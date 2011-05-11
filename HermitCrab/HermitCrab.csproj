@@ -1,0 +1,159 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{9E140FCF-0265-481B-B9A0-B0E7BCD3E814}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SIL.HermitCrab</RootNamespace>
+    <AssemblyName>HermitCrab</AssemblyName>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AffixalMorphologicalRule.cs" />
+    <Compile Include="AffixTemplate.cs" />
+    <Compile Include="Allomorph.cs" />
+    <Compile Include="Gloss.cs" />
+    <Compile Include="LoadException.cs" />
+    <Compile Include="Morph.cs" />
+    <Compile Include="MorphCoOccurrence.cs" />
+    <Compile Include="Morphs.cs" />
+    <Compile Include="PhoneticShapeNode.cs" />
+    <Compile Include="PhoneticShape.cs" />
+    <Compile Include="BoundaryDefinition.cs" />
+    <Compile Include="CharacterDefinitionTable.cs" />
+    <Compile Include="LexEntry.cs" />
+    <Compile Include="LexFamily.cs" />
+    <Compile Include="MorphException.cs" />
+    <Compile Include="MprFeatureGroup.cs" />
+    <Compile Include="MprFeatureSet.cs" />
+    <Compile Include="PartOfSpeech.cs" />
+    <Compile Include="SegmentDefinition.cs" />
+    <Compile Include="SegmentDefinitionTrie.cs" />
+    <Compile Include="Slot.cs" />
+    <Compile Include="CompoundingRule.cs" />
+    <Compile Include="DefaultOutput.cs" />
+    <Compile Include="Environment.cs" />
+    <Compile Include="HCStrings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HCStrings.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Lexicon.cs" />
+    <Compile Include="LegacyLoader.cs" />
+    <Compile Include="Loader.cs" />
+    <Compile Include="MetathesisRule.cs" />
+    <Compile Include="Morpheme.cs" />
+    <Compile Include="Morpher.cs" />
+    <Compile Include="MorphologicalTransform.cs" />
+    <Compile Include="MprFeature.cs" />
+    <Compile Include="NaturalClass.cs" />
+    <Compile Include="IOutput.cs" />
+    <Compile Include="PhonologicalRule.cs" />
+    <Compile Include="MorphologicalRule.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RealizationalRule.cs" />
+    <Compile Include="StandardPhonologicalRule.cs" />
+    <Compile Include="Stratum.cs" />
+    <Compile Include="Trace.cs" />
+    <Compile Include="WordAnalysis.cs" />
+    <Compile Include="WordSynthesis.cs" />
+    <Compile Include="XmlLoader.cs" />
+    <Compile Include="XmlOutput.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="HCStrings.resx">
+      <SubType>Designer</SubType>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>HCStrings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\APRE\APRE.csproj">
+      <Project>{8C9AB5D2-22CA-4559-ABB0-83E97D7F0E58}</Project>
+      <Name>APRE</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
