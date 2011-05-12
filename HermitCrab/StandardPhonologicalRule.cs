@@ -97,8 +97,11 @@ namespace SIL.HermitCrab
 					{
 						var result = (AnnotationConstraints<PhoneticShapeNode>) lhsConstraints.Clone();
 						result.FeatureStructure.Instantiate(rhsConstraints.FeatureStructure);
-						foreach (KeyValuePair<string, bool> varPolarity in rhsConstraints.Variables)
-							result.Variables[varPolarity.Key] = varPolarity.Value;
+						if (rhsConstraints.Variables != null)
+						{
+							foreach (KeyValuePair<string, bool> varPolarity in rhsConstraints.Variables)
+								result.Variables[varPolarity.Key] = varPolarity.Value;
+						}
 						analysisTarget.Add(result);
 					}
 				}
@@ -255,7 +258,7 @@ namespace SIL.HermitCrab
             /// <returns>
             /// 	<c>true</c> if there is no overlap, otherwise <c>false</c>.
             /// </returns>
-            private static bool IsNonSelfOpaquing(AnnotationConstraints<PhoneticShapeNode> constraints, Pattern<PhoneticShapeNode> env)
+            private static bool IsNonSelfOpaquing(AnnotationConstraints<PhoneticShapeNode> constraints, IEnumerable<PatternNode<PhoneticShapeNode>> env)
             {
                 foreach (PatternNode<PhoneticShapeNode> node in env)
                 {
@@ -270,9 +273,9 @@ namespace SIL.HermitCrab
 							}
                     		break;
 
-						case PatternNode<PhoneticShapeNode>.NodeType.Pattern:
-                            var nestedPattern = (NestedPattern<PhoneticShapeNode>) node;
-                            if (!IsNonSelfOpaquing(constraints, nestedPattern.Pattern))
+						case PatternNode<PhoneticShapeNode>.NodeType.Group:
+                            var nestedPattern = (CapturingGroup<PhoneticShapeNode>) node;
+                            if (!IsNonSelfOpaquing(constraints, nestedPattern.Nodes))
                                 return false;
                             break;
                     }
@@ -467,7 +470,7 @@ namespace SIL.HermitCrab
                 {
                     case ChangeType.Feature:
                 		PhoneticShapeNode shapeNode = match.GetStart(dir);
-						IEnumerator<PatternNode<PhoneticShapeNode>> rhsEnum = _analysisTarget.GetNodes(dir).GetEnumerator();
+						IEnumerator<PatternNode<PhoneticShapeNode>> rhsEnum = _rhs.GetNodes(dir).GetEnumerator();
 						IEnumerator<PatternNode<PhoneticShapeNode>> lhsEnum = _rule._lhs.GetNodes(dir).GetEnumerator();
 						while (rhsEnum.MoveNext() && lhsEnum.MoveNext())
 						{
@@ -619,9 +622,10 @@ namespace SIL.HermitCrab
                 if (!_env.IsMatch(shape, leftNode, rightNode, mode, varValues))
                     return false;
 
+#if WANTPORT
                 // remove ambiguous variables
                 varValues.RemoveAmbiguousVariables();
-
+#endif
                 return true;
             }
 
@@ -654,7 +658,7 @@ namespace SIL.HermitCrab
 						var constraints = rhsNode as AnnotationConstraints<PhoneticShapeNode>;
 						if (constraints != null && constraints.AnnotationType == "Segment")
 						{
-							if (!shapeNode.Annotation.FeatureStructure.IsUnifiable(constraints.AntiFeatureStructure))
+							if (shapeNode.Annotation.FeatureStructure.IsUnifiable(constraints.FeatureStructure))
 								return true;
 							shapeNode = shapeNode.GetNext(dir);
 						}
@@ -695,10 +699,12 @@ namespace SIL.HermitCrab
     	/// <param name="id">The ID.</param>
     	/// <param name="desc">The description.</param>
     	/// <param name="spanFactory"></param>
-    	public StandardPhonologicalRule(string id, string desc, SpanFactory<PhoneticShapeNode> spanFactory)
+    	/// <param name="phoneticFeatSys"></param>
+    	public StandardPhonologicalRule(string id, string desc, SpanFactory<PhoneticShapeNode> spanFactory, FeatureSystem phoneticFeatSys)
             : base(id, desc)
         {
         	_spanFactory = spanFactory;
+    		_phoneticFeatSys = phoneticFeatSys;
             _subrules = new List<Subrule>();
         }
 

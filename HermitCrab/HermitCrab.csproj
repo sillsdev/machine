@@ -57,7 +57,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AffixalMorphologicalRule.cs" />
+    <None Include="AffixalMorphologicalRule.cs" />
     <Compile Include="AffixTemplate.cs" />
     <Compile Include="Allomorph.cs" />
     <Compile Include="Gloss.cs" />
@@ -78,8 +78,8 @@
     <Compile Include="SegmentDefinition.cs" />
     <Compile Include="SegmentDefinitionTrie.cs" />
     <Compile Include="Slot.cs" />
-    <Compile Include="CompoundingRule.cs" />
-    <Compile Include="DefaultOutput.cs" />
+    <None Include="CompoundingRule.cs" />
+    <None Include="DefaultOutput.cs" />
     <Compile Include="Environment.cs" />
     <Compile Include="HCStrings.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -87,26 +87,26 @@
       <DependentUpon>HCStrings.resx</DependentUpon>
     </Compile>
     <Compile Include="Lexicon.cs" />
-    <Compile Include="LegacyLoader.cs" />
+    <None Include="LegacyLoader.cs" />
     <Compile Include="Loader.cs" />
-    <Compile Include="MetathesisRule.cs" />
+    <None Include="MetathesisRule.cs" />
     <Compile Include="Morpheme.cs" />
     <Compile Include="Morpher.cs" />
-    <Compile Include="MorphologicalTransform.cs" />
+    <None Include="MorphologicalTransform.cs" />
     <Compile Include="MprFeature.cs" />
     <Compile Include="NaturalClass.cs" />
     <Compile Include="IOutput.cs" />
     <Compile Include="PhonologicalRule.cs" />
     <Compile Include="MorphologicalRule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RealizationalRule.cs" />
+    <None Include="RealizationalRule.cs" />
     <Compile Include="StandardPhonologicalRule.cs" />
     <Compile Include="Stratum.cs" />
     <Compile Include="Trace.cs" />
     <Compile Include="WordAnalysis.cs" />
     <Compile Include="WordSynthesis.cs" />
-    <Compile Include="XmlLoader.cs" />
-    <Compile Include="XmlOutput.cs" />
+    <None Include="XmlLoader.cs" />
+    <None Include="XmlOutput.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="HCStrings.resx">

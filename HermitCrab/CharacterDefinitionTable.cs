@@ -56,10 +56,10 @@ namespace SIL.HermitCrab
     	/// Adds the segment definition.
     	/// </summary>
     	/// <param name="strRep"></param>
-    	/// <param name="featVals"></param>
-    	public virtual void AddSegmentDefinition(string strRep, IEnumerable<FeatureValue> featVals)
+    	/// <param name="fs"></param>
+    	public virtual void AddSegmentDefinition(string strRep, FeatureStructure fs)
         {
-            var segDef = new SegmentDefinition(strRep, this, featVals, _phoneticFeatSys);
+            var segDef = new SegmentDefinition(strRep, this, fs, _phoneticFeatSys.CreateAnalysisFeatureStructure(fs));
             // what do we do about culture?
             _segDefs[strRep.ToLowerInvariant()] = segDef;
         }
@@ -133,7 +133,7 @@ namespace SIL.HermitCrab
         /// <returns>The phonetic shape, <c>null</c> if the string contains invalid segments.</returns>
         public PhoneticShape ToPhoneticShape(string str, ModeType mode)
         {
-            var ps = new PhoneticShape();
+            var ps = new PhoneticShape(this, mode);
             int i = 0;
             while (i < str.Length)
             {
@@ -246,7 +246,8 @@ namespace SIL.HermitCrab
                         break;
                 }
             }
-        	sb.Append("$");
+			if (!displayFormat)
+        		sb.Append("$");
             return sb.ToString();
         }
 

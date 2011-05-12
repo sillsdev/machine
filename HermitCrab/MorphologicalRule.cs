@@ -154,9 +154,11 @@ namespace SIL.HermitCrab
                     && entry.HeadFeatures.Equals(ws.HeadFeatures)
                     && entry.FootFeatures.Equals(ws.FootFeatures))
                 {
+#if WANTPORT
                     if (Morpher.TraceBlocking)
                         // create a blocking trace record, should this become the current trace?
                         ws.CurrentTrace.AddChild(new BlockingTrace(BlockingTrace.BlockType.Rule, entry));
+#endif
                     return new WordSynthesis(entry.PrimaryAllomorph, ws.RealizationalFeatures, ws.CurrentTrace);
                 }
             }

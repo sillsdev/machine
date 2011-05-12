@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using SIL.APRE;
 
 namespace SIL.HermitCrab
@@ -8,16 +8,35 @@ namespace SIL.HermitCrab
 	public sealed class PhoneticShape : BidirList<PhoneticShapeNode>, ICloneable
 	{
 		private readonly AnnotationList<PhoneticShapeNode> _annotations;
+		private readonly CharacterDefinitionTable _charDefTable;
+		private readonly ModeType _mode;
 
-		public PhoneticShape()
+		public PhoneticShape(CharacterDefinitionTable charDefTable, ModeType mode)
 		{
+			_charDefTable = charDefTable;
+			_mode = mode;
 			_annotations = new AnnotationList<PhoneticShapeNode>();
 		}
 
-		public PhoneticShape(IEnumerable<PhoneticShapeNode> atoms)
-			: this()
+		public PhoneticShape(CharacterDefinitionTable charDefTable, ModeType mode, IEnumerable<PhoneticShapeNode> nodes)
+			: this(charDefTable, mode)
 		{
-			AddMany(atoms);
+			AddMany(nodes);
+		}
+
+		public PhoneticShape(PhoneticShape shape)
+			: this(shape._charDefTable, shape._mode, shape.Select(node => node.Clone()))
+		{
+		}
+
+		public CharacterDefinitionTable CharacterDefinitionTable
+		{
+			get { return _charDefTable; }
+		}
+
+		public ModeType Mode
+		{
+			get { return _mode; }
 		}
 
 		public AnnotationList<PhoneticShapeNode> Annotations
@@ -179,10 +198,7 @@ namespace SIL.HermitCrab
 
 		public override string ToString()
 		{
-			var sb = new StringBuilder();
-			foreach (PhoneticShapeNode node in this)
-				sb.Append(node.ToString());
-			return sb.ToString();
+			return _charDefTable.ToRegexString(this, _mode, true);
 		}
 	}
 }

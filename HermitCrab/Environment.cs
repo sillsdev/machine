@@ -87,7 +87,7 @@ namespace SIL.HermitCrab
 			{
 				PatternMatch<PhoneticShapeNode> match;
 				if (_rightEnv.IsMatch(shape.Annotations.GetView(rightNode.Annotation), Direction.LeftToRight, mode, temp, out match))
-					temp.ReplaceValues(match.VariableValues);
+					temp.Instantiate(match.VariableValues);
 				else
 					return false;
 			}
@@ -97,12 +97,12 @@ namespace SIL.HermitCrab
 			{
 				PatternMatch<PhoneticShapeNode> match;
 				if (_leftEnv.IsMatch(shape.Annotations.GetView(leftNode.Annotation, Direction.RightToLeft), Direction.RightToLeft, mode, temp, out match))
-					temp.ReplaceValues(match.VariableValues);
+					temp.Instantiate(match.VariableValues);
 				else
 					return false;
 			}
 
-			varValues.ReplaceValues(temp);
+			varValues.Instantiate(temp);
 			return true;
 		}
 	}

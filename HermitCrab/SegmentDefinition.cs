@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using SIL.APRE;
+﻿using SIL.APRE;
 
 namespace SIL.HermitCrab
 {
@@ -13,16 +11,14 @@ namespace SIL.HermitCrab
 		private readonly CharacterDefinitionTable _charDefTable;
 		private readonly FeatureStructure _analysisFeatureStructure;
 		private readonly FeatureStructure _synthFeatureStructure;
-		private readonly FeatureStructure _antiFeatureStructure;
 
-		public SegmentDefinition(string strRep, CharacterDefinitionTable charDefTable, IEnumerable<FeatureValue> featureValues,
-			FeatureSystem featSys)
+		public SegmentDefinition(string strRep, CharacterDefinitionTable charDefTable, FeatureStructure synthFeatureStructure,
+			FeatureStructure analysisFeatureStructure)
 		{
 			_strRep = strRep;
 			_charDefTable = charDefTable;
-			_synthFeatureStructure = featSys.CreateFeatureStructure(featureValues.Cast<object>());
-			_antiFeatureStructure = featSys.CreateAntiFeatureStructure(_synthFeatureStructure);
-			_analysisFeatureStructure = featSys.CreateAnalysisFeatureStructure(_synthFeatureStructure);
+			_synthFeatureStructure = synthFeatureStructure;
+			_analysisFeatureStructure = analysisFeatureStructure;
 		}
 
 		public string StrRep
@@ -54,14 +50,6 @@ namespace SIL.HermitCrab
 			get
 			{
 				return _synthFeatureStructure;
-			}
-		}
-
-		public FeatureStructure AntiFeatureStructure
-		{
-			get
-			{
-				return _antiFeatureStructure;
 			}
 		}
 

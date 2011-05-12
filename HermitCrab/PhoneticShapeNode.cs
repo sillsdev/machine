@@ -3,7 +3,7 @@ using SIL.APRE;
 
 namespace SIL.HermitCrab
 {
-	public class PhoneticShapeNode : BidirListNode<PhoneticShapeNode>, IComparable<PhoneticShapeNode>, IComparable
+	public class PhoneticShapeNode : BidirListNode<PhoneticShapeNode>, IComparable<PhoneticShapeNode>, IComparable, ICloneable
 	{
 		private readonly Annotation<PhoneticShapeNode> _ann;
 
@@ -11,6 +11,17 @@ namespace SIL.HermitCrab
 		{
 			_ann = new Annotation<PhoneticShapeNode>(type, spanFactory.Create(this), fs);
 			Tag = int.MinValue;
+		}
+
+		public PhoneticShapeNode(PhoneticShapeNode node)
+		{
+			_ann = node._ann.Clone();
+		}
+
+		protected override void Init(BidirList<PhoneticShapeNode> list)
+		{
+			base.Init(list);
+			((PhoneticShape) List).Annotations.Add(_ann);
 		}
 
 		public int Tag { get; internal set; }
@@ -41,6 +52,16 @@ namespace SIL.HermitCrab
 			if (!(other is PhoneticShapeNode))
 				throw new ArgumentException("other is not an instance of an Atom object.", "other");
 			return CompareTo((PhoneticShapeNode)other);
+		}
+
+		public PhoneticShapeNode Clone()
+		{
+			return new PhoneticShapeNode(this);
+		}
+
+		object ICloneable.Clone()
+		{
+			return Clone();
 		}
 	}
 }

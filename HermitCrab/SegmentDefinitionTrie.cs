@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using SIL.APRE;
 
 namespace SIL.HermitCrab
@@ -77,63 +76,47 @@ namespace SIL.HermitCrab
 			}
 		}
 
-		class TrieNode
+		private class TrieNode
 		{
-			List<T> m_values;
-			SegmentDefinition m_segDef;
-			List<TrieNode> m_children;
+			private readonly List<T> _values;
+			private readonly FeatureStructure _featureStructure;
+			private readonly List<TrieNode> _children;
 
 			public TrieNode()
 				: this(null)
 			{
 			}
 
-			public TrieNode(SegmentDefinition segDef)
+			private TrieNode(FeatureStructure featureStructure)
 			{
-				m_segDef = segDef;
-				m_values = new List<T>();
-				m_children = new List<TrieNode>();
+				_featureStructure = featureStructure;
+				_values = new List<T>();
+				_children = new List<TrieNode>();
 			}
 
 			public void Add(PhoneticShapeNode node, T value, Direction dir)
 			{
-				switch (node.Type)
+				if (node == null)
 				{
-					case PhoneticShapeNode.NodeType.MARGIN:
-						if (node == node.Owner.GetLast(dir))
-						{
-							// we are at the end of the phonetic shape, so add the lexical
-							// entry to this node
-							m_values.Add(value);
-							return;
-						}
-						else
-						{
-							// skip first margin
-							Add(node.GetNext(dir), value, dir);
-						}
-						break;
+					// we are at the end of the phonetic shape, so add the lexical
+					// entry to this node
+					_values.Add(value);
+					return;
+				}
 
-					case PhoneticShapeNode.NodeType.BOUNDARY:
+				switch (node.Annotation.Type)
+				{
+					case "Boundary":
 						// skip boundaries
 						Add(node.GetNext(dir), value, dir);
 						break;
 
-					case PhoneticShapeNode.NodeType.SEGMENT:
-						Segment seg = (Segment)node;
+					case "Segment":
 						TrieNode tnode = null;
-						foreach (TrieNode child in m_children)
+						foreach (TrieNode child in _children)
 						{
-							if (seg.FeatureValues.FeatureSystem.HasFeatures)
-							{
-								// we check for exact matches of feature sets when adding
-								if (child.m_segDef.SynthFeatureStructure.Equals(seg.FeatureValues))
-								{
-									tnode = child;
-									break;
-								}
-							}
-							else if (child.m_segDef == seg.SegmentDefinition)
+							// we check for exact matches of feature sets when adding
+							if (child._featureStructure.Equals(node.Annotation.FeatureStructure))
 							{
 								tnode = child;
 								break;
@@ -143,8 +126,8 @@ namespace SIL.HermitCrab
 						if (tnode == null)
 						{
 							// new node needs to be added
-							tnode = new TrieNode(seg.SegmentDefinition);
-							m_children.Add(tnode);
+							tnode = new TrieNode((FeatureStructure) node.Annotation.FeatureStructure.Clone());
+							_children.Add(tnode);
 						}
 
 						// recursive call matching child node
@@ -156,66 +139,53 @@ namespace SIL.HermitCrab
 			public IList<Match> Search(PhoneticShapeNode node, Direction dir, bool partialMatch)
 			{
 				IList<Match> matches = null;
-				switch (node.Type)
+				if (node == null)
 				{
-					case PhoneticShapeNode.NodeType.MARGIN:
-						if (node == node.Owner.GetLast(dir))
-						{
-							matches = new List<Match>();
-							if (!partialMatch)
-							{
-								// we are at the end of the phonetic shape, so return
-								// all values in this node
-								foreach (T value in m_values)
-									matches.Add(new Match(value));
-							}
-						}
-						else
-						{
-							// skip the first margin
+					matches = new List<Match>();
+					if (!partialMatch)
+					{
+						// we are at the end of the phonetic shape, so return
+						// all values in this node
+						foreach (T value in _values)
+							matches.Add(new Match(value));
+					}
+				}
+				else
+				{
+					switch (node.Annotation.Type)
+					{
+						case "Boundary":
+							// skip boundaries
 							matches = Search(node.GetNext(dir), dir, partialMatch);
-						}
-						break;
+							foreach (Match match in matches)
+								match.AddNode(node);
+							break;
 
-					case PhoneticShapeNode.NodeType.BOUNDARY:
-						// skip boundaries
-						matches = Search(node.GetNext(dir), dir, partialMatch);
-						foreach (Match match in matches)
-							match.AddNode(node);
-						break;
-
-					case PhoneticShapeNode.NodeType.SEGMENT:
-						Segment seg = (Segment)node;
-						PhoneticShapeNode nextNode = node.GetNext(dir);
-						List<Match> segMatches = new List<Match>();
-						foreach (TrieNode child in m_children)
-						{
-							// check for unifiability when searching
-							if (seg.FeatureValues.FeatureSystem.HasFeatures)
+						case "Segment":
+							PhoneticShapeNode nextNode = node.GetNext(dir);
+							var segMatches = new List<Match>();
+							foreach (TrieNode child in _children)
 							{
-								if (seg.FeatureValues.IsUnifiable(child.m_segDef.SynthFeatureStructure))
+								// check for unifiability when searching
+								if (node.Annotation.FeatureStructure.IsUnifiable(child._featureStructure))
 									segMatches.AddRange(child.Search(nextNode, dir, partialMatch));
 							}
-							else if (seg.IsSegmentInstantiated(child.m_segDef))
-							{
-								segMatches.AddRange(child.Search(nextNode, dir, partialMatch));
-							}
-						}
 
-						// if this is an optional node, we can try skipping it
-						if (node.IsOptional)
-							segMatches.AddRange(Search(nextNode, dir, partialMatch));
+							// if this is an optional node, we can try skipping it
+							if (node.Annotation.IsOptional)
+								segMatches.AddRange(Search(nextNode, dir, partialMatch));
 
-						matches = segMatches;
+							matches = segMatches;
 
-						foreach (Match match in matches)
-							match.AddNode(node);
-						break;
+							foreach (Match match in matches)
+								match.AddNode(node);
+							break;
+					}	
 				}
 
-				if (partialMatch)
+				if (partialMatch && matches != null)
 				{
-					foreach (T value in m_values)
+					foreach (T value in _values)
 						matches.Add(new Match(value));
 				}
 
@@ -224,13 +194,13 @@ namespace SIL.HermitCrab
 
 			public override string ToString()
 			{
-				return m_segDef.ToString();
+				return _featureStructure.ToString();
 			}
 		}
 
-		TrieNode m_root;
-		int m_numValues = 0;
-		Direction m_dir;
+		private TrieNode _root;
+		private int _numValues;
+		private readonly Direction _dir;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SegmentDefinitionTrie&lt;T&gt;"/> class.
@@ -238,39 +208,40 @@ namespace SIL.HermitCrab
 		/// <param name="dir">The direction.</param>
 		public SegmentDefinitionTrie(Direction dir)
 		{
-			m_dir = dir;
-			m_root = new TrieNode();
+			_dir = dir;
+			_root = new TrieNode();
 		}
 
 		public Direction Direction
 		{
 			get
 			{
-				return m_dir;
+				return _dir;
 			}
 		}
 
 		/// <summary>
 		/// Adds the specified lexical entry.
 		/// </summary>
-		/// <param name="entry">The lexical entry.</param>
+		/// <param name="shape"></param>
+		/// <param name="value"></param>
 		public void Add(PhoneticShape shape, T value)
 		{
-			m_root.Add(shape.GetFirst(m_dir), value, m_dir);
-			m_numValues++;
+			_root.Add(shape.GetFirst(_dir), value, _dir);
+			_numValues++;
 		}
 
 		public void Clear()
 		{
-			m_root = new TrieNode();
-			m_numValues = 0;
+			_root = new TrieNode();
+			_numValues = 0;
 		}
 
 		public int Count
 		{
 			get
 			{
-				return m_numValues;
+				return _numValues;
 			}
 		}
 
@@ -282,12 +253,12 @@ namespace SIL.HermitCrab
 		/// <returns>All matching values.</returns>
 		public IEnumerable<Match> Search(PhoneticShape shape)
 		{
-			return new Set<Match>(m_root.Search(shape.GetFirst(m_dir), m_dir, false));
+			return new HashSet<Match>(_root.Search(shape.GetFirst(_dir), _dir, false));
 		}
 
 		public IEnumerable<Match> SearchPartial(PhoneticShape shape)
 		{
-			return new Set<Match>(m_root.Search(shape.GetFirst(m_dir), m_dir, true));
+			return new HashSet<Match>(_root.Search(shape.GetFirst(_dir), _dir, true));
 		}
 	}
 }

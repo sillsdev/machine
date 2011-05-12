@@ -18,6 +18,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APRETest", "APRETest\APRETe
 		{8C9AB5D2-22CA-4559-ABB0-83E97D7F0E58} = {8C9AB5D2-22CA-4559-ABB0-83E97D7F0E58}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HermitCrabTest", "HermitCrabTest\HermitCrabTest.csproj", "{B91590D0-1519-48A0-866B-B17E326812AD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9E140FCF-0265-481B-B9A0-B0E7BCD3E814} = {9E140FCF-0265-481B-B9A0-B0E7BCD3E814}
+		{8C9AB5D2-22CA-4559-ABB0-83E97D7F0E58} = {8C9AB5D2-22CA-4559-ABB0-83E97D7F0E58}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,6 +72,16 @@ Global
 		{3B8610C8-8EF2-4733-9D8F-5303318830DA}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{3B8610C8-8EF2-4733-9D8F-5303318830DA}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{3B8610C8-8EF2-4733-9D8F-5303318830DA}.Release|Win32.ActiveCfg = Release|Any CPU
+		{B91590D0-1519-48A0-866B-B17E326812AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B91590D0-1519-48A0-866B-B17E326812AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B91590D0-1519-48A0-866B-B17E326812AD}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{B91590D0-1519-48A0-866B-B17E326812AD}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{B91590D0-1519-48A0-866B-B17E326812AD}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{B91590D0-1519-48A0-866B-B17E326812AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B91590D0-1519-48A0-866B-B17E326812AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B91590D0-1519-48A0-866B-B17E326812AD}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{B91590D0-1519-48A0-866B-B17E326812AD}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{B91590D0-1519-48A0-866B-B17E326812AD}.Release|Win32.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

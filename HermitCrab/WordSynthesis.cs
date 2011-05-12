@@ -61,13 +61,16 @@ namespace SIL.HermitCrab
         {
             _root = (LexEntry) rootAllomorph.Morpheme;
             m_mprFeatures = _root.MprFeatures != null ? _root.MprFeatures.Clone() : new MprFeatureSet();
+#if WANTPORT
             m_headFeatures = _root.HeadFeatures != null ? (FeatureStructure) _root.HeadFeatures.Clone() : new FeatureDictionary();
             m_footFeatures = _root.FootFeatures != null ? (FeatureStructure) _root.FootFeatures.Clone() : new FeatureDictionary();
+#endif
             _partOfSpeech = _root.PartOfSpeech;
             m_stratum = _root.Stratum;
 
             m_nonHead = nonHead;
             _morphs = new Morphs();
+#if WANTPORT
             Morph morph = new Morph(rootAllomorph);
             morph.Shape.AddMany(rootAllomorph.Shape.Segments);
             _morphs.Add(morph);
@@ -75,7 +78,7 @@ namespace SIL.HermitCrab
             _shape.Add(new Margin(Direction.RightToLeft));
             _shape.AddPartition(rootAllomorph.Shape.Segments, morph.Partition);
             _shape.Add(new Margin(Direction.LeftToRight));
-
+#endif
             m_obligHeadFeatures = new IDBearerSet<Feature>();
             m_mrules = new List<MorphologicalRule>(mrules);
             m_rzFeatures = rzFeatures;
@@ -244,12 +247,13 @@ namespace SIL.HermitCrab
         {
             get
             {
+#if WANTPORT
                 foreach (Feature feature in m_obligHeadFeatures)
                 {
                     if (!m_headFeatures.ContainsFeature(feature))
                         return false;
                 }
-
+#endif
                 if (!IsMorphsValid)
                     return false;
 
@@ -270,6 +274,7 @@ namespace SIL.HermitCrab
             {
                 foreach (Morph morph in _morphs)
                 {
+#if WANTPORT
                     if (morph.Allomorph.ExcludedEnvironments != null || morph.Allomorph.RequiredEnvironments != null)
                     {
                         // get the left and right context nodes for this morph
@@ -318,7 +323,7 @@ namespace SIL.HermitCrab
                                 return false;
                         }
                     }
-
+#endif
                     // excluded morpheme co-occurrences
                     if (morph.Allomorph.Morpheme.ExcludedMorphemeCoOccurrences != null)
                     {

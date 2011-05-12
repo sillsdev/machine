@@ -345,12 +345,14 @@ namespace SIL.HermitCrab
         void LexicalLookup(WordAnalysis input, ICollection<WordSynthesis> candidates)
         {
             LexLookupTrace lookupTrace = null;
+#if WANTPORT
             if (Morpher.TraceLexLookup)
             {
                 // create lexical lookup trace record
                 lookupTrace = new LexLookupTrace(this, input.Shape.Clone());
                 input.CurrentTrace.AddChild(lookupTrace);
             }
+#endif
 
             foreach (SegmentDefinitionTrie<LexEntry.RootAllomorph>.Match match in _entryTrie.Search(input.Shape))
             {
@@ -364,14 +366,16 @@ namespace SIL.HermitCrab
 
 						wa.RootAllomorph = allomorph;
 
+#if WANTPORT
 						if (Morpher.TraceLexLookup)
 						{
 							// successful lookup, so create word synthesis trace record
 							var wsTrace = new WordSynthesisTrace(wa.RootAllomorph, wa.UnappliedMorphologicalRules,
-								wa.RealizationalFeatures.Clone());
+								(FeatureStructure) wa.RealizationalFeatures.Clone());
 							lookupTrace.AddChild(wsTrace);
 							wa.CurrentTrace = wsTrace;
 						}
+#endif
 
 						candidates.Add(new WordSynthesis(wa));
 					}
@@ -444,8 +448,10 @@ namespace SIL.HermitCrab
         {
             // if this word synthesis is not compatible with the realizational features,
             // then skip it
+#if WANTPORT
             if (!input.RealizationalFeatures.IsCompatible(input.HeadFeatures))
                 return;
+#endif
 
             WordSynthesis ws = ChooseInflStem(input);
             bool applicableTemplate = false;
@@ -479,6 +485,7 @@ namespace SIL.HermitCrab
                 return ws;
 
             WordSynthesis best = ws;
+#if WANTPORT
             // iterate thru all relatives
             foreach (LexEntry relative in ws.Root.Family.Entries)
             {
@@ -497,6 +504,7 @@ namespace SIL.HermitCrab
                     }
                 }
             }
+#endif
             return best;
         }
 

@@ -20,18 +20,21 @@ namespace SIL.HermitCrab
         private Trace _curTrace;
         private Stratum _stratum;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="WordAnalysis"/> class.
-        /// </summary>
-        /// <param name="shape">The shape.</param>
-        /// <param name="curTrace">The current trace record.</param>
-        internal WordAnalysis(PhoneticShape shape, Stratum stratum, Trace curTrace)
+    	/// <summary>
+    	/// Initializes a new instance of the <see cref="WordAnalysis"/> class.
+    	/// </summary>
+    	/// <param name="shape">The shape.</param>
+    	/// <param name="stratum"></param>
+    	/// <param name="curTrace">The current trace record.</param>
+    	public WordAnalysis(PhoneticShape shape, Stratum stratum, Trace curTrace)
         {
             _shape = shape;
             _partsOfSpeech = new IDBearerSet<PartOfSpeech>();
             _mrules = new List<MorphologicalRule>();
             _mrulesUnapplied = new Dictionary<MorphologicalRule, int>();
+#if WANTPORT
             _rzFeatures = new FeatureDictionary();
+#endif
             _stratum = stratum;
             _curTrace = curTrace;
         }
@@ -49,7 +52,9 @@ namespace SIL.HermitCrab
                 _nonHead = wa._nonHead.Clone();
             _mrules = new List<MorphologicalRule>(wa._mrules);
             _mrulesUnapplied = new Dictionary<MorphologicalRule, int>(wa._mrulesUnapplied);
+#if WANTPORT
             _rzFeatures = wa._rzFeatures.Clone();
+#endif
             _curTrace = wa._curTrace;
             _stratum = wa._stratum;
         }

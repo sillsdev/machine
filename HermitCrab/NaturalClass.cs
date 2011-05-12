@@ -37,7 +37,6 @@ namespace SIL.HermitCrab
             set
             {
                 _featureStructure = value;
-                _antiFeatureStructure = new SymbolicFeatureValueSet(_featureStructure, true);
             }
         }
 

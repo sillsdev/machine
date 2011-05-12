@@ -19,7 +19,9 @@ namespace SIL.HermitCrab
 		public Morph(Allomorph allomorph)
 		{
 			_allomorph = allomorph;
+#if WANTPORT
 			_shape = new PhoneticShape();
+#endif
 		}
 
 		/// <summary>
