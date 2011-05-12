@@ -14,7 +14,6 @@ namespace SIL.APRE
 		/// </summary>
 		/// <param name="marginType">Type of the margin.</param>
 		public Margin(Direction marginType)
-			: base(-1)
 		{
 			_marginType = marginType;
 		}
@@ -24,7 +23,6 @@ namespace SIL.APRE
 		/// </summary>
 		/// <param name="margin">The margin.</param>
 		public Margin(Margin<TOffset> margin)
-			: base(margin)
 		{
 			_marginType = margin._marginType;
 		}

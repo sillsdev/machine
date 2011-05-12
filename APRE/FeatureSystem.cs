@@ -124,6 +124,16 @@ namespace SIL.APRE
 			return GenerateFeatureStructure(contents);
 		}
 
+		public FeatureStructure CreateFeatureStructure(IEnumerable<FeatValPair> contents)
+		{
+			return GenerateFeatureStructure(contents.Cast<object>());
+		}
+
+		public FeatureStructure CreateFeatureStructure(IEnumerable<FeatureValue> contents)
+		{
+			return GenerateFeatureStructure(contents.Cast<object>());
+		}
+
 		private FeatureStructure GenerateFeatureStructure(IEnumerable<object> contents)
 		{
 			var featureValues = new Dictionary<Feature, FeatureValue>();
@@ -281,39 +291,6 @@ namespace SIL.APRE
 			return output;
 		}
 
-		public FeatureStructure CreateAntiFeatureStructure(FeatureStructure fs)
-		{
-			return GenerateFeatureStructure(CreateAntiFeatStruc(fs));
-		}
-
-		private IEnumerable<object> CreateAntiFeatStruc(FeatureStructure fs)
-		{
-			return (from feature in fs.Features
-				    let value = GetAntiValue(feature, fs.GetValue(feature))
-				    where value != null
-				    select new FeatValPair(feature, value)).Cast<object>();
-		}
-
-		private object GetAntiValue(Feature feature, FeatureValue value)
-		{
-			switch (feature.ValueType)
-			{
-				case FeatureValueType.String:
-					// TODO: how do we handle strings?
-					break;
-
-				case FeatureValueType.Symbol:
-					var symbolFeature = (SymbolicFeature)feature;
-					var symbolValue = (SymbolicFeatureValue)value;
-					return new SymbolicFeatureValue(symbolFeature.PossibleSymbols.Except(symbolValue.Values));
-
-				case FeatureValueType.Complex:
-					var complexValue = (FeatureStructure)value;
-					return new FeatStruc(CreateAntiFeatStruc(complexValue));
-			}
-			return null;
-		}
-
 		public FeatureStructure CreateAnalysisFeatureStructure(FeatureStructure fs)
 		{
 			return GenerateFeatureStructure(CreateAnalysisFeatStruc(fs, Features));
@@ -388,7 +365,16 @@ namespace SIL.APRE
         /// <param name="feature">The feature.</param>
         public void AddFeature(Feature feature)
         {
-            _features.Add(feature);
+			if (!_features.Contains(feature))
+			{
+				_features.Add(feature);
+				var symbolFeat = feature as SymbolicFeature;
+				if (symbolFeat != null)
+				{
+					foreach (FeatureSymbol symbol in symbolFeat.PossibleSymbols)
+						AddSymbol(symbol);
+				}
+			}
         }
 
         /// <summary>
@@ -399,8 +385,11 @@ namespace SIL.APRE
 		/// and this feature system does not contain the specified value.</exception>
         public void AddSymbol(FeatureSymbol symbol)
         {
-            symbol.SymbolIndex = _symbols.Count;
-            _symbols.Add(symbol);
+			if (!_symbols.Contains(symbol))
+			{
+				symbol.SymbolIndex = _symbols.Count;
+				_symbols.Add(symbol);
+			}
         }
 
         /// <summary>

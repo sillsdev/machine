@@ -81,7 +81,7 @@
 			_list.Insert(newNode, (TNode)this, dir);
 		}
 
-		internal void Init(BidirList<TNode> list)
+		protected internal virtual void Init(BidirList<TNode> list)
 		{
 			_list = list;
 		}

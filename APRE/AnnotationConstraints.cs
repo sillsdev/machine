@@ -13,43 +13,23 @@ namespace SIL.APRE
     {
     	private readonly string _annotationType;
     	private readonly FeatureStructure _featureStructure;
-    	private readonly FeatureStructure _antiFeatureStructure;
     	private readonly IDictionary<string, bool> _variables;
-    	private readonly IDictionary<string, bool> _antiVariables;
     	private readonly AlphaVariables<TOffset> _alphaVars;
 
         /// <summary>
 		/// Initializes a new instance of the <see cref="AnnotationConstraints&lt;TOffset&gt;"/> class.
         /// </summary>
-		public AnnotationConstraints(int groupNum, string annotationType, FeatureStructure featureStructure,
-			FeatureStructure antiFeatureStructure, IDictionary<string, bool> variables, AlphaVariables<TOffset> alphaVars) : base(groupNum)
+		public AnnotationConstraints(string annotationType, FeatureStructure featureStructure,
+			IDictionary<string, bool> variables, AlphaVariables<TOffset> alphaVars)
         {
 			_annotationType = annotationType;
             _featureStructure = featureStructure;
-            _antiFeatureStructure = antiFeatureStructure;
 			_variables = variables;
 			_alphaVars = alphaVars;
-			if (_variables != null)
-			{
-				_antiVariables = new Dictionary<string, bool>(variables.Count);
-				foreach (KeyValuePair<string, bool> kvp in variables)
-					_antiVariables[kvp.Key] = !kvp.Value;
-			}
         }
 
-		public AnnotationConstraints(string annotationType, FeatureStructure featureValues, FeatureStructure antiFeatureStructure,
-			IDictionary<string, bool> variables, AlphaVariables<TOffset> alphaVars)
-			: this(-1, annotationType, featureValues, antiFeatureStructure, variables, alphaVars)
-		{
-		}
-
-		public AnnotationConstraints(int groupNum, string annotationType, FeatureStructure featureStructure, FeatureStructure antiFeatureStructure)
-			: this(groupNum, annotationType, featureStructure, antiFeatureStructure, null, null)
-		{
-		}
-
-		public AnnotationConstraints(string annotationType, FeatureStructure featureValues, FeatureStructure antiFeatureStructure)
-			: this(-1, annotationType, featureValues, antiFeatureStructure)
+		public AnnotationConstraints(string annotationType, FeatureStructure featureStructure)
+			: this(annotationType, featureStructure, null, null)
 		{
 		}
 
@@ -58,16 +38,12 @@ namespace SIL.APRE
     	/// </summary>
     	/// <param name="constraints">The annotation constraints.</param>
     	public AnnotationConstraints(AnnotationConstraints<TOffset> constraints)
-            : base(constraints)
         {
 			_annotationType = constraints._annotationType;
             _featureStructure = constraints._featureStructure.Clone() as FeatureStructure;
-            _antiFeatureStructure = constraints._antiFeatureStructure.Clone() as FeatureStructure;
 
 			if (constraints._variables != null)
 				_variables = new Dictionary<string, bool>(constraints._variables);
-			if (constraints._antiVariables != null)
-				_antiVariables = new Dictionary<string, bool>(constraints._antiVariables);
 			_alphaVars = constraints._alphaVars;
         }
 
@@ -137,26 +113,9 @@ namespace SIL.APRE
             }
         }
 
-        /// <summary>
-        /// Gets the anti feature values.
-        /// </summary>
-        /// <value>The anti feature values.</value>
-        public FeatureStructure AntiFeatureStructure
-        {
-            get
-            {
-                return _antiFeatureStructure;
-            }
-        }
-
     	public IDictionary<string, bool> Variables
     	{
     		get { return _variables; }
-    	}
-
-    	public IDictionary<string, bool> AntiVariables
-    	{
-    		get { return _antiVariables; }
     	}
 
     	/// <summary>
@@ -164,18 +123,19 @@ namespace SIL.APRE
     	/// </summary>
     	/// <param name="ann">The annotation.</param>
     	/// <param name="mode">The mode.</param>
-    	/// <param name="instantiatedVars">The instantiated variables.</param>
+    	/// <param name="varValues">The instantiated variables.</param>
     	/// <returns>All matches.</returns>
-    	public override bool IsMatch(Annotation<TOffset> ann, ModeType mode, ref FeatureStructure instantiatedVars)
+    	public override bool IsMatch(Annotation<TOffset> ann, ModeType mode, ref FeatureStructure varValues)
     	{
-    		instantiatedVars = (FeatureStructure) instantiatedVars.Clone();
+			if (varValues != null)
+    			varValues = (FeatureStructure) varValues.Clone();
 
 			if (ann == null)
 				return false;
 
 			if (_annotationType == ann.Type)
 			{
-				if (List != null && ((Pattern<TOffset>) List).CheckClean(mode))
+				if (Pattern != null && Pattern.CheckClean(mode))
 				{
 					// check segment to see if it has already been altered by another
 					// subrule, only matters for simultaneously applying rules
@@ -183,7 +143,7 @@ namespace SIL.APRE
 						return false;
 				}
 
-				if (!IsFeatureMatch(ann, mode, instantiatedVars))
+				if (!IsFeatureMatch(ann, mode, varValues))
 					return false;
 
 				return true;
@@ -194,30 +154,24 @@ namespace SIL.APRE
 		internal override State<TOffset, FeatureStructure> GenerateNfa(FiniteStateAutomaton<TOffset, FeatureStructure> fsa,
 			State<TOffset, FeatureStructure> startState, Direction dir)
 		{
-			if (GroupNum > 0)
-				startState = fsa.CreateTag(startState, GroupNum, true);
-
 			State<TOffset, FeatureStructure> endState = fsa.CreateState();
 			startState.AddTransition(new Transition<TOffset, FeatureStructure>(this, endState));
-
-			if (GroupNum > 0)
-				endState = fsa.CreateTag(endState, GroupNum, false);
 
 			return base.GenerateNfa(fsa, endState, dir);
 		}
 
-        protected virtual bool IsFeatureMatch(Annotation<TOffset> ann, ModeType mode, FeatureStructure instantiatedVars)
+        protected virtual bool IsFeatureMatch(Annotation<TOffset> ann, ModeType mode, FeatureStructure varValues)
         {
             // check unifiability
             if (!ann.FeatureStructure.IsUnifiable(_featureStructure))
                 return false;
 
-			if (_alphaVars != null)
+			if (_alphaVars != null && varValues != null)
 			{
 				// only one possible binding during synthesis
 				if (mode == ModeType.Synthesis)
 				{
-					if (!_alphaVars.GetBinding(_variables, ann, instantiatedVars))
+					if (!_alphaVars.GetBinding(_variables, ann, varValues))
 					{
 						// when a variable is specified in a target and environment for agreement, the environment
 						// must specify a feature for each variable
@@ -230,7 +184,7 @@ namespace SIL.APRE
 				{
 					// during analysis, get all possible bindings, since a feature could
 					// be uninstantiated
-					if (!_alphaVars.GetAllBindings(_variables, ann, instantiatedVars))
+					if (!_alphaVars.GetAllBindings(_variables, ann, varValues))
 						return false;
 				}
 			}
@@ -247,37 +201,6 @@ namespace SIL.APRE
 		{
 			_alphaVars.Uninstantiate(ann, _variables, varValues);
 		}
-
-		//public void Apply(Annotation<TOffset> ann, VariableValues<TOffset> varValues)
-		//{
-		//    ann.FeatureStructure.UnionWith(_featureStructure);
-		//    ann.FeatureStructure.ExceptWith(_antiFeatureStructure);
-
-		//    _alphaVars.AddValues(ann, _variables, varValues);
-		//    _alphaVars.RemoveValues(ann, _antiVariables, varValues);
-		//}
-
-		//public void ApplyInsertion(Annotation<TOffset> ann, VariableValues<TOffset> varValues)
-		//{
-		//    ann.FeatureStructure.UnionWith(_featureStructure);
-
-		//    _alphaVars.AddValues(ann, _variables, varValues);
-		//}
-
-		//public void Unapply(Annotation<TOffset> ann, VariableValues<TOffset> varValues)
-		//{
-		//    ann.FeatureStructure.UnionWith(_antiFeatureStructure);
-
-		//    _alphaVars.AddValues(ann, _antiVariables, varValues);
-		//}
-
-		//public void UnapplyDeletion(Annotation<TOffset> ann, VariableValues<TOffset> varValues)
-		//{
-		//    ann.FeatureStructure.ExceptWith(_antiFeatureStructure);
-
-		//    _alphaVars.AddCurrentValues(ann, _antiVariables, varValues);
-		//    ann.IsOptional = true;
-		//}
 
 		public override PatternNode<TOffset> Clone()
 		{

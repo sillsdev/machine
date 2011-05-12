@@ -166,7 +166,7 @@ namespace SIL.APRE.Fsa
 			HashSet<string> types = mode == ModeType.Analysis ? _analysisTypes : _synthesisTypes;
 			if (types != null)
 				return types.Contains(ann.Type);
-			return false;
+			return true;
 		}
 
 		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, ModeType mode, TData data, bool allMatches,

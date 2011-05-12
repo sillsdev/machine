@@ -178,6 +178,8 @@ namespace SIL.APRE
 		{
 			if (IsUnifiable(other))
 			{
+
+
 				foreach (SymbolicFeature feature in other.Features)
 				{
 					var curValue = (SymbolicFeatureValue) GetValue(feature);
@@ -199,11 +201,16 @@ namespace SIL.APRE
 			if (sfvs != null)
 			{
 				_featureValues.UnionWith(sfvs._featureValues);
-				_antiFeatureValues.ExceptWith(sfvs._antiFeatureValues);
+				_featureValues.ExceptWith(sfvs._antiFeatureValues);
 			}
 			else
 			{
-				
+				foreach (SymbolicFeature feature in other.Features)
+				{
+					var value = (SymbolicFeatureValue) other.GetValue(feature);
+					foreach (FeatureSymbol symbol in feature.PossibleSymbols)
+						_featureValues.Set(symbol, value.Values.Contains(symbol));
+				}
 			}
 		}
 
@@ -216,7 +223,15 @@ namespace SIL.APRE
 			}
 			else
 			{
-				
+				foreach (SymbolicFeature feature in other.Features)
+				{
+					var value = (SymbolicFeatureValue) other.GetValue(feature);
+					foreach (FeatureSymbol symbol in feature.PossibleSymbols)
+					{
+						if (!value.Values.Contains(symbol))
+							_featureValues.Set(symbol, true);
+					}
+				}
 			}
 		}
 

@@ -34,11 +34,11 @@ namespace SIL.APRE.Test
 			FeatureStructure fs = featSys.CreateFeatureStructure();
 
 			var pattern = new Pattern<int>(spanFactory, new[] { "Noun", "Verb", "NP", "VP", "Det", "Adj", "Adv" },
-				new AnnotationConstraints<int>(1, "Adj", fs, fs),
-				new AnnotationConstraints<int>(2, "Noun", fs, fs),
-				new AnnotationConstraints<int>(3, "Verb", fs, fs),
-				new RangeQuantifier<int>(4, 0, 1,
-					new AnnotationConstraints<int>(5, "Adv", fs, fs)));
+				new CapturingGroup<int>(1, new AnnotationConstraints<int>("Adj", fs)),
+				new CapturingGroup<int>(2, new AnnotationConstraints<int>("Noun", fs)),
+				new CapturingGroup<int>(3, new AnnotationConstraints<int>("Verb", fs)),
+				new CapturingGroup<int>(4, new RangeQuantifier<int>(0, 1,
+					new CapturingGroup<int>(5, new AnnotationConstraints<int>("Adv", fs)))));
 
 			pattern.Compile();
 

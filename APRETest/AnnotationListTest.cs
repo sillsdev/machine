@@ -6,36 +6,27 @@ namespace SIL.APRE.Test
 	[TestFixture]
 	public class AnnotationListTest
 	{
-		private SpanFactory<Atom> _spanFactory;
-		private AtomList _atomList;
+		private SpanFactory<int> _spanFactory;
 
 		[TestFixtureSetUp]
 		public void FixtureSetUp()
 		{
-			_spanFactory = new SpanFactory<Atom>((x, y) => x.CompareTo(y), (start, end) => start.GetNodes(end, Direction.LeftToRight).Count());
-			_atomList = new AtomList();
-			for (int i = 0; i < 10; i++)
-				_atomList.Add(new Atom(i));
-		}
-
-		[SetUp]
-		public void SetUp()
-		{
-			_atomList.Annotations.Clear();
+			_spanFactory = new SpanFactory<int>((x, y) => x.CompareTo(y), (start, end) => end - start);
 		}
 
 		[Test]
 		public void AddAnnotations()
 		{
-			var a = new Annotation<Atom>("Last", _spanFactory.Create(_atomList.Last), null);
-			_atomList.Annotations.Add(a);
-			Assert.AreSame(a, _atomList.Annotations.First);
-			a = new Annotation<Atom>("First", _spanFactory.Create(_atomList.First), null);
-			_atomList.Annotations.Add(a);
-			Assert.AreSame(a, _atomList.Annotations.First);
-			a = new Annotation<Atom>("Entire", _spanFactory.Create(_atomList.First, _atomList.Last), null);
-			_atomList.Annotations.Add(a);
-			Assert.AreSame(a, _atomList.Annotations.ElementAt(1));
+			var annList = new AnnotationList<int>();
+			var a = new Annotation<int>("Last", _spanFactory.Create(99), null);
+			annList.Add(a);
+			Assert.AreSame(a, annList.First);
+			a = new Annotation<int>("First", _spanFactory.Create(0), null);
+			annList.Add(a);
+			Assert.AreSame(a, annList.First);
+			a = new Annotation<int>("Entire", _spanFactory.Create(0, 99), null);
+			annList.Add(a);
+			Assert.AreSame(a, annList.ElementAt(1));
 		}
 
 		/*

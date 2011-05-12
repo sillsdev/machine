@@ -77,7 +77,7 @@
     <Compile Include="Fsa\FiniteStateAutomaton.cs" />
     <Compile Include="BidirList.cs" />
     <Compile Include="Margin.cs" />
-    <Compile Include="NestedPattern.cs" />
+    <Compile Include="CapturingGroup.cs" />
     <Compile Include="RangeQuantifier.cs" />
     <Compile Include="Pattern.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -12,31 +12,7 @@ namespace SIL.APRE
 		/// <summary>
 		/// This enumeration represents the node type.
 		/// </summary>
-		public enum NodeType { Constraints, Margin, Range, Pattern };
-
-		private readonly int _groupNum;
-
-		protected PatternNode()
-		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PatternNode&lt;TOffset&gt;"/> class.
-		/// </summary>
-		protected PatternNode(int groupNum)
-		{
-			_groupNum = groupNum;
-		}
-
-		protected PatternNode(PatternNode<TOffset> node)
-		{
-			_groupNum = node.GroupNum;
-		}
-
-		public int GroupNum
-		{
-			get { return _groupNum; }
-		}
+		public enum NodeType { Constraints, Margin, Range, Group };
 
 		/// <summary>
 		/// Gets the node type.
@@ -59,9 +35,12 @@ namespace SIL.APRE
 		/// </returns>
 		public abstract bool IsFeatureReferenced(Feature feature);
 
+		public virtual Pattern<TOffset> Pattern { get; internal set; }
+
 		public virtual bool IsMatch(Annotation<TOffset> ann, ModeType mode, ref FeatureStructure varValues)
 		{
-			varValues = (FeatureStructure) varValues.Clone();
+			if (varValues != null)
+				varValues = (FeatureStructure) varValues.Clone();
 
 			return true;
 		}

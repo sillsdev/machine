@@ -15,29 +15,21 @@ namespace SIL.APRE
     	/// <summary>
 		/// Initializes a new instance of the <see cref="RangeQuantifier&lt;TOffset&gt;"/> class.
     	/// </summary>
-		/// <param name="groupNum">The group number.</param>
     	/// <param name="minOccur">The minimum number of occurrences.</param>
     	/// <param name="maxOccur">The maximum number of occurrences.</param>
 		/// <param name="node">The pattern node.</param>
-		public RangeQuantifier(int groupNum, int minOccur, int maxOccur, PatternNode<TOffset> node)
-			: base(groupNum)
+		public RangeQuantifier(int minOccur, int maxOccur, PatternNode<TOffset> node)
         {
             _node = node;
             _minOccur = minOccur;
             _maxOccur = maxOccur;
         }
 
-		public RangeQuantifier(int minOccur, int maxOccur, PatternNode<TOffset> node)
-			: this(-1, minOccur, maxOccur, node)
-		{
-		}
-
     	/// <summary>
     	/// Copy constructor.
     	/// </summary>
     	/// <param name="range">The range quantifier.</param>
     	public RangeQuantifier(RangeQuantifier<TOffset> range)
-            : base(range)
         {
 			_node = range._node.Clone();
             _minOccur = range._minOccur;
@@ -104,6 +96,20 @@ namespace SIL.APRE
             }
         }
 
+		public override Pattern<TOffset> Pattern
+		{
+			get
+			{
+				return base.Pattern;
+			}
+
+			internal set
+			{
+				base.Pattern = value;
+				_node.Pattern = value;
+			}
+		}
+
         /// <summary>
         /// Determines whether this node references the specified feature.
         /// </summary>
@@ -119,9 +125,6 @@ namespace SIL.APRE
 		internal override State<TOffset, FeatureStructure> GenerateNfa(FiniteStateAutomaton<TOffset, FeatureStructure> fsa,
 			State<TOffset, FeatureStructure> startState, Direction dir)
 		{
-			if (GroupNum > 0)
-				startState = fsa.CreateTag(startState, GroupNum, true);
-
 			State<TOffset, FeatureStructure> endState = _node.GenerateNfa(fsa, startState, dir);
 
 			if (_minOccur == 0 && _maxOccur == 1)
@@ -177,9 +180,6 @@ namespace SIL.APRE
 				foreach (State<TOffset, FeatureStructure> state in startStates)
 					state.AddTransition(new Transition<TOffset, FeatureStructure>(endState));
 			}
-
-			if (GroupNum > 0)
-				endState = fsa.CreateTag(endState, GroupNum, false);
 
 			return base.GenerateNfa(fsa, endState, dir);
 		}

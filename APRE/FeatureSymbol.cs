@@ -16,6 +16,11 @@
 			SymbolIndex = -1;
 		}
 
+		public FeatureSymbol(string id)
+			: this(id, id)
+		{
+		}
+
 		/// <summary>
 		/// Gets or sets the feature.
 		/// </summary>
