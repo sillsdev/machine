@@ -23,47 +23,45 @@ namespace SIL.HermitCrab
             /// </summary>
             public enum ChangeType { Feature, Epenthesis, Widen, Narrow, Unknown };
 
-            private readonly Environment _env;
+            private readonly Pattern<PhoneticShapeNode> _leftEnv;
+        	private readonly Pattern<PhoneticShapeNode> _rightEnv;
             private readonly Pattern<PhoneticShapeNode> _rhs;
             private readonly Pattern<PhoneticShapeNode> _analysisTarget;
-            private readonly StandardPhonologicalRule _rule;
+        	private readonly Pattern<PhoneticShapeNode> _synthesisTarget;
+			private readonly StandardPhonologicalRule _rule;
 
             private IDBearerSet<PartOfSpeech> _requiredPartsOfSpeech;
             private MprFeatureSet _excludedMprFeatures;
             private MprFeatureSet _requiredMprFeatures;
 
-        	private readonly SpanFactory<PhoneticShapeNode> _spanFactory;
-        	private readonly FeatureSystem _phoneticFeatSys;
         	private readonly int _delReapplications;
 
         	/// <summary>
         	/// Initializes a new instance of the <see cref="Subrule"/> class.
         	/// </summary>
-        	/// <param name="spanFactory"></param>
-        	/// <param name="phoneticFeatSys"></param>
         	/// <param name="delReapplications"></param>
         	/// <param name="rhs">The RHS.</param>
-        	/// <param name="env">The environment.</param>
+        	/// <param name="leftEnv">The left environment.</param>
+        	/// <param name="rightEnv">The right environment.</param>
         	/// <param name="rule">The phonological rule.</param>
         	/// <exception cref="System.ArgumentException">Thrown when the size of the RHS is greater than the
         	/// size of the specified rule's LHS and the LHS's size is greater than 1. A standard phonological
         	/// rule does not currently support this type of widening.</exception>
-        	public Subrule(SpanFactory<PhoneticShapeNode> spanFactory, FeatureSystem phoneticFeatSys,
-				int delReapplications, Pattern<PhoneticShapeNode> rhs, Environment env, StandardPhonologicalRule rule)
+        	public Subrule(int delReapplications, Pattern<PhoneticShapeNode> rhs, Pattern<PhoneticShapeNode> leftEnv, Pattern<PhoneticShapeNode> rightEnv,
+				StandardPhonologicalRule rule)
             {
-            	_spanFactory = spanFactory;
-            	_phoneticFeatSys = phoneticFeatSys;
                 _rhs = rhs;
-                _env = env;
+                _leftEnv = leftEnv;
+        		_rightEnv = rightEnv;
                 _rule = rule;
         		_delReapplications = delReapplications;
-
+        		_synthesisTarget = CreateTarget(_rule._lhs);
                 switch (Type)
                 {
                     case ChangeType.Narrow:
                     case ChangeType.Epenthesis:
                         // analysis target is a copy of the RHS, because there is no LHS
-                        _analysisTarget = _rhs.Clone();
+                		_analysisTarget = CreateTarget(_rhs);
                         break;
 
                     case ChangeType.Widen:
@@ -72,11 +70,11 @@ namespace SIL.HermitCrab
                         Pattern<PhoneticShapeNode> lhs = _rule._lhs.Clone();
                         while (lhs.Count != _rhs.Count)
                             lhs.Add(lhs.First.Clone());
-                		_analysisTarget = CreateAnalysisTarget(_rhs, lhs);
+                		_analysisTarget = CreateTarget(_rhs, lhs);
                         break;
 
                     case ChangeType.Feature:
-                        _analysisTarget = CreateAnalysisTarget(_rhs, _rule._lhs);
+                        _analysisTarget = CreateTarget(_rhs, _rule._lhs);
                         break;
 
                     case ChangeType.Unknown:
@@ -84,9 +82,25 @@ namespace SIL.HermitCrab
                 }
             }
 
-			private Pattern<PhoneticShapeNode> CreateAnalysisTarget(Pattern<PhoneticShapeNode> rhs, Pattern<PhoneticShapeNode> lhs)
+			private Pattern<PhoneticShapeNode> CreateTarget(Pattern<PhoneticShapeNode> pattern)
 			{
-				var analysisTarget = new Pattern<PhoneticShapeNode>(_spanFactory, new [] {"Segment", "Boundary"}, new [] {"Segment"});
+				var target = new Pattern<PhoneticShapeNode>(_rule._spanFactory, new[] { "Segment", "Boundary" }, new[] { "Segment" });
+				if (_leftEnv != null)
+					target.Add(new Group<PhoneticShapeNode>("leftEnv", _leftEnv.Select(node => node.Clone())));
+				if (pattern.Count > 0)
+					target.Add(new Group<PhoneticShapeNode>("target", pattern.Select(node => node.Clone())));
+				if (_rightEnv != null)
+					target.Add(new Group<PhoneticShapeNode>("rightEnv", _rightEnv.Select(node => node.Clone())));
+				return target;
+			}
+
+			private Pattern<PhoneticShapeNode> CreateTarget(Pattern<PhoneticShapeNode> rhs, Pattern<PhoneticShapeNode> lhs)
+			{
+				var target = new Pattern<PhoneticShapeNode>(_rule._spanFactory, new [] {"Segment", "Boundary"}, new [] {"Segment"});
+				if (_leftEnv != null)
+					target.AddMany(_leftEnv.Select(node => node.Clone()));
+
+				var group = new Group<PhoneticShapeNode>("target");
 				IEnumerator<PatternNode<PhoneticShapeNode>> rhsEnum = rhs.GetEnumerator();
 				IEnumerator<PatternNode<PhoneticShapeNode>> lhsEnum = lhs.GetEnumerator();
 				while (rhsEnum.MoveNext() && lhsEnum.MoveNext())
@@ -102,10 +116,14 @@ namespace SIL.HermitCrab
 							foreach (KeyValuePair<string, bool> varPolarity in rhsConstraints.Variables)
 								result.Variables[varPolarity.Key] = varPolarity.Value;
 						}
-						analysisTarget.Add(result);
+						group.Nodes.Add(result);
 					}
 				}
-				return analysisTarget;
+				target.Add(group);
+
+				if (_rightEnv != null)
+					target.AddMany(_rightEnv.Select(node => node.Clone()));
+				return target;
 			}
 
             /// <summary>
@@ -226,9 +244,9 @@ namespace SIL.HermitCrab
 								{
 									// check if there is any overlap of features between
 									// the context and the environments
-									if (!IsNonSelfOpaquing(constraints, _env.LeftEnvironment))
+									if (!IsNonSelfOpaquing(constraints, _leftEnv))
 										return true;
-									if (!IsNonSelfOpaquing(constraints, _env.RightEnvironment))
+									if (!IsNonSelfOpaquing(constraints, _rightEnv))
 										return true;
 								}
                             }
@@ -274,7 +292,7 @@ namespace SIL.HermitCrab
                     		break;
 
 						case PatternNode<PhoneticShapeNode>.NodeType.Group:
-                            var nestedPattern = (CapturingGroup<PhoneticShapeNode>) node;
+                            var nestedPattern = (Group<PhoneticShapeNode>) node;
                             if (!IsNonSelfOpaquing(constraints, nestedPattern.Nodes))
                                 return false;
                             break;
@@ -327,64 +345,111 @@ namespace SIL.HermitCrab
                 }
             }
 
-            bool UnapplyIterative(PhoneticShape shape, Direction dir)
+            private bool UnapplyIterative(PhoneticShape shape, Direction dir)
             {
                 bool unapplied = false;
-                PhoneticShapeNode node = shape.GetFirst(dir);
-                PatternMatch<PhoneticShapeNode> match;
-                // iterate thru all matches
-                while (FindNextMatchRhs(shape, node, dir, out match))
-                {
-                    // unapply the subrule
-                    Span<PhoneticShapeNode> span = match.EntireMatch;
-                    UnapplyRhs(dir, span, match.VariableValues);
-                    unapplied = true;
-                    node = span.GetEnd(dir).GetNext(dir);
-                }
+				PhoneticShapeNode node = shape.GetFirst(dir);
+            	Span<PhoneticShapeNode> span;
+            	FeatureStructure varValues;
+            	while (FindNextMatch(_analysisTarget, shape, node, dir, ModeType.Analysis, out span, out varValues))
+            	{
+        			if (CheckVacuousUnapplication(span, dir))
+        			{
+						// unapply the subrule
+						UnapplyRhs(dir, span, varValues);
+						unapplied = true;
+        				node = span.GetEnd(dir).GetNext(dir);
+        			}
+        			else
+        			{
+        				node = node.GetNext(dir);
+        			}
+            	}
 
                 return unapplied;
             }
 
             private bool UnapplyNarrow(PhoneticShape shape)
             {
-                var matches = new List<PatternMatch<PhoneticShapeNode>>();
-                PhoneticShapeNode node = shape.First;
-                PatternMatch<PhoneticShapeNode> match;
-                // deletion subrules are always treated like simultaneous subrules during unapplication
-                while (FindNextMatchRhs(shape, node, Direction.LeftToRight, out match))
-                {
-                    matches.Add(match);
-                    node = match.EntireMatch.Start.Next;
-                }
+				var matches = new List<Tuple<Span<PhoneticShapeNode>, FeatureStructure>>();
+				PhoneticShapeNode node = shape.First;
+            	Span<PhoneticShapeNode> span;
+            	FeatureStructure varValues;
+				// deletion subrules are always treated like simultaneous subrules during unapplication
+				while (FindNextMatch(_analysisTarget, shape, node, Direction.LeftToRight, ModeType.Analysis, out span, out varValues))
+				{
+					matches.Add(Tuple.Create(span, varValues));
+					node = span.Start.Next;
+				}
 
-                foreach (PatternMatch<PhoneticShapeNode> m in matches)
-                {
-                    PhoneticShapeNode cur = m.EntireMatch.End;
-                    foreach (PatternNode<PhoneticShapeNode> lhsNode in _rule._lhs)
-                    {
-                    	var constraints = lhsNode as AnnotationConstraints<PhoneticShapeNode>;
-                        if (constraints == null)
-                            continue;
+				// deletion subrules are always treated like simultaneous subrules during unapplication
+				foreach (Tuple<Span<PhoneticShapeNode>, FeatureStructure> match in matches)
+				{
+					PhoneticShapeNode cur = match.Item1.End;
+					foreach (PatternNode<PhoneticShapeNode> lhsNode in _rule._lhs)
+					{
+						var constraints = lhsNode as AnnotationConstraints<PhoneticShapeNode>;
+						if (constraints == null)
+							continue;
 
-                        var newNode = new PhoneticShapeNode(_spanFactory, constraints.AnnotationType, _phoneticFeatSys.CreateFeatureStructure());
+						var newNode = new PhoneticShapeNode(_rule._spanFactory, constraints.AnnotationType,
+						                                    _rule._phoneticFeatSys.CreateFeatureStructure());
 						newNode.Annotation.FeatureStructure.UninstantiateAll();
 						newNode.Annotation.FeatureStructure.Instantiate(constraints.FeatureStructure);
-						//constraints.UnapplyDeletion(newNode.Annotation, m.VariableValues);
-                        // mark the undeleted segment as optional
-                        newNode.Annotation.IsOptional = true;
-                        cur.Insert(newNode, Direction.LeftToRight);
-                        cur = newNode;
-                    }
+						// mark the undeleted segment as optional
+						newNode.Annotation.IsOptional = true;
+						cur.Insert(newNode, Direction.LeftToRight);
+						cur = newNode;
+					}
 
-                    if (_analysisTarget.Count > 0)
-                    {
-                        foreach (PhoneticShapeNode matchNode in m.EntireMatch.Start.GetNodes(m.EntireMatch.End))
-                            matchNode.Annotation.IsOptional = true;
-                    }
-                }
+					if (_rhs.Count > 0)
+					{
+						foreach (PhoneticShapeNode matchNode in match.Item1.Start.GetNodes(match.Item1.End))
+							matchNode.Annotation.IsOptional = true;
+					}
+				}
 
-                return matches.Count > 0;
+            	return matches.Count > 0;
             }
+
+			private bool FindNextMatch(Pattern<PhoneticShapeNode> pattern, PhoneticShape shape, PhoneticShapeNode startNode, Direction dir, ModeType mode,
+				out Span<PhoneticShapeNode> span, out FeatureStructure varValues)
+			{
+				foreach (PhoneticShapeNode curNode in startNode.GetNodes(dir).Where(node => node.Annotation.Type == "Segment"))
+				{
+					if (pattern.Count == 0)
+					{
+						span = _rule._spanFactory.Create(curNode);
+						varValues = _rule._phoneticFeatSys.CreateFeatureStructure();
+						return true;
+					}
+
+					PatternMatch<PhoneticShapeNode> match;
+					if (pattern.IsMatch(shape.Annotations.GetView(curNode.Annotation, dir), dir, mode, _rule._phoneticFeatSys.CreateFeatureStructure(),
+					                    out match))
+					{
+						if (match["target"] != null)
+							span = match["target"];
+						else if (match["leftEnv"] != null)
+							span = _rule._spanFactory.Create(match["leftEnv"].End);
+						else
+							span = _rule._spanFactory.Create(match["rightEnv"].Start.Prev);
+						varValues = match.VariableValues;
+						// TODO: remove ambiguous variable values
+						return true;
+					}
+				}
+
+				span = null;
+				varValues = null;
+				return false;
+			}
+
+			public bool FindNextMatchLhs(PhoneticShape shape, PhoneticShapeNode startNode, Direction dir, out Span<PhoneticShapeNode> span,
+				out FeatureStructure varValues)
+			{
+				return FindNextMatch(_synthesisTarget, shape, startNode, dir, ModeType.Synthesis, out span, out varValues);
+			}
 
         	/// <summary>
         	/// Applies the RHS to the matched segments.
@@ -446,7 +511,7 @@ namespace SIL.HermitCrab
                 	var constraints = patNode as AnnotationConstraints<PhoneticShapeNode>;
 					if (constraints == null)
 						continue;
-					var newNode = new PhoneticShapeNode(_spanFactory, constraints.AnnotationType, _phoneticFeatSys.CreateFeatureStructure());
+					var newNode = new PhoneticShapeNode(_rule._spanFactory, constraints.AnnotationType, _rule._phoneticFeatSys.CreateFeatureStructure());
 					newNode.Annotation.FeatureStructure.Instantiate(constraints.FeatureStructure);
                 	constraints.InstantiateVariables(newNode.Annotation, varValues);
             		try
@@ -507,128 +572,6 @@ namespace SIL.HermitCrab
                 }
             }
 
-            private bool FindNextMatchRhs(PhoneticShape shape, PhoneticShapeNode startNode, Direction dir, out PatternMatch<PhoneticShapeNode> match)
-            {
-                foreach (PhoneticShapeNode node in startNode.GetNodes(dir).Where(node => node.Annotation.Type == "Segment"))
-                {
-                    if (_analysisTarget.Count == 0)
-                    {
-                        // if the analysis target is empty (deletion rule),
-                        // just check environment
-                    	FeatureStructure varValues = _phoneticFeatSys.CreateFeatureStructure();
-                    	Span<PhoneticShapeNode> span = _spanFactory.Create(node);
-                        if (MatchEnvEmpty(shape, span, dir, ModeType.Analysis, varValues))
-                        {
-                            match = new PatternMatch<PhoneticShapeNode>(span, varValues);
-                            return true;
-                        }
-                    }
-                    else
-                    {
-                        // analysis target is non-empty, check everything
-                        if (MatchAnalysisTarget(shape, node, dir, out match))
-                            return true;
-                    }
-                }
-
-                match = null;
-                return false;
-            }
-
-            private bool MatchAnalysisTarget(PhoneticShape shape, PhoneticShapeNode node, Direction dir, out PatternMatch<PhoneticShapeNode> match)
-            {
-                // check analysis target
-            	FeatureStructure varValues = _phoneticFeatSys.CreateFeatureStructure();
-                if (!_analysisTarget.IsMatch(shape.Annotations.GetView(node.Annotation, dir), dir, ModeType.Analysis, varValues, out match))
-                {
-                    match = null;
-                    return false;
-                }
-
-                // check vacuous unapplication
-                // even if the subrule matches, we do not want to successfully unapply if no real changes are
-                // going to be made to the phonetic shape
-                if (!CheckVacuousUnapplication(match, dir))
-                {
-                    match = null;
-                    return false;
-                }
-
-                // finally, check environment
-                if (!MatchEnvNonempty(shape, match.EntireMatch, dir, ModeType.Analysis, match.VariableValues))
-                {
-                    match = null;
-                    return false;
-                }
-
-                return true;
-            }
-
-            public bool MatchEnvNonempty(PhoneticShape shape, Span<PhoneticShapeNode> match, Direction dir, ModeType mode,
-                FeatureStructure varValues)
-            {
-                PhoneticShapeNode leftAtom = null;
-                PhoneticShapeNode rightAtom = null;
-                switch (dir)
-                {
-                    case Direction.RightToLeft:
-                        rightAtom = match.Start.GetNext(Direction.LeftToRight);
-                        leftAtom = match.End.GetNext(Direction.RightToLeft);
-                        break;
-
-                    case Direction.LeftToRight:
-                        rightAtom = match.End.GetNext(Direction.LeftToRight);
-                        leftAtom = match.Start.GetNext(Direction.RightToLeft);
-                        break;
-                }
-
-                if (!_env.IsMatch(shape, leftAtom, rightAtom, mode, varValues))
-                    return false;
-
-                return true;
-            }
-
-            public bool MatchEnvEmpty(PhoneticShape shape, Span<PhoneticShapeNode> match, Direction dir, ModeType mode,
-                FeatureStructure varValues)
-            {
-                PhoneticShapeNode leftNode;
-                PhoneticShapeNode rightNode;
-				if (dir == Direction.LeftToRight)
-				{
-					rightNode = match.Start.GetNext(Direction.LeftToRight);
-					leftNode = match.Start;
-				}
-				else
-				{
-					rightNode = match.Start;
-					leftNode = match.Start.GetNext(Direction.RightToLeft);
-				}
-
-                // in case this is an epenthesis rule, we want to ensure that the segment to the right
-                // of where we're going to do the epenthesis is not a boundary marker, unless the
-                // environment calls for one.
-                if (mode == ModeType.Synthesis && _env.RightEnvironment != null && _env.RightEnvironment.Count > 0)
-                {
-                	var constraints = _env.RightEnvironment.First as AnnotationConstraints<PhoneticShapeNode>;
-                    if (rightNode.Annotation.Type == "Boundary" && (constraints != null && constraints.AnnotationType != "Boundary"))
-                        return false;
-                }
-
-                // there is a small difference between legacy HC and HC.NET in matching environments when the
-                // analysis target is empty and one of the environments is empty. In this case, legacy HC does
-                // not try to skip the initial optional segments when matching the right environment. I think
-                // this will cause HC.NET to overproduce a little more during analysis, which isn't that big of a
-                // deal
-                if (!_env.IsMatch(shape, leftNode, rightNode, mode, varValues))
-                    return false;
-
-#if WANTPORT
-                // remove ambiguous variables
-                varValues.RemoveAmbiguousVariables();
-#endif
-                return true;
-            }
-
             /// <summary>
             /// Checks if the subrule will be unapplied vacuously. Vacuous unapplication means that
             /// the subrule will actually make changes to the phonetic shape. This is important to know
@@ -638,12 +581,11 @@ namespace SIL.HermitCrab
             /// <param name="match">The match.</param>
             /// <param name="dir">The direction.</param>
             /// <returns></returns>
-            private bool CheckVacuousUnapplication(PatternMatch<PhoneticShapeNode> match, Direction dir)
+            private bool CheckVacuousUnapplication(Span<PhoneticShapeNode> match, Direction dir)
             {
                 PatternNode<PhoneticShapeNode> rhsNode = _rhs.GetFirst(dir);
-                Span<PhoneticShapeNode> span = match.EntireMatch;
-            	PhoneticShapeNode shapeNode = span.GetStart(dir);
-				while (shapeNode != span.GetEnd(dir).GetNext(dir))
+            	PhoneticShapeNode shapeNode = match.GetStart(dir);
+				while (shapeNode != match.GetEnd(dir).GetNext(dir))
 				{
 					if (Type == ChangeType.Epenthesis)
 					{
@@ -839,85 +781,56 @@ namespace SIL.HermitCrab
 				trace.Output = input.Clone();
         }
 
-        private void ApplySimultaneous(PhoneticShape shape, IEnumerable<Subrule> subrules)
+        private static void ApplySimultaneous(PhoneticShape shape, IEnumerable<Subrule> subrules)
         {
             foreach (Subrule sr in subrules)
             {
                 // first find all segments which match the LHS
-                var matches = new List<PatternMatch<PhoneticShapeNode>>();
-                PhoneticShapeNode node = shape.First;
-                PatternMatch<PhoneticShapeNode> match;
-                while (FindNextMatchLhs(shape, node, Direction.LeftToRight, out match))
-                {
-                    // check each candidate match against the subrule's environment
-                    Span<PhoneticShapeNode> span = match.EntireMatch;
-                    FeatureStructure instantiatedVars = match.VariableValues;
-                    if (_lhs.Count == 0
-                        ? sr.MatchEnvEmpty(shape, span, Direction.LeftToRight, ModeType.Synthesis, instantiatedVars)
-                        : sr.MatchEnvNonempty(shape, span, Direction.LeftToRight, ModeType.Synthesis, instantiatedVars))
-                    {
-                        matches.Add(match);
-                        node = span.End.Next;
-                    }
-                    else
-                    {
-                        node = span.Start.Next;
-                    }
-                }
+            	var matches = new List<Tuple<Span<PhoneticShapeNode>, FeatureStructure>>();
+				PhoneticShapeNode node = shape.First;
+            	Span<PhoneticShapeNode> span;
+            	FeatureStructure varValues;
+            	while (sr.FindNextMatchLhs(shape, node, Direction.LeftToRight, out span, out varValues))
+            	{
+            		matches.Add(Tuple.Create(span, varValues));
+            		node = span.End.Next;
+            	}
 
                 // then apply changes
-                foreach (PatternMatch<PhoneticShapeNode> m in matches)
-                    sr.ApplyRhs(shape, m.EntireMatch, Direction.LeftToRight, m.VariableValues);
+				foreach (Tuple<Span<PhoneticShapeNode>, FeatureStructure> match in matches)
+                    sr.ApplyRhs(shape, match.Item1, Direction.LeftToRight, match.Item2);
             }
         }
 
-        private void ApplyIterative(PhoneticShape shape, Direction dir, IEnumerable<Subrule> subrules)
+        private static void ApplyIterative(PhoneticShape shape, Direction dir, IEnumerable<Subrule> subrules)
         {
-            PatternMatch<PhoneticShapeNode> match;
-            PhoneticShapeNode node = shape.GetFirst(dir);
-            // iterate thru each LHS match
-            while (FindNextMatchLhs(shape, node, dir, out match))
-            {
-                Span<PhoneticShapeNode> span = match.EntireMatch;
-                FeatureStructure instantiatedVars = match.VariableValues;
-                bool matched = false;
-                // check each subrule's environment
-                foreach (Subrule sr in subrules)
-                {
-                    if (_lhs.Count == 0
-                        ? sr.MatchEnvEmpty(shape, span, dir, ModeType.Synthesis, instantiatedVars)
-                        : sr.MatchEnvNonempty(shape, span, dir, ModeType.Synthesis, instantiatedVars))
-                    {
+			PatternMatch<PhoneticShapeNode> match;
+			PhoneticShapeNode node = shape.GetFirst(dir);
+			foreach (Subrule sr in subrules)
+			{
+				
+			}
+			while (FindNextMatchLhs(shape, node, dir, out match))
+			{
+				Span<PhoneticShapeNode> span = match.EntireMatch;
+				FeatureStructure instantiatedVars = match.VariableValues;
+				bool matched = false;
+				// check each subrule's environment
+				foreach (Subrule sr in subrules)
+				{
+					if (_lhs.Count == 0
+						? sr.MatchEnvEmpty(shape, span, dir, ModeType.Synthesis, instantiatedVars)
+						: sr.MatchEnvNonempty(shape, span, dir, ModeType.Synthesis, instantiatedVars))
+					{
 						sr.ApplyRhs(shape, span, dir, instantiatedVars);
-                        matched = true;
-                        break;
-                    }
-                }
+						matched = true;
+						break;
+					}
+				}
 
-                node = matched ? span.GetEnd(dir).GetNext(dir) : span.GetStart(dir).GetNext(dir);
-            }
-        }
+				node = matched ? span.GetEnd(dir).GetNext(dir) : span.GetStart(dir).GetNext(dir);
+			}
 
-        private bool FindNextMatchLhs(PhoneticShape shape, PhoneticShapeNode startNode, Direction dir, out PatternMatch<PhoneticShapeNode> match)
-        {
-            foreach (PhoneticShapeNode node in startNode.GetNodes(dir))
-            {
-            	FeatureStructure instantiatedVars = _phoneticFeatSys.CreateFeatureStructure();
-                if (_lhs.Count == 0)
-                {
-                    // epenthesis rules always match the LHS
-                    match = new PatternMatch<PhoneticShapeNode>(_spanFactory.Create(node), instantiatedVars);
-                    return true;
-                }
-                else
-                {
-                    if (_lhs.IsMatch(shape.Annotations.GetView(node.Annotation, dir), dir, ModeType.Synthesis, instantiatedVars, out match))
-                        return true;
-                }
-            }
-
-            match = null;
-            return false;
         }
 
         public void Reset()
