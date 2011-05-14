@@ -12,7 +12,7 @@ namespace SIL.APRE
 		/// <summary>
 		/// This enumeration represents the node type.
 		/// </summary>
-		public enum NodeType { Constraints, Margin, Range, Group };
+		public enum NodeType { Constraints, Margin, Range, Group, Alternation };
 
 		/// <summary>
 		/// Gets the node type.

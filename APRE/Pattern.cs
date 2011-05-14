@@ -173,7 +173,7 @@ namespace SIL.APRE
 
 		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, Direction dir, ModeType mode, FeatureStructure varValues)
 		{
-			IList<PatternMatch<TOffset>> matches;
+			IEnumerable<PatternMatch<TOffset>> matches;
 			return IsMatch(annList, dir, mode, varValues, false, out matches);
 		}
 
@@ -185,10 +185,10 @@ namespace SIL.APRE
 		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, Direction dir, ModeType mode, FeatureStructure varValues,
 			out PatternMatch<TOffset> match)
 		{
-			IList<PatternMatch<TOffset>> matches;
+			IEnumerable<PatternMatch<TOffset>> matches;
 			if (IsMatch(annList, dir, mode, varValues, false, out matches))
 			{
-				match = matches[0];
+				match = matches.First();
 				return true;
 			}
 
@@ -197,19 +197,19 @@ namespace SIL.APRE
 		}
 
 		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, Direction dir, ModeType mode,
-			out IList<PatternMatch<TOffset>> matches)
+			out IEnumerable<PatternMatch<TOffset>> matches)
 		{
 			return IsMatch(annList, dir, mode, null, out matches);
 		}
 
 		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, Direction dir, ModeType mode, FeatureStructure varValues,
-			out IList<PatternMatch<TOffset>> matches)
+			out IEnumerable<PatternMatch<TOffset>> matches)
 		{
 			return IsMatch(annList, dir, mode, varValues, true, out matches);
 		}
 
 		private bool IsMatch(IBidirList<Annotation<TOffset>> annList, Direction dir, ModeType mode, FeatureStructure varValues,
-			bool allMatches, out IList<PatternMatch<TOffset>> matches)
+			bool allMatches, out IEnumerable<PatternMatch<TOffset>> matches)
 		{
 			FiniteStateAutomaton<TOffset, FeatureStructure> fsa;
 			if (dir == Direction.LeftToRight)
@@ -228,33 +228,33 @@ namespace SIL.APRE
 			IEnumerable<FsaMatch<TOffset, FeatureStructure>> fsaMatches;
 			if (fsa.IsMatch(annList, mode, varValues, allMatches, out fsaMatches))
 			{
-				matches = new List<PatternMatch<TOffset>>();
+				var matchesList = new List<PatternMatch<TOffset>>();
+				matches = matchesList;
 				foreach (FsaMatch<TOffset, FeatureStructure> match in fsaMatches)
 				{
-					var groups = new Dictionary<int, Span<TOffset>>();
+					var groups = new Dictionary<string, Span<TOffset>>();
 					TOffset matchStart, matchEnd;
-					fsa.GetOffsets(0, match, out matchStart, out matchEnd);
+					fsa.GetOffsets(FiniteStateAutomaton<TOffset, FeatureStructure>.EntireGroupName, match, out matchStart, out matchEnd);
 					var matchSpan = _spanFactory.Create(matchStart, matchEnd);
-					groups[0] = matchSpan;
 
-					foreach (int group in fsa.Groups)
+					foreach (string groupName in fsa.GroupNames)
 					{
-						if (group == 0)
+						if (groupName == FiniteStateAutomaton<TOffset, FeatureStructure>.EntireGroupName)
 							continue;
 
 						TOffset start, end;
-						if (fsa.GetOffsets(group, match, out start, out end))
+						if (fsa.GetOffsets(groupName, match, out start, out end))
 						{
 							if (_spanFactory.IsValidSpan(start, end))
 							{
 								Span<TOffset> span = _spanFactory.Create(start, end);
 								if (matchSpan.Contains(span))
-									groups[group] = span;
+									groups[groupName] = span;
 							}
 						}
 					}
 
-					matches.Add(new PatternMatch<TOffset>(groups, match.Data));
+					matchesList.Add(new PatternMatch<TOffset>(matchSpan, groups, match.Data));
 				}
 				return true;
 			}

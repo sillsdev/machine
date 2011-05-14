@@ -194,12 +194,14 @@ namespace SIL.APRE
 
 		public void InstantiateVariables(Annotation<TOffset> ann, FeatureStructure varValues)
 		{
-			_alphaVars.Instantiate(ann, _variables, varValues);
+			if (_alphaVars != null)
+				_alphaVars.Instantiate(ann, _variables, varValues);
 		}
 
 		public void UninstantiateVariables(Annotation<TOffset> ann, FeatureStructure varValues)
 		{
-			_alphaVars.Uninstantiate(ann, _variables, varValues);
+			if (_alphaVars != null)
+				_alphaVars.Uninstantiate(ann, _variables, varValues);
 		}
 
 		public override PatternNode<TOffset> Clone()

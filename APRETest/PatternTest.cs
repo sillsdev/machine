@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 
 namespace SIL.APRE.Test
@@ -34,11 +35,14 @@ namespace SIL.APRE.Test
 			FeatureStructure fs = featSys.CreateFeatureStructure();
 
 			var pattern = new Pattern<int>(spanFactory, new[] { "Noun", "Verb", "NP", "VP", "Det", "Adj", "Adv" },
-				new CapturingGroup<int>(1, new AnnotationConstraints<int>("Adj", fs)),
-				new CapturingGroup<int>(2, new AnnotationConstraints<int>("Noun", fs)),
-				new CapturingGroup<int>(3, new AnnotationConstraints<int>("Verb", fs)),
-				new CapturingGroup<int>(4, new RangeQuantifier<int>(0, 1,
-					new CapturingGroup<int>(5, new AnnotationConstraints<int>("Adv", fs)))));
+				new Alternation<int>(
+					new AnnotationConstraints<int>("Det", fs),
+					new Group<int>(
+						new Group<int>("adj", new AnnotationConstraints<int>("Adj", fs)),
+						new Group<int>("noun", new AnnotationConstraints<int>("Noun", fs)),
+						new Group<int>("verb", new AnnotationConstraints<int>("Verb", fs)),
+						new Group<int>("range", new RangeQuantifier<int>(0, 1,
+							new Group<int>("adv", new AnnotationConstraints<int>("Adv", fs)))))));
 
 			pattern.Compile();
 
@@ -62,24 +66,24 @@ namespace SIL.APRE.Test
 			annList.Add(new Annotation<int>("NP", spanFactory.Create(0, 17), fs));
 			annList.Add(new Annotation<int>("VP", spanFactory.Create(19, 28), fs));
 
-			IList<PatternMatch<int>> matches;
+			IEnumerable<PatternMatch<int>> matches;
 			Assert.True(pattern.IsMatch(annList, Direction.LeftToRight, ModeType.Synthesis, out matches));
-			Assert.AreEqual(6, matches.Count);
-			Assert.AreEqual(0, matches[0].EntireMatch.Start);
-			Assert.AreEqual(28, matches[0].EntireMatch.End);
-			Assert.AreEqual(4, matches[0][1].Start);
-			Assert.AreEqual(6, matches[0][1].End);
-			Assert.AreEqual(9, matches[5].EntireMatch.Start);
-			Assert.AreEqual(23, matches[5].EntireMatch.End);
+			Assert.AreEqual(7, matches.Count());
+			Assert.AreEqual(0, matches.First().Start);
+			Assert.AreEqual(28, matches.First().End);
+			Assert.AreEqual(4, matches.First()["adj"].Start);
+			Assert.AreEqual(6, matches.First()["adj"].End);
+			Assert.AreEqual(9, matches.Last().Start);
+			Assert.AreEqual(23, matches.Last().End);
 
 			Assert.True(pattern.IsMatch(annList, Direction.RightToLeft, ModeType.Synthesis, out matches));
-			Assert.AreEqual(6, matches.Count);
-			Assert.AreEqual(0, matches[0].EntireMatch.Start);
-			Assert.AreEqual(28, matches[0].EntireMatch.End);
-			Assert.AreEqual(4, matches[0][1].Start);
-			Assert.AreEqual(6, matches[0][1].End);
-			Assert.AreEqual(9, matches[5].EntireMatch.Start);
-			Assert.AreEqual(23, matches[5].EntireMatch.End);
+			Assert.AreEqual(7, matches.Count());
+			Assert.AreEqual(0, matches.First().Start);
+			Assert.AreEqual(28, matches.First().End);
+			Assert.AreEqual(4, matches.First()["adj"].Start);
+			Assert.AreEqual(6, matches.First()["adj"].End);
+			Assert.AreEqual(0, matches.Last().Start);
+			Assert.AreEqual(2, matches.Last().End);
 		}
 	}
 }

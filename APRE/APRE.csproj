@@ -39,6 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Alternation.cs" />
     <Compile Include="AnnotationList.cs" />
     <Compile Include="BidirListExtensions.cs" />
     <Compile Include="StringFeature.cs" />
@@ -77,7 +78,7 @@
     <Compile Include="Fsa\FiniteStateAutomaton.cs" />
     <Compile Include="BidirList.cs" />
     <Compile Include="Margin.cs" />
-    <Compile Include="CapturingGroup.cs" />
+    <Compile Include="Group.cs" />
     <Compile Include="RangeQuantifier.cs" />
     <Compile Include="Pattern.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

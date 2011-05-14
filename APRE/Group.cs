@@ -4,29 +4,39 @@ using SIL.APRE.Fsa;
 
 namespace SIL.APRE
 {
-	public class CapturingGroup<TOffset> : PatternNode<TOffset>
+	public class Group<TOffset> : PatternNode<TOffset>
 	{
 		private readonly BidirList<PatternNode<TOffset>> _nodes;
-		private readonly int _groupNum;
+		private readonly string _groupName;
 
-		public CapturingGroup(int groupNum, IEnumerable<PatternNode<TOffset>> nodes)
+		public Group(string groupName, IEnumerable<PatternNode<TOffset>> nodes)
 		{
-			_groupNum = groupNum;
+			_groupName = groupName;
 			_nodes = new BidirList<PatternNode<TOffset>>();
 			_nodes.AddMany(nodes);
         }
 
-		public CapturingGroup(int groupNum, params PatternNode<TOffset>[] nodes)
-			: this(groupNum, (IEnumerable<PatternNode<TOffset>>) nodes)
+		public Group(string groupName, params PatternNode<TOffset>[] nodes)
+			: this(groupName, (IEnumerable<PatternNode<TOffset>>) nodes)
+		{
+		}
+
+		public Group(IEnumerable<PatternNode<TOffset>> nodes)
+			: this(null, nodes)
+		{
+		}
+
+		public Group(params PatternNode<TOffset>[] nodes)
+			: this((IEnumerable<PatternNode<TOffset>>) nodes)
 		{
 		}
 
         /// <summary>
         /// Copy constructor.
         /// </summary>
-        /// <param name="capturingGroup">The nested pattern.</param>
-        public CapturingGroup(CapturingGroup<TOffset> capturingGroup)
-			: this(capturingGroup._groupNum, capturingGroup._nodes)
+        /// <param name="group">The nested pattern.</param>
+        public Group(Group<TOffset> group)
+			: this(group._groupName, group._nodes)
         {
         }
 
@@ -84,9 +94,9 @@ namespace SIL.APRE
             }
         }
 
-		public int GroupNum
+		public string GroupName
 		{
-			get { return _groupNum; }
+			get { return _groupName; }
 		}
 
 		/// <summary>
@@ -107,9 +117,11 @@ namespace SIL.APRE
 			if (_nodes.Count == 0)
 				return base.GenerateNfa(fsa, startState, dir);
 
-			startState = fsa.CreateTag(startState, GroupNum, true);
+			if (_groupName != null)
+				startState = fsa.CreateTag(startState, _groupName, true);
 			State<TOffset, FeatureStructure> endState = _nodes.GetFirst(dir).GenerateNfa(fsa, startState, dir);
-			endState = fsa.CreateTag(endState, GroupNum, false);
+			if (_groupName != null)
+				endState = fsa.CreateTag(endState, _groupName, false);
 			return base.GenerateNfa(fsa, endState, dir);
 		}
 
@@ -127,10 +139,10 @@ namespace SIL.APRE
 		{
 			if (obj == null)
 				return false;
-			return Equals(obj as CapturingGroup<TOffset>);
+			return Equals(obj as Group<TOffset>);
 		}
 
-		public bool Equals(CapturingGroup<TOffset> other)
+		public bool Equals(Group<TOffset> other)
 		{
 			if (other == null)
 				return false;
@@ -139,7 +151,7 @@ namespace SIL.APRE
 
 		public override PatternNode<TOffset> Clone()
 		{
-			return new CapturingGroup<TOffset>(this);
+			return new Group<TOffset>(this);
 		}
 	}
 }

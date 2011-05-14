@@ -7,10 +7,12 @@ namespace SIL.APRE.Fsa
 {
 	public class FiniteStateAutomaton<TOffset, TData>
 	{
+		public const string EntireGroupName = "*entire*";
+
 		private State<TOffset, TData> _startState;
 		private readonly List<State<TOffset, TData>> _states;
 		private int _nextTag;
-		private readonly Dictionary<int, int> _groups;
+		private readonly Dictionary<string, int> _groups;
 		private readonly List<TagMapCommand> _initializers;
 		private int _nextPriority;
 		private int _registerCount;
@@ -23,7 +25,7 @@ namespace SIL.APRE.Fsa
 		{
 			_initializers = new List<TagMapCommand>();
 			_states = new List<State<TOffset, TData>>();
-			_groups = new Dictionary<int, int>();
+			_groups = new Dictionary<string, int>();
 			_dir = dir;
 			_startState = CreateState();
 			if (synthesisTypes != null)
@@ -31,20 +33,20 @@ namespace SIL.APRE.Fsa
 			if (analysisTypes != null)
 				_analysisTypes = new HashSet<string>(analysisTypes);
 
-			State<TOffset, TData> startState = CreateTag(_startState, 0, true);
-			State<TOffset, TData> endState = CreateTag(generateNfa(this, startState, dir), 0, false);
+			State<TOffset, TData> startState = CreateTag(_startState, EntireGroupName, true);
+			State<TOffset, TData> endState = CreateTag(generateNfa(this, startState, dir), EntireGroupName, false);
 			endState.AddTransition(new Transition<TOffset, TData>(CreateState(true)));
 			ConvertToDfa();
 		}
 
-		public IEnumerable<int> Groups
+		public IEnumerable<string> GroupNames
 		{
 			get { return _groups.Keys; }
 		}
 
-		public bool GetOffsets(int group, FsaMatch<TOffset, TData> match, out TOffset start, out TOffset end)
+		public bool GetOffsets(string groupName, FsaMatch<TOffset, TData> match, out TOffset start, out TOffset end)
 		{
-			int tag = _groups[group];
+			int tag = _groups[groupName];
 			NullableValue<TOffset> startValue = match.Registers[tag, 0];
 			NullableValue<TOffset> endValue = match.Registers[tag + 1, 1];
 			if (startValue.HasValue && endValue.HasValue)
@@ -86,7 +88,7 @@ namespace SIL.APRE.Fsa
 			return CreateState(false);
 		}
 
-		public State<TOffset, TData> CreateTag(State<TOffset, TData> startState, int groupNum, bool isStart)
+		public State<TOffset, TData> CreateTag(State<TOffset, TData> startState, string groupName, bool isStart)
 		{
 			State<TOffset, TData> tagState = CreateState();
 			int tag;
@@ -94,11 +96,11 @@ namespace SIL.APRE.Fsa
 			{
 				tag = _nextTag;
 				_nextTag += 2;
-				_groups.Add(groupNum, tag);
+				_groups.Add(groupName, tag);
 			}
 			else
 			{
-				tag = _groups[groupNum] + 1;
+				tag = _groups[groupName] + 1;
 			}
 
 			startState.AddTransition(new Transition<TOffset, TData>(tagState, tag, _nextPriority++));

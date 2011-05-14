@@ -6,51 +6,39 @@ namespace SIL.APRE
 	/// <summary>
 	/// This class represents a match between a phonetic shape and a phonetic pattern.
 	/// </summary>
-	public class PatternMatch<TOffset> : IComparable<PatternMatch<TOffset>>
+	public class PatternMatch<TOffset> : Span<TOffset>, IComparable<PatternMatch<TOffset>>
 	{
-		private readonly Dictionary<int, Span<TOffset>> _groups;
+		private readonly Dictionary<string, Span<TOffset>> _groups;
+		private readonly FeatureStructure _varValues;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PatternMatch{TOffset}"/> class.
 		/// </summary>
+		/// <param name="entire"></param>
 		/// <param name="groups">The groups.</param>
-		/// <param name="vars">The vars.</param>
-		public PatternMatch(IDictionary<int, Span<TOffset>> groups, FeatureStructure vars)
+		/// <param name="varValues"></param>
+		public PatternMatch(Span<TOffset> entire, IDictionary<string, Span<TOffset>> groups, FeatureStructure varValues)
+			: base(entire)
 		{
-			_groups = new Dictionary<int, Span<TOffset>>(groups);
-			VariableValues = vars;
-		}
-
-		public PatternMatch(Span<TOffset> entireMatch, FeatureStructure vars)
-		{
-			_groups = new Dictionary<int, Span<TOffset>> {{0, entireMatch}};
-			VariableValues = vars;
-		}
-
-		/// <summary>
-		/// Gets the entire match.
-		/// </summary>
-		/// <value>The entire match.</value>
-		public Span<TOffset> EntireMatch
-		{
-			get
-			{
-				return _groups[0];
-			}
+			_groups = new Dictionary<string, Span<TOffset>>(groups);
+			_varValues = varValues;
 		}
 
 		/// <summary>
 		/// Gets or sets the data associated with this match.
 		/// </summary>
 		/// <value>The data.</value>
-		public FeatureStructure VariableValues { get; internal set; }
+		public FeatureStructure VariableValues
+		{
+			get { return _varValues; }
+		}
 
-		public Span<TOffset> this[int groupNum]
+		public Span<TOffset> this[string groupName]
 		{
 			get
 			{
 				Span<TOffset> group;
-				if (_groups.TryGetValue(groupNum, out group))
+				if (_groups.TryGetValue(groupName, out group))
 					return group;
 				return null;
 			}
@@ -58,10 +46,10 @@ namespace SIL.APRE
 
 		public int CompareTo(PatternMatch<TOffset> other)
 		{
-			if (_groups[0].Length > other._groups[0].Length)
+			if (Length > other.Length)
 				return -1;
 
-			if (_groups[0].Length < other._groups[0].Length)
+			if (Length < other.Length)
 				return 1;
 
 			if (_groups.Count > other._groups.Count)
@@ -71,11 +59,6 @@ namespace SIL.APRE
 				return 1;
 
 			return 0;
-		}
-
-		public override string ToString()
-		{
-			return _groups[0].ToString();
 		}
 	}
 }
