@@ -152,12 +152,12 @@ namespace SIL.APRE
         }
 
 		internal override State<TOffset, FeatureStructure> GenerateNfa(FiniteStateAutomaton<TOffset, FeatureStructure> fsa,
-			State<TOffset, FeatureStructure> startState, Direction dir)
+			State<TOffset, FeatureStructure> startState)
 		{
 			State<TOffset, FeatureStructure> endState = fsa.CreateState();
 			startState.AddTransition(new Transition<TOffset, FeatureStructure>(this, endState));
 
-			return base.GenerateNfa(fsa, endState, dir);
+			return base.GenerateNfa(fsa, endState);
 		}
 
         protected virtual bool IsFeatureMatch(Annotation<TOffset> ann, ModeType mode, FeatureStructure varValues)

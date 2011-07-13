@@ -23,6 +23,8 @@ namespace SIL.APRE
 
 	public sealed class Pattern<TOffset> : BidirList<PatternNode<TOffset>>, ICloneable
 	{
+		private const string EntireGroupName = "*entire*";
+
 		private readonly SpanFactory<TOffset> _spanFactory;
 		private readonly bool _checkSynthesisClean;
 		private readonly bool _checkAnalysisClean;
@@ -154,16 +156,20 @@ namespace SIL.APRE
 			return dir == Direction.LeftToRight ? _leftToRightFsa : _rightToLeftFsa;
 		}
 
-		private State<TOffset, FeatureStructure> GenerateNfa(FiniteStateAutomaton<TOffset, FeatureStructure> fsa,
-			State<TOffset, FeatureStructure> startState, Direction dir)
-		{
-			return GetFirst(dir).GenerateNfa(fsa, startState, dir);
-		}
-
 		public void Compile()
 		{
-			_leftToRightFsa = new FiniteStateAutomaton<TOffset, FeatureStructure>(GenerateNfa, Direction.LeftToRight, _synthesisTypes, _analysisTypes);
-			_rightToLeftFsa = new FiniteStateAutomaton<TOffset, FeatureStructure>(GenerateNfa, Direction.RightToLeft, _synthesisTypes, _analysisTypes);
+			_leftToRightFsa = GenerateFsa(Direction.LeftToRight);
+			_rightToLeftFsa = GenerateFsa(Direction.RightToLeft);
+		}
+
+		private FiniteStateAutomaton<TOffset, FeatureStructure> GenerateFsa(Direction dir)
+		{
+			var fsa = new FiniteStateAutomaton<TOffset, FeatureStructure>(dir, _synthesisTypes, _analysisTypes);
+			State<TOffset, FeatureStructure> startState = fsa.CreateGroupTag(fsa.StartState, EntireGroupName, true);
+			State<TOffset, FeatureStructure> endState = fsa.CreateGroupTag(GetFirst(dir).GenerateNfa(fsa, startState), EntireGroupName, false);
+			endState.AddTransition(new Transition<TOffset, FeatureStructure>(fsa.CreateState(true)));
+			fsa.ConvertToDfa();
+			return fsa;
 		}
 
 		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, Direction dir, ModeType mode)
@@ -215,13 +221,13 @@ namespace SIL.APRE
 			if (dir == Direction.LeftToRight)
 			{
 				if (_leftToRightFsa == null)
-					_leftToRightFsa = new FiniteStateAutomaton<TOffset, FeatureStructure>(GenerateNfa, Direction.LeftToRight, _synthesisTypes, _analysisTypes);
+					_leftToRightFsa = GenerateFsa(Direction.LeftToRight);
 				fsa = _leftToRightFsa;
 			}
 			else
 			{
 				if (_rightToLeftFsa == null)
-					_rightToLeftFsa = new FiniteStateAutomaton<TOffset, FeatureStructure>(GenerateNfa, Direction.RightToLeft, _synthesisTypes, _analysisTypes);
+					_rightToLeftFsa = GenerateFsa(Direction.RightToLeft);
 				fsa = _rightToLeftFsa;
 			}
 
@@ -234,12 +240,12 @@ namespace SIL.APRE
 				{
 					var groups = new Dictionary<string, Span<TOffset>>();
 					TOffset matchStart, matchEnd;
-					fsa.GetOffsets(FiniteStateAutomaton<TOffset, FeatureStructure>.EntireGroupName, match, out matchStart, out matchEnd);
+					fsa.GetOffsets(EntireGroupName, match, out matchStart, out matchEnd);
 					var matchSpan = _spanFactory.Create(matchStart, matchEnd);
 
 					foreach (string groupName in fsa.GroupNames)
 					{
-						if (groupName == FiniteStateAutomaton<TOffset, FeatureStructure>.EntireGroupName)
+						if (groupName == EntireGroupName)
 							continue;
 
 						TOffset start, end;

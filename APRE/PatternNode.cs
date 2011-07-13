@@ -46,13 +46,13 @@ namespace SIL.APRE
 		}
 
 		internal virtual State<TOffset, FeatureStructure> GenerateNfa(FiniteStateAutomaton<TOffset, FeatureStructure> fsa,
-			State<TOffset, FeatureStructure> startState, Direction dir)
+			State<TOffset, FeatureStructure> startState)
 		{
-			PatternNode<TOffset> nextNode = GetNext(dir);
+			PatternNode<TOffset> nextNode = GetNext(fsa.Direction);
 			if (nextNode == null)
 				return startState;
 
-			return nextNode.GenerateNfa(fsa, startState, dir);
+			return nextNode.GenerateNfa(fsa, startState);
 		}
 
 		public abstract PatternNode<TOffset> Clone();

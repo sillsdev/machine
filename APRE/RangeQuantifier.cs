@@ -123,9 +123,9 @@ namespace SIL.APRE
         }
 
 		internal override State<TOffset, FeatureStructure> GenerateNfa(FiniteStateAutomaton<TOffset, FeatureStructure> fsa,
-			State<TOffset, FeatureStructure> startState, Direction dir)
+			State<TOffset, FeatureStructure> startState)
 		{
-			State<TOffset, FeatureStructure> endState = _node.GenerateNfa(fsa, startState, dir);
+			State<TOffset, FeatureStructure> endState = _node.GenerateNfa(fsa, startState);
 
 			if (_minOccur == 0 && _maxOccur == 1)
 			{
@@ -157,7 +157,7 @@ namespace SIL.APRE
 					for (int i = 1; i < _minOccur; i++)
 					{
 						currentState = endState;
-						endState = _node.GenerateNfa(fsa, currentState, dir);
+						endState = _node.GenerateNfa(fsa, currentState);
 					}
 				}
 
@@ -174,14 +174,14 @@ namespace SIL.APRE
 					{
 						currentState = endState;
 						startStates.Add(currentState);
-						endState = _node.GenerateNfa(fsa, currentState, dir);
+						endState = _node.GenerateNfa(fsa, currentState);
 					}
 				}
 				foreach (State<TOffset, FeatureStructure> state in startStates)
 					state.AddTransition(new Transition<TOffset, FeatureStructure>(endState));
 			}
 
-			return base.GenerateNfa(fsa, endState, dir);
+			return base.GenerateNfa(fsa, endState);
 		}
 
         public override string ToString()

@@ -84,20 +84,20 @@ namespace SIL.APRE
 		}
 
 		internal override State<TOffset, FeatureStructure> GenerateNfa(FiniteStateAutomaton<TOffset, FeatureStructure> fsa,
-			State<TOffset, FeatureStructure> startState, Direction dir)
+			State<TOffset, FeatureStructure> startState)
 		{
 			if (_nodes.Count == 0)
-				return base.GenerateNfa(fsa, startState, dir);
+				return base.GenerateNfa(fsa, startState);
 
 			State<TOffset, FeatureStructure> endState = fsa.CreateState();
 			foreach (PatternNode<TOffset> node in _nodes)
 			{
 				State<TOffset, FeatureStructure> nodeStartState = fsa.CreateState();
 				startState.AddTransition(new Transition<TOffset, FeatureStructure>(nodeStartState));
-				State<TOffset, FeatureStructure> nodeEndState = node.GenerateNfa(fsa, startState, dir);
+				State<TOffset, FeatureStructure> nodeEndState = node.GenerateNfa(fsa, startState);
 				nodeEndState.AddTransition(new Transition<TOffset, FeatureStructure>(endState));
 			}
-			return base.GenerateNfa(fsa, endState, dir);
+			return base.GenerateNfa(fsa, endState);
 		}
 
 		public override PatternNode<TOffset> Clone()

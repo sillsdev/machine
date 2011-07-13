@@ -112,17 +112,17 @@ namespace SIL.APRE
 		}
 
 		internal override State<TOffset, FeatureStructure> GenerateNfa(FiniteStateAutomaton<TOffset, FeatureStructure> fsa,
-			State<TOffset, FeatureStructure> startState, Direction dir)
+			State<TOffset, FeatureStructure> startState)
 		{
 			if (_nodes.Count == 0)
-				return base.GenerateNfa(fsa, startState, dir);
+				return base.GenerateNfa(fsa, startState);
 
 			if (_groupName != null)
-				startState = fsa.CreateTag(startState, _groupName, true);
-			State<TOffset, FeatureStructure> endState = _nodes.GetFirst(dir).GenerateNfa(fsa, startState, dir);
+				startState = fsa.CreateGroupTag(startState, _groupName, true);
+			State<TOffset, FeatureStructure> endState = _nodes.GetFirst(fsa.Direction).GenerateNfa(fsa, startState);
 			if (_groupName != null)
-				endState = fsa.CreateTag(endState, _groupName, false);
-			return base.GenerateNfa(fsa, endState, dir);
+				endState = fsa.CreateGroupTag(endState, _groupName, false);
+			return base.GenerateNfa(fsa, endState);
 		}
 
 		public override string ToString()

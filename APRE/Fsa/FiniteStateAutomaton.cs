@@ -7,8 +7,6 @@ namespace SIL.APRE.Fsa
 {
 	public class FiniteStateAutomaton<TOffset, TData>
 	{
-		public const string EntireGroupName = "*entire*";
-
 		private State<TOffset, TData> _startState;
 		private readonly List<State<TOffset, TData>> _states;
 		private int _nextTag;
@@ -20,8 +18,7 @@ namespace SIL.APRE.Fsa
 		private readonly HashSet<string> _analysisTypes;
 		private readonly Direction _dir;
 
-		public FiniteStateAutomaton(Func<FiniteStateAutomaton<TOffset, TData>, State<TOffset, TData>, Direction, State<TOffset, TData>> generateNfa,
-			Direction dir, IEnumerable<string> synthesisTypes, IEnumerable<string> analysisTypes)
+		public FiniteStateAutomaton(Direction dir, IEnumerable<string> synthesisTypes, IEnumerable<string> analysisTypes)
 		{
 			_initializers = new List<TagMapCommand>();
 			_states = new List<State<TOffset, TData>>();
@@ -32,11 +29,6 @@ namespace SIL.APRE.Fsa
 				_synthesisTypes = new HashSet<string>(synthesisTypes);
 			if (analysisTypes != null)
 				_analysisTypes = new HashSet<string>(analysisTypes);
-
-			State<TOffset, TData> startState = CreateTag(_startState, EntireGroupName, true);
-			State<TOffset, TData> endState = CreateTag(generateNfa(this, startState, dir), EntireGroupName, false);
-			endState.AddTransition(new Transition<TOffset, TData>(CreateState(true)));
-			ConvertToDfa();
 		}
 
 		public IEnumerable<string> GroupNames
@@ -88,7 +80,7 @@ namespace SIL.APRE.Fsa
 			return CreateState(false);
 		}
 
-		public State<TOffset, TData> CreateTag(State<TOffset, TData> startState, string groupName, bool isStart)
+		public State<TOffset, TData> CreateGroupTag(State<TOffset, TData> startState, string groupName, bool isStart)
 		{
 			State<TOffset, TData> tagState = CreateState();
 			int tag;
@@ -113,6 +105,11 @@ namespace SIL.APRE.Fsa
 			{
 				return _startState;
 			}
+		}
+
+		public Direction Direction
+		{
+			get { return _dir; }
 		}
 
 		class FsaInstance
@@ -444,7 +441,7 @@ namespace SIL.APRE.Fsa
 			public State<TOffset, TData> DfaState { get; set; }
 		}
 
-		private void ConvertToDfa()
+		public void ConvertToDfa()
 		{
 			var registerIndices = new Dictionary<int, int>();
 
@@ -781,6 +778,49 @@ namespace SIL.APRE.Fsa
 			}
 
 			writer.WriteLine("}");
+		}
+
+		public FiniteStateAutomaton<TOffset, TData> Intersect(FiniteStateAutomaton<TOffset, TData> fsa)
+		{
+			var newFsa = new FiniteStateAutomaton<TOffset, TData>(_dir, _synthesisTypes, _analysisTypes);
+
+			var queue = new Queue<Tuple<State<TOffset, TData>, State<TOffset, TData>>>();
+			var newStates = new Dictionary<Tuple<State<TOffset, TData>, State<TOffset, TData>>, State<TOffset, TData>>();
+			Tuple<State<TOffset, TData>, State<TOffset, TData>> pair = Tuple.Create(StartState, fsa.StartState);
+			queue.Enqueue(pair);
+			newStates[pair] = newFsa.StartState;
+			while (queue.Count > 0)
+			{
+				Tuple<State<TOffset, TData>, State<TOffset, TData>> p = queue.Dequeue();
+				State<TOffset, TData> s = newStates[p];
+
+				var newTrans = (from t1 in p.Item1.Transitions
+							    where t1.Condition == null
+							    select new { q = Tuple.Create(t1.Target, p.Item2), cond = (ITransitionCondition<TOffset, TData>) null }
+							   ).Union(
+							   (from t2 in p.Item2.Transitions
+							    where t2.Condition == null
+							    select new { q = Tuple.Create(p.Item1, t2.Target), cond = (ITransitionCondition<TOffset, TData>) null }
+							   ).Union(
+							    from t1 in p.Item1.Transitions
+							    from t2 in p.Item2.Transitions
+							    where t1.Condition != null && t2.Condition != null && t1.Condition.Equals(t2.Condition)
+						 	    select new { q = Tuple.Create(t1.Target, t2.Target), cond = t1.Condition }
+							   ));
+
+				foreach (var newTran in newTrans)
+				{
+					State<TOffset, TData> r;
+					if (!newStates.TryGetValue(newTran.q, out r))
+					{
+						r = newFsa.CreateState(newTran.q.Item1.IsAccepting && newTran.q.Item2.IsAccepting);
+						queue.Enqueue(newTran.q);
+						newStates[newTran.q] = r;
+					}
+					s.AddTransition(new Transition<TOffset, TData>(newTran.cond, r));
+				}
+			}
+			return newFsa;
 		}
 	}
 }
