@@ -103,7 +103,6 @@
     <Compile Include="StandardPhonologicalRule.cs" />
     <Compile Include="Stratum.cs" />
     <Compile Include="Trace.cs" />
-    <Compile Include="Tuple.cs" />
     <Compile Include="WordAnalysis.cs" />
     <Compile Include="WordSynthesis.cs" />
     <None Include="XmlLoader.cs" />
