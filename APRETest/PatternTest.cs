@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using NUnit.Framework;
+using SIL.APRE.Fsa;
 
 namespace SIL.APRE.Test
 {
@@ -46,10 +48,10 @@ namespace SIL.APRE.Test
 
 			pattern.Compile();
 
-			//FiniteStateAutomaton<int, VariableValues<int>> fsa = pattern.GetFsa(Direction.LeftToRight);
-			//var writer = new StreamWriter("c:\\ltor-fsa.dot");
-			//fsa.ToGraphViz(writer);
-			//writer.Close();
+			FiniteStateAutomaton<int, FeatureStructure> fsa = pattern.GetFsa(Direction.LeftToRight);
+			var writer = new StreamWriter("c:\\ltor-dfa.dot");
+			fsa.ToGraphViz(writer);
+			writer.Close();
 
 			//fsa = pattern.GetFsa(Direction.RightToLeft);
 			//writer = new StreamWriter("c:\\rtol-fsa.dot");

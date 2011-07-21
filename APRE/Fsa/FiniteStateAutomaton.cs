@@ -441,7 +441,7 @@ namespace SIL.APRE.Fsa
 			public State<TOffset, TData> DfaState { get; set; }
 		}
 
-		public void ConvertToDfa()
+		public void Determinize()
 		{
 			var registerIndices = new Dictionary<int, int>();
 
@@ -463,75 +463,108 @@ namespace SIL.APRE.Fsa
 			_initializers.AddRange(from kvp in cmdTags
 								   select new TagMapCommand(GetRegisterIndex(registerIndices, kvp.Key, kvp.Value), TagMapCommand.CurrentPosition));
 
-			var subsetStates = new List<SubsetState> {subsetStart};
-			var unmarkedSubsetStates = new List<SubsetState> {subsetStart};
+			var subsetStates = new Dictionary<SubsetState, SubsetState> { {subsetStart, subsetStart} };
+			var unmarkedSubsetStates = new Queue<SubsetState>();
+			unmarkedSubsetStates.Enqueue(subsetStart);
 
 			while (unmarkedSubsetStates.Count != 0)
 			{
-				SubsetState curSubsetState = unmarkedSubsetStates[0];
-				unmarkedSubsetStates.RemoveAt(0);
+				SubsetState curSubsetState = unmarkedSubsetStates.Dequeue();
 
-				foreach (ITransitionCondition<TOffset, TData> condition in GetConditions(curSubsetState))
+				IEnumerable<ITransitionCondition<TOffset, TData>> conditions = (from state in curSubsetState
+																				from tran in state.NfaState.Transitions
+																				where tran.Condition != null
+																				select tran.Condition).Distinct();
+				if (conditions.Any())
 				{
-					SubsetState u = EpsilonClosure(Reach(curSubsetState, condition), curSubsetState);
-					cmdTags.Clear();
-					foreach (StateElement uState in u)
-					{
-						foreach (KeyValuePair<int, int> kvp in uState.Tags)
-						{
-							bool found = false;
-							foreach (StateElement curState in curSubsetState)
-							{
-								if (curState.Tags.Contains(kvp))
-								{
-									found = true;
-									break;
-								}
-							}
-
-							if (!found)
-								cmdTags[kvp.Key] = kvp.Value;
-						}
-					}
-
-					var cmds = (from kvp in cmdTags
-							    select new TagMapCommand(GetRegisterIndex(registerIndices, kvp.Key, kvp.Value), TagMapCommand.CurrentPosition)).ToList();
-
-					bool exists = false;
-					foreach (SubsetState subsetState in subsetStates)
-					{
-						if (subsetState.Equals(u))
-						{
-							ReorderTagIndices(u, subsetState, registerIndices, cmds);
-							u = subsetState;
-							exists = true;
-							break;
-						}
-					}
-
-					if (!exists)
-					{
-						subsetStates.Add(u);
-						unmarkedSubsetStates.Add(u);
-						StateElement minState = GetMinAcceptingGroup(u);
-						if (minState != null)
-						{
-							u.DfaState = CreateState(from kvp in minState.Tags
-													 let dest = GetRegisterIndex(registerIndices, kvp.Key, 0)
-													 let src = GetRegisterIndex(registerIndices, kvp.Key, kvp.Value)
-													 where dest != src
-													 select new TagMapCommand(dest, src));
-						}
-						else
-						{
-							u.DfaState = CreateState();
-						}
-					}
-
-					curSubsetState.DfaState.AddTransition(new Transition<TOffset, TData>(condition, u.DfaState, cmds));
+					CreateTransitions(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, conditions,
+						Enumerable.Empty<ITransitionCondition<TOffset, TData>>(), Enumerable.Empty<ITransitionCondition<TOffset, TData>>());
 				}
 			}
 			_registerCount = _nextTag + registerIndices.Count;
+		}
+
+		private void CreateTransitions(Dictionary<SubsetState, SubsetState> subsetStates, Queue<SubsetState> unmarkedSubsetStates,
+			Dictionary<int, int> registerIndices, SubsetState curSubsetState, IEnumerable<ITransitionCondition<TOffset, TData>> remaining,
+			IEnumerable<ITransitionCondition<TOffset, TData>> subset1, IEnumerable<ITransitionCondition<TOffset, TData>> subset2)
+		{
+			if (!remaining.Any())
+			{
+				ITransitionCondition<TOffset, TData> condition = subset1.Aggregate((ITransitionCondition<TOffset, TData>)null,
+					(newCondition, curCondition) => newCondition == null ? curCondition : newCondition.Conjunction(curCondition));
+				condition = subset2.Aggregate(condition,
+					(newCondition, curCondition) => newCondition == null ? curCondition.Negation() : newCondition.Conjunction(curCondition.Negation()));
+
+				if (condition.IsSatisfiable)
+				{
+					var cmdTags = new Dictionary<int, int>();
+					SubsetState u = EpsilonClosure((from state in curSubsetState
+					                                from tran in state.NfaState.Transitions
+					                                where tran.Condition != null && subset1.Contains(tran.Condition)
+					                                select new StateElement(tran.Target, state.Tags)).Distinct(), curSubsetState);
+					// this makes the FSA not complete
+					if (u.Any())
+					{
+						foreach (StateElement uState in u)
+						{
+							foreach (KeyValuePair<int, int> kvp in uState.Tags)
+							{
+								bool found = false;
+								foreach (StateElement curState in curSubsetState)
+								{
+									if (curState.Tags.Contains(kvp))
+									{
+										found = true;
+										break;
+									}
+								}
+
+								if (!found)
+									cmdTags[kvp.Key] = kvp.Value;
+							}
+						}
+
+						var cmds = (from kvp in cmdTags
+						            select new TagMapCommand(GetRegisterIndex(registerIndices, kvp.Key, kvp.Value),
+						                                     TagMapCommand.CurrentPosition)).ToList();
+
+						SubsetState subsetState;
+						if (subsetStates.TryGetValue(u, out subsetState))
+						{
+							ReorderTagIndices(u, subsetState, registerIndices, cmds);
+							u = subsetState;
+						}
+						else
+						{
+							subsetStates.Add(u, u);
+							unmarkedSubsetStates.Enqueue(u);
+							StateElement minState = GetMinAcceptingGroup(u);
+							if (minState != null)
+							{
+								u.DfaState = CreateState(from kvp in minState.Tags
+								                         let dest = GetRegisterIndex(registerIndices, kvp.Key, 0)
+								                         let src = GetRegisterIndex(registerIndices, kvp.Key, kvp.Value)
+								                         where dest != src
+								                         select new TagMapCommand(dest, src));
+							}
+							else
+							{
+								u.DfaState = CreateState();
+							}
+						}
+
+						curSubsetState.DfaState.AddTransition(new Transition<TOffset, TData>(condition, u.DfaState, cmds));
+					}
+				}
+			}
+			else
+			{
+				ITransitionCondition<TOffset, TData> condition = remaining.First();
+				CreateTransitions(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, remaining.Skip(1),
+					subset1.Concat(condition), subset2);
+				CreateTransitions(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, remaining.Skip(1),
+					subset1, subset2.Concat(condition));
+			}
 		}
 
 		private void ReorderTagIndices(IEnumerable<StateElement> from, IEnumerable<StateElement> to, Dictionary<int, int> registerIndices,
@@ -553,36 +586,6 @@ namespace SIL.APRE.Fsa
 				}
 			}
 			cmds.AddRange(newCmds.Values);
-		}
-
-		private static IEnumerable<ITransitionCondition<TOffset, TData>> GetConditions(IEnumerable<StateElement> t)
-		{
-			var conditions = new HashSet<ITransitionCondition<TOffset, TData>>();
-			foreach (StateElement state in t)
-			{
-				foreach (Transition<TOffset, TData> transition in state.NfaState.Transitions)
-				{
-					if (transition.Condition != null)
-						conditions.Add(transition.Condition);
-				}
-			}
-			return conditions;
-		}
-
-		private static IEnumerable<StateElement> Reach(IEnumerable<StateElement> t, ITransitionCondition<TOffset, TData> condition)
-		{
-			var reach = new SubsetState();
-			foreach (StateElement state in t)
-			{
-				foreach (Transition<TOffset, TData> transition in state.NfaState.Transitions)
-				{
-					if (transition.Condition != null && transition.Condition.Equals(condition))
-					{
-						reach.Add(new StateElement(transition.Target, state.Tags));
-					}
-				}
-			}
-			return reach;
 		}
 
 		private static StateElement GetMinAcceptingGroup(IEnumerable<StateElement> subsetState)
@@ -804,8 +807,8 @@ namespace SIL.APRE.Fsa
 							   ).Union(
 							    from t1 in p.Item1.Transitions
 							    from t2 in p.Item2.Transitions
-							    where t1.Condition != null && t2.Condition != null && t1.Condition.Equals(t2.Condition)
-						 	    select new { q = Tuple.Create(t1.Target, t2.Target), cond = t1.Condition }
+							    where t1.Condition != null && t2.Condition != null
+						 	    select new { q = Tuple.Create(t1.Target, t2.Target), cond = t1.Condition.Conjunction(t2.Condition) }
 							   ));
 
 				foreach (var newTran in newTrans)

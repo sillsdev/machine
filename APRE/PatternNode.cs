@@ -7,7 +7,7 @@ namespace SIL.APRE
 	/// <summary>
 	/// This is the abstract class that all phonetic pattern nodes extend.
 	/// </summary>
-	public abstract class PatternNode<TOffset> : BidirListNode<PatternNode<TOffset>>, ITransitionCondition<TOffset, FeatureStructure>, ICloneable
+	public abstract class PatternNode<TOffset> : BidirListNode<PatternNode<TOffset>>, ICloneable
 	{
 		/// <summary>
 		/// This enumeration represents the node type.
@@ -36,14 +36,6 @@ namespace SIL.APRE
 		public abstract bool IsFeatureReferenced(Feature feature);
 
 		public virtual Pattern<TOffset> Pattern { get; internal set; }
-
-		public virtual bool IsMatch(Annotation<TOffset> ann, ModeType mode, ref FeatureStructure varValues)
-		{
-			if (varValues != null)
-				varValues = (FeatureStructure) varValues.Clone();
-
-			return true;
-		}
 
 		internal virtual State<TOffset, FeatureStructure> GenerateNfa(FiniteStateAutomaton<TOffset, FeatureStructure> fsa,
 			State<TOffset, FeatureStructure> startState)

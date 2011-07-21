@@ -125,7 +125,7 @@ namespace SIL.APRE
     	/// <param name="mode">The mode.</param>
     	/// <param name="varValues">The instantiated variables.</param>
     	/// <returns>All matches.</returns>
-    	public override bool IsMatch(Annotation<TOffset> ann, ModeType mode, ref FeatureStructure varValues)
+    	public bool IsMatch(Annotation<TOffset> ann, ModeType mode, ref FeatureStructure varValues)
     	{
 			if (varValues != null)
     			varValues = (FeatureStructure) varValues.Clone();
@@ -151,11 +151,12 @@ namespace SIL.APRE
 			return false;
         }
 
-		internal override State<TOffset, FeatureStructure> GenerateNfa(FiniteStateAutomaton<TOffset, FeatureStructure> fsa,
+    	internal override State<TOffset, FeatureStructure> GenerateNfa(FiniteStateAutomaton<TOffset, FeatureStructure> fsa,
 			State<TOffset, FeatureStructure> startState)
 		{
 			State<TOffset, FeatureStructure> endState = fsa.CreateState();
-			startState.AddTransition(new Transition<TOffset, FeatureStructure>(this, endState));
+			startState.AddTransition(new Transition<TOffset, FeatureStructure>(new AnnotationTransitionCondition<TOffset>(_annotationType, false),
+				endState));
 
 			return base.GenerateNfa(fsa, endState);
 		}

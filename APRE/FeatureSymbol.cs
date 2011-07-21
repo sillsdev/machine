@@ -13,7 +13,6 @@
 		public FeatureSymbol(string id, string description)
 			: base(id, description)
 		{
-			SymbolIndex = -1;
 		}
 
 		public FeatureSymbol(string id)
@@ -26,11 +25,5 @@
 		/// </summary>
 		/// <value>The feature.</value>
 		public Feature Feature { get; internal set; }
-
-		/// <summary>
-		/// Gets or sets the index of this value in feature bundles.
-		/// </summary>
-		/// <value>The index in feature bundles.</value>
-		internal int SymbolIndex { get; set; }
 	}
 }

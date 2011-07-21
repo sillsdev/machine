@@ -41,7 +41,9 @@
   <ItemGroup>
     <Compile Include="Alternation.cs" />
     <Compile Include="AnnotationList.cs" />
+    <Compile Include="AnnotationTransitionCondition.cs" />
     <Compile Include="BidirListExtensions.cs" />
+    <Compile Include="EnumerableExtensions.cs" />
     <Compile Include="StringFeature.cs" />
     <Compile Include="SymbolicFeature.cs" />
     <Compile Include="Fsa\FsaMatch.cs" />
@@ -51,7 +53,6 @@
     <Compile Include="BidirListNode.cs" />
     <Compile Include="FeatureStructure.cs" />
     <Compile Include="Feature.cs" />
-    <Compile Include="FeatureDictionary.cs" />
     <Compile Include="FeatureValue.cs" />
     <Compile Include="FeatureSymbol.cs" />
     <Compile Include="IBidirList.cs" />
@@ -70,7 +71,6 @@
     <Compile Include="StringFeatureValue.cs" />
     <Compile Include="ComplexFeature.cs" />
     <Compile Include="SymbolicFeatureValue.cs" />
-    <Compile Include="SymbolicFeatureValueSet.cs" />
     <Compile Include="AlphaVariables.cs" />
     <Compile Include="Annotation.cs" />
     <Compile Include="AnnotationConstraints.cs" />

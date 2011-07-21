@@ -57,7 +57,6 @@ namespace SIL.APRE
     public class FeatureSystem
     {
     	private readonly IDBearerSet<Feature> _features;
-    	private readonly IDBearerSet<FeatureSymbol> _symbols;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FeatureSystem"/> class.
@@ -65,7 +64,6 @@ namespace SIL.APRE
         public FeatureSystem()
         {
             _features = new IDBearerSet<Feature>();
-            _symbols = new IDBearerSet<FeatureSymbol>();
         }
 
         /// <summary>
@@ -96,7 +94,10 @@ namespace SIL.APRE
         {
             get
             {
-                return _symbols;
+            	return from feature in _features
+            	       where feature.ValueType == FeatureValueType.Symbol
+            	       from symbol in ((SymbolicFeature) feature).PossibleSymbols
+            	       select symbol;
             }
         }
 
@@ -173,8 +174,8 @@ namespace SIL.APRE
 						else if (valueObj is string)
 						{
 							var str = (string) valueObj;
-							FeatureSymbol symbol;
-							if (_symbols.TryGetValue(str, out symbol))
+							FeatureSymbol symbol = GetSymbol(str);
+							if (symbol != null)
 							{
 								if (symbol.Feature != f)
 									throw new ArgumentException("A specified symbol is not associated with the specified feature.", "contents");
@@ -238,8 +239,8 @@ namespace SIL.APRE
 							else if (val is string)
 							{
 								var str = (string) val;
-								FeatureSymbol symbol;
-								if (_symbols.TryGetValue(str, out symbol))
+								FeatureSymbol symbol = GetSymbol(str);
+								if (symbol != null)
 								{
 									if (symbol.Feature != f)
 										throw new ArgumentException("A specified symbol is not associated with the specified feature.", "contents");
@@ -265,8 +266,8 @@ namespace SIL.APRE
 				else if (obj is string)
 				{
 					var str = (string) obj;
-					FeatureSymbol symbol;
-					if (_symbols.TryGetValue(str, out symbol))
+					FeatureSymbol symbol = GetSymbol(str);
+					if (symbol != null)
 						featureValues.Add(symbol.Feature, new SymbolicFeatureValue(symbol));
 					else
 						throw new ArgumentException("An invalid value was specified", "contents");
@@ -282,10 +283,7 @@ namespace SIL.APRE
 				}
 			}
 
-			if (_features.All(f => f.ValueType == FeatureValueType.Symbol) && _symbols.Count <= SymbolicFeatureValueSet.MaxNumValues)
-				return new SymbolicFeatureValueSet(featureValues.Values.SelectMany(val => ((SimpleFeatureValue<FeatureSymbol>) val).Values), this);
-
-			var output = new FeatureDictionary(this);
+			var output = new FeatureStructure(this);
 			foreach (KeyValuePair<Feature, FeatureValue> kvp in featureValues)
 				output.Add(kvp.Key, kvp.Value);
 			return output;
@@ -353,9 +351,12 @@ namespace SIL.APRE
         /// <returns>The feature value.</returns>
         public FeatureSymbol GetSymbol(string id)
         {
-            FeatureSymbol symbol;
-            if (_symbols.TryGetValue(id, out symbol))
-                return symbol;
+			foreach (SymbolicFeature feature in _features.Where(f => f.ValueType == FeatureValueType.Symbol))
+			{
+				FeatureSymbol symbol = feature.GetPossibleSymbol(id);
+				if (symbol != null)
+					return symbol;
+			}
             return null;
         }
 
@@ -366,30 +367,7 @@ namespace SIL.APRE
         public void AddFeature(Feature feature)
         {
 			if (!_features.Contains(feature))
-			{
 				_features.Add(feature);
-				var symbolFeat = feature as SymbolicFeature;
-				if (symbolFeat != null)
-				{
-					foreach (FeatureSymbol symbol in symbolFeat.PossibleSymbols)
-						AddSymbol(symbol);
-				}
-			}
-        }
-
-        /// <summary>
-        /// Adds the feature value.
-        /// </summary>
-        /// <param name="symbol">The feature value.</param>
-		/// <exception cref="System.InvalidOperationException">Thrown when the current number of feature values is equal to the maximum
-		/// and this feature system does not contain the specified value.</exception>
-        public void AddSymbol(FeatureSymbol symbol)
-        {
-			if (!_symbols.Contains(symbol))
-			{
-				symbol.SymbolIndex = _symbols.Count;
-				_symbols.Add(symbol);
-			}
         }
 
         /// <summary>
@@ -398,7 +376,6 @@ namespace SIL.APRE
         public void Reset()
         {
             _features.Clear();
-            _symbols.Clear();
         }
     }
 }

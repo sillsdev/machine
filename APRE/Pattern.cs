@@ -168,7 +168,7 @@ namespace SIL.APRE
 			State<TOffset, FeatureStructure> startState = fsa.CreateGroupTag(fsa.StartState, EntireGroupName, true);
 			State<TOffset, FeatureStructure> endState = fsa.CreateGroupTag(GetFirst(dir).GenerateNfa(fsa, startState), EntireGroupName, false);
 			endState.AddTransition(new Transition<TOffset, FeatureStructure>(fsa.CreateState(true)));
-			fsa.ConvertToDfa();
+			fsa.Determinize();
 			return fsa;
 		}
 

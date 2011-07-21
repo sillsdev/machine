@@ -94,7 +94,7 @@ namespace SIL.APRE
 			{
 				State<TOffset, FeatureStructure> nodeStartState = fsa.CreateState();
 				startState.AddTransition(new Transition<TOffset, FeatureStructure>(nodeStartState));
-				State<TOffset, FeatureStructure> nodeEndState = node.GenerateNfa(fsa, startState);
+				State<TOffset, FeatureStructure> nodeEndState = node.GenerateNfa(fsa, nodeStartState);
 				nodeEndState.AddTransition(new Transition<TOffset, FeatureStructure>(endState));
 			}
 			return base.GenerateNfa(fsa, endState);
