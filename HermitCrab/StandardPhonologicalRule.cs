@@ -105,12 +105,12 @@ namespace SIL.HermitCrab
 				IEnumerator<PatternNode<PhoneticShapeNode>> lhsEnum = lhs.GetEnumerator();
 				while (rhsEnum.MoveNext() && lhsEnum.MoveNext())
 				{
-					var rhsConstraints = rhsEnum.Current as AnnotationConstraints<PhoneticShapeNode>;
-					var lhsConstraints = lhsEnum.Current as AnnotationConstraints<PhoneticShapeNode>;
+					var rhsConstraints = rhsEnum.Current as Constraints<PhoneticShapeNode>;
+					var lhsConstraints = lhsEnum.Current as Constraints<PhoneticShapeNode>;
 					if (rhsConstraints != null && lhsConstraints != null)
 					{
-						var result = (AnnotationConstraints<PhoneticShapeNode>) lhsConstraints.Clone();
-						result.FeatureStructure.Instantiate(rhsConstraints.FeatureStructure);
+						var result = (Constraints<PhoneticShapeNode>) lhsConstraints.Clone();
+						result.FeatureStructure.IntersectWith(rhsConstraints.FeatureStructure);
 						if (rhsConstraints.Variables != null)
 						{
 							foreach (KeyValuePair<string, bool> varPolarity in rhsConstraints.Variables)
@@ -239,7 +239,7 @@ namespace SIL.HermitCrab
                         {
                             foreach (PatternNode<PhoneticShapeNode> node in _rhs)
                             {
-                            	var constraints = node as AnnotationConstraints<PhoneticShapeNode>;
+                            	var constraints = node as Constraints<PhoneticShapeNode>;
 								if (constraints != null && constraints.AnnotationType == "Segment")
 								{
 									// check if there is any overlap of features between
@@ -276,14 +276,14 @@ namespace SIL.HermitCrab
             /// <returns>
             /// 	<c>true</c> if there is no overlap, otherwise <c>false</c>.
             /// </returns>
-            private static bool IsNonSelfOpaquing(AnnotationConstraints<PhoneticShapeNode> constraints, IEnumerable<PatternNode<PhoneticShapeNode>> env)
+            private static bool IsNonSelfOpaquing(Constraints<PhoneticShapeNode> constraints, IEnumerable<PatternNode<PhoneticShapeNode>> env)
             {
                 foreach (PatternNode<PhoneticShapeNode> node in env)
                 {
                     switch (node.Type)
                     {
                         case PatternNode<PhoneticShapeNode>.NodeType.Constraints:
-                    		var curConstraints = (AnnotationConstraints<PhoneticShapeNode>) node;
+                    		var curConstraints = (Constraints<PhoneticShapeNode>) node;
 							if (curConstraints.AnnotationType == "Segment")
 							{
 								if (curConstraints.FeatureStructure.IsUnifiable(constraints.FeatureStructure))
@@ -388,14 +388,14 @@ namespace SIL.HermitCrab
 					PhoneticShapeNode cur = match.Item1.End;
 					foreach (PatternNode<PhoneticShapeNode> lhsNode in _rule._lhs)
 					{
-						var constraints = lhsNode as AnnotationConstraints<PhoneticShapeNode>;
+						var constraints = lhsNode as Constraints<PhoneticShapeNode>;
 						if (constraints == null)
 							continue;
 
 						var newNode = new PhoneticShapeNode(_rule._spanFactory, constraints.AnnotationType,
 						                                    _rule._phoneticFeatSys.CreateFeatureStructure());
 						newNode.Annotation.FeatureStructure.UninstantiateAll();
-						newNode.Annotation.FeatureStructure.Instantiate(constraints.FeatureStructure);
+						newNode.Annotation.FeatureStructure.IntersectWith(constraints.FeatureStructure);
 						// mark the undeleted segment as optional
 						newNode.Annotation.IsOptional = true;
 						cur.Insert(newNode, Direction.LeftToRight);
@@ -466,7 +466,7 @@ namespace SIL.HermitCrab
                 		PhoneticShapeNode shapeNode = match.GetStart(dir);
                         foreach (PatternNode<PhoneticShapeNode> patNode in _rhs.GetNodes(dir))
                         {
-                        	var constraints = patNode as AnnotationConstraints<PhoneticShapeNode>;
+                        	var constraints = patNode as Constraints<PhoneticShapeNode>;
 							if (constraints == null)
 								continue;
 
@@ -476,7 +476,7 @@ namespace SIL.HermitCrab
 									while (shapeNode.Annotation.Type == "Boundary")
 										shapeNode = shapeNode.GetNext(dir);
 									// match[i] should be a segment, should I check that here?
-									shapeNode.Annotation.FeatureStructure.Instantiate(constraints.FeatureStructure);
+									shapeNode.Annotation.FeatureStructure.IntersectWith(constraints.FeatureStructure);
 									constraints.InstantiateVariables(shapeNode.Annotation, varValues);
 									// marked the segment as altered
 									shapeNode.Annotation.IsClean = false;
@@ -508,11 +508,11 @@ namespace SIL.HermitCrab
             	PhoneticShapeNode cur = match.GetEnd(dir);
                 foreach (PatternNode<PhoneticShapeNode> patNode in _rhs.GetNodes(dir))
                 {
-                	var constraints = patNode as AnnotationConstraints<PhoneticShapeNode>;
+                	var constraints = patNode as Constraints<PhoneticShapeNode>;
 					if (constraints == null)
 						continue;
 					var newNode = new PhoneticShapeNode(_rule._spanFactory, constraints.AnnotationType, _rule._phoneticFeatSys.CreateFeatureStructure());
-					newNode.Annotation.FeatureStructure.Instantiate(constraints.FeatureStructure);
+					newNode.Annotation.FeatureStructure.IntersectWith(constraints.FeatureStructure);
                 	constraints.InstantiateVariables(newNode.Annotation, varValues);
             		try
             		{
@@ -539,16 +539,16 @@ namespace SIL.HermitCrab
 						IEnumerator<PatternNode<PhoneticShapeNode>> lhsEnum = _rule._lhs.GetNodes(dir).GetEnumerator();
 						while (rhsEnum.MoveNext() && lhsEnum.MoveNext())
 						{
-							var rhsConstraints = rhsEnum.Current as AnnotationConstraints<PhoneticShapeNode>;
-							var lhsConstraints = lhsEnum.Current as AnnotationConstraints<PhoneticShapeNode>;
+							var rhsConstraints = rhsEnum.Current as Constraints<PhoneticShapeNode>;
+							var lhsConstraints = lhsEnum.Current as Constraints<PhoneticShapeNode>;
 							if (rhsConstraints != null && lhsConstraints != null)
 							{
 								switch (rhsConstraints.AnnotationType)
 								{
 									case "Segment":
 										// match[i] should be a segment, should I check that here?
-										shapeNode.Annotation.FeatureStructure.Uninstantiate(rhsConstraints.FeatureStructure);
-										shapeNode.Annotation.FeatureStructure.Instantiate(lhsConstraints.FeatureStructure);
+										shapeNode.Annotation.FeatureStructure.UnionWith(rhsConstraints.FeatureStructure);
+										shapeNode.Annotation.FeatureStructure.IntersectWith(lhsConstraints.FeatureStructure);
 										rhsConstraints.UninstantiateVariables(shapeNode.Annotation, varValues);
 										lhsConstraints.InstantiateVariables(shapeNode.Annotation, varValues);
 										break;
@@ -597,7 +597,7 @@ namespace SIL.HermitCrab
 					}
 					else
 					{
-						var constraints = rhsNode as AnnotationConstraints<PhoneticShapeNode>;
+						var constraints = rhsNode as Constraints<PhoneticShapeNode>;
 						if (constraints != null && constraints.AnnotationType == "Segment")
 						{
 							if (shapeNode.Annotation.FeatureStructure.IsUnifiable(constraints.FeatureStructure))

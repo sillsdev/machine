@@ -61,10 +61,10 @@ namespace HermitCrabTest
 		public void TestRule()
 		{
 			var rule1 = new StandardPhonologicalRule("rule1", "rule1", _spanFactory, _phoneticFeatSys);
-			rule1.Lhs = new Pattern<PhoneticShapeNode>(_spanFactory, new AnnotationConstraints<PhoneticShapeNode>("Segment", (FeatureStructure) _charDefTable.GetSegmentDefinition("t").SynthFeatureStructure.Clone()));
+			rule1.Lhs = new Pattern<PhoneticShapeNode>(_spanFactory, new Constraints<PhoneticShapeNode>("Segment", (FeatureStructure) _charDefTable.GetSegmentDefinition("t").SynthFeatureStructure.Clone()));
 			rule1.AddSubrule(new StandardPhonologicalRule.Subrule(1,
-				new Pattern<PhoneticShapeNode>(_spanFactory, new AnnotationConstraints<PhoneticShapeNode>("Segment", _phoneticFeatSys.CreateFeatureStructure("asp_plus"))),
-				new Pattern<PhoneticShapeNode>(_spanFactory, new AnnotationConstraints<PhoneticShapeNode>("Segment", _phoneticFeatSys.CreateFeatureStructure("cons_minus"))), null, rule1));
+				new Pattern<PhoneticShapeNode>(_spanFactory, new Constraints<PhoneticShapeNode>("Segment", _phoneticFeatSys.CreateFeatureStructure("asp_plus"))),
+				new Pattern<PhoneticShapeNode>(_spanFactory, new Constraints<PhoneticShapeNode>("Segment", _phoneticFeatSys.CreateFeatureStructure("cons_minus"))), null, rule1));
 			rule1.Unapply(new WordAnalysis(_charDefTable.ToPhoneticShape("pHitH", ModeType.Analysis), null, null));
 		}
 	}
