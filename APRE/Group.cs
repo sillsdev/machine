@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using SIL.APRE.Fsa;
 
@@ -111,18 +112,18 @@ namespace SIL.APRE
 			return _nodes.Any(node => node.IsFeatureReferenced(feature));
 		}
 
-		internal override State<TOffset, FeatureStructure> GenerateNfa(FiniteStateAutomaton<TOffset, FeatureStructure> fsa,
-			State<TOffset, FeatureStructure> startState)
+		internal override State<TOffset> GenerateNfa(FiniteStateAutomaton<TOffset> fsa,
+			State<TOffset> startState, int varValueIndex, IEnumerable<Tuple<string, IEnumerable<Feature>, FeatureSymbol>> varValues)
 		{
 			if (_nodes.Count == 0)
-				return base.GenerateNfa(fsa, startState);
+				return base.GenerateNfa(fsa, startState, varValueIndex, varValues);
 
 			if (_groupName != null)
-				startState = fsa.CreateGroupTag(startState, _groupName, true);
-			State<TOffset, FeatureStructure> endState = _nodes.GetFirst(fsa.Direction).GenerateNfa(fsa, startState);
+				startState = fsa.CreateGroupTag(startState, varValueIndex == -1 ? _groupName : _groupName + varValueIndex, true);
+			State<TOffset> endState = _nodes.GetFirst(fsa.Direction).GenerateNfa(fsa, startState, varValueIndex, varValues);
 			if (_groupName != null)
-				endState = fsa.CreateGroupTag(endState, _groupName, false);
-			return base.GenerateNfa(fsa, endState);
+				endState = fsa.CreateGroupTag(endState, varValueIndex == -1 ? _groupName : _groupName + varValueIndex, false);
+			return base.GenerateNfa(fsa, endState, varValueIndex, varValues);
 		}
 
 		public override string ToString()

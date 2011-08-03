@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
@@ -7,7 +8,7 @@ using SIL.APRE.Fsa;
 
 namespace SIL.APRE.Test
 {
-	public class TestCondition : ITransitionCondition<int, object>
+	public class TestCondition : IArcCondition<int, object>
 	{
 		private readonly HashSet<Tuple<string, bool>> _symbols;
 
@@ -32,12 +33,12 @@ namespace SIL.APRE.Test
 			return true;
 		}
 
-		public ITransitionCondition<int, object> Negation()
+		public IArcCondition<int, object> Negation()
 		{
 			return new TestCondition(_symbols.Select(symbol => Tuple.Create(symbol.Item1, !symbol.Item2)));
 		}
 
-		public ITransitionCondition<int, object> Conjunction(ITransitionCondition<int, object> cond)
+		public IArcCondition<int, object> Conjunction(IArcCondition<int, object> cond)
 		{
 			var tcond = (TestCondition) cond;
 			return new TestCondition(_symbols.Union(tcond._symbols));
@@ -84,40 +85,57 @@ namespace SIL.APRE.Test
 		[Test]
 		public void Determinize()
 		{
-			var featSys = new FeatureSystem();
-			var f = new SymbolicFeature("pi1");
-			f.AddPossibleSymbol(new FeatureSymbol("pi1+", "+"));
-			featSys.AddFeature(f);
-
-			f = new SymbolicFeature("pi2");
-			f.AddPossibleSymbol(new FeatureSymbol("pi2+", "+"));
-			featSys.AddFeature(f);
-
-			f = new SymbolicFeature("pi3");
-			f.AddPossibleSymbol(new FeatureSymbol("pi3+", "+"));
-
-			featSys.AddFeature(f);
-
 			var fsa = new FiniteStateAutomaton<int, object>(Direction.LeftToRight, null, null);
 			State<int, object> q1 = fsa.CreateState(true);
-			fsa.StartState.AddTransition(new Transition<int, object>(new TestCondition("pi1"), q1));
+			fsa.StartState.AddArc(new Arc<int, object>(new TestCondition("pi1"), q1));
 			State<int, object> q2 = fsa.CreateState(true);
-			fsa.StartState.AddTransition(new Transition<int, object>(new TestCondition("pi1"), q2));
-			fsa.StartState.AddTransition(new Transition<int, object>(new TestCondition("pi2"), q2));
+			fsa.StartState.AddArc(new Arc<int, object>(new TestCondition("pi1"), q2));
+			fsa.StartState.AddArc(new Arc<int, object>(new TestCondition("pi2"), q2));
 			State<int, object> q3 = fsa.CreateState(true);
-			fsa.StartState.AddTransition(new Transition<int, object>(new TestCondition("pi2"), q3));
-			fsa.StartState.AddTransition(new Transition<int, object>(new TestCondition("pi3"), q3));
+			fsa.StartState.AddArc(new Arc<int, object>(new TestCondition("pi2"), q3));
+			fsa.StartState.AddArc(new Arc<int, object>(new TestCondition("pi3"), q3));
 			State<int, object> q4 = fsa.CreateState(true);
-			fsa.StartState.AddTransition(new Transition<int, object>(new TestCondition("pi2"), q4));
+			fsa.StartState.AddArc(new Arc<int, object>(new TestCondition("pi2"), q4));
 			State<int, object> q5 = fsa.CreateState(true);
-			fsa.StartState.AddTransition(new Transition<int, object>(new TestCondition("pi3"), q5));
+			fsa.StartState.AddArc(new Arc<int, object>(new TestCondition("pi3"), q5));
 			fsa.Determinize();
 
-			Assert.AreEqual(8, fsa.StartState.Transitions.Count());
-			Assert.IsTrue(fsa.StartState.Transitions.Any(tran => tran.Condition.Equals(
+			Assert.AreEqual(8, fsa.StartState.Arcs.Count());
+			Assert.IsTrue(fsa.StartState.Arcs.Any(tran => tran.Condition.Equals(
 				new TestCondition(new [] { Tuple.Create("pi1", false), Tuple.Create("pi2", false), Tuple.Create("pi3", false)} ))));
-			Assert.IsTrue(fsa.StartState.Transitions.Any(tran => tran.Condition.Equals(
+			Assert.IsTrue(fsa.StartState.Arcs.Any(tran => tran.Condition.Equals(
 				new TestCondition(new[] { Tuple.Create("pi1", false), Tuple.Create("pi2", true), Tuple.Create("pi3", false) }))));
 		}
+
+		//[Test]
+		//public void Intersect()
+		//{
+		//    var insertionFsa = new FiniteStateAutomaton<int, FeatureStructure>(Direction.LeftToRight, null, null);
+		//    State<int, FeatureStructure> startState = insertionFsa.StartState;
+		//    State<int, FeatureStructure> endState = insertionFsa.CreateState();
+		//    startState.AddArc(new Arc<int, FeatureStructure>(new AnnotationArcCondition<int>(new[] {"s", "z"}, false), endState));
+		//    startState = endState;
+		//    endState = insertionFsa.CreateState();
+		//    startState.AddArc(new Arc<int, FeatureStructure>(new AnnotationArcCondition<int>(new[] {"+"}, false), endState));
+		//    startState = endState;
+		//    endState = insertionFsa.CreateState(true);
+		//    startState.AddArc(new Arc<int, FeatureStructure>(new AnnotationArcCondition<int>(new[] {"z"}, false), endState));
+
+		//    var devoiceFsa = new FiniteStateAutomaton<int, FeatureStructure>(Direction.LeftToRight, null, null);
+		//    startState = devoiceFsa.StartState;
+		//    endState = devoiceFsa.CreateState();
+		//    startState.AddArc(new Arc<int, FeatureStructure>(new AnnotationArcCondition<int>(new[] {"z", "a", "ɨ"}, false), endState));
+		//    startState = endState;
+		//    endState = insertionFsa.CreateState();
+		//    startState.AddArc(new Arc<int, FeatureStructure>(new AnnotationArcCondition<int>(new[] {"+"}, false), endState));
+		//    startState = endState;
+		//    endState = insertionFsa.CreateState(true);
+		//    startState.AddArc(new Arc<int, FeatureStructure>(new AnnotationArcCondition<int>(new[] {"z"}, false), endState));
+
+		//    var fsa = insertionFsa.Intersect(devoiceFsa);
+		//    var writer = new StreamWriter("c:\\nfa.dot");
+		//    fsa.ToGraphViz(writer);
+		//    writer.Close();
+		//}
 	}
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using SIL.APRE.Fsa;
 
@@ -6,19 +7,19 @@ namespace SIL.APRE
     /// <summary>
     /// This class represents a nested phonetic pattern within another phonetic pattern.
     /// </summary>
-    public class RangeQuantifier<TOffset> : PatternNode<TOffset>
+    public class Quantifier<TOffset> : PatternNode<TOffset>
     {
     	private readonly int _minOccur;
     	private readonly int _maxOccur;
     	private readonly PatternNode<TOffset> _node;
 
     	/// <summary>
-		/// Initializes a new instance of the <see cref="RangeQuantifier&lt;TOffset&gt;"/> class.
+		/// Initializes a new instance of the <see cref="Quantifier{TOffset}"/> class.
     	/// </summary>
     	/// <param name="minOccur">The minimum number of occurrences.</param>
     	/// <param name="maxOccur">The maximum number of occurrences.</param>
 		/// <param name="node">The pattern node.</param>
-		public RangeQuantifier(int minOccur, int maxOccur, PatternNode<TOffset> node)
+		public Quantifier(int minOccur, int maxOccur, PatternNode<TOffset> node)
         {
             _node = node;
             _minOccur = minOccur;
@@ -29,7 +30,7 @@ namespace SIL.APRE
     	/// Copy constructor.
     	/// </summary>
     	/// <param name="range">The range quantifier.</param>
-    	public RangeQuantifier(RangeQuantifier<TOffset> range)
+    	public Quantifier(Quantifier<TOffset> range)
         {
 			_node = range._node.Clone();
             _minOccur = range._minOccur;
@@ -44,7 +45,7 @@ namespace SIL.APRE
         {
             get
             {
-                return NodeType.Range;
+                return NodeType.Quantifier;
             }
         }
 
@@ -122,32 +123,32 @@ namespace SIL.APRE
             return _node.IsFeatureReferenced(feature);
         }
 
-		internal override State<TOffset, FeatureStructure> GenerateNfa(FiniteStateAutomaton<TOffset, FeatureStructure> fsa,
-			State<TOffset, FeatureStructure> startState)
+		internal override State<TOffset> GenerateNfa(FiniteStateAutomaton<TOffset> fsa,
+			State<TOffset> startState, int varValueIndex, IEnumerable<Tuple<string, IEnumerable<Feature>, FeatureSymbol>> varValues)
 		{
-			State<TOffset, FeatureStructure> endState = _node.GenerateNfa(fsa, startState);
+			State<TOffset> endState = _node.GenerateNfa(fsa, startState, varValueIndex, varValues);
 
 			if (_minOccur == 0 && _maxOccur == 1)
 			{
 				// optional
-				startState.AddTransition(new Transition<TOffset, FeatureStructure>(endState));
+				startState.AddArc(new Arc<TOffset>(endState));
 			}
 			else if (_minOccur == 0 && _maxOccur == -1)
 			{
 				// kleene star
-				startState.AddTransition(new Transition<TOffset, FeatureStructure>(endState));
-				endState.AddTransition(new Transition<TOffset, FeatureStructure>(startState));
+				startState.AddArc(new Arc<TOffset>(endState));
+				endState.AddArc(new Arc<TOffset>(startState));
 			}
 			else if (_minOccur == 1 && _maxOccur == -1)
 			{
 				// plus
-				endState.AddTransition(new Transition<TOffset, FeatureStructure>(startState));
+				endState.AddArc(new Arc<TOffset>(startState));
 			}
 			else
 			{
 				// range
-				State<TOffset, FeatureStructure> currentState = startState;
-				var startStates = new List<State<TOffset, FeatureStructure>>();
+				State<TOffset> currentState = startState;
+				var startStates = new List<State<TOffset>>();
 				if (_minOccur == 0)
 				{
 					startStates.Add(currentState);
@@ -157,13 +158,13 @@ namespace SIL.APRE
 					for (int i = 1; i < _minOccur; i++)
 					{
 						currentState = endState;
-						endState = _node.GenerateNfa(fsa, currentState);
+						endState = _node.GenerateNfa(fsa, currentState, varValueIndex, varValues);
 					}
 				}
 
 				if (_maxOccur == -1)
 				{
-					endState.AddTransition(new Transition<TOffset, FeatureStructure>(currentState));
+					endState.AddArc(new Arc<TOffset>(currentState));
 				}
 				else
 				{
@@ -174,14 +175,14 @@ namespace SIL.APRE
 					{
 						currentState = endState;
 						startStates.Add(currentState);
-						endState = _node.GenerateNfa(fsa, currentState);
+						endState = _node.GenerateNfa(fsa, currentState, varValueIndex, varValues);
 					}
 				}
-				foreach (State<TOffset, FeatureStructure> state in startStates)
-					state.AddTransition(new Transition<TOffset, FeatureStructure>(endState));
+				foreach (State<TOffset> state in startStates)
+					state.AddArc(new Arc<TOffset>(endState));
 			}
 
-			return base.GenerateNfa(fsa, endState);
+			return base.GenerateNfa(fsa, endState, varValueIndex, varValues);
 		}
 
         public override string ToString()
@@ -198,10 +199,10 @@ namespace SIL.APRE
         {
             if (obj == null)
                 return false;
-            return Equals(obj as RangeQuantifier<TOffset>);
+            return Equals(obj as Quantifier<TOffset>);
         }
 
-        public bool Equals(RangeQuantifier<TOffset> other)
+        public bool Equals(Quantifier<TOffset> other)
         {
             if (other == null)
                 return false;
@@ -211,7 +212,7 @@ namespace SIL.APRE
 
         public override PatternNode<TOffset> Clone()
         {
-            return new RangeQuantifier<TOffset>(this);
+            return new Quantifier<TOffset>(this);
         }
     }
 }

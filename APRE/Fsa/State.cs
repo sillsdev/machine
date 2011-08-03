@@ -2,11 +2,11 @@
 
 namespace SIL.APRE.Fsa
 {
-	public class State<TOffset, TData>
+	public class State<TOffset>
 	{
 		private readonly int _index;
 		private readonly bool _isAccepting;
-		private readonly List<Transition<TOffset, TData>> _transitions;
+		private readonly List<Arc<TOffset>> _arcs;
 		private readonly List<TagMapCommand> _finishers;
 
 		internal State(int index, bool isAccepting)
@@ -23,7 +23,7 @@ namespace SIL.APRE.Fsa
 		{
 			_isAccepting = isAccepting;
 			_index = index;
-			_transitions = new List<Transition<TOffset, TData>>();
+			_arcs = new List<Arc<TOffset>>();
 			_finishers = finishers == null ? new List<TagMapCommand>() : new List<TagMapCommand>(finishers);
 		}
 
@@ -43,11 +43,11 @@ namespace SIL.APRE.Fsa
 			}
 		}
 
-		public IEnumerable<Transition<TOffset, TData>> Transitions
+		public IEnumerable<Arc<TOffset>> Arcs
 		{
 			get
 			{
-				return _transitions;
+				return _arcs;
 			}
 		}
 
@@ -59,9 +59,9 @@ namespace SIL.APRE.Fsa
 			}
 		}
 
-		public void AddTransition(Transition<TOffset, TData> transition)
+		public void AddArc(Arc<TOffset> arc)
 		{
-			_transitions.Add(transition);
+			_arcs.Add(arc);
 		}
 
 		public override int GetHashCode()
@@ -73,10 +73,10 @@ namespace SIL.APRE.Fsa
 		{
 			if (obj == null)
 				return false;
-			return Equals(obj as State<TOffset, TData>);
+			return Equals(obj as State<TOffset>);
 		}
 
-		public bool Equals(State<TOffset, TData> other)
+		public bool Equals(State<TOffset> other)
 		{
 			if (other == null)
 				return false;

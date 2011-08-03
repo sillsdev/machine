@@ -5,10 +5,10 @@ using System.Linq;
 
 namespace SIL.APRE.Fsa
 {
-	public class FiniteStateAutomaton<TOffset, TData>
+	public class FiniteStateAutomaton<TOffset>
 	{
-		private State<TOffset, TData> _startState;
-		private readonly List<State<TOffset, TData>> _states;
+		private State<TOffset> _startState;
+		private readonly List<State<TOffset>> _states;
 		private int _nextTag;
 		private readonly Dictionary<string, int> _groups;
 		private readonly List<TagMapCommand> _initializers;
@@ -21,7 +21,7 @@ namespace SIL.APRE.Fsa
 		public FiniteStateAutomaton(Direction dir, IEnumerable<string> synthesisTypes, IEnumerable<string> analysisTypes)
 		{
 			_initializers = new List<TagMapCommand>();
-			_states = new List<State<TOffset, TData>>();
+			_states = new List<State<TOffset>>();
 			_groups = new Dictionary<string, int>();
 			_dir = dir;
 			_startState = CreateState();
@@ -36,7 +36,7 @@ namespace SIL.APRE.Fsa
 			get { return _groups.Keys; }
 		}
 
-		public bool GetOffsets(string groupName, FsaMatch<TOffset, TData> match, out TOffset start, out TOffset end)
+		public bool GetOffsets(string groupName, FsaMatch<TOffset> match, out TOffset start, out TOffset end)
 		{
 			int tag = _groups[groupName];
 			NullableValue<TOffset> startValue = match.Registers[tag, 0];
@@ -61,28 +61,28 @@ namespace SIL.APRE.Fsa
 			return false;
 		}
 
-		private State<TOffset, TData> CreateState(IEnumerable<TagMapCommand> finishers)
+		private State<TOffset> CreateState(IEnumerable<TagMapCommand> finishers)
 		{
-			var state = new State<TOffset, TData>(_states.Count, finishers);
+			var state = new State<TOffset>(_states.Count, finishers);
 			_states.Add(state);
 			return state;
 		}
 
-		public State<TOffset, TData> CreateState(bool isAccepting)
+		public State<TOffset> CreateState(bool isAccepting)
 		{
-			var state = new State<TOffset, TData>(_states.Count, isAccepting);
+			var state = new State<TOffset>(_states.Count, isAccepting);
 			_states.Add(state);
 			return state;
 		}
 
-		public State<TOffset, TData> CreateState()
+		public State<TOffset> CreateState()
 		{
 			return CreateState(false);
 		}
 
-		public State<TOffset, TData> CreateGroupTag(State<TOffset, TData> startState, string groupName, bool isStart)
+		public State<TOffset> CreateGroupTag(State<TOffset> startState, string groupName, bool isStart)
 		{
-			State<TOffset, TData> tagState = CreateState();
+			State<TOffset> tagState = CreateState();
 			int tag;
 			if (isStart)
 			{
@@ -95,11 +95,11 @@ namespace SIL.APRE.Fsa
 				tag = _groups[groupName] + 1;
 			}
 
-			startState.AddTransition(new Transition<TOffset, TData>(tagState, tag, _nextPriority++));
+			startState.AddArc(new Arc<TOffset>(tagState, tag, _nextPriority++));
 			return tagState;
 		}
 
-		public State<TOffset, TData> StartState
+		public State<TOffset> StartState
 		{
 			get
 			{
@@ -114,20 +114,18 @@ namespace SIL.APRE.Fsa
 
 		class FsaInstance
 		{
-			private readonly State<TOffset, TData> _state;
-			private readonly TData _data;
+			private readonly State<TOffset> _state;
 			private readonly Annotation<TOffset> _ann;
 			private readonly NullableValue<TOffset>[,] _registers;
 
-			public FsaInstance(State<TOffset, TData> state, Annotation<TOffset> ann, TData data, NullableValue<TOffset>[,] registers)
+			public FsaInstance(State<TOffset> state, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers)
 			{
 				_state = state;
 				_ann = ann;
-				_data = data;
 				_registers = registers;
 			}
 
-			public State<TOffset, TData> State
+			public State<TOffset> State
 			{
 				get
 				{
@@ -140,14 +138,6 @@ namespace SIL.APRE.Fsa
 				get
 				{
 					return _ann;
-				}
-			}
-
-			public TData Data
-			{
-				get
-				{
-					return _data;
 				}
 			}
 
@@ -168,84 +158,81 @@ namespace SIL.APRE.Fsa
 			return true;
 		}
 
-		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, ModeType mode, TData data, bool allMatches,
-			out IEnumerable<FsaMatch<TOffset, TData>> matches)
+		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, ModeType mode, bool allMatches,
+			out IEnumerable<FsaMatch<TOffset>> matches)
 		{
 			var instStack = new Stack<FsaInstance>();
-			var matchStack = new Stack<FsaMatch<TOffset, TData>>();
+			var matchStack = new Stack<FsaMatch<TOffset>>();
 
-			var matchList = new List<FsaMatch<TOffset, TData>>();
+			var matchList = new List<FsaMatch<TOffset>>();
 			matches = matchList;
 
 			Annotation<TOffset> ann = annList.GetFirst(_dir, a => IsValidType(mode, a));
-			while (ann != null)
+
+			var registers = new NullableValue<TOffset>[_registerCount, 2];
+
+			var cmds = new List<TagMapCommand>();
+			foreach (TagMapCommand cmd in _initializers)
 			{
-				var registers = new NullableValue<TOffset>[_registerCount, 2];
+				if (cmd.Dest == 0)
+					registers[cmd.Dest, 0].Value = ann.Span.GetStart(_dir);
+				else
+					cmds.Add(cmd);
+			}
 
-				var cmds = new List<TagMapCommand>();
-				foreach (TagMapCommand cmd in _initializers)
+			InitializeStack(ann, registers, mode, cmds, instStack);
+
+			//int offset = annSet[index].GetStartOffset(dir);
+			//ExecuteCommands(registers, cmds, offset, -1);
+			//for (; index != -1 && annSet[index].GetStartOffset(dir) == offset; index = annSet.GetNextIndex(index, dir))
+			//    instStack.Push(new FSAInstance(_startState, index, instantiatedVars, registers.Clone() as int[,]));
+
+			while (instStack.Count != 0)
+			{
+				FsaInstance inst = instStack.Pop();
+
+				foreach (Arc<TOffset> arc in inst.State.Arcs)
 				{
-					if (cmd.Dest == 0)
-						registers[cmd.Dest, 0].Value = ann.Span.GetStart(_dir);
-					else
-						cmds.Add(cmd);
-				}
-
-				ann = InitializeStack(ann, registers, mode, data, cmds, instStack);
-
-				//int offset = annSet[index].GetStartOffset(dir);
-				//ExecuteCommands(registers, cmds, offset, -1);
-				//for (; index != -1 && annSet[index].GetStartOffset(dir) == offset; index = annSet.GetNextIndex(index, dir))
-				//    instStack.Push(new FSAInstance(_startState, index, instantiatedVars, registers.Clone() as int[,]));
-
-				while (instStack.Count != 0)
-				{
-					FsaInstance inst = instStack.Pop();
-
-					foreach (Transition<TOffset, TData> transition in inst.State.Transitions)
+					if (arc.Condition.IsMatch(inst.Annotation, mode))
 					{
-						TData curData = inst.Data;
-						if (transition.Condition.IsMatch(inst.Annotation, mode, ref curData))
-						{
-							AdvanceFsa(annList, inst.Annotation, inst.Annotation.Span.GetEnd(_dir), inst.Registers,
-								mode, transition, curData, instStack, matchStack);
+						AdvanceFsa(annList, inst.Annotation, inst.Annotation.Span.GetEnd(_dir), inst.Registers,
+							mode, arc, instStack, matchStack);
 
-							//int nextIndex = annSet.GetNextIndexNonOverlapping(inst.AnnotationIndex, dir);
-							//int nextOffset = nextIndex == -1 ? annSet.GetLast(dir).GetEndOffset(dir) : annSet[nextIndex].GetStartOffset(dir);
-							//int endOffset = annSet[inst.AnnotationIndex].GetEndOffset(dir);
-							//registers = inst.Registers.Clone() as int[,];
-							//ExecuteCommands(registers, transition.Commands, nextOffset, endOffset);
-							//if (nextIndex != -1)
-							//{
-							//    for (; nextIndex != -1 && annSet[nextIndex].GetStartOffset(dir) == nextOffset;
-							//        nextIndex = annSet.GetNextIndex(nextIndex, dir))
-							//    {
-							//        stack.Push(new FSAInstance(transition.Target, nextIndex, vars, registers.Clone() as int[,]));
-							//    }
-							//}
+						//int nextIndex = annSet.GetNextIndexNonOverlapping(inst.AnnotationIndex, dir);
+						//int nextOffset = nextIndex == -1 ? annSet.GetLast(dir).GetEndOffset(dir) : annSet[nextIndex].GetStartOffset(dir);
+						//int endOffset = annSet[inst.AnnotationIndex].GetEndOffset(dir);
+						//registers = inst.Registers.Clone() as int[,];
+						//ExecuteCommands(registers, Arc.Commands, nextOffset, endOffset);
+						//if (nextIndex != -1)
+						//{
+						//    for (; nextIndex != -1 && annSet[nextIndex].GetStartOffset(dir) == nextOffset;
+						//        nextIndex = annSet.GetNextIndex(nextIndex, dir))
+						//    {
+						//        stack.Push(new FSAInstance(Arc.Target, nextIndex, vars, registers.Clone() as int[,]));
+						//    }
+						//}
 
-							//if (transition.Target.IsAccepting)
-							//{
-							//    ExecuteCommands(registers, transition.Target.Finishers, -1, annSet[inst.AnnotationIndex].GetEndOffset(dir));
-							//    matchStack.Push(CreateMatch(registers, inst.VariableValues));
-							//}
-						}
+						//if (Arc.Target.IsAccepting)
+						//{
+						//    ExecuteCommands(registers, Arc.Target.Finishers, -1, annSet[inst.AnnotationIndex].GetEndOffset(dir));
+						//    matchStack.Push(CreateMatch(registers, inst.VariableValues));
+						//}
 					}
 				}
+			}
 
-				while (matchStack.Count != 0)
-				{
-					matchList.Add(matchStack.Pop());
-					if (!allMatches)
-						return true;
-				}
+			while (matchStack.Count != 0)
+			{
+				matchList.Add(matchStack.Pop());
+				if (!allMatches)
+					return true;
 			}
 
 			return matchList.Count > 0;
 		}
 
-		private Annotation<TOffset> InitializeStack(Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, ModeType mode,
-			TData data, IEnumerable<TagMapCommand> cmds, Stack<FsaInstance> instStack)
+		private void InitializeStack(Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, ModeType mode,
+			IEnumerable<TagMapCommand> cmds, Stack<FsaInstance> instStack)
 		{
 			TOffset offset = ann.Span.GetStart(_dir);
 
@@ -258,42 +245,40 @@ namespace SIL.APRE.Fsa
 				{
 					Annotation<TOffset> nextAnn = a.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && IsValidType(mode, next));
 					if (nextAnn != null)
-						InitializeStack(nextAnn, registers, mode, data, cmds, instStack);
+						InitializeStack(nextAnn, registers, mode, cmds, instStack);
 				}
 			}
 
 			for (; ann != null && ann.Span.GetStart(_dir).Equals(offset); ann = ann.GetNext(_dir, next => IsValidType(mode, next)))
-				instStack.Push(new FsaInstance(_startState, ann, data, (NullableValue<TOffset>[,]) registers.Clone()));
-
-			return ann;
+				instStack.Push(new FsaInstance(_startState, ann, (NullableValue<TOffset>[,]) registers.Clone()));
 		}
 
 		private void AdvanceFsa(IBidirList<Annotation<TOffset>> annList, Annotation<TOffset> ann, TOffset end,
-			NullableValue<TOffset>[,] registers, ModeType mode, Transition<TOffset, TData> transition, TData data,
-			Stack<FsaInstance> instStack, Stack<FsaMatch<TOffset, TData>> matchStack)
+			NullableValue<TOffset>[,] registers, ModeType mode, Arc<TOffset> arc, Stack<FsaInstance> instStack,
+			Stack<FsaMatch<TOffset>> matchStack)
 		{
 			Annotation<TOffset> nextAnn = ann.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && IsValidType(mode, next));
 			TOffset nextOffset = nextAnn == null ? annList.GetLast(_dir, prev => IsValidType(mode, prev)).Span.GetEnd(_dir) : nextAnn.Span.GetStart(_dir);
 			var newRegisters = (NullableValue<TOffset>[,]) registers.Clone();
-			ExecuteCommands(newRegisters, transition.Commands, new NullableValue<TOffset>(nextOffset), new NullableValue<TOffset>(end),
+			ExecuteCommands(newRegisters, arc.Commands, new NullableValue<TOffset>(nextOffset), new NullableValue<TOffset>(end),
 				ann.Span.GetEnd(_dir));
-			if (transition.Target.IsAccepting)
+			if (arc.Target.IsAccepting)
 			{
 				var matchRegisters = (NullableValue<TOffset>[,]) newRegisters.Clone();
-				ExecuteCommands(matchRegisters, transition.Target.Finishers, new NullableValue<TOffset>(), new NullableValue<TOffset>(),
+				ExecuteCommands(matchRegisters, arc.Target.Finishers, new NullableValue<TOffset>(), new NullableValue<TOffset>(),
 					ann.Span.GetEnd(_dir));
-				matchStack.Push(new FsaMatch<TOffset, TData>(matchRegisters, data));
+				matchStack.Push(new FsaMatch<TOffset>(matchRegisters));
 			}
 			if (nextAnn != null)
 			{
 				for (Annotation<TOffset> a = nextAnn; a != null && a.Span.GetStart(_dir).Equals(nextOffset); a = a.GetNext(_dir, next => IsValidType(mode, next)))
 				{
 					if (a.IsOptional)
-						AdvanceFsa(annList, a, end, registers, mode, transition, data, instStack, matchStack);
+						AdvanceFsa(annList, a, end, registers, mode, arc, instStack, matchStack);
 				}
 
 				for (Annotation<TOffset> a = nextAnn; a != null && a.Span.GetStart(_dir).Equals(nextOffset); a = a.GetNext(_dir, next => IsValidType(mode, next)))
-					instStack.Push(new FsaInstance(transition.Target, a, data, (NullableValue<TOffset>[,]) newRegisters.Clone()));
+					instStack.Push(new FsaInstance(arc.Target, a, (NullableValue<TOffset>[,]) newRegisters.Clone()));
 			}
 		}
 
@@ -344,28 +329,28 @@ namespace SIL.APRE.Fsa
 
 		private class StateElement : IEquatable<StateElement>
 		{
-			private readonly State<TOffset, TData> _nfsState;
+			private readonly State<TOffset> _nfsState;
 			private readonly Dictionary<int, int> _tags;
 			private int _priority;
 
-			public StateElement(State<TOffset, TData> nfaState)
+			public StateElement(State<TOffset> nfaState)
 				: this(nfaState, null)
 			{
 			}
 
-			public StateElement(State<TOffset, TData> nfaState, IDictionary<int, int> tags)
+			public StateElement(State<TOffset> nfaState, IDictionary<int, int> tags)
 				: this(nfaState, -1, tags)
 			{
 			}
 
-			public StateElement(State<TOffset, TData> nfaState, int priority, IDictionary<int, int> tags)
+			public StateElement(State<TOffset> nfaState, int priority, IDictionary<int, int> tags)
 			{
 				_nfsState = nfaState;
 				_priority = priority;
 				_tags = tags == null ? new Dictionary<int, int>() : new Dictionary<int, int>(tags);
 			}
 
-			public State<TOffset, TData> NfaState
+			public State<TOffset> NfaState
 			{
 				get
 				{
@@ -438,7 +423,7 @@ namespace SIL.APRE.Fsa
 			{
 			}
 
-			public State<TOffset, TData> DfaState { get; set; }
+			public State<TOffset> DfaState { get; set; }
 		}
 
 		public void Determinize()
@@ -471,26 +456,26 @@ namespace SIL.APRE.Fsa
 			{
 				SubsetState curSubsetState = unmarkedSubsetStates.Dequeue();
 
-				IEnumerable<ITransitionCondition<TOffset, TData>> conditions = (from state in curSubsetState
-																				from tran in state.NfaState.Transitions
-																				where tran.Condition != null
-																				select tran.Condition).Distinct();
+				IEnumerable<IArcCondition<TOffset>> conditions = (from state in curSubsetState
+																  from tran in state.NfaState.Arcs
+																  where tran.Condition != null
+																  select tran.Condition).Distinct();
 				if (conditions.Any())
 				{
-					CreateTransitions(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, conditions,
-						Enumerable.Empty<ITransitionCondition<TOffset, TData>>(), Enumerable.Empty<ITransitionCondition<TOffset, TData>>());
+					ComputeArcs(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, conditions,
+						Enumerable.Empty<IArcCondition<TOffset>>(), Enumerable.Empty<IArcCondition<TOffset>>());
 				}
 			}
 			_registerCount = _nextTag + registerIndices.Count;
 		}
 
-		private void CreateTransitions(Dictionary<SubsetState, SubsetState> subsetStates, Queue<SubsetState> unmarkedSubsetStates,
-			Dictionary<int, int> registerIndices, SubsetState curSubsetState, IEnumerable<ITransitionCondition<TOffset, TData>> remaining,
-			IEnumerable<ITransitionCondition<TOffset, TData>> subset1, IEnumerable<ITransitionCondition<TOffset, TData>> subset2)
+		private void ComputeArcs(Dictionary<SubsetState, SubsetState> subsetStates, Queue<SubsetState> unmarkedSubsetStates,
+			Dictionary<int, int> registerIndices, SubsetState curSubsetState, IEnumerable<IArcCondition<TOffset>> remaining,
+			IEnumerable<IArcCondition<TOffset>> subset1, IEnumerable<IArcCondition<TOffset>> subset2)
 		{
 			if (!remaining.Any())
 			{
-				ITransitionCondition<TOffset, TData> condition = subset1.Aggregate((ITransitionCondition<TOffset, TData>)null,
+				IArcCondition<TOffset> condition = subset1.Aggregate((IArcCondition<TOffset>) null,
 					(newCondition, curCondition) => newCondition == null ? curCondition : newCondition.Conjunction(curCondition));
 				condition = subset2.Aggregate(condition,
 					(newCondition, curCondition) => newCondition == null ? curCondition.Negation() : newCondition.Conjunction(curCondition.Negation()));
@@ -499,7 +484,7 @@ namespace SIL.APRE.Fsa
 				{
 					var cmdTags = new Dictionary<int, int>();
 					SubsetState u = EpsilonClosure((from state in curSubsetState
-					                                from tran in state.NfaState.Transitions
+					                                from tran in state.NfaState.Arcs
 					                                where tran.Condition != null && subset1.Contains(tran.Condition)
 					                                select new StateElement(tran.Target, state.Tags)).Distinct(), curSubsetState);
 					// this makes the FSA not complete
@@ -553,16 +538,16 @@ namespace SIL.APRE.Fsa
 							}
 						}
 
-						curSubsetState.DfaState.AddTransition(new Transition<TOffset, TData>(condition, u.DfaState, cmds));
+						curSubsetState.DfaState.AddArc(new Arc<TOffset>(condition, u.DfaState, cmds));
 					}
 				}
 			}
 			else
 			{
-				ITransitionCondition<TOffset, TData> condition = remaining.First();
-				CreateTransitions(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, remaining.Skip(1),
+				IArcCondition<TOffset> condition = remaining.First();
+				ComputeArcs(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, remaining.Skip(1),
 					subset1.Concat(condition), subset2);
-				CreateTransitions(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, remaining.Skip(1),
+				ComputeArcs(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, remaining.Skip(1),
 					subset1, subset2.Concat(condition));
 			}
 		}
@@ -614,40 +599,40 @@ namespace SIL.APRE.Fsa
 			{
 				StateElement top = stack.Pop();
 
-				foreach (Transition<TOffset, TData> transition in top.NfaState.Transitions)
+				foreach (Arc<TOffset> arc in top.NfaState.Arcs)
 				{
-					if (transition.Condition == null)
+					if (arc.Condition == null)
 					{
-						int newPriority = Math.Max(transition.Priority, top.Priority);
+						int newPriority = Math.Max(arc.Priority, top.Priority);
 						StateElement tempSe;
-						if (closure.TryGetValue(transition.Target.Index, out tempSe))
+						if (closure.TryGetValue(arc.Target.Index, out tempSe))
 						{
 							if (tempSe.Priority < newPriority)
 								continue;
 						}
 
-						var newSe = new StateElement(transition.Target, newPriority, top.Tags);
+						var newSe = new StateElement(arc.Target, newPriority, top.Tags);
 
-						//if (transition.Tag != -1)
+						//if (Arc.Tag != -1)
 						//{
 						//    int maxIndex = -1;
 						//    foreach (StateElement se in prev)
 						//    {
 						//        int index;
-						//        if (se.Tags.TryGetValue(transition.Tag, out index))
+						//        if (se.Tags.TryGetValue(Arc.Tag, out index))
 						//            maxIndex = Math.Max(maxIndex, index);
 						//    }
 
-						//    newSe.Tags[transition.Tag] = maxIndex + 1;
+						//    newSe.Tags[Arc.Tag] = maxIndex + 1;
 						//}
 
-						if (transition.Tag != -1)
+						if (arc.Tag != -1)
 						{
 							var indices = new List<int>();
 							foreach (StateElement se in prev)
 							{
 								int index;
-								if (se.Tags.TryGetValue(transition.Tag, out index))
+								if (se.Tags.TryGetValue(arc.Tag, out index))
 									indices.Add(index);
 							}
 
@@ -665,10 +650,10 @@ namespace SIL.APRE.Fsa
 								}
 							}
 
-							newSe.Tags[transition.Tag] = minIndex;
+							newSe.Tags[arc.Tag] = minIndex;
 						}
 
-						closure[transition.Target.Index] = newSe;
+						closure[arc.Target.Index] = newSe;
 						stack.Push(newSe);
 					}
 				}
@@ -707,17 +692,17 @@ namespace SIL.APRE.Fsa
 		//    {
 		//        StateElement top = stack.Pop();
 
-		//        foreach (Transition transition in top.NFAState.Transitions)
+		//        foreach (Arc Arc in top.NFAState.Arcs)
 		//        {
-		//            if (transition.Node == null)
+		//            if (Arc.Node == null)
 		//            {
-		//                if (transition.Tag != -1)
+		//                if (Arc.Tag != -1)
 		//                {
 		//                    int minIndex = -1;
 		//                    foreach (StateElement se in s)
 		//                    {
 		//                        int index;
-		//                        if (se.Tags.TryGetValue(transition.Tag, out index))
+		//                        if (se.Tags.TryGetValue(Arc.Tag, out index))
 		//                        {
 		//                            if (minIndex == -1 || index < minIndex)
 		//                                minIndex = index;
@@ -728,19 +713,19 @@ namespace SIL.APRE.Fsa
 		//                        minIndex = 0;
 		//                    else
 		//                        minIndex--;
-		//                    top.Tags[transition.Tag] = minIndex;
+		//                    top.Tags[Arc.Tag] = minIndex;
 		//                }
 
 		//                foreach (StateElement se in closure)
 		//                {
-		//                    if (se.NFAState.Index == transition.Target.Index && top.Priority < se.Priority)
+		//                    if (se.NFAState.Index == Arc.Target.Index && top.Priority < se.Priority)
 		//                    {
 		//                        closure.Remove(se);
 		//                        break;
 		//                    }
 		//                }
 
-		//                StateElement newSe = new StateElement(transition.Target, top.Priority, top.Tags);
+		//                StateElement newSe = new StateElement(Arc.Target, top.Priority, top.Tags);
 		//                if (!closure.Contains(newSe))
 		//                {
 		//                    closure.Add(newSe);
@@ -757,12 +742,12 @@ namespace SIL.APRE.Fsa
 		{
 			writer.WriteLine("digraph G {");
 
-			var stack = new Stack<State<TOffset, TData>>();
-			var processed = new HashSet<State<TOffset, TData>>();
+			var stack = new Stack<State<TOffset>>();
+			var processed = new HashSet<State<TOffset>>();
 			stack.Push(_startState);
 			while (stack.Count != 0)
 			{
-				State<TOffset, TData> state = stack.Pop();
+				State<TOffset> state = stack.Pop();
 				processed.Add(state);
 
 				writer.Write("  {0} [shape=\"{1}\", color=\"{2}\"", state.Index, state == _startState ? "diamond" : "circle",
@@ -771,7 +756,7 @@ namespace SIL.APRE.Fsa
 					writer.Write(", peripheries=\"2\"");
 				writer.WriteLine("];");
 
-				foreach (Transition<TOffset, TData> transition in state.Transitions)
+				foreach (Arc<TOffset> transition in state.Arcs)
 				{
 					writer.WriteLine("  {0} -> {1} [label=\"{2}\"];", state.Index, transition.Target.Index,
 						transition);
@@ -783,44 +768,46 @@ namespace SIL.APRE.Fsa
 			writer.WriteLine("}");
 		}
 
-		public FiniteStateAutomaton<TOffset, TData> Intersect(FiniteStateAutomaton<TOffset, TData> fsa)
+		public FiniteStateAutomaton<TOffset> Intersect(FiniteStateAutomaton<TOffset> fsa)
 		{
-			var newFsa = new FiniteStateAutomaton<TOffset, TData>(_dir, _synthesisTypes, _analysisTypes);
+			var newFsa = new FiniteStateAutomaton<TOffset>(_dir, _synthesisTypes, _analysisTypes);
 
-			var queue = new Queue<Tuple<State<TOffset, TData>, State<TOffset, TData>>>();
-			var newStates = new Dictionary<Tuple<State<TOffset, TData>, State<TOffset, TData>>, State<TOffset, TData>>();
-			Tuple<State<TOffset, TData>, State<TOffset, TData>> pair = Tuple.Create(StartState, fsa.StartState);
+			var queue = new Queue<Tuple<State<TOffset>, State<TOffset>>>();
+			var newStates = new Dictionary<Tuple<State<TOffset>, State<TOffset>>, State<TOffset>>();
+			Tuple<State<TOffset>, State<TOffset>> pair = Tuple.Create(StartState, fsa.StartState);
 			queue.Enqueue(pair);
 			newStates[pair] = newFsa.StartState;
 			while (queue.Count > 0)
 			{
-				Tuple<State<TOffset, TData>, State<TOffset, TData>> p = queue.Dequeue();
-				State<TOffset, TData> s = newStates[p];
+				Tuple<State<TOffset>, State<TOffset>> p = queue.Dequeue();
+				State<TOffset> s = newStates[p];
 
-				var newTrans = (from t1 in p.Item1.Transitions
-							    where t1.Condition == null
-							    select new { q = Tuple.Create(t1.Target, p.Item2), cond = (ITransitionCondition<TOffset, TData>) null }
-							   ).Union(
-							   (from t2 in p.Item2.Transitions
-							    where t2.Condition == null
-							    select new { q = Tuple.Create(p.Item1, t2.Target), cond = (ITransitionCondition<TOffset, TData>) null }
-							   ).Union(
-							    from t1 in p.Item1.Transitions
-							    from t2 in p.Item2.Transitions
-							    where t1.Condition != null && t2.Condition != null
-						 	    select new { q = Tuple.Create(t1.Target, t2.Target), cond = t1.Condition.Conjunction(t2.Condition) }
-							   ));
+				var newArcs = (from t1 in p.Item1.Arcs
+							   where t1.Condition == null
+							   select new { q = Tuple.Create(t1.Target, p.Item2), cond = (IArcCondition<TOffset>) null }
+							  ).Union(
+							  (from t2 in p.Item2.Arcs
+							   where t2.Condition == null
+							   select new { q = Tuple.Create(p.Item1, t2.Target), cond = (IArcCondition<TOffset>) null }
+							  ).Union(
+							   from t1 in p.Item1.Arcs
+							   where t1.Condition != null
+							   from t2 in p.Item2.Arcs
+							   let newCond = t2.Condition != null ? t1.Condition.Conjunction(t2.Condition) : null
+							   where newCond != null && newCond.IsSatisfiable
+						 	   select new { q = Tuple.Create(t1.Target, t2.Target), cond = newCond }
+							  ));
 
-				foreach (var newTran in newTrans)
+				foreach (var newArc in newArcs)
 				{
-					State<TOffset, TData> r;
-					if (!newStates.TryGetValue(newTran.q, out r))
+					State<TOffset> r;
+					if (!newStates.TryGetValue(newArc.q, out r))
 					{
-						r = newFsa.CreateState(newTran.q.Item1.IsAccepting && newTran.q.Item2.IsAccepting);
-						queue.Enqueue(newTran.q);
-						newStates[newTran.q] = r;
+						r = newFsa.CreateState(newArc.q.Item1.IsAccepting && newArc.q.Item2.IsAccepting);
+						queue.Enqueue(newArc.q);
+						newStates[newArc.q] = r;
 					}
-					s.AddTransition(new Transition<TOffset, TData>(newTran.cond, r));
+					s.AddArc(new Arc<TOffset>(newArc.cond, r));
 				}
 			}
 			return newFsa;

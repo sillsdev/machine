@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using SIL.APRE.Fsa;
@@ -83,21 +84,21 @@ namespace SIL.APRE
 			return _nodes.Any(node => node.IsFeatureReferenced(feature));
 		}
 
-		internal override State<TOffset, FeatureStructure> GenerateNfa(FiniteStateAutomaton<TOffset, FeatureStructure> fsa,
-			State<TOffset, FeatureStructure> startState)
+		internal override State<TOffset> GenerateNfa(FiniteStateAutomaton<TOffset> fsa,
+			State<TOffset> startState, int varValueIndex, IEnumerable<Tuple<string, IEnumerable<Feature>, FeatureSymbol>> varValues)
 		{
 			if (_nodes.Count == 0)
-				return base.GenerateNfa(fsa, startState);
+				return base.GenerateNfa(fsa, startState, varValueIndex, varValues);
 
-			State<TOffset, FeatureStructure> endState = fsa.CreateState();
+			State<TOffset> endState = fsa.CreateState();
 			foreach (PatternNode<TOffset> node in _nodes)
 			{
-				State<TOffset, FeatureStructure> nodeStartState = fsa.CreateState();
-				startState.AddTransition(new Transition<TOffset, FeatureStructure>(nodeStartState));
-				State<TOffset, FeatureStructure> nodeEndState = node.GenerateNfa(fsa, nodeStartState);
-				nodeEndState.AddTransition(new Transition<TOffset, FeatureStructure>(endState));
+				State<TOffset> nodeStartState = fsa.CreateState();
+				startState.AddArc(new Arc<TOffset>(nodeStartState));
+				State<TOffset> nodeEndState = node.GenerateNfa(fsa, nodeStartState, varValueIndex, varValues);
+				nodeEndState.AddArc(new Arc<TOffset>(endState));
 			}
-			return base.GenerateNfa(fsa, endState);
+			return base.GenerateNfa(fsa, endState, varValueIndex, varValues);
 		}
 
 		public override PatternNode<TOffset> Clone()

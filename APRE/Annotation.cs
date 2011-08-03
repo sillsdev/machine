@@ -15,11 +15,16 @@ namespace SIL.APRE
 			IsClean = true;
 		}
 
+		public Annotation(string type, Span<TOffset> span)
+			: this(type, span, null)
+		{
+		}
+
 		public Annotation(Annotation<TOffset> ann)
 		{
 			_type = ann._type;
 			_span = ann._span;
-			FeatureStructure = (FeatureStructure) ann.FeatureStructure.Clone();
+			FeatureStructure = ann.FeatureStructure == null ? null : (FeatureStructure) ann.FeatureStructure.Clone();
 			IsClean = ann.IsClean;
 			IsOptional = ann.IsOptional;
 		}

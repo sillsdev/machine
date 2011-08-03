@@ -70,7 +70,12 @@ namespace SIL.APRE
 
 		public override bool IsAmbiguous
 		{
-			get { throw new NotImplementedException(); }
+			get { return _values.Values.Any(value => value.IsAmbiguous); }
+		}
+
+		public override bool IsSatisfiable
+		{
+			get { return _values.Values.All(value => value.IsSatisfiable); }
 		}
 
 		/// <summary>
@@ -153,27 +158,19 @@ namespace SIL.APRE
 				return GetValue(feature);
 			return null;
 		}
-		
-		public bool Unify(FeatureStructure other, out FeatureStructure output, bool useDefaults)
-		{
-			output = (FeatureStructure) other.Clone();
-			if (output.UnifyWith(this, useDefaults))
-				return true;
-			output = null;
-			return false;
-		}
 
 		/// <summary>
 		/// Determines whether the specified feature values set matches this set of feature
 		/// values. For each feature in this set, there must be a value which belongs to
 		/// the list of values in the specified set.
 		/// </summary>
-		/// <param name="fs">The feature values.</param>
+		/// <param name="other">The feature value.</param>
 		/// <returns>
 		/// 	<c>true</c> if the sets match, otherwise <c>false</c>.
 		/// </returns>
-		public bool Matches(FeatureStructure fs)
+		public override bool Matches(FeatureValue other)
 		{
+			var fs = (FeatureStructure) other;
 			foreach (KeyValuePair<Feature, FeatureValue> kvp in _values)
 			{
 				FeatureValue value = fs.GetValue(kvp.Key);
@@ -192,12 +189,13 @@ namespace SIL.APRE
 		/// specified set does not contain a feature in this set, it is still a match.
 		/// It basically checks to make sure that there is no contradictory features.
 		/// </summary>
-		/// <param name="fs">The feature values.</param>
+		/// <param name="other">The feature value.</param>
 		/// <returns>
 		/// 	<c>true</c> the sets are compatible, otherwise <c>false</c>.
 		/// </returns>
-		public bool IsUnifiable(FeatureStructure fs)
+		public override bool IsUnifiable(FeatureValue other)
 		{
+			var fs = (FeatureStructure) other;
 			foreach (KeyValuePair<Feature, FeatureValue> kvp in _values)
 			{
 				FeatureValue value = fs.GetValue(kvp.Key);
@@ -210,8 +208,9 @@ namespace SIL.APRE
 			return true;
 		}
 
-		public bool UnifyWith(FeatureStructure fs, bool useDefaults)
+		public override bool UnifyWith(FeatureValue other, bool useDefaults)
 		{
+			var fs = (FeatureStructure) other;
 			var unification = new Dictionary<Feature, FeatureValue>(_values);
 			foreach (Feature feature in fs.Features)
 			{
@@ -242,74 +241,78 @@ namespace SIL.APRE
 			return true;
 		}
 
-		public void Instantiate(FeatureStructure other)
+		public override void IntersectWith(FeatureValue other)
 		{
-			throw new NotImplementedException();
+			var fs = (FeatureStructure) other;
+			foreach (Feature feature in fs.Features)
+			{
+				FeatureValue value = fs.GetValue(feature);
+				FeatureValue curValue;
+				if (_values.TryGetValue(feature, out curValue))
+					curValue.IntersectWith(value);
+			}
+
+			foreach (Feature feature in _values.Keys.Except(fs.Features).ToArray())
+				_values.Remove(feature);
 		}
 
-		public void Uninstantiate(FeatureStructure other)
+		public override void UnionWith(FeatureValue other)
 		{
-			throw new NotImplementedException();
+			var fs = (FeatureStructure)other;
+			foreach (Feature feature in fs.Features)
+			{
+				FeatureValue value = fs.GetValue(feature);
+				FeatureValue curValue;
+				if (_values.TryGetValue(feature, out curValue))
+					curValue.UnionWith(value);
+				else
+					_values[feature] = value.Clone();
+			}
 		}
 
 		public override void UninstantiateAll()
 		{
-			throw new NotImplementedException();
+			foreach (FeatureValue value in _values.Values)
+				value.UninstantiateAll();
 		}
 
-		public override bool Unify(FeatureValue other, out FeatureValue output, bool useDefaults)
+		public override void Negate()
 		{
-			var fs = other as FeatureStructure;
-			if (fs != null)
-			{
-				FeatureStructure outputFs;
-				if (Unify(other as FeatureStructure, out outputFs, useDefaults))
-				{
-					output = outputFs;
-					return true;
-				}
-			}
+			foreach (FeatureValue value in _values.Values)
+				value.Negate();
+		}
 
+		public bool Unify(FeatureStructure other, out FeatureStructure output, bool useDefaults)
+		{
+			var fs = (FeatureStructure) other.Clone();
+			if (fs.UnifyWith(this, useDefaults))
+			{
+				output = fs;
+				return true;
+			}
 			output = null;
 			return false;
 		}
 
-		public override bool Matches(FeatureValue other)
+		public FeatureStructure Negation()
 		{
-			var fs = other as FeatureStructure;
-			if (fs == null)
-				return false;
-			return Matches(fs);
+			var fs = (FeatureStructure) Clone();
+			fs.Negate();
+			return fs;
 		}
 
-		public override bool IsUnifiable(FeatureValue other)
+		public FeatureStructure Intersect(FeatureStructure other)
 		{
-			var fs = other as FeatureStructure;
-			if (fs == null)
-				return false;
-			return IsUnifiable(fs);
+			var fs = (FeatureStructure) other.Clone();
+			fs.IntersectWith(this);
+			return fs;
 		}
 
-		public override bool UnifyWith(FeatureValue other, bool useDefaults)
+		public FeatureStructure Union(FeatureStructure other)
 		{
-			var fs = other as FeatureStructure;
-			if (fs == null)
-				return false;
-			return UnifyWith(fs, useDefaults);
-		}
-
-		public override void Instantiate(FeatureValue other)
-		{
-			var fs = other as FeatureStructure;
-			if (fs != null)
-				Instantiate(fs);
-		}
-
-		public override void Uninstantiate(FeatureValue other)
-		{
-			var fs = other as FeatureStructure;
-			if (fs != null)
-				Uninstantiate(fs);
+			var fs = (FeatureStructure) other.Clone();
+			fs.UnionWith(this);
+			return fs;
 		}
 
 		/// <summary>
@@ -380,6 +383,7 @@ namespace SIL.APRE
 		{
 			bool firstFeature = true;
 			var sb = new StringBuilder();
+			sb.Append("[");
 			foreach (KeyValuePair<Feature, FeatureValue> kvp in _values)
 			{
 				if (!firstFeature)
@@ -387,13 +391,12 @@ namespace SIL.APRE
 				sb.Append(kvp.Key.Description);
 				if (kvp.Value != null)
 				{
-					sb.Append("->(");
+					sb.Append("->");
 					sb.Append(kvp.Value.ToString());
-					sb.Append(")");
 				}
 				firstFeature = false;
 			}
-
+			sb.Append("]");
 			return sb.ToString();
 		}
 	}

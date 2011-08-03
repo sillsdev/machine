@@ -24,6 +24,6 @@
 		/// Gets or sets the feature.
 		/// </summary>
 		/// <value>The feature.</value>
-		public Feature Feature { get; internal set; }
+		public SymbolicFeature Feature { get; internal set; }
 	}
 }
