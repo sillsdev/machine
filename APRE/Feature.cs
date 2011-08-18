@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace SIL.APRE
+﻿namespace SIL.APRE
 {
 	/// <summary>
 	/// This class represents a feature.
@@ -16,8 +14,6 @@ namespace SIL.APRE
 			: this(id, id)
 		{
 		}
-
-		public Feature ParentFeature { get; internal set; }
 
 		public abstract FeatureValueType ValueType { get; }
 

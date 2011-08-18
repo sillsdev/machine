@@ -21,8 +21,9 @@ namespace SIL.APRE.Test
 						annType = "Bdry";
 						break;
 				}
-				annList.Add(new Annotation<int>(annType, spanFactory.Create(i, i + 1),
-					featSys.CreateFeatureStructure(new FeatValPair("str", str[i].ToString()))));
+				annList.Add(new Annotation<int>(spanFactory.Create(i, i + 1), FeatureStructure.Build(featSys)
+					.String("str", str[i].ToString())
+					.String("type", annType)));
 			}
 			return annList;
 		}
@@ -30,43 +31,35 @@ namespace SIL.APRE.Test
 		[Test]
 		public void PatternMatch()
 		{
-			var spanFactory = new SpanFactory<int>((x, y) => x.CompareTo(y), (start, end) => end - start);
-			var featSys = new FeatureSystem();
+			var spanFactory = new IntegerSpanFactory();
+			FeatureSystem featSys = FeatureSystem.Build()
+				.StringFeature("str")
+				.StringFeature("type");
 
-			var pattern = new Pattern<int>(spanFactory, new[] { "Noun", "Verb", "NP", "VP", "Det", "Adj", "Adv" },
-				new Alternation<int>(
-					new Constraints<int>("Det"),
-					new Group<int>(
-						new Group<int>("adj", new Constraints<int>("Adj")),
-						new Group<int>("noun", new Constraints<int>("Noun")),
-						new Group<int>("verb", new Constraints<int>("Verb")),
-						new Group<int>("range", new Quantifier<int>(0, 1,
-							new Group<int>("adv", new Constraints<int>("Adv")))))));
-
-			pattern.Compile();
-
-			//FiniteStateAutomaton<int, FeatureStructure> fsa = pattern.GetFsa(Direction.LeftToRight);
-			//var writer = new StreamWriter("c:\\ltor-dfa.dot");
-			//fsa.ToGraphViz(writer);
-			//writer.Close();
-
-			//fsa = pattern.GetFsa(Direction.RightToLeft);
-			//writer = new StreamWriter("c:\\rtol-fsa.dot");
-			//fsa.ToGraphViz(writer);
-			//writer.Close();
+			FeatureStructure types = featSys.BuildFS().String("type", "Noun", "Verb", "NP", "VP", "Det", "Adj", "Adv");
+			Pattern<int> ltorPattern = Pattern<int>.Build(spanFactory).Filter(ann => ann.FeatureStructure.IsUnifiable(types, false, true))
+				.Expression(expr => expr
+					.Or(or => or
+						.Annotation(featSys, fs => fs.String("type", "Det"))
+						.Group(g => g
+							.Group("adj", adj => adj.Annotation(featSys, fs => fs.String("type", "Adj")))
+							.Group("noun", noun => noun.Annotation(featSys, fs => fs.String("type", "Noun")))
+							.Group("verb", verb => verb.Annotation(featSys, fs => fs.String("type", "Verb")))
+							.Group("range", range => range
+								.Group("adv", adv => adv.Annotation(featSys, fs => fs.String("type", "Adv"))).Optional()))));
 
 			AnnotationList<int> annList = CreateShapeAnnotations("the old, angry man slept well", spanFactory, featSys);
-			annList.Add(new Annotation<int>("Det", spanFactory.Create(0, 2)) { IsOptional = true });
-			annList.Add(new Annotation<int>("Adj", spanFactory.Create(4, 6)));
-			annList.Add(new Annotation<int>("Adj", spanFactory.Create(9, 13)) { IsOptional = true });
-			annList.Add(new Annotation<int>("Noun", spanFactory.Create(15, 17)));
-			annList.Add(new Annotation<int>("Verb", spanFactory.Create(19, 23)));
-			annList.Add(new Annotation<int>("Adv", spanFactory.Create(25, 28)));
-			annList.Add(new Annotation<int>("NP", spanFactory.Create(0, 17)));
-			annList.Add(new Annotation<int>("VP", spanFactory.Create(19, 28)));
+			annList.Add(new Annotation<int>(spanFactory.Create(0, 2), featSys.BuildFS().String("type", "Det")) { IsOptional = true });
+			annList.Add(new Annotation<int>(spanFactory.Create(4, 6), featSys.BuildFS().String("type", "Adj")));
+			annList.Add(new Annotation<int>(spanFactory.Create(9, 13), featSys.BuildFS().String("type", "Adj")) { IsOptional = true });
+			annList.Add(new Annotation<int>(spanFactory.Create(15, 17), featSys.BuildFS().String("type", "Noun")));
+			annList.Add(new Annotation<int>(spanFactory.Create(19, 23), featSys.BuildFS().String("type", "Verb")));
+			annList.Add(new Annotation<int>(spanFactory.Create(25, 28), featSys.BuildFS().String("type", "Adv")));
+			annList.Add(new Annotation<int>(spanFactory.Create(0, 17), featSys.BuildFS().String("type", "NP")));
+			annList.Add(new Annotation<int>(spanFactory.Create(19, 28), featSys.BuildFS().String("type", "VP")));
 
 			IEnumerable<PatternMatch<int>> matches;
-			Assert.True(pattern.IsMatch(annList, Direction.LeftToRight, ModeType.Synthesis, out matches));
+			Assert.True(ltorPattern.IsMatch(annList, out matches));
 			Assert.AreEqual(7, matches.Count());
 			Assert.AreEqual(0, matches.First().Start);
 			Assert.AreEqual(28, matches.First().End);
@@ -75,7 +68,8 @@ namespace SIL.APRE.Test
 			Assert.AreEqual(9, matches.Last().Start);
 			Assert.AreEqual(23, matches.Last().End);
 
-			Assert.True(pattern.IsMatch(annList, Direction.RightToLeft, ModeType.Synthesis, out matches));
+			Pattern<int> rtolPattern = ltorPattern.Reverse();
+			Assert.True(rtolPattern.IsMatch(annList, out matches));
 			Assert.AreEqual(7, matches.Count());
 			Assert.AreEqual(0, matches.First().Start);
 			Assert.AreEqual(28, matches.First().End);
@@ -91,87 +85,136 @@ namespace SIL.APRE.Test
 			for (int i = 0; i < str.Length; i++)
 			{
 				FeatureStructure fs = null;
-				string annType = "Seg";
 				switch (str[i])
 				{
 					case 'f':
-						fs = featSys.CreateFeatureStructure("cons+", "voice-", "sib-", "cor-", "lab+", "low-", new FeatValPair("str", "f"));
+						fs = FeatureStructure.Build(featSys)
+							.Symbol("cons+")
+							.Symbol("voice-")
+							.Symbol("sib-")
+							.Symbol("cor-")
+							.Symbol("lab+")
+							.Symbol("low-")
+							.String("str", "f")
+							.String("type", "Seg");
 						break;
 					case 'k':
-						fs = featSys.CreateFeatureStructure("cons+", "voice-", "sib-", "cor-", "lab-", "low-", new FeatValPair("str", "k"));
+						fs = FeatureStructure.Build(featSys)
+							.Symbol("cons+")
+							.Symbol("voice-")
+							.Symbol("sib-")
+							.Symbol("cor-")
+							.Symbol("lab-")
+							.Symbol("low-")
+							.String("str", "k")
+							.String("type", "Seg");
 						break;
 					case 'z':
-						fs = featSys.CreateFeatureStructure("cons+", "voice+", "sib+", "cor+", "lab-", "low-", new FeatValPair("str", "z"));
+						fs = FeatureStructure.Build(featSys)
+							.Symbol("cons+")
+							.Symbol("voice+")
+							.Symbol("sib+")
+							.Symbol("cor+")
+							.Symbol("lab-")
+							.Symbol("low-")
+							.String("str", "z")
+							.String("type", "Seg");
 						break;
 					case 's':
-						fs = featSys.CreateFeatureStructure("cons+", "voice-", "sib+", "cor+", "lab-", "low-", new FeatValPair("str", "s"));
+						fs = FeatureStructure.Build(featSys)
+							.Symbol("cons+")
+							.Symbol("voice-")
+							.Symbol("sib+")
+							.Symbol("cor+")
+							.Symbol("lab-")
+							.Symbol("low-")
+							.String("str", "s")
+							.String("type", "Seg");
 						break;
 					case 'a':
-						fs = featSys.CreateFeatureStructure("cons-", "voice+", "sib-", "cor-", "lab-", "low+", new FeatValPair("str", "a"));
+						fs = FeatureStructure.Build(featSys)
+							.Symbol("cons-")
+							.Symbol("voice+")
+							.Symbol("sib-")
+							.Symbol("cor-")
+							.Symbol("lab-")
+							.Symbol("low+")
+							.String("str", "a")
+							.String("type", "Seg");
 						break;
 					case 'ɨ':
-						fs = featSys.CreateFeatureStructure("cons-", "voice+", "sib-", "cor-", "lab-", "low-", new FeatValPair("str", "ɨ"));
+						fs = FeatureStructure.Build(featSys)
+							.Symbol("cons-")
+							.Symbol("voice+")
+							.Symbol("sib-")
+							.Symbol("cor-")
+							.Symbol("lab-")
+							.Symbol("low-")
+							.String("str", "ɨ")
+							.String("type", "Seg");
 						break;
 					case '+':
-						annType = "Bdry";
-						fs = featSys.CreateFeatureStructure(new FeatValPair("str", "+"));
+						fs = FeatureStructure.Build(featSys)
+							.String("str", "+")
+							.String("type", "Bdry");
 						break;
 				}
-				annList.Add(new Annotation<int>(annType, spanFactory.Create(i, i + 1), fs));
+				annList.Add(new Annotation<int>(spanFactory.Create(i, i + 1), fs));
 			}
 			return annList;
 		}
 
 		private static FeatureSystem CreateFeatureSystem()
 		{
-			var featSys = new FeatureSystem();
-			var symf = new SymbolicFeature("cons");
-			symf.AddPossibleSymbol(new FeatureSymbol("cons+", "+"));
-			symf.AddPossibleSymbol(new FeatureSymbol("cons-", "-"));
-			featSys.AddFeature(symf);
-			symf = new SymbolicFeature("voice");
-			symf.AddPossibleSymbol(new FeatureSymbol("voice+", "+"));
-			symf.AddPossibleSymbol(new FeatureSymbol("voice-", "-"));
-			featSys.AddFeature(symf);
-			symf = new SymbolicFeature("sib");
-			symf.AddPossibleSymbol(new FeatureSymbol("sib+", "+"));
-			symf.AddPossibleSymbol(new FeatureSymbol("sib-", "-"));
-			featSys.AddFeature(symf);
-			symf = new SymbolicFeature("cor");
-			symf.AddPossibleSymbol(new FeatureSymbol("cor+", "+"));
-			symf.AddPossibleSymbol(new FeatureSymbol("cor-", "-"));
-			featSys.AddFeature(symf);
-			symf = new SymbolicFeature("lab");
-			symf.AddPossibleSymbol(new FeatureSymbol("lab+", "+"));
-			symf.AddPossibleSymbol(new FeatureSymbol("lab-", "-"));
-			featSys.AddFeature(symf);
-			symf = new SymbolicFeature("low");
-			symf.AddPossibleSymbol(new FeatureSymbol("low+", "+"));
-			symf.AddPossibleSymbol(new FeatureSymbol("low-", "-"));
-			featSys.AddFeature(symf);
-			featSys.AddFeature(new StringFeature("str"));
-
-			return featSys;
+			return FeatureSystem.Build()
+				.SymbolicFeature("cons", cons => cons
+					.Symbol("cons+", "+")
+					.Symbol("cons-", "-"))
+				.SymbolicFeature("voice", voice => voice
+					.Symbol("voice+", "+")
+					.Symbol("voice-", "-"))
+				.SymbolicFeature("sib", sib => sib
+					.Symbol("sib+", "+")
+					.Symbol("sib-", "-"))
+				.SymbolicFeature("cor", cor => cor
+					.Symbol("cor+", "+")
+					.Symbol("cor-", "-"))
+				.SymbolicFeature("lab", lab => lab
+					.Symbol("lab+", "+")
+					.Symbol("lab-", "-"))
+				.SymbolicFeature("low", low => low
+					.Symbol("low+", "+")
+					.Symbol("low-", "-"))
+				.StringFeature("str")
+				.StringFeature("type");
 		}
 
 		[Test]
 		public void Variables()
 		{
-			var spanFactory = new SpanFactory<int>((x, y) => x.CompareTo(y), (start, end) => end - start);
+			var spanFactory = new IntegerSpanFactory();
 			FeatureSystem featSys = CreateFeatureSystem();
-			Feature voice = featSys.GetFeature("voice");
 
-			var pattern = new Pattern<int>(spanFactory, null, null, false, false, new Dictionary<string, IEnumerable<Feature>> { { "a", new[] { voice } } },
-				new Group<int>("leftEnv",
-					new Constraints<int>("Seg", featSys.CreateFeatureStructure("cons+"), new Dictionary<string, bool> { { "a", true } }),
-				new Group<int>("lhs",
-					new Constraints<int>("Seg", featSys.CreateFeatureStructure(new FeatValPair("str", "a")))),
-				new Group<int>("rightEnv",
-					new Constraints<int>("Seg", featSys.CreateFeatureStructure("cons+"), new Dictionary<string, bool> { { "a", false } }))));
+			Pattern<int> pattern = Pattern<int>.Build(spanFactory).Expression(expr => expr
+				.Group("leftEnv", leftEnv => leftEnv
+					.Annotation(featSys, fs => fs
+						.String("type", "Seg")
+						.Symbol("cons+")
+						.Variable("voice", "a")))
+				.Group("lhs", lhs => lhs
+					.Annotation(featSys, fs => fs
+						.String("type", "Seg")
+						.String("str", "a")))
+				.Group("rightEnv", rightEnv => rightEnv
+					.Annotation(featSys, fs => fs
+						.String("type", "Seg")
+						.Symbol("cons+")
+						.Not().Variable("voice", "a"))));
+
 			pattern.Compile();
 
 			AnnotationList<int> word = CreateFeatShapeAnnotations("fazk", spanFactory, featSys);
-			Assert.IsTrue(pattern.IsMatch(word, Direction.LeftToRight, ModeType.Synthesis));
+			Assert.IsTrue(pattern.IsMatch(word));
 		}
 	}
 }

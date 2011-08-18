@@ -41,15 +41,24 @@
   <ItemGroup>
     <Compile Include="Alternation.cs" />
     <Compile Include="AnnotationList.cs" />
-    <Compile Include="AnnotationArcCondition.cs" />
-    <Compile Include="BidirListExtensions.cs" />
-    <Compile Include="EnumerableExtensions.cs" />
+    <Compile Include="Fsa\ArcCondition.cs" />
+    <Compile Include="ComplexFeatureBuilder.cs" />
+    <Compile Include="DisjunctionBuilder.cs" />
+    <Compile Include="DisjunctiveFeatureStructureBuilder.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="Fsa\FsaMatch.cs" />
+    <Compile Include="PatternExpressionBuilder.cs" />
+    <Compile Include="FeatureStructureBuilder.cs" />
+    <Compile Include="FeatureSystemBuilder.cs" />
+    <Compile Include="IdentityEqualityComparer.cs" />
+    <Compile Include="IntegerSpanFactory.cs" />
+    <Compile Include="PatternBuilder.cs" />
     <Compile Include="Rule.cs" />
     <Compile Include="RuleBatch.cs" />
     <Compile Include="StringFeature.cs" />
+    <Compile Include="StringFeatureBuilder.cs" />
+    <Compile Include="SimpleFeatureValue.cs" />
     <Compile Include="SymbolicFeature.cs" />
-    <Compile Include="Fsa\FsaMatch.cs" />
-    <Compile Include="Fsa\IArcCondition.cs" />
     <Compile Include="NullableValue.cs" />
     <Compile Include="Span.cs" />
     <Compile Include="BidirListNode.cs" />
@@ -71,6 +80,7 @@
     <Compile Include="Fsa\State.cs" />
     <Compile Include="StringFeatureValue.cs" />
     <Compile Include="ComplexFeature.cs" />
+    <Compile Include="SymbolicFeatureBuilder.cs" />
     <Compile Include="SymbolicFeatureValue.cs" />
     <Compile Include="Annotation.cs" />
     <Compile Include="Constraints.cs" />
@@ -85,6 +95,7 @@
     <Compile Include="Fsa\TagMapCommand.cs" />
     <Compile Include="Fsa\Arc.cs" />
     <Compile Include="Tuple.cs" />
+    <Compile Include="VariableFeatureValue.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

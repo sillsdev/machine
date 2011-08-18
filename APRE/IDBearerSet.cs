@@ -13,13 +13,7 @@ namespace SIL.APRE
 
 		public IDBearerSet(IEnumerable<T> items)
 		{
-			AddMany(items);
-		}
-
-		public void AddMany(IEnumerable<T> items)
-		{
-			foreach (T item in items)
-				Add(item);
+			UnionWith(items);
 		}
 
 		public bool TryGetValue(string id, out T value)
@@ -33,33 +27,27 @@ namespace SIL.APRE
 			return Dictionary.TryGetValue(id, out value);
 		}
 
-		public IDBearerSet<T> Intersection(IEnumerable<T> items)
+		public void IntersectWith(IEnumerable<T> items)
 		{
-			var result = new IDBearerSet<T>();
-			foreach (T item in items)
-			{
-				if (Contains(item))
-					result.Add(item);
-			}
-			return result;
+			foreach (T item in this.Where(i => !items.Contains(i)))
+				Remove(item);
 		}
 
-		public IDBearerSet<T> Union(IEnumerable<T> items)
+		public void UnionWith(IEnumerable<T> items)
 		{
-			var result = new IDBearerSet<T>(this);
-			result.AddMany(items);
-			return result;
+			foreach (T item in items)
+				Add(item);
 		}
 
-		public IDBearerSet<T> Difference(IEnumerable<T> items)
+		public void ExceptWith(IEnumerable<T> items)
 		{
-			var result = new IDBearerSet<T>();
-			foreach (T item in items)
-			{
-				if (!Contains(item))
-					result.Add(item);
-			}
-			return result;
+			foreach (T item in this.Where(items.Contains))
+				Remove(item);
+		}
+
+		public bool Overlaps(IEnumerable<T> items)
+		{
+			return items.Any(Contains);
 		}
 
 		protected override string GetKeyForItem(T item)

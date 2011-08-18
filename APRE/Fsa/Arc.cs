@@ -5,7 +5,7 @@ namespace SIL.APRE.Fsa
 	public class Arc<TOffset>
 	{
 		private readonly State<TOffset> _target;
-		private readonly IArcCondition<TOffset> _condition;
+		private readonly ArcCondition<TOffset> _condition;
 		private readonly int _tag = -1;
 		private readonly List<TagMapCommand> _commands;
 		private readonly int _priority = -1;
@@ -22,13 +22,13 @@ namespace SIL.APRE.Fsa
 			_priority = priority;
 		}
 
-		public Arc(IArcCondition<TOffset> condition, State<TOffset> target)
+		public Arc(ArcCondition<TOffset> condition, State<TOffset> target)
 		{
 			_condition = condition;
 			_target = target;
 		}
 
-		internal Arc(IArcCondition<TOffset> condition, State<TOffset> target, IEnumerable<TagMapCommand> cmds)
+		internal Arc(ArcCondition<TOffset> condition, State<TOffset> target, IEnumerable<TagMapCommand> cmds)
 			: this(condition, target)
 		{
 			_commands = new List<TagMapCommand>(cmds);
@@ -42,7 +42,7 @@ namespace SIL.APRE.Fsa
 			}
 		}
 
-		public IArcCondition<TOffset> Condition
+		public ArcCondition<TOffset> Condition
 		{
 			get
 			{

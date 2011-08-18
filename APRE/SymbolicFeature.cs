@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace SIL.APRE
 {
@@ -60,10 +61,19 @@ namespace SIL.APRE
 		/// <returns>The feature value.</returns>
 		public FeatureSymbol GetPossibleSymbol(string id)
 		{
-			FeatureSymbol symbol;
-			if (_possibleSymbols.TryGetValue(id, out symbol))
-				return symbol;
-			return null;
+			try
+			{
+				return _possibleSymbols[id];
+			}
+			catch (KeyNotFoundException ex)
+			{
+				throw new ArgumentException("The specified symbol could not be found.", "id", ex);
+			}
+		}
+
+		public bool TryGetPossibleSymbol(string id, out FeatureSymbol symbol)
+		{
+			return _possibleSymbols.TryGetValue(id, out symbol);
 		}
 	}
 }

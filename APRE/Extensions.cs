@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SIL.APRE
 {
-	public static class BidirListExtensions
+	public static class Extensions
 	{
+		#region IBidirList
+
 		public static TNode GetFirst<TNode>(this IBidirList<TNode> list, Direction dir, Func<TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
 		{
 			TNode node = list.GetFirst(dir);
@@ -130,5 +133,27 @@ namespace SIL.APRE
 			for (var node = (TNode) first; node != last.GetNext(dir); node = node.GetNext(dir))
 				yield return node;
 		}
+
+		#endregion
+
+		#region IEnumerable
+
+		public static IEnumerable<T> Concat<T>(this IEnumerable<T> source, T item)
+		{
+			foreach (T i in source)
+				yield return i;
+			yield return item;
+		}
+
+		#endregion
+
+		#region Generic
+
+		public static bool IsOneOf<T>(this T item, params T[] list)
+		{
+			return list.Contains(item);
+		}
+
+		#endregion
 	}
 }

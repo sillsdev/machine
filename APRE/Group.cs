@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using SIL.APRE.Fsa;
 
@@ -37,7 +36,7 @@ namespace SIL.APRE
         /// </summary>
         /// <param name="group">The nested pattern.</param>
         public Group(Group<TOffset> group)
-			: this(group._groupName, group._nodes)
+			: this(group._groupName, group._nodes.Select(node => node.Clone()))
         {
         }
 
@@ -112,18 +111,17 @@ namespace SIL.APRE
 			return _nodes.Any(node => node.IsFeatureReferenced(feature));
 		}
 
-		internal override State<TOffset> GenerateNfa(FiniteStateAutomaton<TOffset> fsa,
-			State<TOffset> startState, int varValueIndex, IEnumerable<Tuple<string, IEnumerable<Feature>, FeatureSymbol>> varValues)
+		internal override State<TOffset> GenerateNfa(FiniteStateAutomaton<TOffset> fsa, State<TOffset> startState)
 		{
 			if (_nodes.Count == 0)
-				return base.GenerateNfa(fsa, startState, varValueIndex, varValues);
+				return base.GenerateNfa(fsa, startState);
 
 			if (_groupName != null)
-				startState = fsa.CreateGroupTag(startState, varValueIndex == -1 ? _groupName : _groupName + varValueIndex, true);
-			State<TOffset> endState = _nodes.GetFirst(fsa.Direction).GenerateNfa(fsa, startState, varValueIndex, varValues);
+				startState = fsa.CreateGroupTag(startState, _groupName, true);
+			State<TOffset> endState = _nodes.GetFirst(fsa.Direction).GenerateNfa(fsa, startState);
 			if (_groupName != null)
-				endState = fsa.CreateGroupTag(endState, varValueIndex == -1 ? _groupName : _groupName + varValueIndex, false);
-			return base.GenerateNfa(fsa, endState, varValueIndex, varValues);
+				endState = fsa.CreateGroupTag(endState, _groupName, false);
+			return base.GenerateNfa(fsa, endState);
 		}
 
 		public override string ToString()

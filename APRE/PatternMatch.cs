@@ -9,28 +9,24 @@ namespace SIL.APRE
 	public class PatternMatch<TOffset> : Span<TOffset>, IComparable<PatternMatch<TOffset>>
 	{
 		private readonly Dictionary<string, Span<TOffset>> _groups;
-		private readonly FeatureStructure _varValues;
+		private readonly IDictionary<string, FeatureValue> _varBindings;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PatternMatch{TOffset}"/> class.
 		/// </summary>
 		/// <param name="entire"></param>
 		/// <param name="groups">The groups.</param>
-		/// <param name="varValues"></param>
-		public PatternMatch(Span<TOffset> entire, IDictionary<string, Span<TOffset>> groups, FeatureStructure varValues)
+		/// <param name="varBindings"></param>
+		public PatternMatch(Span<TOffset> entire, IDictionary<string, Span<TOffset>> groups, IDictionary<string, FeatureValue> varBindings)
 			: base(entire)
 		{
 			_groups = new Dictionary<string, Span<TOffset>>(groups);
-			_varValues = varValues;
+			_varBindings = varBindings;
 		}
 
-		/// <summary>
-		/// Gets or sets the data associated with this match.
-		/// </summary>
-		/// <value>The data.</value>
-		public FeatureStructure VariableValues
+		public IDictionary<string, FeatureValue> VariableBindings
 		{
-			get { return _varValues; }
+			get { return _varBindings; }
 		}
 
 		public Span<TOffset> this[string groupName]

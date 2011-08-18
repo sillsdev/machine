@@ -24,90 +24,64 @@ namespace SIL.APRE
 
 	public class Pattern<TOffset> : BidirList<PatternNode<TOffset>>, ICloneable
 	{
+		public static PatternBuilder<TOffset> Build(SpanFactory<TOffset> spanFactory)
+		{
+			return new PatternBuilder<TOffset>(spanFactory);
+		}
+
 		protected const string EntireGroupName = "*entire*";
 
 		private readonly SpanFactory<TOffset> _spanFactory;
-		private readonly bool _checkSynthesisClean;
-		private readonly bool _checkAnalysisClean;
-		private readonly HashSet<string> _synthesisTypes;
-		private readonly HashSet<string> _analysisTypes;
-		private FiniteStateAutomaton<TOffset> _rightToLeftFsa;
-		private FiniteStateAutomaton<TOffset> _leftToRightFsa;
+		private readonly Func<Annotation<TOffset>, bool> _filter;
+		private FiniteStateAutomaton<TOffset> _fsa;
+		private readonly Direction _dir;
 
-		private readonly IDictionary<string, IEnumerable<Feature>> _varFeatures;
-		private readonly List<IEnumerable<Tuple<string, IEnumerable<Feature>, FeatureSymbol>>> _varValues; 
-
-        /// <summary>
-		/// Initializes a new instance of the <see cref="Pattern&lt;TOffset&gt;"/> class.
-        /// </summary>
         public Pattern(SpanFactory<TOffset> spanFactory)
-			: this(spanFactory, (IEnumerable<string>) null)
+			: this(spanFactory, Direction.LeftToRight)
         {
         }
 
-		public Pattern(SpanFactory<TOffset> spanFactory, IEnumerable<string> types)
-			: this(spanFactory, types, types)
+		public Pattern(SpanFactory<TOffset> spanFactory, Direction dir)
+			: this(spanFactory, dir, ann => true)
 		{
 		}
 
-		public Pattern(SpanFactory<TOffset> spanFactory, IEnumerable<string> synthesisTypes, IEnumerable<string> analysisTypes)
-			: this(spanFactory, synthesisTypes, analysisTypes, false, false, null)
-		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="Pattern&lt;TOffset&gt;"/> class.
-		/// </summary>
-		/// <param name="spanFactory"></param>
-		/// <param name="synthesisTypes"></param>
-		/// <param name="analysisTypes"></param>
-		/// <param name="checkSynthesisClean"></param>
-		/// <param name="checkAnalysisClean"></param>
-		/// <param name="varFeatures"></param>
-		public Pattern(SpanFactory<TOffset> spanFactory, IEnumerable<string> synthesisTypes, IEnumerable<string> analysisTypes,
-			bool checkSynthesisClean, bool checkAnalysisClean, IDictionary<string, IEnumerable<Feature>> varFeatures)
+		public Pattern(SpanFactory<TOffset> spanFactory, Direction dir, Func<Annotation<TOffset>, bool> filter)
 		{
 			_spanFactory = spanFactory;
-			if (synthesisTypes != null)
-				_synthesisTypes = new HashSet<string>(synthesisTypes);
-			if (analysisTypes != null)
-				_analysisTypes = new HashSet<string>(analysisTypes);
-			_checkSynthesisClean = checkSynthesisClean;
-			_checkAnalysisClean = checkAnalysisClean;
-			_varFeatures = varFeatures;
-			_varValues = new List<IEnumerable<Tuple<string, IEnumerable<Feature>, FeatureSymbol>>>();
+			_dir = dir;
+			_filter = filter;
 		}
 
 		public Pattern(SpanFactory<TOffset> spanFactory, params PatternNode<TOffset>[] nodes)
-			: this(spanFactory, null, nodes)
+			: this(spanFactory, Direction.LeftToRight, nodes)
 		{
 		}
 
-		public Pattern(SpanFactory<TOffset> spanFactory, IEnumerable<string> types, params PatternNode<TOffset>[] nodes)
-			: this(spanFactory, types, types, nodes)
+		public Pattern(SpanFactory<TOffset> spanFactory, IEnumerable<PatternNode<TOffset>> nodes)
+			: this(spanFactory, Direction.LeftToRight, nodes)
 		{
 		}
 
-		public Pattern(SpanFactory<TOffset> spanFactory, IEnumerable<string> synthesisTypes, IEnumerable<string> analysisTypes,
+		public Pattern(SpanFactory<TOffset> spanFactory, Direction dir, params PatternNode<TOffset>[] nodes)
+			: this(spanFactory, dir, ann => true, nodes)
+		{
+		}
+
+		public Pattern(SpanFactory<TOffset> spanFactory, Direction dir, IEnumerable<PatternNode<TOffset>> nodes)
+			: this(spanFactory, dir, ann => true, nodes)
+		{
+		}
+
+		public Pattern(SpanFactory<TOffset> spanFactory, Direction dir, Func<Annotation<TOffset>, bool> filter,
 			params PatternNode<TOffset>[] nodes)
-			: this(spanFactory, synthesisTypes, analysisTypes, false, false, null, nodes)
+			: this(spanFactory, dir, filter, (IEnumerable<PatternNode<TOffset>>) nodes)
 		{
 		}
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="Pattern&lt;TOffset&gt;"/> class.
-		/// </summary>
-		/// <param name="spanFactory"></param>
-		/// <param name="synthesisTypes"></param>
-		/// <param name="analysisTypes"></param>
-		/// <param name="checkSynthesisClean"></param>
-		/// <param name="checkAnalysisClean"></param>
-		/// <param name="varFeatures"></param>
-		/// <param name="nodes"></param>
-		public Pattern(SpanFactory<TOffset> spanFactory, IEnumerable<string> synthesisTypes, IEnumerable<string> analysisTypes,
-			bool checkSynthesisClean, bool checkAnalysisClean, IDictionary<string, IEnumerable<Feature>> varFeatures,
-			params PatternNode<TOffset>[] nodes)
-			: this(spanFactory, synthesisTypes, analysisTypes, checkSynthesisClean, checkAnalysisClean, varFeatures)
+		public Pattern(SpanFactory<TOffset> spanFactory, Direction dir, Func<Annotation<TOffset>, bool> filter,
+			IEnumerable<PatternNode<TOffset>> nodes)
+			: this(spanFactory, dir, filter)
 		{
 			AddMany(nodes);
 		}
@@ -119,28 +93,14 @@ namespace SIL.APRE
         public Pattern(Pattern<TOffset> pattern)
         {
         	_spanFactory = pattern._spanFactory;
-			_checkSynthesisClean = pattern._checkSynthesisClean;
-			_checkAnalysisClean = pattern._checkAnalysisClean;
-			if (_synthesisTypes != null)
-				_synthesisTypes = new HashSet<string>(pattern._synthesisTypes);
-			if (_analysisTypes != null)
-				_analysisTypes = new HashSet<string>(pattern._analysisTypes);
+        	_dir = pattern._dir;
+        	_filter = pattern._filter;
 			AddMany(pattern.Select(node => node.Clone()));
         }
 
 		public SpanFactory<TOffset> SpanFactory
 		{
 			get { return _spanFactory; }
-		}
-
-		public IEnumerable<string> SynthesisTypes
-		{
-			get { return _synthesisTypes; }
-		}
-
-		public IEnumerable<string> AnalysisTypes
-		{
-			get { return _analysisTypes; }
 		}
 
         /// <summary>
@@ -158,6 +118,16 @@ namespace SIL.APRE
             }
         }
 
+		public FiniteStateAutomaton<TOffset> Fsa
+		{
+			get { return _fsa; }
+		}
+
+		public Direction Direction
+		{
+			get { return _dir; }
+		}
+
         /// <summary>
         /// Determines whether the phonetic pattern references the specified feature.
         /// </summary>
@@ -170,37 +140,16 @@ namespace SIL.APRE
         	return this.Any(node => node.IsFeatureReferenced(feature));
         }
 
-		public bool CheckClean(ModeType mode)
-		{
-			return mode == ModeType.Synthesis ? _checkSynthesisClean : _checkAnalysisClean;
-		}
-
-		public FiniteStateAutomaton<TOffset> GetFsa(Direction dir)
-		{
-			return dir == Direction.LeftToRight ? _leftToRightFsa : _rightToLeftFsa;
-		}
-
 		public void Compile()
 		{
-			_leftToRightFsa = GenerateFsa(Direction.LeftToRight);
-			_rightToLeftFsa = GenerateFsa(Direction.RightToLeft);
+			_fsa = GenerateFsa(_dir);
 		}
 
 		protected virtual FiniteStateAutomaton<TOffset> GenerateFsa(Direction dir)
 		{
-			var fsa = new FiniteStateAutomaton<TOffset>(dir, _synthesisTypes, _analysisTypes);
+			var fsa = new FiniteStateAutomaton<TOffset>(dir, _filter);
 			State<TOffset> startState = fsa.CreateGroupTag(fsa.StartState, EntireGroupName, true);
-			State<TOffset> endState;
-			if (_varFeatures != null && _varFeatures.Count > 0)
-			{
-				endState = fsa.CreateState();
-				GenerateVariableFsa(fsa, startState, endState, _varFeatures.Select(kvp => Tuple.Create(kvp.Key, kvp.Value)),
-					Enumerable.Empty<Tuple<string, IEnumerable<Feature>, FeatureSymbol>>());
-			}
-			else
-			{
-				endState = GetFirst(dir).GenerateNfa(fsa, startState, -1, Enumerable.Empty<Tuple<string, IEnumerable<Feature>, FeatureSymbol>>());
-			}
+			State<TOffset> endState = GetFirst(dir).GenerateNfa(fsa, startState);
 			endState = fsa.CreateGroupTag(endState, EntireGroupName, false);
 			endState.AddArc(new Arc<TOffset>(fsa.CreateState(true)));
 
@@ -216,120 +165,89 @@ namespace SIL.APRE
 			return fsa;
 		}
 
-		private void GenerateVariableFsa(FiniteStateAutomaton<TOffset> fsa, State<TOffset> startState, State<TOffset> endState,
-			IEnumerable<Tuple<string, IEnumerable<Feature>>> varFeatures, IEnumerable<Tuple<string, IEnumerable<Feature>, FeatureSymbol>> varValues)
-		{
-			if (!varFeatures.Any())
-			{
-				State<TOffset> state = GetFirst(fsa.Direction).GenerateNfa(fsa, startState, _varValues.Count, varValues);
-				state.AddArc(new Arc<TOffset>(endState));
-				_varValues.Add(varValues);
-			}
-			else
-			{
-				Tuple<string, IEnumerable<Feature>> varFeature = varFeatures.First();
-				var feature = (SymbolicFeature) varFeature.Item2.Last();
-				foreach (FeatureSymbol symbol in feature.PossibleSymbols)
-					GenerateVariableFsa(fsa, startState, endState, varFeatures.Skip(1),
-						varValues.Concat(Tuple.Create(varFeature.Item1, varFeature.Item2, symbol)));
-			}
-		}
-
-		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, Direction dir, ModeType mode)
-		{
-			return IsMatch(annList, dir, mode, null);
-		}
-
-		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, Direction dir, ModeType mode, FeatureStructure varValues)
+		public bool IsMatch(IBidirList<Annotation<TOffset>> annList)
 		{
 			IEnumerable<PatternMatch<TOffset>> matches;
-			return IsMatch(annList, dir, mode, varValues, false, out matches);
+			return IsMatch(annList, false, out matches);
 		}
 
-		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, Direction dir, ModeType mode, out PatternMatch<TOffset> match)
-		{
-			return IsMatch(annList, dir, mode, null, out match);
-		}
-
-		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, Direction dir, ModeType mode, FeatureStructure varValues,
-			out PatternMatch<TOffset> match)
+		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, out PatternMatch<TOffset> match)
 		{
 			IEnumerable<PatternMatch<TOffset>> matches;
-			if (IsMatch(annList, dir, mode, varValues, false, out matches))
+			if (IsMatch(annList, false, out matches))
 			{
 				match = matches.First();
 				return true;
 			}
-
 			match = null;
 			return false;
 		}
 
-		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, Direction dir, ModeType mode,
-			out IEnumerable<PatternMatch<TOffset>> matches)
+		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, out IEnumerable<PatternMatch<TOffset>> matches)
 		{
-			return IsMatch(annList, dir, mode, null, out matches);
+			return IsMatch(annList, true, out matches);
 		}
 
-		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, Direction dir, ModeType mode, FeatureStructure varValues,
-			out IEnumerable<PatternMatch<TOffset>> matches)
+		private bool IsMatch(IBidirList<Annotation<TOffset>> annList, bool allMatches, out IEnumerable<PatternMatch<TOffset>> matches)
 		{
-			return IsMatch(annList, dir, mode, varValues, true, out matches);
-		}
+			if (_fsa == null)
+				_fsa = GenerateFsa(_dir);
 
-		private bool IsMatch(IBidirList<Annotation<TOffset>> annList, Direction dir, ModeType mode, FeatureStructure varValues,
-			bool allMatches, out IEnumerable<PatternMatch<TOffset>> matches)
-		{
-			FiniteStateAutomaton<TOffset> fsa;
-			if (dir == Direction.LeftToRight)
+			List<PatternMatch<TOffset>> matchesList = null;
+			Annotation<TOffset> first = annList.GetFirst(_dir, _filter);
+			while (first != null)
 			{
-				if (_leftToRightFsa == null)
-					_leftToRightFsa = GenerateFsa(Direction.LeftToRight);
-				fsa = _leftToRightFsa;
-			}
-			else
-			{
-				if (_rightToLeftFsa == null)
-					_rightToLeftFsa = GenerateFsa(Direction.RightToLeft);
-				fsa = _rightToLeftFsa;
-			}
-
-			IEnumerable<FsaMatch<TOffset>> fsaMatches;
-			if (fsa.IsMatch(annList, mode, allMatches, out fsaMatches))
-			{
-				var matchesList = new List<PatternMatch<TOffset>>();
-				matches = matchesList;
-				foreach (FsaMatch<TOffset> match in fsaMatches)
+				IEnumerable<FsaMatch<TOffset>> fsaMatches;
+				if (_fsa.IsMatch(annList.GetView(first, _dir), allMatches, out fsaMatches))
 				{
-					var groups = new Dictionary<string, Span<TOffset>>();
-					TOffset matchStart, matchEnd;
-					fsa.GetOffsets(EntireGroupName, match, out matchStart, out matchEnd);
-					var matchSpan = _spanFactory.Create(matchStart, matchEnd);
+					if (matchesList == null)
+						matchesList = new List<PatternMatch<TOffset>>();
 
-					foreach (string groupName in fsa.GroupNames)
+					foreach (FsaMatch<TOffset> match in fsaMatches)
 					{
-						if (groupName == EntireGroupName)
-							continue;
+						var groups = new Dictionary<string, Span<TOffset>>();
+						TOffset matchStart, matchEnd;
+						_fsa.GetOffsets(EntireGroupName, match.Registers, out matchStart, out matchEnd);
+						var matchSpan = _spanFactory.Create(matchStart, matchEnd);
 
-						TOffset start, end;
-						if (fsa.GetOffsets(groupName, match, out start, out end))
+						foreach (string groupName in _fsa.GroupNames)
 						{
-							if (_spanFactory.IsValidSpan(start, end))
+							if (groupName == EntireGroupName)
+								continue;
+
+							TOffset start, end;
+							if (_fsa.GetOffsets(groupName, match.Registers, out start, out end))
 							{
-								Span<TOffset> span = _spanFactory.Create(start, end);
-								if (matchSpan.Contains(span))
-									groups[groupName] = span;
+								if (_spanFactory.IsValidSpan(start, end))
+								{
+									Span<TOffset> span = _spanFactory.Create(start, end);
+									if (matchSpan.Contains(span))
+										groups[groupName] = span;
+								}
 							}
 						}
+
+						matchesList.Add(new PatternMatch<TOffset>(matchSpan, groups, match.VariableBindings));
 					}
 
-					matchesList.Add(new PatternMatch<TOffset>(matchSpan, groups, null));
+					if (!allMatches)
+					{
+						matches = matchesList;
+						return true;
+					}
 				}
-				return true;
+
+				first = first.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
 			}
 
-			matches = null;
-			return false;
+			matches = matchesList;
+			return matchesList != null;
+		}
+
+		public Pattern<TOffset> Reverse()
+		{
+			return new Pattern<TOffset>(_spanFactory, _dir == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight,
+				_filter, this.Select(node => node.Clone()));
 		}
 
         object ICloneable.Clone()

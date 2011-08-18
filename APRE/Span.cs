@@ -8,17 +8,20 @@ namespace SIL.APRE
 		private readonly TOffset _end;
 		private readonly Func<TOffset, TOffset, int> _compare;
 		private readonly Func<TOffset, TOffset, int> _calcLength;
+		private readonly bool _includeEndpoint;
 
-		internal Span(Func<TOffset, TOffset, int> compare, Func<TOffset, TOffset, int> calcLength, TOffset start, TOffset end)
+		internal Span(Func<TOffset, TOffset, int> compare, Func<TOffset, TOffset, int> calcLength, bool includeEndpoint,
+			TOffset start, TOffset end)
 		{
 			_compare = compare;
 			_calcLength = calcLength;
+			_includeEndpoint = includeEndpoint;
 			_start = start;
 			_end = end;
 		}
 
 		public Span(Span<TOffset> span)
-			: this(span._compare, span._calcLength, span._start, span._end)
+			: this(span._compare, span._calcLength, span._includeEndpoint, span._start, span._end)
 		{
 		}
 
@@ -40,12 +43,12 @@ namespace SIL.APRE
 
 		public Span<TOffset> StartSpan
 		{
-			get { return new Span<TOffset>(_compare, _calcLength, _start, _start); }
+			get { return new Span<TOffset>(_compare, _calcLength, _includeEndpoint, _start, _start); }
 		}
 
 		public Span<TOffset> EndSpan
 		{
-			get { return new Span<TOffset>(_compare, _calcLength, _end, _end); }
+			get { return new Span<TOffset>(_compare, _calcLength, _includeEndpoint, _end, _end); }
 		}
 
 		public int Length
@@ -77,7 +80,8 @@ namespace SIL.APRE
 		{
 			if (other == null)
 				return false;
-			return _compare(_start, other._end) <= 0 && _compare(_end, other._start) >= 0;
+			return _compare(_start, other._end) <= 0
+				&& ( _includeEndpoint ? _compare(_end, other._start) >= 0 : _compare(_end, other._start) > 0);
 		}
 
 		public bool Contains(Span<TOffset> other)

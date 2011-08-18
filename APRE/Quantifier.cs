@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using SIL.APRE.Fsa;
 
@@ -123,10 +122,9 @@ namespace SIL.APRE
             return _node.IsFeatureReferenced(feature);
         }
 
-		internal override State<TOffset> GenerateNfa(FiniteStateAutomaton<TOffset> fsa,
-			State<TOffset> startState, int varValueIndex, IEnumerable<Tuple<string, IEnumerable<Feature>, FeatureSymbol>> varValues)
+		internal override State<TOffset> GenerateNfa(FiniteStateAutomaton<TOffset> fsa, State<TOffset> startState)
 		{
-			State<TOffset> endState = _node.GenerateNfa(fsa, startState, varValueIndex, varValues);
+			State<TOffset> endState = _node.GenerateNfa(fsa, startState);
 
 			if (_minOccur == 0 && _maxOccur == 1)
 			{
@@ -158,7 +156,7 @@ namespace SIL.APRE
 					for (int i = 1; i < _minOccur; i++)
 					{
 						currentState = endState;
-						endState = _node.GenerateNfa(fsa, currentState, varValueIndex, varValues);
+						endState = _node.GenerateNfa(fsa, currentState);
 					}
 				}
 
@@ -175,14 +173,14 @@ namespace SIL.APRE
 					{
 						currentState = endState;
 						startStates.Add(currentState);
-						endState = _node.GenerateNfa(fsa, currentState, varValueIndex, varValues);
+						endState = _node.GenerateNfa(fsa, currentState);
 					}
 				}
 				foreach (State<TOffset> state in startStates)
 					state.AddArc(new Arc<TOffset>(endState));
 			}
 
-			return base.GenerateNfa(fsa, endState, varValueIndex, varValues);
+			return base.GenerateNfa(fsa, endState);
 		}
 
         public override string ToString()

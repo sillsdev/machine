@@ -6,6 +6,8 @@ namespace SIL.APRE
 {
 	public sealed class AnnotationList<TOffset> : SkipList<Annotation<TOffset>>, ICloneable
 	{
+		private int _currentID;
+
 		public AnnotationList()
 			: base(new AnnotationComparer(Direction.LeftToRight), new AnnotationComparer(Direction.RightToLeft))
 		{
@@ -15,6 +17,12 @@ namespace SIL.APRE
 			: this()
 		{
 			AddMany(annList.Select(ann => ann.Clone()));
+		}
+
+		public override void Add(Annotation<TOffset> node)
+		{
+			base.Add(node);
+			node.ListID = _currentID++;
 		}
 
 		public IBidirList<Annotation<TOffset>> GetView(Span<TOffset> span)
@@ -54,7 +62,10 @@ namespace SIL.APRE
 				if (x == null)
 					return y == null ? 0 : -1;
 
-				return x.CompareTo(y, _dir);
+				int res = x.Span.CompareTo(y.Span, _dir);
+				if (res != 0)
+					return res;
+				return x.ListID.CompareTo(y.ListID);
 			}
 		}
 	}

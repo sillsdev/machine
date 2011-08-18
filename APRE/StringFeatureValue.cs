@@ -4,10 +4,15 @@ using System.Text;
 
 namespace SIL.APRE
 {
-	public class StringFeatureValue : FeatureValue
+	public class StringFeatureValue : SimpleFeatureValue
 	{
 		private readonly HashSet<string> _values; 
 		private bool _not;
+
+		public StringFeatureValue()
+			: this(Enumerable.Empty<string>())
+		{
+		}
 
 		public StringFeatureValue(IEnumerable<string> values)
 			: this(values, false)
@@ -46,46 +51,72 @@ namespace SIL.APRE
 		{
 			get
 			{
+				if (Forward != null)
+					return ((StringFeatureValue) Forward).Values;
+
 				return _values;
 			}
 		}
 
-		public override bool IsAmbiguous
+		public bool Not
 		{
-			get { return _not || _values.Count > 1; }
+			get
+			{
+				if (Forward != null)
+					return ((StringFeatureValue) Forward).Not;
+
+				return _not;
+			}
 		}
 
-		public override bool IsSatisfiable
+		internal override bool IsUnifiable(FeatureValue other, bool useDefaults, IDictionary<string, FeatureValue> varBindings)
 		{
-			get { return _not || _values.Any(); }
-		}
+			if (Forward != null)
+				return Forward.IsUnifiable(other, useDefaults, varBindings);
 
-		public override bool Matches(FeatureValue other)
-		{
-			var sfv = (StringFeatureValue) other;
-			if (_not == sfv._not)
-				return _values.Any(value => sfv._values.Contains(value));
-
-			return !_values.Equals(sfv._values);
-		}
-
-		public override bool IsUnifiable(FeatureValue other)
-		{
-			return Matches(other);
-		}
-
-		public override bool UnifyWith(FeatureValue other, bool useDefaults)
-		{
-			if (!IsUnifiable(other))
+			StringFeatureValue sfv;
+			if (!GetValue(other, out sfv))
 				return false;
 
-			IntersectWith(other);
+			if (!_not && !sfv._not)
+			{
+				return _values.Overlaps(sfv._values);
+			}
+			if (!_not && sfv._not)
+			{
+				return !_values.SetEquals(sfv._values);
+			}
+			if (_not && !sfv._not)
+			{
+				return !_values.SetEquals(sfv._values);
+			}
+
 			return true;
 		}
 
-		public override void IntersectWith(FeatureValue other)
+		internal override bool DestructiveUnify(FeatureValue other, bool useDefaults, bool preserveInput,
+			IDictionary<FeatureValue, FeatureValue> copies, IDictionary<string, FeatureValue> varBindings)
 		{
-			var sfv = (StringFeatureValue) other;
+			if (Forward != null)
+				return Forward.DestructiveUnify(other, useDefaults, preserveInput, copies, varBindings);
+
+			StringFeatureValue sfv;
+			if (!GetValue(other, out sfv))
+				return false;
+
+			if (!IsUnifiable(sfv, useDefaults, varBindings))
+				return false;
+
+			if (preserveInput)
+			{
+				if (copies != null)
+					copies[sfv] = this;
+			}
+			else
+			{
+				sfv.Forward = this;
+			}
+
 			if (!_not && !sfv._not)
 			{
 				_values.IntersectWith(sfv._values);
@@ -105,44 +136,23 @@ namespace SIL.APRE
 			{
 				_values.UnionWith(sfv._values);
 			}
+			return true;
 		}
 
-		public override void UnionWith(FeatureValue other)
+		internal override bool Negation(out FeatureValue output)
 		{
-			var sfv = (StringFeatureValue) other;
-			if (!_not && !sfv._not)
-			{
-				_values.UnionWith(sfv._values);
-			}
-			else if (!_not && sfv._not)
-			{
-				_values.Clear();
-				_values.UnionWith(sfv._values);
-				_not = true;
-			}
-			else if (_not && !sfv._not)
-			{
-				// do nothing
-			}
-			else
-			{
-				_values.IntersectWith(sfv._values);
-			}
-		}
+			if (Forward != null)
+				return Forward.Negation(out output);
 
-		public override void UninstantiateAll()
-		{
-			_not = true;
-			_values.Clear();
-		}
-
-		public override void Negate()
-		{
-			_not = !_not;
+			output = new StringFeatureValue(_values, !_not);
+			return true;
 		}
 
 		public override bool Equals(object obj)
 		{
+			if (Forward != null)
+				return Forward.Equals(obj);
+
 			if (obj == null)
 				return false;
 			return Equals(obj as StringFeatureValue);
@@ -150,36 +160,57 @@ namespace SIL.APRE
 
 		public bool Equals(StringFeatureValue other)
 		{
+			if (Forward != null)
+				return ((StringFeatureValue) Forward).Equals(other);
+
 			if (other == null)
 				return false;
-			return Values.Equals(other.Values) && _not == other._not;
+
+			other = GetValue(other);
+			return _values.SetEquals(other._values) && _not == other._not;
 		}
 
 		public override int GetHashCode()
 		{
+			if (Forward != null)
+				return Forward.GetHashCode();
+
 			return _values.GetHashCode() ^ _not.GetHashCode();
 		}
 
 		public override string ToString()
 		{
+			if (Forward != null)
+				return Forward.ToString();
+
 			var sb = new StringBuilder();
 			bool firstValue = true;
 			if (_not)
 				sb.Append("!");
-			sb.Append("{");
-			foreach (string value in _values)
+			if (_values.Count == 1)
 			{
-				if (!firstValue)
-					sb.Append(", ");
-				sb.Append(value);
-				firstValue = false;
+				sb.Append(_values.First());
 			}
-			sb.Append("}");
+			else
+			{
+				sb.Append("{");
+				foreach (string value in _values)
+				{
+					if (!firstValue)
+						sb.Append(", ");
+					sb.Append(value);
+					firstValue = false;
+				}
+				sb.Append("}");
+			}
 			return sb.ToString();
 		}
 
 		public override FeatureValue Clone()
 		{
+			if (Forward != null)
+				return Forward.Clone();
+
 			return new StringFeatureValue(this);
 		}
 	}

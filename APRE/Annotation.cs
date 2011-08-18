@@ -2,41 +2,28 @@
 
 namespace SIL.APRE
 {
-	public class Annotation<TOffset> : SkipListNode<Annotation<TOffset>>, ICloneable, IComparable<Annotation<TOffset>>, IComparable, IEquatable<Annotation<TOffset>>
+	public class Annotation<TOffset> : SkipListNode<Annotation<TOffset>>, ICloneable, IEquatable<Annotation<TOffset>>
 	{
-		private readonly string _type;
 		private readonly Span<TOffset> _span;
 
-		public Annotation(string type, Span<TOffset> span, FeatureStructure fs)
+		public Annotation(Span<TOffset> span, FeatureStructure fs)
 		{
-			_type = type;
 			_span = span;
 			FeatureStructure = fs;
 			IsClean = true;
 		}
 
-		public Annotation(string type, Span<TOffset> span)
-			: this(type, span, null)
+		internal Annotation(Span<TOffset> span)
+			: this(span, null)
 		{
 		}
 
 		public Annotation(Annotation<TOffset> ann)
 		{
-			_type = ann._type;
 			_span = ann._span;
 			FeatureStructure = ann.FeatureStructure == null ? null : (FeatureStructure) ann.FeatureStructure.Clone();
 			IsClean = ann.IsClean;
 			IsOptional = ann.IsOptional;
-		}
-
-		internal Annotation(Span<TOffset> span)
-			: this(null, span, null)
-		{
-		}
-
-		public string Type
-		{
-			get { return _type; }
 		}
 
 		public Span<TOffset> Span
@@ -63,9 +50,11 @@ namespace SIL.APRE
 		/// <value><c>true</c> if this instance is clean, otherwise <c>false</c>.</value>
 		public bool IsClean { get; set; }
 
+		internal int ListID { get; set; }
+
 		public override int GetHashCode()
 		{
-			return _span.GetHashCode() ^ (_type == null ? 0 : _type.GetHashCode());
+			return _span.GetHashCode() ^ (FeatureStructure == null ? 0 : FeatureStructure.GetHashCode());
 		}
 
 		public Annotation<TOffset> Clone()
@@ -89,36 +78,23 @@ namespace SIL.APRE
 		{
 			if (other == null)
 				return false;
-			return _span.Equals(other._span) && _type == other._type;
-		}
 
-		public int CompareTo(Annotation<TOffset> other, Direction dir)
-		{
-			int res = _span.CompareTo(other._span, dir);
-			if (res != 0)
-				return res;
-			if (_type == null && other._type == null)
-				return 0;
-			if (_type == null)
-				return -1;
-			return _type.CompareTo(other._type);
-		}
+			if (FeatureStructure == null)
+			{
+				if (other.FeatureStructure != null)
+					return false;
+			}
+			else if (!FeatureStructure.Equals(other.FeatureStructure))
+			{
+				return false;
+			}
 
-		public int CompareTo(Annotation<TOffset> other)
-		{
-			return CompareTo(other, Direction.LeftToRight);
-		}
-
-		int IComparable.CompareTo(object obj)
-		{
-			if (!(obj is Annotation<TOffset>))
-				throw new ArgumentException();
-			return CompareTo((Annotation<TOffset>) obj);
+			return _span.Equals(other._span);
 		}
 
 		public override string ToString()
 		{
-			return string.Format("({0} {1})", _type, _span);
+			return string.Format("({0} {1})", _span, FeatureStructure);
 		}
 	}
 }

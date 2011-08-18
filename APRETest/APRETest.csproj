@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnnotationListTest.cs" />
+    <Compile Include="FeatureStructureTest.cs" />
     <Compile Include="FiniteStateAutomatonTest.cs" />
     <Compile Include="PatternTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

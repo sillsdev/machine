@@ -7,33 +7,44 @@ namespace SIL.APRE
 {
 	public class FeatureStructure : FeatureValue
 	{
-		private readonly FeatureSystem _featSys;
-		private readonly SortedDictionary<Feature, FeatureValue> _values;
+		public static DisjunctiveFeatureStructureBuilder Build(FeatureSystem featSys)
+		{
+			return new DisjunctiveFeatureStructureBuilder(featSys);
+		}
+
+		private readonly SortedDictionary<Feature, FeatureValue> _definite;
+		private readonly HashSet<HashSet<FeatureStructure>> _indefinite;
+
+		private readonly Dictionary<string, FeatureValue> _varBindings; 
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FeatureStructure"/> class.
 		/// </summary>
-		public FeatureStructure(FeatureSystem featSys)
+		public FeatureStructure()
 		{
-			_featSys = featSys;
-			_values = new SortedDictionary<Feature, FeatureValue>();
+			_definite = new SortedDictionary<Feature, FeatureValue>();
+			_indefinite = new HashSet<HashSet<FeatureStructure>>();
+			_varBindings = new Dictionary<string, FeatureValue>();
+		}
+
+		public FeatureStructure(FeatureStructure fs)
+			: this(fs, new Dictionary<FeatureValue, FeatureValue>(new IdentityEqualityComparer<FeatureValue>()))
+		{
 		}
 
 		/// <summary>
 		/// Copy constructor.
 		/// </summary>
-		/// <param name="fv">The fs.</param>
-		public FeatureStructure(FeatureStructure fv)
-			: this(fv.FeatureSystem)
+		/// <param name="fs">The fs.</param>
+		/// <param name="copies"></param>
+		private FeatureStructure(FeatureStructure fs, IDictionary<FeatureValue, FeatureValue> copies)
+			: this()
 		{
-			foreach (KeyValuePair<Feature, FeatureValue> kvp in fv._values)
-				_values[kvp.Key] = kvp.Value.Clone();
-		}
+			copies[this] = fs;
+			foreach (KeyValuePair<Feature, FeatureValue> featVal in fs._definite)
+				_definite[featVal.Key] = featVal.Value.Clone(copies);
 
-
-		public FeatureSystem FeatureSystem
-		{
-			get { return _featSys; }
+			CopyDisjunctions(fs, this, copies);
 		}
 
 		/// <summary>
@@ -44,7 +55,21 @@ namespace SIL.APRE
 		{
 			get
 			{
-				return _values.Keys;
+				if (Forward != null)
+					return ((FeatureStructure) Forward).Features;
+
+				return _definite.Keys;
+			}
+		}
+
+		public IEnumerable<IEnumerable<FeatureStructure>> Disjunctions
+		{
+			get
+			{
+				if (Forward != null)
+					return ((FeatureStructure) Forward).Disjunctions;
+
+				return _indefinite.Cast<IEnumerable<FeatureStructure>>();
 			}
 		}
 
@@ -52,11 +77,25 @@ namespace SIL.APRE
 		/// Gets the number of features.
 		/// </summary>
 		/// <value>The number of features.</value>
-		public int NumFeatures
+		public int NumValues
 		{
 			get
 			{
-				return _values.Count;
+				if (Forward != null)
+					return ((FeatureStructure) Forward).NumValues;
+
+				return _definite.Count;
+			}
+		}
+
+		public int NumDisjunctions
+		{
+			get
+			{
+				if (Forward != null)
+					return ((FeatureStructure) Forward).NumDisjunctions;
+
+				return _indefinite.Count;
 			}
 		}
 
@@ -68,38 +107,40 @@ namespace SIL.APRE
 			}
 		}
 
-		public override bool IsAmbiguous
-		{
-			get { return _values.Values.Any(value => value.IsAmbiguous); }
-		}
-
-		public override bool IsSatisfiable
-		{
-			get { return _values.Values.All(value => value.IsSatisfiable); }
-		}
-
 		/// <summary>
 		/// Adds the specified feature-value pair.
 		/// </summary>
 		/// <param name="feature">The feature.</param>
 		/// <param name="value">The value.</param>
-		public void Add(Feature feature, FeatureValue value)
+		public void AddValue(Feature feature, FeatureValue value)
 		{
-			_values[feature] = value;
+			if (Forward != null)
+			{
+				((FeatureStructure) Forward).AddValue(feature, value);
+				return;
+			}
+
+			_definite[feature] = value;
 		}
 
-		public void Add(IEnumerable<Feature> path, FeatureValue value)
+		public void AddValue(IEnumerable<Feature> path, FeatureValue value)
 		{
+			if (Forward != null)
+			{
+				((FeatureStructure) Forward).AddValue(path, value);
+				return;
+			}
+
 			Feature f = path.First();
 			IEnumerable<Feature> remaining = path.Skip(1);
 			if (remaining.Any())
 			{
 				FeatureValue curValue;
-				if (_values.TryGetValue(f, out curValue))
+				if (_definite.TryGetValue(f, out curValue))
 				{
 					var fs = curValue as FeatureStructure;
 					if (fs != null)
-						fs.Add(remaining, value);
+						fs.AddValue(remaining, value);
 					else
 						throw new ArgumentException("The feature path is invalid.", "path");
 				}
@@ -110,13 +151,76 @@ namespace SIL.APRE
 			}
 			else
 			{
-				Add(f, value);
+				AddValue(f, value);
 			}
+		}
+
+		public void AddDisjunction(IEnumerable<FeatureStructure> disjunction)
+		{
+			if (Forward != null)
+			{
+				((FeatureStructure) Forward).AddDisjunction(disjunction);
+				return;
+			}
+
+			_indefinite.Add(new HashSet<FeatureStructure>(disjunction));
+		}
+
+		public bool TryGetVariableBinding(string name, out FeatureValue value)
+		{
+			if (Forward != null)
+				return ((FeatureStructure) Forward).TryGetVariableBinding(name, out value);
+
+			if (_varBindings.TryGetValue(name, out value))
+				return true;
+
+			value = null;
+			return false;
+		}
+
+		public void AddVariableBinding(string name, FeatureValue value)
+		{
+			if (Forward != null)
+			{
+				((FeatureStructure) Forward).AddVariableBinding(name, value);
+				return;
+			}
+
+			_varBindings[name] = value;
 		}
 
 		public void Clear()
 		{
-			_values.Clear();
+			if (Forward != null)
+			{
+				((FeatureStructure) Forward).Clear();
+				return;
+			}
+
+			ClearValues();
+			ClearDisjunctions();
+		}
+
+		public void ClearValues()
+		{
+			if (Forward != null)
+			{
+				((FeatureStructure) Forward).ClearValues();
+				return;
+			}
+
+			_definite.Clear();
+		}
+
+		public void ClearDisjunctions()
+		{
+			if (Forward != null)
+			{
+				((FeatureStructure) Forward).ClearDisjunctions();
+				return;
+			}
+
+			_indefinite.Clear();
 		}
 
 		/// <summary>
@@ -126,61 +230,47 @@ namespace SIL.APRE
 		/// <returns>All values.</returns>
 		public FeatureValue GetValue(Feature feature)
 		{
-			FeatureValue value;
-			if (_values.TryGetValue(feature, out value))
-				return value;
-			return null;
+			if (Forward != null)
+				return ((FeatureStructure) Forward).GetValue(feature);
+
+			try
+			{
+				return _definite[feature];
+			}
+			catch (KeyNotFoundException ex)
+			{
+				throw new ArgumentException("The specified value could not be found.", "feature", ex);
+			}
 		}
 
 		public FeatureValue GetValue(IEnumerable<Feature> path)
 		{
+			if (Forward != null)
+				return ((FeatureStructure) Forward).GetValue(path);
+
 			Feature f = path.First();
 			IEnumerable<Feature> remaining = path.Skip(1);
 			if (remaining.Any())
 			{
 				FeatureValue curValue;
-				if (_values.TryGetValue(f, out curValue))
+				if (_definite.TryGetValue(f, out curValue))
 				{
 					var fs = curValue as FeatureStructure;
 					if (fs != null)
 						return fs.GetValue(remaining);
 				}
-				return null;
+				throw new ArgumentException("The specified path is not valid.", "path");
 			}
 
 			return GetValue(f);
 		}
 
-		public FeatureValue GetValue(string id)
+		public bool IsUnifiable(FeatureValue other, bool useDefaults, bool definite)
 		{
-			Feature feature = _featSys.GetFeature(id);
-			if (feature != null)
-				return GetValue(feature);
-			return null;
-		}
+			if (Forward != null)
+				return ((FeatureStructure) Forward).IsUnifiable(other, useDefaults, definite);
 
-		/// <summary>
-		/// Determines whether the specified feature values set matches this set of feature
-		/// values. For each feature in this set, there must be a value which belongs to
-		/// the list of values in the specified set.
-		/// </summary>
-		/// <param name="other">The feature value.</param>
-		/// <returns>
-		/// 	<c>true</c> if the sets match, otherwise <c>false</c>.
-		/// </returns>
-		public override bool Matches(FeatureValue other)
-		{
-			var fs = (FeatureStructure) other;
-			foreach (KeyValuePair<Feature, FeatureValue> kvp in _values)
-			{
-				FeatureValue value = fs.GetValue(kvp.Key);
-				if (value == null)
-					return false;
-
-				if (kvp.Value != null && !kvp.Value.Matches(value))
-					return false;
-			}
-			return true;
+			return IsUnifiable(other, useDefaults, definite, _varBindings.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Clone()));
 		}
 
 		/// <summary>
@@ -190,169 +280,427 @@ namespace SIL.APRE
 		/// It basically checks to make sure that there is no contradictory features.
 		/// </summary>
 		/// <param name="other">The feature value.</param>
+		/// <param name="useDefaults"></param>
+		/// <param name="definite"></param>
+		/// <param name="varBindings"></param>
 		/// <returns>
 		/// 	<c>true</c> the sets are compatible, otherwise <c>false</c>.
 		/// </returns>
-		public override bool IsUnifiable(FeatureValue other)
+		public bool IsUnifiable(FeatureValue other, bool useDefaults, bool definite, IDictionary<string, FeatureValue> varBindings)
 		{
-			var fs = (FeatureStructure) other;
-			foreach (KeyValuePair<Feature, FeatureValue> kvp in _values)
-			{
-				FeatureValue value = fs.GetValue(kvp.Key);
-				if (value == null)
-					continue;
+			if (Forward != null)
+				return ((FeatureStructure) Forward).IsUnifiable(other, useDefaults, definite, varBindings);
 
-				if (kvp.Value != null && !kvp.Value.IsUnifiable(value))
+			if (definite)
+				return IsUnifiable(other, useDefaults, varBindings);
+
+			FeatureStructure output;
+			return Unify(other, false, false, varBindings, out output);
+		}
+
+		internal override bool IsUnifiable(FeatureValue other, bool useDefaults, IDictionary<string, FeatureValue> varBindings)
+		{
+			if (Forward != null)
+				return Forward.IsUnifiable(other, useDefaults, varBindings);
+
+			FeatureStructure fs;
+			if (!GetValue(other, out fs))
+				return false;
+
+			foreach (KeyValuePair<Feature, FeatureValue> featVal in fs._definite)
+			{
+				FeatureValue curValue;
+				if (_definite.TryGetValue(featVal.Key, out curValue))
+				{
+					if (!curValue.IsUnifiable(featVal.Value, useDefaults, varBindings))
+						return false;
+				}
+				else if (useDefaults && featVal.Key.DefaultValue != null)
+				{
+					if (!featVal.Key.DefaultValue.IsUnifiable(featVal.Value, true, varBindings))
+						return false;
+				}
+			}
+			return true;
+		}
+
+		public bool Unify(FeatureValue other, bool useDefaults, bool definite, out FeatureStructure output)
+		{
+			if (Forward != null)
+				return ((FeatureStructure) Forward).Unify(other, useDefaults, definite, out output);
+
+			return Unify(other, useDefaults, definite, _varBindings.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Clone()),
+				out output);
+		}
+
+		public bool Unify(FeatureValue other, bool useDefaults, bool definite, IDictionary<string, FeatureValue> varBindings,
+			out FeatureStructure output)
+		{
+			if (Forward != null)
+				return ((FeatureStructure) Forward).Unify(other, useDefaults, definite, varBindings, out output);
+
+			FeatureStructure fs;
+			if (!GetValue(other, out fs))
+			{
+				output = null;
+				return false;
+			}
+
+			var copies = new Dictionary<FeatureValue, FeatureValue>(new IdentityEqualityComparer<FeatureValue>());
+			FeatureValue newFv;
+			if (!UnifyCopy(fs, useDefaults, copies, varBindings, out newFv))
+			{
+				output = null;
+				return false;
+			}
+
+			var newFs = (FeatureStructure) newFv;
+			if (!definite && newFs.NumDisjunctions > 0)
+			{
+				// TODO: use variable bindings
+				if (!CheckIndefinite(newFs, newFs, useDefaults, out newFs))
+				{
+					output = null;
 					return false;
+				}
+
+				if (newFs.NumDisjunctions > 0)
+				{
+					for (int n = 1; n < newFs.NumDisjunctions; n++)
+						NWiseConsistency(newFs, n, useDefaults, out newFs);
+				}
 			}
+
+			foreach (KeyValuePair<string, FeatureValue> kvp in varBindings)
+				newFs.AddVariableBinding(kvp.Key, kvp.Value);
+
+			output = newFs;
 			return true;
 		}
 
-		public override bool UnifyWith(FeatureValue other, bool useDefaults)
+		internal override bool DestructiveUnify(FeatureValue other, bool useDefaults, bool preserveInput,
+			IDictionary<FeatureValue, FeatureValue> copies, IDictionary<string, FeatureValue> varBindings)
 		{
-			var fs = (FeatureStructure) other;
-			var unification = new Dictionary<Feature, FeatureValue>(_values);
-			foreach (Feature feature in fs.Features)
+			if (Forward != null)
+				return Forward.DestructiveUnify(other, useDefaults, preserveInput, copies, varBindings);
+
+			FeatureStructure fs;
+			if (!GetValue(other, out fs))
+				return false;
+
+			if (preserveInput)
 			{
-				FeatureValue value = fs.GetValue(feature);
+				if (copies != null)
+					copies[fs] = this;
+			}
+			else
+			{
+				fs.Forward = this;
+			}
+
+			foreach (KeyValuePair<Feature, FeatureValue> featVal in fs._definite)
+			{
 				FeatureValue curValue;
-				if (_values.TryGetValue(feature, out curValue))
+				if (_definite.TryGetValue(featVal.Key, out curValue))
 				{
-					FeatureValue newValue = curValue.Clone();
-					if (!newValue.UnifyWith(value, useDefaults))
+					if (!curValue.DestructiveUnify(featVal.Value, useDefaults, preserveInput, copies, varBindings))
 						return false;
-					unification[feature] = newValue;
 				}
-				else if (useDefaults && feature.DefaultValue != null)
+				else if (useDefaults && featVal.Key.DefaultValue != null)
 				{
-					FeatureValue defValue = feature.DefaultValue.Clone();
-					if (!defValue.UnifyWith(value, true))
+					curValue = featVal.Key.DefaultValue.Clone();
+					_definite[featVal.Key] = curValue;
+					if (!curValue.DestructiveUnify(featVal.Value, true, preserveInput, copies, varBindings))
 						return false;
-					unification[feature] = defValue;
 				}
 				else
 				{
-					unification[feature] = value.Clone();
+					FeatureValue value;
+					if (preserveInput)
+						value = copies != null ? featVal.Value.Clone(copies) : featVal.Value.Clone();
+					else
+						value = featVal.Value;
+					_definite[featVal.Key] = value;
 				}
 			}
 
-			foreach (KeyValuePair<Feature, FeatureValue> kvp in unification)
-				_values[kvp.Key] = kvp.Value;
 			return true;
 		}
 
-		public override void IntersectWith(FeatureValue other)
+		protected override bool UnifyCopy(FeatureValue other, bool useDefaults, IDictionary<FeatureValue, FeatureValue> copies,
+			IDictionary<string, FeatureValue> varBindings, out FeatureValue output)
 		{
-			var fs = (FeatureStructure) other;
-			foreach (Feature feature in fs.Features)
+			FeatureStructure fs;
+			if (!GetValue(other, out fs))
 			{
-				FeatureValue value = fs.GetValue(feature);
-				FeatureValue curValue;
-				if (_values.TryGetValue(feature, out curValue))
-					curValue.IntersectWith(value);
+				output = null;
+				return false;
 			}
 
-			foreach (Feature feature in _values.Keys.Except(fs.Features).ToArray())
-				_values.Remove(feature);
-		}
-
-		public override void UnionWith(FeatureValue other)
-		{
-			var fs = (FeatureStructure)other;
-			foreach (Feature feature in fs.Features)
+			var copy = new FeatureStructure();
+			copies[this] = copy;
+			copies[other] = copy;
+			foreach (KeyValuePair<Feature, FeatureValue> featVal in fs._definite)
 			{
-				FeatureValue value = fs.GetValue(feature);
 				FeatureValue curValue;
-				if (_values.TryGetValue(feature, out curValue))
-					curValue.UnionWith(value);
+				if (_definite.TryGetValue(featVal.Key, out curValue))
+				{
+					FeatureValue newValue;
+					if (!curValue.Unify(featVal.Value, useDefaults, copies, varBindings, out newValue))
+					{
+						output = null;
+						return false;
+					}
+					copy.AddValue(featVal.Key, newValue);
+				}
+				else if (useDefaults && featVal.Key.DefaultValue != null)
+				{
+					curValue = featVal.Key.DefaultValue.Clone();
+					FeatureValue newValue;
+					if (!curValue.Unify(featVal.Value, true, copies, varBindings, out newValue))
+					{
+						output = null;
+						return false;
+					}
+					copy.AddValue(featVal.Key, newValue);
+				}
 				else
-					_values[feature] = value.Clone();
+				{
+					copy.AddValue(featVal.Key, featVal.Value.Clone(copies));
+				}
+			}
+
+			foreach (KeyValuePair<Feature, FeatureValue> featVal in _definite)
+			{
+				if (!fs._definite.ContainsKey(featVal.Key))
+					copy.AddValue(featVal.Key, featVal.Value.Clone(copies));
+			}
+
+			CopyDisjunctions(this, copy, copies);
+			CopyDisjunctions(fs, copy, copies);
+
+			output = copy;
+			return true;
+		}
+
+		private static void CopyDisjunctions(FeatureStructure src, FeatureStructure dest, IDictionary<FeatureValue, FeatureValue> mapping)
+		{
+			foreach (IEnumerable<FeatureStructure> disjunction in src.Disjunctions)
+			{
+				var newDisjunction = new HashSet<FeatureStructure>();
+				foreach (FeatureStructure disjunct in disjunction)
+					newDisjunction.Add((FeatureStructure)disjunct.Clone(mapping));
+				dest.AddDisjunction(newDisjunction);
 			}
 		}
 
-		public override void UninstantiateAll()
+		internal override FeatureValue Clone(IDictionary<FeatureValue, FeatureValue> copies)
 		{
-			foreach (FeatureValue value in _values.Values)
-				value.UninstantiateAll();
+			if (Forward != null)
+				return Forward.Clone(copies);
+
+			FeatureValue clone;
+			if (copies.TryGetValue(this, out clone))
+				return clone;
+
+			return new FeatureStructure(this, copies);
 		}
 
-		public override void Negate()
+		private bool CheckIndefinite(FeatureStructure fs, FeatureStructure cond, bool useDefaults, out FeatureStructure newFs)
 		{
-			foreach (FeatureValue value in _values.Values)
-				value.Negate();
-		}
-
-		public bool Unify(FeatureStructure other, out FeatureStructure output, bool useDefaults)
-		{
-			var fs = (FeatureStructure) other.Clone();
-			if (fs.UnifyWith(this, useDefaults))
+			var indefinite = new HashSet<IEnumerable<FeatureStructure>>(fs.Disjunctions);
+			newFs = fs;
+			bool uncheckedParts = true;
+			while (uncheckedParts)
 			{
-				output = fs;
+				uncheckedParts = false;
+				newFs.ClearDisjunctions();
+
+				foreach (HashSet<FeatureStructure> disjunction in indefinite)
+				{
+					var newDisjunction = new HashSet<FeatureStructure>();
+					foreach (FeatureStructure disjunct in disjunction)
+					{
+						if (cond.IsUnifiable(disjunct, useDefaults, true))
+						{
+							if (disjunct.NumDisjunctions > 0)
+							{
+								FeatureStructure newDisjunct;
+								if (CheckIndefinite(disjunct, cond, useDefaults, out newDisjunct))
+									newDisjunction.Add(newDisjunct);
+							}
+							else
+							{
+								newDisjunction.Add(disjunct);
+							}
+						}
+					}
+
+					if (newDisjunction.Count == 0)
+					{
+						newFs = null;
+						return false;
+					}
+					else if (newDisjunction.Count == 1)
+					{
+						FeatureStructure disjunct = newDisjunction.First();
+						newFs.Unify(disjunct, useDefaults, true, out newFs);
+						uncheckedParts = true;
+					}
+					else
+					{
+						newFs.AddDisjunction(newDisjunction);
+					}
+				}
+				cond = newFs;
+				indefinite.Clear();
+				indefinite.UnionWith(newFs.Disjunctions);
+			}
+
+			return true;
+		}
+
+		private bool NWiseConsistency(FeatureStructure fs, int n, bool useDefaults, out FeatureStructure newFs)
+		{
+			newFs = fs;
+			if (fs.NumDisjunctions <= n)
 				return true;
+
+			var indefinite = new HashSet<IEnumerable<FeatureStructure>>(newFs.Disjunctions);
+			newFs.ClearDisjunctions();
+
+			while (indefinite.Any())
+			{
+				IEnumerable<FeatureStructure> disjunction = indefinite.First();
+				indefinite.Remove(disjunction);
+				var newDisjunction = new HashSet<FeatureStructure>();
+
+				foreach (FeatureStructure disjunct in disjunction)
+				{
+					FeatureStructure hypFs;
+					fs.Unify(disjunct, useDefaults, true, out hypFs);
+					foreach (HashSet<FeatureStructure> disj in indefinite)
+						hypFs.AddDisjunction(disj);
+
+					FeatureStructure nFs;
+					if (n == 1 ? CheckIndefinite(hypFs, hypFs, useDefaults, out nFs)
+						: NWiseConsistency(hypFs, n - 1, useDefaults, out nFs))
+					{
+						newDisjunction.Add(nFs);
+					}
+				}
+
+				if (newDisjunction.Count == 0)
+				{
+					newFs = null;
+					return false;
+				}
+				else if (newDisjunction.Count == 1)
+				{
+					FeatureStructure nFs = newDisjunction.First();
+					newFs = nFs;
+					indefinite.Clear();
+					indefinite.UnionWith(newFs.Disjunctions);
+					newFs.ClearDisjunctions();
+				}
+				else
+				{
+					newFs.AddDisjunction(newDisjunction);
+				}
 			}
+
+			return true;
+		}
+
+		internal override bool Negation(out FeatureValue output)
+		{
+			if (Forward != null)
+				return Forward.Negation(out output);
+
+			FeatureStructure fs;
+			if (!Negation(out fs))
+			{
+				output = null;
+				return false;
+			}
+
+			output = fs;
+			return true;
+		}
+
+		public bool Negation(out FeatureStructure output)
+		{
+			if (Forward != null)
+				return ((FeatureStructure) Forward).Negation(out output);
+
 			output = null;
-			return false;
-		}
+			foreach (HashSet<FeatureStructure> disjunction in _indefinite)
+			{
+				foreach (FeatureStructure disjunct in disjunction)
+				{
+					FeatureStructure negation;
+					if (!disjunct.Negation(out negation))
+					{
+						output = null;
+						return false;
+					}
 
-		public FeatureStructure Negation()
-		{
-			var fs = (FeatureStructure) Clone();
-			fs.Negate();
-			return fs;
-		}
+					if (output == null)
+					{
+						output = negation;
+					}
+					else
+					{
+						if (!output.Unify(negation, false, true, out output))
+						{
+							output = null;
+							return false;
+						}
+					}
+				}
+			}
 
-		public FeatureStructure Intersect(FeatureStructure other)
-		{
-			var fs = (FeatureStructure) other.Clone();
-			fs.IntersectWith(this);
-			return fs;
-		}
+			if (output == null)
+				output = new FeatureStructure();
 
-		public FeatureStructure Union(FeatureStructure other)
-		{
-			var fs = (FeatureStructure) other.Clone();
-			fs.UnionWith(this);
-			return fs;
-		}
-
-		/// <summary>
-		/// Gets the difference between this subset and the specified superset. If this set is
-		/// not a subset of the specified superset, it will return <c>false</c>.
-		/// </summary>
-		/// <param name="superset">The superset feature values.</param>
-		/// <param name="remainder">The remainder.</param>
-		/// <returns><c>true</c> if this is a subset, otherwise <c>false</c>.</returns>
-		public bool GetSupersetRemainder(FeatureStructure superset, out FeatureStructure remainder)
-		{
-			var result = (FeatureStructure) superset.Clone();
-			foreach (KeyValuePair<Feature, FeatureValue> kvp in _values)
+			var newDisjunction = new HashSet<FeatureStructure>();
+			foreach (KeyValuePair<Feature, FeatureValue> kvp in _definite)
 			{
 				FeatureValue value;
-				if (kvp.Value != null && (!result._values.TryGetValue(kvp.Key, out value) || !value.Equals(kvp.Value)))
+				if (!kvp.Value.Negation(out value))
 				{
-					remainder = null;
+					output = null;
 					return false;
 				}
-
-				result._values.Remove(kvp.Key);
+				var fs = new FeatureStructure();
+				fs.AddValue(kvp.Key, value);
+				newDisjunction.Add(fs);
 			}
-
-			remainder = result;
+			output.AddDisjunction(newDisjunction);
 			return true;
 		}
 
 		public override FeatureValue Clone()
 		{
+			if (Forward != null)
+				return Forward.Clone();
+
 			return new FeatureStructure(this);
 		}
 
 		public override int GetHashCode()
 		{
-			return _values.Aggregate(0, (current, kvp) => current ^ (kvp.Key.GetHashCode() ^ (kvp.Value != null ? kvp.Value.GetHashCode() : 0)));
+			if (Forward != null)
+				return Forward.GetHashCode();
+
+			return _definite.Aggregate(0, (current, kvp) => current ^ (kvp.Key.GetHashCode() ^ (kvp.Value != null ? kvp.Value.GetHashCode() : 0)));
 		}
 
 		public override bool Equals(object obj)
 		{
+			if (Forward != null)
+				return Forward.Equals(obj);
+
 			if (obj == null)
 				return false;
 			return Equals(obj as FeatureStructure);
@@ -360,16 +708,21 @@ namespace SIL.APRE
 
 		public bool Equals(FeatureStructure other)
 		{
+			if (Forward != null)
+				return ((FeatureStructure) Forward).Equals(other);
+
 			if (other == null)
 				return false;
 
-			if (_values.Count != other._values.Count)
+			other = GetValue(other);
+
+			if (_definite.Count != other._definite.Count)
 				return false;
 
-			foreach (KeyValuePair<Feature, FeatureValue> kvp in _values)
+			foreach (KeyValuePair<Feature, FeatureValue> kvp in _definite)
 			{
 				FeatureValue value;
-				if (!other._values.TryGetValue(kvp.Key, out value))
+				if (!other._definite.TryGetValue(kvp.Key, out value))
 					return false;
 
 				if (kvp.Value != null && !kvp.Value.Equals(value))
@@ -381,17 +734,20 @@ namespace SIL.APRE
 
 		public override string ToString()
 		{
+			if (Forward != null)
+				return Forward.ToString();
+
 			bool firstFeature = true;
 			var sb = new StringBuilder();
 			sb.Append("[");
-			foreach (KeyValuePair<Feature, FeatureValue> kvp in _values)
+			foreach (KeyValuePair<Feature, FeatureValue> kvp in _definite)
 			{
 				if (!firstFeature)
 					sb.Append(", ");
 				sb.Append(kvp.Key.Description);
 				if (kvp.Value != null)
 				{
-					sb.Append("->");
+					sb.Append(":");
 					sb.Append(kvp.Value.ToString());
 				}
 				firstFeature = false;

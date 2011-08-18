@@ -37,14 +37,13 @@ namespace SIL.APRE
 
 		public virtual Pattern<TOffset> Pattern { get; internal set; }
 
-		internal virtual State<TOffset> GenerateNfa(FiniteStateAutomaton<TOffset> fsa,
-			State<TOffset> startState, int varValueIndex, IEnumerable<Tuple<string, IEnumerable<Feature>, FeatureSymbol>> varValues)
+		internal virtual State<TOffset> GenerateNfa(FiniteStateAutomaton<TOffset> fsa, State<TOffset> startState)
 		{
 			PatternNode<TOffset> nextNode = GetNext(fsa.Direction);
 			if (nextNode == null)
 				return startState;
 
-			return nextNode.GenerateNfa(fsa, startState, varValueIndex, varValues);
+			return nextNode.GenerateNfa(fsa, startState);
 		}
 
 		public abstract PatternNode<TOffset> Clone();

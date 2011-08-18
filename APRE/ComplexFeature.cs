@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace SIL.APRE
 {
@@ -29,7 +30,6 @@ namespace SIL.APRE
 
 		public void AddSubfeature(Feature feature)
 		{
-			feature.ParentFeature = this;
 			_subfeatures.Add(feature);
 		}
 
@@ -40,10 +40,19 @@ namespace SIL.APRE
 
 		public Feature GetSubfeature(string id)
 		{
-			Feature feature;
-			if (_subfeatures.TryGetValue(id, out feature))
-				return feature;
-			return null;
+			try
+			{
+				return _subfeatures[id];
+			}
+			catch (KeyNotFoundException ex)
+			{
+				throw new ArgumentException("The specified feature could not be found.", "id", ex);
+			}
+		}
+
+		public bool TryGetSubfeature(string id, out Feature subfeature)
+		{
+			return _subfeatures.TryGetValue(id, out subfeature);
 		}
 	}
 }
