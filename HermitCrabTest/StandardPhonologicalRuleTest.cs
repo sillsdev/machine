@@ -38,15 +38,15 @@ namespace HermitCrabTest
 			_phoneticFeatSys.AddFeature(poaFeature);
 
 			_charDefTable = new CharacterDefinitionTable("table1", "table1", _spanFactory, _phoneticFeatSys);
-			_charDefTable.AddSegmentDefinition("a", _phoneticFeatSys.CreateFeatureStructure("cons_minus", "voc_plus", "high_minus", "low_plus", "back_plus", "round_minus", "vd_plus", "cont_plus"));
-			_charDefTable.AddSegmentDefinition("i", _phoneticFeatSys.CreateFeatureStructure("cons_minus", "voc_plus", "high_plus", "low_minus", "back_minus", "round_minus", "vd_plus", "cont_plus"));
-			_charDefTable.AddSegmentDefinition("u", _phoneticFeatSys.CreateFeatureStructure("cons_minus", "voc_plus", "high_minus", "low_minus", "back_plus", "round_plus", "vd_plus", "cont_plus"));
-			_charDefTable.AddSegmentDefinition("o", _phoneticFeatSys.CreateFeatureStructure("cons_minus", "voc_plus", "high_minus", "low_minus", "back_plus", "round_plus", "vd_plus", "cont_plus"));
-			_charDefTable.AddSegmentDefinition("uû", _phoneticFeatSys.CreateFeatureStructure("cons_minus", "voc_plus", "high_plus", "low_minus", "back_minus", "round_plus", "vd_plus", "cont_plus"));
-			_charDefTable.AddSegmentDefinition("p", _phoneticFeatSys.CreateFeatureStructure("cons_plus", "voc_minus", "bilabial", "vd_minus", "asp_minus", "strident_minus", "cont_minus", "nasal_minus"));
-			_charDefTable.AddSegmentDefinition("t", _phoneticFeatSys.CreateFeatureStructure("cons_plus", "voc_minus", "alveolar", "vd_minus", "asp_minus", "del_rel_minus", "strident_minus", "cont_minus", "nasal_minus"));
-			_charDefTable.AddSegmentDefinition("pH", _phoneticFeatSys.CreateFeatureStructure("cons_plus", "voc_minus", "bilabial", "vd_minus", "asp_plus", "strident_minus", "cont_minus", "nasal_minus"));
-			_charDefTable.AddSegmentDefinition("tH", _phoneticFeatSys.CreateFeatureStructure("cons_plus", "voc_minus", "alveolar", "vd_minus", "asp_plus", "del_rel_minus", "strident_minus", "cont_minus", "nasal_minus"));
+			_charDefTable.AddSegmentDefinition("a", _phoneticFeatSys.CreateFS("cons_minus", "voc_plus", "high_minus", "low_plus", "back_plus", "round_minus", "vd_plus", "cont_plus"));
+			_charDefTable.AddSegmentDefinition("i", _phoneticFeatSys.CreateFS("cons_minus", "voc_plus", "high_plus", "low_minus", "back_minus", "round_minus", "vd_plus", "cont_plus"));
+			_charDefTable.AddSegmentDefinition("u", _phoneticFeatSys.CreateFS("cons_minus", "voc_plus", "high_minus", "low_minus", "back_plus", "round_plus", "vd_plus", "cont_plus"));
+			_charDefTable.AddSegmentDefinition("o", _phoneticFeatSys.CreateFS("cons_minus", "voc_plus", "high_minus", "low_minus", "back_plus", "round_plus", "vd_plus", "cont_plus"));
+			_charDefTable.AddSegmentDefinition("uû", _phoneticFeatSys.CreateFS("cons_minus", "voc_plus", "high_plus", "low_minus", "back_minus", "round_plus", "vd_plus", "cont_plus"));
+			_charDefTable.AddSegmentDefinition("p", _phoneticFeatSys.CreateFS("cons_plus", "voc_minus", "bilabial", "vd_minus", "asp_minus", "strident_minus", "cont_minus", "nasal_minus"));
+			_charDefTable.AddSegmentDefinition("t", _phoneticFeatSys.CreateFS("cons_plus", "voc_minus", "alveolar", "vd_minus", "asp_minus", "del_rel_minus", "strident_minus", "cont_minus", "nasal_minus"));
+			_charDefTable.AddSegmentDefinition("pH", _phoneticFeatSys.CreateFS("cons_plus", "voc_minus", "bilabial", "vd_minus", "asp_plus", "strident_minus", "cont_minus", "nasal_minus"));
+			_charDefTable.AddSegmentDefinition("tH", _phoneticFeatSys.CreateFS("cons_plus", "voc_minus", "alveolar", "vd_minus", "asp_plus", "del_rel_minus", "strident_minus", "cont_minus", "nasal_minus"));
 		}
 
 		private static Feature CreatePhonologicalFeature(string id)
@@ -63,8 +63,8 @@ namespace HermitCrabTest
 			var rule1 = new StandardPhonologicalRule("rule1", "rule1", _spanFactory, _phoneticFeatSys);
 			rule1.Lhs = new Pattern<PhoneticShapeNode>(_spanFactory, new Constraints<PhoneticShapeNode>("Segment", (FeatureStructure) _charDefTable.GetSegmentDefinition("t").SynthFeatureStructure.Clone()));
 			rule1.AddSubrule(new StandardPhonologicalRule.Subrule(1,
-				new Pattern<PhoneticShapeNode>(_spanFactory, new Constraints<PhoneticShapeNode>("Segment", _phoneticFeatSys.CreateFeatureStructure("asp_plus"))),
-				new Pattern<PhoneticShapeNode>(_spanFactory, new Constraints<PhoneticShapeNode>("Segment", _phoneticFeatSys.CreateFeatureStructure("cons_minus"))), null, rule1));
+				new Pattern<PhoneticShapeNode>(_spanFactory, new Constraints<PhoneticShapeNode>("Segment", _phoneticFeatSys.CreateFS("asp_plus"))),
+				new Pattern<PhoneticShapeNode>(_spanFactory, new Constraints<PhoneticShapeNode>("Segment", _phoneticFeatSys.CreateFS("cons_minus"))), null, rule1));
 			rule1.Unapply(new WordAnalysis(_charDefTable.ToPhoneticShape("pHitH", ModeType.Analysis), null, null));
 		}
 	}

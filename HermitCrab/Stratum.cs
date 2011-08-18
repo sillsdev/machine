@@ -481,7 +481,7 @@ namespace SIL.HermitCrab
         /// <returns>The resulting word synthesis.</returns>
         WordSynthesis ChooseInflStem(WordSynthesis ws)
         {
-            if (ws.RealizationalFeatures.NumFeatures == 0 || ws.Root.Family == null)
+            if (ws.RealizationalFeatures.NumValues == 0 || ws.Root.Family == null)
                 return ws;
 
             WordSynthesis best = ws;

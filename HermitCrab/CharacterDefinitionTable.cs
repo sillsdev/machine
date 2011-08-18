@@ -179,7 +179,7 @@ namespace SIL.HermitCrab
 				if (bdryDef != null)
 				{
 					node = new PhoneticShapeNode(_spanFactory, "Boundary",
-						_phoneticFeatSys.CreateFeatureStructure(new FeatValPair("strRep", bdryDef.StrRep)));
+						_phoneticFeatSys.CreateFS(new FV("strRep", bdryDef.StrRep)));
 				}
             }
             return node;

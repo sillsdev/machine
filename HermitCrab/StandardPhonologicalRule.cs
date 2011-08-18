@@ -393,7 +393,7 @@ namespace SIL.HermitCrab
 							continue;
 
 						var newNode = new PhoneticShapeNode(_rule._spanFactory, constraints.AnnotationType,
-						                                    _rule._phoneticFeatSys.CreateFeatureStructure());
+						                                    _rule._phoneticFeatSys.CreateFS());
 						newNode.Annotation.FeatureStructure.UninstantiateAll();
 						newNode.Annotation.FeatureStructure.IntersectWith(constraints.FeatureStructure);
 						// mark the undeleted segment as optional
@@ -420,12 +420,12 @@ namespace SIL.HermitCrab
 					if (pattern.Count == 0)
 					{
 						span = _rule._spanFactory.Create(curNode);
-						varValues = _rule._phoneticFeatSys.CreateFeatureStructure();
+						varValues = _rule._phoneticFeatSys.CreateFS();
 						return true;
 					}
 
 					PatternMatch<PhoneticShapeNode> match;
-					if (pattern.IsMatch(shape.Annotations.GetView(curNode.Annotation, dir), dir, mode, _rule._phoneticFeatSys.CreateFeatureStructure(),
+					if (pattern.IsMatch(shape.Annotations.GetView(curNode.Annotation, dir), dir, mode, _rule._phoneticFeatSys.CreateFS(),
 					                    out match))
 					{
 						if (match["target"] != null)
@@ -511,7 +511,7 @@ namespace SIL.HermitCrab
                 	var constraints = patNode as Constraints<PhoneticShapeNode>;
 					if (constraints == null)
 						continue;
-					var newNode = new PhoneticShapeNode(_rule._spanFactory, constraints.AnnotationType, _rule._phoneticFeatSys.CreateFeatureStructure());
+					var newNode = new PhoneticShapeNode(_rule._spanFactory, constraints.AnnotationType, _rule._phoneticFeatSys.CreateFS());
 					newNode.Annotation.FeatureStructure.IntersectWith(constraints.FeatureStructure);
                 	constraints.InstantiateVariables(newNode.Annotation, varValues);
             		try
