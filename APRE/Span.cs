@@ -109,10 +109,10 @@ namespace SIL.APRE
 				if (_compare(_start, other._start) > 0)
 					return 1;
 
-				if (_compare(_end, other._end) < 0)
+				if (_compare(_end, other._end) > 0)
 					return -1;
 
-				if (_compare(_end, other._end) > 0)
+				if (_compare(_end, other._end) < 0)
 					return 1;
 			}
 			else
@@ -123,10 +123,10 @@ namespace SIL.APRE
 				if (_compare(_end, other._end) < 0)
 					return 1;
 
-				if (_compare(_start, other._start) > 0)
+				if (_compare(_start, other._start) < 0)
 					return -1;
 
-				if (_compare(_start, other._start) < 0)
+				if (_compare(_start, other._start) > 0)
 					return 1;
 			}
 

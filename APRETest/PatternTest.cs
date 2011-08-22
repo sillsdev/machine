@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using SIL.APRE.FeatureModel;
+using SIL.APRE.Patterns;
 
 namespace SIL.APRE.Test
 {
@@ -21,7 +23,7 @@ namespace SIL.APRE.Test
 						annType = "Bdry";
 						break;
 				}
-				annList.Add(new Annotation<int>(spanFactory.Create(i, i + 1), FeatureStructure.Build(featSys)
+				annList.Add(new Annotation<int>(spanFactory.Create(i, i + 1), featSys.BuildFS()
 					.String("str", str[i].ToString())
 					.String("type", annType)));
 			}
@@ -36,7 +38,7 @@ namespace SIL.APRE.Test
 				.StringFeature("str")
 				.StringFeature("type");
 
-			FeatureStructure types = featSys.BuildFS().String("type", "Noun", "Verb", "NP", "VP", "Det", "Adj", "Adv");
+			FeatureStructure types = featSys.BuildFS().String("type", "Noun", "Verb", "Det", "Adj", "Adv");
 			Pattern<int> ltorPattern = Pattern<int>.Build(spanFactory).Filter(ann => ann.FeatureStructure.IsUnifiable(types, false, true))
 				.Expression(expr => expr
 					.Or(or => or

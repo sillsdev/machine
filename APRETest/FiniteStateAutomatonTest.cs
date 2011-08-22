@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using NUnit.Framework;
+using SIL.APRE.FeatureModel;
 using SIL.APRE.Fsa;
 
 namespace SIL.APRE.Test

@@ -1,4 +1,5 @@
 ﻿using System;
+using SIL.APRE.FeatureModel;
 
 namespace SIL.APRE
 {

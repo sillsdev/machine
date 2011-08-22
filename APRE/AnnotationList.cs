@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace SIL.APRE
 {
@@ -25,19 +26,6 @@ namespace SIL.APRE
 			node.ListID = _currentID++;
 		}
 
-		public IBidirList<Annotation<TOffset>> GetView(Span<TOffset> span)
-		{
-			Annotation<TOffset> startAnn;
-			Find(new Annotation<TOffset>(span.StartSpan), Direction.LeftToRight, out startAnn);
-			startAnn = startAnn == null ? First : startAnn.Next;
-
-			Annotation<TOffset> endAnn;
-			Find(new Annotation<TOffset>(span.EndSpan), Direction.LeftToRight, out endAnn);
-			endAnn = endAnn == null ? First : endAnn.Next;
-
-			return this.GetView(startAnn, endAnn);
-		}
-
 		public AnnotationList<TOffset> Clone()
 		{
 			return new AnnotationList<TOffset>(this);
@@ -46,6 +34,22 @@ namespace SIL.APRE
 		object ICloneable.Clone()
 		{
 			return Clone();
+		}
+
+		public override string ToString()
+		{
+			var sb = new StringBuilder();
+			sb.Append("{");
+			bool first = true;
+			foreach (Annotation<TOffset> ann in this)
+			{
+				if (!first)
+					sb.Append(", ");
+				sb.Append(ann.ToString());
+				first = false;
+			}
+			sb.Append("}");
+			return sb.ToString();
 		}
 
 		class AnnotationComparer : IComparer<Annotation<TOffset>>

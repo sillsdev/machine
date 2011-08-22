@@ -1,4 +1,4 @@
-﻿namespace SIL.APRE
+namespace SIL.APRE
 {
 	public abstract class SkipListNode<TNode> : IBidirListNode<TNode> where TNode : SkipListNode<TNode>
 	{

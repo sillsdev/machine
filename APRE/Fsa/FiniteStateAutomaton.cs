@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using SIL.APRE.FeatureModel;
 
 namespace SIL.APRE.Fsa
 {

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace SIL.APRE
 {
@@ -63,5 +63,24 @@ namespace SIL.APRE
 		/// <returns>The previous node.</returns>
 		/// <exception cref="System.ArgumentException">Thrown when the specified node is not owned by this linked list.</exception>
 		TNode GetPrev(TNode cur, Direction dir);
+
+		/// <summary>
+		/// Finds the node that matches the specified node.
+		/// </summary>
+		/// <param name="node">The node.</param>
+		/// <param name="dir">The direction.</param>
+		/// <param name="result">The result.</param>
+		/// <returns></returns>
+		bool Find(TNode node, Direction dir, out TNode result);
+
+		/// <summary>
+		/// Finds the node that matches the specified node.
+		/// </summary>
+		/// <param name="start">The node to start searching from.</param>
+		/// <param name="node">The node.</param>
+		/// <param name="dir">The direction.</param>
+		/// <param name="result">The result.</param>
+		/// <returns></returns>
+		bool Find(TNode start, TNode node, Direction dir, out TNode result);
 	}
 }

@@ -1,4 +1,4 @@
-﻿namespace SIL.APRE
+namespace SIL.APRE
 {
 	/// <summary>
 	/// This is an abstract class that all bi-directional linked list nodes must extend. Having to specify the type
@@ -81,12 +81,12 @@
 			_list.Insert(newNode, (TNode)this, dir);
 		}
 
-		protected internal virtual void Init(BidirList<TNode> list)
+		internal virtual void Init(BidirList<TNode> list)
 		{
 			_list = list;
 		}
 
-		internal void Clear()
+		internal virtual void Clear()
 		{
 			_list = null;
 			Next = null;

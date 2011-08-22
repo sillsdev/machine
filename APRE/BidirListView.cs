@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,9 +11,9 @@ namespace SIL.APRE
 		private TNode _first;
 		private TNode _last;
 
-		public BidirListView(IBidirList<TNode> list, TNode first, TNode last)
+		public BidirListView(TNode first, TNode last)
 		{
-			_list = list;
+			_list = first.List;
 			_first = first;
 			_last = last;
 		}
@@ -21,7 +21,7 @@ namespace SIL.APRE
 		public bool IsValid
 		{
 			get { return _first.List == _list && _last.List == _list; }
-		}
+		} 
 
 		public void SlideNext(int num, Direction dir)
 		{
@@ -205,6 +205,22 @@ namespace SIL.APRE
 				throw new InvalidOperationException("This view has been invalidated by a modification to its backing list.");
 
 			return _list.GetPrev(cur, dir);
+		}
+
+		public bool Find(TNode node, Direction dir, out TNode result)
+		{
+			if (!IsValid)
+				throw new InvalidOperationException("This view has been invalidated by a modification to its backing list.");
+
+			return _list.Find(node, dir, out result);
+		}
+
+		public bool Find(TNode start, TNode node, Direction dir, out TNode result)
+		{
+			if (!IsValid)
+				throw new InvalidOperationException("This view has been invalidated by a modification to its backing list.");
+
+			return _list.Find(start, node, dir, out result);
 		}
 	}
 }

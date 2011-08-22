@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using SIL.APRE.FeatureModel;
 
 namespace SIL.APRE.Fsa
 {

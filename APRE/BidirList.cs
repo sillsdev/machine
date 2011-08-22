@@ -15,6 +15,18 @@ namespace SIL.APRE
     	private TNode _last;
         private int _size;
 
+    	private readonly IEqualityComparer<TNode> _comparer; 
+
+		public BidirList()
+			: this(EqualityComparer<TNode>.Default)
+		{
+		}
+
+		public BidirList(IEqualityComparer<TNode> comparer)
+		{
+			_comparer = comparer;
+		}
+
     	public int Count
         {
             get
@@ -216,7 +228,26 @@ namespace SIL.APRE
         	return cur.Next;
         }
 
-        /// <summary>
+    	public bool Find(TNode node, Direction dir, out TNode result)
+    	{
+    		return Find(GetFirst(dir), node, dir, out result);
+    	}
+
+    	public bool Find(TNode start, TNode node, Direction dir, out TNode result)
+    	{
+			for (TNode n = start; n != null; n = n.GetNext(dir))
+			{
+				if (_comparer.Equals(node, n))
+				{
+					result = n;
+					return true;
+				}
+			}
+    		result = null;
+    		return false;
+    	}
+
+    	/// <summary>
         /// Inserts <c>newNode</c> to the left or right of <c>node</c>.
         /// </summary>
         /// <param name="newNode">The new node.</param>
@@ -272,7 +303,7 @@ namespace SIL.APRE
 
         public override int GetHashCode()
         {
-        	return this.Aggregate(0, (current, node) => current ^ node.GetHashCode());
+        	return this.Aggregate(0, (current, node) => current ^ _comparer.GetHashCode(node));
         }
 
         public override bool Equals(object obj)
@@ -294,7 +325,7 @@ namespace SIL.APRE
             IEnumerator<TNode> e2 = other.GetEnumerator();
             while (e1.MoveNext() && e2.MoveNext())
             {
-                if (e1.Current != null && !e1.Current.Equals(e2.Current))
+                if (e1.Current != null && ! _comparer.Equals(e1.Current, e2.Current))
                     return false;
             }
 

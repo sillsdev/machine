@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -242,10 +242,16 @@ namespace SIL.APRE
 		public bool Find(TNode node, Direction dir, out TNode result)
 		{
 			State state = GetState(dir);
+			return Find(state.First[state.Levels - 1], node, dir, out result);
+		}
+
+		public bool Find(TNode start, TNode node, Direction dir, out TNode result)
+		{
+			State state = GetState(dir);
 			TNode cur = null;
-			for (int i = state.Levels - 1; i >= 0; i--)
+			for (int i = start.GetLevels(dir) - 1; i >= 0; i--)
 			{
-				TNode next = cur == null ? state.First[i] : cur.GetNext(dir, i);
+				TNode next = cur == null ? (i == start.GetLevels(dir) - 1 ? start : state.First[i]) : cur.GetNext(dir, i);
 				while (next != null)
 				{
 					int res = state.Comparer.Compare(next, node);

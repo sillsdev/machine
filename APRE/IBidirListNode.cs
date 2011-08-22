@@ -1,4 +1,4 @@
-﻿namespace SIL.APRE
+namespace SIL.APRE
 {
 	public interface IBidirListNode<TNode> where TNode : class, IBidirListNode<TNode>
 	{
