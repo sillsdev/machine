@@ -5,6 +5,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.IO;
 using SIL.APRE;
+using SIL.APRE.FeatureModel;
+using SIL.APRE.Patterns;
 
 namespace SIL.HermitCrab
 {
@@ -17,12 +19,12 @@ namespace SIL.HermitCrab
             return obj as ConfigNode;
         }
 
-        NodeType m_type;
+        PatternNodeType m_type;
         string m_name;
         Dictionary<string, object> m_parameters;
 		LegacyLoader m_loader;
 
-        public ConfigNode(NodeType type, string name, LegacyLoader loader)
+        public ConfigNode(PatternNodeType type, string name, LegacyLoader loader)
         {
             m_type = type;
             m_name = name;
@@ -30,7 +32,7 @@ namespace SIL.HermitCrab
 			m_loader = loader;
         }
 
-        public NodeType Type
+        public PatternNodeType Type
         {
             get
             {
@@ -92,7 +94,7 @@ namespace SIL.HermitCrab
             T value;
             if (!Get<T>(key, out value))
                 throw new LoadException(LoadException.LoadErrorType.InvalidFormat, m_loader,
-					string.Format(HCStrings.kstidFieldNotDefined, key, m_name, (m_type == NodeType.COMMAND ? "command" : "object")));
+					string.Format(HCStrings.kstidFieldNotDefined, key, m_name, (m_type == PatternNodeType.COMMAND ? "command" : "object")));
             return value;
         }
 
@@ -104,7 +106,7 @@ namespace SIL.HermitCrab
 				if (!(valObj is T))
 				{
 					throw new LoadException(LoadException.LoadErrorType.InvalidFormat, m_loader,
-						string.Format(HCStrings.kstidInvalidField, key, m_name, (m_type == NodeType.COMMAND ? "command" : "object")));
+						string.Format(HCStrings.kstidInvalidField, key, m_name, (m_type == PatternNodeType.COMMAND ? "command" : "object")));
 				}
                 value = (T) valObj;
                 return true;

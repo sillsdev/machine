@@ -4,6 +4,8 @@ using System.Text;
 using System.Xml;
 using System.Xml.Schema;
 using SIL.APRE;
+using SIL.APRE.FeatureModel;
+using SIL.APRE.Patterns;
 
 namespace SIL.HermitCrab
 {

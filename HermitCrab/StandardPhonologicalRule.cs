@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using SIL.APRE;
+using SIL.APRE.FeatureModel;
+using SIL.APRE.Patterns;
 
 namespace SIL.HermitCrab
 {

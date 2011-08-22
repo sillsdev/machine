@@ -1,6 +1,8 @@
 ﻿using System.Linq;
 using NUnit.Framework;
 using SIL.APRE;
+using SIL.APRE.FeatureModel;
+using SIL.APRE.Patterns;
 using SIL.HermitCrab;
 
 namespace HermitCrabTest
