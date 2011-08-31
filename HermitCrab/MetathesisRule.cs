@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using SIL.APRE;
-using SIL.APRE.Patterns;
+using SIL.APRE.Matching;
 
 namespace SIL.HermitCrab
 {

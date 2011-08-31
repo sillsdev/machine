@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.IO;
 using SIL.APRE;
 using SIL.APRE.FeatureModel;
-using SIL.APRE.Patterns;
+using SIL.APRE.Matching;
 
 namespace SIL.HermitCrab
 {
@@ -838,7 +838,7 @@ namespace SIL.HermitCrab
             }
 
             ICollection<FeatureValue> featVals = LoadFeatValues(natClassSpec.Get<List<object>>("features"));
-            natClass.FeatureStructure = new FeatureBundle(featVals, _curMorpher.PhoneticFeatureSystem);
+            natClass.FeatureStruct = new FeatureBundle(featVals, _curMorpher.PhoneticFeatureSystem);
         }
 
         void LoadPRule(ConfigNode pruleSpec)

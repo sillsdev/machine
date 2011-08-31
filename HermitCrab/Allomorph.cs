@@ -8,7 +8,7 @@ namespace SIL.HermitCrab
 	/// This class represents an allomorph of a morpheme. Allomorphs can be phonologically
 	/// conditioned using environments and are applied disjunctively within a morpheme.
 	/// </summary>
-	public abstract class Allomorph : IDBearer, IComparable<Allomorph>
+	public abstract class Allomorph : IDBearerBase, IComparable<Allomorph>
 	{
 		private Morpheme _morpheme;
 		private IEnumerable<Environment> _requiredEnvs;

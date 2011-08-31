@@ -80,7 +80,7 @@ namespace SIL.HermitCrab
 		private class TrieNode
 		{
 			private readonly List<T> _values;
-			private readonly FeatureStructure _featureStructure;
+			private readonly FeatureStruct _featureStruct;
 			private readonly List<TrieNode> _children;
 
 			public TrieNode()
@@ -88,9 +88,9 @@ namespace SIL.HermitCrab
 			{
 			}
 
-			private TrieNode(FeatureStructure featureStructure)
+			private TrieNode(FeatureStruct featureStruct)
 			{
-				_featureStructure = featureStructure;
+				_featureStruct = featureStruct;
 				_values = new List<T>();
 				_children = new List<TrieNode>();
 			}
@@ -117,7 +117,7 @@ namespace SIL.HermitCrab
 						foreach (TrieNode child in _children)
 						{
 							// we check for exact matches of feature sets when adding
-							if (child._featureStructure.Equals(node.Annotation.FeatureStructure))
+							if (child._featureStruct.Equals(node.Annotation.FeatureStruct))
 							{
 								tnode = child;
 								break;
@@ -127,7 +127,7 @@ namespace SIL.HermitCrab
 						if (tnode == null)
 						{
 							// new node needs to be added
-							tnode = new TrieNode((FeatureStructure) node.Annotation.FeatureStructure.Clone());
+							tnode = new TrieNode((FeatureStruct) node.Annotation.FeatureStruct.Clone());
 							_children.Add(tnode);
 						}
 
@@ -168,7 +168,7 @@ namespace SIL.HermitCrab
 							foreach (TrieNode child in _children)
 							{
 								// check for unifiability when searching
-								if (node.Annotation.FeatureStructure.IsUnifiable(child._featureStructure))
+								if (node.Annotation.FeatureStruct.IsUnifiable(child._featureStruct))
 									segMatches.AddRange(child.Search(nextNode, dir, partialMatch));
 							}
 
@@ -195,7 +195,7 @@ namespace SIL.HermitCrab
 
 			public override string ToString()
 			{
-				return _featureStructure.ToString();
+				return _featureStruct.ToString();
 			}
 		}
 

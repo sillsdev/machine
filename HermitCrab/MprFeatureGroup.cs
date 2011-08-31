@@ -6,7 +6,7 @@ namespace SIL.HermitCrab
 	/// <summary>
 	/// This class represents a group of related MPR features.
 	/// </summary>
-	public class MprFeatureGroup : IDBearer
+	public class MprFeatureGroup : IDBearerBase
 	{
 		/// <summary>
 		/// The matching type

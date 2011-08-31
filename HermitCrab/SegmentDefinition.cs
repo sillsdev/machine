@@ -10,16 +10,16 @@ namespace SIL.HermitCrab
 	{
 		private readonly string _strRep;
 		private readonly CharacterDefinitionTable _charDefTable;
-		private readonly FeatureStructure _analysisFeatureStructure;
-		private readonly FeatureStructure _synthFeatureStructure;
+		private readonly FeatureStruct _analysisFeatureStruct;
+		private readonly FeatureStruct _synthFeatureStruct;
 
-		public SegmentDefinition(string strRep, CharacterDefinitionTable charDefTable, FeatureStructure synthFeatureStructure,
-			FeatureStructure analysisFeatureStructure)
+		public SegmentDefinition(string strRep, CharacterDefinitionTable charDefTable, FeatureStruct synthFeatureStruct,
+			FeatureStruct analysisFeatureStruct)
 		{
 			_strRep = strRep;
 			_charDefTable = charDefTable;
-			_synthFeatureStructure = synthFeatureStructure;
-			_analysisFeatureStructure = analysisFeatureStructure;
+			_synthFeatureStruct = synthFeatureStruct;
+			_analysisFeatureStruct = analysisFeatureStruct;
 		}
 
 		public string StrRep
@@ -38,19 +38,19 @@ namespace SIL.HermitCrab
 			}
 		}
 
-		public FeatureStructure AnalysisFeatureStructure
+		public FeatureStruct AnalysisFeatureStruct
 		{
 			get
 			{
-				return _analysisFeatureStructure;
+				return _analysisFeatureStruct;
 			}
 		}
 
-		public FeatureStructure SynthFeatureStructure
+		public FeatureStruct SynthFeatureStruct
 		{
 			get
 			{
-				return _synthFeatureStructure;
+				return _synthFeatureStruct;
 			}
 		}
 

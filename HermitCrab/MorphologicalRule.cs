@@ -134,7 +134,7 @@ namespace SIL.HermitCrab
 		/// <returns>
 		/// 	<c>true</c> if the rule was successfully applied, otherwise <c>false</c>
 		/// </returns>
-		public abstract bool ApplySlotAffix(WordSynthesis input, FeatureStructure origHeadFeatures, out ICollection<WordSynthesis> output);
+		public abstract bool ApplySlotAffix(WordSynthesis input, FeatureStruct origHeadFeatures, out ICollection<WordSynthesis> output);
 
         public virtual void Reset()
         {

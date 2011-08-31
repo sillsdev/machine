@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using SIL.APRE;
 using SIL.APRE.FeatureModel;
-using SIL.APRE.Patterns;
+using SIL.APRE.Matching;
 
 namespace SIL.HermitCrab
 {
@@ -18,7 +18,7 @@ namespace SIL.HermitCrab
         private WordAnalysis _nonHead;
         private readonly List<MorphologicalRule> _mrules;
         private readonly Dictionary<MorphologicalRule, int> _mrulesUnapplied;
-        private FeatureStructure _rzFeatures;
+        private FeatureStruct _rzFeatures;
         private Trace _curTrace;
         private Stratum _stratum;
 
@@ -128,7 +128,7 @@ namespace SIL.HermitCrab
         /// Gets or sets the realizational features.
         /// </summary>
         /// <value>The realizational features.</value>
-        public FeatureStructure RealizationalFeatures
+        public FeatureStruct RealizationalFeatures
         {
             get
             {

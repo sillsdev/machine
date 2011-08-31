@@ -2,7 +2,7 @@
 using System.Text;
 using SIL.APRE;
 using SIL.APRE.FeatureModel;
-using SIL.APRE.Patterns;
+using SIL.APRE.Matching;
 
 namespace SIL.HermitCrab
 {
@@ -51,8 +51,8 @@ namespace SIL.HermitCrab
 		private readonly List<RootAllomorph> _allomorphs;
 		private PartOfSpeech _partOfSpeech;
 		private MprFeatureSet _mprFeatures;
-		private FeatureStructure _headFeatures;
-		private FeatureStructure _footFeatures;
+		private FeatureStruct _headFeatures;
+		private FeatureStruct _footFeatures;
 		private LexFamily _family;
 
 		/// <summary>
@@ -142,7 +142,7 @@ namespace SIL.HermitCrab
 		/// Gets the head features.
 		/// </summary>
 		/// <value>The head features.</value>
-		public FeatureStructure HeadFeatures
+		public FeatureStruct HeadFeatures
 		{
 			get
 			{
@@ -159,7 +159,7 @@ namespace SIL.HermitCrab
 		/// Gets the foot features.
 		/// </summary>
 		/// <value>The foot features.</value>
-		public FeatureStructure FootFeatures
+		public FeatureStruct FootFeatures
 		{
 			get
 			{

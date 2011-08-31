@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using SIL.APRE;
 using SIL.APRE.FeatureModel;
-using SIL.APRE.Patterns;
+using SIL.APRE.Matching;
 
 namespace SIL.HermitCrab
 {
@@ -13,7 +13,7 @@ namespace SIL.HermitCrab
     /// This class represents a character definition table. It encapsulates the mappings of
     /// characters to phonetic segments.
     /// </summary>
-    public class CharacterDefinitionTable : IDBearer
+    public class CharacterDefinitionTable : IDBearerBase
     {
         private readonly Dictionary<string, SegmentDefinition> _segDefs;
         private readonly Dictionary<string, BoundaryDefinition> _bdryDefs;
@@ -59,7 +59,7 @@ namespace SIL.HermitCrab
     	/// </summary>
     	/// <param name="strRep"></param>
     	/// <param name="fs"></param>
-    	public virtual void AddSegmentDefinition(string strRep, FeatureStructure fs)
+    	public virtual void AddSegmentDefinition(string strRep, FeatureStruct fs)
         {
             var segDef = new SegmentDefinition(strRep, this, fs, _phoneticFeatSys.CreateAnalysisFeatureStructure(fs));
             // what do we do about culture?
@@ -112,12 +112,12 @@ namespace SIL.HermitCrab
                 switch (mode)
                 {
                     case ModeType.Synthesis:
-                        if (segDef.AnalysisFeatureStructure.IsUnifiable(node.Annotation.FeatureStructure))
+                        if (segDef.AnalysisFeatureStruct.IsUnifiable(node.Annotation.FeatureStruct))
                             results.Add(segDef);
                         break;
 
                     case ModeType.Analysis:
-                        if (node.Annotation.FeatureStructure.IsUnifiable(segDef.SynthFeatureStructure))
+                        if (node.Annotation.FeatureStruct.IsUnifiable(segDef.SynthFeatureStruct))
                             results.Add(segDef);
                         break;
                 }
@@ -173,7 +173,7 @@ namespace SIL.HermitCrab
             if (segDef != null)
             {
 				node = new PhoneticShapeNode(_spanFactory, "Segment", mode == ModeType.Synthesis
-					? (FeatureStructure) segDef.SynthFeatureStructure.Clone() : (FeatureStructure) segDef.AnalysisFeatureStructure.Clone());
+					? (FeatureStruct) segDef.SynthFeatureStruct.Clone() : (FeatureStruct) segDef.AnalysisFeatureStruct.Clone());
             }
             else
             {
@@ -235,7 +235,7 @@ namespace SIL.HermitCrab
                         break;
 
                     case "Boundary":
-                		var value = (StringFeatureValue) node.Annotation.FeatureStructure.GetValue("strRep");
+                		var value = (StringFeatureValue) node.Annotation.FeatureStruct.GetValue("strRep");
                 		string strRep = value.Values.First();
                         if (strRep.Length > 1)
                             sb.Append("(");
@@ -278,7 +278,7 @@ namespace SIL.HermitCrab
                     case "Boundary":
                         if (includeBdry)
                         {
-							var value = (StringFeatureValue)node.Annotation.FeatureStructure.GetValue("strRep");
+							var value = (StringFeatureValue)node.Annotation.FeatureStruct.GetValue("strRep");
 							string strRep = value.Values.First();
                             sb.Append(strRep);
                         }

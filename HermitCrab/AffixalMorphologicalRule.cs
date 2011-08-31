@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using SIL.APRE;
 using SIL.APRE.FeatureModel;
-using SIL.APRE.Patterns;
+using SIL.APRE.Matching;
 
 namespace SIL.HermitCrab
 {
@@ -216,10 +216,10 @@ namespace SIL.HermitCrab
         IDBearerSet<PartOfSpeech> m_requiredPOSs = null;
         PartOfSpeech m_outPOS = null;
         int m_maxNumApps = 1;
-		FeatureStructure m_requiredHeadFeatures = null;
-		FeatureStructure m_requiredFootFeatures = null;
-		FeatureStructure m_outHeadFeatures = null;
-		FeatureStructure m_outFootFeatures = null;
+		FeatureStruct m_requiredHeadFeatures = null;
+		FeatureStruct m_requiredFootFeatures = null;
+		FeatureStruct m_outHeadFeatures = null;
+		FeatureStruct m_outFootFeatures = null;
         IDBearerSet<Feature> m_obligHeadFeatures = null;
         // TODO: add subcats
 
@@ -290,7 +290,7 @@ namespace SIL.HermitCrab
         /// Gets or sets the required head features.
         /// </summary>
         /// <value>The required head features.</value>
-        public FeatureStructure RequiredHeadFeatures
+        public FeatureStruct RequiredHeadFeatures
         {
             get
             {
@@ -307,7 +307,7 @@ namespace SIL.HermitCrab
         /// Gets or sets the required foot features.
         /// </summary>
         /// <value>The required foot features.</value>
-		public FeatureStructure RequiredFootFeatures
+		public FeatureStruct RequiredFootFeatures
         {
             get
             {
@@ -324,7 +324,7 @@ namespace SIL.HermitCrab
         /// Gets or sets the output head features.
         /// </summary>
         /// <value>The output head features.</value>
-		public FeatureStructure OutHeadFeatures
+		public FeatureStruct OutHeadFeatures
         {
             get
             {
@@ -341,7 +341,7 @@ namespace SIL.HermitCrab
         /// Gets or sets the output foot features.
         /// </summary>
         /// <value>The output foot features.</value>
-		public FeatureStructure OutFootFeatures
+		public FeatureStruct OutFootFeatures
         {
             get
             {
@@ -513,12 +513,12 @@ namespace SIL.HermitCrab
 			// synthesis record
 
 			// check head features
-			FeatureStructure headFeatures;
+			FeatureStruct headFeatures;
 			if (!m_requiredHeadFeatures.UnifyDefaults(input.HeadFeatures, out headFeatures))
 				return false;
 
 			// check foot features
-			FeatureStructure footFeatures;
+			FeatureStruct footFeatures;
 			if (!m_requiredFootFeatures.UnifyDefaults(input.FootFeatures, out footFeatures))
 				return false;
 
@@ -593,7 +593,7 @@ namespace SIL.HermitCrab
 		/// <returns>
 		/// 	<c>true</c> if the rule was successfully applied, otherwise <c>false</c>
 		/// </returns>
-		public override bool ApplySlotAffix(WordSynthesis input, FeatureStructure origHeadFeatures, out ICollection<WordSynthesis> output)
+		public override bool ApplySlotAffix(WordSynthesis input, FeatureStruct origHeadFeatures, out ICollection<WordSynthesis> output)
         {
 			return Apply(input, out output);
         }

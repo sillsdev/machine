@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using SIL.APRE;
-using SIL.APRE.Patterns;
+using SIL.APRE.Matching;
 
 namespace SIL.HermitCrab
 {

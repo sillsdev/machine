@@ -2,7 +2,7 @@
 using System.Text;
 using SIL.APRE;
 using SIL.APRE.FeatureModel;
-using SIL.APRE.Patterns;
+using SIL.APRE.Matching;
 
 namespace SIL.HermitCrab
 {
@@ -438,7 +438,7 @@ namespace SIL.HermitCrab
     public class WordSynthesisTrace : Trace
     {
         private readonly LexEntry.RootAllomorph _rootAllomorph;
-        private readonly FeatureStructure _rzFeatures;
+        private readonly FeatureStruct _rzFeatures;
         private readonly List<MorphologicalRule> _mrules;
 
         /// <summary>
@@ -447,7 +447,7 @@ namespace SIL.HermitCrab
         /// <param name="rootAllomorph">The root allomorph.</param>
         /// <param name="mrules">The morphological rules.</param>
         /// <param name="rzFeatures">The realizational features.</param>
-        internal WordSynthesisTrace(LexEntry.RootAllomorph rootAllomorph, IEnumerable<MorphologicalRule> mrules, FeatureStructure rzFeatures)
+        internal WordSynthesisTrace(LexEntry.RootAllomorph rootAllomorph, IEnumerable<MorphologicalRule> mrules, FeatureStruct rzFeatures)
         {
             _rootAllomorph = rootAllomorph;
             _mrules = new List<MorphologicalRule>(mrules);
@@ -494,7 +494,7 @@ namespace SIL.HermitCrab
         /// Gets the realizational features.
         /// </summary>
         /// <value>The realizational features.</value>
-        public FeatureStructure RealizationalFeatures
+        public FeatureStruct RealizationalFeatures
         {
             get
             {

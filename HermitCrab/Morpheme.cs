@@ -6,7 +6,7 @@ namespace SIL.HermitCrab
     /// <summary>
     /// This class represents a morpheme. All morpheme objects should extend this class.
     /// </summary>
-    public abstract class Morpheme : IDBearer
+    public abstract class Morpheme : IDBearerBase
     {
         private Stratum _stratum;
         private Gloss _gloss;

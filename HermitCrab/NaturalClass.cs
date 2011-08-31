@@ -7,11 +7,11 @@ namespace SIL.HermitCrab
     /// <summary>
     /// This class represents a natural class of phonetic segments.
     /// </summary>
-    public class NaturalClass : IDBearer
+    public class NaturalClass : IDBearerBase
     {
         private readonly HashSet<SegmentDefinition> _segDefs;
-        private FeatureStructure _featureStructure;
-        private FeatureStructure _antiFeatureStructure;
+        private FeatureStruct _featureStruct;
+        private FeatureStruct _antiFeatureStruct;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NaturalClass"/> class.
@@ -28,16 +28,16 @@ namespace SIL.HermitCrab
         /// Gets or sets the features.
         /// </summary>
         /// <value>The features.</value>
-        public FeatureStructure FeatureStructure
+        public FeatureStruct FeatureStruct
         {
             get
             {
-                return _featureStructure;
+                return _featureStruct;
             }
 
             set
             {
-                _featureStructure = value;
+                _featureStruct = value;
             }
         }
 
@@ -45,11 +45,11 @@ namespace SIL.HermitCrab
         /// Gets or sets the anti features.
         /// </summary>
         /// <value>The anti features.</value>
-        public FeatureStructure AntiFeatureStructure
+        public FeatureStruct AntiFeatureStruct
         {
             get
             {
-                return _antiFeatureStructure;
+                return _antiFeatureStruct;
             }
         }
 

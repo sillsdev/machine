@@ -7,7 +7,7 @@ namespace SIL.HermitCrab
 	/// This class represents a slot in an affix template. It encapsulates a list of
 	/// affixal morphological rules.
 	/// </summary>
-	public class Slot : IDBearer
+	public class Slot : IDBearerBase
 	{
 		private readonly IDBearerSet<MorphologicalRule> _rules;
 		private bool _isOptional;

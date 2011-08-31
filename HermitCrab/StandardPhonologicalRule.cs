@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SIL.APRE;
 using SIL.APRE.FeatureModel;
-using SIL.APRE.Patterns;
+using SIL.APRE.Matching;
 
 namespace SIL.HermitCrab
 {
@@ -107,12 +107,12 @@ namespace SIL.HermitCrab
 				IEnumerator<PatternNode<PhoneticShapeNode>> lhsEnum = lhs.GetEnumerator();
 				while (rhsEnum.MoveNext() && lhsEnum.MoveNext())
 				{
-					var rhsConstraints = rhsEnum.Current as Constraints<PhoneticShapeNode>;
-					var lhsConstraints = lhsEnum.Current as Constraints<PhoneticShapeNode>;
+					var rhsConstraints = rhsEnum.Current as Constraint<PhoneticShapeNode>;
+					var lhsConstraints = lhsEnum.Current as Constraint<PhoneticShapeNode>;
 					if (rhsConstraints != null && lhsConstraints != null)
 					{
-						var result = (Constraints<PhoneticShapeNode>) lhsConstraints.Clone();
-						result.FeatureStructure.IntersectWith(rhsConstraints.FeatureStructure);
+						var result = (Constraint<PhoneticShapeNode>) lhsConstraints.Clone();
+						result.FeatureStruct.IntersectWith(rhsConstraints.FeatureStruct);
 						if (rhsConstraints.Variables != null)
 						{
 							foreach (KeyValuePair<string, bool> varPolarity in rhsConstraints.Variables)
@@ -241,7 +241,7 @@ namespace SIL.HermitCrab
                         {
                             foreach (PatternNode<PhoneticShapeNode> node in _rhs)
                             {
-                            	var constraints = node as Constraints<PhoneticShapeNode>;
+                            	var constraints = node as Constraint<PhoneticShapeNode>;
 								if (constraints != null && constraints.AnnotationType == "Segment")
 								{
 									// check if there is any overlap of features between
@@ -273,29 +273,29 @@ namespace SIL.HermitCrab
             /// Checks for overlap of features between the specified simple context and the specified
             /// environment.
             /// </summary>
-            /// <param name="constraints">The simple context.</param>
+            /// <param name="constraint">The simple context.</param>
             /// <param name="env">The environment.</param>
             /// <returns>
             /// 	<c>true</c> if there is no overlap, otherwise <c>false</c>.
             /// </returns>
-            private static bool IsNonSelfOpaquing(Constraints<PhoneticShapeNode> constraints, IEnumerable<PatternNode<PhoneticShapeNode>> env)
+            private static bool IsNonSelfOpaquing(Constraint<PhoneticShapeNode> constraint, IEnumerable<PatternNode<PhoneticShapeNode>> env)
             {
                 foreach (PatternNode<PhoneticShapeNode> node in env)
                 {
                     switch (node.Type)
                     {
                         case PatternNode<PhoneticShapeNode>.NodeType.Constraints:
-                    		var curConstraints = (Constraints<PhoneticShapeNode>) node;
+                    		var curConstraints = (Constraint<PhoneticShapeNode>) node;
 							if (curConstraints.AnnotationType == "Segment")
 							{
-								if (curConstraints.FeatureStructure.IsUnifiable(constraints.FeatureStructure))
+								if (curConstraints.FeatureStruct.IsUnifiable(constraint.FeatureStruct))
 									return false;
 							}
                     		break;
 
 						case PatternNode<PhoneticShapeNode>.NodeType.Group:
                             var nestedPattern = (Group<PhoneticShapeNode>) node;
-                            if (!IsNonSelfOpaquing(constraints, nestedPattern.Nodes))
+                            if (!IsNonSelfOpaquing(constraint, nestedPattern.Nodes))
                                 return false;
                             break;
                     }
@@ -352,7 +352,7 @@ namespace SIL.HermitCrab
                 bool unapplied = false;
 				PhoneticShapeNode node = shape.GetFirst(dir);
             	Span<PhoneticShapeNode> span;
-            	FeatureStructure varValues;
+            	FeatureStruct varValues;
             	while (FindNextMatch(_analysisTarget, shape, node, dir, ModeType.Analysis, out span, out varValues))
             	{
         			if (CheckVacuousUnapplication(span, dir))
@@ -373,10 +373,10 @@ namespace SIL.HermitCrab
 
             private bool UnapplyNarrow(PhoneticShape shape)
             {
-				var matches = new List<Tuple<Span<PhoneticShapeNode>, FeatureStructure>>();
+				var matches = new List<Tuple<Span<PhoneticShapeNode>, FeatureStruct>>();
 				PhoneticShapeNode node = shape.First;
             	Span<PhoneticShapeNode> span;
-            	FeatureStructure varValues;
+            	FeatureStruct varValues;
 				// deletion subrules are always treated like simultaneous subrules during unapplication
 				while (FindNextMatch(_analysisTarget, shape, node, Direction.LeftToRight, ModeType.Analysis, out span, out varValues))
 				{
@@ -385,19 +385,19 @@ namespace SIL.HermitCrab
 				}
 
 				// deletion subrules are always treated like simultaneous subrules during unapplication
-				foreach (Tuple<Span<PhoneticShapeNode>, FeatureStructure> match in matches)
+				foreach (Tuple<Span<PhoneticShapeNode>, FeatureStruct> match in matches)
 				{
 					PhoneticShapeNode cur = match.Item1.End;
 					foreach (PatternNode<PhoneticShapeNode> lhsNode in _rule._lhs)
 					{
-						var constraints = lhsNode as Constraints<PhoneticShapeNode>;
+						var constraints = lhsNode as Constraint<PhoneticShapeNode>;
 						if (constraints == null)
 							continue;
 
 						var newNode = new PhoneticShapeNode(_rule._spanFactory, constraints.AnnotationType,
 						                                    _rule._phoneticFeatSys.CreateFS());
-						newNode.Annotation.FeatureStructure.UninstantiateAll();
-						newNode.Annotation.FeatureStructure.IntersectWith(constraints.FeatureStructure);
+						newNode.Annotation.FeatureStruct.UninstantiateAll();
+						newNode.Annotation.FeatureStruct.IntersectWith(constraints.FeatureStruct);
 						// mark the undeleted segment as optional
 						newNode.Annotation.IsOptional = true;
 						cur.Insert(newNode, Direction.LeftToRight);
@@ -415,7 +415,7 @@ namespace SIL.HermitCrab
             }
 
 			private bool FindNextMatch(Pattern<PhoneticShapeNode> pattern, PhoneticShape shape, PhoneticShapeNode startNode, Direction dir, ModeType mode,
-				out Span<PhoneticShapeNode> span, out FeatureStructure varValues)
+				out Span<PhoneticShapeNode> span, out FeatureStruct varValues)
 			{
 				foreach (PhoneticShapeNode curNode in startNode.GetNodes(dir).Where(node => node.Annotation.Type == "Segment"))
 				{
@@ -448,7 +448,7 @@ namespace SIL.HermitCrab
 			}
 
 			public bool FindNextMatchLhs(PhoneticShape shape, PhoneticShapeNode startNode, Direction dir, out Span<PhoneticShapeNode> span,
-				out FeatureStructure varValues)
+				out FeatureStruct varValues)
 			{
 				return FindNextMatch(_synthesisTarget, shape, startNode, dir, ModeType.Synthesis, out span, out varValues);
 			}
@@ -460,7 +460,7 @@ namespace SIL.HermitCrab
         	/// <param name="match">The matched segments.</param>
 			/// <param name="dir">The direction.</param>
         	/// <param name="varValues">The instantiated variables.</param>
-        	public void ApplyRhs(PhoneticShape shape, Span<PhoneticShapeNode> match, Direction dir, FeatureStructure varValues)
+        	public void ApplyRhs(PhoneticShape shape, Span<PhoneticShapeNode> match, Direction dir, FeatureStruct varValues)
             {
                 switch (Type)
                 {
@@ -468,7 +468,7 @@ namespace SIL.HermitCrab
                 		PhoneticShapeNode shapeNode = match.GetStart(dir);
                         foreach (PatternNode<PhoneticShapeNode> patNode in _rhs.GetNodes(dir))
                         {
-                        	var constraints = patNode as Constraints<PhoneticShapeNode>;
+                        	var constraints = patNode as Constraint<PhoneticShapeNode>;
 							if (constraints == null)
 								continue;
 
@@ -478,7 +478,7 @@ namespace SIL.HermitCrab
 									while (shapeNode.Annotation.Type == "Boundary")
 										shapeNode = shapeNode.GetNext(dir);
 									// match[i] should be a segment, should I check that here?
-									shapeNode.Annotation.FeatureStructure.IntersectWith(constraints.FeatureStructure);
+									shapeNode.Annotation.FeatureStruct.IntersectWith(constraints.FeatureStruct);
 									constraints.InstantiateVariables(shapeNode.Annotation, varValues);
 									// marked the segment as altered
 									shapeNode.Annotation.IsClean = false;
@@ -505,16 +505,16 @@ namespace SIL.HermitCrab
                 }
             }
 
-            private void ApplyInsertion(Span<PhoneticShapeNode> match, Direction dir, FeatureStructure varValues)
+            private void ApplyInsertion(Span<PhoneticShapeNode> match, Direction dir, FeatureStruct varValues)
             {
             	PhoneticShapeNode cur = match.GetEnd(dir);
                 foreach (PatternNode<PhoneticShapeNode> patNode in _rhs.GetNodes(dir))
                 {
-                	var constraints = patNode as Constraints<PhoneticShapeNode>;
+                	var constraints = patNode as Constraint<PhoneticShapeNode>;
 					if (constraints == null)
 						continue;
 					var newNode = new PhoneticShapeNode(_rule._spanFactory, constraints.AnnotationType, _rule._phoneticFeatSys.CreateFS());
-					newNode.Annotation.FeatureStructure.IntersectWith(constraints.FeatureStructure);
+					newNode.Annotation.FeatureStruct.IntersectWith(constraints.FeatureStruct);
                 	constraints.InstantiateVariables(newNode.Annotation, varValues);
             		try
             		{
@@ -531,7 +531,7 @@ namespace SIL.HermitCrab
                 }
             }
 
-            private void UnapplyRhs(Direction dir, Span<PhoneticShapeNode> match, FeatureStructure varValues)
+            private void UnapplyRhs(Direction dir, Span<PhoneticShapeNode> match, FeatureStruct varValues)
             {
                 switch (Type)
                 {
@@ -541,16 +541,16 @@ namespace SIL.HermitCrab
 						IEnumerator<PatternNode<PhoneticShapeNode>> lhsEnum = _rule._lhs.GetNodes(dir).GetEnumerator();
 						while (rhsEnum.MoveNext() && lhsEnum.MoveNext())
 						{
-							var rhsConstraints = rhsEnum.Current as Constraints<PhoneticShapeNode>;
-							var lhsConstraints = lhsEnum.Current as Constraints<PhoneticShapeNode>;
+							var rhsConstraints = rhsEnum.Current as Constraint<PhoneticShapeNode>;
+							var lhsConstraints = lhsEnum.Current as Constraint<PhoneticShapeNode>;
 							if (rhsConstraints != null && lhsConstraints != null)
 							{
 								switch (rhsConstraints.AnnotationType)
 								{
 									case "Segment":
 										// match[i] should be a segment, should I check that here?
-										shapeNode.Annotation.FeatureStructure.UnionWith(rhsConstraints.FeatureStructure);
-										shapeNode.Annotation.FeatureStructure.IntersectWith(lhsConstraints.FeatureStructure);
+										shapeNode.Annotation.FeatureStruct.UnionWith(rhsConstraints.FeatureStruct);
+										shapeNode.Annotation.FeatureStruct.IntersectWith(lhsConstraints.FeatureStruct);
 										rhsConstraints.UninstantiateVariables(shapeNode.Annotation, varValues);
 										lhsConstraints.InstantiateVariables(shapeNode.Annotation, varValues);
 										break;
@@ -599,10 +599,10 @@ namespace SIL.HermitCrab
 					}
 					else
 					{
-						var constraints = rhsNode as Constraints<PhoneticShapeNode>;
+						var constraints = rhsNode as Constraint<PhoneticShapeNode>;
 						if (constraints != null && constraints.AnnotationType == "Segment")
 						{
-							if (shapeNode.Annotation.FeatureStructure.IsUnifiable(constraints.FeatureStructure))
+							if (shapeNode.Annotation.FeatureStruct.IsUnifiable(constraints.FeatureStruct))
 								return true;
 							shapeNode = shapeNode.GetNext(dir);
 						}
@@ -788,10 +788,10 @@ namespace SIL.HermitCrab
             foreach (Subrule sr in subrules)
             {
                 // first find all segments which match the LHS
-            	var matches = new List<Tuple<Span<PhoneticShapeNode>, FeatureStructure>>();
+            	var matches = new List<Tuple<Span<PhoneticShapeNode>, FeatureStruct>>();
 				PhoneticShapeNode node = shape.First;
             	Span<PhoneticShapeNode> span;
-            	FeatureStructure varValues;
+            	FeatureStruct varValues;
             	while (sr.FindNextMatchLhs(shape, node, Direction.LeftToRight, out span, out varValues))
             	{
             		matches.Add(Tuple.Create(span, varValues));
@@ -799,7 +799,7 @@ namespace SIL.HermitCrab
             	}
 
                 // then apply changes
-				foreach (Tuple<Span<PhoneticShapeNode>, FeatureStructure> match in matches)
+				foreach (Tuple<Span<PhoneticShapeNode>, FeatureStruct> match in matches)
                     sr.ApplyRhs(shape, match.Item1, Direction.LeftToRight, match.Item2);
             }
         }
@@ -815,7 +815,7 @@ namespace SIL.HermitCrab
 			while (FindNextMatchLhs(shape, node, dir, out match))
 			{
 				Span<PhoneticShapeNode> span = match.EntireMatch;
-				FeatureStructure instantiatedVars = match.VariableValues;
+				FeatureStruct instantiatedVars = match.VariableValues;
 				bool matched = false;
 				// check each subrule's environment
 				foreach (Subrule sr in subrules)

@@ -5,7 +5,7 @@ using System.Xml;
 using System.Xml.Schema;
 using SIL.APRE;
 using SIL.APRE.FeatureModel;
-using SIL.APRE.Patterns;
+using SIL.APRE.Matching;
 
 namespace SIL.HermitCrab
 {
@@ -868,7 +868,7 @@ namespace SIL.HermitCrab
             string name = natClassNode.SelectSingleNode("Name").InnerText;
             NaturalClass natClass = new NaturalClass(id, name, _curMorpher);
             ICollection<FeatureValue> featVals = LoadFeatValues(natClassNode);
-            natClass.FeatureStructure = new FeatureBundle(featVals, _curMorpher.PhoneticFeatureSystem);
+            natClass.FeatureStruct = new FeatureBundle(featVals, _curMorpher.PhoneticFeatureSystem);
 
             _curMorpher.AddNaturalClass(natClass);
         }
@@ -892,9 +892,9 @@ namespace SIL.HermitCrab
                     if (_curMorpher.PhoneticFeatureSystem.HasFeatures)
                     {
                         if (fb == null)
-                            fb = segDef.SynthFeatureStructure.Clone();
+                            fb = segDef.SynthFeatureStruct.Clone();
                         else
-                            fb.Intersection(segDef.SynthFeatureStructure);
+                            fb.Intersection(segDef.SynthFeatureStruct);
                     }
                     else
                     {
@@ -904,7 +904,7 @@ namespace SIL.HermitCrab
             }
             if (fb == null)
                 fb = new FeatureBundle(false, _curMorpher.PhoneticFeatureSystem);
-            natClass.FeatureStructure = fb;
+            natClass.FeatureStruct = fb;
 
             _curMorpher.AddNaturalClass(natClass);
         }

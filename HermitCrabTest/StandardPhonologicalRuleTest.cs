@@ -2,7 +2,7 @@
 using NUnit.Framework;
 using SIL.APRE;
 using SIL.APRE.FeatureModel;
-using SIL.APRE.Patterns;
+using SIL.APRE.Matching;
 using SIL.HermitCrab;
 
 namespace HermitCrabTest
@@ -63,10 +63,10 @@ namespace HermitCrabTest
 		public void TestRule()
 		{
 			var rule1 = new StandardPhonologicalRule("rule1", "rule1", _spanFactory, _phoneticFeatSys);
-			rule1.Lhs = new Pattern<PhoneticShapeNode>(_spanFactory, new Constraints<PhoneticShapeNode>("Segment", (FeatureStructure) _charDefTable.GetSegmentDefinition("t").SynthFeatureStructure.Clone()));
+			rule1.Lhs = new Pattern<PhoneticShapeNode>(_spanFactory, new Constraint<PhoneticShapeNode>("Segment", (FeatureStruct) _charDefTable.GetSegmentDefinition("t").SynthFeatureStruct.Clone()));
 			rule1.AddSubrule(new StandardPhonologicalRule.Subrule(1,
-				new Pattern<PhoneticShapeNode>(_spanFactory, new Constraints<PhoneticShapeNode>("Segment", _phoneticFeatSys.CreateFS("asp_plus"))),
-				new Pattern<PhoneticShapeNode>(_spanFactory, new Constraints<PhoneticShapeNode>("Segment", _phoneticFeatSys.CreateFS("cons_minus"))), null, rule1));
+				new Pattern<PhoneticShapeNode>(_spanFactory, new Constraint<PhoneticShapeNode>("Segment", _phoneticFeatSys.CreateFS("asp_plus"))),
+				new Pattern<PhoneticShapeNode>(_spanFactory, new Constraint<PhoneticShapeNode>("Segment", _phoneticFeatSys.CreateFS("cons_minus"))), null, rule1));
 			rule1.Unapply(new WordAnalysis(_charDefTable.ToPhoneticShape("pHitH", ModeType.Analysis), null, null));
 		}
 	}

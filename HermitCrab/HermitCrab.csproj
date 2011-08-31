@@ -60,6 +60,7 @@
     <None Include="AffixalMorphologicalRule.cs" />
     <Compile Include="AffixTemplate.cs" />
     <Compile Include="Allomorph.cs" />
+    <Compile Include="AnalysisPhonologicalSubrule.cs" />
     <Compile Include="Gloss.cs" />
     <Compile Include="LoadException.cs" />
     <Compile Include="Morph.cs" />
@@ -102,6 +103,7 @@
     <None Include="RealizationalRule.cs" />
     <Compile Include="StandardPhonologicalRule.cs" />
     <Compile Include="Stratum.cs" />
+    <Compile Include="SynthesisPhonologicalSubrule.cs" />
     <Compile Include="Trace.cs" />
     <Compile Include="WordAnalysis.cs" />
     <Compile Include="WordSynthesis.cs" />

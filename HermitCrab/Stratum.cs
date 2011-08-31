@@ -8,7 +8,7 @@ namespace SIL.HermitCrab
     /// This class encapsulates the character definition table, rules, and lexicon for
     /// a particular stratum.
     /// </summary>
-    public class Stratum : IDBearer
+    public class Stratum : IDBearerBase
     {
         /// <summary>
         /// This enumeration represents the rule ordering for phonological rules.

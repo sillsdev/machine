@@ -8,7 +8,7 @@ namespace SIL.HermitCrab
     /// This class represents an affix template. It is normally used to model inflectional
     /// affixation.
     /// </summary>
-    public class AffixTemplate : IDBearer
+    public class AffixTemplate : IDBearerBase
     {
         private readonly IDBearerSet<Slot> _slots;
         private IDBearerSet<PartOfSpeech> _requiredPartsOfSpeech;
@@ -152,7 +152,7 @@ namespace SIL.HermitCrab
         /// <returns><c>true</c> if the affix template applied, otherwise <c>false</c>.</returns>
         public bool Apply(WordSynthesis input, out IEnumerable<WordSynthesis> output)
         {
-            var headFeatures = (FeatureStructure) input.HeadFeatures.Clone();
+            var headFeatures = (FeatureStruct) input.HeadFeatures.Clone();
             var results = new HashSet<WordSynthesis>();
 #if WANTPORT
             if (Morpher.TraceTemplatesSynthesis)
@@ -176,7 +176,7 @@ namespace SIL.HermitCrab
             }
         }
 
-        void ApplySlots(WordSynthesis input, int sIndex, FeatureStructure origHeadFeatures, HashSet<WordSynthesis> output)
+        void ApplySlots(WordSynthesis input, int sIndex, FeatureStruct origHeadFeatures, HashSet<WordSynthesis> output)
         {
             for (int i = sIndex; i < _slots.Count; i++)
             {

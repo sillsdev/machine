@@ -6,7 +6,7 @@ namespace SIL.HermitCrab
 	/// <summary>
 	/// This class represents a lexical family.
 	/// </summary>
-	public class LexFamily : IDBearer
+	public class LexFamily : IDBearerBase
 	{
 		private readonly IDBearerSet<LexEntry> _entries;
 

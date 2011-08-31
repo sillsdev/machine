@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using SIL.APRE;
 using SIL.APRE.FeatureModel;
-using SIL.APRE.Patterns;
+using SIL.APRE.Matching;
 
 namespace SIL.HermitCrab
 {
@@ -19,12 +19,12 @@ namespace SIL.HermitCrab
         private PartOfSpeech _partOfSpeech;
         MprFeatureSet m_mprFeatures;
         WordSynthesis m_nonHead = null;
-        FeatureStructure m_headFeatures;
-        FeatureStructure m_footFeatures;
+        FeatureStruct m_headFeatures;
+        FeatureStruct m_footFeatures;
         IDBearerSet<Feature> m_obligHeadFeatures;
         List<MorphologicalRule> m_mrules;
         int m_curRuleIndex = 0;
-        FeatureStructure m_rzFeatures;
+        FeatureStruct m_rzFeatures;
         Trace m_curTrace = null;
         Stratum m_stratum;
         Dictionary<MorphologicalRule, int> m_mrulesApplied;
@@ -35,7 +35,7 @@ namespace SIL.HermitCrab
         /// <param name="rootAllomorph">The root allomorph.</param>
         /// <param name="rzFeatures">The realizational features.</param>
         /// <param name="curTrace">The current trace record.</param>
-        internal WordSynthesis(LexEntry.RootAllomorph rootAllomorph, FeatureStructure rzFeatures, Trace curTrace)
+        internal WordSynthesis(LexEntry.RootAllomorph rootAllomorph, FeatureStruct rzFeatures, Trace curTrace)
             : this(rootAllomorph, null, rzFeatures, new MorphologicalRule[] {}, curTrace)
         {
         }
@@ -45,7 +45,7 @@ namespace SIL.HermitCrab
 		/// </summary>
 		/// <param name="wa">The word analysis.</param>
         internal WordSynthesis(WordAnalysis wa)
-            : this(wa.RootAllomorph, wa.NonHead == null ? null : new WordSynthesis(wa.NonHead), (FeatureStructure) wa.RealizationalFeatures.Clone(),
+            : this(wa.RootAllomorph, wa.NonHead == null ? null : new WordSynthesis(wa.NonHead), (FeatureStruct) wa.RealizationalFeatures.Clone(),
             wa.UnappliedMorphologicalRules, wa.CurrentTrace)
         {
         }
@@ -58,7 +58,7 @@ namespace SIL.HermitCrab
         /// <param name="rzFeatures">The realizational features.</param>
         /// <param name="mrules">The morphological rules to apply.</param>
         /// <param name="curTrace">The current trace record.</param>
-        internal WordSynthesis(LexEntry.RootAllomorph rootAllomorph, WordSynthesis nonHead, FeatureStructure rzFeatures, IEnumerable<MorphologicalRule> mrules,
+        internal WordSynthesis(LexEntry.RootAllomorph rootAllomorph, WordSynthesis nonHead, FeatureStruct rzFeatures, IEnumerable<MorphologicalRule> mrules,
             Trace curTrace)
         {
             _root = (LexEntry) rootAllomorph.Morpheme;
@@ -101,12 +101,12 @@ namespace SIL.HermitCrab
             _morphs = ws._morphs.Clone();
             _partOfSpeech = ws._partOfSpeech;
             m_mprFeatures = ws.m_mprFeatures.Clone();
-            m_headFeatures = (FeatureStructure) ws.m_headFeatures.Clone();
-            m_footFeatures = (FeatureStructure) ws.m_footFeatures.Clone();
+            m_headFeatures = (FeatureStruct) ws.m_headFeatures.Clone();
+            m_footFeatures = (FeatureStruct) ws.m_footFeatures.Clone();
             m_obligHeadFeatures = new IDBearerSet<Feature>(ws.m_obligHeadFeatures);
             m_mrules = new List<MorphologicalRule>(ws.m_mrules);
             m_curRuleIndex = ws.m_curRuleIndex;
-            m_rzFeatures = (FeatureStructure) ws.m_rzFeatures.Clone();
+            m_rzFeatures = (FeatureStruct) ws.m_rzFeatures.Clone();
             m_curTrace = ws.m_curTrace;
             m_stratum = ws.m_stratum;
             m_mrulesApplied = new Dictionary<MorphologicalRule, int>(ws.m_mrulesApplied);
@@ -198,7 +198,7 @@ namespace SIL.HermitCrab
         /// Gets or sets the head features.
         /// </summary>
         /// <value>The head features.</value>
-        public FeatureStructure HeadFeatures
+        public FeatureStruct HeadFeatures
         {
             get
             {
@@ -215,7 +215,7 @@ namespace SIL.HermitCrab
         /// Gets or sets the foot features.
         /// </summary>
         /// <value>The foot features.</value>
-        public FeatureStructure FootFeatures
+        public FeatureStruct FootFeatures
         {
             get
             {
@@ -232,7 +232,7 @@ namespace SIL.HermitCrab
         /// Gets the realizational features.
         /// </summary>
         /// <value>The realizational features.</value>
-        public FeatureStructure RealizationalFeatures
+        public FeatureStruct RealizationalFeatures
         {
             get
             {

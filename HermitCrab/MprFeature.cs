@@ -6,7 +6,7 @@ namespace SIL.HermitCrab
     /// This class represents a morphological/phonological rule feature. It is used to restrict
     /// the application of rules for exception cases.
     /// </summary>
-    public class MprFeature : IDBearer
+    public class MprFeature : IDBearerBase
     {
     	public MprFeature(string id, string desc)
             : base(id, desc)

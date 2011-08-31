@@ -1,6 +1,6 @@
 ﻿using SIL.APRE;
 using SIL.APRE.FeatureModel;
-using SIL.APRE.Patterns;
+using SIL.APRE.Matching;
 
 namespace SIL.HermitCrab
 {
@@ -81,9 +81,9 @@ namespace SIL.HermitCrab
 		/// 	<c>true</c> if the shape successfully matched this pattern, otherwise <c>false</c>.
 		/// </returns>
 		public bool IsMatch(PhoneticShape shape, PhoneticShapeNode leftNode, PhoneticShapeNode rightNode, ModeType mode,
-			FeatureStructure varValues)
+			FeatureStruct varValues)
 		{
-			var temp = (FeatureStructure) varValues.Clone();
+			var temp = (FeatureStruct) varValues.Clone();
 			// right environment
 			if (_rightEnv != null)
 			{

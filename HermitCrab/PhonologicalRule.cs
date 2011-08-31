@@ -5,7 +5,7 @@ namespace SIL.HermitCrab
     /// <summary>
     /// This class should be extended by all phonological rules.
     /// </summary>
-    public abstract class PhonologicalRule : IDBearer
+    public abstract class PhonologicalRule : IDBearerBase
     {
     	/// <summary>
         /// The multiple application order for phonological rules.

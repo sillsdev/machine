@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SIL.APRE;
 using SIL.APRE.FeatureModel;
-using SIL.APRE.Patterns;
+using SIL.APRE.Matching;
 
 namespace SIL.HermitCrab
 {
@@ -10,7 +10,7 @@ namespace SIL.HermitCrab
     /// This class acts as the main interface to the morphing capability of HC.NET. It encapsulates
     /// the feature systems, rules, character definition tables, etc. for a particular language.
     /// </summary>
-    public class Morpher : IDBearer
+    public class Morpher : IDBearerBase
     {
         private readonly FeatureSystem _phoneticFeatSys;
         private readonly FeatureSystem _headFeatSys;
