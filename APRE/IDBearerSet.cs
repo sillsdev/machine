@@ -1,30 +1,27 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace SIL.APRE
 {
-	public class IDBearerSet<T> : KeyedCollection<string, T> where T : IIDBearer
+	public class IDBearerSet<T> : ICollection<T> where T : IIDBearer
 	{
+		private readonly Dictionary<string, T> _idBearers; 
+
 		public IDBearerSet()
 		{
+			_idBearers = new Dictionary<string, T>();
 		}
 
 		public IDBearerSet(IEnumerable<T> items)
+			: this()
 		{
 			UnionWith(items);
 		}
 
 		public bool TryGetValue(string id, out T value)
 		{
-			if (Dictionary == null)
-			{
-				value = default(T);
-				return false;
-			}
-
-			return Dictionary.TryGetValue(id, out value);
+			return _idBearers.TryGetValue(id, out value);
 		}
 
 		public void IntersectWith(IEnumerable<T> items)
@@ -50,73 +47,67 @@ namespace SIL.APRE
 			return items.Any(Contains);
 		}
 
-		protected override string GetKeyForItem(T item)
+		IEnumerator<T> IEnumerable<T>.GetEnumerator()
 		{
-			return item.ID;
+			return _idBearers.Values.GetEnumerator();
 		}
 
-		protected override void InsertItem(int index, T item)
+		IEnumerator IEnumerable.GetEnumerator()
 		{
-			if (Contains(item.ID))
-			{
-				int oldIndex = IndexOf(item);
-				Remove(item.ID);
-				if (oldIndex < index)
-					index--;
-			}
-			base.InsertItem(index, item);
+			return ((IEnumerable<T>) this).GetEnumerator();
 		}
 
-		protected override void SetItem(int index, T item)
+		void ICollection<T>.Add(T item)
 		{
-			if (Contains(item.ID))
-			{
-				int oldIndex = IndexOf(item);
-				if (oldIndex != index)
-				{
-					Remove(item.ID);
-					if (oldIndex < index)
-						index--;
-				}
-			}
-			base.SetItem(index, item);
+			Add(item);
 		}
 
-		public override string ToString()
+		public bool Add(T item)
 		{
-			bool firstItem = true;
-			var sb = new StringBuilder();
-			foreach (T item in this)
-			{
-				if (!firstItem)
-					sb.Append(", ");
-				sb.Append(item.Description);
-				firstItem = false;
-			}
-			return sb.ToString();
-		}
-
-		public override bool Equals(object obj)
-		{
-			if (obj == null)
+			if (_idBearers.ContainsKey(item.ID))
 				return false;
-			return Equals(obj as IDBearerSet<T>);
+			_idBearers[item.ID] = item;
+			return true;
 		}
 
-		public bool Equals(IDBearerSet<T> other)
+		public void Clear()
 		{
-			if (other == null)
-				return false;
-
-			if (Count != other.Count)
-				return false;
-
-			return this.All(other.Contains);
+			_idBearers.Clear();
 		}
 
-		public override int GetHashCode()
+		public bool Contains(T item)
 		{
-			return this.Aggregate(0, (current, item) => current ^ item.GetHashCode());
+			return _idBearers.ContainsKey(item.ID);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex)
+		{
+			_idBearers.Values.CopyTo(array, arrayIndex);
+		}
+
+		public bool Remove(T item)
+		{
+			return _idBearers.Remove(item.ID);
+		}
+
+		public int Count
+		{
+			get { return _idBearers.Count; }
+		}
+
+		bool ICollection<T>.IsReadOnly
+		{
+			get { return false; }
+		}
+
+		public T this[string id]
+		{
+			get { return _idBearers[id]; }
+		}
+
+		public bool Contains(string id)
+		{
+			return _idBearers.ContainsKey(id);
 		}
 	}
 }

@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 using SIL.APRE.FeatureModel;
-using SIL.APRE.Patterns;
-using SIL.APRE.Rules;
+using SIL.APRE.Matching;
+using SIL.APRE.Transduction;
 
 namespace SIL.APRE.Test
 {
@@ -14,28 +14,28 @@ namespace SIL.APRE.Test
 			var spanFactory = new IntegerSpanFactory();
 			FeatureSystem featSys = CreateFeatureSystem();
 
-			Pattern<int> pattern = Pattern<int>.Build(spanFactory).Expression(expr => expr
+			Pattern<int> pattern = Pattern<int>.With(spanFactory).Expression(expr => expr
 				.Group("leftEnv", leftEnv => leftEnv
-					.Annotation(featSys, fs => fs
-						.String("type", "Seg")
+					.Annotation(FeatureStruct.With(featSys)
+						.Feature("type").EqualTo("Seg")
 						.Symbol("cons+")
-						.Variable("voice", "a")))
+						.Feature("voice").EqualToVariable("a").Value))
 				.Group("lhs", lhs => lhs
-					.Annotation(featSys, fs => fs
-						.String("type", "Seg")
+					.Annotation(FeatureStruct.With(featSys)
+						.Feature("type").EqualTo("Seg")
 						.Symbol("cons-")
-						.Symbol("low+")))
+						.Symbol("low+").Value))
 				.Group("rightEnv", rightEnv => rightEnv
-					.Annotation(featSys, fs => fs
-						.String("type", "Seg")
+					.Annotation(FeatureStruct.With(featSys)
+						.Feature("type").EqualTo("Seg")
 						.Symbol("cons+")
-						.Not().Variable("voice", "a"))));
+						.Feature("voice").Not.EqualToVariable("a").Value))).Value;
 
-			var rule = new Rule<int>(pattern, (lhs, input, match) =>
+			var rule = new PatternRule<int>(pattern, (lhs, input, match) =>
 			                                  	{
 			                                  		IBidirList<Annotation<int>> target = input.GetView(match["lhs"]);
 			                                  		foreach (Annotation<int> ann in target)
-			                                  			ann.FeatureStructure.AddValues(featSys.BuildFS().Symbol("low-"));
+			                                  			ann.FeatureStruct.AddValues(FeatureStruct.With(featSys).Symbol("low-").Value);
 			                                  		return target.GetLast(lhs.Direction);
 			                                  	});
 
@@ -49,40 +49,45 @@ namespace SIL.APRE.Test
 			var spanFactory = new IntegerSpanFactory();
 			FeatureSystem featSys = CreateFeatureSystem();
 
-			Pattern<int> pattern = Pattern<int>.Build(spanFactory).Expression(expr => expr
+			Pattern<int> pattern = Pattern<int>.With(spanFactory).Expression(expr => expr
 				.Group("leftEnv", leftEnv => leftEnv
-					.Annotation(featSys, fs => fs
-						.String("type", "Seg")
+					.Annotation(FeatureStruct.With(featSys)
+						.Feature("type").EqualTo("Seg")
 						.Symbol("cons+")
-						.Variable("voice", "a")))
+						.Feature("voice").EqualToVariable("a").Value))
 				.Group("lhs", lhs => lhs
-					.Annotation(featSys, fs => fs
-						.String("type", "Seg")
+					.Annotation(FeatureStruct.With(featSys)
+						.Feature("type").EqualTo("Seg")
 						.Symbol("cons-")
-						.Symbol("low+")))
+						.Symbol("low+").Value))
 				.Group("rightEnv", rightEnv => rightEnv
-					.Annotation(featSys, fs => fs
-						.String("type", "Seg")
+					.Annotation(FeatureStruct.With(featSys)
+						.Feature("type").EqualTo("Seg")
 						.Symbol("cons+")
-						.Not().Variable("voice", "a"))));
+						.Feature("voice").Not.EqualToVariable("a").Value))).Value;
 
-			var rule1 = new Rule<int>(pattern, (lhs, input, match) =>
+			var rule1 = new PatternRule<int>(pattern, (lhs, input, match) =>
 												{
-													IBidirList<Annotation<int>> target = input.GetView(match["lhs"]);
+													IBidirListView<Annotation<int>> target = input.GetView(match["lhs"]);
 													foreach (Annotation<int> ann in target)
-														ann.FeatureStructure.AddValues(featSys.BuildFS().Symbol("low-"));
+														ann.FeatureStruct.AddValues(FeatureStruct.With(featSys)
+															.Symbol("low-")
+															.Symbol("mid-").Value);
+													return target.GetLast(lhs.Direction);
+												},
+												input => input.First.FeatureStruct.IsUnifiable(FeatureStruct.With(featSys).Symbol("verb").Value));
+
+			var rule2 = new PatternRule<int>(pattern, (lhs, input, match) =>
+												{
+													IBidirListView<Annotation<int>> target = input.GetView(match["lhs"]);
+													foreach (Annotation<int> ann in target)
+														ann.FeatureStruct.AddValues(FeatureStruct.With(featSys)
+															.Symbol("low-")
+															.Symbol("mid+").Value);
 													return target.GetLast(lhs.Direction);
 												});
 
-			var rule2 = new Rule<int>(pattern, (lhs, input, match) =>
-												{
-													IBidirList<Annotation<int>> target = input.GetView(match["lhs"]);
-													foreach (Annotation<int> ann in target)
-														ann.FeatureStructure.AddValues(featSys.BuildFS().Symbol("low+"));
-													return target.GetLast(lhs.Direction);
-												});
-
-			var batch = new RuleBatch<int>(new[] {rule1, rule2});
+			var batch = new PatternRuleBatch<int>(new[] {rule1, rule2});
 			batch.Compile();
 			AnnotationList<int> word = CreateFeatShapeAnnotations("fazk", spanFactory, featSys);
 			Assert.IsTrue(batch.Apply(word));
@@ -93,83 +98,101 @@ namespace SIL.APRE.Test
 			var annList = new AnnotationList<int>();
 			for (int i = 0; i < str.Length; i++)
 			{
-				FeatureStructure fs = null;
+				FeatureStruct fs = null;
 				switch (str[i])
 				{
 					case 'f':
-						fs = FeatureStructure.Build(featSys)
+						fs = FeatureStruct.With(featSys)
 							.Symbol("cons+")
 							.Symbol("voice-")
 							.Symbol("sib-")
 							.Symbol("cor-")
 							.Symbol("lab+")
 							.Symbol("low-")
-							.String("type", "Seg");
+							.Symbol("mid-")
+							.Feature("type").EqualTo("Seg").Value;
 						break;
 					case 'k':
-						fs = FeatureStructure.Build(featSys)
+						fs = FeatureStruct.With(featSys)
 							.Symbol("cons+")
 							.Symbol("voice-")
 							.Symbol("sib-")
 							.Symbol("cor-")
 							.Symbol("lab-")
 							.Symbol("low-")
-							.String("type", "Seg");
+							.Symbol("mid-")
+							.Feature("type").EqualTo("Seg").Value;
 						break;
 					case 'z':
-						fs = FeatureStructure.Build(featSys)
+						fs = FeatureStruct.With(featSys)
 							.Symbol("cons+")
 							.Symbol("voice+")
 							.Symbol("sib+")
 							.Symbol("cor+")
 							.Symbol("lab-")
 							.Symbol("low-")
-							.String("type", "Seg");
+							.Symbol("mid-")
+							.Feature("type").EqualTo("Seg").Value;
 						break;
 					case 's':
-						fs = FeatureStructure.Build(featSys)
+						fs = FeatureStruct.With(featSys)
 							.Symbol("cons+")
 							.Symbol("voice-")
 							.Symbol("sib+")
 							.Symbol("cor+")
 							.Symbol("lab-")
 							.Symbol("low-")
-							.String("type", "Seg");
+							.Symbol("mid-")
+							.Feature("type").EqualTo("Seg").Value;
 						break;
 					case 'a':
-						fs = FeatureStructure.Build(featSys)
+						fs = FeatureStruct.With(featSys)
 							.Symbol("cons-")
 							.Symbol("voice+")
 							.Symbol("sib-")
 							.Symbol("cor-")
 							.Symbol("lab-")
 							.Symbol("low+")
-							.String("type", "Seg");
+							.Symbol("mid-")
+							.Feature("type").EqualTo("Seg").Value;
 						break;
-					case 'ɨ':
-						fs = FeatureStructure.Build(featSys)
+					case 'i':
+						fs = FeatureStruct.With(featSys)
 							.Symbol("cons-")
 							.Symbol("voice+")
 							.Symbol("sib-")
 							.Symbol("cor-")
 							.Symbol("lab-")
 							.Symbol("low-")
-							.String("type", "Seg");
+							.Symbol("mid-")
+							.Feature("type").EqualTo("Seg").Value;
+						break;
+					case 'e':
+						fs = FeatureStruct.With(featSys)
+							.Symbol("cons-")
+							.Symbol("voice+")
+							.Symbol("sib-")
+							.Symbol("cor-")
+							.Symbol("lab-")
+							.Symbol("low-")
+							.Symbol("mid+")
+							.Feature("type").EqualTo("Seg").Value;
 						break;
 					case '+':
-						fs = FeatureStructure.Build(featSys)
-							.String("str", "+")
-							.String("type", "Bdry");
+						fs = FeatureStruct.With(featSys)
+							.Feature("str").EqualTo("+")
+							.Feature("type").EqualTo("Bdry").Value;
 						break;
 				}
 				annList.Add(new Annotation<int>(spanFactory.Create(i, i + 1), fs));
 			}
+			annList.Add(new Annotation<int>(spanFactory.Create(0, str.Length), FeatureStruct.With(featSys).Feature("type").EqualTo("Shape").Symbol("noun").Value));
 			return annList;
 		}
 
 		private static FeatureSystem CreateFeatureSystem()
 		{
-			return FeatureSystem.Build()
+			return FeatureSystem.With
 				.SymbolicFeature("cons", cons => cons
 					.Symbol("cons+", "+")
 					.Symbol("cons-", "-"))
@@ -188,7 +211,13 @@ namespace SIL.APRE.Test
 				.SymbolicFeature("low", low => low
 					.Symbol("low+", "+")
 					.Symbol("low-", "-"))
-				.StringFeature("type");
+				.SymbolicFeature("mid", mid => mid
+					.Symbol("mid+", "+")
+					.Symbol("mid-", "-"))
+				.StringFeature("type")
+				.SymbolicFeature("pos", pos => pos
+					.Symbol("noun")
+					.Symbol("verb")).Value;
 		}
 	}
 }

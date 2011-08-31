@@ -4,8 +4,63 @@ namespace SIL.APRE.FeatureModel
 {
 	public abstract class SimpleFeatureValue : FeatureValue
 	{
-		protected override bool UnifyCopy(FeatureValue other, bool useDefaults, IDictionary<FeatureValue, FeatureValue> copies,
-			IDictionary<string, FeatureValue> varBindings, out FeatureValue output)
+		internal override bool IsDefiniteUnifiable(FeatureValue other, bool useDefaults, VariableBindings varBindings)
+		{
+			other = Dereference(other);
+			if (Type != FeatureValueType.Variable && other.Type == FeatureValueType.Variable)
+			{
+				var otherVfv = (VariableFeatureValue) other;
+				FeatureValue binding;
+				if (varBindings.TryGetValue(otherVfv.Name, out binding))
+					return IsValuesUnifiable(binding, !otherVfv.Agree);
+				return true;
+			}
+
+			return IsValuesUnifiable(other, false);
+		}
+
+		protected abstract bool IsValuesUnifiable(FeatureValue other, bool negate);
+
+		internal override bool DestructiveUnify(FeatureValue other, bool useDefaults, bool preserveInput, IDictionary<FeatureValue, FeatureValue> copies, VariableBindings varBindings)
+		{
+			if (!IsDefiniteUnifiable(other, useDefaults, varBindings))
+				return false;
+
+			other = Dereference(other);
+			if (preserveInput)
+			{
+				if (copies != null)
+					copies[other] = this;
+			}
+			else
+			{
+				other.Forward = this;
+			}
+
+			if (Type != FeatureValueType.Variable && other.Type == FeatureValueType.Variable)
+			{
+				var otherVfv = (VariableFeatureValue) other;
+				FeatureValue binding;
+				if (varBindings.TryGetValue(otherVfv.Name, out binding))
+					UnifyValues(binding, !otherVfv.Agree);
+				if (otherVfv.Agree)
+					binding = Clone();
+				else
+					Negation(out binding);
+				varBindings[otherVfv.Name] = binding;
+			}
+			else
+			{
+				UnifyValues(other, false);
+			}
+
+			return true;
+		}
+
+		protected abstract void UnifyValues(FeatureValue other, bool negate);
+
+		protected override bool NondestructiveUnify(FeatureValue other, bool useDefaults, IDictionary<FeatureValue, FeatureValue> copies,
+			VariableBindings varBindings, out FeatureValue output)
 		{
 			FeatureValue copy = Clone();
 			copies[this] = copy;
@@ -21,9 +76,6 @@ namespace SIL.APRE.FeatureModel
 
 		internal override FeatureValue Clone(IDictionary<FeatureValue, FeatureValue> copies)
 		{
-			if (Forward != null)
-				return Forward.Clone(copies);
-
 			FeatureValue copy;
 			if (copies.TryGetValue(this, out copy))
 				return copy;

@@ -7,11 +7,12 @@ namespace SIL.APRE
 	{
 		private readonly Span<TOffset> _span;
 
-		public Annotation(Span<TOffset> span, FeatureStructure fs)
+		public Annotation(Span<TOffset> span, FeatureStruct fs)
 		{
 			_span = span;
-			FeatureStructure = fs;
+			FeatureStruct = fs;
 			IsClean = true;
+			ListID = -1;
 		}
 
 		internal Annotation(Span<TOffset> span)
@@ -22,7 +23,7 @@ namespace SIL.APRE
 		public Annotation(Annotation<TOffset> ann)
 		{
 			_span = ann._span;
-			FeatureStructure = ann.FeatureStructure == null ? null : (FeatureStructure) ann.FeatureStructure.Clone();
+			FeatureStruct = ann.FeatureStruct == null ? null : (FeatureStruct) ann.FeatureStruct.Clone();
 			IsClean = ann.IsClean;
 			IsOptional = ann.IsOptional;
 		}
@@ -32,7 +33,7 @@ namespace SIL.APRE
 			get { return _span; }
 		}
 
-		public FeatureStructure FeatureStructure { get; set; }
+		public FeatureStruct FeatureStruct { get; set; }
 
 		/// <summary>
 		/// Gets or sets a value indicating whether this annotation is optional.
@@ -55,7 +56,7 @@ namespace SIL.APRE
 
 		public override int GetHashCode()
 		{
-			return _span.GetHashCode() ^ (FeatureStructure == null ? 0 : FeatureStructure.GetHashCode());
+			return _span.GetHashCode() ^ (FeatureStruct == null ? 0 : FeatureStruct.GetHashCode());
 		}
 
 		public Annotation<TOffset> Clone()
@@ -80,12 +81,12 @@ namespace SIL.APRE
 			if (other == null)
 				return false;
 
-			if (FeatureStructure == null)
+			if (FeatureStruct == null)
 			{
-				if (other.FeatureStructure != null)
+				if (other.FeatureStruct != null)
 					return false;
 			}
-			else if (!FeatureStructure.Equals(other.FeatureStructure))
+			else if (!FeatureStruct.Equals(other.FeatureStruct))
 			{
 				return false;
 			}
@@ -95,7 +96,7 @@ namespace SIL.APRE
 
 		public override string ToString()
 		{
-			return string.Format("({0} {1})", _span, FeatureStructure);
+			return string.Format("({0} {1})", _span, FeatureStruct);
 		}
 	}
 }

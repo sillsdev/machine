@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace SIL.APRE
 {
@@ -9,7 +8,7 @@ namespace SIL.APRE
     /// This is a bi-directional list. It is optimized for list traversal in either direction.
     /// </summary>
     /// <typeparam name="TNode">Item Type, must be the type of the class that the linked list handles.</typeparam>
-    public class BidirList<TNode> : IBidirList<TNode>, IEquatable<BidirList<TNode>> where TNode : BidirListNode<TNode>
+    public class BidirList<TNode> : IBidirList<TNode> where TNode : BidirListNode<TNode>
     {
         private TNode _first;
     	private TNode _last;
@@ -35,27 +34,11 @@ namespace SIL.APRE
             }
         }
 
-        public bool IsReadOnly
+        bool ICollection<TNode>.IsReadOnly
         {
             get
             {
                 return false;
-            }
-        }
-
-        public bool IsSynchronized
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        public Object SyncRoot
-        {
-            get
-            {
-                return this;
             }
         }
 
@@ -117,7 +100,7 @@ namespace SIL.APRE
             return true;
         }
 
-        public IEnumerator<TNode> GetEnumerator()
+        IEnumerator<TNode> IEnumerable<TNode>.GetEnumerator()
         {
             for (TNode node = First; node != null; node = node.Next)
                 yield return node;
@@ -125,7 +108,7 @@ namespace SIL.APRE
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return GetEnumerator();
+            return ((IEnumerable<TNode>) this).GetEnumerator();
         }
 
         /// <summary>
@@ -228,16 +211,26 @@ namespace SIL.APRE
         	return cur.Next;
         }
 
-    	public bool Find(TNode node, Direction dir, out TNode result)
+		public bool Find(TNode example, out TNode result)
+		{
+			return Find(example, Direction.LeftToRight, out result);
+		}
+
+		public bool Find(TNode start, TNode example, out TNode result)
+		{
+			return Find(start, example, Direction.LeftToRight, out result);
+		}
+
+    	public bool Find(TNode example, Direction dir, out TNode result)
     	{
-    		return Find(GetFirst(dir), node, dir, out result);
+    		return Find(GetFirst(dir), example, dir, out result);
     	}
 
-    	public bool Find(TNode start, TNode node, Direction dir, out TNode result)
+    	public bool Find(TNode start, TNode example, Direction dir, out TNode result)
     	{
 			for (TNode n = start; n != null; n = n.GetNext(dir))
 			{
-				if (_comparer.Equals(node, n))
+				if (_comparer.Equals(example, n))
 				{
 					result = n;
 					return true;
@@ -246,6 +239,26 @@ namespace SIL.APRE
     		result = null;
     		return false;
     	}
+
+		public IBidirListView<TNode> GetView(TNode first)
+		{
+			return GetView(first, Direction.LeftToRight);
+		}
+
+		public IBidirListView<TNode> GetView(TNode first, TNode last)
+		{
+			return GetView(first, last, Direction.LeftToRight);
+		}
+
+		public IBidirListView<TNode> GetView(TNode first, Direction dir)
+		{
+			return GetView(first, GetLast(dir), dir);
+		}
+
+		public IBidirListView<TNode> GetView(TNode first, TNode last, Direction dir)
+		{
+			return new BidirListView<TNode>(dir == Direction.LeftToRight ? first : last, dir == Direction.LeftToRight ? last : first, _comparer);
+		}
 
     	/// <summary>
         /// Inserts <c>newNode</c> to the left or right of <c>node</c>.
@@ -295,41 +308,10 @@ namespace SIL.APRE
         /// Adds all of the nodes from the enumerable collection.
         /// </summary>
         /// <param name="e">The enumerable collection.</param>
-        public void AddMany(IEnumerable<TNode> e)
+        public void AddRange(IEnumerable<TNode> e)
         {
             foreach (TNode node in e)
                 Add(node);
-        }
-
-        public override int GetHashCode()
-        {
-        	return this.Aggregate(0, (current, node) => current ^ _comparer.GetHashCode(node));
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (obj == null)
-                return false;
-            return Equals(obj as BidirList<TNode>);
-        }
-
-        public bool Equals(BidirList<TNode> other)
-        {
-            if (other == null)
-                return false;
-
-            if (Count != other.Count)
-                return false;
-
-            IEnumerator<TNode> e1 = GetEnumerator();
-            IEnumerator<TNode> e2 = other.GetEnumerator();
-            while (e1.MoveNext() && e2.MoveNext())
-            {
-                if (e1.Current != null && ! _comparer.Equals(e1.Current, e2.Current))
-                    return false;
-            }
-
-            return true;
         }
     }
 }

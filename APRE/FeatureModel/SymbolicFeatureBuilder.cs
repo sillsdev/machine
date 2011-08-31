@@ -1,14 +1,7 @@
-using System;
-
 namespace SIL.APRE.FeatureModel
 {
-	public class SymbolicFeatureBuilder
+	public class SymbolicFeatureBuilder : IDefaultableSymbolicFeatureBuilder
 	{
-		public static implicit operator SymbolicFeature(SymbolicFeatureBuilder builder)
-		{
-			return builder.ToSymbolicFeature();
-		}
-
 		private readonly SymbolicFeature _feature;
 		private FeatureSymbol _lastSymbol;
 
@@ -22,31 +15,32 @@ namespace SIL.APRE.FeatureModel
 			_feature = new SymbolicFeature(id);
 		}
 
-		public SymbolicFeatureBuilder Symbol(string id, string desc)
+		public IDefaultableSymbolicFeatureBuilder Symbol(string id, string desc)
 		{
 			_lastSymbol = new FeatureSymbol(id, desc);
 			_feature.AddPossibleSymbol(_lastSymbol);
 			return this;
 		}
 
-		public SymbolicFeatureBuilder Symbol(string id)
+		public IDefaultableSymbolicFeatureBuilder Symbol(string id)
 		{
 			_lastSymbol = new FeatureSymbol(id);
 			_feature.AddPossibleSymbol(_lastSymbol);
 			return this;
 		}
 
-		public SymbolicFeatureBuilder Default()
+		ISymbolicFeatureBuilder IDefaultableSymbolicFeatureBuilder.Default
 		{
-			if (_lastSymbol == null)
-				throw new ArgumentException("There is no symbol to be made default.");
-			_feature.DefaultValue = new SymbolicFeatureValue(_lastSymbol);
-			return this;
+			get
+			{
+				_feature.DefaultValue = new SymbolicFeatureValue(_lastSymbol);
+				return this;
+			}
 		}
 
-		public SymbolicFeature ToSymbolicFeature()
+		public SymbolicFeature Value
 		{
-			return _feature;
+			get { return _feature; }
 		}
 	}
 }

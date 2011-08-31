@@ -3,7 +3,7 @@ namespace SIL.APRE.FeatureModel
 	/// <summary>
 	/// This class represents a feature value.
 	/// </summary>
-	public class FeatureSymbol : IDBearer
+	public class FeatureSymbol : IDBearerBase
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FeatureSymbol"/> class.

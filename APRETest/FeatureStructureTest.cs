@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using SIL.APRE.FeatureModel;
 
 namespace SIL.APRE.Test
@@ -10,7 +9,7 @@ namespace SIL.APRE.Test
 		[Test]
 		public void DisjunctiveUnify()
 		{
-			FeatureSystem featSys = FeatureSystem.Build()
+			FeatureSystem featSys = FeatureSystem.With
 				.SymbolicFeature("rank", rank => rank
 					.Symbol("clause"))
 				.ComplexFeature("subj", subj => subj
@@ -38,53 +37,66 @@ namespace SIL.APRE.Test
 					.ExtantFeature("case")
 					.ExtantFeature("number")
 					.ExtantFeature("person")
-					.ExtantFeature("lex"));
+					.ExtantFeature("lex"))
+				.StringFeature("varFeat1")
+				.StringFeature("varFeat2")
+				.StringFeature("varFeat3")
+				.StringFeature("varFeat4").Value;
 
-			FeatureStructure grammar = featSys.BuildFS()
-				.Symbol("rank", "clause")
-				.FeatureStructure("subj", subj => subj
-					.Symbol("case", "nom"))
-				.Or(or => or
-					.FeatureStructure(disj => disj
-						.Symbol("voice", "passive")
-						.Symbol("transitivity", "trans")
-						.Pointer("goal", "subj"))
-					.FeatureStructure(disj => disj
-						.Symbol("voice", "active")
-						.Pointer("actor", "subj")))
-				.Or(or => or
-					.FeatureStructure(disj => disj
-						.Symbol("transitivity", "intrans")
-						.FeatureStructure("actor", actor => actor
-							.Symbol("person", "3")))
-					.FeatureStructure(disj => disj
-						.Symbol("transitivity", "trans")
-						.FeatureStructure("goal", goal => goal
-							.Symbol("person", "3"))))
-				.Or(or => or
-					.FeatureStructure(disj => disj
-						.Symbol("number", "sing")
-						.FeatureStructure("subj", subj1 => subj1
-							.Symbol("number", "sing")))
-					.FeatureStructure(disj => disj
-						.Symbol("number", "pl")
-						.FeatureStructure("subj", subj1 => subj1
-							.Symbol("number", "pl"))));
+			FeatureStruct grammar = FeatureStruct.With(featSys)
+				.Feature("rank").EqualTo("clause")
+				.Feature("subj").EqualToFeatureStruct(subj => subj
+					.Feature("case").EqualTo("nom"))
+				.Feature("varFeat1").EqualToVariable("alpha")
+				.Feature("varFeat2").EqualTo("value2")
+				.And(and => and
+					.With(disj => disj
+						.Feature("voice").EqualTo("passive")
+						.Feature("transitivity").EqualTo("trans")
+						.Feature("goal").ReferringTo("subj"))
+					.Or(disj => disj
+						.Feature("voice").EqualTo("active")
+						.Feature("actor").ReferringTo("subj")
+						.Feature("varFeat4").EqualToVariable("gamma")))
+				.And(and => and
+					.With(disj => disj
+						.Feature("transitivity").EqualTo("intrans")
+						.Feature("actor").EqualToFeatureStruct(actor => actor
+							.Feature("person").EqualTo("3")))
+					.Or(disj => disj
+						.Feature("transitivity").EqualTo("trans")
+						.Feature("goal").EqualToFeatureStruct(goal => goal
+							.Feature("person").EqualTo("3"))
+						.Feature("varFeat3").EqualToVariable("beta")))
+				.And(and => and
+					.With(disj => disj
+						.Feature("number").EqualTo("sing")
+						.Feature("subj").EqualToFeatureStruct(subj1 => subj1
+							.Feature("number").EqualTo("sing")))
+					.Or(disj => disj
+						.Feature("number").EqualTo("pl")
+						.Feature("subj").EqualToFeatureStruct(subj1 => subj1
+							.Feature("number").EqualTo("pl"))
+						.Feature("varFeat3").EqualTo("value3")
+						.Feature("varFeat2").Not.EqualToVariable("beta"))).Value;
 
-			FeatureStructure constituent = featSys.BuildFS()
-				.FeatureStructure("subj", subj => subj
-					.String("lex", "y'all")
-					.Symbol("person", "2")
-					.Symbol("number", "pl"));
+			FeatureStruct constituent = FeatureStruct.With(featSys)
+				.Feature("subj").EqualToFeatureStruct(subj => subj
+					.Feature("lex").EqualTo("y'all")
+					.Feature("person").EqualTo("2")
+					.Feature("number").EqualTo("pl"))
+				.Feature("varFeat1").EqualTo("value1")
+				.Feature("varFeat4").EqualTo("value4").Value;
 
-			FeatureStructure output;
-			grammar.Unify(constituent, false, false, out output);
+			var varBindings = new VariableBindings();
+			FeatureStruct output;
+			Assert.IsTrue(grammar.Unify(constituent, false, varBindings, out output));
 		}
 
 		[Test]
 		public void Unify1()
 		{
-			FeatureSystem featSys = FeatureSystem.Build()
+			FeatureSystem featSys = FeatureSystem.With
 				.ComplexFeature("a", a => a
 					.SymbolicFeature("b", b => b
 						.Symbol("c"))
@@ -99,30 +111,30 @@ namespace SIL.APRE.Test
 				.ComplexFeature("g", g => g
 					.ExtantFeature("b")
 					.ExtantFeature("e")
-					.ExtantFeature("h"));
+					.ExtantFeature("h")).Value;
 
-			FeatureStructure fs1 = featSys.BuildFS()
-				.FeatureStructure("a", a => a
-					.Symbol("b", "c"))
-				.FeatureStructure("d", d => d
-					.Symbol("e", "f"))
-				.Pointer("g", "d");
+			FeatureStruct fs1 = FeatureStruct.With(featSys)
+				.Feature("a").EqualToFeatureStruct(a => a
+					.Feature("b").EqualTo("c"))
+				.Feature("d").EqualToFeatureStruct(d => d
+					.Feature("e").EqualTo("f"))
+				.Feature("g").ReferringTo("d").Value;
 
-			FeatureStructure fs2 = featSys.BuildFS()
-				.FeatureStructure("a", a => a
-					.Symbol("b", "c"))
-				.Pointer("d", "a")
-				.FeatureStructure("g", g => g
-					.Symbol("h", "j"));
+			FeatureStruct fs2 = FeatureStruct.With(featSys)
+				.Feature("a").EqualToFeatureStruct(a => a
+					.Feature("b").EqualTo("c"))
+				.Feature("d").ReferringTo("a")
+				.Feature("g").EqualToFeatureStruct(g => g
+					.Feature("h").EqualTo("j")).Value;
 
-			FeatureStructure result;
-			Assert.IsTrue(fs1.Unify(fs2, false, true, out result));
+			FeatureStruct result;
+			Assert.IsTrue(fs1.Unify(fs2, out result));
 		}
 
 		[Test]
 		public void Unify2()
 		{
-			FeatureSystem featSys = FeatureSystem.Build()
+			FeatureSystem featSys = FeatureSystem.With
 				.ComplexFeature("a", a => a
 					.SymbolicFeature("b", b => b
 						.Symbol("c"))
@@ -139,82 +151,84 @@ namespace SIL.APRE.Test
 					.ExtantFeature("e")
 					.ExtantFeature("h"))
 				.ComplexFeature("i", i => i
-					.ExtantFeature("b"));
+					.ExtantFeature("b")).Value;
 
-			FeatureStructure fs1 = featSys.BuildFS()
-				.FeatureStructure("a", a => a
-					.Symbol("b", "c"))
-				.FeatureStructure("d", d => d
-					.Symbol("e", "f"))
-				.Pointer("g", "d")
-				.Pointer("i", "a", "b");
+			FeatureStruct fs1 = FeatureStruct.With(featSys)
+				.Feature("a").EqualToFeatureStruct(a => a
+					.Feature("b").EqualTo("c"))
+				.Feature("d").EqualToFeatureStruct(d => d
+					.Feature("e").EqualTo("f"))
+				.Feature("g").ReferringTo("d")
+				.Feature("i").ReferringTo("a", "b").Value;
 
-			FeatureStructure fs2 = featSys.BuildFS()
-				.FeatureStructure("a", a => a
-					.Symbol("b", "c"))
-				.FeatureStructure("d", g => g
-					.Symbol("h", "j"))
-				.Pointer("g", "a");
+			FeatureStruct fs2 = FeatureStruct.With(featSys)
+				.Feature("a").EqualToFeatureStruct(a => a
+					.Feature("b").EqualTo("c"))
+				.Feature("d").EqualToFeatureStruct(g => g
+					.Feature("h").EqualTo("j"))
+				.Feature("g").ReferringTo("a").Value;
 
-			FeatureStructure result;
-			Assert.IsTrue(fs1.Unify(fs2, false, true, out result));
+			FeatureStruct result;
+			Assert.IsTrue(fs1.Unify(fs2, out result));
 		}
 
 		[Test]
 		public void UnifyVariables()
 		{
-			FeatureSystem featSys = FeatureSystem.Build()
+			FeatureSystem featSys = FeatureSystem.With
 				.SymbolicFeature("a", a => a
 					.Symbol("a+", "+")
 					.Symbol("a-", "-"))
 				.SymbolicFeature("b", b => b
 					.Symbol("b+", "+")
-					.Symbol("b-", "-"));
+					.Symbol("b-", "-")).Value;
 
-			FeatureStructure fs1 = featSys.BuildFS()
-				.Variable("a", "var1")
-				.Symbol("b-");
+			FeatureStruct fs1 = FeatureStruct.With(featSys)
+				.Feature("a").EqualToVariable("var1")
+				.Symbol("b-").Value;
 
-			FeatureStructure fs2 = featSys.BuildFS()
-				.Not().Variable("a", "var1")
-				.Symbol("b-");
+			FeatureStruct fs2 = FeatureStruct.With(featSys)
+				.Feature("a").Not.EqualToVariable("var1")
+				.Symbol("b-").Value;
 
-			FeatureStructure result;
-			Assert.IsFalse(fs1.Unify(fs2, false, true, out result));
+			FeatureStruct result;
+			Assert.IsFalse(fs1.Unify(fs2, out result));
 
-			fs1 = featSys.BuildFS()
-				.Variable("a", "var1")
-				.Symbol("b-");
+			fs1 = FeatureStruct.With(featSys)
+				.Feature("a").EqualToVariable("var1")
+				.Symbol("b-").Value;
 
-			fs2 = featSys.BuildFS()
+			fs2 = FeatureStruct.With(featSys)
 				.Symbol("a+")
-				.Symbol("b-");
+				.Symbol("b-").Value;
 
-			Assert.IsTrue(fs1.Unify(fs2, false, true, out result));
+			Assert.IsTrue(fs1.Unify(fs2, out result));
 
-			fs1 = featSys.BuildFS()
+			fs1 = FeatureStruct.With(featSys)
 				.Symbol("a+")
-				.Symbol("b-");
+				.Symbol("b-").Value;
 
-			fs2 = featSys.BuildFS()
-				.Not().Variable("a", "var1")
-				.Symbol("b-");
+			fs2 = FeatureStruct.With(featSys)
+				.Feature("a").Not.EqualToVariable("var1")
+				.Symbol("b-").Value;
 
-			Assert.IsTrue(fs1.Unify(fs2, false, true, out result));
+			Assert.IsTrue(fs1.Unify(fs2, out result));
 
-			fs1 = featSys.BuildFS()
+			fs1 = FeatureStruct.With(featSys)
 				.Symbol("a+")
-				.Symbol("b-");
+				.Symbol("b-").Value;
 
-			fs2 = featSys.BuildFS()
-				.Not().Variable("a", "var1")
-				.Symbol("b-");
+			fs2 = FeatureStruct.With(featSys)
+				.Feature("a").Not.EqualToVariable("var1")
+				.Symbol("b-").Value;
 
-			var varBindings = new Dictionary<string, FeatureValue> {{"var1", new SymbolicFeatureValue(featSys.GetSymbol("a-"))}};
-			Assert.IsTrue(fs1.Unify(fs2, false, true, varBindings, out result));
+			var varBindings = new VariableBindings();
+			varBindings["var1"] = new SymbolicFeatureValue(featSys.GetSymbol("a-"));
+			Assert.IsTrue(fs1.Unify(fs2, varBindings, out result));
 
-			varBindings = new Dictionary<string, FeatureValue> {{"var1", new SymbolicFeatureValue(featSys.GetSymbol("a+"))}};
-			Assert.IsFalse(fs1.Unify(fs2, false, true, varBindings, out result));
+			varBindings = new VariableBindings();
+			varBindings["var1"] = new SymbolicFeatureValue(featSys.GetSymbol("a+"));
+			Assert.IsFalse(fs1.Unify(fs2, varBindings, out result));
 		}
 	}
 }

@@ -1,12 +1,7 @@
 namespace SIL.APRE.FeatureModel
 {
-	public class StringFeatureBuilder
+	public class StringFeatureBuilder : IStringFeatureBuilder
 	{
-		public static implicit operator StringFeature(StringFeatureBuilder builder)
-		{
-			return builder.ToStringFeature();
-		}
-
 		private readonly StringFeature _feature;
 
 		public StringFeatureBuilder(string id, string desc)
@@ -19,15 +14,15 @@ namespace SIL.APRE.FeatureModel
 			_feature = new StringFeature(id);
 		}
 
-		public StringFeatureBuilder Default(string str)
+		public IStringFeatureBuilder Default(string str)
 		{
 			_feature.DefaultValue = new StringFeatureValue(str);
 			return this;
 		}
 
-		public StringFeature ToStringFeature()
+		public StringFeature Value
 		{
-			return _feature;
+			get { return _feature; }
 		}
 	}
 }

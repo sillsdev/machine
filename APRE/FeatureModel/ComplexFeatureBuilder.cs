@@ -2,13 +2,8 @@ using System;
 
 namespace SIL.APRE.FeatureModel
 {
-	public class ComplexFeatureBuilder
+	public class ComplexFeatureBuilder : IComplexFeatureBuilder
 	{
-		public static implicit operator ComplexFeature(ComplexFeatureBuilder builder)
-		{
-			return builder.ToComplexFeature();
-		}
-
 		private readonly FeatureSystem _featSys;
 		private readonly ComplexFeature _feature;
 
@@ -24,77 +19,77 @@ namespace SIL.APRE.FeatureModel
 			_feature = new ComplexFeature(id);
 		}
 
-		public ComplexFeatureBuilder SymbolicFeature(string id, string desc, Action<SymbolicFeatureBuilder> build)
+		public IComplexFeatureBuilder SymbolicFeature(string id, string desc, Func<ISymbolicFeatureBuilder, ISymbolicFeatureBuilder> build)
 		{
 			var featureBuilder = new SymbolicFeatureBuilder(id, desc);
-			_feature.AddSubfeature(featureBuilder);
+			_feature.AddSubfeature(featureBuilder.Value);
 			build(featureBuilder);
 			return this;
 		}
 
-		public ComplexFeatureBuilder SymbolicFeature(string id, Action<SymbolicFeatureBuilder> build)
+		public IComplexFeatureBuilder SymbolicFeature(string id, Func<ISymbolicFeatureBuilder, ISymbolicFeatureBuilder> build)
 		{
 			var featureBuilder = new SymbolicFeatureBuilder(id);
-			_feature.AddSubfeature(featureBuilder);
+			_feature.AddSubfeature(featureBuilder.Value);
 			build(featureBuilder);
 			return this;
 		}
 
-		public ComplexFeatureBuilder StringFeature(string id, string desc)
+		public IComplexFeatureBuilder StringFeature(string id, string desc)
 		{
 			Feature feature = new StringFeature(id, desc);
 			_feature.AddSubfeature(feature);
 			return this;
 		}
 
-		public ComplexFeatureBuilder StringFeature(string id)
+		public IComplexFeatureBuilder StringFeature(string id)
 		{
 			Feature feature = new StringFeature(id);
 			_feature.AddSubfeature(feature);
 			return this;
 		}
 
-		public ComplexFeatureBuilder StringFeature(string id, string desc, Action<StringFeatureBuilder> build)
+		public IComplexFeatureBuilder StringFeature(string id, string desc, Func<IStringFeatureBuilder, IStringFeatureBuilder> build)
 		{
 			var featureBuilder = new StringFeatureBuilder(id, desc);
-			_feature.AddSubfeature(featureBuilder);
+			_feature.AddSubfeature(featureBuilder.Value);
 			build(featureBuilder);
 			return this;
 		}
 
-		public ComplexFeatureBuilder StringFeature(string id, Action<StringFeatureBuilder> build)
+		public IComplexFeatureBuilder StringFeature(string id, Func<IStringFeatureBuilder, IStringFeatureBuilder> build)
 		{
 			var featureBuilder = new StringFeatureBuilder(id);
-			_feature.AddSubfeature(featureBuilder);
+			_feature.AddSubfeature(featureBuilder.Value);
 			build(featureBuilder);
 			return this;
 		}
 
-		public ComplexFeatureBuilder ComplexFeature(string id, string desc, Action<ComplexFeatureBuilder> build)
+		public IComplexFeatureBuilder ComplexFeature(string id, string desc, Func<IComplexFeatureBuilder, IComplexFeatureBuilder> build)
 		{
 			var featureBuilder = new ComplexFeatureBuilder(_featSys, id, desc);
-			_feature.AddSubfeature(featureBuilder);
+			_feature.AddSubfeature(featureBuilder.Value);
 			build(featureBuilder);
 			return this;
 		}
 
-		public ComplexFeatureBuilder ComplexFeature(string id, Action<ComplexFeatureBuilder> build)
+		public IComplexFeatureBuilder ComplexFeature(string id, Func<IComplexFeatureBuilder, IComplexFeatureBuilder> build)
 		{
 			var featureBuilder = new ComplexFeatureBuilder(_featSys, id);
-			_feature.AddSubfeature(featureBuilder);
+			_feature.AddSubfeature(featureBuilder.Value);
 			build(featureBuilder);
 			return this;
 		}
 
-		public ComplexFeatureBuilder ExtantFeature(string id)
+		public IComplexFeatureBuilder ExtantFeature(string id)
 		{
 			_feature.AddSubfeature(_featSys.GetFeature(id));
 			return this;
 		}
 
-		public ComplexFeature ToComplexFeature()
+		public ComplexFeature Value
 		{
-			return _feature;
+			get { return _feature; }
 		}
 	}
 }

@@ -12,22 +12,22 @@ namespace SIL.APRE.Test
 		[TestFixtureSetUp]
 		public void FixtureSetUp()
 		{
-			_spanFactory = new SpanFactory<int>((x, y) => x.CompareTo(y), (start, end) => end - start, false);
+			_spanFactory = new IntegerSpanFactory();
 		}
 
 		[Test]
 		public void AddAnnotations()
 		{
-			FeatureSystem featSys = FeatureSystem.Build().StringFeature("pos");
+			FeatureSystem featSys = FeatureSystem.With.StringFeature("pos").Value;
 
 			var annList = new AnnotationList<int>();
-			var a = new Annotation<int>(_spanFactory.Create(99), featSys.BuildFS().String("pos", "Last"));
+			var a = new Annotation<int>(_spanFactory.Create(99), FeatureStruct.With(featSys).Feature("pos").EqualTo("Last").Value);
 			annList.Add(a);
 			Assert.AreSame(a, annList.First);
-			a = new Annotation<int>(_spanFactory.Create(0), featSys.BuildFS().String("pos", "First"));
+			a = new Annotation<int>(_spanFactory.Create(0), FeatureStruct.With(featSys).Feature("pos").EqualTo("First").Value);
 			annList.Add(a);
 			Assert.AreSame(a, annList.First);
-			a = new Annotation<int>(_spanFactory.Create(0, 99), featSys.BuildFS().String("pos", "Entire"));
+			a = new Annotation<int>(_spanFactory.Create(0, 99), FeatureStruct.With(featSys).Feature("pos").EqualTo("Entire").Value);
 			annList.Add(a);
 			Assert.AreSame(a, annList.ElementAt(1));
 		}

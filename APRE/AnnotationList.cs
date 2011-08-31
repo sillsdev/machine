@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SIL.APRE
 {
-	public sealed class AnnotationList<TOffset> : SkipList<Annotation<TOffset>>, ICloneable
+	public class AnnotationList<TOffset> : SkipList<Annotation<TOffset>>, ICloneable
 	{
 		private int _currentID;
 
@@ -17,7 +17,7 @@ namespace SIL.APRE
 		public AnnotationList(AnnotationList<TOffset> annList)
 			: this()
 		{
-			AddMany(annList.Select(ann => ann.Clone()));
+			AddRange(annList.Select(ann => ann.Clone()));
 		}
 
 		public override void Add(Annotation<TOffset> node)

@@ -81,12 +81,12 @@ namespace SIL.APRE
 			_list.Insert(newNode, (TNode)this, dir);
 		}
 
-		internal virtual void Init(BidirList<TNode> list)
+		protected internal virtual void Init(BidirList<TNode> list)
 		{
 			_list = list;
 		}
 
-		internal virtual void Clear()
+		protected internal virtual void Clear()
 		{
 			_list = null;
 			Next = null;

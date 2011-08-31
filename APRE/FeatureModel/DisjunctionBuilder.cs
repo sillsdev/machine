@@ -3,30 +3,47 @@ using System.Collections.Generic;
 
 namespace SIL.APRE.FeatureModel
 {
-	public class DisjunctionBuilder
+	public class DisjunctionBuilder : IFirstDisjunctBuilder, ISecondDisjunctBuilder, IFinalDisjunctBuilder
 	{
 		private readonly FeatureSystem _featSys;
-		private readonly FeatureStructure _rootFs;
-		private readonly HashSet<FeatureStructure> _disjunction;
+		private readonly FeatureStruct _rootFs;
+		private readonly List<FeatureStruct> _disjuncts;
 
-		internal DisjunctionBuilder(FeatureSystem featSys, FeatureStructure rootFs)
+		public DisjunctionBuilder(FeatureSystem featSys, FeatureStruct rootFs)
 		{
 			_featSys = featSys;
 			_rootFs = rootFs;
-			_disjunction = new HashSet<FeatureStructure>();
+			_disjuncts = new List<FeatureStruct>();
 		}
 
-		public DisjunctionBuilder FeatureStructure(Action<DisjunctiveFeatureStructureBuilder> build)
+		public ISecondDisjunctBuilder With(Func<IDisjunctiveFeatureStructBuilder, IDisjunctiveFeatureStructBuilder> build)
 		{
-			var fsBuilder = new DisjunctiveFeatureStructureBuilder(_featSys, _rootFs);
-			_disjunction.Add(fsBuilder.ToFeatureStructure());
-			build(fsBuilder);
+			AddDisjunct(build);
 			return this;
 		}
 
-		public IEnumerable<FeatureStructure> ToDisjunction()
+		IFinalDisjunctBuilder ISecondDisjunctBuilder.Or(Func<IDisjunctiveFeatureStructBuilder, IDisjunctiveFeatureStructBuilder> build)
 		{
-			return _disjunction;
+			AddDisjunct(build);
+			return this;
+		}
+
+		IFinalDisjunctBuilder IFinalDisjunctBuilder.Or(Func<IDisjunctiveFeatureStructBuilder, IDisjunctiveFeatureStructBuilder> build)
+		{
+			AddDisjunct(build);
+			return this;
+		}
+
+		private void AddDisjunct(Func<IDisjunctiveFeatureStructBuilder, IDisjunctiveFeatureStructBuilder> build)
+		{
+			var fsBuilder = new DisjunctiveFeatureStructBuilder(_featSys, _rootFs);
+			IDisjunctiveFeatureStructBuilder result = build(fsBuilder);
+			_disjuncts.Add(result.Value);
+		}
+
+		Disjunction IFinalDisjunctBuilder.ToDisjunction()
+		{
+			return new Disjunction(_disjuncts);
 		}
 	}
 }

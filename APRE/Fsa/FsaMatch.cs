@@ -1,17 +1,23 @@
-﻿using System.Collections.Generic;
-using SIL.APRE.FeatureModel;
+﻿using SIL.APRE.FeatureModel;
 
 namespace SIL.APRE.Fsa
 {
 	public class FsaMatch<TOffset>
 	{
 		private readonly NullableValue<TOffset>[,] _registers;
-		private readonly IDictionary<string, FeatureValue> _varBindings; 
+		private readonly VariableBindings _varBindings;
+		private readonly string _id;
 
-		public FsaMatch(NullableValue<TOffset>[,] registers, IDictionary<string, FeatureValue> varBindings)
+		public FsaMatch(string id, NullableValue<TOffset>[,] registers, VariableBindings varBindings)
 		{
+			_id = id;
 			_registers = registers;
 			_varBindings = varBindings;
+		}
+
+		public string ID
+		{
+			get { return _id; }
 		}
 
 		public NullableValue<TOffset>[,] Registers
@@ -19,7 +25,7 @@ namespace SIL.APRE.Fsa
 			get { return _registers; }
 		}
 
-		public IDictionary<string, FeatureValue> VariableBindings
+		public VariableBindings VariableBindings
 		{
 			get { return _varBindings; }
 		}

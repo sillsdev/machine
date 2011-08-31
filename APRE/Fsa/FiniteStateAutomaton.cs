@@ -63,42 +63,52 @@ namespace SIL.APRE.Fsa
 			return false;
 		}
 
-		private State<TOffset> CreateState(IEnumerable<TagMapCommand> finishers)
+		private State<TOffset> CreateAcceptingState(IEnumerable<AcceptInfo<TOffset>> acceptInfos, IEnumerable<TagMapCommand> finishers)
 		{
-			var state = new State<TOffset>(_states.Count, finishers);
+			var state = new State<TOffset>(_states.Count, acceptInfos, finishers);
 			_states.Add(state);
 			return state;
 		}
 
-		public State<TOffset> CreateState(bool isAccepting)
+		public State<TOffset> CreateAcceptingState(string id, Func<IBidirList<Annotation<TOffset>>, bool> accept)
 		{
-			var state = new State<TOffset>(_states.Count, isAccepting);
+			var state = new State<TOffset>(_states.Count, id, accept);
+			_states.Add(state);
+			return state;
+		}
+
+		public State<TOffset> CreateAcceptingState()
+		{
+			var state = new State<TOffset>(_states.Count, true);
 			_states.Add(state);
 			return state;
 		}
 
 		public State<TOffset> CreateState()
 		{
-			return CreateState(false);
+			var state = new State<TOffset>(_states.Count, false);
+			_states.Add(state);
+			return state;
 		}
 
-		public State<TOffset> CreateGroupTag(State<TOffset> startState, string groupName, bool isStart)
+		public Arc<TOffset> CreateTag(State<TOffset> target, string groupName, bool isStart)
 		{
-			State<TOffset> tagState = CreateState();
 			int tag;
 			if (isStart)
 			{
-				tag = _nextTag;
-				_nextTag += 2;
-				_groups.Add(groupName, tag);
+				if (!_groups.TryGetValue(groupName, out tag))
+				{
+					tag = _nextTag;
+					_nextTag += 2;
+					_groups.Add(groupName, tag);
+				}
 			}
 			else
 			{
 				tag = _groups[groupName] + 1;
 			}
 
-			startState.AddArc(new Arc<TOffset>(tagState, tag, _nextPriority++));
-			return tagState;
+			return new Arc<TOffset>(target, tag, _nextPriority++);
 		}
 
 		public State<TOffset> StartState
@@ -119,10 +129,10 @@ namespace SIL.APRE.Fsa
 			private readonly State<TOffset> _state;
 			private readonly Annotation<TOffset> _ann;
 			private readonly NullableValue<TOffset>[,] _registers;
-			private readonly IDictionary<string, FeatureValue> _varBindings; 
+			private readonly VariableBindings _varBindings; 
 
 			public FsaInstance(State<TOffset> state, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers,
-				IDictionary<string, FeatureValue> varBindings)
+				VariableBindings varBindings)
 			{
 				_state = state;
 				_ann = ann;
@@ -145,7 +155,7 @@ namespace SIL.APRE.Fsa
 				get { return _registers; }
 			}
 
-			public IDictionary<string, FeatureValue> VariableBindings
+			public VariableBindings VariableBindings
 			{
 				get { return _varBindings; }
 			}
@@ -244,12 +254,12 @@ namespace SIL.APRE.Fsa
 			for (; ann != null && ann.Span.GetStart(_dir).Equals(offset); ann = ann.GetNext(_dir, _filter))
 			{
 				instStack.Push(new FsaInstance(_startState, ann, (NullableValue<TOffset>[,])registers.Clone(),
-					new Dictionary<string, FeatureValue>()));
+					new VariableBindings()));
 			}
 		}
 
 		private void AdvanceFsa(IBidirList<Annotation<TOffset>> annList, Annotation<TOffset> ann, TOffset end,
-			NullableValue<TOffset>[,] registers, IDictionary<string, FeatureValue> varBindings, Arc<TOffset> arc, Stack<FsaInstance> instStack,
+			NullableValue<TOffset>[,] registers, VariableBindings varBindings, Arc<TOffset> arc, Stack<FsaInstance> instStack,
 			Stack<FsaMatch<TOffset>> matchStack)
 		{
 			Annotation<TOffset> nextAnn = ann.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
@@ -259,10 +269,20 @@ namespace SIL.APRE.Fsa
 				ann.Span.GetEnd(_dir));
 			if (arc.Target.IsAccepting)
 			{
-				var matchRegisters = (NullableValue<TOffset>[,]) newRegisters.Clone();
-				ExecuteCommands(matchRegisters, arc.Target.Finishers, new NullableValue<TOffset>(), new NullableValue<TOffset>(),
-					ann.Span.GetEnd(_dir));
-				matchStack.Push(new FsaMatch<TOffset>(matchRegisters, varBindings));
+				NullableValue<TOffset>[,] matchRegisters = null;
+				foreach (AcceptInfo<TOffset> acceptInfo in arc.Target.AcceptInfos.Reverse())
+				{
+					if (acceptInfo.Accept == null || acceptInfo.Accept(annList))
+					{
+						if (matchRegisters == null)
+						{
+							matchRegisters = (NullableValue<TOffset>[,]) newRegisters.Clone();
+							ExecuteCommands(matchRegisters, arc.Target.Finishers, new NullableValue<TOffset>(), new NullableValue<TOffset>(),
+								ann.Span.GetEnd(_dir));
+						}
+						matchStack.Push(new FsaMatch<TOffset>(acceptInfo.ID, matchRegisters, varBindings));
+					}
+				}
 			}
 			if (nextAnn != null)
 			{
@@ -274,8 +294,8 @@ namespace SIL.APRE.Fsa
 
 				for (Annotation<TOffset> a = nextAnn; a != null && a.Span.GetStart(_dir).Equals(nextOffset); a = a.GetNext(_dir, _filter))
 				{
-					instStack.Push(new FsaInstance(arc.Target, a, (NullableValue<TOffset>[,])newRegisters.Clone(),
-						varBindings.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Clone())));
+					instStack.Push(new FsaInstance(arc.Target, a, (NullableValue<TOffset>[,]) newRegisters.Clone(),
+						varBindings.Clone()));
 				}
 			}
 		}
@@ -560,14 +580,20 @@ namespace SIL.APRE.Fsa
 						{
 							subsetStates.Add(u, u);
 							unmarkedSubsetStates.Enqueue(u);
-							StateElement minState = GetMinAcceptingGroup(u);
-							if (minState != null)
+							IEnumerable<StateElement> acceptingStates = from state in u
+																		where state.NfaState.IsAccepting
+																		orderby state.Priority
+																		select state;
+							if (acceptingStates.Any())
 							{
-								u.DfaState = CreateState(from kvp in minState.Tags
-								                         let dest = GetRegisterIndex(registerIndices, kvp.Key, 0)
-								                         let src = GetRegisterIndex(registerIndices, kvp.Key, kvp.Value)
-								                         where dest != src
-								                         select new TagMapCommand(dest, src));
+								IEnumerable<AcceptInfo<TOffset>> acceptInfos = acceptingStates.SelectMany(state => state.NfaState.AcceptInfos);
+								StateElement minState = acceptingStates.First();
+								IEnumerable<TagMapCommand> finishers = from kvp in minState.Tags
+								                                       let dest = GetRegisterIndex(registerIndices, kvp.Key, 0)
+								                                       let src = GetRegisterIndex(registerIndices, kvp.Key, kvp.Value)
+								                                       where dest != src
+								                                       select new TagMapCommand(dest, src);
+								u.DfaState = CreateAcceptingState(acceptInfos, finishers);
 							}
 							else
 							{
@@ -608,17 +634,6 @@ namespace SIL.APRE.Fsa
 				}
 			}
 			cmds.AddRange(newCmds.Values);
-		}
-
-		private static StateElement GetMinAcceptingGroup(IEnumerable<StateElement> subsetState)
-		{
-			StateElement minState = null;
-			foreach (StateElement state in subsetState)
-			{
-				if (state.NfaState.IsAccepting && (minState == null || minState.Priority > state.Priority))
-					minState = state;
-			}
-			return minState;
 		}
 
 		private static SubsetState EpsilonClosure(IEnumerable<StateElement> s, IEnumerable<StateElement> prev)

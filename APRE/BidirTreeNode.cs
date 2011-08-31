@@ -3,6 +3,7 @@ namespace SIL.APRE
 	public class BidirTreeNode<TNode> : BidirListNode<TNode>, IBidirTreeNode<TNode> where TNode : BidirTreeNode<TNode>
 	{
 		private readonly BidirList<TNode> _children;
+		private IBidirTree<TNode> _tree;
 
 		public BidirTreeNode()
 		{
@@ -21,15 +22,25 @@ namespace SIL.APRE
 			get { return _children; }
 		}
 
-		public IBidirTree<TNode> Tree { get; internal set; }
+		public IBidirTree<TNode> Tree
+		{
+			get { return _tree; }
+			
+			internal set
+			{
+				_tree = value;
+				foreach (TNode child in Children)
+					child.Tree = value;
+			}
+		}
 
-		internal override void Clear()
+		protected internal override void Clear()
 		{
 			base.Clear();
 			Parent = null;
 		}
 
-		internal override void Init(BidirList<TNode> list)
+		protected internal override void Init(BidirList<TNode> list)
 		{
 			base.Init(list);
 			TNode parent = ((TreeBidirList) list).Parent;

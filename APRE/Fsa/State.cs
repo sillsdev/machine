@@ -1,30 +1,35 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace SIL.APRE.Fsa
 {
 	public class State<TOffset>
 	{
 		private readonly int _index;
-		private readonly bool _isAccepting;
 		private readonly List<Arc<TOffset>> _arcs;
+
+		private readonly bool _isAccepting;
+		private readonly List<AcceptInfo<TOffset>> _acceptInfos; 
 		private readonly List<TagMapCommand> _finishers;
 
 		internal State(int index, bool isAccepting)
-			: this(index, isAccepting, null)
 		{
-		}
-
-		internal State(int index, IEnumerable<TagMapCommand> finishers)
-			: this(index, true, finishers)
-		{
-		}
-
-		State(int index, bool isAccepting, IEnumerable<TagMapCommand> finishers)
-		{
-			_isAccepting = isAccepting;
 			_index = index;
+			_isAccepting = isAccepting;
 			_arcs = new List<Arc<TOffset>>();
-			_finishers = finishers == null ? new List<TagMapCommand>() : new List<TagMapCommand>(finishers);
+		}
+
+		internal State(int index, string id, Func<IBidirList<Annotation<TOffset>>, bool> accept)
+			: this(index, true)
+		{
+			_acceptInfos = new List<AcceptInfo<TOffset>> {new AcceptInfo<TOffset>(id, accept)};
+		}
+
+		internal State(int index, IEnumerable<AcceptInfo<TOffset>> acceptInfos, IEnumerable<TagMapCommand> finishers)
+			: this(index, true)
+		{
+			_acceptInfos = new List<AcceptInfo<TOffset>>(acceptInfos);
+			_finishers = new List<TagMapCommand>(finishers);
 		}
 
 		public int Index
@@ -51,6 +56,11 @@ namespace SIL.APRE.Fsa
 			}
 		}
 
+		public IEnumerable<AcceptInfo<TOffset>> AcceptInfos
+		{
+			get { return _acceptInfos; }
+		}
+
 		internal IEnumerable<TagMapCommand> Finishers
 		{
 			get
@@ -59,9 +69,10 @@ namespace SIL.APRE.Fsa
 			}
 		}
 
-		public void AddArc(Arc<TOffset> arc)
+		public State<TOffset> AddArc(Arc<TOffset> arc)
 		{
 			_arcs.Add(arc);
+			return arc.Target;
 		}
 
 		public override int GetHashCode()

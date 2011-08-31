@@ -1,11 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace SIL.APRE
 {
-	public class SkipList<TNode> : IBidirList<TNode>, IEquatable<SkipList<TNode>> where TNode : SkipListNode<TNode>
+	public class SkipList<TNode> : IBidirList<TNode> where TNode : SkipListNode<TNode>
 	{
 		private readonly State _leftToRightState;
 		private readonly State _rightToLeftState;
@@ -49,7 +48,7 @@ namespace SIL.APRE
 			get { return _size; }
 		}
 
-		public bool IsReadOnly
+		bool ICollection<TNode>.IsReadOnly
 		{
 			get { return false; }
 		}
@@ -143,7 +142,7 @@ namespace SIL.APRE
 				array[arrayIndex++] = node;
 		}
 
-		public IEnumerator<TNode> GetEnumerator()
+		IEnumerator<TNode> IEnumerable<TNode>.GetEnumerator()
 		{
 			for (TNode node = First; node != null; node = node.Next)
 				yield return node;
@@ -151,7 +150,7 @@ namespace SIL.APRE
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			return GetEnumerator();
+			return ((IEnumerable<TNode>) this).GetEnumerator();
 		}
 
 		public virtual bool Remove(TNode node)
@@ -233,19 +232,23 @@ namespace SIL.APRE
 			return cur.GetPrev(dir);
 		}
 
-		public void AddMany(IEnumerable<TNode> nodes)
+		public bool Find(TNode example, out TNode result)
 		{
-			foreach (TNode ann in nodes)
-				Add(ann);
+			return Find(example, Direction.LeftToRight, out result);
 		}
 
-		public bool Find(TNode node, Direction dir, out TNode result)
+		public bool Find(TNode start, TNode example, out TNode result)
+		{
+			return Find(start, example, Direction.LeftToRight, out result);
+		}
+
+		public bool Find(TNode example, Direction dir, out TNode result)
 		{
 			State state = GetState(dir);
-			return Find(state.First[state.Levels - 1], node, dir, out result);
+			return Find(state.First[state.Levels - 1], example, dir, out result);
 		}
 
-		public bool Find(TNode start, TNode node, Direction dir, out TNode result)
+		public bool Find(TNode start, TNode example, Direction dir, out TNode result)
 		{
 			State state = GetState(dir);
 			TNode cur = null;
@@ -254,7 +257,7 @@ namespace SIL.APRE
 				TNode next = cur == null ? (i == start.GetLevels(dir) - 1 ? start : state.First[i]) : cur.GetNext(dir, i);
 				while (next != null)
 				{
-					int res = state.Comparer.Compare(next, node);
+					int res = state.Comparer.Compare(next, example);
 					if (res > 0)
 						break;
 					if (res == 0)
@@ -270,35 +273,30 @@ namespace SIL.APRE
 			return false;
 		}
 
-		public override int GetHashCode()
+		public IBidirListView<TNode> GetView(TNode first)
 		{
-			return this.Aggregate(0, (current, node) => current ^ node.GetHashCode());
+			return GetView(first, Direction.LeftToRight);
 		}
 
-		public override bool Equals(object obj)
+		public IBidirListView<TNode> GetView(TNode first, TNode last)
 		{
-			if (obj == null)
-				return false;
-			return Equals(obj as SkipList<TNode>);
+			return GetView(first, last, Direction.LeftToRight);
 		}
 
-		public bool Equals(SkipList<TNode> other)
+		public IBidirListView<TNode> GetView(TNode first, Direction dir)
 		{
-			if (other == null)
-				return false;
+			return GetView(first, GetLast(dir), dir);
+		}
 
-			if (Count != other.Count)
-				return false;
+		public IBidirListView<TNode> GetView(TNode first, TNode last, Direction dir)
+		{
+			return new SortedBidirListView<TNode>(first, last, _leftToRightState.Comparer);
+		}
 
-			IEnumerator<TNode> e1 = GetEnumerator();
-			IEnumerator<TNode> e2 = other.GetEnumerator();
-			while (e1.MoveNext() && e2.MoveNext())
-			{
-				if (e1.Current != null && !e1.Current.Equals(e2.Current))
-					return false;
-			}
-
-			return true;
+		public void AddRange(IEnumerable<TNode> nodes)
+		{
+			foreach (TNode ann in nodes)
+				Add(ann);
 		}
 
 		class State

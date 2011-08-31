@@ -9,9 +9,12 @@ namespace SIL.APRE.FeatureModel
     /// </summary>
     public class FeatureSystem
     {
-		public static FeatureSystemBuilder Build()
+		public static IFeatureSystemBuilder With
 		{
-			return new FeatureSystemBuilder();
+			get
+			{
+				return new FeatureSystemBuilder();
+			}
 		}
 
     	private readonly IDBearerSet<Feature> _features;
@@ -58,12 +61,7 @@ namespace SIL.APRE.FeatureModel
             }
         }
 
-		public DisjunctiveFeatureStructureBuilder BuildFS()
-		{
-			return FeatureStructure.Build(this);
-		}
-
-        /// <summary>
+    	/// <summary>
         /// Gets the feature associated with the specified ID.
         /// </summary>
         /// <param name="id">The ID.</param>

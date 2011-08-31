@@ -43,67 +43,44 @@ namespace SIL.APRE.FeatureModel
 
 		public IEnumerable<FeatureSymbol> Values
 		{
-			get
-			{
-				if (Forward != null)
-					return ((SymbolicFeatureValue) Forward).Values;
-
-				return _values;
-			}
+			get { return _values; }
 		}
 
-		internal override bool IsUnifiable(FeatureValue other, bool useDefaults, IDictionary<string, FeatureValue> varBindings)
+		public bool Contains(FeatureSymbol symbol)
 		{
-			if (Forward != null)
-				return Forward.IsUnifiable(other, useDefaults, varBindings);
-
-			SymbolicFeatureValue sfv;
-			if (!GetValue(other, out sfv))
-				return false;
-			return _values.Overlaps(sfv._values);
+			return _values.Contains(symbol);
 		}
 
-		internal override bool DestructiveUnify(FeatureValue other, bool useDefaults, bool preserveInput,
-			IDictionary<FeatureValue, FeatureValue> copies, IDictionary<string, FeatureValue> varBindings)
+		public bool Contains(string symbolID)
 		{
-			if (Forward != null)
-				return Forward.DestructiveUnify(other, useDefaults, preserveInput, copies, varBindings);
+			return _values.Contains(symbolID);
+		}
 
-			SymbolicFeatureValue sfv;
-			if (!GetValue(other, out sfv))
+		protected override bool IsValuesUnifiable(FeatureValue other, bool negate)
+		{
+			if (other.Type != FeatureValueType.Symbol)
 				return false;
 
-			if (!IsUnifiable(sfv, useDefaults, varBindings))
-				return false;
+			var otherSfv = (SymbolicFeatureValue) other;
+			IEnumerable<FeatureSymbol> values = negate ? otherSfv._feature.PossibleSymbols.Except(otherSfv._values) : otherSfv._values;
+			return _values.Overlaps(values);
+		}
 
-			if (preserveInput)
-			{
-				if (copies != null)
-					copies[sfv] = this;
-			}
-			else
-			{
-				sfv.Forward = this;
-			}
-
-			_values.IntersectWith(sfv._values);
-			return true;
+		protected override void UnifyValues(FeatureValue other, bool negate)
+		{
+			var otherSfv = (SymbolicFeatureValue) other;
+			IEnumerable<FeatureSymbol> values = negate ? otherSfv._feature.PossibleSymbols.Except(otherSfv._values) : otherSfv._values;
+			_values.IntersectWith(values);
 		}
 
 		internal override bool Negation(out FeatureValue output)
 		{
-			if (Forward != null)
-				return Forward.Negation(out output);
-
 			output = new SymbolicFeatureValue(_feature.PossibleSymbols.Except(_values));
 			return true;
 		}
 
 		public override string ToString()
 		{
-			if (Forward != null)
-				return Forward.ToString();
-
 			if (_values.Count == 1)
 				return _values.First().ToString();
 
@@ -123,22 +100,15 @@ namespace SIL.APRE.FeatureModel
 
 		public override bool Equals(object obj)
 		{
-			if (Forward != null)
-				return Forward.Equals(obj);
-
-			if (obj == null)
-				return false;
-			return Equals(obj as SymbolicFeatureValue);
+			var other = obj as SymbolicFeatureValue;
+			return other != null && Equals(other);
 		}
 
 		public bool Equals(SymbolicFeatureValue other)
 		{
-			if (Forward != null)
-				return ((SymbolicFeatureValue) Forward).Equals(other);
-
 			if (other == null)
 				return false;
-			other = GetValue(other);
+			other = Dereference(other);
 			return _values.Equals(other._values);
 		}
 
@@ -149,9 +119,6 @@ namespace SIL.APRE.FeatureModel
 
 		public override FeatureValue Clone()
 		{
-			if (Forward != null)
-				return Forward.Clone();
-
 			return new SymbolicFeatureValue(this);
 		}
 	}

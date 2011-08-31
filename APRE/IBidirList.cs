@@ -65,22 +65,47 @@ namespace SIL.APRE
 		TNode GetPrev(TNode cur, Direction dir);
 
 		/// <summary>
-		/// Finds the node that matches the specified node.
+		/// Finds the node that matches the specified example node.
 		/// </summary>
-		/// <param name="node">The node.</param>
-		/// <param name="dir">The direction.</param>
+		/// <param name="example">The example node.</param>
 		/// <param name="result">The result.</param>
 		/// <returns></returns>
-		bool Find(TNode node, Direction dir, out TNode result);
+		bool Find(TNode example, out TNode result);
 
 		/// <summary>
-		/// Finds the node that matches the specified node.
+		/// Finds the node that matches the specified example node.
 		/// </summary>
 		/// <param name="start">The node to start searching from.</param>
-		/// <param name="node">The node.</param>
+		/// <param name="example">The example node.</param>
+		/// <param name="result">The result.</param>
+		/// <returns></returns>
+		bool Find(TNode start, TNode example, out TNode result);
+
+		/// <summary>
+		/// Finds the node that matches the specified example node.
+		/// </summary>
+		/// <param name="example">The example node.</param>
 		/// <param name="dir">The direction.</param>
 		/// <param name="result">The result.</param>
 		/// <returns></returns>
-		bool Find(TNode start, TNode node, Direction dir, out TNode result);
+		bool Find(TNode example, Direction dir, out TNode result);
+
+		/// <summary>
+		/// Finds the node that matches the specified example node.
+		/// </summary>
+		/// <param name="start">The node to start searching from.</param>
+		/// <param name="example">The example node.</param>
+		/// <param name="dir">The direction.</param>
+		/// <param name="result">The result.</param>
+		/// <returns></returns>
+		bool Find(TNode start, TNode example, Direction dir, out TNode result);
+
+		IBidirListView<TNode> GetView(TNode first);
+
+		IBidirListView<TNode> GetView(TNode first, TNode last);
+
+		IBidirListView<TNode> GetView(TNode first, Direction dir);
+
+		IBidirListView<TNode> GetView(TNode first, TNode last, Direction dir);
 	}
 }

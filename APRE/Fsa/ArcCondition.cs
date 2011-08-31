@@ -1,33 +1,32 @@
-﻿using System.Collections.Generic;
-using SIL.APRE.FeatureModel;
+﻿using SIL.APRE.FeatureModel;
 
 namespace SIL.APRE.Fsa
 {
 	public class ArcCondition<TOffset>
 	{
-		private readonly FeatureStructure _fs;
+		private readonly FeatureStruct _fs;
 
-		public ArcCondition(FeatureStructure fs)
+		public ArcCondition(FeatureStruct fs)
 		{
 			_fs = fs;
 		}
 
-		public FeatureStructure FeatureStructure
+		public FeatureStruct FeatureStruct
 		{
 			get { return _fs; }
 		}
 
-		public bool IsMatch(Annotation<TOffset> ann, IDictionary<string, FeatureValue> varBindings)
+		public bool IsMatch(Annotation<TOffset> ann, VariableBindings varBindings)
 		{
 			if (ann == null)
 				return false;
 
-			return ann.FeatureStructure.IsUnifiable(_fs, false, false, varBindings);
+			return ann.FeatureStruct.IsUnifiable(_fs, false, varBindings);
 		}
 
 		public bool Negation(out ArcCondition<TOffset> output)
 		{
-			FeatureStructure fs;
+			FeatureStruct fs;
 			if (!_fs.Negation(out fs))
 			{
 				output = null;
@@ -40,8 +39,8 @@ namespace SIL.APRE.Fsa
 
 		public bool Conjunction(ArcCondition<TOffset> cond, out ArcCondition<TOffset> output)
 		{
-			FeatureStructure fs;
-			if (!cond._fs.Unify(_fs, false, false, out fs))
+			FeatureStruct fs;
+			if (!cond._fs.Unify(_fs, out fs))
 			{
 				output = null;
 				return false;

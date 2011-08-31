@@ -44,6 +44,20 @@ namespace SIL.APRE
 			return cur.GetPrev(dir, filter);
 		}
 
+		public static IEnumerable<TNode> GetNodes<TNode>(this IBidirList<TNode> list, Direction dir) where TNode : class, IBidirListNode<TNode>
+		{
+			return list.GetFirst(dir).GetNodes(dir);
+		}
+
+		public static IEnumerable<TNode> GetNodes<TNode>(this IBidirList<TNode> list, TNode first, TNode last, Direction dir) where TNode : class, IBidirListNode<TNode>
+		{
+			return first.GetNodes(last, dir);
+		}
+
+		#endregion
+
+		#region IBidirListNode
+
 		public static TNode GetNext<TNode>(this IBidirListNode<TNode> cur, Direction dir, Func<TNode, TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
 		{
 			var node = (TNode) cur;
@@ -51,7 +65,7 @@ namespace SIL.APRE
 			{
 				node = node.GetNext(dir);
 			}
-			while (node != null && !filter((TNode) cur, node));
+			while (node != null && !filter((TNode)cur, node));
 			return node;
 		}
 
@@ -88,34 +102,9 @@ namespace SIL.APRE
 			return node;
 		}
 
-		public static BidirListView<TNode> GetView<TNode>(this IBidirList<TNode> list, TNode first) where TNode : class, IBidirListNode<TNode>
+		public static IEnumerable<TNode> GetNodes<TNode>(this IBidirListNode<TNode> first) where TNode : class, IBidirListNode<TNode>
 		{
-			return GetView(list, first, list.Last);
-		}
-
-		public static BidirListView<TNode> GetView<TNode>(this IBidirList<TNode> list, TNode first, TNode last) where TNode : class, IBidirListNode<TNode>
-		{
-			return new BidirListView<TNode>(first, last);
-		}
-
-		public static BidirListView<TNode> GetView<TNode>(this IBidirList<TNode> list, TNode first, Direction dir) where TNode : class, IBidirListNode<TNode>
-		{
-			return GetView(list, first, list.GetLast(dir), dir);
-		}
-
-		public static BidirListView<TNode> GetView<TNode>(this IBidirList<TNode> list, TNode first, TNode last, Direction dir) where TNode : class, IBidirListNode<TNode>
-		{
-			return new BidirListView<TNode>(dir == Direction.LeftToRight ? first : last, dir == Direction.LeftToRight ? last : first);
-		}
-
-		public static IEnumerable<TNode> GetNodes<TNode>(this IBidirList<TNode> list, Direction dir) where TNode : class, IBidirListNode<TNode>
-		{
-			return list.GetFirst(dir).GetNodes(dir);
-		}
-
-		public static IEnumerable<TNode> GetNodes<TNode>(this IBidirList<TNode> list, TNode first, TNode last, Direction dir) where TNode : class, IBidirListNode<TNode>
-		{
-			return first.GetNodes(last, dir);
+			return GetNodes(first, Direction.LeftToRight);
 		}
 
 		public static IEnumerable<TNode> GetNodes<TNode>(this IBidirListNode<TNode> first, TNode last) where TNode : class, IBidirListNode<TNode>
@@ -175,8 +164,22 @@ namespace SIL.APRE
 
 		public static IEnumerable<TNode> GetNodes<TNode>(this IBidirTree<TNode> tree, Direction dir) where TNode : class, IBidirTreeNode<TNode>
 		{
+			return tree.Root.GetNodes(dir);
+		}
+
+		#endregion
+
+		#region IBidirTreeNode
+
+		public static IEnumerable<TNode> GetNodes<TNode>(this IBidirTreeNode<TNode> root) where TNode : class, IBidirTreeNode<TNode>
+		{
+			return GetNodes(root, Direction.LeftToRight);
+		}
+
+		public static IEnumerable<TNode> GetNodes<TNode>(this IBidirTreeNode<TNode> root, Direction dir) where TNode : class, IBidirTreeNode<TNode>
+		{
 			var stack = new Stack<TNode>();
-			stack.Push(tree.Root);
+			stack.Push((TNode) root);
 			while (stack.Any())
 			{
 				TNode node = stack.Pop();
@@ -190,15 +193,15 @@ namespace SIL.APRE
 
 		#region IBidirList<Annotation>
 
-		public static BidirListView<Annotation<TOffset>> GetView<TOffset>(this IBidirList<Annotation<TOffset>> list, Span<TOffset> span)
+		public static IBidirListView<Annotation<TOffset>> GetView<TOffset>(this IBidirList<Annotation<TOffset>> list, Span<TOffset> span)
 		{
 			Annotation<TOffset> startAnn;
-			list.Find(new Annotation<TOffset>(span.StartSpan), Direction.LeftToRight, out startAnn);
+			list.Find(new Annotation<TOffset>(span), Direction.LeftToRight, out startAnn);
 			startAnn = startAnn == null ? list.First : startAnn.Next;
 
 			Annotation<TOffset> endAnn;
-			list.Find(new Annotation<TOffset>(span.EndSpan), Direction.LeftToRight, out endAnn);
-			endAnn = endAnn == null ? list.First : (span.Contains(endAnn.Next.Span) ? endAnn.Next : endAnn);
+			list.Find(new Annotation<TOffset>(span), Direction.RightToLeft, out endAnn);
+			endAnn = endAnn == null ? list.Last : endAnn.Prev;
 
 			return list.GetView(startAnn, endAnn);
 		}
@@ -212,6 +215,38 @@ namespace SIL.APRE
 			foreach (T i in source)
 				yield return i;
 			yield return item;
+		}
+
+		public static IEnumerable<T> Clone<T>(this IEnumerable<T> source) where T : ICloneable
+		{
+			foreach (T i in source)
+				yield return (T) i.Clone();
+		}
+
+		public static IEnumerable<TResult> Zip<TFirst, TSecond, TResult>(this IEnumerable<TFirst> first, IEnumerable<TSecond> second,
+			Func<TFirst, TSecond, TResult> resultSelector)
+		{
+			using (IEnumerator<TFirst> iterator1 = first.GetEnumerator())
+			using (IEnumerator<TSecond> iterator2 = second.GetEnumerator())
+			{
+				while (iterator1.MoveNext() && iterator2.MoveNext())
+					yield return resultSelector(iterator1.Current, iterator2.Current);
+			} 
+		}
+
+		public static IEnumerable<Tuple<TFirst, TSecond>> Zip<TFirst, TSecond>(this IEnumerable<TFirst> first, IEnumerable<TSecond> second)
+		{
+			using (IEnumerator<TFirst> iterator1 = first.GetEnumerator())
+			using (IEnumerator<TSecond> iterator2 = second.GetEnumerator())
+			{
+				while (iterator1.MoveNext() && iterator2.MoveNext())
+					yield return Tuple.Create(iterator1.Current, iterator2.Current);
+			} 
+		}
+
+		public static IEnumerable<string> GetIDs<T>(this IEnumerable<T> source) where T : IIDBearer
+		{
+			return source.Select(idBearer => idBearer.ID);
 		}
 
 		#endregion
