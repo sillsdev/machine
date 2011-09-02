@@ -39,16 +39,15 @@ namespace SIL.APRE.Test
 				.StringFeature("type").Value;
 
 			FeatureStruct types = FeatureStruct.With(featSys).Feature("type").EqualTo("Noun", "Verb", "Det", "Adj", "Adv").Value;
-			Pattern<int> ltorPattern = Pattern<int>.With(spanFactory).AllowWhere(ann => ann.FeatureStruct.IsUnifiable(types))
-				.Expression(expr => expr
-					.Annotation(FeatureStruct.With(featSys).Feature("type").EqualTo("Det").Value)
-					.Or
-					.Group(g => g
-						.Group("adj", adj => adj.Annotation(FeatureStruct.With(featSys).Feature("type").EqualTo("Adj").Value))
-						.Group("noun", noun => noun.Annotation(FeatureStruct.With(featSys).Feature("type").EqualTo("Noun").Value))
-						.Group("verb", verb => verb.Annotation(FeatureStruct.With(featSys).Feature("type").EqualTo("Verb").Value))
-						.Group("range", range => range
-							.Group("adv", adv => adv.Annotation(FeatureStruct.With(featSys).Feature("type").EqualTo("Adv").Value)).Optional))).Value;
+			Pattern<int> ltorPattern = Pattern<int>.With(spanFactory).AnnotationsAllowableWhere(ann => ann.FeatureStruct.IsUnifiable(types))
+				.Annotation(FeatureStruct.With(featSys).Feature("type").EqualTo("Det").Value)
+				.Or
+				.Group(g => g
+					.Group("adj", adj => adj.Annotation(FeatureStruct.With(featSys).Feature("type").EqualTo("Adj").Value))
+					.Group("noun", noun => noun.Annotation(FeatureStruct.With(featSys).Feature("type").EqualTo("Noun").Value))
+					.Group("verb", verb => verb.Annotation(FeatureStruct.With(featSys).Feature("type").EqualTo("Verb").Value))
+					.Group("range", range => range
+						.Group("adv", adv => adv.Annotation(FeatureStruct.With(featSys).Feature("type").EqualTo("Adv").Value)).Optional)).Value;
 			ltorPattern.Compile();
 
 			AnnotationList<int> annList = CreateShapeAnnotations("the old, angry man slept well", spanFactory, featSys);
@@ -199,7 +198,7 @@ namespace SIL.APRE.Test
 			var spanFactory = new IntegerSpanFactory();
 			FeatureSystem featSys = CreateFeatureSystem();
 
-			Pattern<int> pattern = Pattern<int>.With(spanFactory).Expression(expr => expr
+			Pattern<int> pattern = Pattern<int>.With(spanFactory)
 				.Group("leftEnv", leftEnv => leftEnv
 					.Annotation(FeatureStruct.With(featSys)
 						.Feature("type").EqualTo("Seg")
@@ -213,7 +212,7 @@ namespace SIL.APRE.Test
 					.Annotation(FeatureStruct.With(featSys)
 						.Feature("type").EqualTo("Seg")
 						.Symbol("cons+")
-						.Feature("voice").Not.EqualToVariable("a").Value))).Value;
+						.Feature("voice").Not.EqualToVariable("a").Value)).Value;
 
 			pattern.Compile();
 

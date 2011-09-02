@@ -7,7 +7,5 @@ namespace SIL.APRE
 		bool IsLeaf { get; }
 
 		IBidirList<TNode> Children { get; }
-
-		IBidirTree<TNode> Tree { get; } 
 	}
 }

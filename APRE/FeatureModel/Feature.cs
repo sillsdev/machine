@@ -15,8 +15,6 @@ namespace SIL.APRE.FeatureModel
 		{
 		}
 
-		public abstract FeatureValueType ValueType { get; }
-
 		/// <summary>
 		/// Gets all default values.
 		/// </summary>

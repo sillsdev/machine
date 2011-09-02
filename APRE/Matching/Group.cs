@@ -47,21 +47,16 @@ namespace SIL.APRE.Matching
         	_name = group._name;
         }
 
-        /// <summary>
-        /// Gets the node type.
-        /// </summary>
-        /// <value>The node type.</value>
-        public override PatternNodeType Type
-        {
-            get
-            {
-                return PatternNodeType.Group;
-            }
-        }
-
 		public string Name
 		{
 			get { return _name; }
+		}
+
+		protected override bool CanAdd(PatternNode<TOffset> child)
+		{
+			if (child is Expression<TOffset>)
+				return false;
+			return true;
 		}
 
 		internal override State<TOffset> GenerateNfa(FiniteStateAutomaton<TOffset> fsa, State<TOffset> startState)

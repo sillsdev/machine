@@ -17,12 +17,13 @@ namespace SIL.APRE.Fsa
 			_index = index;
 			_isAccepting = isAccepting;
 			_arcs = new List<Arc<TOffset>>();
+			_acceptInfos = new List<AcceptInfo<TOffset>>();
 		}
 
-		internal State(int index, string id, Func<IBidirList<Annotation<TOffset>>, bool> accept)
+		internal State(int index, string id, Func<IBidirList<Annotation<TOffset>>, FsaMatch<TOffset>, bool> acceptable)
 			: this(index, true)
 		{
-			_acceptInfos = new List<AcceptInfo<TOffset>> {new AcceptInfo<TOffset>(id, accept)};
+			_acceptInfos = new List<AcceptInfo<TOffset>> {new AcceptInfo<TOffset>(id, acceptable)};
 		}
 
 		internal State(int index, IEnumerable<AcceptInfo<TOffset>> acceptInfos, IEnumerable<TagMapCommand> finishers)

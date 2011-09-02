@@ -11,10 +11,5 @@ namespace SIL.APRE.FeatureModel
 			: this(id, id)
 		{
 		}
-
-		public override FeatureValueType ValueType
-		{
-			get { return FeatureValueType.String; }
-		}
 	}
 }

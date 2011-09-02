@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SIL.APRE.FeatureModel.Fluent;
 
 namespace SIL.APRE.FeatureModel
 {
 	public class FeatureStruct : FeatureValue, IEquatable<FeatureStruct>
 	{
-		public static IDisjunctiveFeatureStructBuilder With(FeatureSystem featSys)
+		public static IDisjunctiveFeatureStructSyntax With(FeatureSystem featSys)
 		{
-			return new DisjunctiveFeatureStructBuilder(featSys);
+			return new Fluent.FeatureStructBuilder(featSys);
 		}
 
 		private readonly IDBearerDictionary<Feature, FeatureValue> _definite;
@@ -72,14 +73,6 @@ namespace SIL.APRE.FeatureModel
 			get { return _indefinite.Count; }
 		}
 
-		public override FeatureValueType Type
-		{
-			get
-			{
-				return FeatureValueType.Complex;
-			}
-		}
-
 		/// <summary>
 		/// Adds the specified feature-value pair.
 		/// </summary>
@@ -107,15 +100,11 @@ namespace SIL.APRE.FeatureModel
 				FeatureValue thisValue;
 				if (_definite.TryGetValue(featVal.Key, out thisValue))
 				{
-					if (thisValue.Type == FeatureValueType.Complex)
-					{
-						var thisFS = (FeatureStruct) thisValue;
+					var thisFS = thisValue as FeatureStruct;
+					if (thisFS != null)
 						thisFS.AddValues((FeatureStruct) otherValue);
-					}
 					else
-					{
 						_definite[featVal.Key] = otherValue.Clone();
-					}
 				}
 				else
 				{
@@ -275,12 +264,11 @@ namespace SIL.APRE.FeatureModel
 				if (lastID != null)
 				{
 					FeatureValue curValue;
-					if (!lastFS._definite.TryGetValue(lastID, out curValue) || curValue.Type != FeatureValueType.Complex)
+					if (!lastFS._definite.TryGetValue(lastID, out curValue) || !Dereference(curValue, out lastFS))
 					{
 						lastFS = null;
 						return false;
 					}
-					Dereference(curValue, out lastFS);
 				}
 				lastID = id;
 			}
@@ -294,25 +282,24 @@ namespace SIL.APRE.FeatureModel
 			foreach (KeyValuePair<Feature, FeatureValue> featVal in _definite)
 			{
 				FeatureValue value = Dereference(featVal.Value);
-				switch (value.Type)
+				var vfv = value as VariableFeatureValue;
+				if (vfv != null)
 				{
-					case FeatureValueType.Variable:
-						var vfv = (VariableFeatureValue) value;
-						FeatureValue binding;
-						if (varBindings.TryGetValue(vfv.Name, out binding))
-						{
-							if (vfv.Agree)
-								binding = binding.Clone();
-							else
-								binding.Negation(out binding);
-							replacements[featVal.Key] = binding;
-						}
-						break;
-
-					case FeatureValueType.Complex:
-						var fs = (FeatureStruct) featVal.Value;
+					FeatureValue binding;
+					if (varBindings.TryGetValue(vfv.Name, out binding))
+					{
+						if (vfv.Agree)
+							binding = binding.Clone();
+						else
+							binding.Negation(out binding);
+						replacements[featVal.Key] = binding;
+					}
+				}
+				else
+				{
+					var fs = value as FeatureStruct;
+					if (fs != null)
 						fs.ReplaceVariables(varBindings);
-						break;
 				}
 			}
 
@@ -378,7 +365,7 @@ namespace SIL.APRE.FeatureModel
 				if (_definite.TryGetValue(featVal.Key, out thisValue))
 				{
 					thisValue = Dereference(thisValue);
-					if (thisValue.Type == FeatureValueType.Variable && otherValue.Type != FeatureValueType.Variable)
+					if (thisValue is VariableFeatureValue && !(otherValue is VariableFeatureValue))
 					{
 						if (!otherValue.IsDefiniteUnifiable(thisValue, useDefaults, varBindings))
 							return false;
@@ -686,7 +673,7 @@ namespace SIL.APRE.FeatureModel
 			return true;
 		}
 
-		internal override bool Negation(out FeatureValue output)
+		public override bool Negation(out FeatureValue output)
 		{
 			FeatureStruct fs;
 			if (!Negation(out fs))

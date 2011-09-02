@@ -40,18 +40,6 @@ namespace SIL.APRE.Matching
         }
 
         /// <summary>
-        /// Gets the node type.
-        /// </summary>
-        /// <value>The node type.</value>
-        public override PatternNodeType Type
-        {
-            get
-            {
-                return PatternNodeType.Constraint;
-            }
-        }
-
-        /// <summary>
         /// Gets the feature values.
         /// </summary>
         /// <value>The feature values.</value>
@@ -67,6 +55,11 @@ namespace SIL.APRE.Matching
     	{
     		get { return _variables; }
     	}
+
+		protected override bool CanAdd(PatternNode<TOffset> child)
+		{
+			return false;
+		}
 
     	internal override State<TOffset> GenerateNfa(FiniteStateAutomaton<TOffset> fsa, State<TOffset> startState)
 		{

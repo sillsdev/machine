@@ -5,12 +5,12 @@ namespace SIL.APRE.Fsa
 	public class AcceptInfo<TOffset>
 	{
 		private readonly string _id;
-		private readonly Func<IBidirList<Annotation<TOffset>>, bool> _accept;
+		private readonly Func<IBidirList<Annotation<TOffset>>, FsaMatch<TOffset>, bool> _acceptable;
 
-		internal AcceptInfo(string id, Func<IBidirList<Annotation<TOffset>>, bool> accept)
+		internal AcceptInfo(string id, Func<IBidirList<Annotation<TOffset>>, FsaMatch<TOffset>, bool> acceptable)
 		{
 			_id = id;
-			_accept = accept;
+			_acceptable = acceptable;
 		}
 
 		public string ID
@@ -18,9 +18,9 @@ namespace SIL.APRE.Fsa
 			get { return _id; }
 		}
 
-		public Func<IBidirList<Annotation<TOffset>>, bool> Accept
+		public Func<IBidirList<Annotation<TOffset>>, FsaMatch<TOffset>, bool> Acceptable
 		{
-			get { return _accept; }
+			get { return _acceptable; }
 		}
 	}
 }

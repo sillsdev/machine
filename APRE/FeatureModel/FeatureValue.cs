@@ -3,12 +3,8 @@ using System.Collections.Generic;
 
 namespace SIL.APRE.FeatureModel
 {
-	public enum FeatureValueType { Symbol, Complex, String, Variable };
-
 	public abstract class FeatureValue : ICloneable
 	{
-		public abstract FeatureValueType Type { get; }
-
 		internal FeatureValue Forward { get; set; }
 
 		public abstract FeatureValue Clone();
@@ -18,7 +14,8 @@ namespace SIL.APRE.FeatureModel
 			return Clone();
 		}
 
-		internal abstract bool Negation(out FeatureValue output);
+		public abstract bool Negation(out FeatureValue output);
+
 		internal abstract bool IsDefiniteUnifiable(FeatureValue other, bool useDefaults, VariableBindings varBindings);
 		internal abstract bool DestructiveUnify(FeatureValue other, bool useDefaults, bool preserveInput,
 			IDictionary<FeatureValue, FeatureValue> copies, VariableBindings varBindings);
@@ -46,7 +43,7 @@ namespace SIL.APRE.FeatureModel
 
 			if (fv1 == null && fv2 == null)
 			{
-				if (Type == FeatureValueType.Variable && other.Type != FeatureValueType.Variable)
+				if (this is VariableFeatureValue && !(other is VariableFeatureValue))
 				{
 					if (!other.NondestructiveUnify(this, useDefaults, copies, varBindings, out output))
 					{
@@ -65,7 +62,7 @@ namespace SIL.APRE.FeatureModel
 			}
 			else if (fv1 != null && fv2 != null)
 			{
-				if (fv1.Type == FeatureValueType.Variable && fv2.Type != FeatureValueType.Variable)
+				if (fv1 is VariableFeatureValue && !(fv2 is VariableFeatureValue))
 				{
 					fv2.DestructiveUnify(fv1, useDefaults, false, copies, varBindings);
 					output = fv2;
@@ -78,7 +75,7 @@ namespace SIL.APRE.FeatureModel
 			}
 			else if (fv1 != null)
 			{
-				if (fv1.Type == FeatureValueType.Variable && other.Type != FeatureValueType.Variable)
+				if (fv1 is VariableFeatureValue && !(other is VariableFeatureValue))
 				{
 					if (!other.NondestructiveUnify(fv1, useDefaults, copies, varBindings, out output))
 					{
@@ -94,7 +91,7 @@ namespace SIL.APRE.FeatureModel
 			}
 			else
 			{
-				if (fv2.Type == FeatureValueType.Variable && Type != FeatureValueType.Variable)
+				if (fv2 is VariableFeatureValue && !(this is VariableFeatureValue))
 				{
 					if (!NondestructiveUnify(fv2, useDefaults, copies, varBindings, out output))
 					{

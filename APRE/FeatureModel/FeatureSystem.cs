@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SIL.APRE.FeatureModel.Fluent;
 
 namespace SIL.APRE.FeatureModel
 {
@@ -9,7 +10,7 @@ namespace SIL.APRE.FeatureModel
     /// </summary>
     public class FeatureSystem
     {
-		public static IFeatureSystemBuilder With
+		public static IFeatureSystemSyntax With
 		{
 			get
 			{
@@ -72,7 +73,7 @@ namespace SIL.APRE.FeatureModel
             if (_features.TryGetValue(id, out feature))
                 return feature;
 
-			foreach (ComplexFeature child in _features.Where(f => f.ValueType == FeatureValueType.Complex))
+			foreach (ComplexFeature child in _features.OfType<ComplexFeature>())
 			{
 				if (FindFeature(id, child, out feature))
 					return feature;
@@ -86,7 +87,7 @@ namespace SIL.APRE.FeatureModel
 			if (feature.TryGetSubfeature(id, out result))
 				return true;
 
-			foreach (ComplexFeature child in feature.Subfeatures.Where(f => f.ValueType == FeatureValueType.Complex))
+			foreach (ComplexFeature child in feature.Subfeatures.OfType<ComplexFeature>())
 			{
 				if (FindFeature(id, child, out result))
 					return true;
@@ -113,17 +114,20 @@ namespace SIL.APRE.FeatureModel
 		{
 			foreach (Feature feature in features)
 			{
-				switch (feature.ValueType)
+				var sf = feature as SymbolicFeature;
+				if (sf != null)
 				{
-					case FeatureValueType.Symbol:
-						if (((SymbolicFeature) feature).TryGetPossibleSymbol(id, out result))
+					if (sf.TryGetPossibleSymbol(id, out result))
+						return true;
+				}
+				else
+				{
+					var cf = feature as ComplexFeature;
+					if (cf != null)
+					{
+						if (FindSymbol(id, cf.Subfeatures, out result))
 							return true;
-						break;
-
-					case FeatureValueType.Complex:
-						if (FindSymbol(id, ((ComplexFeature) feature).Subfeatures, out result))
-							return true;
-						break;
+					}
 				}
 			}
 

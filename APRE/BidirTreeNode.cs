@@ -1,9 +1,10 @@
+using System;
+
 namespace SIL.APRE
 {
 	public class BidirTreeNode<TNode> : BidirListNode<TNode>, IBidirTreeNode<TNode> where TNode : BidirTreeNode<TNode>
 	{
 		private readonly BidirList<TNode> _children;
-		private IBidirTree<TNode> _tree;
 
 		public BidirTreeNode()
 		{
@@ -22,18 +23,6 @@ namespace SIL.APRE
 			get { return _children; }
 		}
 
-		public IBidirTree<TNode> Tree
-		{
-			get { return _tree; }
-			
-			internal set
-			{
-				_tree = value;
-				foreach (TNode child in Children)
-					child.Tree = value;
-			}
-		}
-
 		protected internal override void Clear()
 		{
 			base.Clear();
@@ -45,7 +34,11 @@ namespace SIL.APRE
 			base.Init(list);
 			TNode parent = ((TreeBidirList) list).Parent;
 			Parent = parent;
-			Tree = parent.Tree;
+		}
+
+		protected virtual bool CanAdd(TNode child)
+		{
+			return true;
 		}
 
 		private class TreeBidirList : BidirList<TNode>
@@ -60,6 +53,13 @@ namespace SIL.APRE
 			public TNode Parent
 			{
 				get { return _parent; }
+			}
+
+			public override void Insert(TNode newNode, TNode node, Direction dir)
+			{
+				if (!_parent.CanAdd(newNode))
+					throw new ArgumentException("The specified node cannot be added to this node.", "newNode");
+				base.Insert(newNode, node, dir);
 			}
 		}
 	}

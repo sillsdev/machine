@@ -5,11 +5,6 @@ using SIL.APRE.Fsa;
 namespace SIL.APRE.Matching
 {
 	/// <summary>
-	/// This enumeration represents the node type.
-	/// </summary>
-	public enum PatternNodeType { Expression, Constraint, Margin, Quantifier, Group, Alternation };
-
-	/// <summary>
 	/// This is the abstract class that all phonetic pattern nodes extend.
 	/// </summary>
 	public abstract class PatternNode<TOffset> : BidirTreeNode<PatternNode<TOffset>>, ICloneable
@@ -29,11 +24,10 @@ namespace SIL.APRE.Matching
 		{
 		}
 
-		/// <summary>
-		/// Gets the node type.
-		/// </summary>
-		/// <value>The node type.</value>
-		public abstract PatternNodeType Type { get; }
+		protected Pattern<TOffset> Pattern
+		{
+			get { return this.GetRoot() as Pattern<TOffset>; }
+		}
 
 		internal virtual State<TOffset> GenerateNfa(FiniteStateAutomaton<TOffset> fsa, State<TOffset> startState)
 		{

@@ -14,7 +14,7 @@ namespace SIL.APRE.Test
 			var spanFactory = new IntegerSpanFactory();
 			FeatureSystem featSys = CreateFeatureSystem();
 
-			Pattern<int> pattern = Pattern<int>.With(spanFactory).Expression(expr => expr
+			Pattern<int> pattern = Pattern<int>.With(spanFactory)
 				.Group("leftEnv", leftEnv => leftEnv
 					.Annotation(FeatureStruct.With(featSys)
 						.Feature("type").EqualTo("Seg")
@@ -29,7 +29,7 @@ namespace SIL.APRE.Test
 					.Annotation(FeatureStruct.With(featSys)
 						.Feature("type").EqualTo("Seg")
 						.Symbol("cons+")
-						.Feature("voice").Not.EqualToVariable("a").Value))).Value;
+						.Feature("voice").Not.EqualToVariable("a").Value)).Value;
 
 			var rule = new PatternRule<int>(pattern, (lhs, input, match) =>
 			                                  	{
@@ -49,7 +49,7 @@ namespace SIL.APRE.Test
 			var spanFactory = new IntegerSpanFactory();
 			FeatureSystem featSys = CreateFeatureSystem();
 
-			Pattern<int> pattern = Pattern<int>.With(spanFactory).Expression(expr => expr
+			Pattern<int> pattern = Pattern<int>.With(spanFactory)
 				.Group("leftEnv", leftEnv => leftEnv
 					.Annotation(FeatureStruct.With(featSys)
 						.Feature("type").EqualTo("Seg")
@@ -64,7 +64,7 @@ namespace SIL.APRE.Test
 					.Annotation(FeatureStruct.With(featSys)
 						.Feature("type").EqualTo("Seg")
 						.Symbol("cons+")
-						.Feature("voice").Not.EqualToVariable("a").Value))).Value;
+						.Feature("voice").Not.EqualToVariable("a").Value)).Value;
 
 			var rule1 = new PatternRule<int>(pattern, (lhs, input, match) =>
 												{

@@ -18,11 +18,6 @@ namespace SIL.APRE.FeatureModel
 		{
 		}
 
-		public override FeatureValueType ValueType
-		{
-			get { return FeatureValueType.Symbol; }
-		}
-
 		/// <summary>
 		/// Gets all possible values.
 		/// </summary>

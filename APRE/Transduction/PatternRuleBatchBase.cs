@@ -24,12 +24,10 @@ namespace SIL.APRE.Transduction
 			int i = 0;
 			foreach (IPatternRule<TOffset> rule in rules)
 			{
-				string name = "rule" + i;
-				foreach (Expression<TOffset> expr in rule.Lhs.Expressions)
-				{
-					pattern.AddExpression(new Expression<TOffset>(string.IsNullOrEmpty(expr.Name) ? name : name + "*" + expr.Name,
-						rule.IsApplicable, expr.Children.Select(child => child.Clone())));
-				}
+				IPatternRule<TOffset> localRule = rule;
+				pattern.Children.Add(new Expression<TOffset>("rule" + i,
+					(input, match) => localRule.IsApplicable(input) && (localRule.Lhs.Acceptable == null || localRule.Lhs.Acceptable(input, match)),
+					rule.Lhs.Children.Clone()));
 				i++;
 			}
 			return pattern;
@@ -37,13 +35,11 @@ namespace SIL.APRE.Transduction
 
 		public override Annotation<TOffset> ApplyRhs(IBidirList<Annotation<TOffset>> input, PatternMatch<TOffset> match)
 		{
-			int index = match.ExpressionName.IndexOf('*');
-			IPatternRule<TOffset> rule = _rules[index == -1 ? match.ExpressionName : match.ExpressionName.Substring(0, index)];
+			IPatternRule<TOffset> rule = _rules[match.ExpressionPath.First()];
 			var groups = new Dictionary<string, Span<TOffset>>();
 			foreach (string group in match.Groups)
 				groups[group] = match[group];
-			return rule.ApplyRhs(input, new PatternMatch<TOffset>(match, groups,
-				index == -1 ? null : match.ExpressionName.Substring(index + 1), match.VariableBindings));
+			return rule.ApplyRhs(input, new PatternMatch<TOffset>(match, groups, match.ExpressionPath.Skip(1), match.VariableBindings));
 		}
 	}
 }

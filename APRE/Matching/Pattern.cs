@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using SIL.APRE.Fsa;
+using SIL.APRE.Matching.Fluent;
 
 namespace SIL.APRE.Matching
 {
@@ -22,16 +22,13 @@ namespace SIL.APRE.Matching
 		Synthesis
 	}
 
-	public class Pattern<TOffset> : ICloneable
+	public class Pattern<TOffset> : Expression<TOffset>
 	{
-		public const string EntireGroupName = "*entire*";
-
-		public static IPatternBuilder<TOffset> With(SpanFactory<TOffset> spanFactory)
+		public static IPatternSyntax<TOffset> With(SpanFactory<TOffset> spanFactory)
 		{
 			return new PatternBuilder<TOffset>(spanFactory);
 		}
 
-		private readonly List<BidirTree<PatternNode<TOffset>>> _expressions;
 		private readonly SpanFactory<TOffset> _spanFactory;
 		private readonly Func<Annotation<TOffset>, bool> _filter;
 		private FiniteStateAutomaton<TOffset> _fsa;
@@ -48,8 +45,17 @@ namespace SIL.APRE.Matching
 		}
 
 		public Pattern(SpanFactory<TOffset> spanFactory, Direction dir, Func<Annotation<TOffset>, bool> filter)
-			: this(spanFactory, dir, filter, (IEnumerable<Expression<TOffset>>) new[] {new Expression<TOffset>()})
+			: this(spanFactory, dir, filter, (input, match) => true)
 		{
+		}
+
+		public Pattern(SpanFactory<TOffset> spanFactory, Direction dir, Func<Annotation<TOffset>, bool> filter,
+			Func<IBidirList<Annotation<TOffset>>, PatternMatch<TOffset>, bool> acceptable)
+			: base("*entire*", acceptable)
+		{
+			_spanFactory = spanFactory;
+			_dir = dir;
+			_filter = filter;
 		}
 
 		public Pattern(SpanFactory<TOffset> spanFactory, params PatternNode<TOffset>[] nodes)
@@ -80,42 +86,20 @@ namespace SIL.APRE.Matching
 
 		public Pattern(SpanFactory<TOffset> spanFactory, Direction dir, Func<Annotation<TOffset>, bool> filter,
 			IEnumerable<PatternNode<TOffset>> nodes)
-			: this(spanFactory, dir, filter, (IEnumerable<Expression<TOffset>>) new[] {new Expression<TOffset>(nodes)})
-		{
-		}
-
-		public Pattern(SpanFactory<TOffset> spanFactory, params Expression<TOffset>[] expressions)
-			: this(spanFactory, (IEnumerable<Expression<TOffset>>) expressions)
-		{
-		}
-
-		public Pattern(SpanFactory<TOffset> spanFactory, IEnumerable<Expression<TOffset>> expressions)
-			: this(spanFactory, Direction.LeftToRight, expressions)
-		{
-		}
-
-		public Pattern(SpanFactory<TOffset> spanFactory, Direction dir, params Expression<TOffset>[] expressions)
-			: this(spanFactory, dir, (IEnumerable<Expression<TOffset>>) expressions)
-		{
-		}
-
-		public Pattern(SpanFactory<TOffset> spanFactory, Direction dir, IEnumerable<Expression<TOffset>> expressions)
-			: this(spanFactory, dir, ann => true, expressions)
+			: this(spanFactory, dir, filter, (input, match) => true, nodes)
 		{
 		}
 
 		public Pattern(SpanFactory<TOffset> spanFactory, Direction dir, Func<Annotation<TOffset>, bool> filter,
-			params Expression<TOffset>[] expressions)
-			: this(spanFactory, dir, filter, (IEnumerable<Expression<TOffset>>) expressions)
+			Func<IBidirList<Annotation<TOffset>>, PatternMatch<TOffset>, bool> acceptable, params PatternNode<TOffset>[] nodes)
+			: this(spanFactory, dir, filter, acceptable, (IEnumerable<PatternNode<TOffset>>) nodes)
 		{
 		}
 
 		public Pattern(SpanFactory<TOffset> spanFactory, Direction dir, Func<Annotation<TOffset>, bool> filter,
-			IEnumerable<Expression<TOffset>> expressions)
+			Func<IBidirList<Annotation<TOffset>>, PatternMatch<TOffset>, bool> acceptable, IEnumerable<PatternNode<TOffset>> nodes)
+			: base("*entire*", acceptable, nodes)
 		{
-			_expressions = new List<BidirTree<PatternNode<TOffset>>>();
-			foreach (Expression<TOffset> expr in expressions)
-				_expressions.Add(new BidirTree<PatternNode<TOffset>>(expr));
 			_spanFactory = spanFactory;
 			_dir = dir;
 			_filter = filter;
@@ -126,23 +110,16 @@ namespace SIL.APRE.Matching
         /// </summary>
         /// <param name="pattern">The phonetic pattern.</param>
         public Pattern(Pattern<TOffset> pattern)
-			: this(pattern._spanFactory, pattern._dir, pattern._filter, pattern.Expressions.Clone())
+			: base(pattern)
         {
+			_spanFactory = pattern._spanFactory;
+			_dir = pattern._dir;
+			_filter = pattern._filter;
         }
-
-		public IEnumerable<Expression<TOffset>> Expressions
-		{
-			get { return _expressions.Select(expr => (Expression<TOffset>) expr.Root); }
-		}
 
 		public SpanFactory<TOffset> SpanFactory
 		{
 			get { return _spanFactory; }
-		}
-
-		public FiniteStateAutomaton<TOffset> Fsa
-		{
-			get { return _fsa; }
 		}
 
 		public Direction Direction
@@ -160,17 +137,11 @@ namespace SIL.APRE.Matching
 			_fsa = GenerateFsa(_dir);
 		}
 
-		public void AddExpression(Expression<TOffset> expression)
-		{
-			_expressions.Add(new BidirTree<PatternNode<TOffset>>(expression));
-		}
-
 		protected FiniteStateAutomaton<TOffset> GenerateFsa(Direction dir)
 		{
 			var fsa = new FiniteStateAutomaton<TOffset>(dir, _filter);
-			State<TOffset> startState = fsa.StartState.AddArc(fsa.CreateTag(fsa.CreateState(), EntireGroupName, true));
-			foreach (Expression<TOffset> expr in Expressions)
-				expr.GenerateNfa(fsa, startState);
+			State<TOffset> startState = fsa.StartState.AddArc(fsa.CreateTag(fsa.CreateState(), Name, true));
+			GenerateNfa(fsa, startState);
 
 			var writer = new StreamWriter("c:\\nfa.dot");
 			fsa.ToGraphViz(writer);
@@ -212,16 +183,6 @@ namespace SIL.APRE.Matching
 			if (_fsa == null)
 				_fsa = GenerateFsa(_dir);
 
-			if (_expressions.Count == 1)
-			{
-				var expr = (Expression<TOffset>) _expressions.First().Root;
-				if (expr.Applicable != null && !expr.Applicable(annList))
-				{
-					matches = null;
-					return false;
-				}
-			}
-
 			List<PatternMatch<TOffset>> matchesList = null;
 			Annotation<TOffset> first = annList.GetFirst(_dir, _filter);
 			while (first != null)
@@ -252,19 +213,19 @@ namespace SIL.APRE.Matching
 		public Pattern<TOffset> Reverse()
 		{
 			return new Pattern<TOffset>(_spanFactory, _dir == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight,
-				_filter, Expressions.Clone());
+				_filter, Acceptable, Children.Clone());
 		}
 
-		private PatternMatch<TOffset> CreatePatternMatch(FsaMatch<TOffset> match)
+		internal PatternMatch<TOffset> CreatePatternMatch(FsaMatch<TOffset> match)
 		{
 			var groups = new Dictionary<string, Span<TOffset>>();
 			TOffset matchStart, matchEnd;
-			_fsa.GetOffsets(EntireGroupName, match.Registers, out matchStart, out matchEnd);
+			_fsa.GetOffsets(Name, match.Registers, out matchStart, out matchEnd);
 			var matchSpan = _spanFactory.Create(matchStart, matchEnd);
 
 			foreach (string groupName in _fsa.GroupNames)
 			{
-				if (groupName == EntireGroupName)
+				if (groupName == Name)
 					continue;
 
 				TOffset start, end;
@@ -278,25 +239,18 @@ namespace SIL.APRE.Matching
 					}
 				}
 			}
-			return new PatternMatch<TOffset>(matchSpan, groups, match.ID, match.VariableBindings);
+
+			return new PatternMatch<TOffset>(matchSpan, groups, match.ID.Split('*'), match.VariableBindings);
 		}
 
-        object ICloneable.Clone()
-        {
-            return Clone();
-        }
-
-        public Pattern<TOffset> Clone()
+        public override PatternNode<TOffset> Clone()
         {
             return new Pattern<TOffset>(this);
         }
 
         public override string ToString()
         {
-            var sb = new StringBuilder();
-            foreach (Expression<TOffset> expr in Expressions)
-                sb.Append(expr.ToString());
-            return sb.ToString();
+        	return Children.ToString();
         }
 	}
 }

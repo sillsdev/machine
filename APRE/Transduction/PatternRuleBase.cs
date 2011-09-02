@@ -6,12 +6,12 @@ namespace SIL.APRE.Transduction
 	public abstract class PatternRuleBase<TOffset> : IPatternRule<TOffset>
 	{
 		private readonly Pattern<TOffset> _lhs;
-		private readonly bool _simultaneous;
+		private readonly bool _simult;
 
-		protected PatternRuleBase(Pattern<TOffset> lhs, bool simultaneous)
+		protected PatternRuleBase(Pattern<TOffset> lhs, bool simult)
 		{
 			_lhs = lhs;
-			_simultaneous = simultaneous;
+			_simult = simult;
 		}
 
 		public Pattern<TOffset> Lhs
@@ -21,7 +21,7 @@ namespace SIL.APRE.Transduction
 
 		public bool Simultaneous
 		{
-			get { return _simultaneous; }
+			get { return _simult; }
 		}
 
 		public void Compile()
@@ -36,7 +36,7 @@ namespace SIL.APRE.Transduction
 			if (!IsApplicable(input))
 				return false;
 
-			if (_simultaneous)
+			if (_simult)
 			{
 				IEnumerable<PatternMatch<TOffset>> matches;
 				if (_lhs.IsMatch(input, out matches))

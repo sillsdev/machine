@@ -7,9 +7,9 @@ namespace SIL.APRE.FeatureModel
 		internal override bool IsDefiniteUnifiable(FeatureValue other, bool useDefaults, VariableBindings varBindings)
 		{
 			other = Dereference(other);
-			if (Type != FeatureValueType.Variable && other.Type == FeatureValueType.Variable)
+			var otherVfv = other as VariableFeatureValue;
+			if (otherVfv != null && !(this is VariableFeatureValue))
 			{
-				var otherVfv = (VariableFeatureValue) other;
 				FeatureValue binding;
 				if (varBindings.TryGetValue(otherVfv.Name, out binding))
 					return IsValuesUnifiable(binding, !otherVfv.Agree);
@@ -37,9 +37,10 @@ namespace SIL.APRE.FeatureModel
 				other.Forward = this;
 			}
 
-			if (Type != FeatureValueType.Variable && other.Type == FeatureValueType.Variable)
+			var otherVfv = other as VariableFeatureValue;
+			if (otherVfv != null && !(this is VariableFeatureValue))
 			{
-				var otherVfv = (VariableFeatureValue) other;
+				
 				FeatureValue binding;
 				if (varBindings.TryGetValue(otherVfv.Name, out binding))
 					UnifyValues(binding, !otherVfv.Agree);

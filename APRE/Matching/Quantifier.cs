@@ -40,18 +40,6 @@ namespace SIL.APRE.Matching
         }
 
         /// <summary>
-        /// Gets the node type.
-        /// </summary>
-        /// <value>The node type.</value>
-        public override PatternNodeType Type
-        {
-            get
-            {
-                return PatternNodeType.Quantifier;
-            }
-        }
-
-        /// <summary>
         /// Gets the minimum number of occurrences of this pattern.
         /// </summary>
         /// <value>The minimum number of occurrences.</value>
@@ -68,6 +56,13 @@ namespace SIL.APRE.Matching
     	{
     		get { return _maxOccur; }
     	}
+
+		protected override bool CanAdd(PatternNode<TOffset> child)
+		{
+			if (child is Expression<TOffset>)
+				return false;
+			return true;
+		}
 
 		internal override State<TOffset> GenerateNfa(FiniteStateAutomaton<TOffset> fsa, State<TOffset> startState)
 		{

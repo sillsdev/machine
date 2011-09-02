@@ -290,7 +290,7 @@ namespace SIL.APRE
 
 		public IBidirListView<TNode> GetView(TNode first, TNode last, Direction dir)
 		{
-			return new SortedBidirListView<TNode>(first, last, _leftToRightState.Comparer);
+			return new SortedBidirListView<TNode>(dir == Direction.LeftToRight ? first : last, dir == Direction.LeftToRight ? last : first, _leftToRightState.Comparer);
 		}
 
 		public void AddRange(IEnumerable<TNode> nodes)

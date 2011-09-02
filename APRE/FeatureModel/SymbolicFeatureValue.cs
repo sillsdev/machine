@@ -36,11 +36,6 @@ namespace SIL.APRE.FeatureModel
 			_values = new IDBearerSet<FeatureSymbol>(sfv._values);
 		}
 
-		public override FeatureValueType Type
-		{
-			get { return FeatureValueType.Symbol; }
-		}
-
 		public IEnumerable<FeatureSymbol> Values
 		{
 			get { return _values; }
@@ -56,12 +51,22 @@ namespace SIL.APRE.FeatureModel
 			return _values.Contains(symbolID);
 		}
 
+		public bool Overlaps(IEnumerable<FeatureSymbol> symbols)
+		{
+			return _values.Overlaps(symbols);
+		}
+
+		public bool Overlaps(IEnumerable<string> ids)
+		{
+			return _values.Overlaps(ids);
+		}
+
 		protected override bool IsValuesUnifiable(FeatureValue other, bool negate)
 		{
-			if (other.Type != FeatureValueType.Symbol)
+			var otherSfv = other as SymbolicFeatureValue;
+			if (otherSfv == null)
 				return false;
 
-			var otherSfv = (SymbolicFeatureValue) other;
 			IEnumerable<FeatureSymbol> values = negate ? otherSfv._feature.PossibleSymbols.Except(otherSfv._values) : otherSfv._values;
 			return _values.Overlaps(values);
 		}
@@ -73,7 +78,7 @@ namespace SIL.APRE.FeatureModel
 			_values.IntersectWith(values);
 		}
 
-		internal override bool Negation(out FeatureValue output)
+		public override bool Negation(out FeatureValue output)
 		{
 			output = new SymbolicFeatureValue(_feature.PossibleSymbols.Except(_values));
 			return true;

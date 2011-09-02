@@ -25,11 +25,6 @@ namespace SIL.APRE.Matching
 		{
 		}
 
-		public override PatternNodeType Type
-		{
-			get { return PatternNodeType.Alternation; }
-		}
-
 		internal override State<TOffset> GenerateNfa(FiniteStateAutomaton<TOffset> fsa, State<TOffset> startState)
 		{
 			if (IsLeaf)

@@ -26,18 +26,6 @@ namespace SIL.APRE.Matching
 		}
 
 		/// <summary>
-		/// Gets the phonetic sequence node type.
-		/// </summary>
-		/// <value>The node type.</value>
-		public override PatternNodeType Type
-		{
-			get
-			{
-				return PatternNodeType.Margin;
-			}
-		}
-
-		/// <summary>
 		/// Gets the type of the margin.
 		/// </summary>
 		/// <value>The type of the margin.</value>

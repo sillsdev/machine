@@ -11,27 +11,27 @@ namespace SIL.APRE.Matching
 	{
 		private readonly Dictionary<string, Span<TOffset>> _groups;
 		private readonly VariableBindings _varBindings;
-		private readonly string _exprName;
+		private readonly IEnumerable<string> _exprPath;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PatternMatch{TOffset}"/> class.
 		/// </summary>
 		/// <param name="entire"></param>
 		/// <param name="groups">The groups.</param>
-		/// <param name="exprName"></param>
+		/// <param name="exprPath"></param>
 		/// <param name="varBindings"></param>
-		public PatternMatch(Span<TOffset> entire, IDictionary<string, Span<TOffset>> groups, string exprName,
+		public PatternMatch(Span<TOffset> entire, IDictionary<string, Span<TOffset>> groups, IEnumerable<string> exprPath,
 			VariableBindings varBindings)
 			: base(entire)
 		{
 			_groups = new Dictionary<string, Span<TOffset>>(groups);
-			_exprName = exprName;
+			_exprPath = exprPath;
 			_varBindings = varBindings;
 		}
 
-		public string ExpressionName
+		public IEnumerable<string> ExpressionPath
 		{
-			get { return _exprName; }
+			get { return _exprPath; }
 		}
 
 		public VariableBindings VariableBindings

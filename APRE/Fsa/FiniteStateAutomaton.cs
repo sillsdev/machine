@@ -19,7 +19,7 @@ namespace SIL.APRE.Fsa
 		private readonly Direction _dir;
 
 		public FiniteStateAutomaton(Direction dir)
-			: this(dir, null)
+			: this(dir, ann => true)
 		{
 		}
 		
@@ -70,9 +70,9 @@ namespace SIL.APRE.Fsa
 			return state;
 		}
 
-		public State<TOffset> CreateAcceptingState(string id, Func<IBidirList<Annotation<TOffset>>, bool> accept)
+		public State<TOffset> CreateAcceptingState(string id, Func<IBidirList<Annotation<TOffset>>, FsaMatch<TOffset>, bool> acceptable)
 		{
-			var state = new State<TOffset>(_states.Count, id, accept);
+			var state = new State<TOffset>(_states.Count, id, acceptable);
 			_states.Add(state);
 			return state;
 		}
@@ -269,19 +269,14 @@ namespace SIL.APRE.Fsa
 				ann.Span.GetEnd(_dir));
 			if (arc.Target.IsAccepting)
 			{
-				NullableValue<TOffset>[,] matchRegisters = null;
+				var matchRegisters = (NullableValue<TOffset>[,]) newRegisters.Clone();
+				ExecuteCommands(matchRegisters, arc.Target.Finishers, new NullableValue<TOffset>(), new NullableValue<TOffset>(),
+					ann.Span.GetEnd(_dir));
 				foreach (AcceptInfo<TOffset> acceptInfo in arc.Target.AcceptInfos.Reverse())
 				{
-					if (acceptInfo.Accept == null || acceptInfo.Accept(annList))
-					{
-						if (matchRegisters == null)
-						{
-							matchRegisters = (NullableValue<TOffset>[,]) newRegisters.Clone();
-							ExecuteCommands(matchRegisters, arc.Target.Finishers, new NullableValue<TOffset>(), new NullableValue<TOffset>(),
-								ann.Span.GetEnd(_dir));
-						}
-						matchStack.Push(new FsaMatch<TOffset>(acceptInfo.ID, matchRegisters, varBindings));
-					}
+					var match = new FsaMatch<TOffset>(acceptInfo.ID, matchRegisters, varBindings);
+					if (acceptInfo.Acceptable == null || acceptInfo.Acceptable(annList, match))
+						matchStack.Push(match);
 				}
 			}
 			if (nextAnn != null)

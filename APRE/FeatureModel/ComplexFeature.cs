@@ -18,11 +18,6 @@ namespace SIL.APRE.FeatureModel
 		{
 		}
 
-		public override FeatureValueType ValueType
-		{
-			get { return FeatureValueType.Complex; }
-		}
-
 		public IEnumerable<Feature> Subfeatures
 		{
 			get { return _subfeatures; }

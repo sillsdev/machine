@@ -42,11 +42,6 @@ namespace SIL.APRE.FeatureModel
 			_not = sfv._not;
 		}
 
-		public override FeatureValueType Type
-		{
-			get { return FeatureValueType.String; }
-		}
-
 		public IEnumerable<string> Values
 		{
 			get { return _values; }
@@ -62,12 +57,17 @@ namespace SIL.APRE.FeatureModel
 			return _not ? !_values.Contains(str) : _values.Contains(str);
 		}
 
+		public bool Overlaps(IEnumerable<string> strings)
+		{
+			return _not ? !_values.Overlaps(strings) : _values.Overlaps(strings);
+		}
+
 		protected override bool IsValuesUnifiable(FeatureValue other, bool negate)
 		{
-			if (other.Type != FeatureValueType.String)
+			var otherSfv = other as StringFeatureValue;
+			if (otherSfv == null)
 				return false;
-
-			var otherSfv = (StringFeatureValue) other;
+			
 			bool not = negate ? !otherSfv._not : otherSfv._not;
 
 			if (!_not && !not)
@@ -112,7 +112,7 @@ namespace SIL.APRE.FeatureModel
 			}
 		}
 
-		internal override bool Negation(out FeatureValue output)
+		public override bool Negation(out FeatureValue output)
 		{
 			output = new StringFeatureValue(_values, !_not);
 			return true;

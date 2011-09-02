@@ -46,7 +46,7 @@ namespace SIL.APRE
         /// Adds the specified node to the end of this list.
         /// </summary>
         /// <param name="node">The node.</param>
-        public virtual void Add(TNode node)
+        public void Add(TNode node)
         {
 			Insert(node, _last, Direction.LeftToRight);
         }

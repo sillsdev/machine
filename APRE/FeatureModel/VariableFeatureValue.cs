@@ -17,11 +17,6 @@ namespace SIL.APRE.FeatureModel
 			_agree = vsfv._agree;
 		}
 
-		public override FeatureValueType Type
-		{
-			get { return FeatureValueType.Variable; }
-		}
-
 		public string Name
 		{
 			get { return _name; }
@@ -32,7 +27,7 @@ namespace SIL.APRE.FeatureModel
 			get { return _agree; }
 		}
 
-		internal override bool Negation(out FeatureValue output)
+		public override bool Negation(out FeatureValue output)
 		{
 			output = new VariableFeatureValue(_name, !_agree);
 			return true;
@@ -40,10 +35,10 @@ namespace SIL.APRE.FeatureModel
 
 		protected override bool IsValuesUnifiable(FeatureValue other, bool negate)
 		{
-			if (other.Type != FeatureValueType.Variable)
+			var otherVfv = other as VariableFeatureValue;
+			if (otherVfv == null)
 				return false;
 
-			var otherVfv = (VariableFeatureValue) other;
 			return _name == otherVfv._name && _agree == otherVfv._agree;
 		}
 

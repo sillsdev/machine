@@ -47,6 +47,11 @@ namespace SIL.APRE
 			return items.Any(Contains);
 		}
 
+		public bool Overlaps(IEnumerable<string> ids)
+		{
+			return ids.Any(Contains);
+		}
+
 		IEnumerator<T> IEnumerable<T>.GetEnumerator()
 		{
 			return _idBearers.Values.GetEnumerator();

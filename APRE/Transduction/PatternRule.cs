@@ -29,8 +29,8 @@ namespace SIL.APRE.Transduction
 		{
 		}
 
-		public PatternRule(Pattern<TOffset> lhs, IPatternRuleAction<TOffset> rhs, bool simultaneous)
-			: base(lhs, simultaneous)
+		public PatternRule(Pattern<TOffset> lhs, IPatternRuleAction<TOffset> rhs, bool simult)
+			: base(lhs, simult)
 		{
 			_rhs = rhs;
 		}
