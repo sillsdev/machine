@@ -16,8 +16,8 @@ namespace SIL.HermitCrab
 
 		public SynthesisPhonologicalSubrule(SpanFactory<PhoneticShapeNode> spanFactory, Expression<PhoneticShapeNode> lhs,
 			Expression<PhoneticShapeNode> rhs, Expression<PhoneticShapeNode> leftEnv, Expression<PhoneticShapeNode> rightEnv,
-			Direction dir, bool simultaneous, FeatureStruct applicableFs)
-			: base(CreatePattern(spanFactory, lhs, leftEnv, rightEnv, dir), simultaneous)
+			Direction dir, bool simult, FeatureStruct applicableFs)
+			: base(CreatePattern(spanFactory, lhs, leftEnv, rightEnv, dir), simult)
 		{
 			_spanFactory = spanFactory;
 			_lhs = lhs;
@@ -29,10 +29,9 @@ namespace SIL.HermitCrab
 			Expression<PhoneticShapeNode> leftEnv, Expression<PhoneticShapeNode> rightEnv, Direction dir)
 		{
 			var pattern = new Pattern<PhoneticShapeNode>(spanFactory, dir);
-			Expression<PhoneticShapeNode> expr = pattern.Expressions.First();
-			expr.Children.Add(new Group<PhoneticShapeNode>("leftEnv", leftEnv.Children.Clone()));
-			expr.Children.Add(new Group<PhoneticShapeNode>("target", lhs.Children.Clone()));
-			expr.Children.Add(new Group<PhoneticShapeNode>("rightEnv", rightEnv.Children.Clone()));
+			pattern.Children.Add(new Group<PhoneticShapeNode>("leftEnv", leftEnv.Children.Clone()));
+			pattern.Children.Add(new Group<PhoneticShapeNode>("target", lhs.Children.Clone()));
+			pattern.Children.Add(new Group<PhoneticShapeNode>("rightEnv", rightEnv.Children.Clone()));
 			return pattern;
 		}
 
