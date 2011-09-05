@@ -62,7 +62,7 @@ namespace SIL.APRE.FeatureModel
 			return _not ? !_values.Overlaps(strings) : _values.Overlaps(strings);
 		}
 
-		protected override bool IsValuesUnifiable(FeatureValue other, bool negate)
+		protected override bool Overlaps(FeatureValue other, bool negate)
 		{
 			var otherSfv = other as StringFeatureValue;
 			if (otherSfv == null)
@@ -76,39 +76,71 @@ namespace SIL.APRE.FeatureModel
 			}
 			if (!_not && not)
 			{
-				return !_values.SetEquals(otherSfv._values);
+				return _values.IsSupersetOf(otherSfv._values);
 			}
 			if (_not && !not)
 			{
-				return !_values.SetEquals(otherSfv._values);
+				return _values.IsProperSubsetOf(otherSfv._values);
 			}
 
 			return true;
 		}
 
-		protected override void UnifyValues(FeatureValue other, bool negate)
+		protected override void IntersectWith(FeatureValue other, bool negate)
 		{
 			var otherSfv = (StringFeatureValue) other;
 			bool not = negate ? !otherSfv._not : otherSfv._not;
 
 			if (!_not && !not)
 			{
+				_not = false;
 				_values.IntersectWith(otherSfv._values);
 			}
 			else if (!_not && not)
 			{
+				_not = false;
 				_values.ExceptWith(otherSfv._values);
 			}
 			else if (_not && !not)
 			{
+				_not = false;
 				string[] newValues = otherSfv._values.Except(_values).ToArray();
 				_values.Clear();
 				_values.UnionWith(newValues);
-				_not = false;
 			}
 			else
 			{
+				_not = true;
 				_values.UnionWith(otherSfv._values);
+			}
+		}
+
+		protected override void UnionWith(FeatureValue other, bool negate)
+		{
+			var otherSfv = (StringFeatureValue) other;
+			bool not = negate ? !otherSfv._not : otherSfv._not;
+
+			if (!_not && !not)
+			{
+				_not = false;
+				_values.UnionWith(otherSfv._values);
+			}
+			else if (!_not && not)
+			{
+				_not = true;
+				_values.ExceptWith(otherSfv._values);
+			}
+			else if (_not && !not)
+			{
+				_not = true;
+				string[] newValues = otherSfv._values.Except(_values).ToArray();
+				_values.Clear();
+				_values.UnionWith(newValues);
+			}
+			else
+			{
+				_not = true;
+				_values.IntersectWith(otherSfv.Values);
 			}
 		}
 

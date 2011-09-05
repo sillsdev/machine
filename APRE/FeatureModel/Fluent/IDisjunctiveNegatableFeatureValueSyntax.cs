@@ -4,7 +4,6 @@ namespace SIL.APRE.FeatureModel.Fluent
 	{
 		IDisjunctiveFeatureStructSyntax EqualTo(string string1, params string[] strings);
 		IDisjunctiveFeatureStructSyntax EqualTo(FeatureSymbol symbol1, params FeatureSymbol[] symbols);
-		IDisjunctiveFeatureStructSyntax EqualToAny { get; }
 		IDisjunctiveFeatureStructSyntax EqualToVariable(string name);
 	}
 }

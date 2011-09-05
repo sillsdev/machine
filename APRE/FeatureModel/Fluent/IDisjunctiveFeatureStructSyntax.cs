@@ -11,6 +11,6 @@ namespace SIL.APRE.FeatureModel.Fluent
 
 		IDisjunctiveFeatureStructSyntax And(Func<IFirstDisjunctSyntax, IFinalDisjunctSyntax> build);
 
-		FeatureModel.FeatureStruct Value { get; }
+		FeatureStruct Value { get; }
 	}
 }

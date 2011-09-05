@@ -16,6 +16,7 @@ namespace SIL.APRE.FeatureModel
 
 		public abstract bool Negation(out FeatureValue output);
 
+		internal abstract void MergeValues(FeatureValue other, VariableBindings varBindings);
 		internal abstract bool IsDefiniteUnifiable(FeatureValue other, bool useDefaults, VariableBindings varBindings);
 		internal abstract bool DestructiveUnify(FeatureValue other, bool useDefaults, bool preserveInput,
 			IDictionary<FeatureValue, FeatureValue> copies, VariableBindings varBindings);

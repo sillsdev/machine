@@ -52,6 +52,56 @@ namespace SIL.APRE
 			return ids.Any(Contains);
 		}
 
+		public bool IsProperSubsetOf(IEnumerable<T> items)
+		{
+			int unfoundCount;
+			return CheckSubset(items, out unfoundCount) && unfoundCount > 0;
+		}
+
+		public bool IsSubsetOf(IEnumerable<T> items)
+		{
+			int unfoundCount;
+			return CheckSubset(items, out unfoundCount) && unfoundCount >= 0;
+		}
+
+		private bool CheckSubset(IEnumerable<T> items, out int unfoundCount)
+		{
+			int foundCount = 0;
+			unfoundCount = 0;
+			foreach (T item in items.Distinct())
+			{
+				if (Contains(item))
+					foundCount++;
+				else
+					unfoundCount++;
+			}
+			return foundCount == _idBearers.Count;
+		}
+
+		public bool IsProperSupersetOf(IEnumerable<T> items)
+		{
+			int foundCount;
+			return CheckSuperset(items, out foundCount) && foundCount < _idBearers.Count;
+		}
+
+		public bool IsSupersetOf(IEnumerable<T> items)
+		{
+			int foundCount;
+			return CheckSuperset(items, out foundCount) && foundCount <= _idBearers.Count;
+		}
+
+		private bool CheckSuperset(IEnumerable<T> items, out int foundCount)
+		{
+			foundCount = 0;
+			foreach (T item in items.Distinct())
+			{
+				if (!Contains(item))
+					return false;
+				foundCount++;
+			}
+			return true;
+		}
+
 		IEnumerator<T> IEnumerable<T>.GetEnumerator()
 		{
 			return _idBearers.Values.GetEnumerator();

@@ -10,7 +10,7 @@ namespace SIL.APRE.FeatureModel
 	{
 		public static IDisjunctiveFeatureStructSyntax With(FeatureSystem featSys)
 		{
-			return new Fluent.FeatureStructBuilder(featSys);
+			return new FeatureStructBuilder(featSys);
 		}
 
 		private readonly IDBearerDictionary<Feature, FeatureValue> _definite;
@@ -85,9 +85,10 @@ namespace SIL.APRE.FeatureModel
 
 		public void AddValue(IEnumerable<Feature> path, FeatureValue value)
 		{
+		    Feature lastFeature;
 			FeatureStruct lastFS;
-			if (FollowPath(path.GetIDs(), out lastFS))
-				lastFS._definite[path.Last()] = value;
+			if (FollowPath(path, out lastFeature, out lastFS))
+				lastFS._definite[lastFeature] = value;
 
 			throw new ArgumentException("The feature path is invalid.", "path");
 		}
@@ -100,6 +101,7 @@ namespace SIL.APRE.FeatureModel
 				FeatureValue thisValue;
 				if (_definite.TryGetValue(featVal.Key, out thisValue))
 				{
+					thisValue = Dereference(thisValue);
 					var thisFS = thisValue as FeatureStruct;
 					if (thisFS != null)
 						thisFS.AddValues((FeatureStruct) otherValue);
@@ -111,6 +113,35 @@ namespace SIL.APRE.FeatureModel
 					_definite[featVal.Key] = otherValue.Clone();
 				}
 			}
+
+			// TODO: what do we do about disjunctions?
+		}
+
+		public void MergeValues(FeatureStruct other, VariableBindings varBindings)
+		{
+			foreach (KeyValuePair<Feature, FeatureValue> featVal in other._definite)
+			{
+				FeatureValue otherValue = Dereference(featVal.Value);
+				FeatureValue thisValue;
+				if (_definite.TryGetValue(featVal.Key, out thisValue))
+				{
+					thisValue = Dereference(thisValue);
+					thisValue.MergeValues(otherValue, varBindings);
+				}
+				else
+				{
+					_definite[featVal.Key] = otherValue.Clone();
+				}
+			}
+
+			// TODO: what do we do about disjunctions?
+		}
+
+		internal override void MergeValues(FeatureValue other, VariableBindings varBindings)
+		{
+			FeatureStruct otherFS;
+			if (Dereference(other, out otherFS))
+				MergeValues(otherFS, varBindings);
 		}
 
 		public void AddDisjunction(Disjunction disjunction)
@@ -231,11 +262,12 @@ namespace SIL.APRE.FeatureModel
 
 		public bool TryGetValue<T>(IEnumerable<Feature> path, out T value) where T : FeatureValue
 		{
+		    Feature lastFeature;
 			FeatureStruct lastFS;
-			if (FollowPath(path.GetIDs(), out lastFS))
+			if (FollowPath(path, out lastFeature, out lastFS))
 			{
 				FeatureValue val;
-				if (lastFS._definite.TryGetValue(path.Last(), out val))
+				if (lastFS._definite.TryGetValue(lastFeature, out val))
 					return Dereference(val, out value);
 			}
 			value = null;
@@ -244,21 +276,22 @@ namespace SIL.APRE.FeatureModel
 
 		public bool TryGetValue<T>(IEnumerable<string> path, out T value) where T : FeatureValue
 		{
+		    string lastID;
 			FeatureStruct lastFS;
-			if (FollowPath(path, out lastFS))
+			if (FollowPath(path, out lastID, out lastFS))
 			{
 				FeatureValue val;
-				if (lastFS._definite.TryGetValue(path.Last(), out val))
+				if (lastFS._definite.TryGetValue(lastID, out val))
 					return Dereference(val, out value);
 			}
 			value = null;
 			return false;
 		}
 
-		private bool FollowPath(IEnumerable<string> path, out FeatureStruct lastFS)
+		private bool FollowPath(IEnumerable<string> path, out string lastID, out FeatureStruct lastFS)
 		{
 			lastFS = this;
-			string lastID = null;
+			lastID = null;
 			foreach (string id in path)
 			{
 				if (lastID != null)
@@ -266,7 +299,8 @@ namespace SIL.APRE.FeatureModel
 					FeatureValue curValue;
 					if (!lastFS._definite.TryGetValue(lastID, out curValue) || !Dereference(curValue, out lastFS))
 					{
-						lastFS = null;
+					    lastID = null;
+                        lastFS = null;
 						return false;
 					}
 				}
@@ -275,6 +309,28 @@ namespace SIL.APRE.FeatureModel
 
 			return true;
 		}
+
+        private bool FollowPath(IEnumerable<Feature> path, out Feature lastFeature, out FeatureStruct lastFS)
+        {
+            lastFS = this;
+            lastFeature = null;
+            foreach (Feature feature in path)
+            {
+                if (lastFeature != null)
+                {
+                    FeatureValue curValue;
+                    if (!lastFS._definite.TryGetValue(lastFeature, out curValue) || !Dereference(curValue, out lastFS))
+                    {
+                        lastFeature = null;
+                        lastFS = null;
+                        return false;
+                    }
+                }
+                lastFeature = feature;
+            }
+
+            return true;
+        }
 
 		public void ReplaceVariables(VariableBindings varBindings)
 		{
@@ -305,6 +361,8 @@ namespace SIL.APRE.FeatureModel
 
 			foreach (KeyValuePair<Feature, FeatureValue> replacement in replacements)
 				_definite[replacement.Key] = replacement.Value;
+
+			// TODO: what do we do about disjunctions?
 		}
 
 		public bool IsUnifiable(FeatureValue other)
@@ -596,18 +654,18 @@ namespace SIL.APRE.FeatureModel
 						newFs = null;
 						return false;
 					}
-					else if (newDisjunction.Count == 1)
-					{
-						FeatureStruct disjunct = newDisjunction.First();
-						FeatureValue newFv;
-						newFs.UnifyDefinite(disjunct, useDefaults, varBindings, out newFv);
-						newFs = (FeatureStruct) newFv;
-						uncheckedParts = true;
-					}
-					else
-					{
-						newFs.AddDisjunction(new Disjunction(newDisjunction));
-					}
+				    if (newDisjunction.Count == 1)
+				    {
+				        FeatureStruct disjunct = newDisjunction.First();
+				        FeatureValue newFv;
+				        newFs.UnifyDefinite(disjunct, useDefaults, varBindings, out newFv);
+				        newFs = (FeatureStruct) newFv;
+				        uncheckedParts = true;
+				    }
+				    else
+				    {
+				        newFs.AddDisjunction(new Disjunction(newDisjunction));
+				    }
 				}
 				cond = newFs;
 				indefinite.Clear();
@@ -655,19 +713,19 @@ namespace SIL.APRE.FeatureModel
 					newFs = null;
 					return false;
 				}
-				else if (newDisjunction.Count == 1)
-				{
-					FeatureStruct nFs = newDisjunction.First();
-					newFs = nFs;
-					varBindings.Replace(lastVarBindings);
-					indefinite.Clear();
-					indefinite.AddRange(newFs.Disjunctions);
-					newFs.ClearDisjunctions();
-				}
-				else
-				{
-					newFs.AddDisjunction(new Disjunction(newDisjunction));
-				}
+			    if (newDisjunction.Count == 1)
+			    {
+			        FeatureStruct nFs = newDisjunction.First();
+			        newFs = nFs;
+			        varBindings.Replace(lastVarBindings);
+			        indefinite.Clear();
+			        indefinite.AddRange(newFs.Disjunctions);
+			        newFs.ClearDisjunctions();
+			    }
+			    else
+			    {
+			        newFs.AddDisjunction(new Disjunction(newDisjunction));
+			    }
 			}
 
 			return true;

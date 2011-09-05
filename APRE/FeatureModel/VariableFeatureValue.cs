@@ -33,7 +33,7 @@ namespace SIL.APRE.FeatureModel
 			return true;
 		}
 
-		protected override bool IsValuesUnifiable(FeatureValue other, bool negate)
+		protected override bool Overlaps(FeatureValue other, bool negate)
 		{
 			var otherVfv = other as VariableFeatureValue;
 			if (otherVfv == null)
@@ -42,8 +42,13 @@ namespace SIL.APRE.FeatureModel
 			return _name == otherVfv._name && _agree == otherVfv._agree;
 		}
 
-		protected override void UnifyValues(FeatureValue other, bool negate)
+		protected override void IntersectWith(FeatureValue other, bool negate)
 		{
+		}
+
+		protected override void UnionWith(FeatureValue other, bool negate)
+		{
+
 		}
 
 		public override FeatureValue Clone()

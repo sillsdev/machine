@@ -49,7 +49,7 @@ namespace SIL.APRE.FeatureModel.Fluent
 
 		public IDisjunctiveFeatureStructSyntax Symbol(FeatureSymbol symbol1, params FeatureSymbol[] symbols)
 		{
-			if (!AddSymbols(symbol1, symbols))
+			if (!AddSymbols(symbol1.Feature, symbol1, symbols))
 				throw new ArgumentException("All specified symbols must be associated with the same feature.", "symbols");
 			return this;
 		}
@@ -88,7 +88,7 @@ namespace SIL.APRE.FeatureModel.Fluent
 
 		IFeatureStructSyntax IFeatureStructSyntax.Symbol(FeatureSymbol symbol1, params FeatureSymbol[] symbols)
 		{
-			if (!AddSymbols(symbol1, symbols))
+			if (!AddSymbols(symbol1.Feature, symbol1, symbols))
 				throw new ArgumentException("All specified symbols must be associated with the same feature.", "symbols");
 			return this;
 		}
@@ -113,7 +113,7 @@ namespace SIL.APRE.FeatureModel.Fluent
 			}
 			else if (_lastFeature is SymbolicFeature)
 			{
-				if (!AddSymbols(string1, strings))
+				if (!AddSymbols(_lastFeature, string1, strings))
 					return false;
 			}
 
@@ -122,13 +122,13 @@ namespace SIL.APRE.FeatureModel.Fluent
 			return true;
 		}
 
-		private bool AddSymbols(FeatureSymbol symbol1, IEnumerable<FeatureSymbol> symbols)
+		private bool AddSymbols(Feature feature, FeatureSymbol symbol1, IEnumerable<FeatureSymbol> symbols)
 		{
-			if (symbols.Any(s => s.Feature != symbol1.Feature))
+			FeatureSymbol[] allSymbols = symbols.Concat(symbol1).ToArray();
+			if (allSymbols.Any(s => s.Feature != feature))
 				return false;
-			var symbolFeature = (SymbolicFeature)_lastFeature;
-			symbols = symbols.Concat(symbol1);
-			_fs.AddValue(symbol1.Feature, new SymbolicFeatureValue(_not ? symbolFeature.PossibleSymbols.Except(symbols) : symbols));
+			var symbolFeature = (SymbolicFeature) feature;
+			_fs.AddValue(symbolFeature, new SymbolicFeatureValue(_not ? symbolFeature.PossibleSymbols.Except(allSymbols) : allSymbols));
 			return true;
 		}
 
@@ -136,47 +136,22 @@ namespace SIL.APRE.FeatureModel.Fluent
 		{
 			FeatureSymbol symbol1 = _featSys.GetSymbol(symbolID1);
 			IEnumerable<FeatureSymbol> symbols = symbolIDs.Select(id => _featSys.GetSymbol(id)).ToArray();
-			return AddSymbols(symbol1, symbols);
+			return AddSymbols(symbol1.Feature, symbol1, symbols);
+		}
+
+		private bool AddSymbols(Feature feature, string symbolID1, IEnumerable<string> symbolIDs)
+		{
+			FeatureSymbol symbol1 = _featSys.GetSymbol(symbolID1);
+			IEnumerable<FeatureSymbol> symbols = symbolIDs.Select(id => _featSys.GetSymbol(id)).ToArray();
+			return AddSymbols(feature, symbol1, symbols);
 		}
 
 		IDisjunctiveFeatureStructSyntax IDisjunctiveNegatableFeatureValueSyntax.EqualTo(FeatureSymbol symbol1, params FeatureSymbol[] symbols)
 		{
-			IEnumerable<FeatureSymbol> allSymbols = symbols.Concat(symbol1);
-			if (allSymbols.Any(s => s.Feature != _lastFeature))
+			if (!AddSymbols(_lastFeature, symbol1, symbols))
 				throw new ArgumentException("All specified symbols must be associated with the same feature.", "symbols");
-			var symbolFeature = (SymbolicFeature)_lastFeature;
-			_fs.AddValue(_lastFeature, new SymbolicFeatureValue(_not ? symbolFeature.PossibleSymbols.Except(allSymbols) : allSymbols));
 			_not = false;
 			return this;
-		}
-
-		IDisjunctiveFeatureStructSyntax IDisjunctiveNegatableFeatureValueSyntax.EqualToAny
-		{
-			get
-			{
-				if (_lastFeature is ComplexFeature)
-					throw new ArgumentException("The specified feature cannot be complex.");
-				AddAny();
-				return this;
-			}
-		}
-
-		private void AddAny()
-		{
-			FeatureValue value = null;
-			if (_lastFeature is StringFeature)
-			{
-				value = new StringFeatureValue(Enumerable.Empty<string>(), !_not);
-			}
-			else
-			{
-				var symbolFeature = _lastFeature as SymbolicFeature;
-				if (symbolFeature != null)
-					value = _not ? new SymbolicFeatureValue(symbolFeature) : new SymbolicFeatureValue(symbolFeature.PossibleSymbols);
-			}
-
-			_fs.AddValue(_lastFeature, value);
-			_not = false;
 		}
 
 		IDisjunctiveFeatureStructSyntax IDisjunctiveNegatableFeatureValueSyntax.EqualToVariable(string name)
@@ -199,20 +174,9 @@ namespace SIL.APRE.FeatureModel.Fluent
 
 		IFeatureStructSyntax INegatableFeatureValueSyntax.EqualTo(FeatureSymbol symbol1, params FeatureSymbol[] symbols)
 		{
-			if (!AddSymbols(symbol1, symbols))
+			if (!AddSymbols(_lastFeature, symbol1, symbols))
 				throw new ArgumentException("All specified symbols must be associated with the same feature.", "symbols");
 			return this;
-		}
-
-		IFeatureStructSyntax INegatableFeatureValueSyntax.EqualToAny
-		{
-			get
-			{
-				if (_lastFeature is ComplexFeature)
-					throw new ArgumentException("The specified feature cannot be complex.");
-				AddAny();
-				return this;
-			}
 		}
 
 		IFeatureStructSyntax INegatableFeatureValueSyntax.EqualToVariable(string name)

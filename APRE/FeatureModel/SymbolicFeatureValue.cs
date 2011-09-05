@@ -18,10 +18,10 @@ namespace SIL.APRE.FeatureModel
 
 		public SymbolicFeatureValue(IEnumerable<FeatureSymbol> values)
 		{
-			if (!values.Any())
-				throw new ArgumentException("values cannot be empty", "values");
-			_feature = values.First().Feature;
 			_values = new IDBearerSet<FeatureSymbol>(values);
+			if (_values.Count == 0)
+				throw new ArgumentException("values cannot be empty", "values");
+			_feature = _values.First().Feature;
 		}
 
 		public SymbolicFeatureValue(FeatureSymbol value)
@@ -61,21 +61,32 @@ namespace SIL.APRE.FeatureModel
 			return _values.Overlaps(ids);
 		}
 
-		protected override bool IsValuesUnifiable(FeatureValue other, bool negate)
+		protected override bool Overlaps(FeatureValue other, bool negate)
 		{
 			var otherSfv = other as SymbolicFeatureValue;
 			if (otherSfv == null)
 				return false;
 
-			IEnumerable<FeatureSymbol> values = negate ? otherSfv._feature.PossibleSymbols.Except(otherSfv._values) : otherSfv._values;
-			return _values.Overlaps(values);
+			if (!negate)
+				return _values.Overlaps(otherSfv._values);
+
+			return _values.IsSupersetOf(otherSfv._values);
 		}
 
-		protected override void UnifyValues(FeatureValue other, bool negate)
+		protected override void IntersectWith(FeatureValue other, bool negate)
 		{
 			var otherSfv = (SymbolicFeatureValue) other;
-			IEnumerable<FeatureSymbol> values = negate ? otherSfv._feature.PossibleSymbols.Except(otherSfv._values) : otherSfv._values;
-			_values.IntersectWith(values);
+			if (!negate)
+				_values.IntersectWith(otherSfv._values);
+			else
+				_values.ExceptWith(otherSfv._values);
+		}
+
+		protected override void UnionWith(FeatureValue other, bool negate)
+		{
+			var otherSfv = (SymbolicFeatureValue) other;
+
+			_values.UnionWith(!negate ? otherSfv._values : _feature.PossibleSymbols.Except(otherSfv.Values));
 		}
 
 		public override bool Negation(out FeatureValue output)

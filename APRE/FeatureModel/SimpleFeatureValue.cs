@@ -4,6 +4,8 @@ namespace SIL.APRE.FeatureModel
 {
 	public abstract class SimpleFeatureValue : FeatureValue
 	{
+
+
 		internal override bool IsDefiniteUnifiable(FeatureValue other, bool useDefaults, VariableBindings varBindings)
 		{
 			other = Dereference(other);
@@ -12,14 +14,28 @@ namespace SIL.APRE.FeatureModel
 			{
 				FeatureValue binding;
 				if (varBindings.TryGetValue(otherVfv.Name, out binding))
-					return IsValuesUnifiable(binding, !otherVfv.Agree);
+					return Overlaps(binding, !otherVfv.Agree);
 				return true;
 			}
 
-			return IsValuesUnifiable(other, false);
+			return Overlaps(other, false);
 		}
 
-		protected abstract bool IsValuesUnifiable(FeatureValue other, bool negate);
+		internal override void MergeValues(FeatureValue other, VariableBindings varBindings)
+		{
+			other = Dereference(other);
+			var otherVfv = other as VariableFeatureValue;
+			if (otherVfv != null && !(this is VariableFeatureValue))
+			{
+				FeatureValue binding;
+				if (varBindings.TryGetValue(otherVfv.Name, out binding))
+					UnionWith(binding, !otherVfv.Agree);
+			}
+			else
+			{
+				UnionWith(other, false);
+			}
+		}
 
 		internal override bool DestructiveUnify(FeatureValue other, bool useDefaults, bool preserveInput, IDictionary<FeatureValue, FeatureValue> copies, VariableBindings varBindings)
 		{
@@ -43,7 +59,7 @@ namespace SIL.APRE.FeatureModel
 				
 				FeatureValue binding;
 				if (varBindings.TryGetValue(otherVfv.Name, out binding))
-					UnifyValues(binding, !otherVfv.Agree);
+					IntersectWith(binding, !otherVfv.Agree);
 				if (otherVfv.Agree)
 					binding = Clone();
 				else
@@ -52,13 +68,11 @@ namespace SIL.APRE.FeatureModel
 			}
 			else
 			{
-				UnifyValues(other, false);
+				IntersectWith(other, false);
 			}
 
 			return true;
 		}
-
-		protected abstract void UnifyValues(FeatureValue other, bool negate);
 
 		protected override bool NondestructiveUnify(FeatureValue other, bool useDefaults, IDictionary<FeatureValue, FeatureValue> copies,
 			VariableBindings varBindings, out FeatureValue output)
@@ -85,5 +99,9 @@ namespace SIL.APRE.FeatureModel
 			copies[this] = copy;
 			return copy;
 		}
+
+		protected abstract bool Overlaps(FeatureValue other, bool negate);
+		protected abstract void IntersectWith(FeatureValue other, bool negate);
+		protected abstract void UnionWith(FeatureValue other, bool negate);
 	}
 }
