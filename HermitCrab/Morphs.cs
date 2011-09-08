@@ -56,7 +56,7 @@ namespace SIL.HermitCrab
 				&& (item.Partition == -1 || Contains(item.Partition) || morphs[index - 1].Partition == item.Partition))
 			{
 				item.Partition = morphs[index - 1].Partition;
-				item.Shape.AddMany(morphs[index - 1].Shape);
+				item.Shape.AddRange(morphs[index - 1].Shape);
 				base.SetItem(index - 1, item);
 			}
 			else

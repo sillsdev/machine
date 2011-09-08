@@ -10,7 +10,7 @@ namespace SIL.HermitCrab
     /// </summary>
     public class AffixTemplate : IDBearerBase
     {
-        private readonly IDBearerSet<Slot> _slots;
+        private readonly List<Slot> _slots;
         private IDBearerSet<PartOfSpeech> _requiredPartsOfSpeech;
 
         /// <summary>
@@ -21,7 +21,7 @@ namespace SIL.HermitCrab
         public AffixTemplate(string id, string desc)
             : base(id, desc)
         {
-            _slots = new IDBearerSet<Slot>();
+            _slots = new List<Slot>();
         }
 
         /// <summary>

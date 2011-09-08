@@ -892,9 +892,9 @@ namespace SIL.HermitCrab
                     if (_curMorpher.PhoneticFeatureSystem.HasFeatures)
                     {
                         if (fb == null)
-                            fb = segDef.SynthFeatureStruct.Clone();
+                            fb = segDef.FeatureStruct.Clone();
                         else
-                            fb.Intersection(segDef.SynthFeatureStruct);
+                            fb.Intersection(segDef.FeatureStruct);
                     }
                     else
                     {

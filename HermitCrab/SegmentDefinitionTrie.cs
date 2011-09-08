@@ -105,41 +105,39 @@ namespace SIL.HermitCrab
 					return;
 				}
 
-				switch (node.Annotation.Type)
+				if (node.Annotation.FeatureStruct.GetValue<StringFeatureValue>("type").Contains("seg"))
 				{
-					case "Boundary":
-						// skip boundaries
-						Add(node.GetNext(dir), value, dir);
-						break;
-
-					case "Segment":
-						TrieNode tnode = null;
-						foreach (TrieNode child in _children)
+					TrieNode tnode = null;
+					foreach (TrieNode child in _children)
+					{
+						// we check for exact matches of feature sets when adding
+						if (child._featureStruct.Equals(node.Annotation.FeatureStruct))
 						{
-							// we check for exact matches of feature sets when adding
-							if (child._featureStruct.Equals(node.Annotation.FeatureStruct))
-							{
-								tnode = child;
-								break;
-							}
+							tnode = child;
+							break;
 						}
+					}
 
-						if (tnode == null)
-						{
-							// new node needs to be added
-							tnode = new TrieNode((FeatureStruct) node.Annotation.FeatureStruct.Clone());
-							_children.Add(tnode);
-						}
+					if (tnode == null)
+					{
+						// new node needs to be added
+						tnode = new TrieNode((FeatureStruct)node.Annotation.FeatureStruct.Clone());
+						_children.Add(tnode);
+					}
 
-						// recursive call matching child node
-						tnode.Add(node.GetNext(dir), value, dir);
-						break;
+					// recursive call matching child node
+					tnode.Add(node.GetNext(dir), value, dir);
+				}
+				else
+				{
+					// skip boundaries
+					Add(node.GetNext(dir), value, dir);
 				}
 			}
 
 			public IList<Match> Search(PhoneticShapeNode node, Direction dir, bool partialMatch)
 			{
-				IList<Match> matches = null;
+				IList<Match> matches;
 				if (node == null)
 				{
 					matches = new List<Match>();
@@ -153,38 +151,36 @@ namespace SIL.HermitCrab
 				}
 				else
 				{
-					switch (node.Annotation.Type)
+					if (node.Annotation.FeatureStruct.GetValue<StringFeatureValue>("type").Contains("seg"))
 					{
-						case "Boundary":
-							// skip boundaries
-							matches = Search(node.GetNext(dir), dir, partialMatch);
-							foreach (Match match in matches)
-								match.AddNode(node);
-							break;
+						PhoneticShapeNode nextNode = node.GetNext(dir);
+						var segMatches = new List<Match>();
+						foreach (TrieNode child in _children)
+						{
+							// check for unifiability when searching
+							if (node.Annotation.FeatureStruct.IsUnifiable(child._featureStruct))
+								segMatches.AddRange(child.Search(nextNode, dir, partialMatch));
+						}
 
-						case "Segment":
-							PhoneticShapeNode nextNode = node.GetNext(dir);
-							var segMatches = new List<Match>();
-							foreach (TrieNode child in _children)
-							{
-								// check for unifiability when searching
-								if (node.Annotation.FeatureStruct.IsUnifiable(child._featureStruct))
-									segMatches.AddRange(child.Search(nextNode, dir, partialMatch));
-							}
+						// if this is an optional node, we can try skipping it
+						if (node.Annotation.IsOptional)
+							segMatches.AddRange(Search(nextNode, dir, partialMatch));
 
-							// if this is an optional node, we can try skipping it
-							if (node.Annotation.IsOptional)
-								segMatches.AddRange(Search(nextNode, dir, partialMatch));
+						matches = segMatches;
 
-							matches = segMatches;
-
-							foreach (Match match in matches)
-								match.AddNode(node);
-							break;
-					}	
+						foreach (Match match in matches)
+							match.AddNode(node);
+					}
+					else
+					{
+						// skip boundaries
+						matches = Search(node.GetNext(dir), dir, partialMatch);
+						foreach (Match match in matches)
+							match.AddNode(node);
+					}
 				}
 
-				if (partialMatch && matches != null)
+				if (partialMatch)
 				{
 					foreach (T value in _values)
 						matches.Add(new Match(value));

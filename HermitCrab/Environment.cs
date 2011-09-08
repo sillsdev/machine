@@ -83,6 +83,7 @@ namespace SIL.HermitCrab
 		public bool IsMatch(PhoneticShape shape, PhoneticShapeNode leftNode, PhoneticShapeNode rightNode, ModeType mode,
 			FeatureStruct varValues)
 		{
+			/*
 			var temp = (FeatureStruct) varValues.Clone();
 			// right environment
 			if (_rightEnv != null)
@@ -105,6 +106,7 @@ namespace SIL.HermitCrab
 			}
 
 			varValues.IntersectWith(temp);
+			 */
 			return true;
 		}
 	}

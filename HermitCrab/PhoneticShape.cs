@@ -22,7 +22,7 @@ namespace SIL.HermitCrab
 		public PhoneticShape(CharacterDefinitionTable charDefTable, ModeType mode, IEnumerable<PhoneticShapeNode> nodes)
 			: this(charDefTable, mode)
 		{
-			AddMany(nodes);
+			AddRange(nodes);
 		}
 
 		public PhoneticShape(PhoneticShape shape)

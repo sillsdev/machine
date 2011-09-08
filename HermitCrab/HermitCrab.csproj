@@ -101,7 +101,6 @@
     <Compile Include="MorphologicalRule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="RealizationalRule.cs" />
-    <Compile Include="StandardPhonologicalRule.cs" />
     <Compile Include="Stratum.cs" />
     <Compile Include="SynthesisPhonologicalSubrule.cs" />
     <Compile Include="Trace.cs" />

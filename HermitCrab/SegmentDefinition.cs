@@ -1,5 +1,4 @@
-﻿using SIL.APRE;
-using SIL.APRE.FeatureModel;
+﻿using SIL.APRE.FeatureModel;
 
 namespace SIL.HermitCrab
 {
@@ -10,16 +9,13 @@ namespace SIL.HermitCrab
 	{
 		private readonly string _strRep;
 		private readonly CharacterDefinitionTable _charDefTable;
-		private readonly FeatureStruct _analysisFeatureStruct;
-		private readonly FeatureStruct _synthFeatureStruct;
+		private readonly FeatureStruct _featureStruct;
 
-		public SegmentDefinition(string strRep, CharacterDefinitionTable charDefTable, FeatureStruct synthFeatureStruct,
-			FeatureStruct analysisFeatureStruct)
+		public SegmentDefinition(string strRep, CharacterDefinitionTable charDefTable, FeatureStruct featureStruct)
 		{
 			_strRep = strRep;
 			_charDefTable = charDefTable;
-			_synthFeatureStruct = synthFeatureStruct;
-			_analysisFeatureStruct = analysisFeatureStruct;
+			_featureStruct = featureStruct;
 		}
 
 		public string StrRep
@@ -38,19 +34,11 @@ namespace SIL.HermitCrab
 			}
 		}
 
-		public FeatureStruct AnalysisFeatureStruct
+		public FeatureStruct FeatureStruct
 		{
 			get
 			{
-				return _analysisFeatureStruct;
-			}
-		}
-
-		public FeatureStruct SynthFeatureStruct
-		{
-			get
-			{
-				return _synthFeatureStruct;
+				return _featureStruct;
 			}
 		}
 

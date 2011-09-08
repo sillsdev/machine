@@ -46,7 +46,7 @@ namespace SIL.HermitCrab
 				}
 			}
 
-			AddMany(mprFeats);
+			UnionWith(mprFeats);
 		}
 
 		public bool IsMatch(MprFeatureSet mprFeats)

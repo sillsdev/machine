@@ -15,7 +15,8 @@ namespace SIL.HermitCrab
         private readonly FeatureSystem _phoneticFeatSys;
         private readonly FeatureSystem _headFeatSys;
         private readonly FeatureSystem _footFeatSys;
-        private readonly IDBearerSet<Stratum> _strata;
+        private readonly List<Stratum> _orderedStrata;
+    	private readonly IDBearerSet<Stratum> _strata; 
         private readonly IDBearerSet<CharacterDefinitionTable> _charDefTables;
     	private readonly IDBearerSet<NaturalClass> _natClasses;
         private readonly IDBearerSet<PhonologicalRule> _prules;
@@ -43,7 +44,8 @@ namespace SIL.HermitCrab
         public Morpher(string id, string language)
             : base(id, language)
         {
-            _strata = new IDBearerSet<Stratum>();
+            _orderedStrata = new List<Stratum>();
+			_strata = new IDBearerSet<Stratum>();
             _phoneticFeatSys = new FeatureSystem();
             _headFeatSys = new FeatureSystem();
             _footFeatSys = new FeatureSystem();
@@ -67,9 +69,9 @@ namespace SIL.HermitCrab
         {
             get
             {
-                if (_strata.Count < 2)
+                if (_orderedStrata.Count < 2)
                     return null;
-                return _strata[0];
+                return _orderedStrata[0];
             }
         }
 
@@ -81,9 +83,9 @@ namespace SIL.HermitCrab
         {
             get
             {
-                if (_strata.Count < 2)
+                if (_orderedStrata.Count < 2)
                     return null;
-                return _strata[_strata.Count - 2];
+                return _orderedStrata[_orderedStrata.Count - 2];
             }
         }
 
@@ -95,10 +97,9 @@ namespace SIL.HermitCrab
         {
             get
             {
-                Stratum stratum;
-                if (_strata.TryGetValue(Stratum.SurfaceStratumID, out stratum))
-                    return stratum;
-                return null;
+				if (_orderedStrata.Count == 0)
+					return null;
+            	return _orderedStrata[_orderedStrata.Count - 1];
             }
         }
 
@@ -146,7 +147,7 @@ namespace SIL.HermitCrab
         {
             get
             {
-                return _strata;
+                return _orderedStrata;
             }
         }
 
@@ -545,7 +546,8 @@ namespace SIL.HermitCrab
         /// <param name="stratum">The stratum.</param>
         public void AddStratum(Stratum stratum)
         {
-            _strata.Add(stratum);
+            _orderedStrata.Add(stratum);
+        	_strata.Add(stratum);
         }
 
         /// <summary>
@@ -715,7 +717,8 @@ namespace SIL.HermitCrab
         /// </summary>
         public void ClearStrata()
         {
-            _strata.Clear();
+            _orderedStrata.Clear();
+			_strata.Clear();
         }
 
         /// <summary>
@@ -800,7 +803,7 @@ namespace SIL.HermitCrab
             inAnalysis.Add(new WordAnalysis(input, SurfaceStratum, trace));
 
             // Unapply rules
-            for (int i = _strata.Count - 1; i >= 0; i--)
+            for (int i = _orderedStrata.Count - 1; i >= 0; i--)
             {
                 outAnalysis.Clear();
                 foreach (WordAnalysis wa in inAnalysis)
@@ -808,18 +811,18 @@ namespace SIL.HermitCrab
                     if (_traceStrataAnalysis)
                     {
                         // create the stratum analysis input trace record
-                        var stratumTrace = new StratumAnalysisTrace(_strata[i], true, wa.Clone());
+                        var stratumTrace = new StratumAnalysisTrace(_orderedStrata[i], true, wa.Clone());
                         wa.CurrentTrace.AddChild(stratumTrace);
                     }
-                    foreach (WordAnalysis outWa in _strata[i].Unapply(wa, candidates))
+                    foreach (WordAnalysis outWa in _orderedStrata[i].Unapply(wa, candidates))
                     {
                         // promote each analysis to the next stratum
                         if (i != 0)
-                            outWa.Stratum = _strata[i - 1];
+                            outWa.Stratum = _orderedStrata[i - 1];
 
                         if (_traceStrataAnalysis)
                             // create the stratum analysis output trace record for the output word synthesis
-                            outWa.CurrentTrace.AddChild(new StratumAnalysisTrace(_strata[i], false, outWa.Clone()));
+                            outWa.CurrentTrace.AddChild(new StratumAnalysisTrace(_orderedStrata[i], false, outWa.Clone()));
 
                         outAnalysis.Add(outWa);
                     }
@@ -835,10 +838,10 @@ namespace SIL.HermitCrab
             {
                 var inSynthesis = new HashSet<WordSynthesis>();
                 var outSynthesis = new HashSet<WordSynthesis>();
-                for (int i = 0; i < _strata.Count; i++)
+                for (int i = 0; i < _orderedStrata.Count; i++)
                 {
                     // start applying at the stratum that this lex entry belongs to
-                    if (_strata[i] == candidate.Root.Stratum)
+                    if (_orderedStrata[i] == candidate.Root.Stratum)
                         inSynthesis.Add(candidate);
 
                     outSynthesis.Clear();
@@ -847,18 +850,18 @@ namespace SIL.HermitCrab
                         if (_traceStrataSynthesis)
                         {
                             // create the stratum synthesis input trace record
-                            var stratumTrace = new StratumSynthesisTrace(_strata[i], true, cur.Clone());
+                            var stratumTrace = new StratumSynthesisTrace(_orderedStrata[i], true, cur.Clone());
                             cur.CurrentTrace.AddChild(stratumTrace);
                         }
-                        foreach (WordSynthesis outWs in _strata[i].Apply(cur))
+                        foreach (WordSynthesis outWs in _orderedStrata[i].Apply(cur))
                         {
                             // promote the word synthesis to the next stratum
-                            if (i != _strata.Count - 1)
-                                outWs.Stratum = _strata[i + 1];
+                            if (i != _orderedStrata.Count - 1)
+                                outWs.Stratum = _orderedStrata[i + 1];
 
                             if (_traceStrataSynthesis)
                                 // create the stratum synthesis output trace record for the output analysis
-                                outWs.CurrentTrace.AddChild(new StratumSynthesisTrace(_strata[i], false, outWs.Clone()));
+                                outWs.CurrentTrace.AddChild(new StratumSynthesisTrace(_orderedStrata[i], false, outWs.Clone()));
 
                             outSynthesis.Add(outWs);
                         }

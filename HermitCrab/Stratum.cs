@@ -31,8 +31,8 @@ namespace SIL.HermitCrab
         private MRuleOrder _mruleOrder = MRuleOrder.Linear;
 
     	private readonly SegmentDefinitionTrie<LexEntry.RootAllomorph> _entryTrie;
-        private readonly IDBearerSet<MorphologicalRule> _mrules;
-        private readonly IDBearerSet<PhonologicalRule> _prules;
+        private readonly List<MorphologicalRule> _mrules;
+        private readonly List<PhonologicalRule> _prules;
         private readonly IDBearerSet<AffixTemplate> _templates;
 
         /// <summary>
@@ -43,8 +43,8 @@ namespace SIL.HermitCrab
         public Stratum(string id, string desc)
             : base(id, desc)
         {
-            _mrules = new IDBearerSet<MorphologicalRule>();
-            _prules = new IDBearerSet<PhonologicalRule>();
+            _mrules = new List<MorphologicalRule>();
+            _prules = new List<PhonologicalRule>();
             _templates = new IDBearerSet<AffixTemplate>();
             _entryTrie = new SegmentDefinitionTrie<LexEntry.RootAllomorph>(Direction.LeftToRight);
         }
@@ -144,7 +144,7 @@ namespace SIL.HermitCrab
         /// <param name="id">The ID.</param>
         public void RemovePhonologicalRule(string id)
         {
-            _prules.Remove(id);
+        	_prules.RemoveAll(rule => rule.ID == id);
         }
 
         /// <summary>
@@ -163,7 +163,7 @@ namespace SIL.HermitCrab
         /// <param name="id">The ID.</param>
         public void RemoveMorphologicalRule(string id)
         {
-            _mrules.Remove(id);
+        	_mrules.RemoveAll(rule => rule.ID == id);
         }
 
         /// <summary>
@@ -386,8 +386,8 @@ namespace SIL.HermitCrab
         void UnapplyPhonologicalRules(WordAnalysis input)
         {
             // TODO: handle ordering properly
-            for (int i = _prules.Count - 1; i >= 0; i--)
-                _prules[i].Unapply(input);
+            //for (int i = _prules.Count - 1; i >= 0; i--)
+            //    _prules[i].Unapply(input);
         }
 
         /// <summary>
@@ -510,8 +510,8 @@ namespace SIL.HermitCrab
 
         void ApplyPhonologicalRules(WordSynthesis input)
         {
-            for (int i = 0; i < _prules.Count; i++)
-                _prules[i].Apply(input);
+            //for (int i = 0; i < _prules.Count; i++)
+            //    _prules[i].Apply(input);
         }
     }
 }

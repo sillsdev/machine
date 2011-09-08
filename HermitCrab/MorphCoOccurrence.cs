@@ -52,7 +52,7 @@ namespace SIL.HermitCrab
 			AdjacentToRight
 		}
 
-		private readonly IDBearerSet<IIDBearer> _others;
+		private readonly List<IIDBearer> _others;
 		private readonly AdjacencyType _adjacency;
 		private readonly ObjectType _objectType;
 
@@ -64,7 +64,7 @@ namespace SIL.HermitCrab
 		/// <param name="adjacency">The adjacency.</param>
 		public MorphCoOccurrence(IEnumerable<IIDBearer> others, ObjectType objectType, AdjacencyType adjacency)
 		{
-			_others = new IDBearerSet<IIDBearer>(others);
+			_others = new List<IIDBearer>(others);
 			_objectType = objectType;
 			_adjacency = adjacency;
 		}
@@ -78,7 +78,7 @@ namespace SIL.HermitCrab
 		public bool CoOccurs(Morphs morphs, IIDBearer key)
 		{
 			Collection<Morph> morphList = morphs;
-			var others = new IDBearerSet<IIDBearer>(_others);
+			var others = new List<IIDBearer>(_others);
 
 			switch (_adjacency)
 			{

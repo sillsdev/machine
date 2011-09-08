@@ -14,15 +14,15 @@ namespace SIL.HermitCrab
 		private readonly Expression<PhoneticShapeNode> _rhs;
 		private readonly FeatureStruct _applicableFs;
 
-		public SynthesisPhonologicalSubrule(SpanFactory<PhoneticShapeNode> spanFactory, Expression<PhoneticShapeNode> lhs,
+		public SynthesisPhonologicalSubrule(SpanFactory<PhoneticShapeNode> spanFactory, Direction dir, bool simult, Expression<PhoneticShapeNode> lhs,
 			Expression<PhoneticShapeNode> rhs, Expression<PhoneticShapeNode> leftEnv, Expression<PhoneticShapeNode> rightEnv,
-			Direction dir, bool simult, FeatureStruct applicableFs)
+			FeatureStruct applicableFS)
 			: base(CreatePattern(spanFactory, lhs, leftEnv, rightEnv, dir), simult)
 		{
 			_spanFactory = spanFactory;
 			_lhs = lhs;
 			_rhs = rhs;
-			_applicableFs = applicableFs;
+			_applicableFs = applicableFS;
 		}
 
 		private static Pattern<PhoneticShapeNode> CreatePattern(SpanFactory<PhoneticShapeNode> spanFactory, Expression<PhoneticShapeNode> lhs,
@@ -37,9 +37,6 @@ namespace SIL.HermitCrab
 
 		public override bool IsApplicable(IBidirList<Annotation<PhoneticShapeNode>> input)
 		{
-			if (_applicableFs == null)
-				return true;
-
 			return input.First.FeatureStruct.IsUnifiable(_applicableFs);
 		}
 
@@ -52,7 +49,7 @@ namespace SIL.HermitCrab
 				foreach (Tuple<PhoneticShapeNode, PatternNode<PhoneticShapeNode>> tuple in target.Start.GetNodes(target.End).Zip(_rhs.Children))
 				{
 					var constraints = (Constraint<PhoneticShapeNode>) tuple.Item2;
-					tuple.Item1.Annotation.FeatureStruct.AddValues(constraints.FeatureStruct);
+					tuple.Item1.Annotation.FeatureStruct.Replace(constraints.FeatureStruct);
 					tuple.Item1.Annotation.FeatureStruct.ReplaceVariables(match.VariableBindings);
 				}
 			}

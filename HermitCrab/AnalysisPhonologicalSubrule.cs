@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using SIL.APRE;
 using SIL.APRE.FeatureModel;
@@ -11,34 +10,65 @@ namespace SIL.HermitCrab
 	public class AnalysisPhonologicalSubrule : PatternRuleBase<PhoneticShapeNode>
 	{
 		private readonly SpanFactory<PhoneticShapeNode> _spanFactory;
-		private readonly Expression<PhoneticShapeNode> _lhs;
-		private readonly Expression<PhoneticShapeNode> _rhs;
+		private readonly Expression<PhoneticShapeNode> _analysisLhs;
+		private readonly Expression<PhoneticShapeNode> _analysisRhs;
 		private readonly Expression<PhoneticShapeNode> _leftEnv;
 		private readonly Expression<PhoneticShapeNode> _rightEnv;
 		private readonly int _delReapplications;
 		private readonly bool _selfOpaquing;
 
-		public AnalysisPhonologicalSubrule(SpanFactory<PhoneticShapeNode> spanFactory, Expression<PhoneticShapeNode> lhs,
-			Expression<PhoneticShapeNode> rhs, Expression<PhoneticShapeNode> leftEnv, Expression<PhoneticShapeNode> rightEnv,
-			Direction synthesisDir, bool synthesisSimult, int delReapplications)
-			: base(CreatePattern(spanFactory, lhs, rhs, leftEnv, rightEnv, synthesisDir), lhs.Children.Count > rhs.Children.Count)
+		public AnalysisPhonologicalSubrule(SpanFactory<PhoneticShapeNode> spanFactory, int delReapplications, Direction synthesisDir,
+			bool synthesisSimult, Expression<PhoneticShapeNode> lhs, Expression<PhoneticShapeNode> rhs, Expression<PhoneticShapeNode> leftEnv,
+			Expression<PhoneticShapeNode> rightEnv)
+			: base(new Pattern<PhoneticShapeNode>(spanFactory, synthesisDir == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight,
+				ann => ann.FeatureStruct.GetValue<SymbolicFeatureValue>("type").Contains("seg"),
+				(input, match) => IsUnapplicationNonvacuous(match, lhs, rhs)), lhs.Children.Count > rhs.Children.Count)
 		{
 			_spanFactory = spanFactory;
-			_lhs = lhs;
-			_rhs = rhs;
 			_leftEnv = leftEnv;
 			_rightEnv = rightEnv;
 			_delReapplications = delReapplications;
+			_analysisLhs = new Expression<PhoneticShapeNode>();
+			_analysisRhs = new Expression<PhoneticShapeNode>();
 
-			if (_lhs.Children.Count > _rhs.Children.Count)
+			Lhs.Children.Add(new Group<PhoneticShapeNode>("leftEnv", leftEnv.Children.Clone()));
+			if (lhs.Children.Count == 0 || lhs.Children.Count > rhs.Children.Count)
+			{
+				Lhs.Children.Add(new Group<PhoneticShapeNode>("target", rhs.Children.Clone()));
+			}
+			else if (lhs.Children.Count == rhs.Children.Count)
+			{
+				var target = new Group<PhoneticShapeNode>("target");
+				foreach (Tuple<PatternNode<PhoneticShapeNode>, PatternNode<PhoneticShapeNode>> tuple in lhs.Children.Zip(rhs.Children))
+				{
+					var lhsConstraint = (Constraint<PhoneticShapeNode>) tuple.Item1;
+					var rhsConstraint = (Constraint<PhoneticShapeNode>) tuple.Item2;
+
+					var targetConstraint = (Constraint<PhoneticShapeNode>) tuple.Item1.Clone();
+					targetConstraint.FeatureStruct.Replace(rhsConstraint.FeatureStruct);
+					target.Children.Add(targetConstraint);
+
+					var analysisLhsConstraint = (Constraint<PhoneticShapeNode>) targetConstraint.Clone();
+					analysisLhsConstraint.FeatureStruct.Subtract(rhsConstraint.FeatureStruct);
+					_analysisLhs.Children.Add(analysisLhsConstraint);
+
+					var analysisRhsConstraint = (Constraint<PhoneticShapeNode>) tuple.Item2.Clone();
+					analysisRhsConstraint.FeatureStruct.Subtract(lhsConstraint.FeatureStruct);
+					_analysisRhs.Children.Add(analysisRhsConstraint);
+				}
+				Lhs.Children.Add(target);
+			}
+			Lhs.Children.Add(new Group<PhoneticShapeNode>("rightEnv", rightEnv.Children.Clone()));
+
+			if (lhs.Children.Count > rhs.Children.Count)
 			{
 				_selfOpaquing = true;
 			}
 			else if (synthesisSimult)
 			{
-				if (_lhs.Children.Count == _rhs.Children.Count)
+				if (lhs.Children.Count == rhs.Children.Count)
 				{
-					foreach (Constraint<PhoneticShapeNode> constraint in _rhs.Children.OfType<Constraint<PhoneticShapeNode>>())
+					foreach (Constraint<PhoneticShapeNode> constraint in rhs.Children)
 					{
 						if (constraint.FeatureStruct.GetValue<SymbolicFeatureValue>("type").Contains("seg"))
 						{
@@ -55,7 +85,6 @@ namespace SIL.HermitCrab
 					_selfOpaquing = true;
 				}
 			}
-			
 		}
 
 		private static bool IsUnifiable(Constraint<PhoneticShapeNode> constraint, Expression<PhoneticShapeNode> env)
@@ -72,54 +101,32 @@ namespace SIL.HermitCrab
 			return true;
 		}
 
-		private static Pattern<PhoneticShapeNode> CreatePattern(SpanFactory<PhoneticShapeNode> spanFactory, Expression<PhoneticShapeNode> lhs,
-			Expression<PhoneticShapeNode> rhs, Expression<PhoneticShapeNode> leftEnv, Expression<PhoneticShapeNode> rightEnv, Direction dir)
-		{
-			var pattern = new Pattern<PhoneticShapeNode>(spanFactory, dir == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight,
-				ann => ann.FeatureStruct.GetValue<SymbolicFeatureValue>("type").Overlaps(new[] {"seg", "bdry"}),
-				(input, match) => IsUnapplicationNonvacuous(match, lhs, rhs));
-			pattern.Children.Add(new Group<PhoneticShapeNode>("leftEnv", leftEnv.Children.Clone()));
-			if (lhs.Children.Count == 0 || lhs.Children.Count > rhs.Children.Count)
-			{
-				pattern.Children.Add(new Group<PhoneticShapeNode>("target", rhs.Children.Clone()));
-			}
-			else if (lhs.Children.Count == rhs.Children.Count)
-			{
-				IEnumerable<Constraint<PhoneticShapeNode>> lhsConstraints = lhs.Children.OfType<Constraint<PhoneticShapeNode>>();
-				IEnumerable<Constraint<PhoneticShapeNode>> rhsConstraints = rhs.Children.OfType<Constraint<PhoneticShapeNode>>();
-				pattern.Children.Add(new Group<PhoneticShapeNode>("target", lhsConstraints.Zip(rhsConstraints,
-					(lhsNode, rhsNode) =>
-						{
-							var newNode = (Constraint<PhoneticShapeNode>) lhsNode.Clone();
-							newNode.FeatureStruct.AddValues(rhsNode.FeatureStruct);
-							return (PatternNode<PhoneticShapeNode>) newNode;
-						})));
-			}
-			pattern.Children.Add(new Group<PhoneticShapeNode>("rightEnv", rightEnv.Children.Clone()));
-			return pattern;
-		}
-
 		private static bool IsUnapplicationNonvacuous(PatternMatch<PhoneticShapeNode> match, Expression<PhoneticShapeNode> lhs,
 			Expression<PhoneticShapeNode> rhs)
 		{
 			Span<PhoneticShapeNode> target = match["target"];
-			foreach (Tuple<PhoneticShapeNode, PatternNode<PhoneticShapeNode>> tuple in target.Start.GetNodes(target.End).Zip(rhs.Children))
+			if (lhs.Children.Count == 0)
 			{
-				if (lhs.Children.Count == 0)
+				foreach (PhoneticShapeNode node in target.Start.GetNodes(target.End))
 				{
-					if (!tuple.Item1.Annotation.IsOptional)
+					if (!node.Annotation.IsOptional)
 						return true;
 				}
-				else
+			}
+			else
+			{
+				foreach (Tuple<PhoneticShapeNode, PatternNode<PhoneticShapeNode>> tuple in target.Start.GetNodes(target.End).Zip(rhs.Children))
 				{
-					var constraint = tuple.Item2 as Constraint<PhoneticShapeNode>;
-					if (constraint != null && constraint.FeatureStruct.GetValue<SymbolicFeatureValue>("type").Contains("seg"))
+					PhoneticShapeNode node = tuple.Item1;
+					var constraint = (Constraint<PhoneticShapeNode>) tuple.Item2;
+					if (node.Annotation.FeatureStruct.GetValue<SymbolicFeatureValue>("type").Contains("seg"))
 					{
-						if (!tuple.Item1.Annotation.FeatureStruct.IsUnifiable(constraint.FeatureStruct, match.VariableBindings))
+						if (node.Annotation.FeatureStruct.IsUnifiable(constraint.FeatureStruct, match.VariableBindings))
 							return true;
 					}
 				}
 			}
+
 			return false;
 		}
 
@@ -130,7 +137,7 @@ namespace SIL.HermitCrab
 
 		public override bool Apply(IBidirList<Annotation<PhoneticShapeNode>> input)
 		{
-			if (_lhs.Children.Count > _rhs.Children.Count)
+			if (_analysisLhs.Children.Count > _analysisRhs.Children.Count)
 			{
 				int i = 0;
 				while (i <= _delReapplications && base.Apply(input))
@@ -156,31 +163,31 @@ namespace SIL.HermitCrab
 		public override Annotation<PhoneticShapeNode> ApplyRhs(IBidirList<Annotation<PhoneticShapeNode>> input, PatternMatch<PhoneticShapeNode> match)
 		{
 			Span<PhoneticShapeNode> target = match["target"];
-			if (_lhs.Children.Count == _rhs.Children.Count)
+			if (_analysisLhs.Children.Count == _analysisRhs.Children.Count)
 			{
 				PhoneticShapeNode node = target.Start;
-				IEnumerable<Constraint<PhoneticShapeNode>> lhsConstraints = _lhs.Children.OfType<Constraint<PhoneticShapeNode>>();
-				IEnumerable<Constraint<PhoneticShapeNode>> rhsConstraints = _rhs.Children.OfType<Constraint<PhoneticShapeNode>>();
-				foreach (Tuple<Constraint<PhoneticShapeNode>, Constraint<PhoneticShapeNode>> tuple in rhsConstraints.Zip(lhsConstraints))
+				foreach (Tuple<PatternNode<PhoneticShapeNode>, PatternNode<PhoneticShapeNode>> tuple in _analysisLhs.Children.Zip(_analysisRhs.Children))
 				{
-					if (tuple.Item1.FeatureStruct.GetValue<SymbolicFeatureValue>("type").Contains("seg"))
+					if (node.Annotation.FeatureStruct.GetValue<SymbolicFeatureValue>("type").Contains("seg"))
 					{
-						node.Annotation.FeatureStruct.MergeValues(tuple.Item1.FeatureStruct);
-						node.Annotation.FeatureStruct.AddValues(tuple.Item2.FeatureStruct);
+						var lhsConstraint = (Constraint<PhoneticShapeNode>) tuple.Item1;
+						var rhsConstraint = (Constraint<PhoneticShapeNode>) tuple.Item2;
+						node.Annotation.FeatureStruct.Replace(lhsConstraint.FeatureStruct);
 						node.Annotation.FeatureStruct.ReplaceVariables(match.VariableBindings);
+						node.Annotation.FeatureStruct.Subtract(rhsConstraint.FeatureStruct, match.VariableBindings);
 					}
 					node = node.Next;
 				}
 			}
-			else if (_lhs.Children.Count == 0)
+			else if (_analysisLhs.Children.Count == 0)
 			{
 				foreach (PhoneticShapeNode node in target.Start.GetNodes(match.End))
 					node.Annotation.IsOptional = true;
 			}
-			else if (_lhs.Children.Count > _rhs.Children.Count)
+			else if (_analysisLhs.Children.Count > _analysisRhs.Children.Count)
 			{
 				PhoneticShapeNode curNode = target.End;
-				foreach (Constraint<PhoneticShapeNode> constraint in _lhs.Children.OfType<Constraint<PhoneticShapeNode>>())
+				foreach (Constraint<PhoneticShapeNode> constraint in _analysisLhs.Children)
 				{
 					var newNode = new PhoneticShapeNode(_spanFactory, (FeatureStruct) constraint.FeatureStruct.Clone());
 					newNode.Annotation.FeatureStruct.ReplaceVariables(match.VariableBindings);
@@ -189,7 +196,7 @@ namespace SIL.HermitCrab
 					curNode = newNode;
 				}
 
-				if (_rhs.Children.Count > 0)
+				if (_analysisRhs.Children.Count > 0)
 				{
 					foreach (PhoneticShapeNode node in target.Start.GetNodes(match.End))
 						node.Annotation.IsOptional = true;

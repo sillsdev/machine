@@ -61,7 +61,7 @@ namespace SIL.HermitCrab
     	/// <param name="fs"></param>
     	public virtual void AddSegmentDefinition(string strRep, FeatureStruct fs)
         {
-            var segDef = new SegmentDefinition(strRep, this, fs, _phoneticFeatSys.CreateAnalysisFeatureStructure(fs));
+            var segDef = new SegmentDefinition(strRep, this, fs);
             // what do we do about culture?
             _segDefs[strRep.ToLowerInvariant()] = segDef;
         }
@@ -109,18 +109,8 @@ namespace SIL.HermitCrab
 
             foreach (SegmentDefinition segDef in _segDefs.Values)
             {
-                switch (mode)
-                {
-                    case ModeType.Synthesis:
-                        if (segDef.AnalysisFeatureStruct.IsUnifiable(node.Annotation.FeatureStruct))
-                            results.Add(segDef);
-                        break;
-
-                    case ModeType.Analysis:
-                        if (node.Annotation.FeatureStruct.IsUnifiable(segDef.SynthFeatureStruct))
-                            results.Add(segDef);
-                        break;
-                }
+				if (segDef.FeatureStruct.IsUnifiable(node.Annotation.FeatureStruct))
+					results.Add(segDef);
             }
 
             return results;
@@ -172,16 +162,16 @@ namespace SIL.HermitCrab
             SegmentDefinition segDef = GetSegmentDefinition(strRep);
             if (segDef != null)
             {
-				node = new PhoneticShapeNode(_spanFactory, "Segment", mode == ModeType.Synthesis
-					? (FeatureStruct) segDef.SynthFeatureStruct.Clone() : (FeatureStruct) segDef.AnalysisFeatureStruct.Clone());
+				node = new PhoneticShapeNode(_spanFactory, (FeatureStruct) segDef.FeatureStruct.Clone());
             }
             else
             {
                 BoundaryDefinition bdryDef = GetBoundaryDefinition(strRep);
 				if (bdryDef != null)
 				{
-					node = new PhoneticShapeNode(_spanFactory, "Boundary",
-						_phoneticFeatSys.CreateFS(new FV("strRep", bdryDef.StrRep)));
+					node = new PhoneticShapeNode(_spanFactory, FeatureStruct.With(_phoneticFeatSys)
+						.Feature("type").EqualTo("bdry")
+						.Feature("strRep").EqualTo(bdryDef.StrRep).Value);
 				}
             }
             return node;
@@ -203,50 +193,49 @@ namespace SIL.HermitCrab
 				sb.Append("^");
             foreach (PhoneticShapeNode node in shape)
             {
-                switch (node.Annotation.Type)
-                {
-                    case "Segment":
-                        IEnumerable<SegmentDefinition> segDefs = GetMatchingSegmentDefinitions(node, mode);
-                		int numSegDefs = segDefs.Count();
-                        if (numSegDefs > 0)
-                        {
-                            if (numSegDefs > 1)
-                                sb.Append(displayFormat ? "[" : "(");
-                        	int i = 0;
-                            foreach (SegmentDefinition segDef in segDefs)
-                            {
-                                if (segDef.StrRep.Length > 1)
-                                    sb.Append("(");
+            	var type = node.Annotation.FeatureStruct.GetValue<SymbolicFeatureValue>("type");
+				if (type.Contains("seg"))
+				{
+					IEnumerable<SegmentDefinition> segDefs = GetMatchingSegmentDefinitions(node, mode);
+					int numSegDefs = segDefs.Count();
+					if (numSegDefs > 0)
+					{
+						if (numSegDefs > 1)
+							sb.Append(displayFormat ? "[" : "(");
+						int i = 0;
+						foreach (SegmentDefinition segDef in segDefs)
+						{
+							if (segDef.StrRep.Length > 1)
+								sb.Append("(");
 
-                            	sb.Append(displayFormat ? segDef.StrRep : Regex.Escape(segDef.StrRep));
+							sb.Append(displayFormat ? segDef.StrRep : Regex.Escape(segDef.StrRep));
 
-                            	if (segDef.StrRep.Length > 1)
-                                    sb.Append(")");
-                                if (i < numSegDefs - 1 && !displayFormat)
-                                    sb.Append("|");
-                            	i++;
-                            }
-                            if (segDefs.Count() > 1)
-                                sb.Append(displayFormat ? "]" : ")");
+							if (segDef.StrRep.Length > 1)
+								sb.Append(")");
+							if (i < numSegDefs - 1 && !displayFormat)
+								sb.Append("|");
+							i++;
+						}
+						if (segDefs.Count() > 1)
+							sb.Append(displayFormat ? "]" : ")");
 
-                            if (node.Annotation.IsOptional)
-                                sb.Append("?");
-                        }
-                        break;
+						if (node.Annotation.IsOptional)
+							sb.Append("?");
+					}
+				}
+				else
+				{
+					var value = (StringFeatureValue)node.Annotation.FeatureStruct.GetValue("strRep");
+					string strRep = value.Values.First();
+					if (strRep.Length > 1)
+						sb.Append("(");
 
-                    case "Boundary":
-                		var value = (StringFeatureValue) node.Annotation.FeatureStruct.GetValue("strRep");
-                		string strRep = value.Values.First();
-                        if (strRep.Length > 1)
-                            sb.Append("(");
+					sb.Append(displayFormat ? strRep : Regex.Escape(strRep));
 
-                		sb.Append(displayFormat ? strRep : Regex.Escape(strRep));
-
-                		if (strRep.Length > 1)
-                            sb.Append(")");
-                        sb.Append("?");
-                        break;
-                }
+					if (strRep.Length > 1)
+						sb.Append(")");
+					sb.Append("?");
+				}
             }
 			if (!displayFormat)
         		sb.Append("$");
@@ -266,24 +255,20 @@ namespace SIL.HermitCrab
             var sb = new StringBuilder();
             foreach (PhoneticShapeNode node in shape)
             {
-                switch (node.Annotation.Type)
-                {
-                    case "Segment":
-                        IEnumerable<SegmentDefinition> segDefs = GetMatchingSegmentDefinitions(node, mode);
-                		SegmentDefinition segDef = segDefs.FirstOrDefault();
-                        if (segDef != null)
-                            sb.Append(segDef.StrRep);
-                        break;
-
-                    case "Boundary":
-                        if (includeBdry)
-                        {
-							var value = (StringFeatureValue)node.Annotation.FeatureStruct.GetValue("strRep");
-							string strRep = value.Values.First();
-                            sb.Append(strRep);
-                        }
-                        break;
-                }
+				var type = node.Annotation.FeatureStruct.GetValue<SymbolicFeatureValue>("type");
+				if (type.Contains("seg"))
+				{
+					IEnumerable<SegmentDefinition> segDefs = GetMatchingSegmentDefinitions(node, mode);
+					SegmentDefinition segDef = segDefs.FirstOrDefault();
+					if (segDef != null)
+						sb.Append(segDef.StrRep);
+				}
+				else
+				{
+					var value = node.Annotation.FeatureStruct.GetValue<StringFeatureValue>("strRep");
+					string strRep = value.Values.First();
+					sb.Append(strRep);
+				}
             }
             return sb.ToString();
         }
