@@ -3,11 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using SIL.APRE.Fsa;
+using SIL.APRE.Matching.Fluent;
 
 namespace SIL.APRE.Matching
 {
 	public class Expression<TOffset> : PatternNode<TOffset>
 	{
+		public static IExpressionSyntax<TOffset> With
+		{
+			get
+			{
+				return new ExpressionBuilder<TOffset>();
+			}
+		}
+
 		private readonly string _name;
 		private readonly Func<IBidirList<Annotation<TOffset>>, PatternMatch<TOffset>, bool> _acceptable;
 
@@ -109,10 +118,10 @@ namespace SIL.APRE.Matching
 						if (!first)
 							sb.Append('*');
 						sb.Append(expr.Name);
+						first = false;
 					}
 					if (expr.Acceptable != null)
 						acceptables.Add(expr.Acceptable);
-					first = false;
 				}
 				State<TOffset> acceptingState = fsa.CreateAcceptingState(sb.ToString(),
 					(input, match) => acceptables.All(acceptable => acceptable(input, pattern.CreatePatternMatch(match))));

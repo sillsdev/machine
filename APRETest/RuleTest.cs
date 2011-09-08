@@ -35,7 +35,7 @@ namespace SIL.APRE.Test
 			                                  	{
 			                                  		IBidirList<Annotation<int>> target = input.GetView(match["lhs"]);
 			                                  		foreach (Annotation<int> ann in target)
-			                                  			ann.FeatureStruct.AddValues(FeatureStruct.With(featSys).Symbol("low-").Value);
+			                                  			ann.FeatureStruct.Replace(FeatureStruct.With(featSys).Symbol("low-").Value);
 			                                  		return target.GetLast(lhs.Direction);
 			                                  	});
 
@@ -70,7 +70,7 @@ namespace SIL.APRE.Test
 												{
 													IBidirListView<Annotation<int>> target = input.GetView(match["lhs"]);
 													foreach (Annotation<int> ann in target)
-														ann.FeatureStruct.AddValues(FeatureStruct.With(featSys)
+														ann.FeatureStruct.Replace(FeatureStruct.With(featSys)
 															.Symbol("low-")
 															.Symbol("mid-").Value);
 													return target.GetLast(lhs.Direction);
@@ -81,7 +81,7 @@ namespace SIL.APRE.Test
 												{
 													IBidirListView<Annotation<int>> target = input.GetView(match["lhs"]);
 													foreach (Annotation<int> ann in target)
-														ann.FeatureStruct.AddValues(FeatureStruct.With(featSys)
+														ann.FeatureStruct.Replace(FeatureStruct.With(featSys)
 															.Symbol("low-")
 															.Symbol("mid+").Value);
 													return target.GetLast(lhs.Direction);

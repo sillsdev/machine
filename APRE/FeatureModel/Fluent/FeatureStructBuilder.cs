@@ -106,19 +106,16 @@ namespace SIL.APRE.FeatureModel.Fluent
 
 		private bool Add(string string1, IEnumerable<string> strings)
 		{
-			FeatureValue value = null;
 			if (_lastFeature is StringFeature)
 			{
-				value = new StringFeatureValue(strings.Concat(string1), _not);
+				_fs.AddValue(_lastFeature, new StringFeatureValue(strings.Concat(string1), _not));
+				_not = false;
 			}
 			else if (_lastFeature is SymbolicFeature)
 			{
 				if (!AddSymbols(_lastFeature, string1, strings))
 					return false;
 			}
-
-			_fs.AddValue(_lastFeature, value);
-			_not = false;
 			return true;
 		}
 
@@ -129,6 +126,7 @@ namespace SIL.APRE.FeatureModel.Fluent
 				return false;
 			var symbolFeature = (SymbolicFeature) feature;
 			_fs.AddValue(symbolFeature, new SymbolicFeatureValue(_not ? symbolFeature.PossibleSymbols.Except(allSymbols) : allSymbols));
+			_not = false;
 			return true;
 		}
 
@@ -150,14 +148,15 @@ namespace SIL.APRE.FeatureModel.Fluent
 		{
 			if (!AddSymbols(_lastFeature, symbol1, symbols))
 				throw new ArgumentException("All specified symbols must be associated with the same feature.", "symbols");
-			_not = false;
 			return this;
 		}
 
 		IDisjunctiveFeatureStructSyntax IDisjunctiveNegatableFeatureValueSyntax.EqualToVariable(string name)
 		{
-			_fs.AddValue(_lastFeature, new VariableFeatureValue(name, !_not));
-			_not = false;
+			if (_lastFeature is ComplexFeature)
+				throw new ArgumentException("The specified feature cannot be complex.");
+
+			AddVariable(name);
 			return this;
 		}
 
@@ -181,9 +180,22 @@ namespace SIL.APRE.FeatureModel.Fluent
 
 		IFeatureStructSyntax INegatableFeatureValueSyntax.EqualToVariable(string name)
 		{
-			_fs.AddValue(_lastFeature, new VariableFeatureValue(name, !_not));
-			_not = false;
+			if (_lastFeature is ComplexFeature)
+				throw new ArgumentException("The specified feature cannot be complex.");
+
+			AddVariable(name);
 			return this;
+		}
+
+		private void AddVariable(string name)
+		{
+			FeatureValue vfv;
+			if (_lastFeature is StringFeature)
+				vfv = new StringFeatureValue(name, !_not);
+			else
+				vfv = new SymbolicFeatureValue((SymbolicFeature)_lastFeature, name, !_not);
+			_fs.AddValue(_lastFeature, vfv);
+			_not = false;
 		}
 
 		IDisjunctiveNegatableFeatureValueSyntax IDisjunctiveFeatureValueSyntax.Not

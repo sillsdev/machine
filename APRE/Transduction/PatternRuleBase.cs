@@ -47,23 +47,21 @@ namespace SIL.APRE.Transduction
 				}
 				return false;
 			}
-			else
-			{
-				bool applied = false;
-				Annotation<TOffset> first = input.GetFirst(_lhs.Direction, _lhs.Filter);
-				while (first != null)
-				{
-					PatternMatch<TOffset> match;
-					if (_lhs.IsMatch(input.GetView(first, _lhs.Direction), out match))
-					{
-						first = ApplyRhs(input, match);
-						applied = true;
 
-					}
-					first = first.GetNext(_lhs.Direction, (cur, next) => !cur.Span.Overlaps(next.Span) && _lhs.Filter(next));
+			bool applied = false;
+			Annotation<TOffset> first = input.GetFirst(_lhs.Direction, _lhs.Filter);
+			while (first != null)
+			{
+				PatternMatch<TOffset> match;
+				if (_lhs.IsMatch(input.GetView(first, _lhs.Direction), out match))
+				{
+					first = ApplyRhs(input, match);
+					applied = true;
+
 				}
-				return applied;
+				first = first.GetNext(_lhs.Direction, (cur, next) => !cur.Span.Overlaps(next.Span) && _lhs.Filter(next));
 			}
+			return applied;
 		}
 
 		public abstract Annotation<TOffset> ApplyRhs(IBidirList<Annotation<TOffset>> input, PatternMatch<TOffset> match);

@@ -8,7 +8,7 @@ namespace SIL.APRE.Transduction
 		private readonly IPatternRuleAction<TOffset> _rhs;
 
 		public PatternRule(Pattern<TOffset> lhs, Func<Pattern<TOffset>, IBidirList<Annotation<TOffset>>, PatternMatch<TOffset>, Annotation<TOffset>> rhs)
-			: this(lhs, rhs, null)
+			: this(lhs, rhs, ann => true)
 		{
 		}
 
@@ -42,13 +42,11 @@ namespace SIL.APRE.Transduction
 
 		public override bool IsApplicable(IBidirList<Annotation<TOffset>> input)
 		{
-			return _rhs == null || _rhs.IsApplicable(input);
+			return _rhs.IsApplicable(input);
 		}
 
 		public override Annotation<TOffset> ApplyRhs(IBidirList<Annotation<TOffset>> input, PatternMatch<TOffset> match)
 		{
-			if (_rhs == null)
-				return input.GetView(match).GetLast(Lhs.Direction);
 			return _rhs.Apply(Lhs, input, match);
 		}
 	}

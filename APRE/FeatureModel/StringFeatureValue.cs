@@ -6,8 +6,7 @@ namespace SIL.APRE.FeatureModel
 {
 	public class StringFeatureValue : SimpleFeatureValue
 	{
-		private readonly HashSet<string> _values; 
-		private bool _not;
+		private HashSet<string> _values;
 
 		public StringFeatureValue()
 			: this(Enumerable.Empty<string>())
@@ -22,24 +21,25 @@ namespace SIL.APRE.FeatureModel
 		public StringFeatureValue(IEnumerable<string> values, bool not)
 		{
 			_values = new HashSet<string>(values);
-			_not = not;
+			Not = not;
 		}
 
 		public StringFeatureValue(string value)
-			: this(value, false)
-		{
-		}
-
-		public StringFeatureValue(string value, bool not)
 		{
 			_values = new HashSet<string> {value};
-			_not = not;
+		}
+
+		public StringFeatureValue(string varName, bool agree)
+			: base(varName, agree) 
+		{
+			_values = new HashSet<string>();
 		}
 
 		public StringFeatureValue(StringFeatureValue sfv)
+			: base(sfv)
 		{
 			_values = new HashSet<string>(sfv._values);
-			_not = sfv._not;
+			Not = sfv.Not;
 		}
 
 		public IEnumerable<string> Values
@@ -47,106 +47,138 @@ namespace SIL.APRE.FeatureModel
 			get { return _values; }
 		}
 
-		public bool Not
+		public bool Not { get; private set; }
+
+		protected override bool IsSatisfiable
 		{
-			get { return _not; }
+			get { return Not || _values.Count > 0; }
 		}
 
 		public bool Contains(string str)
 		{
-			return _not ? !_values.Contains(str) : _values.Contains(str);
+			return Not ? !_values.Contains(str) : _values.Contains(str);
 		}
 
 		public bool Overlaps(IEnumerable<string> strings)
 		{
-			return _not ? !_values.Overlaps(strings) : _values.Overlaps(strings);
+			return Not ? !_values.Overlaps(strings) : _values.Overlaps(strings);
 		}
 
-		protected override bool Overlaps(FeatureValue other, bool negate)
+		protected override bool Overlaps(bool not, SimpleFeatureValue other, bool notOther)
 		{
 			var otherSfv = other as StringFeatureValue;
 			if (otherSfv == null)
 				return false;
 			
-			bool not = negate ? !otherSfv._not : otherSfv._not;
+			not = not ? !Not : Not;
+			notOther = notOther ? !otherSfv.Not : otherSfv.Not;
 
-			if (!_not && !not)
-			{
+			if (!not && !notOther)
 				return _values.Overlaps(otherSfv._values);
-			}
-			if (!_not && not)
-			{
-				return _values.IsSupersetOf(otherSfv._values);
-			}
-			if (_not && !not)
-			{
-				return _values.IsProperSubsetOf(otherSfv._values);
-			}
+			if (!not)
+				return !_values.IsSubsetOf(otherSfv._values);
+			if (!notOther)
+				return !_values.IsSupersetOf(otherSfv._values);
 
 			return true;
 		}
 
-		protected override void IntersectWith(FeatureValue other, bool negate)
+		protected override void IntersectWith(bool not, SimpleFeatureValue other, bool notOther)
 		{
-			var otherSfv = (StringFeatureValue) other;
-			bool not = negate ? !otherSfv._not : otherSfv._not;
+			var otherSfv = other as StringFeatureValue;
+			if (otherSfv == null)
+				return;
+			
+			not = not ? !Not : Not;
+			notOther = notOther ? !otherSfv.Not : otherSfv.Not;
 
-			if (!_not && !not)
+			if (!not && !notOther)
 			{
-				_not = false;
+				Not = false;
 				_values.IntersectWith(otherSfv._values);
 			}
-			else if (!_not && not)
+			else if (!not)
 			{
-				_not = false;
+				Not = false;
 				_values.ExceptWith(otherSfv._values);
 			}
-			else if (_not && !not)
+			else if (!notOther)
 			{
-				_not = false;
-				string[] newValues = otherSfv._values.Except(_values).ToArray();
-				_values.Clear();
-				_values.UnionWith(newValues);
+				Not = false;
+				_values = new HashSet<string>(otherSfv._values.Except(_values));
 			}
 			else
 			{
-				_not = true;
+				Not = true;
 				_values.UnionWith(otherSfv._values);
 			}
 		}
 
-		protected override void UnionWith(FeatureValue other, bool negate)
+		protected override void UnionWith(bool not, SimpleFeatureValue other, bool notOther)
 		{
-			var otherSfv = (StringFeatureValue) other;
-			bool not = negate ? !otherSfv._not : otherSfv._not;
+			var otherSfv = other as StringFeatureValue;
+			if (otherSfv == null)
+				return;
 
-			if (!_not && !not)
+			not = not ? !Not : Not;
+			notOther = notOther ? !otherSfv.Not : otherSfv.Not;
+
+			if (!not && !notOther)
 			{
-				_not = false;
+				Not = false;
 				_values.UnionWith(otherSfv._values);
 			}
-			else if (!_not && not)
+			else if (!not)
 			{
-				_not = true;
+				Not = true;
 				_values.ExceptWith(otherSfv._values);
 			}
-			else if (_not && !not)
+			else if (!notOther)
 			{
-				_not = true;
-				string[] newValues = otherSfv._values.Except(_values).ToArray();
-				_values.Clear();
-				_values.UnionWith(newValues);
+				Not = true;
+				_values = new HashSet<string>(otherSfv._values.Except(_values));
 			}
 			else
 			{
-				_not = true;
+				Not = true;
 				_values.IntersectWith(otherSfv.Values);
+			}
+		}
+
+		protected override void ExceptWith(bool not, SimpleFeatureValue other, bool notOther)
+		{
+			var otherSfv = other as StringFeatureValue;
+			if (otherSfv == null)
+				return;
+
+			not = not ? !Not : Not;
+			notOther = notOther ? !otherSfv.Not : otherSfv.Not;
+
+			if (!not && !notOther)
+			{
+				Not = false;
+				_values.ExceptWith(otherSfv._values);
+			}
+			else if (!not)
+			{
+				Not = false;
+				_values.IntersectWith(otherSfv._values);
+			}
+			else if (!notOther)
+			{
+				Not = true;
+				_values.UnionWith(otherSfv._values);
+			}
+			else
+			{
+				Not = false;
+				_values = new HashSet<string>(otherSfv._values.Except(_values));
 			}
 		}
 
 		public override bool Negation(out FeatureValue output)
 		{
-			output = new StringFeatureValue(_values, !_not);
+			output = IsVariable ? new StringFeatureValue(VariableName, !Agree) : new StringFeatureValue(_values, !Not);
 			return true;
 		}
 
@@ -162,19 +194,22 @@ namespace SIL.APRE.FeatureModel
 				return false;
 
 			other = Dereference(other);
-			return _values.SetEquals(other._values) && _not == other._not;
+			return _values.SetEquals(other._values) && Not == other.Not;
 		}
 
 		public override int GetHashCode()
 		{
-			return _values.GetHashCode() ^ _not.GetHashCode();
+			return _values.GetHashCode() ^ Not.GetHashCode();
 		}
 
 		public override string ToString()
 		{
+			if (IsVariable)
+				return (Agree ? "+" : "-") + VariableName;
+
 			var sb = new StringBuilder();
 			bool firstValue = true;
-			if (_not)
+			if (Not)
 				sb.Append('!');
 			if (_values.Count == 1)
 			{

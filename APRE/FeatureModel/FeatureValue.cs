@@ -16,7 +16,8 @@ namespace SIL.APRE.FeatureModel
 
 		public abstract bool Negation(out FeatureValue output);
 
-		internal abstract void MergeValues(FeatureValue other, VariableBindings varBindings);
+		internal abstract void Merge(FeatureValue other, VariableBindings varBindings);
+		internal abstract bool Subtract(FeatureValue other, VariableBindings varBindings);
 		internal abstract bool IsDefiniteUnifiable(FeatureValue other, bool useDefaults, VariableBindings varBindings);
 		internal abstract bool DestructiveUnify(FeatureValue other, bool useDefaults, bool preserveInput,
 			IDictionary<FeatureValue, FeatureValue> copies, VariableBindings varBindings);
@@ -44,67 +45,26 @@ namespace SIL.APRE.FeatureModel
 
 			if (fv1 == null && fv2 == null)
 			{
-				if (this is VariableFeatureValue && !(other is VariableFeatureValue))
+				if (!NondestructiveUnify(other, useDefaults, copies, varBindings, out output))
 				{
-					if (!other.NondestructiveUnify(this, useDefaults, copies, varBindings, out output))
-					{
-						output = null;
-						return false;
-					}
-				}
-				else
-				{
-					if (!NondestructiveUnify(other, useDefaults, copies, varBindings, out output))
-					{
-						output = null;
-						return false;
-					}
+					output = null;
+					return false;
 				}
 			}
 			else if (fv1 != null && fv2 != null)
 			{
-				if (fv1 is VariableFeatureValue && !(fv2 is VariableFeatureValue))
-				{
-					fv2.DestructiveUnify(fv1, useDefaults, false, copies, varBindings);
-					output = fv2;
-				}
-				else
-				{
-					fv1.DestructiveUnify(fv2, useDefaults, false, copies, varBindings);
-					output = fv1;
-				}
+				fv1.DestructiveUnify(fv2, useDefaults, false, copies, varBindings);
+				output = fv1;
 			}
 			else if (fv1 != null)
 			{
-				if (fv1 is VariableFeatureValue && !(other is VariableFeatureValue))
-				{
-					if (!other.NondestructiveUnify(fv1, useDefaults, copies, varBindings, out output))
-					{
-						output = null;
-						return false;
-					}
-				}
-				else
-				{
-					fv1.DestructiveUnify(other, useDefaults, true, copies, varBindings);
-					output = fv1;
-				}
+				fv1.DestructiveUnify(other, useDefaults, true, copies, varBindings);
+				output = fv1;
 			}
 			else
 			{
-				if (fv2 is VariableFeatureValue && !(this is VariableFeatureValue))
-				{
-					if (!NondestructiveUnify(fv2, useDefaults, copies, varBindings, out output))
-					{
-						output = null;
-						return false;
-					}
-				}
-				else
-				{
-					fv2.DestructiveUnify(this, useDefaults, true, copies, varBindings);
-					output = fv2;
-				}
+				fv2.DestructiveUnify(this, useDefaults, true, copies, varBindings);
+				output = fv2;
 			}
 
 			return true;

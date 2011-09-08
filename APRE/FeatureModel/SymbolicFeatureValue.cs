@@ -8,7 +8,7 @@ namespace SIL.APRE.FeatureModel
 	public class SymbolicFeatureValue : SimpleFeatureValue
 	{
 		private readonly SymbolicFeature _feature;
-		private readonly IDBearerSet<FeatureSymbol> _values;
+		private IDBearerSet<FeatureSymbol> _values;
 
 		public SymbolicFeatureValue(SymbolicFeature feature)
 		{
@@ -30,7 +30,15 @@ namespace SIL.APRE.FeatureModel
 			_values = new IDBearerSet<FeatureSymbol> {value};
 		}
 
+		public SymbolicFeatureValue(SymbolicFeature feature, string varName, bool agree)
+			: base(varName, agree)
+		{
+			_feature = feature;
+			_values = new IDBearerSet<FeatureSymbol>();
+		}
+
 		public SymbolicFeatureValue(SymbolicFeatureValue sfv)
+			: base(sfv)
 		{
 			_feature = sfv._feature;
 			_values = new IDBearerSet<FeatureSymbol>(sfv._values);
@@ -39,6 +47,11 @@ namespace SIL.APRE.FeatureModel
 		public IEnumerable<FeatureSymbol> Values
 		{
 			get { return _values; }
+		}
+
+		protected override bool IsSatisfiable
+		{
+			get { return _values.Count > 0; }
 		}
 
 		public bool Contains(FeatureSymbol symbol)
@@ -61,42 +74,80 @@ namespace SIL.APRE.FeatureModel
 			return _values.Overlaps(ids);
 		}
 
-		protected override bool Overlaps(FeatureValue other, bool negate)
+		protected override bool Overlaps(bool not, SimpleFeatureValue other, bool notOther)
 		{
 			var otherSfv = other as SymbolicFeatureValue;
 			if (otherSfv == null)
 				return false;
 
-			if (!negate)
+			if (!not && !notOther)
 				return _values.Overlaps(otherSfv._values);
-
-			return _values.IsSupersetOf(otherSfv._values);
+			if (!not)
+				return !_values.IsSubsetOf(otherSfv._values);
+			if (!notOther)
+				return !_values.IsSupersetOf(otherSfv._values);
+			return !_values.IsSupersetOf(_feature.PossibleSymbols.Except(otherSfv._values));
 		}
 
-		protected override void IntersectWith(FeatureValue other, bool negate)
+		protected override void IntersectWith(bool not, SimpleFeatureValue other, bool notOther)
 		{
-			var otherSfv = (SymbolicFeatureValue) other;
-			if (!negate)
+			var otherSfv = other as SymbolicFeatureValue;
+			if (otherSfv == null)
+				return;
+
+			if (!not && !notOther)
 				_values.IntersectWith(otherSfv._values);
-			else
+			else if (!not)
 				_values.ExceptWith(otherSfv._values);
+			else if (!notOther)
+				_values = new IDBearerSet<FeatureSymbol>(otherSfv._values.Except(_values));
+			else
+				_values = new IDBearerSet<FeatureSymbol>(_feature.PossibleSymbols.Except(_values.Union(otherSfv._values)));
 		}
 
-		protected override void UnionWith(FeatureValue other, bool negate)
+		protected override void UnionWith(bool not, SimpleFeatureValue other, bool notOther)
 		{
-			var otherSfv = (SymbolicFeatureValue) other;
+			var otherSfv = other as SymbolicFeatureValue;
+			if (otherSfv == null)
+				return;
 
-			_values.UnionWith(!negate ? otherSfv._values : _feature.PossibleSymbols.Except(otherSfv.Values));
+			if (!not && !notOther)
+				_values.UnionWith(otherSfv._values);
+			else if (!not)
+				_values = new IDBearerSet<FeatureSymbol>(_feature.PossibleSymbols.Except(otherSfv._values.Except(_values)));
+			else if (!notOther)
+				_values = new IDBearerSet<FeatureSymbol>(_feature.PossibleSymbols.Except(_values.Except(otherSfv._values)));
+			else
+				_values = new IDBearerSet<FeatureSymbol>(_feature.PossibleSymbols.Except(_values.Intersect(otherSfv._values)));
+		}
+
+		protected override void ExceptWith(bool not, SimpleFeatureValue other, bool notOther)
+		{
+			var otherSfv = other as SymbolicFeatureValue;
+			if (otherSfv == null)
+				return;
+
+			if (!not && !notOther)
+				_values.ExceptWith(otherSfv._values);
+			else if (!not)
+				_values.IntersectWith(otherSfv._values);
+			else if (!notOther)
+				_values = new IDBearerSet<FeatureSymbol>(_feature.PossibleSymbols.Except(_values.Union(otherSfv._values)));
+			else
+				_values = new IDBearerSet<FeatureSymbol>(otherSfv._values.Except(_values));
 		}
 
 		public override bool Negation(out FeatureValue output)
 		{
-			output = new SymbolicFeatureValue(_feature.PossibleSymbols.Except(_values));
+			output = IsVariable ? new SymbolicFeatureValue(_feature, VariableName, !Agree) : new SymbolicFeatureValue(_feature.PossibleSymbols.Except(_values));
 			return true;
 		}
 
 		public override string ToString()
 		{
+			if (IsVariable)
+				return (Agree ? "+" : "-") + VariableName;
+
 			if (_values.Count == 1)
 				return _values.First().ToString();
 

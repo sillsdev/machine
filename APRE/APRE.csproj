@@ -78,7 +78,6 @@
     <Compile Include="FeatureModel\SymbolicFeature.cs" />
     <Compile Include="FeatureModel\SymbolicFeatureValue.cs" />
     <Compile Include="FeatureModel\VariableBindings.cs" />
-    <Compile Include="FeatureModel\VariableFeatureValue.cs" />
     <Compile Include="Fsa\AcceptInfo.cs" />
     <Compile Include="Fsa\ArcCondition.cs" />
     <Compile Include="Extensions.cs" />
@@ -121,6 +120,7 @@
     <Compile Include="Transduction\IPatternRule.cs" />
     <Compile Include="Transduction\IRule.cs" />
     <Compile Include="Transduction\IPatternRuleAction.cs" />
+    <Compile Include="Transduction\NullPatternRuleAction.cs" />
     <Compile Include="Transduction\PatternRule.cs" />
     <Compile Include="Transduction\PatternRuleBase.cs" />
     <Compile Include="Transduction\PatternRuleBatch.cs" />

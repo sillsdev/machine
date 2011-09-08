@@ -233,7 +233,7 @@ namespace SIL.APRE.Fsa
 			return matchList.Count > 0;
 		}
 
-		private void InitializeStack(Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, IEnumerable<TagMapCommand> cmds,
+		private void InitializeStack(Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, List<TagMapCommand> cmds,
 			Stack<FsaInstance> instStack)
 		{
 			TOffset offset = ann.Span.GetStart(_dir);
@@ -253,7 +253,7 @@ namespace SIL.APRE.Fsa
 
 			for (; ann != null && ann.Span.GetStart(_dir).Equals(offset); ann = ann.GetNext(_dir, _filter))
 			{
-				instStack.Push(new FsaInstance(_startState, ann, (NullableValue<TOffset>[,])registers.Clone(),
+				instStack.Push(new FsaInstance(_startState, ann, (NullableValue<TOffset>[,]) registers.Clone(),
 					new VariableBindings()));
 			}
 		}
@@ -469,24 +469,24 @@ namespace SIL.APRE.Fsa
 			{
 				SubsetState curSubsetState = unmarkedSubsetStates.Dequeue();
 
-				IEnumerable<ArcCondition<TOffset>> conditions = (from state in curSubsetState
-																 from tran in state.NfaState.Arcs
-																 where tran.Condition != null
-																 select tran.Condition).Distinct();
-				if (conditions.Any())
+				ArcCondition<TOffset>[] conditions = (from state in curSubsetState
+													  from tran in state.NfaState.Arcs
+													  where tran.Condition != null
+													  select tran.Condition).Distinct().ToArray();
+				if (conditions.Length > 0)
 				{
-					ComputeArcs(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, conditions,
-						Enumerable.Empty<ArcCondition<TOffset>>(), Enumerable.Empty<ArcCondition<TOffset>>());
+					ComputeArcs(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, conditions, 0,
+						new ArcCondition<TOffset>[0], new ArcCondition<TOffset>[0]);
 				}
 			}
 			_registerCount = _nextTag + registerIndices.Count;
 		}
 
 		private void ComputeArcs(Dictionary<SubsetState, SubsetState> subsetStates, Queue<SubsetState> unmarkedSubsetStates,
-			Dictionary<int, int> registerIndices, SubsetState curSubsetState, IEnumerable<ArcCondition<TOffset>> remaining,
-			IEnumerable<ArcCondition<TOffset>> subset1, IEnumerable<ArcCondition<TOffset>> subset2)
+			Dictionary<int, int> registerIndices, SubsetState curSubsetState, ArcCondition<TOffset>[] conditions, int conditionIndex,
+			ArcCondition<TOffset>[] subset1, ArcCondition<TOffset>[] subset2)
 		{
-			if (!remaining.Any())
+			if (conditionIndex == conditions.Length)
 			{
 				bool satisfiable = true;
 				ArcCondition<TOffset> condition = null;
@@ -602,15 +602,15 @@ namespace SIL.APRE.Fsa
 			}
 			else
 			{
-				ArcCondition<TOffset> condition = remaining.First();
-				ComputeArcs(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, remaining.Skip(1),
-					subset1.Concat(condition), subset2);
-				ComputeArcs(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, remaining.Skip(1),
-					subset1, subset2.Concat(condition));
+				ArcCondition<TOffset> condition = conditions.First();
+				ComputeArcs(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, conditions, conditionIndex + 1,
+					subset1.Concat(condition).ToArray(), subset2);
+				ComputeArcs(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, conditions, conditionIndex + 1,
+					subset1, subset2.Concat(condition).ToArray());
 			}
 		}
 
-		private void ReorderTagIndices(IEnumerable<StateElement> from, IEnumerable<StateElement> to, Dictionary<int, int> registerIndices,
+		private void ReorderTagIndices(SubsetState from, SubsetState to, Dictionary<int, int> registerIndices,
 			List<TagMapCommand> cmds)
 		{
 			var newCmds = new SortedDictionary<int, TagMapCommand>();
@@ -631,7 +631,7 @@ namespace SIL.APRE.Fsa
 			cmds.AddRange(newCmds.Values);
 		}
 
-		private static SubsetState EpsilonClosure(IEnumerable<StateElement> s, IEnumerable<StateElement> prev)
+		private static SubsetState EpsilonClosure(IEnumerable<StateElement> s, SubsetState prev)
 		{
 			var stack = new Stack<StateElement>();
 			var closure = new Dictionary<int, StateElement>();
@@ -806,7 +806,7 @@ namespace SIL.APRE.Fsa
 				foreach (Arc<TOffset> transition in state.Arcs)
 				{
 					writer.WriteLine("  {0} -> {1} [label=\"{2}\"];", state.Index, transition.Target.Index,
-						transition);
+						transition.ToString().Replace("\"", "\\\""));
 					if (!processed.Contains(transition.Target) && !stack.Contains(transition.Target))
 						stack.Push(transition.Target);
 				}

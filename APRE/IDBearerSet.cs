@@ -38,7 +38,7 @@ namespace SIL.APRE
 
 		public void ExceptWith(IEnumerable<T> items)
 		{
-			foreach (T item in this.Where(items.Contains))
+			foreach (T item in this.Where(items.Contains).ToArray())
 				Remove(item);
 		}
 
@@ -143,6 +143,11 @@ namespace SIL.APRE
 		public bool Remove(T item)
 		{
 			return _idBearers.Remove(item.ID);
+		}
+
+		public bool Remove(string id)
+		{
+			return _idBearers.Remove(id);
 		}
 
 		public int Count

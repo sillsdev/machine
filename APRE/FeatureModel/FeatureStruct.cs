@@ -93,7 +93,7 @@ namespace SIL.APRE.FeatureModel
 			throw new ArgumentException("The feature path is invalid.", "path");
 		}
 
-		public void AddValues(FeatureStruct other)
+		public void Replace(FeatureStruct other)
 		{
 			foreach (KeyValuePair<Feature, FeatureValue> featVal in other._definite)
 			{
@@ -104,7 +104,7 @@ namespace SIL.APRE.FeatureModel
 					thisValue = Dereference(thisValue);
 					var thisFS = thisValue as FeatureStruct;
 					if (thisFS != null)
-						thisFS.AddValues((FeatureStruct) otherValue);
+						thisFS.Replace((FeatureStruct) otherValue);
 					else
 						_definite[featVal.Key] = otherValue.Clone();
 				}
@@ -117,7 +117,12 @@ namespace SIL.APRE.FeatureModel
 			// TODO: what do we do about disjunctions?
 		}
 
-		public void MergeValues(FeatureStruct other, VariableBindings varBindings)
+		public void Merge(FeatureStruct other)
+		{
+			Merge(other, new VariableBindings());
+		}
+
+		public void Merge(FeatureStruct other, VariableBindings varBindings)
 		{
 			foreach (KeyValuePair<Feature, FeatureValue> featVal in other._definite)
 			{
@@ -126,7 +131,7 @@ namespace SIL.APRE.FeatureModel
 				if (_definite.TryGetValue(featVal.Key, out thisValue))
 				{
 					thisValue = Dereference(thisValue);
-					thisValue.MergeValues(otherValue, varBindings);
+					thisValue.Merge(otherValue, varBindings);
 				}
 				else
 				{
@@ -137,11 +142,41 @@ namespace SIL.APRE.FeatureModel
 			// TODO: what do we do about disjunctions?
 		}
 
-		internal override void MergeValues(FeatureValue other, VariableBindings varBindings)
+		internal override void Merge(FeatureValue other, VariableBindings varBindings)
 		{
 			FeatureStruct otherFS;
 			if (Dereference(other, out otherFS))
-				MergeValues(otherFS, varBindings);
+				Merge(otherFS, varBindings);
+		}
+
+		public void Subtract(FeatureStruct other)
+		{
+			Subtract(other, new VariableBindings());
+		}
+
+		public void Subtract(FeatureStruct other, VariableBindings varBindings)
+		{
+			foreach (KeyValuePair<Feature, FeatureValue> featVal in other._definite)
+			{
+				FeatureValue otherValue = Dereference(featVal.Value);
+				FeatureValue thisValue;
+				if (_definite.TryGetValue(featVal.Key, out thisValue))
+				{
+					thisValue = Dereference(thisValue);
+					if (!thisValue.Subtract(otherValue, varBindings))
+						_definite.Remove(featVal.Key);
+				}
+			}
+
+			// TODO: what do we do about disjunctions?
+		}
+
+		internal override bool Subtract(FeatureValue other, VariableBindings varBindings)
+		{
+			FeatureStruct otherFS;
+			if (Dereference(other, out otherFS))
+				Subtract(otherFS, varBindings);
+			return _definite.Count > 0;
 		}
 
 		public void AddDisjunction(Disjunction disjunction)
@@ -338,13 +373,13 @@ namespace SIL.APRE.FeatureModel
 			foreach (KeyValuePair<Feature, FeatureValue> featVal in _definite)
 			{
 				FeatureValue value = Dereference(featVal.Value);
-				var vfv = value as VariableFeatureValue;
-				if (vfv != null)
+				var sfv = value as SimpleFeatureValue;
+				if (sfv != null && sfv.IsVariable)
 				{
 					FeatureValue binding;
-					if (varBindings.TryGetValue(vfv.Name, out binding))
+					if (varBindings.TryGetValue(sfv.VariableName, out binding))
 					{
-						if (vfv.Agree)
+						if (sfv.Agree)
 							binding = binding.Clone();
 						else
 							binding.Negation(out binding);
@@ -423,16 +458,8 @@ namespace SIL.APRE.FeatureModel
 				if (_definite.TryGetValue(featVal.Key, out thisValue))
 				{
 					thisValue = Dereference(thisValue);
-					if (thisValue is VariableFeatureValue && !(otherValue is VariableFeatureValue))
-					{
-						if (!otherValue.IsDefiniteUnifiable(thisValue, useDefaults, varBindings))
-							return false;
-					}
-					else
-					{
-						if (!thisValue.IsDefiniteUnifiable(otherValue, useDefaults, varBindings))
-							return false;
-					}
+					if (!thisValue.IsDefiniteUnifiable(otherValue, useDefaults, varBindings))
+						return false;
 				}
 				else if (useDefaults && featVal.Key.DefaultValue != null)
 				{

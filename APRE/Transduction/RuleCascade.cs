@@ -7,22 +7,36 @@ namespace SIL.APRE.Transduction
 	{
 		private readonly Func<IBidirList<Annotation<TOffset>>, bool> _applicable;
 
-		public RuleCascade(IEnumerable<IRule<TOffset>> rules, bool linear)
-			: this(rules, linear, null)
+		public RuleCascade(RuleOrder ruleOrder)
+			: this(ruleOrder, ann => true)
 		{
 		}
 
-		public RuleCascade(IEnumerable<IRule<TOffset>> rules, bool linear, Func<IBidirList<Annotation<TOffset>>, bool> applicable)
-			: base(rules, linear)
+		public RuleCascade(RuleOrder ruleOrder, Func<IBidirList<Annotation<TOffset>>, bool> applicable)
+			: base(ruleOrder)
+		{
+			_applicable = applicable;
+		}
+
+		public RuleCascade(RuleOrder ruleOrder, IEnumerable<IRule<TOffset>> rules)
+			: this(ruleOrder, rules, ann => true)
+		{
+		}
+
+		public RuleCascade(RuleOrder ruleOrder, IEnumerable<IRule<TOffset>> rules, Func<IBidirList<Annotation<TOffset>>, bool> applicable)
+			: base(ruleOrder, rules)
 		{
 			_applicable = applicable;
 		}
 
 		public override bool IsApplicable(IBidirList<Annotation<TOffset>> input)
 		{
-			if (_applicable == null)
-				return true;
 			return _applicable(input);
+		}
+
+		public void AddRule(IRule<TOffset> rule)
+		{
+			AddRuleInternal(rule);
 		}
 	}
 }

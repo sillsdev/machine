@@ -12,25 +12,28 @@ namespace SIL.APRE.Transduction
 			: base(CreatePattern(rules), rules.First().Simultaneous)
 		{
 			_rules = new Dictionary<string, IPatternRule<TOffset>>();
-			int i = 0;
 			foreach (IPatternRule<TOffset> rule in rules)
-				_rules["rule" + i++] = rule;
+				AddRuleInternal(rule);
+		}
+
+		protected PatternRuleBatchBase(Pattern<TOffset> pattern, bool simult)
+			: base(pattern, simult)
+		{
+			_rules = new Dictionary<string, IPatternRule<TOffset>>();
 		}
 
 		private static Pattern<TOffset> CreatePattern(IEnumerable<IPatternRule<TOffset>> rules)
 		{
 			IPatternRule<TOffset> firstRule = rules.First();
-			var pattern = new Pattern<TOffset>(firstRule.Lhs.SpanFactory, firstRule.Lhs.Direction, firstRule.Lhs.Filter);
-			int i = 0;
-			foreach (IPatternRule<TOffset> rule in rules)
-			{
-				IPatternRule<TOffset> localRule = rule;
-				pattern.Children.Add(new Expression<TOffset>("rule" + i,
-					(input, match) => localRule.IsApplicable(input) && (localRule.Lhs.Acceptable == null || localRule.Lhs.Acceptable(input, match)),
-					rule.Lhs.Children.Clone()));
-				i++;
-			}
-			return pattern;
+			return new Pattern<TOffset>(firstRule.Lhs.SpanFactory, firstRule.Lhs.Direction, firstRule.Lhs.Filter);
+		}
+
+		protected void AddRuleInternal(IPatternRule<TOffset> rule)
+		{
+			string id = "rule" + _rules.Count;
+			_rules[id] = rule;
+			Lhs.Children.Add(new Expression<TOffset>(id, (input, match) => rule.IsApplicable(input) && rule.Lhs.Acceptable(input, match),
+				rule.Lhs.Children.Clone()));
 		}
 
 		public override Annotation<TOffset> ApplyRhs(IBidirList<Annotation<TOffset>> input, PatternMatch<TOffset> match)

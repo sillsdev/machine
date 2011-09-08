@@ -9,7 +9,7 @@ namespace SIL.APRE.Transduction
 		private readonly Func<IBidirList<Annotation<TOffset>>, bool> _applicable;
 
 		public DelegatePatternRuleAction(Func<Pattern<TOffset>, IBidirList<Annotation<TOffset>>, PatternMatch<TOffset>, Annotation<TOffset>> action)
-			: this(action, null)
+			: this(action, ann => true)
 		{
 		}
 
@@ -22,9 +22,7 @@ namespace SIL.APRE.Transduction
 
 		public bool IsApplicable(IBidirList<Annotation<TOffset>> input)
 		{
-			if (_applicable != null)
-				return _applicable(input);
-			return true;
+			return _applicable(input);
 		}
 
 		public Annotation<TOffset> Apply(Pattern<TOffset> lhs, IBidirList<Annotation<TOffset>> input, PatternMatch<TOffset> match)

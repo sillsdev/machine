@@ -24,7 +24,7 @@ namespace SIL.APRE.Matching
 
 	public class Pattern<TOffset> : Expression<TOffset>
 	{
-		public static IPatternSyntax<TOffset> With(SpanFactory<TOffset> spanFactory)
+		public new static IPatternSyntax<TOffset> With(SpanFactory<TOffset> spanFactory)
 		{
 			return new PatternBuilder<TOffset>(spanFactory);
 		}
