@@ -31,6 +31,11 @@ namespace SIL.APRE.Transduction
 			get { return _ruleOrder; }
 		}
 
+		public IEnumerable<IRule<TOffset>> Rules
+		{
+			get { return _rules; }
+		}
+
 		public abstract bool IsApplicable(IBidirList<Annotation<TOffset>> input);
 
 		protected void AddRuleInternal(IRule<TOffset> rule)

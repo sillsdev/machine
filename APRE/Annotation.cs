@@ -3,7 +3,7 @@ using SIL.APRE.FeatureModel;
 
 namespace SIL.APRE
 {
-	public class Annotation<TOffset> : SkipListNode<Annotation<TOffset>>, ICloneable, IEquatable<Annotation<TOffset>>
+	public class Annotation<TOffset> : SkipListNode<Annotation<TOffset>>, ICloneable, IEquatable<Annotation<TOffset>>, IComparable<Annotation<TOffset>>, IComparable
 	{
 		private readonly Span<TOffset> _span;
 
@@ -92,6 +92,26 @@ namespace SIL.APRE
 			}
 
 			return _span.Equals(other._span);
+		}
+
+		public int CompareTo(Annotation<TOffset> other)
+		{
+			return CompareTo(other, Direction.LeftToRight);
+		}
+
+		public int CompareTo(Annotation<TOffset> other, Direction dir)
+		{
+			int res = Span.CompareTo(other.Span, dir);
+			if (res != 0)
+				return res;
+
+			res = ListID.CompareTo(other.ListID);
+			return dir == Direction.LeftToRight ? res : -res;
+		}
+
+		int IComparable.CompareTo(object obj)
+		{
+			return CompareTo(obj as Annotation<TOffset>);
 		}
 
 		public override string ToString()

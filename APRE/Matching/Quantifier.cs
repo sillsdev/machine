@@ -71,18 +71,18 @@ namespace SIL.APRE.Matching
 			if (_minOccur == 0 && _maxOccur == 1)
 			{
 				// optional
-				startState.AddArc(new Arc<TOffset>(endState));
+				startState.AddArc(endState);
 			}
 			else if (_minOccur == 0 && _maxOccur == Infinite)
 			{
 				// kleene star
-				startState.AddArc(new Arc<TOffset>(endState));
-				endState.AddArc(new Arc<TOffset>(startState));
+				startState.AddArc(endState);
+				endState.AddArc(startState);
 			}
 			else if (_minOccur == 1 && _maxOccur == Infinite)
 			{
 				// plus
-				endState.AddArc(new Arc<TOffset>(startState));
+				endState.AddArc(startState);
 			}
 			else
 			{
@@ -104,7 +104,7 @@ namespace SIL.APRE.Matching
 
 				if (_maxOccur == Infinite)
 				{
-					endState.AddArc(new Arc<TOffset>(currentState));
+					endState.AddArc(currentState);
 				}
 				else
 				{
@@ -119,7 +119,7 @@ namespace SIL.APRE.Matching
 					}
 				}
 				foreach (State<TOffset> state in startStates)
-					state.AddArc(new Arc<TOffset>(endState));
+					state.AddArc(endState);
 			}
 
 			return endState;

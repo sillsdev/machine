@@ -46,6 +46,8 @@ namespace SIL.APRE
 
 		public static IEnumerable<TNode> GetNodes<TNode>(this IBidirList<TNode> list, Direction dir) where TNode : class, IBidirListNode<TNode>
 		{
+			if (list.Count == 0)
+				return Enumerable.Empty<TNode>();
 			return list.GetFirst(dir).GetNodes(dir);
 		}
 
@@ -191,11 +193,11 @@ namespace SIL.APRE
 		{
 			Annotation<TOffset> startAnn;
 			list.Find(new Annotation<TOffset>(span), Direction.LeftToRight, out startAnn);
-			startAnn = startAnn == null ? list.First : startAnn.Next;
+			startAnn = startAnn == null ? list.First : (startAnn.Next ?? startAnn);
 
 			Annotation<TOffset> endAnn;
 			list.Find(new Annotation<TOffset>(span), Direction.RightToLeft, out endAnn);
-			endAnn = endAnn == null ? list.Last : endAnn.Prev;
+			endAnn = endAnn == null ? list.Last : (endAnn.Prev ?? endAnn);
 
 			return list.GetView(startAnn, endAnn);
 		}

@@ -3,8 +3,7 @@ using SIL.APRE.FeatureModel;
 
 namespace SIL.APRE.Matching.Fluent
 {
-	public class ExpressionBuilder<TOffset> : PatternNodeBuilder<TOffset>, IExpressionSyntax<TOffset>,
-		IQuantifierExpressionSyntax<TOffset>
+	public class ExpressionBuilder<TOffset> : PatternNodeBuilder<TOffset>, IExpressionSyntax<TOffset>, IQuantifierExpressionSyntax<TOffset>
 	{
 		private readonly string _name;
 		private Func<IBidirList<Annotation<TOffset>>, PatternMatch<TOffset>, bool> _acceptable;
@@ -43,6 +42,15 @@ namespace SIL.APRE.Matching.Fluent
 		{
 			AddAnnotation(fs);
 			return this;
+		}
+
+		public IFinalExpressionSyntax<TOffset> RightSideOfInput
+		{
+			get
+			{
+				AddAnchor(AnchorType.RightSide);
+				return this;
+			}
 		}
 
 		public INodesExpressionSyntax<TOffset> Expression(Func<IExpressionSyntax<TOffset>, IExpressionSyntax<TOffset>> build)
@@ -104,6 +112,15 @@ namespace SIL.APRE.Matching.Fluent
 		{
 			_acceptable = acceptable;
 			return this;
+		}
+
+		public INodesExpressionSyntax<TOffset> LeftSideOfInput
+		{
+			get
+			{
+				AddAnchor(AnchorType.LeftSide);
+				return this;
+			}
 		}
 	}
 }

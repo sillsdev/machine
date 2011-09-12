@@ -34,7 +34,7 @@ namespace SIL.APRE.Matching
 			foreach (PatternNode<TOffset> node in Children)
 			{
 				State<TOffset> nodeEndState = node.GenerateNfa(fsa, startState);
-				nodeEndState.AddArc(new Arc<TOffset>(endState));
+				nodeEndState.AddArc(endState);
 			}
 			return endState;
 		}

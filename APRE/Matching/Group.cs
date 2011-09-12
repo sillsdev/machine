@@ -65,10 +65,10 @@ namespace SIL.APRE.Matching
 				return startState;
 
 			if (_name != null)
-				startState = startState.AddArc(fsa.CreateTag(fsa.CreateState(), _name, true));
+				startState = fsa.CreateTag(startState, fsa.CreateState(), _name, true);
 			startState = base.GenerateNfa(fsa, startState);
 			if (_name != null)
-				startState = startState.AddArc(fsa.CreateTag(fsa.CreateState(), _name, false));
+				startState = fsa.CreateTag(startState, fsa.CreateState(), _name, false);
 			return startState;
 		}
 

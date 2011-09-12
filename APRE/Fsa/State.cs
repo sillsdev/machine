@@ -6,7 +6,8 @@ namespace SIL.APRE.Fsa
 	public class State<TOffset>
 	{
 		private readonly int _index;
-		private readonly List<Arc<TOffset>> _arcs;
+		private readonly List<Arc<TOffset>> _outgoingArcs;
+		private readonly List<Arc<TOffset>> _incomingArcs;
 
 		private readonly bool _isAccepting;
 		private readonly List<AcceptInfo<TOffset>> _acceptInfos; 
@@ -16,7 +17,8 @@ namespace SIL.APRE.Fsa
 		{
 			_index = index;
 			_isAccepting = isAccepting;
-			_arcs = new List<Arc<TOffset>>();
+			_outgoingArcs = new List<Arc<TOffset>>();
+			_incomingArcs = new List<Arc<TOffset>>();
 			_acceptInfos = new List<AcceptInfo<TOffset>>();
 		}
 
@@ -49,12 +51,14 @@ namespace SIL.APRE.Fsa
 			}
 		}
 
-		public IEnumerable<Arc<TOffset>> Arcs
+		public IEnumerable<Arc<TOffset>> OutgoingArcs
 		{
-			get
-			{
-				return _arcs;
-			}
+			get { return _outgoingArcs; }
+		}
+
+		public IEnumerable<Arc<TOffset>> IncomingArcs
+		{
+			get { return _incomingArcs; }
 		}
 
 		public IEnumerable<AcceptInfo<TOffset>> AcceptInfos
@@ -70,9 +74,30 @@ namespace SIL.APRE.Fsa
 			}
 		}
 
-		public State<TOffset> AddArc(Arc<TOffset> arc)
+		public State<TOffset> AddArc(State<TOffset> target)
 		{
-			_arcs.Add(arc);
+			return AddArc(new Arc<TOffset>(this, target));
+		}
+
+		public State<TOffset> AddArc(ArcCondition<TOffset> condition, State<TOffset> target)
+		{
+			return AddArc(new Arc<TOffset>(this, condition, target));
+		}
+
+		internal State<TOffset> AddArc(State<TOffset> target, int tag, int priority)
+		{
+			return AddArc(new Arc<TOffset>(this, target, tag, priority));
+		}
+
+		internal State<TOffset> AddArc(ArcCondition<TOffset> condition, State<TOffset> target, IEnumerable<TagMapCommand> cmds)
+		{
+			return AddArc(new Arc<TOffset>(this, condition, target, cmds));
+		}
+
+		private State<TOffset> AddArc(Arc<TOffset> arc)
+		{
+			_outgoingArcs.Add(arc);
+			arc.Target._incomingArcs.Add(arc);
 			return arc.Target;
 		}
 

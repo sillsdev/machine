@@ -105,6 +105,37 @@ namespace SIL.APRE.Matching
 		internal override State<TOffset> GenerateNfa(FiniteStateAutomaton<TOffset> fsa, State<TOffset> startState)
 		{
 			State<TOffset> endState = base.GenerateNfa(fsa, startState);
+
+			HashSet<ArcCondition<TOffset>> startAnchored = null;
+			var startAnchor = Children.GetFirst(fsa.Direction) as Anchor<TOffset>;
+			if (startAnchor != null)
+				startAnchored = new HashSet<ArcCondition<TOffset>>(GetStartAnchoredConditions(startState));
+
+			HashSet<ArcCondition<TOffset>> endAnchored = null;
+			var endAnchor = Children.GetLast(fsa.Direction) as Anchor<TOffset>;
+			if (endAnchor != null)
+				endAnchored = new HashSet<ArcCondition<TOffset>>(GetEndAnchoredConditions(endState));
+
+			if (startAnchored != null)
+			{
+				foreach (ArcCondition<TOffset> cond in startAnchored)
+				{
+					AnchorType a = startAnchor.Type;
+					if (endAnchored != null && endAnchored.Contains(cond))
+						a = a | endAnchor.Type;
+					Pattern.AddAnchor(cond.FeatureStruct, a);
+				}
+			}
+
+			if (endAnchored != null)
+			{
+				foreach (ArcCondition<TOffset> cond in endAnchored)
+				{
+					if (startAnchored == null || !startAnchored.Contains(cond))
+						Pattern.AddAnchor(cond.FeatureStruct, endAnchor.Type);
+				}
+			}
+
 			if (!(Children.GetLast(fsa.Direction) is Expression<TOffset>))
 			{
 				Pattern<TOffset> pattern = Pattern;
@@ -125,9 +156,41 @@ namespace SIL.APRE.Matching
 				}
 				State<TOffset> acceptingState = fsa.CreateAcceptingState(sb.ToString(),
 					(input, match) => acceptables.All(acceptable => acceptable(input, pattern.CreatePatternMatch(match))));
-				endState.AddArc(fsa.CreateTag(acceptingState, pattern.Name, false));
+				fsa.CreateTag(endState, acceptingState, pattern.Name, false);
 			}
 			return startState;
+		}
+
+		private IEnumerable<ArcCondition<TOffset>> GetStartAnchoredConditions(State<TOffset> startState)
+		{
+			foreach (Arc<TOffset> arc in startState.OutgoingArcs)
+			{
+				if (arc.Condition != null)
+				{
+					yield return arc.Condition;
+				}
+				else
+				{
+					foreach (ArcCondition<TOffset> cond in GetStartAnchoredConditions(arc.Target))
+						yield return cond;
+				}
+			}
+		}
+
+		private IEnumerable<ArcCondition<TOffset>> GetEndAnchoredConditions(State<TOffset> endState)
+		{
+			foreach (Arc<TOffset> arc in endState.IncomingArcs)
+			{
+				if (arc.Condition != null)
+				{
+					yield return arc.Condition;
+				}
+				else
+				{
+					foreach (ArcCondition<TOffset> cond in GetEndAnchoredConditions(arc.Source))
+						yield return cond;
+				}
+			}
 		}
 
 		public override PatternNode<TOffset> Clone()

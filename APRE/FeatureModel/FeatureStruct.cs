@@ -93,6 +93,21 @@ namespace SIL.APRE.FeatureModel
 			throw new ArgumentException("The feature path is invalid.", "path");
 		}
 
+		public void RemoveValue(Feature feature)
+		{
+			_definite.Remove(feature);
+		}
+
+		public void RemoveValue(IEnumerable<Feature> path)
+		{
+		    Feature lastFeature;
+			FeatureStruct lastFS;
+			if (FollowPath(path, out lastFeature, out lastFS))
+				lastFS._definite.Remove(lastFeature);
+
+			throw new ArgumentException("The feature path is invalid.", "path");
+		}
+
 		public void Replace(FeatureStruct other)
 		{
 			foreach (KeyValuePair<Feature, FeatureValue> featVal in other._definite)
@@ -320,6 +335,34 @@ namespace SIL.APRE.FeatureModel
 					return Dereference(val, out value);
 			}
 			value = null;
+			return false;
+		}
+
+		public bool ContainsFeature(Feature feature)
+		{
+			return _definite.ContainsKey(feature);
+		}
+
+		public bool ContainsFeature(string featureID)
+		{
+			return _definite.ContainsKey(featureID);
+		}
+
+		public bool ContainsFeature(IEnumerable<Feature> path)
+		{
+			Feature lastFeature;
+			FeatureStruct lastFS;
+			if (FollowPath(path, out lastFeature, out lastFS))
+				return lastFS._definite.ContainsKey(lastFeature);
+			return false;
+		}
+
+		public bool ContainsFeature(IEnumerable<string> path)
+		{
+			string lastID;
+			FeatureStruct lastFS;
+			if (FollowPath(path, out lastID, out lastFS))
+				return lastFS._definite.ContainsKey(lastID);
 			return false;
 		}
 

@@ -66,6 +66,11 @@ namespace SIL.APRE
 			return _idBearerDictionary.ContainsKey(key);
 		}
 
+		public bool ContainsKey(string keyID)
+		{
+			return _idDictionary.ContainsKey(keyID);
+		}
+
 		public void Add(TKey key, TValue value)
 		{
 			_idBearerDictionary.Add(key, value);

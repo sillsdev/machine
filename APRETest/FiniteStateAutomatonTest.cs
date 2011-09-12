@@ -42,9 +42,9 @@ namespace SIL.APRE.Test
 			fsa.ToGraphViz(writer);
 			writer.Close();
 
-			Assert.AreEqual(7, fsa.StartState.Arcs.Count());
-			Assert.IsTrue(fsa.StartState.Arcs.Any(tran => tran.Condition.FeatureStruct.Equals(FeatureStruct.With(featSys).Symbol("pi1+").Symbol("pi2+").Symbol("pi3+").Value)));
-			Assert.IsTrue(fsa.StartState.Arcs.Any(tran => tran.Condition.FeatureStruct.Equals(FeatureStruct.With(featSys).Symbol("pi1+").Symbol("pi2-").Symbol("pi3+").Value)));
+			Assert.AreEqual(7, fsa.StartState.OutgoingArcs.Count());
+			Assert.IsTrue(fsa.StartState.OutgoingArcs.Any(tran => tran.Condition.FeatureStruct.Equals(FeatureStruct.With(featSys).Symbol("pi1+").Symbol("pi2+").Symbol("pi3+").Value)));
+			Assert.IsTrue(fsa.StartState.OutgoingArcs.Any(tran => tran.Condition.FeatureStruct.Equals(FeatureStruct.With(featSys).Symbol("pi1+").Symbol("pi2-").Symbol("pi3+").Value)));
 		}
 
 		//[Test]

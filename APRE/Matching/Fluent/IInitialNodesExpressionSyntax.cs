@@ -9,5 +9,7 @@ namespace SIL.APRE.Matching.Fluent
 		IQuantifierExpressionSyntax<TOffset> Group(Func<IGroupSyntax<TOffset>, IGroupSyntax<TOffset>> build);
 
 		IQuantifierExpressionSyntax<TOffset> Annotation(FeatureStruct fs);
+
+		IFinalExpressionSyntax<TOffset> RightSideOfInput { get; } 
 	}
 }

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using SIL.APRE.FeatureModel;
 using SIL.APRE.Fsa;
 
@@ -11,20 +10,13 @@ namespace SIL.APRE.Matching
     public class Constraint<TOffset> : PatternNode<TOffset>
     {
     	private readonly FeatureStruct _fs;
-    	private readonly IDictionary<string, bool> _variables;
 
         /// <summary>
 		/// Initializes a new instance of the <see cref="Constraint{TOffset}"/> class.
         /// </summary>
-		public Constraint(FeatureStruct fs, IDictionary<string, bool> variables)
-        {
-            _fs = fs;
-			_variables = variables;
-        }
-
 		public Constraint(FeatureStruct fs)
-			: this(fs, null)
 		{
+			_fs = fs;
 		}
 
     	/// <summary>
@@ -34,9 +26,6 @@ namespace SIL.APRE.Matching
     	public Constraint(Constraint<TOffset> constraint)
         {
             _fs = (FeatureStruct) constraint._fs.Clone();
-
-			if (constraint._variables != null)
-				_variables = new Dictionary<string, bool>(constraint._variables);
         }
 
         /// <summary>
@@ -45,16 +34,8 @@ namespace SIL.APRE.Matching
         /// <value>The feature values.</value>
         public FeatureStruct FeatureStruct
         {
-            get
-            {
-                return _fs;
-            }
+            get { return _fs; }
         }
-
-    	public IDictionary<string, bool> Variables
-    	{
-    		get { return _variables; }
-    	}
 
 		protected override bool CanAdd(PatternNode<TOffset> child)
 		{
@@ -64,7 +45,7 @@ namespace SIL.APRE.Matching
     	internal override State<TOffset> GenerateNfa(FiniteStateAutomaton<TOffset> fsa, State<TOffset> startState)
 		{
     		var fs = (FeatureStruct) _fs.Clone();
-    		return startState.AddArc(new Arc<TOffset>(new ArcCondition<TOffset>(fs), fsa.CreateState()));
+    		return startState.AddArc(new ArcCondition<TOffset>(fs), fsa.CreateState());
 		}
 
 		public override PatternNode<TOffset> Clone()

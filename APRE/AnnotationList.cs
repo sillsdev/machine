@@ -66,10 +66,7 @@ namespace SIL.APRE
 				if (x == null)
 					return y == null ? 0 : -1;
 
-				int res = x.Span.CompareTo(y.Span, _dir);
-				if (res != 0)
-					return res;
-				return x.ListID.CompareTo(y.ListID);
+				return x.CompareTo(y, _dir);
 			}
 		}
 	}
