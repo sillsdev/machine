@@ -57,6 +57,12 @@ namespace SIL.HermitCrab
     		get { return _synthesisRule; }
     	}
 
+		public void Compile()
+		{
+			_analysisRule.Compile();
+			_synthesisRule.Compile();
+		}
+
 		public void AddSubrule(Expression<PhoneticShapeNode> rhs, Expression<PhoneticShapeNode> leftEnv,
 			Expression<PhoneticShapeNode> rightEnv, FeatureStruct applicableFS)
 		{
@@ -72,6 +78,12 @@ namespace SIL.HermitCrab
 				: base(RuleOrder.Linear)
 			{
 				_rule = rule;
+			}
+
+			public void Compile()
+			{
+				foreach (AnalysisPhonologicalSubrule subrule in Rules)
+					subrule.Compile();
 			}
 
 			public override bool Apply(IBidirList<Annotation<PhoneticShapeNode>> input)

@@ -31,7 +31,13 @@ namespace SIL.HermitCrab
 			_analysisLhs = new Expression<PhoneticShapeNode>();
 			_analysisRhs = new Expression<PhoneticShapeNode>();
 
-			Lhs.Children.Add(new Group<PhoneticShapeNode>("leftEnv", leftEnv.Children.Clone()));
+
+			if (leftEnv.Children.Count > 0)
+			{
+				if (leftEnv.Children.First is Anchor<PhoneticShapeNode>)
+					Lhs.Children.Add(new Anchor<PhoneticShapeNode>(AnchorType.LeftSide));
+				Lhs.Children.Add(new Group<PhoneticShapeNode>("leftEnv", leftEnv.Children.Where(node => !(node is Anchor<PhoneticShapeNode>)).Clone()));
+			}
 			if (lhs.Children.Count == 0 || lhs.Children.Count > rhs.Children.Count)
 			{
 				Lhs.Children.Add(new Group<PhoneticShapeNode>("target", rhs.Children.Clone()));
@@ -58,7 +64,12 @@ namespace SIL.HermitCrab
 				}
 				Lhs.Children.Add(target);
 			}
-			Lhs.Children.Add(new Group<PhoneticShapeNode>("rightEnv", rightEnv.Children.Clone()));
+			if (rightEnv.Children.Count > 0)
+			{
+				Lhs.Children.Add(new Group<PhoneticShapeNode>("rightEnv", rightEnv.Children.Where(node => !(node is Anchor<PhoneticShapeNode>)).Clone()));
+				if (rightEnv.Children.Last is Anchor<PhoneticShapeNode>)
+					Lhs.Children.Add(new Anchor<PhoneticShapeNode>(AnchorType.RightSide));
+			}
 
 			if (lhs.Children.Count > rhs.Children.Count)
 			{

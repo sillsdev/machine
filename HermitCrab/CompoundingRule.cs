@@ -174,9 +174,9 @@ namespace SIL.HermitCrab
             void UnapplyRHS(PatternMatch match, out PhoneticShape headShape, out PhoneticShape nonHeadShape)
             {
                 headShape = new PhoneticShape();
-                headShape.Add(new Margin(Direction.LEFT));
+                headShape.Add(new Anchor<>(Direction.LEFT));
                 nonHeadShape = new PhoneticShape();
-                nonHeadShape.Add(new Margin(Direction.LEFT));
+                nonHeadShape.Add(new Anchor<>(Direction.LEFT));
                 // iterate thru LHS partitions, copying the matching partition from the
                 // input to the output
                 for (int i = 0; i < m_transform.PartitionCount; i++)
@@ -184,8 +184,8 @@ namespace SIL.HermitCrab
                     PhoneticShape curShape = i < m_firstNonHeadPartition ? headShape : nonHeadShape;
                     m_transform.Unapply(match, i, curShape);
                 }
-                headShape.Add(new Margin(Direction.RIGHT));
-                nonHeadShape.Add(new Margin(Direction.RIGHT));
+                headShape.Add(new Anchor<>(Direction.RIGHT));
+                nonHeadShape.Add(new Anchor<>(Direction.RIGHT));
             }
 
             /// <summary>
@@ -224,7 +224,7 @@ namespace SIL.HermitCrab
             {
                 output.Shape.Clear();
                 output.Morphs.Clear();
-                output.Shape.Add(new Margin(Direction.LEFT));
+                output.Shape.Add(new Anchor<>(Direction.LEFT));
                 foreach (MorphologicalOutput outputMember in m_transform.RHS)
                 {
                     PatternMatch curMatch;
@@ -241,7 +241,7 @@ namespace SIL.HermitCrab
                     }
                     outputMember.Apply(curMatch, curInput, output, m_morpheme.Gloss != null ? this : null);
                 }
-                output.Shape.Add(new Margin(Direction.RIGHT));
+                output.Shape.Add(new Anchor<>(Direction.RIGHT));
             }
         }
 

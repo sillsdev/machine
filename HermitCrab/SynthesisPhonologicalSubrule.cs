@@ -29,9 +29,19 @@ namespace SIL.HermitCrab
 			Expression<PhoneticShapeNode> leftEnv, Expression<PhoneticShapeNode> rightEnv, Direction dir)
 		{
 			var pattern = new Pattern<PhoneticShapeNode>(spanFactory, dir);
-			pattern.Children.Add(new Group<PhoneticShapeNode>("leftEnv", leftEnv.Children.Clone()));
+			if (leftEnv.Children.Count > 0)
+			{
+				if (leftEnv.Children.First is Anchor<PhoneticShapeNode>)
+					pattern.Children.Add(new Anchor<PhoneticShapeNode>(AnchorType.LeftSide));
+				pattern.Children.Add(new Group<PhoneticShapeNode>("leftEnv", leftEnv.Children.Where(node => !(node is Anchor<PhoneticShapeNode>)).Clone()));
+			}
 			pattern.Children.Add(new Group<PhoneticShapeNode>("target", lhs.Children.Clone()));
-			pattern.Children.Add(new Group<PhoneticShapeNode>("rightEnv", rightEnv.Children.Clone()));
+			if (rightEnv.Children.Count > 0)
+			{
+				pattern.Children.Add(new Group<PhoneticShapeNode>("rightEnv", rightEnv.Children.Where(node => !(node is Anchor<PhoneticShapeNode>)).Clone()));
+				if (rightEnv.Children.Last is Anchor<PhoneticShapeNode>)
+					pattern.Children.Add(new Anchor<PhoneticShapeNode>(AnchorType.RightSide));
+			}
 			return pattern;
 		}
 

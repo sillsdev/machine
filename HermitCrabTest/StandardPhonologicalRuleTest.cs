@@ -67,7 +67,8 @@ namespace HermitCrabTest
 					.Symbol("velar"))
 				.SymbolicFeature("type", type => type
 					.Symbol("seg", "Segment")
-					.Symbol("bdry", "Boundary")).Value;
+					.Symbol("bdry", "Boundary"))
+				.StringFeature("strRep").Value;
 
 			_table1 = new CharacterDefinitionTable("table1", "table1", _spanFactory, _phoneticFeatSys);
 			AddSegDef(_table1, "a", "cons-", "voc+", "high-", "low+", "back+", "round-", "vd+");
@@ -265,12 +266,180 @@ namespace HermitCrabTest
 			var rhs = Expression<PhoneticShapeNode>.With
 				.Annotation(FeatureStruct.With(_phoneticFeatSys).Symbol("vd-").Symbol("asp-").Symbol("seg").Value).Value;
 			var leftEnv = new Expression<PhoneticShapeNode>();
-			var rightEnv = new Expression<PhoneticShapeNode>();
+			var rightEnv = Expression<PhoneticShapeNode>.With.RightSideOfInput.Value;
 			rule.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			PhoneticShape shape = _table1.ToPhoneticShape("gap", ModeType.Analysis);
 			Assert.IsTrue(rule.AnalysisRule.Apply(shape.Annotations));
 			Assert.AreEqual("ga[p(pH)b]", _table1.ToRegexString(shape, ModeType.Analysis, true));
+
+			shape = _table3.ToPhoneticShape("ga'p", ModeType.Synthesis);
+			Assert.IsTrue(rule.SynthesisRule.Apply(shape.Annotations));
+			Assert.AreEqual("gap", _table1.ToString(shape, ModeType.Synthesis, false));
+
+			shape = _table3.ToPhoneticShape("gab", ModeType.Synthesis);
+			Assert.IsTrue(rule.SynthesisRule.Apply(shape.Annotations));
+			Assert.AreEqual("gap", _table1.ToString(shape, ModeType.Synthesis, false));
+
+			shape = _table3.ToPhoneticShape("ga+b", ModeType.Synthesis);
+			Assert.IsTrue(rule.SynthesisRule.Apply(shape.Annotations));
+			Assert.AreEqual("gap", _table1.ToString(shape, ModeType.Synthesis, false));
+
+			rule = new PhonologicalRule("rule", "rule", _spanFactory, 1, Direction.LeftToRight, false, lhs);
+			rightEnv = Expression<PhoneticShapeNode>.With
+				.Annotation(FeatureStruct.With(_phoneticFeatSys).Symbol("cons-").Symbol("voc+").Value)
+				.Annotation(FeatureStruct.With(_phoneticFeatSys).Symbol("cons+").Symbol("voc-").Value)
+				.RightSideOfInput.Value;
+			rule.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+
+			shape = _table1.ToPhoneticShape("kab", ModeType.Analysis);
+			Assert.IsTrue(rule.AnalysisRule.Apply(shape.Annotations));
+			Assert.AreEqual("[k(kH)g]ab", _table1.ToRegexString(shape, ModeType.Analysis, true));
+
+			shape = _table3.ToPhoneticShape("gab", ModeType.Synthesis);
+			Assert.IsTrue(rule.SynthesisRule.Apply(shape.Annotations));
+			Assert.AreEqual("kab", _table1.ToString(shape, ModeType.Synthesis, false));
+
+			shape = _table3.ToPhoneticShape("ga+b", ModeType.Synthesis);
+			Assert.IsTrue(rule.SynthesisRule.Apply(shape.Annotations));
+			Assert.AreEqual("kab", _table1.ToString(shape, ModeType.Synthesis, false));
+
+			rule = new PhonologicalRule("rule", "rule", _spanFactory, 1, Direction.LeftToRight, false, lhs);
+			leftEnv = Expression<PhoneticShapeNode>.With.LeftSideOfInput.Value;
+			rightEnv = new Expression<PhoneticShapeNode>();
+			rule.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+
+			shape = _table1.ToPhoneticShape("kab", ModeType.Analysis);
+			Assert.IsTrue(rule.AnalysisRule.Apply(shape.Annotations));
+			Assert.AreEqual("[k(kH)g]ab", _table1.ToRegexString(shape, ModeType.Analysis, true));
+
+			shape = _table3.ToPhoneticShape("gab", ModeType.Synthesis);
+			Assert.IsTrue(rule.SynthesisRule.Apply(shape.Annotations));
+			Assert.AreEqual("kab", _table1.ToString(shape, ModeType.Synthesis, false));
+
+			shape = _table3.ToPhoneticShape("ga+b", ModeType.Synthesis);
+			Assert.IsTrue(rule.SynthesisRule.Apply(shape.Annotations));
+			Assert.AreEqual("kab", _table1.ToString(shape, ModeType.Synthesis, false));
+
+			rule = new PhonologicalRule("rule", "rule", _spanFactory, 1, Direction.LeftToRight, false, lhs);
+			leftEnv = Expression<PhoneticShapeNode>.With
+				.LeftSideOfInput
+				.Annotation(FeatureStruct.With(_phoneticFeatSys).Symbol("cons+").Symbol("voc-").Value)
+				.Annotation(FeatureStruct.With(_phoneticFeatSys).Symbol("cons-").Symbol("voc+").Value).Value;
+			rule.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+
+			shape = _table1.ToPhoneticShape("gap", ModeType.Analysis);
+			Assert.IsTrue(rule.AnalysisRule.Apply(shape.Annotations));
+			Assert.AreEqual("ga[p(pH)b]", _table1.ToRegexString(shape, ModeType.Analysis, true));
+
+			shape = _table3.ToPhoneticShape("ga'p", ModeType.Synthesis);
+			Assert.IsTrue(rule.SynthesisRule.Apply(shape.Annotations));
+			Assert.AreEqual("gap", _table1.ToString(shape, ModeType.Synthesis, false));
+
+			shape = _table3.ToPhoneticShape("gab", ModeType.Synthesis);
+			Assert.IsTrue(rule.SynthesisRule.Apply(shape.Annotations));
+			Assert.AreEqual("gap", _table1.ToString(shape, ModeType.Synthesis, false));
+
+			shape = _table3.ToPhoneticShape("ga+b", ModeType.Synthesis);
+			Assert.IsTrue(rule.SynthesisRule.Apply(shape.Annotations));
+			Assert.AreEqual("gap", _table1.ToString(shape, ModeType.Synthesis, false));
+		}
+
+		[Test]
+		public void TestQuantifierRules()
+		{
+			var lhs = Expression<PhoneticShapeNode>.With
+				.Annotation(FeatureStruct.With(_phoneticFeatSys).Symbol("cons-").Symbol("voc+").Symbol("high+").Symbol("seg").Value).Value;
+			var rule1 = new PhonologicalRule("rule1", "rule1", _spanFactory, 1, Direction.LeftToRight, false, lhs);
+			var rhs = Expression<PhoneticShapeNode>.With
+				.Annotation(FeatureStruct.With(_phoneticFeatSys).Symbol("back+").Symbol("round+").Symbol("seg").Value).Value;
+			var leftEnv = new Expression<PhoneticShapeNode>();
+			var rightEnv = Expression<PhoneticShapeNode>.With
+				.Group(g => g
+	            	.Annotation(FeatureStruct.With(_phoneticFeatSys).Symbol("cons+").Symbol("seg").Value)
+	            	.Annotation(FeatureStruct.With(_phoneticFeatSys).Symbol("cons-").Symbol("voc+").Symbol("low+").Symbol("seg").Value)).Range(1, 2)
+				.Annotation(FeatureStruct.With(_phoneticFeatSys).Symbol("cons+").Symbol("seg").Value)
+				.Annotation(FeatureStruct.With(_phoneticFeatSys).Symbol("cons-").Symbol("voc+").Symbol("round+").Symbol("seg").Value).Value;
+			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+
+			var rule2 = new PhonologicalRule("rule2", "rule2", _spanFactory, 1, Direction.LeftToRight, false, lhs);
+			leftEnv = Expression<PhoneticShapeNode>.With
+				.Annotation(FeatureStruct.With(_phoneticFeatSys).Symbol("cons-").Symbol("voc+").Symbol("round+").Symbol("seg").Value)
+				.Group(g => g
+					.Annotation(FeatureStruct.With(_phoneticFeatSys).Symbol("cons+").Symbol("seg").Value)
+					.Annotation(FeatureStruct.With(_phoneticFeatSys).Symbol("cons-").Symbol("voc+").Symbol("low+").Symbol("seg").Value)).Range(1, 2)
+				.Annotation(FeatureStruct.With(_phoneticFeatSys).Symbol("cons+").Symbol("seg").Value).Value;
+			rightEnv = new Expression<PhoneticShapeNode>();
+			rule2.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+
+			PhoneticShape shape = _table1.ToPhoneticShape("bubu", ModeType.Analysis);
+			Assert.IsFalse(rule2.AnalysisRule.Apply(shape.Annotations));
+			Assert.IsFalse(rule1.AnalysisRule.Apply(shape.Annotations));
+			Assert.AreEqual("bubu", _table1.ToRegexString(shape, ModeType.Analysis, true));
+
+			shape = _table3.ToPhoneticShape("b+ubu", ModeType.Synthesis);
+			Assert.IsFalse(rule1.SynthesisRule.Apply(shape.Annotations));
+			Assert.IsFalse(rule2.SynthesisRule.Apply(shape.Annotations));
+			Assert.AreEqual("bubu", _table1.ToString(shape, ModeType.Synthesis, false));
+
+			shape = _table1.ToPhoneticShape("bubabu", ModeType.Analysis);
+			Assert.IsTrue(rule2.AnalysisRule.Apply(shape.Annotations));
+			Assert.IsTrue(rule1.AnalysisRule.Apply(shape.Annotations));
+			Assert.AreEqual("b[iu(uû)ü]bab[iu(uû)ü]", _table1.ToRegexString(shape, ModeType.Analysis, true));
+
+			shape = _table1.ToPhoneticShape("bubabu", ModeType.Synthesis);
+			Assert.IsTrue(rule1.SynthesisRule.Apply(shape.Annotations));
+			Assert.IsTrue(rule2.SynthesisRule.Apply(shape.Annotations));
+			Assert.AreEqual("bubabu", _table1.ToString(shape, ModeType.Synthesis, false));
+
+			shape = _table1.ToPhoneticShape("bubabi", ModeType.Synthesis);
+			Assert.IsFalse(rule1.SynthesisRule.Apply(shape.Annotations));
+			Assert.IsTrue(rule2.SynthesisRule.Apply(shape.Annotations));
+			Assert.AreEqual("bubabu", _table1.ToString(shape, ModeType.Synthesis, false));
+
+			shape = _table1.ToPhoneticShape("bübabu", ModeType.Synthesis);
+			Assert.IsTrue(rule1.SynthesisRule.Apply(shape.Annotations));
+			Assert.IsTrue(rule2.SynthesisRule.Apply(shape.Annotations));
+			Assert.AreEqual("bubabu", _table1.ToString(shape, ModeType.Synthesis, false));
+
+			shape = _table1.ToPhoneticShape("bibabi", ModeType.Synthesis);
+			Assert.IsFalse(rule1.SynthesisRule.Apply(shape.Annotations));
+			Assert.IsFalse(rule2.SynthesisRule.Apply(shape.Annotations));
+			Assert.AreEqual("bibabi", _table1.ToString(shape, ModeType.Synthesis, false));
+
+			shape = _table1.ToPhoneticShape("bubababu", ModeType.Analysis);
+			Assert.IsTrue(rule2.AnalysisRule.Apply(shape.Annotations));
+			Assert.IsTrue(rule1.AnalysisRule.Apply(shape.Annotations));
+			Assert.AreEqual("b[iu(uû)ü]babab[iu(uû)ü]", _table1.ToRegexString(shape, ModeType.Analysis, true));
+
+			shape = _table1.ToPhoneticShape("bubababi", ModeType.Synthesis);
+			Assert.IsFalse(rule1.SynthesisRule.Apply(shape.Annotations));
+			Assert.IsTrue(rule2.SynthesisRule.Apply(shape.Annotations));
+			Assert.AreEqual("bubababu", _table1.ToString(shape, ModeType.Synthesis, false));
+
+			shape = _table1.ToPhoneticShape("bibababu", ModeType.Synthesis);
+			Assert.IsTrue(rule1.SynthesisRule.Apply(shape.Annotations));
+			Assert.IsTrue(rule2.SynthesisRule.Apply(shape.Annotations));
+			Assert.AreEqual("bubababu", _table1.ToString(shape, ModeType.Synthesis, false));
+
+			shape = _table1.ToPhoneticShape("bubabababu", ModeType.Analysis);
+			Assert.IsFalse(rule2.AnalysisRule.Apply(shape.Annotations));
+			Assert.IsFalse(rule1.AnalysisRule.Apply(shape.Annotations));
+			Assert.AreEqual("bubabababu", _table1.ToRegexString(shape, ModeType.Analysis, true));
+
+			rule1 = new PhonologicalRule("rule1", "rule1", _spanFactory, 1, Direction.LeftToRight, false, lhs);
+			leftEnv = Expression<PhoneticShapeNode>.With
+				.Annotation(FeatureStruct.With(_phoneticFeatSys).Symbol("cons-").Symbol("voc+").Symbol("back+").Symbol("round+").Symbol("seg").Value)
+				.Annotation(FeatureStruct.With(_phoneticFeatSys).Symbol("cons-").Symbol("voc+").Symbol("high+").Symbol("seg").Value).Range(0, 2).Value;
+			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+
+			shape = _table1.ToPhoneticShape("buuubuuu", ModeType.Analysis);
+			Assert.IsTrue(rule1.AnalysisRule.Apply(shape.Annotations));
+			Assert.AreEqual("bu[iu(uû)ü][iu(uû)ü]bu[iu(uû)ü][iu(uû)ü]", _table1.ToRegexString(shape, ModeType.Analysis, true));
+
+			shape = _table1.ToPhoneticShape("buiibuii", ModeType.Synthesis);
+			Assert.IsTrue(rule1.SynthesisRule.Apply(shape.Annotations));
+			Assert.AreEqual("buuubuuu", _table1.ToString(shape, ModeType.Synthesis, false));
 		}
 	}
 }

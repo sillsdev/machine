@@ -133,7 +133,7 @@ namespace SIL.HermitCrab
                 for (int j = str.Length - i; j > 0; j--)
                 {
                     string s = str.Substring(i, j);
-                    PhoneticShapeNode node = GetPhoneticShapeNode(s, mode);
+                    PhoneticShapeNode node = GetPhoneticShapeNode(s);
                     if (node != null)
                     {
                         try
@@ -156,7 +156,7 @@ namespace SIL.HermitCrab
             return ps;
         }
 
-        private PhoneticShapeNode GetPhoneticShapeNode(string strRep, ModeType mode)
+        private PhoneticShapeNode GetPhoneticShapeNode(string strRep)
         {
             PhoneticShapeNode node = null;
             SegmentDefinition segDef = GetSegmentDefinition(strRep);
@@ -172,6 +172,7 @@ namespace SIL.HermitCrab
 					node = new PhoneticShapeNode(_spanFactory, FeatureStruct.With(_phoneticFeatSys)
 						.Feature("type").EqualTo("bdry")
 						.Feature("strRep").EqualTo(bdryDef.StrRep).Value);
+					node.Annotation.IsOptional = true;
 				}
             }
             return node;
@@ -196,8 +197,8 @@ namespace SIL.HermitCrab
             	var type = node.Annotation.FeatureStruct.GetValue<SymbolicFeatureValue>("type");
 				if (type.Contains("seg"))
 				{
-					IEnumerable<SegmentDefinition> segDefs = GetMatchingSegmentDefinitions(node, mode);
-					int numSegDefs = segDefs.Count();
+					SegmentDefinition[] segDefs = GetMatchingSegmentDefinitions(node, mode).ToArray();
+					int numSegDefs = segDefs.Length;
 					if (numSegDefs > 0)
 					{
 						if (numSegDefs > 1)
@@ -216,7 +217,7 @@ namespace SIL.HermitCrab
 								sb.Append("|");
 							i++;
 						}
-						if (segDefs.Count() > 1)
+						if (segDefs.Length > 1)
 							sb.Append(displayFormat ? "]" : ")");
 
 						if (node.Annotation.IsOptional)
@@ -225,7 +226,7 @@ namespace SIL.HermitCrab
 				}
 				else
 				{
-					var value = (StringFeatureValue)node.Annotation.FeatureStruct.GetValue("strRep");
+					var value = node.Annotation.FeatureStruct.GetValue<StringFeatureValue>("strRep");
 					string strRep = value.Values.First();
 					if (strRep.Length > 1)
 						sb.Append("(");
@@ -263,7 +264,7 @@ namespace SIL.HermitCrab
 					if (segDef != null)
 						sb.Append(segDef.StrRep);
 				}
-				else
+				else if (includeBdry)
 				{
 					var value = node.Annotation.FeatureStruct.GetValue<StringFeatureValue>("strRep");
 					string strRep = value.Values.First();
