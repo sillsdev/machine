@@ -23,14 +23,6 @@ namespace SIL.APRE.Matching
 		Synthesis
 	}
 
-	[Flags]
-	public enum AnchorType
-	{
-		None = 0x0,
-		LeftSide = 0x1,
-		RightSide = 0x2
-	}
-
 	public class Pattern<TOffset> : Expression<TOffset>
 	{
 		public new static IPatternSyntax<TOffset> With(SpanFactory<TOffset> spanFactory)
@@ -171,6 +163,7 @@ namespace SIL.APRE.Matching
 			_fsa = new FiniteStateAutomaton<TOffset>(_dir, _filter);
 			State<TOffset> startState = _fsa.CreateTag(_fsa.StartState, _fsa.CreateState(), Name, true);
 			GenerateNfa(_fsa, startState);
+			_fsa.MarkPriorities();
 
 			var writer = new StreamWriter(string.Format("c:\\{0}-nfa.dot", _dir == Direction.LeftToRight ? "ltor" : "rtol"));
 			_fsa.ToGraphViz(writer);

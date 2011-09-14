@@ -1,4 +1,5 @@
-﻿using SIL.APRE.FeatureModel;
+﻿using System.Collections.Generic;
+using SIL.APRE.FeatureModel;
 
 namespace SIL.APRE.Fsa
 {
@@ -40,7 +41,7 @@ namespace SIL.APRE.Fsa
 		public bool Conjunction(ArcCondition<TOffset> cond, out ArcCondition<TOffset> output)
 		{
 			FeatureStruct fs;
-			if (!cond._fs.Unify(_fs, out fs))
+			if (!cond._fs.Unify(_fs, false, new VariableBindings(), false, out fs))
 			{
 				output = null;
 				return false;

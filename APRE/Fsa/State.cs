@@ -76,7 +76,12 @@ namespace SIL.APRE.Fsa
 
 		public State<TOffset> AddArc(State<TOffset> target)
 		{
-			return AddArc(new Arc<TOffset>(this, target));
+			return AddArc(target, PriorityType.Normal);
+		}
+
+		public State<TOffset> AddArc(State<TOffset> target, PriorityType priorityType)
+		{
+			return AddArc(new Arc<TOffset>(this, target, priorityType));
 		}
 
 		public State<TOffset> AddArc(ArcCondition<TOffset> condition, State<TOffset> target)
@@ -84,9 +89,9 @@ namespace SIL.APRE.Fsa
 			return AddArc(new Arc<TOffset>(this, condition, target));
 		}
 
-		internal State<TOffset> AddArc(State<TOffset> target, int tag, int priority)
+		internal State<TOffset> AddArc(State<TOffset> target, int tag)
 		{
-			return AddArc(new Arc<TOffset>(this, target, tag, priority));
+			return AddArc(new Arc<TOffset>(this, target, tag));
 		}
 
 		internal State<TOffset> AddArc(ArcCondition<TOffset> condition, State<TOffset> target, IEnumerable<TagMapCommand> cmds)

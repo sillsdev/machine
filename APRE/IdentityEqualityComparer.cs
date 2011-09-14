@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace SIL.APRE
 {
@@ -11,7 +12,7 @@ namespace SIL.APRE
 
 		public int GetHashCode(T obj)
 		{
-			return obj.GetHashCode();
+			return RuntimeHelpers.GetHashCode(obj);
 		}
 	}
 }

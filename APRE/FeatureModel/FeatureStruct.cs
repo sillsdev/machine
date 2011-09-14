@@ -472,10 +472,14 @@ namespace SIL.APRE.FeatureModel
 		/// </returns>
 		public bool IsUnifiable(FeatureValue other, bool useDefaults, VariableBindings varBindings)
 		{
-			if (!_indefinite.Any())
+			FeatureStruct otherFS;
+			if (!Dereference(other, out otherFS))
+				return false;
+
+			if (_indefinite.Count == 0 && otherFS._indefinite.Count == 0)
 			{
 				VariableBindings definiteVarBindings = varBindings == null ? new VariableBindings() : varBindings.Clone();
-				if (IsDefiniteUnifiable(other, useDefaults, definiteVarBindings))
+				if (IsDefiniteUnifiable(otherFS, useDefaults, definiteVarBindings))
 				{
 					if (varBindings != null)
 						varBindings.Replace(definiteVarBindings);
@@ -530,6 +534,11 @@ namespace SIL.APRE.FeatureModel
 
 		public bool Unify(FeatureValue other, bool useDefaults, VariableBindings varBindings, out FeatureStruct output)
 		{
+			return Unify(other, useDefaults, varBindings, true, out output);
+		}
+
+		public bool Unify(FeatureValue other, bool useDefaults, VariableBindings varBindings, bool checkDisjunctiveConsistency, out FeatureStruct output)
+		{
 			FeatureStruct otherFS;
 			if (!Dereference(other, out otherFS))
 			{
@@ -546,7 +555,7 @@ namespace SIL.APRE.FeatureModel
 			}
 
 			var newFS = (FeatureStruct) newFV;
-			if (newFS.NumDisjunctions > 0)
+			if (newFS._indefinite.Count > 0)
 			{
 				if (!CheckIndefinite(newFS, newFS, useDefaults, tempVarBindings, out newFS))
 				{
@@ -554,16 +563,24 @@ namespace SIL.APRE.FeatureModel
 					return false;
 				}
 
-				if (newFS.NumDisjunctions > 0)
-				{
-					for (int n = 1; n < newFS.NumDisjunctions; n++)
-						NWiseConsistency(newFS, n, useDefaults, tempVarBindings, out newFS);
-				}
+				if (checkDisjunctiveConsistency)
+					newFS.CheckDisjunctiveConsistency(useDefaults, tempVarBindings, out newFS);
 			}
 
 			if (varBindings != null)
 				varBindings.Replace(tempVarBindings);
 			output = newFS;
+			return true;
+		}
+
+		public bool CheckDisjunctiveConsistency(bool useDefaults, VariableBindings varBindings, out FeatureStruct output)
+		{
+			output = this;
+			if (_indefinite.Count > 0)
+			{
+				for (int n = 1; n < output._indefinite.Count; n++)
+					NWiseConsistency(output, n, useDefaults, varBindings, out output);
+			}
 			return true;
 		}
 
@@ -675,8 +692,8 @@ namespace SIL.APRE.FeatureModel
 
 		private static void CopyDisjunctions(FeatureStruct src, FeatureStruct dest, IDictionary<FeatureValue, FeatureValue> copies)
 		{
-			foreach (Disjunction disjunction in src.Disjunctions)
-				dest.AddDisjunction(disjunction.Clone(copies));
+			foreach (Disjunction disjunction in src._indefinite)
+				dest._indefinite.Add(disjunction.Clone(copies));
 		}
 
 		internal override FeatureValue Clone(IDictionary<FeatureValue, FeatureValue> copies)
@@ -689,15 +706,15 @@ namespace SIL.APRE.FeatureModel
 		}
 
 		private bool CheckIndefinite(FeatureStruct fs, FeatureStruct cond, bool useDefaults, VariableBindings varBindings,
-			out FeatureStruct newFs)
+			out FeatureStruct newFS)
 		{
-			var indefinite = new List<Disjunction>(fs.Disjunctions);
-			newFs = fs;
+			var indefinite = new List<Disjunction>(fs._indefinite);
+			newFS = fs;
 			bool uncheckedParts = true;
 			while (uncheckedParts)
 			{
 				uncheckedParts = false;
-				newFs.ClearDisjunctions();
+				newFS._indefinite.Clear();
 
 				foreach (Disjunction disjunction in indefinite)
 				{
@@ -706,7 +723,7 @@ namespace SIL.APRE.FeatureModel
 					{
 						if (cond.IsDefiniteUnifiable(disjunct, useDefaults, varBindings.Clone()))
 						{
-							if (disjunct.NumDisjunctions > 0)
+							if (disjunct._indefinite.Count > 0)
 							{
 								FeatureStruct newDisjunct;
 								if (CheckIndefinite(disjunct, cond, useDefaults, varBindings.Clone(), out newDisjunct))
@@ -721,80 +738,82 @@ namespace SIL.APRE.FeatureModel
 
 					if (newDisjunction.Count == 0)
 					{
-						newFs = null;
+						newFS = null;
 						return false;
 					}
 				    if (newDisjunction.Count == 1)
 				    {
 				        FeatureStruct disjunct = newDisjunction.First();
-				        FeatureValue newFv;
-				        newFs.UnifyDefinite(disjunct, useDefaults, varBindings, out newFv);
-				        newFs = (FeatureStruct) newFv;
+				        FeatureValue newFV;
+				        newFS.UnifyDefinite(disjunct, useDefaults, varBindings, out newFV);
+				        newFS = (FeatureStruct) newFV;
 				        uncheckedParts = true;
 				    }
 				    else
 				    {
-				        newFs.AddDisjunction(new Disjunction(newDisjunction));
+				    	newFS._indefinite.Add(new Disjunction(newDisjunction));
 				    }
 				}
-				cond = newFs;
+				cond = newFS;
 				indefinite.Clear();
-				indefinite.AddRange(newFs.Disjunctions);
+				indefinite.AddRange(newFS._indefinite);
 			}
 
 			return true;
 		}
 
-		private bool NWiseConsistency(FeatureStruct fs, int n, bool useDefaults, VariableBindings varBindings, out FeatureStruct newFs)
+		private bool NWiseConsistency(FeatureStruct fs, int n, bool useDefaults, VariableBindings varBindings, out FeatureStruct newFS)
 		{
-			newFs = fs;
-			if (fs.NumDisjunctions <= n)
+			newFS = fs;
+			if (fs._indefinite.Count <= n)
 				return true;
 
-			var indefinite = new List<Disjunction>(newFs.Disjunctions);
-			newFs.ClearDisjunctions();
+			var indefinite = new List<Disjunction>(newFS._indefinite);
+			newFS._indefinite.Clear();
 
-			while (indefinite.Any())
+			while (indefinite.Count > 0)
 			{
-				IEnumerable<FeatureStruct> disjunction = indefinite.First();
+				Disjunction disjunction = indefinite.First();
 				indefinite.RemoveAt(0);
+				
 				var newDisjunction = new List<FeatureStruct>();
+				FeatureStruct lastFS = null;
 				VariableBindings lastVarBindings = null;
 				foreach (FeatureStruct disjunct in disjunction)
 				{
 					VariableBindings tempVarBindings = varBindings.Clone();
-					FeatureValue hypFv;
-					fs.UnifyDefinite(disjunct, useDefaults, tempVarBindings, out hypFv);
-					var hypFs = (FeatureStruct) hypFv;
+					FeatureValue hypFV;
+					fs.UnifyDefinite(disjunct, useDefaults, tempVarBindings, out hypFV);
+					var hypFS = (FeatureStruct) hypFV;
 					foreach (Disjunction disj in indefinite)
-						hypFs.AddDisjunction(disj);
+						hypFS._indefinite.Add(disj);
 
-					FeatureStruct nFs;
-					if (n == 1 ? CheckIndefinite(hypFs, hypFs, useDefaults, tempVarBindings, out nFs)
-						: NWiseConsistency(hypFs, n - 1, useDefaults, tempVarBindings, out nFs))
+					FeatureStruct nFS;
+					if (n == 1 ? CheckIndefinite(hypFS, hypFS, useDefaults, tempVarBindings, out nFS)
+						: NWiseConsistency(hypFS, n - 1, useDefaults, tempVarBindings, out nFS))
 					{
-						newDisjunction.Add(nFs);
+						newDisjunction.Add(disjunct);
+						lastFS = nFS;
 						lastVarBindings = tempVarBindings;
 					}
 				}
 
-				if (newDisjunction.Count == 0)
+				if (lastFS == null)
 				{
-					newFs = null;
+					newFS = null;
 					return false;
 				}
 			    if (newDisjunction.Count == 1)
 			    {
-			        FeatureStruct nFs = newDisjunction.First();
-			        newFs = nFs;
+			    	newFS = lastFS;
 			        varBindings.Replace(lastVarBindings);
 			        indefinite.Clear();
-			        indefinite.AddRange(newFs.Disjunctions);
-			        newFs.ClearDisjunctions();
+			        indefinite.AddRange(newFS._indefinite);
+			        newFS._indefinite.Clear();
 			    }
 			    else
 			    {
-			        newFs.AddDisjunction(new Disjunction(newDisjunction));
+			    	newFS._indefinite.Add(new Disjunction(newDisjunction));
 			    }
 			}
 
@@ -816,7 +835,7 @@ namespace SIL.APRE.FeatureModel
 
 		public bool Negation(out FeatureStruct output)
 		{
-			var newDisjunction = new List<FeatureStruct>();
+			var newDisjunction = new HashSet<FeatureStruct>();
 			foreach (Disjunction disjunction in _indefinite)
 			{
 				FeatureStruct fs;

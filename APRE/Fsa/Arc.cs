@@ -2,6 +2,13 @@
 
 namespace SIL.APRE.Fsa
 {
+	public enum PriorityType
+	{
+		Greedy = 0,
+		Normal,
+		Lazy
+	}
+
 	public class Arc<TOffset>
 	{
 		private readonly State<TOffset> _source;
@@ -9,19 +16,24 @@ namespace SIL.APRE.Fsa
 		private readonly ArcCondition<TOffset> _condition;
 		private readonly int _tag = -1;
 		private readonly List<TagMapCommand> _commands;
-		private readonly int _priority = -1;
+		private readonly PriorityType _priorityType;
 
-		internal Arc(State<TOffset> source, State<TOffset> target)
+		internal Arc(State<TOffset> source, State<TOffset> target, PriorityType priorityType)
 			: this(source, null, target)
 		{
+			_priorityType = priorityType;
 		}
 
-		internal Arc(State<TOffset> source, State<TOffset> target, int tag, int priority)
+		internal Arc(State<TOffset> source, State<TOffset> target, int tag)
+			: this(source, null, target)
 		{
-			_source = source;
-			_target = target;
 			_tag = tag;
-			_priority = priority;
+		}
+
+		internal Arc(State<TOffset> source, ArcCondition<TOffset> condition, State<TOffset> target, IEnumerable<TagMapCommand> cmds)
+			: this(source, condition, target)
+		{
+			_commands = new List<TagMapCommand>(cmds);
 		}
 
 		internal Arc(State<TOffset> source, ArcCondition<TOffset> condition, State<TOffset> target)
@@ -29,12 +41,7 @@ namespace SIL.APRE.Fsa
 			_source = source;
 			_condition = condition;
 			_target = target;
-		}
-
-		internal Arc(State<TOffset> source, ArcCondition<TOffset> condition, State<TOffset> target, IEnumerable<TagMapCommand> cmds)
-			: this(source, condition, target)
-		{
-			_commands = new List<TagMapCommand>(cmds);
+			_priorityType = PriorityType.Normal;
 		}
 
 		public State<TOffset> Source
@@ -74,24 +81,23 @@ namespace SIL.APRE.Fsa
 			}
 		}
 
-		public int Priority
+		public PriorityType PriorityType
 		{
-			get
-			{
-				return _priority;
-			}
+			get { return _priorityType; }
 		}
+
+		public int Priority { get; set; }
 
 		public override string ToString()
 		{
 			if (_condition == null)
 			{
 				if (_tag != -1)
-					return string.Format("Tag {0}", _tag);
-				return "";
+					return string.Format("tag {0}, {1}", _tag, Priority);
+				return string.Format("ε, {0}", Priority);
 			}
 
-			return _condition.ToString();
+			return string.Format("{0}, {1}", _condition, Priority);
 		}
 	}
 }

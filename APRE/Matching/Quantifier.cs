@@ -13,23 +13,38 @@ namespace SIL.APRE.Matching
     	private readonly int _minOccur;
     	private readonly int _maxOccur;
 
+    	private readonly bool _greedy;
+
 		public Quantifier(int minOccur, int maxOccur)
+			: this(minOccur, maxOccur, false)
+		{
+		}
+
+		public Quantifier(int minOccur, int maxOccur, bool greedy)
 		{
 			_minOccur = minOccur;
 			_maxOccur = maxOccur;
+			_greedy = greedy;
+		}
+
+		public Quantifier(int minOccur, int maxOccur, PatternNode<TOffset> node)
+			: this(minOccur, maxOccur, false, node)
+		{
 		}
 
     	/// <summary>
-		/// Initializes a new instance of the <see cref="Quantifier{TOffset}"/> class.
+    	/// Initializes a new instance of the <see cref="Quantifier{TOffset}"/> class.
     	/// </summary>
     	/// <param name="minOccur">The minimum number of occurrences.</param>
     	/// <param name="maxOccur">The maximum number of occurrences.</param>
-		/// <param name="node">The pattern node.</param>
-		public Quantifier(int minOccur, int maxOccur, PatternNode<TOffset> node)
+    	/// <param name="greedy"></param>
+    	/// <param name="node">The pattern node.</param>
+    	public Quantifier(int minOccur, int maxOccur, bool greedy, PatternNode<TOffset> node)
 			: base(node.ToEnumerable())
         {
             _minOccur = minOccur;
             _maxOccur = maxOccur;
+    		_greedy = greedy;
         }
 
     	public Quantifier(Quantifier<TOffset> quantifier)
@@ -37,6 +52,7 @@ namespace SIL.APRE.Matching
         {
             _minOccur = quantifier._minOccur;
             _maxOccur = quantifier._maxOccur;
+    		_greedy = quantifier._greedy;
         }
 
         /// <summary>
@@ -57,6 +73,11 @@ namespace SIL.APRE.Matching
     		get { return _maxOccur; }
     	}
 
+    	public bool IsGreedy
+    	{
+    		get { return _greedy; }
+    	}
+
 		protected override bool CanAdd(PatternNode<TOffset> child)
 		{
 			if (child is Expression<TOffset>)
@@ -66,23 +87,28 @@ namespace SIL.APRE.Matching
 
 		internal override State<TOffset> GenerateNfa(FiniteStateAutomaton<TOffset> fsa, State<TOffset> startState)
 		{
-			State<TOffset> endState = base.GenerateNfa(fsa, startState);
-
+			PriorityType priorityType = _greedy ? PriorityType.Greedy : PriorityType.Lazy;
+			State<TOffset> endState;
 			if (_minOccur == 0 && _maxOccur == 1)
 			{
 				// optional
+				startState = startState.AddArc(fsa.CreateState(), priorityType);
+				endState = base.GenerateNfa(fsa, startState);
 				startState.AddArc(endState);
 			}
 			else if (_minOccur == 0 && _maxOccur == Infinite)
 			{
 				// kleene star
+				startState = startState.AddArc(fsa.CreateState(), priorityType);
+				endState = base.GenerateNfa(fsa, startState);
 				startState.AddArc(endState);
-				endState.AddArc(startState);
+				endState.AddArc(startState, priorityType);
 			}
 			else if (_minOccur == 1 && _maxOccur == Infinite)
 			{
 				// plus
-				endState.AddArc(startState);
+				endState = base.GenerateNfa(fsa, startState);
+				endState.AddArc(startState, priorityType);
 			}
 			else
 			{
@@ -91,11 +117,14 @@ namespace SIL.APRE.Matching
 				var startStates = new List<State<TOffset>>();
 				if (_minOccur == 0)
 				{
+					endState = startState.AddArc(fsa.CreateState(), priorityType);
+					endState = base.GenerateNfa(fsa, endState);
 					startStates.Add(currentState);
 				}
 				else
 				{
-					for (int i = 1; i < _minOccur; i++)
+					endState = startState;
+					for (int i = 0; i < _minOccur; i++)
 					{
 						currentState = endState;
 						endState = base.GenerateNfa(fsa, currentState);
@@ -104,7 +133,7 @@ namespace SIL.APRE.Matching
 
 				if (_maxOccur == Infinite)
 				{
-					endState.AddArc(currentState);
+					endState.AddArc(currentState, priorityType);
 				}
 				else
 				{
@@ -113,9 +142,9 @@ namespace SIL.APRE.Matching
 						numCopies--;
 					for (int i = 1; i <= numCopies; i++)
 					{
-						currentState = endState;
-						startStates.Add(currentState);
-						endState = base.GenerateNfa(fsa, currentState);
+						startStates.Add(endState);
+						endState = endState.AddArc(fsa.CreateState(), priorityType);
+						endState = base.GenerateNfa(fsa, endState);
 					}
 				}
 				foreach (State<TOffset> state in startStates)

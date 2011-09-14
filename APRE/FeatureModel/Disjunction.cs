@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace SIL.APRE.FeatureModel
 {
-	public class Disjunction : IEnumerable<FeatureStruct>, ICloneable
+	public class Disjunction : IEnumerable<FeatureStruct>, IEquatable<Disjunction>, ICloneable
 	{
 		private readonly List<FeatureStruct> _disjuncts;
 
@@ -61,7 +61,7 @@ namespace SIL.APRE.FeatureModel
 
 		internal Disjunction Clone(IDictionary<FeatureValue, FeatureValue> copies)
 		{
-			return new Disjunction(_disjuncts.Select(disj => (FeatureStruct) disj.Clone(copies)));
+			return new Disjunction(_disjuncts.Select(disj => (FeatureStruct) disj.Clone(new Dictionary<FeatureValue, FeatureValue>(copies, new IdentityEqualityComparer<FeatureValue>()))));
 		}
 
 		public Disjunction Clone()
@@ -72,6 +72,22 @@ namespace SIL.APRE.FeatureModel
 		object ICloneable.Clone()
 		{
 			return Clone();
+		}
+
+		public bool Equals(Disjunction other)
+		{
+			return other != null && new HashSet<FeatureStruct>(_disjuncts).SetEquals(other._disjuncts);
+		}
+
+		public override bool Equals(object obj)
+		{
+			var disjunction = obj as Disjunction;
+			return disjunction != null && Equals(disjunction);
+		}
+
+		public override int GetHashCode()
+		{
+			return _disjuncts.Aggregate(0, (code, fs) => code ^ fs.GetHashCode());
 		}
 	}
 }

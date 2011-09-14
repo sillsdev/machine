@@ -109,12 +109,12 @@ namespace SIL.APRE.Matching
 			HashSet<ArcCondition<TOffset>> startAnchored = null;
 			var startAnchor = Children.GetFirst(fsa.Direction) as Anchor<TOffset>;
 			if (startAnchor != null)
-				startAnchored = new HashSet<ArcCondition<TOffset>>(GetStartAnchoredConditions(startState));
+				startAnchored = new HashSet<ArcCondition<TOffset>>(GetStartAnchoredConditions(startState, new HashSet<State<TOffset>>()));
 
 			HashSet<ArcCondition<TOffset>> endAnchored = null;
 			var endAnchor = Children.GetLast(fsa.Direction) as Anchor<TOffset>;
 			if (endAnchor != null)
-				endAnchored = new HashSet<ArcCondition<TOffset>>(GetEndAnchoredConditions(endState));
+				endAnchored = new HashSet<ArcCondition<TOffset>>(GetEndAnchoredConditions(endState, new HashSet<State<TOffset>>()));
 
 			if (startAnchored != null)
 			{
@@ -161,33 +161,35 @@ namespace SIL.APRE.Matching
 			return startState;
 		}
 
-		private IEnumerable<ArcCondition<TOffset>> GetStartAnchoredConditions(State<TOffset> startState)
+		private IEnumerable<ArcCondition<TOffset>> GetStartAnchoredConditions(State<TOffset> startState, HashSet<State<TOffset>> visitedStates)
 		{
+			visitedStates.Add(startState);
 			foreach (Arc<TOffset> arc in startState.OutgoingArcs)
 			{
 				if (arc.Condition != null)
 				{
 					yield return arc.Condition;
 				}
-				else
+				else if (!visitedStates.Contains(arc.Target))
 				{
-					foreach (ArcCondition<TOffset> cond in GetStartAnchoredConditions(arc.Target))
+					foreach (ArcCondition<TOffset> cond in GetStartAnchoredConditions(arc.Target, visitedStates))
 						yield return cond;
 				}
 			}
 		}
 
-		private IEnumerable<ArcCondition<TOffset>> GetEndAnchoredConditions(State<TOffset> endState)
+		private IEnumerable<ArcCondition<TOffset>> GetEndAnchoredConditions(State<TOffset> endState, HashSet<State<TOffset>> visitedStates)
 		{
+			visitedStates.Add(endState);
 			foreach (Arc<TOffset> arc in endState.IncomingArcs)
 			{
 				if (arc.Condition != null)
 				{
 					yield return arc.Condition;
 				}
-				else
+				else if (!visitedStates.Contains(arc.Source))
 				{
-					foreach (ArcCondition<TOffset> cond in GetEndAnchoredConditions(arc.Source))
+					foreach (ArcCondition<TOffset> cond in GetEndAnchoredConditions(arc.Source, visitedStates))
 						yield return cond;
 				}
 			}

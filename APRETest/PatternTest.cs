@@ -40,7 +40,7 @@ namespace SIL.APRE.Test
 
 			FeatureStruct types = FeatureStruct.With(featSys).Feature("type").EqualTo("Noun", "Verb", "Det", "Adj", "Adv").Value;
 			Pattern<int> ltorPattern = Pattern<int>.With(spanFactory).AnnotationsAllowableWhere(ann => ann.FeatureStruct.IsUnifiable(types))
-				.Annotation(FeatureStruct.With(featSys).Feature("type").EqualTo("Det").Value, AnchorType.LeftSide)
+				.Annotation(FeatureStruct.With(featSys).Feature("type").EqualTo("Det").Value)
 				.Or
 				.Group(g => g
 					.Group("adj", adj => adj.Annotation(FeatureStruct.With(featSys).Feature("type").EqualTo("Adj").Value))

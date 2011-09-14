@@ -1,5 +1,15 @@
-﻿namespace SIL.APRE.Matching
+﻿using System;
+
+namespace SIL.APRE.Matching
 {
+	[Flags]
+	public enum AnchorType
+	{
+		None = 0x0,
+		LeftSide = 0x1,
+		RightSide = 0x2
+	}
+
 	public class Anchor<TOffset> : PatternNode<TOffset>
 	{
 		private readonly AnchorType _type;

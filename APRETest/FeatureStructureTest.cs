@@ -7,7 +7,7 @@ namespace SIL.APRE.Test
 	public class FeatureStructureTest
 	{
 		[Test]
-		public void DisjunctiveUnify()
+		public void DisjunctiveUnify1()
 		{
 			FeatureSystem featSys = FeatureSystem.With
 				.SymbolicFeature("rank", rank => rank
@@ -91,6 +91,49 @@ namespace SIL.APRE.Test
 			var varBindings = new VariableBindings();
 			FeatureStruct output;
 			Assert.IsTrue(grammar.Unify(constituent, false, varBindings, out output));
+		}
+
+		[Test]
+		public void DisjunctiveUnify2()
+		{
+			FeatureSystem featSys = FeatureSystem.With
+				.SymbolicFeature("feat1", feat1 => feat1
+					.Symbol("feat1+")
+					.Symbol("feat1-"))
+				.SymbolicFeature("feat2", feat2 => feat2
+					.Symbol("feat2+")
+					.Symbol("feat2-"))
+				.SymbolicFeature("feat3", feat3 => feat3
+					.Symbol("feat3+")
+					.Symbol("feat3-"))
+				.SymbolicFeature("feat4", feat4 => feat4
+					.Symbol("feat4+")
+					.Symbol("feat4-"))
+				.SymbolicFeature("feat5", feat5 => feat5
+					.Symbol("feat5+")
+					.Symbol("feat5-"))
+				.SymbolicFeature("feat6", feat6 => feat6
+					.Symbol("feat6+")
+					.Symbol("feat6-"))
+				.SymbolicFeature("feat7", feat7 => feat7
+					.Symbol("feat7+")
+					.Symbol("feat7-")).Value;
+
+			FeatureStruct fs1 = FeatureStruct.With(featSys)
+				.And(disjunction => disjunction
+					.With(disj => disj.Symbol("feat1+"))
+					.Or(disj => disj.Symbol("feat2+"))).Value;
+
+			FeatureStruct fs2 = FeatureStruct.With(featSys)
+				.And(disjunction => disjunction
+					.With(disj => disj.Symbol("feat3+"))
+					.Or(disj => disj.Symbol("feat4+")))
+				.And(disjunction => disjunction
+					.With(disj => disj.Symbol("feat5+"))
+					.Or(disj => disj.Symbol("feat6+"))).Value;
+
+			FeatureStruct result;
+			Assert.IsTrue(fs1.Unify(fs2, out result));
 		}
 
 		[Test]
