@@ -430,7 +430,7 @@ namespace HermitCrabTest
 			rule1 = new PhonologicalRule("rule1", "rule1", _spanFactory, 1, Direction.LeftToRight, false, lhs);
 			leftEnv = Expression<PhoneticShapeNode>.With
 				.Annotation(FeatureStruct.With(_phoneticFeatSys).Symbol("cons-").Symbol("voc+").Symbol("back+").Symbol("round+").Symbol("seg").Value)
-				.Annotation(FeatureStruct.With(_phoneticFeatSys).Symbol("cons-").Symbol("voc+").Symbol("high+").Symbol("seg").Value).Range(0, 2).Value;
+				.Annotation(FeatureStruct.With(_phoneticFeatSys).Symbol("cons-").Symbol("voc+").Symbol("high+").Symbol("seg").Value).LazyRange(0, 2).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			shape = _table1.ToPhoneticShape("buuubuuu", ModeType.Analysis);

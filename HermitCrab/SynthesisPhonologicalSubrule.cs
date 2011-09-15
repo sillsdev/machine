@@ -32,7 +32,7 @@ namespace SIL.HermitCrab
 			if (leftEnv.Children.Count > 0)
 			{
 				if (leftEnv.Children.First is Anchor<PhoneticShapeNode>)
-					pattern.Children.Add(new Anchor<PhoneticShapeNode>(AnchorType.LeftSide));
+					pattern.Children.Add(new Anchor<PhoneticShapeNode>(AnchorTypes.LeftSide));
 				pattern.Children.Add(new Group<PhoneticShapeNode>("leftEnv", leftEnv.Children.Where(node => !(node is Anchor<PhoneticShapeNode>)).Clone()));
 			}
 			pattern.Children.Add(new Group<PhoneticShapeNode>("target", lhs.Children.Clone()));
@@ -40,7 +40,7 @@ namespace SIL.HermitCrab
 			{
 				pattern.Children.Add(new Group<PhoneticShapeNode>("rightEnv", rightEnv.Children.Where(node => !(node is Anchor<PhoneticShapeNode>)).Clone()));
 				if (rightEnv.Children.Last is Anchor<PhoneticShapeNode>)
-					pattern.Children.Add(new Anchor<PhoneticShapeNode>(AnchorType.RightSide));
+					pattern.Children.Add(new Anchor<PhoneticShapeNode>(AnchorTypes.RightSide));
 			}
 			return pattern;
 		}
@@ -53,7 +53,6 @@ namespace SIL.HermitCrab
 		public override Annotation<PhoneticShapeNode> ApplyRhs(IBidirList<Annotation<PhoneticShapeNode>> input, PatternMatch<PhoneticShapeNode> match)
 		{
 			Span<PhoneticShapeNode> target = match["target"];
-			PhoneticShapeNode endNode = target.GetEnd(Lhs.Direction);
 			if (_lhs.Children.Count == _rhs.Children.Count)
 			{
 				foreach (Tuple<PhoneticShapeNode, PatternNode<PhoneticShapeNode>> tuple in target.Start.GetNodes(target.End).Zip(_rhs.Children))
@@ -65,19 +64,19 @@ namespace SIL.HermitCrab
 			}
 			else if (_lhs.Children.Count == 0)
 			{
-				endNode = ApplyInsertion(target);
+				ApplyInsertion(target);
 			}
 			else if (_lhs.Children.Count > _rhs.Children.Count)
 			{
-				endNode = ApplyInsertion(target);
+				ApplyInsertion(target);
 				foreach (PhoneticShapeNode node in target.Start.GetNodes(target.End).ToArray())
 					node.Remove();
 			}
 
-			return endNode.Annotation;
+			return match.GetStart(Lhs.Direction).Annotation;
 		}
 
-		private PhoneticShapeNode ApplyInsertion(Span<PhoneticShapeNode> target)
+		private void ApplyInsertion(Span<PhoneticShapeNode> target)
 		{
 			PhoneticShapeNode cur = target.GetEnd(Lhs.Direction);
 			foreach (PatternNode<PhoneticShapeNode> node in _rhs.Children.GetNodes(Lhs.Direction))
@@ -87,7 +86,6 @@ namespace SIL.HermitCrab
 				cur.Insert(newNode, Lhs.Direction);
 				cur = newNode;
 			}
-			return cur;
 		}
 	}
 }

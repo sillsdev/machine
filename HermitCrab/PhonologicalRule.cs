@@ -66,11 +66,11 @@ namespace SIL.HermitCrab
 		public void AddSubrule(Expression<PhoneticShapeNode> rhs, Expression<PhoneticShapeNode> leftEnv,
 			Expression<PhoneticShapeNode> rightEnv, FeatureStruct applicableFS)
 		{
-			_analysisRule.AddRule(new AnalysisPhonologicalSubrule(_spanFactory, _delReapplications, _dir, _simult, _lhs, rhs, leftEnv, rightEnv));
-			_synthesisRule.AddRule(new SynthesisPhonologicalSubrule(_spanFactory, _dir, _simult, _lhs, rhs, leftEnv, rightEnv, applicableFS));
+			_analysisRule.AddSubrule(new AnalysisPhonologicalSubrule(_spanFactory, _delReapplications, _dir, _simult, _lhs, rhs, leftEnv, rightEnv));
+			_synthesisRule.AddSubrule(new SynthesisPhonologicalSubrule(_spanFactory, _dir, _simult, _lhs, rhs, leftEnv, rightEnv, applicableFS));
 		}
 
-		private class AnalysisPhonologicalRule : RuleCascade<PhoneticShapeNode>
+		private class AnalysisPhonologicalRule : RuleCascadeBase<PhoneticShapeNode>
 		{
 			private readonly PhonologicalRule _rule;
 
@@ -86,6 +86,16 @@ namespace SIL.HermitCrab
 					subrule.Compile();
 			}
 
+			public void AddSubrule(AnalysisPhonologicalSubrule subrule)
+			{
+				AddRuleInternal(subrule);
+			}
+
+			public override bool IsApplicable(IBidirList<Annotation<PhoneticShapeNode>> input)
+			{
+				return true;
+			}
+
 			public override bool Apply(IBidirList<Annotation<PhoneticShapeNode>> input)
 			{
 				// TODO: do tracing here
@@ -95,7 +105,7 @@ namespace SIL.HermitCrab
 			}
 		}
 
-		private class SynthesisPhonologicalRule : PatternRuleBatch<PhoneticShapeNode>
+		private class SynthesisPhonologicalRule : PatternRuleBatchBase<PhoneticShapeNode>
 		{
 			private readonly PhonologicalRule _rule;
 
@@ -103,6 +113,16 @@ namespace SIL.HermitCrab
 				: base(new Pattern<PhoneticShapeNode>(spanFactory, dir), simult)
 			{
 				_rule = rule;
+			}
+
+			public void AddSubrule(SynthesisPhonologicalSubrule subrule)
+			{
+				AddRuleInternal(subrule);
+			}
+
+			public override bool IsApplicable(IBidirList<Annotation<PhoneticShapeNode>> input)
+			{
+				return true;
 			}
 
 			public override bool Apply(IBidirList<Annotation<PhoneticShapeNode>> input)

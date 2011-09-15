@@ -35,7 +35,7 @@ namespace SIL.HermitCrab
 			if (leftEnv.Children.Count > 0)
 			{
 				if (leftEnv.Children.First is Anchor<PhoneticShapeNode>)
-					Lhs.Children.Add(new Anchor<PhoneticShapeNode>(AnchorType.LeftSide));
+					Lhs.Children.Add(new Anchor<PhoneticShapeNode>(AnchorTypes.LeftSide));
 				Lhs.Children.Add(new Group<PhoneticShapeNode>("leftEnv", leftEnv.Children.Where(node => !(node is Anchor<PhoneticShapeNode>)).Clone()));
 			}
 			if (lhs.Children.Count == 0 || lhs.Children.Count > rhs.Children.Count)
@@ -68,7 +68,7 @@ namespace SIL.HermitCrab
 			{
 				Lhs.Children.Add(new Group<PhoneticShapeNode>("rightEnv", rightEnv.Children.Where(node => !(node is Anchor<PhoneticShapeNode>)).Clone()));
 				if (rightEnv.Children.Last is Anchor<PhoneticShapeNode>)
-					Lhs.Children.Add(new Anchor<PhoneticShapeNode>(AnchorType.RightSide));
+					Lhs.Children.Add(new Anchor<PhoneticShapeNode>(AnchorTypes.RightSide));
 			}
 
 			if (lhs.Children.Count > rhs.Children.Count)
@@ -214,7 +214,7 @@ namespace SIL.HermitCrab
 				}
 			}
 
-			return input.GetView(target).GetLast(Lhs.Direction);
+			return match.GetStart(Lhs.Direction).Annotation;
 		}
 	}
 }
