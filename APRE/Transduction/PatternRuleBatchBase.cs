@@ -28,6 +28,11 @@ namespace SIL.APRE.Transduction
 			return new Pattern<TOffset>(firstRule.Lhs.SpanFactory, firstRule.Lhs.Direction, firstRule.Lhs.Filter);
 		}
 
+		public IEnumerable<IPatternRule<TOffset>> Rules
+		{
+			get { return _rules.Values; }
+		}
+
 		protected void AddRuleInternal(IPatternRule<TOffset> rule)
 		{
 			string id = "rule" + _rules.Count;

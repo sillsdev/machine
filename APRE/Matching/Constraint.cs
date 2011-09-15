@@ -44,8 +44,7 @@ namespace SIL.APRE.Matching
 
     	internal override State<TOffset> GenerateNfa(FiniteStateAutomaton<TOffset> fsa, State<TOffset> startState)
 		{
-    		var fs = (FeatureStruct) _fs.Clone();
-    		return startState.AddArc(new ArcCondition<TOffset>(fs), fsa.CreateState());
+    		return startState.AddArc((FeatureStruct) _fs.Clone(), fsa.CreateState());
 		}
 
 		public override PatternNode<TOffset> Clone()

@@ -54,6 +54,11 @@ namespace SIL.APRE.Matching
 			return _groups.TryGetValue(groupName, out span);
 		}
 
+		public bool ContainsGroup(string groupName)
+		{
+			return _groups.ContainsKey(groupName);
+		}
+
 		public int CompareTo(PatternMatch<TOffset> other)
 		{
 			if (Length > other.Length)

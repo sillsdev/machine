@@ -42,10 +42,10 @@ namespace SIL.APRE.Matching.Fluent
 			AddNode(result.Value);
 		}
 
-		protected void AddQuantifier(int min, int max)
+		protected void AddQuantifier(int min, int max, bool greedy)
 		{
 			List<PatternNode<TOffset>> list = _alternation.Any() ? _alternation : _nodes;
-			var quantifier = new Quantifier<TOffset>(min, max, list.Last());
+			var quantifier = new Quantifier<TOffset>(min, max, greedy, list.Last());
 			list[list.Count - 1] = quantifier;
 		}
 
@@ -57,7 +57,7 @@ namespace SIL.APRE.Matching.Fluent
 			AddNode(result.Value);
 		}
 
-		protected void AddAnchor(AnchorType anchor)
+		protected void AddAnchor(AnchorTypes anchor)
 		{
 			CheckEndAlternation();
 			AddNode(new Anchor<TOffset>(anchor));

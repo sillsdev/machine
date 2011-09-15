@@ -79,7 +79,6 @@
     <Compile Include="FeatureModel\SymbolicFeatureValue.cs" />
     <Compile Include="FeatureModel\VariableBindings.cs" />
     <Compile Include="Fsa\AcceptInfo.cs" />
-    <Compile Include="Fsa\ArcCondition.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Fsa\FsaMatch.cs" />
     <Compile Include="IBidirList.cs" />

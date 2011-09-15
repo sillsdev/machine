@@ -6,9 +6,17 @@ using SIL.APRE.FeatureModel;
 
 namespace SIL.APRE.Fsa
 {
+	public enum PriorityType
+	{
+		High = 0,
+		Medium,
+		Low
+	}
+
 	public class FiniteStateAutomaton<TOffset>
 	{
 		private State<TOffset> _startState;
+		private readonly List<State<TOffset>> _acceptingStates;
 		private readonly List<State<TOffset>> _states;
 		private int _nextTag;
 		private readonly Dictionary<string, int> _groups;
@@ -25,6 +33,7 @@ namespace SIL.APRE.Fsa
 		public FiniteStateAutomaton(Direction dir, Func<Annotation<TOffset>, bool> filter)
 		{
 			_initializers = new List<TagMapCommand>();
+			_acceptingStates = new List<State<TOffset>>();
 			_states = new List<State<TOffset>>();
 			_groups = new Dictionary<string, int>();
 			_dir = dir;
@@ -62,17 +71,19 @@ namespace SIL.APRE.Fsa
 			return false;
 		}
 
-		private State<TOffset> CreateAcceptingState(IEnumerable<AcceptInfo<TOffset>> acceptInfos, IEnumerable<TagMapCommand> finishers)
+		private State<TOffset> CreateAcceptingState(PriorityType acceptPriorityType, IEnumerable<AcceptInfo<TOffset>> acceptInfos, IEnumerable<TagMapCommand> finishers)
 		{
-			var state = new State<TOffset>(_states.Count, acceptInfos, finishers);
+			var state = new State<TOffset>(_states.Count, acceptPriorityType, acceptInfos, finishers);
 			_states.Add(state);
+			_acceptingStates.Add(state);
 			return state;
 		}
 
-		public State<TOffset> CreateAcceptingState(string id, Func<IBidirList<Annotation<TOffset>>, FsaMatch<TOffset>, bool> acceptable)
+		public State<TOffset> CreateAcceptingState(string id, Func<IBidirList<Annotation<TOffset>>, FsaMatch<TOffset>, bool> acceptable, int priority)
 		{
-			var state = new State<TOffset>(_states.Count, id, acceptable);
+			var state = new State<TOffset>(_states.Count, new AcceptInfo<TOffset>(id, acceptable, priority).ToEnumerable());
 			_states.Add(state);
+			_acceptingStates.Add(state);
 			return state;
 		}
 
@@ -80,6 +91,7 @@ namespace SIL.APRE.Fsa
 		{
 			var state = new State<TOffset>(_states.Count, true);
 			_states.Add(state);
+			_acceptingStates.Add(state);
 			return state;
 		}
 
@@ -116,6 +128,11 @@ namespace SIL.APRE.Fsa
 			{
 				return _startState;
 			}
+		}
+
+		public IEnumerable<State<TOffset>> AcceptingStates
+		{
+			get { return _acceptingStates; }
 		}
 
 		public Direction Direction
@@ -165,17 +182,15 @@ namespace SIL.APRE.Fsa
 			}
 		}
 
-		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, bool allMatches, out IEnumerable<FsaMatch<TOffset>> matches)
+		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, out IEnumerable<FsaMatch<TOffset>> matches)
 		{
 			var instStack = new Stack<FsaInstance>();
-			var matchStack = new Stack<FsaMatch<TOffset>>();
 
 			var matchList = new List<FsaMatch<TOffset>>();
-			matches = matchList;
 
 			Annotation<TOffset> ann = annList.GetFirst(_dir, _filter);
 
-			var registers = new NullableValue<TOffset>[_registerCount,2];
+			var registers = new NullableValue<TOffset>[_registerCount, 2];
 
 			var cmds = new List<TagMapCommand>();
 			foreach (TagMapCommand cmd in _initializers)
@@ -194,22 +209,24 @@ namespace SIL.APRE.Fsa
 
 				foreach (Arc<TOffset> arc in inst.State.OutgoingArcs)
 				{
-					if (arc.Condition.IsMatch(inst.Annotation, inst.VariableBindings))
+					if (inst.Annotation.FeatureStruct.IsUnifiable(arc.Condition, false, inst.VariableBindings))
 					{
 						AdvanceFsa(annList, inst.Annotation, inst.Annotation.Span.GetEnd(_dir), inst.Registers, inst.VariableBindings, arc,
-							instStack, matchStack);
+							instStack, matchList);
 					}
 				}
 			}
 
-			while (matchStack.Count != 0)
+			matchList.Sort();
+
+			if (matchList.Count > 0)
 			{
-				matchList.Add(matchStack.Pop());
-				if (!allMatches)
-					return true;
+				matches = matchList;
+				return true;
 			}
 
-			return matchList.Count > 0;
+			matches = null;
+			return false;
 		}
 
 		private void InitializeStack(Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, List<TagMapCommand> cmds, Stack<FsaInstance> instStack)
@@ -238,7 +255,7 @@ namespace SIL.APRE.Fsa
 
 		private void AdvanceFsa(IBidirList<Annotation<TOffset>> annList, Annotation<TOffset> ann, TOffset end,
 			NullableValue<TOffset>[,] registers, VariableBindings varBindings, Arc<TOffset> arc, Stack<FsaInstance> instStack,
-			Stack<FsaMatch<TOffset>> matchStack)
+			List<FsaMatch<TOffset>> matchList)
 		{
 			Annotation<TOffset> nextAnn = ann.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
 			TOffset nextOffset = nextAnn == null ? annList.GetLast(_dir, _filter).Span.GetEnd(_dir) : nextAnn.Span.GetStart(_dir);
@@ -250,11 +267,11 @@ namespace SIL.APRE.Fsa
 				var matchRegisters = (NullableValue<TOffset>[,]) newRegisters.Clone();
 				ExecuteCommands(matchRegisters, arc.Target.Finishers, new NullableValue<TOffset>(), new NullableValue<TOffset>(),
 					ann.Span.GetEnd(_dir));
-				foreach (AcceptInfo<TOffset> acceptInfo in arc.Target.AcceptInfos.Reverse())
+				foreach (AcceptInfo<TOffset> acceptInfo in arc.Target.AcceptInfos)
 				{
-					var match = new FsaMatch<TOffset>(acceptInfo.ID, matchRegisters, varBindings);
-					if (acceptInfo.Acceptable == null || acceptInfo.Acceptable(annList, match))
-						matchStack.Push(match);
+					var match = new FsaMatch<TOffset>(acceptInfo.ID, matchRegisters, varBindings, acceptInfo.Priority, arc.Target.AcceptPriority);
+					if (acceptInfo.Acceptable(annList, match))
+						matchList.Add(match);
 				}
 			}
 			if (nextAnn != null)
@@ -262,7 +279,7 @@ namespace SIL.APRE.Fsa
 				for (Annotation<TOffset> a = nextAnn; a != null && a.Span.GetStart(_dir).Equals(nextOffset); a = a.GetNext(_dir, _filter))
 				{
 					if (a.IsOptional)
-						AdvanceFsa(annList, a, end, registers, varBindings, arc, instStack, matchStack);
+						AdvanceFsa(annList, a, end, registers, varBindings, arc, instStack, matchList);
 				}
 
 				for (Annotation<TOffset> a = nextAnn; a != null && a.Span.GetStart(_dir).Equals(nextOffset); a = a.GetNext(_dir, _filter))
@@ -298,22 +315,19 @@ namespace SIL.APRE.Fsa
 		{
 			private readonly State<TOffset> _nfsState;
 			private readonly Dictionary<int, int> _tags;
-			private int _priority;
+			private readonly int _lastPriority;
+			private readonly int _maxPriority;
 
 			public NfaStateInfo(State<TOffset> nfaState)
-				: this(nfaState, null)
+				: this(nfaState, 0, 0, null)
 			{
 			}
 
-			public NfaStateInfo(State<TOffset> nfaState, IDictionary<int, int> tags)
-				: this(nfaState, -1, tags)
-			{
-			}
-
-			public NfaStateInfo(State<TOffset> nfaState, int priority, IDictionary<int, int> tags)
+			public NfaStateInfo(State<TOffset> nfaState, int maxPriority, int lastPriority, IDictionary<int, int> tags)
 			{
 				_nfsState = nfaState;
-				_priority = priority;
+				_maxPriority = maxPriority;
+				_lastPriority = lastPriority;
 				_tags = tags == null ? new Dictionary<int, int>() : new Dictionary<int, int>(tags);
 			}
 
@@ -325,17 +339,14 @@ namespace SIL.APRE.Fsa
 				}
 			}
 
-			public int Priority
+			public int MaxPriority
 			{
-				get
-				{
-					return _priority;
-				}
+				get { return _maxPriority; }
+			}
 
-				set
-				{
-					_priority = value;
-				}
+			public int LastPriority
+			{
+				get { return _lastPriority; }
 			}
 
 			public IDictionary<int, int> Tags
@@ -375,7 +386,7 @@ namespace SIL.APRE.Fsa
 
 			public override string ToString()
 			{
-				return string.Format("State {0} ({1})", _nfsState.Index, _priority);
+				return string.Format("State {0} ({1}, {2})", _nfsState.Index, _maxPriority, _lastPriority);
 			}
 		}
 
@@ -418,33 +429,18 @@ namespace SIL.APRE.Fsa
 			}
 		}
 
-		public void MarkPriorities()
+		public void MarkArcPriorities()
 		{
-			var arcs = new Dictionary<PriorityType, List<Arc<TOffset>>>();
-
-			foreach (State<TOffset> state in _states)
-			{
-				foreach (Arc<TOffset> arc in state.OutgoingArcs)
-				{
-					List<Arc<TOffset>> priorityArcs;
-					if (!arcs.TryGetValue(arc.PriorityType, out priorityArcs))
-					{
-						priorityArcs = new List<Arc<TOffset>>();
-						arcs[arc.PriorityType] = priorityArcs;
-					}
-					priorityArcs.Add(arc);
-				}
-			}
-
+			// TODO: traverse through the FSA properly
 			int nextPriority = 0;
-			foreach (PriorityType priorityType in Enum.GetValues(typeof(PriorityType)))
+			foreach (Arc<TOffset> arc in from state in _states
+										 from arc in state.OutgoingArcs
+										 group arc by arc.PriorityType into priorityGroup
+										 orderby priorityGroup.Key
+										 from arc in priorityGroup
+										 select arc)
 			{
-				List<Arc<TOffset>> priorityArcs;
-				if (arcs.TryGetValue(priorityType, out priorityArcs))
-				{
-					foreach (Arc<TOffset> arc in priorityArcs)
-						arc.Priority = nextPriority++;
-				}
+				arc.Priority = nextPriority++;
 			}
 		}
 
@@ -457,6 +453,7 @@ namespace SIL.APRE.Fsa
 			subsetStart = EpsilonClosure(subsetStart, subsetStart);
 
 			_states.Clear();
+			_acceptingStates.Clear();
 			_startState = CreateState();
 			subsetStart.DfaState = _startState;
 
@@ -477,33 +474,46 @@ namespace SIL.APRE.Fsa
 			{
 				SubsetState curSubsetState = unmarkedSubsetStates.Dequeue();
 
-				ArcCondition<TOffset>[] conditions = (from state in curSubsetState.NfaStates
-													  from tran in state.NfaState.OutgoingArcs
-													  where tran.Condition != null
-													  select tran.Condition).Distinct().ToArray();
+				FeatureStruct[] conditions = (from state in curSubsetState.NfaStates
+										      from tran in state.NfaState.OutgoingArcs
+											  where tran.Condition != null
+											  select tran.Condition).Distinct().ToArray();
 				if (conditions.Length > 0)
 				{
 					ComputeArcs(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, conditions, 0,
-						new ArcCondition<TOffset>[0], new ArcCondition<TOffset>[0]);
+						new FeatureStruct[0], new FeatureStruct[0]);
 				}
 			}
+
+			// TODO: traverse through the FSA properly
+			int nextPriority = 0;
+			foreach (State<TOffset> state in from state in _acceptingStates
+											 group state by state.AcceptPriorityType into priorityGroup
+											 orderby priorityGroup.Key
+											 from state in priorityGroup.Key == PriorityType.Medium ? priorityGroup.Reverse() : priorityGroup
+											 select state)
+			{
+				state.AcceptPriority = nextPriority++;
+			}
+
 			_registerCount = _nextTag + registerIndices.Count;
 		}
 
 		private void ComputeArcs(Dictionary<SubsetState, SubsetState> subsetStates, Queue<SubsetState> unmarkedSubsetStates,
-			Dictionary<int, int> registerIndices, SubsetState curSubsetState, ArcCondition<TOffset>[] conditions, int conditionIndex,
-			ArcCondition<TOffset>[] subset1, ArcCondition<TOffset>[] subset2)
+			Dictionary<int, int> registerIndices, SubsetState curSubsetState, FeatureStruct[] conditions, int conditionIndex,
+			FeatureStruct[] subset1, FeatureStruct[] subset2)
 		{
 			if (conditionIndex == conditions.Length)
 			{
-				ArcCondition<TOffset> condition;
+				FeatureStruct condition;
 				if (CreateDisjointCondition(subset1, subset2, out condition))
 				{
 					var cmdTags = new Dictionary<int, int>();
-					SubsetState target = EpsilonClosure(new SubsetState(from state in curSubsetState.NfaStates
-																		from tran in state.NfaState.OutgoingArcs
-																		where tran.Condition != null && subset1.Contains(tran.Condition)
-																		select new NfaStateInfo(tran.Target, state.Tags)), curSubsetState);
+					var reach = new SubsetState(from state in curSubsetState.NfaStates
+											    from tran in state.NfaState.OutgoingArcs
+												where tran.Condition != null && subset1.Contains(tran.Condition)
+												select new NfaStateInfo(tran.Target, Math.Max(tran.Priority, state.MaxPriority), tran.Priority, state.Tags));
+					SubsetState target = EpsilonClosure(reach, curSubsetState);
 					// this makes the FSA not complete
 					if (!target.IsEmpty)
 					{
@@ -540,20 +550,37 @@ namespace SIL.APRE.Fsa
 						{
 							subsetStates.Add(target, target);
 							unmarkedSubsetStates.Enqueue(target);
-							NfaStateInfo[] acceptingStates = (from state in target.NfaStates
-															  where state.NfaState.IsAccepting
-															  orderby state.Priority
-															  select state).ToArray();
+							NfaStateInfo[] sortedStates = target.NfaStates.OrderByDescending(state => state.MaxPriority).ThenByDescending(state => state.LastPriority).ToArray();
+							NfaStateInfo[] acceptingStates = sortedStates.Where(state => state.NfaState.IsAccepting).ToArray();
 							if (acceptingStates.Length > 0)
 							{
 								IEnumerable<AcceptInfo<TOffset>> acceptInfos = acceptingStates.SelectMany(state => state.NfaState.AcceptInfos);
-								NfaStateInfo minState = acceptingStates.First();
-								IEnumerable<TagMapCommand> finishers = from kvp in minState.Tags
-								                                       let dest = GetRegisterIndex(registerIndices, kvp.Key, 0)
-								                                       let src = GetRegisterIndex(registerIndices, kvp.Key, kvp.Value)
-								                                       where dest != src
+								IEnumerable<TagMapCommand> finishers = from state in acceptingStates
+																	   from tag in state.Tags.Keys.Distinct()
+								                                       let dest = GetRegisterIndex(registerIndices, tag, 0)
+								                                       let src = GetRegisterIndex(registerIndices, tag, state.Tags[tag])
+								                                       where dest != src && state.Tags[tag] > 0
 								                                       select new TagMapCommand(dest, src);
-								target.DfaState = CreateAcceptingState(acceptInfos, finishers);
+								
+								PriorityType priorityType = PriorityType.Medium;
+								foreach (Arc<TOffset> arc in sortedStates.Last().NfaState.OutgoingArcs)
+								{
+									State<TOffset> state = arc.Target;
+									while (!state.IsAccepting)
+									{
+										Arc<TOffset> highestPriArc = state.OutgoingArcs.MinBy(a => a.Priority);
+										if (highestPriArc.Condition != null)
+											break;
+										state = highestPriArc.Target;
+									}
+
+									if (state.IsAccepting)
+									{
+										priorityType = PriorityType.High;
+										break;
+									}
+								}
+								target.DfaState = CreateAcceptingState(priorityType, acceptInfos, finishers);
 							}
 							else
 							{
@@ -567,7 +594,7 @@ namespace SIL.APRE.Fsa
 			}
 			else
 			{
-				ArcCondition<TOffset> condition = conditions[conditionIndex];
+				FeatureStruct condition = conditions[conditionIndex];
 				ComputeArcs(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, conditions, conditionIndex + 1,
 					subset1.Concat(condition).ToArray(), subset2);
 				ComputeArcs(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, conditions, conditionIndex + 1,
@@ -575,18 +602,18 @@ namespace SIL.APRE.Fsa
 			}
 		}
 
-		private bool CreateDisjointCondition(IEnumerable<ArcCondition<TOffset>> conditions, IEnumerable<ArcCondition<TOffset>> negConditions, out ArcCondition<TOffset> result)
+		private bool CreateDisjointCondition(IEnumerable<FeatureStruct> conditions, IEnumerable<FeatureStruct> negConditions, out FeatureStruct result)
 		{
 			FeatureStruct fs = null;
-			foreach (ArcCondition<TOffset> curCond in conditions)
+			foreach (FeatureStruct curCond in conditions)
 			{
 				if (fs == null)
 				{
-					fs = curCond.FeatureStruct;
+					fs = curCond;
 				}
 				else
 				{
-					if (!fs.Unify(curCond.FeatureStruct, false, new VariableBindings(), false, out fs))
+					if (!fs.Unify(curCond, false, new VariableBindings(), false, out fs))
 					{
 						result = null;
 						return false;
@@ -594,10 +621,10 @@ namespace SIL.APRE.Fsa
 				}
 			}
 
-			foreach (ArcCondition<TOffset> curCond in negConditions)
+			foreach (FeatureStruct curCond in negConditions)
 			{
 				FeatureStruct negation;
-				if (!curCond.FeatureStruct.Negation(out negation))
+				if (!curCond.Negation(out negation))
 				{
 					result = null;
 					return false;
@@ -627,59 +654,85 @@ namespace SIL.APRE.Fsa
 				return false;
 			}
 
-			result = new ArcCondition<TOffset>(fs);
+			result = fs;
 			return true;
 		}
 
 		private void ReorderTagIndices(SubsetState from, SubsetState to, Dictionary<int, int> registerIndices,
 			List<TagMapCommand> cmds)
 		{
-			var newCmds = new SortedDictionary<int, TagMapCommand>();
+			var newCmds = new List<TagMapCommand>();
+			var reorderedIndices = new Dictionary<Tuple<int, int>, int>();
+			var reorderedStates = new Dictionary<Tuple<int, int>, NfaStateInfo>();
+
 			foreach (NfaStateInfo fromState in from.NfaStates)
 			{
-				foreach (KeyValuePair<int, int> kvp in fromState.Tags)
+				foreach (NfaStateInfo toState in to.NfaStates)
 				{
-					foreach (NfaStateInfo toState in to.NfaStates)
+					if (!toState.NfaState.Equals(fromState.NfaState))
+						continue;
+
+					foreach (KeyValuePair<int, int> fromTag in fromState.Tags)
 					{
-						if (toState.NfaState.Equals(fromState.NfaState) && toState.Tags[kvp.Key] != kvp.Value)
+						Tuple<int, int> tagIndex = Tuple.Create(fromTag.Key, toState.Tags[fromTag.Key]);
+
+						int index;
+						if (reorderedIndices.TryGetValue(tagIndex, out index))
 						{
-							int dest = GetRegisterIndex(registerIndices, kvp.Key, toState.Tags[kvp.Key]);
-							newCmds[dest] = new TagMapCommand(dest, GetRegisterIndex(registerIndices, kvp.Key, kvp.Value));
+							NfaStateInfo state = reorderedStates[tagIndex];
+							if (index != fromTag.Value && (state.MaxPriority <= fromState.MaxPriority && state.LastPriority <= fromState.LastPriority))
+								continue;
+
+							int src = GetRegisterIndex(registerIndices, fromTag.Key, index);
+							int dest = GetRegisterIndex(registerIndices, fromTag.Key, tagIndex.Item2);
+							newCmds.RemoveAll(cmd => cmd.Src == src && cmd.Dest == dest);
 						}
+
+						if (tagIndex.Item2 != fromTag.Value)
+						{
+							int src = GetRegisterIndex(registerIndices, fromTag.Key, fromTag.Value);
+							int dest = GetRegisterIndex(registerIndices, fromTag.Key, tagIndex.Item2);
+							newCmds.Add(new TagMapCommand(dest, src));
+						}
+
+						reorderedIndices[tagIndex] = fromTag.Value;
+						reorderedStates[tagIndex] = fromState;
 					}
 				}
+
 			}
-			cmds.AddRange(newCmds.Values);
+			cmds.AddRange(newCmds);
 		}
 
-		private static SubsetState EpsilonClosure(SubsetState s, SubsetState prev)
+		private static SubsetState EpsilonClosure(SubsetState from, SubsetState prev)
 		{
 			var stack = new Stack<NfaStateInfo>();
 			var closure = new Dictionary<int, NfaStateInfo>();
-			foreach (NfaStateInfo state in s.NfaStates)
+			foreach (NfaStateInfo state in from.NfaStates)
 			{
-				state.Priority = 0;
 				stack.Push(state);
 				closure[state.NfaState.Index] = state;
 			}
 
 			while (stack.Count != 0)
 			{
-				NfaStateInfo top = stack.Pop();
+				NfaStateInfo topState = stack.Pop();
 
-				foreach (Arc<TOffset> arc in top.NfaState.OutgoingArcs)
+				foreach (Arc<TOffset> arc in topState.NfaState.OutgoingArcs)
 				{
 					if (arc.Condition == null)
 					{
-						int newPriority = Math.Max(arc.Priority, top.Priority);
-						NfaStateInfo tempSe;
-						if (closure.TryGetValue(arc.Target.Index, out tempSe))
+						int newMaxPriority = Math.Max(arc.Priority, topState.MaxPriority);
+						NfaStateInfo temp;
+						if (closure.TryGetValue(arc.Target.Index, out temp))
 						{
-							if (tempSe.Priority < newPriority)
+							if (temp.MaxPriority < newMaxPriority)
+								continue;
+							if (temp.MaxPriority == newMaxPriority && temp.LastPriority <= arc.Priority)
 								continue;
 						}
 
-						var newSe = new NfaStateInfo(arc.Target, newPriority, top.Tags);
+						var newState = new NfaStateInfo(arc.Target, newMaxPriority, arc.Priority, topState.Tags);
 
 						if (arc.Tag != -1)
 						{
@@ -705,11 +758,11 @@ namespace SIL.APRE.Fsa
 								}
 							}
 
-							newSe.Tags[arc.Tag] = minIndex;
+							newState.Tags[arc.Tag] = minIndex;
 						}
 
-						closure[arc.Target.Index] = newSe;
-						stack.Push(newSe);
+						closure[arc.Target.Index] = newState;
+						stack.Push(newState);
 					}
 				}
 			}

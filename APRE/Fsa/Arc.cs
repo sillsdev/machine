@@ -1,19 +1,14 @@
 ﻿using System.Collections.Generic;
+using System.Text;
+using SIL.APRE.FeatureModel;
 
 namespace SIL.APRE.Fsa
 {
-	public enum PriorityType
-	{
-		Greedy = 0,
-		Normal,
-		Lazy
-	}
-
 	public class Arc<TOffset>
 	{
 		private readonly State<TOffset> _source;
 		private readonly State<TOffset> _target;
-		private readonly ArcCondition<TOffset> _condition;
+		private readonly FeatureStruct _condition;
 		private readonly int _tag = -1;
 		private readonly List<TagMapCommand> _commands;
 		private readonly PriorityType _priorityType;
@@ -30,18 +25,19 @@ namespace SIL.APRE.Fsa
 			_tag = tag;
 		}
 
-		internal Arc(State<TOffset> source, ArcCondition<TOffset> condition, State<TOffset> target, IEnumerable<TagMapCommand> cmds)
+		internal Arc(State<TOffset> source, FeatureStruct condition, State<TOffset> target, IEnumerable<TagMapCommand> cmds)
 			: this(source, condition, target)
 		{
 			_commands = new List<TagMapCommand>(cmds);
 		}
 
-		internal Arc(State<TOffset> source, ArcCondition<TOffset> condition, State<TOffset> target)
+		internal Arc(State<TOffset> source, FeatureStruct condition, State<TOffset> target)
 		{
 			_source = source;
 			_condition = condition;
 			_target = target;
-			_priorityType = PriorityType.Normal;
+			_priorityType = PriorityType.Medium;
+			Priority = -1;
 		}
 
 		public State<TOffset> Source
@@ -57,7 +53,7 @@ namespace SIL.APRE.Fsa
 			}
 		} 
 
-		public ArcCondition<TOffset> Condition
+		public FeatureStruct Condition
 		{
 			get
 			{
@@ -86,18 +82,35 @@ namespace SIL.APRE.Fsa
 			get { return _priorityType; }
 		}
 
-		public int Priority { get; set; }
+		public int Priority { get; internal set; }
 
 		public override string ToString()
 		{
+			var sb = new StringBuilder();
 			if (_condition == null)
 			{
 				if (_tag != -1)
-					return string.Format("tag {0}, {1}", _tag, Priority);
-				return string.Format("ε, {0}", Priority);
+				{
+					sb.Append("tag ");
+					sb.Append(_tag);
+				}
+				else
+				{
+					sb.Append("ε");
+				}
+			}
+			else
+			{
+				sb.Append(_condition.ToString());
 			}
 
-			return string.Format("{0}, {1}", _condition, Priority);
+			if (Priority != -1)
+			{
+				sb.Append(", ");
+				sb.Append(Priority);
+			}
+
+			return sb.ToString();
 		}
 	}
 }

@@ -57,7 +57,16 @@ namespace SIL.APRE.Matching.Fluent
 		{
 			get
 			{
-				AddQuantifier(0, Quantifier<TOffset>.Infinite);
+				AddQuantifier(0, Quantifier<TOffset>.Infinite, true);
+				return this;
+			}
+		}
+
+		IAlternationGroupSyntax<TOffset> IQuantifierGroupSyntax<TOffset>.LazyZeroOrMore
+		{
+			get
+			{
+				AddQuantifier(0, Quantifier<TOffset>.Infinite, false);
 				return this;
 			}
 		}
@@ -66,7 +75,16 @@ namespace SIL.APRE.Matching.Fluent
 		{
 			get
 			{
-				AddQuantifier(1, Quantifier<TOffset>.Infinite);
+				AddQuantifier(1, Quantifier<TOffset>.Infinite, true);
+				return this;
+			}
+		}
+
+		IAlternationGroupSyntax<TOffset> IQuantifierGroupSyntax<TOffset>.LazyOneOrMore
+		{
+			get
+			{
+				AddQuantifier(1, Quantifier<TOffset>.Infinite, false);
 				return this;
 			}
 		}
@@ -75,14 +93,29 @@ namespace SIL.APRE.Matching.Fluent
 		{
 			get
 			{
-				AddQuantifier(0, 1);
+				AddQuantifier(0, 1, true);
+				return this;
+			}
+		}
+
+		IAlternationGroupSyntax<TOffset> IQuantifierGroupSyntax<TOffset>.LazyOptional
+		{
+			get
+			{
+				AddQuantifier(0, 1, false);
 				return this;
 			}
 		}
 
 		IAlternationGroupSyntax<TOffset> IQuantifierGroupSyntax<TOffset>.Range(int min, int max)
 		{
-			AddQuantifier(min, max);
+			AddQuantifier(min, max, true);
+			return this;
+		}
+
+		IAlternationGroupSyntax<TOffset> IQuantifierGroupSyntax<TOffset>.LazyRange(int min, int max)
+		{
+			AddQuantifier(min, max, false);
 			return this;
 		}
 	}

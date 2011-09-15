@@ -16,7 +16,7 @@ namespace SIL.APRE.Matching
     	private readonly bool _greedy;
 
 		public Quantifier(int minOccur, int maxOccur)
-			: this(minOccur, maxOccur, false)
+			: this(minOccur, maxOccur, true)
 		{
 		}
 
@@ -28,7 +28,7 @@ namespace SIL.APRE.Matching
 		}
 
 		public Quantifier(int minOccur, int maxOccur, PatternNode<TOffset> node)
-			: this(minOccur, maxOccur, false, node)
+			: this(minOccur, maxOccur, true, node)
 		{
 		}
 
@@ -87,7 +87,7 @@ namespace SIL.APRE.Matching
 
 		internal override State<TOffset> GenerateNfa(FiniteStateAutomaton<TOffset> fsa, State<TOffset> startState)
 		{
-			PriorityType priorityType = _greedy ? PriorityType.Greedy : PriorityType.Lazy;
+			PriorityType priorityType = _greedy ? PriorityType.High : PriorityType.Low;
 			State<TOffset> endState;
 			if (_minOccur == 0 && _maxOccur == 1)
 			{

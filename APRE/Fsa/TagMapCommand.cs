@@ -43,6 +43,10 @@ namespace SIL.APRE.Fsa
 
 		public int CompareTo(TagMapCommand other)
 		{
+			if (_src == CurrentPosition && other._src != CurrentPosition)
+				return 1;
+			if (_src != CurrentPosition && other._src == CurrentPosition)
+				return -1;
 			if (_dest < other._dest)
 				return -1;
 			if (_dest > other._dest)

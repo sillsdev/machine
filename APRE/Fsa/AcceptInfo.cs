@@ -6,11 +6,13 @@ namespace SIL.APRE.Fsa
 	{
 		private readonly string _id;
 		private readonly Func<IBidirList<Annotation<TOffset>>, FsaMatch<TOffset>, bool> _acceptable;
+		private readonly int _priority;
 
-		internal AcceptInfo(string id, Func<IBidirList<Annotation<TOffset>>, FsaMatch<TOffset>, bool> acceptable)
+		internal AcceptInfo(string id, Func<IBidirList<Annotation<TOffset>>, FsaMatch<TOffset>, bool> acceptable, int priority)
 		{
 			_id = id;
 			_acceptable = acceptable;
+			_priority = priority;
 		}
 
 		public string ID
@@ -21,6 +23,11 @@ namespace SIL.APRE.Fsa
 		public Func<IBidirList<Annotation<TOffset>>, FsaMatch<TOffset>, bool> Acceptable
 		{
 			get { return _acceptable; }
+		}
+
+		public int Priority
+		{
+			get { return _priority; }
 		}
 	}
 }
