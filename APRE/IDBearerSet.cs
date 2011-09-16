@@ -102,6 +102,12 @@ namespace SIL.APRE
 			return true;
 		}
 
+		public bool SetEquals(IEnumerable<T> items)
+		{
+			int foundCount;
+			return CheckSuperset(items, out foundCount) && foundCount == _idBearers.Count;
+		}
+
 		IEnumerator<T> IEnumerable<T>.GetEnumerator()
 		{
 			return _idBearers.Values.GetEnumerator();

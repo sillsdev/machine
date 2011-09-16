@@ -2,61 +2,36 @@
 
 namespace SIL.APRE.Fsa
 {
-	internal struct TagMapCommand : IComparable<TagMapCommand>
+	internal class TagMapCommand : IComparable<TagMapCommand>
 	{
 		public const int CurrentPosition = -1;
 
-		private int _dest;
-		private int _src;
-
 		public TagMapCommand(int dest, int src)
 		{
-			_dest = dest;
-			_src = src;
+			Dest = dest;
+			Src = src;
 		}
 
-		public int Dest
-		{
-			get
-			{
-				return _dest;
-			}
+		public int Dest { get; set; }
 
-			set
-			{
-				_dest = value;
-			}
-		}
-
-		public int Src
-		{
-			get
-			{
-				return _src;
-			}
-
-			set
-			{
-				_src = value;
-			}
-		}
+		public int Src { get; set; }
 
 		public int CompareTo(TagMapCommand other)
 		{
-			if (_src == CurrentPosition && other._src != CurrentPosition)
+			if (Src == CurrentPosition && other.Src != CurrentPosition)
 				return 1;
-			if (_src != CurrentPosition && other._src == CurrentPosition)
+			if (Src != CurrentPosition && other.Src == CurrentPosition)
 				return -1;
-			if (_dest < other._dest)
+			if (Dest < other.Dest)
 				return -1;
-			if (_dest > other._dest)
+			if (Dest > other.Dest)
 				return 1;
 			return 0;
 		}
 
 		public override string ToString()
 		{
-			return string.Format("{0} <- {1}", _dest, _src == CurrentPosition ? "p" : _src.ToString());
+			return string.Format("{0} <- {1}", Dest, Src == CurrentPosition ? "p" : Src.ToString());
 		}
 	}
 }

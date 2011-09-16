@@ -6,13 +6,6 @@ using SIL.APRE.FeatureModel;
 
 namespace SIL.APRE.Fsa
 {
-	public enum PriorityType
-	{
-		High = 0,
-		Medium,
-		Low
-	}
-
 	public class FiniteStateAutomaton<TOffset>
 	{
 		private State<TOffset> _startState;
@@ -71,9 +64,9 @@ namespace SIL.APRE.Fsa
 			return false;
 		}
 
-		private State<TOffset> CreateAcceptingState(PriorityType acceptPriorityType, IEnumerable<AcceptInfo<TOffset>> acceptInfos, IEnumerable<TagMapCommand> finishers)
+		private State<TOffset> CreateAcceptingState(IEnumerable<AcceptInfo<TOffset>> acceptInfos, IEnumerable<TagMapCommand> finishers, bool isLazy)
 		{
-			var state = new State<TOffset>(_states.Count, acceptPriorityType, acceptInfos, finishers);
+			var state = new State<TOffset>(_states.Count, acceptInfos, finishers, isLazy);
 			_states.Add(state);
 			_acceptingStates.Add(state);
 			return state;
@@ -190,31 +183,36 @@ namespace SIL.APRE.Fsa
 
 			Annotation<TOffset> ann = annList.GetFirst(_dir, _filter);
 
-			var registers = new NullableValue<TOffset>[_registerCount, 2];
-
-			var cmds = new List<TagMapCommand>();
-			foreach (TagMapCommand cmd in _initializers)
+			while (ann != null)
 			{
-				if (cmd.Dest == 0)
-					registers[cmd.Dest, 0].Value = ann.Span.GetStart(_dir);
-				else
-					cmds.Add(cmd);
-			}
+				var registers = new NullableValue<TOffset>[_registerCount,2];
 
-			InitializeStack(ann, registers, cmds, instStack);
-
-			while (instStack.Count != 0)
-			{
-				FsaInstance inst = instStack.Pop();
-
-				foreach (Arc<TOffset> arc in inst.State.OutgoingArcs)
+				var cmds = new List<TagMapCommand>();
+				foreach (TagMapCommand cmd in _initializers)
 				{
-					if (inst.Annotation.FeatureStruct.IsUnifiable(arc.Condition, false, inst.VariableBindings))
+					if (cmd.Dest == 0)
+						registers[cmd.Dest, 0].Value = ann.Span.GetStart(_dir);
+					else
+						cmds.Add(cmd);
+				}
+
+				InitializeStack(ann, registers, cmds, instStack);
+
+				while (instStack.Count != 0)
+				{
+					FsaInstance inst = instStack.Pop();
+
+					foreach (Arc<TOffset> arc in inst.State.OutgoingArcs)
 					{
-						AdvanceFsa(annList, inst.Annotation, inst.Annotation.Span.GetEnd(_dir), inst.Registers, inst.VariableBindings, arc,
-							instStack, matchList);
+						if (inst.Annotation.FeatureStruct.IsUnifiable(arc.Condition, false, inst.VariableBindings))
+						{
+							AdvanceFsa(annList, inst.Annotation, inst.Annotation.Span.GetEnd(_dir), inst.Registers, inst.VariableBindings,
+								arc, instStack, matchList);
+						}
 					}
 				}
+
+				ann = ann.IsOptional ? ann.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next)) : null;
 			}
 
 			matchList.Sort();
@@ -262,14 +260,14 @@ namespace SIL.APRE.Fsa
 			var newRegisters = (NullableValue<TOffset>[,]) registers.Clone();
 			ExecuteCommands(newRegisters, arc.Commands, new NullableValue<TOffset>(nextOffset), new NullableValue<TOffset>(end),
 				ann.Span.GetEnd(_dir));
-			if (arc.Target.IsAccepting)
+			if (arc.Target.IsAccepting && IsEndOfInput(nextAnn))
 			{
 				var matchRegisters = (NullableValue<TOffset>[,]) newRegisters.Clone();
 				ExecuteCommands(matchRegisters, arc.Target.Finishers, new NullableValue<TOffset>(), new NullableValue<TOffset>(),
 					ann.Span.GetEnd(_dir));
 				foreach (AcceptInfo<TOffset> acceptInfo in arc.Target.AcceptInfos)
 				{
-					var match = new FsaMatch<TOffset>(acceptInfo.ID, matchRegisters, varBindings, acceptInfo.Priority, arc.Target.AcceptPriority);
+					var match = new FsaMatch<TOffset>(acceptInfo.ID, matchRegisters, varBindings, acceptInfo.Priority, matchList.Count, arc.Target.IsLazy);
 					if (acceptInfo.Acceptable(annList, match))
 						matchList.Add(match);
 				}
@@ -290,6 +288,18 @@ namespace SIL.APRE.Fsa
 			}
 		}
 
+		private bool IsEndOfInput(Annotation<TOffset> nextAnn)
+		{
+			while (nextAnn != null)
+			{
+				if (nextAnn.IsOptional)
+					nextAnn = nextAnn.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
+				else
+					return false;
+			}
+			return true;
+		}
+
 		private static void ExecuteCommands(NullableValue<TOffset>[,] registers, IEnumerable<TagMapCommand> cmds,
 			NullableValue<TOffset> start, NullableValue<TOffset> end, TOffset curEnd)
 		{
@@ -298,6 +308,7 @@ namespace SIL.APRE.Fsa
 				if (cmd.Src == TagMapCommand.CurrentPosition)
 				{
 					registers[cmd.Dest, 0] = start;
+
 					if (cmd.Dest == 1)
 						registers[1, 1].Value = curEnd;
 					else
@@ -311,7 +322,7 @@ namespace SIL.APRE.Fsa
 			}
 		}
 
-		private class NfaStateInfo : IEquatable<NfaStateInfo>
+		private class NfaStateInfo : IEquatable<NfaStateInfo>, IComparable<NfaStateInfo>, IComparable
 		{
 			private readonly State<TOffset> _nfsState;
 			private readonly Dictionary<int, int> _tags;
@@ -384,6 +395,25 @@ namespace SIL.APRE.Fsa
 				return _nfsState.Equals(other._nfsState);
 			}
 
+			public int CompareTo(NfaStateInfo other)
+			{
+				if (other == null)
+					return 1;
+				int res = _maxPriority.CompareTo(other._maxPriority);
+				if (res != 0)
+					return res;
+
+				return _lastPriority.CompareTo(other._lastPriority);
+			}
+
+			int IComparable.CompareTo(object obj)
+			{
+				var other = obj as NfaStateInfo;
+				if (other == null)
+					throw new ArgumentException("The specified object is of the wrong type.");
+				return CompareTo(other);
+			}
+
 			public override string ToString()
 			{
 				return string.Format("State {0} ({1}, {2})", _nfsState.Index, _maxPriority, _lastPriority);
@@ -446,7 +476,7 @@ namespace SIL.APRE.Fsa
 
 		public void Determinize()
 		{
-			var registerIndices = new Dictionary<int, int>();
+			var registerIndices = new Dictionary<Tuple<int, int>, int>();
 
 			var startState = new NfaStateInfo(_startState);
 			var subsetStart = new SubsetState(startState.ToEnumerable());
@@ -485,22 +515,37 @@ namespace SIL.APRE.Fsa
 				}
 			}
 
-			// TODO: traverse through the FSA properly
-			int nextPriority = 0;
-			foreach (State<TOffset> state in from state in _acceptingStates
-											 group state by state.AcceptPriorityType into priorityGroup
-											 orderby priorityGroup.Key
-											 from state in priorityGroup.Key == PriorityType.Medium ? priorityGroup.Reverse() : priorityGroup
-											 select state)
-			{
-				state.AcceptPriority = nextPriority++;
-			}
+			//_registerCount = _nextTag + registerIndices.Count;
 
-			_registerCount = _nextTag + registerIndices.Count;
+			var regNums = new Dictionary<int, int>();
+			for (_registerCount = 0; _registerCount < _nextTag; _registerCount++)
+				regNums[_registerCount] = _registerCount;
+
+			foreach (State<TOffset> state in _states)
+			{
+				RenumberCommands(regNums, state.Finishers);
+				foreach (Arc<TOffset> arc in state.OutgoingArcs)
+					RenumberCommands(regNums, arc.Commands);
+			}
+		}
+
+		private void RenumberCommands(Dictionary<int, int> regNums, List<TagMapCommand> cmds)
+		{
+			foreach (TagMapCommand cmd in cmds)
+			{
+				if (cmd.Src != TagMapCommand.CurrentPosition && !regNums.ContainsKey(cmd.Src))
+					regNums[cmd.Src] = _registerCount++;
+				if (!regNums.ContainsKey(cmd.Dest))
+					regNums[cmd.Dest] = _registerCount++;
+				if (cmd.Src != TagMapCommand.CurrentPosition)
+					cmd.Src = regNums[cmd.Src];
+				cmd.Dest = regNums[cmd.Dest];
+			}
+			cmds.Sort();
 		}
 
 		private void ComputeArcs(Dictionary<SubsetState, SubsetState> subsetStates, Queue<SubsetState> unmarkedSubsetStates,
-			Dictionary<int, int> registerIndices, SubsetState curSubsetState, FeatureStruct[] conditions, int conditionIndex,
+			Dictionary<Tuple<int, int>, int> registerIndices, SubsetState curSubsetState, FeatureStruct[] conditions, int conditionIndex,
 			FeatureStruct[] subset1, FeatureStruct[] subset2)
 		{
 			if (conditionIndex == conditions.Length)
@@ -508,7 +553,6 @@ namespace SIL.APRE.Fsa
 				FeatureStruct condition;
 				if (CreateDisjointCondition(subset1, subset2, out condition))
 				{
-					var cmdTags = new Dictionary<int, int>();
 					var reach = new SubsetState(from state in curSubsetState.NfaStates
 											    from tran in state.NfaState.OutgoingArcs
 												where tran.Condition != null && subset1.Contains(tran.Condition)
@@ -517,6 +561,7 @@ namespace SIL.APRE.Fsa
 					// this makes the FSA not complete
 					if (!target.IsEmpty)
 					{
+						var cmdTags = new Dictionary<int, int>();
 						foreach (NfaStateInfo targetState in target.NfaStates)
 						{
 							foreach (KeyValuePair<int, int> tag in targetState.Tags)
@@ -536,10 +581,7 @@ namespace SIL.APRE.Fsa
 							}
 						}
 
-						var cmds = (from kvp in cmdTags
-						            select new TagMapCommand(GetRegisterIndex(registerIndices, kvp.Key, kvp.Value),
-						                                     TagMapCommand.CurrentPosition)).ToList();
-
+						var cmds = new List<TagMapCommand>();
 						SubsetState subsetState;
 						if (subsetStates.TryGetValue(target, out subsetState))
 						{
@@ -550,42 +592,52 @@ namespace SIL.APRE.Fsa
 						{
 							subsetStates.Add(target, target);
 							unmarkedSubsetStates.Enqueue(target);
-							NfaStateInfo[] sortedStates = target.NfaStates.OrderByDescending(state => state.MaxPriority).ThenByDescending(state => state.LastPriority).ToArray();
-							NfaStateInfo[] acceptingStates = sortedStates.Where(state => state.NfaState.IsAccepting).ToArray();
+							NfaStateInfo[] acceptingStates = (from state in target.NfaStates
+							                                  where state.NfaState.IsAccepting
+							                                  orderby state descending
+							                                  select state).ToArray();
 							if (acceptingStates.Length > 0)
 							{
 								IEnumerable<AcceptInfo<TOffset>> acceptInfos = acceptingStates.SelectMany(state => state.NfaState.AcceptInfos);
-								IEnumerable<TagMapCommand> finishers = from state in acceptingStates
-																	   from tag in state.Tags.Keys.Distinct()
-								                                       let dest = GetRegisterIndex(registerIndices, tag, 0)
-								                                       let src = GetRegisterIndex(registerIndices, tag, state.Tags[tag])
-								                                       where dest != src && state.Tags[tag] > 0
-								                                       select new TagMapCommand(dest, src);
-								
-								PriorityType priorityType = PriorityType.Medium;
-								foreach (Arc<TOffset> arc in sortedStates.Last().NfaState.OutgoingArcs)
-								{
-									State<TOffset> state = arc.Target;
-									while (!state.IsAccepting)
-									{
-										Arc<TOffset> highestPriArc = state.OutgoingArcs.MinBy(a => a.Priority);
-										if (highestPriArc.Condition != null)
-											break;
-										state = highestPriArc.Target;
-									}
 
-									if (state.IsAccepting)
+								var finishers = new List<TagMapCommand>();
+								var finishedTags = new HashSet<int>();
+								foreach (NfaStateInfo acceptingState in acceptingStates)
+								{
+									foreach (KeyValuePair<int, int> tag in acceptingState.Tags)
 									{
-										priorityType = PriorityType.High;
-										break;
+										if (tag.Value > 0 && !finishedTags.Contains(tag.Key))
+										{
+											finishedTags.Add(tag.Key);
+											int src = GetRegisterIndex(registerIndices, tag.Key, tag.Value);
+											int dest = GetRegisterIndex(registerIndices, tag.Key, 0);
+											finishers.Add(new TagMapCommand(dest, src));
+										}
 									}
 								}
-								target.DfaState = CreateAcceptingState(priorityType, acceptInfos, finishers);
+								target.DfaState = CreateAcceptingState(acceptInfos, finishers, IsLazyAcceptingState(target));
 							}
 							else
 							{
 								target.DfaState = CreateState();
 							}
+						}
+
+						foreach (KeyValuePair<int, int> tag in cmdTags)
+						{
+							int reg = GetRegisterIndex(registerIndices, tag.Key, tag.Value);
+							bool found = false;
+							foreach (TagMapCommand cmd in cmds)
+							{
+								if (cmd.Src == reg)
+								{
+									found = true;
+									cmd.Src = TagMapCommand.CurrentPosition;
+									break;
+								}
+							}
+							if (!found)
+								cmds.Add(new TagMapCommand(reg, TagMapCommand.CurrentPosition));
 						}
 
 						curSubsetState.DfaState.AddArc(condition, target.DfaState, cmds);
@@ -600,6 +652,34 @@ namespace SIL.APRE.Fsa
 				ComputeArcs(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, conditions, conditionIndex + 1,
 					subset1, subset2.Concat(condition).ToArray());
 			}
+		}
+
+		private bool IsLazyAcceptingState(SubsetState state)
+		{
+			foreach (Arc<TOffset> arc in state.NfaStates.Min().NfaState.OutgoingArcs)
+			{
+				State<TOffset> curState = arc.Target;
+				while (!curState.IsAccepting)
+				{
+					Arc<TOffset> highestPriArc = curState.OutgoingArcs.MinBy(a => a.Priority);
+					if (highestPriArc.Condition != null)
+						break;
+					curState = highestPriArc.Target;
+				}
+
+				if (curState.IsAccepting)
+				{
+					if ((from s in state.NfaStates
+						 from tran in s.NfaState.OutgoingArcs
+						 where tran.Condition != null
+						 select tran.Condition).Any())
+					{
+						return true;
+					}
+					break;
+				}
+			}
+			return false;
 		}
 
 		private bool CreateDisjointCondition(IEnumerable<FeatureStruct> conditions, IEnumerable<FeatureStruct> negConditions, out FeatureStruct result)
@@ -658,7 +738,7 @@ namespace SIL.APRE.Fsa
 			return true;
 		}
 
-		private void ReorderTagIndices(SubsetState from, SubsetState to, Dictionary<int, int> registerIndices,
+		private void ReorderTagIndices(SubsetState from, SubsetState to, Dictionary<Tuple<int, int>, int> registerIndices,
 			List<TagMapCommand> cmds)
 		{
 			var newCmds = new List<TagMapCommand>();
@@ -706,6 +786,14 @@ namespace SIL.APRE.Fsa
 
 		private static SubsetState EpsilonClosure(SubsetState from, SubsetState prev)
 		{
+			int firstFreeIndex = -1;
+			foreach (NfaStateInfo state in prev.NfaStates)
+			{
+				foreach (KeyValuePair<int, int> tag in state.Tags)
+					firstFreeIndex = Math.Max(firstFreeIndex, tag.Value);
+			}
+			firstFreeIndex++;
+
 			var stack = new Stack<NfaStateInfo>();
 			var closure = new Dictionary<int, NfaStateInfo>();
 			foreach (NfaStateInfo state in from.NfaStates)
@@ -735,31 +823,7 @@ namespace SIL.APRE.Fsa
 						var newState = new NfaStateInfo(arc.Target, newMaxPriority, arc.Priority, topState.Tags);
 
 						if (arc.Tag != -1)
-						{
-							var indices = new List<int>();
-							foreach (NfaStateInfo state in prev.NfaStates)
-							{
-								int index;
-								if (state.Tags.TryGetValue(arc.Tag, out index))
-									indices.Add(index);
-							}
-
-							int minIndex = 0;
-							if (indices.Count > 0)
-							{
-								indices.Sort();
-								for (int i = 0; i <= indices[indices.Count - 1] + 1; i++)
-								{
-									if (indices.BinarySearch(i) < 0)
-									{
-										minIndex = i;
-										break;
-									}
-								}
-							}
-
-							newState.Tags[arc.Tag] = minIndex;
-						}
+							newState.Tags[arc.Tag] = firstFreeIndex;
 
 						closure[arc.Target.Index] = newState;
 						stack.Push(newState);
@@ -770,12 +834,12 @@ namespace SIL.APRE.Fsa
 			return new SubsetState(closure.Values);
 		}
 
-		private int GetRegisterIndex(Dictionary<int, int> registerIndices, int tag, int index)
+		private int GetRegisterIndex(Dictionary<Tuple<int, int>, int> registerIndices, int tag, int index)
 		{
 			if (index == 0)
 				return tag;
 
-			int key = tag ^ index;
+			Tuple<int, int> key =  Tuple.Create(tag, index);
 			int registerIndex;
 			if (registerIndices.TryGetValue(key, out registerIndex))
 				return registerIndex;

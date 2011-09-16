@@ -11,32 +11,32 @@ namespace SIL.APRE.Fsa
 		private readonly List<Arc<TOffset>> _incomingArcs;
 
 		private readonly bool _isAccepting;
-		private readonly PriorityType _acceptPriorityType;
 		private readonly List<AcceptInfo<TOffset>> _acceptInfos; 
 		private readonly List<TagMapCommand> _finishers;
+		private readonly bool _isLazy;
 
 		internal State(int index, bool isAccepting)
-			: this(index, isAccepting, PriorityType.Medium, Enumerable.Empty<AcceptInfo<TOffset>>(), Enumerable.Empty<TagMapCommand>())
+			: this(index, isAccepting, Enumerable.Empty<AcceptInfo<TOffset>>(), Enumerable.Empty<TagMapCommand>(), false)
 		{
 		}
 
 		internal State(int index, IEnumerable<AcceptInfo<TOffset>> acceptInfos)
-			: this(index, true, PriorityType.Medium, acceptInfos, Enumerable.Empty<TagMapCommand>())
+			: this(index, true, acceptInfos, Enumerable.Empty<TagMapCommand>(), false)
 		{
 		}
 
-		internal State(int index, PriorityType acceptPriorityType, IEnumerable<AcceptInfo<TOffset>> acceptInfos, IEnumerable<TagMapCommand> finishers)
-			: this(index, true, acceptPriorityType, acceptInfos, finishers)
+		internal State(int index, IEnumerable<AcceptInfo<TOffset>> acceptInfos, IEnumerable<TagMapCommand> finishers, bool isLazy)
+			: this(index, true, acceptInfos, finishers, isLazy)
 		{
 		}
 
-		private State(int index, bool isAccepting, PriorityType acceptPriorityType, IEnumerable<AcceptInfo<TOffset>> acceptInfos, IEnumerable<TagMapCommand> finishers)
+		private State(int index, bool isAccepting, IEnumerable<AcceptInfo<TOffset>> acceptInfos, IEnumerable<TagMapCommand> finishers, bool isLazy)
 		{
 			_index = index;
 			_isAccepting = isAccepting;
-			_acceptPriorityType = acceptPriorityType;
 			_acceptInfos = new List<AcceptInfo<TOffset>>(acceptInfos);
 			_finishers = new List<TagMapCommand>(finishers);
+			_isLazy = isLazy;
 			_outgoingArcs = new List<Arc<TOffset>>();
 			_incomingArcs = new List<Arc<TOffset>>();
 		}
@@ -72,14 +72,12 @@ namespace SIL.APRE.Fsa
 			get { return _acceptInfos; }
 		}
 
-		public PriorityType AcceptPriorityType
+		public bool IsLazy
 		{
-			get { return _acceptPriorityType; }
+			get { return _isLazy; }
 		}
 
-		public int AcceptPriority { get; internal set; }
-
-		internal IEnumerable<TagMapCommand> Finishers
+		internal List<TagMapCommand> Finishers
 		{
 			get
 			{
@@ -89,10 +87,10 @@ namespace SIL.APRE.Fsa
 
 		public State<TOffset> AddArc(State<TOffset> target)
 		{
-			return AddArc(target, PriorityType.Medium);
+			return AddArc(target, ArcPriorityType.Medium);
 		}
 
-		public State<TOffset> AddArc(State<TOffset> target, PriorityType priorityType)
+		public State<TOffset> AddArc(State<TOffset> target, ArcPriorityType priorityType)
 		{
 			return AddArc(new Arc<TOffset>(this, target, priorityType));
 		}

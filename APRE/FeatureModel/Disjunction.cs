@@ -2,23 +2,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace SIL.APRE.FeatureModel
 {
 	public class Disjunction : IEnumerable<FeatureStruct>, IEquatable<Disjunction>, ICloneable
 	{
-		private readonly List<FeatureStruct> _disjuncts;
+		private readonly HashSet<FeatureStruct> _disjuncts;
 
 		public Disjunction(IEnumerable<FeatureStruct> disjuncts)
 		{
-			_disjuncts = new List<FeatureStruct>(disjuncts);
+			_disjuncts = new HashSet<FeatureStruct>(disjuncts);
 			if (_disjuncts.Count < 2)
 				throw new ArgumentException("At least two disjuncts must be specified.", "disjuncts");
 		}
 
 		public Disjunction(Disjunction disjunction)
 		{
-			_disjuncts = new List<FeatureStruct>(disjunction._disjuncts.Select(disj => (FeatureStruct) disj.Clone()));
+			_disjuncts = new HashSet<FeatureStruct>(disjunction._disjuncts.Select(disj => (FeatureStruct) disj.Clone()));
 		}
 
 		public IEnumerator<FeatureStruct> GetEnumerator()
@@ -76,7 +77,7 @@ namespace SIL.APRE.FeatureModel
 
 		public bool Equals(Disjunction other)
 		{
-			return other != null && new HashSet<FeatureStruct>(_disjuncts).SetEquals(other._disjuncts);
+			return other != null && _disjuncts.SetEquals(other._disjuncts);
 		}
 
 		public override bool Equals(object obj)
@@ -88,6 +89,20 @@ namespace SIL.APRE.FeatureModel
 		public override int GetHashCode()
 		{
 			return _disjuncts.Aggregate(0, (code, fs) => code ^ fs.GetHashCode());
+		}
+
+		public override string ToString()
+		{
+			var sb = new StringBuilder();
+			bool first = true;
+			foreach (FeatureStruct disjunct in _disjuncts)
+			{
+				if (!first)
+					sb.Append(" || ");
+				sb.Append(disjunct);
+				first = false;
+			}
+			return sb.ToString();
 		}
 	}
 }

@@ -4,6 +4,14 @@ using SIL.APRE.FeatureModel;
 
 namespace SIL.APRE.Fsa
 {
+	public enum ArcPriorityType
+	{
+		High = 0,
+		Medium,
+		Low,
+		VeryLow
+	}
+
 	public class Arc<TOffset>
 	{
 		private readonly State<TOffset> _source;
@@ -11,9 +19,9 @@ namespace SIL.APRE.Fsa
 		private readonly FeatureStruct _condition;
 		private readonly int _tag = -1;
 		private readonly List<TagMapCommand> _commands;
-		private readonly PriorityType _priorityType;
+		private readonly ArcPriorityType _priorityType;
 
-		internal Arc(State<TOffset> source, State<TOffset> target, PriorityType priorityType)
+		internal Arc(State<TOffset> source, State<TOffset> target, ArcPriorityType priorityType)
 			: this(source, null, target)
 		{
 			_priorityType = priorityType;
@@ -36,7 +44,7 @@ namespace SIL.APRE.Fsa
 			_source = source;
 			_condition = condition;
 			_target = target;
-			_priorityType = PriorityType.Medium;
+			_priorityType = ArcPriorityType.Medium;
 			Priority = -1;
 		}
 
@@ -69,7 +77,7 @@ namespace SIL.APRE.Fsa
 			}
 		}
 
-		internal IEnumerable<TagMapCommand> Commands
+		internal List<TagMapCommand> Commands
 		{
 			get
 			{
@@ -77,7 +85,7 @@ namespace SIL.APRE.Fsa
 			}
 		}
 
-		public PriorityType PriorityType
+		public ArcPriorityType PriorityType
 		{
 			get { return _priorityType; }
 		}

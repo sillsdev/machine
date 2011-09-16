@@ -87,7 +87,7 @@ namespace SIL.APRE.Matching
 
 		internal override State<TOffset> GenerateNfa(FiniteStateAutomaton<TOffset> fsa, State<TOffset> startState)
 		{
-			PriorityType priorityType = _greedy ? PriorityType.High : PriorityType.Low;
+			ArcPriorityType priorityType = _greedy ? ArcPriorityType.High : ArcPriorityType.Low;
 			State<TOffset> endState;
 			if (_minOccur == 0 && _maxOccur == 1)
 			{
@@ -99,8 +99,7 @@ namespace SIL.APRE.Matching
 			else if (_minOccur == 0 && _maxOccur == Infinite)
 			{
 				// kleene star
-				startState = startState.AddArc(fsa.CreateState(), priorityType);
-				endState = base.GenerateNfa(fsa, startState);
+				endState = base.GenerateNfa(fsa, startState.AddArc(fsa.CreateState(), priorityType));
 				startState.AddArc(endState);
 				endState.AddArc(startState, priorityType);
 			}

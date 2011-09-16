@@ -47,7 +47,7 @@ namespace SIL.APRE.Test
 					.Group("noun", noun => noun.Annotation(FeatureStruct.With(featSys).Feature("type").EqualTo("Noun").Value))
 					.Group("verb", verb => verb.Annotation(FeatureStruct.With(featSys).Feature("type").EqualTo("Verb").Value))
 					.Group("range", range => range
-						.Group("adv", adv => adv.Annotation(FeatureStruct.With(featSys).Feature("type").EqualTo("Adv").Value)).Optional)).Value;
+						.Group("adv", adv => adv.Annotation(FeatureStruct.With(featSys).Feature("type").EqualTo("Adv").Value)).LazyOptional)).Value;
 			ltorPattern.Compile();
 
 			AnnotationList<int> annList = CreateShapeAnnotations("the old, angry man slept well", spanFactory, featSys);

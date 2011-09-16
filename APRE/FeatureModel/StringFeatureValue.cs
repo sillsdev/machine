@@ -199,7 +199,7 @@ namespace SIL.APRE.FeatureModel
 
 		public override int GetHashCode()
 		{
-			return _values.GetHashCode() ^ Not.GetHashCode();
+			return _values.Aggregate(0, (code, str) => code ^ str.GetHashCode()) ^ Not.GetHashCode();
 		}
 
 		public override string ToString()

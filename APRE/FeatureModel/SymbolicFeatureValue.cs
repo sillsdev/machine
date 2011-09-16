@@ -176,12 +176,12 @@ namespace SIL.APRE.FeatureModel
 			if (other == null)
 				return false;
 			other = Dereference(other);
-			return _values.Equals(other._values);
+			return _values.SetEquals(other._values);
 		}
 
 		public override int GetHashCode()
 		{
-			return _values.GetHashCode();
+			return _values.Aggregate(0, (code, symbol) => code ^ symbol.GetHashCode());
 		}
 
 		public override FeatureValue Clone()

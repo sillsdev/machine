@@ -14,7 +14,7 @@ namespace SIL.APRE.FeatureModel
 		}
 
 		private readonly IDBearerDictionary<Feature, FeatureValue> _definite;
-		private readonly List<Disjunction> _indefinite;
+		private readonly HashSet<Disjunction> _indefinite;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FeatureStruct"/> class.
@@ -22,7 +22,7 @@ namespace SIL.APRE.FeatureModel
 		public FeatureStruct()
 		{
 			_definite = new IDBearerDictionary<Feature, FeatureValue>();
-			_indefinite = new List<Disjunction>();
+			_indefinite = new HashSet<Disjunction>();
 		}
 
 		public FeatureStruct(FeatureStruct other)
@@ -774,7 +774,7 @@ namespace SIL.APRE.FeatureModel
 			while (indefinite.Count > 0)
 			{
 				Disjunction disjunction = indefinite.First();
-				indefinite.RemoveAt(0);
+				indefinite.Remove(disjunction);
 				
 				var newDisjunction = new List<FeatureStruct>();
 				FeatureStruct lastFS = null;
@@ -835,7 +835,13 @@ namespace SIL.APRE.FeatureModel
 
 		public bool Negation(out FeatureStruct output)
 		{
-			var newDisjunction = new HashSet<FeatureStruct>();
+			if (_definite.Count == 0 && _indefinite.Count == 0)
+			{
+				output = null;
+				return false;
+			}
+
+			var newDisjunction = new List<FeatureStruct>();
 			foreach (Disjunction disjunction in _indefinite)
 			{
 				FeatureStruct fs;
@@ -934,6 +940,12 @@ namespace SIL.APRE.FeatureModel
 				firstFeature = false;
 			}
 			sb.Append("]");
+			foreach (Disjunction disjunction in _indefinite)
+			{
+				sb.Append(" && (");
+				sb.Append(disjunction);
+				sb.Append(")");
+			}
 			return sb.ToString();
 		}
 	}

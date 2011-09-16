@@ -191,76 +191,31 @@ namespace SIL.APRE.Matching
 			}
 			else
 			{
-				startState = _fsa.CreateTag(startState, _fsa.CreateState(), EntireMatch, true);
-				State<TOffset> endState = expr.GenerateNfa(_fsa, startState);
-
-				HashSet<FeatureStruct> startAnchored = null;
-				var startAnchor = expr.Children.GetFirst(_fsa.Direction) as Anchor<TOffset>;
-				if (startAnchor != null)
-					startAnchored = new HashSet<FeatureStruct>(GetStartAnchoredConditions(startState, new HashSet<State<TOffset>>()));
-
-				HashSet<FeatureStruct> endAnchored = null;
-				var endAnchor = expr.Children.GetLast(_fsa.Direction) as Anchor<TOffset>;
-				if (endAnchor != null)
-					endAnchored = new HashSet<FeatureStruct>(GetEndAnchoredConditions(endState, new HashSet<State<TOffset>>()));
-
-				if (startAnchored != null)
+				if (!(expr.Children.GetFirst(_fsa.Direction) is Anchor<TOffset>))
 				{
-					foreach (FeatureStruct cond in startAnchored)
-					{
-						AnchorTypes a = startAnchor.Type;
-						if (endAnchored != null && endAnchored.Contains(cond))
-							a = a | endAnchor.Type;
-						AddAnchor(cond, a);
-					}
+					State<TOffset> nextState = startState.AddArc(_fsa.CreateState(), ArcPriorityType.VeryLow);
+					State<TOffset> endState = nextState.AddArc(new FeatureStruct(), _fsa.CreateState());
+					startState.AddArc(endState);
+					endState.AddArc(startState, ArcPriorityType.VeryLow);
+					startState = endState;
 				}
 
-				if (endAnchored != null)
+				startState = _fsa.CreateTag(startState, _fsa.CreateState(), EntireMatch, true);
+				startState = expr.GenerateNfa(_fsa, startState);
+				startState = _fsa.CreateTag(startState, _fsa.CreateState(), EntireMatch, false);
+
+				if (!(expr.Children.GetLast(_fsa.Direction) is Anchor<TOffset>))
 				{
-					foreach (FeatureStruct cond in endAnchored)
-					{
-						if (startAnchored == null || !startAnchored.Contains(cond))
-							AddAnchor(cond, endAnchor.Type);
-					}
+					State<TOffset> nextState = startState.AddArc(_fsa.CreateState(), ArcPriorityType.Low);
+					State<TOffset> endState = nextState.AddArc(new FeatureStruct(), _fsa.CreateState());
+					startState.AddArc(endState);
+					endState.AddArc(startState, ArcPriorityType.Low);
+					startState = endState;
 				}
 
 				State<TOffset> acceptingState = _fsa.CreateAcceptingState(name,
 					(input, match) => acceptables.All(acceptable => acceptable(input, CreatePatternMatch(match))), nextPriority++);
-				_fsa.CreateTag(endState, acceptingState, EntireMatch, false);
-			}
-		}
-
-		private static IEnumerable<FeatureStruct> GetStartAnchoredConditions(State<TOffset> startState, HashSet<State<TOffset>> visitedStates)
-		{
-			visitedStates.Add(startState);
-			foreach (Arc<TOffset> arc in startState.OutgoingArcs)
-			{
-				if (arc.Condition != null)
-				{
-					yield return arc.Condition;
-				}
-				else if (!visitedStates.Contains(arc.Target))
-				{
-					foreach (FeatureStruct cond in GetStartAnchoredConditions(arc.Target, visitedStates))
-						yield return cond;
-				}
-			}
-		}
-
-		private static IEnumerable<FeatureStruct> GetEndAnchoredConditions(State<TOffset> endState, HashSet<State<TOffset>> visitedStates)
-		{
-			visitedStates.Add(endState);
-			foreach (Arc<TOffset> arc in endState.IncomingArcs)
-			{
-				if (arc.Condition != null)
-				{
-					yield return arc.Condition;
-				}
-				else if (!visitedStates.Contains(arc.Source))
-				{
-					foreach (FeatureStruct cond in GetEndAnchoredConditions(arc.Source, visitedStates))
-						yield return cond;
-				}
+				startState.AddArc(acceptingState);
 			}
 		}
 
@@ -292,38 +247,50 @@ namespace SIL.APRE.Matching
 			if (!IsCompiled)
 				Compile();
 
-			HashSet<Annotation<TOffset>> leftAnchored = null;
-			HashSet<Annotation<TOffset>> rightAnchored = null;
-			if (_checkAnchors)
-			{
-				leftAnchored = new HashSet<Annotation<TOffset>>(GetAnchoredAnnotations(annList.GetFirst(Direction.LeftToRight), Direction.LeftToRight));
-				rightAnchored = new HashSet<Annotation<TOffset>>(GetAnchoredAnnotations(annList.GetFirst(Direction.RightToLeft), Direction.RightToLeft));
-				MarkAnchoredAnnotations(leftAnchored, rightAnchored);
-			}
+			//HashSet<Annotation<TOffset>> leftAnchored = null;
+			//HashSet<Annotation<TOffset>> rightAnchored = null;
+			//if (_checkAnchors)
+			//{
+			//    leftAnchored = new HashSet<Annotation<TOffset>>(GetAnchoredAnnotations(annList.GetFirst(Direction.LeftToRight), Direction.LeftToRight));
+			//    rightAnchored = new HashSet<Annotation<TOffset>>(GetAnchoredAnnotations(annList.GetFirst(Direction.RightToLeft), Direction.RightToLeft));
+			//    MarkAnchoredAnnotations(leftAnchored, rightAnchored);
+			//}
 
 			List<PatternMatch<TOffset>> matchesList = null;
-			Annotation<TOffset> first = annList.GetFirst(_dir, _filter);
-			while (first != null)
+			IEnumerable<FsaMatch<TOffset>> fsaMatches;
+			if (_fsa.IsMatch(annList, out fsaMatches))
 			{
-				IEnumerable<FsaMatch<TOffset>> fsaMatches;
-				if (_fsa.IsMatch(annList.GetView(first, _dir), out fsaMatches))
+				matchesList = new List<PatternMatch<TOffset>>();
+				foreach (FsaMatch<TOffset> match in fsaMatches)
 				{
-					if (matchesList == null)
-						matchesList = new List<PatternMatch<TOffset>>();
-					foreach (FsaMatch<TOffset> match in fsaMatches)
-						matchesList.Add(CreatePatternMatch(match));
-					if (!allMatches)
-					{
-						matches = matchesList;
-						return true;
-					}
+					PatternMatch<TOffset> patMatch = CreatePatternMatch(match);
+					if (patMatch != null)
+						matchesList.Add(patMatch);
 				}
-
-				first = first.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
 			}
 
-			if (_checkAnchors)
-				UnmarkAnchoredAnnotations(leftAnchored, rightAnchored);
+			//Annotation<TOffset> first = annList.GetFirst(_dir, _filter);
+			//while (first != null)
+			//{
+			//    IEnumerable<FsaMatch<TOffset>> fsaMatches;
+			//    if (_fsa.IsMatch(annList.GetView(first, _dir), out fsaMatches))
+			//    {
+			//        if (matchesList == null)
+			//            matchesList = new List<PatternMatch<TOffset>>();
+			//        foreach (FsaMatch<TOffset> match in fsaMatches)
+			//            matchesList.Add(CreatePatternMatch(match));
+			//        if (!allMatches)
+			//        {
+			//            matches = matchesList;
+			//            return true;
+			//        }
+			//    }
+
+			//    first = first.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
+			//}
+
+			//if (_checkAnchors)
+			//    UnmarkAnchoredAnnotations(leftAnchored, rightAnchored);
 
 			matches = matchesList;
 			return matchesList != null;
@@ -340,8 +307,7 @@ namespace SIL.APRE.Matching
 			var groups = new Dictionary<string, Span<TOffset>>();
 			TOffset matchStart, matchEnd;
 			_fsa.GetOffsets(EntireMatch, match.Registers, out matchStart, out matchEnd);
-			var matchSpan = _spanFactory.Create(matchStart, matchEnd);
-
+			Span<TOffset> matchSpan = _spanFactory.Create(matchStart, matchEnd);
 			foreach (string groupName in _fsa.GroupNames)
 			{
 				if (groupName == EntireMatch)

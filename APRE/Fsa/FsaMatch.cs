@@ -9,15 +9,18 @@ namespace SIL.APRE.Fsa
 		private readonly VariableBindings _varBindings;
 		private readonly string _id;
 		private readonly int _priority;
-		private readonly int _acceptPriority;
 
-		internal FsaMatch(string id, NullableValue<TOffset>[,] registers, VariableBindings varBindings, int priority, int acceptPriority)
+		private readonly int _matchNum;
+		private readonly bool _isLazy;
+
+		internal FsaMatch(string id, NullableValue<TOffset>[,] registers, VariableBindings varBindings, int priority, int matchNum, bool isLazy)
 		{
 			_id = id;
 			_registers = registers;
 			_varBindings = varBindings;
 			_priority = priority;
-			_acceptPriority = acceptPriority;
+			_matchNum = matchNum;
+			_isLazy = isLazy;
 		}
 
 		public string ID
@@ -44,7 +47,16 @@ namespace SIL.APRE.Fsa
 			if (res != 0)
 				return res;
 
-			return _acceptPriority.CompareTo(other._acceptPriority);
+			//if (_isLazy && other._isLazy)
+			//    return _matchNum.CompareTo(other._matchNum);
+
+			//if (_isLazy && !other._isLazy)
+			//    return _matchNum.CompareTo(other._matchNum);
+
+			//if (!_isLazy && other._isLazy)
+			//    return _matchNum.CompareTo(other._matchNum);
+
+			return -_matchNum.CompareTo(other._matchNum);
 		}
 
 		int IComparable.CompareTo(object obj)
