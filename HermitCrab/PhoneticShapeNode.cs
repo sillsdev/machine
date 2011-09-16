@@ -64,5 +64,39 @@ namespace SIL.HermitCrab
 		{
 			return Clone();
 		}
+
+		public override string ToString()
+		{
+			if (List != null)
+			{
+				int i = 0;
+				foreach (PhoneticShapeNode node in List)
+				{
+					if (node == this)
+						return i.ToString();
+					i++;
+				}
+			}
+
+			return Annotation.ToString();
+
+			//var shape = (PhoneticShape) List;
+
+			//var sb = new StringBuilder();
+			//SegmentDefinition[] segDefs = shape.CharacterDefinitionTable.GetMatchingSegmentDefinitions(this, shape.Mode).ToArray();
+			//if (segDefs.Length > 1)
+			//    sb.Append("[");
+			//foreach (SegmentDefinition segDef in segDefs)
+			//{
+			//    if (segDef.StrRep.Length > 1)
+			//        sb.Append("(");
+			//    sb.Append(segDef.StrRep);
+			//    if (segDef.StrRep.Length > 1)
+			//        sb.Append(")");
+			//}
+			//if (segDefs.Length > 1)
+			//    sb.Append("]");
+			//return sb.ToString();
+		}
 	}
 }
