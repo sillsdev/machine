@@ -9,13 +9,13 @@ namespace SIL.HermitCrab
 	{
 		private readonly string _strRep;
 		private readonly CharacterDefinitionTable _charDefTable;
-		private readonly FeatureStruct _featureStruct;
+		private readonly FeatureStruct _fs;
 
-		public SegmentDefinition(string strRep, CharacterDefinitionTable charDefTable, FeatureStruct featureStruct)
+		public SegmentDefinition(string strRep, CharacterDefinitionTable charDefTable, FeatureStruct fs)
 		{
 			_strRep = strRep;
 			_charDefTable = charDefTable;
-			_featureStruct = featureStruct;
+			_fs = fs;
 		}
 
 		public string StrRep
@@ -38,7 +38,7 @@ namespace SIL.HermitCrab
 		{
 			get
 			{
-				return _featureStruct;
+				return _fs;
 			}
 		}
 

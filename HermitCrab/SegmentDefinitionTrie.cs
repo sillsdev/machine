@@ -163,7 +163,7 @@ namespace SIL.HermitCrab
 						}
 
 						// if this is an optional node, we can try skipping it
-						if (node.Annotation.IsOptional)
+						if (node.Annotation.Optional)
 							segMatches.AddRange(Search(nextNode, dir, partialMatch));
 
 						matches = segMatches;

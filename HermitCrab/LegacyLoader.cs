@@ -377,21 +377,21 @@ namespace SIL.HermitCrab
             return Stratum.MRuleOrder.Unordered;
         }
 
-        static PhonologicalRule.MultAppOrder GetMultAppOrder(string multAppOrderStr)
+        static StandardPhonologicalRule.MultAppOrder GetMultAppOrder(string multAppOrderStr)
         {
             switch (multAppOrderStr)
             {
                 case "simultaneous":
-                    return PhonologicalRule.MultAppOrder.Simultaneous;
+                    return StandardPhonologicalRule.MultAppOrder.Simultaneous;
 
                 case "rl_iterative":
-                    return PhonologicalRule.MultAppOrder.RightToLeftIterative;
+                    return StandardPhonologicalRule.MultAppOrder.RightToLeftIterative;
 
                 case "lr_iterative":
-                    return PhonologicalRule.MultAppOrder.LeftToRightIterative;
+                    return StandardPhonologicalRule.MultAppOrder.LeftToRightIterative;
             }
 
-            return PhonologicalRule.MultAppOrder.LeftToRightIterative;
+            return StandardPhonologicalRule.MultAppOrder.LeftToRightIterative;
         }
 
         LegacyParser m_parser;
@@ -846,7 +846,7 @@ namespace SIL.HermitCrab
             CheckCurMorpher();
             string name = pruleSpec.Get<string>("nm");
             StandardPhonologicalRule rule = null;
-            PhonologicalRule prule = _curMorpher.GetPhonologicalRule(name);
+            StandardPhonologicalRule prule = _curMorpher.GetPhonologicalRule(name);
             if (prule != null)
             {
                 rule = prule as StandardPhonologicalRule;

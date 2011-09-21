@@ -1,30 +1,33 @@
-﻿namespace SIL.HermitCrab
+﻿using SIL.APRE.FeatureModel;
+
+namespace SIL.HermitCrab
 {
 	public class BoundaryDefinition
 	{
 		private readonly string _strRep;
 		private readonly CharacterDefinitionTable _charDefTable;
+		private readonly FeatureStruct _fs;
 
-		public BoundaryDefinition(string strRep, CharacterDefinitionTable charDefTable)
+		public BoundaryDefinition(string strRep, CharacterDefinitionTable charDefTable, FeatureStruct fs)
 		{
 			_strRep = strRep;
 			_charDefTable = charDefTable;
+			_fs = fs;
 		}
 
 		public string StrRep
 		{
-			get
-			{
-				return _strRep;
-			}
+			get { return _strRep; }
 		}
 
 		public CharacterDefinitionTable CharacterDefinitionTable
 		{
-			get
-			{
-				return _charDefTable;
-			}
+			get { return _charDefTable; }
+		}
+
+		public FeatureStruct FeatureStruct
+		{
+			get { return _fs; }
 		}
 
 		public override int GetHashCode()

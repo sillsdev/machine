@@ -72,7 +72,7 @@ namespace SIL.HermitCrab
         /// <param name="strRep">The string representation.</param>
         public void AddBoundaryDefinition(string strRep)
         {
-            _bdryDefs[strRep] = new BoundaryDefinition(strRep, this);
+            _bdryDefs[strRep] = new BoundaryDefinition(strRep, this, FeatureStruct.With(_phoneticFeatSys).Feature("strRep").EqualTo(strRep).Symbol("bdry").Value);
         }
 
         /// <summary>
@@ -169,10 +169,8 @@ namespace SIL.HermitCrab
                 BoundaryDefinition bdryDef = GetBoundaryDefinition(strRep);
 				if (bdryDef != null)
 				{
-					node = new PhoneticShapeNode(_spanFactory, FeatureStruct.With(_phoneticFeatSys)
-						.Feature("type").EqualTo("bdry")
-						.Feature("strRep").EqualTo(bdryDef.StrRep).Value);
-					node.Annotation.IsOptional = true;
+					node = new PhoneticShapeNode(_spanFactory, (FeatureStruct) bdryDef.FeatureStruct.Clone());
+					node.Annotation.Optional = true;
 				}
             }
             return node;
@@ -220,7 +218,7 @@ namespace SIL.HermitCrab
 						if (segDefs.Length > 1)
 							sb.Append(displayFormat ? "]" : ")");
 
-						if (node.Annotation.IsOptional)
+						if (node.Annotation.Optional)
 							sb.Append("?");
 					}
 				}

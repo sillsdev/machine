@@ -42,21 +42,21 @@ namespace SIL.HermitCrab
             return Stratum.MRuleOrder.Unordered;
         }
 
-        static PhonologicalRule.MultAppOrder GetMultAppOrder(string multAppOrderStr)
+        static StandardPhonologicalRule.MultAppOrder GetMultAppOrder(string multAppOrderStr)
         {
             switch (multAppOrderStr)
             {
                 case "simultaneous":
-                    return PhonologicalRule.MultAppOrder.Simultaneous;
+                    return StandardPhonologicalRule.MultAppOrder.Simultaneous;
 
                 case "rightToLeftIterative":
-                    return PhonologicalRule.MultAppOrder.RightToLeftIterative;
+                    return StandardPhonologicalRule.MultAppOrder.RightToLeftIterative;
 
                 case "leftToRightIterative":
-                    return PhonologicalRule.MultAppOrder.LeftToRightIterative;
+                    return StandardPhonologicalRule.MultAppOrder.LeftToRightIterative;
             }
 
-            return PhonologicalRule.MultAppOrder.LeftToRightIterative;
+            return StandardPhonologicalRule.MultAppOrder.LeftToRightIterative;
         }
 
         static MprFeatureGroup.GroupMatchType GetGroupMatchType(string matchTypeStr)

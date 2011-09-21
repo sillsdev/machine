@@ -32,7 +32,7 @@ namespace SIL.HermitCrab
 
     	private readonly SegmentDefinitionTrie<LexEntry.RootAllomorph> _entryTrie;
         private readonly List<MorphologicalRule> _mrules;
-        private readonly List<PhonologicalRule> _prules;
+        private readonly List<StandardPhonologicalRule> _prules;
         private readonly IDBearerSet<AffixTemplate> _templates;
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace SIL.HermitCrab
             : base(id, desc)
         {
             _mrules = new List<MorphologicalRule>();
-            _prules = new List<PhonologicalRule>();
+            _prules = new List<StandardPhonologicalRule>();
             _templates = new IDBearerSet<AffixTemplate>();
             _entryTrie = new SegmentDefinitionTrie<LexEntry.RootAllomorph>(Direction.LeftToRight);
         }
@@ -133,7 +133,7 @@ namespace SIL.HermitCrab
         /// Adds the phonological rule.
         /// </summary>
         /// <param name="prule">The phonological rule.</param>
-        public void AddPhonologicalRule(PhonologicalRule prule)
+        public void AddPhonologicalRule(StandardPhonologicalRule prule)
         {
             _prules.Add(prule);
         }

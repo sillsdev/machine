@@ -525,13 +525,13 @@ namespace SIL.HermitCrab
     /// </summary>
     public abstract class PhonologicalRuleTrace : Trace
     {
-        private readonly PhonologicalRule _rule;
+        private readonly StandardPhonologicalRule _rule;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PhonologicalRuleTrace"/> class.
         /// </summary>
         /// <param name="rule">The rule.</param>
-        internal PhonologicalRuleTrace(PhonologicalRule rule)
+        internal PhonologicalRuleTrace(StandardPhonologicalRule rule)
         {
             _rule = rule;
         }
@@ -540,7 +540,7 @@ namespace SIL.HermitCrab
         /// Gets the rule.
         /// </summary>
         /// <value>The rule.</value>
-        public PhonologicalRule Rule
+        public StandardPhonologicalRule Rule
         {
             get
             {
@@ -564,7 +564,7 @@ namespace SIL.HermitCrab
         /// </summary>
         /// <param name="rule">The rule.</param>
         /// <param name="input">The input.</param>
-        internal PhonologicalRuleAnalysisTrace(PhonologicalRule rule, WordAnalysis input)
+        internal PhonologicalRuleAnalysisTrace(StandardPhonologicalRule rule, WordAnalysis input)
             : base(rule)
         {
             _input = input;
@@ -632,7 +632,7 @@ namespace SIL.HermitCrab
         /// </summary>
         /// <param name="rule">The rule.</param>
         /// <param name="input">The input.</param>
-        internal PhonologicalRuleSynthesisTrace(PhonologicalRule rule, WordSynthesis input)
+        internal PhonologicalRuleSynthesisTrace(StandardPhonologicalRule rule, WordSynthesis input)
             : base(rule)
         {
             _input = input;

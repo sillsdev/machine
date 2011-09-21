@@ -19,7 +19,7 @@ namespace SIL.HermitCrab
     	private readonly IDBearerSet<Stratum> _strata; 
         private readonly IDBearerSet<CharacterDefinitionTable> _charDefTables;
     	private readonly IDBearerSet<NaturalClass> _natClasses;
-        private readonly IDBearerSet<PhonologicalRule> _prules;
+        private readonly IDBearerSet<StandardPhonologicalRule> _prules;
         private readonly IDBearerSet<MorphologicalRule> _mrules;
         private readonly IDBearerSet<AffixTemplate> _templates;
         private readonly Lexicon _lexicon;
@@ -51,7 +51,7 @@ namespace SIL.HermitCrab
             _footFeatSys = new FeatureSystem();
             _charDefTables = new IDBearerSet<CharacterDefinitionTable>();
             _natClasses = new IDBearerSet<NaturalClass>();
-            _prules = new IDBearerSet<PhonologicalRule>();
+            _prules = new IDBearerSet<StandardPhonologicalRule>();
             _mrules = new IDBearerSet<MorphologicalRule>();
             _lexicon = new Lexicon();
             _templates = new IDBearerSet<AffixTemplate>();
@@ -359,7 +359,7 @@ namespace SIL.HermitCrab
         /// if tracing during synthesis is off.</param>
         public void SetTraceRules(bool traceAnalysis, bool traceSynthesis)
         {
-            foreach (PhonologicalRule prule in _prules)
+            foreach (StandardPhonologicalRule prule in _prules)
             {
                 prule.TraceAnalysis = traceAnalysis;
                 prule.TraceSynthesis = traceSynthesis;
@@ -382,7 +382,7 @@ namespace SIL.HermitCrab
         /// if tracing during synthesis is off.</param>
         public void SetTraceRule(string id, bool traceAnalysis, bool traceSynthesis)
         {
-            PhonologicalRule prule = GetPhonologicalRule(id);
+            StandardPhonologicalRule prule = GetPhonologicalRule(id);
             if (prule != null)
             {
                 prule.TraceAnalysis = traceAnalysis;
@@ -443,9 +443,9 @@ namespace SIL.HermitCrab
         /// </summary>
         /// <param name="id">The ID.</param>
         /// <returns>The phonological rule.</returns>
-        public PhonologicalRule GetPhonologicalRule(string id)
+        public StandardPhonologicalRule GetPhonologicalRule(string id)
         {
-            PhonologicalRule prule;
+            StandardPhonologicalRule prule;
             if (_prules.TryGetValue(id, out prule))
                 return prule;
             return null;
@@ -572,7 +572,7 @@ namespace SIL.HermitCrab
         /// Adds the phonological rule.
         /// </summary>
         /// <param name="prule">The phonological rule.</param>
-        public void AddPhonologicalRule(PhonologicalRule prule)
+        public void AddPhonologicalRule(StandardPhonologicalRule prule)
         {
             _prules.Add(prule);
         }

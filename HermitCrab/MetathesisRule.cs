@@ -8,7 +8,7 @@ namespace SIL.HermitCrab
     /// This class represents a metathesis rule. Metathesis rules are phonlogical rules that
     /// reorder segments.
     /// </summary>
-    public class MetathesisRule : PhonologicalRule
+    public class MetathesisRule : StandardPhonologicalRule
     {
         MultAppOrder m_multApplication = MultAppOrder.LeftToRightIterative;
         Pattern<PhoneticShapeNode> m_lhsTemp = null;

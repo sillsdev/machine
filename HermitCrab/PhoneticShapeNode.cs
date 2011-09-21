@@ -78,7 +78,7 @@ namespace SIL.HermitCrab
 				}
 			}
 
-			return Annotation.ToString();
+			return base.ToString();
 
 			//var shape = (PhoneticShape) List;
 
