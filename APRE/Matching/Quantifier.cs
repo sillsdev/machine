@@ -92,14 +92,15 @@ namespace SIL.APRE.Matching
 			if (_minOccur == 0 && _maxOccur == 1)
 			{
 				// optional
-				startState = startState.AddArc(fsa.CreateState(), priorityType);
-				endState = base.GenerateNfa(fsa, startState);
+				State<TOffset> nextState = startState.AddArc(fsa.CreateState(), priorityType);
+				endState = base.GenerateNfa(fsa, nextState);
 				startState.AddArc(endState);
 			}
 			else if (_minOccur == 0 && _maxOccur == Infinite)
 			{
 				// kleene star
-				endState = base.GenerateNfa(fsa, startState.AddArc(fsa.CreateState(), priorityType));
+				State<TOffset> nextState = startState.AddArc(fsa.CreateState(), priorityType);
+				endState = base.GenerateNfa(fsa, nextState);
 				startState.AddArc(endState);
 				endState.AddArc(startState, priorityType);
 			}

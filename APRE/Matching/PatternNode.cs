@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using SIL.APRE.Fsa;
 
@@ -7,7 +6,7 @@ namespace SIL.APRE.Matching
 	/// <summary>
 	/// This is the abstract class that all phonetic pattern nodes extend.
 	/// </summary>
-	public abstract class PatternNode<TOffset> : BidirTreeNode<PatternNode<TOffset>>, ICloneable
+	public abstract class PatternNode<TOffset> : BidirTreeNode<PatternNode<TOffset>>, ICloneable<PatternNode<TOffset>> 
 	{
 		protected PatternNode()
 		{
@@ -41,10 +40,5 @@ namespace SIL.APRE.Matching
 		}
 
 		public abstract PatternNode<TOffset> Clone();
-
-		object ICloneable.Clone()
-		{
-			return Clone();
-		}
 	}
 }

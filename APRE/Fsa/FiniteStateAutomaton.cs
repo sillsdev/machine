@@ -144,14 +144,27 @@ namespace SIL.APRE.Fsa
 			private readonly Annotation<TOffset> _ann;
 			private readonly NullableValue<TOffset>[,] _registers;
 			private readonly VariableBindings _varBindings;
+			private readonly FsaMatch<TOffset> _match;
+
+			public FsaInstance(State<TOffset> state, FsaMatch<TOffset> match)
+				: this(state, null, null, null, match)
+			{
+			}
 
 			public FsaInstance(State<TOffset> state, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers,
 				VariableBindings varBindings)
+				: this (state, ann, registers, varBindings, null)
+			{
+			}
+
+			public FsaInstance(State<TOffset> state, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers,
+				VariableBindings varBindings, FsaMatch<TOffset> match)
 			{
 				_state = state;
 				_ann = ann;
 				_registers = registers;
 				_varBindings = varBindings;
+				_match = match;
 			}
 
 			public State<TOffset> State
@@ -173,19 +186,24 @@ namespace SIL.APRE.Fsa
 			{
 				get { return _varBindings; }
 			}
+
+			public FsaMatch<TOffset> Match
+			{
+				get { return _match; }
+			}
 		}
 
-		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, out IEnumerable<FsaMatch<TOffset>> matches)
+		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, bool allMatches, out IEnumerable<FsaMatch<TOffset>> matches)
 		{
 			var instStack = new Stack<FsaInstance>();
 
-			var matchList = new List<FsaMatch<TOffset>>();
+			List<FsaMatch<TOffset>> matchList = null;
 
 			Annotation<TOffset> ann = annList.GetFirst(_dir, _filter);
 
 			while (ann != null)
 			{
-				var registers = new NullableValue<TOffset>[_registerCount,2];
+				var registers = new NullableValue<TOffset>[_registerCount, 2];
 
 				var cmds = new List<TagMapCommand>();
 				foreach (TagMapCommand cmd in _initializers)
@@ -196,47 +214,53 @@ namespace SIL.APRE.Fsa
 						cmds.Add(cmd);
 				}
 
-				InitializeStack(ann, registers, cmds, instStack);
+				ann = InitializeStack(ann, registers, cmds, instStack);
 
+				var matchStack = new Stack<FsaMatch<TOffset>>();
 				while (instStack.Count != 0)
 				{
 					FsaInstance inst = instStack.Pop();
 
-					foreach (Arc<TOffset> arc in inst.State.OutgoingArcs)
+					bool advance = false;
+					if (inst.Annotation != null)
 					{
-						if (inst.Annotation.FeatureStruct.IsUnifiable(arc.Condition, false, inst.VariableBindings))
+						foreach (Arc<TOffset> arc in inst.State.OutgoingArcs)
 						{
-							AdvanceFsa(annList, inst.Annotation, inst.Annotation.Span.GetEnd(_dir), inst.Registers, inst.VariableBindings,
-								arc, instStack, matchList);
+							if (inst.Annotation.FeatureStruct.IsUnifiable(arc.Condition, false, inst.VariableBindings))
+							{
+								AdvanceFsa(annList, inst.Annotation, inst.Registers, inst.VariableBindings, inst.Match, arc, instStack);
+								advance = true;
+								break;
+							}
 						}
 					}
+					if (!advance && inst.Match != null)
+						matchStack.Push(inst.Match);
 				}
 
-				ann = ann.IsOptional ? ann.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next)) : null;
+				if (matchStack.Count > 0)
+				{
+					if (matchList == null)
+						matchList = new List<FsaMatch<TOffset>>();
+					matchList.AddRange(matchStack.Distinct());
+					if (!allMatches)
+						break;
+				}
 			}
 
-			matchList.Sort();
-
-			if (matchList.Count > 0)
-			{
-				matches = matchList;
-				return true;
-			}
-
-			matches = null;
-			return false;
+			matches = matchList;
+			return matches != null;
 		}
 
-		private void InitializeStack(Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, List<TagMapCommand> cmds, Stack<FsaInstance> instStack)
+		private Annotation<TOffset> InitializeStack(Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, List<TagMapCommand> cmds, Stack<FsaInstance> instStack)
 		{
 			TOffset offset = ann.Span.GetStart(_dir);
 
-			ExecuteCommands(registers, cmds, new NullableValue<TOffset>(ann.Span.GetStart(_dir)), new NullableValue<TOffset>(),
-				ann.Span.GetEnd(_dir));
+			ExecuteCommands(registers, cmds, new NullableValue<TOffset>(ann.Span.GetStart(_dir)), new NullableValue<TOffset>());
 
 			for (Annotation<TOffset> a = ann; a != null && a.Span.GetStart(_dir).Equals(offset); a = a.GetNext(_dir, _filter))
 			{
-				if (a.IsOptional)
+				if (a.Optional)
 				{
 					Annotation<TOffset> nextAnn = a.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
 					if (nextAnn != null)
@@ -249,70 +273,78 @@ namespace SIL.APRE.Fsa
 				instStack.Push(new FsaInstance(_startState, ann, (NullableValue<TOffset>[,]) registers.Clone(),
 					new VariableBindings()));
 			}
+
+			return ann;
 		}
 
-		private void AdvanceFsa(IBidirList<Annotation<TOffset>> annList, Annotation<TOffset> ann, TOffset end,
-			NullableValue<TOffset>[,] registers, VariableBindings varBindings, Arc<TOffset> arc, Stack<FsaInstance> instStack,
-			List<FsaMatch<TOffset>> matchList)
+		private void AdvanceFsa(IBidirList<Annotation<TOffset>> annList, Annotation<TOffset> ann,
+			NullableValue<TOffset>[,] registers, VariableBindings varBindings, FsaMatch<TOffset> match, Arc<TOffset> arc,
+			Stack<FsaInstance> instStack)
 		{
 			Annotation<TOffset> nextAnn = ann.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
 			TOffset nextOffset = nextAnn == null ? annList.GetLast(_dir, _filter).Span.GetEnd(_dir) : nextAnn.Span.GetStart(_dir);
+			TOffset end = ann.Span.GetEnd(_dir);
 			var newRegisters = (NullableValue<TOffset>[,]) registers.Clone();
-			ExecuteCommands(newRegisters, arc.Commands, new NullableValue<TOffset>(nextOffset), new NullableValue<TOffset>(end),
-				ann.Span.GetEnd(_dir));
-			if (arc.Target.IsAccepting && IsEndOfInput(nextAnn))
+			ExecuteCommands(newRegisters, arc.Commands, new NullableValue<TOffset>(nextOffset), new NullableValue<TOffset>(end));
+			//bool endOfInput = IsEndOfInput(ann);
+			if (arc.Target.IsAccepting /*&& (arc.Target.IsLazy || endOfInput)*/)
 			{
 				var matchRegisters = (NullableValue<TOffset>[,]) newRegisters.Clone();
-				ExecuteCommands(matchRegisters, arc.Target.Finishers, new NullableValue<TOffset>(), new NullableValue<TOffset>(),
-					ann.Span.GetEnd(_dir));
+				ExecuteCommands(matchRegisters, arc.Target.Finishers, new NullableValue<TOffset>(), new NullableValue<TOffset>());
 				foreach (AcceptInfo<TOffset> acceptInfo in arc.Target.AcceptInfos)
 				{
-					var match = new FsaMatch<TOffset>(acceptInfo.ID, matchRegisters, varBindings, acceptInfo.Priority, matchList.Count, arc.Target.IsLazy);
-					if (acceptInfo.Acceptable(annList, match))
-						matchList.Add(match);
+					if (match == null || acceptInfo.Priority < match.Priority || !match.IsLazy)
+					{
+						var candidate = new FsaMatch<TOffset>(acceptInfo.ID, matchRegisters, varBindings, acceptInfo.Priority, arc.Target.IsLazy);
+						if (acceptInfo.Acceptable(annList, candidate))
+							match = candidate;
+					}
 				}
+				//if (endOfInput && match != null)
+				//	matchStack.Push(match);
 			}
 			if (nextAnn != null)
 			{
 				for (Annotation<TOffset> a = nextAnn; a != null && a.Span.GetStart(_dir).Equals(nextOffset); a = a.GetNext(_dir, _filter))
 				{
-					if (a.IsOptional)
-						AdvanceFsa(annList, a, end, registers, varBindings, arc, instStack, matchList);
+					if (a.Optional)
+						AdvanceFsa(annList, a, registers, varBindings, match, arc, instStack);
 				}
 
 				for (Annotation<TOffset> a = nextAnn; a != null && a.Span.GetStart(_dir).Equals(nextOffset); a = a.GetNext(_dir, _filter))
 				{
 					instStack.Push(new FsaInstance(arc.Target, a, (NullableValue<TOffset>[,]) newRegisters.Clone(),
-						varBindings.Clone()));
+						varBindings.Clone(), match));
 				}
 			}
+			else if (match != null)
+			{
+				instStack.Push(new FsaInstance(arc.Target, match));
+			}
 		}
 
-		private bool IsEndOfInput(Annotation<TOffset> nextAnn)
-		{
-			while (nextAnn != null)
-			{
-				if (nextAnn.IsOptional)
-					nextAnn = nextAnn.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
-				else
-					return false;
-			}
-			return true;
-		}
+		//private bool IsEndOfInput(Annotation<TOffset> ann)
+		//{
+		//    Annotation<TOffset> nextAnn = ann.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
+		//    while (nextAnn != null)
+		//    {
+		//        if (nextAnn.IsOptional)
+		//            nextAnn = nextAnn.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
+		//        else
+		//            return false;
+		//    }
+		//    return true;
+		//}
 
 		private static void ExecuteCommands(NullableValue<TOffset>[,] registers, IEnumerable<TagMapCommand> cmds,
-			NullableValue<TOffset> start, NullableValue<TOffset> end, TOffset curEnd)
+			NullableValue<TOffset> start, NullableValue<TOffset> end)
 		{
 			foreach (TagMapCommand cmd in cmds)
 			{
 				if (cmd.Src == TagMapCommand.CurrentPosition)
 				{
 					registers[cmd.Dest, 0] = start;
-
-					if (cmd.Dest == 1)
-						registers[1, 1].Value = curEnd;
-					else
-						registers[cmd.Dest, 1] = end;
+					registers[cmd.Dest, 1] = end;
 				}
 				else
 				{

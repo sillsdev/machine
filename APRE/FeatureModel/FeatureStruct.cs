@@ -146,22 +146,20 @@ namespace SIL.APRE.FeatureModel
 				if (_definite.TryGetValue(featVal.Key, out thisValue))
 				{
 					thisValue = Dereference(thisValue);
-					thisValue.Merge(otherValue, varBindings);
-				}
-				else
-				{
-					_definite[featVal.Key] = otherValue.Clone();
+					if (!thisValue.Merge(otherValue, varBindings))
+						_definite.Remove(featVal.Key);
 				}
 			}
 
 			// TODO: what do we do about disjunctions?
 		}
 
-		internal override void Merge(FeatureValue other, VariableBindings varBindings)
+		internal override bool Merge(FeatureValue other, VariableBindings varBindings)
 		{
 			FeatureStruct otherFS;
 			if (Dereference(other, out otherFS))
 				Merge(otherFS, varBindings);
+			return _definite.Count > 0;
 		}
 
 		public void Subtract(FeatureStruct other)

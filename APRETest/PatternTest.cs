@@ -51,9 +51,9 @@ namespace SIL.APRE.Test
 			ltorPattern.Compile();
 
 			AnnotationList<int> annList = CreateShapeAnnotations("the old, angry man slept well", spanFactory, featSys);
-			annList.Add(new Annotation<int>(spanFactory.Create(0, 2), FeatureStruct.With(featSys).Feature("type").EqualTo("Det").Value) { IsOptional = true });
+			annList.Add(new Annotation<int>(spanFactory.Create(0, 2), FeatureStruct.With(featSys).Feature("type").EqualTo("Det").Value) { Optional = true });
 			annList.Add(new Annotation<int>(spanFactory.Create(4, 6), FeatureStruct.With(featSys).Feature("type").EqualTo("Adj").Value));
-			annList.Add(new Annotation<int>(spanFactory.Create(9, 13), FeatureStruct.With(featSys).Feature("type").EqualTo("Adj").Value) { IsOptional = true });
+			annList.Add(new Annotation<int>(spanFactory.Create(9, 13), FeatureStruct.With(featSys).Feature("type").EqualTo("Adj").Value) { Optional = true });
 			annList.Add(new Annotation<int>(spanFactory.Create(15, 17), FeatureStruct.With(featSys).Feature("type").EqualTo("Noun").Value));
 			annList.Add(new Annotation<int>(spanFactory.Create(19, 23), FeatureStruct.With(featSys).Feature("type").EqualTo("Verb").Value));
 			annList.Add(new Annotation<int>(spanFactory.Create(25, 28), FeatureStruct.With(featSys).Feature("type").EqualTo("Adv").Value));
@@ -62,11 +62,11 @@ namespace SIL.APRE.Test
 
 			IEnumerable<PatternMatch<int>> matches;
 			Assert.True(ltorPattern.IsMatch(annList, out matches));
-			Assert.AreEqual(7, matches.Count());
+			Assert.AreEqual(4, matches.Count());
 			Assert.AreEqual(0, matches.First().Start);
-			Assert.AreEqual(28, matches.First().End);
+			Assert.AreEqual(23, matches.First().End);
 			Assert.AreEqual(4, matches.First()["adj"].Start);
-			Assert.AreEqual(6, matches.First()["adj"].End);
+			Assert.AreEqual(13, matches.First()["adj"].End);
 			Assert.AreEqual(9, matches.Last().Start);
 			Assert.AreEqual(23, matches.Last().End);
 
@@ -76,7 +76,7 @@ namespace SIL.APRE.Test
 			Assert.AreEqual(7, matches.Count());
 			Assert.AreEqual(0, matches.First().Start);
 			Assert.AreEqual(28, matches.First().End);
-			Assert.AreEqual(4, matches.First()["adj"].Start);
+			Assert.AreEqual(0, matches.First()["adj"].Start);
 			Assert.AreEqual(6, matches.First()["adj"].End);
 			Assert.AreEqual(0, matches.Last().Start);
 			Assert.AreEqual(2, matches.Last().End);

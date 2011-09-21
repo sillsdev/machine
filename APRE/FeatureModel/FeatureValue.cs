@@ -1,22 +1,16 @@
-using System;
 using System.Collections.Generic;
 
 namespace SIL.APRE.FeatureModel
 {
-	public abstract class FeatureValue : ICloneable
+	public abstract class FeatureValue : ICloneable<FeatureValue>
 	{
 		internal FeatureValue Forward { get; set; }
 
 		public abstract FeatureValue Clone();
 
-		object ICloneable.Clone()
-		{
-			return Clone();
-		}
-
 		public abstract bool Negation(out FeatureValue output);
 
-		internal abstract void Merge(FeatureValue other, VariableBindings varBindings);
+		internal abstract bool Merge(FeatureValue other, VariableBindings varBindings);
 		internal abstract bool Subtract(FeatureValue other, VariableBindings varBindings);
 		internal abstract bool IsDefiniteUnifiable(FeatureValue other, bool useDefaults, VariableBindings varBindings);
 		internal abstract bool DestructiveUnify(FeatureValue other, bool useDefaults, bool preserveInput,

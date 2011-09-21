@@ -54,6 +54,11 @@ namespace SIL.APRE.FeatureModel
 			get { return Not || _values.Count > 0; }
 		}
 
+		protected override bool IsUninstantiated
+		{
+			get { return Not && _values.Count == 0; }
+		}
+
 		public bool Contains(string str)
 		{
 			return Not ? !_values.Contains(str) : _values.Contains(str);

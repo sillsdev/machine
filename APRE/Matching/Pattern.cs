@@ -108,7 +108,7 @@ namespace SIL.APRE.Matching
 
 		public Pattern(SpanFactory<TOffset> spanFactory, Direction dir, Func<Annotation<TOffset>, bool> filter,
 			Func<IBidirList<Annotation<TOffset>>, PatternMatch<TOffset>, bool> acceptable, IEnumerable<PatternNode<TOffset>> nodes)
-			: base("*entire*", acceptable, nodes)
+			: base(null, acceptable, nodes)
 		{
 			_spanFactory = spanFactory;
 			_dir = dir;
@@ -164,7 +164,7 @@ namespace SIL.APRE.Matching
 		{
 			_fsa = new FiniteStateAutomaton<TOffset>(_dir, _filter);
 			int nextPriority = 0;
-			GenerateExpressionNfa(_fsa.StartState, this, null, new[] {Acceptable}, ref nextPriority);
+			GenerateExpressionNfa(_fsa.StartState, this, null, new Func<IBidirList<Annotation<TOffset>>, PatternMatch<TOffset>, bool>[0], ref nextPriority);
 			_fsa.MarkArcPriorities();
 
 			var writer = new StreamWriter(string.Format("c:\\{0}-nfa.dot", _dir == Direction.LeftToRight ? "ltor" : "rtol"));
@@ -184,40 +184,92 @@ namespace SIL.APRE.Matching
 			Func<IBidirList<Annotation<TOffset>>, PatternMatch<TOffset>, bool>[] acceptables, ref int nextPriority)
 		{
 			string name = parentName == null ? expr.Name : parentName + "*" + expr.Name;
+			acceptables = acceptables.Concat(expr.Acceptable).ToArray();
 			if (expr.Children.All(node => node is Expression<TOffset>))
 			{
 				foreach (Expression<TOffset> childExpr in expr.Children.GetNodes(_fsa.Direction))
-					GenerateExpressionNfa(startState, childExpr, name, acceptables.Concat(expr.Acceptable).ToArray(), ref nextPriority);
+					GenerateExpressionNfa(startState, childExpr, name, acceptables, ref nextPriority);
 			}
 			else
 			{
-				if (!(expr.Children.GetFirst(_fsa.Direction) is Anchor<TOffset>))
-				{
-					State<TOffset> nextState = startState.AddArc(_fsa.CreateState(), ArcPriorityType.VeryLow);
-					State<TOffset> endState = nextState.AddArc(new FeatureStruct(), _fsa.CreateState());
-					startState.AddArc(endState);
-					endState.AddArc(startState, ArcPriorityType.VeryLow);
-					startState = endState;
-				}
-
 				startState = _fsa.CreateTag(startState, _fsa.CreateState(), EntireMatch, true);
-				startState = expr.GenerateNfa(_fsa, startState);
-				startState = _fsa.CreateTag(startState, _fsa.CreateState(), EntireMatch, false);
+				State<TOffset> endState = expr.GenerateNfa(_fsa, startState);
 
-				if (!(expr.Children.GetLast(_fsa.Direction) is Anchor<TOffset>))
+				HashSet<FeatureStruct> startAnchored = null;
+				var startAnchor = expr.Children.GetFirst(_fsa.Direction) as Anchor<TOffset>;
+				if (startAnchor != null)
+					startAnchored = new HashSet<FeatureStruct>(GetStartAnchoredConditions(startState, new HashSet<State<TOffset>>()));
+
+				HashSet<FeatureStruct> endAnchored = null;
+				var endAnchor = expr.Children.GetLast(_fsa.Direction) as Anchor<TOffset>;
+				if (endAnchor != null)
+					endAnchored = new HashSet<FeatureStruct>(GetEndAnchoredConditions(endState, new HashSet<State<TOffset>>()));
+
+				if (startAnchored != null)
 				{
-					State<TOffset> nextState = startState.AddArc(_fsa.CreateState(), ArcPriorityType.Low);
-					State<TOffset> endState = nextState.AddArc(new FeatureStruct(), _fsa.CreateState());
-					startState.AddArc(endState);
-					endState.AddArc(startState, ArcPriorityType.Low);
-					startState = endState;
+					foreach (FeatureStruct cond in startAnchored)
+					{
+						AnchorTypes a = startAnchor.Type;
+						if (endAnchored != null && endAnchored.Contains(cond))
+							a = a | endAnchor.Type;
+						AddAnchor(cond, a);
+					}
 				}
 
+				if (endAnchored != null)
+				{
+					foreach (FeatureStruct cond in endAnchored)
+					{
+						if (startAnchored == null || !startAnchored.Contains(cond))
+							AddAnchor(cond, endAnchor.Type);
+					}
+				}
+
+				startState = _fsa.CreateTag(endState, _fsa.CreateState(), EntireMatch, false);
 				State<TOffset> acceptingState = _fsa.CreateAcceptingState(name,
-					(input, match) => acceptables.All(acceptable => acceptable(input, CreatePatternMatch(match))), nextPriority++);
+					(input, match) =>
+						{
+							PatternMatch<TOffset> patMatch = CreatePatternMatch(match);
+							return acceptables.All(acceptable => acceptable(input, patMatch));
+						}, nextPriority++);
 				startState.AddArc(acceptingState);
 			}
 		}
+
+		private static IEnumerable<FeatureStruct> GetStartAnchoredConditions(State<TOffset> startState, HashSet<State<TOffset>> visitedStates)
+		{
+			visitedStates.Add(startState);
+			foreach (Arc<TOffset> arc in startState.OutgoingArcs)
+			{
+				if (arc.Condition != null)
+				{
+					yield return arc.Condition;
+				}
+				else if (!visitedStates.Contains(arc.Target))
+				{
+					foreach (FeatureStruct cond in GetStartAnchoredConditions(arc.Target, visitedStates))
+						yield return cond;
+				}
+			}
+		}
+
+		private static IEnumerable<FeatureStruct> GetEndAnchoredConditions(State<TOffset> endState, HashSet<State<TOffset>> visitedStates)
+		{
+			visitedStates.Add(endState);
+			foreach (Arc<TOffset> arc in endState.IncomingArcs)
+			{
+				if (arc.Condition != null)
+				{
+					yield return arc.Condition;
+				}
+				else if (!visitedStates.Contains(arc.Source))
+				{
+					foreach (FeatureStruct cond in GetEndAnchoredConditions(arc.Source, visitedStates))
+						yield return cond;
+				}
+			}
+		}
+
 
 		public bool IsMatch(IBidirList<Annotation<TOffset>> annList)
 		{
@@ -247,50 +299,28 @@ namespace SIL.APRE.Matching
 			if (!IsCompiled)
 				Compile();
 
-			//HashSet<Annotation<TOffset>> leftAnchored = null;
-			//HashSet<Annotation<TOffset>> rightAnchored = null;
-			//if (_checkAnchors)
-			//{
-			//    leftAnchored = new HashSet<Annotation<TOffset>>(GetAnchoredAnnotations(annList.GetFirst(Direction.LeftToRight), Direction.LeftToRight));
-			//    rightAnchored = new HashSet<Annotation<TOffset>>(GetAnchoredAnnotations(annList.GetFirst(Direction.RightToLeft), Direction.RightToLeft));
-			//    MarkAnchoredAnnotations(leftAnchored, rightAnchored);
-			//}
+			HashSet<Annotation<TOffset>> leftAnchored = null;
+			HashSet<Annotation<TOffset>> rightAnchored = null;
+			if (_checkAnchors)
+			{
+				leftAnchored = new HashSet<Annotation<TOffset>>(GetAnchoredAnnotations(annList.GetFirst(Direction.LeftToRight), Direction.LeftToRight));
+				rightAnchored = new HashSet<Annotation<TOffset>>(GetAnchoredAnnotations(annList.GetFirst(Direction.RightToLeft), Direction.RightToLeft));
+				MarkAnchoredAnnotations(leftAnchored, rightAnchored);
+			}
 
 			List<PatternMatch<TOffset>> matchesList = null;
 			IEnumerable<FsaMatch<TOffset>> fsaMatches;
-			if (_fsa.IsMatch(annList, out fsaMatches))
+			if (_fsa.IsMatch(annList, allMatches, out fsaMatches))
 			{
 				matchesList = new List<PatternMatch<TOffset>>();
 				foreach (FsaMatch<TOffset> match in fsaMatches)
 				{
-					PatternMatch<TOffset> patMatch = CreatePatternMatch(match);
-					if (patMatch != null)
-						matchesList.Add(patMatch);
+					matchesList.Add(CreatePatternMatch(match));
 				}
 			}
 
-			//Annotation<TOffset> first = annList.GetFirst(_dir, _filter);
-			//while (first != null)
-			//{
-			//    IEnumerable<FsaMatch<TOffset>> fsaMatches;
-			//    if (_fsa.IsMatch(annList.GetView(first, _dir), out fsaMatches))
-			//    {
-			//        if (matchesList == null)
-			//            matchesList = new List<PatternMatch<TOffset>>();
-			//        foreach (FsaMatch<TOffset> match in fsaMatches)
-			//            matchesList.Add(CreatePatternMatch(match));
-			//        if (!allMatches)
-			//        {
-			//            matches = matchesList;
-			//            return true;
-			//        }
-			//    }
-
-			//    first = first.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
-			//}
-
-			//if (_checkAnchors)
-			//    UnmarkAnchoredAnnotations(leftAnchored, rightAnchored);
+			if (_checkAnchors)
+				UnmarkAnchoredAnnotations(leftAnchored, rightAnchored);
 
 			matches = matchesList;
 			return matchesList != null;
@@ -358,7 +388,7 @@ namespace SIL.APRE.Matching
 			for (; curAnn != null && curAnn.Span.GetStart(_dir).Equals(offset); curAnn = curAnn.GetNext(_dir, _filter))
 			{
 				yield return curAnn;
-				if (curAnn.IsOptional)
+				if (curAnn.Optional)
 				{
 					Annotation<TOffset> nextAnn = curAnn.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
 					if (nextAnn != null)

@@ -3,7 +3,7 @@ using SIL.APRE.FeatureModel;
 
 namespace SIL.APRE
 {
-	public class Annotation<TOffset> : SkipListNode<Annotation<TOffset>>, ICloneable, IEquatable<Annotation<TOffset>>, IComparable<Annotation<TOffset>>, IComparable
+	public class Annotation<TOffset> : SkipListNode<Annotation<TOffset>>, ICloneable<Annotation<TOffset>>, IEquatable<Annotation<TOffset>>, IComparable<Annotation<TOffset>>, IComparable
 	{
 		private readonly Span<TOffset> _span;
 
@@ -25,7 +25,7 @@ namespace SIL.APRE
 			_span = ann._span;
 			FeatureStruct = ann.FeatureStruct == null ? null : (FeatureStruct) ann.FeatureStruct.Clone();
 			IsClean = ann.IsClean;
-			IsOptional = ann.IsOptional;
+			Optional = ann.Optional;
 		}
 
 		public Span<TOffset> Span
@@ -41,7 +41,7 @@ namespace SIL.APRE
 		/// <value>
 		/// 	<c>true</c> if this annotation is optional, otherwise <c>false</c>.
 		/// </value>
-		public bool IsOptional { get; set; }
+		public bool Optional { get; set; }
 
 		/// <summary>
 		/// Gets or sets a value indicating whether this instance is clean. This is used
@@ -62,11 +62,6 @@ namespace SIL.APRE
 		public Annotation<TOffset> Clone()
 		{
 			return new Annotation<TOffset>(this);
-		}
-
-		object ICloneable.Clone()
-		{
-			return Clone();
 		}
 
 		public override bool Equals(object obj)

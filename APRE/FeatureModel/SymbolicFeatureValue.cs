@@ -54,6 +54,11 @@ namespace SIL.APRE.FeatureModel
 			get { return _values.Count > 0; }
 		}
 
+		protected override bool IsUninstantiated
+		{
+			get { return _values.SetEquals(_feature.PossibleSymbols); }
+		}
+
 		public bool Contains(FeatureSymbol symbol)
 		{
 			return _values.Contains(symbol);

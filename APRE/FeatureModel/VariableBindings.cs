@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 
 namespace SIL.APRE.FeatureModel
 {
-	public class VariableBindings : IDictionary<string, FeatureValue>, ICloneable
+	public class VariableBindings : IDictionary<string, FeatureValue>, ICloneable<VariableBindings>
 	{
 		private readonly Dictionary<string, FeatureValue> _varBindings;
 
@@ -115,11 +114,6 @@ namespace SIL.APRE.FeatureModel
 		bool ICollection<KeyValuePair<string, FeatureValue>>.IsReadOnly
 		{
 			get { return false; }
-		}
-
-		object ICloneable.Clone()
-		{
-			return Clone();
 		}
 
 		public VariableBindings Clone()

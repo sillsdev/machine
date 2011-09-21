@@ -213,10 +213,10 @@ namespace SIL.APRE
 			yield return item;
 		}
 
-		public static IEnumerable<T> Clone<T>(this IEnumerable<T> source) where T : ICloneable
+		public static IEnumerable<T> Clone<T>(this IEnumerable<T> source) where T : ICloneable<T>
 		{
 			foreach (T i in source)
-				yield return (T) i.Clone();
+				yield return i.Clone();
 		}
 
 		public static IEnumerable<TResult> Zip<TFirst, TSecond, TResult>(this IEnumerable<TFirst> first, IEnumerable<TSecond> second,

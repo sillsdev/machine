@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace SIL.APRE
 {
-	public class AnnotationList<TOffset> : SkipList<Annotation<TOffset>>, ICloneable
+	public class AnnotationList<TOffset> : SkipList<Annotation<TOffset>>, ICloneable<AnnotationList<TOffset>> 
 	{
 		private int _currentID;
 
@@ -29,11 +28,6 @@ namespace SIL.APRE
 		public AnnotationList<TOffset> Clone()
 		{
 			return new AnnotationList<TOffset>(this);
-		}
-
-		object ICloneable.Clone()
-		{
-			return Clone();
 		}
 
 		public override string ToString()

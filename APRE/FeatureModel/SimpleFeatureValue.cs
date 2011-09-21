@@ -158,11 +158,11 @@ namespace SIL.APRE.FeatureModel
 			return true;
 		}
 
-		internal override void Merge(FeatureValue other, VariableBindings varBindings)
+		internal override bool Merge(FeatureValue other, VariableBindings varBindings)
 		{
 			SimpleFeatureValue otherSfv;
 			if (!Dereference(other, out otherSfv))
-				return;
+				return true;
 
 			if (!IsVariable && !otherSfv.IsVariable)
 			{
@@ -205,6 +205,8 @@ namespace SIL.APRE.FeatureModel
 					varBindings[otherSfv.VariableName] = binding;
 				}
 			}
+
+			return !IsUninstantiated;
 		}
 
 		internal override bool Subtract(FeatureValue other, VariableBindings varBindings)
@@ -272,5 +274,6 @@ namespace SIL.APRE.FeatureModel
 		protected abstract void UnionWith(bool not, SimpleFeatureValue other, bool notOther);
 		protected abstract void ExceptWith(bool not, SimpleFeatureValue other, bool notOther);
 		protected abstract bool IsSatisfiable { get; }
+		protected abstract bool IsUninstantiated { get; }
 	}
 }

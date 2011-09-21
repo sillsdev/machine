@@ -6,7 +6,7 @@ using System.Text;
 
 namespace SIL.APRE.FeatureModel
 {
-	public class Disjunction : IEnumerable<FeatureStruct>, IEquatable<Disjunction>, ICloneable
+	public class Disjunction : IEnumerable<FeatureStruct>, IEquatable<Disjunction>, ICloneable<Disjunction>
 	{
 		private readonly HashSet<FeatureStruct> _disjuncts;
 
@@ -68,11 +68,6 @@ namespace SIL.APRE.FeatureModel
 		public Disjunction Clone()
 		{
 			return new Disjunction(this);
-		}
-
-		object ICloneable.Clone()
-		{
-			return Clone();
 		}
 
 		public bool Equals(Disjunction other)

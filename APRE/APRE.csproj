@@ -85,6 +85,7 @@
     <Compile Include="IBidirListNode.cs" />
     <Compile Include="IBidirListView.cs" />
     <Compile Include="IBidirTreeNode.cs" />
+    <Compile Include="ICloneable.cs" />
     <Compile Include="IDBearerDictionary.cs" />
     <Compile Include="IdentityEqualityComparer.cs" />
     <Compile Include="IntegerSpanFactory.cs" />
