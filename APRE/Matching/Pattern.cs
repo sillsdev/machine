@@ -35,12 +35,7 @@ namespace SIL.APRE.Matching
 		private readonly SpanFactory<TOffset> _spanFactory;
 		private readonly Func<Annotation<TOffset>, bool> _filter;
 		private FiniteStateAutomaton<TOffset> _fsa;
-		private bool _checkAnchors;
 		private readonly Direction _dir;
-
-		private readonly FeatureSymbol _leftSide;
-		private readonly FeatureSymbol _rightSide;
-		private readonly SymbolicFeature _anchorFeature;
 
         public Pattern(SpanFactory<TOffset> spanFactory)
 			: this(spanFactory, Direction.LeftToRight)
@@ -64,8 +59,6 @@ namespace SIL.APRE.Matching
 			_spanFactory = spanFactory;
 			_dir = dir;
 			_filter = filter;
-
-			InitAnchorFeature(out _anchorFeature, out _leftSide, out _rightSide);
 		}
 
 		public Pattern(SpanFactory<TOffset> spanFactory, params PatternNode<TOffset>[] nodes)
@@ -113,8 +106,6 @@ namespace SIL.APRE.Matching
 			_spanFactory = spanFactory;
 			_dir = dir;
 			_filter = filter;
-
-			InitAnchorFeature(out _anchorFeature, out _leftSide, out _rightSide);
 		}
 
         /// <summary>
@@ -127,18 +118,7 @@ namespace SIL.APRE.Matching
 			_spanFactory = pattern._spanFactory;
 			_dir = pattern._dir;
 			_filter = pattern._filter;
-
-			InitAnchorFeature(out _anchorFeature, out _leftSide, out _rightSide);
         }
-
-		private static void InitAnchorFeature(out SymbolicFeature anchorFeature, out FeatureSymbol leftSide, out FeatureSymbol rightSide)
-		{
-			leftSide = new FeatureSymbol(Guid.NewGuid().ToString(), "LeftSide");
-			rightSide = new FeatureSymbol(Guid.NewGuid().ToString(), "RightSide");
-			anchorFeature = new SymbolicFeature(Guid.NewGuid().ToString(), "Anchor");
-			anchorFeature.AddPossibleSymbol(leftSide);
-			anchorFeature.AddPossibleSymbol(rightSide);
-		}
 
 		public SpanFactory<TOffset> SpanFactory
 		{
@@ -176,8 +156,6 @@ namespace SIL.APRE.Matching
 			writer = new StreamWriter(string.Format("c:\\{0}-dfa.dot", _dir == Direction.LeftToRight ? "ltor" : "rtol"));
 			_fsa.ToGraphViz(writer);
 			writer.Close();
-
-			_checkAnchors = this.GetNodes().OfType<Anchor<TOffset>>().Any();
 		}
 
 		private void GenerateExpressionNfa(State<TOffset> startState, Expression<TOffset> expr, string parentName,
@@ -193,38 +171,37 @@ namespace SIL.APRE.Matching
 			else
 			{
 				startState = _fsa.CreateTag(startState, _fsa.CreateState(), EntireMatch, true);
-				State<TOffset> endState = expr.GenerateNfa(_fsa, startState);
-
-				HashSet<FeatureStruct> startAnchored = null;
-				var startAnchor = expr.Children.GetFirst(_fsa.Direction) as Anchor<TOffset>;
-				if (startAnchor != null)
-					startAnchored = new HashSet<FeatureStruct>(GetStartAnchoredConditions(startState, new HashSet<State<TOffset>>()));
-
-				HashSet<FeatureStruct> endAnchored = null;
-				var endAnchor = expr.Children.GetLast(_fsa.Direction) as Anchor<TOffset>;
-				if (endAnchor != null)
-					endAnchored = new HashSet<FeatureStruct>(GetEndAnchoredConditions(endState, new HashSet<State<TOffset>>()));
-
-				if (startAnchored != null)
+				State<TOffset> endState;
+				if (expr.Children.GetFirst(_fsa.Direction) is Anchor<TOffset>)
 				{
-					foreach (FeatureStruct cond in startAnchored)
-					{
-						AnchorTypes a = startAnchor.Type;
-						if (endAnchored != null && endAnchored.Contains(cond))
-							a = a | endAnchor.Type;
-						AddAnchor(cond, a);
-					}
+					endState = startState.AddArc(FeatureStruct.With(FsaFeatureSystem.Instance)
+						.Feature(FsaFeatureSystem.Type).EqualTo("anchor")
+						.Symbol(_dir == Direction.LeftToRight ? FsaFeatureSystem.LeftSide : FsaFeatureSystem.RightSide).Value, _fsa.CreateState());
 				}
-
-				if (endAnchored != null)
+				else
 				{
-					foreach (FeatureStruct cond in endAnchored)
-					{
-						if (startAnchored == null || !startAnchored.Contains(cond))
-							AddAnchor(cond, endAnchor.Type);
-					}
+					State<TOffset> nextState = startState.AddArc(_fsa.CreateState(), ArcPriorityType.High);
+					endState = nextState.AddArc(FeatureStruct.With(FsaFeatureSystem.Instance)
+						.Feature(FsaFeatureSystem.Type).EqualTo("anchor")
+						.Symbol(_dir == Direction.LeftToRight ? FsaFeatureSystem.LeftSide : FsaFeatureSystem.RightSide).Value, _fsa.CreateState());
+					startState.AddArc(endState);
 				}
+				startState = expr.GenerateNfa(_fsa, endState);
 
+				if (expr.Children.GetLast(_fsa.Direction) is Anchor<TOffset>)
+				{
+					endState = startState.AddArc(FeatureStruct.With(FsaFeatureSystem.Instance)
+						.Feature(FsaFeatureSystem.Type).EqualTo("anchor")
+						.Symbol(_dir == Direction.LeftToRight ? FsaFeatureSystem.RightSide : FsaFeatureSystem.LeftSide).Value, _fsa.CreateState());
+				}
+				else
+				{
+					State<TOffset> nextState = startState.AddArc(_fsa.CreateState(), ArcPriorityType.VeryLow);
+					endState = nextState.AddArc(FeatureStruct.With(FsaFeatureSystem.Instance)
+						.Feature(FsaFeatureSystem.Type).EqualTo("anchor")
+						.Symbol(_dir == Direction.LeftToRight ? FsaFeatureSystem.RightSide : FsaFeatureSystem.LeftSide).Value, _fsa.CreateState());
+					startState.AddArc(endState);
+				}
 				startState = _fsa.CreateTag(endState, _fsa.CreateState(), EntireMatch, false);
 				State<TOffset> acceptingState = _fsa.CreateAcceptingState(name,
 					(input, match) =>
@@ -236,51 +213,39 @@ namespace SIL.APRE.Matching
 			}
 		}
 
-		private static IEnumerable<FeatureStruct> GetStartAnchoredConditions(State<TOffset> startState, HashSet<State<TOffset>> visitedStates)
+		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, Annotation<TOffset> start)
 		{
-			visitedStates.Add(startState);
-			foreach (Arc<TOffset> arc in startState.OutgoingArcs)
-			{
-				if (arc.Condition != null)
-				{
-					yield return arc.Condition;
-				}
-				else if (!visitedStates.Contains(arc.Target))
-				{
-					foreach (FeatureStruct cond in GetStartAnchoredConditions(arc.Target, visitedStates))
-						yield return cond;
-				}
-			}
+			IEnumerable<PatternMatch<TOffset>> matches;
+			return IsMatch(annList, start, false, out matches);
 		}
 
-		private static IEnumerable<FeatureStruct> GetEndAnchoredConditions(State<TOffset> endState, HashSet<State<TOffset>> visitedStates)
+		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, Annotation<TOffset> start, out PatternMatch<TOffset> match)
 		{
-			visitedStates.Add(endState);
-			foreach (Arc<TOffset> arc in endState.IncomingArcs)
+			IEnumerable<PatternMatch<TOffset>> matches;
+			if (IsMatch(annList, start, false, out matches))
 			{
-				if (arc.Condition != null)
-				{
-					yield return arc.Condition;
-				}
-				else if (!visitedStates.Contains(arc.Source))
-				{
-					foreach (FeatureStruct cond in GetEndAnchoredConditions(arc.Source, visitedStates))
-						yield return cond;
-				}
+				match = matches.First();
+				return true;
 			}
+			match = null;
+			return false;
 		}
 
+		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, Annotation<TOffset> start, out IEnumerable<PatternMatch<TOffset>> matches)
+		{
+			return IsMatch(annList, start, true, out matches);
+		}
 
 		public bool IsMatch(IBidirList<Annotation<TOffset>> annList)
 		{
 			IEnumerable<PatternMatch<TOffset>> matches;
-			return IsMatch(annList, false, out matches);
+			return IsMatch(annList, annList.GetFirst(_dir, _filter), false, out matches);
 		}
 
 		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, out PatternMatch<TOffset> match)
 		{
 			IEnumerable<PatternMatch<TOffset>> matches;
-			if (IsMatch(annList, false, out matches))
+			if (IsMatch(annList, annList.GetFirst(_dir, _filter), false, out matches))
 			{
 				match = matches.First();
 				return true;
@@ -291,26 +256,17 @@ namespace SIL.APRE.Matching
 
 		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, out IEnumerable<PatternMatch<TOffset>> matches)
 		{
-			return IsMatch(annList, true, out matches);
+			return IsMatch(annList, annList.GetFirst(_dir, _filter), true, out matches);
 		}
 
-		private bool IsMatch(IBidirList<Annotation<TOffset>> annList, bool allMatches, out IEnumerable<PatternMatch<TOffset>> matches)
+		private bool IsMatch(IBidirList<Annotation<TOffset>> annList, Annotation<TOffset> start, bool allMatches, out IEnumerable<PatternMatch<TOffset>> matches)
 		{
 			if (!IsCompiled)
 				Compile();
 
-			HashSet<Annotation<TOffset>> leftAnchored = null;
-			HashSet<Annotation<TOffset>> rightAnchored = null;
-			if (_checkAnchors)
-			{
-				leftAnchored = new HashSet<Annotation<TOffset>>(GetAnchoredAnnotations(annList.GetFirst(Direction.LeftToRight), Direction.LeftToRight));
-				rightAnchored = new HashSet<Annotation<TOffset>>(GetAnchoredAnnotations(annList.GetFirst(Direction.RightToLeft), Direction.RightToLeft));
-				MarkAnchoredAnnotations(leftAnchored, rightAnchored);
-			}
-
 			List<PatternMatch<TOffset>> matchesList = null;
 			IEnumerable<FsaMatch<TOffset>> fsaMatches;
-			if (_fsa.IsMatch(annList, allMatches, out fsaMatches))
+			if (_fsa.IsMatch(annList, start, allMatches, out fsaMatches))
 			{
 				matchesList = new List<PatternMatch<TOffset>>();
 				foreach (FsaMatch<TOffset> match in fsaMatches)
@@ -318,9 +274,6 @@ namespace SIL.APRE.Matching
 					matchesList.Add(CreatePatternMatch(match));
 				}
 			}
-
-			if (_checkAnchors)
-				UnmarkAnchoredAnnotations(leftAnchored, rightAnchored);
 
 			matches = matchesList;
 			return matchesList != null;
@@ -359,63 +312,63 @@ namespace SIL.APRE.Matching
 				string.IsNullOrEmpty(match.ID) ? Enumerable.Empty<string>() : match.ID.Split('*'), match.VariableBindings);
 		}
 
-		private void MarkAnchoredAnnotations(HashSet<Annotation<TOffset>> leftAnchored, HashSet<Annotation<TOffset>> rightAnchored)
-		{
-			foreach (Annotation<TOffset> ann in leftAnchored)
-			{
-				AnchorTypes anchor = AnchorTypes.LeftSide;
-				if (rightAnchored.Contains(ann))
-					anchor = anchor | AnchorTypes.RightSide;
-				AddAnchor(ann.FeatureStruct, anchor);
-			}
+		//private void MarkAnchoredAnnotations(HashSet<Annotation<TOffset>> leftAnchored, HashSet<Annotation<TOffset>> rightAnchored)
+		//{
+		//    foreach (Annotation<TOffset> ann in leftAnchored)
+		//    {
+		//        AnchorTypes anchor = AnchorTypes.LeftSide;
+		//        if (rightAnchored.Contains(ann))
+		//            anchor = anchor | AnchorTypes.RightSide;
+		//        AddAnchor(ann.FeatureStruct, anchor);
+		//    }
 
-			foreach (Annotation<TOffset> ann in rightAnchored)
-			{
-				if (!leftAnchored.Contains(ann))
-					AddAnchor(ann.FeatureStruct, AnchorTypes.RightSide);
-			}
-		}
+		//    foreach (Annotation<TOffset> ann in rightAnchored)
+		//    {
+		//        if (!leftAnchored.Contains(ann))
+		//            AddAnchor(ann.FeatureStruct, AnchorTypes.RightSide);
+		//    }
+		//}
 
-		private void UnmarkAnchoredAnnotations(HashSet<Annotation<TOffset>> leftAnchored, HashSet<Annotation<TOffset>> rightAnchored)
-		{
-			foreach (Annotation<TOffset> ann in leftAnchored.Union(rightAnchored))
-				ann.FeatureStruct.RemoveValue(_anchorFeature);
-		}
+		//private void UnmarkAnchoredAnnotations(HashSet<Annotation<TOffset>> leftAnchored, HashSet<Annotation<TOffset>> rightAnchored)
+		//{
+		//    foreach (Annotation<TOffset> ann in leftAnchored.Union(rightAnchored))
+		//        ann.FeatureStruct.RemoveValue(_anchorFeature);
+		//}
 
-		private IEnumerable<Annotation<TOffset>> GetAnchoredAnnotations(Annotation<TOffset> curAnn, Direction dir)
-		{
-			TOffset offset = curAnn.Span.GetStart(dir);
-			for (; curAnn != null && curAnn.Span.GetStart(_dir).Equals(offset); curAnn = curAnn.GetNext(_dir, _filter))
-			{
-				yield return curAnn;
-				if (curAnn.Optional)
-				{
-					Annotation<TOffset> nextAnn = curAnn.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
-					if (nextAnn != null)
-					{
-						foreach (Annotation<TOffset> a in GetAnchoredAnnotations(nextAnn, dir))
-							yield return a;
-					}
-				}
-			}
-		}
+		//private IEnumerable<Annotation<TOffset>> GetAnchoredAnnotations(Annotation<TOffset> curAnn, Direction dir)
+		//{
+		//    TOffset offset = curAnn.Span.GetStart(dir);
+		//    for (; curAnn != null && curAnn.Span.GetStart(_dir).Equals(offset); curAnn = curAnn.GetNext(_dir, _filter))
+		//    {
+		//        yield return curAnn;
+		//        if (curAnn.Optional)
+		//        {
+		//            Annotation<TOffset> nextAnn = curAnn.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
+		//            if (nextAnn != null)
+		//            {
+		//                foreach (Annotation<TOffset> a in GetAnchoredAnnotations(nextAnn, dir))
+		//                    yield return a;
+		//            }
+		//        }
+		//    }
+		//}
 
-		private void AddAnchor(FeatureStruct fs, AnchorTypes anchor)
-		{
-			if (anchor == AnchorTypes.None)
-			{
-				fs.AddValue(_anchorFeature, new SymbolicFeatureValue(_anchorFeature));
-			}
-			else
-			{
-				IEnumerable<FeatureSymbol> symbols = Enumerable.Empty<FeatureSymbol>();
-				if ((anchor & AnchorTypes.LeftSide) == AnchorTypes.LeftSide)
-					symbols = symbols.Concat(_leftSide);
-				if ((anchor & AnchorTypes.RightSide) == AnchorTypes.RightSide)
-					symbols = symbols.Concat(_rightSide);
-				fs.AddValue(_anchorFeature, new SymbolicFeatureValue(symbols));
-			}
-		}
+		//private void AddAnchor(FeatureStruct fs, AnchorTypes anchor)
+		//{
+		//    if (anchor == AnchorTypes.None)
+		//    {
+		//        fs.AddValue(_anchorFeature, new SymbolicFeatureValue(_anchorFeature));
+		//    }
+		//    else
+		//    {
+		//        IEnumerable<FeatureSymbol> symbols = Enumerable.Empty<FeatureSymbol>();
+		//        if ((anchor & AnchorTypes.LeftSide) == AnchorTypes.LeftSide)
+		//            symbols = symbols.Concat(_leftSide);
+		//        if ((anchor & AnchorTypes.RightSide) == AnchorTypes.RightSide)
+		//            symbols = symbols.Concat(_rightSide);
+		//        fs.AddValue(_anchorFeature, new SymbolicFeatureValue(symbols));
+		//    }
+		//}
 
         public override PatternNode<TOffset> Clone()
         {

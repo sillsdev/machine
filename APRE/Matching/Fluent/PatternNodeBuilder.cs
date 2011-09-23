@@ -28,10 +28,10 @@ namespace SIL.APRE.Matching.Fluent
 			_inAlternation = true;
 		}
 
-		protected void AddAnnotation(FeatureStruct fs)
+		protected void AddAnnotation(string type, FeatureStruct fs)
 		{
 			CheckEndAlternation();
-			AddNode(new Constraint<TOffset>(fs));
+			AddNode(new Constraint<TOffset>(type, fs));
 		}
 
 		protected void AddGroup(string name, Func<IGroupSyntax<TOffset>, IGroupSyntax<TOffset>> build)

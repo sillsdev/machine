@@ -186,6 +186,26 @@ namespace SIL.APRE
 			}
 		}
 
+		public TNode Begin
+		{
+			get { return null; }
+		}
+
+		public TNode End
+		{
+			get { return null; }
+		}
+
+		public TNode GetBegin(Direction dir)
+		{
+			return null;
+		}
+
+		public TNode GetEnd(Direction dir)
+		{
+			return null;
+		}
+
 		public TNode First
 		{
 			get { return GetFirst(Direction.LeftToRight); }

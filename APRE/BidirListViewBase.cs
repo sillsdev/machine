@@ -154,6 +154,26 @@ namespace SIL.APRE
 			get { return false; }
 		}
 
+		public TNode Begin
+		{
+			get { return _first.Prev; }
+		}
+
+		public TNode End
+		{
+			get { return _last.Next; }
+		}
+
+		public TNode GetBegin(Direction dir)
+		{
+			return dir == Direction.LeftToRight ? Begin : End;
+		}
+
+		public TNode GetEnd(Direction dir)
+		{
+			return dir == Direction.LeftToRight ? End : Begin;
+		}
+
 		public TNode First
 		{
 			get

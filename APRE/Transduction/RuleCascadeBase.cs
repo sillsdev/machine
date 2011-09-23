@@ -53,7 +53,7 @@ namespace SIL.APRE.Transduction
 			bool applied = false;
 			for (int i = ruleIndex; i < _rules.Count; i++)
 			{
-				if (_rules[i].Apply(input))
+				if (ApplyRule(_rules[i], input))
 				{
 					switch (_ruleOrder)
 					{
@@ -70,6 +70,11 @@ namespace SIL.APRE.Transduction
 				}
 			}
 			return applied;
+		}
+
+		protected virtual bool ApplyRule(IRule<TOffset> rule, IBidirList<Annotation<TOffset>> input)
+		{
+			return rule.Apply(input);
 		}
 	}
 }

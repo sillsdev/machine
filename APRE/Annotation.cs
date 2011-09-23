@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using SIL.APRE.FeatureModel;
+using SIL.APRE.Fsa;
 
 namespace SIL.APRE
 {
@@ -7,16 +9,18 @@ namespace SIL.APRE
 	{
 		private readonly Span<TOffset> _span;
 
-		public Annotation(Span<TOffset> span, FeatureStruct fs)
+		public Annotation(string type, Span<TOffset> span, FeatureStruct fs)
 		{
 			_span = span;
 			FeatureStruct = fs;
+			if (type != null)
+				FeatureStruct.AddValue(FsaFeatureSystem.Type, type);
 			IsClean = true;
 			ListID = -1;
 		}
 
 		internal Annotation(Span<TOffset> span)
-			: this(span, null)
+			: this(null, span, null)
 		{
 		}
 
@@ -26,6 +30,11 @@ namespace SIL.APRE
 			FeatureStruct = ann.FeatureStruct == null ? null : (FeatureStruct) ann.FeatureStruct.Clone();
 			IsClean = ann.IsClean;
 			Optional = ann.Optional;
+		}
+
+		public string Type
+		{
+			get { return FeatureStruct.GetValue<StringFeatureValue>(FsaFeatureSystem.Type).Values.First(); }
 		}
 
 		public Span<TOffset> Span

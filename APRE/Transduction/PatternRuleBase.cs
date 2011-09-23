@@ -50,10 +50,10 @@ namespace SIL.APRE.Transduction
 
 			bool applied = false;
 			Annotation<TOffset> first = input.GetFirst(_lhs.Direction, _lhs.Filter);
-			while (first != null)
+			while (first != input.GetEnd(_lhs.Direction))
 			{
 				PatternMatch<TOffset> match;
-				if (_lhs.IsMatch(input.GetView(first, _lhs.Direction), out match))
+				if (_lhs.IsMatch(input, first, out match))
 				{
 					first = ApplyRhs(input, match);
 					applied = true;

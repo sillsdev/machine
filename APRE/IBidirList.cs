@@ -6,6 +6,14 @@ namespace SIL.APRE
 
 	public interface IBidirList<TNode> : ICollection<TNode> where TNode : class, IBidirListNode<TNode>
 	{
+		TNode Begin { get; }
+
+		TNode End { get; }
+
+		TNode GetBegin(Direction dir);
+
+		TNode GetEnd(Direction dir);
+
 		/// <summary>
 		/// Gets the first node in this list.
 		/// </summary>

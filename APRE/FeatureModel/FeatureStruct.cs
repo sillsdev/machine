@@ -73,6 +73,37 @@ namespace SIL.APRE.FeatureModel
 			get { return _indefinite.Count; }
 		}
 
+		public void AddValue(SymbolicFeature feature, IEnumerable<FeatureSymbol> values)
+		{
+			FeatureSymbol[] vals = values.ToArray();
+			AddValue(feature, vals.Length == 0 ? new SymbolicFeatureValue(feature) : new SymbolicFeatureValue(vals));
+		}
+
+		public void AddValue(SymbolicFeature feature, params FeatureSymbol[] values)
+		{
+			AddValue(feature, values.Length == 0 ? new SymbolicFeatureValue(feature) : new SymbolicFeatureValue(values));
+		}
+
+		public void AddValue(StringFeature feature, IEnumerable<string> values)
+		{
+			AddValue(feature, false, values);
+		}
+
+		public void AddValue(StringFeature feature, bool not, IEnumerable<string> values)
+		{
+			AddValue(feature, new StringFeatureValue(values, not));
+		}
+
+		public void AddValue(StringFeature feature, params string[] values)
+		{
+			AddValue(feature, false, values);
+		}
+
+		public void AddValue(StringFeature feature, bool not, params string[] values)
+		{
+			AddValue(feature, new StringFeatureValue(values, not));
+		}
+
 		/// <summary>
 		/// Adds the specified feature-value pair.
 		/// </summary>

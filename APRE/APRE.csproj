@@ -80,6 +80,7 @@
     <Compile Include="FeatureModel\VariableBindings.cs" />
     <Compile Include="Fsa\AcceptInfo.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="Fsa\FsaFeatureSystem.cs" />
     <Compile Include="Fsa\FsaMatch.cs" />
     <Compile Include="IBidirList.cs" />
     <Compile Include="IBidirListNode.cs" />

@@ -139,7 +139,7 @@ namespace SIL.APRE.FeatureModel
         /// Adds the feature.
         /// </summary>
         /// <param name="feature">The feature.</param>
-        public void AddFeature(Feature feature)
+        public virtual void AddFeature(Feature feature)
         {
         	_features.Add(feature);
         }
@@ -147,7 +147,7 @@ namespace SIL.APRE.FeatureModel
         /// <summary>
         /// Resets this instance.
         /// </summary>
-        public void Reset()
+        public virtual void Reset()
         {
             _features.Clear();
         }

@@ -111,7 +111,27 @@ namespace SIL.APRE
             return ((IEnumerable<TNode>) this).GetEnumerator();
         }
 
-        /// <summary>
+    	public TNode Begin
+    	{
+			get { return null; }
+    	}
+
+    	public TNode End
+    	{
+			get { return null; }
+    	}
+
+    	public TNode GetBegin(Direction dir)
+    	{
+    		return null;
+    	}
+
+    	public TNode GetEnd(Direction dir)
+    	{
+    		return null;
+    	}
+
+    	/// <summary>
         /// Gets the first node in this list.
         /// </summary>
         /// <value>The first node.</value>

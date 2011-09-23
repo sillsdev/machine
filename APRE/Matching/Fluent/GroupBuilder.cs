@@ -37,9 +37,9 @@ namespace SIL.APRE.Matching.Fluent
 			return this;
 		}
 
-		public IQuantifierGroupSyntax<TOffset> Annotation(FeatureStruct fs)
+		public IQuantifierGroupSyntax<TOffset> Annotation(string type, FeatureStruct fs)
 		{
-			AddAnnotation(fs);
+			AddAnnotation(type, fs);
 			return this;
 		}
 

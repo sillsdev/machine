@@ -1,3 +1,4 @@
+using System.Linq;
 using SIL.APRE.FeatureModel;
 using SIL.APRE.Fsa;
 
@@ -14,9 +15,10 @@ namespace SIL.APRE.Matching
         /// <summary>
 		/// Initializes a new instance of the <see cref="Constraint{TOffset}"/> class.
         /// </summary>
-		public Constraint(FeatureStruct fs)
+		public Constraint(string type, FeatureStruct fs)
 		{
 			_fs = fs;
+			_fs.AddValue(FsaFeatureSystem.Type, type);
 		}
 
     	/// <summary>
@@ -27,6 +29,11 @@ namespace SIL.APRE.Matching
         {
             _fs = (FeatureStruct) constraint._fs.Clone();
         }
+
+    	public string Type
+    	{
+    		get { return _fs.GetValue<StringFeatureValue>(FsaFeatureSystem.Type).Values.First(); }
+    	}
 
         /// <summary>
         /// Gets the feature values.
