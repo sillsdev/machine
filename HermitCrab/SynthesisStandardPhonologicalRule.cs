@@ -1,5 +1,4 @@
-﻿using System;
-using SIL.APRE;
+﻿using SIL.APRE;
 using SIL.APRE.FeatureModel;
 using SIL.APRE.Matching;
 using SIL.APRE.Transduction;
@@ -10,20 +9,24 @@ namespace SIL.HermitCrab
 	{
 		private readonly Expression<PhoneticShapeNode> _lhs;
 
-		private readonly StringFeature _searchedFeature;
-
 		public SynthesisStandardPhonologicalRule(SpanFactory<PhoneticShapeNode> spanFactory, Direction dir, bool simult, Expression<PhoneticShapeNode> lhs)
 			: base(new Pattern<PhoneticShapeNode>(spanFactory, dir), simult)
 		{
 			_lhs = lhs;
-
-			_searchedFeature = new StringFeature(Guid.NewGuid().ToString(), "Searched");
 		}
 
-		public void AddSubrule(Expression<PhoneticShapeNode> rhs, Expression<PhoneticShapeNode> leftEnv,
-			Expression<PhoneticShapeNode> rightEnv, FeatureStruct applicableFS)
+		public void AddSubrule(Expression<PhoneticShapeNode> rhs, Expression<PhoneticShapeNode> leftEnv, Expression<PhoneticShapeNode> rightEnv,
+			FeatureStruct applicableFS)
 		{
-			AddRuleInternal(new SynthesisStandardPhonologicalSubrule(Lhs.SpanFactory, Lhs.Direction, Simultaneous, _lhs, rhs, leftEnv, rightEnv, applicableFS, _searchedFeature));
+			if (_lhs.Children.Count == rhs.Children.Count)
+				AddRuleInternal(new FeatureSynthesisRewriteRule(Lhs.SpanFactory, Lhs.Direction, Simultaneous, _lhs, rhs, leftEnv,
+					rightEnv, applicableFS));
+			else if (_lhs.Children.Count > rhs.Children.Count)
+				AddRuleInternal(new NarrowSynthesisRewriteRule(Lhs.SpanFactory, Lhs.Direction, Simultaneous, _lhs, rhs, leftEnv,
+					rightEnv, applicableFS));
+			else if (_lhs.Children.Count == 0)
+				AddRuleInternal(new EpenthesisSynthesisRewriteRule(Lhs.SpanFactory, Lhs.Direction, Simultaneous, _lhs, rhs, leftEnv,
+					rightEnv, applicableFS));
 		}
 
 		public override bool IsApplicable(IBidirList<Annotation<PhoneticShapeNode>> input)
@@ -36,7 +39,7 @@ namespace SIL.HermitCrab
 			if (base.Apply(input))
 			{
 				foreach (Annotation<PhoneticShapeNode> ann in input)
-					ann.FeatureStruct.RemoveValue(_searchedFeature);
+					ann.FeatureStruct.RemoveValue(HCFeatureSystem.Backtrack);
 				return true;
 			}
 			return false;

@@ -105,7 +105,7 @@ namespace SIL.HermitCrab
 					return;
 				}
 
-				if (node.Annotation.FeatureStruct.GetValue<StringFeatureValue>("type").Contains("seg"))
+				if (node.Annotation.Type == "segment")
 				{
 					TrieNode tnode = null;
 					foreach (TrieNode child in _children)
@@ -151,7 +151,7 @@ namespace SIL.HermitCrab
 				}
 				else
 				{
-					if (node.Annotation.FeatureStruct.GetValue<StringFeatureValue>("type").Contains("seg"))
+					if (node.Annotation.Type == "segment")
 					{
 						PhoneticShapeNode nextNode = node.GetNext(dir);
 						var segMatches = new List<Match>();

@@ -8,9 +8,9 @@ namespace SIL.HermitCrab
 	{
 		private readonly Annotation<PhoneticShapeNode> _ann;
 
-		public PhoneticShapeNode(SpanFactory<PhoneticShapeNode> spanFactory, FeatureStruct fs)
+		public PhoneticShapeNode(string type, SpanFactory<PhoneticShapeNode> spanFactory, FeatureStruct fs)
 		{
-			_ann = new Annotation<PhoneticShapeNode>(spanFactory.Create(this), fs);
+			_ann = new Annotation<PhoneticShapeNode>(type, spanFactory.Create(this), fs);
 			Tag = int.MinValue;
 		}
 

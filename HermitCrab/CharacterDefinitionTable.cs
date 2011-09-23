@@ -72,7 +72,7 @@ namespace SIL.HermitCrab
         /// <param name="strRep">The string representation.</param>
         public void AddBoundaryDefinition(string strRep)
         {
-            _bdryDefs[strRep] = new BoundaryDefinition(strRep, this, FeatureStruct.With(_phoneticFeatSys).Feature("strRep").EqualTo(strRep).Symbol("bdry").Value);
+            _bdryDefs[strRep] = new BoundaryDefinition(strRep, this, FeatureStruct.With(_phoneticFeatSys).Feature("strRep").EqualTo(strRep).Value);
         }
 
         /// <summary>
@@ -162,14 +162,14 @@ namespace SIL.HermitCrab
             SegmentDefinition segDef = GetSegmentDefinition(strRep);
             if (segDef != null)
             {
-				node = new PhoneticShapeNode(_spanFactory, (FeatureStruct) segDef.FeatureStruct.Clone());
+				node = new PhoneticShapeNode("segment", _spanFactory, (FeatureStruct) segDef.FeatureStruct.Clone());
             }
             else
             {
                 BoundaryDefinition bdryDef = GetBoundaryDefinition(strRep);
 				if (bdryDef != null)
 				{
-					node = new PhoneticShapeNode(_spanFactory, (FeatureStruct) bdryDef.FeatureStruct.Clone());
+					node = new PhoneticShapeNode("boundary", _spanFactory, (FeatureStruct) bdryDef.FeatureStruct.Clone());
 					node.Annotation.Optional = true;
 				}
             }
@@ -192,8 +192,7 @@ namespace SIL.HermitCrab
 				sb.Append("^");
             foreach (PhoneticShapeNode node in shape)
             {
-            	var type = node.Annotation.FeatureStruct.GetValue<SymbolicFeatureValue>("type");
-				if (type.Contains("seg"))
+				if (node.Annotation.Type == "segment")
 				{
 					SegmentDefinition[] segDefs = GetMatchingSegmentDefinitions(node, mode).ToArray();
 					int numSegDefs = segDefs.Length;
@@ -254,8 +253,7 @@ namespace SIL.HermitCrab
             var sb = new StringBuilder();
             foreach (PhoneticShapeNode node in shape)
             {
-				var type = node.Annotation.FeatureStruct.GetValue<SymbolicFeatureValue>("type");
-				if (type.Contains("seg"))
+				if (node.Annotation.Type == "segment")
 				{
 					IEnumerable<SegmentDefinition> segDefs = GetMatchingSegmentDefinitions(node, mode);
 					SegmentDefinition segDef = segDefs.FirstOrDefault();

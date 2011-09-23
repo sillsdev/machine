@@ -1,6 +1,4 @@
-﻿using System;
-using SIL.APRE;
-using SIL.APRE.FeatureModel;
+﻿using SIL.APRE;
 using SIL.APRE.Matching;
 using SIL.APRE.Transduction;
 
@@ -27,14 +25,18 @@ namespace SIL.HermitCrab
 
 		public void Compile()
 		{
-			foreach (AnalysisStandardPhonologicalSubrule subrule in Rules)
+			foreach (AnalysisRewriteRule subrule in Rules)
 				subrule.Compile();
 		}
 
 		public void AddSubrule(Expression<PhoneticShapeNode> rhs, Expression<PhoneticShapeNode> leftEnv, Expression<PhoneticShapeNode> rightEnv)
 		{
-			AddRuleInternal(new AnalysisStandardPhonologicalSubrule(_spanFactory, _delReapplications, _synthesisDir, _synthesisSimult, _lhs,
-				rhs, leftEnv, rightEnv));
+			if (_lhs.Children.Count == rhs.Children.Count)
+				AddRuleInternal(new FeatureAnalysisRewriteRule(_spanFactory, _synthesisDir, _synthesisSimult, _lhs, rhs, leftEnv, rightEnv));
+			else if (_lhs.Children.Count > rhs.Children.Count)
+				AddRuleInternal(new NarrowAnalysisRewriteRule(_spanFactory, _lhs, rhs, leftEnv, rightEnv));
+			else if (_lhs.Children.Count == 0)
+				AddRuleInternal(new EpenthesisAnalysisRewriteRule(_spanFactory, _synthesisDir, _synthesisSimult, rhs, leftEnv, rightEnv));
 		}
 
 		public override bool IsApplicable(IBidirList<Annotation<PhoneticShapeNode>> input)
@@ -47,6 +49,47 @@ namespace SIL.HermitCrab
 			bool result = base.Apply(input);
 
 			return result;
+		}
+
+		protected override bool ApplyRule(IRule<PhoneticShapeNode> rule, IBidirList<Annotation<PhoneticShapeNode>> input)
+		{
+			bool applied = false;
+			switch (((AnalysisRewriteRule) rule).AnalysisReapplyType)
+			{
+				case AnalysisReapplyType.Normal:
+					if (base.ApplyRule(rule, input))
+					{
+						RemoveSearchedValue(input);
+						applied = true;
+					}
+					break;
+
+				case AnalysisReapplyType.Deletion:
+					int i = 0;
+					while (i <= _delReapplications && base.ApplyRule(rule, input))
+					{
+						RemoveSearchedValue(input);
+						i++;
+					}
+					applied = i > 0;
+					break;
+
+				case AnalysisReapplyType.SelfOpaquing:
+					while (base.ApplyRule(rule, input))
+					{
+						RemoveSearchedValue(input);
+						applied = true;
+					}
+					break;
+			}
+
+			return applied;
+		}
+
+		private void RemoveSearchedValue(IBidirList<Annotation<PhoneticShapeNode>> input)
+		{
+			foreach (Annotation<PhoneticShapeNode> ann in input)
+				ann.FeatureStruct.RemoveValue(HCFeatureSystem.Backtrack);
 		}
 	}
 }
