@@ -20,16 +20,7 @@ namespace SIL.HermitCrab
 
 			AddEnvironment("leftEnv", leftEnv);
 			if (rhs.Children.Count > 0)
-			{
-				var target = new Group<PhoneticShapeNode>("target");
-				foreach (Constraint<PhoneticShapeNode> constraint in rhs.Children)
-				{
-					var newConstraint = (Constraint<PhoneticShapeNode>)constraint.Clone();
-					newConstraint.FeatureStruct.AddValue(HCFeatureSystem.Backtrack, HCFeatureSystem.NotSearched);
-					target.Children.Add(newConstraint);
-				}
-				Lhs.Children.Add(target);
-			}
+				Lhs.Children.Add(new Group<PhoneticShapeNode>("target", rhs.Children.Clone()));
 			AddEnvironment("rightEnv", rightEnv);
 		}
 
@@ -40,12 +31,11 @@ namespace SIL.HermitCrab
 
 		public override Annotation<PhoneticShapeNode> ApplyRhs(IBidirList<Annotation<PhoneticShapeNode>> input, PatternMatch<PhoneticShapeNode> match)
 		{
-			PhoneticShape shape;
+			var shape = (PhoneticShape) match.Start.List;
 			PhoneticShapeNode curNode;
 			Span<PhoneticShapeNode> target;
 			if (match.TryGetGroup("target", out target))
 			{
-				shape = (PhoneticShape) target.Start.List;
 				curNode = target.End;
 			}
 			else
@@ -53,14 +43,15 @@ namespace SIL.HermitCrab
 				Span<PhoneticShapeNode> leftEnv;
 				if (match.TryGetGroup("leftEnv", out leftEnv))
 				{
-					shape = (PhoneticShape)leftEnv.Start.List;
 					curNode = leftEnv.End;
 				}
 				else
 				{
-					Span<PhoneticShapeNode> rightEnv = match["rightEnv"];
-					shape = (PhoneticShape)rightEnv.Start.List;
-					curNode = rightEnv.Start.Prev;
+					Span<PhoneticShapeNode> rightEnv;
+					if (match.TryGetGroup("rightEnv", out rightEnv))
+						curNode = rightEnv.Start.Prev;
+					else
+						curNode = match.Start;
 				}
 			}
 			foreach (Constraint<PhoneticShapeNode> constraint in _analysisRhs.Children)
@@ -78,9 +69,7 @@ namespace SIL.HermitCrab
 				curNode = curNode.Next;
 			}
 
-			MarkSearchedNodes(match.Start, curNode);
-
-			return match.GetStart(Lhs.Direction).Annotation;
+			return null;
 		}
 
 	}

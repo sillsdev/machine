@@ -26,7 +26,7 @@ namespace SIL.HermitCrab
 				tuple.Item1.Annotation.FeatureStruct.Replace(constraints.FeatureStruct);
 				tuple.Item1.Annotation.FeatureStruct.ReplaceVariables(match.VariableBindings);
 				if (HasVariable(tuple.Item1.Annotation.FeatureStruct))
-					throw new MorphException(MorphException.MorphErrorType.UninstantiatedFeature);
+					throw new MorphException(MorphErrorCode.UninstantiatedFeature);
 			}
 
 			MarkSearchedNodes(match.GetStart(Lhs.Direction), target.GetEnd(Lhs.Direction));

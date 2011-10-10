@@ -61,32 +61,38 @@ namespace SIL.HermitCrab
 			}
 			else
 			{
-				if (node == null)
+				PhoneticShapeNode curNode = node;
+				if (dir == Direction.RightToLeft)
+					curNode = curNode == null ? Last : curNode.Prev;
+
+				if (curNode == null)
 				{
 					if (int.MinValue + 1 == First.Tag)
 						RelabelMinimumSparseEnclosingRange(null);
 				}
-				else if (node.Next == null)
+				else if (curNode.Next == null)
 				{
-					if (node.Tag == int.MaxValue)
-						RelabelMinimumSparseEnclosingRange(node);
+					if (curNode.Tag == int.MaxValue)
+						RelabelMinimumSparseEnclosingRange(curNode);
 				}
-				else if (node.Tag + 1 == node.Next.Tag)
+				else if (curNode.Tag + 1 == curNode.Next.Tag)
 				{
-					RelabelMinimumSparseEnclosingRange(node);
+					RelabelMinimumSparseEnclosingRange(curNode);
 				}
 					
-				if (node != null && node.Next == null)
+				if (curNode != null && curNode.Next == null)
 				{
-					newNode.Tag = node.Tag == int.MaxValue - 1 ? int.MaxValue : Average(node.Tag, int.MaxValue);
+					newNode.Tag = curNode.Tag == int.MaxValue - 1 ? int.MaxValue : Average(curNode.Tag, int.MaxValue);
 				}
 				else
 				{
-					newNode.Tag = Average(node == null ? int.MinValue : node.Tag, node == null ? First.Tag : node.Next.Tag);
+					newNode.Tag = Average(curNode == null ? int.MinValue : curNode.Tag, curNode == null ? First.Tag : curNode.Next.Tag);
 				}
 			}
 
 			base.Insert(newNode, node, dir);
+
+			_annotations.Add(newNode.Annotation);
 		}
 
 		public override bool Remove(PhoneticShapeNode node)
@@ -112,15 +118,15 @@ namespace SIL.HermitCrab
 
 		private const int NumBits = (sizeof(int) * 8) - 2;
 
-		private void RelabelMinimumSparseEnclosingRange(PhoneticShapeNode atom)
+		private void RelabelMinimumSparseEnclosingRange(PhoneticShapeNode node)
 		{
 			double T = Math.Pow(Math.Pow(2, NumBits) / Count, 1.0 / NumBits);
 
 			double elementCount = 1.0;
 
-			PhoneticShapeNode left = atom;
-			PhoneticShapeNode right = atom;
-			int tag = atom == null ? int.MinValue : atom.Tag;
+			PhoneticShapeNode left = node;
+			PhoneticShapeNode right = node;
+			int tag = node == null ? int.MinValue : node.Tag;
 			int low = tag;
 			int high = tag;
 
@@ -180,7 +186,7 @@ namespace SIL.HermitCrab
 					if (cursor != null)
 						cursor.Tag = pos;
 					pos++;
-					if (atom == cursor)
+					if (node == cursor)
 						pos += slack;
 					cursor = cursor == null ? First : cursor.Next;
 				}

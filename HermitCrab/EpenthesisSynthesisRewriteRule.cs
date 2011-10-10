@@ -17,23 +17,31 @@ namespace SIL.HermitCrab
 
 		public override Annotation<PhoneticShapeNode> ApplyRhs(IBidirList<Annotation<PhoneticShapeNode>> input, PatternMatch<PhoneticShapeNode> match)
 		{
-			PhoneticShape shape;
+			var shape = (PhoneticShape) match.Start.List;
 			PhoneticShapeNode curNode;
 			Span<PhoneticShapeNode> leftEnv;
 			if (match.TryGetGroup("leftEnv", out leftEnv))
 			{
-				shape = (PhoneticShape)leftEnv.Start.List;
 				curNode = leftEnv.End;
 			}
 			else
 			{
-				Span<PhoneticShapeNode> rightEnv = match["rightEnv"];
-				shape = (PhoneticShape)rightEnv.Start.List;
-				curNode = rightEnv.Start.Prev;
+
+				Span<PhoneticShapeNode> rightEnv;
+				if (match.TryGetGroup("rightEnv", out rightEnv))
+				{
+					curNode = rightEnv.Start.Prev;
+				}
+				else
+				{
+					curNode = match.Start;
+				}
 			}
 
 			foreach (PatternNode<PhoneticShapeNode> node in _rhs.Children.GetNodes(Lhs.Direction))
 			{
+				if (shape.Count == 256)
+					throw new MorphException(MorphErrorCode.TooManySegs);
 				var constraint = (Constraint<PhoneticShapeNode>) node;
 				PhoneticShapeNode newNode = CreateNodeFromConstraint(constraint, match.VariableBindings);
 				shape.Insert(newNode, curNode, Lhs.Direction);

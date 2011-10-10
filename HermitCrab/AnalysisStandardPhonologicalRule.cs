@@ -67,10 +67,7 @@ namespace SIL.HermitCrab
 				case AnalysisReapplyType.Deletion:
 					int i = 0;
 					while (i <= _delReapplications && base.ApplyRule(rule, input))
-					{
-						RemoveSearchedValue(input);
 						i++;
-					}
 					applied = i > 0;
 					break;
 

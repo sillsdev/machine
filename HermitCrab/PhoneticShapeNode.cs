@@ -19,12 +19,6 @@ namespace SIL.HermitCrab
 			_ann = node._ann.Clone();
 		}
 
-		protected override void Init(BidirList<PhoneticShapeNode> list)
-		{
-			base.Init(list);
-			((PhoneticShape) List).Annotations.Add(_ann);
-		}
-
 		public int Tag { get; internal set; }
 
 		public Annotation<PhoneticShapeNode> Annotation

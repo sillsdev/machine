@@ -72,7 +72,7 @@ namespace SIL.HermitCrab
         /// <param name="strRep">The string representation.</param>
         public void AddBoundaryDefinition(string strRep)
         {
-            _bdryDefs[strRep] = new BoundaryDefinition(strRep, this, FeatureStruct.With(_phoneticFeatSys).Feature("strRep").EqualTo(strRep).Value);
+            _bdryDefs[strRep] = new BoundaryDefinition(strRep, this, FeatureStruct.New(_phoneticFeatSys).Feature("strRep").EqualTo(strRep).Value);
         }
 
         /// <summary>

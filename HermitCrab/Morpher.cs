@@ -787,7 +787,7 @@ namespace SIL.HermitCrab
             // if word contains invalid segments, the char def table will return null
 			if (input == null)
 			{
-				var me = new MorphException(MorphException.MorphErrorType.InvalidShape,
+				var me = new MorphException(MorphErrorCode.InvalidShape,
 					string.Format(HCStrings.kstidInvalidWord, word, SurfaceStratum.CharacterDefinitionTable.ID));
 				me.Data["shape"] = word;
 				me.Data["charDefTable"] = SurfaceStratum.CharacterDefinitionTable.ID;

@@ -3,55 +3,55 @@
 namespace SIL.HermitCrab
 {
 	/// <summary>
+	/// The specific error type of morph exception. This is useful for displaying
+	/// user-friendly error messages.
+	/// </summary>
+	public enum MorphErrorCode
+	{
+		/// <summary>
+		/// A character definition table could not translate a phonetic shape.
+		/// </summary>
+		InvalidShape = 0,
+		/// <summary>
+		/// A feature is uninstantiated when a rule requires that it agree between the target and environment.
+		/// </summary>
+		UninstantiatedFeature,
+		/// <summary>
+		/// A phonetic shape contains too many segments.
+		/// </summary>
+		TooManySegs
+	}
+
+	/// <summary>
 	/// This exception is thrown during the morphing process. It is used to indicate
 	/// that an error occurred while morphing a word.
 	/// </summary>
 	public class MorphException : Exception
 	{
-		/// <summary>
-		/// The specific error type of morph exception. This is useful for displaying
-		/// user-friendly error messages.
-		/// </summary>
-		public enum MorphErrorType
+		private readonly MorphErrorCode _errorCode;
+
+		public MorphException(MorphErrorCode errorCode)
 		{
-			/// <summary>
-			/// A character definition table could not translate a phonetic shape.
-			/// </summary>
-			InvalidShape,
-			/// <summary>
-			/// A feature is uninstantiated when a rule requires that it agree between the target and environment.
-			/// </summary>
-			UninstantiatedFeature,
-			/// <summary>
-			/// A phonetic shape contains too many segments.
-			/// </summary>
-			TooManySegs
+			_errorCode = errorCode;
 		}
 
-		private readonly MorphErrorType _errorType;
-
-		public MorphException(MorphErrorType errorType)
-		{
-			_errorType = errorType;
-		}
-
-		public MorphException(MorphErrorType errorType, string message)
+		public MorphException(MorphErrorCode errorCode, string message)
 			: base(message)
 		{
-			_errorType = errorType;
+			_errorCode = errorCode;
 		}
 
-		public MorphException(MorphErrorType errorType, string message, Exception inner)
+		public MorphException(MorphErrorCode errorCode, string message, Exception inner)
 			: base(message, inner)
 		{
-			_errorType = errorType;
+			_errorCode = errorCode;
 		}
 
-		public MorphErrorType ErrorType
+		public MorphErrorCode ErrorCode
 		{
 			get
 			{
-				return _errorType;
+				return _errorCode;
 			}
 		}
 	}

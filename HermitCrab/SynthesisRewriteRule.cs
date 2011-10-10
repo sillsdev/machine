@@ -22,7 +22,7 @@ namespace SIL.HermitCrab
 			if (leftEnv.Children.Count > 0)
 			{
 				if (leftEnv.Children.First is Anchor<PhoneticShapeNode>)
-					Lhs.Children.Add(new Anchor<PhoneticShapeNode>(AnchorTypes.LeftSide));
+					Lhs.Children.Add(new Anchor<PhoneticShapeNode>(AnchorType.LeftSide));
 				Lhs.Children.Add(new Group<PhoneticShapeNode>("leftEnv", leftEnv.Children.Where(node => !(node is Anchor<PhoneticShapeNode>)).Clone()));
 			}
 
@@ -38,7 +38,7 @@ namespace SIL.HermitCrab
 			{
 				Lhs.Children.Add(new Group<PhoneticShapeNode>("rightEnv", rightEnv.Children.Where(node => !(node is Anchor<PhoneticShapeNode>)).Clone()));
 				if (rightEnv.Children.Last is Anchor<PhoneticShapeNode>)
-					Lhs.Children.Add(new Anchor<PhoneticShapeNode>(AnchorTypes.RightSide));
+					Lhs.Children.Add(new Anchor<PhoneticShapeNode>(AnchorType.RightSide));
 			}
 		}
 
@@ -73,7 +73,7 @@ namespace SIL.HermitCrab
 			var newNode = new PhoneticShapeNode(constraint.Type, _spanFactory, (FeatureStruct) constraint.FeatureStruct.Clone());
 			newNode.Annotation.FeatureStruct.ReplaceVariables(varBindings);
 			if (HasVariable(newNode.Annotation.FeatureStruct))
-				throw new MorphException(MorphException.MorphErrorType.UninstantiatedFeature);
+				throw new MorphException(MorphErrorCode.UninstantiatedFeature);
 			return newNode;
 		}
 

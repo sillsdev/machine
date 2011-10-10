@@ -31,13 +31,15 @@ namespace SIL.HermitCrab
 				shape.Insert(newNode, curNode, Lhs.Direction);
 				curNode = newNode;
 			}
+
+			MarkSearchedNodes(match.GetStart(Lhs.Direction), curNode);
+			PhoneticShapeNode resumeNode = match.GetStart(Lhs.Direction).GetPrev(Lhs.Direction);
+
 			PhoneticShapeNode[] nodes = target.GetStart(Lhs.Direction).GetNodes(target.GetEnd(Lhs.Direction)).ToArray();
 			for (int i = 0; i < _targetCount; i++)
 				nodes[i].Remove();
 
-			MarkSearchedNodes(match.GetStart(Lhs.Direction), curNode);
-
-			return match.GetStart(Lhs.Direction).Annotation;
+			return resumeNode == null ? null : resumeNode.Annotation;
 		}
 	}
 }
