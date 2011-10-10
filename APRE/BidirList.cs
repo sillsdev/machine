@@ -296,24 +296,15 @@ namespace SIL.APRE
 
 			newNode.Init(this);
 
-            if (dir == Direction.LeftToRight)
-            {
-				newNode.Next = node == null ? _first : node.Next;
-				if (node != null)
-					node.Next = newNode;
-				newNode.Prev = node;
-				if (newNode.Next != null)
-					newNode.Next.Prev = newNode;
-            }
-            else
-            {
-				newNode.Prev = node == null ? null : node.Prev;
-				if (node != null)
-					node.Prev = newNode;
-				newNode.Next = node;
-				if (newNode.Prev != null)
-					newNode.Prev.Next = newNode;
-            }
+			if (dir == Direction.RightToLeft)
+				node = node == null ? _last : node.Prev;
+
+			newNode.Next = node == null ? _first : node.Next;
+			if (node != null)
+				node.Next = newNode;
+			newNode.Prev = node;
+			if (newNode.Next != null)
+				newNode.Next.Prev = newNode;
 
 			if (newNode.Next == null)
 				_last = newNode;

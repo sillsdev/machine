@@ -10,7 +10,7 @@ namespace SIL.APRE.FeatureModel
     /// </summary>
     public class FeatureSystem
     {
-		public static IFeatureSystemSyntax With
+		public static IFeatureSystemSyntax New
 		{
 			get
 			{

@@ -57,7 +57,7 @@ namespace SIL.APRE.Matching.Fluent
 			AddNode(result.Value);
 		}
 
-		protected void AddAnchor(AnchorTypes anchor)
+		protected void AddAnchor(AnchorType anchor)
 		{
 			CheckEndAlternation();
 			AddNode(new Anchor<TOffset>(anchor));

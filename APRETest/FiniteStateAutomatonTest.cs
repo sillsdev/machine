@@ -12,7 +12,7 @@ namespace SIL.APRE.Test
 		[Test]
 		public void Determinize()
 		{
-			FeatureSystem featSys = FeatureSystem.With
+			FeatureSystem featSys = FeatureSystem.New
 				.SymbolicFeature("pi1", pi1 => pi1
 					.Symbol("pi1+", "+")
                		.Symbol("pi1-", "-"))
@@ -25,17 +25,17 @@ namespace SIL.APRE.Test
 
 			var fsa = new FiniteStateAutomaton<int>(Direction.LeftToRight);
 			State<int> q1 = fsa.CreateAcceptingState();
-			fsa.StartState.AddArc(FeatureStruct.With(featSys).Symbol("pi1+").Value, q1);
+			fsa.StartState.AddArc(FeatureStruct.New(featSys).Symbol("pi1+").Value, q1);
 			State<int> q2 = fsa.CreateAcceptingState();
-			fsa.StartState.AddArc(FeatureStruct.With(featSys).Symbol("pi1+").Value, q2);
-			fsa.StartState.AddArc(FeatureStruct.With(featSys).Symbol("pi2+").Value, q2);
+			fsa.StartState.AddArc(FeatureStruct.New(featSys).Symbol("pi1+").Value, q2);
+			fsa.StartState.AddArc(FeatureStruct.New(featSys).Symbol("pi2+").Value, q2);
 			State<int> q3 = fsa.CreateAcceptingState();
-			fsa.StartState.AddArc(FeatureStruct.With(featSys).Symbol("pi2+").Value, q3);
-			fsa.StartState.AddArc(FeatureStruct.With(featSys).Symbol("pi3+").Value, q3);
+			fsa.StartState.AddArc(FeatureStruct.New(featSys).Symbol("pi2+").Value, q3);
+			fsa.StartState.AddArc(FeatureStruct.New(featSys).Symbol("pi3+").Value, q3);
 			State<int> q4 = fsa.CreateAcceptingState();
-			fsa.StartState.AddArc(FeatureStruct.With(featSys).Symbol("pi2+").Value, q4);
+			fsa.StartState.AddArc(FeatureStruct.New(featSys).Symbol("pi2+").Value, q4);
 			State<int> q5 = fsa.CreateAcceptingState();
-			fsa.StartState.AddArc(FeatureStruct.With(featSys).Symbol("pi3+").Value, q5);
+			fsa.StartState.AddArc(FeatureStruct.New(featSys).Symbol("pi3+").Value, q5);
 			fsa.Determinize();
 
 			var writer = new StreamWriter("c:\\dfa.dot");
@@ -43,8 +43,8 @@ namespace SIL.APRE.Test
 			writer.Close();
 
 			Assert.AreEqual(7, fsa.StartState.OutgoingArcs.Count());
-			Assert.IsTrue(fsa.StartState.OutgoingArcs.Any(tran => tran.Condition.Equals(FeatureStruct.With(featSys).Symbol("pi1+").Symbol("pi2+").Symbol("pi3+").Value)));
-			Assert.IsTrue(fsa.StartState.OutgoingArcs.Any(tran => tran.Condition.Equals(FeatureStruct.With(featSys).Symbol("pi1+").Symbol("pi2-").Symbol("pi3+").Value)));
+			Assert.IsTrue(fsa.StartState.OutgoingArcs.Any(tran => tran.Condition.Equals(FeatureStruct.New(featSys).Symbol("pi1+").Symbol("pi2+").Symbol("pi3+").Value)));
+			Assert.IsTrue(fsa.StartState.OutgoingArcs.Any(tran => tran.Condition.Equals(FeatureStruct.New(featSys).Symbol("pi1+").Symbol("pi2-").Symbol("pi3+").Value)));
 		}
 
 		//[Test]

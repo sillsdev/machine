@@ -9,7 +9,7 @@ namespace SIL.APRE.Test
 		[Test]
 		public void DisjunctiveUnify1()
 		{
-			FeatureSystem featSys = FeatureSystem.With
+			FeatureSystem featSys = FeatureSystem.New
 				.SymbolicFeature("rank", rank => rank
 					.Symbol("clause"))
 				.ComplexFeature("subj", subj => subj
@@ -43,7 +43,7 @@ namespace SIL.APRE.Test
 				.StringFeature("varFeat3")
 				.StringFeature("varFeat4").Value;
 
-			FeatureStruct grammar = FeatureStruct.With(featSys)
+			FeatureStruct grammar = FeatureStruct.New(featSys)
 				.Feature("rank").EqualTo("clause")
 				.Feature("subj").EqualToFeatureStruct(subj => subj
 					.Feature("case").EqualTo("nom"))
@@ -80,7 +80,7 @@ namespace SIL.APRE.Test
 						.Feature("varFeat3").EqualTo("value3")
 						.Feature("varFeat2").Not.EqualToVariable("beta"))).Value;
 
-			FeatureStruct constituent = FeatureStruct.With(featSys)
+			FeatureStruct constituent = FeatureStruct.New(featSys)
 				.Feature("subj").EqualToFeatureStruct(subj => subj
 					.Feature("lex").EqualTo("y'all")
 					.Feature("person").EqualTo("2")
@@ -96,7 +96,7 @@ namespace SIL.APRE.Test
 		[Test]
 		public void DisjunctiveUnify2()
 		{
-			FeatureSystem featSys = FeatureSystem.With
+			FeatureSystem featSys = FeatureSystem.New
 				.SymbolicFeature("feat1", feat1 => feat1
 					.Symbol("feat1+")
 					.Symbol("feat1-"))
@@ -119,12 +119,12 @@ namespace SIL.APRE.Test
 					.Symbol("feat7+")
 					.Symbol("feat7-")).Value;
 
-			FeatureStruct fs1 = FeatureStruct.With(featSys)
+			FeatureStruct fs1 = FeatureStruct.New(featSys)
 				.And(disjunction => disjunction
 					.With(disj => disj.Symbol("feat1+"))
 					.Or(disj => disj.Symbol("feat2+"))).Value;
 
-			FeatureStruct fs2 = FeatureStruct.With(featSys)
+			FeatureStruct fs2 = FeatureStruct.New(featSys)
 				.And(disjunction => disjunction
 					.With(disj => disj.Symbol("feat3+"))
 					.Or(disj => disj.Symbol("feat4+")))
@@ -139,7 +139,7 @@ namespace SIL.APRE.Test
 		[Test]
 		public void Unify1()
 		{
-			FeatureSystem featSys = FeatureSystem.With
+			FeatureSystem featSys = FeatureSystem.New
 				.ComplexFeature("a", a => a
 					.SymbolicFeature("b", b => b
 						.Symbol("c"))
@@ -156,14 +156,14 @@ namespace SIL.APRE.Test
 					.ExtantFeature("e")
 					.ExtantFeature("h")).Value;
 
-			FeatureStruct fs1 = FeatureStruct.With(featSys)
+			FeatureStruct fs1 = FeatureStruct.New(featSys)
 				.Feature("a").EqualToFeatureStruct(a => a
 					.Feature("b").EqualTo("c"))
 				.Feature("d").EqualToFeatureStruct(d => d
 					.Feature("e").EqualTo("f"))
 				.Feature("g").ReferringTo("d").Value;
 
-			FeatureStruct fs2 = FeatureStruct.With(featSys)
+			FeatureStruct fs2 = FeatureStruct.New(featSys)
 				.Feature("a").EqualToFeatureStruct(a => a
 					.Feature("b").EqualTo("c"))
 				.Feature("d").ReferringTo("a")
@@ -177,7 +177,7 @@ namespace SIL.APRE.Test
 		[Test]
 		public void Unify2()
 		{
-			FeatureSystem featSys = FeatureSystem.With
+			FeatureSystem featSys = FeatureSystem.New
 				.ComplexFeature("a", a => a
 					.SymbolicFeature("b", b => b
 						.Symbol("c"))
@@ -196,7 +196,7 @@ namespace SIL.APRE.Test
 				.ComplexFeature("i", i => i
 					.ExtantFeature("b")).Value;
 
-			FeatureStruct fs1 = FeatureStruct.With(featSys)
+			FeatureStruct fs1 = FeatureStruct.New(featSys)
 				.Feature("a").EqualToFeatureStruct(a => a
 					.Feature("b").EqualTo("c"))
 				.Feature("d").EqualToFeatureStruct(d => d
@@ -204,7 +204,7 @@ namespace SIL.APRE.Test
 				.Feature("g").ReferringTo("d")
 				.Feature("i").ReferringTo("a", "b").Value;
 
-			FeatureStruct fs2 = FeatureStruct.With(featSys)
+			FeatureStruct fs2 = FeatureStruct.New(featSys)
 				.Feature("a").EqualToFeatureStruct(a => a
 					.Feature("b").EqualTo("c"))
 				.Feature("d").EqualToFeatureStruct(g => g
@@ -218,7 +218,7 @@ namespace SIL.APRE.Test
 		[Test]
 		public void UnifyVariables()
 		{
-			FeatureSystem featSys = FeatureSystem.With
+			FeatureSystem featSys = FeatureSystem.New
 				.SymbolicFeature("a", a => a
 					.Symbol("a+", "+")
 					.Symbol("a-", "-"))
@@ -226,42 +226,42 @@ namespace SIL.APRE.Test
 					.Symbol("b+", "+")
 					.Symbol("b-", "-")).Value;
 
-			FeatureStruct fs1 = FeatureStruct.With(featSys)
+			FeatureStruct fs1 = FeatureStruct.New(featSys)
 				.Feature("a").EqualToVariable("var1")
 				.Symbol("b-").Value;
 
-			FeatureStruct fs2 = FeatureStruct.With(featSys)
+			FeatureStruct fs2 = FeatureStruct.New(featSys)
 				.Feature("a").Not.EqualToVariable("var1")
 				.Symbol("b-").Value;
 
 			FeatureStruct result;
 			Assert.IsFalse(fs1.Unify(fs2, out result));
 
-			fs1 = FeatureStruct.With(featSys)
+			fs1 = FeatureStruct.New(featSys)
 				.Feature("a").EqualToVariable("var1")
 				.Symbol("b-").Value;
 
-			fs2 = FeatureStruct.With(featSys)
+			fs2 = FeatureStruct.New(featSys)
 				.Symbol("a+")
 				.Symbol("b-").Value;
 
 			Assert.IsTrue(fs1.Unify(fs2, out result));
 
-			fs1 = FeatureStruct.With(featSys)
+			fs1 = FeatureStruct.New(featSys)
 				.Symbol("a+")
 				.Symbol("b-").Value;
 
-			fs2 = FeatureStruct.With(featSys)
+			fs2 = FeatureStruct.New(featSys)
 				.Feature("a").Not.EqualToVariable("var1")
 				.Symbol("b-").Value;
 
 			Assert.IsTrue(fs1.Unify(fs2, out result));
 
-			fs1 = FeatureStruct.With(featSys)
+			fs1 = FeatureStruct.New(featSys)
 				.Symbol("a+")
 				.Symbol("b-").Value;
 
-			fs2 = FeatureStruct.With(featSys)
+			fs2 = FeatureStruct.New(featSys)
 				.Feature("a").Not.EqualToVariable("var1")
 				.Symbol("b-").Value;
 

@@ -1,20 +1,16 @@
-﻿using System;
-
-namespace SIL.APRE.Matching
+﻿namespace SIL.APRE.Matching
 {
-	[Flags]
-	public enum AnchorTypes
+	public enum AnchorType
 	{
-		None = 0x0,
-		LeftSide = 0x1,
-		RightSide = 0x2
+		LeftSide,
+		RightSide
 	}
 
 	public class Anchor<TOffset> : PatternNode<TOffset>
 	{
-		private readonly AnchorTypes _type;
+		private readonly AnchorType _type;
 
-		public Anchor(AnchorTypes type)
+		public Anchor(AnchorType type)
 		{
 			_type = type;
 		}
@@ -24,7 +20,7 @@ namespace SIL.APRE.Matching
 			_type = anchor._type;
 		}
 
-		public AnchorTypes Type
+		public AnchorType Type
 		{
 			get { return _type; }
 		}
@@ -36,7 +32,7 @@ namespace SIL.APRE.Matching
 
 		public override string ToString()
 		{
-			return _type == AnchorTypes.LeftSide ? "^" : "$";
+			return _type == AnchorType.LeftSide ? "^" : "$";
 		}
 	}
 }

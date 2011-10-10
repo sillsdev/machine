@@ -48,7 +48,7 @@ namespace SIL.APRE.Matching.Fluent
 		{
 			get
 			{
-				AddAnchor(AnchorTypes.RightSide);
+				AddAnchor(AnchorType.RightSide);
 				return this;
 			}
 		}
@@ -151,7 +151,7 @@ namespace SIL.APRE.Matching.Fluent
 		{
 			get
 			{
-				AddAnchor(AnchorTypes.LeftSide);
+				AddAnchor(AnchorType.LeftSide);
 				return this;
 			}
 		}

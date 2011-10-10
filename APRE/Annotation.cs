@@ -5,7 +5,7 @@ using SIL.APRE.Fsa;
 
 namespace SIL.APRE
 {
-	public class Annotation<TOffset> : SkipListNode<Annotation<TOffset>>, ICloneable<Annotation<TOffset>>, IEquatable<Annotation<TOffset>>, IComparable<Annotation<TOffset>>, IComparable
+	public class Annotation<TOffset> : SkipListNode<Annotation<TOffset>>, ICloneable<Annotation<TOffset>>, IComparable<Annotation<TOffset>>, IComparable
 	{
 		private readonly Span<TOffset> _span;
 
@@ -63,39 +63,9 @@ namespace SIL.APRE
 
 		internal int ListID { get; set; }
 
-		public override int GetHashCode()
-		{
-			return _span.GetHashCode() ^ (FeatureStruct == null ? 0 : FeatureStruct.GetHashCode());
-		}
-
 		public Annotation<TOffset> Clone()
 		{
 			return new Annotation<TOffset>(this);
-		}
-
-		public override bool Equals(object obj)
-		{
-			if (obj == null)
-				return false;
-			return Equals(obj as Annotation<TOffset>);
-		}
-
-		public bool Equals(Annotation<TOffset> other)
-		{
-			if (other == null)
-				return false;
-
-			if (FeatureStruct == null)
-			{
-				if (other.FeatureStruct != null)
-					return false;
-			}
-			else if (!FeatureStruct.Equals(other.FeatureStruct))
-			{
-				return false;
-			}
-
-			return _span.Equals(other._span);
 		}
 
 		public int CompareTo(Annotation<TOffset> other)

@@ -50,16 +50,13 @@ namespace SIL.APRE.Transduction
 
 			bool applied = false;
 			Annotation<TOffset> first = input.GetFirst(_lhs.Direction, _lhs.Filter);
-			while (first != input.GetEnd(_lhs.Direction))
+			PatternMatch<TOffset> curMatch;
+			while (_lhs.IsMatch(input, first, out curMatch))
 			{
-				PatternMatch<TOffset> match;
-				if (_lhs.IsMatch(input, first, out match))
-				{
-					first = ApplyRhs(input, match);
-					applied = true;
-
-				}
-				first = first.GetNext(_lhs.Direction, (cur, next) => !cur.Span.Overlaps(next.Span) && _lhs.Filter(next));
+				first = ApplyRhs(input, curMatch);
+				first = first == null ? input.GetFirst(_lhs.Direction, _lhs.Filter)
+					: first.GetNext(_lhs.Direction, (cur, next) => !cur.Span.Overlaps(next.Span) && _lhs.Filter(next));
+				applied = true;
 			}
 			return applied;
 		}

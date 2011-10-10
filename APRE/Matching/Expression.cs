@@ -6,7 +6,7 @@ namespace SIL.APRE.Matching
 {
 	public class Expression<TOffset> : PatternNode<TOffset>
 	{
-		public static IExpressionSyntax<TOffset> With
+		public static IExpressionSyntax<TOffset> New
 		{
 			get
 			{

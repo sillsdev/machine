@@ -25,7 +25,7 @@ namespace SIL.APRE.Matching
 
 	public class Pattern<TOffset> : Expression<TOffset>
 	{
-		public new static IPatternSyntax<TOffset> With(SpanFactory<TOffset> spanFactory)
+		public new static IPatternSyntax<TOffset> New(SpanFactory<TOffset> spanFactory)
 		{
 			return new PatternBuilder<TOffset>(spanFactory);
 		}
@@ -172,32 +172,51 @@ namespace SIL.APRE.Matching
 			{
 				startState = _fsa.CreateTag(startState, _fsa.CreateState(), EntireMatch, true);
 				State<TOffset> endState;
-				if (expr.Children.GetFirst(_fsa.Direction) is Anchor<TOffset>)
+
+				var startAnchor = expr.Children.GetFirst(_fsa.Direction) as Anchor<TOffset>;
+				if (startAnchor != null)
 				{
-					endState = startState.AddArc(FeatureStruct.With(FsaFeatureSystem.Instance)
-						.Feature(FsaFeatureSystem.Type).EqualTo("anchor")
-						.Symbol(_dir == Direction.LeftToRight ? FsaFeatureSystem.LeftSide : FsaFeatureSystem.RightSide).Value, _fsa.CreateState());
+					if ((_dir == Direction.LeftToRight && startAnchor.Type == AnchorType.LeftSide)
+						|| (_dir == Direction.RightToLeft && startAnchor.Type == AnchorType.RightSide))
+					{
+						endState = startState.AddArc(FeatureStruct.New(FsaFeatureSystem.Instance)
+							.Feature(FsaFeatureSystem.Type).EqualTo("anchor")
+							.Symbol(_dir == Direction.LeftToRight ? FsaFeatureSystem.LeftSide : FsaFeatureSystem.RightSide).Value, _fsa.CreateState());
+					}
+					else
+					{
+						endState = startState;
+					}
 				}
 				else
 				{
 					State<TOffset> nextState = startState.AddArc(_fsa.CreateState(), ArcPriorityType.High);
-					endState = nextState.AddArc(FeatureStruct.With(FsaFeatureSystem.Instance)
+					endState = nextState.AddArc(FeatureStruct.New(FsaFeatureSystem.Instance)
 						.Feature(FsaFeatureSystem.Type).EqualTo("anchor")
 						.Symbol(_dir == Direction.LeftToRight ? FsaFeatureSystem.LeftSide : FsaFeatureSystem.RightSide).Value, _fsa.CreateState());
 					startState.AddArc(endState);
 				}
 				startState = expr.GenerateNfa(_fsa, endState);
 
-				if (expr.Children.GetLast(_fsa.Direction) is Anchor<TOffset>)
+				var endAnchor = expr.Children.GetLast(_fsa.Direction) as Anchor<TOffset>;
+				if (endAnchor != null)
 				{
-					endState = startState.AddArc(FeatureStruct.With(FsaFeatureSystem.Instance)
-						.Feature(FsaFeatureSystem.Type).EqualTo("anchor")
-						.Symbol(_dir == Direction.LeftToRight ? FsaFeatureSystem.RightSide : FsaFeatureSystem.LeftSide).Value, _fsa.CreateState());
+					if ((_dir == Direction.LeftToRight && endAnchor.Type == AnchorType.RightSide)
+						|| (_dir == Direction.RightToLeft && endAnchor.Type == AnchorType.LeftSide))
+					{
+						endState = startState.AddArc(FeatureStruct.New(FsaFeatureSystem.Instance)
+							.Feature(FsaFeatureSystem.Type).EqualTo("anchor")
+							.Symbol(_dir == Direction.LeftToRight ? FsaFeatureSystem.RightSide : FsaFeatureSystem.LeftSide).Value, _fsa.CreateState());
+					}
+					else
+					{
+						endState = startState;
+					}
 				}
 				else
 				{
 					State<TOffset> nextState = startState.AddArc(_fsa.CreateState(), ArcPriorityType.VeryLow);
-					endState = nextState.AddArc(FeatureStruct.With(FsaFeatureSystem.Instance)
+					endState = nextState.AddArc(FeatureStruct.New(FsaFeatureSystem.Instance)
 						.Feature(FsaFeatureSystem.Type).EqualTo("anchor")
 						.Symbol(_dir == Direction.LeftToRight ? FsaFeatureSystem.RightSide : FsaFeatureSystem.LeftSide).Value, _fsa.CreateState());
 					startState.AddArc(endState);

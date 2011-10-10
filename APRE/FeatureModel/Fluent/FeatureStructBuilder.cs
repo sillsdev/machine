@@ -9,23 +9,26 @@ namespace SIL.APRE.FeatureModel.Fluent
 	{
 		private readonly FeatureSystem _featSys;
 		private readonly FeatureStruct _fs;
-		private readonly FeatureStruct _rootFs;
+		private readonly FeatureStruct _rootFS;
 
 		private Feature _lastFeature;
 		private bool _not;
 
 		public FeatureStructBuilder(FeatureSystem featSys)
+			: this(featSys, new FeatureStruct())
 		{
-			_featSys = featSys;
-			_fs = new FeatureStruct();
-			_rootFs = _fs;
 		}
 
-		internal FeatureStructBuilder(FeatureSystem featSys, FeatureStruct rootFs)
+		public FeatureStructBuilder(FeatureSystem featSys, FeatureStruct fs)
+			: this(featSys, fs, fs)
+		{
+		}
+
+		internal FeatureStructBuilder(FeatureSystem featSys, FeatureStruct fs, FeatureStruct rootFS)
 		{
 			_featSys = featSys;
-			_fs = new FeatureStruct();
-			_rootFs = rootFs;
+			_fs = fs;
+			_rootFS = rootFS;
 		}
 
 		public IDisjunctiveFeatureValueSyntax Feature(string featureID)
@@ -56,7 +59,7 @@ namespace SIL.APRE.FeatureModel.Fluent
 
 		public IDisjunctiveFeatureStructSyntax And(Func<IFirstDisjunctSyntax, IFinalDisjunctSyntax> build)
 		{
-			var disjunctionBuilder = new DisjunctionBuilder(_featSys, _rootFs);
+			var disjunctionBuilder = new DisjunctionBuilder(_featSys, _rootFS);
 			IFinalDisjunctSyntax result = build(disjunctionBuilder);
 			_fs.AddDisjunction(result.ToDisjunction());
 			return this;
@@ -209,7 +212,7 @@ namespace SIL.APRE.FeatureModel.Fluent
 
 		IDisjunctiveFeatureStructSyntax IDisjunctiveFeatureValueSyntax.EqualToFeatureStruct(Func<IDisjunctiveFeatureStructSyntax, IDisjunctiveFeatureStructSyntax> build)
 		{
-			var fsBuilder = new FeatureStructBuilder(_featSys, _rootFs);
+			var fsBuilder = new FeatureStructBuilder(_featSys, _rootFS);
 			_fs.AddValue(_lastFeature, fsBuilder._fs);
 			build(fsBuilder);
 			return this;
@@ -217,13 +220,13 @@ namespace SIL.APRE.FeatureModel.Fluent
 
 		IDisjunctiveFeatureStructSyntax IDisjunctiveFeatureValueSyntax.ReferringTo(params Feature[] path)
 		{
-			_fs.AddValue(_lastFeature, _rootFs.GetValue(path));
+			_fs.AddValue(_lastFeature, _rootFS.GetValue(path));
 			return this;
 		}
 
 		IDisjunctiveFeatureStructSyntax IDisjunctiveFeatureValueSyntax.ReferringTo(params string[] idPath)
 		{
-			_fs.AddValue(_lastFeature, _rootFs.GetValue(idPath));
+			_fs.AddValue(_lastFeature, _rootFS.GetValue(idPath));
 			return this;
 		}
 
@@ -238,7 +241,7 @@ namespace SIL.APRE.FeatureModel.Fluent
 
 		IFeatureStructSyntax IFeatureValueSyntax.EqualToFeatureStruct(Func<IFeatureStructSyntax, IFeatureStructSyntax> build)
 		{
-			var fsBuilder = new FeatureStructBuilder(_featSys, _rootFs);
+			var fsBuilder = new FeatureStructBuilder(_featSys, _rootFS);
 			_fs.AddValue(_lastFeature, fsBuilder._fs);
 			build(fsBuilder);
 			return this;
@@ -246,13 +249,13 @@ namespace SIL.APRE.FeatureModel.Fluent
 
 		IFeatureStructSyntax IFeatureValueSyntax.ReferringTo(params Feature[] path)
 		{
-			_fs.AddValue(_lastFeature, _rootFs.GetValue(path));
+			_fs.AddValue(_lastFeature, _rootFS.GetValue(path));
 			return this;
 		}
 
 		IFeatureStructSyntax IFeatureValueSyntax.ReferringTo(params string[] idPath)
 		{
-			_fs.AddValue(_lastFeature, _rootFs.GetValue(idPath));
+			_fs.AddValue(_lastFeature, _rootFS.GetValue(idPath));
 			return this;
 		}
 	}

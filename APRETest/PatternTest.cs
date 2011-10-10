@@ -23,7 +23,7 @@ namespace SIL.APRE.Test
 						annType = "Bdry";
 						break;
 				}
-				annList.Add(new Annotation<int>(spanFactory.Create(i, i + 1), FeatureStruct.With(featSys)
+				annList.Add(new Annotation<int>(spanFactory.Create(i, i + 1), FeatureStruct.New(featSys)
 					.Feature("str").EqualTo(str[i].ToString())
 					.Feature("type").EqualTo(annType).Value));
 			}
@@ -34,31 +34,31 @@ namespace SIL.APRE.Test
 		public void PatternMatch()
 		{
 			var spanFactory = new IntegerSpanFactory();
-			FeatureSystem featSys = FeatureSystem.With
+			FeatureSystem featSys = FeatureSystem.New
 				.StringFeature("str")
 				.StringFeature("type").Value;
 
-			FeatureStruct types = FeatureStruct.With(featSys).Feature("type").EqualTo("Noun", "Verb", "Det", "Adj", "Adv").Value;
-			Pattern<int> ltorPattern = Pattern<int>.With(spanFactory).AnnotationsAllowableWhere(ann => ann.FeatureStruct.IsUnifiable(types))
-				.Annotation(FeatureStruct.With(featSys).Feature("type").EqualTo("Det").Value)
+			FeatureStruct types = FeatureStruct.New(featSys).Feature("type").EqualTo("Noun", "Verb", "Det", "Adj", "Adv").Value;
+			Pattern<int> ltorPattern = Pattern<int>.New(spanFactory).AnnotationsAllowableWhere(ann => ann.FeatureStruct.IsUnifiable(types))
+				.Annotation(FeatureStruct.New(featSys).Feature("type").EqualTo("Det").Value)
 				.Or
 				.Group(g => g
-					.Group("adj", adj => adj.Annotation(FeatureStruct.With(featSys).Feature("type").EqualTo("Adj").Value))
-					.Group("noun", noun => noun.Annotation(FeatureStruct.With(featSys).Feature("type").EqualTo("Noun").Value))
-					.Group("verb", verb => verb.Annotation(FeatureStruct.With(featSys).Feature("type").EqualTo("Verb").Value))
+					.Group("adj", adj => adj.Annotation(FeatureStruct.New(featSys).Feature("type").EqualTo("Adj").Value))
+					.Group("noun", noun => noun.Annotation(FeatureStruct.New(featSys).Feature("type").EqualTo("Noun").Value))
+					.Group("verb", verb => verb.Annotation(FeatureStruct.New(featSys).Feature("type").EqualTo("Verb").Value))
 					.Group("range", range => range
-						.Group("adv", adv => adv.Annotation(FeatureStruct.With(featSys).Feature("type").EqualTo("Adv").Value)).LazyOptional)).Value;
+						.Group("adv", adv => adv.Annotation(FeatureStruct.New(featSys).Feature("type").EqualTo("Adv").Value)).LazyOptional)).Value;
 			ltorPattern.Compile();
 
 			AnnotationList<int> annList = CreateShapeAnnotations("the old, angry man slept well", spanFactory, featSys);
-			annList.Add(new Annotation<int>(spanFactory.Create(0, 2), FeatureStruct.With(featSys).Feature("type").EqualTo("Det").Value) { Optional = true });
-			annList.Add(new Annotation<int>(spanFactory.Create(4, 6), FeatureStruct.With(featSys).Feature("type").EqualTo("Adj").Value));
-			annList.Add(new Annotation<int>(spanFactory.Create(9, 13), FeatureStruct.With(featSys).Feature("type").EqualTo("Adj").Value) { Optional = true });
-			annList.Add(new Annotation<int>(spanFactory.Create(15, 17), FeatureStruct.With(featSys).Feature("type").EqualTo("Noun").Value));
-			annList.Add(new Annotation<int>(spanFactory.Create(19, 23), FeatureStruct.With(featSys).Feature("type").EqualTo("Verb").Value));
-			annList.Add(new Annotation<int>(spanFactory.Create(25, 28), FeatureStruct.With(featSys).Feature("type").EqualTo("Adv").Value));
-			annList.Add(new Annotation<int>(spanFactory.Create(0, 17), FeatureStruct.With(featSys).Feature("type").EqualTo("NP").Value));
-			annList.Add(new Annotation<int>(spanFactory.Create(19, 28), FeatureStruct.With(featSys).Feature("type").EqualTo("VP").Value));
+			annList.Add(new Annotation<int>(spanFactory.Create(0, 2), FeatureStruct.New(featSys).Feature("type").EqualTo("Det").Value) { Optional = true });
+			annList.Add(new Annotation<int>(spanFactory.Create(4, 6), FeatureStruct.New(featSys).Feature("type").EqualTo("Adj").Value));
+			annList.Add(new Annotation<int>(spanFactory.Create(9, 13), FeatureStruct.New(featSys).Feature("type").EqualTo("Adj").Value) { Optional = true });
+			annList.Add(new Annotation<int>(spanFactory.Create(15, 17), FeatureStruct.New(featSys).Feature("type").EqualTo("Noun").Value));
+			annList.Add(new Annotation<int>(spanFactory.Create(19, 23), FeatureStruct.New(featSys).Feature("type").EqualTo("Verb").Value));
+			annList.Add(new Annotation<int>(spanFactory.Create(25, 28), FeatureStruct.New(featSys).Feature("type").EqualTo("Adv").Value));
+			annList.Add(new Annotation<int>(spanFactory.Create(0, 17), FeatureStruct.New(featSys).Feature("type").EqualTo("NP").Value));
+			annList.Add(new Annotation<int>(spanFactory.Create(19, 28), FeatureStruct.New(featSys).Feature("type").EqualTo("VP").Value));
 
 			IEnumerable<PatternMatch<int>> matches;
 			Assert.True(ltorPattern.IsMatch(annList, out matches));
@@ -91,7 +91,7 @@ namespace SIL.APRE.Test
 				switch (str[i])
 				{
 					case 'f':
-						fs = FeatureStruct.With(featSys)
+						fs = FeatureStruct.New(featSys)
 							.Symbol("cons+")
 							.Symbol("voice-")
 							.Symbol("sib-")
@@ -102,7 +102,7 @@ namespace SIL.APRE.Test
 							.Feature("type").EqualTo("Seg").Value;
 						break;
 					case 'k':
-						fs = FeatureStruct.With(featSys)
+						fs = FeatureStruct.New(featSys)
 							.Symbol("cons+")
 							.Symbol("voice-")
 							.Symbol("sib-")
@@ -113,7 +113,7 @@ namespace SIL.APRE.Test
 							.Feature("type").EqualTo("Seg").Value;
 						break;
 					case 'z':
-						fs = FeatureStruct.With(featSys)
+						fs = FeatureStruct.New(featSys)
 							.Symbol("cons+")
 							.Symbol("voice+")
 							.Symbol("sib+")
@@ -124,7 +124,7 @@ namespace SIL.APRE.Test
 							.Feature("type").EqualTo("Seg").Value;
 						break;
 					case 's':
-						fs = FeatureStruct.With(featSys)
+						fs = FeatureStruct.New(featSys)
 							.Symbol("cons+")
 							.Symbol("voice-")
 							.Symbol("sib+")
@@ -135,7 +135,7 @@ namespace SIL.APRE.Test
 							.Feature("type").EqualTo("Seg").Value;
 						break;
 					case 'a':
-						fs = FeatureStruct.With(featSys)
+						fs = FeatureStruct.New(featSys)
 							.Symbol("cons-")
 							.Symbol("voice+")
 							.Symbol("sib-")
@@ -146,7 +146,7 @@ namespace SIL.APRE.Test
 							.Feature("type").EqualTo("Seg").Value;
 						break;
 					case 'i':
-						fs = FeatureStruct.With(featSys)
+						fs = FeatureStruct.New(featSys)
 							.Symbol("cons-")
 							.Symbol("voice+")
 							.Symbol("sib-")
@@ -157,7 +157,7 @@ namespace SIL.APRE.Test
 							.Feature("type").EqualTo("Seg").Value;
 						break;
 					case '+':
-						fs = FeatureStruct.With(featSys)
+						fs = FeatureStruct.New(featSys)
 							.Feature("str").EqualTo("+")
 							.Feature("type").EqualTo("Bdry").Value;
 						break;
@@ -169,7 +169,7 @@ namespace SIL.APRE.Test
 
 		private static FeatureSystem CreateFeatureSystem()
 		{
-			return FeatureSystem.With
+			return FeatureSystem.New
 				.SymbolicFeature("cons", cons => cons
 					.Symbol("cons+", "+")
 					.Symbol("cons-", "-"))
@@ -198,18 +198,18 @@ namespace SIL.APRE.Test
 			var spanFactory = new IntegerSpanFactory();
 			FeatureSystem featSys = CreateFeatureSystem();
 
-			Pattern<int> pattern = Pattern<int>.With(spanFactory)
+			Pattern<int> pattern = Pattern<int>.New(spanFactory)
 				.Group("leftEnv", leftEnv => leftEnv
-					.Annotation(FeatureStruct.With(featSys)
+					.Annotation(FeatureStruct.New(featSys)
 						.Feature("type").EqualTo("Seg")
 						.Symbol("cons+")
 						.Feature("voice").EqualToVariable("a").Value))
 				.Group("lhs", lhs => lhs
-					.Annotation(FeatureStruct.With(featSys)
+					.Annotation(FeatureStruct.New(featSys)
 						.Feature("type").EqualTo("Seg")
 						.Feature("str").EqualTo("a").Value))
 				.Group("rightEnv", rightEnv => rightEnv
-					.Annotation(FeatureStruct.With(featSys)
+					.Annotation(FeatureStruct.New(featSys)
 						.Feature("type").EqualTo("Seg")
 						.Symbol("cons+")
 						.Feature("voice").Not.EqualToVariable("a").Value)).Value;

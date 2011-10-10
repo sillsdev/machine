@@ -8,9 +8,14 @@ namespace SIL.APRE.FeatureModel
 {
 	public class FeatureStruct : FeatureValue, IEquatable<FeatureStruct>
 	{
-		public static IDisjunctiveFeatureStructSyntax With(FeatureSystem featSys)
+		public static IDisjunctiveFeatureStructSyntax New(FeatureSystem featSys)
 		{
 			return new FeatureStructBuilder(featSys);
+		}
+
+		public static IDisjunctiveFeatureStructSyntax New(FeatureSystem featSys, FeatureStruct fs)
+		{
+			return new FeatureStructBuilder(featSys, (FeatureStruct) fs.Clone());
 		}
 
 		private readonly IDBearerDictionary<Feature, FeatureValue> _definite;
