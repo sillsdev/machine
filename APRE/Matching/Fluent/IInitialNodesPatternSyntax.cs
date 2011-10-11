@@ -10,6 +10,6 @@ namespace SIL.APRE.Matching.Fluent
 
 		IQuantifierPatternSyntax<TOffset> Annotation(string type, FeatureStruct fs);
 
-		IFinalPatternSyntax<TOffset> RightSideOfInput { get; } 
+		Pattern<TOffset> Value { get; }
 	}
 }

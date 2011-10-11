@@ -14,7 +14,7 @@ namespace SIL.APRE
 			_span = span;
 			FeatureStruct = fs;
 			if (type != null)
-				FeatureStruct.AddValue(FsaFeatureSystem.Type, type);
+				FeatureStruct.AddValue(AnnotationFeatureSystem.Type, type);
 			IsClean = true;
 			ListID = -1;
 		}
@@ -34,7 +34,7 @@ namespace SIL.APRE
 
 		public string Type
 		{
-			get { return FeatureStruct.GetValue<StringFeatureValue>(FsaFeatureSystem.Type).Values.First(); }
+			get { return FeatureStruct.GetValue<StringFeatureValue>(AnnotationFeatureSystem.Type).Values.First(); }
 		}
 
 		public Span<TOffset> Span

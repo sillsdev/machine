@@ -44,15 +44,6 @@ namespace SIL.APRE.Matching.Fluent
 			return this;
 		}
 
-		public IFinalExpressionSyntax<TOffset> RightSideOfInput
-		{
-			get
-			{
-				AddAnchor(AnchorType.RightSide);
-				return this;
-			}
-		}
-
 		public INodesExpressionSyntax<TOffset> Expression(Func<IExpressionSyntax<TOffset>, IExpressionSyntax<TOffset>> build)
 		{
 			AddExpression(null, build);
@@ -145,15 +136,6 @@ namespace SIL.APRE.Matching.Fluent
 		{
 			_acceptable = acceptable;
 			return this;
-		}
-
-		public INodesExpressionSyntax<TOffset> LeftSideOfInput
-		{
-			get
-			{
-				AddAnchor(AnchorType.LeftSide);
-				return this;
-			}
 		}
 	}
 }

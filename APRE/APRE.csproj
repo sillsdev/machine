@@ -78,9 +78,9 @@
     <Compile Include="FeatureModel\SymbolicFeature.cs" />
     <Compile Include="FeatureModel\SymbolicFeatureValue.cs" />
     <Compile Include="FeatureModel\VariableBindings.cs" />
+    <Compile Include="AnnotationFeatureSystem.cs" />
     <Compile Include="Fsa\AcceptInfo.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="Fsa\FsaFeatureSystem.cs" />
     <Compile Include="Fsa\FsaMatch.cs" />
     <Compile Include="IBidirList.cs" />
     <Compile Include="IBidirListNode.cs" />
@@ -91,7 +91,6 @@
     <Compile Include="IdentityEqualityComparer.cs" />
     <Compile Include="IntegerSpanFactory.cs" />
     <Compile Include="Matching\Alternation.cs" />
-    <Compile Include="Matching\Anchor.cs" />
     <Compile Include="Matching\Constraint.cs" />
     <Compile Include="Matching\Fluent\ExpressionBuilder.cs" />
     <Compile Include="Matching\Fluent\GroupBuilder.cs" />
@@ -99,9 +98,6 @@
     <Compile Include="Matching\Fluent\IAlternationGroupSyntax.cs" />
     <Compile Include="Matching\Fluent\IAlternationPatternSyntax.cs" />
     <Compile Include="Matching\Fluent\IExpressionSyntax.cs" />
-    <Compile Include="Matching\Fluent\IFinalExpressionSyntax.cs" />
-    <Compile Include="Matching\Fluent\ILeftSideAnchorExpressionSyntax.cs" />
-    <Compile Include="Matching\Fluent\ILeftSideAnchorPatternSyntax.cs" />
     <Compile Include="Matching\Fluent\INodesExpressionSyntax.cs" />
     <Compile Include="Matching\Fluent\INodesPatternSyntax.cs" />
     <Compile Include="Matching\Fluent\IGroupSyntax.cs" />
@@ -111,7 +107,6 @@
     <Compile Include="Matching\Fluent\IQuantifierExpressionSyntax.cs" />
     <Compile Include="Matching\Fluent\IQuantifierGroupSyntax.cs" />
     <Compile Include="Matching\Fluent\IQuantifierPatternSyntax.cs" />
-    <Compile Include="Matching\Fluent\IFinalPatternSyntax.cs" />
     <Compile Include="Matching\Fluent\PatternBuilder.cs" />
     <Compile Include="Matching\Fluent\PatternNodeBuilder.cs" />
     <Compile Include="Matching\Expression.cs" />

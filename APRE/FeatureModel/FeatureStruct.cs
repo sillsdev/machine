@@ -817,18 +817,21 @@ namespace SIL.APRE.FeatureModel
 				{
 					VariableBindings tempVarBindings = varBindings.Clone();
 					FeatureValue hypFV;
-					fs.UnifyDefinite(disjunct, useDefaults, tempVarBindings, out hypFV);
-					var hypFS = (FeatureStruct) hypFV;
-					foreach (Disjunction disj in indefinite)
-						hypFS._indefinite.Add(disj);
-
-					FeatureStruct nFS;
-					if (n == 1 ? CheckIndefinite(hypFS, hypFS, useDefaults, tempVarBindings, out nFS)
-						: NWiseConsistency(hypFS, n - 1, useDefaults, tempVarBindings, out nFS))
+					if (fs.UnifyDefinite(disjunct, useDefaults, tempVarBindings, out hypFV))
 					{
-						newDisjunction.Add(disjunct);
-						lastFS = nFS;
-						lastVarBindings = tempVarBindings;
+						var hypFS = (FeatureStruct)hypFV;
+						foreach (Disjunction disj in indefinite)
+							hypFS._indefinite.Add(disj);
+
+						FeatureStruct nFS;
+						if (n == 1 ? CheckIndefinite(hypFS, hypFS, useDefaults, tempVarBindings, out nFS)
+							: NWiseConsistency(hypFS, n - 1, useDefaults, tempVarBindings, out nFS))
+						{
+							newDisjunction.Add(disjunct);
+							//newDisjunction.Add(nFS);
+							lastFS = nFS;
+							lastVarBindings = tempVarBindings;
+						}
 					}
 				}
 

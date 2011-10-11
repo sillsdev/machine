@@ -80,15 +80,6 @@ namespace SIL.APRE.Matching.Fluent
 			return this;
 		}
 
-		public IFinalPatternSyntax<TOffset> RightSideOfInput
-		{
-			get
-			{
-				AddAnchor(AnchorType.RightSide);
-				return this;
-			}
-		}
-
 		IInitialNodesPatternSyntax<TOffset> IAlternationPatternSyntax<TOffset>.Or
 		{
 			get
@@ -162,15 +153,6 @@ namespace SIL.APRE.Matching.Fluent
 		{
 			AddQuantifier(min, max, false);
 			return this;
-		}
-
-		public INodesPatternSyntax<TOffset> LeftSideOfInput
-		{
-			get
-			{
-				AddAnchor(AnchorType.LeftSide);
-				return this;
-			}
 		}
 	}
 }

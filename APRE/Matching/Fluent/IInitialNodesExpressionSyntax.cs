@@ -10,6 +10,6 @@ namespace SIL.APRE.Matching.Fluent
 
 		IQuantifierExpressionSyntax<TOffset> Annotation(string type, FeatureStruct fs);
 
-		IFinalExpressionSyntax<TOffset> RightSideOfInput { get; } 
+		Expression<TOffset> Value { get; }
 	}
 }

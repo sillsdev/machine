@@ -12,6 +12,8 @@ namespace SIL.APRE
     {
         private TNode _first;
     	private TNode _last;
+		private readonly TNode _begin;
+		private readonly TNode _end;
         private int _size;
 
     	private readonly IEqualityComparer<TNode> _comparer; 
@@ -22,8 +24,25 @@ namespace SIL.APRE
 		}
 
 		public BidirList(IEqualityComparer<TNode> comparer)
+			: this(comparer, null, null)
+		{
+		}
+
+		protected BidirList(IEqualityComparer<TNode> comparer, TNode begin, TNode end)
 		{
 			_comparer = comparer;
+			_begin = begin;
+			_end = end;
+			if (_begin != null)
+			{
+				_begin.Init(this);
+				_begin.Next = _end;
+			}
+			if (_end != null)
+			{
+				_end.Init(this);
+				_end.Prev = _begin;
+			}
 		}
 
     	public int Count
@@ -48,7 +67,7 @@ namespace SIL.APRE
         /// <param name="node">The node.</param>
         public void Add(TNode node)
         {
-			Insert(node, _last, Direction.LeftToRight);
+			Insert(node, _last ?? _begin, Direction.LeftToRight);
         }
 
         public virtual void Clear()
@@ -82,13 +101,13 @@ namespace SIL.APRE
                 return false;
 
 			TNode prev = node.Prev;
-			if (prev == null)
+			if (prev == _begin)
 				_first = node.Next;
 			else
 				prev.Next = node.Next;
 
 			TNode next = node.Next;
-			if (next == null)
+			if (next == _end)
 				_last = node.Prev;
 			else
 				next.Prev = node.Prev;
@@ -96,13 +115,18 @@ namespace SIL.APRE
 			node.Clear();
 
             _size--;
+			if (_size == 0)
+			{
+				_first = null;
+				_last = null;
+			}
 
             return true;
         }
 
         IEnumerator<TNode> IEnumerable<TNode>.GetEnumerator()
         {
-            for (TNode node = First; node != null; node = node.Next)
+            for (TNode node = First; node != End; node = node.Next)
                 yield return node;
         }
 
@@ -113,22 +137,28 @@ namespace SIL.APRE
 
     	public TNode Begin
     	{
-			get { return null; }
+			get { return _begin; }
     	}
 
     	public TNode End
     	{
-			get { return null; }
+			get { return _end; }
     	}
 
     	public TNode GetBegin(Direction dir)
     	{
-    		return null;
+			if (dir == Direction.LeftToRight)
+				return Begin;
+
+    		return End;
     	}
 
     	public TNode GetEnd(Direction dir)
     	{
-    		return null;
+			if (dir == Direction.LeftToRight)
+				return End;
+
+    		return Begin;
     	}
 
     	/// <summary>
@@ -248,7 +278,7 @@ namespace SIL.APRE
 
     	public bool Find(TNode start, TNode example, Direction dir, out TNode result)
     	{
-			for (TNode n = start; n != null; n = n.GetNext(dir))
+			for (TNode n = start; n != GetEnd(dir); n = n.GetNext(dir))
 			{
 				if (_comparer.Equals(example, n))
 				{
@@ -306,10 +336,10 @@ namespace SIL.APRE
 			if (newNode.Next != null)
 				newNode.Next.Prev = newNode;
 
-			if (newNode.Next == null)
+			if (newNode.Next == _end)
 				_last = newNode;
 
-			if (newNode.Prev == null)
+			if (newNode.Prev == _begin)
 				_first = newNode;
 
             _size++;

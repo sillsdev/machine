@@ -142,29 +142,26 @@ namespace SIL.APRE.Fsa
 		{
 			private readonly State<TOffset> _state;
 			private readonly Annotation<TOffset> _ann;
-			private readonly Annotation<TOffset> _nextAnn;
 			private readonly NullableValue<TOffset>[,] _registers;
 			private readonly VariableBindings _varBindings;
 			private readonly FsaMatch<TOffset> _match;
 
 			public FsaInstance(State<TOffset> state, FsaMatch<TOffset> match)
-				: this(state, null, null, null, null, match)
+				: this(state, null, null, null, match)
 			{
 			}
 
-			public FsaInstance(State<TOffset> state, Annotation<TOffset> ann, Annotation<TOffset> nextAnn,
-				NullableValue<TOffset>[,] registers, VariableBindings varBindings)
-				: this(state, ann, nextAnn, registers, varBindings, null)
+			public FsaInstance(State<TOffset> state, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers,
+				VariableBindings varBindings)
+				: this(state, ann, registers, varBindings, null)
 			{
-				_nextAnn = nextAnn;
 			}
 
-			public FsaInstance(State<TOffset> state, Annotation<TOffset> ann, Annotation<TOffset> nextAnn,
-				NullableValue<TOffset>[,] registers, VariableBindings varBindings, FsaMatch<TOffset> match)
+			public FsaInstance(State<TOffset> state, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers,
+				VariableBindings varBindings, FsaMatch<TOffset> match)
 			{
 				_state = state;
 				_ann = ann;
-				_nextAnn = nextAnn;
 				_registers = registers;
 				_varBindings = varBindings;
 				_match = match;
@@ -178,11 +175,6 @@ namespace SIL.APRE.Fsa
 			public Annotation<TOffset> Annotation
 			{
 				get { return _ann; }
-			}
-
-			public Annotation<TOffset> NextAnnotation
-			{
-				get { return _nextAnn; }
 			}
 
 			public NullableValue<TOffset>[,] Registers
@@ -237,7 +229,7 @@ namespace SIL.APRE.Fsa
 						{
 							if (inst.Annotation.FeatureStruct.IsUnifiable(arc.Condition, false, inst.VariableBindings))
 							{
-								AdvanceFsa(annList, inst.Annotation, inst.NextAnnotation, inst.Registers, inst.VariableBindings, inst.Match, arc, instStack);
+								AdvanceFsa(annList, inst.Annotation, inst.Registers, inst.VariableBindings, inst.Match, arc, instStack);
 								advance = true;
 								break;
 							}
@@ -279,55 +271,23 @@ namespace SIL.APRE.Fsa
 				}
 			}
 
-			Annotation<TOffset> anchorAnn = null;
 			for (; ann != annList.GetEnd(_dir) && ann.Span.GetStart(_dir).Equals(offset); ann = ann.GetNext(_dir, _filter))
 			{
 				if (!initAnns.Contains(ann))
 				{
-					Annotation<TOffset> instAnn;
-					Annotation<TOffset> nextAnn;
-					if (IsStartOfInput(annList, ann))
-					{
-						var anchorFS = FeatureStruct.New(FsaFeatureSystem.Instance)
-							.Symbol(_dir == Direction.LeftToRight ? FsaFeatureSystem.LeftSide : FsaFeatureSystem.RightSide).Value;
-						instAnn = new Annotation<TOffset>("anchor", ann.Span, anchorFS);
-						nextAnn = ann;
-
-						if (IsEndOfInput(annList, ann))
-						{
-							anchorFS = FeatureStruct.New(FsaFeatureSystem.Instance)
-								.Symbol(_dir == Direction.LeftToRight ? FsaFeatureSystem.RightSide : FsaFeatureSystem.LeftSide).Value;
-							anchorAnn = new Annotation<TOffset>("anchor", ann.Span, anchorFS);
-						}
-					}
-					else
-					{
-						instAnn = ann;
-						if (IsEndOfInput(annList, ann))
-						{
-							var anchorFS = FeatureStruct.New(FsaFeatureSystem.Instance)
-								.Symbol(_dir == Direction.LeftToRight ? FsaFeatureSystem.RightSide : FsaFeatureSystem.LeftSide).Value;
-							anchorAnn = new Annotation<TOffset>("anchor", ann.Span, anchorFS);
-							nextAnn = anchorAnn;
-						}
-						else
-						{
-							nextAnn = ann.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
-						}
-					}
-					instStack.Push(new FsaInstance(_startState, instAnn, nextAnn, (NullableValue<TOffset>[,]) newRegisters.Clone(),
-					                               new VariableBindings()));
+					instStack.Push(new FsaInstance(_startState, ann, (NullableValue<TOffset>[,]) newRegisters.Clone(),
+						new VariableBindings()));
 					initAnns.Add(ann);
 				}
 			}
 
-			return ann == annList.GetEnd(_dir) ? anchorAnn : ann;
+			return ann;
 		}
 
-		private void AdvanceFsa(IBidirList<Annotation<TOffset>> annList, Annotation<TOffset> ann, Annotation<TOffset> nextAnn,
-			NullableValue<TOffset>[,] registers, VariableBindings varBindings, FsaMatch<TOffset> match, Arc<TOffset> arc,
-			Stack<FsaInstance> instStack)
+		private void AdvanceFsa(IBidirList<Annotation<TOffset>> annList, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers,
+			VariableBindings varBindings, FsaMatch<TOffset> match, Arc<TOffset> arc, Stack<FsaInstance> instStack)
 		{
+			Annotation<TOffset> nextAnn = ann.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
 			TOffset nextOffset = nextAnn == annList.GetEnd(_dir) ? annList.GetLast(_dir, _filter).Span.GetEnd(_dir) : nextAnn.Span.GetStart(_dir);
 			TOffset end = ann.Span.GetEnd(_dir);
 			var newRegisters = (NullableValue<TOffset>[,]) registers.Clone();
@@ -338,7 +298,7 @@ namespace SIL.APRE.Fsa
 				ExecuteCommands(matchRegisters, arc.Target.Finishers, new NullableValue<TOffset>(), new NullableValue<TOffset>());
 				foreach (AcceptInfo<TOffset> acceptInfo in arc.Target.AcceptInfos)
 				{
-					if (match == null || acceptInfo.Priority < match.Priority || !match.IsLazy)
+					if (match == null || acceptInfo.Priority < match.Priority || (acceptInfo.Priority != match.Priority && !match.IsLazy))
 					{
 						var candidate = new FsaMatch<TOffset>(acceptInfo.ID, matchRegisters, varBindings, acceptInfo.Priority, arc.Target.IsLazy);
 						if (acceptInfo.Acceptable(annList, candidate))
@@ -347,39 +307,17 @@ namespace SIL.APRE.Fsa
 				}
 			}
 
-			if (nextAnn != null && nextAnn.List == null)
+			if (nextAnn != annList.GetEnd(_dir))
 			{
-				instStack.Push(new FsaInstance(arc.Target, nextAnn, annList.GetEnd(_dir), (NullableValue<TOffset>[,])newRegisters.Clone(),
-					varBindings.Clone(), match));
-			}
-			else if (nextAnn != null && nextAnn != annList.GetEnd(_dir))
-			{
-				if (ann.Type != "anchor")
+				for (Annotation<TOffset> a = nextAnn; a != annList.GetEnd(_dir) && a.Span.GetStart(_dir).Equals(nextOffset); a = a.GetNext(_dir, _filter))
 				{
-					for (Annotation<TOffset> a = nextAnn; a != annList.GetEnd(_dir) && a.Span.GetStart(_dir).Equals(nextOffset); a = a.GetNext(_dir, _filter))
-					{
-						if (a.Optional)
-						{
-							Annotation<TOffset> nextNextAnn = a.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
-							AdvanceFsa(annList, a, nextNextAnn, registers, varBindings, match, arc, instStack);
-						}
-					}
+					if (a.Optional)
+						AdvanceFsa(annList, a, registers, varBindings, match, arc, instStack);
 				}
 
 				for (Annotation<TOffset> a = nextAnn; a != annList.GetEnd(_dir) && a.Span.GetStart(_dir).Equals(nextOffset); a = a.GetNext(_dir, _filter))
 				{
-					Annotation<TOffset> nextNextAnn;
-					if (IsEndOfInput(annList, a))
-					{
-						var anchorFS = FeatureStruct.New(FsaFeatureSystem.Instance)
-							.Symbol(_dir == Direction.LeftToRight ? FsaFeatureSystem.RightSide : FsaFeatureSystem.LeftSide).Value;
-						nextNextAnn = new Annotation<TOffset>("anchor", a.Span, anchorFS);
-					}
-					else
-					{
-						nextNextAnn = a.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
-					}
-					instStack.Push(new FsaInstance(arc.Target, a, nextNextAnn, (NullableValue<TOffset>[,]) newRegisters.Clone(),
+					instStack.Push(new FsaInstance(arc.Target, a, (NullableValue<TOffset>[,]) newRegisters.Clone(),
 						varBindings.Clone(), match));
 				}
 			}
@@ -387,38 +325,6 @@ namespace SIL.APRE.Fsa
 			{
 				instStack.Push(new FsaInstance(arc.Target, match));
 			}
-		}
-
-		private bool IsStartOfInput(IBidirList<Annotation<TOffset>> annList, Annotation<TOffset> ann)
-		{
-			if (ann.List != annList)
-				return false;
-
-			Annotation<TOffset> prevAnn = ann.GetPrev(_dir, (cur, prev) => !cur.Span.Overlaps(prev.Span) && _filter(prev));
-			while (prevAnn != annList.GetBegin(_dir))
-			{
-				if (prevAnn.Optional)
-					prevAnn = prevAnn.GetPrev(_dir, (cur, prev) => !cur.Span.Overlaps(prev.Span) && _filter(prev));
-				else
-					return false;
-			}
-			return true;
-		}
-
-		private bool IsEndOfInput(IBidirList<Annotation<TOffset>> annList, Annotation<TOffset> ann)
-		{
-			if (ann.List != annList)
-				return false;
-
-			Annotation<TOffset> nextAnn = ann.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
-			while (nextAnn != annList.GetEnd(_dir))
-			{
-				if (nextAnn.Optional)
-					nextAnn = nextAnn.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
-				else
-					return false;
-			}
-			return true;
 		}
 
 		private static void ExecuteCommands(NullableValue<TOffset>[,] registers, IEnumerable<TagMapCommand> cmds,

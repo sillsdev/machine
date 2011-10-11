@@ -18,7 +18,7 @@ namespace SIL.APRE.Matching
 		public Constraint(string type, FeatureStruct fs)
 		{
 			_fs = fs;
-			_fs.AddValue(FsaFeatureSystem.Type, type);
+			_fs.AddValue(AnnotationFeatureSystem.Type, type);
 		}
 
     	/// <summary>
@@ -32,7 +32,7 @@ namespace SIL.APRE.Matching
 
     	public string Type
     	{
-    		get { return _fs.GetValue<StringFeatureValue>(FsaFeatureSystem.Type).Values.First(); }
+    		get { return _fs.GetValue<StringFeatureValue>(AnnotationFeatureSystem.Type).Values.First(); }
     	}
 
         /// <summary>

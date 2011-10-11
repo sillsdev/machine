@@ -57,12 +57,6 @@ namespace SIL.APRE.Matching.Fluent
 			AddNode(result.Value);
 		}
 
-		protected void AddAnchor(AnchorType anchor)
-		{
-			CheckEndAlternation();
-			AddNode(new Anchor<TOffset>(anchor));
-		}
-
 		private void AddNode(PatternNode<TOffset> node)
 		{
 			if (_inAlternation)
