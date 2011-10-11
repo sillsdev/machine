@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using SIL.APRE;
 using SIL.APRE.FeatureModel;
 using SIL.APRE.Matching;
@@ -21,9 +20,7 @@ namespace SIL.HermitCrab
 
 			if (leftEnv.Children.Count > 0)
 			{
-				if (leftEnv.Children.First is Anchor<PhoneticShapeNode>)
-					Lhs.Children.Add(new Anchor<PhoneticShapeNode>(AnchorType.LeftSide));
-				Lhs.Children.Add(new Group<PhoneticShapeNode>("leftEnv", leftEnv.Children.Where(node => !(node is Anchor<PhoneticShapeNode>)).Clone()));
+				Lhs.Children.Add(new Group<PhoneticShapeNode>("leftEnv", leftEnv.Children.Clone()));
 			}
 
 			var target = new Group<PhoneticShapeNode>("target");
@@ -36,9 +33,7 @@ namespace SIL.HermitCrab
 			Lhs.Children.Add(target);
 			if (rightEnv.Children.Count > 0)
 			{
-				Lhs.Children.Add(new Group<PhoneticShapeNode>("rightEnv", rightEnv.Children.Where(node => !(node is Anchor<PhoneticShapeNode>)).Clone()));
-				if (rightEnv.Children.Last is Anchor<PhoneticShapeNode>)
-					Lhs.Children.Add(new Anchor<PhoneticShapeNode>(AnchorType.RightSide));
+				Lhs.Children.Add(new Group<PhoneticShapeNode>("rightEnv", rightEnv.Children.Clone()));
 			}
 		}
 

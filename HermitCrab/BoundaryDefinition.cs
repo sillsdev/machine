@@ -8,11 +8,11 @@ namespace SIL.HermitCrab
 		private readonly CharacterDefinitionTable _charDefTable;
 		private readonly FeatureStruct _fs;
 
-		public BoundaryDefinition(string strRep, CharacterDefinitionTable charDefTable, FeatureStruct fs)
+		public BoundaryDefinition(string strRep, CharacterDefinitionTable charDefTable)
 		{
 			_strRep = strRep;
 			_charDefTable = charDefTable;
-			_fs = fs;
+			_fs = FeatureStruct.New(HCFeatureSystem.Instance).Feature(HCFeatureSystem.StrRep).EqualTo(strRep).Value;
 		}
 
 		public string StrRep

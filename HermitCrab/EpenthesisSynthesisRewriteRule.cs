@@ -18,26 +18,35 @@ namespace SIL.HermitCrab
 		public override Annotation<PhoneticShapeNode> ApplyRhs(IBidirList<Annotation<PhoneticShapeNode>> input, PatternMatch<PhoneticShapeNode> match)
 		{
 			var shape = (PhoneticShape) match.Start.List;
-			PhoneticShapeNode curNode;
-			Span<PhoneticShapeNode> leftEnv;
-			if (match.TryGetGroup("leftEnv", out leftEnv))
+			PhoneticShapeNode startNode;
+			if (Lhs.Direction == Direction.LeftToRight)
 			{
-				curNode = leftEnv.End;
-			}
-			else
-			{
-
-				Span<PhoneticShapeNode> rightEnv;
-				if (match.TryGetGroup("rightEnv", out rightEnv))
+				Span<PhoneticShapeNode> leftEnv;
+				if (match.TryGetGroup("leftEnv", out leftEnv))
 				{
-					curNode = rightEnv.Start.Prev;
+					startNode = leftEnv.End;
 				}
 				else
 				{
-					curNode = match.Start;
+					Span<PhoneticShapeNode> rightEnv = match["rightEnv"];
+					startNode = rightEnv.Start.Prev;
+				}
+			}
+			else
+			{
+				Span<PhoneticShapeNode> rightEnv;
+				if (match.TryGetGroup("rightEnv", out rightEnv))
+				{
+					startNode = rightEnv.Start;
+				}
+				else
+				{
+					Span<PhoneticShapeNode> leftEnv = match["leftEnv"];
+					startNode = leftEnv.End.Next;
 				}
 			}
 
+			PhoneticShapeNode curNode = startNode;
 			foreach (PatternNode<PhoneticShapeNode> node in _rhs.Children.GetNodes(Lhs.Direction))
 			{
 				if (shape.Count == 256)
@@ -48,9 +57,9 @@ namespace SIL.HermitCrab
 				curNode = newNode;
 			}
 
-			MarkSearchedNodes(match.GetStart(Lhs.Direction), curNode);
+			MarkSearchedNodes(startNode, curNode);
 
-			return match.GetStart(Lhs.Direction).Annotation;
+			return startNode.Annotation;
 		}
 	}
 }

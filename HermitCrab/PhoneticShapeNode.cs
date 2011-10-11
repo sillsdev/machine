@@ -29,14 +29,14 @@ namespace SIL.HermitCrab
 		public int CompareTo(PhoneticShapeNode other)
 		{
 			if (other.List != List)
-				throw new ArgumentException("Only atoms from the same list can be compared.", "other");
+				throw new ArgumentException("Only nodes from the same list can be compared.", "other");
 			return Tag.CompareTo(other.Tag);
 		}
 
 		public int CompareTo(PhoneticShapeNode other, Direction dir)
 		{
 			if (other.List != List)
-				throw new ArgumentException("Only atoms from the same list can be compared.", "other");
+				throw new ArgumentException("Only nodes from the same list can be compared.", "other");
 
 			int res = Tag.CompareTo(other.Tag);
 			return dir == Direction.LeftToRight ? res : -res;
@@ -45,7 +45,7 @@ namespace SIL.HermitCrab
 		public int CompareTo(object other)
 		{
 			if (!(other is PhoneticShapeNode))
-				throw new ArgumentException("other is not an instance of an Atom object.", "other");
+				throw new ArgumentException("other is not an instance of a PhoneticShapeNode.", "other");
 			return CompareTo((PhoneticShapeNode)other);
 		}
 
@@ -63,6 +63,10 @@ namespace SIL.HermitCrab
 		{
 			if (List != null)
 			{
+				if (List.Begin == this)
+					return "B";
+				if (List.End == this)
+					return "E";
 				int i = 0;
 				foreach (PhoneticShapeNode node in List)
 				{

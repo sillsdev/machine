@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,9 +16,7 @@ namespace SIL.HermitCrab
     {
         private readonly Dictionary<string, SegmentDefinition> _segDefs;
         private readonly Dictionary<string, BoundaryDefinition> _bdryDefs;
-        private string _encoding;
     	private readonly SpanFactory<PhoneticShapeNode> _spanFactory;
-    	private readonly FeatureSystem _phoneticFeatSys;
 
     	/// <summary>
     	/// Initializes a new instance of the <see cref="CharacterDefinitionTable"/> class.
@@ -27,32 +24,18 @@ namespace SIL.HermitCrab
     	/// <param name="id">The ID.</param>
     	/// <param name="desc">The description.</param>
     	/// <param name="spanFactory"></param>
-    	/// <param name="phoneticFeatSys"></param>
-    	public CharacterDefinitionTable(string id, string desc, SpanFactory<PhoneticShapeNode> spanFactory, FeatureSystem phoneticFeatSys)
-            : base(id, desc)
+		public CharacterDefinitionTable(string id, string desc, SpanFactory<PhoneticShapeNode> spanFactory)
+			: base(id, desc)
     	{
     		_spanFactory = spanFactory;
-    		_phoneticFeatSys = phoneticFeatSys;
-            _segDefs = new Dictionary<string, SegmentDefinition>();
-            _bdryDefs = new Dictionary<string, BoundaryDefinition>();
-        }
+    		_segDefs = new Dictionary<string, SegmentDefinition>();
+    		_bdryDefs = new Dictionary<string, BoundaryDefinition>();
+    	}
 
-        /// <summary>
-        /// Gets or sets the encoding.
-        /// </summary>
-        /// <value>The encoding.</value>
-        public string Encoding
-        {
-            get
-            {
-                return _encoding;
-            }
-
-            set
-            {
-                _encoding = value;
-            }
-        }
+    	public SpanFactory<PhoneticShapeNode> SpanFactory
+    	{
+    		get { return _spanFactory; }
+    	}
 
     	/// <summary>
     	/// Adds the segment definition.
@@ -72,7 +55,7 @@ namespace SIL.HermitCrab
         /// <param name="strRep">The string representation.</param>
         public void AddBoundaryDefinition(string strRep)
         {
-            _bdryDefs[strRep] = new BoundaryDefinition(strRep, this, FeatureStruct.New(_phoneticFeatSys).Feature("strRep").EqualTo(strRep).Value);
+            _bdryDefs[strRep] = new BoundaryDefinition(strRep, this);
         }
 
         /// <summary>
@@ -136,14 +119,7 @@ namespace SIL.HermitCrab
                     PhoneticShapeNode node = GetPhoneticShapeNode(s);
                     if (node != null)
                     {
-                        try
-                        {
-                            ps.Add(node);
-                        }
-                        catch (InvalidOperationException)
-                        {
-                            return null;
-                        }
+                        ps.Add(node);
                         i += j;
                         match = true;
                         break;
@@ -162,14 +138,14 @@ namespace SIL.HermitCrab
             SegmentDefinition segDef = GetSegmentDefinition(strRep);
             if (segDef != null)
             {
-				node = new PhoneticShapeNode("segment", _spanFactory, (FeatureStruct) segDef.FeatureStruct.Clone());
+				node = new PhoneticShapeNode(HCFeatureSystem.SegmentType, _spanFactory, (FeatureStruct) segDef.FeatureStruct.Clone());
             }
             else
             {
                 BoundaryDefinition bdryDef = GetBoundaryDefinition(strRep);
 				if (bdryDef != null)
 				{
-					node = new PhoneticShapeNode("boundary", _spanFactory, (FeatureStruct) bdryDef.FeatureStruct.Clone());
+					node = new PhoneticShapeNode(HCFeatureSystem.BoundaryType, _spanFactory, (FeatureStruct) bdryDef.FeatureStruct.Clone());
 					node.Annotation.Optional = true;
 				}
             }
@@ -192,7 +168,7 @@ namespace SIL.HermitCrab
 				sb.Append("^");
             foreach (PhoneticShapeNode node in shape)
             {
-				if (node.Annotation.Type == "segment")
+				if (node.Annotation.Type == HCFeatureSystem.SegmentType)
 				{
 					SegmentDefinition[] segDefs = GetMatchingSegmentDefinitions(node, mode).ToArray();
 					int numSegDefs = segDefs.Length;
@@ -253,7 +229,7 @@ namespace SIL.HermitCrab
             var sb = new StringBuilder();
             foreach (PhoneticShapeNode node in shape)
             {
-				if (node.Annotation.Type == "segment")
+				if (node.Annotation.Type == HCFeatureSystem.SegmentType)
 				{
 					IEnumerable<SegmentDefinition> segDefs = GetMatchingSegmentDefinitions(node, mode);
 					SegmentDefinition segDef = segDefs.FirstOrDefault();
@@ -286,7 +262,6 @@ namespace SIL.HermitCrab
 
         public void Reset()
         {
-            _encoding = null;
             _segDefs.Clear();
             _bdryDefs.Clear();
         }

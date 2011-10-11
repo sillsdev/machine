@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using SIL.APRE;
 using SIL.APRE.FeatureModel;
+using SIL.APRE.Fsa;
 using SIL.APRE.Matching;
 
 namespace SIL.HermitCrab
@@ -13,8 +15,7 @@ namespace SIL.HermitCrab
 
 		public FeatureAnalysisRewriteRule(SpanFactory<PhoneticShapeNode> spanFactory, Direction synthesisDir, bool synthesisSimult,
 			Expression<PhoneticShapeNode> lhs, Expression<PhoneticShapeNode> rhs, Expression<PhoneticShapeNode> leftEnv, Expression<PhoneticShapeNode> rightEnv)
-			: base(spanFactory, synthesisDir == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight, false,
-			(input, match) => IsUnapplicationNonvacuous(match, rhs, synthesisDir))
+			: base(spanFactory, synthesisDir == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight, false, CreateAcceptable(rhs, synthesisDir))
 		{
 			_analysisRhs = new Expression<PhoneticShapeNode>();
 			AddEnvironment("leftEnv", leftEnv);
@@ -24,7 +25,7 @@ namespace SIL.HermitCrab
 				var lhsConstraint = (Constraint<PhoneticShapeNode>) tuple.Item1;
 				var rhsConstraint = (Constraint<PhoneticShapeNode>) tuple.Item2;
 
-				if (lhsConstraint.Type == "segment" && rhsConstraint.Type == "segment")
+				if (lhsConstraint.Type == HCFeatureSystem.SegmentType && rhsConstraint.Type == HCFeatureSystem.SegmentType)
 				{
 					var targetConstraint = (Constraint<PhoneticShapeNode>)lhsConstraint.Clone();
 					targetConstraint.FeatureStruct.Replace(rhsConstraint.FeatureStruct);
@@ -33,7 +34,7 @@ namespace SIL.HermitCrab
 
 					var fs = GetAntiFeatureStruct(rhsConstraint.FeatureStruct);
 					fs.Subtract(GetAntiFeatureStruct(lhsConstraint.FeatureStruct));
-					_analysisRhs.Children.Add(new Constraint<PhoneticShapeNode>("segment", fs));
+					_analysisRhs.Children.Add(new Constraint<PhoneticShapeNode>(HCFeatureSystem.SegmentType, fs));
 
 					i++;
 				}
@@ -44,7 +45,7 @@ namespace SIL.HermitCrab
 			{
 				foreach (Constraint<PhoneticShapeNode> constraint in rhs.Children)
 				{
-					if (constraint.Type == "segment")
+					if (constraint.Type == HCFeatureSystem.SegmentType)
 					{
 						if (!IsUnifiable(constraint, leftEnv) || !IsUnifiable(constraint, rightEnv))
 						{
@@ -56,19 +57,28 @@ namespace SIL.HermitCrab
 			}
 		}
 
-		private static bool IsUnapplicationNonvacuous(PatternMatch<PhoneticShapeNode> match, Expression<PhoneticShapeNode> rhs, Direction synthesisDir)
+		private static Func<IBidirList<Annotation<PhoneticShapeNode>>, PatternMatch<PhoneticShapeNode>, bool> CreateAcceptable(Expression<PhoneticShapeNode> rhs, Direction synthesisDir)
 		{
-			Direction dir = synthesisDir == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight;
-			int i = 0;
-			foreach (Constraint<PhoneticShapeNode> constraint in rhs.Children)
+			var rhsAntiFSs = new List<FeatureStruct>();
+			foreach (Constraint<PhoneticShapeNode> constraint in rhs.Children.OfType<Constraint<PhoneticShapeNode>>().Where(c => c.Type == HCFeatureSystem.SegmentType))
 			{
-				if (constraint.Type == "segment")
-				{
-					PhoneticShapeNode node = match["target" + i].GetStart(dir);
-					if (node.Annotation.FeatureStruct.IsUnifiable(constraint.FeatureStruct, match.VariableBindings))
-						return true;
-					i++;
-				}
+				FeatureStruct fs = GetAntiFeatureStruct(constraint.FeatureStruct);
+				fs.RemoveValue(AnnotationFeatureSystem.Type);
+				rhsAntiFSs.Add(fs);
+			}
+			Direction dir = synthesisDir == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight;
+			return (input, match) => IsUnapplicationNonvacuous(match, rhsAntiFSs, dir);
+		}
+
+		private static bool IsUnapplicationNonvacuous(PatternMatch<PhoneticShapeNode> match, IEnumerable<FeatureStruct> rhsAntiFSs, Direction dir)
+		{
+			int i = 0;
+			foreach (FeatureStruct fs in rhsAntiFSs)
+			{
+				PhoneticShapeNode node = match["target" + i].GetStart(dir);
+				if (!node.Annotation.FeatureStruct.IsUnifiable(fs, match.VariableBindings))
+					return true;
+				i++;
 			}
 
 			return false;
@@ -99,7 +109,7 @@ namespace SIL.HermitCrab
 		{
 			foreach (Constraint<PhoneticShapeNode> curConstraint in env.GetNodes().OfType<Constraint<PhoneticShapeNode>>())
 			{
-				if (curConstraint.Type == "segment"
+				if (curConstraint.Type == HCFeatureSystem.SegmentType
 					&& !curConstraint.FeatureStruct.IsUnifiable(constraint.FeatureStruct))
 				{
 					return false;

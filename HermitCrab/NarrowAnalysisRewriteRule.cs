@@ -47,11 +47,8 @@ namespace SIL.HermitCrab
 				}
 				else
 				{
-					Span<PhoneticShapeNode> rightEnv;
-					if (match.TryGetGroup("rightEnv", out rightEnv))
-						curNode = rightEnv.Start.Prev;
-					else
-						curNode = match.Start;
+					Span<PhoneticShapeNode> rightEnv = match["rightEnv"];
+					curNode = rightEnv.Start.Prev;
 				}
 			}
 			foreach (Constraint<PhoneticShapeNode> constraint in _analysisRhs.Children)

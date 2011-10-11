@@ -17,7 +17,7 @@ namespace SIL.HermitCrab
 	{
 		protected AnalysisRewriteRule(SpanFactory<PhoneticShapeNode> spanFactory, Direction dir, bool simult,
 			Func<IBidirList<Annotation<PhoneticShapeNode>>, PatternMatch<PhoneticShapeNode>, bool> acceptable)
-			: base(new Pattern<PhoneticShapeNode>(spanFactory, dir, ann => ann.Type == "segment", acceptable), simult)
+			: base(new Pattern<PhoneticShapeNode>(spanFactory, dir, ann => ann.Type != HCFeatureSystem.BoundaryType, acceptable), simult)
 		{
 		}
 
@@ -28,14 +28,8 @@ namespace SIL.HermitCrab
 			if (env.Children.Count == 0)
 				return;
 
-			if (env.Children.First is Anchor<PhoneticShapeNode>)
-				Lhs.Children.Add(new Anchor<PhoneticShapeNode>(AnchorType.LeftSide));
-			Lhs.Children.Add(new Group<PhoneticShapeNode>(name, from node in env.Children
-															    where !(node is Anchor<PhoneticShapeNode>) && (!(node is Constraint<PhoneticShapeNode>)
-																	|| ((Constraint<PhoneticShapeNode>)node).Type == "segment")
-																select node.Clone()));
-			if (env.Children.Last is Anchor<PhoneticShapeNode>)
-				Lhs.Children.Add(new Anchor<PhoneticShapeNode>(AnchorType.RightSide));
+			Lhs.Children.Add(new Group<PhoneticShapeNode>(name,
+				env.Children.Where(node => !(node is Constraint<PhoneticShapeNode>) || ((Constraint<PhoneticShapeNode>) node).Type != HCFeatureSystem.BoundaryType).Clone()));
 		}
 
 		protected void MarkSearchedNodes(PhoneticShapeNode startNode, PhoneticShapeNode endNode)

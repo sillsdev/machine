@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using SIL.APRE;
+using SIL.APRE.FeatureModel;
 using SIL.APRE.Matching;
 
 namespace SIL.HermitCrab
@@ -13,10 +14,23 @@ namespace SIL.HermitCrab
 		private readonly ModeType _mode;
 
 		public PhoneticShape(CharacterDefinitionTable charDefTable, ModeType mode)
+			: base(EqualityComparer<PhoneticShapeNode>.Default, CreateBegin(charDefTable.SpanFactory), CreateEnd(charDefTable.SpanFactory))
 		{
 			_charDefTable = charDefTable;
 			_mode = mode;
-			_annotations = new AnnotationList<PhoneticShapeNode>();
+			_annotations = new AnnotationList<PhoneticShapeNode> {Begin.Annotation, End.Annotation};
+		}
+
+		private static PhoneticShapeNode CreateBegin(SpanFactory<PhoneticShapeNode> spanFactory)
+		{
+			return new PhoneticShapeNode(HCFeatureSystem.AnchorType, spanFactory,
+				FeatureStruct.New(HCFeatureSystem.Instance).Symbol(HCFeatureSystem.LeftSide).Value) { Tag = int.MinValue };
+		}
+
+		private static PhoneticShapeNode CreateEnd(SpanFactory<PhoneticShapeNode> spanFactory)
+		{
+			return new PhoneticShapeNode(HCFeatureSystem.AnchorType, spanFactory,
+				FeatureStruct.New(HCFeatureSystem.Instance).Symbol(HCFeatureSystem.RightSide).Value) { Tag = int.MaxValue };
 		}
 
 		public PhoneticShape(CharacterDefinitionTable charDefTable, ModeType mode, IEnumerable<PhoneticShapeNode> nodes)
@@ -67,12 +81,12 @@ namespace SIL.HermitCrab
 
 				if (curNode == null)
 				{
-					if (int.MinValue + 1 == First.Tag)
+					if (First.Tag == int.MinValue + 1)
 						RelabelMinimumSparseEnclosingRange(null);
 				}
 				else if (curNode.Next == null)
 				{
-					if (curNode.Tag == int.MaxValue)
+					if (curNode.Tag == int.MaxValue - 1)
 						RelabelMinimumSparseEnclosingRange(curNode);
 				}
 				else if (curNode.Tag + 1 == curNode.Next.Tag)
@@ -82,7 +96,7 @@ namespace SIL.HermitCrab
 					
 				if (curNode != null && curNode.Next == null)
 				{
-					newNode.Tag = curNode.Tag == int.MaxValue - 1 ? int.MaxValue : Average(curNode.Tag, int.MaxValue);
+					newNode.Tag = Average(curNode.Tag, int.MaxValue);
 				}
 				else
 				{
@@ -161,7 +175,7 @@ namespace SIL.HermitCrab
 			}
 			while (elementCount >= (range * overflowThreshold) && level < NumBits);
 
-			var count = (int)elementCount; //elementCount always fits into an int, size() is an int too
+			var count = (int) elementCount; //elementCount always fits into an int, size() is an int too
 
 			//note that the base itself can be relabeled, but always gets the same label! (int.MIN_VALUE)
 			int pos = low;
