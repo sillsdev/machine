@@ -616,7 +616,7 @@ namespace SIL.HermitCrab
         {
             string alloId = alloNode.GetAttribute("id");
             string shapeStr = alloNode.SelectSingleNode("PhoneticShape").InnerText;
-            PhoneticShape shape = stratum.CharacterDefinitionTable.ToPhoneticShape(shapeStr, ModeType.Synthesis);
+            Shape shape = stratum.CharacterDefinitionTable.ToShape(shapeStr, ModeType.Synthesis);
 			if (shape == null)
 			{
 				LoadException le = new LoadException(LoadException.LoadErrorType.InvalidEntryShape, this,
@@ -1008,7 +1008,7 @@ namespace SIL.HermitCrab
         {
             string id = mruleNode.GetAttribute("id");
             string name = mruleNode.SelectSingleNode("Name").InnerText;
-            AffixalMorphologicalRule mrule = new AffixalMorphologicalRule(id, name, _curMorpher);
+            AffixProcessRule mrule = new AffixProcessRule(id, name, _curMorpher);
             XmlElement glossElem = mruleNode.SelectSingleNode("Gloss") as XmlElement;
             if (glossElem != null)
                 mrule.Gloss = new Gloss(glossElem.GetAttribute("id"), glossElem.InnerText, _curMorpher);
@@ -1110,7 +1110,7 @@ namespace SIL.HermitCrab
                 _curMorpher.AddMorphologicalRule(realRule);
         }
 
-        void LoadMSubrule(XmlElement msubruleNode, AffixalMorphologicalRule mrule)
+        void LoadMSubrule(XmlElement msubruleNode, AffixProcessRule mrule)
         {
             string id = msubruleNode.GetAttribute("id");
             Dictionary<string, string> varFeatIds;
@@ -1129,7 +1129,7 @@ namespace SIL.HermitCrab
 
             MorphologicalTransform.RedupMorphType redupMorphType = GetRedupMorphType(outputElem.GetAttribute("redupMorphType"));
 
-            AffixalMorphologicalRule.Subrule sr = new AffixalMorphologicalRule.Subrule(id, id, _curMorpher,
+            AffixProcessRule.Subrule sr = new AffixProcessRule.Subrule(id, id, _curMorpher,
                 lhsList, rhsList, varFeats, redupMorphType);
 
             sr.RequiredMPRFeatures = LoadMPRFeatures(inputElem.GetAttribute("requiredMPRFeatures"));
@@ -1141,7 +1141,7 @@ namespace SIL.HermitCrab
 
             sr.Properties = LoadProperties(msubruleNode.SelectSingleNode("Properties"));
 
-            mrule.AddSubrule(sr);
+            mrule.AddAllomorph(sr);
             _curMorpher.AddAllomorph(sr);
         }
 
@@ -1191,7 +1191,7 @@ namespace SIL.HermitCrab
                     case "InsertSegments":
                         CharacterDefinitionTable charDefTable = GetCharDefTable(partElem.GetAttribute("characterTable"));
                         string shapeStr = partElem.SelectSingleNode("PhoneticShape").InnerText;
-                        PhoneticShape pshape = charDefTable.ToPhoneticShape(shapeStr, ModeType.Synthesis);
+                        Shape pshape = charDefTable.ToShape(shapeStr, ModeType.Synthesis);
 						if (pshape == null)
 						{
 							LoadException le = new LoadException(LoadException.LoadErrorType.InvalidRuleShape, this,
@@ -1201,7 +1201,7 @@ namespace SIL.HermitCrab
 							le.Data["rule"] = ruleId;
 							throw le;
 						}
-                        rhsList.Add(new InsertSegments(pshape));
+                        rhsList.Add(new InsertShape(pshape));
                         break;
                 }
             }
@@ -1511,7 +1511,7 @@ namespace SIL.HermitCrab
         {
             CharacterDefinitionTable charDefTable = GetCharDefTable(ctxtsNode.GetAttribute("characterTable"));
             string shapeStr = ctxtsNode.SelectSingleNode("PhoneticShape").InnerText;
-            PhoneticShape shape = charDefTable.ToPhoneticShape(shapeStr, ModeType.Synthesis);
+            Shape shape = charDefTable.ToShape(shapeStr, ModeType.Synthesis);
 			if (shape == null)
 			{
 				LoadException le = new LoadException(LoadException.LoadErrorType.InvalidRuleShape, this,
@@ -1521,15 +1521,15 @@ namespace SIL.HermitCrab
 				throw le;
 			}
             List<PhoneticPatternNode> nodes = new List<PhoneticPatternNode>();
-            for (PhoneticShapeNode node = shape.Begin; node != shape.Last; node = node.Next)
+            for (ShapeNode node = shape.Begin; node != shape.Last; node = node.Next)
             {
                 switch (node.Type)
                 {
-                    case PhoneticShapeNode.NodeType.SEGMENT:
+                    case ShapeNode.NodeType.SEGMENT:
                         nodes.Add(new SegmentContext(node as Segment));
                         break;
 
-                    case PhoneticShapeNode.NodeType.BOUNDARY:
+                    case ShapeNode.NodeType.BOUNDARY:
                         nodes.Add(new BoundaryContext(node as Boundary));
                         break;
                 }

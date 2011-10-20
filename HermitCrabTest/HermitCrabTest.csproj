@@ -46,6 +46,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AffixProcessRuleTest.cs" />
+    <Compile Include="HermitCrabTestBase.cs" />
     <Compile Include="StandardPhonologicalRuleTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

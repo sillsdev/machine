@@ -1,68 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using SIL.HermitCrab;
 
 namespace SIL.HermitCrab
 {
-    /// <summary>
-    /// This abstract class is extended by each type of morphological output record
-    /// used on the RHS of morphological rules.
-    /// </summary>
-    public abstract class MorphologicalOutput
-    {
-        protected int m_partition = -1;
-        protected bool m_redup = false;
-
-        /// <summary>
-        /// Gets the partition.
-        /// </summary>
-        /// <value>The partition.</value>
-        public int Partition
-        {
-            get
-            {
-                return m_partition;
-            }
-        }
-
-        public bool IsReduplication
-        {
-            get
-            {
-                return m_redup;
-            }
-
-            internal set
-            {
-                m_redup = value;
-            }
-        }
-
-        /// <summary>
-        /// Generates the RHS template of a morphological rule. If the record
-        /// modifies the input using a simple context, it should add that context
-        /// to varFeats of modify-from contexts. It is used during unapplication.
-        /// The reduplication flags are used to indicate that the same input partition
-        /// is being copied multiple times.
-        /// </summary>
-        /// <param name="rhsTemp">The RHS template.</param>
-        /// <param name="lhs">The LHS.</param>
-        /// <param name="modifyFromCtxts">The modify-from contexts.</param>
-        /// <param name="redup">The reduplication flag.</param>
-        public abstract void GenerateRHSTemplate(Pattern rhsTemp, IList<Pattern> lhs,
-            IDictionary<int, SimpleContext> modifyFromCtxts);
-
-
-        /// <summary>
-        /// Applies this output record to the specified word synthesis.
-        /// </summary>
-        /// <param name="match">The match.</param>
-        /// <param name="input">The input word synthesis.</param>
-        /// <param name="output">The output word synthesis.</param>
-        /// <param name="morpheme">The morpheme info.</param>
-        public abstract void Apply(Match match, WordSynthesis input, WordSynthesis output, Allomorph allomorph);
-    }
-
     /// <summary>
     /// This morphological output record is used to copy a partition from the input and
     /// append it to the output. This can be used to perform reduplication.
@@ -102,13 +44,13 @@ namespace SIL.HermitCrab
         /// <param name="morpheme">The morpheme info.</param>
         public override void Apply(Match match, WordSynthesis input, WordSynthesis output, Allomorph allomorph)
         {
-            IList<PhoneticShapeNode> nodes = match.GetPartition(m_partition);
+            IList<ShapeNode> nodes = match.GetPartition(m_partition);
             if (nodes != null && nodes.Count > 0)
             {
                 Morph morph = null;
-                for (PhoneticShapeNode node = nodes[0]; node != nodes[nodes.Count - 1].Next; node = node.Next)
+                for (ShapeNode node = nodes[0]; node != nodes[nodes.Count - 1].Next; node = node.Next)
                 {
-                    PhoneticShapeNode newNode = node.Clone();
+                    ShapeNode newNode = node.Clone();
                     // mark the reduplicated segments with the gloss partition
                     if (m_redup)
                     {
@@ -274,7 +216,7 @@ namespace SIL.HermitCrab
         /// <param name="morpheme">The morpheme info.</param>
         public override void Apply(Match match, WordSynthesis input, WordSynthesis output, Allomorph allomorph)
         {
-            IList<PhoneticShapeNode> nodes = match.GetPartition(m_partition);
+            IList<ShapeNode> nodes = match.GetPartition(m_partition);
             if (nodes != null && nodes.Count > 0)
             {
                 Morph morph = null;
@@ -283,10 +225,10 @@ namespace SIL.HermitCrab
                     morph = new Morph(allomorph);
                     output.Morphs.Add(morph);
                 }
-                for (PhoneticShapeNode node = nodes[0]; node != nodes[nodes.Count - 1].Next; node = node.Next)
+                for (ShapeNode node = nodes[0]; node != nodes[nodes.Count - 1].Next; node = node.Next)
                 {
-                    PhoneticShapeNode newNode = node.Clone();
-                    if (node.Type == PhoneticShapeNode.NodeType.SEGMENT)
+                    ShapeNode newNode = node.Clone();
+                    if (node.Type == ShapeNode.NodeType.SEGMENT)
                     {
                         Segment seg = newNode as Segment;
                         // sets the context's features on the segment
@@ -309,13 +251,13 @@ namespace SIL.HermitCrab
     /// </summary>
     public class InsertSegments : MorphologicalOutput
     {
-        PhoneticShape m_pshape;
+        Shape m_pshape;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="InsertSegments"/> class.
+        /// Initializes a new instance of the <see cref="InsertShape"/> class.
         /// </summary>
         /// <param name="pshape">The phonetic shape.</param>
-        public InsertSegments(PhoneticShape pshape)
+        public InsertSegments(Shape pshape)
         {
             m_pshape = pshape;
         }
@@ -330,17 +272,17 @@ namespace SIL.HermitCrab
         public override void GenerateRHSTemplate(Pattern rhsTemp, IList<Pattern> lhs,
             IDictionary<int, SimpleContext> modifyFromCtxts)
         {
-            for (PhoneticShapeNode node = m_pshape.Begin; node != m_pshape.Last; node = node.Next)
+            for (ShapeNode node = m_pshape.Begin; node != m_pshape.Last; node = node.Next)
             {
                 // create contexts from the segments and boundaries in the phonetic shape
                 // and append them to the RHS template
                 switch (node.Type)
                 {
-                    case PhoneticShapeNode.NodeType.SEGMENT:
+                    case ShapeNode.NodeType.SEGMENT:
                         rhsTemp.Add(new SegmentContext(node as Segment));
                         break;
 
-                    case PhoneticShapeNode.NodeType.BOUNDARY:
+                    case ShapeNode.NodeType.BOUNDARY:
                         rhsTemp.Add(new BoundaryContext(node as Boundary));
                         break;
                 }
@@ -362,9 +304,9 @@ namespace SIL.HermitCrab
                 morph = new Morph(allomorph);
                 output.Morphs.Add(morph);
             }
-            for (PhoneticShapeNode node = m_pshape.Begin; node != m_pshape.Last; node = node.Next)
+            for (ShapeNode node = m_pshape.Begin; node != m_pshape.Last; node = node.Next)
             {
-                PhoneticShapeNode newNode = node.Clone();
+                ShapeNode newNode = node.Clone();
                 if (morph != null)
                 {
                     newNode.Partition = morph.Partition;
@@ -573,20 +515,20 @@ namespace SIL.HermitCrab
         /// <param name="match">The match.</param>
         /// <param name="partition">The partition.</param>
         /// <param name="output">The output.</param>
-        public void Unapply(Match match, int partition, PhoneticShape output)
+        public void Unapply(Match match, int partition, Shape output)
         {
-            IList<PhoneticShapeNode> nodes = match.GetPartition(partition);
+            IList<ShapeNode> nodes = match.GetPartition(partition);
             if (nodes != null && nodes.Count > 0)
             {
                 SimpleContext ctxt;
                 if (!m_modifyFromCtxts.TryGetValue(partition, out ctxt))
                     ctxt = null;
 
-                foreach (PhoneticShapeNode node in nodes)
+                foreach (ShapeNode node in nodes)
                 {
                     switch (node.Type)
                     {
-                        case PhoneticShapeNode.NodeType.SEGMENT:
+                        case ShapeNode.NodeType.SEGMENT:
                             Segment newSeg = new Segment(node as Segment);
                             // if there is a modify-from context on this partition, unapply it
                             if (ctxt != null)
@@ -594,7 +536,7 @@ namespace SIL.HermitCrab
                             output.Add(newSeg);
                             break;
 
-                        case PhoneticShapeNode.NodeType.BOUNDARY:
+                        case ShapeNode.NodeType.BOUNDARY:
                             output.Add(node.Clone());
                             break;
                     }
@@ -607,7 +549,7 @@ namespace SIL.HermitCrab
             }
         }
 
-        void Untruncate(Pattern lhs, PhoneticShape output, bool optional, VariableValues instantiatedVars)
+        void Untruncate(Pattern lhs, Shape output, bool optional, VariableValues instantiatedVars)
         {
             // create segments from the LHS partition pattern and append them to the output
             foreach (PhoneticPatternNode node in lhs)

@@ -1,18 +1,19 @@
 ﻿using SIL.APRE;
 using SIL.APRE.FeatureModel;
 using SIL.APRE.Matching;
+using SIL.APRE.Transduction;
 
 namespace SIL.HermitCrab
 {
 	public class NarrowAnalysisRewriteRule : AnalysisRewriteRule
 	{
-		private readonly SpanFactory<PhoneticShapeNode> _spanFactory;
-		private readonly Expression<PhoneticShapeNode> _analysisRhs;
+		private readonly SpanFactory<ShapeNode> _spanFactory;
+		private readonly Expression<Word, ShapeNode> _analysisRhs;
 		private readonly int _targetCount;
 
-		public NarrowAnalysisRewriteRule(SpanFactory<PhoneticShapeNode> spanFactory, Expression<PhoneticShapeNode> lhs, Expression<PhoneticShapeNode> rhs,
-			Expression<PhoneticShapeNode> leftEnv, Expression<PhoneticShapeNode> rightEnv)
-			: base(spanFactory, Direction.LeftToRight, true, (input, match) => true)
+		public NarrowAnalysisRewriteRule(SpanFactory<ShapeNode> spanFactory, Expression<Word, ShapeNode> lhs, Expression<Word, ShapeNode> rhs,
+			Expression<Word, ShapeNode> leftEnv, Expression<Word, ShapeNode> rightEnv)
+			: base(spanFactory, Direction.LeftToRight, ApplicationMode.Simultaneous, (input, match) => true)
 		{
 			_spanFactory = spanFactory;
 			_analysisRhs = lhs;
@@ -20,7 +21,7 @@ namespace SIL.HermitCrab
 
 			AddEnvironment("leftEnv", leftEnv);
 			if (rhs.Children.Count > 0)
-				Lhs.Children.Add(new Group<PhoneticShapeNode>("target", rhs.Children.Clone()));
+				Lhs.Children.Add(new Group<Word, ShapeNode>("target", rhs.Children.Clone()));
 			AddEnvironment("rightEnv", rightEnv);
 		}
 
@@ -29,34 +30,35 @@ namespace SIL.HermitCrab
 			get { return AnalysisReapplyType.Deletion; }
 		}
 
-		public override Annotation<PhoneticShapeNode> ApplyRhs(IBidirList<Annotation<PhoneticShapeNode>> input, PatternMatch<PhoneticShapeNode> match)
+		public override Annotation<ShapeNode> ApplyRhs(Word input, PatternMatch<ShapeNode> match, out Word output)
 		{
-			var shape = (PhoneticShape) match.Start.List;
-			PhoneticShapeNode curNode;
-			Span<PhoneticShapeNode> target;
+			ShapeNode startNode;
+			Span<ShapeNode> target;
 			if (match.TryGetGroup("target", out target))
 			{
-				curNode = target.End;
+				startNode = target.End;
 			}
 			else
 			{
-				Span<PhoneticShapeNode> leftEnv;
+				Span<ShapeNode> leftEnv;
 				if (match.TryGetGroup("leftEnv", out leftEnv))
 				{
-					curNode = leftEnv.End;
+					startNode = leftEnv.End;
 				}
 				else
 				{
-					Span<PhoneticShapeNode> rightEnv = match["rightEnv"];
-					curNode = rightEnv.Start.Prev;
+					Span<ShapeNode> rightEnv = match["rightEnv"];
+					startNode = rightEnv.Start.Prev;
 				}
 			}
-			foreach (Constraint<PhoneticShapeNode> constraint in _analysisRhs.Children)
+
+			ShapeNode curNode = startNode;
+			foreach (Constraint<Word, ShapeNode> constraint in _analysisRhs.Children)
 			{
-				var newNode = new PhoneticShapeNode(constraint.Type, _spanFactory, (FeatureStruct) constraint.FeatureStruct.Clone());
+				var newNode = new ShapeNode(constraint.Type, _spanFactory, (FeatureStruct) constraint.FeatureStruct.Clone());
 				newNode.Annotation.FeatureStruct.ReplaceVariables(match.VariableBindings);
 				newNode.Annotation.Optional = true;
-				shape.Insert(newNode, curNode, Direction.LeftToRight);
+				input.Shape.Insert(newNode, curNode, Direction.LeftToRight);
 				curNode = newNode;
 			}
 
@@ -66,6 +68,7 @@ namespace SIL.HermitCrab
 				curNode = curNode.Next;
 			}
 
+			output = input;
 			return null;
 		}
 

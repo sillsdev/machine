@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using SIL.APRE;
 using SIL.APRE.FeatureModel;
-using SIL.APRE.Matching;
 
 namespace SIL.HermitCrab
 {
@@ -783,7 +782,7 @@ namespace SIL.HermitCrab
         ICollection<WordSynthesis> MorphAndLookupToken(string word, string prev, string next, out WordAnalysisTrace trace)
         {
             // convert the word to its phonetic shape
-            PhoneticShape input = SurfaceStratum.CharacterDefinitionTable.ToPhoneticShape(word, ModeType.Analysis);
+            Shape input = SurfaceStratum.CharacterDefinitionTable.ToShape(word);
             // if word contains invalid segments, the char def table will return null
 			if (input == null)
 			{
@@ -795,7 +794,7 @@ namespace SIL.HermitCrab
 			}
 
             // create the root of the trace tree
-            trace = new WordAnalysisTrace(word, input.Clone());
+            trace = new WordAnalysisTrace(word, input);
 
             var candidates = new HashSet<WordSynthesis>();
             var inAnalysis = new HashSet<WordAnalysis>();

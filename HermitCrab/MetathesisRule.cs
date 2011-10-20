@@ -11,8 +11,8 @@ namespace SIL.HermitCrab
     public class MetathesisRule : StandardPhonologicalRule
     {
         MultAppOrder m_multApplication = MultAppOrder.LeftToRightIterative;
-        Pattern<PhoneticShapeNode> m_lhsTemp = null;
-        Pattern<PhoneticShapeNode> m_rhsTemp = null;
+        Pattern<ShapeNode> m_lhsTemp = null;
+        Pattern<ShapeNode> m_rhsTemp = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MetathesisRule"/> class.
@@ -151,10 +151,10 @@ namespace SIL.HermitCrab
             ProcessIterative(input.Shape, dir, m_lhsTemp, ModeType.SYNTHESIS);
         }
 
-        bool ProcessIterative(PhoneticShape input, Direction dir, Pattern ptemp, ModeType mode)
+        bool ProcessIterative(Shape input, Direction dir, Pattern ptemp, ModeType mode)
         {
             bool reordered = false;
-            PhoneticShapeNode node = input.GetFirst(dir);
+            ShapeNode node = input.GetFirst(dir);
             Match match;
             // iterate thru each match
             while (FindNextMatch(node, dir, ptemp, mode, out match))
@@ -162,19 +162,19 @@ namespace SIL.HermitCrab
                 // reorder the matching segments
                 Reorder(dir, match);
                 reordered = true;
-                IList<PhoneticShapeNode> nodes = match.EntireMatch;
+                IList<ShapeNode> nodes = match.EntireMatch;
                 node = nodes[nodes.Count - 1].GetNext(dir);
             }
 
             return reordered;
         }
 
-        bool FindNextMatch(PhoneticShapeNode node, Direction dir, Pattern ptemp, ModeType mode,
+        bool FindNextMatch(ShapeNode node, Direction dir, Pattern ptemp, ModeType mode,
             out Match match)
         {
             for (; node != node.Owner.GetLast(dir); node = node.GetNext(dir))
             {
-                if (mode == ModeType.ANALYSIS && node.Type == PhoneticShapeNode.NodeType.BOUNDARY)
+                if (mode == ModeType.ANALYSIS && node.Type == ShapeNode.NodeType.BOUNDARY)
                     continue;
 
                 IList<Match> matches;
@@ -194,8 +194,8 @@ namespace SIL.HermitCrab
             if (match.EntireMatch.Count == 0)
                 return;
 
-            PhoneticShapeNode first = null;
-            PhoneticShapeNode last = null;
+            ShapeNode first = null;
+            ShapeNode last = null;
             switch (dir)
             {
                 case Direction.RIGHT:
@@ -211,20 +211,20 @@ namespace SIL.HermitCrab
 
             // remove the matching segments, so that we can reinsert them in the 
             // new order
-            PhoneticShapeNode cur = first.Prev;
-            for (PhoneticShapeNode node = first; node != last.Next; node = node.Next)
+            ShapeNode cur = first.Prev;
+            for (ShapeNode node = first; node != last.Next; node = node.Next)
                 node.Remove();
 
             // reinsert the segments in the new order
             for (int i = 0; i < m_lhsTemp.Count; i++)
             {
-                IList<PhoneticShapeNode> partNodes = match.GetPartition(i);
+                IList<ShapeNode> partNodes = match.GetPartition(i);
                 if (partNodes == null)
                     continue;
 
-                IEnumerable<PhoneticShapeNode> partEnum = dir == Direction.RIGHT ? partNodes
+                IEnumerable<ShapeNode> partEnum = dir == Direction.RIGHT ? partNodes
                     : ReverseNodes(partNodes);
-                foreach (PhoneticShapeNode node in partEnum)
+                foreach (ShapeNode node in partEnum)
                 {
                     cur.Insert(node, Direction.RIGHT);
                     cur = node;
@@ -232,7 +232,7 @@ namespace SIL.HermitCrab
             }
         }
 
-        IEnumerable<PhoneticShapeNode> ReverseNodes(IList<PhoneticShapeNode> nodes)
+        IEnumerable<ShapeNode> ReverseNodes(IList<ShapeNode> nodes)
         {
             for (int i = nodes.Count - 1; i >= 0; i--)
                 yield return nodes[i];

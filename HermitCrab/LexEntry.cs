@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text;
-using SIL.APRE;
 using SIL.APRE.FeatureModel;
-using SIL.APRE.Matching;
 
 namespace SIL.HermitCrab
 {
@@ -16,7 +14,7 @@ namespace SIL.HermitCrab
 		/// </summary>
 		public class RootAllomorph : Allomorph
 		{
-			private readonly PhoneticShape _shape;
+			private readonly Shape _shape;
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="RootAllomorph"/> class.
@@ -24,7 +22,7 @@ namespace SIL.HermitCrab
 			/// <param name="id">The id.</param>
 			/// <param name="desc">The description.</param>
 			/// <param name="shape">The shape.</param>
-			public RootAllomorph(string id, string desc, PhoneticShape shape)
+			public RootAllomorph(string id, string desc, Shape shape)
 				: base(id, desc)
 			{
 				_shape = shape;
@@ -34,7 +32,7 @@ namespace SIL.HermitCrab
 			/// Gets the phonetic shape.
 			/// </summary>
 			/// <value>The phonetic shape.</value>
-			public PhoneticShape Shape
+			public Shape Shape
 			{
 				get
 				{
@@ -208,7 +206,7 @@ namespace SIL.HermitCrab
 			{
 				if (!firstItem)
 					sb.Append(", ");
-				sb.Append(Stratum.CharacterDefinitionTable.ToString(allomorph.Shape, ModeType.Synthesis, true));
+				sb.Append(Stratum.CharacterDefinitionTable.ToString(allomorph.Shape, Mode.Synthesis, true));
 				firstItem = false;
 			}
 

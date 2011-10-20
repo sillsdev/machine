@@ -995,7 +995,7 @@ namespace SIL.HermitCrab
             if (stratum == null)
                 throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownLexEntryStratum, id, stratumName), stratumName);
             entry.Stratum = stratum;
-            PhoneticShape pshape = stratum.CharacterDefinitionTable.ToPhoneticShape(shapeStr, ModeType.SYNTHESIS);
+            Shape pshape = stratum.CharacterDefinitionTable.ToShape(shapeStr, ModeType.SYNTHESIS);
 			if (pshape == null)
 			{
 				LoadException le = new LoadException(LoadException.LoadErrorType.InvalidEntryShape, this,
@@ -1164,17 +1164,17 @@ namespace SIL.HermitCrab
         {
             CheckCurMorpher();
             string name = mruleSpec.Get<string>("nm");
-            AffixalMorphologicalRule rule = null;
+            AffixProcessRule rule = null;
             MorphologicalRule mrule = _curMorpher.GetMorphologicalRule(name);
             if (mrule != null)
             {
-                rule = mrule as AffixalMorphologicalRule;
-                foreach (AffixalMorphologicalRule.Subrule sr in rule.Subrules)
+                rule = mrule as AffixProcessRule;
+                foreach (AffixProcessRule.Subrule sr in rule.Subrules)
                     _curMorpher.RemoveAllomorph(sr.ID);
             }
             else
             {
-                rule = new AffixalMorphologicalRule(name, name, _curMorpher);
+                rule = new AffixProcessRule(name, name, _curMorpher);
                 _curMorpher.AddMorphologicalRule(rule);
             }
             rule.Reset();
@@ -1313,7 +1313,7 @@ namespace SIL.HermitCrab
                 LoadMSubrule(srSpec, rule);
         }
 
-        void LoadMSubrule(ConfigNode msubruleSpec, AffixalMorphologicalRule rule)
+        void LoadMSubrule(ConfigNode msubruleSpec, AffixProcessRule rule)
         {
             List<object> varFeatsList;
             msubruleSpec.Get<List<object>>("var_fs", out varFeatsList);
@@ -1335,7 +1335,7 @@ namespace SIL.HermitCrab
             List<MorphologicalOutput> rhsList = LoadPhonOutput(poutList, varFeatures, rule.ID);
 
             string id = rule.ID + "_subrule" + rule.SubruleCount;
-            AffixalMorphologicalRule.Subrule sr = new AffixalMorphologicalRule.Subrule(id, id, _curMorpher,
+            AffixProcessRule.Subrule sr = new AffixProcessRule.Subrule(id, id, _curMorpher,
                 lhsList, rhsList, varFeatures, MorphologicalTransform.RedupMorphType.IMPLICIT);
 
             List<object> exFeats;
@@ -1359,7 +1359,7 @@ namespace SIL.HermitCrab
             }
             sr.OutputMPRFeatures = LoadMPRFeatures(outFeats);
 
-            rule.AddSubrule(sr);
+            rule.AddAllomorph(sr);
             _curMorpher.AddAllomorph(sr);
         }
 
@@ -1573,7 +1573,7 @@ namespace SIL.HermitCrab
                         string shapeStr = list[0] as string;
                         string ctableName = list[1] as string;
                         CharacterDefinitionTable charDefTable = GetCharDefTable(ctableName);
-                        PhoneticShape pshape = charDefTable.ToPhoneticShape(shapeStr, ModeType.SYNTHESIS);
+                        Shape pshape = charDefTable.ToShape(shapeStr, ModeType.SYNTHESIS);
 						if (pshape == null)
 						{
 							LoadException le = new LoadException(LoadException.LoadErrorType.InvalidRuleShape, this,
@@ -1583,7 +1583,7 @@ namespace SIL.HermitCrab
 							le.Data["rule"] = ruleName;
 							throw le;
 						}
-                        rhsList.Add(new InsertSegments(pshape));
+                        rhsList.Add(new InsertShape(pshape));
                     }
                 }
             }

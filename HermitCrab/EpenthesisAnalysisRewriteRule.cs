@@ -1,5 +1,6 @@
 ﻿using SIL.APRE;
 using SIL.APRE.Matching;
+using SIL.APRE.Transduction;
 
 namespace SIL.HermitCrab
 {
@@ -8,31 +9,31 @@ namespace SIL.HermitCrab
 		private readonly AnalysisReapplyType _reapplyType;
 		private readonly int _targetCount;
 
-		public EpenthesisAnalysisRewriteRule(SpanFactory<PhoneticShapeNode> spanFactory, Direction synthesisDir, bool synthesisSimult,
-			Expression<PhoneticShapeNode> rhs, Expression<PhoneticShapeNode> leftEnv, Expression<PhoneticShapeNode> rightEnv)
-			: base(spanFactory, synthesisDir == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight, false,
+		public EpenthesisAnalysisRewriteRule(SpanFactory<ShapeNode> spanFactory, Direction synthesisDir, ApplicationMode synthesisAppMode,
+			Expression<Word, ShapeNode> rhs, Expression<Word, ShapeNode> leftEnv, Expression<Word, ShapeNode> rightEnv)
+			: base(spanFactory, synthesisDir == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight, ApplicationMode.Iterative,
 			(input, match) => IsUnapplicationNonvacuous(match))
 		{
 			_targetCount = rhs.Children.Count;
 
 			AddEnvironment("leftEnv", leftEnv);
-			var target = new Group<PhoneticShapeNode>("target");
-			foreach (Constraint<PhoneticShapeNode> constraint in rhs.Children)
+			var target = new Group<Word, ShapeNode>("target");
+			foreach (Constraint<Word, ShapeNode> constraint in rhs.Children)
 			{
-				var newConstraint = (Constraint<PhoneticShapeNode>) constraint.Clone();
+				var newConstraint = (Constraint<Word, ShapeNode>)constraint.Clone();
 				newConstraint.FeatureStruct.AddValue(HCFeatureSystem.Backtrack, HCFeatureSystem.NotSearched);
 				target.Children.Add(newConstraint);
 			}
 			Lhs.Children.Add(target);
 			AddEnvironment("rightEnv", rightEnv);
 
-			_reapplyType = synthesisSimult ? AnalysisReapplyType.SelfOpaquing : AnalysisReapplyType.Normal;
+			_reapplyType = synthesisAppMode == ApplicationMode.Simultaneous ? AnalysisReapplyType.SelfOpaquing : AnalysisReapplyType.Normal;
 		}
 
-		private static bool IsUnapplicationNonvacuous(PatternMatch<PhoneticShapeNode> match)
+		private static bool IsUnapplicationNonvacuous(PatternMatch<ShapeNode> match)
 		{
-			Span<PhoneticShapeNode> target = match["target"];
-			foreach (PhoneticShapeNode node in target.Start.GetNodes(target.End))
+			Span<ShapeNode> target = match["target"];
+			foreach (ShapeNode node in target.Start.GetNodes(target.End))
 			{
 				if (!node.Annotation.Optional)
 					return true;
@@ -46,19 +47,21 @@ namespace SIL.HermitCrab
 			get { return _reapplyType; }
 		}
 
-		public override Annotation<PhoneticShapeNode> ApplyRhs(IBidirList<Annotation<PhoneticShapeNode>> input, PatternMatch<PhoneticShapeNode> match)
+		public override Annotation<ShapeNode> ApplyRhs(Word input, PatternMatch<ShapeNode> match, out Word output)
 		{
-			Span<PhoneticShapeNode> target = match["target"];
-			PhoneticShapeNode curNode = target.GetStart(Lhs.Direction);
+			Span<ShapeNode> target = match["target"];
+			ShapeNode curNode = target.GetStart(Lhs.Direction);
 			for (int i = 0; i < _targetCount; i++)
 			{
 				curNode.Annotation.Optional = true;
 				curNode = curNode.GetNext(Lhs.Direction);
 			}
 
-			MarkSearchedNodes(match.GetStart(Lhs.Direction), curNode);
+			ShapeNode resumeNode = match.GetStart(Lhs.Direction).GetNext(Lhs.Direction);
+			MarkSearchedNodes(resumeNode, curNode);
 
-			return match.GetStart(Lhs.Direction).Annotation;
+			output = input;
+			return resumeNode.Annotation;
 		}
 	}
 }

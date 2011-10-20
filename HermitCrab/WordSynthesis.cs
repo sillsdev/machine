@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using SIL.APRE;
 using SIL.APRE.FeatureModel;
-using SIL.APRE.Matching;
 
 namespace SIL.HermitCrab
 {
@@ -14,7 +13,7 @@ namespace SIL.HermitCrab
     public class WordSynthesis : ICloneable, IComparable<WordSynthesis>
     {
         private readonly LexEntry _root;
-        private PhoneticShape _shape;
+        private Shape _shape;
         private readonly Morphs _morphs;
         private PartOfSpeech _partOfSpeech;
         MprFeatureSet m_mprFeatures;
@@ -97,7 +96,7 @@ namespace SIL.HermitCrab
             _root = ws._root;
             if (ws.m_nonHead != null)
                 m_nonHead = ws.m_nonHead.Clone();
-            _shape = ws._shape.Clone();
+            //_shape = ws._shape.Clone();
             _morphs = ws._morphs.Clone();
             _partOfSpeech = ws._partOfSpeech;
             m_mprFeatures = ws.m_mprFeatures.Clone();
@@ -140,7 +139,7 @@ namespace SIL.HermitCrab
         /// Gets the phonetic shape.
         /// </summary>
         /// <value>The phonetic shape.</value>
-        public PhoneticShape Shape
+        public Shape Shape
         {
             get
             {
@@ -554,7 +553,7 @@ namespace SIL.HermitCrab
                 firstItem = false;
             }
 
-            return string.Format(HCStrings.kstidWordSynthesis, m_stratum.CharacterDefinitionTable.ToString(_shape, ModeType.Synthesis, true),
+            return string.Format(HCStrings.kstidWordSynthesis, m_stratum.CharacterDefinitionTable.ToString(_shape, Mode.Synthesis, true),
                 _partOfSpeech, _root.ID, m_stratum, morphsSb);
         }
 

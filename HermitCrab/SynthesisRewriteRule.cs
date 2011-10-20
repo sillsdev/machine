@@ -6,45 +6,47 @@ using SIL.APRE.Transduction;
 
 namespace SIL.HermitCrab
 {
-	public abstract class SynthesisRewriteRule : PatternRuleBase<PhoneticShapeNode>
+	public abstract class SynthesisRewriteRule : PatternRuleBase<Word, ShapeNode>
 	{
-		private readonly SpanFactory<PhoneticShapeNode> _spanFactory;
+		private readonly SpanFactory<ShapeNode> _spanFactory;
 		private readonly FeatureStruct _applicableFS;
 
-		protected SynthesisRewriteRule(SpanFactory<PhoneticShapeNode> spanFactory, Direction dir, bool simult, Expression<PhoneticShapeNode> lhs,
-			Expression<PhoneticShapeNode> leftEnv, Expression<PhoneticShapeNode> rightEnv, FeatureStruct applicableFS)
-			: base(new Pattern<PhoneticShapeNode>(spanFactory, dir, ann => true, (input, match) => CheckTarget(match, lhs)), simult)
+		protected SynthesisRewriteRule(SpanFactory<ShapeNode> spanFactory, Direction dir, ApplicationMode appMode, Expression<Word, ShapeNode> lhs,
+			Expression<Word, ShapeNode> leftEnv, Expression<Word, ShapeNode> rightEnv, FeatureStruct applicableFS)
+			: base(new Pattern<Word, ShapeNode>(spanFactory, dir,
+				ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.BoundaryType, HCFeatureSystem.AnchorType),
+				(input, match) => CheckTarget(match, lhs)), appMode)
 		{
 			_spanFactory = spanFactory;
 			_applicableFS = applicableFS;
 
 			if (leftEnv.Children.Count > 0)
 			{
-				Lhs.Children.Add(new Group<PhoneticShapeNode>("leftEnv", leftEnv.Children.Clone()));
+				Lhs.Children.Add(new Group<Word, ShapeNode>("leftEnv", leftEnv.Children.Clone()));
 			}
 
-			var target = new Group<PhoneticShapeNode>("target");
-			foreach (Constraint<PhoneticShapeNode> constraint in lhs.Children)
+			var target = new Group<Word, ShapeNode>("target");
+			foreach (Constraint<Word, ShapeNode> constraint in lhs.Children)
 			{
-				var newConstraint = (Constraint<PhoneticShapeNode>) constraint.Clone();
+				var newConstraint = (Constraint<Word, ShapeNode>)constraint.Clone();
 				newConstraint.FeatureStruct.AddValue(HCFeatureSystem.Backtrack, HCFeatureSystem.NotSearched);
 				target.Children.Add(newConstraint);
 			}
 			Lhs.Children.Add(target);
 			if (rightEnv.Children.Count > 0)
 			{
-				Lhs.Children.Add(new Group<PhoneticShapeNode>("rightEnv", rightEnv.Children.Clone()));
+				Lhs.Children.Add(new Group<Word, ShapeNode>("rightEnv", rightEnv.Children.Clone()));
 			}
 		}
 
-		private static bool CheckTarget(PatternMatch<PhoneticShapeNode> match, Expression<PhoneticShapeNode> lhs)
+		private static bool CheckTarget(PatternMatch<ShapeNode> match, Expression<Word, ShapeNode> lhs)
 		{
-			Span<PhoneticShapeNode> target;
+			Span<ShapeNode> target;
 			if (match.TryGetGroup("target", out target))
 			{
-				foreach (Tuple<PhoneticShapeNode, PatternNode<PhoneticShapeNode>> tuple in target.Start.GetNodes(target.End).Zip(lhs.Children))
+				foreach (Tuple<ShapeNode, PatternNode<Word, ShapeNode>> tuple in target.Start.GetNodes(target.End).Zip(lhs.Children))
 				{
-					var constraints = (Constraint<PhoneticShapeNode>) tuple.Item2;
+					var constraints = (Constraint<Word, ShapeNode>)tuple.Item2;
 					if (tuple.Item1.Annotation.Type != constraints.Type)
 						return false;
 				}
@@ -52,43 +54,27 @@ namespace SIL.HermitCrab
 			return true;
 		}
 
-		public override bool IsApplicable(IBidirList<Annotation<PhoneticShapeNode>> input)
+		public override bool IsApplicable(Word input)
 		{
-			return input.First.FeatureStruct.IsUnifiable(_applicableFS);
+			return input.Annotation.FeatureStruct.IsUnifiable(_applicableFS);
 		}
 
-		protected void MarkSearchedNodes(PhoneticShapeNode startNode, PhoneticShapeNode endNode)
+		protected void MarkSearchedNodes(ShapeNode startNode, ShapeNode endNode)
 		{
-			foreach (PhoneticShapeNode node in startNode.GetNodes(endNode, Lhs.Direction))
-				node.Annotation.FeatureStruct.AddValue(HCFeatureSystem.Backtrack, HCFeatureSystem.Searched);
+			if (ApplicationMode == ApplicationMode.Iterative)
+			{
+				foreach (ShapeNode node in startNode.GetNodes(endNode, Lhs.Direction))
+					node.Annotation.FeatureStruct.AddValue(HCFeatureSystem.Backtrack, HCFeatureSystem.Searched);
+			}
 		}
 
-		protected PhoneticShapeNode CreateNodeFromConstraint(Constraint<PhoneticShapeNode> constraint, VariableBindings varBindings)
+		protected ShapeNode CreateNodeFromConstraint(Constraint<Word, ShapeNode> constraint, VariableBindings varBindings)
 		{
-			var newNode = new PhoneticShapeNode(constraint.Type, _spanFactory, (FeatureStruct) constraint.FeatureStruct.Clone());
+			var newNode = new ShapeNode(constraint.Type, _spanFactory, (FeatureStruct) constraint.FeatureStruct.Clone());
 			newNode.Annotation.FeatureStruct.ReplaceVariables(varBindings);
-			if (HasVariable(newNode.Annotation.FeatureStruct))
+			if (newNode.Annotation.FeatureStruct.HasVariables)
 				throw new MorphException(MorphErrorCode.UninstantiatedFeature);
 			return newNode;
-		}
-
-		protected bool HasVariable(FeatureStruct fs)
-		{
-			foreach (Feature feature in fs.Features)
-			{
-				FeatureValue value = fs.GetValue(feature);
-				var childFS = value as FeatureStruct;
-				if (childFS != null)
-				{
-					if (HasVariable(childFS))
-						return true;
-				}
-				else if (((SimpleFeatureValue)value).IsVariable)
-				{
-					return true;
-				}
-			}
-			return false;
 		}
 	}
 }

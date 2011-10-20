@@ -9,8 +9,8 @@ namespace SIL.HermitCrab
 	/// </summary>
 	public class Environment
 	{
-		private readonly Pattern<PhoneticShapeNode> _leftEnv;
-		private readonly Pattern<PhoneticShapeNode> _rightEnv;
+		private readonly Pattern<Word, ShapeNode> _leftEnv;
+		private readonly Pattern<Word, ShapeNode> _rightEnv;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Environment"/> class.
@@ -24,7 +24,7 @@ namespace SIL.HermitCrab
 		/// </summary>
 		/// <param name="leftEnv">The left environment.</param>
 		/// <param name="rightEnv">The right environment.</param>
-		public Environment(Pattern<PhoneticShapeNode> leftEnv, Pattern<PhoneticShapeNode> rightEnv)
+		public Environment(Pattern<Word, ShapeNode> leftEnv, Pattern<Word, ShapeNode> rightEnv)
 		{
 			_leftEnv = leftEnv;
 			_rightEnv = rightEnv;
@@ -34,7 +34,7 @@ namespace SIL.HermitCrab
 		/// Gets the left environment.
 		/// </summary>
 		/// <value>The left environment.</value>
-		public Pattern<PhoneticShapeNode> LeftEnvironment
+		public Pattern<Word, ShapeNode> LeftEnvironment
 		{
 			get
 			{
@@ -46,7 +46,7 @@ namespace SIL.HermitCrab
 		/// Gets the right environment.
 		/// </summary>
 		/// <value>The right environment.</value>
-		public Pattern<PhoneticShapeNode> RightEnvironment
+		public Pattern<Word, ShapeNode> RightEnvironment
 		{
 			get
 			{
@@ -64,7 +64,7 @@ namespace SIL.HermitCrab
 		/// <returns>
 		/// 	<c>true</c> if the specified left node is match; otherwise, <c>false</c>.
 		/// </returns>
-		public bool IsMatch(PhoneticShape shape, PhoneticShapeNode leftNode, PhoneticShapeNode rightNode, ModeType mode)
+		public bool IsMatch(Shape shape, ShapeNode leftNode, ShapeNode rightNode, Mode mode)
 		{
 			return IsMatch(shape, leftNode, rightNode, mode, null);
 		}
@@ -80,7 +80,7 @@ namespace SIL.HermitCrab
 		/// <returns>
 		/// 	<c>true</c> if the shape successfully matched this pattern, otherwise <c>false</c>.
 		/// </returns>
-		public bool IsMatch(PhoneticShape shape, PhoneticShapeNode leftNode, PhoneticShapeNode rightNode, ModeType mode,
+		public bool IsMatch(Shape shape, ShapeNode leftNode, ShapeNode rightNode, Mode mode,
 			FeatureStruct varValues)
 		{
 			/*

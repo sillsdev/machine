@@ -132,8 +132,8 @@ namespace SIL.HermitCrab
                 output = outputList;
                 foreach (PatternMatch match in matches)
                 {
-                    PhoneticShape headShape;
-                    PhoneticShape nonHeadShape;
+                    Shape headShape;
+                    Shape nonHeadShape;
                     UnapplyRHS(match, out headShape, out nonHeadShape);
 
 					// for computational complexity reasons, we ensure that the non-head is a root, otherwise we assume it is not
@@ -171,17 +171,17 @@ namespace SIL.HermitCrab
                 return outputList.Count > 0;
             }
 
-            void UnapplyRHS(PatternMatch match, out PhoneticShape headShape, out PhoneticShape nonHeadShape)
+            void UnapplyRHS(PatternMatch match, out Shape headShape, out Shape nonHeadShape)
             {
-                headShape = new PhoneticShape();
+                headShape = new Shape();
                 headShape.Add(new Anchor<>(Direction.LEFT));
-                nonHeadShape = new PhoneticShape();
+                nonHeadShape = new Shape();
                 nonHeadShape.Add(new Anchor<>(Direction.LEFT));
                 // iterate thru LHS partitions, copying the matching partition from the
                 // input to the output
                 for (int i = 0; i < m_transform.PartitionCount; i++)
                 {
-                    PhoneticShape curShape = i < m_firstNonHeadPartition ? headShape : nonHeadShape;
+                    Shape curShape = i < m_firstNonHeadPartition ? headShape : nonHeadShape;
                     m_transform.Unapply(match, i, curShape);
                 }
                 headShape.Add(new Anchor<>(Direction.RIGHT));

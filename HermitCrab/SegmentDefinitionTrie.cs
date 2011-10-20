@@ -12,13 +12,13 @@ namespace SIL.HermitCrab
 	{
 		public class Match
 		{
-			private readonly List<PhoneticShapeNode> _nodes;
+			private readonly List<ShapeNode> _nodes;
 			private readonly T _value;
 
 			public Match(T value)
 			{
 				_value = value;
-				_nodes = new List<PhoneticShapeNode>();
+				_nodes = new List<ShapeNode>();
 			}
 
 			public T Value
@@ -29,7 +29,7 @@ namespace SIL.HermitCrab
 				}
 			}
 
-			public IList<PhoneticShapeNode> Nodes
+			public IList<ShapeNode> Nodes
 			{
 				get
 				{
@@ -37,7 +37,7 @@ namespace SIL.HermitCrab
 				}
 			}
 
-			public void AddNode(PhoneticShapeNode node)
+			public void AddNode(ShapeNode node)
 			{
 				_nodes.Insert(0, node);
 			}
@@ -71,7 +71,7 @@ namespace SIL.HermitCrab
 			public override int GetHashCode()
 			{
 				int hashCode = 0;
-				foreach (PhoneticShapeNode node in _nodes)
+				foreach (ShapeNode node in _nodes)
 					hashCode ^= node.GetHashCode();
 				return hashCode ^ _value.GetHashCode();
 			}
@@ -95,7 +95,7 @@ namespace SIL.HermitCrab
 				_children = new List<TrieNode>();
 			}
 
-			public void Add(PhoneticShapeNode node, T value, Direction dir)
+			public void Add(ShapeNode node, T value, Direction dir)
 			{
 				if (node == null)
 				{
@@ -135,7 +135,7 @@ namespace SIL.HermitCrab
 				}
 			}
 
-			public IList<Match> Search(PhoneticShapeNode node, Direction dir, bool partialMatch)
+			public IList<Match> Search(ShapeNode node, Direction dir, bool partialMatch)
 			{
 				IList<Match> matches;
 				if (node == null)
@@ -153,7 +153,7 @@ namespace SIL.HermitCrab
 				{
 					if (node.Annotation.Type == "segment")
 					{
-						PhoneticShapeNode nextNode = node.GetNext(dir);
+						ShapeNode nextNode = node.GetNext(dir);
 						var segMatches = new List<Match>();
 						foreach (TrieNode child in _children)
 						{
@@ -222,7 +222,7 @@ namespace SIL.HermitCrab
 		/// </summary>
 		/// <param name="shape"></param>
 		/// <param name="value"></param>
-		public void Add(PhoneticShape shape, T value)
+		public void Add(Shape shape, T value)
 		{
 			_root.Add(shape.GetFirst(_dir), value, _dir);
 			_numValues++;
@@ -248,12 +248,12 @@ namespace SIL.HermitCrab
 		/// </summary>
 		/// <param name="shape">The phonetic shape.</param>
 		/// <returns>All matching values.</returns>
-		public IEnumerable<Match> Search(PhoneticShape shape)
+		public IEnumerable<Match> Search(Shape shape)
 		{
 			return new HashSet<Match>(_root.Search(shape.GetFirst(_dir), _dir, false));
 		}
 
-		public IEnumerable<Match> SearchPartial(PhoneticShape shape)
+		public IEnumerable<Match> SearchPartial(Shape shape)
 		{
 			return new HashSet<Match>(_root.Search(shape.GetFirst(_dir), _dir, true));
 		}

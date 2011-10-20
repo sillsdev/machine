@@ -182,7 +182,7 @@ namespace SIL.HermitCrab
 		/// </summary>
 		/// <param name="shape">The shape.</param>
 		/// <returns>The matching lexical entries.</returns>
-		public IEnumerable<LexEntry.RootAllomorph> SearchEntries(PhoneticShape shape)
+		public IEnumerable<LexEntry.RootAllomorph> SearchEntries(Shape shape)
 		{
 			foreach (SegmentDefinitionTrie<LexEntry.RootAllomorph>.Match match in _entryTrie.Search(shape))
 				yield return match.Value;
@@ -245,6 +245,7 @@ namespace SIL.HermitCrab
             bool unapplied = false;
             if (rIndex >= 0)
             {
+#if WANTPORT
                 if (_mrules[rIndex].BeginUnapplication(input))
                 {
                     ICollection<WordAnalysis> analyses;
@@ -262,11 +263,13 @@ namespace SIL.HermitCrab
                     rIndex--;
                     srIndex = -1;
                 }
+#endif
             }
 
             // iterate thru all subrules that occur after the specified rule in analysis order
             for (int i = rIndex; i >= 0; i--)
             {
+#if WANTPORT
                 if (srIndex != -1 || _mrules[i].BeginUnapplication(input))
                 {
                     for (int j = 0; j < _mrules[i].SubruleCount; j++)
@@ -287,7 +290,7 @@ namespace SIL.HermitCrab
 
 					_mrules[i].EndUnapplication(input, unapplied);
                 }
-
+#endif
                 unapplied = false;
                 srIndex = -1;
             }
@@ -418,6 +421,7 @@ namespace SIL.HermitCrab
             // iterate thru all rules starting from the specified rule in synthesis order
             for (int i = rIndex; i < _mrules.Count; i++)
             {
+#if WANTPORT
 				if (_mrules[i].IsApplicable(input))
 				{
 					ICollection<WordSynthesis> syntheses;
@@ -439,6 +443,7 @@ namespace SIL.HermitCrab
 						}
 					}
 				}
+#endif
             }
 
             ApplyTemplates(input, output);

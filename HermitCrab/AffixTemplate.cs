@@ -102,6 +102,7 @@ namespace SIL.HermitCrab
             {
                 foreach (MorphologicalRule rule in _slots[i].MorphologicalRules)
                 {
+#if WANTPORT
                     if (rule.BeginUnapplication(input))
                     {
                         bool ruleUnapplied = false;
@@ -120,6 +121,7 @@ namespace SIL.HermitCrab
                         }
 						rule.EndUnapplication(input, ruleUnapplied);
                     }
+#endif
                 }
                 // we can skip this slot if it is optional
                 if (!_slots[i].IsOptional)
@@ -182,6 +184,7 @@ namespace SIL.HermitCrab
             {
                 foreach (MorphologicalRule rule in _slots[i].MorphologicalRules)
                 {
+#if WANTPORT
                     if (rule.IsApplicable(input))
                     {
                         // this is the slot affix that realizes the features
@@ -192,6 +195,7 @@ namespace SIL.HermitCrab
 								ApplySlots(ws, i + 1, origHeadFeatures, output);
 						}
                     }
+#endif
                 }
 
                 if (!_slots[i].IsOptional)

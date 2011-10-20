@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using SIL.APRE;
 using SIL.APRE.FeatureModel;
-using SIL.APRE.Matching;
 
 namespace SIL.HermitCrab
 {
@@ -12,7 +11,7 @@ namespace SIL.HermitCrab
     /// </summary>
     public class WordAnalysis : ICloneable
     {
-        private PhoneticShape _shape;
+        private Shape _shape;
         private readonly IDBearerSet<PartOfSpeech> _partsOfSpeech;
         private LexEntry.RootAllomorph _rootAllomorph;
         private WordAnalysis _nonHead;
@@ -28,7 +27,7 @@ namespace SIL.HermitCrab
     	/// <param name="shape">The shape.</param>
     	/// <param name="stratum"></param>
     	/// <param name="curTrace">The current trace record.</param>
-    	public WordAnalysis(PhoneticShape shape, Stratum stratum, Trace curTrace)
+    	public WordAnalysis(Shape shape, Stratum stratum, Trace curTrace)
         {
             _shape = shape;
             _partsOfSpeech = new IDBearerSet<PartOfSpeech>();
@@ -47,7 +46,7 @@ namespace SIL.HermitCrab
         /// <param name="wa">The word analysis.</param>
         public WordAnalysis(WordAnalysis wa)
         {
-            _shape = wa._shape.Clone();
+            //_shape = wa._shape.Clone();
             _partsOfSpeech = new IDBearerSet<PartOfSpeech>(wa._partsOfSpeech);
             _rootAllomorph = wa._rootAllomorph;
             if (wa._nonHead != null)
@@ -65,7 +64,7 @@ namespace SIL.HermitCrab
         /// Gets or sets the phonetic shape.
         /// </summary>
         /// <value>The phonetic shape.</value>
-        public PhoneticShape Shape
+        public Shape Shape
         {
             get
             {
@@ -284,7 +283,7 @@ namespace SIL.HermitCrab
             }
 
             return string.Format(HCStrings.kstidWordAnalysis,
-                _stratum == null ? _shape.ToString() : _stratum.CharacterDefinitionTable.ToRegexString(_shape, ModeType.Analysis, true),
+                _stratum == null ? _shape.ToString() : _stratum.CharacterDefinitionTable.ToRegexString(_shape, Mode.Analysis, true),
                 _partsOfSpeech, sb, _stratum);
         }
 

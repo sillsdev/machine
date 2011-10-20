@@ -4,7 +4,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using SIL.APRE;
 using SIL.APRE.FeatureModel;
-using SIL.APRE.Matching;
 
 namespace SIL.HermitCrab
 {
@@ -16,7 +15,7 @@ namespace SIL.HermitCrab
     {
         private readonly Dictionary<string, SegmentDefinition> _segDefs;
         private readonly Dictionary<string, BoundaryDefinition> _bdryDefs;
-    	private readonly SpanFactory<PhoneticShapeNode> _spanFactory;
+    	private readonly SpanFactory<ShapeNode> _spanFactory;
 
     	/// <summary>
     	/// Initializes a new instance of the <see cref="CharacterDefinitionTable"/> class.
@@ -24,7 +23,7 @@ namespace SIL.HermitCrab
     	/// <param name="id">The ID.</param>
     	/// <param name="desc">The description.</param>
     	/// <param name="spanFactory"></param>
-		public CharacterDefinitionTable(string id, string desc, SpanFactory<PhoneticShapeNode> spanFactory)
+		public CharacterDefinitionTable(string id, string desc, SpanFactory<ShapeNode> spanFactory)
 			: base(id, desc)
     	{
     		_spanFactory = spanFactory;
@@ -32,7 +31,7 @@ namespace SIL.HermitCrab
     		_bdryDefs = new Dictionary<string, BoundaryDefinition>();
     	}
 
-    	public SpanFactory<PhoneticShapeNode> SpanFactory
+    	public SpanFactory<ShapeNode> SpanFactory
     	{
     		get { return _spanFactory; }
     	}
@@ -86,7 +85,7 @@ namespace SIL.HermitCrab
         /// <param name="node">The phonetic shape node.</param>
         /// <param name="mode">The mode.</param>
         /// <returns>The string representations.</returns>
-        public IEnumerable<SegmentDefinition> GetMatchingSegmentDefinitions(PhoneticShapeNode node, ModeType mode)
+        public IEnumerable<SegmentDefinition> GetMatchingSegmentDefinitions(ShapeNode node, Mode mode)
         {
             var results = new List<SegmentDefinition>();
 
@@ -99,16 +98,21 @@ namespace SIL.HermitCrab
             return results;
         }
 
-        /// <summary>
-        /// Converts the specified string to a phonetic shape. It matches the longest possible segment
-        /// first.
-        /// </summary>
-        /// <param name="str">The string.</param>
-        /// <param name="mode">The mode.</param>
-        /// <returns>The phonetic shape, <c>null</c> if the string contains invalid segments.</returns>
-        public PhoneticShape ToPhoneticShape(string str, ModeType mode)
+		public Shape ToShape(string str)
+		{
+			return ToShape(str, new AnnotationList<ShapeNode>());
+		}
+
+    	/// <summary>
+    	/// Converts the specified string to a phonetic shape. It matches the longest possible segment
+    	/// first.
+    	/// </summary>
+    	/// <param name="str">The string.</param>
+    	/// <param name="annotations"></param>
+    	/// <returns>The phonetic shape, <c>null</c> if the string contains invalid segments.</returns>
+    	public Shape ToShape(string str, AnnotationList<ShapeNode> annotations)
         {
-            var ps = new PhoneticShape(this, mode);
+            var ps = new Shape(_spanFactory, annotations);
             int i = 0;
             while (i < str.Length)
             {
@@ -116,7 +120,7 @@ namespace SIL.HermitCrab
                 for (int j = str.Length - i; j > 0; j--)
                 {
                     string s = str.Substring(i, j);
-                    PhoneticShapeNode node = GetPhoneticShapeNode(s);
+                    ShapeNode node = GetPhoneticShapeNode(s);
                     if (node != null)
                     {
                         ps.Add(node);
@@ -132,20 +136,20 @@ namespace SIL.HermitCrab
             return ps;
         }
 
-        private PhoneticShapeNode GetPhoneticShapeNode(string strRep)
+        private ShapeNode GetPhoneticShapeNode(string strRep)
         {
-            PhoneticShapeNode node = null;
+            ShapeNode node = null;
             SegmentDefinition segDef = GetSegmentDefinition(strRep);
             if (segDef != null)
             {
-				node = new PhoneticShapeNode(HCFeatureSystem.SegmentType, _spanFactory, (FeatureStruct) segDef.FeatureStruct.Clone());
+				node = new ShapeNode(HCFeatureSystem.SegmentType, _spanFactory, (FeatureStruct) segDef.FeatureStruct.Clone());
             }
             else
             {
                 BoundaryDefinition bdryDef = GetBoundaryDefinition(strRep);
 				if (bdryDef != null)
 				{
-					node = new PhoneticShapeNode(HCFeatureSystem.BoundaryType, _spanFactory, (FeatureStruct) bdryDef.FeatureStruct.Clone());
+					node = new ShapeNode(HCFeatureSystem.BoundaryType, _spanFactory, (FeatureStruct) bdryDef.FeatureStruct.Clone());
 					node.Annotation.Optional = true;
 				}
             }
@@ -161,12 +165,12 @@ namespace SIL.HermitCrab
         /// <param name="displayFormat">if <c>true</c> the result will be formatted for display, otherwise
         /// it will be formatted for compilation.</param>
         /// <returns>The regular expression string.</returns>
-        public string ToRegexString(PhoneticShape shape, ModeType mode, bool displayFormat)
+        public string ToRegexString(Shape shape, Mode mode, bool displayFormat)
         {
             var sb = new StringBuilder();
 			if (!displayFormat)
 				sb.Append("^");
-            foreach (PhoneticShapeNode node in shape)
+            foreach (ShapeNode node in shape)
             {
 				if (node.Annotation.Type == HCFeatureSystem.SegmentType)
 				{
@@ -199,7 +203,7 @@ namespace SIL.HermitCrab
 				}
 				else
 				{
-					var value = node.Annotation.FeatureStruct.GetValue<StringFeatureValue>("strRep");
+					var value = node.Annotation.FeatureStruct.GetValue<StringFeatureValue>(HCFeatureSystem.StrRep);
 					string strRep = value.Values.First();
 					if (strRep.Length > 1)
 						sb.Append("(");
@@ -224,10 +228,10 @@ namespace SIL.HermitCrab
         /// <param name="includeBdry">if <c>true</c> boundary markers will be included in the
         /// string representation.</param>
         /// <returns>The string representation.</returns>
-        public string ToString(PhoneticShape shape, ModeType mode, bool includeBdry)
+        public string ToString(Shape shape, Mode mode, bool includeBdry)
         {
             var sb = new StringBuilder();
-            foreach (PhoneticShapeNode node in shape)
+            foreach (ShapeNode node in shape)
             {
 				if (node.Annotation.Type == HCFeatureSystem.SegmentType)
 				{
@@ -254,9 +258,9 @@ namespace SIL.HermitCrab
         /// <returns>
         /// 	<c>true</c> if the word matches the shape, otherwise <c>false</c>.
         /// </returns>
-        public virtual bool IsMatch(string word, PhoneticShape shape)
+        public virtual bool IsMatch(string word, Shape shape)
         {
-            string pattern = ToRegexString(shape, ModeType.Synthesis, false);
+            string pattern = ToRegexString(shape, Mode.Synthesis, false);
             return Regex.IsMatch(word, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
         }
 

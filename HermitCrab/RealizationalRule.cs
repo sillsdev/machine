@@ -6,7 +6,7 @@ namespace SIL.HermitCrab
     /// This class represents a realizational rule. A realizational rule is a affixal morphological rule
     /// that realizes a set of morphosyntactic features. It is typically used to model inflectional morphology.
     /// </summary>
-    public class RealizationalRule : AffixalMorphologicalRule
+    public class RealizationalRule : AffixProcessRule
     {
         public RealizationalRule(string id, string desc, Morpher morpher)
             : base(id, desc, morpher)

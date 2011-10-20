@@ -9,7 +9,7 @@ namespace SIL.HermitCrab
 	public class Morph : ICloneable
 	{
 		private int _partition = -1;
-		private readonly PhoneticShape _shape;
+		private readonly Shape _shape;
 		private readonly Allomorph _allomorph;
 
 		/// <summary>
@@ -31,7 +31,7 @@ namespace SIL.HermitCrab
 		public Morph(Morph morph)
 		{
 			_partition = morph._partition;
-			_shape = morph._shape.Clone();
+			//_shape = morph._shape.Clone();
 			_allomorph = morph._allomorph;
 		}
 
@@ -56,7 +56,7 @@ namespace SIL.HermitCrab
 		/// Gets the phonetic shape.
 		/// </summary>
 		/// <value>The phonetic shape.</value>
-		public PhoneticShape Shape
+		public Shape Shape
 		{
 			get
 			{

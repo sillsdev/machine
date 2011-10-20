@@ -1,65 +1,65 @@
 ﻿using SIL.APRE;
 using SIL.APRE.FeatureModel;
 using SIL.APRE.Matching;
+using SIL.APRE.Transduction;
 
 namespace SIL.HermitCrab
 {
 	public class EpenthesisSynthesisRewriteRule : SynthesisRewriteRule
 	{
-		private readonly Expression<PhoneticShapeNode> _rhs; 
+		private readonly Expression<Word, ShapeNode> _rhs;
 
-		public EpenthesisSynthesisRewriteRule(SpanFactory<PhoneticShapeNode> spanFactory, Direction dir, bool simult, Expression<PhoneticShapeNode> lhs,
-			Expression<PhoneticShapeNode> rhs, Expression<PhoneticShapeNode> leftEnv, Expression<PhoneticShapeNode> rightEnv, FeatureStruct applicableFS)
-			: base(spanFactory, dir, simult, lhs, leftEnv, rightEnv, applicableFS)
+		public EpenthesisSynthesisRewriteRule(SpanFactory<ShapeNode> spanFactory, Direction dir, ApplicationMode appMode, Expression<Word, ShapeNode> lhs,
+			Expression<Word, ShapeNode> rhs, Expression<Word, ShapeNode> leftEnv, Expression<Word, ShapeNode> rightEnv, FeatureStruct applicableFS)
+			: base(spanFactory, dir, appMode, lhs, leftEnv, rightEnv, applicableFS)
 		{
 			_rhs = rhs;
 		}
 
-		public override Annotation<PhoneticShapeNode> ApplyRhs(IBidirList<Annotation<PhoneticShapeNode>> input, PatternMatch<PhoneticShapeNode> match)
+		public override Annotation<ShapeNode> ApplyRhs(Word input, PatternMatch<ShapeNode> match, out Word output)
 		{
-			var shape = (PhoneticShape) match.Start.List;
-			PhoneticShapeNode startNode;
+			ShapeNode startNode;
 			if (Lhs.Direction == Direction.LeftToRight)
 			{
-				Span<PhoneticShapeNode> leftEnv;
+				Span<ShapeNode> leftEnv;
 				if (match.TryGetGroup("leftEnv", out leftEnv))
 				{
 					startNode = leftEnv.End;
 				}
 				else
 				{
-					Span<PhoneticShapeNode> rightEnv = match["rightEnv"];
+					Span<ShapeNode> rightEnv = match["rightEnv"];
 					startNode = rightEnv.Start.Prev;
 				}
 			}
 			else
 			{
-				Span<PhoneticShapeNode> rightEnv;
+				Span<ShapeNode> rightEnv;
 				if (match.TryGetGroup("rightEnv", out rightEnv))
 				{
 					startNode = rightEnv.Start;
 				}
 				else
 				{
-					Span<PhoneticShapeNode> leftEnv = match["leftEnv"];
+					Span<ShapeNode> leftEnv = match["leftEnv"];
 					startNode = leftEnv.End.Next;
 				}
 			}
 
-			PhoneticShapeNode curNode = startNode;
-			foreach (PatternNode<PhoneticShapeNode> node in _rhs.Children.GetNodes(Lhs.Direction))
+			ShapeNode curNode = startNode;
+			foreach (PatternNode<Word, ShapeNode> node in _rhs.Children.GetNodes(Lhs.Direction))
 			{
-				if (shape.Count == 256)
+				if (input.Shape.Count == 256)
 					throw new MorphException(MorphErrorCode.TooManySegs);
-				var constraint = (Constraint<PhoneticShapeNode>) node;
-				PhoneticShapeNode newNode = CreateNodeFromConstraint(constraint, match.VariableBindings);
-				shape.Insert(newNode, curNode, Lhs.Direction);
+				var constraint = (Constraint<Word, ShapeNode>)node;
+				ShapeNode newNode = CreateNodeFromConstraint(constraint, match.VariableBindings);
+				input.Shape.Insert(newNode, curNode, Lhs.Direction);
 				curNode = newNode;
 			}
 
 			MarkSearchedNodes(startNode, curNode);
-
-			return startNode.Annotation;
+			output = input;
+			return startNode.GetNext(Lhs.Direction).Annotation;
 		}
 	}
 }

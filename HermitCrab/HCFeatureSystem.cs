@@ -18,6 +18,8 @@ namespace SIL.HermitCrab
 		public const string AnchorType = "anchor";
 		public const string SegmentType = "segment";
 		public const string BoundaryType = "boundary";
+		public const string MorphType = "morph";
+		public const string WordType = "word";
 
 		private static readonly HCFeatureSystem FeatureSystem;
 

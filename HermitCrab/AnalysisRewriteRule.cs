@@ -13,32 +13,35 @@ namespace SIL.HermitCrab
 		SelfOpaquing
 	}
 
-	public abstract class AnalysisRewriteRule : PatternRuleBase<PhoneticShapeNode>
+	public abstract class AnalysisRewriteRule : PatternRuleBase<Word, ShapeNode>
 	{
-		protected AnalysisRewriteRule(SpanFactory<PhoneticShapeNode> spanFactory, Direction dir, bool simult,
-			Func<IBidirList<Annotation<PhoneticShapeNode>>, PatternMatch<PhoneticShapeNode>, bool> acceptable)
-			: base(new Pattern<PhoneticShapeNode>(spanFactory, dir, ann => ann.Type != HCFeatureSystem.BoundaryType, acceptable), simult)
+		protected AnalysisRewriteRule(SpanFactory<ShapeNode> spanFactory, Direction dir, ApplicationMode appMode,
+			Func<Word, PatternMatch<ShapeNode>, bool> acceptable)
+			: base(new Pattern<Word, ShapeNode>(spanFactory, dir, ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType), acceptable), appMode)
 		{
 		}
 
 		public abstract AnalysisReapplyType AnalysisReapplyType { get; }
 
-		protected void AddEnvironment(string name, Expression<PhoneticShapeNode> env)
+		protected void AddEnvironment(string name, Expression<Word, ShapeNode> env)
 		{
 			if (env.Children.Count == 0)
 				return;
 
-			Lhs.Children.Add(new Group<PhoneticShapeNode>(name,
-				env.Children.Where(node => !(node is Constraint<PhoneticShapeNode>) || ((Constraint<PhoneticShapeNode>) node).Type != HCFeatureSystem.BoundaryType).Clone()));
+			Lhs.Children.Add(new Group<Word, ShapeNode>(name,
+				env.Children.Where(node => !(node is Constraint<Word, ShapeNode>) || ((Constraint<Word, ShapeNode>)node).Type != HCFeatureSystem.BoundaryType).Clone()));
 		}
 
-		protected void MarkSearchedNodes(PhoneticShapeNode startNode, PhoneticShapeNode endNode)
+		protected void MarkSearchedNodes(ShapeNode startNode, ShapeNode endNode)
 		{
-			foreach (PhoneticShapeNode node in endNode == null ? startNode.GetNodes(Lhs.Direction) : startNode.GetNodes(endNode, Lhs.Direction))
-				node.Annotation.FeatureStruct.AddValue(HCFeatureSystem.Backtrack, HCFeatureSystem.Searched);
+			if (ApplicationMode == ApplicationMode.Iterative)
+			{
+				foreach (ShapeNode node in startNode.GetNodes(endNode, Lhs.Direction))
+					node.Annotation.FeatureStruct.AddValue(HCFeatureSystem.Backtrack, HCFeatureSystem.Searched);
+			}
 		}
 
-		public override bool IsApplicable(IBidirList<Annotation<PhoneticShapeNode>> input)
+		public override bool IsApplicable(Word input)
 		{
 			return true;
 		}

@@ -6,53 +6,39 @@ using SIL.APRE.Transduction;
 namespace SIL.HermitCrab
 {
     /// <summary>
-    /// This class should be extended by all phonological rules.
+    /// 
     /// </summary>
-    public class StandardPhonologicalRule : IDBearerBase
+    public class StandardPhonologicalRule : PhonologicalRule
     {
-    	private readonly AnalysisStandardPhonologicalRule _analysisRule;
-    	private readonly SynthesisStandardPhonologicalRule _synthesisRule;
+    	private readonly StandardPhonologicalAnalysisRule _analysisRule;
+    	private readonly StandardPhonologicalSynthesisRule _synthesisRule;
 
-    	public StandardPhonologicalRule(string id, string description, SpanFactory<PhoneticShapeNode> spanFactory, int delReapplications,
-			Direction dir, bool simult, Expression<PhoneticShapeNode> lhs)
+    	public StandardPhonologicalRule(string id, string description, SpanFactory<ShapeNode> spanFactory, int delReapplications,
+			Direction dir, ApplicationMode appMode, Expression<Word, ShapeNode> lhs)
 			: base(id, description)
 		{
-			_analysisRule = new AnalysisStandardPhonologicalRule(spanFactory, delReapplications, dir, simult, lhs);
-			_synthesisRule = new SynthesisStandardPhonologicalRule(spanFactory, dir, simult, lhs);
+			_analysisRule = new StandardPhonologicalAnalysisRule(spanFactory, delReapplications, dir, appMode, lhs);
+			_synthesisRule = new StandardPhonologicalSynthesisRule(spanFactory, dir, appMode, lhs);
     	}
 
-    	/// <summary>
-    	/// Gets or sets a value indicating whether tracing of this phonological rule
-    	/// during analysis is on or off.
-    	/// </summary>
-    	/// <value><c>true</c> if tracing is on, <c>false</c> if tracing is off.</value>
-    	public bool TraceAnalysis { get; set; }
-
-    	/// <summary>
-    	/// Gets or sets a value indicating whether tracing of this phonological rule
-    	/// during synthesis is on or off.
-    	/// </summary>
-    	/// <value><c>true</c> if tracing is on, <c>false</c> if tracing is off.</value>
-    	public bool TraceSynthesis { get; set; }
-
-    	public IRule<PhoneticShapeNode> AnalysisRule
+		public override IRule<Word, ShapeNode> AnalysisRule
     	{
     		get { return _analysisRule; }
     	}
 
-    	public IRule<PhoneticShapeNode> SynthesisRule
+		public override IRule<Word, ShapeNode> SynthesisRule
     	{
     		get { return _synthesisRule; }
     	}
 
-		public void Compile()
+		public override void Compile()
 		{
 			_analysisRule.Compile();
 			_synthesisRule.Compile();
 		}
 
-		public void AddSubrule(Expression<PhoneticShapeNode> rhs, Expression<PhoneticShapeNode> leftEnv,
-			Expression<PhoneticShapeNode> rightEnv, FeatureStruct applicableFS)
+		public void AddSubrule(Expression<Word, ShapeNode> rhs, Expression<Word, ShapeNode> leftEnv,
+			Expression<Word, ShapeNode> rightEnv, FeatureStruct applicableFS)
 		{
 			_analysisRule.AddSubrule(rhs, leftEnv, rightEnv);
 			_synthesisRule.AddSubrule(rhs, leftEnv, rightEnv, applicableFS);
