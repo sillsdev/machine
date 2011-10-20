@@ -2,10 +2,10 @@ using SIL.APRE.Matching;
 
 namespace SIL.APRE.Transduction
 {
-	public interface IPatternRuleAction<TOffset>
+	public interface IPatternRuleAction<TData, TOffset> where TData : IData<TOffset>
 	{
-		bool IsApplicable(IBidirList<Annotation<TOffset>> input);
+		bool IsApplicable(TData input);
 
-		Annotation<TOffset> Apply(Pattern<TOffset> lhs, IBidirList<Annotation<TOffset>> input, PatternMatch<TOffset> match);
+		Annotation<TOffset> Apply(Pattern<TData, TOffset> lhs, TData input, PatternMatch<TOffset> match, out TData output);
 	}
 }

@@ -2,8 +2,8 @@ using System;
 
 namespace SIL.APRE.Matching.Fluent
 {
-	public interface IExpressionSyntax<TOffset> : INodesExpressionSyntax<TOffset>
+	public interface IExpressionSyntax<TData, TOffset> : INodesExpressionSyntax<TData, TOffset> where TData : IData<TOffset>
 	{
-		IExpressionSyntax<TOffset> MatchAcceptableWhere(Func<IBidirList<Annotation<TOffset>>, PatternMatch<TOffset>, bool> acceptable);
+		IExpressionSyntax<TData, TOffset> MatchAcceptableWhere(Func<TData, PatternMatch<TOffset>, bool> acceptable);
 	}
 }

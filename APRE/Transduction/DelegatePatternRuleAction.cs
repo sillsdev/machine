@@ -3,31 +3,32 @@ using SIL.APRE.Matching;
 
 namespace SIL.APRE.Transduction
 {
-	public class DelegatePatternRuleAction<TOffset> : IPatternRuleAction<TOffset>
-	{
-		private readonly Func<Pattern<TOffset>, IBidirList<Annotation<TOffset>>, PatternMatch<TOffset>, Annotation<TOffset>> _action;
-		private readonly Func<IBidirList<Annotation<TOffset>>, bool> _applicable;
+	public delegate Annotation<TOffset> ApplyDelegate<TData, TOffset>(Pattern<TData, TOffset> lhs, TData input, PatternMatch<TOffset> match, out TData output) where TData : IData<TOffset>; 
 
-		public DelegatePatternRuleAction(Func<Pattern<TOffset>, IBidirList<Annotation<TOffset>>, PatternMatch<TOffset>, Annotation<TOffset>> action)
+	public class DelegatePatternRuleAction<TData, TOffset> : IPatternRuleAction<TData, TOffset> where TData : IData<TOffset>
+	{
+		private readonly ApplyDelegate<TData, TOffset> _action;
+		private readonly Func<TData, bool> _applicable;
+
+		public DelegatePatternRuleAction(ApplyDelegate<TData, TOffset> action)
 			: this(action, ann => true)
 		{
 		}
 
-		public DelegatePatternRuleAction(Func<Pattern<TOffset>, IBidirList<Annotation<TOffset>>, PatternMatch<TOffset>, Annotation<TOffset>> action,
-			Func<IBidirList<Annotation<TOffset>>, bool> applicable)
+		public DelegatePatternRuleAction(ApplyDelegate<TData, TOffset> action, Func<TData, bool> applicable)
 		{
 			_action = action;
 			_applicable = applicable;
 		}
 
-		public bool IsApplicable(IBidirList<Annotation<TOffset>> input)
+		public bool IsApplicable(TData input)
 		{
 			return _applicable(input);
 		}
 
-		public Annotation<TOffset> Apply(Pattern<TOffset> lhs, IBidirList<Annotation<TOffset>> input, PatternMatch<TOffset> match)
+		public Annotation<TOffset> Apply(Pattern<TData, TOffset> lhs, TData input, PatternMatch<TOffset> match, out TData output)
 		{
-			return _action(lhs, input, match);
+			return _action(lhs, input, match, out output);
 		}
 	}
 }

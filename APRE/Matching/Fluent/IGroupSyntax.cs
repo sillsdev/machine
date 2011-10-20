@@ -3,13 +3,13 @@ using SIL.APRE.FeatureModel;
 
 namespace SIL.APRE.Matching.Fluent
 {
-	public interface IGroupSyntax<TOffset>
+	public interface IGroupSyntax<TData, TOffset> where TData : IData<TOffset>
 	{
-		IQuantifierGroupSyntax<TOffset> Group(string name, Func<IGroupSyntax<TOffset>, IGroupSyntax<TOffset>> build);
-		IQuantifierGroupSyntax<TOffset> Group(Func<IGroupSyntax<TOffset>, IGroupSyntax<TOffset>> build);
+		IQuantifierGroupSyntax<TData, TOffset> Group(string name, Func<IGroupSyntax<TData, TOffset>, IGroupSyntax<TData, TOffset>> build);
+		IQuantifierGroupSyntax<TData, TOffset> Group(Func<IGroupSyntax<TData, TOffset>, IGroupSyntax<TData, TOffset>> build);
 
-		IQuantifierGroupSyntax<TOffset> Annotation(string type, FeatureStruct fs);
+		IQuantifierGroupSyntax<TData, TOffset> Annotation(string type, FeatureStruct fs);
 
-		Group<TOffset> Value { get; } 
+		Group<TData, TOffset> Value { get; } 
 	}
 }

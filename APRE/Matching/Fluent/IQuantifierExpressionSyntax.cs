@@ -1,17 +1,17 @@
 ﻿namespace SIL.APRE.Matching.Fluent
 {
-	public interface IQuantifierExpressionSyntax<TOffset> : IAlternationExpressionSyntax<TOffset>
+	public interface IQuantifierExpressionSyntax<TData, TOffset> : IAlternationExpressionSyntax<TData, TOffset> where TData : IData<TOffset>
 	{
-		IAlternationExpressionSyntax<TOffset> ZeroOrMore { get; }
-		IAlternationExpressionSyntax<TOffset> LazyZeroOrMore { get; }
+		IAlternationExpressionSyntax<TData, TOffset> ZeroOrMore { get; }
+		IAlternationExpressionSyntax<TData, TOffset> LazyZeroOrMore { get; }
 
-		IAlternationExpressionSyntax<TOffset> OneOrMore { get; }
-		IAlternationExpressionSyntax<TOffset> LazyOneOrMore { get; }
+		IAlternationExpressionSyntax<TData, TOffset> OneOrMore { get; }
+		IAlternationExpressionSyntax<TData, TOffset> LazyOneOrMore { get; }
 
-		IAlternationExpressionSyntax<TOffset> Optional { get; }
-		IAlternationExpressionSyntax<TOffset> LazyOptional { get; }
+		IAlternationExpressionSyntax<TData, TOffset> Optional { get; }
+		IAlternationExpressionSyntax<TData, TOffset> LazyOptional { get; }
 
-		IAlternationExpressionSyntax<TOffset> Range(int min, int max);
-		IAlternationExpressionSyntax<TOffset> LazyRange(int min, int max);
+		IAlternationExpressionSyntax<TData, TOffset> Range(int min, int max);
+		IAlternationExpressionSyntax<TData, TOffset> LazyRange(int min, int max);
 	}
 }

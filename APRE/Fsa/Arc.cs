@@ -12,34 +12,34 @@ namespace SIL.APRE.Fsa
 		VeryLow
 	}
 
-	public class Arc<TOffset>
+	public class Arc<TData, TOffset> where TData : IData<TOffset>
 	{
-		private readonly State<TOffset> _source;
-		private readonly State<TOffset> _target;
+		private readonly State<TData, TOffset> _source;
+		private readonly State<TData, TOffset> _target;
 		private readonly FeatureStruct _condition;
 		private readonly int _tag = -1;
 		private readonly List<TagMapCommand> _commands;
 		private readonly ArcPriorityType _priorityType;
 
-		internal Arc(State<TOffset> source, State<TOffset> target, ArcPriorityType priorityType)
+		internal Arc(State<TData, TOffset> source, State<TData, TOffset> target, ArcPriorityType priorityType)
 			: this(source, null, target)
 		{
 			_priorityType = priorityType;
 		}
 
-		internal Arc(State<TOffset> source, State<TOffset> target, int tag)
+		internal Arc(State<TData, TOffset> source, State<TData, TOffset> target, int tag)
 			: this(source, null, target)
 		{
 			_tag = tag;
 		}
 
-		internal Arc(State<TOffset> source, FeatureStruct condition, State<TOffset> target, IEnumerable<TagMapCommand> cmds)
+		internal Arc(State<TData, TOffset> source, FeatureStruct condition, State<TData, TOffset> target, IEnumerable<TagMapCommand> cmds)
 			: this(source, condition, target)
 		{
 			_commands = new List<TagMapCommand>(cmds);
 		}
 
-		internal Arc(State<TOffset> source, FeatureStruct condition, State<TOffset> target)
+		internal Arc(State<TData, TOffset> source, FeatureStruct condition, State<TData, TOffset> target)
 		{
 			_source = source;
 			_condition = condition;
@@ -48,12 +48,12 @@ namespace SIL.APRE.Fsa
 			Priority = -1;
 		}
 
-		public State<TOffset> Source
+		public State<TData, TOffset> Source
 		{
 			get { return _source; }
 		}
 
-		public State<TOffset> Target
+		public State<TData, TOffset> Target
 		{
 			get
 			{

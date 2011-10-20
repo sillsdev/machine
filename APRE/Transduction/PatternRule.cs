@@ -3,51 +3,51 @@ using SIL.APRE.Matching;
 
 namespace SIL.APRE.Transduction
 {
-	public class PatternRule<TOffset> : PatternRuleBase<TOffset>
+	public class PatternRule<TData, TOffset> : PatternRuleBase<TData, TOffset> where TData : IData<TOffset>
 	{
-		private readonly IPatternRuleAction<TOffset> _rhs;
+		private readonly IPatternRuleAction<TData, TOffset> _rhs;
 
-		public PatternRule(Pattern<TOffset> lhs, Func<Pattern<TOffset>, IBidirList<Annotation<TOffset>>, PatternMatch<TOffset>, Annotation<TOffset>> rhs)
-			: this(lhs, rhs, ann => true)
+		public PatternRule(Pattern<TData, TOffset> lhs, ApplyDelegate<TData, TOffset> rhs)
+			: this(lhs, rhs, input => true)
 		{
 		}
 
-		public PatternRule(Pattern<TOffset> lhs, Func<Pattern<TOffset>, IBidirList<Annotation<TOffset>>, PatternMatch<TOffset>, Annotation<TOffset>> rhs,
-			Func<IBidirList<Annotation<TOffset>>, bool> applicable)
-			: this(lhs, rhs, applicable, false)
+		public PatternRule(Pattern<TData, TOffset> lhs, ApplyDelegate<TData, TOffset> rhs,
+			Func<TData, bool> applicable)
+			: this(lhs, rhs, applicable, ApplicationMode.Single)
 		{
 		}
 
-		public PatternRule(Pattern<TOffset> lhs, Func<Pattern<TOffset>, IBidirList<Annotation<TOffset>>, PatternMatch<TOffset>, Annotation<TOffset>> rhs,
-			Func<IBidirList<Annotation<TOffset>>, bool> applicable, bool simultaneous)
-			: this(lhs, new DelegatePatternRuleAction<TOffset>(rhs, applicable), simultaneous)
+		public PatternRule(Pattern<TData, TOffset> lhs, ApplyDelegate<TData, TOffset> rhs,
+			Func<TData, bool> applicable, ApplicationMode appMode)
+			: this(lhs, new DelegatePatternRuleAction<TData, TOffset>(rhs, applicable), appMode)
 		{
 		}
 
-		public PatternRule(Pattern<TOffset> lhs, IPatternRuleAction<TOffset> rhs)
-			: this(lhs, rhs, false)
+		public PatternRule(Pattern<TData, TOffset> lhs, IPatternRuleAction<TData, TOffset> rhs)
+			: this(lhs, rhs, ApplicationMode.Single)
 		{
 		}
 
-		public PatternRule(Pattern<TOffset> lhs, IPatternRuleAction<TOffset> rhs, bool simult)
-			: base(lhs, simult)
+		public PatternRule(Pattern<TData, TOffset> lhs, IPatternRuleAction<TData, TOffset> rhs, ApplicationMode appMode)
+			: base(lhs, appMode)
 		{
 			_rhs = rhs;
 		}
 
-		public IPatternRuleAction<TOffset> Rhs
+		public IPatternRuleAction<TData, TOffset> Rhs
 		{
 			get { return _rhs; }
 		}
 
-		public override bool IsApplicable(IBidirList<Annotation<TOffset>> input)
+		public override bool IsApplicable(TData input)
 		{
 			return _rhs.IsApplicable(input);
 		}
 
-		public override Annotation<TOffset> ApplyRhs(IBidirList<Annotation<TOffset>> input, PatternMatch<TOffset> match)
+		public override Annotation<TOffset> ApplyRhs(TData input, PatternMatch<TOffset> match, out TData output)
 		{
-			return _rhs.Apply(Lhs, input, match);
+			return _rhs.Apply(Lhs, input, match, out output);
 		}
 	}
 }

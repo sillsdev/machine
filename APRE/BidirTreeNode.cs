@@ -18,7 +18,7 @@ namespace SIL.APRE
 			get { return _children.Count == 0; }
 		}
 
-		public IBidirList<TNode> Children
+		public IOrderedBidirList<TNode> Children
 		{
 			get { return _children; }
 		}

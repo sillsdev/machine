@@ -1,7 +1,7 @@
 ﻿namespace SIL.APRE.Matching.Fluent
 {
-	public interface IAlternationExpressionSyntax<TOffset> : INodesExpressionSyntax<TOffset>
+	public interface IAlternationExpressionSyntax<TData, TOffset> : INodesExpressionSyntax<TData, TOffset> where TData : IData<TOffset>
 	{
-		IInitialNodesExpressionSyntax<TOffset> Or { get; }
+		IInitialNodesExpressionSyntax<TData, TOffset> Or { get; }
 	}
 }

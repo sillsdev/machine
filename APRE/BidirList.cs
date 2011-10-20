@@ -8,7 +8,7 @@ namespace SIL.APRE
     /// This is a bi-directional list. It is optimized for list traversal in either direction.
     /// </summary>
     /// <typeparam name="TNode">Item Type, must be the type of the class that the linked list handles.</typeparam>
-    public class BidirList<TNode> : IBidirList<TNode> where TNode : BidirListNode<TNode>
+    public class BidirList<TNode> : IOrderedBidirList<TNode> where TNode : BidirListNode<TNode>
     {
         private TNode _first;
     	private TNode _last;
@@ -345,7 +345,12 @@ namespace SIL.APRE
             _size++;
         }
 
-        /// <summary>
+    	public void Insert(TNode newNode, TNode node)
+    	{
+    		Insert(newNode, node, Direction.LeftToRight);
+    	}
+
+    	/// <summary>
         /// Adds all of the nodes from the enumerable collection.
         /// </summary>
         /// <param name="e">The enumerable collection.</param>

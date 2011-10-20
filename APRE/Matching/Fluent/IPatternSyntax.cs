@@ -2,11 +2,11 @@ using System;
 
 namespace SIL.APRE.Matching.Fluent
 {
-	public interface IPatternSyntax<TOffset> : INodesPatternSyntax<TOffset>
+	public interface IPatternSyntax<TData, TOffset> : INodesPatternSyntax<TData, TOffset> where TData : IData<TOffset>
 	{
-		IPatternSyntax<TOffset> MatchLeftToRight { get; }
-		IPatternSyntax<TOffset> MatchRightToLeft { get; }
+		IPatternSyntax<TData, TOffset> MatchLeftToRight { get; }
+		IPatternSyntax<TData, TOffset> MatchRightToLeft { get; }
 
-		IPatternSyntax<TOffset> AnnotationsAllowableWhere(Func<Annotation<TOffset>, bool> filter);
+		IPatternSyntax<TData, TOffset> AnnotationsAllowableWhere(Func<Annotation<TOffset>, bool> filter);
 	}
 }

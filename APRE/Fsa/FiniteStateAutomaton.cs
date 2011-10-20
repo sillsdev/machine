@@ -6,11 +6,11 @@ using SIL.APRE.FeatureModel;
 
 namespace SIL.APRE.Fsa
 {
-	public class FiniteStateAutomaton<TOffset>
+	public class FiniteStateAutomaton<TData, TOffset> where TData : IData<TOffset>
 	{
-		private State<TOffset> _startState;
-		private readonly List<State<TOffset>> _acceptingStates;
-		private readonly List<State<TOffset>> _states;
+		private State<TData, TOffset> _startState;
+		private readonly List<State<TData, TOffset>> _acceptingStates;
+		private readonly List<State<TData, TOffset>> _states;
 		private int _nextTag;
 		private readonly Dictionary<string, int> _groups;
 		private readonly List<TagMapCommand> _initializers;
@@ -26,8 +26,8 @@ namespace SIL.APRE.Fsa
 		public FiniteStateAutomaton(Direction dir, Func<Annotation<TOffset>, bool> filter)
 		{
 			_initializers = new List<TagMapCommand>();
-			_acceptingStates = new List<State<TOffset>>();
-			_states = new List<State<TOffset>>();
+			_acceptingStates = new List<State<TData, TOffset>>();
+			_states = new List<State<TData, TOffset>>();
 			_groups = new Dictionary<string, int>();
 			_dir = dir;
 			_startState = CreateState();
@@ -64,38 +64,38 @@ namespace SIL.APRE.Fsa
 			return false;
 		}
 
-		private State<TOffset> CreateAcceptingState(IEnumerable<AcceptInfo<TOffset>> acceptInfos, IEnumerable<TagMapCommand> finishers, bool isLazy)
+		private State<TData, TOffset> CreateAcceptingState(IEnumerable<AcceptInfo<TData, TOffset>> acceptInfos, IEnumerable<TagMapCommand> finishers, bool isLazy)
 		{
-			var state = new State<TOffset>(_states.Count, acceptInfos, finishers, isLazy);
+			var state = new State<TData, TOffset>(_states.Count, acceptInfos, finishers, isLazy);
 			_states.Add(state);
 			_acceptingStates.Add(state);
 			return state;
 		}
 
-		public State<TOffset> CreateAcceptingState(string id, Func<IBidirList<Annotation<TOffset>>, FsaMatch<TOffset>, bool> acceptable, int priority)
+		public State<TData, TOffset> CreateAcceptingState(string id, Func<TData, FsaMatch<TOffset>, bool> acceptable, int priority)
 		{
-			var state = new State<TOffset>(_states.Count, new AcceptInfo<TOffset>(id, acceptable, priority).ToEnumerable());
+			var state = new State<TData, TOffset>(_states.Count, new AcceptInfo<TData, TOffset>(id, acceptable, priority).ToEnumerable());
 			_states.Add(state);
 			_acceptingStates.Add(state);
 			return state;
 		}
 
-		public State<TOffset> CreateAcceptingState()
+		public State<TData, TOffset> CreateAcceptingState()
 		{
-			var state = new State<TOffset>(_states.Count, true);
+			var state = new State<TData, TOffset>(_states.Count, true);
 			_states.Add(state);
 			_acceptingStates.Add(state);
 			return state;
 		}
 
-		public State<TOffset> CreateState()
+		public State<TData, TOffset> CreateState()
 		{
-			var state = new State<TOffset>(_states.Count, false);
+			var state = new State<TData, TOffset>(_states.Count, false);
 			_states.Add(state);
 			return state;
 		}
 
-		public State<TOffset> CreateTag(State<TOffset> source, State<TOffset> target, string groupName, bool isStart)
+		public State<TData, TOffset> CreateTag(State<TData, TOffset> source, State<TData, TOffset> target, string groupName, bool isStart)
 		{
 			int tag;
 			if (isStart)
@@ -115,7 +115,7 @@ namespace SIL.APRE.Fsa
 			return source.AddArc(target, tag);
 		}
 
-		public State<TOffset> StartState
+		public State<TData, TOffset> StartState
 		{
 			get
 			{
@@ -123,7 +123,7 @@ namespace SIL.APRE.Fsa
 			}
 		}
 
-		public IEnumerable<State<TOffset>> AcceptingStates
+		public IEnumerable<State<TData, TOffset>> AcceptingStates
 		{
 			get { return _acceptingStates; }
 		}
@@ -133,31 +133,31 @@ namespace SIL.APRE.Fsa
 			get { return _dir; }
 		}
 
-		public IEnumerable<State<TOffset>> States
+		public IEnumerable<State<TData, TOffset>> States
 		{
 			get { return _states; }
 		}
 
 		private class FsaInstance
 		{
-			private readonly State<TOffset> _state;
+			private readonly State<TData, TOffset> _state;
 			private readonly Annotation<TOffset> _ann;
 			private readonly NullableValue<TOffset>[,] _registers;
 			private readonly VariableBindings _varBindings;
 			private readonly FsaMatch<TOffset> _match;
 
-			public FsaInstance(State<TOffset> state, FsaMatch<TOffset> match)
+			public FsaInstance(State<TData, TOffset> state, FsaMatch<TOffset> match)
 				: this(state, null, null, null, match)
 			{
 			}
 
-			public FsaInstance(State<TOffset> state, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers,
+			public FsaInstance(State<TData, TOffset> state, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers,
 				VariableBindings varBindings)
 				: this(state, ann, registers, varBindings, null)
 			{
 			}
 
-			public FsaInstance(State<TOffset> state, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers,
+			public FsaInstance(State<TData, TOffset> state, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers,
 				VariableBindings varBindings, FsaMatch<TOffset> match)
 			{
 				_state = state;
@@ -167,7 +167,7 @@ namespace SIL.APRE.Fsa
 				_match = match;
 			}
 
-			public State<TOffset> State
+			public State<TData, TOffset> State
 			{
 				get { return _state; }
 			}
@@ -193,7 +193,7 @@ namespace SIL.APRE.Fsa
 			}
 		}
 
-		public bool IsMatch(IBidirList<Annotation<TOffset>> annList, Annotation<TOffset> start, bool allMatches, out IEnumerable<FsaMatch<TOffset>> matches)
+		public bool IsMatch(TData data, Annotation<TOffset> start, bool allMatches, out IEnumerable<FsaMatch<TOffset>> matches)
 		{
 			var instStack = new Stack<FsaInstance>();
 
@@ -215,7 +215,7 @@ namespace SIL.APRE.Fsa
 						cmds.Add(cmd);
 				}
 
-				ann = InitializeStack(annList, ann, registers, cmds, instStack, initAnns);
+				ann = InitializeStack(data, ann, registers, cmds, instStack, initAnns);
 
 				var matchStack = new Stack<FsaMatch<TOffset>>();
 				while (instStack.Count != 0)
@@ -225,11 +225,11 @@ namespace SIL.APRE.Fsa
 					bool advance = false;
 					if (inst.Annotation != null)
 					{
-						foreach (Arc<TOffset> arc in inst.State.OutgoingArcs)
+						foreach (Arc<TData, TOffset> arc in inst.State.OutgoingArcs)
 						{
 							if (inst.Annotation.FeatureStruct.IsUnifiable(arc.Condition, false, inst.VariableBindings))
 							{
-								AdvanceFsa(annList, inst.Annotation, inst.Registers, inst.VariableBindings, inst.Match, arc, instStack);
+								AdvanceFsa(data, inst.Annotation, inst.Registers, inst.VariableBindings, inst.Match, arc, instStack);
 								advance = true;
 								break;
 							}
@@ -253,7 +253,7 @@ namespace SIL.APRE.Fsa
 			return matches != null;
 		}
 
-		private Annotation<TOffset> InitializeStack(IBidirList<Annotation<TOffset>> annList, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers,
+		private Annotation<TOffset> InitializeStack(TData data, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers,
 			List<TagMapCommand> cmds, Stack<FsaInstance> instStack, HashSet<Annotation<TOffset>> initAnns)
 		{
 			TOffset offset = ann.Span.GetStart(_dir);
@@ -261,17 +261,17 @@ namespace SIL.APRE.Fsa
 			var newRegisters = (NullableValue<TOffset>[,]) registers.Clone();
 			ExecuteCommands(newRegisters, cmds, new NullableValue<TOffset>(ann.Span.GetStart(_dir)), new NullableValue<TOffset>());
 
-			for (Annotation<TOffset> a = ann; a != annList.GetEnd(_dir) && a.Span.GetStart(_dir).Equals(offset); a = a.GetNext(_dir, _filter))
+			for (Annotation<TOffset> a = ann; a != data.Annotations.GetEnd(_dir) && a.Span.GetStart(_dir).Equals(offset); a = a.GetNext(_dir, _filter))
 			{
 				if (a.Optional)
 				{
 					Annotation<TOffset> nextAnn = a.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
 					if (nextAnn != null)
-						InitializeStack(annList, nextAnn, registers, cmds, instStack, initAnns);
+						InitializeStack(data, nextAnn, registers, cmds, instStack, initAnns);
 				}
 			}
 
-			for (; ann != annList.GetEnd(_dir) && ann.Span.GetStart(_dir).Equals(offset); ann = ann.GetNext(_dir, _filter))
+			for (; ann != data.Annotations.GetEnd(_dir) && ann.Span.GetStart(_dir).Equals(offset); ann = ann.GetNext(_dir, _filter))
 			{
 				if (!initAnns.Contains(ann))
 				{
@@ -284,11 +284,11 @@ namespace SIL.APRE.Fsa
 			return ann;
 		}
 
-		private void AdvanceFsa(IBidirList<Annotation<TOffset>> annList, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers,
-			VariableBindings varBindings, FsaMatch<TOffset> match, Arc<TOffset> arc, Stack<FsaInstance> instStack)
+		private void AdvanceFsa(TData data, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers,
+			VariableBindings varBindings, FsaMatch<TOffset> match, Arc<TData, TOffset> arc, Stack<FsaInstance> instStack)
 		{
 			Annotation<TOffset> nextAnn = ann.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
-			TOffset nextOffset = nextAnn == annList.GetEnd(_dir) ? annList.GetLast(_dir, _filter).Span.GetEnd(_dir) : nextAnn.Span.GetStart(_dir);
+			TOffset nextOffset = nextAnn == data.Annotations.GetEnd(_dir) ? data.Annotations.GetLast(_dir, _filter).Span.GetEnd(_dir) : nextAnn.Span.GetStart(_dir);
 			TOffset end = ann.Span.GetEnd(_dir);
 			var newRegisters = (NullableValue<TOffset>[,]) registers.Clone();
 			ExecuteCommands(newRegisters, arc.Commands, new NullableValue<TOffset>(nextOffset), new NullableValue<TOffset>(end));
@@ -296,26 +296,26 @@ namespace SIL.APRE.Fsa
 			{
 				var matchRegisters = (NullableValue<TOffset>[,]) newRegisters.Clone();
 				ExecuteCommands(matchRegisters, arc.Target.Finishers, new NullableValue<TOffset>(), new NullableValue<TOffset>());
-				foreach (AcceptInfo<TOffset> acceptInfo in arc.Target.AcceptInfos)
+				foreach (AcceptInfo<TData, TOffset> acceptInfo in arc.Target.AcceptInfos)
 				{
 					if (match == null || acceptInfo.Priority < match.Priority || (acceptInfo.Priority != match.Priority && !match.IsLazy))
 					{
 						var candidate = new FsaMatch<TOffset>(acceptInfo.ID, matchRegisters, varBindings, acceptInfo.Priority, arc.Target.IsLazy);
-						if (acceptInfo.Acceptable(annList, candidate))
+						if (acceptInfo.Acceptable(data, candidate))
 							match = candidate;
 					}
 				}
 			}
 
-			if (nextAnn != annList.GetEnd(_dir))
+			if (nextAnn != data.Annotations.GetEnd(_dir))
 			{
-				for (Annotation<TOffset> a = nextAnn; a != annList.GetEnd(_dir) && a.Span.GetStart(_dir).Equals(nextOffset); a = a.GetNext(_dir, _filter))
+				for (Annotation<TOffset> a = nextAnn; a != data.Annotations.GetEnd(_dir) && a.Span.GetStart(_dir).Equals(nextOffset); a = a.GetNext(_dir, _filter))
 				{
 					if (a.Optional)
-						AdvanceFsa(annList, a, registers, varBindings, match, arc, instStack);
+						AdvanceFsa(data, a, registers, varBindings, match, arc, instStack);
 				}
 
-				for (Annotation<TOffset> a = nextAnn; a != annList.GetEnd(_dir) && a.Span.GetStart(_dir).Equals(nextOffset); a = a.GetNext(_dir, _filter))
+				for (Annotation<TOffset> a = nextAnn; a != data.Annotations.GetEnd(_dir) && a.Span.GetStart(_dir).Equals(nextOffset); a = a.GetNext(_dir, _filter))
 				{
 					instStack.Push(new FsaInstance(arc.Target, a, (NullableValue<TOffset>[,]) newRegisters.Clone(),
 						varBindings.Clone(), match));
@@ -347,17 +347,17 @@ namespace SIL.APRE.Fsa
 
 		private class NfaStateInfo : IEquatable<NfaStateInfo>, IComparable<NfaStateInfo>, IComparable
 		{
-			private readonly State<TOffset> _nfsState;
+			private readonly State<TData, TOffset> _nfsState;
 			private readonly Dictionary<int, int> _tags;
 			private readonly int _lastPriority;
 			private readonly int _maxPriority;
 
-			public NfaStateInfo(State<TOffset> nfaState)
+			public NfaStateInfo(State<TData, TOffset> nfaState)
 				: this(nfaState, 0, 0, null)
 			{
 			}
 
-			public NfaStateInfo(State<TOffset> nfaState, int maxPriority, int lastPriority, IDictionary<int, int> tags)
+			public NfaStateInfo(State<TData, TOffset> nfaState, int maxPriority, int lastPriority, IDictionary<int, int> tags)
 			{
 				_nfsState = nfaState;
 				_maxPriority = maxPriority;
@@ -365,7 +365,7 @@ namespace SIL.APRE.Fsa
 				_tags = tags == null ? new Dictionary<int, int>() : new Dictionary<int, int>(tags);
 			}
 
-			public State<TOffset> NfaState
+			public State<TData, TOffset> NfaState
 			{
 				get
 				{
@@ -462,7 +462,7 @@ namespace SIL.APRE.Fsa
 				get { return _nfaStates.Count == 0; }
 			}
 
-			public State<TOffset> DfaState { get; set; }
+			public State<TData, TOffset> DfaState { get; set; }
 
 
 			public override bool Equals(object obj)
@@ -486,12 +486,12 @@ namespace SIL.APRE.Fsa
 		{
 			// TODO: traverse through the FSA properly
 			int nextPriority = 0;
-			foreach (Arc<TOffset> arc in from state in _states
-										 from arc in state.OutgoingArcs
-										 group arc by arc.PriorityType into priorityGroup
-										 orderby priorityGroup.Key
-										 from arc in priorityGroup
-										 select arc)
+			foreach (Arc<TData, TOffset> arc in from state in _states
+												from arc in state.OutgoingArcs
+												group arc by arc.PriorityType into priorityGroup
+												orderby priorityGroup.Key
+												from arc in priorityGroup
+												select arc)
 			{
 				arc.Priority = nextPriority++;
 			}
@@ -544,10 +544,10 @@ namespace SIL.APRE.Fsa
 			for (_registerCount = 0; _registerCount < _nextTag; _registerCount++)
 				regNums[_registerCount] = _registerCount;
 
-			foreach (State<TOffset> state in _states)
+			foreach (State<TData, TOffset> state in _states)
 			{
 				RenumberCommands(regNums, state.Finishers);
-				foreach (Arc<TOffset> arc in state.OutgoingArcs)
+				foreach (Arc<TData, TOffset> arc in state.OutgoingArcs)
 					RenumberCommands(regNums, arc.Commands);
 			}
 		}
@@ -621,7 +621,7 @@ namespace SIL.APRE.Fsa
 							                                  select state).ToArray();
 							if (acceptingStates.Length > 0)
 							{
-								IEnumerable<AcceptInfo<TOffset>> acceptInfos = acceptingStates.SelectMany(state => state.NfaState.AcceptInfos);
+								IEnumerable<AcceptInfo<TData, TOffset>> acceptInfos = acceptingStates.SelectMany(state => state.NfaState.AcceptInfos);
 
 								var finishers = new List<TagMapCommand>();
 								var finishedTags = new HashSet<int>();
@@ -679,12 +679,12 @@ namespace SIL.APRE.Fsa
 
 		private bool IsLazyAcceptingState(SubsetState state)
 		{
-			foreach (Arc<TOffset> arc in state.NfaStates.Min().NfaState.OutgoingArcs)
+			foreach (Arc<TData, TOffset> arc in state.NfaStates.Min().NfaState.OutgoingArcs)
 			{
-				State<TOffset> curState = arc.Target;
+				State<TData, TOffset> curState = arc.Target;
 				while (!curState.IsAccepting)
 				{
-					Arc<TOffset> highestPriArc = curState.OutgoingArcs.MinBy(a => a.Priority);
+					Arc<TData, TOffset> highestPriArc = curState.OutgoingArcs.MinBy(a => a.Priority);
 					if (highestPriArc.Condition != null)
 						break;
 					curState = highestPriArc.Target;
@@ -829,7 +829,7 @@ namespace SIL.APRE.Fsa
 			{
 				NfaStateInfo topState = stack.Pop();
 
-				foreach (Arc<TOffset> arc in topState.NfaState.OutgoingArcs)
+				foreach (Arc<TData, TOffset> arc in topState.NfaState.OutgoingArcs)
 				{
 					if (arc.Condition == null)
 					{
@@ -876,12 +876,12 @@ namespace SIL.APRE.Fsa
 		{
 			writer.WriteLine("digraph G {");
 
-			var stack = new Stack<State<TOffset>>();
-			var processed = new HashSet<State<TOffset>>();
+			var stack = new Stack<State<TData, TOffset>>();
+			var processed = new HashSet<State<TData, TOffset>>();
 			stack.Push(_startState);
 			while (stack.Count != 0)
 			{
-				State<TOffset> state = stack.Pop();
+				State<TData, TOffset> state = stack.Pop();
 				processed.Add(state);
 
 				writer.Write("  {0} [shape=\"{1}\", color=\"{2}\"", state.Index, state == _startState ? "diamond" : "circle",
@@ -890,7 +890,7 @@ namespace SIL.APRE.Fsa
 					writer.Write(", peripheries=\"2\"");
 				writer.WriteLine("];");
 
-				foreach (Arc<TOffset> arc in state.OutgoingArcs)
+				foreach (Arc<TData, TOffset> arc in state.OutgoingArcs)
 				{
 					writer.WriteLine("  {0} -> {1} [label=\"{2}\"];", state.Index, arc.Target.Index,
 						arc.ToString().Replace("\"", "\\\""));

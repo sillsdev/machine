@@ -6,7 +6,7 @@ namespace SIL.APRE
 	/// methods in the node class that can manipulate the owning linked list.
 	/// </summary>
 	/// <typeparam name="TNode">Item Type, must be the type of the class that extends this class.</typeparam>
-	public abstract class BidirListNode<TNode> : IBidirListNode<TNode> where TNode : BidirListNode<TNode>
+	public abstract class BidirListNode<TNode> : IOrderedBidirListNode<TNode> where TNode : BidirListNode<TNode>
 	{
 		private BidirList<TNode> _list;
 
@@ -79,6 +79,11 @@ namespace SIL.APRE
 				return;
 
 			_list.Insert(newNode, (TNode)this, dir);
+		}
+
+		public void Insert(TNode newNode)
+		{
+			Insert(newNode, Direction.LeftToRight);
 		}
 
 		protected internal virtual void Init(BidirList<TNode> list)

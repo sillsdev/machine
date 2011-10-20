@@ -2,9 +2,9 @@
 
 namespace SIL.APRE.Matching.Fluent
 {
-	public interface INodesExpressionSyntax<TOffset> : IInitialNodesExpressionSyntax<TOffset>
+	public interface INodesExpressionSyntax<TData, TOffset> : IInitialNodesExpressionSyntax<TData, TOffset> where TData : IData<TOffset>
 	{
-		INodesExpressionSyntax<TOffset> Expression(Func<IExpressionSyntax<TOffset>, IExpressionSyntax<TOffset>> build);
-		INodesExpressionSyntax<TOffset> Expression(string name, Func<IExpressionSyntax<TOffset>, IExpressionSyntax<TOffset>> build);
+		INodesExpressionSyntax<TData, TOffset> Expression(Func<IExpressionSyntax<TData, TOffset>, IExpressionSyntax<TData, TOffset>> build);
+		INodesExpressionSyntax<TData, TOffset> Expression(string name, Func<IExpressionSyntax<TData, TOffset>, IExpressionSyntax<TData, TOffset>> build);
 	}
 }

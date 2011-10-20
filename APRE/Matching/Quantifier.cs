@@ -6,7 +6,7 @@ namespace SIL.APRE.Matching
     /// <summary>
     /// This class represents a nested phonetic pattern within another phonetic pattern.
     /// </summary>
-    public class Quantifier<TOffset> : PatternNode<TOffset>
+	public class Quantifier<TData, TOffset> : PatternNode<TData, TOffset> where TData : IData<TOffset>
     {
     	public const int Infinite = -1;
 
@@ -27,19 +27,19 @@ namespace SIL.APRE.Matching
 			_greedy = greedy;
 		}
 
-		public Quantifier(int minOccur, int maxOccur, PatternNode<TOffset> node)
+		public Quantifier(int minOccur, int maxOccur, PatternNode<TData, TOffset> node)
 			: this(minOccur, maxOccur, true, node)
 		{
 		}
 
     	/// <summary>
-    	/// Initializes a new instance of the <see cref="Quantifier{TOffset}"/> class.
+    	/// Initializes a new instance of the <see cref="Quantifier{TData, TOffset}"/> class.
     	/// </summary>
     	/// <param name="minOccur">The minimum number of occurrences.</param>
     	/// <param name="maxOccur">The maximum number of occurrences.</param>
     	/// <param name="greedy"></param>
     	/// <param name="node">The pattern node.</param>
-    	public Quantifier(int minOccur, int maxOccur, bool greedy, PatternNode<TOffset> node)
+		public Quantifier(int minOccur, int maxOccur, bool greedy, PatternNode<TData, TOffset> node)
 			: base(node.ToEnumerable())
         {
             _minOccur = minOccur;
@@ -47,7 +47,7 @@ namespace SIL.APRE.Matching
     		_greedy = greedy;
         }
 
-    	public Quantifier(Quantifier<TOffset> quantifier)
+		public Quantifier(Quantifier<TData, TOffset> quantifier)
 			: base(quantifier)
         {
             _minOccur = quantifier._minOccur;
@@ -78,28 +78,28 @@ namespace SIL.APRE.Matching
     		get { return _greedy; }
     	}
 
-		protected override bool CanAdd(PatternNode<TOffset> child)
+		protected override bool CanAdd(PatternNode<TData, TOffset> child)
 		{
-			if (child is Expression<TOffset>)
+			if (child is Expression<TData, TOffset>)
 				return false;
 			return true;
 		}
 
-		internal override State<TOffset> GenerateNfa(FiniteStateAutomaton<TOffset> fsa, State<TOffset> startState)
+		internal override State<TData, TOffset> GenerateNfa(FiniteStateAutomaton<TData, TOffset> fsa, State<TData, TOffset> startState)
 		{
 			ArcPriorityType priorityType = _greedy ? ArcPriorityType.High : ArcPriorityType.Low;
-			State<TOffset> endState;
+			State<TData, TOffset> endState;
 			if (_minOccur == 0 && _maxOccur == 1)
 			{
 				// optional
-				State<TOffset> nextState = startState.AddArc(fsa.CreateState(), priorityType);
+				State<TData, TOffset> nextState = startState.AddArc(fsa.CreateState(), priorityType);
 				endState = base.GenerateNfa(fsa, nextState);
 				startState.AddArc(endState);
 			}
 			else if (_minOccur == 0 && _maxOccur == Infinite)
 			{
 				// kleene star
-				State<TOffset> nextState = startState.AddArc(fsa.CreateState(), priorityType);
+				State<TData, TOffset> nextState = startState.AddArc(fsa.CreateState(), priorityType);
 				endState = base.GenerateNfa(fsa, nextState);
 				startState.AddArc(endState);
 				endState.AddArc(startState, priorityType);
@@ -113,8 +113,8 @@ namespace SIL.APRE.Matching
 			else
 			{
 				// range
-				State<TOffset> currentState = startState;
-				var startStates = new List<State<TOffset>>();
+				State<TData, TOffset> currentState = startState;
+				var startStates = new List<State<TData, TOffset>>();
 				if (_minOccur == 0)
 				{
 					endState = startState.AddArc(fsa.CreateState(), priorityType);
@@ -147,7 +147,7 @@ namespace SIL.APRE.Matching
 						endState = base.GenerateNfa(fsa, endState);
 					}
 				}
-				foreach (State<TOffset> state in startStates)
+				foreach (State<TData, TOffset> state in startStates)
 					state.AddArc(endState);
 			}
 
@@ -179,10 +179,10 @@ namespace SIL.APRE.Matching
         {
             if (obj == null)
                 return false;
-            return Equals(obj as Quantifier<TOffset>);
+			return Equals(obj as Quantifier<TData, TOffset>);
         }
 
-        public bool Equals(Quantifier<TOffset> other)
+		public bool Equals(Quantifier<TData, TOffset> other)
         {
             if (other == null)
                 return false;
@@ -190,9 +190,9 @@ namespace SIL.APRE.Matching
                 && _maxOccur == other._maxOccur;
         }
 
-        public override PatternNode<TOffset> Clone()
+		public override PatternNode<TData, TOffset> Clone()
         {
-            return new Quantifier<TOffset>(this);
+			return new Quantifier<TData, TOffset>(this);
         }
     }
 }

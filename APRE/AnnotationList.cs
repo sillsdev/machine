@@ -25,6 +25,24 @@ namespace SIL.APRE
 			node.ListID = _currentID++;
 		}
 
+		public IEnumerable<Annotation<TOffset>> GetNodes(Span<TOffset> span)
+		{
+			return GetNodes(span, Direction.LeftToRight);
+		}
+
+		public IEnumerable<Annotation<TOffset>> GetNodes(Span<TOffset> span, Direction dir)
+		{
+			Annotation<TOffset> startAnn;
+			Find(new Annotation<TOffset>(span), Direction.LeftToRight, out startAnn);
+			startAnn = startAnn == null ? First : (startAnn.Next ?? startAnn);
+
+			Annotation<TOffset> endAnn;
+			Find(new Annotation<TOffset>(span), Direction.RightToLeft, out endAnn);
+			endAnn = endAnn == null ? Last : (endAnn.Prev ?? endAnn);
+
+			return this.GetNodes(dir == Direction.LeftToRight ? startAnn : endAnn, dir == Direction.LeftToRight ? endAnn : startAnn, dir);
+		}
+
 		public AnnotationList<TOffset> Clone()
 		{
 			return new AnnotationList<TOffset>(this);

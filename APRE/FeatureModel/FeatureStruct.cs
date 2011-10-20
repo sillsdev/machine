@@ -78,6 +78,28 @@ namespace SIL.APRE.FeatureModel
 			get { return _indefinite.Count; }
 		}
 
+		public bool HasVariables
+		{
+			get
+			{
+				// TODO: should we check disjunctions?
+				foreach (FeatureValue value in _definite.Values)
+				{
+					var childFS = value as FeatureStruct;
+					if (childFS != null)
+					{
+						if (childFS.HasVariables)
+							return true;
+					}
+					else if (((SimpleFeatureValue)value).IsVariable)
+					{
+						return true;
+					}
+				}
+				return false;
+			}
+		}
+
 		public void AddValue(SymbolicFeature feature, IEnumerable<FeatureSymbol> values)
 		{
 			FeatureSymbol[] vals = values.ToArray();
@@ -144,7 +166,7 @@ namespace SIL.APRE.FeatureModel
 			throw new ArgumentException("The feature path is invalid.", "path");
 		}
 
-		public void Replace(FeatureStruct other)
+		public void PriorityUnion(FeatureStruct other)
 		{
 			foreach (KeyValuePair<Feature, FeatureValue> featVal in other._definite)
 			{
@@ -155,7 +177,7 @@ namespace SIL.APRE.FeatureModel
 					thisValue = Dereference(thisValue);
 					var thisFS = thisValue as FeatureStruct;
 					if (thisFS != null)
-						thisFS.Replace((FeatureStruct) otherValue);
+						thisFS.PriorityUnion((FeatureStruct) otherValue);
 					else
 						_definite[featVal.Key] = otherValue.Clone();
 				}

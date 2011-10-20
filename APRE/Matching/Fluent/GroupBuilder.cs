@@ -3,7 +3,7 @@ using SIL.APRE.FeatureModel;
 
 namespace SIL.APRE.Matching.Fluent
 {
-	public class GroupBuilder<TOffset> : PatternNodeBuilder<TOffset>, IQuantifierGroupSyntax<TOffset>
+	public class GroupBuilder<TData, TOffset> : PatternNodeBuilder<TData, TOffset>, IQuantifierGroupSyntax<TData, TOffset> where TData : IData<TOffset>
 	{
 		private readonly string _name;
 
@@ -16,7 +16,7 @@ namespace SIL.APRE.Matching.Fluent
 			_name = name;
 		}
 
-		IGroupSyntax<TOffset> IAlternationGroupSyntax<TOffset>.Or
+		IGroupSyntax<TData, TOffset> IAlternationGroupSyntax<TData, TOffset>.Or
 		{
 			get
 			{
@@ -25,71 +25,71 @@ namespace SIL.APRE.Matching.Fluent
 			}
 		}
 
-		public IQuantifierGroupSyntax<TOffset> Group(string name, Func<IGroupSyntax<TOffset>, IGroupSyntax<TOffset>> build)
+		public IQuantifierGroupSyntax<TData, TOffset> Group(string name, Func<IGroupSyntax<TData, TOffset>, IGroupSyntax<TData, TOffset>> build)
 		{
 			AddGroup(name, build);
 			return this;
 		}
 
-		public IQuantifierGroupSyntax<TOffset> Group(Func<IGroupSyntax<TOffset>, IGroupSyntax<TOffset>> build)
+		public IQuantifierGroupSyntax<TData, TOffset> Group(Func<IGroupSyntax<TData, TOffset>, IGroupSyntax<TData, TOffset>> build)
 		{
 			AddGroup(null, build);
 			return this;
 		}
 
-		public IQuantifierGroupSyntax<TOffset> Annotation(string type, FeatureStruct fs)
+		public IQuantifierGroupSyntax<TData, TOffset> Annotation(string type, FeatureStruct fs)
 		{
 			AddAnnotation(type, fs);
 			return this;
 		}
 
-		public Group<TOffset> Value
+		public Group<TData, TOffset> Value
 		{
 			get
 			{
-				var group = new Group<TOffset>(_name);
+				var group = new Group<TData, TOffset>(_name);
 				PopulateNode(group);
 				return group;
 			}
 		}
 
-		IAlternationGroupSyntax<TOffset> IQuantifierGroupSyntax<TOffset>.ZeroOrMore
+		IAlternationGroupSyntax<TData, TOffset> IQuantifierGroupSyntax<TData, TOffset>.ZeroOrMore
 		{
 			get
 			{
-				AddQuantifier(0, Quantifier<TOffset>.Infinite, true);
+				AddQuantifier(0, Quantifier<TData, TOffset>.Infinite, true);
 				return this;
 			}
 		}
 
-		IAlternationGroupSyntax<TOffset> IQuantifierGroupSyntax<TOffset>.LazyZeroOrMore
+		IAlternationGroupSyntax<TData, TOffset> IQuantifierGroupSyntax<TData, TOffset>.LazyZeroOrMore
 		{
 			get
 			{
-				AddQuantifier(0, Quantifier<TOffset>.Infinite, false);
+				AddQuantifier(0, Quantifier<TData, TOffset>.Infinite, false);
 				return this;
 			}
 		}
 
-		IAlternationGroupSyntax<TOffset> IQuantifierGroupSyntax<TOffset>.OneOrMore
+		IAlternationGroupSyntax<TData, TOffset> IQuantifierGroupSyntax<TData, TOffset>.OneOrMore
 		{
 			get
 			{
-				AddQuantifier(1, Quantifier<TOffset>.Infinite, true);
+				AddQuantifier(1, Quantifier<TData, TOffset>.Infinite, true);
 				return this;
 			}
 		}
 
-		IAlternationGroupSyntax<TOffset> IQuantifierGroupSyntax<TOffset>.LazyOneOrMore
+		IAlternationGroupSyntax<TData, TOffset> IQuantifierGroupSyntax<TData, TOffset>.LazyOneOrMore
 		{
 			get
 			{
-				AddQuantifier(1, Quantifier<TOffset>.Infinite, false);
+				AddQuantifier(1, Quantifier<TData, TOffset>.Infinite, false);
 				return this;
 			}
 		}
 
-		IAlternationGroupSyntax<TOffset> IQuantifierGroupSyntax<TOffset>.Optional
+		IAlternationGroupSyntax<TData, TOffset> IQuantifierGroupSyntax<TData, TOffset>.Optional
 		{
 			get
 			{
@@ -98,7 +98,7 @@ namespace SIL.APRE.Matching.Fluent
 			}
 		}
 
-		IAlternationGroupSyntax<TOffset> IQuantifierGroupSyntax<TOffset>.LazyOptional
+		IAlternationGroupSyntax<TData, TOffset> IQuantifierGroupSyntax<TData, TOffset>.LazyOptional
 		{
 			get
 			{
@@ -107,13 +107,13 @@ namespace SIL.APRE.Matching.Fluent
 			}
 		}
 
-		IAlternationGroupSyntax<TOffset> IQuantifierGroupSyntax<TOffset>.Range(int min, int max)
+		IAlternationGroupSyntax<TData, TOffset> IQuantifierGroupSyntax<TData, TOffset>.Range(int min, int max)
 		{
 			AddQuantifier(min, max, true);
 			return this;
 		}
 
-		IAlternationGroupSyntax<TOffset> IQuantifierGroupSyntax<TOffset>.LazyRange(int min, int max)
+		IAlternationGroupSyntax<TData, TOffset> IQuantifierGroupSyntax<TData, TOffset>.LazyRange(int min, int max)
 		{
 			AddQuantifier(min, max, false);
 			return this;

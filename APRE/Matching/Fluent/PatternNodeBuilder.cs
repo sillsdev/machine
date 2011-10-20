@@ -5,17 +5,17 @@ using SIL.APRE.FeatureModel;
 
 namespace SIL.APRE.Matching.Fluent
 {
-	public abstract class PatternNodeBuilder<TOffset>
+	public abstract class PatternNodeBuilder<TData, TOffset> where TData : IData<TOffset>
 	{
-		private readonly List<PatternNode<TOffset>> _nodes;
-		private readonly List<PatternNode<TOffset>> _alternation;
+		private readonly List<PatternNode<TData, TOffset>> _nodes;
+		private readonly List<PatternNode<TData, TOffset>> _alternation;
 
 		private bool _inAlternation;
 
 		protected PatternNodeBuilder()
 		{
-			_nodes = new List<PatternNode<TOffset>>();
-			_alternation = new List<PatternNode<TOffset>>();
+			_nodes = new List<PatternNode<TData, TOffset>>();
+			_alternation = new List<PatternNode<TData, TOffset>>();
 		}
 
 		protected void AddAlternative()
@@ -31,33 +31,33 @@ namespace SIL.APRE.Matching.Fluent
 		protected void AddAnnotation(string type, FeatureStruct fs)
 		{
 			CheckEndAlternation();
-			AddNode(new Constraint<TOffset>(type, fs));
+			AddNode(new Constraint<TData, TOffset>(type, fs));
 		}
 
-		protected void AddGroup(string name, Func<IGroupSyntax<TOffset>, IGroupSyntax<TOffset>> build)
+		protected void AddGroup(string name, Func<IGroupSyntax<TData, TOffset>, IGroupSyntax<TData, TOffset>> build)
 		{
 			CheckEndAlternation();
-			var groupBuilder = new GroupBuilder<TOffset>(name);
-			IGroupSyntax<TOffset> result = build(groupBuilder);
+			var groupBuilder = new GroupBuilder<TData, TOffset>(name);
+			IGroupSyntax<TData, TOffset> result = build(groupBuilder);
 			AddNode(result.Value);
 		}
 
 		protected void AddQuantifier(int min, int max, bool greedy)
 		{
-			List<PatternNode<TOffset>> list = _alternation.Any() ? _alternation : _nodes;
-			var quantifier = new Quantifier<TOffset>(min, max, greedy, list.Last());
+			List<PatternNode<TData, TOffset>> list = _alternation.Any() ? _alternation : _nodes;
+			var quantifier = new Quantifier<TData, TOffset>(min, max, greedy, list.Last());
 			list[list.Count - 1] = quantifier;
 		}
 
-		protected void AddExpression(string name, Func<IExpressionSyntax<TOffset>, IExpressionSyntax<TOffset>> build)
+		protected void AddExpression(string name, Func<IExpressionSyntax<TData, TOffset>, IExpressionSyntax<TData, TOffset>> build)
 		{
 			CheckEndAlternation();
-			var exprBuilder = new ExpressionBuilder<TOffset>(name);
-			IExpressionSyntax<TOffset> result = build(exprBuilder);
+			var exprBuilder = new ExpressionBuilder<TData, TOffset>(name);
+			IExpressionSyntax<TData, TOffset> result = build(exprBuilder);
 			AddNode(result.Value);
 		}
 
-		private void AddNode(PatternNode<TOffset> node)
+		private void AddNode(PatternNode<TData, TOffset> node)
 		{
 			if (_inAlternation)
 			{
@@ -74,15 +74,15 @@ namespace SIL.APRE.Matching.Fluent
 		{
 			if (!_inAlternation && _alternation.Count > 0)
 			{
-				_nodes.Add(new Alternation<TOffset>(_alternation));
+				_nodes.Add(new Alternation<TData, TOffset>(_alternation));
 				_alternation.Clear();
 			}
 		}
 
-		protected void PopulateNode(PatternNode<TOffset> node)
+		protected void PopulateNode(PatternNode<TData, TOffset> node)
 		{
 			CheckEndAlternation();
-			foreach (PatternNode<TOffset> child in _nodes)
+			foreach (PatternNode<TData, TOffset> child in _nodes)
 				node.Children.Add(child);
 		}
 	}

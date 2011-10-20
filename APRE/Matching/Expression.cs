@@ -4,29 +4,31 @@ using SIL.APRE.Matching.Fluent;
 
 namespace SIL.APRE.Matching
 {
-	public class Expression<TOffset> : PatternNode<TOffset>
+	public class Expression<TData, TOffset> : PatternNode<TData, TOffset> where TData : IData<TOffset>
 	{
-		public static IExpressionSyntax<TOffset> New
+		public static IExpressionSyntax<TData, TOffset> New()
 		{
-			get
-			{
-				return new ExpressionBuilder<TOffset>();
-			}
+			return new ExpressionBuilder<TData, TOffset>();
+		}
+
+		public static IExpressionSyntax<TData, TOffset> New(string name)
+		{
+			return new ExpressionBuilder<TData, TOffset>(name);
 		}
 
 		private readonly string _name;
-		private readonly Func<IBidirList<Annotation<TOffset>>, PatternMatch<TOffset>, bool> _acceptable;
+		private readonly Func<TData, PatternMatch<TOffset>, bool> _acceptable;
 
 		public Expression()
 		{
 		}
 
-		public Expression(params PatternNode<TOffset>[] nodes)
+		public Expression(params PatternNode<TData, TOffset>[] nodes)
 			: base(nodes)
 		{
 		}
 
-		public Expression(IEnumerable<PatternNode<TOffset>> nodes)
+		public Expression(IEnumerable<PatternNode<TData, TOffset>> nodes)
 			: base(nodes)
 		{
 		}
@@ -37,37 +39,37 @@ namespace SIL.APRE.Matching
 			_acceptable = (input, match) => true;
 		}
 
-		public Expression(string name, params PatternNode<TOffset>[] nodes)
-			: this(name, (IEnumerable<PatternNode<TOffset>>) nodes)
+		public Expression(string name, params PatternNode<TData, TOffset>[] nodes)
+			: this(name, (IEnumerable<PatternNode<TData, TOffset>>)nodes)
 		{
 		}
 
-		public Expression(string name, IEnumerable<PatternNode<TOffset>> nodes)
+		public Expression(string name, IEnumerable<PatternNode<TData, TOffset>> nodes)
 			: base(nodes)
 		{
 			_name = name;
 			_acceptable = (input, match) => true;
 		}
 
-		public Expression(string name, Func<IBidirList<Annotation<TOffset>>, PatternMatch<TOffset>, bool> acceptable)
+		public Expression(string name, Func<TData, PatternMatch<TOffset>, bool> acceptable)
 		{
 			_name = name;
 			_acceptable = acceptable;
 		}
 
-		public Expression(string name, Func<IBidirList<Annotation<TOffset>>, PatternMatch<TOffset>, bool> acceptable, params PatternNode<TOffset>[] nodes)
-			: this(name, acceptable, (IEnumerable<PatternNode<TOffset>>) nodes)
+		public Expression(string name, Func<TData, PatternMatch<TOffset>, bool> acceptable, params PatternNode<TData, TOffset>[] nodes)
+			: this(name, acceptable, (IEnumerable<PatternNode<TData, TOffset>>)nodes)
 		{
 		}
 
-		public Expression(string name, Func<IBidirList<Annotation<TOffset>>, PatternMatch<TOffset>, bool> acceptable, IEnumerable<PatternNode<TOffset>> nodes)
+		public Expression(string name, Func<TData, PatternMatch<TOffset>, bool> acceptable, IEnumerable<PatternNode<TData, TOffset>> nodes)
 			: base(nodes)
 		{
 			_name = name;
 			_acceptable = acceptable;
 		}
 
-		public Expression(Expression<TOffset> expr)
+		public Expression(Expression<TData, TOffset> expr)
 			: base(expr)
 		{
 			_name = expr._name;
@@ -79,14 +81,14 @@ namespace SIL.APRE.Matching
 			get { return _name; }
 		}
 
-		public Func<IBidirList<Annotation<TOffset>>, PatternMatch<TOffset>, bool> Acceptable
+		public Func<TData, PatternMatch<TOffset>, bool> Acceptable
 		{
 			get { return _acceptable; }
 		}
 
-		public override PatternNode<TOffset> Clone()
+		public override PatternNode<TData, TOffset> Clone()
 		{
-			return new Expression<TOffset>(this);
+			return new Expression<TData, TOffset>(this);
 		}
 	}
 }

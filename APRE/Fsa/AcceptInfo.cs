@@ -2,13 +2,13 @@
 
 namespace SIL.APRE.Fsa
 {
-	public class AcceptInfo<TOffset>
+	public class AcceptInfo<TData, TOffset> where TData : IData<TOffset>
 	{
 		private readonly string _id;
-		private readonly Func<IBidirList<Annotation<TOffset>>, FsaMatch<TOffset>, bool> _acceptable;
+		private readonly Func<TData, FsaMatch<TOffset>, bool> _acceptable;
 		private readonly int _priority;
 
-		internal AcceptInfo(string id, Func<IBidirList<Annotation<TOffset>>, FsaMatch<TOffset>, bool> acceptable, int priority)
+		internal AcceptInfo(string id, Func<TData, FsaMatch<TOffset>, bool> acceptable, int priority)
 		{
 			_id = id;
 			_acceptable = acceptable;
@@ -20,7 +20,7 @@ namespace SIL.APRE.Fsa
 			get { return _id; }
 		}
 
-		public Func<IBidirList<Annotation<TOffset>>, FsaMatch<TOffset>, bool> Acceptable
+		public Func<TData, FsaMatch<TOffset>, bool> Acceptable
 		{
 			get { return _acceptable; }
 		}

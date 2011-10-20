@@ -87,9 +87,12 @@
     <Compile Include="IBidirListView.cs" />
     <Compile Include="IBidirTreeNode.cs" />
     <Compile Include="ICloneable.cs" />
+    <Compile Include="IData.cs" />
     <Compile Include="IDBearerDictionary.cs" />
     <Compile Include="IdentityEqualityComparer.cs" />
     <Compile Include="IntegerSpanFactory.cs" />
+    <Compile Include="IOrderedBidirList.cs" />
+    <Compile Include="IOrderedBidirListNode.cs" />
     <Compile Include="Matching\Alternation.cs" />
     <Compile Include="Matching\Constraint.cs" />
     <Compile Include="Matching\Fluent\ExpressionBuilder.cs" />
@@ -125,6 +128,7 @@
     <Compile Include="Transduction\PatternRuleBase.cs" />
     <Compile Include="Transduction\PatternRuleBatch.cs" />
     <Compile Include="Transduction\PatternRuleBatchBase.cs" />
+    <Compile Include="Transduction\PatternRuleApplication.cs" />
     <Compile Include="Transduction\RuleCascade.cs" />
     <Compile Include="SkipList.cs" />
     <Compile Include="SkipListNode.cs" />

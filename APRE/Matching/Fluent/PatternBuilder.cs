@@ -3,7 +3,7 @@ using SIL.APRE.FeatureModel;
 
 namespace SIL.APRE.Matching.Fluent
 {
-	public class PatternBuilder<TOffset> : PatternNodeBuilder<TOffset>, IPatternSyntax<TOffset>, IQuantifierPatternSyntax<TOffset>
+	public class PatternBuilder<TData, TOffset> : PatternNodeBuilder<TData, TOffset>, IPatternSyntax<TData, TOffset>, IQuantifierPatternSyntax<TData, TOffset> where TData : IData<TOffset>
 	{
 		private readonly SpanFactory<TOffset> _spanFactory;
 		private Func<Annotation<TOffset>, bool> _filter;
@@ -16,7 +16,7 @@ namespace SIL.APRE.Matching.Fluent
 			_filter = ann => true;
 		}
 
-		public IPatternSyntax<TOffset> MatchLeftToRight
+		public IPatternSyntax<TData, TOffset> MatchLeftToRight
 		{
 			get
 			{
@@ -25,7 +25,7 @@ namespace SIL.APRE.Matching.Fluent
 			}
 		}
 
-		public IPatternSyntax<TOffset> MatchRightToLeft
+		public IPatternSyntax<TData, TOffset> MatchRightToLeft
 		{
 			get
 			{
@@ -34,53 +34,53 @@ namespace SIL.APRE.Matching.Fluent
 			}
 		}
 
-		public IPatternSyntax<TOffset> AnnotationsAllowableWhere(Func<Annotation<TOffset>, bool> filter)
+		public IPatternSyntax<TData, TOffset> AnnotationsAllowableWhere(Func<Annotation<TOffset>, bool> filter)
 		{
 			_filter = filter;
 			return this;
 		}
 
-		public INodesPatternSyntax<TOffset> Expression(Func<IExpressionSyntax<TOffset>, IExpressionSyntax<TOffset>> build)
+		public INodesPatternSyntax<TData, TOffset> Expression(Func<IExpressionSyntax<TData, TOffset>, IExpressionSyntax<TData, TOffset>> build)
 		{
 			AddExpression(null, build);
 			return this;
 		}
 
-		public INodesPatternSyntax<TOffset> Expression(string name, Func<IExpressionSyntax<TOffset>, IExpressionSyntax<TOffset>> build)
+		public INodesPatternSyntax<TData, TOffset> Expression(string name, Func<IExpressionSyntax<TData, TOffset>, IExpressionSyntax<TData, TOffset>> build)
 		{
 			AddExpression(name, build);
 			return this;
 		}
 
-		public Pattern<TOffset> Value
+		public Pattern<TData, TOffset> Value
 		{
 			get
 			{
-				var pattern = new Pattern<TOffset>(_spanFactory, _dir, _filter);
+				var pattern = new Pattern<TData, TOffset>(_spanFactory, _dir, _filter);
 				PopulateNode(pattern);
 				return pattern;
 			}
 		}
 
-		public IQuantifierPatternSyntax<TOffset> Group(string name, Func<IGroupSyntax<TOffset>, IGroupSyntax<TOffset>> build)
+		public IQuantifierPatternSyntax<TData, TOffset> Group(string name, Func<IGroupSyntax<TData, TOffset>, IGroupSyntax<TData, TOffset>> build)
 		{
 			AddGroup(name, build);
 			return this;
 		}
 
-		public IQuantifierPatternSyntax<TOffset> Group(Func<IGroupSyntax<TOffset>, IGroupSyntax<TOffset>> build)
+		public IQuantifierPatternSyntax<TData, TOffset> Group(Func<IGroupSyntax<TData, TOffset>, IGroupSyntax<TData, TOffset>> build)
 		{
 			AddGroup(null, build);
 			return this;
 		}
 
-		public IQuantifierPatternSyntax<TOffset> Annotation(string type, FeatureStruct fs)
+		public IQuantifierPatternSyntax<TData, TOffset> Annotation(string type, FeatureStruct fs)
 		{
 			AddAnnotation(type, fs);
 			return this;
 		}
 
-		IInitialNodesPatternSyntax<TOffset> IAlternationPatternSyntax<TOffset>.Or
+		IInitialNodesPatternSyntax<TData, TOffset> IAlternationPatternSyntax<TData, TOffset>.Or
 		{
 			get
 			{
@@ -89,43 +89,43 @@ namespace SIL.APRE.Matching.Fluent
 			}
 		}
 
-		IAlternationPatternSyntax<TOffset> IQuantifierPatternSyntax<TOffset>.ZeroOrMore
+		IAlternationPatternSyntax<TData, TOffset> IQuantifierPatternSyntax<TData, TOffset>.ZeroOrMore
 		{
 			get
 			{
-				AddQuantifier(0, Quantifier<TOffset>.Infinite, true);
+				AddQuantifier(0, Quantifier<TData, TOffset>.Infinite, true);
 				return this;
 			}
 		}
 
-		IAlternationPatternSyntax<TOffset> IQuantifierPatternSyntax<TOffset>.LazyZeroOrMore
+		IAlternationPatternSyntax<TData, TOffset> IQuantifierPatternSyntax<TData, TOffset>.LazyZeroOrMore
 		{
 			get
 			{
-				AddQuantifier(0, Quantifier<TOffset>.Infinite, false);
+				AddQuantifier(0, Quantifier<TData, TOffset>.Infinite, false);
 				return this;
 			}
 		}
 
-		IAlternationPatternSyntax<TOffset> IQuantifierPatternSyntax<TOffset>.OneOrMore
+		IAlternationPatternSyntax<TData, TOffset> IQuantifierPatternSyntax<TData, TOffset>.OneOrMore
 		{
 			get
 			{
-				AddQuantifier(1, Quantifier<TOffset>.Infinite, true);
+				AddQuantifier(1, Quantifier<TData, TOffset>.Infinite, true);
 				return this;
 			}
 		}
 
-		IAlternationPatternSyntax<TOffset> IQuantifierPatternSyntax<TOffset>.LazyOneOrMore
+		IAlternationPatternSyntax<TData, TOffset> IQuantifierPatternSyntax<TData, TOffset>.LazyOneOrMore
 		{
 			get
 			{
-				AddQuantifier(1, Quantifier<TOffset>.Infinite, false);
+				AddQuantifier(1, Quantifier<TData, TOffset>.Infinite, false);
 				return this;
 			}
 		}
 
-		IAlternationPatternSyntax<TOffset> IQuantifierPatternSyntax<TOffset>.Optional
+		IAlternationPatternSyntax<TData, TOffset> IQuantifierPatternSyntax<TData, TOffset>.Optional
 		{
 			get
 			{
@@ -134,7 +134,7 @@ namespace SIL.APRE.Matching.Fluent
 			}
 		}
 
-		IAlternationPatternSyntax<TOffset> IQuantifierPatternSyntax<TOffset>.LazyOptional
+		IAlternationPatternSyntax<TData, TOffset> IQuantifierPatternSyntax<TData, TOffset>.LazyOptional
 		{
 			get
 			{
@@ -143,13 +143,13 @@ namespace SIL.APRE.Matching.Fluent
 			}
 		}
 
-		IAlternationPatternSyntax<TOffset> IQuantifierPatternSyntax<TOffset>.Range(int min, int max)
+		IAlternationPatternSyntax<TData, TOffset> IQuantifierPatternSyntax<TData, TOffset>.Range(int min, int max)
 		{
 			AddQuantifier(min, max, true);
 			return this;
 		}
 
-		IAlternationPatternSyntax<TOffset> IQuantifierPatternSyntax<TOffset>.LazyRange(int min, int max)
+		IAlternationPatternSyntax<TData, TOffset> IQuantifierPatternSyntax<TData, TOffset>.LazyRange(int min, int max)
 		{
 			AddQuantifier(min, max, false);
 			return this;

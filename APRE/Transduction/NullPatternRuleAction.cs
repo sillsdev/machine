@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using SIL.APRE.Matching;
+﻿using SIL.APRE.Matching;
 
 namespace SIL.APRE.Transduction
 {
-	public class NullPatternRuleAction<TOffset> : IPatternRuleAction<TOffset>
+	public class NullPatternRuleAction<TData, TOffset> : IPatternRuleAction<TData, TOffset> where TData : IData<TOffset>
 	{
-		public bool IsApplicable(IBidirList<Annotation<TOffset>> input)
+		public bool IsApplicable(TData input)
 		{
 			return true;
 		}
 
-		public Annotation<TOffset> Apply(Pattern<TOffset> lhs, IBidirList<Annotation<TOffset>> input, PatternMatch<TOffset> match)
+		public Annotation<TOffset> Apply(Pattern<TData, TOffset> lhs, TData input, PatternMatch<TOffset> match, out TData output)
 		{
+			output = default(TData);
 			return null;
 		}
 	}

@@ -4,44 +4,44 @@ using SIL.APRE.Fsa;
 
 namespace SIL.APRE.Matching
 {
-	public class Alternation<TOffset> : PatternNode<TOffset>
+	public class Alternation<TData, TOffset> : PatternNode<TData, TOffset> where TData : IData<TOffset>
 	{
 		public Alternation()
 		{
 		}
 
-		public Alternation(IEnumerable<PatternNode<TOffset>> nodes)
+		public Alternation(IEnumerable<PatternNode<TData, TOffset>> nodes)
 			: base(nodes)
 		{
 		}
 
-		public Alternation(params PatternNode<TOffset>[] nodes)
+		public Alternation(params PatternNode<TData, TOffset>[] nodes)
 			: base(nodes)
 		{
 		}
 
-		public Alternation(Alternation<TOffset> alternation)
+		public Alternation(Alternation<TData, TOffset> alternation)
 			: base(alternation)
 		{
 		}
 
-		internal override State<TOffset> GenerateNfa(FiniteStateAutomaton<TOffset> fsa, State<TOffset> startState)
+		internal override State<TData, TOffset> GenerateNfa(FiniteStateAutomaton<TData, TOffset> fsa, State<TData, TOffset> startState)
 		{
 			if (IsLeaf)
 				return startState;
 
-			State<TOffset> endState = fsa.CreateState();
-			foreach (PatternNode<TOffset> node in Children)
+			State<TData, TOffset> endState = fsa.CreateState();
+			foreach (PatternNode<TData, TOffset> node in Children)
 			{
-				State<TOffset> nodeEndState = node.GenerateNfa(fsa, startState);
+				State<TData, TOffset> nodeEndState = node.GenerateNfa(fsa, startState);
 				nodeEndState.AddArc(endState);
 			}
 			return endState;
 		}
 
-		public override PatternNode<TOffset> Clone()
+		public override PatternNode<TData, TOffset> Clone()
 		{
-			return new Alternation<TOffset>(this);
+			return new Alternation<TData, TOffset>(this);
 		}
 
 		public override string ToString()
@@ -49,7 +49,7 @@ namespace SIL.APRE.Matching
 			var sb = new StringBuilder();
 			sb.Append("(");
 			bool first = true;
-			foreach (PatternNode<TOffset> node in Children)
+			foreach (PatternNode<TData, TOffset> node in Children)
 			{
 				if (!first)
 					sb.Append("|");
@@ -68,10 +68,10 @@ namespace SIL.APRE.Matching
 		{
 			if (obj == null)
 				return false;
-			return Equals(obj as Alternation<TOffset>);
+			return Equals(obj as Alternation<TData, TOffset>);
 		}
 
-		public bool Equals(Alternation<TOffset> other)
+		public bool Equals(Alternation<TData, TOffset> other)
 		{
 			if (other == null)
 				return false;

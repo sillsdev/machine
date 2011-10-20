@@ -3,40 +3,40 @@ using System.Collections.Generic;
 
 namespace SIL.APRE.Transduction
 {
-	public class RuleCascade<TOffset> : RuleCascadeBase<TOffset>
+	public class RuleCascade<TData, TOffset> : RuleCascadeBase<TData, TOffset> where TData : IData<TOffset>
 	{
-		private readonly Func<IBidirList<Annotation<TOffset>>, bool> _applicable;
+		private readonly Func<TData, bool> _applicable;
 
-		public RuleCascade(RuleOrder ruleOrder)
-			: this(ruleOrder, ann => true)
+		public RuleCascade(RuleCascadeOrder ruleCascadeOrder)
+			: this(ruleCascadeOrder, input => true)
 		{
 		}
 
-		public RuleCascade(RuleOrder ruleOrder, Func<IBidirList<Annotation<TOffset>>, bool> applicable)
-			: base(ruleOrder)
-		{
-			_applicable = applicable;
-		}
-
-		public RuleCascade(RuleOrder ruleOrder, IEnumerable<IRule<TOffset>> rules)
-			: this(ruleOrder, rules, ann => true)
-		{
-		}
-
-		public RuleCascade(RuleOrder ruleOrder, IEnumerable<IRule<TOffset>> rules, Func<IBidirList<Annotation<TOffset>>, bool> applicable)
-			: base(ruleOrder, rules)
+		public RuleCascade(RuleCascadeOrder ruleCascadeOrder, Func<TData, bool> applicable)
+			: base(ruleCascadeOrder)
 		{
 			_applicable = applicable;
 		}
 
-		public override bool IsApplicable(IBidirList<Annotation<TOffset>> input)
+		public RuleCascade(RuleCascadeOrder ruleCascadeOrder, IEnumerable<IRule<TData, TOffset>> rules)
+			: this(ruleCascadeOrder, rules, input => true)
+		{
+		}
+
+		public RuleCascade(RuleCascadeOrder ruleCascadeOrder, IEnumerable<IRule<TData, TOffset>> rules, Func<TData, bool> applicable)
+			: base(ruleCascadeOrder, rules)
+		{
+			_applicable = applicable;
+		}
+
+		public override bool IsApplicable(TData input)
 		{
 			return _applicable(input);
 		}
 
-		public void AddRule(IRule<TOffset> rule)
+		public void AddRule(IRule<TData, TOffset> rule)
 		{
-			AddRuleInternal(rule);
+			AddRuleInternal(rule, true);
 		}
 	}
 }

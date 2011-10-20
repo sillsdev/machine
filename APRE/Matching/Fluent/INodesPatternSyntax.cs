@@ -2,9 +2,9 @@ using System;
 
 namespace SIL.APRE.Matching.Fluent
 {
-	public interface INodesPatternSyntax<TOffset> : IInitialNodesPatternSyntax<TOffset>
+	public interface INodesPatternSyntax<TData, TOffset> : IInitialNodesPatternSyntax<TData, TOffset> where TData : IData<TOffset>
 	{
-		INodesPatternSyntax<TOffset> Expression(Func<IExpressionSyntax<TOffset>, IExpressionSyntax<TOffset>> build);
-		INodesPatternSyntax<TOffset> Expression(string name, Func<IExpressionSyntax<TOffset>, IExpressionSyntax<TOffset>> build);
+		INodesPatternSyntax<TData, TOffset> Expression(Func<IExpressionSyntax<TData, TOffset>, IExpressionSyntax<TData, TOffset>> build);
+		INodesPatternSyntax<TData, TOffset> Expression(string name, Func<IExpressionSyntax<TData, TOffset>, IExpressionSyntax<TData, TOffset>> build);
 	}
 }

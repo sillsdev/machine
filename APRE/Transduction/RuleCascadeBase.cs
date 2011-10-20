@@ -3,78 +3,94 @@ using System.Linq;
 
 namespace SIL.APRE.Transduction
 {
-	public enum RuleOrder
+	public enum RuleCascadeOrder
 	{
 		Linear,
 		Permutation,
 		Combination
 	}
 
-	public abstract class RuleCascadeBase<TOffset> : IRule<TOffset>
+	public abstract class RuleCascadeBase<TData, TOffset> : IRule<TData, TOffset> where TData : IData<TOffset>
 	{
-		private readonly List<IRule<TOffset>> _rules;
-		private readonly RuleOrder _ruleOrder;
+		private readonly List<IRule<TData, TOffset>> _rules;
+		private readonly RuleCascadeOrder _ruleCascadeOrder;
 
-		protected RuleCascadeBase(RuleOrder ruleOrder)
-			: this(ruleOrder, Enumerable.Empty<IRule<TOffset>>())
+		protected RuleCascadeBase(RuleCascadeOrder ruleCascadeOrder)
+			: this(ruleCascadeOrder, Enumerable.Empty<IRule<TData, TOffset>>())
 		{
 		}
 
-		protected RuleCascadeBase(RuleOrder ruleOrder, IEnumerable<IRule<TOffset>> rules)
+		protected RuleCascadeBase(RuleCascadeOrder ruleCascadeOrder, IEnumerable<IRule<TData, TOffset>> rules)
 		{
-			_ruleOrder = ruleOrder;
-			_rules = new List<IRule<TOffset>>(rules);
+			_ruleCascadeOrder = ruleCascadeOrder;
+			_rules = new List<IRule<TData, TOffset>>(rules);
 		}
 
-		public RuleOrder RuleOrder
+		public RuleCascadeOrder RuleCascadeOrder
 		{
-			get { return _ruleOrder; }
+			get { return _ruleCascadeOrder; }
 		}
 
-		public IEnumerable<IRule<TOffset>> Rules
+		public IEnumerable<IRule<TData, TOffset>> Rules
 		{
 			get { return _rules; }
 		}
 
-		public abstract bool IsApplicable(IBidirList<Annotation<TOffset>> input);
+		public abstract bool IsApplicable(TData input);
 
-		protected void AddRuleInternal(IRule<TOffset> rule)
+		protected void AddRuleInternal(IRule<TData, TOffset> rule, bool end)
 		{
-			_rules.Add(rule);
+			_rules.Insert(end ? _rules.Count : 0, rule);
 		}
 
-		public virtual bool Apply(IBidirList<Annotation<TOffset>> input)
+		public virtual bool Apply(TData input, out IEnumerable<TData> output)
 		{
-			return ApplyRules(input, 0);
+			var outputList = new List<TData>();
+			output = ApplyRules(input, 0, outputList) ? outputList : null;
+			return output != null;
 		}
 
-		private bool ApplyRules(IBidirList<Annotation<TOffset>> input, int ruleIndex)
+		private bool ApplyRules(TData input, int ruleIndex, List<TData> output)
 		{
 			bool applied = false;
 			for (int i = ruleIndex; i < _rules.Count; i++)
 			{
-				if (ApplyRule(_rules[i], input))
+				IEnumerable<TData> results;
+				if (ApplyRule(_rules[i], input, out results))
 				{
-					switch (_ruleOrder)
+					foreach (TData result in results)
 					{
-						case RuleOrder.Permutation:
-							ApplyRules(input, i);
-							break;
+						switch (_ruleCascadeOrder)
+						{
+							case RuleCascadeOrder.Permutation:
+								if (!ApplyRules(result, i, output))
+									output.Add(result);
+								break;
 
-						case RuleOrder.Combination:
-							ApplyRules(input, 0);
-							break;
+							case RuleCascadeOrder.Combination:
+								if (!ApplyRules(result, 0, output))
+									output.Add(result);
+								break;
 
+							case RuleCascadeOrder.Linear:
+								if (!ApplyRules(result, i + 1, output))
+									output.Add(result);
+								break;
+						}
 					}
+
 					applied = true;
+					if (_ruleCascadeOrder == RuleCascadeOrder.Linear)
+						break;
 				}
 			}
+
 			return applied;
 		}
 
-		protected virtual bool ApplyRule(IRule<TOffset> rule, IBidirList<Annotation<TOffset>> input)
+		protected virtual bool ApplyRule(IRule<TData, TOffset> rule, TData input, out IEnumerable<TData> output)
 		{
-			return rule.Apply(input);
+			return rule.Apply(input, out output);
 		}
 	}
 }

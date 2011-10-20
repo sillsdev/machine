@@ -1,11 +1,11 @@
 namespace SIL.APRE
 {
-	public interface IBidirTreeNode<TNode> : IBidirListNode<TNode> where TNode : class, IBidirTreeNode<TNode>
+	public interface IBidirTreeNode<TNode> : IOrderedBidirListNode<TNode> where TNode : class, IBidirTreeNode<TNode>
 	{
 		TNode Parent { get; }
 		
 		bool IsLeaf { get; }
 
-		IBidirList<TNode> Children { get; }
+		IOrderedBidirList<TNode> Children { get; }
 	}
 }

@@ -1,17 +1,17 @@
 ﻿namespace SIL.APRE.Matching.Fluent
 {
-	public interface IQuantifierGroupSyntax<TOffset> : IAlternationGroupSyntax<TOffset>
+	public interface IQuantifierGroupSyntax<TData, TOffset> : IAlternationGroupSyntax<TData, TOffset> where TData : IData<TOffset>
 	{
-		IAlternationGroupSyntax<TOffset> ZeroOrMore { get; }
-		IAlternationGroupSyntax<TOffset> LazyZeroOrMore { get; }
+		IAlternationGroupSyntax<TData, TOffset> ZeroOrMore { get; }
+		IAlternationGroupSyntax<TData, TOffset> LazyZeroOrMore { get; }
 
-		IAlternationGroupSyntax<TOffset> OneOrMore { get; }
-		IAlternationGroupSyntax<TOffset> LazyOneOrMore { get; }
+		IAlternationGroupSyntax<TData, TOffset> OneOrMore { get; }
+		IAlternationGroupSyntax<TData, TOffset> LazyOneOrMore { get; }
 
-		IAlternationGroupSyntax<TOffset> Optional { get; }
-		IAlternationGroupSyntax<TOffset> LazyOptional { get; }
+		IAlternationGroupSyntax<TData, TOffset> Optional { get; }
+		IAlternationGroupSyntax<TData, TOffset> LazyOptional { get; }
 
-		IAlternationGroupSyntax<TOffset> Range(int min, int max);
-		IAlternationGroupSyntax<TOffset> LazyRange(int min, int max);
+		IAlternationGroupSyntax<TData, TOffset> Range(int min, int max);
+		IAlternationGroupSyntax<TData, TOffset> LazyRange(int min, int max);
 	}
 }

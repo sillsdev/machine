@@ -1,7 +1,7 @@
 ﻿namespace SIL.APRE.Matching.Fluent
 {
-	public interface IAlternationGroupSyntax<TOffset> : IGroupSyntax<TOffset>
+	public interface IAlternationGroupSyntax<TData, TOffset> : IGroupSyntax<TData, TOffset> where TData : IData<TOffset>
 	{
-		IGroupSyntax<TOffset> Or { get; }
+		IGroupSyntax<TData, TOffset> Or { get; }
 	}
 }

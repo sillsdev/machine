@@ -2,14 +2,22 @@
 
 namespace SIL.APRE.Transduction
 {
-	public interface IPatternRule<TOffset> : IRule<TOffset>
+	public enum ApplicationMode
 	{
-		Pattern<TOffset> Lhs { get; }
+		Single,
+		Multiple,
+		Iterative,
+		Simultaneous
+	}
 
-		bool Simultaneous { get; }
+	public interface IPatternRule<TData, TOffset> : IRule<TData, TOffset> where TData : IData<TOffset>
+	{
+		Pattern<TData, TOffset> Lhs { get; }
+
+		ApplicationMode ApplicationMode { get; }
 
 		void Compile();
 
-		Annotation<TOffset> ApplyRhs(IBidirList<Annotation<TOffset>> input, PatternMatch<TOffset> match);
+		Annotation<TOffset> ApplyRhs(TData input, PatternMatch<TOffset> match, out TData output);
 	}
 }

@@ -3,7 +3,7 @@ using SIL.APRE.Fsa;
 
 namespace SIL.APRE.Matching
 {
-	public class Group<TOffset> : PatternNode<TOffset>
+	public class Group<TData, TOffset> : PatternNode<TData, TOffset> where TData : IData<TOffset>
 	{
 		private readonly string _name;
 
@@ -15,23 +15,23 @@ namespace SIL.APRE.Matching
 		{
 			_name = name;
 		}
-		
-		public Group(params PatternNode<TOffset>[] nodes)
-			: this((IEnumerable<PatternNode<TOffset>>) nodes)
+
+		public Group(params PatternNode<TData, TOffset>[] nodes)
+			: this((IEnumerable<PatternNode<TData, TOffset>>)nodes)
 		{
 		}
 
-		public Group(IEnumerable<PatternNode<TOffset>> nodes)
+		public Group(IEnumerable<PatternNode<TData, TOffset>> nodes)
 			: this(null, nodes)
 		{
 		}
 
-		public Group(string name, params PatternNode<TOffset>[] nodes)
-			: this(name, (IEnumerable<PatternNode<TOffset>>)nodes)
+		public Group(string name, params PatternNode<TData, TOffset>[] nodes)
+			: this(name, (IEnumerable<PatternNode<TData, TOffset>>)nodes)
 		{
 		}
 
-		public Group(string name, IEnumerable<PatternNode<TOffset>> nodes)
+		public Group(string name, IEnumerable<PatternNode<TData, TOffset>> nodes)
 			: base(nodes)
 		{
 			_name = name;
@@ -41,7 +41,7 @@ namespace SIL.APRE.Matching
         /// Copy constructor.
         /// </summary>
         /// <param name="group">The nested pattern.</param>
-        public Group(Group<TOffset> group)
+		public Group(Group<TData, TOffset> group)
 			: base(group)
         {
         	_name = group._name;
@@ -52,14 +52,14 @@ namespace SIL.APRE.Matching
 			get { return _name; }
 		}
 
-		protected override bool CanAdd(PatternNode<TOffset> child)
+		protected override bool CanAdd(PatternNode<TData, TOffset> child)
 		{
-			if (child is Expression<TOffset>)
+			if (child is Expression<TData, TOffset>)
 				return false;
 			return true;
 		}
 
-		internal override State<TOffset> GenerateNfa(FiniteStateAutomaton<TOffset> fsa, State<TOffset> startState)
+		internal override State<TData, TOffset> GenerateNfa(FiniteStateAutomaton<TData, TOffset> fsa, State<TData, TOffset> startState)
 		{
 			if (IsLeaf)
 				return startState;
@@ -86,19 +86,19 @@ namespace SIL.APRE.Matching
 		{
 			if (obj == null)
 				return false;
-			return Equals(obj as Group<TOffset>);
+			return Equals(obj as Group<TData, TOffset>);
 		}
 
-		public bool Equals(Group<TOffset> other)
+		public bool Equals(Group<TData, TOffset> other)
 		{
 			if (other == null)
 				return false;
 			return Children.Equals(other.Children);
 		}
 
-		public override PatternNode<TOffset> Clone()
+		public override PatternNode<TData, TOffset> Clone()
 		{
-			return new Group<TOffset>(this);
+			return new Group<TData, TOffset>(this);
 		}
 	}
 }

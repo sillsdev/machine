@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using SIL.APRE.FeatureModel;
-using SIL.APRE.Fsa;
 
 namespace SIL.APRE
 {
@@ -15,7 +14,6 @@ namespace SIL.APRE
 			FeatureStruct = fs;
 			if (type != null)
 				FeatureStruct.AddValue(AnnotationFeatureSystem.Type, type);
-			IsClean = true;
 			ListID = -1;
 		}
 
@@ -28,7 +26,6 @@ namespace SIL.APRE
 		{
 			_span = ann._span;
 			FeatureStruct = ann.FeatureStruct == null ? null : (FeatureStruct) ann.FeatureStruct.Clone();
-			IsClean = ann.IsClean;
 			Optional = ann.Optional;
 		}
 
@@ -51,15 +48,6 @@ namespace SIL.APRE
 		/// 	<c>true</c> if this annotation is optional, otherwise <c>false</c>.
 		/// </value>
 		public bool Optional { get; set; }
-
-		/// <summary>
-		/// Gets or sets a value indicating whether this instance is clean. This is used
-		/// for phonological rules that apply simultaneously. In order to enforce the disjunctive
-		/// nature of the subrules, we do not allow another subrule to apply on segment that
-		/// has already been altered by another subrule.
-		/// </summary>
-		/// <value><c>true</c> if this instance is clean, otherwise <c>false</c>.</value>
-		public bool IsClean { get; set; }
 
 		internal int ListID { get; set; }
 
