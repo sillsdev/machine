@@ -18,16 +18,14 @@ namespace SIL.APRE.Test
 		[Test]
 		public void AddAnnotations()
 		{
-			FeatureSystem featSys = FeatureSystem.New.StringFeature("pos").Value;
-
-			var annList = new AnnotationList<int>();
-			var a = new Annotation<int>(_spanFactory.Create(99), FeatureStruct.New(featSys).Feature("pos").EqualTo("Last").Value);
+			var annList = new AnnotationList<int>(_spanFactory);
+			var a = new Annotation<int>("Last", _spanFactory.Create(99), new FeatureStruct());
 			annList.Add(a);
 			Assert.AreSame(a, annList.First);
-			a = new Annotation<int>(_spanFactory.Create(0), FeatureStruct.New(featSys).Feature("pos").EqualTo("First").Value);
+			a = new Annotation<int>("First", _spanFactory.Create(0), new FeatureStruct());
 			annList.Add(a);
 			Assert.AreSame(a, annList.First);
-			a = new Annotation<int>(_spanFactory.Create(0, 99), FeatureStruct.New(featSys).Feature("pos").EqualTo("Entire").Value);
+			a = new Annotation<int>("Entire", _spanFactory.Create(0, 99), new FeatureStruct());
 			annList.Add(a);
 			Assert.AreSame(a, annList.ElementAt(1));
 		}

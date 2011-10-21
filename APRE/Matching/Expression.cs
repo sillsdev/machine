@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using SIL.APRE.Matching.Fluent;
 
 namespace SIL.APRE.Matching
@@ -17,63 +18,35 @@ namespace SIL.APRE.Matching
 		}
 
 		private readonly string _name;
-		private readonly Func<TData, PatternMatch<TOffset>, bool> _acceptable;
 
 		public Expression()
-		{
-		}
-
-		public Expression(params PatternNode<TData, TOffset>[] nodes)
-			: base(nodes)
+			: this(Enumerable.Empty<PatternNode<TData, TOffset>>())
 		{
 		}
 
 		public Expression(IEnumerable<PatternNode<TData, TOffset>> nodes)
 			: base(nodes)
 		{
+			Acceptable = (input, match) => true;
 		}
 
 		public Expression(string name)
-		{
-			_name = name;
-			_acceptable = (input, match) => true;
-		}
-
-		public Expression(string name, params PatternNode<TData, TOffset>[] nodes)
-			: this(name, (IEnumerable<PatternNode<TData, TOffset>>)nodes)
+			: this(name, Enumerable.Empty<PatternNode<TData, TOffset>>())
 		{
 		}
 
 		public Expression(string name, IEnumerable<PatternNode<TData, TOffset>> nodes)
 			: base(nodes)
 		{
+			Acceptable = (input, match) => true;
 			_name = name;
-			_acceptable = (input, match) => true;
-		}
-
-		public Expression(string name, Func<TData, PatternMatch<TOffset>, bool> acceptable)
-		{
-			_name = name;
-			_acceptable = acceptable;
-		}
-
-		public Expression(string name, Func<TData, PatternMatch<TOffset>, bool> acceptable, params PatternNode<TData, TOffset>[] nodes)
-			: this(name, acceptable, (IEnumerable<PatternNode<TData, TOffset>>)nodes)
-		{
-		}
-
-		public Expression(string name, Func<TData, PatternMatch<TOffset>, bool> acceptable, IEnumerable<PatternNode<TData, TOffset>> nodes)
-			: base(nodes)
-		{
-			_name = name;
-			_acceptable = acceptable;
 		}
 
 		public Expression(Expression<TData, TOffset> expr)
 			: base(expr)
 		{
 			_name = expr._name;
-			_acceptable = expr._acceptable;
+			Acceptable = expr.Acceptable;
 		}
 
 		public string Name
@@ -81,10 +54,7 @@ namespace SIL.APRE.Matching
 			get { return _name; }
 		}
 
-		public Func<TData, PatternMatch<TOffset>, bool> Acceptable
-		{
-			get { return _acceptable; }
-		}
+		public Func<TData, PatternMatch<TOffset>, bool> Acceptable { get; set; }
 
 		public override PatternNode<TData, TOffset> Clone()
 		{

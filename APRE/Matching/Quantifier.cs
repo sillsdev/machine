@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using SIL.APRE.Fsa;
 
 namespace SIL.APRE.Matching
@@ -13,22 +14,8 @@ namespace SIL.APRE.Matching
     	private readonly int _minOccur;
     	private readonly int _maxOccur;
 
-    	private readonly bool _greedy;
-
-		public Quantifier(int minOccur, int maxOccur)
-			: this(minOccur, maxOccur, true)
-		{
-		}
-
-		public Quantifier(int minOccur, int maxOccur, bool greedy)
-		{
-			_minOccur = minOccur;
-			_maxOccur = maxOccur;
-			_greedy = greedy;
-		}
-
-		public Quantifier(int minOccur, int maxOccur, PatternNode<TData, TOffset> node)
-			: this(minOccur, maxOccur, true, node)
+    	public Quantifier(int minOccur, int maxOccur)
+			: this(minOccur, maxOccur, null)
 		{
 		}
 
@@ -37,14 +24,14 @@ namespace SIL.APRE.Matching
     	/// </summary>
     	/// <param name="minOccur">The minimum number of occurrences.</param>
     	/// <param name="maxOccur">The maximum number of occurrences.</param>
-    	/// <param name="greedy"></param>
+
     	/// <param name="node">The pattern node.</param>
-		public Quantifier(int minOccur, int maxOccur, bool greedy, PatternNode<TData, TOffset> node)
-			: base(node.ToEnumerable())
+		public Quantifier(int minOccur, int maxOccur, PatternNode<TData, TOffset> node)
+			: base(node == null ? Enumerable.Empty<PatternNode<TData, TOffset>>() : node.ToEnumerable())
         {
-            _minOccur = minOccur;
+    		IsGreedy = true;
+    		_minOccur = minOccur;
             _maxOccur = maxOccur;
-    		_greedy = greedy;
         }
 
 		public Quantifier(Quantifier<TData, TOffset> quantifier)
@@ -52,7 +39,7 @@ namespace SIL.APRE.Matching
         {
             _minOccur = quantifier._minOccur;
             _maxOccur = quantifier._maxOccur;
-    		_greedy = quantifier._greedy;
+    		IsGreedy = quantifier.IsGreedy;
         }
 
         /// <summary>
@@ -73,12 +60,9 @@ namespace SIL.APRE.Matching
     		get { return _maxOccur; }
     	}
 
-    	public bool IsGreedy
-    	{
-    		get { return _greedy; }
-    	}
+    	public bool IsGreedy { get; set; }
 
-		protected override bool CanAdd(PatternNode<TData, TOffset> child)
+    	protected override bool CanAdd(PatternNode<TData, TOffset> child)
 		{
 			if (child is Expression<TData, TOffset>)
 				return false;
@@ -87,7 +71,7 @@ namespace SIL.APRE.Matching
 
 		internal override State<TData, TOffset> GenerateNfa(FiniteStateAutomaton<TData, TOffset> fsa, State<TData, TOffset> startState)
 		{
-			ArcPriorityType priorityType = _greedy ? ArcPriorityType.High : ArcPriorityType.Low;
+			ArcPriorityType priorityType = IsGreedy ? ArcPriorityType.High : ArcPriorityType.Low;
 			State<TData, TOffset> endState;
 			if (_minOccur == 0 && _maxOccur == 1)
 			{

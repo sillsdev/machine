@@ -7,7 +7,7 @@ namespace SIL.APRE.FeatureModel.Fluent
 
 		public SymbolicFeatureBuilder(string id, string desc)
 		{
-			_feature = new SymbolicFeature(id, desc);
+			_feature = new SymbolicFeature(id) {Description = desc};
 		}
 
 		public SymbolicFeatureBuilder(string id)
@@ -17,7 +17,7 @@ namespace SIL.APRE.FeatureModel.Fluent
 
 		public IDefaultSymbolicFeatureSyntax Symbol(string id, string desc)
 		{
-			_lastSymbol = new FeatureSymbol(id, desc);
+			_lastSymbol = new FeatureSymbol(id) {Description = desc};
 			_feature.AddPossibleSymbol(_lastSymbol);
 			return this;
 		}

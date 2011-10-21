@@ -14,23 +14,12 @@ namespace SIL.APRE.Transduction
 
 		public PatternRule(Pattern<TData, TOffset> lhs, ApplyDelegate<TData, TOffset> rhs,
 			Func<TData, bool> applicable)
-			: this(lhs, rhs, applicable, ApplicationMode.Single)
-		{
-		}
-
-		public PatternRule(Pattern<TData, TOffset> lhs, ApplyDelegate<TData, TOffset> rhs,
-			Func<TData, bool> applicable, ApplicationMode appMode)
-			: this(lhs, new DelegatePatternRuleAction<TData, TOffset>(rhs, applicable), appMode)
+			: this(lhs, new DelegatePatternRuleAction<TData, TOffset>(rhs, applicable))
 		{
 		}
 
 		public PatternRule(Pattern<TData, TOffset> lhs, IPatternRuleAction<TData, TOffset> rhs)
-			: this(lhs, rhs, ApplicationMode.Single)
-		{
-		}
-
-		public PatternRule(Pattern<TData, TOffset> lhs, IPatternRuleAction<TData, TOffset> rhs, ApplicationMode appMode)
-			: base(lhs, appMode)
+			: base(lhs)
 		{
 			_rhs = rhs;
 		}
@@ -47,7 +36,7 @@ namespace SIL.APRE.Transduction
 
 		public override Annotation<TOffset> ApplyRhs(TData input, PatternMatch<TOffset> match, out TData output)
 		{
-			return _rhs.Apply(Lhs, input, match, out output);
+			return _rhs.Apply(input, match, out output);
 		}
 	}
 }

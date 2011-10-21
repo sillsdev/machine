@@ -9,7 +9,7 @@ namespace SIL.APRE.Transduction
 			return true;
 		}
 
-		public Annotation<TOffset> Apply(Pattern<TData, TOffset> lhs, TData input, PatternMatch<TOffset> match, out TData output)
+		public Annotation<TOffset> Apply(TData input, PatternMatch<TOffset> match, out TData output)
 		{
 			output = default(TData);
 			return null;

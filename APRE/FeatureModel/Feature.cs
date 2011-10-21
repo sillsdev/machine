@@ -5,13 +5,8 @@ namespace SIL.APRE.FeatureModel
 	/// </summary>
 	public abstract class Feature : IDBearerBase
 	{
-		protected Feature(string id, string description)
-			: base(id, description)
-		{
-		}
-
 		protected Feature(string id)
-			: this(id, id)
+			: base(id)
 		{
 		}
 

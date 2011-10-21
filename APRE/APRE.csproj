@@ -119,6 +119,7 @@
     <Compile Include="Matching\PatternNode.cs" />
     <Compile Include="Matching\Quantifier.cs" />
     <Compile Include="NullableValue.cs" />
+    <Compile Include="StringData.cs" />
     <Compile Include="Transduction\DelegatePatternRuleAction.cs" />
     <Compile Include="Transduction\IPatternRule.cs" />
     <Compile Include="Transduction\IRule.cs" />

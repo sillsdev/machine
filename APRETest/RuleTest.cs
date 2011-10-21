@@ -1,223 +1,97 @@
-﻿using NUnit.Framework;
+﻿using System.Collections.Generic;
+using System.Linq;
+using NUnit.Framework;
 using SIL.APRE.FeatureModel;
 using SIL.APRE.Matching;
 using SIL.APRE.Transduction;
 
 namespace SIL.APRE.Test
 {
-	[TestFixture]
-	public class RuleTest
+	public class RuleTest : PhoneticTestBase
 	{
 		[Test]
 		public void Apply()
 		{
-			var spanFactory = new IntegerSpanFactory();
-			FeatureSystem featSys = CreateFeatureSystem();
-
-			Pattern<int> pattern = Pattern<int>.New(spanFactory)
+			var pattern = Pattern<StringData, int>.New(SpanFactory)
 				.Group("leftEnv", leftEnv => leftEnv
-					.Annotation(FeatureStruct.New(featSys)
-						.Feature("type").EqualTo("Seg")
+					.Annotation("Seg", FeatureStruct.New(PhoneticFeatSys)
 						.Symbol("cons+")
 						.Feature("voice").EqualToVariable("a").Value))
-				.Group("lhs", lhs => lhs
-					.Annotation(FeatureStruct.New(featSys)
-						.Feature("type").EqualTo("Seg")
+				.Group("target", target => target
+					.Annotation("Seg", FeatureStruct.New(PhoneticFeatSys)
 						.Symbol("cons-")
 						.Symbol("low+").Value))
 				.Group("rightEnv", rightEnv => rightEnv
-					.Annotation(FeatureStruct.New(featSys)
-						.Feature("type").EqualTo("Seg")
+					.Annotation("Seg", FeatureStruct.New(PhoneticFeatSys)
 						.Symbol("cons+")
 						.Feature("voice").Not.EqualToVariable("a").Value)).Value;
 
-			var rule = new PatternRule<int>(pattern, (lhs, input, match) =>
+			var rule = new PatternRule<StringData, int>(pattern, (StringData input, PatternMatch<int> match, out StringData output) =>
 			                                  	{
-			                                  		IBidirList<Annotation<int>> target = input.GetView(match["lhs"]);
-			                                  		foreach (Annotation<int> ann in target)
-			                                  			ann.FeatureStruct.PriorityUnion(FeatureStruct.New(featSys).Symbol("low-").Value);
-			                                  		return target.GetLast(lhs.Direction);
+													Span<int> target = match["target"];
+			                                  		foreach (Annotation<int> ann in input.Annotations.GetNodes(target))
+			                                  			ann.FeatureStruct.PriorityUnion(FeatureStruct.New(PhoneticFeatSys).Symbol("low-").Value);
+			                                  		output = input;
+			                                  		Annotation<int> resumeAnn;
+													input.Annotations.Find(target.GetEnd(pattern.Direction), pattern.Direction, out resumeAnn);
+			                                  		return resumeAnn;
 			                                  	});
 
-			AnnotationList<int> word = CreateFeatShapeAnnotations("fazk", spanFactory, featSys);
-			Assert.IsTrue(rule.Apply(word));
+			StringData inputWord = CreateStringData("fazk");
+			IEnumerable<StringData> outputWords;
+			Assert.IsTrue(rule.Apply(inputWord, out outputWords));
 		}
 
 		[Test]
 		public void Batch()
 		{
-			var spanFactory = new IntegerSpanFactory();
-			FeatureSystem featSys = CreateFeatureSystem();
-
-			Pattern<int> pattern = Pattern<int>.New(spanFactory)
+			var pattern = Pattern<StringData, int>.New(SpanFactory)
 				.Group("leftEnv", leftEnv => leftEnv
-					.Annotation(FeatureStruct.New(featSys)
-						.Feature("type").EqualTo("Seg")
+					.Annotation("Seg", FeatureStruct.New(PhoneticFeatSys)
 						.Symbol("cons+")
 						.Feature("voice").EqualToVariable("a").Value))
-				.Group("lhs", lhs => lhs
-					.Annotation(FeatureStruct.New(featSys)
-						.Feature("type").EqualTo("Seg")
+				.Group("target", target => target
+					.Annotation("Seg", FeatureStruct.New(PhoneticFeatSys)
 						.Symbol("cons-")
 						.Symbol("low+").Value))
 				.Group("rightEnv", rightEnv => rightEnv
-					.Annotation(FeatureStruct.New(featSys)
-						.Feature("type").EqualTo("Seg")
+					.Annotation("Seg", FeatureStruct.New(PhoneticFeatSys)
 						.Symbol("cons+")
 						.Feature("voice").Not.EqualToVariable("a").Value)).Value;
 
-			var rule1 = new PatternRule<int>(pattern, (lhs, input, match) =>
+			var rule1 = new PatternRule<StringData, int>(pattern, (StringData input, PatternMatch<int> match, out StringData output) =>
 												{
-													IBidirListView<Annotation<int>> target = input.GetView(match["lhs"]);
-													foreach (Annotation<int> ann in target)
-														ann.FeatureStruct.PriorityUnion(FeatureStruct.New(featSys)
+													Span<int> target = match["target"];
+													foreach (Annotation<int> ann in input.Annotations.GetNodes(target))
+														ann.FeatureStruct.PriorityUnion(FeatureStruct.New(PhoneticFeatSys)
 															.Symbol("low-")
 															.Symbol("mid-").Value);
-													return target.GetLast(lhs.Direction);
+													output = input;
+													Annotation<int> resumeAnn;
+													input.Annotations.Find(target.GetEnd(pattern.Direction), pattern.Direction, out resumeAnn);
+													return resumeAnn;
 												},
-												input => input.First.FeatureStruct.IsUnifiable(FeatureStruct.New(featSys).Symbol("verb").Value));
+												input => input.Annotations.GetNodes("Word").Single().FeatureStruct.IsUnifiable(FeatureStruct.New(WordFeatSys).Symbol("verb").Value));
 
-			var rule2 = new PatternRule<int>(pattern, (lhs, input, match) =>
+			var rule2 = new PatternRule<StringData, int>(pattern, (StringData input, PatternMatch<int> match, out StringData output) =>
 												{
-													IBidirListView<Annotation<int>> target = input.GetView(match["lhs"]);
-													foreach (Annotation<int> ann in target)
-														ann.FeatureStruct.PriorityUnion(FeatureStruct.New(featSys)
+													Span<int> target = match["target"];
+													foreach (Annotation<int> ann in input.Annotations.GetNodes(target))
+														ann.FeatureStruct.PriorityUnion(FeatureStruct.New(PhoneticFeatSys)
 															.Symbol("low-")
 															.Symbol("mid+").Value);
-													return target.GetLast(lhs.Direction);
+													output = input;
+													Annotation<int> resumeAnn;
+													input.Annotations.Find(target.GetEnd(pattern.Direction), pattern.Direction, out resumeAnn);
+													return resumeAnn;
 												});
 
-			var batch = new PatternRuleBatch<int>(new[] {rule1, rule2});
+			var batch = new PatternRuleBatch<StringData, int>(new[] {rule1, rule2});
 			batch.Compile();
-			AnnotationList<int> word = CreateFeatShapeAnnotations("fazk", spanFactory, featSys);
-			Assert.IsTrue(batch.Apply(word));
-		}
-
-		private static AnnotationList<int> CreateFeatShapeAnnotations(string str, SpanFactory<int> spanFactory, FeatureSystem featSys)
-		{
-			var annList = new AnnotationList<int>();
-			for (int i = 0; i < str.Length; i++)
-			{
-				FeatureStruct fs = null;
-				switch (str[i])
-				{
-					case 'f':
-						fs = FeatureStruct.New(featSys)
-							.Symbol("cons+")
-							.Symbol("voice-")
-							.Symbol("sib-")
-							.Symbol("cor-")
-							.Symbol("lab+")
-							.Symbol("low-")
-							.Symbol("mid-")
-							.Feature("type").EqualTo("Seg").Value;
-						break;
-					case 'k':
-						fs = FeatureStruct.New(featSys)
-							.Symbol("cons+")
-							.Symbol("voice-")
-							.Symbol("sib-")
-							.Symbol("cor-")
-							.Symbol("lab-")
-							.Symbol("low-")
-							.Symbol("mid-")
-							.Feature("type").EqualTo("Seg").Value;
-						break;
-					case 'z':
-						fs = FeatureStruct.New(featSys)
-							.Symbol("cons+")
-							.Symbol("voice+")
-							.Symbol("sib+")
-							.Symbol("cor+")
-							.Symbol("lab-")
-							.Symbol("low-")
-							.Symbol("mid-")
-							.Feature("type").EqualTo("Seg").Value;
-						break;
-					case 's':
-						fs = FeatureStruct.New(featSys)
-							.Symbol("cons+")
-							.Symbol("voice-")
-							.Symbol("sib+")
-							.Symbol("cor+")
-							.Symbol("lab-")
-							.Symbol("low-")
-							.Symbol("mid-")
-							.Feature("type").EqualTo("Seg").Value;
-						break;
-					case 'a':
-						fs = FeatureStruct.New(featSys)
-							.Symbol("cons-")
-							.Symbol("voice+")
-							.Symbol("sib-")
-							.Symbol("cor-")
-							.Symbol("lab-")
-							.Symbol("low+")
-							.Symbol("mid-")
-							.Feature("type").EqualTo("Seg").Value;
-						break;
-					case 'i':
-						fs = FeatureStruct.New(featSys)
-							.Symbol("cons-")
-							.Symbol("voice+")
-							.Symbol("sib-")
-							.Symbol("cor-")
-							.Symbol("lab-")
-							.Symbol("low-")
-							.Symbol("mid-")
-							.Feature("type").EqualTo("Seg").Value;
-						break;
-					case 'e':
-						fs = FeatureStruct.New(featSys)
-							.Symbol("cons-")
-							.Symbol("voice+")
-							.Symbol("sib-")
-							.Symbol("cor-")
-							.Symbol("lab-")
-							.Symbol("low-")
-							.Symbol("mid+")
-							.Feature("type").EqualTo("Seg").Value;
-						break;
-					case '+':
-						fs = FeatureStruct.New(featSys)
-							.Feature("str").EqualTo("+")
-							.Feature("type").EqualTo("Bdry").Value;
-						break;
-				}
-				annList.Add(new Annotation<int>(spanFactory.Create(i, i + 1), fs));
-			}
-			annList.Add(new Annotation<int>(spanFactory.Create(0, str.Length), FeatureStruct.New(featSys).Feature("type").EqualTo("Shape").Symbol("noun").Value));
-			return annList;
-		}
-
-		private static FeatureSystem CreateFeatureSystem()
-		{
-			return FeatureSystem.New
-				.SymbolicFeature("cons", cons => cons
-					.Symbol("cons+", "+")
-					.Symbol("cons-", "-"))
-				.SymbolicFeature("voice", voice => voice
-					.Symbol("voice+", "+")
-					.Symbol("voice-", "-"))
-				.SymbolicFeature("sib", sib => sib
-					.Symbol("sib+", "+")
-					.Symbol("sib-", "-"))
-				.SymbolicFeature("cor", cor => cor
-					.Symbol("cor+", "+")
-					.Symbol("cor-", "-"))
-				.SymbolicFeature("lab", lab => lab
-					.Symbol("lab+", "+")
-					.Symbol("lab-", "-"))
-				.SymbolicFeature("low", low => low
-					.Symbol("low+", "+")
-					.Symbol("low-", "-"))
-				.SymbolicFeature("mid", mid => mid
-					.Symbol("mid+", "+")
-					.Symbol("mid-", "-"))
-				.StringFeature("type")
-				.SymbolicFeature("pos", pos => pos
-					.Symbol("noun")
-					.Symbol("verb")).Value;
+			StringData inputWord = CreateStringData("fazk");
+			inputWord.Annotations.Add("Word", inputWord.Span, FeatureStruct.New(WordFeatSys).Symbol("noun").Value);
+			IEnumerable<StringData> outputWords;
+			Assert.IsTrue(batch.Apply(inputWord, out outputWords));
 		}
 	}
 }

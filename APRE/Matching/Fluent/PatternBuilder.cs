@@ -6,14 +6,12 @@ namespace SIL.APRE.Matching.Fluent
 	public class PatternBuilder<TData, TOffset> : PatternNodeBuilder<TData, TOffset>, IPatternSyntax<TData, TOffset>, IQuantifierPatternSyntax<TData, TOffset> where TData : IData<TOffset>
 	{
 		private readonly SpanFactory<TOffset> _spanFactory;
-		private Func<Annotation<TOffset>, bool> _filter;
-		private Direction _dir;
+		private Func<Annotation<TOffset>, bool> _filter = ann => true;
+		private Direction _dir = Direction.LeftToRight;
 
 		public PatternBuilder(SpanFactory<TOffset> spanFactory)
 		{
 			_spanFactory = spanFactory;
-			_dir = Direction.LeftToRight;
-			_filter = ann => true;
 		}
 
 		public IPatternSyntax<TData, TOffset> MatchLeftToRight
@@ -56,7 +54,7 @@ namespace SIL.APRE.Matching.Fluent
 		{
 			get
 			{
-				var pattern = new Pattern<TData, TOffset>(_spanFactory, _dir, _filter);
+				var pattern = new Pattern<TData, TOffset>(_spanFactory) {Direction = _dir, Filter = _filter};
 				PopulateNode(pattern);
 				return pattern;
 			}

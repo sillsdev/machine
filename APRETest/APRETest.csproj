@@ -50,6 +50,7 @@
     <Compile Include="FeatureStructureTest.cs" />
     <Compile Include="FiniteStateAutomatonTest.cs" />
     <Compile Include="PatternTest.cs" />
+    <Compile Include="PhoneticTestBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RuleTest.cs" />
   </ItemGroup>

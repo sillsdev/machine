@@ -6,7 +6,7 @@ namespace SIL.APRE.Matching.Fluent
 	public class ExpressionBuilder<TData, TOffset> : PatternNodeBuilder<TData, TOffset>, IExpressionSyntax<TData, TOffset>, IQuantifierExpressionSyntax<TData, TOffset> where TData : IData<TOffset>
 	{
 		private readonly string _name;
-		private Func<TData, PatternMatch<TOffset>, bool> _acceptable;
+		private Func<TData, PatternMatch<TOffset>, bool> _acceptable = (input, match) => true;
 
 		public ExpressionBuilder()
 		{
@@ -60,7 +60,7 @@ namespace SIL.APRE.Matching.Fluent
 		{
 			get
 			{
-				var expr = new Expression<TData, TOffset>(_name, _acceptable);
+				var expr = new Expression<TData, TOffset>(_name) {Acceptable = _acceptable};
 				PopulateNode(expr);
 				return expr;
 			}

@@ -26,7 +26,7 @@ namespace SIL.APRE
 
 		public void IntersectWith(IEnumerable<T> items)
 		{
-			foreach (T item in this.Where(i => !items.Contains(i)))
+			foreach (T item in this.Where(i => !items.Contains(i)).ToArray())
 				Remove(item);
 		}
 

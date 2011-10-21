@@ -6,6 +6,6 @@ namespace SIL.APRE.Transduction
 	{
 		bool IsApplicable(TData input);
 
-		Annotation<TOffset> Apply(Pattern<TData, TOffset> lhs, TData input, PatternMatch<TOffset> match, out TData output);
+		Annotation<TOffset> Apply(TData input, PatternMatch<TOffset> match, out TData output);
 	}
 }

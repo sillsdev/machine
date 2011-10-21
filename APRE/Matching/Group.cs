@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using SIL.APRE.Fsa;
 
 namespace SIL.APRE.Matching
@@ -12,22 +13,12 @@ namespace SIL.APRE.Matching
 		}
 
 		public Group(string name)
-		{
-			_name = name;
-		}
-
-		public Group(params PatternNode<TData, TOffset>[] nodes)
-			: this((IEnumerable<PatternNode<TData, TOffset>>)nodes)
+			: this(name, Enumerable.Empty<PatternNode<TData, TOffset>>())
 		{
 		}
 
 		public Group(IEnumerable<PatternNode<TData, TOffset>> nodes)
 			: this(null, nodes)
-		{
-		}
-
-		public Group(string name, params PatternNode<TData, TOffset>[] nodes)
-			: this(name, (IEnumerable<PatternNode<TData, TOffset>>)nodes)
 		{
 		}
 

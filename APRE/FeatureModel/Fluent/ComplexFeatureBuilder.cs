@@ -10,7 +10,7 @@ namespace SIL.APRE.FeatureModel.Fluent
 		public ComplexFeatureBuilder(FeatureSystem featSys, string id, string desc)
 		{
 			_featSys = featSys;
-			_feature = new ComplexFeature(id, desc);
+			_feature = new ComplexFeature(id) {Description = desc};
 		}
 
 		public ComplexFeatureBuilder(FeatureSystem featSys, string id)
@@ -37,7 +37,7 @@ namespace SIL.APRE.FeatureModel.Fluent
 
 		public IComplexFeatureSyntax StringFeature(string id, string desc)
 		{
-			Feature feature = new StringFeature(id, desc);
+			Feature feature = new StringFeature(id) {Description = desc};
 			_feature.AddSubfeature(feature);
 			return this;
 		}

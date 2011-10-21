@@ -9,7 +9,7 @@ namespace SIL.APRE.Matching
 {
 	public class Pattern<TData, TOffset> : Expression<TData, TOffset> where TData : IData<TOffset>
 	{
-		public new static IPatternSyntax<TData, TOffset> New(SpanFactory<TOffset> spanFactory)
+		public static IPatternSyntax<TData, TOffset> New(SpanFactory<TOffset> spanFactory)
 		{
 			return new PatternBuilder<TData, TOffset>(spanFactory);
 		}
@@ -17,82 +17,22 @@ namespace SIL.APRE.Matching
 		private const string EntireMatch = "*entire*";
 
 		private readonly SpanFactory<TOffset> _spanFactory;
-		private readonly Func<Annotation<TOffset>, bool> _filter;
 		private FiniteStateAutomaton<TData, TOffset> _fsa;
-		private readonly Direction _dir;
 
-        public Pattern(SpanFactory<TOffset> spanFactory)
-			: this(spanFactory, Direction.LeftToRight)
+		public Pattern(SpanFactory<TOffset> spanFactory)
+			: this(spanFactory, Enumerable.Empty<PatternNode<TData, TOffset>>())
         {
         }
 
-		public Pattern(SpanFactory<TOffset> spanFactory, Direction dir)
-			: this(spanFactory, dir, ann => true)
-		{
-		}
-
-		public Pattern(SpanFactory<TOffset> spanFactory, Direction dir, Func<Annotation<TOffset>, bool> filter)
-			: this(spanFactory, dir, filter, (input, match) => true)
-		{
-		}
-
-		public Pattern(SpanFactory<TOffset> spanFactory, Direction dir, Func<Annotation<TOffset>, bool> filter,
-			Func<TData, PatternMatch<TOffset>, bool> acceptable)
-			: base(null, acceptable)
-		{
-			_spanFactory = spanFactory;
-			_dir = dir;
-			_filter = filter;
-		}
-
-		public Pattern(SpanFactory<TOffset> spanFactory, params PatternNode<TData, TOffset>[] nodes)
-			: this(spanFactory, (IEnumerable<PatternNode<TData, TOffset>>)nodes)
-		{
-		}
-
 		public Pattern(SpanFactory<TOffset> spanFactory, IEnumerable<PatternNode<TData, TOffset>> nodes)
-			: this(spanFactory, Direction.LeftToRight, nodes)
+			: base(nodes)
 		{
-		}
-
-		public Pattern(SpanFactory<TOffset> spanFactory, Direction dir, params PatternNode<TData, TOffset>[] nodes)
-			: this(spanFactory, dir, (IEnumerable<PatternNode<TData, TOffset>>)nodes)
-		{
-		}
-
-		public Pattern(SpanFactory<TOffset> spanFactory, Direction dir, IEnumerable<PatternNode<TData, TOffset>> nodes)
-			: this(spanFactory, dir, ann => true, nodes)
-		{
-		}
-
-		public Pattern(SpanFactory<TOffset> spanFactory, Direction dir, Func<Annotation<TOffset>, bool> filter,
-			params PatternNode<TData, TOffset>[] nodes)
-			: this(spanFactory, dir, filter, (IEnumerable<PatternNode<TData, TOffset>>)nodes)
-		{
-		}
-
-		public Pattern(SpanFactory<TOffset> spanFactory, Direction dir, Func<Annotation<TOffset>, bool> filter,
-			IEnumerable<PatternNode<TData, TOffset>> nodes)
-			: this(spanFactory, dir, filter, (input, match) => true, nodes)
-		{
-		}
-
-		public Pattern(SpanFactory<TOffset> spanFactory, Direction dir, Func<Annotation<TOffset>, bool> filter,
-			Func<TData, PatternMatch<TOffset>, bool> acceptable, params PatternNode<TData, TOffset>[] nodes)
-			: this(spanFactory, dir, filter, acceptable, (IEnumerable<PatternNode<TData, TOffset>>)nodes)
-		{
-		}
-
-		public Pattern(SpanFactory<TOffset> spanFactory, Direction dir, Func<Annotation<TOffset>, bool> filter,
-			Func<TData, PatternMatch<TOffset>, bool> acceptable, IEnumerable<PatternNode<TData, TOffset>> nodes)
-			: base(null, acceptable, nodes)
-		{
+			Filter = ann => true;
+			Direction = Direction.LeftToRight;
 			_spanFactory = spanFactory;
-			_dir = dir;
-			_filter = filter;
 		}
 
-        /// <summary>
+		/// <summary>
         /// Copy constructor.
         /// </summary>
         /// <param name="pattern">The phonetic pattern.</param>
@@ -100,8 +40,8 @@ namespace SIL.APRE.Matching
 			: base(pattern)
         {
 			_spanFactory = pattern._spanFactory;
-			_dir = pattern._dir;
-			_filter = pattern._filter;
+			Direction = pattern.Direction;
+			Filter = pattern.Filter;
         }
 
 		public SpanFactory<TOffset> SpanFactory
@@ -109,15 +49,9 @@ namespace SIL.APRE.Matching
 			get { return _spanFactory; }
 		}
 
-		public Direction Direction
-		{
-			get { return _dir; }
-		}
+		public Direction Direction { get; set; }
 
-		public Func<Annotation<TOffset>, bool> Filter
-		{
-			get { return _filter; }
-		}
+		public Func<Annotation<TOffset>, bool> Filter { get; set; }
 
 		public bool IsCompiled
 		{
@@ -126,18 +60,18 @@ namespace SIL.APRE.Matching
 
 		public void Compile()
 		{
-			_fsa = new FiniteStateAutomaton<TData, TOffset>(_dir, _filter);
+			_fsa = new FiniteStateAutomaton<TData, TOffset>(Direction, Filter);
 			int nextPriority = 0;
 			GenerateExpressionNfa(_fsa.StartState, this, null, new Func<TData, PatternMatch<TOffset>, bool>[0], ref nextPriority);
 			_fsa.MarkArcPriorities();
 
-			var writer = new StreamWriter(string.Format("c:\\{0}-nfa.dot", _dir == Direction.LeftToRight ? "ltor" : "rtol"));
+			var writer = new StreamWriter(string.Format("c:\\{0}-nfa.dot", Direction == Direction.LeftToRight ? "ltor" : "rtol"));
 			_fsa.ToGraphViz(writer);
 			writer.Close();
 
 			_fsa.Determinize();
 
-			writer = new StreamWriter(string.Format("c:\\{0}-dfa.dot", _dir == Direction.LeftToRight ? "ltor" : "rtol"));
+			writer = new StreamWriter(string.Format("c:\\{0}-dfa.dot", Direction == Direction.LeftToRight ? "ltor" : "rtol"));
 			_fsa.ToGraphViz(writer);
 			writer.Close();
 		}
@@ -193,13 +127,13 @@ namespace SIL.APRE.Matching
 		public bool IsMatch(TData data)
 		{
 			IEnumerable<PatternMatch<TOffset>> matches;
-			return IsMatch(data, data.Annotations.GetFirst(_dir, _filter), false, out matches);
+			return IsMatch(data, data.Annotations.GetFirst(Direction, Filter), false, out matches);
 		}
 
 		public bool IsMatch(TData data, out PatternMatch<TOffset> match)
 		{
 			IEnumerable<PatternMatch<TOffset>> matches;
-			if (IsMatch(data, data.Annotations.GetFirst(_dir, _filter), false, out matches))
+			if (IsMatch(data, data.Annotations.GetFirst(Direction, Filter), false, out matches))
 			{
 				match = matches.First();
 				return true;
@@ -210,7 +144,7 @@ namespace SIL.APRE.Matching
 
 		public bool IsMatch(TData data, out IEnumerable<PatternMatch<TOffset>> matches)
 		{
-			return IsMatch(data, data.Annotations.GetFirst(_dir, _filter), true, out matches);
+			return IsMatch(data, data.Annotations.GetFirst(Direction, Filter), true, out matches);
 		}
 
 		private bool IsMatch(TData data, Annotation<TOffset> start, bool allMatches, out IEnumerable<PatternMatch<TOffset>> matches)
@@ -235,8 +169,12 @@ namespace SIL.APRE.Matching
 
 		public Pattern<TData, TOffset> Reverse()
 		{
-			return new Pattern<TData, TOffset>(_spanFactory, _dir == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight,
-				_filter, Acceptable, Children.Clone());
+			return new Pattern<TData, TOffset>(_spanFactory, Children.Clone())
+			       	{
+			       		Direction = Direction == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight,
+			       		Filter = Filter,
+			       		Acceptable = Acceptable
+			       	};
 		}
 
 		private PatternMatch<TOffset> CreatePatternMatch(FsaMatch<TOffset> match)

@@ -9,12 +9,7 @@ namespace SIL.APRE.Transduction
 		private readonly IPatternRuleAction<TData, TOffset> _rhs;
 
 		public PatternRuleBatch(Pattern<TData, TOffset> pattern)
-			: this(pattern, ApplicationMode.Single)
-		{
-		}
-
-		public PatternRuleBatch(Pattern<TData, TOffset> pattern, ApplicationMode appMode)
-			: this(pattern, new NullPatternRuleAction<TData, TOffset>(), appMode)
+			: this(pattern, new NullPatternRuleAction<TData, TOffset>())
 		{
 		}
 
@@ -25,23 +20,12 @@ namespace SIL.APRE.Transduction
 
 		public PatternRuleBatch(Pattern<TData, TOffset> pattern, ApplyDelegate<TData, TOffset> rhs,
 			Func<TData, bool> applicable)
-			: this(pattern, rhs, applicable, ApplicationMode.Single)
-		{
-		}
-
-		public PatternRuleBatch(Pattern<TData, TOffset> pattern, ApplyDelegate<TData, TOffset> rhs,
-			Func<TData, bool> applicable, ApplicationMode appMode)
-			: this(pattern, new DelegatePatternRuleAction<TData, TOffset>(rhs, applicable), appMode)
+			: this(pattern, new DelegatePatternRuleAction<TData, TOffset>(rhs, applicable))
 		{
 		}
 
 		public PatternRuleBatch(Pattern<TData, TOffset> pattern, IPatternRuleAction<TData, TOffset> rhs)
-			: this(pattern, rhs, ApplicationMode.Single)
-		{
-		}
-
-		public PatternRuleBatch(Pattern<TData, TOffset> pattern, IPatternRuleAction<TData, TOffset> rhs, ApplicationMode appMode)
-			: base(pattern, appMode)
+			: base(pattern)
 		{
 			_rhs = rhs;
 		}
@@ -86,7 +70,7 @@ namespace SIL.APRE.Transduction
 		public override Annotation<TOffset> ApplyRhs(TData input, PatternMatch<TOffset> match, out TData output)
 		{
 			Annotation<TOffset> last = base.ApplyRhs(input, match, out output);
-			return Rhs.Apply(Lhs, output, match, out output) ?? last;
+			return Rhs.Apply(output, match, out output) ?? last;
 		}
 	}
 }

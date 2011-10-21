@@ -11,7 +11,7 @@ namespace SIL.APRE
 
 		static AnnotationFeatureSystem()
 		{
-			Type = new StringFeature(Guid.NewGuid().ToString(), "Type");
+			Type = new StringFeature(Guid.NewGuid().ToString()) {Description = "Type"};
 
 			FeatureSystem = new AnnotationFeatureSystem();
 		}

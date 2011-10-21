@@ -7,15 +7,10 @@ namespace SIL.APRE.FeatureModel
 	{
 		private readonly IDBearerSet<Feature> _subfeatures;
 
-		public ComplexFeature(string id, string description)
-			: base(id, description)
+		public ComplexFeature(string id)
+			: base(id)
 		{
 			_subfeatures = new IDBearerSet<Feature>();
-		}
-
-		public ComplexFeature(string id)
-			: this(id, id)
-		{
 		}
 
 		public IEnumerable<Feature> Subfeatures

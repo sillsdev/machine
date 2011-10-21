@@ -10,12 +10,9 @@ namespace SIL.APRE.FeatureModel
     /// </summary>
     public class FeatureSystem
     {
-		public static IFeatureSystemSyntax New
+		public static IFeatureSystemSyntax New()
 		{
-			get
-			{
-				return new FeatureSystemBuilder();
-			}
+			return new FeatureSystemBuilder();
 		}
 
     	private readonly IDBearerSet<Feature> _features;

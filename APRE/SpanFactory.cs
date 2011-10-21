@@ -17,12 +17,48 @@ namespace SIL.APRE
 
 		public bool IsValidSpan(TOffset start, TOffset end)
 		{
-			return _compare(start, end) <= 0;
+			return IsValidSpan(start, end, Direction.LeftToRight);
+		}
+
+		public bool IsValidSpan(TOffset start, TOffset end, Direction dir)
+		{
+			TOffset actualStart;
+			TOffset actualEnd;
+			if (dir == Direction.LeftToRight)
+			{
+				actualStart = start;
+				actualEnd = end;
+			}
+			else
+			{
+				actualStart = end;
+				actualEnd = start;
+			}
+
+			return _compare(actualStart, actualEnd) <= 0;
 		}
 
 		public Span<TOffset> Create(TOffset start, TOffset end)
 		{
-			return new Span<TOffset>(_compare, _calcLength, _includeEndpoint, start, end);
+			return Create(start, end, Direction.LeftToRight);
+		}
+
+		public Span<TOffset> Create(TOffset start, TOffset end, Direction dir)
+		{
+			TOffset actualStart;
+			TOffset actualEnd;
+			if (dir == Direction.LeftToRight)
+			{
+				actualStart = start;
+				actualEnd = end;
+			}
+			else
+			{
+				actualStart = end;
+				actualEnd = start;
+			}
+
+			return new Span<TOffset>(_compare, _calcLength, _includeEndpoint, actualStart, actualEnd);
 		}
 
 		public Span<TOffset> Create(TOffset offset)

@@ -9,7 +9,7 @@ namespace SIL.APRE.Test
 		[Test]
 		public void DisjunctiveUnify1()
 		{
-			FeatureSystem featSys = FeatureSystem.New
+			FeatureSystem featSys = FeatureSystem.New()
 				.SymbolicFeature("rank", rank => rank
 					.Symbol("clause"))
 				.ComplexFeature("subj", subj => subj
@@ -96,7 +96,7 @@ namespace SIL.APRE.Test
 		[Test]
 		public void DisjunctiveUnify2()
 		{
-			FeatureSystem featSys = FeatureSystem.New
+			FeatureSystem featSys = FeatureSystem.New()
 				.SymbolicFeature("feat1", feat1 => feat1
 					.Symbol("feat1+")
 					.Symbol("feat1-"))
@@ -139,7 +139,7 @@ namespace SIL.APRE.Test
 		[Test]
 		public void Unify1()
 		{
-			FeatureSystem featSys = FeatureSystem.New
+			FeatureSystem featSys = FeatureSystem.New()
 				.ComplexFeature("a", a => a
 					.SymbolicFeature("b", b => b
 						.Symbol("c"))
@@ -177,7 +177,7 @@ namespace SIL.APRE.Test
 		[Test]
 		public void Unify2()
 		{
-			FeatureSystem featSys = FeatureSystem.New
+			FeatureSystem featSys = FeatureSystem.New()
 				.ComplexFeature("a", a => a
 					.SymbolicFeature("b", b => b
 						.Symbol("c"))
@@ -218,7 +218,7 @@ namespace SIL.APRE.Test
 		[Test]
 		public void UnifyVariables()
 		{
-			FeatureSystem featSys = FeatureSystem.New
+			FeatureSystem featSys = FeatureSystem.New()
 				.SymbolicFeature("a", a => a
 					.Symbol("a+", "+")
 					.Symbol("a-", "-"))

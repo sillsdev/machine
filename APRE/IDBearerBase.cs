@@ -5,12 +5,11 @@ namespace SIL.APRE
 	public abstract class IDBearerBase : IIDBearer
 	{
 		private readonly string _id;
-		private readonly string _description;
 
-		protected IDBearerBase(string id, string description)
+		protected IDBearerBase(string id)
         {
             _id = id;
-            _description = description;
+			Description = id;
         }
 
 		public string ID
@@ -18,10 +17,7 @@ namespace SIL.APRE
 			get { return _id;  }
 		}
 
-		public string Description
-		{
-			get { return _description; }
-		}
+		public string Description { get; set; }
 
 		public int CompareTo(IIDBearer other)
 		{

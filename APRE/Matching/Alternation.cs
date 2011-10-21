@@ -15,11 +15,6 @@ namespace SIL.APRE.Matching
 		{
 		}
 
-		public Alternation(params PatternNode<TData, TOffset>[] nodes)
-			: base(nodes)
-		{
-		}
-
 		public Alternation(Alternation<TData, TOffset> alternation)
 			: base(alternation)
 		{

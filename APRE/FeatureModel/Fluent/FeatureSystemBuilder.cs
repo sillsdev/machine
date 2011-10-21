@@ -29,7 +29,7 @@ namespace SIL.APRE.FeatureModel.Fluent
 
 		public IFeatureSystemSyntax StringFeature(string id, string desc)
 		{
-			Feature feature = new StringFeature(id, desc);
+			Feature feature = new StringFeature(id) {Description = desc};
 			_featSys.AddFeature(feature);
 			return this;
 		}

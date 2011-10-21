@@ -45,7 +45,7 @@ namespace SIL.APRE.Matching.Fluent
 		protected void AddQuantifier(int min, int max, bool greedy)
 		{
 			List<PatternNode<TData, TOffset>> list = _alternation.Any() ? _alternation : _nodes;
-			var quantifier = new Quantifier<TData, TOffset>(min, max, greedy, list.Last());
+			var quantifier = new Quantifier<TData, TOffset>(min, max, list.Last()) {IsGreedy = greedy};
 			list[list.Count - 1] = quantifier;
 		}
 

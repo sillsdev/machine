@@ -6,7 +6,7 @@ namespace SIL.APRE.FeatureModel.Fluent
 
 		public StringFeatureBuilder(string id, string desc)
 		{
-			_feature = new StringFeature(id, desc);
+			_feature = new StringFeature(id) {Description = desc};
 		}
 
 		public StringFeatureBuilder(string id)

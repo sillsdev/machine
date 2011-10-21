@@ -7,15 +7,10 @@ namespace SIL.APRE.FeatureModel
 	{
 		private readonly IDBearerSet<FeatureSymbol> _possibleSymbols;
 
-		public SymbolicFeature(string id, string description)
-			: base(id, description)
+		public SymbolicFeature(string id)
+			: base(id)
 		{
 			_possibleSymbols = new IDBearerSet<FeatureSymbol>();
-		}
-
-		public SymbolicFeature(string id)
-			: this(id, id)
-		{
 		}
 
 		/// <summary>

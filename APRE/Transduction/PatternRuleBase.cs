@@ -6,12 +6,11 @@ namespace SIL.APRE.Transduction
 	public abstract class PatternRuleBase<TData, TOffset> : IPatternRule<TData, TOffset> where TData : IData<TOffset>
 	{
 		private readonly Pattern<TData, TOffset> _lhs;
-		private readonly ApplicationMode _appMode;
+		private ApplicationMode _appMode = ApplicationMode.Single;
 
-		protected PatternRuleBase(Pattern<TData, TOffset> lhs, ApplicationMode appMode)
+		protected PatternRuleBase(Pattern<TData, TOffset> lhs)
 		{
 			_lhs = lhs;
-			_appMode = appMode;
 		}
 
 		public Pattern<TData, TOffset> Lhs
@@ -22,6 +21,7 @@ namespace SIL.APRE.Transduction
 		public ApplicationMode ApplicationMode
 		{
 			get { return _appMode; }
+			set { _appMode = value; }
 		}
 
 		public void Compile()
