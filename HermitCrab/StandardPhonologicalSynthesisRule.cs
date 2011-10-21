@@ -10,8 +10,8 @@ namespace SIL.HermitCrab
 	{
 		private readonly Expression<Word, ShapeNode> _lhs;
 
-		public StandardPhonologicalSynthesisRule(SpanFactory<ShapeNode> spanFactory, Direction dir, ApplicationMode appMode, Expression<Word, ShapeNode> lhs)
-			: base(new Pattern<Word, ShapeNode>(spanFactory, dir), appMode)
+		public StandardPhonologicalSynthesisRule(SpanFactory<ShapeNode> spanFactory, Expression<Word, ShapeNode> lhs)
+			: base(new Pattern<Word, ShapeNode>(spanFactory))
 		{
 			_lhs = lhs;
 		}
@@ -20,14 +20,11 @@ namespace SIL.HermitCrab
 			FeatureStruct applicableFS)
 		{
 			if (_lhs.Children.Count == rhs.Children.Count)
-				AddRuleInternal(new FeatureSynthesisRewriteRule(Lhs.SpanFactory, Lhs.Direction, ApplicationMode, _lhs, rhs, leftEnv,
-					rightEnv, applicableFS), true);
+				AddRuleInternal(new FeatureSynthesisRewriteRule(Lhs.SpanFactory, _lhs, rhs, leftEnv, rightEnv, applicableFS), true);
 			else if (_lhs.Children.Count > rhs.Children.Count)
-				AddRuleInternal(new NarrowSynthesisRewriteRule(Lhs.SpanFactory, Lhs.Direction, ApplicationMode, _lhs, rhs, leftEnv,
-					rightEnv, applicableFS), true);
+				AddRuleInternal(new NarrowSynthesisRewriteRule(Lhs.SpanFactory, _lhs, rhs, leftEnv, rightEnv, applicableFS), true);
 			else if (_lhs.Children.Count == 0)
-				AddRuleInternal(new EpenthesisSynthesisRewriteRule(Lhs.SpanFactory, Lhs.Direction, ApplicationMode, _lhs, rhs, leftEnv,
-					rightEnv, applicableFS), true);
+				AddRuleInternal(new EpenthesisSynthesisRewriteRule(Lhs.SpanFactory, _lhs, rhs, leftEnv, rightEnv, applicableFS), true);
 		}
 
 		public override bool IsApplicable(Word input)

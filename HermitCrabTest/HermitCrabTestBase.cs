@@ -7,7 +7,7 @@ using SIL.HermitCrab;
 namespace HermitCrabTest
 {
 	[TestFixture]
-	public class HermitCrabTestBase
+	public abstract class HermitCrabTestBase
 	{
 		protected SpanFactory<ShapeNode> SpanFactory;
 		protected FeatureSystem FeatSys;

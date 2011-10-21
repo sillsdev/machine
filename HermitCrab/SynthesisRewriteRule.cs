@@ -11,12 +11,13 @@ namespace SIL.HermitCrab
 		private readonly SpanFactory<ShapeNode> _spanFactory;
 		private readonly FeatureStruct _applicableFS;
 
-		protected SynthesisRewriteRule(SpanFactory<ShapeNode> spanFactory, Direction dir, ApplicationMode appMode, Expression<Word, ShapeNode> lhs,
+		protected SynthesisRewriteRule(SpanFactory<ShapeNode> spanFactory, Expression<Word, ShapeNode> lhs,
 			Expression<Word, ShapeNode> leftEnv, Expression<Word, ShapeNode> rightEnv, FeatureStruct applicableFS)
-			: base(new Pattern<Word, ShapeNode>(spanFactory, dir,
-				ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.BoundaryType, HCFeatureSystem.AnchorType),
-				(input, match) => CheckTarget(match, lhs)), appMode)
+			: base(new Pattern<Word, ShapeNode>(spanFactory))
 		{
+			Lhs.Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.BoundaryType, HCFeatureSystem.AnchorType);
+			Lhs.Acceptable = (input, match) => CheckTarget(match, lhs);
+
 			_spanFactory = spanFactory;
 			_applicableFS = applicableFS;
 

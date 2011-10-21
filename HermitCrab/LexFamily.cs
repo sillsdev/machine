@@ -10,8 +10,8 @@ namespace SIL.HermitCrab
 	{
 		private readonly IDBearerSet<LexEntry> _entries;
 
-		public LexFamily(string id, string desc)
-			: base(id, desc)
+		public LexFamily(string id)
+			: base(id)
 		{
 			_entries = new IDBearerSet<LexEntry>();
 		}

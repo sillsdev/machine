@@ -15,10 +15,10 @@ namespace SIL.HermitCrab
 
 	public abstract class AnalysisRewriteRule : PatternRuleBase<Word, ShapeNode>
 	{
-		protected AnalysisRewriteRule(SpanFactory<ShapeNode> spanFactory, Direction dir, ApplicationMode appMode,
-			Func<Word, PatternMatch<ShapeNode>, bool> acceptable)
-			: base(new Pattern<Word, ShapeNode>(spanFactory, dir, ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType), acceptable), appMode)
+		protected AnalysisRewriteRule(SpanFactory<ShapeNode> spanFactory)
+			: base(new Pattern<Word, ShapeNode>(spanFactory))
 		{
+			Lhs.Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType);
 		}
 
 		public abstract AnalysisReapplyType AnalysisReapplyType { get; }

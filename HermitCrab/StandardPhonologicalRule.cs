@@ -13,12 +13,29 @@ namespace SIL.HermitCrab
     	private readonly StandardPhonologicalAnalysisRule _analysisRule;
     	private readonly StandardPhonologicalSynthesisRule _synthesisRule;
 
-    	public StandardPhonologicalRule(string id, string description, SpanFactory<ShapeNode> spanFactory, int delReapplications,
-			Direction dir, ApplicationMode appMode, Expression<Word, ShapeNode> lhs)
-			: base(id, description)
+    	public StandardPhonologicalRule(string id, SpanFactory<ShapeNode> spanFactory, Expression<Word, ShapeNode> lhs)
+			: base(id)
 		{
-			_analysisRule = new StandardPhonologicalAnalysisRule(spanFactory, delReapplications, dir, appMode, lhs);
-			_synthesisRule = new StandardPhonologicalSynthesisRule(spanFactory, dir, appMode, lhs);
+			_analysisRule = new StandardPhonologicalAnalysisRule(spanFactory, dir, appMode, lhs);
+			_synthesisRule = new StandardPhonologicalSynthesisRule(spanFactory, lhs);
+    	}
+
+    	public Direction Direction
+    	{
+			get { return _synthesisRule.Lhs.Direction; }
+			set { _synthesisRule.Lhs.Direction = value; }
+    	}
+
+    	public ApplicationMode ApplicationMode
+    	{
+    		get { return _synthesisRule.ApplicationMode; }
+    		set { _synthesisRule.ApplicationMode = value; }
+    	}
+
+    	public int DelReapplications
+    	{
+			get { return _analysisRule.DelReapplications; }
+			set { _analysisRule.DelReapplications = value; }
     	}
 
 		public override IRule<Word, ShapeNode> AnalysisRule

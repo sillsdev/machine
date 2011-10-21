@@ -9,21 +9,21 @@ namespace SIL.HermitCrab
 	internal class StandardPhonologicalAnalysisRule : RuleCascadeBase<Word, ShapeNode>
 	{
 		private readonly SpanFactory<ShapeNode> _spanFactory;
-		private readonly int _delReapplications;
 		private readonly Direction _synthesisDir;
 		private readonly ApplicationMode _synthesisAppMode;
 		private readonly Expression<Word, ShapeNode> _lhs;
 
-		public StandardPhonologicalAnalysisRule(SpanFactory<ShapeNode> spanFactory, int delReapplications, Direction synthesisDir,
+		public StandardPhonologicalAnalysisRule(SpanFactory<ShapeNode> spanFactory, Direction synthesisDir,
 			ApplicationMode synthesisAppMode, Expression<Word, ShapeNode> lhs)
 			: base(RuleCascadeOrder.Linear)
 		{
 			_spanFactory = spanFactory;
-			_delReapplications = delReapplications;
 			_synthesisDir = synthesisDir;
 			_synthesisAppMode = synthesisAppMode;
 			_lhs = lhs;
 		}
+
+		public int DelReapplications { get; set; }
 
 		public void Compile()
 		{
@@ -75,7 +75,7 @@ namespace SIL.HermitCrab
 					{
 						int i = 0;
 						IEnumerable<Word> result;
-						while (i <= _delReapplications && base.ApplyRule(rewriteRule, input, out result))
+						while (i <= DelReapplications && base.ApplyRule(rewriteRule, input, out result))
 						{
 							input = result.Single();
 							output = input.ToEnumerable();

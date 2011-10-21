@@ -10,11 +10,11 @@ namespace SIL.HermitCrab
 		private readonly AffixProcessAllomorph _allomorph;
 
 		public SynthesisAffixProcessRule(SpanFactory<ShapeNode> spanFactory, AffixProcessAllomorph allomorph)
-			: base(new Pattern<Word, ShapeNode>(spanFactory, Direction.LeftToRight,
-				ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.BoundaryType, HCFeatureSystem.AnchorType)),
-			ApplicationMode.Single)
+			: base(new Pattern<Word, ShapeNode>(spanFactory))
 		{
 			_allomorph = allomorph;
+
+			Lhs.Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.BoundaryType, HCFeatureSystem.AnchorType);
 
 			Lhs.Children.Add(new Constraint<Word, ShapeNode>(HCFeatureSystem.AnchorType,
 				FeatureStruct.New(HCFeatureSystem.Instance).Symbol(HCFeatureSystem.LeftSide).Value));

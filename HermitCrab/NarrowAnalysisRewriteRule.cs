@@ -13,8 +13,10 @@ namespace SIL.HermitCrab
 
 		public NarrowAnalysisRewriteRule(SpanFactory<ShapeNode> spanFactory, Expression<Word, ShapeNode> lhs, Expression<Word, ShapeNode> rhs,
 			Expression<Word, ShapeNode> leftEnv, Expression<Word, ShapeNode> rightEnv)
-			: base(spanFactory, Direction.LeftToRight, ApplicationMode.Simultaneous, (input, match) => true)
+			: base(spanFactory)
 		{
+			ApplicationMode = ApplicationMode.Simultaneous;
+
 			_spanFactory = spanFactory;
 			_analysisRhs = lhs;
 			_targetCount = rhs.Children.Count;

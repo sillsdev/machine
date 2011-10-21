@@ -10,28 +10,45 @@ namespace SIL.HermitCrab
 {
 	public class FeatureAnalysisRewriteRule : AnalysisRewriteRule
 	{
+		private readonly Expression<Word, ShapeNode> _rhs;
+		private readonly Expression<Word, ShapeNode> _leftEnv;
+		private readonly Expression<Word, ShapeNode> _rightEnv;
 		private readonly Expression<Word, ShapeNode> _analysisRhs;
-		private readonly AnalysisReapplyType _reapplyType;
+		private AnalysisReapplyType _reapplyType;
+		private ApplicationMode _synthesisAppMode;
 
-		public FeatureAnalysisRewriteRule(SpanFactory<ShapeNode> spanFactory, Direction synthesisDir, ApplicationMode synthesisAppMode,
+		public FeatureAnalysisRewriteRule(SpanFactory<ShapeNode> spanFactory, ApplicationMode synthesisAppMode,
 			Expression<Word, ShapeNode> lhs, Expression<Word, ShapeNode> rhs, Expression<Word, ShapeNode> leftEnv, Expression<Word, ShapeNode> rightEnv)
-			: base(spanFactory, synthesisDir == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight, ApplicationMode.Iterative,
-				CreateAcceptable(rhs, synthesisDir))
+			: base(spanFactory)
 		{
+			_rhs = rhs;
+			_leftEnv = leftEnv;
+			_rightEnv = rightEnv;
+
+			ApplicationMode = ApplicationMode.Iterative;
+			var rhsAntiFSs = new List<FeatureStruct>();
+			foreach (Constraint<Word, ShapeNode> constraint in rhs.Children.OfType<Constraint<Word, ShapeNode>>().Where(c => c.Type == HCFeatureSystem.SegmentType))
+			{
+				FeatureStruct fs = GetAntiFeatureStruct(constraint.FeatureStruct);
+				fs.RemoveValue(AnnotationFeatureSystem.Type);
+				rhsAntiFSs.Add(fs);
+			}
+			Lhs.Acceptable = (input, match) => IsUnapplicationNonvacuous(match, rhsAntiFSs);
+
 			_analysisRhs = new Expression<Word, ShapeNode>();
 			AddEnvironment("leftEnv", leftEnv);
 			int i = 0;
 			foreach (Tuple<PatternNode<Word, ShapeNode>, PatternNode<Word, ShapeNode>> tuple in lhs.Children.Zip(rhs.Children))
 			{
-				var lhsConstraint = (Constraint<Word, ShapeNode>)tuple.Item1;
-				var rhsConstraint = (Constraint<Word, ShapeNode>)tuple.Item2;
+				var lhsConstraint = (Constraint<Word, ShapeNode>) tuple.Item1;
+				var rhsConstraint = (Constraint<Word, ShapeNode>) tuple.Item2;
 
 				if (lhsConstraint.Type == HCFeatureSystem.SegmentType && rhsConstraint.Type == HCFeatureSystem.SegmentType)
 				{
 					var targetConstraint = (Constraint<Word, ShapeNode>)lhsConstraint.Clone();
 					targetConstraint.FeatureStruct.PriorityUnion(rhsConstraint.FeatureStruct);
 					targetConstraint.FeatureStruct.AddValue(HCFeatureSystem.Backtrack, HCFeatureSystem.NotSearched);
-					Lhs.Children.Add(new Group<Word, ShapeNode>("target" + i, targetConstraint));
+					Lhs.Children.Add(new Group<Word, ShapeNode>("target" + i) {Children = {targetConstraint}});
 
 					var fs = GetAntiFeatureStruct(rhsConstraint.FeatureStruct);
 					fs.Subtract(GetAntiFeatureStruct(lhsConstraint.FeatureStruct));
@@ -41,42 +58,44 @@ namespace SIL.HermitCrab
 				}
 			}
 			AddEnvironment("rightEnv", rightEnv);
+		}
 
-			if (synthesisAppMode == ApplicationMode.Simultaneous)
+		public Direction SynthesisDirection
+		{
+			get { return Lhs.Direction == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight; }
+			set { Lhs.Direction = value == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight; }
+		}
+
+		public ApplicationMode SynthesisApplicationMode
+		{
+			get { return _synthesisAppMode; }
+			set
 			{
-				foreach (Constraint<Word, ShapeNode> constraint in rhs.Children)
+				_synthesisAppMode = value;
+				if (_synthesisAppMode == ApplicationMode.Simultaneous)
 				{
-					if (constraint.Type == HCFeatureSystem.SegmentType)
+					_reapplyType = AnalysisReapplyType.Normal;
+					foreach (Constraint<Word, ShapeNode> constraint in _rhs.Children)
 					{
-						if (!IsUnifiable(constraint, leftEnv) || !IsUnifiable(constraint, rightEnv))
+						if (constraint.Type == HCFeatureSystem.SegmentType)
 						{
-							_reapplyType = AnalysisReapplyType.SelfOpaquing;
-							break;
+							if (!IsUnifiable(constraint, _leftEnv) || !IsUnifiable(constraint, _rightEnv))
+							{
+								_reapplyType = AnalysisReapplyType.SelfOpaquing;
+								break;
+							}
 						}
 					}
 				}
 			}
 		}
 
-		private static Func<Word, PatternMatch<ShapeNode>, bool> CreateAcceptable(Expression<Word, ShapeNode> rhs, Direction synthesisDir)
-		{
-			var rhsAntiFSs = new List<FeatureStruct>();
-			foreach (Constraint<Word, ShapeNode> constraint in rhs.Children.OfType<Constraint<Word, ShapeNode>>().Where(c => c.Type == HCFeatureSystem.SegmentType))
-			{
-				FeatureStruct fs = GetAntiFeatureStruct(constraint.FeatureStruct);
-				fs.RemoveValue(AnnotationFeatureSystem.Type);
-				rhsAntiFSs.Add(fs);
-			}
-			Direction dir = synthesisDir == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight;
-			return (input, match) => IsUnapplicationNonvacuous(match, rhsAntiFSs, dir);
-		}
-
-		private static bool IsUnapplicationNonvacuous(PatternMatch<ShapeNode> match, IEnumerable<FeatureStruct> rhsAntiFSs, Direction dir)
+		private bool IsUnapplicationNonvacuous(PatternMatch<ShapeNode> match, IEnumerable<FeatureStruct> rhsAntiFSs)
 		{
 			int i = 0;
 			foreach (FeatureStruct fs in rhsAntiFSs)
 			{
-				ShapeNode node = match["target" + i].GetStart(dir);
+				ShapeNode node = match["target" + i].GetStart(Lhs.Direction);
 				if (!node.Annotation.FeatureStruct.IsUnifiable(fs, match.VariableBindings))
 					return true;
 				i++;

@@ -2,7 +2,6 @@
 using SIL.APRE;
 using SIL.APRE.FeatureModel;
 using SIL.APRE.Matching;
-using SIL.APRE.Transduction;
 
 namespace SIL.HermitCrab
 {
@@ -10,10 +9,10 @@ namespace SIL.HermitCrab
 	{
 		private readonly Expression<Word, ShapeNode> _rhs;
 
-		public FeatureSynthesisRewriteRule(SpanFactory<ShapeNode> spanFactory, Direction dir, ApplicationMode appMode, Expression<Word, ShapeNode> lhs,
+		public FeatureSynthesisRewriteRule(SpanFactory<ShapeNode> spanFactory, Expression<Word, ShapeNode> lhs,
 			Expression<Word, ShapeNode> rhs, Expression<Word, ShapeNode> leftEnv, Expression<Word, ShapeNode> rightEnv,
 			FeatureStruct applicableFS)
-			: base(spanFactory, dir, appMode, lhs, leftEnv, rightEnv, applicableFS)
+			: base(spanFactory, lhs, leftEnv, rightEnv, applicableFS)
 		{
 			_rhs = rhs;
 		}

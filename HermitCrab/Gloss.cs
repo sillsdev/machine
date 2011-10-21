@@ -7,8 +7,8 @@ namespace SIL.HermitCrab
 	/// </summary>
 	public class Gloss : IDBearerBase
 	{
-		public Gloss(string id, string desc)
-			: base(id, desc)
+		public Gloss(string id)
+			: base(id)
 		{
 		}
 	}

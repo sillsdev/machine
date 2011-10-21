@@ -13,10 +13,11 @@ namespace SIL.HermitCrab
 		private readonly Dictionary<int, Constraint<Word, ShapeNode>> _modifyFromConstraints;
 
 		public AnalysisAffixPatternRule(SpanFactory<ShapeNode> spanFactory, AffixProcessAllomorph allomorph)
-			: base(new Pattern<Word, ShapeNode>(spanFactory,
-				Direction.LeftToRight, ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType)),
-			ApplicationMode.Multiple)
+			: base(new Pattern<Word, ShapeNode>(spanFactory))
 		{
+			Lhs.Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType);
+			ApplicationMode = ApplicationMode.Multiple;
+
 			_spanFactory = spanFactory;
 			_allomorph = allomorph;
 			_modifyFromConstraints = new Dictionary<int, Constraint<Word, ShapeNode>>();

@@ -8,8 +8,8 @@ namespace SIL.HermitCrab
     /// </summary>
     public class MprFeature : IDBearerBase
     {
-    	public MprFeature(string id, string desc)
-            : base(id, desc)
+    	public MprFeature(string id)
+            : base(id)
         {
         	Group = null;
         }

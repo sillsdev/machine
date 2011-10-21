@@ -11,9 +11,11 @@ namespace SIL.HermitCrab
 
 		public EpenthesisAnalysisRewriteRule(SpanFactory<ShapeNode> spanFactory, Direction synthesisDir, ApplicationMode synthesisAppMode,
 			Expression<Word, ShapeNode> rhs, Expression<Word, ShapeNode> leftEnv, Expression<Word, ShapeNode> rightEnv)
-			: base(spanFactory, synthesisDir == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight, ApplicationMode.Iterative,
-			(input, match) => IsUnapplicationNonvacuous(match))
+			: base(spanFactory)
 		{
+			ApplicationMode = ApplicationMode.Iterative;
+			Lhs.Direction = synthesisDir == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight;
+			Lhs.Acceptable = (input, match) => IsUnapplicationNonvacuous(match);
 			_targetCount = rhs.Children.Count;
 
 			AddEnvironment("leftEnv", leftEnv);

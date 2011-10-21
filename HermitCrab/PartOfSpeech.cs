@@ -7,8 +7,8 @@ namespace SIL.HermitCrab
 	/// </summary>
 	public class PartOfSpeech : IDBearerBase
 	{
-		public PartOfSpeech(string id, string desc)
-			: base(id, desc)
+		public PartOfSpeech(string id)
+			: base(id)
 		{
 		}
 	}

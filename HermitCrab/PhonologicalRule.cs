@@ -8,8 +8,8 @@ namespace SIL.HermitCrab
 	/// </summary>
 	public abstract class PhonologicalRule : IDBearerBase
 	{
-		protected PhonologicalRule(string id, string description)
-			: base(id, description)
+		protected PhonologicalRule(string id)
+			: base(id)
 		{
 		}
 
