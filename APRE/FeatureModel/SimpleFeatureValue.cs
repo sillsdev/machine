@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace SIL.APRE.FeatureModel
 {
-	public abstract class SimpleFeatureValue : FeatureValue
+	public abstract class SimpleFeatureValue : FeatureValue, ICloneable<SimpleFeatureValue>
 	{
 		protected SimpleFeatureValue()
 		{
@@ -42,39 +42,28 @@ namespace SIL.APRE.FeatureModel
 			}
 			else if (IsVariable && !otherSfv.IsVariable)
 			{
-				FeatureValue binding;
+				SimpleFeatureValue binding;
 				if (varBindings.TryGetValue(VariableName, out binding))
 				{
-
-					var bindingSfv = (SimpleFeatureValue) binding;
-					if (!bindingSfv.Overlaps(!Agree, otherSfv, false))
+					if (!binding.Overlaps(!Agree, otherSfv, false))
 						return false;
 				}
 				else
 				{
-					if (Agree)
-						binding = otherSfv.Clone();
-					else
-						otherSfv.Negation(out binding);
-					varBindings[VariableName] = binding;
+					varBindings[VariableName] = otherSfv.GetVariableValue(Agree);
 				}
 			}
 			else if (!IsVariable && otherSfv.IsVariable)
 			{
-				FeatureValue binding;
+				SimpleFeatureValue binding;
 				if (varBindings.TryGetValue(otherSfv.VariableName, out binding))
 				{
-					var bindingSfv = (SimpleFeatureValue) binding;
-					if (!Overlaps(false, bindingSfv, !otherSfv.Agree))
+					if (!Overlaps(false, binding, !otherSfv.Agree))
 						return false;
 				}
 				else
 				{
-					if (otherSfv.Agree)
-						binding = Clone();
-					else
-						Negation(out binding);
-					varBindings[otherSfv.VariableName] = binding;
+					varBindings[otherSfv.VariableName] = GetVariableValue(otherSfv.Agree);
 				}
 			}
 			else
@@ -100,43 +89,33 @@ namespace SIL.APRE.FeatureModel
 			}
 			else if (IsVariable && !otherSfv.IsVariable)
 			{
-				FeatureValue binding;
+				SimpleFeatureValue binding;
 				if (varBindings.TryGetValue(VariableName, out binding))
 				{
-					var bindingSfv = (SimpleFeatureValue) binding;
-					if (!bindingSfv.Overlaps(!Agree, otherSfv, false))
+					if (!binding.Overlaps(!Agree, otherSfv, false))
 						return false;
-					UnionWith(false, bindingSfv, !Agree);
+					UnionWith(false, binding, !Agree);
 					IntersectWith(false, otherSfv, false);
 				}
 				else
 				{
 					UnionWith(false, otherSfv, false);
-					if (Agree)
-						binding = otherSfv.Clone();
-					else
-						otherSfv.Negation(out binding);
-					varBindings[VariableName] = binding;
+					varBindings[VariableName] = otherSfv.GetVariableValue(Agree);
 				}
 				VariableName = null;
 			}
 			else if (!IsVariable && otherSfv.IsVariable)
 			{
-				FeatureValue binding;
+				SimpleFeatureValue binding;
 				if (varBindings.TryGetValue(otherSfv.VariableName, out binding))
 				{
-					var bindingSfv = (SimpleFeatureValue) binding;
-					if (!Overlaps(false, bindingSfv, !otherSfv.Agree))
+					if (!Overlaps(false, binding, !otherSfv.Agree))
 						return false;
-					IntersectWith(false, bindingSfv, !otherSfv.Agree);
+					IntersectWith(false, binding, !otherSfv.Agree);
 				}
 				else
 				{
-					if (otherSfv.Agree)
-						binding = Clone();
-					else
-						Negation(out binding);
-					varBindings[otherSfv.VariableName] = binding;
+					varBindings[otherSfv.VariableName] = GetVariableValue(otherSfv.Agree);
 				}
 			}
 			else
@@ -170,39 +149,29 @@ namespace SIL.APRE.FeatureModel
 			}
 			else if (IsVariable && !otherSfv.IsVariable)
 			{
-				FeatureValue binding;
+				SimpleFeatureValue binding;
 				if (varBindings.TryGetValue(VariableName, out binding))
 				{
-					var bindingSfv = (SimpleFeatureValue) binding;
-					UnionWith(false, bindingSfv, !Agree);
+					UnionWith(false, binding, !Agree);
 					UnionWith(false, otherSfv, false);
 				}
 				else
 				{
 					UnionWith(false, otherSfv, false);
-					if (Agree)
-						binding = otherSfv.Clone();
-					else
-						otherSfv.Negation(out binding);
-					varBindings[VariableName] = binding;
+					varBindings[VariableName] = otherSfv.GetVariableValue(Agree);
 				}
 				VariableName = null;
 			}
 			else if (!IsVariable && otherSfv.IsVariable)
 			{
-				FeatureValue binding;
+				SimpleFeatureValue binding;
 				if (varBindings.TryGetValue(otherSfv.VariableName, out binding))
 				{
-					var bindingSfv = (SimpleFeatureValue) binding;
-					UnionWith(false, bindingSfv, !otherSfv.Agree);
+					UnionWith(false, binding, !otherSfv.Agree);
 				}
 				else
 				{
-					if (otherSfv.Agree)
-						binding = Clone();
-					else
-						Negation(out binding);
-					varBindings[otherSfv.VariableName] = binding;
+					varBindings[otherSfv.VariableName] = GetVariableValue(otherSfv.Agree);
 				}
 			}
 
@@ -221,26 +190,27 @@ namespace SIL.APRE.FeatureModel
 			}
 			else if (IsVariable && !otherSfv.IsVariable)
 			{
-				FeatureValue binding;
+				SimpleFeatureValue binding;
 				if (varBindings.TryGetValue(VariableName, out binding))
 				{
-					var bindingSfv = (SimpleFeatureValue) binding;
-					UnionWith(false, bindingSfv, !Agree);
+					UnionWith(false, binding, !Agree);
 					ExceptWith(false, otherSfv, false);
 					VariableName = null;
 				}
 			}
 			else if (!IsVariable && otherSfv.IsVariable)
 			{
-				FeatureValue binding;
+				SimpleFeatureValue binding;
 				if (varBindings.TryGetValue(otherSfv.VariableName, out binding))
-				{
-					var bindingSfv = (SimpleFeatureValue) binding;
-					ExceptWith(false, bindingSfv, !otherSfv.Agree);
-				}
+					ExceptWith(false, binding, !otherSfv.Agree);
 			}
 
 			return IsSatisfiable;
+		}
+
+		internal SimpleFeatureValue GetVariableValue(bool agree)
+		{
+			return agree ? Clone() : Negation();
 		}
 
 		protected override bool NondestructiveUnify(FeatureValue other, bool useDefaults, IDictionary<FeatureValue, FeatureValue> copies,
@@ -261,13 +231,28 @@ namespace SIL.APRE.FeatureModel
 		internal override FeatureValue Clone(IDictionary<FeatureValue, FeatureValue> copies)
 		{
 			FeatureValue copy;
-			if (copies.TryGetValue(this, out copy))
-				return copy;
+			if (copies != null)
+			{
+				if (copies.TryGetValue(this, out copy))
+					return copy;
+			}
 
 			copy = Clone();
-			copies[this] = copy;
+
+			if (copies != null)
+				copies[this] = copy;
 			return copy;
 		}
+
+		public abstract SimpleFeatureValue Clone();
+
+		internal override bool Negation(out FeatureValue output)
+		{
+			output = Negation();
+			return true;
+		}
+
+		public abstract SimpleFeatureValue Negation();
 
 		protected abstract bool Overlaps(bool not, SimpleFeatureValue other, bool notOther);
 		protected abstract void IntersectWith(bool not, SimpleFeatureValue other, bool notOther);

@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using SIL.APRE.FeatureModel;
 
 namespace SIL.APRE.Fsa
 {
-	public class State<TData, TOffset> where TData : IData<TOffset>
+	public class State<TData, TOffset> : IEquatable<State<TData, TOffset>>  where TData : IData<TOffset>
 	{
 		private readonly int _index;
 		private readonly List<Arc<TData, TOffset>> _outgoingArcs;

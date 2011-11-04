@@ -6,14 +6,14 @@ namespace SIL.APRE.FeatureModel.Fluent
 	public class DisjunctionBuilder : IFirstDisjunctSyntax, ISecondDisjunctSyntax, IFinalDisjunctSyntax
 	{
 		private readonly FeatureSystem _featSys;
-		private readonly FeatureModel.FeatureStruct _rootFs;
-		private readonly List<FeatureModel.FeatureStruct> _disjuncts;
+		private readonly FeatureStruct _rootFs;
+		private readonly List<FeatureStruct> _disjuncts;
 
-		public DisjunctionBuilder(FeatureSystem featSys, FeatureModel.FeatureStruct rootFs)
+		public DisjunctionBuilder(FeatureSystem featSys, FeatureStruct rootFs)
 		{
 			_featSys = featSys;
 			_rootFs = rootFs;
-			_disjuncts = new List<FeatureModel.FeatureStruct>();
+			_disjuncts = new List<FeatureStruct>();
 		}
 
 		public ISecondDisjunctSyntax With(Func<IDisjunctiveFeatureStructSyntax, IDisjunctiveFeatureStructSyntax> build)

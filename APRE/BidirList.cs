@@ -74,6 +74,10 @@ namespace SIL.APRE
         {
 			foreach (TNode node in this)
 				node.Clear();
+			if (_begin != null)
+				_begin.Next = _end;
+			if (_end != null)
+				_end.Prev = _begin;
         	_first = null;
         	_last = null;
             _size = 0;

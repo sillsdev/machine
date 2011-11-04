@@ -68,25 +68,6 @@ namespace SIL.APRE.Matching
 			return "(" + Children + ")";
 		}
 
-		public override int GetHashCode()
-		{
-			return Children.GetHashCode();
-		}
-
-		public override bool Equals(object obj)
-		{
-			if (obj == null)
-				return false;
-			return Equals(obj as Group<TData, TOffset>);
-		}
-
-		public bool Equals(Group<TData, TOffset> other)
-		{
-			if (other == null)
-				return false;
-			return Children.Equals(other.Children);
-		}
-
 		public override PatternNode<TData, TOffset> Clone()
 		{
 			return new Group<TData, TOffset>(this);

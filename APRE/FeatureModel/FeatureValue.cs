@@ -2,14 +2,11 @@ using System.Collections.Generic;
 
 namespace SIL.APRE.FeatureModel
 {
-	public abstract class FeatureValue : ICloneable<FeatureValue>
+	public abstract class FeatureValue
 	{
 		internal FeatureValue Forward { get; set; }
 
-		public abstract FeatureValue Clone();
-
-		public abstract bool Negation(out FeatureValue output);
-
+		internal abstract bool Negation(out FeatureValue output);
 		internal abstract bool Merge(FeatureValue other, VariableBindings varBindings);
 		internal abstract bool Subtract(FeatureValue other, VariableBindings varBindings);
 		internal abstract bool IsDefiniteUnifiable(FeatureValue other, bool useDefaults, VariableBindings varBindings);
@@ -18,10 +15,13 @@ namespace SIL.APRE.FeatureModel
 		protected abstract bool NondestructiveUnify(FeatureValue other, bool useDefaults, IDictionary<FeatureValue, FeatureValue> copies,
 			VariableBindings varBindings, out FeatureValue output);
 		internal abstract FeatureValue Clone(IDictionary<FeatureValue, FeatureValue> copies);
+		internal abstract bool Equals(FeatureValue other, HashSet<FeatureStruct> visitedSelf, HashSet<FeatureStruct> visitedOther,
+			IDictionary<FeatureStruct, FeatureStruct> visitedPairs);
+		internal abstract int GetHashCode(HashSet<FeatureStruct> visited);
 
 		internal bool UnifyDefinite(FeatureValue other, bool useDefaults, VariableBindings varBindings, out FeatureValue output)
 		{
-			var copies = new Dictionary<FeatureValue, FeatureValue>(new IdentityEqualityComparer<FeatureValue>());
+			var copies = new Dictionary<FeatureValue, FeatureValue>(new ReferenceEqualityComparer<FeatureValue>());
 			return UnifyDefinite(other, useDefaults, copies, varBindings, out output);
 		}
 

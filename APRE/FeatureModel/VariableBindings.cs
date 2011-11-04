@@ -3,19 +3,19 @@ using System.Collections.Generic;
 
 namespace SIL.APRE.FeatureModel
 {
-	public class VariableBindings : IDictionary<string, FeatureValue>, ICloneable<VariableBindings>
+	public class VariableBindings : IDictionary<string, SimpleFeatureValue>, ICloneable<VariableBindings>
 	{
-		private readonly Dictionary<string, FeatureValue> _varBindings;
+		private readonly Dictionary<string, SimpleFeatureValue> _varBindings;
 
 		public VariableBindings()
 		{
-			_varBindings = new Dictionary<string, FeatureValue>();
+			_varBindings = new Dictionary<string, SimpleFeatureValue>();
 		}
 
 		public VariableBindings(VariableBindings varBindings)
 			: this()
 		{
-			foreach (KeyValuePair<string, FeatureValue> kvp in varBindings._varBindings)
+			foreach (KeyValuePair<string, SimpleFeatureValue> kvp in varBindings._varBindings)
 				_varBindings[kvp.Key] = kvp.Value.Clone();
 		}
 
@@ -29,19 +29,19 @@ namespace SIL.APRE.FeatureModel
 			return _varBindings.ContainsKey(variableName);
 		}
 
-		bool IDictionary<string, FeatureValue>.ContainsKey(string key)
+		bool IDictionary<string, SimpleFeatureValue>.ContainsKey(string key)
 		{
 			return _varBindings.ContainsKey(key);
 		}
 
-		public void Add(string variableName, FeatureValue value)
+		public void Add(string variableName, SimpleFeatureValue value)
 		{
 			_varBindings.Add(variableName, value);
 		}
 
 		public void Replace(VariableBindings varBindings)
 		{
-			foreach (KeyValuePair<string, FeatureValue> varBinding in varBindings)
+			foreach (KeyValuePair<string, SimpleFeatureValue> varBinding in varBindings)
 				_varBindings[varBinding.Key] = varBinding.Value;
 		}
 
@@ -50,28 +50,28 @@ namespace SIL.APRE.FeatureModel
 			return _varBindings.Remove(variableName);
 		}
 
-		public bool TryGetValue(string variableName, out FeatureValue value)
+		public bool TryGetValue(string variableName, out SimpleFeatureValue value)
 		{
 			return _varBindings.TryGetValue(variableName, out value);
 		}
 
-		public FeatureValue this[string variableName]
+		public SimpleFeatureValue this[string variableName]
 		{
 			get { return _varBindings[variableName]; }
 			set { _varBindings[variableName] = value; }
 		}
 
-		ICollection<string> IDictionary<string, FeatureValue>.Keys
+		ICollection<string> IDictionary<string, SimpleFeatureValue>.Keys
 		{
 			get { return _varBindings.Keys; }
 		}
 
-		ICollection<FeatureValue> IDictionary<string, FeatureValue>.Values
+		public ICollection<SimpleFeatureValue> Values
 		{
 			get { return _varBindings.Values; }
 		}
 
-		IEnumerator<KeyValuePair<string, FeatureValue>> IEnumerable<KeyValuePair<string, FeatureValue>>.GetEnumerator()
+		IEnumerator<KeyValuePair<string, SimpleFeatureValue>> IEnumerable<KeyValuePair<string, SimpleFeatureValue>>.GetEnumerator()
 		{
 			return _varBindings.GetEnumerator();
 		}
@@ -81,9 +81,9 @@ namespace SIL.APRE.FeatureModel
 			return ((IEnumerable<KeyValuePair<string, FeatureValue>>) this).GetEnumerator();
 		}
 
-		void ICollection<KeyValuePair<string, FeatureValue>>.Add(KeyValuePair<string, FeatureValue> item)
+		void ICollection<KeyValuePair<string, SimpleFeatureValue>>.Add(KeyValuePair<string, SimpleFeatureValue> item)
 		{
-			((ICollection<KeyValuePair<string, FeatureValue>>) _varBindings).Add(item);
+			((ICollection<KeyValuePair<string, SimpleFeatureValue>>) _varBindings).Add(item);
 		}
 
 		public void Clear()
@@ -91,19 +91,19 @@ namespace SIL.APRE.FeatureModel
 			_varBindings.Clear();
 		}
 
-		bool ICollection<KeyValuePair<string, FeatureValue>>.Contains(KeyValuePair<string, FeatureValue> item)
+		bool ICollection<KeyValuePair<string, SimpleFeatureValue>>.Contains(KeyValuePair<string, SimpleFeatureValue> item)
 		{
-			return ((ICollection<KeyValuePair<string, FeatureValue>>) _varBindings).Contains(item);
+			return ((ICollection<KeyValuePair<string, SimpleFeatureValue>>) _varBindings).Contains(item);
 		}
 
-		void ICollection<KeyValuePair<string, FeatureValue>>.CopyTo(KeyValuePair<string, FeatureValue>[] array, int arrayIndex)
+		void ICollection<KeyValuePair<string, SimpleFeatureValue>>.CopyTo(KeyValuePair<string, SimpleFeatureValue>[] array, int arrayIndex)
 		{
-			((ICollection<KeyValuePair<string, FeatureValue>>) _varBindings).CopyTo(array, arrayIndex);
+			((ICollection<KeyValuePair<string, SimpleFeatureValue>>) _varBindings).CopyTo(array, arrayIndex);
 		}
 
-		bool ICollection<KeyValuePair<string, FeatureValue>>.Remove(KeyValuePair<string, FeatureValue> item)
+		bool ICollection<KeyValuePair<string, SimpleFeatureValue>>.Remove(KeyValuePair<string, SimpleFeatureValue> item)
 		{
-			return ((ICollection<KeyValuePair<string, FeatureValue>>) _varBindings).Remove(item);
+			return ((ICollection<KeyValuePair<string, SimpleFeatureValue>>) _varBindings).Remove(item);
 		}
 
 		public int Count
@@ -111,7 +111,7 @@ namespace SIL.APRE.FeatureModel
 			get { return _varBindings.Count; }
 		}
 
-		bool ICollection<KeyValuePair<string, FeatureValue>>.IsReadOnly
+		bool ICollection<KeyValuePair<string, SimpleFeatureValue>>.IsReadOnly
 		{
 			get { return false; }
 		}

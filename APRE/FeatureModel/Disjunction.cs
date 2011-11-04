@@ -19,7 +19,7 @@ namespace SIL.APRE.FeatureModel
 
 		public Disjunction(Disjunction disjunction)
 		{
-			_disjuncts = new HashSet<FeatureStruct>(disjunction._disjuncts.Select(disj => (FeatureStruct) disj.Clone()));
+			_disjuncts = new HashSet<FeatureStruct>(disjunction._disjuncts.Clone());
 		}
 
 		public IEnumerator<FeatureStruct> GetEnumerator()
@@ -62,7 +62,7 @@ namespace SIL.APRE.FeatureModel
 
 		internal Disjunction Clone(IDictionary<FeatureValue, FeatureValue> copies)
 		{
-			return new Disjunction(_disjuncts.Select(disj => (FeatureStruct) disj.Clone(new Dictionary<FeatureValue, FeatureValue>(copies, new IdentityEqualityComparer<FeatureValue>()))));
+			return new Disjunction(_disjuncts.Select(disj => (FeatureStruct) disj.Clone(new Dictionary<FeatureValue, FeatureValue>(copies, new ReferenceEqualityComparer<FeatureValue>()))));
 		}
 
 		public Disjunction Clone()
@@ -83,7 +83,7 @@ namespace SIL.APRE.FeatureModel
 
 		public override int GetHashCode()
 		{
-			return _disjuncts.Aggregate(0, (code, fs) => code ^ fs.GetHashCode());
+			return _disjuncts.Aggregate(23, (code, fs) => code * 31 + fs.GetHashCode());
 		}
 
 		public override string ToString()

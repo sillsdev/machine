@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SIL.APRE.FeatureModel
 {
-	public class SymbolicFeatureValue : SimpleFeatureValue
+	public class SymbolicFeatureValue : SimpleFeatureValue, IEquatable<SymbolicFeatureValue>
 	{
 		private readonly SymbolicFeature _feature;
 		private IDBearerSet<FeatureSymbol> _values;
@@ -47,6 +47,11 @@ namespace SIL.APRE.FeatureModel
 		public IEnumerable<FeatureSymbol> Values
 		{
 			get { return _values; }
+		}
+
+		public SymbolicFeature Feature
+		{
+			get { return _feature; }
 		}
 
 		protected override bool IsSatisfiable
@@ -142,10 +147,56 @@ namespace SIL.APRE.FeatureModel
 				_values = new IDBearerSet<FeatureSymbol>(otherSfv._values.Except(_values));
 		}
 
-		public override bool Negation(out FeatureValue output)
+		public override SimpleFeatureValue Negation()
 		{
-			output = IsVariable ? new SymbolicFeatureValue(_feature, VariableName, !Agree) : new SymbolicFeatureValue(_feature.PossibleSymbols.Except(_values));
-			return true;
+			return IsVariable ? new SymbolicFeatureValue(_feature, VariableName, !Agree) : new SymbolicFeatureValue(_feature.PossibleSymbols.Except(_values));
+		}
+
+		internal override bool Equals(FeatureValue other, HashSet<FeatureStruct> visitedSelf, HashSet<FeatureStruct> visitedOther,
+			IDictionary<FeatureStruct, FeatureStruct> visitedPairs)
+		{
+			if (other == null)
+				return false;
+			SymbolicFeatureValue otherSfv;
+			if (!Dereference(other, out otherSfv))
+				return false;
+			return Equals(otherSfv);
+		}
+
+		public override bool Equals(object other)
+		{
+			var otherSfv = other as SymbolicFeatureValue;
+			return other != null && Equals(otherSfv);
+		}
+
+		public bool Equals(SymbolicFeatureValue other)
+		{
+			if (other == null)
+				return false;
+
+			if (IsVariable)
+				return VariableName == other.VariableName && Agree == other.Agree;
+			return _values.SetEquals(other._values);
+		}
+
+		internal override int GetHashCode(HashSet<FeatureStruct> visited)
+		{
+			return GetHashCode();
+		}
+
+		public override int GetHashCode()
+		{
+			int code = 23;
+			if (IsVariable)
+			{
+				code = code * 31 + VariableName.GetHashCode();
+				code = code * 31 + Agree.GetHashCode();
+			}
+			else
+			{
+				code = _values.Aggregate(code, (symValCode, sym) => symValCode * 31 + sym.GetHashCode());
+			}
+			return code;
 		}
 
 		public override string ToString()
@@ -170,26 +221,7 @@ namespace SIL.APRE.FeatureModel
 			return sb.ToString();
 		}
 
-		public override bool Equals(object obj)
-		{
-			var other = obj as SymbolicFeatureValue;
-			return other != null && Equals(other);
-		}
-
-		public bool Equals(SymbolicFeatureValue other)
-		{
-			if (other == null)
-				return false;
-			other = Dereference(other);
-			return _values.SetEquals(other._values);
-		}
-
-		public override int GetHashCode()
-		{
-			return _values.Aggregate(0, (code, symbol) => code ^ symbol.GetHashCode());
-		}
-
-		public override FeatureValue Clone()
+		public override SimpleFeatureValue Clone()
 		{
 			return new SymbolicFeatureValue(this);
 		}

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using SIL.APRE.Fsa;
 using SIL.APRE.Matching.Fluent;
 
@@ -27,8 +28,7 @@ namespace SIL.APRE.Matching
 		public Pattern(SpanFactory<TOffset> spanFactory, IEnumerable<PatternNode<TData, TOffset>> nodes)
 			: base(nodes)
 		{
-			Filter = ann => true;
-			Direction = Direction.LeftToRight;
+			//Filter = ann => true;
 			_spanFactory = spanFactory;
 		}
 
@@ -51,7 +51,17 @@ namespace SIL.APRE.Matching
 
 		public Direction Direction { get; set; }
 
-		public Func<Annotation<TOffset>, bool> Filter { get; set; }
+		private Func<Annotation<TOffset>, bool> _filter = ann => true;
+		public Func<Annotation<TOffset>, bool> Filter
+		{
+			get { return _filter; }
+
+			set { _filter = value; }
+		}
+
+		public bool UseDefaultsForMatching { get; set; }
+
+		public bool Quasideterministic { get; set; }
 
 		public bool IsCompiled
 		{
@@ -69,7 +79,7 @@ namespace SIL.APRE.Matching
 			_fsa.ToGraphViz(writer);
 			writer.Close();
 
-			_fsa.Determinize();
+			_fsa.Determinize(Quasideterministic);
 
 			writer = new StreamWriter(string.Format("c:\\{0}-dfa.dot", Direction == Direction.LeftToRight ? "ltor" : "rtol"));
 			_fsa.ToGraphViz(writer);
@@ -154,7 +164,7 @@ namespace SIL.APRE.Matching
 
 			List<PatternMatch<TOffset>> matchesList = null;
 			IEnumerable<FsaMatch<TOffset>> fsaMatches;
-			if (_fsa.IsMatch(data, start, allMatches, out fsaMatches))
+			if (_fsa.IsMatch(data, start, allMatches, UseDefaultsForMatching, out fsaMatches))
 			{
 				matchesList = new List<PatternMatch<TOffset>>();
 				foreach (FsaMatch<TOffset> match in fsaMatches)
@@ -211,7 +221,10 @@ namespace SIL.APRE.Matching
 
         public override string ToString()
         {
-        	return Children.ToString();
+        	var sb = new StringBuilder();
+			foreach (PatternNode<TData, TOffset> node in Children)
+				sb.Append(node.ToString());
+        	return sb.ToString();
         }
 	}
 }

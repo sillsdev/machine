@@ -25,7 +25,7 @@ namespace SIL.APRE
 		public Annotation(Annotation<TOffset> ann)
 		{
 			_span = ann._span;
-			FeatureStruct = ann.FeatureStruct == null ? null : (FeatureStruct) ann.FeatureStruct.Clone();
+			FeatureStruct = ann.FeatureStruct == null ? null : ann.FeatureStruct.Clone();
 			Optional = ann.Optional;
 		}
 

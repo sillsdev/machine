@@ -53,24 +53,5 @@ namespace SIL.APRE.Matching
 			}
 			return sb.ToString();
 		}
-
-		public override int GetHashCode()
-		{
-			return Children.GetHashCode();
-		}
-
-		public override bool Equals(object obj)
-		{
-			if (obj == null)
-				return false;
-			return Equals(obj as Alternation<TData, TOffset>);
-		}
-
-		public bool Equals(Alternation<TData, TOffset> other)
-		{
-			if (other == null)
-				return false;
-			return Children.Equals(other.Children);
-		}
 	}
 }

@@ -26,7 +26,7 @@ namespace SIL.APRE.Test
 						.Symbol("cons+")
 						.Feature("voice").Not.EqualToVariable("a").Value)).Value;
 
-			var rule = new PatternRule<StringData, int>(pattern, (StringData input, PatternMatch<int> match, out StringData output) =>
+			var rule = new ActionPatternRule<StringData, int>(pattern, (StringData input, PatternMatch<int> match, out StringData output) =>
 			                                  	{
 													Span<int> target = match["target"];
 			                                  		foreach (Annotation<int> ann in input.Annotations.GetNodes(target))
@@ -59,7 +59,7 @@ namespace SIL.APRE.Test
 						.Symbol("cons+")
 						.Feature("voice").Not.EqualToVariable("a").Value)).Value;
 
-			var rule1 = new PatternRule<StringData, int>(pattern, (StringData input, PatternMatch<int> match, out StringData output) =>
+			var rule1 = new ActionPatternRule<StringData, int>(pattern, (StringData input, PatternMatch<int> match, out StringData output) =>
 												{
 													Span<int> target = match["target"];
 													foreach (Annotation<int> ann in input.Annotations.GetNodes(target))
@@ -73,7 +73,7 @@ namespace SIL.APRE.Test
 												},
 												input => input.Annotations.GetNodes("Word").Single().FeatureStruct.IsUnifiable(FeatureStruct.New(WordFeatSys).Symbol("verb").Value));
 
-			var rule2 = new PatternRule<StringData, int>(pattern, (StringData input, PatternMatch<int> match, out StringData output) =>
+			var rule2 = new ActionPatternRule<StringData, int>(pattern, (StringData input, PatternMatch<int> match, out StringData output) =>
 												{
 													Span<int> target = match["target"];
 													foreach (Annotation<int> ann in input.Annotations.GetNodes(target))
@@ -86,7 +86,7 @@ namespace SIL.APRE.Test
 													return resumeAnn;
 												});
 
-			var batch = new PatternRuleBatch<StringData, int>(new[] {rule1, rule2});
+			var batch = new ActionPatternRuleBatch<StringData, int>(new[] {rule1, rule2});
 			batch.Compile();
 			StringData inputWord = CreateStringData("fazk");
 			inputWord.Annotations.Add("Word", inputWord.Span, FeatureStruct.New(WordFeatSys).Symbol("noun").Value);

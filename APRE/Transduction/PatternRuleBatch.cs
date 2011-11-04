@@ -1,76 +1,53 @@
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using SIL.APRE.Matching;
 
 namespace SIL.APRE.Transduction
 {
-	public class PatternRuleBatch<TData, TOffset> : PatternRuleBatchBase<TData, TOffset> where TData : IData<TOffset>
+	public abstract class PatternRuleBatch<TData, TOffset> : PatternRule<TData, TOffset> where TData : IData<TOffset>
 	{
-		private readonly IPatternRuleAction<TData, TOffset> _rhs;
+		private readonly List<PatternRule<TData, TOffset>> _rules; 
+		private readonly Dictionary<string, PatternRule<TData, TOffset>> _ruleIds;
 
-		public PatternRuleBatch(Pattern<TData, TOffset> pattern)
-			: this(pattern, new NullPatternRuleAction<TData, TOffset>())
+		protected PatternRuleBatch(SpanFactory<TOffset> spanFactory)
+			: this(new Pattern<TData, TOffset>(spanFactory))
 		{
 		}
 
-		public PatternRuleBatch(Pattern<TData, TOffset> pattern, ApplyDelegate<TData, TOffset> rhs)
-			: this(pattern, rhs, ann => true)
-		{
-		}
-
-		public PatternRuleBatch(Pattern<TData, TOffset> pattern, ApplyDelegate<TData, TOffset> rhs,
-			Func<TData, bool> applicable)
-			: this(pattern, new DelegatePatternRuleAction<TData, TOffset>(rhs, applicable))
-		{
-		}
-
-		public PatternRuleBatch(Pattern<TData, TOffset> pattern, IPatternRuleAction<TData, TOffset> rhs)
+		protected PatternRuleBatch(Pattern<TData, TOffset> pattern)
 			: base(pattern)
 		{
-			_rhs = rhs;
+			_rules = new List<PatternRule<TData, TOffset>>();
+			_ruleIds = new Dictionary<string, PatternRule<TData, TOffset>>();
 		}
 
-		public PatternRuleBatch(IEnumerable<IPatternRule<TData, TOffset>> rules)
-			: this(rules, new NullPatternRuleAction<TData, TOffset>())
+		public ReadOnlyCollection<PatternRule<TData, TOffset>> Rules
 		{
+			get { return _rules.AsReadOnly(); }
 		}
 
-		public PatternRuleBatch(IEnumerable<IPatternRule<TData, TOffset>> rules, ApplyDelegate<TData, TOffset> rhs)
-			: this(rules, rhs, ann => true)
+		protected void InsertRuleInternal(int index, PatternRule<TData, TOffset> rule)
 		{
-		}
+			string id = "rule" + _rules.Count;
+			_rules.Insert(index, rule);
+			_ruleIds[id] = rule;
+			var expr = new Expression<TData, TOffset>(id, rule.Lhs.Children.Clone())
+			           	{
+			           		Acceptable = (input, match) => rule.IsApplicable(input) && rule.Lhs.Acceptable(input, match)
+			           	};
 
-		public PatternRuleBatch(IEnumerable<IPatternRule<TData, TOffset>> rules, ApplyDelegate<TData, TOffset> rhs,
-			Func<TData, bool> applicable)
-			: this(rules, new DelegatePatternRuleAction<TData, TOffset>(rhs, applicable))
-		{
-		}
-
-		public PatternRuleBatch(IEnumerable<IPatternRule<TData, TOffset>> rules, IPatternRuleAction<TData, TOffset> rhs)
-			: base(rules)
-		{
-			_rhs = rhs;
-		}
-
-		public IPatternRuleAction<TData, TOffset> Rhs
-		{
-			get { return _rhs; }
-		}
-
-		public void AddRule(IPatternRule<TData, TOffset> rule)
-		{
-			AddRuleInternal(rule, true);
-		}
-
-		public override bool IsApplicable(TData input)
-		{
-			return _rhs.IsApplicable(input);
+			Lhs.Children.Insert(expr, index == _rules.Count - 1 ? Lhs.Children.Last : Lhs.Children.ElementAtOrDefault(index));
+			rule.Parent = this;
 		}
 
 		public override Annotation<TOffset> ApplyRhs(TData input, PatternMatch<TOffset> match, out TData output)
 		{
-			Annotation<TOffset> last = base.ApplyRhs(input, match, out output);
-			return Rhs.Apply(output, match, out output) ?? last;
+			PatternRule<TData, TOffset> rule = _ruleIds[match.ExpressionPath.First()];
+			var groups = new Dictionary<string, Span<TOffset>>();
+			foreach (string group in match.Groups)
+				groups[group] = match[group];
+			return rule.ApplyRhs(input, new PatternMatch<TOffset>(match, groups, match.ExpressionPath.Skip(1), match.VariableBindings), out output);
 		}
 	}
 }

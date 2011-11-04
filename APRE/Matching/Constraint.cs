@@ -27,7 +27,7 @@ namespace SIL.APRE.Matching
     	/// <param name="constraint">The annotation constraints.</param>
 		public Constraint(Constraint<TData, TOffset> constraint)
         {
-            _fs = (FeatureStruct) constraint._fs.Clone();
+            _fs = constraint._fs.Clone();
         }
 
     	public string Type
@@ -51,32 +51,12 @@ namespace SIL.APRE.Matching
 
 		internal override State<TData, TOffset> GenerateNfa(FiniteStateAutomaton<TData, TOffset> fsa, State<TData, TOffset> startState)
 		{
-    		return startState.AddArc((FeatureStruct) _fs.Clone(), fsa.CreateState());
+    		return startState.AddArc(_fs.Clone(), fsa.CreateState());
 		}
 
 		public override PatternNode<TData, TOffset> Clone()
 		{
 			return new Constraint<TData, TOffset>(this);
-		}
-
-		public override int GetHashCode()
-		{
-			return _fs.GetHashCode();
-		}
-
-		public override bool Equals(object obj)
-		{
-			if (obj == null)
-				return false;
-			return Equals(obj as Constraint<TData, TOffset>);
-		}
-
-		public bool Equals(Constraint<TData, TOffset> other)
-		{
-			if (other == null)
-				return false;
-
-			return _fs.Equals(other._fs);
 		}
 
 		public override string ToString()

@@ -72,6 +72,14 @@ namespace SIL.APRE.Fsa
 			return state;
 		}
 
+		private State<TData, TOffset> CreateAcceptingState(IEnumerable<AcceptInfo<TData, TOffset>> acceptInfos)
+		{
+			var state = new State<TData, TOffset>(_states.Count, acceptInfos);
+			_states.Add(state);
+			_acceptingStates.Add(state);
+			return state;
+		}
+
 		public State<TData, TOffset> CreateAcceptingState(string id, Func<TData, FsaMatch<TOffset>, bool> acceptable, int priority)
 		{
 			var state = new State<TData, TOffset>(_states.Count, new AcceptInfo<TData, TOffset>(id, acceptable, priority).ToEnumerable());
@@ -193,7 +201,7 @@ namespace SIL.APRE.Fsa
 			}
 		}
 
-		public bool IsMatch(TData data, Annotation<TOffset> start, bool allMatches, out IEnumerable<FsaMatch<TOffset>> matches)
+		public bool IsMatch(TData data, Annotation<TOffset> start, bool allMatches, bool useDefaults, out IEnumerable<FsaMatch<TOffset>> matches)
 		{
 			var instStack = new Stack<FsaInstance>();
 
@@ -227,11 +235,10 @@ namespace SIL.APRE.Fsa
 					{
 						foreach (Arc<TData, TOffset> arc in inst.State.OutgoingArcs)
 						{
-							if (inst.Annotation.FeatureStruct.IsUnifiable(arc.Condition, false, inst.VariableBindings))
+							if (inst.Annotation.FeatureStruct.IsUnifiable(arc.Condition, useDefaults, inst.VariableBindings))
 							{
 								AdvanceFsa(data, inst.Annotation, inst.Registers, inst.VariableBindings, inst.Match, arc, instStack);
 								advance = true;
-								break;
 							}
 						}
 					}
@@ -497,7 +504,7 @@ namespace SIL.APRE.Fsa
 			}
 		}
 
-		public void Determinize()
+		public void Determinize(bool quasideterministic)
 		{
 			var registerIndices = new Dictionary<Tuple<int, int>, int>();
 
@@ -527,18 +534,24 @@ namespace SIL.APRE.Fsa
 			{
 				SubsetState curSubsetState = unmarkedSubsetStates.Dequeue();
 
-				FeatureStruct[] conditions = (from state in curSubsetState.NfaStates
-										      from tran in state.NfaState.OutgoingArcs
-											  where tran.Condition != null
-											  select tran.Condition).Distinct().ToArray();
-				if (conditions.Length > 0)
+				IEnumerable<FeatureStruct> conditions = (from state in curSubsetState.NfaStates
+				                                         from tran in state.NfaState.OutgoingArcs
+				                                         where tran.Condition != null
+				                                         select tran.Condition).Distinct();
+				if (quasideterministic)
 				{
-					ComputeArcs(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, conditions, 0,
-						new FeatureStruct[0], new FeatureStruct[0]);
+					QuasideterministicComputeArcs(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, conditions);
+				}
+				else
+				{
+					FeatureStruct[] conditionsArray = conditions.ToArray();
+					if (conditionsArray.Length > 0)
+					{
+						DeterministicComputeArcs(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, conditionsArray, 0,
+							new FeatureStruct[0], new FeatureStruct[0]);
+					}
 				}
 			}
-
-			//_registerCount = _nextTag + registerIndices.Count;
 
 			var regNums = new Dictionary<int, int>();
 			for (_registerCount = 0; _registerCount < _nextTag; _registerCount++)
@@ -567,7 +580,20 @@ namespace SIL.APRE.Fsa
 			cmds.Sort();
 		}
 
-		private void ComputeArcs(Dictionary<SubsetState, SubsetState> subsetStates, Queue<SubsetState> unmarkedSubsetStates,
+		private void QuasideterministicComputeArcs(Dictionary<SubsetState, SubsetState> subsetStates, Queue<SubsetState> unmarkedSubsetStates,
+			Dictionary<Tuple<int, int>, int> registerIndices, SubsetState curSubsetState, IEnumerable<FeatureStruct> conditions)
+		{
+			foreach (FeatureStruct condition in conditions)
+			{
+				var reach = new SubsetState(from state in curSubsetState.NfaStates
+											from tran in state.NfaState.OutgoingArcs
+											where tran.Condition != null && tran.Condition.Equals(condition)
+											select new NfaStateInfo(tran.Target, Math.Max(tran.Priority, state.MaxPriority), tran.Priority, state.Tags));
+				CreateDeterministicState(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, reach, condition);
+			}
+		}
+
+		private void DeterministicComputeArcs(Dictionary<SubsetState, SubsetState> subsetStates, Queue<SubsetState> unmarkedSubsetStates,
 			Dictionary<Tuple<int, int>, int> registerIndices, SubsetState curSubsetState, FeatureStruct[] conditions, int conditionIndex,
 			FeatureStruct[] subset1, FeatureStruct[] subset2)
 		{
@@ -580,100 +606,106 @@ namespace SIL.APRE.Fsa
 											    from tran in state.NfaState.OutgoingArcs
 												where tran.Condition != null && subset1.Contains(tran.Condition)
 												select new NfaStateInfo(tran.Target, Math.Max(tran.Priority, state.MaxPriority), tran.Priority, state.Tags));
-					SubsetState target = EpsilonClosure(reach, curSubsetState);
-					// this makes the FSA not complete
-					if (!target.IsEmpty)
-					{
-						var cmdTags = new Dictionary<int, int>();
-						foreach (NfaStateInfo targetState in target.NfaStates)
-						{
-							foreach (KeyValuePair<int, int> tag in targetState.Tags)
-							{
-								bool found = false;
-								foreach (NfaStateInfo curState in curSubsetState.NfaStates)
-								{
-									if (curState.Tags.Contains(tag))
-									{
-										found = true;
-										break;
-									}
-								}
-
-								if (!found)
-									cmdTags[tag.Key] = tag.Value;
-							}
-						}
-
-						var cmds = new List<TagMapCommand>();
-						SubsetState subsetState;
-						if (subsetStates.TryGetValue(target, out subsetState))
-						{
-							ReorderTagIndices(target, subsetState, registerIndices, cmds);
-							target = subsetState;
-						}
-						else
-						{
-							subsetStates.Add(target, target);
-							unmarkedSubsetStates.Enqueue(target);
-							NfaStateInfo[] acceptingStates = (from state in target.NfaStates
-							                                  where state.NfaState.IsAccepting
-							                                  orderby state descending
-							                                  select state).ToArray();
-							if (acceptingStates.Length > 0)
-							{
-								IEnumerable<AcceptInfo<TData, TOffset>> acceptInfos = acceptingStates.SelectMany(state => state.NfaState.AcceptInfos);
-
-								var finishers = new List<TagMapCommand>();
-								var finishedTags = new HashSet<int>();
-								foreach (NfaStateInfo acceptingState in acceptingStates)
-								{
-									foreach (KeyValuePair<int, int> tag in acceptingState.Tags)
-									{
-										if (tag.Value > 0 && !finishedTags.Contains(tag.Key))
-										{
-											finishedTags.Add(tag.Key);
-											int src = GetRegisterIndex(registerIndices, tag.Key, tag.Value);
-											int dest = GetRegisterIndex(registerIndices, tag.Key, 0);
-											finishers.Add(new TagMapCommand(dest, src));
-										}
-									}
-								}
-								target.DfaState = CreateAcceptingState(acceptInfos, finishers, IsLazyAcceptingState(target));
-							}
-							else
-							{
-								target.DfaState = CreateState();
-							}
-						}
-
-						foreach (KeyValuePair<int, int> tag in cmdTags)
-						{
-							int reg = GetRegisterIndex(registerIndices, tag.Key, tag.Value);
-							bool found = false;
-							foreach (TagMapCommand cmd in cmds)
-							{
-								if (cmd.Src == reg)
-								{
-									found = true;
-									cmd.Src = TagMapCommand.CurrentPosition;
-									break;
-								}
-							}
-							if (!found)
-								cmds.Add(new TagMapCommand(reg, TagMapCommand.CurrentPosition));
-						}
-
-						curSubsetState.DfaState.AddArc(condition, target.DfaState, cmds);
-					}
+					CreateDeterministicState(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, reach, condition);
 				}
 			}
 			else
 			{
 				FeatureStruct condition = conditions[conditionIndex];
-				ComputeArcs(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, conditions, conditionIndex + 1,
+				DeterministicComputeArcs(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, conditions, conditionIndex + 1,
 					subset1.Concat(condition).ToArray(), subset2);
-				ComputeArcs(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, conditions, conditionIndex + 1,
+				DeterministicComputeArcs(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, conditions, conditionIndex + 1,
 					subset1, subset2.Concat(condition).ToArray());
+			}
+		}
+
+		private void CreateDeterministicState(Dictionary<SubsetState, SubsetState> subsetStates, Queue<SubsetState> unmarkedSubsetStates,
+			Dictionary<Tuple<int, int>, int> registerIndices, SubsetState curSubsetState, SubsetState reach, FeatureStruct condition)
+		{
+			SubsetState target = EpsilonClosure(reach, curSubsetState);
+			// this makes the FSA not complete
+			if (!target.IsEmpty)
+			{
+				var cmdTags = new Dictionary<int, int>();
+				foreach (NfaStateInfo targetState in target.NfaStates)
+				{
+					foreach (KeyValuePair<int, int> tag in targetState.Tags)
+					{
+						bool found = false;
+						foreach (NfaStateInfo curState in curSubsetState.NfaStates)
+						{
+							if (curState.Tags.Contains(tag))
+							{
+								found = true;
+								break;
+							}
+						}
+
+						if (!found)
+							cmdTags[tag.Key] = tag.Value;
+					}
+				}
+
+				var cmds = new List<TagMapCommand>();
+				SubsetState subsetState;
+				if (subsetStates.TryGetValue(target, out subsetState))
+				{
+					ReorderTagIndices(target, subsetState, registerIndices, cmds);
+					target = subsetState;
+				}
+				else
+				{
+					subsetStates.Add(target, target);
+					unmarkedSubsetStates.Enqueue(target);
+					NfaStateInfo[] acceptingStates = (from state in target.NfaStates
+													  where state.NfaState.IsAccepting
+													  orderby state descending
+													  select state).ToArray();
+					if (acceptingStates.Length > 0)
+					{
+						IEnumerable<AcceptInfo<TData, TOffset>> acceptInfos = acceptingStates.SelectMany(state => state.NfaState.AcceptInfos);
+
+						var finishers = new List<TagMapCommand>();
+						var finishedTags = new HashSet<int>();
+						foreach (NfaStateInfo acceptingState in acceptingStates)
+						{
+							foreach (KeyValuePair<int, int> tag in acceptingState.Tags)
+							{
+								if (tag.Value > 0 && !finishedTags.Contains(tag.Key))
+								{
+									finishedTags.Add(tag.Key);
+									int src = GetRegisterIndex(registerIndices, tag.Key, tag.Value);
+									int dest = GetRegisterIndex(registerIndices, tag.Key, 0);
+									finishers.Add(new TagMapCommand(dest, src));
+								}
+							}
+						}
+						target.DfaState = CreateAcceptingState(acceptInfos, finishers, IsLazyAcceptingState(target));
+					}
+					else
+					{
+						target.DfaState = CreateState();
+					}
+				}
+
+				foreach (KeyValuePair<int, int> tag in cmdTags)
+				{
+					int reg = GetRegisterIndex(registerIndices, tag.Key, tag.Value);
+					bool found = false;
+					foreach (TagMapCommand cmd in cmds)
+					{
+						if (cmd.Src == reg)
+						{
+							found = true;
+							cmd.Src = TagMapCommand.CurrentPosition;
+							break;
+						}
+					}
+					if (!found)
+						cmds.Add(new TagMapCommand(reg, TagMapCommand.CurrentPosition));
+				}
+
+				curSubsetState.DfaState.AddArc(condition, target.DfaState, cmds);
 			}
 		}
 
@@ -870,6 +902,62 @@ namespace SIL.APRE.Fsa
 			registerIndex = _nextTag + registerIndices.Count;
 			registerIndices[key] = registerIndex;
 			return registerIndex;
+		}
+
+		public FiniteStateAutomaton<TData, TOffset> Intersect(FiniteStateAutomaton<TData, TOffset> fsa)
+		{
+			var newFsa = new FiniteStateAutomaton<TData, TOffset>(_dir);
+
+			var queue = new Queue<Tuple<State<TData, TOffset>, State<TData, TOffset>>>();
+			var newStates = new Dictionary<Tuple<State<TData, TOffset>, State<TData, TOffset>>, State<TData, TOffset>>();
+			Tuple<State<TData, TOffset>, State<TData, TOffset>> pair = Tuple.Create(StartState, fsa.StartState);
+			queue.Enqueue(pair);
+			newStates[pair] = newFsa.StartState;
+			while (queue.Count > 0)
+			{
+				Tuple<State<TData, TOffset>, State<TData, TOffset>> p = queue.Dequeue();
+				State<TData, TOffset> s = newStates[p];
+
+				var newArcs = (from t1 in p.Item1.OutgoingArcs
+							   where t1.Condition == null
+							   select new { q = Tuple.Create(t1.Target, p.Item2), cond = (FeatureStruct) null }
+							  ).Union(
+							  (from t2 in p.Item2.OutgoingArcs
+							   where t2.Condition == null
+							   select new { q = Tuple.Create(p.Item1, t2.Target), cond = (FeatureStruct) null }
+							  ).Union(
+							   from t1 in p.Item1.OutgoingArcs
+							   where t1.Condition != null
+							   from t2 in p.Item2.OutgoingArcs
+							   let newCond = t2.Condition != null ? Unify(t1.Condition, t2.Condition) : null
+							   where newCond != null
+							   select new { q = Tuple.Create(t1.Target, t2.Target), cond = newCond }
+							  ));
+
+				foreach (var newArc in newArcs)
+				{
+					State<TData, TOffset> r;
+					if (!newStates.TryGetValue(newArc.q, out r))
+					{
+						if (newArc.q.Item1.IsAccepting && newArc.q.Item2.IsAccepting)
+							r = newFsa.CreateAcceptingState(newArc.q.Item1.AcceptInfos.Concat(newArc.q.Item2.AcceptInfos));
+						else
+							r = newFsa.CreateState();
+						queue.Enqueue(newArc.q);
+						newStates[newArc.q] = r;
+					}
+					s.AddArc(newArc.cond, r);
+				}
+			}
+			return newFsa;
+		}
+
+		private static FeatureStruct Unify(FeatureStruct fs1, FeatureStruct fs2)
+		{
+			FeatureStruct result;
+			if (fs1.Unify(fs2, out result))
+				return result;
+			return null;
 		}
 
 		public void ToGraphViz(TextWriter writer)

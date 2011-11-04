@@ -154,26 +154,6 @@ namespace SIL.APRE.Matching
         	return Children + quantifierStr;
         }
 
-        public override int GetHashCode()
-        {
-			return Children.GetHashCode() ^ _minOccur ^ _maxOccur;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (obj == null)
-                return false;
-			return Equals(obj as Quantifier<TData, TOffset>);
-        }
-
-		public bool Equals(Quantifier<TData, TOffset> other)
-        {
-            if (other == null)
-                return false;
-			return Children.Equals(other.Children) && _minOccur == other._minOccur
-                && _maxOccur == other._maxOccur;
-        }
-
 		public override PatternNode<TData, TOffset> Clone()
         {
 			return new Quantifier<TData, TOffset>(this);

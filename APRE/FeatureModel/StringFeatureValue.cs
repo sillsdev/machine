@@ -1,10 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace SIL.APRE.FeatureModel
 {
-	public class StringFeatureValue : SimpleFeatureValue
+	public class StringFeatureValue : SimpleFeatureValue, IEquatable<StringFeatureValue>
 	{
 		private HashSet<string> _values;
 
@@ -181,30 +182,57 @@ namespace SIL.APRE.FeatureModel
 			}
 		}
 
-		public override bool Negation(out FeatureValue output)
+		public override SimpleFeatureValue Negation()
 		{
-			output = IsVariable ? new StringFeatureValue(VariableName, !Agree) : new StringFeatureValue(_values, !Not);
-			return true;
+			return IsVariable ? new StringFeatureValue(VariableName, !Agree) : new StringFeatureValue(_values, !Not);
 		}
 
-		public override bool Equals(object obj)
+		internal override bool Equals(FeatureValue other, HashSet<FeatureStruct> visitedSelf, HashSet<FeatureStruct> visitedOther,
+			IDictionary<FeatureStruct, FeatureStruct> visitedPairs)
 		{
-			var other = obj as StringFeatureValue;
-			return other != null && Equals(other);
+			if (other == null)
+				return false;
+
+			StringFeatureValue otherSfv;
+			if (!Dereference(other, out otherSfv))
+				return false;
+			return Equals(otherSfv);
 		}
 
 		public bool Equals(StringFeatureValue other)
 		{
 			if (other == null)
 				return false;
-
-			other = Dereference(other);
+			if (IsVariable)
+				return VariableName == other.VariableName && Agree == other.Agree;
 			return _values.SetEquals(other._values) && Not == other.Not;
+		}
+
+		public override bool Equals(object other)
+		{
+			var otherSfv = other as StringFeatureValue;
+			return otherSfv != null && Equals(otherSfv);
+		}
+
+		internal override int GetHashCode(HashSet<FeatureStruct> visited)
+		{
+			return GetHashCode();
 		}
 
 		public override int GetHashCode()
 		{
-			return _values.Aggregate(0, (code, str) => code ^ str.GetHashCode()) ^ Not.GetHashCode();
+			int code = 23;
+			if (IsVariable)
+			{
+				code = code * 31 + VariableName.GetHashCode();
+				code = code * 31 + Agree.GetHashCode();
+			}
+			else
+			{
+				code = _values.Aggregate(code, (strValCode, str) => strValCode * 31 + str.GetHashCode());
+				code = code * 31 + Not.GetHashCode();
+			}
+			return code;
 		}
 
 		public override string ToString()
@@ -239,11 +267,8 @@ namespace SIL.APRE.FeatureModel
 			return sb.ToString();
 		}
 
-		public override FeatureValue Clone()
+		public override SimpleFeatureValue Clone()
 		{
-			if (Forward != null)
-				return Forward.Clone();
-
 			return new StringFeatureValue(this);
 		}
 	}
