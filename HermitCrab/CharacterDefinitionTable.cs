@@ -21,10 +21,9 @@ namespace SIL.HermitCrab
     	/// Initializes a new instance of the <see cref="CharacterDefinitionTable"/> class.
     	/// </summary>
     	/// <param name="id">The ID.</param>
-    	/// <param name="desc">The description.</param>
     	/// <param name="spanFactory"></param>
-		public CharacterDefinitionTable(string id, string desc, SpanFactory<ShapeNode> spanFactory)
-			: base(id, desc)
+    	public CharacterDefinitionTable(string id, SpanFactory<ShapeNode> spanFactory)
+			: base(id)
     	{
     		_spanFactory = spanFactory;
     		_segDefs = new Dictionary<string, SegmentDefinition>();
@@ -98,9 +97,17 @@ namespace SIL.HermitCrab
             return results;
         }
 
-		public Shape ToShape(string str)
+		public bool ToShape(string str, out Shape shape)
 		{
-			return ToShape(str, new AnnotationList<ShapeNode>());
+			IEnumerable<ShapeNode> nodes;
+			if (GetShapeNodes(str, out nodes))
+			{
+				shape = new Shape(_spanFactory, nodes);
+				return true;
+			}
+
+			shape = null;
+			return false;
 		}
 
     	/// <summary>
@@ -109,32 +116,50 @@ namespace SIL.HermitCrab
     	/// </summary>
     	/// <param name="str">The string.</param>
     	/// <param name="annotations"></param>
+    	/// <param name="shape"></param>
     	/// <returns>The phonetic shape, <c>null</c> if the string contains invalid segments.</returns>
-    	public Shape ToShape(string str, AnnotationList<ShapeNode> annotations)
-        {
-            var ps = new Shape(_spanFactory, annotations);
-            int i = 0;
-            while (i < str.Length)
-            {
-                bool match = false;
-                for (int j = str.Length - i; j > 0; j--)
-                {
-                    string s = str.Substring(i, j);
-                    ShapeNode node = GetPhoneticShapeNode(s);
-                    if (node != null)
-                    {
-                        ps.Add(node);
-                        i += j;
-                        match = true;
-                        break;
-                    }
-                }
+    	public bool ToShape(string str, AnnotationList<ShapeNode> annotations, out Shape shape)
+    	{
+    		IEnumerable<ShapeNode> nodes;
+			if (GetShapeNodes(str, out nodes))
+			{
+				shape = new Shape(_spanFactory, annotations, nodes);
+				return true;
+			}
 
-                if (!match)
-                    return null;
-            }
-            return ps;
-        }
+    		shape = null;
+    		return false;
+    	}
+
+		private bool GetShapeNodes(string str, out IEnumerable<ShapeNode> nodes)
+		{
+			var nodesList = new List<ShapeNode>();
+			int i = 0;
+			while (i < str.Length)
+			{
+				bool match = false;
+				for (int j = str.Length - i; j > 0; j--)
+				{
+					string s = str.Substring(i, j);
+					ShapeNode node = GetPhoneticShapeNode(s);
+					if (node != null)
+					{
+						nodesList.Add(node);
+						i += j;
+						match = true;
+						break;
+					}
+				}
+
+				if (!match)
+				{
+					nodes = null;
+					return false;
+				}
+			}
+			nodes = nodesList;
+			return true;
+		}
 
         private ShapeNode GetPhoneticShapeNode(string strRep)
         {
@@ -142,14 +167,14 @@ namespace SIL.HermitCrab
             SegmentDefinition segDef = GetSegmentDefinition(strRep);
             if (segDef != null)
             {
-				node = new ShapeNode(HCFeatureSystem.SegmentType, _spanFactory, (FeatureStruct) segDef.FeatureStruct.Clone());
+				node = new ShapeNode(HCFeatureSystem.SegmentType, _spanFactory, segDef.FeatureStruct.Clone());
             }
             else
             {
                 BoundaryDefinition bdryDef = GetBoundaryDefinition(strRep);
 				if (bdryDef != null)
 				{
-					node = new ShapeNode(HCFeatureSystem.BoundaryType, _spanFactory, (FeatureStruct) bdryDef.FeatureStruct.Clone());
+					node = new ShapeNode(HCFeatureSystem.BoundaryType, _spanFactory, bdryDef.FeatureStruct.Clone());
 					node.Annotation.Optional = true;
 				}
             }

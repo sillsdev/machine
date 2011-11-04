@@ -1,44 +1,54 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using SIL.APRE;
-using SIL.APRE.Matching;
 using SIL.APRE.Transduction;
 
 namespace SIL.HermitCrab
 {
-	internal class StandardPhonologicalAnalysisRule : RuleCascadeBase<Word, ShapeNode>
+	public class AnalysisRewriteRuleCascade : RuleCascade<Word, ShapeNode>
 	{
-		private readonly SpanFactory<ShapeNode> _spanFactory;
-		private readonly Direction _synthesisDir;
-		private readonly ApplicationMode _synthesisAppMode;
-		private readonly Expression<Word, ShapeNode> _lhs;
+		private Direction _synthesisDir;
+		private ApplicationMode _synthesisAppMode;
 
-		public StandardPhonologicalAnalysisRule(SpanFactory<ShapeNode> spanFactory, Direction synthesisDir,
-			ApplicationMode synthesisAppMode, Expression<Word, ShapeNode> lhs)
-			: base(RuleCascadeOrder.Linear)
+		public AnalysisRewriteRuleCascade()
 		{
-			_spanFactory = spanFactory;
-			_synthesisDir = synthesisDir;
-			_synthesisAppMode = synthesisAppMode;
-			_lhs = lhs;
+			_synthesisDir = Direction.RightToLeft;
+			_synthesisAppMode = ApplicationMode.Iterative;
 		}
 
 		public int DelReapplications { get; set; }
 
+		public Direction SynthesisDirection
+		{
+			get { return _synthesisDir; }
+			set
+			{
+				_synthesisDir = value;
+				foreach (AnalysisRewriteRule rule in Rules)
+					rule.SynthesisDirection = value;
+			}
+		}
+
+		public ApplicationMode SynthesisApplicationMode
+		{
+			get { return _synthesisAppMode; }
+			set
+			{
+				_synthesisAppMode = value;
+				foreach (AnalysisRewriteRule rule in Rules)
+					rule.SynthesisApplicationMode = value;
+			}
+		}
+
 		public void Compile()
 		{
 			foreach (AnalysisRewriteRule subrule in Rules)
-				subrule.Compile();
+				subrule.Lhs.Compile();
 		}
 
-		public void AddSubrule(Expression<Word, ShapeNode> rhs, Expression<Word, ShapeNode> leftEnv, Expression<Word, ShapeNode> rightEnv)
+		public void AddSubrule(AnalysisRewriteRule rule)
 		{
-			if (_lhs.Children.Count == rhs.Children.Count)
-				AddRuleInternal(new FeatureAnalysisRewriteRule(_spanFactory, _synthesisDir, _synthesisAppMode, _lhs, rhs, leftEnv, rightEnv), false);
-			else if (_lhs.Children.Count > rhs.Children.Count)
-				AddRuleInternal(new NarrowAnalysisRewriteRule(_spanFactory, _lhs, rhs, leftEnv, rightEnv), false);
-			else if (_lhs.Children.Count == 0)
-				AddRuleInternal(new EpenthesisAnalysisRewriteRule(_spanFactory, _synthesisDir, _synthesisAppMode, rhs, leftEnv, rightEnv), false);
+			InsertRuleInternal(0, rule);
 		}
 
 		public override bool IsApplicable(Word input)

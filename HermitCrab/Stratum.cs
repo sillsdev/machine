@@ -1,6 +1,9 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using SIL.APRE;
+using SIL.APRE.FeatureModel;
+using SIL.APRE.Matching;
+using SIL.APRE.Transduction;
 
 namespace SIL.HermitCrab
 {
@@ -11,42 +14,56 @@ namespace SIL.HermitCrab
     public class Stratum : IDBearerBase
     {
         /// <summary>
-        /// This enumeration represents the rule ordering for phonological rules.
-        /// </summary>
-        public enum PRuleOrder { Linear, Simultaneous };
-
-        /// <summary>
-        /// This enumeration represents the rule ordering for morphological rules.
-        /// </summary>
-        public enum MRuleOrder { Linear, Unordered };
-
-        /// <summary>
         /// The surface stratum ID
         /// </summary>
         public const string SurfaceStratumID = "surface";
 
-        private CharacterDefinitionTable _charDefTable;
+        private readonly CharacterDefinitionTable _charDefTable;
         private bool _isCyclic;
-        private PRuleOrder _pruleOrder = PRuleOrder.Linear;
-        private MRuleOrder _mruleOrder = MRuleOrder.Linear;
 
-    	private readonly SegmentDefinitionTrie<LexEntry.RootAllomorph> _entryTrie;
+    	private readonly SegmentDefinitionTrie<RootAllomorph> _entryTrie;
         private readonly List<MorphologicalRule> _mrules;
-        private readonly List<StandardPhonologicalRule> _prules;
+        private readonly List<PhonologicalRule> _prules;
+
+    	private readonly DefaultRuleCascade<Word, ShapeNode> _synthesisRule;
+    	private readonly DefaultRuleCascade<Word, ShapeNode> _pruleSynthesisRule;
+		private readonly DefaultRuleCascade<Word, ShapeNode> _mruleSynthesisRule;
+
+    	private readonly DefaultRuleCascade<Word, ShapeNode> _analysisRule; 
+    	private readonly DefaultRuleCascade<Word, ShapeNode> _pruleAnalysisRule;
+    	private readonly DefaultRuleCascade<Word, ShapeNode> _mruleAnalysisRule; 
+
         private readonly IDBearerSet<AffixTemplate> _templates;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Stratum"/> class.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        /// <param name="desc">The description.</param>
-        public Stratum(string id, string desc)
-            : base(id, desc)
-        {
+    	private readonly IDBearerSet<LexEntry> _entries; 
+    	private readonly Pattern<Shape, ShapeNode> _entriesPattern;
+
+    	/// <summary>
+    	/// Initializes a new instance of the <see cref="Stratum"/> class.
+    	/// </summary>
+    	/// <param name="id">The ID.</param>
+    	/// <param name="charDefTable"></param>
+    	public Stratum(string id, CharacterDefinitionTable charDefTable)
+            : base(id)
+    	{
+    		_charDefTable = charDefTable;
+
             _mrules = new List<MorphologicalRule>();
-            _prules = new List<StandardPhonologicalRule>();
+            _prules = new List<PhonologicalRule>();
+
+			_pruleSynthesisRule = new DefaultRuleCascade<Word, ShapeNode>();
+			_mruleSynthesisRule = new DefaultRuleCascade<Word, ShapeNode>();
+			_synthesisRule = new DefaultRuleCascade<Word, ShapeNode>(new[] {_pruleSynthesisRule, _mruleSynthesisRule});
+
+			_pruleAnalysisRule = new DefaultRuleCascade<Word, ShapeNode>();
+			_mruleAnalysisRule = new DefaultRuleCascade<Word, ShapeNode>();
+			_analysisRule = new DefaultRuleCascade<Word, ShapeNode>(new[] {_mruleAnalysisRule, _pruleAnalysisRule});
+
             _templates = new IDBearerSet<AffixTemplate>();
-            _entryTrie = new SegmentDefinitionTrie<LexEntry.RootAllomorph>(Direction.LeftToRight);
+            _entryTrie = new SegmentDefinitionTrie<RootAllomorph>(Direction.LeftToRight);
+
+			_entries = new IDBearerSet<LexEntry>();
+			_entriesPattern = new Pattern<Shape, ShapeNode>(charDefTable.SpanFactory) {Filter = ann => ann.Type == HCFeatureSystem.SegmentType, Quasideterministic = true};
         }
 
         /// <summary>
@@ -58,11 +75,6 @@ namespace SIL.HermitCrab
             get
             {
                 return _charDefTable;
-            }
-
-            set
-            {
-                _charDefTable = value;
             }
         }
 
@@ -87,16 +99,14 @@ namespace SIL.HermitCrab
         /// Gets or sets the phonological rule order.
         /// </summary>
         /// <value>The phonological rule order.</value>
-        public PRuleOrder PhonologicalRuleOrder
+        public RuleCascadeOrder PhonologicalRuleOrder
         {
-            get
-            {
-                return _pruleOrder;
-            }
+            get { return _pruleSynthesisRule.RuleCascadeOrder; }
 
             set
             {
-                _pruleOrder = value;
+            	_pruleSynthesisRule.RuleCascadeOrder = value;
+            	_pruleAnalysisRule.RuleCascadeOrder = value;
             }
         }
 
@@ -104,18 +114,26 @@ namespace SIL.HermitCrab
         /// Gets or sets the morphological rule order.
         /// </summary>
         /// <value>The morphological rule order.</value>
-        public MRuleOrder MorphologicalRuleOrder
+        public RuleCascadeOrder MorphologicalRuleOrder
         {
-            get
-            {
-                return _mruleOrder;
-            }
+            get { return _mruleSynthesisRule.RuleCascadeOrder; }
 
             set
             {
-                _mruleOrder = value;
+            	_mruleSynthesisRule.RuleCascadeOrder = value;
+            	_mruleAnalysisRule.RuleCascadeOrder = value;
             }
         }
+
+    	public IRule<Word, ShapeNode> AnalysisRule
+    	{
+    		get { return _analysisRule; }
+    	}
+
+    	public IRule<Word, ShapeNode> SynthesisRule
+    	{
+    		get { return _synthesisRule; }
+    	}
 
         /// <summary>
         /// Gets the affix templates.
@@ -133,18 +151,11 @@ namespace SIL.HermitCrab
         /// Adds the phonological rule.
         /// </summary>
         /// <param name="prule">The phonological rule.</param>
-        public void AddPhonologicalRule(StandardPhonologicalRule prule)
+        public void AddPhonologicalRule(PhonologicalRule prule)
         {
             _prules.Add(prule);
-        }
-
-        /// <summary>
-        /// Removes the phonological rule associated with the specified ID.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        public void RemovePhonologicalRule(string id)
-        {
-        	_prules.RemoveAll(rule => rule.ID == id);
+			_pruleSynthesisRule.AddRule(prule.SynthesisRule);
+			_pruleAnalysisRule.InsertRule(0, prule.AnalysisRule);
         }
 
         /// <summary>
@@ -155,15 +166,8 @@ namespace SIL.HermitCrab
         {
             mrule.Stratum = this;
             _mrules.Add(mrule);
-        }
-
-        /// <summary>
-        /// Removes the morphological rule associated with the specified ID.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        public void RemoveMorphologicalRule(string id)
-        {
-        	_mrules.RemoveAll(rule => rule.ID == id);
+			_mruleSynthesisRule.AddRule(mrule.SynthesisRule);
+			_mruleAnalysisRule.InsertRule(0, mrule.AnalysisRule);
         }
 
         /// <summary>
@@ -173,19 +177,38 @@ namespace SIL.HermitCrab
         public void AddEntry(LexEntry entry)
         {
             entry.Stratum = this;
-            foreach (LexEntry.RootAllomorph allomorph in entry.Allomorphs)
-                _entryTrie.Add(allomorph.Shape, allomorph);
+        	_entries.Add(entry);
+			foreach (RootAllomorph allomorph in entry.Allomorphs)
+				_entriesPattern.Children.Add(CreateExpression(allomorph));
         }
 
-		/// <summary>
-		/// Searches for the lexical entry that matches the specified shape.
-		/// </summary>
-		/// <param name="shape">The shape.</param>
-		/// <returns>The matching lexical entries.</returns>
-		public IEnumerable<LexEntry.RootAllomorph> SearchEntries(Shape shape)
+		private Expression<Shape, ShapeNode> CreateExpression(RootAllomorph allomorph)
 		{
-			foreach (SegmentDefinitionTrie<LexEntry.RootAllomorph>.Match match in _entryTrie.Search(shape))
-				yield return match.Value;
+			var expr = new Expression<Shape, ShapeNode>(allomorph.Morpheme.ID);
+			expr.Children.Add(new Constraint<Shape, ShapeNode>(HCFeatureSystem.AnchorType, FeatureStruct.New(HCFeatureSystem.Instance).Symbol(HCFeatureSystem.LeftSide).Value));
+			foreach (ShapeNode node in allomorph.Shape.Where(node => node.Annotation.Type == HCFeatureSystem.SegmentType))
+				expr.Children.Add(new Constraint<Shape, ShapeNode>(HCFeatureSystem.SegmentType, node.Annotation.FeatureStruct.Clone()));
+			expr.Children.Add(new Constraint<Shape, ShapeNode>(HCFeatureSystem.AnchorType, FeatureStruct.New(HCFeatureSystem.Instance).Symbol(HCFeatureSystem.RightSide).Value));
+			return expr;
+		}
+
+    	/// <summary>
+    	/// Searches for the lexical entry that matches the specified shape.
+    	/// </summary>
+    	/// <param name="input"></param>
+		/// <param name="output">The matching lexical entries.</param>
+    	/// <returns></returns>
+    	public bool SearchEntries(Shape input, out IEnumerable<LexEntry> output)
+		{
+			IEnumerable<PatternMatch<ShapeNode>> matches;
+			if (_entriesPattern.IsMatch(input, out matches))
+			{
+				output = matches.Select(match => _entries[match.ExpressionPath.Single()]);
+				return true;
+			}
+
+			output = null;
+			return false;
 		}
 
         /// <summary>
@@ -203,278 +226,6 @@ namespace SIL.HermitCrab
         public void ClearAffixTemplates()
         {
             _templates.Clear();
-        }
-
-        /// <summary>
-        /// Unapplies all of the rules to the specified input word analysis. All matching lexical
-        /// entries are added to the <c>candidates</c> parameter.
-        /// </summary>
-        /// <param name="input">The input word analysis.</param>
-        /// <param name="candidates">The set of candidate word synthesis records.</param>
-        /// <returns>All word analyses that result from the unapplication of rules.</returns>
-        public IEnumerable<WordAnalysis> Unapply(WordAnalysis input, ICollection<WordSynthesis> candidates)
-        {
-            if (_isCyclic)
-                throw new NotImplementedException(HCStrings.kstidCyclicStratumNotSupported);
-
-            if (_pruleOrder == PRuleOrder.Simultaneous)
-                throw new NotImplementedException(HCStrings.kstidSimultOrderNotSupported);
-
-            WordAnalysis wa = input.Clone();
-
-            UnapplyPhonologicalRules(wa);
-
-            LexicalLookup(wa, candidates);
-
-            var tempOutput = new HashSet<WordAnalysis>();
-            tempOutput.Add(wa);
-            UnapplyTemplates(wa, tempOutput, candidates);
-
-            var output = new HashSet<WordAnalysis>();
-            // TODO: handle cyclicity
-            foreach (WordAnalysis analysis in tempOutput)
-                UnapplyMorphologicalRules(analysis, _mrules.Count - 1, 0, candidates, output);
-
-            return output;
-        }
-
-        void UnapplyMorphologicalRules(WordAnalysis input, int rIndex, int srIndex, ICollection<WordSynthesis> candidates,
-            HashSet<WordAnalysis> output)
-        {
-            // first try to unapply the specified subrule
-            bool unapplied = false;
-            if (rIndex >= 0)
-            {
-#if WANTPORT
-                if (_mrules[rIndex].BeginUnapplication(input))
-                {
-                    ICollection<WordAnalysis> analyses;
-                    if (_mrules[rIndex].Unapply(input, srIndex, out analyses))
-                    {
-                        foreach (WordAnalysis wa in analyses)
-                            MorphologicalRuleUnapplied(wa, rIndex, srIndex, candidates, output);
-
-                        unapplied = true;
-                    }
-                }
-                else
-                {
-                    // move to next rule
-                    rIndex--;
-                    srIndex = -1;
-                }
-#endif
-            }
-
-            // iterate thru all subrules that occur after the specified rule in analysis order
-            for (int i = rIndex; i >= 0; i--)
-            {
-#if WANTPORT
-                if (srIndex != -1 || _mrules[i].BeginUnapplication(input))
-                {
-                    for (int j = 0; j < _mrules[i].SubruleCount; j++)
-                    {
-                        // skip the specified subrule, since we already tried to unapply it
-                        if (j != srIndex)
-                        {
-                            ICollection<WordAnalysis> analyses;
-                            if (_mrules[i].Unapply(input, j, out analyses))
-                            {
-                                foreach (WordAnalysis wa in analyses)
-                                    MorphologicalRuleUnapplied(wa, i, j, candidates, output);
-
-                                unapplied = true;
-                            }
-                        }
-                    }
-
-					_mrules[i].EndUnapplication(input, unapplied);
-                }
-#endif
-                unapplied = false;
-                srIndex = -1;
-            }
-
-            output.Add(input);
-        }
-
-        void MorphologicalRuleUnapplied(WordAnalysis ruleOutput, int rIndex, int srIndex, ICollection<WordSynthesis> candidates,
-			HashSet<WordAnalysis> output)
-        {
-            if (ruleOutput.Shape.Count > 2)
-            {
-                // lookup resulting phonetic shape in lexicon
-                LexicalLookup(ruleOutput, candidates);
-
-                // recursive call so that we can cover every permutation of rule unapplication
-                switch (_mruleOrder)
-                {
-                    case MRuleOrder.Linear:
-                        UnapplyMorphologicalRules(ruleOutput, rIndex, srIndex, candidates, output);
-                        break;
-
-                    case MRuleOrder.Unordered:
-                        // start over from the very beginning
-                        UnapplyMorphologicalRules(ruleOutput, _mrules.Count - 1, 0, candidates, output);
-                        break;
-                }
-            }
-        }
-
-        void UnapplyTemplates(WordAnalysis input, HashSet<WordAnalysis> output, ICollection<WordSynthesis> candidates)
-        {
-            foreach (AffixTemplate template in _templates)
-            {
-                if (template.IsUnapplicable(input))
-                {
-                    IEnumerable<WordAnalysis> tempOutput;
-                    if (template.Unapply(input, out tempOutput))
-                    {
-                        foreach (WordAnalysis tempAnalysis in tempOutput)
-                        {
-                            // don't bother to do a lookup if this analysis already exists
-                            if (!output.Contains(tempAnalysis))
-                            {
-                                output.Add(tempAnalysis);
-                                // lookup resulting phonetic shape in lexicon
-                                LexicalLookup(tempAnalysis, candidates);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        void LexicalLookup(WordAnalysis input, ICollection<WordSynthesis> candidates)
-        {
-            LexLookupTrace lookupTrace = null;
-#if WANTPORT
-            if (Morpher.TraceLexLookup)
-            {
-                // create lexical lookup trace record
-                lookupTrace = new LexLookupTrace(this, input.Shape.Clone());
-                input.CurrentTrace.AddChild(lookupTrace);
-            }
-#endif
-
-            foreach (SegmentDefinitionTrie<LexEntry.RootAllomorph>.Match match in _entryTrie.Search(input.Shape))
-            {
-                // don't allow a compound where both roots are the same
-                if (input.NonHead == null || input.NonHead.RootAllomorph.Morpheme != match.Value.Morpheme)
-                {
-                	LexEntry entry = (LexEntry) match.Value.Morpheme;
-					foreach (LexEntry.RootAllomorph allomorph in entry.Allomorphs)
-					{
-						WordAnalysis wa = input.Clone();
-
-						wa.RootAllomorph = allomorph;
-
-#if WANTPORT
-						if (Morpher.TraceLexLookup)
-						{
-							// successful lookup, so create word synthesis trace record
-							var wsTrace = new WordSynthesisTrace(wa.RootAllomorph, wa.UnappliedMorphologicalRules,
-								(FeatureStructure) wa.RealizationalFeatures.Clone());
-							lookupTrace.AddChild(wsTrace);
-							wa.CurrentTrace = wsTrace;
-						}
-#endif
-
-						candidates.Add(new WordSynthesis(wa));
-					}
-                }
-            }
-        }
-
-        void UnapplyPhonologicalRules(WordAnalysis input)
-        {
-            // TODO: handle ordering properly
-            //for (int i = _prules.Count - 1; i >= 0; i--)
-            //    _prules[i].Unapply(input);
-        }
-
-        /// <summary>
-        /// Applies all of the rules to the specified word synthesis.
-        /// </summary>
-        /// <param name="input">The input word synthesis.</param>
-        /// <returns>All word synthesis records that result from the application of rules.</returns>
-        public IEnumerable<WordSynthesis> Apply(WordSynthesis input)
-        {
-            if (_isCyclic)
-                throw new NotImplementedException(HCStrings.kstidCyclicStratumNotSupported);
-
-            if (_pruleOrder == PRuleOrder.Simultaneous)
-                throw new NotImplementedException(HCStrings.kstidSimultOrderNotSupported);
-
-            // TODO: handle cyclicity
-            var output = new HashSet<WordSynthesis>();
-            ApplyMorphologicalRules(input.Clone(), 0, output);
-
-            foreach (WordSynthesis cur in output)
-                ApplyPhonologicalRules(cur);
-
-            return output;
-        }
-
-        void ApplyMorphologicalRules(WordSynthesis input, int rIndex, HashSet<WordSynthesis> output)
-        {
-            // iterate thru all rules starting from the specified rule in synthesis order
-            for (int i = rIndex; i < _mrules.Count; i++)
-            {
-#if WANTPORT
-				if (_mrules[i].IsApplicable(input))
-				{
-					ICollection<WordSynthesis> syntheses;
-					if (_mrules[i].Apply(input, out syntheses))
-					{
-						foreach (WordSynthesis ws in syntheses)
-						{
-							// recursive call so that we can cover every permutation of rule application
-							switch (_mruleOrder)
-							{
-								case MRuleOrder.Linear:
-									ApplyMorphologicalRules(ws, i, output);
-									break;
-
-								case MRuleOrder.Unordered:
-									ApplyMorphologicalRules(ws, 0, output);
-									break;
-							}
-						}
-					}
-				}
-#endif
-            }
-
-            ApplyTemplates(input, output);
-        }
-
-        void ApplyTemplates(WordSynthesis input, HashSet<WordSynthesis> output)
-        {
-            // if this word synthesis is not compatible with the realizational features,
-            // then skip it
-#if WANTPORT
-            if (!input.RealizationalFeatures.IsCompatible(input.HeadFeatures))
-                return;
-#endif
-
-            WordSynthesis ws = ChooseInflStem(input);
-            bool applicableTemplate = false;
-            foreach (AffixTemplate template in _templates)
-            {
-                // HC.NET does not treat templates as applying disjunctively, as opposed to legacy HC,
-                // which does
-                if (template.IsApplicable(ws))
-                {
-                    applicableTemplate = true;
-                    IEnumerable<WordSynthesis> tempOutput;
-                    if (template.Apply(ws, out tempOutput))
-                        output.UnionWith(tempOutput);
-                }
-            }
-
-            if (!applicableTemplate)
-                output.Add(ws);
         }
 
         /// <summary>
@@ -511,12 +262,6 @@ namespace SIL.HermitCrab
             }
 #endif
             return best;
-        }
-
-        void ApplyPhonologicalRules(WordSynthesis input)
-        {
-            //for (int i = 0; i < _prules.Count; i++)
-            //    _prules[i].Apply(input);
         }
     }
 }

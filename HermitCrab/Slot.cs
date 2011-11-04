@@ -16,9 +16,8 @@ namespace SIL.HermitCrab
 		/// Initializes a new instance of the <see cref="Slot"/> class.
 		/// </summary>
 		/// <param name="id">The ID.</param>
-		/// <param name="desc">The description.</param>
-		public Slot(string id, string desc)
-			: base(id, desc)
+		public Slot(string id)
+			: base(id)
 		{
 			_rules = new IDBearerSet<MorphologicalRule>();
 		}

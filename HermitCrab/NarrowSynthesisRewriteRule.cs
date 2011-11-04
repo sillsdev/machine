@@ -22,20 +22,20 @@ namespace SIL.HermitCrab
 		public override Annotation<ShapeNode> ApplyRhs(Word input, PatternMatch<ShapeNode> match, out Word output)
 		{
 			Span<ShapeNode> target = match["target"];
-			ShapeNode curNode = target.GetEnd(Lhs.Direction);
-			foreach (PatternNode<Word, ShapeNode> node in _rhs.Children.GetNodes(Lhs.Direction))
+			ShapeNode curNode = target.GetEnd(Direction);
+			foreach (PatternNode<Word, ShapeNode> node in _rhs.Children.GetNodes(Direction))
 			{
 				var constraint = (Constraint<Word, ShapeNode>) node;
 				ShapeNode newNode = CreateNodeFromConstraint(constraint, match.VariableBindings);
-				input.Shape.Insert(newNode, curNode, Lhs.Direction);
+				input.Shape.Insert(newNode, curNode, Direction);
 				curNode = newNode;
 			}
 
-			ShapeNode matchStartNode = match.GetStart(Lhs.Direction);
-			ShapeNode resumeNode = matchStartNode == target.GetStart(Lhs.Direction) ? target.GetEnd(Lhs.Direction).GetNext(Lhs.Direction) : matchStartNode;
+			ShapeNode matchStartNode = match.GetStart(Direction);
+			ShapeNode resumeNode = matchStartNode == target.GetStart(Direction) ? target.GetEnd(Direction).GetNext(Direction) : matchStartNode;
 			MarkSearchedNodes(resumeNode, curNode);
 
-			ShapeNode[] nodes = input.Shape.GetNodes(target, Lhs.Direction).ToArray();
+			ShapeNode[] nodes = input.Shape.GetNodes(target, Direction).ToArray();
 			for (int i = 0; i < _targetCount; i++)
 				nodes[i].Remove();
 

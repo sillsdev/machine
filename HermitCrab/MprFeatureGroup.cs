@@ -42,8 +42,8 @@ namespace SIL.HermitCrab
 		private GroupOutputType _outputType = GroupOutputType.Overwrite;
 		private readonly IDBearerSet<MprFeature> _mprFeatures;
 
-		public MprFeatureGroup(string id, string desc)
-			: base(id, desc)
+		public MprFeatureGroup(string id)
+			: base(id)
 		{
 			_mprFeatures = new IDBearerSet<MprFeature>();
 		}

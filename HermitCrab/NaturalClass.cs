@@ -13,13 +13,12 @@ namespace SIL.HermitCrab
         private FeatureStruct _featureStruct;
         private FeatureStruct _antiFeatureStruct;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="NaturalClass"/> class.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        /// <param name="desc">The description.</param>
-        public NaturalClass(string id, string desc)
-            : base(id, desc)
+    	/// <summary>
+    	/// Initializes a new instance of the <see cref="NaturalClass"/> class.
+    	/// </summary>
+    	/// <param name="id">The ID.</param>
+    	public NaturalClass(string id)
+            : base(id)
         {
             _segDefs = new HashSet<SegmentDefinition>();
         }

@@ -7,8 +7,8 @@ namespace SIL.HermitCrab
     /// </summary>
     public abstract class MorphologicalRule : Morpheme
     {
-    	protected MorphologicalRule(string id, string desc)
-            : base(id, desc)
+    	protected MorphologicalRule(string id)
+            : base(id)
         {
         }
 

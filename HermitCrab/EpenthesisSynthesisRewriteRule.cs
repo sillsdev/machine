@@ -18,7 +18,7 @@ namespace SIL.HermitCrab
 		public override Annotation<ShapeNode> ApplyRhs(Word input, PatternMatch<ShapeNode> match, out Word output)
 		{
 			ShapeNode startNode;
-			if (Lhs.Direction == Direction.LeftToRight)
+			if (Direction == Direction.LeftToRight)
 			{
 				Span<ShapeNode> leftEnv;
 				if (match.TryGetGroup("leftEnv", out leftEnv))
@@ -46,19 +46,19 @@ namespace SIL.HermitCrab
 			}
 
 			ShapeNode curNode = startNode;
-			foreach (PatternNode<Word, ShapeNode> node in _rhs.Children.GetNodes(Lhs.Direction))
+			foreach (PatternNode<Word, ShapeNode> node in _rhs.Children.GetNodes(Direction))
 			{
 				if (input.Shape.Count == 256)
 					throw new MorphException(MorphErrorCode.TooManySegs);
 				var constraint = (Constraint<Word, ShapeNode>)node;
 				ShapeNode newNode = CreateNodeFromConstraint(constraint, match.VariableBindings);
-				input.Shape.Insert(newNode, curNode, Lhs.Direction);
+				input.Shape.Insert(newNode, curNode, Direction);
 				curNode = newNode;
 			}
 
 			MarkSearchedNodes(startNode, curNode);
 			output = input;
-			return startNode.GetNext(Lhs.Direction).Annotation;
+			return startNode.GetNext(Direction).Annotation;
 		}
 	}
 }

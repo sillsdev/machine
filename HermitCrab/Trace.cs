@@ -433,7 +433,7 @@ namespace SIL.HermitCrab
     /// </summary>
     public class WordSynthesisTrace : Trace
     {
-        private readonly LexEntry.RootAllomorph _rootAllomorph;
+        private readonly RootAllomorph _rootAllomorph;
         private readonly FeatureStruct _rzFeatures;
         private readonly List<MorphologicalRule> _mrules;
 
@@ -443,7 +443,7 @@ namespace SIL.HermitCrab
         /// <param name="rootAllomorph">The root allomorph.</param>
         /// <param name="mrules">The morphological rules.</param>
         /// <param name="rzFeatures">The realizational features.</param>
-        internal WordSynthesisTrace(LexEntry.RootAllomorph rootAllomorph, IEnumerable<MorphologicalRule> mrules, FeatureStruct rzFeatures)
+        internal WordSynthesisTrace(RootAllomorph rootAllomorph, IEnumerable<MorphologicalRule> mrules, FeatureStruct rzFeatures)
         {
             _rootAllomorph = rootAllomorph;
             _mrules = new List<MorphologicalRule>(mrules);
@@ -466,7 +466,7 @@ namespace SIL.HermitCrab
         /// Gets the root allomorph.
         /// </summary>
         /// <value>The root allomorph.</value>
-        public LexEntry.RootAllomorph RootAllomorph
+        public RootAllomorph RootAllomorph
         {
             get
             {

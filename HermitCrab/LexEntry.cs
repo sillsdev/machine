@@ -9,58 +9,18 @@ namespace SIL.HermitCrab
 	/// </summary>
 	public class LexEntry : Morpheme
 	{
-		/// <summary>
-		/// This class represents an allomorph in a lexical entry.
-		/// </summary>
-		public class RootAllomorph : Allomorph
-		{
-			private readonly Shape _shape;
-
-			/// <summary>
-			/// Initializes a new instance of the <see cref="RootAllomorph"/> class.
-			/// </summary>
-			/// <param name="id">The id.</param>
-			/// <param name="desc">The description.</param>
-			/// <param name="shape">The shape.</param>
-			public RootAllomorph(string id, string desc, Shape shape)
-				: base(id, desc)
-			{
-				_shape = shape;
-			}
-
-			/// <summary>
-			/// Gets the phonetic shape.
-			/// </summary>
-			/// <value>The phonetic shape.</value>
-			public Shape Shape
-			{
-				get
-				{
-					return _shape;
-				}
-			}
-
-			public override string ToString()
-			{
-				return _shape.ToString();
-			}
-		}
-
 		private readonly List<RootAllomorph> _allomorphs;
-		private PartOfSpeech _partOfSpeech;
-		private MprFeatureSet _mprFeatures;
-		private FeatureStruct _headFeatures;
-		private FeatureStruct _footFeatures;
-		private LexFamily _family;
+		private readonly FeatureStruct _syntacticFS;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="LexEntry"/> class.
 		/// </summary>
 		/// <param name="id">The ID.</param>
-		/// <param name="desc">The description.</param>
-		public LexEntry(string id, string desc)
-			: base(id, desc)
+		/// <param name="syntacticFS"></param>
+		public LexEntry(string id, FeatureStruct syntacticFS)
+			: base(id)
 		{
+			_syntacticFS = syntacticFS;
 			_allomorphs = new List<RootAllomorph>();
 		}
 
@@ -103,89 +63,25 @@ namespace SIL.HermitCrab
 		}
 
 		/// <summary>
-		/// Gets or sets the part of speech.
-		/// </summary>
-		/// <value>The part of speech.</value>
-		public PartOfSpeech PartOfSpeech
-		{
-			get
-			{
-				return _partOfSpeech;
-			}
-
-			set
-			{
-				_partOfSpeech = value;
-			}
-		}
-
-		/// <summary>
 		/// Gets the MPR features.
 		/// </summary>
 		/// <value>The MPR features.</value>
-		public MprFeatureSet MprFeatures
-		{
-			get
-			{
-				return _mprFeatures;
-			}
-
-			set
-			{
-				_mprFeatures = value;
-			}
-		}
+		public MprFeatureSet MprFeatures { get; set; }
 
 		/// <summary>
 		/// Gets the head features.
 		/// </summary>
 		/// <value>The head features.</value>
-		public FeatureStruct HeadFeatures
+		public FeatureStruct SyntacticFeatureStruct
 		{
-			get
-			{
-				return _headFeatures;
-			}
-
-			set
-			{
-				_headFeatures = value;
-			}
-		}
-
-		/// <summary>
-		/// Gets the foot features.
-		/// </summary>
-		/// <value>The foot features.</value>
-		public FeatureStruct FootFeatures
-		{
-			get
-			{
-				return _footFeatures;
-			}
-
-			set
-			{
-				_footFeatures = value;
-			}
+			get { return _syntacticFS; }
 		}
 
 		/// <summary>
 		/// Gets or sets the lexical family.
 		/// </summary>
 		/// <value>The lexical family.</value>
-		public LexFamily Family
-		{
-			get
-			{
-				return _family;
-			}
-
-			internal set
-			{
-				_family = value;
-			}
-		}
+		public LexFamily Family { get; internal set; }
 
 		/// <summary>
 		/// Adds the specified allomorph.

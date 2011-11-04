@@ -6,15 +6,16 @@ namespace SIL.HermitCrab
 {
 	public class EpenthesisAnalysisRewriteRule : AnalysisRewriteRule
 	{
-		private readonly AnalysisReapplyType _reapplyType;
+		private AnalysisReapplyType _reapplyType;
 		private readonly int _targetCount;
 
-		public EpenthesisAnalysisRewriteRule(SpanFactory<ShapeNode> spanFactory, Direction synthesisDir, ApplicationMode synthesisAppMode,
-			Expression<Word, ShapeNode> rhs, Expression<Word, ShapeNode> leftEnv, Expression<Word, ShapeNode> rightEnv)
+		public EpenthesisAnalysisRewriteRule(SpanFactory<ShapeNode> spanFactory, Expression<Word, ShapeNode> rhs,
+			Expression<Word, ShapeNode> leftEnv, Expression<Word, ShapeNode> rightEnv)
 			: base(spanFactory)
 		{
 			ApplicationMode = ApplicationMode.Iterative;
-			Lhs.Direction = synthesisDir == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight;
+			Direction = Direction.RightToLeft;
+
 			Lhs.Acceptable = (input, match) => IsUnapplicationNonvacuous(match);
 			_targetCount = rhs.Children.Count;
 
@@ -28,8 +29,24 @@ namespace SIL.HermitCrab
 			}
 			Lhs.Children.Add(target);
 			AddEnvironment("rightEnv", rightEnv);
+		}
 
-			_reapplyType = synthesisAppMode == ApplicationMode.Simultaneous ? AnalysisReapplyType.SelfOpaquing : AnalysisReapplyType.Normal;
+		public override ApplicationMode SynthesisApplicationMode
+		{
+			set
+			{
+				base.SynthesisApplicationMode = value;
+				_reapplyType = value == ApplicationMode.Simultaneous ? AnalysisReapplyType.SelfOpaquing : AnalysisReapplyType.Normal;
+			}
+		}
+
+		public override Direction SynthesisDirection
+		{
+			set
+			{
+				base.SynthesisDirection = value;
+				Direction = value == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight;
+			}
 		}
 
 		private static bool IsUnapplicationNonvacuous(PatternMatch<ShapeNode> match)
@@ -52,14 +69,14 @@ namespace SIL.HermitCrab
 		public override Annotation<ShapeNode> ApplyRhs(Word input, PatternMatch<ShapeNode> match, out Word output)
 		{
 			Span<ShapeNode> target = match["target"];
-			ShapeNode curNode = target.GetStart(Lhs.Direction);
+			ShapeNode curNode = target.GetStart(Direction);
 			for (int i = 0; i < _targetCount; i++)
 			{
 				curNode.Annotation.Optional = true;
-				curNode = curNode.GetNext(Lhs.Direction);
+				curNode = curNode.GetNext(Direction);
 			}
 
-			ShapeNode resumeNode = match.GetStart(Lhs.Direction).GetNext(Lhs.Direction);
+			ShapeNode resumeNode = match.GetStart(Direction).GetNext(Direction);
 			MarkSearchedNodes(resumeNode, curNode);
 
 			output = input;

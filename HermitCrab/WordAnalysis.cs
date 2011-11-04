@@ -13,7 +13,7 @@ namespace SIL.HermitCrab
     {
         private Shape _shape;
         private readonly IDBearerSet<PartOfSpeech> _partsOfSpeech;
-        private LexEntry.RootAllomorph _rootAllomorph;
+        private RootAllomorph _rootAllomorph;
         private WordAnalysis _nonHead;
         private readonly List<MorphologicalRule> _mrules;
         private readonly Dictionary<MorphologicalRule, int> _mrulesUnapplied;
@@ -81,7 +81,7 @@ namespace SIL.HermitCrab
         /// Gets or sets the root allomorph.
         /// </summary>
         /// <value>The root allomorph.</value>
-        public LexEntry.RootAllomorph RootAllomorph
+        public RootAllomorph RootAllomorph
         {
             get
             {

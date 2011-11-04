@@ -22,9 +22,8 @@ namespace SIL.HermitCrab
 		/// Initializes a new instance of the <see cref="Allomorph"/> class.
 		/// </summary>
 		/// <param name="id">The id.</param>
-		/// <param name="desc">The description.</param>
-		protected Allomorph(string id, string desc)
-			: base(id, desc)
+		protected Allomorph(string id)
+			: base(id)
 		{
 			_properties = new Dictionary<string, string>();
 		}

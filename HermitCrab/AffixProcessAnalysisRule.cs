@@ -1,28 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using SIL.APRE;
 using SIL.APRE.Transduction;
 
 namespace SIL.HermitCrab
 {
-	public class AffixProcessAnalysisRule : RuleCascadeBase<Word, ShapeNode>
+	public class AffixProcessAnalysisRule : RuleCascade<Word, ShapeNode>
 	{
 		private readonly SpanFactory<ShapeNode> _spanFactory;
 
 		public AffixProcessAnalysisRule(SpanFactory<ShapeNode> spanFactory)
-			: base(RuleCascadeOrder.Linear)
 		{
 			_spanFactory = spanFactory;
 		}
 
 		public void AddAllomorph(AffixProcessAllomorph allomorph)
 		{
-			AddRuleInternal(new AnalysisAffixPatternRule(_spanFactory, allomorph), true);
+			InsertRuleInternal(Rules.Count, new AnalysisAffixPatternRule(_spanFactory, allomorph));
 		}
 
 		public override bool IsApplicable(Word input)
 		{
-			throw new NotImplementedException();
+			return true;
 		}
 
 		public override bool Apply(Word input, out IEnumerable<Word> output)

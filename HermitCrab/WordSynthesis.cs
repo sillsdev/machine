@@ -34,7 +34,7 @@ namespace SIL.HermitCrab
         /// <param name="rootAllomorph">The root allomorph.</param>
         /// <param name="rzFeatures">The realizational features.</param>
         /// <param name="curTrace">The current trace record.</param>
-        internal WordSynthesis(LexEntry.RootAllomorph rootAllomorph, FeatureStruct rzFeatures, Trace curTrace)
+        internal WordSynthesis(RootAllomorph rootAllomorph, FeatureStruct rzFeatures, Trace curTrace)
             : this(rootAllomorph, null, rzFeatures, new MorphologicalRule[] {}, curTrace)
         {
         }
@@ -44,7 +44,7 @@ namespace SIL.HermitCrab
 		/// </summary>
 		/// <param name="wa">The word analysis.</param>
         internal WordSynthesis(WordAnalysis wa)
-            : this(wa.RootAllomorph, wa.NonHead == null ? null : new WordSynthesis(wa.NonHead), (FeatureStruct) wa.RealizationalFeatures.Clone(),
+            : this(wa.RootAllomorph, wa.NonHead == null ? null : new WordSynthesis(wa.NonHead), wa.RealizationalFeatures.Clone(),
             wa.UnappliedMorphologicalRules, wa.CurrentTrace)
         {
         }
@@ -57,7 +57,7 @@ namespace SIL.HermitCrab
         /// <param name="rzFeatures">The realizational features.</param>
         /// <param name="mrules">The morphological rules to apply.</param>
         /// <param name="curTrace">The current trace record.</param>
-        internal WordSynthesis(LexEntry.RootAllomorph rootAllomorph, WordSynthesis nonHead, FeatureStruct rzFeatures, IEnumerable<MorphologicalRule> mrules,
+        internal WordSynthesis(RootAllomorph rootAllomorph, WordSynthesis nonHead, FeatureStruct rzFeatures, IEnumerable<MorphologicalRule> mrules,
             Trace curTrace)
         {
             _root = (LexEntry) rootAllomorph.Morpheme;
@@ -65,9 +65,9 @@ namespace SIL.HermitCrab
 #if WANTPORT
             m_headFeatures = _root.HeadFeatures != null ? (FeatureStructure) _root.HeadFeatures.Clone() : new FeatureDictionary();
             m_footFeatures = _root.FootFeatures != null ? (FeatureStructure) _root.FootFeatures.Clone() : new FeatureDictionary();
-#endif
             _partOfSpeech = _root.PartOfSpeech;
-            m_stratum = _root.Stratum;
+#endif
+			m_stratum = _root.Stratum;
 
             m_nonHead = nonHead;
             _morphs = new Morphs();

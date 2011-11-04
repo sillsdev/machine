@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using SIL.APRE;
 using SIL.APRE.FeatureModel;
 using SIL.APRE.Matching;
@@ -6,17 +7,18 @@ using SIL.APRE.Transduction;
 
 namespace SIL.HermitCrab
 {
-	public abstract class SynthesisRewriteRule : PatternRuleBase<Word, ShapeNode>
+	public abstract class SynthesisRewriteRule : PatternRule<Word, ShapeNode>
 	{
 		private readonly SpanFactory<ShapeNode> _spanFactory;
 		private readonly FeatureStruct _applicableFS;
 
 		protected SynthesisRewriteRule(SpanFactory<ShapeNode> spanFactory, Expression<Word, ShapeNode> lhs,
 			Expression<Word, ShapeNode> leftEnv, Expression<Word, ShapeNode> rightEnv, FeatureStruct applicableFS)
-			: base(new Pattern<Word, ShapeNode>(spanFactory))
+			: base(new Pattern<Word, ShapeNode>(spanFactory) {UseDefaultsForMatching = true,
+				Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.BoundaryType, HCFeatureSystem.AnchorType),
+				Acceptable = (input, match) => CheckTarget(match, lhs)})
 		{
-			Lhs.Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.BoundaryType, HCFeatureSystem.AnchorType);
-			Lhs.Acceptable = (input, match) => CheckTarget(match, lhs);
+			ApplicationMode = ApplicationMode.Iterative;
 
 			_spanFactory = spanFactory;
 			_applicableFS = applicableFS;
@@ -47,7 +49,7 @@ namespace SIL.HermitCrab
 			{
 				foreach (Tuple<ShapeNode, PatternNode<Word, ShapeNode>> tuple in target.Start.GetNodes(target.End).Zip(lhs.Children))
 				{
-					var constraints = (Constraint<Word, ShapeNode>)tuple.Item2;
+					var constraints = (Constraint<Word, ShapeNode>) tuple.Item2;
 					if (tuple.Item1.Annotation.Type != constraints.Type)
 						return false;
 				}
@@ -57,24 +59,24 @@ namespace SIL.HermitCrab
 
 		public override bool IsApplicable(Word input)
 		{
-			return input.Annotation.FeatureStruct.IsUnifiable(_applicableFS);
+			return input.SyntacticFeatureStruct.IsUnifiable(_applicableFS);
 		}
 
 		protected void MarkSearchedNodes(ShapeNode startNode, ShapeNode endNode)
 		{
 			if (ApplicationMode == ApplicationMode.Iterative)
 			{
-				foreach (ShapeNode node in startNode.GetNodes(endNode, Lhs.Direction))
+				foreach (ShapeNode node in startNode.GetNodes(endNode, Direction))
 					node.Annotation.FeatureStruct.AddValue(HCFeatureSystem.Backtrack, HCFeatureSystem.Searched);
 			}
 		}
 
 		protected ShapeNode CreateNodeFromConstraint(Constraint<Word, ShapeNode> constraint, VariableBindings varBindings)
 		{
-			var newNode = new ShapeNode(constraint.Type, _spanFactory, (FeatureStruct) constraint.FeatureStruct.Clone());
-			newNode.Annotation.FeatureStruct.ReplaceVariables(varBindings);
-			if (newNode.Annotation.FeatureStruct.HasVariables)
+			if (varBindings.Values.OfType<SymbolicFeatureValue>().Where(value => value.Feature.DefaultValue.Equals(value)).Any())
 				throw new MorphException(MorphErrorCode.UninstantiatedFeature);
+			var newNode = new ShapeNode(constraint.Type, _spanFactory, constraint.FeatureStruct.Clone());
+			newNode.Annotation.FeatureStruct.ReplaceVariables(varBindings);
 			return newNode;
 		}
 	}

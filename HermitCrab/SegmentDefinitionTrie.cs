@@ -121,7 +121,7 @@ namespace SIL.HermitCrab
 					if (tnode == null)
 					{
 						// new node needs to be added
-						tnode = new TrieNode((FeatureStruct)node.Annotation.FeatureStruct.Clone());
+						tnode = new TrieNode(node.Annotation.FeatureStruct.Clone());
 						_children.Add(tnode);
 					}
 

@@ -8,8 +8,8 @@ namespace SIL.HermitCrab
 		private readonly List<Expression<Word, ShapeNode>> _lhs;
 		private readonly List<MorphologicalOutput> _rhs;
 
-		public AffixProcessAllomorph(string id, string desc)
-			: base(id, desc)
+		public AffixProcessAllomorph(string id)
+			: base(id)
 		{
 			_lhs = new List<Expression<Word, ShapeNode>>();
 			_rhs = new List<MorphologicalOutput>();

@@ -5,16 +5,15 @@ using SIL.APRE.Transduction;
 
 namespace SIL.HermitCrab
 {
-	public class SynthesisAffixProcessRule : PatternRuleBase<Word, ShapeNode>
+	public class SynthesisAffixPatternRule : PatternRule<Word, ShapeNode>
 	{
 		private readonly AffixProcessAllomorph _allomorph;
 
-		public SynthesisAffixProcessRule(SpanFactory<ShapeNode> spanFactory, AffixProcessAllomorph allomorph)
-			: base(new Pattern<Word, ShapeNode>(spanFactory))
+		public SynthesisAffixPatternRule(SpanFactory<ShapeNode> spanFactory, AffixProcessAllomorph allomorph)
+			: base(new Pattern<Word, ShapeNode>(spanFactory) {UseDefaultsForMatching = true,
+				Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.BoundaryType, HCFeatureSystem.AnchorType)})
 		{
 			_allomorph = allomorph;
-
-			Lhs.Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.BoundaryType, HCFeatureSystem.AnchorType);
 
 			Lhs.Children.Add(new Constraint<Word, ShapeNode>(HCFeatureSystem.AnchorType,
 				FeatureStruct.New(HCFeatureSystem.Instance).Symbol(HCFeatureSystem.LeftSide).Value));
@@ -36,7 +35,8 @@ namespace SIL.HermitCrab
 
 		public override Annotation<ShapeNode> ApplyRhs(Word input, PatternMatch<ShapeNode> match, out Word output)
 		{
-			output = new Word(input.Stratum, input.Mode);
+			output = input.Clone();
+			output.Shape.Clear();
 			foreach (MorphologicalOutput outputAction in _allomorph.Rhs)
 				outputAction.Apply(match, input, output, _allomorph);
 

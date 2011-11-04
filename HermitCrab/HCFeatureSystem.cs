@@ -15,29 +15,32 @@ namespace SIL.HermitCrab
 
 		public static readonly StringFeature StrRep;
 
+		public static readonly StringFeature Allomorph;
+
 		public const string AnchorType = "anchor";
 		public const string SegmentType = "segment";
 		public const string BoundaryType = "boundary";
 		public const string MorphType = "morph";
-		public const string WordType = "word";
 
 		private static readonly HCFeatureSystem FeatureSystem;
 
 		static HCFeatureSystem()
 		{
-			Backtrack = new SymbolicFeature(Guid.NewGuid().ToString(), "Backtrack");
-			Searched = new FeatureSymbol(Guid.NewGuid().ToString(), "Searched");
+			Backtrack = new SymbolicFeature(Guid.NewGuid().ToString()) { Description = "Backtrack" };
+			Searched = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "Searched" };
 			Backtrack.AddPossibleSymbol(Searched);
-			NotSearched = new FeatureSymbol(Guid.NewGuid().ToString(), "NotSearched");
+			NotSearched = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "NotSearched" };
 			Backtrack.AddPossibleSymbol(NotSearched);
 
-			Anchor = new SymbolicFeature(Guid.NewGuid().ToString(), "Anchor");
-			LeftSide = new FeatureSymbol(Guid.NewGuid().ToString(), "LeftSide");
+			Anchor = new SymbolicFeature(Guid.NewGuid().ToString()) {Description = "Anchor"};
+			LeftSide = new FeatureSymbol(Guid.NewGuid().ToString()) {Description = "LeftSide"};
 			Anchor.AddPossibleSymbol(LeftSide);
-			RightSide = new FeatureSymbol(Guid.NewGuid().ToString(), "RightSide");
+			RightSide = new FeatureSymbol(Guid.NewGuid().ToString()) {Description = "RightSide"};
 			Anchor.AddPossibleSymbol(RightSide);
 
-			StrRep = new StringFeature(Guid.NewGuid().ToString(), "StrRep");
+			StrRep = new StringFeature(Guid.NewGuid().ToString()) {Description = "StrRep"};
+
+			Allomorph = new StringFeature(Guid.NewGuid().ToString()) {Description = "Allomorph"};
 
 			FeatureSystem = new HCFeatureSystem();
 		}
@@ -52,6 +55,7 @@ namespace SIL.HermitCrab
 			base.AddFeature(Backtrack);
 			base.AddFeature(Anchor);
 			base.AddFeature(StrRep);
+			base.AddFeature(Allomorph);
 		}
 
 		public override void AddFeature(Feature feature)

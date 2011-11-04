@@ -63,7 +63,7 @@
     <Compile Include="Allomorph.cs" />
     <Compile Include="AffixProcessAnalysisRule.cs" />
     <Compile Include="AnalysisAffixPatternRule.cs" />
-    <Compile Include="StandardPhonologicalAnalysisRule.cs" />
+    <Compile Include="AnalysisRewriteRuleCascade.cs" />
     <Compile Include="AnalysisRewriteRule.cs" />
     <Compile Include="CopyFromInput.cs" />
     <Compile Include="EpenthesisAnalysisRewriteRule.cs" />
@@ -82,6 +82,7 @@
     <Compile Include="Morphs.cs" />
     <Compile Include="NarrowAnalysisRewriteRule.cs" />
     <Compile Include="NarrowSynthesisRewriteRule.cs" />
+    <Compile Include="RootAllomorph.cs" />
     <Compile Include="ShapeNode.cs" />
     <Compile Include="Shape.cs" />
     <Compile Include="BoundaryDefinition.cs" />
@@ -120,8 +121,9 @@
     <None Include="RealizationalRule.cs" />
     <Compile Include="Stratum.cs" />
     <Compile Include="AffixProcessSynthesisRule.cs" />
-    <Compile Include="SynthesisAffixProcessRule.cs" />
-    <Compile Include="StandardPhonologicalSynthesisRule.cs" />
+    <Compile Include="MorpherAnalysisRule.cs" />
+    <Compile Include="SynthesisAffixPatternRule.cs" />
+    <Compile Include="SynthesisRewriteRuleBatch.cs" />
     <Compile Include="SynthesisRewriteRule.cs" />
     <Compile Include="Trace.cs" />
     <Compile Include="Word.cs" />

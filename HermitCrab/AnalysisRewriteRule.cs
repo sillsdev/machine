@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using SIL.APRE;
 using SIL.APRE.Matching;
 using SIL.APRE.Transduction;
@@ -13,15 +12,18 @@ namespace SIL.HermitCrab
 		SelfOpaquing
 	}
 
-	public abstract class AnalysisRewriteRule : PatternRuleBase<Word, ShapeNode>
+	public abstract class AnalysisRewriteRule : PatternRule<Word, ShapeNode>
 	{
 		protected AnalysisRewriteRule(SpanFactory<ShapeNode> spanFactory)
-			: base(new Pattern<Word, ShapeNode>(spanFactory))
+			: base(new Pattern<Word, ShapeNode>(spanFactory) {Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType)})
 		{
-			Lhs.Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType);
 		}
 
 		public abstract AnalysisReapplyType AnalysisReapplyType { get; }
+
+		public virtual Direction SynthesisDirection { get; set; }
+
+		public virtual ApplicationMode SynthesisApplicationMode { get; set; }
 
 		protected void AddEnvironment(string name, Expression<Word, ShapeNode> env)
 		{

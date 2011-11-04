@@ -13,13 +13,12 @@ namespace SIL.HermitCrab
         private IEnumerable<MorphCoOccurrence> _requiredMorphCoOccur;
         private IEnumerable<MorphCoOccurrence> _excludedMorphCoOccur;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Morpheme"/> class.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="desc">The description.</param>
-        protected Morpheme(string id, string desc)
-            : base(id, desc)
+    	/// <summary>
+    	/// Initializes a new instance of the <see cref="Morpheme"/> class.
+    	/// </summary>
+    	/// <param name="id">The id.</param>
+    	protected Morpheme(string id)
+            : base(id)
         {
         }
 

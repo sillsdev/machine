@@ -13,8 +13,8 @@ namespace SIL.HermitCrab
     	private readonly AffixProcessAnalysisRule _analysisRule;
     	private readonly AffixProcessSynthesisRule _synthesisRule;
 
-    	public AffixProcessRule(string id, string desc, SpanFactory<ShapeNode> spanFactory)
-			: base(id, desc)
+    	public AffixProcessRule(string id, SpanFactory<ShapeNode> spanFactory)
+			: base(id)
     	{
 			_analysisRule = new AffixProcessAnalysisRule(spanFactory);
 			_synthesisRule = new AffixProcessSynthesisRule(spanFactory);

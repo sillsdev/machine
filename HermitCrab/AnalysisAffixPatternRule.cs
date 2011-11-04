@@ -6,16 +6,15 @@ using SIL.APRE.Transduction;
 
 namespace SIL.HermitCrab
 {
-	public class AnalysisAffixPatternRule : PatternRuleBase<Word, ShapeNode>
+	public class AnalysisAffixPatternRule : PatternRule<Word, ShapeNode>
 	{
 		private readonly SpanFactory<ShapeNode> _spanFactory;
 		private readonly AffixProcessAllomorph _allomorph;
 		private readonly Dictionary<int, Constraint<Word, ShapeNode>> _modifyFromConstraints;
 
 		public AnalysisAffixPatternRule(SpanFactory<ShapeNode> spanFactory, AffixProcessAllomorph allomorph)
-			: base(new Pattern<Word, ShapeNode>(spanFactory))
+			: base(new Pattern<Word, ShapeNode>(spanFactory) {Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType)})
 		{
-			Lhs.Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType);
 			ApplicationMode = ApplicationMode.Multiple;
 
 			_spanFactory = spanFactory;
@@ -48,13 +47,9 @@ namespace SIL.HermitCrab
 				var childFS = value as FeatureStruct;
 				FeatureValue newValue;
 				if (childFS != null)
-				{
 					newValue = GetAntiFeatureStruct(childFS);
-				}
 				else
-				{
-					value.Negation(out newValue);
-				}
+					newValue = ((SimpleFeatureValue) value).Negation();
 				result.AddValue(feature, newValue);
 			}
 			return result;
@@ -67,7 +62,8 @@ namespace SIL.HermitCrab
 
 		public override Annotation<ShapeNode> ApplyRhs(Word input, PatternMatch<ShapeNode> match, out Word output)
 		{
-			output = new Word(input.Stratum, input.Mode);
+			output = input.Clone();
+			output.Shape.Clear();
 			for (int i = 0; i < _allomorph.Lhs.Count; i++)
 			{
 				Span<ShapeNode> inputSpan;
@@ -102,7 +98,7 @@ namespace SIL.HermitCrab
 				var constraint = node as Constraint<Word, ShapeNode>;
 				if (constraint != null && constraint.Type == HCFeatureSystem.SegmentType)
 				{
-					var newNode = new ShapeNode(constraint.Type, _spanFactory, (FeatureStruct) constraint.FeatureStruct.Clone());
+					var newNode = new ShapeNode(constraint.Type, _spanFactory, constraint.FeatureStruct.Clone());
 					newNode.Annotation.FeatureStruct.ReplaceVariables(varBindings);
 					newNode.Annotation.Optional = optional;
 					output.Shape.Add(newNode);

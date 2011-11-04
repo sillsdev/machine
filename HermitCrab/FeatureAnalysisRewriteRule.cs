@@ -15,10 +15,9 @@ namespace SIL.HermitCrab
 		private readonly Expression<Word, ShapeNode> _rightEnv;
 		private readonly Expression<Word, ShapeNode> _analysisRhs;
 		private AnalysisReapplyType _reapplyType;
-		private ApplicationMode _synthesisAppMode;
 
-		public FeatureAnalysisRewriteRule(SpanFactory<ShapeNode> spanFactory, ApplicationMode synthesisAppMode,
-			Expression<Word, ShapeNode> lhs, Expression<Word, ShapeNode> rhs, Expression<Word, ShapeNode> leftEnv, Expression<Word, ShapeNode> rightEnv)
+		public FeatureAnalysisRewriteRule(SpanFactory<ShapeNode> spanFactory, Expression<Word, ShapeNode> lhs, Expression<Word, ShapeNode> rhs,
+			Expression<Word, ShapeNode> leftEnv, Expression<Word, ShapeNode> rightEnv)
 			: base(spanFactory)
 		{
 			_rhs = rhs;
@@ -26,6 +25,7 @@ namespace SIL.HermitCrab
 			_rightEnv = rightEnv;
 
 			ApplicationMode = ApplicationMode.Iterative;
+			Direction = Direction.RightToLeft;
 			var rhsAntiFSs = new List<FeatureStruct>();
 			foreach (Constraint<Word, ShapeNode> constraint in rhs.Children.OfType<Constraint<Word, ShapeNode>>().Where(c => c.Type == HCFeatureSystem.SegmentType))
 			{
@@ -60,19 +60,21 @@ namespace SIL.HermitCrab
 			AddEnvironment("rightEnv", rightEnv);
 		}
 
-		public Direction SynthesisDirection
+		public override Direction SynthesisDirection
 		{
-			get { return Lhs.Direction == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight; }
-			set { Lhs.Direction = value == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight; }
-		}
-
-		public ApplicationMode SynthesisApplicationMode
-		{
-			get { return _synthesisAppMode; }
 			set
 			{
-				_synthesisAppMode = value;
-				if (_synthesisAppMode == ApplicationMode.Simultaneous)
+				base.SynthesisDirection = value;
+				Direction = value == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight;
+			}
+		}
+
+		public override ApplicationMode SynthesisApplicationMode
+		{
+			set
+			{
+				base.SynthesisApplicationMode = value;
+				if (value == ApplicationMode.Simultaneous)
 				{
 					_reapplyType = AnalysisReapplyType.Normal;
 					foreach (Constraint<Word, ShapeNode> constraint in _rhs.Children)
@@ -95,7 +97,7 @@ namespace SIL.HermitCrab
 			int i = 0;
 			foreach (FeatureStruct fs in rhsAntiFSs)
 			{
-				ShapeNode node = match["target" + i].GetStart(Lhs.Direction);
+				ShapeNode node = match["target" + i].GetStart(Direction);
 				if (!node.Annotation.FeatureStruct.IsUnifiable(fs, match.VariableBindings))
 					return true;
 				i++;
@@ -113,13 +115,9 @@ namespace SIL.HermitCrab
 				var childFS = value as FeatureStruct;
 				FeatureValue newValue;
 				if (childFS != null)
-				{
 					newValue = GetAntiFeatureStruct(childFS);
-				}
 				else
-				{
-					value.Negation(out newValue);
-				}
+					newValue = ((SimpleFeatureValue) value).Negation();
 				result.AddValue(feature, newValue);
 			}
 			return result;
@@ -150,14 +148,14 @@ namespace SIL.HermitCrab
 			int i = 0;
 			foreach (Constraint<Word, ShapeNode> constraint in _analysisRhs.Children)
 			{
-				ShapeNode node = match["target" + i].GetStart(Lhs.Direction);
-				if (endNode == null || node.CompareTo(endNode, Lhs.Direction) > 0)
+				ShapeNode node = match["target" + i].GetStart(Direction);
+				if (endNode == null || node.CompareTo(endNode, Direction) > 0)
 					endNode = node;
 				node.Annotation.FeatureStruct.Merge(constraint.FeatureStruct, match.VariableBindings);
 				i++;
 			}
 
-			ShapeNode resumeNode = match.GetStart(Lhs.Direction).GetNext(Lhs.Direction);
+			ShapeNode resumeNode = match.GetStart(Direction).GetNext(Direction);
 			MarkSearchedNodes(resumeNode, endNode);
 
 			output = input;

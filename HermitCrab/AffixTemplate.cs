@@ -17,9 +17,8 @@ namespace SIL.HermitCrab
         /// Initializes a new instance of the <see cref="AffixTemplate"/> class.
         /// </summary>
         /// <param name="id">The ID.</param>
-        /// <param name="desc">The description.</param>
-        public AffixTemplate(string id, string desc)
-            : base(id, desc)
+        public AffixTemplate(string id)
+            : base(id)
         {
             _slots = new List<Slot>();
         }

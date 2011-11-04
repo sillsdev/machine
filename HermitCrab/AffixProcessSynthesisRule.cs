@@ -8,28 +8,28 @@ namespace SIL.HermitCrab
 	public class AffixProcessSynthesisRule : IRule<Word, ShapeNode>
 	{
 		private readonly SpanFactory<ShapeNode> _spanFactory; 
-		private readonly List<SynthesisAffixProcessRule> _rules;
+		private readonly List<SynthesisAffixPatternRule> _rules;
 
 		public AffixProcessSynthesisRule(SpanFactory<ShapeNode> spanFactory)
 		{
 			_spanFactory = spanFactory;
-			_rules = new List<SynthesisAffixProcessRule>();
+			_rules = new List<SynthesisAffixPatternRule>();
 		}
 
 		public void AddAllomorph(AffixProcessAllomorph allomorph)
 		{
-			_rules.Add(new SynthesisAffixProcessRule(_spanFactory, allomorph));
+			_rules.Add(new SynthesisAffixPatternRule(_spanFactory, allomorph));
 		}
 
 		public bool IsApplicable(Word input)
 		{
-			throw new System.NotImplementedException();
+			return true;
 		}
 
 		public bool Apply(Word input, out IEnumerable<Word> output)
 		{
 			List<Word> outputList = null;
-			foreach (SynthesisAffixProcessRule sr in _rules)
+			foreach (SynthesisAffixPatternRule sr in _rules)
 			{
 				IEnumerable<Word> result;
 				if (sr.Apply(input, out result))

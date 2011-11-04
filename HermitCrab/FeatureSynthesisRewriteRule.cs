@@ -23,8 +23,7 @@ namespace SIL.HermitCrab
 			foreach (Tuple<ShapeNode, PatternNode<Word, ShapeNode>> tuple in input.Shape.GetNodes(target).Zip(_rhs.Children))
 			{
 				var constraints = (Constraint<Word, ShapeNode>) tuple.Item2;
-				tuple.Item1.Annotation.FeatureStruct.PriorityUnion(constraints.FeatureStruct);
-				tuple.Item1.Annotation.FeatureStruct.ReplaceVariables(match.VariableBindings);
+				tuple.Item1.Annotation.FeatureStruct.PriorityUnion(constraints.FeatureStruct, match.VariableBindings);
 				if (tuple.Item1.Annotation.FeatureStruct.HasVariables)
 					throw new MorphException(MorphErrorCode.UninstantiatedFeature);
 			}

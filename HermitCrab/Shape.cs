@@ -5,10 +5,15 @@ using SIL.APRE.FeatureModel;
 
 namespace SIL.HermitCrab
 {
-	public sealed class Shape : BidirList<ShapeNode>
+	public sealed class Shape : BidirList<ShapeNode>, IData<ShapeNode>, ICloneable<Shape>
 	{
 		private readonly SpanFactory<ShapeNode> _spanFactory;
 		private readonly AnnotationList<ShapeNode> _annotations;
+
+		public Shape(SpanFactory<ShapeNode> spanFactory)
+			: this(spanFactory, new AnnotationList<ShapeNode>(spanFactory))
+		{
+		}
 
 		public Shape(SpanFactory<ShapeNode> spanFactory, AnnotationList<ShapeNode> annotations)
 			: base(EqualityComparer<ShapeNode>.Default, CreateBegin(spanFactory), CreateEnd(spanFactory))
@@ -17,6 +22,23 @@ namespace SIL.HermitCrab
 			_annotations = annotations;
 			_annotations.Add(Begin.Annotation);
 			_annotations.Add(End.Annotation);
+		}
+
+		public Shape(SpanFactory<ShapeNode> spanFactory, IEnumerable<ShapeNode> nodes)
+			: this(spanFactory, new AnnotationList<ShapeNode>(spanFactory), nodes)
+		{
+		}
+
+		public Shape(SpanFactory<ShapeNode> spanFactory, AnnotationList<ShapeNode> annotations, IEnumerable<ShapeNode> nodes)
+			: this(spanFactory, annotations)
+		{
+			AddRange(nodes);
+		}
+
+		public Shape(Shape shape)
+			: this(shape.SpanFactory)
+		{
+			shape.CopyTo(_spanFactory.Create(shape.First, shape.Last), this);
 		}
 
 		private static ShapeNode CreateBegin(SpanFactory<ShapeNode> spanFactory)
@@ -31,24 +53,33 @@ namespace SIL.HermitCrab
 				FeatureStruct.New(HCFeatureSystem.Instance).Symbol(HCFeatureSystem.RightSide).Value) { Tag = int.MaxValue };
 		}
 
-		public Shape(SpanFactory<ShapeNode> spanFactory, AnnotationList<ShapeNode> annotations, IEnumerable<ShapeNode> nodes)
-			: this(spanFactory, annotations)
-		{
-			AddRange(nodes);
-		}
-
 		public SpanFactory<ShapeNode> SpanFactory
 		{
 			get { return _spanFactory; }
 		}
 
-		public Span<ShapeNode> CopyTo(Span<ShapeNode> span, Shape dest)
+		public Span<ShapeNode> Span
+		{
+			get { return _spanFactory.Create(Begin, End); }
+		}
+
+		public AnnotationList<ShapeNode> Annotations
+		{
+			get { return _annotations; }
+		}
+
+		public Span<ShapeNode> CopyTo(ShapeNode srcStart, ShapeNode srcEnd, Shape dest)
+		{
+			return CopyTo(_spanFactory.Create(srcStart, srcEnd), dest);
+		}
+
+		public Span<ShapeNode> CopyTo(Span<ShapeNode> srcSpan, Shape dest)
 		{
 			ShapeNode startNode = null;
 			ShapeNode endNode = null;
-			foreach (ShapeNode node in GetNodes(span))
+			foreach (ShapeNode node in GetNodes(srcSpan))
 			{
-				var newNode = new ShapeNode(node.Annotation.Type, _spanFactory, (FeatureStruct) node.Annotation.FeatureStruct.Clone());
+				var newNode = new ShapeNode(node.Annotation.Type, _spanFactory, node.Annotation.FeatureStruct.Clone());
 				if (startNode == null)
 					startNode = newNode;
 				endNode = newNode;
@@ -210,6 +241,11 @@ namespace SIL.HermitCrab
 		public IEnumerable<ShapeNode> GetNodes(Span<ShapeNode> span, Direction dir)
 		{
 			return this.GetNodes(span.GetStart(dir), span.GetEnd(dir), dir);
+		}
+
+		public Shape Clone()
+		{
+			return new Shape(this);
 		}
 	}
 }

@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using SIL.APRE;
 using SIL.APRE.FeatureModel;
 using SIL.APRE.Matching;
-using SIL.APRE.Transduction;
 using SIL.HermitCrab;
 
 namespace HermitCrabTest
@@ -15,79 +13,90 @@ namespace HermitCrabTest
 		public void SuffixRules()
 		{
 			var any = new FeatureStruct();
-			var strident = FeatureStruct.New(FeatSys).Symbol("cons+").Symbol("strident+").Value;
-			var voicelessCons = FeatureStruct.New(FeatSys).Symbol("cons+").Symbol("vd-").Value;
-			var alvStop = FeatureStruct.New(FeatSys).Symbol("cons+").Symbol("strident-").Symbol("del_rel-").Symbol("alveolar").Symbol("nasal-").Symbol("asp-").Value;
-			var d = FeatureStruct.New(FeatSys).Symbol("cons+").Symbol("strident-").Symbol("del_rel-").Symbol("alveolar").Symbol("nasal-").Symbol("vd+").Value;
-			var unasp = FeatureStruct.New(FeatSys).Symbol("asp-").Value;
-			var cons = FeatureStruct.New(FeatSys).Symbol("cons+").Value;
+			var strident = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("strident+").Value;
+			var voicelessCons = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("vd-").Value;
+			var alvStop = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("strident-").Symbol("del_rel-").Symbol("alveolar").Symbol("nasal-").Symbol("asp-").Value;
+			var d = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("strident-").Symbol("del_rel-").Symbol("alveolar").Symbol("nasal-").Symbol("vd+").Value;
+			var unasp = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("asp-").Value;
+			var cons = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Value;
 
-			var mrule1 = new AffixProcessRule("s_suffix", "s_suffix", SpanFactory);
+			var mrule1 = new AffixProcessRule("s_suffix", SpanFactory);
 			
-			var allomorph = new AffixProcessAllomorph("allo1", "allo1");
+			var allomorph = new AffixProcessAllomorph("allo1");
 			allomorph.Lhs.Add(Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, any).OneOrMore.Annotation(HCFeatureSystem.SegmentType, strident).Value);
 
+			Shape shape;
 			allomorph.Rhs.Add(new CopyFromInput(0));
-			allomorph.Rhs.Add(new InsertShape(Table3.ToShape("ɯz")));
+			Table3.ToShape("ɯz", out shape);
+			allomorph.Rhs.Add(new InsertShape(shape));
 			mrule1.AddAllomorph(allomorph);
 
-			allomorph = new AffixProcessAllomorph("allo2", "allo2");
+			allomorph = new AffixProcessAllomorph("allo2");
 			allomorph.Lhs.Add(Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, any).OneOrMore.Annotation(HCFeatureSystem.SegmentType, voicelessCons).Value);
 
 			allomorph.Rhs.Add(new CopyFromInput(0));
-			allomorph.Rhs.Add(new InsertShape(Table3.ToShape("s")));
+			Table3.ToShape("s", out shape);
+			allomorph.Rhs.Add(new InsertShape(shape));
 			mrule1.AddAllomorph(allomorph);
 
-			allomorph = new AffixProcessAllomorph("allo3", "allo3");
+			allomorph = new AffixProcessAllomorph("allo3");
 			allomorph.Lhs.Add(Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, any).OneOrMore.Value);
 
 			allomorph.Rhs.Add(new CopyFromInput(0));
-			allomorph.Rhs.Add(new InsertShape(Table3.ToShape("z")));
+			Table3.ToShape("z", out shape);
+			allomorph.Rhs.Add(new InsertShape(shape));
 			mrule1.AddAllomorph(allomorph);
 
-			var mrule2 = new AffixProcessRule("ed_suffix", "ed_suffix", SpanFactory);
+			Morphophonemic.AddMorphologicalRule(mrule1);
 
-			allomorph = new AffixProcessAllomorph("allo4", "allo4");
+			var mrule2 = new AffixProcessRule("ed_suffix", SpanFactory);
+
+			allomorph = new AffixProcessAllomorph("allo4");
 			allomorph.Lhs.Add(Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, any).OneOrMore.Value);
 			allomorph.Lhs.Add(Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, alvStop).Value);
 
 			allomorph.Rhs.Add(new CopyFromInput(0));
 			allomorph.Rhs.Add(new CopyFromInput(1));
-			allomorph.Rhs.Add(new InsertShape(Table3.ToShape("+ɯd")));
+			Table3.ToShape("+ɯd", out shape);
+			allomorph.Rhs.Add(new InsertShape(shape));
 			mrule2.AddAllomorph(allomorph);
 
-			allomorph = new AffixProcessAllomorph("allo5", "allo5");
+			allomorph = new AffixProcessAllomorph("allo5");
 			allomorph.Lhs.Add(Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, any).OneOrMore.Annotation(HCFeatureSystem.SegmentType, voicelessCons).Value);
 
 			allomorph.Rhs.Add(new CopyFromInput(0));
-			allomorph.Rhs.Add(new InsertShape(Table3.ToShape("+t")));
+			Table3.ToShape("+t", out shape);
+			allomorph.Rhs.Add(new InsertShape(shape));
 			mrule2.AddAllomorph(allomorph);
 
-			allomorph = new AffixProcessAllomorph("allo6", "allo6");
+			allomorph = new AffixProcessAllomorph("allo6");
 			allomorph.Lhs.Add(Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, any).OneOrMore.Value);
 
 			allomorph.Rhs.Add(new CopyFromInput(0));
-			allomorph.Rhs.Add(new InsertShape(Table3.ToShape("+")));
+			Table3.ToShape("+", out shape);
+			allomorph.Rhs.Add(new InsertShape(shape));
 			allomorph.Rhs.Add(new InsertShapeNodeFromConstraint(new Constraint<Word, ShapeNode>(HCFeatureSystem.SegmentType, d)));
 			mrule2.AddAllomorph(allomorph);
 
+			Morphophonemic.AddMorphologicalRule(mrule2);
+
 			var lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSegmentDefinition("t").FeatureStruct).Value;
-			var prule1 = new StandardPhonologicalRule("rule1", "rule1", SpanFactory, 0, Direction.LeftToRight, ApplicationMode.Iterative, lhs);
+			var prule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
 
 			var rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unasp).Value;
 			var leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
 			var rightEnv = Expression<Word, ShapeNode>.New().Value;
 			prule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
-			IEnumerable<Word> output;
-			var input = new Word(Surface, Mode.Analysis, "sagz") {Stratum = Allophonic};
-			Assert.IsFalse(prule1.AnalysisRule.Apply(input, out output));
-			input.Stratum = Morphophonemic;
-			Assert.IsFalse(mrule2.AnalysisRule.Apply(input, out output));
-			Assert.IsTrue(mrule1.AnalysisRule.Apply(input, out output));
+			Allophonic.AddPhonologicalRule(prule1);
+
+			IEnumerable<Word> output = Morpher.MorphAndLookupWord("sagz");
+			//Assert.IsFalse(prule1.AnalysisRule.Apply(input, out output));
+			//Assert.IsFalse(mrule2.AnalysisRule.Apply(input, out output));
+			//Assert.IsTrue(mrule1.AnalysisRule.Apply(input, out output));
 			Assert.AreEqual("s[a(a̘)]g", output.Single().ToString());
 
-			input = new Word(Morphophonemic, Mode.Synthesis, "sag");
+			var input = new Word(Morphophonemic, "sag");
 			Assert.IsTrue(mrule1.SynthesisRule.Apply(input, out output));
 			input = output.Single();
 			input.Stratum = Allophonic;
@@ -95,14 +104,14 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("sagz", input.ToString());
 
-			input = new Word(Surface, Mode.Analysis, "sagd") { Stratum = Allophonic };
+			input = new Word(Surface, "sagd") { Stratum = Allophonic };
 			Assert.IsFalse(prule1.AnalysisRule.Apply(input, out output));
 			input.Stratum = Morphophonemic;
 			Assert.IsTrue(mrule2.AnalysisRule.Apply(input, out output));
 			Assert.AreEqual("s[a(a̘)]g", output.Single().ToString());
 			Assert.IsFalse(mrule1.AnalysisRule.Apply(input, out output));
 
-			input = new Word(Morphophonemic, Mode.Synthesis, "sag");
+			input = new Word(Morphophonemic, "sag");
 			Assert.IsTrue(mrule2.SynthesisRule.Apply(input, out output));
 			input = output.Single();
 			input.Stratum = Allophonic;
@@ -110,14 +119,14 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("sag+?d", input.ToString());
 
-			input = new Word(Surface, Mode.Analysis, "sasɯz") { Stratum = Allophonic };
+			input = new Word(Surface, "sasɯz") { Stratum = Allophonic };
 			Assert.IsFalse(prule1.AnalysisRule.Apply(input, out output));
 			input.Stratum = Morphophonemic;
 			Assert.IsFalse(mrule2.AnalysisRule.Apply(input, out output));
 			Assert.IsTrue(mrule1.AnalysisRule.Apply(input, out output));
 			Assert.AreEqual("s[a(a̘)]s", output.Single().ToString());
 
-			input = new Word(Morphophonemic, Mode.Synthesis, "sas");
+			input = new Word(Morphophonemic, "sas");
 			Assert.IsTrue(mrule1.SynthesisRule.Apply(input, out output));
 			input = output.Single();
 			input.Stratum = Allophonic;
@@ -125,14 +134,14 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("sasɯz", input.ToString());
 
-			input = new Word(Surface, Mode.Analysis, "sast") { Stratum = Allophonic };
+			input = new Word(Surface, "sast") { Stratum = Allophonic };
 			Assert.IsTrue(prule1.AnalysisRule.Apply(input, out output));
 			input.Stratum = Morphophonemic;
 			Assert.IsTrue(mrule2.AnalysisRule.Apply(input, out output));
 			Assert.AreEqual("s[a(a̘)]s", output.Single().ToString());
 			Assert.IsFalse(mrule1.AnalysisRule.Apply(input, out output));
 
-			input = new Word(Morphophonemic, Mode.Synthesis, "sas");
+			input = new Word(Morphophonemic, "sas");
 			Assert.IsTrue(mrule2.SynthesisRule.Apply(input, out output));
 			input = output.Single();
 			input.Stratum = Allophonic;
@@ -140,14 +149,14 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("sas+?[t(tʰ)]", input.ToString());
 
-			input = new Word(Surface, Mode.Analysis, "sazd") { Stratum = Allophonic };
+			input = new Word(Surface, "sazd") { Stratum = Allophonic };
 			Assert.IsFalse(prule1.AnalysisRule.Apply(input, out output));
 			input.Stratum = Morphophonemic;
 			Assert.IsTrue(mrule2.AnalysisRule.Apply(input, out output));
 			Assert.AreEqual("s[a(a̘)]z", output.Single().ToString());
 			Assert.IsFalse(mrule1.AnalysisRule.Apply(input, out output));
 
-			input = new Word(Morphophonemic, Mode.Synthesis, "saz");
+			input = new Word(Morphophonemic, "saz");
 			Assert.IsTrue(mrule2.SynthesisRule.Apply(input, out output));
 			input = output.Single();
 			input.Stratum = Allophonic;
@@ -155,13 +164,13 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("saz+?d", input.ToString());
 
-			input = new Word(Surface, Mode.Analysis, "sagɯs") { Stratum = Allophonic };
+			input = new Word(Surface, "sagɯs") { Stratum = Allophonic };
 			Assert.IsFalse(prule1.AnalysisRule.Apply(input, out output));
 			input.Stratum = Morphophonemic;
 			Assert.IsFalse(mrule2.AnalysisRule.Apply(input, out output));
 			Assert.IsFalse(mrule1.AnalysisRule.Apply(input, out output));
 
-			input = new Word(Surface, Mode.Analysis, "sags") { Stratum = Allophonic };
+			input = new Word(Surface, "sags") { Stratum = Allophonic };
 			Assert.IsFalse(prule1.AnalysisRule.Apply(input, out output));
 			input.Stratum = Morphophonemic;
 			Assert.IsFalse(mrule2.AnalysisRule.Apply(input, out output));

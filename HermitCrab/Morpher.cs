@@ -12,11 +12,9 @@ namespace SIL.HermitCrab
     public class Morpher : IDBearerBase
     {
         private readonly FeatureSystem _phoneticFeatSys;
-        private readonly FeatureSystem _headFeatSys;
-        private readonly FeatureSystem _footFeatSys;
+        private readonly FeatureSystem _syntacticFeatSys;
         private readonly List<Stratum> _orderedStrata;
     	private readonly IDBearerSet<Stratum> _strata; 
-        private readonly IDBearerSet<CharacterDefinitionTable> _charDefTables;
     	private readonly IDBearerSet<NaturalClass> _natClasses;
         private readonly IDBearerSet<StandardPhonologicalRule> _prules;
         private readonly IDBearerSet<MorphologicalRule> _mrules;
@@ -24,8 +22,8 @@ namespace SIL.HermitCrab
         private readonly Lexicon _lexicon;
         private readonly IDBearerSet<MprFeatureGroup> _mprFeatGroups;
         private readonly IDBearerSet<MprFeature> _mprFeatures;
-        private readonly IDBearerSet<PartOfSpeech> _partsOfSpeech;
-        private readonly IDBearerSet<Allomorph> _allomorphs;
+
+    	private readonly MorpherAnalysisRule _analysisRule;
 
     	private bool _traceStrataAnalysis;
         private bool _traceStrataSynthesis;
@@ -35,29 +33,29 @@ namespace SIL.HermitCrab
         private bool _traceBlocking;
         private bool _traceSuccess;
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="Morpher"/> class.
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <param name="language">The language.</param>
-        public Morpher(string id, string language)
-            : base(id, language)
+    	/// <summary>
+    	/// Initializes a new instance of the <see cref="Morpher"/> class.
+    	/// </summary>
+    	/// <param name="id">The id.</param>
+    	/// <param name="phoneticFeatSys"></param>
+    	/// <param name="syntacticFeatSys"></param>
+    	/// <param name="lexicon"></param>
+    	public Morpher(string id, FeatureSystem phoneticFeatSys, FeatureSystem syntacticFeatSys, Lexicon lexicon)
+            : base(id)
         {
             _orderedStrata = new List<Stratum>();
 			_strata = new IDBearerSet<Stratum>();
-            _phoneticFeatSys = new FeatureSystem();
-            _headFeatSys = new FeatureSystem();
-            _footFeatSys = new FeatureSystem();
-            _charDefTables = new IDBearerSet<CharacterDefinitionTable>();
+    		_phoneticFeatSys = phoneticFeatSys;
+    		_syntacticFeatSys = syntacticFeatSys;
             _natClasses = new IDBearerSet<NaturalClass>();
             _prules = new IDBearerSet<StandardPhonologicalRule>();
             _mrules = new IDBearerSet<MorphologicalRule>();
-            _lexicon = new Lexicon();
+    		_lexicon = lexicon;
             _templates = new IDBearerSet<AffixTemplate>();
             _mprFeatGroups = new IDBearerSet<MprFeatureGroup>();
             _mprFeatures = new IDBearerSet<MprFeature>();
-            _partsOfSpeech = new IDBearerSet<PartOfSpeech>();
-            _allomorphs = new IDBearerSet<Allomorph>();
+
+    		_analysisRule = new MorpherAnalysisRule(this);
         }
 
         /// <summary>
@@ -115,26 +113,14 @@ namespace SIL.HermitCrab
         }
 
         /// <summary>
-        /// Gets the head feature system.
+        /// Gets the syntactic feature system.
         /// </summary>
-        /// <value>The head feature system.</value>
-        public FeatureSystem HeadFeatureSystem
+        /// <value>The syntactic feature system.</value>
+        public FeatureSystem SyntacticFeatureSystem
         {
             get
             {
-                return _headFeatSys;
-            }
-        }
-
-        /// <summary>
-        /// Gets the foot feature system.
-        /// </summary>
-        /// <value>The foot feature system.</value>
-        public FeatureSystem FootFeatureSystem
-        {
-            get
-            {
-                return _footFeatSys;
+                return _syntacticFeatSys;
             }
         }
 
@@ -412,19 +398,6 @@ namespace SIL.HermitCrab
         }
 
         /// <summary>
-        /// Gets the character definition table associated with the specified ID.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        /// <returns>The character definition table.</returns>
-        public CharacterDefinitionTable GetCharacterDefinitionTable(string id)
-        {
-            CharacterDefinitionTable charDefTable;
-            if (_charDefTables.TryGetValue(id, out charDefTable))
-                return charDefTable;
-            return null;
-        }
-
-        /// <summary>
         /// Gets the natural class associated with the specified ID.
         /// </summary>
         /// <param name="id">The ID.</param>
@@ -503,43 +476,6 @@ namespace SIL.HermitCrab
         }
 
         /// <summary>
-        /// Gets the part of speech associated with the specified ID.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        /// <returns>The part of speech.</returns>
-        public PartOfSpeech GetPartOfSpeech(string id)
-        {
-            PartOfSpeech pos;
-            if (_partsOfSpeech.TryGetValue(id, out pos))
-                return pos;
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the morpheme associated with the specified ID. Morphological rules
-        /// and lexical entries are morphemes.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        /// <returns>The morpheme.</returns>
-        public Morpheme GetMorpheme(string id)
-        {
-        	return GetMorphologicalRule(id) ?? (Morpheme) Lexicon.GetEntry(id);
-        }
-
-        /// <summary>
-        /// Gets the allomorph associated with the specified ID.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        /// <returns>The allomorph.</returns>
-        public Allomorph GetAllomorph(string id)
-        {
-            Allomorph allomorph;
-            if (_allomorphs.TryGetValue(id, out allomorph))
-                return allomorph;
-            return null;
-        }
-
-        /// <summary>
         /// Adds the stratum.
         /// </summary>
         /// <param name="stratum">The stratum.</param>
@@ -547,15 +483,6 @@ namespace SIL.HermitCrab
         {
             _orderedStrata.Add(stratum);
         	_strata.Add(stratum);
-        }
-
-        /// <summary>
-        /// Adds the character definition table.
-        /// </summary>
-        /// <param name="charDefTable">The character definition table.</param>
-        public void AddCharacterDefinitionTable(CharacterDefinitionTable charDefTable)
-        {
-            _charDefTables.Add(charDefTable);
         }
 
         /// <summary>
@@ -613,33 +540,6 @@ namespace SIL.HermitCrab
         }
 
         /// <summary>
-        /// Adds the part of speech.
-        /// </summary>
-        /// <param name="pos">The part of speech.</param>
-        public void AddPartOfSpeech(PartOfSpeech pos)
-        {
-            _partsOfSpeech.Add(pos);
-        }
-
-        /// <summary>
-        /// Adds the allomorph.
-        /// </summary>
-        /// <param name="allomorph">The allomorph.</param>
-        public void AddAllomorph(Allomorph allomorph)
-        {
-            _allomorphs.Add(allomorph);
-        }
-
-        /// <summary>
-        /// Removes the character definition table associated with the specified ID.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        public void RemoveCharacterDefinitionTable(string id)
-        {
-            _charDefTables.Remove(id);
-        }
-
-        /// <summary>
         /// Removes the natural class associated with the specified ID.
         /// </summary>
         /// <param name="id">The ID.</param>
@@ -694,24 +594,6 @@ namespace SIL.HermitCrab
         }
 
         /// <summary>
-        /// Removes the part of speech associated with the specified ID.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        public void RemovePartOfSpeech(string id)
-        {
-            _partsOfSpeech.Remove(id);
-        }
-
-        /// <summary>
-        /// Removes the allomorph associated with the specified ID.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        public void RemoveAllomorph(string id)
-        {
-            _allomorphs.Remove(id);
-        }
-
-        /// <summary>
         /// Clears the strata.
         /// </summary>
         public void ClearStrata()
@@ -725,13 +607,13 @@ namespace SIL.HermitCrab
         /// </summary>
         /// <param name="word">The word.</param>
         /// <returns>All valid word synthesis records.</returns>
-        public ICollection<WordSynthesis> MorphAndLookupWord(string word)
+        public ICollection<Word> MorphAndLookupWord(string word)
         {
             WordAnalysisTrace trace;
             return MorphAndLookupWord(word, out trace);
         }
 
-        public ICollection<WordSynthesis> MorphAndLookupWord(string word, out WordAnalysisTrace trace)
+        public ICollection<Word> MorphAndLookupWord(string word, out WordAnalysisTrace trace)
         {
             return MorphAndLookupToken(word, null, null, out trace);
         }
@@ -741,16 +623,16 @@ namespace SIL.HermitCrab
         /// </summary>
         /// <param name="wordList">The word list.</param>
         /// <returns>All valid word synthesis records for each word.</returns>
-        public IList<ICollection<WordSynthesis>> MorphAndLookupWordList(IList<string> wordList)
+        public IList<ICollection<Word>> MorphAndLookupWordList(IList<string> wordList)
         {
             IList<WordAnalysisTrace> traces;
             return MorphAndLookupWordList(wordList, out traces);
         }
 
-        public IList<ICollection<WordSynthesis>> MorphAndLookupWordList(IList<string> wordList,
+        public IList<ICollection<Word>> MorphAndLookupWordList(IList<string> wordList,
             out IList<WordAnalysisTrace> traces)
         {
-            var results = new List<ICollection<WordSynthesis>>();
+            var results = new List<ICollection<Word>>();
             traces = new List<WordAnalysisTrace>();
             string prev = null;
             string word = wordList[0];
@@ -779,129 +661,49 @@ namespace SIL.HermitCrab
 		/// <param name="next">The next word.</param>
 		/// <param name="trace">The trace.</param>
 		/// <returns>All valid word synthesis records.</returns>
-        ICollection<WordSynthesis> MorphAndLookupToken(string word, string prev, string next, out WordAnalysisTrace trace)
+		private ICollection<Word> MorphAndLookupToken(string word, string prev, string next, out WordAnalysisTrace trace)
         {
             // convert the word to its phonetic shape
-            Shape input = SurfaceStratum.CharacterDefinitionTable.ToShape(word);
-            // if word contains invalid segments, the char def table will return null
-			if (input == null)
-			{
-				var me = new MorphException(MorphErrorCode.InvalidShape,
-					string.Format(HCStrings.kstidInvalidWord, word, SurfaceStratum.CharacterDefinitionTable.ID));
-				me.Data["shape"] = word;
-				me.Data["charDefTable"] = SurfaceStratum.CharacterDefinitionTable.ID;
-				throw me;
-			}
-
-            // create the root of the trace tree
-            trace = new WordAnalysisTrace(word, input);
-
-            var candidates = new HashSet<WordSynthesis>();
-            var inAnalysis = new HashSet<WordAnalysis>();
-            var outAnalysis = new HashSet<WordAnalysis>();
-            inAnalysis.Add(new WordAnalysis(input, SurfaceStratum, trace));
+            var input = new Word(SurfaceStratum, word);
 
             // Unapply rules
-            for (int i = _orderedStrata.Count - 1; i >= 0; i--)
-            {
-                outAnalysis.Clear();
-                foreach (WordAnalysis wa in inAnalysis)
-                {
-                    if (_traceStrataAnalysis)
-                    {
-                        // create the stratum analysis input trace record
-                        var stratumTrace = new StratumAnalysisTrace(_orderedStrata[i], true, wa.Clone());
-                        wa.CurrentTrace.AddChild(stratumTrace);
-                    }
-                    foreach (WordAnalysis outWa in _orderedStrata[i].Unapply(wa, candidates))
-                    {
-                        // promote each analysis to the next stratum
-                        if (i != 0)
-                            outWa.Stratum = _orderedStrata[i - 1];
+			IEnumerable<Word> output;
+			_analysisRule.Apply(input, out output);
 
-                        if (_traceStrataAnalysis)
-                            // create the stratum analysis output trace record for the output word synthesis
-                            outWa.CurrentTrace.AddChild(new StratumAnalysisTrace(_orderedStrata[i], false, outWa.Clone()));
-
-                        outAnalysis.Add(outWa);
-                    }
-                }
-
-                inAnalysis.Clear();
-                inAnalysis.UnionWith(outAnalysis);
-            }
-
-			var allValidSyntheses = new HashSet<WordSynthesis>();
-            // Apply rules for each candidate entry
-            foreach (WordSynthesis candidate in candidates)
-            {
-                var inSynthesis = new HashSet<WordSynthesis>();
-                var outSynthesis = new HashSet<WordSynthesis>();
-                for (int i = 0; i < _orderedStrata.Count; i++)
-                {
-                    // start applying at the stratum that this lex entry belongs to
-                    if (_orderedStrata[i] == candidate.Root.Stratum)
-                        inSynthesis.Add(candidate);
-
-                    outSynthesis.Clear();
-                    foreach (WordSynthesis cur in inSynthesis)
-                    {
-                        if (_traceStrataSynthesis)
-                        {
-                            // create the stratum synthesis input trace record
-                            var stratumTrace = new StratumSynthesisTrace(_orderedStrata[i], true, cur.Clone());
-                            cur.CurrentTrace.AddChild(stratumTrace);
-                        }
-                        foreach (WordSynthesis outWs in _orderedStrata[i].Apply(cur))
-                        {
-                            // promote the word synthesis to the next stratum
-                            if (i != _orderedStrata.Count - 1)
-                                outWs.Stratum = _orderedStrata[i + 1];
-
-                            if (_traceStrataSynthesis)
-                                // create the stratum synthesis output trace record for the output analysis
-                                outWs.CurrentTrace.AddChild(new StratumSynthesisTrace(_orderedStrata[i], false, outWs.Clone()));
-
-                            outSynthesis.Add(outWs);
-                        }
-                    }
-
-                    inSynthesis.Clear();
-                    inSynthesis.UnionWith(outSynthesis);
-                }
-
-				foreach (WordSynthesis ws in outSynthesis)
-				{
-					if (ws.IsValid)
-						allValidSyntheses.Add(ws);
-				}
-            }
-
-			var results = new HashSet<WordSynthesis>();
-			// sort the resulting syntheses according to the order of precedence of each allomorph in
-			// their respective morphemes
-			var sortedSyntheses = new List<WordSynthesis>(allValidSyntheses);
-			sortedSyntheses.Sort();
-
-			WordSynthesis prevValidSynthesis = null;
-			foreach (WordSynthesis cur in sortedSyntheses)
+			var candidates = new List<Word>();
+			foreach (Word outWord in output)
 			{
-				// enforce the disjunctive property of allomorphs by ensuring that this word synthesis
-				// has the highest order of precedence for its allomorphs, also check that the phonetic
-				// shape matches the original input word
-				if ((prevValidSynthesis == null || !cur.Morphs.SameMorphemes(prevValidSynthesis.Morphs))
-					&& SurfaceStratum.CharacterDefinitionTable.IsMatch(word, cur.Shape))
-				{
-					if (_traceSuccess)
-						// create the report a success output trace record for the output analysis
-						cur.CurrentTrace.AddChild(new ReportSuccessTrace(cur));
-					// do not add to the result if it has the same root, shape, and morphemes as another result
-					if (!results.Any(ws => cur.Duplicates(ws)))
-						results.Add(cur);
-				}
-				prevValidSynthesis = cur;
+				IEnumerable<Word> lexLookupOutput;
+				if (LexicalLookup(outWord, out lexLookupOutput))
+					candidates.AddRange(lexLookupOutput);
 			}
-            return results;
+
+			trace = null;
+
+			var results = new HashSet<Word>();
+			return results;
         }
+
+		private bool LexicalLookup(Word input, out IEnumerable<Word> output)
+		{
+			IEnumerable<LexEntry> entries;
+			if (input.Stratum.SearchEntries(input.Shape, out entries))
+			{
+				var outputList = new List<Word>();
+				foreach (LexEntry entry in entries)
+				{
+					foreach (RootAllomorph allomorph in entry.Allomorphs)
+					{
+
+					}
+				}
+
+				output = outputList;
+				return true;
+			}
+
+			output = null;
+			return false;
+		}
     }
 }
