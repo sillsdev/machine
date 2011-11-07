@@ -9,11 +9,13 @@ namespace SIL.HermitCrab
     public class Lexicon
     {
         private readonly IDBearerSet<LexEntry> _entries;
+    	private readonly IDBearerSet<RootAllomorph> _rootAllomorphs; 
         private readonly IDBearerSet<LexFamily> _families;
 
         public Lexicon()
         {
             _entries = new IDBearerSet<LexEntry>();
+			_rootAllomorphs = new IDBearerSet<RootAllomorph>();
             _families = new IDBearerSet<LexFamily>();
         }
 
@@ -23,10 +25,7 @@ namespace SIL.HermitCrab
         /// <value>The lexical families.</value>
         public IEnumerable<LexFamily> Families
         {
-            get
-            {
-                return _families;
-            }
+            get { return _families; }
         }
 
         /// <summary>
@@ -35,11 +34,13 @@ namespace SIL.HermitCrab
         /// <value>The lexical entries.</value>
         public IEnumerable<LexEntry> Entries
         {
-            get
-            {
-                return _entries;
-            }
+            get { return _entries; }
         }
+
+    	public IEnumerable<RootAllomorph> RootAllomorphs
+    	{
+    		get { return _rootAllomorphs; }
+    	}
 
         /// <summary>
         /// Gets the lexical entry associated with the specified ID.
@@ -48,11 +49,13 @@ namespace SIL.HermitCrab
         /// <returns>The lexical entry.</returns>
         public LexEntry GetEntry(string id)
         {
-            LexEntry entry;
-            if (_entries.TryGetValue(id, out entry))
-                return entry;
-            return null;
+        	return _entries[id];
         }
+
+		public RootAllomorph GetRootAllomorph(string id)
+		{
+			return _rootAllomorphs[id];
+		}
 
         /// <summary>
         /// Gets the lexical family associated with the specified ID.
@@ -61,10 +64,7 @@ namespace SIL.HermitCrab
         /// <returns>The lexical family.</returns>
         public LexFamily GetFamily(string id)
         {
-            LexFamily family;
-            if (_families.TryGetValue(id, out family))
-                return family;
-            return null;
+        	return _families[id];
         }
 
         /// <summary>
@@ -83,6 +83,7 @@ namespace SIL.HermitCrab
         public void AddEntry(LexEntry entry)
         {
             _entries.Add(entry);
+			_rootAllomorphs.UnionWith(entry.Allomorphs);
         }
 
         /// <summary>
@@ -92,6 +93,7 @@ namespace SIL.HermitCrab
         {
             _families.Clear();
             _entries.Clear();
+			_rootAllomorphs.Clear();
         }
     }
 }

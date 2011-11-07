@@ -315,7 +315,7 @@ namespace HermitCrabTest
 				entry.Gloss = new Gloss(gloss);
 			Shape shape;
 			stratum.CharacterDefinitionTable.ToShape(word, out shape);
-			entry.AddAllomorph(new RootAllomorph(id + "_allo", shape));
+			entry.AddAllomorph(new RootAllomorph(id, shape));
 			lexicon.AddEntry(entry);
 			stratum.AddEntry(entry);
 		}

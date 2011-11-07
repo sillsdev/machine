@@ -44,7 +44,8 @@ namespace SIL.HermitCrab
 				if (outputNode.Annotation.Type == _constraint.Type)
 					outputNode.Annotation.FeatureStruct.PriorityUnion(_constraint.FeatureStruct, match.VariableBindings);
 			}
-			AddMorphAnnotation(output, outputSpan.Start, outputSpan.End, allomorph);
+			if (allomorph != null)
+				output.MarkMorph(outputSpan, allomorph);
 		}
 	}
 }

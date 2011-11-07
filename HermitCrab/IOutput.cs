@@ -15,11 +15,11 @@
 		void MorphAndLookupWord(Morpher morpher, string word, bool prettyPrint, bool printTraceInputs);
 
 		/// <summary>
-		/// Writes the specified word synthesis record.
+		/// Writes the specified word.
 		/// </summary>
-		/// <param name="ws">The word synthesis record.</param>
+		/// <param name="word">The word.</param>
 		/// <param name="prettyPrint">if set to <c>true</c> the results will be formatted for human readability.</param>
-		void Write(WordSynthesis ws, bool prettyPrint);
+		void Write(Word word, bool prettyPrint);
 
 		/// <summary>
 		/// Writes the specified trace.

@@ -28,7 +28,8 @@ namespace SIL.HermitCrab
 		{
 			Span<ShapeNode> inputSpan = match[_index.ToString()];
 			Span<ShapeNode> outputSpan = input.CopyTo(inputSpan, output);
-			AddMorphAnnotation(output, outputSpan.Start, outputSpan.End, allomorph);
+			if (allomorph != null && Reduplication)
+				output.MarkMorph(outputSpan, allomorph);
 		}
 	}
 }

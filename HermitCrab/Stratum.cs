@@ -19,10 +19,8 @@ namespace SIL.HermitCrab
         public const string SurfaceStratumID = "surface";
 
         private readonly CharacterDefinitionTable _charDefTable;
-        private bool _isCyclic;
 
-    	private readonly SegmentDefinitionTrie<RootAllomorph> _entryTrie;
-        private readonly List<MorphologicalRule> _mrules;
+    	private readonly List<MorphologicalRule> _mrules;
         private readonly List<PhonologicalRule> _prules;
 
     	private readonly DefaultRuleCascade<Word, ShapeNode> _synthesisRule;
@@ -52,18 +50,21 @@ namespace SIL.HermitCrab
             _prules = new List<PhonologicalRule>();
 
 			_pruleSynthesisRule = new DefaultRuleCascade<Word, ShapeNode>();
-			_mruleSynthesisRule = new DefaultRuleCascade<Word, ShapeNode>();
+			_mruleSynthesisRule = new DefaultRuleCascade<Word, ShapeNode> {RuleCascadeOrder = RuleCascadeOrder.Permutation, MultipleApplication = true};
 			_synthesisRule = new DefaultRuleCascade<Word, ShapeNode>(new[] {_pruleSynthesisRule, _mruleSynthesisRule});
 
 			_pruleAnalysisRule = new DefaultRuleCascade<Word, ShapeNode>();
-			_mruleAnalysisRule = new DefaultRuleCascade<Word, ShapeNode>();
+			_mruleAnalysisRule = new DefaultRuleCascade<Word, ShapeNode> {RuleCascadeOrder = RuleCascadeOrder.Permutation, MultipleApplication = true};
 			_analysisRule = new DefaultRuleCascade<Word, ShapeNode>(new[] {_mruleAnalysisRule, _pruleAnalysisRule});
 
             _templates = new IDBearerSet<AffixTemplate>();
-            _entryTrie = new SegmentDefinitionTrie<RootAllomorph>(Direction.LeftToRight);
 
 			_entries = new IDBearerSet<LexEntry>();
-			_entriesPattern = new Pattern<Shape, ShapeNode>(charDefTable.SpanFactory) {Filter = ann => ann.Type == HCFeatureSystem.SegmentType, Quasideterministic = true};
+			_entriesPattern = new Pattern<Shape, ShapeNode>(charDefTable.SpanFactory)
+			                  	{
+			                  		Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType),
+									Quasideterministic = true
+			                  	};
         }
 
         /// <summary>
@@ -78,24 +79,13 @@ namespace SIL.HermitCrab
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is cyclic.
-        /// </summary>
-        /// <value><c>true</c> if this instance is cyclic; otherwise, <c>false</c>.</value>
-        public bool IsCyclic
-        {
-            get
-            {
-                return _isCyclic;
-            }
+    	/// <summary>
+    	/// Gets or sets a value indicating whether this instance is cyclic.
+    	/// </summary>
+    	/// <value><c>true</c> if this instance is cyclic; otherwise, <c>false</c>.</value>
+    	public bool IsCyclic { get; set; }
 
-            set
-            {
-                _isCyclic = value;
-            }
-        }
-
-        /// <summary>
+    	/// <summary>
         /// Gets or sets the phonological rule order.
         /// </summary>
         /// <value>The phonological rule order.</value>
@@ -226,42 +216,6 @@ namespace SIL.HermitCrab
         public void ClearAffixTemplates()
         {
             _templates.Clear();
-        }
-
-        /// <summary>
-        /// If the list of Realizational Features is non-empty, choose from either the input stem or its relatives
-        /// of this stratum that stem which incorporates the most realizational features (without being incompatible
-        /// with any realizational feature or with the head and foot features of the input stem).
-        /// </summary>
-        /// <param name="ws">The input word synthesis.</param>
-        /// <returns>The resulting word synthesis.</returns>
-        WordSynthesis ChooseInflStem(WordSynthesis ws)
-        {
-            if (ws.RealizationalFeatures.NumValues == 0 || ws.Root.Family == null)
-                return ws;
-
-            WordSynthesis best = ws;
-#if WANTPORT
-            // iterate thru all relatives
-            foreach (LexEntry relative in ws.Root.Family.Entries)
-            {
-                if (relative != ws.Root && relative.Stratum == ws.Stratum
-                    && ws.RealizationalFeatures.IsCompatible(relative.HeadFeatures)
-                    && ws.PartOfSpeech == relative.PartOfSpeech && relative.FootFeatures.Equals(ws.FootFeatures))
-                {
-                    FeatureValues remainder;
-                    if (best.HeadFeatures.GetSupersetRemainder(relative.HeadFeatures, out remainder) && remainder.NumFeatures > 0
-                        && ws.RealizationalFeatures.IsCompatible(remainder))
-                    {
-                        if (Morpher.TraceBlocking)
-                            // create blocking trace record, should this become the current trace?
-                            ws.CurrentTrace.AddChild(new BlockingTrace(BlockingTrace.BlockType.Template, relative));
-                        best = new WordSynthesis(relative.PrimaryAllomorph, ws.RealizationalFeatures, ws.CurrentTrace);
-                    }
-                }
-            }
-#endif
-            return best;
         }
     }
 }

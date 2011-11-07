@@ -7,10 +7,12 @@ namespace SIL.HermitCrab
 	public class AffixProcessAnalysisRule : RuleCascade<Word, ShapeNode>
 	{
 		private readonly SpanFactory<ShapeNode> _spanFactory;
+		private readonly AffixProcessRule _rule;
 
-		public AffixProcessAnalysisRule(SpanFactory<ShapeNode> spanFactory)
+		public AffixProcessAnalysisRule(SpanFactory<ShapeNode> spanFactory, AffixProcessRule rule)
 		{
 			_spanFactory = spanFactory;
+			_rule = rule;
 		}
 
 		public void AddAllomorph(AffixProcessAllomorph allomorph)
@@ -20,7 +22,8 @@ namespace SIL.HermitCrab
 
 		public override bool IsApplicable(Word input)
 		{
-			return true;
+			return input.GetNumUnappliesForMorphologicalRule(_rule) < _rule.MaxApplicationCount
+				&& _rule.OutSyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct);
 		}
 
 		public override bool Apply(Word input, out IEnumerable<Word> output)
@@ -34,7 +37,12 @@ namespace SIL.HermitCrab
 		{
 			if (base.ApplyRule(rule, input, out output))
 			{
-				// TODO: do lexical lookup here
+				foreach (Word outWord in output)
+				{
+					outWord.SyntacticFeatureStruct.Merge(_rule.RequiredSyntacticFeatureStruct);
+					outWord.MorphologicalRuleUnapplied(_rule);
+				}
+
 				return true;
 			}
 

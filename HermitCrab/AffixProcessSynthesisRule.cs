@@ -1,18 +1,21 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using SIL.APRE;
+using SIL.APRE.FeatureModel;
 using SIL.APRE.Transduction;
 
 namespace SIL.HermitCrab
 {
 	public class AffixProcessSynthesisRule : IRule<Word, ShapeNode>
 	{
-		private readonly SpanFactory<ShapeNode> _spanFactory; 
+		private readonly SpanFactory<ShapeNode> _spanFactory;
+		private readonly AffixProcessRule _rule;
 		private readonly List<SynthesisAffixPatternRule> _rules;
 
-		public AffixProcessSynthesisRule(SpanFactory<ShapeNode> spanFactory)
+		public AffixProcessSynthesisRule(SpanFactory<ShapeNode> spanFactory, AffixProcessRule rule)
 		{
 			_spanFactory = spanFactory;
+			_rule = rule;
 			_rules = new List<SynthesisAffixPatternRule>();
 		}
 
@@ -23,23 +26,35 @@ namespace SIL.HermitCrab
 
 		public bool IsApplicable(Word input)
 		{
-			return true;
+			return input.CurrentRule == _rule && input.GetNumAppliesForMorphologicalRule(_rule) < _rule.MaxApplicationCount;
 		}
 
 		public bool Apply(Word input, out IEnumerable<Word> output)
 		{
 			List<Word> outputList = null;
-			foreach (SynthesisAffixPatternRule sr in _rules)
-			{
-				IEnumerable<Word> result;
-				if (sr.Apply(input, out result))
-				{
-					if (outputList == null)
-						outputList = new List<Word>();
-					outputList.Add(result.Single());
 
-					if (sr.Allomorph.RequiredEnvironments == null && sr.Allomorph.ExcludedEnvironments == null)
-						break;
+			FeatureStruct syntacticFS;
+			if (IsApplicable(input) && _rule.RequiredSyntacticFeatureStruct.Unify(input.SyntacticFeatureStruct, true, out syntacticFS))
+			{
+				foreach (SynthesisAffixPatternRule sr in _rules)
+				{
+					IEnumerable<Word> outWords;
+					if (sr.Apply(input, out outWords))
+					{
+						Word outWord = outWords.Single();
+
+						outWord.SyntacticFeatureStruct = syntacticFS;
+						outWord.SyntacticFeatureStruct.PriorityUnion(_rule.OutSyntacticFeatureStruct);
+
+						outWord.MorphologicalRuleApplied(_rule);
+
+						if (outputList == null)
+							outputList = new List<Word>();
+						outputList.Add(outWord);
+
+						if (sr.Allomorph.RequiredEnvironments == null && sr.Allomorph.ExcludedEnvironments == null)
+							break;
+					}
 				}
 			}
 

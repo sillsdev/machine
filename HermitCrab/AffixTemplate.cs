@@ -49,6 +49,7 @@ namespace SIL.HermitCrab
             _slots.Add(slot);
         }
 
+#if WANTPORT
         public bool IsUnapplicable(WordAnalysis input)
         {
             foreach (PartOfSpeech pos in _requiredPartsOfSpeech)
@@ -68,14 +69,14 @@ namespace SIL.HermitCrab
         public bool Unapply(WordAnalysis input, out IEnumerable<WordAnalysis> output)
         {
             var results = new HashSet<WordAnalysis>();
-#if WANTPORT
+
             if (Morpher.TraceTemplatesAnalysis)
             {
                 // create the template analysis trace input record
                 var tempTrace = new TemplateAnalysisTrace(this, true, input.Clone());
                 input.CurrentTrace.AddChild(tempTrace);
             }
-#endif
+
             UnapplySlots(input.Clone(), _slots.Count - 1, results);
             foreach (WordAnalysis wa in results)
             {
@@ -101,7 +102,6 @@ namespace SIL.HermitCrab
             {
                 foreach (MorphologicalRule rule in _slots[i].MorphologicalRules)
                 {
-#if WANTPORT
                     if (rule.BeginUnapplication(input))
                     {
                         bool ruleUnapplied = false;
@@ -120,23 +120,18 @@ namespace SIL.HermitCrab
                         }
 						rule.EndUnapplication(input, ruleUnapplied);
                     }
-#endif
                 }
                 // we can skip this slot if it is optional
                 if (!_slots[i].IsOptional)
                 {
-#if WANTPORT
                     if (Morpher.TraceTemplatesAnalysis)
                         input.CurrentTrace.AddChild(new TemplateAnalysisTrace(this, false, null));
-#endif
                     return;
                 }
             }
 
-#if WANTPORT
             if (Morpher.TraceTemplatesAnalysis)
                 input.CurrentTrace.AddChild(new TemplateAnalysisTrace(this, false, input.Clone()));
-#endif
             output.Add(input);
         }
 
@@ -155,14 +150,13 @@ namespace SIL.HermitCrab
         {
             var headFeatures = (FeatureStruct) input.HeadFeatures.Clone();
             var results = new HashSet<WordSynthesis>();
-#if WANTPORT
             if (Morpher.TraceTemplatesSynthesis)
             {
                 // create the template synthesis input trace record
                 var tempTrace = new TemplateSynthesisTrace(this, true, input.Clone());
                 input.CurrentTrace.AddChild(tempTrace);
             }
-#endif
+
             ApplySlots(input.Clone(), 0, headFeatures, results);
 
             if (results.Count > 0)
@@ -183,7 +177,6 @@ namespace SIL.HermitCrab
             {
                 foreach (MorphologicalRule rule in _slots[i].MorphologicalRules)
                 {
-#if WANTPORT
                     if (rule.IsApplicable(input))
                     {
                         // this is the slot affix that realizes the features
@@ -194,24 +187,20 @@ namespace SIL.HermitCrab
 								ApplySlots(ws, i + 1, origHeadFeatures, output);
 						}
                     }
-#endif
                 }
 
                 if (!_slots[i].IsOptional)
                 {
-#if WANTPORT
                     if (Morpher.TraceTemplatesSynthesis)
                         input.CurrentTrace.AddChild(new TemplateSynthesisTrace(this, false, null));
-#endif
                     return;
                 }
             }
 
-#if WANTPORT
             if (Morpher.TraceTemplatesSynthesis)
                 input.CurrentTrace.AddChild(new TemplateSynthesisTrace(this, false, input.Clone()));
-#endif
             output.Add(input);
         }
+#endif
     }
 }

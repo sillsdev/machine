@@ -1,4 +1,5 @@
 using SIL.APRE;
+using SIL.APRE.FeatureModel;
 using SIL.APRE.Transduction;
 
 namespace SIL.HermitCrab
@@ -16,9 +17,19 @@ namespace SIL.HermitCrab
     	public AffixProcessRule(string id, SpanFactory<ShapeNode> spanFactory)
 			: base(id)
     	{
-			_analysisRule = new AffixProcessAnalysisRule(spanFactory);
-			_synthesisRule = new AffixProcessSynthesisRule(spanFactory);
+			_analysisRule = new AffixProcessAnalysisRule(spanFactory, this);
+			_synthesisRule = new AffixProcessSynthesisRule(spanFactory, this);
+
+    		MaxApplicationCount = 1;
+    		RequiredSyntacticFeatureStruct = new FeatureStruct();
+    		OutSyntacticFeatureStruct = new FeatureStruct();
     	}
+
+		public int MaxApplicationCount { get; set; }
+
+		public FeatureStruct RequiredSyntacticFeatureStruct { get; set; }
+
+		public FeatureStruct OutSyntacticFeatureStruct { get; set; }
 
 		public override IRule<Word, ShapeNode> AnalysisRule
 		{
@@ -32,6 +43,7 @@ namespace SIL.HermitCrab
 
 		public void AddAllomorph(AffixProcessAllomorph allomorph)
 		{
+			allomorph.Morpheme = this;
 			_analysisRule.AddAllomorph(allomorph);
 			_synthesisRule.AddAllomorph(allomorph);
 		}

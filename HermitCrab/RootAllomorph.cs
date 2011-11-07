@@ -29,10 +29,5 @@
 				return _shape;
 			}
 		}
-
-		public override string ToString()
-		{
-			return _shape.ToString();
-		}
 	}
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SIL.APRE;
@@ -24,6 +25,7 @@ namespace SIL.HermitCrab
         private readonly IDBearerSet<MprFeature> _mprFeatures;
 
     	private readonly MorpherAnalysisRule _analysisRule;
+    	private readonly MorpherSynthesisRule _synthesisRule;
 
     	private bool _traceStrataAnalysis;
         private bool _traceStrataSynthesis;
@@ -56,6 +58,7 @@ namespace SIL.HermitCrab
             _mprFeatures = new IDBearerSet<MprFeature>();
 
     		_analysisRule = new MorpherAnalysisRule(this);
+			_synthesisRule = new MorpherSynthesisRule(this);
         }
 
         /// <summary>
@@ -667,22 +670,65 @@ namespace SIL.HermitCrab
             var input = new Word(SurfaceStratum, word);
 
             // Unapply rules
-			IEnumerable<Word> output;
-			_analysisRule.Apply(input, out output);
+			IEnumerable<Word> analysisOutput;
+			_analysisRule.Apply(input, out analysisOutput);
 
-			var candidates = new List<Word>();
-			foreach (Word outWord in output)
+			var validWords = new HashSet<Word>();
+			foreach (Word analysisWord in analysisOutput)
 			{
 				IEnumerable<Word> lexLookupOutput;
-				if (LexicalLookup(outWord, out lexLookupOutput))
-					candidates.AddRange(lexLookupOutput);
+				if (LexicalLookup(analysisWord, out lexLookupOutput))
+				{
+					foreach (Word synthesisWord in lexLookupOutput)
+					{
+						IEnumerable<Word> synthesisOutput;
+						if (_synthesisRule.Apply(synthesisWord, out synthesisOutput))
+							validWords.UnionWith(synthesisOutput);
+					}
+				}
+			}
+
+			var matchList = new List<Word>();
+			foreach (Word match in validWords.GroupBy(validWord => validWord.Morphs, new MorphsEqualityComparer())
+				.Select(group => group.MaxBy(validWord => validWord.Morphs, new MorphsComparer()))
+				.Where(validWord => SurfaceStratum.CharacterDefinitionTable.IsMatch(word, validWord.Shape)))
+			{
+				matchList.Add(match);
 			}
 
 			trace = null;
-
-			var results = new HashSet<Word>();
-			return results;
+			return matchList;
         }
+
+		private class MorphsEqualityComparer : IEqualityComparer<IEnumerable<Morph>>
+		{
+			public bool Equals(IEnumerable<Morph> x, IEnumerable<Morph> y)
+			{
+				return x.SequenceEqual(y, ProjectionEqualityComparer<Morph>.Create(morph => morph.Allomorph.Morpheme));
+			}
+
+			public int GetHashCode(IEnumerable<Morph> obj)
+			{
+				return obj.Aggregate(23, (code, morph) => code * 31 + morph.Allomorph.Morpheme.GetHashCode());
+			}
+		}
+
+		private class MorphsComparer : IComparer<IEnumerable<Morph>>
+		{
+			public int Compare(IEnumerable<Morph> x, IEnumerable<Morph> y)
+			{
+				foreach (Tuple<Morph, Morph> tuple in x.Zip(y))
+				{
+					int res = tuple.Item1.Allomorph.Morpheme.CompareTo(tuple.Item2.Allomorph.Morpheme);
+					if (res != 0)
+						return res;
+					res = tuple.Item1.Allomorph.Index.CompareTo(tuple.Item2.Allomorph.Index);
+					if (res != 0)
+						return res;
+				}
+				return 0;
+			}
+		}
 
 		private bool LexicalLookup(Word input, out IEnumerable<Word> output)
 		{
@@ -694,7 +740,13 @@ namespace SIL.HermitCrab
 				{
 					foreach (RootAllomorph allomorph in entry.Allomorphs)
 					{
-
+						Word newWord = input.Clone();
+						newWord.Root = entry;
+						newWord.SyntacticFeatureStruct = entry.SyntacticFeatureStruct.Clone();
+						newWord.Shape.Clear();
+						allomorph.Shape.CopyTo(allomorph.Shape.First, allomorph.Shape.Last, newWord.Shape);
+						newWord.MarkMorph(newWord.Shape.First, newWord.Shape.Last, allomorph);
+						outputList.Add(newWord);
 					}
 				}
 

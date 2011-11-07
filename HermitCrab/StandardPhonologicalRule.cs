@@ -67,21 +67,21 @@ namespace SIL.HermitCrab
 		}
 
 		public void AddSubrule(Expression<Word, ShapeNode> rhs, Expression<Word, ShapeNode> leftEnv,
-			Expression<Word, ShapeNode> rightEnv, FeatureStruct applicableFS)
+			Expression<Word, ShapeNode> rightEnv, FeatureStruct requiredSyntacticFS)
 		{
 			if (_lhs.Children.Count == rhs.Children.Count)
 			{
-				_synthesisRule.AddSubrule(new FeatureSynthesisRewriteRule(_spanFactory, _lhs, rhs, leftEnv, rightEnv, applicableFS));
+				_synthesisRule.AddSubrule(new FeatureSynthesisRewriteRule(_spanFactory, _lhs, rhs, leftEnv, rightEnv, requiredSyntacticFS));
 				_analysisRule.AddSubrule(new FeatureAnalysisRewriteRule(_spanFactory, _lhs, rhs, leftEnv, rightEnv) {SynthesisApplicationMode = ApplicationMode, SynthesisDirection = Direction});
 			}
 			else if (_lhs.Children.Count > rhs.Children.Count)
 			{
-				_synthesisRule.AddSubrule(new NarrowSynthesisRewriteRule(_spanFactory, _lhs, rhs, leftEnv, rightEnv, applicableFS));
+				_synthesisRule.AddSubrule(new NarrowSynthesisRewriteRule(_spanFactory, _lhs, rhs, leftEnv, rightEnv, requiredSyntacticFS));
 				_analysisRule.AddSubrule(new NarrowAnalysisRewriteRule(_spanFactory, _lhs, rhs, leftEnv, rightEnv) {SynthesisApplicationMode = ApplicationMode, SynthesisDirection = Direction});
 			}
 			else if (_lhs.Children.Count == 0)
 			{
-				_synthesisRule.AddSubrule(new EpenthesisSynthesisRewriteRule(_spanFactory, _lhs, rhs, leftEnv, rightEnv, applicableFS));
+				_synthesisRule.AddSubrule(new EpenthesisSynthesisRewriteRule(_spanFactory, _lhs, rhs, leftEnv, rightEnv, requiredSyntacticFS));
 				_analysisRule.AddSubrule(new EpenthesisAnalysisRewriteRule(_spanFactory, rhs, leftEnv, rightEnv) {SynthesisApplicationMode = ApplicationMode, SynthesisDirection = Direction});
 			}
 		}

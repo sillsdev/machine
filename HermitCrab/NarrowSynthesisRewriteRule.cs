@@ -12,8 +12,8 @@ namespace SIL.HermitCrab
 
 		public NarrowSynthesisRewriteRule(SpanFactory<ShapeNode> spanFactory, Expression<Word, ShapeNode> lhs,
 			Expression<Word, ShapeNode> rhs, Expression<Word, ShapeNode> leftEnv, Expression<Word, ShapeNode> rightEnv,
-			FeatureStruct applicableFS)
-			: base(spanFactory, lhs, leftEnv, rightEnv, applicableFS)
+			FeatureStruct requiredSyntacticFS)
+			: base(spanFactory, lhs, leftEnv, rightEnv, requiredSyntacticFS)
 		{
 			_rhs = rhs;
 			_targetCount = lhs.Children.Count;

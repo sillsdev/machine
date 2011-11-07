@@ -36,3 +36,4 @@ zgrviewer
 lib
 *.Resharper
 .hgignore
+*- Copy*

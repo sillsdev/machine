@@ -9,8 +9,8 @@ namespace SIL.HermitCrab
 		private readonly Expression<Word, ShapeNode> _rhs;
 
 		public EpenthesisSynthesisRewriteRule(SpanFactory<ShapeNode> spanFactory, Expression<Word, ShapeNode> lhs,
-			Expression<Word, ShapeNode> rhs, Expression<Word, ShapeNode> leftEnv, Expression<Word, ShapeNode> rightEnv, FeatureStruct applicableFS)
-			: base(spanFactory, lhs, leftEnv, rightEnv, applicableFS)
+			Expression<Word, ShapeNode> rhs, Expression<Word, ShapeNode> leftEnv, Expression<Word, ShapeNode> rightEnv, FeatureStruct requiredSyntacticFS)
+			: base(spanFactory, lhs, leftEnv, rightEnv, requiredSyntacticFS)
 		{
 			_rhs = rhs;
 		}

@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using SIL.APRE;
-using SIL.APRE.FeatureModel;
 using SIL.APRE.Matching;
 
 namespace SIL.HermitCrab
@@ -23,14 +21,5 @@ namespace SIL.HermitCrab
 		/// <param name="output">The output word synthesis.</param>
 		/// <param name="allomorph"></param>
 		public abstract void Apply(PatternMatch<ShapeNode> match, Word input, Word output, Allomorph allomorph);
-
-		protected void AddMorphAnnotation(Word output, ShapeNode startNode, ShapeNode endNode, Allomorph allomorph)
-		{
-			if (allomorph != null)
-			{
-				output.Annotations.Add(new Annotation<ShapeNode>(HCFeatureSystem.MorphType,
-					output.Shape.SpanFactory.Create(startNode, output.Shape.Last), new FeatureStruct()));
-			}
-		}
 	}
 }

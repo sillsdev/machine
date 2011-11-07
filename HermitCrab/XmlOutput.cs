@@ -90,14 +90,14 @@ namespace SIL.HermitCrab
 					var saTrace = (StratumAnalysisTrace) trace;
 					_xmlWriter.WriteStartElement(saTrace.GetType().Name + (saTrace.IsInput ? "In" : "Out"));
 					Write("Stratum", saTrace.Stratum);
-					Write(saTrace.IsInput ? "Input" : "Output", saTrace.Analysis);
+					Write(saTrace.IsInput ? "Input" : "Output", saTrace.Word);
 					break;
 
 				case Trace.TraceType.StratumSynthesis:
 					var ssTrace = (StratumSynthesisTrace) trace;
 					_xmlWriter.WriteStartElement(ssTrace.GetType().Name + (ssTrace.IsInput ? "In" : "Out"));
 					Write("Stratum", ssTrace.Stratum);
-					Write(ssTrace.IsInput ? "Input" : "Output", ssTrace.Synthesis);
+					Write(ssTrace.IsInput ? "Input" : "Output", ssTrace.Word);
 					break;
 
 				case Trace.TraceType.LexicalLookup:
@@ -141,14 +141,14 @@ namespace SIL.HermitCrab
 					var taTrace = (TemplateAnalysisTrace) trace;
 					_xmlWriter.WriteStartElement(taTrace.GetType().Name + (taTrace.IsInput ? "In" : "Out"));
 					Write("AffixTemplate", taTrace.Template);
-					Write(taTrace.IsInput ? "Input" : "Output", taTrace.Analysis);
+					Write(taTrace.IsInput ? "Input" : "Output", taTrace.Word);
 					break;
 
 				case Trace.TraceType.TemplateSynthesis:
 					var tsTrace = (TemplateSynthesisTrace) trace;
 					_xmlWriter.WriteStartElement(tsTrace.GetType().Name + (tsTrace.IsInput ? "In" : "Out"));
 					Write("AffixTemplate", tsTrace.Template);
-					Write(tsTrace.IsInput ? "Input" : "Output", tsTrace.Synthesis);
+					Write(tsTrace.IsInput ? "Input" : "Output", tsTrace.Word);
 					break;
 
 				case Trace.TraceType.MorphologicalRuleAnalysis:

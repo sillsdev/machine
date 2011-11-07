@@ -78,8 +78,8 @@
     <Compile Include="ModifyFromInput.cs" />
     <Compile Include="Morph.cs" />
     <Compile Include="MorphCoOccurrence.cs" />
+    <Compile Include="MorpherSynthesisRule.cs" />
     <Compile Include="MorphologicalOutput.cs" />
-    <Compile Include="Morphs.cs" />
     <Compile Include="NarrowAnalysisRewriteRule.cs" />
     <Compile Include="NarrowSynthesisRewriteRule.cs" />
     <Compile Include="RootAllomorph.cs" />
@@ -127,8 +127,6 @@
     <Compile Include="SynthesisRewriteRule.cs" />
     <Compile Include="Trace.cs" />
     <Compile Include="Word.cs" />
-    <Compile Include="WordAnalysis.cs" />
-    <Compile Include="WordSynthesis.cs" />
     <None Include="XmlLoader.cs" />
     <None Include="XmlOutput.cs" />
   </ItemGroup>

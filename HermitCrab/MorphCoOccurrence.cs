@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Linq;
 using SIL.APRE;
 
 namespace SIL.HermitCrab
@@ -75,9 +75,9 @@ namespace SIL.HermitCrab
 		/// <param name="morphs">The morphs.</param>
 		/// <param name="key">The key morpheme.</param>
 		/// <returns></returns>
-		public bool CoOccurs(Morphs morphs, IIDBearer key)
+		public bool CoOccurs(IEnumerable<Morph> morphs, IIDBearer key)
 		{
-			Collection<Morph> morphList = morphs;
+			var morphList = morphs.ToList();
 			var others = new List<IIDBearer>(_others);
 
 			switch (_adjacency)
@@ -96,7 +96,7 @@ namespace SIL.HermitCrab
 						{
 							break;
 						}
-						else if (others.Count > 0 && others[0] == curMorphObj)
+						if (others.Count > 0 && others[0] == curMorphObj)
 						{
 							if (_adjacency == AdjacencyType.AdjacentToLeft)
 							{
@@ -128,7 +128,7 @@ namespace SIL.HermitCrab
 						{
 							break;
 						}
-						else if (others.Count > 0 && others[others.Count - 1] == curMorphObj)
+						if (others.Count > 0 && others[others.Count - 1] == curMorphObj)
 						{
 							if (_adjacency == AdjacencyType.AdjacentToRight)
 							{

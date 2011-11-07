@@ -10,10 +10,10 @@ namespace SIL.HermitCrab
 	public abstract class SynthesisRewriteRule : PatternRule<Word, ShapeNode>
 	{
 		private readonly SpanFactory<ShapeNode> _spanFactory;
-		private readonly FeatureStruct _applicableFS;
+		private readonly FeatureStruct _requiredSyntacticFS;
 
 		protected SynthesisRewriteRule(SpanFactory<ShapeNode> spanFactory, Expression<Word, ShapeNode> lhs,
-			Expression<Word, ShapeNode> leftEnv, Expression<Word, ShapeNode> rightEnv, FeatureStruct applicableFS)
+			Expression<Word, ShapeNode> leftEnv, Expression<Word, ShapeNode> rightEnv, FeatureStruct requiredSyntacticFS)
 			: base(new Pattern<Word, ShapeNode>(spanFactory) {UseDefaultsForMatching = true,
 				Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.BoundaryType, HCFeatureSystem.AnchorType),
 				Acceptable = (input, match) => CheckTarget(match, lhs)})
@@ -21,7 +21,7 @@ namespace SIL.HermitCrab
 			ApplicationMode = ApplicationMode.Iterative;
 
 			_spanFactory = spanFactory;
-			_applicableFS = applicableFS;
+			_requiredSyntacticFS = requiredSyntacticFS;
 
 			if (leftEnv.Children.Count > 0)
 			{
@@ -59,7 +59,7 @@ namespace SIL.HermitCrab
 
 		public override bool IsApplicable(Word input)
 		{
-			return input.SyntacticFeatureStruct.IsUnifiable(_applicableFS);
+			return input.SyntacticFeatureStruct.IsUnifiable(_requiredSyntacticFS);
 		}
 
 		protected void MarkSearchedNodes(ShapeNode startNode, ShapeNode endNode)

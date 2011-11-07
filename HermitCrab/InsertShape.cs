@@ -25,7 +25,8 @@ namespace SIL.HermitCrab
 		public override void Apply(PatternMatch<ShapeNode> match, Word input, Word output, Allomorph allomorph)
 		{
 			Span<ShapeNode> outputSpan = _shape.CopyTo(_shape.SpanFactory.Create(_shape.First, _shape.Last), output.Shape);
-			AddMorphAnnotation(output, outputSpan.Start, outputSpan.End, allomorph);
+			if (allomorph != null)
+				output.MarkMorph(outputSpan, allomorph);
 		}
 	}
 }

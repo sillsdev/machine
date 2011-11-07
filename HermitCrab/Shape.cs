@@ -149,6 +149,8 @@ namespace SIL.HermitCrab
 		{
 			base.Clear();
 			_annotations.Clear();
+			_annotations.Add(Begin.Annotation);
+			_annotations.Add(End.Annotation);
 		}
 
 		private static int Average(int x, int y)
@@ -192,7 +194,7 @@ namespace SIL.HermitCrab
 				else
 				{
 					high ^= toggleBit;
-					while (right == null || (right.Tag < high && right.Next.Tag > right.Tag))
+					while (right == null || (right.Tag < high && (right.Next != null && right.Next.Tag > right.Tag)))
 					{
 						right = right == null ? First : right.Next;
 						elementCount++;

@@ -251,18 +251,18 @@ namespace SIL.HermitCrab
     /// </summary>
     public class StratumAnalysisTrace : StratumTrace
     {
-        private readonly WordAnalysis _analysis;
+        private readonly Word _word;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StratumAnalysisTrace"/> class.
         /// </summary>
         /// <param name="stratum">The stratum.</param>
         /// <param name="input">if <c>true</c> this is an input record, if <c>false</c> this is an output record.</param>
-        /// <param name="analysis">The input or output word analysis.</param>
-        internal StratumAnalysisTrace(Stratum stratum, bool input, WordAnalysis analysis)
+        /// <param name="word">The input or output word analysis.</param>
+        internal StratumAnalysisTrace(Stratum stratum, bool input, Word word)
             : base(stratum, input)
         {
-            _analysis = analysis;
+            _word = word;
         }
 
         /// <summary>
@@ -281,11 +281,11 @@ namespace SIL.HermitCrab
         /// Gets the input or output word analysis.
         /// </summary>
         /// <value>The input or output word analysis.</value>
-        public WordAnalysis Analysis
+        public Word Word
         {
             get
             {
-                return _analysis;
+                return _word;
             }
         }
 
@@ -294,11 +294,11 @@ namespace SIL.HermitCrab
         	if (IsInput)
             {
                 return string.Format(HCStrings.kstidTraceStratumAnalysisIn, Stratum,
-                    _analysis.Stratum.CharacterDefinitionTable.ToRegexString(_analysis.Shape, Mode.Analysis, true));
+                    _word.Stratum.CharacterDefinitionTable.ToRegexString(_word.Shape, Mode.Analysis, true));
             }
 
         	return string.Format(HCStrings.kstidTraceStratumAnalysisOut, Stratum,
-				_analysis.Stratum.CharacterDefinitionTable.ToRegexString(_analysis.Shape, Mode.Analysis, true));
+				_word.Stratum.CharacterDefinitionTable.ToRegexString(_word.Shape, Mode.Analysis, true));
         }
     }
 
@@ -309,18 +309,18 @@ namespace SIL.HermitCrab
     /// </summary>
     public class StratumSynthesisTrace : StratumTrace
     {
-        private readonly WordSynthesis _synthesis;
+        private readonly Word _word;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StratumSynthesisTrace"/> class.
         /// </summary>
         /// <param name="stratum">The stratum.</param>
         /// <param name="input">if <c>true</c> this is an input record, if <c>false</c> this is an output record.</param>
-        /// <param name="synthesis">The input or output word synthesis.</param>
-        internal StratumSynthesisTrace(Stratum stratum, bool input, WordSynthesis synthesis)
+        /// <param name="word">The input or output word synthesis.</param>
+        internal StratumSynthesisTrace(Stratum stratum, bool input, Word word)
             : base(stratum, input)
         {
-            _synthesis = synthesis;
+            _word = word;
         }
 
         /// <summary>
@@ -339,26 +339,24 @@ namespace SIL.HermitCrab
         /// Gets the input or output word synthesis.
         /// </summary>
         /// <value>The input or output word synthesis.</value>
-        public WordSynthesis Synthesis
+        public Word Word
         {
             get
             {
-                return _synthesis;
+                return _word;
             }
         }
 
         public override string ToString(bool includeInputs)
         {
-            if (IsInput)
+        	if (IsInput)
             {
                 return string.Format(HCStrings.kstidTraceStratumSynthesisIn, Stratum,
-                    _synthesis.Stratum.CharacterDefinitionTable.ToString(_synthesis.Shape, Mode.Synthesis, true));
+                    _word.Stratum.CharacterDefinitionTable.ToString(_word.Shape, Mode.Synthesis, true));
             }
-            else
-            {
-                return string.Format(HCStrings.kstidTraceStratumSynthesisOut, Stratum,
-                    _synthesis.Stratum.CharacterDefinitionTable.ToString(_synthesis.Shape, Mode.Synthesis, true));
-            }
+
+        	return string.Format(HCStrings.kstidTraceStratumSynthesisOut, Stratum,
+				_word.Stratum.CharacterDefinitionTable.ToString(_word.Shape, Mode.Synthesis, true));
         }
     }
 
@@ -553,14 +551,14 @@ namespace SIL.HermitCrab
     /// </summary>
     public class PhonologicalRuleAnalysisTrace : PhonologicalRuleTrace
     {
-        private readonly WordAnalysis _input;
+        private readonly Word _input;
 
     	/// <summary>
         /// Initializes a new instance of the <see cref="PhonologicalRuleAnalysisTrace"/> class.
         /// </summary>
         /// <param name="rule">The rule.</param>
         /// <param name="input">The input.</param>
-        internal PhonologicalRuleAnalysisTrace(StandardPhonologicalRule rule, WordAnalysis input)
+        internal PhonologicalRuleAnalysisTrace(StandardPhonologicalRule rule, Word input)
             : base(rule)
         {
             _input = input;
@@ -582,7 +580,7 @@ namespace SIL.HermitCrab
         /// Gets the input word analysis.
         /// </summary>
         /// <value>The input word analysis.</value>
-        public WordAnalysis Input
+        public Word Input
         {
             get
             {
@@ -594,24 +592,20 @@ namespace SIL.HermitCrab
     	/// Gets or sets the output word analysis.
     	/// </summary>
     	/// <value>The output word analysis.</value>
-    	public WordAnalysis Output { get; internal set; }
+    	public Word Output { get; internal set; }
 
     	public override string ToString(bool includeInputs)
-        {
-            if (includeInputs)
+    	{
+    		if (includeInputs)
             {
                 return string.Format(HCStrings.kstidTracePhonologicalRuleAnalysisInputs, Rule,
                     _input.Stratum.CharacterDefinitionTable.ToRegexString(_input.Shape, Mode.Analysis, true),
-					Output == null ? HCStrings.kstidTraceNoOutput
-					: Output.Stratum.CharacterDefinitionTable.ToRegexString(Output.Shape, Mode.Analysis, true));
+					Output == null ? HCStrings.kstidTraceNoOutput : Output.Stratum.CharacterDefinitionTable.ToRegexString(Output.Shape, Mode.Analysis, true));
             }
-            else
-            {
-                return string.Format(HCStrings.kstidTracePhonologicalRuleAnalysis, Rule,
-					Output == null ? HCStrings.kstidTraceNoOutput
-					: Output.Stratum.CharacterDefinitionTable.ToRegexString(Output.Shape, Mode.Analysis, true));
-            }
-        }
+
+    		return string.Format(HCStrings.kstidTracePhonologicalRuleAnalysis, Rule,
+				Output == null ? HCStrings.kstidTraceNoOutput : Output.Stratum.CharacterDefinitionTable.ToRegexString(Output.Shape, Mode.Analysis, true));
+    	}
     }
 
     /// <summary>
@@ -621,14 +615,14 @@ namespace SIL.HermitCrab
     /// </summary>
     public class PhonologicalRuleSynthesisTrace : PhonologicalRuleTrace
     {
-    	private readonly WordSynthesis _input;
+    	private readonly Word _input;
 
     	/// <summary>
         /// Initializes a new instance of the <see cref="PhonologicalRuleSynthesisTrace"/> class.
         /// </summary>
         /// <param name="rule">The rule.</param>
         /// <param name="input">The input.</param>
-        internal PhonologicalRuleSynthesisTrace(StandardPhonologicalRule rule, WordSynthesis input)
+        internal PhonologicalRuleSynthesisTrace(StandardPhonologicalRule rule, Word input)
             : base(rule)
         {
             _input = input;
@@ -650,7 +644,7 @@ namespace SIL.HermitCrab
         /// Gets the input word synthesis.
         /// </summary>
         /// <value>The input word synthesis.</value>
-        public WordSynthesis Input
+        public Word Input
         {
             get
             {
@@ -662,24 +656,20 @@ namespace SIL.HermitCrab
     	/// Gets or sets the output word synthesis.
     	/// </summary>
     	/// <value>The output word synthesis.</value>
-    	public WordSynthesis Output { get; internal set; }
+    	public Word Output { get; internal set; }
 
     	public override string ToString(bool includeInputs)
-        {
-            if (includeInputs)
+    	{
+    		if (includeInputs)
             {
                 return string.Format(HCStrings.kstidTracePhonologicalRuleSynthesisInputs, Rule,
                     _input.Stratum.CharacterDefinitionTable.ToString(_input.Shape, Mode.Synthesis, true),
-					Output == null ? HCStrings.kstidTraceNoOutput
-					: Output.Stratum.CharacterDefinitionTable.ToString(Output.Shape, Mode.Synthesis, true));
+					Output == null ? HCStrings.kstidTraceNoOutput : Output.Stratum.CharacterDefinitionTable.ToString(Output.Shape, Mode.Synthesis, true));
             }
-            else
-            {
-                return string.Format(HCStrings.kstidTracePhonologicalRuleSynthesis, Rule,
-					Output == null ? HCStrings.kstidTraceNoOutput
-					: Output.Stratum.CharacterDefinitionTable.ToString(Output.Shape, Mode.Synthesis, true));
-            }
-        }
+
+    		return string.Format(HCStrings.kstidTracePhonologicalRuleSynthesis, Rule,
+				Output == null ? HCStrings.kstidTraceNoOutput : Output.Stratum.CharacterDefinitionTable.ToString(Output.Shape, Mode.Synthesis, true));
+    	}
     }
 
     /// <summary>
@@ -733,18 +723,18 @@ namespace SIL.HermitCrab
     /// </summary>
     public class TemplateAnalysisTrace : TemplateTrace
     {
-        private readonly WordAnalysis _analysis;
+        private readonly Word _word;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TemplateAnalysisTrace"/> class.
         /// </summary>
         /// <param name="template">The template.</param>
         /// <param name="input">if <c>true</c> this is an input record, if <c>false</c> this is an output record.</param>
-        /// <param name="analysis">The input or output word analysis.</param>
-        internal TemplateAnalysisTrace(AffixTemplate template, bool input, WordAnalysis analysis)
+        /// <param name="word">The input or output word analysis.</param>
+        internal TemplateAnalysisTrace(AffixTemplate template, bool input, Word word)
             : base(template, input)
         {
-            _analysis = analysis;
+            _word = word;
         }
 
         /// <summary>
@@ -763,27 +753,24 @@ namespace SIL.HermitCrab
         /// Gets the input or output word analysis.
         /// </summary>
         /// <value>The input or output word analysis.</value>
-        public WordAnalysis Analysis
+        public Word Word
         {
             get
             {
-                return _analysis;
+                return _word;
             }
         }
 
         public override string ToString(bool includeInputs)
         {
-            if (IsInput)
+        	if (IsInput)
             {
                 return string.Format(HCStrings.kstidTraceTemplateAnalysisIn, Template,
-                    _analysis.Stratum.CharacterDefinitionTable.ToRegexString(_analysis.Shape, Mode.Analysis, true));
+                    _word.Stratum.CharacterDefinitionTable.ToRegexString(_word.Shape, Mode.Analysis, true));
             }
-            else
-            {
-                return string.Format(HCStrings.kstidTraceTemplateAnalysisOut, Template,
-                    (_analysis == null ? HCStrings.kstidTraceNoOutput
-                    : _analysis.Stratum.CharacterDefinitionTable.ToRegexString(_analysis.Shape, Mode.Analysis, true)));
-            }
+
+        	return string.Format(HCStrings.kstidTraceTemplateAnalysisOut, Template,
+				(_word == null ? HCStrings.kstidTraceNoOutput : _word.Stratum.CharacterDefinitionTable.ToRegexString(_word.Shape, Mode.Analysis, true)));
         }
     }
 
@@ -794,18 +781,18 @@ namespace SIL.HermitCrab
     /// </summary>
     public class TemplateSynthesisTrace : TemplateTrace
     {
-        private readonly WordSynthesis _synthesis;
+        private readonly Word _word;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TemplateSynthesisTrace"/> class.
         /// </summary>
         /// <param name="template">The template.</param>
         /// <param name="input">if <c>true</c> this is an input record, if <c>false</c> this is an output record.</param>
-        /// <param name="synthesis">The input or output word synthesis.</param>
-        internal TemplateSynthesisTrace(AffixTemplate template, bool input, WordSynthesis synthesis)
+        /// <param name="word">The input or output word synthesis.</param>
+        internal TemplateSynthesisTrace(AffixTemplate template, bool input, Word word)
             : base(template, input)
         {
-            _synthesis = synthesis;
+            _word = word;
         }
 
         /// <summary>
@@ -821,30 +808,27 @@ namespace SIL.HermitCrab
         }
 
         /// <summary>
-        /// Gets the input or output word synthesis.
+        /// Gets the input or output word.
         /// </summary>
-        /// <value>The input or output word synthesis.</value>
-        public WordSynthesis Synthesis
+        /// <value>The input or output word.</value>
+        public Word Word
         {
             get
             {
-                return _synthesis;
+                return _word;
             }
         }
 
         public override string ToString(bool includeInputs)
         {
-            if (IsInput)
+        	if (IsInput)
             {
                 return string.Format(HCStrings.kstidTraceTemplateSynthesisIn, Template,
-                    _synthesis.Stratum.CharacterDefinitionTable.ToString(_synthesis.Shape, Mode.Synthesis, true));
+                    _word.Stratum.CharacterDefinitionTable.ToString(_word.Shape, Mode.Synthesis, true));
             }
-            else
-            {
-                return string.Format(HCStrings.kstidTraceTemplateSynthesisOut, Template,
-                    (_synthesis == null ? HCStrings.kstidTraceNoOutput
-                    : _synthesis.Stratum.CharacterDefinitionTable.ToString(_synthesis.Shape, Mode.Synthesis, true)));
-            }
+
+        	return string.Format(HCStrings.kstidTraceTemplateSynthesisOut, Template,
+				(_word == null ? HCStrings.kstidTraceNoOutput : _word.Stratum.CharacterDefinitionTable.ToString(_word.Shape, Mode.Synthesis, true)));
         }
     }
 
@@ -892,14 +876,14 @@ namespace SIL.HermitCrab
     /// </summary>
     public class MorphologicalRuleAnalysisTrace : MorphologicalRuleTrace
     {
-        private readonly WordAnalysis _input;
+        private readonly Word _input;
 
     	/// <summary>
         /// Initializes a new instance of the <see cref="MorphologicalRuleAnalysisTrace"/> class.
         /// </summary>
         /// <param name="rule">The rule.</param>
         /// <param name="input">The input.</param>
-        internal MorphologicalRuleAnalysisTrace(MorphologicalRule rule, WordAnalysis input)
+        internal MorphologicalRuleAnalysisTrace(MorphologicalRule rule, Word input)
             : base(rule)
         {
         	Output = null;
@@ -922,7 +906,7 @@ namespace SIL.HermitCrab
         /// Gets the input word analysis.
         /// </summary>
         /// <value>The input word analysis.</value>
-        public WordAnalysis Input
+        public Word Input
         {
             get
             {
@@ -934,24 +918,20 @@ namespace SIL.HermitCrab
     	/// Gets or sets the output word analysis.
     	/// </summary>
     	/// <value>The output word analysis.</value>
-    	public WordAnalysis Output { get; internal set; }
+    	public Word Output { get; internal set; }
 
     	public override string ToString(bool includeInputs)
-        {
-            if (includeInputs)
+    	{
+    		if (includeInputs)
             {
                 return string.Format(HCStrings.kstidTraceMorphologicalRuleAnalysisInputs, Rule,
                     _input.Stratum.CharacterDefinitionTable.ToRegexString(_input.Shape, Mode.Analysis, true),
-                    (Output == null ? HCStrings.kstidTraceNoOutput
-                    : Output.Stratum.CharacterDefinitionTable.ToRegexString(Output.Shape, Mode.Analysis, true)));
+                    (Output == null ? HCStrings.kstidTraceNoOutput : Output.Stratum.CharacterDefinitionTable.ToRegexString(Output.Shape, Mode.Analysis, true)));
             }
-            else
-            {
-                return string.Format(HCStrings.kstidTraceMorphologicalRuleAnalysis, Rule,
-                    (Output == null ? HCStrings.kstidTraceNoOutput
-                    : Output.Stratum.CharacterDefinitionTable.ToRegexString(Output.Shape, Mode.Analysis, true)));
-            }
-        }
+
+    		return string.Format(HCStrings.kstidTraceMorphologicalRuleAnalysis, Rule,
+				(Output == null ? HCStrings.kstidTraceNoOutput : Output.Stratum.CharacterDefinitionTable.ToRegexString(Output.Shape, Mode.Analysis, true)));
+    	}
     }
 
     /// <summary>
@@ -962,14 +942,14 @@ namespace SIL.HermitCrab
     /// </summary>
     public class MorphologicalRuleSynthesisTrace : MorphologicalRuleTrace
     {
-        private readonly WordSynthesis _input;
+        private readonly Word _input;
 
     	/// <summary>
         /// Initializes a new instance of the <see cref="MorphologicalRuleSynthesisTrace"/> class.
         /// </summary>
         /// <param name="rule">The rule.</param>
         /// <param name="input">The input.</param>
-        internal MorphologicalRuleSynthesisTrace(MorphologicalRule rule, WordSynthesis input)
+        internal MorphologicalRuleSynthesisTrace(MorphologicalRule rule, Word input)
             : base(rule)
         {
         	Output = null;
@@ -992,7 +972,7 @@ namespace SIL.HermitCrab
         /// Gets the input word synthesis.
         /// </summary>
         /// <value>The input word synthesis.</value>
-        public WordSynthesis Input
+        public Word Input
         {
             get
             {
@@ -1004,24 +984,21 @@ namespace SIL.HermitCrab
     	/// Gets or sets the output word synthesis.
     	/// </summary>
     	/// <value>The output word synthesis.</value>
-    	public WordSynthesis Output { get; internal set; }
+    	public Word Output { get; internal set; }
 
     	public override string ToString(bool includeInputs)
-        {
-            if (includeInputs)
+    	{
+    		if (includeInputs)
             {
                 return string.Format(HCStrings.kstidTraceMorphologicalRuleSynthesisInputs, Rule,
                     _input.Stratum.CharacterDefinitionTable.ToString(_input.Shape, Mode.Synthesis, true),
                     (Output == null ? HCStrings.kstidTraceNoOutput
                     : Output.Stratum.CharacterDefinitionTable.ToString(Output.Shape, Mode.Synthesis, true)));
             }
-            else
-            {
-                return string.Format(HCStrings.kstidTraceMorphologicalRuleSynthesis, Rule,
-                    (Output == null ? HCStrings.kstidTraceNoOutput
-                    : Output.Stratum.CharacterDefinitionTable.ToString(Output.Shape, Mode.Synthesis, true)));
-            }
-        }
+
+    		return string.Format(HCStrings.kstidTraceMorphologicalRuleSynthesis, Rule,
+				(Output == null ? HCStrings.kstidTraceNoOutput : Output.Stratum.CharacterDefinitionTable.ToString(Output.Shape, Mode.Synthesis, true)));
+    	}
     }
 
     /// <summary>
@@ -1110,11 +1087,11 @@ namespace SIL.HermitCrab
     /// </summary>
     public class ReportSuccessTrace : Trace
     {
-        private readonly WordSynthesis _output;
+        private readonly Word _output;
         /// <summary>
         /// Initializes a new instance of the <see cref="ReportSuccessTrace"/> class.
         /// </summary>
-        internal ReportSuccessTrace(WordSynthesis output)
+        internal ReportSuccessTrace(Word output)
         {
             _output = output;
         }
@@ -1135,7 +1112,7 @@ namespace SIL.HermitCrab
 		/// Gets the output.
 		/// </summary>
 		/// <value>The output.</value>
-		public WordSynthesis Output
+		public Word Output
 		{
 			get
 			{
