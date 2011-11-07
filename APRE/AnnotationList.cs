@@ -97,7 +97,7 @@ namespace SIL.APRE
 		{
 			List<Annotation<TOffset>> annotations;
 			if (_typeIndex.TryGetValue(type, out annotations))
-				return annotations;
+				return annotations.OrderBy(ann => ann, GetComparer(dir));
 			return Enumerable.Empty<Annotation<TOffset>>();
 		}
 

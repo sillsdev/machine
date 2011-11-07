@@ -187,23 +187,6 @@ namespace SIL.APRE
 			
 		#endregion
 
-		#region IBidirList<Annotation>
-
-		public static IBidirListView<Annotation<TOffset>> GetView<TOffset>(this IBidirList<Annotation<TOffset>> list, Span<TOffset> span)
-		{
-			Annotation<TOffset> startAnn;
-			list.Find(new Annotation<TOffset>(span), Direction.LeftToRight, out startAnn);
-			startAnn = startAnn == null ? list.First : (startAnn.Next ?? startAnn);
-
-			Annotation<TOffset> endAnn;
-			list.Find(new Annotation<TOffset>(span), Direction.RightToLeft, out endAnn);
-			endAnn = endAnn == null ? list.Last : (endAnn.Prev ?? endAnn);
-
-			return list.GetView(startAnn, endAnn);
-		}
-
-		#endregion
-
 		#region IEnumerable
 
 		public static IEnumerable<T> Concat<T>(this IEnumerable<T> source, T item)

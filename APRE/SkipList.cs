@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SIL.APRE
 {
@@ -114,7 +115,7 @@ namespace SIL.APRE
 
 		public virtual void Clear()
 		{
-			foreach (TNode node in this)
+			foreach (TNode node in this.ToArray())
 				node.Clear();
 			Clear(Direction.LeftToRight);
 			if (_leftToRightState != _rightToLeftState)
@@ -129,6 +130,7 @@ namespace SIL.APRE
 				state.First[i] = null;
 			for (int i = 0; i < state.Last.Length; i++)
 				state.Last[i] = null;
+			state.Levels = 1;
 		}
 
 		public bool Contains(TNode node)
@@ -291,26 +293,6 @@ namespace SIL.APRE
 			}
 			result = cur;
 			return false;
-		}
-
-		public IBidirListView<TNode> GetView(TNode first)
-		{
-			return GetView(first, Direction.LeftToRight);
-		}
-
-		public IBidirListView<TNode> GetView(TNode first, TNode last)
-		{
-			return GetView(first, last, Direction.LeftToRight);
-		}
-
-		public IBidirListView<TNode> GetView(TNode first, Direction dir)
-		{
-			return GetView(first, GetLast(dir), dir);
-		}
-
-		public IBidirListView<TNode> GetView(TNode first, TNode last, Direction dir)
-		{
-			return new SortedBidirListView<TNode>(dir == Direction.LeftToRight ? first : last, dir == Direction.LeftToRight ? last : first, _leftToRightState.Comparer);
 		}
 
 		public void AddRange(IEnumerable<TNode> nodes)

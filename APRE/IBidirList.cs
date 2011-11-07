@@ -107,13 +107,5 @@ namespace SIL.APRE
 		/// <param name="result">The result.</param>
 		/// <returns></returns>
 		bool Find(TNode start, TNode example, Direction dir, out TNode result);
-
-		IBidirListView<TNode> GetView(TNode first);
-
-		IBidirListView<TNode> GetView(TNode first, TNode last);
-
-		IBidirListView<TNode> GetView(TNode first, Direction dir);
-
-		IBidirListView<TNode> GetView(TNode first, TNode last, Direction dir);
 	}
 }

@@ -42,8 +42,6 @@
     <Compile Include="AnnotationList.cs" />
     <Compile Include="BidirList.cs" />
     <Compile Include="BidirListNode.cs" />
-    <Compile Include="BidirListView.cs" />
-    <Compile Include="BidirListViewBase.cs" />
     <Compile Include="BidirTreeNode.cs" />
     <Compile Include="FeatureModel\ComplexFeature.cs" />
     <Compile Include="FeatureModel\Disjunction.cs" />
@@ -118,6 +116,7 @@
     <Compile Include="Matching\PatternNode.cs" />
     <Compile Include="Matching\Quantifier.cs" />
     <Compile Include="NullableValue.cs" />
+    <Compile Include="ProjectionEqualityComparer.cs" />
     <Compile Include="ReferenceEqualityComparer.cs" />
     <Compile Include="StringData.cs" />
     <Compile Include="Transduction\DelegatePatternRuleAction.cs" />
@@ -131,7 +130,6 @@
     <Compile Include="Transduction\DefaultRuleCascade.cs" />
     <Compile Include="SkipList.cs" />
     <Compile Include="SkipListNode.cs" />
-    <Compile Include="SortedBidirListView.cs" />
     <Compile Include="Span.cs" />
     <Compile Include="IDBearerBase.cs" />
     <Compile Include="IDBearerSet.cs" />
