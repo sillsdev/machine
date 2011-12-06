@@ -1,0 +1,157 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{8C9AB5D2-22CA-4559-ABB0-83E97D7F0E58}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SIL.Machine</RootNamespace>
+    <AssemblyName>Machine</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AnnotationList.cs" />
+    <Compile Include="BidirList.cs" />
+    <Compile Include="BidirListNode.cs" />
+    <Compile Include="BidirTreeNode.cs" />
+    <Compile Include="FeatureModel\ComplexFeature.cs" />
+    <Compile Include="FeatureModel\Disjunction.cs" />
+    <Compile Include="FeatureModel\Feature.cs" />
+    <Compile Include="FeatureModel\FeatureStruct.cs" />
+    <Compile Include="FeatureModel\FeatureSymbol.cs" />
+    <Compile Include="FeatureModel\FeatureSystem.cs" />
+    <Compile Include="FeatureModel\FeatureValue.cs" />
+    <Compile Include="FeatureModel\Fluent\ComplexFeatureBuilder.cs" />
+    <Compile Include="FeatureModel\Fluent\DisjunctionBuilder.cs" />
+    <Compile Include="FeatureModel\Fluent\FeatureStructBuilder.cs" />
+    <Compile Include="FeatureModel\Fluent\FeatureSystemBuilder.cs" />
+    <Compile Include="FeatureModel\Fluent\IComplexFeatureSyntax.cs" />
+    <Compile Include="FeatureModel\Fluent\IDefaultSymbolicFeatureSyntax.cs" />
+    <Compile Include="FeatureModel\Fluent\IDisjunctiveFeatureStructSyntax.cs" />
+    <Compile Include="FeatureModel\Fluent\IDisjunctiveFeatureValueSyntax.cs" />
+    <Compile Include="FeatureModel\Fluent\IDisjunctiveNegatableFeatureValueSyntax.cs" />
+    <Compile Include="FeatureModel\Fluent\IFeatureStructSyntax.cs" />
+    <Compile Include="FeatureModel\Fluent\IFeatureSystemSyntax.cs" />
+    <Compile Include="FeatureModel\Fluent\IFeatureValueSyntax.cs" />
+    <Compile Include="FeatureModel\Fluent\IFinalDisjunctSyntax.cs" />
+    <Compile Include="FeatureModel\Fluent\IFirstDisjunctSyntax.cs" />
+    <Compile Include="FeatureModel\Fluent\INegatableFeatureValueSyntax.cs" />
+    <Compile Include="FeatureModel\Fluent\ISecondDisjunctSyntax.cs" />
+    <Compile Include="FeatureModel\Fluent\IStringFeatureSyntax.cs" />
+    <Compile Include="FeatureModel\Fluent\ISymbolicFeatureSyntax.cs" />
+    <Compile Include="FeatureModel\Fluent\StringFeatureBuilder.cs" />
+    <Compile Include="FeatureModel\Fluent\SymbolicFeatureBuilder.cs" />
+    <Compile Include="FeatureModel\SimpleFeatureValue.cs" />
+    <Compile Include="FeatureModel\StringFeature.cs" />
+    <Compile Include="FeatureModel\StringFeatureValue.cs" />
+    <Compile Include="FeatureModel\SymbolicFeature.cs" />
+    <Compile Include="FeatureModel\SymbolicFeatureValue.cs" />
+    <Compile Include="FeatureModel\VariableBindings.cs" />
+    <Compile Include="AnnotationFeatureSystem.cs" />
+    <Compile Include="Fsa\AcceptInfo.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="Fsa\FsaMatch.cs" />
+    <Compile Include="IBidirList.cs" />
+    <Compile Include="IBidirListNode.cs" />
+    <Compile Include="IBidirListView.cs" />
+    <Compile Include="IBidirTreeNode.cs" />
+    <Compile Include="ICloneable.cs" />
+    <Compile Include="IData.cs" />
+    <Compile Include="IDBearerDictionary.cs" />
+    <Compile Include="IntegerSpanFactory.cs" />
+    <Compile Include="IOrderedBidirList.cs" />
+    <Compile Include="IOrderedBidirListNode.cs" />
+    <Compile Include="Matching\Alternation.cs" />
+    <Compile Include="Matching\Constraint.cs" />
+    <Compile Include="Matching\Fluent\ExpressionBuilder.cs" />
+    <Compile Include="Matching\Fluent\GroupBuilder.cs" />
+    <Compile Include="Matching\Fluent\IAlternationExpressionSyntax.cs" />
+    <Compile Include="Matching\Fluent\IAlternationGroupSyntax.cs" />
+    <Compile Include="Matching\Fluent\IAlternationPatternSyntax.cs" />
+    <Compile Include="Matching\Fluent\IExpressionSyntax.cs" />
+    <Compile Include="Matching\Fluent\INodesExpressionSyntax.cs" />
+    <Compile Include="Matching\Fluent\INodesPatternSyntax.cs" />
+    <Compile Include="Matching\Fluent\IGroupSyntax.cs" />
+    <Compile Include="Matching\Fluent\IInitialNodesExpressionSyntax.cs" />
+    <Compile Include="Matching\Fluent\IInitialNodesPatternSyntax.cs" />
+    <Compile Include="Matching\Fluent\IPatternSyntax.cs" />
+    <Compile Include="Matching\Fluent\IQuantifierExpressionSyntax.cs" />
+    <Compile Include="Matching\Fluent\IQuantifierGroupSyntax.cs" />
+    <Compile Include="Matching\Fluent\IQuantifierPatternSyntax.cs" />
+    <Compile Include="Matching\Fluent\PatternBuilder.cs" />
+    <Compile Include="Matching\Fluent\PatternNodeBuilder.cs" />
+    <Compile Include="Matching\Expression.cs" />
+    <Compile Include="Matching\Group.cs" />
+    <Compile Include="Matching\Pattern.cs" />
+    <Compile Include="Matching\PatternMatch.cs" />
+    <Compile Include="Matching\PatternNode.cs" />
+    <Compile Include="Matching\Quantifier.cs" />
+    <Compile Include="NullableValue.cs" />
+    <Compile Include="ProjectionEqualityComparer.cs" />
+    <Compile Include="ReferenceEqualityComparer.cs" />
+    <Compile Include="Shape.cs" />
+    <Compile Include="ShapeNode.cs" />
+    <Compile Include="StringData.cs" />
+    <Compile Include="Transduction\DelegatePatternRuleAction.cs" />
+    <Compile Include="Transduction\IRule.cs" />
+    <Compile Include="Transduction\IPatternRuleAction.cs" />
+    <Compile Include="Transduction\NullPatternRuleAction.cs" />
+    <Compile Include="Transduction\ActionPatternRule.cs" />
+    <Compile Include="Transduction\PatternRule.cs" />
+    <Compile Include="Transduction\ActionPatternRuleBatch.cs" />
+    <Compile Include="Transduction\PatternRuleBatch.cs" />
+    <Compile Include="Transduction\DefaultRuleCascade.cs" />
+    <Compile Include="SkipList.cs" />
+    <Compile Include="SkipListNode.cs" />
+    <Compile Include="Span.cs" />
+    <Compile Include="IDBearerBase.cs" />
+    <Compile Include="IDBearerSet.cs" />
+    <Compile Include="IIDBearer.cs" />
+    <Compile Include="SpanFactory.cs" />
+    <Compile Include="Fsa\State.cs" />
+    <Compile Include="Annotation.cs" />
+    <Compile Include="Fsa\FiniteStateAutomaton.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Fsa\TagMapCommand.cs" />
+    <Compile Include="Fsa\Arc.cs" />
+    <Compile Include="Transduction\RuleCascade.cs" />
+    <Compile Include="Tuple.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
