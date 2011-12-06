@@ -1,5 +1,5 @@
 ﻿using System;
-using SIL.APRE.FeatureModel;
+using SIL.Machine.FeatureModel;
 
 namespace SIL.HermitCrab
 {

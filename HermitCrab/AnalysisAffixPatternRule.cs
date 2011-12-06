@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using SIL.APRE;
-using SIL.APRE.FeatureModel;
-using SIL.APRE.Matching;
-using SIL.APRE.Transduction;
+using SIL.Machine;
+using SIL.Machine.FeatureModel;
+using SIL.Machine.Matching;
+using SIL.Machine.Transduction;
 
 namespace SIL.HermitCrab
 {
@@ -98,10 +98,9 @@ namespace SIL.HermitCrab
 				var constraint = node as Constraint<Word, ShapeNode>;
 				if (constraint != null && constraint.Type == HCFeatureSystem.SegmentType)
 				{
-					var newNode = new ShapeNode(constraint.Type, _spanFactory, constraint.FeatureStruct.Clone());
-					newNode.Annotation.FeatureStruct.ReplaceVariables(varBindings);
-					newNode.Annotation.Optional = optional;
-					output.Shape.Add(newNode);
+					FeatureStruct fs = constraint.FeatureStruct.Clone();
+					fs.ReplaceVariables(varBindings);
+					output.Shape.Add(constraint.Type, fs, true);
 				}
 				else
 				{

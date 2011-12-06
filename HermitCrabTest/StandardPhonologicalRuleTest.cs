@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using SIL.APRE;
-using SIL.APRE.FeatureModel;
-using SIL.APRE.Matching;
-using SIL.APRE.Transduction;
 using SIL.HermitCrab;
+using SIL.Machine;
+using SIL.Machine.FeatureModel;
+using SIL.Machine.Matching;
+using SIL.Machine.Transduction;
 
 namespace HermitCrabTest
 {
@@ -17,14 +17,14 @@ namespace HermitCrabTest
 			var asp = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("asp+").Value;
 			var nonCons = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Value;
 
-			var lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSegmentDefinition("t").FeatureStruct).Value;
+			var lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSymbolDefinition("t").FeatureStruct).Value;
 			var rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
 			var rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
 			var leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, nonCons).Value;
 			var rightEnv = Expression<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
-			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSegmentDefinition("p").FeatureStruct).Value;
+			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("p").FeatureStruct).Value;
 			var rule2 = new StandardPhonologicalRule("rule2", SpanFactory, lhs);
 			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
 			leftEnv = Expression<Word, ShapeNode>.New().Value;
@@ -439,7 +439,7 @@ namespace HermitCrabTest
 			var rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRnd).Value;
 			var leftEnv = Expression<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, backRndVowel)
-				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetBoundaryDefinition("+").FeatureStruct).Value;
+				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct).Value;
 			var rightEnv = Expression<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
@@ -463,7 +463,7 @@ namespace HermitCrabTest
 			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unbackUnrnd).Value;
 			leftEnv = Expression<Word, ShapeNode>.New().Value;
 			rightEnv = Expression<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetBoundaryDefinition("+").FeatureStruct)
+				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct)
 				.Annotation(HCFeatureSystem.SegmentType, unbackUnrndVowel).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
@@ -526,20 +526,20 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("biib", input.ToString());
 
-			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSegmentDefinition("i").FeatureStruct).Value;
+			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("i").FeatureStruct).Value;
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
 			rhs = Expression<Word, ShapeNode>.New().Value;
 			leftEnv = Expression<Word, ShapeNode>.New().Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSegmentDefinition("b").FeatureStruct).Value;
+			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("b").FeatureStruct).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backVowel).Value;
 			var rule2 = new StandardPhonologicalRule("rule2", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSegmentDefinition("a").FeatureStruct).Value;
+			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("a").FeatureStruct).Value;
 			leftEnv = Expression<Word, ShapeNode>.New().Value;
 			rightEnv = Expression<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetBoundaryDefinition("+").FeatureStruct)
-				.Annotation(HCFeatureSystem.SegmentType, Table3.GetSegmentDefinition("b").FeatureStruct).Value;
+				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct)
+				.Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("b").FeatureStruct).Value;
 			rule2.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "bab") {Stratum = Morphophonemic};
@@ -563,10 +563,10 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("bub", input.ToString());
 
-			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSegmentDefinition("u").FeatureStruct).Value;
+			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("u").FeatureStruct).Value;
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
 			rhs = Expression<Word, ShapeNode>.New().Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSegmentDefinition("b").FeatureStruct).Value;
+			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("b").FeatureStruct).Value;
 			rightEnv = Expression<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
@@ -574,8 +574,8 @@ namespace HermitCrabTest
 			rule2 = new StandardPhonologicalRule("rule2", SpanFactory, lhs);
 			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, lowBack).Value;
 			leftEnv = Expression<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, Table3.GetSegmentDefinition("b").FeatureStruct)
-				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetBoundaryDefinition("+").FeatureStruct).Value;
+				.Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("b").FeatureStruct)
+				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct).Value;
 			rightEnv = Expression<Word, ShapeNode>.New().Value;
 			rule2.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
@@ -602,12 +602,12 @@ namespace HermitCrabTest
 
 			lhs = Expression<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, bilabialCons)
-				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetBoundaryDefinition("+").FeatureStruct)
+				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct)
 				.Annotation(HCFeatureSystem.SegmentType, bilabialCons).Value;
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
 			rhs = Expression<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, unvdUnasp)
-				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetBoundaryDefinition("+").FeatureStruct)
+				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct)
 				.Annotation(HCFeatureSystem.SegmentType, unvdUnasp).Value;
 			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
 			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
@@ -657,7 +657,7 @@ namespace HermitCrabTest
 			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
 			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.BoundaryType, Table3.GetBoundaryDefinition("+").FeatureStruct).Value;
+			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct).Value;
 			rightEnv = Expression<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
@@ -678,7 +678,7 @@ namespace HermitCrabTest
 			var vdLabFric = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("labiodental").Symbol("vd+").Symbol("strident+").Symbol("cont+").Value;
 
 			var lhs = Expression<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, Table1.GetSegmentDefinition("p").FeatureStruct).Value;
+				.Annotation(HCFeatureSystem.SegmentType, Table1.GetSymbolDefinition("p").FeatureStruct).Value;
 			var rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
 			var rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vdLabFric).Value;
 			var leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
@@ -702,7 +702,7 @@ namespace HermitCrabTest
 			Assert.AreEqual("b+?ubu", input.ToString());
 
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSegmentDefinition("v").FeatureStruct).Value;
+			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSymbolDefinition("v").FeatureStruct).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "buvu") {Stratum = Allophonic};
@@ -814,7 +814,7 @@ namespace HermitCrabTest
 
 			lhs = Expression<Word, ShapeNode>.New().Value;
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSegmentDefinition("f").FeatureStruct).Value;
+			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSymbolDefinition("f").FeatureStruct).Value;
 			leftEnv = Expression<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, vowel)
 					.Feature("high").EqualToVariable("a")
@@ -904,7 +904,7 @@ namespace HermitCrabTest
 			Assert.AreEqual("buibui", input.ToString());
 
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs) {ApplicationMode = ApplicationMode.Simultaneous};
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSegmentDefinition("i").FeatureStruct).Value;
+			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSymbolDefinition("i").FeatureStruct).Value;
 			leftEnv = Expression<Word, ShapeNode>.New().Value;
 			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
@@ -1014,7 +1014,7 @@ namespace HermitCrabTest
 
 			lhs = Expression<Word, ShapeNode>.New().Value;
 			var rule2 = new StandardPhonologicalRule("rule3", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSegmentDefinition("t").FeatureStruct).Value;
+			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSymbolDefinition("t").FeatureStruct).Value;
 			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
 			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
 			rule2.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
@@ -1218,22 +1218,22 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("bubu", input.ToString());
 
-			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSegmentDefinition("b").FeatureStruct).Value;
+			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("b").FeatureStruct).Value;
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
 			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, LeftSideFS).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.BoundaryType, Table3.GetBoundaryDefinition("+").FeatureStruct).Value;
+			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			lhs = Expression<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, Table3.GetSegmentDefinition("u").FeatureStruct)
-				.Annotation(HCFeatureSystem.SegmentType, Table3.GetSegmentDefinition("b").FeatureStruct)
-				.Annotation(HCFeatureSystem.SegmentType, Table3.GetSegmentDefinition("u").FeatureStruct).Value;
+				.Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("u").FeatureStruct)
+				.Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("b").FeatureStruct)
+				.Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("u").FeatureStruct).Value;
 			var rule2 = new StandardPhonologicalRule("rule2", SpanFactory, lhs);
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.BoundaryType, Table3.GetBoundaryDefinition("+").FeatureStruct).Value;
+			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct).Value;
 			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, RightSideFS).Value;
 			rule2.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
-			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSegmentDefinition("t").FeatureStruct).Value;
+			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("t").FeatureStruct).Value;
 			var rule3 = new StandardPhonologicalRule("rule3", SpanFactory, lhs);
 			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
 			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, nonCons).Value;

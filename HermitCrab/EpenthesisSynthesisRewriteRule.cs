@@ -1,6 +1,7 @@
-﻿using SIL.APRE;
-using SIL.APRE.FeatureModel;
-using SIL.APRE.Matching;
+﻿using System.Linq;
+using SIL.Machine;
+using SIL.Machine.FeatureModel;
+using SIL.Machine.Matching;
 
 namespace SIL.HermitCrab
 {
@@ -50,10 +51,12 @@ namespace SIL.HermitCrab
 			{
 				if (input.Shape.Count == 256)
 					throw new MorphException(MorphErrorCode.TooManySegs);
-				var constraint = (Constraint<Word, ShapeNode>)node;
-				ShapeNode newNode = CreateNodeFromConstraint(constraint, match.VariableBindings);
-				input.Shape.Insert(newNode, curNode, Direction);
-				curNode = newNode;
+				var constraint = (Constraint<Word, ShapeNode>) node;
+				if (match.VariableBindings.Values.OfType<SymbolicFeatureValue>().Where(value => value.Feature.DefaultValue.Equals(value)).Any())
+					throw new MorphException(MorphErrorCode.UninstantiatedFeature);
+				FeatureStruct fs = constraint.FeatureStruct.Clone();
+				fs.ReplaceVariables(match.VariableBindings);
+				curNode = input.Shape.Insert(curNode, constraint.Type, fs);
 			}
 
 			MarkSearchedNodes(startNode, curNode);

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using SIL.APRE;
-using SIL.APRE.FeatureModel;
+using SIL.Machine;
+using SIL.Machine.FeatureModel;
 
 namespace SIL.HermitCrab
 {

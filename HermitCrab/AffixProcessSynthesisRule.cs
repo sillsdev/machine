@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using SIL.APRE;
-using SIL.APRE.FeatureModel;
-using SIL.APRE.Transduction;
+using SIL.Machine;
+using SIL.Machine.FeatureModel;
+using SIL.Machine.Transduction;
 
 namespace SIL.HermitCrab
 {

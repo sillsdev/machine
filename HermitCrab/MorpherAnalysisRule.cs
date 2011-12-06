@@ -1,7 +1,7 @@
 ﻿using System.Linq;
-using SIL.APRE;
 using System.Collections.Generic;
-using SIL.APRE.Transduction;
+using SIL.Machine;
+using SIL.Machine.Transduction;
 
 namespace SIL.HermitCrab
 {

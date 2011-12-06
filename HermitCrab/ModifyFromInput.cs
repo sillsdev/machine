@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using SIL.APRE;
-using SIL.APRE.Matching;
+using SIL.Machine;
+using SIL.Machine.Matching;
 
 namespace SIL.HermitCrab
 {

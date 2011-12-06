@@ -1,4 +1,6 @@
-﻿namespace SIL.HermitCrab
+﻿using SIL.Machine;
+
+namespace SIL.HermitCrab
 {
 	/// <summary>
 	/// This class represents an allomorph in a lexical entry.

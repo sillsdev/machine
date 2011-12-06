@@ -1,11 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 using System.Xml.Schema;
-using SIL.APRE;
-using SIL.APRE.FeatureModel;
-using SIL.APRE.Matching;
+using SIL.Machine;
+using SIL.Machine.FeatureModel;
 
 namespace SIL.HermitCrab
 {
@@ -538,7 +536,7 @@ namespace SIL.HermitCrab
             string id = stratumNode.GetAttribute("id");
             string name = stratumNode.SelectSingleNode("Name").InnerText;
             Stratum stratum = new Stratum(id, name, _curMorpher);
-            stratum.CharacterDefinitionTable = GetCharDefTable(stratumNode.GetAttribute("characterDefinitionTable"));
+            stratum.SymbolDefinitionTable = GetCharDefTable(stratumNode.GetAttribute("characterDefinitionTable"));
             stratum.IsCyclic = stratumNode.GetAttribute("cyclicity") == "cyclic";
             stratum.PhonologicalRuleOrder = GetPRuleOrder(stratumNode.GetAttribute("phonologicalRuleOrder"));
             stratum.MorphologicalRuleOrder = GetMRuleOrder(stratumNode.GetAttribute("morphologicalRuleOrder"));
@@ -616,13 +614,13 @@ namespace SIL.HermitCrab
         {
             string alloId = alloNode.GetAttribute("id");
             string shapeStr = alloNode.SelectSingleNode("PhoneticShape").InnerText;
-            Shape shape = stratum.CharacterDefinitionTable.ToShape(shapeStr, ModeType.Synthesis);
+            Shape shape = stratum.SymbolDefinitionTable.ToShape(shapeStr, ModeType.Synthesis);
 			if (shape == null)
 			{
 				LoadException le = new LoadException(LoadException.LoadErrorType.InvalidEntryShape, this,
-					string.Format(HCStrings.kstidInvalidLexEntryShape, shapeStr, entry.ID, stratum.CharacterDefinitionTable.ID));
+					string.Format(HCStrings.kstidInvalidLexEntryShape, shapeStr, entry.ID, stratum.SymbolDefinitionTable.ID));
 				le.Data["shape"] = shapeStr;
-				le.Data["charDefTable"] = stratum.CharacterDefinitionTable.ID;
+				le.Data["charDefTable"] = stratum.SymbolDefinitionTable.ID;
 				le.Data["entry"] = entry.ID;
 				throw le;
 			}
@@ -827,7 +825,7 @@ namespace SIL.HermitCrab
         {
             string id = charDefTableNode.GetAttribute("id");
             string name = charDefTableNode.SelectSingleNode("Name").InnerText;
-            CharacterDefinitionTable charDefTable = null;
+            DefaultSymbolDefinitionTable charDefTable = null;
 
 #if IPA_CHAR_DEF_TABLE
             if (id == "ipa")
@@ -835,7 +833,7 @@ namespace SIL.HermitCrab
             else
                 charDefTable = new CharacterDefinitionTable(id, name, m_curMorpher);
 #else
-            charDefTable = new CharacterDefinitionTable(id, name, _curMorpher);
+            charDefTable = new DefaultSymbolDefinitionTable(id, name, _curMorpher);
 #endif
 
             charDefTable.Encoding = charDefTableNode.SelectSingleNode("Encoding").InnerText;
@@ -846,7 +844,7 @@ namespace SIL.HermitCrab
                 XmlElement segDefElem = segDefNode as XmlElement;
                 XmlElement repElem = segDefElem.SelectSingleNode("Representation") as XmlElement;
                 string strRep = repElem.InnerText;
-                charDefTable.AddSegmentDefinition(strRep, LoadFeatValues(segDefElem));
+                charDefTable.AddSymbolDefinition(strRep, LoadFeatValues(segDefElem));
                 m_repIds[repElem.GetAttribute("id")] = strRep;
             }
 
@@ -886,9 +884,9 @@ namespace SIL.HermitCrab
                 {
                     XmlElement segElem = segNode as XmlElement;
 
-                    CharacterDefinitionTable charDefTable = GetCharDefTable(segElem.GetAttribute("characterTable"));
+                    DefaultSymbolDefinitionTable charDefTable = GetCharDefTable(segElem.GetAttribute("characterTable"));
                     string strRep = m_repIds[segElem.GetAttribute("representation")];
-                    SegmentDefinition segDef = charDefTable.GetSegmentDefinition(strRep);
+                    SymbolDefinition segDef = charDefTable.GetSymbolDefinition(strRep);
                     if (_curMorpher.PhoneticFeatureSystem.HasFeatures)
                     {
                         if (fb == null)
@@ -1189,7 +1187,7 @@ namespace SIL.HermitCrab
                         break;
 
                     case "InsertSegments":
-                        CharacterDefinitionTable charDefTable = GetCharDefTable(partElem.GetAttribute("characterTable"));
+                        DefaultSymbolDefinitionTable charDefTable = GetCharDefTable(partElem.GetAttribute("characterTable"));
                         string shapeStr = partElem.SelectSingleNode("PhoneticShape").InnerText;
                         Shape pshape = charDefTable.ToShape(shapeStr, ModeType.Synthesis);
 						if (pshape == null)
@@ -1494,22 +1492,22 @@ namespace SIL.HermitCrab
         IEnumerable<PhoneticPatternNode> LoadBdryCtxt(XmlElement bdryNode)
         {
             string strRep = m_repIds[bdryNode.GetAttribute("representation")];
-            CharacterDefinitionTable charDefTable = GetCharDefTable(bdryNode.GetAttribute("characterTable"));
+            DefaultSymbolDefinitionTable charDefTable = GetCharDefTable(bdryNode.GetAttribute("characterTable"));
             BoundaryDefinition bdryDef = charDefTable.GetBoundaryDefinition(strRep);
             yield return new BoundaryContext(bdryDef);
         }
 
         IEnumerable<PhoneticPatternNode> LoadSegCtxt(XmlElement ctxtNode)
         {
-            CharacterDefinitionTable charDefTable = GetCharDefTable(ctxtNode.GetAttribute("characterTable"));
+            DefaultSymbolDefinitionTable charDefTable = GetCharDefTable(ctxtNode.GetAttribute("characterTable"));
             string strRep = m_repIds[ctxtNode.GetAttribute("representation")];
-            SegmentDefinition segDef = charDefTable.GetSegmentDefinition(strRep);
+            SymbolDefinition segDef = charDefTable.GetSymbolDefinition(strRep);
             yield return new SegmentContext(segDef);
         }
 
         IEnumerable<PhoneticPatternNode> LoadSegCtxts(XmlElement ctxtsNode)
         {
-            CharacterDefinitionTable charDefTable = GetCharDefTable(ctxtsNode.GetAttribute("characterTable"));
+            DefaultSymbolDefinitionTable charDefTable = GetCharDefTable(ctxtsNode.GetAttribute("characterTable"));
             string shapeStr = ctxtsNode.SelectSingleNode("PhoneticShape").InnerText;
             Shape shape = charDefTable.ToShape(shapeStr, ModeType.Synthesis);
 			if (shape == null)
@@ -1568,9 +1566,9 @@ namespace SIL.HermitCrab
             return pattern;
         }
 
-        CharacterDefinitionTable GetCharDefTable(string id)
+        DefaultSymbolDefinitionTable GetCharDefTable(string id)
         {
-            CharacterDefinitionTable charDefTable = _curMorpher.GetCharacterDefinitionTable(id);
+            DefaultSymbolDefinitionTable charDefTable = _curMorpher.GetCharacterDefinitionTable(id);
             if (charDefTable == null)
                 throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownCharDefTable, id), id);
             return charDefTable;

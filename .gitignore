@@ -29,7 +29,7 @@ _ReSharper*/
 [Tt]est[Rr]esult*
 
 .hg
-xml
+data
 tests
 doc
 zgrviewer

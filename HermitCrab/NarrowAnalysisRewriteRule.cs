@@ -1,6 +1,7 @@
-﻿using SIL.APRE;
-using SIL.APRE.Matching;
-using SIL.APRE.Transduction;
+﻿using SIL.Machine;
+using SIL.Machine.FeatureModel;
+using SIL.Machine.Matching;
+using SIL.Machine.Transduction;
 
 namespace SIL.HermitCrab
 {
@@ -56,11 +57,9 @@ namespace SIL.HermitCrab
 			ShapeNode curNode = startNode;
 			foreach (Constraint<Word, ShapeNode> constraint in _analysisRhs.Children)
 			{
-				var newNode = new ShapeNode(constraint.Type, _spanFactory, constraint.FeatureStruct.Clone());
-				newNode.Annotation.FeatureStruct.ReplaceVariables(match.VariableBindings);
-				newNode.Annotation.Optional = true;
-				input.Shape.Insert(newNode, curNode, Direction.LeftToRight);
-				curNode = newNode;
+				FeatureStruct fs = constraint.FeatureStruct.Clone();
+				fs.ReplaceVariables(match.VariableBindings);
+				curNode = input.Shape.Insert(curNode, constraint.Type, fs, true);
 			}
 
 			for (int i = 0; i < _targetCount; i++)

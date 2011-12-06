@@ -1,7 +1,7 @@
 ﻿using System.Linq;
-using SIL.APRE;
-using SIL.APRE.FeatureModel;
-using SIL.APRE.Matching;
+using SIL.Machine;
+using SIL.Machine.FeatureModel;
+using SIL.Machine.Matching;
 
 namespace SIL.HermitCrab
 {
@@ -26,9 +26,11 @@ namespace SIL.HermitCrab
 			foreach (PatternNode<Word, ShapeNode> node in _rhs.Children.GetNodes(Direction))
 			{
 				var constraint = (Constraint<Word, ShapeNode>) node;
-				ShapeNode newNode = CreateNodeFromConstraint(constraint, match.VariableBindings);
-				input.Shape.Insert(newNode, curNode, Direction);
-				curNode = newNode;
+				if (match.VariableBindings.Values.OfType<SymbolicFeatureValue>().Where(value => value.Feature.DefaultValue.Equals(value)).Any())
+					throw new MorphException(MorphErrorCode.UninstantiatedFeature);
+				FeatureStruct fs = constraint.FeatureStruct.Clone();
+				fs.ReplaceVariables(match.VariableBindings);
+				curNode = input.Shape.Insert(curNode, constraint.Type, fs);
 			}
 
 			ShapeNode matchStartNode = match.GetStart(Direction);

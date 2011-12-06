@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using SIL.APRE;
-using SIL.APRE.FeatureModel;
+using SIL.Machine;
+using SIL.Machine.FeatureModel;
 
 namespace SIL.HermitCrab
 {
@@ -9,7 +9,7 @@ namespace SIL.HermitCrab
     /// </summary>
     public class NaturalClass : IDBearerBase
     {
-        private readonly HashSet<SegmentDefinition> _segDefs;
+        private readonly HashSet<SymbolDefinition> _segDefs;
         private FeatureStruct _featureStruct;
         private FeatureStruct _antiFeatureStruct;
 
@@ -20,7 +20,7 @@ namespace SIL.HermitCrab
     	public NaturalClass(string id)
             : base(id)
         {
-            _segDefs = new HashSet<SegmentDefinition>();
+            _segDefs = new HashSet<SymbolDefinition>();
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace SIL.HermitCrab
         /// Gets the segment definitions.
         /// </summary>
         /// <value>The segment definitions.</value>
-        public IEnumerable<SegmentDefinition> SegmentDefinitions
+        public IEnumerable<SymbolDefinition> SegmentDefinitions
         {
             get
             {
@@ -80,7 +80,7 @@ namespace SIL.HermitCrab
         /// Adds the segment definition.
         /// </summary>
         /// <param name="segDef">The seg def.</param>
-        public void AddSegmentDefinition(SegmentDefinition segDef)
+        public void AddSegmentDefinition(SymbolDefinition segDef)
         {
             _segDefs.Add(segDef);
         }

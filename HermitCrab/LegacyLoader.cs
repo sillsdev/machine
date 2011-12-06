@@ -1,12 +1,10 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.IO;
-using SIL.APRE;
-using SIL.APRE.FeatureModel;
-using SIL.APRE.Matching;
+using SIL.Machine;
+using SIL.Machine.FeatureModel;
 
 namespace SIL.HermitCrab
 {
@@ -702,7 +700,7 @@ namespace SIL.HermitCrab
         {
             CheckCurMorpher();
             string name = charDefTableSpec.Get<string>("name");
-            CharacterDefinitionTable charDefTable = _curMorpher.GetCharacterDefinitionTable(name);
+            DefaultSymbolDefinitionTable charDefTable = _curMorpher.GetCharacterDefinitionTable(name);
             if (charDefTable == null)
             {
 #if IPA_CHAR_DEF_TABLE
@@ -711,7 +709,7 @@ namespace SIL.HermitCrab
                 else
                     charDefTable = new CharacterDefinitionTable(name, name, m_curMorpher);
 #else
-                charDefTable = new CharacterDefinitionTable(name, name, _curMorpher);
+                charDefTable = new DefaultSymbolDefinitionTable(name, name, _curMorpher);
 #endif
                 _curMorpher.AddCharacterDefinitionTable(charDefTable);
             }
@@ -724,7 +722,7 @@ namespace SIL.HermitCrab
             {
                 List<object> segDef = obj as List<object>;
                 string strRep = segDef[0] as string;
-                charDefTable.AddSegmentDefinition(strRep, LoadFeatValues((segDef[1] as List<object>)));
+                charDefTable.AddSymbolDefinition(strRep, LoadFeatValues((segDef[1] as List<object>)));
             }
 
             List<string> bdryDefs;
@@ -750,7 +748,7 @@ namespace SIL.HermitCrab
             {
                 case "ctable":
                     string tableName = stratumSetting.Get<string>("value");
-                    stratum.CharacterDefinitionTable = GetCharDefTable(tableName);
+                    stratum.SymbolDefinitionTable = GetCharDefTable(tableName);
                     break;
 
                 case "cyclicity":
@@ -995,13 +993,13 @@ namespace SIL.HermitCrab
             if (stratum == null)
                 throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownLexEntryStratum, id, stratumName), stratumName);
             entry.Stratum = stratum;
-            Shape pshape = stratum.CharacterDefinitionTable.ToShape(shapeStr, ModeType.SYNTHESIS);
+            Shape pshape = stratum.SymbolDefinitionTable.ToShape(shapeStr, ModeType.SYNTHESIS);
 			if (pshape == null)
 			{
 				LoadException le = new LoadException(LoadException.LoadErrorType.InvalidEntryShape, this,
-					string.Format(HCStrings.kstidInvalidLexEntryShape, shapeStr, id, stratum.CharacterDefinitionTable.ID));
+					string.Format(HCStrings.kstidInvalidLexEntryShape, shapeStr, id, stratum.SymbolDefinitionTable.ID));
 				le.Data["shape"] = shapeStr;
-				le.Data["charDefTable"] = stratum.CharacterDefinitionTable.ID;
+				le.Data["charDefTable"] = stratum.SymbolDefinitionTable.ID;
 				le.Data["entry"] = entry.ID;
 				throw le;
 			}
@@ -1132,8 +1130,8 @@ namespace SIL.HermitCrab
         {
             string strRep = segSpec.Get<string>("rep");
             string ctableName = segSpec.Get<string>("ctable");
-            CharacterDefinitionTable charDefTable = GetCharDefTable(ctableName);
-            SegmentDefinition segDef = charDefTable.GetSegmentDefinition(strRep);
+            DefaultSymbolDefinitionTable charDefTable = GetCharDefTable(ctableName);
+            SymbolDefinition segDef = charDefTable.GetSymbolDefinition(strRep);
             if (segDef == null)
                 throw CreateUndefinedObjectException(string.Format(HCStrings.kstidInvalidRuleSeg, strRep, ctableName), strRep);
             return new SegmentContext(segDef);
@@ -1143,7 +1141,7 @@ namespace SIL.HermitCrab
         {
             string strRep = bdrySpec.Get<string>("rep");
             string ctableName = bdrySpec.Get<string>("ctable");
-            CharacterDefinitionTable charDefTable = GetCharDefTable(ctableName);
+            DefaultSymbolDefinitionTable charDefTable = GetCharDefTable(ctableName);
             BoundaryDefinition bdryDef = charDefTable.GetBoundaryDefinition(strRep);
             return new BoundaryContext(bdryDef);
         }
@@ -1572,7 +1570,7 @@ namespace SIL.HermitCrab
                     {
                         string shapeStr = list[0] as string;
                         string ctableName = list[1] as string;
-                        CharacterDefinitionTable charDefTable = GetCharDefTable(ctableName);
+                        DefaultSymbolDefinitionTable charDefTable = GetCharDefTable(ctableName);
                         Shape pshape = charDefTable.ToShape(shapeStr, ModeType.SYNTHESIS);
 						if (pshape == null)
 						{
@@ -1667,9 +1665,9 @@ namespace SIL.HermitCrab
             return pos;
         }
 
-        CharacterDefinitionTable GetCharDefTable(string name)
+        DefaultSymbolDefinitionTable GetCharDefTable(string name)
         {
-            CharacterDefinitionTable charDefTable = _curMorpher.GetCharacterDefinitionTable(name);
+            DefaultSymbolDefinitionTable charDefTable = _curMorpher.GetCharacterDefinitionTable(name);
             if (charDefTable == null)
                 throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownCharDefTable, name), name);
             return charDefTable;

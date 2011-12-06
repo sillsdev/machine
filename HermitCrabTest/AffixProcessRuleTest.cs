@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using SIL.APRE.FeatureModel;
-using SIL.APRE.Matching;
 using SIL.HermitCrab;
+using SIL.Machine;
+using SIL.Machine.FeatureModel;
+using SIL.Machine.Matching;
 
 namespace HermitCrabTest
 {
@@ -80,7 +81,7 @@ namespace HermitCrabTest
 
 			Morphophonemic.AddMorphologicalRule(mrule2);
 
-			var lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSegmentDefinition("t").FeatureStruct).Value;
+			var lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("t").FeatureStruct).Value;
 			var prule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
 
 			var rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unasp).Value;

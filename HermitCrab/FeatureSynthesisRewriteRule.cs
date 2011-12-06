@@ -1,7 +1,7 @@
 ﻿using System;
-using SIL.APRE;
-using SIL.APRE.FeatureModel;
-using SIL.APRE.Matching;
+using SIL.Machine;
+using SIL.Machine.FeatureModel;
+using SIL.Machine.Matching;
 
 namespace SIL.HermitCrab
 {

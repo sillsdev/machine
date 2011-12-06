@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text;
-using SIL.APRE.FeatureModel;
+using SIL.Machine;
+using SIL.Machine.FeatureModel;
 
 namespace SIL.HermitCrab
 {
@@ -294,11 +295,11 @@ namespace SIL.HermitCrab
         	if (IsInput)
             {
                 return string.Format(HCStrings.kstidTraceStratumAnalysisIn, Stratum,
-                    _word.Stratum.CharacterDefinitionTable.ToRegexString(_word.Shape, Mode.Analysis, true));
+                    _word.Stratum.SymbolDefinitionTable.ToRegexString(_word.Shape, true));
             }
 
         	return string.Format(HCStrings.kstidTraceStratumAnalysisOut, Stratum,
-				_word.Stratum.CharacterDefinitionTable.ToRegexString(_word.Shape, Mode.Analysis, true));
+				_word.Stratum.SymbolDefinitionTable.ToRegexString(_word.Shape, true));
         }
     }
 
@@ -352,11 +353,11 @@ namespace SIL.HermitCrab
         	if (IsInput)
             {
                 return string.Format(HCStrings.kstidTraceStratumSynthesisIn, Stratum,
-                    _word.Stratum.CharacterDefinitionTable.ToString(_word.Shape, Mode.Synthesis, true));
+                    _word.Stratum.SymbolDefinitionTable.ToString(_word.Shape, true));
             }
 
         	return string.Format(HCStrings.kstidTraceStratumSynthesisOut, Stratum,
-				_word.Stratum.CharacterDefinitionTable.ToString(_word.Shape, Mode.Synthesis, true));
+				_word.Stratum.SymbolDefinitionTable.ToString(_word.Shape, true));
         }
     }
 
@@ -421,7 +422,7 @@ namespace SIL.HermitCrab
         public override string ToString(bool includeInputs)
         {
             return string.Format(HCStrings.kstidTraceLexLookup,
-                _stratum.CharacterDefinitionTable.ToRegexString(_shape, Mode.Analysis, true), _stratum);
+                _stratum.SymbolDefinitionTable.ToRegexString(_shape, true), _stratum);
         }
     }
 
@@ -509,7 +510,7 @@ namespace SIL.HermitCrab
             }
 
             return string.Format(HCStrings.kstidTraceWordSynthesis, _rootAllomorph.Morpheme,
-                _rootAllomorph.Morpheme.Stratum.CharacterDefinitionTable.ToString(_rootAllomorph.Shape, Mode.Synthesis, true),
+                _rootAllomorph.Morpheme.Stratum.SymbolDefinitionTable.ToString(_rootAllomorph.Shape, true),
                 sb, _rzFeatures);
         }
     }
@@ -599,12 +600,12 @@ namespace SIL.HermitCrab
     		if (includeInputs)
             {
                 return string.Format(HCStrings.kstidTracePhonologicalRuleAnalysisInputs, Rule,
-                    _input.Stratum.CharacterDefinitionTable.ToRegexString(_input.Shape, Mode.Analysis, true),
-					Output == null ? HCStrings.kstidTraceNoOutput : Output.Stratum.CharacterDefinitionTable.ToRegexString(Output.Shape, Mode.Analysis, true));
+                    _input.Stratum.SymbolDefinitionTable.ToRegexString(_input.Shape, true),
+					Output == null ? HCStrings.kstidTraceNoOutput : Output.Stratum.SymbolDefinitionTable.ToRegexString(Output.Shape, true));
             }
 
     		return string.Format(HCStrings.kstidTracePhonologicalRuleAnalysis, Rule,
-				Output == null ? HCStrings.kstidTraceNoOutput : Output.Stratum.CharacterDefinitionTable.ToRegexString(Output.Shape, Mode.Analysis, true));
+				Output == null ? HCStrings.kstidTraceNoOutput : Output.Stratum.SymbolDefinitionTable.ToRegexString(Output.Shape, true));
     	}
     }
 
@@ -663,12 +664,12 @@ namespace SIL.HermitCrab
     		if (includeInputs)
             {
                 return string.Format(HCStrings.kstidTracePhonologicalRuleSynthesisInputs, Rule,
-                    _input.Stratum.CharacterDefinitionTable.ToString(_input.Shape, Mode.Synthesis, true),
-					Output == null ? HCStrings.kstidTraceNoOutput : Output.Stratum.CharacterDefinitionTable.ToString(Output.Shape, Mode.Synthesis, true));
+                    _input.Stratum.SymbolDefinitionTable.ToString(_input.Shape, true),
+					Output == null ? HCStrings.kstidTraceNoOutput : Output.Stratum.SymbolDefinitionTable.ToString(Output.Shape, true));
             }
 
     		return string.Format(HCStrings.kstidTracePhonologicalRuleSynthesis, Rule,
-				Output == null ? HCStrings.kstidTraceNoOutput : Output.Stratum.CharacterDefinitionTable.ToString(Output.Shape, Mode.Synthesis, true));
+				Output == null ? HCStrings.kstidTraceNoOutput : Output.Stratum.SymbolDefinitionTable.ToString(Output.Shape, true));
     	}
     }
 
@@ -766,11 +767,11 @@ namespace SIL.HermitCrab
         	if (IsInput)
             {
                 return string.Format(HCStrings.kstidTraceTemplateAnalysisIn, Template,
-                    _word.Stratum.CharacterDefinitionTable.ToRegexString(_word.Shape, Mode.Analysis, true));
+                    _word.Stratum.SymbolDefinitionTable.ToRegexString(_word.Shape, true));
             }
 
         	return string.Format(HCStrings.kstidTraceTemplateAnalysisOut, Template,
-				(_word == null ? HCStrings.kstidTraceNoOutput : _word.Stratum.CharacterDefinitionTable.ToRegexString(_word.Shape, Mode.Analysis, true)));
+				(_word == null ? HCStrings.kstidTraceNoOutput : _word.Stratum.SymbolDefinitionTable.ToRegexString(_word.Shape, true)));
         }
     }
 
@@ -824,11 +825,11 @@ namespace SIL.HermitCrab
         	if (IsInput)
             {
                 return string.Format(HCStrings.kstidTraceTemplateSynthesisIn, Template,
-                    _word.Stratum.CharacterDefinitionTable.ToString(_word.Shape, Mode.Synthesis, true));
+                    _word.Stratum.SymbolDefinitionTable.ToString(_word.Shape, true));
             }
 
         	return string.Format(HCStrings.kstidTraceTemplateSynthesisOut, Template,
-				(_word == null ? HCStrings.kstidTraceNoOutput : _word.Stratum.CharacterDefinitionTable.ToString(_word.Shape, Mode.Synthesis, true)));
+				(_word == null ? HCStrings.kstidTraceNoOutput : _word.Stratum.SymbolDefinitionTable.ToString(_word.Shape, true)));
         }
     }
 
@@ -925,12 +926,12 @@ namespace SIL.HermitCrab
     		if (includeInputs)
             {
                 return string.Format(HCStrings.kstidTraceMorphologicalRuleAnalysisInputs, Rule,
-                    _input.Stratum.CharacterDefinitionTable.ToRegexString(_input.Shape, Mode.Analysis, true),
-                    (Output == null ? HCStrings.kstidTraceNoOutput : Output.Stratum.CharacterDefinitionTable.ToRegexString(Output.Shape, Mode.Analysis, true)));
+                    _input.Stratum.SymbolDefinitionTable.ToRegexString(_input.Shape, true),
+                    (Output == null ? HCStrings.kstidTraceNoOutput : Output.Stratum.SymbolDefinitionTable.ToRegexString(Output.Shape, true)));
             }
 
     		return string.Format(HCStrings.kstidTraceMorphologicalRuleAnalysis, Rule,
-				(Output == null ? HCStrings.kstidTraceNoOutput : Output.Stratum.CharacterDefinitionTable.ToRegexString(Output.Shape, Mode.Analysis, true)));
+				(Output == null ? HCStrings.kstidTraceNoOutput : Output.Stratum.SymbolDefinitionTable.ToRegexString(Output.Shape, true)));
     	}
     }
 
@@ -991,13 +992,13 @@ namespace SIL.HermitCrab
     		if (includeInputs)
             {
                 return string.Format(HCStrings.kstidTraceMorphologicalRuleSynthesisInputs, Rule,
-                    _input.Stratum.CharacterDefinitionTable.ToString(_input.Shape, Mode.Synthesis, true),
+                    _input.Stratum.SymbolDefinitionTable.ToString(_input.Shape, true),
                     (Output == null ? HCStrings.kstidTraceNoOutput
-                    : Output.Stratum.CharacterDefinitionTable.ToString(Output.Shape, Mode.Synthesis, true)));
+                    : Output.Stratum.SymbolDefinitionTable.ToString(Output.Shape, true)));
             }
 
     		return string.Format(HCStrings.kstidTraceMorphologicalRuleSynthesis, Rule,
-				(Output == null ? HCStrings.kstidTraceNoOutput : Output.Stratum.CharacterDefinitionTable.ToString(Output.Shape, Mode.Synthesis, true)));
+				(Output == null ? HCStrings.kstidTraceNoOutput : Output.Stratum.SymbolDefinitionTable.ToString(Output.Shape, true)));
     	}
     }
 
@@ -1123,7 +1124,7 @@ namespace SIL.HermitCrab
         public override string ToString(bool includeInputs)
         {
             return string.Format(HCStrings.kstidTraceReportSuccess,
-                _output.Stratum.CharacterDefinitionTable.ToString(_output.Shape, Mode.Synthesis, true));
+                _output.Stratum.SymbolDefinitionTable.ToString(_output.Shape, true));
         }
     }
 

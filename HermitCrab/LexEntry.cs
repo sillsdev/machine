@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text;
-using SIL.APRE.FeatureModel;
+using SIL.Machine.FeatureModel;
 
 namespace SIL.HermitCrab
 {
@@ -102,7 +102,7 @@ namespace SIL.HermitCrab
 			{
 				if (!firstItem)
 					sb.Append(", ");
-				sb.Append(Stratum.CharacterDefinitionTable.ToString(allomorph.Shape, Mode.Synthesis, true));
+				sb.Append(Stratum.SymbolDefinitionTable.ToString(allomorph.Shape, true));
 				firstItem = false;
 			}
 

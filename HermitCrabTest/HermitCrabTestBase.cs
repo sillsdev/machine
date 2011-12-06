@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 using NUnit.Framework;
-using SIL.APRE;
-using SIL.APRE.FeatureModel;
 using SIL.HermitCrab;
+using SIL.Machine;
+using SIL.Machine.FeatureModel;
 
 namespace HermitCrabTest
 {
@@ -10,9 +10,9 @@ namespace HermitCrabTest
 	public abstract class HermitCrabTestBase
 	{
 		protected SpanFactory<ShapeNode> SpanFactory;
-		protected CharacterDefinitionTable Table1;
-		protected CharacterDefinitionTable Table2;
-		protected CharacterDefinitionTable Table3;
+		protected SymbolDefinitionTable Table1;
+		protected SymbolDefinitionTable Table2;
+		protected SymbolDefinitionTable Table3;
 		protected FeatureStruct LeftSideFS;
 		protected FeatureStruct RightSideFS;
 
@@ -112,7 +112,7 @@ namespace HermitCrabTest
 						.Symbol("bar+", "+")
 						.Symbol("bar-", "-"))).Value;
 
-			Table1 = new CharacterDefinitionTable("table1", SpanFactory);
+			Table1 = new SymbolDefinitionTable("table1", SpanFactory);
 			AddSegDef(Table1, phoneticFeatSys, "a", "cons-", "voc+", "high-", "low+", "back+", "round-", "vd+");
 			AddSegDef(Table1, phoneticFeatSys, "i", "cons-", "voc+", "high+", "low-", "back-", "round-", "vd+");
 			AddSegDef(Table1, phoneticFeatSys, "u", "cons-", "voc+", "high+", "low-", "back+", "round+", "vd+");
@@ -138,7 +138,7 @@ namespace HermitCrabTest
 			AddSegDef(Table1, phoneticFeatSys, "f", "cons+", "voc-", "labiodental", "vd-", "asp-", "strident+", "cont+");
 			AddSegDef(Table1, phoneticFeatSys, "v", "cons+", "voc-", "labiodental", "vd+", "asp-", "strident+", "cont+");
 
-			Table2 = new CharacterDefinitionTable("table2", SpanFactory);
+			Table2 = new SymbolDefinitionTable("table2", SpanFactory);
 			AddSegDef(Table2, phoneticFeatSys, "a", "cons-", "voc+", "high-", "low+", "back+", "round-", "vd+");
 			AddSegDef(Table2, phoneticFeatSys, "i", "cons-", "voc+", "high+", "low-", "back-", "round-", "vd+");
 			AddSegDef(Table2, phoneticFeatSys, "u", "cons-", "voc+", "high+", "low-", "back+", "round+", "vd+");
@@ -158,13 +158,13 @@ namespace HermitCrabTest
 			AddSegDef(Table2, phoneticFeatSys, "z", "cons+", "voc-", "alveolar", "vd+", "asp-", "del_rel-", "strident+", "cont+");
 			AddSegDef(Table2, phoneticFeatSys, "f", "cons+", "voc-", "labiodental", "vd-", "asp-", "strident+", "cont+");
 			AddSegDef(Table2, phoneticFeatSys, "v", "cons+", "voc-", "labiodental", "vd+", "asp-", "strident+", "cont+");
-			Table2.AddBoundaryDefinition("+");
-			Table2.AddBoundaryDefinition("#");
-			Table2.AddBoundaryDefinition("!");
-			Table2.AddBoundaryDefinition(".");
-			Table2.AddBoundaryDefinition("$");
+			AddBdryDef(Table2, "+");
+			AddBdryDef(Table2, "#");
+			AddBdryDef(Table2, "!");
+			AddBdryDef(Table2, ".");
+			AddBdryDef(Table2, "$");
 
-			Table3 = new CharacterDefinitionTable("table3", SpanFactory);
+			Table3 = new SymbolDefinitionTable("table3", SpanFactory);
 			AddSegDef(Table3, phoneticFeatSys, "a", "cons-", "voc+", "high-", "low+", "back+", "round-", "vd+", "ATR+", "cont+");
 			AddSegDef(Table3, phoneticFeatSys, "a̘", "cons-", "voc+", "high-", "low+", "back+", "round-", "vd+", "ATR-", "cont+");
 			AddSegDef(Table3, phoneticFeatSys, "i", "cons-", "voc+", "high+", "low-", "back-", "round-", "vd+", "cont+");
@@ -186,10 +186,10 @@ namespace HermitCrabTest
 			AddSegDef(Table3, phoneticFeatSys, "z", "cons+", "voc-", "alveolar", "vd+", "asp-", "del_rel-", "strident+", "cont+");
 			AddSegDef(Table3, phoneticFeatSys, "f", "cons+", "voc-", "labiodental", "vd-", "asp-", "strident+", "cont+");
 			AddSegDef(Table3, phoneticFeatSys, "v", "cons+", "voc-", "labiodental", "vd+", "asp-", "strident+", "cont+");
-			Table3.AddBoundaryDefinition("+");
-			Table3.AddBoundaryDefinition("#");
-			Table3.AddBoundaryDefinition("!");
-			Table3.AddBoundaryDefinition(".");
+			AddBdryDef(Table3, "+");
+			AddBdryDef(Table3, "#");
+			AddBdryDef(Table3, "!");
+			AddBdryDef(Table3, ".");
 
 			LeftSideFS = FeatureStruct.New(HCFeatureSystem.Instance).Symbol(HCFeatureSystem.LeftSide).Value;
 			RightSideFS = FeatureStruct.New(HCFeatureSystem.Instance).Symbol(HCFeatureSystem.RightSide).Value;
@@ -314,7 +314,7 @@ namespace HermitCrabTest
 			if (gloss != null)
 				entry.Gloss = new Gloss(gloss);
 			Shape shape;
-			stratum.CharacterDefinitionTable.ToShape(word, out shape);
+			stratum.SymbolDefinitionTable.ToShape(word, out shape);
 			entry.AddAllomorph(new RootAllomorph(id, shape));
 			lexicon.AddEntry(entry);
 			stratum.AddEntry(entry);
@@ -325,7 +325,7 @@ namespace HermitCrabTest
 			AddEntry(lexicon, id, word, null, syntacticFS, stratum);
 		}
 
-		private void AddSegDef(CharacterDefinitionTable table, FeatureSystem phoneticFeatSys, string strRep, params string[] symbols)
+		private void AddSegDef(SymbolDefinitionTable table, FeatureSystem phoneticFeatSys, string strRep, params string[] symbols)
 		{
 			var fs = new FeatureStruct();
 			foreach (string symbolID in symbols)
@@ -333,7 +333,12 @@ namespace HermitCrabTest
 				FeatureSymbol symbol = phoneticFeatSys.GetSymbol(symbolID);
 				fs.AddValue(symbol.Feature, new SymbolicFeatureValue(symbol));
 			}
-			table.AddSegmentDefinition(strRep, fs);
+			table.AddSymbolDefinition(strRep, HCFeatureSystem.SegmentType, fs);
+		}
+
+		private void AddBdryDef(SymbolDefinitionTable table, string strRep)
+		{
+			table.AddSymbolDefinition(strRep, HCFeatureSystem.BoundaryType, FeatureStruct.New(HCFeatureSystem.Instance).Feature(HCFeatureSystem.StrRep).EqualTo(strRep).Value);
 		}
 	}
 }

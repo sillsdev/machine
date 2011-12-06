@@ -83,10 +83,6 @@
     <Compile Include="NarrowAnalysisRewriteRule.cs" />
     <Compile Include="NarrowSynthesisRewriteRule.cs" />
     <Compile Include="RootAllomorph.cs" />
-    <Compile Include="ShapeNode.cs" />
-    <Compile Include="Shape.cs" />
-    <Compile Include="BoundaryDefinition.cs" />
-    <Compile Include="CharacterDefinitionTable.cs" />
     <Compile Include="LexEntry.cs" />
     <Compile Include="LexFamily.cs" />
     <Compile Include="MorphException.cs" />
@@ -94,7 +90,7 @@
     <Compile Include="MprFeatureSet.cs" />
     <Compile Include="PartOfSpeech.cs" />
     <Compile Include="PhonologicalRule.cs" />
-    <Compile Include="SegmentDefinition.cs" />
+    <Compile Include="SymbolDefinition.cs" />
     <Compile Include="SegmentDefinitionTrie.cs" />
     <Compile Include="Slot.cs" />
     <None Include="CompoundingRule.cs" />
@@ -122,6 +118,7 @@
     <Compile Include="Stratum.cs" />
     <Compile Include="AffixProcessSynthesisRule.cs" />
     <Compile Include="MorpherAnalysisRule.cs" />
+    <Compile Include="SymbolDefinitionTable.cs" />
     <Compile Include="SynthesisAffixPatternRule.cs" />
     <Compile Include="SynthesisRewriteRuleBatch.cs" />
     <Compile Include="SynthesisRewriteRule.cs" />
@@ -165,9 +162,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\APRE\APRE.csproj">
+    <ProjectReference Include="..\Machine\Machine.csproj">
       <Project>{8C9AB5D2-22CA-4559-ABB0-83E97D7F0E58}</Project>
-      <Name>APRE</Name>
+      <Name>Machine</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

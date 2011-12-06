@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Xml;
-using SIL.APRE;
-using SIL.APRE.Matching;
 
 namespace SIL.HermitCrab
 {
@@ -104,7 +102,7 @@ namespace SIL.HermitCrab
 					var llTrace = (LexLookupTrace) trace;
 					_xmlWriter.WriteStartElement(llTrace.GetType().Name);
 					_xmlWriter.WriteElementString("Stratum", llTrace.Stratum.Description);
-					_xmlWriter.WriteElementString("Shape", llTrace.Stratum.CharacterDefinitionTable.ToRegexString(llTrace.Shape,
+					_xmlWriter.WriteElementString("Shape", llTrace.Stratum.SymbolDefinitionTable.ToRegexString(llTrace.Shape,
 						ModeType.Analysis, true));
 					break;
 

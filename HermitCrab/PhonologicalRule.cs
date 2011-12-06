@@ -1,5 +1,5 @@
-﻿using SIL.APRE;
-using SIL.APRE.Transduction;
+﻿using SIL.Machine;
+using SIL.Machine.Transduction;
 
 namespace SIL.HermitCrab
 {

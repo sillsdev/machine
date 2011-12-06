@@ -52,13 +52,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\APRE\APRE.csproj">
-      <Project>{8C9AB5D2-22CA-4559-ABB0-83E97D7F0E58}</Project>
-      <Name>APRE</Name>
-    </ProjectReference>
     <ProjectReference Include="..\HermitCrab\HermitCrab.csproj">
       <Project>{9E140FCF-0265-481B-B9A0-B0E7BCD3E814}</Project>
       <Name>HermitCrab</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Machine\Machine.csproj">
+      <Project>{8C9AB5D2-22CA-4559-ABB0-83E97D7F0E58}</Project>
+      <Name>Machine</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

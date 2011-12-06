@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SIL.APRE;
-using SIL.APRE.FeatureModel;
+using SIL.Machine;
+using SIL.Machine.FeatureModel;
 
 namespace SIL.HermitCrab
 {
@@ -691,7 +691,7 @@ namespace SIL.HermitCrab
 			var matchList = new List<Word>();
 			foreach (Word match in validWords.GroupBy(validWord => validWord.Morphs, new MorphsEqualityComparer())
 				.Select(group => group.MaxBy(validWord => validWord.Morphs, new MorphsComparer()))
-				.Where(validWord => SurfaceStratum.CharacterDefinitionTable.IsMatch(word, validWord.Shape)))
+				.Where(validWord => SurfaceStratum.SymbolDefinitionTable.IsMatch(word, validWord.Shape)))
 			{
 				matchList.Add(match);
 			}

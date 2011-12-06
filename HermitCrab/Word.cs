@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using SIL.APRE;
-using SIL.APRE.FeatureModel;
+using SIL.Machine;
+using SIL.Machine.FeatureModel;
 
 namespace SIL.HermitCrab
 {
@@ -31,12 +31,12 @@ namespace SIL.HermitCrab
 		public Word(Stratum stratum, string word)
 		{
 			Stratum = stratum;
-			if (!stratum.CharacterDefinitionTable.ToShape(word, out _shape))
+			if (!stratum.SymbolDefinitionTable.ToShape(word, out _shape))
 			{
 				var me = new MorphException(MorphErrorCode.InvalidShape,
-					string.Format(HCStrings.kstidInvalidWord, word, stratum.CharacterDefinitionTable.ID));
+					string.Format(HCStrings.kstidInvalidWord, word, stratum.SymbolDefinitionTable.ID));
 				me.Data["shape"] = word;
-				me.Data["charDefTable"] = stratum.CharacterDefinitionTable.ID;
+				me.Data["charDefTable"] = stratum.SymbolDefinitionTable.ID;
 			}
 			SyntacticFeatureStruct = new FeatureStruct();
 			_mrules = new Stack<MorphologicalRule>();
@@ -48,7 +48,7 @@ namespace SIL.HermitCrab
 		public Word(Word word)
 		{
 			Stratum = word.Stratum;
-			_shape = new Shape(word._shape.SpanFactory);
+			_shape = new Shape(word._shape.SpanFactory, word._shape.Begin.Clone(), word._shape.End.Clone());
 			_allomorphs = new IDBearerSet<Allomorph>();
 			word.CopyTo(word._shape.First, word._shape.Last, this);
 			SyntacticFeatureStruct = word.SyntacticFeatureStruct.Clone();
@@ -190,7 +190,7 @@ namespace SIL.HermitCrab
 
 		public override string ToString()
 		{
-			return Stratum.CharacterDefinitionTable.ToRegexString(Shape, Mode.Analysis, true);
+			return Stratum.SymbolDefinitionTable.ToRegexString(Shape, true);
 		}
 	}
 }

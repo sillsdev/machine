@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using SIL.HermitCrab;
+using SIL.Machine;
 
 namespace SIL.HermitCrab
 {

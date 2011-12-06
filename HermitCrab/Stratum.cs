@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
-using SIL.APRE;
-using SIL.APRE.FeatureModel;
-using SIL.APRE.Matching;
-using SIL.APRE.Transduction;
+using SIL.Machine;
+using SIL.Machine.FeatureModel;
+using SIL.Machine.Matching;
+using SIL.Machine.Transduction;
 
 namespace SIL.HermitCrab
 {
@@ -18,7 +18,7 @@ namespace SIL.HermitCrab
         /// </summary>
         public const string SurfaceStratumID = "surface";
 
-        private readonly CharacterDefinitionTable _charDefTable;
+        private readonly SymbolDefinitionTable _symDefTable;
 
     	private readonly List<MorphologicalRule> _mrules;
         private readonly List<PhonologicalRule> _prules;
@@ -40,11 +40,11 @@ namespace SIL.HermitCrab
     	/// Initializes a new instance of the <see cref="Stratum"/> class.
     	/// </summary>
     	/// <param name="id">The ID.</param>
-    	/// <param name="charDefTable"></param>
-    	public Stratum(string id, CharacterDefinitionTable charDefTable)
+    	/// <param name="symDefTable"></param>
+    	public Stratum(string id, SymbolDefinitionTable symDefTable)
             : base(id)
     	{
-    		_charDefTable = charDefTable;
+    		_symDefTable = symDefTable;
 
             _mrules = new List<MorphologicalRule>();
             _prules = new List<PhonologicalRule>();
@@ -60,7 +60,7 @@ namespace SIL.HermitCrab
             _templates = new IDBearerSet<AffixTemplate>();
 
 			_entries = new IDBearerSet<LexEntry>();
-			_entriesPattern = new Pattern<Shape, ShapeNode>(charDefTable.SpanFactory)
+			_entriesPattern = new Pattern<Shape, ShapeNode>(symDefTable.SpanFactory)
 			                  	{
 			                  		Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType),
 									Quasideterministic = true
@@ -68,14 +68,14 @@ namespace SIL.HermitCrab
         }
 
         /// <summary>
-        /// Gets or sets the character definition table.
+        /// Gets the symbol definition table.
         /// </summary>
-        /// <value>The character definition table.</value>
-        public CharacterDefinitionTable CharacterDefinitionTable
+        /// <value>The symbol definition table.</value>
+        public SymbolDefinitionTable SymbolDefinitionTable
         {
             get
             {
-                return _charDefTable;
+                return _symDefTable;
             }
         }
 

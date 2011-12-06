@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Linq;
-using SIL.APRE;
-using SIL.APRE.FeatureModel;
-using SIL.APRE.Matching;
-using SIL.APRE.Transduction;
+using SIL.Machine;
+using SIL.Machine.FeatureModel;
+using SIL.Machine.Matching;
+using SIL.Machine.Transduction;
 
 namespace SIL.HermitCrab
 {
 	public abstract class SynthesisRewriteRule : PatternRule<Word, ShapeNode>
 	{
-		private readonly SpanFactory<ShapeNode> _spanFactory;
 		private readonly FeatureStruct _requiredSyntacticFS;
 
 		protected SynthesisRewriteRule(SpanFactory<ShapeNode> spanFactory, Expression<Word, ShapeNode> lhs,
@@ -20,7 +18,6 @@ namespace SIL.HermitCrab
 		{
 			ApplicationMode = ApplicationMode.Iterative;
 
-			_spanFactory = spanFactory;
 			_requiredSyntacticFS = requiredSyntacticFS;
 
 			if (leftEnv.Children.Count > 0)
@@ -69,15 +66,6 @@ namespace SIL.HermitCrab
 				foreach (ShapeNode node in startNode.GetNodes(endNode, Direction))
 					node.Annotation.FeatureStruct.AddValue(HCFeatureSystem.Backtrack, HCFeatureSystem.Searched);
 			}
-		}
-
-		protected ShapeNode CreateNodeFromConstraint(Constraint<Word, ShapeNode> constraint, VariableBindings varBindings)
-		{
-			if (varBindings.Values.OfType<SymbolicFeatureValue>().Where(value => value.Feature.DefaultValue.Equals(value)).Any())
-				throw new MorphException(MorphErrorCode.UninstantiatedFeature);
-			var newNode = new ShapeNode(constraint.Type, _spanFactory, constraint.FeatureStruct.Clone());
-			newNode.Annotation.FeatureStruct.ReplaceVariables(varBindings);
-			return newNode;
 		}
 	}
 }
