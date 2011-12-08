@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using SIL.HermitCrab;
 using SIL.Machine;
 using SIL.Machine.FeatureModel;
@@ -24,7 +23,7 @@ namespace HermitCrabTest
 		[TestFixtureSetUp]
 		public void FixtureSetUp()
 		{
-			SpanFactory = new SpanFactory<ShapeNode>((x, y) => x.CompareTo(y), (start, end) => start.GetNodes(end).Count(), true);
+			SpanFactory = new ShapeSpanFactory();
 			var phoneticFeatSys = FeatureSystem.New()
 				.SymbolicFeature("voc", voc => voc
 					.Symbol("voc+", "+")
@@ -191,12 +190,12 @@ namespace HermitCrabTest
 			AddBdryDef(Table3, "!");
 			AddBdryDef(Table3, ".");
 
-			LeftSideFS = FeatureStruct.New(HCFeatureSystem.Instance).Symbol(HCFeatureSystem.LeftSide).Value;
-			RightSideFS = FeatureStruct.New(HCFeatureSystem.Instance).Symbol(HCFeatureSystem.RightSide).Value;
+			LeftSideFS = FeatureStruct.New().Symbol(HCFeatureSystem.LeftSide).Value;
+			RightSideFS = FeatureStruct.New().Symbol(HCFeatureSystem.RightSide).Value;
 
-			Morphophonemic = new Stratum("morphophonemic", Table3) {Description = "Morphophonemic"};
-			Allophonic = new Stratum("allophonic", Table1) {Description = "Allophonic"};
-			Surface = new Stratum(Stratum.SurfaceStratumID, Table1) {Description = "Surface"};
+			Morphophonemic = new Stratum("morphophonemic", SpanFactory, Table3) {Description = "Morphophonemic"};
+			Allophonic = new Stratum("allophonic", SpanFactory, Table1) {Description = "Allophonic"};
+			Surface = new Stratum(Stratum.SurfaceStratumID, SpanFactory, Table1) {Description = "Surface"};
 
 			var lexicon = new Lexicon();
 			var fs = FeatureStruct.New(syntacticFeatSys)
@@ -338,7 +337,7 @@ namespace HermitCrabTest
 
 		private void AddBdryDef(SymbolDefinitionTable table, string strRep)
 		{
-			table.AddSymbolDefinition(strRep, HCFeatureSystem.BoundaryType, FeatureStruct.New(HCFeatureSystem.Instance).Feature(HCFeatureSystem.StrRep).EqualTo(strRep).Value);
+			table.AddSymbolDefinition(strRep, HCFeatureSystem.BoundaryType, FeatureStruct.New().Feature(HCFeatureSystem.StrRep).EqualTo(strRep).Value);
 		}
 	}
 }

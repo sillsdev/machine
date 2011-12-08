@@ -6,17 +6,17 @@ namespace SIL.HermitCrab
 {
 	public class AffixProcessAllomorph : Allomorph
 	{
-		private readonly List<Expression<Word, ShapeNode>> _lhs;
+		private readonly List<Pattern<Word, ShapeNode>> _lhs;
 		private readonly List<MorphologicalOutput> _rhs;
 
 		public AffixProcessAllomorph(string id)
 			: base(id)
 		{
-			_lhs = new List<Expression<Word, ShapeNode>>();
+			_lhs = new List<Pattern<Word, ShapeNode>>();
 			_rhs = new List<MorphologicalOutput>();
 		}
 
-		public IList<Expression<Word, ShapeNode>> Lhs
+		public IList<Pattern<Word, ShapeNode>> Lhs
 		{
 			get { return _lhs; }
 		}

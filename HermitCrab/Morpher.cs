@@ -676,15 +676,11 @@ namespace SIL.HermitCrab
 			var validWords = new HashSet<Word>();
 			foreach (Word analysisWord in analysisOutput)
 			{
-				IEnumerable<Word> lexLookupOutput;
-				if (LexicalLookup(analysisWord, out lexLookupOutput))
+				foreach (Word synthesisWord in LexicalLookup(analysisWord))
 				{
-					foreach (Word synthesisWord in lexLookupOutput)
-					{
-						IEnumerable<Word> synthesisOutput;
-						if (_synthesisRule.Apply(synthesisWord, out synthesisOutput))
-							validWords.UnionWith(synthesisOutput);
-					}
+					IEnumerable<Word> synthesisOutput;
+					if (_synthesisRule.Apply(synthesisWord, out synthesisOutput))
+						validWords.UnionWith(synthesisOutput);
 				}
 			}
 
@@ -730,32 +726,21 @@ namespace SIL.HermitCrab
 			}
 		}
 
-		private bool LexicalLookup(Word input, out IEnumerable<Word> output)
+		private IEnumerable<Word> LexicalLookup(Word input)
 		{
-			IEnumerable<LexEntry> entries;
-			if (input.Stratum.SearchEntries(input.Shape, out entries))
+			foreach (LexEntry entry in input.Stratum.SearchEntries(input.Shape))
 			{
-				var outputList = new List<Word>();
-				foreach (LexEntry entry in entries)
+				foreach (RootAllomorph allomorph in entry.Allomorphs)
 				{
-					foreach (RootAllomorph allomorph in entry.Allomorphs)
-					{
-						Word newWord = input.Clone();
-						newWord.Root = entry;
-						newWord.SyntacticFeatureStruct = entry.SyntacticFeatureStruct.Clone();
-						newWord.Shape.Clear();
-						allomorph.Shape.CopyTo(allomorph.Shape.First, allomorph.Shape.Last, newWord.Shape);
-						newWord.MarkMorph(newWord.Shape.First, newWord.Shape.Last, allomorph);
-						outputList.Add(newWord);
-					}
+					Word newWord = input.Clone();
+					newWord.Root = entry;
+					newWord.SyntacticFeatureStruct = entry.SyntacticFeatureStruct.Clone();
+					newWord.Shape.Clear();
+					allomorph.Shape.CopyTo(allomorph.Shape.First, allomorph.Shape.Last, newWord.Shape);
+					newWord.MarkMorph(newWord.Shape.First, newWord.Shape.Last, allomorph);
+					yield return newWord;
 				}
-
-				output = outputList;
-				return true;
 			}
-
-			output = null;
-			return false;
 		}
     }
 }

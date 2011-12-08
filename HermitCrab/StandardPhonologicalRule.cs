@@ -1,4 +1,5 @@
-﻿using SIL.Machine;
+﻿using System.Collections.Generic;
+using SIL.Machine;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Transduction;
@@ -10,45 +11,28 @@ namespace SIL.HermitCrab
     /// </summary>
     public class StandardPhonologicalRule : PhonologicalRule
     {
-    	private readonly AnalysisRewriteRuleCascade _analysisRule;
-    	private readonly SynthesisRewriteRuleBatch _synthesisRule;
-		private readonly Expression<Word, ShapeNode> _lhs;
+    	private readonly List<AnalysisRewriteRuleSpec> _analysisRuleSpecs;
+    	private AnalysisRewriteRule _analysisRule;
+    	private readonly List<SynthesisRewriteRuleSpec> _synthesisRuleSpecs; 
+    	private SynthesisRewriteRule _synthesisRule;
+		private readonly Pattern<Word, ShapeNode> _lhs;
     	private readonly SpanFactory<ShapeNode> _spanFactory; 
 
-    	public StandardPhonologicalRule(string id, SpanFactory<ShapeNode> spanFactory, Expression<Word, ShapeNode> lhs)
+    	public StandardPhonologicalRule(string id, SpanFactory<ShapeNode> spanFactory, Pattern<Word, ShapeNode> lhs)
 			: base(id)
     	{
+			ApplicationMode = ApplicationMode.Iterative;
     		_lhs = lhs;
     		_spanFactory = spanFactory;
-			_analysisRule = new AnalysisRewriteRuleCascade();
-			_synthesisRule = new SynthesisRewriteRuleBatch(spanFactory);
+			_analysisRuleSpecs = new List<AnalysisRewriteRuleSpec>();
+			_synthesisRuleSpecs = new List<SynthesisRewriteRuleSpec>();
     	}
 
-    	public Direction Direction
-    	{
-			get { return _synthesisRule.Direction; }
-			set
-			{
-				_synthesisRule.Direction = value;
-				_analysisRule.SynthesisDirection = value;
-			}
-    	}
+		public Direction Direction { get; set; }
 
-    	public ApplicationMode ApplicationMode
-    	{
-    		get { return _synthesisRule.ApplicationMode; }
-    		set
-    		{
-    			_synthesisRule.ApplicationMode = value;
-    			_analysisRule.SynthesisApplicationMode = value;
-    		}
-    	}
+		public ApplicationMode ApplicationMode { get; set; }
 
-    	public int DelReapplications
-    	{
-			get { return _analysisRule.DelReapplications; }
-			set { _analysisRule.DelReapplications = value; }
-    	}
+		public int DelReapplications { get; set; }
 
 		public override IRule<Word, ShapeNode> AnalysisRule
     	{
@@ -62,27 +46,27 @@ namespace SIL.HermitCrab
 
 		public override void Compile()
 		{
-			_analysisRule.Compile();
-			_synthesisRule.Lhs.Compile();
+			_synthesisRule = new SynthesisRewriteRule(_spanFactory, _synthesisRuleSpecs, ApplicationMode, Direction);
+			_analysisRule = new AnalysisRewriteRule(_spanFactory, _analysisRuleSpecs, ApplicationMode, Direction, DelReapplications);
 		}
 
-		public void AddSubrule(Expression<Word, ShapeNode> rhs, Expression<Word, ShapeNode> leftEnv,
-			Expression<Word, ShapeNode> rightEnv, FeatureStruct requiredSyntacticFS)
+		public void AddSubrule(Pattern<Word, ShapeNode> rhs, Pattern<Word, ShapeNode> leftEnv,
+			Pattern<Word, ShapeNode> rightEnv, FeatureStruct requiredSyntacticFS)
 		{
 			if (_lhs.Children.Count == rhs.Children.Count)
 			{
-				_synthesisRule.AddSubrule(new FeatureSynthesisRewriteRule(_spanFactory, _lhs, rhs, leftEnv, rightEnv, requiredSyntacticFS));
-				_analysisRule.AddSubrule(new FeatureAnalysisRewriteRule(_spanFactory, _lhs, rhs, leftEnv, rightEnv) {SynthesisApplicationMode = ApplicationMode, SynthesisDirection = Direction});
+				_synthesisRuleSpecs.Add(new FeatureSynthesisRewriteRuleSpec(_lhs, rhs, leftEnv, rightEnv, requiredSyntacticFS));
+				_analysisRuleSpecs.Add(new FeatureAnalysisRewriteRuleSpec(_lhs, rhs, leftEnv, rightEnv));
 			}
 			else if (_lhs.Children.Count > rhs.Children.Count)
 			{
-				_synthesisRule.AddSubrule(new NarrowSynthesisRewriteRule(_spanFactory, _lhs, rhs, leftEnv, rightEnv, requiredSyntacticFS));
-				_analysisRule.AddSubrule(new NarrowAnalysisRewriteRule(_spanFactory, _lhs, rhs, leftEnv, rightEnv) {SynthesisApplicationMode = ApplicationMode, SynthesisDirection = Direction});
+				_synthesisRuleSpecs.Add(new NarrowSynthesisRewriteRuleSpec(_lhs, rhs, leftEnv, rightEnv, requiredSyntacticFS));
+				_analysisRuleSpecs.Add(new NarrowAnalysisRewriteRuleSpec(_lhs, rhs, leftEnv, rightEnv));
 			}
 			else if (_lhs.Children.Count == 0)
 			{
-				_synthesisRule.AddSubrule(new EpenthesisSynthesisRewriteRule(_spanFactory, _lhs, rhs, leftEnv, rightEnv, requiredSyntacticFS));
-				_analysisRule.AddSubrule(new EpenthesisAnalysisRewriteRule(_spanFactory, rhs, leftEnv, rightEnv) {SynthesisApplicationMode = ApplicationMode, SynthesisDirection = Direction});
+				_synthesisRuleSpecs.Add(new EpenthesisSynthesisRewriteRuleSpec(_lhs, rhs, leftEnv, rightEnv, requiredSyntacticFS));
+				_analysisRuleSpecs.Add(new EpenthesisAnalysisRewriteRuleSpec(rhs, leftEnv, rightEnv));
 			}
 		}
     }

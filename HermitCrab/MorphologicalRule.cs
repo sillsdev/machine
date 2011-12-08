@@ -30,6 +30,8 @@ namespace SIL.HermitCrab
 		public abstract IRule<Word, ShapeNode> AnalysisRule { get; }
 
 		public abstract IRule<Word, ShapeNode> SynthesisRule { get; }
+
+    	public abstract void Compile();
     }
 
 }

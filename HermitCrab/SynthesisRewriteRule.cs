@@ -1,71 +1,37 @@
-﻿using System;
+﻿using System.Linq;
+using System.Collections.Generic;
 using SIL.Machine;
-using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Transduction;
 
 namespace SIL.HermitCrab
 {
-	public abstract class SynthesisRewriteRule : PatternRule<Word, ShapeNode>
+	public class SynthesisRewriteRule : PatternRule<Word, ShapeNode>
 	{
-		private readonly FeatureStruct _requiredSyntacticFS;
-
-		protected SynthesisRewriteRule(SpanFactory<ShapeNode> spanFactory, Expression<Word, ShapeNode> lhs,
-			Expression<Word, ShapeNode> leftEnv, Expression<Word, ShapeNode> rightEnv, FeatureStruct requiredSyntacticFS)
-			: base(new Pattern<Word, ShapeNode>(spanFactory) {UseDefaultsForMatching = true,
-				Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.BoundaryType, HCFeatureSystem.AnchorType),
-				Acceptable = (input, match) => CheckTarget(match, lhs)})
+		public SynthesisRewriteRule(SpanFactory<ShapeNode> spanFactory, IEnumerable<SynthesisRewriteRuleSpec> ruleSpecs,
+			ApplicationMode appMode, Direction dir)
+			: base(spanFactory, new BatchPatternRuleSpec<Word, ShapeNode>(ruleSpecs.Cast<IPatternRuleSpec<Word, ShapeNode>>()),
+			appMode, new MatcherSettings<ShapeNode>
+			         	{
+			         		Direction = dir,
+							Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.BoundaryType, HCFeatureSystem.AnchorType),
+							UseDefaultsForMatching = true
+			         	})
 		{
-			ApplicationMode = ApplicationMode.Iterative;
-
-			_requiredSyntacticFS = requiredSyntacticFS;
-
-			if (leftEnv.Children.Count > 0)
-			{
-				Lhs.Children.Add(new Group<Word, ShapeNode>("leftEnv", leftEnv.Children.Clone()));
-			}
-
-			var target = new Group<Word, ShapeNode>("target");
-			foreach (Constraint<Word, ShapeNode> constraint in lhs.Children)
-			{
-				var newConstraint = (Constraint<Word, ShapeNode>)constraint.Clone();
-				newConstraint.FeatureStruct.AddValue(HCFeatureSystem.Backtrack, HCFeatureSystem.NotSearched);
-				target.Children.Add(newConstraint);
-			}
-			Lhs.Children.Add(target);
-			if (rightEnv.Children.Count > 0)
-			{
-				Lhs.Children.Add(new Group<Word, ShapeNode>("rightEnv", rightEnv.Children.Clone()));
-			}
 		}
 
-		private static bool CheckTarget(PatternMatch<ShapeNode> match, Expression<Word, ShapeNode> lhs)
+		public override bool Apply(Word input, out IEnumerable<Word> output)
 		{
-			Span<ShapeNode> target;
-			if (match.TryGetGroup("target", out target))
+			if (base.Apply(input, out output))
 			{
-				foreach (Tuple<ShapeNode, PatternNode<Word, ShapeNode>> tuple in target.Start.GetNodes(target.End).Zip(lhs.Children))
+				if (ApplicationMode == ApplicationMode.Iterative)
 				{
-					var constraints = (Constraint<Word, ShapeNode>) tuple.Item2;
-					if (tuple.Item1.Annotation.Type != constraints.Type)
-						return false;
+					foreach (Annotation<ShapeNode> ann in input.Annotations)
+						ann.FeatureStruct.RemoveValue(HCFeatureSystem.Backtrack);
 				}
+				return true;
 			}
-			return true;
-		}
-
-		public override bool IsApplicable(Word input)
-		{
-			return input.SyntacticFeatureStruct.IsUnifiable(_requiredSyntacticFS);
-		}
-
-		protected void MarkSearchedNodes(ShapeNode startNode, ShapeNode endNode)
-		{
-			if (ApplicationMode == ApplicationMode.Iterative)
-			{
-				foreach (ShapeNode node in startNode.GetNodes(endNode, Direction))
-					node.Annotation.FeatureStruct.AddValue(HCFeatureSystem.Backtrack, HCFeatureSystem.Searched);
-			}
+			return false;
 		}
 	}
 }

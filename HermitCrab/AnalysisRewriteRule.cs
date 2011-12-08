@@ -1,51 +1,98 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using SIL.Machine;
 using SIL.Machine.Matching;
 using SIL.Machine.Transduction;
 
 namespace SIL.HermitCrab
 {
-	public enum AnalysisReapplyType
+	public class AnalysisRewriteRule : RuleCascade<Word, ShapeNode>
 	{
-		Normal,
-		Deletion,
-		SelfOpaquing
-	}
+		private readonly ApplicationMode _synthesisAppMode;
+		private readonly int _delReapplications;
 
-	public abstract class AnalysisRewriteRule : PatternRule<Word, ShapeNode>
-	{
-		protected AnalysisRewriteRule(SpanFactory<ShapeNode> spanFactory)
-			: base(new Pattern<Word, ShapeNode>(spanFactory) {Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType)})
+		public AnalysisRewriteRule(SpanFactory<ShapeNode> spanFactory, IEnumerable<AnalysisRewriteRuleSpec> ruleSpecs,
+			ApplicationMode synthesisAppMode, Direction synthesisDir, int delReapplications)
+			: base(CreateRules(spanFactory, ruleSpecs, synthesisDir))
 		{
+			_synthesisAppMode = synthesisAppMode;
+			_delReapplications = delReapplications;
 		}
 
-		public abstract AnalysisReapplyType AnalysisReapplyType { get; }
-
-		public virtual Direction SynthesisDirection { get; set; }
-
-		public virtual ApplicationMode SynthesisApplicationMode { get; set; }
-
-		protected void AddEnvironment(string name, Expression<Word, ShapeNode> env)
+		private static IEnumerable<IRule<Word, ShapeNode>> CreateRules(SpanFactory<ShapeNode> spanFactory,
+			IEnumerable<AnalysisRewriteRuleSpec> ruleSpecs, Direction dir)
 		{
-			if (env.Children.Count == 0)
-				return;
-
-			Lhs.Children.Add(new Group<Word, ShapeNode>(name,
-				env.Children.Where(node => !(node is Constraint<Word, ShapeNode>) || ((Constraint<Word, ShapeNode>)node).Type != HCFeatureSystem.BoundaryType).Clone()));
-		}
-
-		protected void MarkSearchedNodes(ShapeNode startNode, ShapeNode endNode)
-		{
-			if (ApplicationMode == ApplicationMode.Iterative)
+			foreach (AnalysisRewriteRuleSpec ruleSpec in ruleSpecs)
 			{
-				foreach (ShapeNode node in startNode.GetNodes(endNode, Lhs.Direction))
-					node.Annotation.FeatureStruct.AddValue(HCFeatureSystem.Backtrack, HCFeatureSystem.Searched);
+				var rule = new PatternRule<Word, ShapeNode>(spanFactory, ruleSpec, ruleSpec.ApplicationMode,
+					new MatcherSettings<ShapeNode>
+						{
+							Direction = dir == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight,
+							Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType)
+						});
+				yield return rule;
 			}
 		}
 
-		public override bool IsApplicable(Word input)
+		public override bool Apply(Word input, out IEnumerable<Word> output)
 		{
-			return true;
+			bool result = base.Apply(input, out output);
+
+			return result;
+		}
+
+		protected override bool ApplyRule(IRule<Word, ShapeNode> rule, Word input, out IEnumerable<Word> output)
+		{
+			output = null;
+			var rewriteRule = (PatternRule<Word, ShapeNode>) rule;
+			switch (((AnalysisRewriteRuleSpec) rewriteRule.RuleSpec).GetAnalysisReapplyType(_synthesisAppMode))
+			{
+				case AnalysisReapplyType.Normal:
+					{
+						IEnumerable<Word> result;
+						if (base.ApplyRule(rewriteRule, input, out result))
+						{
+							if (rewriteRule.ApplicationMode == ApplicationMode.Iterative)
+								RemoveSearchedValue(input);
+							output = result;
+						}
+					}
+					break;
+
+				case AnalysisReapplyType.Deletion:
+					{
+						int i = 0;
+						IEnumerable<Word> result;
+						while (i <= _delReapplications && base.ApplyRule(rewriteRule, input, out result))
+						{
+							input = result.Single();
+							output = input.ToEnumerable();
+							i++;
+						}
+					}
+					break;
+
+				case AnalysisReapplyType.SelfOpaquing:
+					{
+						IEnumerable<Word> result;
+						while (base.ApplyRule(rewriteRule, input, out result))
+						{
+							if (rewriteRule.ApplicationMode == ApplicationMode.Iterative)
+								RemoveSearchedValue(input);
+							input = result.Single();
+							output = input.ToEnumerable();
+						}
+					}
+					break;
+			}
+
+			return output != null;
+		}
+
+		private void RemoveSearchedValue(IData<ShapeNode> input)
+		{
+			foreach (Annotation<ShapeNode> ann in input.Annotations)
+				ann.FeatureStruct.RemoveValue(HCFeatureSystem.Backtrack);
 		}
 	}
 }

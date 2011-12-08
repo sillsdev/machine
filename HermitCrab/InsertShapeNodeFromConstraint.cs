@@ -15,12 +15,12 @@ namespace SIL.HermitCrab
 			_constraint = constraint;
 		}
 
-		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IList<Expression<Word, ShapeNode>> lhs)
+		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IList<Pattern<Word, ShapeNode>> lhs)
 		{
 			analysisLhs.Children.Add(_constraint.Clone());
 		}
 
-		public override void Apply(PatternMatch<ShapeNode> match, Word input, Word output, Allomorph allomorph)
+		public override void Apply(Match<Word, ShapeNode> match, Word output, Allomorph allomorph)
 		{
 			if (match.VariableBindings.Values.OfType<SymbolicFeatureValue>().Where(value => value.Feature.DefaultValue.Equals(value)).Any())
 				throw new MorphException(MorphErrorCode.UninstantiatedFeature);

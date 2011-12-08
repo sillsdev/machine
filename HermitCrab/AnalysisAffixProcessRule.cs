@@ -1,23 +1,31 @@
 ﻿using System.Collections.Generic;
 using SIL.Machine;
+using SIL.Machine.Matching;
 using SIL.Machine.Transduction;
 
 namespace SIL.HermitCrab
 {
-	public class AffixProcessAnalysisRule : RuleCascade<Word, ShapeNode>
+	public class AnalysisAffixProcessRule : RuleCascade<Word, ShapeNode>
 	{
-		private readonly SpanFactory<ShapeNode> _spanFactory;
 		private readonly AffixProcessRule _rule;
 
-		public AffixProcessAnalysisRule(SpanFactory<ShapeNode> spanFactory, AffixProcessRule rule)
+		public AnalysisAffixProcessRule(SpanFactory<ShapeNode> spanFactory, AffixProcessRule rule)
+			: base(CreateRules(spanFactory, rule))
 		{
-			_spanFactory = spanFactory;
 			_rule = rule;
 		}
 
-		public void AddAllomorph(AffixProcessAllomorph allomorph)
+		private static IEnumerable<IRule<Word, ShapeNode>> CreateRules(SpanFactory<ShapeNode> spanFactory, AffixProcessRule rule)
 		{
-			InsertRuleInternal(Rules.Count, new AnalysisAffixPatternRule(_spanFactory, allomorph));
+			foreach (AffixProcessAllomorph allo in rule.Allomorphs)
+			{
+				var ruleSpec = new AnalysisAffixPatternRuleSpec(allo);
+				yield return new PatternRule<Word, ShapeNode>(spanFactory, ruleSpec, ApplicationMode.Multiple,
+					new MatcherSettings<ShapeNode>
+						{
+							Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType)
+						});
+			}
 		}
 
 		public override bool IsApplicable(Word input)

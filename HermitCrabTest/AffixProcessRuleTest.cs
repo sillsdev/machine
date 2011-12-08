@@ -24,7 +24,7 @@ namespace HermitCrabTest
 			var mrule1 = new AffixProcessRule("s_suffix", SpanFactory);
 			
 			var allomorph = new AffixProcessAllomorph("allo1");
-			allomorph.Lhs.Add(Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, any).OneOrMore.Annotation(HCFeatureSystem.SegmentType, strident).Value);
+			allomorph.Lhs.Add(Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, any).OneOrMore.Annotation(HCFeatureSystem.SegmentType, strident).Value);
 
 			Shape shape;
 			allomorph.Rhs.Add(new CopyFromInput(0));
@@ -33,7 +33,7 @@ namespace HermitCrabTest
 			mrule1.AddAllomorph(allomorph);
 
 			allomorph = new AffixProcessAllomorph("allo2");
-			allomorph.Lhs.Add(Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, any).OneOrMore.Annotation(HCFeatureSystem.SegmentType, voicelessCons).Value);
+			allomorph.Lhs.Add(Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, any).OneOrMore.Annotation(HCFeatureSystem.SegmentType, voicelessCons).Value);
 
 			allomorph.Rhs.Add(new CopyFromInput(0));
 			Table3.ToShape("s", out shape);
@@ -41,7 +41,7 @@ namespace HermitCrabTest
 			mrule1.AddAllomorph(allomorph);
 
 			allomorph = new AffixProcessAllomorph("allo3");
-			allomorph.Lhs.Add(Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, any).OneOrMore.Value);
+			allomorph.Lhs.Add(Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, any).OneOrMore.Value);
 
 			allomorph.Rhs.Add(new CopyFromInput(0));
 			Table3.ToShape("z", out shape);
@@ -53,8 +53,8 @@ namespace HermitCrabTest
 			var mrule2 = new AffixProcessRule("ed_suffix", SpanFactory);
 
 			allomorph = new AffixProcessAllomorph("allo4");
-			allomorph.Lhs.Add(Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, any).OneOrMore.Value);
-			allomorph.Lhs.Add(Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, alvStop).Value);
+			allomorph.Lhs.Add(Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, any).OneOrMore.Value);
+			allomorph.Lhs.Add(Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, alvStop).Value);
 
 			allomorph.Rhs.Add(new CopyFromInput(0));
 			allomorph.Rhs.Add(new CopyFromInput(1));
@@ -63,7 +63,7 @@ namespace HermitCrabTest
 			mrule2.AddAllomorph(allomorph);
 
 			allomorph = new AffixProcessAllomorph("allo5");
-			allomorph.Lhs.Add(Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, any).OneOrMore.Annotation(HCFeatureSystem.SegmentType, voicelessCons).Value);
+			allomorph.Lhs.Add(Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, any).OneOrMore.Annotation(HCFeatureSystem.SegmentType, voicelessCons).Value);
 
 			allomorph.Rhs.Add(new CopyFromInput(0));
 			Table3.ToShape("+t", out shape);
@@ -71,7 +71,7 @@ namespace HermitCrabTest
 			mrule2.AddAllomorph(allomorph);
 
 			allomorph = new AffixProcessAllomorph("allo6");
-			allomorph.Lhs.Add(Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, any).OneOrMore.Value);
+			allomorph.Lhs.Add(Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, any).OneOrMore.Value);
 
 			allomorph.Rhs.Add(new CopyFromInput(0));
 			Table3.ToShape("+", out shape);
@@ -81,12 +81,12 @@ namespace HermitCrabTest
 
 			Morphophonemic.AddMorphologicalRule(mrule2);
 
-			var lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("t").FeatureStruct).Value;
+			var lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("t").FeatureStruct).Value;
 			var prule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
 
-			var rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unasp).Value;
-			var leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			var rightEnv = Expression<Word, ShapeNode>.New().Value;
+			var rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unasp).Value;
+			var leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
+			var rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			prule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			Allophonic.AddPhonologicalRule(prule1);

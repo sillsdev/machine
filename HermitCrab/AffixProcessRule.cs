@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using SIL.Machine;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Transduction;
@@ -11,14 +12,17 @@ namespace SIL.HermitCrab
     /// </summary>
     public class AffixProcessRule : MorphologicalRule
     {
-    	private readonly AffixProcessAnalysisRule _analysisRule;
-    	private readonly AffixProcessSynthesisRule _synthesisRule;
+    	private readonly SpanFactory<ShapeNode> _spanFactory; 
+    	private readonly List<AffixProcessAllomorph> _allomorphs; 
+
+    	private AnalysisAffixProcessRule _analysisRule;
+    	private SynthesisAffixProcessRule _synthesisRule;
 
     	public AffixProcessRule(string id, SpanFactory<ShapeNode> spanFactory)
 			: base(id)
     	{
-			_analysisRule = new AffixProcessAnalysisRule(spanFactory, this);
-			_synthesisRule = new AffixProcessSynthesisRule(spanFactory, this);
+    		_spanFactory = spanFactory;
+			_allomorphs = new List<AffixProcessAllomorph>();
 
     		MaxApplicationCount = 1;
     		RequiredSyntacticFeatureStruct = new FeatureStruct();
@@ -31,6 +35,11 @@ namespace SIL.HermitCrab
 
 		public FeatureStruct OutSyntacticFeatureStruct { get; set; }
 
+    	public IEnumerable<AffixProcessAllomorph> Allomorphs
+    	{
+    		get { return _allomorphs; }
+    	}
+
 		public override IRule<Word, ShapeNode> AnalysisRule
 		{
 			get { return _analysisRule; }
@@ -41,11 +50,16 @@ namespace SIL.HermitCrab
 			get { return _synthesisRule; }
     	}
 
-		public void AddAllomorph(AffixProcessAllomorph allomorph)
+    	public override void Compile()
+    	{
+			_analysisRule = new AnalysisAffixProcessRule(_spanFactory, this);
+			_synthesisRule = new SynthesisAffixProcessRule(_spanFactory, this);
+    	}
+
+    	public void AddAllomorph(AffixProcessAllomorph allomorph)
 		{
 			allomorph.Morpheme = this;
-			_analysisRule.AddAllomorph(allomorph);
-			_synthesisRule.AddAllomorph(allomorph);
+			_allomorphs.Add(allomorph);
 		}
     }
 }

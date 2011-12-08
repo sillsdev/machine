@@ -13,7 +13,7 @@ namespace SIL.HermitCrab
 			_shape = shape;
 		}
 
-		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IList<Expression<Word, ShapeNode>> lhs)
+		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IList<Pattern<Word, ShapeNode>> lhs)
 		{
 			foreach (ShapeNode node in _shape)
 			{
@@ -22,7 +22,7 @@ namespace SIL.HermitCrab
 			}
 		}
 
-		public override void Apply(PatternMatch<ShapeNode> match, Word input, Word output, Allomorph allomorph)
+		public override void Apply(Match<Word, ShapeNode> match, Word output, Allomorph allomorph)
 		{
 			Span<ShapeNode> outputSpan = _shape.CopyTo(_shape.SpanFactory.Create(_shape.First, _shape.Last), output.Shape);
 			if (allomorph != null)

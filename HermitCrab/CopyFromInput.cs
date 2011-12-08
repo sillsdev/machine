@@ -18,16 +18,16 @@ namespace SIL.HermitCrab
 			get { return _index; }
 		}
 
-		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IList<Expression<Word, ShapeNode>> lhs)
+		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IList<Pattern<Word, ShapeNode>> lhs)
 		{
-			Expression<Word, ShapeNode> expr = lhs[_index];
-			analysisLhs.Children.Add(new Group<Word, ShapeNode>(_index.ToString(), expr.Children.Clone()));
+			Pattern<Word, ShapeNode> pattern = lhs[_index];
+			analysisLhs.Children.Add(new Group<Word, ShapeNode>(_index.ToString(), pattern.Children.Clone()));
 		}
 
-		public override void Apply(PatternMatch<ShapeNode> match, Word input, Word output, Allomorph allomorph)
+		public override void Apply(Match<Word, ShapeNode> match, Word output, Allomorph allomorph)
 		{
-			Span<ShapeNode> inputSpan = match[_index.ToString()];
-			Span<ShapeNode> outputSpan = input.CopyTo(inputSpan, output);
+			GroupCapture<ShapeNode> inputGroup = match[_index.ToString()];
+			Span<ShapeNode> outputSpan = match.Input.CopyTo(inputGroup.Span, output);
 			if (allomorph != null && Reduplication)
 				output.MarkMorph(outputSpan, allomorph);
 		}

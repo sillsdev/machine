@@ -17,18 +17,18 @@ namespace HermitCrabTest
 			var asp = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("asp+").Value;
 			var nonCons = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Value;
 
-			var lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSymbolDefinition("t").FeatureStruct).Value;
+			var lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSymbolDefinition("t").FeatureStruct).Value;
 			var rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			var rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
-			var leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, nonCons).Value;
-			var rightEnv = Expression<Word, ShapeNode>.New().Value;
+			var rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
+			var leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, nonCons).Value;
+			var rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
-			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("p").FeatureStruct).Value;
+			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("p").FeatureStruct).Value;
 			var rule2 = new StandardPhonologicalRule("rule2", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, nonCons).Value;
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, nonCons).Value;
 			rule2.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			IEnumerable<Word> output;
@@ -86,15 +86,15 @@ namespace HermitCrabTest
 			var cons = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Value;
 			var lowVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("low+").Value;
 
-			var lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
+			var lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
 			var rule = new StandardPhonologicalRule("rule", SpanFactory, lhs);
-			var rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRnd).Value;
-			var leftEnv = Expression<Word, ShapeNode>.New()
+			var rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRnd).Value;
+			var leftEnv = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, rndVowel)
 				.Annotation(HCFeatureSystem.SegmentType, cons)
 				.Annotation(HCFeatureSystem.SegmentType, lowVowel)
 				.Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			var rightEnv = Expression<Word, ShapeNode>.New().Value;
+			var rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 			
 			IEnumerable<Word> output;
@@ -115,8 +115,8 @@ namespace HermitCrabTest
 			Assert.AreEqual("bubabu", input.ToString());
 
 			rule = new StandardPhonologicalRule("rule", SpanFactory, lhs);
-			leftEnv = Expression<Word, ShapeNode>.New().Value;
-			rightEnv = Expression<Word, ShapeNode>.New()
+			leftEnv = Pattern<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, cons)
 				.Annotation(HCFeatureSystem.SegmentType, lowVowel)
 				.Annotation(HCFeatureSystem.SegmentType, cons)
@@ -147,11 +147,11 @@ namespace HermitCrabTest
 			var vlUnasp = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("vd-").Symbol("asp-").Value;
 			var vowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Value;
 
-			var lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
+			var lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
 			var rule = new StandardPhonologicalRule("rule", SpanFactory, lhs);
-			var rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vlUnasp).Value;
-			var leftEnv = Expression<Word, ShapeNode>.New().Value;
-			var rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, RightSideFS).Value;
+			var rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vlUnasp).Value;
+			var leftEnv = Pattern<Word, ShapeNode>.New().Value;
+			var rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, RightSideFS).Value;
 			rule.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			IEnumerable<Word> output;
@@ -178,7 +178,7 @@ namespace HermitCrabTest
 			Assert.AreEqual("ga+?p", input.ToString());
 
 			rule = new StandardPhonologicalRule("rule", SpanFactory, lhs);
-			rightEnv = Expression<Word, ShapeNode>.New()
+			rightEnv = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, vowel)
 				.Annotation(HCFeatureSystem.SegmentType, cons)
 				.Annotation(HCFeatureSystem.AnchorType, RightSideFS).Value;
@@ -201,8 +201,8 @@ namespace HermitCrabTest
 			Assert.AreEqual("ka+?b", input.ToString());
 
 			rule = new StandardPhonologicalRule("rule", SpanFactory, lhs);
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, LeftSideFS).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, LeftSideFS).Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "kab") {Stratum = Morphophonemic};
@@ -222,7 +222,7 @@ namespace HermitCrabTest
 			Assert.AreEqual("ka+?b", input.ToString());
 
 			rule = new StandardPhonologicalRule("rule", SpanFactory, lhs);
-			leftEnv = Expression<Word, ShapeNode>.New()
+			leftEnv = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.AnchorType, LeftSideFS)
 				.Annotation(HCFeatureSystem.SegmentType, cons).Annotation(HCFeatureSystem.SegmentType, vowel).Value;
 			rule.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
@@ -260,21 +260,21 @@ namespace HermitCrabTest
 			var rndVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("round+").Value;
 			var backRndVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("back+").Symbol("round+").Value;
 
-			var lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
+			var lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
 			var rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			var rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRnd).Value;
-			var leftEnv = Expression<Word, ShapeNode>.New().Value;
-			var rightEnv = Expression<Word, ShapeNode>.New()
+			var rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRnd).Value;
+			var leftEnv = Pattern<Word, ShapeNode>.New().Value;
+			var rightEnv = Pattern<Word, ShapeNode>.New()
 				.Group(g => g.Annotation(HCFeatureSystem.SegmentType, cons).Annotation(HCFeatureSystem.SegmentType, lowVowel)).LazyRange(1, 2)
 				.Annotation(HCFeatureSystem.SegmentType, cons).Annotation(HCFeatureSystem.SegmentType, rndVowel).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			var rule2 = new StandardPhonologicalRule("rule2", SpanFactory, lhs);
-			leftEnv = Expression<Word, ShapeNode>.New()
+			leftEnv = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, rndVowel)
 				.Group(g => g.Annotation(HCFeatureSystem.SegmentType, cons).Annotation(HCFeatureSystem.SegmentType, lowVowel)).LazyRange(1, 2)
 				.Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule2.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			IEnumerable<Word> output;
@@ -351,7 +351,7 @@ namespace HermitCrabTest
 			Assert.AreEqual("bubabababu", input.ToString());
 
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRndVowel).Annotation(HCFeatureSystem.SegmentType, highVowel).LazyRange(0, 2).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRndVowel).Annotation(HCFeatureSystem.SegmentType, highVowel).LazyRange(0, 2).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "buuubuuu") {Stratum = Allophonic};
@@ -373,11 +373,11 @@ namespace HermitCrabTest
 			var backRndVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("back+").Symbol("round+").Value;
 			var t = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("alveolar").Symbol("del_rel-").Symbol("asp-").Symbol("vd-").Symbol("strident-").Value;
 
-			var lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
+			var lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
 			var rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			var rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRnd).Annotation(HCFeatureSystem.SegmentType, backRnd).Value;
-			var leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRndVowel).Value;
-			var rightEnv = Expression<Word, ShapeNode>.New().Value;
+			var rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRnd).Annotation(HCFeatureSystem.SegmentType, backRnd).Value;
+			var leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRndVowel).Value;
+			var rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			IEnumerable<Word> output;
@@ -391,10 +391,10 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("buuubuuu", input.ToString());
 
-			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, t).Value;
+			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, t).Value;
 			var rule2 = new StandardPhonologicalRule("rule2", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRndVowel).Value;
+			rhs = Pattern<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRndVowel).Value;
 			rule2.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "buuubuuu") {Stratum = Allophonic};
@@ -434,13 +434,13 @@ namespace HermitCrabTest
 			var cons = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("voc-").Value;
 			var asp = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("asp+").Value;
 
-			var lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
+			var lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
 			var rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			var rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRnd).Value;
-			var leftEnv = Expression<Word, ShapeNode>.New()
+			var rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRnd).Value;
+			var leftEnv = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, backRndVowel)
 				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct).Value;
-			var rightEnv = Expression<Word, ShapeNode>.New().Value;
+			var rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			IEnumerable<Word> output;
@@ -460,9 +460,9 @@ namespace HermitCrabTest
 			Assert.AreEqual("buib", input.ToString());
 
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unbackUnrnd).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Value;
-			rightEnv = Expression<Word, ShapeNode>.New()
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unbackUnrnd).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct)
 				.Annotation(HCFeatureSystem.SegmentType, unbackUnrndVowel).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
@@ -483,9 +483,9 @@ namespace HermitCrabTest
 			Assert.AreEqual("buib", input.ToString());
 
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRnd).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRndVowel).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Value;
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRnd).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRndVowel).Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "buub") {Stratum = Morphophonemic};
@@ -505,9 +505,9 @@ namespace HermitCrabTest
 			Assert.AreEqual("buub", input.ToString());
 
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unbackUnrnd).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unbackUnrndVowel).Value;
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unbackUnrnd).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unbackUnrndVowel).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "biib") {Stratum = Morphophonemic};
@@ -526,18 +526,18 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("biib", input.ToString());
 
-			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("i").FeatureStruct).Value;
+			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("i").FeatureStruct).Value;
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("b").FeatureStruct).Value;
+			rhs = Pattern<Word, ShapeNode>.New().Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("b").FeatureStruct).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
-			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backVowel).Value;
+			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backVowel).Value;
 			var rule2 = new StandardPhonologicalRule("rule2", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("a").FeatureStruct).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Value;
-			rightEnv = Expression<Word, ShapeNode>.New()
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("a").FeatureStruct).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct)
 				.Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("b").FeatureStruct).Value;
 			rule2.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
@@ -563,20 +563,20 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("bub", input.ToString());
 
-			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("u").FeatureStruct).Value;
+			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("u").FeatureStruct).Value;
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("b").FeatureStruct).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Value;
+			rhs = Pattern<Word, ShapeNode>.New().Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("b").FeatureStruct).Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
-			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unrndVowel).Value;
+			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unrndVowel).Value;
 			rule2 = new StandardPhonologicalRule("rule2", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, lowBack).Value;
-			leftEnv = Expression<Word, ShapeNode>.New()
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, lowBack).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("b").FeatureStruct)
 				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule2.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "bab") {Stratum = Morphophonemic};
@@ -600,17 +600,17 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("bib", input.ToString());
 
-			lhs = Expression<Word, ShapeNode>.New()
+			lhs = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, bilabialCons)
 				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct)
 				.Annotation(HCFeatureSystem.SegmentType, bilabialCons).Value;
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New()
+			rhs = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, unvdUnasp)
 				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct)
 				.Annotation(HCFeatureSystem.SegmentType, unvdUnasp).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "appa") {Stratum = Morphophonemic};
@@ -628,15 +628,15 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("abba", input.ToString());
 
-			lhs = Expression<Word, ShapeNode>.New()
+			lhs = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, bilabialCons)
 				.Annotation(HCFeatureSystem.SegmentType, bilabialCons).Value;
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New()
+			rhs = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, unvdUnasp)
 				.Annotation(HCFeatureSystem.SegmentType, unvdUnasp).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "appa") {Stratum = Morphophonemic};
@@ -654,11 +654,11 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("appa", input.ToString());
 
-			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
+			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Value;
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct).Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "pʰipʰ") {Stratum = Allophonic};
@@ -677,12 +677,12 @@ namespace HermitCrabTest
 			var vowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Value;
 			var vdLabFric = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("labiodental").Symbol("vd+").Symbol("strident+").Symbol("cont+").Value;
 
-			var lhs = Expression<Word, ShapeNode>.New()
+			var lhs = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, Table1.GetSymbolDefinition("p").FeatureStruct).Value;
 			var rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			var rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vdLabFric).Value;
-			var leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
-			var rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
+			var rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vdLabFric).Value;
+			var leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
+			var rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			IEnumerable<Word> output;
@@ -702,7 +702,7 @@ namespace HermitCrabTest
 			Assert.AreEqual("b+?ubu", input.ToString());
 
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSymbolDefinition("v").FeatureStruct).Value;
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSymbolDefinition("v").FeatureStruct).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "buvu") {Stratum = Allophonic};
@@ -734,18 +734,18 @@ namespace HermitCrabTest
 			var k = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("voc-").Symbol("velar").Symbol("vd-").Symbol("cont-").Symbol("nasal-").Value;
 			var g = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("voc-").Symbol("velar").Symbol("vd+").Symbol("cont-").Symbol("nasal-").Value;
 
-			var lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
+			var lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
 			var rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			var rhs = Expression<Word, ShapeNode>.New()
+			var rhs = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem)
 					.Feature("back").EqualToVariable("a")
 					.Feature("round").EqualToVariable("b").Value).Value;
-			var leftEnv = Expression<Word, ShapeNode>.New()
+			var leftEnv = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, highVowel)
 					.Feature("back").EqualToVariable("a")
 					.Feature("round").EqualToVariable("b").Value)
 				.Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			var rightEnv = Expression<Word, ShapeNode>.New().Value;
+			var rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			IEnumerable<Word> output;
@@ -765,13 +765,13 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("bububu", input.ToString());
 
-			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, nasalCons).Value;
+			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, nasalCons).Value;
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New()
+			rhs = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem)
 					.Feature("poa").EqualToVariable("a").Value).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Value;
-			rightEnv = Expression<Word, ShapeNode>.New()
+			leftEnv = Pattern<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, cons)
 					.Feature("poa").EqualToVariable("a").Value).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
@@ -786,20 +786,20 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("mbindiŋg", input.ToString());
 
-			lhs = Expression<Word, ShapeNode>.New()
+			lhs = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, voicelessStop)
 					.Feature("poa").EqualToVariable("a").Value).Value;
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
-			leftEnv = Expression<Word, ShapeNode>.New()
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, voicelessStop)
 					.Feature("poa").EqualToVariable("a").Value)
 				.Annotation(HCFeatureSystem.SegmentType, vowel).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unasp).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Value;
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unasp).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "pipʰ") {Stratum = Allophonic};
@@ -812,15 +812,15 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("pi(pʰ)", input.ToString());
 
-			lhs = Expression<Word, ShapeNode>.New().Value;
+			lhs = Pattern<Word, ShapeNode>.New().Value;
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSymbolDefinition("f").FeatureStruct).Value;
-			leftEnv = Expression<Word, ShapeNode>.New()
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSymbolDefinition("f").FeatureStruct).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, vowel)
 					.Feature("high").EqualToVariable("a")
 					.Feature("back").EqualToVariable("b")
 					.Feature("round").EqualToVariable("c").Value).Value;
-			rightEnv = Expression<Word, ShapeNode>.New()
+			rightEnv = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, vowel)
 					.Feature("high").EqualToVariable("a")
 					.Feature("back").EqualToVariable("b")
@@ -837,15 +837,15 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("buifibuifi", input.ToString());
 
-			lhs = Expression<Word, ShapeNode>.New().Value;
+			lhs = Pattern<Word, ShapeNode>.New().Value;
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New()
+			rhs = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, k)
 					.Feature("asp").EqualToVariable("a").Value).Value;
-			leftEnv = Expression<Word, ShapeNode>.New()
+			leftEnv = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, g)
 					.Feature("asp").EqualToVariable("a").Value).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, RightSideFS).Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, RightSideFS).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "sagk") {Stratum = Morphophonemic};
@@ -867,11 +867,11 @@ namespace HermitCrabTest
 			var vowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Value;
 			var highBackRnd = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("high+").Symbol("back+").Symbol("round+").Value;
 
-			var lhs = Expression<Word, ShapeNode>.New().Value;
+			var lhs = Pattern<Word, ShapeNode>.New().Value;
 			var rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs) {ApplicationMode = ApplicationMode.Simultaneous};
-			var rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
-			var leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
-			var rightEnv = Expression<Word, ShapeNode>.New().Value;
+			var rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
+			var leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
+			var rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			IEnumerable<Word> output;
@@ -904,9 +904,9 @@ namespace HermitCrabTest
 			Assert.AreEqual("buibui", input.ToString());
 
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs) {ApplicationMode = ApplicationMode.Simultaneous};
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSymbolDefinition("i").FeatureStruct).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSymbolDefinition("i").FeatureStruct).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "biubiu") {Stratum = Allophonic};
@@ -920,9 +920,9 @@ namespace HermitCrabTest
 			Assert.AreEqual("biubiu", input.ToString());
 
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, LeftSideFS).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, LeftSideFS).Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "ipʰit") {Stratum = Allophonic};
@@ -936,9 +936,9 @@ namespace HermitCrabTest
 			Assert.AreEqual("i(pʰ)it", input.ToString());
 
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, RightSideFS).Value;
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, RightSideFS).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "pʰiti") {Stratum = Allophonic};
@@ -952,9 +952,9 @@ namespace HermitCrabTest
 			Assert.AreEqual("(pʰ)iti", input.ToString());
 
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highBackRndVowel).Value;
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highBackRndVowel).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "biubiu") {Stratum = Morphophonemic};
@@ -968,15 +968,15 @@ namespace HermitCrabTest
 			Assert.AreEqual("b+?iubiu", input.ToString());
 
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs) {ApplicationMode = ApplicationMode.Simultaneous};
-			rhs = Expression<Word, ShapeNode>.New()
+			rhs = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, highVowel)
 					.Feature("back").EqualToVariable("a")
 					.Feature("round").EqualToVariable("b").Value).Value;
-			leftEnv = Expression<Word, ShapeNode>.New()
+			leftEnv = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, highVowel)
 					.Feature("back").EqualToVariable("a")
 					.Feature("round").EqualToVariable("b").Value).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "biibuu") {Stratum = Allophonic};
@@ -990,9 +990,9 @@ namespace HermitCrabTest
 			Assert.AreEqual("biibuu", input.ToString());
 
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs) {ApplicationMode = ApplicationMode.Simultaneous};
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Value;
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "biiibuii") {Stratum = Allophonic};
@@ -1005,18 +1005,18 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("biiibuii", input.ToString());
 
-			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
+			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
 			rule1 = new StandardPhonologicalRule("rule2", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highBackRnd).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highBackRndVowel).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Value;
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highBackRnd).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highBackRndVowel).Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
-			lhs = Expression<Word, ShapeNode>.New().Value;
+			lhs = Pattern<Word, ShapeNode>.New().Value;
 			var rule2 = new StandardPhonologicalRule("rule3", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSymbolDefinition("t").FeatureStruct).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSymbolDefinition("t").FeatureStruct).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
 			rule2.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "butubu") {Stratum = Allophonic};
@@ -1034,9 +1034,9 @@ namespace HermitCrabTest
 			Assert.AreEqual("butubu", input.ToString());
 
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs) {Direction = Direction.RightToLeft};
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, LeftSideFS).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Value;
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, LeftSideFS).Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "ipʰit") {Stratum = Allophonic};
@@ -1060,11 +1060,11 @@ namespace HermitCrabTest
 			var vowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Value;
 			var voiced = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("vd+").Value;
 
-			var lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
+			var lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
 			var rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			var rhs = Expression<Word, ShapeNode>.New().Value;
-			var leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
-			var rightEnv = Expression<Word, ShapeNode>.New().Value;
+			var rhs = Pattern<Word, ShapeNode>.New().Value;
+			var leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
+			var rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			IEnumerable<Word> output;
@@ -1132,8 +1132,8 @@ namespace HermitCrabTest
 			Assert.AreEqual("bubu", input.ToString());
 
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs) {DelReapplications = 1};
-			leftEnv = Expression<Word, ShapeNode>.New().Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "bubu") {Stratum = Allophonic};
@@ -1157,10 +1157,10 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("bubu", input.ToString());
 
-			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
+			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			leftEnv = Expression<Word, ShapeNode>.New().Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "bubu") {Stratum = Allophonic};
@@ -1184,8 +1184,8 @@ namespace HermitCrabTest
 			Assert.AreEqual("bubu", input.ToString());
 
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highBackRndVowel).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highBackRndVowel).Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "bubu") {Stratum = Allophonic};
@@ -1218,26 +1218,26 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("bubu", input.ToString());
 
-			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("b").FeatureStruct).Value;
+			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("b").FeatureStruct).Value;
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, LeftSideFS).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, LeftSideFS).Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
-			lhs = Expression<Word, ShapeNode>.New()
+			lhs = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("u").FeatureStruct)
 				.Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("b").FeatureStruct)
 				.Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("u").FeatureStruct).Value;
 			var rule2 = new StandardPhonologicalRule("rule2", SpanFactory, lhs);
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, RightSideFS).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct).Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, RightSideFS).Value;
 			rule2.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
-			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("t").FeatureStruct).Value;
+			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("t").FeatureStruct).Value;
 			var rule3 = new StandardPhonologicalRule("rule3", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, nonCons).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Value;
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, nonCons).Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule3.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "b") {Stratum = Morphophonemic};
@@ -1256,27 +1256,27 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("+?", input.ToString());
 
-			lhs = Expression<Word, ShapeNode>.New()
+			lhs = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, cons)
 					.Feature("poa").EqualToVariable("a")
 					.Feature("vd").EqualToVariable("b")
 					.Feature("cont").EqualToVariable("c")
 					.Feature("nasal").EqualToVariable("d").Value).Value;
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, cons)
+			rhs = Pattern<Word, ShapeNode>.New().Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, cons)
 					.Feature("poa").EqualToVariable("a")
 					.Feature("vd").EqualToVariable("b")
 					.Feature("cont").EqualToVariable("c")
 					.Feature("nasal").EqualToVariable("d").Value).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
-			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
+			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
 			rule2 = new StandardPhonologicalRule("rule2", SpanFactory, lhs);
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, voiced).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, voiced).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
 			rule2.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "aba") {Stratum = Morphophonemic};
@@ -1324,17 +1324,17 @@ namespace HermitCrabTest
 			var vowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Value;
 			var voicelessStop = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("vd-").Symbol("cont-").Value;
 
-			var lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, stop).Value;
+			var lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, stop).Value;
 			var rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
 			
-			var rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
-			var leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, LeftSideFS).Value;
-			var rightEnv = Expression<Word, ShapeNode>.New().Value;
+			var rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
+			var leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, LeftSideFS).Value;
+			var rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 			
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unasp).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Value;
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unasp).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			IEnumerable<Word> output;
@@ -1348,39 +1348,39 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("(pʰ)ip", input.ToString());
 
-			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
+			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
 			
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRnd).Value;
-			leftEnv = Expression<Word, ShapeNode>.New()
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRnd).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, backRndVowel)
 				.Group(g => g.Annotation(HCFeatureSystem.SegmentType, cons).Annotation(HCFeatureSystem.SegmentType, highFrontVowel)).LazyZeroOrMore
 				.Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, frontRnd).Value;
-			leftEnv = Expression<Word, ShapeNode>.New()
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, frontRnd).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, frontRndVowel)
 				.Group(g => g.Annotation(HCFeatureSystem.SegmentType, cons).Annotation(HCFeatureSystem.SegmentType, highFrontVowel)).LazyZeroOrMore
 				.Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backUnrnd).Value;
-			leftEnv = Expression<Word, ShapeNode>.New()
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backUnrnd).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, backUnrndVowel)
 				.Group(g => g.Annotation(HCFeatureSystem.SegmentType, cons).Annotation(HCFeatureSystem.SegmentType, highFrontVowel)).LazyZeroOrMore
 				.Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, frontUnrnd).Value;
-			leftEnv = Expression<Word, ShapeNode>.New()
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, frontUnrnd).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New()
 				.Annotation(HCFeatureSystem.SegmentType, frontUnrndVowel)
 				.Group(g => g.Annotation(HCFeatureSystem.SegmentType, cons).Annotation(HCFeatureSystem.SegmentType, highFrontVowel)).LazyZeroOrMore
 				.Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "bububu") {Stratum = Allophonic};
@@ -1399,17 +1399,17 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("bububu", input.ToString());
 
-			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, stop).Value;
+			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, stop).Value;
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
 
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, LeftSideFS).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Value;
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, LeftSideFS).Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unasp).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, RightSideFS).Value;
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unasp).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, RightSideFS).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "pʰip");
@@ -1420,17 +1420,17 @@ namespace HermitCrabTest
 			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
 			Assert.AreEqual("(pʰ)ip", input.ToString());
 
-			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, p).Value;
+			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, p).Value;
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
 
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vd).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Value;
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vd).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, RightSideFS).Value;
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, RightSideFS).Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "bubu") {Stratum = Allophonic};
@@ -1448,17 +1448,17 @@ namespace HermitCrabTest
 			input.Stratum = Surface;
 			Assert.AreEqual("bubu", input.ToString());
 
-			lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, voicelessStop).Value;
+			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, voicelessStop).Value;
 			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
 
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, voicelessStop).Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Value;
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, voicelessStop).Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
-			rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unasp).Value;
-			leftEnv = Expression<Word, ShapeNode>.New().Value;
-			rightEnv = Expression<Word, ShapeNode>.New().Value;
+			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unasp).Value;
+			leftEnv = Pattern<Word, ShapeNode>.New().Value;
+			rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			input = new Word(Surface, "ktʰb") {Stratum = Allophonic};
@@ -1480,11 +1480,11 @@ namespace HermitCrabTest
 			var i = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("high+").Symbol("back-").Symbol("round-").Value;
 			var cons = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("voc-").Value;
 
-			var lhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
+			var lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
 			var rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs) {ApplicationMode = ApplicationMode.Simultaneous};
-			var rhs = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRnd).Value;
-			var leftEnv = Expression<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, i).Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			var rightEnv = Expression<Word, ShapeNode>.New().Value;
+			var rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRnd).Value;
+			var leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, i).Annotation(HCFeatureSystem.SegmentType, cons).Value;
+			var rightEnv = Pattern<Word, ShapeNode>.New().Value;
 			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
 			IEnumerable<Word> output;

@@ -6,26 +6,22 @@ using SIL.Machine.Transduction;
 
 namespace SIL.HermitCrab
 {
-	public class AnalysisAffixPatternRule : PatternRule<Word, ShapeNode>
+	public class AnalysisAffixPatternRuleSpec : IPatternRuleSpec<Word, ShapeNode>
 	{
-		private readonly SpanFactory<ShapeNode> _spanFactory;
+		private readonly Pattern<Word, ShapeNode> _pattern; 
 		private readonly AffixProcessAllomorph _allomorph;
 		private readonly Dictionary<int, Constraint<Word, ShapeNode>> _modifyFromConstraints;
 
-		public AnalysisAffixPatternRule(SpanFactory<ShapeNode> spanFactory, AffixProcessAllomorph allomorph)
-			: base(new Pattern<Word, ShapeNode>(spanFactory) {Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType)})
+		public AnalysisAffixPatternRuleSpec(AffixProcessAllomorph allomorph)
 		{
-			ApplicationMode = ApplicationMode.Multiple;
-
-			_spanFactory = spanFactory;
 			_allomorph = allomorph;
 			_modifyFromConstraints = new Dictionary<int, Constraint<Word, ShapeNode>>();
-
-			Lhs.Children.Add(new Constraint<Word, ShapeNode>(HCFeatureSystem.AnchorType,
-				FeatureStruct.New(HCFeatureSystem.Instance).Symbol(HCFeatureSystem.LeftSide).Value));
+			_pattern = new Pattern<Word, ShapeNode>();
+			_pattern.Children.Add(new Constraint<Word, ShapeNode>(HCFeatureSystem.AnchorType,
+				FeatureStruct.New().Symbol(HCFeatureSystem.LeftSide).Value));
 			foreach (MorphologicalOutput outputAction in _allomorph.Rhs)
 			{
-				outputAction.GenerateAnalysisLhs(Lhs, _allomorph.Lhs);
+				outputAction.GenerateAnalysisLhs(_pattern, _allomorph.Lhs);
 
 				var modifyFrom = outputAction as ModifyFromInput;
 				if (modifyFrom != null)
@@ -34,8 +30,8 @@ namespace SIL.HermitCrab
 						GetAntiFeatureStruct(modifyFrom.Constraint.FeatureStruct));
 				}
 			}
-			Lhs.Children.Add(new Constraint<Word, ShapeNode>(HCFeatureSystem.AnchorType,
-				FeatureStruct.New(HCFeatureSystem.Instance).Symbol(HCFeatureSystem.RightSide).Value));
+			_pattern.Children.Add(new Constraint<Word, ShapeNode>(HCFeatureSystem.AnchorType,
+				FeatureStruct.New().Symbol(HCFeatureSystem.RightSide).Value));
 		}
 
 		private static FeatureStruct GetAntiFeatureStruct(FeatureStruct fs)
@@ -55,24 +51,29 @@ namespace SIL.HermitCrab
 			return result;
 		}
 
-		public override bool IsApplicable(Word input)
+		public Pattern<Word, ShapeNode> Pattern
+		{
+			get { return _pattern; }
+		}
+
+		public bool IsApplicable(Word input)
 		{
 			return true;
 		}
 
-		public override Annotation<ShapeNode> ApplyRhs(Word input, PatternMatch<ShapeNode> match, out Word output)
+		public ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)
 		{
-			output = input.Clone();
+			output = match.Input.Clone();
 			output.Shape.Clear();
 			for (int i = 0; i < _allomorph.Lhs.Count; i++)
 			{
-				Span<ShapeNode> inputSpan;
-				if (match.TryGetGroup(i.ToString(), out inputSpan))
+				GroupCapture<ShapeNode> inputGroup = match[i.ToString()];
+				if (inputGroup.Success)
 				{
 					Constraint<Word, ShapeNode> constraint;
 					if (!_modifyFromConstraints.TryGetValue(i, out constraint))
 						constraint = null;
-					Span<ShapeNode> outputSpan = input.Shape.CopyTo(inputSpan, output.Shape);
+					Span<ShapeNode> outputSpan = match.Input.Shape.CopyTo(inputGroup.Span, output.Shape);
 					if (constraint != null)
 					{
 						foreach (ShapeNode node in output.Shape.GetNodes(outputSpan))
@@ -100,7 +101,7 @@ namespace SIL.HermitCrab
 				{
 					FeatureStruct fs = constraint.FeatureStruct.Clone();
 					fs.ReplaceVariables(varBindings);
-					output.Shape.Add(constraint.Type, fs, true);
+					output.Shape.Add(constraint.Type, fs, optional);
 				}
 				else
 				{

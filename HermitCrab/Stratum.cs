@@ -18,53 +18,40 @@ namespace SIL.HermitCrab
         /// </summary>
         public const string SurfaceStratumID = "surface";
 
+    	private readonly SpanFactory<ShapeNode> _spanFactory; 
         private readonly SymbolDefinitionTable _symDefTable;
 
     	private readonly List<MorphologicalRule> _mrules;
         private readonly List<PhonologicalRule> _prules;
 
-    	private readonly DefaultRuleCascade<Word, ShapeNode> _synthesisRule;
-    	private readonly DefaultRuleCascade<Word, ShapeNode> _pruleSynthesisRule;
-		private readonly DefaultRuleCascade<Word, ShapeNode> _mruleSynthesisRule;
-
-    	private readonly DefaultRuleCascade<Word, ShapeNode> _analysisRule; 
-    	private readonly DefaultRuleCascade<Word, ShapeNode> _pruleAnalysisRule;
-    	private readonly DefaultRuleCascade<Word, ShapeNode> _mruleAnalysisRule; 
+    	private RuleCascade<Word, ShapeNode> _synthesisRule;
+    	private RuleCascade<Word, ShapeNode> _analysisRule; 
 
         private readonly IDBearerSet<AffixTemplate> _templates;
 
-    	private readonly IDBearerSet<LexEntry> _entries; 
-    	private readonly Pattern<Shape, ShapeNode> _entriesPattern;
+    	private readonly IDBearerSet<LexEntry> _entries;
+    	private Matcher<Shape, ShapeNode> _entriesMatcher;
 
     	/// <summary>
     	/// Initializes a new instance of the <see cref="Stratum"/> class.
     	/// </summary>
     	/// <param name="id">The ID.</param>
+    	/// <param name="spanFactory"></param>
     	/// <param name="symDefTable"></param>
-    	public Stratum(string id, SymbolDefinitionTable symDefTable)
+    	public Stratum(string id, SpanFactory<ShapeNode> spanFactory, SymbolDefinitionTable symDefTable)
             : base(id)
     	{
+    		_spanFactory = spanFactory;
     		_symDefTable = symDefTable;
 
             _mrules = new List<MorphologicalRule>();
             _prules = new List<PhonologicalRule>();
 
-			_pruleSynthesisRule = new DefaultRuleCascade<Word, ShapeNode>();
-			_mruleSynthesisRule = new DefaultRuleCascade<Word, ShapeNode> {RuleCascadeOrder = RuleCascadeOrder.Permutation, MultipleApplication = true};
-			_synthesisRule = new DefaultRuleCascade<Word, ShapeNode>(new[] {_pruleSynthesisRule, _mruleSynthesisRule});
-
-			_pruleAnalysisRule = new DefaultRuleCascade<Word, ShapeNode>();
-			_mruleAnalysisRule = new DefaultRuleCascade<Word, ShapeNode> {RuleCascadeOrder = RuleCascadeOrder.Permutation, MultipleApplication = true};
-			_analysisRule = new DefaultRuleCascade<Word, ShapeNode>(new[] {_mruleAnalysisRule, _pruleAnalysisRule});
+			MorphologicalRuleOrder = RuleCascadeOrder.Permutation;
 
             _templates = new IDBearerSet<AffixTemplate>();
 
 			_entries = new IDBearerSet<LexEntry>();
-			_entriesPattern = new Pattern<Shape, ShapeNode>(symDefTable.SpanFactory)
-			                  	{
-			                  		Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType),
-									Quasideterministic = true
-			                  	};
         }
 
         /// <summary>
@@ -86,34 +73,16 @@ namespace SIL.HermitCrab
     	public bool IsCyclic { get; set; }
 
     	/// <summary>
-        /// Gets or sets the phonological rule order.
-        /// </summary>
-        /// <value>The phonological rule order.</value>
-        public RuleCascadeOrder PhonologicalRuleOrder
-        {
-            get { return _pruleSynthesisRule.RuleCascadeOrder; }
+    	/// Gets or sets the phonological rule order.
+    	/// </summary>
+    	/// <value>The phonological rule order.</value>
+		public RuleCascadeOrder PhonologicalRuleOrder { get; set; }
 
-            set
-            {
-            	_pruleSynthesisRule.RuleCascadeOrder = value;
-            	_pruleAnalysisRule.RuleCascadeOrder = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the morphological rule order.
-        /// </summary>
-        /// <value>The morphological rule order.</value>
-        public RuleCascadeOrder MorphologicalRuleOrder
-        {
-            get { return _mruleSynthesisRule.RuleCascadeOrder; }
-
-            set
-            {
-            	_mruleSynthesisRule.RuleCascadeOrder = value;
-            	_mruleAnalysisRule.RuleCascadeOrder = value;
-            }
-        }
+    	/// <summary>
+    	/// Gets or sets the morphological rule order.
+    	/// </summary>
+    	/// <value>The morphological rule order.</value>
+		public RuleCascadeOrder MorphologicalRuleOrder { get; set; }
 
     	public IRule<Word, ShapeNode> AnalysisRule
     	{
@@ -124,6 +93,34 @@ namespace SIL.HermitCrab
     	{
     		get { return _synthesisRule; }
     	}
+
+		public void Compile()
+		{
+			var pruleSynthesisRule = new RuleCascade<Word, ShapeNode>(_prules.Select(prule => prule.SynthesisRule), PhonologicalRuleOrder);
+			var mruleSynthesisRule = new RuleCascade<Word, ShapeNode>(_mrules.Select(mrule => mrule.SynthesisRule), MorphologicalRuleOrder, true);
+			_synthesisRule = new RuleCascade<Word, ShapeNode>(new[] { pruleSynthesisRule, mruleSynthesisRule });
+
+			var pruleAnalysisRule = new RuleCascade<Word, ShapeNode>(_prules.Select(prule => prule.AnalysisRule).Reverse(), PhonologicalRuleOrder);
+			var mruleAnalysisRule = new RuleCascade<Word, ShapeNode>(_mrules.Select(mrule => mrule.AnalysisRule).Reverse(), MorphologicalRuleOrder, true);
+			_analysisRule = new RuleCascade<Word, ShapeNode>(new[] { mruleAnalysisRule, pruleAnalysisRule });
+
+			var pattern = new Pattern<Shape, ShapeNode>(_entries.SelectMany(entry => entry.Allomorphs, (entry, allo) => CreateSubpattern(allo)).Cast<PatternNode<Shape, ShapeNode>>());
+			_entriesMatcher = new Matcher<Shape, ShapeNode>(_spanFactory, pattern, new MatcherSettings<ShapeNode>
+			                                                                       	{
+																						Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType),
+																						Quasideterministic = true
+			                                                                       	});
+		}
+
+		private Pattern<Shape, ShapeNode> CreateSubpattern(RootAllomorph allomorph)
+		{
+			var subpattern = new Pattern<Shape, ShapeNode>(allomorph.Morpheme.ID);
+			subpattern.Children.Add(new Constraint<Shape, ShapeNode>(HCFeatureSystem.AnchorType, FeatureStruct.New().Symbol(HCFeatureSystem.LeftSide).Value));
+			foreach (ShapeNode node in allomorph.Shape.Where(node => node.Annotation.Type == HCFeatureSystem.SegmentType))
+				subpattern.Children.Add(new Constraint<Shape, ShapeNode>(HCFeatureSystem.SegmentType, node.Annotation.FeatureStruct.Clone()));
+			subpattern.Children.Add(new Constraint<Shape, ShapeNode>(HCFeatureSystem.AnchorType, FeatureStruct.New().Symbol(HCFeatureSystem.RightSide).Value));
+			return subpattern;
+		}
 
         /// <summary>
         /// Gets the affix templates.
@@ -144,8 +141,6 @@ namespace SIL.HermitCrab
         public void AddPhonologicalRule(PhonologicalRule prule)
         {
             _prules.Add(prule);
-			_pruleSynthesisRule.AddRule(prule.SynthesisRule);
-			_pruleAnalysisRule.InsertRule(0, prule.AnalysisRule);
         }
 
         /// <summary>
@@ -156,8 +151,6 @@ namespace SIL.HermitCrab
         {
             mrule.Stratum = this;
             _mrules.Add(mrule);
-			_mruleSynthesisRule.AddRule(mrule.SynthesisRule);
-			_mruleAnalysisRule.InsertRule(0, mrule.AnalysisRule);
         }
 
         /// <summary>
@@ -168,37 +161,16 @@ namespace SIL.HermitCrab
         {
             entry.Stratum = this;
         	_entries.Add(entry);
-			foreach (RootAllomorph allomorph in entry.Allomorphs)
-				_entriesPattern.Children.Add(CreateExpression(allomorph));
         }
-
-		private Expression<Shape, ShapeNode> CreateExpression(RootAllomorph allomorph)
-		{
-			var expr = new Expression<Shape, ShapeNode>(allomorph.Morpheme.ID);
-			expr.Children.Add(new Constraint<Shape, ShapeNode>(HCFeatureSystem.AnchorType, FeatureStruct.New(HCFeatureSystem.Instance).Symbol(HCFeatureSystem.LeftSide).Value));
-			foreach (ShapeNode node in allomorph.Shape.Where(node => node.Annotation.Type == HCFeatureSystem.SegmentType))
-				expr.Children.Add(new Constraint<Shape, ShapeNode>(HCFeatureSystem.SegmentType, node.Annotation.FeatureStruct.Clone()));
-			expr.Children.Add(new Constraint<Shape, ShapeNode>(HCFeatureSystem.AnchorType, FeatureStruct.New(HCFeatureSystem.Instance).Symbol(HCFeatureSystem.RightSide).Value));
-			return expr;
-		}
 
     	/// <summary>
     	/// Searches for the lexical entry that matches the specified shape.
     	/// </summary>
     	/// <param name="input"></param>
-		/// <param name="output">The matching lexical entries.</param>
-    	/// <returns></returns>
-    	public bool SearchEntries(Shape input, out IEnumerable<LexEntry> output)
-		{
-			IEnumerable<PatternMatch<ShapeNode>> matches;
-			if (_entriesPattern.IsMatch(input, out matches))
-			{
-				output = matches.Select(match => _entries[match.ExpressionPath.Single()]);
-				return true;
-			}
-
-			output = null;
-			return false;
+		/// <returns>The matching lexical entries.</returns>
+    	public IEnumerable<LexEntry> SearchEntries(Shape input)
+    	{
+    		return _entriesMatcher.AllMatches(input).Select(match => _entries[match.PatternPath.Single()]);
 		}
 
         /// <summary>

@@ -26,19 +26,19 @@ namespace SIL.HermitCrab
 			get { return _constraint; }
 		}
 
-		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IList<Expression<Word, ShapeNode>> lhs)
+		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IList<Pattern<Word, ShapeNode>> lhs)
 		{
-			Expression<Word, ShapeNode> expr = lhs[_index];
-			var group = new Group<Word, ShapeNode>(_index.ToString(), expr.Children.Clone());
+			Pattern<Word, ShapeNode> pattern = lhs[_index];
+			var group = new Group<Word, ShapeNode>(_index.ToString(), pattern.Children.Clone());
 			foreach (Constraint<Word, ShapeNode> constraint in group.GetNodes().OfType<Constraint<Word, ShapeNode>>().Where(c => c.Type == _constraint.Type))
 				constraint.FeatureStruct.PriorityUnion(_constraint.FeatureStruct);
 			analysisLhs.Children.Add(group);
 		}
 
-		public override void Apply(PatternMatch<ShapeNode> match, Word input, Word output, Allomorph allomorph)
+		public override void Apply(Match<Word, ShapeNode> match, Word output, Allomorph allomorph)
 		{
-			Span<ShapeNode> inputSpan = match[_index.ToString()];
-			Span<ShapeNode> outputSpan = input.CopyTo(inputSpan, output);
+			GroupCapture<ShapeNode> inputGroup = match[_index.ToString()];
+			Span<ShapeNode> outputSpan = match.Input.CopyTo(inputGroup.Span, output);
 			foreach (ShapeNode outputNode in output.Shape.GetNodes(outputSpan))
 			{
 				if (outputNode.Annotation.Type == _constraint.Type)

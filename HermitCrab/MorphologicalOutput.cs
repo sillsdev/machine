@@ -12,7 +12,7 @@ namespace SIL.HermitCrab
 	{
 		public bool Reduplication { get; internal set; }
 
-		public abstract void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IList<Expression<Word, ShapeNode>> lhs);
+		public abstract void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IList<Pattern<Word, ShapeNode>> lhs);
 
 		/// <summary>
 		/// Applies this output record to the specified word synthesis.
@@ -21,6 +21,6 @@ namespace SIL.HermitCrab
 		/// <param name="input"></param>
 		/// <param name="output">The output word synthesis.</param>
 		/// <param name="allomorph"></param>
-		public abstract void Apply(PatternMatch<ShapeNode> match, Word input, Word output, Allomorph allomorph);
+		public abstract void Apply(Match<Word, ShapeNode> match, Word output, Allomorph allomorph);
 	}
 }

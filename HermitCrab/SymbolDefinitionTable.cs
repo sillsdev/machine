@@ -129,13 +129,13 @@ namespace SIL.HermitCrab
 		private ShapeNode CreateBegin()
 		{
 			return new ShapeNode(_spanFactory, HCFeatureSystem.AnchorType,
-				FeatureStruct.New(HCFeatureSystem.Instance).Symbol(HCFeatureSystem.LeftSide).Value);
+				FeatureStruct.New().Symbol(HCFeatureSystem.LeftSide).Value);
 		}
 
 		private ShapeNode CreateEnd()
 		{
 			return new ShapeNode(_spanFactory, HCFeatureSystem.AnchorType,
-				FeatureStruct.New(HCFeatureSystem.Instance).Symbol(HCFeatureSystem.RightSide).Value);
+				FeatureStruct.New().Symbol(HCFeatureSystem.RightSide).Value);
 		}
 
 		/// <summary>
