@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using SIL.Machine.Matching;
 
 namespace SIL.Machine.Transduction
@@ -11,48 +12,56 @@ namespace SIL.Machine.Transduction
 		Simultaneous
 	}
 
-	public abstract class PatternRule<TData, TOffset> : IRule<TData, TOffset> where TData : IData<TOffset>
+	public class PatternRule<TData, TOffset> : IRule<TData, TOffset> where TData : IData<TOffset>
 	{
-		private readonly Pattern<TData, TOffset> _lhs;
-		private ApplicationMode _appMode;
+		private readonly IPatternRuleSpec<TData, TOffset> _ruleSpec;
+		private readonly Matcher<TData, TOffset> _matcher; 
+		private readonly ApplicationMode _appMode;
 
-		protected PatternRule(Pattern<TData, TOffset> lhs)
+		public PatternRule(SpanFactory<TOffset> spanFactory, IPatternRuleSpec<TData, TOffset> ruleSpec)
+			: this(spanFactory, ruleSpec, ApplicationMode.Single)
 		{
-			_lhs = lhs;
 		}
 
-		public PatternRule<TData, TOffset> Parent { get; internal set; }
-
-		public Pattern<TData, TOffset> Lhs
+		public PatternRule(SpanFactory<TOffset> spanFactory, IPatternRuleSpec<TData, TOffset> ruleSpec,
+			ApplicationMode appMode)
+			: this(spanFactory, ruleSpec, appMode, new MatcherSettings<TOffset>())
 		{
-			get { return _lhs; }
+		}
+
+		public PatternRule(SpanFactory<TOffset> spanFactory, IPatternRuleSpec<TData, TOffset> ruleSpec,
+			MatcherSettings<TOffset> matcherSettings)
+			: this(spanFactory, ruleSpec, ApplicationMode.Single, matcherSettings)
+		{
+		}
+
+		public PatternRule(SpanFactory<TOffset> spanFactory, IPatternRuleSpec<TData, TOffset> ruleSpec,
+			ApplicationMode appMode, MatcherSettings<TOffset> matcherSettings)
+		{
+			_ruleSpec = ruleSpec;
+			_appMode = appMode;
+			_matcher = new Matcher<TData, TOffset>(spanFactory, _ruleSpec.Pattern, matcherSettings);
+		}
+
+		public IPatternRuleSpec<TData, TOffset> RuleSpec
+		{
+			get { return _ruleSpec; }
 		}
 
 		public ApplicationMode ApplicationMode
 		{
-			get
-			{
-				if (Parent != null)
-					return Parent.ApplicationMode;
-				return _appMode;
-			}
-
-			set { _appMode = value; }
+			get { return _appMode; }
 		}
 
-		public Direction Direction
+		public MatcherSettings<TOffset> MatcherSettings
 		{
-			get
-			{
-				if (Parent != null)
-					return Parent._lhs.Direction;
-				return _lhs.Direction;
-			}
-
-			set { _lhs.Direction = value; }
+			get { return _matcher.Settings; }
 		}
 
-		public abstract bool IsApplicable(TData input);
+		public bool IsApplicable(TData input)
+		{
+			return _ruleSpec.IsApplicable(input);
+		}
 
 		public virtual bool Apply(TData input, out IEnumerable<TData> output)
 		{
@@ -67,50 +76,41 @@ namespace SIL.Machine.Transduction
 			{
 				case ApplicationMode.Simultaneous:
 					{
-						IEnumerable<PatternMatch<TOffset>> matches;
-						TData inputData = input;
-						if (_lhs.IsMatch(inputData, out matches))
+						TData data = input;
+						Match<TData, TOffset>[] matches = _matcher.Matches(input).ToArray();
+						if (matches.Length > 0)
 						{
-							TData outputData = default(TData);
-							foreach (PatternMatch<TOffset> match in matches)
-							{
-								ApplyRhs(inputData, match, out outputData);
-								inputData = outputData;
-							}
-							outputList = new List<TData> {outputData};
+							foreach (Match<TData, TOffset> match in matches)
+								_ruleSpec.ApplyRhs(this, match, out data);
+							outputList = new List<TData> {data};
 						}
 					}
 					break;
 
 				case ApplicationMode.Iterative:
 					{
-						TData inputData = input;
-						TData outputData = default(TData);
-						Annotation<TOffset> startAnn = input.Annotations.GetFirst(Direction, _lhs.Filter);
-						PatternMatch<TOffset> curMatch;
 						bool applied = false;
-						while (_lhs.IsMatch(inputData, startAnn, out curMatch))
+						TData data = input;
+						Match<TData, TOffset> match = _matcher.Match(input);
+						while (match.Success)
 						{
-							startAnn = ApplyRhs(input, curMatch, out outputData);
+							TOffset nextOffset = _ruleSpec.ApplyRhs(this, match, out data);
 							applied = true;
-							if (startAnn == input.Annotations.GetEnd(Direction))
-								break;
-							if (!_lhs.Filter(startAnn))
-								startAnn = startAnn.GetNext(Direction, _lhs.Filter);
-							inputData = outputData;
+							match = _matcher.Match(data, nextOffset);
 						}
+
 						if (applied)
-							outputList = new List<TData> {outputData};
+							outputList = new List<TData> {data};
 					}
 					break;
 
 				case ApplicationMode.Single:
 					{
-						PatternMatch<TOffset> match;
-						if (_lhs.IsMatch(input, out match))
+						Match<TData, TOffset> match = _matcher.Match(input);
+						if (match.Success)
 						{
 							TData outputData;
-							ApplyRhs(input, match, out outputData);
+							_ruleSpec.ApplyRhs(this, match, out outputData);
 							outputList = new List<TData> {outputData};
 						}
 					}
@@ -118,16 +118,13 @@ namespace SIL.Machine.Transduction
 
 				case ApplicationMode.Multiple:
 					{
-						IEnumerable<PatternMatch<TOffset>> matches;
-						if (_lhs.IsMatch(input, out matches))
+						foreach (Match<TData, TOffset> match in _matcher.Matches(input))
 						{
-							outputList = new List<TData>();
-							foreach (PatternMatch<TOffset> match in matches)
-							{
-								TData outputData;
-								ApplyRhs(input, match, out outputData);
-								outputList.Add(outputData);
-							}
+							TData outputData;
+							_ruleSpec.ApplyRhs(this, match, out outputData);
+							if (outputList == null)
+								outputList = new List<TData>();
+							outputList.Add(outputData);
 						}
 					}
 					break;
@@ -136,7 +133,5 @@ namespace SIL.Machine.Transduction
 			output = outputList;
 			return output != null;
 		}
-
-		public abstract Annotation<TOffset> ApplyRhs(TData input, PatternMatch<TOffset> match, out TData output);
 	}
 }

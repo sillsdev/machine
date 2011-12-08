@@ -27,7 +27,7 @@ namespace SIL.Machine.Test
 			Assert.AreSame(a, annList.First);
 			a = new Annotation<int>("Entire", _spanFactory.Create(0, 99), new FeatureStruct());
 			annList.Add(a);
-			Assert.AreSame(a, annList.ElementAt(1));
+			Assert.AreSame(a, annList.First());
 		}
 
 		/*

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 namespace SIL.Machine.Transduction
 {
@@ -10,29 +9,52 @@ namespace SIL.Machine.Transduction
 		Combination
 	}
 
-	public abstract class RuleCascade<TData, TOffset> : IRule<TData, TOffset> where TData : IData<TOffset>
+	public class RuleCascade<TData, TOffset> : IRule<TData, TOffset> where TData : IData<TOffset>
 	{
 		private readonly List<IRule<TData, TOffset>> _rules;
+		private readonly RuleCascadeOrder _order;
+		private readonly bool _multiApp;
 
-		protected RuleCascade()
+		public RuleCascade(IEnumerable<IRule<TData, TOffset>> rules)
+			: this(rules, RuleCascadeOrder.Linear)
 		{
-			_rules = new List<IRule<TData, TOffset>>();
 		}
 
-		public RuleCascadeOrder RuleCascadeOrder { get; set; }
-
-		public bool MultipleApplication { get; set; }
-
-		public ReadOnlyCollection<IRule<TData, TOffset>> Rules
+		public RuleCascade(IEnumerable<IRule<TData, TOffset>> rules, RuleCascadeOrder order)
+			: this(rules, order, false)
 		{
-			get { return _rules.AsReadOnly(); }
 		}
 
-		public abstract bool IsApplicable(TData input);
-
-		protected void InsertRuleInternal(int index, IRule<TData, TOffset> rule)
+		public RuleCascade(IEnumerable<IRule<TData, TOffset>> rules, bool multiApp)
+			: this(rules, RuleCascadeOrder.Linear, multiApp)
 		{
-			_rules.Insert(index, rule);
+		}
+
+		public RuleCascade(IEnumerable<IRule<TData, TOffset>> rules, RuleCascadeOrder order, bool multiApp)
+		{
+			_rules = new List<IRule<TData, TOffset>>(rules);
+			_order = order;
+			_multiApp = multiApp;
+		}
+
+		public RuleCascadeOrder RuleCascadeOrder
+		{
+			get { return _order; }
+		}
+
+		public bool MultipleApplication
+		{
+			get { return _multiApp; }
+		}
+
+		public IEnumerable<IRule<TData, TOffset>> Rules
+		{
+			get { return _rules; }
+		}
+
+		public virtual bool IsApplicable(TData input)
+		{
+			return true;
 		}
 
 		public virtual bool Apply(TData input, out IEnumerable<TData> output)

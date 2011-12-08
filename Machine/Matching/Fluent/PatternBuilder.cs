@@ -5,48 +5,27 @@ namespace SIL.Machine.Matching.Fluent
 {
 	public class PatternBuilder<TData, TOffset> : PatternNodeBuilder<TData, TOffset>, IPatternSyntax<TData, TOffset>, IQuantifierPatternSyntax<TData, TOffset> where TData : IData<TOffset>
 	{
-		private readonly SpanFactory<TOffset> _spanFactory;
-		private Func<Annotation<TOffset>, bool> _filter = ann => true;
-		private Direction _dir = Direction.LeftToRight;
+		private readonly string _name;
+		private Func<Match<TData, TOffset>, bool> _acceptable = match => true;
 
-		public PatternBuilder(SpanFactory<TOffset> spanFactory)
+		public PatternBuilder()
 		{
-			_spanFactory = spanFactory;
 		}
 
-		public IPatternSyntax<TData, TOffset> MatchLeftToRight
+		public PatternBuilder(string name)
 		{
-			get
-			{
-				_dir = Direction.LeftToRight;
-				return this;
-			}
+			_name = name;
 		}
 
-		public IPatternSyntax<TData, TOffset> MatchRightToLeft
+		public INodesPatternSyntax<TData, TOffset> Subpattern(Func<IPatternSyntax<TData, TOffset>, IPatternSyntax<TData, TOffset>> build)
 		{
-			get
-			{
-				_dir = Direction.RightToLeft;
-				return this;
-			}
-		}
-
-		public IPatternSyntax<TData, TOffset> AnnotationsAllowableWhere(Func<Annotation<TOffset>, bool> filter)
-		{
-			_filter = filter;
+			AddSubpattern(null, build);
 			return this;
 		}
 
-		public INodesPatternSyntax<TData, TOffset> Expression(Func<IExpressionSyntax<TData, TOffset>, IExpressionSyntax<TData, TOffset>> build)
+		public INodesPatternSyntax<TData, TOffset> Subpattern(string name, Func<IPatternSyntax<TData, TOffset>, IPatternSyntax<TData, TOffset>> build)
 		{
-			AddExpression(null, build);
-			return this;
-		}
-
-		public INodesPatternSyntax<TData, TOffset> Expression(string name, Func<IExpressionSyntax<TData, TOffset>, IExpressionSyntax<TData, TOffset>> build)
-		{
-			AddExpression(name, build);
+			AddSubpattern(name, build);
 			return this;
 		}
 
@@ -54,7 +33,7 @@ namespace SIL.Machine.Matching.Fluent
 		{
 			get
 			{
-				var pattern = new Pattern<TData, TOffset>(_spanFactory) {Direction = _dir, Filter = _filter};
+				var pattern = new Pattern<TData, TOffset>(_name) {Acceptable = _acceptable};
 				PopulateNode(pattern);
 				return pattern;
 			}
@@ -150,6 +129,12 @@ namespace SIL.Machine.Matching.Fluent
 		IAlternationPatternSyntax<TData, TOffset> IQuantifierPatternSyntax<TData, TOffset>.LazyRange(int min, int max)
 		{
 			AddQuantifier(min, max, false);
+			return this;
+		}
+
+		public INodesPatternSyntax<TData, TOffset> MatchAcceptableWhere(Func<Match<TData, TOffset>, bool> acceptable)
+		{
+			_acceptable = acceptable;
 			return this;
 		}
 	}

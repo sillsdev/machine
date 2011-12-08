@@ -1,12 +1,9 @@
-using System;
+﻿using System;
 
 namespace SIL.Machine.Matching.Fluent
 {
 	public interface IPatternSyntax<TData, TOffset> : INodesPatternSyntax<TData, TOffset> where TData : IData<TOffset>
 	{
-		IPatternSyntax<TData, TOffset> MatchLeftToRight { get; }
-		IPatternSyntax<TData, TOffset> MatchRightToLeft { get; }
-
-		IPatternSyntax<TData, TOffset> AnnotationsAllowableWhere(Func<Annotation<TOffset>, bool> filter);
+		INodesPatternSyntax<TData, TOffset> MatchAcceptableWhere(Func<Match<TData, TOffset>, bool> acceptable);
 	}
 }

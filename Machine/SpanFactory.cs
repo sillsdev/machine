@@ -1,19 +1,24 @@
-﻿using System;
-
-namespace SIL.Machine
+﻿namespace SIL.Machine
 {
-	public class SpanFactory<TOffset>
+	public abstract class SpanFactory<TOffset>
 	{
-		private readonly Func<TOffset, TOffset, int> _compare;
-		private readonly Func<TOffset, TOffset, int> _calcLength;
 		private readonly bool _includeEndpoint;
 
-		public SpanFactory(Func<TOffset, TOffset, int> compare, Func<TOffset, TOffset, int> calcLength, bool includeEndpoint)
+		protected SpanFactory(bool includeEndpoint)
 		{
-			_compare = compare;
-			_calcLength = calcLength;
 			_includeEndpoint = includeEndpoint;
 		}
+
+		public abstract Span<TOffset> Empty { get; }
+
+		public bool IncludeEndpoint
+		{
+			get { return _includeEndpoint; }
+		}
+
+		public abstract int Compare(TOffset x, TOffset y);
+
+		public abstract int CalcLength(TOffset start, TOffset end);
 
 		public bool IsValidSpan(TOffset start, TOffset end)
 		{
@@ -35,7 +40,7 @@ namespace SIL.Machine
 				actualEnd = start;
 			}
 
-			return _compare(actualStart, actualEnd) <= 0;
+			return Compare(actualStart, actualEnd) <= 0;
 		}
 
 		public Span<TOffset> Create(TOffset start, TOffset end)
@@ -58,12 +63,12 @@ namespace SIL.Machine
 				actualEnd = start;
 			}
 
-			return new Span<TOffset>(_compare, _calcLength, _includeEndpoint, actualStart, actualEnd);
+			return new Span<TOffset>(this, actualStart, actualEnd);
 		}
 
 		public Span<TOffset> Create(TOffset offset)
 		{
-			return new Span<TOffset>(_compare, _calcLength, _includeEndpoint, offset, offset);
+			return new Span<TOffset>(this, offset, offset);
 		}
 	}
 }

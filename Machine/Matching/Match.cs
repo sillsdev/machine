@@ -1,0 +1,76 @@
+using System.Collections.Generic;
+using System.Linq;
+using SIL.Machine.FeatureModel;
+
+namespace SIL.Machine.Matching
+{
+	/// <summary>
+	/// This class represents a match between a phonetic shape and a phonetic pattern.
+	/// </summary>
+	public class Match<TData, TOffset> : GroupCapture<TOffset> where TData : IData<TOffset>
+	{
+		private readonly Matcher<TData, TOffset> _matcher; 
+		private readonly Dictionary<string, GroupCapture<TOffset>> _groupCaptures;
+		private readonly VariableBindings _varBindings;
+		private readonly IEnumerable<string> _patternPath;
+		private readonly TData _input;
+		private readonly Annotation<TOffset> _nextAnn;
+
+		internal Match(Matcher<TData, TOffset> matcher, Span<TOffset> span, TData input)
+			: this(matcher, span, input, Enumerable.Empty<GroupCapture<TOffset>>(), Enumerable.Empty<string>(), new VariableBindings(), null)
+		{
+		}
+
+		internal Match(Matcher<TData, TOffset> matcher, Span<TOffset> span, TData input, IEnumerable<GroupCapture<TOffset>> groupCaptures,
+			IEnumerable<string> patternPath, VariableBindings varBindings, Annotation<TOffset> nextAnn)
+			: base(Matcher<TData, TOffset>.EntireMatch, span)
+		{
+			_matcher = matcher;
+			_groupCaptures = groupCaptures.ToDictionary(groupCapture => groupCapture.Name);
+			_patternPath = patternPath;
+			_varBindings = varBindings;
+			_input = input;
+			_nextAnn = nextAnn;
+		}
+
+		public Matcher<TData, TOffset> Matcher
+		{
+			get { return _matcher; }
+		}
+
+		public TData Input
+		{
+			get { return _input; }
+		}
+
+		public IEnumerable<string> PatternPath
+		{
+			get { return _patternPath; }
+		}
+
+		public VariableBindings VariableBindings
+		{
+			get { return _varBindings; }
+		}
+
+		public IEnumerable<GroupCapture<TOffset>> GroupCaptures
+		{
+			get { return _groupCaptures.Values; }
+		}
+
+		public GroupCapture<TOffset> this[string groupName]
+		{
+			get { return _groupCaptures[groupName]; }
+		}
+
+		public Match<TData, TOffset> NextMatch()
+		{
+			return _matcher.Match(_input, _nextAnn);
+		}
+
+		internal Annotation<TOffset> NextAnnotation
+		{
+			get { return _nextAnn; }
+		}
+	}
+}

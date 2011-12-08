@@ -2,7 +2,7 @@ using System;
 
 namespace SIL.Machine
 {
-	public class BidirTreeNode<TNode> : BidirListNode<TNode>, IBidirTreeNode<TNode> where TNode : BidirTreeNode<TNode>
+	public class BidirTreeNode<TNode> : BidirListNode<TNode>, IOrderedBidirTreeNode<TNode> where TNode : BidirTreeNode<TNode>
 	{
 		private readonly BidirList<TNode> _children;
 

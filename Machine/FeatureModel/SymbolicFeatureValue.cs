@@ -7,6 +7,16 @@ namespace SIL.Machine.FeatureModel
 {
 	public class SymbolicFeatureValue : SimpleFeatureValue, IEquatable<SymbolicFeatureValue>
 	{
+		public static implicit operator SymbolicFeatureValue(FeatureSymbol symbol)
+		{
+			return new SymbolicFeatureValue(symbol);
+		}
+
+		public static explicit operator FeatureSymbol(SymbolicFeatureValue sfv)
+		{
+			return sfv._values.First();
+		}
+
 		private readonly SymbolicFeature _feature;
 		private IDBearerSet<FeatureSymbol> _values;
 

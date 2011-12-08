@@ -31,7 +31,7 @@ namespace SIL.Machine
 
 		public string Type
 		{
-			get { return FeatureStruct.GetValue<StringFeatureValue>(AnnotationFeatureSystem.Type).Values.First(); }
+			get { return (string) FeatureStruct.GetValue(AnnotationFeatureSystem.Type); }
 		}
 
 		public Span<TOffset> Span

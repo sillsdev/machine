@@ -2,27 +2,36 @@
 
 namespace SIL.Machine
 {
-	public class Span<TOffset> : IComparable<Span<TOffset>>, IComparable, IEquatable<Span<TOffset>>
+	public struct Span<TOffset> : IComparable<Span<TOffset>>, IComparable, IEquatable<Span<TOffset>>
 	{
+		public static bool operator ==(Span<TOffset> x, Span<TOffset> y)
+		{
+			return x.Equals(y);
+		}
+		public static bool operator !=(Span<TOffset> x, Span<TOffset> y)
+		{
+			return !(x == y);
+		}
+
+		private readonly SpanFactory<TOffset> _spanFactory; 
 		private readonly TOffset _start;
 		private readonly TOffset _end;
-		private readonly Func<TOffset, TOffset, int> _compare;
-		private readonly Func<TOffset, TOffset, int> _calcLength;
-		private readonly bool _includeEndpoint;
 
-		internal Span(Func<TOffset, TOffset, int> compare, Func<TOffset, TOffset, int> calcLength, bool includeEndpoint,
-			TOffset start, TOffset end)
+		internal Span(SpanFactory<TOffset> spanFactory, TOffset start, TOffset end)
 		{
-			_compare = compare;
-			_calcLength = calcLength;
-			_includeEndpoint = includeEndpoint;
+			_spanFactory = spanFactory;
 			_start = start;
 			_end = end;
 		}
 
 		public Span(Span<TOffset> span)
-			: this(span._compare, span._calcLength, span._includeEndpoint, span._start, span._end)
+			: this(span._spanFactory, span._start, span._end)
 		{
+		}
+
+		public bool IsEmpty
+		{
+			get { return _spanFactory.Empty == this; }
 		}
 
 		public TOffset Start
@@ -41,19 +50,9 @@ namespace SIL.Machine
 			}
 		}
 
-		public Span<TOffset> StartSpan
-		{
-			get { return new Span<TOffset>(_compare, _calcLength, _includeEndpoint, _start, _start); }
-		}
-
-		public Span<TOffset> EndSpan
-		{
-			get { return new Span<TOffset>(_compare, _calcLength, _includeEndpoint, _end, _end); }
-		}
-
 		public int Length
 		{
-			get { return _calcLength(_start, _end); }
+			get { return _spanFactory.CalcLength(_start, _end); }
 		}
 
 		public TOffset GetStart(Direction dir)
@@ -66,34 +65,20 @@ namespace SIL.Machine
 			return dir == Direction.LeftToRight ? _end : _start;
 		}
 
-		public Span<TOffset> GetStartSpan(Direction dir)
-		{
-			return dir == Direction.LeftToRight ? StartSpan : EndSpan;
-		}
-
-		public Span<TOffset> GetEndSpan(Direction dir)
-		{
-			return dir == Direction.LeftToRight ? EndSpan : StartSpan;
-		}
-
 		public bool Overlaps(Span<TOffset> other)
 		{
-			if (other == null)
-				return false;
-			return _compare(_start, other._end) <= 0
-				&& ( _includeEndpoint ? _compare(_end, other._start) >= 0 : _compare(_end, other._start) > 0);
+			return _spanFactory.Compare(_start, other._end) <= 0
+				&& ( _spanFactory.IncludeEndpoint ? _spanFactory.Compare(_end, other._start) >= 0 : _spanFactory.Compare(_end, other._start) > 0);
 		}
 
 		public bool Contains(Span<TOffset> other)
 		{
-			if (other == null)
-				return false;
-			return _compare(_start, other._start) <= 0 && _compare(_end, other._end) >= 0;
+			return _spanFactory.Compare(_start, other._start) <= 0 && _spanFactory.Compare(_end, other._end) >= 0;
 		}
 
 		public bool Contains(TOffset offset)
 		{
-			return _compare(_start, offset) <= 0 && _compare(_end, offset) >= 0;
+			return _spanFactory.Compare(_start, offset) <= 0 && _spanFactory.Compare(_end, offset) >= 0;
 		}
 
 		public int CompareTo(Span<TOffset> other)
@@ -103,35 +88,32 @@ namespace SIL.Machine
 
 		public int CompareTo(Span<TOffset> other, Direction dir)
 		{
-			if (other == null)
-				return 1;
-
 			if (dir == Direction.LeftToRight)
 			{
-				if (_compare(_start, other._start) < 0)
+				if (_spanFactory.Compare(_start, other._start) < 0)
 					return -1;
 
-				if (_compare(_start, other._start) > 0)
+				if (_spanFactory.Compare(_start, other._start) > 0)
 					return 1;
 
-				if (_compare(_end, other._end) > 0)
+				if (_spanFactory.Compare(_end, other._end) > 0)
 					return -1;
 
-				if (_compare(_end, other._end) < 0)
+				if (_spanFactory.Compare(_end, other._end) < 0)
 					return 1;
 			}
 			else
 			{
-				if (_compare(_end, other._end) > 0)
+				if (_spanFactory.Compare(_end, other._end) > 0)
 					return -1;
 
-				if (_compare(_end, other._end) < 0)
+				if (_spanFactory.Compare(_end, other._end) < 0)
 					return 1;
 
-				if (_compare(_start, other._start) < 0)
+				if (_spanFactory.Compare(_start, other._start) < 0)
 					return -1;
 
-				if (_compare(_start, other._start) > 0)
+				if (_spanFactory.Compare(_start, other._start) > 0)
 					return 1;
 			}
 
@@ -152,15 +134,11 @@ namespace SIL.Machine
 
 		public override bool Equals(object obj)
 		{
-			if (obj == null)
-				return false;
-			return Equals(obj as Span<TOffset>);
+			return obj is Span<TOffset> && Equals((Span<TOffset>) obj);
 		}
 
 		public bool Equals(Span<TOffset> other)
 		{
-			if (other == null)
-				return false;
 			return _start.Equals(other._start) && _end.Equals(other._end);
 		}
 

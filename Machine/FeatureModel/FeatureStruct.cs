@@ -8,9 +8,19 @@ namespace SIL.Machine.FeatureModel
 {
 	public class FeatureStruct : FeatureValue, IEquatable<FeatureStruct>, ICloneable<FeatureStruct>
 	{
+		public static IDisjunctiveFeatureStructSyntax New()
+		{
+			return new FeatureStructBuilder();
+		}
+
 		public static IDisjunctiveFeatureStructSyntax New(FeatureSystem featSys)
 		{
 			return new FeatureStructBuilder(featSys);
+		}
+
+		public static IDisjunctiveFeatureStructSyntax New(FeatureStruct fs)
+		{
+			return new FeatureStructBuilder(fs.Clone());
 		}
 
 		public static IDisjunctiveFeatureStructSyntax New(FeatureSystem featSys, FeatureStruct fs)

@@ -36,7 +36,7 @@ namespace SIL.Machine.FeatureModel.Fluent
 
 		private void AddDisjunct(Func<IDisjunctiveFeatureStructSyntax, IDisjunctiveFeatureStructSyntax> build)
 		{
-			var fsBuilder = new FeatureStructBuilder(_featSys, _rootFs);
+			var fsBuilder = new FeatureStructBuilder(_featSys, new FeatureStruct(), _rootFs);
 			IDisjunctiveFeatureStructSyntax result = build(fsBuilder);
 			_disjuncts.Add(result.Value);
 		}

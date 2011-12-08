@@ -14,8 +14,18 @@ namespace SIL.Machine.FeatureModel.Fluent
 		private Feature _lastFeature;
 		private bool _not;
 
+		public FeatureStructBuilder()
+			: this(new FeatureStruct())
+		{
+		}
+
 		public FeatureStructBuilder(FeatureSystem featSys)
 			: this(featSys, new FeatureStruct())
+		{
+		}
+
+		public FeatureStructBuilder(FeatureStruct fs)
+			: this(null, fs)
 		{
 		}
 
@@ -33,6 +43,8 @@ namespace SIL.Machine.FeatureModel.Fluent
 
 		public IDisjunctiveFeatureValueSyntax Feature(string featureID)
 		{
+			if (_featSys == null)
+				throw new NotSupportedException("A feature system must be specified.");
 			_lastFeature = _featSys.GetFeature(featureID);
 			return this;
 		}
@@ -45,6 +57,8 @@ namespace SIL.Machine.FeatureModel.Fluent
 
 		public IDisjunctiveFeatureStructSyntax Symbol(string symbolID1, params string[] symbolIDs)
 		{
+			if (_featSys == null)
+				throw new NotSupportedException("A feature system must be specified.");
 			if (!AddSymbols(symbolID1, symbolIDs))
 				throw new ArgumentException("All specified symbols must be associated with the same feature.", "symbolIDs");
 			return this;
@@ -72,6 +86,8 @@ namespace SIL.Machine.FeatureModel.Fluent
 
 		IFeatureValueSyntax IFeatureStructSyntax.Feature(string featureID)
 		{
+			if (_featSys == null)
+				throw new NotSupportedException("A feature system must be specified.");
 			_lastFeature = _featSys.GetFeature(featureID);
 			return this;
 		}
@@ -84,6 +100,8 @@ namespace SIL.Machine.FeatureModel.Fluent
 
 		IFeatureStructSyntax IFeatureStructSyntax.Symbol(string symbolID1, params string[] symbolIDs)
 		{
+			if (_featSys == null)
+				throw new NotSupportedException("A feature system must be specified.");
 			if (!AddSymbols(symbolID1, symbolIDs))
 				throw new ArgumentException("All specified symbols must be associated with the same feature.", "symbolIDs");
 			return this;
@@ -99,7 +117,10 @@ namespace SIL.Machine.FeatureModel.Fluent
 		IDisjunctiveFeatureStructSyntax IDisjunctiveNegatableFeatureValueSyntax.EqualTo(string string1, params string[] strings)
 		{
 			if (_lastFeature is ComplexFeature)
-				throw new ArgumentException("The specified feature cannot be complex.");
+				throw new NotSupportedException("The specified feature cannot be complex.");
+
+			if (_featSys == null && _lastFeature is SymbolicFeature)
+				throw new NotSupportedException("A feature system must be specified.");
 
 			if (!Add(string1, strings))
 				throw new ArgumentException("All specified symbols must be associated with the same feature.", "strings");
@@ -166,7 +187,10 @@ namespace SIL.Machine.FeatureModel.Fluent
 		IFeatureStructSyntax INegatableFeatureValueSyntax.EqualTo(string string1, params string[] strings)
 		{
 			if (_lastFeature is ComplexFeature)
-				throw new ArgumentException("The specified feature cannot be complex.");
+				throw new NotSupportedException("The specified feature cannot be complex.");
+
+			if (_featSys == null && _lastFeature is SymbolicFeature)
+				throw new NotSupportedException("A feature system must be specified.");
 
 			if (!Add(string1, strings))
 				throw new ArgumentException("All specified symbols must be associated with the same feature.", "strings");
@@ -212,7 +236,7 @@ namespace SIL.Machine.FeatureModel.Fluent
 
 		IDisjunctiveFeatureStructSyntax IDisjunctiveFeatureValueSyntax.EqualToFeatureStruct(Func<IDisjunctiveFeatureStructSyntax, IDisjunctiveFeatureStructSyntax> build)
 		{
-			var fsBuilder = new FeatureStructBuilder(_featSys, _rootFS);
+			var fsBuilder = new FeatureStructBuilder(_featSys, new FeatureStruct(), _rootFS);
 			_fs.AddValue(_lastFeature, fsBuilder._fs);
 			build(fsBuilder);
 			return this;
@@ -241,7 +265,7 @@ namespace SIL.Machine.FeatureModel.Fluent
 
 		IFeatureStructSyntax IFeatureValueSyntax.EqualToFeatureStruct(Func<IFeatureStructSyntax, IFeatureStructSyntax> build)
 		{
-			var fsBuilder = new FeatureStructBuilder(_featSys, _rootFS);
+			var fsBuilder = new FeatureStructBuilder(_featSys, new FeatureStruct(), _rootFS);
 			_fs.AddValue(_lastFeature, fsBuilder._fs);
 			build(fsBuilder);
 			return this;

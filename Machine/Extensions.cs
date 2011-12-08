@@ -134,27 +134,27 @@ namespace SIL.Machine
 
 		#region IBidirTreeNode
 
-		public static void PreorderTraverse<TNode>(this IBidirTreeNode<TNode> root, Action<TNode> action) where TNode : class, IBidirTreeNode<TNode>
+		public static void PreorderTraverse<TNode>(this IOrderedBidirTreeNode<TNode> root, Action<TNode> action) where TNode : class, IOrderedBidirTreeNode<TNode>
 		{
 			PreorderTraverse(root, action, Direction.LeftToRight);
 		}
 
-		public static void PreorderTraverse<TNode>(this IBidirTreeNode<TNode> root, Action<TNode> action, Direction dir) where TNode : class, IBidirTreeNode<TNode>
+		public static void PreorderTraverse<TNode>(this IOrderedBidirTreeNode<TNode> root, Action<TNode> action, Direction dir) where TNode : class, IOrderedBidirTreeNode<TNode>
 		{
 			TraverseNode((TNode) root, action, dir, true);
 		}
 
-		public static void PostorderTraverse<TNode>(this IBidirTreeNode<TNode> root, Action<TNode> action) where TNode : class, IBidirTreeNode<TNode>
+		public static void PostorderTraverse<TNode>(this IOrderedBidirTreeNode<TNode> root, Action<TNode> action) where TNode : class, IOrderedBidirTreeNode<TNode>
 		{
 			PostorderTraverse(root, action, Direction.LeftToRight);
 		}
 
-		public static void PostorderTraverse<TNode>(this IBidirTreeNode<TNode> root, Action<TNode> action, Direction dir) where TNode : class, IBidirTreeNode<TNode>
+		public static void PostorderTraverse<TNode>(this IOrderedBidirTreeNode<TNode> root, Action<TNode> action, Direction dir) where TNode : class, IOrderedBidirTreeNode<TNode>
 		{
 			TraverseNode((TNode) root, action, dir, false);
 		}
 
-		private static void TraverseNode<TNode>(TNode node, Action<TNode> action, Direction dir, bool preorder) where TNode : class, IBidirTreeNode<TNode>
+		private static void TraverseNode<TNode>(TNode node, Action<TNode> action, Direction dir, bool preorder) where TNode : class, IOrderedBidirTreeNode<TNode>
 		{
 			if (preorder)
 				action(node);
@@ -164,12 +164,12 @@ namespace SIL.Machine
 				action(node);
 		}
 
-		public static IEnumerable<TNode> GetNodes<TNode>(this IBidirTreeNode<TNode> root) where TNode : class, IBidirTreeNode<TNode>
+		public static IEnumerable<TNode> GetNodes<TNode>(this IOrderedBidirTreeNode<TNode> root) where TNode : class, IOrderedBidirTreeNode<TNode>
 		{
 			return GetNodes(root, Direction.LeftToRight);
 		}
 
-		public static IEnumerable<TNode> GetNodes<TNode>(this IBidirTreeNode<TNode> root, Direction dir) where TNode : class, IBidirTreeNode<TNode>
+		public static IEnumerable<TNode> GetNodes<TNode>(this IOrderedBidirTreeNode<TNode> root, Direction dir) where TNode : class, IOrderedBidirTreeNode<TNode>
 		{
 			var stack = new Stack<TNode>();
 			stack.Push((TNode) root);
@@ -182,7 +182,7 @@ namespace SIL.Machine
 			}
 		}
 
-		public static TNode GetRoot<TNode>(this IBidirTreeNode<TNode> node) where TNode : class, IBidirTreeNode<TNode>
+		public static TNode GetRoot<TNode>(this IOrderedBidirTreeNode<TNode> node) where TNode : class, IOrderedBidirTreeNode<TNode>
 		{
 			var curNode = (TNode) node;
 			while (curNode.Parent != null)

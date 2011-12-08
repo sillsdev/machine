@@ -45,7 +45,7 @@ namespace SIL.Machine.Matching
 
 		protected override bool CanAdd(PatternNode<TData, TOffset> child)
 		{
-			if (child is Expression<TData, TOffset>)
+			if (child is Pattern<TData, TOffset>)
 				return false;
 			return true;
 		}

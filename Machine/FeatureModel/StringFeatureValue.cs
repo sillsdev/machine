@@ -7,6 +7,18 @@ namespace SIL.Machine.FeatureModel
 {
 	public class StringFeatureValue : SimpleFeatureValue, IEquatable<StringFeatureValue>
 	{
+		public static implicit operator StringFeatureValue(string str)
+		{
+			return new StringFeatureValue(str);
+		}
+
+		public static explicit operator string(StringFeatureValue sfv)
+		{
+			if (sfv.Not)
+				return null;
+			return sfv._values.First();
+		}
+
 		private HashSet<string> _values;
 
 		public StringFeatureValue()

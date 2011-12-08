@@ -49,11 +49,11 @@ namespace SIL.Machine.Matching.Fluent
 			list[list.Count - 1] = quantifier;
 		}
 
-		protected void AddExpression(string name, Func<IExpressionSyntax<TData, TOffset>, IExpressionSyntax<TData, TOffset>> build)
+		protected void AddSubpattern(string name, Func<IPatternSyntax<TData, TOffset>, IPatternSyntax<TData, TOffset>> build)
 		{
 			CheckEndAlternation();
-			var exprBuilder = new ExpressionBuilder<TData, TOffset>(name);
-			IExpressionSyntax<TData, TOffset> result = build(exprBuilder);
+			var exprBuilder = new PatternBuilder<TData, TOffset>(name);
+			IPatternSyntax<TData, TOffset> result = build(exprBuilder);
 			AddNode(result.Value);
 		}
 

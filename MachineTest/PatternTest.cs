@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using NUnit.Framework;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
@@ -11,7 +10,7 @@ namespace SIL.Machine.Test
 		[Test]
 		public void PatternMatch()
 		{
-			var ltorPattern = Pattern<StringData, int>.New(SpanFactory).AnnotationsAllowableWhere(ann => ann.Type == "Word")
+			var pattern = Pattern<StringData, int>.New()
 				.Annotation("Word", FeatureStruct.New(WordFeatSys).Symbol("det").Value)
 				.Or
 				.Group(g => g
@@ -20,7 +19,6 @@ namespace SIL.Machine.Test
 					.Group("verb", verb => verb.Annotation("Word", FeatureStruct.New(WordFeatSys).Symbol("verb").Value))
 					.Group("range", range => range
 						.Group("adv", adv => adv.Annotation("Word", FeatureStruct.New(WordFeatSys).Symbol("adv").Value)).LazyOptional)).Value;
-			ltorPattern.Compile();
 
 			StringData sentence = CreateStringData("the old, angry man slept well.");
 			sentence.Annotations.Add("Word", 0, 2, FeatureStruct.New(WordFeatSys).Symbol("det").Value, true);
@@ -29,35 +27,32 @@ namespace SIL.Machine.Test
 			sentence.Annotations.Add("Word", 15, 17, FeatureStruct.New(WordFeatSys).Symbol("noun").Value);
 			sentence.Annotations.Add("Word", 19, 23, FeatureStruct.New(WordFeatSys).Symbol("verb").Value);
 			sentence.Annotations.Add("Word", 25, 28, FeatureStruct.New(WordFeatSys).Symbol("adv").Value);
-			sentence.Annotations.Add("NP", 0, 17, new FeatureStruct());
-			sentence.Annotations.Add("VP", 19, 28, new FeatureStruct());
+			sentence.Annotations.Add("NP", 0, 17, FeatureStruct.New().Value);
+			sentence.Annotations.Add("VP", 19, 28, FeatureStruct.New().Value);
 
-			IEnumerable<PatternMatch<int>> matches;
-			Assert.True(ltorPattern.IsMatch(sentence, out matches));
-			Assert.AreEqual(3, matches.Count());
-			Assert.AreEqual(0, matches.First().Start);
-			Assert.AreEqual(23, matches.First().End);
-			Assert.AreEqual(4, matches.First()["adj"].Start);
-			Assert.AreEqual(13, matches.First()["adj"].End);
-			Assert.AreEqual(9, matches.Last().Start);
-			Assert.AreEqual(23, matches.Last().End);
+			var matcher = new Matcher<StringData, int>(SpanFactory, pattern, new MatcherSettings<int> {Filter = ann => ann.Type == "Word"});
+			Match<StringData, int>[] matches = matcher.Matches(sentence).ToArray();
+			Assert.AreEqual(1, matches.Length);
+			Assert.AreEqual(0, matches[0].Span.Start);
+			Assert.AreEqual(23, matches[0].Span.End);
+			Assert.AreEqual(4, matches[0]["adj"].Span.Start);
+			Assert.AreEqual(13, matches[0]["adj"].Span.End);
 
-			Pattern<StringData, int> rtolPattern = ltorPattern.Reverse();
-			rtolPattern.Compile();
-			Assert.True(rtolPattern.IsMatch(sentence, out matches));
-			Assert.AreEqual(5, matches.Count());
-			Assert.AreEqual(4, matches.First().Start);
-			Assert.AreEqual(28, matches.First().End);
-			Assert.AreEqual(4, matches.First()["adj"].Start);
-			Assert.AreEqual(6, matches.First()["adj"].End);
-			Assert.AreEqual(0, matches.Last().Start);
-			Assert.AreEqual(2, matches.Last().End);
+			matcher = new Matcher<StringData, int>(SpanFactory, pattern, new MatcherSettings<int> {Direction = Direction.RightToLeft, Filter = ann => ann.Type == "Word"});
+			matches = matcher.Matches(sentence).ToArray();
+			Assert.AreEqual(2, matches.Length);
+			Assert.AreEqual(4, matches[0].Span.Start);
+			Assert.AreEqual(28, matches[0].Span.End);
+			Assert.AreEqual(4, matches[0]["adj"].Span.Start);
+			Assert.AreEqual(6, matches[0]["adj"].Span.End);
+			Assert.AreEqual(0, matches[1].Span.Start);
+			Assert.AreEqual(2, matches[1].Span.End);
 		}
 
 		[Test]
 		public void Variables()
 		{
-			var pattern = Pattern<StringData, int>.New(SpanFactory)
+			var pattern = Pattern<StringData, int>.New()
 				.Group("leftEnv", leftEnv => leftEnv
 					.Annotation("Seg", FeatureStruct.New(PhoneticFeatSys)
 						.Symbol("cons+")
@@ -70,10 +65,9 @@ namespace SIL.Machine.Test
 						.Symbol("cons+")
 						.Feature("voice").Not.EqualToVariable("a").Value)).Value;
 
-			pattern.Compile();
-
 			StringData word = CreateStringData("fazk");
-			Assert.IsTrue(pattern.IsMatch(word));
+			var matcher = new Matcher<StringData, int>(SpanFactory, pattern);
+			Assert.IsTrue(matcher.IsMatch(word));
 		}
 	}
 }

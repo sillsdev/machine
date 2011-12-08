@@ -1,4 +1,3 @@
-using System.Linq;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Fsa;
 
@@ -32,7 +31,7 @@ namespace SIL.Machine.Matching
 
     	public string Type
     	{
-    		get { return _fs.GetValue<StringFeatureValue>(AnnotationFeatureSystem.Type).Values.First(); }
+    		get { return (string) _fs.GetValue(AnnotationFeatureSystem.Type); }
     	}
 
         /// <summary>

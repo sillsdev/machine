@@ -12,7 +12,7 @@ namespace SIL.Machine.Test
 		[Test]
 		public void Apply()
 		{
-			var pattern = Pattern<StringData, int>.New(SpanFactory)
+			var pattern = Pattern<StringData, int>.New()
 				.Group("leftEnv", leftEnv => leftEnv
 					.Annotation("Seg", FeatureStruct.New(PhoneticFeatSys)
 						.Symbol("cons+")
@@ -26,17 +26,16 @@ namespace SIL.Machine.Test
 						.Symbol("cons+")
 						.Feature("voice").Not.EqualToVariable("a").Value)).Value;
 
-			var rule = new ActionPatternRule<StringData, int>(pattern, (PatternRule<StringData, int> r, StringData input, PatternMatch<int> match, out StringData output) =>
+			var ruleSpec = new DefaultPatternRuleSpec<StringData, int>(pattern, (PatternRule<StringData, int> r, Match<StringData, int> match, out StringData output) =>
 			                                  	{
-													Span<int> target = match["target"];
-			                                  		foreach (Annotation<int> ann in input.Annotations.GetNodes(target))
+													GroupCapture<int> target = match["target"];
+			                                  		foreach (Annotation<int> ann in match.Input.Annotations.GetNodes(target.Span))
 			                                  			ann.FeatureStruct.PriorityUnion(FeatureStruct.New(PhoneticFeatSys).Symbol("low-").Value);
-			                                  		output = input;
-			                                  		Annotation<int> resumeAnn;
-													input.Annotations.Find(target.GetEnd(pattern.Direction), pattern.Direction, out resumeAnn);
-			                                  		return resumeAnn;
+			                                  		output = match.Input;
+			                                  		return target.Span.End;
 			                                  	});
 
+			var rule = new PatternRule<StringData, int>(SpanFactory, ruleSpec);
 			StringData inputWord = CreateStringData("fazk");
 			IEnumerable<StringData> outputWords;
 			Assert.IsTrue(rule.Apply(inputWord, out outputWords));
@@ -45,7 +44,7 @@ namespace SIL.Machine.Test
 		[Test]
 		public void Batch()
 		{
-			var pattern = Pattern<StringData, int>.New(SpanFactory)
+			var pattern = Pattern<StringData, int>.New()
 				.Group("leftEnv", leftEnv => leftEnv
 					.Annotation("Seg", FeatureStruct.New(PhoneticFeatSys)
 						.Symbol("cons+")
@@ -59,41 +58,35 @@ namespace SIL.Machine.Test
 						.Symbol("cons+")
 						.Feature("voice").Not.EqualToVariable("a").Value)).Value;
 
-			var rule1 = new ActionPatternRule<StringData, int>(pattern, (PatternRule<StringData, int> r, StringData input, PatternMatch<int> match, out StringData output) =>
+			var ruleSpec1 = new DefaultPatternRuleSpec<StringData, int>(pattern, (PatternRule<StringData, int> r, Match<StringData, int> match, out StringData output) =>
 												{
-													Span<int> target = match["target"];
-													foreach (Annotation<int> ann in input.Annotations.GetNodes(target))
+													GroupCapture<int> target = match["target"];
+													foreach (Annotation<int> ann in match.Input.Annotations.GetNodes(target.Span))
 														ann.FeatureStruct.PriorityUnion(FeatureStruct.New(PhoneticFeatSys)
 															.Symbol("low-")
 															.Symbol("mid-").Value);
-													output = input;
-													Annotation<int> resumeAnn;
-													input.Annotations.Find(target.GetEnd(pattern.Direction), pattern.Direction, out resumeAnn);
-													return resumeAnn;
+													output = match.Input;
+													return target.Span.End;
 												},
 												input => input.Annotations.GetNodes("Word").Single().FeatureStruct.IsUnifiable(FeatureStruct.New(WordFeatSys).Symbol("verb").Value));
 
-			var rule2 = new ActionPatternRule<StringData, int>(pattern, (PatternRule<StringData, int> r, StringData input, PatternMatch<int> match, out StringData output) =>
+			var ruleSpec2 = new DefaultPatternRuleSpec<StringData, int>(pattern, (PatternRule<StringData, int> r, Match<StringData, int> match, out StringData output) =>
 												{
-													Span<int> target = match["target"];
-													foreach (Annotation<int> ann in input.Annotations.GetNodes(target))
+													GroupCapture<int> target = match["target"];
+													foreach (Annotation<int> ann in match.Input.Annotations.GetNodes(target.Span))
 														ann.FeatureStruct.PriorityUnion(FeatureStruct.New(PhoneticFeatSys)
 															.Symbol("low-")
 															.Symbol("mid+").Value);
-													output = input;
-													Annotation<int> resumeAnn;
-													input.Annotations.Find(target.GetEnd(pattern.Direction), pattern.Direction, out resumeAnn);
-													return resumeAnn;
+													output = match.Input;
+													return target.Span.End;
 												});
 
-			var batch = new ActionPatternRuleBatch<StringData, int>(SpanFactory);
-			batch.AddRule(rule1);
-			batch.AddRule(rule2);
-			batch.Lhs.Compile();
+			var batchSpec = new BatchPatternRuleSpec<StringData, int>(new[] {ruleSpec1, ruleSpec2});
+			var rule = new PatternRule<StringData, int>(SpanFactory, batchSpec);
 			StringData inputWord = CreateStringData("fazk");
 			inputWord.Annotations.Add("Word", inputWord.Span, FeatureStruct.New(WordFeatSys).Symbol("noun").Value);
 			IEnumerable<StringData> outputWords;
-			Assert.IsTrue(batch.Apply(inputWord, out outputWords));
+			Assert.IsTrue(rule.Apply(inputWord, out outputWords));
 		}
 	}
 }

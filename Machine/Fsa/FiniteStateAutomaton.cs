@@ -307,7 +307,7 @@ namespace SIL.Machine.Fsa
 				{
 					if (match == null || acceptInfo.Priority < match.Priority || (acceptInfo.Priority != match.Priority && !match.IsLazy))
 					{
-						var candidate = new FsaMatch<TOffset>(acceptInfo.ID, matchRegisters, varBindings, acceptInfo.Priority, arc.Target.IsLazy);
+						var candidate = new FsaMatch<TOffset>(acceptInfo.ID, matchRegisters, varBindings, acceptInfo.Priority, arc.Target.IsLazy, nextAnn);
 						if (acceptInfo.Acceptable(data, candidate))
 							match = candidate;
 					}
