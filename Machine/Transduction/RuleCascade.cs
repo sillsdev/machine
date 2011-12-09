@@ -57,11 +57,11 @@ namespace SIL.Machine.Transduction
 			return true;
 		}
 
-		public virtual bool Apply(TData input, out IEnumerable<TData> output)
+		public virtual IEnumerable<TData> Apply(TData input)
 		{
 			var outputList = new List<TData>();
-			output = ApplyRules(input, RuleCascadeOrder == RuleCascadeOrder.Combination && !MultipleApplication ? new HashSet<int>() : null, 0, outputList) ? outputList : null;
-			return output != null;
+			ApplyRules(input, RuleCascadeOrder == RuleCascadeOrder.Combination && !MultipleApplication ? new HashSet<int>() : null, 0, outputList);
+			return outputList;
 		}
 
 		private bool ApplyRules(TData input, HashSet<int> rulesApplied, int ruleIndex, List<TData> output)
@@ -69,10 +69,9 @@ namespace SIL.Machine.Transduction
 			bool applied = false;
 			for (int i = ruleIndex; i < _rules.Count; i++)
 			{
-				IEnumerable<TData> results;
-				if ((rulesApplied == null || !rulesApplied.Contains(i)) && ApplyRule(_rules[i], input, out results))
+				if ((rulesApplied == null || !rulesApplied.Contains(i)))
 				{
-					foreach (TData result in results)
+					foreach (TData result in ApplyRule(_rules[i], input))
 					{
 						switch (RuleCascadeOrder)
 						{
@@ -98,9 +97,9 @@ namespace SIL.Machine.Transduction
 			return applied;
 		}
 
-		protected virtual bool ApplyRule(IRule<TData, TOffset> rule, TData input, out IEnumerable<TData> output)
+		protected virtual IEnumerable<TData> ApplyRule(IRule<TData, TOffset> rule, TData input)
 		{
-			return rule.Apply(input, out output);
+			return rule.Apply(input);
 		}
 	}
 }

@@ -63,27 +63,19 @@ namespace SIL.Machine.Transduction
 			return _ruleSpec.IsApplicable(input);
 		}
 
-		public virtual bool Apply(TData input, out IEnumerable<TData> output)
+		public virtual IEnumerable<TData> Apply(TData input)
 		{
 			if (input.Annotations.Count == 0 || !IsApplicable(input))
-			{
-				output = null;
-				return false;
-			}
+				yield break;
 
-			List<TData> outputList = null;
 			switch (ApplicationMode)
 			{
 				case ApplicationMode.Simultaneous:
 					{
 						TData data = input;
-						Match<TData, TOffset>[] matches = _matcher.Matches(input).ToArray();
-						if (matches.Length > 0)
-						{
-							foreach (Match<TData, TOffset> match in matches)
-								_ruleSpec.ApplyRhs(this, match, out data);
-							outputList = new List<TData> {data};
-						}
+						foreach (Match<TData, TOffset> match in _matcher.Matches(input).ToArray())
+							_ruleSpec.ApplyRhs(this, match, out data);
+						yield return data;
 					}
 					break;
 
@@ -100,7 +92,7 @@ namespace SIL.Machine.Transduction
 						}
 
 						if (applied)
-							outputList = new List<TData> {data};
+							yield return data;
 					}
 					break;
 
@@ -111,7 +103,7 @@ namespace SIL.Machine.Transduction
 						{
 							TData outputData;
 							_ruleSpec.ApplyRhs(this, match, out outputData);
-							outputList = new List<TData> {outputData};
+							yield return outputData;
 						}
 					}
 					break;
@@ -122,16 +114,11 @@ namespace SIL.Machine.Transduction
 						{
 							TData outputData;
 							_ruleSpec.ApplyRhs(this, match, out outputData);
-							if (outputList == null)
-								outputList = new List<TData>();
-							outputList.Add(outputData);
+							yield return outputData;
 						}
 					}
 					break;
 			}
-
-			output = outputList;
-			return output != null;
 		}
 	}
 }

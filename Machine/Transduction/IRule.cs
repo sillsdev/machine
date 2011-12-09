@@ -6,6 +6,6 @@ namespace SIL.Machine.Transduction
 	{
 		bool IsApplicable(TData input);
 
-		bool Apply(TData input, out IEnumerable<TData> output);
+		IEnumerable<TData> Apply(TData input);
 	}
 }

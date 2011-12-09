@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine
@@ -8,11 +7,16 @@ namespace SIL.Machine
 	{
 		private readonly Span<TOffset> _span;
 
+		public Annotation(Span<TOffset> span, FeatureStruct fs)
+			: this(null, span, fs)
+		{
+		}
+
 		public Annotation(string type, Span<TOffset> span, FeatureStruct fs)
 		{
 			_span = span;
 			FeatureStruct = fs;
-			if (type != null)
+			if (!string.IsNullOrEmpty(type))
 				FeatureStruct.AddValue(AnnotationFeatureSystem.Type, type);
 			ListID = -1;
 		}
@@ -25,13 +29,19 @@ namespace SIL.Machine
 		public Annotation(Annotation<TOffset> ann)
 		{
 			_span = ann._span;
-			FeatureStruct = ann.FeatureStruct == null ? null : ann.FeatureStruct.Clone();
+			FeatureStruct = ann.FeatureStruct.Clone();
 			Optional = ann.Optional;
 		}
 
 		public string Type
 		{
-			get { return (string) FeatureStruct.GetValue(AnnotationFeatureSystem.Type); }
+			get
+			{
+				StringFeatureValue sfv;
+				if (FeatureStruct.TryGetValue(AnnotationFeatureSystem.Type, out sfv))
+					return (string) sfv;
+				return null;
+			}
 		}
 
 		public Span<TOffset> Span

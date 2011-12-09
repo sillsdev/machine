@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using NUnit.Framework;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
@@ -37,8 +36,7 @@ namespace SIL.Machine.Test
 
 			var rule = new PatternRule<StringData, int>(SpanFactory, ruleSpec);
 			StringData inputWord = CreateStringData("fazk");
-			IEnumerable<StringData> outputWords;
-			Assert.IsTrue(rule.Apply(inputWord, out outputWords));
+			Assert.IsTrue(rule.Apply(inputWord).Any());
 		}
 
 		[Test]
@@ -85,8 +83,7 @@ namespace SIL.Machine.Test
 			var rule = new PatternRule<StringData, int>(SpanFactory, batchSpec);
 			StringData inputWord = CreateStringData("fazk");
 			inputWord.Annotations.Add("Word", inputWord.Span, FeatureStruct.New(WordFeatSys).Symbol("noun").Value);
-			IEnumerable<StringData> outputWords;
-			Assert.IsTrue(rule.Apply(inputWord, out outputWords));
+			Assert.IsTrue(rule.Apply(inputWord).Any());
 		}
 	}
 }

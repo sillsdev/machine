@@ -9,6 +9,7 @@ namespace SIL.Machine.Matching.Fluent
 		IQuantifierPatternSyntax<TData, TOffset> Group(Func<IGroupSyntax<TData, TOffset>, IGroupSyntax<TData, TOffset>> build);
 
 		IQuantifierPatternSyntax<TData, TOffset> Annotation(string type, FeatureStruct fs);
+		IQuantifierPatternSyntax<TData, TOffset> Annotation(FeatureStruct fs);
 
 		Pattern<TData, TOffset> Value { get; }
 	}
