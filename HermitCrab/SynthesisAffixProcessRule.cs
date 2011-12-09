@@ -35,28 +35,22 @@ namespace SIL.HermitCrab
 			return input.CurrentRule == _rule && input.GetNumAppliesForMorphologicalRule(_rule) < _rule.MaxApplicationCount;
 		}
 
-		public bool Apply(Word input, out IEnumerable<Word> output)
+		public IEnumerable<Word> Apply(Word input)
 		{
-			List<Word> outputList = null;
-
 			FeatureStruct syntacticFS;
 			if (IsApplicable(input) && _rule.RequiredSyntacticFeatureStruct.Unify(input.SyntacticFeatureStruct, true, out syntacticFS))
 			{
 				foreach (PatternRule<Word, ShapeNode> sr in _rules)
 				{
-					IEnumerable<Word> outWords;
-					if (sr.Apply(input, out outWords))
+					Word outWord = sr.Apply(input).SingleOrDefault();
+					if (outWord != null)
 					{
-						Word outWord = outWords.Single();
-
 						outWord.SyntacticFeatureStruct = syntacticFS;
 						outWord.SyntacticFeatureStruct.PriorityUnion(_rule.OutSyntacticFeatureStruct);
 
 						outWord.MorphologicalRuleApplied(_rule);
 
-						if (outputList == null)
-							outputList = new List<Word>();
-						outputList.Add(outWord);
+						yield return outWord;
 
 						AffixProcessAllomorph allo = ((SynthesisAffixPatternRuleSpec) sr.RuleSpec).Allomorph;
 						if (allo.RequiredEnvironments == null && allo.ExcludedEnvironments == null)
@@ -64,9 +58,6 @@ namespace SIL.HermitCrab
 					}
 				}
 			}
-
-			output = outputList;
-			return output != null;
 		}
 	}
 }

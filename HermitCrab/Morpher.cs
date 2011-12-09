@@ -670,18 +670,11 @@ namespace SIL.HermitCrab
             var input = new Word(SurfaceStratum, word);
 
             // Unapply rules
-			IEnumerable<Word> analysisOutput;
-			_analysisRule.Apply(input, out analysisOutput);
-
 			var validWords = new HashSet<Word>();
-			foreach (Word analysisWord in analysisOutput)
+			foreach (Word analysisWord in _analysisRule.Apply(input))
 			{
 				foreach (Word synthesisWord in LexicalLookup(analysisWord))
-				{
-					IEnumerable<Word> synthesisOutput;
-					if (_synthesisRule.Apply(synthesisWord, out synthesisOutput))
-						validWords.UnionWith(synthesisOutput);
-				}
+					validWords.UnionWith(_synthesisRule.Apply(synthesisWord));
 			}
 
 			var matchList = new List<Word>();

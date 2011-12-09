@@ -34,27 +34,26 @@ namespace SIL.HermitCrab
 				&& _rule.OutSyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct);
 		}
 
-		public override bool Apply(Word input, out IEnumerable<Word> output)
+		public override IEnumerable<Word> Apply(Word input)
 		{
-			bool result = base.Apply(input, out output);
+			IEnumerable<Word> output = base.Apply(input);
 			// TODO: add trace record here
-			return result;
+			return output;
 		}
 
-		protected override bool ApplyRule(IRule<Word, ShapeNode> rule, Word input, out IEnumerable<Word> output)
+		protected override IEnumerable<Word> ApplyRule(IRule<Word, ShapeNode> rule, Word input)
 		{
-			if (base.ApplyRule(rule, input, out output))
+			foreach (Word outWord in CallBaseApplyRule(rule, input))
 			{
-				foreach (Word outWord in output)
-				{
-					outWord.SyntacticFeatureStruct.Merge(_rule.RequiredSyntacticFeatureStruct);
-					outWord.MorphologicalRuleUnapplied(_rule);
-				}
-
-				return true;
+				outWord.SyntacticFeatureStruct.Merge(_rule.RequiredSyntacticFeatureStruct);
+				outWord.MorphologicalRuleUnapplied(_rule);
+				yield return outWord;
 			}
+		}
 
-			return false;
+		private IEnumerable<Word> CallBaseApplyRule(IRule<Word, ShapeNode> rule, Word input)
+		{
+			return base.ApplyRule(rule, input);
 		}
 	}
 }

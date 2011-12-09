@@ -20,18 +20,20 @@ namespace SIL.HermitCrab
 		{
 		}
 
-		public override bool Apply(Word input, out IEnumerable<Word> output)
+		public override IEnumerable<Word> Apply(Word input)
 		{
-			if (base.Apply(input, out output))
+			Word output = base.Apply(input).SingleOrDefault();
+			if (output != null)
 			{
 				if (ApplicationMode == ApplicationMode.Iterative)
 				{
-					foreach (Annotation<ShapeNode> ann in input.Annotations)
+					foreach (Annotation<ShapeNode> ann in output.Annotations)
 						ann.FeatureStruct.RemoveValue(HCFeatureSystem.Backtrack);
 				}
-				return true;
+				return output.ToEnumerable();
 			}
-			return false;
+
+			return Enumerable.Empty<Word>();
 		}
 	}
 }

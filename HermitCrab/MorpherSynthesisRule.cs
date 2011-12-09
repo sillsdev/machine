@@ -18,7 +18,7 @@ namespace SIL.HermitCrab
 			return true;
 		}
 
-		public bool Apply(Word input, out IEnumerable<Word> output)
+		public IEnumerable<Word> Apply(Word input)
 		{
 			var inWords = new HashSet<Word>();
 			var outWords = new HashSet<Word>();
@@ -32,8 +32,7 @@ namespace SIL.HermitCrab
 				outWords.Clear();
 				foreach (Word inWord in inWords)
 				{
-					IEnumerable<Word> stratumOutput = strata[i].SynthesisRule.Apply(inWord, out stratumOutput) ? stratumOutput.Concat(inWord) : inWord.ToEnumerable();
-					foreach (Word outWord in stratumOutput)
+					foreach (Word outWord in strata[i].SynthesisRule.Apply(inWord).Concat(inWord))
 					{
 						// promote the word synthesis to the next stratum
 						if (i != strata.Count - 1)
@@ -47,8 +46,7 @@ namespace SIL.HermitCrab
 				inWords.UnionWith(outWords);
 			}
 
-			output = outWords;
-			return true;
+			return outWords;
 		}
 	}
 }

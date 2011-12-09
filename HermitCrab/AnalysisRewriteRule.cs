@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine;
 using SIL.Machine.Matching;
@@ -34,59 +35,66 @@ namespace SIL.HermitCrab
 			}
 		}
 
-		public override bool Apply(Word input, out IEnumerable<Word> output)
+		public override IEnumerable<Word> Apply(Word input)
 		{
-			bool result = base.Apply(input, out output);
+			IEnumerable<Word> output = base.Apply(input);
 
-			return result;
+			return output;
 		}
 
-		protected override bool ApplyRule(IRule<Word, ShapeNode> rule, Word input, out IEnumerable<Word> output)
+		protected override IEnumerable<Word> ApplyRule(IRule<Word, ShapeNode> rule, Word input)
 		{
-			output = null;
 			var rewriteRule = (PatternRule<Word, ShapeNode>) rule;
 			switch (((AnalysisRewriteRuleSpec) rewriteRule.RuleSpec).GetAnalysisReapplyType(_synthesisAppMode))
 			{
 				case AnalysisReapplyType.Normal:
 					{
-						IEnumerable<Word> result;
-						if (base.ApplyRule(rewriteRule, input, out result))
+						Word output = base.ApplyRule(rewriteRule, input).SingleOrDefault();
+						if (output != null)
 						{
 							if (rewriteRule.ApplicationMode == ApplicationMode.Iterative)
-								RemoveSearchedValue(input);
-							output = result;
+								RemoveSearchedValue(output);
+							return output.ToEnumerable();
 						}
 					}
 					break;
 
 				case AnalysisReapplyType.Deletion:
 					{
+						Word output = null;
 						int i = 0;
-						IEnumerable<Word> result;
-						while (i <= _delReapplications && base.ApplyRule(rewriteRule, input, out result))
+						Word data = base.ApplyRule(rewriteRule, input).SingleOrDefault();
+						while (data != null)
 						{
-							input = result.Single();
-							output = input.ToEnumerable();
+							output = data;
 							i++;
+							if (i > _delReapplications)
+								break;
+							data = base.ApplyRule(rewriteRule, data).SingleOrDefault();
 						}
+						if (output != null)
+							return output.ToEnumerable();
 					}
 					break;
 
 				case AnalysisReapplyType.SelfOpaquing:
 					{
-						IEnumerable<Word> result;
-						while (base.ApplyRule(rewriteRule, input, out result))
+						Word output = null;
+						Word data = base.ApplyRule(rewriteRule, input).SingleOrDefault();
+						while (data != null)
 						{
 							if (rewriteRule.ApplicationMode == ApplicationMode.Iterative)
-								RemoveSearchedValue(input);
-							input = result.Single();
-							output = input.ToEnumerable();
+								RemoveSearchedValue(data);
+							output = data;
+							data = base.ApplyRule(rewriteRule, data).SingleOrDefault();
 						}
+						if (output != null)
+							return output.ToEnumerable();
 					}
 					break;
 			}
 
-			return output != null;
+			return Enumerable.Empty<Word>();
 		}
 
 		private void RemoveSearchedValue(IData<ShapeNode> input)

@@ -31,20 +31,22 @@ namespace HermitCrabTest
 			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, nonCons).Value;
 			rule2.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
 
-			IEnumerable<Word> output;
 			var input = new Word(Surface, "pʰitʰ") {Stratum = Allophonic};
-			Assert.IsTrue(rule2.AnalysisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("[p(pʰ)]i[t(tʰ)]", output.Single().ToString());
+			Word output = rule2.AnalysisRule.Apply(input).SingleOrDefault();
+			Assert.IsNotNull(output);
+			input = output;
+			output = rule1.AnalysisRule.Apply(input).SingleOrDefault();
+			Assert.IsNotNull(output);
+			Assert.AreEqual("[p(pʰ)]i[t(tʰ)]", output.ToString());
 
 			input = new Word(Allophonic, "pʰit");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsTrue(rule2.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("(pʰ)i(tʰ)", input.ToString());
+			output = rule1.SynthesisRule.Apply(input).SingleOrDefault();
+			Assert.IsNotNull(output);
+			input = output;
+			output = rule2.SynthesisRule.Apply(input).SingleOrDefault();
+			Assert.IsNotNull(output);
+			output.Stratum = Surface;
+			Assert.AreEqual("(pʰ)i(tʰ)", output.ToString());
 
 			input = new Word(Allophonic, "pit");
 			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));

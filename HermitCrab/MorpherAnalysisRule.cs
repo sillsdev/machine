@@ -19,7 +19,7 @@ namespace SIL.HermitCrab
 			return true;
 		}
 
-		public bool Apply(Word input, out IEnumerable<Word> output)
+		public IEnumerable<Word> Apply(Word input)
 		{
 			var inWords = new List<Word> {input};
 			var outWords = new List<Word>();
@@ -30,10 +30,7 @@ namespace SIL.HermitCrab
 				outWords.Clear();
 				foreach (Word inWord in inWords)
 				{
-					IEnumerable<Word> stratumOutput;
-					stratumOutput = strata[i].AnalysisRule.Apply(inWord, out stratumOutput) ? stratumOutput.Concat(inWord) : inWord.ToEnumerable();
-
-					foreach (Word outWord in stratumOutput)
+					foreach (Word outWord in strata[i].AnalysisRule.Apply(inWord).Concat(inWord))
 					{
 						outputList.Add(outWord);
 
@@ -49,8 +46,7 @@ namespace SIL.HermitCrab
 				inWords.AddRange(outWords);
 			}
 
-			output = outputList;
-			return true;
+			return outputList;
 		}
 	}
 }
