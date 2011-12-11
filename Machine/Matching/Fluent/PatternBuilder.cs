@@ -29,6 +29,12 @@ namespace SIL.Machine.Matching.Fluent
 			return this;
 		}
 
+		public IQuantifierPatternSyntax<TData, TOffset> Annotation(FeatureStruct fs)
+		{
+			AddAnnotation(fs);
+			return this;
+		}
+
 		public Pattern<TData, TOffset> Value
 		{
 			get

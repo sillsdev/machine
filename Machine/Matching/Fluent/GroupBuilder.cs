@@ -43,6 +43,12 @@ namespace SIL.Machine.Matching.Fluent
 			return this;
 		}
 
+		public IQuantifierGroupSyntax<TData, TOffset> Annotation(FeatureStruct fs)
+		{
+			AddAnnotation(fs);
+			return this;
+		}
+
 		public Group<TData, TOffset> Value
 		{
 			get

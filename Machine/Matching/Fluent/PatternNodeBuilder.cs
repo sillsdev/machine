@@ -28,6 +28,12 @@ namespace SIL.Machine.Matching.Fluent
 			_inAlternation = true;
 		}
 
+		protected void AddAnnotation(FeatureStruct fs)
+		{
+			CheckEndAlternation();
+			AddNode(new Constraint<TData, TOffset>(fs));
+		}
+
 		protected void AddAnnotation(string type, FeatureStruct fs)
 		{
 			CheckEndAlternation();
