@@ -94,7 +94,7 @@ namespace SIL.HermitCrab
 
 		private static bool IsUnifiable(Constraint<Word, ShapeNode> constraint, Pattern<Word, ShapeNode> env)
 		{
-			foreach (Constraint<Word, ShapeNode> curConstraint in env.GetNodes().OfType<Constraint<Word, ShapeNode>>())
+			foreach (Constraint<Word, ShapeNode> curConstraint in env.GetNodesDepthFirst().OfType<Constraint<Word, ShapeNode>>())
 			{
 				if (curConstraint.Type == HCFeatureSystem.SegmentType
 					&& !curConstraint.FeatureStruct.IsUnifiable(constraint.FeatureStruct))
@@ -131,7 +131,7 @@ namespace SIL.HermitCrab
 				ShapeNode node = match["target" + i].Span.GetStart(match.Matcher.Direction);
 				if (endNode == null || node.CompareTo(endNode, match.Matcher.Direction) > 0)
 					endNode = node;
-				node.Annotation.FeatureStruct.Merge(constraint.FeatureStruct, match.VariableBindings);
+				node.Annotation.FeatureStruct.Union(constraint.FeatureStruct, match.VariableBindings);
 				i++;
 			}
 

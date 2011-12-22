@@ -79,7 +79,7 @@ namespace SIL.HermitCrab
 						foreach (ShapeNode node in output.Shape.GetNodes(outputSpan))
 						{
 							if (constraint.Type == node.Annotation.Type)
-								node.Annotation.FeatureStruct.Merge(constraint.FeatureStruct, match.VariableBindings);
+								node.Annotation.FeatureStruct.Union(constraint.FeatureStruct, match.VariableBindings);
 						}
 					}
 				}

@@ -30,7 +30,7 @@ namespace SIL.HermitCrab
 		{
 			Pattern<Word, ShapeNode> pattern = lhs[_index];
 			var group = new Group<Word, ShapeNode>(_index.ToString(), pattern.Children.Clone());
-			foreach (Constraint<Word, ShapeNode> constraint in group.GetNodes().OfType<Constraint<Word, ShapeNode>>().Where(c => c.Type == _constraint.Type))
+			foreach (Constraint<Word, ShapeNode> constraint in group.GetNodesDepthFirst().OfType<Constraint<Word, ShapeNode>>().Where(c => c.Type == _constraint.Type))
 				constraint.FeatureStruct.PriorityUnion(_constraint.FeatureStruct);
 			analysisLhs.Children.Add(group);
 		}

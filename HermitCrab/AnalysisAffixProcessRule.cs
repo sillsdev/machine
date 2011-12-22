@@ -45,7 +45,7 @@ namespace SIL.HermitCrab
 		{
 			foreach (Word outWord in CallBaseApplyRule(rule, input))
 			{
-				outWord.SyntacticFeatureStruct.Merge(_rule.RequiredSyntacticFeatureStruct);
+				outWord.SyntacticFeatureStruct.Union(_rule.RequiredSyntacticFeatureStruct);
 				outWord.MorphologicalRuleUnapplied(_rule);
 				yield return outWord;
 			}

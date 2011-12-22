@@ -57,7 +57,7 @@ namespace SIL.HermitCrab
 					throw new MorphException(MorphErrorCode.UninstantiatedFeature);
 				FeatureStruct fs = constraint.FeatureStruct.Clone();
 				fs.ReplaceVariables(match.VariableBindings);
-				curNode = match.Input.Shape.Insert(curNode, constraint.Type, fs);
+				curNode = match.Input.Shape.AddAfter(curNode, constraint.Type, fs);
 			}
 			if (rule.ApplicationMode == ApplicationMode.Iterative)
 				MarkSearchedNodes(startNode, curNode, match.Matcher.Direction);
