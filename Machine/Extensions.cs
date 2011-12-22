@@ -65,6 +65,11 @@ namespace SIL.Machine
 
 		#region IBidirListNode
 
+		public static TNode GetNext<TNode>(this IBidirListNode<TNode> cur, Func<TNode, TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
+		{
+			return GetNext(cur, Direction.LeftToRight, filter);
+		}
+
 		public static TNode GetNext<TNode>(this IBidirListNode<TNode> cur, Direction dir, Func<TNode, TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
 		{
 			var node = (TNode) cur;
@@ -74,6 +79,11 @@ namespace SIL.Machine
 			}
 			while (node != null && !filter((TNode)cur, node));
 			return node;
+		}
+
+		public static TNode GetNext<TNode>(this IBidirListNode<TNode> cur, Func<TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
+		{
+			return GetNext(cur, Direction.LeftToRight, filter);
 		}
 
 		public static TNode GetNext<TNode>(this IBidirListNode<TNode> cur, Direction dir, Func<TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
@@ -87,6 +97,11 @@ namespace SIL.Machine
 			return node;
 		}
 
+		public static TNode GetPrev<TNode>(this IBidirListNode<TNode> cur, Func<TNode, TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
+		{
+			return GetPrev(cur, Direction.LeftToRight, filter);
+		}
+
 		public static TNode GetPrev<TNode>(this IBidirListNode<TNode> cur, Direction dir, Func<TNode, TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
 		{
 			var node = (TNode) cur;
@@ -96,6 +111,11 @@ namespace SIL.Machine
 			}
 			while (node != null && !filter((TNode) cur, node));
 			return node;
+		}
+
+		public static TNode GetPrev<TNode>(this IBidirListNode<TNode> cur, Func<TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
+		{
+			return GetPrev(cur, Direction.LeftToRight, filter);
 		}
 
 		public static TNode GetPrev<TNode>(this IBidirListNode<TNode> cur, Direction dir, Func<TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
@@ -134,46 +154,64 @@ namespace SIL.Machine
 
 		#region IBidirTreeNode
 
-		public static void PreorderTraverse<TNode>(this IOrderedBidirTreeNode<TNode> root, Action<TNode> action) where TNode : class, IOrderedBidirTreeNode<TNode>
+		public static void PreorderTraverse<TNode>(this IBidirTreeNode<TNode> root, Action<TNode> action) where TNode : class, IBidirTreeNode<TNode>
 		{
 			PreorderTraverse(root, action, Direction.LeftToRight);
 		}
 
-		public static void PreorderTraverse<TNode>(this IOrderedBidirTreeNode<TNode> root, Action<TNode> action, Direction dir) where TNode : class, IOrderedBidirTreeNode<TNode>
+		public static void PreorderTraverse<TNode>(this IBidirTreeNode<TNode> root, Action<TNode> action, Direction dir) where TNode : class, IBidirTreeNode<TNode>
 		{
-			TraverseNode((TNode) root, action, dir, true);
+			DepthFirstTraverseNode(root, action, dir, true);
 		}
 
-		public static void PostorderTraverse<TNode>(this IOrderedBidirTreeNode<TNode> root, Action<TNode> action) where TNode : class, IOrderedBidirTreeNode<TNode>
+		public static void PostorderTraverse<TNode>(this IBidirTreeNode<TNode> root, Action<TNode> action) where TNode : class, IBidirTreeNode<TNode>
 		{
 			PostorderTraverse(root, action, Direction.LeftToRight);
 		}
 
-		public static void PostorderTraverse<TNode>(this IOrderedBidirTreeNode<TNode> root, Action<TNode> action, Direction dir) where TNode : class, IOrderedBidirTreeNode<TNode>
+		public static void PostorderTraverse<TNode>(this IBidirTreeNode<TNode> root, Action<TNode> action, Direction dir) where TNode : class, IBidirTreeNode<TNode>
 		{
-			TraverseNode((TNode) root, action, dir, false);
+			DepthFirstTraverseNode(root, action, dir, false);
 		}
 
-		private static void TraverseNode<TNode>(TNode node, Action<TNode> action, Direction dir, bool preorder) where TNode : class, IOrderedBidirTreeNode<TNode>
+		private static void DepthFirstTraverseNode<TNode>(IBidirTreeNode<TNode> node, Action<TNode> action, Direction dir, bool preorder) where TNode : class, IBidirTreeNode<TNode>
 		{
 			if (preorder)
-				action(node);
+				action((TNode) node);
 			foreach (TNode child in node.Children.GetNodes(dir))
-				TraverseNode(child, action, dir, preorder);
+				DepthFirstTraverseNode(child, action, dir, preorder);
 			if (!preorder)
-				action(node);
+				action((TNode) node);
 		}
 
-		public static IEnumerable<TNode> GetNodes<TNode>(this IOrderedBidirTreeNode<TNode> root) where TNode : class, IOrderedBidirTreeNode<TNode>
+		public static void LevelOrderTraverse<TNode>(this IBidirTreeNode<TNode> root, Action<TNode> action) where TNode : class, IBidirTreeNode<TNode>
 		{
-			return GetNodes(root, Direction.LeftToRight);
+			LevelOrderTraverse(root, action, Direction.LeftToRight);
 		}
 
-		public static IEnumerable<TNode> GetNodes<TNode>(this IOrderedBidirTreeNode<TNode> root, Direction dir) where TNode : class, IOrderedBidirTreeNode<TNode>
+		public static void LevelOrderTraverse<TNode>(this IBidirTreeNode<TNode> root, Action<TNode> action, Direction dir) where TNode : class, IBidirTreeNode<TNode>
+		{
+			var queue = new Queue<TNode>();
+			queue.Enqueue((TNode)root);
+			while (queue.Count > 0)
+			{
+				TNode node = queue.Dequeue();
+				action(node);
+				foreach (TNode child in node.Children.GetNodes(dir))
+					queue.Enqueue(child);
+			}
+		}
+
+		public static IEnumerable<TNode> GetNodesDepthFirst<TNode>(this IBidirTreeNode<TNode> root) where TNode : class, IBidirTreeNode<TNode>
+		{
+			return GetNodesDepthFirst(root, Direction.LeftToRight);
+		}
+
+		public static IEnumerable<TNode> GetNodesDepthFirst<TNode>(this IBidirTreeNode<TNode> root, Direction dir) where TNode : class, IBidirTreeNode<TNode>
 		{
 			var stack = new Stack<TNode>();
-			stack.Push((TNode) root);
-			while (stack.Any())
+			stack.Push((TNode)root);
+			while (stack.Count > 0)
 			{
 				TNode node = stack.Pop();
 				yield return node;
@@ -182,14 +220,32 @@ namespace SIL.Machine
 			}
 		}
 
-		public static TNode GetRoot<TNode>(this IOrderedBidirTreeNode<TNode> node) where TNode : class, IOrderedBidirTreeNode<TNode>
+		public static IEnumerable<TNode> GetNodesBreadthFirst<TNode>(this IBidirTreeNode<TNode> root) where TNode : class, IBidirTreeNode<TNode>
 		{
-			var curNode = (TNode) node;
+			return GetNodesBreadthFirst(root, Direction.LeftToRight);
+		}
+
+		public static IEnumerable<TNode> GetNodesBreadthFirst<TNode>(this IBidirTreeNode<TNode> root, Direction dir) where TNode : class, IBidirTreeNode<TNode>
+		{
+			var queue = new Queue<TNode>();
+			queue.Enqueue((TNode)root);
+			while (queue.Count > 0)
+			{
+				TNode node = queue.Dequeue();
+				yield return node;
+				foreach (TNode child in node.Children.GetNodes(dir))
+					queue.Enqueue(child);
+			}
+		}
+
+		public static TNode GetRoot<TNode>(this IBidirTreeNode<TNode> node) where TNode : class, IBidirTreeNode<TNode>
+		{
+			var curNode = (TNode)node;
 			while (curNode.Parent != null)
 				curNode = curNode.Parent;
 			return curNode;
 		}
-			
+
 		#endregion
 
 		#region IEnumerable
@@ -286,6 +342,35 @@ namespace SIL.Machine
 			}
 		}
 
+		public static IEnumerable<TSource> DistinctBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
+		{
+			return source.DistinctBy(keySelector, EqualityComparer<TKey>.Default);
+		}
+
+		public static IEnumerable<TSource> DistinctBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector,
+			IEqualityComparer<TKey> comparer)
+		{
+			if (source == null)
+			{
+				throw new ArgumentNullException("source");
+			}
+			if (keySelector == null)
+			{
+				throw new ArgumentNullException("keySelector");
+			}
+			if (comparer == null)
+			{
+				throw new ArgumentNullException("comparer");
+			}
+
+			var knownKeys = new HashSet<TKey>(comparer);
+			foreach (TSource element in source)
+			{
+				if (knownKeys.Add(keySelector(element)))
+					yield return element;
+			}
+		}
+
 		public static IEnumerable<string> GetIDs<T>(this IEnumerable<T> source) where T : IIDBearer
 		{
 			return source.Select(idBearer => idBearer.ID);
@@ -303,6 +388,28 @@ namespace SIL.Machine
 		public static IEnumerable<T> ToEnumerable<T>(this T item)
 		{
 			yield return item;
+		}
+
+		#endregion
+
+		#region IComparer
+
+		public static IComparer<T> Reverse<T>(this IComparer<T> comparer)
+		{
+			if (comparer == null)
+				throw new ArgumentNullException("comparer");
+			return new ReverseComparer<T>(comparer);
+		}
+
+		#endregion
+
+		#region IList
+
+		public static IEnumerable<T> Skip<T>(this IList<T> source, int count)
+		{
+			using (var e = source.GetEnumerator())
+				while (count < source.Count && e.MoveNext())
+					yield return source[count++];
 		}
 
 		#endregion

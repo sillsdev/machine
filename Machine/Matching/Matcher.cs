@@ -193,7 +193,7 @@ namespace SIL.Machine.Matching
 
 		private Annotation<TOffset> GetStartAnnotation(TData input)
 		{
-			return input.Annotations.GetFirst(_settings.Direction, _settings.Filter);
+			return GetStartAnnotation(input, input.Span.GetStart(_settings.Direction));
 		}
 
 		private Annotation<TOffset> GetStartAnnotation(TData input, TOffset start)

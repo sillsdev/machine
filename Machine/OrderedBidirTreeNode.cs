@@ -2,11 +2,11 @@ using System;
 
 namespace SIL.Machine
 {
-	public class BidirTreeNode<TNode> : BidirListNode<TNode>, IOrderedBidirTreeNode<TNode> where TNode : BidirTreeNode<TNode>
+	public class OrderedBidirTreeNode<TNode> : OrderedBidirListNode<TNode>, IOrderedBidirTreeNode<TNode> where TNode : OrderedBidirTreeNode<TNode>
 	{
-		private readonly BidirList<TNode> _children;
+		private readonly OrderedBidirList<TNode> _children;
 
-		public BidirTreeNode()
+		public OrderedBidirTreeNode()
 		{
 			_children = new TreeBidirList((TNode) this);
 		}
@@ -16,6 +16,16 @@ namespace SIL.Machine
 		public bool IsLeaf
 		{
 			get { return _children.Count == 0; }
+		}
+
+		public int Depth
+		{
+			get { return Parent == null ? 0 : Parent.Depth + 1; }
+		}
+
+		IBidirList<TNode> IBidirTreeNode<TNode>.Children
+		{
+			get { return Children; }
 		}
 
 		public IOrderedBidirList<TNode> Children
@@ -29,7 +39,7 @@ namespace SIL.Machine
 			Parent = null;
 		}
 
-		protected internal override void Init(BidirList<TNode> list)
+		protected internal override void Init(OrderedBidirList<TNode> list)
 		{
 			base.Init(list);
 			TNode parent = ((TreeBidirList) list).Parent;
@@ -41,7 +51,7 @@ namespace SIL.Machine
 			return true;
 		}
 
-		private class TreeBidirList : BidirList<TNode>
+		private class TreeBidirList : OrderedBidirList<TNode>
 		{
 			private readonly TNode _parent;
 
@@ -55,11 +65,11 @@ namespace SIL.Machine
 				get { return _parent; }
 			}
 
-			public override void Insert(TNode node, TNode newNode, Direction dir)
+			public override void AddAfter(TNode node, TNode newNode, Direction dir)
 			{
 				if (!_parent.CanAdd(newNode))
 					throw new ArgumentException("The specified node cannot be added to this node.", "newNode");
-				base.Insert(node, newNode, dir);
+				base.AddAfter(node, newNode, dir);
 			}
 		}
 	}

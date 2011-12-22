@@ -250,12 +250,12 @@ namespace SIL.Machine.FeatureModel
 			// TODO: what do we do about disjunctions?
 		}
 
-		public void Merge(FeatureStruct other)
+		public void Union(FeatureStruct other)
 		{
-			Merge(other, new VariableBindings());
+			Union(other, new VariableBindings());
 		}
 
-		public void Merge(FeatureStruct other, VariableBindings varBindings)
+		public void Union(FeatureStruct other, VariableBindings varBindings)
 		{
 			foreach (KeyValuePair<Feature, FeatureValue> featVal in other._definite)
 			{
@@ -264,7 +264,7 @@ namespace SIL.Machine.FeatureModel
 				if (_definite.TryGetValue(featVal.Key, out thisValue))
 				{
 					thisValue = Dereference(thisValue);
-					if (!thisValue.Merge(otherValue, varBindings))
+					if (!thisValue.Union(otherValue, varBindings))
 						_definite.Remove(featVal.Key);
 				}
 			}
@@ -272,11 +272,11 @@ namespace SIL.Machine.FeatureModel
 			// TODO: what do we do about disjunctions?
 		}
 
-		internal override bool Merge(FeatureValue other, VariableBindings varBindings)
+		internal override bool Union(FeatureValue other, VariableBindings varBindings)
 		{
 			FeatureStruct otherFS;
 			if (Dereference(other, out otherFS))
-				Merge(otherFS, varBindings);
+				Union(otherFS, varBindings);
 			return _definite.Count > 0;
 		}
 

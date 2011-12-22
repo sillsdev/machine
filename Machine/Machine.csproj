@@ -40,9 +40,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnnotationList.cs" />
-    <Compile Include="BidirList.cs" />
-    <Compile Include="BidirListNode.cs" />
-    <Compile Include="BidirTreeNode.cs" />
+    <Compile Include="Forker.cs" />
+    <Compile Include="OrderedBidirList.cs" />
+    <Compile Include="OrderedBidirListNode.cs" />
+    <Compile Include="OrderedBidirTreeNode.cs" />
     <Compile Include="DefaultSpanFactory.cs" />
     <Compile Include="FeatureModel\ComplexFeature.cs" />
     <Compile Include="FeatureModel\Disjunction.cs" />
@@ -114,19 +115,24 @@
     <Compile Include="Matching\PatternNode.cs" />
     <Compile Include="Matching\Quantifier.cs" />
     <Compile Include="NullableValue.cs" />
+    <Compile Include="PriorityQueue.cs" />
+    <Compile Include="ProjectionComparer.cs" />
     <Compile Include="ProjectionEqualityComparer.cs" />
     <Compile Include="ReferenceEqualityComparer.cs" />
+    <Compile Include="ReverseComparer.cs" />
     <Compile Include="Shape.cs" />
     <Compile Include="ShapeNode.cs" />
     <Compile Include="ShapeSpanFactory.cs" />
+    <Compile Include="SkipList.cs" />
+    <Compile Include="SkipListNode.cs" />
     <Compile Include="StringData.cs" />
     <Compile Include="Transduction\BatchPatternRuleSpec.cs" />
     <Compile Include="Transduction\DefaultPatternRuleSpec.cs" />
     <Compile Include="Transduction\IRule.cs" />
     <Compile Include="Transduction\IPatternRuleSpec.cs" />
     <Compile Include="Transduction\PatternRule.cs" />
-    <Compile Include="SkipList.cs" />
-    <Compile Include="SkipListNode.cs" />
+    <Compile Include="BidirList.cs" />
+    <Compile Include="BidirListNode.cs" />
     <Compile Include="Span.cs" />
     <Compile Include="IDBearerBase.cs" />
     <Compile Include="IDBearerSet.cs" />

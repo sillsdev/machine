@@ -7,7 +7,7 @@ namespace SIL.Machine.FeatureModel
 		internal FeatureValue Forward { get; set; }
 
 		internal abstract bool Negation(out FeatureValue output);
-		internal abstract bool Merge(FeatureValue other, VariableBindings varBindings);
+		internal abstract bool Union(FeatureValue other, VariableBindings varBindings);
 		internal abstract bool Subtract(FeatureValue other, VariableBindings varBindings);
 		internal abstract bool IsDefiniteUnifiable(FeatureValue other, bool useDefaults, VariableBindings varBindings);
 		internal abstract bool DestructiveUnify(FeatureValue other, bool useDefaults, bool preserveInput,

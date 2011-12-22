@@ -137,7 +137,7 @@ namespace SIL.Machine.FeatureModel
 			return true;
 		}
 
-		internal override bool Merge(FeatureValue other, VariableBindings varBindings)
+		internal override bool Union(FeatureValue other, VariableBindings varBindings)
 		{
 			SimpleFeatureValue otherSfv;
 			if (!Dereference(other, out otherSfv))

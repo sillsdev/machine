@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace SIL.Machine
+﻿namespace SIL.Machine
 {
-	public interface IIDBearer : IComparable<IIDBearer>, IComparable, IEquatable<IIDBearer>
+	public interface IIDBearer
 	{
 		string ID { get; }
 		string Description { get; }

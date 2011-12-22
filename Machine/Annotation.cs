@@ -3,7 +3,7 @@ using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine
 {
-	public class Annotation<TOffset> : SkipListNode<Annotation<TOffset>>, ICloneable<Annotation<TOffset>>, IComparable<Annotation<TOffset>>, IComparable
+	public class Annotation<TOffset> : BidirListNode<Annotation<TOffset>>, ICloneable<Annotation<TOffset>>, IComparable<Annotation<TOffset>>, IComparable
 	{
 		private readonly Span<TOffset> _span;
 

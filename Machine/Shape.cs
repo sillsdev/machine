@@ -4,7 +4,7 @@ using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine
 {
-	public sealed class Shape : BidirList<ShapeNode>, IData<ShapeNode>, ICloneable<Shape>
+	public sealed class Shape : OrderedBidirList<ShapeNode>, IData<ShapeNode>, ICloneable<Shape>
 	{
 		private readonly SpanFactory<ShapeNode> _spanFactory;
 		private readonly AnnotationList<ShapeNode> _annotations;
@@ -80,30 +80,30 @@ namespace SIL.Machine
 			return dest.SpanFactory.Create(startNode, endNode);
 		}
 
-		public ShapeNode Insert(ShapeNode node, string type, FeatureStruct fs)
+		public ShapeNode AddAfter(ShapeNode node, string type, FeatureStruct fs)
 		{
-			return Insert(node, type, fs, Direction.LeftToRight);
+			return AddAfter(node, type, fs, Direction.LeftToRight);
 		}
 
-		public ShapeNode Insert(ShapeNode node, string type, FeatureStruct fs, bool optional)
+		public ShapeNode AddAfter(ShapeNode node, string type, FeatureStruct fs, bool optional)
 		{
-			return Insert(node, type, fs, optional, Direction.LeftToRight);
+			return AddAfter(node, type, fs, optional, Direction.LeftToRight);
 		}
 
-		public ShapeNode Insert(ShapeNode node, string type, FeatureStruct fs, Direction dir)
+		public ShapeNode AddAfter(ShapeNode node, string type, FeatureStruct fs, Direction dir)
 		{
-			return Insert(node, type, fs, false, dir);
+			return AddAfter(node, type, fs, false, dir);
 		}
 
-		public ShapeNode Insert(ShapeNode node, string type, FeatureStruct fs, bool optional, Direction dir)
+		public ShapeNode AddAfter(ShapeNode node, string type, FeatureStruct fs, bool optional, Direction dir)
 		{
 			var newNode = new ShapeNode(_spanFactory, type, fs);
 			node.Annotation.Optional = optional;
-			Insert(node, newNode, dir);
+			AddAfter(node, newNode, dir);
 			return newNode;
 		}
 
-		public override void Insert(ShapeNode node, ShapeNode newNode, Direction dir)
+		public override void AddAfter(ShapeNode node, ShapeNode newNode, Direction dir)
 		{
 			if (newNode.List == this)
 				throw new ArgumentException("newNode is already a member of this collection.", "newNode");
@@ -145,7 +145,7 @@ namespace SIL.Machine
 				}
 			}
 
-			base.Insert(node, newNode, dir);
+			base.AddAfter(node, newNode, dir);
 
 			_annotations.Add(newNode.Annotation);
 		}

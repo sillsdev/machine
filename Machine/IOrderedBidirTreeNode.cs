@@ -1,11 +1,7 @@
 namespace SIL.Machine
 {
-	public interface IOrderedBidirTreeNode<TNode> : IOrderedBidirListNode<TNode> where TNode : class, IOrderedBidirTreeNode<TNode>
+	public interface IOrderedBidirTreeNode<TNode> : IBidirTreeNode<TNode>, IOrderedBidirListNode<TNode> where TNode : class, IOrderedBidirTreeNode<TNode>
 	{
-		TNode Parent { get; }
-		
-		bool IsLeaf { get; }
-
-		IOrderedBidirList<TNode> Children { get; }
+		new IOrderedBidirList<TNode> Children { get; }
 	}
 }

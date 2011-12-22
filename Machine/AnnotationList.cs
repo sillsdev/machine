@@ -5,7 +5,7 @@ using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine
 {
-	public class AnnotationList<TOffset> : SkipList<Annotation<TOffset>>, ICloneable<AnnotationList<TOffset>>
+	public class AnnotationList<TOffset> : BidirList<Annotation<TOffset>>, ICloneable<AnnotationList<TOffset>>
 	{
 		private readonly SpanFactory<TOffset> _spanFactory; 
 		private int _currentID;

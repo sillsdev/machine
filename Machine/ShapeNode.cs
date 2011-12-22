@@ -3,7 +3,7 @@ using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine
 {
-	public class ShapeNode : BidirListNode<ShapeNode>, IComparable<ShapeNode>, IComparable, ICloneable<ShapeNode>
+	public class ShapeNode : OrderedBidirListNode<ShapeNode>, IComparable<ShapeNode>, IComparable, ICloneable<ShapeNode>
 	{
 		private readonly SpanFactory<ShapeNode> _spanFactory; 
 		private readonly Annotation<ShapeNode> _ann;
