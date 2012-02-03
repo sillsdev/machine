@@ -28,12 +28,12 @@ obj/
 _ReSharper*/
 [Tt]est[Rr]esult*
 
-.hg
-data
-tests
-doc
-zgrviewer
-lib
+data/
+tests/
+doc/
+zgrviewer/
+lib/
+Backup/
 *.Resharper
-.hgignore
+*.DotSettings
 *- Copy*

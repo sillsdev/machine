@@ -10,8 +10,7 @@ namespace SIL.HermitCrab
 	{
 		public SynthesisRewriteRule(SpanFactory<ShapeNode> spanFactory, IEnumerable<SynthesisRewriteRuleSpec> ruleSpecs,
 			ApplicationMode appMode, Direction dir)
-			: base(spanFactory, new BatchPatternRuleSpec<Word, ShapeNode>(ruleSpecs.Cast<IPatternRuleSpec<Word, ShapeNode>>()),
-			appMode, new MatcherSettings<ShapeNode>
+			: base(spanFactory, new BatchPatternRuleSpec<Word, ShapeNode>(ruleSpecs), appMode, new MatcherSettings<ShapeNode>
 			         	{
 			         		Direction = dir,
 							Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.BoundaryType, HCFeatureSystem.AnchorType),

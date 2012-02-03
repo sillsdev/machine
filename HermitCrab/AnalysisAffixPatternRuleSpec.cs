@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using SIL.Machine;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
@@ -67,7 +68,7 @@ namespace SIL.HermitCrab
 			output.Shape.Clear();
 			for (int i = 0; i < _allomorph.Lhs.Count; i++)
 			{
-				GroupCapture<ShapeNode> inputGroup = match[i.ToString()];
+				GroupCapture<ShapeNode> inputGroup = match[i.ToString(CultureInfo.InvariantCulture)];
 				if (inputGroup.Success)
 				{
 					Constraint<Word, ShapeNode> constraint;

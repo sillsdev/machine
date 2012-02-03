@@ -104,7 +104,7 @@ namespace SIL.HermitCrab
 			var mruleAnalysisRule = new RuleCascade<Word, ShapeNode>(_mrules.Select(mrule => mrule.AnalysisRule).Reverse(), MorphologicalRuleOrder, true);
 			_analysisRule = new RuleCascade<Word, ShapeNode>(new[] { mruleAnalysisRule, pruleAnalysisRule });
 
-			var pattern = new Pattern<Shape, ShapeNode>(_entries.SelectMany(entry => entry.Allomorphs, (entry, allo) => CreateSubpattern(allo)).Cast<PatternNode<Shape, ShapeNode>>());
+			var pattern = new Pattern<Shape, ShapeNode>(_entries.SelectMany(entry => entry.Allomorphs, (entry, allo) => CreateSubpattern(allo)));
 			_entriesMatcher = new Matcher<Shape, ShapeNode>(_spanFactory, pattern, new MatcherSettings<ShapeNode>
 			                                                                       	{
 																						Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType),

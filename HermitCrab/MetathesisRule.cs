@@ -225,7 +225,7 @@ namespace SIL.HermitCrab
                     : ReverseNodes(partNodes);
                 foreach (ShapeNode node in partEnum)
                 {
-                    cur.Insert(node, Direction.RIGHT);
+                    cur.AddAfter(node, Direction.RIGHT);
                     cur = node;
                 }
             }
