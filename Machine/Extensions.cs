@@ -238,12 +238,27 @@ namespace SIL.Machine
 			}
 		}
 
-		public static TNode GetRoot<TNode>(this IBidirTreeNode<TNode> node) where TNode : class, IBidirTreeNode<TNode>
+		public static TNode Root<TNode>(this IBidirTreeNode<TNode> node) where TNode : class, IBidirTreeNode<TNode>
 		{
 			var curNode = (TNode)node;
 			while (curNode.Parent != null)
 				curNode = curNode.Parent;
 			return curNode;
+		}
+
+		public static int DescendantCount<TNode>(this IBidirTreeNode<TNode> node) where TNode : class, IBidirTreeNode<TNode>
+		{
+			return node.Children.Aggregate(node.Children.Count, (count, child) => count + child.DescendantCount());
+		}
+
+		public static int Depth<TNode>(this IBidirTreeNode<TNode> node) where TNode : class, IBidirTreeNode<TNode>
+		{
+			return node.Parent == null ? 0 : node.Parent.Depth() + 1;
+		}
+
+		public static bool IsLeaf<TNode>(this IBidirTreeNode<TNode> node) where TNode : class, IBidirTreeNode<TNode>
+		{
+			return node.Children.Count == 0;
 		}
 
 		#endregion
@@ -261,17 +276,6 @@ namespace SIL.Machine
 		{
 			foreach (T i in source)
 				yield return i.Clone();
-		}
-
-		public static IEnumerable<TResult> Zip<TFirst, TSecond, TResult>(this IEnumerable<TFirst> first, IEnumerable<TSecond> second,
-			Func<TFirst, TSecond, TResult> resultSelector)
-		{
-			using (IEnumerator<TFirst> iterator1 = first.GetEnumerator())
-			using (IEnumerator<TSecond> iterator2 = second.GetEnumerator())
-			{
-				while (iterator1.MoveNext() && iterator2.MoveNext())
-					yield return resultSelector(iterator1.Current, iterator2.Current);
-			} 
 		}
 
 		public static IEnumerable<Tuple<TFirst, TSecond>> Zip<TFirst, TSecond>(this IEnumerable<TFirst> first, IEnumerable<TSecond> second)
@@ -410,6 +414,58 @@ namespace SIL.Machine
 			using (var e = source.GetEnumerator())
 				while (count < source.Count && e.MoveNext())
 					yield return source[count++];
+		}
+
+		public static ReadOnlyList<T> AsReadOnlyList<T>(this IList<T> list)
+		{
+			return new ReadOnlyList<T>(list);
+		}
+
+		#endregion
+
+		#region IDictionary
+
+		public static void UpdateValue<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, Func<TValue> defaultValueSelector, Func<TValue, TValue> valueSelector)
+		{
+			TValue value;
+			if (!dictionary.TryGetValue(key, out value))
+				value = defaultValueSelector();
+
+			dictionary[key] = valueSelector(value);
+		}
+
+		public static TValue GetValue<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, Func<TValue> defaultValueSelector)
+		{
+			TValue value;
+			if (!dictionary.TryGetValue(key, out value))
+			{
+				value = defaultValueSelector();
+				dictionary[key] = value;
+			}
+			return value;
+		}
+
+		public static ReadOnlyDictionary<TKey, TValue> AsReadOnlyDictionary<TKey, TValue>(this IDictionary<TKey, TValue> dictionary)
+		{
+			return new ReadOnlyDictionary<TKey, TValue>(dictionary);
+		}
+
+		#endregion
+
+		#region ICollection
+
+		public static ReadOnlyCollection<T> AsReadOnlyCollection<T>(this ICollection<T> collection)
+		{
+			return new ReadOnlyCollection<T>(collection);
+		}
+
+		#endregion
+
+		#region ISet
+
+		public static ReadOnlySet<T> AsReadOnlySet<T>(this ISet<T> set)
+		{
+			return new ReadOnlySet<T>(set);
 		}
 
 		#endregion

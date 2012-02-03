@@ -29,6 +29,11 @@ namespace SIL.Machine
 		{
 		}
 
+		public SpanFactory<TOffset> SpanFactory
+		{
+			get { return _spanFactory; }
+		}
+
 		public bool IsEmpty
 		{
 			get { return _spanFactory.Empty == this; }
@@ -129,7 +134,7 @@ namespace SIL.Machine
 
 		public override int GetHashCode()
 		{
-			return _start.GetHashCode() ^ _end.GetHashCode();
+			return (_start == null ? 0 : _start.GetHashCode()) ^ (_end == null ? 0 : _end.GetHashCode());
 		}
 
 		public override bool Equals(object obj)
@@ -139,7 +144,27 @@ namespace SIL.Machine
 
 		public bool Equals(Span<TOffset> other)
 		{
-			return _start.Equals(other._start) && _end.Equals(other._end);
+			if (_start == null)
+			{
+				if (other._start != null)
+					return false;
+			}
+			else if (!_start.Equals(other._start))
+			{
+				return false;
+			}
+
+			if (_end == null)
+			{
+				if (other._end != null)
+					return false;
+			}
+			else if (!_end.Equals(other._end))
+			{
+				return false;
+			}
+
+			return true;
 		}
 
 		public override string ToString()

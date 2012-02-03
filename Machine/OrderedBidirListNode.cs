@@ -73,7 +73,7 @@ namespace SIL.Machine
 		/// </summary>
 		/// <param name="newNode">The new node.</param>
 		/// <param name="dir">The direction to insert the node.</param>
-		public void Insert(TNode newNode, Direction dir)
+		public void AddAfter(TNode newNode, Direction dir)
 		{
 			if (List == null)
 				return;
@@ -81,9 +81,9 @@ namespace SIL.Machine
 			_list.AddAfter((TNode) this, newNode, dir);
 		}
 
-		public void Insert(TNode newNode)
+		public void AddAfter(TNode newNode)
 		{
-			Insert(newNode, Direction.LeftToRight);
+			AddAfter(newNode, Direction.LeftToRight);
 		}
 
 		protected internal virtual void Init(OrderedBidirList<TNode> list)

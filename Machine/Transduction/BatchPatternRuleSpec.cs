@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using SIL.Machine.Matching;
 
@@ -25,9 +24,9 @@ namespace SIL.Machine.Transduction
 				AddRuleSpec(ruleSpec);
 		}
 
-		public ReadOnlyCollection<IPatternRuleSpec<TData, TOffset>> RuleSpecs
+		public IReadOnlyList<IPatternRuleSpec<TData, TOffset>> RuleSpecs
 		{
-			get { return _ruleSpecs.AsReadOnly(); }
+			get { return _ruleSpecs.AsReadOnlyList(); }
 		}
 
 		public void AddRuleSpec(IPatternRuleSpec<TData, TOffset> ruleSpec)

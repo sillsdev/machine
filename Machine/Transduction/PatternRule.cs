@@ -66,7 +66,7 @@ namespace SIL.Machine.Transduction
 		public virtual IEnumerable<TData> Apply(TData input)
 		{
 			if (input.Annotations.Count == 0 || !IsApplicable(input))
-				yield break;
+				return Enumerable.Empty<TData>();
 
 			switch (ApplicationMode)
 			{
@@ -75,9 +75,8 @@ namespace SIL.Machine.Transduction
 						TData data = input;
 						foreach (Match<TData, TOffset> match in _matcher.Matches(input).ToArray())
 							_ruleSpec.ApplyRhs(this, match, out data);
-						yield return data;
+						return data.ToEnumerable();
 					}
-					break;
 
 				case ApplicationMode.Iterative:
 					{
@@ -92,7 +91,7 @@ namespace SIL.Machine.Transduction
 						}
 
 						if (applied)
-							yield return data;
+							return data.ToEnumerable();
 					}
 					break;
 
@@ -103,22 +102,25 @@ namespace SIL.Machine.Transduction
 						{
 							TData outputData;
 							_ruleSpec.ApplyRhs(this, match, out outputData);
-							yield return outputData;
+							return outputData.ToEnumerable();
 						}
 					}
 					break;
 
 				case ApplicationMode.Multiple:
 					{
+						var results = new List<TData>();
 						foreach (Match<TData, TOffset> match in _matcher.Matches(input))
 						{
 							TData outputData;
 							_ruleSpec.ApplyRhs(this, match, out outputData);
-							yield return outputData;
+							results.Add(outputData);
 						}
+						return results;
 					}
-					break;
 			}
+
+			return Enumerable.Empty<TData>();
 		}
 	}
 }

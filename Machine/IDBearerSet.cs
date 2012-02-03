@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace SIL.Machine
 {
-	public class IDBearerSet<T> : ICollection<T> where T : IIDBearer
+	public class IDBearerSet<T> : ISet<T> where T : IIDBearer
 	{
 		private readonly Dictionary<string, T> _idBearers; 
 
@@ -40,6 +40,15 @@ namespace SIL.Machine
 		{
 			foreach (T item in this.Where(items.Contains).ToArray())
 				Remove(item);
+		}
+
+		public void SymmetricExceptWith(IEnumerable<T> other)
+		{
+			foreach (T item in other.Distinct())
+			{
+				if (!Remove(item))
+					Add(item);
+			}
 		}
 
 		public bool Overlaps(IEnumerable<T> items)

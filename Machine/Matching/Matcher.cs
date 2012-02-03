@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using SIL.Machine.Fsa;
 
@@ -50,15 +49,15 @@ namespace SIL.Machine.Matching
 			GeneratePatternNfa(_fsa.StartState, _pattern, null, new Func<Match<TData, TOffset>, bool>[0], ref nextPriority);
 			_fsa.MarkArcPriorities();
 
-			var writer = new StreamWriter(string.Format("c:\\{0}-nfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
-			_fsa.ToGraphViz(writer);
-			writer.Close();
+			//var writer = new StreamWriter(string.Format("c:\\{0}-nfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
+			//_fsa.ToGraphViz(writer);
+			//writer.Close();
 
 			_fsa.Determinize(_settings.Quasideterministic);
 
-			writer = new StreamWriter(string.Format("c:\\{0}-dfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
-			_fsa.ToGraphViz(writer);
-			writer.Close();
+			//writer = new StreamWriter(string.Format("c:\\{0}-dfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
+			//_fsa.ToGraphViz(writer);
+			//writer.Close();
 		}
 
 		private void GeneratePatternNfa(State<TData, TOffset> startState, Pattern<TData, TOffset> pattern, string parentName,
@@ -68,7 +67,7 @@ namespace SIL.Machine.Matching
 			acceptables = acceptables.Concat(pattern.Acceptable).ToArray();
 			if (pattern.Children.All(node => node is Pattern<TData, TOffset>))
 			{
-				foreach (Pattern<TData, TOffset> childExpr in pattern.Children.GetNodes(_fsa.Direction))
+				foreach (Pattern<TData, TOffset> childExpr in pattern.Children)
 					GeneratePatternNfa(startState, childExpr, name, acceptables, ref nextPriority);
 			}
 			else

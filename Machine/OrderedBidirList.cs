@@ -312,6 +312,7 @@ namespace SIL.Machine
             if (node != null && node.List != this)
                 throw new ArgumentException("node is not a member of this collection.", "node");
 
+    		newNode.Remove();
 			newNode.Init(this);
 
 			if (dir == Direction.RightToLeft)

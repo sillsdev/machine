@@ -25,12 +25,12 @@ namespace SIL.Machine.Matching
 
 		protected Pattern<TData, TOffset> Pattern
 		{
-			get { return this.GetRoot() as Pattern<TData, TOffset>; }
+			get { return this.Root() as Pattern<TData, TOffset>; }
 		}
 
 		internal virtual State<TData, TOffset> GenerateNfa(FiniteStateAutomaton<TData, TOffset> fsa, State<TData, TOffset> startState)
 		{
-			if (IsLeaf)
+			if (this.IsLeaf())
 				return startState;
 
 			foreach (PatternNode<TData, TOffset> child in Children.GetNodes(fsa.Direction))

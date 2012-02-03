@@ -4,10 +4,6 @@
 	{
 		TNode Parent { get; }
 
-		bool IsLeaf { get; }
-
-		int Depth { get; }
-
 		IBidirList<TNode> Children { get; }
 	}
 }

@@ -59,14 +59,14 @@ namespace SIL.Machine
 			return List.Remove((TNode) this);
 		}
 
-		internal void Init(BidirList<TNode> list, bool singleState)
+		protected internal virtual void Init(BidirList<TNode> list, bool singleState)
 		{
 			_list = list;
 			_leftToRightState = new State();
 			_rightToLeftState = singleState ? _leftToRightState : new State();
 		}
 
-		internal void Clear()
+		protected internal virtual void Clear()
 		{
 			_list = null;
 			_leftToRightState = null;

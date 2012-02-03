@@ -13,16 +13,6 @@ namespace SIL.Machine
 
 		public TNode Parent { get; private set; }
 
-		public bool IsLeaf
-		{
-			get { return _children.Count == 0; }
-		}
-
-		public int Depth
-		{
-			get { return Parent == null ? 0 : Parent.Depth + 1; }
-		}
-
 		IBidirList<TNode> IBidirTreeNode<TNode>.Children
 		{
 			get { return Children; }
@@ -42,8 +32,7 @@ namespace SIL.Machine
 		protected internal override void Init(OrderedBidirList<TNode> list)
 		{
 			base.Init(list);
-			TNode parent = ((TreeBidirList) list).Parent;
-			Parent = parent;
+			Parent = ((TreeBidirList) list).Parent;
 		}
 
 		protected virtual bool CanAdd(TNode child)

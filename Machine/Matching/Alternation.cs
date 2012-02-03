@@ -22,7 +22,7 @@ namespace SIL.Machine.Matching
 
 		internal override State<TData, TOffset> GenerateNfa(FiniteStateAutomaton<TData, TOffset> fsa, State<TData, TOffset> startState)
 		{
-			if (IsLeaf)
+			if (this.IsLeaf())
 				return startState;
 
 			State<TData, TOffset> endState = fsa.CreateState();

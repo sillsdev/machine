@@ -21,8 +21,8 @@ namespace SIL.Machine
 			_annotations = annotations;
 			Begin.Tag = int.MinValue;
 			End.Tag = int.MaxValue;
-			_annotations.Add(Begin.Annotation);
-			_annotations.Add(End.Annotation);
+			_annotations.Add(Begin.Annotation, false);
+			_annotations.Add(End.Annotation, false);
 		}
 
 		public Shape(Shape shape)

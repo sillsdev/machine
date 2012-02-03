@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -10,8 +10,14 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SIL.Machine</RootNamespace>
     <AssemblyName>Machine</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -40,7 +46,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnnotationList.cs" />
-    <Compile Include="Forker.cs" />
+    <Compile Include="BidirTreeNode.cs" />
+    <Compile Include="IReadOnlyCollection.cs" />
+    <Compile Include="IReadOnlyDictionary.cs" />
+    <Compile Include="IReadOnlyList.cs" />
+    <Compile Include="IReadOnlySet.cs" />
     <Compile Include="OrderedBidirList.cs" />
     <Compile Include="OrderedBidirListNode.cs" />
     <Compile Include="OrderedBidirTreeNode.cs" />
@@ -118,6 +128,10 @@
     <Compile Include="PriorityQueue.cs" />
     <Compile Include="ProjectionComparer.cs" />
     <Compile Include="ProjectionEqualityComparer.cs" />
+    <Compile Include="ReadOnlyCollection.cs" />
+    <Compile Include="ReadOnlyDictionary.cs" />
+    <Compile Include="ReadOnlyList.cs" />
+    <Compile Include="ReadOnlySet.cs" />
     <Compile Include="ReferenceEqualityComparer.cs" />
     <Compile Include="ReverseComparer.cs" />
     <Compile Include="Shape.cs" />
@@ -145,7 +159,6 @@
     <Compile Include="Fsa\TagMapCommand.cs" />
     <Compile Include="Fsa\Arc.cs" />
     <Compile Include="Transduction\RuleCascade.cs" />
-    <Compile Include="Tuple.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

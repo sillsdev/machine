@@ -3,8 +3,9 @@ using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine
 {
-	public class Annotation<TOffset> : BidirListNode<Annotation<TOffset>>, ICloneable<Annotation<TOffset>>, IComparable<Annotation<TOffset>>, IComparable
+	public class Annotation<TOffset> : BidirListNode<Annotation<TOffset>>, IBidirTreeNode<Annotation<TOffset>>, ICloneable<Annotation<TOffset>>, IComparable<Annotation<TOffset>>, IComparable
 	{
+		private readonly AnnotationList<TOffset> _children;
 		private readonly Span<TOffset> _span;
 
 		public Annotation(Span<TOffset> span, FeatureStruct fs)
@@ -19,6 +20,7 @@ namespace SIL.Machine
 			if (!string.IsNullOrEmpty(type))
 				FeatureStruct.AddValue(AnnotationFeatureSystem.Type, type);
 			ListID = -1;
+			_children = new AnnotationList<TOffset>(span.SpanFactory, this);
 		}
 
 		internal Annotation(Span<TOffset> span)
@@ -31,6 +33,30 @@ namespace SIL.Machine
 			_span = ann._span;
 			FeatureStruct = ann.FeatureStruct.Clone();
 			Optional = ann.Optional;
+		}
+
+		public Annotation<TOffset> Parent { get; private set; }
+
+		public AnnotationList<TOffset> Children
+		{
+			get { return _children; }
+		}
+
+		IBidirList<Annotation<TOffset>> IBidirTreeNode<Annotation<TOffset>>.Children
+		{
+			get { return _children; }
+		}
+
+		protected internal override void Clear()
+		{
+			base.Clear();
+			Parent = null;
+		}
+
+		protected internal override void Init(BidirList<Annotation<TOffset>> list, bool singleState)
+		{
+			base.Init(list, singleState);
+			Parent = ((AnnotationList<TOffset>) list).Parent;
 		}
 
 		public string Type
@@ -60,6 +86,14 @@ namespace SIL.Machine
 		public bool Optional { get; set; }
 
 		internal int ListID { get; set; }
+
+		public bool Remove(bool preserveChildren)
+		{
+			if (List == null)
+				return false;
+
+			return ((AnnotationList<TOffset>) List).Remove(this, preserveChildren);
+		}
 
 		public Annotation<TOffset> Clone()
 		{

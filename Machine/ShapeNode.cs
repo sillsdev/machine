@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine
@@ -67,7 +68,7 @@ namespace SIL.Machine
 				foreach (ShapeNode node in List)
 				{
 					if (node == this)
-						return i.ToString();
+						return i.ToString(CultureInfo.InvariantCulture);
 					i++;
 				}
 			}
