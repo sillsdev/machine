@@ -59,7 +59,7 @@ namespace SIL.HermitCrab
 			{
 				FeatureStruct fs = constraint.FeatureStruct.Clone();
 				fs.ReplaceVariables(match.VariableBindings);
-				curNode = match.Input.Shape.AddAfter(curNode, constraint.Type, fs, true);
+				curNode = match.Input.Shape.AddAfter(curNode, fs, true);
 			}
 
 			for (int i = 0; i < _targetCount; i++)

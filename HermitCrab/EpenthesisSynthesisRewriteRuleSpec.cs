@@ -53,11 +53,11 @@ namespace SIL.HermitCrab
 				if (match.Input.Shape.Count == 256)
 					throw new MorphException(MorphErrorCode.TooManySegs);
 				var constraint = (Constraint<Word, ShapeNode>) node;
-				if (match.VariableBindings.Values.OfType<SymbolicFeatureValue>().Where(value => value.Feature.DefaultValue.Equals(value)).Any())
+				if (match.VariableBindings.Values.OfType<SymbolicFeatureValue>().Any(value => value.Feature.DefaultValue.Equals(value)))
 					throw new MorphException(MorphErrorCode.UninstantiatedFeature);
 				FeatureStruct fs = constraint.FeatureStruct.Clone();
 				fs.ReplaceVariables(match.VariableBindings);
-				curNode = match.Input.Shape.AddAfter(curNode, constraint.Type, fs);
+				curNode = match.Input.Shape.AddAfter(curNode, fs);
 			}
 			if (rule.ApplicationMode == ApplicationMode.Iterative)
 				MarkSearchedNodes(startNode, curNode, match.Matcher.Direction);

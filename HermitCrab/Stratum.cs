@@ -107,7 +107,7 @@ namespace SIL.HermitCrab
 			var pattern = new Pattern<Shape, ShapeNode>(_entries.SelectMany(entry => entry.Allomorphs, (entry, allo) => CreateSubpattern(allo)));
 			_entriesMatcher = new Matcher<Shape, ShapeNode>(_spanFactory, pattern, new MatcherSettings<ShapeNode>
 			                                                                       	{
-																						Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType),
+																						Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType),
 																						Quasideterministic = true
 			                                                                       	});
 		}
@@ -115,10 +115,10 @@ namespace SIL.HermitCrab
 		private Pattern<Shape, ShapeNode> CreateSubpattern(RootAllomorph allomorph)
 		{
 			var subpattern = new Pattern<Shape, ShapeNode>(allomorph.Morpheme.ID);
-			subpattern.Children.Add(new Constraint<Shape, ShapeNode>(HCFeatureSystem.AnchorType, FeatureStruct.New().Symbol(HCFeatureSystem.LeftSide).Value));
-			foreach (ShapeNode node in allomorph.Shape.Where(node => node.Annotation.Type == HCFeatureSystem.SegmentType))
-				subpattern.Children.Add(new Constraint<Shape, ShapeNode>(HCFeatureSystem.SegmentType, node.Annotation.FeatureStruct.Clone()));
-			subpattern.Children.Add(new Constraint<Shape, ShapeNode>(HCFeatureSystem.AnchorType, FeatureStruct.New().Symbol(HCFeatureSystem.RightSide).Value));
+			subpattern.Children.Add(new Constraint<Shape, ShapeNode>(FeatureStruct.New().Symbol(HCFeatureSystem.AnchorType).Symbol(HCFeatureSystem.LeftSide).Value));
+			foreach (ShapeNode node in allomorph.Shape.Where(node => node.Annotation.Type() == HCFeatureSystem.SegmentType))
+				subpattern.Children.Add(new Constraint<Shape, ShapeNode>(node.Annotation.FeatureStruct.Clone()));
+			subpattern.Children.Add(new Constraint<Shape, ShapeNode>(FeatureStruct.New().Symbol(HCFeatureSystem.AnchorType).Symbol(HCFeatureSystem.RightSide).Value));
 			return subpattern;
 		}
 

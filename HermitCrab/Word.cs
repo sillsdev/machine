@@ -85,7 +85,7 @@ namespace SIL.HermitCrab
 		{
 			get
 			{
-				return from morphAnn in _shape.Annotations.GetNodes(HCFeatureSystem.MorphType)
+				return from morphAnn in _shape.Annotations.Where(ann => ann.Type() == HCFeatureSystem.MorphType)
 					   select new Morph(morphAnn.Span, _allomorphs[(string) morphAnn.FeatureStruct.GetValue(HCFeatureSystem.Allomorph)]);
 			}
 		}
@@ -99,7 +99,7 @@ namespace SIL.HermitCrab
 		{
 			Span<ShapeNode> destSpan = _shape.CopyTo(srcSpan, dest._shape);
 			Dictionary<ShapeNode, ShapeNode> mapping = _shape.GetNodes(srcSpan).Zip(dest._shape.GetNodes(destSpan)).ToDictionary(tuple => tuple.Item1, tuple => tuple.Item2);
-			foreach (Annotation<ShapeNode> morphAnn in _shape.Annotations.GetNodes(srcSpan).Where(ann => ann.Type == HCFeatureSystem.MorphType))
+			foreach (Annotation<ShapeNode> morphAnn in _shape.Annotations.GetNodes(srcSpan).Where(ann => ann.Type() == HCFeatureSystem.MorphType))
 			{
 				var id = (string) morphAnn.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
 				dest.MarkMorph(mapping[morphAnn.Span.Start], mapping[morphAnn.Span.End], _allomorphs[id]);
@@ -115,8 +115,7 @@ namespace SIL.HermitCrab
 
 		internal void MarkMorph(Span<ShapeNode> span, Allomorph allomorph)
 		{
-			_shape.Annotations.Add(HCFeatureSystem.MorphType, span,
-				FeatureStruct.New().Feature(HCFeatureSystem.Allomorph).EqualTo(allomorph.ID).Value);
+			_shape.Annotations.Add(span, FeatureStruct.New().Symbol(HCFeatureSystem.MorphType).Feature(HCFeatureSystem.Allomorph).EqualTo(allomorph.ID).Value);
 			_allomorphs.Add(allomorph);
 		}
 

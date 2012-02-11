@@ -105,7 +105,7 @@ namespace SIL.HermitCrab
 					return;
 				}
 
-				if (node.Annotation.Type == "segment")
+				if (node.Annotation.Type() == HCFeatureSystem.SegmentType)
 				{
 					TrieNode tnode = null;
 					foreach (TrieNode child in _children)
@@ -151,7 +151,7 @@ namespace SIL.HermitCrab
 				}
 				else
 				{
-					if (node.Annotation.Type == "segment")
+					if (node.Annotation.Type() == HCFeatureSystem.SegmentType)
 					{
 						ShapeNode nextNode = node.GetNext(dir);
 						var segMatches = new List<Match>();

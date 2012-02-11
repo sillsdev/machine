@@ -18,8 +18,7 @@ namespace SIL.HermitCrab
 			_allomorph = allomorph;
 			_modifyFromConstraints = new Dictionary<int, Constraint<Word, ShapeNode>>();
 			_pattern = new Pattern<Word, ShapeNode>();
-			_pattern.Children.Add(new Constraint<Word, ShapeNode>(HCFeatureSystem.AnchorType,
-				FeatureStruct.New().Symbol(HCFeatureSystem.LeftSide).Value));
+			_pattern.Children.Add(new Constraint<Word, ShapeNode>(FeatureStruct.New().Symbol(HCFeatureSystem.AnchorType).Symbol(HCFeatureSystem.LeftSide).Value));
 			foreach (MorphologicalOutput outputAction in _allomorph.Rhs)
 			{
 				outputAction.GenerateAnalysisLhs(_pattern, _allomorph.Lhs);
@@ -27,29 +26,12 @@ namespace SIL.HermitCrab
 				var modifyFrom = outputAction as ModifyFromInput;
 				if (modifyFrom != null)
 				{
-					_modifyFromConstraints[modifyFrom.Index] = new Constraint<Word, ShapeNode>(modifyFrom.Constraint.Type,
-						GetAntiFeatureStruct(modifyFrom.Constraint.FeatureStruct));
+					FeatureStruct fs = modifyFrom.Constraint.FeatureStruct.AntiFeatureStruct();
+					fs.AddValue(HCFeatureSystem.Type, modifyFrom.Constraint.Type());
+					_modifyFromConstraints[modifyFrom.Index] = new Constraint<Word, ShapeNode>(fs);
 				}
 			}
-			_pattern.Children.Add(new Constraint<Word, ShapeNode>(HCFeatureSystem.AnchorType,
-				FeatureStruct.New().Symbol(HCFeatureSystem.RightSide).Value));
-		}
-
-		private static FeatureStruct GetAntiFeatureStruct(FeatureStruct fs)
-		{
-			var result = new FeatureStruct();
-			foreach (Feature feature in fs.Features)
-			{
-				FeatureValue value = fs.GetValue(feature);
-				var childFS = value as FeatureStruct;
-				FeatureValue newValue;
-				if (childFS != null)
-					newValue = GetAntiFeatureStruct(childFS);
-				else
-					newValue = ((SimpleFeatureValue) value).Negation();
-				result.AddValue(feature, newValue);
-			}
-			return result;
+			_pattern.Children.Add(new Constraint<Word, ShapeNode>(FeatureStruct.New().Symbol(HCFeatureSystem.AnchorType).Symbol(HCFeatureSystem.RightSide).Value));
 		}
 
 		public Pattern<Word, ShapeNode> Pattern
@@ -79,7 +61,7 @@ namespace SIL.HermitCrab
 					{
 						foreach (ShapeNode node in output.Shape.GetNodes(outputSpan))
 						{
-							if (constraint.Type == node.Annotation.Type)
+							if (constraint.Type() == node.Annotation.Type())
 								node.Annotation.FeatureStruct.Union(constraint.FeatureStruct, match.VariableBindings);
 						}
 					}
@@ -98,11 +80,11 @@ namespace SIL.HermitCrab
 			foreach (PatternNode<Word, ShapeNode> node in patternNode.Children)
 			{
 				var constraint = node as Constraint<Word, ShapeNode>;
-				if (constraint != null && constraint.Type == HCFeatureSystem.SegmentType)
+				if (constraint != null && constraint.Type() == HCFeatureSystem.SegmentType)
 				{
 					FeatureStruct fs = constraint.FeatureStruct.Clone();
 					fs.ReplaceVariables(varBindings);
-					output.Shape.Add(constraint.Type, fs, optional);
+					output.Shape.Add(fs, optional);
 				}
 				else
 				{

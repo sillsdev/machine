@@ -1,4 +1,5 @@
-﻿using SIL.Machine;
+﻿using System.Globalization;
+using SIL.Machine;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Transduction;
@@ -15,12 +16,10 @@ namespace SIL.HermitCrab
 			_allomorph = allomorph;
 
 			_pattern = new Pattern<Word, ShapeNode>();
-			_pattern.Children.Add(new Constraint<Word, ShapeNode>(HCFeatureSystem.AnchorType,
-				FeatureStruct.New().Symbol(HCFeatureSystem.LeftSide).Value));
+			_pattern.Children.Add(new Constraint<Word, ShapeNode>(FeatureStruct.New().Symbol(HCFeatureSystem.AnchorType).Symbol(HCFeatureSystem.LeftSide).Value));
 			for (int i = 0; i < _allomorph.Lhs.Count; i++)
-				_pattern.Children.Add(new Group<Word, ShapeNode>(i.ToString(), _allomorph.Lhs[i].Children.Clone()));
-			_pattern.Children.Add(new Constraint<Word, ShapeNode>(HCFeatureSystem.AnchorType,
-				FeatureStruct.New().Symbol(HCFeatureSystem.RightSide).Value));
+				_pattern.Children.Add(new Group<Word, ShapeNode>(i.ToString(CultureInfo.InvariantCulture), _allomorph.Lhs[i].Children.Clone()));
+			_pattern.Children.Add(new Constraint<Word, ShapeNode>(FeatureStruct.New().Symbol(HCFeatureSystem.AnchorType).Symbol(HCFeatureSystem.RightSide).Value));
 		}
 
 		public AffixProcessAllomorph Allomorph

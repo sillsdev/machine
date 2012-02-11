@@ -5,6 +5,12 @@ namespace SIL.HermitCrab
 {
 	public class HCFeatureSystem : FeatureSystem
 	{
+		public static readonly SymbolicFeature Type;
+		public static readonly FeatureSymbol AnchorType;
+		public static readonly FeatureSymbol SegmentType;
+		public static readonly FeatureSymbol BoundaryType;
+		public static readonly FeatureSymbol MorphType;
+
 		public static readonly SymbolicFeature Backtrack;
 		public static readonly FeatureSymbol Searched;
 		public static readonly FeatureSymbol NotSearched;
@@ -17,19 +23,24 @@ namespace SIL.HermitCrab
 
 		public static readonly StringFeature Allomorph;
 
-		public const string AnchorType = "anchor";
-		public const string SegmentType = "segment";
-		public const string BoundaryType = "boundary";
-		public const string MorphType = "morph";
-
 		private static readonly HCFeatureSystem FeatureSystem;
 
 		static HCFeatureSystem()
 		{
-			Backtrack = new SymbolicFeature(Guid.NewGuid().ToString()) { Description = "Backtrack" };
-			Searched = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "Searched" };
+			Type = new SymbolicFeature(Guid.NewGuid().ToString()) {Description = "Type"};
+			AnchorType = new FeatureSymbol(Guid.NewGuid().ToString()) {Description = "anchor"};
+			Type.AddPossibleSymbol(AnchorType);
+			SegmentType = new FeatureSymbol(Guid.NewGuid().ToString()) {Description = "segment"};
+			Type.AddPossibleSymbol(SegmentType);
+			BoundaryType = new FeatureSymbol(Guid.NewGuid().ToString()) {Description = "boundary"};
+			Type.AddPossibleSymbol(BoundaryType);
+			MorphType = new FeatureSymbol(Guid.NewGuid().ToString()) {Description = "morph"};
+			Type.AddPossibleSymbol(MorphType);
+
+			Backtrack = new SymbolicFeature(Guid.NewGuid().ToString()) {Description = "Backtrack"};
+			Searched = new FeatureSymbol(Guid.NewGuid().ToString()) {Description = "Searched"};
 			Backtrack.AddPossibleSymbol(Searched);
-			NotSearched = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "NotSearched" };
+			NotSearched = new FeatureSymbol(Guid.NewGuid().ToString()) {Description = "NotSearched"};
 			Backtrack.AddPossibleSymbol(NotSearched);
 
 			Anchor = new SymbolicFeature(Guid.NewGuid().ToString()) {Description = "Anchor"};
@@ -52,6 +63,7 @@ namespace SIL.HermitCrab
 
 		private HCFeatureSystem()
 		{
+			base.AddFeature(Type);
 			base.AddFeature(Backtrack);
 			base.AddFeature(Anchor);
 			base.AddFeature(StrRep);

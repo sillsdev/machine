@@ -7,18 +7,18 @@ namespace SIL.HermitCrab
 	/// </summary>
 	public class SymbolDefinition
 	{
-		private readonly string _type;
+		private readonly FeatureSymbol _type;
 		private readonly string _strRep;
 		private readonly FeatureStruct _fs;
 
-		public SymbolDefinition(string strRep, string type, FeatureStruct fs)
+		public SymbolDefinition(string strRep, FeatureSymbol type, FeatureStruct fs)
 		{
 			_type = type;
 			_strRep = strRep;
 			_fs = fs;
 		}
 
-		public string Type
+		public FeatureSymbol Type
 		{
 			get { return _type; }
 		}

@@ -31,7 +31,7 @@ namespace SIL.HermitCrab
 				return;
 
 			_pattern.Children.Add(new Group<Word, ShapeNode>(name,
-				env.Children.Where(node => !(node is Constraint<Word, ShapeNode>) || ((Constraint<Word, ShapeNode>)node).Type != HCFeatureSystem.BoundaryType).Clone()));
+				env.Children.Where(node => !(node is Constraint<Word, ShapeNode>) || ((Constraint<Word, ShapeNode>)node).Type() != HCFeatureSystem.BoundaryType).Clone()));
 		}
 
 		protected void MarkSearchedNodes(ShapeNode startNode, ShapeNode endNode, Direction dir)

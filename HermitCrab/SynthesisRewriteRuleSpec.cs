@@ -40,7 +40,7 @@ namespace SIL.HermitCrab
 				foreach (Tuple<ShapeNode, PatternNode<Word, ShapeNode>> tuple in target.Span.Start.GetNodes(target.Span.End).Zip(lhs.Children))
 				{
 					var constraints = (Constraint<Word, ShapeNode>) tuple.Item2;
-					if (tuple.Item1.Annotation.Type != constraints.Type)
+					if (tuple.Item1.Annotation.Type() != constraints.Type())
 						return false;
 				}
 			}

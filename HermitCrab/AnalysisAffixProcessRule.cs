@@ -23,7 +23,7 @@ namespace SIL.HermitCrab
 				yield return new PatternRule<Word, ShapeNode>(spanFactory, ruleSpec, ApplicationMode.Multiple,
 					new MatcherSettings<ShapeNode>
 						{
-							Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType)
+							Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType)
 						});
 			}
 		}

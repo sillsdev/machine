@@ -35,7 +35,7 @@ namespace SIL.HermitCrab
 		/// <param name="strRep"></param>
 		/// <param name="type"></param>
 		/// <param name="fs"></param>
-		public void AddSymbolDefinition(string strRep, string type, FeatureStruct fs)
+		public void AddSymbolDefinition(string strRep, FeatureSymbol type, FeatureStruct fs)
 		{
 			var segDef = new SymbolDefinition(strRep, type, fs);
 			// what do we do about culture?
@@ -68,7 +68,7 @@ namespace SIL.HermitCrab
 		{
 			foreach (SymbolDefinition symDef in _symDefs.Values)
 			{
-				if (node.Annotation.Type == symDef.Type && symDef.FeatureStruct.IsUnifiable(node.Annotation.FeatureStruct))
+				if (node.Annotation.Type() == symDef.Type && symDef.FeatureStruct.IsUnifiable(node.Annotation.FeatureStruct))
 					yield return symDef.StrRep;
 			}
 		}
@@ -86,7 +86,9 @@ namespace SIL.HermitCrab
 					SymbolDefinition symDef;
 					if (TryGetSymbolDefinition(s, out symDef))
 					{
-						var node = new ShapeNode(SpanFactory, symDef.Type, symDef.FeatureStruct.Clone());
+						FeatureStruct fs = symDef.FeatureStruct.Clone();
+						fs.AddValue(HCFeatureSystem.Type, symDef.Type);
+						var node = new ShapeNode(SpanFactory, fs);
 						node.Annotation.Optional = symDef.Type == HCFeatureSystem.BoundaryType;
 						nodesList.Add(node);
 						i += j;
@@ -128,14 +130,12 @@ namespace SIL.HermitCrab
 
 		private ShapeNode CreateBegin()
 		{
-			return new ShapeNode(_spanFactory, HCFeatureSystem.AnchorType,
-				FeatureStruct.New().Symbol(HCFeatureSystem.LeftSide).Value);
+			return new ShapeNode(_spanFactory, FeatureStruct.New().Symbol(HCFeatureSystem.AnchorType).Symbol(HCFeatureSystem.LeftSide).Value);
 		}
 
 		private ShapeNode CreateEnd()
 		{
-			return new ShapeNode(_spanFactory, HCFeatureSystem.AnchorType,
-				FeatureStruct.New().Symbol(HCFeatureSystem.RightSide).Value);
+			return new ShapeNode(_spanFactory, FeatureStruct.New().Symbol(HCFeatureSystem.AnchorType).Symbol(HCFeatureSystem.RightSide).Value);
 		}
 
 		/// <summary>

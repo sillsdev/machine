@@ -13,7 +13,7 @@ namespace SIL.HermitCrab
 			: base(spanFactory, new BatchPatternRuleSpec<Word, ShapeNode>(ruleSpecs), appMode, new MatcherSettings<ShapeNode>
 			         	{
 			         		Direction = dir,
-							Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.BoundaryType, HCFeatureSystem.AnchorType),
+							Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.BoundaryType, HCFeatureSystem.AnchorType),
 							UseDefaultsForMatching = true
 			         	})
 		{

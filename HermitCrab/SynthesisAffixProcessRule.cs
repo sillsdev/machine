@@ -24,7 +24,7 @@ namespace SIL.HermitCrab
 				_rules.Add(new PatternRule<Word, ShapeNode>(_spanFactory, ruleSpec,
 					new MatcherSettings<ShapeNode>
 						{
-							Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.BoundaryType, HCFeatureSystem.AnchorType),
+							Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.BoundaryType, HCFeatureSystem.AnchorType),
 							UseDefaultsForMatching = true
 						}));
 			}

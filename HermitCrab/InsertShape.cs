@@ -17,8 +17,8 @@ namespace SIL.HermitCrab
 		{
 			foreach (ShapeNode node in _shape)
 			{
-				if (node.Annotation.Type != HCFeatureSystem.BoundaryType)
-					analysisLhs.Children.Add(new Constraint<Word, ShapeNode>(node.Annotation.Type, node.Annotation.FeatureStruct));
+				if (node.Annotation.Type() != HCFeatureSystem.BoundaryType)
+					analysisLhs.Children.Add(new Constraint<Word, ShapeNode>(node.Annotation.FeatureStruct));
 			}
 		}
 

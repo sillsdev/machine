@@ -70,6 +70,7 @@
     <Compile Include="CopyFromInput.cs" />
     <Compile Include="EpenthesisAnalysisRewriteRuleSpec.cs" />
     <Compile Include="EpenthesisSynthesisRewriteRuleSpec.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="FeatureAnalysisRewriteRuleSpec.cs" />
     <Compile Include="FeatureSynthesisRewriteRuleSpec.cs" />
     <Compile Include="Gloss.cs" />

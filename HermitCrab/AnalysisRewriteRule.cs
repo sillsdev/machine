@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine;
 using SIL.Machine.Matching;
@@ -29,7 +28,7 @@ namespace SIL.HermitCrab
 					new MatcherSettings<ShapeNode>
 						{
 							Direction = dir == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight,
-							Filter = ann => ann.Type.IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType)
+							Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.SegmentType, HCFeatureSystem.AnchorType)
 						});
 				yield return rule;
 			}

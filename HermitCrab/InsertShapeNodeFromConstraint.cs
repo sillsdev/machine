@@ -22,11 +22,11 @@ namespace SIL.HermitCrab
 
 		public override void Apply(Match<Word, ShapeNode> match, Word output, Allomorph allomorph)
 		{
-			if (match.VariableBindings.Values.OfType<SymbolicFeatureValue>().Where(value => value.Feature.DefaultValue.Equals(value)).Any())
+			if (match.VariableBindings.Values.OfType<SymbolicFeatureValue>().Any(value => value.Feature.DefaultValue.Equals(value)))
 				throw new MorphException(MorphErrorCode.UninstantiatedFeature);
 			FeatureStruct fs = _constraint.FeatureStruct.Clone();
 			fs.ReplaceVariables(match.VariableBindings);
-			ShapeNode newNode = output.Shape.Add(_constraint.Type, fs);
+			ShapeNode newNode = output.Shape.Add(fs);
 			if (allomorph != null)
 				output.MarkMorph(newNode, newNode, allomorph);
 		}

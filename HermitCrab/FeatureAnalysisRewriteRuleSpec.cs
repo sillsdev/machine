@@ -23,12 +23,9 @@ namespace SIL.HermitCrab
 			_rightEnv = rightEnv;
 
 			var rhsAntiFSs = new List<FeatureStruct>();
-			foreach (Constraint<Word, ShapeNode> constraint in rhs.Children.OfType<Constraint<Word, ShapeNode>>().Where(c => c.Type == HCFeatureSystem.SegmentType))
-			{
-				FeatureStruct fs = GetAntiFeatureStruct(constraint.FeatureStruct);
-				fs.RemoveValue(AnnotationFeatureSystem.Type);
-				rhsAntiFSs.Add(fs);
-			}
+			foreach (Constraint<Word, ShapeNode> constraint in rhs.Children.OfType<Constraint<Word, ShapeNode>>().Where(c => c.Type() == HCFeatureSystem.SegmentType))
+				rhsAntiFSs.Add(constraint.FeatureStruct.AntiFeatureStruct());
+
 			Pattern.Acceptable = match => IsUnapplicationNonvacuous(match, rhsAntiFSs);
 
 			_analysisRhs = new Pattern<Word, ShapeNode>();
@@ -39,16 +36,17 @@ namespace SIL.HermitCrab
 				var lhsConstraint = (Constraint<Word, ShapeNode>) tuple.Item1;
 				var rhsConstraint = (Constraint<Word, ShapeNode>) tuple.Item2;
 
-				if (lhsConstraint.Type == HCFeatureSystem.SegmentType && rhsConstraint.Type == HCFeatureSystem.SegmentType)
+				if (lhsConstraint.Type() == HCFeatureSystem.SegmentType && rhsConstraint.Type() == HCFeatureSystem.SegmentType)
 				{
 					var targetConstraint = (Constraint<Word, ShapeNode>)lhsConstraint.Clone();
 					targetConstraint.FeatureStruct.PriorityUnion(rhsConstraint.FeatureStruct);
 					targetConstraint.FeatureStruct.AddValue(HCFeatureSystem.Backtrack, HCFeatureSystem.NotSearched);
 					Pattern.Children.Add(new Group<Word, ShapeNode>("target" + i) {Children = {targetConstraint}});
 
-					var fs = GetAntiFeatureStruct(rhsConstraint.FeatureStruct);
-					fs.Subtract(GetAntiFeatureStruct(lhsConstraint.FeatureStruct));
-					_analysisRhs.Children.Add(new Constraint<Word, ShapeNode>(HCFeatureSystem.SegmentType, fs));
+					FeatureStruct fs = rhsConstraint.FeatureStruct.AntiFeatureStruct();
+					fs.Subtract(lhsConstraint.FeatureStruct.AntiFeatureStruct());
+					fs.AddValue(HCFeatureSystem.Type, HCFeatureSystem.SegmentType);
+					_analysisRhs.Children.Add(new Constraint<Word, ShapeNode>(fs));
 
 					i++;
 				}
@@ -75,28 +73,11 @@ namespace SIL.HermitCrab
 			return false;
 		}
 
-		private static FeatureStruct GetAntiFeatureStruct(FeatureStruct fs)
-		{
-			var result = new FeatureStruct();
-			foreach (Feature feature in fs.Features)
-			{
-				FeatureValue value = fs.GetValue(feature);
-				var childFS = value as FeatureStruct;
-				FeatureValue newValue;
-				if (childFS != null)
-					newValue = GetAntiFeatureStruct(childFS);
-				else
-					newValue = ((SimpleFeatureValue) value).Negation();
-				result.AddValue(feature, newValue);
-			}
-			return result;
-		}
-
 		private static bool IsUnifiable(Constraint<Word, ShapeNode> constraint, Pattern<Word, ShapeNode> env)
 		{
 			foreach (Constraint<Word, ShapeNode> curConstraint in env.GetNodesDepthFirst().OfType<Constraint<Word, ShapeNode>>())
 			{
-				if (curConstraint.Type == HCFeatureSystem.SegmentType
+				if (curConstraint.Type() == HCFeatureSystem.SegmentType
 					&& !curConstraint.FeatureStruct.IsUnifiable(constraint.FeatureStruct))
 				{
 					return false;
@@ -112,7 +93,7 @@ namespace SIL.HermitCrab
 			{
 				foreach (Constraint<Word, ShapeNode> constraint in _rhs.Children)
 				{
-					if (constraint.Type == HCFeatureSystem.SegmentType)
+					if (constraint.Type() == HCFeatureSystem.SegmentType)
 					{
 						if (!IsUnifiable(constraint, _leftEnv) || !IsUnifiable(constraint, _rightEnv))
 							return AnalysisReapplyType.SelfOpaquing;
