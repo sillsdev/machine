@@ -10,14 +10,12 @@ namespace SIL.Machine
 	{
 		private readonly SpanFactory<TOffset> _spanFactory; 
 		private int _currentID;
-		private readonly Dictionary<string, List<Annotation<TOffset>>> _typeIndex;
 		private readonly Annotation<TOffset> _parent; 
 
 		public AnnotationList(SpanFactory<TOffset> spanFactory)
 			: base(new AnnotationComparer(Direction.LeftToRight), new AnnotationComparer(Direction.RightToLeft))
 		{
 			_spanFactory = spanFactory;
-			_typeIndex = new Dictionary<string, List<Annotation<TOffset>>>();
 		}
 
 		public AnnotationList(AnnotationList<TOffset> annList)
@@ -37,24 +35,24 @@ namespace SIL.Machine
 			get { return _parent; }
 		}
 
-		public void Add(string type, Span<TOffset> span, FeatureStruct fs)
+		public void Add(Span<TOffset> span, FeatureStruct fs)
 		{
-			Add(type, span, fs, false);
+			Add(span, fs, false);
 		}
 
-		public void Add(string type, TOffset start, TOffset end, FeatureStruct fs)
+		public void Add(TOffset start, TOffset end, FeatureStruct fs)
 		{
-			Add(type, start, end, fs, false);
+			Add(start, end, fs, false);
 		}
 
-		public void Add(string type, Span<TOffset> span, FeatureStruct fs, bool optional)
+		public void Add(Span<TOffset> span, FeatureStruct fs, bool optional)
 		{
-			Add(new Annotation<TOffset>(type, span, fs) {Optional = optional});
+			Add(new Annotation<TOffset>(span, fs) {Optional = optional});
 		}
 
-		public void Add(string type, TOffset start, TOffset end, FeatureStruct fs, bool optional)
+		public void Add(TOffset start, TOffset end, FeatureStruct fs, bool optional)
 		{
-			Add(type, _spanFactory.Create(start, end), fs, optional);
+			Add(_spanFactory.Create(start, end), fs, optional);
 		}
 
 		public override void Add(Annotation<TOffset> node)
@@ -76,14 +74,6 @@ namespace SIL.Machine
 
 			base.Add(node);
 			node.ListID = _currentID++;
-
-			List<Annotation<TOffset>> annotations;
-			if (!_typeIndex.TryGetValue(node.Type, out annotations))
-			{
-				annotations = new List<Annotation<TOffset>>();
-				_typeIndex[node.Type] = annotations;
-			}
-			annotations.Add(node);
 		}
 
 		public override bool Remove(Annotation<TOffset> node)
@@ -95,9 +85,6 @@ namespace SIL.Machine
 		{
 			if (base.Remove(node))
 			{
-				List<Annotation<TOffset>> annotations = _typeIndex[node.Type];
-				annotations.Remove(node);
-
 				if (preserveChildren)
 				{
 					foreach (Annotation<TOffset> ann in node.Children.ToArray())
@@ -108,12 +95,6 @@ namespace SIL.Machine
 			}
 
 			return false;
-		}
-
-		public override void Clear()
-		{
-			base.Clear();
-			_typeIndex.Clear();
 		}
 
 		public bool Find(TOffset offset, out Annotation<TOffset> result)
@@ -133,19 +114,6 @@ namespace SIL.Machine
 			Find(new Annotation<TOffset>(_spanFactory.Create(_spanFactory.Compare(offset, lastOffset, dir) > 0 ? lastOffset : offset, lastOffset, dir)), dir, out result);
 			result = result == GetEnd(dir) ? GetFirst(dir) : (result.GetNext(dir) == GetEnd(dir) ? result : result.GetNext(dir));
 			return result.Span.GetStart(dir).Equals(offset);
-		}
-
-		public IEnumerable<Annotation<TOffset>> GetNodes(string type)
-		{
-			return GetNodes(type, Direction.LeftToRight);
-		}
-
-		public IEnumerable<Annotation<TOffset>> GetNodes(string type, Direction dir)
-		{
-			List<Annotation<TOffset>> annotations;
-			if (_typeIndex.TryGetValue(type, out annotations))
-				return annotations.OrderBy(ann => ann, GetComparer(dir));
-			return Enumerable.Empty<Annotation<TOffset>>();
 		}
 
 		public IEnumerable<Annotation<TOffset>> GetNodes(Span<TOffset> span)

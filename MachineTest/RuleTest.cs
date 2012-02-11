@@ -13,15 +13,18 @@ namespace SIL.Machine.Test
 		{
 			var pattern = Pattern<StringData, int>.New()
 				.Group("leftEnv", leftEnv => leftEnv
-					.Annotation("Seg", FeatureStruct.New(PhoneticFeatSys)
+					.Annotation(FeatureStruct.New(PhoneticFeatSys)
+						.Symbol(Seg)
 						.Symbol("cons+")
 						.Feature("voice").EqualToVariable("a").Value))
 				.Group("target", target => target
-					.Annotation("Seg", FeatureStruct.New(PhoneticFeatSys)
+					.Annotation(FeatureStruct.New(PhoneticFeatSys)
+						.Symbol(Seg)
 						.Symbol("cons-")
 						.Symbol("low+").Value))
 				.Group("rightEnv", rightEnv => rightEnv
-					.Annotation("Seg", FeatureStruct.New(PhoneticFeatSys)
+					.Annotation(FeatureStruct.New(PhoneticFeatSys)
+						.Symbol(Seg)
 						.Symbol("cons+")
 						.Feature("voice").Not.EqualToVariable("a").Value)).Value;
 
@@ -44,15 +47,18 @@ namespace SIL.Machine.Test
 		{
 			var pattern = Pattern<StringData, int>.New()
 				.Group("leftEnv", leftEnv => leftEnv
-					.Annotation("Seg", FeatureStruct.New(PhoneticFeatSys)
+					.Annotation(FeatureStruct.New(PhoneticFeatSys)
+						.Symbol(Seg)
 						.Symbol("cons+")
 						.Feature("voice").EqualToVariable("a").Value))
 				.Group("target", target => target
-					.Annotation("Seg", FeatureStruct.New(PhoneticFeatSys)
+					.Annotation(FeatureStruct.New(PhoneticFeatSys)
+						.Symbol(Seg)
 						.Symbol("cons-")
 						.Symbol("low+").Value))
 				.Group("rightEnv", rightEnv => rightEnv
-					.Annotation("Seg", FeatureStruct.New(PhoneticFeatSys)
+					.Annotation(FeatureStruct.New(PhoneticFeatSys)
+						.Symbol(Seg)
 						.Symbol("cons+")
 						.Feature("voice").Not.EqualToVariable("a").Value)).Value;
 
@@ -66,7 +72,8 @@ namespace SIL.Machine.Test
 													output = match.Input;
 													return target.Span.End;
 												},
-												input => input.Annotations.GetNodes("Word").Single().FeatureStruct.IsUnifiable(FeatureStruct.New(WordFeatSys).Symbol("verb").Value));
+												input => input.Annotations.Single(ann => ((FeatureSymbol) ann.FeatureStruct.GetValue(Type)) == Word)
+													.FeatureStruct.IsUnifiable(FeatureStruct.New(WordFeatSys).Symbol("verb").Value));
 
 			var ruleSpec2 = new DefaultPatternRuleSpec<StringData, int>(pattern, (PatternRule<StringData, int> r, Match<StringData, int> match, out StringData output) =>
 												{
@@ -82,7 +89,7 @@ namespace SIL.Machine.Test
 			var batchSpec = new BatchPatternRuleSpec<StringData, int>(new[] {ruleSpec1, ruleSpec2});
 			var rule = new PatternRule<StringData, int>(SpanFactory, batchSpec);
 			StringData inputWord = CreateStringData("fazk");
-			inputWord.Annotations.Add("Word", inputWord.Span, FeatureStruct.New(WordFeatSys).Symbol("noun").Value);
+			inputWord.Annotations.Add(inputWord.Span, FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("noun").Value);
 			Assert.IsTrue(rule.Apply(inputWord).Any());
 		}
 	}

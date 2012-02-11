@@ -57,12 +57,6 @@ namespace SIL.Machine.Matching.Fluent
 			return this;
 		}
 
-		public IQuantifierPatternSyntax<TData, TOffset> Annotation(string type, FeatureStruct fs)
-		{
-			AddAnnotation(type, fs);
-			return this;
-		}
-
 		IInitialNodesPatternSyntax<TData, TOffset> IAlternationPatternSyntax<TData, TOffset>.Or
 		{
 			get

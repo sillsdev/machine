@@ -29,19 +29,11 @@ namespace SIL.Machine.FeatureModel
         /// Gets the features.
         /// </summary>
         /// <value>The features.</value>
-        public IEnumerable<Feature> Features
+        public IReadOnlySet<Feature> Features
         {
             get
             {
-                return _features;
-            }
-        }
-
-        public int NumFeatures
-        {
-            get
-            {
-                return _features.Count;
+                return _features.AsReadOnlySet();
             }
         }
 

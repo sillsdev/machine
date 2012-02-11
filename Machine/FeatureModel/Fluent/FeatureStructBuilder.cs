@@ -9,7 +9,7 @@ namespace SIL.Machine.FeatureModel.Fluent
 	{
 		private readonly FeatureSystem _featSys;
 		private readonly FeatureStruct _fs;
-		private readonly FeatureStruct _rootFS;
+		private readonly IDictionary<int, FeatureValue> _ids; 
 
 		private Feature _lastFeature;
 		private bool _not;
@@ -30,15 +30,15 @@ namespace SIL.Machine.FeatureModel.Fluent
 		}
 
 		public FeatureStructBuilder(FeatureSystem featSys, FeatureStruct fs)
-			: this(featSys, fs, fs)
+			: this(featSys, fs, new Dictionary<int, FeatureValue>())
 		{
 		}
 
-		internal FeatureStructBuilder(FeatureSystem featSys, FeatureStruct fs, FeatureStruct rootFS)
+		internal FeatureStructBuilder(FeatureSystem featSys, FeatureStruct fs, IDictionary<int, FeatureValue> ids)
 		{
 			_featSys = featSys;
 			_fs = fs;
-			_rootFS = rootFS;
+			_ids = ids;
 		}
 
 		public IDisjunctiveFeatureValueSyntax Feature(string featureID)
@@ -59,23 +59,39 @@ namespace SIL.Machine.FeatureModel.Fluent
 		{
 			if (_featSys == null)
 				throw new NotSupportedException("A feature system must be specified.");
-			if (!AddSymbols(symbolID1, symbolIDs))
+			if (!AddSymbols(symbolID1, symbolIDs, -1))
+				throw new ArgumentException("All specified symbols must be associated with the same feature.", "symbolIDs");
+			return this;
+		}
+
+		public IDisjunctiveFeatureStructSyntax Symbol(int id, string symbolID1, params string[] symbolIDs)
+		{
+			if (_featSys == null)
+				throw new NotSupportedException("A feature system must be specified.");
+			if (!AddSymbols(symbolID1, symbolIDs, id))
 				throw new ArgumentException("All specified symbols must be associated with the same feature.", "symbolIDs");
 			return this;
 		}
 
 		public IDisjunctiveFeatureStructSyntax Symbol(FeatureSymbol symbol1, params FeatureSymbol[] symbols)
 		{
-			if (!AddSymbols(symbol1.Feature, symbol1, symbols))
+			if (!AddSymbols(symbol1.Feature, symbol1, symbols, -1))
+				throw new ArgumentException("All specified symbols must be associated with the same feature.", "symbols");
+			return this;
+		}
+
+		public IDisjunctiveFeatureStructSyntax Symbol(int id, FeatureSymbol symbol1, params FeatureSymbol[] symbols)
+		{
+			if (!AddSymbols(symbol1.Feature, symbol1, symbols, id))
 				throw new ArgumentException("All specified symbols must be associated with the same feature.", "symbols");
 			return this;
 		}
 
 		public IDisjunctiveFeatureStructSyntax And(Func<IFirstDisjunctSyntax, IFinalDisjunctSyntax> build)
 		{
-			var disjunctionBuilder = new DisjunctionBuilder(_featSys, _rootFS);
-			IFinalDisjunctSyntax result = build(disjunctionBuilder);
-			_fs.AddDisjunction(result.ToDisjunction());
+			var disjunctionBuilder = new DisjunctionBuilder(_featSys, _ids);
+			build(disjunctionBuilder);
+			_fs.AddDisjunction(disjunctionBuilder.Disjuncts);
 			return this;
 		}
 
@@ -102,14 +118,30 @@ namespace SIL.Machine.FeatureModel.Fluent
 		{
 			if (_featSys == null)
 				throw new NotSupportedException("A feature system must be specified.");
-			if (!AddSymbols(symbolID1, symbolIDs))
+			if (!AddSymbols(symbolID1, symbolIDs, -1))
+				throw new ArgumentException("All specified symbols must be associated with the same feature.", "symbolIDs");
+			return this;
+		}
+
+		IFeatureStructSyntax IFeatureStructSyntax.Symbol(int id, string symbolID1, params string[] symbolIDs)
+		{
+			if (_featSys == null)
+				throw new NotSupportedException("A feature system must be specified.");
+			if (!AddSymbols(symbolID1, symbolIDs, id))
 				throw new ArgumentException("All specified symbols must be associated with the same feature.", "symbolIDs");
 			return this;
 		}
 
 		IFeatureStructSyntax IFeatureStructSyntax.Symbol(FeatureSymbol symbol1, params FeatureSymbol[] symbols)
 		{
-			if (!AddSymbols(symbol1.Feature, symbol1, symbols))
+			if (!AddSymbols(symbol1.Feature, symbol1, symbols, -1))
+				throw new ArgumentException("All specified symbols must be associated with the same feature.", "symbols");
+			return this;
+		}
+
+		IFeatureStructSyntax IFeatureStructSyntax.Symbol(int id, FeatureSymbol symbol1, params FeatureSymbol[] symbols)
+		{
+			if (!AddSymbols(symbol1.Feature, symbol1, symbols, id))
 				throw new ArgumentException("All specified symbols must be associated with the same feature.", "symbols");
 			return this;
 		}
@@ -122,55 +154,82 @@ namespace SIL.Machine.FeatureModel.Fluent
 			if (_featSys == null && _lastFeature is SymbolicFeature)
 				throw new NotSupportedException("A feature system must be specified.");
 
-			if (!Add(string1, strings))
+			if (!Add(string1, strings, -1))
 				throw new ArgumentException("All specified symbols must be associated with the same feature.", "strings");
 
 			return this;
 		}
 
-		private bool Add(string string1, IEnumerable<string> strings)
+		IDisjunctiveFeatureStructSyntax IDisjunctiveNegatableFeatureValueSyntax.EqualTo(int id, string string1, params string[] strings)
+		{
+			if (_lastFeature is ComplexFeature)
+				throw new NotSupportedException("The specified feature cannot be complex.");
+
+			if (_featSys == null && _lastFeature is SymbolicFeature)
+				throw new NotSupportedException("A feature system must be specified.");
+
+			if (!Add(string1, strings, id))
+				throw new ArgumentException("All specified symbols must be associated with the same feature.", "strings");
+
+			return this;
+		}
+
+		private bool Add(string string1, IEnumerable<string> strings, int id)
 		{
 			if (_lastFeature is StringFeature)
 			{
-				_fs.AddValue(_lastFeature, new StringFeatureValue(strings.Concat(string1), _not));
+				var value = new StringFeatureValue(strings.Concat(string1), _not);
+				_fs.AddValue(_lastFeature, value);
 				_not = false;
+				if (id > -1)
+					_ids[id] = value;
 			}
 			else if (_lastFeature is SymbolicFeature)
 			{
-				if (!AddSymbols(_lastFeature, string1, strings))
+				if (!AddSymbols(_lastFeature, string1, strings, id))
 					return false;
 			}
 			return true;
 		}
 
-		private bool AddSymbols(Feature feature, FeatureSymbol symbol1, IEnumerable<FeatureSymbol> symbols)
+		private bool AddSymbols(Feature feature, FeatureSymbol symbol1, IEnumerable<FeatureSymbol> symbols, int id)
 		{
 			FeatureSymbol[] allSymbols = symbols.Concat(symbol1).ToArray();
 			if (allSymbols.Any(s => s.Feature != feature))
 				return false;
 			var symbolFeature = (SymbolicFeature) feature;
-			_fs.AddValue(symbolFeature, new SymbolicFeatureValue(_not ? symbolFeature.PossibleSymbols.Except(allSymbols) : allSymbols));
+			var value = new SymbolicFeatureValue(_not ? symbolFeature.PossibleSymbols.Except(allSymbols) : allSymbols);
+			_fs.AddValue(symbolFeature, value);
 			_not = false;
+			if (id > -1)
+				_ids[id] = value;
 			return true;
 		}
 
-		private bool AddSymbols(string symbolID1, IEnumerable<string> symbolIDs)
+		private bool AddSymbols(string symbolID1, IEnumerable<string> symbolIDs, int id)
 		{
 			FeatureSymbol symbol1 = _featSys.GetSymbol(symbolID1);
-			IEnumerable<FeatureSymbol> symbols = symbolIDs.Select(id => _featSys.GetSymbol(id)).ToArray();
-			return AddSymbols(symbol1.Feature, symbol1, symbols);
+			IEnumerable<FeatureSymbol> symbols = symbolIDs.Select(symID => _featSys.GetSymbol(symID)).ToArray();
+			return AddSymbols(symbol1.Feature, symbol1, symbols, id);
 		}
 
-		private bool AddSymbols(Feature feature, string symbolID1, IEnumerable<string> symbolIDs)
+		private bool AddSymbols(Feature feature, string symbolID1, IEnumerable<string> symbolIDs, int id)
 		{
 			FeatureSymbol symbol1 = _featSys.GetSymbol(symbolID1);
-			IEnumerable<FeatureSymbol> symbols = symbolIDs.Select(id => _featSys.GetSymbol(id)).ToArray();
-			return AddSymbols(feature, symbol1, symbols);
+			IEnumerable<FeatureSymbol> symbols = symbolIDs.Select(symID => _featSys.GetSymbol(symID)).ToArray();
+			return AddSymbols(feature, symbol1, symbols, id);
 		}
 
 		IDisjunctiveFeatureStructSyntax IDisjunctiveNegatableFeatureValueSyntax.EqualTo(FeatureSymbol symbol1, params FeatureSymbol[] symbols)
 		{
-			if (!AddSymbols(_lastFeature, symbol1, symbols))
+			if (!AddSymbols(_lastFeature, symbol1, symbols, -1))
+				throw new ArgumentException("All specified symbols must be associated with the same feature.", "symbols");
+			return this;
+		}
+
+		IDisjunctiveFeatureStructSyntax IDisjunctiveNegatableFeatureValueSyntax.EqualTo(int id, FeatureSymbol symbol1, params FeatureSymbol[] symbols)
+		{
+			if (!AddSymbols(_lastFeature, symbol1, symbols, id))
 				throw new ArgumentException("All specified symbols must be associated with the same feature.", "symbols");
 			return this;
 		}
@@ -180,7 +239,16 @@ namespace SIL.Machine.FeatureModel.Fluent
 			if (_lastFeature is ComplexFeature)
 				throw new ArgumentException("The specified feature cannot be complex.");
 
-			AddVariable(name);
+			AddVariable(name, -1);
+			return this;
+		}
+
+		IDisjunctiveFeatureStructSyntax IDisjunctiveNegatableFeatureValueSyntax.EqualToVariable(int id, string name)
+		{
+			if (_lastFeature is ComplexFeature)
+				throw new ArgumentException("The specified feature cannot be complex.");
+
+			AddVariable(name, id);
 			return this;
 		}
 
@@ -192,7 +260,21 @@ namespace SIL.Machine.FeatureModel.Fluent
 			if (_featSys == null && _lastFeature is SymbolicFeature)
 				throw new NotSupportedException("A feature system must be specified.");
 
-			if (!Add(string1, strings))
+			if (!Add(string1, strings, -1))
+				throw new ArgumentException("All specified symbols must be associated with the same feature.", "strings");
+
+			return this;
+		}
+
+		IFeatureStructSyntax INegatableFeatureValueSyntax.EqualTo(int id, string string1, params string[] strings)
+		{
+			if (_lastFeature is ComplexFeature)
+				throw new NotSupportedException("The specified feature cannot be complex.");
+
+			if (_featSys == null && _lastFeature is SymbolicFeature)
+				throw new NotSupportedException("A feature system must be specified.");
+
+			if (!Add(string1, strings, id))
 				throw new ArgumentException("All specified symbols must be associated with the same feature.", "strings");
 
 			return this;
@@ -200,7 +282,14 @@ namespace SIL.Machine.FeatureModel.Fluent
 
 		IFeatureStructSyntax INegatableFeatureValueSyntax.EqualTo(FeatureSymbol symbol1, params FeatureSymbol[] symbols)
 		{
-			if (!AddSymbols(_lastFeature, symbol1, symbols))
+			if (!AddSymbols(_lastFeature, symbol1, symbols, -1))
+				throw new ArgumentException("All specified symbols must be associated with the same feature.", "symbols");
+			return this;
+		}
+
+		IFeatureStructSyntax INegatableFeatureValueSyntax.EqualTo(int id, FeatureSymbol symbol1, params FeatureSymbol[] symbols)
+		{
+			if (!AddSymbols(_lastFeature, symbol1, symbols, id))
 				throw new ArgumentException("All specified symbols must be associated with the same feature.", "symbols");
 			return this;
 		}
@@ -210,11 +299,20 @@ namespace SIL.Machine.FeatureModel.Fluent
 			if (_lastFeature is ComplexFeature)
 				throw new ArgumentException("The specified feature cannot be complex.");
 
-			AddVariable(name);
+			AddVariable(name, -1);
 			return this;
 		}
 
-		private void AddVariable(string name)
+		IFeatureStructSyntax INegatableFeatureValueSyntax.EqualToVariable(int id, string name)
+		{
+			if (_lastFeature is ComplexFeature)
+				throw new ArgumentException("The specified feature cannot be complex.");
+
+			AddVariable(name, id);
+			return this;
+		}
+
+		private void AddVariable(string name, int id)
 		{
 			FeatureValue vfv;
 			if (_lastFeature is StringFeature)
@@ -223,6 +321,8 @@ namespace SIL.Machine.FeatureModel.Fluent
 				vfv = new SymbolicFeatureValue((SymbolicFeature)_lastFeature, name, !_not);
 			_fs.AddValue(_lastFeature, vfv);
 			_not = false;
+			if (id > -1)
+				_ids[id] = vfv;
 		}
 
 		IDisjunctiveNegatableFeatureValueSyntax IDisjunctiveFeatureValueSyntax.Not
@@ -236,21 +336,22 @@ namespace SIL.Machine.FeatureModel.Fluent
 
 		IDisjunctiveFeatureStructSyntax IDisjunctiveFeatureValueSyntax.EqualToFeatureStruct(Func<IDisjunctiveFeatureStructSyntax, IDisjunctiveFeatureStructSyntax> build)
 		{
-			var fsBuilder = new FeatureStructBuilder(_featSys, new FeatureStruct(), _rootFS);
-			_fs.AddValue(_lastFeature, fsBuilder._fs);
-			build(fsBuilder);
+			BuildFeatureStruct(build, -1);
 			return this;
 		}
 
-		IDisjunctiveFeatureStructSyntax IDisjunctiveFeatureValueSyntax.ReferringTo(params Feature[] path)
+		IDisjunctiveFeatureStructSyntax IDisjunctiveFeatureValueSyntax.EqualToFeatureStruct(int id, Func<IDisjunctiveFeatureStructSyntax, IDisjunctiveFeatureStructSyntax> build)
 		{
-			_fs.AddValue(_lastFeature, _rootFS.GetValue(path));
+			BuildFeatureStruct(build, id);
 			return this;
 		}
 
-		IDisjunctiveFeatureStructSyntax IDisjunctiveFeatureValueSyntax.ReferringTo(params string[] idPath)
+		IDisjunctiveFeatureStructSyntax IDisjunctiveFeatureValueSyntax.ReferringTo(int id)
 		{
-			_fs.AddValue(_lastFeature, _rootFS.GetValue(idPath));
+			FeatureValue value;
+			if (!_ids.TryGetValue(id, out value))
+				throw new ArgumentException("The ID has not been specified for a previous value.", "id");
+			_fs.AddValue(_lastFeature, value);
 			return this;
 		}
 
@@ -265,22 +366,41 @@ namespace SIL.Machine.FeatureModel.Fluent
 
 		IFeatureStructSyntax IFeatureValueSyntax.EqualToFeatureStruct(Func<IFeatureStructSyntax, IFeatureStructSyntax> build)
 		{
-			var fsBuilder = new FeatureStructBuilder(_featSys, new FeatureStruct(), _rootFS);
+			BuildFeatureStruct(build, -1);
+			return this;
+		}
+
+		IFeatureStructSyntax IFeatureValueSyntax.EqualToFeatureStruct(int id, Func<IFeatureStructSyntax, IFeatureStructSyntax> build)
+		{
+			BuildFeatureStruct(build, id);
+			return this;
+		}
+
+		IFeatureStructSyntax IFeatureValueSyntax.ReferringTo(int id)
+		{
+			FeatureValue value;
+			if (!_ids.TryGetValue(id, out value))
+				throw new ArgumentException("The ID has not been specified for a previous value.", "id");
+			_fs.AddValue(_lastFeature, value);
+			return this;
+		}
+
+		private void BuildFeatureStruct(Func<IDisjunctiveFeatureStructSyntax, IDisjunctiveFeatureStructSyntax> build, int id)
+		{
+			var fsBuilder = new FeatureStructBuilder(_featSys, new FeatureStruct(), _ids);
 			_fs.AddValue(_lastFeature, fsBuilder._fs);
+			if (id > -1)
+				_ids[id] = fsBuilder._fs;
 			build(fsBuilder);
-			return this;
 		}
 
-		IFeatureStructSyntax IFeatureValueSyntax.ReferringTo(params Feature[] path)
+		private void BuildFeatureStruct(Func<IFeatureStructSyntax, IFeatureStructSyntax> build, int id)
 		{
-			_fs.AddValue(_lastFeature, _rootFS.GetValue(path));
-			return this;
-		}
-
-		IFeatureStructSyntax IFeatureValueSyntax.ReferringTo(params string[] idPath)
-		{
-			_fs.AddValue(_lastFeature, _rootFS.GetValue(idPath));
-			return this;
+			var fsBuilder = new FeatureStructBuilder(_featSys, new FeatureStruct(), _ids);
+			_fs.AddValue(_lastFeature, fsBuilder._fs);
+			if (id > -1)
+				_ids[id] = fsBuilder._fs;
+			build(fsBuilder);
 		}
 	}
 }

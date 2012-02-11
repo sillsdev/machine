@@ -9,15 +9,15 @@ namespace SIL.Machine
 		private readonly SpanFactory<ShapeNode> _spanFactory; 
 		private readonly Annotation<ShapeNode> _ann;
 
-		public ShapeNode(SpanFactory<ShapeNode> spanFactory, string type, FeatureStruct fs)
+		public ShapeNode(SpanFactory<ShapeNode> spanFactory, FeatureStruct fs)
 		{
 			_spanFactory = spanFactory;
-			_ann = new Annotation<ShapeNode>(type, spanFactory.Create(this), fs);
+			_ann = new Annotation<ShapeNode>(spanFactory.Create(this), fs);
 			Tag = int.MinValue;
 		}
 
 		public ShapeNode(ShapeNode node)
-			: this(node._spanFactory, node.Annotation.Type, node.Annotation.FeatureStruct.Clone())
+			: this(node._spanFactory, node.Annotation.FeatureStruct.Clone())
 		{
 		}
 

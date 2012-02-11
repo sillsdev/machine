@@ -160,8 +160,7 @@ namespace SIL.Machine.Fsa
 			}
 
 			public FsaInstance(State<TData, TOffset> state, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers,
-				VariableBindings varBindings)
-				: this(state, ann, registers, varBindings, null)
+				VariableBindings varBindings) : this(state, ann, registers, varBindings, null)
 			{
 			}
 
@@ -268,17 +267,17 @@ namespace SIL.Machine.Fsa
 			var newRegisters = (NullableValue<TOffset>[,]) registers.Clone();
 			ExecuteCommands(newRegisters, cmds, new NullableValue<TOffset>(ann.Span.GetStart(_dir)), new NullableValue<TOffset>());
 
-			for (Annotation<TOffset> a = ann; a != data.Annotations.GetEnd(_dir) && a.Span.GetStart(_dir).Equals(offset); a = a.GetNext(_dir, _filter))
+			for (Annotation<TOffset> a = ann; a != data.Annotations.GetEnd(_dir) && a.Span.GetStart(_dir).Equals(offset); a = a.GetNextDepthFirst(_dir, _filter))
 			{
 				if (a.Optional)
 				{
-					Annotation<TOffset> nextAnn = a.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
+					Annotation<TOffset> nextAnn = a.GetNextDepthFirst(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
 					if (nextAnn != null)
 						InitializeStack(data, nextAnn, registers, cmds, instStack, initAnns);
 				}
 			}
 
-			for (; ann != data.Annotations.GetEnd(_dir) && ann.Span.GetStart(_dir).Equals(offset); ann = ann.GetNext(_dir, _filter))
+			for (; ann != data.Annotations.GetEnd(_dir) && ann.Span.GetStart(_dir).Equals(offset); ann = ann.GetNextDepthFirst(_dir, _filter))
 			{
 				if (!initAnns.Contains(ann))
 				{
@@ -294,7 +293,7 @@ namespace SIL.Machine.Fsa
 		private void AdvanceFsa(TData data, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers,
 			VariableBindings varBindings, FsaMatch<TOffset> match, Arc<TData, TOffset> arc, Stack<FsaInstance> instStack)
 		{
-			Annotation<TOffset> nextAnn = ann.GetNext(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
+			Annotation<TOffset> nextAnn = ann.GetNextDepthFirst(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
 			TOffset nextOffset = nextAnn == data.Annotations.GetEnd(_dir) ? data.Annotations.GetLast(_dir, _filter).Span.GetEnd(_dir) : nextAnn.Span.GetStart(_dir);
 			TOffset end = ann.Span.GetEnd(_dir);
 			var newRegisters = (NullableValue<TOffset>[,]) registers.Clone();
@@ -316,13 +315,13 @@ namespace SIL.Machine.Fsa
 
 			if (nextAnn != data.Annotations.GetEnd(_dir))
 			{
-				for (Annotation<TOffset> a = nextAnn; a != data.Annotations.GetEnd(_dir) && a.Span.GetStart(_dir).Equals(nextOffset); a = a.GetNext(_dir, _filter))
+				for (Annotation<TOffset> a = nextAnn; a != data.Annotations.GetEnd(_dir) && a.Span.GetStart(_dir).Equals(nextOffset); a = a.GetNextDepthFirst(_dir, _filter))
 				{
 					if (a.Optional)
 						AdvanceFsa(data, a, registers, varBindings, match, arc, instStack);
 				}
 
-				for (Annotation<TOffset> a = nextAnn; a != data.Annotations.GetEnd(_dir) && a.Span.GetStart(_dir).Equals(nextOffset); a = a.GetNext(_dir, _filter))
+				for (Annotation<TOffset> a = nextAnn; a != data.Annotations.GetEnd(_dir) && a.Span.GetStart(_dir).Equals(nextOffset); a = a.GetNextDepthFirst(_dir, _filter))
 				{
 					instStack.Push(new FsaInstance(arc.Target, a, (NullableValue<TOffset>[,]) newRegisters.Clone(),
 						varBindings.Clone(), match));
@@ -359,12 +358,7 @@ namespace SIL.Machine.Fsa
 			private readonly int _lastPriority;
 			private readonly int _maxPriority;
 
-			public NfaStateInfo(State<TData, TOffset> nfaState)
-				: this(nfaState, 0, 0, null)
-			{
-			}
-
-			public NfaStateInfo(State<TData, TOffset> nfaState, int maxPriority, int lastPriority, IDictionary<int, int> tags)
+			public NfaStateInfo(State<TData, TOffset> nfaState, int maxPriority = 0, int lastPriority = 0, IDictionary<int, int> tags = null)
 			{
 				_nfsState = nfaState;
 				_maxPriority = maxPriority;

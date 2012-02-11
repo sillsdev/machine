@@ -37,12 +37,6 @@ namespace SIL.Machine.Matching.Fluent
 			return this;
 		}
 
-		public IQuantifierGroupSyntax<TData, TOffset> Annotation(string type, FeatureStruct fs)
-		{
-			AddAnnotation(type, fs);
-			return this;
-		}
-
 		public IQuantifierGroupSyntax<TData, TOffset> Annotation(FeatureStruct fs)
 		{
 			AddAnnotation(fs);

@@ -9,9 +9,12 @@ namespace SIL.Machine
 		public OrderedBidirTreeNode()
 		{
 			_children = new TreeBidirList((TNode) this);
+			Depth = -1;
 		}
 
 		public TNode Parent { get; private set; }
+
+		public int Depth { get; private set; }
 
 		IBidirList<TNode> IBidirTreeNode<TNode>.Children
 		{
@@ -27,12 +30,14 @@ namespace SIL.Machine
 		{
 			base.Clear();
 			Parent = null;
+			Depth = -1;
 		}
 
 		protected internal override void Init(OrderedBidirList<TNode> list)
 		{
 			base.Init(list);
 			Parent = ((TreeBidirList) list).Parent;
+			Depth = Parent == null ? 0 : Parent.Depth + 1;
 		}
 
 		protected virtual bool CanAdd(TNode child)

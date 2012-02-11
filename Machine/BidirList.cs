@@ -65,8 +65,6 @@ namespace SIL.Machine
 			if (_leftToRightState != _rightToLeftState)
 				Add(node, Direction.RightToLeft);
 			_size++;
-			if (_leftToRightState.First[_leftToRightState.Levels - 1] == null || _rightToLeftState.First[_rightToLeftState.Levels - 1] == null)
-				Console.WriteLine();
 		}
 
 		private void Add(TNode node, Direction dir)
@@ -124,8 +122,6 @@ namespace SIL.Machine
 			if (_leftToRightState != _rightToLeftState)
 				Clear(Direction.RightToLeft);
 			_size = 0;
-			if (_leftToRightState.First[_leftToRightState.Levels - 1] == null || _rightToLeftState.First[_rightToLeftState.Levels - 1] == null)
-				Console.WriteLine();
 		}
 
 		private void Clear(Direction dir)
@@ -192,12 +188,8 @@ namespace SIL.Machine
 					next.SetPrev(dir, i, node.GetPrev(dir, i));
 			}
 
-			int origLevels = state.Levels;
 			while (state.First[state.Levels - 1] == null)
 				state.Levels--;
-
-			if ((_leftToRightState.First[_leftToRightState.Levels - 1] == null || _rightToLeftState.First[_rightToLeftState.Levels - 1] == null) && origLevels != state.Levels)
-				Console.WriteLine();
 		}
 
 		public TNode Begin

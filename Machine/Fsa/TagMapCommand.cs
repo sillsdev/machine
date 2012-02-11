@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace SIL.Machine.Fsa
 {
@@ -31,7 +32,7 @@ namespace SIL.Machine.Fsa
 
 		public override string ToString()
 		{
-			return string.Format("{0} <- {1}", Dest, Src == CurrentPosition ? "p" : Src.ToString());
+			return string.Format("{0} <- {1}", Dest, Src == CurrentPosition ? "p" : Src.ToString(CultureInfo.InvariantCulture));
 		}
 	}
 }

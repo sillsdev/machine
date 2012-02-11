@@ -19,13 +19,13 @@ namespace SIL.Machine.Test
 		public void AddAnnotations()
 		{
 			var annList = new AnnotationList<int>(_spanFactory);
-			var a = new Annotation<int>("Last", _spanFactory.Create(99), new FeatureStruct());
+			var a = new Annotation<int>(_spanFactory.Create(99), FeatureStruct.New().Value);
 			annList.Add(a);
 			Assert.AreSame(a, annList.First);
-			a = new Annotation<int>("First", _spanFactory.Create(0), new FeatureStruct());
+			a = new Annotation<int>(_spanFactory.Create(0), FeatureStruct.New().Value);
 			annList.Add(a);
 			Assert.AreSame(a, annList.First);
-			a = new Annotation<int>("Entire", _spanFactory.Create(0, 99), new FeatureStruct());
+			a = new Annotation<int>(_spanFactory.Create(0, 99), FeatureStruct.New().Value);
 			annList.Add(a);
 			Assert.AreSame(a, annList.First());
 		}

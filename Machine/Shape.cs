@@ -47,14 +47,14 @@ namespace SIL.Machine
 			get { return _annotations; }
 		}
 
-		public ShapeNode Add(string type, FeatureStruct fs)
+		public ShapeNode Add(FeatureStruct fs)
 		{
-			return Add(type, fs, false);
+			return Add(fs, false);
 		}
 
-		public ShapeNode Add(string type, FeatureStruct fs, bool optional)
+		public ShapeNode Add(FeatureStruct fs, bool optional)
 		{
-			var newNode = new ShapeNode(_spanFactory, type, fs);
+			var newNode = new ShapeNode(_spanFactory, fs);
 			newNode.Annotation.Optional = optional;
 			Add(newNode);
 			return newNode;
@@ -80,24 +80,24 @@ namespace SIL.Machine
 			return dest.SpanFactory.Create(startNode, endNode);
 		}
 
-		public ShapeNode AddAfter(ShapeNode node, string type, FeatureStruct fs)
+		public ShapeNode AddAfter(ShapeNode node, FeatureStruct fs)
 		{
-			return AddAfter(node, type, fs, Direction.LeftToRight);
+			return AddAfter(node, fs, Direction.LeftToRight);
 		}
 
-		public ShapeNode AddAfter(ShapeNode node, string type, FeatureStruct fs, bool optional)
+		public ShapeNode AddAfter(ShapeNode node, FeatureStruct fs, bool optional)
 		{
-			return AddAfter(node, type, fs, optional, Direction.LeftToRight);
+			return AddAfter(node, fs, optional, Direction.LeftToRight);
 		}
 
-		public ShapeNode AddAfter(ShapeNode node, string type, FeatureStruct fs, Direction dir)
+		public ShapeNode AddAfter(ShapeNode node, FeatureStruct fs, Direction dir)
 		{
-			return AddAfter(node, type, fs, false, dir);
+			return AddAfter(node, fs, false, dir);
 		}
 
-		public ShapeNode AddAfter(ShapeNode node, string type, FeatureStruct fs, bool optional, Direction dir)
+		public ShapeNode AddAfter(ShapeNode node, FeatureStruct fs, bool optional, Direction dir)
 		{
-			var newNode = new ShapeNode(_spanFactory, type, fs);
+			var newNode = new ShapeNode(_spanFactory, fs);
 			node.Annotation.Optional = optional;
 			AddAfter(node, newNode, dir);
 			return newNode;

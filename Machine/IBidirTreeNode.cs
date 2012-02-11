@@ -4,6 +4,8 @@
 	{
 		TNode Parent { get; }
 
+		int Depth { get; }
+
 		IBidirList<TNode> Children { get; }
 	}
 }

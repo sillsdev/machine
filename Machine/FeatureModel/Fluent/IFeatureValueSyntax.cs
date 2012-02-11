@@ -6,7 +6,7 @@ namespace SIL.Machine.FeatureModel.Fluent
 	{
 		INegatableFeatureValueSyntax Not { get; }
 		IFeatureStructSyntax EqualToFeatureStruct(Func<IFeatureStructSyntax, IFeatureStructSyntax> build);
-		IFeatureStructSyntax ReferringTo(params Feature[] path);
-		IFeatureStructSyntax ReferringTo(params string[] idPath);
+		IFeatureStructSyntax EqualToFeatureStruct(int id, Func<IFeatureStructSyntax, IFeatureStructSyntax> build);
+		IFeatureStructSyntax ReferringTo(int id);
 	}
 }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text;
 
 namespace SIL.Machine.FeatureModel
 {
@@ -81,6 +82,9 @@ namespace SIL.Machine.FeatureModel
 			if (!Dereference(other, out otherSfv))
 				return false;
 
+			if (this == otherSfv)
+				return true;
+
 			if (!IsVariable && !otherSfv.IsVariable)
 			{
 				if (!Overlaps(false, otherSfv, false))
@@ -137,7 +141,7 @@ namespace SIL.Machine.FeatureModel
 			return true;
 		}
 
-		internal override bool Union(FeatureValue other, VariableBindings varBindings)
+		internal override bool Union(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited)
 		{
 			SimpleFeatureValue otherSfv;
 			if (!Dereference(other, out otherSfv))
@@ -166,19 +170,40 @@ namespace SIL.Machine.FeatureModel
 			{
 				SimpleFeatureValue binding;
 				if (varBindings.TryGetValue(otherSfv.VariableName, out binding))
-				{
 					UnionWith(false, binding, !otherSfv.Agree);
+				else
+					varBindings[otherSfv.VariableName] = GetVariableValue(otherSfv.Agree);
+			}
+			else
+			{
+				SimpleFeatureValue binding;
+				if (varBindings.TryGetValue(VariableName, out binding))
+				{
+					UnionWith(false, binding, !Agree);
+					SimpleFeatureValue otherBinding;
+					if (varBindings.TryGetValue(otherSfv.VariableName, out otherBinding))
+						UnionWith(false, otherBinding, !otherSfv.Agree);
+					VariableName = null;
 				}
 				else
 				{
-					varBindings[otherSfv.VariableName] = GetVariableValue(otherSfv.Agree);
+					SimpleFeatureValue otherBinding;
+					if (varBindings.TryGetValue(otherSfv.VariableName, out otherBinding))
+					{
+						UnionWith(false, otherBinding, !otherSfv.Agree);
+						VariableName = null;
+					}
+					else
+					{
+						return VariableName == otherSfv.VariableName && Agree == otherSfv.Agree;
+					}
 				}
 			}
 
 			return !IsUninstantiated;
 		}
 
-		internal override bool Subtract(FeatureValue other, VariableBindings varBindings)
+		internal override bool Subtract(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited)
 		{
 			SimpleFeatureValue otherSfv;
 			if (!Dereference(other, out otherSfv))
@@ -203,6 +228,22 @@ namespace SIL.Machine.FeatureModel
 				SimpleFeatureValue binding;
 				if (varBindings.TryGetValue(otherSfv.VariableName, out binding))
 					ExceptWith(false, binding, !otherSfv.Agree);
+			}
+			else
+			{
+				SimpleFeatureValue binding;
+				if (varBindings.TryGetValue(VariableName, out binding))
+				{
+					UnionWith(false, binding, !Agree);
+					SimpleFeatureValue otherBinding;
+					if (varBindings.TryGetValue(otherSfv.VariableName, out otherBinding))
+						ExceptWith(false, otherSfv, false);
+					VariableName = null;
+				}
+				else if (!varBindings.ContainsVariable(otherSfv.VariableName))
+				{
+					return VariableName != otherSfv.VariableName || Agree != otherSfv.Agree;
+				}
 			}
 
 			return IsSatisfiable;
@@ -246,19 +287,94 @@ namespace SIL.Machine.FeatureModel
 
 		public abstract SimpleFeatureValue Clone();
 
-		internal override bool Negation(out FeatureValue output)
+		internal override bool Negation(IDictionary<FeatureValue, FeatureValue> visited, out FeatureValue output)
 		{
+			FeatureValue negation;
+			if (visited.TryGetValue(this, out negation))
+			{
+				output = negation;
+				return true;
+			}
+
 			output = Negation();
+
+			visited[this] = output;
 			return true;
 		}
 
 		public abstract SimpleFeatureValue Negation();
 
+		internal override void FindReentrances(IDictionary<FeatureValue, bool> reentrances)
+		{
+			reentrances[this] = reentrances.ContainsKey(this);
+		}
+
+		internal override void GetAllValues(ISet<FeatureValue> values, bool indefinite)
+		{
+			values.Add(this);
+		}
+
+		internal override string ToString(ISet<FeatureValue> visited, IDictionary<FeatureValue, int> reentranceIds)
+		{
+			if (visited.Contains(this))
+				return string.Format("<{0}>", reentranceIds[this]);
+
+			visited.Add(this);
+			var sb = new StringBuilder();
+			int id;
+			if (reentranceIds.TryGetValue(this, out id))
+				sb.AppendFormat("<{0}>=", id);
+			sb.Append(ToString());
+			return sb.ToString();
+		}
+
+		internal override int GetHashCode(ISet<FeatureValue> visited)
+		{
+			if (visited.Contains(this))
+				return 1;
+			visited.Add(this);
+
+			return GetHashCode();
+		}
+
+		internal override bool Equals(FeatureValue other, ISet<FeatureValue> visitedSelf, ISet<FeatureValue> visitedOther, IDictionary<FeatureValue, FeatureValue> visitedPairs)
+		{
+			if (other == null)
+				return false;
+
+			SimpleFeatureValue otherSfv;
+			if (!Dereference(other, out otherSfv))
+				return false;
+
+			if (this == otherSfv)
+				return true;
+
+			if (visitedSelf.Contains(this) || visitedOther.Contains(otherSfv))
+			{
+				FeatureValue fv;
+				if (visitedPairs.TryGetValue(this, out fv))
+					return fv == otherSfv;
+				return false;
+			}
+
+			visitedSelf.Add(this);
+			visitedOther.Add(otherSfv);
+			visitedPairs[this] = otherSfv;
+
+			return Equals(otherSfv);
+		}
+
 		protected abstract bool Overlaps(bool not, SimpleFeatureValue other, bool notOther);
 		protected abstract void IntersectWith(bool not, SimpleFeatureValue other, bool notOther);
 		protected abstract void UnionWith(bool not, SimpleFeatureValue other, bool notOther);
 		protected abstract void ExceptWith(bool not, SimpleFeatureValue other, bool notOther);
-		protected abstract bool IsSatisfiable { get; }
-		protected abstract bool IsUninstantiated { get; }
+		protected virtual bool IsSatisfiable
+		{
+			get { return IsVariable; }
+		}
+		protected virtual bool IsUninstantiated
+		{
+			get { return !IsVariable; }
+		}
 	}
 }

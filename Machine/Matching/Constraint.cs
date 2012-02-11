@@ -11,19 +11,12 @@ namespace SIL.Machine.Matching
     {
     	private readonly FeatureStruct _fs;
 
-		public Constraint(FeatureStruct fs)
-			: this(null, fs)
-		{
-		}
-
         /// <summary>
 		/// Initializes a new instance of the <see cref="Constraint{TData, TOffset}"/> class.
         /// </summary>
-		public Constraint(string type, FeatureStruct fs)
+		public Constraint(FeatureStruct fs)
 		{
 			_fs = fs;
-			if (!string.IsNullOrEmpty(type))
-				_fs.AddValue(AnnotationFeatureSystem.Type, type);
 		}
 
     	/// <summary>
@@ -34,17 +27,6 @@ namespace SIL.Machine.Matching
         {
             _fs = constraint._fs.Clone();
         }
-
-    	public string Type
-    	{
-    		get
-    		{
-				StringFeatureValue sfv;
-				if (FeatureStruct.TryGetValue(AnnotationFeatureSystem.Type, out sfv))
-					return (string)sfv;
-				return null;
-    		}
-    	}
 
         /// <summary>
         /// Gets the feature values.

@@ -6,7 +6,7 @@ namespace SIL.Machine.FeatureModel.Fluent
 	{
 		IDisjunctiveNegatableFeatureValueSyntax Not { get; }
 		IDisjunctiveFeatureStructSyntax EqualToFeatureStruct(Func<IDisjunctiveFeatureStructSyntax, IDisjunctiveFeatureStructSyntax> build);
-		IDisjunctiveFeatureStructSyntax ReferringTo(params Feature[] path);
-		IDisjunctiveFeatureStructSyntax ReferringTo(params string[] idPath);
+		IDisjunctiveFeatureStructSyntax EqualToFeatureStruct(int id, Func<IDisjunctiveFeatureStructSyntax, IDisjunctiveFeatureStructSyntax> build);
+		IDisjunctiveFeatureStructSyntax ReferringTo(int id);
 	}
 }

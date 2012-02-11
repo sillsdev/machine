@@ -9,22 +9,16 @@ namespace SIL.Machine
 		private readonly Span<TOffset> _span;
 
 		public Annotation(Span<TOffset> span, FeatureStruct fs)
-			: this(null, span, fs)
-		{
-		}
-
-		public Annotation(string type, Span<TOffset> span, FeatureStruct fs)
 		{
 			_span = span;
 			FeatureStruct = fs;
-			if (!string.IsNullOrEmpty(type))
-				FeatureStruct.AddValue(AnnotationFeatureSystem.Type, type);
 			ListID = -1;
 			_children = new AnnotationList<TOffset>(span.SpanFactory, this);
+			Depth = -1;
 		}
 
 		internal Annotation(Span<TOffset> span)
-			: this(null, span, null)
+			: this(span, null)
 		{
 		}
 
@@ -36,6 +30,8 @@ namespace SIL.Machine
 		}
 
 		public Annotation<TOffset> Parent { get; private set; }
+
+		public int Depth { get; private set; }
 
 		public AnnotationList<TOffset> Children
 		{
@@ -51,23 +47,14 @@ namespace SIL.Machine
 		{
 			base.Clear();
 			Parent = null;
+			Depth = -1;
 		}
 
 		protected internal override void Init(BidirList<Annotation<TOffset>> list, bool singleState)
 		{
 			base.Init(list, singleState);
 			Parent = ((AnnotationList<TOffset>) list).Parent;
-		}
-
-		public string Type
-		{
-			get
-			{
-				StringFeatureValue sfv;
-				if (FeatureStruct.TryGetValue(AnnotationFeatureSystem.Type, out sfv))
-					return (string) sfv;
-				return null;
-			}
+			Depth = Parent == null ? 0 : Parent.Depth + 1;
 		}
 
 		public Span<TOffset> Span

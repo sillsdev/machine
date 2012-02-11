@@ -65,68 +65,68 @@ namespace SIL.Machine
 
 		#region IBidirListNode
 
-		public static TNode GetNext<TNode>(this IBidirListNode<TNode> cur, Func<TNode, TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
+		public static TNode GetNext<TNode>(this IBidirListNode<TNode> node, Func<TNode, TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
 		{
-			return GetNext(cur, Direction.LeftToRight, filter);
+			return GetNext(node, Direction.LeftToRight, filter);
 		}
 
-		public static TNode GetNext<TNode>(this IBidirListNode<TNode> cur, Direction dir, Func<TNode, TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
+		public static TNode GetNext<TNode>(this IBidirListNode<TNode> node, Direction dir, Func<TNode, TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
 		{
-			var node = (TNode) cur;
+			var cur = (TNode) node;
 			do
 			{
-				node = node.GetNext(dir);
+				cur = cur.GetNext(dir);
 			}
-			while (node != null && !filter((TNode)cur, node));
-			return node;
+			while (cur != node.List.GetEnd(dir) && !filter((TNode) node, cur));
+			return cur;
 		}
 
-		public static TNode GetNext<TNode>(this IBidirListNode<TNode> cur, Func<TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
+		public static TNode GetNext<TNode>(this IBidirListNode<TNode> node, Func<TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
 		{
-			return GetNext(cur, Direction.LeftToRight, filter);
+			return GetNext(node, Direction.LeftToRight, filter);
 		}
 
-		public static TNode GetNext<TNode>(this IBidirListNode<TNode> cur, Direction dir, Func<TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
+		public static TNode GetNext<TNode>(this IBidirListNode<TNode> node, Direction dir, Func<TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
 		{
-			var node = (TNode) cur;
+			var cur = (TNode) node;
 			do
 			{
-				node = node.GetNext(dir);
+				cur = cur.GetNext(dir);
 			}
-			while (node != null && !filter(node));
-			return node;
+			while (cur != node.List.GetEnd(dir) && !filter(cur));
+			return cur;
 		}
 
-		public static TNode GetPrev<TNode>(this IBidirListNode<TNode> cur, Func<TNode, TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
+		public static TNode GetPrev<TNode>(this IBidirListNode<TNode> node, Func<TNode, TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
 		{
-			return GetPrev(cur, Direction.LeftToRight, filter);
+			return GetPrev(node, Direction.LeftToRight, filter);
 		}
 
-		public static TNode GetPrev<TNode>(this IBidirListNode<TNode> cur, Direction dir, Func<TNode, TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
+		public static TNode GetPrev<TNode>(this IBidirListNode<TNode> node, Direction dir, Func<TNode, TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
 		{
-			var node = (TNode) cur;
+			var cur = (TNode) node;
 			do
 			{
-				node = node.GetPrev(dir);
+				cur = cur.GetPrev(dir);
 			}
-			while (node != null && !filter((TNode) cur, node));
-			return node;
+			while (cur != node.List.GetBegin(dir) && !filter((TNode) node, cur));
+			return cur;
 		}
 
-		public static TNode GetPrev<TNode>(this IBidirListNode<TNode> cur, Func<TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
+		public static TNode GetPrev<TNode>(this IBidirListNode<TNode> node, Func<TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
 		{
-			return GetPrev(cur, Direction.LeftToRight, filter);
+			return GetPrev(node, Direction.LeftToRight, filter);
 		}
 
-		public static TNode GetPrev<TNode>(this IBidirListNode<TNode> cur, Direction dir, Func<TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
+		public static TNode GetPrev<TNode>(this IBidirListNode<TNode> node, Direction dir, Func<TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
 		{
-			var node = (TNode) cur;
+			var cur = (TNode) node;
 			do
 			{
-				node = node.GetPrev(dir);
+				cur = cur.GetPrev(dir);
 			}
-			while (node != null && !filter(node));
-			return node;
+			while (cur != node.List.GetBegin(dir) && !filter(cur));
+			return cur;
 		}
 
 		public static IEnumerable<TNode> GetNodes<TNode>(this IBidirListNode<TNode> first) where TNode : class, IBidirListNode<TNode>
@@ -248,17 +248,120 @@ namespace SIL.Machine
 
 		public static int DescendantCount<TNode>(this IBidirTreeNode<TNode> node) where TNode : class, IBidirTreeNode<TNode>
 		{
-			return node.Children.Aggregate(node.Children.Count, (count, child) => count + child.DescendantCount());
-		}
-
-		public static int Depth<TNode>(this IBidirTreeNode<TNode> node) where TNode : class, IBidirTreeNode<TNode>
-		{
-			return node.Parent == null ? 0 : node.Parent.Depth() + 1;
+			return node.Children.Count + node.Children.Sum(child => child.DescendantCount());
 		}
 
 		public static bool IsLeaf<TNode>(this IBidirTreeNode<TNode> node) where TNode : class, IBidirTreeNode<TNode>
 		{
 			return node.Children.Count == 0;
+		}
+
+		public static TNode GetNextDepthFirst<TNode>(this IBidirTreeNode<TNode> node) where TNode : class, IBidirTreeNode<TNode>
+		{
+			return node.GetNextDepthFirst(Direction.LeftToRight);
+		}
+
+		public static TNode GetNextDepthFirst<TNode>(this IBidirTreeNode<TNode> node, Direction dir) where TNode : class, IBidirTreeNode<TNode>
+		{
+			if (!node.IsLeaf())
+				return node.Children.GetFirst(dir);
+
+			do
+			{
+				TNode next = node.GetNext(dir);
+				if (next != node.List.GetEnd(dir))
+					return next;
+				node = node.Parent;
+			}
+			while (node != null);
+
+			return null;
+		}
+
+		public static TNode GetNextDepthFirst<TNode>(this IBidirTreeNode<TNode> node, Func<TNode, bool> filter) where TNode : class, IBidirTreeNode<TNode>
+		{
+			return node.GetNextDepthFirst(Direction.LeftToRight, filter);
+		}
+
+		public static TNode GetNextDepthFirst<TNode>(this IBidirTreeNode<TNode> node, Direction dir, Func<TNode, bool> filter) where TNode : class, IBidirTreeNode<TNode>
+		{
+			var cur = (TNode) node;
+			do
+			{
+				cur = cur.GetNextDepthFirst(dir);
+			}
+			while (cur != null && !filter(cur));
+			return cur;
+		}
+
+		public static TNode GetNextDepthFirst<TNode>(this IBidirTreeNode<TNode> node, Func<TNode, TNode, bool> filter) where TNode : class, IBidirTreeNode<TNode>
+		{
+			return node.GetNextDepthFirst(Direction.LeftToRight, filter);
+		}
+
+		public static TNode GetNextDepthFirst<TNode>(this IBidirTreeNode<TNode> node, Direction dir, Func<TNode, TNode, bool> filter) where TNode : class, IBidirTreeNode<TNode>
+		{
+			var cur = (TNode) node;
+			do
+			{
+				cur = cur.GetNextDepthFirst(dir);
+			}
+			while (cur != null && !filter((TNode) node, cur));
+			return cur;
+		}
+
+		public static TNode GetPrevDepthFirst<TNode>(this IBidirTreeNode<TNode> node) where TNode : class, IBidirTreeNode<TNode>
+		{
+			return node.GetPrevDepthFirst(Direction.LeftToRight);
+		}
+
+		public static TNode GetPrevDepthFirst<TNode>(this IBidirTreeNode<TNode> node, Direction dir) where TNode : class, IBidirTreeNode<TNode>
+		{
+			if (!node.IsLeaf())
+				return node.Children.GetLast(dir);
+
+			do
+			{
+				TNode prev = node.GetPrev(dir);
+				if (prev != node.List.GetBegin(dir))
+					return prev;
+				node = node.Parent;
+			}
+			while (node != null);
+
+			return null;
+		}
+
+		public static TNode GetPrevDepthFirst<TNode>(this IBidirTreeNode<TNode> node, Func<TNode, bool> filter) where TNode : class, IBidirTreeNode<TNode>
+		{
+			return node.GetPrevDepthFirst(Direction.LeftToRight, filter);
+		}
+
+		public static TNode GetPrevDepthFirst<TNode>(this IBidirTreeNode<TNode> node, Direction dir, Func<TNode, bool> filter) where TNode : class, IBidirTreeNode<TNode>
+		{
+			var cur = (TNode) node;
+			do
+			{
+				cur = cur.GetPrevDepthFirst(dir);
+			}
+			while (cur != null && !filter(cur));
+			return cur;
+		}
+
+		public static TNode GetPrevDepthFirst<TNode>(this IBidirTreeNode<TNode> node, Func<TNode, TNode, bool> filter) where TNode : class, IBidirTreeNode<TNode>
+		{
+			return node.GetPrevDepthFirst(Direction.LeftToRight, filter);
+		}
+
+		public static TNode GetPrevDepthFirst<TNode>(this IBidirTreeNode<TNode> node, Direction dir, Func<TNode, TNode, bool> filter) where TNode : class, IBidirTreeNode<TNode>
+		{
+			var cur = (TNode) node;
+			do
+			{
+				cur = cur.GetPrevDepthFirst(dir);
+			}
+			while (cur != null && !filter((TNode) node, cur));
+			return cur;
 		}
 
 		#endregion
@@ -457,6 +560,12 @@ namespace SIL.Machine
 		public static ReadOnlyCollection<T> AsReadOnlyCollection<T>(this ICollection<T> collection)
 		{
 			return new ReadOnlyCollection<T>(collection);
+		}
+
+		public static void RemoveAll<T>(this ICollection<T> collection, Func<T, bool> predicate)
+		{
+			foreach (T item in collection.Where(predicate).ToArray())
+				collection.Remove(item);
 		}
 
 		#endregion

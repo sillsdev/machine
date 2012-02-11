@@ -34,12 +34,6 @@ namespace SIL.Machine.Matching.Fluent
 			AddNode(new Constraint<TData, TOffset>(fs));
 		}
 
-		protected void AddAnnotation(string type, FeatureStruct fs)
-		{
-			CheckEndAlternation();
-			AddNode(new Constraint<TData, TOffset>(type, fs));
-		}
-
 		protected void AddGroup(string name, Func<IGroupSyntax<TData, TOffset>, IGroupSyntax<TData, TOffset>> build)
 		{
 			CheckEndAlternation();

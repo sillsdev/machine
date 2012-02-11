@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Globalization;
+using NUnit.Framework;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.Test
@@ -9,6 +10,13 @@ namespace SIL.Machine.Test
 		protected SpanFactory<int> SpanFactory;
 		protected FeatureSystem PhoneticFeatSys;
 		protected FeatureSystem WordFeatSys;
+		protected FeatureSystem TypeFeatSys;
+		protected SymbolicFeature Type;
+		protected FeatureSymbol Word;
+		protected FeatureSymbol NP;
+		protected FeatureSymbol VP;
+		protected FeatureSymbol Seg;
+		protected FeatureSymbol Bdry;
 
 		[TestFixtureSetUp]
 		public void FixtureSetUp()
@@ -46,6 +54,21 @@ namespace SIL.Machine.Test
 					.Symbol("adj")
 					.Symbol("adv")
 					.Symbol("det")).Value;
+
+			Type = new SymbolicFeature("Type");
+			Word = new FeatureSymbol("Word");
+			Type.AddPossibleSymbol(Word);
+			NP = new FeatureSymbol("NP");
+			Type.AddPossibleSymbol(NP);
+			VP = new FeatureSymbol("VP");
+			Type.AddPossibleSymbol(VP);
+			Seg = new FeatureSymbol("Seg");
+			Type.AddPossibleSymbol(Seg);
+			Bdry = new FeatureSymbol("Bdry");
+			Type.AddPossibleSymbol(Bdry);
+
+			TypeFeatSys = new FeatureSystem();
+			TypeFeatSys.AddFeature(Type);
 		}
 
 		protected StringData CreateStringData(string str)
@@ -53,7 +76,7 @@ namespace SIL.Machine.Test
 			var stringData = new StringData(SpanFactory, str);
 			for (int i = 0; i < str.Length; i++)
 			{
-				string type = "Seg";
+				FeatureSymbol type = Seg;
 				FeatureStruct fs;
 				switch (str[i])
 				{
@@ -131,16 +154,18 @@ namespace SIL.Machine.Test
 					case ',':
 					case ' ':
 					case '.':
-						type = "Bdry";
+						type = Bdry;
 						fs = FeatureStruct.New(PhoneticFeatSys)
-							.Feature("str").EqualTo(str[i].ToString()).Value;
+							.Feature("str").EqualTo(str[i].ToString(CultureInfo.InvariantCulture)).Value;
 						break;
 					default:
 						fs = FeatureStruct.New(PhoneticFeatSys)
-							.Feature("str").EqualTo(str[i].ToString()).Value;
+							.Feature("str").EqualTo(str[i].ToString(CultureInfo.InvariantCulture)).Value;
 						break;
 				}
-				stringData.Annotations.Add(type, i, i + 1, fs);
+
+				fs.AddValue(Type, type);
+				stringData.Annotations.Add(i, i + 1, fs);
 			}
 			return stringData;
 		}

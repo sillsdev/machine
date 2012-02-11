@@ -66,12 +66,12 @@ namespace SIL.Machine.FeatureModel
 
 		protected override bool IsSatisfiable
 		{
-			get { return _values.Count > 0; }
+			get { return base.IsSatisfiable || _values.Count > 0; }
 		}
 
 		protected override bool IsUninstantiated
 		{
-			get { return _values.SetEquals(_feature.PossibleSymbols); }
+			get { return base.IsUninstantiated && _values.SetEquals(_feature.PossibleSymbols); }
 		}
 
 		public bool Contains(FeatureSymbol symbol)
@@ -162,17 +162,6 @@ namespace SIL.Machine.FeatureModel
 			return IsVariable ? new SymbolicFeatureValue(_feature, VariableName, !Agree) : new SymbolicFeatureValue(_feature.PossibleSymbols.Except(_values));
 		}
 
-		internal override bool Equals(FeatureValue other, HashSet<FeatureStruct> visitedSelf, HashSet<FeatureStruct> visitedOther,
-			IDictionary<FeatureStruct, FeatureStruct> visitedPairs)
-		{
-			if (other == null)
-				return false;
-			SymbolicFeatureValue otherSfv;
-			if (!Dereference(other, out otherSfv))
-				return false;
-			return Equals(otherSfv);
-		}
-
 		public override bool Equals(object other)
 		{
 			var otherSfv = other as SymbolicFeatureValue;
@@ -189,11 +178,6 @@ namespace SIL.Machine.FeatureModel
 			return _values.SetEquals(other._values);
 		}
 
-		internal override int GetHashCode(HashSet<FeatureStruct> visited)
-		{
-			return GetHashCode();
-		}
-
 		public override int GetHashCode()
 		{
 			int code = 23;
@@ -204,7 +188,7 @@ namespace SIL.Machine.FeatureModel
 			}
 			else
 			{
-				code = _values.Aggregate(code, (symValCode, sym) => symValCode * 31 + sym.GetHashCode());
+				code = _values.OrderBy(sym => sym.ID).Aggregate(code, (symValCode, sym) => symValCode * 31 + sym.GetHashCode());
 			}
 			return code;
 		}

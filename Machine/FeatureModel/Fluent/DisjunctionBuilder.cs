@@ -6,14 +6,19 @@ namespace SIL.Machine.FeatureModel.Fluent
 	public class DisjunctionBuilder : IFirstDisjunctSyntax, ISecondDisjunctSyntax, IFinalDisjunctSyntax
 	{
 		private readonly FeatureSystem _featSys;
-		private readonly FeatureStruct _rootFs;
+		private readonly IDictionary<int, FeatureValue> _ids; 
 		private readonly List<FeatureStruct> _disjuncts;
 
-		public DisjunctionBuilder(FeatureSystem featSys, FeatureStruct rootFs)
+		public DisjunctionBuilder(FeatureSystem featSys, IDictionary<int, FeatureValue> ids)
 		{
 			_featSys = featSys;
-			_rootFs = rootFs;
+			_ids = ids;
 			_disjuncts = new List<FeatureStruct>();
+		}
+
+		public IEnumerable<FeatureStruct> Disjuncts
+		{
+			get { return _disjuncts; }
 		}
 
 		public ISecondDisjunctSyntax With(Func<IDisjunctiveFeatureStructSyntax, IDisjunctiveFeatureStructSyntax> build)
@@ -36,14 +41,9 @@ namespace SIL.Machine.FeatureModel.Fluent
 
 		private void AddDisjunct(Func<IDisjunctiveFeatureStructSyntax, IDisjunctiveFeatureStructSyntax> build)
 		{
-			var fsBuilder = new FeatureStructBuilder(_featSys, new FeatureStruct(), _rootFs);
+			var fsBuilder = new FeatureStructBuilder(_featSys, new FeatureStruct(), _ids);
 			IDisjunctiveFeatureStructSyntax result = build(fsBuilder);
 			_disjuncts.Add(result.Value);
-		}
-
-		Disjunction IFinalDisjunctSyntax.ToDisjunction()
-		{
-			return new Disjunction(_disjuncts);
 		}
 	}
 }
