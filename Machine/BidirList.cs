@@ -188,7 +188,7 @@ namespace SIL.Machine
 					next.SetPrev(dir, i, node.GetPrev(dir, i));
 			}
 
-			while (state.First[state.Levels - 1] == null)
+			while (state.Levels > 1 && state.First[state.Levels - 1] == null)
 				state.Levels--;
 		}
 

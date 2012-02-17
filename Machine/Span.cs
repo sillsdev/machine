@@ -93,36 +93,21 @@ namespace SIL.Machine
 
 		public int CompareTo(Span<TOffset> other, Direction dir)
 		{
+			int res;
 			if (dir == Direction.LeftToRight)
 			{
-				if (_spanFactory.Compare(_start, other._start) < 0)
-					return -1;
-
-				if (_spanFactory.Compare(_start, other._start) > 0)
-					return 1;
-
-				if (_spanFactory.Compare(_end, other._end) > 0)
-					return -1;
-
-				if (_spanFactory.Compare(_end, other._end) < 0)
-					return 1;
+				res = _spanFactory.Compare(_start, other._start);
+				if (res == 0)
+					res = -_spanFactory.Compare(_end, other._end);
 			}
 			else
 			{
-				if (_spanFactory.Compare(_end, other._end) > 0)
-					return -1;
-
-				if (_spanFactory.Compare(_end, other._end) < 0)
-					return 1;
-
-				if (_spanFactory.Compare(_start, other._start) < 0)
-					return -1;
-
-				if (_spanFactory.Compare(_start, other._start) > 0)
-					return 1;
+				res = -_spanFactory.Compare(_end, other._end);
+				if (res == 0)
+					res = _spanFactory.Compare(_start, other._start);
 			}
 
-			return 0;
+			return res;
 		}
 
 		public int CompareTo(object other)

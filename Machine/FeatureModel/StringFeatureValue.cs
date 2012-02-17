@@ -15,7 +15,7 @@ namespace SIL.Machine.FeatureModel
 		public static explicit operator string(StringFeatureValue sfv)
 		{
 			if (sfv.Not)
-				return null;
+				throw new InvalidCastException("A negated string feature value cannot be converted to a string.");
 			return sfv._values.First();
 		}
 

@@ -12,17 +12,17 @@ namespace SIL.Machine.Matching
 		private readonly Matcher<TData, TOffset> _matcher; 
 		private readonly Dictionary<string, GroupCapture<TOffset>> _groupCaptures;
 		private readonly VariableBindings _varBindings;
-		private readonly IEnumerable<string> _patternPath;
+		private readonly IList<string> _patternPath;
 		private readonly TData _input;
 		private readonly Annotation<TOffset> _nextAnn;
 
 		internal Match(Matcher<TData, TOffset> matcher, Span<TOffset> span, TData input)
-			: this(matcher, span, input, Enumerable.Empty<GroupCapture<TOffset>>(), Enumerable.Empty<string>(), new VariableBindings(), null)
+			: this(matcher, span, input, Enumerable.Empty<GroupCapture<TOffset>>(), new string[0], new VariableBindings(), null)
 		{
 		}
 
 		internal Match(Matcher<TData, TOffset> matcher, Span<TOffset> span, TData input, IEnumerable<GroupCapture<TOffset>> groupCaptures,
-			IEnumerable<string> patternPath, VariableBindings varBindings, Annotation<TOffset> nextAnn)
+			IList<string> patternPath, VariableBindings varBindings, Annotation<TOffset> nextAnn)
 			: base(Matcher<TData, TOffset>.EntireMatch, span)
 		{
 			_matcher = matcher;
@@ -43,9 +43,9 @@ namespace SIL.Machine.Matching
 			get { return _input; }
 		}
 
-		public IEnumerable<string> PatternPath
+		public IReadOnlyList<string> PatternPath
 		{
-			get { return _patternPath; }
+			get { return _patternPath.AsReadOnlyList(); }
 		}
 
 		public VariableBindings VariableBindings
@@ -53,9 +53,9 @@ namespace SIL.Machine.Matching
 			get { return _varBindings; }
 		}
 
-		public IEnumerable<GroupCapture<TOffset>> GroupCaptures
+		public IReadOnlyCollection<GroupCapture<TOffset>> GroupCaptures
 		{
-			get { return _groupCaptures.Values; }
+			get { return _groupCaptures.Values.AsReadOnlyCollection(); }
 		}
 
 		public GroupCapture<TOffset> this[string groupName]

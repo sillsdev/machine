@@ -24,28 +24,63 @@ namespace SIL.Machine.Test
 			SpanFactory = new IntegerSpanFactory();
 
 			PhoneticFeatSys = FeatureSystem.New()
+				.SymbolicFeature("son", son => son
+					.Symbol("son+", "+")
+					.Symbol("son-", "-")
+					.Symbol("son?", "?").Default)
+				.SymbolicFeature("syl", syl => syl
+					.Symbol("syl+", "+")
+					.Symbol("syl-", "-")
+					.Symbol("syl?", "?").Default)
 				.SymbolicFeature("cons", cons => cons
 					.Symbol("cons+", "+")
-					.Symbol("cons-", "-"))
-				.SymbolicFeature("voice", voice => voice
-					.Symbol("voice+", "+")
-					.Symbol("voice-", "-"))
-				.SymbolicFeature("sib", sib => sib
-					.Symbol("sib+", "+")
-					.Symbol("sib-", "-"))
-				.SymbolicFeature("cor", cor => cor
-					.Symbol("cor+", "+")
-					.Symbol("cor-", "-"))
-				.SymbolicFeature("lab", lab => lab
-					.Symbol("lab+", "+")
-					.Symbol("lab-", "-"))
+					.Symbol("cons-", "-")
+					.Symbol("cons?", "?").Default)
+				.SymbolicFeature("high", high => high
+					.Symbol("high+", "+")
+					.Symbol("high-", "-")
+					.Symbol("high?", "?").Default)
+				.SymbolicFeature("back", back => back
+					.Symbol("back+", "+")
+					.Symbol("back-", "-")
+					.Symbol("back?", "?").Default)
+				.SymbolicFeature("front", front => front
+					.Symbol("front+", "+")
+					.Symbol("front-", "-")
+					.Symbol("front?", "?").Default)
 				.SymbolicFeature("low", low => low
 					.Symbol("low+", "+")
-					.Symbol("low-", "-"))
-				.SymbolicFeature("mid", mid => mid
-					.Symbol("mid+", "+")
-					.Symbol("mid-", "-"))
-				.StringFeature("str").Value;
+					.Symbol("low-", "-")
+					.Symbol("low?", "?").Default)
+				.SymbolicFeature("rnd", rnd => rnd
+					.Symbol("rnd+", "+")
+					.Symbol("rnd-", "-")
+					.Symbol("rnd?", "?").Default)
+				.SymbolicFeature("ant", ant => ant
+					.Symbol("ant+", "+")
+					.Symbol("ant-", "-")
+					.Symbol("ant?", "?").Default)
+				.SymbolicFeature("cor", cor => cor
+					.Symbol("cor+", "+")
+					.Symbol("cor-", "-")
+					.Symbol("cor?", "?").Default)
+				.SymbolicFeature("voice", voice => voice
+					.Symbol("voice+", "+")
+					.Symbol("voice-", "-")
+					.Symbol("voice?", "?").Default)
+				.SymbolicFeature("cont", cont => cont
+					.Symbol("cont+", "+")
+					.Symbol("cont-", "-")
+					.Symbol("cont?", "?").Default)
+				.SymbolicFeature("nas", nas => nas
+					.Symbol("nas+", "+")
+					.Symbol("nas-", "-")
+					.Symbol("nas?", "?").Default)
+				.SymbolicFeature("str", str => str
+					.Symbol("str+", "+")
+					.Symbol("str-", "-")
+					.Symbol("str?", "?").Default)
+				.StringFeature("strRep").Value;
 
 			WordFeatSys = FeatureSystem.New()
 				.SymbolicFeature("POS", pos => pos
@@ -80,75 +115,308 @@ namespace SIL.Machine.Test
 				FeatureStruct fs;
 				switch (str[i])
 				{
-					case 'f':
+					case 'b':
 						fs = FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("son-")
+							.Symbol("syl-")
 							.Symbol("cons+")
-							.Symbol("voice-")
-							.Symbol("sib-")
+							.Symbol("high-")
+							.Symbol("ant+")
 							.Symbol("cor-")
-							.Symbol("lab+")
-							.Symbol("low-")
-							.Symbol("mid-").Value;
-						break;
-					case 'k':
-						fs = FeatureStruct.New(PhoneticFeatSys)
-							.Symbol("cons+")
-							.Symbol("voice-")
-							.Symbol("sib-")
-							.Symbol("cor-")
-							.Symbol("lab-")
-							.Symbol("low-")
-							.Symbol("mid-").Value;
-						break;
-					case 'z':
-						fs = FeatureStruct.New(PhoneticFeatSys)
-							.Symbol("cons+")
 							.Symbol("voice+")
-							.Symbol("sib+")
+							.Symbol("cont-")
+							.Symbol("nas-")
+							.Symbol("str-").Value;
+						break;
+					case 'd':
+						fs = FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("son-")
+							.Symbol("syl-")
+							.Symbol("cons+")
+							.Symbol("high-")
+							.Symbol("ant+")
 							.Symbol("cor+")
-							.Symbol("lab-")
-							.Symbol("low-")
-							.Symbol("mid-").Value;
+							.Symbol("voice+")
+							.Symbol("cont-")
+							.Symbol("nas-")
+							.Symbol("str-").Value;
+						break;
+					case 'g':
+						fs = FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("son-")
+							.Symbol("syl-")
+							.Symbol("cons+")
+							.Symbol("high+")
+							.Symbol("ant-")
+							.Symbol("cor-")
+							.Symbol("voice+")
+							.Symbol("cont-")
+							.Symbol("nas-")
+							.Symbol("str-").Value;
+						break;
+					case 'p':
+						fs = FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("son-")
+							.Symbol("syl-")
+							.Symbol("cons+")
+							.Symbol("high-")
+							.Symbol("ant+")
+							.Symbol("cor-")
+							.Symbol("voice-")
+							.Symbol("cont-")
+							.Symbol("nas-")
+							.Symbol("str-").Value;
+						break;
+					case 't':
+						fs = FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("son-")
+							.Symbol("syl-")
+							.Symbol("cons+")
+							.Symbol("high-")
+							.Symbol("ant+")
+							.Symbol("cor+")
+							.Symbol("voice-")
+							.Symbol("cont-")
+							.Symbol("nas-")
+							.Symbol("str-").Value;
+						break;
+					case 'q':
+					case 'c':
+					case 'k':
+					case 'x':
+						fs = FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("son-")
+							.Symbol("syl-")
+							.Symbol("cons+")
+							.Symbol("high+")
+							.Symbol("ant-")
+							.Symbol("cor-")
+							.Symbol("voice-")
+							.Symbol("cont-")
+							.Symbol("nas-")
+							.Symbol("str-").Value;
+						break;
+					case 'j':
+						fs = FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("son-")
+							.Symbol("syl-")
+							.Symbol("cons+")
+							.Symbol("high+")
+							.Symbol("ant-")
+							.Symbol("cor+")
+							.Symbol("voice+")
+							.Symbol("cont-")
+							.Symbol("nas-")
+							.Symbol("str+").Value;
 						break;
 					case 's':
 						fs = FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("son-")
+							.Symbol("syl-")
 							.Symbol("cons+")
-							.Symbol("voice-")
-							.Symbol("sib+")
+							.Symbol("high-")
+							.Symbol("ant+")
 							.Symbol("cor+")
-							.Symbol("lab-")
+							.Symbol("voice-")
+							.Symbol("cont+")
+							.Symbol("nas-")
+							.Symbol("str+").Value;
+						break;
+					case 'z':
+						fs = FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("son-")
+							.Symbol("syl-")
+							.Symbol("cons+")
+							.Symbol("high-")
+							.Symbol("ant+")
+							.Symbol("cor+")
+							.Symbol("voice+")
+							.Symbol("cont+")
+							.Symbol("nas-")
+							.Symbol("str+").Value;
+						break;
+					case 'f':
+						fs = FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("son-")
+							.Symbol("syl-")
+							.Symbol("cons+")
+							.Symbol("high-")
+							.Symbol("ant+")
+							.Symbol("cor-")
+							.Symbol("voice-")
+							.Symbol("cont+")
+							.Symbol("nas-")
+							.Symbol("str+").Value;
+						break;
+					case 'v':
+						fs = FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("son-")
+							.Symbol("syl-")
+							.Symbol("cons+")
+							.Symbol("high-")
+							.Symbol("ant+")
+							.Symbol("cor-")
+							.Symbol("voice+")
+							.Symbol("cont+")
+							.Symbol("nas-")
+							.Symbol("str+").Value;
+						break;
+					case 'w':
+						fs = FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("son+")
+							.Symbol("syl-")
+							.Symbol("cons-")
+							.Symbol("high+")
+							.Symbol("back+")
+							.Symbol("front-")
 							.Symbol("low-")
-							.Symbol("mid-").Value;
+							.Symbol("rnd+")
+							.Symbol("ant-")
+							.Symbol("cor-").Value;
+						break;
+					case 'y':
+						fs = FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("son+")
+							.Symbol("syl-")
+							.Symbol("cons-")
+							.Symbol("high+")
+							.Symbol("back-")
+							.Symbol("front+")
+							.Symbol("low-")
+							.Symbol("rnd-")
+							.Symbol("ant-")
+							.Symbol("cor-").Value;
+						break;
+					case 'h':
+						fs = FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("son+")
+							.Symbol("syl-")
+							.Symbol("cons-")
+							.Symbol("high-")
+							.Symbol("back-")
+							.Symbol("front-")
+							.Symbol("low+")
+							.Symbol("ant-")
+							.Symbol("cor-")
+							.Symbol("voice-")
+							.Symbol("cont+")
+							.Symbol("nas-")
+							.Symbol("str-").Value;
+						break;
+					case 'r':
+						fs = FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("son+")
+							.Symbol("syl-")
+							.Symbol("cons+")
+							.Symbol("high-")
+							.Symbol("back-")
+							.Symbol("front-")
+							.Symbol("low-")
+							.Symbol("ant-")
+							.Symbol("cor+")
+							.Symbol("voice+")
+							.Symbol("cont+")
+							.Symbol("nas-")
+							.Symbol("str-").Value;
+						break;
+					case 'l':
+						fs = FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("son+")
+							.Symbol("syl-")
+							.Symbol("cons+")
+							.Symbol("high-")
+							.Symbol("back-")
+							.Symbol("front-")
+							.Symbol("low-")
+							.Symbol("ant+")
+							.Symbol("cor+")
+							.Symbol("voice+")
+							.Symbol("cont+")
+							.Symbol("nas-")
+							.Symbol("str-").Value;
+						break;
+					case 'm':
+						fs = FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("son+")
+							.Symbol("syl-")
+							.Symbol("cons+")
+							.Symbol("high-")
+							.Symbol("low-")
+							.Symbol("ant+")
+							.Symbol("cor-")
+							.Symbol("voice+")
+							.Symbol("cont-")
+							.Symbol("nas+")
+							.Symbol("str-").Value;
+						break;
+					case 'n':
+						fs = FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("son+")
+							.Symbol("syl-")
+							.Symbol("cons+")
+							.Symbol("high-")
+							.Symbol("low-")
+							.Symbol("ant+")
+							.Symbol("cor+")
+							.Symbol("voice+")
+							.Symbol("cont-")
+							.Symbol("nas+")
+							.Symbol("str-").Value;
 						break;
 					case 'a':
 						fs = FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("son+")
+							.Symbol("syl+")
 							.Symbol("cons-")
-							.Symbol("voice+")
-							.Symbol("sib-")
-							.Symbol("cor-")
-							.Symbol("lab-")
+							.Symbol("high-")
+							.Symbol("back-")
+							.Symbol("front+")
 							.Symbol("low+")
-							.Symbol("mid-").Value;
-						break;
-					case 'i':
-						fs = FeatureStruct.New(PhoneticFeatSys)
-							.Symbol("cons-")
-							.Symbol("voice+")
-							.Symbol("sib-")
-							.Symbol("cor-")
-							.Symbol("lab-")
-							.Symbol("low-")
-							.Symbol("mid-").Value;
+							.Symbol("rnd-").Value;
 						break;
 					case 'e':
 						fs = FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("son+")
+							.Symbol("syl+")
 							.Symbol("cons-")
-							.Symbol("voice+")
-							.Symbol("sib-")
-							.Symbol("cor-")
-							.Symbol("lab-")
+							.Symbol("high-")
+							.Symbol("back-")
+							.Symbol("front+")
 							.Symbol("low-")
-							.Symbol("mid+").Value;
+							.Symbol("rnd-").Value;
+						break;
+					case 'i':
+						fs = FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("son+")
+							.Symbol("syl+")
+							.Symbol("cons-")
+							.Symbol("high+")
+							.Symbol("back-")
+							.Symbol("front+")
+							.Symbol("low-")
+							.Symbol("rnd-").Value;
+						break;
+					case 'o':
+						fs = FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("son+")
+							.Symbol("syl+")
+							.Symbol("cons-")
+							.Symbol("high-")
+							.Symbol("back+")
+							.Symbol("front-")
+							.Symbol("low+")
+							.Symbol("rnd-").Value;
+						break;
+					case 'u':
+						fs = FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("son+")
+							.Symbol("syl+")
+							.Symbol("cons-")
+							.Symbol("high+")
+							.Symbol("back+")
+							.Symbol("front-")
+							.Symbol("low-")
+							.Symbol("rnd+").Value;
 						break;
 					case '+':
 					case ',':
@@ -156,11 +424,11 @@ namespace SIL.Machine.Test
 					case '.':
 						type = Bdry;
 						fs = FeatureStruct.New(PhoneticFeatSys)
-							.Feature("str").EqualTo(str[i].ToString(CultureInfo.InvariantCulture)).Value;
+							.Feature("strRep").EqualTo(str[i].ToString(CultureInfo.InvariantCulture)).Value;
 						break;
 					default:
 						fs = FeatureStruct.New(PhoneticFeatSys)
-							.Feature("str").EqualTo(str[i].ToString(CultureInfo.InvariantCulture)).Value;
+							.Feature("strRep").EqualTo(str[i].ToString(CultureInfo.InvariantCulture)).Value;
 						break;
 				}
 

@@ -1,4 +1,5 @@
-﻿using SIL.Machine.FeatureModel;
+﻿using System;
+using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.Fsa
 {
@@ -9,9 +10,10 @@ namespace SIL.Machine.Fsa
 		private readonly string _id;
 		private readonly int _priority;
 		private readonly bool _isLazy;
-		private readonly Annotation<TOffset> _nextAnn; 
+		private readonly Annotation<TOffset> _nextAnn;
+		private readonly int _index;
 
-		internal FsaMatch(string id, NullableValue<TOffset>[,] registers, VariableBindings varBindings, int priority, bool isLazy, Annotation<TOffset> nextAnn)
+		internal FsaMatch(string id, NullableValue<TOffset>[,] registers, VariableBindings varBindings, int priority, bool isLazy, Annotation<TOffset> nextAnn, int index)
 		{
 			_id = id;
 			_registers = registers;
@@ -19,6 +21,7 @@ namespace SIL.Machine.Fsa
 			_priority = priority;
 			_isLazy = isLazy;
 			_nextAnn = nextAnn;
+			_index = index;
 		}
 
 		public string ID
@@ -49,6 +52,11 @@ namespace SIL.Machine.Fsa
 		public Annotation<TOffset> NextAnnotation
 		{
 			get { return _nextAnn; }
+		}
+
+		public int Index
+		{
+			get { return _index; }
 		}
 	}
 }

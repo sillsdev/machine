@@ -58,8 +58,7 @@ namespace SIL.Machine.Matching
 			if (_name != null)
 				startState = fsa.CreateTag(startState, fsa.CreateState(), _name, true);
 			startState = base.GenerateNfa(fsa, startState);
-			if (_name != null)
-				startState = fsa.CreateTag(startState, fsa.CreateState(), _name, false);
+			startState = _name != null ? fsa.CreateTag(startState, fsa.CreateState(), _name, false) : startState.AddArc(fsa.CreateState());
 			return startState;
 		}
 

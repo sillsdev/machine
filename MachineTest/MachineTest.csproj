@@ -52,10 +52,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AnnotationListTest.cs" />
+    <Compile Include="AnnotationTest.cs" />
     <Compile Include="FeatureStructTest.cs" />
-    <Compile Include="FiniteStateAutomatonTest.cs" />
-    <Compile Include="PatternTest.cs" />
+    <Compile Include="MatcherTest.cs" />
     <Compile Include="PhoneticTestBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RuleTest.cs" />

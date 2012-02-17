@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using SIL.Machine.Fsa;
 
@@ -49,15 +50,15 @@ namespace SIL.Machine.Matching
 			GeneratePatternNfa(_fsa.StartState, _pattern, null, new Func<Match<TData, TOffset>, bool>[0], ref nextPriority);
 			_fsa.MarkArcPriorities();
 
-			//var writer = new StreamWriter(string.Format("c:\\{0}-nfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
-			//_fsa.ToGraphViz(writer);
-			//writer.Close();
+			var writer = new StreamWriter(string.Format("c:\\{0}-nfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
+			_fsa.ToGraphViz(writer);
+			writer.Close();
 
 			_fsa.Determinize(_settings.Quasideterministic);
 
-			//writer = new StreamWriter(string.Format("c:\\{0}-dfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
-			//_fsa.ToGraphViz(writer);
-			//writer.Close();
+			writer = new StreamWriter(string.Format("c:\\{0}-dfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
+			_fsa.ToGraphViz(writer);
+			writer.Close();
 		}
 
 		private void GeneratePatternNfa(State<TData, TOffset> startState, Pattern<TData, TOffset> pattern, string parentName,
@@ -100,7 +101,7 @@ namespace SIL.Machine.Matching
 				TOffset start, end;
 				if (_fsa.GetOffsets(groupName, match.Registers, out start, out end))
 				{
-					if (_spanFactory.IsValidSpan(start, end))
+					if (_spanFactory.IsValidSpan(start, end) && _spanFactory.CalcLength(start, end) > 0)
 					{
 						Span<TOffset> span = _spanFactory.Create(start, end);
 						if (matchSpan.Contains(span))
@@ -114,8 +115,7 @@ namespace SIL.Machine.Matching
 			}
 
 			return new Match<TData, TOffset>(this, matchSpan, input, groupCaptures,
-				string.IsNullOrEmpty(match.ID) ? Enumerable.Empty<string>() : match.ID.Split('*'), match.VariableBindings,
-				match.NextAnnotation);
+				string.IsNullOrEmpty(match.ID) ? new string[0] : match.ID.Split('*'), match.VariableBindings, match.NextAnnotation);
 		}
 
 		public bool IsMatch(TData input)
@@ -160,7 +160,7 @@ namespace SIL.Machine.Matching
 
 		internal Match<TData, TOffset> Match(TData input, Annotation<TOffset> startAnn)
 		{
-			return GetMatches(input, startAnn, false).First();
+			return GetMatches(input, startAnn, false).FirstOrDefault() ?? new Match<TData, TOffset>(this, _spanFactory.Empty, input);
 		}
 
 		internal IEnumerable<Match<TData, TOffset>> Matches(TData input, Annotation<TOffset> startAnn)
@@ -173,7 +173,7 @@ namespace SIL.Machine.Matching
 			}
 		}
 
-		internal IEnumerable<Match<TData, TOffset>> AllMatches(TData input, Annotation<TOffset> startAnn)
+		private IEnumerable<Match<TData, TOffset>> AllMatches(TData input, Annotation<TOffset> startAnn)
 		{
 			return GetMatches(input, startAnn, true);
 		}
@@ -186,8 +186,6 @@ namespace SIL.Machine.Matching
 				foreach (FsaMatch<TOffset> fsaMatch in fsaMatches)
 					yield return CreatePatternMatch(input, fsaMatch);
 			}
-
-			yield return new Match<TData, TOffset>(this, _spanFactory.Empty, input);
 		}
 
 		private Annotation<TOffset> GetStartAnnotation(TData input)
@@ -198,9 +196,10 @@ namespace SIL.Machine.Matching
 		private Annotation<TOffset> GetStartAnnotation(TData input, TOffset start)
 		{
 			Annotation<TOffset> startAnn;
-			input.Annotations.Find(start, _settings.Direction, out startAnn);
+			if (!input.Annotations.FindDepthFirst(start, _settings.Direction, out startAnn))
+				startAnn = startAnn == input.Annotations.GetBegin(_settings.Direction) ? input.Annotations.GetFirst(_settings.Direction) : startAnn.GetNext(_settings.Direction);
 			if (!_settings.Filter(startAnn))
-				startAnn = startAnn.GetNext(_settings.Direction, _settings.Filter);
+				startAnn = startAnn.GetNextDepthFirst(_settings.Direction, _settings.Filter);
 			return startAnn;
 		}
 	}

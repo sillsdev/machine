@@ -17,13 +17,13 @@ namespace SIL.Machine.Matching.Fluent
 			_name = name;
 		}
 
-		public INodesPatternSyntax<TData, TOffset> Subpattern(Func<IPatternSyntax<TData, TOffset>, IPatternSyntax<TData, TOffset>> build)
+		public INodesPatternSyntax<TData, TOffset> Subpattern(Func<IPatternSyntax<TData, TOffset>, IInitialNodesPatternSyntax<TData, TOffset>> build)
 		{
 			AddSubpattern(null, build);
 			return this;
 		}
 
-		public INodesPatternSyntax<TData, TOffset> Subpattern(string name, Func<IPatternSyntax<TData, TOffset>, IPatternSyntax<TData, TOffset>> build)
+		public INodesPatternSyntax<TData, TOffset> Subpattern(string name, Func<IPatternSyntax<TData, TOffset>, IInitialNodesPatternSyntax<TData, TOffset>> build)
 		{
 			AddSubpattern(name, build);
 			return this;

@@ -5,6 +5,26 @@ namespace SIL.Machine.FeatureModel
 {
 	public abstract class SimpleFeatureValue : FeatureValue, ICloneable<SimpleFeatureValue>
 	{
+		public static implicit operator SimpleFeatureValue(FeatureSymbol symbol)
+		{
+			return new SymbolicFeatureValue(symbol);
+		}
+
+		public static explicit operator FeatureSymbol(SimpleFeatureValue sfv)
+		{
+			return (FeatureSymbol) ((SymbolicFeatureValue) sfv);
+		}
+
+		public static implicit operator SimpleFeatureValue(string str)
+		{
+			return new StringFeatureValue(str);
+		}
+
+		public static explicit operator string(SimpleFeatureValue sfv)
+		{
+			return (string) ((StringFeatureValue) sfv);
+		}
+
 		protected SimpleFeatureValue()
 		{
 		}

@@ -93,7 +93,6 @@
     <Compile Include="Fsa\FsaMatch.cs" />
     <Compile Include="IBidirList.cs" />
     <Compile Include="IBidirListNode.cs" />
-    <Compile Include="IBidirListView.cs" />
     <Compile Include="IBidirTreeNode.cs" />
     <Compile Include="IOrderedBidirTreeNode.cs" />
     <Compile Include="ICloneable.cs" />

@@ -60,7 +60,7 @@ namespace SIL.Machine.Transduction
 		public TOffset ApplyRhs(PatternRule<TData, TOffset> rule, Match<TData, TOffset> match, out TData output)
 		{
 			IPatternRuleSpec<TData, TOffset> ruleSpec = _ruleIds[match.PatternPath.First()];
-			var newMatch = new Match<TData, TOffset>(match.Matcher, match.Span, match.Input, match.GroupCaptures, match.PatternPath.Skip(1),
+			var newMatch = new Match<TData, TOffset>(match.Matcher, match.Span, match.Input, match.GroupCaptures, match.PatternPath.Skip(1).ToArray(),
 				match.VariableBindings, match.NextAnnotation);
 			return ruleSpec.ApplyRhs(rule, newMatch, out output);
 		}
