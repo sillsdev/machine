@@ -5,43 +5,34 @@ using System.Linq;
 
 namespace SIL.Machine
 {
-	public class BidirList<TNode> : IBidirList<TNode> where TNode : BidirListNode<TNode>
+	public abstract class BidirList<TNode> : IBidirList<TNode> where TNode : BidirListNode<TNode>
 	{
-		private readonly State _leftToRightState;
-		private readonly State _rightToLeftState;
+		private readonly TNode _begin;
+		private readonly TNode _end;
+		private readonly IComparer<TNode> _comparer;
+
 		private readonly Random _rand = new Random();
 		private int _size;
 
-		public BidirList()
-			: this(Comparer<TNode>.Default)
+		protected BidirList(IComparer<TNode> comparer, Func<bool, TNode> marginSelector)
 		{
+			_begin = marginSelector(true);
+			_end = marginSelector(false);
+			_begin.Init(this, 33);
+			_begin.Levels = 1;
+			_end.Init(this, 33);
+			_end.Levels = 1;
+			for (int i = 0; i < 33; i++)
+			{
+				_begin.SetNext(i, _end);
+				_end.SetPrev(i, _begin);
+			}
+			_comparer = comparer;
 		}
 
-		public BidirList(IComparer<TNode> comparer)
+		public IComparer<TNode> Comparer
 		{
-			_leftToRightState = new State(comparer);
-			_rightToLeftState = _leftToRightState;
-		}
-
-		public BidirList(IComparer<TNode> leftToRightComparer, IComparer<TNode> rightToLeftComparer)
-		{
-			_leftToRightState = new State(leftToRightComparer);
-			_rightToLeftState = new State(rightToLeftComparer);
-		}
-
-		private State GetState(Direction dir)
-		{
-			return dir == Direction.LeftToRight ? _leftToRightState : _rightToLeftState;
-		}
-
-		public int GetLevels(Direction dir)
-		{
-			return GetState(dir).Levels;
-		}
-
-		public IComparer<TNode> GetComparer(Direction dir)
-		{
-			return GetState(dir).Comparer;
+			get { return _comparer; }
 		}
 
 		public int Count
@@ -59,17 +50,6 @@ namespace SIL.Machine
 			if (node.List == this)
 				throw new ArgumentException("node is already a member of this collection.", "node");
 
-			node.Remove();
-			node.Init(this, _leftToRightState == _rightToLeftState);
-			Add(node, Direction.LeftToRight);
-			if (_leftToRightState != _rightToLeftState)
-				Add(node, Direction.RightToLeft);
-			_size++;
-		}
-
-		private void Add(TNode node, Direction dir)
-		{
-			State state = GetState(dir);
 			// Determine the level of the new node. Generate a random number R. The number of
 			// 1-bits before we encounter the first 0-bit is the level of the node. Since R is
 			// 32-bit, the level can be at most 32.
@@ -77,61 +57,52 @@ namespace SIL.Machine
 			for (int r = _rand.Next(); (r & 1) == 1; r >>= 1)
 			{
 				level++;
-				if (level == state.Levels)
+				if (level == _begin.Levels)
 				{
-					state.Levels++;
+					_begin.Levels++;
+					_end.Levels++;
 					break;
 				}
 			}
 
-			node.SetLevels(dir, level + 1);
+			node.Remove();
+			node.Init(this, level + 1);
 
-			TNode cur = null;
-			for (int i = state.Levels - 1; i >= 0; i--)
+			TNode cur = _begin;
+			for (int i = _begin.Levels - 1; i >= 0; i--)
 			{
-				TNode next = cur == null ? state.First[i] : cur.GetNext(dir, i);
-				while (next != null)
+				TNode next = cur.GetNext(i);
+				while (next != _end)
 				{
-					if (state.Comparer.Compare(next, node) > 0)
+					if (_comparer.Compare(next, node) > 0)
 						break;
 					cur = next;
-					next = cur.GetNext(dir, i);
+					next = cur.GetNext(i);
 				}
 
 				if (i <= level)
 				{
-					node.SetNext(dir, i, cur == null ? state.First[i] : cur.GetNext(dir, i));
-					if (cur != null)
-						cur.SetNext(dir, i, node);
-					else
-						state.First[i] = node;
-					node.SetPrev(dir, i, cur);
-					if (node.GetNext(dir, i) != null)
-						node.GetNext(dir, i).SetPrev(dir, i, node);
-					else
-						state.Last[i] = node;
+					node.SetNext(i, cur.GetNext(i));
+					cur.SetNext(i, node);
+					node.SetPrev(i, cur);
+					node.GetNext(i).SetPrev(i, node);
 				}
 			}
+			_size++;
 		}
 
 		public virtual void Clear()
 		{
 			foreach (TNode node in this.ToArray())
 				node.Clear();
-			Clear(Direction.LeftToRight);
-			if (_leftToRightState != _rightToLeftState)
-				Clear(Direction.RightToLeft);
+			for (int i = 0; i < 33; i++)
+			{
+				_begin.SetNext(i, _end);
+				_end.SetPrev(i, _begin);
+			}
+			_begin.Levels = 1;
+			_end.Levels = 1;
 			_size = 0;
-		}
-
-		private void Clear(Direction dir)
-		{
-			State state = GetState(dir);
-			for (int i = 0; i < state.First.Length; i++)
-				state.First[i] = null;
-			for (int i = 0; i < state.Last.Length; i++)
-				state.Last[i] = null;
-			state.Levels = 1;
 		}
 
 		public bool Contains(TNode node)
@@ -161,75 +132,65 @@ namespace SIL.Machine
 			if (node.List != this)
 				return false;
 
-			Remove(node, Direction.LeftToRight);
-			if (_leftToRightState != _rightToLeftState)
-				Remove(node, Direction.RightToLeft);
+			for (int i = 0; i < node.Levels; i++)
+			{
+				node.GetPrev(i).SetNext(i, node.GetNext(i));
+				node.GetNext(i).SetPrev(i, node.GetPrev(i));
+			}
 
 			node.Clear();
 			_size--;
 			return true;
 		}
 
-		private void Remove(TNode node, Direction dir)
-		{
-			State state = GetState(dir);
-			for (int i = 0; i < node.GetLevels(dir); i++)
-			{
-				TNode prev = node.GetPrev(dir, i);
-				if (prev == null)
-					state.First[i] = node.GetNext(dir, i);
-				else
-					prev.SetNext(dir, i, node.GetNext(dir, i));
-
-				TNode next = node.GetNext(dir, i);
-				if (next == null)
-					state.Last[i] = node.GetPrev(dir, i);
-				else
-					next.SetPrev(dir, i, node.GetPrev(dir, i));
-			}
-
-			while (state.Levels > 1 && state.First[state.Levels - 1] == null)
-				state.Levels--;
-		}
-
 		public TNode Begin
 		{
-			get { return null; }
+			get { return _begin; }
 		}
 
 		public TNode End
 		{
-			get { return null; }
+			get { return _end; }
 		}
 
 		public TNode GetBegin(Direction dir)
 		{
-			return null;
+			if (dir == Direction.LeftToRight)
+				return Begin;
+			return End;
 		}
 
 		public TNode GetEnd(Direction dir)
 		{
-			return null;
+			if (dir == Direction.LeftToRight)
+				return End;
+			return Begin;
 		}
 
 		public TNode First
 		{
-			get { return GetFirst(Direction.LeftToRight); }
+			get { return _size == 0 ? null : _begin.GetNext(0); }
 		}
 
 		public TNode Last
 		{
-			get { return GetLast(Direction.LeftToRight); }
+			get { return _size == 0 ? null : _end.GetPrev(0); }
 		}
 
 		public TNode GetFirst(Direction dir)
 		{
-			return GetState(dir).First[0];
+			if (dir == Direction.LeftToRight)
+				return First;
+
+			return Last;
 		}
 
 		public TNode GetLast(Direction dir)
 		{
-			return GetState(dir).Last[0];
+			if (dir == Direction.LeftToRight)
+				return Last;
+
+			return First;
 		}
 
 		public TNode GetNext(TNode cur)
@@ -242,7 +203,10 @@ namespace SIL.Machine
 			if (cur.List != this)
 				throw new ArgumentException("cur is not a member of this collection.", "cur");
 
-			return cur.GetNext(dir);
+			if (dir == Direction.LeftToRight)
+				return cur.Next;
+
+			return cur.Prev;
 		}
 
 		public TNode GetPrev(TNode cur)
@@ -255,7 +219,10 @@ namespace SIL.Machine
 			if (cur.List != this)
 				throw new ArgumentException("cur is not a member of this collection.", "cur");
 
-			return cur.GetPrev(dir);
+			if (dir == Direction.LeftToRight)
+				return cur.Prev;
+
+			return cur.Next;
 		}
 
 		public bool Find(TNode example, out TNode result)
@@ -270,20 +237,20 @@ namespace SIL.Machine
 
 		public bool Find(TNode example, Direction dir, out TNode result)
 		{
-			State state = GetState(dir);
-			return Find(state.First[state.Levels - 1], example, dir, out result);
+			return Find(dir == Direction.LeftToRight ? _begin.GetNext(_begin.Levels - 1) : _end.GetPrev(_end.Levels - 1), example, dir, out result);
 		}
 
 		public bool Find(TNode start, TNode example, Direction dir, out TNode result)
 		{
-			State state = GetState(dir);
-			TNode cur = null;
-			for (int i = start.GetLevels(dir) - 1; i >= 0; i--)
+			TNode cur = dir == Direction.LeftToRight ? start.GetPrev(start.Levels - 1) : start.GetNext(start.Levels - 1);
+			for (int i = start.Levels - 1; i >= 0; i--)
 			{
-				TNode next = cur == null ? (i == start.GetLevels(dir) - 1 ? start : state.First[i]) : cur.GetNext(dir, i);
-				while (next != null)
+				TNode next = dir == Direction.LeftToRight ? cur.GetNext(i) : cur.GetPrev(i);
+				while (next != _end)
 				{
-					int res = state.Comparer.Compare(next, example);
+					int res = _comparer.Compare(next, example);
+					if (dir == Direction.RightToLeft)
+						res = -res;
 					if (res > 0)
 						break;
 					if (res == 0)
@@ -292,7 +259,7 @@ namespace SIL.Machine
 						return true;
 					}
 					cur = next;
-					next = cur.GetNext(dir, i);
+					next = dir == Direction.LeftToRight ? cur.GetNext(i) : cur.GetPrev(i);
 				}
 			}
 			result = cur;
@@ -303,39 +270,6 @@ namespace SIL.Machine
 		{
 			foreach (TNode ann in nodes)
 				Add(ann);
-		}
-
-		class State
-		{
-			private readonly TNode[] _first;
-			private readonly TNode[] _last;
-			private readonly IComparer<TNode> _comparer;
-
-			public State(IComparer<TNode> comparer)
-			{
-				_first = new TNode[33];
-				_last = new TNode[33];
-				_comparer = comparer;
-				Levels = 1;
-			}
-
-			public TNode[] First
-			{
-				get { return _first; }
-			}
-
-			public TNode[] Last
-			{
-				get { return _last;
-				}
-			}
-
-			public IComparer<TNode> Comparer
-			{
-				get { return _comparer; }
-			}
-
-			public int Levels { get; set; }
 		}
 	}
 }

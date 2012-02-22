@@ -9,41 +9,23 @@ namespace SIL.Machine
     /// This is a bi-directional list. It is optimized for list traversal in either direction.
     /// </summary>
     /// <typeparam name="TNode">Item Type, must be the type of the class that the linked list handles.</typeparam>
-    public class OrderedBidirList<TNode> : IOrderedBidirList<TNode> where TNode : OrderedBidirListNode<TNode>
+    public abstract class OrderedBidirList<TNode> : IOrderedBidirList<TNode> where TNode : OrderedBidirListNode<TNode>
     {
-        private TNode _first;
-    	private TNode _last;
 		private readonly TNode _begin;
 		private readonly TNode _end;
         private int _size;
 
     	private readonly IEqualityComparer<TNode> _comparer; 
 
-		public OrderedBidirList()
-			: this(EqualityComparer<TNode>.Default)
-		{
-		}
-
-		public OrderedBidirList(IEqualityComparer<TNode> comparer)
-			: this(comparer, null, null)
-		{
-		}
-
-		protected OrderedBidirList(IEqualityComparer<TNode> comparer, TNode begin, TNode end)
+		protected OrderedBidirList(IEqualityComparer<TNode> comparer, Func<bool, TNode> marginSelector)
 		{
 			_comparer = comparer;
-			_begin = begin;
-			_end = end;
-			if (_begin != null)
-			{
-				_begin.Init(this);
-				_begin.Next = _end;
-			}
-			if (_end != null)
-			{
-				_end.Init(this);
-				_end.Prev = _begin;
-			}
+			_begin = marginSelector(true);
+			_end = marginSelector(false);
+			_begin.Init(this);
+			_begin.Next = _end;
+			_end.Init(this);
+			_end.Prev = _begin;
 		}
 
     	public int Count
@@ -68,19 +50,15 @@ namespace SIL.Machine
         /// <param name="node">The node.</param>
         public void Add(TNode node)
         {
-			AddAfter(_last ?? _begin, node, Direction.LeftToRight);
+			AddAfter(_end.Prev, node, Direction.LeftToRight);
         }
 
         public virtual void Clear()
         {
 			foreach (TNode node in this.ToArray())
 				node.Clear();
-			if (_begin != null)
-				_begin.Next = _end;
-			if (_end != null)
-				_end.Prev = _begin;
-        	_first = null;
-        	_last = null;
+			_begin.Next = _end;
+			_end.Prev = _begin;
             _size = 0;
         }
 
@@ -105,26 +83,12 @@ namespace SIL.Machine
             if (node.List != this)
                 return false;
 
-			TNode prev = node.Prev;
-			if (prev == _begin)
-				_first = node.Next;
-			else
-				prev.Next = node.Next;
-
-			TNode next = node.Next;
-			if (next == _end)
-				_last = node.Prev;
-			else
-				next.Prev = node.Prev;
+			node.Prev.Next = node.Next;
+			node.Next.Prev = node.Prev;
 
 			node.Clear();
 
             _size--;
-			if (_size == 0)
-			{
-				_first = null;
-				_last = null;
-			}
 
             return true;
         }
@@ -175,7 +139,12 @@ namespace SIL.Machine
         /// <value>The first node.</value>
         public TNode First
         {
-            get { return _first; } 
+            get
+            {
+				if (_size == 0)
+					return null;
+            	return _begin.Next;
+            } 
         }
 
         /// <summary>
@@ -184,7 +153,12 @@ namespace SIL.Machine
         /// <value>The last node.</value>
         public TNode Last
         {
-            get { return _last; }
+            get
+            {
+				if (_size == 0)
+					return null;
+            	return _end.Prev;
+            }
         }
 
         /// <summary>
@@ -309,27 +283,19 @@ namespace SIL.Machine
         {
 			if (newNode.List == this)
 				throw new ArgumentException("newNode is already a member of this collection.", "newNode");
-            if (node != null && node.List != this)
+            if (node.List != this)
                 throw new ArgumentException("node is not a member of this collection.", "node");
 
     		newNode.Remove();
 			newNode.Init(this);
 
 			if (dir == Direction.RightToLeft)
-				node = node == null ? _last : node.Prev;
+				node = node.Prev;
 
-			newNode.Next = node == null ? _first : node.Next;
-			if (node != null)
-				node.Next = newNode;
+			newNode.Next = node.Next;
+			node.Next = newNode;
 			newNode.Prev = node;
-			if (newNode.Next != null)
-				newNode.Next.Prev = newNode;
-
-			if (newNode.Next == _end)
-				_last = newNode;
-
-			if (newNode.Prev == _begin)
-				_first = newNode;
+			newNode.Next.Prev = newNode;
 
             _size++;
         }

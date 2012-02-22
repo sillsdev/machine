@@ -1,14 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace SIL.Machine
 {
-	public class BidirTreeNode<TNode> : BidirListNode<TNode>, IBidirTreeNode<TNode> where TNode : BidirTreeNode<TNode>
+	public abstract class BidirTreeNode<TNode> : BidirListNode<TNode>, IBidirTreeNode<TNode> where TNode : BidirTreeNode<TNode>
 	{
-		private readonly BidirList<TNode> _children;
+		private readonly Func<bool, TNode> _marginSelector; 
+		private BidirList<TNode> _children;
 
-		public BidirTreeNode()
+		protected BidirTreeNode(Func<bool, TNode> marginSelector)
 		{
-			_children = new TreeBidirList((TNode) this);
+			_marginSelector = marginSelector;
 			Depth = -1;
 		}
 
@@ -18,7 +20,12 @@ namespace SIL.Machine
 
 		public IBidirList<TNode> Children
 		{
-			get { return _children; }
+			get
+			{
+				if (_children == null)
+					_children = new TreeBidirList(_marginSelector, (TNode) this);
+				return _children;
+			}
 		}
 
 		protected internal override void Clear()
@@ -28,9 +35,9 @@ namespace SIL.Machine
 			Depth = -1;
 		}
 
-		protected internal override void Init(BidirList<TNode> list, bool singleState)
+		protected internal override void Init(BidirList<TNode> list, int levels)
 		{
-			base.Init(list, singleState);
+			base.Init(list, levels);
 			Parent = ((TreeBidirList) list).Parent;
 			Depth = Parent == null ? 0 : Parent.Depth + 1;
 		}
@@ -44,7 +51,8 @@ namespace SIL.Machine
 		{
 			private readonly TNode _parent;
 
-			public TreeBidirList(TNode parent)
+			public TreeBidirList(Func<bool, TNode> marginSelector, TNode parent)
+				: base(Comparer<TNode>.Default, marginSelector)
 			{
 				_parent = parent;
 			}

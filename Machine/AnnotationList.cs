@@ -13,7 +13,7 @@ namespace SIL.Machine
 		private readonly Annotation<TOffset> _parent; 
 
 		public AnnotationList(SpanFactory<TOffset> spanFactory)
-			: base(new AnnotationComparer(Direction.LeftToRight), new AnnotationComparer(Direction.RightToLeft))
+			: base(new AnnotationComparer(), begin => new Annotation<TOffset>(spanFactory.Empty))
 		{
 			_spanFactory = spanFactory;
 		}
@@ -133,26 +133,29 @@ namespace SIL.Machine
 			}
 
 			TOffset lastOffset = GetLast(dir).Span.GetEnd(dir);
-			if (Find(new Annotation<TOffset>(_spanFactory.Create(_spanFactory.Compare(offset, lastOffset, dir) > 0 ? lastOffset : offset, lastOffset, dir)), dir, out result))
-				return true;
-			if (result == GetEnd(dir))
-				result = GetBegin(dir);
-
-			if (result == GetBegin(dir))
+			if (!_spanFactory.IsValidSpan(offset, lastOffset, dir))
 			{
-				if (GetFirst(dir).Span.GetStart(dir).Equals(offset))
-				{
-					result = GetFirst(dir);
-					return true;
-				}
+				result = GetLast(dir);
 				return false;
 			}
 
-			if (result.GetNext(dir) != GetEnd(dir))
+			if (dir == Direction.LeftToRight)
 			{
-				if (result.GetNext(dir).Span.GetStart(dir).Equals(offset))
-					result = result.GetNext(dir);
+				if (Find(new Annotation<TOffset>(_spanFactory.Create(offset, lastOffset)), out result))
+					return true;
 			}
+			else
+			{
+				Span<TOffset> offsetSpan = _spanFactory.Create(offset, Direction.RightToLeft);
+				if (Find(new Annotation<TOffset>(offsetSpan), Direction.RightToLeft, out result))
+					return true;
+
+				if (result != First && result.Prev.Span.Contains(offsetSpan))
+					result = result.Prev;
+			}
+
+			if (result.GetNext(dir).Span.GetStart(dir).Equals(offset))
+				result = result.GetNext(dir);
 			return result.Span.GetStart(dir).Equals(offset);
 		}
 
@@ -166,7 +169,7 @@ namespace SIL.Machine
 			if (Find(offset, dir, out result))
 				return true;
 
-			if (result != GetBegin(dir) && !result.IsLeaf() && result.Span.Contains(offset))
+			if (!result.IsLeaf() && result.Span.Contains(offset, dir))
 				return result.Children.FindDepthFirst(offset, dir, out result);
 
 			return false;
@@ -194,14 +197,14 @@ namespace SIL.Machine
 
 			Annotation<TOffset> startAnn;
 			if (!Find(span.Start, Direction.LeftToRight, out startAnn))
-				startAnn = startAnn == Begin ? First : startAnn.Next;
+				startAnn = startAnn.Next;
 
 			if (startAnn == GetEnd(dir))
 				return Enumerable.Empty<Annotation<TOffset>>();
 
 			Annotation<TOffset> endAnn;
 			if (!Find(span.End, Direction.RightToLeft, out endAnn))
-				endAnn = endAnn == GetBegin(Direction.RightToLeft) ? GetFirst(Direction.RightToLeft) : endAnn.GetNext(Direction.RightToLeft);
+				endAnn = endAnn.Prev;
 
 			if (endAnn == GetBegin(dir))
 				return Enumerable.Empty<Annotation<TOffset>>();
@@ -232,19 +235,12 @@ namespace SIL.Machine
 
 		class AnnotationComparer : IComparer<Annotation<TOffset>>
 		{
-			private readonly Direction _dir;
-
-			public AnnotationComparer(Direction dir)
-			{
-				_dir = dir;
-			}
-
 			public int Compare(Annotation<TOffset> x, Annotation<TOffset> y)
 			{
 				if (x == null)
 					return y == null ? 0 : -1;
 
-				return x.CompareTo(y, _dir);
+				return x.CompareTo(y);
 			}
 		}
 	}

@@ -266,16 +266,18 @@ namespace SIL.Machine
 			if (!node.IsLeaf())
 				return node.Children.GetFirst(dir);
 
+			IBidirTreeNode<TNode> parent = node;
 			do
 			{
+				node = parent;
 				TNode next = node.GetNext(dir);
 				if (next != node.List.GetEnd(dir))
 					return next;
-				node = node.Parent;
+				parent = node.Parent;
 			}
-			while (node != null);
+			while (parent != null);
 
-			return null;
+			return node.GetNext(dir);
 		}
 
 		public static TNode GetNextDepthFirst<TNode>(this IBidirTreeNode<TNode> node, Func<TNode, bool> filter) where TNode : class, IBidirTreeNode<TNode>
@@ -290,7 +292,7 @@ namespace SIL.Machine
 			{
 				cur = cur.GetNextDepthFirst(dir);
 			}
-			while (cur != null && !filter(cur));
+			while (cur != null && cur != cur.List.GetEnd(dir) && !filter(cur));
 			return cur;
 		}
 
@@ -306,7 +308,7 @@ namespace SIL.Machine
 			{
 				cur = cur.GetNextDepthFirst(dir);
 			}
-			while (cur != null && !filter((TNode) node, cur));
+			while (cur != null && cur != cur.List.GetEnd(dir) && !filter((TNode) node, cur));
 			return cur;
 		}
 
@@ -320,16 +322,18 @@ namespace SIL.Machine
 			if (!node.IsLeaf())
 				return node.Children.GetLast(dir);
 
+			IBidirTreeNode<TNode> parent = node;
 			do
 			{
+				node = parent;
 				TNode prev = node.GetPrev(dir);
 				if (prev != node.List.GetBegin(dir))
 					return prev;
-				node = node.Parent;
+				parent = node.Parent;
 			}
-			while (node != null);
+			while (parent != null);
 
-			return null;
+			return node.GetPrev(dir);
 		}
 
 		public static TNode GetPrevDepthFirst<TNode>(this IBidirTreeNode<TNode> node, Func<TNode, bool> filter) where TNode : class, IBidirTreeNode<TNode>
@@ -344,7 +348,7 @@ namespace SIL.Machine
 			{
 				cur = cur.GetPrevDepthFirst(dir);
 			}
-			while (cur != null && !filter(cur));
+			while (cur != null && cur != cur.List.GetBegin(dir) && !filter(cur));
 			return cur;
 		}
 
@@ -360,7 +364,7 @@ namespace SIL.Machine
 			{
 				cur = cur.GetPrevDepthFirst(dir);
 			}
-			while (cur != null && !filter((TNode) node, cur));
+			while (cur != null && cur != cur.List.GetBegin(dir) && !filter((TNode) node, cur));
 			return cur;
 		}
 
@@ -389,6 +393,17 @@ namespace SIL.Machine
 				while (iterator1.MoveNext() && iterator2.MoveNext())
 					yield return Tuple.Create(iterator1.Current, iterator2.Current);
 			} 
+		}
+
+		public static IEnumerable<Tuple<TFirst, TSecond, TThird>> Zip<TFirst, TSecond, TThird>(this IEnumerable<TFirst> first, IEnumerable<TSecond> second, IEnumerable<TThird> third)
+		{
+			using (IEnumerator<TFirst> iterator1 = first.GetEnumerator())
+			using (IEnumerator<TSecond> iterator2 = second.GetEnumerator())
+			using (IEnumerator<TThird> iterator3 = third.GetEnumerator())
+			{
+				while (iterator1.MoveNext() && iterator2.MoveNext() && iterator3.MoveNext())
+					yield return Tuple.Create(iterator1.Current, iterator2.Current, iterator3.Current);
+			}
 		}
 
 		public static TSource MinBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> selector)

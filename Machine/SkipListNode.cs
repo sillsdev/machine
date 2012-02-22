@@ -4,6 +4,10 @@
 	{
 		private readonly T _value;
 
+		internal SkipListNode()
+		{
+		}
+
 		public SkipListNode(T value)
 		{
 			_value = value;

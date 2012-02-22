@@ -65,7 +65,8 @@ namespace SIL.Machine
 				actualEnd = start;
 			}
 
-			return Compare(actualStart, actualEnd) <= 0;
+			int compare = Compare(actualStart, actualEnd);
+			return _includeEndpoint ? compare <= 0 : compare < 0;
 		}
 
 		public Span<TOffset> Create(TOffset start, TOffset end)
@@ -88,7 +89,7 @@ namespace SIL.Machine
 				actualEnd = start;
 			}
 
-			if (Compare(actualStart, actualEnd) > 0)
+			if (!IsValidSpan(actualStart, actualEnd))
 				throw new ArgumentException("The start offset is greater than the end offset.", "start");
 
 			return new Span<TOffset>(this, actualStart, actualEnd);
@@ -96,7 +97,9 @@ namespace SIL.Machine
 
 		public Span<TOffset> Create(TOffset offset)
 		{
-			return new Span<TOffset>(this, offset, offset);
+			return Create(offset, Direction.LeftToRight);
 		}
+
+		public abstract Span<TOffset> Create(TOffset offset, Direction dir);
 	}
 }

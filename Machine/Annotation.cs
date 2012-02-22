@@ -5,7 +5,7 @@ namespace SIL.Machine
 {
 	public class Annotation<TOffset> : BidirListNode<Annotation<TOffset>>, IBidirTreeNode<Annotation<TOffset>>, ICloneable<Annotation<TOffset>>, IComparable<Annotation<TOffset>>, IComparable
 	{
-		private readonly AnnotationList<TOffset> _children;
+		private AnnotationList<TOffset> _children;
 		private readonly Span<TOffset> _span;
 
 		public Annotation(Span<TOffset> span, FeatureStruct fs)
@@ -13,20 +13,22 @@ namespace SIL.Machine
 			_span = span;
 			FeatureStruct = fs;
 			ListID = -1;
-			_children = new AnnotationList<TOffset>(span.SpanFactory, this);
 			Depth = -1;
 		}
 
 		internal Annotation(Span<TOffset> span)
-			: this(span, null)
 		{
+			_span = span;
+			ListID = -1;
+			Depth = -1;
 		}
 
 		public Annotation(Annotation<TOffset> ann)
+			: this(ann._span, ann.FeatureStruct.Clone())
 		{
-			_span = ann._span;
-			FeatureStruct = ann.FeatureStruct.Clone();
 			Optional = ann.Optional;
+			if (ann._children != null && ann._children.Count > 0)
+				Children.AddRange(ann.Children.Clone());
 		}
 
 		public Annotation<TOffset> Parent { get; private set; }
@@ -35,12 +37,17 @@ namespace SIL.Machine
 
 		public AnnotationList<TOffset> Children
 		{
-			get { return _children; }
+			get
+			{
+				if (_children == null)
+					_children = new AnnotationList<TOffset>(_span.SpanFactory, this);
+				return _children;
+			}
 		}
 
 		IBidirList<Annotation<TOffset>> IBidirTreeNode<Annotation<TOffset>>.Children
 		{
-			get { return _children; }
+			get { return Children; }
 		}
 
 		protected internal override void Clear()
@@ -50,9 +57,9 @@ namespace SIL.Machine
 			Depth = -1;
 		}
 
-		protected internal override void Init(BidirList<Annotation<TOffset>> list, bool singleState)
+		protected internal override void Init(BidirList<Annotation<TOffset>> list, int levels)
 		{
-			base.Init(list, singleState);
+			base.Init(list, levels);
 			Parent = ((AnnotationList<TOffset>) list).Parent;
 			Depth = Parent == null ? 0 : Parent.Depth + 1;
 		}
@@ -89,17 +96,13 @@ namespace SIL.Machine
 
 		public int CompareTo(Annotation<TOffset> other)
 		{
-			return CompareTo(other, Direction.LeftToRight);
-		}
-
-		public int CompareTo(Annotation<TOffset> other, Direction dir)
-		{
-			int res = Span.CompareTo(other.Span, dir);
+			int res = Span.CompareTo(other.Span);
 			if (res != 0)
 				return res;
 
-			res = ListID.CompareTo(other.ListID);
-			return dir == Direction.LeftToRight ? res : -res;
+			if (ListID == -1 || other.ListID == -1)
+				return 0;
+			return ListID.CompareTo(other.ListID);
 		}
 
 		int IComparable.CompareTo(object obj)

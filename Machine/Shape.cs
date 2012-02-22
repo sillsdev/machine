@@ -6,17 +6,19 @@ namespace SIL.Machine
 {
 	public sealed class Shape : OrderedBidirList<ShapeNode>, IData<ShapeNode>, ICloneable<Shape>
 	{
+		private readonly Func<bool, ShapeNode> _marginSelector;
 		private readonly SpanFactory<ShapeNode> _spanFactory;
 		private readonly AnnotationList<ShapeNode> _annotations;
 
-		public Shape(SpanFactory<ShapeNode> spanFactory, ShapeNode begin, ShapeNode end)
-			: this(spanFactory, begin, end, new AnnotationList<ShapeNode>(spanFactory))
+		public Shape(SpanFactory<ShapeNode> spanFactory, Func<bool, ShapeNode> marginSelector)
+			: this(spanFactory, marginSelector, new AnnotationList<ShapeNode>(spanFactory))
 		{
 		}
 
-		public Shape(SpanFactory<ShapeNode> spanFactory, ShapeNode begin, ShapeNode end, AnnotationList<ShapeNode> annotations)
-			: base(EqualityComparer<ShapeNode>.Default, begin, end)
+		public Shape(SpanFactory<ShapeNode> spanFactory, Func<bool, ShapeNode> marginSelector, AnnotationList<ShapeNode> annotations)
+			: base(EqualityComparer<ShapeNode>.Default, marginSelector)
 		{
+			_marginSelector = marginSelector;
 			_spanFactory = spanFactory;
 			_annotations = annotations;
 			Begin.Tag = int.MinValue;
@@ -26,7 +28,7 @@ namespace SIL.Machine
 		}
 
 		public Shape(Shape shape)
-			: this(shape.SpanFactory, shape.Begin.Clone(), shape.End.Clone())
+			: this(shape.SpanFactory, shape._marginSelector)
 		{
 			foreach (ShapeNode node in shape)
 				Add(node.Clone());

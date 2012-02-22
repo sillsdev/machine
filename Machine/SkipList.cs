@@ -10,7 +10,7 @@ namespace SIL.Machine
 		}
 
 		public SkipList(IComparer<T> comparer)
-			: base(new ProjectionComparer<SkipListNode<T>, T>(node => node.Value, comparer))
+			: base(new ProjectionComparer<SkipListNode<T>, T>(node => node.Value, comparer), begin => new SkipListNode<T>())
 		{
 		}
 

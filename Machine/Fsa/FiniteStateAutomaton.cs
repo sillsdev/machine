@@ -193,7 +193,7 @@ namespace SIL.Machine.Fsa
 			Annotation<TOffset> ann = start;
 
 			var initAnns = new HashSet<Annotation<TOffset>>();
-			while (ann != null)
+			while (ann != data.Annotations.GetEnd(_dir))
 			{
 				var registers = new NullableValue<TOffset>[_registerCount, 2];
 

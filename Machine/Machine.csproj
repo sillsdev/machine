@@ -54,7 +54,6 @@
     <Compile Include="OrderedBidirList.cs" />
     <Compile Include="OrderedBidirListNode.cs" />
     <Compile Include="OrderedBidirTreeNode.cs" />
-    <Compile Include="DefaultSpanFactory.cs" />
     <Compile Include="FeatureModel\ComplexFeature.cs" />
     <Compile Include="FeatureModel\Disjunction.cs" />
     <Compile Include="FeatureModel\Feature.cs" />

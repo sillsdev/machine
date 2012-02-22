@@ -83,30 +83,19 @@ namespace SIL.Machine
 
 		public bool Contains(TOffset offset)
 		{
-			return _spanFactory.Compare(_start, offset) <= 0 && _spanFactory.Compare(_end, offset) >= 0;
+			return Contains(offset, Direction.LeftToRight);
+		}
+
+		public bool Contains(TOffset offset, Direction dir)
+		{
+			return Contains(_spanFactory.Create(offset, dir));
 		}
 
 		public int CompareTo(Span<TOffset> other)
 		{
-			return CompareTo(other, Direction.LeftToRight);
-		}
-
-		public int CompareTo(Span<TOffset> other, Direction dir)
-		{
-			int res;
-			if (dir == Direction.LeftToRight)
-			{
-				res = _spanFactory.Compare(_start, other._start);
-				if (res == 0)
-					res = -_spanFactory.Compare(_end, other._end);
-			}
-			else
-			{
+			int res = _spanFactory.Compare(_start, other._start);
+			if (res == 0)
 				res = -_spanFactory.Compare(_end, other._end);
-				if (res == 0)
-					res = _spanFactory.Compare(_start, other._start);
-			}
-
 			return res;
 		}
 

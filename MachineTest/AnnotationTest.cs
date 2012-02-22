@@ -168,6 +168,9 @@ namespace SIL.Machine.Test
 			Assert.IsFalse(annList.Find(100, out result));
 			Assert.AreSame(annList.Last, result);
 
+			Assert.IsFalse(annList.Find(101, out result));
+			Assert.AreSame(annList.Last, result);
+
 			Assert.IsFalse(annList.Find(30, out result));
 			Assert.AreSame(annList.ElementAt(3), result);
 
@@ -180,11 +183,14 @@ namespace SIL.Machine.Test
 			Assert.IsTrue(annList.Find(100, Direction.RightToLeft, out result));
 			Assert.AreSame(annList.Last, result);
 
+			Assert.IsFalse(annList.Find(1, Direction.RightToLeft, out result));
+			Assert.AreSame(annList.First, result);
+
 			Assert.IsFalse(annList.Find(0, Direction.RightToLeft, out result));
 			Assert.AreSame(annList.First, result);
 
 			Assert.IsFalse(annList.Find(15, Direction.RightToLeft, out result));
-			Assert.AreSame(annList.ElementAt(3), result);
+			Assert.AreSame(annList.ElementAt(2), result);
 
 			Assert.IsTrue(annList.Find(10, Direction.RightToLeft, out result));
 			Assert.AreSame(annList.First.Next, result);
@@ -235,7 +241,7 @@ namespace SIL.Machine.Test
 			Assert.AreEqual(annList.Begin, result);
 
 			Assert.IsFalse(annList.FindDepthFirst(100, out result));
-			Assert.AreEqual(annList.Last.Children.Last, result);
+			Assert.AreEqual(annList.Last, result);
 
 			Assert.IsTrue(annList.FindDepthFirst(1, out result));
 			Assert.AreEqual(annList.First, result);
@@ -253,7 +259,7 @@ namespace SIL.Machine.Test
 			Assert.AreEqual(annList.End, result);
 
 			Assert.IsFalse(annList.FindDepthFirst(1, Direction.RightToLeft, out result));
-			Assert.AreEqual(annList.First.Children.First, result);
+			Assert.AreEqual(annList.First, result);
 
 			Assert.IsTrue(annList.FindDepthFirst(100, Direction.RightToLeft, out result));
 			Assert.AreEqual(annList.Last, result);

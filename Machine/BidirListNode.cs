@@ -3,24 +3,31 @@ namespace SIL.Machine
 	public abstract class BidirListNode<TNode> : IBidirListNode<TNode> where TNode : BidirListNode<TNode>
 	{
 		private BidirList<TNode> _list;
-		private State _leftToRightState;
-		private State _rightToLeftState;
-
-		private State GetState(Direction dir)
-		{
-			return dir == Direction.LeftToRight ? _leftToRightState : _rightToLeftState;
-		}
+		private TNode[] _next;
+		private TNode[] _prev;
 
 		public IBidirList<TNode> List { get { return _list; } }
 
 		public TNode Next
 		{
-			get { return GetNext(Direction.LeftToRight); }
+			get
+			{
+				if (_next == null)
+					return null;
+
+				return _next[0];
+			}
 		}
 
 		public TNode Prev
 		{
-			get { return GetPrev(Direction.LeftToRight); }
+			get
+			{
+				if (_prev == null)
+					return null;
+
+				return _prev[0];
+			}
 		}
 
 		/// <summary>
@@ -34,7 +41,7 @@ namespace SIL.Machine
 			if (List == null)
 				return null;
 
-			return GetState(dir).Next[0];
+			return List.GetNext((TNode) this, dir);
 		}
 
 		/// <summary>
@@ -48,7 +55,7 @@ namespace SIL.Machine
 			if (List == null)
 				return null;
 
-			return GetState(dir).Prev[0];
+			return List.GetPrev((TNode) this, dir);
 		}
 
 		public bool Remove()
@@ -59,66 +66,42 @@ namespace SIL.Machine
 			return List.Remove((TNode) this);
 		}
 
-		protected internal virtual void Init(BidirList<TNode> list, bool singleState)
+		protected internal virtual void Init(BidirList<TNode> list, int levels)
 		{
 			_list = list;
-			_leftToRightState = new State();
-			_rightToLeftState = singleState ? _leftToRightState : new State();
+			_next = new TNode[levels];
+			_prev = new TNode[levels];
+			Levels = levels;
 		}
 
 		protected internal virtual void Clear()
 		{
 			_list = null;
-			_leftToRightState = null;
-			_rightToLeftState = null;
+			_next = null;
+			_prev = null;
+			Levels = 0;
 		}
 
-		internal int GetLevels(Direction dir)
+		internal int Levels { get; set; }
+
+		internal TNode GetNext(int level)
 		{
-			State state = GetState(dir);
-			if (state == null || state.Next == null)
-				return 0;
-			return state.Next.Length;
+			return _next[level];
 		}
 
-		internal void SetLevels(Direction dir, int levels)
+		internal void SetNext(int level, TNode node)
 		{
-			State state = GetState(dir);
-
-			state.Next = null;
-			state.Prev = null;
-			if (levels > 0)
-			{
-				state.Next = new TNode[levels];
-				state.Prev = new TNode[levels];
-			}
+			_next[level] = node;
 		}
 
-		internal TNode GetNext(Direction dir, int level)
+		internal TNode GetPrev(int level)
 		{
-			return GetState(dir).Next[level];
-		}
-
-		internal void SetNext(Direction dir, int level, TNode node)
-		{
-			GetState(dir).Next[level] = node;
-		}
-
-		internal TNode GetPrev(Direction dir, int level)
-		{
-			return GetState(dir).Prev[level];
+			return _prev[level];
 		}
         
-        internal void SetPrev(Direction dir, int level, TNode node)
+        internal void SetPrev(int level, TNode node)
         {
-        	GetState(dir).Prev[level] = node;
+        	_prev[level] = node;
         }
-
-		class State
-		{
-			public TNode[] Next { get; set; }
-
-			public TNode[] Prev { get; set; }
-		}
 	}
 }

@@ -9,10 +9,12 @@ namespace SIL.Machine.Matching
 	public abstract class PatternNode<TData, TOffset> : OrderedBidirTreeNode<PatternNode<TData, TOffset>>, ICloneable<PatternNode<TData, TOffset>> where TData : IData<TOffset>
 	{
 		protected PatternNode()
+			: base(begin => new TempPatternNode())
 		{
 		}
 
 		protected PatternNode(IEnumerable<PatternNode<TData, TOffset>> children)
+			: this()
 		{
 			foreach (PatternNode<TData, TOffset> child in children)
 				Children.Add(child);
@@ -40,5 +42,18 @@ namespace SIL.Machine.Matching
 		}
 
 		public abstract PatternNode<TData, TOffset> Clone();
+
+		private class TempPatternNode : PatternNode<TData, TOffset>
+		{
+			public override PatternNode<TData, TOffset> Clone()
+			{
+				return new TempPatternNode();
+			}
+
+			protected override bool CanAdd(PatternNode<TData,TOffset> child)
+			{
+				return false;
+			}
+		}
 	}
 }

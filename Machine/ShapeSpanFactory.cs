@@ -35,5 +35,10 @@ namespace SIL.Machine
 
 			return start.GetNodes(end).Count();
 		}
+
+		public override Span<ShapeNode> Create(ShapeNode offset, Direction dir)
+		{
+			return Create(offset, offset, dir);
+		}
 	}
 }

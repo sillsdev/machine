@@ -25,6 +25,7 @@ namespace SIL.Machine.Matching
 			_spanFactory = spanFactory;
 			_pattern = pattern;
 			_settings = settings;
+			_settings.ReadOnly = true;
 			_fsa = new FiniteStateAutomaton<TData, TOffset>(_settings.Direction, _settings.Filter);
 			Compile();
 		}

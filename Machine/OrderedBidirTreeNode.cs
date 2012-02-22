@@ -1,14 +1,16 @@
 using System;
+using System.Collections.Generic;
 
 namespace SIL.Machine
 {
-	public class OrderedBidirTreeNode<TNode> : OrderedBidirListNode<TNode>, IOrderedBidirTreeNode<TNode> where TNode : OrderedBidirTreeNode<TNode>
+	public abstract class OrderedBidirTreeNode<TNode> : OrderedBidirListNode<TNode>, IOrderedBidirTreeNode<TNode> where TNode : OrderedBidirTreeNode<TNode>
 	{
-		private readonly OrderedBidirList<TNode> _children;
+		private readonly Func<bool, TNode> _marginSelector; 
+		private OrderedBidirList<TNode> _children;
 
-		public OrderedBidirTreeNode()
+		protected OrderedBidirTreeNode(Func<bool, TNode> marginSelector)
 		{
-			_children = new TreeBidirList((TNode) this);
+			_marginSelector = marginSelector;
 			Depth = -1;
 		}
 
@@ -23,7 +25,12 @@ namespace SIL.Machine
 
 		public IOrderedBidirList<TNode> Children
 		{
-			get { return _children; }
+			get
+			{
+				if (_children == null)
+					_children = new TreeBidirList(_marginSelector, (TNode) this);
+				return _children;
+			}
 		}
 
 		protected internal override void Clear()
@@ -49,7 +56,8 @@ namespace SIL.Machine
 		{
 			private readonly TNode _parent;
 
-			public TreeBidirList(TNode parent)
+			public TreeBidirList(Func<bool, TNode> marginSelector, TNode parent)
+				: base(EqualityComparer<TNode>.Default, marginSelector)
 			{
 				_parent = parent;
 			}

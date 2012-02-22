@@ -44,7 +44,7 @@ namespace SIL.Machine.Transduction
 				Acceptable = match => ruleSpec.IsApplicable(match.Input) && ruleSpec.Pattern.Acceptable(match)
 			};
 
-			_pattern.Children.AddAfter(index == _ruleSpecs.Count - 1 ? _pattern.Children.Last : _pattern.Children.ElementAtOrDefault(index), subpattern);
+			_pattern.Children.AddAfter(index == 0 ? _pattern.Children.Begin : _pattern.Children.ElementAt(index - 1), subpattern);
 		}
 
 		public Pattern<TData, TOffset> Pattern
