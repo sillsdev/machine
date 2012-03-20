@@ -14,7 +14,7 @@ namespace SIL.Machine.FeatureModel.Fluent
 		public IFeatureSystemSyntax SymbolicFeature(string id, string desc, Func<ISymbolicFeatureSyntax, ISymbolicFeatureSyntax> build)
 		{
 			var featureBuilder = new SymbolicFeatureBuilder(id, desc);
-			_featSys.AddFeature(featureBuilder.Value);
+			_featSys.Add(featureBuilder.Value);
 			build(featureBuilder);
 			return this;
 		}
@@ -22,7 +22,7 @@ namespace SIL.Machine.FeatureModel.Fluent
 		public IFeatureSystemSyntax SymbolicFeature(string id, Func<ISymbolicFeatureSyntax, ISymbolicFeatureSyntax> build)
 		{
 			var featureBuilder = new SymbolicFeatureBuilder(id);
-			_featSys.AddFeature(featureBuilder.Value);
+			_featSys.Add(featureBuilder.Value);
 			build(featureBuilder);
 			return this;
 		}
@@ -30,21 +30,21 @@ namespace SIL.Machine.FeatureModel.Fluent
 		public IFeatureSystemSyntax StringFeature(string id, string desc)
 		{
 			Feature feature = new StringFeature(id) {Description = desc};
-			_featSys.AddFeature(feature);
+			_featSys.Add(feature);
 			return this;
 		}
 
 		public IFeatureSystemSyntax StringFeature(string id)
 		{
 			Feature feature = new StringFeature(id);
-			_featSys.AddFeature(feature);
+			_featSys.Add(feature);
 			return this;
 		}
 
 		public IFeatureSystemSyntax StringFeature(string id, string desc, Func<IStringFeatureSyntax, IStringFeatureSyntax> build)
 		{
 			var featureBuilder = new StringFeatureBuilder(id, desc);
-			_featSys.AddFeature(featureBuilder.Value);
+			_featSys.Add(featureBuilder.Value);
 			build(featureBuilder);
 			return this;
 		}
@@ -52,30 +52,26 @@ namespace SIL.Machine.FeatureModel.Fluent
 		public IFeatureSystemSyntax StringFeature(string id, Func<IStringFeatureSyntax, IStringFeatureSyntax> build)
 		{
 			var featureBuilder = new StringFeatureBuilder(id);
-			_featSys.AddFeature(featureBuilder.Value);
+			_featSys.Add(featureBuilder.Value);
 			build(featureBuilder);
 			return this;
 		}
 
-		public IFeatureSystemSyntax ComplexFeature(string id, string desc, Func<IComplexFeatureSyntax, IComplexFeatureSyntax> build)
+		public IFeatureSystemSyntax ComplexFeature(string id, string desc)
 		{
-			var featureBuilder = new ComplexFeatureBuilder(_featSys, id, desc);
-			_featSys.AddFeature(featureBuilder.Value);
-			build(featureBuilder);
+			_featSys.Add(new ComplexFeature(id) { Description = desc });
 			return this;
 		}
 
-		public IFeatureSystemSyntax ComplexFeature(string id, Func<IComplexFeatureSyntax, IComplexFeatureSyntax> build)
+		public IFeatureSystemSyntax ComplexFeature(string id)
 		{
-			var featureBuilder = new ComplexFeatureBuilder(_featSys, id);
-			_featSys.AddFeature(featureBuilder.Value);
-			build(featureBuilder);
+			_featSys.Add(new ComplexFeature(id));
 			return this;
 		}
 
 		public IFeatureSystemSyntax ExtantFeature(string id)
 		{
-			_featSys.AddFeature(_featSys.GetFeature(id));
+			_featSys.Add(_featSys.GetFeature(id));
 			return this;
 		}
 

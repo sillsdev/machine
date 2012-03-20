@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using SIL.Collections;
 using SIL.Machine.Fsa;
 
 namespace SIL.Machine.Matching
@@ -7,7 +8,7 @@ namespace SIL.Machine.Matching
     /// <summary>
     /// This class represents a nested phonetic pattern within another phonetic pattern.
     /// </summary>
-	public class Quantifier<TData, TOffset> : PatternNode<TData, TOffset> where TData : IData<TOffset>
+	public class Quantifier<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Quantifier<TData, TOffset>> where TData : IData<TOffset>
     {
     	public const int Infinite = -1;
 
@@ -138,7 +139,17 @@ namespace SIL.Machine.Matching
 			return endState;
 		}
 
-        public override string ToString()
+    	public new Quantifier<TData, TOffset> DeepClone()
+    	{
+			return new Quantifier<TData, TOffset>(this);
+    	}
+
+		protected override PatternNode<TData, TOffset> DeepCloneImpl()
+		{
+			return DeepClone();
+		}
+
+    	public override string ToString()
         {
         	string quantifierStr;
 			if (_minOccur == 0 && _maxOccur == Infinite)
@@ -151,12 +162,7 @@ namespace SIL.Machine.Matching
 				quantifierStr = string.Format("[{0},]", _minOccur);
 			else
 				quantifierStr = string.Format("[{0},{1}]", _minOccur, _maxOccur);
-        	return Children + quantifierStr;
-        }
-
-		public override PatternNode<TData, TOffset> Clone()
-        {
-			return new Quantifier<TData, TOffset>(this);
+        	return string.Concat(Children) + quantifierStr;
         }
     }
 }

@@ -1,3 +1,4 @@
+using SIL.Collections;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Fsa;
 
@@ -7,7 +8,7 @@ namespace SIL.Machine.Matching
     /// This class represents a simple context in a phonetic pattern. Simple contexts are used to represent
     /// natural classes and segments in a pattern.
     /// </summary>
-	public class Constraint<TData, TOffset> : PatternNode<TData, TOffset> where TData : IData<TOffset>
+	public class Constraint<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Constraint<TData, TOffset>> where TData : IData<TOffset>
     {
     	private readonly FeatureStruct _fs;
 
@@ -23,9 +24,9 @@ namespace SIL.Machine.Matching
     	/// Copy constructor.
     	/// </summary>
     	/// <param name="constraint">The annotation constraints.</param>
-		public Constraint(Constraint<TData, TOffset> constraint)
+		protected Constraint(Constraint<TData, TOffset> constraint)
         {
-            _fs = constraint._fs.Clone();
+            _fs = constraint._fs.DeepClone();
         }
 
         /// <summary>
@@ -44,17 +45,22 @@ namespace SIL.Machine.Matching
 
 		internal override State<TData, TOffset> GenerateNfa(FiniteStateAutomaton<TData, TOffset> fsa, State<TData, TOffset> startState)
 		{
-    		return startState.AddArc(_fs.Clone(), fsa.CreateState());
+    		return startState.AddArc(_fs.DeepClone(), fsa.CreateState());
 		}
 
-		public override PatternNode<TData, TOffset> Clone()
+		protected override PatternNode<TData, TOffset> DeepCloneImpl()
 		{
+			return DeepClone();
+		}
+
+    	public new Constraint<TData, TOffset> DeepClone()
+    	{
 			return new Constraint<TData, TOffset>(this);
-		}
+    	}
 
-		public override string ToString()
+    	public override string ToString()
 		{
-			return string.Format("[{0}]", _fs);
+			return _fs.ToString();
 		}
     }
 }

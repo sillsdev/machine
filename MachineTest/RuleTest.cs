@@ -2,7 +2,7 @@
 using NUnit.Framework;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
-using SIL.Machine.Transduction;
+using SIL.Machine.Rules;
 
 namespace SIL.Machine.Test
 {
@@ -30,7 +30,7 @@ namespace SIL.Machine.Test
 
 			var ruleSpec = new DefaultPatternRuleSpec<StringData, int>(pattern, (PatternRule<StringData, int> r, Match<StringData, int> match, out StringData output) =>
 			                                  	{
-													GroupCapture<int> target = match["target"];
+													GroupCapture<int> target = match.GroupCaptures["target"];
 			                                  		foreach (Annotation<int> ann in match.Input.Annotations.GetNodes(target.Span))
 			                                  			ann.FeatureStruct.PriorityUnion(FeatureStruct.New(PhoneticFeatSys).Symbol("low-").Value);
 			                                  		output = match.Input;
@@ -64,7 +64,7 @@ namespace SIL.Machine.Test
 
 			var ruleSpec1 = new DefaultPatternRuleSpec<StringData, int>(pattern, (PatternRule<StringData, int> r, Match<StringData, int> match, out StringData output) =>
 												{
-													GroupCapture<int> target = match["target"];
+													GroupCapture<int> target = match.GroupCaptures["target"];
 													foreach (Annotation<int> ann in match.Input.Annotations.GetNodes(target.Span))
 														ann.FeatureStruct.PriorityUnion(FeatureStruct.New(PhoneticFeatSys)
 															.Symbol("low-")
@@ -77,7 +77,7 @@ namespace SIL.Machine.Test
 
 			var ruleSpec2 = new DefaultPatternRuleSpec<StringData, int>(pattern, (PatternRule<StringData, int> r, Match<StringData, int> match, out StringData output) =>
 												{
-													GroupCapture<int> target = match["target"];
+													GroupCapture<int> target = match.GroupCaptures["target"];
 													foreach (Annotation<int> ann in match.Input.Annotations.GetNodes(target.Span))
 														ann.FeatureStruct.PriorityUnion(FeatureStruct.New(PhoneticFeatSys)
 															.Symbol("low-")

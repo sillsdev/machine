@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SIL.Collections;
 using SIL.Machine.Matching.Fluent;
 
 namespace SIL.Machine.Matching
 {
-	public class Pattern<TData, TOffset> : PatternNode<TData, TOffset> where TData : IData<TOffset>
+	public class Pattern<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Pattern<TData, TOffset>> where TData : IData<TOffset>
 	{
 		public static IPatternSyntax<TData, TOffset> New()
 		{
@@ -43,7 +44,7 @@ namespace SIL.Machine.Matching
 			_name = name;
 		}
 
-		public Pattern(Pattern<TData, TOffset> pattern)
+		protected Pattern(Pattern<TData, TOffset> pattern)
 			: base(pattern)
 		{
 			_name = pattern._name;
@@ -57,7 +58,12 @@ namespace SIL.Machine.Matching
 
 		public Func<Match<TData, TOffset>, bool> Acceptable { get; set; }
 
-		public override PatternNode<TData, TOffset> Clone()
+		protected override PatternNode<TData, TOffset> DeepCloneImpl()
+		{
+			return new Pattern<TData, TOffset>(this);
+		}
+
+		public new Pattern<TData, TOffset> DeepClone()
 		{
 			return new Pattern<TData, TOffset>(this);
 		}

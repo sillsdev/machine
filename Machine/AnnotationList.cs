@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SIL.Collections;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine
 {
-	public class AnnotationList<TOffset> : BidirList<Annotation<TOffset>>, ICloneable<AnnotationList<TOffset>>
+	public class AnnotationList<TOffset> : BidirList<Annotation<TOffset>>, IDeepCloneable<AnnotationList<TOffset>>
 	{
 		private readonly SpanFactory<TOffset> _spanFactory; 
 		private int _currentID;
@@ -18,10 +19,10 @@ namespace SIL.Machine
 			_spanFactory = spanFactory;
 		}
 
-		public AnnotationList(AnnotationList<TOffset> annList)
+		protected AnnotationList(AnnotationList<TOffset> annList)
 			: this(annList._spanFactory)
 		{
-			AddRange(annList.Select(ann => ann.Clone()));
+			AddRange(annList.Select(ann => ann.DeepClone()));
 		}
 
 		internal AnnotationList(SpanFactory<TOffset> spanFactory, Annotation<TOffset> parent)
@@ -35,34 +36,36 @@ namespace SIL.Machine
 			get { return _parent; }
 		}
 
-		public void Add(Span<TOffset> span, FeatureStruct fs)
+		public Annotation<TOffset> Add(Span<TOffset> span, FeatureStruct fs)
 		{
-			Add(span, fs, false);
+			return Add(span, fs, false);
 		}
 
-		public void Add(TOffset start, TOffset end, FeatureStruct fs)
+		public Annotation<TOffset> Add(TOffset start, TOffset end, FeatureStruct fs)
 		{
-			Add(start, end, fs, false);
+			return Add(start, end, fs, false);
 		}
 
-		public void Add(TOffset offset, FeatureStruct fs)
+		public Annotation<TOffset> Add(TOffset offset, FeatureStruct fs)
 		{
-			Add(offset, offset, fs);
+			return Add(_spanFactory.Create(offset), fs);
 		}
 
-		public void Add(Span<TOffset> span, FeatureStruct fs, bool optional)
+		public Annotation<TOffset> Add(Span<TOffset> span, FeatureStruct fs, bool optional)
 		{
-			Add(new Annotation<TOffset>(span, fs) {Optional = optional});
+			var ann = new Annotation<TOffset>(span, fs) {Optional = optional};
+			Add(ann);
+			return ann;
 		}
 
-		public void Add(TOffset start, TOffset end, FeatureStruct fs, bool optional)
+		public Annotation<TOffset> Add(TOffset start, TOffset end, FeatureStruct fs, bool optional)
 		{
-			Add(_spanFactory.Create(start, end), fs, optional);
+			return Add(_spanFactory.Create(start, end), fs, optional);
 		}
 
-		public void Add(TOffset offset, FeatureStruct fs, bool optional)
+		public Annotation<TOffset> Add(TOffset offset, FeatureStruct fs, bool optional)
 		{
-			Add(offset, offset, fs, optional);
+			return Add(_spanFactory.Create(offset), fs, optional);
 		}
 
 		public override void Add(Annotation<TOffset> node)
@@ -154,9 +157,9 @@ namespace SIL.Machine
 					result = result.Prev;
 			}
 
-			if (result.GetNext(dir).Span.GetStart(dir).Equals(offset))
+			if (offset.Equals(result.GetNext(dir).Span.GetStart(dir)))
 				result = result.GetNext(dir);
-			return result.Span.GetStart(dir).Equals(offset);
+			return offset.Equals(result.Span.GetStart(dir));
 		}
 
 		public bool FindDepthFirst(TOffset offset, out Annotation<TOffset> result)
@@ -169,7 +172,7 @@ namespace SIL.Machine
 			if (Find(offset, dir, out result))
 				return true;
 
-			if (!result.IsLeaf() && result.Span.Contains(offset, dir))
+			if (!result.IsLeaf && result.Span.Contains(offset, dir))
 				return result.Children.FindDepthFirst(offset, dir, out result);
 
 			return false;
@@ -209,10 +212,13 @@ namespace SIL.Machine
 			if (endAnn == GetBegin(dir))
 				return Enumerable.Empty<Annotation<TOffset>>();
 
+			if (startAnn.CompareTo(endAnn) > 0)
+				return Enumerable.Empty<Annotation<TOffset>>();
+
 			return this.GetNodes(dir == Direction.LeftToRight ? startAnn : endAnn, dir == Direction.LeftToRight ? endAnn : startAnn, dir).Where(ann => span.Contains(ann.Span));
 		}
 
-		public AnnotationList<TOffset> Clone()
+		public AnnotationList<TOffset> DeepClone()
 		{
 			return new AnnotationList<TOffset>(this);
 		}

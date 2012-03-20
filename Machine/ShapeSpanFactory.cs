@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using SIL.Collections;
 
 namespace SIL.Machine
 {

@@ -1,6 +1,8 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using SIL.Collections;
 using SIL.Machine.FeatureModel.Fluent;
 
 namespace SIL.Machine.FeatureModel
@@ -8,7 +10,7 @@ namespace SIL.Machine.FeatureModel
     /// <summary>
     /// This class represents a feature system. It encapsulates all of the valid features and symbols.
     /// </summary>
-    public class FeatureSystem
+    public class FeatureSystem : ICollection<Feature>
     {
 		public static IFeatureSystemSyntax New()
 		{
@@ -25,64 +27,52 @@ namespace SIL.Machine.FeatureModel
             _features = new IDBearerSet<Feature>();
         }
 
-        /// <summary>
-        /// Gets the features.
-        /// </summary>
-        /// <value>The features.</value>
-        public IReadOnlySet<Feature> Features
-        {
-            get
-            {
-                return _features.AsReadOnlySet();
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this feature system has features.
-        /// </summary>
-        /// <value>
-        /// 	<c>true</c> if this instance has features, otherwise <c>false</c>.
-        /// </value>
-        public bool HasFeatures
-        {
-            get
-            {
-                return _features.Count > 0;
-            }
-        }
-
-    	/// <summary>
-        /// Gets the feature associated with the specified ID.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        /// <returns>The feature.</returns>
-        public Feature GetFeature(string id)
-        {
-            Feature feature;
-            if (_features.TryGetValue(id, out feature))
-                return feature;
-
-			foreach (ComplexFeature child in _features.OfType<ComplexFeature>())
-			{
-				if (FindFeature(id, child, out feature))
-					return feature;
-			}
+		public Feature GetFeature(string id)
+		{
+			Feature feature;
+			if (TryGetFeature(id, out feature))
+				return feature;
 
 			throw new ArgumentException("The specified feature could not be found.", "id");
-        }
+		}
 
-		private bool FindFeature(string id, ComplexFeature feature, out Feature result)
+		public T GetFeature<T>(string id) where T : Feature
 		{
-			if (feature.TryGetSubfeature(id, out result))
-				return true;
+			Feature feature;
+			if (TryGetFeature(id, out feature))
+				return (T) feature;
 
-			foreach (ComplexFeature child in feature.Subfeatures.OfType<ComplexFeature>())
+			throw new ArgumentException("The specified feature could not be found.", "id");
+		}
+
+		public bool TryGetFeature(string id, out Feature feature)
+		{
+			return _features.TryGetValue(id, out feature);
+		}
+
+		public bool TryGetFeature<T>(string id, out T feature) where T : Feature
+		{
+			Feature f;
+			if (TryGetFeature(id, out f))
 			{
-				if (FindFeature(id, child, out result))
-					return true;
+				feature = (T) f;
+				return true;
 			}
 
+			feature = null;
 			return false;
+		}
+
+		public Feature this[string id]
+		{
+			get
+			{
+				Feature feature;
+				if (TryGetFeature(id, out feature))
+					return feature;
+
+				throw new ArgumentException("The specified feature could not be found.", "id");
+			}
 		}
 
         /// <summary>
@@ -93,52 +83,83 @@ namespace SIL.Machine.FeatureModel
         public FeatureSymbol GetSymbol(string id)
         {
         	FeatureSymbol symbol;
-			if (FindSymbol(id, _features, out symbol))
+			if (TryGetSymbol(id, out symbol))
 				return symbol;
 
 			throw new ArgumentException("The specified symbol could not be found.", "id");
         }
 
-		private bool FindSymbol(string id, IEnumerable<Feature> features, out FeatureSymbol result)
+    	/// <summary>
+    	/// Gets the feature value associated with the specified ID.
+    	/// </summary>
+    	/// <param name="id">The ID.</param>
+    	/// <param name="symbol"> </param>
+    	/// <returns>The feature value.</returns>
+    	public bool TryGetSymbol(string id, out FeatureSymbol symbol)
 		{
-			foreach (Feature feature in features)
+			foreach (SymbolicFeature sf in _features.OfType<SymbolicFeature>())
 			{
-				var sf = feature as SymbolicFeature;
-				if (sf != null)
-				{
-					if (sf.TryGetPossibleSymbol(id, out result))
-						return true;
-				}
-				else
-				{
-					var cf = feature as ComplexFeature;
-					if (cf != null)
-					{
-						if (FindSymbol(id, cf.Subfeatures, out result))
-							return true;
-					}
-				}
+				if (sf.PossibleSymbols.TryGetValue(id, out symbol))
+					return true;
 			}
 
-			result = null;
+			symbol = null;
 			return false;
 		}
 
-        /// <summary>
-        /// Adds the feature.
-        /// </summary>
-        /// <param name="feature">The feature.</param>
-        public virtual void AddFeature(Feature feature)
-        {
-        	_features.Add(feature);
-        }
+    	IEnumerator<Feature> IEnumerable<Feature>.GetEnumerator()
+    	{
+    		return ((IEnumerable<Feature>) _features).GetEnumerator();
+    	}
 
-        /// <summary>
-        /// Resets this instance.
-        /// </summary>
-        public virtual void Reset()
-        {
-            _features.Clear();
-        }
+    	IEnumerator IEnumerable.GetEnumerator()
+    	{
+    		return ((IEnumerable<Feature>) this).GetEnumerator();
+    	}
+
+    	public void Add(Feature feature)
+    	{
+			if (IsReadOnly)
+				throw new InvalidOperationException("The feature system is read-only.");
+			_features.Add(feature);
+    	}
+
+    	public void Clear()
+    	{
+			if (IsReadOnly)
+				throw new InvalidOperationException("The feature system is read-only.");
+    		_features.Clear();
+    	}
+
+		bool ICollection<Feature>.Contains(Feature feature)
+		{
+			return _features.Contains(feature);
+		}
+
+    	void ICollection<Feature>.CopyTo(Feature[] array, int arrayIndex)
+    	{
+    		_features.CopyTo(array, arrayIndex);
+    	}
+
+		public bool Remove(Feature feature)
+		{
+			if (IsReadOnly)
+				throw new InvalidOperationException("The feature system is read-only.");
+			return _features.Remove(feature);
+		}
+
+		public bool Remove(string featureID)
+		{
+			if (IsReadOnly)
+				throw new InvalidOperationException("The feature system is read-only.");
+			return _features.Remove(featureID);
+		}
+
+    	public int Count
+    	{
+			get { return _features.Count; }
+    	}
+
+		public bool IsReadOnly { get; protected set; }
     }
 }

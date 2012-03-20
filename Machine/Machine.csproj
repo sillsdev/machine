@@ -46,14 +46,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnnotationList.cs" />
-    <Compile Include="BidirTreeNode.cs" />
-    <Compile Include="IReadOnlyCollection.cs" />
-    <Compile Include="IReadOnlyDictionary.cs" />
-    <Compile Include="IReadOnlyList.cs" />
-    <Compile Include="IReadOnlySet.cs" />
-    <Compile Include="OrderedBidirList.cs" />
-    <Compile Include="OrderedBidirListNode.cs" />
-    <Compile Include="OrderedBidirTreeNode.cs" />
+    <Compile Include="FeatureModel\FeaturePath.cs" />
+    <Compile Include="Matching\GroupCaptureCollection.cs" />
     <Compile Include="FeatureModel\ComplexFeature.cs" />
     <Compile Include="FeatureModel\Disjunction.cs" />
     <Compile Include="FeatureModel\Feature.cs" />
@@ -61,11 +55,9 @@
     <Compile Include="FeatureModel\FeatureSymbol.cs" />
     <Compile Include="FeatureModel\FeatureSystem.cs" />
     <Compile Include="FeatureModel\FeatureValue.cs" />
-    <Compile Include="FeatureModel\Fluent\ComplexFeatureBuilder.cs" />
     <Compile Include="FeatureModel\Fluent\DisjunctionBuilder.cs" />
     <Compile Include="FeatureModel\Fluent\FeatureStructBuilder.cs" />
     <Compile Include="FeatureModel\Fluent\FeatureSystemBuilder.cs" />
-    <Compile Include="FeatureModel\Fluent\IComplexFeatureSyntax.cs" />
     <Compile Include="FeatureModel\Fluent\IDefaultSymbolicFeatureSyntax.cs" />
     <Compile Include="FeatureModel\Fluent\IDisjunctiveFeatureStructSyntax.cs" />
     <Compile Include="FeatureModel\Fluent\IDisjunctiveFeatureValueSyntax.cs" />
@@ -88,18 +80,9 @@
     <Compile Include="FeatureModel\SymbolicFeatureValue.cs" />
     <Compile Include="FeatureModel\VariableBindings.cs" />
     <Compile Include="Fsa\AcceptInfo.cs" />
-    <Compile Include="Extensions.cs" />
     <Compile Include="Fsa\FsaMatch.cs" />
-    <Compile Include="IBidirList.cs" />
-    <Compile Include="IBidirListNode.cs" />
-    <Compile Include="IBidirTreeNode.cs" />
-    <Compile Include="IOrderedBidirTreeNode.cs" />
-    <Compile Include="ICloneable.cs" />
     <Compile Include="IData.cs" />
-    <Compile Include="IDBearerDictionary.cs" />
     <Compile Include="IntegerSpanFactory.cs" />
-    <Compile Include="IOrderedBidirList.cs" />
-    <Compile Include="IOrderedBidirListNode.cs" />
     <Compile Include="Matching\Alternation.cs" />
     <Compile Include="Matching\Constraint.cs" />
     <Compile Include="Matching\Fluent\GroupBuilder.cs" />
@@ -121,33 +104,16 @@
     <Compile Include="Matching\Match.cs" />
     <Compile Include="Matching\PatternNode.cs" />
     <Compile Include="Matching\Quantifier.cs" />
-    <Compile Include="NullableValue.cs" />
-    <Compile Include="PriorityQueue.cs" />
-    <Compile Include="ProjectionComparer.cs" />
-    <Compile Include="ProjectionEqualityComparer.cs" />
-    <Compile Include="ReadOnlyCollection.cs" />
-    <Compile Include="ReadOnlyDictionary.cs" />
-    <Compile Include="ReadOnlyList.cs" />
-    <Compile Include="ReadOnlySet.cs" />
-    <Compile Include="ReferenceEqualityComparer.cs" />
-    <Compile Include="ReverseComparer.cs" />
     <Compile Include="Shape.cs" />
     <Compile Include="ShapeNode.cs" />
     <Compile Include="ShapeSpanFactory.cs" />
-    <Compile Include="SkipList.cs" />
-    <Compile Include="SkipListNode.cs" />
     <Compile Include="StringData.cs" />
-    <Compile Include="Transduction\BatchPatternRuleSpec.cs" />
-    <Compile Include="Transduction\DefaultPatternRuleSpec.cs" />
-    <Compile Include="Transduction\IRule.cs" />
-    <Compile Include="Transduction\IPatternRuleSpec.cs" />
-    <Compile Include="Transduction\PatternRule.cs" />
-    <Compile Include="BidirList.cs" />
-    <Compile Include="BidirListNode.cs" />
+    <Compile Include="Rules\BatchPatternRuleSpec.cs" />
+    <Compile Include="Rules\DefaultPatternRuleSpec.cs" />
+    <Compile Include="Rules\IRule.cs" />
+    <Compile Include="Rules\IPatternRuleSpec.cs" />
+    <Compile Include="Rules\PatternRule.cs" />
     <Compile Include="Span.cs" />
-    <Compile Include="IDBearerBase.cs" />
-    <Compile Include="IDBearerSet.cs" />
-    <Compile Include="IIDBearer.cs" />
     <Compile Include="SpanFactory.cs" />
     <Compile Include="Fsa\State.cs" />
     <Compile Include="Annotation.cs" />
@@ -155,7 +121,14 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Fsa\TagMapCommand.cs" />
     <Compile Include="Fsa\Arc.cs" />
-    <Compile Include="Transduction\RuleCascade.cs" />
+    <Compile Include="Rules\RuleBatch.cs" />
+    <Compile Include="Rules\RuleCascade.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Collections\Collections.csproj">
+      <Project>{08691159-167B-4E5A-AE88-67DEF10AF7D3}</Project>
+      <Name>Collections</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

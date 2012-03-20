@@ -1,4 +1,6 @@
-﻿namespace SIL.Machine
+﻿using SIL.Collections;
+
+namespace SIL.Machine
 {
 	public class IntegerSpanFactory : SpanFactory<int>
 	{

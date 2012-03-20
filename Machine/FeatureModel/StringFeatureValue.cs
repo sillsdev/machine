@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SIL.Collections;
 
 namespace SIL.Machine.FeatureModel
 {
-	public class StringFeatureValue : SimpleFeatureValue, IEquatable<StringFeatureValue>
+	public class StringFeatureValue : SimpleFeatureValue, IEquatable<StringFeatureValue>, IDeepCloneable<StringFeatureValue>
 	{
 		public static implicit operator StringFeatureValue(string str)
 		{
@@ -48,7 +49,7 @@ namespace SIL.Machine.FeatureModel
 			_values = new HashSet<string>();
 		}
 
-		public StringFeatureValue(StringFeatureValue sfv)
+		protected StringFeatureValue(StringFeatureValue sfv)
 			: base(sfv)
 		{
 			_values = new HashSet<string>(sfv._values);
@@ -194,6 +195,11 @@ namespace SIL.Machine.FeatureModel
 			}
 		}
 
+		protected override SimpleFeatureValue DeepCloneImpl()
+		{
+			return DeepClone();
+		}
+
 		public override SimpleFeatureValue Negation()
 		{
 			return IsVariable ? new StringFeatureValue(VariableName, !Agree) : new StringFeatureValue(_values, !Not);
@@ -230,6 +236,11 @@ namespace SIL.Machine.FeatureModel
 			return code;
 		}
 
+		public new StringFeatureValue DeepClone()
+		{
+			return new StringFeatureValue(this);
+		}
+
 		public override string ToString()
 		{
 			if (IsVariable)
@@ -260,11 +271,6 @@ namespace SIL.Machine.FeatureModel
 				sb.Append('}');
 			}
 			return sb.ToString();
-		}
-
-		public override SimpleFeatureValue Clone()
-		{
-			return new StringFeatureValue(this);
 		}
 	}
 }

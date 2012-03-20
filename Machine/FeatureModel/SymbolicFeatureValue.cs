@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SIL.Collections;
 
 namespace SIL.Machine.FeatureModel
 {
-	public class SymbolicFeatureValue : SimpleFeatureValue, IEquatable<SymbolicFeatureValue>
+	public class SymbolicFeatureValue : SimpleFeatureValue, IEquatable<SymbolicFeatureValue>, IDeepCloneable<SymbolicFeatureValue>
 	{
 		public static implicit operator SymbolicFeatureValue(FeatureSymbol symbol)
 		{
@@ -47,7 +48,7 @@ namespace SIL.Machine.FeatureModel
 			_values = new IDBearerSet<FeatureSymbol>();
 		}
 
-		public SymbolicFeatureValue(SymbolicFeatureValue sfv)
+		protected SymbolicFeatureValue(SymbolicFeatureValue sfv)
 			: base(sfv)
 		{
 			_feature = sfv._feature;
@@ -157,6 +158,11 @@ namespace SIL.Machine.FeatureModel
 				_values = new IDBearerSet<FeatureSymbol>(otherSfv._values.Except(_values));
 		}
 
+		protected override SimpleFeatureValue DeepCloneImpl()
+		{
+			return DeepClone();
+		}
+
 		public override SimpleFeatureValue Negation()
 		{
 			return IsVariable ? new SymbolicFeatureValue(_feature, VariableName, !Agree) : new SymbolicFeatureValue(_feature.PossibleSymbols.Except(_values));
@@ -193,6 +199,11 @@ namespace SIL.Machine.FeatureModel
 			return code;
 		}
 
+		public new SymbolicFeatureValue DeepClone()
+		{
+			return new SymbolicFeatureValue(this);
+		}
+
 		public override string ToString()
 		{
 			if (IsVariable)
@@ -213,11 +224,6 @@ namespace SIL.Machine.FeatureModel
 			}
 			sb.Append("}");
 			return sb.ToString();
-		}
-
-		public override SimpleFeatureValue Clone()
-		{
-			return new SymbolicFeatureValue(this);
 		}
 	}
 }

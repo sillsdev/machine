@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SIL.Collections;
 
 namespace SIL.Machine.FeatureModel
 {
@@ -16,7 +17,7 @@ namespace SIL.Machine.FeatureModel
 
 		public Disjunction(Disjunction disjunction)
 		{
-			_disjuncts = new List<FeatureStruct>(disjunction._disjuncts.Clone());
+			_disjuncts = new List<FeatureStruct>(disjunction._disjuncts.DeepClone());
 		}
 
 		IEnumerator<FeatureStruct> IEnumerable<FeatureStruct>.GetEnumerator()
@@ -39,7 +40,7 @@ namespace SIL.Machine.FeatureModel
 			get { return _disjuncts.Count; }
 		}
 
-		internal bool Negation(out FeatureStruct output)
+		internal bool NegationImpl(out FeatureStruct output)
 		{
 			output = null;
 			foreach (FeatureStruct disjunct in _disjuncts)
@@ -73,9 +74,9 @@ namespace SIL.Machine.FeatureModel
 				disjunct.ReplaceVariables(varBindings);
 		}
 
-		internal Disjunction Clone(IDictionary<FeatureValue, FeatureValue> copies)
+		internal Disjunction DeepCloneImpl(IDictionary<FeatureValue, FeatureValue> copies)
 		{
-			return new Disjunction(_disjuncts.Select(disj => (FeatureStruct) disj.Clone(new Dictionary<FeatureValue, FeatureValue>(copies, new ReferenceEqualityComparer<FeatureValue>()))));
+			return new Disjunction(_disjuncts.Select(disj => (FeatureStruct) disj.DeepCloneImpl(new Dictionary<FeatureValue, FeatureValue>(copies, new ReferenceEqualityComparer<FeatureValue>()))));
 		}
 
 		internal void FindReentrances(IDictionary<FeatureValue, bool> reentrances)
@@ -90,7 +91,7 @@ namespace SIL.Machine.FeatureModel
 				disjunct.GetAllValues(values, true);
 		}
 
-		internal bool Equals(Disjunction other, ISet<FeatureValue> visitedSelf, ISet<FeatureValue> visitedOther, IDictionary<FeatureValue, FeatureValue> visitedPairs)
+		internal bool EqualsImpl(Disjunction other, ISet<FeatureValue> visitedSelf, ISet<FeatureValue> visitedOther, IDictionary<FeatureValue, FeatureValue> visitedPairs)
 		{
 			if (_disjuncts.Count != other._disjuncts.Count)
 				return false;
@@ -111,7 +112,7 @@ namespace SIL.Machine.FeatureModel
 						var tempVisitedOther = new HashSet<FeatureValue>(visitedOther, comparer);
 						var tempVisitedPairs = new Dictionary<FeatureValue, FeatureValue>(visitedPairs, comparer);
 
-						if (thisDisjunct.Equals(other._disjuncts[i], tempVisitedSelf, tempVisitedOther, tempVisitedPairs))
+						if (thisDisjunct.EqualsImpl(other._disjuncts[i], tempVisitedSelf, tempVisitedOther, tempVisitedPairs))
 						{
 							visitedSelf = tempVisitedSelf;
 							visitedOther = tempVisitedOther;
@@ -130,12 +131,12 @@ namespace SIL.Machine.FeatureModel
 			return true;
 		}
 
-		internal int GetHashCode(ISet<FeatureValue> visited)
+		internal int GetHashCodeImpl(ISet<FeatureValue> visited)
 		{
-			return _disjuncts.Aggregate(23, (code, fs) => code ^ fs.GetHashCode(visited));
+			return _disjuncts.Aggregate(23, (code, fs) => code ^ fs.GetHashCodeImpl(visited));
 		}
 
-		internal string ToString(ISet<FeatureValue> visited, IDictionary<FeatureValue, int> reentranceIds)
+		internal string ToStringImpl(ISet<FeatureValue> visited, IDictionary<FeatureValue, int> reentranceIds)
 		{
 			var sb = new StringBuilder();
 			bool first = true;
@@ -143,7 +144,7 @@ namespace SIL.Machine.FeatureModel
 			{
 				if (!first)
 					sb.Append(" || ");
-				sb.Append(disjunct.ToString(visited, reentranceIds));
+				sb.Append(disjunct.ToStringImpl(visited, reentranceIds));
 				first = false;
 			}
 			return sb.ToString();

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using SIL.Collections;
 using SIL.Machine.Fsa;
 
 namespace SIL.Machine.Matching
@@ -6,10 +7,10 @@ namespace SIL.Machine.Matching
 	/// <summary>
 	/// This is the abstract class that all phonetic pattern nodes extend.
 	/// </summary>
-	public abstract class PatternNode<TData, TOffset> : OrderedBidirTreeNode<PatternNode<TData, TOffset>>, ICloneable<PatternNode<TData, TOffset>> where TData : IData<TOffset>
+	public abstract class PatternNode<TData, TOffset> : OrderedBidirTreeNode<PatternNode<TData, TOffset>>, IDeepCloneable<PatternNode<TData, TOffset>> where TData : IData<TOffset>
 	{
 		protected PatternNode()
-			: base(begin => new TempPatternNode())
+			: base(begin => new Margin())
 		{
 		}
 
@@ -21,18 +22,18 @@ namespace SIL.Machine.Matching
 		}
 
 		protected PatternNode(PatternNode<TData, TOffset> node)
-			: this(node.Children.Clone())
+			: this(node.Children.DeepClone())
 		{
 		}
 
 		protected Pattern<TData, TOffset> Pattern
 		{
-			get { return this.Root() as Pattern<TData, TOffset>; }
+			get { return Root as Pattern<TData, TOffset>; }
 		}
 
 		internal virtual State<TData, TOffset> GenerateNfa(FiniteStateAutomaton<TData, TOffset> fsa, State<TData, TOffset> startState)
 		{
-			if (this.IsLeaf())
+			if (IsLeaf)
 				return startState;
 
 			foreach (PatternNode<TData, TOffset> child in Children.GetNodes(fsa.Direction))
@@ -41,13 +42,18 @@ namespace SIL.Machine.Matching
 			return startState;
 		}
 
-		public abstract PatternNode<TData, TOffset> Clone();
-
-		private class TempPatternNode : PatternNode<TData, TOffset>
+		public PatternNode<TData, TOffset> DeepClone()
 		{
-			public override PatternNode<TData, TOffset> Clone()
+			return DeepCloneImpl();
+		}
+
+		protected abstract PatternNode<TData, TOffset> DeepCloneImpl();
+
+		private class Margin : PatternNode<TData, TOffset>
+		{
+			protected override PatternNode<TData, TOffset> DeepCloneImpl()
 			{
-				return new TempPatternNode();
+				return new Margin();
 			}
 
 			protected override bool CanAdd(PatternNode<TData,TOffset> child)

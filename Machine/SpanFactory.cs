@@ -1,4 +1,5 @@
 ﻿using System;
+using SIL.Collections;
 
 namespace SIL.Machine
 {

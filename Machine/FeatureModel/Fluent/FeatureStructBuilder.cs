@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SIL.Collections;
 
 namespace SIL.Machine.FeatureModel.Fluent
 {

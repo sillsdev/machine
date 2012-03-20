@@ -1,4 +1,5 @@
 ﻿using System;
+using SIL.Collections;
 
 namespace SIL.Machine.Matching
 {
@@ -6,8 +7,10 @@ namespace SIL.Machine.Matching
 	{
 		private Direction _dir;
 		private Func<Annotation<TOffset>, bool> _filter;
-		private bool _useDefaultsForMatching;
+		private bool _useDefaults;
 		private bool _quasideterministic;
+		private bool _anchoredToStart;
+		private bool _anchoredToEnd;
 
 		public MatcherSettings()
 		{
@@ -36,13 +39,13 @@ namespace SIL.Machine.Matching
 			}
 		}
 
-		public bool UseDefaultsForMatching
+		public bool UseDefaults
 		{
-			get { return _useDefaultsForMatching; }
+			get { return _useDefaults; }
 			set
 			{
 				CheckReadOnly();
-				_useDefaultsForMatching = value;
+				_useDefaults = value;
 			}
 		}
 
@@ -53,6 +56,26 @@ namespace SIL.Machine.Matching
 			{
 				CheckReadOnly();
 				_quasideterministic = value;
+			}
+		}
+
+		public bool AnchoredToStart
+		{
+			get { return _anchoredToStart; }
+			set
+			{
+				CheckReadOnly();
+				_anchoredToStart = value;
+			}
+		}
+
+		public bool AnchoredToEnd
+		{
+			get { return _anchoredToEnd; }
+			set
+			{
+				CheckReadOnly();
+				_anchoredToEnd = value;
 			}
 		}
 

@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
+using SIL.Collections;
 using SIL.Machine.Fsa;
 
 namespace SIL.Machine.Matching
 {
-	public class Group<TData, TOffset> : PatternNode<TData, TOffset> where TData : IData<TOffset>
+	public class Group<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Group<TData, TOffset>> where TData : IData<TOffset>
 	{
 		private readonly string _name;
 
@@ -28,11 +29,22 @@ namespace SIL.Machine.Matching
 			_name = name;
 		}
 
+		public Group(PatternNode<TData, TOffset> node)
+			: this(null, node)
+		{
+		}
+
+		public Group(string name, PatternNode<TData, TOffset> node)
+			: base(node)
+		{
+			_name = name;
+		}
+
         /// <summary>
         /// Copy constructor.
         /// </summary>
         /// <param name="group">The nested pattern.</param>
-		public Group(Group<TData, TOffset> group)
+		protected Group(Group<TData, TOffset> group)
 			: base(group)
         {
         	_name = group._name;
@@ -52,7 +64,7 @@ namespace SIL.Machine.Matching
 
 		internal override State<TData, TOffset> GenerateNfa(FiniteStateAutomaton<TData, TOffset> fsa, State<TData, TOffset> startState)
 		{
-			if (this.IsLeaf())
+			if (IsLeaf)
 				return startState;
 
 			if (_name != null)
@@ -62,14 +74,19 @@ namespace SIL.Machine.Matching
 			return startState;
 		}
 
-		public override string ToString()
-		{
-			return "(" + Children + ")";
-		}
-
-		public override PatternNode<TData, TOffset> Clone()
+		public new Group<TData, TOffset> DeepClone()
 		{
 			return new Group<TData, TOffset>(this);
+		}
+
+		protected override PatternNode<TData, TOffset> DeepCloneImpl()
+		{
+			return DeepClone();
+		}
+
+		public override string ToString()
+		{
+			return "(" + string.Concat(Children) + ")";
 		}
 	}
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using SIL.Collections;
 using SIL.Machine.Fsa;
 
 namespace SIL.Machine.Matching
@@ -182,7 +183,7 @@ namespace SIL.Machine.Matching
 		private IEnumerable<Match<TData, TOffset>> GetMatches(TData input, Annotation<TOffset> startAnn, bool allMatches)
 		{
 			IEnumerable<FsaMatch<TOffset>> fsaMatches;
-			if (_fsa.IsMatch(input, startAnn, allMatches, _settings.UseDefaultsForMatching, out fsaMatches))
+			if (_fsa.IsMatch(input, startAnn, _settings.AnchoredToStart, _settings.AnchoredToEnd, allMatches, _settings.UseDefaults, out fsaMatches))
 			{
 				foreach (FsaMatch<TOffset> fsaMatch in fsaMatches)
 					yield return CreatePatternMatch(input, fsaMatch);

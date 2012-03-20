@@ -1,3 +1,5 @@
+using SIL.Collections;
+
 namespace SIL.Machine.FeatureModel
 {
 	/// <summary>

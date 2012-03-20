@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using System.Text;
+using SIL.Collections;
 
 namespace SIL.Machine.FeatureModel
 {
-	public abstract class SimpleFeatureValue : FeatureValue, ICloneable<SimpleFeatureValue>
+	public abstract class SimpleFeatureValue : FeatureValue, IDeepCloneable<SimpleFeatureValue>
 	{
 		public static implicit operator SimpleFeatureValue(FeatureSymbol symbol)
 		{
@@ -161,7 +162,7 @@ namespace SIL.Machine.FeatureModel
 			return true;
 		}
 
-		internal override bool Union(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited)
+		internal override bool UnionImpl(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited)
 		{
 			SimpleFeatureValue otherSfv;
 			if (!Dereference(other, out otherSfv))
@@ -223,7 +224,7 @@ namespace SIL.Machine.FeatureModel
 			return !IsUninstantiated;
 		}
 
-		internal override bool Subtract(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited)
+		internal override bool SubtractImpl(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited)
 		{
 			SimpleFeatureValue otherSfv;
 			if (!Dereference(other, out otherSfv))
@@ -271,13 +272,13 @@ namespace SIL.Machine.FeatureModel
 
 		internal SimpleFeatureValue GetVariableValue(bool agree)
 		{
-			return agree ? Clone() : Negation();
+			return agree ? DeepClone() : Negation();
 		}
 
 		protected override bool NondestructiveUnify(FeatureValue other, bool useDefaults, IDictionary<FeatureValue, FeatureValue> copies,
 			VariableBindings varBindings, out FeatureValue output)
 		{
-			FeatureValue copy = Clone();
+			FeatureValue copy = DeepClone();
 			copies[this] = copy;
 			copies[other] = copy;
 			if (!copy.DestructiveUnify(other, useDefaults, true, copies, varBindings))
@@ -289,7 +290,7 @@ namespace SIL.Machine.FeatureModel
 			return true;
 		}
 
-		internal override FeatureValue Clone(IDictionary<FeatureValue, FeatureValue> copies)
+		internal override FeatureValue DeepCloneImpl(IDictionary<FeatureValue, FeatureValue> copies)
 		{
 			FeatureValue copy;
 			if (copies != null)
@@ -298,16 +299,19 @@ namespace SIL.Machine.FeatureModel
 					return copy;
 			}
 
-			copy = Clone();
+			copy = DeepClone();
 
 			if (copies != null)
 				copies[this] = copy;
 			return copy;
 		}
 
-		public abstract SimpleFeatureValue Clone();
+		public new SimpleFeatureValue DeepClone()
+		{
+			return DeepCloneImpl();
+		}
 
-		internal override bool Negation(IDictionary<FeatureValue, FeatureValue> visited, out FeatureValue output)
+		internal override bool NegationImpl(IDictionary<FeatureValue, FeatureValue> visited, out FeatureValue output)
 		{
 			FeatureValue negation;
 			if (visited.TryGetValue(this, out negation))
@@ -334,7 +338,7 @@ namespace SIL.Machine.FeatureModel
 			values.Add(this);
 		}
 
-		internal override string ToString(ISet<FeatureValue> visited, IDictionary<FeatureValue, int> reentranceIds)
+		internal override string ToStringImpl(ISet<FeatureValue> visited, IDictionary<FeatureValue, int> reentranceIds)
 		{
 			if (visited.Contains(this))
 				return string.Format("<{0}>", reentranceIds[this]);
@@ -348,7 +352,7 @@ namespace SIL.Machine.FeatureModel
 			return sb.ToString();
 		}
 
-		internal override int GetHashCode(ISet<FeatureValue> visited)
+		internal override int GetHashCodeImpl(ISet<FeatureValue> visited)
 		{
 			if (visited.Contains(this))
 				return 1;
@@ -357,7 +361,7 @@ namespace SIL.Machine.FeatureModel
 			return GetHashCode();
 		}
 
-		internal override bool Equals(FeatureValue other, ISet<FeatureValue> visitedSelf, ISet<FeatureValue> visitedOther, IDictionary<FeatureValue, FeatureValue> visitedPairs)
+		internal override bool EqualsImpl(FeatureValue other, ISet<FeatureValue> visitedSelf, ISet<FeatureValue> visitedOther, IDictionary<FeatureValue, FeatureValue> visitedPairs)
 		{
 			if (other == null)
 				return false;
@@ -388,6 +392,7 @@ namespace SIL.Machine.FeatureModel
 		protected abstract void IntersectWith(bool not, SimpleFeatureValue other, bool notOther);
 		protected abstract void UnionWith(bool not, SimpleFeatureValue other, bool notOther);
 		protected abstract void ExceptWith(bool not, SimpleFeatureValue other, bool notOther);
+		protected abstract SimpleFeatureValue DeepCloneImpl();
 		protected virtual bool IsSatisfiable
 		{
 			get { return IsVariable; }

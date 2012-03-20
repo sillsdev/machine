@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using NUnit.Framework;
+using SIL.Collections;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.Test

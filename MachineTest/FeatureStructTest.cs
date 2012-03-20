@@ -13,36 +13,28 @@ namespace SIL.Machine.Test
 			FeatureSystem featSys = FeatureSystem.New()
 				.SymbolicFeature("rank", rank => rank
 					.Symbol("clause"))
-				.ComplexFeature("subj", subj => subj
-					.SymbolicFeature("case", casef => casef
-						.Symbol("nom"))
-					.SymbolicFeature("number", number => number
-						.Symbol("pl")
-						.Symbol("sing"))
-					.SymbolicFeature("person", person => person
-						.Symbol("2")
-						.Symbol("3"))
-					.StringFeature("lex"))
+				.SymbolicFeature("case", casef => casef
+					.Symbol("nom"))
+				.SymbolicFeature("number", number => number
+					.Symbol("pl")
+					.Symbol("sing"))
+				.SymbolicFeature("person", person => person
+					.Symbol("2")
+					.Symbol("3"))
+				.StringFeature("lex")
 				.SymbolicFeature("transitivity", transitivity => transitivity
 					.Symbol("trans")
 					.Symbol("intrans"))
 				.SymbolicFeature("voice", voice => voice
 					.Symbol("passive")
 					.Symbol("active"))
-				.ComplexFeature("goal", goal => goal
-					.ExtantFeature("case")
-					.ExtantFeature("number")
-					.ExtantFeature("person")
-					.ExtantFeature("lex"))
-				.ComplexFeature("actor", actor => actor
-					.ExtantFeature("case")
-					.ExtantFeature("number")
-					.ExtantFeature("person")
-					.ExtantFeature("lex"))
 				.StringFeature("varFeat1")
 				.StringFeature("varFeat2")
 				.StringFeature("varFeat3")
-				.StringFeature("varFeat4").Value;
+				.StringFeature("varFeat4")
+				.ComplexFeature("subj")
+				.ComplexFeature("actor")
+				.ComplexFeature("goal").Value;
 
 			FeatureStruct grammar = FeatureStruct.New(featSys)
 				.Feature("rank").EqualTo("clause")
@@ -235,21 +227,15 @@ namespace SIL.Machine.Test
 				featSys => null);
 
 			FeatureSystem featureSystem = FeatureSystem.New()
-				.ComplexFeature("a", a => a
-					.SymbolicFeature("b", b => b
-						.Symbol("c"))
-					.SymbolicFeature("e", e => e
-						.Symbol("f"))
-					.SymbolicFeature("h", h => h
-						.Symbol("j")))
-				.ComplexFeature("d", d => d
-					.ExtantFeature("b")
-					.ExtantFeature("e")
-					.ExtantFeature("h"))
-				.ComplexFeature("g", g => g
-					.ExtantFeature("b")
-					.ExtantFeature("e")
-					.ExtantFeature("h")).Value;
+				.ComplexFeature("a")
+				.SymbolicFeature("b", b => b
+					.Symbol("c"))
+				.ComplexFeature("d")
+				.SymbolicFeature("e", e => e
+					.Symbol("f"))
+				.ComplexFeature("g")
+				.SymbolicFeature("h", h => h
+					.Symbol("j")).Value;
 
 			FeatureStruct featStruct1 = FeatureStruct.New(featureSystem)
 				.Feature("a").EqualToFeatureStruct(a => a
@@ -269,25 +255,16 @@ namespace SIL.Machine.Test
 			Assert.IsTrue(featStruct1.Unify(featStruct2, out result));
 
 			featureSystem = FeatureSystem.New()
-				.ComplexFeature("a", a => a
-					.SymbolicFeature("b", b => b
-						.Symbol("c"))
-					.SymbolicFeature("e", e => e
-						.Symbol("f"))
-					.SymbolicFeature("h", h => h
-						.Symbol("j")))
-				.ComplexFeature("d", d => d
-					.ExtantFeature("b")
-					.ExtantFeature("e")
-					.ExtantFeature("h"))
-				.ComplexFeature("g", g => g
-					.ExtantFeature("b")
-					.ExtantFeature("e")
-					.ExtantFeature("h"))
-				.ComplexFeature("i", i => i
-					.ExtantFeature("b")
-					.ExtantFeature("e")
-					.ExtantFeature("h")).Value;
+				.ComplexFeature("a")
+				.SymbolicFeature("b", b => b
+					.Symbol("c"))
+				.ComplexFeature("d")
+				.SymbolicFeature("e", e => e
+					.Symbol("f"))
+				.ComplexFeature("g")
+				.SymbolicFeature("h", h => h
+					.Symbol("j"))
+				.ComplexFeature("i").Value;
 
 			featStruct1 = FeatureStruct.New(featureSystem)
 				.Feature("a").EqualToFeatureStruct(1, a => a
@@ -628,25 +605,25 @@ namespace SIL.Machine.Test
 
 			// complex
 			featSys = FeatureSystem.New()
-				.ComplexFeature("cx1", cx1 => cx1
-					.SymbolicFeature("a", a => a
-						.Symbol("a1")
-						.Symbol("a2")
-						.Symbol("a3")))
-				.ComplexFeature("cx2", cx2 => cx2
-					.SymbolicFeature("b", b => b
-						.Symbol("b1")
-						.Symbol("b2")
-						.Symbol("b3")))
-				.ComplexFeature("cx3", cx3 => cx3
-					.SymbolicFeature("c", c => c
-						.Symbol("c1")
-						.Symbol("c2")
-						.Symbol("c3"))
-					.SymbolicFeature("d", d => d
-						.Symbol("d1")
-						.Symbol("d2")
-						.Symbol("d3"))).Value;
+				.ComplexFeature("cx1")
+				.SymbolicFeature("a", a => a
+					.Symbol("a1")
+					.Symbol("a2")
+					.Symbol("a3"))
+				.ComplexFeature("cx2")
+				.SymbolicFeature("b", b => b
+					.Symbol("b1")
+					.Symbol("b2")
+					.Symbol("b3"))
+				.ComplexFeature("cx3")
+				.SymbolicFeature("c", c => c
+					.Symbol("c1")
+					.Symbol("c2")
+					.Symbol("c3"))
+				.SymbolicFeature("d", d => d
+					.Symbol("d1")
+					.Symbol("d2")
+					.Symbol("d3")).Value;
 
 			fs = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a1"))
 				.Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol("b1"))
@@ -660,14 +637,13 @@ namespace SIL.Machine.Test
 
 			// re-entrant
 			featSys = FeatureSystem.New()
-				.ComplexFeature("cx1", cx1 => cx1
-					.SymbolicFeature("a", a => a
-						.Symbol("a1")
-						.Symbol("a2")
-						.Symbol("a3")
-						.Symbol("a4")))
-				.ComplexFeature("cx2", cx2 => cx2
-					.ExtantFeature("a")).Value;
+				.ComplexFeature("cx1")
+				.SymbolicFeature("a", a => a
+					.Symbol("a1")
+					.Symbol("a2")
+					.Symbol("a3")
+					.Symbol("a4"))
+				.ComplexFeature("cx2").Value;
 
 			fs = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1.Symbol("a1"))
 				.Feature("cx2").ReferringTo(1).Value;
@@ -683,24 +659,20 @@ namespace SIL.Machine.Test
 
 			// cyclic
 			featSys = FeatureSystem.New()
-				.ComplexFeature("cx1", cx1 => cx1
-					.SymbolicFeature("a", a => a
-						.Symbol("a1")
-						.Symbol("a2")
-						.Symbol("a3"))
-					.SymbolicFeature("b", b => b
-						.Symbol("b1")
-						.Symbol("b2")
-						.Symbol("b3"))
-					.SymbolicFeature("c", b => b
-						.Symbol("c1")
-						.Symbol("c2")
-						.Symbol("c3")))
-					.ComplexFeature("cx2", cx2 => cx2
-						.ExtantFeature("a")
-						.ExtantFeature("b")
-						.ExtantFeature("c")
-						.ExtantFeature("cx2")).Value;
+				.ComplexFeature("cx1")
+				.SymbolicFeature("a", a => a
+					.Symbol("a1")
+					.Symbol("a2")
+					.Symbol("a3"))
+				.SymbolicFeature("b", b => b
+					.Symbol("b1")
+					.Symbol("b2")
+					.Symbol("b3"))
+				.SymbolicFeature("c", b => b
+					.Symbol("c1")
+					.Symbol("c2")
+					.Symbol("c3"))
+				.ComplexFeature("cx2").Value;
 
 			fs = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1
 				.Symbol("a2").Feature("cx2").ReferringTo(1)).Value;
@@ -751,20 +723,20 @@ namespace SIL.Machine.Test
 				.SymbolicFeature("feat6", feat6 => feat6
 					.Symbol("feat6+")
 					.Symbol("feat6-"))
-				.ComplexFeature("cfeat1", cfeat1 => cfeat1
-					.SymbolicFeature("feat7", feat7 => feat7
-						.Symbol("feat7+")
-						.Symbol("feat7-"))
-					.SymbolicFeature("feat8", feat8 => feat8
-						.Symbol("feat8+")
-						.Symbol("feat8-")))
-				.ComplexFeature("cfeat2", cfeat2 => cfeat2
-					.SymbolicFeature("feat9", feat9 => feat9
-						.Symbol("feat9+")
-						.Symbol("feat9-"))
-					.SymbolicFeature("feat10", feat10 => feat10
-						.Symbol("feat10+")
-						.Symbol("feat10-"))).Value;
+				.ComplexFeature("cfeat1")
+				.SymbolicFeature("feat7", feat7 => feat7
+					.Symbol("feat7+")
+					.Symbol("feat7-"))
+				.SymbolicFeature("feat8", feat8 => feat8
+					.Symbol("feat8+")
+					.Symbol("feat8-"))
+				.ComplexFeature("cfeat2")
+				.SymbolicFeature("feat9", feat9 => feat9
+					.Symbol("feat9+")
+					.Symbol("feat9-"))
+				.SymbolicFeature("feat10", feat10 => feat10
+					.Symbol("feat10+")
+					.Symbol("feat10-")).Value;
 
 			fs = FeatureStruct.New(featSys)
 				.And(disjunction => disjunction
@@ -830,26 +802,26 @@ namespace SIL.Machine.Test
 
 			// complex
 			featSys = FeatureSystem.New()
-				.ComplexFeature("cx1", cx1 => cx1
-					.SymbolicFeature("a", a => a
-						.Symbol("a1")
-						.Symbol("a2")
-						.Symbol("a3")))
-				.ComplexFeature("cx2", cx2 => cx2
-					.SymbolicFeature("b", b => b
-						.Symbol("b1")
-						.Symbol("b2")
-						.Symbol("b3"))
-				.ComplexFeature("cx3", cx3 => cx3
-					.SymbolicFeature("c", c => c
-						.Symbol("c1")
-						.Symbol("c2")
-						.Symbol("c3")))
-				.ComplexFeature("cx4", cx4 => cx4
-					.SymbolicFeature("d", d => d
-						.Symbol("d1")
-						.Symbol("d2")
-						.Symbol("d3")))).Value;
+				.ComplexFeature("cx1")
+				.SymbolicFeature("a", a => a
+					.Symbol("a1")
+					.Symbol("a2")
+					.Symbol("a3"))
+				.ComplexFeature("cx2")
+				.SymbolicFeature("b", b => b
+					.Symbol("b1")
+					.Symbol("b2")
+					.Symbol("b3"))
+				.ComplexFeature("cx3")
+				.SymbolicFeature("c", c => c
+					.Symbol("c1")
+					.Symbol("c2")
+					.Symbol("c3"))
+				.ComplexFeature("cx4")
+				.SymbolicFeature("d", d => d
+					.Symbol("d1")
+					.Symbol("d2")
+					.Symbol("d3")).Value;
 
 			fs1 = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a1"))
 				.Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol("b1"))
@@ -869,14 +841,13 @@ namespace SIL.Machine.Test
 
 			// re-entrant
 			featSys = FeatureSystem.New()
-				.ComplexFeature("cx1", cx1 => cx1
-					.SymbolicFeature("a", a => a
-						.Symbol("a1")
-						.Symbol("a2")
-						.Symbol("a3")
-						.Symbol("a4")))
-				.ComplexFeature("cx2", cx2 => cx2
-					.ExtantFeature("a")).Value;
+				.ComplexFeature("cx1")
+				.SymbolicFeature("a", a => a
+					.Symbol("a1")
+					.Symbol("a2")
+					.Symbol("a3")
+					.Symbol("a4"))
+				.ComplexFeature("cx2").Value;
 
 			fs1 = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1.Symbol("a1"))
 				.Feature("cx2").ReferringTo(1).Value;
@@ -913,24 +884,20 @@ namespace SIL.Machine.Test
 
 			// cyclic
 			featSys = FeatureSystem.New()
-				.ComplexFeature("cx1", cx1 => cx1
-					.SymbolicFeature("a", a => a
-						.Symbol("a1")
-						.Symbol("a2")
-						.Symbol("a3"))
-					.SymbolicFeature("b", b => b
-						.Symbol("b1")
-						.Symbol("b2")
-						.Symbol("b3"))
-					.SymbolicFeature("c", b => b
-						.Symbol("c1")
-						.Symbol("c2")
-						.Symbol("c3")))
-					.ComplexFeature("cx2", cx2 => cx2
-						.ExtantFeature("a")
-						.ExtantFeature("b")
-						.ExtantFeature("c")
-						.ExtantFeature("cx2")).Value;
+				.ComplexFeature("cx1")
+				.SymbolicFeature("a", a => a
+					.Symbol("a1")
+					.Symbol("a2")
+					.Symbol("a3"))
+				.SymbolicFeature("b", b => b
+					.Symbol("b1")
+					.Symbol("b2")
+					.Symbol("b3"))
+				.SymbolicFeature("c", b => b
+					.Symbol("c1")
+					.Symbol("c2")
+					.Symbol("c3"))
+				.ComplexFeature("cx2").Value;
 
 			fs1 = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1
 				.Symbol("a1").Symbol("b1")).Value;

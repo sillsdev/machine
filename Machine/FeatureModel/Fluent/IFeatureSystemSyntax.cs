@@ -12,8 +12,8 @@ namespace SIL.Machine.FeatureModel.Fluent
 		IFeatureSystemSyntax StringFeature(string id, string desc, Func<IStringFeatureSyntax, IStringFeatureSyntax> build);
 		IFeatureSystemSyntax StringFeature(string id, Func<IStringFeatureSyntax, IStringFeatureSyntax> build);
 
-		IFeatureSystemSyntax ComplexFeature(string id, string desc, Func<IComplexFeatureSyntax, IComplexFeatureSyntax> build);
-		IFeatureSystemSyntax ComplexFeature(string id, Func<IComplexFeatureSyntax, IComplexFeatureSyntax> build);
+		IFeatureSystemSyntax ComplexFeature(string id, string desc);
+		IFeatureSystemSyntax ComplexFeature(string id);
 
 		IFeatureSystemSyntax ExtantFeature(string id);
 

@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SIL.Collections;
 using SIL.Machine.FeatureModel.Fluent;
 
 namespace SIL.Machine.FeatureModel
 {
-	public class FeatureStruct : FeatureValue, IEquatable<FeatureStruct>, ICloneable<FeatureStruct>
+	public class FeatureStruct : FeatureValue, IEquatable<FeatureStruct>, IDeepCloneable<FeatureStruct>
 	{
 		public static IDisjunctiveFeatureStructSyntax New()
 		{
@@ -20,12 +21,12 @@ namespace SIL.Machine.FeatureModel
 
 		public static IDisjunctiveFeatureStructSyntax New(FeatureStruct fs)
 		{
-			return new FeatureStructBuilder(fs.Clone());
+			return new FeatureStructBuilder(fs.DeepClone());
 		}
 
 		public static IDisjunctiveFeatureStructSyntax New(FeatureSystem featSys, FeatureStruct fs)
 		{
-			return new FeatureStructBuilder(featSys, fs.Clone());
+			return new FeatureStructBuilder(featSys, fs.DeepClone());
 		}
 
 		private readonly IDBearerDictionary<Feature, FeatureValue> _definite;
@@ -40,7 +41,7 @@ namespace SIL.Machine.FeatureModel
 			_indefinite = new List<Disjunction>();
 		}
 
-		public FeatureStruct(FeatureStruct other)
+		protected FeatureStruct(FeatureStruct other)
 			: this(other, new Dictionary<FeatureValue, FeatureValue>(new ReferenceEqualityComparer<FeatureValue>()))
 		{
 		}
@@ -55,7 +56,7 @@ namespace SIL.Machine.FeatureModel
 		{
 			copies[other] = this;
 			foreach (KeyValuePair<Feature, FeatureValue> featVal in other._definite)
-				_definite[featVal.Key] = Dereference(featVal.Value).Clone(copies);
+				_definite[featVal.Key] = Dereference(featVal.Value).DeepCloneImpl(copies);
 
 			CopyDisjunctions(other, this, copies);
 		}
@@ -77,6 +78,11 @@ namespace SIL.Machine.FeatureModel
 		public bool HasVariables
 		{
 			get { return DetermineHasVariables(new HashSet<FeatureStruct>(new ReferenceEqualityComparer<FeatureStruct>())); }
+		}
+
+		public bool IsEmpty
+		{
+			get { return _definite.Count == 0 && _indefinite.Count == 0; }
 		}
 
 		private bool DetermineHasVariables(ISet<FeatureStruct> visited)
@@ -261,7 +267,7 @@ namespace SIL.Machine.FeatureModel
 						}
 						else
 						{
-							_definite[featVal.Key] = otherFS.Clone(copies);
+							_definite[featVal.Key] = otherFS.DeepCloneImpl(copies);
 						}
 					}
 					else
@@ -271,12 +277,12 @@ namespace SIL.Machine.FeatureModel
 						if (otherSfv.IsVariable && varBindings.TryGetValue(otherSfv.VariableName, out binding))
 							_definite[featVal.Key] = binding.GetVariableValue(otherSfv.Agree);
 						else
-							_definite[featVal.Key] = otherSfv.Clone(copies);
+							_definite[featVal.Key] = otherSfv.DeepCloneImpl(copies);
 					}
 				}
 				else
 				{
-					_definite[featVal.Key] = otherValue.Clone(copies);
+					_definite[featVal.Key] = otherValue.DeepCloneImpl(copies);
 				}
 			}
 		}
@@ -291,10 +297,10 @@ namespace SIL.Machine.FeatureModel
 			// TODO: support disjunctive feature structures
 			if (_indefinite.Count > 0 || other._indefinite.Count > 0)
 				throw new InvalidOperationException("This operation is not supported on disjunctive feature structures.");
-			Union(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>(new ReferenceEqualityComparer<FeatureStruct>()));
+			UnionImpl(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>(new ReferenceEqualityComparer<FeatureStruct>()));
 		}
 
-		internal override bool Union(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited)
+		internal override bool UnionImpl(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited)
 		{
 			FeatureStruct otherFS;
 			if (Dereference(other, out otherFS))
@@ -311,7 +317,7 @@ namespace SIL.Machine.FeatureModel
 						if (_definite.TryGetValue(featVal.Key, out thisValue))
 						{
 							thisValue = Dereference(thisValue);
-							if (!thisValue.Union(otherValue, varBindings, visited))
+							if (!thisValue.UnionImpl(otherValue, varBindings, visited))
 								_definite.Remove(featVal.Key);
 						}
 					}
@@ -333,10 +339,10 @@ namespace SIL.Machine.FeatureModel
 			if (_indefinite.Count > 0 || other._indefinite.Count > 0)
 				throw new InvalidOperationException("This operation is not supported on disjunctive feature structures.");
 
-			Subtract(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>(new ReferenceEqualityComparer<FeatureStruct>()));
+			SubtractImpl(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>(new ReferenceEqualityComparer<FeatureStruct>()));
 		}
 
-		internal override bool Subtract(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited)
+		internal override bool SubtractImpl(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited)
 		{
 			FeatureStruct otherFS;
 			if (Dereference(other, out otherFS))
@@ -353,7 +359,7 @@ namespace SIL.Machine.FeatureModel
 						if (_definite.TryGetValue(featVal.Key, out thisValue))
 						{
 							thisValue = Dereference(thisValue);
-							if (!thisValue.Subtract(otherValue, varBindings, visited))
+							if (!thisValue.SubtractImpl(otherValue, varBindings, visited))
 								_definite.Remove(featVal.Key);
 						}
 					}
@@ -648,7 +654,7 @@ namespace SIL.Machine.FeatureModel
 
 			if (_indefinite.Count == 0 && other._indefinite.Count == 0)
 			{
-				VariableBindings definiteVarBindings = varBindings == null ? new VariableBindings() : varBindings.Clone();
+				VariableBindings definiteVarBindings = varBindings == null ? new VariableBindings() : varBindings.DeepClone();
 				if (IsDefiniteUnifiable(other, useDefaults, definiteVarBindings))
 				{
 					if (varBindings != null)
@@ -711,7 +717,7 @@ namespace SIL.Machine.FeatureModel
 		{
 			other = Dereference(other);
 
-			VariableBindings tempVarBindings = varBindings == null ? new VariableBindings() : varBindings.Clone();
+			VariableBindings tempVarBindings = varBindings == null ? new VariableBindings() : varBindings.DeepClone();
 			FeatureValue newFV;
 			if (!UnifyDefinite(other, useDefaults, tempVarBindings, out newFV))
 			{
@@ -736,6 +742,14 @@ namespace SIL.Machine.FeatureModel
 				varBindings.Replace(tempVarBindings);
 			output = newFS;
 			return true;
+		}
+
+		public bool Subsumes(FeatureStruct other)
+		{
+			FeatureStruct result;
+			if (Unify(other, out result))
+				return other.Equals(result);
+			return false;
 		}
 
 		public bool CheckDisjunctiveConsistency(bool useDefaults, VariableBindings varBindings, out FeatureStruct output)
@@ -781,14 +795,14 @@ namespace SIL.Machine.FeatureModel
 				}
 				else if (useDefaults && featVal.Key.DefaultValue != null)
 				{
-					thisValue = featVal.Key.DefaultValue.Clone(null);
+					thisValue = featVal.Key.DefaultValue.DeepCloneImpl(null);
 					_definite[featVal.Key] = thisValue;
 					if (!thisValue.DestructiveUnify(otherValue, true, preserveInput, copies, varBindings))
 						return false;
 				}
 				else
 				{
-					_definite[featVal.Key] = preserveInput ? otherValue.Clone(copies) : otherValue;
+					_definite[featVal.Key] = preserveInput ? otherValue.DeepCloneImpl(copies) : otherValue;
 				}
 			}
 
@@ -825,7 +839,7 @@ namespace SIL.Machine.FeatureModel
 				}
 				else if (useDefaults && featVal.Key.DefaultValue != null)
 				{
-					thisValue = featVal.Key.DefaultValue.Clone(null);
+					thisValue = featVal.Key.DefaultValue.DeepCloneImpl(null);
 					FeatureValue newValue;
 					if (!thisValue.UnifyDefinite(otherValue, true, copies, varBindings, out newValue))
 					{
@@ -836,14 +850,14 @@ namespace SIL.Machine.FeatureModel
 				}
 				else
 				{
-					copy._definite[featVal.Key] = otherValue.Clone(copies);
+					copy._definite[featVal.Key] = otherValue.DeepCloneImpl(copies);
 				}
 			}
 
 			foreach (KeyValuePair<Feature, FeatureValue> featVal in _definite)
 			{
 				if (!otherFS._definite.ContainsKey(featVal.Key))
-					copy._definite[featVal.Key] = Dereference(featVal.Value).Clone(copies);
+					copy._definite[featVal.Key] = Dereference(featVal.Value).DeepCloneImpl(copies);
 			}
 
 			CopyDisjunctions(this, copy, copies);
@@ -856,10 +870,10 @@ namespace SIL.Machine.FeatureModel
 		private static void CopyDisjunctions(FeatureStruct src, FeatureStruct dest, IDictionary<FeatureValue, FeatureValue> copies)
 		{
 			foreach (Disjunction disjunction in src._indefinite)
-				dest._indefinite.Add(disjunction.Clone(copies));
+				dest._indefinite.Add(disjunction.DeepCloneImpl(copies));
 		}
 
-		internal override FeatureValue Clone(IDictionary<FeatureValue, FeatureValue> copies)
+		internal override FeatureValue DeepCloneImpl(IDictionary<FeatureValue, FeatureValue> copies)
 		{
 			if (copies != null)
 			{
@@ -869,7 +883,7 @@ namespace SIL.Machine.FeatureModel
 				return new FeatureStruct(this, copies);
 			}
 
-			return new FeatureStruct(this);
+			return DeepClone();
 		}
 
 		private bool CheckIndefinite(FeatureStruct fs, FeatureStruct cond, bool useDefaults, VariableBindings varBindings, ISet<FeatureValue> values,
@@ -891,12 +905,12 @@ namespace SIL.Machine.FeatureModel
 					var newDisjunction = new List<FeatureStruct>();
 					foreach (FeatureStruct disjunct in disjunction)
 					{
-						if (cond.IsDefiniteUnifiable(disjunct, useDefaults, varBindings.Clone()))
+						if (cond.IsDefiniteUnifiable(disjunct, useDefaults, varBindings.DeepClone()))
 						{
 							if (disjunct._indefinite.Count > 0)
 							{
 								FeatureStruct newDisjunct;
-								if (CheckIndefinite(disjunct, cond, useDefaults, varBindings.Clone(), tempValues, out newDisjunct))
+								if (CheckIndefinite(disjunct, cond, useDefaults, varBindings.DeepClone(), tempValues, out newDisjunct))
 								{
 									if (!Contains(tempValues, newDisjunction, newDisjunct))
 										newDisjunction.Add(newDisjunct);
@@ -960,7 +974,7 @@ namespace SIL.Machine.FeatureModel
 				VariableBindings lastVarBindings = null;
 				foreach (FeatureStruct disjunct in disjunction)
 				{
-					VariableBindings tempVarBindings = varBindings.Clone();
+					VariableBindings tempVarBindings = varBindings.DeepClone();
 					FeatureValue hypFV;
 					if (fs.UnifyDefinite(disjunct, useDefaults, tempVarBindings, out hypFV))
 					{
@@ -1034,7 +1048,7 @@ namespace SIL.Machine.FeatureModel
 				var visitedOther = new HashSet<FeatureValue>(values, comparer);
 				var visitedPairs = values.ToDictionary(fv => fv, comparer);
 
-				if (fs.Equals(existing, visitedSelf, visitedOther, visitedPairs))
+				if (fs.EqualsImpl(existing, visitedSelf, visitedOther, visitedPairs))
 					return true;
 			}
 
@@ -1052,55 +1066,17 @@ namespace SIL.Machine.FeatureModel
 			var visitedPairs = values.ToDictionary(fv => fv, comparer);
 			foreach (Disjunction existing in disjunctions)
 			{
-				if (disjunction.Equals(existing, visitedSelf, visitedOther, visitedPairs))
+				if (disjunction.EqualsImpl(existing, visitedSelf, visitedOther, visitedPairs))
 					return true;
 			}
 
 			return false;
 		}
 
-		//private void DistinctFeatureStructs(List<FeatureStruct> featureStructs, ISet<FeatureValue> values)
-		//{
-		//    if (featureStructs.Count <= 1)
-		//        return;
-
-		//    var comparer = new ReferenceEqualityComparer<FeatureValue>();
-		//    for (int i = featureStructs.Count - 1; i >= 0; i--)
-		//    {
-		//        for (int j = i - 1; j >= 0; j--)
-		//        {
-		//            ISet<FeatureValue> tempValues;
-		//            if (featureStructs.Count == 2)
-		//            {
-		//                tempValues = values;
-		//            }
-		//            else
-		//            {
-		//                tempValues = new HashSet<FeatureValue>(values, comparer);
-		//                for (int k = 0; k < featureStructs.Count; k++)
-		//                {
-		//                    if (k != j && k != i)
-		//                        featureStructs[k].GetAllValues(tempValues, false);
-		//                }
-		//            }
-
-		//            var visitedSelf = new HashSet<FeatureValue>(tempValues, comparer);
-		//            var visitedOther = new HashSet<FeatureValue>(tempValues, comparer);
-		//            var visitedPairs = tempValues.ToDictionary(fv => fv, comparer);
-
-		//            if (featureStructs[i].Equals(featureStructs[j], visitedSelf, visitedOther, visitedPairs))
-		//            {
-		//                featureStructs.RemoveAt(i);
-		//                break;
-		//            }
-		//        }	
-		//    }
-		//}
-
 		public bool Negation(out FeatureStruct output)
 		{
 			FeatureValue fv;
-			if (Negation(new Dictionary<FeatureValue, FeatureValue>(new ReferenceEqualityComparer<FeatureValue>()), out fv))
+			if (NegationImpl(new Dictionary<FeatureValue, FeatureValue>(new ReferenceEqualityComparer<FeatureValue>()), out fv))
 			{
 				output = (FeatureStruct) fv;
 				return true;
@@ -1110,7 +1086,7 @@ namespace SIL.Machine.FeatureModel
 			return false;
 		}
 
-		internal override bool Negation(IDictionary<FeatureValue, FeatureValue> visited, out FeatureValue output)
+		internal override bool NegationImpl(IDictionary<FeatureValue, FeatureValue> visited, out FeatureValue output)
 		{
 			FeatureValue negation;
 			if (visited.TryGetValue(this, out negation))
@@ -1131,7 +1107,7 @@ namespace SIL.Machine.FeatureModel
 			foreach (Disjunction disjunction in _indefinite)
 			{
 				FeatureStruct fs;
-				if (!disjunction.Negation(out fs))
+				if (!disjunction.NegationImpl(out fs))
 				{
 					output = null;
 					return false;
@@ -1163,7 +1139,7 @@ namespace SIL.Machine.FeatureModel
 
 				FeatureValue value = Dereference(kvp.Value);
 				FeatureValue negValue;
-				if (!value.Negation(visited, out negValue))
+				if (!value.NegationImpl(visited, out negValue))
 				{
 					output = null;
 					return false;
@@ -1198,12 +1174,12 @@ namespace SIL.Machine.FeatureModel
 			}
 		}
 
-		public FeatureStruct Clone()
+		public new FeatureStruct DeepClone()
 		{
 			return new FeatureStruct(this);
 		}
 
-		internal override bool Equals(FeatureValue other, ISet<FeatureValue> visitedSelf, ISet<FeatureValue> visitedOther, IDictionary<FeatureValue, FeatureValue> visitedPairs)
+		internal override bool EqualsImpl(FeatureValue other, ISet<FeatureValue> visitedSelf, ISet<FeatureValue> visitedOther, IDictionary<FeatureValue, FeatureValue> visitedPairs)
 		{
 			if (other == null)
 				return false;
@@ -1237,7 +1213,7 @@ namespace SIL.Machine.FeatureModel
 				if (!otherFS._definite.TryGetValue(kvp.Key, out otherValue))
 					return false;
 				otherValue = Dereference(otherValue);
-				if (!thisValue.Equals(otherValue, visitedSelf, visitedOther, visitedPairs))
+				if (!thisValue.EqualsImpl(otherValue, visitedSelf, visitedOther, visitedPairs))
 					return false;
 			}
 
@@ -1255,7 +1231,7 @@ namespace SIL.Machine.FeatureModel
 						if (matched.Contains(i))
 							continue;
 
-						if (thisDisjunction.Equals(otherFS._indefinite[i], visitedSelf, visitedOther, visitedPairs))
+						if (thisDisjunction.EqualsImpl(otherFS._indefinite[i], visitedSelf, visitedOther, visitedPairs))
 						{
 							matched.Add(i);
 							found = true;
@@ -1280,16 +1256,16 @@ namespace SIL.Machine.FeatureModel
 		public bool Equals(FeatureStruct other)
 		{
 			var comparer = new ReferenceEqualityComparer<FeatureValue>();
-			return other != null && Equals(other, new HashSet<FeatureValue>(comparer), new HashSet<FeatureValue>(comparer),
+			return other != null && EqualsImpl(other, new HashSet<FeatureValue>(comparer), new HashSet<FeatureValue>(comparer),
 				new Dictionary<FeatureValue, FeatureValue>(comparer));
 		}
 
 		public override int GetHashCode()
 		{
-			return GetHashCode(new HashSet<FeatureValue>(new ReferenceEqualityComparer<FeatureValue>()));
+			return GetHashCodeImpl(new HashSet<FeatureValue>(new ReferenceEqualityComparer<FeatureValue>()));
 		}
 
-		internal override int GetHashCode(ISet<FeatureValue> visited)
+		internal override int GetHashCodeImpl(ISet<FeatureValue> visited)
 		{
 			if (visited.Contains(this))
 				return 1;
@@ -1301,10 +1277,10 @@ namespace SIL.Machine.FeatureModel
 			{
 				code = code * 31 + kvp.Key.GetHashCode();
 				FeatureValue value = Dereference(kvp.Value);
-				code = code * 31 + value.GetHashCode(visited);
+				code = code * 31 + value.GetHashCodeImpl(visited);
 			}
 
-			return _indefinite.Aggregate(code, (disjCode, disjunction) => disjCode ^ disjunction.GetHashCode(visited));
+			return _indefinite.Aggregate(code, (disjCode, disjunction) => disjCode ^ disjunction.GetHashCodeImpl(visited));
 		}
 
 		public override string ToString()
@@ -1317,10 +1293,10 @@ namespace SIL.Machine.FeatureModel
 			int id = 1;
 			foreach (FeatureValue value in reentrances.Where(kvp => kvp.Value).Select(kvp => kvp.Key))
 				reentranceIds[value] = id++;
-			return ToString(new HashSet<FeatureValue>(comparer), reentranceIds);
+			return ToStringImpl(new HashSet<FeatureValue>(comparer), reentranceIds);
 		}
 
-		internal override string ToString(ISet<FeatureValue> visited, IDictionary<FeatureValue, int> reentranceIds)
+		internal override string ToStringImpl(ISet<FeatureValue> visited, IDictionary<FeatureValue, int> reentranceIds)
 		{
 			if (visited.Contains(this))
 				return string.Format("<{0}>", reentranceIds[this]);
@@ -1344,7 +1320,7 @@ namespace SIL.Machine.FeatureModel
 			if (_definite.Count > 0)
 			{
 				bool firstFeature = true;
-				if (_definite.Count > 1)
+				if (_definite.Count > 0)
 					sb.Append("[");
 				foreach (KeyValuePair<Feature, FeatureValue> kvp in _definite)
 				{
@@ -1353,10 +1329,10 @@ namespace SIL.Machine.FeatureModel
 						sb.Append(", ");
 					sb.Append(kvp.Key.Description);
 					sb.Append(":");
-					sb.Append(value.ToString(visited, reentranceIds));
+					sb.Append(value.ToStringImpl(visited, reentranceIds));
 					firstFeature = false;
 				}
-				if (_definite.Count > 1)
+				if (_definite.Count > 0)
 					sb.Append("]");
 
 				if (_indefinite.Count > 0)
@@ -1369,7 +1345,7 @@ namespace SIL.Machine.FeatureModel
 				if (!firstDisjunction)
 					sb.Append(" && ");
 				sb.Append("(");
-				sb.Append(disjunction.ToString(visited, reentranceIds));
+				sb.Append(disjunction.ToStringImpl(visited, reentranceIds));
 				sb.Append(")");
 				firstDisjunction = false;
 			}

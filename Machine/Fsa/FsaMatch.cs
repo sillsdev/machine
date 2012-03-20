@@ -1,4 +1,4 @@
-﻿using System;
+﻿using SIL.Collections;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.Fsa

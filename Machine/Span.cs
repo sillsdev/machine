@@ -1,4 +1,5 @@
 ﻿using System;
+using SIL.Collections;
 
 namespace SIL.Machine
 {
@@ -76,6 +77,16 @@ namespace SIL.Machine
 				&& ( _spanFactory.IncludeEndpoint ? _spanFactory.Compare(_end, other._start) >= 0 : _spanFactory.Compare(_end, other._start) > 0);
 		}
 
+		public bool Overlaps(TOffset start, TOffset end)
+		{
+			return Overlaps(start, end, Direction.LeftToRight);
+		}
+
+		public bool Overlaps(TOffset start, TOffset end, Direction dir)
+		{
+			return Overlaps(_spanFactory.Create(start, end, dir));
+		}
+
 		public bool Contains(Span<TOffset> other)
 		{
 			return _spanFactory.Compare(_start, other._start) <= 0 && _spanFactory.Compare(_end, other._end) >= 0;
@@ -89,6 +100,16 @@ namespace SIL.Machine
 		public bool Contains(TOffset offset, Direction dir)
 		{
 			return Contains(_spanFactory.Create(offset, dir));
+		}
+
+		public bool Contains(TOffset start, TOffset end)
+		{
+			return Contains(start, end, Direction.LeftToRight);
+		}
+
+		public bool Contains(TOffset start, TOffset end, Direction dir)
+		{
+			return Contains(_spanFactory.Create(start, end, dir));
 		}
 
 		public int CompareTo(Span<TOffset> other)

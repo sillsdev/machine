@@ -1,10 +1,11 @@
 using System;
 using System.Globalization;
+using SIL.Collections;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine
 {
-	public class ShapeNode : OrderedBidirListNode<ShapeNode>, IComparable<ShapeNode>, IComparable, ICloneable<ShapeNode>
+	public class ShapeNode : OrderedBidirListNode<ShapeNode>, IComparable<ShapeNode>, IComparable, IDeepCloneable<ShapeNode>
 	{
 		private readonly SpanFactory<ShapeNode> _spanFactory; 
 		private readonly Annotation<ShapeNode> _ann;
@@ -16,9 +17,10 @@ namespace SIL.Machine
 			Tag = int.MinValue;
 		}
 
-		public ShapeNode(ShapeNode node)
-			: this(node._spanFactory, node.Annotation.FeatureStruct.Clone())
+		protected ShapeNode(ShapeNode node)
+			: this(node._spanFactory, node.Annotation.FeatureStruct.DeepClone())
 		{
+			_ann.Optional = node.Annotation.Optional;
 		}
 
 		public int Tag { get; internal set; }
@@ -51,7 +53,7 @@ namespace SIL.Machine
 			return CompareTo((ShapeNode)other);
 		}
 
-		public ShapeNode Clone()
+		public ShapeNode DeepClone()
 		{
 			return new ShapeNode(this);
 		}

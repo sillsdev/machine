@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using SIL.Collections;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.Matching
@@ -10,7 +11,7 @@ namespace SIL.Machine.Matching
 	public class Match<TData, TOffset> : GroupCapture<TOffset> where TData : IData<TOffset>
 	{
 		private readonly Matcher<TData, TOffset> _matcher; 
-		private readonly Dictionary<string, GroupCapture<TOffset>> _groupCaptures;
+		private readonly GroupCaptureCollection<TOffset> _groupCaptures;
 		private readonly VariableBindings _varBindings;
 		private readonly IList<string> _patternPath;
 		private readonly TData _input;
@@ -26,7 +27,7 @@ namespace SIL.Machine.Matching
 			: base(Matcher<TData, TOffset>.EntireMatch, span)
 		{
 			_matcher = matcher;
-			_groupCaptures = groupCaptures.ToDictionary(groupCapture => groupCapture.Name);
+			_groupCaptures = new GroupCaptureCollection<TOffset>(span.SpanFactory, groupCaptures);
 			_patternPath = patternPath;
 			_varBindings = varBindings;
 			_input = input;
@@ -53,14 +54,9 @@ namespace SIL.Machine.Matching
 			get { return _varBindings; }
 		}
 
-		public IReadOnlyCollection<GroupCapture<TOffset>> GroupCaptures
+		public GroupCaptureCollection<TOffset> GroupCaptures
 		{
-			get { return _groupCaptures.Values.AsReadOnlyCollection(); }
-		}
-
-		public GroupCapture<TOffset> this[string groupName]
-		{
-			get { return _groupCaptures[groupName]; }
+			get { return _groupCaptures; }
 		}
 
 		public Match<TData, TOffset> NextMatch()

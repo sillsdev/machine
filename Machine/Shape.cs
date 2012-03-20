@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using SIL.Collections;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine
 {
-	public sealed class Shape : OrderedBidirList<ShapeNode>, IData<ShapeNode>, ICloneable<Shape>
+	public class Shape : OrderedBidirList<ShapeNode>, IData<ShapeNode>, IDeepCloneable<Shape>
 	{
 		private readonly Func<bool, ShapeNode> _marginSelector;
 		private readonly SpanFactory<ShapeNode> _spanFactory;
@@ -27,11 +29,10 @@ namespace SIL.Machine
 			_annotations.Add(End.Annotation, false);
 		}
 
-		public Shape(Shape shape)
+		protected Shape(Shape shape)
 			: this(shape.SpanFactory, shape._marginSelector)
 		{
-			foreach (ShapeNode node in shape)
-				Add(node.Clone());
+			shape.CopyTo(this);
 		}
 
 		public SpanFactory<ShapeNode> SpanFactory
@@ -62,6 +63,11 @@ namespace SIL.Machine
 			return newNode;
 		}
 
+		public Span<ShapeNode> CopyTo(Shape dest)
+		{
+			return CopyTo(First, Last, dest);
+		}
+
 		public Span<ShapeNode> CopyTo(ShapeNode srcStart, ShapeNode srcEnd, Shape dest)
 		{
 			return CopyTo(_spanFactory.Create(srcStart, srcEnd), dest);
@@ -73,13 +79,32 @@ namespace SIL.Machine
 			ShapeNode endNode = null;
 			foreach (ShapeNode node in GetNodes(srcSpan))
 			{
-				ShapeNode newNode = node.Clone();
+				ShapeNode newNode = node.DeepClone();
 				if (startNode == null)
 					startNode = newNode;
 				endNode = newNode;
 				dest.Add(newNode);
 			}
-			return dest.SpanFactory.Create(startNode, endNode);
+
+			Span<ShapeNode> destSpan = dest.SpanFactory.Create(startNode, endNode);
+			Dictionary<ShapeNode, ShapeNode> mapping = GetNodes(srcSpan).Zip(dest.GetNodes(destSpan)).ToDictionary(tuple => tuple.Item1, tuple => tuple.Item2);
+			foreach (Annotation<ShapeNode> ann in _annotations.GetNodes(srcSpan))
+				CopyAnnotations(dest._annotations, ann, mapping);
+
+			return destSpan;
+		}
+
+		private void CopyAnnotations(AnnotationList<ShapeNode> destList, Annotation<ShapeNode> ann, Dictionary<ShapeNode, ShapeNode> mapping)
+		{
+			if (ann.Span.Start.Annotation == ann)
+				return;
+
+			Annotation<ShapeNode> newAnn = destList.Add(mapping[ann.Span.Start], mapping[ann.Span.End], ann.FeatureStruct.DeepClone());
+			if (!ann.IsLeaf)
+			{
+				foreach (Annotation<ShapeNode> child in ann.Children)
+					CopyAnnotations(newAnn.Children, child, mapping);
+			}
 		}
 
 		public ShapeNode AddAfter(ShapeNode node, FeatureStruct fs)
@@ -100,7 +125,7 @@ namespace SIL.Machine
 		public ShapeNode AddAfter(ShapeNode node, FeatureStruct fs, bool optional, Direction dir)
 		{
 			var newNode = new ShapeNode(_spanFactory, fs);
-			node.Annotation.Optional = optional;
+			newNode.Annotation.Optional = optional;
 			AddAfter(node, newNode, dir);
 			return newNode;
 		}
@@ -154,12 +179,54 @@ namespace SIL.Machine
 
 		public override bool Remove(ShapeNode node)
 		{
-			if (base.Remove(node))
+			if (node.List != this)
+				return false;
+
+			node.Annotation.Remove();
+			UpdateAnnotations(_annotations, node);
+			return base.Remove(node);
+		}
+
+		private void UpdateAnnotations(AnnotationList<ShapeNode> annList, ShapeNode node)
+		{
+			if (annList.Count == 0)
+				return;
+
+			Annotation<ShapeNode> startAnn;
+			annList.Find(node, Direction.LeftToRight, out startAnn);
+			if (startAnn == annList.Begin)
+				startAnn = annList.First;
+
+			Annotation<ShapeNode> endAnn;
+			annList.Find(node, Direction.RightToLeft, out endAnn);
+			if (endAnn == annList.End)
+				endAnn = annList.Last;
+
+			if (startAnn.CompareTo(endAnn) > 0)
+				return;
+
+			foreach (Annotation<ShapeNode> ann in annList.GetNodes(startAnn, endAnn).Where(ann => ann.Span.Contains(node)).ToArray())
 			{
-				_annotations.Remove(node.Annotation);
-				return true;
+				if (!ann.IsLeaf)
+					UpdateAnnotations(ann.Children, node);
+
+				if (ann.Span.Start == node && ann.Span.End == node)
+				{
+					annList.Remove(ann);
+				}
+				else if (ann.Span.Start == node || ann.Span.End == node)
+				{
+					Span<ShapeNode> span = ann.Span.Start == node ? _spanFactory.Create(node.Next, ann.Span.End) : _spanFactory.Create(ann.Span.Start, node.Prev);
+					var newAnn = new Annotation<ShapeNode>(span, ann.FeatureStruct.DeepClone()) {Optional = ann.Optional};
+					if (!ann.IsLeaf)
+					{
+						foreach (Annotation<ShapeNode> child in ann.Children.ToArray())
+							newAnn.Children.Add(child, false);
+					}
+					annList.Remove(ann, false);
+					annList.Add(newAnn, false);
+				}
 			}
-			return false;
 		}
 
 		public override void Clear()
@@ -262,7 +329,7 @@ namespace SIL.Machine
 			return this.GetNodes(span.GetStart(dir), span.GetEnd(dir), dir);
 		}
 
-		public Shape Clone()
+		public Shape DeepClone()
 		{
 			return new Shape(this);
 		}

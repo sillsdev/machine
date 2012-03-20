@@ -90,20 +90,15 @@ namespace SIL.Machine.Test
 					.Symbol("adv")
 					.Symbol("det")).Value;
 
-			Type = new SymbolicFeature("Type");
 			Word = new FeatureSymbol("Word");
-			Type.AddPossibleSymbol(Word);
 			NP = new FeatureSymbol("NP");
-			Type.AddPossibleSymbol(NP);
 			VP = new FeatureSymbol("VP");
-			Type.AddPossibleSymbol(VP);
 			Seg = new FeatureSymbol("Seg");
-			Type.AddPossibleSymbol(Seg);
 			Bdry = new FeatureSymbol("Bdry");
-			Type.AddPossibleSymbol(Bdry);
 
-			TypeFeatSys = new FeatureSystem();
-			TypeFeatSys.AddFeature(Type);
+			Type = new SymbolicFeature("Type") { PossibleSymbols = { Word, NP, VP, Seg, Bdry } };
+
+			TypeFeatSys = new FeatureSystem { Type };
 		}
 
 		protected StringData CreateStringData(string str)

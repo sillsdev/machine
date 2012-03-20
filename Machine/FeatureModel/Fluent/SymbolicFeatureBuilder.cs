@@ -18,14 +18,14 @@ namespace SIL.Machine.FeatureModel.Fluent
 		public IDefaultSymbolicFeatureSyntax Symbol(string id, string desc)
 		{
 			_lastSymbol = new FeatureSymbol(id) {Description = desc};
-			_feature.AddPossibleSymbol(_lastSymbol);
+			_feature.PossibleSymbols.Add(_lastSymbol);
 			return this;
 		}
 
 		public IDefaultSymbolicFeatureSyntax Symbol(string id)
 		{
 			_lastSymbol = new FeatureSymbol(id);
-			_feature.AddPossibleSymbol(_lastSymbol);
+			_feature.PossibleSymbols.Add(_lastSymbol);
 			return this;
 		}
 

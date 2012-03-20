@@ -1,9 +1,10 @@
 ﻿using System;
+using SIL.Collections;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine
 {
-	public class Annotation<TOffset> : BidirListNode<Annotation<TOffset>>, IBidirTreeNode<Annotation<TOffset>>, ICloneable<Annotation<TOffset>>, IComparable<Annotation<TOffset>>, IComparable
+	public class Annotation<TOffset> : BidirListNode<Annotation<TOffset>>, IBidirTreeNode<Annotation<TOffset>>, IDeepCloneable<Annotation<TOffset>>, IComparable<Annotation<TOffset>>, IComparable
 	{
 		private AnnotationList<TOffset> _children;
 		private readonly Span<TOffset> _span;
@@ -13,27 +14,34 @@ namespace SIL.Machine
 			_span = span;
 			FeatureStruct = fs;
 			ListID = -1;
-			Depth = -1;
+			Root = this;
 		}
 
 		internal Annotation(Span<TOffset> span)
 		{
 			_span = span;
 			ListID = -1;
-			Depth = -1;
+			Root = this;
 		}
 
-		public Annotation(Annotation<TOffset> ann)
-			: this(ann._span, ann.FeatureStruct.Clone())
+		protected Annotation(Annotation<TOffset> ann)
+			: this(ann._span, ann.FeatureStruct.DeepClone())
 		{
 			Optional = ann.Optional;
 			if (ann._children != null && ann._children.Count > 0)
-				Children.AddRange(ann.Children.Clone());
+				Children.AddRange(ann.Children.DeepClone());
 		}
 
 		public Annotation<TOffset> Parent { get; private set; }
 
 		public int Depth { get; private set; }
+
+		public bool IsLeaf
+		{
+			get { return _children == null || _children.Count == 0; }
+		}
+
+		public Annotation<TOffset> Root { get; private set; }
 
 		public AnnotationList<TOffset> Children
 		{
@@ -50,18 +58,23 @@ namespace SIL.Machine
 			get { return Children; }
 		}
 
-		protected internal override void Clear()
+		protected override void Clear()
 		{
 			base.Clear();
 			Parent = null;
-			Depth = -1;
+			Depth = 0;
+			Root = this;
 		}
 
-		protected internal override void Init(BidirList<Annotation<TOffset>> list, int levels)
+		protected override void Init(BidirList<Annotation<TOffset>> list, int levels)
 		{
 			base.Init(list, levels);
 			Parent = ((AnnotationList<TOffset>) list).Parent;
-			Depth = Parent == null ? 0 : Parent.Depth + 1;
+			if (Parent != null)
+			{
+				Depth = Parent.Depth + 1;
+				Root = Parent.Root;
+			}
 		}
 
 		public Span<TOffset> Span
@@ -89,7 +102,7 @@ namespace SIL.Machine
 			return ((AnnotationList<TOffset>) List).Remove(this, preserveChildren);
 		}
 
-		public Annotation<TOffset> Clone()
+		public Annotation<TOffset> DeepClone()
 		{
 			return new Annotation<TOffset>(this);
 		}
