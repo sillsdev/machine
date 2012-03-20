@@ -1,115 +1,98 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using SIL.Machine;
+using SIL.Collections;
 
 namespace SIL.HermitCrab
 {
 	/// <summary>
+	/// The co-occurrence adjacency type
+	/// </summary>
+	public enum MorphCoOccurrenceAdjacency
+	{
+		/// <summary>
+		/// Anywhere in the same word
+		/// </summary>
+		Anywhere,
+		/// <summary>
+		/// Somewhere to the left
+		/// </summary>
+		SomewhereToLeft,
+		/// <summary>
+		/// Somewhere to the right
+		/// </summary>
+		SomewhereToRight,
+		/// <summary>
+		/// Adjacent to the left
+		/// </summary>
+		AdjacentToLeft,
+		/// <summary>
+		/// Adjacent to the right
+		/// </summary>
+		AdjacentToRight
+	}
+
+	/// <summary>
 	/// This class represents a morpheme co-occurrence rule. Morpheme co-occurrence rules are used
 	/// to determine if a list of morphemes co-occur with a specific morpheme.
 	/// </summary>
-	public class MorphCoOccurrence
+	public abstract class MorphCoOccurrence<T> where T : IIDBearer
 	{
-		/// <summary>
-		/// The object type
-		/// </summary>
-		public enum ObjectType
-		{
-			/// <summary>
-			/// Allomorph
-			/// </summary>
-			Allomorph,
-			/// <summary>
-			/// Morpheme
-			/// </summary>
-			Morpheme
-		}
+		private readonly List<string> _others;
+		private readonly MorphCoOccurrenceAdjacency _adjacency;
 
 		/// <summary>
-		/// The co-occurrence adjacency type
+		/// Initializes a new instance of the <see cref="MorphCoOccurrence&lt;T&gt;"/> class.
 		/// </summary>
-		public enum AdjacencyType
-		{
-			/// <summary>
-			/// Anywhere in the same word
-			/// </summary>
-			Anywhere,
-			/// <summary>
-			/// Somewhere to the left
-			/// </summary>
-			SomewhereToLeft,
-			/// <summary>
-			/// Somewhere to the right
-			/// </summary>
-			SomewhereToRight,
-			/// <summary>
-			/// Adjacent to the left
-			/// </summary>
-			AdjacentToLeft,
-			/// <summary>
-			/// Adjacent to the right
-			/// </summary>
-			AdjacentToRight
-		}
-
-		private readonly List<IIDBearer> _others;
-		private readonly AdjacencyType _adjacency;
-		private readonly ObjectType _objectType;
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="MorphCoOccurrence"/> class.
-		/// </summary>
-		/// <param name="others">The other allomorphs or morphemes.</param>
-		/// <param name="objectType">Type of the object.</param>
+		/// <param name="others">The others.</param>
 		/// <param name="adjacency">The adjacency.</param>
-		public MorphCoOccurrence(IEnumerable<IIDBearer> others, ObjectType objectType, AdjacencyType adjacency)
+		protected MorphCoOccurrence(IEnumerable<T> others, MorphCoOccurrenceAdjacency adjacency)
 		{
-			_others = new List<IIDBearer>(others);
-			_objectType = objectType;
+			_others = others.Select(idBearer => idBearer.ID).ToList();
 			_adjacency = adjacency;
 		}
+
+		public T Key { get; internal set; }
 
 		/// <summary>
 		/// Determines if all of the specified morphemes co-occur with the key morpheme.
 		/// </summary>
-		/// <param name="morphs">The morphs.</param>
-		/// <param name="key">The key morpheme.</param>
+		/// <param name="word">The word.</param>
 		/// <returns></returns>
-		public bool CoOccurs(IEnumerable<Morph> morphs, IIDBearer key)
+		public bool CoOccurs(Word word)
 		{
-			var morphList = morphs.ToList();
-			var others = new List<IIDBearer>(_others);
+			List<Allomorph> morphList = word.AllomorphsInMorphOrder.ToList();
+			var others = new List<string>(_others);
 
 			switch (_adjacency)
 			{
-				case AdjacencyType.Anywhere:
-					foreach (Morph morph in morphList)
-						others.Remove(GetMorphObject(morph));
+				case MorphCoOccurrenceAdjacency.Anywhere:
+					foreach (Allomorph morph in morphList)
+						others.Remove(GetMorphID(morph));
 					break;
 
-				case AdjacencyType.SomewhereToLeft:
-				case AdjacencyType.AdjacentToLeft:
+				case MorphCoOccurrenceAdjacency.SomewhereToLeft:
+				case MorphCoOccurrenceAdjacency.AdjacentToLeft:
 					for (int i = 0; i < morphList.Count; i++)
 					{
-						IIDBearer curMorphObj = GetMorphObject(morphList[i]);
-						if (key == curMorphObj)
+						string curMorphObj = GetMorphID(morphList[i]);
+						if (Key.ID == curMorphObj)
 						{
 							break;
 						}
 						if (others.Count > 0 && others[0] == curMorphObj)
 						{
-							if (_adjacency == AdjacencyType.AdjacentToLeft)
+							if (_adjacency == MorphCoOccurrenceAdjacency.AdjacentToLeft)
 							{
 								if (i == morphList.Count - 1)
 									return false;
 
-								IIDBearer nextMorphObj = GetMorphObject(morphList[i + 1]);
+								string nextMorphObj = GetMorphID(morphList[i + 1]);
 								if (others.Count > 1)
 								{
 									if (others[1] != nextMorphObj)
 										return false;
 								}
-								else if (key != nextMorphObj)
+								else if (Key.ID != nextMorphObj)
 								{
 									return false;
 								}
@@ -119,29 +102,29 @@ namespace SIL.HermitCrab
 					}
 					break;
 
-				case AdjacencyType.SomewhereToRight:
-				case AdjacencyType.AdjacentToRight:
+				case MorphCoOccurrenceAdjacency.SomewhereToRight:
+				case MorphCoOccurrenceAdjacency.AdjacentToRight:
 					for (int i = morphList.Count - 1; i >= 0; i--)
 					{
-						IIDBearer curMorphObj = GetMorphObject(morphList[i]);
-						if (key == curMorphObj)
+						string curMorphObj = GetMorphID(morphList[i]);
+						if (Key.ID == curMorphObj)
 						{
 							break;
 						}
 						if (others.Count > 0 && others[others.Count - 1] == curMorphObj)
 						{
-							if (_adjacency == AdjacencyType.AdjacentToRight)
+							if (_adjacency == MorphCoOccurrenceAdjacency.AdjacentToRight)
 							{
 								if (i == 0)
 									return false;
 
-								IIDBearer prevMorphObj = GetMorphObject(morphList[i - 1]);
+								string prevMorphObj = GetMorphID(morphList[i - 1]);
 								if (others.Count > 1)
 								{
 									if (others[others.Count - 2] != prevMorphObj)
 										return false;
 								}
-								else if (key != prevMorphObj)
+								else if (Key.ID != prevMorphObj)
 								{
 									return false;
 								}
@@ -155,17 +138,6 @@ namespace SIL.HermitCrab
 			return others.Count == 0;
 		}
 
-		private IIDBearer GetMorphObject(Morph morph)
-		{
-			switch (_objectType)
-			{
-				case ObjectType.Allomorph:
-					return morph.Allomorph;
-
-				case ObjectType.Morpheme:
-					return morph.Allomorph.Morpheme;
-			}
-			return null;
-		}
+		protected abstract string GetMorphID(Allomorph morph);
 	}
 }

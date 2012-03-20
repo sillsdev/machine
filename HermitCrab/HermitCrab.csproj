@@ -57,74 +57,84 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AffixProcessRule.cs" />
-    <Compile Include="AffixProcessAllomorph.cs" />
     <Compile Include="AffixTemplate.cs" />
     <Compile Include="Allomorph.cs" />
-    <Compile Include="AnalysisAffixProcessRule.cs" />
-    <Compile Include="AnalysisAffixPatternRuleSpec.cs" />
-    <Compile Include="AnalysisRewriteRule.cs" />
-    <Compile Include="AnalysisRewriteRuleSpec.cs" />
-    <Compile Include="CopyFromInput.cs" />
-    <Compile Include="EpenthesisAnalysisRewriteRuleSpec.cs" />
-    <Compile Include="EpenthesisSynthesisRewriteRuleSpec.cs" />
+    <Compile Include="AllomorphCoOccurrence.cs" />
+    <Compile Include="AnalysisAffixTemplateRule.cs" />
+    <Compile Include="AllomorphEnvironment.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="FeatureAnalysisRewriteRuleSpec.cs" />
-    <Compile Include="FeatureSynthesisRewriteRuleSpec.cs" />
-    <Compile Include="Gloss.cs" />
     <Compile Include="HCFeatureSystem.cs" />
-    <Compile Include="InsertShapeNodeFromConstraint.cs" />
-    <Compile Include="InsertShape.cs" />
+    <Compile Include="IHCRule.cs" />
+    <Compile Include="IMorphologicalRule.cs" />
+    <Compile Include="IPhonologicalRule.cs" />
     <Compile Include="LoadException.cs" />
-    <Compile Include="ModifyFromInput.cs" />
-    <Compile Include="Morph.cs" />
     <Compile Include="MorphCoOccurrence.cs" />
-    <Compile Include="MorpherSynthesisRule.cs" />
-    <Compile Include="MorphologicalOutput.cs" />
-    <Compile Include="NarrowAnalysisRewriteRuleSpec.cs" />
-    <Compile Include="NarrowSynthesisRewriteRuleSpec.cs" />
+    <Compile Include="MorphemeCoOccurrence.cs" />
+    <Compile Include="Morpher.cs" />
+    <Compile Include="LanguageSynthesisRule.cs" />
+    <Compile Include="MorphologicalRules\AffixProcessAllomorph.cs" />
+    <Compile Include="MorphologicalRules\AffixProcessRule.cs" />
+    <Compile Include="MorphologicalRules\AnalysisAffixProcessRule.cs" />
+    <Compile Include="MorphologicalRules\AnalysisCompoundingRule.cs" />
+    <Compile Include="MorphologicalRules\AnalysisCompoundingRuleSpec.cs" />
+    <Compile Include="MorphologicalRules\AnalysisMorphologicalTransform.cs" />
+    <Compile Include="MorphologicalRules\AnalysisRealizationalAffixProcessRule.cs" />
+    <Compile Include="MorphologicalRules\CompoundingRule.cs" />
+    <Compile Include="MorphologicalRules\CompoundingSubrule.cs" />
+    <Compile Include="MorphologicalRules\CopyFromInput.cs" />
+    <Compile Include="MorphologicalRules\InsertShape.cs" />
+    <Compile Include="MorphologicalRules\InsertShapeNode.cs" />
+    <Compile Include="MorphologicalRules\ModifyFromInput.cs" />
+    <Compile Include="MorphologicalRules\MorphologicalOutputAction.cs" />
+    <Compile Include="MorphologicalRules\RealizationalAffixProcessRule.cs" />
+    <Compile Include="MorphologicalRules\SynthesisAffixProcessRule.cs" />
+    <Compile Include="MorphologicalRules\SynthesisCompoundingRule.cs" />
+    <Compile Include="MorphologicalRules\SynthesisMorphologicalTransform.cs" />
+    <Compile Include="MorphologicalRules\SynthesisRealizationalAffixProcessRule.cs" />
+    <Compile Include="PhonologicalRules\AnalysisMetathesisRule.cs" />
+    <Compile Include="PhonologicalRules\AnalysisRewriteRule.cs" />
+    <Compile Include="PhonologicalRules\AnalysisRewriteRuleSpec.cs" />
+    <Compile Include="PhonologicalRules\BacktrackingPatternRule.cs" />
+    <Compile Include="PhonologicalRules\EpenthesisAnalysisRewriteRuleSpec.cs" />
+    <Compile Include="PhonologicalRules\EpenthesisSynthesisRewriteRuleSpec.cs" />
+    <Compile Include="PhonologicalRules\FeatureAnalysisRewriteRuleSpec.cs" />
+    <Compile Include="PhonologicalRules\FeatureSynthesisRewriteRuleSpec.cs" />
+    <Compile Include="PhonologicalRules\MetathesisRule.cs" />
+    <Compile Include="PhonologicalRules\MetathesisRuleSpec.cs" />
+    <Compile Include="PhonologicalRules\NarrowAnalysisRewriteRuleSpec.cs" />
+    <Compile Include="PhonologicalRules\NarrowSynthesisRewriteRuleSpec.cs" />
+    <Compile Include="PhonologicalRules\RewriteRule.cs" />
+    <Compile Include="PhonologicalRules\RewriteSubrule.cs" />
+    <Compile Include="PhonologicalRules\SynthesisMetathesisRule.cs" />
+    <Compile Include="PhonologicalRules\SynthesisRewriteRule.cs" />
+    <Compile Include="PhonologicalRules\SynthesisRewriteRuleSpec.cs" />
     <Compile Include="RootAllomorph.cs" />
     <Compile Include="LexEntry.cs" />
     <Compile Include="LexFamily.cs" />
     <Compile Include="MorphException.cs" />
     <Compile Include="MprFeatureGroup.cs" />
     <Compile Include="MprFeatureSet.cs" />
-    <Compile Include="PartOfSpeech.cs" />
-    <Compile Include="PhonologicalRule.cs" />
-    <Compile Include="SymbolDefinition.cs" />
-    <Compile Include="SegmentDefinitionTrie.cs" />
-    <Compile Include="Slot.cs" />
-    <None Include="CompoundingRule.cs" />
+    <Compile Include="AffixTemplateSlot.cs" />
+    <Compile Include="SynthesisAffixTemplateRule.cs" />
     <None Include="DefaultOutput.cs" />
-    <Compile Include="Environment.cs" />
     <Compile Include="HCStrings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>HCStrings.resx</DependentUpon>
     </Compile>
-    <Compile Include="Lexicon.cs" />
     <None Include="LegacyLoader.cs" />
-    <Compile Include="Loader.cs" />
-    <None Include="MetathesisRule.cs" />
     <Compile Include="Morpheme.cs" />
-    <Compile Include="Morpher.cs" />
-    <None Include="MorphologicalTransform.cs" />
+    <Compile Include="Language.cs" />
     <Compile Include="MprFeature.cs" />
-    <Compile Include="NaturalClass.cs" />
     <Compile Include="IOutput.cs" />
-    <Compile Include="StandardPhonologicalRule.cs" />
-    <Compile Include="MorphologicalRule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <None Include="RealizationalRule.cs" />
     <Compile Include="Stratum.cs" />
-    <Compile Include="SynthesisAffixProcessRule.cs" />
-    <Compile Include="MorpherAnalysisRule.cs" />
-    <Compile Include="SymbolDefinitionTable.cs" />
-    <Compile Include="SynthesisAffixPatternRuleSpec.cs" />
-    <Compile Include="SynthesisRewriteRule.cs" />
-    <Compile Include="SynthesisRewriteRuleSpec.cs" />
+    <Compile Include="LanguageAnalysisRule.cs" />
+    <Compile Include="SymbolTable.cs" />
+    <Compile Include="SynthesisAffixTemplatesRule.cs" />
     <Compile Include="Trace.cs" />
     <Compile Include="Word.cs" />
     <None Include="XmlLoader.cs" />
@@ -165,6 +175,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Collections\Collections.csproj">
+      <Project>{08691159-167B-4E5A-AE88-67DEF10AF7D3}</Project>
+      <Name>Collections</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Machine\Machine.csproj">
       <Project>{8C9AB5D2-22CA-4559-ABB0-83E97D7F0E58}</Project>
       <Name>Machine</Name>

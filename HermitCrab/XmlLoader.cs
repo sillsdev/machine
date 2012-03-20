@@ -1,171 +1,177 @@
+using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Diagnostics;
+using System.Xml.Linq;
 using System.Xml;
 using System.Xml.Schema;
+using System.Linq;
+
+using SIL.Collections;
+using SIL.HermitCrab.MorphologicalRules;
+using SIL.HermitCrab.PhonologicalRules;
 using SIL.Machine;
 using SIL.Machine.FeatureModel;
+using SIL.Machine.Matching;
+using SIL.Machine.Rules;
 
 namespace SIL.HermitCrab
 {
-    /// <summary>
-    /// This class represents the loader for HC.NET's XML input format.
-    /// </summary>
-    public class XmlLoader : Loader
-    {
-        static Stratum.PRuleOrder GetPRuleOrder(string ruleOrderStr)
-        {
-            switch (ruleOrderStr)
-            {
-                case "linear":
-                    return Stratum.PRuleOrder.Linear;
-
-                case "simultaneous":
-                    return Stratum.PRuleOrder.Simultaneous;
-            }
-
-            return Stratum.PRuleOrder.Linear;
-        }
-
-        static Stratum.MRuleOrder GetMRuleOrder(string ruleOrderStr)
-        {
-            switch (ruleOrderStr)
-            {
-                case "linear":
-                    return Stratum.MRuleOrder.Linear;
-
-                case "unordered":
-                    return Stratum.MRuleOrder.Unordered;
-            }
-
-            return Stratum.MRuleOrder.Unordered;
-        }
-
-        static StandardPhonologicalRule.MultAppOrder GetMultAppOrder(string multAppOrderStr)
-        {
-            switch (multAppOrderStr)
-            {
-                case "simultaneous":
-                    return StandardPhonologicalRule.MultAppOrder.Simultaneous;
-
-                case "rightToLeftIterative":
-                    return StandardPhonologicalRule.MultAppOrder.RightToLeftIterative;
-
-                case "leftToRightIterative":
-                    return StandardPhonologicalRule.MultAppOrder.LeftToRightIterative;
-            }
-
-            return StandardPhonologicalRule.MultAppOrder.LeftToRightIterative;
-        }
-
-        static MprFeatureGroup.GroupMatchType GetGroupMatchType(string matchTypeStr)
-        {
-            switch (matchTypeStr)
-            {
-                case "all":
-                    return MprFeatureGroup.GroupMatchType.All;
-
-                case "any":
-                    return MprFeatureGroup.GroupMatchType.Any;
-            }
-            return MprFeatureGroup.GroupMatchType.Any;
-        }
-
-        static MprFeatureGroup.GroupOutputType GetGroupOutputType(string outputTypeStr)
-        {
-            switch (outputTypeStr)
-            {
-                case "overwrite":
-                    return MprFeatureGroup.GroupOutputType.Overwrite;
-
-                case "append":
-                    return MprFeatureGroup.GroupOutputType.Append;
-            }
-            return MprFeatureGroup.GroupOutputType.Overwrite;
-        }
-
-        static MorphologicalTransform.RedupMorphType GetRedupMorphType(string redupMorphTypeStr)
-        {
-            switch (redupMorphTypeStr)
-            {
-                case "prefix":
-                    return MorphologicalTransform.RedupMorphType.PREFIX;
-
-                case "suffix":
-                    return MorphologicalTransform.RedupMorphType.SUFFIX;
-
-                case "implicit":
-                    return MorphologicalTransform.RedupMorphType.IMPLICIT;
-            }
-            return MorphologicalTransform.RedupMorphType.IMPLICIT;
-        }
-
-        static MorphCoOccurrence.AdjacencyType GetAdjacencyType(string adjacencyTypeStr)
-        {
-            switch (adjacencyTypeStr)
-            {
-                case "anywhere":
-                    return MorphCoOccurrence.AdjacencyType.Anywhere;
-
-                case "somewhereToLeft":
-                    return MorphCoOccurrence.AdjacencyType.SomewhereToLeft;
-
-                case "somewhereToRight":
-                    return MorphCoOccurrence.AdjacencyType.SomewhereToRight;
-
-                case "adjacentToLeft":
-                    return MorphCoOccurrence.AdjacencyType.AdjacentToLeft;
-
-                case "adjacentToRight":
-                    return MorphCoOccurrence.AdjacencyType.AdjacentToRight;
-            }
-            return MorphCoOccurrence.AdjacencyType.Anywhere;
-        }
-
-        Dictionary<string, string> m_repIds;
-        XmlResolver m_resolver = null;
-
-        public XmlLoader()
-        {
-            m_repIds = new Dictionary<string, string>();
-        }
-
-        public XmlResolver XmlResolver
-        {
-            set
-            {
-                m_resolver = value;
-            }
-        }
-
-		public override Encoding DefaultOutputEncoding
+	/// <summary>
+	/// This class represents the loader for HC.NET's XML input format.
+	/// </summary>
+	public class XmlLoader
+	{
+		public Language Load(string configPath)
 		{
-			get
+			return Load(configPath, false);
+		}
+
+		public Language Load(string configPath, bool quitOnError)
+		{
+			return Load(configPath, quitOnError, null);
+		}
+
+		public Language Load(string configPath, bool quitOnError, XmlResolver resolver)
+		{
+			var loader = new XmlLoader(configPath, quitOnError, resolver);
+			return loader.Load();
+		}
+
+		private static RuleCascadeOrder GetMRuleOrder(string ruleOrderStr)
+		{
+			switch (ruleOrderStr)
 			{
-				return Encoding.UTF8;
+				case "linear":
+					return RuleCascadeOrder.Linear;
+
+				case "unordered":
+					return RuleCascadeOrder.Combination;
 			}
+
+			return RuleCascadeOrder.Combination;
 		}
 
-        public override void Reset()
-        {
-            base.Reset();
-            m_repIds.Clear();
-        }
-
-		public override void Load()
+		private static ApplicationMode GetMultAppOrder(string multAppOrderStr)
 		{
-			throw new NotImplementedException();
+			switch (multAppOrderStr)
+			{
+				case "simultaneous":
+					return ApplicationMode.Simultaneous;
+
+				case "rightToLeftIterative":
+				case "leftToRightIterative":
+					return ApplicationMode.Iterative;
+			}
+
+			return ApplicationMode.Iterative;
 		}
 
-        public override void Load(string configFile)
-        {
-            Reset();
-
-            XmlReaderSettings settings = new XmlReaderSettings();
-            settings.ProhibitDtd = false;
-			if (Type.GetType ("Mono.Runtime") == null)
+		private static MprFeatureGroupMatchType GetGroupMatchType(string matchTypeStr)
+		{
+			switch (matchTypeStr)
 			{
-            	settings.ValidationType = ValidationType.DTD;
-            	settings.ValidationEventHandler += new ValidationEventHandler(settings_ValidationEventHandler);
+				case "all":
+					return MprFeatureGroupMatchType.All;
+
+				case "any":
+					return MprFeatureGroupMatchType.Any;
+			}
+			return MprFeatureGroupMatchType.Any;
+		}
+
+		private static MprFeatureGroupOutput GetGroupOutput(string outputTypeStr)
+		{
+			switch (outputTypeStr)
+			{
+				case "overwrite":
+					return MprFeatureGroupOutput.Overwrite;
+
+				case "append":
+					return MprFeatureGroupOutput.Append;
+			}
+			return MprFeatureGroupOutput.Overwrite;
+		}
+
+		private static ReduplicationHint GetReduplicationHint(string redupMorphTypeStr)
+		{
+			switch (redupMorphTypeStr)
+			{
+				case "prefix":
+					return ReduplicationHint.Prefix;
+
+				case "suffix":
+					return ReduplicationHint.Suffix;
+
+				case "implicit":
+					return ReduplicationHint.Implicit;
+			}
+			return ReduplicationHint.Implicit;
+		}
+
+		private static MorphCoOccurrenceAdjacency GetAdjacencyType(string adjacencyTypeStr)
+		{
+			switch (adjacencyTypeStr)
+			{
+				case "anywhere":
+					return MorphCoOccurrenceAdjacency.Anywhere;
+
+				case "somewhereToLeft":
+					return MorphCoOccurrenceAdjacency.SomewhereToLeft;
+
+				case "somewhereToRight":
+					return MorphCoOccurrenceAdjacency.SomewhereToRight;
+
+				case "adjacentToLeft":
+					return MorphCoOccurrenceAdjacency.AdjacentToLeft;
+
+				case "adjacentToRight":
+					return MorphCoOccurrenceAdjacency.AdjacentToRight;
+			}
+			return MorphCoOccurrenceAdjacency.Anywhere;
+		}
+
+		private Language _language;
+
+		private readonly SymbolicFeature _posFeature;
+		private readonly ComplexFeature _headFeature;
+		private readonly ComplexFeature _footFeature;
+
+		private readonly string _configPath;
+		private readonly bool _quitOnError;
+		private readonly Dictionary<string, string> _repIds;
+		private readonly ShapeSpanFactory _spanFactory;
+		private readonly XmlResolver _resolver;
+
+		private readonly IDBearerSet<SymbolTable> _tables; 
+		private readonly IDBearerSet<MprFeature> _mprFeatures;
+		private readonly IDBearerSet<MprFeatureGroup> _mprFeatureGroups;
+		private readonly Dictionary<string, FeatureStruct> _natClasses;
+
+		private XmlLoader(string configPath, bool quitOnError, XmlResolver resolver)
+		{
+			_configPath = configPath;
+			_quitOnError = quitOnError;
+			_repIds = new Dictionary<string, string>();
+			_spanFactory = new ShapeSpanFactory();
+			_resolver = resolver;
+
+			_posFeature = new SymbolicFeature(Guid.NewGuid().ToString()) { Description = "POS" };
+			_headFeature = new ComplexFeature(Guid.NewGuid().ToString()) { Description = "Head" };
+			_footFeature = new ComplexFeature(Guid.NewGuid().ToString()) { Description = "Foot" };
+
+			_tables = new IDBearerSet<SymbolTable>();
+			_mprFeatures = new IDBearerSet<MprFeature>();
+			_mprFeatureGroups = new IDBearerSet<MprFeatureGroup>();
+			_natClasses = new Dictionary<string, FeatureStruct>();
+		}
+
+		private Language Load()
+		{
+			var settings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Parse };
+			if (Type.GetType("Mono.Runtime") == null)
+			{
+				settings.ValidationType = ValidationType.DTD;
+				settings.ValidationEventHandler += ValidationEventHandler;
 			}
 			else
 			{
@@ -173,796 +179,585 @@ namespace SIL.HermitCrab
 				settings.ValidationType = ValidationType.None;
 			}
 			
-            if (m_resolver != null)
-                settings.XmlResolver = m_resolver;
+			if (_resolver != null)
+				settings.XmlResolver = _resolver;
 
-            XmlReader reader = XmlReader.Create(configFile, settings);
-            XmlDocument doc = new XmlDocument();
-            try
-            {
-                doc.Load(reader);
-            }
-            catch (XmlException xe)
-            {
-                throw new LoadException(LoadException.LoadErrorType.ParseError, this,
-					string.Format(HCStrings.kstidParseError, configFile), xe);
-            }
-            finally
-            {
-                reader.Close();
-            }
+			XmlReader reader = XmlReader.Create(_configPath, settings);
+			XDocument doc;
+			try
+			{
+				doc = XDocument.Load(reader);
+			}
+			catch (XmlException xe)
+			{
+				throw new LoadException(LoadError.ParseError, string.Format("Unable to parser input file: {0}.", _configPath), xe);
+			}
+			finally
+			{
+				reader.Close();
+			}
 
-            XmlNode lang = doc.DocumentElement.SelectSingleNode("Language[@isActive='yes']");
-            LoadLanguage(lang as XmlElement);
+			LoadLanguage(doc.Elements("Language").Single(IsActive));
+			return _language;
+		}
 
-            XmlNode cmds = doc.DocumentElement.SelectSingleNode("Commands");
-            if (cmds != null)
-                LoadCommands(cmds as XmlElement);
-            m_isLoaded = true;
-        }
+		private static void ValidationEventHandler(object sender, ValidationEventArgs e)
+		{
+			throw new LoadException(LoadError.InvalidFormat, e.Message + " Line: " + e.Exception.LineNumber + ", Pos: " + e.Exception.LinePosition);
+		}
 
-        void LoadCommands(XmlElement cmds)
-        {
-            foreach (XmlNode cmdNode in cmds.ChildNodes)
-            {
-                if (cmdNode.NodeType != XmlNodeType.Element)
-                    continue;
-                XmlElement cmdElem = cmdNode as XmlElement;
-                if (cmdElem.GetAttribute("isActive") == "no")
-                    continue;
+		private static bool IsActive(XElement elem)
+		{
+			return (string) elem.Attribute("isActive") == "yes";
+		}
 
-                switch (cmdElem.Name)
-                {
-                    case "OpenLanguage":
-                        m_morphers.TryGetValue(cmdElem.GetAttribute("language"), out _curMorpher);
-                        break;
+		private void LoadLanguage(XElement langElem)
+		{
+			var id = (string) langElem.Attribute("id");
+			_language = new Language(id) { Description = (string) langElem.Element("Name") };
 
-                    case "MorpherSet":
-                        foreach (XmlNode varNode in cmdElem.ChildNodes)
-                        {
-                            if (varNode.NodeType != XmlNodeType.Element)
-                                continue;
+			foreach (XElement posElem in langElem.Elements("PartsOfSpeech").Elements("PartOfSpeech"))
+				_posFeature.PossibleSymbols.Add(new FeatureSymbol((string)posElem.Attribute("id")) { Description = (string) posElem });
+			_language.SyntacticFeatureSystem.Add(_posFeature);
 
-                            XmlElement varElem = varNode as XmlElement;
-                            switch (varElem.Name)
-                            {
-                                case "MorpherSetBoolean":
-                                    bool boolVal = varElem.GetAttribute("value") == "true";
-                                    switch (varElem.GetAttribute("variable"))
-                                    {
-                                        case "quitOnError":
-                                            m_quitOnError = boolVal;
-                                            break;
+			_mprFeatures.UnionWith(from elem in langElem.Elements("MorphologicalPhonologicalRuleFeatures").Elements("MorphologicalPhonologicalRuleFeature")
+								   where IsActive(elem)
+								   select new MprFeature((string) elem.Attribute("id")) { Description = (string) elem });
 
-                                        case "traceInputs":
-                                            m_traceInputs = boolVal;
-                                            break;
-                                    }
-                                    break;
+			foreach (XElement mprFeatGroupElem in langElem.Elements("MorphologicalPhonologicalRuleFeatures").Elements("MorphologicalPhonologicalRuleFeatureGroup").Where(IsActive))
+				LoadMprFeatGroup(mprFeatGroupElem);
 
-                                case "MorpherSetInteger":
-                                    int intVal = Convert.ToInt32(varElem.GetAttribute("value"));
-                                    switch (varElem.GetAttribute("variable"))
-                                    {
-                                        case "deletionRuleReApplications":
-                                            _curMorpher.DelReapplications = intVal;
-                                            break;
-                                    }
-                                    break;
-                            }
-                        }
-                        break;
+			LoadFeatureSystem(langElem.Elements("PhonologicalFeatureSystem").Single(IsActive), _language.PhoneticFeatureSystem);
 
-                    case "MorphAndLookupWord":
-                        string word = cmdElem.SelectSingleNode("CurrentInputWord").InnerText;
-                        MorphAndLookupWord(word, cmdElem.GetAttribute("resultFormat") == "prettyPrint");
-                        break;
+			_language.SyntacticFeatureSystem.Add(_headFeature);
+			XElement headFeatsElem = langElem.Element("HeadFeatures");
+			if (headFeatsElem != null)
+				LoadFeatureSystem(headFeatsElem, _language.SyntacticFeatureSystem);
+			_language.SyntacticFeatureSystem.Add(_footFeature);
+			XElement footFeatsElem = langElem.Element("FootFeatures");
+			if (footFeatsElem != null)
+				LoadFeatureSystem(footFeatsElem, _language.SyntacticFeatureSystem);
 
-                    case "TraceBlocking":
-                        _curMorpher.TraceBlocking = cmdElem.GetAttribute("on") == "true";
-                        break;
+			foreach (XElement charDefTableElem in langElem.Elements("CharacterDefinitionTable").Where(IsActive))
+				LoadSymbolTable(charDefTableElem);
 
-                    case "TraceLexicalLookup":
-                        _curMorpher.TraceLexLookup = cmdElem.GetAttribute("on") == "true";
-                        break;
+			foreach (XElement natClassElem in langElem.Elements("NaturalClasses").Elements("FeatureNaturalClass").Where(IsActive))
+				_natClasses[(string) natClassElem.Attribute("id")] = LoadPhoneticFeatureStruct(natClassElem);
 
-                    case "TraceMorpherRule":
-                        bool traceAnalysis = cmdElem.GetAttribute("analysisMode") == "true";
-                        bool traceSynthesis = cmdElem.GetAttribute("generateMode") == "true";
-                        string ruleId = cmdElem.GetAttribute("rule");
-                        if (string.IsNullOrEmpty(ruleId))
-                            _curMorpher.SetTraceRules(traceAnalysis, traceSynthesis);
-                        else
-                            _curMorpher.SetTraceRule(ruleId, traceAnalysis, traceSynthesis);
-                        break;
+			foreach (XElement natClassElem in langElem.Elements("NaturalClasses").Elements("SegmentNaturalClass").Where(IsActive))
+				LoadSegNatClass(natClassElem);
 
-                    case "TraceMorpherStrata":
-                        _curMorpher.TraceStrataAnalysis = cmdElem.GetAttribute("analysisMode") == "true";
-                        _curMorpher.TraceStrataSynthesis = cmdElem.GetAttribute("generateMode") == "true";
-                        break;
+			var mrules = new IDBearerSet<IMorphologicalRule>();
+			foreach (XElement mruleElem in langElem.Elements("Rules").Elements().Where(IsActive))
+			{
+				try
+				{
+					switch (mruleElem.Name.LocalName)
+					{
+						case "MorphologicalRule":
+							AffixProcessRule aprule = LoadAffixProcessRule(mruleElem);
+							if (aprule.Allomorphs.Count > 0)
+								mrules.Add(aprule);
+							break;
 
-                    case "TraceMorpherTemplates":
-                        _curMorpher.TraceTemplatesAnalysis = cmdElem.GetAttribute("analysisMode") == "true";
-                        _curMorpher.TraceTemplatesSynthesis = cmdElem.GetAttribute("generateMode") == "true";
-                        break;
+						case "RealizationalRule":
+							RealizationalAffixProcessRule realRule = LoadRealizationalRule(mruleElem);
+							if (realRule.Allomorphs.Count > 0)
+								mrules.Add(realRule);
+							break;
 
-                    case "TraceMorpherSuccess":
-                        _curMorpher.TraceSuccess = cmdElem.GetAttribute("on") == "true";
-                        break;
-                }
-            }
-        }
+						case "CompoundingRule":
+							LoadCompoundingRule(mruleElem);
+							break;
+					}
+				}
+				catch (LoadException)
+				{
+					if (_quitOnError)
+						throw;
+				}
+			}
 
-        void LoadLanguage(XmlElement langElem)
-        {
-            string id = langElem.GetAttribute("id");
-            _curMorpher = new Morpher(id, langElem.SelectSingleNode("Name").InnerText);
-            m_morphers.Add(_curMorpher);
+			IDBearerSet<MorphologicalRule> templateRules = new IDBearerSet<MorphologicalRule>();
+			XmlNodeList tempList = langElem.SelectNodes("Strata/AffixTemplate[@isActive='yes']");
+			foreach (XmlNode tempNode in tempList)
+				LoadAffixTemplate(tempNode as XmlElement, templateRules);
 
-            XmlNodeList posList = langElem.SelectNodes("PartsOfSpeech/PartOfSpeech");
-            foreach (XmlNode posNode in posList)
-            {
-                XmlElement posElem = posNode as XmlElement;
-                string posId = posElem.GetAttribute("id");
-                _curMorpher.AddPartOfSpeech(new PartOfSpeech(posId, posElem.InnerText, _curMorpher));
-            }
+			XmlNodeList stratumList = langElem.SelectNodes("Strata/Stratum[@isActive='yes']");
+			XmlElement surfaceElem = null;
+			foreach (XmlNode stratumNode in stratumList)
+			{
+				XmlElement stratumElem = stratumNode as XmlElement;
+				if (stratumElem.GetAttribute("id") == Stratum.SurfaceStratumID)
+					surfaceElem = stratumElem;
+				else
+					LoadStratum(stratumElem);
+			}
+			if (surfaceElem == null)
+				throw CreateUndefinedObjectException(HCStrings.kstidNoSurfaceStratum, Stratum.SurfaceStratumID);
+			LoadStratum(surfaceElem);
 
-            XmlNodeList mprFeatList = langElem.SelectNodes("MorphologicalPhonologicalRuleFeatures/MorphologicalPhonologicalRuleFeature[@isActive='yes']");
-            foreach (XmlNode mprFeatNode in mprFeatList)
-            {
-                XmlElement mprFeatElem = mprFeatNode as XmlElement;
-                string mprFeatId = mprFeatElem.GetAttribute("id");
-                _curMorpher.AddMprFeature(new MprFeature(mprFeatId, mprFeatElem.InnerText, _curMorpher));
-            }
+			if (mrulesNodeList != null)
+			{
+				foreach (XmlNode mruleNode in mrulesNodeList)
+				{
+					XmlElement mruleElem = mruleNode as XmlElement;
+					string ruleId = mruleElem.GetAttribute("id");
+					if (!templateRules.Contains(ruleId))
+					{
+						MorphologicalRule mrule = _curMorpher.GetMorphologicalRule(ruleId);
+						if (mrule != null)
+						{
+							Stratum stratum = _curMorpher.GetStratum(mruleElem.GetAttribute("stratum"));
+							stratum.AddMorphologicalRule(mrule);
+						}
+					}
+				}
+			}
 
-            XmlNodeList mprFeatGroupList = langElem.SelectNodes("MorphologicalPhonologicalRuleFeatures/MorphologicalPhonologicalRuleFeatureGroup[@isActive='yes']");
-            foreach (XmlNode mprFeatGroupNode in mprFeatGroupList)
-                LoadMPRFeatGroup(mprFeatGroupNode as XmlElement);
+			XmlNodeList familyList = langElem.SelectNodes("Lexicon/Families/Family[@isActive='yes']");
+			foreach (XmlNode familyNode in familyList)
+			{
+				XmlElement familyElem = familyNode as XmlElement;
+				LexFamily family = new LexFamily(familyElem.GetAttribute("id"), familyElem.InnerText, _curMorpher);
+				_curMorpher.Lexicon.AddFamily(family);
+			}
 
-            XmlNode phonFeatSysNode = langElem.SelectSingleNode("PhonologicalFeatureSystem[@isActive='yes']");
-            if (phonFeatSysNode != null)
-                LoadFeatureSystem(phonFeatSysNode as XmlElement, _curMorpher.PhoneticFeatureSystem);
+			XmlNodeList entryList = langElem.SelectNodes("Lexicon/LexicalEntry[@isActive='yes']");
+			foreach (XmlNode entryNode in entryList)
+			{
+				try
+				{
+					LoadLexEntry(entryNode as XmlElement);
+				}
+				catch (LoadException)
+				{
+					if (_quitOnError)
+						throw;
+				}
+			}
 
-            XmlNode headFeatsNode = langElem.SelectSingleNode("HeadFeatures");
-            if (headFeatsNode != null)
-                LoadFeatureSystem(headFeatsNode as XmlElement, _curMorpher.HeadFeatureSystem);
+			// co-occurrence rules cannot be loaded until all of the morphemes and their allomorphs have been loaded
+			XmlNodeList morphemeList = langElem.SelectNodes("Lexicon/LexicalEntry[@isActive='yes'] | Rules/*[@isActive='yes']");
+			foreach (XmlNode morphemeNode in morphemeList)
+			{
+				XmlElement morphemeElem = morphemeNode as XmlElement;
+				string morphemeId = morphemeElem.GetAttribute("id");
+				Morpheme morpheme = _curMorpher.GetMorpheme(morphemeId);
+				if (morpheme != null)
+				{
+					try
+					{
+						morpheme.RequiredMorphemeCoOccurrences = LoadMorphCoOccurs(morphemeElem.SelectSingleNode("RequiredMorphemeCoOccurrences"));
+					}
+					catch (LoadException le)
+					{
+						if (m_quitOnError)
+							throw le;
+					}
+					try
+					{
+						morpheme.ExcludedMorphemeCoOccurrences = LoadMorphCoOccurs(morphemeElem.SelectSingleNode("ExcludedMorphemeCoOccurrences"));
+					}
+					catch (LoadException le)
+					{
+						if (m_quitOnError)
+							throw le;
+					}
+				}
 
-            XmlNode footFeatsNode = langElem.SelectSingleNode("FootFeatures");
-            if (footFeatsNode != null)
-                LoadFeatureSystem(footFeatsNode as XmlElement, _curMorpher.FootFeatureSystem);
+				XmlNodeList allomorphList = morphemeNode.SelectNodes("Allomorphs/Allomorph[@isActive='yes'] | MorphologicalSubrules/MorphologicalSubruleStructure[@isActive='yes']");
+				foreach (XmlNode alloNode in allomorphList)
+				{
+					XmlElement alloElem = alloNode as XmlElement;
+					string alloId = alloElem.GetAttribute("id");
+					Allomorph allomorph = _curMorpher.GetAllomorph(alloId);
+					if (allomorph != null)
+					{
+						try
+						{
+							allomorph.RequiredAllomorphCoOccurrences = LoadAlloCoOccurs(alloElem.SelectSingleNode("RequiredAllomorphCoOccurrences"));
+						}
+						catch (LoadException)
+						{
+							if (_quitOnError)
+								throw;
+						}
+						try
+						{
+							allomorph.ExcludedAllomorphCoOccurrences = LoadAlloCoOccurs(alloElem.SelectSingleNode("ExcludedAllomorphCoOccurrences"));
+						}
+						catch (LoadException)
+						{
+							if (_quitOnError)
+								throw;
+						}
+					}
+				}
+			}
 
-            XmlNodeList charDefTableList = langElem.SelectNodes("CharacterDefinitionTable[@isActive='yes']");
-            foreach (XmlNode charDefTableNode in charDefTableList)
-                LoadCharDefTable(charDefTableNode as XmlElement);
+			XmlNodeList prules = langElem.SelectNodes("PhonologicalRules/*[@isActive='yes']");
+			foreach (XmlNode pruleNode in prules)
+			{
+				XmlElement pruleElem = pruleNode as XmlElement;
+				try
+				{
+					switch (pruleElem.Name)
+					{
+						case "MetathesisRule":
+							LoadMetathesisRule(pruleElem);
+							break;
 
-            XmlNodeList featNatClassList = langElem.SelectNodes("NaturalClasses/FeatureNaturalClass[@isActive='yes']");
-            foreach (XmlNode natClassNode in featNatClassList)
-                LoadFeatNatClass(natClassNode as XmlElement);
+						case "PhonologicalRule":
+							LoadPRule(pruleElem);
+							break;
+					}
+				}
+				catch (LoadException)
+				{
+					if (_quitOnError)
+						throw;
+				}
+			}
+		}
 
-            XmlNodeList segNatClassList = langElem.SelectNodes("NaturalClasses/SegmentNaturalClass[@isActive='yes']");
-            foreach (XmlNode natClassNode in segNatClassList)
-                LoadSegNatClass(natClassNode as XmlElement);
+		private void LoadMprFeatGroup(XElement mprFeatGroupElem)
+		{
+			var group = new MprFeatureGroup((string) mprFeatGroupElem.Attribute("id")) { Description = (string) mprFeatGroupElem.Element("Name") };
+			group.MatchType = GetGroupMatchType((string) mprFeatGroupElem.Attribute("matchType"));
+			group.Output = GetGroupOutput((string) mprFeatGroupElem.Attribute("outputType"));
+			var mprFeatIdsStr = (string) mprFeatGroupElem.Attribute("features");
+			foreach (MprFeature mprFeat in LoadMprFeatures(mprFeatIdsStr))
+				group.Add(mprFeat);
+			_mprFeatureGroups.Add(group);
+		}
 
-            XmlNodeList mrulesNodeList = langElem.SelectNodes("MorphologicalRules/*[@isActive='yes']");
-            if (mrulesNodeList != null)
-            {
-                foreach (XmlNode mruleNode in mrulesNodeList)
-                {
-                    XmlElement mruleElem = mruleNode as XmlElement;
-                    try
-                    {
-                        switch (mruleElem.Name)
-                        {
-                            case "MorphologicalRule":
-                                LoadMRule(mruleNode as XmlElement);
-                                break;
+		void LoadStratum(XmlElement stratumNode)
+		{
+			string id = stratumNode.GetAttribute("id");
+			string name = stratumNode.SelectSingleNode("Name").InnerText;
+			Stratum stratum = new Stratum(id, name, _curMorpher);
+			stratum.SymbolTable = GetCharDefTable(stratumNode.GetAttribute("characterDefinitionTable"));
+			stratum.IsCyclic = stratumNode.GetAttribute("cyclicity") == "cyclic";
+			stratum.PhonologicalRuleOrder = GetPRuleOrder(stratumNode.GetAttribute("phonologicalRuleOrder"));
+			stratum.MorphologicalRuleOrder = GetMRuleOrder(stratumNode.GetAttribute("morphologicalRuleOrder"));
 
-                            case "RealizationalRule":
-                                LoadRealRule(mruleNode as XmlElement);
-                                break;
+			string tempIdsStr = stratumNode.GetAttribute("affixTemplates");
+			if (!string.IsNullOrEmpty(tempIdsStr))
+			{
+				string[] tempIds = tempIdsStr.Split(' ');
+				foreach (string tempId in tempIds)
+				{
+					AffixTemplate template = _curMorpher.GetAffixTemplate(tempId);
+					if (template == null)
+						throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownTemplate, tempId), tempId);
+					stratum.AddAffixTemplate(template);
+				}
+			}
 
-                            case "CompoundingRule":
-                                LoadCompoundRule(mruleNode as XmlElement);
-                                break;
-                        }
-                    }
-                    catch (LoadException le)
-                    {
-                        if (m_quitOnError)
-                            throw le;
-                    }
-                }
-            }
+			_curMorpher.AddStratum(stratum);
+		}
 
-            IDBearerSet<MorphologicalRule> templateRules = new IDBearerSet<MorphologicalRule>();
-            XmlNodeList tempList = langElem.SelectNodes("Strata/AffixTemplate[@isActive='yes']");
-            foreach (XmlNode tempNode in tempList)
-                LoadAffixTemplate(tempNode as XmlElement, templateRules);
+		void LoadLexEntry(XmlElement entryNode)
+		{
+			string id = entryNode.GetAttribute("id");
+			LexEntry entry = new LexEntry(id, id, _curMorpher);
 
-            XmlNodeList stratumList = langElem.SelectNodes("Strata/Stratum[@isActive='yes']");
-            XmlElement surfaceElem = null;
-            foreach (XmlNode stratumNode in stratumList)
-            {
-                XmlElement stratumElem = stratumNode as XmlElement;
-                if (stratumElem.GetAttribute("id") == Stratum.SurfaceStratumID)
-                    surfaceElem = stratumElem;
-                else
-                    LoadStratum(stratumElem);
-            }
-            if (surfaceElem == null)
-                throw CreateUndefinedObjectException(HCStrings.kstidNoSurfaceStratum, Stratum.SurfaceStratumID);
-            LoadStratum(surfaceElem);
+			string posId = entryNode.GetAttribute("partOfSpeech");
+			PartOfSpeech pos = _curMorpher.GetPartOfSpeech(posId);
+			if (pos == null)
+				throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownPOS, posId), posId);
+			entry.PartOfSpeech = pos;
+			XmlElement glossElem = entryNode.SelectSingleNode("Gloss") as XmlElement;
+			entry.Gloss = new Gloss(glossElem.GetAttribute("id"), glossElem.InnerText, _curMorpher);
 
-            if (mrulesNodeList != null)
-            {
-                foreach (XmlNode mruleNode in mrulesNodeList)
-                {
-                    XmlElement mruleElem = mruleNode as XmlElement;
-                    string ruleId = mruleElem.GetAttribute("id");
-                    if (!templateRules.Contains(ruleId))
-                    {
-                        MorphologicalRule mrule = _curMorpher.GetMorphologicalRule(ruleId);
-                        if (mrule != null)
-                        {
-                            Stratum stratum = _curMorpher.GetStratum(mruleElem.GetAttribute("stratum"));
-                            stratum.AddMorphologicalRule(mrule);
-                        }
-                    }
-                }
-            }
+			entry.MprFeatures = LoadMprFeatures(entryNode.GetAttribute("ruleFeatures"));
 
-            XmlNodeList familyList = langElem.SelectNodes("Lexicon/Families/Family[@isActive='yes']");
-            foreach (XmlNode familyNode in familyList)
-            {
-                XmlElement familyElem = familyNode as XmlElement;
-                LexFamily family = new LexFamily(familyElem.GetAttribute("id"), familyElem.InnerText, _curMorpher);
-                _curMorpher.Lexicon.AddFamily(family);
-            }
+			entry.HeadFeatures = LoadSynFeats(entryNode.SelectSingleNode("HeadFeatures"),
+				_curMorpher.HeadFeatureSystem);
 
-            XmlNodeList entryList = langElem.SelectNodes("Lexicon/LexicalEntry[@isActive='yes']");
-            foreach (XmlNode entryNode in entryList)
-            {
-                try
-                {
-                    LoadLexEntry(entryNode as XmlElement);
-                }
-                catch (LoadException le)
-                {
-                    if (m_quitOnError)
-                        throw le;
-                }
-            }
+			entry.FootFeatures = LoadSynFeats(entryNode.SelectSingleNode("FootFeatures"),
+				_curMorpher.FootFeatureSystem);
 
-            // co-occurrence rules cannot be loaded until all of the morphemes and their allomorphs have been loaded
-            XmlNodeList morphemeList = langElem.SelectNodes("Lexicon/LexicalEntry[@isActive='yes'] | MorphologicalRules/*[@isActive='yes']");
-            foreach (XmlNode morphemeNode in morphemeList)
-            {
-                XmlElement morphemeElem = morphemeNode as XmlElement;
-                string morphemeId = morphemeElem.GetAttribute("id");
-                Morpheme morpheme = _curMorpher.GetMorpheme(morphemeId);
-                if (morpheme != null)
-                {
-                    try
-                    {
-                        morpheme.RequiredMorphemeCoOccurrences = LoadMorphCoOccurs(morphemeElem.SelectSingleNode("RequiredMorphemeCoOccurrences"));
-                    }
-                    catch (LoadException le)
-                    {
-                        if (m_quitOnError)
-                            throw le;
-                    }
-                    try
-                    {
-                        morpheme.ExcludedMorphemeCoOccurrences = LoadMorphCoOccurs(morphemeElem.SelectSingleNode("ExcludedMorphemeCoOccurrences"));
-                    }
-                    catch (LoadException le)
-                    {
-                        if (m_quitOnError)
-                            throw le;
-                    }
-                }
+			Stratum stratum = GetStratum(entryNode.GetAttribute("stratum"));
 
-                XmlNodeList allomorphList = morphemeNode.SelectNodes("Allomorphs/Allomorph[@isActive='yes'] | MorphologicalSubrules/MorphologicalSubruleStructure[@isActive='yes']");
-                foreach (XmlNode alloNode in allomorphList)
-                {
-                    XmlElement alloElem = alloNode as XmlElement;
-                    string alloId = alloElem.GetAttribute("id");
-                    Allomorph allomorph = _curMorpher.GetAllomorph(alloId);
-                    if (allomorph != null)
-                    {
-                        try
-                        {
-                            allomorph.RequiredAllomorphCoOccurrences = LoadAlloCoOccurs(alloElem.SelectSingleNode("RequiredAllomorphCoOccurrences"));
-                        }
-                        catch (LoadException le)
-                        {
-                            if (m_quitOnError)
-                                throw le;
-                        }
-                        try
-                        {
-                            allomorph.ExcludedAllomorphCoOccurrences = LoadAlloCoOccurs(alloElem.SelectSingleNode("ExcludedAllomorphCoOccurrences"));
-                        }
-                        catch (LoadException le)
-                        {
-                            if (m_quitOnError)
-                                throw le;
-                        }
-                    }
-                }
-            }
+			string familyId = entryNode.GetAttribute("family");
+			if (!string.IsNullOrEmpty(familyId))
+			{
+				LexFamily family = _curMorpher.Lexicon.GetFamily(familyId);
+				if (family == null)
+					throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownFamily, familyId), familyId);
+				family.AddEntry(entry);
+			}
 
-            XmlNodeList prules = langElem.SelectNodes("PhonologicalRules/*[@isActive='yes']");
-            foreach (XmlNode pruleNode in prules)
-            {
-                XmlElement pruleElem = pruleNode as XmlElement;
-                try
-                {
-                    switch (pruleElem.Name)
-                    {
-                        case "MetathesisRule":
-                            LoadMetathesisRule(pruleElem);
-                            break;
+			XmlNodeList alloNodes = entryNode.SelectNodes("Allomorphs/Allomorph[@isActive='yes']");
+			foreach (XmlNode alloNode in alloNodes)
+			{
+				try
+				{
+					LoadAllomorph(alloNode as XmlElement, entry, stratum);
+				}
+				catch (LoadException le)
+				{
+					if (m_quitOnError)
+						throw le;
+				}
+			}
 
-                        case "PhonologicalRule":
-                            LoadPRule(pruleElem);
-                            break;
-                    }
-                }
-                catch (LoadException le)
-                {
-                    if (m_quitOnError)
-                        throw le;
-                }
-            }
-        }
+			if (entry.AllomorphCount > 0)
+			{
+				stratum.AddEntry(entry);
+				_curMorpher.Lexicon.AddEntry(entry);
+			}
+		}
 
-        void LoadMPRFeatGroup(XmlElement mprFeatGroupNode)
-        {
-            string mprFeatGroupId = mprFeatGroupNode.GetAttribute("id");
-            string mprFeatGroupName = mprFeatGroupNode.SelectSingleNode("Name").InnerText;
-            MprFeatureGroup group = new MprFeatureGroup(mprFeatGroupId, mprFeatGroupName, _curMorpher);
-            group.MatchType = GetGroupMatchType(mprFeatGroupNode.GetAttribute("matchType"));
-            group.OutputType = GetGroupOutputType(mprFeatGroupNode.GetAttribute("outputType"));
-            string mprFeatIdsStr = mprFeatGroupNode.GetAttribute("features");
-            IEnumerable<MprFeature> mprFeatures = LoadMPRFeatures(mprFeatIdsStr);
-            foreach (MprFeature mprFeat in mprFeatures)
-                group.Add(mprFeat);
-            _curMorpher.AddMprFeatureGroup(group);
-        }
-
-        void LoadStratum(XmlElement stratumNode)
-        {
-            string id = stratumNode.GetAttribute("id");
-            string name = stratumNode.SelectSingleNode("Name").InnerText;
-            Stratum stratum = new Stratum(id, name, _curMorpher);
-            stratum.SymbolDefinitionTable = GetCharDefTable(stratumNode.GetAttribute("characterDefinitionTable"));
-            stratum.IsCyclic = stratumNode.GetAttribute("cyclicity") == "cyclic";
-            stratum.PhonologicalRuleOrder = GetPRuleOrder(stratumNode.GetAttribute("phonologicalRuleOrder"));
-            stratum.MorphologicalRuleOrder = GetMRuleOrder(stratumNode.GetAttribute("morphologicalRuleOrder"));
-
-            string tempIdsStr = stratumNode.GetAttribute("affixTemplates");
-            if (!string.IsNullOrEmpty(tempIdsStr))
-            {
-                string[] tempIds = tempIdsStr.Split(' ');
-                foreach (string tempId in tempIds)
-                {
-                    AffixTemplate template = _curMorpher.GetAffixTemplate(tempId);
-                    if (template == null)
-                        throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownTemplate, tempId), tempId);
-                    stratum.AddAffixTemplate(template);
-                }
-            }
-
-            _curMorpher.AddStratum(stratum);
-        }
-
-        void LoadLexEntry(XmlElement entryNode)
-        {
-            string id = entryNode.GetAttribute("id");
-            LexEntry entry = new LexEntry(id, id, _curMorpher);
-
-            string posId = entryNode.GetAttribute("partOfSpeech");
-            PartOfSpeech pos = _curMorpher.GetPartOfSpeech(posId);
-            if (pos == null)
-                throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownPOS, posId), posId);
-            entry.PartOfSpeech = pos;
-            XmlElement glossElem = entryNode.SelectSingleNode("Gloss") as XmlElement;
-            entry.Gloss = new Gloss(glossElem.GetAttribute("id"), glossElem.InnerText, _curMorpher);
-
-            entry.MprFeatures = LoadMPRFeatures(entryNode.GetAttribute("ruleFeatures"));
-
-            entry.HeadFeatures = LoadSynFeats(entryNode.SelectSingleNode("HeadFeatures"),
-                _curMorpher.HeadFeatureSystem);
-
-            entry.FootFeatures = LoadSynFeats(entryNode.SelectSingleNode("FootFeatures"),
-                _curMorpher.FootFeatureSystem);
-
-            Stratum stratum = GetStratum(entryNode.GetAttribute("stratum"));
-
-            string familyId = entryNode.GetAttribute("family");
-            if (!string.IsNullOrEmpty(familyId))
-            {
-                LexFamily family = _curMorpher.Lexicon.GetFamily(familyId);
-                if (family == null)
-                    throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownFamily, familyId), familyId);
-                family.AddEntry(entry);
-            }
-
-            XmlNodeList alloNodes = entryNode.SelectNodes("Allomorphs/Allomorph[@isActive='yes']");
-            foreach (XmlNode alloNode in alloNodes)
-            {
-                try
-                {
-                    LoadAllomorph(alloNode as XmlElement, entry, stratum);
-                }
-                catch (LoadException le)
-                {
-                    if (m_quitOnError)
-                        throw le;
-                }
-            }
-
-            if (entry.AllomorphCount > 0)
-            {
-                stratum.AddEntry(entry);
-                _curMorpher.Lexicon.AddEntry(entry);
-            }
-        }
-
-        void LoadAllomorph(XmlElement alloNode, LexEntry entry, Stratum stratum)
-        {
-            string alloId = alloNode.GetAttribute("id");
-            string shapeStr = alloNode.SelectSingleNode("PhoneticShape").InnerText;
-            Shape shape = stratum.SymbolDefinitionTable.ToShape(shapeStr, ModeType.Synthesis);
+		void LoadAllomorph(XmlElement alloNode, LexEntry entry, Stratum stratum)
+		{
+			string alloId = alloNode.GetAttribute("id");
+			string shapeStr = alloNode.SelectSingleNode("PhoneticShape").InnerText;
+			Shape shape = stratum.SymbolTable.ToShape(shapeStr, ModeType.Synthesis);
 			if (shape == null)
 			{
 				LoadException le = new LoadException(LoadException.LoadErrorType.InvalidEntryShape, this,
-					string.Format(HCStrings.kstidInvalidLexEntryShape, shapeStr, entry.ID, stratum.SymbolDefinitionTable.ID));
+					string.Format(HCStrings.kstidInvalidLexEntryShape, shapeStr, entry.ID, stratum.SymbolTable.ID));
 				le.Data["shape"] = shapeStr;
-				le.Data["charDefTable"] = stratum.SymbolDefinitionTable.ID;
+				le.Data["charDefTable"] = stratum.SymbolTable.ID;
 				le.Data["entry"] = entry.ID;
 				throw le;
 			}
-            LexEntry.RootAllomorph allomorph = new LexEntry.RootAllomorph(alloId, shapeStr, _curMorpher, shape);
-            allomorph.RequiredEnvironments = LoadEnvs(alloNode.SelectSingleNode("RequiredEnvironments"));
-            allomorph.ExcludedEnvironments = LoadEnvs(alloNode.SelectSingleNode("ExcludedEnvironments"));
-            allomorph.Properties = LoadProperties(alloNode.SelectSingleNode("Properties"));
-            entry.AddAllomorph(allomorph);
+			LexEntry.RootAllomorph allomorph = new LexEntry.RootAllomorph(alloId, shapeStr, _curMorpher, shape);
+			allomorph.RequiredEnvironments = LoadAllomorphEnvironments(alloNode.SelectSingleNode("RequiredEnvironments"));
+			allomorph.ExcludedEnvironments = LoadAllomorphEnvironments(alloNode.SelectSingleNode("ExcludedEnvironments"));
+			allomorph.Properties = LoadProperties(alloNode.SelectSingleNode("Properties"));
+			entry.AddAllomorph(allomorph);
 
-            _curMorpher.AddAllomorph(allomorph);
-        }
+			_curMorpher.AddAllomorph(allomorph);
+		}
 
-        IEnumerable<Environment> LoadEnvs(XmlNode envsNode)
-        {
-            if (envsNode == null)
-                return null;
+		private void LoadAllomorphEnvironments(XElement envsElem, ICollection<AllomorphEnvironment> envs)
+		{
+			if (envsElem == null)
+				return;
 
-            List<Environment> envs = new List<Environment>();
-            XmlNodeList envList = envsNode.SelectNodes("Environment");
-            foreach (XmlNode envNode in envList)
-                envs.Add(LoadEnv(envNode, null, null));
-            return envs;
-        }
+			foreach (XElement envElem in envsElem.Elements("Environment"))
+				envs.Add(LoadAllomorphEnvironment(envElem));
+		}
 
-        Environment LoadEnv(XmlNode envNode, AlphaVariables varFeats, Dictionary<string, string> varFeatIds)
-        {
-            if (envNode == null)
-                return new Environment();
+		private AllomorphEnvironment LoadAllomorphEnvironment(XElement envElem)
+		{
+			var variables = new Dictionary<string, Tuple<string, SymbolicFeature>>();
+			Pattern<Word, ShapeNode> leftEnv = LoadPattern(envElem.Elements("LeftEnvironment").Elements("PhoneticTemplate").Single(), variables);
+			Pattern<Word, ShapeNode> rightEnv = LoadPattern(envElem.Elements("RightEnvironment").Elements("PhoneticTemplate").Single(), variables);
+			return new AllomorphEnvironment(_spanFactory, leftEnv, rightEnv);
+		}
 
-            Pattern leftEnv = LoadPTemp(envNode.SelectSingleNode("LeftEnvironment/PhoneticTemplate") as XmlElement,
-                varFeats, varFeatIds, null);
-            Pattern rightEnv = LoadPTemp(envNode.SelectSingleNode("RightEnvironment/PhoneticTemplate") as XmlElement,
-                varFeats, varFeatIds, null);
-            return new Environment(leftEnv, rightEnv);
-        }
+		IEnumerable<MorphCoOccurrence> LoadMorphCoOccurs(XmlNode coOccursNode)
+		{
+			if (coOccursNode == null)
+				return null;
 
-        IEnumerable<MorphCoOccurrence> LoadMorphCoOccurs(XmlNode coOccursNode)
-        {
-            if (coOccursNode == null)
-                return null;
+			List<MorphCoOccurrence> coOccurs = new List<MorphCoOccurrence>();
+			XmlNodeList coOccurList = coOccursNode.SelectNodes("MorphemeCoOccurrence");
+			foreach (XmlNode coOccurNode in coOccurList)
+				coOccurs.Add(LoadMorphCoOccur(coOccurNode as XmlElement));
+			return coOccurs;
+		}
 
-            List<MorphCoOccurrence> coOccurs = new List<MorphCoOccurrence>();
-            XmlNodeList coOccurList = coOccursNode.SelectNodes("MorphemeCoOccurrence");
-            foreach (XmlNode coOccurNode in coOccurList)
-                coOccurs.Add(LoadMorphCoOccur(coOccurNode as XmlElement));
-            return coOccurs;
-        }
+		MorphCoOccurrence LoadMorphCoOccur(XmlElement coOccurNode)
+		{
+			MorphCoOccurrence.AdjacencyType adjacency = GetAdjacencyType(coOccurNode.GetAttribute("adjacency"));
+			string[] morphemeIds = coOccurNode.GetAttribute("morphemes").Split(' ');
+			IDBearerSet<HCObject> morphemes = new IDBearerSet<HCObject>();
+			foreach (string morphemeId in morphemeIds)
+			{
+				Morpheme morpheme = _curMorpher.GetMorpheme(morphemeId);
+				if (morpheme == null)
+					throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownMorpheme, morphemeId), morphemeId);
+				morphemes.Add(morpheme);
+			}
+			return new MorphCoOccurrence(morphemes, MorphCoOccurrence.ObjectType.Morpheme, adjacency);
+		}
 
-        MorphCoOccurrence LoadMorphCoOccur(XmlElement coOccurNode)
-        {
-            MorphCoOccurrence.AdjacencyType adjacency = GetAdjacencyType(coOccurNode.GetAttribute("adjacency"));
-            string[] morphemeIds = coOccurNode.GetAttribute("morphemes").Split(' ');
-            IDBearerSet<HCObject> morphemes = new IDBearerSet<HCObject>();
-            foreach (string morphemeId in morphemeIds)
-            {
-                Morpheme morpheme = _curMorpher.GetMorpheme(morphemeId);
-                if (morpheme == null)
-                    throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownMorpheme, morphemeId), morphemeId);
-                morphemes.Add(morpheme);
-            }
-            return new MorphCoOccurrence(morphemes, MorphCoOccurrence.ObjectType.Morpheme, adjacency);
-        }
+		IEnumerable<MorphCoOccurrence> LoadAlloCoOccurs(XmlNode coOccursNode)
+		{
+			if (coOccursNode == null)
+				return null;
 
-        IEnumerable<MorphCoOccurrence> LoadAlloCoOccurs(XmlNode coOccursNode)
-        {
-            if (coOccursNode == null)
-                return null;
+			List<MorphCoOccurrence> coOccurs = new List<MorphCoOccurrence>();
+			XmlNodeList coOccurList = coOccursNode.SelectNodes("AllomorphCoOccurrence");
+			foreach (XmlNode coOccurNode in coOccurList)
+				coOccurs.Add(LoadAlloCoOccur(coOccurNode as XmlElement));
+			return coOccurs;
+		}
 
-            List<MorphCoOccurrence> coOccurs = new List<MorphCoOccurrence>();
-            XmlNodeList coOccurList = coOccursNode.SelectNodes("AllomorphCoOccurrence");
-            foreach (XmlNode coOccurNode in coOccurList)
-                coOccurs.Add(LoadAlloCoOccur(coOccurNode as XmlElement));
-            return coOccurs;
-        }
+		MorphCoOccurrence LoadAlloCoOccur(XmlElement coOccurNode)
+		{
+			MorphCoOccurrence.AdjacencyType adjacency = GetAdjacencyType(coOccurNode.GetAttribute("adjacency"));
+			string[] allomorphIds = coOccurNode.GetAttribute("allomorphs").Split(' ');
+			IDBearerSet<HCObject> allomorphs = new IDBearerSet<HCObject>();
+			foreach (string allomorphId in allomorphIds)
+			{
+				Allomorph allomorph = _curMorpher.GetAllomorph(allomorphId);
+				if (allomorph == null)
+					throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownAllo, allomorphId), allomorphId);
+				allomorphs.Add(allomorph);
+			}
+			return new MorphCoOccurrence(allomorphs, MorphCoOccurrence.ObjectType.Allomorph, adjacency);
+		}
 
-        MorphCoOccurrence LoadAlloCoOccur(XmlElement coOccurNode)
-        {
-            MorphCoOccurrence.AdjacencyType adjacency = GetAdjacencyType(coOccurNode.GetAttribute("adjacency"));
-            string[] allomorphIds = coOccurNode.GetAttribute("allomorphs").Split(' ');
-            IDBearerSet<HCObject> allomorphs = new IDBearerSet<HCObject>();
-            foreach (string allomorphId in allomorphIds)
-            {
-                Allomorph allomorph = _curMorpher.GetAllomorph(allomorphId);
-                if (allomorph == null)
-                    throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownAllo, allomorphId), allomorphId);
-                allomorphs.Add(allomorph);
-            }
-            return new MorphCoOccurrence(allomorphs, MorphCoOccurrence.ObjectType.Allomorph, adjacency);
-        }
+		private void LoadProperties(XElement propsElem, IDictionary<string, string> props)
+		{
+			if (propsElem == null)
+				return;
 
-        IDictionary<string, string> LoadProperties(XmlNode propsNode)
-        {
-            if (propsNode == null)
-                return null;
+			foreach (XElement propElem in propsElem.Elements("Property"))
+				props[(string) propElem.Attribute("name")] = (string) propElem;
+		}
 
-            Dictionary<string, string> properties = new Dictionary<string, string>();
-            if (propsNode != null)
-            {
-                XmlNodeList propList = propsNode.SelectNodes("Property");
-                foreach (XmlNode propNode in propList)
-                {
-                    XmlElement propElem = propNode as XmlElement;
-                    properties[propElem.GetAttribute("name")] = propElem.InnerText;
-                }
-            }
-            return properties;
-        }
+		private FeatureStruct LoadSyntacticFeatureStruct(XElement elem)
+		{
+			var fs = new FeatureStruct();
+			foreach (XElement featValElem in elem.Elements("FeatureValueList").Where(IsActive))
+			{
+				Feature feature = GetFeature(_language.SyntacticFeatureSystem, (string) featValElem.Attribute("feature"));
+				var valueIDsStr = (string) featValElem.Attribute("values");
+				if (!string.IsNullOrEmpty(valueIDsStr))
+				{
+					var sf = (SymbolicFeature) feature;
+					fs.AddValue(sf, valueIDsStr.Split(' ').Select(id => GetFeatureSymbol(sf, id)));
+				}
+				else
+				{
+					var cf = (ComplexFeature) feature;
+					fs.AddValue(cf, LoadSyntacticFeatureStruct(featValElem));
+				}
+			}
 
-        FeatureValues LoadSynFeats(XmlNode node, FeatureSystem featSys)
-        {
-            FeatureValues fvs = new FeatureValues();
-            if (node != null)
-            {
-                XmlNodeList featValList = node.SelectNodes("FeatureValueList[@isActive='yes']");
-                foreach (XmlNode featValNode in featValList)
-                {
-                    XmlElement featValElem = featValNode as XmlElement;
-                    string featId = featValElem.GetAttribute("feature");
-                    Feature feature = featSys.GetFeature(featId);
-                    if (feature == null)
-                        throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownFeat, featId), featId);
-                    string valueIdsStr = featValElem.GetAttribute("values");
-                    if (!string.IsNullOrEmpty(valueIdsStr))
-                    {
-                        string[] valueIds = valueIdsStr.Split(' ');
-                        foreach (string valueId in valueIds)
-                        {
-                            FeatureValue value = feature.GetPossibleValue(valueId);
-                            if (value == null)
-                                throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownFeatValue, valueId, featId), valueId);
-                            fvs.Add(feature, new ClosedValueInstance(value));
-                        }
-                    }
-                    else
-                    {
-                        fvs.Add(feature, LoadSynFeats(featValNode, featSys));
-                    }
-                }
-            }
+			return fs;
+		}
 
-            return fvs;
-        }
+		private void LoadFeatureSystem(XElement featSysElem, FeatureSystem featSys)
+		{
+			foreach (XElement featDefElem in featSysElem.Elements("FeatureDefinition").Where(IsActive))
+				featSys.Add(LoadFeature(featDefElem));
+		}
 
-        void LoadFeatureSystem(XmlElement featSysNode, FeatureSystem featSys)
-        {
-            XmlNodeList features = featSysNode.SelectNodes("FeatureDefinition[@isActive='yes']");
-            foreach (XmlNode featDefNode in features)
-                LoadFeature(featDefNode as XmlElement, featSysNode, featSys);
-        }
+		private Feature LoadFeature(XElement featDefElem)
+		{
+			XElement featElem = featDefElem.Element("Feature");
+			Debug.Assert(featElem != null);
+			var id = (string) featElem.Attribute("id");
+			var name = (string) featElem;
 
-        Feature LoadFeature(XmlElement featDefNode, XmlElement featSysNode, FeatureSystem featSys)
-        {
-            XmlElement featElem = featDefNode.SelectSingleNode("Feature") as XmlElement;
-            string featId = featElem.GetAttribute("id");
-            Feature feature = featSys.GetFeature(featId);
-            if (feature != null)
-                return feature;
+			XElement valueListElem = featDefElem.Element("ValueList");
+			if (valueListElem != null)
+			{
+				var feature = new SymbolicFeature(id) { Description = name };
+				foreach (XElement valueElem in valueListElem.Elements("Value"))
+				{
+					var symbol = new FeatureSymbol((string) valueElem.Attribute("id")) { Description = (string) valueElem };
+					feature.PossibleSymbols.Add(symbol);
+				}
+				var defValId = (string) featElem.Attribute("defaultValue");
+				if (!string.IsNullOrEmpty(defValId))
+					feature.DefaultValue = new SymbolicFeatureValue(feature.PossibleSymbols[defValId]);
+				return feature;
+			}
 
-            string featureName = featElem.InnerText;
-            string defValId = featElem.GetAttribute("defaultValue");
-            feature = new Feature(featId, featureName, _curMorpher);
-            XmlNode valueListNode = featDefNode.SelectSingleNode("ValueList");
-            if (valueListNode != null)
-            {
-                XmlNodeList valueList = valueListNode.SelectNodes("Value");
-                foreach (XmlNode valueNode in valueList)
-                {
-                    XmlElement valueElem = valueNode as XmlElement;
-                    string valueId = valueElem.GetAttribute("id");
-                    FeatureValue value = new FeatureValue(valueId, valueElem.InnerText, _curMorpher);
-					try
-					{
-						featSys.AddValue(value);
-						feature.AddPossibleValue(value);
-					}
-					catch (InvalidOperationException ioe)
-					{
-						throw new LoadException(LoadException.LoadErrorType.TooManyFeatureValues, this,
-							HCStrings.kstidTooManyFeatValues, ioe);
-					}
-                }
-                if (!string.IsNullOrEmpty(defValId))
-                    feature.DefaultValue = new ClosedValueInstance(feature.GetPossibleValue(defValId));
-            }
-            else
-            {
-                XmlElement featListElem = featDefNode.SelectSingleNode("FeatureList") as XmlElement;
-                string featDefIdsStr = featListElem.GetAttribute("features");
-                string[] featDefIds = featDefIdsStr.Split(' ');
-                foreach (string featDefId in featDefIds)
-                {
-                    XmlNode subFeatDefNode = featSysNode.SelectSingleNode(string.Format("FeatureDefinition[@id = '{0}']", featDefId));
-                    Feature subFeature = LoadFeature(subFeatDefNode as XmlElement, featSysNode, featSys);
-                    feature.AddSubFeature(subFeature);
-                }
-            }
-            featSys.AddFeature(feature);
-            return feature;
-        }
+			return new ComplexFeature(id) { Description = name };
+		}
 
-        void LoadCharDefTable(XmlElement charDefTableNode)
-        {
-            string id = charDefTableNode.GetAttribute("id");
-            string name = charDefTableNode.SelectSingleNode("Name").InnerText;
-            DefaultSymbolDefinitionTable charDefTable = null;
+		private void LoadSymbolTable(XElement charDefTableElem)
+		{
+			var table = new SymbolTable(_spanFactory, (string) charDefTableElem.Attribute("id")) { Description = (string) charDefTableElem.Element("Name") };
+			foreach (XElement segDefElem in charDefTableElem.Elements("SegmentDefinitions").Elements("SegmentDefinition").Where(IsActive))
+			{
+				XElement repElem = segDefElem.Element("Representation");
+				Debug.Assert(repElem != null);
+				var strRep = (string) repElem;
+				FeatureStruct fs = _language.PhoneticFeatureSystem.Count > 0 ? LoadPhoneticFeatureStruct(segDefElem)
+					: FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Feature(HCFeatureSystem.StrRep).EqualTo(strRep).Value;
+				table.Add(strRep, fs);
+				_repIds[(string) repElem.Attribute("id")] = strRep;
+			}
 
-#if IPA_CHAR_DEF_TABLE
-            if (id == "ipa")
-                charDefTable = new IPACharacterDefinitionTable(id, name, m_curMorpher);
-            else
-                charDefTable = new CharacterDefinitionTable(id, name, m_curMorpher);
-#else
-            charDefTable = new DefaultSymbolDefinitionTable(id, name, _curMorpher);
-#endif
+			foreach (XElement bdryDefElem in charDefTableElem.Elements("BoundaryDefinitions").Elements("BoundarySymbol"))
+			{
+				var strRep = (string) bdryDefElem;
+				table.Add(strRep, FeatureStruct.New().Symbol(HCFeatureSystem.Boundary).Feature(HCFeatureSystem.StrRep).EqualTo(strRep).Value);
+				_repIds[(string) bdryDefElem.Attribute("id")] = strRep;
+			}
 
-            charDefTable.Encoding = charDefTableNode.SelectSingleNode("Encoding").InnerText;
+			_tables.Add(table);
+		}
 
-            XmlNodeList segDefList = charDefTableNode.SelectNodes("SegmentDefinitions/SegmentDefinition[@isActive='yes']");
-            foreach (XmlNode segDefNode in segDefList)
-            {
-                XmlElement segDefElem = segDefNode as XmlElement;
-                XmlElement repElem = segDefElem.SelectSingleNode("Representation") as XmlElement;
-                string strRep = repElem.InnerText;
-                charDefTable.AddSymbolDefinition(strRep, LoadFeatValues(segDefElem));
-                m_repIds[repElem.GetAttribute("id")] = strRep;
-            }
+		private void LoadSegNatClass(XElement natClassElem)
+		{
+			var id = (string) natClassElem.Attribute("id");
+			FeatureStruct fs = null;
+			foreach (XElement segElem in natClassElem.Elements("Segment"))
+			{
+				SymbolTable table = GetTable((string) segElem.Attribute("characterTable"));
+				string strRep = GetStrRep((string) segElem.Attribute("representation"));
+				FeatureStruct segFS = table.GetSymbolFeatureStruct(strRep);
+				if (fs == null)
+					fs = segFS.DeepClone();
+				else
+					fs.Union(segFS);
+			}
 
-            XmlNodeList bdryDefList = charDefTableNode.SelectNodes("BoundaryDefinitions/BoundarySymbol");
-            foreach (XmlNode bdryDefNode in bdryDefList)
-            {
-                XmlElement bdryDefElem = bdryDefNode as XmlElement;
-                string strRep = bdryDefElem.InnerText;
-                charDefTable.AddBoundaryDefinition(strRep);
-                m_repIds[bdryDefElem.GetAttribute("id")] = strRep;
-            }
+			_natClasses[id] = fs;
+		}
 
-            _curMorpher.AddCharacterDefinitionTable(charDefTable);
-        }
+		private FeatureStruct LoadPhoneticFeatureStruct(XElement elem)
+		{
+			var fs = new FeatureStruct();
+			fs.AddValue(HCFeatureSystem.Type, HCFeatureSystem.Segment);
+			foreach (XElement featValElem in elem.Elements("FeatureValuePair").Where(IsActive))
+			{
+				var feature = (SymbolicFeature) GetFeature(_language.PhoneticFeatureSystem, (string) featValElem.Attribute("feature"));
+				FeatureSymbol symbol = GetFeatureSymbol(feature, (string) featValElem.Attribute("value"));
+				fs.AddValue(feature, new SymbolicFeatureValue(symbol));
+			}
+			return fs;
+		}
 
-        void LoadFeatNatClass(XmlElement natClassNode)
-        {
-            string id = natClassNode.GetAttribute("id");
-            string name = natClassNode.SelectSingleNode("Name").InnerText;
-            NaturalClass natClass = new NaturalClass(id, name, _curMorpher);
-            ICollection<FeatureValue> featVals = LoadFeatValues(natClassNode);
-            natClass.FeatureStruct = new FeatureBundle(featVals, _curMorpher.PhoneticFeatureSystem);
+		void LoadPRule(XmlElement pruleNode)
+		{
+			string id = pruleNode.GetAttribute("id");
+			string name = pruleNode.SelectSingleNode("Name").InnerText;
+			RewriteRule prule = new RewriteRule(id, name, _curMorpher);
+			prule.MultApplication = GetMultAppOrder(pruleNode.GetAttribute("multipleApplicationOrder"));
+			Dictionary<string, string> varFeatIds;
+			prule.AlphaVariables = LoadVariables(pruleNode.SelectSingleNode("VariableFeatures") as XmlElement,
+				out varFeatIds);
+			XmlElement pseqElem = pruleNode.SelectSingleNode("PhoneticInputSequence/PhoneticSequence") as XmlElement;
+			prule.Lhs = new Pattern<,>(true);
+			LoadPatternNodes(prule.Lhs, pseqElem, prule.AlphaVariables, varFeatIds, null);
 
-            _curMorpher.AddNaturalClass(natClass);
-        }
+			XmlNodeList subruleList = pruleNode.SelectNodes("PhonologicalSubrules/PhonologicalSubrule");
+			foreach (XmlNode subruleNode in subruleList)
+				LoadPSubrule(subruleNode as XmlElement, prule, varFeatIds);
 
-        void LoadSegNatClass(XmlElement natClassNode)
-        {
-            string id = natClassNode.GetAttribute("id");
-            string name = natClassNode.SelectSingleNode("Name").InnerText;
-            NaturalClass natClass = new NaturalClass(id, name, _curMorpher);
-            XmlNodeList segList = natClassNode.SelectNodes("Segment");
-            FeatureBundle fb = null;
-            if (segList != null)
-            {
-                foreach (XmlNode segNode in segList)
-                {
-                    XmlElement segElem = segNode as XmlElement;
+			_curMorpher.AddPhonologicalRule(prule);
+			string[] stratumIds = pruleNode.GetAttribute("ruleStrata").Split(' ');
+			foreach (string stratumId in stratumIds)
+				GetStratum(stratumId).AddPhonologicalRule(prule);
+		}
 
-                    DefaultSymbolDefinitionTable charDefTable = GetCharDefTable(segElem.GetAttribute("characterTable"));
-                    string strRep = m_repIds[segElem.GetAttribute("representation")];
-                    SymbolDefinition segDef = charDefTable.GetSymbolDefinition(strRep);
-                    if (_curMorpher.PhoneticFeatureSystem.HasFeatures)
-                    {
-                        if (fb == null)
-                            fb = segDef.FeatureStruct.Clone();
-                        else
-                            fb.Intersection(segDef.FeatureStruct);
-                    }
-                    else
-                    {
-                        natClass.AddSegmentDefinition(segDef);
-                    }
-                }
-            }
-            if (fb == null)
-                fb = new FeatureBundle(false, _curMorpher.PhoneticFeatureSystem);
-            natClass.FeatureStruct = fb;
+		void LoadPSubrule(XmlElement psubruleNode, RewriteRule prule, Dictionary<string, string> varFeatIds)
+		{
+			XmlElement structElem = psubruleNode.SelectSingleNode("PhonologicalSubruleStructure[@isActive='yes']") as XmlElement;
+			Pattern rhs = new Pattern(true);
+			LoadPatternNodes(rhs, structElem.SelectSingleNode("PhoneticOutput/PhoneticSequence") as XmlElement, prule.AlphaVariables,
+				varFeatIds, null);
 
-            _curMorpher.AddNaturalClass(natClass);
-        }
+			AllomorphEnvironment env = LoadAllomorphEnvironment(structElem.SelectSingleNode("Environment"), prule.AlphaVariables, varFeatIds);
 
-        ICollection<FeatureValue> LoadFeatValues(XmlNode node)
-        {
-            List<FeatureValue> featVals = new List<FeatureValue>();
-            XmlNodeList featValList = node.SelectNodes("FeatureValuePair[@isActive='yes']");
-            foreach (XmlNode featValNode in featValList)
-            {
-                XmlElement featValElem = featValNode as XmlElement;
-                string featId = featValElem.GetAttribute("feature");
-                Feature feature = _curMorpher.PhoneticFeatureSystem.GetFeature(featId);
-                if (feature == null)
-                    throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownFeat, featId), featId);
-                string valueId = featValElem.GetAttribute("value");
-                FeatureValue value = feature.GetPossibleValue(valueId);
-                if (value == null)
-                    throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownFeatValue, valueId, featId), valueId);
-                featVals.Add(value);
-            }
-            return featVals;
-        }
-
-        void LoadPRule(XmlElement pruleNode)
-        {
-            string id = pruleNode.GetAttribute("id");
-            string name = pruleNode.SelectSingleNode("Name").InnerText;
-            StandardPhonologicalRule prule = new StandardPhonologicalRule(id, name, _curMorpher);
-            prule.MultApplication = GetMultAppOrder(pruleNode.GetAttribute("multipleApplicationOrder"));
-            Dictionary<string, string> varFeatIds;
-            prule.AlphaVariables = LoadAlphaVars(pruleNode.SelectSingleNode("VariableFeatures") as XmlElement,
-                out varFeatIds);
-            XmlElement pseqElem = pruleNode.SelectSingleNode("PhoneticInputSequence/PhoneticSequence") as XmlElement;
-            prule.Lhs = new Pattern(true);
-            LoadPSeq(prule.Lhs, pseqElem, prule.AlphaVariables, varFeatIds, null);
-
-            XmlNodeList subruleList = pruleNode.SelectNodes("PhonologicalSubrules/PhonologicalSubrule");
-            foreach (XmlNode subruleNode in subruleList)
-                LoadPSubrule(subruleNode as XmlElement, prule, varFeatIds);
-
-            _curMorpher.AddPhonologicalRule(prule);
-            string[] stratumIds = pruleNode.GetAttribute("ruleStrata").Split(' ');
-            foreach (string stratumId in stratumIds)
-                GetStratum(stratumId).AddPhonologicalRule(prule);
-        }
-
-        void LoadPSubrule(XmlElement psubruleNode, StandardPhonologicalRule prule, Dictionary<string, string> varFeatIds)
-        {
-            XmlElement structElem = psubruleNode.SelectSingleNode("PhonologicalSubruleStructure[@isActive='yes']") as XmlElement;
-            Pattern rhs = new Pattern(true);
-            LoadPSeq(rhs, structElem.SelectSingleNode("PhoneticOutput/PhoneticSequence") as XmlElement, prule.AlphaVariables,
-                varFeatIds, null);
-
-            Environment env = LoadEnv(structElem.SelectSingleNode("Environment"), prule.AlphaVariables, varFeatIds);
-
-			StandardPhonologicalRule.Subrule sr = null;
+			RewriteRule.Subrule sr = null;
 			try
 			{
-				sr = new StandardPhonologicalRule.Subrule(rhs, env, prule);
+				sr = new RewriteRule.Subrule(rhs, env, prule);
 			}
 			catch (ArgumentException ae)
 			{
@@ -972,620 +767,501 @@ namespace SIL.HermitCrab
 				throw le;
 			}
 
-            sr.RequiredPartsOfSpeech = LoadPOSs(psubruleNode.GetAttribute("requiredPartsOfSpeech"));
-
-            sr.RequiredMprFeatures = LoadMPRFeatures(psubruleNode.GetAttribute("requiredMPRFeatures"));
-            sr.ExcludedMprFeatures = LoadMPRFeatures(psubruleNode.GetAttribute("excludedMPRFeatures"));
-
-            prule.AddSubrule(sr);
-        }
-
-        void LoadMetathesisRule(XmlElement metathesisNode)
-        {
-            string id = metathesisNode.GetAttribute("id");
-            string name = metathesisNode.SelectSingleNode("Name").InnerText;
-            MetathesisRule metathesisRule = new MetathesisRule(id, name, _curMorpher);
-            metathesisRule.MultApplication = GetMultAppOrder(metathesisNode.GetAttribute("multipleApplicationOrder"));
-
-            string[] changeIds = metathesisNode.GetAttribute("structuralChange").Split(' ');
-            Dictionary<string, int> partIds = new Dictionary<string, int>();
-            int partition = 0;
-            foreach (string changeId in changeIds)
-                partIds[changeId] = partition++;
-
-            metathesisRule.Pattern = LoadPTemp(metathesisNode.SelectSingleNode("StructuralDescription/PhoneticTemplate") as XmlElement,
-                null, null, partIds);
-
-            _curMorpher.AddPhonologicalRule(metathesisRule);
-            string[] stratumIds = metathesisNode.GetAttribute("ruleStrata").Split(' ');
-            foreach (string stratumId in stratumIds)
-                GetStratum(stratumId).AddPhonologicalRule(metathesisRule);
-        }
-
-        void LoadMRule(XmlElement mruleNode)
-        {
-            string id = mruleNode.GetAttribute("id");
-            string name = mruleNode.SelectSingleNode("Name").InnerText;
-            AffixProcessRule mrule = new AffixProcessRule(id, name, _curMorpher);
-            XmlElement glossElem = mruleNode.SelectSingleNode("Gloss") as XmlElement;
-            if (glossElem != null)
-                mrule.Gloss = new Gloss(glossElem.GetAttribute("id"), glossElem.InnerText, _curMorpher);
-
-            string multApp = mruleNode.GetAttribute("multipleApplication");
-            if (!string.IsNullOrEmpty(multApp))
-                mrule.MaxNumApps = Convert.ToInt32(multApp);
-
-            mrule.RequiredPOSs = LoadPOSs(mruleNode.GetAttribute("requiredPartsOfSpeech"));
-
-            string outPOSId = mruleNode.GetAttribute("outputPartOfSpeech");
-            PartOfSpeech outPOS = null;
-            if (!string.IsNullOrEmpty(outPOSId))
-            {
-                outPOS = _curMorpher.GetPartOfSpeech(outPOSId);
-                if (outPOS == null)
-                    throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownPOS, outPOSId), outPOSId);
-            }
-            mrule.OutPOS = outPOS;
-
-            mrule.RequiredHeadFeatures = LoadSynFeats(mruleNode.SelectSingleNode("RequiredHeadFeatures"),
-                _curMorpher.HeadFeatureSystem);
-            mrule.RequiredFootFeatures = LoadSynFeats(mruleNode.SelectSingleNode("RequiredFootFeatures"),
-                _curMorpher.FootFeatureSystem);
-
-            mrule.OutHeadFeatures = LoadSynFeats(mruleNode.SelectSingleNode("OutputHeadFeatures"),
-                _curMorpher.HeadFeatureSystem);
-            mrule.OutFootFeatures = LoadSynFeats(mruleNode.SelectSingleNode("OutputFootFeatures"),
-                _curMorpher.FootFeatureSystem);
-
-            IDBearerSet<Feature> obligHeadFeats = new IDBearerSet<Feature>();
-            string obligHeadIdsStr = mruleNode.GetAttribute("outputObligatoryFeatures");
-            if (!string.IsNullOrEmpty(obligHeadIdsStr))
-            {
-                string[] obligHeadIds = obligHeadIdsStr.Split(' ');
-                foreach (string obligHeadId in obligHeadIds)
-                {
-                    Feature feature = _curMorpher.HeadFeatureSystem.GetFeature(obligHeadId);
-                    if (feature == null)
-                        throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownFeat, obligHeadId), obligHeadId);
-                    obligHeadFeats.Add(feature);
-                }
-            }
-            mrule.ObligatoryHeadFeatures = obligHeadFeats;
-
-            mrule.IsBlockable = mruleNode.GetAttribute("blockable") == "true";
-
-            XmlNodeList subruleList = mruleNode.SelectNodes("MorphologicalSubrules/MorphologicalSubruleStructure[@isActive='yes']");
-            foreach (XmlNode subruleNode in subruleList)
-            {
-                try
-                {
-                    LoadMSubrule(subruleNode as XmlElement, mrule);
-                }
-                catch (LoadException le)
-                {
-                    if (m_quitOnError)
-                        throw le;
-                }
-            }
-
-            if (mrule.SubruleCount > 0)
-                _curMorpher.AddMorphologicalRule(mrule);
-        }
-
-        void LoadRealRule(XmlElement realRuleNode)
-        {
-            string id = realRuleNode.GetAttribute("id");
-            string name = realRuleNode.SelectSingleNode("Name").InnerText;
-            RealizationalRule realRule = new RealizationalRule(id, name, _curMorpher);
-            XmlElement glossElem = realRuleNode.SelectSingleNode("Gloss") as XmlElement;
-            if (glossElem != null)
-                realRule.Gloss = new Gloss(glossElem.GetAttribute("id"), glossElem.InnerText, _curMorpher);
-
-            realRule.RequiredHeadFeatures = LoadSynFeats(realRuleNode.SelectSingleNode("RequiredHeadFeatures"),
-                _curMorpher.HeadFeatureSystem);
-            realRule.RequiredFootFeatures = LoadSynFeats(realRuleNode.SelectSingleNode("RequiredFootFeatures"),
-                _curMorpher.FootFeatureSystem);
-
-            realRule.RealizationalFeatures = LoadSynFeats(realRuleNode.SelectSingleNode("RealizationalFeatures"), _curMorpher.HeadFeatureSystem);
-
-            realRule.IsBlockable = realRuleNode.GetAttribute("blockable") == "true";
-
-            XmlNodeList subruleList = realRuleNode.SelectNodes("MorphologicalSubrules/MorphologicalSubruleStructure[@isActive='yes']");
-            foreach (XmlNode subruleNode in subruleList)
-            {
-                try
-                {
-                    LoadMSubrule(subruleNode as XmlElement, realRule);
-                }
-                catch (LoadException le)
-                {
-                    if (m_quitOnError)
-                        throw le;
-                }
-            }
-
-            if (realRule.SubruleCount > 0)
-                _curMorpher.AddMorphologicalRule(realRule);
-        }
-
-        void LoadMSubrule(XmlElement msubruleNode, AffixProcessRule mrule)
-        {
-            string id = msubruleNode.GetAttribute("id");
-            Dictionary<string, string> varFeatIds;
-            AlphaVariables varFeats = LoadAlphaVars(msubruleNode.SelectSingleNode("VariableFeatures"), out varFeatIds);
-
-            XmlElement inputElem = msubruleNode.SelectSingleNode("InputSideRecordStructure") as XmlElement;
-
-            Dictionary<string, int> partIds = new Dictionary<string, int>();
-            List<Pattern> lhsList = LoadReqPhoneticInput(inputElem.SelectSingleNode("RequiredPhoneticInput"), 0,
-                varFeats, varFeatIds, partIds);
-
-            XmlElement outputElem = msubruleNode.SelectSingleNode("OutputSideRecordStructure") as XmlElement;
-
-            List<MorphologicalOutput> rhsList = LoadPhoneticOutput(outputElem.SelectSingleNode("MorphologicalPhoneticOutput"),
-                varFeats, varFeatIds, partIds, mrule.ID);
-
-            MorphologicalTransform.RedupMorphType redupMorphType = GetRedupMorphType(outputElem.GetAttribute("redupMorphType"));
-
-            AffixProcessRule.Subrule sr = new AffixProcessRule.Subrule(id, id, _curMorpher,
-                lhsList, rhsList, varFeats, redupMorphType);
-
-            sr.RequiredMPRFeatures = LoadMPRFeatures(inputElem.GetAttribute("requiredMPRFeatures"));
-            sr.ExcludedMPRFeatures = LoadMPRFeatures(inputElem.GetAttribute("excludedMPRFeatures"));
-            sr.OutputMPRFeatures = LoadMPRFeatures(outputElem.GetAttribute("MPRFeatures"));
-
-            sr.RequiredEnvironments = LoadEnvs(msubruleNode.SelectSingleNode("RequiredEnvironments"));
-            sr.ExcludedEnvironments = LoadEnvs(msubruleNode.SelectSingleNode("ExcludedEnvironments"));
-
-            sr.Properties = LoadProperties(msubruleNode.SelectSingleNode("Properties"));
-
-            mrule.AddAllomorph(sr);
-            _curMorpher.AddAllomorph(sr);
-        }
-
-        List<Pattern> LoadReqPhoneticInput(XmlNode reqPhonInputNode, int partition, AlphaVariables varFeats, Dictionary<string, string> varFeatIds,
-            Dictionary<string, int> partIds)
-        {
-            List<Pattern> lhsList = new List<Pattern>();
-            XmlNodeList pseqList = reqPhonInputNode.SelectNodes("PhoneticSequence");
-            foreach (XmlNode pseqNode in pseqList)
-            {
-                XmlElement pseqElem = pseqNode as XmlElement;
-                Pattern pattern = new Pattern();
-                LoadPSeq(pattern, pseqElem, varFeats, varFeatIds, null);
-                lhsList.Add(pattern);
-                partIds[pseqElem.GetAttribute("id")] = partition++;
-            }
-            return lhsList;
-        }
-
-        List<MorphologicalOutput> LoadPhoneticOutput(XmlNode phonOutputNode, AlphaVariables varFeats, Dictionary<string, string> varFeatIds,
-            Dictionary<string, int> partIds, string ruleId)
-        {
-            List<MorphologicalOutput> rhsList = new List<MorphologicalOutput>();
-            foreach (XmlNode partNode in phonOutputNode.ChildNodes)
-            {
-                if (partNode.NodeType != XmlNodeType.Element)
-                    continue;
-                XmlElement partElem = partNode as XmlElement;
-                switch (partElem.Name)
-                {
-                    case "CopyFromInput":
-                        rhsList.Add(new CopyFromInput(partIds[partElem.GetAttribute("index")]));
-                        break;
-
-                    case "InsertSimpleContext":
-                        SimpleContext insCtxt = LoadNatClassCtxt(partElem.SelectSingleNode("SimpleContext") as XmlElement,
-                            varFeats, varFeatIds);
-                        rhsList.Add(new InsertSimpleContext(insCtxt));
-                        break;
-
-                    case "ModifyFromInput":
-                        SimpleContext modCtxt = LoadNatClassCtxt(partElem.SelectSingleNode("SimpleContext") as XmlElement,
-                            varFeats, varFeatIds);
-                        rhsList.Add(new ModifyFromInput(partIds[partElem.GetAttribute("index")], modCtxt, _curMorpher));
-                        break;
-
-                    case "InsertSegments":
-                        DefaultSymbolDefinitionTable charDefTable = GetCharDefTable(partElem.GetAttribute("characterTable"));
-                        string shapeStr = partElem.SelectSingleNode("PhoneticShape").InnerText;
-                        Shape pshape = charDefTable.ToShape(shapeStr, ModeType.Synthesis);
-						if (pshape == null)
-						{
-							LoadException le = new LoadException(LoadException.LoadErrorType.InvalidRuleShape, this,
-								string.Format(HCStrings.kstidInvalidRuleShape, shapeStr, ruleId, charDefTable.ID));
-							le.Data["shape"] = shapeStr;
-							le.Data["charDefTable"] = charDefTable.ID;
-							le.Data["rule"] = ruleId;
-							throw le;
-						}
-                        rhsList.Add(new InsertShape(pshape));
-                        break;
-                }
-            }
-            return rhsList;
-        }
-
-        void LoadCompoundRule(XmlElement compRuleNode)
-        {
-            string id = compRuleNode.GetAttribute("id");
-            string name = compRuleNode.SelectSingleNode("Name").InnerText;
-            CompoundingRule compRule = new CompoundingRule(id, name, _curMorpher);
-            XmlElement glossElem = compRuleNode.SelectSingleNode("Gloss") as XmlElement;
-            if (glossElem != null)
-                compRule.Gloss = new Gloss(glossElem.GetAttribute("id"), glossElem.InnerText, _curMorpher);
-
-            string multApp = compRuleNode.GetAttribute("multipleApplication");
-            if (!string.IsNullOrEmpty(multApp))
-                compRule.MaxNumApps = Convert.ToInt32(multApp);
-
-            compRule.HeadRequiredPOSs = LoadPOSs(compRuleNode.GetAttribute("headPartsOfSpeech"));
-
-            compRule.NonHeadRequiredPOSs = LoadPOSs(compRuleNode.GetAttribute("nonheadPartsOfSpeech"));
-
-            string outPOSId = compRuleNode.GetAttribute("outputPartOfSpeech");
-            PartOfSpeech outPOS = null;
-            if (!string.IsNullOrEmpty(outPOSId))
-            {
-                outPOS = _curMorpher.GetPartOfSpeech(outPOSId);
-                if (outPOS == null)
-                    throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownPOS, outPOSId), outPOSId);
-            }
-            compRule.OutPOS = outPOS;
-
-            compRule.HeadRequiredHeadFeatures = LoadSynFeats(compRuleNode.SelectSingleNode("HeadRequiredHeadFeatures"),
-                _curMorpher.HeadFeatureSystem);
-            compRule.HeadRequiredFootFeatures = LoadSynFeats(compRuleNode.SelectSingleNode("HeadRequiredFootFeatures"),
-                _curMorpher.FootFeatureSystem);
-
-            compRule.NonHeadRequiredHeadFeatures = LoadSynFeats(compRuleNode.SelectSingleNode("NonHeadRequiredHeadFeatures"),
-                _curMorpher.HeadFeatureSystem);
-            compRule.NonHeadRequiredFootFeatures = LoadSynFeats(compRuleNode.SelectSingleNode("NonHeadRequiredFootFeatures"),
-                _curMorpher.FootFeatureSystem);
-
-            compRule.OutHeadFeatures = LoadSynFeats(compRuleNode.SelectSingleNode("OutputHeadFeatures"),
-                _curMorpher.HeadFeatureSystem);
-            compRule.OutFootFeatures = LoadSynFeats(compRuleNode.SelectSingleNode("OutputFootFeatures"),
-                _curMorpher.FootFeatureSystem);
-
-            IDBearerSet<Feature> obligHeadFeats = new IDBearerSet<Feature>();
-            string obligHeadIdsStr = compRuleNode.GetAttribute("outputObligatoryFeatures");
-            if (!string.IsNullOrEmpty(obligHeadIdsStr))
-            {
-                string[] obligHeadIds = obligHeadIdsStr.Split(' ');
-                foreach (string obligHeadId in obligHeadIds)
-                {
-                    Feature feature = _curMorpher.HeadFeatureSystem.GetFeature(obligHeadId);
-                    if (feature == null)
-                        throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownFeat, obligHeadId), obligHeadId);
-                    obligHeadFeats.Add(feature);
-                }
-            }
-            compRule.ObligatoryHeadFeatures = obligHeadFeats;
-
-            compRule.IsBlockable = compRuleNode.GetAttribute("blockable") == "true";
-
-            XmlNodeList subruleList = compRuleNode.SelectNodes("CompoundSubrules/CompoundSubruleStructure[@isActive='yes']");
-            foreach (XmlNode subruleNode in subruleList)
-            {
-                try
-                {
-                    LoadCompoundSubrule(subruleNode as XmlElement, compRule);
-                }
-                catch (LoadException le)
-                {
-                    if (m_quitOnError)
-                        throw le;
-                }
-            }
-
-            if (compRule.SubruleCount > 0)
-                _curMorpher.AddMorphologicalRule(compRule);
-        }
-
-        void LoadCompoundSubrule(XmlElement compSubruleNode, CompoundingRule compRule)
-        {
-            string id = compSubruleNode.GetAttribute("id");
-            Dictionary<string, string> varFeatIds;
-            AlphaVariables varFeats = LoadAlphaVars(compSubruleNode.SelectSingleNode("VariableFeatures"), out varFeatIds);
-
-            XmlElement headElem = compSubruleNode.SelectSingleNode("HeadRecordStructure") as XmlElement;
-
-            Dictionary<string, int> partIds = new Dictionary<string, int>();
-            List<Pattern> headLhsList = LoadReqPhoneticInput(headElem.SelectSingleNode("RequiredPhoneticInput"), 0,
-                varFeats, varFeatIds, partIds);
-
-            List<Pattern> nonHeadLhsList = LoadReqPhoneticInput(compSubruleNode.SelectSingleNode("NonHeadRecordStructure/RequiredPhoneticInput"),
-                headLhsList.Count, varFeats, varFeatIds, partIds);
-
-            XmlElement outputElem = compSubruleNode.SelectSingleNode("OutputSideRecordStructure") as XmlElement;
-
-            List<MorphologicalOutput> rhsList = LoadPhoneticOutput(outputElem.SelectSingleNode("MorphologicalPhoneticOutput"), varFeats,
-                varFeatIds, partIds, compRule.ID);
-
-            CompoundingRule.Subrule sr = new CompoundingRule.Subrule(id, id, _curMorpher,
-                headLhsList, nonHeadLhsList, rhsList, varFeats);
-
-            sr.RequiredMPRFeatures = LoadMPRFeatures(headElem.GetAttribute("requiredMPRFeatures"));
-            sr.ExcludedMPRFeatures = LoadMPRFeatures(headElem.GetAttribute("excludedMPRFeatures"));
-            sr.OutputMPRFeatures = LoadMPRFeatures(outputElem.GetAttribute("MPRFeatures"));
-
-            sr.Properties = LoadProperties(compSubruleNode.SelectSingleNode("Properties"));
-
-            compRule.AddSubrule(sr);
-        }
-
-        void LoadAffixTemplate(XmlElement tempNode, IDBearerSet<MorphologicalRule> templateRules)
-        {
-            string id = tempNode.GetAttribute("id");
-            string name = tempNode.SelectSingleNode("Name").InnerText;
-            AffixTemplate template = new AffixTemplate(id, name, _curMorpher);
-
-            string posIdsStr = tempNode.GetAttribute("requiredPartsOfSpeech");
-            template.RequiredPartsOfSpeech = LoadPOSs(posIdsStr);
-
-            XmlNodeList slotList = tempNode.SelectNodes("Slot[@isActive='yes']");
-            foreach (XmlNode slotNode in slotList)
-            {
-                XmlElement slotElem = slotNode as XmlElement;
-                string slotId = slotElem.GetAttribute("id");
-                string slotName = slotElem.SelectSingleNode("Name").InnerText;
-
-                Slot slot = new Slot(slotId, slotName, _curMorpher);
-                string ruleIdsStr = slotElem.GetAttribute("morphologicalRules");
-                string[] ruleIds = ruleIdsStr.Split(' ');
-                MorphologicalRule lastRule = null;
-                foreach (string ruleId in ruleIds)
-                {
-                    MorphologicalRule rule = _curMorpher.GetMorphologicalRule(ruleId);
-                    if (rule != null)
-                    {
-                        slot.AddRule(rule);
-                        lastRule = rule;
-                        templateRules.Add(rule);
-                    }
-                    else
-                    {
-                        if (m_quitOnError)
-                            throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownMRule, ruleId), ruleId);
-                    }
-                }
-
-                string optionalStr = slotElem.GetAttribute("optional");
-                if (string.IsNullOrEmpty(optionalStr) && lastRule is RealizationalRule)
-                    slot.IsOptional = (lastRule as RealizationalRule).RealizationalFeatures.NumFeatures > 0;
-                else
-                    slot.IsOptional = optionalStr == "true";
-                template.AddSlot(slot);
-            }
-
-            _curMorpher.AddAffixTemplate(template);
-        }
-
-        IEnumerable<PartOfSpeech> LoadPOSs(string posIdsStr)
-        {
-            IDBearerSet<PartOfSpeech> result = new IDBearerSet<PartOfSpeech>();
-            if (!string.IsNullOrEmpty(posIdsStr))
-            {
-                string[] posIds = posIdsStr.Split(' ');
-                foreach (string posId in posIds)
-                {
-                    PartOfSpeech pos = _curMorpher.GetPartOfSpeech(posId);
-                    if (pos == null)
-                        throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownPOS, posId), posId);
-                    result.Add(pos);
-                }
-            }
-            return result;
-        }
-
-        MprFeatureSet LoadMPRFeatures(string mprFeatIdsStr)
-        {
-            if (string.IsNullOrEmpty(mprFeatIdsStr))
-                return null;
-
-            MprFeatureSet result = new MprFeatureSet();
-            string[] mprFeatIds = mprFeatIdsStr.Split(' ');
-            foreach (string mprFeatId in mprFeatIds)
-            {
-                MprFeature mprFeat = _curMorpher.GetMprFeature(mprFeatId);
-                if (mprFeat == null)
-                    throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownMPRFeat, mprFeatId), mprFeatId);
-                result.Add(mprFeat);
-            }
-            return result;
-        }
-
-        AlphaVariables LoadAlphaVars(XmlNode alphaVarsNode, out Dictionary<string, string> varFeatIds)
-        {
-            Dictionary<string, Feature> varFeats = new Dictionary<string, Feature>();
-            varFeatIds = new Dictionary<string, string>();
-            if (alphaVarsNode != null)
-            {
-                XmlNodeList varFeatList = alphaVarsNode.SelectNodes("VariableFeature");
-                foreach (XmlNode varFeatNode in varFeatList)
-                {
-                    XmlElement varFeatElem = varFeatNode as XmlElement;
-                    string varName = varFeatElem.GetAttribute("name");
-                    string featId = varFeatElem.GetAttribute("phonologicalFeature");
-                    Feature feature = _curMorpher.PhoneticFeatureSystem.GetFeature(featId);
-                    if (feature == null)
-                        throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownFeat, featId), featId);
-                    varFeats[varName] = feature;
-                    varFeatIds[varFeatElem.GetAttribute("id")] = varName;
-                }
-            }
-
-            return new AlphaVariables(varFeats);
-        }
-
-        void LoadPSeq(Pattern pattern, XmlElement pseqNode, AlphaVariables alphaVars, Dictionary<string, string> varFeatIds,
-            Dictionary<string, int> partIds)
-        {
-            if (pseqNode == null)
-                return;
-
-            foreach (XmlNode recNode in pseqNode.ChildNodes)
-            {
-                if (recNode.NodeType != XmlNodeType.Element)
-                    continue;
-
-                XmlElement recElem = recNode as XmlElement;
-                IEnumerable<PhoneticPatternNode> nodes = null;
-                switch (recElem.Name)
-                {
-                    case "SimpleContext":
-                        nodes = LoadNatClassCtxtPSeq(recElem, alphaVars, varFeatIds);
-                        break;
-
-                    case "BoundaryMarker":
-                        nodes = LoadBdryCtxt(recElem);
-                        break;
-
-                    case "Segment":
-                        nodes = LoadSegCtxt(recElem);
-                        break;
-
-                    case "OptionalSegmentSequence":
-                        nodes = LoadOptSeq(recElem, alphaVars, varFeatIds, pattern.IsTarget);
-                        break;
-
-                    case "Segments":
-                        nodes = LoadSegCtxts(recElem);
-                        break;
-                }
-
-                int partition = -1;
-                string id = recElem.GetAttribute("id");
-                if (partIds != null && !string.IsNullOrEmpty(id))
-                    partition = partIds[id];
-                pattern.AddPartition(nodes, partition);
-            }
-        }
-
-        IEnumerable<PhoneticPatternNode> LoadNatClassCtxtPSeq(XmlElement ctxtNode, AlphaVariables alphaVars,
-            Dictionary<string, string> varFeatIds)
-        {
-            yield return LoadNatClassCtxt(ctxtNode, alphaVars, varFeatIds);
-        }
-
-        NaturalClassContext LoadNatClassCtxt(XmlElement ctxtNode, AlphaVariables alphaVars,
-            Dictionary<string, string> varFeatIds)
-        {
-            string classId = ctxtNode.GetAttribute("naturalClass");
-            NaturalClass natClass = _curMorpher.GetNaturalClass(classId);
-            if (natClass == null)
-                throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownNatClass, classId), classId);
-
-            Dictionary<string, bool> vars = new Dictionary<string, bool>();
-            XmlNodeList varsList = ctxtNode.SelectNodes("AlphaVariables/AlphaVariable");
-            foreach (XmlNode varNode in varsList)
-            {
-                XmlElement varElem = varNode as XmlElement;
-
-                string varStr = varFeatIds[varElem.GetAttribute("variableFeature")];
-                vars[varStr] = varElem.GetAttribute("polarity") == "plus";
-            }
-            return new NaturalClassContext(natClass, vars, alphaVars);
-        }
-
-        IEnumerable<PhoneticPatternNode> LoadBdryCtxt(XmlElement bdryNode)
-        {
-            string strRep = m_repIds[bdryNode.GetAttribute("representation")];
-            DefaultSymbolDefinitionTable charDefTable = GetCharDefTable(bdryNode.GetAttribute("characterTable"));
-            BoundaryDefinition bdryDef = charDefTable.GetBoundaryDefinition(strRep);
-            yield return new BoundaryContext(bdryDef);
-        }
-
-        IEnumerable<PhoneticPatternNode> LoadSegCtxt(XmlElement ctxtNode)
-        {
-            DefaultSymbolDefinitionTable charDefTable = GetCharDefTable(ctxtNode.GetAttribute("characterTable"));
-            string strRep = m_repIds[ctxtNode.GetAttribute("representation")];
-            SymbolDefinition segDef = charDefTable.GetSymbolDefinition(strRep);
-            yield return new SegmentContext(segDef);
-        }
-
-        IEnumerable<PhoneticPatternNode> LoadSegCtxts(XmlElement ctxtsNode)
-        {
-            DefaultSymbolDefinitionTable charDefTable = GetCharDefTable(ctxtsNode.GetAttribute("characterTable"));
-            string shapeStr = ctxtsNode.SelectSingleNode("PhoneticShape").InnerText;
-            Shape shape = charDefTable.ToShape(shapeStr, ModeType.Synthesis);
-			if (shape == null)
+			sr.RequiredPartsOfSpeech = LoadPOSs(psubruleNode.GetAttribute("requiredPartsOfSpeech"));
+
+			sr.RequiredMprFeatures = LoadMprFeatures(psubruleNode.GetAttribute("requiredMPRFeatures"));
+			sr.ExcludedMprFeatures = LoadMprFeatures(psubruleNode.GetAttribute("excludedMPRFeatures"));
+
+			prule.AddSubrule(sr);
+		}
+
+		void LoadMetathesisRule(XmlElement metathesisNode)
+		{
+			string id = metathesisNode.GetAttribute("id");
+			string name = metathesisNode.SelectSingleNode("Name").InnerText;
+			MetathesisRule metathesisRule = new MetathesisRule(id, name, _curMorpher);
+			metathesisRule.MultApplication = GetMultAppOrder(metathesisNode.GetAttribute("multipleApplicationOrder"));
+
+			string[] changeIds = metathesisNode.GetAttribute("structuralChange").Split(' ');
+			Dictionary<string, int> partIds = new Dictionary<string, int>();
+			int partition = 0;
+			foreach (string changeId in changeIds)
+				partIds[changeId] = partition++;
+
+			metathesisRule.Pattern = LoadPattern(metathesisNode.SelectSingleNode("StructuralDescription/PhoneticTemplate") as XmlElement,
+				null, null, partIds);
+
+			_curMorpher.AddPhonologicalRule(metathesisRule);
+			string[] stratumIds = metathesisNode.GetAttribute("ruleStrata").Split(' ');
+			foreach (string stratumId in stratumIds)
+				GetStratum(stratumId).AddPhonologicalRule(metathesisRule);
+		}
+
+		private AffixProcessRule LoadAffixProcessRule(XElement mruleElem)
+		{
+			var mrule = new AffixProcessRule((string) mruleElem.Attribute("id"))
+			            	{
+			            		Description = (string) mruleElem.Element("Name"),
+								Gloss = (string) mruleElem.Element("Gloss"),
+								Blockable = (string) mruleElem.Attribute("blockable") == "true"
+			            	};
+			var multApp = (string) mruleElem.Attribute("multipleApplication");
+			if (!string.IsNullOrEmpty(multApp))
+				mrule.MaxApplicationCount = int.Parse(multApp);
+
+			var requiredPos = (string) mruleElem.Attribute("requiredPartsOfSpeech");
+			if (!string.IsNullOrEmpty(requiredPos))
+				mrule.RequiredSyntacticFeatureStruct.AddValue(_posFeature, ParsePartsOfSpeech(requiredPos));
+
+			var outPos = (string) mruleElem.Attribute("outputPartOfSpeech");
+			if (!string.IsNullOrEmpty(outPos))
+				mrule.OutSyntacticFeatureStruct.AddValue(_posFeature, ParsePartsOfSpeech(outPos));
+
+			XElement requiredHeadFeatElem = mruleElem.Element("RequiredHeadFeatures");
+			if (requiredHeadFeatElem != null)
+				mrule.RequiredSyntacticFeatureStruct.AddValue(_headFeature, LoadSyntacticFeatureStruct(requiredHeadFeatElem));
+			XElement requiredFootFeatElem = mruleElem.Element("RequiredFootFeatures");
+			if (requiredFootFeatElem != null)
+				mrule.RequiredSyntacticFeatureStruct.AddValue(_footFeature, LoadSyntacticFeatureStruct(requiredFootFeatElem));
+
+			XElement outHeadFeatElem = mruleElem.Element("OutputHeadFeatures");
+			if (outHeadFeatElem != null)
+				mrule.OutSyntacticFeatureStruct.AddValue(_headFeature, LoadSyntacticFeatureStruct(outHeadFeatElem));
+			XElement outFootFeatElem = mruleElem.Element("OutputFootFeatures");
+			if (outFootFeatElem != null)
+				mrule.OutSyntacticFeatureStruct.AddValue(_footFeature, LoadSyntacticFeatureStruct(outFootFeatElem));
+
+			var obligHeadIDsStr = (string) mruleElem.Attribute("outputObligatoryFeatures");
+			if (!string.IsNullOrEmpty(obligHeadIDsStr))
 			{
-				LoadException le = new LoadException(LoadException.LoadErrorType.InvalidRuleShape, this,
-					string.Format(HCStrings.kstidInvalidPseqShape, shapeStr, charDefTable.ID));
-				le.Data["shape"] = shapeStr;
-				le.Data["charDefTable"] = charDefTable.ID;
-				throw le;
+				foreach (string obligHeadID in obligHeadIDsStr.Split(' '))
+					mrule.ObligatorySyntacticFeatures.Add(GetFeature(_language.SyntacticFeatureSystem, obligHeadID));
 			}
-            List<PhoneticPatternNode> nodes = new List<PhoneticPatternNode>();
-            for (ShapeNode node = shape.Begin; node != shape.Last; node = node.Next)
-            {
-                switch (node.Type)
-                {
-                    case ShapeNode.NodeType.SEGMENT:
-                        nodes.Add(new SegmentContext(node as Segment));
-                        break;
 
-                    case ShapeNode.NodeType.BOUNDARY:
-                        nodes.Add(new BoundaryContext(node as Boundary));
-                        break;
-                }
-            }
-            return nodes;
-        }
+			foreach (XElement subruleElem in mruleElem.Elements("MorphologicalSubrules").Elements("MorphologicalSubruleStructure").Where(IsActive))
+			{
+				try
+				{
+					mrule.Allomorphs.Add(LoadAffixProcessAllomorph(subruleElem, mrule.ID));
+				}
+				catch (LoadException)
+				{
+					if (_quitOnError)
+						throw;
+				}
+			}
 
-        IEnumerable<PhoneticPatternNode> LoadOptSeq(XmlElement optSeqNode, AlphaVariables varFeats,
-            Dictionary<string, string> varFeatIds, bool isTarget)
-        {
-            string minStr = optSeqNode.GetAttribute("min");
-            int min = string.IsNullOrEmpty(minStr) ? 0 : Convert.ToInt32(minStr);
-            string maxStr = optSeqNode.GetAttribute("max");
-            int max = string.IsNullOrEmpty(maxStr) ? -1 : Convert.ToInt32(maxStr);
-            Pattern pattern = new Pattern(isTarget);
-            LoadPSeq(pattern, optSeqNode, varFeats, varFeatIds, null);
-            yield return new NestedPhoneticPattern(pattern, min, max);
-        }
+			return mrule;
+		}
 
-        Pattern LoadPTemp(XmlElement ptempNode, AlphaVariables varFeats, Dictionary<string, string> varFeatIds,
-            Dictionary<string, int> partIds)
-        {
-            if (ptempNode == null)
-                return null;
+		private RealizationalAffixProcessRule LoadRealizationalRule(XElement realRuleElem)
+		{
+			var realRule = new RealizationalAffixProcessRule((string) realRuleElem.Attribute("id"))
+							{
+								Description = (string) realRuleElem.Element("Name"),
+								Gloss = (string) realRuleElem.Element("Gloss"),
+								Blockable = (string) realRuleElem.Attribute("blockable") == "true"
+							};
 
-            bool initial = ptempNode.GetAttribute("initialBoundaryCondition") == "true";
-            bool final = ptempNode.GetAttribute("finalBoundaryCondition") == "true";
-            Pattern pattern = new Pattern();
-            if (initial)
-                pattern.Add(new MarginContext(Direction.LEFT));
-            LoadPSeq(pattern, ptempNode.SelectSingleNode("PhoneticSequence") as XmlElement, varFeats,
-                varFeatIds, partIds);
-            if (final)
-                pattern.Add(new MarginContext(Direction.RIGHT));
+			XElement requiredHeadFeatElem = realRuleElem.Element("RequiredHeadFeatures");
+			if (requiredHeadFeatElem != null)
+				realRule.RequiredSyntacticFeatureStruct.AddValue(_headFeature, LoadSyntacticFeatureStruct(requiredHeadFeatElem));
+			XElement requiredFootFeatElem = realRuleElem.Element("RequiredFootFeatures");
+			if (requiredFootFeatElem != null)
+				realRule.RequiredSyntacticFeatureStruct.AddValue(_footFeature, LoadSyntacticFeatureStruct(requiredFootFeatElem));
+			XElement realFeatElem = realRuleElem.Element("RealizationalFeatures");
+			if (realFeatElem != null)
+				realRule.RealizationalFeatureStruct.AddValue(_headFeature, LoadSyntacticFeatureStruct(realFeatElem));
 
-            return pattern;
-        }
+			foreach (XElement subruleElem in realRuleElem.Elements("MorphologicalSubrules").Elements("MorphologicalSubruleStructure").Where(IsActive))
+			{
+				try
+				{
+					realRule.Allomorphs.Add(LoadAffixProcessAllomorph(subruleElem, realRule.ID));
+				}
+				catch (LoadException)
+				{
+					if (_quitOnError)
+						throw;
+				}
+			}
 
-        DefaultSymbolDefinitionTable GetCharDefTable(string id)
-        {
-            DefaultSymbolDefinitionTable charDefTable = _curMorpher.GetCharacterDefinitionTable(id);
-            if (charDefTable == null)
-                throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownCharDefTable, id), id);
-            return charDefTable;
-        }
+			return realRule;
+		}
 
-        Stratum GetStratum(string id)
-        {
-            Stratum stratum = _curMorpher.GetStratum(id);
-            if (stratum == null)
-                throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownStratum, id), id);
-            return stratum;
-        }
+		private AffixProcessAllomorph LoadAffixProcessAllomorph(XElement msubruleElem, string mruleID)
+		{
+			var allomorph = new AffixProcessAllomorph((string) msubruleElem.Attribute("id"));
 
-        void settings_ValidationEventHandler(object sender, ValidationEventArgs e)
-        {
-            throw new LoadException(LoadException.LoadErrorType.InvalidFormat, this,
-				e.Message + " Line: " + e.Exception.LineNumber + ", Pos: " + e.Exception.LinePosition);
-        }
-    }
+			LoadAllomorphEnvironments(msubruleElem.Element("RequiredEnvironments"), allomorph.RequiredEnvironments);
+			LoadAllomorphEnvironments(msubruleElem.Element("ExcludedEnvironments"), allomorph.ExcludedEnvironments);
+
+			LoadProperties(msubruleElem.Element("Properties"), allomorph.Properties);
+
+			Dictionary<string, Tuple<string, SymbolicFeature>> variables = LoadVariables(msubruleElem.Element("VariableFeatures"));
+
+			XElement inputElem = msubruleElem.Element("InputSideRecordStructure");
+			Debug.Assert(inputElem != null);
+
+			LoadMprFeatures((string) inputElem.Attribute("requiredMPRFeatures"), allomorph.RequiredMprFeatures);
+			LoadMprFeatures((string) inputElem.Attribute("excludedMPRFeatures"), allomorph.ExcludedMprFeatures);
+			LoadMprFeatures((string) inputElem.Attribute("MPRFeatures"), allomorph.OutMprFeatures);
+
+			LoadMorphologicalLhs(inputElem.Element("RequiredPhoneticInput"), variables, allomorph.Lhs);
+
+			XElement outputElem = msubruleElem.Element("OutputSideRecordStructure");
+			Debug.Assert(outputElem != null);
+
+			allomorph.ReduplicationHint = GetReduplicationHint((string) outputElem.Attribute("redupMorphType"));
+			LoadMorphologicalRhs(outputElem.Element("MorphologicalPhoneticOutput"), variables, mruleID, allomorph.Rhs);
+
+			return allomorph;
+		}
+
+		private void LoadMorphologicalLhs(XElement reqPhonInputElem, Dictionary<string, Tuple<string, SymbolicFeature>> variables, IList<Pattern<Word, ShapeNode>> lhs)
+		{
+			foreach (XElement pseqElem in reqPhonInputElem.Elements("PhoneticSequence"))
+				lhs.Add(new Pattern<Word, ShapeNode>((string) pseqElem.Attribute("id"), LoadPatternNodes(pseqElem, variables)));
+		}
+
+		private void LoadMorphologicalRhs(XElement phonOutputElem, Dictionary<string, Tuple<string, SymbolicFeature>> variables, string ruleID, IList<MorphologicalOutputAction> rhs)
+		{
+			foreach (XElement partElem in phonOutputElem.Elements())
+			{
+				switch (partElem.Name.LocalName)
+				{
+					case "CopyFromInput":
+						rhs.Add(new CopyFromInput((string) partElem.Attribute("index")));
+						break;
+
+					case "InsertSimpleContext":
+						rhs.Add(new InsertShapeNode(LoadNaturalClassFeatureStruct(partElem.Element("SimpleContext"), variables)));
+						break;
+
+					case "ModifyFromInput":
+						rhs.Add(new ModifyFromInput((string) partElem.Attribute("index"), LoadNaturalClassFeatureStruct(partElem.Element("SimpleContext"), variables)));
+						break;
+
+					case "InsertSegments":
+						SymbolTable table = GetTable((string) partElem.Attribute("characterTable"));
+						var shapeStr = (string) partElem.Element("PhoneticShape");
+						Shape shape;
+						if (!table.ToShape(shapeStr, out shape))
+						{
+							throw new LoadException(LoadError.InvalidShape,
+								string.Format("Failure to translate shape '{0}' of rule '{1}' into a phonetic shape using character table '{2}'.", shapeStr, ruleID, table.ID));
+						}
+						rhs.Add(new InsertShape(shape));
+						break;
+				}
+			}
+		}
+
+		private CompoundingRule LoadCompoundingRule(XElement compRuleElem)
+		{
+			var compRule = new CompoundingRule((string) compRuleElem.Attribute("id"))
+			            	{
+			            		Description = (string) compRuleElem.Element("Name"),
+								Blockable = (string) compRuleElem.Attribute("blockable") == "true"
+			            	};
+			var multApp = (string) compRuleElem.Attribute("multipleApplication");
+			if (!string.IsNullOrEmpty(multApp))
+				compRule.MaxApplicationCount = int.Parse(multApp);
+
+			var headRequiredPos = (string) compRuleElem.Attribute("headPartsOfSpeech");
+			if (!string.IsNullOrEmpty(headRequiredPos))
+				compRule.HeadRequiredSyntacticFeatureStruct.AddValue(_posFeature, ParsePartsOfSpeech(headRequiredPos));
+
+			var nonHeadRequiredPos = (string) compRuleElem.Attribute("nonheadPartsOfSpeech");
+			if (!string.IsNullOrEmpty(nonHeadRequiredPos))
+				compRule.NonHeadRequiredSyntacticFeatureStruct.AddValue(_posFeature, ParsePartsOfSpeech(nonHeadRequiredPos));
+
+			var outPos = (string) compRuleElem.Attribute("outputPartOfSpeech");
+			if (!string.IsNullOrEmpty(outPos))
+				compRule.OutSyntacticFeatureStruct.AddValue(_posFeature, ParsePartsOfSpeech(outPos));
+
+			XElement headRequiredHeadFeatElem = compRuleElem.Element("HeadRequiredHeadFeatures");
+			if (headRequiredHeadFeatElem != null)
+				compRule.HeadRequiredSyntacticFeatureStruct.AddValue(_headFeature, LoadSyntacticFeatureStruct(headRequiredHeadFeatElem));
+			XElement headRequiredFootFeatElem = compRuleElem.Element("HeadRequiredFootFeatures");
+			if (headRequiredFootFeatElem != null)
+				compRule.HeadRequiredSyntacticFeatureStruct.AddValue(_footFeature, LoadSyntacticFeatureStruct(headRequiredFootFeatElem));
+
+			XElement nonHeadRequiredHeadFeatElem = compRuleElem.Element("NonHeadRequiredHeadFeatures");
+			if (nonHeadRequiredHeadFeatElem != null)
+				compRule.NonHeadRequiredSyntacticFeatureStruct.AddValue(_headFeature, LoadSyntacticFeatureStruct(nonHeadRequiredHeadFeatElem));
+			XElement nonHeadRequiredFootFeatElem = compRuleElem.Element("NonHeadRequiredFootFeatures");
+			if (nonHeadRequiredFootFeatElem != null)
+				compRule.NonHeadRequiredSyntacticFeatureStruct.AddValue(_footFeature, LoadSyntacticFeatureStruct(nonHeadRequiredFootFeatElem));
+
+			XElement outHeadFeatElem = compRuleElem.Element("OutputHeadFeatures");
+			if (outHeadFeatElem != null)
+				compRule.OutSyntacticFeatureStruct.AddValue(_headFeature, LoadSyntacticFeatureStruct(outHeadFeatElem));
+			XElement outFootFeatElem = compRuleElem.Element("OutputFootFeatures");
+			if (outFootFeatElem != null)
+				compRule.OutSyntacticFeatureStruct.AddValue(_footFeature, LoadSyntacticFeatureStruct(outFootFeatElem));
+
+			var obligHeadIDsStr = (string) compRuleElem.Attribute("outputObligatoryFeatures");
+			if (!string.IsNullOrEmpty(obligHeadIDsStr))
+			{
+				foreach (string obligHeadID in obligHeadIDsStr.Split(' '))
+					compRule.ObligatorySyntacticFeatures.Add(GetFeature(_language.SyntacticFeatureSystem, obligHeadID));
+			}
+
+			foreach (XElement subruleElem in compRuleElem.Elements("CompoundSubrules").Elements("CompoundSubruleStructure").Where(IsActive))
+			{
+				try
+				{
+					compRule.Subrules.Add(LoadCompoundSubrule(subruleElem, compRule.ID));
+				}
+				catch (LoadException)
+				{
+					if (_quitOnError)
+						throw;
+				}
+			}
+			return compRule;
+		}
+
+		private CompoundingSubrule LoadCompoundSubrule(XElement compSubruleElem, string compRuleID)
+		{
+			string id = compSubruleNode.GetAttribute("id");
+			Dictionary<string, string> varFeatIds;
+			AlphaVariables varFeats = LoadVariables(compSubruleNode.SelectSingleNode("VariableFeatures"), out varFeatIds);
+
+			XmlElement headElem = compSubruleNode.SelectSingleNode("HeadRecordStructure") as XmlElement;
+
+			Dictionary<string, int> partIds = new Dictionary<string, int>();
+			List<Pattern> headLhsList = LoadMorphologicalLhs(headElem.SelectSingleNode("RequiredPhoneticInput"), 0,
+				varFeats, varFeatIds, partIds);
+
+			List<Pattern> nonHeadLhsList = LoadMorphologicalLhs(compSubruleNode.SelectSingleNode("NonHeadRecordStructure/RequiredPhoneticInput"),
+				headLhsList.Count, varFeats, varFeatIds, partIds);
+
+			XmlElement outputElem = compSubruleNode.SelectSingleNode("OutputSideRecordStructure") as XmlElement;
+
+			List<MorphologicalOutputAction> rhsList = LoadMorphologicalRhs(outputElem.SelectSingleNode("MorphologicalPhoneticOutput"), varFeats,
+				varFeatIds, partIds, compRule.ID);
+
+			CompoundingRule.Subrule sr = new CompoundingRule.Subrule(id, id, _curMorpher,
+				headLhsList, nonHeadLhsList, rhsList, varFeats);
+
+			sr.RequiredMPRFeatures = LoadMprFeatures(headElem.GetAttribute("requiredMPRFeatures"));
+			sr.ExcludedMPRFeatures = LoadMprFeatures(headElem.GetAttribute("excludedMPRFeatures"));
+			sr.OutputMPRFeatures = LoadMprFeatures(outputElem.GetAttribute("MPRFeatures"));
+
+			sr.Properties = LoadProperties(compSubruleNode.SelectSingleNode("Properties"));
+
+			compRule.AddSubrule(sr);
+		}
+
+		void LoadAffixTemplate(XmlElement tempNode, IDBearerSet<MorphologicalRule> templateRules)
+		{
+			string id = tempNode.GetAttribute("id");
+			string name = tempNode.SelectSingleNode("Name").InnerText;
+			AffixTemplate template = new AffixTemplate(id, name, _curMorpher);
+
+			string posIdsStr = tempNode.GetAttribute("requiredPartsOfSpeech");
+			template.RequiredPartsOfSpeech = LoadPOSs(posIdsStr);
+
+			XmlNodeList slotList = tempNode.SelectNodes("Slot[@isActive='yes']");
+			foreach (XmlNode slotNode in slotList)
+			{
+				XmlElement slotElem = slotNode as XmlElement;
+				string slotId = slotElem.GetAttribute("id");
+				string slotName = slotElem.SelectSingleNode("Name").InnerText;
+
+				AffixTemplateSlot slot = new AffixTemplateSlot(slotId, slotName, _curMorpher);
+				string ruleIdsStr = slotElem.GetAttribute("morphologicalRules");
+				string[] ruleIds = ruleIdsStr.Split(' ');
+				MorphologicalRule lastRule = null;
+				foreach (string ruleId in ruleIds)
+				{
+					MorphologicalRule rule = _curMorpher.GetMorphologicalRule(ruleId);
+					if (rule != null)
+					{
+						slot.AddRule(rule);
+						lastRule = rule;
+						templateRules.Add(rule);
+					}
+					else
+					{
+						if (m_quitOnError)
+							throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownMRule, ruleId), ruleId);
+					}
+				}
+
+				string optionalStr = slotElem.GetAttribute("optional");
+				if (string.IsNullOrEmpty(optionalStr) && lastRule is RealizationalRule)
+					slot.Optional = (lastRule as RealizationalRule).RealizationalFeatures.NumFeatures > 0;
+				else
+					slot.Optional = optionalStr == "true";
+				template.AddSlot(slot);
+			}
+
+			_curMorpher.AddAffixTemplate(template);
+		}
+
+		private IEnumerable<FeatureSymbol> ParsePartsOfSpeech(string posIdsStr)
+		{
+			if (!string.IsNullOrEmpty(posIdsStr))
+			{
+				string[] posIDs = posIdsStr.Split(' ');
+				foreach (string posID in posIDs)
+				{
+					FeatureSymbol pos;
+					if (!_language.SyntacticFeatureSystem.TryGetSymbol(posID, out pos))
+						throw new LoadException(LoadError.UndefinedObject, string.Format("POS '{0}' is unknown.", posID));
+					yield return pos;
+				}
+			}
+		}
+
+		private void LoadMprFeatures(string mprFeatIDsStr, MprFeatureSet mprFeatures)
+		{
+			if (string.IsNullOrEmpty(mprFeatIDsStr))
+				return;
+
+			foreach (string mprFeatID in mprFeatIDsStr.Split(' '))
+			{
+				MprFeature mprFeature;
+				if (!_mprFeatures.TryGetValue(mprFeatID, out mprFeature))
+					throw new LoadException(LoadError.UndefinedObject, string.Format("MPR Feature '{0}' is unknown.", mprFeatID));
+				mprFeatures.Add(mprFeature);
+			}
+		}
+
+		private Dictionary<string, Tuple<string, SymbolicFeature>> LoadVariables(XElement alphaVarsElem)
+		{
+			var variables = new Dictionary<string, Tuple<string, SymbolicFeature>>();
+			if (alphaVarsElem != null)
+			{
+				foreach (XElement varFeatElem in alphaVarsElem.Elements("VariableFeature"))
+				{
+					var varName = (string)varFeatElem.Attribute("name");
+					var feature = (SymbolicFeature)GetFeature(_language.PhoneticFeatureSystem, (string)varFeatElem.Attribute("phonologicalFeature"));
+					variables[(string)varFeatElem.Attribute("id")] = Tuple.Create(varName, feature);
+				}
+			}
+			return variables;
+		}
+
+		private IEnumerable<PatternNode<Word, ShapeNode>> LoadPatternNodes(XElement pseqElem, Dictionary<string, Tuple<string, SymbolicFeature>> variables)
+		{
+			foreach (XElement recElem in pseqElem.Elements())
+			{
+				PatternNode<Word, ShapeNode> node = null;
+				switch (recElem.Name.LocalName)
+				{
+					case "SimpleContext":
+						node = new Constraint<Word, ShapeNode>(LoadNaturalClassFeatureStruct(recElem, variables));
+						break;
+
+					case "Segment":
+					case "BoundaryMarker":
+						SymbolTable symTable = GetTable((string) recElem.Attribute("characterTable"));
+						string strRep = GetStrRep((string) recElem.Attribute("representation"));
+						node = new Constraint<Word, ShapeNode>(symTable.GetSymbolFeatureStruct(strRep));
+						break;
+
+					case "OptionalSegmentSequence":
+						var minStr = (string) recElem.Attribute("min");
+						int min = string.IsNullOrEmpty(minStr) ? 0 : int.Parse(minStr);
+						var maxStr = (string) recElem.Attribute("max");
+						int max = string.IsNullOrEmpty(maxStr) ? -1 : int.Parse(maxStr);
+						node = new Quantifier<Word, ShapeNode>(min, max, new Group<Word, ShapeNode>(LoadPatternNodes(recElem, variables)));
+						break;
+
+					case "Segments":
+						SymbolTable segsTable = GetTable((string) recElem.Attribute("characterTable"));
+						var shapeStr = (string) recElem.Element("PhoneticShape");
+						Shape shape;
+						if (!segsTable.ToShape(shapeStr, out shape))
+						{
+							throw new LoadException(LoadError.InvalidShape,
+								string.Format("Failure to translate shape '{0}' in a phonetic sequence into a phonetic shape using character table '{1}'.", shapeStr, table.ID));
+						}
+						node = new Group<Word, ShapeNode>(shape.Select(n => new Constraint<Word, ShapeNode>(n.Annotation.FeatureStruct)));
+						break;
+				}
+
+				var id = (string) recElem.Attribute("id");
+				yield return string.IsNullOrEmpty(id) ? node : new Group<Word, ShapeNode>(id, node);
+			}
+		}
+
+		private FeatureStruct LoadNaturalClassFeatureStruct(XElement ctxtElem, Dictionary<string, Tuple<string, SymbolicFeature>> variables)
+		{
+			var natClassID = (string) ctxtElem.Attribute("naturalClass");
+			FeatureStruct fs;
+			if (!_natClasses.TryGetValue(natClassID, out fs))
+				throw new LoadException(LoadError.UndefinedObject, string.Format("Natural class '{0}' is unknown.", natClassID));
+
+			fs = fs.DeepClone();
+			foreach (XElement varElem in ctxtElem.Elements("AlphaVariables").Elements("AlphaVariable"))
+			{
+				var varID = (string)varElem.Attribute("variableFeature");
+				Tuple<string, SymbolicFeature> variable;
+				if (!variables.TryGetValue(varID, out variable))
+					throw new LoadException(LoadError.UndefinedObject, string.Format("Variable '{0}' is unknown.", varID));
+				fs.AddValue(variable.Item2, new SymbolicFeatureValue(variable.Item2, variable.Item1, (string)varElem.Attribute("polarity") == "plus"));
+			}
+			return fs;
+		}
+
+		private Pattern<Word, ShapeNode> LoadPattern(XElement ptempElem, Dictionary<string, Tuple<string, SymbolicFeature>> variables)
+		{
+			if (ptempElem == null)
+				return null;
+			var pattern = new Pattern<Word, ShapeNode>();
+			if ((string) ptempElem.Attribute("initialBoundaryCondition") == "true")
+				pattern.Children.Add(new Constraint<Word, ShapeNode>(HCFeatureSystem.LeftSideAnchor));
+			foreach (PatternNode<Word, ShapeNode> node in LoadPatternNodes(ptempElem.Element("PhoneticSequence"), variables))
+				pattern.Children.Add(node);
+			if ((string) ptempElem.Attribute("finalBoundaryCondition") == "true")
+				pattern.Children.Add(new Constraint<Word, ShapeNode>(HCFeatureSystem.RightSideAnchor));
+
+			return pattern;
+		}
+
+		Stratum GetStratum(string id)
+		{
+			Stratum stratum = _curMorpher.GetStratum(id);
+			if (stratum == null)
+				throw CreateUndefinedObjectException(string.Format(HCStrings.kstidUnknownStratum, id), id);
+			return stratum;
+		}
+
+		private SymbolTable GetTable(string id)
+		{
+			SymbolTable table;
+			if (!_tables.TryGetValue(id, out table))
+				throw new LoadException(LoadError.UndefinedObject, string.Format("Character definition table {0} is unknown.", id));
+			return table;
+		}
+
+		private string GetStrRep(string id)
+		{
+			string strRep;
+			if (!_repIds.TryGetValue(id, out strRep))
+				throw new LoadException(LoadError.UndefinedObject, string.Format("Character definition {0} is unknown.", id));
+			return strRep;
+		}
+
+		private Feature GetFeature(FeatureSystem featSys, string id)
+		{
+			Feature feature;
+			if (!featSys.TryGetFeature(id, out feature))
+				throw new LoadException(LoadError.UndefinedObject, string.Format("Unknown feature '{0}'.", id));
+			return feature;
+		}
+
+		private FeatureSymbol GetFeatureSymbol(SymbolicFeature feature, string id)
+		{
+			FeatureSymbol symbol;
+			if (!feature.PossibleSymbols.TryGetValue(id, out symbol))
+				throw new LoadException(LoadError.UndefinedObject, string.Format("Unknown value '{0}' for feature '{1}'.", id, feature.ID));
+			return symbol;
+		}
+	}
 }

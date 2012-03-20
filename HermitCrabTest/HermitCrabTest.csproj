@@ -53,11 +53,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AffixProcessRuleTest.cs" />
+    <Compile Include="AffixTemplateTest.cs" />
+    <Compile Include="AllomorphEnvironmentTest.cs" />
+    <Compile Include="CompoundingRuleTest.cs" />
     <Compile Include="HermitCrabTestBase.cs" />
+    <Compile Include="MetathesisRuleTest.cs" />
     <Compile Include="StandardPhonologicalRuleTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Collections\Collections.csproj">
+      <Project>{08691159-167B-4E5A-AE88-67DEF10AF7D3}</Project>
+      <Name>Collections</Name>
+    </ProjectReference>
     <ProjectReference Include="..\HermitCrab\HermitCrab.csproj">
       <Project>{9E140FCF-0265-481B-B9A0-B0E7BCD3E814}</Project>
       <Name>HermitCrab</Name>

@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
-using SIL.Machine;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using SIL.Collections;
 
 namespace SIL.HermitCrab
 {
@@ -9,6 +11,10 @@ namespace SIL.HermitCrab
 	/// </summary>
 	public abstract class Allomorph : IDBearerBase
 	{
+		private readonly ObservableCollection<AllomorphEnvironment> _requiredEnvironments;
+		private readonly ObservableCollection<AllomorphEnvironment> _excludedEnvironments;
+		private readonly ObservableCollection<AllomorphCoOccurrence> _requiredAllomorphCoOccurrences;
+		private readonly ObservableCollection<AllomorphCoOccurrence> _excludedAllomorphCoOccurrences; 
 		private readonly Dictionary<string, string> _properties;
 
 		/// <summary>
@@ -19,7 +25,43 @@ namespace SIL.HermitCrab
 			: base(id)
 		{
 			Index = -1;
+			_requiredEnvironments = new ObservableCollection<AllomorphEnvironment>();
+			_requiredEnvironments.CollectionChanged += EnvironmentsChanged;
+			_excludedEnvironments = new ObservableCollection<AllomorphEnvironment>();
+			_excludedEnvironments.CollectionChanged += EnvironmentsChanged;
+			_requiredAllomorphCoOccurrences = new ObservableCollection<AllomorphCoOccurrence>();
+			_requiredAllomorphCoOccurrences.CollectionChanged += AllomorphCoOccurrencesChanged;
+			_excludedAllomorphCoOccurrences = new ObservableCollection<AllomorphCoOccurrence>();
+			_excludedAllomorphCoOccurrences.CollectionChanged += AllomorphCoOccurrencesChanged;
 			_properties = new Dictionary<string, string>();
+		}
+
+		private void AllomorphCoOccurrencesChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			if (e.OldItems != null)
+			{
+				foreach (AllomorphCoOccurrence cooccur in e.OldItems)
+					cooccur.Key = null;
+			}
+			if (e.NewItems != null)
+			{
+				foreach (AllomorphCoOccurrence cooccur in e.NewItems)
+					cooccur.Key = this;
+			}
+		}
+
+		private void EnvironmentsChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			if (e.OldItems != null)
+			{
+				foreach (AllomorphEnvironment env in e.OldItems)
+					env.Allomorph = null;
+			}
+			if (e.NewItems != null)
+			{
+				foreach (AllomorphEnvironment env in e.NewItems)
+					env.Allomorph = this;
+			}
 		}
 
 		/// <summary>
@@ -38,59 +80,45 @@ namespace SIL.HermitCrab
 		/// Gets or sets the required environments.
 		/// </summary>
 		/// <value>The required environments.</value>
-		public IEnumerable<Environment> RequiredEnvironments { get; set; }
+		public ICollection<AllomorphEnvironment> RequiredEnvironments
+		{
+			get { return _requiredEnvironments; }
+		}
 
 		/// <summary>
 		/// Gets or sets the excluded environments.
 		/// </summary>
 		/// <value>The excluded environments.</value>
-		public IEnumerable<Environment> ExcludedEnvironments { get; set; }
+		public ICollection<AllomorphEnvironment> ExcludedEnvironments
+		{
+			get { return _excludedEnvironments; }
+		}
 
 		/// <summary>
 		/// Gets or sets the required allomorph co-occurrences.
 		/// </summary>
 		/// <value>The required allomorph co-occurrences.</value>
-		public IEnumerable<MorphCoOccurrence> RequiredAllomorphCoOccurrences { get; set; }
+		public ICollection<AllomorphCoOccurrence> RequiredAllomorphCoOccurrences
+		{
+			get { return _requiredAllomorphCoOccurrences; }
+		}
 
 		/// <summary>
 		/// Gets or sets the excluded allomorph co-occurrences.
 		/// </summary>
 		/// <value>The excluded allomorph co-occurrences.</value>
-		public IEnumerable<MorphCoOccurrence> ExcludedAllomorphCoOccurrences { get; set; }
+		public ICollection<AllomorphCoOccurrence> ExcludedAllomorphCoOccurrences
+		{
+			get { return _excludedAllomorphCoOccurrences; }
+		}
 
 		/// <summary>
 		/// Gets or sets the properties.
 		/// </summary>
 		/// <value>The properties.</value>
-		public IEnumerable<KeyValuePair<string, string>> Properties
+		public IDictionary<string, string> Properties
 		{
-			get
-			{
-				return _properties;
-			}
-
-			set
-			{
-				_properties.Clear();
-				if (value != null)
-				{
-					foreach (KeyValuePair<string, string> kvp in value)
-						_properties[kvp.Key] = kvp.Value;
-				}
-			}
-		}
-
-		/// <summary>
-		/// Gets the property value for the specified name.
-		/// </summary>
-		/// <param name="name">The name.</param>
-		/// <returns>The value.</returns>
-		public string GetProperty(string name)
-		{
-			string value;
-			if (_properties.TryGetValue(name, out value))
-				return value;
-			return null;
+			get { return _properties; }
 		}
 	}
 }

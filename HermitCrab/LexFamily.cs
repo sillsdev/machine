@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
-using SIL.Machine;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using SIL.Collections;
 
 namespace SIL.HermitCrab
 {
@@ -8,26 +10,32 @@ namespace SIL.HermitCrab
 	/// </summary>
 	public class LexFamily : IDBearerBase
 	{
-		private readonly IDBearerSet<LexEntry> _entries;
+		private readonly ObservableCollection<LexEntry> _entries;
 
 		public LexFamily(string id)
 			: base(id)
 		{
-			_entries = new IDBearerSet<LexEntry>();
+			_entries = new ObservableCollection<LexEntry>();
+			_entries.CollectionChanged += EntriesChanged;
 		}
 
-		public IEnumerable<LexEntry> Entries
+		private void EntriesChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			get
+			if (e.OldItems != null)
 			{
-				return _entries;
+				foreach (LexEntry entry in e.OldItems)
+					entry.Family = null;
+			}
+			if (e.NewItems != null)
+			{
+				foreach (LexEntry entry in e.NewItems)
+					entry.Family = this;
 			}
 		}
 
-		public void AddEntry(LexEntry entry)
+		public ICollection<LexEntry> Entries
 		{
-			entry.Family = this;
-			_entries.Add(entry);
+			get { return _entries; }
 		}
 	}
 }

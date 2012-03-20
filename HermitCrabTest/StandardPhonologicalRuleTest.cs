@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using NUnit.Framework;
+using SIL.Collections;
 using SIL.HermitCrab;
+using SIL.HermitCrab.PhonologicalRules;
 using SIL.Machine;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
-using SIL.Machine.Transduction;
+using SIL.Machine.Rules;
 
 namespace HermitCrabTest
 {
@@ -14,1504 +15,1218 @@ namespace HermitCrabTest
 		[Test]
 		public void SimpleRules()
 		{
-			var asp = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("asp+").Value;
-			var nonCons = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Value;
+			var asp = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("asp+").Value;
+			var nonCons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-").Value;
 
-			var lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSymbolDefinition("t").FeatureStruct).Value;
-			var rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			var rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
-			var leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, nonCons).Value;
-			var rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			var rule1 = new RewriteRule("rule1") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table1.GetSymbolFeatureStruct("t")).Value};
+			Allophonic.PhonologicalRules.Add(rule1);
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(asp).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(nonCons).Value
+			                   	});
 
-			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("p").FeatureStruct).Value;
-			var rule2 = new StandardPhonologicalRule("rule2", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, nonCons).Value;
-			rule2.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			var rule2 = new RewriteRule("rule2") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("p")).Value};
+			Allophonic.PhonologicalRules.Add(rule2);
+			Morphophonemic.PhonologicalRules.Add(rule2);
+			rule2.Subrules.Add(new RewriteSubrule
+			              		{
+			              			Rhs = Pattern<Word, ShapeNode>.New().Annotation(asp).Value,
+			              			RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(nonCons).Value
+			              		});
 
-			var input = new Word(Surface, "pʰitʰ") {Stratum = Allophonic};
-			Word output = rule2.AnalysisRule.Apply(input).SingleOrDefault();
-			Assert.IsNotNull(output);
-			input = output;
-			output = rule1.AnalysisRule.Apply(input).SingleOrDefault();
-			Assert.IsNotNull(output);
-			Assert.AreEqual("[p(pʰ)]i[t(tʰ)]", output.ToString());
-
-			input = new Word(Allophonic, "pʰit");
-			output = rule1.SynthesisRule.Apply(input).SingleOrDefault();
-			Assert.IsNotNull(output);
-			input = output;
-			output = rule2.SynthesisRule.Apply(input).SingleOrDefault();
-			Assert.IsNotNull(output);
-			output.Stratum = Surface;
-			Assert.AreEqual("(pʰ)i(tʰ)", output.ToString());
-
-			input = new Word(Allophonic, "pit");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			Assert.IsTrue(rule2.SynthesisRule.Apply(output.Single(), out output));
-			Word result = output.Single();
-			result.Stratum = Surface;
-			Assert.AreEqual("(pʰ)i(tʰ)", result.ToString());
-
-			input = new Word(Surface, "datʰ") {Stratum = Allophonic};
-			Assert.IsFalse(rule2.AnalysisRule.Apply(input, out output));
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("da[t(tʰ)]", output.Single().ToString());
-
-			input = new Word(Allophonic, "dat");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsFalse(rule2.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("da(tʰ)", input.ToString());
-
-			input = new Word(Surface, "gab") {Stratum = Allophonic};
-			Assert.IsFalse(rule2.AnalysisRule.Apply(input, out output));
-			Assert.IsFalse(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("gab", input.ToString());
-
-			input = new Word(Allophonic, "gab");
-			Assert.IsFalse(rule1.SynthesisRule.Apply(input, out output));
-			Assert.IsFalse(rule2.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("gab", input.ToString());
+			var morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("pʰitʰ"), "1", "2");
+			AssertMorphsEqual(morpher.ParseWord("datʰ"), "8", "9");
+			AssertMorphsEqual(morpher.ParseWord("gab"), "11", "12");
 		}
 
 		[Test]
 		public void LongDistanceRules()
 		{
-			var highVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("high+").Value;
-			var backRnd = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("back+").Symbol("round+").Value;
-			var rndVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("round+").Value;
-			var cons = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Value;
-			var lowVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("low+").Value;
+			var highVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-").Symbol("voc+")
+				.Symbol("high+").Value;
+			var backRnd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("back+")
+				.Symbol("round+").Value;
+			var rndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("round+").Value;
+			var cons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+").Value;
+			var lowVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("low+").Value;
 
-			var lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
-			var rule = new StandardPhonologicalRule("rule", SpanFactory, lhs);
-			var rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRnd).Value;
-			var leftEnv = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, rndVowel)
-				.Annotation(HCFeatureSystem.SegmentType, cons)
-				.Annotation(HCFeatureSystem.SegmentType, lowVowel)
-				.Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			var rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-			
-			IEnumerable<Word> output;
-			var input = new Word(Surface, "bubabu") {Stratum = Allophonic};
-			Assert.IsTrue(rule.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("bubab[iuyɯ]", output.Single().ToString());
+			var rule3 = new RewriteRule("rule3") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value};
+			Allophonic.PhonologicalRules.Add(rule3);
+			rule3.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(rndVowel).Annotation(cons).Annotation(lowVowel).Annotation(cons).Value
+			                   	});
 
-			input = new Word(Allophonic, "bubabu");
-			Assert.IsTrue(rule.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bubabu", input.ToString());
+			var morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("bubabu"), "13", "14");
 
-			input = new Word(Allophonic, "bubabi");
-			Assert.IsTrue(rule.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bubabu", input.ToString());
+			rule3.Subrules.Clear();
+			rule3.Subrules.Add(new RewriteSubrule
+			                   	{
+									Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Value,
+									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(cons).Annotation(lowVowel).Annotation(cons).Annotation(rndVowel).Value
+			                   	});
 
-			rule = new StandardPhonologicalRule("rule", SpanFactory, lhs);
-			leftEnv = Pattern<Word, ShapeNode>.New().Value;
-			rightEnv = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, cons)
-				.Annotation(HCFeatureSystem.SegmentType, lowVowel)
-				.Annotation(HCFeatureSystem.SegmentType, cons)
-				.Annotation(HCFeatureSystem.SegmentType, rndVowel).Value;
-			rule.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			input = new Word(Surface, "bubabu") {Stratum = Allophonic};
-			Assert.IsTrue(rule.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("b[iuyɯ]babu", output.Single().ToString());
-
-			input = new Word(Allophonic, "bubabu");
-			Assert.IsTrue(rule.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bubabu", input.ToString());
-
-			input = new Word(Allophonic, "bɯbabu");
-			Assert.IsTrue(rule.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bubabu", input.ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("bubabu"), "13", "15");
 		}
 
 		[Test]
 		public void AnchorRules()
 		{
-			var cons = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("voc-").Value;
-			var vlUnasp = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("vd-").Symbol("asp-").Value;
-			var vowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Value;
+			var cons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+")
+				.Symbol("voc-").Value;
+			var vlUnasp = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("vd-")
+				.Symbol("asp-").Value;
+			var vowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+").Value;
 
-			var lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			var rule = new StandardPhonologicalRule("rule", SpanFactory, lhs);
-			var rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vlUnasp).Value;
-			var leftEnv = Pattern<Word, ShapeNode>.New().Value;
-			var rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, RightSideFS).Value;
-			rule.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			var rule3 = new RewriteRule("rule3") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(cons).Value};
+			Allophonic.PhonologicalRules.Add(rule3);
+			rule3.Subrules.Add(new RewriteSubrule
+			                   	{
+									Rhs = Pattern<Word, ShapeNode>.New().Annotation(vlUnasp).Value,
+									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(RightSideFS).Value
+			                   	});
 
-			IEnumerable<Word> output;
-			var input = new Word(Surface, "gap") {Stratum = Morphophonemic};
-			Assert.IsTrue(rule.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("g[a(a̘)][pb]", output.Single().ToString());
+			var morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("gap"), "10", "11", "12");
 
-			input = new Word(Morphophonemic, "ga̘p");
-			Assert.IsTrue(rule.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("gap", input.ToString());
+			rule3.Subrules.Clear();
+			rule3.Subrules.Add(new RewriteSubrule
+			                   	{
+									Rhs = Pattern<Word, ShapeNode>.New().Annotation(vlUnasp).Value,
+									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Annotation(cons).Annotation(RightSideFS).Value
+			                   	});
 
-			input = new Word(Morphophonemic, "gab");
-			Assert.IsTrue(rule.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("gap", input.ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("kab"), "11", "12");
 
-			input = new Word(Morphophonemic, "ga+b");
-			Assert.IsTrue(rule.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("ga+?p", input.ToString());
+			rule3.Subrules.Clear();
+			rule3.Subrules.Add(new RewriteSubrule
+			                   	{
+									Rhs = Pattern<Word, ShapeNode>.New().Annotation(vlUnasp).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(LeftSideFS).Value
+			                   	});
 
-			rule = new StandardPhonologicalRule("rule", SpanFactory, lhs);
-			rightEnv = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, vowel)
-				.Annotation(HCFeatureSystem.SegmentType, cons)
-				.Annotation(HCFeatureSystem.AnchorType, RightSideFS).Value;
-			rule.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("kab"), "11", "12");
 
-			input = new Word(Surface, "kab") {Stratum = Morphophonemic};
-			Assert.IsTrue(rule.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("[kg][a(a̘)]b", output.Single().ToString());
+			rule3.Subrules.Clear();
+			rule3.Subrules.Add(new RewriteSubrule
+			                   	{
+									Rhs = Pattern<Word, ShapeNode>.New().Annotation(vlUnasp).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(LeftSideFS).Annotation(cons).Annotation(vowel).Value
+			                   	});
 
-			input = new Word(Morphophonemic, "gab");
-			Assert.IsTrue(rule.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("kab", input.ToString());
-
-			input = new Word(Morphophonemic, "ga+b");
-			Assert.IsTrue(rule.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("ka+?b", input.ToString());
-
-			rule = new StandardPhonologicalRule("rule", SpanFactory, lhs);
-			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, LeftSideFS).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			input = new Word(Surface, "kab") {Stratum = Morphophonemic};
-			Assert.IsTrue(rule.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("[kg][a(a̘)]b", output.Single().ToString());
-
-			input = new Word(Morphophonemic, "gab");
-			Assert.IsTrue(rule.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("kab", input.ToString());
-
-			input = new Word(Morphophonemic, "ga+b");
-			Assert.IsTrue(rule.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("ka+?b", input.ToString());
-
-			rule = new StandardPhonologicalRule("rule", SpanFactory, lhs);
-			leftEnv = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.AnchorType, LeftSideFS)
-				.Annotation(HCFeatureSystem.SegmentType, cons).Annotation(HCFeatureSystem.SegmentType, vowel).Value;
-			rule.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			input = new Word(Surface, "gap") {Stratum = Morphophonemic};
-			Assert.IsTrue(rule.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("g[a(a̘)][pb]", output.Single().ToString());
-
-			input = new Word(Morphophonemic, "ga̘p");
-			Assert.IsTrue(rule.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("gap", input.ToString());
-
-			input = new Word(Morphophonemic, "gab");
-			Assert.IsTrue(rule.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("gap", input.ToString());
-
-			input = new Word(Morphophonemic, "ga+b");
-			Assert.IsTrue(rule.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("ga+?p", input.ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("gap"), "10", "11", "12");
 		}
 
 		[Test]
 		public void QuantifierRules()
 		{
-			var highVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("high+").Value;
-			var backRnd = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("back+").Symbol("round+").Value;
-			var cons = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Value;
-			var lowVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("low+").Value;
-			var rndVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("round+").Value;
-			var backRndVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("back+").Symbol("round+").Value;
+			var highVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("high+").Value;
+			var backRnd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("back+")
+				.Symbol("round+").Value;
+			var cons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+").Value;
+			var lowVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("low+").Value;
+			var rndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment).Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("round+").Value;
+			var backRndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("back+")
+				.Symbol("round+").Value;
 
-			var lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
-			var rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			var rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRnd).Value;
-			var leftEnv = Pattern<Word, ShapeNode>.New().Value;
-			var rightEnv = Pattern<Word, ShapeNode>.New()
-				.Group(g => g.Annotation(HCFeatureSystem.SegmentType, cons).Annotation(HCFeatureSystem.SegmentType, lowVowel)).LazyRange(1, 2)
-				.Annotation(HCFeatureSystem.SegmentType, cons).Annotation(HCFeatureSystem.SegmentType, rndVowel).Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			var rule3 = new RewriteRule("rule3") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value};
+			Allophonic.PhonologicalRules.Add(rule3);
+			rule3.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Value,
+									RightEnvironment = Pattern<Word, ShapeNode>.New()
+										.Group(g => g.Annotation(cons).Annotation(lowVowel)).LazyRange(1, 2)
+										.Annotation(cons).Annotation(rndVowel).Value
+			                   	});
 
-			var rule2 = new StandardPhonologicalRule("rule2", SpanFactory, lhs);
-			leftEnv = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, rndVowel)
-				.Group(g => g.Annotation(HCFeatureSystem.SegmentType, cons).Annotation(HCFeatureSystem.SegmentType, lowVowel)).LazyRange(1, 2)
-				.Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule2.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			var rule4 = new RewriteRule("rule4") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value};
+			Allophonic.PhonologicalRules.Add(rule4);
+			rule4.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New()
+										.Annotation(rndVowel)
+										.Group(g => g.Annotation(cons).Annotation(lowVowel)).LazyRange(1, 2)
+										.Annotation(cons).Value
+			                   	});
 
-			IEnumerable<Word> output;
-			var input = new Word(Surface, "bubu") {Stratum = Morphophonemic};
-			Assert.IsFalse(rule2.AnalysisRule.Apply(input, out output));
-			Assert.IsFalse(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("bubu", input.ToString());
+			var morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("bubu"), "19");
+			AssertMorphsEqual(morpher.ParseWord("bubabu"), "13", "14", "15");
+			AssertMorphsEqual(morpher.ParseWord("bubababu"), "20", "21");
+			Assert.IsFalse(morpher.ParseWord("bubabababu").Any());
 
-			input = new Word(Morphophonemic, "b+ubu");
-			Assert.IsFalse(rule1.SynthesisRule.Apply(input, out output));
-			Assert.IsFalse(rule2.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("b+?ubu", input.ToString());
+			Allophonic.PhonologicalRules.Clear();
 
-			input = new Word(Surface, "bubabu") {Stratum = Allophonic};
-			Assert.IsTrue(rule2.AnalysisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("b[iuyɯ]bab[iuyɯ]", output.Single().ToString());
+			var rule1 = new RewriteRule("rule1") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value};
+			Allophonic.PhonologicalRules.Add(rule1);
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+									Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Annotation(highVowel).LazyRange(0, 2).Value
+			                   	});
 
-			input = new Word(Allophonic, "bubabu");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsTrue(rule2.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bubabu", input.ToString());
-
-			input = new Word(Allophonic, "bubabi");
-			Assert.IsFalse(rule1.SynthesisRule.Apply(input, out output));
-			Assert.IsTrue(rule2.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bubabu", input.ToString());
-
-			input = new Word(Allophonic, "bɯbabu");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsTrue(rule2.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bubabu", input.ToString());
-
-			input = new Word(Allophonic, "bibabi");
-			Assert.IsFalse(rule1.SynthesisRule.Apply(input, out output));
-			Assert.IsFalse(rule2.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("bibabi", input.ToString());
-
-			input = new Word(Surface, "bubababu") {Stratum = Allophonic};
-			Assert.IsTrue(rule2.AnalysisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("b[iuyɯ]babab[iuyɯ]", input.ToString());
-
-			input = new Word(Allophonic, "bubababi");
-			Assert.IsFalse(rule1.SynthesisRule.Apply(input, out output));
-			Assert.IsTrue(rule2.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bubababu", input.ToString());
-
-			input = new Word(Allophonic, "bibababu");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsTrue(rule2.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bubababu", input.ToString());
-
-			input = new Word(Surface, "bubabababu") {Stratum = Allophonic};
-			Assert.IsFalse(rule2.AnalysisRule.Apply(input, out output));
-			Assert.IsFalse(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("bubabababu", input.ToString());
-
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRndVowel).Annotation(HCFeatureSystem.SegmentType, highVowel).LazyRange(0, 2).Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			input = new Word(Surface, "buuubuuu") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("bu[iuyɯ][iuyɯ]bu[iuyɯ][iuyɯ]", output.Single().ToString());
-
-			input = new Word(Allophonic, "buiibuii");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("buuubuuu", input.ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("buuubuuu"), "27");
 		}
 
 		[Test]
 		public void MultipleSegmentRules()
 		{
-			var highVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("high+").Value;
-			var backRnd = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("back+").Symbol("round+").Value;
-			var backRndVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("back+").Symbol("round+").Value;
-			var t = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("alveolar").Symbol("del_rel-").Symbol("asp-").Symbol("vd-").Symbol("strident-").Value;
+			var highVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("high+").Value;
+			var backRnd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("back+")
+				.Symbol("round+").Value;
+			var backRndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("back+")
+				.Symbol("round+").Value;
+			var t = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+")
+				.Symbol("alveolar")
+				.Symbol("del_rel-")
+				.Symbol("asp-")
+				.Symbol("vd-")
+				.Symbol("strident-").Value;
 
-			var lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
-			var rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			var rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRnd).Annotation(HCFeatureSystem.SegmentType, backRnd).Value;
-			var leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRndVowel).Value;
-			var rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			var rule1 = new RewriteRule("rule1") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Annotation(highVowel).Value};
+			Allophonic.PhonologicalRules.Add(rule1);
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Annotation(backRnd).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Value
+			                   	});
 
-			IEnumerable<Word> output;
-			var input = new Word(Surface, "buuubuuu") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("bu[iuyɯ][iuyɯ]bu[iuyɯ][iuyɯ]", output.Single().ToString());
+			var morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("buuubuuu"), "27");
 
-			input = new Word(Allophonic, "buiibuii");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("buuubuuu", input.ToString());
+			var rule2 = new RewriteRule("rule2") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(t).Value};
+			Allophonic.PhonologicalRules.Add(rule2);
+			rule2.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Value
+			                   	});
 
-			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, t).Value;
-			var rule2 = new StandardPhonologicalRule("rule2", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New().Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRndVowel).Value;
-			rule2.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			input = new Word(Surface, "buuubuuu") {Stratum = Allophonic};
-			Assert.IsTrue(rule2.AnalysisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("but?[iuyɯ]t?[iuyɯ]but?[iuyɯ]t?[iuyɯ]", output.Single().ToString());
-
-			input = new Word(Allophonic, "buiibuii");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsFalse(rule2.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("buuubuuu", input.ToString());
-
-			input = new Word(Allophonic, "buitibuiti");
-			Assert.IsFalse(rule1.SynthesisRule.Apply(input, out output));
-			Assert.IsFalse(rule2.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("buitibuiti", input.ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("buuubuuu"), "27");
 		}
 
 		[Test]
 		public void BoundaryRules()
 		{
-			var highVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("high+").Value;
-			var backRndVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("back+").Symbol("round+").Value;
-			var backRnd = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("back+").Symbol("round+").Value;
-			var unbackUnrnd = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("back-").Symbol("round-").Value;
-			var unbackUnrndVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("back-").Symbol("round-").Value;
-			var backVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("back+").Value;
-			var unrndVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("round-").Value;
-			var lowBack = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("back+").Symbol("low+").Symbol("high-").Value;
-			var bilabialCons = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("voc-").Symbol("bilabial").Value;
-			var unvdUnasp = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("vd-").Symbol("asp-").Value;
-			var vowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Value;
-			var cons = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("voc-").Value;
-			var asp = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("asp+").Value;
+			var highVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("high+").Value;
+			var backRndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("back+")
+				.Symbol("round+").Value;
+			var backRnd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("back+")
+				.Symbol("round+").Value;
+			var unbackUnrnd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("back-")
+				.Symbol("round-").Value;
+			var unbackUnrndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("back-")
+				.Symbol("round-").Value;
+			var backVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("back+").Value;
+			var unrndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("round-").Value;
+			var lowBack = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("back+")
+				.Symbol("low+")
+				.Symbol("high-").Value;
+			var bilabialCons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+")
+				.Symbol("voc-")
+				.Symbol("bilabial").Value;
+			var unvdUnasp = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("vd-")
+				.Symbol("asp-").Value;
+			var vowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+").Value;
+			var cons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+")
+				.Symbol("voc-").Value;
+			var asp = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("asp+").Value;
 
-			var lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
-			var rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			var rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRnd).Value;
-			var leftEnv = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, backRndVowel)
-				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct).Value;
-			var rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			var rule1 = new RewriteRule("rule1") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value};
+			Morphophonemic.PhonologicalRules.Add(rule1);
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Annotation(Table3.GetSymbolFeatureStruct("+")).Value
+			                   	});
 
-			IEnumerable<Word> output;
-			var input = new Word(Surface, "buub") {Stratum = Morphophonemic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("bu[iuyɯ]b", output.Single().ToString());
+			var morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("buub"), "30");
 
-			input = new Word(Morphophonemic, "bu+ib");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bu+?ub", input.ToString());
+			rule1.Subrules.Clear();
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(unbackUnrnd).Value,
+									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("+")).Annotation(unbackUnrndVowel).Value
+			                   	});
 
-			input = new Word(Morphophonemic, "buib");
-			Assert.IsFalse(rule1.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("buib", input.ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("biib"), "30");
 
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unbackUnrnd).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Value;
-			rightEnv = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct)
-				.Annotation(HCFeatureSystem.SegmentType, unbackUnrndVowel).Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			rule1.Subrules.Clear();
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Value
+			                   	});
 
-			input = new Word(Surface, "biib") {Stratum = Morphophonemic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("b[iuyɯ]ib", output.Single().ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("buub"), "30", "31");
 
-			input = new Word(Morphophonemic, "bu+ib");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bi+?ib", input.ToString());
+			rule1.Subrules.Clear();
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(unbackUnrnd).Value,
+									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(unbackUnrndVowel).Value
+			                   	});
 
-			input = new Word(Morphophonemic, "buib");
-			Assert.IsFalse(rule1.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("buib", input.ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("biib"), "30", "31");
 
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRnd).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRndVowel).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			rule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("i")).Value;
+			rule1.Subrules.Clear();
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("b")).Value
+			                   	});
 
-			input = new Word(Surface, "buub") {Stratum = Morphophonemic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("bu[iuyɯ]b", output.Single().ToString());
+			var rule2 = new RewriteRule("rule2") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(backVowel).Value};
+			Morphophonemic.PhonologicalRules.Add(rule2);
+			rule2.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("a")).Value,
+									RightEnvironment = Pattern<Word, ShapeNode>.New()
+										.Annotation(Table3.GetSymbolFeatureStruct("+"))
+										.Annotation(Table3.GetSymbolFeatureStruct("b")).Value
+			                   	});
 
-			input = new Word(Morphophonemic, "bu+ib");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bu+?ub", input.ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("bab"), "30");
 
-			input = new Word(Morphophonemic, "buib");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("buub", input.ToString());
+			rule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("u")).Value;
+			rule1.Subrules.Clear();
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("b")).Value
+			                   	});
 
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unbackUnrnd).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unbackUnrndVowel).Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			rule2.Lhs = Pattern<Word, ShapeNode>.New().Annotation(unrndVowel).Value;
+			rule2.Subrules.Clear();
+			rule2.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(lowBack).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New()
+										.Annotation(Table3.GetSymbolFeatureStruct("b"))
+										.Annotation(Table3.GetSymbolFeatureStruct("+")).Value
+			                   	});
 
-			input = new Word(Surface, "biib") {Stratum = Morphophonemic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("b[iuyɯ]ib", output.Single().ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("bab"), "30");
 
-			input = new Word(Morphophonemic, "bu+ib");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bi+?ib", input.ToString());
+			Morphophonemic.PhonologicalRules.Remove(rule2);
 
-			input = new Word(Morphophonemic, "buib");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("biib", input.ToString());
+			rule1.Lhs = Pattern<Word, ShapeNode>.New()
+				.Annotation(bilabialCons)
+				.Annotation(Table3.GetSymbolFeatureStruct("+"))
+				.Annotation(bilabialCons).Value;
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New()
+										.Annotation(unvdUnasp)
+										.Annotation(Table3.GetSymbolFeatureStruct("+"))
+										.Annotation(unvdUnasp).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
+									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
+			                   	});
 
-			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("i").FeatureStruct).Value;
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New().Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("b").FeatureStruct).Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("appa"), "39");
 
-			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backVowel).Value;
-			var rule2 = new StandardPhonologicalRule("rule2", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("a").FeatureStruct).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Value;
-			rightEnv = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct)
-				.Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("b").FeatureStruct).Value;
-			rule2.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			rule1.Lhs = Pattern<Word, ShapeNode>.New()
+				.Annotation(bilabialCons)
+				.Annotation(bilabialCons).Value;
+			rule1.Subrules.Clear();
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New()
+										.Annotation(unvdUnasp)
+										.Annotation(unvdUnasp).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
+									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
+			                   	});
 
-			input = new Word(Surface, "bab") {Stratum = Morphophonemic};
-			Assert.IsTrue(rule2.AnalysisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("i?b[a(a̘)uɯo]i?b", output.Single().ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("appa"), "40");
 
-			input = new Word(Morphophonemic, "bu+ib");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsTrue(rule2.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("ba+?b", input.ToString());
+			rule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(cons).Value;
+			rule1.Subrules.Clear();
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(asp).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("+")).Value
+			                   	});
 
-			input = new Word(Morphophonemic, "buib");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsFalse(rule2.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("bub", input.ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			Assert.IsFalse(morpher.ParseWord("pʰipʰ").Any());
 
-			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("u").FeatureStruct).Value;
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New().Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("b").FeatureStruct).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			Morphophonemic.PhonologicalRules.Clear();
 
-			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unrndVowel).Value;
-			rule2 = new StandardPhonologicalRule("rule2", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, lowBack).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("b").FeatureStruct)
-				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule2.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			rule1 = new RewriteRule("rule1");
+			Allophonic.PhonologicalRules.Add(rule1);
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New()
+										.Annotation(Table1.GetSymbolFeatureStruct("t"))
+										.Annotation(Table1.GetSymbolFeatureStruct("a")).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(LeftSideFS).Value,
+									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(cons).Annotation(vowel).Annotation(RightSideFS).Value,
+									RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value
+			                   	});
 
-			input = new Word(Surface, "bab") {Stratum = Morphophonemic};
-			Assert.IsTrue(rule2.AnalysisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("bu?[a(a̘)iɯ]bu?", output.Single().ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("taba"), "pos2");
+			AssertMorphsEqual(morpher.ParseWord("ba"), "pos1");
 
-			input = new Word(Morphophonemic, "bu+ib");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsTrue(rule2.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("b+?ab", input.ToString());
+			RewriteSubrule subrule = rule1.Subrules[0];
+			subrule.RequiredSyntacticFeatureStruct.Clear();
+			subrule.RequiredMprFeatures.Add(Latinate);
 
-			input = new Word(Morphophonemic, "buib");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsFalse(rule2.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("bib", input.ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("taba"), "pos1");
 
-			lhs = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, bilabialCons)
-				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct)
-				.Annotation(HCFeatureSystem.SegmentType, bilabialCons).Value;
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, unvdUnasp)
-				.Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct)
-				.Annotation(HCFeatureSystem.SegmentType, unvdUnasp).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			subrule.RequiredMprFeatures.Clear();
+			subrule.ExcludedMprFeatures.Add(Latinate);
 
-			input = new Word(Surface, "appa") {Stratum = Morphophonemic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("[a(a̘)][pb][pb][a(a̘)]", output.Single().ToString());
-
-			input = new Word(Morphophonemic, "ab+ba");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("ap+?pa", input.ToString());
-
-			input = new Word(Morphophonemic, "abba");
-			Assert.IsFalse(rule1.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("abba", input.ToString());
-
-			lhs = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, bilabialCons)
-				.Annotation(HCFeatureSystem.SegmentType, bilabialCons).Value;
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, unvdUnasp)
-				.Annotation(HCFeatureSystem.SegmentType, unvdUnasp).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			input = new Word(Surface, "appa") {Stratum = Morphophonemic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("[a(a̘)][pb][pb][a(a̘)]", output.Single().ToString());
-
-			input = new Word(Morphophonemic, "ab+ba");
-			Assert.IsFalse(rule1.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("ab+?ba", input.ToString());
-
-			input = new Word(Morphophonemic, "abba");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("appa", input.ToString());
-
-			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			input = new Word(Surface, "pʰipʰ") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("[p(pʰ)]i[p(pʰ)]", output.Single().ToString());
-
-			input = new Word(Allophonic, "pip");
-			Assert.IsFalse(rule1.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("pip", input.ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("taba"), "pos2");
 		}
 
 		[Test]
 		public void CommonFeatureRules()
 		{
-			var vowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Value;
-			var vdLabFric = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("labiodental").Symbol("vd+").Symbol("strident+").Symbol("cont+").Value;
+			var vowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+").Value;
+			var vdLabFric = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("labiodental")
+				.Symbol("vd+")
+				.Symbol("strident+")
+				.Symbol("cont+").Value;
 
-			var lhs = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, Table1.GetSymbolDefinition("p").FeatureStruct).Value;
-			var rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			var rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vdLabFric).Value;
-			var leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
-			var rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			var rule1 = new RewriteRule("rule1") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table1.GetSymbolFeatureStruct("p")).Value};
+			Allophonic.PhonologicalRules.Add(rule1);
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(vdLabFric).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
+									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
+			                   	});
 
-			IEnumerable<Word> output;
-			var input = new Word(Surface, "buvu") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("bu[pbmfv]u", output.Single().ToString());
+			var morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("buvu"), "46");
 
-			input = new Word(Allophonic, "bupu");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("buvu", input.ToString());
+			rule1.Subrules.Clear();
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(Table1.GetSymbolFeatureStruct("v")).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
+									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
+			                   	});
 
-			input = new Word(Morphophonemic, "b+ubu");
-			Assert.IsFalse(rule1.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("b+?ubu", input.ToString());
-
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSymbolDefinition("v").FeatureStruct).Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			input = new Word(Surface, "buvu") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("bu[pbmfv]u", output.Single().ToString());
-
-			input = new Word(Allophonic, "bupu");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("buvu", input.ToString());
-
-			input = new Word(Morphophonemic, "b+ubu");
-			Assert.IsFalse(rule1.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("b+?ubu", input.ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("buvu"), "46");
 		}
 
 		[Test]
 		public void AlphaVariableRules()
 		{
-			var highVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("high+").Value;
-			var cons = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("voc-").Value;
-			var nasalCons = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("voc-").Symbol("nasal+").Value;
-			var voicelessStop = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("vd-").Symbol("cont-").Value;
-			var asp = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("asp+").Value;
-			var vowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Value;
-			var unasp = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("asp-").Value;
-			var k = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("voc-").Symbol("velar").Symbol("vd-").Symbol("cont-").Symbol("nasal-").Value;
-			var g = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("voc-").Symbol("velar").Symbol("vd+").Symbol("cont-").Symbol("nasal-").Value;
+			var highVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("high+").Value;
+			var cons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+")
+				.Symbol("voc-").Value;
+			var nasalCons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+")
+				.Symbol("voc-")
+				.Symbol("nasal+").Value;
+			var voicelessStop = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+")
+				.Symbol("vd-")
+				.Symbol("cont-").Value;
+			var asp = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("asp+").Value;
+			var vowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+").Value;
+			var unasp = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("asp-").Value;
+			var k = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+")
+				.Symbol("voc-")
+				.Symbol("velar")
+				.Symbol("vd-")
+				.Symbol("cont-")
+				.Symbol("nasal-").Value;
+			var g = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+")
+				.Symbol("voc-")
+				.Symbol("velar")
+				.Symbol("vd+")
+				.Symbol("cont-")
+				.Symbol("nasal-").Value;
 
-			var lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
-			var rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			var rhs = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem)
-					.Feature("back").EqualToVariable("a")
-					.Feature("round").EqualToVariable("b").Value).Value;
-			var leftEnv = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, highVowel)
-					.Feature("back").EqualToVariable("a")
-					.Feature("round").EqualToVariable("b").Value)
-				.Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			var rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			var rule1 = new RewriteRule("rule1") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value};
+			Morphophonemic.PhonologicalRules.Add(rule1);
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New()
+										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem)
+											.Symbol(HCFeatureSystem.Segment)
+											.Feature("back").EqualToVariable("a")
+											.Feature("round").EqualToVariable("b").Value).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New()
+										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, highVowel)
+											.Feature("back").EqualToVariable("a")
+											.Feature("round").EqualToVariable("b").Value)
+										.Annotation(cons).Value
+			                   	});
 
-			IEnumerable<Word> output;
-			var input = new Word(Surface, "bububu") { Stratum = Morphophonemic };
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("bub[iuyɯ]b[iuyɯ]", output.Single().ToString());
+			var morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("bububu"), "42", "43");
 
-			input = new Word(Morphophonemic, "bubibi");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bububu", input.ToString());
+			rule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(nasalCons).Value;
+			rule1.Subrules.Clear();
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New()
+										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem)
+											.Symbol(HCFeatureSystem.Segment)
+											.Feature("poa").EqualToVariable("a").Value).Value,
+									RightEnvironment = Pattern<Word, ShapeNode>.New()
+										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, cons)
+											.Feature("poa").EqualToVariable("a").Value).Value
+			                   	});
 
-			input = new Word(Morphophonemic, "bubibu");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bububu", input.ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("mbindiŋg"), "45");
 
-			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, nasalCons).Value;
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem)
+			Morphophonemic.PhonologicalRules.Clear();
+			Allophonic.PhonologicalRules.Add(rule1);
+
+			rule1.Lhs = Pattern<Word, ShapeNode>.New()
+				.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, voicelessStop)
 					.Feature("poa").EqualToVariable("a").Value).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Value;
-			rightEnv = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, cons)
-					.Feature("poa").EqualToVariable("a").Value).Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			rule1.Subrules.Clear();
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(asp).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New()
+										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, voicelessStop)
+											.Feature("poa").EqualToVariable("a").Value)
+										.Annotation(vowel).Value
+			                   	});
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(unasp).Value,
+			                   	});
 
-			input = new Word(Surface, "mbindiŋg") { Stratum = Morphophonemic };
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("[mnŋ]bi[mnŋ]di[mnŋ]g", output.Single().ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("pipʰ"), "41");
 
-			input = new Word(Morphophonemic, "nbinding");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("mbindiŋg", input.ToString());
+			rule1.Lhs = Pattern<Word, ShapeNode>.New().Value;
+			rule1.Subrules.Clear();
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(Table1.GetSymbolFeatureStruct("f")).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New()
+										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, vowel)
+											.Feature("high").EqualToVariable("a")
+											.Feature("back").EqualToVariable("b")
+											.Feature("round").EqualToVariable("c").Value).Value,
+									RightEnvironment = Pattern<Word, ShapeNode>.New()
+										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, vowel)
+											.Feature("high").EqualToVariable("a")
+											.Feature("back").EqualToVariable("b")
+											.Feature("round").EqualToVariable("c").Value).Value
+			                   	});
 
-			lhs = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, voicelessStop)
-					.Feature("poa").EqualToVariable("a").Value).Value;
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, voicelessStop)
-					.Feature("poa").EqualToVariable("a").Value)
-				.Annotation(HCFeatureSystem.SegmentType, vowel).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unasp).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("buifibuifi"), "27");
 
-			input = new Word(Surface, "pipʰ") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("[p(pʰ)]i[p(pʰ)]", output.Single().ToString());
+			Allophonic.PhonologicalRules.Clear();
+			Morphophonemic.PhonologicalRules.Add(rule1);
 
-			input = new Word(Allophonic, "pip");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("pi(pʰ)", input.ToString());
+			rule1.Subrules.Clear();
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New()
+										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, k)
+											.Feature("asp").EqualToVariable("a").Value).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New()
+										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, g)
+											.Feature("asp").EqualToVariable("a").Value).Value,
+									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(RightSideFS).Value
+			                   	});
 
-			lhs = Pattern<Word, ShapeNode>.New().Value;
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSymbolDefinition("f").FeatureStruct).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, vowel)
-					.Feature("high").EqualToVariable("a")
-					.Feature("back").EqualToVariable("b")
-					.Feature("round").EqualToVariable("c").Value).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, vowel)
-					.Feature("high").EqualToVariable("a")
-					.Feature("back").EqualToVariable("b")
-					.Feature("round").EqualToVariable("c").Value).Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			input = new Word(Surface, "buifibuifi") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("buif?ibuif?i", output.Single().ToString());
-
-			input = new Word(Allophonic, "buiibuii");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("buifibuifi", input.ToString());
-
-			lhs = Pattern<Word, ShapeNode>.New().Value;
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, k)
-					.Feature("asp").EqualToVariable("a").Value).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, g)
-					.Feature("asp").EqualToVariable("a").Value).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, RightSideFS).Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			input = new Word(Surface, "sagk") {Stratum = Morphophonemic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("s[a(a̘)]gk?", output.Single().ToString());
-
-			input = new Word(Morphophonemic, "sag");
-			var me = Assert.Throws<MorphException>(() => rule1.SynthesisRule.Apply(input, out output));
+			morpher = new Morpher(SpanFactory, Language);
+			var me = Assert.Throws<MorphException>(() => morpher.ParseWord("sagk"));
 			Assert.AreEqual(MorphErrorCode.UninstantiatedFeature, me.ErrorCode);
 		}
 
 		[Test]
 		public void EpenthesisRules()
 		{
-			var highVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("high+").Value;
-			var highFrontUnrndVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("high+").Symbol("back-").Symbol("round-").Value;
-			var highBackRndVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("high+").Symbol("back+").Symbol("round+").Value;
-			var cons = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("voc-").Value;
-			var vowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Value;
-			var highBackRnd = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("high+").Symbol("back+").Symbol("round+").Value;
+			var highVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("high+").Value;
+			var highFrontUnrndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("high+")
+				.Symbol("back-")
+				.Symbol("round-").Value;
+			var highBackRndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("high+")
+				.Symbol("back+")
+				.Symbol("round+").Value;
+			var cons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+")
+				.Symbol("voc-").Value;
+			var vowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+").Value;
+			var highBackRnd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("high+")
+				.Symbol("back+")
+				.Symbol("round+").Value;
 
-			var lhs = Pattern<Word, ShapeNode>.New().Value;
-			var rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs) {ApplicationMode = ApplicationMode.Simultaneous};
-			var rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
-			var leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
-			var rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			var rule4 = new RewriteRule("rule4") {ApplicationMode = ApplicationMode.Simultaneous};
+			Allophonic.PhonologicalRules.Add(rule4);
+			rule4.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
+			                   	});
 
-			IEnumerable<Word> output;
-			var input = new Word(Surface, "buibui") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("bui?bui?", output.Single().ToString());
+			var morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("buibui"), "19");
 
-			input = new Word(Allophonic, "bubui");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("buibuiii", input.ToString());
+			rule4.Subrules.Clear();
+			rule4.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(Table1.GetSymbolFeatureStruct("i")).Value,
+									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
+			                   	});
 
-			input = new Word(Allophonic, "buibu");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("buiiibui", input.ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("biubiu"), "19");
 
-			input = new Word(Allophonic, "buibui");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("buiiibuiii", input.ToString());
+			rule4.ApplicationMode = ApplicationMode.Iterative;
+			rule4.Subrules.Clear();
+			rule4.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(LeftSideFS).Value,
+									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(cons).Value
+			                   	});
 
-			input = new Word(Allophonic, "bubu");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("buibui", input.ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("ipʰit"), "1");
 
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs) {ApplicationMode = ApplicationMode.Simultaneous};
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSymbolDefinition("i").FeatureStruct).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			rule4.Subrules.Clear();
+			rule4.Subrules.Add(new RewriteSubrule
+								{
+									Rhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(cons).Value,
+									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(RightSideFS).Value
+								});
 
-			input = new Word(Surface, "biubiu") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("bi?ubi?u", output.Single().ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("pʰiti"), "1");
 
-			input = new Word(Allophonic, "bubu");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("biubiu", input.ToString());
+			rule4.Subrules.Clear();
+			rule4.Subrules.Add(new RewriteSubrule
+								{
+									Rhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(cons).Value,
+									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highBackRndVowel).Value
+								});
 
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, LeftSideFS).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("biubiu"), "19");
 
-			input = new Word(Surface, "ipʰit") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("i?(pʰ)it", output.Single().ToString());
+			rule4.ApplicationMode = ApplicationMode.Simultaneous;
+			rule4.Subrules.Clear();
+			rule4.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New()
+										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, highVowel)
+											.Feature("back").EqualToVariable("a")
+											.Feature("round").EqualToVariable("b").Value).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New()
+										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, highVowel)
+											.Feature("back").EqualToVariable("a")
+											.Feature("round").EqualToVariable("b").Value).Value
+			                   	});
 
-			input = new Word(Allophonic, "pʰit");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("i(pʰ)it", input.ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("biibuu"), "18");
 
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, RightSideFS).Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			rule4.Subrules.Clear();
+			rule4.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Annotation(highFrontUnrndVowel).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
+			                   	});
 
-			input = new Word(Surface, "pʰiti") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("(pʰ)iti?", output.Single().ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("biiibuii"), "18");
 
-			input = new Word(Allophonic, "pʰit");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("(pʰ)iti", input.ToString());
+			rule4.ApplicationMode = ApplicationMode.Iterative;
+			rule4.Direction = Direction.RightToLeft;
+			rule4.Subrules.Clear();
+			rule4.Subrules.Add(new RewriteSubrule
+			                   	{
+									Rhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(LeftSideFS).Value
+			                   	});
 
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highBackRndVowel).Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			input = new Word(Surface, "biubiu") {Stratum = Morphophonemic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("bi?ubi?u", output.Single().ToString());
-
-			input = new Word(Morphophonemic, "b+ubu");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("b+?iubiu", input.ToString());
-
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs) {ApplicationMode = ApplicationMode.Simultaneous};
-			rhs = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, highVowel)
-					.Feature("back").EqualToVariable("a")
-					.Feature("round").EqualToVariable("b").Value).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, highVowel)
-					.Feature("back").EqualToVariable("a")
-					.Feature("round").EqualToVariable("b").Value).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			input = new Word(Surface, "biibuu") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("bii?buu?", output.Single().ToString());
-
-			input = new Word(Allophonic, "bibu");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("biibuu", input.ToString());
-
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs) {ApplicationMode = ApplicationMode.Simultaneous};
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			input = new Word(Surface, "biiibuii") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("bii?i?bui?i?", output.Single().ToString());
-
-			input = new Word(Allophonic, "bibu");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("biiibuii", input.ToString());
-
-			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
-			rule1 = new StandardPhonologicalRule("rule2", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highBackRnd).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highBackRndVowel).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			lhs = Pattern<Word, ShapeNode>.New().Value;
-			var rule2 = new StandardPhonologicalRule("rule3", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table1.GetSymbolDefinition("t").FeatureStruct).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
-			rule2.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			input = new Word(Surface, "butubu") {Stratum = Allophonic};
-			Assert.IsTrue(rule2.AnalysisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("but?[iuoyɯ]bu", output.Single().ToString());
-
-			input = new Word(Allophonic, "buibu");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsTrue(rule2.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("butubu", input.ToString());
-
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs) {Direction = Direction.RightToLeft};
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, LeftSideFS).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			input = new Word(Surface, "ipʰit") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("i?(pʰ)it", output.Single().ToString());
-
-			input = new Word(Allophonic, "pʰit");
-			var me = Assert.Throws<MorphException>(() => rule1.SynthesisRule.Apply(input, out output));
+			morpher = new Morpher(SpanFactory, Language);
+			var me = Assert.Throws<MorphException>(() => morpher.ParseWord("ipʰit"));
 			Assert.AreEqual(MorphErrorCode.TooManySegs, me.ErrorCode);
+
+			Allophonic.PhonologicalRules.Clear();
+
+			var rule1 = new RewriteRule("rule1") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value};
+			Allophonic.PhonologicalRules.Add(rule1);
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(highBackRnd).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highBackRndVowel).Value
+			                   	});
+
+			var rule2 = new RewriteRule("rule2");
+			Allophonic.PhonologicalRules.Add(rule2);
+			rule2.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(Table1.GetSymbolFeatureStruct("t")).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
+									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
+			                   	});
+
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("butubu"), "25");
 		}
 
 		[Test]
 		public void DeletionRules()
 		{
-			var highFrontUnrndVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("high+").Symbol("low-").Symbol("back-").Symbol("round-").Value;
-			var highVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("high+").Value;
-			var cons = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("voc-").Value;
-			var highBackRndVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("high+").Symbol("back+").Symbol("round+").Value;
-			var asp = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("asp+").Value;
-			var nonCons = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Value;
-			var vowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Value;
-			var voiced = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("vd+").Value;
+			var highFrontUnrndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("high+")
+				.Symbol("low-")
+				.Symbol("back-")
+				.Symbol("round-").Value;
+			var highVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("high+").Value;
+			var cons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+")
+				.Symbol("voc-").Value;
+			var highBackRndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("high+")
+				.Symbol("back+")
+				.Symbol("round+").Value;
+			var asp = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("asp+").Value;
+			var nonCons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-").Value;
+			var vowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+").Value;
+			var voiced = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("vd+").Value;
 
-			var lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
-			var rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			var rhs = Pattern<Word, ShapeNode>.New().Value;
-			var leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
-			var rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			var rule4 = new RewriteRule("rule4") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Value};
+			Allophonic.PhonologicalRules.Add(rule4);
+			rule4.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
+			                   	});
 
-			IEnumerable<Word> output;
-			var input = new Word(Surface, "bubu") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("bui?bui?", output.Single().ToString());
+			var morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("bubu"), "24", "25", "26", "19");
 
-			input = new Word(Allophonic, "bubui");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bubu", input.ToString());
+			rule4.DelReapplications = 1;
 
-			input = new Word(Allophonic, "buibu");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bubu", input.ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("bubu"), "24", "25", "26", "27", "19");
 
-			input = new Word(Allophonic, "buibui");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bubu", input.ToString());
+			rule4.Subrules.Clear();
+			rule4.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(cons).Value
+			                   	});
 
-			input = new Word(Allophonic, "bubu");
-			Assert.IsFalse(rule1.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("bubu", input.ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("bubu"), "25", "19");
 
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs) {DelReapplications = 1};
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			rule4.DelReapplications = 0;
+			rule4.Lhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Annotation(highFrontUnrndVowel).Value;
 
-			input = new Word(Surface, "bubu") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("bui?i?i?bui?i?i?", output.Single().ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("bubu"), "29", "19");
 
-			input = new Word(Allophonic, "bubui");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bubu", input.ToString());
+			rule4.Subrules.Clear();
+			rule4.Subrules.Add(new RewriteSubrule
+			                   	{
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highBackRndVowel).Value
+			                   	});
 
-			input = new Word(Allophonic, "buibu");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bubu", input.ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("bubu"), "27", "19");
 
-			input = new Word(Allophonic, "buibui");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bubu", input.ToString());
+			Allophonic.PhonologicalRules.Clear();
+			Morphophonemic.PhonologicalRules.Add(rule4);
 
-			input = new Word(Allophonic, "buiibuii");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bubu", input.ToString());
+			rule4.Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("b")).Value;
+			rule4.Subrules.Clear();
+			rule4.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(LeftSideFS).Value,
+									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("+")).Value
+			                   	});
 
-			input = new Word(Allophonic, "bubu");
-			Assert.IsFalse(rule1.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("bubu", input.ToString());
+			var rule5 = new RewriteRule("rule5")
+			            	{
+								Lhs = Pattern<Word, ShapeNode>.New()
+									.Annotation(Table3.GetSymbolFeatureStruct("u"))
+									.Annotation(Table3.GetSymbolFeatureStruct("b"))
+									.Annotation(Table3.GetSymbolFeatureStruct("u")).Value
+			            	};
+			Morphophonemic.PhonologicalRules.Add(rule5);
+			rule5.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("+")).Value,
+									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(RightSideFS).Value
+			                   	});
 
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs) {DelReapplications = 1};
-			leftEnv = Pattern<Word, ShapeNode>.New().Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			var rule1 = new RewriteRule("rule1") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("t")).Value};
+			Morphophonemic.PhonologicalRules.Add(rule1);
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(asp).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(nonCons).Value
+			                   	});
 
-			input = new Word(Surface, "bubu") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("i?i?bui?i?bu", output.Single().ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			Assert.IsFalse(morpher.ParseWord("b").Any());
 
-			input = new Word(Allophonic, "buibu");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bubu", input.ToString());
+			Morphophonemic.PhonologicalRules.Clear();
+			Allophonic.PhonologicalRules.Add(rule4);
+			Allophonic.PhonologicalRules.Add(rule5);
+			Allophonic.PhonologicalRules.Add(rule1);
 
-			input = new Word(Allophonic, "iibubu");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("ibubu", input.ToString());
+			rule4.Subrules[0].LeftEnvironment.Children.Clear();
 
-			input = new Word(Allophonic, "bubu");
-			Assert.IsFalse(rule1.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("bubu", input.ToString());
+			rule5.Lhs = Pattern<Word, ShapeNode>.New()
+				.Annotation(Table3.GetSymbolFeatureStruct("u"))
+				.Annotation(Table3.GetSymbolFeatureStruct("b"))
+				.Annotation(Table3.GetSymbolFeatureStruct("i")).Value;
+			rule5.Subrules[0].RightEnvironment.Children.Clear();
 
-			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Annotation(HCFeatureSystem.SegmentType, highFrontUnrndVowel).Value;
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			leftEnv = Pattern<Word, ShapeNode>.New().Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			morpher = new Morpher(SpanFactory, Language);
+			Assert.IsFalse(morpher.ParseWord("b").Any());
 
-			input = new Word(Surface, "bubu") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("i?i?bui?i?bu", output.Single().ToString());
+			Allophonic.PhonologicalRules.Clear();
+			Allophonic.PhonologicalRules.Add(rule4);
+			Morphophonemic.PhonologicalRules.Add(rule5);
 
-			input = new Word(Allophonic, "buibu");
-			Assert.IsFalse(rule1.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("buibu", input.ToString());
-
-			input = new Word(Allophonic, "iibubu");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bubu", input.ToString());
-
-			input = new Word(Allophonic, "bubu");
-			Assert.IsFalse(rule1.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("bubu", input.ToString());
-
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highBackRndVowel).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			input = new Word(Surface, "bubu") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("bui?i?bui?i?", output.Single().ToString());
-
-			input = new Word(Allophonic, "bubui");
-			Assert.IsFalse(rule1.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("bubui", input.ToString());
-
-			input = new Word(Allophonic, "buibu");
-			Assert.IsFalse(rule1.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("buibu", input.ToString());
-
-			input = new Word(Allophonic, "buibui");
-			Assert.IsFalse(rule1.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("buibui", input.ToString());
-
-			input = new Word(Allophonic, "buiibuii");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bubu", input.ToString());
-
-			input = new Word(Allophonic, "bubu");
-			Assert.IsFalse(rule1.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("bubu", input.ToString());
-
-			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("b").FeatureStruct).Value;
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, LeftSideFS).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct).Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			lhs = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("u").FeatureStruct)
-				.Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("b").FeatureStruct)
-				.Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("u").FeatureStruct).Value;
-			var rule2 = new StandardPhonologicalRule("rule2", SpanFactory, lhs);
-			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.BoundaryType, Table3.GetSymbolDefinition("+").FeatureStruct).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, RightSideFS).Value;
-			rule2.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, Table3.GetSymbolDefinition("t").FeatureStruct).Value;
-			var rule3 = new StandardPhonologicalRule("rule3", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, nonCons).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule3.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			input = new Word(Surface, "b") {Stratum = Morphophonemic};
-			Assert.IsFalse(rule3.AnalysisRule.Apply(input, out output));
-			Assert.IsTrue(rule2.AnalysisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("b?bu?b?u?", output.Single().ToString());
-
-			input = new Word(Morphophonemic, "b+ubu");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsTrue(rule2.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsFalse(rule3.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("+?", input.ToString());
-
-			lhs = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, cons)
+			rule4.Lhs = Pattern<Word, ShapeNode>.New()
+				.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, cons)
 					.Feature("poa").EqualToVariable("a")
 					.Feature("vd").EqualToVariable("b")
 					.Feature("cont").EqualToVariable("c")
 					.Feature("nasal").EqualToVariable("d").Value).Value;
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New().Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, FeatureStruct.New(Morpher.PhoneticFeatureSystem, cons)
-					.Feature("poa").EqualToVariable("a")
-					.Feature("vd").EqualToVariable("b")
-					.Feature("cont").EqualToVariable("c")
-					.Feature("nasal").EqualToVariable("d").Value).Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			rule4.Subrules.Clear();
+			rule4.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		RightEnvironment = Pattern<Word, ShapeNode>.New()
+										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, cons)
+											.Feature("poa").EqualToVariable("a")
+											.Feature("vd").EqualToVariable("b")
+											.Feature("cont").EqualToVariable("c")
+											.Feature("nasal").EqualToVariable("d").Value).Value
+			                   	});
 
-			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			rule2 = new StandardPhonologicalRule("rule2", SpanFactory, lhs);
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, voiced).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
-			rule2.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			rule5.Lhs = Pattern<Word, ShapeNode>.New().Annotation(cons).Value;
+			rule5.Subrules.Clear();
+			rule5.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(voiced).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
+									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
+			                   	});
 
-			input = new Word(Surface, "aba") {Stratum = Morphophonemic};
-			Assert.IsTrue(rule2.AnalysisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("[a(a̘)][pb]?[pb][a(a̘)]", output.Single().ToString());
-
-			input = new Word(Morphophonemic, "ab+ba");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsTrue(rule2.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("a+?ba", input.ToString());
-
-			input = new Word(Morphophonemic, "abba");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			Assert.IsTrue(rule2.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("aba", input.ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("aba"), "39", "40");
 		}
 
 		[Test]
 		public void DisjunctiveRules()
 		{
-			var stop = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("cont-").Value;
-			var asp = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("asp+").Value;
-			var unasp = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("asp-").Value;
-			var highVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("high+").Value;
-			var backRnd = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("back+").Symbol("round+").Value;
-			var backRndVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("back+").Symbol("round+").Value;
-			var cons = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("voc-").Value;
-			var highFrontVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("high+").Symbol("back-").Value;
-			var frontRnd = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("back-").Symbol("round+").Value;
-			var frontRndVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("back-").Symbol("round+").Value;
-			var backUnrnd = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("back+").Symbol("round-").Value;
-			var backUnrndVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("back+").Symbol("round-").Value;
-			var frontUnrnd = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("back-").Symbol("round-").Value;
-			var frontUnrndVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("back-").Symbol("round-").Value;
-			var p = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("cont-").Symbol("vd-").Symbol("asp-").Symbol("bilabial").Value;
-			var vd = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("vd+").Value;
-			var vowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Value;
-			var voicelessStop = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("vd-").Symbol("cont-").Value;
+			var stop = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+")
+				.Symbol("cont-").Value;
+			var asp = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("asp+").Value;
+			var unasp = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("asp-").Value;
+			var highVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("high+").Value;
+			var backRnd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("back+")
+				.Symbol("round+").Value;
+			var backRndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("back+")
+				.Symbol("round+").Value;
+			var cons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+")
+				.Symbol("voc-").Value;
+			var highFrontVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("high+")
+				.Symbol("back-").Value;
+			var frontRnd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("back-")
+				.Symbol("round+").Value;
+			var frontRndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("back-")
+				.Symbol("round+").Value;
+			var backUnrnd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("back+")
+				.Symbol("round-").Value;
+			var backUnrndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("back+")
+				.Symbol("round-").Value;
+			var frontUnrnd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("back-")
+				.Symbol("round-").Value;
+			var frontUnrndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("back-")
+				.Symbol("round-").Value;
+			var p = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+")
+				.Symbol("cont-")
+				.Symbol("vd-")
+				.Symbol("asp-")
+				.Symbol("bilabial").Value;
+			var vd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("vd+").Value;
+			var vowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+").Value;
+			var voicelessStop = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+")
+				.Symbol("vd-")
+				.Symbol("cont-").Value;
 
-			var lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, stop).Value;
-			var rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			
-			var rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
-			var leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, LeftSideFS).Value;
-			var rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-			
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unasp).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			var disrule1 = new RewriteRule("disrule1") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(stop).Value};
+			Allophonic.PhonologicalRules.Add(disrule1);
+			disrule1.Subrules.Add(new RewriteSubrule
+			                      	{
+			                      		Rhs = Pattern<Word, ShapeNode>.New().Annotation(asp).Value,
+										LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(LeftSideFS).Value
+			                      	});
+			disrule1.Subrules.Add(new RewriteSubrule
+			                      	{
+			                      		Rhs = Pattern<Word, ShapeNode>.New().Annotation(unasp).Value
+			                      	});
 
-			IEnumerable<Word> output;
-			var input = new Word(Surface, "pʰip") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("[p(pʰ)]i[p(pʰ)]", output.Single().ToString());
+			var morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("pʰip"), "41");
 
-			input = new Word(Allophonic, "pip");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("(pʰ)ip", input.ToString());
+			disrule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value;
+			disrule1.Subrules.Clear();
+			disrule1.Subrules.Add(new RewriteSubrule
+			                      	{
+			                      		Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Value,
+										LeftEnvironment = Pattern<Word, ShapeNode>.New()
+											.Annotation(backRndVowel)
+											.Group(g => g.Annotation(cons).Annotation(highFrontVowel)).LazyZeroOrMore
+											.Annotation(cons).Value
+			                      	});
+			disrule1.Subrules.Add(new RewriteSubrule
+			                      	{
+			                      		Rhs = Pattern<Word, ShapeNode>.New().Annotation(frontRnd).Value,
+										LeftEnvironment = Pattern<Word, ShapeNode>.New()
+											.Annotation(frontRndVowel)
+											.Group(g => g.Annotation(cons).Annotation(highFrontVowel)).LazyZeroOrMore
+											.Annotation(cons).Value
+			                      	});
+			disrule1.Subrules.Add(new RewriteSubrule
+			                      	{
+			                      		Rhs = Pattern<Word, ShapeNode>.New().Annotation(backUnrnd).Value,
+										LeftEnvironment = Pattern<Word, ShapeNode>.New()
+											.Annotation(backUnrndVowel)
+											.Group(g => g.Annotation(cons).Annotation(highFrontVowel)).LazyZeroOrMore
+											.Annotation(cons).Value
+			                      	});
+			disrule1.Subrules.Add(new RewriteSubrule
+			                      	{
+			                      		Rhs = Pattern<Word, ShapeNode>.New().Annotation(frontUnrnd).Value,
+										LeftEnvironment = Pattern<Word, ShapeNode>.New()
+											.Annotation(frontUnrndVowel)
+											.Group(g => g.Annotation(cons).Annotation(highFrontVowel)).LazyZeroOrMore
+											.Annotation(cons).Value
+			                      	});
 
-			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRnd).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, backRndVowel)
-				.Group(g => g.Annotation(HCFeatureSystem.SegmentType, cons).Annotation(HCFeatureSystem.SegmentType, highFrontVowel)).LazyZeroOrMore
-				.Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("bububu"), "42", "43");
 
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, frontRnd).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, frontRndVowel)
-				.Group(g => g.Annotation(HCFeatureSystem.SegmentType, cons).Annotation(HCFeatureSystem.SegmentType, highFrontVowel)).LazyZeroOrMore
-				.Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			disrule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(stop).Value;
+			disrule1.Subrules.Clear();
+			disrule1.Subrules.Add(new RewriteSubrule
+			                      	{
+			                      		Rhs = Pattern<Word, ShapeNode>.New().Annotation(asp).Value,
+										LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(LeftSideFS).Value
+			                      	});
+			disrule1.Subrules.Add(new RewriteSubrule
+			                      	{
+			                      		Rhs = Pattern<Word, ShapeNode>.New().Annotation(unasp).Value,
+										RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(RightSideFS).Value
+			                      	});
 
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backUnrnd).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, backUnrndVowel)
-				.Group(g => g.Annotation(HCFeatureSystem.SegmentType, cons).Annotation(HCFeatureSystem.SegmentType, highFrontVowel)).LazyZeroOrMore
-				.Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("pʰip"), "41");
 
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, frontUnrnd).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New()
-				.Annotation(HCFeatureSystem.SegmentType, frontUnrndVowel)
-				.Group(g => g.Annotation(HCFeatureSystem.SegmentType, cons).Annotation(HCFeatureSystem.SegmentType, highFrontVowel)).LazyZeroOrMore
-				.Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			disrule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(p).Value;
+			disrule1.Subrules.Clear();
+			disrule1.Subrules.Add(new RewriteSubrule
+			                      	{
+			                      		Rhs = Pattern<Word, ShapeNode>.New().Annotation(vd).Value,
+										LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
+			                      	});
+			disrule1.Subrules.Add(new RewriteSubrule
+			                      	{
+			                      		Rhs = Pattern<Word, ShapeNode>.New().Annotation(asp).Value,
+										RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(RightSideFS).Value
+			                      	});
 
-			input = new Word(Surface, "bububu") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("bub[iuyɯ]b[iuyɯ]", output.Single().ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("bubu"), "46", "19");
 
-			input = new Word(Allophonic, "bubibi");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bububu", input.ToString());
+			disrule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(voicelessStop).Value;
+			disrule1.Subrules.Clear();
+			disrule1.Subrules.Add(new RewriteSubrule
+			                      	{
+			                      		Rhs = Pattern<Word, ShapeNode>.New().Annotation(asp).Value,
+										LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(voicelessStop).Value
+			                      	});
+			disrule1.Subrules.Add(new RewriteSubrule
+			                      	{
+			                      		Rhs = Pattern<Word, ShapeNode>.New().Annotation(unasp).Value
+			                      	});
 
-			input = new Word(Allophonic, "bubibu");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bububu", input.ToString());
-
-			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, stop).Value;
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, LeftSideFS).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unasp).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, RightSideFS).Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			input = new Word(Surface, "pʰip");
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("[p(pʰ)]i[p(pʰ)]", output.Single().ToString());
-
-			input = new Word(Allophonic, "pip");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			Assert.AreEqual("(pʰ)ip", input.ToString());
-
-			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, p).Value;
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vd).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, vowel).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.AnchorType, RightSideFS).Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			input = new Word(Surface, "bubu") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("bu[p(pʰ)b]u", output.Single().ToString());
-
-			input = new Word(Allophonic, "bupu");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("bubu", input.ToString());
-
-			input = new Word(Allophonic, "bubu");
-			Assert.IsFalse(rule1.SynthesisRule.Apply(input, out output));
-			input.Stratum = Surface;
-			Assert.AreEqual("bubu", input.ToString());
-
-			lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, voicelessStop).Value;
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, asp).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, voicelessStop).Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, unasp).Value;
-			leftEnv = Pattern<Word, ShapeNode>.New().Value;
-			rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			input = new Word(Surface, "ktʰb") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("[k(kʰ)][t(tʰ)]b", output.Single().ToString());
-
-			input = new Word(Allophonic, "ktb");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("k(tʰ)b", input.ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("ktʰb"), "49");
 		}
 
 		[Test]
 		public void MultipleApplicationRules()
 		{
-			var highVowel = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("high+").Value;
-			var backRnd = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("back+").Symbol("round+").Value;
-			var i = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons-").Symbol("voc+").Symbol("high+").Symbol("back-").Symbol("round-").Value;
-			var cons = FeatureStruct.New(Morpher.PhoneticFeatureSystem).Symbol("cons+").Symbol("voc-").Value;
+			var highVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("high+").Value;
+			var backRnd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("back+")
+				.Symbol("round+").Value;
+			var i = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("high+")
+				.Symbol("back-")
+				.Symbol("round-").Value;
+			var cons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+")
+				.Symbol("voc-").Value;
 
-			var lhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, highVowel).Value;
-			var rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs) {ApplicationMode = ApplicationMode.Simultaneous};
-			var rhs = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, backRnd).Value;
-			var leftEnv = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.SegmentType, i).Annotation(HCFeatureSystem.SegmentType, cons).Value;
-			var rightEnv = Pattern<Word, ShapeNode>.New().Value;
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
+			var rule1 = new RewriteRule("rule1") { ApplicationMode = ApplicationMode.Simultaneous, Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value };
+			Allophonic.PhonologicalRules.Add(rule1);
+			rule1.Subrules.Add(new RewriteSubrule
+			                   	{
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Value,
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(i).Annotation(cons).Value
+			                   	});
 
-			IEnumerable<Word> output;
-			var input = new Word(Surface, "gigugu") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("gig[iuyɯ]g[iuyɯ]", output.Single().ToString());
+			var morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("gigugu"), "44");
 
-			input = new Word(Allophonic, "gigigi");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("gigugu", input.ToString());
+			rule1.ApplicationMode = ApplicationMode.Iterative;
 
-			rule1 = new StandardPhonologicalRule("rule1", SpanFactory, lhs);
-			rule1.AddSubrule(rhs, leftEnv, rightEnv, new FeatureStruct());
-
-			input = new Word(Surface, "gigugi") {Stratum = Allophonic};
-			Assert.IsTrue(rule1.AnalysisRule.Apply(input, out output));
-			Assert.AreEqual("gig[iuyɯ]gi", output.Single().ToString());
-
-			input = new Word(Allophonic, "gigigi");
-			Assert.IsTrue(rule1.SynthesisRule.Apply(input, out output));
-			input = output.Single();
-			input.Stratum = Surface;
-			Assert.AreEqual("gigugi", input.ToString());
+			morpher = new Morpher(SpanFactory, Language);
+			AssertMorphsEqual(morpher.ParseWord("gigugi"), "44");
 		}
 	}
 }

@@ -6,16 +6,16 @@ namespace SIL.HermitCrab
 	public class HCFeatureSystem : FeatureSystem
 	{
 		public static readonly SymbolicFeature Type;
-		public static readonly FeatureSymbol AnchorType;
-		public static readonly FeatureSymbol SegmentType;
-		public static readonly FeatureSymbol BoundaryType;
-		public static readonly FeatureSymbol MorphType;
+		public static readonly FeatureSymbol Anchor;
+		public static readonly FeatureSymbol Segment;
+		public static readonly FeatureSymbol Boundary;
+		public static readonly FeatureSymbol Morph;
 
-		public static readonly SymbolicFeature Backtrack;
-		public static readonly FeatureSymbol Searched;
-		public static readonly FeatureSymbol NotSearched;
+		public static readonly SymbolicFeature Modified;
+		public static readonly FeatureSymbol Dirty;
+		public static readonly FeatureSymbol Clean;
 
-		public static readonly SymbolicFeature Anchor;
+		public static readonly SymbolicFeature AnchorType;
 		public static readonly FeatureSymbol LeftSide;
 		public static readonly FeatureSymbol RightSide;
 
@@ -23,61 +23,49 @@ namespace SIL.HermitCrab
 
 		public static readonly StringFeature Allomorph;
 
-		private static readonly HCFeatureSystem FeatureSystem;
+		public static readonly HCFeatureSystem Instance;
+
+		public static readonly FeatureStruct LeftSideAnchor;
+		public static readonly FeatureStruct RightSideAnchor;
 
 		static HCFeatureSystem()
 		{
-			Type = new SymbolicFeature(Guid.NewGuid().ToString()) {Description = "Type"};
-			AnchorType = new FeatureSymbol(Guid.NewGuid().ToString()) {Description = "anchor"};
-			Type.AddPossibleSymbol(AnchorType);
-			SegmentType = new FeatureSymbol(Guid.NewGuid().ToString()) {Description = "segment"};
-			Type.AddPossibleSymbol(SegmentType);
-			BoundaryType = new FeatureSymbol(Guid.NewGuid().ToString()) {Description = "boundary"};
-			Type.AddPossibleSymbol(BoundaryType);
-			MorphType = new FeatureSymbol(Guid.NewGuid().ToString()) {Description = "morph"};
-			Type.AddPossibleSymbol(MorphType);
+			Instance = new HCFeatureSystem();
 
-			Backtrack = new SymbolicFeature(Guid.NewGuid().ToString()) {Description = "Backtrack"};
-			Searched = new FeatureSymbol(Guid.NewGuid().ToString()) {Description = "Searched"};
-			Backtrack.AddPossibleSymbol(Searched);
-			NotSearched = new FeatureSymbol(Guid.NewGuid().ToString()) {Description = "NotSearched"};
-			Backtrack.AddPossibleSymbol(NotSearched);
+			Anchor = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "anchor" };
+			Segment = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "segment" };
+			Boundary = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "boundary" };
+			Morph = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "morph" };
 
-			Anchor = new SymbolicFeature(Guid.NewGuid().ToString()) {Description = "Anchor"};
-			LeftSide = new FeatureSymbol(Guid.NewGuid().ToString()) {Description = "LeftSide"};
-			Anchor.AddPossibleSymbol(LeftSide);
-			RightSide = new FeatureSymbol(Guid.NewGuid().ToString()) {Description = "RightSide"};
-			Anchor.AddPossibleSymbol(RightSide);
+			Type = new SymbolicFeature(Guid.NewGuid().ToString()) { Description = "Type", PossibleSymbols = { Anchor, Segment, Boundary, Morph } };
+			Instance.Add(Type);
+
+			Dirty = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "Dirty" };
+			Clean = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "Clean" };
+
+			Modified = new SymbolicFeature(Guid.NewGuid().ToString()) { Description = "Modified", PossibleSymbols = { Dirty, Clean } };
+			Instance.Add(Modified);
+
+			LeftSide = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "LeftSide" };
+			RightSide = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "RightSide" };
+
+			AnchorType = new SymbolicFeature(Guid.NewGuid().ToString()) { Description = "AnchorType", PossibleSymbols = { LeftSide, RightSide } };
+			Instance.Add(AnchorType);
 
 			StrRep = new StringFeature(Guid.NewGuid().ToString()) {Description = "StrRep"};
+			Instance.Add(StrRep);
 
 			Allomorph = new StringFeature(Guid.NewGuid().ToString()) {Description = "Allomorph"};
+			Instance.Add(Allomorph);
 
-			FeatureSystem = new HCFeatureSystem();
-		}
+			Instance.IsReadOnly = true;
 
-		public static HCFeatureSystem Instance
-		{
-			get { return FeatureSystem; }
+			LeftSideAnchor = FeatureStruct.New().Symbol(Anchor).Symbol(LeftSide).Value;
+			RightSideAnchor = FeatureStruct.New().Symbol(Anchor).Symbol(RightSide).Value;
 		}
 
 		private HCFeatureSystem()
 		{
-			base.AddFeature(Type);
-			base.AddFeature(Backtrack);
-			base.AddFeature(Anchor);
-			base.AddFeature(StrRep);
-			base.AddFeature(Allomorph);
-		}
-
-		public override void AddFeature(Feature feature)
-		{
-			throw new NotSupportedException("This feature system is readonly.");
-		}
-
-		public override void Reset()
-		{
-			throw new NotSupportedException("This feature system is readonly.");
 		}
 	}
 }

@@ -1,68 +1,103 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using SIL.Collections;
 using SIL.Machine;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.HermitCrab
 {
-	/// <summary>
-	/// This enumeration represents the morpher mode type.
-	/// </summary>
-	public enum Mode
+	public class Word : IData<ShapeNode>, IDeepCloneable<Word>
 	{
-		/// <summary>
-		/// Analysis mode (unapplication of rules)
-		/// </summary>
-		Analysis,
-		/// <summary>
-		/// Synthesis mode (application of rules)
-		/// </summary>
-		Synthesis
-	}
-
-	public class Word : IData<ShapeNode>, ICloneable<Word>
-	{
-		private readonly Shape _shape;
-		private readonly Stack<MorphologicalRule> _mrules;
-		private readonly Dictionary<MorphologicalRule, int> _mrulesUnapplied;
-		private readonly Dictionary<MorphologicalRule, int> _mrulesApplied;
 		private readonly IDBearerSet<Allomorph> _allomorphs; 
+		private RootAllomorph _rootAllomorph;
+		private readonly Shape _shape;
+		private readonly Stack<IMorphologicalRule> _mrules;
+		private readonly Dictionary<IMorphologicalRule, int> _mrulesUnapplied;
+		private readonly Dictionary<IMorphologicalRule, int> _mrulesApplied;
+		private readonly Stack<Word> _nonHeads;
+		private readonly MprFeatureSet _mprFeatures;
+		private readonly IDBearerSet<Feature> _obligatorySyntacticFeatures;
 
-		public Word(Stratum stratum, string word)
+		public Word(RootAllomorph rootAllomorph, FeatureStruct realizationalFS)
 		{
+			_allomorphs = new IDBearerSet<Allomorph>();
+			_mprFeatures = new MprFeatureSet();
+			_shape = rootAllomorph.Shape.DeepClone();
+			SetRootAllomorph(rootAllomorph);
+			RealizationalFeatureStruct = realizationalFS;
+			_mrules = new Stack<IMorphologicalRule>();
+			_mrulesUnapplied = new Dictionary<IMorphologicalRule, int>();
+			_mrulesApplied = new Dictionary<IMorphologicalRule, int>();
+			_nonHeads = new Stack<Word>();
+			_obligatorySyntacticFeatures = new IDBearerSet<Feature>();
+		}
+
+		public Word(Stratum stratum, Shape shape)
+		{
+			_allomorphs = new IDBearerSet<Allomorph>();
 			Stratum = stratum;
-			if (!stratum.SymbolDefinitionTable.ToShape(word, out _shape))
-			{
-				var me = new MorphException(MorphErrorCode.InvalidShape,
-					string.Format(HCStrings.kstidInvalidWord, word, stratum.SymbolDefinitionTable.ID));
-				me.Data["shape"] = word;
-				me.Data["charDefTable"] = stratum.SymbolDefinitionTable.ID;
-			}
+			_shape = shape;
 			SyntacticFeatureStruct = new FeatureStruct();
-			_mrules = new Stack<MorphologicalRule>();
-			_mrulesUnapplied = new Dictionary<MorphologicalRule, int>();
-			_mrulesApplied = new Dictionary<MorphologicalRule, int>();
-			_allomorphs = new IDBearerSet<Allomorph>();
+			RealizationalFeatureStruct = new FeatureStruct();
+			_mprFeatures = new MprFeatureSet();
+			_mrules = new Stack<IMorphologicalRule>();
+			_mrulesUnapplied = new Dictionary<IMorphologicalRule, int>();
+			_mrulesApplied = new Dictionary<IMorphologicalRule, int>();
+			_nonHeads = new Stack<Word>();
+			_obligatorySyntacticFeatures = new IDBearerSet<Feature>();
 		}
 
-		public Word(Word word)
+		protected Word(Word word)
 		{
+			_allomorphs = new IDBearerSet<Allomorph>(word._allomorphs);
 			Stratum = word.Stratum;
-			_shape = new Shape(word._shape.SpanFactory, word._shape.Begin.Clone(), word._shape.End.Clone());
-			_allomorphs = new IDBearerSet<Allomorph>();
-			word.CopyTo(word._shape.First, word._shape.Last, this);
-			SyntacticFeatureStruct = word.SyntacticFeatureStruct.Clone();
-			_mrules = new Stack<MorphologicalRule>(word._mrules);
-			Root = word.Root;
-			_mrulesUnapplied = new Dictionary<MorphologicalRule, int>(word._mrulesUnapplied);
-			_mrulesApplied = new Dictionary<MorphologicalRule, int>(word._mrulesApplied);
+			_shape = word._shape.DeepClone();
+			_rootAllomorph = word._rootAllomorph;
+			SyntacticFeatureStruct = word.SyntacticFeatureStruct.DeepClone();
+			RealizationalFeatureStruct = word.RealizationalFeatureStruct.DeepClone();
+			_mprFeatures = word.MprFeatures.DeepClone();
+			_mrules = new Stack<IMorphologicalRule>(word._mrules.Reverse());
+			_mrulesUnapplied = new Dictionary<IMorphologicalRule, int>(word._mrulesUnapplied);
+			_mrulesApplied = new Dictionary<IMorphologicalRule, int>(word._mrulesApplied);
+			_nonHeads = new Stack<Word>(word._nonHeads.Reverse().DeepClone());
+			_obligatorySyntacticFeatures = new IDBearerSet<Feature>(word._obligatorySyntacticFeatures);
 		}
 
-		public Stratum Stratum { get; set; }
+		public IEnumerable<Annotation<ShapeNode>> Morphs
+		{
+			get { return Annotations.Where(ann => ann.Type() == HCFeatureSystem.Morph); }
+		}
 
-		public Trace CurrentTrace { get; set; }
+		public IEnumerable<Allomorph> AllomorphsInMorphOrder
+		{
+			get { return Morphs.Select(morph => _allomorphs[(string) morph.FeatureStruct.GetValue(HCFeatureSystem.Allomorph)]); }
+		}
 
-		public LexEntry Root { get; internal set; }
+		public RootAllomorph RootAllomorph
+		{
+			get { return _rootAllomorph; }
+
+			set
+			{
+				_shape.Clear();
+				value.Shape.CopyTo(_shape);
+				SetRootAllomorph(value);
+			}
+		}
+
+		private void SetRootAllomorph(RootAllomorph rootAllomorph)
+		{
+			_rootAllomorph = rootAllomorph;
+			var entry = (LexEntry) _rootAllomorph.Morpheme;
+			Stratum = entry.Stratum;
+			_shape.Annotations.Add(_shape.First, _shape.Last, FeatureStruct.New()
+				.Symbol(HCFeatureSystem.Morph)
+				.Feature(HCFeatureSystem.Allomorph).EqualTo(_rootAllomorph.ID).Value);
+			SyntacticFeatureStruct = entry.SyntacticFeatureStruct.DeepClone();
+			_mprFeatures.Clear();
+			_mprFeatures.UnionWith(entry.MprFeatures);
+			_allomorphs.Add(_rootAllomorph);
+		}
 
 		public Shape Shape
 		{
@@ -70,6 +105,23 @@ namespace SIL.HermitCrab
 		}
 
 		public FeatureStruct SyntacticFeatureStruct { get; set; }
+
+		public FeatureStruct RealizationalFeatureStruct { get; set; }
+
+		public MprFeatureSet MprFeatures
+		{
+			get { return _mprFeatures; }
+		}
+
+		public ICollection<Feature> ObligatorySyntacticFeatures
+		{
+			get { return _obligatorySyntacticFeatures; }
+		}
+
+		public IDBearerSet<Allomorph> Allomorphs
+		{
+			get { return _allomorphs; }
+		}
 
 		public Span<ShapeNode> Span
 		{
@@ -81,49 +133,15 @@ namespace SIL.HermitCrab
 			get { return _shape.Annotations; }
 		}
 
-		public IEnumerable<Morph> Morphs
-		{
-			get
-			{
-				return from morphAnn in _shape.Annotations.Where(ann => ann.Type() == HCFeatureSystem.MorphType)
-					   select new Morph(morphAnn.Span, _allomorphs[(string) morphAnn.FeatureStruct.GetValue(HCFeatureSystem.Allomorph)]);
-			}
-		}
+		public Stratum Stratum { get; set; }
 
-		public Span<ShapeNode> CopyTo(ShapeNode srcStart, ShapeNode srcEnd, Word dest)
-		{
-			return CopyTo(_shape.SpanFactory.Create(srcStart, srcEnd), dest);
-		}
-
-		public Span<ShapeNode> CopyTo(Span<ShapeNode> srcSpan, Word dest)
-		{
-			Span<ShapeNode> destSpan = _shape.CopyTo(srcSpan, dest._shape);
-			Dictionary<ShapeNode, ShapeNode> mapping = _shape.GetNodes(srcSpan).Zip(dest._shape.GetNodes(destSpan)).ToDictionary(tuple => tuple.Item1, tuple => tuple.Item2);
-			foreach (Annotation<ShapeNode> morphAnn in _shape.Annotations.GetNodes(srcSpan).Where(ann => ann.Type() == HCFeatureSystem.MorphType))
-			{
-				var id = (string) morphAnn.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
-				dest.MarkMorph(mapping[morphAnn.Span.Start], mapping[morphAnn.Span.End], _allomorphs[id]);
-			}
-
-			return destSpan;
-		}
-
-		internal void MarkMorph(ShapeNode start, ShapeNode end, Allomorph allomorph)
-		{
-			MarkMorph(_shape.SpanFactory.Create(start, end), allomorph);
-		}
-
-		internal void MarkMorph(Span<ShapeNode> span, Allomorph allomorph)
-		{
-			_shape.Annotations.Add(span, FeatureStruct.New().Symbol(HCFeatureSystem.MorphType).Feature(HCFeatureSystem.Allomorph).EqualTo(allomorph.ID).Value);
-			_allomorphs.Add(allomorph);
-		}
+		public Trace CurrentTrace { get; set; }
 
 		/// <summary>
 		/// Gets the current rule.
 		/// </summary>
 		/// <value>The current rule.</value>
-		internal MorphologicalRule CurrentRule
+		public IMorphologicalRule CurrentMorphologicalRule
 		{
 			get
 			{
@@ -137,10 +155,9 @@ namespace SIL.HermitCrab
 		/// Notifies this analysis that the specified morphological rule was unapplied.
 		/// </summary>
 		/// <param name="mrule">The morphological rule.</param>
-		internal void MorphologicalRuleUnapplied(MorphologicalRule mrule)
+		public void MorphologicalRuleUnapplied(IMorphologicalRule mrule)
 		{
-			int numUnapplies = GetNumUnappliesForMorphologicalRule(mrule);
-			_mrulesUnapplied[mrule] = numUnapplies + 1;
+			_mrulesUnapplied.UpdateValue(mrule, () => 0, count => count + 1);
 			_mrules.Push(mrule);
 		}
 
@@ -149,7 +166,7 @@ namespace SIL.HermitCrab
 		/// </summary>
 		/// <param name="mrule">The morphological rule.</param>
 		/// <returns>The number of unapplications.</returns>
-		internal int GetNumUnappliesForMorphologicalRule(MorphologicalRule mrule)
+		public int GetUnapplicationCount(IMorphologicalRule mrule)
 		{
 			int numUnapplies;
 			if (!_mrulesUnapplied.TryGetValue(mrule, out numUnapplies))
@@ -160,13 +177,15 @@ namespace SIL.HermitCrab
 		/// <summary>
 		/// Notifies this word synthesis that the specified morphological rule has applied.
 		/// </summary>
-		/// <param name="mrule">The morphological rule.</param>
-		internal void MorphologicalRuleApplied(MorphologicalRule mrule)
+		public void MorphologicalRuleApplied(IMorphologicalRule mrule)
 		{
-			int numApplies = GetNumAppliesForMorphologicalRule(mrule);
-			_mrulesApplied[mrule] = numApplies + 1;
-			if (mrule == CurrentRule)
-				_mrules.Pop();
+			_mrulesApplied.UpdateValue(mrule, () => 0, count => count + 1);
+		}
+
+		public void CurrentMorphologicalRuleApplied()
+		{
+			IMorphologicalRule mrule = _mrules.Pop();
+			MorphologicalRuleApplied(mrule);
 		}
 
 		/// <summary>
@@ -174,7 +193,7 @@ namespace SIL.HermitCrab
 		/// </summary>
 		/// <param name="mrule">The morphological rule.</param>
 		/// <returns>The number of applications.</returns>
-		internal int GetNumAppliesForMorphologicalRule(MorphologicalRule mrule)
+		public int GetApplicationCount(IMorphologicalRule mrule)
 		{
 			int numApplies;
 			if (!_mrulesApplied.TryGetValue(mrule, out numApplies))
@@ -182,14 +201,53 @@ namespace SIL.HermitCrab
 			return numApplies;
 		}
 
-		public Word Clone()
+		public Word CurrentNonHead
+		{
+			get
+			{
+				if (_nonHeads.Count == 0)
+					return null;
+				return _nonHeads.Peek();
+			}
+		}
+
+		public void NonHeadUnapplied(Word nonHead)
+		{
+			_nonHeads.Push(nonHead);
+		}
+
+		public void CurrentNonHeadApplied()
+		{
+			_nonHeads.Pop();
+		}
+
+		public bool CheckBlocking(out Word word)
+		{
+			word = null;
+			LexFamily family = ((LexEntry) RootAllomorph.Morpheme).Family;
+			if (family == null)
+				return false;
+
+			foreach (LexEntry entry in family.Entries)
+			{
+				if (entry != RootAllomorph.Morpheme && entry.Stratum == Stratum && entry.SyntacticFeatureStruct.Equals(SyntacticFeatureStruct))
+				{
+					word = new Word(entry.PrimaryAllomorph, RealizationalFeatureStruct.DeepClone()) { CurrentTrace = CurrentTrace };
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		public Word DeepClone()
 		{
 			return new Word(this);
 		}
 
 		public override string ToString()
 		{
-			return Stratum.SymbolDefinitionTable.ToRegexString(Shape, true);
+			return Stratum.SymbolTable.ToRegexString(Shape, true);
 		}
 	}
 }

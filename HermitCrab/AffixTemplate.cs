@@ -1,5 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using SIL.Collections;
 using SIL.Machine;
+using SIL.Machine.FeatureModel;
+using SIL.Machine.Rules;
 
 namespace SIL.HermitCrab
 {
@@ -7,10 +12,10 @@ namespace SIL.HermitCrab
     /// This class represents an affix template. It is normally used to model inflectional
     /// affixation.
     /// </summary>
-    public class AffixTemplate : IDBearerBase
+    public class AffixTemplate : IDBearerBase, IHCRule
     {
-        private readonly List<Slot> _slots;
-        private IDBearerSet<PartOfSpeech> _requiredPartsOfSpeech;
+    	private Stratum _stratum;
+        private readonly ObservableCollection<AffixTemplateSlot> _slots;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AffixTemplate"/> class.
@@ -19,187 +24,60 @@ namespace SIL.HermitCrab
         public AffixTemplate(string id)
             : base(id)
         {
-            _slots = new List<Slot>();
+            _slots = new ObservableCollection<AffixTemplateSlot>();
+			_slots.CollectionChanged += SlotsChanged;
+			RequiredSyntacticFeatureStruct = new FeatureStruct();
         }
 
-        /// <summary>
-        /// Gets or sets the required parts of speech.
-        /// </summary>
-        /// <value>The required parts of speech.</value>
-        public IEnumerable<PartOfSpeech> RequiredPartsOfSpeech
-        {
-            get
-            {
-                return _requiredPartsOfSpeech;
-            }
+		private void SlotsChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			if (e.OldItems != null)
+			{
+				foreach (AffixTemplateSlot slot in e.OldItems)
+				{
+					foreach (IMorphologicalRule rule in slot.Rules)
+						rule.Stratum = null;
+				}
+			}
+			if (e.NewItems != null)
+			{
+				foreach (AffixTemplateSlot slot in e.NewItems)
+				{
+					foreach (IMorphologicalRule rule in slot.Rules)
+						rule.Stratum = Stratum;
+				}
+			}
+		}
 
-            set
-            {
-                _requiredPartsOfSpeech = new IDBearerSet<PartOfSpeech>(value);
-            }
-        }
+		public FeatureStruct RequiredSyntacticFeatureStruct { get; set; }
 
-        /// <summary>
-        /// Adds the slot.
-        /// </summary>
-        /// <param name="slot">The slot.</param>
-        public void AddSlot(Slot slot)
-        {
-            _slots.Add(slot);
-        }
+    	public IList<AffixTemplateSlot> Slots
+    	{
+    		get { return _slots; }
+    	}
 
-#if WANTPORT
-        public bool IsUnapplicable(WordAnalysis input)
-        {
-            foreach (PartOfSpeech pos in _requiredPartsOfSpeech)
-            {
-                if (input.MatchPartOfSpeech(pos))
-                    return true;
-            }
-            return false;
-        }
+    	public Stratum Stratum
+    	{
+    		get { return _stratum; }
+			set
+			{
+				_stratum = value;
+				foreach (AffixTemplateSlot slot in _slots)
+				{
+					foreach (IMorphologicalRule rule in slot.Rules)
+						rule.Stratum = value;
+				}
+			}
+    	}
 
-		/// <summary>
-		/// Unapplies this affix template to specified input word analysis.
-		/// </summary>
-		/// <param name="input">The input word analysis.</param>
-		/// <param name="output">The output word analyses.</param>
-		/// <returns>The resulting word analyses.</returns>
-        public bool Unapply(WordAnalysis input, out IEnumerable<WordAnalysis> output)
-        {
-            var results = new HashSet<WordAnalysis>();
+    	public IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+    	{
+    		return new AnalysisAffixTemplateRule(spanFactory, morpher, this);
+    	}
 
-            if (Morpher.TraceTemplatesAnalysis)
-            {
-                // create the template analysis trace input record
-                var tempTrace = new TemplateAnalysisTrace(this, true, input.Clone());
-                input.CurrentTrace.AddChild(tempTrace);
-            }
-
-            UnapplySlots(input.Clone(), _slots.Count - 1, results);
-            foreach (WordAnalysis wa in results)
-            {
-                foreach (PartOfSpeech pos in _requiredPartsOfSpeech)
-                    wa.AddPartOfSpeech(pos);
-            }
-
-            if (results.Count > 0)
-            {
-                output = results;
-                return true;
-            }
-            else
-            {
-                output = null;
-                return false;
-            }
-        }
-
-        void UnapplySlots(WordAnalysis input, int sIndex, HashSet<WordAnalysis> output)
-        {
-            for (int i = sIndex; i >= 0; i--)
-            {
-                foreach (MorphologicalRule rule in _slots[i].MorphologicalRules)
-                {
-                    if (rule.BeginUnapplication(input))
-                    {
-                        bool ruleUnapplied = false;
-                        for (int j = 0; j < rule.SubruleCount; j++)
-                        {
-                            ICollection<WordAnalysis> analyses;
-                            if (rule.Unapply(input, j, out analyses))
-                            {
-                                ruleUnapplied = true;
-                                foreach (WordAnalysis wa in analyses)
-                                {
-                                    if (wa.Shape.Count > 2)
-                                        UnapplySlots(wa, i - 1, output);
-                                }
-                            }
-                        }
-						rule.EndUnapplication(input, ruleUnapplied);
-                    }
-                }
-                // we can skip this slot if it is optional
-                if (!_slots[i].IsOptional)
-                {
-                    if (Morpher.TraceTemplatesAnalysis)
-                        input.CurrentTrace.AddChild(new TemplateAnalysisTrace(this, false, null));
-                    return;
-                }
-            }
-
-            if (Morpher.TraceTemplatesAnalysis)
-                input.CurrentTrace.AddChild(new TemplateAnalysisTrace(this, false, input.Clone()));
-            output.Add(input);
-        }
-
-        public bool IsApplicable(WordSynthesis input)
-        {
-            return _requiredPartsOfSpeech.Contains(input.PartOfSpeech);
-        }
-
-        /// <summary>
-        /// Applies this affix template to the specified input word synthesis.
-        /// </summary>
-        /// <param name="input">The input word synthesis.</param>
-        /// <param name="output">The output word synthesis.</param>
-        /// <returns><c>true</c> if the affix template applied, otherwise <c>false</c>.</returns>
-        public bool Apply(WordSynthesis input, out IEnumerable<WordSynthesis> output)
-        {
-            var headFeatures = (FeatureStruct) input.HeadFeatures.Clone();
-            var results = new HashSet<WordSynthesis>();
-            if (Morpher.TraceTemplatesSynthesis)
-            {
-                // create the template synthesis input trace record
-                var tempTrace = new TemplateSynthesisTrace(this, true, input.Clone());
-                input.CurrentTrace.AddChild(tempTrace);
-            }
-
-            ApplySlots(input.Clone(), 0, headFeatures, results);
-
-            if (results.Count > 0)
-            {
-                output = results;
-                return true;
-            }
-            else
-            {
-                output = null;
-                return false;
-            }
-        }
-
-        void ApplySlots(WordSynthesis input, int sIndex, FeatureStruct origHeadFeatures, HashSet<WordSynthesis> output)
-        {
-            for (int i = sIndex; i < _slots.Count; i++)
-            {
-                foreach (MorphologicalRule rule in _slots[i].MorphologicalRules)
-                {
-                    if (rule.IsApplicable(input))
-                    {
-                        // this is the slot affix that realizes the features
-                        ICollection<WordSynthesis> syntheses;
-						if (rule.ApplySlotAffix(input, origHeadFeatures, out syntheses))
-						{
-							foreach (WordSynthesis ws in syntheses)
-								ApplySlots(ws, i + 1, origHeadFeatures, output);
-						}
-                    }
-                }
-
-                if (!_slots[i].IsOptional)
-                {
-                    if (Morpher.TraceTemplatesSynthesis)
-                        input.CurrentTrace.AddChild(new TemplateSynthesisTrace(this, false, null));
-                    return;
-                }
-            }
-
-            if (Morpher.TraceTemplatesSynthesis)
-                input.CurrentTrace.AddChild(new TemplateSynthesisTrace(this, false, input.Clone()));
-            output.Add(input);
-        }
-#endif
+    	public IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+    	{
+    		return new SynthesisAffixTemplateRule(spanFactory, morpher, this);
+    	}
     }
 }

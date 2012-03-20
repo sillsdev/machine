@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using SIL.Machine;
+﻿using System.Collections.Generic;
+using SIL.Collections;
 
 namespace SIL.HermitCrab
 {
 	/// <summary>
 	/// This represents a set of MPR features.
 	/// </summary>
-	public class MprFeatureSet : IDBearerSet<MprFeature>, ICloneable
+	public class MprFeatureSet : IDBearerSet<MprFeature>, IDeepCloneable<MprFeatureSet>
 	{
 		public MprFeatureSet()
 		{
@@ -22,13 +21,11 @@ namespace SIL.HermitCrab
 		{
 			get
 			{
-				var groups = new IDBearerSet<MprFeatureGroup>();
 				foreach (MprFeature feat in this)
 				{
 					if (feat.Group != null)
-						groups.Add(feat.Group);
+						yield return feat.Group;
 				}
-				return groups;
 			}
 		}
 
@@ -36,9 +33,9 @@ namespace SIL.HermitCrab
 		{
 			foreach (MprFeatureGroup group in mprFeats.Groups)
 			{
-				if (group.OutputType == MprFeatureGroup.GroupOutputType.Overwrite)
+				if (group.Output == MprFeatureGroupOutput.Overwrite)
 				{
-					foreach (MprFeature mprFeat in group.Features)
+					foreach (MprFeature mprFeat in group)
 					{
 						if (!mprFeats.Contains(mprFeat))
 							Remove(mprFeat);
@@ -54,11 +51,11 @@ namespace SIL.HermitCrab
 			foreach (MprFeatureGroup group in Groups)
 			{
 				bool match = true;
-				foreach (MprFeature feat in group.Features)
+				foreach (MprFeature feat in group)
 				{
 					if (Contains(feat))
 					{
-						if (group.MatchType == MprFeatureGroup.GroupMatchType.All)
+						if (group.MatchType == MprFeatureGroupMatchType.All)
 						{
 							if (!mprFeats.Contains(feat))
 							{
@@ -73,10 +70,7 @@ namespace SIL.HermitCrab
 								match = true;
 								break;
 							}
-							else
-							{
-								match = false;
-							}
+							match = false;
 						}
 					}
 				}
@@ -93,12 +87,7 @@ namespace SIL.HermitCrab
 			return true;
 		}
 
-		object ICloneable.Clone()
-		{
-			return Clone();
-		}
-
-		public MprFeatureSet Clone()
+		public MprFeatureSet DeepClone()
 		{
 			return new MprFeatureSet(this);
 		}

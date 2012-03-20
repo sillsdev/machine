@@ -1,4 +1,4 @@
-﻿using SIL.Machine;
+﻿using SIL.Collections;
 
 namespace SIL.HermitCrab
 {
@@ -11,7 +11,6 @@ namespace SIL.HermitCrab
     	public MprFeature(string id)
             : base(id)
         {
-        	Group = null;
         }
 
     	/// <summary>

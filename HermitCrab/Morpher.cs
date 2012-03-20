@@ -1,717 +1,42 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SIL.Collections;
 using SIL.Machine;
 using SIL.Machine.FeatureModel;
+using SIL.Machine.Matching;
+using SIL.Machine.Rules;
 
 namespace SIL.HermitCrab
 {
-    /// <summary>
-    /// This class acts as the main interface to the morphing capability of HC.NET. It encapsulates
-    /// the feature systems, rules, character definition tables, etc. for a particular language.
-    /// </summary>
-    public class Morpher : IDBearerBase
-    {
-        private readonly FeatureSystem _phoneticFeatSys;
-        private readonly FeatureSystem _syntacticFeatSys;
-        private readonly List<Stratum> _orderedStrata;
-    	private readonly IDBearerSet<Stratum> _strata; 
-    	private readonly IDBearerSet<NaturalClass> _natClasses;
-        private readonly IDBearerSet<StandardPhonologicalRule> _prules;
-        private readonly IDBearerSet<MorphologicalRule> _mrules;
-        private readonly IDBearerSet<AffixTemplate> _templates;
-        private readonly Lexicon _lexicon;
-        private readonly IDBearerSet<MprFeatureGroup> _mprFeatGroups;
-        private readonly IDBearerSet<MprFeature> _mprFeatures;
-
-    	private readonly MorpherAnalysisRule _analysisRule;
-    	private readonly MorpherSynthesisRule _synthesisRule;
-
-    	private bool _traceStrataAnalysis;
-        private bool _traceStrataSynthesis;
-        private bool _traceTemplatesAnalysis;
-        private bool _traceTemplatesSynthesis;
-        private bool _traceLexLookup;
-        private bool _traceBlocking;
-        private bool _traceSuccess;
-
-    	/// <summary>
-    	/// Initializes a new instance of the <see cref="Morpher"/> class.
-    	/// </summary>
-    	/// <param name="id">The id.</param>
-    	/// <param name="phoneticFeatSys"></param>
-    	/// <param name="syntacticFeatSys"></param>
-    	/// <param name="lexicon"></param>
-    	public Morpher(string id, FeatureSystem phoneticFeatSys, FeatureSystem syntacticFeatSys, Lexicon lexicon)
-            : base(id)
-        {
-            _orderedStrata = new List<Stratum>();
-			_strata = new IDBearerSet<Stratum>();
-    		_phoneticFeatSys = phoneticFeatSys;
-    		_syntacticFeatSys = syntacticFeatSys;
-            _natClasses = new IDBearerSet<NaturalClass>();
-            _prules = new IDBearerSet<StandardPhonologicalRule>();
-            _mrules = new IDBearerSet<MorphologicalRule>();
-    		_lexicon = lexicon;
-            _templates = new IDBearerSet<AffixTemplate>();
-            _mprFeatGroups = new IDBearerSet<MprFeatureGroup>();
-            _mprFeatures = new IDBearerSet<MprFeature>();
-
-    		_analysisRule = new MorpherAnalysisRule(this);
-			_synthesisRule = new MorpherSynthesisRule(this);
-        }
-
-        /// <summary>
-        /// Gets the deepest stratum that is not the surface stratum.
-        /// </summary>
-        /// <value>The deepest stratum.</value>
-        public Stratum DeepestStratum
-        {
-            get
-            {
-                if (_orderedStrata.Count < 2)
-                    return null;
-                return _orderedStrata[0];
-            }
-        }
-
-        /// <summary>
-        /// Gets the shallowest stratum that is not the surface stratum.
-        /// </summary>
-        /// <value>The shallowest stratum.</value>
-        public Stratum ShallowestStratum
-        {
-            get
-            {
-                if (_orderedStrata.Count < 2)
-                    return null;
-                return _orderedStrata[_orderedStrata.Count - 2];
-            }
-        }
-
-        /// <summary>
-        /// Gets the surface stratum.
-        /// </summary>
-        /// <value>The surface stratum.</value>
-        public Stratum SurfaceStratum
-        {
-            get
-            {
-				if (_orderedStrata.Count == 0)
-					return null;
-            	return _orderedStrata[_orderedStrata.Count - 1];
-            }
-        }
-
-        /// <summary>
-        /// Gets the phonetic feature system.
-        /// </summary>
-        /// <value>The phonetic feature system.</value>
-        public FeatureSystem PhoneticFeatureSystem
-        {
-            get
-            {
-                return _phoneticFeatSys;
-            }
-        }
-
-        /// <summary>
-        /// Gets the syntactic feature system.
-        /// </summary>
-        /// <value>The syntactic feature system.</value>
-        public FeatureSystem SyntacticFeatureSystem
-        {
-            get
-            {
-                return _syntacticFeatSys;
-            }
-        }
-
-        /// <summary>
-        /// Gets all strata, including the surface stratum.
-        /// </summary>
-        /// <value>The strata.</value>
-        public IEnumerable<Stratum> Strata
-        {
-            get
-            {
-                return _orderedStrata;
-            }
-        }
-
-        /// <summary>
-        /// Gets the lexicon
-        /// </summary>
-        /// <value>The lexicon.</value>
-        public Lexicon Lexicon
-        {
-            get
-            {
-                return _lexicon;
-            }
-        }
-
-    	/// <summary>
-    	/// Gets or sets the maximum number of times a deletion phonological rule can be reapplied.
-    	/// Default: 0.
-    	/// </summary>
-    	/// <value>Maximum number of delete reapplications.</value>
-    	public int DelReapplications { get; set; }
-
-    	/// <summary>
-        /// Gets the MPR feature groups.
-        /// </summary>
-        /// <value>The MPR feature groups.</value>
-        public IEnumerable<MprFeatureGroup> MprFeatureGroups
-        {
-            get
-            {
-                return _mprFeatGroups;
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this morpher is tracing.
-        /// </summary>
-        /// <value>
-        /// 	<c>true</c> if this morpher is tracing, otherwise <c>false</c>.
-        /// </value>
-        public bool IsTracing
-        {
-            get
-            {
-                if (_traceStrataAnalysis || _traceStrataSynthesis || _traceTemplatesAnalysis || _traceTemplatesSynthesis
-                    || _traceLexLookup || _traceBlocking || _traceSuccess)
-                {
-                    return true;
-                }
-
-                if (_prules.Any(prule => prule.TraceAnalysis || prule.TraceSynthesis))
-                	return true;
-
-            	return _mrules.Any(mrule => mrule.TraceAnalysis || mrule.TraceSynthesis);
-            }
-        }
-
-        /// <summary>
-        /// Turns tracing on and off for all parts of the morpher.
-        /// </summary>
-        /// <value><c>true</c> to turn tracing on, <c>false</c> to turn tracing off.</value>
-        public bool TraceAll
-        {
-            set
-            {
-                _traceStrataAnalysis = value;
-                _traceStrataSynthesis = value;
-                _traceTemplatesAnalysis = value;
-                _traceTemplatesSynthesis = value;
-                _traceLexLookup = value;
-                _traceBlocking = value;
-                _traceSuccess = value;
-                SetTraceRules(value, value);
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether tracing of strata during analysis is
-        /// on or off.
-        /// </summary>
-        /// <value><c>true</c> if tracing is on, <c>false</c> if tracing is off.</value>
-        public bool TraceStrataAnalysis
-        {
-            get
-            {
-                return _traceStrataAnalysis;
-            }
-
-            set
-            {
-                _traceStrataAnalysis = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether tracing of strata during synthesis is
-        /// on or off.
-        /// </summary>
-        /// <value><c>true</c> if tracing is on, <c>false</c> if tracing is off.</value>
-        public bool TraceStrataSynthesis
-        {
-            get
-            {
-                return _traceStrataSynthesis;
-            }
-
-            set
-            {
-                _traceStrataSynthesis = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether tracing of affix templates during analysis
-        /// is on or off.
-        /// </summary>
-        /// <value><c>true</c> if tracing is on, <c>false</c> if tracing is off.</value>
-        public bool TraceTemplatesAnalysis
-        {
-            get
-            {
-                return _traceTemplatesAnalysis;
-            }
-
-            set
-            {
-                _traceTemplatesAnalysis = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether tracing of affix templates during synthesis
-        /// is on or off.
-        /// </summary>
-        /// <value><c>true</c> if tracing is on, <c>false</c> if tracing is off.</value>
-        public bool TraceTemplatesSynthesis
-        {
-            get
-            {
-                return _traceTemplatesSynthesis;
-            }
-
-            set
-            {
-                _traceTemplatesSynthesis = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether tracing of lexical lookup is
-        /// on or off.
-        /// </summary>
-        /// <value><c>true</c> if tracing is on, <c>false</c> if tracing is off.</value>
-        public bool TraceLexLookup
-        {
-            get
-            {
-                return _traceLexLookup;
-            }
-
-            set
-            {
-                _traceLexLookup = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether tracing of blocking is
-        /// on or off.
-        /// </summary>
-        /// <value><c>true</c> if tracing is on, <c>false</c> if tracing is off.</value>
-        public bool TraceBlocking
-        {
-            get
-            {
-                return _traceBlocking;
-            }
-
-            set
-            {
-                _traceBlocking = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether tracing of successful parses is
-        /// on or off.
-        /// </summary>
-        /// <value><c>true</c> if tracing is on, <c>false</c> if tracing is off.</value>
-        public bool TraceSuccess
-        {
-            get
-            {
-                return _traceSuccess;
-            }
-
-            set
-            {
-                _traceSuccess = value;
-            }
-        }
-
-        /// <summary>
-        /// Turns tracing of all rules on or off.
-        /// </summary>
-        /// <param name="traceAnalysis"><c>true</c> if tracing during analysis is on, <c>false</c>
-        /// if tracing during analysis is off.</param>
-        /// <param name="traceSynthesis"><c>true</c> if tracing during synthesis is on, <c>false</c>
-        /// if tracing during synthesis is off.</param>
-        public void SetTraceRules(bool traceAnalysis, bool traceSynthesis)
-        {
-            foreach (StandardPhonologicalRule prule in _prules)
-            {
-                prule.TraceAnalysis = traceAnalysis;
-                prule.TraceSynthesis = traceSynthesis;
-            }
-
-            foreach (MorphologicalRule mrule in _mrules)
-            {
-                mrule.TraceAnalysis = traceAnalysis;
-                mrule.TraceSynthesis = traceSynthesis;
-            }
-        }
-
-        /// <summary>
-        /// Turns tracing of a rule on or off.
-        /// </summary>
-        /// <param name="id">The rule ID.</param>
-        /// <param name="traceAnalysis"><c>true</c> if tracing during analysis is on, <c>false</c>
-        /// if tracing during analysis is off.</param>
-        /// <param name="traceSynthesis"><c>true</c> if tracing during synthesis is on, <c>false</c>
-        /// if tracing during synthesis is off.</param>
-        public void SetTraceRule(string id, bool traceAnalysis, bool traceSynthesis)
-        {
-            StandardPhonologicalRule prule = GetPhonologicalRule(id);
-            if (prule != null)
-            {
-                prule.TraceAnalysis = traceAnalysis;
-                prule.TraceSynthesis = traceSynthesis;
-            }
-            else
-            {
-                MorphologicalRule mrule = GetMorphologicalRule(id);
-                if (mrule != null)
-                {
-                    mrule.TraceAnalysis = traceAnalysis;
-                    mrule.TraceSynthesis = traceSynthesis;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the stratum associated with the specified ID.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        /// <returns>The stratum.</returns>
-        public Stratum GetStratum(string id)
-        {
-            Stratum stratum;
-            if (_strata.TryGetValue(id, out stratum))
-                return stratum;
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the natural class associated with the specified ID.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        /// <returns>The natural class.</returns>
-        public NaturalClass GetNaturalClass(string id)
-        {
-            NaturalClass nc;
-            if (_natClasses.TryGetValue(id, out nc))
-                return nc;
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the phonological rule associated with the specified ID.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        /// <returns>The phonological rule.</returns>
-        public StandardPhonologicalRule GetPhonologicalRule(string id)
-        {
-            StandardPhonologicalRule prule;
-            if (_prules.TryGetValue(id, out prule))
-                return prule;
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the morphological rule associated with the specified ID.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        /// <returns>The morphological rule.</returns>
-        public MorphologicalRule GetMorphologicalRule(string id)
-        {
-            MorphologicalRule mrule;
-            if (_mrules.TryGetValue(id, out mrule))
-                return mrule;
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the affix template associated with the specified ID.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        /// <returns>The affix template.</returns>
-        public AffixTemplate GetAffixTemplate(string id)
-        {
-            AffixTemplate template;
-            if (_templates.TryGetValue(id, out template))
-                return template;
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the MPR feature group associated with the specified ID.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        /// <returns>The MPR feature group.</returns>
-        public MprFeatureGroup GetMprFeatureGroup(string id)
-        {
-            MprFeatureGroup group;
-            if (_mprFeatGroups.TryGetValue(id, out group))
-                return group;
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the MPR feature associated with the specified ID.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        /// <returns>The MPR feature.</returns>
-        public MprFeature GetMprFeature(string id)
-        {
-            MprFeature mprFeat;
-            if (_mprFeatures.TryGetValue(id, out mprFeat))
-                return mprFeat;
-            return null;
-        }
-
-        /// <summary>
-        /// Adds the stratum.
-        /// </summary>
-        /// <param name="stratum">The stratum.</param>
-        public void AddStratum(Stratum stratum)
-        {
-            _orderedStrata.Add(stratum);
-        	_strata.Add(stratum);
-        }
-
-        /// <summary>
-        /// Adds the natural class.
-        /// </summary>
-        /// <param name="nc">The natural class.</param>
-        public void AddNaturalClass(NaturalClass nc)
-        {
-            _natClasses.Add(nc);
-        }
-
-        /// <summary>
-        /// Adds the phonological rule.
-        /// </summary>
-        /// <param name="prule">The phonological rule.</param>
-        public void AddPhonologicalRule(StandardPhonologicalRule prule)
-        {
-            _prules.Add(prule);
-        }
-
-        /// <summary>
-        /// Adds the morphological rule.
-        /// </summary>
-        /// <param name="mrule">The morphological rule.</param>
-        public void AddMorphologicalRule(MorphologicalRule mrule)
-        {
-            _mrules.Add(mrule);
-        }
-
-        /// <summary>
-        /// Adds the affix template.
-        /// </summary>
-        /// <param name="template">The affix template.</param>
-        public void AddAffixTemplate(AffixTemplate template)
-        {
-            _templates.Add(template);
-        }
-
-        /// <summary>
-        /// Adds the MPR feature group.
-        /// </summary>
-        /// <param name="group">The group.</param>
-        public void AddMprFeatureGroup(MprFeatureGroup group)
-        {
-            _mprFeatGroups.Add(group);
-        }
-
-        /// <summary>
-        /// Adds the MPR feature.
-        /// </summary>
-        /// <param name="mprFeature">The MPR feature.</param>
-        public void AddMprFeature(MprFeature mprFeature)
-        {
-            _mprFeatures.Add(mprFeature);
-        }
-
-        /// <summary>
-        /// Removes the natural class associated with the specified ID.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        public void RemoveNaturalClass(string id)
-        {
-            _natClasses.Remove(id);
-        }
-
-        /// <summary>
-        /// Removes the phonological rule associated with the specified ID.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        public void RemovePhonologicalRule(string id)
-        {
-            _prules.Remove(id);
-        }
-
-        /// <summary>
-        /// Removes the morphological rule associated with the specified ID.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        public void RemoveMorphologicalRule(string id)
-        {
-            _mrules.Remove(id);
-        }
-
-        /// <summary>
-        /// Removes the affix template associated with the specified ID.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        public void RemoveAffixTemplate(string id)
-        {
-            _templates.Remove(id);
-        }
-
-        /// <summary>
-        /// Removes the MPR feature group associated with the specified ID.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        public void RemoveMprFeatureGroup(string id)
-        {
-            _mprFeatGroups.Remove(id);
-        }
-
-        /// <summary>
-        /// Removes the MPR feature associated with the specified ID.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        public void RemoveMprFeature(string id)
-        {
-            _mprFeatures.Remove(id);
-        }
-
-        /// <summary>
-        /// Clears the strata.
-        /// </summary>
-        public void ClearStrata()
-        {
-            _orderedStrata.Clear();
-			_strata.Clear();
-        }
-
-        /// <summary>
-        /// Morphs the specified word.
-        /// </summary>
-        /// <param name="word">The word.</param>
-        /// <returns>All valid word synthesis records.</returns>
-        public ICollection<Word> MorphAndLookupWord(string word)
-        {
-            WordAnalysisTrace trace;
-            return MorphAndLookupWord(word, out trace);
-        }
-
-        public ICollection<Word> MorphAndLookupWord(string word, out WordAnalysisTrace trace)
-        {
-            return MorphAndLookupToken(word, null, null, out trace);
-        }
-
-        /// <summary>
-        /// Morphs the list of specified words.
-        /// </summary>
-        /// <param name="wordList">The word list.</param>
-        /// <returns>All valid word synthesis records for each word.</returns>
-        public IList<ICollection<Word>> MorphAndLookupWordList(IList<string> wordList)
-        {
-            IList<WordAnalysisTrace> traces;
-            return MorphAndLookupWordList(wordList, out traces);
-        }
-
-        public IList<ICollection<Word>> MorphAndLookupWordList(IList<string> wordList,
-            out IList<WordAnalysisTrace> traces)
-        {
-            var results = new List<ICollection<Word>>();
-            traces = new List<WordAnalysisTrace>();
-            string prev = null;
-            string word = wordList[0];
-            for (int i = 0; i < wordList.Count; i++)
-            {
-                string next = null;
-                if (i + 1 < wordList.Count)
-                    next = wordList[i + 1];
-
-                WordAnalysisTrace trace;
-                results.Add(MorphAndLookupToken(word, prev, next, out trace));
-                traces.Add(trace);
-
-                prev = word;
-                word = next;
-            }
-
-            return results;
-        }
-
-		/// <summary>
-		/// Does the real work of morphing the specified word.
-		/// </summary>
-		/// <param name="word">The word.</param>
-		/// <param name="prev">The previous word.</param>
-		/// <param name="next">The next word.</param>
-		/// <param name="trace">The trace.</param>
-		/// <returns>All valid word synthesis records.</returns>
-		private ICollection<Word> MorphAndLookupToken(string word, string prev, string next, out WordAnalysisTrace trace)
-        {
-            // convert the word to its phonetic shape
-            var input = new Word(SurfaceStratum, word);
-
-            // Unapply rules
-			var validWords = new HashSet<Word>();
-			foreach (Word analysisWord in _analysisRule.Apply(input))
-			{
-				foreach (Word synthesisWord in LexicalLookup(analysisWord))
-					validWords.UnionWith(_synthesisRule.Apply(synthesisWord));
-			}
-
-			var matchList = new List<Word>();
-			foreach (Word match in validWords.GroupBy(validWord => validWord.Morphs, new MorphsEqualityComparer())
-				.Select(group => group.MaxBy(validWord => validWord.Morphs, new MorphsComparer()))
-				.Where(validWord => SurfaceStratum.SymbolDefinitionTable.IsMatch(word, validWord.Shape)))
-			{
-				matchList.Add(match);
-			}
-
-			trace = null;
-			return matchList;
-        }
-
-		private class MorphsEqualityComparer : IEqualityComparer<IEnumerable<Morph>>
+	public class Morpher
+	{
+		private class MorphsEqualityComparer : IEqualityComparer<IEnumerable<Allomorph>>
 		{
-			public bool Equals(IEnumerable<Morph> x, IEnumerable<Morph> y)
+			private static readonly IEqualityComparer<Allomorph> MorphemeEqualityComparer = ProjectionEqualityComparer<Allomorph>.Create(allo => allo.Morpheme);
+
+			public bool Equals(IEnumerable<Allomorph> x, IEnumerable<Allomorph> y)
 			{
-				return x.SequenceEqual(y, ProjectionEqualityComparer<Morph>.Create(morph => morph.Allomorph.Morpheme));
+				return x.SequenceEqual(y, MorphemeEqualityComparer);
 			}
 
-			public int GetHashCode(IEnumerable<Morph> obj)
+			public int GetHashCode(IEnumerable<Allomorph> obj)
 			{
-				return obj.Aggregate(23, (code, morph) => code * 31 + morph.Allomorph.Morpheme.GetHashCode());
+				return obj.Aggregate(23, (code, allo) => code * 31 + allo.Morpheme.GetHashCode());
 			}
 		}
 
-		private class MorphsComparer : IComparer<IEnumerable<Morph>>
+		private class MorphsComparer : IComparer<IEnumerable<Allomorph>>
 		{
-			public int Compare(IEnumerable<Morph> x, IEnumerable<Morph> y)
+			public int Compare(IEnumerable<Allomorph> x, IEnumerable<Allomorph> y)
 			{
-				foreach (Tuple<Morph, Morph> tuple in x.Zip(y))
+				foreach (Tuple<Allomorph, Allomorph> tuple in x.Zip(y))
 				{
-					int res = tuple.Item1.Allomorph.Morpheme.CompareTo(tuple.Item2.Allomorph.Morpheme);
+					int res = string.CompareOrdinal(tuple.Item1.Morpheme.ID, tuple.Item2.Morpheme.ID);
 					if (res != 0)
 						return res;
-					res = tuple.Item1.Allomorph.Index.CompareTo(tuple.Item2.Allomorph.Index);
+
+					res = tuple.Item1.Index.CompareTo(tuple.Item2.Index);
 					if (res != 0)
 						return res;
 				}
@@ -719,21 +44,232 @@ namespace SIL.HermitCrab
 			}
 		}
 
+		private static readonly MorphsEqualityComparer WordMorphsEqualityComparer = new MorphsEqualityComparer();
+		private static readonly MorphsComparer WordMorphsComparer = new MorphsComparer();
+
+		private readonly Language _lang;
+		private readonly IRule<Word, ShapeNode> _analysisRule;
+		private readonly IRule<Word, ShapeNode> _synthesisRule;
+		private readonly Dictionary<Stratum, Tuple<Matcher<Shape, ShapeNode>, IDBearerSet<RootAllomorph>>> _allomorphSearchers;
+
+		private bool _traceAll;
+		private bool _traceLexLookup;
+		private bool _traceSuccess;
+		private bool _traceBlocking;
+		private readonly HashSet<IHCRule> _traceRules; 
+
+		public Morpher(SpanFactory<ShapeNode> spanFactory, Language lang)
+		{
+			_lang = lang;
+			_allomorphSearchers = new Dictionary<Stratum, Tuple<Matcher<Shape, ShapeNode>, IDBearerSet<RootAllomorph>>>();
+			foreach (Stratum stratum in _lang.Strata)
+			{
+				var allomorphs = new IDBearerSet<RootAllomorph>(stratum.Entries.SelectMany(entry => entry.Allomorphs));
+				var matcher = new Matcher<Shape, ShapeNode>(spanFactory, new Pattern<Shape, ShapeNode>(allomorphs.Select(CreateSubpattern)),
+					new MatcherSettings<ShapeNode>
+						{
+							Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Anchor),
+							Quasideterministic = true
+						});
+				_allomorphSearchers[stratum] = Tuple.Create(matcher, allomorphs);
+			}
+			_analysisRule = lang.CompileAnalysisRule(spanFactory, this);
+			_synthesisRule = lang.CompileSynthesisRule(spanFactory, this);
+			_traceRules = new HashSet<IHCRule>();
+		}
+
+		private Pattern<Shape, ShapeNode> CreateSubpattern(RootAllomorph allomorph)
+		{
+			var subpattern = new Pattern<Shape, ShapeNode>(allomorph.ID);
+			subpattern.Children.Add(new Constraint<Shape, ShapeNode>(FeatureStruct.New().Symbol(HCFeatureSystem.Anchor).Symbol(HCFeatureSystem.LeftSide).Value));
+			foreach (ShapeNode node in allomorph.Shape.Where(node => node.Annotation.Type() == HCFeatureSystem.Segment))
+				subpattern.Children.Add(new Constraint<Shape, ShapeNode>(node.Annotation.FeatureStruct.DeepClone()));
+			subpattern.Children.Add(new Constraint<Shape, ShapeNode>(FeatureStruct.New().Symbol(HCFeatureSystem.Anchor).Symbol(HCFeatureSystem.RightSide).Value));
+			return subpattern;
+		}
+
+		public bool IsTracing
+		{
+			get { return _traceAll || _traceBlocking || _traceLexLookup || _traceSuccess || _traceRules.Count > 0; }
+		}
+
+		public bool TraceAll
+		{
+			get { return _traceAll; }
+			set
+			{
+				_traceAll = value;
+				_traceBlocking = value;
+				_traceLexLookup = value;
+				_traceSuccess = value;
+				_traceRules.Clear();
+			}
+		}
+
+		public bool TraceLexicalLookup
+		{
+			get { return _traceLexLookup; }
+			set
+			{
+				if (!_traceAll)
+					_traceLexLookup = value;
+			}
+		}
+
+		public bool TraceSuccess
+		{
+			get { return _traceSuccess; }
+			set
+			{
+				if (!_traceAll)
+					_traceSuccess = value;
+			}
+		}
+
+		public bool TraceBlocking
+		{
+			get { return _traceBlocking; }
+			set
+			{
+				if (!_traceAll)
+					_traceBlocking = value;
+			}
+		}
+
+		public void SetTraceRule(IHCRule rule, bool trace)
+		{
+			if (!_traceAll)
+			{
+				if (trace)
+					_traceRules.Add(rule);
+				else
+					_traceRules.Remove(rule);
+			}
+		}
+
+		public bool GetTraceRule(IHCRule rule)
+		{
+			if (_traceAll)
+				return true;
+
+			return _traceRules.Contains(rule);
+		}
+
+		/// <summary>
+		/// Morphs the specified word.
+		/// </summary>
+		/// <param name="word">The word.</param>
+		/// <returns>All valid word synthesis records.</returns>
+		public IEnumerable<Word> ParseWord(string word)
+		{
+			Trace trace;
+			return ParseWord(word, out trace);
+		}
+
+		public IEnumerable<Word> ParseWord(string word, out Trace trace)
+		{
+			// convert the word to its phonetic shape
+			Shape shape;
+			if (!_lang.SurfaceStratum.SymbolTable.ToShape(word, out shape))
+				throw new ArgumentException("The word '{0}' cannot be converted to a shape.", "word");
+
+			var input = new Word(_lang.SurfaceStratum, shape);
+			trace = new Trace(TraceType.WordAnalysis, _lang) { Input = input.DeepClone() };
+			input.CurrentTrace = trace;
+
+			// Unapply rules
+			var validWords = new HashSet<Word>();
+			foreach (Word analysisWord in _analysisRule.Apply(input))
+			{
+				foreach (Word synthesisWord in LexicalLookup(analysisWord))
+					validWords.UnionWith(_synthesisRule.Apply(synthesisWord).Where(w => IsWordValid(w) && _lang.SurfaceStratum.SymbolTable.IsMatch(word, w.Shape)));
+			}
+
+			var matchList = new List<Word>();
+			foreach (Word match in validWords.GroupBy(validWord => validWord.AllomorphsInMorphOrder, WordMorphsEqualityComparer)
+				.Select(group => group.MaxBy(validWord => validWord.AllomorphsInMorphOrder, WordMorphsComparer)))
+			{
+				if (_traceSuccess)
+					match.CurrentTrace.Children.Add(new Trace(TraceType.ReportSuccess, _lang) { Output = match });
+				matchList.Add(match);
+			}
+
+			trace = null;
+			return matchList;
+		}
+
+		internal IEnumerable<RootAllomorph> SearchRootAllomorphs(Stratum stratum, Shape shape)
+		{
+			Tuple<Matcher<Shape, ShapeNode>, IDBearerSet<RootAllomorph>> alloSearcher = _allomorphSearchers[stratum];
+			return alloSearcher.Item1.AllMatches(shape).Select(match => alloSearcher.Item2[match.PatternPath.Single()]).Distinct();
+		}
+
 		private IEnumerable<Word> LexicalLookup(Word input)
 		{
-			foreach (LexEntry entry in input.Stratum.SearchEntries(input.Shape))
+			Trace lookupTrace = null;
+			if (_traceLexLookup)
+			{
+				lookupTrace = new Trace(TraceType.LexicalLookup, input.Stratum) { Input = input.DeepClone() };
+				input.CurrentTrace.Children.Add(lookupTrace);
+			}
+			foreach (LexEntry entry in SearchRootAllomorphs(input.Stratum, input.Shape).Select(allo => allo.Morpheme).Distinct())
 			{
 				foreach (RootAllomorph allomorph in entry.Allomorphs)
 				{
-					Word newWord = input.Clone();
-					newWord.Root = entry;
-					newWord.SyntacticFeatureStruct = entry.SyntacticFeatureStruct.Clone();
-					newWord.Shape.Clear();
-					allomorph.Shape.CopyTo(allomorph.Shape.First, allomorph.Shape.Last, newWord.Shape);
-					newWord.MarkMorph(newWord.Shape.First, newWord.Shape.Last, allomorph);
+					Word newWord = input.DeepClone();
+					newWord.RootAllomorph = allomorph;
+					if (lookupTrace != null)
+					{
+						var wsTrace = new Trace(TraceType.WordSynthesis, _lang) { Input = newWord.DeepClone() };
+						lookupTrace.Children.Add(wsTrace);
+						newWord.CurrentTrace = wsTrace;
+					}
 					yield return newWord;
 				}
 			}
 		}
-    }
+
+		private bool IsWordValid(Word word)
+		{
+			if (!word.ObligatorySyntacticFeatures.All(feature => ContainsFeature(word.SyntacticFeatureStruct, feature, new HashSet<FeatureStruct>(new ReferenceEqualityComparer<FeatureStruct>()))))
+				return false;
+
+			foreach (Allomorph allo in word.Allomorphs)
+			{
+				if (!allo.RequiredAllomorphCoOccurrences.All(c => c.CoOccurs(word)))
+					return false;
+
+				if (allo.ExcludedAllomorphCoOccurrences.Any(c => c.CoOccurs(word)))
+					return false;
+
+				if (!allo.RequiredEnvironments.All(env => env.IsMatch(word)))
+					return false;
+
+				if (allo.ExcludedEnvironments.Any(env => env.IsMatch(word)))
+					return false;
+
+				if (!allo.Morpheme.RequiredMorphemeCoOccurrences.All(c => c.CoOccurs(word)))
+					return false;
+
+				if (allo.Morpheme.ExcludedMorphemeCoOccurrences.Any(c => c.CoOccurs(word)))
+					return false;
+			}
+
+			return true;
+		}
+
+		private bool ContainsFeature(FeatureStruct fs, Feature feature, ISet<FeatureStruct> visited)
+		{
+			if (visited.Contains(fs))
+				return false;
+
+			if (fs.ContainsFeature(feature))
+				return true;
+
+			if (fs.Features.OfType<ComplexFeature>().Any(cf => ContainsFeature(fs.GetValue(cf), feature, visited)))
+				return true;
+
+			return false;
+		}
+	}
 }

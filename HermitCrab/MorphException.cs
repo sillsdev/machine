@@ -9,10 +9,6 @@ namespace SIL.HermitCrab
 	public enum MorphErrorCode
 	{
 		/// <summary>
-		/// A character definition table could not translate a phonetic shape.
-		/// </summary>
-		InvalidShape = 0,
-		/// <summary>
 		/// A feature is uninstantiated when a rule requires that it agree between the target and environment.
 		/// </summary>
 		UninstantiatedFeature,
