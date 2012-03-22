@@ -49,34 +49,43 @@ namespace SIL.Machine.Matching
 		private void Compile()
 		{
 			int nextPriority = 0;
-			GeneratePatternNfa(_fsa.StartState, _pattern, null, new Func<Match<TData, TOffset>, bool>[0], ref nextPriority);
-			_fsa.MarkArcPriorities();
+			bool deterministic = GeneratePatternNfa(_fsa.StartState, _pattern, null, new Func<Match<TData, TOffset>, bool>[0], ref nextPriority);
 
 			var writer = new StreamWriter(string.Format("c:\\{0}-nfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
 			_fsa.ToGraphViz(writer);
 			writer.Close();
 
-			_fsa.Determinize(_settings.Quasideterministic);
+			if (deterministic && !_settings.AllSubmatches)
+			{
+				_fsa.Determinize(_settings.FastCompile);
 
-			writer = new StreamWriter(string.Format("c:\\{0}-dfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
-			_fsa.ToGraphViz(writer);
-			writer.Close();
+				writer = new StreamWriter(string.Format("c:\\{0}-dfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
+				_fsa.ToGraphViz(writer);
+				writer.Close();
+			}
 		}
 
-		private void GeneratePatternNfa(State<TData, TOffset> startState, Pattern<TData, TOffset> pattern, string parentName,
+		private bool GeneratePatternNfa(State<TData, TOffset> startState, Pattern<TData, TOffset> pattern, string parentName,
 			Func<Match<TData, TOffset>, bool>[] acceptables, ref int nextPriority)
 		{
+			bool deterministic = true;
 			string name = parentName == null ? pattern.Name : parentName + "*" + pattern.Name;
 			acceptables = acceptables.Concat(pattern.Acceptable).ToArray();
 			if (pattern.Children.All(node => node is Pattern<TData, TOffset>))
 			{
 				foreach (Pattern<TData, TOffset> childExpr in pattern.Children)
-					GeneratePatternNfa(startState, childExpr, name, acceptables, ref nextPriority);
+				{
+					if (!GeneratePatternNfa(startState, childExpr, name, acceptables, ref nextPriority))
+						deterministic = false;
+				}
 			}
 			else
 			{
 				startState = _fsa.CreateTag(startState, _fsa.CreateState(), EntireMatch, true);
-				startState = pattern.GenerateNfa(_fsa, startState);
+				bool hasVariables;
+				startState = pattern.GenerateNfa(_fsa, startState, out hasVariables);
+				if (hasVariables)
+					deterministic = false;
 				startState = _fsa.CreateTag(startState, _fsa.CreateState(), EntireMatch, false);
 				State<TData, TOffset> acceptingState = _fsa.CreateAcceptingState(name,
 					(input, match) =>
@@ -86,6 +95,8 @@ namespace SIL.Machine.Matching
 					}, nextPriority++);
 				startState.AddArc(acceptingState);
 			}
+
+			return deterministic;
 		}
 
 		private Match<TData, TOffset> CreatePatternMatch(TData input, FsaMatch<TOffset> match)

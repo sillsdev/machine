@@ -8,9 +8,10 @@ namespace SIL.Machine.Matching
 		private Direction _dir;
 		private Func<Annotation<TOffset>, bool> _filter;
 		private bool _useDefaults;
-		private bool _quasideterministic;
+		private bool _fastCompile;
 		private bool _anchoredToStart;
 		private bool _anchoredToEnd;
+		private bool _allSubmatches;
 
 		public MatcherSettings()
 		{
@@ -49,13 +50,13 @@ namespace SIL.Machine.Matching
 			}
 		}
 
-		public bool Quasideterministic
+		public bool FastCompile
 		{
-			get { return _quasideterministic; }
+			get { return _fastCompile; }
 			set
 			{
 				CheckReadOnly();
-				_quasideterministic = value;
+				_fastCompile = value;
 			}
 		}
 
@@ -76,6 +77,16 @@ namespace SIL.Machine.Matching
 			{
 				CheckReadOnly();
 				_anchoredToEnd = value;
+			}
+		}
+
+		public bool AllSubmatches
+		{
+			get { return _allSubmatches; }
+			set
+			{
+				CheckReadOnly();
+				_allSubmatches = value;
 			}
 		}
 

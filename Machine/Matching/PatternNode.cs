@@ -31,13 +31,19 @@ namespace SIL.Machine.Matching
 			get { return Root as Pattern<TData, TOffset>; }
 		}
 
-		internal virtual State<TData, TOffset> GenerateNfa(FiniteStateAutomaton<TData, TOffset> fsa, State<TData, TOffset> startState)
+		internal virtual State<TData, TOffset> GenerateNfa(FiniteStateAutomaton<TData, TOffset> fsa, State<TData, TOffset> startState, out bool hasVariables)
 		{
+			hasVariables = false;
 			if (IsLeaf)
 				return startState;
 
 			foreach (PatternNode<TData, TOffset> child in Children.GetNodes(fsa.Direction))
-				startState = child.GenerateNfa(fsa, startState);
+			{
+				bool childHasVariables;
+				startState = child.GenerateNfa(fsa, startState, out childHasVariables);
+				if (childHasVariables)
+					hasVariables = true;
+			}
 
 			return startState;
 		}

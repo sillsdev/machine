@@ -1049,7 +1049,7 @@ namespace SIL.Machine.Test
 						.Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Value).OneOrMore
 						.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adv").Value)).ZeroOrMore).Value;
 
-			matcher = new Matcher<StringData, int>(SpanFactory, pattern, new MatcherSettings<int> {Quasideterministic = true});
+			matcher = new Matcher<StringData, int>(SpanFactory, pattern, new MatcherSettings<int> { FastCompile = true });
 			match = matcher.Match(sentence);
 			Assert.IsTrue(match.Success);
 			Assert.AreEqual(SpanFactory.Create(0, 29), match.Span);
@@ -1133,6 +1133,42 @@ namespace SIL.Machine.Test
 			word = CreateStringData("dazk");
 			match = matcher.Match(word);
 			Assert.IsFalse(match.Success);
+		}
+
+		[Test]
+		public void NondeterministicPattern()
+		{
+			var any = FeatureStruct.New().Value;
+
+			var pattern = Pattern<StringData, int>.New()
+				.Group("first", first => first.Annotation(any).OneOrMore)
+				.Group("second", second => second.Annotation(any).OneOrMore).Value;
+
+			var matcher = new Matcher<StringData, int>(SpanFactory, pattern, new MatcherSettings<int>
+			                                                                 	{
+			                                                                 		AnchoredToStart = true,
+			                                                                 		AnchoredToEnd = true,
+			                                                                 		AllSubmatches = true
+			                                                                 	});
+			var word = new StringData(SpanFactory, "test");
+			word.Annotations.Add(0, 1, FeatureStruct.New(PhoneticFeatSys).Feature("strRep").EqualTo("t").Value);
+			word.Annotations.Add(1, 2, FeatureStruct.New(PhoneticFeatSys).Feature("strRep").EqualTo("e").Value);
+			word.Annotations.Add(2, 3, FeatureStruct.New(PhoneticFeatSys).Feature("strRep").EqualTo("s").Value);
+			word.Annotations.Add(3, 4, FeatureStruct.New(PhoneticFeatSys).Feature("strRep").EqualTo("t").Value);
+
+			Match<StringData, int>[] matches = matcher.AllMatches(word).ToArray();
+			Assert.AreEqual(3, matches.Length);
+			Assert.AreEqual(SpanFactory.Create(0, 4), matches[0].Span);
+			Assert.AreEqual(SpanFactory.Create(0, 3), matches[0].GroupCaptures["first"].Span);
+			Assert.AreEqual(SpanFactory.Create(3, 4), matches[0].GroupCaptures["second"].Span);
+
+			Assert.AreEqual(SpanFactory.Create(0, 4), matches[1].Span);
+			Assert.AreEqual(SpanFactory.Create(0, 2), matches[1].GroupCaptures["first"].Span);
+			Assert.AreEqual(SpanFactory.Create(2, 4), matches[1].GroupCaptures["second"].Span);
+
+			Assert.AreEqual(SpanFactory.Create(0, 4), matches[2].Span);
+			Assert.AreEqual(SpanFactory.Create(0, 1), matches[2].GroupCaptures["first"].Span);
+			Assert.AreEqual(SpanFactory.Create(1, 4), matches[2].GroupCaptures["second"].Span);
 		}
 	}
 }

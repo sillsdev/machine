@@ -68,6 +68,16 @@ namespace SIL.Machine.FeatureModel
 			return true;
 		}
 
+		internal void RemoveVariables()
+		{
+			for (int i = _disjuncts.Count - 1; i >= 0; i--)
+			{
+				_disjuncts[i].RemoveVariables();
+				if (_disjuncts[i].IsEmpty)
+					_disjuncts.RemoveAt(i);
+			}
+		}
+
 		internal void ReplaceVariables(VariableBindings varBindings)
 		{
 			foreach (FeatureStruct disjunct in _disjuncts)

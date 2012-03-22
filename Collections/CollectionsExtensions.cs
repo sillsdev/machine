@@ -178,8 +178,11 @@ namespace SIL.Collections
 		{
 			if (preorder)
 				action((TNode) node);
-			foreach (TNode child in node.Children.GetNodes(dir))
-				DepthFirstTraverseNode(child, action, dir, preorder);
+			if (!node.IsLeaf)
+			{
+				foreach (TNode child in node.Children.GetNodes(dir))
+					DepthFirstTraverseNode(child, action, dir, preorder);
+			}
 			if (!preorder)
 				action((TNode) node);
 		}
@@ -197,8 +200,11 @@ namespace SIL.Collections
 			{
 				TNode node = queue.Dequeue();
 				action(node);
-				foreach (TNode child in node.Children.GetNodes(dir))
-					queue.Enqueue(child);
+				if (!node.IsLeaf)
+				{
+					foreach (TNode child in node.Children.GetNodes(dir))
+						queue.Enqueue(child);
+				}
 			}
 		}
 
@@ -215,8 +221,11 @@ namespace SIL.Collections
 			{
 				TNode node = stack.Pop();
 				yield return node;
-				foreach (TNode child in node.Children.GetNodes(dir))
-					stack.Push(child);
+				if (!node.IsLeaf)
+				{
+					foreach (TNode child in node.Children.GetNodes(dir))
+						stack.Push(child);
+				}
 			}
 		}
 
@@ -233,8 +242,11 @@ namespace SIL.Collections
 			{
 				TNode node = queue.Dequeue();
 				yield return node;
-				foreach (TNode child in node.Children.GetNodes(dir))
-					queue.Enqueue(child);
+				if (!node.IsLeaf)
+				{
+					foreach (TNode child in node.Children.GetNodes(dir))
+						queue.Enqueue(child);
+				}
 			}
 		}
 
@@ -478,11 +490,6 @@ namespace SIL.Collections
 				if (knownKeys.Add(keySelector(element)))
 					yield return element;
 			}
-		}
-
-		public static IEnumerable<string> GetIDs<T>(this IEnumerable<T> source) where T : IIDBearer
-		{
-			return source.Select(idBearer => idBearer.ID);
 		}
 
 		#endregion

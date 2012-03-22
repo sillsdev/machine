@@ -21,15 +21,19 @@ namespace SIL.Machine.Matching
 		{
 		}
 
-		internal override State<TData, TOffset> GenerateNfa(FiniteStateAutomaton<TData, TOffset> fsa, State<TData, TOffset> startState)
+		internal override State<TData, TOffset> GenerateNfa(FiniteStateAutomaton<TData, TOffset> fsa, State<TData, TOffset> startState, out bool hasVariables)
 		{
+			hasVariables = false;
 			if (IsLeaf)
 				return startState;
 
 			State<TData, TOffset> endState = fsa.CreateState();
 			foreach (PatternNode<TData, TOffset> node in Children)
 			{
-				State<TData, TOffset> nodeEndState = node.GenerateNfa(fsa, startState);
+				bool childHasVariables;
+				State<TData, TOffset> nodeEndState = node.GenerateNfa(fsa, startState, out childHasVariables);
+				if (childHasVariables)
+					hasVariables = true;
 				nodeEndState.AddArc(endState);
 			}
 			return endState;

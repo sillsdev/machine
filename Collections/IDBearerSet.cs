@@ -14,9 +14,8 @@ namespace SIL.Collections
 		}
 
 		public IDBearerSet(IEnumerable<T> items)
-			: this()
 		{
-			UnionWith(items);
+			_idBearers = items.ToDictionary(item => item.ID);
 		}
 
 		public bool TryGetValue(string id, out T value)
@@ -24,25 +23,25 @@ namespace SIL.Collections
 			return _idBearers.TryGetValue(id, out value);
 		}
 
-		public void IntersectWith(IEnumerable<T> items)
+		public virtual void IntersectWith(IEnumerable<T> items)
 		{
 			foreach (T item in this.Where(i => !items.Contains(i)).ToArray())
 				Remove(item);
 		}
 
-		public void UnionWith(IEnumerable<T> items)
+		public virtual void UnionWith(IEnumerable<T> items)
 		{
 			foreach (T item in items)
 				Add(item);
 		}
 
-		public void ExceptWith(IEnumerable<T> items)
+		public virtual void ExceptWith(IEnumerable<T> items)
 		{
 			foreach (T item in this.Where(items.Contains).ToArray())
 				Remove(item);
 		}
 
-		public void SymmetricExceptWith(IEnumerable<T> other)
+		public virtual void SymmetricExceptWith(IEnumerable<T> other)
 		{
 			foreach (T item in other.Distinct())
 			{

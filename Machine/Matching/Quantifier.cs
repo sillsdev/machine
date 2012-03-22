@@ -12,8 +12,15 @@ namespace SIL.Machine.Matching
     {
     	public const int Infinite = -1;
 
-    	private readonly int _minOccur;
-    	private readonly int _maxOccur;
+		public Quantifier()
+			: this(0, Infinite)
+		{
+		}
+
+		public Quantifier(PatternNode<TData, TOffset> node)
+			: this(0, Infinite, node)
+		{
+		}
 
     	public Quantifier(int minOccur, int maxOccur)
 			: this(minOccur, maxOccur, null)
@@ -31,35 +38,29 @@ namespace SIL.Machine.Matching
 			: base(node == null ? Enumerable.Empty<PatternNode<TData, TOffset>>() : node.ToEnumerable())
         {
     		IsGreedy = true;
-    		_minOccur = minOccur;
-            _maxOccur = maxOccur;
+    		MinOccur = minOccur;
+            MaxOccur = maxOccur;
         }
 
-		public Quantifier(Quantifier<TData, TOffset> quantifier)
+		protected Quantifier(Quantifier<TData, TOffset> quantifier)
 			: base(quantifier)
         {
-            _minOccur = quantifier._minOccur;
-            _maxOccur = quantifier._maxOccur;
+            MinOccur = quantifier.MinOccur;
+            MaxOccur = quantifier.MaxOccur;
     		IsGreedy = quantifier.IsGreedy;
         }
 
-        /// <summary>
-        /// Gets the minimum number of occurrences of this pattern.
-        /// </summary>
-        /// <value>The minimum number of occurrences.</value>
-        public int MinOccur
-        {
-			get { return _minOccur; }
-        }
+    	/// <summary>
+    	/// Gets the minimum number of occurrences of this pattern.
+    	/// </summary>
+    	/// <value>The minimum number of occurrences.</value>
+		public int MinOccur { get; set; }
 
     	/// <summary>
     	/// Gets the maximum number of occurrences of this pattern.
     	/// </summary>
     	/// <value>The maximum number of occurrences.</value>
-    	public int MaxOccur
-    	{
-    		get { return _maxOccur; }
-    	}
+		public int MaxOccur { get; set; }
 
     	public bool IsGreedy { get; set; }
 
@@ -70,71 +71,47 @@ namespace SIL.Machine.Matching
 			return true;
 		}
 
-		internal override State<TData, TOffset> GenerateNfa(FiniteStateAutomaton<TData, TOffset> fsa, State<TData, TOffset> startState)
+		internal override State<TData, TOffset> GenerateNfa(FiniteStateAutomaton<TData, TOffset> fsa, State<TData, TOffset> startState, out bool hasVariables)
 		{
+			hasVariables = false;
 			ArcPriorityType priorityType = IsGreedy ? ArcPriorityType.High : ArcPriorityType.Low;
 			State<TData, TOffset> endState;
-			if (_minOccur == 0 && _maxOccur == 1)
+			State<TData, TOffset> currentState = startState;
+			var startStates = new List<State<TData, TOffset>>();
+			if (MinOccur == 0)
 			{
-				// optional
-				State<TData, TOffset> nextState = startState.AddArc(fsa.CreateState(), priorityType);
-				endState = base.GenerateNfa(fsa, nextState);
-				startState.AddArc(endState);
-			}
-			else if (_minOccur == 0 && _maxOccur == Infinite)
-			{
-				// kleene star
-				State<TData, TOffset> nextState = startState.AddArc(fsa.CreateState(), priorityType);
-				endState = base.GenerateNfa(fsa, nextState);
-				startState.AddArc(endState);
-				endState.AddArc(startState, priorityType);
-			}
-			else if (_minOccur == 1 && _maxOccur == Infinite)
-			{
-				// plus
-				endState = base.GenerateNfa(fsa, startState);
-				endState.AddArc(startState, priorityType);
+				endState = startState.AddArc(fsa.CreateState(), priorityType);
+				endState = base.GenerateNfa(fsa, endState, out hasVariables);
+				startStates.Add(currentState);
 			}
 			else
 			{
-				// range
-				State<TData, TOffset> currentState = startState;
-				var startStates = new List<State<TData, TOffset>>();
-				if (_minOccur == 0)
+				endState = startState;
+				for (int i = 0; i < MinOccur; i++)
 				{
-					endState = startState.AddArc(fsa.CreateState(), priorityType);
-					endState = base.GenerateNfa(fsa, endState);
-					startStates.Add(currentState);
+					currentState = endState;
+					endState = base.GenerateNfa(fsa, currentState, out hasVariables);
 				}
-				else
-				{
-					endState = startState;
-					for (int i = 0; i < _minOccur; i++)
-					{
-						currentState = endState;
-						endState = base.GenerateNfa(fsa, currentState);
-					}
-				}
-
-				if (_maxOccur == Infinite)
-				{
-					endState.AddArc(currentState, priorityType);
-				}
-				else
-				{
-					int numCopies = _maxOccur - _minOccur;
-					if (_minOccur == 0)
-						numCopies--;
-					for (int i = 1; i <= numCopies; i++)
-					{
-						startStates.Add(endState);
-						endState = endState.AddArc(fsa.CreateState(), priorityType);
-						endState = base.GenerateNfa(fsa, endState);
-					}
-				}
-				foreach (State<TData, TOffset> state in startStates)
-					state.AddArc(endState);
 			}
+
+			if (MaxOccur == Infinite)
+			{
+				endState.AddArc(currentState, priorityType);
+			}
+			else
+			{
+				int numCopies = MaxOccur - MinOccur;
+				if (MinOccur == 0)
+					numCopies--;
+				for (int i = 1; i <= numCopies; i++)
+				{
+					startStates.Add(endState);
+					endState = endState.AddArc(fsa.CreateState(), priorityType);
+					endState = base.GenerateNfa(fsa, endState, out hasVariables);
+				}
+			}
+			foreach (State<TData, TOffset> state in startStates)
+				state.AddArc(endState);
 
 			return endState;
 		}
@@ -152,16 +129,16 @@ namespace SIL.Machine.Matching
     	public override string ToString()
         {
         	string quantifierStr;
-			if (_minOccur == 0 && _maxOccur == Infinite)
+			if (MinOccur == 0 && MaxOccur == Infinite)
 				quantifierStr = "*";
-			else if (_minOccur == 1 && _maxOccur == Infinite)
+			else if (MinOccur == 1 && MaxOccur == Infinite)
 				quantifierStr = "+";
-			else if (_minOccur == 0 && _maxOccur == 1)
+			else if (MinOccur == 0 && MaxOccur == 1)
 				quantifierStr = "?";
-			else if (_maxOccur == Infinite)
-				quantifierStr = string.Format("[{0},]", _minOccur);
+			else if (MaxOccur == Infinite)
+				quantifierStr = string.Format("[{0},]", MinOccur);
 			else
-				quantifierStr = string.Format("[{0},{1}]", _minOccur, _maxOccur);
+				quantifierStr = string.Format("[{0},{1}]", MinOccur, MaxOccur);
         	return string.Concat(Children) + quantifierStr;
         }
     }

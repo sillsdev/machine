@@ -60,6 +60,7 @@
     <Compile Include="IReadOnlyList.cs" />
     <Compile Include="IReadOnlySet.cs" />
     <Compile Include="NullableValue.cs" />
+    <Compile Include="ObservableIDBearerSet.cs" />
     <Compile Include="OrderedBidirList.cs" />
     <Compile Include="OrderedBidirListNode.cs" />
     <Compile Include="OrderedBidirTreeNode.cs" />

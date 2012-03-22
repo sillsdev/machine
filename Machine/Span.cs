@@ -73,8 +73,8 @@ namespace SIL.Machine
 
 		public bool Overlaps(Span<TOffset> other)
 		{
-			return _spanFactory.Compare(_start, other._end) <= 0
-				&& ( _spanFactory.IncludeEndpoint ? _spanFactory.Compare(_end, other._start) >= 0 : _spanFactory.Compare(_end, other._start) > 0);
+			return (_spanFactory.IncludeEndpoint ? _spanFactory.Compare(_start, other._end) <= 0 : _spanFactory.Compare(_start, other._end) < 0)
+				&& (_spanFactory.IncludeEndpoint ? _spanFactory.Compare(_end, other._start) >= 0 : _spanFactory.Compare(_end, other._start) > 0);
 		}
 
 		public bool Overlaps(TOffset start, TOffset end)

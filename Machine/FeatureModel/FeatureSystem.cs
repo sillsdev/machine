@@ -75,6 +75,16 @@ namespace SIL.Machine.FeatureModel
 			}
 		}
 
+		public bool ContainsFeature(string id)
+		{
+			return _features.Contains(id);
+		}
+
+		public bool ContainsFeature(Feature feature)
+		{
+			return _features.Contains(feature);
+		}
+
         /// <summary>
         /// Gets the feature value associated with the specified ID.
         /// </summary>
@@ -105,6 +115,17 @@ namespace SIL.Machine.FeatureModel
 
 			symbol = null;
 			return false;
+		}
+
+		public bool ContainsSymbol(string id)
+		{
+			FeatureSymbol symbol;
+			return TryGetSymbol(id, out symbol);
+		}
+
+		public bool ContainsSymbol(FeatureSymbol symbol)
+		{
+			return ContainsSymbol(symbol.ID);
 		}
 
     	IEnumerator<Feature> IEnumerable<Feature>.GetEnumerator()

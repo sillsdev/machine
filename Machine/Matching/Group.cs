@@ -62,14 +62,17 @@ namespace SIL.Machine.Matching
 			return true;
 		}
 
-		internal override State<TData, TOffset> GenerateNfa(FiniteStateAutomaton<TData, TOffset> fsa, State<TData, TOffset> startState)
+		internal override State<TData, TOffset> GenerateNfa(FiniteStateAutomaton<TData, TOffset> fsa, State<TData, TOffset> startState, out bool hasVariables)
 		{
 			if (IsLeaf)
+			{
+				hasVariables = false;
 				return startState;
+			}
 
 			if (_name != null)
 				startState = fsa.CreateTag(startState, fsa.CreateState(), _name, true);
-			startState = base.GenerateNfa(fsa, startState);
+			startState = base.GenerateNfa(fsa, startState, out hasVariables);
 			startState = _name != null ? fsa.CreateTag(startState, fsa.CreateState(), _name, false) : startState.AddArc(fsa.CreateState());
 			return startState;
 		}

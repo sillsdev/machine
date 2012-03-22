@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SIL.Collections;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.Fsa
@@ -8,13 +9,13 @@ namespace SIL.Machine.Fsa
 	public class State<TData, TOffset> : IEquatable<State<TData, TOffset>>  where TData : IData<TOffset>
 	{
 		private readonly int _index;
-		private readonly List<Arc<TData, TOffset>> _outgoingArcs;
-		private readonly List<Arc<TData, TOffset>> _incomingArcs;
+		private readonly List<Arc<TData, TOffset>> _arcs;
 
 		private readonly bool _isAccepting;
 		private readonly List<AcceptInfo<TData, TOffset>> _acceptInfos; 
 		private readonly List<TagMapCommand> _finishers;
 		private readonly bool _isLazy;
+		private readonly IComparer<Arc<TData, TOffset>> _arcComparer; 
 
 		internal State(int index, bool isAccepting)
 			: this(index, isAccepting, Enumerable.Empty<AcceptInfo<TData, TOffset>>(), Enumerable.Empty<TagMapCommand>(), false)
@@ -38,8 +39,8 @@ namespace SIL.Machine.Fsa
 			_acceptInfos = new List<AcceptInfo<TData, TOffset>>(acceptInfos);
 			_finishers = new List<TagMapCommand>(finishers);
 			_isLazy = isLazy;
-			_outgoingArcs = new List<Arc<TData, TOffset>>();
-			_incomingArcs = new List<Arc<TData, TOffset>>();
+			_arcs = new List<Arc<TData, TOffset>>();
+			_arcComparer = ProjectionComparer<Arc<TData, TOffset>>.Create(arc => arc.PriorityType).Reverse();
 		}
 
 		public int Index
@@ -58,14 +59,9 @@ namespace SIL.Machine.Fsa
 			}
 		}
 
-		public IEnumerable<Arc<TData, TOffset>> OutgoingArcs
+		public IEnumerable<Arc<TData, TOffset>> Arcs
 		{
-			get { return _outgoingArcs; }
-		}
-
-		public IEnumerable<Arc<TData, TOffset>> IncomingArcs
-		{
-			get { return _incomingArcs; }
+			get { return _arcs; }
 		}
 
 		public IEnumerable<AcceptInfo<TData, TOffset>> AcceptInfos
@@ -113,8 +109,10 @@ namespace SIL.Machine.Fsa
 
 		private State<TData, TOffset> AddArc(Arc<TData, TOffset> arc)
 		{
-			_outgoingArcs.Add(arc);
-			arc.Target._incomingArcs.Add(arc);
+			int index = _arcs.BinarySearch(arc, _arcComparer);
+			if (index < 0)
+				index = ~index;
+			_arcs.Insert(index, arc);
 			return arc.Target;
 		}
 

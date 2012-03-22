@@ -31,12 +31,13 @@ namespace SIL.Machine.Fsa
 			: this(source, null, target)
 		{
 			_tag = tag;
+			_commands.Add(new TagMapCommand(_tag, TagMapCommand.CurrentPosition));
 		}
 
 		internal Arc(State<TData, TOffset> source, FeatureStruct condition, State<TData, TOffset> target, IEnumerable<TagMapCommand> cmds)
 			: this(source, condition, target)
 		{
-			_commands = new List<TagMapCommand>(cmds);
+			_commands.AddRange(cmds);
 		}
 
 		internal Arc(State<TData, TOffset> source, FeatureStruct condition, State<TData, TOffset> target)
@@ -46,6 +47,7 @@ namespace SIL.Machine.Fsa
 			_target = target;
 			_priorityType = ArcPriorityType.Medium;
 			Priority = -1;
+			_commands = new List<TagMapCommand>();
 		}
 
 		public State<TData, TOffset> Source

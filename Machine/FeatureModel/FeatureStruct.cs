@@ -192,17 +192,19 @@ namespace SIL.Machine.FeatureModel
 			{
 				FeatureValue value = Dereference(featVal.Value);
 				var sfv = value as SimpleFeatureValue;
-				if (sfv != null && sfv.IsVariable)
+				if (sfv != null)
 				{
-					SimpleFeatureValue binding;
-					if (varBindings.TryGetValue(sfv.VariableName, out binding))
-						replacements[featVal.Key] = binding.GetVariableValue(sfv.Agree);
+					if (sfv.IsVariable)
+					{
+						SimpleFeatureValue binding;
+						if (varBindings.TryGetValue(sfv.VariableName, out binding))
+							replacements[featVal.Key] = binding.GetVariableValue(sfv.Agree);
+					}
 				}
 				else
 				{
-					var fs = value as FeatureStruct;
-					if (fs != null)
-						fs.ReplaceVariables(varBindings, visited);
+					var fs = (FeatureStruct) value;
+					fs.ReplaceVariables(varBindings, visited);
 				}
 			}
 
@@ -211,6 +213,52 @@ namespace SIL.Machine.FeatureModel
 
 			foreach (Disjunction disjunction in _indefinite)
 				disjunction.ReplaceVariables(varBindings);
+		}
+
+		public void RemoveVariables()
+		{
+			RemoveVariables(new HashSet<FeatureStruct>(new ReferenceEqualityComparer<FeatureStruct>()));
+		}
+
+		private void RemoveVariables(ISet<FeatureStruct> visited)
+		{
+			if (visited.Contains(this))
+				return;
+
+			visited.Add(this);
+
+			foreach (KeyValuePair<Feature, FeatureValue> featVal in _definite.ToArray())
+			{
+				FeatureValue value = Dereference(featVal.Value);
+				var sfv = value as SimpleFeatureValue;
+				if (sfv != null)
+				{
+					if (sfv.IsVariable)
+						_definite.Remove(featVal.Key);
+				}
+				else
+				{
+					var fs = (FeatureStruct) value;
+					fs.RemoveVariables(visited);
+					if (fs.IsEmpty)
+						_definite.Remove(featVal.Key);
+				}
+
+			}
+
+			for (int i = _indefinite.Count - 1; i >= 0; i--)
+			{
+				_indefinite[i].RemoveVariables();
+				if (_indefinite[i].Count == 0)
+				{
+					_indefinite.RemoveAt(i);
+				}
+				else if (_indefinite[i].Count == 1)
+				{
+					UnionImpl(_indefinite[i].First(), new VariableBindings(), new Dictionary<FeatureStruct, ISet<FeatureStruct>>(new ReferenceEqualityComparer<FeatureStruct>()));
+					_indefinite.RemoveAt(i);
+				}
+			}
 		}
 
 		public void PriorityUnion(FeatureStruct other)
@@ -1285,6 +1333,9 @@ namespace SIL.Machine.FeatureModel
 
 		public override string ToString()
 		{
+			if (IsEmpty)
+				return "ANY";
+
 			var comparer = new ReferenceEqualityComparer<FeatureValue>();
 
 			var reentrances = new Dictionary<FeatureValue, bool>(comparer);
