@@ -141,8 +141,7 @@ namespace SIL.HermitCrab
 			IEnumerable<ShapeNode> nodes;
 			if (GetShapeNodes(str, out nodes))
 			{
-				shape = new Shape(_spanFactory, begin => begin ? new ShapeNode(_spanFactory, FeatureStruct.New().Symbol(HCFeatureSystem.Anchor).Symbol(HCFeatureSystem.LeftSide).Value)
-					: new ShapeNode(_spanFactory, FeatureStruct.New().Symbol(HCFeatureSystem.Anchor).Symbol(HCFeatureSystem.RightSide).Value));
+				shape = new Shape(_spanFactory, begin => new ShapeNode(_spanFactory, begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor));
 				shape.AddRange(nodes);
 				return true;
 			}

@@ -68,8 +68,10 @@ namespace SIL.HermitCrab
 				var matcher = new Matcher<Shape, ShapeNode>(spanFactory, new Pattern<Shape, ShapeNode>(allomorphs.Select(CreateSubpattern)),
 					new MatcherSettings<ShapeNode>
 						{
-							Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Anchor),
-							Quasideterministic = true
+							Filter = ann => ann.Type() == HCFeatureSystem.Segment,
+							FastCompile = true,
+							AnchoredToStart = true,
+							AnchoredToEnd = true
 						});
 				_allomorphSearchers[stratum] = Tuple.Create(matcher, allomorphs);
 			}
@@ -81,10 +83,8 @@ namespace SIL.HermitCrab
 		private Pattern<Shape, ShapeNode> CreateSubpattern(RootAllomorph allomorph)
 		{
 			var subpattern = new Pattern<Shape, ShapeNode>(allomorph.ID);
-			subpattern.Children.Add(new Constraint<Shape, ShapeNode>(FeatureStruct.New().Symbol(HCFeatureSystem.Anchor).Symbol(HCFeatureSystem.LeftSide).Value));
 			foreach (ShapeNode node in allomorph.Shape.Where(node => node.Annotation.Type() == HCFeatureSystem.Segment))
 				subpattern.Children.Add(new Constraint<Shape, ShapeNode>(node.Annotation.FeatureStruct.DeepClone()));
-			subpattern.Children.Add(new Constraint<Shape, ShapeNode>(FeatureStruct.New().Symbol(HCFeatureSystem.Anchor).Symbol(HCFeatureSystem.RightSide).Value));
 			return subpattern;
 		}
 

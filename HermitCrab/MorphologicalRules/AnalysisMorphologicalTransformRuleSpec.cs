@@ -3,18 +3,17 @@ using System.Linq;
 using SIL.Machine;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
+using SIL.Machine.Rules;
 
 namespace SIL.HermitCrab.MorphologicalRules
 {
-	public class AnalysisMorphologicalTransform
+	public abstract class AnalysisMorphologicalTransformRuleSpec : IPatternRuleSpec<Word, ShapeNode>
 	{
-		private readonly IList<Pattern<Word, ShapeNode>> _lhs;
 		private readonly Pattern<Word, ShapeNode> _pattern;
 		private readonly Dictionary<string, FeatureStruct> _modifyFrom;
 
-		public AnalysisMorphologicalTransform(IList<Pattern<Word, ShapeNode>> lhs, IList<MorphologicalOutputAction> rhs)
+		protected AnalysisMorphologicalTransformRuleSpec(IEnumerable<Pattern<Word, ShapeNode>> lhs, IList<MorphologicalOutputAction> rhs)
 		{
-			_lhs = lhs;
 			Dictionary<string, Pattern<Word, ShapeNode>> partLookup = lhs.ToDictionary(p => p.Name);
 			_modifyFrom = new Dictionary<string, FeatureStruct>();
 			_pattern = new Pattern<Word, ShapeNode>();
@@ -33,13 +32,18 @@ namespace SIL.HermitCrab.MorphologicalRules
 			get { return _pattern; }
 		}
 
-		public Word Unapply(Match<Word, ShapeNode> match)
+		public virtual bool IsApplicable(Word input)
 		{
-			Word output = match.Input.DeepClone();
-			output.Shape.Clear();
-			foreach (Pattern<Word, ShapeNode> part in _lhs)
-				AddPartNodes(part, match, output.Shape);
-			return output;
+			return true;
+		}
+
+		public abstract ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output);
+
+		protected void GenerateShape(IList<Pattern<Word, ShapeNode>> lhs, Shape shape, Match<Word, ShapeNode> match)
+		{
+			shape.Clear();
+			foreach (Pattern<Word, ShapeNode> part in lhs)
+				AddPartNodes(part, match, shape);
 		}
 
 		private void AddPartNodes(Pattern<Word, ShapeNode> part, Match<Word, ShapeNode> match, Shape output)
@@ -55,7 +59,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 				{
 					foreach (ShapeNode node in output.GetNodes(outputSpan))
 					{
-						if ((FeatureSymbol)modifyFromFS.GetValue(HCFeatureSystem.Type) == node.Annotation.Type())
+						if ((FeatureSymbol) modifyFromFS.GetValue(HCFeatureSystem.Type) == node.Annotation.Type())
 						{
 							FeatureStruct fs = node.Annotation.FeatureStruct.DeepClone();
 							fs.PriorityUnion(modifyFromFS);

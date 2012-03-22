@@ -96,41 +96,41 @@ namespace HermitCrabTest
 					.Symbol("N", "Noun")
 					.Symbol("V", "Verb")
 					.Symbol("A", "Adjective"))
-				.ComplexFeature("head", head => head
-					.SymbolicFeature("foo", foo => foo
-						.Symbol("foo+", "+")
-						.Symbol("foo-", "-"))
-					.SymbolicFeature("baz", baz => baz
-						.Symbol("baz+", "+")
-						.Symbol("baz-", "-"))
-					.SymbolicFeature("num", num => num
-						.Symbol("sg")
-						.Symbol("pl"))
-					.SymbolicFeature("pers", pers => pers
-						.Symbol("1")
-						.Symbol("2")
-						.Symbol("3")
-						.Symbol("4"))
-					.SymbolicFeature("tense", tense => tense
-						.Symbol("past")
-						.Symbol("pres"))
-					.SymbolicFeature("evidential", evidential => evidential
-						.Symbol("witnessed"))
-					.SymbolicFeature("aspect", aspect => aspect
-						.Symbol("perf")
-						.Symbol("impf"))
-					.SymbolicFeature("mood", mood => mood
-						.Symbol("active")
-						.Symbol("passive")))
-				.ComplexFeature("foot", foot => foot
-					.SymbolicFeature("fum", fum => fum
-						.Symbol("fum+", "+")
-						.Symbol("fum-", "-"))
-					.SymbolicFeature("bar", bar => bar
-						.Symbol("bar+", "+")
-						.Symbol("bar-", "-"))).Value;
+				.SymbolicFeature("foo", foo => foo
+					.Symbol("foo+", "+")
+					.Symbol("foo-", "-"))
+				.SymbolicFeature("baz", baz => baz
+					.Symbol("baz+", "+")
+					.Symbol("baz-", "-"))
+				.SymbolicFeature("num", num => num
+					.Symbol("sg")
+					.Symbol("pl"))
+				.SymbolicFeature("pers", pers => pers
+					.Symbol("1")
+					.Symbol("2")
+					.Symbol("3")
+					.Symbol("4"))
+				.SymbolicFeature("tense", tense => tense
+					.Symbol("past")
+					.Symbol("pres"))
+				.SymbolicFeature("evidential", evidential => evidential
+					.Symbol("witnessed"))
+				.SymbolicFeature("aspect", aspect => aspect
+					.Symbol("perf")
+					.Symbol("impf"))
+				.SymbolicFeature("mood", mood => mood
+					.Symbol("active")
+					.Symbol("passive"))
+				.SymbolicFeature("fum", fum => fum
+					.Symbol("fum+", "+")
+					.Symbol("fum-", "-"))
+				.SymbolicFeature("bar", bar => bar
+					.Symbol("bar+", "+")
+					.Symbol("bar-", "-"))
+				.ComplexFeature("head")
+				.ComplexFeature("foot").Value;
 
-			Table1 = new SymbolTable("table1", SpanFactory);
+			Table1 = new SymbolTable(SpanFactory, "table1");
 			AddSegDef(Table1, phoneticFeatSys, "a", "cons-", "voc+", "high-", "low+", "back+", "round-", "vd+");
 			AddSegDef(Table1, phoneticFeatSys, "i", "cons-", "voc+", "high+", "low-", "back-", "round-", "vd+");
 			AddSegDef(Table1, phoneticFeatSys, "u", "cons-", "voc+", "high+", "low-", "back+", "round+", "vd+");
@@ -156,7 +156,7 @@ namespace HermitCrabTest
 			AddSegDef(Table1, phoneticFeatSys, "f", "cons+", "voc-", "labiodental", "vd-", "asp-", "strident+", "cont+");
 			AddSegDef(Table1, phoneticFeatSys, "v", "cons+", "voc-", "labiodental", "vd+", "asp-", "strident+", "cont+");
 
-			Table2 = new SymbolTable("table2", SpanFactory);
+			Table2 = new SymbolTable(SpanFactory, "table2");
 			AddSegDef(Table2, phoneticFeatSys, "a", "cons-", "voc+", "high-", "low+", "back+", "round-", "vd+");
 			AddSegDef(Table2, phoneticFeatSys, "i", "cons-", "voc+", "high+", "low-", "back-", "round-", "vd+");
 			AddSegDef(Table2, phoneticFeatSys, "u", "cons-", "voc+", "high+", "low-", "back+", "round+", "vd+");
@@ -182,7 +182,7 @@ namespace HermitCrabTest
 			AddBdryDef(Table2, ".");
 			AddBdryDef(Table2, "$");
 
-			Table3 = new SymbolTable("table3", SpanFactory);
+			Table3 = new SymbolTable(SpanFactory, "table3");
 			AddSegDef(Table3, phoneticFeatSys, "a", "cons-", "voc+", "high-", "low+", "back+", "round-", "vd+", "ATR+", "cont+");
 			AddSegDef(Table3, phoneticFeatSys, "a̘", "cons-", "voc+", "high-", "low+", "back+", "round-", "vd+", "ATR-", "cont+");
 			AddSegDef(Table3, phoneticFeatSys, "i", "cons-", "voc+", "high+", "low-", "back-", "round-", "vd+", "cont+");
@@ -341,10 +341,12 @@ namespace HermitCrabTest
 			entry = AddEntry("pos2", "ba", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Morphophonemic);
 			entry.MprFeatures.Add(Germanic);
 
-			Language = new Language("lang1", phoneticFeatSys, syntacticFeatSys);
-			Language.Strata.Add(Morphophonemic);
-			Language.Strata.Add(Allophonic);
-			Language.Strata.Add(Surface);
+			Language = new Language("lang1")
+			           	{
+			           		PhoneticFeatureSystem = phoneticFeatSys,
+							SyntacticFeatureSystem = syntacticFeatSys,
+							Strata = { Morphophonemic, Allophonic, Surface }
+			           	} ;
 		}
 
 		[TearDown]
@@ -383,12 +385,12 @@ namespace HermitCrabTest
 				fs.AddValue(symbol.Feature, new SymbolicFeatureValue(symbol));
 			}
 			fs.AddValue(HCFeatureSystem.Type, HCFeatureSystem.Segment);
-			table.AddSymbol(strRep, fs);
+			table.Add(strRep, fs);
 		}
 
 		private void AddBdryDef(SymbolTable table, string strRep)
 		{
-			table.AddSymbol(strRep, FeatureStruct.New().Symbol(HCFeatureSystem.Boundary).Feature(HCFeatureSystem.StrRep).EqualTo(strRep).Value);
+			table.Add(strRep, FeatureStruct.New().Symbol(HCFeatureSystem.Boundary).Feature(HCFeatureSystem.StrRep).EqualTo(strRep).Value);
 		}
 
 		protected void AssertMorphsEqual(IEnumerable<Word> words, params string[] expected)

@@ -43,7 +43,13 @@ namespace SIL.HermitCrab
 			Dirty = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "Dirty" };
 			Clean = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "Clean" };
 
-			Modified = new SymbolicFeature(Guid.NewGuid().ToString()) { Description = "Modified", PossibleSymbols = { Dirty, Clean } };
+			Modified = new SymbolicFeature(Guid.NewGuid().ToString())
+			           	{
+			           		Description = "Modified",
+			           		PossibleSymbols = { Dirty, Clean },
+			           		DefaultValue = new SymbolicFeatureValue(Clean)
+			           	};
+
 			Instance.Add(Modified);
 
 			LeftSide = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "LeftSide" };

@@ -51,7 +51,7 @@ namespace SIL.HermitCrab.PhonologicalRules
 			foreach (PatternNode<Word, ShapeNode> node in _rhs.Children.GetNodes(match.Matcher.Direction))
 			{
 				if (match.Input.Shape.Count == 256)
-					throw new MorphException(MorphErrorCode.TooManySegs);
+					throw new MorphException(MorphErrorCode.InfiniteLoop, "An epenthesis rewrite rule is stuck in an infinite loop.");
 				var constraint = (Constraint<Word, ShapeNode>) node;
 				if (match.VariableBindings.Values.OfType<SymbolicFeatureValue>().Any(value => value.Feature.DefaultValue.Equals(value)))
 					throw new MorphException(MorphErrorCode.UninstantiatedFeature);

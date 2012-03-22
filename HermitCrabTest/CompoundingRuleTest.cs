@@ -19,10 +19,9 @@ namespace HermitCrabTest
 			Allophonic.MorphologicalRules.Add(rule1);
 			rule1.Subrules.Add(new CompoundingSubrule("rule1_sr1")
 			                   	{
-			                   		LeftLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
-									LeftRhs = { new CopyFromInput("head") },
-									RightLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-									RightRhs = { new InsertShape(Table3.ToShape("+")), new CopyFromInput("nonHead") }
+			                   		HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
+									NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
+									Rhs = { new CopyFromInput("head"), new InsertShape(Table3.ToShape("+")), new CopyFromInput("nonHead") }
 			                   	});
 
 			var morpher = new Morpher(SpanFactory, Language);
@@ -35,11 +34,9 @@ namespace HermitCrabTest
 			rule1.Subrules.Clear();
 			rule1.Subrules.Add(new CompoundingSubrule("rule1_sr1")
 								{
-									Headedness = Headedness.RightHeaded,
-									LeftLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-									LeftRhs = { new CopyFromInput("nonHead"), new InsertShape(Table3.ToShape("+")) },
-									RightLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
-									RightRhs = { new CopyFromInput("head") }
+									HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
+									NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
+									Rhs = { new CopyFromInput("nonHead"), new InsertShape(Table3.ToShape("+")), new CopyFromInput("head") }
 								});
 
 			morpher = new Morpher(SpanFactory, Language);
@@ -75,10 +72,9 @@ namespace HermitCrabTest
 			rule1.Subrules.Clear();
 			rule1.Subrules.Add(new CompoundingSubrule("rule1_sr1")
 								{
-									LeftLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
-									LeftRhs = { new CopyFromInput("head") },
-									RightLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-									RightRhs = { new InsertShape(Table3.ToShape("+")), new CopyFromInput("nonHead") }
+									HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
+									NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
+									Rhs = { new CopyFromInput("head"), new InsertShape(Table3.ToShape("+")), new CopyFromInput("nonHead") }
 								});
 
 			morpher = new Morpher(SpanFactory, Language);
@@ -92,11 +88,9 @@ namespace HermitCrabTest
 			Allophonic.MorphologicalRules.Add(rule2);
 			rule2.Subrules.Add(new CompoundingSubrule("rule2_sr1")
 								{
-									Headedness = Headedness.RightHeaded,
-									LeftLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-									LeftRhs = { new CopyFromInput("nonHead"), new InsertShape(Table3.ToShape("+")) },
-									RightLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
-									RightRhs = { new CopyFromInput("head") },
+									HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
+									NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
+									Rhs = { new CopyFromInput("nonHead"), new InsertShape(Table3.ToShape("+")), new CopyFromInput("head") },
 								});
 
 			morpher = new Morpher(SpanFactory, Language);
@@ -113,10 +107,9 @@ namespace HermitCrabTest
 			Allophonic.MorphologicalRules.Add(rule1);
 			rule1.Subrules.Add(new CompoundingSubrule("rule1_sr1")
 								{
-									LeftLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
-									LeftRhs = { new CopyFromInput("head") },
-									RightLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-									RightRhs = { new InsertShape(Table3.ToShape("+")), new CopyFromInput("nonHead") }
+									HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
+									NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
+									Rhs = { new CopyFromInput("head"), new InsertShape(Table3.ToShape("+")), new CopyFromInput("nonHead") }
 								});
 
 			var morpher = new Morpher(SpanFactory, Language);

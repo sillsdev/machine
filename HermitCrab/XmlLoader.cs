@@ -190,7 +190,7 @@ namespace SIL.HermitCrab
 			}
 			catch (XmlException xe)
 			{
-				throw new LoadException(LoadError.ParseError, string.Format("Unable to parser input file: {0}.", _configPath), xe);
+				throw new LoadException(LoadErrorCode.ParseError, string.Format("Unable to parser input file: {0}.", _configPath), xe);
 			}
 			finally
 			{
@@ -203,7 +203,7 @@ namespace SIL.HermitCrab
 
 		private static void ValidationEventHandler(object sender, ValidationEventArgs e)
 		{
-			throw new LoadException(LoadError.InvalidFormat, e.Message + " Line: " + e.Exception.LineNumber + ", Pos: " + e.Exception.LinePosition);
+			throw new LoadException(LoadErrorCode.InvalidFormat, e.Message + " Line: " + e.Exception.LineNumber + ", Pos: " + e.Exception.LinePosition);
 		}
 
 		private static bool IsActive(XElement elem)
@@ -948,7 +948,7 @@ namespace SIL.HermitCrab
 						Shape shape;
 						if (!table.ToShape(shapeStr, out shape))
 						{
-							throw new LoadException(LoadError.InvalidShape,
+							throw new LoadException(LoadErrorCode.InvalidShape,
 								string.Format("Failure to translate shape '{0}' of rule '{1}' into a phonetic shape using character table '{2}'.", shapeStr, ruleID, table.ID));
 						}
 						rhs.Add(new InsertShape(shape));
@@ -1111,7 +1111,7 @@ namespace SIL.HermitCrab
 				{
 					FeatureSymbol pos;
 					if (!_language.SyntacticFeatureSystem.TryGetSymbol(posID, out pos))
-						throw new LoadException(LoadError.UndefinedObject, string.Format("POS '{0}' is unknown.", posID));
+						throw new LoadException(LoadErrorCode.UndefinedObject, string.Format("POS '{0}' is unknown.", posID));
 					yield return pos;
 				}
 			}
@@ -1126,7 +1126,7 @@ namespace SIL.HermitCrab
 			{
 				MprFeature mprFeature;
 				if (!_mprFeatures.TryGetValue(mprFeatID, out mprFeature))
-					throw new LoadException(LoadError.UndefinedObject, string.Format("MPR Feature '{0}' is unknown.", mprFeatID));
+					throw new LoadException(LoadErrorCode.UndefinedObject, string.Format("MPR Feature '{0}' is unknown.", mprFeatID));
 				mprFeatures.Add(mprFeature);
 			}
 		}
@@ -1178,7 +1178,7 @@ namespace SIL.HermitCrab
 						Shape shape;
 						if (!segsTable.ToShape(shapeStr, out shape))
 						{
-							throw new LoadException(LoadError.InvalidShape,
+							throw new LoadException(LoadErrorCode.InvalidShape,
 								string.Format("Failure to translate shape '{0}' in a phonetic sequence into a phonetic shape using character table '{1}'.", shapeStr, table.ID));
 						}
 						node = new Group<Word, ShapeNode>(shape.Select(n => new Constraint<Word, ShapeNode>(n.Annotation.FeatureStruct)));
@@ -1195,7 +1195,7 @@ namespace SIL.HermitCrab
 			var natClassID = (string) ctxtElem.Attribute("naturalClass");
 			FeatureStruct fs;
 			if (!_natClasses.TryGetValue(natClassID, out fs))
-				throw new LoadException(LoadError.UndefinedObject, string.Format("Natural class '{0}' is unknown.", natClassID));
+				throw new LoadException(LoadErrorCode.UndefinedObject, string.Format("Natural class '{0}' is unknown.", natClassID));
 
 			fs = fs.DeepClone();
 			foreach (XElement varElem in ctxtElem.Elements("AlphaVariables").Elements("AlphaVariable"))
@@ -1203,7 +1203,7 @@ namespace SIL.HermitCrab
 				var varID = (string)varElem.Attribute("variableFeature");
 				Tuple<string, SymbolicFeature> variable;
 				if (!variables.TryGetValue(varID, out variable))
-					throw new LoadException(LoadError.UndefinedObject, string.Format("Variable '{0}' is unknown.", varID));
+					throw new LoadException(LoadErrorCode.UndefinedObject, string.Format("Variable '{0}' is unknown.", varID));
 				fs.AddValue(variable.Item2, new SymbolicFeatureValue(variable.Item2, variable.Item1, (string)varElem.Attribute("polarity") == "plus"));
 			}
 			return fs;
@@ -1236,7 +1236,7 @@ namespace SIL.HermitCrab
 		{
 			SymbolTable table;
 			if (!_tables.TryGetValue(id, out table))
-				throw new LoadException(LoadError.UndefinedObject, string.Format("Character definition table {0} is unknown.", id));
+				throw new LoadException(LoadErrorCode.UndefinedObject, string.Format("Character definition table {0} is unknown.", id));
 			return table;
 		}
 
@@ -1244,7 +1244,7 @@ namespace SIL.HermitCrab
 		{
 			string strRep;
 			if (!_repIds.TryGetValue(id, out strRep))
-				throw new LoadException(LoadError.UndefinedObject, string.Format("Character definition {0} is unknown.", id));
+				throw new LoadException(LoadErrorCode.UndefinedObject, string.Format("Character definition {0} is unknown.", id));
 			return strRep;
 		}
 
@@ -1252,7 +1252,7 @@ namespace SIL.HermitCrab
 		{
 			Feature feature;
 			if (!featSys.TryGetFeature(id, out feature))
-				throw new LoadException(LoadError.UndefinedObject, string.Format("Unknown feature '{0}'.", id));
+				throw new LoadException(LoadErrorCode.UndefinedObject, string.Format("Unknown feature '{0}'.", id));
 			return feature;
 		}
 
@@ -1260,7 +1260,7 @@ namespace SIL.HermitCrab
 		{
 			FeatureSymbol symbol;
 			if (!feature.PossibleSymbols.TryGetValue(id, out symbol))
-				throw new LoadException(LoadError.UndefinedObject, string.Format("Unknown value '{0}' for feature '{1}'.", id, feature.ID));
+				throw new LoadException(LoadErrorCode.UndefinedObject, string.Format("Unknown value '{0}' for feature '{1}'.", id, feature.ID));
 			return symbol;
 		}
 	}

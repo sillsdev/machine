@@ -35,10 +35,7 @@ namespace SIL.HermitCrab.PhonologicalRules
 			if (output != null)
 			{
 				if (ApplicationMode == ApplicationMode.Iterative)
-				{
-					foreach (ShapeNode node in output.Shape)
-						node.SetDirty(false);
-				}
+					output.ResetDirty();
 				return output.ToEnumerable();
 			}
 

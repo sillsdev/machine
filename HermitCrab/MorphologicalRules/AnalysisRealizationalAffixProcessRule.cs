@@ -23,19 +23,13 @@ namespace SIL.HermitCrab.MorphologicalRules
 		{
 			foreach (AffixProcessAllomorph allo in rule.Allomorphs)
 			{
-				var transform = new AnalysisMorphologicalTransform(allo.Lhs, allo.Rhs);
-				var ruleSpec = new DefaultPatternRuleSpec<Word, ShapeNode>(transform.Pattern,
-					(PatternRule<Word, ShapeNode> patternRule, Match<Word, ShapeNode> match, out Word output) =>
-						{
-							output = transform.Unapply(match);
-							return null;
-						});
-				yield return new PatternRule<Word, ShapeNode>(spanFactory, ruleSpec, ApplicationMode.Multiple,
+				yield return new PatternRule<Word, ShapeNode>(spanFactory, new AnalysisAffixProcessAllomorphRuleSpec(allo), ApplicationMode.Multiple,
 					new MatcherSettings<ShapeNode>
 						{
 							Filter = ann => ann.Type() == HCFeatureSystem.Segment,
 							AnchoredToStart = true,
-							AnchoredToEnd = true
+							AnchoredToEnd = true,
+							AllSubmatches = true
 						});
 			}
 		}

@@ -23,8 +23,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 			_rule = rule;
 			_subruleMatchers = new List<Tuple<Matcher<Word, ShapeNode>, Matcher<Word, ShapeNode>>>();
 			foreach (CompoundingSubrule sr in rule.Subrules)
-				_subruleMatchers.Add(Tuple.Create(BuildMatcher(spanFactory, sr.Headedness == Headedness.LeftHeaded ? sr.LeftLhs : sr.RightLhs),
-					BuildMatcher(spanFactory, sr.Headedness == Headedness.LeftHeaded ? sr.RightLhs : sr.LeftLhs)));
+				_subruleMatchers.Add(Tuple.Create(BuildMatcher(spanFactory, sr.HeadLhs), BuildMatcher(spanFactory, sr.NonHeadLhs)));
 		}
 
 		private Matcher<Word, ShapeNode> BuildMatcher(SpanFactory<ShapeNode> spanFactory, IEnumerable<Pattern<Word, ShapeNode>> lhs)
@@ -35,12 +34,12 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 			return new Matcher<Word, ShapeNode>(spanFactory, pattern,
 				new MatcherSettings<ShapeNode>
-				{
-					Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor),
-					UseDefaults = true,
-					AnchoredToStart = true,
-					AnchoredToEnd = true
-				});
+					{
+						Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary),
+						UseDefaults = true,
+						AnchoredToStart = true,
+						AnchoredToEnd = true
+					});
 		}
 
 		public bool IsApplicable(Word input)
@@ -63,20 +62,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 						Match<Word, ShapeNode> nonHeadMatch = _subruleMatchers[i].Item2.Match(input.CurrentNonHead);
 						if (nonHeadMatch.Success)
 						{
-							Word outWord = input.DeepClone();
-							outWord.Shape.Clear();
-							switch (_rule.Subrules[i].Headedness)
-							{
-								case Headedness.LeftHeaded:
-									ApplyHead(_rule.Subrules[i].LeftRhs, headMatch, outWord);
-									ApplyNonHead(_rule.Subrules[i].RightRhs, nonHeadMatch, outWord);
-									break;
-
-								case Headedness.RightHeaded:
-									ApplyNonHead(_rule.Subrules[i].LeftRhs, nonHeadMatch, outWord);
-									ApplyHead(_rule.Subrules[i].RightRhs, headMatch, outWord);
-									break;
-							}
+							Word outWord = ApplySubrule(_rule.Subrules[i], headMatch, nonHeadMatch);
 
 							outWord.SyntacticFeatureStruct = syntacticFS;
 							outWord.SyntacticFeatureStruct.PriorityUnion(_rule.OutSyntacticFeatureStruct);
@@ -115,40 +101,58 @@ namespace SIL.HermitCrab.MorphologicalRules
 			return output;
 		}
 
-		private void ApplyHead(IList<MorphologicalOutputAction> rhs, Match<Word, ShapeNode> headMatch, Word output)
+		private Word ApplySubrule(CompoundingSubrule sr, Match<Word, ShapeNode> headMatch, Match<Word, ShapeNode> nonHeadMatch)
 		{
+			// TODO: unify the variable bindings from the head and non-head matches
+			if (headMatch.VariableBindings.Values.OfType<SymbolicFeatureValue>().Any(value => value.Feature.DefaultValue.Equals(value)))
+				throw new MorphException(MorphErrorCode.UninstantiatedFeature);
+			if (nonHeadMatch.VariableBindings.Values.OfType<SymbolicFeatureValue>().Any(value => value.Feature.DefaultValue.Equals(value)))
+				throw new MorphException(MorphErrorCode.UninstantiatedFeature);
+
+			Word output = headMatch.Input.DeepClone();
+			output.Shape.Clear();
+
 			var existingMorphNodes = new Dictionary<string, List<ShapeNode>>();
-			foreach (MorphologicalOutputAction outputAction in rhs)
+			var newMorphNodes = new List<ShapeNode>();
+			foreach (MorphologicalOutputAction outputAction in sr.Rhs)
 			{
-				foreach (Tuple<ShapeNode, ShapeNode> mapping in outputAction.Apply(headMatch, output))
+				if (outputAction.PartName != null && nonHeadMatch.GroupCaptures.Contains(outputAction.PartName))
 				{
-					if (mapping.Item1 != null && mapping.Item1.Annotation.Parent != null)
+					newMorphNodes.AddRange(outputAction.Apply(nonHeadMatch, output).Select(mapping => mapping.Item2));
+				}
+				else
+				{
+					foreach (Tuple<ShapeNode, ShapeNode> mapping in outputAction.Apply(headMatch, output))
 					{
-						var allomorphID = (string) mapping.Item1.Annotation.Parent.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
-						existingMorphNodes.GetValue(allomorphID, () => new List<ShapeNode>()).Add(mapping.Item2);
+						if (mapping.Item1 != null && mapping.Item1.Annotation.Parent != null)
+						{
+							var allomorphID = (string) mapping.Item1.Annotation.Parent.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
+							existingMorphNodes.GetValue(allomorphID, () => new List<ShapeNode>()).Add(mapping.Item2);
+						}
 					}
 				}
 			}
 
-			foreach (Annotation<ShapeNode> morph in headMatch.Input.Morphs)
+			if (existingMorphNodes.Count > 0)
 			{
-				List<ShapeNode> nodes;
-				if (existingMorphNodes.TryGetValue((string) morph.FeatureStruct.GetValue(HCFeatureSystem.Allomorph), out nodes))
-					MarkMorph(output, nodes, morph.FeatureStruct.DeepClone());
+				foreach (Annotation<ShapeNode> morph in headMatch.Input.Morphs)
+				{
+					List<ShapeNode> nodes;
+					if (existingMorphNodes.TryGetValue((string) morph.FeatureStruct.GetValue(HCFeatureSystem.Allomorph), out nodes))
+						MarkMorph(output, nodes, morph.FeatureStruct.DeepClone());
+				}
 			}
-		}
 
-		private void ApplyNonHead(IList<MorphologicalOutputAction> rhs , Match<Word, ShapeNode> nonHeadMatch, Word output)
-		{
-			var newMorphNodes = new List<ShapeNode>();
-			foreach (MorphologicalOutputAction outputAction in rhs)
-				newMorphNodes.AddRange(outputAction.Apply(nonHeadMatch, output).Select(mapping => mapping.Item2));
+			if (newMorphNodes.Count > 0)
+			{
+				FeatureStruct fs = FeatureStruct.New()
+					.Symbol(HCFeatureSystem.Morph)
+					.Feature(HCFeatureSystem.Allomorph).EqualTo(headMatch.Input.CurrentNonHead.RootAllomorph.ID).Value;
+				MarkMorph(output, newMorphNodes, fs);
+				output.Allomorphs.Add(headMatch.Input.CurrentNonHead.RootAllomorph);
+			}
 
-			FeatureStruct fs = FeatureStruct.New()
-				.Symbol(HCFeatureSystem.Morph)
-				.Feature(HCFeatureSystem.Allomorph).EqualTo(nonHeadMatch.Input.RootAllomorph.ID).Value;
-			MarkMorph(output, newMorphNodes, fs);
-			output.Allomorphs.Add(nonHeadMatch.Input.RootAllomorph);
+			return output;
 		}
 
 		private void MarkMorph(Word output, List<ShapeNode> nodes, FeatureStruct fs)

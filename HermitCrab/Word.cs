@@ -23,6 +23,7 @@ namespace SIL.HermitCrab
 			_allomorphs = new IDBearerSet<Allomorph>();
 			_mprFeatures = new MprFeatureSet();
 			_shape = rootAllomorph.Shape.DeepClone();
+			ResetDirty();
 			SetRootAllomorph(rootAllomorph);
 			RealizationalFeatureStruct = realizationalFS;
 			_mrules = new Stack<IMorphologicalRule>();
@@ -37,6 +38,7 @@ namespace SIL.HermitCrab
 			_allomorphs = new IDBearerSet<Allomorph>();
 			Stratum = stratum;
 			_shape = shape;
+			ResetDirty();
 			SyntacticFeatureStruct = new FeatureStruct();
 			RealizationalFeatureStruct = new FeatureStruct();
 			_mprFeatures = new MprFeatureSet();
@@ -238,6 +240,12 @@ namespace SIL.HermitCrab
 			}
 
 			return false;
+		}
+
+		public void ResetDirty()
+		{
+			foreach (ShapeNode node in _shape)
+				node.SetDirty(false);
 		}
 
 		public Word DeepClone()

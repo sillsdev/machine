@@ -808,7 +808,7 @@ namespace HermitCrabTest
 
 			morpher = new Morpher(SpanFactory, Language);
 			var me = Assert.Throws<MorphException>(() => morpher.ParseWord("ipʰit"));
-			Assert.AreEqual(MorphErrorCode.TooManySegs, me.ErrorCode);
+			Assert.AreEqual(MorphErrorCode.InfiniteLoop, me.ErrorCode);
 
 			Allophonic.PhonologicalRules.Clear();
 

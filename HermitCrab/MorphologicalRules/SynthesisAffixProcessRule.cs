@@ -23,21 +23,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 			_rules = new List<PatternRule<Word, ShapeNode>>();
 			foreach (AffixProcessAllomorph allo in rule.Allomorphs)
 			{
-				AffixProcessAllomorph allomorph = allo;
-				var transform = new SynthesisMorphologicalTransform(MorphologicalTransformType.Affix, allomorph.Lhs, allomorph.Rhs, allomorph.ReduplicationHint);
-				var ruleSpec = new DefaultPatternRuleSpec<Word, ShapeNode>(transform.Pattern,
-					(PatternRule<Word, ShapeNode> patternRule, Match<Word, ShapeNode> match, out Word output) =>
-						{
-							output = transform.Apply(patternRule.SpanFactory, match, allomorph);
-							output.MprFeatures.AddOutput(allomorph.OutMprFeatures);
-							return null;
-						},
-					input =>
-						{
-							return (allomorph.RequiredMprFeatures.Count == 0 || allomorph.RequiredMprFeatures.IsMatch(input.MprFeatures))
-								&& (allomorph.ExcludedMprFeatures.Count == 0 || !allomorph.ExcludedMprFeatures.IsMatch(input.MprFeatures));
-						});
-
+				var ruleSpec = new SynthesisAffixProcessAllomorphRuleSpec(allo);
 				_rules.Add(new PatternRule<Word, ShapeNode>(_spanFactory, ruleSpec,
 					new MatcherSettings<ShapeNode>
 						{
@@ -48,8 +34,6 @@ namespace SIL.HermitCrab.MorphologicalRules
 						}));
 			}
 		}
-
-
 
 		public bool IsApplicable(Word input)
 		{

@@ -1,5 +1,4 @@
-﻿using SIL.Collections;
-using SIL.Machine;
+﻿using SIL.Machine;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 
@@ -21,7 +20,6 @@ namespace SIL.HermitCrab
 		{
 			// TODO: handle reentrancy properly
 
-			IReadOnlySet<Feature> hcFeatures = HCFeatureSystem.Instance.Features;
 			var result = new FeatureStruct();
 			foreach (Feature feature in fs.Features)
 			{
@@ -30,12 +28,12 @@ namespace SIL.HermitCrab
 				FeatureValue newValue;
 				if (childFS != null)
 				{
-					newValue = hcFeatures.Contains(feature) ? childFS.DeepClone() : childFS.AntiFeatureStruct();
+					newValue = HCFeatureSystem.Instance.ContainsFeature(feature) ? childFS.DeepClone() : childFS.AntiFeatureStruct();
 				}
 				else
 				{
 					var childSfv = (SimpleFeatureValue) value;
-					newValue = hcFeatures.Contains(feature) ? childSfv.DeepClone() : childSfv.Negation();
+					newValue = HCFeatureSystem.Instance.ContainsFeature(feature) ? childSfv.DeepClone() : childSfv.Negation();
 				}
 				result.AddValue(feature, newValue);
 			}
@@ -49,10 +47,7 @@ namespace SIL.HermitCrab
 
 		public static void SetDirty(this ShapeNode node, bool dirty)
 		{
-			if (dirty)
-				node.Annotation.FeatureStruct.AddValue(HCFeatureSystem.Modified, HCFeatureSystem.Dirty);
-			else
-				node.Annotation.FeatureStruct.RemoveValue(HCFeatureSystem.Modified);
+			node.Annotation.FeatureStruct.AddValue(HCFeatureSystem.Modified, dirty ? HCFeatureSystem.Dirty : HCFeatureSystem.Clean);
 		}
 	}
 }

@@ -5,49 +5,34 @@ using SIL.Machine.Matching;
 
 namespace SIL.HermitCrab.MorphologicalRules
 {
-	public enum Headedness
-	{
-		LeftHeaded,
-		RightHeaded
-	}
-
 	public class CompoundingSubrule : IDBearerBase
 	{
-		private readonly List<Pattern<Word, ShapeNode>> _leftLhs;
-		private readonly List<Pattern<Word, ShapeNode>> _rightLhs;
+		private readonly List<Pattern<Word, ShapeNode>> _headLhs;
+		private readonly List<Pattern<Word, ShapeNode>> _nonHeadLhs;
 
-		private readonly List<MorphologicalOutputAction> _leftRhs;
-		private readonly List<MorphologicalOutputAction> _rightRhs;
+		private readonly List<MorphologicalOutputAction> _rhs;
 
 		public CompoundingSubrule(string id)
 			: base(id)
 		{
-			_leftLhs = new List<Pattern<Word, ShapeNode>>();
-			_rightLhs = new List<Pattern<Word, ShapeNode>>();
-			_leftRhs = new List<MorphologicalOutputAction>();
-			_rightRhs = new List<MorphologicalOutputAction>();
+			_headLhs = new List<Pattern<Word, ShapeNode>>();
+			_nonHeadLhs = new List<Pattern<Word, ShapeNode>>();
+			_rhs = new List<MorphologicalOutputAction>();
 		}
 
-		public Headedness Headedness { get; set; }
-
-		public IList<Pattern<Word, ShapeNode>> LeftLhs
+		public IList<Pattern<Word, ShapeNode>> HeadLhs
 		{
-			get { return _leftLhs; }
+			get { return _headLhs; }
 		}
 
-		public IList<Pattern<Word, ShapeNode>> RightLhs
+		public IList<Pattern<Word, ShapeNode>> NonHeadLhs
 		{
-			get { return _rightLhs; }
+			get { return _nonHeadLhs; }
 		}
 
-		public IList<MorphologicalOutputAction> LeftRhs
+		public IList<MorphologicalOutputAction> Rhs
 		{
-			get { return _leftRhs; }
-		}
-
-		public IList<MorphologicalOutputAction> RightRhs
-		{
-			get { return _rightRhs; }
+			get { return _rhs; }
 		}
 	}
 }

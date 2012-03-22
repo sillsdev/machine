@@ -15,7 +15,7 @@ namespace SIL.HermitCrab
 		/// <summary>
 		/// A phonetic shape contains too many segments.
 		/// </summary>
-		TooManySegs
+		InfiniteLoop
 	}
 
 	/// <summary>

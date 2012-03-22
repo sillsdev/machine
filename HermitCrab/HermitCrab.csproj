@@ -77,10 +77,11 @@
     <Compile Include="LanguageSynthesisRule.cs" />
     <Compile Include="MorphologicalRules\AffixProcessAllomorph.cs" />
     <Compile Include="MorphologicalRules\AffixProcessRule.cs" />
+    <Compile Include="MorphologicalRules\AnalysisAffixProcessAllomorphRuleSpec.cs" />
     <Compile Include="MorphologicalRules\AnalysisAffixProcessRule.cs" />
     <Compile Include="MorphologicalRules\AnalysisCompoundingRule.cs" />
-    <Compile Include="MorphologicalRules\AnalysisCompoundingRuleSpec.cs" />
-    <Compile Include="MorphologicalRules\AnalysisMorphologicalTransform.cs" />
+    <Compile Include="MorphologicalRules\AnalysisCompoundingSubruleRuleSpec.cs" />
+    <Compile Include="MorphologicalRules\AnalysisMorphologicalTransformRuleSpec.cs" />
     <Compile Include="MorphologicalRules\AnalysisRealizationalAffixProcessRule.cs" />
     <Compile Include="MorphologicalRules\CompoundingRule.cs" />
     <Compile Include="MorphologicalRules\CompoundingSubrule.cs" />
@@ -90,9 +91,9 @@
     <Compile Include="MorphologicalRules\ModifyFromInput.cs" />
     <Compile Include="MorphologicalRules\MorphologicalOutputAction.cs" />
     <Compile Include="MorphologicalRules\RealizationalAffixProcessRule.cs" />
+    <Compile Include="MorphologicalRules\SynthesisAffixProcessAllomorphRuleSpec.cs" />
     <Compile Include="MorphologicalRules\SynthesisAffixProcessRule.cs" />
     <Compile Include="MorphologicalRules\SynthesisCompoundingRule.cs" />
-    <Compile Include="MorphologicalRules\SynthesisMorphologicalTransform.cs" />
     <Compile Include="MorphologicalRules\SynthesisRealizationalAffixProcessRule.cs" />
     <Compile Include="PhonologicalRules\AnalysisMetathesisRule.cs" />
     <Compile Include="PhonologicalRules\AnalysisRewriteRule.cs" />
@@ -125,7 +126,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>HCStrings.resx</DependentUpon>
     </Compile>
-    <None Include="LegacyLoader.cs" />
     <Compile Include="Morpheme.cs" />
     <Compile Include="Language.cs" />
     <Compile Include="MprFeature.cs" />

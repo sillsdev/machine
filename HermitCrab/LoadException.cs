@@ -6,7 +6,7 @@ namespace SIL.HermitCrab
 	/// The specific error type of morph exception. This is useful for displaying
 	/// user-friendly error messages.
 	/// </summary>
-	public enum LoadError
+	public enum LoadErrorCode
 	{
 		/// <summary>
 		/// An object is not defined.
@@ -36,30 +36,30 @@ namespace SIL.HermitCrab
 	/// </summary>
 	public class LoadException : Exception
 	{
-		private readonly LoadError _errorType;
+		private readonly LoadErrorCode _errorCode;
 
-		public LoadException(LoadError errorType)
+		public LoadException(LoadErrorCode errorCode)
 		{
-			_errorType = errorType;
+			_errorCode = errorCode;
 		}
 
-		public LoadException(LoadError errorType, string message)
+		public LoadException(LoadErrorCode errorCode, string message)
 			: base(message)
 		{
-			_errorType = errorType;
+			_errorCode = errorCode;
 		}
 
-		public LoadException(LoadError errorType, string message, Exception inner)
+		public LoadException(LoadErrorCode errorCode, string message, Exception inner)
 			: base(message, inner)
 		{
-			_errorType = errorType;
+			_errorCode = errorCode;
 		}
 
-		public LoadError ErrorType
+		public LoadErrorCode ErrorCode
 		{
 			get
 			{
-				return _errorType;
+				return _errorCode;
 			}
 		}
 	}
