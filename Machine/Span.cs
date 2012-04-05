@@ -73,8 +73,8 @@ namespace SIL.Machine
 
 		public bool Overlaps(Span<TOffset> other)
 		{
-			return (_spanFactory.IncludeEndpoint ? _spanFactory.Compare(_start, other._end) <= 0 : _spanFactory.Compare(_start, other._end) < 0)
-				&& (_spanFactory.IncludeEndpoint ? _spanFactory.Compare(_end, other._start) >= 0 : _spanFactory.Compare(_end, other._start) > 0);
+			return (_spanFactory.IncludeEndpoint ? _spanFactory.GetComparer(Direction.LeftToRight).Compare(_start, other._end) <= 0 : _spanFactory.GetComparer(Direction.LeftToRight).Compare(_start, other._end) < 0)
+				&& (_spanFactory.IncludeEndpoint ? _spanFactory.GetComparer(Direction.LeftToRight).Compare(_end, other._start) >= 0 : _spanFactory.GetComparer(Direction.LeftToRight).Compare(_end, other._start) > 0);
 		}
 
 		public bool Overlaps(TOffset start, TOffset end)
@@ -89,7 +89,7 @@ namespace SIL.Machine
 
 		public bool Contains(Span<TOffset> other)
 		{
-			return _spanFactory.Compare(_start, other._start) <= 0 && _spanFactory.Compare(_end, other._end) >= 0;
+			return _spanFactory.GetComparer(Direction.LeftToRight).Compare(_start, other._start) <= 0 && _spanFactory.GetComparer(Direction.LeftToRight).Compare(_end, other._end) >= 0;
 		}
 
 		public bool Contains(TOffset offset)
@@ -114,9 +114,9 @@ namespace SIL.Machine
 
 		public int CompareTo(Span<TOffset> other)
 		{
-			int res = _spanFactory.Compare(_start, other._start);
+			int res = _spanFactory.GetComparer(Direction.LeftToRight).Compare(_start, other._start);
 			if (res == 0)
-				res = -_spanFactory.Compare(_end, other._end);
+				res = -_spanFactory.GetComparer(Direction.LeftToRight).Compare(_end, other._end);
 			return res;
 		}
 
@@ -129,7 +129,10 @@ namespace SIL.Machine
 
 		public override int GetHashCode()
 		{
-			return (_start == null ? 0 : _start.GetHashCode()) ^ (_end == null ? 0 : _end.GetHashCode());
+			int code = 23;
+			code = code * 31 + (_start == null ? 0 : _spanFactory.EqualityComparer.GetHashCode(_start));
+			code = code * 31 + (_end == null ? 0 : _spanFactory.EqualityComparer.GetHashCode(_end));
+			return code;
 		}
 
 		public override bool Equals(object obj)
@@ -139,27 +142,7 @@ namespace SIL.Machine
 
 		public bool Equals(Span<TOffset> other)
 		{
-			if (_start == null)
-			{
-				if (other._start != null)
-					return false;
-			}
-			else if (!_start.Equals(other._start))
-			{
-				return false;
-			}
-
-			if (_end == null)
-			{
-				if (other._end != null)
-					return false;
-			}
-			else if (!_end.Equals(other._end))
-			{
-				return false;
-			}
-
-			return true;
+			return _spanFactory.EqualityComparer.Equals(_start, other._start) && _spanFactory.EqualityComparer.Equals(_end, other._end);
 		}
 
 		public override string ToString()

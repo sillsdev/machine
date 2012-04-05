@@ -8,12 +8,14 @@ namespace SIL.Machine.FeatureModel.Fluent
 		private readonly FeatureSystem _featSys;
 		private readonly IDictionary<int, FeatureValue> _ids; 
 		private readonly List<FeatureStruct> _disjuncts;
+		private readonly bool _mutable;
 
-		public DisjunctionBuilder(FeatureSystem featSys, IDictionary<int, FeatureValue> ids)
+		internal DisjunctionBuilder(FeatureSystem featSys, IDictionary<int, FeatureValue> ids, bool mutable)
 		{
 			_featSys = featSys;
 			_ids = ids;
 			_disjuncts = new List<FeatureStruct>();
+			_mutable = mutable;
 		}
 
 		public IEnumerable<FeatureStruct> Disjuncts
@@ -41,7 +43,7 @@ namespace SIL.Machine.FeatureModel.Fluent
 
 		private void AddDisjunct(Func<IDisjunctiveFeatureStructSyntax, IDisjunctiveFeatureStructSyntax> build)
 		{
-			var fsBuilder = new FeatureStructBuilder(_featSys, new FeatureStruct(), _ids);
+			var fsBuilder = new FeatureStructBuilder(_featSys, new FeatureStruct(), _ids, _mutable);
 			IDisjunctiveFeatureStructSyntax result = build(fsBuilder);
 			_disjuncts.Add(result.Value);
 		}

@@ -4,7 +4,7 @@ using System.Collections.Specialized;
 
 namespace SIL.Collections
 {
-	public class ObservableIDBearerSet<T> : IDBearerSet<T>, INotifyCollectionChanged where T : IIDBearer
+	public sealed class ObservableIDBearerSet<T> : IDBearerSet<T>, INotifyCollectionChanged where T : IIDBearer
 	{
 		private readonly SimpleMonitor _reentrancyMonitor = new SimpleMonitor();
 		private readonly SimpleMonitor _multiChangeMonitor = new SimpleMonitor();
@@ -122,27 +122,6 @@ namespace SIL.Collections
 		{
 			if (_reentrancyMonitor.Busy)
 				throw new InvalidOperationException("This collection cannot be changed during a CollectionChanged event.");
-		}
-
-		private class SimpleMonitor : IDisposable
-		{
-			private bool _busy;
-
-			public SimpleMonitor Enter()
-			{
-				_busy = true;
-				return this;
-			}
-
-			public void Dispose()
-			{
-				_busy = false;
-			}
-
-			public bool Busy
-			{
-				get { return _busy; }
-			}
 		}
 	}
 }

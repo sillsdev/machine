@@ -46,7 +46,21 @@ namespace SIL.Machine.Matching
 		internal override State<TData, TOffset> GenerateNfa(FiniteStateAutomaton<TData, TOffset> fsa, State<TData, TOffset> startState, out bool hasVariables)
 		{
 			hasVariables = _fs.HasVariables;
-    		return startState.AddArc(_fs.DeepClone(), fsa.CreateState());
+			FeatureStruct condition = _fs;
+			if (!_fs.IsFrozen)
+			{
+				condition = _fs.DeepClone();
+				condition.Freeze();
+			}
+			return startState.Arcs.Add(condition, fsa.CreateState());
+		}
+
+		protected override int FreezeImpl()
+		{
+			int code = base.FreezeImpl();
+			_fs.Freeze();
+			code = code * 31 + _fs.GetFrozenHashCode();
+			return code;
 		}
 
 		protected override PatternNode<TData, TOffset> DeepCloneImpl()
@@ -58,6 +72,17 @@ namespace SIL.Machine.Matching
     	{
 			return new Constraint<TData, TOffset>(this);
     	}
+
+		public override bool ValueEquals(PatternNode<TData, TOffset> other)
+		{
+			var otherCons = other as Constraint<TData, TOffset>;
+			return otherCons != null && ValueEquals(otherCons);
+		}
+
+		public bool ValueEquals(Constraint<TData, TOffset> other)
+		{
+			return _fs.ValueEquals(other._fs);
+		}
 
     	public override string ToString()
 		{

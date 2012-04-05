@@ -7,7 +7,7 @@ using SIL.Machine.FeatureModel.Fluent;
 
 namespace SIL.Machine.FeatureModel
 {
-	public class FeatureStruct : FeatureValue, IEquatable<FeatureStruct>, IDeepCloneable<FeatureStruct>
+	public class FeatureStruct : FeatureValue, IDeepCloneable<FeatureStruct>, IFreezable<FeatureStruct>
 	{
 		public static IDisjunctiveFeatureStructSyntax New()
 		{
@@ -29,8 +29,29 @@ namespace SIL.Machine.FeatureModel
 			return new FeatureStructBuilder(featSys, fs.DeepClone());
 		}
 
+		public static IDisjunctiveFeatureStructSyntax NewMutable()
+		{
+			return new FeatureStructBuilder(true);
+		}
+
+		public static IDisjunctiveFeatureStructSyntax NewMutable(FeatureSystem featSys)
+		{
+			return new FeatureStructBuilder(featSys, true);
+		}
+
+		public static IDisjunctiveFeatureStructSyntax NewMutable(FeatureStruct fs)
+		{
+			return new FeatureStructBuilder(fs.DeepClone(), true);
+		}
+
+		public static IDisjunctiveFeatureStructSyntax NewMutable(FeatureSystem featSys, FeatureStruct fs)
+		{
+			return new FeatureStructBuilder(featSys, fs.DeepClone(), true);
+		}
+
 		private readonly IDBearerDictionary<Feature, FeatureValue> _definite;
 		private readonly List<Disjunction> _indefinite;
+		private int? _hashCode;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FeatureStruct"/> class.
@@ -42,7 +63,7 @@ namespace SIL.Machine.FeatureModel
 		}
 
 		protected FeatureStruct(FeatureStruct other)
-			: this(other, new Dictionary<FeatureValue, FeatureValue>(new ReferenceEqualityComparer<FeatureValue>()))
+			: this(other, new Dictionary<FeatureValue, FeatureValue>())
 		{
 		}
 
@@ -77,7 +98,7 @@ namespace SIL.Machine.FeatureModel
 
 		public bool HasVariables
 		{
-			get { return DetermineHasVariables(new HashSet<FeatureStruct>(new ReferenceEqualityComparer<FeatureStruct>())); }
+			get { return DetermineHasVariables(new HashSet<FeatureStruct>()); }
 		}
 
 		public bool IsEmpty
@@ -147,11 +168,13 @@ namespace SIL.Machine.FeatureModel
 		/// <param name="value">The value.</param>
 		public void AddValue(Feature feature, FeatureValue value)
 		{
+			CheckFrozen();
 			_definite[feature] = value;
 		}
 
 		public void AddValue(IEnumerable<Feature> path, FeatureValue value)
 		{
+			CheckFrozen();
 		    Feature lastFeature;
 			FeatureStruct lastFS;
 			if (FollowPath(path, out lastFeature, out lastFS))
@@ -162,11 +185,13 @@ namespace SIL.Machine.FeatureModel
 
 		public void RemoveValue(Feature feature)
 		{
+			CheckFrozen();
 			_definite.Remove(feature);
 		}
 
 		public void RemoveValue(IEnumerable<Feature> path)
 		{
+			CheckFrozen();
 		    Feature lastFeature;
 			FeatureStruct lastFS;
 			if (FollowPath(path, out lastFeature, out lastFS))
@@ -177,7 +202,8 @@ namespace SIL.Machine.FeatureModel
 
 		public void ReplaceVariables(VariableBindings varBindings)
 		{
-			ReplaceVariables(varBindings, new HashSet<FeatureStruct>(new ReferenceEqualityComparer<FeatureStruct>()));
+			CheckFrozen();
+			ReplaceVariables(varBindings, new HashSet<FeatureStruct>());
 		}
 
 		private void ReplaceVariables(VariableBindings varBindings, ISet<FeatureStruct> visited)
@@ -217,7 +243,8 @@ namespace SIL.Machine.FeatureModel
 
 		public void RemoveVariables()
 		{
-			RemoveVariables(new HashSet<FeatureStruct>(new ReferenceEqualityComparer<FeatureStruct>()));
+			CheckFrozen();
+			RemoveVariables(new HashSet<FeatureStruct>());
 		}
 
 		private void RemoveVariables(ISet<FeatureStruct> visited)
@@ -255,7 +282,7 @@ namespace SIL.Machine.FeatureModel
 				}
 				else if (_indefinite[i].Count == 1)
 				{
-					UnionImpl(_indefinite[i].First(), new VariableBindings(), new Dictionary<FeatureStruct, ISet<FeatureStruct>>(new ReferenceEqualityComparer<FeatureStruct>()));
+					UnionImpl(_indefinite[i].First(), new VariableBindings(), new Dictionary<FeatureStruct, ISet<FeatureStruct>>());
 					_indefinite.RemoveAt(i);
 				}
 			}
@@ -268,10 +295,11 @@ namespace SIL.Machine.FeatureModel
 
 		public void PriorityUnion(FeatureStruct other, VariableBindings varBindings)
 		{
+			CheckFrozen();
 			// TODO: support disjunctive feature structures
 			if (_indefinite.Count > 0 || other._indefinite.Count > 0)
 				throw new InvalidOperationException("This operation is not supported on disjunctive feature structures.");
-			PriorityUnion(other, varBindings, new Dictionary<FeatureValue, FeatureValue>(new ReferenceEqualityComparer<FeatureValue>()));
+			PriorityUnion(other, varBindings, new Dictionary<FeatureValue, FeatureValue>());
 		}
 
 		private void PriorityUnion(FeatureStruct other, VariableBindings varBindings, IDictionary<FeatureValue, FeatureValue> copies)
@@ -342,10 +370,11 @@ namespace SIL.Machine.FeatureModel
 
 		public void Union(FeatureStruct other, VariableBindings varBindings)
 		{
+			CheckFrozen();
 			// TODO: support disjunctive feature structures
 			if (_indefinite.Count > 0 || other._indefinite.Count > 0)
 				throw new InvalidOperationException("This operation is not supported on disjunctive feature structures.");
-			UnionImpl(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>(new ReferenceEqualityComparer<FeatureStruct>()));
+			UnionImpl(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>());
 		}
 
 		internal override bool UnionImpl(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited)
@@ -353,7 +382,7 @@ namespace SIL.Machine.FeatureModel
 			FeatureStruct otherFS;
 			if (Dereference(other, out otherFS))
 			{
-				ISet<FeatureStruct> visitedOthers = visited.GetValue(this, () => new HashSet<FeatureStruct>(new ReferenceEqualityComparer<FeatureStruct>()));
+				ISet<FeatureStruct> visitedOthers = visited.GetValue(this, () => new HashSet<FeatureStruct>());
 				if (!visitedOthers.Contains(otherFS))
 				{
 					visitedOthers.Add(otherFS);
@@ -383,11 +412,12 @@ namespace SIL.Machine.FeatureModel
 
 		public void Subtract(FeatureStruct other, VariableBindings varBindings)
 		{
+			CheckFrozen();
 			// TODO: support disjunctive feature structures
 			if (_indefinite.Count > 0 || other._indefinite.Count > 0)
 				throw new InvalidOperationException("This operation is not supported on disjunctive feature structures.");
 
-			SubtractImpl(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>(new ReferenceEqualityComparer<FeatureStruct>()));
+			SubtractImpl(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>());
 		}
 
 		internal override bool SubtractImpl(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited)
@@ -395,7 +425,7 @@ namespace SIL.Machine.FeatureModel
 			FeatureStruct otherFS;
 			if (Dereference(other, out otherFS))
 			{
-				ISet<FeatureStruct> visitedOthers = visited.GetValue(this, () => new HashSet<FeatureStruct>(new ReferenceEqualityComparer<FeatureStruct>()));
+				ISet<FeatureStruct> visitedOthers = visited.GetValue(this, () => new HashSet<FeatureStruct>());
 				if (!visitedOthers.Contains(otherFS))
 				{
 					visitedOthers.Add(otherFS);
@@ -418,6 +448,7 @@ namespace SIL.Machine.FeatureModel
 
 		public void AddDisjunction(params FeatureStruct[] disjuncts)
 		{
+			CheckFrozen();
 			if (disjuncts.Length < 2)
 				throw new ArgumentException("At least two disjuncts must be specified.", "disjuncts");
 			_indefinite.Add(new Disjunction(disjuncts));
@@ -425,6 +456,7 @@ namespace SIL.Machine.FeatureModel
 
 		public void AddDisjunction(IEnumerable<FeatureStruct> disjuncts)
 		{
+			CheckFrozen();
 			FeatureStruct[] disjunctArray = disjuncts.ToArray();
 			if (disjunctArray.Length < 2)
 				throw new ArgumentException("At least two disjuncts must be specified.", "disjuncts");
@@ -433,17 +465,20 @@ namespace SIL.Machine.FeatureModel
 
 		public void Clear()
 		{
-			ClearValues();
-			ClearDisjunctions();
+			CheckFrozen();
+			_definite.Clear();
+			_indefinite.Clear();
 		}
 
 		public void ClearValues()
 		{
+			CheckFrozen();
 			_definite.Clear();
 		}
 
 		public void ClearDisjunctions()
 		{
+			CheckFrozen();
 			_indefinite.Clear();
 		}
 
@@ -776,7 +811,7 @@ namespace SIL.Machine.FeatureModel
 			var newFS = (FeatureStruct) newFV;
 			if (newFS._indefinite.Count > 0)
 			{
-				if (!CheckIndefinite(newFS, newFS, useDefaults, tempVarBindings, new HashSet<FeatureValue>(new ReferenceEqualityComparer<FeatureValue>()), out newFS))
+				if (!CheckIndefinite(newFS, newFS, useDefaults, tempVarBindings, new HashSet<FeatureValue>(), out newFS))
 				{
 					output = null;
 					return false;
@@ -796,7 +831,7 @@ namespace SIL.Machine.FeatureModel
 		{
 			FeatureStruct result;
 			if (Unify(other, out result))
-				return other.Equals(result);
+				return other.ValueEquals(result);
 			return false;
 		}
 
@@ -806,7 +841,7 @@ namespace SIL.Machine.FeatureModel
 			if (_indefinite.Count > 0)
 			{
 				for (int n = 1; n < output._indefinite.Count; n++)
-					NWiseConsistency(output, n, useDefaults, varBindings, new HashSet<FeatureValue>(new ReferenceEqualityComparer<FeatureValue>()),  out output);
+					NWiseConsistency(output, n, useDefaults, varBindings, new HashSet<FeatureValue>(),  out output);
 			}
 			return true;
 		}
@@ -942,7 +977,7 @@ namespace SIL.Machine.FeatureModel
 			bool uncheckedParts = true;
 			while (uncheckedParts)
 			{
-				var tempValues = new HashSet<FeatureValue>(values, new ReferenceEqualityComparer<FeatureValue>());
+				var tempValues = new HashSet<FeatureValue>(values);
 				newFS.GetAllValues(tempValues, false);
 
 				uncheckedParts = false;
@@ -1011,7 +1046,7 @@ namespace SIL.Machine.FeatureModel
 
 			while (indefinite.Count > 0)
 			{
-				var tempValues = new HashSet<FeatureValue>(values, new ReferenceEqualityComparer<FeatureValue>());
+				var tempValues = new HashSet<FeatureValue>(values);
 				newFS.GetAllValues(tempValues, false);
 
 				Disjunction disjunction = indefinite.First();
@@ -1089,14 +1124,13 @@ namespace SIL.Machine.FeatureModel
 		{
 			if (featureStructs.Count == 0)
 				return false;
-			var comparer = new ReferenceEqualityComparer<FeatureValue>();
 			foreach (FeatureStruct existing in featureStructs)
 			{
-				var visitedSelf = new HashSet<FeatureValue>(values, comparer);
-				var visitedOther = new HashSet<FeatureValue>(values, comparer);
-				var visitedPairs = values.ToDictionary(fv => fv, comparer);
+				var visitedSelf = new HashSet<FeatureValue>(values);
+				var visitedOther = new HashSet<FeatureValue>(values);
+				var visitedPairs = values.ToDictionary(fv => fv);
 
-				if (fs.EqualsImpl(existing, visitedSelf, visitedOther, visitedPairs))
+				if (fs.ValueEqualsImpl(existing, visitedSelf, visitedOther, visitedPairs))
 					return true;
 			}
 
@@ -1108,10 +1142,9 @@ namespace SIL.Machine.FeatureModel
 			if (disjunctions.Count == 0)
 				return false;
 
-			var comparer = new ReferenceEqualityComparer<FeatureValue>();
-			var visitedSelf = new HashSet<FeatureValue>(values, comparer);
-			var visitedOther = new HashSet<FeatureValue>(values, comparer);
-			var visitedPairs = values.ToDictionary(fv => fv, comparer);
+			var visitedSelf = new HashSet<FeatureValue>(values);
+			var visitedOther = new HashSet<FeatureValue>(values);
+			var visitedPairs = values.ToDictionary(fv => fv);
 			foreach (Disjunction existing in disjunctions)
 			{
 				if (disjunction.EqualsImpl(existing, visitedSelf, visitedOther, visitedPairs))
@@ -1124,7 +1157,7 @@ namespace SIL.Machine.FeatureModel
 		public bool Negation(out FeatureStruct output)
 		{
 			FeatureValue fv;
-			if (NegationImpl(new Dictionary<FeatureValue, FeatureValue>(new ReferenceEqualityComparer<FeatureValue>()), out fv))
+			if (NegationImpl(new Dictionary<FeatureValue, FeatureValue>(), out fv))
 			{
 				output = (FeatureStruct) fv;
 				return true;
@@ -1227,7 +1260,7 @@ namespace SIL.Machine.FeatureModel
 			return new FeatureStruct(this);
 		}
 
-		internal override bool EqualsImpl(FeatureValue other, ISet<FeatureValue> visitedSelf, ISet<FeatureValue> visitedOther, IDictionary<FeatureValue, FeatureValue> visitedPairs)
+		internal override bool ValueEqualsImpl(FeatureValue other, ISet<FeatureValue> visitedSelf, ISet<FeatureValue> visitedOther, IDictionary<FeatureValue, FeatureValue> visitedPairs)
 		{
 			if (other == null)
 				return false;
@@ -1261,7 +1294,7 @@ namespace SIL.Machine.FeatureModel
 				if (!otherFS._definite.TryGetValue(kvp.Key, out otherValue))
 					return false;
 				otherValue = Dereference(otherValue);
-				if (!thisValue.EqualsImpl(otherValue, visitedSelf, visitedOther, visitedPairs))
+				if (!thisValue.ValueEqualsImpl(otherValue, visitedSelf, visitedOther, visitedPairs))
 					return false;
 			}
 
@@ -1295,40 +1328,63 @@ namespace SIL.Machine.FeatureModel
 			return true;
 		}
 
-		public override bool Equals(object other)
+		public bool ValueEquals(FeatureStruct other)
+		{
+			if (this == other)
+				return true;
+
+			return other != null && ValueEqualsImpl(other, new HashSet<FeatureValue>(), new HashSet<FeatureValue>(),
+				new Dictionary<FeatureValue, FeatureValue>());
+		}
+
+		public int GetFrozenHashCode()
+		{
+			if (!IsFrozen)
+				throw new InvalidOperationException("The feature structure does not have a valid hash code, because it is mutable.");
+			if (!_hashCode.HasValue)
+				_hashCode = FreezeImpl(new HashSet<FeatureValue>());
+			return _hashCode.Value;
+		}
+
+		public override bool ValueEquals(FeatureValue other)
 		{
 			var otherFS = other as FeatureStruct;
-			return otherFS != null && Equals(otherFS);
+			return otherFS != null && ValueEquals(otherFS);
 		}
 
-		public bool Equals(FeatureStruct other)
+		public bool IsFrozen { get; private set; }
+
+		private void CheckFrozen()
 		{
-			var comparer = new ReferenceEqualityComparer<FeatureValue>();
-			return other != null && EqualsImpl(other, new HashSet<FeatureValue>(comparer), new HashSet<FeatureValue>(comparer),
-				new Dictionary<FeatureValue, FeatureValue>(comparer));
+			if (IsFrozen)
+				throw new InvalidOperationException("The feature structure is immutable.");
 		}
 
-		public override int GetHashCode()
+		public void Freeze()
 		{
-			return GetHashCodeImpl(new HashSet<FeatureValue>(new ReferenceEqualityComparer<FeatureValue>()));
+			if (IsFrozen)
+				return;
+
+			_hashCode = FreezeImpl(new HashSet<FeatureValue>());
 		}
 
-		internal override int GetHashCodeImpl(ISet<FeatureValue> visited)
+		internal override int FreezeImpl(ISet<FeatureValue> visited)
 		{
 			if (visited.Contains(this))
 				return 1;
 
 			visited.Add(this);
+			IsFrozen = true;
 
 			int code = 23;
 			foreach (KeyValuePair<Feature, FeatureValue> kvp in _definite.OrderBy(kvp => kvp.Key.ID))
 			{
 				code = code * 31 + kvp.Key.GetHashCode();
 				FeatureValue value = Dereference(kvp.Value);
-				code = code * 31 + value.GetHashCodeImpl(visited);
+				code = code * 31 + value.FreezeImpl(visited);
 			}
 
-			return _indefinite.Aggregate(code, (disjCode, disjunction) => disjCode ^ disjunction.GetHashCodeImpl(visited));
+			return _indefinite.Aggregate(code, (disjCode, disjunction) => disjCode ^ disjunction.FreezeImpl(visited));
 		}
 
 		public override string ToString()
@@ -1336,15 +1392,13 @@ namespace SIL.Machine.FeatureModel
 			if (IsEmpty)
 				return "ANY";
 
-			var comparer = new ReferenceEqualityComparer<FeatureValue>();
-
-			var reentrances = new Dictionary<FeatureValue, bool>(comparer);
+			var reentrances = new Dictionary<FeatureValue, bool>();
 			FindReentrances(reentrances);
-			var reentranceIds = new Dictionary<FeatureValue, int>(comparer);
+			var reentranceIds = new Dictionary<FeatureValue, int>();
 			int id = 1;
 			foreach (FeatureValue value in reentrances.Where(kvp => kvp.Value).Select(kvp => kvp.Key))
 				reentranceIds[value] = id++;
-			return ToStringImpl(new HashSet<FeatureValue>(comparer), reentranceIds);
+			return ToStringImpl(new HashSet<FeatureValue>(), reentranceIds);
 		}
 
 		internal override string ToStringImpl(ISet<FeatureValue> visited, IDictionary<FeatureValue, int> reentranceIds)

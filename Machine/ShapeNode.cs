@@ -5,7 +5,7 @@ using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine
 {
-	public class ShapeNode : OrderedBidirListNode<ShapeNode>, IComparable<ShapeNode>, IComparable, IDeepCloneable<ShapeNode>
+	public class ShapeNode : OrderedBidirListNode<ShapeNode>, IComparable<ShapeNode>, IComparable, IDeepCloneable<ShapeNode>, IFreezable<ShapeNode>
 	{
 		private readonly SpanFactory<ShapeNode> _spanFactory; 
 		private readonly Annotation<ShapeNode> _ann;
@@ -28,6 +28,30 @@ namespace SIL.Machine
 		public Annotation<ShapeNode> Annotation
 		{
 			get { return _ann; }
+		}
+
+		public bool IsFrozen { get; private set; }
+
+		public void Freeze()
+		{
+			if (IsFrozen)
+				return;
+			IsFrozen = true;
+		}
+
+		public bool ValueEquals(ShapeNode other)
+		{
+			if (other == null)
+				return false;
+
+			return Tag == other.Tag;
+		}
+
+		public int GetFrozenHashCode()
+		{
+			if (!IsFrozen)
+				throw new InvalidOperationException("The shape node does not have a valid hash code, because it is mutable.");
+			return Tag;
 		}
 
 		public int CompareTo(ShapeNode other)

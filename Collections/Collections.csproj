@@ -40,10 +40,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnonymousComparer.cs" />
+    <Compile Include="AnonymousEqualityComparer.cs" />
     <Compile Include="BidirList.cs" />
     <Compile Include="BidirListNode.cs" />
     <Compile Include="BidirTreeNode.cs" />
     <Compile Include="CollectionsExtensions.cs" />
+    <Compile Include="Freezable.cs" />
+    <Compile Include="FreezableEqualityComparer.cs" />
     <Compile Include="IBidirList.cs" />
     <Compile Include="IBidirListNode.cs" />
     <Compile Include="IBidirTreeNode.cs" />
@@ -51,6 +55,7 @@
     <Compile Include="IDBearerBase.cs" />
     <Compile Include="IDBearerDictionary.cs" />
     <Compile Include="IDBearerSet.cs" />
+    <Compile Include="IFreezable.cs" />
     <Compile Include="IIDBearer.cs" />
     <Compile Include="IOrderedBidirList.cs" />
     <Compile Include="IOrderedBidirListNode.cs" />
@@ -60,6 +65,7 @@
     <Compile Include="IReadOnlyList.cs" />
     <Compile Include="IReadOnlySet.cs" />
     <Compile Include="NullableValue.cs" />
+    <Compile Include="ObservableHashSet.cs" />
     <Compile Include="ObservableIDBearerSet.cs" />
     <Compile Include="OrderedBidirList.cs" />
     <Compile Include="OrderedBidirListNode.cs" />
@@ -74,6 +80,9 @@
     <Compile Include="ReadOnlySet.cs" />
     <Compile Include="ReferenceEqualityComparer.cs" />
     <Compile Include="ReverseComparer.cs" />
+    <Compile Include="SequenceComparer.cs" />
+    <Compile Include="SequenceEqualityComparer.cs" />
+    <Compile Include="SimpleMonitor.cs" />
     <Compile Include="SkipList.cs" />
     <Compile Include="SkipListNode.cs" />
   </ItemGroup>

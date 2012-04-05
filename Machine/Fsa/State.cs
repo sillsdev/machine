@@ -1,21 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SIL.Collections;
-using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.Fsa
 {
 	public class State<TData, TOffset> : IEquatable<State<TData, TOffset>>  where TData : IData<TOffset>
 	{
 		private readonly int _index;
-		private readonly List<Arc<TData, TOffset>> _arcs;
+		private readonly ArcCollection<TData, TOffset> _arcs;
 
-		private readonly bool _isAccepting;
 		private readonly List<AcceptInfo<TData, TOffset>> _acceptInfos; 
 		private readonly List<TagMapCommand> _finishers;
 		private readonly bool _isLazy;
-		private readonly IComparer<Arc<TData, TOffset>> _arcComparer; 
 
 		internal State(int index, bool isAccepting)
 			: this(index, isAccepting, Enumerable.Empty<AcceptInfo<TData, TOffset>>(), Enumerable.Empty<TagMapCommand>(), false)
@@ -35,12 +31,11 @@ namespace SIL.Machine.Fsa
 		private State(int index, bool isAccepting, IEnumerable<AcceptInfo<TData, TOffset>> acceptInfos, IEnumerable<TagMapCommand> finishers, bool isLazy)
 		{
 			_index = index;
-			_isAccepting = isAccepting;
+			IsAccepting = isAccepting;
 			_acceptInfos = new List<AcceptInfo<TData, TOffset>>(acceptInfos);
 			_finishers = new List<TagMapCommand>(finishers);
 			_isLazy = isLazy;
-			_arcs = new List<Arc<TData, TOffset>>();
-			_arcComparer = ProjectionComparer<Arc<TData, TOffset>>.Create(arc => arc.PriorityType).Reverse();
+			_arcs = new ArcCollection<TData, TOffset>(this);
 		}
 
 		public int Index
@@ -51,20 +46,14 @@ namespace SIL.Machine.Fsa
 			}
 		}
 
-		public bool IsAccepting
-		{
-			get
-			{
-				return _isAccepting;
-			}
-		}
+		public bool IsAccepting { get; set; }
 
-		public IEnumerable<Arc<TData, TOffset>> Arcs
+		public ArcCollection<TData, TOffset> Arcs
 		{
 			get { return _arcs; }
 		}
 
-		public IEnumerable<AcceptInfo<TData, TOffset>> AcceptInfos
+		public ICollection<AcceptInfo<TData, TOffset>> AcceptInfos
 		{
 			get { return _acceptInfos; }
 		}
@@ -80,40 +69,6 @@ namespace SIL.Machine.Fsa
 			{
 				return _finishers;
 			}
-		}
-
-		public State<TData, TOffset> AddArc(State<TData, TOffset> target)
-		{
-			return AddArc(target, ArcPriorityType.Medium);
-		}
-
-		public State<TData, TOffset> AddArc(State<TData, TOffset> target, ArcPriorityType priorityType)
-		{
-			return AddArc(new Arc<TData, TOffset>(this, target, priorityType));
-		}
-
-		public State<TData, TOffset> AddArc(FeatureStruct condition, State<TData, TOffset> target)
-		{
-			return AddArc(new Arc<TData, TOffset>(this, condition, target));
-		}
-
-		internal State<TData, TOffset> AddArc(State<TData, TOffset> target, int tag)
-		{
-			return AddArc(new Arc<TData, TOffset>(this, target, tag));
-		}
-
-		internal State<TData, TOffset> AddArc(FeatureStruct condition, State<TData, TOffset> target, IEnumerable<TagMapCommand> cmds)
-		{
-			return AddArc(new Arc<TData, TOffset>(this, condition, target, cmds));
-		}
-
-		private State<TData, TOffset> AddArc(Arc<TData, TOffset> arc)
-		{
-			int index = _arcs.BinarySearch(arc, _arcComparer);
-			if (index < 0)
-				index = ~index;
-			_arcs.Insert(index, arc);
-			return arc.Target;
 		}
 
 		public override int GetHashCode()

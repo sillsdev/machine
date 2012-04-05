@@ -6,7 +6,7 @@ using SIL.Collections;
 
 namespace SIL.Machine.FeatureModel
 {
-	public class StringFeatureValue : SimpleFeatureValue, IEquatable<StringFeatureValue>, IDeepCloneable<StringFeatureValue>
+	public class StringFeatureValue : SimpleFeatureValue, IDeepCloneable<StringFeatureValue>
 	{
 		public static implicit operator StringFeatureValue(string str)
 		{
@@ -205,34 +205,25 @@ namespace SIL.Machine.FeatureModel
 			return IsVariable ? new StringFeatureValue(VariableName, !Agree) : new StringFeatureValue(_values, !Not);
 		}
 
-		public bool Equals(StringFeatureValue other)
+		public bool ValueEquals(StringFeatureValue other)
 		{
 			if (other == null)
 				return false;
-			if (IsVariable)
-				return VariableName == other.VariableName && Agree == other.Agree;
-			return _values.SetEquals(other._values) && Not == other.Not;
+
+			return base.ValueEquals(other) && _values.SetEquals(other._values) && Not == other.Not;
 		}
 
-		public override bool Equals(object other)
+		public override bool ValueEquals(SimpleFeatureValue other)
 		{
 			var otherSfv = other as StringFeatureValue;
-			return otherSfv != null && Equals(otherSfv);
+			return other != null && ValueEquals(otherSfv);
 		}
 
-		public override int GetHashCode()
+		protected override int GetValuesHashCode()
 		{
-			int code = 23;
-			if (IsVariable)
-			{
-				code = code * 31 + VariableName.GetHashCode();
-				code = code * 31 + Agree.GetHashCode();
-			}
-			else
-			{
-				code = code * 31 + Not.GetHashCode();
-				code = _values.OrderBy(str => str).Aggregate(code, (strValCode, str) => strValCode * 31 + str.GetHashCode());
-			}
+			int code = base.GetValuesHashCode();
+			code = code * 31 + Not.GetHashCode();
+			code = code * 31 + _values.OrderBy(str => str).GetSequenceHashCode();
 			return code;
 		}
 
@@ -243,32 +234,32 @@ namespace SIL.Machine.FeatureModel
 
 		public override string ToString()
 		{
-			if (IsVariable)
-				return (Agree ? "+" : "-") + VariableName;
-
-			var sb = new StringBuilder();
-			bool firstValue = true;
-			if (Not)
-				sb.Append('!');
-			if (_values.Count == 1)
+			var sb = new StringBuilder(base.ToString());
+			if (_values.Count > 0)
 			{
-				sb.Append('"');
-				sb.Append(_values.First());
-				sb.Append('"');
-			}
-			else
-			{
-				sb.Append('{');
-				foreach (string value in _values)
+				bool firstValue = true;
+				if (Not)
+					sb.Append('!');
+				if (_values.Count == 1)
 				{
-					if (!firstValue)
-						sb.Append(", ");
 					sb.Append('"');
-					sb.Append(value);
+					sb.Append(_values.First());
 					sb.Append('"');
-					firstValue = false;
 				}
-				sb.Append('}');
+				else
+				{
+					sb.Append('{');
+					foreach (string value in _values)
+					{
+						if (!firstValue)
+							sb.Append(", ");
+						sb.Append('"');
+						sb.Append(value);
+						sb.Append('"');
+						firstValue = false;
+					}
+					sb.Append('}');
+				}
 			}
 			return sb.ToString();
 		}

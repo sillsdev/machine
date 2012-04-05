@@ -11,9 +11,9 @@ namespace SIL.Machine.FeatureModel
 		internal abstract bool UnionImpl(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited);
 		internal abstract bool SubtractImpl(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited);
 		internal abstract FeatureValue DeepCloneImpl(IDictionary<FeatureValue, FeatureValue> copies);
-		internal abstract bool EqualsImpl(FeatureValue other, ISet<FeatureValue> visitedSelf, ISet<FeatureValue> visitedOther,
+		internal abstract bool ValueEqualsImpl(FeatureValue other, ISet<FeatureValue> visitedSelf, ISet<FeatureValue> visitedOther,
 			IDictionary<FeatureValue, FeatureValue> visitedPairs);
-		internal abstract int GetHashCodeImpl(ISet<FeatureValue> visited);
+		internal abstract int FreezeImpl(ISet<FeatureValue> visited);
 		internal abstract string ToStringImpl(ISet<FeatureValue> visited, IDictionary<FeatureValue, int> reentranceIds);
 
 		internal abstract bool IsDefiniteUnifiable(FeatureValue other, bool useDefaults, VariableBindings varBindings);
@@ -26,7 +26,7 @@ namespace SIL.Machine.FeatureModel
 
 		internal bool UnifyDefinite(FeatureValue other, bool useDefaults, VariableBindings varBindings, out FeatureValue output)
 		{
-			var copies = new Dictionary<FeatureValue, FeatureValue>(new ReferenceEqualityComparer<FeatureValue>());
+			var copies = new Dictionary<FeatureValue, FeatureValue>(ReferenceEqualityComparer<FeatureValue>.Instance);
 			return UnifyDefinite(other, useDefaults, copies, varBindings, out output);
 		}
 
@@ -89,6 +89,8 @@ namespace SIL.Machine.FeatureModel
 				value = (T) value.Forward;
 			return value;
 		}
+
+		public abstract bool ValueEquals(FeatureValue other);
 
 		public FeatureValue DeepClone()
 		{

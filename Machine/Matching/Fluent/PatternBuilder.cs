@@ -7,14 +7,27 @@ namespace SIL.Machine.Matching.Fluent
 	{
 		private readonly string _name;
 		private Func<Match<TData, TOffset>, bool> _acceptable = match => true;
+		private readonly bool _mutable;
 
 		public PatternBuilder()
+			: this(null)
+		{
+		}
+
+		public PatternBuilder(bool mutable)
+			: this(null, mutable)
 		{
 		}
 
 		public PatternBuilder(string name)
+			: this(name, false)
+		{
+		}
+
+		public PatternBuilder(string name, bool mutable)
 		{
 			_name = name;
+			_mutable = mutable;
 		}
 
 		public INodesPatternSyntax<TData, TOffset> Subpattern(Func<IPatternSyntax<TData, TOffset>, IInitialNodesPatternSyntax<TData, TOffset>> build)
@@ -41,6 +54,8 @@ namespace SIL.Machine.Matching.Fluent
 			{
 				var pattern = new Pattern<TData, TOffset>(_name) {Acceptable = _acceptable};
 				PopulateNode(pattern);
+				if (!_mutable)
+					pattern.Freeze();
 				return pattern;
 			}
 		}

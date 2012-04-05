@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using SIL.Collections;
 
 namespace SIL.Machine
@@ -6,10 +7,26 @@ namespace SIL.Machine
 	public abstract class SpanFactory<TOffset>
 	{
 		private readonly bool _includeEndpoint;
+		private readonly IComparer<TOffset> _ltrComparer;
+		private readonly IComparer<TOffset> _rtlComparer;
+		private readonly IEqualityComparer<TOffset> _equalityComparer; 
+
+		protected SpanFactory()
+			: this(false)
+		{
+		}
 
 		protected SpanFactory(bool includeEndpoint)
+			: this(includeEndpoint, Comparer<TOffset>.Default, EqualityComparer<TOffset>.Default)
+		{
+		}
+
+		protected SpanFactory(bool includeEndpoint, IComparer<TOffset> ltrComparer, IEqualityComparer<TOffset> equalityComparer)
 		{
 			_includeEndpoint = includeEndpoint;
+			_ltrComparer = ltrComparer;
+			_rtlComparer = _ltrComparer.Reverse();
+			_equalityComparer = equalityComparer;
 		}
 
 		public abstract Span<TOffset> Empty { get; }
@@ -19,11 +36,17 @@ namespace SIL.Machine
 			get { return _includeEndpoint; }
 		}
 
-		public abstract int Compare(TOffset x, TOffset y);
-
-		public int Compare(TOffset x, TOffset y, Direction dir)
+		public IComparer<TOffset> GetComparer(Direction dir)
 		{
-			return dir == Direction.LeftToRight ? Compare(x, y) : Compare(y, x);
+			if (dir == Direction.LeftToRight)
+				return _ltrComparer;
+
+			return _rtlComparer;
+		}
+
+		public IEqualityComparer<TOffset> EqualityComparer
+		{
+			get { return _equalityComparer; }
 		}
 
 		public abstract int CalcLength(TOffset start, TOffset end);
@@ -66,7 +89,7 @@ namespace SIL.Machine
 				actualEnd = start;
 			}
 
-			int compare = Compare(actualStart, actualEnd);
+			int compare = GetComparer(Direction.LeftToRight).Compare(actualStart, actualEnd);
 			return _includeEndpoint ? compare <= 0 : compare < 0;
 		}
 

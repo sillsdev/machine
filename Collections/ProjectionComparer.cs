@@ -10,9 +10,9 @@ namespace SIL.Collections
 			return new ProjectionComparer<TSource, TKey>(projection);
 		}
 
-		public static ProjectionComparer<TSource, TKey> Create<TSource, TKey>(TSource ignored, Func<TSource, TKey> projection)
+		public static ProjectionComparer<TSource, TKey> Create<TSource, TKey>(Func<TSource, TKey> projection, IComparer<TKey> comparer)
 		{
-			return new ProjectionComparer<TSource, TKey>(projection);
+			return new ProjectionComparer<TSource, TKey>(projection, comparer);
 		}
 	}
 
@@ -22,6 +22,11 @@ namespace SIL.Collections
 		{
 			return new ProjectionComparer<TSource, TKey>(projection);
 		}
+
+		public static ProjectionComparer<TSource, TKey> Create<TKey>(Func<TSource, TKey> projection, IComparer<TKey> comparer)
+		{
+			return new ProjectionComparer<TSource, TKey>(projection, comparer);
+		}
 	}
 
 	public class ProjectionComparer<TSource, TKey> : IComparer<TSource>
@@ -30,13 +35,13 @@ namespace SIL.Collections
 		private readonly IComparer<TKey> _comparer;
 
 		public ProjectionComparer(Func<TSource, TKey> projection)
-			: this(projection, null)
+			: this(projection, Comparer<TKey>.Default)
 		{
 		}
 
 		public ProjectionComparer(Func<TSource, TKey> projection, IComparer<TKey> comparer)
 		{
-			_comparer = comparer ?? Comparer<TKey>.Default;
+			_comparer = comparer;
 			_projection = projection;
 		}
 

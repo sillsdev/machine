@@ -64,6 +64,16 @@ namespace SIL.Collections
 			return true;
 		}
 
+		protected virtual bool CanRemove(TNode child)
+		{
+			return true;
+		}
+
+		protected virtual bool CanClear()
+		{
+			return true;
+		}
+
 		private class TreeBidirList : OrderedBidirList<TNode>
 		{
 			private readonly TNode _parent;
@@ -84,6 +94,20 @@ namespace SIL.Collections
 				if (!_parent.CanAdd(newNode))
 					throw new ArgumentException("The specified node cannot be added to this node.", "newNode");
 				base.AddAfter(node, newNode, dir);
+			}
+
+			public override bool Remove(TNode node)
+			{
+				if (!_parent.CanRemove(node))
+					throw new ArgumentException("The specified node cannot be removed from this node.", "node");
+				return base.Remove(node);
+			}
+
+			public override void Clear()
+			{
+				if (!_parent.CanClear())
+					throw new InvalidOperationException("The node's children cannot be cleared.");
+				base.Clear();
 			}
 		}
 	}

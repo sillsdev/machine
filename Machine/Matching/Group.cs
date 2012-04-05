@@ -55,9 +55,9 @@ namespace SIL.Machine.Matching
 			get { return _name; }
 		}
 
-		protected override bool CanAdd(PatternNode<TData, TOffset> child)
+    	protected override bool CanAdd(PatternNode<TData, TOffset> child)
 		{
-			if (child is Pattern<TData, TOffset>)
+			if (!base.CanAdd(child) || child is Pattern<TData, TOffset>)
 				return false;
 			return true;
 		}
@@ -73,7 +73,7 @@ namespace SIL.Machine.Matching
 			if (_name != null)
 				startState = fsa.CreateTag(startState, fsa.CreateState(), _name, true);
 			startState = base.GenerateNfa(fsa, startState, out hasVariables);
-			startState = _name != null ? fsa.CreateTag(startState, fsa.CreateState(), _name, false) : startState.AddArc(fsa.CreateState());
+			startState = _name != null ? fsa.CreateTag(startState, fsa.CreateState(), _name, false) : startState.Arcs.Add(fsa.CreateState());
 			return startState;
 		}
 
@@ -85,6 +85,17 @@ namespace SIL.Machine.Matching
 		protected override PatternNode<TData, TOffset> DeepCloneImpl()
 		{
 			return DeepClone();
+		}
+
+		public override bool ValueEquals(PatternNode<TData, TOffset> other)
+		{
+			var otherGroup = other as Group<TData, TOffset>;
+			return otherGroup != null && ValueEquals(otherGroup);
+		}
+
+		public bool ValueEquals(Group<TData, TOffset> other)
+		{
+			return base.ValueEquals(other);
 		}
 
 		public override string ToString()

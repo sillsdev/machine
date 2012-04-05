@@ -34,9 +34,16 @@ namespace SIL.Machine.Matching
 				State<TData, TOffset> nodeEndState = node.GenerateNfa(fsa, startState, out childHasVariables);
 				if (childHasVariables)
 					hasVariables = true;
-				nodeEndState.AddArc(endState);
+				nodeEndState.Arcs.Add(endState);
 			}
 			return endState;
+		}
+
+    	protected override bool CanAdd(PatternNode<TData, TOffset> child)
+		{
+			if (!base.CanAdd(child) || child is Pattern<TData, TOffset>)
+				return false;
+			return true;
 		}
 
 		protected override PatternNode<TData, TOffset> DeepCloneImpl()
@@ -47,6 +54,17 @@ namespace SIL.Machine.Matching
 		public new Alternation<TData, TOffset> DeepClone()
 		{
 			return new Alternation<TData, TOffset>(this);
+		}
+
+		public override bool ValueEquals(PatternNode<TData, TOffset> other)
+		{
+			var otherAlter = other as Alternation<TData, TOffset>;
+			return otherAlter != null && ValueEquals(otherAlter);
+		}
+
+		public bool ValueEquals(Alternation<TData, TOffset> other)
+		{
+			return base.ValueEquals(other);
 		}
 
 		public override string ToString()

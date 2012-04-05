@@ -8,12 +8,22 @@ namespace SIL.Collections
 	{
 		#region IBidirList
 
+		public static TNode GetFirst<TNode>(this IBidirList<TNode> list, Func<TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
+		{
+			return GetFirst(list, Direction.LeftToRight, filter);
+		}
+
 		public static TNode GetFirst<TNode>(this IBidirList<TNode> list, Direction dir, Func<TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
 		{
 			TNode node = list.GetFirst(dir);
 			while (node != null && node != list.GetEnd(dir) && !filter(node))
 				node = node.GetNext(dir);
 			return node;
+		}
+
+		public static TNode GetLast<TNode>(this IBidirList<TNode> list, Func<TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
+		{
+			return GetLast(list, Direction.LeftToRight, filter);
 		}
 
 		public static TNode GetLast<TNode>(this IBidirList<TNode> list, Direction dir, Func<TNode, bool> filter) where TNode : class, IBidirListNode<TNode>
@@ -492,6 +502,54 @@ namespace SIL.Collections
 			}
 		}
 
+		public static int GetSequenceHashCode<T>(this IEnumerable<T> source)
+		{
+			return GetSequenceHashCode(source, EqualityComparer<T>.Default);
+		}
+
+		public static int GetSequenceHashCode<T>(this IEnumerable<T> source, IEqualityComparer<T> comparer)
+		{
+			return source.Aggregate(23, (code, item) => code * 31 + comparer.GetHashCode(item));
+		}
+
+		public static int SequenceCompare<T>(this IEnumerable<T> x, IEnumerable<T> y)
+		{
+			return SequenceCompare(x, y, Comparer<T>.Default);
+		}
+
+		public static int SequenceCompare<T>(this IEnumerable<T> x, IEnumerable<T> y, IComparer<T> comparer)
+		{
+			int result = 0;
+			using (IEnumerator<T> iteratorX = x.GetEnumerator())
+			using (IEnumerator<T> iteratorY = y.GetEnumerator())
+			{
+				bool hasValueX = iteratorX.MoveNext();
+				bool hasValueY = iteratorY.MoveNext();
+				while (hasValueX && hasValueY)
+				{
+					int compare = comparer.Compare(iteratorX.Current, iteratorY.Current);
+					if (compare != 0)
+					{
+						result = compare;
+						break;
+					}
+
+					hasValueX = iteratorX.MoveNext();
+					hasValueY = iteratorY.MoveNext();
+				}
+
+				if (result == 0)
+				{
+					if (hasValueX && !hasValueY)
+						result = 1;
+					else if (!hasValueX && hasValueY)
+						result = -1;
+				}
+			}
+
+			return result;
+		}
+
 		#endregion
 
 		#region Generic
@@ -565,6 +623,12 @@ namespace SIL.Collections
 		#endregion
 
 		#region ICollection
+
+		public static void AddRange<T>(this ICollection<T> collection, IEnumerable<T> items)
+		{
+			foreach (T item in items)
+				collection.Add(item);
+		}
 
 		public static ReadOnlyCollection<T> AsReadOnlyCollection<T>(this ICollection<T> collection)
 		{

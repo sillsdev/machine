@@ -6,7 +6,7 @@ using SIL.Collections;
 
 namespace SIL.Machine.FeatureModel
 {
-	public class SymbolicFeatureValue : SimpleFeatureValue, IEquatable<SymbolicFeatureValue>, IDeepCloneable<SymbolicFeatureValue>
+	public class SymbolicFeatureValue : SimpleFeatureValue, IDeepCloneable<SymbolicFeatureValue>
 	{
 		public static implicit operator SymbolicFeatureValue(FeatureSymbol symbol)
 		{
@@ -168,35 +168,24 @@ namespace SIL.Machine.FeatureModel
 			return IsVariable ? new SymbolicFeatureValue(_feature, VariableName, !Agree) : new SymbolicFeatureValue(_feature.PossibleSymbols.Except(_values));
 		}
 
-		public override bool Equals(object other)
+		public override bool ValueEquals(SimpleFeatureValue other)
 		{
 			var otherSfv = other as SymbolicFeatureValue;
-			return other != null && Equals(otherSfv);
+			return otherSfv != null && ValueEquals(otherSfv);
 		}
 
-		public bool Equals(SymbolicFeatureValue other)
+		public bool ValueEquals(SymbolicFeatureValue other)
 		{
 			if (other == null)
 				return false;
 
-			if (IsVariable)
-				return VariableName == other.VariableName && Agree == other.Agree;
-			return _values.SetEquals(other._values);
+			return base.ValueEquals(other) && _values.SetEquals(other._values);
 		}
 
-		public override int GetHashCode()
+		protected override int GetValuesHashCode()
 		{
-			int code = 23;
-			if (IsVariable)
-			{
-				code = code * 31 + VariableName.GetHashCode();
-				code = code * 31 + Agree.GetHashCode();
-			}
-			else
-			{
-				code = _values.OrderBy(sym => sym.ID).Aggregate(code, (symValCode, sym) => symValCode * 31 + sym.GetHashCode());
-			}
-			return code;
+			int code = base.GetValuesHashCode();
+			return code * 31 + _values.OrderBy(sym => sym.ID).GetSequenceHashCode();
 		}
 
 		public new SymbolicFeatureValue DeepClone()
@@ -206,23 +195,24 @@ namespace SIL.Machine.FeatureModel
 
 		public override string ToString()
 		{
-			if (IsVariable)
-				return (Agree ? "+" : "-") + VariableName;
-
+			var sb = new StringBuilder(base.ToString());
 			if (_values.Count == 1)
-				return _values.First().ToString();
-
-			var sb = new StringBuilder();
-			bool firstValue = true;
-			sb.Append("{");
-			foreach (FeatureSymbol value in _values)
 			{
-				if (!firstValue)
-					sb.Append(", ");
-				sb.Append(value.ToString());
-				firstValue = false;
+				sb.Append(_values.First());
 			}
-			sb.Append("}");
+			else if (_values.Count > 1)
+			{
+				bool firstValue = true;
+				sb.Append("{");
+				foreach (FeatureSymbol value in _values)
+				{
+					if (!firstValue)
+						sb.Append(", ");
+					sb.Append(value.ToString());
+					firstValue = false;
+				}
+				sb.Append("}");
+			}
 			return sb.ToString();
 		}
 	}

@@ -51,11 +51,6 @@ namespace SIL.Machine.Rules
 			get { return _spanFactory; }
 		}
 
-		public IPatternRuleSpec<TData, TOffset> RuleSpec
-		{
-			get { return _ruleSpec; }
-		}
-
 		public ApplicationMode ApplicationMode
 		{
 			get { return _appMode; }

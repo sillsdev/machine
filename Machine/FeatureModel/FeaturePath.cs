@@ -53,7 +53,7 @@ namespace SIL.Machine.FeatureModel
 
 		public override int GetHashCode()
 		{
-			return _features.Aggregate(23, (code, feature) => code * 31 + feature.GetHashCode());
+			return _features.GetSequenceHashCode();
 		}
 	}
 }

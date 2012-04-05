@@ -7,11 +7,12 @@ using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine
 {
-	public class AnnotationList<TOffset> : BidirList<Annotation<TOffset>>, IDeepCloneable<AnnotationList<TOffset>>
+	public class AnnotationList<TOffset> : BidirList<Annotation<TOffset>>, IDeepCloneable<AnnotationList<TOffset>>, IFreezable<AnnotationList<TOffset>>
 	{
 		private readonly SpanFactory<TOffset> _spanFactory; 
 		private int _currentID;
-		private readonly Annotation<TOffset> _parent; 
+		private readonly Annotation<TOffset> _parent;
+		private int _hashCode;
 
 		public AnnotationList(SpanFactory<TOffset> spanFactory)
 			: base(new AnnotationComparer(), begin => new Annotation<TOffset>(spanFactory.Empty))
@@ -34,6 +35,45 @@ namespace SIL.Machine
 		internal Annotation<TOffset> Parent
 		{
 			get { return _parent; }
+		}
+
+		public bool IsFrozen { get; private set; }
+
+		public void Freeze()
+		{
+			if (IsFrozen)
+				return;
+			IsFrozen = true;
+			_hashCode = 23;
+			foreach (Annotation<TOffset> ann in this)
+			{
+				ann.Freeze();
+				_hashCode = _hashCode * 31 + ann.GetFrozenHashCode();
+			}
+		}
+
+		public bool ValueEquals(AnnotationList<TOffset> other)
+		{
+			if (other == null)
+				return false;
+
+			if (Count != other.Count)
+				return false;
+
+			return this.SequenceEqual(other, FreezableEqualityComparer<Annotation<TOffset>>.Instance);
+		}
+
+		public int GetFrozenHashCode()
+		{
+			if (!IsFrozen)
+				throw new InvalidOperationException("The annotation list does not have a valid hash code, because it is mutable.");
+			return _hashCode;
+		}
+
+		private void CheckFrozen()
+		{
+			if (IsFrozen)
+				throw new InvalidOperationException("The annotation list is immutable.");
 		}
 
 		public Annotation<TOffset> Add(Span<TOffset> span, FeatureStruct fs)
@@ -75,6 +115,7 @@ namespace SIL.Machine
 
 		public void Add(Annotation<TOffset> node, bool subsume)
 		{
+			CheckFrozen();
 			if (_parent != null && !_parent.Span.Contains(node.Span))
 				throw new ArgumentException("The new annotation must be within the span of the parent annotation.", "node");
 
@@ -108,6 +149,7 @@ namespace SIL.Machine
 
 		public bool Remove(Annotation<TOffset> node, bool preserveChildren)
 		{
+			CheckFrozen();
 			if (base.Remove(node))
 			{
 				if (preserveChildren)
@@ -218,6 +260,12 @@ namespace SIL.Machine
 			return this.GetNodes(dir == Direction.LeftToRight ? startAnn : endAnn, dir == Direction.LeftToRight ? endAnn : startAnn, dir).Where(ann => span.Contains(ann.Span));
 		}
 
+		public override void Clear()
+		{
+			CheckFrozen();
+			base.Clear();
+		}
+
 		public AnnotationList<TOffset> DeepClone()
 		{
 			return new AnnotationList<TOffset>(this);
@@ -239,7 +287,7 @@ namespace SIL.Machine
 			return sb.ToString();
 		}
 
-		class AnnotationComparer : IComparer<Annotation<TOffset>>
+		private class AnnotationComparer : IComparer<Annotation<TOffset>>
 		{
 			public int Compare(Annotation<TOffset> x, Annotation<TOffset> y)
 			{

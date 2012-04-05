@@ -8,7 +8,7 @@ namespace SIL.Machine
 		private readonly Span<ShapeNode> _empty; 
 
 		public ShapeSpanFactory()
-			: base(true)
+			: base(true, AnonymousComparer.Create<ShapeNode>(Compare), FreezableEqualityComparer<ShapeNode>.Instance)
 		{
 			_empty = new Span<ShapeNode>(this, null, null);
 		}
@@ -18,7 +18,7 @@ namespace SIL.Machine
 			get { return _empty; }
 		}
 
-		public override int Compare(ShapeNode x, ShapeNode y)
+		private static int Compare(ShapeNode x, ShapeNode y)
 		{
 			if (x == null)
 				return y == null ? 0 : -1;

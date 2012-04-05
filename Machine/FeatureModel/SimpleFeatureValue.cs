@@ -352,16 +352,27 @@ namespace SIL.Machine.FeatureModel
 			return sb.ToString();
 		}
 
-		internal override int GetHashCodeImpl(ISet<FeatureValue> visited)
+		internal override int FreezeImpl(ISet<FeatureValue> visited)
 		{
 			if (visited.Contains(this))
 				return 1;
 			visited.Add(this);
 
-			return GetHashCode();
+			return GetValuesHashCode();
 		}
 
-		internal override bool EqualsImpl(FeatureValue other, ISet<FeatureValue> visitedSelf, ISet<FeatureValue> visitedOther, IDictionary<FeatureValue, FeatureValue> visitedPairs)
+		protected virtual int GetValuesHashCode()
+		{
+			int code = 23;
+			if (IsVariable)
+			{
+				code = code * 31 + VariableName.GetHashCode();
+				code = code * 31 + Agree.GetHashCode();
+			}
+			return code;
+		}
+
+		internal override bool ValueEqualsImpl(FeatureValue other, ISet<FeatureValue> visitedSelf, ISet<FeatureValue> visitedOther, IDictionary<FeatureValue, FeatureValue> visitedPairs)
 		{
 			if (other == null)
 				return false;
@@ -385,7 +396,30 @@ namespace SIL.Machine.FeatureModel
 			visitedOther.Add(otherSfv);
 			visitedPairs[this] = otherSfv;
 
-			return Equals(otherSfv);
+			return ValueEquals(otherSfv);
+		}
+
+		public virtual bool ValueEquals(SimpleFeatureValue other)
+		{
+			if (other == null)
+				return false;
+
+			if (IsVariable)
+				return VariableName == other.VariableName && Agree == other.Agree;
+			return true;
+		}
+
+		public override bool ValueEquals(FeatureValue other)
+		{
+			var otherSfv = other as SimpleFeatureValue;
+			return otherSfv != null && ValueEquals(otherSfv);
+		}
+
+		public override string ToString()
+		{
+			if (IsVariable)
+				return (Agree ? "+" : "-") + VariableName;
+			return "";
 		}
 
 		protected abstract bool Overlaps(bool not, SimpleFeatureValue other, bool notOther);

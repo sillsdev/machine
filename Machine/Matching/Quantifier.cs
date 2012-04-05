@@ -12,6 +12,10 @@ namespace SIL.Machine.Matching
     {
     	public const int Infinite = -1;
 
+    	private int _minOccur;
+    	private int _maxOccur;
+    	private bool _greedy;
+
 		public Quantifier()
 			: this(0, Infinite)
 		{
@@ -37,36 +41,60 @@ namespace SIL.Machine.Matching
 		public Quantifier(int minOccur, int maxOccur, PatternNode<TData, TOffset> node)
 			: base(node == null ? Enumerable.Empty<PatternNode<TData, TOffset>>() : node.ToEnumerable())
         {
-    		IsGreedy = true;
-    		MinOccur = minOccur;
-            MaxOccur = maxOccur;
+    		_greedy = true;
+    		_minOccur = minOccur;
+            _maxOccur = maxOccur;
         }
 
 		protected Quantifier(Quantifier<TData, TOffset> quantifier)
 			: base(quantifier)
         {
-            MinOccur = quantifier.MinOccur;
-            MaxOccur = quantifier.MaxOccur;
-    		IsGreedy = quantifier.IsGreedy;
+            _minOccur = quantifier._minOccur;
+            _maxOccur = quantifier._maxOccur;
+    		_greedy = quantifier._greedy;
         }
 
     	/// <summary>
     	/// Gets the minimum number of occurrences of this pattern.
     	/// </summary>
     	/// <value>The minimum number of occurrences.</value>
-		public int MinOccur { get; set; }
+    	public int MinOccur
+    	{
+    		get { return _minOccur; }
+			set
+			{
+				CheckFrozen();
+				_minOccur = value;
+			}
+    	}
 
     	/// <summary>
     	/// Gets the maximum number of occurrences of this pattern.
     	/// </summary>
     	/// <value>The maximum number of occurrences.</value>
-		public int MaxOccur { get; set; }
+    	public int MaxOccur
+    	{
+    		get { return _maxOccur; }
+			set
+			{
+				CheckFrozen();
+				_maxOccur = value;
+			}
+    	}
 
-    	public bool IsGreedy { get; set; }
+    	public bool IsGreedy
+    	{
+    		get { return _greedy; }
+			set
+			{
+				CheckFrozen();
+				_greedy = value;
+			}
+    	}
 
     	protected override bool CanAdd(PatternNode<TData, TOffset> child)
 		{
-			if (child is Pattern<TData, TOffset>)
+			if (!base.CanAdd(child) || child is Pattern<TData, TOffset>)
 				return false;
 			return true;
 		}
@@ -80,7 +108,7 @@ namespace SIL.Machine.Matching
 			var startStates = new List<State<TData, TOffset>>();
 			if (MinOccur == 0)
 			{
-				endState = startState.AddArc(fsa.CreateState(), priorityType);
+				endState = startState.Arcs.Add(fsa.CreateState(), priorityType);
 				endState = base.GenerateNfa(fsa, endState, out hasVariables);
 				startStates.Add(currentState);
 			}
@@ -96,7 +124,7 @@ namespace SIL.Machine.Matching
 
 			if (MaxOccur == Infinite)
 			{
-				endState.AddArc(currentState, priorityType);
+				endState.Arcs.Add(currentState, priorityType);
 			}
 			else
 			{
@@ -106,14 +134,23 @@ namespace SIL.Machine.Matching
 				for (int i = 1; i <= numCopies; i++)
 				{
 					startStates.Add(endState);
-					endState = endState.AddArc(fsa.CreateState(), priorityType);
+					endState = endState.Arcs.Add(fsa.CreateState(), priorityType);
 					endState = base.GenerateNfa(fsa, endState, out hasVariables);
 				}
 			}
 			foreach (State<TData, TOffset> state in startStates)
-				state.AddArc(endState);
+				state.Arcs.Add(endState);
 
 			return endState;
+		}
+
+		protected override int FreezeImpl()
+		{
+			int code = base.FreezeImpl();
+			code = code * 31 + _minOccur.GetHashCode();
+			code = code * 31 + _maxOccur.GetHashCode();
+			code = code * 31 + _greedy.GetHashCode();
+			return code;
 		}
 
     	public new Quantifier<TData, TOffset> DeepClone()
@@ -124,6 +161,17 @@ namespace SIL.Machine.Matching
 		protected override PatternNode<TData, TOffset> DeepCloneImpl()
 		{
 			return DeepClone();
+		}
+
+		public override bool ValueEquals(PatternNode<TData, TOffset> other)
+		{
+			var otherQuant = other as Quantifier<TData, TOffset>;
+			return otherQuant != null && ValueEquals(otherQuant);
+		}
+
+		public bool ValueEquals(Quantifier<TData, TOffset> other)
+		{
+			return MinOccur == other.MinOccur && MaxOccur == other.MaxOccur && IsGreedy == other.IsGreedy && base.ValueEquals(other);
 		}
 
     	public override string ToString()

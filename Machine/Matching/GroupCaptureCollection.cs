@@ -42,9 +42,12 @@ namespace SIL.Machine.Matching
 			}
 		}
 
-		public bool Contains(string groupName)
+		public bool Captured(string groupName)
 		{
-			return _groupCaptures.ContainsKey(groupName);
+			GroupCapture<TOffset> capture;
+			if (_groupCaptures.TryGetValue(groupName, out capture))
+				return capture.Success;
+			return false;
 		}
 	}
 }

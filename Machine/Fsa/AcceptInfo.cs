@@ -8,7 +8,7 @@ namespace SIL.Machine.Fsa
 		private readonly Func<TData, FsaMatch<TOffset>, bool> _acceptable;
 		private readonly int _priority;
 
-		internal AcceptInfo(string id, Func<TData, FsaMatch<TOffset>, bool> acceptable, int priority)
+		public AcceptInfo(string id, Func<TData, FsaMatch<TOffset>, bool> acceptable, int priority)
 		{
 			_id = id;
 			_acceptable = acceptable;

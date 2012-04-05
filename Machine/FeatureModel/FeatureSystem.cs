@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Collections;
-using SIL.Machine.FeatureModel.Fluent;
 
 namespace SIL.Machine.FeatureModel
 {
@@ -12,11 +11,6 @@ namespace SIL.Machine.FeatureModel
     /// </summary>
     public class FeatureSystem : ICollection<Feature>
     {
-		public static IFeatureSystemSyntax New()
-		{
-			return new FeatureSystemBuilder();
-		}
-
     	private readonly IDBearerSet<Feature> _features;
 
         /// <summary>
@@ -33,7 +27,7 @@ namespace SIL.Machine.FeatureModel
 			if (TryGetFeature(id, out feature))
 				return feature;
 
-			throw new ArgumentException("The specified feature could not be found.", "id");
+			throw new ArgumentException(string.Format("The feature '{0}' could not be found.", id), "id");
 		}
 
 		public T GetFeature<T>(string id) where T : Feature
@@ -42,7 +36,7 @@ namespace SIL.Machine.FeatureModel
 			if (TryGetFeature(id, out feature))
 				return (T) feature;
 
-			throw new ArgumentException("The specified feature could not be found.", "id");
+			throw new ArgumentException(string.Format("The feature '{0}' could not be found.", id), "id");
 		}
 
 		public bool TryGetFeature(string id, out Feature feature)
@@ -71,7 +65,7 @@ namespace SIL.Machine.FeatureModel
 				if (TryGetFeature(id, out feature))
 					return feature;
 
-				throw new ArgumentException("The specified feature could not be found.", "id");
+				throw new ArgumentException(string.Format("The feature '{0}' could not be found.", id), "id");
 			}
 		}
 
@@ -96,7 +90,7 @@ namespace SIL.Machine.FeatureModel
 			if (TryGetSymbol(id, out symbol))
 				return symbol;
 
-			throw new ArgumentException("The specified symbol could not be found.", "id");
+			throw new ArgumentException(string.Format("The symbol '{0}' could not be found.", id), "id");
         }
 
     	/// <summary>

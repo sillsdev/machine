@@ -6,7 +6,7 @@ using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine
 {
-	public class Shape : OrderedBidirList<ShapeNode>, IData<ShapeNode>, IDeepCloneable<Shape>
+	public class Shape : OrderedBidirList<ShapeNode>, IData<ShapeNode>, IDeepCloneable<Shape>, IFreezable<Shape>
 	{
 		private readonly Func<bool, ShapeNode> _marginSelector;
 		private readonly SpanFactory<ShapeNode> _spanFactory;
@@ -50,6 +50,30 @@ namespace SIL.Machine
 			get { return _annotations; }
 		}
 
+		public bool IsFrozen { get; private set; }
+
+		public void Freeze()
+		{
+			if (IsFrozen)
+				return;
+
+			IsFrozen = true;
+			int i = 0;
+			foreach (ShapeNode node in this)
+			{
+				node.Tag = i++;
+				node.Freeze();
+			}
+
+			_annotations.Freeze();
+		}
+
+		private void CheckFrozen()
+		{
+			if (IsFrozen)
+				throw new InvalidOperationException("The shape is immutable.");
+		}
+
 		public ShapeNode Add(FeatureStruct fs)
 		{
 			return Add(fs, false);
@@ -65,6 +89,8 @@ namespace SIL.Machine
 
 		public Span<ShapeNode> CopyTo(Shape dest)
 		{
+			if (Count == 0)
+				return _spanFactory.Empty;
 			return CopyTo(First, Last, dest);
 		}
 
@@ -132,6 +158,7 @@ namespace SIL.Machine
 
 		public override void AddAfter(ShapeNode node, ShapeNode newNode, Direction dir)
 		{
+			CheckFrozen();
 			if (newNode.List == this)
 				throw new ArgumentException("newNode is already a member of this collection.", "newNode");
 			if (node != null && node.List != this)
@@ -179,6 +206,7 @@ namespace SIL.Machine
 
 		public override bool Remove(ShapeNode node)
 		{
+			CheckFrozen();
 			if (node.List != this)
 				return false;
 
@@ -231,6 +259,7 @@ namespace SIL.Machine
 
 		public override void Clear()
 		{
+			CheckFrozen();
 			base.Clear();
 			_annotations.Clear();
 			_annotations.Add(Begin.Annotation);
@@ -327,6 +356,21 @@ namespace SIL.Machine
 		public IEnumerable<ShapeNode> GetNodes(Span<ShapeNode> span, Direction dir)
 		{
 			return this.GetNodes(span.GetStart(dir), span.GetEnd(dir), dir);
+		}
+
+		public bool ValueEquals(Shape other)
+		{
+			if (Count != other.Count)
+				return false;
+
+			return this.Zip(other).All(tuple => tuple.Item1.ValueEquals(tuple.Item2));
+		}
+
+		public int GetFrozenHashCode()
+		{
+			if (!IsFrozen)
+				throw new InvalidOperationException("The shape does not have a valid hash code, because it is mutable.");
+			return _annotations.GetFrozenHashCode();
 		}
 
 		public Shape DeepClone()

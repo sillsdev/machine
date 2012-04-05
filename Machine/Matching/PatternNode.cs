@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using SIL.Collections;
 using SIL.Machine.Fsa;
 
@@ -7,8 +9,10 @@ namespace SIL.Machine.Matching
 	/// <summary>
 	/// This is the abstract class that all phonetic pattern nodes extend.
 	/// </summary>
-	public abstract class PatternNode<TData, TOffset> : OrderedBidirTreeNode<PatternNode<TData, TOffset>>, IDeepCloneable<PatternNode<TData, TOffset>> where TData : IData<TOffset>
+	public abstract class PatternNode<TData, TOffset> : OrderedBidirTreeNode<PatternNode<TData, TOffset>>, IDeepCloneable<PatternNode<TData, TOffset>>, IFreezable<PatternNode<TData, TOffset>> where TData : IData<TOffset>
 	{
+		private int _hashCode;
+
 		protected PatternNode()
 			: base(begin => new Margin())
 		{
@@ -51,6 +55,68 @@ namespace SIL.Machine.Matching
 		public PatternNode<TData, TOffset> DeepClone()
 		{
 			return DeepCloneImpl();
+		}
+
+		public bool IsFrozen { get; private set; }
+
+		public void Freeze()
+		{
+			if (IsFrozen)
+				return;
+			IsFrozen = true;
+			_hashCode = FreezeImpl();
+		}
+
+		public virtual bool ValueEquals(PatternNode<TData, TOffset> other)
+		{
+			if (IsLeaf && other.IsLeaf)
+				return true;
+
+			if (!IsLeaf && !other.IsLeaf && Children.Count == other.Children.Count)
+				return Children.Zip(other.Children).All(tuple => tuple.Item1.ValueEquals(tuple.Item2));
+			return false;
+		}
+
+		public int GetFrozenHashCode()
+		{
+			if (!IsFrozen)
+				throw new InvalidOperationException("The pattern node does not have a valid hash code, because it is mutable.");
+			return _hashCode;
+		}
+
+		protected void CheckFrozen()
+		{
+			if (IsFrozen)
+				throw new InvalidOperationException("The pattern is immutable.");
+		}
+
+		protected virtual int FreezeImpl()
+		{
+			int code = 23;
+			if (!IsLeaf)
+			{
+				foreach (PatternNode<TData, TOffset> child in Children)
+				{
+					child.Freeze();
+					code = code * 31 + child.GetFrozenHashCode();
+				}
+			}
+			return code;
+		}
+
+		protected override bool CanAdd(PatternNode<TData, TOffset> child)
+		{
+			return !IsFrozen;
+		}
+
+		protected override bool CanRemove(PatternNode<TData, TOffset> child)
+		{
+			return !IsFrozen;
+		}
+
+		protected override bool CanClear()
+		{
+			return !IsFrozen;
 		}
 
 		protected abstract PatternNode<TData, TOffset> DeepCloneImpl();

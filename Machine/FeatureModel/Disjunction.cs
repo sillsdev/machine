@@ -86,7 +86,7 @@ namespace SIL.Machine.FeatureModel
 
 		internal Disjunction DeepCloneImpl(IDictionary<FeatureValue, FeatureValue> copies)
 		{
-			return new Disjunction(_disjuncts.Select(disj => (FeatureStruct) disj.DeepCloneImpl(new Dictionary<FeatureValue, FeatureValue>(copies, new ReferenceEqualityComparer<FeatureValue>()))));
+			return new Disjunction(_disjuncts.Select(disj => (FeatureStruct) disj.DeepCloneImpl(new Dictionary<FeatureValue, FeatureValue>(copies))));
 		}
 
 		internal void FindReentrances(IDictionary<FeatureValue, bool> reentrances)
@@ -117,12 +117,11 @@ namespace SIL.Machine.FeatureModel
 						if (matched.Contains(i))
 							continue;
 
-						var comparer = new ReferenceEqualityComparer<FeatureValue>();
-						var tempVisitedSelf = new HashSet<FeatureValue>(visitedSelf, comparer);
-						var tempVisitedOther = new HashSet<FeatureValue>(visitedOther, comparer);
-						var tempVisitedPairs = new Dictionary<FeatureValue, FeatureValue>(visitedPairs, comparer);
+						var tempVisitedSelf = new HashSet<FeatureValue>(visitedSelf);
+						var tempVisitedOther = new HashSet<FeatureValue>(visitedOther);
+						var tempVisitedPairs = new Dictionary<FeatureValue, FeatureValue>(visitedPairs);
 
-						if (thisDisjunct.EqualsImpl(other._disjuncts[i], tempVisitedSelf, tempVisitedOther, tempVisitedPairs))
+						if (thisDisjunct.ValueEqualsImpl(other._disjuncts[i], tempVisitedSelf, tempVisitedOther, tempVisitedPairs))
 						{
 							visitedSelf = tempVisitedSelf;
 							visitedOther = tempVisitedOther;
@@ -141,9 +140,9 @@ namespace SIL.Machine.FeatureModel
 			return true;
 		}
 
-		internal int GetHashCodeImpl(ISet<FeatureValue> visited)
+		internal int FreezeImpl(ISet<FeatureValue> visited)
 		{
-			return _disjuncts.Aggregate(23, (code, fs) => code ^ fs.GetHashCodeImpl(visited));
+			return _disjuncts.Aggregate(23, (code, fs) => code ^ fs.FreezeImpl(visited));
 		}
 
 		internal string ToStringImpl(ISet<FeatureValue> visited, IDictionary<FeatureValue, int> reentranceIds)

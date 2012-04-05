@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using NUnit.Framework;
+using SIL.Collections;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.Test
@@ -10,35 +12,27 @@ namespace SIL.Machine.Test
 		[Test]
 		public void DisjunctiveUnify()
 		{
-			FeatureSystem featSys = FeatureSystem.New()
-				.SymbolicFeature("rank", rank => rank
-					.Symbol("clause"))
-				.SymbolicFeature("case", casef => casef
-					.Symbol("nom"))
-				.SymbolicFeature("number", number => number
-					.Symbol("pl")
-					.Symbol("sing"))
-				.SymbolicFeature("person", person => person
-					.Symbol("2")
-					.Symbol("3"))
-				.StringFeature("lex")
-				.SymbolicFeature("transitivity", transitivity => transitivity
-					.Symbol("trans")
-					.Symbol("intrans"))
-				.SymbolicFeature("voice", voice => voice
-					.Symbol("passive")
-					.Symbol("active"))
-				.StringFeature("varFeat1")
-				.StringFeature("varFeat2")
-				.StringFeature("varFeat3")
-				.StringFeature("varFeat4")
-				.ComplexFeature("subj")
-				.ComplexFeature("actor")
-				.ComplexFeature("goal").Value;
+			var featSys = new FeatureSystem
+							{
+								new SymbolicFeature("rank") {PossibleSymbols = {"clause"}},
+								new SymbolicFeature("case") {PossibleSymbols = {"nom"}},
+								new SymbolicFeature("number") {PossibleSymbols = {"pl", "sing"}},
+								new SymbolicFeature("person") {PossibleSymbols = {"2", "3"}},
+								new StringFeature("lex"),
+								new SymbolicFeature("transitivity") {PossibleSymbols = {"trans", "intrans"}},
+								new SymbolicFeature("voice") {PossibleSymbols = {"passive", "active"}},
+								new StringFeature("varFeat1"),
+								new StringFeature("varFeat2"),
+								new StringFeature("varFeat3"),
+								new StringFeature("varFeat4"),
+								new ComplexFeature("subj"),
+								new ComplexFeature("actor"),
+								new ComplexFeature("goal")
+							};
 
 			FeatureStruct grammar = FeatureStruct.New(featSys)
 				.Feature("rank").EqualTo("clause")
-				.Feature("subj").EqualToFeatureStruct(1, subj => subj
+				.Feature("subj").EqualTo(1, subj => subj
 					.Feature("case").EqualTo("nom"))
 				.Feature("varFeat1").EqualToVariable("alpha")
 				.Feature("varFeat2").EqualTo("value2")
@@ -54,27 +48,27 @@ namespace SIL.Machine.Test
 				.And(and => and
 					.With(disj => disj
 						.Feature("transitivity").EqualTo("intrans")
-						.Feature("actor").EqualToFeatureStruct(actor => actor
+						.Feature("actor").EqualTo(actor => actor
 							.Feature("person").EqualTo("3")))
 					.Or(disj => disj
 						.Feature("transitivity").EqualTo("trans")
-						.Feature("goal").EqualToFeatureStruct(goal => goal
+						.Feature("goal").EqualTo(goal => goal
 							.Feature("person").EqualTo("3"))
 						.Feature("varFeat3").EqualToVariable("beta")))
 				.And(and => and
 					.With(disj => disj
 						.Feature("number").EqualTo("sing")
-						.Feature("subj").EqualToFeatureStruct(subj1 => subj1
+						.Feature("subj").EqualTo(subj1 => subj1
 							.Feature("number").EqualTo("sing")))
 					.Or(disj => disj
 						.Feature("number").EqualTo("pl")
-						.Feature("subj").EqualToFeatureStruct(subj1 => subj1
+						.Feature("subj").EqualTo(subj1 => subj1
 							.Feature("number").EqualTo("pl"))
 						.Feature("varFeat3").EqualTo("value3")
 						.Feature("varFeat2").Not.EqualToVariable("beta"))).Value;
 
 			FeatureStruct constituent = FeatureStruct.New(featSys)
-				.Feature("subj").EqualToFeatureStruct(subj => subj
+				.Feature("subj").EqualTo(subj => subj
 					.Feature("lex").EqualTo("y'all")
 					.Feature("person").EqualTo("2")
 					.Feature("number").EqualTo("pl"))
@@ -82,10 +76,10 @@ namespace SIL.Machine.Test
 				.Feature("varFeat4").EqualTo("value4").Value;
 
 			FeatureStruct output;
-			Assert.IsTrue(grammar.Unify(constituent, out output));
-			Assert.AreEqual(FeatureStruct.New(featSys)
+			Assert.That(grammar.Unify(constituent, out output), Is.True);
+			Assert.That(output, Is.EqualTo(FeatureStruct.New(featSys)
 				.Feature("rank").EqualTo("clause")
-				.Feature("subj").EqualToFeatureStruct(1, subj => subj
+				.Feature("subj").EqualTo(1, subj => subj
 					.Feature("case").EqualTo("nom")
 					.Feature("lex").EqualTo("y'all")
 					.Feature("person").EqualTo("2")
@@ -94,34 +88,22 @@ namespace SIL.Machine.Test
 				.Feature("voice").EqualTo("active")
 				.Feature("actor").ReferringTo(1)
 				.Feature("transitivity").EqualTo("trans")
-				.Feature("goal").EqualToFeatureStruct(goal => goal.Feature("person").EqualTo("3"))
+				.Feature("goal").EqualTo(goal => goal.Feature("person").EqualTo("3"))
 				.Feature("varFeat1").EqualTo("value1")
 				.Feature("varFeat2").EqualTo("value2")
 				.Feature("varFeat3").EqualTo("value3")
-				.Feature("varFeat4").EqualTo("value4").Value, output);
+				.Feature("varFeat4").EqualTo("value4").Value).Using((IEqualityComparer<FeatureStruct>) FreezableEqualityComparer<FeatureStruct>.Instance));
 
-			featSys = FeatureSystem.New()
-				.SymbolicFeature("feat1", feat1 => feat1
-					.Symbol("feat1+")
-					.Symbol("feat1-"))
-				.SymbolicFeature("feat2", feat2 => feat2
-					.Symbol("feat2+")
-					.Symbol("feat2-"))
-				.SymbolicFeature("feat3", feat3 => feat3
-					.Symbol("feat3+")
-					.Symbol("feat3-"))
-				.SymbolicFeature("feat4", feat4 => feat4
-					.Symbol("feat4+")
-					.Symbol("feat4-"))
-				.SymbolicFeature("feat5", feat5 => feat5
-					.Symbol("feat5+")
-					.Symbol("feat5-"))
-				.SymbolicFeature("feat6", feat6 => feat6
-					.Symbol("feat6+")
-					.Symbol("feat6-"))
-				.SymbolicFeature("feat7", feat7 => feat7
-					.Symbol("feat7+")
-					.Symbol("feat7-")).Value;
+			featSys = new FeatureSystem
+			          	{
+			          		new SymbolicFeature("feat1") {PossibleSymbols = {"feat1+", "feat1-"}},
+			          		new SymbolicFeature("feat2") {PossibleSymbols = {"feat2+", "feat2-"}},
+			          		new SymbolicFeature("feat3") {PossibleSymbols = {"feat3+", "feat3-"}},
+			          		new SymbolicFeature("feat4") {PossibleSymbols = {"feat4+", "feat4-"}},
+			          		new SymbolicFeature("feat5") {PossibleSymbols = {"feat5+", "feat5-"}},
+			          		new SymbolicFeature("feat6") {PossibleSymbols = {"feat6+", "feat6-"}},
+			          		new SymbolicFeature("feat7") {PossibleSymbols = {"feat7+", "feat7-"}},
+			          	};
 
 			FeatureStruct fs1 = FeatureStruct.New(featSys)
 				.And(disjunction => disjunction
@@ -136,8 +118,8 @@ namespace SIL.Machine.Test
 					.With(disj => disj.Symbol("feat5+"))
 					.Or(disj => disj.Symbol("feat6+"))).Value;
 
-			Assert.IsTrue(fs1.Unify(fs2, out output));
-			Assert.AreEqual(FeatureStruct.New(featSys)
+			Assert.That(fs1.Unify(fs2, out output), Is.True);
+			Assert.That(output, Is.EqualTo(FeatureStruct.New(featSys)
 				.And(disjunction => disjunction
 					.With(disj => disj.Symbol("feat1+"))
 					.Or(disj => disj.Symbol("feat2+")))
@@ -146,7 +128,7 @@ namespace SIL.Machine.Test
 					.Or(disj => disj.Symbol("feat4+")))
 				.And(disjunction => disjunction
 					.With(disj => disj.Symbol("feat5+"))
-					.Or(disj => disj.Symbol("feat6+"))).Value, output);
+					.Or(disj => disj.Symbol("feat6+"))).Value).Using((IEqualityComparer<FeatureStruct>) FreezableEqualityComparer<FeatureStruct>.Instance));
 
 			fs1 = FeatureStruct.New(featSys)
 				.Symbol(1, "feat1+")
@@ -163,13 +145,13 @@ namespace SIL.Machine.Test
 				.And(disjunction => disjunction
 					.With(disj => disj.Symbol("feat3+"))
 					.Or(disj => disj.Symbol("feat1-"))).Value;
-			Assert.IsTrue(fs1.Unify(fs2, out output));
-			Assert.AreEqual(FeatureStruct.New(featSys)
+			Assert.That(fs1.Unify(fs2, out output), Is.True);
+			Assert.That(output, Is.EqualTo(FeatureStruct.New(featSys)
 				.Symbol(1, "feat1+")
 				.Symbol("feat3+")
 				.And(disjunction => disjunction
 					.With(disj => disj.Symbol("feat1+"))
-					.Or(disj => disj.Feature("feat1").ReferringTo(1))).Value, output);
+					.Or(disj => disj.Feature("feat1").ReferringTo(1))).Value).Using((IEqualityComparer<FeatureStruct>) FreezableEqualityComparer<FeatureStruct>.Instance));
 		}
 
 		[Test]
@@ -185,36 +167,36 @@ namespace SIL.Machine.Test
 																						FeatureStruct res;
 																						return fs1.Unify(fs2, varBindings, out res) ? res : null;
 																					};
-			TestBinaryOperation(resultsSelector, varResultsSelector,
+			TestBinaryOperation(FreezableEqualityComparer<FeatureStruct>.Instance, resultsSelector, varResultsSelector,
 				// simple
 				featSys => null,
 				featSys => FeatureStruct.New(featSys).Symbol("a2").Symbol("b1").Symbol("c2").Value,
 
 				// complex
 				featSys => null,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a2"))
-					.Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol("b1"))
-					.Feature("cx3").EqualToFeatureStruct(cx2 => cx2.Symbol("c2"))
-					.Feature("cx4").EqualToFeatureStruct(cx4 => cx4.Symbol("d1")).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a2"))
+					.Feature("cx2").EqualTo(cx2 => cx2.Symbol("b1"))
+					.Feature("cx3").EqualTo(cx2 => cx2.Symbol("c2"))
+					.Feature("cx4").EqualTo(cx4 => cx4.Symbol("d1")).Value,
 
 				// re-entrant
 				featSys => null,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1.Symbol("a1"))
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1.Symbol("a1"))
 					.Feature("cx2").ReferringTo(1).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol(1, "a1"))
-					.Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Feature("a").ReferringTo(1)).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1.Symbol("a1"))
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol(1, "a1"))
+					.Feature("cx2").EqualTo(cx2 => cx2.Feature("a").ReferringTo(1)).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1.Symbol("a1"))
 					.Feature("cx2").ReferringTo(1).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1.Symbol("a2"))
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1.Symbol("a2"))
 					.Feature("cx2").ReferringTo(1).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol(1, "a2"))
-					.Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Feature("a").ReferringTo(1)).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol(1, "a2"))
+					.Feature("cx2").EqualTo(cx2 => cx2.Feature("a").ReferringTo(1)).Value,
 
 				// cyclic
 				featSys => null,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
 					.Symbol("a2").Symbol("b2").Feature("cx2").ReferringTo(1)).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
 					.Symbol("a2").Symbol("b1").Symbol("c1").Feature("cx2").ReferringTo(1)).Value,
 				featSys => null,
 				featSys => null,
@@ -226,70 +208,68 @@ namespace SIL.Machine.Test
 				featSys => FeatureStruct.New(featSys).Symbol("a+").Symbol("b-").Value,
 				featSys => null);
 
-			FeatureSystem featureSystem = FeatureSystem.New()
-				.ComplexFeature("a")
-				.SymbolicFeature("b", b => b
-					.Symbol("c"))
-				.ComplexFeature("d")
-				.SymbolicFeature("e", e => e
-					.Symbol("f"))
-				.ComplexFeature("g")
-				.SymbolicFeature("h", h => h
-					.Symbol("j")).Value;
+			var featureSystem = new FeatureSystem
+			                    	{
+			                    		new ComplexFeature("a"),
+			                    		new SymbolicFeature("b") {PossibleSymbols = {"c"}},
+			                    		new ComplexFeature("d"),
+			                    		new SymbolicFeature("e") {PossibleSymbols = {"f"}},
+			                    		new ComplexFeature("g"),
+			                    		new SymbolicFeature("h") {PossibleSymbols = {"j"}}
+			                    	};
 
 			FeatureStruct featStruct1 = FeatureStruct.New(featureSystem)
-				.Feature("a").EqualToFeatureStruct(a => a
+				.Feature("a").EqualTo(a => a
 					.Feature("b").EqualTo("c"))
-				.Feature("d").EqualToFeatureStruct(1, d => d
+				.Feature("d").EqualTo(1, d => d
 					.Feature("e").EqualTo("f"))
 				.Feature("g").ReferringTo(1).Value;
 
 			FeatureStruct featStruct2 = FeatureStruct.New(featureSystem)
-				.Feature("a").EqualToFeatureStruct(1, a => a
+				.Feature("a").EqualTo(1, a => a
 					.Feature("b").EqualTo("c"))
 				.Feature("d").ReferringTo(1)
-				.Feature("g").EqualToFeatureStruct(g => g
+				.Feature("g").EqualTo(g => g
 					.Feature("h").EqualTo("j")).Value;
 
 			FeatureStruct result;
 			Assert.IsTrue(featStruct1.Unify(featStruct2, out result));
 
-			featureSystem = FeatureSystem.New()
-				.ComplexFeature("a")
-				.SymbolicFeature("b", b => b
-					.Symbol("c"))
-				.ComplexFeature("d")
-				.SymbolicFeature("e", e => e
-					.Symbol("f"))
-				.ComplexFeature("g")
-				.SymbolicFeature("h", h => h
-					.Symbol("j"))
-				.ComplexFeature("i").Value;
+			featureSystem = new FeatureSystem
+			                	{
+			                		new ComplexFeature("a"),
+									new SymbolicFeature("b") {PossibleSymbols = {"c"}},
+									new ComplexFeature("d"),
+									new SymbolicFeature("e") {PossibleSymbols = {"f"}},
+									new ComplexFeature("g"),
+									new SymbolicFeature("h") {PossibleSymbols = {"j"}},
+									new ComplexFeature("i")
+			                	};
 
 			featStruct1 = FeatureStruct.New(featureSystem)
-				.Feature("a").EqualToFeatureStruct(1, a => a
+				.Feature("a").EqualTo(1, a => a
 					.Feature("b").EqualTo("c"))
-				.Feature("d").EqualToFeatureStruct(2, d => d
+				.Feature("d").EqualTo(2, d => d
 					.Feature("e").EqualTo("f"))
 				.Feature("g").ReferringTo(2)
 				.Feature("i").ReferringTo(1).Value;
 
 			featStruct2 = FeatureStruct.New(featureSystem)
-				.Feature("a").EqualToFeatureStruct(1, a => a
+				.Feature("a").EqualTo(1, a => a
 					.Feature("b").EqualTo("c"))
-				.Feature("d").EqualToFeatureStruct(g => g
+				.Feature("d").EqualTo(g => g
 					.Feature("h").EqualTo("j"))
 				.Feature("g").ReferringTo(1).Value;
 
-			Assert.IsTrue(featStruct1.Unify(featStruct2, out result));
-			Assert.AreEqual(FeatureStruct.New(featureSystem)
-				.Feature("a").EqualToFeatureStruct(1, a => a
+			Assert.That(featStruct1.Unify(featStruct2, out result), Is.True);
+			Assert.That(result, Is.EqualTo(FeatureStruct.New(featureSystem)
+				.Feature("a").EqualTo(1, a => a
 					.Feature("b").EqualTo("c")
 					.Feature("e").EqualTo("f")
 					.Feature("h").EqualTo("j"))
 				.Feature("d").ReferringTo(1)
 				.Feature("g").ReferringTo(1)
-				.Feature("i").ReferringTo(1).Value, result);
+				.Feature("i").ReferringTo(1).Value).Using((IEqualityComparer<FeatureStruct>) FreezableEqualityComparer<FeatureStruct>.Instance));
 		}
 
 		[Test]
@@ -297,7 +277,7 @@ namespace SIL.Machine.Test
 		{
 			Func<FeatureStruct, FeatureStruct, bool> resultsSelector = (fs1, fs2) => fs1.IsUnifiable(fs2);
 			Func<FeatureStruct, FeatureStruct, VariableBindings, bool> varResultsSelector = (fs1, fs2, varBindings) => fs1.IsUnifiable(fs2, varBindings);
-			TestBinaryOperation(resultsSelector, varResultsSelector,
+			TestBinaryOperation(EqualityComparer<bool>.Default, resultsSelector, varResultsSelector,
 				// simple
 				featSys => false,
 				featSys => true,
@@ -342,46 +322,46 @@ namespace SIL.Machine.Test
 			                                                                    		fs1.PriorityUnion(fs2, varBindings);
 			                                                                    		return fs1;
 			                                                                    	};
-			TestBinaryOperation(resultsSelector, varResultsSelector,
+			TestBinaryOperation(FreezableEqualityComparer<FeatureStruct>.Instance, resultsSelector, varResultsSelector,
 				// simple
 				featSys => FeatureStruct.New(featSys).Symbol("a2").Symbol("b1").Symbol("c2").Value,
 				featSys => FeatureStruct.New(featSys).Symbol("a2").Symbol("b1").Symbol("c2").Value,
 
 				// complex
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a2"))
-					.Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol("b1"))
-					.Feature("cx3").EqualToFeatureStruct(cx2 => cx2.Symbol("c2"))
-					.Feature("cx4").EqualToFeatureStruct(cx4 => cx4.Symbol("d2", "d3")).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a2"))
-					.Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol("b1"))
-					.Feature("cx3").EqualToFeatureStruct(cx2 => cx2.Symbol("c2"))
-					.Feature("cx4").EqualToFeatureStruct(cx4 => cx4.Symbol("d1", "d2")).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a2"))
+					.Feature("cx2").EqualTo(cx2 => cx2.Symbol("b1"))
+					.Feature("cx3").EqualTo(cx2 => cx2.Symbol("c2"))
+					.Feature("cx4").EqualTo(cx4 => cx4.Symbol("d2", "d3")).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a2"))
+					.Feature("cx2").EqualTo(cx2 => cx2.Symbol("b1"))
+					.Feature("cx3").EqualTo(cx2 => cx2.Symbol("c2"))
+					.Feature("cx4").EqualTo(cx4 => cx4.Symbol("d1", "d2")).Value,
 
 				// re-entrant
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1.Symbol("a2"))
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1.Symbol("a2"))
 					.Feature("cx2").ReferringTo(1).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx2").EqualToFeatureStruct(1, cx2 => cx2.Symbol("a1", "a3"))
+				featSys => FeatureStruct.New(featSys).Feature("cx2").EqualTo(1, cx2 => cx2.Symbol("a1", "a3"))
 					.Feature("cx1").ReferringTo(1).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol(1, "a1", "a3"))
-					.Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Feature("a").ReferringTo(1)).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1.Symbol("a1", "a2"))
+				featSys => FeatureStruct.New(featSys).Feature("cx2").EqualTo(cx2 => cx2.Symbol(1, "a1", "a3"))
+					.Feature("cx1").EqualTo(cx1 => cx1.Feature("a").ReferringTo(1)).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1.Symbol("a1", "a2"))
 					.Feature("cx2").ReferringTo(1).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1.Symbol("a2", "a3", "a4"))
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1.Symbol("a2", "a3", "a4"))
 					.Feature("cx2").ReferringTo(1).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol(1, "a2", "a3", "a4"))
-					.Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Feature("a").ReferringTo(1)).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx2").EqualTo(cx2 => cx2.Symbol(1, "a2", "a3", "a4"))
+					.Feature("cx1").EqualTo(cx1 => cx1.Feature("a").ReferringTo(1)).Value,
 
 				// cyclic
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
 					.Symbol("a2").Symbol("b1").Feature("cx2").ReferringTo(1)).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
 					.Symbol("a2").Symbol("b2").Feature("cx2").ReferringTo(1)).Value,
 				// fs1 is not re-entrant and fs2 is re-entrant on cx2, so fs2 wins out and replaces fs1's value for cx2
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
 					.Symbol("a2").Symbol("b1").Feature("cx2").ReferringTo(1)).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
 					.Symbol("a2").Symbol("b1").Symbol("c2").Feature("cx2").ReferringTo(1)).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
 					.Symbol("a2").Symbol("b1").Symbol("c2").Feature("cx2").ReferringTo(1)).Value,
 
 				// variable
@@ -406,33 +386,33 @@ namespace SIL.Machine.Test
 																						return fs1;
 																					};
 			
-			TestBinaryOperation(resultsSelector, varResultsSelector,
+			TestBinaryOperation(FreezableEqualityComparer<FeatureStruct>.Instance, resultsSelector, varResultsSelector,
 				// simple
 				featSys => FeatureStruct.New(featSys).Symbol("a1", "a2").Value,
 				featSys => FeatureStruct.New(featSys).Symbol("a1", "a2").Symbol("c2").Value,
 
 				// complex
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a1", "a2")).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a1", "a2"))
-					.Feature("cx4").EqualToFeatureStruct(cx4 => cx4.Symbol("d1", "d2")).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1", "a2")).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1", "a2"))
+					.Feature("cx4").EqualTo(cx4 => cx4.Symbol("d1", "d2")).Value,
 
 				// re-entrant
-				featSys => FeatureStruct.New(featSys).Feature("cx2").EqualToFeatureStruct(cx1 => cx1.Symbol("a1", "a2")).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx2 => cx2.Symbol("a1", "a2", "a3")).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx2 => cx2.Symbol("a1", "a2", "a3")).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1.Symbol("a1", "a2"))
+				featSys => FeatureStruct.New(featSys).Feature("cx2").EqualTo(cx1 => cx1.Symbol("a1", "a2")).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx2 => cx2.Symbol("a1", "a2", "a3")).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx2 => cx2.Symbol("a1", "a2", "a3")).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1.Symbol("a1", "a2"))
 					.Feature("cx2").ReferringTo(1).Value,
 				featSys => FeatureStruct.New().Value,
 				featSys => FeatureStruct.New().Value,
 
 				// cyclic
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a1", "a2")).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a1", "a2")).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a1", "a2")).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1", "a2")).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1", "a2")).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1", "a2")).Value,
 				// fs1 is not re-entrant, so the result is also not re-entrant
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a1", "a2")
-					.Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol("c1", "c2"))).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1.Symbol("a1", "a2").Symbol("c1", "c2")
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1", "a2")
+					.Feature("cx2").EqualTo(cx2 => cx2.Symbol("c1", "c2"))).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1.Symbol("a1", "a2").Symbol("c1", "c2")
 					.Feature("cx2").ReferringTo(1)).Value,
 
 				// variable
@@ -458,38 +438,38 @@ namespace SIL.Machine.Test
 																						return fs1;
 																					};
 
-			TestBinaryOperation(resultsSelector, varResultsSelector,
+			TestBinaryOperation(FreezableEqualityComparer<FeatureStruct>.Instance, resultsSelector, varResultsSelector,
 				// simple
 				featSys => FeatureStruct.New(featSys).Symbol("a1").Symbol("b1").Value,
 				featSys => FeatureStruct.New(featSys).Symbol("a1").Symbol("b1").Value,
 
 				// complex
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a1"))
-					.Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol("b1"))
-					.Feature("cx4").EqualToFeatureStruct(cx4 => cx4.Symbol("d1")).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a1"))
-					.Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol("b1")).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1"))
+					.Feature("cx2").EqualTo(cx2 => cx2.Symbol("b1"))
+					.Feature("cx4").EqualTo(cx4 => cx4.Symbol("d1")).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1"))
+					.Feature("cx2").EqualTo(cx2 => cx2.Symbol("b1")).Value,
 
 				// re-entrant
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1.Symbol("a1")).Feature("cx2")
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1.Symbol("a1")).Feature("cx2")
 					.ReferringTo(1).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a2")).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a2")).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a2")).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a2")).Value,
 				featSys => FeatureStruct.New().Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1.Symbol("a1"))
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1.Symbol("a1"))
 					.Feature("cx2").ReferringTo(1).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol(1, "a1"))
-					.Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Feature("a").ReferringTo(1)).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol(1, "a1"))
+					.Feature("cx2").EqualTo(cx2 => cx2.Feature("a").ReferringTo(1)).Value,
 
 				// cyclic
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a1").Symbol("b1")).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1.Symbol("a1")
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1").Symbol("b1")).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1.Symbol("a1")
 					.Feature("cx2").ReferringTo(1)).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1
-					.Symbol("a1").Symbol("b1").Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol("c1"))).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1
-					.Symbol("a1").Symbol("b1").Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol("c1"))).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1
+					.Symbol("a1").Symbol("b1").Feature("cx2").EqualTo(cx2 => cx2.Symbol("c1"))).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1
+					.Symbol("a1").Symbol("b1").Feature("cx2").EqualTo(cx2 => cx2.Symbol("c1"))).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
 					.Symbol("a1").Symbol("b1").Symbol("c1").Feature("cx2").ReferringTo(1)).Value,
 
 				// variable
@@ -518,31 +498,31 @@ namespace SIL.Machine.Test
 
 				// complex
 				featSys => FeatureStruct.New(featSys).And(disjunction => disjunction
-					.With(disj => disj.Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a2", "a3")))
-					.Or(disj => disj.Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol("b2", "b3")))
-					.Or(disj => disj.Feature("cx3").EqualToFeatureStruct(cx3 => cx3.Symbol("d2", "d3")))).Value,
+					.With(disj => disj.Feature("cx1").EqualTo(cx1 => cx1.Symbol("a2", "a3")))
+					.Or(disj => disj.Feature("cx2").EqualTo(cx2 => cx2.Symbol("b2", "b3")))
+					.Or(disj => disj.Feature("cx3").EqualTo(cx3 => cx3.Symbol("d2", "d3")))).Value,
 				featSys => FeatureStruct.New(featSys).And(disjunction => disjunction
-					.With(disj => disj.Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a3")))
-					.Or(disj => disj.Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol("b2", "b3")))
-					.Or(disj => disj.Feature("cx3").EqualToFeatureStruct(cx3 => cx3.And(cx3Disjunction => cx3Disjunction
+					.With(disj => disj.Feature("cx1").EqualTo(cx1 => cx1.Symbol("a3")))
+					.Or(disj => disj.Feature("cx2").EqualTo(cx2 => cx2.Symbol("b2", "b3")))
+					.Or(disj => disj.Feature("cx3").EqualTo(cx3 => cx3.And(cx3Disjunction => cx3Disjunction
 						.With(cx3Disj => cx3Disj.Symbol("c1")).Or(cx3Disj => cx3Disj.Symbol("d2", "d3")))))).Value,
 
 				// re-entrant
 				featSys => FeatureStruct.New(featSys).And(disjunction => disjunction
-					.With(disj => disj.Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1.Symbol("a2", "a3", "a4")))
+					.With(disj => disj.Feature("cx1").EqualTo(1, cx1 => cx1.Symbol("a2", "a3", "a4")))
 					.Or(disj => disj.Feature("cx2").ReferringTo(1))).Value,
 				featSys => FeatureStruct.New(featSys).And(disjunction => disjunction
-					.With(disj => disj.Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1.Symbol("a1")))
+					.With(disj => disj.Feature("cx1").EqualTo(1, cx1 => cx1.Symbol("a1")))
 					.Or(disj => disj.Feature("cx2").ReferringTo(1))).Value,
 				featSys => FeatureStruct.New(featSys).And(disjunction => disjunction
-					.With(disj => disj.Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol(1, "a2", "a4")))
-					.Or(disj => disj.Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Feature("a").ReferringTo(1)))).Value,
+					.With(disj => disj.Feature("cx1").EqualTo(cx1 => cx1.Symbol(1, "a2", "a4")))
+					.Or(disj => disj.Feature("cx2").EqualTo(cx2 => cx2.Feature("a").ReferringTo(1)))).Value,
 
 				// cyclic
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1.And(disjunction => disjunction
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1.And(disjunction => disjunction
 					.With(disj => disj.Symbol("a1", "a3"))
 					.Or(disj => disj.Feature("cx2").ReferringTo(1)))).Value,
-				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1.And(disjunction => disjunction
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1.And(disjunction => disjunction
 					.With(disj => disj.Symbol("a3"))
 					.Or(disj => disj.Feature("cx2").ReferringTo(1)))).Value,
 
@@ -570,10 +550,10 @@ namespace SIL.Machine.Test
 				featSys => FeatureStruct.New(featSys)
 					.And(disjunction => disjunction
 						.With(disj => disj.Symbol("feat3-").Symbol("feat4-"))
-						.Or(disj => disj.Symbol("feat5-").Feature("cfeat2").EqualToFeatureStruct(cfeat2 => cfeat2.And(cfeat2Disjunction => cfeat2Disjunction
+						.Or(disj => disj.Symbol("feat5-").Feature("cfeat2").EqualTo(cfeat2 => cfeat2.And(cfeat2Disjunction => cfeat2Disjunction
 							.With(cfeat2Disj => cfeat2Disj.Symbol("feat9-"))
 							.Or(cfeat2Disj => cfeat2Disj.Symbol("feat10-")))))
-						.Or(disj => disj.Feature("cfeat1").EqualToFeatureStruct(cfeat1 => cfeat1.And(cfeat1Disjunction => cfeat1Disjunction
+						.Or(disj => disj.Feature("cfeat1").EqualTo(cfeat1 => cfeat1.And(cfeat1Disjunction => cfeat1Disjunction
 							.With(cfeat1Disj => cfeat1Disj.Symbol("feat7-"))
 							.Or(cfeat1Disj => cfeat1Disj.Symbol("feat8-")))))
 						.Or(disj => disj.Symbol("feat1-"))
@@ -583,172 +563,126 @@ namespace SIL.Machine.Test
 		private void TestUnaryOperation<TResult>(Func<FeatureStruct, TResult> resultsSelector, params Func<FeatureSystem, TResult>[] expectedSelectors)
 		{
 			// simple
-			FeatureSystem featSys = FeatureSystem.New()
-				.SymbolicFeature("a", a => a
-					.Symbol("a1")
-					.Symbol("a2")
-					.Symbol("a3"))
-				.SymbolicFeature("b", b => b
-					.Symbol("b1")
-					.Symbol("b2")
-					.Symbol("b3"))
-				.SymbolicFeature("c", c => c
-					.Symbol("c1")
-					.Symbol("c2")
-					.Symbol("c3")).Value;
+			var featSys = new FeatureSystem
+							{
+								new SymbolicFeature("a") {PossibleSymbols = {"a1", "a2", "a3"}},
+								new SymbolicFeature("b") {PossibleSymbols = {"b1", "b2", "b3"}},
+								new SymbolicFeature("c") {PossibleSymbols = {"c1", "c2", "c3"}}
+							};
 
 			FeatureStruct fs = FeatureStruct.New(featSys).Symbol("a1").Symbol("b1").Value;
-			Assert.AreEqual(expectedSelectors[0](featSys), resultsSelector(fs));
+			Assert.That(resultsSelector(fs), Is.EqualTo(expectedSelectors[0](featSys)).Using((IEqualityComparer<FeatureStruct>) FreezableEqualityComparer<FeatureStruct>.Instance));
 
 			fs = FeatureStruct.New(featSys).Symbol("a1", "a2").Symbol("b1").Symbol("c2").Value;
-			Assert.AreEqual(expectedSelectors[1](featSys), resultsSelector(fs));
+			Assert.That(resultsSelector(fs), Is.EqualTo(expectedSelectors[1](featSys)).Using((IEqualityComparer<FeatureStruct>) FreezableEqualityComparer<FeatureStruct>.Instance));
 
 			// complex
-			featSys = FeatureSystem.New()
-				.ComplexFeature("cx1")
-				.SymbolicFeature("a", a => a
-					.Symbol("a1")
-					.Symbol("a2")
-					.Symbol("a3"))
-				.ComplexFeature("cx2")
-				.SymbolicFeature("b", b => b
-					.Symbol("b1")
-					.Symbol("b2")
-					.Symbol("b3"))
-				.ComplexFeature("cx3")
-				.SymbolicFeature("c", c => c
-					.Symbol("c1")
-					.Symbol("c2")
-					.Symbol("c3"))
-				.SymbolicFeature("d", d => d
-					.Symbol("d1")
-					.Symbol("d2")
-					.Symbol("d3")).Value;
+			featSys = new FeatureSystem
+			          	{
+			          		new ComplexFeature("cx1"),
+			          		new SymbolicFeature("a") {PossibleSymbols = {"a1", "a2", "a3"}},
+			          		new ComplexFeature("cx2"),
+			          		new SymbolicFeature("b") {PossibleSymbols = {"b1", "b2", "b3"}},
+			          		new ComplexFeature("cx3"),
+			          		new SymbolicFeature("c") {PossibleSymbols = {"c1", "c2", "c3"}},
+			          		new SymbolicFeature("d") {PossibleSymbols = {"d1", "d2", "d3"}}
+			          	};
 
-			fs = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a1"))
-				.Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol("b1"))
-				.Feature("cx3").EqualToFeatureStruct(cx3 => cx3.Symbol("d1")).Value;
-			Assert.AreEqual(expectedSelectors[2](featSys), resultsSelector(fs));
+			fs = FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1"))
+				.Feature("cx2").EqualTo(cx2 => cx2.Symbol("b1"))
+				.Feature("cx3").EqualTo(cx3 => cx3.Symbol("d1")).Value;
+			Assert.That(resultsSelector(fs), Is.EqualTo(expectedSelectors[2](featSys)).Using((IEqualityComparer<FeatureStruct>) FreezableEqualityComparer<FeatureStruct>.Instance));
 
-			fs = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a1", "a2"))
-				.Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol("b1"))
-				.Feature("cx3").EqualToFeatureStruct(cx3 => cx3.Symbol("c2", "c3").Symbol("d1")).Value;
-			Assert.AreEqual(expectedSelectors[3](featSys), resultsSelector(fs));
+			fs = FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1", "a2"))
+				.Feature("cx2").EqualTo(cx2 => cx2.Symbol("b1"))
+				.Feature("cx3").EqualTo(cx3 => cx3.Symbol("c2", "c3").Symbol("d1")).Value;
+			Assert.That(resultsSelector(fs), Is.EqualTo(expectedSelectors[3](featSys)).Using((IEqualityComparer<FeatureStruct>) FreezableEqualityComparer<FeatureStruct>.Instance));
 
 			// re-entrant
-			featSys = FeatureSystem.New()
-				.ComplexFeature("cx1")
-				.SymbolicFeature("a", a => a
-					.Symbol("a1")
-					.Symbol("a2")
-					.Symbol("a3")
-					.Symbol("a4"))
-				.ComplexFeature("cx2").Value;
+			featSys = new FeatureSystem
+			          	{
+			          		new ComplexFeature("cx1"),
+			          		new SymbolicFeature("a") {PossibleSymbols = {"a1", "a2", "a3", "a4"}},
+			          		new ComplexFeature("cx2")
+			          	};
 
-			fs = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1.Symbol("a1"))
+			fs = FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1.Symbol("a1"))
 				.Feature("cx2").ReferringTo(1).Value;
-			Assert.AreEqual(expectedSelectors[4](featSys), resultsSelector(fs));
+			Assert.That(resultsSelector(fs), Is.EqualTo(expectedSelectors[4](featSys)).Using((IEqualityComparer<FeatureStruct>) FreezableEqualityComparer<FeatureStruct>.Instance));
 
-			fs = FeatureStruct.New(featSys).Feature("cx2").EqualToFeatureStruct(1, cx2 => cx2.Symbol("a2", "a3", "a4"))
+			fs = FeatureStruct.New(featSys).Feature("cx2").EqualTo(1, cx2 => cx2.Symbol("a2", "a3", "a4"))
 				.Feature("cx1").ReferringTo(1).Value;
-			Assert.AreEqual(expectedSelectors[5](featSys), resultsSelector(fs));
+			Assert.That(resultsSelector(fs), Is.EqualTo(expectedSelectors[5](featSys)).Using((IEqualityComparer<FeatureStruct>) FreezableEqualityComparer<FeatureStruct>.Instance));
 
-			fs = FeatureStruct.New(featSys).Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol(1, "a1", "a3"))
-				.Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Feature("a").ReferringTo(1)).Value;
-			Assert.AreEqual(expectedSelectors[6](featSys), resultsSelector(fs));
+			fs = FeatureStruct.New(featSys).Feature("cx2").EqualTo(cx2 => cx2.Symbol(1, "a1", "a3"))
+				.Feature("cx1").EqualTo(cx1 => cx1.Feature("a").ReferringTo(1)).Value;
+			Assert.That(resultsSelector(fs), Is.EqualTo(expectedSelectors[6](featSys)).Using((IEqualityComparer<FeatureStruct>) FreezableEqualityComparer<FeatureStruct>.Instance));
 
 			// cyclic
-			featSys = FeatureSystem.New()
-				.ComplexFeature("cx1")
-				.SymbolicFeature("a", a => a
-					.Symbol("a1")
-					.Symbol("a2")
-					.Symbol("a3"))
-				.SymbolicFeature("b", b => b
-					.Symbol("b1")
-					.Symbol("b2")
-					.Symbol("b3"))
-				.SymbolicFeature("c", b => b
-					.Symbol("c1")
-					.Symbol("c2")
-					.Symbol("c3"))
-				.ComplexFeature("cx2").Value;
+			featSys = new FeatureSystem
+			          	{
+			          		new ComplexFeature("cx1"),
+			          		new SymbolicFeature("a") {PossibleSymbols = {"a1", "a2", "a3"}},
+			          		new SymbolicFeature("b") {PossibleSymbols = {"b1", "b2", "b3"}},
+			          		new SymbolicFeature("c") {PossibleSymbols = {"c1", "c2", "c3"}},
+			          		new ComplexFeature("cx2")
+			          	};
 
-			fs = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1
+			fs = FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
 				.Symbol("a2").Feature("cx2").ReferringTo(1)).Value;
-			Assert.AreEqual(expectedSelectors[7](featSys), resultsSelector(fs));
+			Assert.That(resultsSelector(fs), Is.EqualTo(expectedSelectors[7](featSys)).Using((IEqualityComparer<FeatureStruct>) FreezableEqualityComparer<FeatureStruct>.Instance));
 
-			fs = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1
+			fs = FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
 				.Symbol("a1", "a2").Feature("cx2").ReferringTo(1)).Value;
-			Assert.AreEqual(expectedSelectors[8](featSys), resultsSelector(fs));
+			Assert.That(resultsSelector(fs), Is.EqualTo(expectedSelectors[8](featSys)).Using((IEqualityComparer<FeatureStruct>) FreezableEqualityComparer<FeatureStruct>.Instance));
 
 			// variable
-			featSys = FeatureSystem.New()
-				.SymbolicFeature("a", a => a
-					.Symbol("a+", "+")
-					.Symbol("a-", "-"))
-				.SymbolicFeature("b", b => b
-					.Symbol("b+", "+")
-					.Symbol("b-", "-")).Value;
+			featSys = new FeatureSystem
+			          	{
+			          		new SymbolicFeature("a") {PossibleSymbols = {{"a+", "+"}, {"a-", "-"}}},
+			          		new SymbolicFeature("b") {PossibleSymbols = {{"b+", "+"}, {"b-", "-"}}}
+			          	};
 
 			fs = FeatureStruct.New(featSys)
 				.Feature("a").EqualToVariable("var1")
 				.Symbol("b-").Value;
 
-			Assert.AreEqual(expectedSelectors[9](featSys), resultsSelector(fs));
+			Assert.That(resultsSelector(fs), Is.EqualTo(expectedSelectors[9](featSys)).Using((IEqualityComparer<FeatureStruct>) FreezableEqualityComparer<FeatureStruct>.Instance));
 
 			fs = FeatureStruct.New(featSys)
 				.Feature("a").Not.EqualToVariable("var1")
 				.Symbol("b-").Value;
 
-			Assert.AreEqual(expectedSelectors[10](featSys), resultsSelector(fs));
+			Assert.That(resultsSelector(fs), Is.EqualTo(expectedSelectors[10](featSys)).Using((IEqualityComparer<FeatureStruct>) FreezableEqualityComparer<FeatureStruct>.Instance));
 
 			// disjunctive
-			featSys = FeatureSystem.New()
-				.SymbolicFeature("feat1", feat1 => feat1
-					.Symbol("feat1+")
-					.Symbol("feat1-"))
-				.SymbolicFeature("feat2", feat2 => feat2
-					.Symbol("feat2+")
-					.Symbol("feat2-"))
-				.SymbolicFeature("feat3", feat3 => feat3
-					.Symbol("feat3+")
-					.Symbol("feat3-"))
-				.SymbolicFeature("feat4", feat4 => feat4
-					.Symbol("feat4+")
-					.Symbol("feat4-"))
-				.SymbolicFeature("feat5", feat5 => feat5
-					.Symbol("feat5+")
-					.Symbol("feat5-"))
-				.SymbolicFeature("feat6", feat6 => feat6
-					.Symbol("feat6+")
-					.Symbol("feat6-"))
-				.ComplexFeature("cfeat1")
-				.SymbolicFeature("feat7", feat7 => feat7
-					.Symbol("feat7+")
-					.Symbol("feat7-"))
-				.SymbolicFeature("feat8", feat8 => feat8
-					.Symbol("feat8+")
-					.Symbol("feat8-"))
-				.ComplexFeature("cfeat2")
-				.SymbolicFeature("feat9", feat9 => feat9
-					.Symbol("feat9+")
-					.Symbol("feat9-"))
-				.SymbolicFeature("feat10", feat10 => feat10
-					.Symbol("feat10+")
-					.Symbol("feat10-")).Value;
+			featSys = new FeatureSystem
+			          	{
+			          		new SymbolicFeature("feat1") {PossibleSymbols = {"feat1+", "feat1-"}},
+			          		new SymbolicFeature("feat2") {PossibleSymbols = {"feat2+", "feat2-"}},
+			          		new SymbolicFeature("feat3") {PossibleSymbols = {"feat3+", "feat3-"}},
+			          		new SymbolicFeature("feat4") {PossibleSymbols = {"feat4+", "feat4-"}},
+			          		new SymbolicFeature("feat5") {PossibleSymbols = {"feat5+", "feat5-"}},
+			          		new SymbolicFeature("feat6") {PossibleSymbols = {"feat6+", "feat6-"}},
+			          		new SymbolicFeature("feat7") {PossibleSymbols = {"feat7+", "feat7-"}},
+			          		new SymbolicFeature("feat8") {PossibleSymbols = {"feat8+", "feat8-"}},
+			          		new SymbolicFeature("feat9") {PossibleSymbols = {"feat9+", "feat9-"}},
+			          		new SymbolicFeature("feat10") {PossibleSymbols = {"feat10+", "feat10-"}},
+							new ComplexFeature("cfeat1"),
+							new ComplexFeature("cfeat2")
+			          	};
 
 			fs = FeatureStruct.New(featSys)
 				.And(disjunction => disjunction
 					.With(disj => disj.Symbol("feat1+"))
 					.Or(disj => disj.Symbol("feat2+"))).Value;
-			Assert.AreEqual(expectedSelectors[11](featSys), resultsSelector(fs));
+			Assert.That(resultsSelector(fs), Is.EqualTo(expectedSelectors[11](featSys)).Using((IEqualityComparer<FeatureStruct>) FreezableEqualityComparer<FeatureStruct>.Instance));
 
 			fs = FeatureStruct.New(featSys)
 				.And(disjunction => disjunction
 					.With(disj => disj.Symbol("feat1+").Symbol("feat2+"))
 					.Or(disj => disj.Symbol("feat3+").Symbol("feat4+"))).Value;
-			Assert.AreEqual(expectedSelectors[12](featSys), resultsSelector(fs));
+			Assert.That(resultsSelector(fs), Is.EqualTo(expectedSelectors[12](featSys)).Using((IEqualityComparer<FeatureStruct>) FreezableEqualityComparer<FeatureStruct>.Instance));
 
 			fs = FeatureStruct.New(featSys)
 				.Symbol("feat1+")
@@ -759,238 +693,210 @@ namespace SIL.Machine.Test
 				.And(disjunction => disjunction
 					.With(disj => disj.Symbol("feat5+"))
 					.Or(disj => disj.Symbol("feat6+"))).Value;
-			Assert.AreEqual(expectedSelectors[13](featSys), resultsSelector(fs));
+			Assert.That(resultsSelector(fs), Is.EqualTo(expectedSelectors[13](featSys)).Using((IEqualityComparer<FeatureStruct>) FreezableEqualityComparer<FeatureStruct>.Instance));
 
 			fs = FeatureStruct.New(featSys)
-				.Feature("cfeat1").EqualToFeatureStruct(cfeat1 => cfeat1.Symbol("feat7+").Symbol("feat8+"))
+				.Feature("cfeat1").EqualTo(cfeat1 => cfeat1.Symbol("feat7+").Symbol("feat8+"))
 				.Symbol("feat1+")
 				.Symbol("feat2+")
 				.And(disjunction => disjunction
 					.With(disj => disj.Symbol("feat3+"))
 					.Or(disj => disj.Symbol("feat4+")))
 				.And(disjunction => disjunction
-					.With(disj => disj.Feature("cfeat2").EqualToFeatureStruct(cfeat2 => cfeat2.Symbol("feat9+").Symbol("feat10+")))
+					.With(disj => disj.Feature("cfeat2").EqualTo(cfeat2 => cfeat2.Symbol("feat9+").Symbol("feat10+")))
 					.Or(disj => disj.Symbol("feat5+"))).Value;
-			Assert.AreEqual(expectedSelectors[14](featSys), resultsSelector(fs));
+			Assert.That(resultsSelector(fs), Is.EqualTo(expectedSelectors[14](featSys)).Using((IEqualityComparer<FeatureStruct>) FreezableEqualityComparer<FeatureStruct>.Instance));
 		}
 
-		private void TestBinaryOperation<TResult>(Func<FeatureStruct, FeatureStruct, TResult> resultsSelector, Func<FeatureStruct, FeatureStruct, VariableBindings, TResult> varResultsSelector,
-			params Func<FeatureSystem, TResult>[] expectedSelectors)
+		private void TestBinaryOperation<TResult>(IEqualityComparer<TResult> comparer, Func<FeatureStruct, FeatureStruct, TResult> resultsSelector,
+			Func<FeatureStruct, FeatureStruct, VariableBindings, TResult> varResultsSelector, params Func<FeatureSystem, TResult>[] expectedSelectors)
 		{
 			// simple
-			FeatureSystem featSys = FeatureSystem.New()
-				.SymbolicFeature("a", a => a
-					.Symbol("a1")
-					.Symbol("a2")
-					.Symbol("a3"))
-				.SymbolicFeature("b", b => b
-					.Symbol("b1")
-					.Symbol("b2")
-					.Symbol("b3"))
-				.SymbolicFeature("c", c => c
-					.Symbol("c1")
-					.Symbol("c2")
-					.Symbol("c3")).Value;
+			var featSys = new FeatureSystem
+			              	{
+			              		new SymbolicFeature("a") {PossibleSymbols = {"a1", "a2", "a3"}},
+			              		new SymbolicFeature("b") {PossibleSymbols = {"b1", "b2", "b3"}},
+			              		new SymbolicFeature("c") {PossibleSymbols = {"c1", "c2", "c3"}}
+			              	};
 
-			FeatureStruct fs1 = FeatureStruct.New(featSys).Symbol("a1").Symbol("b1").Value;
-			FeatureStruct fs2 = FeatureStruct.New(featSys).Symbol("a2").Symbol("c2").Value;
-			Assert.AreEqual(expectedSelectors[0](featSys), resultsSelector(fs1, fs2));
+			FeatureStruct fs1 = FeatureStruct.NewMutable(featSys).Symbol("a1").Symbol("b1").Value;
+			FeatureStruct fs2 = FeatureStruct.NewMutable(featSys).Symbol("a2").Symbol("c2").Value;
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[0](featSys)).Using(comparer));
 
-			fs1 = FeatureStruct.New(featSys).Symbol("a1", "a2").Symbol("b1").Symbol("c2").Value;
-			fs2 = FeatureStruct.New(featSys).Symbol("a2").Symbol("c2").Value;
-			Assert.AreEqual(expectedSelectors[1](featSys), resultsSelector(fs1, fs2));
+			fs1 = FeatureStruct.NewMutable(featSys).Symbol("a1", "a2").Symbol("b1").Symbol("c2").Value;
+			fs2 = FeatureStruct.NewMutable(featSys).Symbol("a2").Symbol("c2").Value;
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[1](featSys)).Using(comparer));
 
 			// complex
-			featSys = FeatureSystem.New()
-				.ComplexFeature("cx1")
-				.SymbolicFeature("a", a => a
-					.Symbol("a1")
-					.Symbol("a2")
-					.Symbol("a3"))
-				.ComplexFeature("cx2")
-				.SymbolicFeature("b", b => b
-					.Symbol("b1")
-					.Symbol("b2")
-					.Symbol("b3"))
-				.ComplexFeature("cx3")
-				.SymbolicFeature("c", c => c
-					.Symbol("c1")
-					.Symbol("c2")
-					.Symbol("c3"))
-				.ComplexFeature("cx4")
-				.SymbolicFeature("d", d => d
-					.Symbol("d1")
-					.Symbol("d2")
-					.Symbol("d3")).Value;
+			featSys = new FeatureSystem
+			          	{
+			          		new ComplexFeature("cx1"),
+			          		new SymbolicFeature("a") {PossibleSymbols = {"a1", "a2", "a3"}},
+			          		new ComplexFeature("cx2"),
+			          		new SymbolicFeature("b") {PossibleSymbols = {"b1", "b2", "b3"}},
+			          		new ComplexFeature("cx3"),
+			          		new SymbolicFeature("c") {PossibleSymbols = {"c1", "c2", "c3"}},
+			          		new ComplexFeature("cx4"),
+			          		new SymbolicFeature("d") {PossibleSymbols = {"d1", "d2", "d3"}}
+			          	};
 
-			fs1 = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a1"))
-				.Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol("b1"))
-				.Feature("cx4").EqualToFeatureStruct(cx4 => cx4.Symbol("d1")).Value;
-			fs2 = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a2"))
-				.Feature("cx3").EqualToFeatureStruct(cx2 => cx2.Symbol("c2"))
-				.Feature("cx4").EqualToFeatureStruct(cx4 => cx4.Symbol("d2", "d3")).Value;
-			Assert.AreEqual(expectedSelectors[2](featSys), resultsSelector(fs1, fs2));
+			fs1 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1"))
+				.Feature("cx2").EqualTo(cx2 => cx2.Symbol("b1"))
+				.Feature("cx4").EqualTo(cx4 => cx4.Symbol("d1")).Value;
+			fs2 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a2"))
+				.Feature("cx3").EqualTo(cx2 => cx2.Symbol("c2"))
+				.Feature("cx4").EqualTo(cx4 => cx4.Symbol("d2", "d3")).Value;
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[2](featSys)).Using(comparer));
 
-			fs1 = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a1", "a2"))
-				.Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol("b1"))
-				.Feature("cx4").EqualToFeatureStruct(cx4 => cx4.Symbol("d1")).Value;
-			fs2 = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a2"))
-				.Feature("cx3").EqualToFeatureStruct(cx2 => cx2.Symbol("c2"))
-				.Feature("cx4").EqualToFeatureStruct(cx4 => cx4.Symbol("d1", "d2")).Value;
-			Assert.AreEqual(expectedSelectors[3](featSys), resultsSelector(fs1, fs2));
+			fs1 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1", "a2"))
+				.Feature("cx2").EqualTo(cx2 => cx2.Symbol("b1"))
+				.Feature("cx4").EqualTo(cx4 => cx4.Symbol("d1")).Value;
+			fs2 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a2"))
+				.Feature("cx3").EqualTo(cx2 => cx2.Symbol("c2"))
+				.Feature("cx4").EqualTo(cx4 => cx4.Symbol("d1", "d2")).Value;
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[3](featSys)).Using(comparer));
 
 			// re-entrant
-			featSys = FeatureSystem.New()
-				.ComplexFeature("cx1")
-				.SymbolicFeature("a", a => a
-					.Symbol("a1")
-					.Symbol("a2")
-					.Symbol("a3")
-					.Symbol("a4"))
-				.ComplexFeature("cx2").Value;
+			featSys = new FeatureSystem
+			          	{
+			          		new ComplexFeature("cx1"),
+			          		new SymbolicFeature("a") {PossibleSymbols = {"a1", "a2", "a3", "a4"}},
+			          		new ComplexFeature("cx2")
+			          	};
 
-			fs1 = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1.Symbol("a1"))
+			fs1 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(1, cx1 => cx1.Symbol("a1"))
 				.Feature("cx2").ReferringTo(1).Value;
-			fs2 = FeatureStruct.New(featSys).Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol("a2")).Value;
-			Assert.AreEqual(expectedSelectors[4](featSys), resultsSelector(fs1, fs2));
+			fs2 = FeatureStruct.NewMutable(featSys).Feature("cx2").EqualTo(cx2 => cx2.Symbol("a2")).Value;
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[4](featSys)).Using(comparer));
 
-			fs1 = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a1", "a2")).Value;
-			fs2 = FeatureStruct.New(featSys).Feature("cx2").EqualToFeatureStruct(1, cx2 => cx2.Symbol("a1", "a3"))
+			fs1 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1", "a2")).Value;
+			fs2 = FeatureStruct.NewMutable(featSys).Feature("cx2").EqualTo(1, cx2 => cx2.Symbol("a1", "a3"))
 				.Feature("cx1").ReferringTo(1).Value;
-			Assert.AreEqual(expectedSelectors[5](featSys), resultsSelector(fs1, fs2));
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[5](featSys)).Using(comparer));
 
-			fs1 = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol("a1", "a2")).Value;
-			fs2 = FeatureStruct.New(featSys).Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol(1, "a1", "a3"))
-				.Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Feature("a").ReferringTo(1)).Value;
-			Assert.AreEqual(expectedSelectors[6](featSys), resultsSelector(fs1, fs2));
+			fs1 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1", "a2")).Value;
+			fs2 = FeatureStruct.NewMutable(featSys).Feature("cx2").EqualTo(cx2 => cx2.Symbol(1, "a1", "a3"))
+				.Feature("cx1").EqualTo(cx1 => cx1.Feature("a").ReferringTo(1)).Value;
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[6](featSys)).Using(comparer));
 
-			fs1 = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1.Symbol("a1"))
+			fs1 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(1, cx1 => cx1.Symbol("a1"))
 				.Feature("cx2").ReferringTo(1).Value;
-			fs2 = FeatureStruct.New(featSys).Feature("cx2").EqualToFeatureStruct(1, cx2 => cx2.Symbol("a1", "a2"))
+			fs2 = FeatureStruct.NewMutable(featSys).Feature("cx2").EqualTo(1, cx2 => cx2.Symbol("a1", "a2"))
 				.Feature("cx1").ReferringTo(1).Value;
-			Assert.AreEqual(expectedSelectors[7](featSys), resultsSelector(fs1, fs2));
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[7](featSys)).Using(comparer));
 
-			fs1 = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1.Symbol("a1", "a2"))
+			fs1 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(1, cx1 => cx1.Symbol("a1", "a2"))
 				.Feature("cx2").ReferringTo(1).Value;
-			fs2 = FeatureStruct.New(featSys).Feature("cx2").EqualToFeatureStruct(1, cx2 => cx2.Symbol("a2", "a3", "a4"))
+			fs2 = FeatureStruct.NewMutable(featSys).Feature("cx2").EqualTo(1, cx2 => cx2.Symbol("a2", "a3", "a4"))
 				.Feature("cx1").ReferringTo(1).Value;
-			Assert.AreEqual(expectedSelectors[8](featSys), resultsSelector(fs1, fs2));
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[8](featSys)).Using(comparer));
 
-			fs1 = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Symbol(1, "a1", "a2"))
-				.Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Feature("a").ReferringTo(1)).Value;
-			fs2 = FeatureStruct.New(featSys).Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol(1, "a2", "a3", "a4"))
-				.Feature("cx1").EqualToFeatureStruct(cx1 => cx1.Feature("a").ReferringTo(1)).Value;
-			Assert.AreEqual(expectedSelectors[9](featSys), resultsSelector(fs1, fs2));
+			fs1 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol(1, "a1", "a2"))
+				.Feature("cx2").EqualTo(cx2 => cx2.Feature("a").ReferringTo(1)).Value;
+			fs2 = FeatureStruct.NewMutable(featSys).Feature("cx2").EqualTo(cx2 => cx2.Symbol(1, "a2", "a3", "a4"))
+				.Feature("cx1").EqualTo(cx1 => cx1.Feature("a").ReferringTo(1)).Value;
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[9](featSys)).Using(comparer));
 
 			// cyclic
-			featSys = FeatureSystem.New()
-				.ComplexFeature("cx1")
-				.SymbolicFeature("a", a => a
-					.Symbol("a1")
-					.Symbol("a2")
-					.Symbol("a3"))
-				.SymbolicFeature("b", b => b
-					.Symbol("b1")
-					.Symbol("b2")
-					.Symbol("b3"))
-				.SymbolicFeature("c", b => b
-					.Symbol("c1")
-					.Symbol("c2")
-					.Symbol("c3"))
-				.ComplexFeature("cx2").Value;
+			featSys = new FeatureSystem
+			          	{
+			          		new ComplexFeature("cx1"),
+			          		new SymbolicFeature("a") {PossibleSymbols = {"a1", "a2", "a3"}},
+			          		new SymbolicFeature("b") {PossibleSymbols = {"b1", "b2", "b3"}},
+			          		new SymbolicFeature("c") {PossibleSymbols = {"c1", "c2", "c3"}},
+			          		new ComplexFeature("cx2")
+			          	};
 
-			fs1 = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1
+			fs1 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(cx1 => cx1
 				.Symbol("a1").Symbol("b1")).Value;
-			fs2 = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1
+			fs2 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
 				.Symbol("a2").Feature("cx2").ReferringTo(1)).Value;
-			Assert.AreEqual(expectedSelectors[10](featSys), resultsSelector(fs1, fs2));
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[10](featSys)).Using(comparer));
 
-			fs1 = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1
+			fs1 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
 				.Symbol("a1", "a2").Feature("cx2").ReferringTo(1)).Value;
-			fs2 = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1
+			fs2 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(cx1 => cx1
 				.Symbol("a2").Symbol("b2")).Value;
-			Assert.AreEqual(expectedSelectors[11](featSys), resultsSelector(fs1, fs2));
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[11](featSys)).Using(comparer));
 
-			fs1 = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1
-				.Symbol("a1", "a2").Symbol("b1").Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol("c1"))).Value;
-			fs2 = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1
+			fs1 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(cx1 => cx1
+				.Symbol("a1", "a2").Symbol("b1").Feature("cx2").EqualTo(cx2 => cx2.Symbol("c1"))).Value;
+			fs2 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
 				.Symbol("a2").Feature("cx2").ReferringTo(1)).Value;
-			Assert.AreEqual(expectedSelectors[12](featSys), resultsSelector(fs1, fs2));
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[12](featSys)).Using(comparer));
 
-			fs1 = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(cx1 => cx1
-				.Symbol("a1").Symbol("b1").Feature("cx2").EqualToFeatureStruct(cx2 => cx2.Symbol("c1", "c2"))).Value;
-			fs2 = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1
+			fs1 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(cx1 => cx1
+				.Symbol("a1").Symbol("b1").Feature("cx2").EqualTo(cx2 => cx2.Symbol("c1", "c2"))).Value;
+			fs2 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
 				.Symbol("a2").Symbol("c2").Feature("cx2").ReferringTo(1)).Value;
-			Assert.AreEqual(expectedSelectors[13](featSys), resultsSelector(fs1, fs2));
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[13](featSys)).Using(comparer));
 
-			fs1 = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1
+			fs1 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
 				.Symbol("a1").Symbol("b1").Symbol("c1").Feature("cx2").ReferringTo(1)).Value;
-			fs2 = FeatureStruct.New(featSys).Feature("cx1").EqualToFeatureStruct(1, cx1 => cx1
+			fs2 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
 				.Symbol("a2").Symbol("c2").Feature("cx2").ReferringTo(1)).Value;
-			Assert.AreEqual(expectedSelectors[14](featSys), resultsSelector(fs1, fs2));
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[14](featSys)).Using(comparer));
 
 			// variable
-			featSys = FeatureSystem.New()
-				.SymbolicFeature("a", a => a
-					.Symbol("a+", "+")
-					.Symbol("a-", "-"))
-				.SymbolicFeature("b", b => b
-					.Symbol("b+", "+")
-					.Symbol("b-", "-")).Value;
+			featSys = new FeatureSystem
+			          	{
+			          		new SymbolicFeature("a") {PossibleSymbols = {{"a+", "+"}, {"a-", "-"}}},
+			          		new SymbolicFeature("b") {PossibleSymbols = {{"b+", "+"}, {"b-", "-"}}}
+			          	};
 
-			fs1 = FeatureStruct.New(featSys)
+			fs1 = FeatureStruct.NewMutable(featSys)
 				.Feature("a").EqualToVariable("var1")
 				.Symbol("b-").Value;
 
-			fs2 = FeatureStruct.New(featSys)
+			fs2 = FeatureStruct.NewMutable(featSys)
 				.Feature("a").Not.EqualToVariable("var1")
 				.Symbol("b-").Value;
 
-			Assert.AreEqual(expectedSelectors[15](featSys), resultsSelector(fs1, fs2));
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[15](featSys)).Using(comparer));
 
-			fs1 = FeatureStruct.New(featSys)
+			fs1 = FeatureStruct.NewMutable(featSys)
 				.Feature("a").EqualToVariable("var1")
 				.Symbol("b-").Value;
 
-			fs2 = FeatureStruct.New(featSys)
+			fs2 = FeatureStruct.NewMutable(featSys)
 				.Symbol("a+")
 				.Symbol("b-").Value;
 
-			Assert.AreEqual(expectedSelectors[16](featSys), resultsSelector(fs1, fs2));
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[16](featSys)).Using(comparer));
 
-			fs1 = FeatureStruct.New(featSys)
+			fs1 = FeatureStruct.NewMutable(featSys)
 				.Symbol("a+")
 				.Symbol("b-").Value;
 
-			fs2 = FeatureStruct.New(featSys)
+			fs2 = FeatureStruct.NewMutable(featSys)
 				.Feature("a").Not.EqualToVariable("var1")
 				.Symbol("b-").Value;
 
-			Assert.AreEqual(expectedSelectors[17](featSys), resultsSelector(fs1, fs2));
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[17](featSys)).Using(comparer));
 
-			fs1 = FeatureStruct.New(featSys)
+			fs1 = FeatureStruct.NewMutable(featSys)
 				.Symbol("a+")
 				.Symbol("b-").Value;
 
-			fs2 = FeatureStruct.New(featSys)
+			fs2 = FeatureStruct.NewMutable(featSys)
 				.Feature("a").Not.EqualToVariable("var1")
 				.Symbol("b-").Value;
 
 			var varBindings = new VariableBindings();
 			varBindings["var1"] = new SymbolicFeatureValue(featSys.GetSymbol("a-"));
-			Assert.AreEqual(expectedSelectors[18](featSys), varResultsSelector(fs1, fs2, varBindings));
+			Assert.That(varResultsSelector(fs1, fs2, varBindings), Is.EqualTo(expectedSelectors[18](featSys)).Using(comparer));
 
-			fs1 = FeatureStruct.New(featSys)
+			fs1 = FeatureStruct.NewMutable(featSys)
 				.Symbol("a+")
 				.Symbol("b-").Value;
 
-			fs2 = FeatureStruct.New(featSys)
+			fs2 = FeatureStruct.NewMutable(featSys)
 				.Feature("a").Not.EqualToVariable("var1")
 				.Symbol("b-").Value;
 
 			varBindings = new VariableBindings();
 			varBindings["var1"] = new SymbolicFeatureValue(featSys.GetSymbol("a+"));
-			Assert.AreEqual(expectedSelectors[19](featSys), varResultsSelector(fs1, fs2, varBindings));
+			Assert.That(varResultsSelector(fs1, fs2, varBindings), Is.EqualTo(expectedSelectors[19](featSys)).Using(comparer));
 		}
 	}
 }

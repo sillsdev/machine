@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace SIL.Machine.FeatureModel.Fluent
 {
@@ -6,10 +7,14 @@ namespace SIL.Machine.FeatureModel.Fluent
 	{
 		IDisjunctiveFeatureValueSyntax Feature(string featureID);
 		IDisjunctiveFeatureValueSyntax Feature(Feature feature);
-		IDisjunctiveFeatureStructSyntax Symbol(string symbolID1, params string[] symbolIDs);
-		IDisjunctiveFeatureStructSyntax Symbol(int id, string symbolID1, params string[] symbolIDs);
-		IDisjunctiveFeatureStructSyntax Symbol(FeatureSymbol symbol1, params FeatureSymbol[] symbols);
-		IDisjunctiveFeatureStructSyntax Symbol(int id, FeatureSymbol symbol1, params FeatureSymbol[] symbols);
+		IDisjunctiveFeatureStructSyntax Symbol(params string[] symbolIDs);
+		IDisjunctiveFeatureStructSyntax Symbol(IEnumerable<string> symbolIDs);
+		IDisjunctiveFeatureStructSyntax Symbol(int id, params string[] symbolIDs);
+		IDisjunctiveFeatureStructSyntax Symbol(int id, IEnumerable<string> symbolIDs);
+		IDisjunctiveFeatureStructSyntax Symbol(params FeatureSymbol[] symbols);
+		IDisjunctiveFeatureStructSyntax Symbol(IEnumerable<FeatureSymbol> symbols);
+		IDisjunctiveFeatureStructSyntax Symbol(int id, params FeatureSymbol[] symbols);
+		IDisjunctiveFeatureStructSyntax Symbol(int id, IEnumerable<FeatureSymbol> symbols);
 
 		IDisjunctiveFeatureStructSyntax And(Func<IFirstDisjunctSyntax, IFinalDisjunctSyntax> build);
 
