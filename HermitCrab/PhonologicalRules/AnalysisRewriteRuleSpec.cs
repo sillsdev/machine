@@ -6,13 +6,6 @@ using SIL.Machine.Rules;
 
 namespace SIL.HermitCrab.PhonologicalRules
 {
-	public enum AnalysisReapplyType
-	{
-		Normal,
-		Deletion,
-		SelfOpaquing
-	}
-
 	public abstract class AnalysisRewriteRuleSpec : IPatternRuleSpec<Word, ShapeNode>
 	{
 		private readonly Pattern<Word, ShapeNode> _pattern; 
@@ -21,10 +14,6 @@ namespace SIL.HermitCrab.PhonologicalRules
 		{
 			_pattern = new Pattern<Word, ShapeNode>();
 		}
-
-		public abstract AnalysisReapplyType GetAnalysisReapplyType(ApplicationMode synthesisAppMode);
-
-		public abstract ApplicationMode ApplicationMode { get; }
 
 		protected void AddEnvironment(string name, Pattern<Word, ShapeNode> env)
 		{

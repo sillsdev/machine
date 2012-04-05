@@ -62,7 +62,7 @@
   <ItemGroup>
     <Compile Include="AffixTemplate.cs" />
     <Compile Include="Allomorph.cs" />
-    <Compile Include="AllomorphCoOccurrence.cs" />
+    <Compile Include="AllomorphCoOccurrenceRule.cs" />
     <Compile Include="AnalysisAffixTemplateRule.cs" />
     <Compile Include="AllomorphEnvironment.cs" />
     <Compile Include="Extensions.cs" />
@@ -71,8 +71,8 @@
     <Compile Include="IMorphologicalRule.cs" />
     <Compile Include="IPhonologicalRule.cs" />
     <Compile Include="LoadException.cs" />
-    <Compile Include="MorphCoOccurrence.cs" />
-    <Compile Include="MorphemeCoOccurrence.cs" />
+    <Compile Include="MorphCoOccurrenceRule.cs" />
+    <Compile Include="MorphemeCoOccurrenceRule.cs" />
     <Compile Include="Morpher.cs" />
     <Compile Include="LanguageSynthesisRule.cs" />
     <Compile Include="MorphologicalRules\AffixProcessAllomorph.cs" />
@@ -119,33 +119,20 @@
     <Compile Include="MprFeatureGroup.cs" />
     <Compile Include="MprFeatureSet.cs" />
     <Compile Include="AffixTemplateSlot.cs" />
+    <Compile Include="ShapeTrie.cs" />
     <Compile Include="SynthesisAffixTemplateRule.cs" />
-    <None Include="DefaultOutput.cs" />
-    <Compile Include="HCStrings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>HCStrings.resx</DependentUpon>
-    </Compile>
     <Compile Include="Morpheme.cs" />
     <Compile Include="Language.cs" />
     <Compile Include="MprFeature.cs" />
-    <Compile Include="IOutput.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Stratum.cs" />
     <Compile Include="LanguageAnalysisRule.cs" />
     <Compile Include="SymbolTable.cs" />
     <Compile Include="SynthesisAffixTemplatesRule.cs" />
     <Compile Include="Trace.cs" />
+    <Compile Include="TraceRuleCollection.cs" />
     <Compile Include="Word.cs" />
-    <None Include="XmlLoader.cs" />
-    <None Include="XmlOutput.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="HCStrings.resx">
-      <SubType>Designer</SubType>
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>HCStrings.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <Compile Include="XmlLoader.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

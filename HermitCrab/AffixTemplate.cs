@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using SIL.Collections;
@@ -78,6 +79,16 @@ namespace SIL.HermitCrab
     	public IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
     	{
     		return new SynthesisAffixTemplateRule(spanFactory, morpher, this);
+    	}
+
+    	public void Traverse(Action<IHCRule> action)
+    	{
+    		action(this);
+			foreach (AffixTemplateSlot slot in _slots)
+			{
+				foreach (IMorphologicalRule rule in slot.Rules)
+					rule.Traverse(action);
+			}
     	}
     }
 }

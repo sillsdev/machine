@@ -1,68 +1,64 @@
 using System.Collections.Generic;
-using System.Linq;
 using SIL.Machine;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
 
 namespace SIL.HermitCrab.MorphologicalRules
 {
-	public class AnalysisAffixProcessRule : RuleCascade<Word, ShapeNode>
+	public class AnalysisAffixProcessRule : IRule<Word, ShapeNode>
 	{
 		private readonly Morpher _morpher;
 		private readonly AffixProcessRule _rule;
+		private readonly List<PatternRule<Word, ShapeNode>> _rules;
 
 		public AnalysisAffixProcessRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, AffixProcessRule rule)
-			: base(CreateRules(spanFactory, rule))
 		{
 			_morpher = morpher;
 			_rule = rule;
-		}
 
-		private static IEnumerable<IRule<Word, ShapeNode>> CreateRules(SpanFactory<ShapeNode> spanFactory, AffixProcessRule rule)
-		{
+			_rules = new List<PatternRule<Word, ShapeNode>>();
 			foreach (AffixProcessAllomorph allo in rule.Allomorphs)
 			{
-				yield return new PatternRule<Word, ShapeNode>(spanFactory, new AnalysisAffixProcessAllomorphRuleSpec(allo), ApplicationMode.Multiple,
+				_rules.Add(new PatternRule<Word, ShapeNode>(spanFactory, new AnalysisAffixProcessAllomorphRuleSpec(allo), ApplicationMode.Multiple,
 					new MatcherSettings<ShapeNode>
 						{
 							Filter = ann => ann.Type() == HCFeatureSystem.Segment,
 							AnchoredToStart = true,
 							AnchoredToEnd = true,
 							AllSubmatches = true
-						});
+						}));
 			}
 		}
 
-		public override bool IsApplicable(Word input)
+		public bool IsApplicable(Word input)
 		{
 			return input.GetUnapplicationCount(_rule) < _rule.MaxApplicationCount
 				&& _rule.OutSyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct);
 		}
 
-		public override IEnumerable<Word> Apply(Word input)
+		public IEnumerable<Word> Apply(Word input)
 		{
-			List<Word> output = base.Apply(input).ToList();
-			if (output.Count == 0 && _morpher.GetTraceRule(_rule))
+			var output = new List<Word>();
+			foreach (PatternRule<Word, ShapeNode> rule in _rules)
+			{
+				foreach (Word outWord in rule.Apply(input).RemoveDuplicates())
+				{
+					outWord.SyntacticFeatureStruct.Union(_rule.RequiredSyntacticFeatureStruct);
+					outWord.MorphologicalRuleUnapplied(_rule);
+
+					if (_morpher.TraceRules.Contains(_rule))
+					{
+						var trace = new Trace(TraceType.MorphologicalRuleAnalysis, _rule) { Input = input.DeepClone(), Output = outWord.DeepClone() };
+						outWord.CurrentTrace.Children.Add(trace);
+						outWord.CurrentTrace = trace;
+					}
+					outWord.Freeze();
+					output.Add(outWord);
+				}
+			}
+			if (output.Count == 0 && _morpher.TraceRules.Contains(_rule))
 				input.CurrentTrace.Children.Add(new Trace(TraceType.MorphologicalRuleAnalysis, _rule) { Input = input.DeepClone() });
 			return output;
-		}
-
-		protected override IEnumerable<Word> ApplyRule(IRule<Word, ShapeNode> rule, int index, Word input)
-		{
-			foreach (Word outWord in rule.Apply(input))
-			{
-				outWord.SyntacticFeatureStruct.Union(_rule.RequiredSyntacticFeatureStruct);
-				outWord.MorphologicalRuleUnapplied(_rule);
-
-				if (_morpher.GetTraceRule(_rule))
-				{
-					var trace = new Trace(TraceType.MorphologicalRuleAnalysis, _rule) { Input = input.DeepClone(), Output = outWord.DeepClone() };
-					outWord.CurrentTrace.Children.Add(trace);
-					outWord.CurrentTrace = trace;
-				}
-
-				yield return outWord;
-			}
 		}
 	}
 }

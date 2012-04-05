@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using SIL.Collections;
 using SIL.Machine;
 using SIL.Machine.Rules;
 
@@ -11,7 +12,7 @@ namespace SIL.HermitCrab
 		private readonly AffixTemplate _template;
 
 		public AnalysisAffixTemplateRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, AffixTemplate template)
-			: base(CreateRules(spanFactory, morpher, template), RuleCascadeOrder.Permutation)
+			: base(CreateRules(spanFactory, morpher, template), RuleCascadeOrder.Permutation, FreezableEqualityComparer<Word>.Instance)
 		{
 			_morpher = morpher;
 			_template = template;
@@ -20,17 +21,18 @@ namespace SIL.HermitCrab
 		private static IEnumerable<IRule<Word, ShapeNode>> CreateRules(SpanFactory<ShapeNode> spanFactory, Morpher morpher, AffixTemplate template)
 		{
 			foreach (AffixTemplateSlot slot in template.Slots.Reverse())
-				yield return new RuleCascade<Word, ShapeNode>(slot.Rules.Select(mr => mr.CompileAnalysisRule(spanFactory, morpher)), RuleCascadeOrder.Permutation);
+				yield return new RuleCascade<Word, ShapeNode>(slot.Rules.Select(mr => mr.CompileAnalysisRule(spanFactory, morpher)), RuleCascadeOrder.Permutation,
+					FreezableEqualityComparer<Word>.Instance);
 		}
 
 		public override IEnumerable<Word> Apply(Word input)
 		{
-			if (_morpher.GetTraceRule(_template))
+			if (_morpher.TraceRules.Contains(_template))
 				input.CurrentTrace.Children.Add(new Trace(TraceType.TemplateAnalysisInput, _template) { Input = input.DeepClone() });
 			List<Word> results = base.Apply(input).ToList();
 			foreach (Word result in results)
 			{
-				if (_morpher.GetTraceRule(_template))
+				if (_morpher.TraceRules.Contains(_template))
 					result.CurrentTrace.Children.Add(new Trace(TraceType.TemplateAnalysisOutput, _template) { Output = result.DeepClone() });
 				result.SyntacticFeatureStruct.Union(_template.RequiredSyntacticFeatureStruct);
 			}
@@ -41,7 +43,7 @@ namespace SIL.HermitCrab
 		{
 			IList<AffixTemplateSlot> slots = _template.Slots;
 			bool cont = slots[slots.Count - index - 1].Optional;
-			if (!cont && _morpher.GetTraceRule(_template))
+			if (!cont && _morpher.TraceRules.Contains(_template))
 				input.CurrentTrace.Children.Add(new Trace(TraceType.TemplateAnalysisOutput, _template));
 			return cont;
 		}

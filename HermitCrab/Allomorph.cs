@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using SIL.Collections;
 
@@ -9,12 +9,12 @@ namespace SIL.HermitCrab
 	/// This class represents an allomorph of a morpheme. Allomorphs can be phonologically
 	/// conditioned using environments and are applied disjunctively within a morpheme.
 	/// </summary>
-	public abstract class Allomorph : IDBearerBase
+	public abstract class Allomorph : IDBearerBase, IComparable<Allomorph>
 	{
-		private readonly ObservableCollection<AllomorphEnvironment> _requiredEnvironments;
-		private readonly ObservableCollection<AllomorphEnvironment> _excludedEnvironments;
-		private readonly ObservableCollection<AllomorphCoOccurrence> _requiredAllomorphCoOccurrences;
-		private readonly ObservableCollection<AllomorphCoOccurrence> _excludedAllomorphCoOccurrences; 
+		private readonly ObservableHashSet<AllomorphEnvironment> _requiredEnvironments;
+		private readonly ObservableHashSet<AllomorphEnvironment> _excludedEnvironments;
+		private readonly ObservableHashSet<AllomorphCoOccurrenceRule> _requiredAllomorphCoOccurrences;
+		private readonly ObservableHashSet<AllomorphCoOccurrenceRule> _excludedAllomorphCoOccurrences; 
 		private readonly Dictionary<string, string> _properties;
 
 		/// <summary>
@@ -25,13 +25,13 @@ namespace SIL.HermitCrab
 			: base(id)
 		{
 			Index = -1;
-			_requiredEnvironments = new ObservableCollection<AllomorphEnvironment>();
+			_requiredEnvironments = new ObservableHashSet<AllomorphEnvironment>();
 			_requiredEnvironments.CollectionChanged += EnvironmentsChanged;
-			_excludedEnvironments = new ObservableCollection<AllomorphEnvironment>();
+			_excludedEnvironments = new ObservableHashSet<AllomorphEnvironment>();
 			_excludedEnvironments.CollectionChanged += EnvironmentsChanged;
-			_requiredAllomorphCoOccurrences = new ObservableCollection<AllomorphCoOccurrence>();
+			_requiredAllomorphCoOccurrences = new ObservableHashSet<AllomorphCoOccurrenceRule>();
 			_requiredAllomorphCoOccurrences.CollectionChanged += AllomorphCoOccurrencesChanged;
-			_excludedAllomorphCoOccurrences = new ObservableCollection<AllomorphCoOccurrence>();
+			_excludedAllomorphCoOccurrences = new ObservableHashSet<AllomorphCoOccurrenceRule>();
 			_excludedAllomorphCoOccurrences.CollectionChanged += AllomorphCoOccurrencesChanged;
 			_properties = new Dictionary<string, string>();
 		}
@@ -40,12 +40,12 @@ namespace SIL.HermitCrab
 		{
 			if (e.OldItems != null)
 			{
-				foreach (AllomorphCoOccurrence cooccur in e.OldItems)
+				foreach (AllomorphCoOccurrenceRule cooccur in e.OldItems)
 					cooccur.Key = null;
 			}
 			if (e.NewItems != null)
 			{
-				foreach (AllomorphCoOccurrence cooccur in e.NewItems)
+				foreach (AllomorphCoOccurrenceRule cooccur in e.NewItems)
 					cooccur.Key = this;
 			}
 		}
@@ -98,7 +98,7 @@ namespace SIL.HermitCrab
 		/// Gets or sets the required allomorph co-occurrences.
 		/// </summary>
 		/// <value>The required allomorph co-occurrences.</value>
-		public ICollection<AllomorphCoOccurrence> RequiredAllomorphCoOccurrences
+		public ICollection<AllomorphCoOccurrenceRule> RequiredAllomorphCoOccurrences
 		{
 			get { return _requiredAllomorphCoOccurrences; }
 		}
@@ -107,7 +107,7 @@ namespace SIL.HermitCrab
 		/// Gets or sets the excluded allomorph co-occurrences.
 		/// </summary>
 		/// <value>The excluded allomorph co-occurrences.</value>
-		public ICollection<AllomorphCoOccurrence> ExcludedAllomorphCoOccurrences
+		public ICollection<AllomorphCoOccurrenceRule> ExcludedAllomorphCoOccurrences
 		{
 			get { return _excludedAllomorphCoOccurrences; }
 		}
@@ -119,6 +119,23 @@ namespace SIL.HermitCrab
 		public IDictionary<string, string> Properties
 		{
 			get { return _properties; }
+		}
+
+		public virtual bool ConstraintsEqual(Allomorph other)
+		{
+			return _requiredEnvironments.SetEquals(other._requiredEnvironments) && _excludedEnvironments.SetEquals(other._excludedEnvironments);
+		}
+
+		public int CompareTo(Allomorph other)
+		{
+			if (other == null)
+				return 1;
+
+			int res = string.CompareOrdinal(Morpheme.ID, other.Morpheme.ID);
+			if (res != 0)
+				return res;
+
+			return Index.CompareTo(other.Index);
 		}
 	}
 }

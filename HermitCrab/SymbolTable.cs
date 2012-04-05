@@ -34,6 +34,8 @@ namespace SIL.HermitCrab
 		/// <param name="fs"></param>
 		public void Add(string strRep, FeatureStruct fs)
 		{
+			if (!fs.IsFrozen)
+				throw new ArgumentException("The feature structure must be immutable.", "fs");
 			_symbols[strRep.ToLowerInvariant()] = fs;
 		}
 
@@ -197,18 +199,14 @@ namespace SIL.HermitCrab
 			return sb.ToString();
 		}
 
-		/// <summary>
-		/// Generates a string representation of the specified phonetic shape.
-		/// </summary>
-		/// <param name="shape">The phonetic shape.</param>
-		/// <param name="includeBdry">if <c>true</c> boundary markers will be included in the
-		/// string representation.</param>
-		/// <returns>The string representation.</returns>
-		public string ToString(Shape shape, bool includeBdry)
+		public string ToString(IEnumerable<ShapeNode> nodes, bool includeBdry)
 		{
 			var sb = new StringBuilder();
-			foreach (ShapeNode node in shape)
+			foreach (ShapeNode node in nodes)
 			{
+				if (!includeBdry && node.Annotation.Type() == HCFeatureSystem.Boundary)
+					continue;
+
 				IEnumerable<string> strReps = GetMatchingStrReps(node);
 				string strRep = strReps.FirstOrDefault();
 				if (strRep != null)

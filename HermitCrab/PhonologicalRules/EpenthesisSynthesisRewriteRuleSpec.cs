@@ -1,4 +1,3 @@
-using System.Linq;
 using SIL.Collections;
 using SIL.Machine;
 using SIL.Machine.FeatureModel;
@@ -19,6 +18,8 @@ namespace SIL.HermitCrab.PhonologicalRules
 
 		public override ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)
 		{
+			match.VariableBindings.CheckUninstantiatedFeatures();
+
 			ShapeNode startNode;
 			if (match.Matcher.Direction == Direction.LeftToRight)
 			{
@@ -53,8 +54,6 @@ namespace SIL.HermitCrab.PhonologicalRules
 				if (match.Input.Shape.Count == 256)
 					throw new MorphException(MorphErrorCode.InfiniteLoop, "An epenthesis rewrite rule is stuck in an infinite loop.");
 				var constraint = (Constraint<Word, ShapeNode>) node;
-				if (match.VariableBindings.Values.OfType<SymbolicFeatureValue>().Any(value => value.Feature.DefaultValue.Equals(value)))
-					throw new MorphException(MorphErrorCode.UninstantiatedFeature);
 				FeatureStruct fs = constraint.FeatureStruct.DeepClone();
 				fs.ReplaceVariables(match.VariableBindings);
 				curNode = match.Input.Shape.AddAfter(curNode, fs);

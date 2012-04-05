@@ -31,7 +31,7 @@ namespace HermitCrabTest
 				.Feature(HCFeatureSystem.Allomorph).EqualTo(nonHeadEntry.PrimaryAllomorph.ID).Value);
 			word.Allomorphs.Add(nonHeadEntry.PrimaryAllomorph);
 
-			Assert.IsTrue(env.IsMatch(word));
+			Assert.That(env.IsMatch(word), Is.True);
 
 			nonHeadMorph.Remove(false);
 			word.Allomorphs.Remove(nonHeadEntry.PrimaryAllomorph);
@@ -43,7 +43,7 @@ namespace HermitCrabTest
 				.Feature(HCFeatureSystem.Allomorph).EqualTo(nonHeadEntry.PrimaryAllomorph.ID).Value);
 			word.Allomorphs.Add(nonHeadEntry.PrimaryAllomorph);
 
-			Assert.IsFalse(env.IsMatch(word));
+			Assert.That(env.IsMatch(word), Is.False);
 
 			headEntry.PrimaryAllomorph.RequiredEnvironments.Clear();
 
@@ -63,7 +63,7 @@ namespace HermitCrabTest
 				.Feature(HCFeatureSystem.Allomorph).EqualTo(nonHeadEntry.PrimaryAllomorph.ID).Value);
 			word.Allomorphs.Add(nonHeadEntry.PrimaryAllomorph);
 
-			Assert.IsTrue(env.IsMatch(word));
+			Assert.That(env.IsMatch(word), Is.True);
 
 			nonHeadMorph.Remove(false);
 			word.Allomorphs.Remove(nonHeadEntry.PrimaryAllomorph);
@@ -75,7 +75,7 @@ namespace HermitCrabTest
 				.Feature(HCFeatureSystem.Allomorph).EqualTo(nonHeadEntry.PrimaryAllomorph.ID).Value);
 			word.Allomorphs.Add(nonHeadEntry.PrimaryAllomorph);
 
-			Assert.IsFalse(env.IsMatch(word));
+			Assert.That(env.IsMatch(word), Is.False);
 		}
 	}
 }

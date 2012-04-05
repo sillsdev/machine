@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Text;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.HermitCrab
@@ -89,20 +88,5 @@ namespace SIL.HermitCrab
 		/// </summary>
 		/// <value>The lexical family.</value>
 		public LexFamily Family { get; internal set; }
-
-		public override string ToString()
-		{
-			var sb = new StringBuilder();
-			bool firstItem = true;
-			foreach (RootAllomorph allomorph in _allomorphs)
-			{
-				if (!firstItem)
-					sb.Append(", ");
-				sb.Append(Stratum.SymbolTable.ToString(allomorph.Shape, true));
-				firstItem = false;
-			}
-
-			return string.Format(HCStrings.kstidLexEntry, ID, sb, string.IsNullOrEmpty(Gloss) ? "?" : Gloss);
-		}
 	}
 }

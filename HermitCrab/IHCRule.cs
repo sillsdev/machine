@@ -1,4 +1,5 @@
-﻿using SIL.Collections;
+﻿using System;
+using SIL.Collections;
 using SIL.Machine;
 using SIL.Machine.Rules;
 
@@ -8,5 +9,7 @@ namespace SIL.HermitCrab
 	{
 		IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher);
 		IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher);
+
+		void Traverse(Action<IHCRule> action);
 	}
 }

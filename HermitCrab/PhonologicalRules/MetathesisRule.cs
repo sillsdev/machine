@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -19,7 +20,7 @@ namespace SIL.HermitCrab.PhonologicalRules
     	public MetathesisRule(string id)
 			: base(id)
     	{
-			Pattern = new Pattern<Word, ShapeNode>();
+			Pattern = Pattern<Word, ShapeNode>.New().Value;
 			_groupOrder = new List<string>();
     	}
 
@@ -95,7 +96,12 @@ namespace SIL.HermitCrab.PhonologicalRules
 											});
     	}
 
-		private ShapeNode Reorder(IEnumerable<string> groupOrder, PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)
+    	public void Traverse(Action<IHCRule> action)
+    	{
+    		action(this);
+    	}
+
+    	private ShapeNode Reorder(IEnumerable<string> groupOrder, PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)
 		{
 			ShapeNode start = null, end = null;
 			foreach (GroupCapture<ShapeNode> gc in match.GroupCaptures)

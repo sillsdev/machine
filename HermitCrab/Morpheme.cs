@@ -10,8 +10,8 @@ namespace SIL.HermitCrab
     /// </summary>
     public abstract class Morpheme : IDBearerBase
     {
-		private readonly ObservableCollection<MorphemeCoOccurrence> _requiredMorphemeCoOccurrences;
-		private readonly ObservableCollection<MorphemeCoOccurrence> _excludedMorphemeCoOccurrences; 
+		private readonly ObservableCollection<MorphemeCoOccurrenceRule> _requiredMorphemeCoOccurrences;
+		private readonly ObservableCollection<MorphemeCoOccurrenceRule> _excludedMorphemeCoOccurrences; 
 
     	/// <summary>
     	/// Initializes a new instance of the <see cref="Morpheme"/> class.
@@ -20,9 +20,9 @@ namespace SIL.HermitCrab
     	protected Morpheme(string id)
             : base(id)
         {
-			_requiredMorphemeCoOccurrences = new ObservableCollection<MorphemeCoOccurrence>();
+			_requiredMorphemeCoOccurrences = new ObservableCollection<MorphemeCoOccurrenceRule>();
     		_requiredMorphemeCoOccurrences.CollectionChanged += MorphemeCoOccurrencesChanged;
-			_excludedMorphemeCoOccurrences = new ObservableCollection<MorphemeCoOccurrence>();
+			_excludedMorphemeCoOccurrences = new ObservableCollection<MorphemeCoOccurrenceRule>();
     		_excludedMorphemeCoOccurrences.CollectionChanged += MorphemeCoOccurrencesChanged;
         }
 
@@ -30,12 +30,12 @@ namespace SIL.HermitCrab
 		{
 			if (e.OldItems != null)
 			{
-				foreach (MorphemeCoOccurrence cooccur in e.OldItems)
+				foreach (MorphemeCoOccurrenceRule cooccur in e.OldItems)
 					cooccur.Key = null;
 			}
 			if (e.NewItems != null)
 			{
-				foreach (MorphemeCoOccurrence cooccur in e.NewItems)
+				foreach (MorphemeCoOccurrenceRule cooccur in e.NewItems)
 					cooccur.Key = this;
 			}
 		}
@@ -56,7 +56,7 @@ namespace SIL.HermitCrab
     	/// Gets or sets the required morpheme co-occurrences.
     	/// </summary>
     	/// <value>The required morpheme co-occurrences.</value>
-    	public ICollection<MorphemeCoOccurrence> RequiredMorphemeCoOccurrences
+    	public ICollection<MorphemeCoOccurrenceRule> RequiredMorphemeCoOccurrences
     	{
     		get { return _requiredMorphemeCoOccurrences; }
     	}
@@ -65,7 +65,7 @@ namespace SIL.HermitCrab
     	/// Gets or sets the excluded morpheme co-occurrences.
     	/// </summary>
     	/// <value>The excluded morpheme co-occurrences.</value>
-    	public ICollection<MorphemeCoOccurrence> ExcludedMorphemeCoOccurrences
+    	public ICollection<MorphemeCoOccurrenceRule> ExcludedMorphemeCoOccurrences
     	{
     		get { return _excludedMorphemeCoOccurrences; }
     	}

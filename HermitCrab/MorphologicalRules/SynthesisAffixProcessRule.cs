@@ -67,24 +67,34 @@ namespace SIL.HermitCrab.MorphologicalRules
 							outWord = newWord;
 						}
 
-						if (_morpher.GetTraceRule(_rule))
+						if (_morpher.TraceRules.Contains(_rule))
 						{
 							var trace = new Trace(TraceType.MorphologicalRuleSynthesis, _rule) { Input = input.DeepClone(), Output = outWord.DeepClone() };
 							outWord.CurrentTrace.Children.Add(trace);
 							outWord.CurrentTrace = trace;
 						}
 
+						outWord.Freeze();
 						output.Add(outWord);
 
+						// return all word syntheses that match subrules that are constrained by environments,
+						// HC violates the disjunctive property of allomorphs here because it cannot check the
+						// environmental constraints until it has a surface form, we will enforce the disjunctive
+						// property of allomorphs at that time
+
+						// HC also checks for free fluctuation, if the next subrule has the same constraints, we
+						// do not treat them as disjunctive
 						AffixProcessAllomorph allo = _rule.Allomorphs[i];
-						// TODO: check for free fluctuation
-						if (allo.RequiredEnvironments.Count == 0 && allo.ExcludedEnvironments.Count == 0)
+						if ((i != _rule.Allomorphs.Count - 1 && !allo.ConstraintsEqual(_rule.Allomorphs[i + 1]))
+							&& allo.RequiredEnvironments.Count == 0 && allo.ExcludedEnvironments.Count == 0)
+						{
 							break;
+						}
 					}
 				}
 			}
 
-			if (output.Count == 0 && _morpher.GetTraceRule(_rule))
+			if (output.Count == 0 && _morpher.TraceRules.Contains(_rule))
 				input.CurrentTrace.Children.Add(new Trace(TraceType.MorphologicalRuleSynthesis, _rule) { Input = input.DeepClone() });
 
 			return output;

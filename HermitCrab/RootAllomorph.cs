@@ -31,5 +31,14 @@ namespace SIL.HermitCrab
 				return _shape;
 			}
 		}
+
+		public override bool ConstraintsEqual(Allomorph other)
+		{
+			var otherAllo = other as RootAllomorph;
+			if (otherAllo == null)
+				return false;
+
+			return base.ConstraintsEqual(other) && _shape.ValueEquals(otherAllo._shape);
+		}
 	}
 }

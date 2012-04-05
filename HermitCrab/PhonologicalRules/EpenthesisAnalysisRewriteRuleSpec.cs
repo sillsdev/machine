@@ -25,11 +25,6 @@ namespace SIL.HermitCrab.PhonologicalRules
 			AddEnvironment("rightEnv", subrule.RightEnvironment);
 		}
 
-		public override ApplicationMode ApplicationMode
-		{
-			get { return ApplicationMode.Iterative; }
-		}
-
 		private static bool IsUnapplicationNonvacuous(Match<Word, ShapeNode> match)
 		{
 			GroupCapture<ShapeNode> target = match.GroupCaptures["target"];
@@ -40,11 +35,6 @@ namespace SIL.HermitCrab.PhonologicalRules
 			}
 
 			return false;
-		}
-
-		public override AnalysisReapplyType GetAnalysisReapplyType(ApplicationMode synthesisAppMode)
-		{
-			return synthesisAppMode == ApplicationMode.Simultaneous ? AnalysisReapplyType.SelfOpaquing : AnalysisReapplyType.Normal;
 		}
 
 		public override ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)

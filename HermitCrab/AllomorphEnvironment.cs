@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using SIL.Collections;
 using SIL.Machine;
 using SIL.Machine.Matching;
@@ -8,9 +9,11 @@ namespace SIL.HermitCrab
 	/// <summary>
 	/// This class represents a phonological environment.
 	/// </summary>
-	public class AllomorphEnvironment
+	public class AllomorphEnvironment : IEquatable<AllomorphEnvironment>
 	{
+		private readonly Pattern<Word, ShapeNode> _leftEnv; 
 		private readonly Matcher<Word, ShapeNode> _leftEnvMatcher;
+		private readonly Pattern<Word, ShapeNode> _rightEnv; 
 		private readonly Matcher<Word, ShapeNode> _rightEnvMatcher;
 
 		/// <summary>
@@ -23,6 +26,9 @@ namespace SIL.HermitCrab
 		{
 			if (leftEnv != null && !leftEnv.IsLeaf)
 			{
+				if (!leftEnv.IsFrozen)
+					throw new ArgumentException("The pattern is not frozen.", "leftEnv");
+				_leftEnv = leftEnv;
 				_leftEnvMatcher = new Matcher<Word, ShapeNode>(spanFactory, leftEnv,
 					new MatcherSettings<ShapeNode>
 						{
@@ -34,6 +40,9 @@ namespace SIL.HermitCrab
 			}
 			if (rightEnv != null && !rightEnv.IsLeaf)
 			{
+				if (!rightEnv.IsFrozen)
+					throw new ArgumentException("The pattern is not frozen.", "rightEnv");
+				_rightEnv = rightEnv;
 				_rightEnvMatcher = new Matcher<Word, ShapeNode>(spanFactory, rightEnv,
 					new MatcherSettings<ShapeNode>
 						{
@@ -57,6 +66,33 @@ namespace SIL.HermitCrab
 					return false;
 			}
 			return true;
+		}
+
+		public bool Equals(AllomorphEnvironment other)
+		{
+			if (other == null)
+				return false;
+
+			if (_leftEnv == null)
+				return other._leftEnv == null;
+			if (_rightEnv == null)
+				return other._rightEnv == null;
+
+			return _leftEnv.ValueEquals(other._leftEnv) && _rightEnv.ValueEquals(other._rightEnv);
+		}
+
+		public override bool Equals(object other)
+		{
+			var otherEnv = other as AllomorphEnvironment;
+			return otherEnv != null && Equals(otherEnv);
+		}
+
+		public override int GetHashCode()
+		{
+			int code = 23;
+			code = code * 31 + (_leftEnv == null ? 0 : _leftEnv.GetFrozenHashCode());
+			code = code * 31 + (_rightEnv == null ? 0 : _rightEnv.GetFrozenHashCode());
+			return code;
 		}
 	}
 }

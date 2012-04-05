@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using SIL.Collections;
 using SIL.Machine;
@@ -58,6 +59,11 @@ namespace SIL.HermitCrab.MorphologicalRules
     	public IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
     	{
     		return new SynthesisCompoundingRule(spanFactory, morpher, this);
+    	}
+
+    	public void Traverse(Action<IHCRule> action)
+    	{
+    		action(this);
     	}
     }
 }

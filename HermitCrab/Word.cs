@@ -6,7 +6,7 @@ using SIL.Machine.FeatureModel;
 
 namespace SIL.HermitCrab
 {
-	public class Word : IData<ShapeNode>, IDeepCloneable<Word>
+	public class Word : Freezable<Word>, IData<ShapeNode>, IDeepCloneable<Word>
 	{
 		private readonly IDBearerSet<Allomorph> _allomorphs; 
 		private RootAllomorph _rootAllomorph;
@@ -17,6 +17,8 @@ namespace SIL.HermitCrab
 		private readonly Stack<Word> _nonHeads;
 		private readonly MprFeatureSet _mprFeatures;
 		private readonly IDBearerSet<Feature> _obligatorySyntacticFeatures;
+		private FeatureStruct _realizationalFS;
+		private Stratum _stratum;
 
 		public Word(RootAllomorph rootAllomorph, FeatureStruct realizationalFS)
 		{
@@ -63,6 +65,7 @@ namespace SIL.HermitCrab
 			_mrulesApplied = new Dictionary<IMorphologicalRule, int>(word._mrulesApplied);
 			_nonHeads = new Stack<Word>(word._nonHeads.Reverse().DeepClone());
 			_obligatorySyntacticFeatures = new IDBearerSet<Feature>(word._obligatorySyntacticFeatures);
+			CurrentTrace = word.CurrentTrace;
 		}
 
 		public IEnumerable<Annotation<ShapeNode>> Morphs
@@ -81,6 +84,7 @@ namespace SIL.HermitCrab
 
 			set
 			{
+				CheckFrozen();
 				_shape.Clear();
 				value.Shape.CopyTo(_shape);
 				SetRootAllomorph(value);
@@ -108,7 +112,15 @@ namespace SIL.HermitCrab
 
 		public FeatureStruct SyntacticFeatureStruct { get; set; }
 
-		public FeatureStruct RealizationalFeatureStruct { get; set; }
+		public FeatureStruct RealizationalFeatureStruct
+		{
+			get { return _realizationalFS; }
+			set
+			{
+				CheckFrozen();
+				_realizationalFS = value;
+			}
+		}
 
 		public MprFeatureSet MprFeatures
 		{
@@ -135,9 +147,22 @@ namespace SIL.HermitCrab
 			get { return _shape.Annotations; }
 		}
 
-		public Stratum Stratum { get; set; }
+		public Stratum Stratum
+		{
+			get { return _stratum; }
+			set
+			{
+				CheckFrozen();
+				_stratum = value;
+			}
+		}
 
 		public Trace CurrentTrace { get; set; }
+
+		public IEnumerable<IMorphologicalRule> MorphologicalRules
+		{
+			get { return _mrules; }
+		}
 
 		/// <summary>
 		/// Gets the current rule.
@@ -159,6 +184,7 @@ namespace SIL.HermitCrab
 		/// <param name="mrule">The morphological rule.</param>
 		public void MorphologicalRuleUnapplied(IMorphologicalRule mrule)
 		{
+			CheckFrozen();
 			_mrulesUnapplied.UpdateValue(mrule, () => 0, count => count + 1);
 			_mrules.Push(mrule);
 		}
@@ -181,6 +207,7 @@ namespace SIL.HermitCrab
 		/// </summary>
 		public void MorphologicalRuleApplied(IMorphologicalRule mrule)
 		{
+			CheckFrozen();
 			_mrulesApplied.UpdateValue(mrule, () => 0, count => count + 1);
 		}
 
@@ -215,11 +242,13 @@ namespace SIL.HermitCrab
 
 		public void NonHeadUnapplied(Word nonHead)
 		{
+			CheckFrozen();
 			_nonHeads.Push(nonHead);
 		}
 
 		public void CurrentNonHeadApplied()
 		{
+			CheckFrozen();
 			_nonHeads.Pop();
 		}
 
@@ -232,7 +261,7 @@ namespace SIL.HermitCrab
 
 			foreach (LexEntry entry in family.Entries)
 			{
-				if (entry != RootAllomorph.Morpheme && entry.Stratum == Stratum && entry.SyntacticFeatureStruct.Equals(SyntacticFeatureStruct))
+				if (entry != RootAllomorph.Morpheme && entry.Stratum == Stratum && entry.SyntacticFeatureStruct.ValueEquals(SyntacticFeatureStruct))
 				{
 					word = new Word(entry.PrimaryAllomorph, RealizationalFeatureStruct.DeepClone()) { CurrentTrace = CurrentTrace };
 					return true;
@@ -244,8 +273,37 @@ namespace SIL.HermitCrab
 
 		public void ResetDirty()
 		{
+			CheckFrozen();
 			foreach (ShapeNode node in _shape)
 				node.SetDirty(false);
+		}
+
+		protected override int FreezeImpl()
+		{
+			int code = 23;
+			_shape.Freeze();
+			code = code * 31 + _shape.GetFrozenHashCode();
+			_realizationalFS.Freeze();
+			code = code * 31 + _realizationalFS.GetFrozenHashCode();
+			foreach (Word nonHead in _nonHeads)
+			{
+				nonHead.Freeze();
+				code = code * 31 + nonHead.GetFrozenHashCode();
+			}
+			code = code * 31 + _stratum.GetHashCode();
+			code = code * 31 + (_rootAllomorph == null ? 0 : _rootAllomorph.GetHashCode());
+			code = code * 31 + _mrules.GetSequenceHashCode();
+			return code;
+		}
+
+		public override bool ValueEquals(Word other)
+		{
+			if (other == null)
+				return false;
+
+			return _shape.ValueEquals(other._shape) && _realizationalFS.ValueEquals(other._realizationalFS)
+				&& _nonHeads.SequenceEqual(other._nonHeads, FreezableEqualityComparer<Word>.Instance) && _stratum == other._stratum
+				&& _rootAllomorph == other._rootAllomorph && _mrules.SequenceEqual(other._mrules);
 		}
 
 		public Word DeepClone()

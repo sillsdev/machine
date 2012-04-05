@@ -5,6 +5,7 @@ using SIL.Collections;
 using SIL.HermitCrab;
 using SIL.Machine;
 using SIL.Machine.FeatureModel;
+using SIL.Machine.Rules;
 
 namespace HermitCrabTest
 {
@@ -15,8 +16,6 @@ namespace HermitCrabTest
 		protected SymbolTable Table1;
 		protected SymbolTable Table2;
 		protected SymbolTable Table3;
-		protected FeatureStruct LeftSideFS;
-		protected FeatureStruct RightSideFS;
 		protected MprFeature Latinate;
 		protected MprFeature Germanic;
 
@@ -31,104 +30,40 @@ namespace HermitCrabTest
 		public void FixtureSetUp()
 		{
 			SpanFactory = new ShapeSpanFactory();
-			var phoneticFeatSys = FeatureSystem.New()
-				.SymbolicFeature("voc", voc => voc
-					.Symbol("voc+", "+")
-					.Symbol("voc-", "-")
-					.Symbol("voc?", "?").Default)
-				.SymbolicFeature("cons", cons => cons
-					.Symbol("cons+", "+")
-					.Symbol("cons-", "-")
-					.Symbol("cons?", "?").Default)
-				.SymbolicFeature("high", high => high
-					.Symbol("high+", "+")
-					.Symbol("high-", "-")
-					.Symbol("high?", "?").Default)
-				.SymbolicFeature("low", low => low
-					.Symbol("low+", "+")
-					.Symbol("low-", "-")
-					.Symbol("low?", "?"))
-				.SymbolicFeature("back", back => back
-					.Symbol("back+", "+")
-					.Symbol("back-", "-")
-					.Symbol("back?", "?").Default)
-				.SymbolicFeature("round", round => round
-					.Symbol("round+", "+")
-					.Symbol("round-", "-")
-					.Symbol("round?", "?").Default)
-				.SymbolicFeature("vd", vd => vd
-					.Symbol("vd+", "+")
-					.Symbol("vd-", "-")
-					.Symbol("vd?", "?").Default)
-				.SymbolicFeature("asp", asp => asp
-					.Symbol("asp+", "+")
-					.Symbol("asp-", "-")
-					.Symbol("asp?", "?").Default)
-				.SymbolicFeature("del_rel", delrel => delrel
-					.Symbol("del_rel+", "+")
-					.Symbol("del_rel-", "-")
-					.Symbol("del_rel?", "?").Default)
-				.SymbolicFeature("ATR", atr => atr
-					.Symbol("ATR+", "+")
-					.Symbol("ATR-", "-")
-					.Symbol("ATR?", "?").Default)
-				.SymbolicFeature("strident", strident => strident
-					.Symbol("strident+", "+")
-					.Symbol("strident-", "-")
-					.Symbol("strident?", "?").Default)
-				.SymbolicFeature("cont", cont => cont
-					.Symbol("cont+", "+")
-					.Symbol("cont-", "-")
-					.Symbol("cont?", "?").Default)
-				.SymbolicFeature("nasal", nasal => nasal
-					.Symbol("nasal+", "+")
-					.Symbol("nasal-", "-")
-					.Symbol("nasal?", "?").Default)
-				.SymbolicFeature("poa", poa => poa
-					.Symbol("bilabial")
-					.Symbol("labiodental")
-					.Symbol("alveolar")
-					.Symbol("velar")
-					.Symbol("poa?", "?").Default).Value;
+			var phoneticFeatSys = new FeatureSystem
+			                      	{
+			                      		new SymbolicFeature("voc") {PossibleSymbols = {{"voc+", "+"}, {"voc-", "-"}, {"voc?", "?", true}}},
+			                      		new SymbolicFeature("cons") {PossibleSymbols = {{"cons+", "+"}, {"cons-", "-"}, {"cons?", "?", true}}},
+			                      		new SymbolicFeature("high") {PossibleSymbols = {{"high+", "+"}, {"high-", "-"}, {"high?", "?", true}}},
+			                      		new SymbolicFeature("low") {PossibleSymbols = {{"low+", "+"}, {"low-", "-"}, {"low?", "?", true}}},
+			                      		new SymbolicFeature("back") {PossibleSymbols = {{"back+", "+"}, {"back-", "-"}, {"back?", "?", true}}},
+			                      		new SymbolicFeature("round") {PossibleSymbols = {{"round+", "+"}, {"round-", "-"}, {"round?", "?", true}}},
+										new SymbolicFeature("vd") {PossibleSymbols = {{"vd+", "+"}, {"vd-", "-"}, {"vd?", "?", true}}},
+			                      		new SymbolicFeature("asp") {PossibleSymbols = {{"asp+", "+"}, {"asp-", "-"}, {"asp?", "?", true}}},
+			                      		new SymbolicFeature("del_rel") {PossibleSymbols = {{"del_rel+", "+"}, {"del_rel-", "-"}, {"del_rel?", "?", true}}},
+			                      		new SymbolicFeature("ATR") {PossibleSymbols = {{"ATR+", "+"}, {"ATR-", "-"}, {"ATR?", "?", true}}},
+			                      		new SymbolicFeature("strident") {PossibleSymbols = {{"strident+", "+"}, {"strident-", "-"}, {"strident?", "?", true}}},
+			                      		new SymbolicFeature("cont") {PossibleSymbols = {{"cont+", "+"}, {"cont-", "-"}, {"cont?", "?", true}}},
+			                      		new SymbolicFeature("nasal") {PossibleSymbols = {{"nasal+", "+"}, {"nasal-", "-"}, {"nasal?", "?", true}}},
+			                      		new SymbolicFeature("poa") {PossibleSymbols = {"bilabial", "labiodental", "alveolar", "velar", {"poa?", "?", true}}}
+			                      	};
 
-			var syntacticFeatSys = FeatureSystem.New()
-				.SymbolicFeature("pos", pos => pos
-					.Symbol("N", "Noun")
-					.Symbol("V", "Verb")
-					.Symbol("A", "Adjective"))
-				.SymbolicFeature("foo", foo => foo
-					.Symbol("foo+", "+")
-					.Symbol("foo-", "-"))
-				.SymbolicFeature("baz", baz => baz
-					.Symbol("baz+", "+")
-					.Symbol("baz-", "-"))
-				.SymbolicFeature("num", num => num
-					.Symbol("sg")
-					.Symbol("pl"))
-				.SymbolicFeature("pers", pers => pers
-					.Symbol("1")
-					.Symbol("2")
-					.Symbol("3")
-					.Symbol("4"))
-				.SymbolicFeature("tense", tense => tense
-					.Symbol("past")
-					.Symbol("pres"))
-				.SymbolicFeature("evidential", evidential => evidential
-					.Symbol("witnessed"))
-				.SymbolicFeature("aspect", aspect => aspect
-					.Symbol("perf")
-					.Symbol("impf"))
-				.SymbolicFeature("mood", mood => mood
-					.Symbol("active")
-					.Symbol("passive"))
-				.SymbolicFeature("fum", fum => fum
-					.Symbol("fum+", "+")
-					.Symbol("fum-", "-"))
-				.SymbolicFeature("bar", bar => bar
-					.Symbol("bar+", "+")
-					.Symbol("bar-", "-"))
-				.ComplexFeature("head")
-				.ComplexFeature("foot").Value;
+			var syntacticFeatSys = new FeatureSystem
+			                       	{
+			                       		new SymbolicFeature("pos") {PossibleSymbols = {{"N", "Noun"}, {"V", "Verb"}, {"A", "Adjective"}}},
+			                       		new SymbolicFeature("foo") {PossibleSymbols = {{"foo+", "+"}, {"foo-", "-"}}},
+			                       		new SymbolicFeature("baz") {PossibleSymbols = {{"baz+", "+"}, {"baz-", "-"}}},
+			                       		new SymbolicFeature("num") {PossibleSymbols = {"sg", "pl"}},
+			                       		new SymbolicFeature("pers") {PossibleSymbols = {"1", "2", "3", "4"}},
+			                       		new SymbolicFeature("tense") {PossibleSymbols = {"past", "pres"}},
+			                       		new SymbolicFeature("evidential") {PossibleSymbols = {"witnessed"}},
+			                       		new SymbolicFeature("aspect") {PossibleSymbols = {"perf", "impf"}},
+			                       		new SymbolicFeature("mood") {PossibleSymbols = {"active", "passive"}},
+			                       		new SymbolicFeature("fum") {PossibleSymbols = {{"fum+", "+"}, {"fum-", "-"}}},
+			                       		new SymbolicFeature("bar") {PossibleSymbols = {{"bar+", "+"}, {"bar-", "-"}}},
+			                       		new ComplexFeature("head"),
+			                       		new ComplexFeature("foot")
+			                       	};
 
 			Table1 = new SymbolTable(SpanFactory, "table1");
 			AddSegDef(Table1, phoneticFeatSys, "a", "cons-", "voc+", "high-", "low+", "back+", "round-", "vd+");
@@ -209,29 +144,26 @@ namespace HermitCrabTest
 			AddBdryDef(Table3, "!");
 			AddBdryDef(Table3, ".");
 
-			LeftSideFS = FeatureStruct.New().Symbol(HCFeatureSystem.Anchor).Symbol(HCFeatureSystem.LeftSide).Value;
-			RightSideFS = FeatureStruct.New().Symbol(HCFeatureSystem.Anchor).Symbol(HCFeatureSystem.RightSide).Value;
-
 			Latinate = new MprFeature("latinate");
 			Germanic = new MprFeature("germanic");
 
-			Morphophonemic = new Stratum("morphophonemic", Table3) {Description = "Morphophonemic"};
-			Allophonic = new Stratum("allophonic", Table1) {Description = "Allophonic"};
-			Surface = new Stratum("surface", Table1) {Description = "Surface"};
+			Morphophonemic = new Stratum("morphophonemic", Table3) { Description = "Morphophonemic", MorphologicalRuleOrder = RuleCascadeOrder.Combination };
+			Allophonic = new Stratum("allophonic", Table1) { Description = "Allophonic", MorphologicalRuleOrder = RuleCascadeOrder.Combination };
+			Surface = new Stratum("surface", Table1) { Description = "Surface", MorphologicalRuleOrder = RuleCascadeOrder.Combination };
 
 			Entries = new IDBearerSet<LexEntry>();
 			var fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("N")
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Symbol("foo+").Symbol("baz-"))
-				.Feature("foot").EqualToFeatureStruct(foot => foot
+				.Feature("foot").EqualTo(foot => foot
 					.Symbol("fum-").Symbol("bar+")).Value;
 			AddEntry("1", "pʰit", fs, Allophonic);
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("N")
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Symbol("foo+").Symbol("baz-"))
-				.Feature("foot").EqualToFeatureStruct(foot => foot
+				.Feature("foot").EqualTo(foot => foot
 					.Symbol("fum-").Symbol("bar+")).Value;
 			AddEntry("2", "pit", fs, Allophonic);
 
@@ -295,30 +227,30 @@ namespace HermitCrabTest
 
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("num").EqualTo("pl")).Value;
 			AddEntry("Perc0", "ssag", "ssag", fs, Morphophonemic);
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("1")
 					.Feature("num").EqualTo("pl")).Value;
 			AddEntry("Perc1", "ssag", "ssag", fs, Morphophonemic);
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("3")
 					.Feature("num").EqualTo("pl")).Value;
 			AddEntry("Perc2", "ssag", "ssag", fs, Morphophonemic);
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("2", "3")
 					.Feature("num").EqualTo("pl")).Value;
 			AddEntry("Perc3", "ssag", "ssag", fs, Morphophonemic);
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("1", "3")
 					.Feature("num").EqualTo("pl")).Value;
 			AddEntry("Perc4", "ssag", "ssag", fs, Morphophonemic);
@@ -327,12 +259,12 @@ namespace HermitCrabTest
 			seeFamily.Entries.Add(AddEntry("bl1", "si", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic));
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("tense").EqualTo("past")).Value;
 			seeFamily.Entries.Add(AddEntry("bl2", "sau", fs, Morphophonemic));
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("tense").EqualTo("pres")).Value;
 			seeFamily.Entries.Add(AddEntry("bl3", "sis", fs, Morphophonemic));
 
@@ -385,6 +317,7 @@ namespace HermitCrabTest
 				fs.AddValue(symbol.Feature, new SymbolicFeatureValue(symbol));
 			}
 			fs.AddValue(HCFeatureSystem.Type, HCFeatureSystem.Segment);
+			fs.Freeze();
 			table.Add(strRep, fs);
 		}
 
@@ -410,15 +343,12 @@ namespace HermitCrabTest
 				actual.Add(sb.ToString());
 			}
 
-			Assert.AreEqual(expected.Length, actual.Count);
-			foreach (string id in expected)
-				Assert.IsTrue(actual.Contains(id));
+			Assert.That(actual, Is.EquivalentTo(expected));
 		}
 
 		protected void AssertSyntacticFeatureStructsEqual(IEnumerable<Word> words, FeatureStruct expected)
 		{
-			foreach (Word word in words)
-				Assert.AreEqual(expected, word.SyntacticFeatureStruct);
+			Assert.That(words, Has.All.Property("SyntacticFeatureStruct").EqualTo(expected).Using(FeatureStruct.ValueComparer));
 		}
 	}
 }

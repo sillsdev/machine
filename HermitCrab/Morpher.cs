@@ -4,156 +4,73 @@ using System.Linq;
 using SIL.Collections;
 using SIL.Machine;
 using SIL.Machine.FeatureModel;
-using SIL.Machine.Matching;
 using SIL.Machine.Rules;
 
 namespace SIL.HermitCrab
 {
 	public class Morpher
 	{
-		private class MorphsEqualityComparer : IEqualityComparer<IEnumerable<Allomorph>>
-		{
-			private static readonly IEqualityComparer<Allomorph> MorphemeEqualityComparer = ProjectionEqualityComparer<Allomorph>.Create(allo => allo.Morpheme);
-
-			public bool Equals(IEnumerable<Allomorph> x, IEnumerable<Allomorph> y)
-			{
-				return x.SequenceEqual(y, MorphemeEqualityComparer);
-			}
-
-			public int GetHashCode(IEnumerable<Allomorph> obj)
-			{
-				return obj.Aggregate(23, (code, allo) => code * 31 + allo.Morpheme.GetHashCode());
-			}
-		}
-
-		private class MorphsComparer : IComparer<IEnumerable<Allomorph>>
-		{
-			public int Compare(IEnumerable<Allomorph> x, IEnumerable<Allomorph> y)
-			{
-				foreach (Tuple<Allomorph, Allomorph> tuple in x.Zip(y))
-				{
-					int res = string.CompareOrdinal(tuple.Item1.Morpheme.ID, tuple.Item2.Morpheme.ID);
-					if (res != 0)
-						return res;
-
-					res = tuple.Item1.Index.CompareTo(tuple.Item2.Index);
-					if (res != 0)
-						return res;
-				}
-				return 0;
-			}
-		}
-
-		private static readonly MorphsEqualityComparer WordMorphsEqualityComparer = new MorphsEqualityComparer();
-		private static readonly MorphsComparer WordMorphsComparer = new MorphsComparer();
+		private static readonly IEqualityComparer<IEnumerable<Allomorph>> MorphsEqualityComparer = SequenceEqualityComparer.Create(ProjectionEqualityComparer<Allomorph>.Create(allo => allo.Morpheme));
+		private static readonly IComparer<IEnumerable<Allomorph>> MorphsComparer = SequenceComparer.Create(ProjectionComparer<Allomorph>.Create(allo => allo.Index));
 
 		private readonly Language _lang;
 		private readonly IRule<Word, ShapeNode> _analysisRule;
 		private readonly IRule<Word, ShapeNode> _synthesisRule;
-		private readonly Dictionary<Stratum, Tuple<Matcher<Shape, ShapeNode>, IDBearerSet<RootAllomorph>>> _allomorphSearchers;
+		private readonly Dictionary<Stratum, Tuple<ShapeTrie, IDBearerSet<RootAllomorph>>> _allomorphTries;
 
-		private bool _traceAll;
-		private bool _traceLexLookup;
-		private bool _traceSuccess;
-		private bool _traceBlocking;
-		private readonly HashSet<IHCRule> _traceRules; 
+		private readonly TraceRuleCollection _traceRules;
+		private readonly IDBearerSet<IHCRule> _rules; 
 
 		public Morpher(SpanFactory<ShapeNode> spanFactory, Language lang)
 		{
 			_lang = lang;
-			_allomorphSearchers = new Dictionary<Stratum, Tuple<Matcher<Shape, ShapeNode>, IDBearerSet<RootAllomorph>>>();
+			_rules = new IDBearerSet<IHCRule>();
+			_lang.Traverse(rule => _rules.Add(rule));
+			_allomorphTries = new Dictionary<Stratum, Tuple<ShapeTrie, IDBearerSet<RootAllomorph>>>();
 			foreach (Stratum stratum in _lang.Strata)
 			{
 				var allomorphs = new IDBearerSet<RootAllomorph>(stratum.Entries.SelectMany(entry => entry.Allomorphs));
-				var matcher = new Matcher<Shape, ShapeNode>(spanFactory, new Pattern<Shape, ShapeNode>(allomorphs.Select(CreateSubpattern)),
-					new MatcherSettings<ShapeNode>
-						{
-							Filter = ann => ann.Type() == HCFeatureSystem.Segment,
-							FastCompile = true,
-							AnchoredToStart = true,
-							AnchoredToEnd = true
-						});
-				_allomorphSearchers[stratum] = Tuple.Create(matcher, allomorphs);
+				var trie = new ShapeTrie(ann => ann.Type() == HCFeatureSystem.Segment);
+				foreach (RootAllomorph allomorph in allomorphs)
+					trie.Add(allomorph.Shape, allomorph.ID);
+				_allomorphTries[stratum] = Tuple.Create(trie, allomorphs);
 			}
 			_analysisRule = lang.CompileAnalysisRule(spanFactory, this);
 			_synthesisRule = lang.CompileSynthesisRule(spanFactory, this);
-			_traceRules = new HashSet<IHCRule>();
-		}
-
-		private Pattern<Shape, ShapeNode> CreateSubpattern(RootAllomorph allomorph)
-		{
-			var subpattern = new Pattern<Shape, ShapeNode>(allomorph.ID);
-			foreach (ShapeNode node in allomorph.Shape.Where(node => node.Annotation.Type() == HCFeatureSystem.Segment))
-				subpattern.Children.Add(new Constraint<Shape, ShapeNode>(node.Annotation.FeatureStruct.DeepClone()));
-			return subpattern;
+			_traceRules = new TraceRuleCollection(_rules);
 		}
 
 		public bool IsTracing
 		{
-			get { return _traceAll || _traceBlocking || _traceLexLookup || _traceSuccess || _traceRules.Count > 0; }
+			get { return TraceBlocking || TraceLexicalLookup || TraceSuccess || _traceRules.Count > 0; }
 		}
 
 		public bool TraceAll
 		{
-			get { return _traceAll; }
+			get { return TraceBlocking && TraceLexicalLookup && TraceSuccess && _traceRules.IsTracingAllRules; }
 			set
 			{
-				_traceAll = value;
-				_traceBlocking = value;
-				_traceLexLookup = value;
-				_traceSuccess = value;
-				_traceRules.Clear();
-			}
-		}
-
-		public bool TraceLexicalLookup
-		{
-			get { return _traceLexLookup; }
-			set
-			{
-				if (!_traceAll)
-					_traceLexLookup = value;
-			}
-		}
-
-		public bool TraceSuccess
-		{
-			get { return _traceSuccess; }
-			set
-			{
-				if (!_traceAll)
-					_traceSuccess = value;
-			}
-		}
-
-		public bool TraceBlocking
-		{
-			get { return _traceBlocking; }
-			set
-			{
-				if (!_traceAll)
-					_traceBlocking = value;
-			}
-		}
-
-		public void SetTraceRule(IHCRule rule, bool trace)
-		{
-			if (!_traceAll)
-			{
-				if (trace)
-					_traceRules.Add(rule);
+				if (value)
+					_traceRules.AddAllRules();
 				else
-					_traceRules.Remove(rule);
+					_traceRules.Clear();
+				TraceBlocking = value;
+				TraceLexicalLookup = value;
+				TraceSuccess = value;
 			}
 		}
 
-		public bool GetTraceRule(IHCRule rule)
-		{
-			if (_traceAll)
-				return true;
+		public bool TraceLexicalLookup { get; set; }
+		public bool TraceSuccess { get; set; }
 
-			return _traceRules.Contains(rule);
+		public bool TraceBlocking { get; set; }
+
+		public TraceRuleCollection TraceRules
+		{
+			get { return _traceRules; }
 		}
+
+		public int DeletionReapplications { get; set; }
 
 		/// <summary>
 		/// Morphs the specified word.
@@ -171,7 +88,7 @@ namespace SIL.HermitCrab
 			// convert the word to its phonetic shape
 			Shape shape;
 			if (!_lang.SurfaceStratum.SymbolTable.ToShape(word, out shape))
-				throw new ArgumentException("The word '{0}' cannot be converted to a shape.", "word");
+				throw new ArgumentException(string.Format("The word '{0}' cannot be converted to a shape.", word), "word");
 
 			var input = new Word(_lang.SurfaceStratum, shape);
 			trace = new Trace(TraceType.WordAnalysis, _lang) { Input = input.DeepClone() };
@@ -186,28 +103,36 @@ namespace SIL.HermitCrab
 			}
 
 			var matchList = new List<Word>();
-			foreach (Word match in validWords.GroupBy(validWord => validWord.AllomorphsInMorphOrder, WordMorphsEqualityComparer)
-				.Select(group => group.MaxBy(validWord => validWord.AllomorphsInMorphOrder, WordMorphsComparer)))
+			foreach (IGrouping<IEnumerable<Allomorph>, Word> group in validWords.GroupBy(validWord => validWord.AllomorphsInMorphOrder, MorphsEqualityComparer))
 			{
-				if (_traceSuccess)
-					match.CurrentTrace.Children.Add(new Trace(TraceType.ReportSuccess, _lang) { Output = match });
-				matchList.Add(match);
+				// enforce the disjunctive property of allomorphs by ensuring that this word synthesis
+				// has the highest order of precedence for its allomorphs while also allowing for free fluctuation
+				Word prevMatch = null;
+				foreach (Word match in group.OrderBy(w => w.AllomorphsInMorphOrder, MorphsComparer))
+				{
+					if (prevMatch != null && match.AllomorphsInMorphOrder.Zip(prevMatch.AllomorphsInMorphOrder).All(tuple => tuple.Item1 == tuple.Item2 || !tuple.Item1.ConstraintsEqual(tuple.Item2)))
+						break;
+
+					if (TraceSuccess)
+						match.CurrentTrace.Children.Add(new Trace(TraceType.ReportSuccess, _lang) {Output = match});
+					matchList.Add(match);
+					prevMatch = match;
+				}
 			}
 
-			trace = null;
 			return matchList;
 		}
 
 		internal IEnumerable<RootAllomorph> SearchRootAllomorphs(Stratum stratum, Shape shape)
 		{
-			Tuple<Matcher<Shape, ShapeNode>, IDBearerSet<RootAllomorph>> alloSearcher = _allomorphSearchers[stratum];
-			return alloSearcher.Item1.AllMatches(shape).Select(match => alloSearcher.Item2[match.PatternPath.Single()]).Distinct();
+			Tuple<ShapeTrie, IDBearerSet<RootAllomorph>> alloSearcher = _allomorphTries[stratum];
+			return alloSearcher.Item1.Search(shape).Select(id => alloSearcher.Item2[id]).Distinct();
 		}
 
 		private IEnumerable<Word> LexicalLookup(Word input)
 		{
 			Trace lookupTrace = null;
-			if (_traceLexLookup)
+			if (TraceLexicalLookup)
 			{
 				lookupTrace = new Trace(TraceType.LexicalLookup, input.Stratum) { Input = input.DeepClone() };
 				input.CurrentTrace.Children.Add(lookupTrace);

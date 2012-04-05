@@ -39,7 +39,7 @@ namespace HermitCrabTest
 			var edSuffix = new RealizationalAffixProcessRule("ed_suffix")
 			               	{
 								RealizationalFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-									.Feature("head").EqualToFeatureStruct(head => head
+									.Feature("head").EqualTo(head => head
 										.Feature("tense").EqualTo("past")).Value,
 			               		Gloss = "PAST"
 			               	};
@@ -67,7 +67,7 @@ namespace HermitCrabTest
 			var sSuffix = new RealizationalAffixProcessRule("s_suffix")
 			              	{
 								RealizationalFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-									.Feature("head").EqualToFeatureStruct(head => head
+									.Feature("head").EqualTo(head => head
 										.Feature("pers").EqualTo("3")
 										.Feature("tense").EqualTo("pres")).Value,
 			              		Gloss = "3SG"
@@ -105,7 +105,7 @@ namespace HermitCrabTest
 			var evidential = new RealizationalAffixProcessRule("evidential")
 								{
 									RealizationalFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-										.Feature("head").EqualToFeatureStruct(head => head
+										.Feature("head").EqualTo(head => head
 											.Feature("evidential").EqualTo("witnessed")).Value,
 									Gloss = "WIT"
 								};
@@ -131,25 +131,25 @@ namespace HermitCrabTest
 			AssertMorphsEqual(output, "32 ed_suffix");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
 				.Symbol("V")
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("tense").EqualTo("past")).Value);
 			output = morpher.ParseWord("sagdv").ToArray();
 			AssertMorphsEqual(output, "32 ed_suffix evidential");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
 				.Symbol("V")
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("tense").EqualTo("past")
 					.Feature("evidential").EqualTo("witnessed")).Value);
-			Assert.IsFalse(morpher.ParseWord("sid").Any());
+			Assert.That(morpher.ParseWord("sid"), Is.Empty);
 			output = morpher.ParseWord("sau").ToArray();
 			AssertMorphsEqual(output, "bl2");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
 				.Symbol("V")
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("tense").EqualTo("past")).Value);
 
 			evidential.RealizationalFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("evidential").EqualTo("witnessed")
 					.Feature("tense").EqualTo("pres")).Value;
 
@@ -158,7 +158,7 @@ namespace HermitCrabTest
 			AssertMorphsEqual(output, "32 s_suffix evidential");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
 				.Symbol("V")
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("3")
 					.Feature("tense").EqualTo("pres")
 					.Feature("evidential").EqualTo("witnessed")).Value);

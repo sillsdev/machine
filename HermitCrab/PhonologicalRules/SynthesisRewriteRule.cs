@@ -42,7 +42,7 @@ namespace SIL.HermitCrab.PhonologicalRules
 		public override IEnumerable<Word> Apply(Word input, ShapeNode start)
 		{
 			Trace trace = null;
-			if (_morpher.GetTraceRule(_rule))
+			if (_morpher.TraceRules.Contains(_rule))
 			{
 				trace = new Trace(TraceType.PhonologicalRuleSynthesis, _rule) { Input = input.DeepClone() };
 				input.CurrentTrace.Children.Add(trace);

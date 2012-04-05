@@ -36,7 +36,7 @@ namespace SIL.HermitCrab
 				outWords.Clear();
 				foreach (Word inWord in inWords)
 				{
-					if (_morpher.GetTraceRule(_strataRules[i].Item1))
+					if (_morpher.TraceRules.Contains(_strataRules[i].Item1))
 						inWord.CurrentTrace.Children.Add(new Trace(TraceType.StratumSynthesisInput, _strataRules[i].Item1) { Input = inWord.DeepClone() });
 
 					foreach (Word outWord in _strataRules[i].Item2.Apply(inWord).Concat(inWord))
@@ -45,7 +45,7 @@ namespace SIL.HermitCrab
 						if (i != _strataRules.Count - 1)
 							outWord.Stratum = _strataRules[i + 1].Item1;
 
-						if (_morpher.GetTraceRule(_strataRules[i].Item1))
+						if (_morpher.TraceRules.Contains(_strataRules[i].Item1))
 							outWord.CurrentTrace.Children.Add(new Trace(TraceType.StratumSynthesisOutput, _strataRules[i].Item1) { Output = outWord.DeepClone() });
 
 						outWords.Add(outWord);

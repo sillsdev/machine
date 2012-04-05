@@ -56,6 +56,12 @@ namespace SIL.HermitCrab.MorphologicalRules
 			{
 				for (int i = 0; i < _rule.Subrules.Count; i++)
 				{
+					if (_rule.Subrules[i].RequiredMprFeatures.Count > 0 && !_rule.Subrules[i].RequiredMprFeatures.IsMatch(input.MprFeatures)
+						|| (_rule.Subrules[i].ExcludedMprFeatures.Count > 0 && _rule.Subrules[i].ExcludedMprFeatures.IsMatch(input.MprFeatures)))
+					{
+						continue;
+					}
+
 					Match<Word, ShapeNode> headMatch = _subruleMatchers[i].Item1.Match(input);
 					if (headMatch.Success)
 					{
@@ -63,6 +69,8 @@ namespace SIL.HermitCrab.MorphologicalRules
 						if (nonHeadMatch.Success)
 						{
 							Word outWord = ApplySubrule(_rule.Subrules[i], headMatch, nonHeadMatch);
+
+							outWord.MprFeatures.AddOutput(_rule.Subrules[i].OutMprFeatures);
 
 							outWord.SyntacticFeatureStruct = syntacticFS;
 							outWord.SyntacticFeatureStruct.PriorityUnion(_rule.OutSyntacticFeatureStruct);
@@ -81,13 +89,14 @@ namespace SIL.HermitCrab.MorphologicalRules
 								outWord = newWord;
 							}
 
-							if (_morpher.GetTraceRule(_rule))
+							if (_morpher.TraceRules.Contains(_rule))
 							{
 								var trace = new Trace(TraceType.MorphologicalRuleSynthesis, _rule) { Input = input.DeepClone(), Output = outWord.DeepClone() };
 								outWord.CurrentTrace.Children.Add(trace);
 								outWord.CurrentTrace = trace;
 							}
 
+							outWord.Freeze();
 							output.Add(outWord);
 							break;
 						}
@@ -95,7 +104,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 				}
 			}
 
-			if (output.Count == 0 && _morpher.GetTraceRule(_rule))
+			if (output.Count == 0 && _morpher.TraceRules.Contains(_rule))
 				input.CurrentTrace.Children.Add(new Trace(TraceType.MorphologicalRuleSynthesis, _rule) { Input = input.DeepClone() });
 
 			return output;
@@ -104,10 +113,8 @@ namespace SIL.HermitCrab.MorphologicalRules
 		private Word ApplySubrule(CompoundingSubrule sr, Match<Word, ShapeNode> headMatch, Match<Word, ShapeNode> nonHeadMatch)
 		{
 			// TODO: unify the variable bindings from the head and non-head matches
-			if (headMatch.VariableBindings.Values.OfType<SymbolicFeatureValue>().Any(value => value.Feature.DefaultValue.Equals(value)))
-				throw new MorphException(MorphErrorCode.UninstantiatedFeature);
-			if (nonHeadMatch.VariableBindings.Values.OfType<SymbolicFeatureValue>().Any(value => value.Feature.DefaultValue.Equals(value)))
-				throw new MorphException(MorphErrorCode.UninstantiatedFeature);
+			headMatch.VariableBindings.CheckUninstantiatedFeatures();
+			nonHeadMatch.VariableBindings.CheckUninstantiatedFeatures();
 
 			Word output = headMatch.Input.DeepClone();
 			output.Shape.Clear();
@@ -116,7 +123,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 			var newMorphNodes = new List<ShapeNode>();
 			foreach (MorphologicalOutputAction outputAction in sr.Rhs)
 			{
-				if (outputAction.PartName != null && nonHeadMatch.GroupCaptures.Contains(outputAction.PartName))
+				if (outputAction.PartName != null && nonHeadMatch.GroupCaptures.Captured(outputAction.PartName))
 				{
 					newMorphNodes.AddRange(outputAction.Apply(nonHeadMatch, output).Select(mapping => mapping.Item2));
 				}
@@ -149,8 +156,8 @@ namespace SIL.HermitCrab.MorphologicalRules
 					.Symbol(HCFeatureSystem.Morph)
 					.Feature(HCFeatureSystem.Allomorph).EqualTo(headMatch.Input.CurrentNonHead.RootAllomorph.ID).Value;
 				MarkMorph(output, newMorphNodes, fs);
-				output.Allomorphs.Add(headMatch.Input.CurrentNonHead.RootAllomorph);
 			}
+			output.Allomorphs.Add(headMatch.Input.CurrentNonHead.RootAllomorph);
 
 			return output;
 		}

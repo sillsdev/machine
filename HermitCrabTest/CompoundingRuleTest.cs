@@ -28,8 +28,8 @@ namespace HermitCrabTest
 			List<Word> output = morpher.ParseWord("pʰutdat").ToList();
 			AssertMorphsEqual(output, "5 8", "5 9");
 			AssertRootAllomorphsEquals(output, "5");
-			Assert.IsFalse(morpher.ParseWord("pʰutdas").Any());
-			Assert.IsFalse(morpher.ParseWord("pʰusdat").Any());
+			Assert.That(morpher.ParseWord("pʰutdas"), Is.Empty);
+			Assert.That(morpher.ParseWord("pʰusdat"), Is.Empty);
 
 			rule1.Subrules.Clear();
 			rule1.Subrules.Add(new CompoundingSubrule("rule1_sr1")
@@ -43,15 +43,15 @@ namespace HermitCrabTest
 			output = morpher.ParseWord("pʰutdat").ToList();
 			AssertMorphsEqual(output, "5 8", "5 9");
 			AssertRootAllomorphsEquals(output, "8", "9");
-			Assert.IsFalse(morpher.ParseWord("pʰutdas").Any());
-			Assert.IsFalse(morpher.ParseWord("pʰusdat").Any());
+			Assert.That(morpher.ParseWord("pʰutdas"), Is.Empty);
+			Assert.That(morpher.ParseWord("pʰusdat"), Is.Empty);
 
 			var prefix = new AffixProcessRule("prefix")
 			{
 				Gloss = "PAST",
 				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
 				OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-					.Feature("head").EqualToFeatureStruct(head => head
+					.Feature("head").EqualTo(head => head
 						.Feature("tense").EqualTo("past")).Value
 			};
 			Allophonic.MorphologicalRules.Insert(0, prefix);
@@ -116,8 +116,8 @@ namespace HermitCrabTest
 			List<Word> output = morpher.ParseWord("pʰutdat").ToList();
 			AssertMorphsEqual(output, "5 9");
 			AssertRootAllomorphsEquals(output, "5");
-			Assert.AreEqual(FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value, output[0].SyntacticFeatureStruct);
-			Assert.IsFalse(morpher.ParseWord("pʰutbupu").Any());
+			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value);
+			Assert.That(morpher.ParseWord("pʰutbupu"), Is.Empty);
 
 			rule1.OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value;
 
@@ -125,13 +125,13 @@ namespace HermitCrabTest
 			output = morpher.ParseWord("pʰutdat").ToList();
 			AssertMorphsEqual(output, "5 9");
 			AssertRootAllomorphsEquals(output, "5");
-			Assert.AreEqual(FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value, output[0].SyntacticFeatureStruct);
+			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value);
 
 			Allophonic.MorphologicalRules.Clear();
 			Morphophonemic.MorphologicalRules.Add(rule1);
 			rule1.HeadRequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
 				.Symbol("V")
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("2")).Value;
 			rule1.NonHeadRequiredSyntacticFeatureStruct = FeatureStruct.New().Value;
 
@@ -143,10 +143,7 @@ namespace HermitCrabTest
 
 		private void AssertRootAllomorphsEquals(IEnumerable<Word> words, params string[] expected)
 		{
-			var actual = new HashSet<string>(words.Select(w => w.RootAllomorph.Morpheme.ID));
-			Assert.AreEqual(expected.Length, actual.Count);
-			foreach (string id in expected)
-				Assert.IsTrue(actual.Contains(id));
+			Assert.That(words.Select(w => w.RootAllomorph.Morpheme.ID).Distinct(), Is.EquivalentTo(expected));
 		}
 	}
 }

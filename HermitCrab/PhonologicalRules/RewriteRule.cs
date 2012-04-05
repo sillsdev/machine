@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using SIL.Collections;
 using SIL.Machine;
@@ -29,8 +30,6 @@ namespace SIL.HermitCrab.PhonologicalRules
 
 		public ApplicationMode ApplicationMode { get; set; }
 
-		public int DelReapplications { get; set; }
-
     	public IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
     	{
     		return new AnalysisRewriteRule(spanFactory, morpher, this);
@@ -40,5 +39,10 @@ namespace SIL.HermitCrab.PhonologicalRules
 		{
 			return new SynthesisRewriteRule(spanFactory, morpher, this);
 		}
+
+    	public void Traverse(Action<IHCRule> action)
+    	{
+    		action(this);
+    	}
     }
 }

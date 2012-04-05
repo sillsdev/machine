@@ -2,9 +2,9 @@
 
 namespace SIL.HermitCrab
 {
-	public class AllomorphCoOccurrence : MorphCoOccurrence<Allomorph>
+	public class AllomorphCoOccurrenceRule : MorphCoOccurrenceRule<Allomorph>
 	{
-		public AllomorphCoOccurrence(IEnumerable<Allomorph> others, MorphCoOccurrenceAdjacency adjacency)
+		public AllomorphCoOccurrenceRule(IEnumerable<Allomorph> others, MorphCoOccurrenceAdjacency adjacency)
 			: base(others, adjacency)
 		{
 		}

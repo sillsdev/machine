@@ -1,27 +1,28 @@
 using System;
 using System.IO;
-
 using NDesk.Options;
+using ManyConsole;
+using ManyConsole.Internal;
+using SIL.Collections;
 
 namespace SIL.HermitCrab
 {
-    class HermitCrabProgram
+    public class HermitCrabProgram
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            string inputFormat = "xml";
             string inputFile = null;
             string outputFile = null;
             bool showHelp = false;
             bool quitOnError = true;
 
-            OptionSet p = new OptionSet()
-                .Add("f|input-format=", "the format of the input file {[xml|legacy]}, default: xml",
-                    delegate(string v) { inputFormat = v.ToLower(); })
-                .Add("i|input-file=", "read configuration from {FILE}", delegate(string v) { inputFile = v; })
-                .Add("o|output-file=", "write results to {FILE}", delegate(string v) {outputFile = v; })
-                .Add("c|continue", "continues when an error occurs", delegate(string v) { quitOnError = v == null; })
-                .Add("h|help", "show this help message and exit", delegate(string v) { showHelp = v != null; });
+			var p = new OptionSet
+                    	{
+                    		{ "i|input-file=", "read configuration from {FILE}", value => inputFile = value },
+							{ "o|output-file=", "write results to {FILE}", value => outputFile = value },
+							{ "c|continue", "continues when an error occurs", value => quitOnError = value == null },
+							{ "h|help", "show this help message and exit", value => showHelp = value != null }
+                    	};
 
             try
             {
@@ -39,53 +40,55 @@ namespace SIL.HermitCrab
                 return;
             }
 
-            Loader loader = null;
-            switch (inputFormat)
-            {
-                case "xml":
-                    loader = new XmlLoader();
-                    break;
-
-                case "legacy":
-                    loader = new LegacyLoader();
-                    break;
-
-                default:
-                    Console.WriteLine("Invalid input file format specified");
-                    ShowHelp(p);
-                    return;
-            }
-
+        	HCContext context;
             try
             {
-                if (outputFile != null)
-                    loader.Output = new DefaultOutput(new StreamWriter(new FileStream(outputFile, FileMode.Create), loader.DefaultOutputEncoding));
-                else
-                    loader.Output = new DefaultOutput(Console.Out);
+				Console.Write("Reading configuration file...");
+            	Language language = XmlLoader.Load(inputFile, quitOnError);
+				Console.WriteLine("done.");
 
-                loader.QuitOnError = quitOnError;
-
-                loader.Load(inputFile);
+				context = new HCContext(language);
+				Console.Write("Compiling rules...");
+				context.Compile();
+				Console.WriteLine("done.");
+				Console.WriteLine("{0} loaded.", language.Description);
             }
             catch (IOException ioe)
             {
+				Console.WriteLine();
                 Console.WriteLine("IO Error: " + ioe.Message);
+            	return;
             }
             catch (LoadException le)
             {
+				Console.WriteLine();
                 Console.WriteLine("Load Error: " + le.Message);
                 if (le.InnerException != null)
                     Console.WriteLine(le.InnerException.Message);
-            }
-            catch (MorphException me)
-            {
-                Console.WriteLine("Morph Error: " + me.Message);
+            	return;
             }
 
-			loader.Output.Close();
+			ConsoleCommand[] commands = { new ParseCommand(context), new TracingCommand(context) };
+
+			Console.Write("> ");
+        	string input = Console.ReadLine();
+			while (input != null && input.Trim() != "exit")
+			{
+				if (input.Trim().IsOneOf("?", "help"))
+				{
+					ConsoleHelp.ShowSummaryOfCommands(commands, Console.Out);
+				}
+				else
+				{
+					string[] cmdArgs = input.ToCommandLineArgs();
+					ConsoleCommandDispatcher.DispatchCommand(commands, cmdArgs, Console.Out);
+				}
+				Console.Write("> ");
+				input = Console.ReadLine();
+			}
         }
 
-        static void ShowHelp(OptionSet p)
+        private static void ShowHelp(OptionSet p)
         {
             Console.WriteLine("Usage: hc [OPTIONS]");
             Console.WriteLine("HermitCrab.NET is a phonological and morphological parser.");

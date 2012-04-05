@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -36,8 +37,6 @@ namespace SIL.HermitCrab
 			_mrules = new ObservableCollection<IMorphologicalRule>();
 			_mrules.CollectionChanged += MorphologicalRulesChanged;
             _prules = new List<IPhonologicalRule>();
-
-			MorphologicalRuleOrder = RuleCascadeOrder.Permutation;
 
             _templates = new ObservableCollection<AffixTemplate>();
     		_templates.CollectionChanged += TemplatesChanged;
@@ -134,20 +133,27 @@ namespace SIL.HermitCrab
 
     	public IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
     	{
-			// TODO: support derivation outside of inflection
 			var pruleAnalysisRule = new RuleCascade<Word, ShapeNode>(_prules.Select(prule => prule.CompileAnalysisRule(spanFactory, morpher)).Reverse(), PhonologicalRuleOrder);
-			var templateAnalysisRule = new RuleCascade<Word, ShapeNode>(_templates.Select(template => template.CompileAnalysisRule(spanFactory, morpher)));
-			var mruleAnalysisRule = new RuleCascade<Word, ShapeNode>(_mrules.Select(mrule => mrule.CompileAnalysisRule(spanFactory, morpher)).Reverse(), MorphologicalRuleOrder, true);
-			return new RuleCascade<Word, ShapeNode>(new IRule<Word, ShapeNode>[] { pruleAnalysisRule, templateAnalysisRule, mruleAnalysisRule });
+			var templateAnalysisRule = new RuleCascade<Word, ShapeNode>(_templates.Select(template => template.CompileAnalysisRule(spanFactory, morpher)), FreezableEqualityComparer<Word>.Instance);
+			var mruleAnalysisRule = new RuleCascade<Word, ShapeNode>(_mrules.Select(mrule => mrule.CompileAnalysisRule(spanFactory, morpher)).Concat(templateAnalysisRule).Reverse(),
+				MorphologicalRuleOrder, true, FreezableEqualityComparer<Word>.Instance);
+			return new RuleCascade<Word, ShapeNode>(new IRule<Word, ShapeNode>[] { pruleAnalysisRule, mruleAnalysisRule });
     	}
 
     	public IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
     	{
-			// TODO: support derivation outside of inflection
-			var mruleSynthesisRule = new RuleCascade<Word, ShapeNode>(_mrules.Select(mrule => mrule.CompileSynthesisRule(spanFactory, morpher)), MorphologicalRuleOrder, true);
 			var templateSynthesisRule = new SynthesisAffixTemplatesRule(spanFactory, morpher, this);
+			var mruleSynthesisRule = new RuleCascade<Word, ShapeNode>(_mrules.Select(mrule => mrule.CompileSynthesisRule(spanFactory, morpher)).Concat(templateSynthesisRule),
+				MorphologicalRuleOrder, true, FreezableEqualityComparer<Word>.Instance);
 			var pruleSynthesisRule = new RuleCascade<Word, ShapeNode>(_prules.Select(prule => prule.CompileSynthesisRule(spanFactory, morpher)), PhonologicalRuleOrder);
-			return new RuleCascade<Word, ShapeNode>(new IRule<Word, ShapeNode>[] { mruleSynthesisRule, templateSynthesisRule, pruleSynthesisRule });
+			return new RuleCascade<Word, ShapeNode>(new IRule<Word, ShapeNode>[] { mruleSynthesisRule, pruleSynthesisRule });
+    	}
+
+    	public void Traverse(Action<IHCRule> action)
+    	{
+    		action(this);
+			foreach (IHCRule rule in _mrules.Cast<IHCRule>().Concat(_prules).Concat(_templates))
+				rule.Traverse(action);
     	}
     }
 }

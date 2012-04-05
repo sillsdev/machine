@@ -7,61 +7,63 @@ using SIL.Machine.Rules;
 
 namespace SIL.HermitCrab.MorphologicalRules
 {
-	public class AnalysisRealizationalAffixProcessRule : RuleCascade<Word, ShapeNode>
+	public class AnalysisRealizationalAffixProcessRule : IRule<Word, ShapeNode>
 	{
 		private readonly Morpher _morpher;
 		private readonly RealizationalAffixProcessRule _rule;
+		private readonly List<PatternRule<Word, ShapeNode>> _rules;
 
 		public AnalysisRealizationalAffixProcessRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, RealizationalAffixProcessRule rule)
-			: base(CreateRules(spanFactory, rule))
 		{
 			_morpher = morpher;
 			_rule = rule;
-		}
 
-		private static IEnumerable<IRule<Word, ShapeNode>> CreateRules(SpanFactory<ShapeNode> spanFactory, RealizationalAffixProcessRule rule)
-		{
+			_rules = new List<PatternRule<Word, ShapeNode>>();
 			foreach (AffixProcessAllomorph allo in rule.Allomorphs)
 			{
-				yield return new PatternRule<Word, ShapeNode>(spanFactory, new AnalysisAffixProcessAllomorphRuleSpec(allo), ApplicationMode.Multiple,
+				_rules.Add(new PatternRule<Word, ShapeNode>(spanFactory, new AnalysisAffixProcessAllomorphRuleSpec(allo), ApplicationMode.Multiple,
 					new MatcherSettings<ShapeNode>
 						{
 							Filter = ann => ann.Type() == HCFeatureSystem.Segment,
 							AnchoredToStart = true,
 							AnchoredToEnd = true,
 							AllSubmatches = true
-						});
+						}));
 			}
 		}
 
-		public override IEnumerable<Word> Apply(Word input)
+		public bool IsApplicable(Word input)
+		{
+			return true;
+		}
+
+		public IEnumerable<Word> Apply(Word input)
 		{
 			FeatureStruct realFS;
 			if (!_rule.RealizationalFeatureStruct.Unify(input.RealizationalFeatureStruct, out realFS))
 				return Enumerable.Empty<Word>();
-			List<Word> output = base.Apply(input).ToList();
-			foreach (Word result in output)
-				result.RealizationalFeatureStruct = realFS;
-			if (output.Count == 0 && _morpher.GetTraceRule(_rule))
+			var output = new List<Word>();
+			foreach (PatternRule<Word, ShapeNode> rule in _rules)
+			{
+				foreach (Word outWord in rule.Apply(input).RemoveDuplicates())
+				{
+					outWord.RealizationalFeatureStruct = realFS;
+					outWord.MorphologicalRuleUnapplied(_rule);
+
+					if (_morpher.TraceRules.Contains(_rule))
+					{
+						var trace = new Trace(TraceType.MorphologicalRuleAnalysis, _rule) {Input = input.DeepClone(), Output = outWord.DeepClone()};
+						outWord.CurrentTrace.Children.Add(trace);
+						outWord.CurrentTrace = trace;
+					}
+
+					outWord.Freeze();
+					output.Add(outWord);
+				}
+			}
+			if (output.Count == 0 && _morpher.TraceRules.Contains(_rule))
 				input.CurrentTrace.Children.Add(new Trace(TraceType.MorphologicalRuleAnalysis, _rule) { Input = input.DeepClone() });
 			return output;
-		}
-
-		protected override IEnumerable<Word> ApplyRule(IRule<Word, ShapeNode> rule, int index, Word input)
-		{
-			foreach (Word outWord in rule.Apply(input))
-			{
-				outWord.MorphologicalRuleUnapplied(_rule);
-
-				if (_morpher.GetTraceRule(_rule))
-				{
-					var trace = new Trace(TraceType.MorphologicalRuleAnalysis, _rule) { Input = input.DeepClone(), Output = outWord.DeepClone() };
-					outWord.CurrentTrace.Children.Add(trace);
-					outWord.CurrentTrace = trace;
-				}
-
-				yield return outWord;
-			}
 		}
 	}
 }

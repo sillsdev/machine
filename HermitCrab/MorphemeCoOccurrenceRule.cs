@@ -2,9 +2,9 @@
 
 namespace SIL.HermitCrab
 {
-	public class MorphemeCoOccurrence : MorphCoOccurrence<Morpheme>
+	public class MorphemeCoOccurrenceRule : MorphCoOccurrenceRule<Morpheme>
 	{
-		public MorphemeCoOccurrence(IEnumerable<Morpheme> others, MorphCoOccurrenceAdjacency adjacency)
+		public MorphemeCoOccurrenceRule(IEnumerable<Morpheme> others, MorphCoOccurrenceAdjacency adjacency)
 			: base(others, adjacency)
 		{
 		}

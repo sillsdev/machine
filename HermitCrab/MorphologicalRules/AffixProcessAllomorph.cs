@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using SIL.Collections;
 using SIL.Machine;
 using SIL.Machine.Matching;
 
@@ -63,6 +65,16 @@ namespace SIL.HermitCrab.MorphologicalRules
 		public MprFeatureSet OutMprFeatures
 		{
 			get { return _outMprFeatures; }
+		}
+
+		public override bool ConstraintsEqual(Allomorph other)
+		{
+			var otherAllo = other as AffixProcessAllomorph;
+			if (otherAllo == null)
+				return false;
+
+			return base.ConstraintsEqual(other) && _requiredMprFeatures.SetEquals(otherAllo._requiredMprFeatures)
+				&& _excludedMprFeatures.SetEquals(otherAllo._excludedMprFeatures) && _lhs.SequenceEqual(otherAllo._lhs, FreezableEqualityComparer<Pattern<Word, ShapeNode>>.Instance);
 		}
 	}
 }

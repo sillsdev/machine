@@ -121,8 +121,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 		public ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)
 		{
-			if (match.VariableBindings.Values.OfType<SymbolicFeatureValue>().Any(value => value.Feature.DefaultValue.Equals(value)))
-				throw new MorphException(MorphErrorCode.UninstantiatedFeature);
+			match.VariableBindings.CheckUninstantiatedFeatures();
 
 			output = match.Input.DeepClone();
 			output.Shape.Clear();
@@ -136,7 +135,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 					{
 						if (mapping.Item1.Annotation.Parent != null)
 						{
-							var allomorphID = (string)mapping.Item1.Annotation.Parent.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
+							var allomorphID = (string) mapping.Item1.Annotation.Parent.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
 							existingMorphNodes.GetValue(allomorphID, () => new List<ShapeNode>()).Add(mapping.Item2);
 						}
 					}
@@ -163,8 +162,9 @@ namespace SIL.HermitCrab.MorphologicalRules
 					.Symbol(HCFeatureSystem.Morph)
 					.Feature(HCFeatureSystem.Allomorph).EqualTo(_allomorph.ID).Value;
 				MarkMorph(rule.SpanFactory, output, newMorphNodes, fs);
-				output.Allomorphs.Add(_allomorph);
 			}
+			output.Allomorphs.Add(_allomorph);
+			output.MprFeatures.AddOutput(_allomorph.OutMprFeatures);
 
 			return null;
 		}

@@ -51,6 +51,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ManyConsole">
+      <HintPath>..\packages\ManyConsole.0.4.2.0\lib\ManyConsole.dll</HintPath>
+    </Reference>
+    <Reference Include="NDesk.Options">
+      <HintPath>..\packages\NDesk.Options.0.2.1\lib\NDesk.Options.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -59,9 +65,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HCContext.cs" />
     <Compile Include="HermitCrabProgram.cs" />
-    <Compile Include="Options.cs" />
+    <Compile Include="ParseCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TracingCommand.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -91,10 +99,21 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Collections\Collections.csproj">
+      <Project>{08691159-167B-4E5A-AE88-67DEF10AF7D3}</Project>
+      <Name>Collections</Name>
+    </ProjectReference>
     <ProjectReference Include="..\HermitCrab\HermitCrab.csproj">
       <Project>{9E140FCF-0265-481B-B9A0-B0E7BCD3E814}</Project>
       <Name>HermitCrab</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Machine\Machine.csproj">
+      <Project>{8C9AB5D2-22CA-4559-ABB0-83E97D7F0E58}</Project>
+      <Name>Machine</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

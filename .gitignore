@@ -37,3 +37,4 @@ Backup/
 *.Resharper
 *.DotSettings
 *- Copy*
+packages/

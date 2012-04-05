@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using SIL.Collections;
 using SIL.Machine;
+using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
 
@@ -18,6 +20,8 @@ namespace SIL.HermitCrab.PhonologicalRules
 
 		public override ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)
 		{
+			match.VariableBindings.CheckUninstantiatedFeatures();
+
 			GroupCapture<ShapeNode> target = match.GroupCaptures["target"];
 			foreach (Tuple<ShapeNode, PatternNode<Word, ShapeNode>> tuple in match.Input.Shape.GetNodes(target.Span).Zip(_rhs.Children))
 			{
@@ -25,8 +29,6 @@ namespace SIL.HermitCrab.PhonologicalRules
 				tuple.Item1.Annotation.FeatureStruct.PriorityUnion(constraints.FeatureStruct, match.VariableBindings);
 				if (rule.ApplicationMode == ApplicationMode.Iterative)
 					tuple.Item1.SetDirty(true);
-				if (tuple.Item1.Annotation.FeatureStruct.HasVariables)
-					throw new MorphException(MorphErrorCode.UninstantiatedFeature);
 			}
 
 			output = match.Input;

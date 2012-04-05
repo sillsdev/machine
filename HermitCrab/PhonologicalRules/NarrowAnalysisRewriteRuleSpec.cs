@@ -22,16 +22,6 @@ namespace SIL.HermitCrab.PhonologicalRules
 			AddEnvironment("rightEnv", subrule.RightEnvironment);
 		}
 
-		public override ApplicationMode ApplicationMode
-		{
-			get { return ApplicationMode.Simultaneous; }
-		}
-
-		public override AnalysisReapplyType GetAnalysisReapplyType(ApplicationMode synthesisAppMode)
-		{
-			return AnalysisReapplyType.Deletion;
-		}
-
 		public override ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)
 		{
 			ShapeNode startNode;

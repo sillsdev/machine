@@ -50,11 +50,6 @@ namespace SIL.HermitCrab.PhonologicalRules
 			AddEnvironment("rightEnv", _subrule.RightEnvironment);
 		}
 
-		public override ApplicationMode ApplicationMode
-		{
-			get { return ApplicationMode.Iterative; }
-		}
-
 		private bool IsUnapplicationNonvacuous(Match<Word, ShapeNode> match, IEnumerable<FeatureStruct> rhsAntiFSs)
 		{
 			int i = 0;
@@ -67,36 +62,6 @@ namespace SIL.HermitCrab.PhonologicalRules
 			}
 
 			return false;
-		}
-
-		private static bool IsUnifiable(Constraint<Word, ShapeNode> constraint, Pattern<Word, ShapeNode> env)
-		{
-			foreach (Constraint<Word, ShapeNode> curConstraint in env.GetNodesDepthFirst().OfType<Constraint<Word, ShapeNode>>())
-			{
-				if (curConstraint.Type() == HCFeatureSystem.Segment
-					&& !curConstraint.FeatureStruct.IsUnifiable(constraint.FeatureStruct))
-				{
-					return false;
-				}
-			}
-
-			return true;
-		}
-
-		public override AnalysisReapplyType GetAnalysisReapplyType(ApplicationMode synthesisAppMode)
-		{
-			if (synthesisAppMode == ApplicationMode.Simultaneous)
-			{
-				foreach (Constraint<Word, ShapeNode> constraint in _subrule.Rhs.Children)
-				{
-					if (constraint.Type() == HCFeatureSystem.Segment)
-					{
-						if (!IsUnifiable(constraint, _subrule.LeftEnvironment) || !IsUnifiable(constraint, _subrule.RightEnvironment))
-							return AnalysisReapplyType.SelfOpaquing;
-					}
-				}
-			}
-			return AnalysisReapplyType.Normal;
 		}
 
 		public override ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)

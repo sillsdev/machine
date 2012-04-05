@@ -58,7 +58,7 @@
     <Compile Include="CompoundingRuleTest.cs" />
     <Compile Include="HermitCrabTestBase.cs" />
     <Compile Include="MetathesisRuleTest.cs" />
-    <Compile Include="StandardPhonologicalRuleTest.cs" />
+    <Compile Include="RewriteRuleTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

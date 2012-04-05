@@ -81,5 +81,10 @@ namespace SIL.HermitCrab.MorphologicalRules
     	{
 			return new SynthesisAffixProcessRule(spanFactory, morpher, this);
     	}
+
+    	public void Traverse(Action<IHCRule> action)
+    	{
+    		action(this);
+    	}
     }
 }

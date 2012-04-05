@@ -13,6 +13,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 			: base(subrule.HeadLhs.Concat(subrule.NonHeadLhs), subrule.Rhs)
 		{
 			_subrule = subrule;
+			Pattern.Acceptable = match => _subrule.HeadLhs.Any(part => match.GroupCaptures.Captured(part.Name));
 		}
 
 		public override ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)

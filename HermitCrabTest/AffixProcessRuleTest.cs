@@ -66,10 +66,10 @@ namespace HermitCrabTest
 			sSuffix.Gloss = "NMLZ";
 			sSuffix.RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
 				.Symbol("V")
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("tense").EqualTo("pres")).Value;
 			sSuffix.OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("tense").EqualTo("past")).Value;
 			sSuffix.Allomorphs.Clear();
 			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo1")
@@ -79,7 +79,7 @@ namespace HermitCrabTest
 									});
 
 			morpher = new Morpher(SpanFactory, Language);
-			Assert.IsFalse(morpher.ParseWord("sid").Any());
+			Assert.That(morpher.ParseWord("sid"), Is.Empty);
 		}
 
 		[Test]
@@ -91,10 +91,10 @@ namespace HermitCrabTest
 							{
 								Gloss = "3SG",
 								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-									.Feature("head").EqualToFeatureStruct(head => head
+									.Feature("head").EqualTo(head => head
 										.Feature("pers").EqualTo("2")).Value,
 								OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-									.Feature("head").EqualToFeatureStruct(head => head
+									.Feature("head").EqualTo(head => head
 										.Feature("pers").EqualTo("2")).Value
 							};
 			Morphophonemic.MorphologicalRules.Add(rule1);
@@ -110,12 +110,12 @@ namespace HermitCrabTest
 			AssertMorphsEqual(output, "Perc0 rule1", "Perc3 rule1");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
 				.Symbol("V")
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("num").EqualTo("pl")
 					.Feature("pers").EqualTo("2")).Value);
 
 			rule1.RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("2", "3")).Value;
 
 			morpher = new Morpher(SpanFactory, Language);
@@ -123,15 +123,15 @@ namespace HermitCrabTest
 			AssertMorphsEqual(output, "Perc0 rule1", "Perc2 rule1", "Perc3 rule1", "Perc4 rule1");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
 				.Symbol("V")
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("num").EqualTo("pl")
 					.Feature("pers").EqualTo("2")).Value);
 
 			rule1.RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("2")).Value;
 			rule1.OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("3")).Value;
 
 			morpher = new Morpher(SpanFactory, Language);
@@ -139,12 +139,12 @@ namespace HermitCrabTest
 			AssertMorphsEqual(output, "Perc0 rule1", "Perc3 rule1");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
 				.Symbol("V")
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("num").EqualTo("pl")
 					.Feature("pers").EqualTo("3")).Value);
 
 			rule1.RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("2", "3")).Value;
 
 			morpher = new Morpher(SpanFactory, Language);
@@ -152,12 +152,12 @@ namespace HermitCrabTest
 			AssertMorphsEqual(output, "Perc0 rule1", "Perc2 rule1", "Perc3 rule1", "Perc4 rule1");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
 				.Symbol("V")
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("num").EqualTo("pl")
 					.Feature("pers").EqualTo("3")).Value);
 
 			rule1.RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("4")).Value;
 
 			morpher = new Morpher(SpanFactory, Language);
@@ -165,12 +165,12 @@ namespace HermitCrabTest
 			AssertMorphsEqual(output, "Perc0 rule1");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
 				.Symbol("V")
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("num").EqualTo("pl")
 					.Feature("pers").EqualTo("3")).Value);
 
 			rule1.RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("2")).Value;
 			rule1.OutSyntacticFeatureStruct = FeatureStruct.New().Value;
 
@@ -179,12 +179,12 @@ namespace HermitCrabTest
 			AssertMorphsEqual(output, "Perc0 rule1", "Perc3 rule1");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
 				.Symbol("V")
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("num").EqualTo("pl")
 					.Feature("pers").EqualTo("2")).Value);
 
 			rule1.RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("2", "3")).Value;
 
 			morpher = new Morpher(SpanFactory, Language);
@@ -192,12 +192,12 @@ namespace HermitCrabTest
 			AssertMorphsEqual(output, "Perc0 rule1", "Perc2 rule1", "Perc3 rule1", "Perc4 rule1");
 			AssertSyntacticFeatureStructsEqual(output.Where(w => w.RootAllomorph.Morpheme.ID.IsOneOf("Perc0", "Perc3")), FeatureStruct.New(Language.SyntacticFeatureSystem)
 				.Symbol("V")
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("num").EqualTo("pl")
 					.Feature("pers").EqualTo("2", "3")).Value);
 			AssertSyntacticFeatureStructsEqual(output.Where(w => w.RootAllomorph.Morpheme.ID.IsOneOf("Perc2", "Perc4")), FeatureStruct.New(Language.SyntacticFeatureSystem)
 				.Symbol("V")
-				.Feature("head").EqualToFeatureStruct(head => head
+				.Feature("head").EqualTo(head => head
 					.Feature("num").EqualTo("pl")
 					.Feature("pers").EqualTo("3")).Value);
 		}
@@ -242,7 +242,7 @@ namespace HermitCrabTest
 			              		Gloss = "3SG",
 			              		RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
 								OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-									.Feature("head").EqualToFeatureStruct(head => head
+									.Feature("head").EqualTo(head => head
 										.Feature("pers").EqualTo("3")).Value
 			              	};
 			Morphophonemic.MorphologicalRules.Add(sSuffix);
@@ -267,7 +267,7 @@ namespace HermitCrabTest
 								Gloss = "PAST",
 								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
 								OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-									.Feature("head").EqualToFeatureStruct(head => head
+									.Feature("head").EqualTo(head => head
 										.Feature("tense").EqualTo("past")).Value
 							};
 			Morphophonemic.MorphologicalRules.Add(edSuffix);
@@ -305,12 +305,12 @@ namespace HermitCrabTest
 			AssertMorphsEqual(morpher.ParseWord("sasɯz"), "33 s_suffix");
 			AssertMorphsEqual(morpher.ParseWord("sast"), "33 ed_suffix");
 			AssertMorphsEqual(morpher.ParseWord("sazd"), "34 ed_suffix");
-			Assert.IsFalse(morpher.ParseWord("sagɯs").Any());
-			Assert.IsFalse(morpher.ParseWord("sags").Any());
-			Assert.IsFalse(morpher.ParseWord("sasz").Any());
-			Assert.IsFalse(morpher.ParseWord("sass").Any());
-			Assert.IsFalse(morpher.ParseWord("satɯs").Any());
-			Assert.IsFalse(morpher.ParseWord("satz").Any());
+			Assert.That(morpher.ParseWord("sagɯs"), Is.Empty);
+			Assert.That(morpher.ParseWord("sags"), Is.Empty);
+			Assert.That(morpher.ParseWord("sasz"), Is.Empty);
+			Assert.That(morpher.ParseWord("sass"), Is.Empty);
+			Assert.That(morpher.ParseWord("satɯs"), Is.Empty);
+			Assert.That(morpher.ParseWord("satz"), Is.Empty);
 
 			edSuffix.Allomorphs.RemoveAt(1);
 			edSuffix.Allomorphs.RemoveAt(1);
@@ -371,7 +371,7 @@ namespace HermitCrabTest
 								Gloss = "3SG",
 								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
 								OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-									.Feature("head").EqualToFeatureStruct(head => head
+									.Feature("head").EqualTo(head => head
 										.Feature("pers").EqualTo("3")).Value
 							};
 			Morphophonemic.MorphologicalRules.Add(sPrefix);
@@ -396,7 +396,7 @@ namespace HermitCrabTest
 								Gloss = "PAST",
 								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
 								OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-									.Feature("head").EqualToFeatureStruct(head => head
+									.Feature("head").EqualTo(head => head
 										.Feature("tense").EqualTo("past")).Value
 							};
 			Morphophonemic.MorphologicalRules.Add(edPrefix);
@@ -430,12 +430,12 @@ namespace HermitCrabTest
 			AssertMorphsEqual(morpher.ParseWord("ditag"), "ed_prefix 47");
 			AssertMorphsEqual(morpher.ParseWord("tpag"), "ed_prefix 48");
 			AssertMorphsEqual(morpher.ParseWord("dabba"), "ed_prefix 39", "ed_prefix 40");
-			Assert.IsFalse(morpher.ParseWord("zitag").Any());
-			Assert.IsFalse(morpher.ParseWord("sabba").Any());
-			Assert.IsFalse(morpher.ParseWord("ztag").Any());
-			Assert.IsFalse(morpher.ParseWord("disag").Any());
-			Assert.IsFalse(morpher.ParseWord("tabba").Any());
-			Assert.IsFalse(morpher.ParseWord("dtag").Any());
+			Assert.That(morpher.ParseWord("zitag"), Is.Empty);
+			Assert.That(morpher.ParseWord("sabba"), Is.Empty);
+			Assert.That(morpher.ParseWord("ztag"), Is.Empty);
+			Assert.That(morpher.ParseWord("disag"), Is.Empty);
+			Assert.That(morpher.ParseWord("tabba"), Is.Empty);
+			Assert.That(morpher.ParseWord("dtag"), Is.Empty);
 
 			edPrefix.Allomorphs.RemoveAt(1);
 			edPrefix.Allomorphs.RemoveAt(1);
@@ -495,7 +495,7 @@ namespace HermitCrabTest
 								Gloss = "PER.ACT",
 								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
 									.Symbol("V")
-									.Feature("head").EqualToFeatureStruct(head => head
+									.Feature("head").EqualTo(head => head
 										.Feature("aspect").EqualTo("perf")
 										.Feature("mood").EqualTo("active")).Value
 							};
@@ -516,7 +516,7 @@ namespace HermitCrabTest
 								Gloss = "PER.PSV",
 								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
 									.Symbol("V")
-									.Feature("head").EqualToFeatureStruct(head => head
+									.Feature("head").EqualTo(head => head
 										.Feature("aspect").EqualTo("perf")
 										.Feature("mood").EqualTo("passive")).Value
 							};
@@ -537,7 +537,7 @@ namespace HermitCrabTest
 									Gloss = "IMPF.ACT",
 									RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
 										.Symbol("V")
-										.Feature("head").EqualToFeatureStruct(head => head
+										.Feature("head").EqualTo(head => head
 											.Feature("aspect").EqualTo("impf")
 											.Feature("mood").EqualTo("active")).Value
 								};
@@ -557,7 +557,7 @@ namespace HermitCrabTest
 									Gloss = "IMPF.PSV",
 									RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
 										.Symbol("V")
-										.Feature("head").EqualToFeatureStruct(head => head
+										.Feature("head").EqualTo(head => head
 											.Feature("aspect").EqualTo("impf")
 											.Feature("mood").EqualTo("passive")).Value
 								};
@@ -610,7 +610,7 @@ namespace HermitCrabTest
 								Gloss = "SIMUL",
 								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
 								OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-									.Feature("head").EqualToFeatureStruct(head => head
+									.Feature("head").EqualTo(head => head
 										.Feature("pers").EqualTo("3")).Value
 							};
 			Allophonic.MorphologicalRules.Add(simulfix);
@@ -692,7 +692,7 @@ namespace HermitCrabTest
 								Gloss = "RED",
 								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
 								OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-									.Feature("head").EqualToFeatureStruct(head => head
+									.Feature("head").EqualTo(head => head
 										.Feature("pers").EqualTo("3")).Value
 							};
 			Morphophonemic.MorphologicalRules.Add(redup);
@@ -726,7 +726,7 @@ namespace HermitCrabTest
 			affrication.Subrules.Add(new RewriteSubrule
 										{
 											Rhs = Pattern<Word, ShapeNode>.New().Annotation(affricate).Value,
-											LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(LeftSideFS).Value
+											LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.LeftSideAnchor).Value
 										});
 
 			morpher = new Morpher(SpanFactory, Language);
@@ -788,7 +788,7 @@ namespace HermitCrabTest
 			gDelete.Subrules.Clear();
 			gDelete.Subrules.Add(new RewriteSubrule
 									{
-										RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(RightSideFS).Value
+										RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value
 									});
 
 			morpher = new Morpher(SpanFactory, Language);
@@ -809,7 +809,7 @@ namespace HermitCrabTest
 								Gloss = "3SG",
 								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
 								OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-									.Feature("head").EqualToFeatureStruct(head => head
+									.Feature("head").EqualTo(head => head
 										.Feature("pers").EqualTo("3")).Value
 							};
 			Morphophonemic.MorphologicalRules.Add(truncate);
