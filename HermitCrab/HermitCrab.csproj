@@ -65,6 +65,7 @@
     <Compile Include="AllomorphCoOccurrenceRule.cs" />
     <Compile Include="AnalysisAffixTemplateRule.cs" />
     <Compile Include="AllomorphEnvironment.cs" />
+    <Compile Include="AnalysisStratumRule.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="HCFeatureSystem.cs" />
     <Compile Include="IHCRule.cs" />
@@ -74,7 +75,6 @@
     <Compile Include="MorphCoOccurrenceRule.cs" />
     <Compile Include="MorphemeCoOccurrenceRule.cs" />
     <Compile Include="Morpher.cs" />
-    <Compile Include="LanguageSynthesisRule.cs" />
     <Compile Include="MorphologicalRules\AffixProcessAllomorph.cs" />
     <Compile Include="MorphologicalRules\AffixProcessRule.cs" />
     <Compile Include="MorphologicalRules\AnalysisAffixProcessAllomorphRuleSpec.cs" />
@@ -126,9 +126,9 @@
     <Compile Include="MprFeature.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Stratum.cs" />
-    <Compile Include="LanguageAnalysisRule.cs" />
     <Compile Include="SymbolTable.cs" />
     <Compile Include="SynthesisAffixTemplatesRule.cs" />
+    <Compile Include="SynthesisStratumRule.cs" />
     <Compile Include="Trace.cs" />
     <Compile Include="TraceRuleCollection.cs" />
     <Compile Include="Word.cs" />

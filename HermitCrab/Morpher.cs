@@ -38,6 +38,7 @@ namespace SIL.HermitCrab
 			_analysisRule = lang.CompileAnalysisRule(spanFactory, this);
 			_synthesisRule = lang.CompileSynthesisRule(spanFactory, this);
 			_traceRules = new TraceRuleCollection(_rules);
+			MaxStemCount = 2;
 		}
 
 		public bool IsTracing
@@ -72,6 +73,8 @@ namespace SIL.HermitCrab
 
 		public int DeletionReapplications { get; set; }
 
+		public int MaxStemCount { get; set; }
+
 		/// <summary>
 		/// Morphs the specified word.
 		/// </summary>
@@ -91,11 +94,12 @@ namespace SIL.HermitCrab
 				throw new ArgumentException(string.Format("The word '{0}' cannot be converted to a shape.", word), "word");
 
 			var input = new Word(_lang.SurfaceStratum, shape);
-			trace = new Trace(TraceType.WordAnalysis, _lang) { Input = input.DeepClone() };
+			input.Freeze();
+			trace = new Trace(TraceType.WordAnalysis, _lang) {Input = input};
 			input.CurrentTrace = trace;
 
 			// Unapply rules
-			var validWords = new HashSet<Word>();
+			var validWords = new HashSet<Word>(FreezableEqualityComparer<Word>.Instance);
 			foreach (Word analysisWord in _analysisRule.Apply(input))
 			{
 				foreach (Word synthesisWord in LexicalLookup(analysisWord))
@@ -149,6 +153,7 @@ namespace SIL.HermitCrab
 						lookupTrace.Children.Add(wsTrace);
 						newWord.CurrentTrace = wsTrace;
 					}
+					newWord.Freeze();
 					yield return newWord;
 				}
 			}

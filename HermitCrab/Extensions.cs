@@ -58,7 +58,7 @@ namespace SIL.HermitCrab
 			foreach (SymbolicFeatureValue sfv in varBindings.Values.OfType<SymbolicFeatureValue>())
 			{
 				if (sfv.Feature.DefaultValue.ValueEquals(sfv))
-					throw new MorphException(MorphErrorCode.UninstantiatedFeature) {Data = {{"feature", sfv.Feature}}};
+					throw new MorphException(MorphErrorCode.UninstantiatedFeature) {Data = {{"feature", sfv.Feature.ID}}};
 			}
 		}
 

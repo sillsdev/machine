@@ -240,6 +240,11 @@ namespace SIL.HermitCrab
 			}
 		}
 
+		public int NonHeadCount
+		{
+			get { return _nonHeads.Count; }
+		}
+
 		public void NonHeadUnapplied(Word nonHead)
 		{
 			CheckFrozen();
@@ -264,6 +269,7 @@ namespace SIL.HermitCrab
 				if (entry != RootAllomorph.Morpheme && entry.Stratum == Stratum && entry.SyntacticFeatureStruct.ValueEquals(SyntacticFeatureStruct))
 				{
 					word = new Word(entry.PrimaryAllomorph, RealizationalFeatureStruct.DeepClone()) { CurrentTrace = CurrentTrace };
+					word.Freeze();
 					return true;
 				}
 			}

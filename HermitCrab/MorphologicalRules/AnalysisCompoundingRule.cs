@@ -32,7 +32,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 		public bool IsApplicable(Word input)
 		{
-			return input.GetUnapplicationCount(_rule) < _rule.MaxApplicationCount
+			return input.NonHeadCount + 1 < _morpher.MaxStemCount && input.GetUnapplicationCount(_rule) < _rule.MaxApplicationCount
 				&& _rule.OutSyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct);
 		}
 
@@ -79,20 +79,19 @@ namespace SIL.HermitCrab.MorphologicalRules
 					outWord.SyntacticFeatureStruct.Union(_rule.HeadRequiredSyntacticFeatureStruct);
 					outWord.MorphologicalRuleUnapplied(_rule);
 
+					outWord.Freeze();
 					if (_morpher.TraceRules.Contains(_rule))
 					{
-						var trace = new Trace(TraceType.MorphologicalRuleAnalysis, _rule) { Input = input.DeepClone(), Output = outWord.DeepClone() };
+						var trace = new Trace(TraceType.MorphologicalRuleAnalysis, _rule) {Input = input, Output = outWord};
 						outWord.CurrentTrace.Children.Add(trace);
 						outWord.CurrentTrace = trace;
 					}
-
-					outWord.Freeze();
 					output.Add(outWord);
 				}
 			}
 
 			if (output.Count == 0 && _morpher.TraceRules.Contains(_rule))
-				input.CurrentTrace.Children.Add(new Trace(TraceType.MorphologicalRuleAnalysis, _rule) { Input = input.DeepClone() });
+				input.CurrentTrace.Children.Add(new Trace(TraceType.MorphologicalRuleAnalysis, _rule) {Input = input});
 
 			return output;
 		}

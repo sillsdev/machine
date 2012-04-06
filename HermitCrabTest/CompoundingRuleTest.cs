@@ -77,7 +77,7 @@ namespace HermitCrabTest
 									Rhs = { new CopyFromInput("head"), new InsertShape(Table3.ToShape("+")), new CopyFromInput("nonHead") }
 								});
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, Language) {MaxStemCount = 3};
 			output = morpher.ParseWord("pʰutdatpip").ToList();
 			AssertMorphsEqual(output, "5 8 41", "5 9 41");
 			AssertRootAllomorphsEquals(output, "5");
@@ -93,7 +93,7 @@ namespace HermitCrabTest
 									Rhs = { new CopyFromInput("nonHead"), new InsertShape(Table3.ToShape("+")), new CopyFromInput("head") },
 								});
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, Language) {MaxStemCount = 3};
 			output = morpher.ParseWord("pʰutdatpip").ToList();
 			AssertMorphsEqual(output, "5 8 41", "5 9 41");
 			AssertRootAllomorphsEquals(output, "8", "9");

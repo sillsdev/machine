@@ -6,7 +6,7 @@ using SIL.Machine.Rules;
 
 namespace SIL.HermitCrab
 {
-	public class SynthesisAffixTemplateRule : RuleCascade<Word, ShapeNode>
+	internal class SynthesisAffixTemplateRule : RuleCascade<Word, ShapeNode>
 	{
 		private readonly Morpher _morpher;
 		private readonly AffixTemplate _template;
@@ -33,12 +33,12 @@ namespace SIL.HermitCrab
 		public override IEnumerable<Word> Apply(Word input)
 		{
 			if (_morpher.TraceRules.Contains(_template))
-				input.CurrentTrace.Children.Add(new Trace(TraceType.TemplateSynthesisInput, _template) { Input = input.DeepClone() });
+				input.CurrentTrace.Children.Add(new Trace(TraceType.TemplateSynthesisInput, _template) {Input = input});
 			List<Word> results = base.Apply(input).ToList();
 			if (_morpher.TraceRules.Contains(_template))
 			{
 				foreach (Word result in results)
-					result.CurrentTrace.Children.Add(new Trace(TraceType.TemplateSynthesisOutput, _template) { Output = result.DeepClone() });
+					result.CurrentTrace.Children.Add(new Trace(TraceType.TemplateSynthesisOutput, _template) {Output = result});
 			}
 			return results;
 		}

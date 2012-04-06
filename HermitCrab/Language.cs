@@ -1,5 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Linq;
+
 using SIL.Collections;
 using SIL.Machine;
 using SIL.Machine.FeatureModel;
@@ -13,7 +17,7 @@ namespace SIL.HermitCrab
     /// </summary>
     public class Language : IDBearerBase, IHCRule
     {
-        private readonly List<Stratum> _strata;
+        private readonly ObservableCollection<Stratum> _strata;
 
     	/// <summary>
     	/// Initializes a new instance of the <see cref="Language"/> class.
@@ -21,13 +25,25 @@ namespace SIL.HermitCrab
     	/// <param name="id">The id.</param>
     	public Language(string id)
             : base(id)
-        {
-            _strata = new List<Stratum>();
+    	{
+    		_strata = new ObservableCollection<Stratum>();
+			_strata.CollectionChanged += StrataChanged;
 			PhoneticFeatureSystem = new FeatureSystem();
 			SyntacticFeatureSystem = new FeatureSystem();
         }
 
-        /// <summary>
+    	private void StrataChanged(object sender, NotifyCollectionChangedEventArgs e)
+    	{
+			if (e.OldItems != null)
+			{
+				foreach (Stratum stratum in e.OldItems)
+					stratum.Depth = -1;
+			}
+			for (int i = 0; i < _strata.Count; i++)
+				_strata[i].Depth = i;
+    	}
+
+    	/// <summary>
         /// Gets the surface stratum.
         /// </summary>
         /// <value>The surface stratum.</value>
@@ -64,12 +80,13 @@ namespace SIL.HermitCrab
 
 		public IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{
-			return new LanguageAnalysisRule(spanFactory, morpher, this);
+			return new RuleCascade<Word, ShapeNode>(_strata.Select(stratum => stratum.CompileAnalysisRule(spanFactory, morpher)).Reverse(),
+				RuleCascadeOrder.Permutation, FreezableEqualityComparer<Word>.Instance);
 		}
 
 		public IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{
-			return new LanguageSynthesisRule(spanFactory, morpher, this);
+			return new RuleCascade<Word, ShapeNode>(_strata.Select(stratum => stratum.CompileSynthesisRule(spanFactory, morpher)), FreezableEqualityComparer<Word>.Instance);
 		}
 
     	public void Traverse(Action<IHCRule> action)

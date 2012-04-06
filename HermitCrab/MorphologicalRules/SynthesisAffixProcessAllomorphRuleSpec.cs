@@ -158,7 +158,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 			if (newMorphNodes.Count > 0)
 			{
-				FeatureStruct fs = FeatureStruct.New()
+				FeatureStruct fs = FeatureStruct.NewMutable()
 					.Symbol(HCFeatureSystem.Morph)
 					.Feature(HCFeatureSystem.Allomorph).EqualTo(_allomorph.ID).Value;
 				MarkMorph(rule.SpanFactory, output, newMorphNodes, fs);

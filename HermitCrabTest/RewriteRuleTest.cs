@@ -480,7 +480,7 @@ namespace HermitCrabTest
 			AssertMorphsEqual(morpher.ParseWord("ba"), "pos1");
 
 			RewriteSubrule subrule = rule1.Subrules[0];
-			subrule.RequiredSyntacticFeatureStruct.Clear();
+			subrule.RequiredSyntacticFeatureStruct = FeatureStruct.New().Value;
 			subrule.RequiredMprFeatures.Add(Latinate);
 
 			morpher = new Morpher(SpanFactory, Language);
@@ -881,9 +881,7 @@ namespace HermitCrabTest
 			var morpher = new Morpher(SpanFactory, Language);
 			AssertMorphsEqual(morpher.ParseWord("bubu"), "24", "25", "26", "19");
 
-			rule4.DelReapplications = 1;
-
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, Language) {DeletionReapplications = 1};
 			AssertMorphsEqual(morpher.ParseWord("bubu"), "24", "25", "26", "27", "19");
 
 			rule4.Subrules.Clear();
@@ -895,7 +893,6 @@ namespace HermitCrabTest
 			morpher = new Morpher(SpanFactory, Language);
 			AssertMorphsEqual(morpher.ParseWord("bubu"), "25", "19");
 
-			rule4.DelReapplications = 0;
 			rule4.Lhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Annotation(highFrontUnrndVowel).Value;
 
 			morpher = new Morpher(SpanFactory, Language);
@@ -951,13 +948,13 @@ namespace HermitCrabTest
 			Allophonic.PhonologicalRules.Add(rule5);
 			Allophonic.PhonologicalRules.Add(rule1);
 
-			rule4.Subrules[0].LeftEnvironment.Children.Clear();
+			rule4.Subrules[0].LeftEnvironment = Pattern<Word, ShapeNode>.New().Value;
 
 			rule5.Lhs = Pattern<Word, ShapeNode>.New()
 				.Annotation(Table3.GetSymbolFeatureStruct("u"))
 				.Annotation(Table3.GetSymbolFeatureStruct("b"))
 				.Annotation(Table3.GetSymbolFeatureStruct("i")).Value;
-			rule5.Subrules[0].RightEnvironment.Children.Clear();
+			rule5.Subrules[0].RightEnvironment = Pattern<Word, ShapeNode>.New().Value;
 
 			morpher = new Morpher(SpanFactory, Language);
 			Assert.That(morpher.ParseWord("b"), Is.Empty);

@@ -32,6 +32,7 @@ namespace SIL.HermitCrab
     	public Stratum(string id, SymbolTable symDefTable)
             : base(id)
     	{
+    		Depth = -1;
     		_symDefTable = symDefTable;
 
 			_mrules = new ObservableCollection<IMorphologicalRule>();
@@ -119,6 +120,8 @@ namespace SIL.HermitCrab
     		get { return _entries; }
     	}
 
+    	public int Depth { get; internal set; }
+
     	/// <summary>
     	/// Gets or sets the phonological rule order.
     	/// </summary>
@@ -133,20 +136,12 @@ namespace SIL.HermitCrab
 
     	public IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
     	{
-			var pruleAnalysisRule = new RuleCascade<Word, ShapeNode>(_prules.Select(prule => prule.CompileAnalysisRule(spanFactory, morpher)).Reverse(), PhonologicalRuleOrder);
-			var templateAnalysisRule = new RuleCascade<Word, ShapeNode>(_templates.Select(template => template.CompileAnalysisRule(spanFactory, morpher)), FreezableEqualityComparer<Word>.Instance);
-			var mruleAnalysisRule = new RuleCascade<Word, ShapeNode>(_mrules.Select(mrule => mrule.CompileAnalysisRule(spanFactory, morpher)).Concat(templateAnalysisRule).Reverse(),
-				MorphologicalRuleOrder, true, FreezableEqualityComparer<Word>.Instance);
-			return new RuleCascade<Word, ShapeNode>(new IRule<Word, ShapeNode>[] { pruleAnalysisRule, mruleAnalysisRule });
+			return new AnalysisStratumRule(spanFactory, morpher, this);
     	}
 
     	public IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
     	{
-			var templateSynthesisRule = new SynthesisAffixTemplatesRule(spanFactory, morpher, this);
-			var mruleSynthesisRule = new RuleCascade<Word, ShapeNode>(_mrules.Select(mrule => mrule.CompileSynthesisRule(spanFactory, morpher)).Concat(templateSynthesisRule),
-				MorphologicalRuleOrder, true, FreezableEqualityComparer<Word>.Instance);
-			var pruleSynthesisRule = new RuleCascade<Word, ShapeNode>(_prules.Select(prule => prule.CompileSynthesisRule(spanFactory, morpher)), PhonologicalRuleOrder);
-			return new RuleCascade<Word, ShapeNode>(new IRule<Word, ShapeNode>[] { mruleSynthesisRule, pruleSynthesisRule });
+			return new SynthesisStratumRule(spanFactory, morpher, this);
     	}
 
     	public void Traverse(Action<IHCRule> action)

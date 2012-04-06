@@ -6,7 +6,7 @@ using SIL.Machine.Rules;
 
 namespace SIL.HermitCrab
 {
-	public class SynthesisAffixTemplatesRule : IRule<Word, ShapeNode>
+	internal class SynthesisAffixTemplatesRule : IRule<Word, ShapeNode>
 	{
 		private readonly Morpher _morpher;
 		private readonly Stratum _stratum;
@@ -61,13 +61,14 @@ namespace SIL.HermitCrab
 					remainder.Subtract(best.SyntacticFeatureStruct);
 					if (!remainder.IsEmpty && input.RealizationalFeatureStruct.IsUnifiable(remainder))
 					{
-						best = new Word(relative.PrimaryAllomorph, input.RealizationalFeatureStruct.DeepClone()) { CurrentTrace = input.CurrentTrace };
+						best = new Word(relative.PrimaryAllomorph, input.RealizationalFeatureStruct.DeepClone()) {CurrentTrace = input.CurrentTrace};
+						best.Freeze();
 					}
 				}
 			}
 
 			if (_morpher.TraceBlocking && best != input)
-				best.CurrentTrace.Children.Add(new Trace(TraceType.Blocking, _stratum) { Output = best.DeepClone() });
+				best.CurrentTrace.Children.Add(new Trace(TraceType.Blocking, _stratum) {Output = best});
 			return best;
 		}
 	}
