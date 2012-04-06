@@ -43,10 +43,8 @@ namespace SIL.HermitCrab.MorphologicalRules
 			{
 				foreach (Word outWord in rule.Apply(input).RemoveDuplicates())
 				{
-					if (!_rule.RequiredSyntacticFeatureStruct.IsEmpty)
-						outWord.SyntacticFeatureStruct.PriorityUnion(_rule.RequiredSyntacticFeatureStruct);
-					else
-						outWord.SyntacticFeatureStruct.Union(_rule.OutSyntacticFeatureStruct);
+					outWord.SyntacticFeatureStruct.Union(_rule.OutSyntacticFeatureStruct);
+					outWord.SyntacticFeatureStruct.PriorityUnion(_rule.RequiredSyntacticFeatureStruct);
 					outWord.MorphologicalRuleUnapplied(_rule);
 					outWord.Freeze();
 					if (_morpher.TraceRules.Contains(_rule))
