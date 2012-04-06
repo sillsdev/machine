@@ -24,7 +24,9 @@ namespace SIL.Machine
 			_spanFactory = spanFactory;
 			_annotations = annotations;
 			Begin.Tag = int.MinValue;
+			Begin.Freeze();
 			End.Tag = int.MaxValue;
+			End.Freeze();
 			_annotations.Add(Begin.Annotation, false);
 			_annotations.Add(End.Annotation, false);
 		}
@@ -123,13 +125,18 @@ namespace SIL.Machine
 		private void CopyAnnotations(AnnotationList<ShapeNode> destList, Annotation<ShapeNode> ann, Dictionary<ShapeNode, ShapeNode> mapping)
 		{
 			if (ann.Span.Start.Annotation == ann)
-				return;
-
-			Annotation<ShapeNode> newAnn = destList.Add(mapping[ann.Span.Start], mapping[ann.Span.End], ann.FeatureStruct.DeepClone());
-			if (!ann.IsLeaf)
 			{
-				foreach (Annotation<ShapeNode> child in ann.Children)
-					CopyAnnotations(newAnn.Children, child, mapping);
+				destList.Add(mapping[ann.Span.Start].Annotation, false);
+			}
+			else
+			{
+				var newAnn = new Annotation<ShapeNode>(_spanFactory.Create(mapping[ann.Span.Start], mapping[ann.Span.End]), ann.FeatureStruct.DeepClone());
+				destList.Add(newAnn, false);
+				if (!ann.IsLeaf)
+				{
+					foreach (Annotation<ShapeNode> child in ann.Children)
+						CopyAnnotations(newAnn.Children, child, mapping);
+				}
 			}
 		}
 

@@ -118,6 +118,8 @@ namespace SIL.Collections
 
 		IEnumerator<TNode> IEnumerable<TNode>.GetEnumerator()
 		{
+			if (Count == 0)
+				yield break;
 			for (TNode node = First; node != End; node = node.Next)
 				yield return node;
 		}

@@ -20,6 +20,7 @@ namespace SIL.Machine.Fsa
 		private readonly Direction _dir;
 		private bool _deterministic;
 		private bool _tryAllConditions;
+		private readonly IEqualityComparer<FsaMatch<TOffset>> _fsaMatchComparer; 
 
 		public FiniteStateAutomaton(Direction dir)
 			: this(dir, ann => true)
@@ -35,6 +36,7 @@ namespace SIL.Machine.Fsa
 			_startState = CreateState();
 			_filter = filter;
 			_tryAllConditions = true;
+			_fsaMatchComparer = AnonymousEqualityComparer.Create<FsaMatch<TOffset>>(FsaMatchEquals, FsaMatchGetHashCode);
 		}
 
 		public IEnumerable<string> GroupNames
@@ -275,8 +277,40 @@ namespace SIL.Machine.Fsa
 				return false;
 			}
 
-			matches = matchList;
+			matches = _deterministic ? matchList : matchList.Distinct(_fsaMatchComparer);
 			return true;
+		}
+
+		private bool FsaMatchEquals(FsaMatch<TOffset> x, FsaMatch<TOffset> y)
+		{
+			if (x.ID != y.ID)
+				return false;
+
+			for (int i = 0; i < _registerCount; i++)
+			{
+				for (int j = 0; j < 2; j++)
+				{
+					if (x.Registers[i, j].HasValue != y.Registers[i, j].HasValue)
+						return false;
+
+					if (x.Registers[i, j].HasValue && !EqualityComparer<TOffset>.Default.Equals(x.Registers[i, j].Value, x.Registers[i, j].Value))
+						return false;
+				}
+			}
+
+			return true;
+		}
+
+		private int FsaMatchGetHashCode(FsaMatch<TOffset> m)
+		{
+			int code = 23;
+			code = code * 31 + (m.ID == null ? 0 : m.ID.GetHashCode());
+			for (int i = 0; i < _registerCount; i++)
+			{
+				for (int j = 0; j < 2; j++)
+					code = code * 31 + (m.Registers[i, j].HasValue && m.Registers[i, j].Value != null ? EqualityComparer<TOffset>.Default.GetHashCode(m.Registers[i, j].Value) : 0);
+			}
+			return code;
 		}
 
 		private static int MatchCompare(FsaMatch<TOffset> x, FsaMatch<TOffset> y)

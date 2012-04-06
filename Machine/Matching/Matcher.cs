@@ -15,20 +15,21 @@ namespace SIL.Machine.Matching
 
 		private static bool MatchEquals(Match<TData, TOffset> x, Match<TData, TOffset> y)
 		{
-			return x.Span == y.Span && x.PatternPath.SequenceEqual(y.PatternPath);
+			return EqualityComparer<TOffset>.Default.Equals(x.Span.Start, y.Span.Start) && EqualityComparer<TOffset>.Default.Equals(x.Span.End, y.Span.End)
+				&& x.PatternPath.SequenceEqual(y.PatternPath);
 		}
 
 		private static int MatchGetHashCode(Match<TData, TOffset> m)
 		{
 			int code = 23;
-			code = code * 31 + m.Span.GetHashCode();
+			code = code * 31 + (m.Span.Start == null ? 0 : EqualityComparer<TOffset>.Default.GetHashCode(m.Span.Start));
+			code = code * 31 + (m.Span.End == null ? 0 : EqualityComparer<TOffset>.Default.GetHashCode(m.Span.End));
 			code = code * 31 + m.PatternPath.GetSequenceHashCode();
 			return code;
 		}
 
 		private readonly SpanFactory<TOffset> _spanFactory;
 		private readonly MatcherSettings<TOffset> _settings;
-		private readonly IEqualityComparer<FsaMatch<TOffset>> _fsaMatchComparer;
 		private readonly FiniteStateAutomaton<TData, TOffset> _fsa;
 
 		public Matcher(SpanFactory<TOffset> spanFactory, Pattern<TData, TOffset> pattern)
@@ -41,41 +42,8 @@ namespace SIL.Machine.Matching
 			_spanFactory = spanFactory;
 			_settings = settings;
 			_settings.ReadOnly = true;
-			_fsaMatchComparer = AnonymousEqualityComparer.Create<FsaMatch<TOffset>>(FsaMatchEquals, FsaMatchGetHashCode);
 			_fsa = new FiniteStateAutomaton<TData, TOffset>(_settings.Direction, _settings.Filter);
 			Compile(pattern);
-		}
-
-		private bool FsaMatchEquals(FsaMatch<TOffset> x, FsaMatch<TOffset> y)
-		{
-			if (x.ID != y.ID)
-				return false;
-
-			for (int i = 0; i < x.Registers.GetLength(0); i++)
-			{
-				for (int j = 0; j < 2; j++)
-				{
-					if (x.Registers[i, j].HasValue != y.Registers[i, j].HasValue)
-						return false;
-
-					if (x.Registers[i, j].HasValue && !_spanFactory.EqualityComparer.Equals(x.Registers[i, j].Value, x.Registers[i, j].Value))
-						return false;
-				}
-			}
-
-			return true;
-		}
-
-		private int FsaMatchGetHashCode(FsaMatch<TOffset> m)
-		{
-			int code = 23;
-			code = code * 31 + (m.ID == null ? 0 : m.ID.GetHashCode());
-			for (int i = 0; i < m.Registers.GetLength(0); i++)
-			{
-				for (int j = 0; j < 2; j++)
-					code = code * 31 + (m.Registers[i, j].HasValue ? _spanFactory.EqualityComparer.GetHashCode(m.Registers[i, j].Value) : 0);
-			}
-			return code;
 		}
 
 		public MatcherSettings<TOffset> Settings
@@ -238,14 +206,10 @@ namespace SIL.Machine.Matching
 			IEnumerable<FsaMatch<TOffset>> fsaMatches;
 			if (_fsa.IsMatch(input, startAnn, _settings.AnchoredToStart, _settings.AnchoredToEnd, allMatches, _settings.UseDefaults, out fsaMatches))
 			{
-				if (!_fsa.Deterministic)
-				{
-					fsaMatches = fsaMatches.Distinct(_fsaMatchComparer);
-					if (!_settings.AllSubmatches)
-						return fsaMatches.Select(fm => CreatePatternMatch(input, fm)).GroupBy(m => m, MatchComparer).Select(group => group.First());
-				}
-
-				return fsaMatches.Select(fm => CreatePatternMatch(input, fm));
+				IEnumerable<Match<TData, TOffset>> matches = fsaMatches.Select(fm => CreatePatternMatch(input, fm));
+				if (!_fsa.Deterministic && !_settings.AllSubmatches)
+					return matches.GroupBy(m => m, MatchComparer).Select(group => group.First());
+				return matches;
 			}
 
 			return Enumerable.Empty<Match<TData, TOffset>>();

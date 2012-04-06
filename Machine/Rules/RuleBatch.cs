@@ -7,10 +7,17 @@ namespace SIL.Machine.Rules
 	public class RuleBatch<TData, TOffset> : IRule<TData, TOffset> where TData : IData<TOffset>
 	{
 		private readonly List<IRule<TData, TOffset>> _rules;
+		private readonly bool _permutation;
 
 		public RuleBatch(IEnumerable<IRule<TData, TOffset>> rules)
+			: this(rules, false)
+		{
+		}
+
+		public RuleBatch(IEnumerable<IRule<TData, TOffset>> rules, bool permutation)
 		{
 			_rules = new List<IRule<TData, TOffset>>(rules);
+			_permutation = permutation;
 		}
 
 		public IReadOnlyList<IRule<TData, TOffset>> Rules
@@ -25,17 +32,18 @@ namespace SIL.Machine.Rules
 
 		public virtual IEnumerable<TData> Apply(TData input)
 		{
+			var output = new List<TData>();
 			foreach (IRule<TData, TOffset> rule in _rules)
 			{
 				if (rule.IsApplicable(input))
 				{
-					TData[] output = rule.Apply(input).ToArray();
-					if (output.Length > 0)
+					output.AddRange(rule.Apply(input));
+					if (!_permutation && output.Count > 0)
 						return output;
 				}
 			}
 
-			return Enumerable.Empty<TData>();
+			return output;
 		}
 	}
 }
