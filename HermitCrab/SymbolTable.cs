@@ -36,7 +36,7 @@ namespace SIL.HermitCrab
 		{
 			if (!fs.IsFrozen)
 				throw new ArgumentException("The feature structure must be immutable.", "fs");
-			_symbols[strRep.ToLowerInvariant()] = fs;
+			_symbols[strRep] = fs;
 		}
 
 		public bool Remove(string strRep)
@@ -67,13 +67,12 @@ namespace SIL.HermitCrab
 		/// <returns></returns>
 		public bool TryGetSymbolFeatureStruct(string strRep, out FeatureStruct fs)
 		{
-			// what do we do about culture?
-			return _symbols.TryGetValue(strRep.ToLowerInvariant(), out fs);
+			return _symbols.TryGetValue(strRep, out fs);
 		}
 
 		public FeatureStruct GetSymbolFeatureStruct(string strRep)
 		{
-			return _symbols[strRep.ToLowerInvariant()];
+			return _symbols[strRep];
 		}
 
 		/// <summary>

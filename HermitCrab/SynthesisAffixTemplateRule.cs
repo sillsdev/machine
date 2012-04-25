@@ -6,50 +6,52 @@ using SIL.Machine.Rules;
 
 namespace SIL.HermitCrab
 {
-	internal class SynthesisAffixTemplateRule : RuleCascade<Word, ShapeNode>
+	internal class SynthesisAffixTemplateRule : IRule<Word, ShapeNode>
 	{
 		private readonly Morpher _morpher;
 		private readonly AffixTemplate _template;
+		private readonly List<IRule<Word, ShapeNode>> _rules; 
 
 		public SynthesisAffixTemplateRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, AffixTemplate template)
-			: base(CreateRules(spanFactory, morpher, template), RuleCascadeOrder.Permutation, FreezableEqualityComparer<Word>.Instance)
 		{
 			_morpher = morpher;
 			_template = template;
+			_rules = new List<IRule<Word, ShapeNode>>(template.Slots
+				.Select(slot => new RuleBatch<Word, ShapeNode>(slot.Rules.Select(mr => mr.CompileSynthesisRule(spanFactory, morpher)), false, FreezableEqualityComparer<Word>.Instance)));
 		}
 
-		private static IEnumerable<IRule<Word, ShapeNode>> CreateRules(SpanFactory<ShapeNode> spanFactory, Morpher morpher, AffixTemplate template)
-		{
-			foreach (AffixTemplateSlot slot in template.Slots)
-				yield return new RuleCascade<Word, ShapeNode>(slot.Rules.Select(mr => mr.CompileSynthesisRule(spanFactory, morpher)),
-					RuleCascadeOrder.Permutation, FreezableEqualityComparer<Word>.Instance);
-		}
-
-		public override bool IsApplicable(Word input)
+		public bool IsApplicable(Word input)
 		{
 			return input.SyntacticFeatureStruct.IsUnifiable(_template.RequiredSyntacticFeatureStruct);
 		}
 
-		public override IEnumerable<Word> Apply(Word input)
+		public IEnumerable<Word> Apply(Word input)
 		{
 			if (_morpher.TraceRules.Contains(_template))
 				input.CurrentTrace.Children.Add(new Trace(TraceType.TemplateSynthesisInput, _template) {Input = input});
-			List<Word> results = base.Apply(input).ToList();
-			if (_morpher.TraceRules.Contains(_template))
-			{
-				foreach (Word result in results)
-					result.CurrentTrace.Children.Add(new Trace(TraceType.TemplateSynthesisOutput, _template) {Output = result});
-			}
-			return results;
+			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Instance);
+			ApplySlots(input, 0, output);
+			return output;
 		}
 
-		protected override bool Continue(IRule<Word, ShapeNode> rule, int index, Word input)
+		private void ApplySlots(Word input, int index, HashSet<Word> output)
 		{
-			IList<AffixTemplateSlot> slots = _template.Slots;
-			bool cont = slots[index].Optional;
-			if (!cont && _morpher.TraceRules.Contains(_template))
-				input.CurrentTrace.Children.Add(new Trace(TraceType.TemplateSynthesisOutput, _template));
-			return cont;
+			for (int i = index; i < _rules.Count; i++)
+			{
+				foreach (Word outWord in _rules[i].Apply(input))
+					ApplySlots(outWord, i + 1, output);
+
+				if (!_template.Slots[i].Optional)
+				{
+					if (_morpher.TraceRules.Contains(_template))
+						input.CurrentTrace.Children.Add(new Trace(TraceType.TemplateSynthesisOutput, _template));
+					return;
+				}
+			}
+
+			if (_morpher.TraceRules.Contains(_template))
+				input.CurrentTrace.Children.Add(new Trace(TraceType.TemplateSynthesisOutput, _template) {Output = input});
+			output.Add(input);
 		}
 	}
 }

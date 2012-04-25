@@ -76,7 +76,10 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 				foreach (Word outWord in srOutput)
 				{
-					outWord.SyntacticFeatureStruct.Union(_rule.HeadRequiredSyntacticFeatureStruct);
+					if (!_rule.HeadRequiredSyntacticFeatureStruct.IsEmpty)
+						outWord.SyntacticFeatureStruct.Add(_rule.HeadRequiredSyntacticFeatureStruct);
+					else if (_rule.OutSyntacticFeatureStruct.IsEmpty)
+						outWord.SyntacticFeatureStruct.Clear();
 					outWord.MorphologicalRuleUnapplied(_rule);
 
 					outWord.Freeze();

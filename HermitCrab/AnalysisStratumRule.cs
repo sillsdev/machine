@@ -17,7 +17,7 @@ namespace SIL.HermitCrab
 			: base(CreateRules(spanFactory, morpher, stratum), stratum.MorphologicalRuleOrder, true, FreezableEqualityComparer<Word>.Instance)
 		{
 			_prulesRule = new RuleCascade<Word, ShapeNode>(stratum.PhonologicalRules.Select(prule => prule.CompileAnalysisRule(spanFactory, morpher)).Reverse(), stratum.PhonologicalRuleOrder);
-			_templatesRule = new RuleCascade<Word, ShapeNode>(stratum.AffixTemplates.Select(template => template.CompileAnalysisRule(spanFactory, morpher)), FreezableEqualityComparer<Word>.Instance);
+			_templatesRule = new RuleBatch<Word, ShapeNode>(stratum.AffixTemplates.Select(template => template.CompileAnalysisRule(spanFactory, morpher)), false, FreezableEqualityComparer<Word>.Instance);
 			_stratum = stratum;
 			_morpher = morpher;
 		}

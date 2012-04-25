@@ -161,11 +161,12 @@ namespace SIL.HermitCrab
 		private readonly Dictionary<string, FeatureStruct> _natClasses;
 		private readonly IDBearerSet<IMorphologicalRule> _mrules;
 		private readonly IDBearerSet<AffixTemplate> _templates;
+		private readonly IDBearerSet<IMorphologicalRule> _templateRules; 
 		private readonly IDBearerSet<Stratum> _strata;
 		private readonly IDBearerSet<LexFamily> _families;
 		private readonly IDBearerSet<LexEntry> _entries;
 		private readonly IDBearerSet<Morpheme> _morphemes;
-		private readonly IDBearerSet<Allomorph> _allomorphs; 
+		private readonly IDBearerSet<Allomorph> _allomorphs;
 
 		private XmlLoader(string configPath, bool quitOnError, XmlResolver resolver)
 		{
@@ -185,6 +186,7 @@ namespace SIL.HermitCrab
 			_natClasses = new Dictionary<string, FeatureStruct>();
 			_mrules = new IDBearerSet<IMorphologicalRule>();
 			_templates = new IDBearerSet<AffixTemplate>();
+			_templateRules = new IDBearerSet<IMorphologicalRule>();
 			_strata = new IDBearerSet<Stratum>();
 			_families = new IDBearerSet<LexFamily>();
 			_entries = new IDBearerSet<LexEntry>();
@@ -313,7 +315,7 @@ namespace SIL.HermitCrab
 				var ruleId = (string) mruleElem.Attribute("id");
 
 				IMorphologicalRule rule;
-				if (_mrules.TryGetValue(ruleId, out rule))
+				if (!_templateRules.Contains(ruleId) && _mrules.TryGetValue(ruleId, out rule))
 				{
 					Stratum stratum = GetStratum((string) mruleElem.Attribute("stratum"));
 					stratum.MorphologicalRules.Add(rule);
@@ -459,10 +461,10 @@ namespace SIL.HermitCrab
 			if (!string.IsNullOrEmpty(pos))
 				fs.AddValue(_posFeature, ParsePartsOfSpeech(pos));
 
-			XElement headFeatElem = entryElem.Element("HeadFeatures");
+			XElement headFeatElem = entryElem.Element("AssignedHeadFeatures");
 			if (headFeatElem != null)
 				fs.AddValue(_headFeature, LoadSyntacticFeatureStruct(headFeatElem));
-			XElement footFeatElem = entryElem.Element("FootFeatures");
+			XElement footFeatElem = entryElem.Element("AssignedFootFeatures");
 			if (footFeatElem != null)
 				fs.AddValue(_footFeature, LoadSyntacticFeatureStruct(footFeatElem));
 			fs.Freeze();
@@ -1075,7 +1077,7 @@ namespace SIL.HermitCrab
 					if (_mrules.TryGetValue(ruleID, out rule))
 					{
 						slot.Rules.Add(rule);
-						_mrules.Remove(rule);
+						_templateRules.Add(rule);
 						lastRule = rule;
 					}
 					else

@@ -9,7 +9,7 @@ namespace SIL.HermitCrab
 {
     public class HermitCrabProgram
     {
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
             string inputFile = null;
             string outputFile = null;
@@ -31,23 +31,27 @@ namespace SIL.HermitCrab
             catch (OptionException)
             {
                 ShowHelp(p);
-                return;
+                return -1;
             }
 
-            if (showHelp || inputFile == null)
+            if (showHelp || string.IsNullOrEmpty(inputFile))
             {
                 ShowHelp(p);
-                return;
+                return -1;
             }
 
         	HCContext context;
+        	TextWriter output = null;
             try
             {
+				if (!string.IsNullOrEmpty(outputFile))
+					output = new StreamWriter(outputFile);
+
 				Console.Write("Reading configuration file...");
             	Language language = XmlLoader.Load(inputFile, quitOnError);
 				Console.WriteLine("done.");
 
-				context = new HCContext(language);
+				context = new HCContext(language, output ?? Console.Out);
 				Console.Write("Compiling rules...");
 				context.Compile();
 				Console.WriteLine("done.");
@@ -57,7 +61,9 @@ namespace SIL.HermitCrab
             {
 				Console.WriteLine();
                 Console.WriteLine("IO Error: " + ioe.Message);
-            	return;
+            	if (output != null)
+					output.Close();
+            	return -1;
             }
             catch (LoadException le)
             {
@@ -65,7 +71,9 @@ namespace SIL.HermitCrab
                 Console.WriteLine("Load Error: " + le.Message);
                 if (le.InnerException != null)
                     Console.WriteLine(le.InnerException.Message);
-            	return;
+            	if (output != null)
+					output.Close();
+            	return -1;
             }
 
 			ConsoleCommand[] commands = { new ParseCommand(context), new TracingCommand(context) };
@@ -86,6 +94,11 @@ namespace SIL.HermitCrab
 				Console.Write("> ");
 				input = Console.ReadLine();
 			}
+
+			if (output != null)
+				output.Close();
+
+        	return 0;
         }
 
         private static void ShowHelp(OptionSet p)

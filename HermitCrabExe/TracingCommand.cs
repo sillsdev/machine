@@ -54,7 +54,7 @@ namespace SIL.HermitCrab
 					}
 					catch (ArgumentException)
 					{
-						Console.WriteLine("One of the specified IDs is not valid.");
+						_context.Out.WriteLine("One of the specified IDs is not valid.");
 						_context.Morpher.TraceAll = false;
 					}
 					finally
@@ -70,30 +70,30 @@ namespace SIL.HermitCrab
 			else if (_curRuleIDs.Count > 0)
 			{
 				foreach (string id in _curRuleIDs)
-					Console.WriteLine("Tracing is turned {0} for object {1}.", _context.Morpher.TraceRules.Contains(id) ? "on" : "off", id);
+					_context.Out.WriteLine("Tracing is turned {0} for object {1}.", _context.Morpher.TraceRules.Contains(id) ? "on" : "off", id);
 			}
 
 			if (_context.Morpher.IsTracing)
 			{
 				if (_context.Morpher.TraceRules.IsTracingAllRules)
 				{
-					Console.WriteLine("Tracing is turned on for all objects.");
+					_context.Out.WriteLine("Tracing is turned on for all objects.");
 				}
 				else
 				{
-					Console.WriteLine("Tracing is turned on for the following objects:");
+					_context.Out.WriteLine("Tracing is turned on for the following objects:");
 					foreach (IHCRule rule in _context.Morpher.TraceRules)
 					{
-						Console.Write(rule.ID);
+						_context.Out.Write(rule.ID);
 						if (rule.ID != rule.Description)
-							Console.Write(" ({0})", rule.Description);
-						Console.WriteLine();
+							_context.Out.Write(" ({0})", rule.Description);
+						_context.Out.WriteLine();
 					}
 				}
 			}
 			else
 			{
-				Console.WriteLine("Tracing is turned off.");
+				_context.Out.WriteLine("Tracing is turned off.");
 			}
 
 			return 0;

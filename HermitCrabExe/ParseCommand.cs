@@ -24,10 +24,10 @@ namespace SIL.HermitCrab
 			string word = remainingArguments[0];
 			Trace trace;
 			Word[] results = _context.Morpher.ParseWord(word, out trace).ToArray();
-			Console.WriteLine("Parsing {0}.", word);
+			_context.Out.WriteLine("Parsing {0}.", word);
 			if (results.Length == 0)
 			{
-				Console.WriteLine("No valid parses.");
+				_context.Out.WriteLine("No valid parses.");
 			}
 			else
 			{
@@ -42,11 +42,11 @@ namespace SIL.HermitCrab
 
 		private void PrintResult(Word result)
 		{
-			Console.Write("Morphs: ");
+			_context.Out.Write("Morphs: ");
 			bool firstItem = true;
 			foreach (Annotation<ShapeNode> morph in result.Morphs)
 			{
-				var alloID = (string)morph.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
+				var alloID = (string) morph.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
 				Allomorph allomorph = result.Allomorphs[alloID];
 				string gloss = string.IsNullOrEmpty(allomorph.Morpheme.Gloss) ? "?" : allomorph.Morpheme.Gloss;
 				string morphStr = result.Stratum.SymbolTable.ToString(result.Shape.GetNodes(morph.Span), false);
@@ -54,13 +54,13 @@ namespace SIL.HermitCrab
 				if (len > 0)
 				{
 					if (!firstItem)
-						Console.Write(" ");
-					Console.Write(morphStr.PadRight(len));
+						_context.Out.Write(" ");
+					_context.Out.Write(morphStr.PadRight(len));
 					firstItem = false;
 				}
 			}
-			Console.WriteLine();
-			Console.Write("Gloss:  ");
+			_context.Out.WriteLine();
+			_context.Out.Write("Gloss:  ");
 			firstItem = true;
 			foreach (Annotation<ShapeNode> morph in result.Morphs)
 			{
@@ -72,42 +72,42 @@ namespace SIL.HermitCrab
 				if (len > 0)
 				{
 					if (!firstItem)
-						Console.Write(" ");
-					Console.Write(gloss.PadRight(len));
+						_context.Out.Write(" ");
+					_context.Out.Write(gloss.PadRight(len));
 					firstItem = false;
 				}
 			}
-			Console.WriteLine();
-			Console.WriteLine();
+			_context.Out.WriteLine();
+			_context.Out.WriteLine();
 		}
 
 		private void PrintTrace(Trace trace, int indent, HashSet<int> lineIndices)
 		{
-			Console.Write(GetTraceTypeString(trace.Type));
-			Console.Write(" [");
+			_context.Out.Write(GetTraceTypeString(trace.Type));
+			_context.Out.Write(" [");
 			bool first = true;
 			string ruleLabel = GetRuleLabelString(trace.Source);
 			if (!string.IsNullOrEmpty(ruleLabel))
 			{
-				Console.Write("{0}: {1}", ruleLabel, trace.Source.Description);
+				_context.Out.Write("{0}: {1}", ruleLabel, trace.Source.Description);
 				first = false;
 			}
 			bool analysis = IsAnalysis(trace.Type);
 			if (trace.Input != null)
 			{
 				if (!first)
-					Console.Write(", ");
+					_context.Out.Write(", ");
 				SymbolTable table = trace.Input.Stratum.SymbolTable;
-				Console.Write("Input: {0}", analysis ? table.ToRegexString(trace.Input.Shape, true) : table.ToString(trace.Input.Shape, true));
+				_context.Out.Write("Input: {0}", analysis ? table.ToRegexString(trace.Input.Shape, true) : table.ToString(trace.Input.Shape, true));
 			}
 			if (trace.Output != null)
 			{
 				if (!first)
-					Console.Write(", ");
+					_context.Out.Write(", ");
 				SymbolTable table = trace.Output.Stratum.SymbolTable;
-				Console.Write("Output: {0}", analysis ? table.ToRegexString(trace.Output.Shape, true) : table.ToString(trace.Output.Shape, true));
+				_context.Out.Write("Output: {0}", analysis ? table.ToRegexString(trace.Output.Shape, true) : table.ToString(trace.Output.Shape, true));
 			}
-			Console.WriteLine("]");
+			_context.Out.WriteLine("]");
 
 			if (!trace.IsLeaf)
 			{
@@ -115,9 +115,9 @@ namespace SIL.HermitCrab
 				foreach (Trace child in trace.Children)
 				{
 					PrintIndent(indent, lineIndices);
-					Console.WriteLine("|");
+					_context.Out.WriteLine("|");
 					PrintIndent(indent, lineIndices);
-					Console.Write("+-");
+					_context.Out.Write("+-");
 					if (i != trace.Children.Count - 1)
 						lineIndices.Add(indent);
 					PrintTrace(child, indent + 2, lineIndices);
@@ -131,7 +131,7 @@ namespace SIL.HermitCrab
 		private void PrintIndent(int indent, HashSet<int> lineIndices)
 		{
 			for (int i = 0; i < indent; i++)
-				Console.Write(lineIndices.Contains(i) ? "|" : " ");
+				_context.Out.Write(lineIndices.Contains(i) ? "|" : " ");
 		}
 
 		private static bool IsAnalysis(TraceType type)
