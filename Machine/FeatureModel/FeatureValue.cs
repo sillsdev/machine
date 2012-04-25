@@ -9,6 +9,7 @@ namespace SIL.Machine.FeatureModel
 
 		internal abstract bool NegationImpl(IDictionary<FeatureValue, FeatureValue> visited, out FeatureValue output);
 		internal abstract bool UnionImpl(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited);
+		internal abstract bool AddImpl(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited);
 		internal abstract bool SubtractImpl(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited);
 		internal abstract FeatureValue DeepCloneImpl(IDictionary<FeatureValue, FeatureValue> copies);
 		internal abstract bool ValueEqualsImpl(FeatureValue other, ISet<FeatureValue> visitedSelf, ISet<FeatureValue> visitedOther,

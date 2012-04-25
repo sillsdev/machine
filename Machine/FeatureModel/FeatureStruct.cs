@@ -405,6 +405,56 @@ namespace SIL.Machine.FeatureModel
 			return _definite.Count > 0;
 		}
 
+		public void Add(FeatureStruct other)
+		{
+			Add(other, new VariableBindings());
+		}
+
+		public void Add(FeatureStruct other, VariableBindings varBindings)
+		{
+			CheckFrozen();
+			// TODO: support disjunctive feature structures
+			if (_indefinite.Count > 0 || other._indefinite.Count > 0)
+				throw new InvalidOperationException("This operation is not supported on disjunctive feature structures.");
+			AddImpl(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>());
+		}
+
+		internal override bool AddImpl(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited)
+		{
+			FeatureStruct otherFS;
+			if (Dereference(other, out otherFS))
+			{
+				ISet<FeatureStruct> visitedOthers = visited.GetValue(this, () => new HashSet<FeatureStruct>());
+				if (!visitedOthers.Contains(otherFS))
+				{
+					visitedOthers.Add(otherFS);
+
+					foreach (KeyValuePair<Feature, FeatureValue> featVal in otherFS._definite)
+					{
+						FeatureValue otherValue = Dereference(featVal.Value);
+						FeatureValue thisValue;
+						if (_definite.TryGetValue(featVal.Key, out thisValue))
+						{
+							thisValue = Dereference(thisValue);
+						}
+						else
+						{
+							if (otherValue is FeatureStruct)
+								thisValue = new FeatureStruct();
+							else if (otherValue is StringFeatureValue)
+								thisValue = new StringFeatureValue();
+							else
+								thisValue = new SymbolicFeatureValue((SymbolicFeature) featVal.Key);
+							_definite[featVal.Key] = thisValue;
+						}
+						if (!thisValue.AddImpl(otherValue, varBindings, visited))
+							_definite.Remove(featVal.Key);
+					}
+				}
+			}
+			return _definite.Count > 0;
+		}
+
 		public void Subtract(FeatureStruct other)
 		{
 			Subtract(other, new VariableBindings());

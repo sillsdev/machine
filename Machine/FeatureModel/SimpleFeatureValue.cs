@@ -162,6 +162,11 @@ namespace SIL.Machine.FeatureModel
 			return true;
 		}
 
+		internal override bool AddImpl(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited)
+		{
+			return UnionImpl(other, varBindings, visited);
+		}
+
 		internal override bool UnionImpl(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited)
 		{
 			SimpleFeatureValue otherSfv;

@@ -89,22 +89,23 @@ namespace SIL.Machine.Rules
 
 		private bool ApplyRules(TData input, HashSet<int> rulesApplied, int ruleIndex, HashSet<TData> output)
 		{
-			bool applied = false;
 			for (int i = ruleIndex; i < _rules.Count; i++)
 			{
 				if ((rulesApplied == null || !rulesApplied.Contains(i)))
 				{
 					if (_rules[i].IsApplicable(input))
 					{
+						bool applied = false;
 						foreach (TData result in ApplyRule(_rules[i], i, input))
 						{
 							switch (RuleCascadeOrder)
 							{
 								case RuleCascadeOrder.Linear:
+								case RuleCascadeOrder.Permutation:
 									// avoid infinite loop
 									if (!MultipleApplication || !_comparer.Equals(input, result))
 									{
-										if (!ApplyRules(result, null, MultipleApplication ? i : i + 1, output))
+										if (ApplyRules(result, null, MultipleApplication ? i : i + 1, output))
 											output.Add(result);
 									}
 									else
@@ -113,40 +114,33 @@ namespace SIL.Machine.Rules
 									}
 									break;
 
-								case RuleCascadeOrder.Permutation:
-									// avoid infinite loop
-									if (!MultipleApplication || !_comparer.Equals(input, result))
-										ApplyRules(result, null, MultipleApplication ? i : i + 1, output);
-									output.Add(result);
-									break;
-
 								case RuleCascadeOrder.Combination:
 									// avoid infinite loop
 									if (!_comparer.Equals(input, result))
-										ApplyRules(result, rulesApplied == null ? null : new HashSet<int>(rulesApplied){i}, 0, output);
-									output.Add(result);
+									{
+										if (ApplyRules(result, rulesApplied == null ? null : new HashSet<int>(rulesApplied) {i}, 0, output))
+											output.Add(result);
+									}
+									else
+									{
+										output.Add(result);
+									}
 									break;
 							}
 							applied = true;
 						}
 
-						if (!Continue(_rules[i], i, input) || (applied && RuleCascadeOrder == RuleCascadeOrder.Linear))
-							break;
+						if (applied && RuleCascadeOrder == RuleCascadeOrder.Linear)
+							return false;
 					}
 				}
 			}
-
-			return applied;
+			return true;
 		}
 
 		protected virtual IEnumerable<TData> ApplyRule(IRule<TData, TOffset> rule, int index, TData input)
 		{
 			return rule.Apply(input);
-		}
-
-		protected virtual bool Continue(IRule<TData, TOffset> rule, int index, TData input)
-		{
-			return true;
 		}
 	}
 }
