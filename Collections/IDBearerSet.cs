@@ -14,8 +14,10 @@ namespace SIL.Collections
 		}
 
 		public IDBearerSet(IEnumerable<T> items)
+			: this()
 		{
-			_idBearers = items.ToDictionary(item => item.ID);
+			foreach (T item in items)
+				_idBearers[item.ID] = item;
 		}
 
 		public bool TryGetValue(string id, out T value)
