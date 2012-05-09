@@ -80,7 +80,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 						outWord.SyntacticFeatureStruct.Add(_rule.HeadRequiredSyntacticFeatureStruct);
 					else if (_rule.OutSyntacticFeatureStruct.IsEmpty)
 						outWord.SyntacticFeatureStruct.Clear();
-					outWord.MorphologicalRuleUnapplied(_rule);
+					outWord.MorphologicalRuleUnapplied(_rule, false);
 
 					outWord.Freeze();
 					if (_morpher.TraceRules.Contains(_rule))

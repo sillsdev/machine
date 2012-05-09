@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using SIL.Collections;
 using SIL.Machine;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Rules;
@@ -26,15 +27,18 @@ namespace SIL.HermitCrab
 
 		public IEnumerable<Word> Apply(Word input)
 		{
-			var output = new List<Word>();
-			input = ChooseInflectionalStem(input);
+			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Instance);
 			bool applicableTemplate = false;
-			foreach (IRule<Word, ShapeNode> rule in _templateRules)
+			if (!input.RealizationalFeatureStruct.Subsumes(input.SyntacticFeatureStruct) || input.CurrentMorphologicalRule != null)
 			{
-				if (rule.IsApplicable(input))
+				input = ChooseInflectionalStem(input);
+				foreach (IRule<Word, ShapeNode> rule in _templateRules)
 				{
-					applicableTemplate = true;
-					output.AddRange(rule.Apply(input));
+					if (rule.IsApplicable(input))
+					{
+						applicableTemplate = true;
+						output.UnionWith(rule.Apply(input));
+					}
 				}
 			}
 

@@ -48,49 +48,52 @@ namespace SIL.HermitCrab.MorphologicalRules
 			{
 				for (int i = 0; i < _rules.Count; i++)
 				{
-					Word outWord = _rules[i].Apply(input).SingleOrDefault();
-					if (outWord != null)
+					if (_rules[i].IsApplicable(input))
 					{
-						outWord.SyntacticFeatureStruct = syntacticFS;
-						outWord.SyntacticFeatureStruct.PriorityUnion(_rule.OutSyntacticFeatureStruct);
-
-						foreach (Feature obligFeature in _rule.ObligatorySyntacticFeatures)
-							outWord.ObligatorySyntacticFeatures.Add(obligFeature);
-
-						outWord.CurrentMorphologicalRuleApplied();
-
-						Word newWord;
-						if (_rule.Blockable && outWord.CheckBlocking(out newWord))
+						Word outWord = _rules[i].Apply(input).SingleOrDefault();
+						if (outWord != null)
 						{
-							if (_morpher.TraceBlocking)
-								newWord.CurrentTrace.Children.Add(new Trace(TraceType.Blocking, _rule) {Output = newWord});
-							outWord = newWord;
-						}
-						else
-						{
-							outWord.Freeze();
-						}
+							outWord.SyntacticFeatureStruct = syntacticFS;
+							outWord.SyntacticFeatureStruct.PriorityUnion(_rule.OutSyntacticFeatureStruct);
 
-						if (_morpher.TraceRules.Contains(_rule))
-						{
-							var trace = new Trace(TraceType.MorphologicalRuleSynthesis, _rule) {Input = input, Output = outWord};
-							outWord.CurrentTrace.Children.Add(trace);
-							outWord.CurrentTrace = trace;
-						}
-						output.Add(outWord);
+							foreach (Feature obligFeature in _rule.ObligatorySyntacticFeatures)
+								outWord.ObligatorySyntacticFeatures.Add(obligFeature);
 
-						// return all word syntheses that match subrules that are constrained by environments,
-						// HC violates the disjunctive property of allomorphs here because it cannot check the
-						// environmental constraints until it has a surface form, we will enforce the disjunctive
-						// property of allomorphs at that time
+							outWord.CurrentMorphologicalRuleApplied();
 
-						// HC also checks for free fluctuation, if the next subrule has the same constraints, we
-						// do not treat them as disjunctive
-						AffixProcessAllomorph allo = _rule.Allomorphs[i];
-						if ((i != _rule.Allomorphs.Count - 1 && !allo.ConstraintsEqual(_rule.Allomorphs[i + 1]))
-							&& allo.RequiredEnvironments.Count == 0 && allo.ExcludedEnvironments.Count == 0)
-						{
-							break;
+							Word newWord;
+							if (_rule.Blockable && outWord.CheckBlocking(out newWord))
+							{
+								if (_morpher.TraceBlocking)
+									newWord.CurrentTrace.Children.Add(new Trace(TraceType.Blocking, _rule) {Output = newWord});
+								outWord = newWord;
+							}
+							else
+							{
+								outWord.Freeze();
+							}
+
+							if (_morpher.TraceRules.Contains(_rule))
+							{
+								var trace = new Trace(TraceType.MorphologicalRuleSynthesis, _rule) {Input = input, Output = outWord};
+								outWord.CurrentTrace.Children.Add(trace);
+								outWord.CurrentTrace = trace;
+							}
+							output.Add(outWord);
+
+							// return all word syntheses that match subrules that are constrained by environments,
+							// HC violates the disjunctive property of allomorphs here because it cannot check the
+							// environmental constraints until it has a surface form, we will enforce the disjunctive
+							// property of allomorphs at that time
+
+							// HC also checks for free fluctuation, if the next subrule has the same constraints, we
+							// do not treat them as disjunctive
+							AffixProcessAllomorph allo = _rule.Allomorphs[i];
+							if ((i != _rule.Allomorphs.Count - 1 && !allo.ConstraintsEqual(_rule.Allomorphs[i + 1]))
+							    && allo.RequiredEnvironments.Count == 0 && allo.ExcludedEnvironments.Count == 0)
+							{
+								break;
+							}
 						}
 					}
 				}

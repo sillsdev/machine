@@ -28,14 +28,17 @@ namespace SIL.HermitCrab
 			if (results.Length == 0)
 			{
 				_context.Out.WriteLine("No valid parses.");
+				_context.Out.WriteLine();
 			}
 			else
 			{
 				foreach (Word result in results)
 					PrintResult(result);
-
-				if (_context.Morpher.IsTracing)
-					PrintTrace(trace, 0, new HashSet<int>());
+			}
+			if (_context.Morpher.IsTracing)
+			{
+				PrintTrace(trace, 0, new HashSet<int>());
+				_context.Out.WriteLine();
 			}
 			return 0;
 		}

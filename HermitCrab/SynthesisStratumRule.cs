@@ -42,6 +42,8 @@ namespace SIL.HermitCrab
 					newWord.CurrentTrace.Children.Add(new Trace(TraceType.StratumSynthesisOutput, _stratum) {Output = newWord});
 				output.Add(newWord);
 			}
+			if (output.Count == 0 && _morpher.TraceRules.Contains(_stratum))
+				input.CurrentTrace.Children.Add(new Trace(TraceType.StratumSynthesisOutput, _stratum));
 			return output;
 		}
 	}

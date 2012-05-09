@@ -48,7 +48,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 				foreach (Word outWord in rule.Apply(input).RemoveDuplicates())
 				{
 					outWord.RealizationalFeatureStruct = realFS;
-					outWord.MorphologicalRuleUnapplied(_rule);
+					outWord.MorphologicalRuleUnapplied(_rule, true);
 					
 					outWord.Freeze();
 					if (_morpher.TraceRules.Contains(_rule))

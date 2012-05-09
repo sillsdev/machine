@@ -182,11 +182,13 @@ namespace SIL.HermitCrab
 		/// Notifies this analysis that the specified morphological rule was unapplied.
 		/// </summary>
 		/// <param name="mrule">The morphological rule.</param>
-		public void MorphologicalRuleUnapplied(IMorphologicalRule mrule)
+		/// <param name="realizational"> </param>
+		public void MorphologicalRuleUnapplied(IMorphologicalRule mrule, bool realizational)
 		{
 			CheckFrozen();
 			_mrulesUnapplied.UpdateValue(mrule, () => 0, count => count + 1);
-			_mrules.Push(mrule);
+			if (!realizational)
+				_mrules.Push(mrule);
 		}
 
 		/// <summary>
@@ -213,6 +215,7 @@ namespace SIL.HermitCrab
 
 		public void CurrentMorphologicalRuleApplied()
 		{
+			CheckFrozen();
 			IMorphologicalRule mrule = _mrules.Pop();
 			MorphologicalRuleApplied(mrule);
 		}

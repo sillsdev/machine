@@ -13,6 +13,7 @@ namespace SIL.HermitCrab
         {
             string inputFile = null;
             string outputFile = null;
+        	string scriptFile = null;
             bool showHelp = false;
             bool quitOnError = true;
 
@@ -20,6 +21,7 @@ namespace SIL.HermitCrab
                     	{
                     		{ "i|input-file=", "read configuration from {FILE}", value => inputFile = value },
 							{ "o|output-file=", "write results to {FILE}", value => outputFile = value },
+							{ "s|script-file=", "runs commands from {FILE}", value => scriptFile = value },
 							{ "c|continue", "continues when an error occurs", value => quitOnError = value == null },
 							{ "h|help", "show this help message and exit", value => showHelp = value != null }
                     	};
@@ -78,24 +80,45 @@ namespace SIL.HermitCrab
 
 			ConsoleCommand[] commands = { new ParseCommand(context), new TracingCommand(context) };
 
-			Console.Write("> ");
-        	string input = Console.ReadLine();
-			while (input != null && input.Trim() != "exit")
+        	string input = null;
+			if (!string.IsNullOrEmpty(scriptFile))
 			{
-				if (input.Trim().IsOneOf("?", "help"))
+				using (var scriptReader = new StreamReader(scriptFile))
 				{
-					ConsoleHelp.ShowSummaryOfCommands(commands, Console.Out);
+					input = scriptReader.ReadLine();
+					while (input != null && input.Trim() != "exit")
+					{
+						if (!input.Trim().StartsWith("#"))
+						{
+							string[] cmdArgs = input.ToCommandLineArgs();
+							ConsoleCommandDispatcher.DispatchCommand(commands, cmdArgs, context.Out);
+						}
+						input = scriptReader.ReadLine();
+					}
 				}
-				else
-				{
-					string[] cmdArgs = input.ToCommandLineArgs();
-					ConsoleCommandDispatcher.DispatchCommand(commands, cmdArgs, Console.Out);
-				}
-				Console.Write("> ");
-				input = Console.ReadLine();
 			}
 
-			if (output != null)
+			if (input != "exit")
+			{
+				Console.Write("> ");
+				input = Console.ReadLine();
+				while (input != null && input.Trim() != "exit")
+				{
+					if (input.Trim().IsOneOf("?", "help"))
+					{
+						ConsoleHelp.ShowSummaryOfCommands(commands, Console.Out);
+					}
+					else
+					{
+						string[] cmdArgs = input.ToCommandLineArgs();
+						ConsoleCommandDispatcher.DispatchCommand(commands, cmdArgs, context.Out);
+					}
+					Console.Write("> ");
+					input = Console.ReadLine();
+				}
+			}
+
+        	if (output != null)
 				output.Close();
 
         	return 0;

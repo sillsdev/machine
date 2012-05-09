@@ -86,7 +86,8 @@ namespace SIL.HermitCrab
 
 		public IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{
-			return new RuleCascade<Word, ShapeNode>(_strata.Select(stratum => stratum.CompileSynthesisRule(spanFactory, morpher)), FreezableEqualityComparer<Word>.Instance);
+			return new RuleCascade<Word, ShapeNode>(_strata.Select(stratum => stratum.CompileSynthesisRule(spanFactory, morpher)), RuleCascadeOrder.Linear,
+				FreezableEqualityComparer<Word>.Instance);
 		}
 
     	public void Traverse(Action<IHCRule> action)
