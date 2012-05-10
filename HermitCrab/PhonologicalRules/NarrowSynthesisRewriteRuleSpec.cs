@@ -31,7 +31,7 @@ namespace SIL.HermitCrab.PhonologicalRules
 				FeatureStruct fs = constraint.FeatureStruct.DeepClone();
 				fs.ReplaceVariables(match.VariableBindings);
 				endNode = match.Input.Shape.AddAfter(endNode, fs);
-				if (rule.ApplicationMode == ApplicationMode.Iterative)
+				if (rule is BacktrackingPatternRule)
 					endNode.SetDirty(true);
 			}
 

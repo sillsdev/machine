@@ -9,6 +9,12 @@ using SIL.Machine.Rules;
 
 namespace SIL.HermitCrab
 {
+	public enum MorphologicalRuleOrder
+	{
+		Linear,
+		Unordered
+	}
+
     /// <summary>
     /// This class encapsulates the character definition table, rules, and lexicon for
     /// a particular stratum.
@@ -123,16 +129,10 @@ namespace SIL.HermitCrab
     	public int Depth { get; internal set; }
 
     	/// <summary>
-    	/// Gets or sets the phonological rule order.
-    	/// </summary>
-    	/// <value>The phonological rule order.</value>
-		public RuleCascadeOrder PhonologicalRuleOrder { get; set; }
-
-    	/// <summary>
     	/// Gets or sets the morphological rule order.
     	/// </summary>
     	/// <value>The morphological rule order.</value>
-		public RuleCascadeOrder MorphologicalRuleOrder { get; set; }
+		public MorphologicalRuleOrder MorphologicalRuleOrder { get; set; }
 
     	public IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
     	{

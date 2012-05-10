@@ -21,11 +21,6 @@ namespace SIL.HermitCrab
 				.Select(slot => new RuleBatch<Word, ShapeNode>(slot.Rules.Select(mr => mr.CompileAnalysisRule(spanFactory, morpher)), false, FreezableEqualityComparer<Word>.Instance)));
 		}
 
-		public bool IsApplicable(Word input)
-		{
-			return true;
-		}
-
 		public IEnumerable<Word> Apply(Word input)
 		{
 			FeatureStruct fs;

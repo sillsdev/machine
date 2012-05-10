@@ -5,7 +5,6 @@ using SIL.HermitCrab.PhonologicalRules;
 using SIL.Machine;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
-using SIL.Machine.Rules;
 
 namespace HermitCrabTest
 {
@@ -713,7 +712,7 @@ namespace HermitCrabTest
 				.Symbol("back+")
 				.Symbol("round+").Value;
 
-			var rule4 = new RewriteRule("rule4") {ApplicationMode = ApplicationMode.Simultaneous};
+			var rule4 = new RewriteRule("rule4") {ApplicationMode = RewriteApplicationMode.Simultaneous};
 			Allophonic.PhonologicalRules.Add(rule4);
 			rule4.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -734,7 +733,7 @@ namespace HermitCrabTest
 			morpher = new Morpher(SpanFactory, Language);
 			AssertMorphsEqual(morpher.ParseWord("biubiu"), "19");
 
-			rule4.ApplicationMode = ApplicationMode.Iterative;
+			rule4.ApplicationMode = RewriteApplicationMode.Iterative;
 			rule4.Subrules.Clear();
 			rule4.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -768,7 +767,7 @@ namespace HermitCrabTest
 			morpher = new Morpher(SpanFactory, Language);
 			AssertMorphsEqual(morpher.ParseWord("biubiu"), "19");
 
-			rule4.ApplicationMode = ApplicationMode.Simultaneous;
+			rule4.ApplicationMode = RewriteApplicationMode.Simultaneous;
 			rule4.Subrules.Clear();
 			rule4.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -795,7 +794,7 @@ namespace HermitCrabTest
 			morpher = new Morpher(SpanFactory, Language);
 			AssertMorphsEqual(morpher.ParseWord("biiibuii"), "18");
 
-			rule4.ApplicationMode = ApplicationMode.Iterative;
+			rule4.ApplicationMode = RewriteApplicationMode.Iterative;
 			rule4.Direction = Direction.RightToLeft;
 			rule4.Subrules.Clear();
 			rule4.Subrules.Add(new RewriteSubrule
@@ -1206,7 +1205,7 @@ namespace HermitCrabTest
 				.Symbol("cons+")
 				.Symbol("voc-").Value;
 
-			var rule1 = new RewriteRule("rule1") { ApplicationMode = ApplicationMode.Simultaneous, Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value };
+			var rule1 = new RewriteRule("rule1") { ApplicationMode = RewriteApplicationMode.Simultaneous, Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value };
 			Allophonic.PhonologicalRules.Add(rule1);
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -1217,7 +1216,7 @@ namespace HermitCrabTest
 			var morpher = new Morpher(SpanFactory, Language);
 			AssertMorphsEqual(morpher.ParseWord("gigugu"), "44");
 
-			rule1.ApplicationMode = ApplicationMode.Iterative;
+			rule1.ApplicationMode = RewriteApplicationMode.Iterative;
 
 			morpher = new Morpher(SpanFactory, Language);
 			AssertMorphsEqual(morpher.ParseWord("gigugi"), "44");

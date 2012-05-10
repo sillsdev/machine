@@ -21,7 +21,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 			_rules = new List<PatternRule<Word, ShapeNode>>();
 			foreach (AffixProcessAllomorph allo in rule.Allomorphs)
 			{
-				_rules.Add(new PatternRule<Word, ShapeNode>(spanFactory, new AnalysisAffixProcessAllomorphRuleSpec(allo), ApplicationMode.Multiple,
+				_rules.Add(new MultiplePatternRule<Word, ShapeNode>(spanFactory, new AnalysisAffixProcessAllomorphRuleSpec(allo),
 					new MatcherSettings<ShapeNode>
 						{
 							Filter = ann => ann.Type() == HCFeatureSystem.Segment,
@@ -30,11 +30,6 @@ namespace SIL.HermitCrab.MorphologicalRules
 							AllSubmatches = true
 						}));
 			}
-		}
-
-		public bool IsApplicable(Word input)
-		{
-			return true;
 		}
 
 		public IEnumerable<Word> Apply(Word input)

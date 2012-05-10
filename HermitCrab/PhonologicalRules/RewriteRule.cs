@@ -7,6 +7,12 @@ using SIL.Machine.Rules;
 
 namespace SIL.HermitCrab.PhonologicalRules
 {
+	public enum RewriteApplicationMode
+	{
+		Iterative,
+		Simultaneous
+	}
+
     public class RewriteRule : IDBearerBase, IPhonologicalRule
     {
     	private readonly List<RewriteSubrule> _subrules;
@@ -14,7 +20,6 @@ namespace SIL.HermitCrab.PhonologicalRules
     	public RewriteRule(string id)
 			: base(id)
     	{
-			ApplicationMode = ApplicationMode.Iterative;
     		Lhs = Pattern<Word, ShapeNode>.New().Value;
 			_subrules = new List<RewriteSubrule>();
     	}
@@ -28,7 +33,7 @@ namespace SIL.HermitCrab.PhonologicalRules
 
 		public Direction Direction { get; set; }
 
-		public ApplicationMode ApplicationMode { get; set; }
+		public RewriteApplicationMode ApplicationMode { get; set; }
 
     	public IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
     	{

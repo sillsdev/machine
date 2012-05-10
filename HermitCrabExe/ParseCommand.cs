@@ -24,7 +24,7 @@ namespace SIL.HermitCrab
 			string word = remainingArguments[0];
 			Trace trace;
 			Word[] results = _context.Morpher.ParseWord(word, out trace).ToArray();
-			_context.Out.WriteLine("Parsing {0}.", word);
+			_context.Out.WriteLine("Parsing \"{0}\"", word);
 			if (results.Length == 0)
 			{
 				_context.Out.WriteLine("No valid parses.");

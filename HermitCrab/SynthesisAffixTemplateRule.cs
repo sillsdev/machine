@@ -20,11 +20,6 @@ namespace SIL.HermitCrab
 				.Select(slot => new RuleBatch<Word, ShapeNode>(slot.Rules.Select(mr => mr.CompileSynthesisRule(spanFactory, morpher)), false, FreezableEqualityComparer<Word>.Instance)));
 		}
 
-		public bool IsApplicable(Word input)
-		{
-			return input.SyntacticFeatureStruct.IsUnifiable(_template.RequiredSyntacticFeatureStruct);
-		}
-
 		public IEnumerable<Word> Apply(Word input)
 		{
 			if (_morpher.TraceRules.Contains(_template))

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using SIL.Machine;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
@@ -19,7 +20,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 			_rules = new List<PatternRule<Word, ShapeNode>>();
 			foreach (CompoundingSubrule sr in rule.Subrules)
 			{
-				_rules.Add(new PatternRule<Word, ShapeNode>(spanFactory, new AnalysisCompoundingSubruleRuleSpec(sr), ApplicationMode.Multiple,
+				_rules.Add(new MultiplePatternRule<Word, ShapeNode>(spanFactory, new AnalysisCompoundingSubruleRuleSpec(sr),
 					new MatcherSettings<ShapeNode>
 					{
 						Filter = ann => ann.Type() == HCFeatureSystem.Segment,
@@ -30,14 +31,14 @@ namespace SIL.HermitCrab.MorphologicalRules
 			}
 		}
 
-		public bool IsApplicable(Word input)
-		{
-			return input.NonHeadCount + 1 < _morpher.MaxStemCount && input.GetUnapplicationCount(_rule) < _rule.MaxApplicationCount
-				&& _rule.OutSyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct);
-		}
-
 		public IEnumerable<Word> Apply(Word input)
 		{
+			if (input.NonHeadCount + 1 >= _morpher.MaxStemCount || input.GetUnapplicationCount(_rule) >= _rule.MaxApplicationCount
+				|| !_rule.OutSyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct))
+			{
+				return Enumerable.Empty<Word>();
+			}
+
 			var output = new List<Word>();
 			foreach (PatternRule<Word, ShapeNode> rule in _rules)
 			{

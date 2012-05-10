@@ -56,11 +56,11 @@ namespace SIL.HermitCrab.PhonologicalRules
 
     		return new BacktrackingPatternRule(spanFactory, new DefaultPatternRuleSpec<Word, ShapeNode>(pattern,
 				(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output) => Reorder(groupOrder.Select(g => g.Name), rule, match, out output)),
-				ApplicationMode.Iterative, new MatcherSettings<ShapeNode>
-											{
-												Direction = Direction == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight,
-												Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Anchor)
-											});
+				new MatcherSettings<ShapeNode>
+				{
+					Direction = Direction == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight,
+					Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Anchor)
+				});
     	}
 
     	public IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
@@ -88,12 +88,12 @@ namespace SIL.HermitCrab.PhonologicalRules
 
 			return new BacktrackingPatternRule(spanFactory, new DefaultPatternRuleSpec<Word, ShapeNode>(pattern,
 				(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output) => Reorder(_groupOrder, rule, match, out output)),
-				ApplicationMode.Iterative, new MatcherSettings<ShapeNode>
-											{
-												Direction = Direction,
-												Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor),
-												UseDefaults = true
-											});
+				new MatcherSettings<ShapeNode>
+				{
+					Direction = Direction,
+					Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor),
+					UseDefaults = true
+				});
     	}
 
     	public void Traverse(Action<IHCRule> action)

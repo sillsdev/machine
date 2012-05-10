@@ -6,26 +6,17 @@ using SIL.Machine.Rules;
 
 namespace SIL.HermitCrab.PhonologicalRules
 {
-	public class SynthesisMetathesisRule : BacktrackingPatternRule
+	public class SynthesisMetathesisRule : IRule<Word, ShapeNode>
 	{
 		private readonly Morpher _morpher;
 		private readonly MetathesisRule _rule;
+		private readonly PatternRule<Word, ShapeNode> _patternRule; 
 
 		public SynthesisMetathesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, MetathesisRule rule)
-			: base(spanFactory, CreateRuleSpec(rule), ApplicationMode.Iterative,
-				new MatcherSettings<ShapeNode>
-					{
-						Direction = rule.Direction,
-						Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor),
-						UseDefaults = true
-					})
 		{
 			_morpher = morpher;
 			_rule = rule;
-		}
 
-		private static IPatternRuleSpec<Word, ShapeNode> CreateRuleSpec(MetathesisRule rule)
-		{
 			var pattern = new Pattern<Word, ShapeNode>();
 			foreach (PatternNode<Word, ShapeNode> node in rule.Pattern.Children)
 			{
@@ -47,10 +38,19 @@ namespace SIL.HermitCrab.PhonologicalRules
 				}
 			}
 
-			return new MetathesisRuleSpec(pattern, rule.GroupOrder);
+			var ruleSpec = new MetathesisRuleSpec(pattern, rule.GroupOrder);
+
+			var settings = new MatcherSettings<ShapeNode>
+			               	{
+			               		Direction = rule.Direction,
+			               		Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor),
+			               		UseDefaults = true
+			               	};
+
+			_patternRule = new BacktrackingPatternRule(spanFactory, ruleSpec, settings);
 		}
 
-		public override IEnumerable<Word> Apply(Word input, ShapeNode start)
+		public IEnumerable<Word> Apply(Word input)
 		{
 			Trace trace = null;
 			if (_morpher.TraceRules.Contains(_rule))
@@ -59,7 +59,7 @@ namespace SIL.HermitCrab.PhonologicalRules
 				input.CurrentTrace.Children.Add(trace);
 			}
 
-			IEnumerable<Word> output = base.Apply(input, start);
+			IEnumerable<Word> output = _patternRule.Apply(input);
 
 			if (trace != null)
 				trace.Output = input.DeepClone();

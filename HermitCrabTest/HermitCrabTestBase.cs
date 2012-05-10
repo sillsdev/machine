@@ -5,7 +5,6 @@ using SIL.Collections;
 using SIL.HermitCrab;
 using SIL.Machine;
 using SIL.Machine.FeatureModel;
-using SIL.Machine.Rules;
 
 namespace HermitCrabTest
 {
@@ -147,9 +146,9 @@ namespace HermitCrabTest
 			Latinate = new MprFeature("latinate");
 			Germanic = new MprFeature("germanic");
 
-			Morphophonemic = new Stratum("morphophonemic", Table3) { Description = "Morphophonemic", MorphologicalRuleOrder = RuleCascadeOrder.Combination };
-			Allophonic = new Stratum("allophonic", Table1) { Description = "Allophonic", MorphologicalRuleOrder = RuleCascadeOrder.Combination };
-			Surface = new Stratum("surface", Table1) { Description = "Surface", MorphologicalRuleOrder = RuleCascadeOrder.Combination };
+			Morphophonemic = new Stratum("morphophonemic", Table3) { Description = "Morphophonemic", MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered };
+			Allophonic = new Stratum("allophonic", Table1) { Description = "Allophonic", MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered };
+			Surface = new Stratum("surface", Table1) { Description = "Surface", MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered };
 
 			Entries = new IDBearerSet<LexEntry>();
 			var fs = FeatureStruct.New(syntacticFeatSys)

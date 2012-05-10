@@ -32,7 +32,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 			get { return _pattern; }
 		}
 
-		public virtual bool IsApplicable(Word input)
+		public bool IsApplicable(Word input)
 		{
 			return true;
 		}

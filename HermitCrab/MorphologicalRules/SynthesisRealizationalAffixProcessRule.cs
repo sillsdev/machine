@@ -35,52 +35,52 @@ namespace SIL.HermitCrab.MorphologicalRules
 			}
 		}
 
-		public bool IsApplicable(Word input)
-		{
-			return _rule.RealizationalFeatureStruct.Subsumes(input.RealizationalFeatureStruct);
-		}
-
 		public IEnumerable<Word> Apply(Word input)
 		{
-			var output = new List<Word>();
+			if (!_rule.RealizationalFeatureStruct.Subsumes(input.RealizationalFeatureStruct))
+				return Enumerable.Empty<Word>();
+
+			if (!_rule.RealizationalFeatureStruct.IsEmpty && IsBlocked(_rule.RealizationalFeatureStruct, input.SyntacticFeatureStruct, new HashSet<Tuple<FeatureStruct, FeatureStruct>>()))
+				return Enumerable.Empty<Word>();
+
 			FeatureStruct syntacticFS;
-			if ((_rule.RealizationalFeatureStruct.IsEmpty || !IsBlocked(_rule.RealizationalFeatureStruct, input.SyntacticFeatureStruct, new HashSet<Tuple<FeatureStruct, FeatureStruct>>()))
-				&& _rule.RequiredSyntacticFeatureStruct.Unify(input.SyntacticFeatureStruct, true, out syntacticFS))
+			if (!_rule.RequiredSyntacticFeatureStruct.Unify(input.SyntacticFeatureStruct, true, out syntacticFS))
+				return Enumerable.Empty<Word>();
+
+			var output = new List<Word>();
+			for (int i = 0; i < _rules.Count; i++)
 			{
-				for (int i = 0; i < _rules.Count; i++)
+				Word outWord = _rules[i].Apply(input).SingleOrDefault();
+				if (outWord != null)
 				{
-					Word outWord = _rules[i].Apply(input).SingleOrDefault();
-					if (outWord != null)
+					outWord.SyntacticFeatureStruct = syntacticFS;
+					outWord.SyntacticFeatureStruct.PriorityUnion(_rule.RealizationalFeatureStruct);
+					outWord.MorphologicalRuleApplied(_rule);
+
+					Word newWord;
+					if (_rule.Blockable && outWord.CheckBlocking(out newWord))
 					{
-						outWord.SyntacticFeatureStruct = syntacticFS;
-						outWord.SyntacticFeatureStruct.PriorityUnion(_rule.RealizationalFeatureStruct);
-						outWord.MorphologicalRuleApplied(_rule);
-
-						Word newWord;
-						if (_rule.Blockable && outWord.CheckBlocking(out newWord))
-						{
-							if (_morpher.TraceBlocking)
-								newWord.CurrentTrace.Children.Add(new Trace(TraceType.Blocking, _rule) {Output = newWord});
-							outWord = newWord;
-						}
-						else
-						{
-							outWord.Freeze();
-						}
-
-						if (_morpher.TraceRules.Contains(_rule))
-						{
-							var trace = new Trace(TraceType.MorphologicalRuleSynthesis, _rule) {Input = input, Output = outWord};
-							outWord.CurrentTrace.Children.Add(trace);
-							outWord.CurrentTrace = trace;
-						}
-
-						output.Add(outWord);
-
-						AffixProcessAllomorph allo = _rule.Allomorphs[i];
-						if (allo.RequiredEnvironments == null && allo.ExcludedEnvironments == null)
-							break;
+						if (_morpher.TraceBlocking)
+							newWord.CurrentTrace.Children.Add(new Trace(TraceType.Blocking, _rule) {Output = newWord});
+						outWord = newWord;
 					}
+					else
+					{
+						outWord.Freeze();
+					}
+
+					if (_morpher.TraceRules.Contains(_rule))
+					{
+						var trace = new Trace(TraceType.MorphologicalRuleSynthesis, _rule) {Input = input, Output = outWord};
+						outWord.CurrentTrace.Children.Add(trace);
+						outWord.CurrentTrace = trace;
+					}
+
+					output.Add(outWord);
+
+					AffixProcessAllomorph allo = _rule.Allomorphs[i];
+					if (allo.RequiredEnvironments == null && allo.ExcludedEnvironments == null)
+						break;
 				}
 			}
 

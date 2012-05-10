@@ -12,7 +12,6 @@ using SIL.HermitCrab.PhonologicalRules;
 using SIL.Machine;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
-using SIL.Machine.Rules;
 
 namespace SIL.HermitCrab
 {
@@ -37,33 +36,33 @@ namespace SIL.HermitCrab
 			return loader.Load();
 		}
 
-		private static RuleCascadeOrder GetMorphologicalRuleOrder(string ruleOrderStr)
+		private static MorphologicalRuleOrder GetMorphologicalRuleOrder(string ruleOrderStr)
 		{
 			switch (ruleOrderStr)
 			{
 				case "linear":
-					return RuleCascadeOrder.Linear;
+					return MorphologicalRuleOrder.Linear;
 
 				case "unordered":
-					return RuleCascadeOrder.Combination;
+					return MorphologicalRuleOrder.Unordered;
 			}
 
-			return RuleCascadeOrder.Combination;
+			return MorphologicalRuleOrder.Unordered;
 		}
 
-		private static ApplicationMode GetApplicationMode(string multAppOrderStr)
+		private static RewriteApplicationMode GetApplicationMode(string multAppOrderStr)
 		{
 			switch (multAppOrderStr)
 			{
 				case "simultaneous":
-					return ApplicationMode.Simultaneous;
+					return RewriteApplicationMode.Simultaneous;
 
 				case "rightToLeftIterative":
 				case "leftToRightIterative":
-					return ApplicationMode.Iterative;
+					return RewriteApplicationMode.Iterative;
 			}
 
-			return ApplicationMode.Iterative;
+			return RewriteApplicationMode.Iterative;
 		}
 
 		private static Direction GetDirection(string multAppOrderStr)

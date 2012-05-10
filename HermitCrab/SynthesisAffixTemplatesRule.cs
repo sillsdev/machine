@@ -11,34 +11,31 @@ namespace SIL.HermitCrab
 	{
 		private readonly Morpher _morpher;
 		private readonly Stratum _stratum;
+		private readonly List<AffixTemplate> _templates; 
 		private readonly List<IRule<Word, ShapeNode>> _templateRules; 
 
 		public SynthesisAffixTemplatesRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, Stratum stratum)
 		{
 			_morpher = morpher;
 			_stratum = stratum;
-			_templateRules = _stratum.AffixTemplates.Select(temp => temp.CompileSynthesisRule(spanFactory, morpher)).ToList();
-		}
-
-		public bool IsApplicable(Word input)
-		{
-			return input.RealizationalFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct);
+			_templates = stratum.AffixTemplates.ToList();
+			_templateRules = _templates.Select(temp => temp.CompileSynthesisRule(spanFactory, morpher)).ToList();
 		}
 
 		public IEnumerable<Word> Apply(Word input)
 		{
+			if (!input.RealizationalFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct))
+				return Enumerable.Empty<Word>();
+
 			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Instance);
 			bool applicableTemplate = false;
-			if (!input.RealizationalFeatureStruct.Subsumes(input.SyntacticFeatureStruct) || input.CurrentMorphologicalRule != null)
+			input = ChooseInflectionalStem(input);
+			for (int i = 0; i < _templateRules.Count; i++)
 			{
-				input = ChooseInflectionalStem(input);
-				foreach (IRule<Word, ShapeNode> rule in _templateRules)
+				if (input.SyntacticFeatureStruct.IsUnifiable(_templates[i].RequiredSyntacticFeatureStruct))
 				{
-					if (rule.IsApplicable(input))
-					{
-						applicableTemplate = true;
-						output.UnionWith(rule.Apply(input));
-					}
+					applicableTemplate = true;
+					output.UnionWith(_templateRules[i].Apply(input));
 				}
 			}
 

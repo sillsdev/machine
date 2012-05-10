@@ -16,20 +16,27 @@ namespace SIL.HermitCrab
 		public SynthesisStratumRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, Stratum stratum)
 		{
 			var templatesRule = new SynthesisAffixTemplatesRule(spanFactory, morpher, stratum);
-			_mrulesRule = new RuleCascade<Word, ShapeNode>(stratum.MorphologicalRules.Select(mrule => mrule.CompileSynthesisRule(spanFactory, morpher)).Concat(templatesRule),
-				stratum.MorphologicalRuleOrder, true, FreezableEqualityComparer<Word>.Instance);
-			_prulesRule = new RuleCascade<Word, ShapeNode>(stratum.PhonologicalRules.Select(prule => prule.CompileSynthesisRule(spanFactory, morpher)), stratum.PhonologicalRuleOrder);
+			_mrulesRule = null;
+			IEnumerable<IRule<Word, ShapeNode>> mrules = stratum.MorphologicalRules.Select(mrule => mrule.CompileSynthesisRule(spanFactory, morpher)).Concat(templatesRule);
+			switch (stratum.MorphologicalRuleOrder)
+			{
+				case MorphologicalRuleOrder.Linear:
+					_mrulesRule = new LinearRuleCascade<Word, ShapeNode>(mrules, true, FreezableEqualityComparer<Word>.Instance);
+					break;
+				case MorphologicalRuleOrder.Unordered:
+					_mrulesRule = new CombinationRuleCascade<Word, ShapeNode>(mrules, true, FreezableEqualityComparer<Word>.Instance);
+					break;
+			}
+			_prulesRule = new LinearRuleCascade<Word, ShapeNode>(stratum.PhonologicalRules.Select(prule => prule.CompileSynthesisRule(spanFactory, morpher)));
 			_stratum = stratum;
 			_morpher = morpher;
 		}
 
-		public bool IsApplicable(Word input)
-		{
-			return input.RootAllomorph.Morpheme.Stratum.Depth <= _stratum.Depth;
-		}
-
 		public IEnumerable<Word> Apply(Word input)
 		{
+			if (input.RootAllomorph.Morpheme.Stratum.Depth > _stratum.Depth)
+				return input.ToEnumerable();
+
 			if (_morpher.TraceRules.Contains(_stratum))
 				input.CurrentTrace.Children.Add(new Trace(TraceType.StratumSynthesisInput, _stratum) {Input = input});
 			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Instance);

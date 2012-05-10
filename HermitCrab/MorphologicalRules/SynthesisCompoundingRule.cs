@@ -42,67 +42,67 @@ namespace SIL.HermitCrab.MorphologicalRules
 					});
 		}
 
-		public bool IsApplicable(Word input)
-		{
-			return input.CurrentMorphologicalRule == _rule && input.GetApplicationCount(_rule) < _rule.MaxApplicationCount
-				&& _rule.NonHeadRequiredSyntacticFeatureStruct.IsUnifiable(input.CurrentNonHead.SyntacticFeatureStruct, true);
-		}
-
 		public IEnumerable<Word> Apply(Word input)
 		{
-			var output = new List<Word>();
-			FeatureStruct syntacticFS;
-			if (_rule.HeadRequiredSyntacticFeatureStruct.Unify(input.SyntacticFeatureStruct, true, out syntacticFS))
+			if (input.CurrentMorphologicalRule != _rule || input.GetApplicationCount(_rule) >= _rule.MaxApplicationCount
+				|| !_rule.NonHeadRequiredSyntacticFeatureStruct.IsUnifiable(input.CurrentNonHead.SyntacticFeatureStruct, true))
 			{
-				for (int i = 0; i < _rule.Subrules.Count; i++)
+				return Enumerable.Empty<Word>();
+			}
+
+			FeatureStruct syntacticFS;
+			if (!_rule.HeadRequiredSyntacticFeatureStruct.Unify(input.SyntacticFeatureStruct, true, out syntacticFS))
+				return Enumerable.Empty<Word>();
+
+			var output = new List<Word>();
+			for (int i = 0; i < _rule.Subrules.Count; i++)
+			{
+				if (_rule.Subrules[i].RequiredMprFeatures.Count > 0 && !_rule.Subrules[i].RequiredMprFeatures.IsMatch(input.MprFeatures)
+					|| (_rule.Subrules[i].ExcludedMprFeatures.Count > 0 && _rule.Subrules[i].ExcludedMprFeatures.IsMatch(input.MprFeatures)))
 				{
-					if (_rule.Subrules[i].RequiredMprFeatures.Count > 0 && !_rule.Subrules[i].RequiredMprFeatures.IsMatch(input.MprFeatures)
-						|| (_rule.Subrules[i].ExcludedMprFeatures.Count > 0 && _rule.Subrules[i].ExcludedMprFeatures.IsMatch(input.MprFeatures)))
-					{
-						continue;
-					}
+					continue;
+				}
 
-					Match<Word, ShapeNode> headMatch = _subruleMatchers[i].Item1.Match(input);
-					if (headMatch.Success)
+				Match<Word, ShapeNode> headMatch = _subruleMatchers[i].Item1.Match(input);
+				if (headMatch.Success)
+				{
+					Match<Word, ShapeNode> nonHeadMatch = _subruleMatchers[i].Item2.Match(input.CurrentNonHead);
+					if (nonHeadMatch.Success)
 					{
-						Match<Word, ShapeNode> nonHeadMatch = _subruleMatchers[i].Item2.Match(input.CurrentNonHead);
-						if (nonHeadMatch.Success)
+						Word outWord = ApplySubrule(_rule.Subrules[i], headMatch, nonHeadMatch);
+
+						outWord.MprFeatures.AddOutput(_rule.Subrules[i].OutMprFeatures);
+
+						outWord.SyntacticFeatureStruct = syntacticFS;
+						outWord.SyntacticFeatureStruct.PriorityUnion(_rule.OutSyntacticFeatureStruct);
+
+						foreach (Feature feature in _rule.ObligatorySyntacticFeatures)
+							outWord.ObligatorySyntacticFeatures.Add(feature);
+
+						outWord.CurrentMorphologicalRuleApplied();
+						outWord.CurrentNonHeadApplied();
+
+						Word newWord;
+						if (_rule.Blockable && outWord.CheckBlocking(out newWord))
 						{
-							Word outWord = ApplySubrule(_rule.Subrules[i], headMatch, nonHeadMatch);
-
-							outWord.MprFeatures.AddOutput(_rule.Subrules[i].OutMprFeatures);
-
-							outWord.SyntacticFeatureStruct = syntacticFS;
-							outWord.SyntacticFeatureStruct.PriorityUnion(_rule.OutSyntacticFeatureStruct);
-
-							foreach (Feature feature in _rule.ObligatorySyntacticFeatures)
-								outWord.ObligatorySyntacticFeatures.Add(feature);
-
-							outWord.CurrentMorphologicalRuleApplied();
-							outWord.CurrentNonHeadApplied();
-
-							Word newWord;
-							if (_rule.Blockable && outWord.CheckBlocking(out newWord))
-							{
-								if (_morpher.TraceBlocking)
-									newWord.CurrentTrace.Children.Add(new Trace(TraceType.Blocking, _rule) {Output = newWord});
-								outWord = newWord;
-							}
-							else
-							{
-								outWord.Freeze();
-							}
-
-							if (_morpher.TraceRules.Contains(_rule))
-							{
-								var trace = new Trace(TraceType.MorphologicalRuleSynthesis, _rule) {Input = input, Output = outWord};
-								outWord.CurrentTrace.Children.Add(trace);
-								outWord.CurrentTrace = trace;
-							}
-
-							output.Add(outWord);
-							break;
+							if (_morpher.TraceBlocking)
+								newWord.CurrentTrace.Children.Add(new Trace(TraceType.Blocking, _rule) {Output = newWord});
+							outWord = newWord;
 						}
+						else
+						{
+							outWord.Freeze();
+						}
+
+						if (_morpher.TraceRules.Contains(_rule))
+						{
+							var trace = new Trace(TraceType.MorphologicalRuleSynthesis, _rule) {Input = input, Output = outWord};
+							outWord.CurrentTrace.Children.Add(trace);
+							outWord.CurrentTrace = trace;
+						}
+
+						output.Add(outWord);
+						break;
 					}
 				}
 			}

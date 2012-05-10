@@ -80,13 +80,13 @@ namespace SIL.HermitCrab
 
 		public IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{
-			return new RuleCascade<Word, ShapeNode>(_strata.Select(stratum => stratum.CompileAnalysisRule(spanFactory, morpher)).Reverse(),
-				RuleCascadeOrder.Permutation, FreezableEqualityComparer<Word>.Instance);
+			return new PermutationRuleCascade<Word, ShapeNode>(_strata.Select(stratum => stratum.CompileAnalysisRule(spanFactory, morpher)).Reverse(),
+				FreezableEqualityComparer<Word>.Instance);
 		}
 
 		public IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{
-			return new RuleCascade<Word, ShapeNode>(_strata.Select(stratum => stratum.CompileSynthesisRule(spanFactory, morpher)), RuleCascadeOrder.Linear,
+			return new PipelineRuleCascade<Word, ShapeNode>(_strata.Select(stratum => stratum.CompileSynthesisRule(spanFactory, morpher)),
 				FreezableEqualityComparer<Word>.Instance);
 		}
 

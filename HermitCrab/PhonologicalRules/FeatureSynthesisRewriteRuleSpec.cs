@@ -1,8 +1,6 @@
 using System;
-using System.Linq;
 using SIL.Collections;
 using SIL.Machine;
-using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
 
@@ -27,7 +25,7 @@ namespace SIL.HermitCrab.PhonologicalRules
 			{
 				var constraints = (Constraint<Word, ShapeNode>) tuple.Item2;
 				tuple.Item1.Annotation.FeatureStruct.PriorityUnion(constraints.FeatureStruct, match.VariableBindings);
-				if (rule.ApplicationMode == ApplicationMode.Iterative)
+				if (rule is BacktrackingPatternRule)
 					tuple.Item1.SetDirty(true);
 			}
 

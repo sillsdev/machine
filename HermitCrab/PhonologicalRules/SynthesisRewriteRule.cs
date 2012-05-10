@@ -6,26 +6,17 @@ using SIL.Machine.Rules;
 
 namespace SIL.HermitCrab.PhonologicalRules
 {
-	public class SynthesisRewriteRule : BacktrackingPatternRule
+	public class SynthesisRewriteRule : IRule<Word, ShapeNode>
 	{
 		private readonly Morpher _morpher;
 		private readonly RewriteRule _rule;
+		private readonly PatternRule<Word, ShapeNode> _patternRule; 
 
 		public SynthesisRewriteRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, RewriteRule rule)
-			: base(spanFactory, CreateRuleSpec(rule), rule.ApplicationMode,
-				new MatcherSettings<ShapeNode>
-					{
-						Direction = rule.Direction,
-						Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor),
-						UseDefaults = true
-					})
 		{
 			_morpher = morpher;
 			_rule = rule;
-		}
 
-		private static IPatternRuleSpec<Word, ShapeNode> CreateRuleSpec(RewriteRule rule)
-		{
 			var ruleSpec = new BatchPatternRuleSpec<Word, ShapeNode>();
 			foreach (RewriteSubrule sr in rule.Subrules)
 			{
@@ -36,10 +27,28 @@ namespace SIL.HermitCrab.PhonologicalRules
 				else if (rule.Lhs.Children.Count == 0)
 					ruleSpec.RuleSpecs.Add(new EpenthesisSynthesisRewriteRuleSpec(rule.Lhs, sr));
 			}
-			return ruleSpec;
+
+			var settings = new MatcherSettings<ShapeNode>
+			               	{
+			               		Direction = rule.Direction,
+			               		Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor),
+			               		UseDefaults = true
+			               	};
+
+			_patternRule = null;
+			switch (rule.ApplicationMode)
+			{
+				case RewriteApplicationMode.Iterative:
+					_patternRule = new BacktrackingPatternRule(spanFactory, ruleSpec, settings);
+					break;
+
+				case RewriteApplicationMode.Simultaneous:
+					_patternRule = new SimultaneousPatternRule<Word, ShapeNode>(spanFactory, ruleSpec, settings);
+					break;
+			}
 		}
 
-		public override IEnumerable<Word> Apply(Word input, ShapeNode start)
+		public IEnumerable<Word> Apply(Word input)
 		{
 			Trace trace = null;
 			if (_morpher.TraceRules.Contains(_rule))
@@ -48,7 +57,7 @@ namespace SIL.HermitCrab.PhonologicalRules
 				input.CurrentTrace.Children.Add(trace);
 			}
 
-			IEnumerable<Word> output = base.Apply(input, start);
+			IEnumerable<Word> output = _patternRule.Apply(input);
 
 			if (trace != null)
 				trace.Output = input.DeepClone();

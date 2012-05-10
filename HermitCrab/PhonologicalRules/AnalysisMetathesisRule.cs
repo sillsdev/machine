@@ -7,25 +7,17 @@ using SIL.Machine.Rules;
 
 namespace SIL.HermitCrab.PhonologicalRules
 {
-	public class AnalysisMetathesisRule : BacktrackingPatternRule
+	public class AnalysisMetathesisRule : IRule<Word, ShapeNode>
 	{
 		private readonly Morpher _morpher;
 		private readonly MetathesisRule _rule;
+		private readonly PatternRule<Word, ShapeNode> _patternRule; 
 
 		public AnalysisMetathesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, MetathesisRule rule)
-			: base(spanFactory, CreateRuleSpec(rule), ApplicationMode.Iterative,
-				new MatcherSettings<ShapeNode>
-					{
-						Direction = rule.Direction == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight,
-						Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Anchor)
-					})
 		{
 			_morpher = morpher;
 			_rule = rule;
-		}
 
-		private static IPatternRuleSpec<Word, ShapeNode> CreateRuleSpec(MetathesisRule rule)
-		{
 			Group<Word, ShapeNode>[] groupOrder = rule.Pattern.Children.OfType<Group<Word, ShapeNode>>().ToArray();
 			Dictionary<string, Group<Word, ShapeNode>> groups = groupOrder.ToDictionary(g => g.Name);
 			var pattern = new Pattern<Word, ShapeNode>();
@@ -45,10 +37,18 @@ namespace SIL.HermitCrab.PhonologicalRules
 			foreach (PatternNode<Word, ShapeNode> node in rule.Pattern.Children.GetNodes(Direction.RightToLeft).TakeWhile(n => !(n is Group<Word, ShapeNode>)).Reverse())
 				pattern.Children.Add(node.DeepClone());
 
-			return new MetathesisRuleSpec(pattern, groupOrder.Select(g => g.Name));
+			var ruleSpec = new MetathesisRuleSpec(pattern, groupOrder.Select(g => g.Name));
+
+			var settings = new MatcherSettings<ShapeNode>
+			               	{
+			               		Direction = rule.Direction == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight,
+			               		Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Anchor)
+			               	};
+
+			_patternRule = new BacktrackingPatternRule(spanFactory, ruleSpec, settings);
 		}
 
-		public override IEnumerable<Word> Apply(Word input, ShapeNode start)
+		public IEnumerable<Word> Apply(Word input)
 		{
 			Trace trace = null;
 			if (_morpher.TraceRules.Contains(_rule))
@@ -57,7 +57,7 @@ namespace SIL.HermitCrab.PhonologicalRules
 				input.CurrentTrace.Children.Add(trace);
 			}
 
-			IEnumerable<Word> output = base.Apply(input, start);
+			IEnumerable<Word> output = _patternRule.Apply(input);
 
 			if (trace != null)
 				trace.Output = input.DeepClone();
