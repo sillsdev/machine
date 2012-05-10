@@ -36,22 +36,14 @@ namespace SIL.Machine.Rules
 			get { return _rules.AsReadOnlyList(); }
 		}
 
-		public virtual bool IsApplicable(TData input)
-		{
-			return true;
-		}
-
 		public virtual IEnumerable<TData> Apply(TData input)
 		{
 			var output = new HashSet<TData>(_comparer);
 			foreach (IRule<TData, TOffset> rule in _rules)
 			{
-				if (rule.IsApplicable(input))
-				{
-					output.UnionWith(rule.Apply(input));
-					if (_disjunctive && output.Count > 0)
-						return output;
-				}
+				output.UnionWith(rule.Apply(input));
+				if (_disjunctive && output.Count > 0)
+					return output;
 			}
 
 			return output;

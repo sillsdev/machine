@@ -1,68 +1,41 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using SIL.Collections;
 
 namespace SIL.Machine.Rules
 {
-	public enum RuleCascadeOrder
+	public abstract class RuleCascade<TData, TOffset> : IRule<TData, TOffset> where TData : IData<TOffset>
 	{
-		Linear,
-		Permutation,
-		Combination
-	}
-
-	public class RuleCascade<TData, TOffset> : IRule<TData, TOffset> where TData : IData<TOffset>
-	{
-		private readonly List<IRule<TData, TOffset>> _rules;
-		private readonly RuleCascadeOrder _order;
+		private readonly ReadOnlyList<IRule<TData, TOffset>> _rules;
 		private readonly bool _multiApp;
-		private readonly IEqualityComparer<TData> _comparer; 
+		private readonly IEqualityComparer<TData> _comparer;
 
-		public RuleCascade(IEnumerable<IRule<TData, TOffset>> rules)
-			: this(rules, RuleCascadeOrder.Linear)
+		protected RuleCascade(IEnumerable<IRule<TData, TOffset>> rules)
+			: this(rules, false)
 		{
 		}
 
-		public RuleCascade(IEnumerable<IRule<TData, TOffset>> rules, IEqualityComparer<TData> comparer)
-			: this(rules, RuleCascadeOrder.Linear, comparer)
+		protected RuleCascade(IEnumerable<IRule<TData, TOffset>> rules, IEqualityComparer<TData> comparer)
+			: this(rules, false, comparer)
 		{
 		}
 
-		public RuleCascade(IEnumerable<IRule<TData, TOffset>> rules, RuleCascadeOrder order)
-			: this(rules, order, false)
+
+		protected RuleCascade(IEnumerable<IRule<TData, TOffset>> rules, bool multiApp)
+			: this(rules, multiApp, EqualityComparer<TData>.Default)
 		{
 		}
 
-		public RuleCascade(IEnumerable<IRule<TData, TOffset>> rules, RuleCascadeOrder order, IEqualityComparer<TData> comparer)
-			: this(rules, order, false, comparer)
+		protected RuleCascade(IEnumerable<IRule<TData, TOffset>> rules, bool multiApp, IEqualityComparer<TData> comparer)
 		{
-		}
-
-		public RuleCascade(IEnumerable<IRule<TData, TOffset>> rules, bool multiApp)
-			: this(rules, RuleCascadeOrder.Linear, multiApp)
-		{
-		}
-
-		public RuleCascade(IEnumerable<IRule<TData, TOffset>> rules, bool multiApp, IEqualityComparer<TData> comparer)
-			: this(rules, RuleCascadeOrder.Linear, multiApp, comparer)
-		{
-		}
-
-		public RuleCascade(IEnumerable<IRule<TData, TOffset>> rules, RuleCascadeOrder order, bool multiApp)
-			: this(rules, order, multiApp, EqualityComparer<TData>.Default)
-		{
-		}
-
-		public RuleCascade(IEnumerable<IRule<TData, TOffset>> rules, RuleCascadeOrder order, bool multiApp, IEqualityComparer<TData> comparer)
-		{
-			_rules = new List<IRule<TData, TOffset>>(rules);
-			_order = order;
+			_rules = new ReadOnlyList<IRule<TData, TOffset>>(rules.ToList());
 			_multiApp = multiApp;
 			_comparer = comparer;
 		}
 
-		public RuleCascadeOrder RuleCascadeOrder
+		public IEqualityComparer<TData> Comparer
 		{
-			get { return _order; }
+			get { return _comparer; }
 		}
 
 		public bool MultipleApplication
@@ -72,71 +45,10 @@ namespace SIL.Machine.Rules
 
 		public IReadOnlyList<IRule<TData, TOffset>> Rules
 		{
-			get { return _rules.AsReadOnlyList(); }
+			get { return _rules; }
 		}
 
-		public virtual bool IsApplicable(TData input)
-		{
-			return true;
-		}
-
-		public virtual IEnumerable<TData> Apply(TData input)
-		{
-			var output = new HashSet<TData>(_comparer);
-			ApplyRules(input, RuleCascadeOrder == RuleCascadeOrder.Combination && !MultipleApplication ? new HashSet<int>() : null, 0, output);
-			return output;
-		}
-
-		private bool ApplyRules(TData input, HashSet<int> rulesApplied, int ruleIndex, HashSet<TData> output)
-		{
-			for (int i = ruleIndex; i < _rules.Count; i++)
-			{
-				if ((rulesApplied == null || !rulesApplied.Contains(i)))
-				{
-					if (_rules[i].IsApplicable(input))
-					{
-						bool applied = false;
-						foreach (TData result in ApplyRule(_rules[i], i, input))
-						{
-							switch (RuleCascadeOrder)
-							{
-								case RuleCascadeOrder.Linear:
-								case RuleCascadeOrder.Permutation:
-									// avoid infinite loop
-									if (!MultipleApplication || !_comparer.Equals(input, result))
-									{
-										if (ApplyRules(result, null, MultipleApplication ? i : i + 1, output))
-											output.Add(result);
-									}
-									else
-									{
-										output.Add(result);
-									}
-									break;
-
-								case RuleCascadeOrder.Combination:
-									// avoid infinite loop
-									if (!_comparer.Equals(input, result))
-									{
-										if (ApplyRules(result, rulesApplied == null ? null : new HashSet<int>(rulesApplied) {i}, 0, output))
-											output.Add(result);
-									}
-									else
-									{
-										output.Add(result);
-									}
-									break;
-							}
-							applied = true;
-						}
-
-						if (applied && RuleCascadeOrder == RuleCascadeOrder.Linear)
-							return false;
-					}
-				}
-			}
-			return true;
-		}
+		public abstract IEnumerable<TData> Apply(TData input);
 
 		protected virtual IEnumerable<TData> ApplyRule(IRule<TData, TOffset> rule, int index, TData input)
 		{

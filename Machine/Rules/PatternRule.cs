@@ -5,44 +5,22 @@ using SIL.Machine.Matching;
 
 namespace SIL.Machine.Rules
 {
-	public enum ApplicationMode
-	{
-		Single,
-		Multiple,
-		Iterative,
-		Simultaneous
-	}
-
 	public class PatternRule<TData, TOffset> : IRule<TData, TOffset> where TData : IData<TOffset>
 	{
 		private readonly SpanFactory<TOffset> _spanFactory;
 		private readonly IPatternRuleSpec<TData, TOffset> _ruleSpec;
 		private readonly Matcher<TData, TOffset> _matcher; 
-		private readonly ApplicationMode _appMode;
 
 		public PatternRule(SpanFactory<TOffset> spanFactory, IPatternRuleSpec<TData, TOffset> ruleSpec)
-			: this(spanFactory, ruleSpec, ApplicationMode.Single)
-		{
-		}
-
-		public PatternRule(SpanFactory<TOffset> spanFactory, IPatternRuleSpec<TData, TOffset> ruleSpec,
-			ApplicationMode appMode)
-			: this(spanFactory, ruleSpec, appMode, new MatcherSettings<TOffset>())
+			: this(spanFactory, ruleSpec, new MatcherSettings<TOffset>())
 		{
 		}
 
 		public PatternRule(SpanFactory<TOffset> spanFactory, IPatternRuleSpec<TData, TOffset> ruleSpec,
 			MatcherSettings<TOffset> matcherSettings)
-			: this(spanFactory, ruleSpec, ApplicationMode.Single, matcherSettings)
-		{
-		}
-
-		public PatternRule(SpanFactory<TOffset> spanFactory, IPatternRuleSpec<TData, TOffset> ruleSpec,
-			ApplicationMode appMode, MatcherSettings<TOffset> matcherSettings)
 		{
 			_spanFactory = spanFactory;
 			_ruleSpec = ruleSpec;
-			_appMode = appMode;
 			_matcher = new Matcher<TData, TOffset>(spanFactory, _ruleSpec.Pattern, matcherSettings);
 		}
 
@@ -51,19 +29,14 @@ namespace SIL.Machine.Rules
 			get { return _spanFactory; }
 		}
 
-		public ApplicationMode ApplicationMode
+		public Matcher<TData, TOffset> Matcher
 		{
-			get { return _appMode; }
+			get { return _matcher; }
 		}
 
-		public MatcherSettings<TOffset> MatcherSettings
+		public IPatternRuleSpec<TData, TOffset> RuleSpec
 		{
-			get { return _matcher.Settings; }
-		}
-
-		public bool IsApplicable(TData input)
-		{
-			return _ruleSpec.IsApplicable(input);
+			get { return _ruleSpec; }
 		}
 
 		public IEnumerable<TData> Apply(TData input)
@@ -71,63 +44,23 @@ namespace SIL.Machine.Rules
 			return Apply(input, input.Span.GetStart(_matcher.Direction));
 		}
 
-		public virtual IEnumerable<TData> Apply(TData input, TOffset start)
+		public IEnumerable<TData> Apply(TData input, TOffset start)
 		{
-			if (input.Annotations.Count == 0)
+			if (!_ruleSpec.IsApplicable(input) || input.Annotations.Count == 0)
 				return Enumerable.Empty<TData>();
 
-			switch (ApplicationMode)
+			return ApplyImpl(input, start);
+		}
+
+		protected virtual IEnumerable<TData> ApplyImpl(TData input, TOffset start)
+		{
+			Match<TData, TOffset> match = _matcher.Match(input, start);
+			if (match.Success)
 			{
-				case ApplicationMode.Simultaneous:
-					{
-						TData data = input;
-						foreach (Match<TData, TOffset> match in _matcher.AllMatches(input, start).ToArray())
-							_ruleSpec.ApplyRhs(this, match, out data);
-						return data.ToEnumerable();
-					}
-
-				case ApplicationMode.Iterative:
-					{
-						bool applied = false;
-						TData data = input;
-						Match<TData, TOffset> match = _matcher.Match(input, start);
-						while (match.Success)
-						{
-							TOffset nextOffset = _ruleSpec.ApplyRhs(this, match, out data);
-							applied = true;
-							match = _matcher.Match(data, nextOffset);
-						}
-
-						if (applied)
-							return data.ToEnumerable();
-					}
-					break;
-
-				case ApplicationMode.Single:
-					{
-						Match<TData, TOffset> match = _matcher.Match(input, start);
-						if (match.Success)
-						{
-							TData outputData;
-							_ruleSpec.ApplyRhs(this, match, out outputData);
-							return outputData.ToEnumerable();
-						}
-					}
-					break;
-
-				case ApplicationMode.Multiple:
-					{
-						var results = new List<TData>();
-						foreach (Match<TData, TOffset> match in _matcher.AllMatches(input, start))
-						{
-							TData outputData;
-							_ruleSpec.ApplyRhs(this, match, out outputData);
-							results.Add(outputData);
-						}
-						return results;
-					}
+				TData outputData;
+				_ruleSpec.ApplyRhs(this, match, out outputData);
+				return outputData.ToEnumerable();
 			}
-
 			return Enumerable.Empty<TData>();
 		}
 	}

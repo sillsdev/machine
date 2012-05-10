@@ -99,6 +99,13 @@
     <Compile Include="Matching\Match.cs" />
     <Compile Include="Matching\PatternNode.cs" />
     <Compile Include="Matching\Quantifier.cs" />
+    <Compile Include="Rules\CombinationRuleCascade.cs" />
+    <Compile Include="Rules\IterativePatternRule.cs" />
+    <Compile Include="Rules\LinearRuleCascade.cs" />
+    <Compile Include="Rules\MultiplePatternRule.cs" />
+    <Compile Include="Rules\PermutationRuleCascade.cs" />
+    <Compile Include="Rules\PipelineRuleCascade.cs" />
+    <Compile Include="Rules\SimultaneousPatternRule.cs" />
     <Compile Include="Shape.cs" />
     <Compile Include="ShapeNode.cs" />
     <Compile Include="ShapeSpanFactory.cs" />
