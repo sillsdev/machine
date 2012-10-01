@@ -57,6 +57,8 @@
     <Compile Include="IDBearerSet.cs" />
     <Compile Include="IFreezable.cs" />
     <Compile Include="IIDBearer.cs" />
+    <Compile Include="IKeyedCollection.cs" />
+    <Compile Include="IKeyedReadOnlyCollection.cs" />
     <Compile Include="IOrderedBidirList.cs" />
     <Compile Include="IOrderedBidirListNode.cs" />
     <Compile Include="IOrderedBidirTreeNode.cs" />
@@ -64,7 +66,12 @@
     <Compile Include="IReadOnlyDictionary.cs" />
     <Compile Include="IReadOnlyList.cs" />
     <Compile Include="IReadOnlySet.cs" />
+    <Compile Include="KeyedCollection.cs" />
+    <Compile Include="KeyedObservableCollection.cs" />
+    <Compile Include="KeyedReadOnlyCollection.cs" />
+    <Compile Include="NotifyPropertyChangedBase.cs" />
     <Compile Include="NullableValue.cs" />
+    <Compile Include="ObservableDictionary.cs" />
     <Compile Include="ObservableHashSet.cs" />
     <Compile Include="ObservableIDBearerSet.cs" />
     <Compile Include="OrderedBidirList.cs" />

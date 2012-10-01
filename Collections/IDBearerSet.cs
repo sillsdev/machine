@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace SIL.Collections
 {
-	public class IDBearerSet<T> : ISet<T> where T : IIDBearer
+	public class IDBearerSet<T> : ISet<T>, IKeyedCollection<string, T> where T : IIDBearer
 	{
 		private readonly Dictionary<string, T> _idBearers; 
 

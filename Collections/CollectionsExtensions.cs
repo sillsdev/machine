@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace SIL.Collections
 {
@@ -550,6 +551,20 @@ namespace SIL.Collections
 			return result;
 		}
 
+		public static string ConcatStrings(this IEnumerable<string> strings, string sep)
+		{
+			var sb = new StringBuilder();
+			bool first = true;
+			foreach (string str in strings)
+			{
+				if (!first)
+					sb.Append(sep);
+				sb.Append(str);
+				first = false;
+			}
+			return sb.ToString();
+		}
+
 		#endregion
 
 		#region Generic
@@ -578,6 +593,56 @@ namespace SIL.Collections
 		#endregion
 
 		#region IList
+
+		public static int BinarySearch<T>(this IList<T> list, T item)
+		{
+			return BinarySearch(list, item, Comparer<T>.Default);
+		}
+
+		public static int BinarySearch<T>(this IList<T> list, T item, IComparer<T> comparer)
+		{
+			return BinarySearch(list, item, i => i, comparer);
+		}
+
+		public static int BinarySearch<TItem, TKey>(this IList<TItem> list, TItem item, Func<TItem, TKey> keySelector)
+		{
+			return BinarySearch(list, item, keySelector, Comparer<TKey>.Default);
+		}
+
+		public static int BinarySearch<TItem, TKey>(this IList<TItem> list, TItem item, Func<TItem, TKey> keySelector, IComparer<TKey> comparer)
+		{
+			if (list == null)
+			{
+				throw new ArgumentNullException("list");
+			}
+			if (comparer == null)
+			{
+				throw new ArgumentNullException("comparer");
+			}
+
+			int lower = 0;
+			int upper = list.Count - 1;
+
+			while (lower <= upper)
+			{
+				int middle = lower + (upper - lower) / 2;
+				int comparisonResult = comparer.Compare(keySelector(item), keySelector(list[middle]));
+				if (comparisonResult < 0)
+				{
+					upper = middle - 1;
+				}
+				else if (comparisonResult > 0)
+				{
+					lower = middle + 1;
+				}
+				else
+				{
+					return middle;
+				}
+			}
+
+			return ~lower;
+		}
 
 		public static IEnumerable<T> Skip<T>(this IList<T> source, int count)
 		{
