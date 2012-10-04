@@ -103,7 +103,18 @@ namespace SIL.Collections
 
 		public bool TryGetValue(TKey key, out TItem value)
 		{
-			return _dict.TryGetValue(key, out value);
+			if (_dict != null)
+				return _dict.TryGetValue(key, out value);
+			foreach (TItem current in Items)
+			{
+				if (_comparer.Equals(GetKeyForItem(current), key))
+				{
+					value = current;
+					return true;
+				}
+			}
+			value = default(TItem);
+			return false;
 		}
 
 		public bool Contains(TKey key)
