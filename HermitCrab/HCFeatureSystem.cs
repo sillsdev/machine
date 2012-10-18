@@ -38,7 +38,6 @@ namespace SIL.HermitCrab
 			Morph = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "morph" };
 
 			Type = new SymbolicFeature(Guid.NewGuid().ToString()) { Description = "Type", PossibleSymbols = { Anchor, Segment, Boundary, Morph } };
-			Instance.Add(Type);
 
 			Dirty = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "Dirty" };
 			Clean = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "Clean" };
@@ -50,21 +49,14 @@ namespace SIL.HermitCrab
 			           		DefaultValue = new SymbolicFeatureValue(Clean)
 			           	};
 
-			Instance.Add(Modified);
-
 			LeftSide = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "LeftSide" };
 			RightSide = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "RightSide" };
 
 			AnchorType = new SymbolicFeature(Guid.NewGuid().ToString()) { Description = "AnchorType", PossibleSymbols = { LeftSide, RightSide } };
-			Instance.Add(AnchorType);
 
 			StrRep = new StringFeature(Guid.NewGuid().ToString()) {Description = "StrRep"};
-			Instance.Add(StrRep);
 
 			Allomorph = new StringFeature(Guid.NewGuid().ToString()) {Description = "Allomorph"};
-			Instance.Add(Allomorph);
-
-			Instance.IsReadOnly = true;
 
 			LeftSideAnchor = FeatureStruct.New().Symbol(Anchor).Symbol(LeftSide).Value;
 			RightSideAnchor = FeatureStruct.New().Symbol(Anchor).Symbol(RightSide).Value;
@@ -72,6 +64,12 @@ namespace SIL.HermitCrab
 
 		private HCFeatureSystem()
 		{
+			Add(Type);
+			Add(Modified);
+			Add(AnchorType);
+			Add(StrRep);
+			Add(Allomorph);
+			Freeze();
 		}
 	}
 }

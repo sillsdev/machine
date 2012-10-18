@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SIL.HermitCrab</RootNamespace>
-    <AssemblyName>HermitCrab</AssemblyName>
+    <AssemblyName>SIL.HermitCrab</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
