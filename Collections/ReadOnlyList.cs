@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SIL.Collections
 {
-	public class ReadOnlyList<T> : ReadOnlyCollection<T>, IReadOnlyList<T>, IList<T>
+	public class ReadOnlyList<T> : SimpleReadOnlyCollection<T>, IReadOnlyList<T>, IList<T>
 	{
 		private readonly IList<T> _list; 
 

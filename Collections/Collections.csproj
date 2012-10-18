@@ -81,7 +81,7 @@
     <Compile Include="ProjectionComparer.cs" />
     <Compile Include="ProjectionEqualityComparer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReadOnlyCollection.cs" />
+    <Compile Include="SimpleReadOnlyCollection.cs" />
     <Compile Include="ReadOnlyDictionary.cs" />
     <Compile Include="ReadOnlyList.cs" />
     <Compile Include="ReadOnlySet.cs" />

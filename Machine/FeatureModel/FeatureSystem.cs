@@ -9,7 +9,7 @@ namespace SIL.Machine.FeatureModel
     /// <summary>
     /// This class represents a feature system. It encapsulates all of the valid features and symbols.
     /// </summary>
-    public class FeatureSystem : ICollection<Feature>
+    public class FeatureSystem : ICollection<Feature>, IFreezable<FeatureSystem>
     {
     	private readonly IDBearerSet<Feature> _features;
 
@@ -134,15 +134,13 @@ namespace SIL.Machine.FeatureModel
 
     	public void Add(Feature feature)
     	{
-			if (IsReadOnly)
-				throw new InvalidOperationException("The feature system is read-only.");
+			CheckFrozen();
 			_features.Add(feature);
     	}
 
     	public void Clear()
     	{
-			if (IsReadOnly)
-				throw new InvalidOperationException("The feature system is read-only.");
+			CheckFrozen();
     		_features.Clear();
     	}
 
@@ -158,16 +156,20 @@ namespace SIL.Machine.FeatureModel
 
 		public bool Remove(Feature feature)
 		{
-			if (IsReadOnly)
-				throw new InvalidOperationException("The feature system is read-only.");
+			CheckFrozen();
 			return _features.Remove(feature);
 		}
 
 		public bool Remove(string featureID)
 		{
-			if (IsReadOnly)
-				throw new InvalidOperationException("The feature system is read-only.");
+			CheckFrozen();
 			return _features.Remove(featureID);
+		}
+
+		private void CheckFrozen()
+		{
+			if (IsFrozen)
+				throw new InvalidOperationException("The feature system is immutable.");
 		}
 
     	public int Count
@@ -175,6 +177,26 @@ namespace SIL.Machine.FeatureModel
 			get { return _features.Count; }
     	}
 
-		public bool IsReadOnly { get; protected set; }
+	    public bool IsReadOnly
+	    {
+		    get { return IsFrozen; }
+	    }
+
+	    public bool IsFrozen { get; private set; }
+
+	    public void Freeze()
+	    {
+		    IsFrozen = true;
+	    }
+
+	    public bool ValueEquals(FeatureSystem other)
+	    {
+		    throw new NotImplementedException();
+	    }
+
+	    public int GetFrozenHashCode()
+	    {
+			throw new NotImplementedException();
+	    }
     }
 }

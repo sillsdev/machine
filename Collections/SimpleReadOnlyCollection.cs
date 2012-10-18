@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 namespace SIL.Collections
 {
-	public class ReadOnlyCollection<T> : ICollection<T>, IReadOnlyCollection<T>
+	public class SimpleReadOnlyCollection<T> : ICollection<T>, IReadOnlyCollection<T>
 	{
 		private readonly ICollection<T> _collection;
 
-		public ReadOnlyCollection(ICollection<T> collection)
+		public SimpleReadOnlyCollection(ICollection<T> collection)
 		{
 			_collection = collection;
 		}

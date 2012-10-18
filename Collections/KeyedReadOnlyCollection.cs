@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SIL.Collections
 {
-	public abstract class KeyedReadOnlyCollection<TKey, TItem> : ReadOnlyCollection<TItem>, IKeyedReadOnlyCollection<TKey, TItem>
+	public abstract class KeyedReadOnlyCollection<TKey, TItem> : SimpleReadOnlyCollection<TItem>, IKeyedReadOnlyCollection<TKey, TItem>
 	{
 		private readonly IEqualityComparer<TKey> _comparer;
 		private readonly Dictionary<TKey, TItem> _dict;

@@ -208,7 +208,7 @@ namespace SIL.Machine.FeatureModel
 				{
 					if (!firstValue)
 						sb.Append(", ");
-					sb.Append(value.ToString());
+					sb.Append(value);
 					firstValue = false;
 				}
 				sb.Append("}");
