@@ -21,7 +21,5 @@ namespace SIL.Machine.FeatureModel
 		/// </summary>
 		/// <value>The feature.</value>
 		public SymbolicFeature Feature { get; internal set; }
-
-		public double Weight { get; set; }
 	}
 }

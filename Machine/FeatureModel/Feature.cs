@@ -17,7 +17,5 @@ namespace SIL.Machine.FeatureModel
 		/// </summary>
 		/// <value>The default values.</value>
 		public FeatureValue DefaultValue { get; set; }
-
-		public double Weight { get; set; }
 	}
 }
