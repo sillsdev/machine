@@ -695,7 +695,7 @@ namespace SIL.Collections
 				collection.Add(item);
 		}
 
-		public static SimpleReadOnlyCollection<T> AsReadOnlyCollection<T>(this ICollection<T> collection)
+		public static SimpleReadOnlyCollection<T> AsSimpleReadOnlyCollection<T>(this ICollection<T> collection)
 		{
 			return new SimpleReadOnlyCollection<T>(collection);
 		}
