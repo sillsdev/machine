@@ -281,6 +281,9 @@ namespace SIL.Collections
 		/// <exception cref="System.ArgumentException">Thrown when the specified node is not owned by this linked list.</exception>
         public virtual void AddAfter(TNode node, TNode newNode, Direction dir)
         {
+			if (_size == 0 && node == null)
+				node = GetBegin(dir);
+
             if (node.List != this)
                 throw new ArgumentException("node is not a member of this collection.", "node");
 
@@ -315,6 +318,9 @@ namespace SIL.Collections
 
 		public void AddRangeAfter(TNode node, IEnumerable<TNode> newNodes, Direction dir)
 		{
+			if (_size == 0 && node == null)
+				node = GetBegin(dir);
+
 			if (node.List != this)
 				throw new ArgumentException("node is not a member of this collection.", "node");
 
