@@ -551,20 +551,6 @@ namespace SIL.Collections
 			return result;
 		}
 
-		public static string ConcatStrings(this IEnumerable<string> strings, string sep)
-		{
-			var sb = new StringBuilder();
-			bool first = true;
-			foreach (string str in strings)
-			{
-				if (!first)
-					sb.Append(sep);
-				sb.Append(str);
-				first = false;
-			}
-			return sb.ToString();
-		}
-
 		#endregion
 
 		#region Generic
