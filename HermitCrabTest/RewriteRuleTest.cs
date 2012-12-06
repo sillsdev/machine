@@ -673,7 +673,7 @@ namespace HermitCrabTest
 			                   	});
 
 			morpher = new Morpher(SpanFactory, Language);
-			Assert.That(morpher.ParseWord("sagk"), Throws.TypeOf<MorphException>().With.Property("ErrorCode").EqualTo(MorphErrorCode.UninstantiatedFeature));
+			Assert.That(() => morpher.ParseWord("sagk"), Throws.TypeOf<MorphException>().With.Property("ErrorCode").EqualTo(MorphErrorCode.UninstantiatedFeature));
 		}
 
 		[Test]
@@ -804,7 +804,7 @@ namespace HermitCrabTest
 			                   	});
 
 			morpher = new Morpher(SpanFactory, Language);
-			Assert.That(morpher.ParseWord("ipʰit"), Throws.TypeOf<MorphException>().With.Property("ErrorCode").EqualTo(MorphErrorCode.InfiniteLoop));
+			Assert.That(() => morpher.ParseWord("ipʰit"), Throws.TypeOf<MorphException>().With.Property("ErrorCode").EqualTo(MorphErrorCode.InfiniteLoop));
 
 			Allophonic.PhonologicalRules.Clear();
 

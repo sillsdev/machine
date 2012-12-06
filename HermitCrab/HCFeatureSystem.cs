@@ -30,8 +30,6 @@ namespace SIL.HermitCrab
 
 		static HCFeatureSystem()
 		{
-			Instance = new HCFeatureSystem();
-
 			Anchor = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "anchor" };
 			Segment = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "segment" };
 			Boundary = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "boundary" };
@@ -60,6 +58,8 @@ namespace SIL.HermitCrab
 
 			LeftSideAnchor = FeatureStruct.New().Symbol(Anchor).Symbol(LeftSide).Value;
 			RightSideAnchor = FeatureStruct.New().Symbol(Anchor).Symbol(RightSide).Value;
+
+			Instance = new HCFeatureSystem();
 		}
 
 		private HCFeatureSystem()
