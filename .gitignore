@@ -38,3 +38,6 @@ Backup/
 *.DotSettings
 *- Copy*
 packages/
+GraphSharp/
+WPFExtensions/
+images/

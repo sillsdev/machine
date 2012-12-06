@@ -1106,7 +1106,7 @@ namespace SIL.Machine.Test
 					.Annotation(FeatureStruct.New(PhoneticFeatSys)
 						.Symbol(Seg)
 						.Symbol("cons+")
-						.Feature("voice").EqualToVariable("a").Value))
+						.Feature("voice").EqualToVariable("a").Value).OneOrMore)
 				.Group("target", target => target
 					.Annotation(FeatureStruct.New(PhoneticFeatSys)
 						.Symbol(Seg)
@@ -1122,7 +1122,7 @@ namespace SIL.Machine.Test
 					.Annotation(FeatureStruct.New(PhoneticFeatSys)
 						.Symbol(Seg)
 						.Symbol("cons+")
-						.Feature("voice").Not.EqualToVariable("a").Value)).Value;
+						.Feature("voice").Not.EqualToVariable("a").Value).OneOrMore).Value;
 
 			StringData word = CreateStringData("fazk");
 			var matcher = new Matcher<StringData, int>(SpanFactory, pattern);

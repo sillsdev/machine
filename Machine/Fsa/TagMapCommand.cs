@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace SIL.Machine.Fsa
 {
-	internal class TagMapCommand : IComparable<TagMapCommand>
+	internal class TagMapCommand : IComparable<TagMapCommand>, IEquatable<TagMapCommand>
 	{
 		public const int CurrentPosition = -1;
 
@@ -28,6 +28,24 @@ namespace SIL.Machine.Fsa
 			if (Dest > other.Dest)
 				return 1;
 			return 0;
+		}
+
+		public bool Equals(TagMapCommand other)
+		{
+			return other != null && Dest == other.Dest && Src == other.Src;
+		}
+
+		public override bool Equals(object obj)
+		{
+			return Equals(obj as TagMapCommand);
+		}
+
+		public override int GetHashCode()
+		{
+			int code = 23;
+			code = code * 31 + Dest;
+			code = code * 31 + Src;
+			return code;
 		}
 
 		public override string ToString()

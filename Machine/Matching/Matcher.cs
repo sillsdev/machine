@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using SIL.Collections;
 using SIL.Machine.Fsa;
@@ -61,17 +60,38 @@ namespace SIL.Machine.Matching
 			int nextPriority = 0;
 			bool deterministic = GeneratePatternNfa(_fsa.StartState, pattern, null, new Func<Match<TData, TOffset>, bool>[0], ref nextPriority);
 
-			//var writer = new StreamWriter(string.Format("c:\\{0}-nfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
-			//_fsa.ToGraphViz(writer);
-			//writer.Close();
+#if DEBUG
+			var writer = new System.IO.StreamWriter(string.Format("c:\\{0}-nfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
+			_fsa.ToGraphViz(writer);
+			writer.Close();
+#endif
 
 			if (deterministic && !_settings.AllSubmatches)
 			{
-				_fsa.Determinize(_settings.FastCompile);
-
-				//writer = new StreamWriter(string.Format("c:\\{0}-dfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
-				//_fsa.ToGraphViz(writer);
-				//writer.Close();
+				if (_settings.FastCompile)
+					_fsa.Quasideterminize();
+				else
+					_fsa.Determinize();
+#if DEBUG
+				writer = new System.IO.StreamWriter(string.Format("c:\\{0}-dfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
+				_fsa.ToGraphViz(writer);
+				writer.Close();
+#endif
+				_fsa.Minimize();
+#if DEBUG
+				writer = new System.IO.StreamWriter(string.Format("c:\\{0}-mindfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
+				_fsa.ToGraphViz(writer);
+				writer.Close();
+#endif
+			}
+			else
+			{
+				_fsa.EpsilonRemoval();
+#if DEBUG
+				writer = new System.IO.StreamWriter(string.Format("c:\\{0}-ernfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
+				_fsa.ToGraphViz(writer);
+				writer.Close();
+#endif
 			}
 		}
 

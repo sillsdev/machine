@@ -15,8 +15,6 @@ namespace SIL.Machine.Fsa
 	public class Arc<TData, TOffset> where TData : IData<TOffset>
 	{
 		private readonly State<TData, TOffset> _source;
-		private readonly State<TData, TOffset> _target;
-		private readonly FeatureStruct _condition;
 		private readonly int _tag = -1;
 		private readonly List<TagMapCommand> _commands;
 		private readonly ArcPriorityType _priorityType;
@@ -43,8 +41,8 @@ namespace SIL.Machine.Fsa
 		internal Arc(State<TData, TOffset> source, FeatureStruct condition, State<TData, TOffset> target)
 		{
 			_source = source;
-			_condition = condition;
-			_target = target;
+			Condition = condition;
+			Target = target;
 			_priorityType = ArcPriorityType.Medium;
 			Priority = -1;
 			_commands = new List<TagMapCommand>();
@@ -55,21 +53,9 @@ namespace SIL.Machine.Fsa
 			get { return _source; }
 		}
 
-		public State<TData, TOffset> Target
-		{
-			get
-			{
-				return _target;
-			}
-		} 
+		public State<TData, TOffset> Target { get; internal set; }
 
-		public FeatureStruct Condition
-		{
-			get
-			{
-				return _condition;
-			}
-		}
+		public FeatureStruct Condition { get; internal set; }
 
 		public int Tag
 		{
@@ -97,7 +83,7 @@ namespace SIL.Machine.Fsa
 		public override string ToString()
 		{
 			var sb = new StringBuilder();
-			if (_condition == null)
+			if (Condition == null)
 			{
 				if (_tag != -1)
 				{
@@ -111,13 +97,13 @@ namespace SIL.Machine.Fsa
 			}
 			else
 			{
-				sb.Append(_condition.ToString());
+				sb.Append(Condition);
 			}
 
-			if (Priority != -1)
+			if (Priority == -1)
 			{
 				sb.Append(", ");
-				sb.Append(Priority);
+				sb.Append(_priorityType.ToString());
 			}
 
 			return sb.ToString();
