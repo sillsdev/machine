@@ -103,6 +103,8 @@
     <Compile Include="Rules\IterativePatternRule.cs" />
     <Compile Include="Rules\LinearRuleCascade.cs" />
     <Compile Include="Rules\MultiplePatternRule.cs" />
+    <Compile Include="Rules\MultithreadedCombinationRuleCascade.cs" />
+    <Compile Include="Rules\MultithreadedPermutationRuleCascade.cs" />
     <Compile Include="Rules\PermutationRuleCascade.cs" />
     <Compile Include="Rules\PipelineRuleCascade.cs" />
     <Compile Include="Rules\SimultaneousPatternRule.cs" />

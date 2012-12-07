@@ -100,10 +100,10 @@ namespace SIL.Machine.Fsa
 				sb.Append(Condition);
 			}
 
-			if (Priority == -1)
+			if (Priority != -1)
 			{
 				sb.Append(", ");
-				sb.Append(_priorityType.ToString());
+				sb.Append(Priority);
 			}
 
 			return sb.ToString();

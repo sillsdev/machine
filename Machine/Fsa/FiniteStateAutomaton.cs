@@ -534,7 +534,7 @@ namespace SIL.Machine.Fsa
 				get { return _nfaStates.Count == 0; }
 			}
 
-			public State<TData, TOffset> DfaState { get; set; }
+			public State<TData, TOffset> State { get; set; }
 
 
 			public override bool Equals(object obj)
@@ -574,21 +574,21 @@ namespace SIL.Machine.Fsa
 
 		public void Determinize()
 		{
-			Optimize(DeterministicGetArcs, false);
+			Optimize(DeterministicGetArcs, true);
 			_deterministic = true;
 			_tryAllConditions = false;
 		}
 
 		public void Quasideterminize()
 		{
-			Optimize(QuasideterministicGetArcs, false);
+			Optimize(QuasideterministicGetArcs, true);
 			_deterministic = true;
 			_tryAllConditions = true;
 		}
 
 		public void EpsilonRemoval()
 		{
-			Optimize(EpsilonRemovalGetArcs, true);
+			Optimize(EpsilonRemovalGetArcs, false);
 			_deterministic = false;
 			_tryAllConditions = true;
 		}
@@ -637,7 +637,10 @@ namespace SIL.Machine.Fsa
 				var reach = new SubsetState(preprocessedCond.Item2);
 				FeatureStruct condition;
 				if (!reach.IsEmpty && preprocessedCond.Item1.CheckDisjunctiveConsistency(false, new VariableBindings(), out condition))
+				{
+					condition.Freeze();
 					yield return Tuple.Create(reach, condition);
+				}
 			}
 		}
 
@@ -677,7 +680,7 @@ namespace SIL.Machine.Fsa
 
 			_states.Clear();
 			_startState = CreateState();
-			subsetStart.DfaState = _startState;
+			subsetStart.State = _startState;
 
 			var cmdTags = new Dictionary<int, int>();
 			foreach (NfaStateInfo state in subsetStart.NfaStates)
@@ -697,9 +700,9 @@ namespace SIL.Machine.Fsa
 				SubsetState curSubsetState = unmarkedSubsetStates.Dequeue();
 
 				foreach (Tuple<SubsetState, FeatureStruct> t in arcsSelector(curSubsetState))
-					CreateDeterministicState(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, t.Item1, t.Item2, addMoveCmdsOnNewState);
+					CreateOptimizedState(subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, t.Item1, t.Item2, addMoveCmdsOnNewState);
 
-				Arc<TData, TOffset>[] arcs = curSubsetState.DfaState.Arcs.ToArray();
+				Arc<TData, TOffset>[] arcs = curSubsetState.State.Arcs.ToArray();
 				for (int i = 0; i < arcs.Length; i++)
 				{
 				    for (int j = i + 1; j < arcs.Length; j++)
@@ -708,7 +711,7 @@ namespace SIL.Machine.Fsa
 				        if (arcs[i].Target.Equals(arcs[j].Target) && arcs[i].Condition.Unify(arcs[j].Condition, out fs))
 				        {
 				            arcs[j].Condition = fs;
-				            curSubsetState.DfaState.Arcs.Remove(arcs[i]);
+				            curSubsetState.State.Arcs.Remove(arcs[i]);
 				            break;
 				        }
 				    }
@@ -742,8 +745,8 @@ namespace SIL.Machine.Fsa
 			cmds.Sort();
 		}
 
-		private void CreateDeterministicState(Dictionary<SubsetState, SubsetState> subsetStates, Queue<SubsetState> unmarkedSubsetStates,
-			Dictionary<Tuple<int, int>, int> registerIndices, SubsetState curSubsetState, SubsetState reach, FeatureStruct condition, bool addMoveCmdsOnNewState)
+		private void CreateOptimizedState(Dictionary<SubsetState, SubsetState> subsetStates, Queue<SubsetState> unmarkedSubsetStates,
+			Dictionary<Tuple<int, int>, int> registerIndices, SubsetState curSubsetState, SubsetState reach, FeatureStruct condition, bool deterministic)
 		{
 			SubsetState target = EpsilonClosure(reach, curSubsetState);
 			// this makes the FSA not complete
@@ -770,7 +773,7 @@ namespace SIL.Machine.Fsa
 				}
 
 				var cmds = new List<TagMapCommand>();
-				if (addMoveCmdsOnNewState)
+				if (!deterministic)
 				{
 					var tags = new HashSet<int>();
 					foreach (NfaStateInfo srcState in curSubsetState.NfaStates)
@@ -820,11 +823,11 @@ namespace SIL.Machine.Fsa
 								}
 							}
 						}
-						target.DfaState = CreateAcceptingState(acceptInfos, finishers, IsLazyAcceptingState(target));
+						target.State = CreateAcceptingState(acceptInfos, finishers, IsLazyAcceptingState(target));
 					}
 					else
 					{
-						target.DfaState = CreateState();
+						target.State = CreateState();
 					}
 				}
 
@@ -845,7 +848,7 @@ namespace SIL.Machine.Fsa
 						cmds.Add(new TagMapCommand(reg, TagMapCommand.CurrentPosition));
 				}
 
-				curSubsetState.DfaState.Arcs.Add(condition, target.DfaState, cmds);
+				curSubsetState.State.Arcs.Add(condition, target.State, cmds);
 			}
 		}
 
@@ -1058,74 +1061,155 @@ namespace SIL.Machine.Fsa
 
 		public void Minimize()
 		{
-			if (!_deterministic)
-				throw new InvalidOperationException("The FSA must be deterministic to be minimized.");
+		    if (!_deterministic)
+		        throw new InvalidOperationException("The FSA must be deterministic to be minimized.");
 
-			var diffTable = new Dictionary<UnorderedTuple<State<TData, TOffset>, State<TData, TOffset>>, bool>();
-
-			var nondistinguisablePairs = new Dictionary<State<TData, TOffset>, State<TData, TOffset>>();
-			bool diff = true;
-			while (diff)
+			var acceptingStates = new HashSet<State<TData, TOffset>>();
+			var nonacceptingStates = new HashSet<State<TData, TOffset>>();
+			foreach (State<TData, TOffset> state in _states)
 			{
-				nondistinguisablePairs.Clear();
-				diff = false;
-				for (int i = 0; i < _states.Count; i++)
+				if (state.IsAccepting)
+					acceptingStates.Add(state);
+				else
+					nonacceptingStates.Add(state);
+			}
+
+			var partitions = new List<HashSet<State<TData, TOffset>>> {nonacceptingStates};
+			var waiting = new List<HashSet<State<TData, TOffset>>>();
+			foreach (IGrouping<MinimizeStateInfo, State<TData, TOffset>> acceptingPartition in acceptingStates.GroupBy(s => new MinimizeStateInfo(s)))
+			{
+				var set = new HashSet<State<TData, TOffset>>(acceptingPartition);
+				partitions.Add(set);
+				waiting.Add(set);
+			}
+
+			while (waiting.Count > 0)
+			{
+				HashSet<State<TData, TOffset>> a = waiting.First();
+				waiting.RemoveAt(0);
+				foreach (IGrouping<MinimizeStateInfo, State<TData, TOffset>> x in _states.SelectMany(state => state.Arcs, (state, arc) => new MinimizeStateInfo(state, arc))
+					.Where(msi => a.Contains(msi.Arc.Target)).GroupBy(msi => msi, msi => msi.State))
 				{
-					State<TData, TOffset> iState = _states[i];
-					for (int j = i + 1; j < _states.Count; j++)
+					for (int i = partitions.Count - 1; i >= 0; i--)
 					{
-						State<TData, TOffset> jState = _states[j];
-						UnorderedTuple<State<TData, TOffset>, State<TData, TOffset>> ijKey = UnorderedTuple.Create(iState, jState);
-						if (diffTable.GetValue(ijKey, () => false))
+						HashSet<State<TData, TOffset>> y = partitions[i];
+						var subset1 = new HashSet<State<TData, TOffset>>(x.Intersect(y));
+						if (subset1.Count == 0)
 							continue;
 
-						if (iState.IsAccepting != jState.IsAccepting || iState.Arcs.Count != jState.Arcs.Count)
+						var subset2 = new HashSet<State<TData, TOffset>>(y.Except(x));
+						partitions[i] = subset1;
+						if (subset2.Count > 0)
+							partitions.Add(subset2);
+						bool found = false;
+						for (int j = 0; j < waiting.Count; j++)
 						{
-							diffTable[ijKey] = true;
-							diff = true;
-							continue;
-						}
-
-						if (iState.IsAccepting && (!iState.Finishers.SequenceEqual(jState.Finishers) || !iState.AcceptInfos.SequenceEqual(jState.AcceptInfos)))
-						{
-							diffTable[ijKey] = true;
-							diff = true;
-							continue;
-						}
-
-						foreach (Arc<TData, TOffset> iArc in iState.Arcs)
-						{
-							if (!jState.Arcs.Any(jArc => (iArc.Target.Equals(jArc.Target) || !diffTable.GetValue(UnorderedTuple.Create(iArc.Target, jArc.Target), () => false))
-								&& iArc.Commands.SequenceEqual(jArc.Commands) && iArc.Condition.IsUnifiable(jArc.Condition)))
+							if (waiting[j].SetEquals(y))
 							{
-								diffTable[ijKey] = true;
-								diff = true;
+								waiting[j] = subset1;
+								if (subset2.Count > 0)
+									waiting.Add(subset2);
+								found = true;
 								break;
 							}
 						}
 
-						if (!diff)
-						    nondistinguisablePairs[jState] = iState;
+						if (!found)
+						{
+							if (subset1.Count <= subset2.Count)
+								waiting.Add(subset1);
+							else if (subset2.Count > 0)
+								waiting.Add(subset2);
+						}
 					}
 				}
 			}
 
+			Dictionary<State<TData, TOffset>, State<TData, TOffset>> nondistinguisablePairs = partitions.Where(p => p.Count > 1)
+				.SelectMany(p => p.Where(state => !state.Equals(p.First())), (p, state) => new {Key = state, Value = p.First()}).ToDictionary(pair => pair.Key, pair => pair.Value);
 			if (nondistinguisablePairs.Count > 0)
 			{
-				var statesToRemove = new HashSet<State<TData, TOffset>>(_states.Where(s => !s.Equals(_startState)));
-				foreach (State<TData, TOffset> state in _states)
+		        var statesToRemove = new HashSet<State<TData, TOffset>>(_states.Where(s => !s.Equals(_startState)));
+		        foreach (State<TData, TOffset> state in _states)
+		        {
+		            foreach (Arc<TData, TOffset> arc in state.Arcs)
+		            {
+		                State<TData, TOffset> curState = arc.Target;
+		                State<TData, TOffset> s;
+		                while (nondistinguisablePairs.TryGetValue(curState, out s))
+		                    curState = s;
+		                arc.Target = curState;
+		                statesToRemove.Remove(curState);
+		            }
+		        }
+		        _states.RemoveAll(statesToRemove.Contains);
+			}
+		}
+
+		private class MinimizeStateInfo : IEquatable<MinimizeStateInfo>
+		{
+			private readonly State<TData, TOffset> _state;
+			private readonly Arc<TData, TOffset> _arc;
+
+			public MinimizeStateInfo(State<TData, TOffset> state)
+				: this(state, null)
+			{
+			}
+
+			public MinimizeStateInfo(State<TData, TOffset> state, Arc<TData, TOffset> arc)
+			{
+				_state = state;
+				_arc = arc;
+			}
+
+			public State<TData, TOffset> State
+			{
+				get { return _state; }
+			}
+
+			public Arc<TData, TOffset> Arc
+			{
+				get { return _arc; }
+			}
+
+			public bool Equals(MinimizeStateInfo other)
+			{
+				if (other == null)
+					return false;
+
+				if (_state.IsAccepting != other._state.IsAccepting)
+					return false;
+
+				if (_state.IsAccepting && (!_state.Finishers.SequenceEqual(other._state.Finishers) || !_state.AcceptInfos.SequenceEqual(other._state.AcceptInfos)))
+					return false;
+
+				if (_arc == null)
+					return other._arc == null;
+				if (other._arc == null)
+					return _arc == null;
+				return _arc.Commands.SequenceEqual(other._arc.Commands) && _arc.Condition.ValueEquals(other._arc.Condition);
+			}
+
+			public override bool Equals(object obj)
+			{
+				return obj != null && Equals(obj as MinimizeStateInfo);
+			}
+
+			public override int GetHashCode()
+			{
+				int code = 23;
+				code = code * 31 + _state.IsAccepting.GetHashCode();
+				if (_state.IsAccepting)
 				{
-					foreach (Arc<TData, TOffset> arc in state.Arcs)
-					{
-						State<TData, TOffset> curState = arc.Target;
-						State<TData, TOffset> s;
-						while (nondistinguisablePairs.TryGetValue(curState, out s))
-							curState = s;
-						arc.Target = curState;
-						statesToRemove.Remove(curState);
-					}
+					code = code * 31 + _state.Finishers.GetSequenceHashCode();
+					code = code * 31 + _state.AcceptInfos.GetSequenceHashCode();
 				}
-				_states.RemoveAll(statesToRemove.Contains);
+				if (_arc != null)
+				{
+					code = code * 31 + _arc.Commands.GetSequenceHashCode();
+					code = code * 31 + _arc.Condition.GetFrozenHashCode();
+				}
+				return code;
 			}
 		}
 
