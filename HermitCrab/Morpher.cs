@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using SIL.Collections;
 using SIL.Machine;
 using SIL.Machine.FeatureModel;
@@ -99,12 +100,32 @@ namespace SIL.HermitCrab
 			input.CurrentTrace = trace;
 
 			// Unapply rules
+			var lockObj = new object();
+			MorphException exception = null;
 			var validWords = new HashSet<Word>(FreezableEqualityComparer<Word>.Instance);
-			foreach (Word analysisWord in _analysisRule.Apply(input))
-			{
-				foreach (Word synthesisWord in LexicalLookup(analysisWord))
-					validWords.UnionWith(_synthesisRule.Apply(synthesisWord).Where(w => IsWordValid(w) && _lang.SurfaceStratum.SymbolTable.IsMatch(word, w.Shape)));
-			}
+			Parallel.ForEach(_analysisRule.Apply(input), (analysisWord, state) =>
+			    {
+			        var results = new HashSet<Word>(FreezableEqualityComparer<Word>.Instance);
+			        try
+			        {
+			            foreach (Word synthesisWord in LexicalLookup(analysisWord))
+			                results.UnionWith(_synthesisRule.Apply(synthesisWord).Where(w => IsWordValid(w) && _lang.SurfaceStratum.SymbolTable.IsMatch(word, w.Shape)));
+			        }
+			        catch (MorphException me)
+			        {
+			            lock (lockObj)
+			                exception = me;
+			            state.Stop();
+			        }
+
+				    if (results.Count > 0)
+				    {
+					    lock (lockObj)
+						    validWords.UnionWith(results);
+				    }
+			    });
+			if (exception != null)
+			    throw exception;
 
 			var matchList = new List<Word>();
 			foreach (IGrouping<IEnumerable<Allomorph>, Word> group in validWords.GroupBy(validWord => validWord.AllomorphsInMorphOrder, MorphsEqualityComparer))
