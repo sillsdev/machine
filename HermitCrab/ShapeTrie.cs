@@ -10,13 +10,14 @@ namespace SIL.HermitCrab
 {
 	public class ShapeTrie
 	{
-		private readonly FiniteStateAutomaton<Shape, ShapeNode> _fsa;
+		private readonly FiniteStateAcceptor<Shape, ShapeNode> _fsa;
 		private readonly Func<Annotation<ShapeNode>, bool> _filter;
 		private int _shapeCount;
  
 		public ShapeTrie(Func<Annotation<ShapeNode>, bool> filter)
 		{
-			_fsa = new FiniteStateAutomaton<Shape, ShapeNode>(Direction.LeftToRight, filter);
+			_fsa = new FiniteStateAcceptor<Shape, ShapeNode>(Direction.LeftToRight, filter);
+			_fsa.StartState = _fsa.CreateState();
 			_filter = filter;
 		}
 
@@ -26,18 +27,18 @@ namespace SIL.HermitCrab
 			_shapeCount++;
 		}
 
-		private void AddNode(ShapeNode node, State<Shape, ShapeNode> state, string id)
+		private void AddNode(ShapeNode node, State<Shape, ShapeNode, FsaMatch<ShapeNode>> state, string id)
 		{
-			Arc<Shape, ShapeNode> arc = state.Arcs.FirstOrDefault(a => node.Annotation.FeatureStruct.ValueEquals(a.Condition));
+			Arc<Shape, ShapeNode, FsaMatch<ShapeNode>> arc = state.Arcs.FirstOrDefault(a => node.Annotation.FeatureStruct.ValueEquals(a.Input.FeatureStruct));
 			ShapeNode nextNode = node.GetNext(n => _filter(n.Annotation));
-			State<Shape, ShapeNode> nextState;
+			State<Shape, ShapeNode, FsaMatch<ShapeNode>> nextState;
 			if (arc != null)
 			{
 				nextState = arc.Target;
 				if (nextNode == node.List.End)
 				{
 					nextState.IsAccepting = true;
-					nextState.AcceptInfos.Add(new AcceptInfo<Shape, ShapeNode>(id, (shape, match) => true, _shapeCount));
+					nextState.AcceptInfos.Add(new AcceptInfo<Shape, ShapeNode, FsaMatch<ShapeNode>>(id, (shape, match) => true, _shapeCount));
 				}
 			}
 			else
