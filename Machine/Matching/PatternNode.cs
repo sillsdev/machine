@@ -35,7 +35,7 @@ namespace SIL.Machine.Matching
 			get { return Root as Pattern<TData, TOffset>; }
 		}
 
-		internal virtual State<TData, TOffset> GenerateNfa(FiniteStateAutomaton<TData, TOffset> fsa, State<TData, TOffset> startState, out bool hasVariables)
+		internal virtual State<TData, TOffset, FsaMatch<TOffset>> GenerateNfa(FiniteStateAcceptor<TData, TOffset> fsa, State<TData, TOffset, FsaMatch<TOffset>> startState, out bool hasVariables)
 		{
 			hasVariables = false;
 			if (IsLeaf)

@@ -1383,7 +1383,13 @@ namespace SIL.Machine.FeatureModel
 			if (this == other)
 				return true;
 
-			return other != null && ValueEqualsImpl(other, new HashSet<FeatureValue>(), new HashSet<FeatureValue>(),
+			if (other == null)
+				return false;
+
+			if (_hashCode.HasValue && other._hashCode.HasValue && _hashCode != other._hashCode)
+				return false;
+
+			return ValueEqualsImpl(other, new HashSet<FeatureValue>(), new HashSet<FeatureValue>(),
 				new Dictionary<FeatureValue, FeatureValue>());
 		}
 

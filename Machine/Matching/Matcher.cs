@@ -29,7 +29,7 @@ namespace SIL.Machine.Matching
 
 		private readonly SpanFactory<TOffset> _spanFactory;
 		private readonly MatcherSettings<TOffset> _settings;
-		private readonly FiniteStateAutomaton<TData, TOffset> _fsa;
+		private readonly FiniteStateAcceptor<TData, TOffset> _fsa;
 
 		public Matcher(SpanFactory<TOffset> spanFactory, Pattern<TData, TOffset> pattern)
 			: this(spanFactory, pattern, new MatcherSettings<TOffset>())
@@ -41,7 +41,7 @@ namespace SIL.Machine.Matching
 			_spanFactory = spanFactory;
 			_settings = settings;
 			_settings.ReadOnly = true;
-			_fsa = new FiniteStateAutomaton<TData, TOffset>(_settings.Direction, _settings.Filter);
+			_fsa = new FiniteStateAcceptor<TData, TOffset>(_settings.Direction, _settings.Filter);
 			Compile(pattern);
 		}
 
@@ -57,6 +57,7 @@ namespace SIL.Machine.Matching
 
 		private void Compile(Pattern<TData, TOffset> pattern)
 		{
+			_fsa.StartState = _fsa.CreateState();
 			int nextPriority = 0;
 			bool deterministic = GeneratePatternNfa(_fsa.StartState, pattern, null, new Func<Match<TData, TOffset>, bool>[0], ref nextPriority);
 
@@ -95,7 +96,7 @@ namespace SIL.Machine.Matching
 			}
 		}
 
-		private bool GeneratePatternNfa(State<TData, TOffset> startState, Pattern<TData, TOffset> pattern, string parentName,
+		private bool GeneratePatternNfa(State<TData, TOffset, FsaMatch<TOffset>> startState, Pattern<TData, TOffset> pattern, string parentName,
 			Func<Match<TData, TOffset>, bool>[] acceptables, ref int nextPriority)
 		{
 			bool deterministic = true;
@@ -117,7 +118,7 @@ namespace SIL.Machine.Matching
 				if (hasVariables)
 					deterministic = false;
 				startState = _fsa.CreateTag(startState, _fsa.CreateState(), EntireMatch, false);
-				State<TData, TOffset> acceptingState = _fsa.CreateAcceptingState(name,
+				State<TData, TOffset, FsaMatch<TOffset>> acceptingState = _fsa.CreateAcceptingState(name,
 					(input, match) =>
 					{
 						Match<TData, TOffset> patMatch = CreatePatternMatch(input, match);

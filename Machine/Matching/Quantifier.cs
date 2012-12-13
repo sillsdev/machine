@@ -99,13 +99,13 @@ namespace SIL.Machine.Matching
 			return true;
 		}
 
-		internal override State<TData, TOffset> GenerateNfa(FiniteStateAutomaton<TData, TOffset> fsa, State<TData, TOffset> startState, out bool hasVariables)
+		internal override State<TData, TOffset, FsaMatch<TOffset>> GenerateNfa(FiniteStateAcceptor<TData, TOffset> fsa, State<TData, TOffset, FsaMatch<TOffset>> startState, out bool hasVariables)
 		{
 			hasVariables = false;
 			ArcPriorityType priorityType = IsGreedy ? ArcPriorityType.High : ArcPriorityType.Low;
-			State<TData, TOffset> endState;
-			State<TData, TOffset> currentState = startState;
-			var startStates = new List<State<TData, TOffset>>();
+			State<TData, TOffset, FsaMatch<TOffset>> endState;
+			State<TData, TOffset, FsaMatch<TOffset>> currentState = startState;
+			var startStates = new List<State<TData, TOffset, FsaMatch<TOffset>>>();
 			if (MinOccur == 0)
 			{
 				endState = startState.Arcs.Add(fsa.CreateState(), priorityType);
@@ -138,7 +138,7 @@ namespace SIL.Machine.Matching
 					endState = base.GenerateNfa(fsa, endState, out hasVariables);
 				}
 			}
-			foreach (State<TData, TOffset> state in startStates)
+			foreach (State<TData, TOffset, FsaMatch<TOffset>> state in startStates)
 				state.Arcs.Add(endState);
 
 			return endState;

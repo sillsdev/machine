@@ -43,7 +43,7 @@ namespace SIL.Machine.Matching
 			return false;
 		}
 
-		internal override State<TData, TOffset> GenerateNfa(FiniteStateAutomaton<TData, TOffset> fsa, State<TData, TOffset> startState, out bool hasVariables)
+		internal override State<TData, TOffset, FsaMatch<TOffset>> GenerateNfa(FiniteStateAcceptor<TData, TOffset> fsa, State<TData, TOffset, FsaMatch<TOffset>> startState, out bool hasVariables)
 		{
 			hasVariables = _fs.HasVariables;
 			FeatureStruct condition = _fs;

@@ -2,13 +2,13 @@
 
 namespace SIL.Machine.Fsa
 {
-	public class AcceptInfo<TData, TOffset> : IEquatable<AcceptInfo<TData, TOffset>> where TData : IData<TOffset>
+	public class AcceptInfo<TData, TOffset, TResult> : IEquatable<AcceptInfo<TData, TOffset, TResult>> where TData : IData<TOffset>
 	{
 		private readonly string _id;
-		private readonly Func<TData, FsaMatch<TOffset>, bool> _acceptable;
+		private readonly Func<TData, TResult, bool> _acceptable;
 		private readonly int _priority;
 
-		public AcceptInfo(string id, Func<TData, FsaMatch<TOffset>, bool> acceptable, int priority)
+		public AcceptInfo(string id, Func<TData, TResult, bool> acceptable, int priority)
 		{
 			_id = id;
 			_acceptable = acceptable;
@@ -20,7 +20,7 @@ namespace SIL.Machine.Fsa
 			get { return _id; }
 		}
 
-		public Func<TData, FsaMatch<TOffset>, bool> Acceptable
+		public Func<TData, TResult, bool> Acceptable
 		{
 			get { return _acceptable; }
 		}
@@ -30,14 +30,14 @@ namespace SIL.Machine.Fsa
 			get { return _priority; }
 		}
 
-		public bool Equals(AcceptInfo<TData, TOffset> other)
+		public bool Equals(AcceptInfo<TData, TOffset, TResult> other)
 		{
 			return other != null && _id == other._id && _acceptable == other._acceptable;
 		}
 
 		public override bool Equals(object obj)
 		{
-			return Equals(obj as AcceptInfo<TData, TOffset>);
+			return Equals(obj as AcceptInfo<TData, TOffset, TResult>);
 		}
 
 		public override int GetHashCode()

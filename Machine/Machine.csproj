@@ -49,6 +49,10 @@
     <Compile Include="FeatureModel\FeaturePath.cs" />
     <Compile Include="FeatureModel\PossibleSymbolCollection.cs" />
     <Compile Include="Fsa\ArcCollection.cs" />
+    <Compile Include="Fsa\FstResult.cs" />
+    <Compile Include="Fsa\Predicate.cs" />
+    <Compile Include="Fsa\FiniteStateAcceptor.cs" />
+    <Compile Include="Fsa\FiniteStateTransducer.cs" />
     <Compile Include="Matching\GroupCaptureCollection.cs" />
     <Compile Include="FeatureModel\ComplexFeature.cs" />
     <Compile Include="FeatureModel\Disjunction.cs" />

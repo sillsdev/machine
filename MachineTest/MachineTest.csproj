@@ -56,6 +56,7 @@
   <ItemGroup>
     <Compile Include="AnnotationTest.cs" />
     <Compile Include="FeatureStructTest.cs" />
+    <Compile Include="FiniteStateTransducerTest.cs" />
     <Compile Include="MatcherTest.cs" />
     <Compile Include="PhoneticTestBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
