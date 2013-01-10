@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Collections;
-using SIL.Machine.Fsa;
+using SIL.Machine.FiniteState;
 
 namespace SIL.Machine.Matching
 {
-	public class Group<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Group<TData, TOffset>> where TData : IData<TOffset>
+	public class Group<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Group<TData, TOffset>> where TData : IData<TOffset>, IDeepCloneable<TData>
 	{
 		private readonly string _name;
 
@@ -62,7 +62,7 @@ namespace SIL.Machine.Matching
 			return true;
 		}
 
-		internal override State<TData, TOffset, FsaMatch<TOffset>> GenerateNfa(FiniteStateAcceptor<TData, TOffset> fsa, State<TData, TOffset, FsaMatch<TOffset>> startState, out bool hasVariables)
+		internal override State<TData, TOffset> GenerateNfa(Fst<TData, TOffset> fsa, State<TData, TOffset> startState, out bool hasVariables)
 		{
 			if (IsLeaf)
 			{

@@ -45,6 +45,7 @@
     <Compile Include="BidirList.cs" />
     <Compile Include="BidirListNode.cs" />
     <Compile Include="BidirTreeNode.cs" />
+    <Compile Include="BulkObservableCollection.cs" />
     <Compile Include="CollectionsExtensions.cs" />
     <Compile Include="Freezable.cs" />
     <Compile Include="FreezableEqualityComparer.cs" />
@@ -67,7 +68,7 @@
     <Compile Include="IReadOnlyList.cs" />
     <Compile Include="IReadOnlySet.cs" />
     <Compile Include="KeyedCollection.cs" />
-    <Compile Include="KeyedObservableCollection.cs" />
+    <Compile Include="KeyedBulkObservableCollection.cs" />
     <Compile Include="KeyedReadOnlyCollection.cs" />
     <Compile Include="NotifyPropertyChangedBase.cs" />
     <Compile Include="NullableValue.cs" />

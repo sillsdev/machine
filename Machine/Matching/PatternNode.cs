@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Collections;
-using SIL.Machine.Fsa;
+using SIL.Machine.FiniteState;
 
 namespace SIL.Machine.Matching
 {
 	/// <summary>
 	/// This is the abstract class that all phonetic pattern nodes extend.
 	/// </summary>
-	public abstract class PatternNode<TData, TOffset> : OrderedBidirTreeNode<PatternNode<TData, TOffset>>, IDeepCloneable<PatternNode<TData, TOffset>>, IFreezable<PatternNode<TData, TOffset>> where TData : IData<TOffset>
+	public abstract class PatternNode<TData, TOffset> : OrderedBidirTreeNode<PatternNode<TData, TOffset>>, IDeepCloneable<PatternNode<TData, TOffset>>, IFreezable<PatternNode<TData, TOffset>> where TData : IData<TOffset>, IDeepCloneable<TData>
 	{
 		private int _hashCode;
 
@@ -35,7 +35,7 @@ namespace SIL.Machine.Matching
 			get { return Root as Pattern<TData, TOffset>; }
 		}
 
-		internal virtual State<TData, TOffset, FsaMatch<TOffset>> GenerateNfa(FiniteStateAcceptor<TData, TOffset> fsa, State<TData, TOffset, FsaMatch<TOffset>> startState, out bool hasVariables)
+		internal virtual State<TData, TOffset> GenerateNfa(Fst<TData, TOffset> fsa, State<TData, TOffset> startState, out bool hasVariables)
 		{
 			hasVariables = false;
 			if (IsLeaf)

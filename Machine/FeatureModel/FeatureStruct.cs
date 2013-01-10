@@ -1066,8 +1066,12 @@ namespace SIL.Machine.FeatureModel
 				    {
 				        FeatureStruct disjunct = newDisjunction.First();
 				        FeatureValue newFV;
-				        newFS.UnifyDefinite(disjunct, useDefaults, varBindings, out newFV);
-				        newFS = (FeatureStruct) newFV;
+					    if (!newFS.UnifyDefinite(disjunct, useDefaults, varBindings, out newFV))
+					    {
+						    newFS = null;
+						    return false;
+					    }
+					    newFS = (FeatureStruct) newFV;
 				        uncheckedParts = true;
 				    }
 				    else

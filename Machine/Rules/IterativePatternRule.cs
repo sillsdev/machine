@@ -5,7 +5,7 @@ using SIL.Machine.Matching;
 
 namespace SIL.Machine.Rules
 {
-	public class IterativePatternRule<TData, TOffset> : PatternRule<TData, TOffset> where TData : IData<TOffset>
+	public class IterativePatternRule<TData, TOffset> : PatternRule<TData, TOffset> where TData : IData<TOffset>, IDeepCloneable<TData>
 	{
 		public IterativePatternRule(SpanFactory<TOffset> spanFactory, IPatternRuleSpec<TData, TOffset> ruleSpec)
 			: base(spanFactory, ruleSpec)

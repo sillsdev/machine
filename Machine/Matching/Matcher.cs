@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Collections;
-using SIL.Machine.Fsa;
+using SIL.Machine.FiniteState;
 
 namespace SIL.Machine.Matching
 {
-	public class Matcher<TData, TOffset> where TData : IData<TOffset>
+	public class Matcher<TData, TOffset> where TData : IData<TOffset>, IDeepCloneable<TData>
 	{
 		public const string EntireMatch = "*entire*";
 
@@ -29,7 +29,7 @@ namespace SIL.Machine.Matching
 
 		private readonly SpanFactory<TOffset> _spanFactory;
 		private readonly MatcherSettings<TOffset> _settings;
-		private readonly FiniteStateAcceptor<TData, TOffset> _fsa;
+		private Fst<TData, TOffset> _fsa;
 
 		public Matcher(SpanFactory<TOffset> spanFactory, Pattern<TData, TOffset> pattern)
 			: this(spanFactory, pattern, new MatcherSettings<TOffset>())
@@ -41,7 +41,6 @@ namespace SIL.Machine.Matching
 			_spanFactory = spanFactory;
 			_settings = settings;
 			_settings.ReadOnly = true;
-			_fsa = new FiniteStateAcceptor<TData, TOffset>(_settings.Direction, _settings.Filter);
 			Compile(pattern);
 		}
 
@@ -57,11 +56,12 @@ namespace SIL.Machine.Matching
 
 		private void Compile(Pattern<TData, TOffset> pattern)
 		{
+			_fsa = new Fst<TData, TOffset>(_settings.Direction, _settings.Filter);
 			_fsa.StartState = _fsa.CreateState();
 			int nextPriority = 0;
 			bool deterministic = GeneratePatternNfa(_fsa.StartState, pattern, null, new Func<Match<TData, TOffset>, bool>[0], ref nextPriority);
 
-#if DEBUG
+#if FST_GRAPHS
 			var writer = new System.IO.StreamWriter(string.Format("c:\\{0}-nfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
 			_fsa.ToGraphViz(writer);
 			writer.Close();
@@ -70,25 +70,29 @@ namespace SIL.Machine.Matching
 			if (deterministic && !_settings.AllSubmatches)
 			{
 				if (_settings.FastCompile)
-					_fsa.Quasideterminize();
+				{
+					_fsa = _fsa.Quasideterminize();
+				}
 				else
-					_fsa.Determinize();
-#if DEBUG
-				writer = new System.IO.StreamWriter(string.Format("c:\\{0}-dfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
-				_fsa.ToGraphViz(writer);
-				writer.Close();
+				{
+					_fsa = _fsa.Determinize();
+#if FST_GRAPHS
+					writer = new System.IO.StreamWriter(string.Format("c:\\{0}-dfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
+					_fsa.ToGraphViz(writer);
+					writer.Close();
 #endif
-				_fsa.Minimize();
-#if DEBUG
-				writer = new System.IO.StreamWriter(string.Format("c:\\{0}-mindfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
-				_fsa.ToGraphViz(writer);
-				writer.Close();
+					_fsa.Minimize();
+#if FST_GRAPHS
+					writer = new System.IO.StreamWriter(string.Format("c:\\{0}-mindfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
+					_fsa.ToGraphViz(writer);
+					writer.Close();
 #endif
+				}
 			}
 			else
 			{
-				_fsa.EpsilonRemoval();
-#if DEBUG
+				_fsa = _fsa.EpsilonRemoval();
+#if FST_GRAPHS
 				writer = new System.IO.StreamWriter(string.Format("c:\\{0}-ernfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
 				_fsa.ToGraphViz(writer);
 				writer.Close();
@@ -96,7 +100,7 @@ namespace SIL.Machine.Matching
 			}
 		}
 
-		private bool GeneratePatternNfa(State<TData, TOffset, FsaMatch<TOffset>> startState, Pattern<TData, TOffset> pattern, string parentName,
+		private bool GeneratePatternNfa(State<TData, TOffset> startState, Pattern<TData, TOffset> pattern, string parentName,
 			Func<Match<TData, TOffset>, bool>[] acceptables, ref int nextPriority)
 		{
 			bool deterministic = true;
@@ -118,7 +122,7 @@ namespace SIL.Machine.Matching
 				if (hasVariables)
 					deterministic = false;
 				startState = _fsa.CreateTag(startState, _fsa.CreateState(), EntireMatch, false);
-				State<TData, TOffset, FsaMatch<TOffset>> acceptingState = _fsa.CreateAcceptingState(name,
+				State<TData, TOffset> acceptingState = _fsa.CreateAcceptingState(name,
 					(input, match) =>
 					{
 						Match<TData, TOffset> patMatch = CreatePatternMatch(input, match);
@@ -130,7 +134,7 @@ namespace SIL.Machine.Matching
 			return deterministic;
 		}
 
-		private Match<TData, TOffset> CreatePatternMatch(TData input, FsaMatch<TOffset> match)
+		private Match<TData, TOffset> CreatePatternMatch(TData input, FstResult<TData, TOffset> match)
 		{
 			TOffset matchStart, matchEnd;
 			_fsa.GetOffsets(EntireMatch, match.Registers, out matchStart, out matchEnd);
@@ -224,11 +228,11 @@ namespace SIL.Machine.Matching
 
 		private IEnumerable<Match<TData, TOffset>> GetMatches(TData input, Annotation<TOffset> startAnn, bool allMatches)
 		{
-			IEnumerable<FsaMatch<TOffset>> fsaMatches;
-			if (_fsa.IsMatch(input, startAnn, _settings.AnchoredToStart, _settings.AnchoredToEnd, allMatches, _settings.UseDefaults, out fsaMatches))
+			IEnumerable<FstResult<TData, TOffset>> results;
+			if (_fsa.Transduce(input, startAnn, _settings.AnchoredToStart, _settings.AnchoredToEnd, allMatches, _settings.UseDefaults, out results))
 			{
-				IEnumerable<Match<TData, TOffset>> matches = fsaMatches.Select(fm => CreatePatternMatch(input, fm));
-				if (!_fsa.Deterministic && !_settings.AllSubmatches)
+				IEnumerable<Match<TData, TOffset>> matches = results.Select(fm => CreatePatternMatch(input, fm));
+				if (!_fsa.IsDeterministic && !_settings.AllSubmatches)
 					return matches.GroupBy(m => m, MatchComparer).Select(group => group.First());
 				return matches;
 			}

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using SIL.Collections;
 using SIL.Machine.FeatureModel;
 
@@ -7,14 +8,13 @@ namespace SIL.Machine
 	public class Annotation<TOffset> : BidirListNode<Annotation<TOffset>>, IBidirTreeNode<Annotation<TOffset>>, IDeepCloneable<Annotation<TOffset>>, IComparable<Annotation<TOffset>>, IComparable, IFreezable<Annotation<TOffset>>
 	{
 		private AnnotationList<TOffset> _children;
-		private readonly Span<TOffset> _span;
 		private int _hashCode;
 		private FeatureStruct _fs;
 		private bool _optional;
 
 		public Annotation(Span<TOffset> span, FeatureStruct fs)
 		{
-			_span = span;
+			Span = span;
 			FeatureStruct = fs;
 			ListID = -1;
 			Root = this;
@@ -22,17 +22,17 @@ namespace SIL.Machine
 
 		internal Annotation(Span<TOffset> span)
 		{
-			_span = span;
+			Span = span;
 			ListID = -1;
 			Root = this;
 		}
 
 		protected Annotation(Annotation<TOffset> ann)
-			: this(ann._span, ann.FeatureStruct.DeepClone())
+			: this(ann.Span, ann.FeatureStruct.DeepClone())
 		{
 			Optional = ann.Optional;
 			if (ann._children != null && ann._children.Count > 0)
-				Children.AddRange(ann.Children.DeepClone());
+				Children.AddRange(ann.Children.Select(node => node.DeepClone()));
 		}
 
 		public Annotation<TOffset> Parent { get; private set; }
@@ -51,7 +51,7 @@ namespace SIL.Machine
 			get
 			{
 				if (_children == null)
-					_children = new AnnotationList<TOffset>(_span.SpanFactory, this);
+					_children = new AnnotationList<TOffset>(Span.SpanFactory, this);
 				return _children;
 			}
 		}
@@ -80,10 +80,7 @@ namespace SIL.Machine
 			}
 		}
 
-		public Span<TOffset> Span
-		{
-			get { return _span; }
-		}
+		public Span<TOffset> Span { get; internal set; }
 
 		public FeatureStruct FeatureStruct
 		{
@@ -157,7 +154,7 @@ namespace SIL.Machine
 			_hashCode = _hashCode * 31 + _fs.GetFrozenHashCode();
 			_hashCode = _hashCode * 31 + (_children == null ? 0 : _children.GetFrozenHashCode());
 			_hashCode = _hashCode * 31 + _optional.GetHashCode();
-			_hashCode = _hashCode * 31 + _span.GetHashCode();
+			_hashCode = _hashCode * 31 + Span.GetHashCode();
 		}
 
 		public bool ValueEquals(Annotation<TOffset> other)
@@ -171,7 +168,7 @@ namespace SIL.Machine
 			if (!IsLeaf && !_children.ValueEquals(other._children))
 				return false;
 
-			return _fs.ValueEquals(other._fs) && _optional == other._optional && _span == other._span;
+			return _fs.ValueEquals(other._fs) && _optional == other._optional && Span == other.Span;
 		}
 
 		public int GetFrozenHashCode()
@@ -189,7 +186,7 @@ namespace SIL.Machine
 
 		public override string ToString()
 		{
-			return string.Format("({0} {1})", _span, FeatureStruct);
+			return string.Format("({0} {1})", Span, FeatureStruct);
 		}
 	}
 }

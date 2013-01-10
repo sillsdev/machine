@@ -7,7 +7,7 @@ using SIL.Machine.Matching;
 
 namespace SIL.Machine.Rules
 {
-	public class BatchPatternRuleSpec<TData, TOffset> : IPatternRuleSpec<TData, TOffset> where TData : IData<TOffset>
+	public class BatchPatternRuleSpec<TData, TOffset> : IPatternRuleSpec<TData, TOffset> where TData : IData<TOffset>, IDeepCloneable<TData>
 	{
 		private readonly Pattern<TData, TOffset> _pattern;
 		private readonly ObservableCollection<IPatternRuleSpec<TData, TOffset>> _ruleSpecs;

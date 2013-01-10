@@ -1,6 +1,6 @@
 using SIL.Collections;
 using SIL.Machine.FeatureModel;
-using SIL.Machine.Fsa;
+using SIL.Machine.FiniteState;
 
 namespace SIL.Machine.Matching
 {
@@ -8,7 +8,7 @@ namespace SIL.Machine.Matching
     /// This class represents a simple context in a phonetic pattern. Simple contexts are used to represent
     /// natural classes and segments in a pattern.
     /// </summary>
-	public class Constraint<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Constraint<TData, TOffset>> where TData : IData<TOffset>
+	public class Constraint<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Constraint<TData, TOffset>> where TData : IData<TOffset>, IDeepCloneable<TData>
     {
     	private readonly FeatureStruct _fs;
 
@@ -43,7 +43,7 @@ namespace SIL.Machine.Matching
 			return false;
 		}
 
-		internal override State<TData, TOffset, FsaMatch<TOffset>> GenerateNfa(FiniteStateAcceptor<TData, TOffset> fsa, State<TData, TOffset, FsaMatch<TOffset>> startState, out bool hasVariables)
+		internal override State<TData, TOffset> GenerateNfa(Fst<TData, TOffset> fsa, State<TData, TOffset> startState, out bool hasVariables)
 		{
 			hasVariables = _fs.HasVariables;
 			FeatureStruct condition = _fs;

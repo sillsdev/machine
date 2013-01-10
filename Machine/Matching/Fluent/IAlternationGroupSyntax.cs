@@ -1,6 +1,8 @@
-﻿namespace SIL.Machine.Matching.Fluent
+﻿using SIL.Collections;
+
+namespace SIL.Machine.Matching.Fluent
 {
-	public interface IAlternationGroupSyntax<TData, TOffset> : IGroupSyntax<TData, TOffset> where TData : IData<TOffset>
+	public interface IAlternationGroupSyntax<TData, TOffset> : IGroupSyntax<TData, TOffset> where TData : IData<TOffset>, IDeepCloneable<TData>
 	{
 		IGroupSyntax<TData, TOffset> Or { get; }
 	}

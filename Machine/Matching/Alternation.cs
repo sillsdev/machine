@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Text;
 using SIL.Collections;
-using SIL.Machine.Fsa;
+using SIL.Machine.FiniteState;
 
 namespace SIL.Machine.Matching
 {
-	public class Alternation<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Alternation<TData, TOffset>> where TData : IData<TOffset>
+	public class Alternation<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Alternation<TData, TOffset>> where TData : IData<TOffset>, IDeepCloneable<TData>
 	{
 		public Alternation()
 		{
@@ -21,17 +21,17 @@ namespace SIL.Machine.Matching
 		{
 		}
 
-		internal override State<TData, TOffset, FsaMatch<TOffset>> GenerateNfa(FiniteStateAcceptor<TData, TOffset> fsa, State<TData, TOffset, FsaMatch<TOffset>> startState, out bool hasVariables)
+		internal override State<TData, TOffset> GenerateNfa(Fst<TData, TOffset> fsa, State<TData, TOffset> startState, out bool hasVariables)
 		{
 			hasVariables = false;
 			if (IsLeaf)
 				return startState;
 
-			State<TData, TOffset, FsaMatch<TOffset>> endState = fsa.CreateState();
+			State<TData, TOffset> endState = fsa.CreateState();
 			foreach (PatternNode<TData, TOffset> node in Children)
 			{
 				bool childHasVariables;
-				State<TData, TOffset, FsaMatch<TOffset>> nodeEndState = node.GenerateNfa(fsa, startState, out childHasVariables);
+				State<TData, TOffset> nodeEndState = node.GenerateNfa(fsa, startState, out childHasVariables);
 				if (childHasVariables)
 					hasVariables = true;
 				nodeEndState.Arcs.Add(endState);

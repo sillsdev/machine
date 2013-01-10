@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
+using SIL.Collections;
 using SIL.Machine.Matching;
 
 namespace SIL.Machine.Rules
 {
-	public class MultiplePatternRule<TData, TOffset> : PatternRule<TData, TOffset> where TData : IData<TOffset>
+	public class MultiplePatternRule<TData, TOffset> : PatternRule<TData, TOffset> where TData : IData<TOffset>, IDeepCloneable<TData>
 	{
 		public MultiplePatternRule(SpanFactory<TOffset> spanFactory, IPatternRuleSpec<TData, TOffset> ruleSpec)
 			: base(spanFactory, ruleSpec)

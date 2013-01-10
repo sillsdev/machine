@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+﻿using System.Collections.Generic;
 using NUnit.Framework;
 using SIL.Machine.FeatureModel;
 
@@ -17,9 +17,10 @@ namespace SIL.Machine.Test
 		protected FeatureSymbol VP;
 		protected FeatureSymbol Seg;
 		protected FeatureSymbol Bdry;
+		protected Dictionary<char, FeatureStruct> Characters;
 
 		[TestFixtureSetUp]
-		public void FixtureSetUp()
+		public virtual void FixtureSetUp()
 		{
 			SpanFactory = new IntegerSpanFactory();
 
@@ -56,19 +57,11 @@ namespace SIL.Machine.Test
 			Type = new SymbolicFeature("Type") {PossibleSymbols = {Word, NP, VP, Seg, Bdry}};
 
 			TypeFeatSys = new FeatureSystem {Type};
-		}
 
-		protected StringData CreateStringData(string str)
-		{
-			var stringData = new StringData(SpanFactory, str);
-			for (int i = 0; i < str.Length; i++)
-			{
-				FeatureSymbol type = Seg;
-				FeatureStruct fs;
-				switch (str[i])
+			Characters = new Dictionary<char, FeatureStruct>
 				{
-					case 'b':
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
+					{'b', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
 							.Symbol("son-")
 							.Symbol("syl-")
 							.Symbol("cons+")
@@ -78,10 +71,9 @@ namespace SIL.Machine.Test
 							.Symbol("voice+")
 							.Symbol("cont-")
 							.Symbol("nas-")
-							.Symbol("str-").Value;
-						break;
-					case 'd':
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol("str-").Value},
+					{'d', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
 							.Symbol("son-")
 							.Symbol("syl-")
 							.Symbol("cons+")
@@ -91,10 +83,9 @@ namespace SIL.Machine.Test
 							.Symbol("voice+")
 							.Symbol("cont-")
 							.Symbol("nas-")
-							.Symbol("str-").Value;
-						break;
-					case 'g':
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol("str-").Value},
+					{'g', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
 							.Symbol("son-")
 							.Symbol("syl-")
 							.Symbol("cons+")
@@ -104,10 +95,9 @@ namespace SIL.Machine.Test
 							.Symbol("voice+")
 							.Symbol("cont-")
 							.Symbol("nas-")
-							.Symbol("str-").Value;
-						break;
-					case 'p':
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol("str-").Value},
+					{'p', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
 							.Symbol("son-")
 							.Symbol("syl-")
 							.Symbol("cons+")
@@ -117,10 +107,9 @@ namespace SIL.Machine.Test
 							.Symbol("voice-")
 							.Symbol("cont-")
 							.Symbol("nas-")
-							.Symbol("str-").Value;
-						break;
-					case 't':
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol("str-").Value},
+					{'t', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
 							.Symbol("son-")
 							.Symbol("syl-")
 							.Symbol("cons+")
@@ -130,13 +119,9 @@ namespace SIL.Machine.Test
 							.Symbol("voice-")
 							.Symbol("cont-")
 							.Symbol("nas-")
-							.Symbol("str-").Value;
-						break;
-					case 'q':
-					case 'c':
-					case 'k':
-					case 'x':
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol("str-").Value},
+					{'q', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
 							.Symbol("son-")
 							.Symbol("syl-")
 							.Symbol("cons+")
@@ -146,10 +131,45 @@ namespace SIL.Machine.Test
 							.Symbol("voice-")
 							.Symbol("cont-")
 							.Symbol("nas-")
-							.Symbol("str-").Value;
-						break;
-					case 'j':
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol("str-").Value},
+					{'c', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
+							.Symbol("son-")
+							.Symbol("syl-")
+							.Symbol("cons+")
+							.Symbol("high+")
+							.Symbol("ant-")
+							.Symbol("cor-")
+							.Symbol("voice-")
+							.Symbol("cont-")
+							.Symbol("nas-")
+							.Symbol("str-").Value},
+					{'k', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
+							.Symbol("son-")
+							.Symbol("syl-")
+							.Symbol("cons+")
+							.Symbol("high+")
+							.Symbol("ant-")
+							.Symbol("cor-")
+							.Symbol("voice-")
+							.Symbol("cont-")
+							.Symbol("nas-")
+							.Symbol("str-").Value},
+					{'x', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
+							.Symbol("son-")
+							.Symbol("syl-")
+							.Symbol("cons+")
+							.Symbol("high+")
+							.Symbol("ant-")
+							.Symbol("cor-")
+							.Symbol("voice-")
+							.Symbol("cont-")
+							.Symbol("nas-")
+							.Symbol("str-").Value},
+					{'j', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
 							.Symbol("son-")
 							.Symbol("syl-")
 							.Symbol("cons+")
@@ -159,10 +179,9 @@ namespace SIL.Machine.Test
 							.Symbol("voice+")
 							.Symbol("cont-")
 							.Symbol("nas-")
-							.Symbol("str+").Value;
-						break;
-					case 's':
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol("str+").Value},
+					{'s', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
 							.Symbol("son-")
 							.Symbol("syl-")
 							.Symbol("cons+")
@@ -172,10 +191,9 @@ namespace SIL.Machine.Test
 							.Symbol("voice-")
 							.Symbol("cont+")
 							.Symbol("nas-")
-							.Symbol("str+").Value;
-						break;
-					case 'z':
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol("str+").Value},
+					{'z', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
 							.Symbol("son-")
 							.Symbol("syl-")
 							.Symbol("cons+")
@@ -185,10 +203,9 @@ namespace SIL.Machine.Test
 							.Symbol("voice+")
 							.Symbol("cont+")
 							.Symbol("nas-")
-							.Symbol("str+").Value;
-						break;
-					case 'f':
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol("str+").Value},
+					{'f', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
 							.Symbol("son-")
 							.Symbol("syl-")
 							.Symbol("cons+")
@@ -198,10 +215,9 @@ namespace SIL.Machine.Test
 							.Symbol("voice-")
 							.Symbol("cont+")
 							.Symbol("nas-")
-							.Symbol("str+").Value;
-						break;
-					case 'v':
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol("str+").Value},
+					{'v', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
 							.Symbol("son-")
 							.Symbol("syl-")
 							.Symbol("cons+")
@@ -211,10 +227,9 @@ namespace SIL.Machine.Test
 							.Symbol("voice+")
 							.Symbol("cont+")
 							.Symbol("nas-")
-							.Symbol("str+").Value;
-						break;
-					case 'w':
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol("str+").Value},
+					{'w', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
 							.Symbol("son+")
 							.Symbol("syl-")
 							.Symbol("cons-")
@@ -224,10 +239,9 @@ namespace SIL.Machine.Test
 							.Symbol("low-")
 							.Symbol("rnd+")
 							.Symbol("ant-")
-							.Symbol("cor-").Value;
-						break;
-					case 'y':
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol("cor-").Value},
+					{'y', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
 							.Symbol("son+")
 							.Symbol("syl-")
 							.Symbol("cons-")
@@ -237,10 +251,9 @@ namespace SIL.Machine.Test
 							.Symbol("low-")
 							.Symbol("rnd-")
 							.Symbol("ant-")
-							.Symbol("cor-").Value;
-						break;
-					case 'h':
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol("cor-").Value},
+					{'h', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
 							.Symbol("son+")
 							.Symbol("syl-")
 							.Symbol("cons-")
@@ -253,10 +266,9 @@ namespace SIL.Machine.Test
 							.Symbol("voice-")
 							.Symbol("cont+")
 							.Symbol("nas-")
-							.Symbol("str-").Value;
-						break;
-					case 'r':
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol("str-").Value},
+					{'r', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
 							.Symbol("son+")
 							.Symbol("syl-")
 							.Symbol("cons+")
@@ -269,10 +281,9 @@ namespace SIL.Machine.Test
 							.Symbol("voice+")
 							.Symbol("cont+")
 							.Symbol("nas-")
-							.Symbol("str-").Value;
-						break;
-					case 'l':
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol("str-").Value},
+					{'l', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
 							.Symbol("son+")
 							.Symbol("syl-")
 							.Symbol("cons+")
@@ -285,10 +296,9 @@ namespace SIL.Machine.Test
 							.Symbol("voice+")
 							.Symbol("cont+")
 							.Symbol("nas-")
-							.Symbol("str-").Value;
-						break;
-					case 'm':
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol("str-").Value},
+					{'m', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
 							.Symbol("son+")
 							.Symbol("syl-")
 							.Symbol("cons+")
@@ -299,10 +309,9 @@ namespace SIL.Machine.Test
 							.Symbol("voice+")
 							.Symbol("cont-")
 							.Symbol("nas+")
-							.Symbol("str-").Value;
-						break;
-					case 'n':
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol("str-").Value},
+					{'n', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
 							.Symbol("son+")
 							.Symbol("syl-")
 							.Symbol("cons+")
@@ -313,10 +322,22 @@ namespace SIL.Machine.Test
 							.Symbol("voice+")
 							.Symbol("cont-")
 							.Symbol("nas+")
-							.Symbol("str-").Value;
-						break;
-					case 'a':
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol("str-").Value},
+					{'N', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
+							.Symbol("son+")
+							.Symbol("syl-")
+							.Symbol("cons+")
+							.Symbol("high-")
+							.Symbol("low-")
+							.Symbol("ant+")
+							.Symbol("cor?")
+							.Symbol("voice+")
+							.Symbol("cont-")
+							.Symbol("nas+")
+							.Symbol("str-").Value},
+					{'a', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
 							.Symbol("son+")
 							.Symbol("syl+")
 							.Symbol("cons-")
@@ -324,10 +345,9 @@ namespace SIL.Machine.Test
 							.Symbol("back-")
 							.Symbol("front+")
 							.Symbol("low+")
-							.Symbol("rnd-").Value;
-						break;
-					case 'e':
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol("rnd-").Value},
+					{'e', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
 							.Symbol("son+")
 							.Symbol("syl+")
 							.Symbol("cons-")
@@ -335,10 +355,9 @@ namespace SIL.Machine.Test
 							.Symbol("back-")
 							.Symbol("front+")
 							.Symbol("low-")
-							.Symbol("rnd-").Value;
-						break;
-					case 'i':
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol("rnd-").Value},
+					{'i', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
 							.Symbol("son+")
 							.Symbol("syl+")
 							.Symbol("cons-")
@@ -346,10 +365,9 @@ namespace SIL.Machine.Test
 							.Symbol("back-")
 							.Symbol("front+")
 							.Symbol("low-")
-							.Symbol("rnd-").Value;
-						break;
-					case 'o':
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol("rnd-").Value},
+					{'o', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
 							.Symbol("son+")
 							.Symbol("syl+")
 							.Symbol("cons-")
@@ -357,10 +375,9 @@ namespace SIL.Machine.Test
 							.Symbol("back+")
 							.Symbol("front-")
 							.Symbol("low+")
-							.Symbol("rnd-").Value;
-						break;
-					case 'u':
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol("rnd-").Value},
+					{'u', FeatureStruct.New(PhoneticFeatSys)
+							.Symbol(Seg)
 							.Symbol("son+")
 							.Symbol("syl+")
 							.Symbol("cons-")
@@ -368,23 +385,28 @@ namespace SIL.Machine.Test
 							.Symbol("back+")
 							.Symbol("front-")
 							.Symbol("low-")
-							.Symbol("rnd+").Value;
-						break;
-					case '+':
-					case ',':
-					case ' ':
-					case '.':
-						type = Bdry;
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
-							.Feature("strRep").EqualTo(str[i].ToString(CultureInfo.InvariantCulture)).Value;
-						break;
-					default:
-						fs = FeatureStruct.NewMutable(PhoneticFeatSys)
-							.Feature("strRep").EqualTo(str[i].ToString(CultureInfo.InvariantCulture)).Value;
-						break;
-				}
+							.Symbol("rnd+").Value},
+					{'+', FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol(Bdry)
+							.Feature("strRep").EqualTo("+").Value},
+					{',', FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol(Bdry)
+							.Feature("strRep").EqualTo(",").Value},
+					{' ', FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol(Bdry)
+							.Feature("strRep").EqualTo(" ").Value},
+					{'.', FeatureStruct.NewMutable(PhoneticFeatSys)
+							.Symbol(Bdry)
+							.Feature("strRep").EqualTo(".").Value}
+				};
+		}
 
-				fs.AddValue(Type, type);
+		protected StringData CreateStringData(string str)
+		{
+			var stringData = new StringData(SpanFactory, str);
+			for (int i = 0; i < str.Length; i++)
+			{
+				FeatureStruct fs = Characters[str[i]];
 				stringData.Annotations.Add(i, i + 1, fs);
 			}
 			return stringData;

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 
-namespace SIL.Machine.Fsa
+namespace SIL.Machine.FiniteState
 {
 	internal class TagMapCommand : IComparable<TagMapCommand>, IEquatable<TagMapCommand>
 	{

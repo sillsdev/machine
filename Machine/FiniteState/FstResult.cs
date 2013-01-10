@@ -1,11 +1,12 @@
 ﻿using SIL.Collections;
 using SIL.Machine.FeatureModel;
 
-namespace SIL.Machine.Fsa
+namespace SIL.Machine.FiniteState
 {
-	public class FsaMatch<TOffset>
+	public class FstResult<TData, TOffset>
 	{
 		private readonly NullableValue<TOffset>[,] _registers;
+		private readonly TData _output;
 		private readonly VariableBindings _varBindings;
 		private readonly string _id;
 		private readonly int _priority;
@@ -13,10 +14,11 @@ namespace SIL.Machine.Fsa
 		private readonly Annotation<TOffset> _nextAnn;
 		private readonly int _index;
 
-		internal FsaMatch(string id, NullableValue<TOffset>[,] registers, VariableBindings varBindings, int priority, bool isLazy, Annotation<TOffset> nextAnn, int index)
+		internal FstResult(string id, NullableValue<TOffset>[,] registers, TData output, VariableBindings varBindings, int priority, bool isLazy, Annotation<TOffset> nextAnn, int index)
 		{
 			_id = id;
 			_registers = registers;
+			_output = output;
 			_varBindings = varBindings;
 			_priority = priority;
 			_isLazy = isLazy;
@@ -34,6 +36,11 @@ namespace SIL.Machine.Fsa
 			get { return _registers; }
 		}
 
+		public TData Output
+		{
+			get { return _output; }
+		}
+
 		public VariableBindings VariableBindings
 		{
 			get { return _varBindings; }
@@ -44,14 +51,14 @@ namespace SIL.Machine.Fsa
 			get { return _priority; }
 		}
 
-		public bool IsLazy
-		{
-			get { return _isLazy; }
-		}
-
 		public Annotation<TOffset> NextAnnotation
 		{
 			get { return _nextAnn; }
+		}
+
+		public bool IsLazy
+		{
+			get { return _isLazy; }
 		}
 
 		public int Index

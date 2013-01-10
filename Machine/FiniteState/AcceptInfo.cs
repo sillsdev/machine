@@ -1,14 +1,14 @@
 ﻿using System;
 
-namespace SIL.Machine.Fsa
+namespace SIL.Machine.FiniteState
 {
-	public class AcceptInfo<TData, TOffset, TResult> : IEquatable<AcceptInfo<TData, TOffset, TResult>> where TData : IData<TOffset>
+	public class AcceptInfo<TData, TOffset> : IEquatable<AcceptInfo<TData, TOffset>> where TData : IData<TOffset>
 	{
 		private readonly string _id;
-		private readonly Func<TData, TResult, bool> _acceptable;
+		private readonly Func<TData, FstResult<TData, TOffset>, bool> _acceptable;
 		private readonly int _priority;
 
-		public AcceptInfo(string id, Func<TData, TResult, bool> acceptable, int priority)
+		public AcceptInfo(string id, Func<TData, FstResult<TData, TOffset>, bool> acceptable, int priority)
 		{
 			_id = id;
 			_acceptable = acceptable;
@@ -20,7 +20,7 @@ namespace SIL.Machine.Fsa
 			get { return _id; }
 		}
 
-		public Func<TData, TResult, bool> Acceptable
+		public Func<TData, FstResult<TData, TOffset>, bool> Acceptable
 		{
 			get { return _acceptable; }
 		}
@@ -30,14 +30,14 @@ namespace SIL.Machine.Fsa
 			get { return _priority; }
 		}
 
-		public bool Equals(AcceptInfo<TData, TOffset, TResult> other)
+		public bool Equals(AcceptInfo<TData, TOffset> other)
 		{
 			return other != null && _id == other._id && _acceptable == other._acceptable;
 		}
 
 		public override bool Equals(object obj)
 		{
-			return Equals(obj as AcceptInfo<TData, TOffset, TResult>);
+			return Equals(obj as AcceptInfo<TData, TOffset>);
 		}
 
 		public override int GetHashCode()
