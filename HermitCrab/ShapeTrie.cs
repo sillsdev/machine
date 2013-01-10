@@ -4,7 +4,6 @@ using System.Linq;
 using SIL.Collections;
 using SIL.Machine;
 using SIL.Machine.FeatureModel;
-using SIL.Machine.Fsa;
 
 namespace SIL.HermitCrab
 {
