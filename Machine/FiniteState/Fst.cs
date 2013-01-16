@@ -315,7 +315,7 @@ namespace SIL.Machine.FiniteState
 						VariableBindings varBindings = null;
 						foreach (Arc<TData, TOffset> arc in inst.State.Arcs)
 						{
-							if (arc.Input.FeatureStruct == null)
+							if (arc.Input.IsEpsilon)
 							{
 								if (!inst.Visited.Contains(arc.Target))
 								{
@@ -333,17 +333,21 @@ namespace SIL.Machine.FiniteState
 									{
 										registers = (NullableValue<TOffset>[,]) inst.Registers.Clone();
 
-										output = inst.Output.DeepClone();
+										if (_operations != null)
+										{
+											output = inst.Output.DeepClone();
 
-										Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = inst.Output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
-											.Zip(output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
-										mappings = inst.Mappings.ToDictionary(kvp => kvp.Key, kvp => outputMappings[kvp.Value]);
-										queue = new Queue<Annotation<TOffset>>(inst.Queue);
+											Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = inst.Output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
+												.Zip(output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
+											mappings = inst.Mappings.ToDictionary(kvp => kvp.Key, kvp => outputMappings[kvp.Value]);
+											queue = new Queue<Annotation<TOffset>>(inst.Queue);
+										}
 										if (varBindings == null)
 											varBindings = inst.VariableBindings.DeepClone();
 										visited = new HashSet<State<TData, TOffset>>(inst.Visited);
 									}
-									ExecuteOutputs(arc.Outputs, output, mappings, queue);
+									if (_operations != null)
+										ExecuteOutputs(arc.Outputs, output, mappings, queue);
 									instStack.Push(EpsilonAdvanceFst(data, endAnchor, inst.Annotation, registers, output, mappings, queue, varBindings, visited, arc, curResults));
 									varBindings = null;
 								}
@@ -352,25 +356,28 @@ namespace SIL.Machine.FiniteState
 							{
 								if (varBindings == null)
 									varBindings = IsInstanceReuseable(inst) ? inst.VariableBindings : inst.VariableBindings.DeepClone();
-								if (inst.Annotation != data.Annotations.GetEnd(_dir) && inst.Annotation.FeatureStruct.IsUnifiable(arc.Input.FeatureStruct, useDefaults, varBindings))
+								if (inst.Annotation != data.Annotations.GetEnd(_dir) && arc.Input.Matches(inst.Annotation.FeatureStruct, useDefaults, varBindings))
 								{
 									TData output = inst.Output;
 									IDictionary<Annotation<TOffset>, Annotation<TOffset>> mappings = inst.Mappings;
 									Queue<Annotation<TOffset>> queue = inst.Queue;
-									if (!IsInstanceReuseable(inst))
+									if (_operations != null)
 									{
-										output = inst.Output.DeepClone();
+										if (!IsInstanceReuseable(inst))
+										{
+											output = inst.Output.DeepClone();
 
-										Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = inst.Output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
-											.Zip(output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
-										mappings = inst.Mappings.ToDictionary(kvp => kvp.Key, kvp => outputMappings[kvp.Value]);
-										queue = new Queue<Annotation<TOffset>>(inst.Queue);
+											Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = inst.Output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
+												.Zip(output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
+											mappings = inst.Mappings.ToDictionary(kvp => kvp.Key, kvp => outputMappings[kvp.Value]);
+											queue = new Queue<Annotation<TOffset>>(inst.Queue);
+										}
+
+										for (int i = 0; i < arc.Input.EnqueueCount; i++)
+											queue.Enqueue(inst.Annotation);
+
+										ExecuteOutputs(arc.Outputs, output, mappings, queue);
 									}
-
-									for (int i = 0; i < arc.Input.EnqueueCount; i++)
-										queue.Enqueue(inst.Annotation);
-
-									ExecuteOutputs(arc.Outputs, output, mappings, queue);
 
 									foreach (FstInstance ni in AdvanceFst(data, endAnchor, inst.Annotation, inst.Registers, output, mappings, queue, varBindings, arc, curResults))
 										instStack.Push(ni);
@@ -412,7 +419,7 @@ namespace SIL.Machine.FiniteState
 			if (inst.State.Arcs.Count <= 1)
 				return true;
 
-			return !_tryAllInputs && inst.State.Arcs.All(a => a.Input.FeatureStruct != null);
+			return !_tryAllInputs && inst.State.Arcs.All(a => !a.Input.IsEpsilon);
 		}
 
 		private void ExecuteOutputs(IEnumerable<Output<TData, TOffset>> outputs, TData output, IDictionary<Annotation<TOffset>, Annotation<TOffset>> mappings,
@@ -460,11 +467,18 @@ namespace SIL.Machine.FiniteState
 			{
 				if (!initAnns.Contains(ann))
 				{
-					TData newOutput = data.DeepClone();
-					Dictionary<Annotation<TOffset>, Annotation<TOffset>> mappings = data.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
-						.Zip(newOutput.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
+					TData o = data;
+					Dictionary<Annotation<TOffset>, Annotation<TOffset>> m = null;
+					Queue<Annotation<TOffset>> q = null;
+					if (_operations != null)
+					{
+						o = data.DeepClone();
+						m = data.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
+							.Zip(o.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
+						q = new Queue<Annotation<TOffset>>();
+					}
 					instStack.Push(new FstInstance(StartState, ann, cloneRegisters ? (NullableValue<TOffset>[,]) newRegisters.Clone() : newRegisters,
-						newOutput, mappings, new Queue<Annotation<TOffset>>(), new VariableBindings(), new HashSet<State<TData, TOffset>>()));
+						o, m, q, new VariableBindings(), new HashSet<State<TData, TOffset>>()));
 					initAnns.Add(ann);
 					cloneRegisters = true;
 				}
@@ -504,6 +518,7 @@ namespace SIL.Machine.FiniteState
 
 			if (nextAnn != data.Annotations.GetEnd(_dir))
 			{
+				var anns = new List<Annotation<TOffset>>();
 				bool cloneOutputs = false;
 				for (Annotation<TOffset> curAnn = nextAnn; curAnn != data.Annotations.GetEnd(_dir) && curAnn.Span.GetStart(_dir).Equals(nextOffset); curAnn = curAnn.GetNextDepthFirst(_dir, _filter))
 				{
@@ -515,24 +530,27 @@ namespace SIL.Machine.FiniteState
 							cloneOutputs = true;
 						}
 					}
+					anns.Add(curAnn);
 				}
 
 				bool cloneRegisters = false;
-				for (Annotation<TOffset> curAnn = nextAnn; curAnn != data.Annotations.GetEnd(_dir) && curAnn.Span.GetStart(_dir).Equals(nextOffset); curAnn = curAnn.GetNextDepthFirst(_dir, _filter))
+				foreach (Annotation<TOffset> curAnn in anns)
 				{
 					TData o = output;
 					IDictionary<Annotation<TOffset>, Annotation<TOffset>> m = mappings;
-					if (cloneOutputs)
+					Queue<Annotation<TOffset>> q = queue;
+					if (_operations != null && cloneOutputs)
 					{
 						o = output.DeepClone();
 
 						Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
 							.Zip(o.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
 						m = mappings.ToDictionary(kvp => kvp.Key, kvp => outputMappings[kvp.Value]);
+						q = new Queue<Annotation<TOffset>>(queue);
 					}
 
-					yield return new FstInstance(arc.Target, curAnn, cloneRegisters ?  (NullableValue<TOffset>[,]) newRegisters.Clone() : newRegisters, o, m,
-						cloneOutputs ? new Queue<Annotation<TOffset>>(queue) : queue, cloneOutputs ? varBindings.DeepClone() : varBindings, new HashSet<State<TData, TOffset>>());
+					yield return new FstInstance(arc.Target, curAnn, cloneRegisters ?  (NullableValue<TOffset>[,]) newRegisters.Clone() : newRegisters, o, m, q,
+						cloneOutputs ? varBindings.DeepClone() : varBindings, new HashSet<State<TData, TOffset>>());
 
 					cloneOutputs = true;
 					cloneRegisters = true;
@@ -565,8 +583,9 @@ namespace SIL.Machine.FiniteState
 				{
 					foreach (AcceptInfo<TData, TOffset> acceptInfo in arc.Target.AcceptInfos)
 					{
-						var candidate = new FstResult<TData, TOffset>(acceptInfo.ID, matchRegisters, output.DeepClone(), varBindings.DeepClone(), acceptInfo.Priority, arc.Target.IsLazy, ann, curResults.Count);
-						if (acceptInfo.Acceptable(data, candidate))
+						var candidate = new FstResult<TData, TOffset>(acceptInfo.ID, matchRegisters, _operations != null ? output.DeepClone() : output, varBindings.DeepClone(),
+							acceptInfo.Priority, arc.Target.IsLazy, ann, curResults.Count);
+						if (acceptInfo.Acceptable == null || acceptInfo.Acceptable(data, candidate))
 							curResults.Add(candidate);
 					}
 				}
@@ -751,55 +770,46 @@ namespace SIL.Machine.FiniteState
 		{
 			ILookup<Input, NfaStateInfo> conditions = from.NfaStates
 				.SelectMany(state => state.NfaState.Arcs, (state, arc) => new { State = state, Arc = arc} )
-				.Where(stateArc => stateArc.Arc.Input.FeatureStruct != null)
+				.Where(stateArc => !stateArc.Arc.Input.IsEpsilon)
 				.ToLookup(stateArc => stateArc.Arc.Input, stateArc => new NfaStateInfo(stateArc.Arc.Target, stateArc.State.Outputs.Concat(stateArc.Arc.Outputs),
 					Math.Max(stateArc.Arc.Priority, stateArc.State.MaxPriority), stateArc.Arc.Priority, stateArc.State.Tags));
 
-			var preprocessedConditions = new List<Tuple<Input, IEnumerable<NfaStateInfo>>> { Tuple.Create((Input) null, Enumerable.Empty<NfaStateInfo>()) };
+			var preprocessedConditions = new List<Tuple<FeatureStruct, IEnumerable<FeatureStruct>, IEnumerable<NfaStateInfo>>>
+				{
+					Tuple.Create((FeatureStruct) null, Enumerable.Empty<FeatureStruct>(), Enumerable.Empty<NfaStateInfo>())
+				};
 			foreach (IGrouping<Input, NfaStateInfo> cond in conditions)
 			{
-				FeatureStruct negation;
-				if (!cond.Key.FeatureStruct.Negation(out negation))
-					negation = null;
-
-				var temp = new List<Tuple<Input, IEnumerable<NfaStateInfo>>>();
-				foreach (Tuple<Input, IEnumerable<NfaStateInfo>> preprocessedCond in preprocessedConditions)
+				var temp = new List<Tuple<FeatureStruct, IEnumerable<FeatureStruct>, IEnumerable<NfaStateInfo>>>();
+				foreach (Tuple<FeatureStruct, IEnumerable<FeatureStruct>, IEnumerable<NfaStateInfo>> preprocessedCond in preprocessedConditions)
 				{
-					//bool identity = cond.Key.Identity || (preprocessedCond.Item1 != null && preprocessedCond.Item1.Identity);
-
 					FeatureStruct newCond;
 					if (preprocessedCond.Item1 == null)
 						newCond = cond.Key.FeatureStruct;
-					else if (!preprocessedCond.Item1.FeatureStruct.Unify(cond.Key.FeatureStruct, false, new VariableBindings(), false, out newCond))
+					else if (!preprocessedCond.Item1.Unify(cond.Key.FeatureStruct, false, new VariableBindings(), false, out newCond))
 						newCond = null;
 					if (newCond != null)
-						temp.Add(Tuple.Create(new Input(newCond, 1), preprocessedCond.Item2.Concat(cond)));
+						temp.Add(Tuple.Create(newCond, preprocessedCond.Item2, preprocessedCond.Item3.Concat(cond)));
 
-					if (negation != null)
-					{
-						if (preprocessedCond.Item1 == null)
-							newCond = negation;
-						else if (!preprocessedCond.Item1.FeatureStruct.Unify(negation, false, new VariableBindings(), false, out newCond))
-							newCond = null;
-						if (newCond != null)
-							temp.Add(Tuple.Create(new Input(newCond, 1), preprocessedCond.Item2));
-					}
+					if (!cond.Key.FeatureStruct.IsEmpty)
+						temp.Add(Tuple.Create(preprocessedCond.Item1, preprocessedCond.Item2.Concat(cond.Key.FeatureStruct), preprocessedCond.Item3));
 				}
 				preprocessedConditions = temp;
 			}
 
-			foreach (Tuple<Input, IEnumerable<NfaStateInfo>> preprocessedCond in preprocessedConditions)
+			foreach (Tuple<FeatureStruct, IEnumerable<FeatureStruct>, IEnumerable<NfaStateInfo>> preprocessedCond in preprocessedConditions.Where(pc => pc.Item1 != null))
 			{
-				FeatureStruct condition;
-				if (preprocessedCond.Item1 != null && preprocessedCond.Item1.FeatureStruct.CheckDisjunctiveConsistency(false, new VariableBindings(), out condition))
+				IGrouping<NfaStateInfo, NfaStateInfo>[] groups = preprocessedCond.Item3.GroupBy(s => s).ToArray();
+				// do not check disjunctive consistency, this might result in unreachable paths in the DFST, but it speeds up the determinization process significantly
+				if (groups.Length > 0)
 				{
-				    condition.Freeze();
-
-				    foreach (Tuple<SubsetState, Input, IEnumerable<Output<TData, TOffset>>> arc in GetAllArcsForInput(new Input(condition, 1/*preprocessedCond.Item1.Identity*/),
-				        from, preprocessedCond.Item2.GroupBy(s => s).ToArray(), 0, Enumerable.Empty<NfaStateInfo>()))
-				    {
-				        yield return arc;
-				    }
+					preprocessedCond.Item1.Freeze();
+					var input = new Input(preprocessedCond.Item1, preprocessedCond.Item2, 1);
+					if (input.IsConsistent)
+					{
+						foreach (Tuple<SubsetState, Input, IEnumerable<Output<TData, TOffset>>> arc in GetAllArcsForInput(input, from, groups, 0, Enumerable.Empty<NfaStateInfo>()))
+							yield return arc;
+					}
 				}
 			}
 		}
@@ -813,14 +823,11 @@ namespace SIL.Machine.FiniteState
 					yield break;
 				var commonPrefix = new List<Output<TData, TOffset>>();
 				bool first = true;
-				int enqueueCount = input.EnqueueCount + targetStates.Select(s => s.NfaState.Arcs.Where(a => a.Input.FeatureStruct == null).Select(a => a.Input.EnqueueCount).Concat(0).Max()).Sum();
+				int enqueueCount = input.EnqueueCount + targetStates.Select(s => s.NfaState.Arcs.Where(a => a.Input.IsEpsilon).Select(a => a.Input.EnqueueCount).Concat(0).Max()).Sum();
 				foreach (NfaStateInfo state in targetStates)
 				{
-					//bool noIdentities = true;
 					for (int i = 0; i < state.Outputs.Count; i++)
 					{
-						//if (!(state.Outputs[i] is InsertOutput<TData, TOffset>))
-						//	noIdentities = false;
 						if (first)
 							commonPrefix.Add(state.Outputs[i]);
 						else if (i < commonPrefix.Count && !commonPrefix[i].Equals(state.Outputs[i]))
@@ -830,8 +837,6 @@ namespace SIL.Machine.FiniteState
 					int dequeueCount = enqueueCount - state.Outputs.Count;
 					for (int i = 0; i < dequeueCount; i++)
 						state.Outputs.Add(new NullOutput<TData, TOffset>());
-					//if (input.Identity && noIdentities)
-					//	state.Outputs.Add(new NullOutput<TData, TOffset>());
 					first = false;
 				}
 
@@ -841,7 +846,7 @@ namespace SIL.Machine.FiniteState
 						state.Outputs.RemoveRange(0, commonPrefix.Count);
 				}
 
-				yield return Tuple.Create(new SubsetState(targetStates), new Input(input.FeatureStruct, enqueueCount), (IEnumerable<Output<TData, TOffset>>) commonPrefix);
+				yield return Tuple.Create(new SubsetState(targetStates), new Input(input.FeatureStruct, input.NegatedFeatureStructs, enqueueCount), (IEnumerable<Output<TData, TOffset>>) commonPrefix);
 			}
 			else
 			{
@@ -857,7 +862,7 @@ namespace SIL.Machine.FiniteState
 		{
 			ILookup<Input, NfaStateInfo> conditions = from.NfaStates
 				.SelectMany(state => state.NfaState.Arcs, (state, arc) => new { State = state, Arc = arc} )
-				.Where(stateArc => stateArc.Arc.Input.FeatureStruct != null)
+				.Where(stateArc => !stateArc.Arc.Input.IsEpsilon)
 				.ToLookup(stateArc => stateArc.Arc.Input, stateArc => new NfaStateInfo(stateArc.Arc.Target, stateArc.State.Outputs.Concat(stateArc.Arc.Outputs),
 					Math.Max(stateArc.Arc.Priority, stateArc.State.MaxPriority), stateArc.Arc.Priority, stateArc.State.Tags));
 
@@ -875,7 +880,7 @@ namespace SIL.Machine.FiniteState
 		{
 			foreach (NfaStateInfo q in from.NfaStates)
 			{
-				foreach (Arc<TData, TOffset> arc in q.NfaState.Arcs.Where(a => a.Input.FeatureStruct != null))
+				foreach (Arc<TData, TOffset> arc in q.NfaState.Arcs.Where(a => !a.Input.IsEpsilon))
 				{
 					var nsi = new NfaStateInfo(arc.Target, Enumerable.Empty<Output<TData, TOffset>>());
 					var target = new SubsetState(EpsilonClosure(nsi.ToEnumerable(), GetFirstFreeIndex(from)));
@@ -973,10 +978,6 @@ namespace SIL.Machine.FiniteState
 		private void CreateOptimizedArc(Fst<TData, TOffset> newFst, Dictionary<SubsetState, SubsetState> subsetStates, Queue<SubsetState> unmarkedSubsetStates,
 			Dictionary<Tuple<int, int>, int> registerIndices, SubsetState curSubsetState, SubsetState target, Input input, IEnumerable<Output<TData, TOffset>> outputs, bool deterministic)
 		{
-			//SubsetState target = EpsilonClosure(reach, curSubsetState);
-			// this makes the FSA not complete
-			//if (!target.IsEmpty)
-			//{
 			var cmdTags = new Dictionary<int, int>();
 			foreach (NfaStateInfo targetState in target.NfaStates)
 			{
@@ -1047,7 +1048,6 @@ namespace SIL.Machine.FiniteState
 			}
 
 			curSubsetState.State.Arcs.Add(input, outputs, target.State, cmds);
-			//}
 		}
 
 		private void CreateOptimizedState(Fst<TData, TOffset> newFst, SubsetState subsetState, Dictionary<Tuple<int, int>, int> registerIndices)
@@ -1123,7 +1123,7 @@ namespace SIL.Machine.FiniteState
 				while (!curState.IsAccepting)
 				{
 					Arc<TData, TOffset> highestPriArc = curState.Arcs.MinBy(a => a.Priority);
-					if (highestPriArc.Input.FeatureStruct != null)
+					if (!highestPriArc.Input.IsEpsilon)
 						break;
 					curState = highestPriArc.Target;
 				}
@@ -1132,7 +1132,7 @@ namespace SIL.Machine.FiniteState
 				{
 					if ((from s in state.NfaStates
 						 from tran in s.NfaState.Arcs
-						 where tran.Input.FeatureStruct != null
+						 where !tran.Input.IsEpsilon
 						 select tran.Input).Any())
 					{
 						return true;
@@ -1206,7 +1206,7 @@ namespace SIL.Machine.FiniteState
 
 				foreach (Arc<TData, TOffset> arc in topState.NfaState.Arcs)
 				{
-					if (arc.Input.FeatureStruct == null)
+					if (arc.Input.IsEpsilon)
 					{
 						var newState = new NfaStateInfo(arc.Target, topState.Outputs.Concat(arc.Outputs), Math.Max(arc.Priority, topState.MaxPriority), arc.Priority, topState.Tags);
 						NfaStateInfo temp;
@@ -1780,13 +1780,13 @@ namespace SIL.Machine.FiniteState
 				var newArcs = new List<Tuple<State<TData, TOffset>, State<TData, TOffset>, FeatureStruct, int, ArcPriorityType>>();
 				foreach (Arc<TData, TOffset> arc1 in p.Item1.Arcs)
 				{
-					if (arc1.Input.FeatureStruct == null)
+					if (arc1.Input.IsEpsilon)
 					{
 						newArcs.Add(Tuple.Create(arc1.Target, p.Item2, (FeatureStruct) null, CopyTag(newFst, arc1.Tag), arc1.PriorityType));
 					}
 					else
 					{
-						foreach (Arc<TData, TOffset> arc2 in p.Item2.Arcs.Where(a => a.Input.FeatureStruct != null))
+						foreach (Arc<TData, TOffset> arc2 in p.Item2.Arcs.Where(a => !a.Input.IsEpsilon))
 						{
 							FeatureStruct fs;
 							if (arc1.Input.FeatureStruct.Unify(arc2.Input.FeatureStruct, out fs))
@@ -1798,7 +1798,7 @@ namespace SIL.Machine.FiniteState
 					}
 				}
 
-				foreach (Arc<TData, TOffset> arc2 in p.Item2.Arcs.Where(a => a.Input.FeatureStruct == null))
+				foreach (Arc<TData, TOffset> arc2 in p.Item2.Arcs.Where(a => a.Input.IsEpsilon))
 					newArcs.Add(Tuple.Create(p.Item1, arc2.Target, (FeatureStruct) null, CopyTag(newFst, arc2.Tag), arc2.PriorityType));
 
 				foreach (Tuple<State<TData, TOffset>, State<TData, TOffset>, FeatureStruct, int, ArcPriorityType> newArc in newArcs)
@@ -1877,7 +1877,7 @@ namespace SIL.Machine.FiniteState
 							compareFs = arc1.Outputs[0].FeatureStruct;
 						}
 
-						foreach (Arc<TData, TOffset> arc2 in p.Item2.Arcs.Where(a => a.Input.FeatureStruct != null))
+						foreach (Arc<TData, TOffset> arc2 in p.Item2.Arcs.Where(a => !a.Input.IsEpsilon))
 						{
 							if (arc2.Input.FeatureStruct.IsUnifiable(compareFs))
 							{
@@ -1907,7 +1907,7 @@ namespace SIL.Machine.FiniteState
 					}
 				}
 
-				foreach (Arc<TData, TOffset> arc2 in p.Item2.Arcs.Where(a => a.Input.FeatureStruct == null))
+				foreach (Arc<TData, TOffset> arc2 in p.Item2.Arcs.Where(a => a.Input.IsEpsilon))
 					newArcs.Add(Tuple.Create(p.Item1, arc2.Target, arc2.Input, arc2.Outputs.Count == 0 ? null : arc2.Outputs[0], CopyTag(newFst, arc2.Tag), arc2.PriorityType));
 
 				foreach (Tuple<State<TData, TOffset>, State<TData, TOffset>, Input, Output<TData, TOffset>, int, ArcPriorityType> newArc in newArcs)

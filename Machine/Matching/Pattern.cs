@@ -40,7 +40,6 @@ namespace SIL.Machine.Matching
 		public Pattern(IEnumerable<PatternNode<TData, TOffset>> nodes)
 			: base(nodes)
 		{
-			Acceptable = match => true;
 		}
 
 		public Pattern(string name)
@@ -51,7 +50,6 @@ namespace SIL.Machine.Matching
 		public Pattern(string name, IEnumerable<PatternNode<TData, TOffset>> nodes)
 			: base(nodes)
 		{
-			Acceptable = match => true;
 			_name = name;
 		}
 
@@ -96,7 +94,8 @@ namespace SIL.Machine.Matching
 		protected override int FreezeImpl()
 		{
 			int code = base.FreezeImpl();
-			code = code * 31 + Acceptable.GetHashCode();
+			if (Acceptable != null)
+				code = code * 31 + Acceptable.GetHashCode();
 			return code;
 		}
 

@@ -27,7 +27,7 @@ namespace SIL.Machine.FeatureModel
 
 		internal bool UnifyDefinite(FeatureValue other, bool useDefaults, VariableBindings varBindings, out FeatureValue output)
 		{
-			var copies = new Dictionary<FeatureValue, FeatureValue>(ReferenceEqualityComparer<FeatureValue>.Instance);
+			var copies = new Dictionary<FeatureValue, FeatureValue>();
 			return UnifyDefinite(other, useDefaults, copies, varBindings, out output);
 		}
 

@@ -105,7 +105,8 @@ namespace SIL.Machine.Matching
 		{
 			bool deterministic = true;
 			string name = parentName == null ? pattern.Name : parentName + "*" + pattern.Name;
-			acceptables = acceptables.Concat(pattern.Acceptable).ToArray();
+			if (pattern.Acceptable != null)
+				acceptables = acceptables.Concat(pattern.Acceptable).ToArray();
 			if (pattern.Children.All(node => node is Pattern<TData, TOffset>))
 			{
 				foreach (Pattern<TData, TOffset> childExpr in pattern.Children)
@@ -122,12 +123,18 @@ namespace SIL.Machine.Matching
 				if (hasVariables)
 					deterministic = false;
 				startState = _fsa.CreateTag(startState, _fsa.CreateState(), EntireMatch, false);
-				State<TData, TOffset> acceptingState = _fsa.CreateAcceptingState(name,
-					(input, match) =>
-					{
-						Match<TData, TOffset> patMatch = CreatePatternMatch(input, match);
-						return acceptables.All(acceptable => acceptable(patMatch));
-					}, nextPriority++);
+
+
+				Func<TData, FstResult<TData, TOffset>, bool> acceptable = null;
+				if (acceptables.Length > 0)
+				{
+					acceptable = (input, match) =>
+						{
+							Match<TData, TOffset> patMatch = CreatePatternMatch(input, match);
+							return acceptables.All(a => a(patMatch));
+						};
+				}
+				State<TData, TOffset> acceptingState = _fsa.CreateAcceptingState(name, acceptable, nextPriority++);
 				startState.Arcs.Add(acceptingState);
 			}
 
@@ -149,7 +156,7 @@ namespace SIL.Machine.Matching
 				TOffset start, end;
 				if (_fsa.GetOffsets(groupName, match.Registers, out start, out end))
 				{
-					if (_spanFactory.IsValidSpan(start, end) && _spanFactory.CalcLength(start, end) > 0)
+					if (_spanFactory.IsValidSpan(start, end) && _spanFactory.IsRange(start, end))
 					{
 						Span<TOffset> span = _spanFactory.Create(start, end);
 						if (matchSpan.Contains(span))

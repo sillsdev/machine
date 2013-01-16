@@ -93,6 +93,26 @@ namespace SIL.Machine
 			return _includeEndpoint ? compare <= 0 : compare < 0;
 		}
 
+		public abstract bool IsRange(TOffset start, TOffset end);
+
+		public bool IsRange(TOffset start, TOffset end, Direction dir)
+		{
+			TOffset actualStart;
+			TOffset actualEnd;
+			if (dir == Direction.LeftToRight)
+			{
+				actualStart = start;
+				actualEnd = end;
+			}
+			else
+			{
+				actualStart = end;
+				actualEnd = start;
+			}
+
+			return IsRange(actualStart, actualEnd);
+		}
+
 		public Span<TOffset> Create(TOffset start, TOffset end)
 		{
 			return Create(start, end, Direction.LeftToRight);

@@ -99,7 +99,7 @@ namespace SIL.Machine.FiniteState
 		public override string ToString()
 		{
 			var sb = new StringBuilder();
-			if (Input.FeatureStruct == null && _tag != -1)
+			if (Input.IsEpsilon && _tag != -1)
 			{
 				sb.Append("tag ");
 				sb.Append(_tag);

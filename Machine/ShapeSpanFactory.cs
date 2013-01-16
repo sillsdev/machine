@@ -37,6 +37,11 @@ namespace SIL.Machine
 			return start.GetNodes(end).Count();
 		}
 
+		public override bool IsRange(ShapeNode start, ShapeNode end)
+		{
+			return start != null && end != null;
+		}
+
 		public override Span<ShapeNode> Create(ShapeNode offset, Direction dir)
 		{
 			return Create(offset, offset, dir);

@@ -891,7 +891,7 @@ namespace SIL.Machine.FeatureModel
 			if (_indefinite.Count > 0)
 			{
 				for (int n = 1; n < output._indefinite.Count; n++)
-					NWiseConsistency(output, n, useDefaults, varBindings, new HashSet<FeatureValue>(),  out output);
+					NWiseConsistency(output, n, useDefaults, varBindings, new HashSet<FeatureValue>(), out output);
 			}
 			return true;
 		}
@@ -1107,38 +1107,41 @@ namespace SIL.Machine.FeatureModel
 				indefinite.RemoveAt(0);
 				
 				var newDisjunction = new List<FeatureStruct>();
-				FeatureStruct lastFS = null;
 				VariableBindings lastVarBindings = null;
 				foreach (FeatureStruct disjunct in disjunction)
 				{
 					VariableBindings tempVarBindings = varBindings.DeepClone();
 					FeatureValue hypFV;
-					if (fs.UnifyDefinite(disjunct, useDefaults, tempVarBindings, out hypFV))
+					if (newFS.UnifyDefinite(disjunct, useDefaults, tempVarBindings, out hypFV))
 					{
 						var hypFS = (FeatureStruct) hypFV;
 						foreach (Disjunction disj in indefinite)
-							hypFS._indefinite.Add(disj);
+						{
+							if (!Contains(tempValues, hypFS._indefinite, disj))
+								hypFS._indefinite.Add(disj.DeepCloneImpl(tempValues.ToDictionary(fv => fv)));
+						}
 
 						FeatureStruct nFS;
 						if (n == 1 ? CheckIndefinite(hypFS, hypFS, useDefaults, tempVarBindings, tempValues, out nFS)
 							: NWiseConsistency(hypFS, n - 1, useDefaults, tempVarBindings, tempValues, out nFS))
 						{
-							newDisjunction.Add(disjunct);
-							//newDisjunction.Add(nFS);
-							lastFS = nFS;
-							lastVarBindings = tempVarBindings;
+							if (!Contains(tempValues, newDisjunction, nFS))
+							{
+								newDisjunction.Add(nFS);
+								lastVarBindings = tempVarBindings;
+							}
 						}
 					}
 				}
 
-				if (lastFS == null)
+				if (newDisjunction.Count == 0)
 				{
 					newFS = null;
 					return false;
 				}
 			    if (newDisjunction.Count == 1)
 			    {
-			    	newFS = lastFS;
+			    	newFS = newDisjunction.First();
 			        varBindings.Replace(lastVarBindings);
 			        indefinite.Clear();
 			        indefinite.AddRange(newFS._indefinite);

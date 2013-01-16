@@ -44,7 +44,8 @@ namespace SIL.Machine.FiniteState
 		{
 			int code = 23;
 			code = code * 31 + (_id == null ? 0 : _id.GetHashCode());
-			code = code * 31 + _acceptable.GetHashCode();
+			if (_acceptable != null)
+				code = code * 31 + _acceptable.GetHashCode();
 			return code;
 		}
 	}

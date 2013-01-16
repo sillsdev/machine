@@ -386,16 +386,16 @@ namespace SIL.Machine.Test
 							.Symbol("front-")
 							.Symbol("low-")
 							.Symbol("rnd+").Value},
-					{'+', FeatureStruct.NewMutable(PhoneticFeatSys)
+					{'+', FeatureStruct.New(PhoneticFeatSys)
 							.Symbol(Bdry)
 							.Feature("strRep").EqualTo("+").Value},
-					{',', FeatureStruct.NewMutable(PhoneticFeatSys)
+					{',', FeatureStruct.New(PhoneticFeatSys)
 							.Symbol(Bdry)
 							.Feature("strRep").EqualTo(",").Value},
-					{' ', FeatureStruct.NewMutable(PhoneticFeatSys)
+					{' ', FeatureStruct.New(PhoneticFeatSys)
 							.Symbol(Bdry)
 							.Feature("strRep").EqualTo(" ").Value},
-					{'.', FeatureStruct.NewMutable(PhoneticFeatSys)
+					{'.', FeatureStruct.New(PhoneticFeatSys)
 							.Symbol(Bdry)
 							.Feature("strRep").EqualTo(".").Value}
 				};
@@ -407,7 +407,7 @@ namespace SIL.Machine.Test
 			for (int i = 0; i < str.Length; i++)
 			{
 				FeatureStruct fs = Characters[str[i]];
-				stringData.Annotations.Add(i, i + 1, fs);
+				stringData.Annotations.Add(i, i + 1, fs.DeepClone());
 			}
 			return stringData;
 		}

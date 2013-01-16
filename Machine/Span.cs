@@ -61,6 +61,11 @@ namespace SIL.Machine
 			get { return _spanFactory.CalcLength(_start, _end); }
 		}
 
+		public bool IsRange
+		{
+			get { return _spanFactory.IsRange(_start, _end); }
+		}
+
 		public TOffset GetStart(Direction dir)
 		{
 			return dir == Direction.LeftToRight ? _start : _end;
