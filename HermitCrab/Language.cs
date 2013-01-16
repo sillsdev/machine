@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -80,8 +81,9 @@ namespace SIL.HermitCrab
 
 		public IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{
-			return new PermutationRuleCascade<Word, ShapeNode>(_strata.Select(stratum => stratum.CompileAnalysisRule(spanFactory, morpher)).Reverse(),
-				FreezableEqualityComparer<Word>.Instance);
+			//return new PermutationRuleCascade<Word, ShapeNode>(_strata.Select(stratum => stratum.CompileAnalysisRule(spanFactory, morpher)).Reverse(),
+			//	FreezableEqualityComparer<Word>.Instance);
+			return new AnalysisLanguageRule(spanFactory, morpher, _strata);
 		}
 
 		public IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
@@ -96,5 +98,41 @@ namespace SIL.HermitCrab
 			foreach (Stratum stratum in _strata)
 				stratum.Traverse(action);
     	}
+
+		private class AnalysisLanguageRule : IRule<Word, ShapeNode>
+		{
+			private readonly List<IRule<Word, ShapeNode>> _rules; 
+
+			public AnalysisLanguageRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, IEnumerable<Stratum> strata)
+			{
+				_rules = strata.Select(stratum => stratum.CompileAnalysisRule(spanFactory, morpher)).Reverse().ToList();
+			}
+
+			public IEnumerable<Word> Apply(Word input)
+			{
+				var inputSet = new HashSet<Word>(FreezableEqualityComparer<Word>.Instance){input};
+				var tempSet = new HashSet<Word>(FreezableEqualityComparer<Word>.Instance);
+				var results = new HashSet<Word>(FreezableEqualityComparer<Word>.Instance);
+				for (int i = 0; i < _rules.Count && inputSet.Count > 0; i++)
+				{
+					HashSet<Word> outputSet = tempSet;
+					outputSet.Clear();
+
+					foreach (Word inData in inputSet)
+					{
+						foreach (Word outData in _rules[i].Apply(inData))
+						{
+							outputSet.Add(outData);
+							results.Add(outData);
+						}
+					}
+
+					tempSet = inputSet;
+					inputSet = outputSet;
+				}
+
+				return results;
+			}
+		}
     }
 }

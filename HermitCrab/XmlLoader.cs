@@ -692,7 +692,8 @@ namespace SIL.HermitCrab
 				else
 					fs.Union(segFS);
 			}
-			Debug.Assert(fs != null);
+			if (fs == null)
+				fs = new FeatureStruct();
 			fs.Freeze();
 			_natClasses[id] = fs;
 		}
