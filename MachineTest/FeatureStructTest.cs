@@ -14,13 +14,13 @@ namespace SIL.Machine.Test
 		{
 			var featSys = new FeatureSystem
 							{
-								new SymbolicFeature("rank") {PossibleSymbols = {"clause"}},
-								new SymbolicFeature("case") {PossibleSymbols = {"nom"}},
-								new SymbolicFeature("number") {PossibleSymbols = {"pl", "sing"}},
-								new SymbolicFeature("person") {PossibleSymbols = {"2", "3"}},
+								new SymbolicFeature("rank", new FeatureSymbol("clause")),
+								new SymbolicFeature("case", new FeatureSymbol("nom")),
+								new SymbolicFeature("number", new FeatureSymbol("pl"), new FeatureSymbol("sing")),
+								new SymbolicFeature("person", new FeatureSymbol("2"), new FeatureSymbol("3")),
 								new StringFeature("lex"),
-								new SymbolicFeature("transitivity") {PossibleSymbols = {"trans", "intrans"}},
-								new SymbolicFeature("voice") {PossibleSymbols = {"passive", "active"}},
+								new SymbolicFeature("transitivity", new FeatureSymbol("trans"), new FeatureSymbol("intrans")),
+								new SymbolicFeature("voice", new FeatureSymbol("passive"), new FeatureSymbol("active")),
 								new StringFeature("varFeat1"),
 								new StringFeature("varFeat2"),
 								new StringFeature("varFeat3"),
@@ -29,6 +29,7 @@ namespace SIL.Machine.Test
 								new ComplexFeature("actor"),
 								new ComplexFeature("goal")
 							};
+			featSys.Freeze();
 
 			FeatureStruct grammar = FeatureStruct.New(featSys)
 				.Feature("rank").EqualTo("clause")
@@ -96,14 +97,15 @@ namespace SIL.Machine.Test
 
 			featSys = new FeatureSystem
 			          	{
-			          		new SymbolicFeature("feat1") {PossibleSymbols = {"feat1+", "feat1-"}},
-			          		new SymbolicFeature("feat2") {PossibleSymbols = {"feat2+", "feat2-"}},
-			          		new SymbolicFeature("feat3") {PossibleSymbols = {"feat3+", "feat3-"}},
-			          		new SymbolicFeature("feat4") {PossibleSymbols = {"feat4+", "feat4-"}},
-			          		new SymbolicFeature("feat5") {PossibleSymbols = {"feat5+", "feat5-"}},
-			          		new SymbolicFeature("feat6") {PossibleSymbols = {"feat6+", "feat6-"}},
-			          		new SymbolicFeature("feat7") {PossibleSymbols = {"feat7+", "feat7-"}},
+			          		new SymbolicFeature("feat1", new FeatureSymbol("feat1+"), new FeatureSymbol("feat1-")),
+			          		new SymbolicFeature("feat2", new FeatureSymbol("feat2+"), new FeatureSymbol("feat2-")),
+			          		new SymbolicFeature("feat3", new FeatureSymbol("feat3+"), new FeatureSymbol("feat3-")),
+			          		new SymbolicFeature("feat4", new FeatureSymbol("feat4+"), new FeatureSymbol("feat4-")),
+			          		new SymbolicFeature("feat5", new FeatureSymbol("feat5+"), new FeatureSymbol("feat5-")),
+			          		new SymbolicFeature("feat6", new FeatureSymbol("feat6+"), new FeatureSymbol("feat6-")),
+			          		new SymbolicFeature("feat7", new FeatureSymbol("feat7+"), new FeatureSymbol("feat7-"))
 			          	};
+			featSys.Freeze();
 
 			FeatureStruct fs1 = FeatureStruct.New(featSys)
 				.And(disjunction => disjunction
@@ -211,11 +213,11 @@ namespace SIL.Machine.Test
 			var featureSystem = new FeatureSystem
 			                    	{
 			                    		new ComplexFeature("a"),
-			                    		new SymbolicFeature("b") {PossibleSymbols = {"c"}},
+			                    		new SymbolicFeature("b", new FeatureSymbol("c")),
 			                    		new ComplexFeature("d"),
-			                    		new SymbolicFeature("e") {PossibleSymbols = {"f"}},
+			                    		new SymbolicFeature("e", new FeatureSymbol("f")),
 			                    		new ComplexFeature("g"),
-			                    		new SymbolicFeature("h") {PossibleSymbols = {"j"}}
+			                    		new SymbolicFeature("h", new FeatureSymbol("j"))
 			                    	};
 
 			FeatureStruct featStruct1 = FeatureStruct.New(featureSystem)
@@ -238,11 +240,11 @@ namespace SIL.Machine.Test
 			featureSystem = new FeatureSystem
 			                	{
 			                		new ComplexFeature("a"),
-									new SymbolicFeature("b") {PossibleSymbols = {"c"}},
+									new SymbolicFeature("b", new FeatureSymbol("c")),
 									new ComplexFeature("d"),
-									new SymbolicFeature("e") {PossibleSymbols = {"f"}},
+									new SymbolicFeature("e", new FeatureSymbol("f")),
 									new ComplexFeature("g"),
-									new SymbolicFeature("h") {PossibleSymbols = {"j"}},
+									new SymbolicFeature("h", new FeatureSymbol("j")),
 									new ComplexFeature("i")
 			                	};
 
@@ -565,10 +567,11 @@ namespace SIL.Machine.Test
 			// simple
 			var featSys = new FeatureSystem
 							{
-								new SymbolicFeature("a") {PossibleSymbols = {"a1", "a2", "a3"}},
-								new SymbolicFeature("b") {PossibleSymbols = {"b1", "b2", "b3"}},
-								new SymbolicFeature("c") {PossibleSymbols = {"c1", "c2", "c3"}}
+								new SymbolicFeature("a", new FeatureSymbol("a1"), new FeatureSymbol("a2"), new FeatureSymbol("a3")),
+								new SymbolicFeature("b", new FeatureSymbol("b1"), new FeatureSymbol("b2"), new FeatureSymbol("b3")),
+								new SymbolicFeature("c", new FeatureSymbol("c1"), new FeatureSymbol("c2"), new FeatureSymbol("c3"))
 							};
+			featSys.Freeze();
 
 			FeatureStruct fs = FeatureStruct.New(featSys).Symbol("a1").Symbol("b1").Value;
 			Assert.That(resultsSelector(fs), Is.EqualTo(expectedSelectors[0](featSys)).Using((IEqualityComparer<FeatureStruct>) FreezableEqualityComparer<FeatureStruct>.Instance));
@@ -580,13 +583,14 @@ namespace SIL.Machine.Test
 			featSys = new FeatureSystem
 			          	{
 			          		new ComplexFeature("cx1"),
-			          		new SymbolicFeature("a") {PossibleSymbols = {"a1", "a2", "a3"}},
+			          		new SymbolicFeature("a", new FeatureSymbol("a1"), new FeatureSymbol("a2"), new FeatureSymbol("a3")),
 			          		new ComplexFeature("cx2"),
-			          		new SymbolicFeature("b") {PossibleSymbols = {"b1", "b2", "b3"}},
+			          		new SymbolicFeature("b", new FeatureSymbol("b1"), new FeatureSymbol("b2"), new FeatureSymbol("b3")),
 			          		new ComplexFeature("cx3"),
-			          		new SymbolicFeature("c") {PossibleSymbols = {"c1", "c2", "c3"}},
-			          		new SymbolicFeature("d") {PossibleSymbols = {"d1", "d2", "d3"}}
+			          		new SymbolicFeature("c", new FeatureSymbol("c1"), new FeatureSymbol("c2"), new FeatureSymbol("c3")),
+			          		new SymbolicFeature("d", new FeatureSymbol("d1"), new FeatureSymbol("d2"), new FeatureSymbol("d3"))
 			          	};
+			featSys.Freeze();
 
 			fs = FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1"))
 				.Feature("cx2").EqualTo(cx2 => cx2.Symbol("b1"))
@@ -602,9 +606,10 @@ namespace SIL.Machine.Test
 			featSys = new FeatureSystem
 			          	{
 			          		new ComplexFeature("cx1"),
-			          		new SymbolicFeature("a") {PossibleSymbols = {"a1", "a2", "a3", "a4"}},
+			          		new SymbolicFeature("a", new FeatureSymbol("a1"), new FeatureSymbol("a2"), new FeatureSymbol("a3"), new FeatureSymbol("a4")),
 			          		new ComplexFeature("cx2")
 			          	};
+			featSys.Freeze();
 
 			fs = FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1.Symbol("a1"))
 				.Feature("cx2").ReferringTo(1).Value;
@@ -622,11 +627,12 @@ namespace SIL.Machine.Test
 			featSys = new FeatureSystem
 			          	{
 			          		new ComplexFeature("cx1"),
-			          		new SymbolicFeature("a") {PossibleSymbols = {"a1", "a2", "a3"}},
-			          		new SymbolicFeature("b") {PossibleSymbols = {"b1", "b2", "b3"}},
-			          		new SymbolicFeature("c") {PossibleSymbols = {"c1", "c2", "c3"}},
+			          		new SymbolicFeature("a", new FeatureSymbol("a1"), new FeatureSymbol("a2"), new FeatureSymbol("a3")),
+			          		new SymbolicFeature("b", new FeatureSymbol("b1"), new FeatureSymbol("b2"), new FeatureSymbol("b3")),
+			          		new SymbolicFeature("c", new FeatureSymbol("c1"), new FeatureSymbol("c2"), new FeatureSymbol("c3")),
 			          		new ComplexFeature("cx2")
 			          	};
+			featSys.Freeze();
 
 			fs = FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
 				.Symbol("a2").Feature("cx2").ReferringTo(1)).Value;
@@ -639,9 +645,10 @@ namespace SIL.Machine.Test
 			// variable
 			featSys = new FeatureSystem
 			          	{
-			          		new SymbolicFeature("a") {PossibleSymbols = {{"a+", "+"}, {"a-", "-"}}},
-			          		new SymbolicFeature("b") {PossibleSymbols = {{"b+", "+"}, {"b-", "-"}}}
+			          		new SymbolicFeature("a", new FeatureSymbol("a+", "+"), new FeatureSymbol("a-", "-")),
+			          		new SymbolicFeature("b", new FeatureSymbol("b+", "+"), new FeatureSymbol("b-", "-"))
 			          	};
+			featSys.Freeze();
 
 			fs = FeatureStruct.New(featSys)
 				.Feature("a").EqualToVariable("var1")
@@ -658,19 +665,20 @@ namespace SIL.Machine.Test
 			// disjunctive
 			featSys = new FeatureSystem
 			          	{
-			          		new SymbolicFeature("feat1") {PossibleSymbols = {"feat1+", "feat1-"}},
-			          		new SymbolicFeature("feat2") {PossibleSymbols = {"feat2+", "feat2-"}},
-			          		new SymbolicFeature("feat3") {PossibleSymbols = {"feat3+", "feat3-"}},
-			          		new SymbolicFeature("feat4") {PossibleSymbols = {"feat4+", "feat4-"}},
-			          		new SymbolicFeature("feat5") {PossibleSymbols = {"feat5+", "feat5-"}},
-			          		new SymbolicFeature("feat6") {PossibleSymbols = {"feat6+", "feat6-"}},
-			          		new SymbolicFeature("feat7") {PossibleSymbols = {"feat7+", "feat7-"}},
-			          		new SymbolicFeature("feat8") {PossibleSymbols = {"feat8+", "feat8-"}},
-			          		new SymbolicFeature("feat9") {PossibleSymbols = {"feat9+", "feat9-"}},
-			          		new SymbolicFeature("feat10") {PossibleSymbols = {"feat10+", "feat10-"}},
+			          		new SymbolicFeature("feat1", new FeatureSymbol("feat1+"), new FeatureSymbol("feat1-")),
+			          		new SymbolicFeature("feat2", new FeatureSymbol("feat2+"), new FeatureSymbol("feat2-")),
+			          		new SymbolicFeature("feat3", new FeatureSymbol("feat3+"), new FeatureSymbol("feat3-")),
+			          		new SymbolicFeature("feat4", new FeatureSymbol("feat4+"), new FeatureSymbol("feat4-")),
+			          		new SymbolicFeature("feat5", new FeatureSymbol("feat5+"), new FeatureSymbol("feat5-")),
+			          		new SymbolicFeature("feat6", new FeatureSymbol("feat6+"), new FeatureSymbol("feat6-")),
+			          		new SymbolicFeature("feat7", new FeatureSymbol("feat7+"), new FeatureSymbol("feat7-")),
+			          		new SymbolicFeature("feat8", new FeatureSymbol("feat8+"), new FeatureSymbol("feat8-")),
+			          		new SymbolicFeature("feat9", new FeatureSymbol("feat9+"), new FeatureSymbol("feat9-")),
+			          		new SymbolicFeature("feat10", new FeatureSymbol("feat10+"), new FeatureSymbol("feat10-")),
 							new ComplexFeature("cfeat1"),
 							new ComplexFeature("cfeat2")
 			          	};
+			featSys.Freeze();
 
 			fs = FeatureStruct.New(featSys)
 				.And(disjunction => disjunction
@@ -714,10 +722,11 @@ namespace SIL.Machine.Test
 			// simple
 			var featSys = new FeatureSystem
 			              	{
-			              		new SymbolicFeature("a") {PossibleSymbols = {"a1", "a2", "a3"}},
-			              		new SymbolicFeature("b") {PossibleSymbols = {"b1", "b2", "b3"}},
-			              		new SymbolicFeature("c") {PossibleSymbols = {"c1", "c2", "c3"}}
+			              		new SymbolicFeature("a", new FeatureSymbol("a1"), new FeatureSymbol("a2"), new FeatureSymbol("a3")),
+			              		new SymbolicFeature("b", new FeatureSymbol("b1"), new FeatureSymbol("b2"), new FeatureSymbol("b3")),
+			              		new SymbolicFeature("c", new FeatureSymbol("c1"), new FeatureSymbol("c2"), new FeatureSymbol("c3"))
 			              	};
+			featSys.Freeze();
 
 			FeatureStruct fs1 = FeatureStruct.NewMutable(featSys).Symbol("a1").Symbol("b1").Value;
 			FeatureStruct fs2 = FeatureStruct.NewMutable(featSys).Symbol("a2").Symbol("c2").Value;
@@ -731,14 +740,15 @@ namespace SIL.Machine.Test
 			featSys = new FeatureSystem
 			          	{
 			          		new ComplexFeature("cx1"),
-			          		new SymbolicFeature("a") {PossibleSymbols = {"a1", "a2", "a3"}},
+			          		new SymbolicFeature("a", new FeatureSymbol("a1"), new FeatureSymbol("a2"), new FeatureSymbol("a3")),
 			          		new ComplexFeature("cx2"),
-			          		new SymbolicFeature("b") {PossibleSymbols = {"b1", "b2", "b3"}},
+			          		new SymbolicFeature("b", new FeatureSymbol("b1"), new FeatureSymbol("b2"), new FeatureSymbol("b3")),
 			          		new ComplexFeature("cx3"),
-			          		new SymbolicFeature("c") {PossibleSymbols = {"c1", "c2", "c3"}},
+			          		new SymbolicFeature("c", new FeatureSymbol("c1"), new FeatureSymbol("c2"), new FeatureSymbol("c3")),
 			          		new ComplexFeature("cx4"),
-			          		new SymbolicFeature("d") {PossibleSymbols = {"d1", "d2", "d3"}}
+			          		new SymbolicFeature("d", new FeatureSymbol("d1"), new FeatureSymbol("d2"), new FeatureSymbol("d3"))
 			          	};
+			featSys.Freeze();
 
 			fs1 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1"))
 				.Feature("cx2").EqualTo(cx2 => cx2.Symbol("b1"))
@@ -760,9 +770,10 @@ namespace SIL.Machine.Test
 			featSys = new FeatureSystem
 			          	{
 			          		new ComplexFeature("cx1"),
-			          		new SymbolicFeature("a") {PossibleSymbols = {"a1", "a2", "a3", "a4"}},
+			          		new SymbolicFeature("a", new FeatureSymbol("a1"), new FeatureSymbol("a2"), new FeatureSymbol("a3"), new FeatureSymbol("a4")),
 			          		new ComplexFeature("cx2")
 			          	};
+			featSys.Freeze();
 
 			fs1 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(1, cx1 => cx1.Symbol("a1"))
 				.Feature("cx2").ReferringTo(1).Value;
@@ -801,11 +812,12 @@ namespace SIL.Machine.Test
 			featSys = new FeatureSystem
 			          	{
 			          		new ComplexFeature("cx1"),
-			          		new SymbolicFeature("a") {PossibleSymbols = {"a1", "a2", "a3"}},
-			          		new SymbolicFeature("b") {PossibleSymbols = {"b1", "b2", "b3"}},
-			          		new SymbolicFeature("c") {PossibleSymbols = {"c1", "c2", "c3"}},
+			          		new SymbolicFeature("a", new FeatureSymbol("a1"), new FeatureSymbol("a2"), new FeatureSymbol("a3")),
+			          		new SymbolicFeature("b", new FeatureSymbol("b1"), new FeatureSymbol("b2"), new FeatureSymbol("b3")),
+			          		new SymbolicFeature("c", new FeatureSymbol("c1"), new FeatureSymbol("c2"), new FeatureSymbol("c3")),
 			          		new ComplexFeature("cx2")
 			          	};
+			featSys.Freeze();
 
 			fs1 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(cx1 => cx1
 				.Symbol("a1").Symbol("b1")).Value;
@@ -840,9 +852,10 @@ namespace SIL.Machine.Test
 			// variable
 			featSys = new FeatureSystem
 			          	{
-			          		new SymbolicFeature("a") {PossibleSymbols = {{"a+", "+"}, {"a-", "-"}}},
-			          		new SymbolicFeature("b") {PossibleSymbols = {{"b+", "+"}, {"b-", "-"}}}
+			          		new SymbolicFeature("a", new FeatureSymbol("a+", "+"), new FeatureSymbol("a-", "-")),
+			          		new SymbolicFeature("b", new FeatureSymbol("b+", "+"), new FeatureSymbol("b-", "-"))
 			          	};
+			featSys.Freeze();
 
 			fs1 = FeatureStruct.NewMutable(featSys)
 				.Feature("a").EqualToVariable("var1")

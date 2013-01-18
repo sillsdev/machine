@@ -12,9 +12,9 @@ namespace SIL.Machine.FiniteState
 		private readonly int _priority;
 		private readonly bool _isLazy;
 		private readonly Annotation<TOffset> _nextAnn;
-		private readonly int _index;
+		private readonly int _depth;
 
-		internal FstResult(string id, NullableValue<TOffset>[,] registers, TData output, VariableBindings varBindings, int priority, bool isLazy, Annotation<TOffset> nextAnn, int index)
+		internal FstResult(string id, NullableValue<TOffset>[,] registers, TData output, VariableBindings varBindings, int priority, bool isLazy, Annotation<TOffset> nextAnn, int depth)
 		{
 			_id = id;
 			_registers = registers;
@@ -23,7 +23,7 @@ namespace SIL.Machine.FiniteState
 			_priority = priority;
 			_isLazy = isLazy;
 			_nextAnn = nextAnn;
-			_index = index;
+			_depth = depth;
 		}
 
 		public string ID
@@ -61,9 +61,9 @@ namespace SIL.Machine.FiniteState
 			get { return _isLazy; }
 		}
 
-		public int Index
+		public int Depth
 		{
-			get { return _index; }
+			get { return _depth; }
 		}
 	}
 }

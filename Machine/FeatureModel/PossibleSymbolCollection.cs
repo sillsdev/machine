@@ -1,69 +1,51 @@
-﻿using SIL.Collections;
+﻿using System.Collections;
+using System.Collections.Generic;
+using SIL.Collections;
 
 namespace SIL.Machine.FeatureModel
 {
-	public class PossibleSymbolCollection : IDBearerSet<FeatureSymbol>
+	public class PossibleSymbolCollection : IKeyedReadOnlyCollection<string, FeatureSymbol>
 	{
-		private readonly SymbolicFeature _feature;
+		private readonly IDBearerSet<FeatureSymbol> _symbols; 
 
-		internal PossibleSymbolCollection(SymbolicFeature feature)
+		internal PossibleSymbolCollection(IEnumerable<FeatureSymbol> symbols)
 		{
-			_feature = feature;
+			_symbols = new IDBearerSet<FeatureSymbol>(symbols);
 		}
 
-		public bool Add(string symbolID)
+		public IEnumerator<FeatureSymbol> GetEnumerator()
 		{
-			return Add(symbolID, false);
+			return ((IEnumerable<FeatureSymbol>) _symbols).GetEnumerator();
 		}
 
-		public bool Add(string symbolID, bool defaultValue)
+		IEnumerator IEnumerable.GetEnumerator()
 		{
-			return Add(new FeatureSymbol(symbolID), defaultValue);
+			return GetEnumerator();
 		}
 
-		public bool Add(string symbolID, string desc)
+		public bool TryGetValue(string id, out FeatureSymbol value)
 		{
-			return Add(symbolID, desc, false);
+			return _symbols.TryGetValue(id, out value);
 		}
 
-		public bool Add(string symbolID, string desc, bool defaultValue)
+		public FeatureSymbol this[string id]
 		{
-			return Add(new FeatureSymbol(symbolID) { Description = desc }, defaultValue);
+			get { return _symbols[id]; }
 		}
 
-		public bool Add(FeatureSymbol item, bool defaultValue)
+		public bool Contains(string id)
 		{
-			if (Add(item))
-			{
-				if (defaultValue)
-					_feature.DefaultValue = new SymbolicFeatureValue(item);
-				return true;
-			}
-			return false;
+			return _symbols.Contains(id);
 		}
 
-		public override bool Add(FeatureSymbol item)
+		public bool Contains(FeatureSymbol symbol)
 		{
-			if (base.Add(item))
-			{
-				item.Feature = _feature;
-				return true;
-			}
-
-			return false;
+			return _symbols.Contains(symbol);
 		}
 
-		public override bool Remove(string id)
+		public int Count
 		{
-			FeatureSymbol symbol;
-			if (TryGetValue(id, out symbol))
-			{
-				base.Remove(id);
-				symbol.Feature = null;
-				return true;
-			}
-
-			return false;
+			get { return _symbols.Count; }
 		}
 	}
 }

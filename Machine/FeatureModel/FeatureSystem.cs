@@ -186,7 +186,13 @@ namespace SIL.Machine.FeatureModel
 
 	    public void Freeze()
 	    {
+		    if (IsFrozen)
+			    return;
+
 		    IsFrozen = true;
+
+			foreach (Feature feature in _features)
+				feature.Freeze();
 	    }
 
 	    public bool ValueEquals(FeatureSystem other)

@@ -15,49 +15,81 @@ namespace SIL.Machine.FeatureModel
 
 		public static explicit operator FeatureSymbol(SymbolicFeatureValue sfv)
 		{
-			return sfv._values.First();
+			return sfv._first;
 		}
 
 		private readonly SymbolicFeature _feature;
-		private IDBearerSet<FeatureSymbol> _values;
+		private ulong _flags;
+		private FeatureSymbol _first;
 
 		public SymbolicFeatureValue(SymbolicFeature feature)
 		{
 			_feature = feature;
-			_values = new IDBearerSet<FeatureSymbol>();
 		}
 
 		public SymbolicFeatureValue(IEnumerable<FeatureSymbol> values)
 		{
-			_values = new IDBearerSet<FeatureSymbol>(values);
-			if (_values.Count == 0)
+			FeatureSymbol[] symbols = values.ToArray();
+			if (symbols.Length == 0)
 				throw new ArgumentException("values cannot be empty", "values");
-			_feature = _values.First().Feature;
+			_feature = symbols[0].Feature;
+			_first = symbols[0];
+			Set(symbols);
 		}
 
 		public SymbolicFeatureValue(FeatureSymbol value)
 		{
 			_feature = value.Feature;
-			_values = new IDBearerSet<FeatureSymbol> {value};
+			_first = value;
+			Set(value.ToEnumerable());
 		}
 
 		public SymbolicFeatureValue(SymbolicFeature feature, string varName, bool agree)
 			: base(varName, agree)
 		{
 			_feature = feature;
-			_values = new IDBearerSet<FeatureSymbol>();
 		}
 
-		protected SymbolicFeatureValue(SymbolicFeatureValue sfv)
+		private SymbolicFeatureValue(SymbolicFeatureValue sfv)
 			: base(sfv)
 		{
 			_feature = sfv._feature;
-			_values = new IDBearerSet<FeatureSymbol>(sfv._values);
+			_first = sfv._first;
+			_flags = sfv._flags;
+		}
+
+		private SymbolicFeatureValue(SymbolicFeature feature, ulong flags)
+		{
+			_feature = feature;
+			_flags = flags;
+			SetFirst();
+		}
+
+		private void Set(IEnumerable<FeatureSymbol> symbols)
+		{
+			foreach (FeatureSymbol symbol in symbols)
+			{
+				ulong mask = 1UL << symbol.Index;
+				_flags |= mask;
+			}
 		}
 
 		public IEnumerable<FeatureSymbol> Values
 		{
-			get { return _values; }
+			get
+			{
+				return _feature.PossibleSymbols.Where(Get);
+			}
+		}
+
+		private void SetFirst()
+		{
+			_first = _flags == 0 ? null : _feature.PossibleSymbols.First(Get);
+		}
+
+		private bool Get(FeatureSymbol symbol)
+		{
+			return (_flags & (1UL << symbol.Index)) != 0;
 		}
 
 		public SymbolicFeature Feature
@@ -67,32 +99,12 @@ namespace SIL.Machine.FeatureModel
 
 		protected override bool IsSatisfiable
 		{
-			get { return base.IsSatisfiable || _values.Count > 0; }
+			get { return base.IsSatisfiable || _flags != 0; }
 		}
 
 		protected override bool IsUninstantiated
 		{
-			get { return base.IsUninstantiated && _values.SetEquals(_feature.PossibleSymbols); }
-		}
-
-		public bool Contains(FeatureSymbol symbol)
-		{
-			return _values.Contains(symbol);
-		}
-
-		public bool Contains(string symbolID)
-		{
-			return _values.Contains(symbolID);
-		}
-
-		public bool Overlaps(IEnumerable<FeatureSymbol> symbols)
-		{
-			return _values.Overlaps(symbols);
-		}
-
-		public bool Overlaps(IEnumerable<string> ids)
-		{
-			return _values.Overlaps(ids);
+			get { return base.IsUninstantiated && _flags == _feature.Mask; }
 		}
 
 		protected override bool Overlaps(bool not, SimpleFeatureValue other, bool notOther)
@@ -102,12 +114,12 @@ namespace SIL.Machine.FeatureModel
 				return false;
 
 			if (!not && !notOther)
-				return _values.Overlaps(otherSfv._values);
+				return (_flags & otherSfv._flags) != 0;
 			if (!not)
-				return !_values.IsSubsetOf(otherSfv._values);
+				return (_flags & (~otherSfv._flags & _feature.Mask)) != 0;
 			if (!notOther)
-				return !_values.IsSupersetOf(otherSfv._values);
-			return !_values.IsSupersetOf(_feature.PossibleSymbols.Except(otherSfv._values));
+				return ((~_flags & _feature.Mask) & otherSfv._flags) != 0;
+			return ((~_flags & _feature.Mask) & (~otherSfv._flags & _feature.Mask)) != 0;
 		}
 
 		protected override void IntersectWith(bool not, SimpleFeatureValue other, bool notOther)
@@ -117,13 +129,14 @@ namespace SIL.Machine.FeatureModel
 				return;
 
 			if (!not && !notOther)
-				_values.IntersectWith(otherSfv._values);
+				_flags = _flags & otherSfv._flags;
 			else if (!not)
-				_values.ExceptWith(otherSfv._values);
+				_flags = _flags & (~otherSfv._flags & _feature.Mask);
 			else if (!notOther)
-				_values = new IDBearerSet<FeatureSymbol>(otherSfv._values.Except(_values));
+				_flags = (~_flags & _feature.Mask) & otherSfv._flags;
 			else
-				_values = new IDBearerSet<FeatureSymbol>(_feature.PossibleSymbols.Except(_values.Union(otherSfv._values)));
+				_flags = (~_flags & _feature.Mask) & (~otherSfv._flags & _feature.Mask);
+			SetFirst();
 		}
 
 		protected override void UnionWith(bool not, SimpleFeatureValue other, bool notOther)
@@ -133,13 +146,14 @@ namespace SIL.Machine.FeatureModel
 				return;
 
 			if (!not && !notOther)
-				_values.UnionWith(otherSfv._values);
+				_flags = _flags | otherSfv._flags;
 			else if (!not)
-				_values = new IDBearerSet<FeatureSymbol>(_feature.PossibleSymbols.Except(otherSfv._values.Except(_values)));
+				_flags = _flags | (~otherSfv._flags & _feature.Mask);
 			else if (!notOther)
-				_values = new IDBearerSet<FeatureSymbol>(_feature.PossibleSymbols.Except(_values.Except(otherSfv._values)));
+				_flags = (~_flags & _feature.Mask) | otherSfv._flags;
 			else
-				_values = new IDBearerSet<FeatureSymbol>(_feature.PossibleSymbols.Except(_values.Intersect(otherSfv._values)));
+				_flags = (~_flags & _feature.Mask) | (~otherSfv._flags & _feature.Mask);
+			SetFirst();
 		}
 
 		protected override void ExceptWith(bool not, SimpleFeatureValue other, bool notOther)
@@ -149,13 +163,13 @@ namespace SIL.Machine.FeatureModel
 				return;
 
 			if (!not && !notOther)
-				_values.ExceptWith(otherSfv._values);
+				_flags = _flags & (~otherSfv._flags & _feature.Mask);
 			else if (!not)
-				_values.IntersectWith(otherSfv._values);
+				_flags = _flags & otherSfv._flags;
 			else if (!notOther)
-				_values = new IDBearerSet<FeatureSymbol>(_feature.PossibleSymbols.Except(_values.Union(otherSfv._values)));
+				_flags = (~_flags & _feature.Mask) & (~otherSfv._flags & _feature.Mask);
 			else
-				_values = new IDBearerSet<FeatureSymbol>(otherSfv._values.Except(_values));
+				_flags = (~_flags & _feature.Mask) & otherSfv._flags;
 		}
 
 		protected override SimpleFeatureValue DeepCloneImpl()
@@ -165,7 +179,7 @@ namespace SIL.Machine.FeatureModel
 
 		public override SimpleFeatureValue Negation()
 		{
-			return IsVariable ? new SymbolicFeatureValue(_feature, VariableName, !Agree) : new SymbolicFeatureValue(_feature.PossibleSymbols.Except(_values));
+			return IsVariable ? new SymbolicFeatureValue(_feature, VariableName, !Agree) : new SymbolicFeatureValue(_feature, (~_flags & _feature.Mask));
 		}
 
 		public override bool ValueEquals(SimpleFeatureValue other)
@@ -179,13 +193,13 @@ namespace SIL.Machine.FeatureModel
 			if (other == null)
 				return false;
 
-			return base.ValueEquals(other) && _values.SetEquals(other._values);
+			return base.ValueEquals(other) && _flags == other._flags;
 		}
 
 		protected override int GetValuesHashCode()
 		{
 			int code = base.GetValuesHashCode();
-			return code * 31 + _values.OrderBy(sym => sym.ID).GetSequenceHashCode();
+			return code * 31 + _flags.GetHashCode();
 		}
 
 		public new SymbolicFeatureValue DeepClone()
@@ -196,15 +210,17 @@ namespace SIL.Machine.FeatureModel
 		public override string ToString()
 		{
 			var sb = new StringBuilder(base.ToString());
-			if (_values.Count == 1)
+
+			FeatureSymbol[] values = Values.ToArray();
+			if (values.Length == 1)
 			{
-				sb.Append(_values.First());
+				sb.Append(values[0]);
 			}
-			else if (_values.Count > 1)
+			else if (values.Length > 1)
 			{
 				bool firstValue = true;
 				sb.Append("{");
-				foreach (FeatureSymbol value in _values)
+				foreach (FeatureSymbol value in values)
 				{
 					if (!firstValue)
 						sb.Append(", ");

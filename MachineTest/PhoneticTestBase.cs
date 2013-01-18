@@ -26,26 +26,26 @@ namespace SIL.Machine.Test
 
 			PhoneticFeatSys = new FeatureSystem
 			                  	{
-			                  		new SymbolicFeature("son") {PossibleSymbols = {{"son+", "+"}, {"son-", "-"}, {"son?", "?", true}}},
-									new SymbolicFeature("syl") {PossibleSymbols = {{"syl+", "+"}, {"syl-", "-"}, {"syl?", "?", true}}},
-									new SymbolicFeature("cons") {PossibleSymbols = {{"cons+", "+"}, {"cons-", "-"}, {"cons?", "?", true}}},
-									new SymbolicFeature("high") {PossibleSymbols = {{"high+", "+"}, {"high-", "-"}, {"high?", "?", true}}},
-									new SymbolicFeature("back") {PossibleSymbols = {{"back+", "+"}, {"back-", "-"}, {"back?", "?", true}}},
-									new SymbolicFeature("front") {PossibleSymbols = {{"front+", "+"}, {"front-", "-"}, {"front?", "?", true}}},
-									new SymbolicFeature("low") {PossibleSymbols = {{"low+", "+"}, {"low-", "-"}, {"low?", "?", true}}},
-									new SymbolicFeature("rnd") {PossibleSymbols = {{"rnd+", "+"}, {"rnd-", "-"}, {"rnd?", "?", true}}},
-									new SymbolicFeature("ant") {PossibleSymbols = {{"ant+", "+"}, {"ant-", "-"}, {"ant?", "?", true}}},
-									new SymbolicFeature("cor") {PossibleSymbols = {{"cor+", "+"}, {"cor-", "-"}, {"cor?", "?", true}}},
-									new SymbolicFeature("voice") {PossibleSymbols = {{"voice+", "+"}, {"voice-", "-"}, {"voice?", "?", true}}},
-									new SymbolicFeature("cont") {PossibleSymbols = {{"cont+", "+"}, {"cont-", "-"}, {"cont?", "?", true}}},
-									new SymbolicFeature("nas") {PossibleSymbols = {{"nas+", "+"}, {"nas-", "-"}, {"nas?", "?", true}}},
-									new SymbolicFeature("str") {PossibleSymbols = {{"str+", "+"}, {"str-", "-"}, {"str?", "?", true}}},
+			                  		new SymbolicFeature("son", new FeatureSymbol("son+", "+"), new FeatureSymbol("son-", "-"), new FeatureSymbol("son?", "?")) {DefaultSymbolID = "son?"},
+									new SymbolicFeature("syl", new FeatureSymbol("syl+", "+"), new FeatureSymbol("syl-", "-"), new FeatureSymbol("syl?", "?")) {DefaultSymbolID = "syl?"},
+									new SymbolicFeature("cons", new FeatureSymbol("cons+", "+"), new FeatureSymbol("cons-", "-"), new FeatureSymbol("cons?", "?")) {DefaultSymbolID = "cons?"},
+									new SymbolicFeature("high", new FeatureSymbol("high+", "+"), new FeatureSymbol("high-", "-"), new FeatureSymbol("high?", "?")) {DefaultSymbolID = "high?"},
+									new SymbolicFeature("back", new FeatureSymbol("back+", "+"), new FeatureSymbol("back-", "-"), new FeatureSymbol("back?", "?")) {DefaultSymbolID = "back?"},
+									new SymbolicFeature("front", new FeatureSymbol("front+", "+"), new FeatureSymbol("front-", "-"), new FeatureSymbol("front?", "?")) {DefaultSymbolID = "front?"},
+									new SymbolicFeature("low", new FeatureSymbol("low+", "+"), new FeatureSymbol("low-", "-"), new FeatureSymbol("low?", "?")) {DefaultSymbolID = "low?"},
+									new SymbolicFeature("rnd", new FeatureSymbol("rnd+", "+"), new FeatureSymbol("rnd-", "-"), new FeatureSymbol("rnd?", "?")) {DefaultSymbolID = "rnd?"},
+									new SymbolicFeature("ant", new FeatureSymbol("ant+", "+"), new FeatureSymbol("ant-", "-"), new FeatureSymbol("ant?", "?")) {DefaultSymbolID = "ant?"},
+									new SymbolicFeature("cor", new FeatureSymbol("cor+", "+"), new FeatureSymbol("cor-", "-"), new FeatureSymbol("cor?", "?")) {DefaultSymbolID = "cor?"},
+									new SymbolicFeature("voice", new FeatureSymbol("voice+", "+"), new FeatureSymbol("voice-", "-"), new FeatureSymbol("voice?", "?")) {DefaultSymbolID = "voice?"},
+									new SymbolicFeature("cont", new FeatureSymbol("cont+", "+"), new FeatureSymbol("cont-", "-"), new FeatureSymbol("cont?", "?")) {DefaultSymbolID = "cont?"},
+									new SymbolicFeature("nas", new FeatureSymbol("nas+", "+"), new FeatureSymbol("nas-", "-"), new FeatureSymbol("nas?", "?")) {DefaultSymbolID = "nas?"},
+									new SymbolicFeature("str", new FeatureSymbol("str+", "+"), new FeatureSymbol("str-", "-"), new FeatureSymbol("str?", "?")) {DefaultSymbolID = "str?"},
 									new StringFeature("strRep")
 			                  	};
 
 			WordFeatSys = new FeatureSystem
 			              	{
-			              		new SymbolicFeature("POS") {PossibleSymbols = {"noun", "verb", "adj", "adv", "det"}}
+			              		new SymbolicFeature("POS", new FeatureSymbol("noun"), new FeatureSymbol("verb"), new FeatureSymbol("adj"), new FeatureSymbol("adv"), new FeatureSymbol("det"))
 			              	};
 
 			Word = new FeatureSymbol("Word");
@@ -54,7 +54,7 @@ namespace SIL.Machine.Test
 			Seg = new FeatureSymbol("Seg");
 			Bdry = new FeatureSymbol("Bdry");
 
-			Type = new SymbolicFeature("Type") {PossibleSymbols = {Word, NP, VP, Seg, Bdry}};
+			Type = new SymbolicFeature("Type", Word, NP, VP, Seg, Bdry);
 
 			TypeFeatSys = new FeatureSystem {Type};
 

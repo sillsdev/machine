@@ -14,6 +14,13 @@ namespace SIL.Machine.FeatureModel
 		public FeatureSymbol(string id)
 			: base(id)
 		{
+			Index = -1;
+		}
+
+		public FeatureSymbol(string id, string desc)
+			: this(id)
+		{
+			Description = desc;
 		}
 
 		/// <summary>
@@ -21,5 +28,7 @@ namespace SIL.Machine.FeatureModel
 		/// </summary>
 		/// <value>The feature.</value>
 		public SymbolicFeature Feature { get; internal set; }
+
+		internal int Index { get; set; }
 	}
 }

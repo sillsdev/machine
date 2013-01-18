@@ -55,7 +55,7 @@ namespace SIL.Machine.FiniteState
 			return fs.IsUnifiable(_fs, useDefaults, varBindings) && _negatedFSs.All(nfs => !fs.IsUnifiable(nfs, useDefaults));
 		}
 
-		public bool IsConsistent
+		public bool IsSatisfiable
 		{
 			get { return _negatedFSs.All(nfs => !nfs.Subsumes(_fs)); }
 		}
