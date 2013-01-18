@@ -68,8 +68,7 @@ namespace SIL.HermitCrab.PhonologicalRules
 				var settings = new MatcherSettings<ShapeNode>
 				               	{
 				               		Direction = rule.Direction == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight,
-				               		Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Anchor),
-									AllSubmatches = true
+				               		Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Anchor)
 				               	};
 
 				PatternRule<Word, ShapeNode> patternRule = null;

@@ -57,7 +57,7 @@ namespace SIL.HermitCrab
 		{
 			Annotation<ShapeNode> startAnn = shape.Annotations.GetFirst(_filter);
 			IEnumerable<FstResult<Shape, ShapeNode>> matches;
-			if (_fsa.Transduce(shape, startAnn, true, true, true, false, out matches))
+			if (_fsa.Transduce(shape, startAnn, true, true, false, out matches))
 			{
 				foreach (FstResult<Shape, ShapeNode> match in matches)
 					yield return match.ID;

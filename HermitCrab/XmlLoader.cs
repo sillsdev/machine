@@ -144,7 +144,7 @@ namespace SIL.HermitCrab
 
 		private Language _language;
 
-		private readonly SymbolicFeature _posFeature;
+		private SymbolicFeature _posFeature;
 		private readonly ComplexFeature _headFeature;
 		private readonly ComplexFeature _footFeature;
 
@@ -175,7 +175,6 @@ namespace SIL.HermitCrab
 			_spanFactory = new ShapeSpanFactory();
 			_resolver = resolver;
 
-			_posFeature = new SymbolicFeature(Guid.NewGuid().ToString()) { Description = "POS" };
 			_headFeature = new ComplexFeature(Guid.NewGuid().ToString()) { Description = "Head" };
 			_footFeature = new ComplexFeature(Guid.NewGuid().ToString()) { Description = "Foot" };
 
@@ -244,8 +243,8 @@ namespace SIL.HermitCrab
 			var id = (string) langElem.Attribute("id");
 			_language = new Language(id) { Description = (string) langElem.Element("Name") };
 
-			foreach (XElement posElem in langElem.Elements("PartsOfSpeech").Elements("PartOfSpeech"))
-				_posFeature.PossibleSymbols.Add(new FeatureSymbol((string)posElem.Attribute("id")) { Description = (string) posElem });
+			_posFeature = new SymbolicFeature(Guid.NewGuid().ToString(), langElem.Elements("PartsOfSpeech").Elements("PartOfSpeech")
+				.Select(e => new FeatureSymbol((string) e.Attribute("id"), (string) e))) { Description = "POS" };
 			_language.SyntacticFeatureSystem.Add(_posFeature);
 
 			_mprFeatures.UnionWith(from elem in langElem.Elements("MorphologicalPhonologicalRuleFeatures").Elements("MorphologicalPhonologicalRuleFeature")
@@ -255,18 +254,14 @@ namespace SIL.HermitCrab
 			foreach (XElement mprFeatGroupElem in langElem.Elements("MorphologicalPhonologicalRuleFeatures").Elements("MorphologicalPhonologicalRuleFeatureGroup").Where(IsActive))
 				LoadMprFeatGroup(mprFeatGroupElem);
 
-			LoadFeatureSystem(langElem.Elements("PhonologicalFeatureSystem").SingleOrDefault(IsActive), _language.PhoneticFeatureSystem);
-			foreach (SymbolicFeature feature in _language.PhoneticFeatureSystem)
-			{
-				var unknownSymbol = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "?" };
-				feature.PossibleSymbols.Add(unknownSymbol);
-				feature.DefaultValue = new SymbolicFeatureValue(unknownSymbol);
-			}
+			LoadFeatureSystem(langElem.Elements("PhonologicalFeatureSystem").SingleOrDefault(IsActive), _language.PhoneticFeatureSystem, true);
+			_language.PhoneticFeatureSystem.Freeze();
 
 			_language.SyntacticFeatureSystem.Add(_headFeature);
-			LoadFeatureSystem(langElem.Element("HeadFeatures"), _language.SyntacticFeatureSystem);
+			LoadFeatureSystem(langElem.Element("HeadFeatures"), _language.SyntacticFeatureSystem, false);
 			_language.SyntacticFeatureSystem.Add(_footFeature);
-			LoadFeatureSystem(langElem.Element("FootFeatures"), _language.SyntacticFeatureSystem);
+			LoadFeatureSystem(langElem.Element("FootFeatures"), _language.SyntacticFeatureSystem, false);
+			_language.SyntacticFeatureSystem.Freeze();
 
 			foreach (XElement charDefTableElem in langElem.Elements("CharacterDefinitionTable").Where(IsActive))
 				LoadSymbolTable(charDefTableElem);
@@ -620,16 +615,16 @@ namespace SIL.HermitCrab
 			return fs;
 		}
 
-		private void LoadFeatureSystem(XElement featSysElem, FeatureSystem featSys)
+		private void LoadFeatureSystem(XElement featSysElem, FeatureSystem featSys, bool addDefault)
 		{
 			if (featSysElem == null)
 				return;
 
 			foreach (XElement featDefElem in featSysElem.Elements("FeatureDefinition").Where(IsActive))
-				featSys.Add(LoadFeature(featDefElem));
+				featSys.Add(LoadFeature(featDefElem, addDefault));
 		}
 
-		private Feature LoadFeature(XElement featDefElem)
+		private Feature LoadFeature(XElement featDefElem, bool addDefault)
 		{
 			XElement featElem = featDefElem.Element("Feature");
 			Debug.Assert(featElem != null);
@@ -639,15 +634,19 @@ namespace SIL.HermitCrab
 			XElement valueListElem = featDefElem.Element("ValueList");
 			if (valueListElem != null)
 			{
-				var feature = new SymbolicFeature(id) { Description = name };
-				foreach (XElement valueElem in valueListElem.Elements("Value"))
+				IEnumerable<FeatureSymbol> symbols = valueListElem.Elements("Value").Select(e => new FeatureSymbol((string) e.Attribute("id"), (string) e));
+				string defValId = null;
+				if (addDefault)
 				{
-					var symbol = new FeatureSymbol((string) valueElem.Attribute("id")) { Description = (string) valueElem };
-					feature.PossibleSymbols.Add(symbol);
+					var defVal = new FeatureSymbol(Guid.NewGuid().ToString(), "?");
+					defValId = defVal.ID;
+					symbols = symbols.Concat(defVal);
 				}
-				var defValId = (string) featElem.Attribute("defaultValue");
+				var feature = new SymbolicFeature(id, symbols) { Description = name };
+				if (defValId == null)
+					defValId = (string) featElem.Attribute("defaultValue");
 				if (!string.IsNullOrEmpty(defValId))
-					feature.DefaultValue = new SymbolicFeatureValue(feature.PossibleSymbols[defValId]);
+					feature.DefaultSymbolID = defValId;
 				return feature;
 			}
 
@@ -1212,6 +1211,7 @@ namespace SIL.HermitCrab
 					throw new LoadException(LoadErrorCode.UndefinedObject, string.Format("Variable '{0}' is unknown.", varID));
 				fs.AddValue(variable.Item2, new SymbolicFeatureValue(variable.Item2, variable.Item1, (string)varElem.Attribute("polarity") == "plus"));
 			}
+			fs.Freeze();
 			return fs;
 		}
 

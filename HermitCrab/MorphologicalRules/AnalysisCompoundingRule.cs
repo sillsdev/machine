@@ -10,24 +10,31 @@ namespace SIL.HermitCrab.MorphologicalRules
 	{
 		private readonly Morpher _morpher;
 		private readonly CompoundingRule _rule;
-		private readonly List<PatternRule<Word, ShapeNode>> _rules;
+		private readonly List<IRule<Word, ShapeNode>> _rules;
 
 		public AnalysisCompoundingRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, CompoundingRule rule)
 		{
 			_morpher = morpher;
 			_rule = rule;
 
-			_rules = new List<PatternRule<Word, ShapeNode>>();
+			_rules = new List<IRule<Word, ShapeNode>>();
 			foreach (CompoundingSubrule sr in rule.Subrules)
 			{
-				_rules.Add(new MultiplePatternRule<Word, ShapeNode>(spanFactory, new AnalysisCompoundingSubruleRuleSpec(sr),
-					new MatcherSettings<ShapeNode>
-					{
-						Filter = ann => ann.Type() == HCFeatureSystem.Segment,
-						AnchoredToStart = true,
-						AnchoredToEnd = true,
-						AllSubmatches = true
-					}));
+				if (sr.HeadLhs.Count == 1 && sr.NonHeadLhs.Count == 1)
+				{
+				    _rules.Add(new AnalysisSimpleCompoundingSubruleRule(spanFactory, sr));
+				}
+				else
+				{
+					_rules.Add(new MultiplePatternRule<Word, ShapeNode>(spanFactory, new AnalysisCompoundingSubruleRuleSpec(sr),
+						new MatcherSettings<ShapeNode>
+							{
+								Filter = ann => ann.Type() == HCFeatureSystem.Segment,
+								AnchoredToStart = true,
+								AnchoredToEnd = true,
+								AllSubmatches = true
+							}));
+				}
 			}
 		}
 
@@ -40,7 +47,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 			}
 
 			var output = new List<Word>();
-			foreach (PatternRule<Word, ShapeNode> rule in _rules)
+			foreach (IRule<Word, ShapeNode> rule in _rules)
 			{
 				var srOutput = new List<Word>();
 				foreach (Word outWord in rule.Apply(input))

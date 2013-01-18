@@ -31,38 +31,40 @@ namespace HermitCrabTest
 			SpanFactory = new ShapeSpanFactory();
 			var phoneticFeatSys = new FeatureSystem
 			                      	{
-			                      		new SymbolicFeature("voc") {PossibleSymbols = {{"voc+", "+"}, {"voc-", "-"}, {"voc?", "?", true}}},
-			                      		new SymbolicFeature("cons") {PossibleSymbols = {{"cons+", "+"}, {"cons-", "-"}, {"cons?", "?", true}}},
-			                      		new SymbolicFeature("high") {PossibleSymbols = {{"high+", "+"}, {"high-", "-"}, {"high?", "?", true}}},
-			                      		new SymbolicFeature("low") {PossibleSymbols = {{"low+", "+"}, {"low-", "-"}, {"low?", "?", true}}},
-			                      		new SymbolicFeature("back") {PossibleSymbols = {{"back+", "+"}, {"back-", "-"}, {"back?", "?", true}}},
-			                      		new SymbolicFeature("round") {PossibleSymbols = {{"round+", "+"}, {"round-", "-"}, {"round?", "?", true}}},
-										new SymbolicFeature("vd") {PossibleSymbols = {{"vd+", "+"}, {"vd-", "-"}, {"vd?", "?", true}}},
-			                      		new SymbolicFeature("asp") {PossibleSymbols = {{"asp+", "+"}, {"asp-", "-"}, {"asp?", "?", true}}},
-			                      		new SymbolicFeature("del_rel") {PossibleSymbols = {{"del_rel+", "+"}, {"del_rel-", "-"}, {"del_rel?", "?", true}}},
-			                      		new SymbolicFeature("ATR") {PossibleSymbols = {{"ATR+", "+"}, {"ATR-", "-"}, {"ATR?", "?", true}}},
-			                      		new SymbolicFeature("strident") {PossibleSymbols = {{"strident+", "+"}, {"strident-", "-"}, {"strident?", "?", true}}},
-			                      		new SymbolicFeature("cont") {PossibleSymbols = {{"cont+", "+"}, {"cont-", "-"}, {"cont?", "?", true}}},
-			                      		new SymbolicFeature("nasal") {PossibleSymbols = {{"nasal+", "+"}, {"nasal-", "-"}, {"nasal?", "?", true}}},
-			                      		new SymbolicFeature("poa") {PossibleSymbols = {"bilabial", "labiodental", "alveolar", "velar", {"poa?", "?", true}}}
+			                      		new SymbolicFeature("voc", new FeatureSymbol("voc+", "+"), new FeatureSymbol("voc-", "-"), new FeatureSymbol("voc?", "?")) {DefaultSymbolID = "voc?"},
+			                      		new SymbolicFeature("cons", new FeatureSymbol("cons+", "+"), new FeatureSymbol("cons-", "-"), new FeatureSymbol("cons?", "?")) {DefaultSymbolID = "cons?"},
+			                      		new SymbolicFeature("high", new FeatureSymbol("high+", "+"), new FeatureSymbol("high-", "-"), new FeatureSymbol("high?", "?")) {DefaultSymbolID = "high?"},
+			                      		new SymbolicFeature("low", new FeatureSymbol("low+", "+"), new FeatureSymbol("low-", "-"), new FeatureSymbol("low?", "?")) {DefaultSymbolID = "low?"},
+			                      		new SymbolicFeature("back", new FeatureSymbol("back+", "+"), new FeatureSymbol("back-", "-"), new FeatureSymbol("back?", "?")) {DefaultSymbolID = "back?"},
+			                      		new SymbolicFeature("round", new FeatureSymbol("round+", "+"), new FeatureSymbol("round-", "-"), new FeatureSymbol("round?", "?")) {DefaultSymbolID = "round?"},
+										new SymbolicFeature("vd", new FeatureSymbol("vd+", "+"), new FeatureSymbol("vd-", "-"), new FeatureSymbol("vd?", "?")) {DefaultSymbolID = "vd?"},
+			                      		new SymbolicFeature("asp", new FeatureSymbol("asp+", "+"), new FeatureSymbol("asp-", "-"), new FeatureSymbol("asp?", "?")) {DefaultSymbolID = "asp?"},
+			                      		new SymbolicFeature("del_rel", new FeatureSymbol("del_rel+", "+"), new FeatureSymbol("del_rel-", "-"), new FeatureSymbol("del_rel?", "?")) {DefaultSymbolID = "del_rel?"},
+			                      		new SymbolicFeature("ATR", new FeatureSymbol("ATR+", "+"), new FeatureSymbol("ATR-", "-"), new FeatureSymbol("ATR?", "?")) {DefaultSymbolID = "ATR?"},
+			                      		new SymbolicFeature("strident", new FeatureSymbol("strident+", "+"), new FeatureSymbol("strident-", "-"), new FeatureSymbol("strident?", "?")) {DefaultSymbolID = "strident?"},
+			                      		new SymbolicFeature("cont", new FeatureSymbol("cont+", "+"), new FeatureSymbol("cont-", "-"), new FeatureSymbol("cont?", "?")) {DefaultSymbolID = "cont?"},
+			                      		new SymbolicFeature("nasal", new FeatureSymbol("nasal+", "+"), new FeatureSymbol("nasal-", "-"), new FeatureSymbol("nasal?", "?")) {DefaultSymbolID = "nasal?"},
+			                      		new SymbolicFeature("poa", new FeatureSymbol("bilabial"), new FeatureSymbol("labiodental"), new FeatureSymbol("alveolar"), new FeatureSymbol("velar"), new FeatureSymbol("poa?")) {DefaultSymbolID = "poa?"}
 			                      	};
+			phoneticFeatSys.Freeze();
 
 			var syntacticFeatSys = new FeatureSystem
 			                       	{
-			                       		new SymbolicFeature("pos") {PossibleSymbols = {{"N", "Noun"}, {"V", "Verb"}, {"A", "Adjective"}}},
-			                       		new SymbolicFeature("foo") {PossibleSymbols = {{"foo+", "+"}, {"foo-", "-"}}},
-			                       		new SymbolicFeature("baz") {PossibleSymbols = {{"baz+", "+"}, {"baz-", "-"}}},
-			                       		new SymbolicFeature("num") {PossibleSymbols = {"sg", "pl"}},
-			                       		new SymbolicFeature("pers") {PossibleSymbols = {"1", "2", "3", "4"}},
-			                       		new SymbolicFeature("tense") {PossibleSymbols = {"past", "pres"}},
-			                       		new SymbolicFeature("evidential") {PossibleSymbols = {"witnessed"}},
-			                       		new SymbolicFeature("aspect") {PossibleSymbols = {"perf", "impf"}},
-			                       		new SymbolicFeature("mood") {PossibleSymbols = {"active", "passive"}},
-			                       		new SymbolicFeature("fum") {PossibleSymbols = {{"fum+", "+"}, {"fum-", "-"}}},
-			                       		new SymbolicFeature("bar") {PossibleSymbols = {{"bar+", "+"}, {"bar-", "-"}}},
+			                       		new SymbolicFeature("pos", new FeatureSymbol("N", "Noun"), new FeatureSymbol("V", "Verb"), new FeatureSymbol("A", "Adjective")),
+			                       		new SymbolicFeature("foo", new FeatureSymbol("foo+", "+"), new FeatureSymbol("foo-", "-")),
+			                       		new SymbolicFeature("baz", new FeatureSymbol("baz+", "+"), new FeatureSymbol("baz-", "-")),
+			                       		new SymbolicFeature("num", new FeatureSymbol("sg"), new FeatureSymbol("pl")),
+			                       		new SymbolicFeature("pers", new FeatureSymbol("1"), new FeatureSymbol("2"), new FeatureSymbol("3"), new FeatureSymbol("4")),
+			                       		new SymbolicFeature("tense", new FeatureSymbol("past"), new FeatureSymbol("pres")),
+			                       		new SymbolicFeature("evidential", new FeatureSymbol("witnessed")),
+			                       		new SymbolicFeature("aspect", new FeatureSymbol("perf"), new FeatureSymbol("impf")),
+			                       		new SymbolicFeature("mood", new FeatureSymbol("active"), new FeatureSymbol("passive")),
+			                       		new SymbolicFeature("fum", new FeatureSymbol("fum+", "+"), new FeatureSymbol("fum-", "-")),
+			                       		new SymbolicFeature("bar", new FeatureSymbol("bar+", "+"), new FeatureSymbol("bar-", "-")),
 			                       		new ComplexFeature("head"),
 			                       		new ComplexFeature("foot")
 			                       	};
+			syntacticFeatSys.Freeze();
 
 			Table1 = new SymbolTable(SpanFactory, "table1");
 			AddSegDef(Table1, phoneticFeatSys, "a", "cons-", "voc+", "high-", "low+", "back+", "round-", "vd+");
