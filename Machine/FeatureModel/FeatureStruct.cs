@@ -9,48 +9,47 @@ namespace SIL.Machine.FeatureModel
 {
 	public class FeatureStruct : FeatureValue, IDeepCloneable<FeatureStruct>, IFreezable<FeatureStruct>
 	{
-		public static IDisjunctiveFeatureStructSyntax New()
+		public static IFeatureStructSyntax New()
 		{
 			return new FeatureStructBuilder();
 		}
 
-		public static IDisjunctiveFeatureStructSyntax New(FeatureSystem featSys)
+		public static IFeatureStructSyntax New(FeatureSystem featSys)
 		{
 			return new FeatureStructBuilder(featSys);
 		}
 
-		public static IDisjunctiveFeatureStructSyntax New(FeatureStruct fs)
+		public static IFeatureStructSyntax New(FeatureStruct fs)
 		{
 			return new FeatureStructBuilder(fs.DeepClone());
 		}
 
-		public static IDisjunctiveFeatureStructSyntax New(FeatureSystem featSys, FeatureStruct fs)
+		public static IFeatureStructSyntax New(FeatureSystem featSys, FeatureStruct fs)
 		{
 			return new FeatureStructBuilder(featSys, fs.DeepClone());
 		}
 
-		public static IDisjunctiveFeatureStructSyntax NewMutable()
+		public static IFeatureStructSyntax NewMutable()
 		{
 			return new FeatureStructBuilder(true);
 		}
 
-		public static IDisjunctiveFeatureStructSyntax NewMutable(FeatureSystem featSys)
+		public static IFeatureStructSyntax NewMutable(FeatureSystem featSys)
 		{
 			return new FeatureStructBuilder(featSys, true);
 		}
 
-		public static IDisjunctiveFeatureStructSyntax NewMutable(FeatureStruct fs)
+		public static IFeatureStructSyntax NewMutable(FeatureStruct fs)
 		{
 			return new FeatureStructBuilder(fs.DeepClone(), true);
 		}
 
-		public static IDisjunctiveFeatureStructSyntax NewMutable(FeatureSystem featSys, FeatureStruct fs)
+		public static IFeatureStructSyntax NewMutable(FeatureSystem featSys, FeatureStruct fs)
 		{
 			return new FeatureStructBuilder(featSys, fs.DeepClone(), true);
 		}
 
 		private readonly IDBearerDictionary<Feature, FeatureValue> _definite;
-		private readonly List<Disjunction> _indefinite;
 		private int? _hashCode;
 
 		/// <summary>
@@ -59,7 +58,6 @@ namespace SIL.Machine.FeatureModel
 		public FeatureStruct()
 		{
 			_definite = new IDBearerDictionary<Feature, FeatureValue>();
-			_indefinite = new List<Disjunction>();
 		}
 
 		protected FeatureStruct(FeatureStruct other)
@@ -78,8 +76,6 @@ namespace SIL.Machine.FeatureModel
 			copies[other] = this;
 			foreach (KeyValuePair<Feature, FeatureValue> featVal in other._definite)
 				_definite[featVal.Key] = Dereference(featVal.Value).DeepCloneImpl(copies);
-
-			CopyDisjunctions(other, this, copies);
 		}
 
 		/// <summary>
@@ -91,11 +87,6 @@ namespace SIL.Machine.FeatureModel
 			get { return _definite.Keys.AsSimpleReadOnlyCollection(); }
 		}
 
-		public IReadOnlyCollection<IReadOnlyCollection<FeatureStruct>> Disjunctions
-		{
-			get { return _indefinite.AsSimpleReadOnlyCollection(); }
-		}
-
 		public bool HasVariables
 		{
 			get { return DetermineHasVariables(new HashSet<FeatureStruct>()); }
@@ -103,7 +94,7 @@ namespace SIL.Machine.FeatureModel
 
 		public bool IsEmpty
 		{
-			get { return _definite.Count == 0 && _indefinite.Count == 0; }
+			get { return _definite.Count == 0; }
 		}
 
 		private bool DetermineHasVariables(ISet<FeatureStruct> visited)
@@ -127,7 +118,7 @@ namespace SIL.Machine.FeatureModel
 				}
 			}
 
-			return _indefinite.Any(disjunction => disjunction.HasVariables);
+			return false;
 		}
 
 		public void AddValue(SymbolicFeature feature, IEnumerable<FeatureSymbol> values)
@@ -236,9 +227,6 @@ namespace SIL.Machine.FeatureModel
 
 			foreach (KeyValuePair<Feature, FeatureValue> replacement in replacements)
 				_definite[replacement.Key] = replacement.Value;
-
-			foreach (Disjunction disjunction in _indefinite)
-				disjunction.ReplaceVariables(varBindings);
 		}
 
 		public void RemoveVariables()
@@ -272,20 +260,6 @@ namespace SIL.Machine.FeatureModel
 				}
 
 			}
-
-			for (int i = _indefinite.Count - 1; i >= 0; i--)
-			{
-				_indefinite[i].RemoveVariables();
-				if (_indefinite[i].Count == 0)
-				{
-					_indefinite.RemoveAt(i);
-				}
-				else if (_indefinite[i].Count == 1)
-				{
-					UnionImpl(_indefinite[i].First(), new VariableBindings(), new Dictionary<FeatureStruct, ISet<FeatureStruct>>());
-					_indefinite.RemoveAt(i);
-				}
-			}
 		}
 
 		public void PriorityUnion(FeatureStruct other)
@@ -296,9 +270,6 @@ namespace SIL.Machine.FeatureModel
 		public void PriorityUnion(FeatureStruct other, VariableBindings varBindings)
 		{
 			CheckFrozen();
-			// TODO: support disjunctive feature structures
-			if (_indefinite.Count > 0 || other._indefinite.Count > 0)
-				throw new InvalidOperationException("This operation is not supported on disjunctive feature structures.");
 			PriorityUnion(other, varBindings, new Dictionary<FeatureValue, FeatureValue>());
 		}
 
@@ -371,9 +342,6 @@ namespace SIL.Machine.FeatureModel
 		public void Union(FeatureStruct other, VariableBindings varBindings)
 		{
 			CheckFrozen();
-			// TODO: support disjunctive feature structures
-			if (_indefinite.Count > 0 || other._indefinite.Count > 0)
-				throw new InvalidOperationException("This operation is not supported on disjunctive feature structures.");
 			UnionImpl(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>());
 		}
 
@@ -413,9 +381,6 @@ namespace SIL.Machine.FeatureModel
 		public void Add(FeatureStruct other, VariableBindings varBindings)
 		{
 			CheckFrozen();
-			// TODO: support disjunctive feature structures
-			if (_indefinite.Count > 0 || other._indefinite.Count > 0)
-				throw new InvalidOperationException("This operation is not supported on disjunctive feature structures.");
 			AddImpl(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>());
 		}
 
@@ -463,10 +428,6 @@ namespace SIL.Machine.FeatureModel
 		public void Subtract(FeatureStruct other, VariableBindings varBindings)
 		{
 			CheckFrozen();
-			// TODO: support disjunctive feature structures
-			if (_indefinite.Count > 0 || other._indefinite.Count > 0)
-				throw new InvalidOperationException("This operation is not supported on disjunctive feature structures.");
-
 			SubtractImpl(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>());
 		}
 
@@ -496,40 +457,10 @@ namespace SIL.Machine.FeatureModel
 			return _definite.Count > 0;
 		}
 
-		public void AddDisjunction(params FeatureStruct[] disjuncts)
-		{
-			CheckFrozen();
-			if (disjuncts.Length < 2)
-				throw new ArgumentException("At least two disjuncts must be specified.", "disjuncts");
-			_indefinite.Add(new Disjunction(disjuncts));
-		}
-
-		public void AddDisjunction(IEnumerable<FeatureStruct> disjuncts)
-		{
-			CheckFrozen();
-			FeatureStruct[] disjunctArray = disjuncts.ToArray();
-			if (disjunctArray.Length < 2)
-				throw new ArgumentException("At least two disjuncts must be specified.", "disjuncts");
-			_indefinite.Add(new Disjunction(disjunctArray));
-		}
-
 		public void Clear()
 		{
 			CheckFrozen();
 			_definite.Clear();
-			_indefinite.Clear();
-		}
-
-		public void ClearValues()
-		{
-			CheckFrozen();
-			_definite.Clear();
-		}
-
-		public void ClearDisjunctions()
-		{
-			CheckFrozen();
-			_indefinite.Clear();
 		}
 
 		/// <summary>
@@ -785,23 +716,17 @@ namespace SIL.Machine.FeatureModel
 		{
 			other = Dereference(other);
 
-			if (_indefinite.Count == 0 && other._indefinite.Count == 0)
+			VariableBindings definiteVarBindings = varBindings == null ? new VariableBindings() : varBindings.DeepClone();
+			if (IsUnifiableImpl(other, useDefaults, definiteVarBindings))
 			{
-				VariableBindings definiteVarBindings = varBindings == null ? new VariableBindings() : varBindings.DeepClone();
-				if (IsDefiniteUnifiable(other, useDefaults, definiteVarBindings))
-				{
-					if (varBindings != null)
-						varBindings.Replace(definiteVarBindings);
-					return true;
-				}
-				return false;
+				if (varBindings != null)
+					varBindings.Replace(definiteVarBindings);
+				return true;
 			}
-
-			FeatureStruct output;
-			return Unify(other, useDefaults, varBindings, out output);
+			return false;
 		}
 
-		internal override bool IsDefiniteUnifiable(FeatureValue other, bool useDefaults, VariableBindings varBindings)
+		internal override bool IsUnifiableImpl(FeatureValue other, bool useDefaults, VariableBindings varBindings)
 		{
 			FeatureStruct otherFS;
 			if (!Dereference(other, out otherFS))
@@ -814,12 +739,12 @@ namespace SIL.Machine.FeatureModel
 				if (_definite.TryGetValue(featVal.Key, out thisValue))
 				{
 					thisValue = Dereference(thisValue);
-					if (!thisValue.IsDefiniteUnifiable(otherValue, useDefaults, varBindings))
+					if (!thisValue.IsUnifiableImpl(otherValue, useDefaults, varBindings))
 						return false;
 				}
 				else if (useDefaults && featVal.Key.DefaultValue != null)
 				{
-					if (!featVal.Key.DefaultValue.IsDefiniteUnifiable(otherValue, true, varBindings))
+					if (!featVal.Key.DefaultValue.IsUnifiableImpl(otherValue, true, varBindings))
 						return false;
 				}
 			}
@@ -843,37 +768,19 @@ namespace SIL.Machine.FeatureModel
 
 		public bool Unify(FeatureStruct other, bool useDefaults, VariableBindings varBindings, out FeatureStruct output)
 		{
-			return Unify(other, useDefaults, varBindings, true, out output);
-		}
-
-		public bool Unify(FeatureStruct other, bool useDefaults, VariableBindings varBindings, bool checkDisjunctiveConsistency, out FeatureStruct output)
-		{
 			other = Dereference(other);
 
 			VariableBindings tempVarBindings = varBindings == null ? new VariableBindings() : varBindings.DeepClone();
 			FeatureValue newFV;
-			if (!UnifyDefinite(other, useDefaults, tempVarBindings, out newFV))
+			if (!UnifyImpl(other, useDefaults, tempVarBindings, out newFV))
 			{
 				output = null;
 				return false;
 			}
 
-			var newFS = (FeatureStruct) newFV;
-			if (newFS._indefinite.Count > 0)
-			{
-				if (!CheckIndefinite(newFS, newFS, useDefaults, tempVarBindings, new HashSet<FeatureValue>(), out newFS))
-				{
-					output = null;
-					return false;
-				}
-
-				if (checkDisjunctiveConsistency)
-					newFS.CheckDisjunctiveConsistency(useDefaults, tempVarBindings, out newFS);
-			}
-
 			if (varBindings != null)
 				varBindings.Replace(tempVarBindings);
-			output = newFS;
+			output = (FeatureStruct) newFV;
 			return true;
 		}
 
@@ -883,17 +790,6 @@ namespace SIL.Machine.FeatureModel
 			if (Unify(other, out result))
 				return other.ValueEquals(result);
 			return false;
-		}
-
-		public bool CheckDisjunctiveConsistency(bool useDefaults, VariableBindings varBindings, out FeatureStruct output)
-		{
-			output = this;
-			if (_indefinite.Count > 0)
-			{
-				for (int n = 1; n < output._indefinite.Count; n++)
-					NWiseConsistency(output, n, useDefaults, varBindings, new HashSet<FeatureValue>(), out output);
-			}
-			return true;
 		}
 
 		internal override bool DestructiveUnify(FeatureValue other, bool useDefaults, bool preserveInput,
@@ -963,7 +859,7 @@ namespace SIL.Machine.FeatureModel
 				{
 					thisValue = Dereference(thisValue);
 					FeatureValue newValue;
-					if (!thisValue.UnifyDefinite(otherValue, useDefaults, copies, varBindings, out newValue))
+					if (!thisValue.UnifyImpl(otherValue, useDefaults, copies, varBindings, out newValue))
 					{
 						output = null;
 						return false;
@@ -974,7 +870,7 @@ namespace SIL.Machine.FeatureModel
 				{
 					thisValue = featVal.Key.DefaultValue.DeepCloneImpl(null);
 					FeatureValue newValue;
-					if (!thisValue.UnifyDefinite(otherValue, true, copies, varBindings, out newValue))
+					if (!thisValue.UnifyImpl(otherValue, true, copies, varBindings, out newValue))
 					{
 						output = null;
 						return false;
@@ -993,17 +889,8 @@ namespace SIL.Machine.FeatureModel
 					copy._definite[featVal.Key] = Dereference(featVal.Value).DeepCloneImpl(copies);
 			}
 
-			CopyDisjunctions(this, copy, copies);
-			CopyDisjunctions(otherFS, copy, copies);
-
 			output = copy;
 			return true;
-		}
-
-		private static void CopyDisjunctions(FeatureStruct src, FeatureStruct dest, IDictionary<FeatureValue, FeatureValue> copies)
-		{
-			foreach (Disjunction disjunction in src._indefinite)
-				dest._indefinite.Add(disjunction.DeepCloneImpl(copies));
 		}
 
 		internal override FeatureValue DeepCloneImpl(IDictionary<FeatureValue, FeatureValue> copies)
@@ -1017,280 +904,6 @@ namespace SIL.Machine.FeatureModel
 			}
 
 			return DeepClone();
-		}
-
-		private bool CheckIndefinite(FeatureStruct fs, FeatureStruct cond, bool useDefaults, VariableBindings varBindings, ISet<FeatureValue> values,
-			out FeatureStruct newFS)
-		{
-			var indefinite = new List<Disjunction>(fs._indefinite);
-			newFS = fs;
-			bool uncheckedParts = true;
-			while (uncheckedParts)
-			{
-				var tempValues = new HashSet<FeatureValue>(values);
-				newFS.GetAllValues(tempValues, false);
-
-				uncheckedParts = false;
-				newFS._indefinite.Clear();
-
-				foreach (Disjunction disjunction in indefinite)
-				{
-					var newDisjunction = new List<FeatureStruct>();
-					foreach (FeatureStruct disjunct in disjunction)
-					{
-						if (cond.IsDefiniteUnifiable(disjunct, useDefaults, varBindings.DeepClone()))
-						{
-							if (disjunct._indefinite.Count > 0)
-							{
-								FeatureStruct newDisjunct;
-								if (CheckIndefinite(disjunct, cond, useDefaults, varBindings.DeepClone(), tempValues, out newDisjunct))
-								{
-									if (!Contains(tempValues, newDisjunction, newDisjunct))
-										newDisjunction.Add(newDisjunct);
-								}
-							}
-							else
-							{
-								if (!Contains(tempValues, newDisjunction, disjunct))
-									newDisjunction.Add(disjunct);
-							}
-						}
-					}
-
-					if (newDisjunction.Count == 0)
-					{
-						newFS = null;
-						return false;
-					}
-				    if (newDisjunction.Count == 1)
-				    {
-				        FeatureStruct disjunct = newDisjunction.First();
-				        FeatureValue newFV;
-					    if (!newFS.UnifyDefinite(disjunct, useDefaults, varBindings, out newFV))
-					    {
-						    newFS = null;
-						    return false;
-					    }
-					    newFS = (FeatureStruct) newFV;
-				        uncheckedParts = true;
-				    }
-				    else
-				    {
-				    	var nd = new Disjunction(newDisjunction);
-						if (!Contains(values, newFS._indefinite, nd))
-				    		newFS._indefinite.Add(nd);
-				    }
-				}
-				cond = newFS;
-				indefinite.Clear();
-				indefinite.AddRange(newFS._indefinite);
-			}
-
-			return true;
-		}
-
-		private bool NWiseConsistency(FeatureStruct fs, int n, bool useDefaults, VariableBindings varBindings, ISet<FeatureValue> values, out FeatureStruct newFS)
-		{
-			newFS = fs;
-			if (fs._indefinite.Count <= n)
-				return true;
-
-			var indefinite = new List<Disjunction>(newFS._indefinite);
-			newFS._indefinite.Clear();
-
-			while (indefinite.Count > 0)
-			{
-				var tempValues = new HashSet<FeatureValue>(values);
-				newFS.GetAllValues(tempValues, false);
-
-				Disjunction disjunction = indefinite.First();
-				indefinite.RemoveAt(0);
-				
-				var newDisjunction = new List<FeatureStruct>();
-				VariableBindings lastVarBindings = null;
-				foreach (FeatureStruct disjunct in disjunction)
-				{
-					VariableBindings tempVarBindings = varBindings.DeepClone();
-					FeatureValue hypFV;
-					if (newFS.UnifyDefinite(disjunct, useDefaults, tempVarBindings, out hypFV))
-					{
-						var hypFS = (FeatureStruct) hypFV;
-						foreach (Disjunction disj in indefinite)
-						{
-							if (!Contains(tempValues, hypFS._indefinite, disj))
-								hypFS._indefinite.Add(disj.DeepCloneImpl(tempValues.ToDictionary(fv => fv)));
-						}
-
-						FeatureStruct nFS;
-						if (n == 1 ? CheckIndefinite(hypFS, hypFS, useDefaults, tempVarBindings, tempValues, out nFS)
-							: NWiseConsistency(hypFS, n - 1, useDefaults, tempVarBindings, tempValues, out nFS))
-						{
-							if (!Contains(tempValues, newDisjunction, nFS))
-							{
-								newDisjunction.Add(nFS);
-								lastVarBindings = tempVarBindings;
-							}
-						}
-					}
-				}
-
-				if (newDisjunction.Count == 0)
-				{
-					newFS = null;
-					return false;
-				}
-			    if (newDisjunction.Count == 1)
-			    {
-			    	newFS = newDisjunction.First();
-			        varBindings.Replace(lastVarBindings);
-			        indefinite.Clear();
-			        indefinite.AddRange(newFS._indefinite);
-			        newFS._indefinite.Clear();
-			    }
-			    else
-			    {
-					var nd = new Disjunction(newDisjunction);
-					if (!Contains(values, newFS._indefinite, nd))
-						newFS._indefinite.Add(nd);
-			    }
-			}
-
-			return true;
-		}
-
-		internal override void GetAllValues(ISet<FeatureValue> values, bool indefinite)
-		{
-			if (!values.Contains(this))
-			{
-				values.Add(this);
-
-				foreach (FeatureValue value in _definite.Values)
-				{
-					FeatureValue v = Dereference(value);
-					v.GetAllValues(values, indefinite);
-				}
-				if (indefinite)
-				{
-					foreach (Disjunction disjunction in _indefinite)
-						disjunction.GetAllValues(values);
-				}
-			}
-		}
-
-		private bool Contains(ISet<FeatureValue> values, List<FeatureStruct> featureStructs, FeatureStruct fs)
-		{
-			if (featureStructs.Count == 0)
-				return false;
-			foreach (FeatureStruct existing in featureStructs)
-			{
-				var visitedSelf = new HashSet<FeatureValue>(values);
-				var visitedOther = new HashSet<FeatureValue>(values);
-				var visitedPairs = values.ToDictionary(fv => fv);
-
-				if (fs.ValueEqualsImpl(existing, visitedSelf, visitedOther, visitedPairs))
-					return true;
-			}
-
-			return false;
-		}
-
-		private bool Contains(ISet<FeatureValue> values, List<Disjunction> disjunctions, Disjunction disjunction)
-		{
-			if (disjunctions.Count == 0)
-				return false;
-
-			var visitedSelf = new HashSet<FeatureValue>(values);
-			var visitedOther = new HashSet<FeatureValue>(values);
-			var visitedPairs = values.ToDictionary(fv => fv);
-			foreach (Disjunction existing in disjunctions)
-			{
-				if (disjunction.EqualsImpl(existing, visitedSelf, visitedOther, visitedPairs))
-					return true;
-			}
-
-			return false;
-		}
-
-		public bool Negation(out FeatureStruct output)
-		{
-			FeatureValue fv;
-			if (NegationImpl(new Dictionary<FeatureValue, FeatureValue>(), out fv))
-			{
-				output = (FeatureStruct) fv;
-				return true;
-			}
-
-			output = null;
-			return false;
-		}
-
-		internal override bool NegationImpl(IDictionary<FeatureValue, FeatureValue> visited, out FeatureValue output)
-		{
-			FeatureValue negation;
-			if (visited.TryGetValue(this, out negation))
-			{
-				output = negation;
-				return true;
-			}
-
-			int disjunctionCount = _indefinite.Count + _definite.Count;
-			if (disjunctionCount == 0)
-			{
-				output = null;
-				return false;
-			}
-
-			FeatureStruct outputFS = null;
-			var newDisjunction = new List<FeatureStruct>();
-			foreach (Disjunction disjunction in _indefinite)
-			{
-				FeatureStruct fs;
-				if (!disjunction.NegationImpl(out fs))
-				{
-					output = null;
-					return false;
-				}
-
-				if (disjunctionCount == 1)
-				{
-					outputFS = fs;
-					visited[this] = outputFS;
-				}
-
-				newDisjunction.Add(fs);
-			}
-
-			if (disjunctionCount > 1)
-			{
-				outputFS = new FeatureStruct();
-				visited[this] = outputFS;
-			}
-
-			foreach (KeyValuePair<Feature, FeatureValue> kvp in _definite)
-			{
-				var fs = new FeatureStruct();
-				if (disjunctionCount == 1)
-				{
-					outputFS = fs;
-					visited[this] = outputFS;
-				}
-
-				FeatureValue value = Dereference(kvp.Value);
-				FeatureValue negValue;
-				if (!value.NegationImpl(visited, out negValue))
-				{
-					output = null;
-					return false;
-				}
-				fs.AddValue(kvp.Key, negValue);
-				newDisjunction.Add(fs);
-			}
-
-			if (disjunctionCount > 1 && outputFS != null)
-				outputFS._indefinite.Add(new Disjunction(newDisjunction));
-
-			output = outputFS;
-			return true;
 		}
 
 		internal override void FindReentrances(IDictionary<FeatureValue, bool> reentrances)
@@ -1307,8 +920,6 @@ namespace SIL.Machine.FeatureModel
 					FeatureValue v = Dereference(value);
 					v.FindReentrances(reentrances);
 				}
-				foreach (Disjunction disjunction in _indefinite)
-					disjunction.FindReentrances(reentrances);
 			}
 		}
 
@@ -1353,33 +964,6 @@ namespace SIL.Machine.FeatureModel
 				otherValue = Dereference(otherValue);
 				if (!thisValue.ValueEqualsImpl(otherValue, visitedSelf, visitedOther, visitedPairs))
 					return false;
-			}
-
-			if (_indefinite.Count != otherFS._indefinite.Count)
-				return false;
-
-			if (_indefinite.Count > 0)
-			{
-				var matched = new HashSet<int>();
-				foreach (Disjunction thisDisjunction in _indefinite)
-				{
-					bool found = false;
-					for (int i = 0; i < otherFS._indefinite.Count; i++)
-					{
-						if (matched.Contains(i))
-							continue;
-
-						if (thisDisjunction.EqualsImpl(otherFS._indefinite[i], visitedSelf, visitedOther, visitedPairs))
-						{
-							matched.Add(i);
-							found = true;
-							break;
-						}
-					}
-
-					if (!found)
-						return false;
-				}
 			}
 
 			return true;
@@ -1447,7 +1031,7 @@ namespace SIL.Machine.FeatureModel
 				code = code * 31 + value.FreezeImpl(visited);
 			}
 
-			return _indefinite.Aggregate(code, (disjCode, disjunction) => disjCode ^ disjunction.FreezeImpl(visited));
+			return code;
 		}
 
 		public override string ToString()
@@ -1479,12 +1063,6 @@ namespace SIL.Machine.FeatureModel
 				sb.Append("=");
 			}
 
-			int groupCount = _indefinite.Count;
-			if (_definite.Count > 0)
-				groupCount++;
-
-			if (groupCount > 1)
-				sb.Append("(");
 			if (_definite.Count > 0)
 			{
 				bool firstFeature = true;
@@ -1502,23 +1080,11 @@ namespace SIL.Machine.FeatureModel
 				}
 				if (_definite.Count > 0)
 					sb.Append("]");
-
-				if (_indefinite.Count > 0)
-					sb.Append(" && ");
 			}
-
-			bool firstDisjunction = true;
-			foreach (Disjunction disjunction in _indefinite)
+			else
 			{
-				if (!firstDisjunction)
-					sb.Append(" && ");
-				sb.Append("(");
-				sb.Append(disjunction.ToStringImpl(visited, reentranceIds));
-				sb.Append(")");
-				firstDisjunction = false;
+				sb.Append("ANY");
 			}
-			if (groupCount > 1)
-				sb.Append(")");
 
 			return sb.ToString();
 		}

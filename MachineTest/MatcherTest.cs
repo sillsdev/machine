@@ -1049,7 +1049,7 @@ namespace SIL.Machine.Test
 						.Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Value).OneOrMore
 						.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adv").Value)).ZeroOrMore).Value;
 
-			matcher = new Matcher<StringData, int>(SpanFactory, pattern, new MatcherSettings<int> { FastCompile = true });
+			matcher = new Matcher<StringData, int>(SpanFactory, pattern, new MatcherSettings<int> { Nondeterministic = true });
 			match = matcher.Match(sentence);
 			Assert.IsTrue(match.Success);
 			Assert.AreEqual(SpanFactory.Create(0, 29), match.Span);

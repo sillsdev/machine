@@ -7,7 +7,6 @@ namespace SIL.Machine.FeatureModel
 	{
 		internal FeatureValue Forward { get; set; }
 
-		internal abstract bool NegationImpl(IDictionary<FeatureValue, FeatureValue> visited, out FeatureValue output);
 		internal abstract bool UnionImpl(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited);
 		internal abstract bool AddImpl(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited);
 		internal abstract bool SubtractImpl(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited);
@@ -17,21 +16,20 @@ namespace SIL.Machine.FeatureModel
 		internal abstract int FreezeImpl(ISet<FeatureValue> visited);
 		internal abstract string ToStringImpl(ISet<FeatureValue> visited, IDictionary<FeatureValue, int> reentranceIds);
 
-		internal abstract bool IsDefiniteUnifiable(FeatureValue other, bool useDefaults, VariableBindings varBindings);
+		internal abstract bool IsUnifiableImpl(FeatureValue other, bool useDefaults, VariableBindings varBindings);
 		internal abstract bool DestructiveUnify(FeatureValue other, bool useDefaults, bool preserveInput,
 			IDictionary<FeatureValue, FeatureValue> copies, VariableBindings varBindings);
 		protected abstract bool NondestructiveUnify(FeatureValue other, bool useDefaults, IDictionary<FeatureValue, FeatureValue> copies,
 			VariableBindings varBindings, out FeatureValue output);
 		internal abstract void FindReentrances(IDictionary<FeatureValue, bool> reentrances);
-		internal abstract void GetAllValues(ISet<FeatureValue> values, bool indefinite);
 
-		internal bool UnifyDefinite(FeatureValue other, bool useDefaults, VariableBindings varBindings, out FeatureValue output)
+		internal bool UnifyImpl(FeatureValue other, bool useDefaults, VariableBindings varBindings, out FeatureValue output)
 		{
 			var copies = new Dictionary<FeatureValue, FeatureValue>();
-			return UnifyDefinite(other, useDefaults, copies, varBindings, out output);
+			return UnifyImpl(other, useDefaults, copies, varBindings, out output);
 		}
 
-		internal bool UnifyDefinite(FeatureValue other, bool useDefaults, IDictionary<FeatureValue, FeatureValue> copies,
+		internal bool UnifyImpl(FeatureValue other, bool useDefaults, IDictionary<FeatureValue, FeatureValue> copies,
 			VariableBindings varBindings, out FeatureValue output)
 		{
 			other = Dereference(other);

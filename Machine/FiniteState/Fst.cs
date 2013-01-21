@@ -21,10 +21,16 @@ namespace SIL.Machine.FiniteState
 		private readonly List<State<TData, TOffset>> _states;
 		private readonly SimpleReadOnlyCollection<State<TData, TOffset>> _readonlyStates;
 		private readonly IEqualityComparer<FstResult<TData, TOffset>> _fsaMatchComparer;
-		private readonly IFstOperations<TData, TOffset> _operations; 
+		private readonly IFstOperations<TData, TOffset> _operations;
+		private readonly IEqualityComparer<TOffset> _offsetComparer; 
 
 		public Fst()
 			: this(Direction.LeftToRight)
+		{
+		}
+
+		public Fst(IEqualityComparer<TOffset> offsetComparer)
+			: this(Direction.LeftToRight, offsetComparer)
 		{
 		}
 
@@ -33,8 +39,18 @@ namespace SIL.Machine.FiniteState
 		{
 		}
 
+		public Fst(IFstOperations<TData, TOffset> operations, IEqualityComparer<TOffset> offsetComparer)
+			: this(operations, Direction.LeftToRight, offsetComparer)
+		{
+		}
+
 		public Fst(Direction dir)
 			: this(dir, ann => true)
+		{
+		}
+
+		public Fst(Direction dir, IEqualityComparer<TOffset> offsetComparer)
+			: this(dir, ann => true, offsetComparer)
 		{
 		}
 
@@ -43,13 +59,28 @@ namespace SIL.Machine.FiniteState
 		{
 		}
 
+		public Fst(IFstOperations<TData, TOffset> operations, Direction dir, IEqualityComparer<TOffset> offsetComparer)
+			: this(operations, dir, ann => true, offsetComparer)
+		{
+		}
+
 		public Fst(Func<Annotation<TOffset>, bool> filter)
 			: this(Direction.LeftToRight, filter)
 		{
 		}
 
+		public Fst(Func<Annotation<TOffset>, bool> filter, IEqualityComparer<TOffset> offsetComparer)
+			: this(Direction.LeftToRight, filter, offsetComparer)
+		{
+		}
+
 		public Fst(IFstOperations<TData, TOffset> operations, Func<Annotation<TOffset>, bool> filter)
 			: this(operations, Direction.LeftToRight, filter)
+		{
+		}
+
+		public Fst(IFstOperations<TData, TOffset> operations, Func<Annotation<TOffset>, bool> filter, IEqualityComparer<TOffset> offsetComparer)
+			: this(operations, Direction.LeftToRight, filter, offsetComparer)
 		{
 		}
 		
@@ -58,7 +89,17 @@ namespace SIL.Machine.FiniteState
 		{
 		}
 
+		public Fst(Direction dir, Func<Annotation<TOffset>, bool> filter, IEqualityComparer<TOffset> offsetComparer)
+			: this(null, dir, filter, offsetComparer)
+		{
+		}
+
 		public Fst(IFstOperations<TData, TOffset> operations, Direction dir, Func<Annotation<TOffset>, bool> filter)
+			: this(operations, dir, filter, EqualityComparer<TOffset>.Default)
+		{
+		}
+
+		public Fst(IFstOperations<TData, TOffset> operations, Direction dir, Func<Annotation<TOffset>, bool> filter, IEqualityComparer<TOffset> offsetComparer)
 		{
 			_states = new List<State<TData, TOffset>>();
 			_readonlyStates = _states.AsSimpleReadOnlyCollection();
@@ -69,6 +110,7 @@ namespace SIL.Machine.FiniteState
 			_filter = filter;
 			_tryAllInputs = true;
 			_fsaMatchComparer = AnonymousEqualityComparer.Create<FstResult<TData, TOffset>>(FstResultEquals, FstResultGetHashCode);
+			_offsetComparer = offsetComparer;
 		}
 
 		private bool FstResultEquals(FstResult<TData, TOffset> x, FstResult<TData, TOffset> y)
@@ -83,12 +125,12 @@ namespace SIL.Machine.FiniteState
 					if (x.Registers[i, j].HasValue != y.Registers[i, j].HasValue)
 						return false;
 
-					if (x.Registers[i, j].HasValue && !EqualityComparer<TOffset>.Default.Equals(x.Registers[i, j].Value, x.Registers[i, j].Value))
+					if (x.Registers[i, j].HasValue && !_offsetComparer.Equals(x.Registers[i, j].Value, x.Registers[i, j].Value))
 						return false;
 				}
 			}
 
-			return true;
+			return EqualityComparer<TData>.Default.Equals(x.Output, y.Output);
 		}
 
 		private int FstResultGetHashCode(FstResult<TData, TOffset> m)
@@ -98,8 +140,9 @@ namespace SIL.Machine.FiniteState
 			for (int i = 0; i < _registerCount; i++)
 			{
 				for (int j = 0; j < 2; j++)
-					code = code * 31 + (m.Registers[i, j].HasValue && m.Registers[i, j].Value != null ? EqualityComparer<TOffset>.Default.GetHashCode(m.Registers[i, j].Value) : 0);
+					code = code * 31 + (m.Registers[i, j].HasValue && m.Registers[i, j].Value != null ? _offsetComparer.GetHashCode(m.Registers[i, j].Value) : 0);
 			}
+			code = code * 31 * EqualityComparer<TData>.Default.GetHashCode(m.Output);
 			return code;
 		}
 
@@ -481,7 +524,7 @@ namespace SIL.Machine.FiniteState
 
 			compare = x.Depth.CompareTo(y.Depth);
 			compare = x.IsLazy ? compare : -compare;
-			return IsDeterministic ? compare : -compare;
+			return compare;
 		}
 
 		private Annotation<TOffset> InitializeStack(TData data, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers,
@@ -663,23 +706,6 @@ namespace SIL.Machine.FiniteState
 			return false;
 		}
 
-		public Fst<TData, TOffset> Quasideterminize()
-		{
-			return Optimize(QuasideterministicGetArcs, true, true);
-		}
-
-		public bool TryQuasideterminize(out Fst<TData, TOffset> fst)
-		{
-			if (IsQuasideterminizable)
-			{
-				fst = Quasideterminize();
-				return true;
-			}
-
-			fst = null;
-			return false;
-		}
-
 		public Fst<TData, TOffset> EpsilonRemoval()
 		{
 			return Optimize(EpsilonRemovalGetArcs, false, true);
@@ -836,7 +862,7 @@ namespace SIL.Machine.FiniteState
 					FeatureStruct newCond;
 					if (preprocessedCond.Item1 == null)
 						newCond = cond.Key.FeatureStruct;
-					else if (!preprocessedCond.Item1.Unify(cond.Key.FeatureStruct, false, new VariableBindings(), false, out newCond))
+					else if (!preprocessedCond.Item1.Unify(cond.Key.FeatureStruct, false, new VariableBindings(), out newCond))
 						newCond = null;
 					if (newCond != null)
 						temp.Add(Tuple.Create(newCond, preprocessedCond.Item2, preprocessedCond.Item3.Concat(cond)));
@@ -850,7 +876,6 @@ namespace SIL.Machine.FiniteState
 			foreach (Tuple<FeatureStruct, IEnumerable<FeatureStruct>, IEnumerable<NfaStateInfo>> preprocessedCond in preprocessedConditions.Where(pc => pc.Item1 != null))
 			{
 				IGrouping<NfaStateInfo, NfaStateInfo>[] groups = preprocessedCond.Item3.GroupBy(s => s).ToArray();
-				// do not check disjunctive consistency, this might result in unreachable paths in the DFST, but it speeds up the determinization process significantly
 				if (groups.Length > 0)
 				{
 					preprocessedCond.Item1.Freeze();
@@ -904,24 +929,6 @@ namespace SIL.Machine.FiniteState
 				{
 					foreach (Tuple<SubsetState, Input, IEnumerable<Output<TData, TOffset>>> arc in GetAllArcsForInput(input, curSubsetState, groups, index + 1, states.Concat(state)))
 						yield return arc;
-				}
-			}
-		}
-
-		private static IEnumerable<Tuple<SubsetState, Input, IEnumerable<Output<TData, TOffset>>>> QuasideterministicGetArcs(SubsetState from)
-		{
-			ILookup<Input, NfaStateInfo> conditions = from.NfaStates
-				.SelectMany(state => state.NfaState.Arcs, (state, arc) => new { State = state, Arc = arc} )
-				.Where(stateArc => !stateArc.Arc.Input.IsEpsilon)
-				.ToLookup(stateArc => stateArc.Arc.Input, stateArc => new NfaStateInfo(stateArc.Arc.Target, stateArc.State.Outputs.Concat(stateArc.Arc.Outputs),
-					Math.Max(stateArc.Arc.Priority, stateArc.State.MaxPriority), stateArc.Arc.Priority, stateArc.State.Tags));
-
-			foreach (IGrouping<Input, NfaStateInfo> conditionGroup in conditions)
-			{
-				foreach (Tuple<SubsetState, Input, IEnumerable<Output<TData, TOffset>>> arc in GetAllArcsForInput(conditionGroup.Key,
-					from, conditionGroup.GroupBy(s => s).ToArray(), 0, Enumerable.Empty<NfaStateInfo>()))
-				{
-					yield return arc;
 				}
 			}
 		}
@@ -1313,18 +1320,7 @@ namespace SIL.Machine.FiniteState
 				if (HasEpsilonLoop)
 					return false;
 
-				return !HasUnboundedLoopsWithNonidenticalOutput(DeterministicGetAmbiguousArcs);
-			}
-		}
-
-		public bool IsQuasideterminizable
-		{
-			get
-			{
-				if (HasEpsilonLoop)
-					return false;
-
-				return !HasUnboundedLoopsWithNonidenticalOutput(QuasideterministicGetAmbiguousArcs);
+				return !HasUnboundedLoopsWithNonidenticalOutput();
 			}
 		}
 
@@ -1365,7 +1361,7 @@ namespace SIL.Machine.FiniteState
 			return false;
 		}
 
-		private static IEnumerable<Tuple<Arc<TData, TOffset>, Arc<TData, TOffset>>> DeterministicGetAmbiguousArcs(State<TData, TOffset> state)
+		private static IEnumerable<Tuple<Arc<TData, TOffset>, Arc<TData, TOffset>>> GetAmbiguousArcs(State<TData, TOffset> state)
 		{
 			for (int i = 0; i < state.Arcs.Count - 1; i++)
 			{
@@ -1393,39 +1389,11 @@ namespace SIL.Machine.FiniteState
 			}
 		}
 
-		private static IEnumerable<Tuple<Arc<TData, TOffset>, Arc<TData, TOffset>>> QuasideterministicGetAmbiguousArcs(State<TData, TOffset> state)
-		{
-			for (int i = 0; i < state.Arcs.Count - 1; i++)
-			{
-				FeatureStruct[] inputs1 = ClosuredInputs(state.Arcs[i]).ToArray();
-				for (int j = i + 1; j < state.Arcs.Count; j++)
-				{
-					bool ambiguous = false;
-					foreach (FeatureStruct input2 in ClosuredInputs(state.Arcs[j]))
-					{
-						foreach (FeatureStruct input1 in inputs1)
-						{
-							if (input1.ValueEquals(input2))
-							{
-								ambiguous = true;
-								break;
-							}
-						}
-						if (ambiguous)
-							break;
-					}
-
-					if (ambiguous)
-						yield return Tuple.Create(state.Arcs[i], state.Arcs[j]);
-				}
-			}
-		}
-
-		private bool HasUnboundedLoopsWithNonidenticalOutput(Func<State<TData, TOffset>, IEnumerable<Tuple<Arc<TData, TOffset>, Arc<TData, TOffset>>>> getAmbiguousArcs)
+		private bool HasUnboundedLoopsWithNonidenticalOutput()
 		{
 			foreach (State<TData, TOffset> state in _states)
 			{
-				foreach (Tuple<Arc<TData, TOffset>, Arc<TData, TOffset>> arcs in getAmbiguousArcs(state))
+				foreach (Tuple<Arc<TData, TOffset>, Arc<TData, TOffset>> arcs in GetAmbiguousArcs(state))
 				{
 					Fst<TData, TOffset> fst1 = ExtractTransducer(state, arcs.Item1);
 					Fst<TData, TOffset> fst2 = ExtractTransducer(state, arcs.Item2);

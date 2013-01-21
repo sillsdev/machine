@@ -51,7 +51,7 @@ namespace SIL.Machine.FeatureModel
 			get { return !string.IsNullOrEmpty(VariableName); }
 		}
 
-		internal override bool IsDefiniteUnifiable(FeatureValue other, bool useDefaults, VariableBindings varBindings)
+		internal override bool IsUnifiableImpl(FeatureValue other, bool useDefaults, VariableBindings varBindings)
 		{
 			SimpleFeatureValue otherSfv;
 			if (!Dereference(other, out otherSfv))
@@ -316,31 +316,11 @@ namespace SIL.Machine.FeatureModel
 			return DeepCloneImpl();
 		}
 
-		internal override bool NegationImpl(IDictionary<FeatureValue, FeatureValue> visited, out FeatureValue output)
-		{
-			FeatureValue negation;
-			if (visited.TryGetValue(this, out negation))
-			{
-				output = negation;
-				return true;
-			}
-
-			output = Negation();
-
-			visited[this] = output;
-			return true;
-		}
-
 		public abstract SimpleFeatureValue Negation();
 
 		internal override void FindReentrances(IDictionary<FeatureValue, bool> reentrances)
 		{
 			reentrances[this] = reentrances.ContainsKey(this);
-		}
-
-		internal override void GetAllValues(ISet<FeatureValue> values, bool indefinite)
-		{
-			values.Add(this);
 		}
 
 		internal override string ToStringImpl(ISet<FeatureValue> visited, IDictionary<FeatureValue, int> reentranceIds)
