@@ -90,7 +90,7 @@ namespace SIL.HermitCrab
 					{
 						if (!input.Trim().StartsWith("#"))
 						{
-							string[] cmdArgs = input.ToCommandLineArgs();
+							string[] cmdArgs = CommandLineParser.Parse(input);
 							ConsoleCommandDispatcher.DispatchCommand(commands, cmdArgs, context.Out);
 						}
 						input = scriptReader.ReadLine();
@@ -110,7 +110,7 @@ namespace SIL.HermitCrab
 					}
 					else
 					{
-						string[] cmdArgs = input.ToCommandLineArgs();
+						string[] cmdArgs = CommandLineParser.Parse(input);
 						ConsoleCommandDispatcher.DispatchCommand(commands, cmdArgs, context.Out);
 					}
 					Console.Write("> ");

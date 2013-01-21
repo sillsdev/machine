@@ -1,0 +1,3 @@
+[submodule "lib/Machine"]
+	path = lib/Machine
+	url = C:/ComLingTools/Machine

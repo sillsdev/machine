@@ -28,17 +28,8 @@ obj/
 _ReSharper*/
 [Tt]est[Rr]esult*
 
-data/
-tests/
-doc/
-zgrviewer/
-lib/
-Backup/
 *.Resharper
 *.DotSettings
 *- Copy*
-packages/
-GraphSharp/
-WPFExtensions/
-images/
-CogConverter/
+packages/*
+!packages/repositories.config
