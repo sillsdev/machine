@@ -11,6 +11,7 @@ namespace SIL.Machine
 		private readonly Func<bool, ShapeNode> _marginSelector;
 		private readonly SpanFactory<ShapeNode> _spanFactory;
 		private readonly AnnotationList<ShapeNode> _annotations;
+		private int _hashCode;
 
 		public Shape(SpanFactory<ShapeNode> spanFactory, Func<bool, ShapeNode> marginSelector)
 			: this(spanFactory, marginSelector, new AnnotationList<ShapeNode>(spanFactory))
@@ -24,9 +25,7 @@ namespace SIL.Machine
 			_spanFactory = spanFactory;
 			_annotations = annotations;
 			Begin.Tag = int.MinValue;
-			Begin.Freeze();
 			End.Tag = int.MaxValue;
-			End.Freeze();
 			_annotations.Add(Begin.Annotation, false);
 			_annotations.Add(End.Annotation, false);
 		}
@@ -62,12 +61,13 @@ namespace SIL.Machine
 			IsFrozen = true;
 			int i = 0;
 			foreach (ShapeNode node in this)
-			{
 				node.Tag = i++;
-				node.Freeze();
-			}
 
 			_annotations.Freeze();
+
+			_hashCode = 23;
+			_hashCode = _hashCode * 31 + Count;
+			_hashCode = _hashCode * 31 + _annotations.GetFrozenHashCode();
 		}
 
 		private void CheckFrozen()
@@ -370,14 +370,15 @@ namespace SIL.Machine
 			if (Count != other.Count)
 				return false;
 
-			return this.Zip(other).All(tuple => tuple.Item1.ValueEquals(tuple.Item2));
+			return _annotations.ValueEquals(other._annotations);
 		}
 
 		public int GetFrozenHashCode()
 		{
 			if (!IsFrozen)
 				throw new InvalidOperationException("The shape does not have a valid hash code, because it is mutable.");
-			return _annotations.GetFrozenHashCode();
+
+			return _hashCode;
 		}
 
 		public Shape DeepClone()

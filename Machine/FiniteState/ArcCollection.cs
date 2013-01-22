@@ -86,9 +86,9 @@ namespace SIL.Machine.FiniteState
 			return AddInternal(new Arc<TData, TOffset>(_state, target, tag));
 		}
 
-		internal State<TData, TOffset> Add(Input input, IEnumerable<Output<TData, TOffset>> outputs, State<TData, TOffset> target, IEnumerable<TagMapCommand> cmds)
+		internal State<TData, TOffset> Add(Input input, IEnumerable<Output<TData, TOffset>> outputs, State<TData, TOffset> target, IEnumerable<TagMapCommand> cmds, int priority)
 		{
-			return AddInternal(new Arc<TData, TOffset>(_state, input, outputs, target, cmds));
+			return AddInternal(new Arc<TData, TOffset>(_state, input, outputs, target, cmds) {Priority = priority});
 		}
 
 		void ICollection<Arc<TData, TOffset>>.Add(Arc<TData, TOffset> arc)

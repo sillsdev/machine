@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Collections.Generic;
 using SIL.Collections;
 
 namespace SIL.Machine
@@ -8,7 +9,7 @@ namespace SIL.Machine
 		private readonly Span<ShapeNode> _empty; 
 
 		public ShapeSpanFactory()
-			: base(true, AnonymousComparer.Create<ShapeNode>(Compare), FreezableEqualityComparer<ShapeNode>.Instance)
+			: base(true, AnonymousComparer.Create<ShapeNode>(Compare), EqualityComparer<ShapeNode>.Default)
 		{
 			_empty = new Span<ShapeNode>(this, null, null);
 		}
