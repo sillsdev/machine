@@ -6,7 +6,7 @@ using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine
 {
-	public class Shape : OrderedBidirList<ShapeNode>, IData<ShapeNode>, IDeepCloneable<Shape>, IFreezable<Shape>
+	public class Shape : OrderedBidirList<ShapeNode>, IData<ShapeNode>, IDeepCloneable<Shape>, IFreezable, IValueEquatable<Shape>
 	{
 		private readonly Func<bool, ShapeNode> _marginSelector;
 		private readonly SpanFactory<ShapeNode> _spanFactory;
@@ -67,7 +67,7 @@ namespace SIL.Machine
 
 			_hashCode = 23;
 			_hashCode = _hashCode * 31 + Count;
-			_hashCode = _hashCode * 31 + _annotations.GetFrozenHashCode();
+			_hashCode = _hashCode * 31 + _annotations.GetValueHashCode();
 		}
 
 		private void CheckFrozen()
@@ -373,7 +373,7 @@ namespace SIL.Machine
 			return _annotations.ValueEquals(other._annotations);
 		}
 
-		public int GetFrozenHashCode()
+		public int GetValueHashCode()
 		{
 			if (!IsFrozen)
 				throw new InvalidOperationException("The shape does not have a valid hash code, because it is mutable.");

@@ -7,7 +7,7 @@ using SIL.Machine.FeatureModel.Fluent;
 
 namespace SIL.Machine.FeatureModel
 {
-	public class FeatureStruct : FeatureValue, IDeepCloneable<FeatureStruct>, IFreezable<FeatureStruct>
+	public class FeatureStruct : FeatureValue, IDeepCloneable<FeatureStruct>, IFreezable, IValueEquatable<FeatureStruct>
 	{
 		public static IFeatureStructSyntax New()
 		{
@@ -984,7 +984,7 @@ namespace SIL.Machine.FeatureModel
 				new Dictionary<FeatureValue, FeatureValue>());
 		}
 
-		public int GetFrozenHashCode()
+		public int GetValueHashCode()
 		{
 			if (!IsFrozen)
 				throw new InvalidOperationException("The feature structure does not have a valid hash code, because it is mutable.");

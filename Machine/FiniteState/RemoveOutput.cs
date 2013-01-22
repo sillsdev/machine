@@ -4,18 +4,15 @@ namespace SIL.Machine.FiniteState
 {
 	public class RemoveOutput<TData, TOffset> : Output<TData, TOffset>, IEquatable<RemoveOutput<TData, TOffset>> where TData : IData<TOffset>
 	{
-		private readonly Action<TData, Span<TOffset>> _updateData;
-
-		internal RemoveOutput(Action<TData, Span<TOffset>> updateData)
+		internal RemoveOutput()
 			: base(null)
 		{
-			_updateData = updateData;
 		}
 
-		public override void UpdateOutput(TData data, Annotation<TOffset> ann)
+		public override void UpdateOutput(TData data, Annotation<TOffset> ann, IFstOperations<TData, TOffset> operations)
 		{
 			ann.Remove(false);
-			_updateData(data, ann.Span);
+			operations.Remove(data, ann.Span);
 		}
 
 		public override bool Equals(object obj)

@@ -1,11 +1,8 @@
 ﻿namespace SIL.Collections
 {
-	public interface IFreezable<in T>
+	public interface IFreezable
 	{
 		bool IsFrozen { get; }
 		void Freeze();
-
-		bool ValueEquals(T other);
-		int GetFrozenHashCode();
 	}
 }

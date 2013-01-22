@@ -9,7 +9,7 @@ namespace SIL.Machine.FeatureModel
     /// <summary>
     /// This class represents a feature system. It encapsulates all of the valid features and symbols.
     /// </summary>
-    public class FeatureSystem : ICollection<Feature>, IFreezable<FeatureSystem>
+    public class FeatureSystem : ICollection<Feature>, IFreezable
     {
     	private readonly IDBearerSet<Feature> _features;
 
@@ -193,16 +193,6 @@ namespace SIL.Machine.FeatureModel
 
 			foreach (Feature feature in _features)
 				feature.Freeze();
-	    }
-
-	    public bool ValueEquals(FeatureSystem other)
-	    {
-		    throw new NotImplementedException();
-	    }
-
-	    public int GetFrozenHashCode()
-	    {
-			throw new NotImplementedException();
 	    }
     }
 }

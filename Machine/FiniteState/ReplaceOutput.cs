@@ -5,24 +5,16 @@ namespace SIL.Machine.FiniteState
 {
 	public class ReplaceOutput<TData, TOffset> : Output<TData, TOffset>, IEquatable<ReplaceOutput<TData, TOffset>> where TData : IData<TOffset>
 	{
-		private readonly Action<TData, Annotation<TOffset>> _updateData; 
-
 		internal ReplaceOutput(FeatureStruct fs)
-			: this(fs, (data, annotation) => { })
-		{
-		}
-
-		internal ReplaceOutput(FeatureStruct fs, Action<TData, Annotation<TOffset>> updateData)
 			: base(fs)
 		{
-			_updateData = updateData;
 		}
 
-		public override void UpdateOutput(TData data, Annotation<TOffset> ann)
+		public override void UpdateOutput(TData data, Annotation<TOffset> ann, IFstOperations<TData, TOffset> operations)
 		{
 			ann.FeatureStruct.Clear();
 			ann.FeatureStruct.PriorityUnion(FeatureStruct);
-			_updateData(data, ann);
+			operations.Replace(data, ann);
 		}
 
 		public override bool Equals(object obj)
@@ -37,7 +29,7 @@ namespace SIL.Machine.FiniteState
 
 		public override int GetHashCode()
 		{
-			return FeatureStruct.GetFrozenHashCode();
+			return FeatureStruct.GetValueHashCode();
 		}
 
 		public override string ToString()

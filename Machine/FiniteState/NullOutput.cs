@@ -9,7 +9,7 @@ namespace SIL.Machine.FiniteState
 		{
 		}
 
-		public override void UpdateOutput(TData data, Annotation<TOffset> ann)
+		public override void UpdateOutput(TData data, Annotation<TOffset> ann, IFstOperations<TData, TOffset> operations)
 		{
 		}
 

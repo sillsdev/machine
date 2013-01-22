@@ -6,7 +6,7 @@ namespace SIL.Machine.FeatureModel
 	/// <summary>
 	/// This class represents a feature.
 	/// </summary>
-	public abstract class Feature : IDBearerBase, IFreezable<Feature>
+	public abstract class Feature : IDBearerBase, IFreezable
 	{
 		private FeatureValue _defaultValue;
 
@@ -40,16 +40,6 @@ namespace SIL.Machine.FeatureModel
 		public virtual void Freeze()
 		{
 			IsFrozen = true;
-		}
-
-		public bool ValueEquals(Feature other)
-		{
-			throw new NotImplementedException();
-		}
-
-		public int GetFrozenHashCode()
-		{
-			throw new NotImplementedException();
 		}
 	}
 }

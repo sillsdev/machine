@@ -12,29 +12,29 @@ namespace SIL.Machine.FiniteState
 		private readonly List<TagMapCommand> _finishers;
 		private readonly bool _isLazy;
 
-		internal State(IFstOperations<TData, TOffset> operations, int index, bool isAccepting)
-			: this(operations, index, isAccepting, Enumerable.Empty<AcceptInfo<TData, TOffset>>(), Enumerable.Empty<TagMapCommand>(), false)
+		internal State(bool isFsa, int index, bool isAccepting)
+			: this(isFsa, index, isAccepting, Enumerable.Empty<AcceptInfo<TData, TOffset>>(), Enumerable.Empty<TagMapCommand>(), false)
 		{
 		}
 
-		internal State(IFstOperations<TData, TOffset> operations, int index, IEnumerable<AcceptInfo<TData, TOffset>> acceptInfos)
-			: this(operations, index, true, acceptInfos, Enumerable.Empty<TagMapCommand>(), false)
+		internal State(bool isFsa, int index, IEnumerable<AcceptInfo<TData, TOffset>> acceptInfos)
+			: this(isFsa, index, true, acceptInfos, Enumerable.Empty<TagMapCommand>(), false)
 		{
 		}
 
-		internal State(IFstOperations<TData, TOffset> operations, int index, IEnumerable<AcceptInfo<TData, TOffset>> acceptInfos, IEnumerable<TagMapCommand> finishers, bool isLazy)
-			: this(operations, index, true, acceptInfos, finishers, isLazy)
+		internal State(bool isFsa, int index, IEnumerable<AcceptInfo<TData, TOffset>> acceptInfos, IEnumerable<TagMapCommand> finishers, bool isLazy)
+			: this(isFsa, index, true, acceptInfos, finishers, isLazy)
 		{
 		}
 
-		private State(IFstOperations<TData, TOffset> operations, int index, bool isAccepting, IEnumerable<AcceptInfo<TData, TOffset>> acceptInfos, IEnumerable<TagMapCommand> finishers, bool isLazy)
+		private State(bool isFsa, int index, bool isAccepting, IEnumerable<AcceptInfo<TData, TOffset>> acceptInfos, IEnumerable<TagMapCommand> finishers, bool isLazy)
 		{
 			_index = index;
 			IsAccepting = isAccepting;
 			_acceptInfos = new List<AcceptInfo<TData, TOffset>>(acceptInfos);
 			_finishers = new List<TagMapCommand>(finishers);
 			_isLazy = isLazy;
-			_arcs = new ArcCollection<TData, TOffset>(operations, this);
+			_arcs = new ArcCollection<TData, TOffset>(isFsa, this);
 		}
 
 		public int Index

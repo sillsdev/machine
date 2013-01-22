@@ -5,7 +5,7 @@ using SIL.Machine.FiniteState;
 
 namespace SIL.Machine.Matching
 {
-	public class Group<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Group<TData, TOffset>> where TData : IData<TOffset>, IDeepCloneable<TData>
+	public class Group<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Group<TData, TOffset>>, IValueEquatable<Group<TData, TOffset>> where TData : IData<TOffset>, IDeepCloneable<TData>
 	{
 		private readonly string _name;
 

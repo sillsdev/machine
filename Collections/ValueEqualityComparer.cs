@@ -3,10 +3,10 @@ using System.Collections.Generic;
 
 namespace SIL.Collections
 {
-	public class FreezableEqualityComparer<T> : EqualityComparer<T> where T : IFreezable<T>
+	public class ValueEqualityComparer<T> : EqualityComparer<T> where T : IValueEquatable<T>
 	{
-		private static readonly FreezableEqualityComparer<T> Comparer = new FreezableEqualityComparer<T>(); 
-		public static FreezableEqualityComparer<T> Instance
+		private static readonly ValueEqualityComparer<T> Comparer = new ValueEqualityComparer<T>(); 
+		public static ValueEqualityComparer<T> Instance
 		{
 			get { return Comparer; }
 		}
@@ -24,7 +24,7 @@ namespace SIL.Collections
 		{
 			if (obj == null)
 				throw new ArgumentNullException("obj");
-			return obj.GetFrozenHashCode();
+			return obj.GetValueHashCode();
 		}
 	}
 }

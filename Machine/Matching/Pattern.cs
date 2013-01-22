@@ -7,7 +7,7 @@ using SIL.Machine.Matching.Fluent;
 
 namespace SIL.Machine.Matching
 {
-	public class Pattern<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Pattern<TData, TOffset>>, IFreezable<Pattern<TData, TOffset>> where TData : IData<TOffset>, IDeepCloneable<TData>
+	public class Pattern<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Pattern<TData, TOffset>>, IValueEquatable<Pattern<TData, TOffset>> where TData : IData<TOffset>, IDeepCloneable<TData>
 	{
 		public static IPatternSyntax<TData, TOffset> New()
 		{

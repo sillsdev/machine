@@ -22,7 +22,7 @@ namespace SIL.Machine.Test
 																						FeatureStruct res;
 																						return fs1.Unify(fs2, varBindings, out res) ? res : null;
 																					};
-			TestBinaryOperation(FreezableEqualityComparer<FeatureStruct>.Instance, resultsSelector, varResultsSelector,
+			TestBinaryOperation(ValueEqualityComparer<FeatureStruct>.Instance, resultsSelector, varResultsSelector,
 				// simple
 				featSys => null,
 				featSys => FeatureStruct.New(featSys).Symbol("a2").Symbol("b1").Symbol("c2").Value,
@@ -124,7 +124,7 @@ namespace SIL.Machine.Test
 					.Feature("h").EqualTo("j"))
 				.Feature("d").ReferringTo(1)
 				.Feature("g").ReferringTo(1)
-				.Feature("i").ReferringTo(1).Value).Using((IEqualityComparer<FeatureStruct>) FreezableEqualityComparer<FeatureStruct>.Instance));
+				.Feature("i").ReferringTo(1).Value).Using((IEqualityComparer<FeatureStruct>) ValueEqualityComparer<FeatureStruct>.Instance));
 		}
 
 		[Test]
@@ -177,7 +177,7 @@ namespace SIL.Machine.Test
 			                                                                    		fs1.PriorityUnion(fs2, varBindings);
 			                                                                    		return fs1;
 			                                                                    	};
-			TestBinaryOperation(FreezableEqualityComparer<FeatureStruct>.Instance, resultsSelector, varResultsSelector,
+			TestBinaryOperation(ValueEqualityComparer<FeatureStruct>.Instance, resultsSelector, varResultsSelector,
 				// simple
 				featSys => FeatureStruct.New(featSys).Symbol("a2").Symbol("b1").Symbol("c2").Value,
 				featSys => FeatureStruct.New(featSys).Symbol("a2").Symbol("b1").Symbol("c2").Value,
@@ -241,7 +241,7 @@ namespace SIL.Machine.Test
 																						return fs1;
 																					};
 			
-			TestBinaryOperation(FreezableEqualityComparer<FeatureStruct>.Instance, resultsSelector, varResultsSelector,
+			TestBinaryOperation(ValueEqualityComparer<FeatureStruct>.Instance, resultsSelector, varResultsSelector,
 				// simple
 				featSys => FeatureStruct.New(featSys).Symbol("a1", "a2").Value,
 				featSys => FeatureStruct.New(featSys).Symbol("a1", "a2").Symbol("c2").Value,
@@ -293,7 +293,7 @@ namespace SIL.Machine.Test
 																						return fs1;
 																					};
 
-			TestBinaryOperation(FreezableEqualityComparer<FeatureStruct>.Instance, resultsSelector, varResultsSelector,
+			TestBinaryOperation(ValueEqualityComparer<FeatureStruct>.Instance, resultsSelector, varResultsSelector,
 				// simple
 				featSys => FeatureStruct.New(featSys).Symbol("a1").Symbol("b1").Value,
 				featSys => FeatureStruct.New(featSys).Symbol("a1").Symbol("b1").Value,

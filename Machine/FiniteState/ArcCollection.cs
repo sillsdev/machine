@@ -11,12 +11,12 @@ namespace SIL.Machine.FiniteState
 		private readonly State<TData, TOffset> _state;
 		private readonly List<Arc<TData, TOffset>> _arcs;
 		private readonly IComparer<Arc<TData, TOffset>> _arcComparer;
-		private readonly IFstOperations<TData, TOffset> _operations; 
+		private readonly bool _isFsa;
 
-		public ArcCollection(IFstOperations<TData, TOffset> operations, State<TData, TOffset> state)
+		public ArcCollection(bool isFsa, State<TData, TOffset> state)
 		{
 			_state = state;
-			_operations = operations;
+			_isFsa = isFsa;
 			_arcs = new List<Arc<TData, TOffset>>();
 			_arcComparer = ProjectionComparer<Arc<TData, TOffset>>.Create(arc => arc.PriorityType).Reverse();
 		}
@@ -55,7 +55,7 @@ namespace SIL.Machine.FiniteState
 
 		public State<TData, TOffset> Add(FeatureStruct input, FeatureStruct output, bool replace, State<TData, TOffset> target)
 		{
-			if (_operations == null)
+			if (_isFsa)
 				throw new InvalidOperationException("Outputs are not valid on acceptors.");
 
 			if (input != null && !input.IsFrozen)
@@ -65,13 +65,13 @@ namespace SIL.Machine.FiniteState
 
 			Output<TData, TOffset> outputAction;
 			if (input == null)
-				outputAction = new InsertOutput<TData, TOffset>(output, _operations.Insert);
+				outputAction = new InsertOutput<TData, TOffset>(output);
 			else if (output == null)
-				outputAction = new RemoveOutput<TData, TOffset>(_operations.Remove);
+				outputAction = new RemoveOutput<TData, TOffset>();
 			else if (replace)
-				outputAction = new ReplaceOutput<TData, TOffset>(output, _operations.Replace);
+				outputAction = new ReplaceOutput<TData, TOffset>(output);
 			else
-				outputAction = new PriorityUnionOutput<TData, TOffset>(output, _operations.Replace);
+				outputAction = new PriorityUnionOutput<TData, TOffset>(output);
 
 			return AddInternal(new Arc<TData, TOffset>(_state, new Input(input, 1), outputAction.ToEnumerable(), target));
 		}

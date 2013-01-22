@@ -5,17 +5,14 @@ namespace SIL.Machine.FiniteState
 {
 	public class InsertOutput<TData, TOffset> : Output<TData, TOffset>, IEquatable<InsertOutput<TData, TOffset>> where TData : IData<TOffset>
 	{
-		private readonly Func<TData, Annotation<TOffset>, FeatureStruct, Span<TOffset>> _updateData;
-
-		internal InsertOutput(FeatureStruct fs, Func<TData, Annotation<TOffset>, FeatureStruct, Span<TOffset>> updateData)
+		internal InsertOutput(FeatureStruct fs)
 			: base(fs)
 		{
-			_updateData = updateData;
 		}
 
-		public override void UpdateOutput(TData data, Annotation<TOffset> ann)
+		public override void UpdateOutput(TData data, Annotation<TOffset> ann, IFstOperations<TData, TOffset> operations)
 		{
-			Span<TOffset> span = _updateData(data, ann, FeatureStruct);
+			Span<TOffset> span = operations.Insert(data, ann, FeatureStruct);
 			data.Annotations.Add(span, FeatureStruct);
 		}
 
@@ -31,7 +28,7 @@ namespace SIL.Machine.FiniteState
 
 		public override int GetHashCode()
 		{
-			return FeatureStruct.GetFrozenHashCode();
+			return FeatureStruct.GetValueHashCode();
 		}
 
 		public override string ToString()

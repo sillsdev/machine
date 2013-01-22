@@ -148,28 +148,28 @@ namespace SIL.Machine.FiniteState
 
 		public State<TData, TOffset> CreateAcceptingState()
 		{
-			var state = new State<TData, TOffset>(_operations, _states.Count, true);
+			var state = new State<TData, TOffset>(_operations == null, _states.Count, true);
 			_states.Add(state);
 			return state;
 		}
 
 		protected State<TData, TOffset> CreateAcceptingState(IEnumerable<AcceptInfo<TData, TOffset>> acceptInfos)
 		{
-			var state = new State<TData, TOffset>(_operations, _states.Count, acceptInfos);
+			var state = new State<TData, TOffset>(_operations == null, _states.Count, acceptInfos);
 			_states.Add(state);
 			return state;
 		}
 
 		public State<TData, TOffset> CreateAcceptingState(string id, Func<TData, FstResult<TData, TOffset>,  bool> acceptable, int priority)
 		{
-			var state = new State<TData, TOffset>(_operations, _states.Count, new AcceptInfo<TData, TOffset>(id, acceptable, priority).ToEnumerable());
+			var state = new State<TData, TOffset>(_operations == null, _states.Count, new AcceptInfo<TData, TOffset>(id, acceptable, priority).ToEnumerable());
 			_states.Add(state);
 			return state;
 		}
 
 		public State<TData, TOffset> CreateState()
 		{
-			var state = new State<TData, TOffset>(_operations, _states.Count, false);
+			var state = new State<TData, TOffset>(_operations == null, _states.Count, false);
 			_states.Add(state);
 			return state;
 		}
@@ -230,7 +230,7 @@ namespace SIL.Machine.FiniteState
 
 		private State<TData, TOffset> CreateAcceptingState(IEnumerable<AcceptInfo<TData, TOffset>> acceptInfos, IEnumerable<TagMapCommand> finishers, bool isLazy)
 		{
-			var state = new State<TData, TOffset>(_operations, _states.Count, acceptInfos, finishers, isLazy);
+			var state = new State<TData, TOffset>(_operations == null, _states.Count, acceptInfos, finishers, isLazy);
 			_states.Add(state);
 			return state;
 		}
@@ -520,7 +520,7 @@ namespace SIL.Machine.FiniteState
 			{
 				Annotation<TOffset> inputAnn = queue.Dequeue();
 				Annotation<TOffset> outputAnn = mappings[inputAnn];
-				outputAction.UpdateOutput(output, outputAnn);
+				outputAction.UpdateOutput(output, outputAnn, _operations);
 			}
 		}
 
@@ -850,11 +850,6 @@ namespace SIL.Machine.FiniteState
 			public IEnumerable<NfaStateInfo> NfaStates
 			{
 				get { return _nfaStates; }
-			}
-
-			public bool IsEmpty
-			{
-				get { return _nfaStates.Count == 0; }
 			}
 
 			public State<TData, TOffset> State { get; set; }
@@ -1510,7 +1505,7 @@ namespace SIL.Machine.FiniteState
 		private static IEnumerable<FeatureStruct> ClosuredInputs(Arc<TData, TOffset> arc)
 		{
 			return EpsilonClosure(arc.Target).SelectMany(s => s.Arcs, (s, a) => a.Input).Concat(arc.Input)
-				.Where(input => input != null).Select(input => input.FeatureStruct).Distinct(FreezableEqualityComparer<FeatureStruct>.Instance);
+				.Where(input => input != null).Select(input => input.FeatureStruct).Distinct(ValueEqualityComparer<FeatureStruct>.Instance);
 		}
 
 		private static IEnumerable<State<TData, TOffset>> EpsilonClosure(State<TData, TOffset> state)
@@ -1939,11 +1934,11 @@ namespace SIL.Machine.FiniteState
 										FeatureStruct fs = arc1.Outputs[0].FeatureStruct.DeepClone();
 										fs.PriorityUnion(arc2.Outputs[0].FeatureStruct);
 										if (arc1.Outputs[0] is PriorityUnionOutput<TData, TOffset>)
-											output = new PriorityUnionOutput<TData, TOffset>(fs, _operations.Replace);
+											output = new PriorityUnionOutput<TData, TOffset>(fs);
 										else if (arc1.Outputs[0] is InsertOutput<TData, TOffset>)
-											output = new InsertOutput<TData, TOffset>(fs, _operations.Insert);
+											output = new InsertOutput<TData, TOffset>(fs);
 										else
-											output = new ReplaceOutput<TData, TOffset>(fs, _operations.Replace);
+											output = new ReplaceOutput<TData, TOffset>(fs);
 									}
 									else
 									{

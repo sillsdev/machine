@@ -7,7 +7,7 @@ using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine
 {
-	public class AnnotationList<TOffset> : BidirList<Annotation<TOffset>>, IDeepCloneable<AnnotationList<TOffset>>, IFreezable<AnnotationList<TOffset>>
+	public class AnnotationList<TOffset> : BidirList<Annotation<TOffset>>, IDeepCloneable<AnnotationList<TOffset>>, IFreezable, IValueEquatable<AnnotationList<TOffset>>
 	{
 		private readonly SpanFactory<TOffset> _spanFactory; 
 		private int _currentID;
@@ -48,7 +48,7 @@ namespace SIL.Machine
 			foreach (Annotation<TOffset> ann in this)
 			{
 				ann.Freeze();
-				_hashCode = _hashCode * 31 + ann.GetFrozenHashCode();
+				_hashCode = _hashCode * 31 + ann.GetValueHashCode();
 			}
 		}
 
@@ -60,10 +60,10 @@ namespace SIL.Machine
 			if (Count != other.Count)
 				return false;
 
-			return this.SequenceEqual(other, FreezableEqualityComparer<Annotation<TOffset>>.Instance);
+			return this.SequenceEqual(other, ValueEqualityComparer<Annotation<TOffset>>.Instance);
 		}
 
-		public int GetFrozenHashCode()
+		public int GetValueHashCode()
 		{
 			if (!IsFrozen)
 				throw new InvalidOperationException("The annotation list does not have a valid hash code, because it is mutable.");
@@ -280,7 +280,7 @@ namespace SIL.Machine
 			{
 				if (!first)
 					sb.Append(", ");
-				sb.Append(ann.ToString());
+				sb.Append(ann);
 				first = false;
 			}
 			sb.Append("}");

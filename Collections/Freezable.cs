@@ -2,7 +2,7 @@
 
 namespace SIL.Collections
 {
-	public abstract class Freezable<T> : IFreezable<T>
+	public abstract class Freezable<T> : IFreezable, IValueEquatable<T>
 	{
 		private int _hashCode;
 
@@ -27,7 +27,7 @@ namespace SIL.Collections
 
 		public abstract bool ValueEquals(T other);
 
-		public int GetFrozenHashCode()
+		public int GetValueHashCode()
 		{
 			if (!IsFrozen)
 				throw new InvalidOperationException("This object does not have a valid hash code, because it is mutable.");

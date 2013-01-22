@@ -49,7 +49,7 @@
     <Compile Include="BulkObservableCollection.cs" />
     <Compile Include="CollectionsExtensions.cs" />
     <Compile Include="Freezable.cs" />
-    <Compile Include="FreezableEqualityComparer.cs" />
+    <Compile Include="ValueEqualityComparer.cs" />
     <Compile Include="IBidirList.cs" />
     <Compile Include="IBidirListNode.cs" />
     <Compile Include="IBidirTreeNode.cs" />
@@ -68,6 +68,7 @@
     <Compile Include="IReadOnlyDictionary.cs" />
     <Compile Include="IReadOnlyList.cs" />
     <Compile Include="IReadOnlySet.cs" />
+    <Compile Include="IValueEquatable.cs" />
     <Compile Include="KeyedCollection.cs" />
     <Compile Include="KeyedBulkObservableCollection.cs" />
     <Compile Include="KeyedReadOnlyCollection.cs" />

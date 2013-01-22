@@ -9,7 +9,7 @@ namespace SIL.Machine.Matching
 	/// <summary>
 	/// This is the abstract class that all phonetic pattern nodes extend.
 	/// </summary>
-	public abstract class PatternNode<TData, TOffset> : OrderedBidirTreeNode<PatternNode<TData, TOffset>>, IDeepCloneable<PatternNode<TData, TOffset>>, IFreezable<PatternNode<TData, TOffset>> where TData : IData<TOffset>, IDeepCloneable<TData>
+	public abstract class PatternNode<TData, TOffset> : OrderedBidirTreeNode<PatternNode<TData, TOffset>>, IDeepCloneable<PatternNode<TData, TOffset>>, IFreezable, IValueEquatable<PatternNode<TData, TOffset>> where TData : IData<TOffset>, IDeepCloneable<TData>
 	{
 		private int _hashCode;
 
@@ -77,7 +77,7 @@ namespace SIL.Machine.Matching
 			return false;
 		}
 
-		public int GetFrozenHashCode()
+		public int GetValueHashCode()
 		{
 			if (!IsFrozen)
 				throw new InvalidOperationException("The pattern node does not have a valid hash code, because it is mutable.");
@@ -98,7 +98,7 @@ namespace SIL.Machine.Matching
 				foreach (PatternNode<TData, TOffset> child in Children)
 				{
 					child.Freeze();
-					code = code * 31 + child.GetFrozenHashCode();
+					code = code * 31 + child.GetValueHashCode();
 				}
 			}
 			return code;
