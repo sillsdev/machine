@@ -291,13 +291,13 @@ namespace SIL.HermitCrab
 		{
 			int code = 23;
 			_shape.Freeze();
-			code = code * 31 + _shape.GetFrozenHashCode();
+			code = code * 31 + _shape.GetValueHashCode();
 			_realizationalFS.Freeze();
-			code = code * 31 + _realizationalFS.GetFrozenHashCode();
+			code = code * 31 + _realizationalFS.GetValueHashCode();
 			foreach (Word nonHead in _nonHeads)
 			{
 				nonHead.Freeze();
-				code = code * 31 + nonHead.GetFrozenHashCode();
+				code = code * 31 + nonHead.GetValueHashCode();
 			}
 			code = code * 31 + _stratum.GetHashCode();
 			code = code * 31 + (_rootAllomorph == null ? 0 : _rootAllomorph.GetHashCode());
@@ -311,7 +311,7 @@ namespace SIL.HermitCrab
 				return false;
 
 			return _shape.ValueEquals(other._shape) && _realizationalFS.ValueEquals(other._realizationalFS)
-				&& _nonHeads.SequenceEqual(other._nonHeads, FreezableEqualityComparer<Word>.Instance) && _stratum == other._stratum
+				&& _nonHeads.SequenceEqual(other._nonHeads, ValueEqualityComparer<Word>.Instance) && _stratum == other._stratum
 				&& _rootAllomorph == other._rootAllomorph && _mrules.SequenceEqual(other._mrules);
 		}
 

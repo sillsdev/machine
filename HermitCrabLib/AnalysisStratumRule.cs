@@ -19,13 +19,13 @@ namespace SIL.HermitCrab
 			_stratum = stratum;
 			_morpher = morpher;
 			_prulesRule = new LinearRuleCascade<Word, ShapeNode>(stratum.PhonologicalRules.Select(prule => prule.CompileAnalysisRule(spanFactory, morpher)).Reverse());
-			_templatesRule = new RuleBatch<Word, ShapeNode>(stratum.AffixTemplates.Select(template => template.CompileAnalysisRule(spanFactory, morpher)), false, FreezableEqualityComparer<Word>.Instance);
+			_templatesRule = new RuleBatch<Word, ShapeNode>(stratum.AffixTemplates.Select(template => template.CompileAnalysisRule(spanFactory, morpher)), false, ValueEqualityComparer<Word>.Instance);
 			_mrulesRule = null;
 			IEnumerable<IRule<Word, ShapeNode>> mrules = stratum.MorphologicalRules.Select(mrule => mrule.CompileAnalysisRule(spanFactory, morpher)).Reverse();
 			switch (stratum.MorphologicalRuleOrder)
 			{
 				case MorphologicalRuleOrder.Linear:
-					_mrulesRule = new LinearRuleCascade<Word, ShapeNode>(mrules, true, FreezableEqualityComparer<Word>.Instance);
+					_mrulesRule = new LinearRuleCascade<Word, ShapeNode>(mrules, true, ValueEqualityComparer<Word>.Instance);
 					break;
 				case MorphologicalRuleOrder.Unordered:
 					_mrulesRule = new TemplateCombinationRuleCascade(mrules, _templatesRule);
@@ -44,7 +44,7 @@ namespace SIL.HermitCrab
 			_prulesRule.Apply(input);
 			input.Freeze();
 
-			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Instance) {input};
+			var output = new HashSet<Word>(ValueEqualityComparer<Word>.Instance) {input};
 			foreach (Word tempWord in _templatesRule.Apply(input).Concat(input))
 			{
 				output.UnionWith(_mrulesRule.Apply(tempWord));
@@ -65,7 +65,7 @@ namespace SIL.HermitCrab
 			private readonly IRule<Word, ShapeNode> _templatesRule; 
 
 			public TemplateCombinationRuleCascade(IEnumerable<IRule<Word, ShapeNode>> rules, IRule<Word, ShapeNode> templatesRule)
-				: base(rules, true, FreezableEqualityComparer<Word>.Instance)
+				: base(rules, true, ValueEqualityComparer<Word>.Instance)
 			{
 				_templatesRule = templatesRule;
 			}

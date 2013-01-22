@@ -18,7 +18,7 @@ namespace SIL.HermitCrab
 			_morpher = morpher;
 			_template = template;
 			_rules = new List<IRule<Word, ShapeNode>>(template.Slots
-				.Select(slot => new RuleBatch<Word, ShapeNode>(slot.Rules.Select(mr => mr.CompileAnalysisRule(spanFactory, morpher)), false, FreezableEqualityComparer<Word>.Instance)));
+				.Select(slot => new RuleBatch<Word, ShapeNode>(slot.Rules.Select(mr => mr.CompileAnalysisRule(spanFactory, morpher)), false, ValueEqualityComparer<Word>.Instance)));
 		}
 
 		public IEnumerable<Word> Apply(Word input)
@@ -30,7 +30,7 @@ namespace SIL.HermitCrab
 			if (_morpher.TraceRules.Contains(_template))
 				input.CurrentTrace.Children.Add(new Trace(TraceType.TemplateAnalysisInput, _template) {Input = input});
 
-			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Instance);
+			var output = new HashSet<Word>(ValueEqualityComparer<Word>.Instance);
 			ApplySlots(input, _rules.Count - 1, output);
 			foreach (Word outWord in output)
 				outWord.SyntacticFeatureStruct = fs;

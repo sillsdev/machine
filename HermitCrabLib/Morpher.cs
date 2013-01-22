@@ -99,7 +99,7 @@ namespace SIL.HermitCrab
 			input.CurrentTrace = trace;
 
 			// Unapply rules
-			var validWords = new HashSet<Word>(FreezableEqualityComparer<Word>.Instance);
+			var validWords = new HashSet<Word>(ValueEqualityComparer<Word>.Instance);
 			IEnumerable<Word> analyses = _analysisRule.Apply(input);
 			foreach (Word analysisWord in analyses)
 			{

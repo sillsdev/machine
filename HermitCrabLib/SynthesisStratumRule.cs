@@ -21,10 +21,10 @@ namespace SIL.HermitCrab
 			switch (stratum.MorphologicalRuleOrder)
 			{
 				case MorphologicalRuleOrder.Linear:
-					_mrulesRule = new LinearRuleCascade<Word, ShapeNode>(mrules, true, FreezableEqualityComparer<Word>.Instance);
+					_mrulesRule = new LinearRuleCascade<Word, ShapeNode>(mrules, true, ValueEqualityComparer<Word>.Instance);
 					break;
 				case MorphologicalRuleOrder.Unordered:
-					_mrulesRule = new CombinationRuleCascade<Word, ShapeNode>(mrules, true, FreezableEqualityComparer<Word>.Instance);
+					_mrulesRule = new CombinationRuleCascade<Word, ShapeNode>(mrules, true, ValueEqualityComparer<Word>.Instance);
 					break;
 			}
 			_prulesRule = new LinearRuleCascade<Word, ShapeNode>(stratum.PhonologicalRules.Select(prule => prule.CompileSynthesisRule(spanFactory, morpher)));
@@ -39,7 +39,7 @@ namespace SIL.HermitCrab
 
 			if (_morpher.TraceRules.Contains(_stratum))
 				input.CurrentTrace.Children.Add(new Trace(TraceType.StratumSynthesisInput, _stratum) {Input = input});
-			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Instance);
+			var output = new HashSet<Word>(ValueEqualityComparer<Word>.Instance);
 			foreach (Word mruleOutWord in _mrulesRule.Apply(input))
 			{
 				Word newWord = mruleOutWord.DeepClone();

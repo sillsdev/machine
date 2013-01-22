@@ -27,7 +27,7 @@ namespace SIL.HermitCrab
 			if (!input.RealizationalFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct))
 				return Enumerable.Empty<Word>();
 
-			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Instance);
+			var output = new HashSet<Word>(ValueEqualityComparer<Word>.Instance);
 			bool applicableTemplate = false;
 			input = ChooseInflectionalStem(input);
 			for (int i = 0; i < _templateRules.Count; i++)

@@ -90,8 +90,8 @@ namespace SIL.HermitCrab
 		public override int GetHashCode()
 		{
 			int code = 23;
-			code = code * 31 + (_leftEnv == null ? 0 : _leftEnv.GetFrozenHashCode());
-			code = code * 31 + (_rightEnv == null ? 0 : _rightEnv.GetFrozenHashCode());
+			code = code * 31 + (_leftEnv == null ? 0 : _leftEnv.GetValueHashCode());
+			code = code * 31 + (_rightEnv == null ? 0 : _rightEnv.GetValueHashCode());
 			return code;
 		}
 	}

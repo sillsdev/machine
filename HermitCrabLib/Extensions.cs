@@ -63,7 +63,7 @@ namespace SIL.HermitCrab
 		}
 
 		private static readonly IEqualityComparer<ShapeNode> NodeComparer = new ProjectionEqualityComparer<ShapeNode, FeatureStruct>(node => node.Annotation.FeatureStruct,
-			FreezableEqualityComparer<FeatureStruct>.Instance);
+			ValueEqualityComparer<FeatureStruct>.Instance);
 		public static bool Duplicates(this Shape x, Shape y)
 		{
 			return x.Where(n => !n.Annotation.Optional).SequenceEqual(y.Where(n => !n.Annotation.Optional), NodeComparer);
