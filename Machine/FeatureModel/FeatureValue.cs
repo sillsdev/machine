@@ -17,6 +17,7 @@ namespace SIL.Machine.FeatureModel
 		internal abstract string ToStringImpl(ISet<FeatureValue> visited, IDictionary<FeatureValue, int> reentranceIds);
 
 		internal abstract bool IsUnifiableImpl(FeatureValue other, bool useDefaults, VariableBindings varBindings);
+		internal abstract bool SubsumesImpl(FeatureValue other, bool useDefaults, VariableBindings varBindings);
 		internal abstract bool DestructiveUnify(FeatureValue other, bool useDefaults, bool preserveInput,
 			IDictionary<FeatureValue, FeatureValue> copies, VariableBindings varBindings);
 		protected abstract bool NondestructiveUnify(FeatureValue other, bool useDefaults, IDictionary<FeatureValue, FeatureValue> copies,

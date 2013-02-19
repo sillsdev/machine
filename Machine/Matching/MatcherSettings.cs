@@ -3,6 +3,12 @@ using SIL.Collections;
 
 namespace SIL.Machine.Matching
 {
+	public enum MatchingMethod
+	{
+		Subsumption,
+		Unification
+	}
+
 	public sealed class MatcherSettings<TOffset>
 	{
 		private Direction _dir;
@@ -12,6 +18,7 @@ namespace SIL.Machine.Matching
 		private bool _anchoredToStart;
 		private bool _anchoredToEnd;
 		private bool _allSubmatches;
+		private MatchingMethod _matchingMethod;
 
 		public MatcherSettings()
 		{
@@ -87,6 +94,16 @@ namespace SIL.Machine.Matching
 			{
 				CheckReadOnly();
 				_allSubmatches = value;
+			}
+		}
+
+		public MatchingMethod MatchingMethod
+		{
+			get { return _matchingMethod; }
+			set
+			{
+				CheckReadOnly();
+				_matchingMethod = value;
 			}
 		}
 

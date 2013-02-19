@@ -33,6 +33,7 @@ namespace SIL.Collections
 		public void Clear()
 		{
 			_idBearerDictionary.Clear();
+			_idDictionary.Clear();
 		}
 
 		bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> item)

@@ -339,15 +339,15 @@ namespace SIL.Machine.FiniteState
 			}
 		}
 
-		public bool Transduce(TData data, Annotation<TOffset> start, bool startAnchor, bool endAnchor, bool useDefaults, out IEnumerable<FstResult<TData, TOffset>> results)
+		public bool Transduce(TData data, Annotation<TOffset> start, bool startAnchor, bool endAnchor, bool unification, bool useDefaults, out IEnumerable<FstResult<TData, TOffset>> results)
 		{
-			return Transduce(data, start, startAnchor, endAnchor, true, useDefaults, out results);
+			return Transduce(data, start, startAnchor, endAnchor, true, unification, useDefaults, out results);
 		}
 
-		public bool Transduce(TData data, Annotation<TOffset> start, bool startAnchor, bool endAnchor, bool useDefaults, out FstResult<TData, TOffset> result)
+		public bool Transduce(TData data, Annotation<TOffset> start, bool startAnchor, bool endAnchor, bool unification, bool useDefaults, out FstResult<TData, TOffset> result)
 		{
 			IEnumerable<FstResult<TData, TOffset>> results;
-			if (Transduce(data, start, startAnchor, endAnchor, false, useDefaults, out results))
+			if (Transduce(data, start, startAnchor, endAnchor, false, unification, useDefaults, out results))
 			{
 				result = results.First();
 				return true;
@@ -356,7 +356,7 @@ namespace SIL.Machine.FiniteState
 			return false;
 		}
 
-		private bool Transduce(TData data, Annotation<TOffset> start, bool startAnchor, bool endAnchor, bool allMatches, bool useDefaults, out IEnumerable<FstResult<TData, TOffset>> results)
+		private bool Transduce(TData data, Annotation<TOffset> start, bool startAnchor, bool endAnchor, bool allMatches, bool unification, bool useDefaults, out IEnumerable<FstResult<TData, TOffset>> results)
 		{
 			var from = new ConcurrentStack<FstInstance>();
 
@@ -436,7 +436,7 @@ namespace SIL.Machine.FiniteState
 								{
 									if (varBindings == null)
 										varBindings = IsInstanceReuseable(inst) ? inst.VariableBindings : inst.VariableBindings.DeepClone();
-									if (inst.Annotation != data.Annotations.GetEnd(_dir) && arc.Input.Matches(inst.Annotation.FeatureStruct, useDefaults, varBindings))
+									if (inst.Annotation != data.Annotations.GetEnd(_dir) && arc.Input.Matches(inst.Annotation.FeatureStruct, unification, useDefaults, varBindings))
 									{
 										TData output = inst.Output;
 										IDictionary<Annotation<TOffset>, Annotation<TOffset>> mappings = inst.Mappings;

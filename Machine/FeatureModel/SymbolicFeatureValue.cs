@@ -107,6 +107,21 @@ namespace SIL.Machine.FeatureModel
 			get { return base.IsUninstantiated && _flags == _feature.Mask; }
 		}
 
+		protected override bool IsSupersetOf(bool not, SimpleFeatureValue other, bool notOther)
+		{
+			var otherSfv = other as SymbolicFeatureValue;
+			if (otherSfv == null)
+				return false;
+
+			if (!not && !notOther)
+				return (_flags & otherSfv._flags) == otherSfv._flags;
+			if (!not)
+				return (_flags & (~otherSfv._flags & _feature.Mask)) == (~otherSfv._flags & _feature.Mask);
+			if (!notOther)
+				return ((~_flags & _feature.Mask) & otherSfv._flags) == otherSfv._flags;
+			return ((~_flags & _feature.Mask) & (~otherSfv._flags & _feature.Mask)) == (~otherSfv._flags & _feature.Mask);
+		}
+
 		protected override bool Overlaps(bool not, SimpleFeatureValue other, bool notOther)
 		{
 			var otherSfv = other as SymbolicFeatureValue;

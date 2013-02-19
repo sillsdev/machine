@@ -97,6 +97,52 @@ namespace SIL.Machine.FeatureModel
 			return true;
 		}
 
+		internal override bool SubsumesImpl(FeatureValue other, bool useDefaults, VariableBindings varBindings)
+		{
+			SimpleFeatureValue otherSfv;
+			if (!Dereference(other, out otherSfv))
+				return false;
+
+			if (!IsVariable && !otherSfv.IsVariable)
+			{
+				if (!IsSupersetOf(false, otherSfv, false))
+					return false;
+			}
+			else if (IsVariable && !otherSfv.IsVariable)
+			{
+				SimpleFeatureValue binding;
+				if (varBindings.TryGetValue(VariableName, out binding))
+				{
+					if (!binding.IsSupersetOf(!Agree, otherSfv, false))
+						return false;
+				}
+				else
+				{
+					varBindings[VariableName] = otherSfv.GetVariableValue(Agree);
+				}
+			}
+			else if (!IsVariable && otherSfv.IsVariable)
+			{
+				SimpleFeatureValue binding;
+				if (varBindings.TryGetValue(otherSfv.VariableName, out binding))
+				{
+					if (!IsSupersetOf(false, binding, !otherSfv.Agree))
+						return false;
+				}
+				else
+				{
+					varBindings[otherSfv.VariableName] = GetVariableValue(otherSfv.Agree);
+				}
+			}
+			else
+			{
+				if (VariableName != otherSfv.VariableName || Agree != otherSfv.Agree)
+					return false;
+			}
+
+			return true;
+		}
+
 		internal override bool DestructiveUnify(FeatureValue other, bool useDefaults, bool preserveInput, IDictionary<FeatureValue, FeatureValue> copies, VariableBindings varBindings)
 		{
 			SimpleFeatureValue otherSfv;
@@ -407,6 +453,7 @@ namespace SIL.Machine.FeatureModel
 			return "";
 		}
 
+		protected abstract bool IsSupersetOf(bool not, SimpleFeatureValue other, bool notOther);
 		protected abstract bool Overlaps(bool not, SimpleFeatureValue other, bool notOther);
 		protected abstract void IntersectWith(bool not, SimpleFeatureValue other, bool notOther);
 		protected abstract void UnionWith(bool not, SimpleFeatureValue other, bool notOther);

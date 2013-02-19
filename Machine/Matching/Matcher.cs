@@ -211,7 +211,7 @@ namespace SIL.Machine.Matching
 		internal Match<TData, TOffset> Match(TData input, Annotation<TOffset> startAnn)
 		{
 			FstResult<TData, TOffset> result;
-			if (_fsa.Transduce(input, startAnn, _settings.AnchoredToStart, _settings.AnchoredToEnd, _settings.UseDefaults, out result))
+			if (_fsa.Transduce(input, startAnn, _settings.AnchoredToStart, _settings.AnchoredToEnd, _settings.MatchingMethod == MatchingMethod.Unification, _settings.UseDefaults, out result))
 				return CreatePatternMatch(input, result);
 
 			return new Match<TData, TOffset>(this, _spanFactory.Empty, input);
@@ -230,7 +230,7 @@ namespace SIL.Machine.Matching
 		private IEnumerable<Match<TData, TOffset>> AllMatches(TData input, Annotation<TOffset> startAnn)
 		{
 			IEnumerable<FstResult<TData, TOffset>> results;
-			if (_fsa.Transduce(input, startAnn, _settings.AnchoredToStart, _settings.AnchoredToEnd, _settings.UseDefaults, out results))
+			if (_fsa.Transduce(input, startAnn, _settings.AnchoredToStart, _settings.AnchoredToEnd, _settings.MatchingMethod == MatchingMethod.Unification, _settings.UseDefaults, out results))
 			{
 				IEnumerable<Match<TData, TOffset>> matches = results.Select(fm => CreatePatternMatch(input, fm));
 				if (!_fsa.IsDeterministic && !_settings.AllSubmatches)

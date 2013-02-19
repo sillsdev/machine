@@ -83,6 +83,25 @@ namespace SIL.Machine.FeatureModel
 			return Not ? !_values.Overlaps(strings) : _values.Overlaps(strings);
 		}
 
+		protected override bool IsSupersetOf(bool not, SimpleFeatureValue other, bool notOther)
+		{
+			var otherSfv = other as StringFeatureValue;
+			if (otherSfv == null)
+				return false;
+			
+			not = not ? !Not : Not;
+			notOther = notOther ? !otherSfv.Not : otherSfv.Not;
+
+			if (!not && !notOther)
+				return _values.IsSupersetOf(otherSfv._values);
+			if (!not)
+				return false;
+			if (!notOther)
+				return !_values.Overlaps(otherSfv._values);
+
+			return _values.IsSubsetOf(otherSfv._values);
+		}
+
 		protected override bool Overlaps(bool not, SimpleFeatureValue other, bool notOther)
 		{
 			var otherSfv = other as StringFeatureValue;

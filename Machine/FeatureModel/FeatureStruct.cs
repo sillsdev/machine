@@ -786,10 +786,60 @@ namespace SIL.Machine.FeatureModel
 
 		public bool Subsumes(FeatureStruct other)
 		{
-			FeatureStruct result;
-			if (Unify(other, out result))
-				return other.ValueEquals(result);
+			return Subsumes(other, false);
+		}
+
+		public bool Subsumes(FeatureStruct other, bool useDefaults)
+		{
+			return Subsumes(other, useDefaults, null);
+		}
+
+		public bool Subsumes(FeatureStruct other, VariableBindings varBindings)
+		{
+			return Subsumes(other, false, varBindings);
+		}
+
+		public bool Subsumes(FeatureStruct other, bool useDefaults, VariableBindings varBindings)
+		{
+			other = Dereference(other);
+
+			VariableBindings tempVarBindings = varBindings == null ? new VariableBindings() : varBindings.DeepClone();
+			if (SubsumesImpl(other, useDefaults, tempVarBindings))
+			{
+				if (varBindings != null)
+					varBindings.Replace(tempVarBindings);
+				return true;
+			}
 			return false;
+		}
+
+		internal override bool SubsumesImpl(FeatureValue other, bool useDefaults, VariableBindings varBindings)
+		{
+			FeatureStruct otherFS;
+			if (!Dereference(other, out otherFS))
+				return false;
+
+			foreach (KeyValuePair<Feature, FeatureValue> featVal in _definite)
+			{
+				FeatureValue thisValue = Dereference(featVal.Value);
+				FeatureValue otherValue;
+				if (otherFS._definite.TryGetValue(featVal.Key, out otherValue))
+				{
+					otherValue = Dereference(otherValue);
+					if (!thisValue.SubsumesImpl(otherValue, useDefaults, varBindings))
+						return false;
+				}
+				else if (useDefaults && featVal.Key.DefaultValue != null)
+				{
+					if (!thisValue.SubsumesImpl(featVal.Key.DefaultValue, true, varBindings))
+						return false;
+				}
+				else
+				{
+					return false;
+				}
+			}
+			return true;
 		}
 
 		internal override bool DestructiveUnify(FeatureValue other, bool useDefaults, bool preserveInput,

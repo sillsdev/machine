@@ -1088,12 +1088,12 @@ namespace SIL.Machine.Test
 				.Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Seg).Symbol("nas+").Value).Value;
 
 			matcher = new Matcher<StringData, int>(SpanFactory, pattern,
-				new MatcherSettings<int> {Filter = ann => ((FeatureSymbol) ann.FeatureStruct.GetValue(Type)) != Word});
+				new MatcherSettings<int> {Filter = ann => ((FeatureSymbol) ann.FeatureStruct.GetValue(Type)) != Word, MatchingMethod = MatchingMethod.Unification});
 			Match<StringData, int>[] matches = matcher.Matches(sentence).ToArray();
 			Assert.AreEqual(4, matches.Length);
 
 			matcher = new Matcher<StringData, int>(SpanFactory, pattern,
-				new MatcherSettings<int> {Filter = ann => ((FeatureSymbol) ann.FeatureStruct.GetValue(Type)) != Word, UseDefaults = true});
+				new MatcherSettings<int> {Filter = ann => ((FeatureSymbol) ann.FeatureStruct.GetValue(Type)) != Word, UseDefaults = true, MatchingMethod = MatchingMethod.Unification});
 			matches = matcher.Matches(sentence).ToArray();
 			Assert.AreEqual(1, matches.Length);
 		}
