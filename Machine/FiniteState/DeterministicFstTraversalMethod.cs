@@ -6,12 +6,15 @@ using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState
 {
-	internal class DeterministicFstTraversalMethod<TData, TOffset> : FstTraversalMethod<TData, TOffset> where TData : IData<TOffset>, IDeepCloneable<TData>
+	internal class DeterministicFstTraversalMethod<TData, TOffset> : TraversalMethod<TData, TOffset> where TData : IData<TOffset>, IDeepCloneable<TData>
 	{
+		private readonly IFstOperations<TData, TOffset> _operations;
+
 		public DeterministicFstTraversalMethod(IFstOperations<TData, TOffset> operations, Direction dir, Func<Annotation<TOffset>, bool> filter, State<TData, TOffset> startState, TData data, bool endAnchor,
 			bool unification, bool useDefaults)
-			: base(operations, dir, filter, startState, data, endAnchor, unification, useDefaults)
+			: base(dir, filter, startState, data, endAnchor, unification, useDefaults)
 		{
+			_operations = operations;
 		}
 
 		public override IEnumerable<FstResult<TData, TOffset>> Traverse(ref Annotation<TOffset> ann, NullableValue<TOffset>[,] initRegisters, IList<TagMapCommand> initCmds, ISet<Annotation<TOffset>> initAnns)
@@ -89,6 +92,26 @@ namespace SIL.Machine.FiniteState
 			}
 
 			return curResults;
+		}
+
+		private void ExecuteOutputs(IEnumerable<Output<TData, TOffset>> outputs, TData output, IDictionary<Annotation<TOffset>, Annotation<TOffset>> mappings,
+			Queue<Annotation<TOffset>> queue)
+		{
+			Annotation<TOffset> prevNewAnn = null;
+			foreach (Output<TData, TOffset> outputAction in outputs)
+			{
+				Annotation<TOffset> outputAnn;
+				if (outputAction.UsePrevNewAnnotation && prevNewAnn != null)
+				{
+					outputAnn = prevNewAnn;
+				}
+				else
+				{
+					Annotation<TOffset> inputAnn = queue.Dequeue();
+					outputAnn = mappings[inputAnn];
+				}
+				prevNewAnn = outputAction.UpdateOutput(output, outputAnn, _operations);
+			}
 		}
 
 		private Stack<FstInstance> InitializeStack(ref Annotation<TOffset> ann, NullableValue<TOffset>[,] registers,

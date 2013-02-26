@@ -50,7 +50,6 @@
     <Compile Include="FeatureModel\PossibleSymbolCollection.cs" />
     <Compile Include="FiniteState\DeterministicFsaTraversalMethod.cs" />
     <Compile Include="FiniteState\DeterministicFstTraversalMethod.cs" />
-    <Compile Include="FiniteState\FstTraversalMethod.cs" />
     <Compile Include="FiniteState\IFstOperations.cs" />
     <Compile Include="FiniteState\InsertOutput.cs" />
     <Compile Include="FiniteState\ArcCollection.cs" />

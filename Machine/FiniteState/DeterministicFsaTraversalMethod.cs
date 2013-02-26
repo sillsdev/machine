@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using SIL.Collections;
 using SIL.Machine.FeatureModel;
 
@@ -24,14 +23,11 @@ namespace SIL.Machine.FiniteState
 
 				if (inst.Annotation != null)
 				{
-					VariableBindings varBindings = null;
 					foreach (Arc<TData, TOffset> arc in inst.State.Arcs)
 					{
-						if (varBindings == null)
-							varBindings = IsInstanceReuseable(inst) ? inst.VariableBindings : inst.VariableBindings.DeepClone();
-						if (CheckInputMatch(arc, inst.Annotation, varBindings))
+						if (CheckInputMatch(arc, inst.Annotation, inst.VariableBindings))
 						{
-							foreach (Instance ni in AdvanceFsa(inst.Annotation, inst.Registers, varBindings, arc, curResults, inst.Depth))
+							foreach (Instance ni in AdvanceFsa(inst.Annotation, inst.Registers, inst.VariableBindings, arc, curResults, inst.Depth))
 								instStack.Push(ni);
 							break;
 						}
@@ -49,11 +45,6 @@ namespace SIL.Machine.FiniteState
 			foreach (Instance inst in Initialize(ref ann, registers, cmds, initAnns, 0, (state, startAnn, regs, vb, cd) => new Instance(state, startAnn, regs, vb, cd)))
 				instStack.Push(inst);
 			return instStack;
-		}
-
-		private bool IsInstanceReuseable(Instance inst)
-		{
-			return inst.State.Arcs.All(a => !a.Input.IsEpsilon);
 		}
 
 		private IEnumerable<Instance> AdvanceFsa(Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, VariableBindings varBindings, Arc<TData, TOffset> arc,
