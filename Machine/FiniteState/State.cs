@@ -10,7 +10,7 @@ namespace SIL.Machine.FiniteState
 		private readonly int _index;
 		private readonly ArcCollection<TData, TOffset> _arcs;
 
-		private readonly SimpleReadOnlyCollection<AcceptInfo<TData, TOffset>> _acceptInfos; 
+		private readonly FreezableList<AcceptInfo<TData, TOffset>> _acceptInfos; 
 		private readonly List<TagMapCommand> _finishers;
 		private readonly bool _isLazy;
 		private bool _isAccepting;
@@ -34,7 +34,7 @@ namespace SIL.Machine.FiniteState
 		{
 			_index = index;
 			IsAccepting = isAccepting;
-			_acceptInfos = new SimpleReadOnlyCollection<AcceptInfo<TData, TOffset>>(acceptInfos.ToArray());
+			_acceptInfos = new FreezableList<AcceptInfo<TData, TOffset>>(acceptInfos);
 			_finishers = new List<TagMapCommand>(finishers);
 			_isLazy = isLazy;
 			_arcs = new ArcCollection<TData, TOffset>(isFsa, this);
@@ -63,7 +63,7 @@ namespace SIL.Machine.FiniteState
 			get { return _arcs; }
 		}
 
-		public IReadOnlyCollection<AcceptInfo<TData, TOffset>> AcceptInfos
+		public IList<AcceptInfo<TData, TOffset>> AcceptInfos
 		{
 			get { return _acceptInfos; }
 		}
@@ -101,6 +101,7 @@ namespace SIL.Machine.FiniteState
 
 			IsFrozen = true;
 			_arcs.Freeze();
+			_acceptInfos.Freeze();
 		}
 	}
 }
