@@ -1,16 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using SIL.Collections;
 
 namespace SIL.Machine.FiniteState
 {
-	public class State<TData, TOffset> where TData : IData<TOffset>
+	public class State<TData, TOffset> : IFreezable where TData : IData<TOffset>
 	{
 		private readonly int _index;
 		private readonly ArcCollection<TData, TOffset> _arcs;
 
-		private readonly List<AcceptInfo<TData, TOffset>> _acceptInfos; 
+		private readonly SimpleReadOnlyCollection<AcceptInfo<TData, TOffset>> _acceptInfos; 
 		private readonly List<TagMapCommand> _finishers;
 		private readonly bool _isLazy;
+		private bool _isAccepting;
 
 		internal State(bool isFsa, int index, bool isAccepting)
 			: this(isFsa, index, isAccepting, Enumerable.Empty<AcceptInfo<TData, TOffset>>(), Enumerable.Empty<TagMapCommand>(), false)
@@ -31,7 +34,7 @@ namespace SIL.Machine.FiniteState
 		{
 			_index = index;
 			IsAccepting = isAccepting;
-			_acceptInfos = new List<AcceptInfo<TData, TOffset>>(acceptInfos);
+			_acceptInfos = new SimpleReadOnlyCollection<AcceptInfo<TData, TOffset>>(acceptInfos.ToArray());
 			_finishers = new List<TagMapCommand>(finishers);
 			_isLazy = isLazy;
 			_arcs = new ArcCollection<TData, TOffset>(isFsa, this);
@@ -45,14 +48,22 @@ namespace SIL.Machine.FiniteState
 			}
 		}
 
-		public bool IsAccepting { get; set; }
+		public bool IsAccepting
+		{
+			get { return _isAccepting; }
+			set
+			{
+				CheckFrozen();
+				_isAccepting = value;
+			}
+		}
 
 		public ArcCollection<TData, TOffset> Arcs
 		{
 			get { return _arcs; }
 		}
 
-		public ICollection<AcceptInfo<TData, TOffset>> AcceptInfos
+		public IReadOnlyCollection<AcceptInfo<TData, TOffset>> AcceptInfos
 		{
 			get { return _acceptInfos; }
 		}
@@ -73,6 +84,23 @@ namespace SIL.Machine.FiniteState
 		public override string ToString()
 		{
 			return string.Format("State {0}", _index);
+		}
+
+		private void CheckFrozen()
+		{
+			if (IsFrozen)
+				throw new InvalidOperationException("The FST is immutable.");
+		}
+
+		public bool IsFrozen { get; private set; }
+
+		public void Freeze()
+		{
+			if (IsFrozen)
+				return;
+
+			IsFrozen = true;
+			_arcs.Freeze();
 		}
 	}
 }

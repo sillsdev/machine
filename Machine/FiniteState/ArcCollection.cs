@@ -6,7 +6,7 @@ using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState
 {
-	public class ArcCollection<TData, TOffset> : ICollection<Arc<TData, TOffset>> where TData : IData<TOffset>
+	public class ArcCollection<TData, TOffset> : ICollection<Arc<TData, TOffset>>, IFreezable where TData : IData<TOffset>
 	{
 		private readonly State<TData, TOffset> _state;
 		private readonly List<Arc<TData, TOffset>> _arcs;
@@ -33,16 +33,22 @@ namespace SIL.Machine.FiniteState
 
 		public State<TData, TOffset> Add(State<TData, TOffset> target)
 		{
+			CheckFrozen();
+
 			return Add(target, ArcPriorityType.Medium);
 		}
 
 		public State<TData, TOffset> Add(State<TData, TOffset> target, ArcPriorityType priorityType)
 		{
+			CheckFrozen();
+
 			return AddInternal(new Arc<TData, TOffset>(_state, target, priorityType));
 		}
 
 		public State<TData, TOffset> Add(FeatureStruct input, State<TData, TOffset> target)
 		{
+			CheckFrozen();
+
 			if (!input.IsFrozen)
 				throw new ArgumentException("The input must be immutable.", "input");
 			return AddInternal(new Arc<TData, TOffset>(_state, new Input(input, 1), new PriorityUnionOutput<TData, TOffset>(FeatureStruct.New().Value).ToEnumerable(), target));
@@ -50,11 +56,15 @@ namespace SIL.Machine.FiniteState
 
 		public State<TData, TOffset> Add(FeatureStruct input, FeatureStruct output, State<TData, TOffset> target)
 		{
+			CheckFrozen();
+
 			return Add(input, output, false, target);
 		}
 
 		public State<TData, TOffset> Add(FeatureStruct input, FeatureStruct output, bool replace, State<TData, TOffset> target)
 		{
+			CheckFrozen();
+
 			if (_isFsa)
 				throw new InvalidOperationException("Outputs are not valid on acceptors.");
 
@@ -107,6 +117,8 @@ namespace SIL.Machine.FiniteState
 
 		public void Clear()
 		{
+			CheckFrozen();
+
 			_arcs.Clear();
 		}
 
@@ -122,6 +134,8 @@ namespace SIL.Machine.FiniteState
 
 		public bool Remove(Arc<TData, TOffset> item)
 		{
+			CheckFrozen();
+
 			return _arcs.Remove(item);
 		}
 
@@ -132,7 +146,7 @@ namespace SIL.Machine.FiniteState
 
 		bool ICollection<Arc<TData, TOffset>>.IsReadOnly
 		{
-			get { return false; }
+			get { return IsFrozen; }
 		}
 
 		public int IndexOf(Arc<TData, TOffset> item)
@@ -143,6 +157,22 @@ namespace SIL.Machine.FiniteState
 		public Arc<TData, TOffset> this[int index]
 		{
 			get { return _arcs[index]; }
+		}
+
+		private void CheckFrozen()
+		{
+			if (IsFrozen)
+				throw new InvalidOperationException("The FST is immutable.");
+		}
+
+		public bool IsFrozen { get; private set; }
+
+		public void Freeze()
+		{
+			if (IsFrozen)
+				return;
+
+			IsFrozen = true;
 		}
 	}
 }

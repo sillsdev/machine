@@ -26,7 +26,7 @@ namespace SIL.Machine.FiniteState
 		internal Input(FeatureStruct fs, IEnumerable<FeatureStruct> negatedFSs, int enqueueCount)
 		{
 			_fs = fs;
-			_negatedFSs = new HashSet<FeatureStruct>(negatedFSs, ValueEqualityComparer<FeatureStruct>.Instance);
+			_negatedFSs = new HashSet<FeatureStruct>(negatedFSs, ValueEqualityComparer<FeatureStruct>.Default);
 			_enqueueCount = enqueueCount;
 		}
 
@@ -102,7 +102,7 @@ namespace SIL.Machine.FiniteState
 			var sb = new StringBuilder();
 			foreach (FeatureStruct nfs in _negatedFSs)
 				sb.AppendFormat(" && ~({0})", nfs);
-			return string.Format("{0}{1}/{2}", _fs == null ? "ε" : _fs.ToString(), sb, _enqueueCount);
+			return string.Format("{0}{1},{2}", _fs == null ? "ε" : _fs.ToString(), sb, _enqueueCount);
 		}
 	}
 }

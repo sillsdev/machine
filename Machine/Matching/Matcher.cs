@@ -58,7 +58,7 @@ namespace SIL.Machine.Matching
 
 		private void Compile(Pattern<TData, TOffset> pattern)
 		{
-			_fsa = new Fst<TData, TOffset>(_settings.Direction, _settings.Filter, _spanFactory.EqualityComparer);
+			_fsa = new Fst<TData, TOffset>(_spanFactory.EqualityComparer) {Direction = _settings.Direction, Filter = _settings.Filter, UseUnification = _settings.MatchingMethod == MatchingMethod.Unification};
 			_fsa.StartState = _fsa.CreateState();
 			int nextPriority = 0;
 			bool deterministic = GeneratePatternNfa(_fsa.StartState, pattern, null, new Func<Match<TData, TOffset>, bool>[0], ref nextPriority);
@@ -93,6 +93,7 @@ namespace SIL.Machine.Matching
 				writer.Close();
 #endif
 			}
+			_fsa.Freeze();
 		}
 
 		private bool GeneratePatternNfa(State<TData, TOffset> startState, Pattern<TData, TOffset> pattern, string parentName,
@@ -211,7 +212,7 @@ namespace SIL.Machine.Matching
 		internal Match<TData, TOffset> Match(TData input, Annotation<TOffset> startAnn)
 		{
 			FstResult<TData, TOffset> result;
-			if (_fsa.Transduce(input, startAnn, _settings.AnchoredToStart, _settings.AnchoredToEnd, _settings.MatchingMethod == MatchingMethod.Unification, _settings.UseDefaults, out result))
+			if (_fsa.Transduce(input, startAnn, _settings.AnchoredToStart, _settings.AnchoredToEnd, _settings.UseDefaults, out result))
 				return CreatePatternMatch(input, result);
 
 			return new Match<TData, TOffset>(this, _spanFactory.Empty, input);
@@ -230,7 +231,7 @@ namespace SIL.Machine.Matching
 		private IEnumerable<Match<TData, TOffset>> AllMatches(TData input, Annotation<TOffset> startAnn)
 		{
 			IEnumerable<FstResult<TData, TOffset>> results;
-			if (_fsa.Transduce(input, startAnn, _settings.AnchoredToStart, _settings.AnchoredToEnd, _settings.MatchingMethod == MatchingMethod.Unification, _settings.UseDefaults, out results))
+			if (_fsa.Transduce(input, startAnn, _settings.AnchoredToStart, _settings.AnchoredToEnd, _settings.UseDefaults, out results))
 			{
 				IEnumerable<Match<TData, TOffset>> matches = results.Select(fm => CreatePatternMatch(input, fm));
 				if (!_fsa.IsDeterministic && !_settings.AllSubmatches)

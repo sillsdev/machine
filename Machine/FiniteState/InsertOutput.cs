@@ -10,10 +10,15 @@ namespace SIL.Machine.FiniteState
 		{
 		}
 
-		public override void UpdateOutput(TData data, Annotation<TOffset> ann, IFstOperations<TData, TOffset> operations)
+		public override Annotation<TOffset> UpdateOutput(TData data, Annotation<TOffset> ann, IFstOperations<TData, TOffset> operations)
 		{
 			Span<TOffset> span = operations.Insert(data, ann, FeatureStruct);
-			data.Annotations.Add(span, FeatureStruct);
+			return data.Annotations.Add(span, FeatureStruct);
+		}
+
+		public override bool UsePrevNewAnnotation
+		{
+			get { return true; }
 		}
 
 		public override bool Equals(object obj)
@@ -33,7 +38,7 @@ namespace SIL.Machine.FiniteState
 
 		public override string ToString()
 		{
-			return string.Format("{0}/I", FeatureStruct);
+			return string.Format("({0},+)", FeatureStruct);
 		}
 	}
 }

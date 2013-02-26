@@ -60,7 +60,7 @@ namespace SIL.Machine
 			if (Count != other.Count)
 				return false;
 
-			return this.SequenceEqual(other, ValueEqualityComparer<Annotation<TOffset>>.Instance);
+			return this.SequenceEqual(other, ValueEqualityComparer<Annotation<TOffset>>.Default);
 		}
 
 		public int GetValueHashCode()

@@ -10,11 +10,12 @@ namespace SIL.Machine.FiniteState
 		{
 		}
 
-		public override void UpdateOutput(TData data, Annotation<TOffset> ann, IFstOperations<TData, TOffset> operations)
+		public override Annotation<TOffset> UpdateOutput(TData data, Annotation<TOffset> ann, IFstOperations<TData, TOffset> operations)
 		{
 			ann.FeatureStruct.PriorityUnion(FeatureStruct);
 			if (!FeatureStruct.IsEmpty)
 				operations.Replace(data, ann);
+			return null;
 		}
 
 		public override bool Equals(object obj)
@@ -34,7 +35,7 @@ namespace SIL.Machine.FiniteState
 
 		public override string ToString()
 		{
-			return FeatureStruct.ToString();
+			return string.Format("({0},∪)", FeatureStruct);
 		}
 	}
 }

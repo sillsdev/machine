@@ -9,10 +9,11 @@ namespace SIL.Machine.FiniteState
 		{
 		}
 
-		public override void UpdateOutput(TData data, Annotation<TOffset> ann, IFstOperations<TData, TOffset> operations)
+		public override Annotation<TOffset> UpdateOutput(TData data, Annotation<TOffset> ann, IFstOperations<TData, TOffset> operations)
 		{
 			ann.Remove(false);
 			operations.Remove(data, ann.Span);
+			return null;
 		}
 
 		public override bool Equals(object obj)

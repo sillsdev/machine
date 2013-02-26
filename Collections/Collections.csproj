@@ -49,6 +49,7 @@
     <Compile Include="BulkObservableCollection.cs" />
     <Compile Include="CollectionsExtensions.cs" />
     <Compile Include="Freezable.cs" />
+    <Compile Include="StructuralEqualityComparer.cs" />
     <Compile Include="ValueEqualityComparer.cs" />
     <Compile Include="IBidirList.cs" />
     <Compile Include="IBidirListNode.cs" />

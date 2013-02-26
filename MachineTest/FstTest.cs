@@ -111,7 +111,7 @@ namespace SIL.Machine.Test
 		public void Transduce()
 		{
 
-			var fst = new Fst<StringData, int>(_operations);
+			var fst = new Fst<StringData, int>(_operations) {UseUnification = false};
 			fst.StartState = fst.CreateAcceptingState();
 			fst.StartState.Arcs.Add(FeatureStruct.New(PhoneticFeatSys).Symbol("nas-", "nas?").Value, fst.StartState);
 			fst.StartState.Arcs.Add(FeatureStruct.New(PhoneticFeatSys).Symbol("nas+").Symbol("cor+", "cor-").Value, fst.StartState);
@@ -135,18 +135,18 @@ namespace SIL.Machine.Test
 
 			StringData data = CreateStringData("caNp");
 			FstResult<StringData, int> result;
-			Assert.That(dfst.Transduce(data, data.Annotations.First, true, true, false, true, out result), Is.True);
+			Assert.That(dfst.Transduce(data, data.Annotations.First, true, true, true, out result), Is.True);
 			Assert.That(result.Output.String, Is.EqualTo("camp"));
 
 			data = CreateStringData("caN");
-			Assert.That(dfst.Transduce(data, data.Annotations.First, true, true, false, true, out result), Is.True);
+			Assert.That(dfst.Transduce(data, data.Annotations.First, true, true, true, out result), Is.True);
 			Assert.That(result.Output.String, Is.EqualTo("can"));
 
 			data = CreateStringData("carp");
-			Assert.That(dfst.Transduce(data, data.Annotations.First, true, true, false, true, out result), Is.True);
+			Assert.That(dfst.Transduce(data, data.Annotations.First, true, true, true, out result), Is.True);
 			Assert.That(result.Output.String, Is.EqualTo("carp"));
 
-			fst = new Fst<StringData, int>(_operations);
+			fst = new Fst<StringData, int>(_operations) {UseUnification = false};
 			fst.StartState = fst.CreateAcceptingState();
 			s1 = fst.StartState.Arcs.Add(FeatureStruct.New(PhoneticFeatSys).Symbol("cons+").Value, fst.CreateState())
 				.Arcs.Add(FeatureStruct.New(PhoneticFeatSys).Symbol("cons-").Value, fst.CreateState());
@@ -154,7 +154,7 @@ namespace SIL.Machine.Test
 			State<StringData, int> s3 = s1.Arcs.Add(FeatureStruct.New(PhoneticFeatSys).Symbol("voice-").Value, fst.CreateState());
 			s3.Arcs.Add(null, FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo(".").Value, s2);
 			s3.Arcs.Add(null, FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo("+").Value, fst.CreateState())
-				.Arcs.Add(null, FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo("+").Value, s2);
+				.Arcs.Add(null, FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo(".").Value, s2);
 			s2.Arcs.Add(FeatureStruct.New(PhoneticFeatSys).Symbol("cons+").Value, fst.CreateAcceptingState());
 
 
@@ -169,15 +169,15 @@ namespace SIL.Machine.Test
 			writer.Close();
 
 			data = CreateStringData("camp");
-			Assert.That(dfst.Transduce(data, data.Annotations.First, true, true, false, true, out result), Is.True);
+			Assert.That(dfst.Transduce(data, data.Annotations.First, true, true, true, out result), Is.True);
 			Assert.That(result.Output.String, Is.EqualTo("cap"));
 
 			data = CreateStringData("casp");
 			IEnumerable<FstResult<StringData, int>> results;
-			Assert.That(dfst.Transduce(data, data.Annotations.First, true, true, false, true, out results), Is.True);
+			Assert.That(dfst.Transduce(data, data.Annotations.First, true, true, true, out results), Is.True);
 			FstResult<StringData, int>[] resultsArray = results.ToArray();
 			Assert.That(resultsArray.Length, Is.EqualTo(2));
-			Assert.That(resultsArray.Select(r => r.Output.String), Is.EquivalentTo(new [] {"cas++p", "cas.p"}));
+			Assert.That(resultsArray.Select(r => r.Output.String), Is.EquivalentTo(new [] {"cas+.p", "cas.p"}));
 		}
 	}
 }

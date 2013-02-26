@@ -3,15 +3,15 @@ using System.Collections.Generic;
 
 namespace SIL.Collections
 {
-	public class ValueEqualityComparer<T> : EqualityComparer<T> where T : IValueEquatable<T>
+	public class ValueEqualityComparer<T> : IEqualityComparer<T> where T : IValueEquatable<T>
 	{
 		private static readonly ValueEqualityComparer<T> Comparer = new ValueEqualityComparer<T>(); 
-		public static ValueEqualityComparer<T> Instance
+		public static ValueEqualityComparer<T> Default
 		{
 			get { return Comparer; }
 		}
 
-		public override bool Equals(T x, T y)
+		public bool Equals(T x, T y)
 		{
 			if (x == null && y == null)
 				return true;
@@ -20,7 +20,7 @@ namespace SIL.Collections
 			return x.ValueEquals(y);
 		}
 
-		public override int GetHashCode(T obj)
+		public int GetHashCode(T obj)
 		{
 			if (obj == null)
 				throw new ArgumentNullException("obj");

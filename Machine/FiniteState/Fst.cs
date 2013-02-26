@@ -1,114 +1,53 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using SIL.Collections;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState
 {
-	public class Fst<TData, TOffset> where TData : IData<TOffset>, IDeepCloneable<TData>
+	public class Fst<TData, TOffset> : IFreezable where TData : IData<TOffset>, IDeepCloneable<TData>
 	{
 		private int _nextTag;
 		private readonly Dictionary<string, int> _groups;
 		private readonly List<TagMapCommand> _initializers;
 		private int _registerCount;
-		private readonly Direction _dir;
-		private readonly Func<Annotation<TOffset>, bool> _filter;
+		private Direction _dir;
+		private Func<Annotation<TOffset>, bool> _filter;
 		private readonly List<State<TData, TOffset>> _states;
 		private readonly SimpleReadOnlyCollection<State<TData, TOffset>> _readonlyStates;
 		private readonly IEqualityComparer<FstResult<TData, TOffset>> _fsaMatchComparer;
 		private readonly IFstOperations<TData, TOffset> _operations;
-		private readonly IEqualityComparer<TOffset> _offsetComparer; 
+		private readonly RegistersEqualityComparer<TOffset> _registersComparer;
+		private bool _unification;
+		private State<TData, TOffset> _startState;
 
 		public Fst()
-			: this(Direction.LeftToRight)
+			: this(null, EqualityComparer<TOffset>.Default)
 		{
 		}
 
 		public Fst(IEqualityComparer<TOffset> offsetComparer)
-			: this(Direction.LeftToRight, offsetComparer)
+			: this(null, offsetComparer)
 		{
 		}
 
 		public Fst(IFstOperations<TData, TOffset> operations)
-			: this(operations, Direction.LeftToRight)
+			: this(operations, EqualityComparer<TOffset>.Default)
 		{
 		}
 
 		public Fst(IFstOperations<TData, TOffset> operations, IEqualityComparer<TOffset> offsetComparer)
-			: this(operations, Direction.LeftToRight, offsetComparer)
-		{
-		}
-
-		public Fst(Direction dir)
-			: this(dir, ann => true)
-		{
-		}
-
-		public Fst(Direction dir, IEqualityComparer<TOffset> offsetComparer)
-			: this(dir, ann => true, offsetComparer)
-		{
-		}
-
-		public Fst(IFstOperations<TData, TOffset> operations, Direction dir)
-			: this(operations, dir, ann => true)
-		{
-		}
-
-		public Fst(IFstOperations<TData, TOffset> operations, Direction dir, IEqualityComparer<TOffset> offsetComparer)
-			: this(operations, dir, ann => true, offsetComparer)
-		{
-		}
-
-		public Fst(Func<Annotation<TOffset>, bool> filter)
-			: this(Direction.LeftToRight, filter)
-		{
-		}
-
-		public Fst(Func<Annotation<TOffset>, bool> filter, IEqualityComparer<TOffset> offsetComparer)
-			: this(Direction.LeftToRight, filter, offsetComparer)
-		{
-		}
-
-		public Fst(IFstOperations<TData, TOffset> operations, Func<Annotation<TOffset>, bool> filter)
-			: this(operations, Direction.LeftToRight, filter)
-		{
-		}
-
-		public Fst(IFstOperations<TData, TOffset> operations, Func<Annotation<TOffset>, bool> filter, IEqualityComparer<TOffset> offsetComparer)
-			: this(operations, Direction.LeftToRight, filter, offsetComparer)
-		{
-		}
-		
-		public Fst(Direction dir, Func<Annotation<TOffset>, bool> filter)
-			: this(null, dir, filter)
-		{
-		}
-
-		public Fst(Direction dir, Func<Annotation<TOffset>, bool> filter, IEqualityComparer<TOffset> offsetComparer)
-			: this(null, dir, filter, offsetComparer)
-		{
-		}
-
-		public Fst(IFstOperations<TData, TOffset> operations, Direction dir, Func<Annotation<TOffset>, bool> filter)
-			: this(operations, dir, filter, EqualityComparer<TOffset>.Default)
-		{
-		}
-
-		public Fst(IFstOperations<TData, TOffset> operations, Direction dir, Func<Annotation<TOffset>, bool> filter, IEqualityComparer<TOffset> offsetComparer)
 		{
 			_states = new List<State<TData, TOffset>>();
 			_readonlyStates = _states.AsSimpleReadOnlyCollection();
 			_operations = operations;
 			_initializers = new List<TagMapCommand>();
 			_groups = new Dictionary<string, int>();
-			_dir = dir;
-			_filter = filter;
+			_filter = ann => true;
 			_fsaMatchComparer = AnonymousEqualityComparer.Create<FstResult<TData, TOffset>>(FstResultEquals, FstResultGetHashCode);
-			_offsetComparer = offsetComparer;
+			_registersComparer = new RegistersEqualityComparer<TOffset>(offsetComparer);
 		}
 
 		private bool FstResultEquals(FstResult<TData, TOffset> x, FstResult<TData, TOffset> y)
@@ -116,17 +55,8 @@ namespace SIL.Machine.FiniteState
 			if (x.ID != y.ID)
 				return false;
 
-			for (int i = 0; i < _registerCount; i++)
-			{
-				for (int j = 0; j < 2; j++)
-				{
-					if (x.Registers[i, j].HasValue != y.Registers[i, j].HasValue)
-						return false;
-
-					if (x.Registers[i, j].HasValue && !_offsetComparer.Equals(x.Registers[i, j].Value, x.Registers[i, j].Value))
-						return false;
-				}
-			}
+			if (!_registersComparer.Equals(x.Registers, y.Registers))
+				return false;
 
 			return EqualityComparer<TData>.Default.Equals(x.Output, y.Output);
 		}
@@ -135,11 +65,7 @@ namespace SIL.Machine.FiniteState
 		{
 			int code = 23;
 			code = code * 31 + (m.ID == null ? 0 : m.ID.GetHashCode());
-			for (int i = 0; i < _registerCount; i++)
-			{
-				for (int j = 0; j < 2; j++)
-					code = code * 31 + (m.Registers[i, j].HasValue && m.Registers[i, j].Value != null ? _offsetComparer.GetHashCode(m.Registers[i, j].Value) : 0);
-			}
+			code = code * 31 + _registersComparer.GetHashCode(m.Registers);
 			code = code * 31 * EqualityComparer<TData>.Default.GetHashCode(m.Output);
 			return code;
 		}
@@ -148,6 +74,8 @@ namespace SIL.Machine.FiniteState
 
 		public State<TData, TOffset> CreateAcceptingState()
 		{
+			CheckFrozen();
+
 			var state = new State<TData, TOffset>(_operations == null, _states.Count, true);
 			_states.Add(state);
 			return state;
@@ -155,6 +83,8 @@ namespace SIL.Machine.FiniteState
 
 		protected State<TData, TOffset> CreateAcceptingState(IEnumerable<AcceptInfo<TData, TOffset>> acceptInfos)
 		{
+			CheckFrozen();
+
 			var state = new State<TData, TOffset>(_operations == null, _states.Count, acceptInfos);
 			_states.Add(state);
 			return state;
@@ -162,6 +92,8 @@ namespace SIL.Machine.FiniteState
 
 		public State<TData, TOffset> CreateAcceptingState(string id, Func<TData, FstResult<TData, TOffset>,  bool> acceptable, int priority)
 		{
+			CheckFrozen();
+
 			var state = new State<TData, TOffset>(_operations == null, _states.Count, new AcceptInfo<TData, TOffset>(id, acceptable, priority).ToEnumerable());
 			_states.Add(state);
 			return state;
@@ -169,6 +101,8 @@ namespace SIL.Machine.FiniteState
 
 		public State<TData, TOffset> CreateState()
 		{
+			CheckFrozen();
+
 			var state = new State<TData, TOffset>(_operations == null, _states.Count, false);
 			_states.Add(state);
 			return state;
@@ -211,6 +145,8 @@ namespace SIL.Machine.FiniteState
 
 		public State<TData, TOffset> CreateTag(State<TData, TOffset> source, State<TData, TOffset> target, string groupName, bool isStart)
 		{
+			CheckFrozen();
+
 			int tag = GetTag(groupName, isStart);
 			return source.Arcs.Add(target, tag);
 		}
@@ -235,11 +171,48 @@ namespace SIL.Machine.FiniteState
 			return state;
 		}
 
-		public State<TData, TOffset> StartState { get; set; }
+		public State<TData, TOffset> StartState
+		{
+			get { return _startState; }
+			set
+			{
+				CheckFrozen();
+
+				_startState = value;
+			}
+		}
 
 		public Direction Direction
 		{
 			get { return _dir; }
+			set
+			{
+				CheckFrozen();
+
+				_dir = value;
+			}
+		}
+
+		public Func<Annotation<TOffset>, bool> Filter
+		{
+			get { return _filter; }
+			set
+			{
+				CheckFrozen();
+
+				_filter = value;
+			}
+		}
+
+		public bool UseUnification
+		{
+			get { return _unification; }
+			set
+			{
+				CheckFrozen();
+
+				_unification = value;
+			}
 		}
 
 		public IReadOnlyCollection<State<TData, TOffset>> States
@@ -254,100 +227,22 @@ namespace SIL.Machine.FiniteState
 
 		public void Reset()
 		{
+			CheckFrozen();
+
 			_states.Clear();
 			StartState = null;
 			IsDeterministic = false;
 		}
 
-		private class FstInstance
+		public bool Transduce(TData data, Annotation<TOffset> start, bool startAnchor, bool endAnchor, bool useDefaults, out IEnumerable<FstResult<TData, TOffset>> results)
 		{
-			private readonly NullableValue<TOffset>[,] _registers;
-			private readonly TData _output;
-			private readonly IDictionary<Annotation<TOffset>, Annotation<TOffset>> _mappings;
-			private readonly Queue<Annotation<TOffset>> _queue;
-			private readonly VariableBindings _varBindings;
-			private readonly ISet<State<TData, TOffset>> _visited;
-			private readonly State<TData, TOffset> _state;
-			private readonly Annotation<TOffset> _annotation;
-			private readonly int _depth;
-			private readonly int[] _priorities; 
-
-			public FstInstance(State<TData, TOffset> state, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, TData output,
-				IDictionary<Annotation<TOffset>, Annotation<TOffset>> mappings, Queue<Annotation<TOffset>> queue, VariableBindings varBindings,
-				ISet<State<TData, TOffset>> visited, int depth, int[] priorities)
-			{
-				_state = state;
-				_annotation = ann;
-				_registers = registers;
-				_output = output;
-				_mappings = mappings;
-				_queue = queue;
-				_varBindings = varBindings;
-				_visited = visited;
-				_depth = depth;
-				_priorities = priorities;
-			}
-
-			public State<TData, TOffset> State
-			{
-				get { return _state; }
-			}
-
-			public Annotation<TOffset> Annotation
-			{
-				get { return _annotation; }
-			}
-
-			public TData Output
-			{
-				get { return _output; }
-			}
-
-			public NullableValue<TOffset>[,] Registers
-			{
-				get { return _registers; }
-			}
-
-			public IDictionary<Annotation<TOffset>, Annotation<TOffset>> Mappings
-			{
-				get { return _mappings; }
-			}
-
-			public Queue<Annotation<TOffset>> Queue
-			{
-				get { return _queue; }
-			}
-
-			public VariableBindings VariableBindings
-			{
-				get { return _varBindings; }
-			}
-
-			public ISet<State<TData, TOffset>> Visited
-			{
-				get { return _visited; }
-			}
-
-			public int Depth
-			{
-				get { return _depth; }
-			}
-
-			public int[] Priorities
-			{
-				get { return _priorities; }
-			}
+			return Transduce(data, start, startAnchor, endAnchor, true, useDefaults, out results);
 		}
 
-		public bool Transduce(TData data, Annotation<TOffset> start, bool startAnchor, bool endAnchor, bool unification, bool useDefaults, out IEnumerable<FstResult<TData, TOffset>> results)
-		{
-			return Transduce(data, start, startAnchor, endAnchor, true, unification, useDefaults, out results);
-		}
-
-		public bool Transduce(TData data, Annotation<TOffset> start, bool startAnchor, bool endAnchor, bool unification, bool useDefaults, out FstResult<TData, TOffset> result)
+		public bool Transduce(TData data, Annotation<TOffset> start, bool startAnchor, bool endAnchor, bool useDefaults, out FstResult<TData, TOffset> result)
 		{
 			IEnumerable<FstResult<TData, TOffset>> results;
-			if (Transduce(data, start, startAnchor, endAnchor, false, unification, useDefaults, out results))
+			if (Transduce(data, start, startAnchor, endAnchor, false, useDefaults, out results))
 			{
 				result = results.First();
 				return true;
@@ -356,10 +251,23 @@ namespace SIL.Machine.FiniteState
 			return false;
 		}
 
-		private bool Transduce(TData data, Annotation<TOffset> start, bool startAnchor, bool endAnchor, bool allMatches, bool unification, bool useDefaults, out IEnumerable<FstResult<TData, TOffset>> results)
+		private bool Transduce(TData data, Annotation<TOffset> start, bool startAnchor, bool endAnchor, bool allMatches, bool useDefaults, out IEnumerable<FstResult<TData, TOffset>> results)
 		{
-			var from = new ConcurrentStack<FstInstance>();
-
+			TraversalMethod<TData, TOffset> traversalMethod;
+			if (_operations != null)
+			{
+				if (IsDeterministic)
+					traversalMethod = new DeterministicFstTraversalMethod<TData, TOffset>(_operations, _dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
+				else
+					traversalMethod = new NondeterministicFstTraversalMethod<TData, TOffset>(_operations, _dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
+			}
+			else
+			{
+				if (IsDeterministic)
+ 					traversalMethod = new DeterministicFsaTraversalMethod<TData, TOffset>(_dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
+				else
+					traversalMethod = new NondeterministicFsaTraversalMethod<TData, TOffset>(_registersComparer, _dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
+			}
 			List<FstResult<TData, TOffset>> resultList = null;
 
 			Annotation<TOffset> ann = start;
@@ -378,109 +286,7 @@ namespace SIL.Machine.FiniteState
 						cmds.Add(cmd);
 				}
 
-				ann = InitializeStack(data, ann, initRegisters, cmds, from, initAnns, 0);
-
-				var curResults = new List<FstResult<TData, TOffset>>();
-				while (!from.IsEmpty)
-				{
-					var to = new ConcurrentStack<FstInstance>();
-					Parallel.ForEach(from, inst =>
-						{
-							if (inst.Annotation == null)
-								return;
-
-							var taskResults = new List<FstResult<TData, TOffset>>();
-							VariableBindings varBindings = null;
-							foreach (Arc<TData, TOffset> arc in inst.State.Arcs)
-							{
-								if (arc.Input.IsEpsilon)
-								{
-									if (!inst.Visited.Contains(arc.Target))
-									{
-										TData output = inst.Output;
-										IDictionary<Annotation<TOffset>, Annotation<TOffset>> mappings = inst.Mappings;
-										Queue<Annotation<TOffset>> queue = inst.Queue;
-										NullableValue<TOffset>[,] registers = inst.Registers;
-										ISet<State<TData, TOffset>> visited = inst.Visited;
-										if (IsInstanceReuseable(inst))
-										{
-											if (varBindings == null)
-												varBindings = inst.VariableBindings;
-										}
-										else
-										{
-											registers = (NullableValue<TOffset>[,]) inst.Registers.Clone();
-
-											if (_operations != null)
-											{
-												output = inst.Output.DeepClone();
-
-												Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = inst.Output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
-													.Zip(output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
-												mappings = inst.Mappings.ToDictionary(kvp => kvp.Key, kvp => outputMappings[kvp.Value]);
-												queue = new Queue<Annotation<TOffset>>(inst.Queue);
-											}
-											if (varBindings == null)
-												varBindings = inst.VariableBindings.DeepClone();
-											visited = new HashSet<State<TData, TOffset>>(inst.Visited);
-										}
-										if (_operations != null)
-											ExecuteOutputs(arc.Outputs, output, mappings, queue);
-
-										to.Push(EpsilonAdvanceFst(data, endAnchor, inst.Annotation, registers, output, mappings, queue, varBindings, visited, arc, taskResults,
-											inst.Depth, inst.Priorities));
-										varBindings = null;
-									}
-								}
-								else
-								{
-									if (varBindings == null)
-										varBindings = IsInstanceReuseable(inst) ? inst.VariableBindings : inst.VariableBindings.DeepClone();
-									if (inst.Annotation != data.Annotations.GetEnd(_dir) && arc.Input.Matches(inst.Annotation.FeatureStruct, unification, useDefaults, varBindings))
-									{
-										TData output = inst.Output;
-										IDictionary<Annotation<TOffset>, Annotation<TOffset>> mappings = inst.Mappings;
-										Queue<Annotation<TOffset>> queue = inst.Queue;
-										if (_operations != null)
-										{
-											if (!IsInstanceReuseable(inst))
-											{
-												output = inst.Output.DeepClone();
-
-												Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = inst.Output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
-													.Zip(output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
-												mappings = inst.Mappings.ToDictionary(kvp => kvp.Key, kvp => outputMappings[kvp.Value]);
-												queue = new Queue<Annotation<TOffset>>(inst.Queue);
-											}
-
-											for (int i = 0; i < arc.Input.EnqueueCount; i++)
-												queue.Enqueue(inst.Annotation);
-
-											ExecuteOutputs(arc.Outputs, output, mappings, queue);
-										}
-
-										FstInstance[] instances = AdvanceFst(data, endAnchor, inst.Annotation, inst.Registers, output, mappings, queue, varBindings, arc,
-											taskResults, inst.Depth, inst.Priorities).ToArray();
-										to.PushRange(instances);
-
-										if (IsDeterministic)
-											break;
-										varBindings = null;
-									}
-								}
-							}
-
-							if (taskResults.Count > 0)
-							{
-								lock (curResults)
-								{
-									curResults.AddRange(taskResults);
-								}
-							}
-						});
-					from = to;
-				}
-
+				List<FstResult<TData, TOffset>> curResults = traversalMethod.Traverse(ref ann, initRegisters, cmds, initAnns).ToList();
 				if (curResults.Count > 0)
 				{
 					if (resultList == null)
@@ -505,25 +311,6 @@ namespace SIL.Machine.FiniteState
 			return true;
 		}
 
-		private bool IsInstanceReuseable(FstInstance inst)
-		{
-			if (inst.State.Arcs.Count <= 1)
-				return true;
-
-			return IsDeterministic && inst.State.Arcs.All(a => !a.Input.IsEpsilon);
-		}
-
-		private void ExecuteOutputs(IEnumerable<Output<TData, TOffset>> outputs, TData output, IDictionary<Annotation<TOffset>, Annotation<TOffset>> mappings,
-			Queue<Annotation<TOffset>> queue)
-		{
-			foreach (Output<TData, TOffset> outputAction in outputs)
-			{
-				Annotation<TOffset> inputAnn = queue.Dequeue();
-				Annotation<TOffset> outputAnn = mappings[inputAnn];
-				outputAction.UpdateOutput(output, outputAnn, _operations);
-			}
-		}
-
 		private int ResultCompare(FstResult<TData, TOffset> x, FstResult<TData, TOffset> y)
 		{
 			int compare = x.Priority.CompareTo(y.Priority);
@@ -545,182 +332,6 @@ namespace SIL.Machine.FiniteState
 				}
 			}
 			return compare;
-		}
-
-		private Annotation<TOffset> InitializeStack(TData data, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers,
-			List<TagMapCommand> cmds, ConcurrentStack<FstInstance> from, HashSet<Annotation<TOffset>> initAnns, int depth)
-		{
-			TOffset offset = ann.Span.GetStart(_dir);
-
-			var newRegisters = (NullableValue<TOffset>[,]) registers.Clone();
-			ExecuteCommands(newRegisters, cmds, new NullableValue<TOffset>(ann.Span.GetStart(_dir)), new NullableValue<TOffset>());
-
-			int curDepth = depth;
-			for (Annotation<TOffset> a = ann; a != data.Annotations.GetEnd(_dir) && a.Span.GetStart(_dir).Equals(offset); a = a.GetNextDepthFirst(_dir, _filter))
-			{
-				if (a.Optional)
-				{
-					Annotation<TOffset> nextAnn = a.GetNextDepthFirst(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
-					if (nextAnn != null)
-						InitializeStack(data, nextAnn, registers, cmds, from, initAnns, curDepth);
-				}
-				depth++;
-			}
-
-			curDepth = depth;
-			bool cloneRegisters = false;
-			for (; ann != data.Annotations.GetEnd(_dir) && ann.Span.GetStart(_dir).Equals(offset); ann = ann.GetNextDepthFirst(_dir, _filter))
-			{
-				if (!initAnns.Contains(ann))
-				{
-					TData o = data;
-					Dictionary<Annotation<TOffset>, Annotation<TOffset>> m = null;
-					Queue<Annotation<TOffset>> q = null;
-					if (_operations != null)
-					{
-						o = data.DeepClone();
-						m = data.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
-							.Zip(o.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
-						q = new Queue<Annotation<TOffset>>();
-					}
-					from.Push(new FstInstance(StartState, ann, cloneRegisters ? (NullableValue<TOffset>[,]) newRegisters.Clone() : newRegisters,
-						o, m, q, new VariableBindings(), new HashSet<State<TData, TOffset>>(), curDepth, IsDeterministic ? null : new int[0]));
-					initAnns.Add(ann);
-					cloneRegisters = true;
-				}
-				curDepth++;
-			}
-
-			return ann;
-		}
-
-		private static void ExecuteCommands(NullableValue<TOffset>[,] registers, IEnumerable<TagMapCommand> cmds,
-			NullableValue<TOffset> start, NullableValue<TOffset> end)
-		{
-			foreach (TagMapCommand cmd in cmds)
-			{
-				if (cmd.Src == TagMapCommand.CurrentPosition)
-				{
-					registers[cmd.Dest, 0] = start;
-					registers[cmd.Dest, 1] = end;
-				}
-				else
-				{
-					registers[cmd.Dest, 0] = registers[cmd.Src, 0];
-					registers[cmd.Dest, 1] = registers[cmd.Src, 1];
-				}
-			}
-		}
-
-		private IEnumerable<FstInstance> AdvanceFst(TData data, bool endAnchor, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, TData output,
-			IDictionary<Annotation<TOffset>, Annotation<TOffset>> mappings, Queue<Annotation<TOffset>> queue, VariableBindings varBindings, Arc<TData, TOffset> arc,
-			List<FstResult<TData, TOffset>> curResults, int depth, int[] priorities)
-		{
-			Annotation<TOffset> nextAnn = ann.GetNextDepthFirst(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
-			TOffset nextOffset = nextAnn == data.Annotations.GetEnd(_dir) ? data.Annotations.GetLast(_dir, _filter).Span.GetEnd(_dir) : nextAnn.Span.GetStart(_dir);
-			TOffset end = ann.Span.GetEnd(_dir);
-			var newRegisters = (NullableValue<TOffset>[,]) registers.Clone();
-			ExecuteCommands(newRegisters, arc.Commands, new NullableValue<TOffset>(nextOffset), new NullableValue<TOffset>(end));
-
-			CheckAccepting(data, nextAnn, endAnchor, newRegisters, output, varBindings, arc, curResults, depth, priorities);
-
-			if (nextAnn != data.Annotations.GetEnd(_dir))
-			{
-				int curDepth = depth + 1;
-				var anns = new List<Annotation<TOffset>>();
-				bool cloneOutputs = false;
-				for (Annotation<TOffset> curAnn = nextAnn; curAnn != data.Annotations.GetEnd(_dir) && curAnn.Span.GetStart(_dir).Equals(nextOffset); curAnn = curAnn.GetNextDepthFirst(_dir, _filter))
-				{
-					if (curAnn.Optional)
-					{
-						foreach (FstInstance ni in AdvanceFst(data, endAnchor, curAnn, registers, output, mappings, queue, varBindings, arc, curResults, curDepth, priorities))
-						{
-							yield return ni;
-							cloneOutputs = true;
-						}
-					}
-					curDepth++;
-					anns.Add(curAnn);
-				}
-
-				curDepth = depth + 1;
-				bool cloneRegisters = false;
-				foreach (Annotation<TOffset> curAnn in anns)
-				{
-					TData o = output;
-					IDictionary<Annotation<TOffset>, Annotation<TOffset>> m = mappings;
-					Queue<Annotation<TOffset>> q = queue;
-					if (_operations != null && cloneOutputs)
-					{
-						o = output.DeepClone();
-
-						Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
-							.Zip(o.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
-						m = mappings.ToDictionary(kvp => kvp.Key, kvp => outputMappings[kvp.Value]);
-						q = new Queue<Annotation<TOffset>>(queue);
-					}
-
-					yield return new FstInstance(arc.Target, curAnn, cloneRegisters ?  (NullableValue<TOffset>[,]) newRegisters.Clone() : newRegisters, o, m, q,
-						cloneOutputs ? varBindings.DeepClone() : varBindings, new HashSet<State<TData, TOffset>>(), curDepth, UpdatePriorities(priorities, arc.Priority));
-
-					curDepth++;
-					cloneOutputs = true;
-					cloneRegisters = true;
-				}
-			}
-			else
-			{
-				yield return new FstInstance(arc.Target, nextAnn, newRegisters, output, mappings, queue, varBindings, new HashSet<State<TData, TOffset>>(),
-					depth + 1, UpdatePriorities(priorities, arc.Priority));
-			}
-		}
-
-		private static int[] UpdatePriorities(int[] priorities, int priority)
-		{
-			int[] p = null;
-			if (priorities != null)
-			{
-				p = new int[priorities.Length + 1];
-				priorities.CopyTo(p, 0);
-				p[p.Length - 1] = priority;
-			}
-			return p;
-		}
-
-		private FstInstance EpsilonAdvanceFst(TData data, bool endAnchor, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, TData output, IDictionary<Annotation<TOffset>,
-			Annotation<TOffset>> mappings, Queue<Annotation<TOffset>> queue, VariableBindings varBindings, ISet<State<TData, TOffset>> visited, Arc<TData, TOffset> arc,
-			List<FstResult<TData, TOffset>> curResults, int depth, int[] priorities)
-		{
-			Annotation<TOffset> prevAnn = ann.GetPrevDepthFirst(_dir, (cur, prev) => !cur.Span.Overlaps(prev.Span) && _filter(prev));
-			ExecuteCommands(registers, arc.Commands, new NullableValue<TOffset>(ann.Span.GetStart(_dir)), new NullableValue<TOffset>(prevAnn.Span.GetEnd(_dir)));
-			CheckAccepting(data, ann, endAnchor, registers, output, varBindings, arc, curResults, depth, priorities);
-			visited.Add(arc.Target);
-			return new FstInstance(arc.Target, ann, registers, output, mappings, queue, varBindings, visited, depth, UpdatePriorities(priorities, arc.Priority));
-		}
-
-		private void CheckAccepting(TData data, Annotation<TOffset> ann, bool endAnchor, NullableValue<TOffset>[,] registers, TData output,
-			VariableBindings varBindings, Arc<TData, TOffset> arc, List<FstResult<TData, TOffset>> curResults, int depth, int[] priorities)
-		{
-			if (arc.Target.IsAccepting && (!endAnchor || ann == data.Annotations.GetEnd(_dir)))
-			{
-				var matchRegisters = (NullableValue<TOffset>[,]) registers.Clone();
-				ExecuteCommands(matchRegisters, arc.Target.Finishers, new NullableValue<TOffset>(), new NullableValue<TOffset>());
-				if (arc.Target.AcceptInfos.Count > 0)
-				{
-					foreach (AcceptInfo<TData, TOffset> acceptInfo in arc.Target.AcceptInfos)
-					{
-						var candidate = new FstResult<TData, TOffset>(acceptInfo.ID, matchRegisters, _operations != null ? output.DeepClone() : output, varBindings.DeepClone(),
-							acceptInfo.Priority, arc.Target.IsLazy, ann, depth, UpdatePriorities(priorities, arc.Priority));
-						if (acceptInfo.Acceptable == null || acceptInfo.Acceptable(data, candidate))
-							curResults.Add(candidate);
-					}
-				}
-				else
-				{
-					curResults.Add(new FstResult<TData, TOffset>(null, matchRegisters, output.DeepClone(), varBindings.DeepClone(), -1, arc.Target.IsLazy, ann,
-						depth, UpdatePriorities(priorities, arc.Priority)));
-				}
-			}
 		}
 
 		public Fst<TData, TOffset> Determinize()
@@ -927,7 +538,7 @@ namespace SIL.Machine.FiniteState
 					yield break;
 				var commonPrefix = new List<Output<TData, TOffset>>();
 				bool first = true;
-				int enqueueCount = input.EnqueueCount + targetStates.Select(s => s.NfaState.Arcs.Where(a => a.Input.IsEpsilon).Select(a => a.Input.EnqueueCount).Concat(0).Max()).Sum();
+				int enqueueCount = input.EnqueueCount + (targetStates.SelectMany(s => s.NfaState.Arcs).Any(a => a.Input.IsEpsilon && a.Input.EnqueueCount > 0) ? 1 : 0);
 				foreach (NfaStateInfo state in targetStates)
 				{
 					for (int i = 0; i < state.Outputs.Count; i++)
@@ -997,7 +608,7 @@ namespace SIL.Machine.FiniteState
 		{
 			MarkArcPriorities();
 
-			var newFst = new Fst<TData, TOffset>(_operations, _dir, _filter) {IsDeterministic = deterministic, _nextTag = _nextTag};
+			var newFst = new Fst<TData, TOffset>(_operations, _registersComparer.OffsetComparer) {IsDeterministic = deterministic, _nextTag = _nextTag, Direction = _dir, Filter = _filter, UseUnification = _unification};
 			foreach (KeyValuePair<string, int> kvp in _groups)
 				newFst._groups[kvp.Key] = kvp.Value;
 
@@ -1027,7 +638,7 @@ namespace SIL.Machine.FiniteState
 				SubsetState curSubsetState = unmarkedSubsetStates.Dequeue();
 
 				foreach (Tuple<SubsetState, Input, IEnumerable<Output<TData, TOffset>>, int> t in arcsSelector(curSubsetState))
-					CreateOptimizedArc(newFst, subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, t.Item1, t.Item2, t.Item3, t.Item4, deterministic);
+					CreateOptimizedArc(newFst, subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, t.Item1, t.Item2, t.Item3, t.Item4);
 			}
 
 			var regNums = new Dictionary<int, int>();
@@ -1060,7 +671,7 @@ namespace SIL.Machine.FiniteState
 		}
 
 		private void CreateOptimizedArc(Fst<TData, TOffset> newFst, Dictionary<SubsetState, SubsetState> subsetStates, Queue<SubsetState> unmarkedSubsetStates,
-			Dictionary<Tuple<int, int>, int> registerIndices, SubsetState curSubsetState, SubsetState target, Input input, IEnumerable<Output<TData, TOffset>> outputs, int priority, bool deterministic)
+			Dictionary<Tuple<int, int>, int> registerIndices, SubsetState curSubsetState, SubsetState target, Input input, IEnumerable<Output<TData, TOffset>> outputs, int priority)
 		{
 			var cmdTags = new Dictionary<int, int>();
 			foreach (NfaStateInfo targetState in target.NfaStates)
@@ -1083,23 +694,6 @@ namespace SIL.Machine.FiniteState
 			}
 
 			var cmds = new List<TagMapCommand>();
-			//if (!deterministic)
-			//{
-			//    var tags = new HashSet<int>();
-			//    foreach (NfaStateInfo srcState in curSubsetState.NfaStates)
-			//    {
-			//        foreach (KeyValuePair<int, int> tag in srcState.Tags)
-			//        {
-			//            if (tag.Value > 0 && !tags.Contains(tag.Key))
-			//            {
-			//                tags.Add(tag.Key);
-			//                int src = GetRegisterIndex(registerIndices, tag.Key, tag.Value);
-			//                int dest = GetRegisterIndex(registerIndices, tag.Key, 0);
-			//                cmds.Add(new TagMapCommand(dest, src));
-			//            }
-			//        }
-			//    }
-			//}
 
 			SubsetState subsetState;
 			if (subsetStates.TryGetValue(target, out subsetState))
@@ -1444,7 +1038,7 @@ namespace SIL.Machine.FiniteState
 
 		private Fst<TData, TOffset> ExtractTransducer(State<TData, TOffset> startState, Arc<TData, TOffset> arc)
 		{
-			var fst = new Fst<TData, TOffset>(_operations, _dir, _filter);
+			var fst = new Fst<TData, TOffset>(_operations, _registersComparer.OffsetComparer) {Direction = _dir, Filter = _filter, UseUnification = _unification};
 			fst.StartState = startState.IsAccepting ? fst.CreateAcceptingState(startState.AcceptInfos) : fst.CreateState();
 			var copies = new Dictionary<State<TData, TOffset>, State<TData, TOffset>>();
 			copies[startState] = fst.StartState;
@@ -1505,7 +1099,7 @@ namespace SIL.Machine.FiniteState
 		private static IEnumerable<FeatureStruct> ClosuredInputs(Arc<TData, TOffset> arc)
 		{
 			return EpsilonClosure(arc.Target).SelectMany(s => s.Arcs, (s, a) => a.Input).Concat(arc.Input)
-				.Where(input => input != null).Select(input => input.FeatureStruct).Distinct(ValueEqualityComparer<FeatureStruct>.Instance);
+				.Where(input => input != null).Select(input => input.FeatureStruct).Distinct(ValueEqualityComparer<FeatureStruct>.Default);
 		}
 
 		private static IEnumerable<State<TData, TOffset>> EpsilonClosure(State<TData, TOffset> state)
@@ -1533,7 +1127,7 @@ namespace SIL.Machine.FiniteState
 
 		public Fst<TData, TOffset> GetOutputAcceptor()
 		{
-			var fst = new Fst<TData, TOffset>(_dir, _filter) {_nextTag = _nextTag, _registerCount = _registerCount};
+			var fst = new Fst<TData, TOffset>(_registersComparer.OffsetComparer) {_nextTag = _nextTag, _registerCount = _registerCount, Direction = _dir, Filter = _filter, UseUnification = _unification};
 			foreach (KeyValuePair<string, int> kvp in _groups)
 				fst._groups[kvp.Key] = kvp.Value;
 			fst.StartState = Copy(fst, StartState, OutputAcceptorAddArc, new Dictionary<State<TData, TOffset>, State<TData, TOffset>>());
@@ -1561,7 +1155,7 @@ namespace SIL.Machine.FiniteState
 
 		public Fst<TData, TOffset> GetInputAcceptor()
 		{
-			var fst = new Fst<TData, TOffset>(_dir, _filter) {_nextTag = _nextTag, _registerCount = _registerCount};
+			var fst = new Fst<TData, TOffset>(_registersComparer.OffsetComparer) {_nextTag = _nextTag, _registerCount = _registerCount, Direction = _dir, Filter = _filter, UseUnification = _unification};
 			foreach (KeyValuePair<string, int> kvp in _groups)
 				fst._groups[kvp.Key] = kvp.Value;
 			fst.StartState = Copy(fst, StartState, InputAcceptorAddArc, new Dictionary<State<TData, TOffset>, State<TData, TOffset>>());
@@ -1809,7 +1403,7 @@ namespace SIL.Machine.FiniteState
 
 		public Fst<TData, TOffset> Intersect(Fst<TData, TOffset> other)
 		{
-			var newFst = new Fst<TData, TOffset>(_dir, _filter);
+			var newFst = new Fst<TData, TOffset>(_registersComparer.OffsetComparer) {Direction = _dir, Filter = _filter, UseUnification = _unification};
 			newFst.StartState = StartState.IsAccepting && other.StartState.IsAccepting ? newFst.CreateAcceptingState() : newFst.CreateState();
 
 			var queue = new Queue<Tuple<State<TData, TOffset>, State<TData, TOffset>>>();
@@ -1889,7 +1483,7 @@ namespace SIL.Machine.FiniteState
 
 		public Fst<TData, TOffset> Compose(Fst<TData, TOffset> other)
 		{
-			var newFst = new Fst<TData, TOffset>(_operations, _dir, _filter);
+			var newFst = new Fst<TData, TOffset>(_operations, _registersComparer.OffsetComparer) {Direction = _dir, Filter = _filter, UseUnification = _unification};
 			newFst.StartState = StartState.IsAccepting && other.StartState.IsAccepting ? newFst.CreateAcceptingState() : newFst.CreateState();
 
 			var queue = new Queue<Tuple<State<TData, TOffset>, State<TData, TOffset>>>();
@@ -1924,7 +1518,7 @@ namespace SIL.Machine.FiniteState
 
 						foreach (Arc<TData, TOffset> arc2 in p.Item2.Arcs.Where(a => !a.Input.IsEpsilon))
 						{
-							if (arc2.Input.FeatureStruct.IsUnifiable(compareFs))
+							if (_unification ? arc2.Input.FeatureStruct.IsUnifiable(compareFs) : arc2.Input.FeatureStruct.Subsumes(compareFs))
 							{
 								Output<TData, TOffset> output = null;
 								if (arc2.Outputs.Count > 0)
@@ -2013,6 +1607,24 @@ namespace SIL.Machine.FiniteState
 			}
 
 			writer.WriteLine("}");
+		}
+
+		private void CheckFrozen()
+		{
+			if (IsFrozen)
+				throw new InvalidOperationException("The FST is immutable.");
+		}
+
+		public bool IsFrozen { get; private set; }
+
+		public void Freeze()
+		{
+			if (IsFrozen)
+				return;
+
+			IsFrozen = true;
+			foreach (State<TData, TOffset> state in _states)
+				state.Freeze();
 		}
 	}
 }

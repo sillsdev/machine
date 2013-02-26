@@ -16,6 +16,11 @@ namespace SIL.Machine.FiniteState
 			get { return _fs; }
 		}
 
-		public abstract void UpdateOutput(TData data, Annotation<TOffset> ann, IFstOperations<TData, TOffset> operations);
+		public abstract Annotation<TOffset> UpdateOutput(TData data, Annotation<TOffset> ann, IFstOperations<TData, TOffset> operations);
+
+		public virtual bool UsePrevNewAnnotation
+		{
+			get { return false; }
+		}
 	}
 }

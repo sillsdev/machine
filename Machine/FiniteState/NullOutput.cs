@@ -9,8 +9,9 @@ namespace SIL.Machine.FiniteState
 		{
 		}
 
-		public override void UpdateOutput(TData data, Annotation<TOffset> ann, IFstOperations<TData, TOffset> operations)
+		public override Annotation<TOffset> UpdateOutput(TData data, Annotation<TOffset> ann, IFstOperations<TData, TOffset> operations)
 		{
+			return null;
 		}
 
 		public override bool Equals(object obj)
@@ -30,7 +31,7 @@ namespace SIL.Machine.FiniteState
 
 		public override string ToString()
 		{
-			return "NULL";
+			return "∅";
 		}
 	}
 }
