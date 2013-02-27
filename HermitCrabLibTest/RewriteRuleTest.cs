@@ -672,7 +672,7 @@ namespace SIL.HermitCrab.Test
 			                   	});
 
 			morpher = new Morpher(SpanFactory, Language);
-			Assert.That(() => morpher.ParseWord("sagk"), Throws.TypeOf<MorphException>().With.Property("ErrorCode").EqualTo(MorphErrorCode.UninstantiatedFeature));
+			Assert.That(morpher.ParseWord("sagk"), Is.Empty);
 		}
 
 		[Test]

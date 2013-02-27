@@ -53,17 +53,8 @@ namespace SIL.HermitCrab
 			node.Annotation.FeatureStruct.AddValue(HCFeatureSystem.Modified, dirty ? HCFeatureSystem.Dirty : HCFeatureSystem.Clean);
 		}
 
-		public static void CheckUninstantiatedFeatures(this VariableBindings varBindings)
-		{
-			foreach (SymbolicFeatureValue sfv in varBindings.Values.OfType<SymbolicFeatureValue>())
-			{
-				if (sfv.Feature.DefaultValue.ValueEquals(sfv))
-					throw new MorphException(MorphErrorCode.UninstantiatedFeature) {Data = {{"feature", sfv.Feature.ID}}};
-			}
-		}
-
 		private static readonly IEqualityComparer<ShapeNode> NodeComparer = new ProjectionEqualityComparer<ShapeNode, FeatureStruct>(node => node.Annotation.FeatureStruct,
-			ValueEqualityComparer<FeatureStruct>.Instance);
+			ValueEqualityComparer<FeatureStruct>.Default);
 		public static bool Duplicates(this Shape x, Shape y)
 		{
 			return x.Where(n => !n.Annotation.Optional).SequenceEqual(y.Where(n => !n.Annotation.Optional), NodeComparer);

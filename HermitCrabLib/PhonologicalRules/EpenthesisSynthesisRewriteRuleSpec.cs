@@ -18,8 +18,6 @@ namespace SIL.HermitCrab.PhonologicalRules
 
 		public override ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)
 		{
-			match.VariableBindings.CheckUninstantiatedFeatures();
-
 			ShapeNode startNode;
 			if (match.Matcher.Direction == Direction.LeftToRight)
 			{

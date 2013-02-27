@@ -30,20 +30,20 @@ namespace SIL.HermitCrab.Test
 			SpanFactory = new ShapeSpanFactory();
 			var phoneticFeatSys = new FeatureSystem
 			                      	{
-			                      		new SymbolicFeature("voc", new FeatureSymbol("voc+", "+"), new FeatureSymbol("voc-", "-"), new FeatureSymbol("voc?", "?")) {DefaultSymbolID = "voc?"},
-			                      		new SymbolicFeature("cons", new FeatureSymbol("cons+", "+"), new FeatureSymbol("cons-", "-"), new FeatureSymbol("cons?", "?")) {DefaultSymbolID = "cons?"},
-			                      		new SymbolicFeature("high", new FeatureSymbol("high+", "+"), new FeatureSymbol("high-", "-"), new FeatureSymbol("high?", "?")) {DefaultSymbolID = "high?"},
-			                      		new SymbolicFeature("low", new FeatureSymbol("low+", "+"), new FeatureSymbol("low-", "-"), new FeatureSymbol("low?", "?")) {DefaultSymbolID = "low?"},
-			                      		new SymbolicFeature("back", new FeatureSymbol("back+", "+"), new FeatureSymbol("back-", "-"), new FeatureSymbol("back?", "?")) {DefaultSymbolID = "back?"},
-			                      		new SymbolicFeature("round", new FeatureSymbol("round+", "+"), new FeatureSymbol("round-", "-"), new FeatureSymbol("round?", "?")) {DefaultSymbolID = "round?"},
-										new SymbolicFeature("vd", new FeatureSymbol("vd+", "+"), new FeatureSymbol("vd-", "-"), new FeatureSymbol("vd?", "?")) {DefaultSymbolID = "vd?"},
-			                      		new SymbolicFeature("asp", new FeatureSymbol("asp+", "+"), new FeatureSymbol("asp-", "-"), new FeatureSymbol("asp?", "?")) {DefaultSymbolID = "asp?"},
-			                      		new SymbolicFeature("del_rel", new FeatureSymbol("del_rel+", "+"), new FeatureSymbol("del_rel-", "-"), new FeatureSymbol("del_rel?", "?")) {DefaultSymbolID = "del_rel?"},
-			                      		new SymbolicFeature("ATR", new FeatureSymbol("ATR+", "+"), new FeatureSymbol("ATR-", "-"), new FeatureSymbol("ATR?", "?")) {DefaultSymbolID = "ATR?"},
-			                      		new SymbolicFeature("strident", new FeatureSymbol("strident+", "+"), new FeatureSymbol("strident-", "-"), new FeatureSymbol("strident?", "?")) {DefaultSymbolID = "strident?"},
-			                      		new SymbolicFeature("cont", new FeatureSymbol("cont+", "+"), new FeatureSymbol("cont-", "-"), new FeatureSymbol("cont?", "?")) {DefaultSymbolID = "cont?"},
-			                      		new SymbolicFeature("nasal", new FeatureSymbol("nasal+", "+"), new FeatureSymbol("nasal-", "-"), new FeatureSymbol("nasal?", "?")) {DefaultSymbolID = "nasal?"},
-			                      		new SymbolicFeature("poa", new FeatureSymbol("bilabial"), new FeatureSymbol("labiodental"), new FeatureSymbol("alveolar"), new FeatureSymbol("velar"), new FeatureSymbol("poa?")) {DefaultSymbolID = "poa?"}
+			                      		new SymbolicFeature("voc", new FeatureSymbol("voc+", "+"), new FeatureSymbol("voc-", "-")),
+			                      		new SymbolicFeature("cons", new FeatureSymbol("cons+", "+"), new FeatureSymbol("cons-", "-")),
+			                      		new SymbolicFeature("high", new FeatureSymbol("high+", "+"), new FeatureSymbol("high-", "-")),
+			                      		new SymbolicFeature("low", new FeatureSymbol("low+", "+"), new FeatureSymbol("low-", "-")),
+			                      		new SymbolicFeature("back", new FeatureSymbol("back+", "+"), new FeatureSymbol("back-", "-")),
+			                      		new SymbolicFeature("round", new FeatureSymbol("round+", "+"), new FeatureSymbol("round-", "-")),
+										new SymbolicFeature("vd", new FeatureSymbol("vd+", "+"), new FeatureSymbol("vd-", "-")),
+			                      		new SymbolicFeature("asp", new FeatureSymbol("asp+", "+"), new FeatureSymbol("asp-", "-")),
+			                      		new SymbolicFeature("del_rel", new FeatureSymbol("del_rel+", "+"), new FeatureSymbol("del_rel-", "-")),
+			                      		new SymbolicFeature("ATR", new FeatureSymbol("ATR+", "+"), new FeatureSymbol("ATR-", "-")),
+			                      		new SymbolicFeature("strident", new FeatureSymbol("strident+", "+"), new FeatureSymbol("strident-", "-")),
+			                      		new SymbolicFeature("cont", new FeatureSymbol("cont+", "+"), new FeatureSymbol("cont-", "-")),
+			                      		new SymbolicFeature("nasal", new FeatureSymbol("nasal+", "+"), new FeatureSymbol("nasal-", "-")),
+			                      		new SymbolicFeature("poa", new FeatureSymbol("bilabial"), new FeatureSymbol("labiodental"), new FeatureSymbol("alveolar"), new FeatureSymbol("velar"))
 			                      	};
 			phoneticFeatSys.Freeze();
 
@@ -348,7 +348,7 @@ namespace SIL.HermitCrab.Test
 
 		protected void AssertSyntacticFeatureStructsEqual(IEnumerable<Word> words, FeatureStruct expected)
 		{
-			Assert.That(words, Has.All.Property("SyntacticFeatureStruct").EqualTo(expected).Using((IEqualityComparer<FeatureStruct>) ValueEqualityComparer<FeatureStruct>.Instance));
+			Assert.That(words, Has.All.Property("SyntacticFeatureStruct").EqualTo(expected).Using(ValueEqualityComparer<FeatureStruct>.Default));
 		}
 	}
 }

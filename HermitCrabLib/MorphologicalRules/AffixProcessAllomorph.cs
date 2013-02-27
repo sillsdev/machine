@@ -74,7 +74,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 				return false;
 
 			return base.ConstraintsEqual(other) && _requiredMprFeatures.SetEquals(otherAllo._requiredMprFeatures)
-				&& _excludedMprFeatures.SetEquals(otherAllo._excludedMprFeatures) && _lhs.SequenceEqual(otherAllo._lhs, ValueEqualityComparer<Pattern<Word, ShapeNode>>.Instance);
+				&& _excludedMprFeatures.SetEquals(otherAllo._excludedMprFeatures) && _lhs.SequenceEqual(otherAllo._lhs, ValueEqualityComparer<Pattern<Word, ShapeNode>>.Default);
 		}
 	}
 }

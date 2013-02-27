@@ -84,7 +84,6 @@
     <Compile Include="MorphologicalRules\AnalysisMorphologicalTransform.cs" />
     <Compile Include="MorphologicalRules\AnalysisMorphologicalTransformRuleSpec.cs" />
     <Compile Include="MorphologicalRules\AnalysisRealizationalAffixProcessRule.cs" />
-    <Compile Include="MorphologicalRules\AnalysisSimpleCompoundingSubruleRule.cs" />
     <Compile Include="MorphologicalRules\CompoundingRule.cs" />
     <Compile Include="MorphologicalRules\CompoundingSubrule.cs" />
     <Compile Include="MorphologicalRules\CopyFromInput.cs" />

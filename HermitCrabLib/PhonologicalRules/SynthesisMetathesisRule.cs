@@ -44,7 +44,6 @@ namespace SIL.HermitCrab.PhonologicalRules
 			               	{
 			               		Direction = rule.Direction,
 			               		Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor),
-			               		UseDefaults = true
 			               	};
 
 			_patternRule = new BacktrackingPatternRule(spanFactory, ruleSpec, settings);

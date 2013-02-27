@@ -311,7 +311,7 @@ namespace SIL.HermitCrab
 				return false;
 
 			return _shape.ValueEquals(other._shape) && _realizationalFS.ValueEquals(other._realizationalFS)
-				&& _nonHeads.SequenceEqual(other._nonHeads, ValueEqualityComparer<Word>.Instance) && _stratum == other._stratum
+				&& _nonHeads.SequenceEqual(other._nonHeads, ValueEqualityComparer<Word>.Default) && _stratum == other._stratum
 				&& _rootAllomorph == other._rootAllomorph && _mrules.SequenceEqual(other._mrules);
 		}
 

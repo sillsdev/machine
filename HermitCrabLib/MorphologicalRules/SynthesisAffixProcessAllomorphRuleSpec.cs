@@ -121,8 +121,6 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 		public ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)
 		{
-			match.VariableBindings.CheckUninstantiatedFeatures();
-
 			output = match.Input.DeepClone();
 			output.Shape.Clear();
 			var existingMorphNodes = new Dictionary<string, List<ShapeNode>>();

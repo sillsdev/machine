@@ -34,7 +34,6 @@ namespace SIL.HermitCrab
 						{
 							AnchoredToStart = true,
 							Direction = Direction.RightToLeft,
-							UseDefaults = true,
 							Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor)
 						});
 			}
@@ -47,7 +46,6 @@ namespace SIL.HermitCrab
 					new MatcherSettings<ShapeNode>
 						{
 							AnchoredToStart = true,
-							UseDefaults = true,
 							Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor)
 						});
 			}

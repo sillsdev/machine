@@ -25,6 +25,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 					new MatcherSettings<ShapeNode>
 						{
 							Filter = ann => ann.Type() == HCFeatureSystem.Segment,
+							MatchingMethod = MatchingMethod.Unification,
 							AnchoredToStart = true,
 							AnchoredToEnd = true,
 							AllSubmatches = true

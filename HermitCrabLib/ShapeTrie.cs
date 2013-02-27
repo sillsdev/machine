@@ -16,7 +16,7 @@ namespace SIL.HermitCrab
  
 		public ShapeTrie(Func<Annotation<ShapeNode>, bool> filter)
 		{
-			_fsa = new Fst<Shape, ShapeNode>(Direction.LeftToRight, filter);
+			_fsa = new Fst<Shape, ShapeNode> {Filter = filter, UseUnification = true};
 			_fsa.StartState = _fsa.CreateState();
 			_filter = filter;
 		}

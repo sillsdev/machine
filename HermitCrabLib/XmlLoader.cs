@@ -254,13 +254,13 @@ namespace SIL.HermitCrab
 			foreach (XElement mprFeatGroupElem in langElem.Elements("MorphologicalPhonologicalRuleFeatures").Elements("MorphologicalPhonologicalRuleFeatureGroup").Where(IsActive))
 				LoadMprFeatGroup(mprFeatGroupElem);
 
-			LoadFeatureSystem(langElem.Elements("PhonologicalFeatureSystem").SingleOrDefault(IsActive), _language.PhoneticFeatureSystem, true);
+			LoadFeatureSystem(langElem.Elements("PhonologicalFeatureSystem").SingleOrDefault(IsActive), _language.PhoneticFeatureSystem);
 			_language.PhoneticFeatureSystem.Freeze();
 
 			_language.SyntacticFeatureSystem.Add(_headFeature);
-			LoadFeatureSystem(langElem.Element("HeadFeatures"), _language.SyntacticFeatureSystem, false);
+			LoadFeatureSystem(langElem.Element("HeadFeatures"), _language.SyntacticFeatureSystem);
 			_language.SyntacticFeatureSystem.Add(_footFeature);
-			LoadFeatureSystem(langElem.Element("FootFeatures"), _language.SyntacticFeatureSystem, false);
+			LoadFeatureSystem(langElem.Element("FootFeatures"), _language.SyntacticFeatureSystem);
 			_language.SyntacticFeatureSystem.Freeze();
 
 			foreach (XElement charDefTableElem in langElem.Elements("CharacterDefinitionTable").Where(IsActive))
@@ -615,16 +615,16 @@ namespace SIL.HermitCrab
 			return fs;
 		}
 
-		private void LoadFeatureSystem(XElement featSysElem, FeatureSystem featSys, bool addDefault)
+		private void LoadFeatureSystem(XElement featSysElem, FeatureSystem featSys)
 		{
 			if (featSysElem == null)
 				return;
 
 			foreach (XElement featDefElem in featSysElem.Elements("FeatureDefinition").Where(IsActive))
-				featSys.Add(LoadFeature(featDefElem, addDefault));
+				featSys.Add(LoadFeature(featDefElem));
 		}
 
-		private Feature LoadFeature(XElement featDefElem, bool addDefault)
+		private Feature LoadFeature(XElement featDefElem)
 		{
 			XElement featElem = featDefElem.Element("Feature");
 			Debug.Assert(featElem != null);
@@ -635,16 +635,8 @@ namespace SIL.HermitCrab
 			if (valueListElem != null)
 			{
 				IEnumerable<FeatureSymbol> symbols = valueListElem.Elements("Value").Select(e => new FeatureSymbol((string) e.Attribute("id"), (string) e));
-				string defValId = null;
-				if (addDefault)
-				{
-					var defVal = new FeatureSymbol(Guid.NewGuid().ToString(), "?");
-					defValId = defVal.ID;
-					symbols = symbols.Concat(defVal);
-				}
 				var feature = new SymbolicFeature(id, symbols) { Description = name };
-				if (defValId == null)
-					defValId = (string) featElem.Attribute("defaultValue");
+				var defValId = (string) featElem.Attribute("defaultValue");
 				if (!string.IsNullOrEmpty(defValId))
 					feature.DefaultSymbolID = defValId;
 				return feature;

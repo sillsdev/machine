@@ -36,7 +36,6 @@ namespace SIL.HermitCrab.MorphologicalRules
 				new MatcherSettings<ShapeNode>
 					{
 						Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary),
-						UseDefaults = true,
 						AnchoredToStart = true,
 						AnchoredToEnd = true
 					});
@@ -116,9 +115,6 @@ namespace SIL.HermitCrab.MorphologicalRules
 		private Word ApplySubrule(CompoundingSubrule sr, Match<Word, ShapeNode> headMatch, Match<Word, ShapeNode> nonHeadMatch)
 		{
 			// TODO: unify the variable bindings from the head and non-head matches
-			headMatch.VariableBindings.CheckUninstantiatedFeatures();
-			nonHeadMatch.VariableBindings.CheckUninstantiatedFeatures();
-
 			Word output = headMatch.Input.DeepClone();
 			output.Shape.Clear();
 

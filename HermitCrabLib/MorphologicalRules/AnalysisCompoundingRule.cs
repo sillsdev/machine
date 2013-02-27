@@ -20,21 +20,15 @@ namespace SIL.HermitCrab.MorphologicalRules
 			_rules = new List<IRule<Word, ShapeNode>>();
 			foreach (CompoundingSubrule sr in rule.Subrules)
 			{
-				if (sr.HeadLhs.Count == 1 && sr.NonHeadLhs.Count == 1)
-				{
-				    _rules.Add(new AnalysisSimpleCompoundingSubruleRule(spanFactory, sr));
-				}
-				else
-				{
-					_rules.Add(new MultiplePatternRule<Word, ShapeNode>(spanFactory, new AnalysisCompoundingSubruleRuleSpec(sr),
-						new MatcherSettings<ShapeNode>
-							{
-								Filter = ann => ann.Type() == HCFeatureSystem.Segment,
-								AnchoredToStart = true,
-								AnchoredToEnd = true,
-								AllSubmatches = true
-							}));
-				}
+				_rules.Add(new MultiplePatternRule<Word, ShapeNode>(spanFactory, new AnalysisCompoundingSubruleRuleSpec(sr),
+					new MatcherSettings<ShapeNode>
+						{
+							Filter = ann => ann.Type() == HCFeatureSystem.Segment,
+							MatchingMethod = MatchingMethod.Unification,
+							AnchoredToStart = true,
+							AnchoredToEnd = true,
+							AllSubmatches = true
+						}));
 			}
 		}
 

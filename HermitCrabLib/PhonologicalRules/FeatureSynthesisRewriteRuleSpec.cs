@@ -18,8 +18,6 @@ namespace SIL.HermitCrab.PhonologicalRules
 
 		public override ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)
 		{
-			match.VariableBindings.CheckUninstantiatedFeatures();
-
 			GroupCapture<ShapeNode> target = match.GroupCaptures["target"];
 			foreach (Tuple<ShapeNode, PatternNode<Word, ShapeNode>> tuple in match.Input.Shape.GetNodes(target.Span).Zip(_rhs.Children))
 			{

@@ -28,7 +28,6 @@ namespace SIL.HermitCrab.MorphologicalRules
 					new MatcherSettings<ShapeNode>
 						{
 							Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary),
-							UseDefaults = true,
 							AnchoredToStart = true,
 							AnchoredToEnd = true
 						}));
