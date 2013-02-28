@@ -57,7 +57,7 @@ namespace SIL.Machine.FiniteState
 		}
 
 		private void CheckAccepting(Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, TData output,
-			VariableBindings varBindings, Arc<TData, TOffset> arc, ICollection<FstResult<TData, TOffset>> curResults, int depth, int[] priorities)
+			VariableBindings varBindings, Arc<TData, TOffset> arc, ICollection<FstResult<TData, TOffset>> curResults, int[] priorities)
 		{
 			if (arc.Target.IsAccepting && (!_endAnchor || ann == _data.Annotations.GetEnd(_dir)))
 			{
@@ -68,7 +68,7 @@ namespace SIL.Machine.FiniteState
 					foreach (AcceptInfo<TData, TOffset> acceptInfo in arc.Target.AcceptInfos)
 					{
 						var candidate = new FstResult<TData, TOffset>(acceptInfo.ID, matchRegisters, output.DeepClone(), varBindings.DeepClone(),
-							acceptInfo.Priority, arc.Target.IsLazy, ann, depth, priorities);
+							acceptInfo.Priority, arc.Target.IsLazy, ann, priorities);
 						if (acceptInfo.Acceptable == null || acceptInfo.Acceptable(_data, candidate))
 							curResults.Add(candidate);
 					}
@@ -76,14 +76,13 @@ namespace SIL.Machine.FiniteState
 				else
 				{
 					curResults.Add(new FstResult<TData, TOffset>(null, matchRegisters, output.DeepClone(), varBindings.DeepClone(), -1, arc.Target.IsLazy, ann,
-						depth, priorities));
+						priorities));
 				}
 			}
 		}
 
 		protected IEnumerable<TInst> Initialize<TInst>(ref Annotation<TOffset> ann, NullableValue<TOffset>[,] registers,
-			IList<TagMapCommand> cmds, ISet<Annotation<TOffset>> initAnns, int depth,
-			Func<State<TData, TOffset>, Annotation<TOffset>, NullableValue<TOffset>[,], VariableBindings, int, TInst> instFactory)
+			IList<TagMapCommand> cmds, ISet<Annotation<TOffset>> initAnns, Func<State<TData, TOffset>, Annotation<TOffset>, NullableValue<TOffset>[,], VariableBindings, TInst> instFactory)
 		{
 			var insts = new List<TInst>();
 			TOffset offset = ann.Span.GetStart(_dir);
@@ -91,16 +90,14 @@ namespace SIL.Machine.FiniteState
 			var newRegisters = (NullableValue<TOffset>[,]) registers.Clone();
 			ExecuteCommands(newRegisters, cmds, new NullableValue<TOffset>(ann.Span.GetStart(_dir)), new NullableValue<TOffset>());
 
-			int curDepth = depth;
 			for (Annotation<TOffset> a = ann; a != _data.Annotations.GetEnd(_dir) && a.Span.GetStart(_dir).Equals(offset); a = a.GetNextDepthFirst(_dir, _filter))
 			{
 				if (a.Optional)
 				{
 					Annotation<TOffset> nextAnn = a.GetNextDepthFirst(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
 					if (nextAnn != null)
-						insts.AddRange(Initialize(ref nextAnn, registers, cmds, initAnns, depth, instFactory));
+						insts.AddRange(Initialize(ref nextAnn, registers, cmds, initAnns, instFactory));
 				}
-				depth++;
 			}
 
 			bool cloneRegisters = false;
@@ -108,19 +105,18 @@ namespace SIL.Machine.FiniteState
 			{
 				if (!initAnns.Contains(ann))
 				{
-					insts.Add(instFactory(_startState, ann, cloneRegisters ? (NullableValue<TOffset>[,]) newRegisters.Clone() : newRegisters, new VariableBindings(), curDepth));
+					insts.Add(instFactory(_startState, ann, cloneRegisters ? (NullableValue<TOffset>[,]) newRegisters.Clone() : newRegisters, new VariableBindings()));
 					initAnns.Add(ann);
 					cloneRegisters = true;
 				}
-				curDepth++;
 			}
 
 			return insts;
 		}
 
 		protected IEnumerable<TInst> Advance<TInst>(Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, TData output, VariableBindings varBindings,
-			Arc<TData, TOffset> arc, ICollection<FstResult<TData, TOffset>> curResults, int depth, int[] priorities,
-			Func<State<TData, TOffset>, Annotation<TOffset>, NullableValue<TOffset>[,], VariableBindings, int, bool, TInst> instFactory)
+			Arc<TData, TOffset> arc, ICollection<FstResult<TData, TOffset>> curResults, int[] priorities,
+			Func<State<TData, TOffset>, Annotation<TOffset>, NullableValue<TOffset>[,], VariableBindings, bool, TInst> instFactory)
 		{
 			Annotation<TOffset> nextAnn = ann.GetNextDepthFirst(_dir, (cur, next) => !cur.Span.Overlaps(next.Span) && _filter(next));
 			TOffset nextOffset = nextAnn == _data.Annotations.GetEnd(_dir) ? _data.Annotations.GetLast(_dir, _filter).Span.GetEnd(_dir) : nextAnn.Span.GetStart(_dir);
@@ -128,52 +124,48 @@ namespace SIL.Machine.FiniteState
 			var newRegisters = (NullableValue<TOffset>[,]) registers.Clone();
 			ExecuteCommands(newRegisters, arc.Commands, new NullableValue<TOffset>(nextOffset), new NullableValue<TOffset>(end));
 
-			CheckAccepting(nextAnn, newRegisters, output, varBindings, arc, curResults, depth, priorities);
+			CheckAccepting(nextAnn, newRegisters, output, varBindings, arc, curResults, priorities);
 
 			if (nextAnn != _data.Annotations.GetEnd(_dir))
 			{
-				int curDepth = depth + 1;
 				var anns = new List<Annotation<TOffset>>();
 				bool cloneOutputs = false;
 				for (Annotation<TOffset> curAnn = nextAnn; curAnn != _data.Annotations.GetEnd(_dir) && curAnn.Span.GetStart(_dir).Equals(nextOffset); curAnn = curAnn.GetNextDepthFirst(_dir, _filter))
 				{
 					if (curAnn.Optional)
 					{
-						foreach (TInst ni in Advance(curAnn, registers, output, varBindings, arc, curResults, curDepth, priorities, instFactory))
+						foreach (TInst ni in Advance(curAnn, registers, output, varBindings, arc, curResults, priorities, instFactory))
 						{
 							yield return ni;
 							cloneOutputs = true;
 						}
 					}
-					curDepth++;
 					anns.Add(curAnn);
 				}
 
-				curDepth = depth + 1;
 				bool cloneRegisters = false;
 				foreach (Annotation<TOffset> curAnn in anns)
 				{
 					yield return instFactory(arc.Target, curAnn, cloneRegisters ? (NullableValue<TOffset>[,]) newRegisters.Clone() : newRegisters,
-						cloneOutputs ? varBindings.DeepClone() : varBindings, curDepth, cloneOutputs);
-					curDepth++;
+						cloneOutputs ? varBindings.DeepClone() : varBindings, cloneOutputs);
 					cloneOutputs = true;
 					cloneRegisters = true;
 				}
 			}
 			else
 			{
-				yield return instFactory(arc.Target, nextAnn, newRegisters, varBindings, depth + 1, false);
+				yield return instFactory(arc.Target, nextAnn, newRegisters, varBindings, false);
 			}
 		}
 
 		protected TInst EpsilonAdvance<TInst>(Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, TData output, VariableBindings varBindings, Arc<TData, TOffset> arc,
-			ICollection<FstResult<TData, TOffset>> curResults, int depth, int[] priorities,
-			Func<State<TData, TOffset>, Annotation<TOffset>, NullableValue<TOffset>[,], VariableBindings, int, TInst> instFactory)
+			ICollection<FstResult<TData, TOffset>> curResults, int[] priorities,
+			Func<State<TData, TOffset>, Annotation<TOffset>, NullableValue<TOffset>[,], VariableBindings, TInst> instFactory)
 		{
 			Annotation<TOffset> prevAnn = ann.GetPrevDepthFirst(_dir, (cur, prev) => !cur.Span.Overlaps(prev.Span) && _filter(prev));
 			ExecuteCommands(registers, arc.Commands, new NullableValue<TOffset>(ann.Span.GetStart(_dir)), new NullableValue<TOffset>(prevAnn.Span.GetEnd(_dir)));
-			CheckAccepting(ann, registers, output, varBindings, arc, curResults, depth, priorities);
-			return instFactory(arc.Target, ann, registers, varBindings, depth);
+			CheckAccepting(ann, registers, output, varBindings, arc, curResults, priorities);
+			return instFactory(arc.Target, ann, registers, varBindings);
 		}
 
 		protected static int[] UpdatePriorities(int[] priorities, int priority)
@@ -190,15 +182,13 @@ namespace SIL.Machine.FiniteState
 			private readonly VariableBindings _varBindings;
 			private readonly State<TData, TOffset> _state;
 			private readonly Annotation<TOffset> _annotation;
-			private readonly int _depth;
 
-			public Instance(State<TData, TOffset> state, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, VariableBindings varBindings, int depth)
+			public Instance(State<TData, TOffset> state, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, VariableBindings varBindings)
 			{
 				_state = state;
 				_annotation = ann;
 				_registers = registers;
 				_varBindings = varBindings;
-				_depth = depth;
 			}
 
 			public State<TData, TOffset> State
@@ -219,11 +209,6 @@ namespace SIL.Machine.FiniteState
 			public VariableBindings VariableBindings
 			{
 				get { return _varBindings; }
-			}
-
-			public int Depth
-			{
-				get { return _depth; }
 			}
 		}
 	}

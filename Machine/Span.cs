@@ -78,8 +78,8 @@ namespace SIL.Machine
 
 		public bool Overlaps(Span<TOffset> other)
 		{
-			return (_spanFactory.IncludeEndpoint ? _spanFactory.GetComparer(Direction.LeftToRight).Compare(_start, other._end) <= 0 : _spanFactory.GetComparer(Direction.LeftToRight).Compare(_start, other._end) < 0)
-				&& (_spanFactory.IncludeEndpoint ? _spanFactory.GetComparer(Direction.LeftToRight).Compare(_end, other._start) >= 0 : _spanFactory.GetComparer(Direction.LeftToRight).Compare(_end, other._start) > 0);
+			return (_spanFactory.IncludeEndpoint ? _spanFactory.Comparer.Compare(_start, other._end) <= 0 : _spanFactory.Comparer.Compare(_start, other._end) < 0)
+				&& (_spanFactory.IncludeEndpoint ? _spanFactory.Comparer.Compare(_end, other._start) >= 0 : _spanFactory.Comparer.Compare(_end, other._start) > 0);
 		}
 
 		public bool Overlaps(TOffset start, TOffset end)
@@ -94,7 +94,7 @@ namespace SIL.Machine
 
 		public bool Contains(Span<TOffset> other)
 		{
-			return _spanFactory.GetComparer(Direction.LeftToRight).Compare(_start, other._start) <= 0 && _spanFactory.GetComparer(Direction.LeftToRight).Compare(_end, other._end) >= 0;
+			return _spanFactory.Comparer.Compare(_start, other._start) <= 0 && _spanFactory.Comparer.Compare(_end, other._end) >= 0;
 		}
 
 		public bool Contains(TOffset offset)
@@ -119,9 +119,9 @@ namespace SIL.Machine
 
 		public int CompareTo(Span<TOffset> other)
 		{
-			int res = _spanFactory.GetComparer(Direction.LeftToRight).Compare(_start, other._start);
+			int res = _spanFactory.Comparer.Compare(_start, other._start);
 			if (res == 0)
-				res = -_spanFactory.GetComparer(Direction.LeftToRight).Compare(_end, other._end);
+				res = -_spanFactory.Comparer.Compare(_end, other._end);
 			return res;
 		}
 

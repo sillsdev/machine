@@ -55,7 +55,7 @@ namespace SIL.Machine.FiniteState
 									varBindings = inst.VariableBindings.DeepClone();
 							}
 							ExecuteOutputs(arc.Outputs, output, mappings, queue);
-							instStack.Push(EpsilonAdvanceFst(inst.Annotation, registers, output, mappings, queue, varBindings, arc, curResults, inst.Depth));
+							instStack.Push(EpsilonAdvanceFst(inst.Annotation, registers, output, mappings, queue, varBindings, arc, curResults));
 							varBindings = null;
 						}
 						else
@@ -82,7 +82,7 @@ namespace SIL.Machine.FiniteState
 
 								ExecuteOutputs(arc.Outputs, output, mappings, queue);
 
-								foreach (FstInstance ni in AdvanceFst(inst.Annotation, inst.Registers, output, mappings, queue, varBindings, arc, curResults, inst.Depth))
+								foreach (FstInstance ni in AdvanceFst(inst.Annotation, inst.Registers, output, mappings, queue, varBindings, arc, curResults))
 									instStack.Push(ni);
 								break;
 							}
@@ -118,14 +118,14 @@ namespace SIL.Machine.FiniteState
 			IList<TagMapCommand> cmds, ISet<Annotation<TOffset>> initAnns)
 		{
 			var instStack = new Stack<FstInstance>();
-			foreach (FstInstance inst in Initialize(ref ann, registers, cmds, initAnns, 0,
-				(state, startAnn, regs, vb, cd) =>
+			foreach (FstInstance inst in Initialize(ref ann, registers, cmds, initAnns,
+				(state, startAnn, regs, vb) =>
 					{
 						TData o = Data.DeepClone();
 						Dictionary<Annotation<TOffset>, Annotation<TOffset>> m = Data.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
 										   .Zip(o.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
 						var q = new Queue<Annotation<TOffset>>();
-						return new FstInstance(state, startAnn, regs, o, m, q, vb, cd);
+						return new FstInstance(state, startAnn, regs, o, m, q, vb);
 					}))
 				instStack.Push(inst);
 			return instStack;
@@ -138,10 +138,10 @@ namespace SIL.Machine.FiniteState
 
 		private IEnumerable<FstInstance> AdvanceFst(Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, TData output,
 			IDictionary<Annotation<TOffset>, Annotation<TOffset>> mappings, Queue<Annotation<TOffset>> queue, VariableBindings varBindings, Arc<TData, TOffset> arc,
-			List<FstResult<TData, TOffset>> curResults, int depth)
+			List<FstResult<TData, TOffset>> curResults)
 		{
-			return Advance(ann, registers, output, varBindings, arc, curResults, depth, null,
-				(state, nextAnn, regs, vb, cd, clone) =>
+			return Advance(ann, registers, output, varBindings, arc, curResults, null,
+				(state, nextAnn, regs, vb, clone) =>
 					{
 						TData o = output;
 						IDictionary<Annotation<TOffset>, Annotation<TOffset>> m = mappings;
@@ -155,16 +155,16 @@ namespace SIL.Machine.FiniteState
 							m = mappings.ToDictionary(kvp => kvp.Key, kvp => outputMappings[kvp.Value]);
 							q = new Queue<Annotation<TOffset>>(queue);
 						}
-						return new FstInstance(state, nextAnn, regs, o, m, q, vb, cd);
+						return new FstInstance(state, nextAnn, regs, o, m, q, vb);
 					});
 		}
 
 		private FstInstance EpsilonAdvanceFst(Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, TData output, IDictionary<Annotation<TOffset>,
 			Annotation<TOffset>> mappings, Queue<Annotation<TOffset>> queue, VariableBindings varBindings, Arc<TData, TOffset> arc,
-			List<FstResult<TData, TOffset>> curResults, int depth)
+			List<FstResult<TData, TOffset>> curResults)
 		{
-			return EpsilonAdvance(ann, registers, output, varBindings, arc, curResults, depth, null,
-				(state, a, regs, vb, cd) => new FstInstance(state, a, regs, output, mappings, queue, vb, cd));
+			return EpsilonAdvance(ann, registers, output, varBindings, arc, curResults, null,
+				(state, a, regs, vb) => new FstInstance(state, a, regs, output, mappings, queue, vb));
 		}
 
 		private class FstInstance : Instance
@@ -174,8 +174,8 @@ namespace SIL.Machine.FiniteState
 			private readonly Queue<Annotation<TOffset>> _queue;
 
 			public FstInstance(State<TData, TOffset> state, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, TData output,
-				IDictionary<Annotation<TOffset>, Annotation<TOffset>> mappings, Queue<Annotation<TOffset>> queue, VariableBindings varBindings, int depth)
-				: base(state, ann, registers, varBindings, depth)
+				IDictionary<Annotation<TOffset>, Annotation<TOffset>> mappings, Queue<Annotation<TOffset>> queue, VariableBindings varBindings)
+				: base(state, ann, registers, varBindings)
 			{
 				_output = output;
 				_mappings = mappings;

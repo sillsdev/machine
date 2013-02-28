@@ -5,16 +5,11 @@ namespace SIL.Machine.FiniteState
 {
 	internal class RegistersEqualityComparer<TOffset> : IEqualityComparer<NullableValue<TOffset>[,]>
 	{
-		private readonly IEqualityComparer<TOffset> _offsetComparer;
+		private readonly IEqualityComparer<TOffset> _offsetEqualityComparer;
 
-		public RegistersEqualityComparer(IEqualityComparer<TOffset> offsetComparer)
+		public RegistersEqualityComparer(IEqualityComparer<TOffset> offsetEqualityComparer)
 		{
-			_offsetComparer = offsetComparer;
-		}
-
-		public IEqualityComparer<TOffset> OffsetComparer
-		{
-			get { return _offsetComparer; }
+			_offsetEqualityComparer = offsetEqualityComparer;
 		}
 
 		public bool Equals(NullableValue<TOffset>[,] x, NullableValue<TOffset>[,] y)
@@ -26,7 +21,7 @@ namespace SIL.Machine.FiniteState
 					if (x[i, j].HasValue != y[i, j].HasValue)
 						return false;
 
-					if (x[i, j].HasValue && !_offsetComparer.Equals(x[i, j].Value, x[i, j].Value))
+					if (x[i, j].HasValue && !_offsetEqualityComparer.Equals(x[i, j].Value, x[i, j].Value))
 						return false;
 				}
 			}
@@ -39,7 +34,7 @@ namespace SIL.Machine.FiniteState
 			for (int i = 0; i < obj.GetLength(0); i++)
 			{
 				for (int j = 0; j < 2; j++)
-					code = code * 31 + (obj[i, j].HasValue && obj[i, j].Value != null ? _offsetComparer.GetHashCode(obj[i, j].Value) : 0);
+					code = code * 31 + (obj[i, j].HasValue && obj[i, j].Value != null ? _offsetEqualityComparer.GetHashCode(obj[i, j].Value) : 0);
 			}
 			return code;
 		}

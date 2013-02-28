@@ -27,7 +27,7 @@ namespace SIL.Machine.FiniteState
 					{
 						if (CheckInputMatch(arc, inst.Annotation, inst.VariableBindings))
 						{
-							foreach (Instance ni in AdvanceFsa(inst.Annotation, inst.Registers, inst.VariableBindings, arc, curResults, inst.Depth))
+							foreach (Instance ni in AdvanceFsa(inst.Annotation, inst.Registers, inst.VariableBindings, arc, curResults))
 								instStack.Push(ni);
 							break;
 						}
@@ -42,16 +42,16 @@ namespace SIL.Machine.FiniteState
 			IList<TagMapCommand> cmds, ISet<Annotation<TOffset>> initAnns)
 		{
 			var instStack = new Stack<Instance>();
-			foreach (Instance inst in Initialize(ref ann, registers, cmds, initAnns, 0, (state, startAnn, regs, vb, cd) => new Instance(state, startAnn, regs, vb, cd)))
+			foreach (Instance inst in Initialize(ref ann, registers, cmds, initAnns, (state, startAnn, regs, vb) => new Instance(state, startAnn, regs, vb)))
 				instStack.Push(inst);
 			return instStack;
 		}
 
 		private IEnumerable<Instance> AdvanceFsa(Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, VariableBindings varBindings, Arc<TData, TOffset> arc,
-			List<FstResult<TData, TOffset>> curResults, int depth)
+			List<FstResult<TData, TOffset>> curResults)
 		{
-			return Advance(ann, registers, Data, varBindings, arc, curResults, depth, null,
-				(state, nextAnn, regs, vb, cd, clone) => new Instance(state, nextAnn, regs, vb, cd));
+			return Advance(ann, registers, Data, varBindings, arc, curResults, null,
+				(state, nextAnn, regs, vb, clone) => new Instance(state, nextAnn, regs, vb));
 		}
 	}
 }

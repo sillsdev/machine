@@ -69,8 +69,7 @@ namespace SIL.Machine.FiniteState
 										arc.Outputs[0].UpdateOutput(output, outputAnn, _operations);
 									}
 
-									to.Enqueue(EpsilonAdvanceFst(inst.Annotation, registers, output, mappings, varBindings, visited, arc, taskResults,
-										inst.Depth, inst.Priorities));
+									to.Enqueue(EpsilonAdvanceFst(inst.Annotation, registers, output, mappings, varBindings, visited, arc, taskResults, inst.Priorities));
 									varBindings = null;
 								}
 							}
@@ -98,7 +97,7 @@ namespace SIL.Machine.FiniteState
 									}
 
 									foreach (FstInstance newInst in AdvanceFst(inst.Annotation, inst.Registers, output, mappings, varBindings, arc,
-										taskResults, inst.Depth, inst.Priorities))
+										taskResults, inst.Priorities))
 									{
 										to.Enqueue(newInst);
 									}
@@ -121,13 +120,13 @@ namespace SIL.Machine.FiniteState
 			IList<TagMapCommand> cmds, ISet<Annotation<TOffset>> initAnns)
 		{
 			var from = new ConcurrentQueue<FstInstance>();
-			foreach (FstInstance inst in Initialize(ref ann, registers, cmds, initAnns, 0,
-				(state, startAnn, regs, vb, cd) =>
+			foreach (FstInstance inst in Initialize(ref ann, registers, cmds, initAnns,
+				(state, startAnn, regs, vb) =>
 					{
 						TData o = Data.DeepClone();
 						Dictionary<Annotation<TOffset>, Annotation<TOffset>> m = Data.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
 										   .Zip(o.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
-						return new FstInstance(state, startAnn, regs, o, m, vb, new HashSet<State<TData, TOffset>>(), cd, new int[0]);
+						return new FstInstance(state, startAnn, regs, o, m, vb, new HashSet<State<TData, TOffset>>(), new int[0]);
 					}))
 			{
 				from.Enqueue(inst);
@@ -137,11 +136,11 @@ namespace SIL.Machine.FiniteState
 
 		private IEnumerable<FstInstance> AdvanceFst(Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, TData output,
 			IDictionary<Annotation<TOffset>, Annotation<TOffset>> mappings, VariableBindings varBindings, Arc<TData, TOffset> arc,
-			List<FstResult<TData, TOffset>> curResults, int depth, int[] priorities)
+			List<FstResult<TData, TOffset>> curResults, int[] priorities)
 		{
 			priorities = UpdatePriorities(priorities, arc.Priority);
-			return Advance(ann, registers, output, varBindings, arc, curResults, depth, priorities,
-				(state, nextAnn, regs, vb, cd, clone) =>
+			return Advance(ann, registers, output, varBindings, arc, curResults, priorities,
+				(state, nextAnn, regs, vb, clone) =>
 					{
 						TData o = output;
 						IDictionary<Annotation<TOffset>, Annotation<TOffset>> m = mappings;
@@ -153,18 +152,18 @@ namespace SIL.Machine.FiniteState
 								.Zip(o.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
 							m = mappings.ToDictionary(kvp => kvp.Key, kvp => outputMappings[kvp.Value]);
 						}
-						return new FstInstance(state, nextAnn, regs, o, m, vb, new HashSet<State<TData, TOffset>>(), cd, priorities);
+						return new FstInstance(state, nextAnn, regs, o, m, vb, new HashSet<State<TData, TOffset>>(), priorities);
 					});
 		}
 
 		private FstInstance EpsilonAdvanceFst(Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, TData output, IDictionary<Annotation<TOffset>,
 			Annotation<TOffset>> mappings, VariableBindings varBindings, ISet<State<TData, TOffset>> visited, Arc<TData, TOffset> arc,
-			List<FstResult<TData, TOffset>> curResults, int depth, int[] priorities)
+			List<FstResult<TData, TOffset>> curResults, int[] priorities)
 		{
 			priorities = UpdatePriorities(priorities, arc.Priority);
 			visited.Add(arc.Target);
-			return EpsilonAdvance(ann, registers, output, varBindings, arc, curResults, depth, priorities,
-				(state, a, regs, vb, cd) => new FstInstance(state, a, regs, output, mappings, varBindings, visited, cd, priorities));
+			return EpsilonAdvance(ann, registers, output, varBindings, arc, curResults, priorities,
+				(state, a, regs, vb) => new FstInstance(state, a, regs, output, mappings, varBindings, visited, priorities));
 		}
 
 		private bool IsInstanceReuseable(FstInstance inst)
@@ -181,8 +180,8 @@ namespace SIL.Machine.FiniteState
 
 			public FstInstance(State<TData, TOffset> state, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, TData output,
 				IDictionary<Annotation<TOffset>, Annotation<TOffset>> mappings, VariableBindings varBindings,
-				ISet<State<TData, TOffset>> visited, int depth, int[] priorities)
-				: base(state, ann, registers, varBindings, depth)
+				ISet<State<TData, TOffset>> visited, int[] priorities)
+				: base(state, ann, registers, varBindings)
 			{
 				_output = output;
 				_mappings = mappings;

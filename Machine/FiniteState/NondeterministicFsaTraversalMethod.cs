@@ -56,8 +56,7 @@ namespace SIL.Machine.FiniteState
 											varBindings = inst.VariableBindings.DeepClone();
 										visited = new HashSet<State<TData, TOffset>>(inst.Visited);
 									}
-									to.Enqueue(EpsilonAdvanceFsa(inst.Annotation, registers, varBindings, visited, arc, taskResults,
-										inst.Depth, inst.Priorities));
+									to.Enqueue(EpsilonAdvanceFsa(inst.Annotation, registers, varBindings, visited, arc, taskResults, inst.Priorities));
 									varBindings = null;
 								}
 							}
@@ -68,7 +67,7 @@ namespace SIL.Machine.FiniteState
 								if (CheckInputMatch(arc, inst.Annotation, varBindings))
 								{
 									foreach (FsaInstance newInst in AdvanceFsa(inst.Annotation, inst.Registers, varBindings, arc,
-										taskResults, inst.Depth, inst.Priorities))
+										taskResults, inst.Priorities))
 									{
 										to.Enqueue(newInst);
 									}
@@ -113,8 +112,8 @@ namespace SIL.Machine.FiniteState
 			IList<TagMapCommand> cmds, ISet<Annotation<TOffset>> initAnns)
 		{
 			var from = new ConcurrentQueue<FsaInstance>();
-			foreach (FsaInstance inst in Initialize(ref ann, registers, cmds, initAnns, 0,
-				(state, startAnn, regs, vb, cd) => new FsaInstance(state, startAnn, regs, vb, new HashSet<State<TData, TOffset>>(), cd, new int[0])))
+			foreach (FsaInstance inst in Initialize(ref ann, registers, cmds, initAnns,
+				(state, startAnn, regs, vb) => new FsaInstance(state, startAnn, regs, vb, new HashSet<State<TData, TOffset>>(), new int[0])))
 			{
 				from.Enqueue(inst);
 			}
@@ -122,20 +121,20 @@ namespace SIL.Machine.FiniteState
 		}
 
 		private IEnumerable<FsaInstance> AdvanceFsa(Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, VariableBindings varBindings, Arc<TData, TOffset> arc,
-			List<FstResult<TData, TOffset>> curResults, int depth, int[] priorities)
+			List<FstResult<TData, TOffset>> curResults, int[] priorities)
 		{
 			priorities = UpdatePriorities(priorities, arc.Priority);
-			return Advance(ann, registers, Data, varBindings, arc, curResults, depth, priorities,
-				(state, nextAnn, regs, vb, cd, clone) => new FsaInstance(state, nextAnn, regs, vb, new HashSet<State<TData, TOffset>>(), cd, priorities));
+			return Advance(ann, registers, Data, varBindings, arc, curResults, priorities,
+				(state, nextAnn, regs, vb, clone) => new FsaInstance(state, nextAnn, regs, vb, new HashSet<State<TData, TOffset>>(), priorities));
 		}
 
 		private FsaInstance EpsilonAdvanceFsa(Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, VariableBindings varBindings, ISet<State<TData, TOffset>> visited,
-			Arc<TData, TOffset> arc, List<FstResult<TData, TOffset>> curResults, int depth, int[] priorities)
+			Arc<TData, TOffset> arc, List<FstResult<TData, TOffset>> curResults, int[] priorities)
 		{
 			priorities = UpdatePriorities(priorities, arc.Priority);
 			visited.Add(arc.Target);
-			return EpsilonAdvance(ann, registers, Data, varBindings, arc, curResults, depth, priorities,
-				(state, a, regs, vb, cd) => new FsaInstance(state, a, regs, vb, visited, cd, priorities));
+			return EpsilonAdvance(ann, registers, Data, varBindings, arc, curResults, priorities,
+				(state, a, regs, vb) => new FsaInstance(state, a, regs, vb, visited, priorities));
 		}
 
 		private bool IsInstanceReuseable(FsaInstance inst)
@@ -149,8 +148,8 @@ namespace SIL.Machine.FiniteState
 			private readonly int[] _priorities; 
 
 			public FsaInstance(State<TData, TOffset> state, Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, VariableBindings varBindings,
-				ISet<State<TData, TOffset>> visited, int depth, int[] priorities)
-				: base(state, ann, registers, varBindings, depth)
+				ISet<State<TData, TOffset>> visited, int[] priorities)
+				: base(state, ann, registers, varBindings)
 			{
 				_visited = visited;
 				_priorities = priorities;

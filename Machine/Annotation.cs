@@ -125,6 +125,21 @@ namespace SIL.Machine
 
 		public int CompareTo(Annotation<TOffset> other)
 		{
+			if (this == other)
+				return 0;
+
+			if (List != null)
+			{
+				if (List.Begin == this)
+					return -1;
+				if (List.Begin == other)
+					return 1;
+				if (List.End == this)
+					return 1;
+				if (List.End == other)
+					return -1;
+			}
+
 			int res = Span.CompareTo(other.Span);
 			if (res != 0)
 				return res;

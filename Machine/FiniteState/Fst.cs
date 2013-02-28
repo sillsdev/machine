@@ -17,9 +17,10 @@ namespace SIL.Machine.FiniteState
 		private Func<Annotation<TOffset>, bool> _filter;
 		private readonly List<State<TData, TOffset>> _states;
 		private readonly SimpleReadOnlyCollection<State<TData, TOffset>> _readonlyStates;
-		private readonly IEqualityComparer<FstResult<TData, TOffset>> _fsaMatchComparer;
+		private readonly IEqualityComparer<FstResult<TData, TOffset>> _fsaMatchEqualityComparer;
 		private readonly IFstOperations<TData, TOffset> _operations;
-		private readonly RegistersEqualityComparer<TOffset> _registersComparer;
+		private readonly RegistersEqualityComparer<TOffset> _registersEqualityComparer;
+		private readonly IEqualityComparer<TOffset> _offsetEqualityComparer; 
 		private bool _unification;
 		private State<TData, TOffset> _startState;
 
@@ -28,8 +29,8 @@ namespace SIL.Machine.FiniteState
 		{
 		}
 
-		public Fst(IEqualityComparer<TOffset> offsetComparer)
-			: this(null, offsetComparer)
+		public Fst(IEqualityComparer<TOffset> equalityComparer)
+			: this(null, equalityComparer)
 		{
 		}
 
@@ -38,7 +39,7 @@ namespace SIL.Machine.FiniteState
 		{
 		}
 
-		public Fst(IFstOperations<TData, TOffset> operations, IEqualityComparer<TOffset> offsetComparer)
+		public Fst(IFstOperations<TData, TOffset> operations, IEqualityComparer<TOffset> offsetEqualityComparer)
 		{
 			_states = new List<State<TData, TOffset>>();
 			_readonlyStates = _states.AsSimpleReadOnlyCollection();
@@ -46,8 +47,9 @@ namespace SIL.Machine.FiniteState
 			_initializers = new List<TagMapCommand>();
 			_groups = new Dictionary<string, int>();
 			_filter = ann => true;
-			_fsaMatchComparer = AnonymousEqualityComparer.Create<FstResult<TData, TOffset>>(FstResultEquals, FstResultGetHashCode);
-			_registersComparer = new RegistersEqualityComparer<TOffset>(offsetComparer);
+			_fsaMatchEqualityComparer = AnonymousEqualityComparer.Create<FstResult<TData, TOffset>>(FstResultEquals, FstResultGetHashCode);
+			_registersEqualityComparer = new RegistersEqualityComparer<TOffset>(offsetEqualityComparer);
+			_offsetEqualityComparer = offsetEqualityComparer;
 		}
 
 		private bool FstResultEquals(FstResult<TData, TOffset> x, FstResult<TData, TOffset> y)
@@ -55,7 +57,7 @@ namespace SIL.Machine.FiniteState
 			if (x.ID != y.ID)
 				return false;
 
-			if (!_registersComparer.Equals(x.Registers, y.Registers))
+			if (!_registersEqualityComparer.Equals(x.Registers, y.Registers))
 				return false;
 
 			return EqualityComparer<TData>.Default.Equals(x.Output, y.Output);
@@ -65,7 +67,7 @@ namespace SIL.Machine.FiniteState
 		{
 			int code = 23;
 			code = code * 31 + (m.ID == null ? 0 : m.ID.GetHashCode());
-			code = code * 31 + _registersComparer.GetHashCode(m.Registers);
+			code = code * 31 + _registersEqualityComparer.GetHashCode(m.Registers);
 			code = code * 31 * EqualityComparer<TData>.Default.GetHashCode(m.Output);
 			return code;
 		}
@@ -266,7 +268,7 @@ namespace SIL.Machine.FiniteState
 				if (IsDeterministic)
  					traversalMethod = new DeterministicFsaTraversalMethod<TData, TOffset>(_dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
 				else
-					traversalMethod = new NondeterministicFsaTraversalMethod<TData, TOffset>(_registersComparer, _dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
+					traversalMethod = new NondeterministicFsaTraversalMethod<TData, TOffset>(_registersEqualityComparer, _dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
 			}
 			List<FstResult<TData, TOffset>> resultList = null;
 
@@ -307,7 +309,7 @@ namespace SIL.Machine.FiniteState
 				return false;
 			}
 
-			results = allMatches ? resultList.Distinct(_fsaMatchComparer) : resultList;
+			results = allMatches ? resultList.Distinct(_fsaMatchEqualityComparer) : resultList;
 			return true;
 		}
 
@@ -317,11 +319,11 @@ namespace SIL.Machine.FiniteState
 			if (compare != 0)
 				return compare;
 
-			compare = -x.Depth.CompareTo(y.Depth);
+			compare = -x.NextAnnotation.CompareTo(y.NextAnnotation);
+			if (_dir == Direction.RightToLeft)
+				compare = -compare;
 			if (IsDeterministic)
-			{
 				compare = x.IsLazy ? -compare : compare;
-			}
 			else if (compare == 0)
 			{
 				foreach (Tuple<int, int> priorityPair in x.Priorities.Zip(y.Priorities))
@@ -608,7 +610,7 @@ namespace SIL.Machine.FiniteState
 		{
 			MarkArcPriorities();
 
-			var newFst = new Fst<TData, TOffset>(_operations, _registersComparer.OffsetComparer) {IsDeterministic = deterministic, _nextTag = _nextTag, Direction = _dir, Filter = _filter, UseUnification = _unification};
+			var newFst = new Fst<TData, TOffset>(_operations, _offsetEqualityComparer) {IsDeterministic = deterministic, _nextTag = _nextTag, Direction = _dir, Filter = _filter, UseUnification = _unification};
 			foreach (KeyValuePair<string, int> kvp in _groups)
 				newFst._groups[kvp.Key] = kvp.Value;
 
@@ -1038,7 +1040,7 @@ namespace SIL.Machine.FiniteState
 
 		private Fst<TData, TOffset> ExtractTransducer(State<TData, TOffset> startState, Arc<TData, TOffset> arc)
 		{
-			var fst = new Fst<TData, TOffset>(_operations, _registersComparer.OffsetComparer) {Direction = _dir, Filter = _filter, UseUnification = _unification};
+			var fst = new Fst<TData, TOffset>(_operations, _offsetEqualityComparer) {Direction = _dir, Filter = _filter, UseUnification = _unification};
 			fst.StartState = startState.IsAccepting ? fst.CreateAcceptingState(startState.AcceptInfos) : fst.CreateState();
 			var copies = new Dictionary<State<TData, TOffset>, State<TData, TOffset>>();
 			copies[startState] = fst.StartState;
@@ -1127,7 +1129,7 @@ namespace SIL.Machine.FiniteState
 
 		public Fst<TData, TOffset> GetOutputAcceptor()
 		{
-			var fst = new Fst<TData, TOffset>(_registersComparer.OffsetComparer) {_nextTag = _nextTag, _registerCount = _registerCount, Direction = _dir, Filter = _filter, UseUnification = _unification};
+			var fst = new Fst<TData, TOffset>(_offsetEqualityComparer) {_nextTag = _nextTag, _registerCount = _registerCount, Direction = _dir, Filter = _filter, UseUnification = _unification};
 			foreach (KeyValuePair<string, int> kvp in _groups)
 				fst._groups[kvp.Key] = kvp.Value;
 			fst.StartState = Copy(fst, StartState, OutputAcceptorAddArc, new Dictionary<State<TData, TOffset>, State<TData, TOffset>>());
@@ -1155,7 +1157,7 @@ namespace SIL.Machine.FiniteState
 
 		public Fst<TData, TOffset> GetInputAcceptor()
 		{
-			var fst = new Fst<TData, TOffset>(_registersComparer.OffsetComparer) {_nextTag = _nextTag, _registerCount = _registerCount, Direction = _dir, Filter = _filter, UseUnification = _unification};
+			var fst = new Fst<TData, TOffset>(_offsetEqualityComparer) {_nextTag = _nextTag, _registerCount = _registerCount, Direction = _dir, Filter = _filter, UseUnification = _unification};
 			foreach (KeyValuePair<string, int> kvp in _groups)
 				fst._groups[kvp.Key] = kvp.Value;
 			fst.StartState = Copy(fst, StartState, InputAcceptorAddArc, new Dictionary<State<TData, TOffset>, State<TData, TOffset>>());
@@ -1403,7 +1405,7 @@ namespace SIL.Machine.FiniteState
 
 		public Fst<TData, TOffset> Intersect(Fst<TData, TOffset> other)
 		{
-			var newFst = new Fst<TData, TOffset>(_registersComparer.OffsetComparer) {Direction = _dir, Filter = _filter, UseUnification = _unification};
+			var newFst = new Fst<TData, TOffset>(_offsetEqualityComparer) {Direction = _dir, Filter = _filter, UseUnification = _unification};
 			newFst.StartState = StartState.IsAccepting && other.StartState.IsAccepting ? newFst.CreateAcceptingState() : newFst.CreateState();
 
 			var queue = new Queue<Tuple<State<TData, TOffset>, State<TData, TOffset>>>();
@@ -1483,7 +1485,7 @@ namespace SIL.Machine.FiniteState
 
 		public Fst<TData, TOffset> Compose(Fst<TData, TOffset> other)
 		{
-			var newFst = new Fst<TData, TOffset>(_operations, _registersComparer.OffsetComparer) {Direction = _dir, Filter = _filter, UseUnification = _unification};
+			var newFst = new Fst<TData, TOffset>(_operations, _offsetEqualityComparer) {Direction = _dir, Filter = _filter, UseUnification = _unification};
 			newFst.StartState = StartState.IsAccepting && other.StartState.IsAccepting ? newFst.CreateAcceptingState() : newFst.CreateState();
 
 			var queue = new Queue<Tuple<State<TData, TOffset>, State<TData, TOffset>>>();

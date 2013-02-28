@@ -7,8 +7,7 @@ namespace SIL.Machine
 	public abstract class SpanFactory<TOffset>
 	{
 		private readonly bool _includeEndpoint;
-		private readonly IComparer<TOffset> _ltrComparer;
-		private readonly IComparer<TOffset> _rtlComparer;
+		private readonly IComparer<TOffset> _comparer;
 		private readonly IEqualityComparer<TOffset> _equalityComparer; 
 
 		protected SpanFactory()
@@ -21,11 +20,10 @@ namespace SIL.Machine
 		{
 		}
 
-		protected SpanFactory(bool includeEndpoint, IComparer<TOffset> ltrComparer, IEqualityComparer<TOffset> equalityComparer)
+		protected SpanFactory(bool includeEndpoint, IComparer<TOffset> comparer, IEqualityComparer<TOffset> equalityComparer)
 		{
 			_includeEndpoint = includeEndpoint;
-			_ltrComparer = ltrComparer;
-			_rtlComparer = _ltrComparer.Reverse();
+			_comparer = comparer;
 			_equalityComparer = equalityComparer;
 		}
 
@@ -36,12 +34,9 @@ namespace SIL.Machine
 			get { return _includeEndpoint; }
 		}
 
-		public IComparer<TOffset> GetComparer(Direction dir)
+		public IComparer<TOffset> Comparer
 		{
-			if (dir == Direction.LeftToRight)
-				return _ltrComparer;
-
-			return _rtlComparer;
+			get { return _comparer; }
 		}
 
 		public IEqualityComparer<TOffset> EqualityComparer
@@ -89,7 +84,7 @@ namespace SIL.Machine
 				actualEnd = start;
 			}
 
-			int compare = GetComparer(Direction.LeftToRight).Compare(actualStart, actualEnd);
+			int compare = _comparer.Compare(actualStart, actualEnd);
 			return _includeEndpoint ? compare <= 0 : compare < 0;
 		}
 
