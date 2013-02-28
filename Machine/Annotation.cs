@@ -11,6 +11,7 @@ namespace SIL.Machine
 		private int _hashCode;
 		private FeatureStruct _fs;
 		private bool _optional;
+		private object _data;
 
 		public Annotation(Span<TOffset> span, FeatureStruct fs)
 		{
@@ -31,8 +32,19 @@ namespace SIL.Machine
 			: this(ann.Span, ann.FeatureStruct.DeepClone())
 		{
 			Optional = ann.Optional;
+			_data = ann._data;
 			if (ann._children != null && ann._children.Count > 0)
 				Children.AddRange(ann.Children.Select(node => node.DeepClone()));
+		}
+
+		public object Data
+		{
+			get { return _data; }
+			set
+			{
+				CheckFrozen();
+				_data = value;
+			}
 		}
 
 		public Annotation<TOffset> Parent { get; private set; }
