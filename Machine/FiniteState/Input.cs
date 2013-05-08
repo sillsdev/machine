@@ -26,7 +26,7 @@ namespace SIL.Machine.FiniteState
 		internal Input(FeatureStruct fs, IEnumerable<FeatureStruct> negatedFSs, int enqueueCount)
 		{
 			_fs = fs;
-			_negatedFSs = new HashSet<FeatureStruct>(negatedFSs, ValueEqualityComparer<FeatureStruct>.Default);
+			_negatedFSs = new HashSet<FeatureStruct>(negatedFSs, FreezableEqualityComparer<FeatureStruct>.Default);
 			_enqueueCount = enqueueCount;
 		}
 
@@ -91,8 +91,8 @@ namespace SIL.Machine.FiniteState
 			int code = 23;
 			code = code * 31 + _enqueueCount.GetHashCode();
 			if (_fs != null)
-				code = code * 31 + _fs.GetValueHashCode();
-			return _negatedFSs.Aggregate(code, (c, nfs) => c ^ nfs.GetValueHashCode());
+				code = code * 31 + _fs.GetFrozenHashCode();
+			return _negatedFSs.Aggregate(code, (c, nfs) => c ^ nfs.GetFrozenHashCode());
 		}
 
 		public override string ToString()

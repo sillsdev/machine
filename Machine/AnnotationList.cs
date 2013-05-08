@@ -48,7 +48,7 @@ namespace SIL.Machine
 			foreach (Annotation<TOffset> ann in this)
 			{
 				ann.Freeze();
-				_hashCode = _hashCode * 31 + ann.GetValueHashCode();
+				_hashCode = _hashCode * 31 + ann.GetFrozenHashCode();
 			}
 		}
 
@@ -60,10 +60,10 @@ namespace SIL.Machine
 			if (Count != other.Count)
 				return false;
 
-			return this.SequenceEqual(other, ValueEqualityComparer<Annotation<TOffset>>.Default);
+			return this.SequenceEqual(other, FreezableEqualityComparer<Annotation<TOffset>>.Default);
 		}
 
-		public int GetValueHashCode()
+		public int GetFrozenHashCode()
 		{
 			if (!IsFrozen)
 				throw new InvalidOperationException("The annotation list does not have a valid hash code, because it is mutable.");

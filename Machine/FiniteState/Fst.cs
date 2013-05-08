@@ -1101,7 +1101,7 @@ namespace SIL.Machine.FiniteState
 		private static IEnumerable<FeatureStruct> ClosuredInputs(Arc<TData, TOffset> arc)
 		{
 			return EpsilonClosure(arc.Target).SelectMany(s => s.Arcs, (s, a) => a.Input).Concat(arc.Input)
-				.Where(input => input != null).Select(input => input.FeatureStruct).Distinct(ValueEqualityComparer<FeatureStruct>.Default);
+				.Where(input => input != null).Select(input => input.FeatureStruct).Distinct(FreezableEqualityComparer<FeatureStruct>.Default);
 		}
 
 		private static IEnumerable<State<TData, TOffset>> EpsilonClosure(State<TData, TOffset> state)
@@ -1627,6 +1627,11 @@ namespace SIL.Machine.FiniteState
 			IsFrozen = true;
 			foreach (State<TData, TOffset> state in _states)
 				state.Freeze();
+		}
+
+		public int GetFrozenHashCode()
+		{
+			return GetHashCode();
 		}
 	}
 }

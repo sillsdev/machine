@@ -103,5 +103,10 @@ namespace SIL.Machine.FiniteState
 			_arcs.Freeze();
 			_acceptInfos.Freeze();
 		}
+
+		public int GetFrozenHashCode()
+		{
+			return GetHashCode();
+		}
 	}
 }

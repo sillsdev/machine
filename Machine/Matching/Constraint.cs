@@ -59,7 +59,7 @@ namespace SIL.Machine.Matching
 		{
 			int code = base.FreezeImpl();
 			_fs.Freeze();
-			code = code * 31 + _fs.GetValueHashCode();
+			code = code * 31 + _fs.GetFrozenHashCode();
 			return code;
 		}
 

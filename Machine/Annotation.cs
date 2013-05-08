@@ -178,8 +178,8 @@ namespace SIL.Machine
 				_children.Freeze();
 
 			_hashCode = 23;
-			_hashCode = _hashCode * 31 + _fs.GetValueHashCode();
-			_hashCode = _hashCode * 31 + (_children == null ? 0 : _children.GetValueHashCode());
+			_hashCode = _hashCode * 31 + _fs.GetFrozenHashCode();
+			_hashCode = _hashCode * 31 + (_children == null ? 0 : _children.GetFrozenHashCode());
 			_hashCode = _hashCode * 31 + _optional.GetHashCode();
 			_hashCode = _hashCode * 31 + Span.GetHashCode();
 		}
@@ -198,7 +198,7 @@ namespace SIL.Machine
 			return _fs.ValueEquals(other._fs) && _optional == other._optional && Span == other.Span;
 		}
 
-		public int GetValueHashCode()
+		public int GetFrozenHashCode()
 		{
 			if (!IsFrozen)
 				throw new InvalidOperationException("The annotation does not have a valid hash code, because it is mutable.");

@@ -174,5 +174,10 @@ namespace SIL.Machine.FiniteState
 
 			IsFrozen = true;
 		}
+
+		public int GetFrozenHashCode()
+		{
+			return GetHashCode();
+		}
 	}
 }

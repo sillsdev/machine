@@ -194,5 +194,10 @@ namespace SIL.Machine.FeatureModel
 			foreach (Feature feature in _features)
 				feature.Freeze();
 	    }
+
+	    public int GetFrozenHashCode()
+	    {
+		    return GetHashCode();
+	    }
     }
 }

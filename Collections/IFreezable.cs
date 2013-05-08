@@ -4,5 +4,6 @@
 	{
 		bool IsFrozen { get; }
 		void Freeze();
+		int GetFrozenHashCode();
 	}
 }

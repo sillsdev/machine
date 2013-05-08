@@ -41,5 +41,10 @@ namespace SIL.Machine.FeatureModel
 		{
 			IsFrozen = true;
 		}
+
+		public int GetFrozenHashCode()
+		{
+			return GetHashCode();
+		}
 	}
 }

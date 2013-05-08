@@ -30,7 +30,7 @@ namespace SIL.Machine.FiniteState
 
 		public override int GetHashCode()
 		{
-			return FeatureStruct.GetValueHashCode();
+			return FeatureStruct.GetFrozenHashCode();
 		}
 
 		public override string ToString()

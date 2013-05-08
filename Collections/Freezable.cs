@@ -17,6 +17,8 @@ namespace SIL.Collections
 			_hashCode = FreezeImpl();
 		}
 
+		public abstract bool ValueEquals(T other);
+
 		protected abstract int FreezeImpl();
 
 		protected void CheckFrozen()
@@ -25,9 +27,7 @@ namespace SIL.Collections
 				throw new InvalidOperationException("This object is immutable.");
 		}
 
-		public abstract bool ValueEquals(T other);
-
-		public int GetValueHashCode()
+		public int GetFrozenHashCode()
 		{
 			if (!IsFrozen)
 				throw new InvalidOperationException("This object does not have a valid hash code, because it is mutable.");

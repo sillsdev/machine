@@ -1034,7 +1034,7 @@ namespace SIL.Machine.FeatureModel
 				new Dictionary<FeatureValue, FeatureValue>());
 		}
 
-		public int GetValueHashCode()
+		public int GetFrozenHashCode()
 		{
 			if (!IsFrozen)
 				throw new InvalidOperationException("The feature structure does not have a valid hash code, because it is mutable.");

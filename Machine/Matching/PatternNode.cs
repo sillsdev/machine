@@ -77,7 +77,7 @@ namespace SIL.Machine.Matching
 			return false;
 		}
 
-		public int GetValueHashCode()
+		public int GetFrozenHashCode()
 		{
 			if (!IsFrozen)
 				throw new InvalidOperationException("The pattern node does not have a valid hash code, because it is mutable.");
@@ -98,7 +98,7 @@ namespace SIL.Machine.Matching
 				foreach (PatternNode<TData, TOffset> child in Children)
 				{
 					child.Freeze();
-					code = code * 31 + child.GetValueHashCode();
+					code = code * 31 + child.GetFrozenHashCode();
 				}
 			}
 			return code;

@@ -67,7 +67,7 @@ namespace SIL.Machine
 
 			_hashCode = 23;
 			_hashCode = _hashCode * 31 + Count;
-			_hashCode = _hashCode * 31 + _annotations.GetValueHashCode();
+			_hashCode = _hashCode * 31 + _annotations.GetFrozenHashCode();
 		}
 
 		private void CheckFrozen()
@@ -373,7 +373,7 @@ namespace SIL.Machine
 			return _annotations.ValueEquals(other._annotations);
 		}
 
-		public int GetValueHashCode()
+		public int GetFrozenHashCode()
 		{
 			if (!IsFrozen)
 				throw new InvalidOperationException("The shape does not have a valid hash code, because it is mutable.");
