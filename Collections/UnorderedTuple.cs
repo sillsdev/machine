@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 
 namespace SIL.Collections
 {
@@ -67,6 +68,15 @@ namespace SIL.Collections
 		{
 			return comparer.GetHashCode(_item1);
 		}
+
+		public override string ToString()
+		{
+			var sb = new StringBuilder();
+			sb.Append("(");
+			sb.Append(_item1);
+			sb.Append(")");
+			return sb.ToString();
+		}
 	}
 
 	public class UnorderedTuple<T1, T2> : IStructuralEquatable
@@ -112,6 +122,17 @@ namespace SIL.Collections
 		int IStructuralEquatable.GetHashCode(IEqualityComparer comparer)
 		{
 			return comparer.GetHashCode(_item1) ^ comparer.GetHashCode(_item2);
+		}
+
+		public override string ToString()
+		{
+			var sb = new StringBuilder();
+			sb.Append("(");
+			sb.Append(_item1);
+			sb.Append(",");
+			sb.Append(_item2);
+			sb.Append(")");
+			return sb.ToString();
 		}
 	}
 
@@ -166,6 +187,19 @@ namespace SIL.Collections
 		int IStructuralEquatable.GetHashCode(IEqualityComparer comparer)
 		{
 			return comparer.GetHashCode(_item1) ^ comparer.GetHashCode(_item2) ^ comparer.GetHashCode(_item3);
+		}
+
+		public override string ToString()
+		{
+			var sb = new StringBuilder();
+			sb.Append("(");
+			sb.Append(_item1);
+			sb.Append(",");
+			sb.Append(_item2);
+			sb.Append(",");
+			sb.Append(_item3);
+			sb.Append(")");
+			return sb.ToString();
 		}
 	}
 
@@ -226,6 +260,21 @@ namespace SIL.Collections
 		int IStructuralEquatable.GetHashCode(IEqualityComparer comparer)
 		{
 			return comparer.GetHashCode(_item1) ^ comparer.GetHashCode(_item2) ^ comparer.GetHashCode(_item3) ^ comparer.GetHashCode(_item4);
+		}
+
+		public override string ToString()
+		{
+			var sb = new StringBuilder();
+			sb.Append("(");
+			sb.Append(_item1);
+			sb.Append(",");
+			sb.Append(_item2);
+			sb.Append(",");
+			sb.Append(_item3);
+			sb.Append(",");
+			sb.Append(_item4);
+			sb.Append(")");
+			return sb.ToString();
 		}
 	}
 
@@ -293,6 +342,23 @@ namespace SIL.Collections
 		int IStructuralEquatable.GetHashCode(IEqualityComparer comparer)
 		{
 			return comparer.GetHashCode(_item1) ^ comparer.GetHashCode(_item2) ^ comparer.GetHashCode(_item3) ^ comparer.GetHashCode(_item4) ^ comparer.GetHashCode(_item5);
+		}
+
+		public override string ToString()
+		{
+			var sb = new StringBuilder();
+			sb.Append("(");
+			sb.Append(_item1);
+			sb.Append(",");
+			sb.Append(_item2);
+			sb.Append(",");
+			sb.Append(_item3);
+			sb.Append(",");
+			sb.Append(_item4);
+			sb.Append(",");
+			sb.Append(_item5);
+			sb.Append(")");
+			return sb.ToString();
 		}
 	}
 
