@@ -51,6 +51,7 @@
     <Compile Include="Freezable.cs" />
     <Compile Include="FreezableEqualityComparer.cs" />
     <Compile Include="FreezableList.cs" />
+    <Compile Include="ReadOnlyMirroredCollection.cs" />
     <Compile Include="StructuralEqualityComparer.cs" />
     <Compile Include="IBidirList.cs" />
     <Compile Include="IBidirListNode.cs" />
