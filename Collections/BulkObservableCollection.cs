@@ -105,13 +105,10 @@ namespace SIL.Collections
 
 		public void ReplaceRange(int index, int count, IEnumerable<T> items)
 		{
-			if (index < 0 || index >= Count)
+			if (index < 0 || index > Count)
 				throw new ArgumentOutOfRangeException("index");
 			if (count < 0 || count > Count - index)
 				throw new ArgumentOutOfRangeException("count");
-
-			if (count == 0)
-				return;
 
 			IList removed = RemoveItems(index, count);
 			IList added = InsertItems(index, items);
