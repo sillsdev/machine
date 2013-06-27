@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace SIL.Collections
 {
-	public class KeyedBulkObservableCollection<TKey, TItem> : BulkObservableCollection<TItem>, IKeyedCollection<TKey, TItem>
+	public class KeyedBulkObservableList<TKey, TItem> : BulkObservableList<TItem>, IKeyedCollection<TKey, TItem>
 	{
 		private readonly Func<TItem, TKey> _getKeyForItem;
 		private readonly IEqualityComparer<TKey> _comparer;
@@ -13,32 +13,32 @@ namespace SIL.Collections
 		private int _keyCount;
 		private readonly int _threshold;
 
-		public KeyedBulkObservableCollection(Func<TItem, TKey> getKeyForItem)
+		public KeyedBulkObservableList(Func<TItem, TKey> getKeyForItem)
 			: this(Enumerable.Empty<TItem>(), getKeyForItem, null)
 		{
 		}
 
-		public KeyedBulkObservableCollection(Func<TItem, TKey> getKeyForItem, IEqualityComparer<TKey> comparer)
+		public KeyedBulkObservableList(Func<TItem, TKey> getKeyForItem, IEqualityComparer<TKey> comparer)
 			: this(Enumerable.Empty<TItem>(), getKeyForItem, comparer, 0)
 		{
 		}
 
-		public KeyedBulkObservableCollection(Func<TItem, TKey> getKeyForItem, IEqualityComparer<TKey> comparer, int dictionaryCreationThreshold)
+		public KeyedBulkObservableList(Func<TItem, TKey> getKeyForItem, IEqualityComparer<TKey> comparer, int dictionaryCreationThreshold)
 			: this(Enumerable.Empty<TItem>(), getKeyForItem, comparer, dictionaryCreationThreshold)
 		{
 		}
 
-		public KeyedBulkObservableCollection(IEnumerable<TItem> items, Func<TItem, TKey> getKeyForItem)
+		public KeyedBulkObservableList(IEnumerable<TItem> items, Func<TItem, TKey> getKeyForItem)
 			: this(items, getKeyForItem, null)
 		{
 		}
 
-		public KeyedBulkObservableCollection(IEnumerable<TItem> items, Func<TItem, TKey> getKeyForItem, IEqualityComparer<TKey> comparer)
+		public KeyedBulkObservableList(IEnumerable<TItem> items, Func<TItem, TKey> getKeyForItem, IEqualityComparer<TKey> comparer)
 			: this(items, getKeyForItem, comparer, 0)
 		{
 		}
 
-		public KeyedBulkObservableCollection(IEnumerable<TItem> items, Func<TItem, TKey> getKeyForItem, IEqualityComparer<TKey> comparer, int dictionaryCreationThreshold)
+		public KeyedBulkObservableList(IEnumerable<TItem> items, Func<TItem, TKey> getKeyForItem, IEqualityComparer<TKey> comparer, int dictionaryCreationThreshold)
 		{
 			_getKeyForItem = getKeyForItem;
 
@@ -56,17 +56,17 @@ namespace SIL.Collections
 			AddRange(items);
 		}
 
-		protected KeyedBulkObservableCollection()
+		protected KeyedBulkObservableList()
 			: this((IEqualityComparer<TKey>) null)
 		{
 		}
 
-		protected KeyedBulkObservableCollection(IEqualityComparer<TKey> comparer)
+		protected KeyedBulkObservableList(IEqualityComparer<TKey> comparer)
 			: this(comparer, 0)
 		{
 		}
 
-		protected KeyedBulkObservableCollection(IEqualityComparer<TKey> comparer, int dictionaryCreationThreshold)
+		protected KeyedBulkObservableList(IEqualityComparer<TKey> comparer, int dictionaryCreationThreshold)
 			: this(null, comparer, dictionaryCreationThreshold)
 		{
 		}

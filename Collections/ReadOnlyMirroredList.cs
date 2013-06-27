@@ -5,24 +5,24 @@ using System.Linq;
 
 namespace SIL.Collections
 {
-	public class ReadOnlyMirroredCollection<TSource, TTarget> : ReadOnlyObservableList<TTarget>, IReadOnlyKeyedCollection<TSource, TTarget>, IKeyedCollection<TSource, TTarget>
+	public class ReadOnlyMirroredList<TSource, TTarget> : ReadOnlyObservableList<TTarget>, IReadOnlyKeyedCollection<TSource, TTarget>, IKeyedCollection<TSource, TTarget>
 	{
 		private readonly Func<TSource, TTarget> _sourceToTarget;
 		private readonly KeyedBulkObservableList<TSource, TTarget> _items;
 
-		public ReadOnlyMirroredCollection(IReadOnlyObservableCollection<TSource> source, Func<TSource, TTarget> sourceToTarget, Func<TTarget, TSource> targetToSource)
+		public ReadOnlyMirroredList(IReadOnlyObservableList<TSource> source, Func<TSource, TTarget> sourceToTarget, Func<TTarget, TSource> targetToSource)
 			: this((IEnumerable<TSource>) source, sourceToTarget, targetToSource)
 		{
 			source.CollectionChanged += OnSourceCollectionChanged;
 		}
 
-		public ReadOnlyMirroredCollection(IObservableCollection<TSource> source, Func<TSource, TTarget> sourceToTarget, Func<TTarget, TSource> targetToSource)
+		public ReadOnlyMirroredList(IObservableList<TSource> source, Func<TSource, TTarget> sourceToTarget, Func<TTarget, TSource> targetToSource)
 			: this((IEnumerable<TSource>) source, sourceToTarget, targetToSource)
 		{
 			source.CollectionChanged += OnSourceCollectionChanged;
 		}
 
-		protected ReadOnlyMirroredCollection(IEnumerable<TSource> source, Func<TSource, TTarget> sourceToTarget, Func<TTarget, TSource> targetToSource)
+		protected ReadOnlyMirroredList(IEnumerable<TSource> source, Func<TSource, TTarget> sourceToTarget, Func<TTarget, TSource> targetToSource)
 			: base(new KeyedBulkObservableList<TSource, TTarget>(source.Select(sourceToTarget), targetToSource))
 		{
 			_sourceToTarget = sourceToTarget;
@@ -34,11 +34,19 @@ namespace SIL.Collections
 			switch (e.Action)
 			{
 				case NotifyCollectionChangedAction.Add:
-					MirrorAdd(e.NewItems.Cast<TSource>());
+					MirrorInsert(e.NewStartingIndex, e.NewItems.Cast<TSource>());
+					break;
+
+				case NotifyCollectionChangedAction.Move:
+					MirrorMove(e.OldStartingIndex, e.OldItems.Count, e.NewStartingIndex);
 					break;
 
 				case NotifyCollectionChangedAction.Remove:
-					MirrorRemove(e.OldItems.Cast<TSource>());
+					MirrorRemove(e.OldStartingIndex, e.OldItems.Count);
+					break;
+
+				case NotifyCollectionChangedAction.Replace:
+					MirrorReplace(e.OldStartingIndex, e.OldItems.Count, e.NewItems.Cast<TSource>());
 					break;
 
 				case NotifyCollectionChangedAction.Reset:
@@ -47,18 +55,24 @@ namespace SIL.Collections
 			}
 		}
 
-		protected virtual void MirrorAdd(IEnumerable<TSource> items)
+		protected virtual void MirrorInsert(int index, IEnumerable<TSource> items)
 		{
-			_items.AddRange(items.Select(item => _sourceToTarget(item)));
+			_items.InsertRange(index, items.Select(item => _sourceToTarget(item)));
 		}
 
-		protected virtual void MirrorRemove(IEnumerable<TSource> items)
+		protected virtual void MirrorMove(int oldIndex, int count, int newIndex)
 		{
-			using (_items.BulkUpdate())
-			{
-				foreach (TSource item in items)
-					_items.Remove(item);
-			}
+			_items.MoveRange(oldIndex, count, newIndex);
+		}
+
+		protected virtual void MirrorRemove(int index, int count)
+		{
+			_items.RemoveRangeAt(index, count);
+		}
+
+		protected virtual void MirrorReplace(int index, int count, IEnumerable<TSource> items)
+		{
+			_items.ReplaceRange(index, count, items.Select(item => _sourceToTarget(item)));
 		}
 
 		protected virtual void MirrorReset(IEnumerable<TSource> source)

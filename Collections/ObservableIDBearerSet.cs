@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 
 namespace SIL.Collections
 {
-	public sealed class ObservableIDBearerSet<T> : IDBearerSet<T>, INotifyCollectionChanged where T : IIDBearer
+	public sealed class ObservableIDBearerSet<T> : IDBearerSet<T>, IObservableSet<T> where T : IIDBearer
 	{
 		private readonly SimpleMonitor _reentrancyMonitor = new SimpleMonitor();
 		private readonly SimpleMonitor _multiChangeMonitor = new SimpleMonitor();
@@ -12,6 +13,14 @@ namespace SIL.Collections
 		private readonly List<T> _removed = new List<T>(); 
 
 		public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+		event PropertyChangedEventHandler INotifyPropertyChanged.PropertyChanged
+		{
+			add { PropertyChanged += value; }
+			remove { PropertyChanged -= value; }
+		}
+
+		private event PropertyChangedEventHandler PropertyChanged;
 
 		public override void IntersectWith(IEnumerable<T> items)
 		{
@@ -47,6 +56,9 @@ namespace SIL.Collections
 
 		private void MultiChangeOccurred()
 		{
+			if (_removed.Count > 0 || _added.Count > 0)
+				OnPropertyChanged(new PropertyChangedEventArgs("Count"));
+
 			if (_removed.Count > 0)
 			{
 				OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, _removed));
@@ -70,6 +82,7 @@ namespace SIL.Collections
 				}
 				else
 				{
+					OnPropertyChanged(new PropertyChangedEventArgs("Count"));
 					OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
 				}
 				return true;
@@ -90,6 +103,7 @@ namespace SIL.Collections
 				}
 				else
 				{
+					OnPropertyChanged(new PropertyChangedEventArgs("Count"));
 					OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
 				}
 				return true;
@@ -105,6 +119,7 @@ namespace SIL.Collections
 			if (Count > 0)
 			{
 				base.Clear();
+				OnPropertyChanged(new PropertyChangedEventArgs("Count"));
 				OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 			}
 		}
@@ -115,6 +130,15 @@ namespace SIL.Collections
 			{
 				using (_reentrancyMonitor.Enter())
 					CollectionChanged(this, e);
+			}
+		}
+
+		private void OnPropertyChanged(PropertyChangedEventArgs e)
+		{
+			if (PropertyChanged != null)
+			{
+				using (_reentrancyMonitor.Enter())
+					PropertyChanged(this, e);
 			}
 		}
 

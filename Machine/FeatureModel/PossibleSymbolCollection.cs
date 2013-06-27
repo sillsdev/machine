@@ -4,7 +4,7 @@ using SIL.Collections;
 
 namespace SIL.Machine.FeatureModel
 {
-	public class PossibleSymbolCollection : IKeyedReadOnlyCollection<string, FeatureSymbol>
+	public class PossibleSymbolCollection : IReadOnlyKeyedCollection<string, FeatureSymbol>
 	{
 		private readonly IDBearerSet<FeatureSymbol> _symbols; 
 

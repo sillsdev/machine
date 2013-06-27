@@ -30,7 +30,7 @@ namespace SIL.Machine.FeatureModel
 		/// Gets all possible values.
 		/// </summary>
 		/// <value>All possible values.</value>
-		public IKeyedReadOnlyCollection<string, FeatureSymbol> PossibleSymbols
+		public IReadOnlyKeyedCollection<string, FeatureSymbol> PossibleSymbols
 		{
 			get { return _possibleSymbols; }
 		}

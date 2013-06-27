@@ -637,7 +637,7 @@ namespace SIL.Collections
 					yield return source[count++];
 		}
 
-		public static ReadOnlyList<T> AsReadOnlyList<T>(this IList<T> list)
+		public static ReadOnlyList<T> ToReadOnlyList<T>(this IList<T> list)
 		{
 			return new ReadOnlyList<T>(list);
 		}
@@ -666,7 +666,7 @@ namespace SIL.Collections
 			return value;
 		}
 
-		public static ReadOnlyDictionary<TKey, TValue> AsReadOnlyDictionary<TKey, TValue>(this IDictionary<TKey, TValue> dictionary)
+		public static ReadOnlyDictionary<TKey, TValue> ToReadOnlyDictionary<TKey, TValue>(this IDictionary<TKey, TValue> dictionary)
 		{
 			return new ReadOnlyDictionary<TKey, TValue>(dictionary);
 		}
@@ -681,9 +681,9 @@ namespace SIL.Collections
 				collection.Add(item);
 		}
 
-		public static SimpleReadOnlyCollection<T> AsSimpleReadOnlyCollection<T>(this ICollection<T> collection)
+		public static ReadOnlyCollection<T> ToReadOnlyCollection<T>(this ICollection<T> collection)
 		{
-			return new SimpleReadOnlyCollection<T>(collection);
+			return new ReadOnlyCollection<T>(collection);
 		}
 
 		public static void RemoveAll<T>(this ICollection<T> collection, Func<T, bool> predicate)
@@ -696,9 +696,36 @@ namespace SIL.Collections
 
 		#region ISet
 
-		public static ReadOnlySet<T> AsReadOnlySet<T>(this ISet<T> set)
+		public static ReadOnlySet<T> ToReadOnlySet<T>(this ISet<T> set)
 		{
 			return new ReadOnlySet<T>(set);
+		}
+
+		#endregion
+
+		#region IObservableList
+
+		public static ReadOnlyObservableList<T> ToReadOnlyObservableList<T>(this IObservableList<T> list)
+		{
+			return new ReadOnlyObservableList<T>(list);
+		}
+
+		#endregion
+
+		#region IObservableCollection
+
+		public static ReadOnlyObservableCollection<T> ToReadOnlyObservableCollection<T>(this IObservableCollection<T> collection)
+		{
+			return new ReadOnlyObservableCollection<T>(collection);
+		}
+
+		#endregion
+
+		#region IKeyedCollection
+
+		public static ReadOnlyKeyedCollection<TKey, TItem> ToReadOnlyKeyedCollection<TKey, TItem>(this IKeyedCollection<TKey, TItem> collection)
+		{
+			return new ReadOnlyKeyedCollection<TKey, TItem>(collection);
 		}
 
 		#endregion

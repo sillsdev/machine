@@ -33,7 +33,7 @@ namespace SIL.Machine.Rules
 
 		public IReadOnlyList<IRule<TData, TOffset>> Rules
 		{
-			get { return _rules.AsReadOnlyList(); }
+			get { return _rules.ToReadOnlyList(); }
 		}
 
 		public virtual IEnumerable<TData> Apply(TData input)

@@ -1,39 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace SIL.Collections
 {
-	public class KeyedCollection<TKey, TItem> : System.Collections.ObjectModel.KeyedCollection<TKey, TItem>, IKeyedCollection<TKey, TItem>
+	public class KeyedList<TKey, TItem> : KeyedCollection<TKey, TItem>, IKeyedCollection<TKey, TItem>
 	{
 		private readonly Func<TItem, TKey> _getKeyForItem; 
 
-		public KeyedCollection(Func<TItem, TKey> getKeyForItem)
+		public KeyedList(Func<TItem, TKey> getKeyForItem)
 		{
 			_getKeyForItem = getKeyForItem;
 		}
 
-		public KeyedCollection(Func<TItem, TKey> getKeyForItem, IEqualityComparer<TKey> comparer)
+		public KeyedList(Func<TItem, TKey> getKeyForItem, IEqualityComparer<TKey> comparer)
 			: base(comparer)
 		{
 			_getKeyForItem = getKeyForItem;
 		}
 
-		public KeyedCollection(Func<TItem, TKey> getKeyForItem, IEqualityComparer<TKey> comparer, int dictionaryCreationThreshold)
+		public KeyedList(Func<TItem, TKey> getKeyForItem, IEqualityComparer<TKey> comparer, int dictionaryCreationThreshold)
 			: base(comparer, dictionaryCreationThreshold)
 		{
 			_getKeyForItem = getKeyForItem;
 		}
 
-		protected KeyedCollection()
+		protected KeyedList()
 		{
 		}
 
-		protected KeyedCollection(IEqualityComparer<TKey> comparer)
+		protected KeyedList(IEqualityComparer<TKey> comparer)
 			: base(comparer)
 		{
 		}
 
-		protected KeyedCollection(IEqualityComparer<TKey> comparer, int dictionaryCreationThreshold)
+		protected KeyedList(IEqualityComparer<TKey> comparer, int dictionaryCreationThreshold)
 			: base(comparer, dictionaryCreationThreshold)
 		{
 		}

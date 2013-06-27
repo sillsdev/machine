@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using SIL.Collections;
@@ -10,13 +9,13 @@ namespace SIL.Machine.Rules
 	public class BatchPatternRuleSpec<TData, TOffset> : IPatternRuleSpec<TData, TOffset> where TData : IData<TOffset>, IDeepCloneable<TData>
 	{
 		private readonly Pattern<TData, TOffset> _pattern;
-		private readonly ObservableCollection<IPatternRuleSpec<TData, TOffset>> _ruleSpecs;
+		private readonly ObservableList<IPatternRuleSpec<TData, TOffset>> _ruleSpecs;
 		private readonly Dictionary<string, IPatternRuleSpec<TData, TOffset>> _ruleIds;
 		private int _curRuleId;
 
 		public BatchPatternRuleSpec()
 		{
-			_ruleSpecs = new ObservableCollection<IPatternRuleSpec<TData, TOffset>>();
+			_ruleSpecs = new ObservableList<IPatternRuleSpec<TData, TOffset>>();
 			_ruleSpecs.CollectionChanged += RuleSpecsChanged;
 			_ruleIds = new Dictionary<string, IPatternRuleSpec<TData, TOffset>>();
 			_pattern = new Pattern<TData, TOffset>();

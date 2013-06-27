@@ -16,7 +16,7 @@ namespace SIL.Machine.FiniteState
 		private Direction _dir;
 		private Func<Annotation<TOffset>, bool> _filter;
 		private readonly List<State<TData, TOffset>> _states;
-		private readonly SimpleReadOnlyCollection<State<TData, TOffset>> _readonlyStates;
+		private readonly ReadOnlyCollection<State<TData, TOffset>> _readonlyStates;
 		private readonly IEqualityComparer<FstResult<TData, TOffset>> _fsaMatchEqualityComparer;
 		private readonly IFstOperations<TData, TOffset> _operations;
 		private readonly RegistersEqualityComparer<TOffset> _registersEqualityComparer;
@@ -42,7 +42,7 @@ namespace SIL.Machine.FiniteState
 		public Fst(IFstOperations<TData, TOffset> operations, IEqualityComparer<TOffset> offsetEqualityComparer)
 		{
 			_states = new List<State<TData, TOffset>>();
-			_readonlyStates = _states.AsSimpleReadOnlyCollection();
+			_readonlyStates = _states.ToReadOnlyCollection();
 			_operations = operations;
 			_initializers = new List<TagMapCommand>();
 			_groups = new Dictionary<string, int>();

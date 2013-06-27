@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SIL.Collections
 {
-	public class ReadOnlyDictionary<TKey, TValue> : SimpleReadOnlyCollection<KeyValuePair<TKey, TValue>>, IReadOnlyDictionary<TKey, TValue>, IDictionary<TKey, TValue>
+	public class ReadOnlyDictionary<TKey, TValue> : ReadOnlyCollection<KeyValuePair<TKey, TValue>>, IReadOnlyDictionary<TKey, TValue>, IDictionary<TKey, TValue>
 	{
 		private readonly IDictionary<TKey, TValue> _dictionary;
  

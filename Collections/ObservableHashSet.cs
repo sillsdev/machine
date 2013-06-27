@@ -2,13 +2,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 
 namespace SIL.Collections
 {
-	public class ObservableHashSet<T> : ISet<T>, INotifyCollectionChanged
+	public class ObservableHashSet<T> : IObservableSet<T>
 	{
-		public event NotifyCollectionChangedEventHandler CollectionChanged;
+		public virtual event NotifyCollectionChangedEventHandler CollectionChanged;
+		event PropertyChangedEventHandler INotifyPropertyChanged.PropertyChanged
+		{
+			add { PropertyChanged += value; }
+			remove { PropertyChanged -= value; }
+		}
+
+		protected virtual event PropertyChangedEventHandler PropertyChanged;
 
 		private readonly SimpleMonitor _reentrancyMonitor = new SimpleMonitor();
 		private readonly HashSet<T> _set;
@@ -59,7 +67,10 @@ namespace SIL.Collections
 			 T[] addedItems = other.Where(x => !_set.Contains(x)).ToArray();
 			_set.UnionWith(addedItems);
 			if (addedItems.Length > 0)
+			{
+				OnPropertyChanged(new PropertyChangedEventArgs("Count"));
 				OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, addedItems));
+			}
 		}
 
 		public virtual void IntersectWith(IEnumerable<T> other)
@@ -68,7 +79,10 @@ namespace SIL.Collections
 			T[] removedItems = _set.Where(x => !other.Contains(x)).ToArray();
 			_set.ExceptWith(removedItems);
 			if (removedItems.Length > 0)
+			{
+				OnPropertyChanged(new PropertyChangedEventArgs("Count"));
 				OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removedItems));
+			}
 		}
 
 		public virtual void ExceptWith(IEnumerable<T> other)
@@ -77,7 +91,10 @@ namespace SIL.Collections
 			T[] removedItems = other.Where(x => _set.Contains(x)).ToArray();
 			_set.ExceptWith(removedItems);
 			if (removedItems.Length > 0)
+			{
+				OnPropertyChanged(new PropertyChangedEventArgs("Count"));
 				OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removedItems));
+			}
 		}
 
 		public virtual void SymmetricExceptWith(IEnumerable<T> other)
@@ -96,6 +113,8 @@ namespace SIL.Collections
 			_set.UnionWith(addedItems);
 			_set.ExceptWith(removedItems);
 
+			if (addedItems.Count > 0 || removedItems.Count > 0)
+				OnPropertyChanged(new PropertyChangedEventArgs("Count"));
 			if (addedItems.Count > 0)
 				OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, addedItems));
 			if (removedItems.Count > 0)
@@ -137,6 +156,7 @@ namespace SIL.Collections
 			CheckReentrancy();
 			if (_set.Add(item))
 			{
+				OnPropertyChanged(new PropertyChangedEventArgs("Count"));
 				OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
 				return true;
 			}
@@ -149,7 +169,10 @@ namespace SIL.Collections
 			int origCount = _set.Count;
 			_set.Clear();
 			if (origCount > 0)
+			{
+				OnPropertyChanged(new PropertyChangedEventArgs("Count"));
 				OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+			}
 		}
 
 		public bool Contains(T item)
@@ -167,6 +190,7 @@ namespace SIL.Collections
 			CheckReentrancy();
 			if (_set.Remove(item))
 			{
+				OnPropertyChanged(new PropertyChangedEventArgs("Count"));
 				OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
 				return true;
 			}
@@ -189,6 +213,15 @@ namespace SIL.Collections
 			{
 				using (_reentrancyMonitor.Enter())
 					CollectionChanged(this, e);
+			}
+		}
+
+		protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
+		{
+			if (PropertyChanged != null)
+			{
+				using (_reentrancyMonitor.Enter())
+					PropertyChanged(this, e);
 			}
 		}
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SIL.Collections
 {
-	public class ReadOnlySet<T> : SimpleReadOnlyCollection<T>, ISet<T>, IReadOnlySet<T>
+	public class ReadOnlySet<T> : ReadOnlyCollection<T>, ISet<T>, IReadOnlySet<T>
 	{
 		private readonly ISet<T> _set; 
 

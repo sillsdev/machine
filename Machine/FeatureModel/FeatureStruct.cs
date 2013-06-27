@@ -84,7 +84,7 @@ namespace SIL.Machine.FeatureModel
 		/// <value>The features.</value>
 		public IReadOnlyCollection<Feature> Features
 		{
-			get { return _definite.Keys.AsSimpleReadOnlyCollection(); }
+			get { return _definite.Keys.ToReadOnlyCollection(); }
 		}
 
 		public bool HasVariables

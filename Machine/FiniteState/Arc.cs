@@ -52,7 +52,7 @@ namespace SIL.Machine.FiniteState
 		{
 			_source = source;
 			Input = input;
-			_outputs = output.ToList().AsReadOnlyList();
+			_outputs = output.ToList().ToReadOnlyList();
 			Target = target;
 			_priorityType = ArcPriorityType.Medium;
 			Priority = -1;

@@ -46,7 +46,7 @@ namespace SIL.Machine.Matching
 
 		public IReadOnlyList<string> PatternPath
 		{
-			get { return _patternPath.AsReadOnlyList(); }
+			get { return _patternPath.ToReadOnlyList(); }
 		}
 
 		public VariableBindings VariableBindings

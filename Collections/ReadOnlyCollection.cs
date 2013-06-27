@@ -4,15 +4,20 @@ using System.Collections.Generic;
 
 namespace SIL.Collections
 {
-	public class SimpleReadOnlyCollection<T> : ICollection<T>, IReadOnlyCollection<T>
+	public class ReadOnlyCollection<T> : ICollection<T>, IReadOnlyCollection<T>
 	{
 		private readonly ICollection<T> _collection;
 
-		public SimpleReadOnlyCollection(ICollection<T> collection)
+		public ReadOnlyCollection(ICollection<T> collection)
 		{
 			_collection = collection;
 		}
 
+		protected ICollection<T> Items
+		{
+			get { return _collection; }
+		}
+			
 		IEnumerator<T> IEnumerable<T>.GetEnumerator()
 		{
 			return _collection.GetEnumerator();

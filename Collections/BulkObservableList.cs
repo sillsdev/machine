@@ -1,27 +1,21 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
 namespace SIL.Collections
 {
-	public class BulkObservableCollection<T> : ObservableCollection<T>
+	public class BulkObservableList<T> : ObservableList<T>
 	{
 		private bool _updating;
 
-		public BulkObservableCollection()
+		public BulkObservableList()
 		{
 		}
 
-		public BulkObservableCollection(IEnumerable<T> collection)
+		public BulkObservableList(IEnumerable<T> collection)
 			: base(collection)
-		{
-		}
-
-		public BulkObservableCollection(List<T> list)
-			: base(list)
 		{
 		}
 
@@ -190,9 +184,9 @@ namespace SIL.Collections
 
 		private class BulkUpdater : IDisposable
 		{
-			private readonly BulkObservableCollection<T> _coll; 
+			private readonly BulkObservableList<T> _coll; 
 
-			public BulkUpdater(BulkObservableCollection<T> coll)
+			public BulkUpdater(BulkObservableList<T> coll)
 			{
 				_coll = coll;
 			}
