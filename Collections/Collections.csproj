@@ -58,6 +58,7 @@
     <Compile Include="IReadOnlyObservableCollection.cs" />
     <Compile Include="IReadOnlyObservableList.cs" />
     <Compile Include="ObservableList.cs" />
+    <Compile Include="ObservableObject.cs" />
     <Compile Include="ReadOnlyMirroredCollection.cs" />
     <Compile Include="ReadOnlyMirroredList.cs" />
     <Compile Include="ReadOnlyObservableCollection.cs" />
@@ -85,7 +86,6 @@
     <Compile Include="KeyedList.cs" />
     <Compile Include="KeyedBulkObservableList.cs" />
     <Compile Include="ReadOnlyKeyedCollection.cs" />
-    <Compile Include="NotifyPropertyChangedBase.cs" />
     <Compile Include="NullableValue.cs" />
     <Compile Include="ObservableDictionary.cs" />
     <Compile Include="ObservableHashSet.cs" />
