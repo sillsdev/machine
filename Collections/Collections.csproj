@@ -59,8 +59,6 @@
     <Compile Include="IReadOnlyObservableList.cs" />
     <Compile Include="ObservableList.cs" />
     <Compile Include="ObservableObject.cs" />
-    <Compile Include="ReadOnlyMirroredCollection.cs" />
-    <Compile Include="ReadOnlyMirroredList.cs" />
     <Compile Include="ReadOnlyObservableCollection.cs" />
     <Compile Include="ReadOnlyObservableList.cs" />
     <Compile Include="StructuralEqualityComparer.cs" />
