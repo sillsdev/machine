@@ -630,13 +630,6 @@ namespace SIL.Collections
 			return ~lower;
 		}
 
-		public static IEnumerable<T> Skip<T>(this IList<T> source, int count)
-		{
-			using (var e = source.GetEnumerator())
-				while (count < source.Count && e.MoveNext())
-					yield return source[count++];
-		}
-
 		public static ReadOnlyList<T> ToReadOnlyList<T>(this IList<T> list)
 		{
 			return new ReadOnlyList<T>(list);
