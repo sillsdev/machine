@@ -29,7 +29,7 @@ namespace SIL.Collections
 		}
 	}
 
-	public class ProjectionComparer<TSource, TKey> : IComparer<TSource>
+	public class ProjectionComparer<TSource, TKey> : Comparer<TSource>
 	{
 		private readonly Func<TSource, TKey> _projection;
 		private readonly IComparer<TKey> _comparer;
@@ -45,7 +45,7 @@ namespace SIL.Collections
 			_projection = projection;
 		}
 
-		public int Compare(TSource x, TSource y)
+		public override int Compare(TSource x, TSource y)
 		{
 			if (x == null && y == null)
 				return 0;

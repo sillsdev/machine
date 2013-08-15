@@ -10,7 +10,7 @@ namespace SIL.Collections
 		}
 	}
 
-	public class ReverseComparer<T> : IComparer<T>
+	public class ReverseComparer<T> : Comparer<T>
 	{
 		private readonly IComparer<T> _comparer;
  
@@ -19,7 +19,7 @@ namespace SIL.Collections
 			_comparer = comparer;
 		}
 
-		public int Compare(T x, T y)
+		public override int Compare(T x, T y)
 		{
 			return _comparer.Compare(y, x);
 		}
