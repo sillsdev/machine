@@ -24,6 +24,11 @@ namespace SIL.Collections
 			InsertRange(Count, items);
 		}
 
+		protected bool Updating
+		{
+			get { return _updating; }
+		}
+
 		public void InsertRange(int index, IEnumerable<T> items)
 		{
 			if (index < 0 || index > Count)
