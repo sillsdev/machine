@@ -1,8 +1,6 @@
-using SIL.Collections;
-
 namespace SIL.Machine.Matching.Fluent
 {
-	public interface IQuantifierPatternSyntax<TData, TOffset> : IAlternationPatternSyntax<TData, TOffset> where TData : IData<TOffset>, IDeepCloneable<TData>
+	public interface IQuantifierPatternSyntax<TData, TOffset> : IAlternationPatternSyntax<TData, TOffset> where TData : IData<TOffset>
 	{
 		IAlternationPatternSyntax<TData, TOffset> ZeroOrMore { get; }
 		IAlternationPatternSyntax<TData, TOffset> LazyZeroOrMore { get; }

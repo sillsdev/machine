@@ -6,7 +6,7 @@ using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.Matching.Fluent
 {
-	public abstract class PatternNodeBuilder<TData, TOffset> where TData : IData<TOffset>, IDeepCloneable<TData>
+	public abstract class PatternNodeBuilder<TData, TOffset> where TData : IData<TOffset>
 	{
 		private readonly List<PatternNode<TData, TOffset>> _nodes;
 		private readonly List<PatternNode<TData, TOffset>> _alternation;

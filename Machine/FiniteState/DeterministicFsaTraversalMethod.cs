@@ -5,10 +5,11 @@ using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState
 {
-	internal class DeterministicFsaTraversalMethod<TData, TOffset> : TraversalMethod<TData, TOffset> where TData : IData<TOffset>, IDeepCloneable<TData>
+	internal class DeterministicFsaTraversalMethod<TData, TOffset> : TraversalMethod<TData, TOffset> where TData : IData<TOffset>
 	{
-		public DeterministicFsaTraversalMethod(Direction dir, Func<Annotation<TOffset>, bool> filter, State<TData, TOffset> startState, TData data, bool endAnchor, bool unification, bool useDefaults)
-			: base(dir, filter, startState, data, endAnchor, unification, useDefaults)
+		public DeterministicFsaTraversalMethod(IEqualityComparer<NullableValue<TOffset>[,]> registersEqualityComparer, Direction dir, Func<Annotation<TOffset>, bool> filter, State<TData, TOffset> startState,
+			TData data, bool endAnchor, bool unification, bool useDefaults)
+			: base(registersEqualityComparer, dir, filter, startState, data, endAnchor, unification, useDefaults)
 		{
 		}
 
@@ -50,7 +51,7 @@ namespace SIL.Machine.FiniteState
 		private IEnumerable<Instance> AdvanceFsa(Annotation<TOffset> ann, NullableValue<TOffset>[,] registers, VariableBindings varBindings, Arc<TData, TOffset> arc,
 			List<FstResult<TData, TOffset>> curResults)
 		{
-			return Advance(ann, registers, Data, varBindings, arc, curResults, null,
+			return Advance(ann, registers, default(TData), varBindings, arc, curResults, null,
 				(state, nextAnn, regs, vb, clone) => new Instance(state, nextAnn, regs, vb));
 		}
 	}

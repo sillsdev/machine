@@ -6,7 +6,7 @@ using SIL.Machine.FiniteState;
 
 namespace SIL.Machine.Matching
 {
-	public class Matcher<TData, TOffset> where TData : IData<TOffset>, IDeepCloneable<TData>
+	public class Matcher<TData, TOffset> where TData : IData<TOffset>
 	{
 		public const string EntireMatch = "*entire*";
 

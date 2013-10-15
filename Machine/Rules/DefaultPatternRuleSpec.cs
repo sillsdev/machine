@@ -1,12 +1,11 @@
 using System;
-using SIL.Collections;
 using SIL.Machine.Matching;
 
 namespace SIL.Machine.Rules
 {
-	public delegate TOffset ApplyRhsDelegate<TData, TOffset>(PatternRule<TData, TOffset> rule, Match<TData, TOffset> match, out TData output) where TData : IData<TOffset>, IDeepCloneable<TData>; 
+	public delegate TOffset ApplyRhsDelegate<TData, TOffset>(PatternRule<TData, TOffset> rule, Match<TData, TOffset> match, out TData output) where TData : IData<TOffset>; 
 
-	public class DefaultPatternRuleSpec<TData, TOffset> : IPatternRuleSpec<TData, TOffset> where TData : IData<TOffset>, IDeepCloneable<TData>
+	public class DefaultPatternRuleSpec<TData, TOffset> : IPatternRuleSpec<TData, TOffset> where TData : IData<TOffset>
 	{
 		private readonly Pattern<TData, TOffset> _pattern; 
 		private readonly ApplyRhsDelegate<TData, TOffset> _action;

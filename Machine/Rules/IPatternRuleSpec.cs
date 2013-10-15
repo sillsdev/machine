@@ -3,7 +3,7 @@ using SIL.Machine.Matching;
 
 namespace SIL.Machine.Rules
 {
-	public interface IPatternRuleSpec<TData, TOffset> where TData : IData<TOffset>, IDeepCloneable<TData>
+	public interface IPatternRuleSpec<TData, TOffset> where TData : IData<TOffset>
 	{
 		Pattern<TData, TOffset> Pattern { get; }
 

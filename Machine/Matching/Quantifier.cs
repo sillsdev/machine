@@ -8,7 +8,7 @@ namespace SIL.Machine.Matching
     /// <summary>
     /// This class represents a nested phonetic pattern within another phonetic pattern.
     /// </summary>
-	public class Quantifier<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Quantifier<TData, TOffset>>, IValueEquatable<Quantifier<TData, TOffset>> where TData : IData<TOffset>, IDeepCloneable<TData>
+	public class Quantifier<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Quantifier<TData, TOffset>>, IValueEquatable<Quantifier<TData, TOffset>> where TData : IData<TOffset>
     {
     	public const int Infinite = -1;
 

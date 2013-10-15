@@ -7,7 +7,7 @@ using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState
 {
-	public class Fst<TData, TOffset> : IFreezable where TData : IData<TOffset>, IDeepCloneable<TData>
+	public class Fst<TData, TOffset> : IFreezable where TData : IData<TOffset>
 	{
 		private int _nextTag;
 		private readonly Dictionary<string, int> _groups;
@@ -17,7 +17,6 @@ namespace SIL.Machine.FiniteState
 		private Func<Annotation<TOffset>, bool> _filter;
 		private readonly List<State<TData, TOffset>> _states;
 		private readonly ReadOnlyCollection<State<TData, TOffset>> _readonlyStates;
-		private readonly IEqualityComparer<FstResult<TData, TOffset>> _fsaMatchEqualityComparer;
 		private readonly IFstOperations<TData, TOffset> _operations;
 		private readonly RegistersEqualityComparer<TOffset> _registersEqualityComparer;
 		private readonly IEqualityComparer<TOffset> _offsetEqualityComparer; 
@@ -47,29 +46,8 @@ namespace SIL.Machine.FiniteState
 			_initializers = new List<TagMapCommand>();
 			_groups = new Dictionary<string, int>();
 			_filter = ann => true;
-			_fsaMatchEqualityComparer = AnonymousEqualityComparer.Create<FstResult<TData, TOffset>>(FstResultEquals, FstResultGetHashCode);
 			_registersEqualityComparer = new RegistersEqualityComparer<TOffset>(offsetEqualityComparer);
 			_offsetEqualityComparer = offsetEqualityComparer;
-		}
-
-		private bool FstResultEquals(FstResult<TData, TOffset> x, FstResult<TData, TOffset> y)
-		{
-			if (x.ID != y.ID)
-				return false;
-
-			if (!_registersEqualityComparer.Equals(x.Registers, y.Registers))
-				return false;
-
-			return EqualityComparer<TData>.Default.Equals(x.Output, y.Output);
-		}
-
-		private int FstResultGetHashCode(FstResult<TData, TOffset> m)
-		{
-			int code = 23;
-			code = code * 31 + (m.ID == null ? 0 : m.ID.GetHashCode());
-			code = code * 31 + _registersEqualityComparer.GetHashCode(m.Registers);
-			code = code * 31 * EqualityComparer<TData>.Default.GetHashCode(m.Output);
-			return code;
 		}
 
 		public bool IsDeterministic { get; private set; }
@@ -238,11 +216,15 @@ namespace SIL.Machine.FiniteState
 
 		public bool Transduce(TData data, Annotation<TOffset> start, bool startAnchor, bool endAnchor, bool useDefaults, out IEnumerable<FstResult<TData, TOffset>> results)
 		{
+			if (_operations != null && !(data is IDeepCloneable<TData>))
+				throw new ArgumentException("The input data must be cloneable.", "data");
 			return Transduce(data, start, startAnchor, endAnchor, true, useDefaults, out results);
 		}
 
 		public bool Transduce(TData data, Annotation<TOffset> start, bool startAnchor, bool endAnchor, bool useDefaults, out FstResult<TData, TOffset> result)
 		{
+			if (_operations != null && !(data is IDeepCloneable<TData>))
+				throw new ArgumentException("The input data must be cloneable.", "data");
 			IEnumerable<FstResult<TData, TOffset>> results;
 			if (Transduce(data, start, startAnchor, endAnchor, false, useDefaults, out results))
 			{
@@ -259,14 +241,14 @@ namespace SIL.Machine.FiniteState
 			if (_operations != null)
 			{
 				if (IsDeterministic)
-					traversalMethod = new DeterministicFstTraversalMethod<TData, TOffset>(_operations, _dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
+					traversalMethod = new DeterministicFstTraversalMethod<TData, TOffset>(_registersEqualityComparer, _operations, _dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
 				else
-					traversalMethod = new NondeterministicFstTraversalMethod<TData, TOffset>(_operations, _dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
+					traversalMethod = new NondeterministicFstTraversalMethod<TData, TOffset>(_registersEqualityComparer, _operations, _dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
 			}
 			else
 			{
 				if (IsDeterministic)
- 					traversalMethod = new DeterministicFsaTraversalMethod<TData, TOffset>(_dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
+ 					traversalMethod = new DeterministicFsaTraversalMethod<TData, TOffset>(_registersEqualityComparer, _dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
 				else
 					traversalMethod = new NondeterministicFsaTraversalMethod<TData, TOffset>(_registersEqualityComparer, _dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
 			}
@@ -309,7 +291,7 @@ namespace SIL.Machine.FiniteState
 				return false;
 			}
 
-			results = allMatches ? resultList.Distinct(_fsaMatchEqualityComparer) : resultList;
+			results = allMatches ? resultList.Distinct() : resultList;
 			return true;
 		}
 

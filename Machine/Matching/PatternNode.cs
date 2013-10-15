@@ -9,7 +9,7 @@ namespace SIL.Machine.Matching
 	/// <summary>
 	/// This is the abstract class that all phonetic pattern nodes extend.
 	/// </summary>
-	public abstract class PatternNode<TData, TOffset> : OrderedBidirTreeNode<PatternNode<TData, TOffset>>, IDeepCloneable<PatternNode<TData, TOffset>>, IFreezable, IValueEquatable<PatternNode<TData, TOffset>> where TData : IData<TOffset>, IDeepCloneable<TData>
+	public abstract class PatternNode<TData, TOffset> : OrderedBidirTreeNode<PatternNode<TData, TOffset>>, IDeepCloneable<PatternNode<TData, TOffset>>, IFreezable, IValueEquatable<PatternNode<TData, TOffset>> where TData : IData<TOffset>
 	{
 		private int _hashCode;
 

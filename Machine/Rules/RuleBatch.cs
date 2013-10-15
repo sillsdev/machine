@@ -36,6 +36,16 @@ namespace SIL.Machine.Rules
 			get { return _rules.ToReadOnlyList(); }
 		}
 
+		public IEqualityComparer<TData> Comparer
+		{
+			get { return _comparer; }
+		}
+
+		public bool IsDisjunctive
+		{
+			get { return _disjunctive; }
+		}
+
 		public virtual IEnumerable<TData> Apply(TData input)
 		{
 			var output = new HashSet<TData>(_comparer);

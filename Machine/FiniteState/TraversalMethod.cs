@@ -5,8 +5,9 @@ using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState
 {
-	internal abstract class TraversalMethod<TData, TOffset> where TData : IData<TOffset>, IDeepCloneable<TData>
+	internal abstract class TraversalMethod<TData, TOffset> where TData : IData<TOffset>
 	{
+		private readonly IEqualityComparer<NullableValue<TOffset>[,]> _registersEqualityComparer;
 		private readonly Direction _dir;
 		private readonly State<TData, TOffset> _startState;
 		private readonly TData _data;
@@ -15,8 +16,10 @@ namespace SIL.Machine.FiniteState
 		private readonly bool _useDefaults;
 		private readonly Func<Annotation<TOffset>, bool> _filter;
 
-		protected TraversalMethod(Direction dir, Func<Annotation<TOffset>, bool> filter, State<TData, TOffset> startState, TData data, bool endAnchor, bool unification, bool useDefaults)
+		protected TraversalMethod(IEqualityComparer<NullableValue<TOffset>[,]> registersEqualityComparer, Direction dir, Func<Annotation<TOffset>, bool> filter, State<TData, TOffset> startState,
+			TData data, bool endAnchor, bool unification, bool useDefaults)
 		{
+			_registersEqualityComparer = registersEqualityComparer;
 			_dir = dir;
 			_filter = filter;
 			_startState = startState;
@@ -29,6 +32,11 @@ namespace SIL.Machine.FiniteState
 		protected TData Data
 		{
 			get { return _data; }
+		}
+
+		protected IEqualityComparer<NullableValue<TOffset>[,]> RegistersEqualityComparer
+		{
+			get { return _registersEqualityComparer; }
 		}
 
 		public abstract IEnumerable<FstResult<TData, TOffset>> Traverse(ref Annotation<TOffset> ann, NullableValue<TOffset>[,] initRegisters, IList<TagMapCommand> initCmds, ISet<Annotation<TOffset>> initAnns);
@@ -67,7 +75,12 @@ namespace SIL.Machine.FiniteState
 				{
 					foreach (AcceptInfo<TData, TOffset> acceptInfo in arc.Target.AcceptInfos)
 					{
-						var candidate = new FstResult<TData, TOffset>(acceptInfo.ID, matchRegisters, output.DeepClone(), varBindings.DeepClone(),
+						TData resOutput = output;
+						var cloneable = resOutput as IDeepCloneable<TData>;
+						if (cloneable != null)
+							resOutput = cloneable.DeepClone();
+
+						var candidate = new FstResult<TData, TOffset>(_registersEqualityComparer, acceptInfo.ID, matchRegisters, resOutput, varBindings.DeepClone(),
 							acceptInfo.Priority, arc.Target.IsLazy, ann, priorities);
 						if (acceptInfo.Acceptable == null || acceptInfo.Acceptable(_data, candidate))
 							curResults.Add(candidate);
@@ -75,7 +88,11 @@ namespace SIL.Machine.FiniteState
 				}
 				else
 				{
-					curResults.Add(new FstResult<TData, TOffset>(null, matchRegisters, output.DeepClone(), varBindings.DeepClone(), -1, arc.Target.IsLazy, ann,
+					TData resOutput = output;
+					var cloneable = resOutput as IDeepCloneable<TData>;
+					if (cloneable != null)
+						resOutput = cloneable.DeepClone();
+					curResults.Add(new FstResult<TData, TOffset>(_registersEqualityComparer, null, matchRegisters, resOutput, varBindings.DeepClone(), -1, arc.Target.IsLazy, ann,
 						priorities));
 				}
 			}

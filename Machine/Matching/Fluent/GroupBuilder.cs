@@ -1,10 +1,9 @@
 using System;
-using SIL.Collections;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.Matching.Fluent
 {
-	public class GroupBuilder<TData, TOffset> : PatternNodeBuilder<TData, TOffset>, IQuantifierGroupSyntax<TData, TOffset> where TData : IData<TOffset>, IDeepCloneable<TData>
+	public class GroupBuilder<TData, TOffset> : PatternNodeBuilder<TData, TOffset>, IQuantifierGroupSyntax<TData, TOffset> where TData : IData<TOffset>
 	{
 		private readonly string _name;
 

@@ -4,7 +4,7 @@ using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.Matching.Fluent
 {
-	public class PatternBuilder<TData, TOffset> : PatternNodeBuilder<TData, TOffset>, IPatternSyntax<TData, TOffset>, IQuantifierPatternSyntax<TData, TOffset> where TData : IData<TOffset>, IDeepCloneable<TData>
+	public class PatternBuilder<TData, TOffset> : PatternNodeBuilder<TData, TOffset>, IPatternSyntax<TData, TOffset>, IQuantifierPatternSyntax<TData, TOffset> where TData : IData<TOffset>
 	{
 		private readonly string _name;
 		private Func<Match<TData, TOffset>, bool> _acceptable = match => true;

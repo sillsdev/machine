@@ -5,7 +5,7 @@ using SIL.Machine.Matching;
 
 namespace SIL.Machine.Rules
 {
-	public class PatternRule<TData, TOffset> : IRule<TData, TOffset> where TData : IData<TOffset>, IDeepCloneable<TData>
+	public class PatternRule<TData, TOffset> : IRule<TData, TOffset> where TData : IData<TOffset>
 	{
 		private readonly SpanFactory<TOffset> _spanFactory;
 		private readonly IPatternRuleSpec<TData, TOffset> _ruleSpec;

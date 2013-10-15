@@ -21,7 +21,7 @@ namespace SIL.Machine.FiniteState
 					if (x[i, j].HasValue != y[i, j].HasValue)
 						return false;
 
-					if (x[i, j].HasValue && !_offsetEqualityComparer.Equals(x[i, j].Value, x[i, j].Value))
+					if (x[i, j].HasValue && !_offsetEqualityComparer.Equals(x[i, j].Value, y[i, j].Value))
 						return false;
 				}
 			}

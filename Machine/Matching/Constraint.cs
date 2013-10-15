@@ -8,7 +8,7 @@ namespace SIL.Machine.Matching
     /// This class represents a simple context in a phonetic pattern. Simple contexts are used to represent
     /// natural classes and segments in a pattern.
     /// </summary>
-	public class Constraint<TData, TOffset> : PatternNode<TData, TOffset>, IValueEquatable<Constraint<TData, TOffset>>, IDeepCloneable<Constraint<TData, TOffset>> where TData : IData<TOffset>, IDeepCloneable<TData>
+	public class Constraint<TData, TOffset> : PatternNode<TData, TOffset>, IValueEquatable<Constraint<TData, TOffset>>, IDeepCloneable<Constraint<TData, TOffset>> where TData : IData<TOffset>
     {
     	private readonly FeatureStruct _fs;
 

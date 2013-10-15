@@ -6,13 +6,13 @@ using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState
 {
-	internal class DeterministicFstTraversalMethod<TData, TOffset> : TraversalMethod<TData, TOffset> where TData : IData<TOffset>, IDeepCloneable<TData>
+	internal class DeterministicFstTraversalMethod<TData, TOffset> : TraversalMethod<TData, TOffset> where TData : IData<TOffset>
 	{
 		private readonly IFstOperations<TData, TOffset> _operations;
 
-		public DeterministicFstTraversalMethod(IFstOperations<TData, TOffset> operations, Direction dir, Func<Annotation<TOffset>, bool> filter, State<TData, TOffset> startState, TData data, bool endAnchor,
-			bool unification, bool useDefaults)
-			: base(dir, filter, startState, data, endAnchor, unification, useDefaults)
+		public DeterministicFstTraversalMethod(IEqualityComparer<NullableValue<TOffset>[,]> registersEqualityComparer, IFstOperations<TData, TOffset> operations, Direction dir, Func<Annotation<TOffset>, bool> filter,
+			State<TData, TOffset> startState, TData data, bool endAnchor, bool unification, bool useDefaults)
+			: base(registersEqualityComparer, dir, filter, startState, data, endAnchor, unification, useDefaults)
 		{
 			_operations = operations;
 		}
@@ -45,7 +45,7 @@ namespace SIL.Machine.FiniteState
 							else
 							{
 								registers = (NullableValue<TOffset>[,]) inst.Registers.Clone();
-								output = inst.Output.DeepClone();
+								output = ((IDeepCloneable<TData>) inst.Output).DeepClone();
 
 								Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = inst.Output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
 									.Zip(output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
@@ -69,7 +69,7 @@ namespace SIL.Machine.FiniteState
 								Queue<Annotation<TOffset>> queue = inst.Queue;
 								if (!IsInstanceReuseable(inst))
 								{
-									output = inst.Output.DeepClone();
+									output = ((IDeepCloneable<TData>) inst.Output).DeepClone();
 
 									Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = inst.Output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
 										.Zip(output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
@@ -121,7 +121,7 @@ namespace SIL.Machine.FiniteState
 			foreach (FstInstance inst in Initialize(ref ann, registers, cmds, initAnns,
 				(state, startAnn, regs, vb) =>
 					{
-						TData o = Data.DeepClone();
+						TData o = ((IDeepCloneable<TData>) Data).DeepClone();
 						Dictionary<Annotation<TOffset>, Annotation<TOffset>> m = Data.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
 										   .Zip(o.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
 						var q = new Queue<Annotation<TOffset>>();
@@ -148,7 +148,7 @@ namespace SIL.Machine.FiniteState
 						Queue<Annotation<TOffset>> q = queue;
 						if (clone)
 						{
-							o = output.DeepClone();
+							o = ((IDeepCloneable<TData>) output).DeepClone();
 
 							Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
 								.Zip(o.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);

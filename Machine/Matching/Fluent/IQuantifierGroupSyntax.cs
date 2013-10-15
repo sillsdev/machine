@@ -1,8 +1,6 @@
-﻿using SIL.Collections;
-
-namespace SIL.Machine.Matching.Fluent
+﻿namespace SIL.Machine.Matching.Fluent
 {
-	public interface IQuantifierGroupSyntax<TData, TOffset> : IAlternationGroupSyntax<TData, TOffset> where TData : IData<TOffset>, IDeepCloneable<TData>
+	public interface IQuantifierGroupSyntax<TData, TOffset> : IAlternationGroupSyntax<TData, TOffset> where TData : IData<TOffset>
 	{
 		IAlternationGroupSyntax<TData, TOffset> ZeroOrMore { get; }
 		IAlternationGroupSyntax<TData, TOffset> LazyZeroOrMore { get; }

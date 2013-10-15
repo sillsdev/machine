@@ -5,7 +5,7 @@ using SIL.Machine.FiniteState;
 
 namespace SIL.Machine.Matching
 {
-	public class Alternation<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Alternation<TData, TOffset>>, IValueEquatable<Alternation<TData, TOffset>> where TData : IData<TOffset>, IDeepCloneable<TData>
+	public class Alternation<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Alternation<TData, TOffset>>, IValueEquatable<Alternation<TData, TOffset>> where TData : IData<TOffset>
 	{
 		public Alternation()
 		{

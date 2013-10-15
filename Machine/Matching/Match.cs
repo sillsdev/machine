@@ -8,7 +8,7 @@ namespace SIL.Machine.Matching
 	/// <summary>
 	/// This class represents a match between a phonetic shape and a phonetic pattern.
 	/// </summary>
-	public class Match<TData, TOffset> : GroupCapture<TOffset> where TData : IData<TOffset>, IDeepCloneable<TData>
+	public class Match<TData, TOffset> : GroupCapture<TOffset> where TData : IData<TOffset>
 	{
 		private readonly Matcher<TData, TOffset> _matcher; 
 		private readonly GroupCaptureCollection<TOffset> _groupCaptures;

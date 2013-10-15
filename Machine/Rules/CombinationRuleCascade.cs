@@ -27,13 +27,13 @@ namespace SIL.Machine.Rules
 		public override IEnumerable<TData> Apply(TData input)
 		{
 			var output = new HashSet<TData>(Comparer);
-			ApplyRules(input, !MultipleApplication ? new HashSet<int>() : null, 0, output);
+			ApplyRules(input, !MultipleApplication ? new HashSet<int>() : null, output);
 			return output;
 		}
 
-		private void ApplyRules(TData input, HashSet<int> rulesApplied, int ruleIndex, HashSet<TData> output)
+		private void ApplyRules(TData input, HashSet<int> rulesApplied, HashSet<TData> output)
 		{
-			for (int i = ruleIndex; i < Rules.Count; i++)
+			for (int i = 0; i < Rules.Count; i++)
 			{
 				if ((rulesApplied == null || !rulesApplied.Contains(i)))
 				{
@@ -41,7 +41,7 @@ namespace SIL.Machine.Rules
 					{
 						// avoid infinite loop
 						if (!Comparer.Equals(input, result))
-							ApplyRules(result, rulesApplied == null ? null : new HashSet<int>(rulesApplied) {i}, 0, output);
+							ApplyRules(result, rulesApplied == null ? null : new HashSet<int>(rulesApplied) {i}, output);
 						output.Add(result);
 					}
 				}
