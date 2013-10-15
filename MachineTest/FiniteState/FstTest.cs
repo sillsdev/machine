@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.FiniteState;
 
-namespace SIL.Machine.Test
+namespace SIL.Machine.Test.FiniteState
 {
 	[TestFixture]
 	public class FstTest : PhoneticTestBase

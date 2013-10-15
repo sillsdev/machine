@@ -361,24 +361,4 @@ namespace SIL.Collections
 			return sb.ToString();
 		}
 	}
-
-	internal class WrapperEqualityComparer<T> : IEqualityComparer<T>
-	{
-		private readonly IEqualityComparer _comparer;
-
-		public WrapperEqualityComparer(IEqualityComparer comparer)
-		{
-			_comparer = comparer;
-		}
-
-		public bool Equals(T x, T y)
-		{
-			return _comparer.Equals(x, y);
-		}
-
-		public int GetHashCode(T obj)
-		{
-			return _comparer.GetHashCode(obj);
-		}
-	}
 }

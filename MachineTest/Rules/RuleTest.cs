@@ -1,10 +1,10 @@
-﻿using System.Linq;
+using System.Linq;
 using NUnit.Framework;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
 
-namespace SIL.Machine.Test
+namespace SIL.Machine.Test.Rules
 {
 	public class RuleTest : PhoneticTestBase
 	{

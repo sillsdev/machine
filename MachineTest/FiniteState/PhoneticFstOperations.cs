@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.FiniteState;
 
-namespace SIL.Machine.Test
+namespace SIL.Machine.Test.FiniteState
 {
 	public class PhoneticFstOperations : IFstOperations<StringData, int>
 	{

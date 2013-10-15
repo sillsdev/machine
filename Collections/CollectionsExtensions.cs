@@ -1,7 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace SIL.Collections
 {
@@ -719,6 +719,15 @@ namespace SIL.Collections
 		public static ReadOnlyKeyedCollection<TKey, TItem> ToReadOnlyKeyedCollection<TKey, TItem>(this IKeyedCollection<TKey, TItem> collection)
 		{
 			return new ReadOnlyKeyedCollection<TKey, TItem>(collection);
+		}
+
+		#endregion
+
+		#region IEqualityComparer
+
+		public static IEqualityComparer<T> ToTypesafe<T>(this IEqualityComparer comparer)
+		{
+			return new WrapperEqualityComparer<T>(comparer);
 		}
 
 		#endregion

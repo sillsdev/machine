@@ -1,14 +1,13 @@
-﻿using System.Linq;
+using System.Linq;
 using NUnit.Framework;
 using SIL.Collections;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 
-namespace SIL.Machine.Test
+namespace SIL.Machine.Test.Matching
 {
 	public class MatcherTest : PhoneticTestBase
 	{
-
 		[Test]
 		public void SimplePattern()
 		{
