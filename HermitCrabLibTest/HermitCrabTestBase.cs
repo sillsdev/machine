@@ -348,7 +348,7 @@ namespace SIL.HermitCrab.Test
 
 		protected void AssertSyntacticFeatureStructsEqual(IEnumerable<Word> words, FeatureStruct expected)
 		{
-			Assert.That(words, Has.All.Property("SyntacticFeatureStruct").EqualTo(expected).Using(ValueEqualityComparer<FeatureStruct>.Default));
+			Assert.That(words, Has.All.Property("SyntacticFeatureStruct").EqualTo(expected).Using(FreezableEqualityComparer<FeatureStruct>.Default));
 		}
 	}
 }

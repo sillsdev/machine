@@ -19,6 +19,10 @@ namespace SIL.HermitCrab
 		public static readonly FeatureSymbol LeftSide;
 		public static readonly FeatureSymbol RightSide;
 
+		public static readonly SymbolicFeature Deletion;
+		public static readonly FeatureSymbol Deleted;
+		public static readonly FeatureSymbol NotDeleted;
+
 		public static readonly StringFeature StrRep;
 
 		public static readonly StringFeature Allomorph;
@@ -41,10 +45,19 @@ namespace SIL.HermitCrab
 			Clean = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "Clean" };
 
 			Modified = new SymbolicFeature(Guid.NewGuid().ToString(), Dirty, Clean)
-			           	{
-			           		Description = "Modified",
-			           		DefaultValue = new SymbolicFeatureValue(Clean)
-			           	};
+			    {
+			        Description = "Modified",
+			        DefaultValue = new SymbolicFeatureValue(Clean)
+			    };
+
+			Deleted = new FeatureSymbol(Guid.NewGuid().ToString()) {Description = "Deleted"};
+			NotDeleted = new FeatureSymbol(Guid.NewGuid().ToString()) {Description = "NotDeleted"};
+
+			Deletion = new SymbolicFeature(Guid.NewGuid().ToString(), Deleted, NotDeleted)
+				{
+					Description = "Deletion",
+					DefaultValue = new SymbolicFeatureValue(NotDeleted)
+				};
 
 			LeftSide = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "LeftSide" };
 			RightSide = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "RightSide" };
@@ -65,6 +78,7 @@ namespace SIL.HermitCrab
 		{
 			Add(Type);
 			Add(Modified);
+			Add(Deletion);
 			Add(AnchorType);
 			Add(StrRep);
 			Add(Allomorph);

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using SIL.Collections;
 using SIL.Machine;
 using SIL.Machine.FeatureModel;
@@ -99,14 +101,32 @@ namespace SIL.HermitCrab
 			input.CurrentTrace = trace;
 
 			// Unapply rules
-			var validWords = new HashSet<Word>(ValueEqualityComparer<Word>.Default);
+			var validWordsStack = new ConcurrentStack<Word>();
 			IEnumerable<Word> analyses = _analysisRule.Apply(input);
-			foreach (Word analysisWord in analyses)
-			{
-				foreach (Word synthesisWord in LexicalLookup(analysisWord))
-					validWords.UnionWith(_synthesisRule.Apply(synthesisWord).Where(w => IsWordValid(w) && _lang.SurfaceStratum.SymbolTable.IsMatch(word, w.Shape)));
-			}
 
+			MorphException exception = null;
+			Parallel.ForEach(analyses, (analysisWord, state) =>
+				{
+					try
+					{
+						foreach (Word synthesisWord in LexicalLookup(analysisWord))
+						{
+							Word[] valid = _synthesisRule.Apply(synthesisWord).Where(IsWordValid).ToArray();
+							if (valid.Length > 0)
+								validWordsStack.PushRange(valid);
+						}
+					}
+					catch (MorphException me)
+					{
+						state.Stop();
+						exception = me;
+					}
+				});
+
+			if (exception != null)
+				throw exception;
+
+			Word[] validWords = validWordsStack.Distinct(FreezableEqualityComparer<Word>.Default).ToArray();
 			var matchList = new List<Word>();
 			foreach (IGrouping<IEnumerable<Allomorph>, Word> group in validWords.GroupBy(validWord => validWord.AllomorphsInMorphOrder, MorphsEqualityComparer))
 			{
@@ -115,12 +135,15 @@ namespace SIL.HermitCrab
 				Word prevMatch = null;
 				foreach (Word match in group.OrderBy(w => w.AllomorphsInMorphOrder, MorphsComparer))
 				{
-					if (prevMatch != null && match.AllomorphsInMorphOrder.Zip(prevMatch.AllomorphsInMorphOrder).All(tuple => tuple.Item1 == tuple.Item2 || !tuple.Item1.ConstraintsEqual(tuple.Item2)))
+					if (prevMatch != null && match.AllomorphsInMorphOrder.Zip(prevMatch.AllomorphsInMorphOrder).Any(tuple => tuple.Item1 != tuple.Item2 && !tuple.Item1.ConstraintsEqual(tuple.Item2)))
 						break;
 
-					if (TraceSuccess)
-						match.CurrentTrace.Children.Add(new Trace(TraceType.ReportSuccess, _lang) {Output = match});
-					matchList.Add(match);
+					if (_lang.SurfaceStratum.SymbolTable.IsMatch(word, match.Shape))
+					{
+						if (TraceSuccess)
+							match.CurrentTrace.Children.Add(new Trace(TraceType.ReportSuccess, _lang) {Output = match});
+						matchList.Add(match);
+					}
 					prevMatch = match;
 				}
 			}

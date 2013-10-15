@@ -58,7 +58,10 @@ namespace SIL.HermitCrab.PhonologicalRules
 				foreach (ShapeNode node in match.Input.Shape.GetNodes(group.Span))
 				{
 					if (node != cur.Next)
+					{
+						node.Remove();
 						cur.AddAfter(node);
+					}
 					node.SetDirty(true);
 					cur = node;
 				}

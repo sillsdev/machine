@@ -17,14 +17,14 @@ namespace SIL.HermitCrab
 			_morpher = morpher;
 			_template = template;
 			_rules = new List<IRule<Word, ShapeNode>>(template.Slots
-				.Select(slot => new RuleBatch<Word, ShapeNode>(slot.Rules.Select(mr => mr.CompileSynthesisRule(spanFactory, morpher)), false, ValueEqualityComparer<Word>.Default)));
+				.Select(slot => new RuleBatch<Word, ShapeNode>(slot.Rules.Select(mr => mr.CompileSynthesisRule(spanFactory, morpher)), false, FreezableEqualityComparer<Word>.Default)));
 		}
 
 		public IEnumerable<Word> Apply(Word input)
 		{
 			if (_morpher.TraceRules.Contains(_template))
 				input.CurrentTrace.Children.Add(new Trace(TraceType.TemplateSynthesisInput, _template) {Input = input});
-			var output = new HashSet<Word>(ValueEqualityComparer<Word>.Default);
+			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
 			ApplySlots(input, 0, output);
 			return output;
 		}

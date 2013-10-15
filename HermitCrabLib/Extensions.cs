@@ -9,6 +9,11 @@ namespace SIL.HermitCrab
 {
 	public static class Extensions
 	{
+		public static FeatureSymbol Type(this ShapeNode node)
+		{
+			return (FeatureSymbol) node.Annotation.FeatureStruct.GetValue(HCFeatureSystem.Type);
+		}
+
 		public static FeatureSymbol Type(this Annotation<ShapeNode> ann)
 		{
 			return (FeatureSymbol) ann.FeatureStruct.GetValue(HCFeatureSystem.Type);
@@ -53,8 +58,26 @@ namespace SIL.HermitCrab
 			node.Annotation.FeatureStruct.AddValue(HCFeatureSystem.Modified, dirty ? HCFeatureSystem.Dirty : HCFeatureSystem.Clean);
 		}
 
+		public static bool IsDeleted(this Annotation<ShapeNode> ann)
+		{
+			SymbolicFeatureValue sfv;
+			if (ann.FeatureStruct.TryGetValue(HCFeatureSystem.Deletion, out sfv))
+				return ((FeatureSymbol) sfv) == HCFeatureSystem.Deleted;
+			return false;
+		}
+
+		public static bool IsDeleted(this ShapeNode node)
+		{
+			return node.Annotation.IsDeleted();
+		}
+
+		public static void SetDeleted(this ShapeNode node, bool deleted)
+		{
+			node.Annotation.FeatureStruct.AddValue(HCFeatureSystem.Deletion, deleted ? HCFeatureSystem.Deleted : HCFeatureSystem.NotDeleted);
+		}
+
 		private static readonly IEqualityComparer<ShapeNode> NodeComparer = new ProjectionEqualityComparer<ShapeNode, FeatureStruct>(node => node.Annotation.FeatureStruct,
-			ValueEqualityComparer<FeatureStruct>.Default);
+			FreezableEqualityComparer<FeatureStruct>.Default);
 		public static bool Duplicates(this Shape x, Shape y)
 		{
 			return x.Where(n => !n.Annotation.Optional).SequenceEqual(y.Where(n => !n.Annotation.Optional), NodeComparer);

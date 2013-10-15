@@ -34,7 +34,7 @@ namespace SIL.HermitCrab
 						{
 							AnchoredToStart = true,
 							Direction = Direction.RightToLeft,
-							Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor)
+							Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor) && !ann.IsDeleted()
 						});
 			}
 			if (rightEnv != null && !rightEnv.IsLeaf)
@@ -46,7 +46,7 @@ namespace SIL.HermitCrab
 					new MatcherSettings<ShapeNode>
 						{
 							AnchoredToStart = true,
-							Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor)
+							Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor) && !ann.IsDeleted()
 						});
 			}
 		}
@@ -88,8 +88,8 @@ namespace SIL.HermitCrab
 		public override int GetHashCode()
 		{
 			int code = 23;
-			code = code * 31 + (_leftEnv == null ? 0 : _leftEnv.GetValueHashCode());
-			code = code * 31 + (_rightEnv == null ? 0 : _rightEnv.GetValueHashCode());
+			code = code * 31 + (_leftEnv == null ? 0 : _leftEnv.GetFrozenHashCode());
+			code = code * 31 + (_rightEnv == null ? 0 : _rightEnv.GetFrozenHashCode());
 			return code;
 		}
 	}

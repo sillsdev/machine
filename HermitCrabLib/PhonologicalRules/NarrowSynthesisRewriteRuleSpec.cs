@@ -39,7 +39,7 @@ namespace SIL.HermitCrab.PhonologicalRules
 
 			ShapeNode[] nodes = match.Input.Shape.GetNodes(target.Span, match.Matcher.Direction).ToArray();
 			for (int i = 0; i < _targetCount; i++)
-				nodes[i].Remove();
+				nodes[i].SetDeleted(true);
 
 			output = match.Input;
 			return resumeNode;

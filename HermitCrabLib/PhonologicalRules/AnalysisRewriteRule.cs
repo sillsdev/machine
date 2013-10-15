@@ -69,7 +69,8 @@ namespace SIL.HermitCrab.PhonologicalRules
 				               	{
 				               		Direction = rule.Direction == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight,
 				               		Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Anchor),
-									MatchingMethod = MatchingMethod.Unification
+									MatchingMethod = MatchingMethod.Unification,
+									UseDefaults = true
 				               	};
 
 				PatternRule<Word, ShapeNode> patternRule = null;

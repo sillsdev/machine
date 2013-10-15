@@ -166,6 +166,9 @@ namespace SIL.HermitCrab
 				sb.Append("^");
 			foreach (ShapeNode node in shape)
 			{
+				if (node.IsDeleted())
+					continue;
+
 				string[] strReps = GetMatchingStrReps(node).ToArray();
 				int strRepCount = strReps.Length;
 				if (strRepCount > 0)
@@ -203,7 +206,7 @@ namespace SIL.HermitCrab
 			var sb = new StringBuilder();
 			foreach (ShapeNode node in nodes)
 			{
-				if (!includeBdry && node.Annotation.Type() == HCFeatureSystem.Boundary)
+				if ((!includeBdry && node.Annotation.Type() == HCFeatureSystem.Boundary) || node.IsDeleted())
 					continue;
 
 				IEnumerable<string> strReps = GetMatchingStrReps(node);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using ManyConsole;
 using SIL.Machine;
@@ -23,7 +24,9 @@ namespace SIL.HermitCrab
 		{
 			string word = remainingArguments[0];
 			Trace trace;
+			Stopwatch watch = Stopwatch.StartNew();
 			Word[] results = _context.Morpher.ParseWord(word, out trace).ToArray();
+			watch.Stop();
 			_context.Out.WriteLine("Parsing \"{0}\"", word);
 			if (results.Length == 0)
 			{
@@ -40,6 +43,7 @@ namespace SIL.HermitCrab
 				PrintTrace(trace, 0, new HashSet<int>());
 				_context.Out.WriteLine();
 			}
+			_context.Out.WriteLine("Parse time: {0}ms", watch.ElapsedMilliseconds);
 			return 0;
 		}
 

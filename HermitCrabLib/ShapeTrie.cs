@@ -23,7 +23,11 @@ namespace SIL.HermitCrab
 
 		public void Add(Shape shape, string id)
 		{
-			AddNode(shape.GetFirst(n => _filter(n.Annotation)), _fsa.StartState, id);
+			ShapeNode first = shape.GetFirst(n => _filter(n.Annotation));
+			if (first == shape.End)
+				_fsa.StartState.Arcs.Add(_fsa.CreateAcceptingState(id, (s, match) => true, _shapeCount));
+			else
+				AddNode(first, _fsa.StartState, id);
 			_shapeCount++;
 		}
 

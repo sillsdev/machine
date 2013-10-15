@@ -10,7 +10,7 @@ namespace SIL.HermitCrab
 	{
 		private readonly IDBearerSet<Allomorph> _allomorphs; 
 		private RootAllomorph _rootAllomorph;
-		private readonly Shape _shape;
+		private Shape _shape;
 		private readonly Stack<IMorphologicalRule> _mrules;
 		private readonly Dictionary<IMorphologicalRule, int> _mrulesUnapplied;
 		private readonly Dictionary<IMorphologicalRule, int> _mrulesApplied;
@@ -85,8 +85,7 @@ namespace SIL.HermitCrab
 			set
 			{
 				CheckFrozen();
-				_shape.Clear();
-				value.Shape.CopyTo(_shape);
+				_shape = value.Shape.DeepClone();
 				SetRootAllomorph(value);
 			}
 		}
@@ -291,13 +290,13 @@ namespace SIL.HermitCrab
 		{
 			int code = 23;
 			_shape.Freeze();
-			code = code * 31 + _shape.GetValueHashCode();
+			code = code * 31 + _shape.GetFrozenHashCode();
 			_realizationalFS.Freeze();
-			code = code * 31 + _realizationalFS.GetValueHashCode();
+			code = code * 31 + _realizationalFS.GetFrozenHashCode();
 			foreach (Word nonHead in _nonHeads)
 			{
 				nonHead.Freeze();
-				code = code * 31 + nonHead.GetValueHashCode();
+				code = code * 31 + nonHead.GetFrozenHashCode();
 			}
 			code = code * 31 + _stratum.GetHashCode();
 			code = code * 31 + (_rootAllomorph == null ? 0 : _rootAllomorph.GetHashCode());
@@ -311,7 +310,7 @@ namespace SIL.HermitCrab
 				return false;
 
 			return _shape.ValueEquals(other._shape) && _realizationalFS.ValueEquals(other._realizationalFS)
-				&& _nonHeads.SequenceEqual(other._nonHeads, ValueEqualityComparer<Word>.Default) && _stratum == other._stratum
+				&& _nonHeads.SequenceEqual(other._nonHeads, FreezableEqualityComparer<Word>.Default) && _stratum == other._stratum
 				&& _rootAllomorph == other._rootAllomorph && _mrules.SequenceEqual(other._mrules);
 		}
 

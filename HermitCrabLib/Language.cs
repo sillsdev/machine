@@ -88,7 +88,7 @@ namespace SIL.HermitCrab
 		public IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{
 			return new PipelineRuleCascade<Word, ShapeNode>(_strata.Select(stratum => stratum.CompileSynthesisRule(spanFactory, morpher)),
-				ValueEqualityComparer<Word>.Default);
+				FreezableEqualityComparer<Word>.Default);
 		}
 
     	public void Traverse(Action<IHCRule> action)
@@ -109,9 +109,9 @@ namespace SIL.HermitCrab
 
 			public IEnumerable<Word> Apply(Word input)
 			{
-				var inputSet = new HashSet<Word>(ValueEqualityComparer<Word>.Default){input};
-				var tempSet = new HashSet<Word>(ValueEqualityComparer<Word>.Default);
-				var results = new HashSet<Word>(ValueEqualityComparer<Word>.Default);
+				var inputSet = new HashSet<Word>(FreezableEqualityComparer<Word>.Default){input};
+				var tempSet = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
+				var results = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
 				for (int i = 0; i < _rules.Count && inputSet.Count > 0; i++)
 				{
 					HashSet<Word> outputSet = tempSet;

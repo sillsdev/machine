@@ -504,7 +504,7 @@ namespace SIL.HermitCrab
 			var alloID = (string) alloElem.Attribute("id");
 			var shapeStr = (string) alloElem.Element("PhoneticShape");
 			Shape shape;
-			if (!table.ToShape(shapeStr, out shape))
+			if (!table.ToShape(shapeStr, out shape) || shape.All(n => n.Type() == HCFeatureSystem.Boundary))
 			{
 				throw new LoadException(LoadErrorCode.InvalidShape,
 					string.Format("Failure to translate shape '{0}' of allomorph '{1}' into a phonetic shape using character table '{2}'.", shapeStr, alloID, table.ID));

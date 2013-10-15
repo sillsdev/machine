@@ -27,7 +27,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 				_rules.Add(new PatternRule<Word, ShapeNode>(_spanFactory, ruleSpec,
 					new MatcherSettings<ShapeNode>
 						{
-							Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary),
+							Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary) && !ann.IsDeleted(),
 							AnchoredToStart = true,
 							AnchoredToEnd = true
 						}));

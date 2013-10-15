@@ -43,7 +43,8 @@ namespace SIL.HermitCrab.PhonologicalRules
 			var settings = new MatcherSettings<ShapeNode>
 			               	{
 			               		Direction = rule.Direction,
-			               		Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor),
+			               		Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor) && !ann.IsDeleted(),
+								UseDefaults = true
 			               	};
 
 			_patternRule = new BacktrackingPatternRule(spanFactory, ruleSpec, settings);
