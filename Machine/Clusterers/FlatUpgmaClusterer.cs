@@ -18,7 +18,7 @@ namespace SIL.Machine.Clusterers
 
 		public IEnumerable<Cluster<T>> GenerateClusters(IEnumerable<T> dataObjects)
 		{
-			var clusters = new List<Cluster<T>>(dataObjects.Select(obj => new Cluster<T>(CollectionsExtensions.ToEnumerable<T>(obj)) {Description = obj.ToString()}));
+			var clusters = new List<Cluster<T>>(dataObjects.Select(obj => new Cluster<T>(obj.ToEnumerable()) {Description = obj.ToString()}));
 
 			while (clusters.Count >= 2)
 			{
