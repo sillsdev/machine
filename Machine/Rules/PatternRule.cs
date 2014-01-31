@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using SIL.Collections;
+using SIL.Machine.Annotations;
 using SIL.Machine.Matching;
 
 namespace SIL.Machine.Rules
 {
-	public class PatternRule<TData, TOffset> : IRule<TData, TOffset> where TData : IData<TOffset>
+	public class PatternRule<TData, TOffset> : IRule<TData, TOffset> where TData : IAnnotatedData<TOffset>
 	{
 		private readonly SpanFactory<TOffset> _spanFactory;
 		private readonly IPatternRuleSpec<TData, TOffset> _ruleSpec;

@@ -1,9 +1,10 @@
 ﻿using System;
+using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState
 {
-	public class PriorityUnionOutput<TData, TOffset> : Output<TData, TOffset>, IEquatable<PriorityUnionOutput<TData, TOffset>> where TData : IData<TOffset>
+	public class PriorityUnionOutput<TData, TOffset> : Output<TData, TOffset>, IEquatable<PriorityUnionOutput<TData, TOffset>> where TData : IAnnotatedData<TOffset>
 	{
 		internal PriorityUnionOutput(FeatureStruct fs)
 			: base(fs)

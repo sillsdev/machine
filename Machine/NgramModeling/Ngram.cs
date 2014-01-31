@@ -6,7 +6,7 @@ using SIL.Collections;
 
 namespace SIL.Machine.NgramModeling
 {
-	public class Ngram<TItem> : IReadOnlyList<TItem>, IStructuralEquatable
+	public class Ngram<TItem> : IReadOnlyList<TItem>, IStructuralEquatable, IEquatable<Ngram<TItem>>
 	{
 		public static implicit operator Ngram<TItem>(TItem item)
 		{
@@ -16,7 +16,8 @@ namespace SIL.Machine.NgramModeling
 			return new Ngram<TItem>(item);
 		}
 
-		private readonly TItem[] _items; 
+		private readonly TItem[] _items;
+		private readonly int _hashCode;
 
 		public Ngram(params TItem[] items)
 		{
@@ -24,8 +25,14 @@ namespace SIL.Machine.NgramModeling
 		}
 
 		public Ngram(IEnumerable<TItem> items)
+			: this(items, Direction.LeftToRight)
 		{
-			_items = items.ToArray();
+		}
+
+		public Ngram(IEnumerable<TItem> items, Direction dir)
+		{
+			_items = (dir == Direction.LeftToRight ? items : items.Reverse()).ToArray();
+			_hashCode = _items.GetSequenceHashCode();
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
@@ -38,7 +45,12 @@ namespace SIL.Machine.NgramModeling
 			return ((IEnumerable<TItem>) _items).GetEnumerator();
 		}
 
-		public int Count
+		int IReadOnlyCollection<TItem>.Count
+		{
+			get { return _items.Length; }
+		}
+
+		public int Length
 		{
 			get { return _items.Length; }
 		}
@@ -123,14 +135,87 @@ namespace SIL.Machine.NgramModeling
 			return new Ngram<TItem>(dir == Direction.LeftToRight ? _items.Concat(ngram) : ngram.Concat(_items));
 		}
 
+		public IEnumerable<TItem> GetItems(Direction dir)
+		{
+			return dir == Direction.LeftToRight ? this : this.Reverse();
+		}
+
+		public bool StartsWith(Ngram<TItem> items)
+		{
+			return StartsWith(items, Direction.LeftToRight);
+		}
+
+		public bool StartsWith(Ngram<TItem> items, Direction dir)
+		{
+			return StartsWith(items, dir, EqualityComparer<TItem>.Default);
+		}
+
+		public bool StartsWith(Ngram<TItem> items, Direction dir, IEqualityComparer<TItem> comparer)
+		{
+			if (items.Length > Length)
+				return false;
+
+			IEnumerable<TItem> x = items;
+			IEnumerable<TItem> y = _items;
+			if (dir == Direction.RightToLeft)
+			{
+				x = x.Reverse();
+				y = y.Reverse();
+			}
+
+			foreach (Tuple<TItem, TItem> item in x.Zip(y))
+			{
+				if (!comparer.Equals(item.Item1, item.Item2))
+					return false;
+			}
+			return true;
+		}
+
+		public bool EndsWith(Ngram<TItem> items)
+		{
+			return EndsWith(items, Direction.LeftToRight);
+		}
+
+		public bool EndsWith(Ngram<TItem> items, Direction dir)
+		{
+			return EndsWith(items, dir, EqualityComparer<TItem>.Default);
+		}
+
+		public bool EndsWith(Ngram<TItem> items, Direction dir, IEqualityComparer<TItem> comparer)
+		{
+			if (items.Length > Length)
+				return false;
+
+			IEnumerable<TItem> x = items;
+			IEnumerable<TItem> y = _items;
+			if (dir == Direction.LeftToRight)
+			{
+				x = x.Reverse();
+				y = y.Reverse();
+			}
+
+			foreach (Tuple<TItem, TItem> item in x.Zip(y))
+			{
+				if (!comparer.Equals(item.Item1, item.Item2))
+					return false;
+			}
+			return true;
+		}
+
 		public override bool Equals(object obj)
 		{
-			return ((IStructuralEquatable) this).Equals(obj, EqualityComparer<TItem>.Default);
+			var other = obj as Ngram<TItem>;
+			return other != null && Equals(other);
 		}
 
 		public override int GetHashCode()
 		{
-			return ((IStructuralEquatable) this).GetHashCode(EqualityComparer<TItem>.Default);
+			return _hashCode;
+		}
+
+		public bool Equals(Ngram<TItem> other)
+		{
+			return other != null && _hashCode == other._hashCode && _items.SequenceEqual(other._items);
 		}
 
 		bool IStructuralEquatable.Equals(object other, IEqualityComparer comparer)

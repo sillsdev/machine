@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text;
 using SIL.Collections;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.FiniteState
 {
@@ -13,7 +14,7 @@ namespace SIL.Machine.FiniteState
 		VeryLow
 	}
 
-	public class Arc<TData, TOffset> where TData : IData<TOffset>
+	public class Arc<TData, TOffset> where TData : IAnnotatedData<TOffset>
 	{
 		private readonly State<TData, TOffset> _source;
 		private readonly int _tag = -1;

@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using SIL.Collections;
+using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState
 {
-	internal class NondeterministicFsaTraversalMethod<TData, TOffset> : TraversalMethod<TData, TOffset> where TData : IData<TOffset>
+	internal class NondeterministicFsaTraversalMethod<TData, TOffset> : TraversalMethod<TData, TOffset> where TData : IAnnotatedData<TOffset>
 	{
 		public NondeterministicFsaTraversalMethod(IEqualityComparer<NullableValue<TOffset>[,]> registersEqualityComparer, Direction dir, Func<Annotation<TOffset>, bool> filter, State<TData, TOffset> startState,
 			TData data, bool endAnchor, bool unification, bool useDefaults)

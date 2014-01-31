@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Collections;
+using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState
 {
-	internal class NondeterministicFstTraversalMethod<TData, TOffset> : TraversalMethod<TData, TOffset> where TData : IData<TOffset>
+	internal class NondeterministicFstTraversalMethod<TData, TOffset> : TraversalMethod<TData, TOffset> where TData : IAnnotatedData<TOffset>
 	{
 		private readonly IFstOperations<TData, TOffset> _operations;
 

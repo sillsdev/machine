@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using System.Text;
 using SIL.Collections;
+using SIL.Machine.Annotations;
 using SIL.Machine.FiniteState;
 
 namespace SIL.Machine.Matching
 {
-	public class Alternation<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Alternation<TData, TOffset>>, IValueEquatable<Alternation<TData, TOffset>> where TData : IData<TOffset>
+	public class Alternation<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Alternation<TData, TOffset>>, IValueEquatable<Alternation<TData, TOffset>> where TData : IAnnotatedData<TOffset>
 	{
 		public Alternation()
 		{

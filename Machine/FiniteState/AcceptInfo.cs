@@ -1,8 +1,9 @@
 ﻿using System;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.FiniteState
 {
-	public class AcceptInfo<TData, TOffset> : IEquatable<AcceptInfo<TData, TOffset>> where TData : IData<TOffset>
+	public class AcceptInfo<TData, TOffset> : IEquatable<AcceptInfo<TData, TOffset>> where TData : IAnnotatedData<TOffset>
 	{
 		private readonly string _id;
 		private readonly Func<TData, FstResult<TData, TOffset>, bool> _acceptable;

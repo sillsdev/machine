@@ -3,10 +3,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Rules
 {
-	public class ParallelCombinationRuleCascade<TData, TOffset> : CombinationRuleCascade<TData, TOffset> where TData : IData<TOffset>
+	public class ParallelCombinationRuleCascade<TData, TOffset> : CombinationRuleCascade<TData, TOffset> where TData : IAnnotatedData<TOffset>
 	{
 		public ParallelCombinationRuleCascade(IEnumerable<IRule<TData, TOffset>> rules)
 			: base(rules)

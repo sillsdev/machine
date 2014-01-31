@@ -1,8 +1,9 @@
-﻿using SIL.Machine.FeatureModel;
+﻿using SIL.Machine.Annotations;
+using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState
 {
-	public abstract class Output<TData, TOffset> where TData : IData<TOffset>
+	public abstract class Output<TData, TOffset> where TData : IAnnotatedData<TOffset>
 	{
 		private readonly FeatureStruct _fs;
 

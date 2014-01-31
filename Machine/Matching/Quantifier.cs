@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Collections;
+using SIL.Machine.Annotations;
 using SIL.Machine.FiniteState;
 
 namespace SIL.Machine.Matching
@@ -8,7 +9,7 @@ namespace SIL.Machine.Matching
     /// <summary>
     /// This class represents a nested phonetic pattern within another phonetic pattern.
     /// </summary>
-	public class Quantifier<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Quantifier<TData, TOffset>>, IValueEquatable<Quantifier<TData, TOffset>> where TData : IData<TOffset>
+	public class Quantifier<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Quantifier<TData, TOffset>>, IValueEquatable<Quantifier<TData, TOffset>> where TData : IAnnotatedData<TOffset>
     {
     	public const int Infinite = -1;
 

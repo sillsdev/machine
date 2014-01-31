@@ -1,4 +1,5 @@
-﻿using SIL.Machine.FeatureModel;
+﻿using SIL.Machine.Annotations;
+using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState
 {

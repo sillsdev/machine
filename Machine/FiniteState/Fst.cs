@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using SIL.Collections;
+using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState
 {
-	public class Fst<TData, TOffset> : IFreezable where TData : IData<TOffset>
+	public class Fst<TData, TOffset> : IFreezable where TData : IAnnotatedData<TOffset>
 	{
 		private int _nextTag;
 		private readonly Dictionary<string, int> _groups;

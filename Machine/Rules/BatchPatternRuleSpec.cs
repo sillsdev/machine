@@ -2,11 +2,12 @@
 using System.Collections.Specialized;
 using System.Linq;
 using SIL.Collections;
+using SIL.Machine.Annotations;
 using SIL.Machine.Matching;
 
 namespace SIL.Machine.Rules
 {
-	public class BatchPatternRuleSpec<TData, TOffset> : IPatternRuleSpec<TData, TOffset> where TData : IData<TOffset>
+	public class BatchPatternRuleSpec<TData, TOffset> : IPatternRuleSpec<TData, TOffset> where TData : IAnnotatedData<TOffset>
 	{
 		private readonly Pattern<TData, TOffset> _pattern;
 		private readonly ObservableList<IPatternRuleSpec<TData, TOffset>> _ruleSpecs;

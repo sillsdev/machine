@@ -48,7 +48,16 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AnnotationList.cs" />
+    <Compile Include="Annotations\Annotation.cs" />
+    <Compile Include="Annotations\AnnotationList.cs" />
+    <Compile Include="Annotations\IAnnotatedData.cs" />
+    <Compile Include="Annotations\IntegerSpanFactory.cs" />
+    <Compile Include="Annotations\Shape.cs" />
+    <Compile Include="Annotations\ShapeNode.cs" />
+    <Compile Include="Annotations\ShapeSpanFactory.cs" />
+    <Compile Include="Annotations\Span.cs" />
+    <Compile Include="Annotations\SpanFactory.cs" />
+    <Compile Include="Annotations\AnnotatedStringData.cs" />
     <Compile Include="Clusterers\Cluster.cs" />
     <Compile Include="Clusterers\ClusterEdge.cs" />
     <Compile Include="Clusterers\ClusterExtensions.cs" />
@@ -104,8 +113,6 @@
     <Compile Include="FeatureModel\SymbolicFeatureValue.cs" />
     <Compile Include="FeatureModel\VariableBindings.cs" />
     <Compile Include="FiniteState\AcceptInfo.cs" />
-    <Compile Include="IData.cs" />
-    <Compile Include="IntegerSpanFactory.cs" />
     <Compile Include="Matching\Alternation.cs" />
     <Compile Include="Matching\Constraint.cs" />
     <Compile Include="Matching\Fluent\GroupBuilder.cs" />
@@ -127,6 +134,11 @@
     <Compile Include="Matching\Match.cs" />
     <Compile Include="Matching\PatternNode.cs" />
     <Compile Include="Matching\Quantifier.cs" />
+    <Compile Include="Morphology\PoorMansStemmer.cs" />
+    <Compile Include="Morphology\IStemmer.cs" />
+    <Compile Include="Morphology\PoorMansAffixIdentifier.cs" />
+    <Compile Include="Morphology\IAffixIdentifier.cs" />
+    <Compile Include="Morphology\PoorMansStemmingAlgorithmBase.cs" />
     <Compile Include="NgramModeling\INgramModelSmoother.cs" />
     <Compile Include="NgramModeling\MaxLikelihoodSmoother.cs" />
     <Compile Include="NgramModeling\ModifiedKneserNeySmoother.cs" />
@@ -143,9 +155,13 @@
     <Compile Include="Rules\PermutationRuleCascade.cs" />
     <Compile Include="Rules\PipelineRuleCascade.cs" />
     <Compile Include="Rules\SimultaneousPatternRule.cs" />
-    <Compile Include="Shape.cs" />
-    <Compile Include="ShapeNode.cs" />
-    <Compile Include="ShapeSpanFactory.cs" />
+    <Compile Include="SequenceAlignment\Alignment.cs" />
+    <Compile Include="SequenceAlignment\AlignmentCell.cs" />
+    <Compile Include="SequenceAlignment\IPairwiseAlignmentScorer.cs" />
+    <Compile Include="SequenceAlignment\MultipleAlignmentAlgorithm.cs" />
+    <Compile Include="SequenceAlignment\PairwiseAlignmentAlgorithm.cs" />
+    <Compile Include="SequenceAlignment\Profile.cs" />
+    <Compile Include="SequenceAlignment\ProfileScorer.cs" />
     <Compile Include="Statistics\ConditionalFrequencyDistribution.cs" />
     <Compile Include="Statistics\ConditionalProbabilityDistribution.cs" />
     <Compile Include="Statistics\FrequencyDistribution.cs" />
@@ -154,17 +170,15 @@
     <Compile Include="Statistics\LidstoneProbabilityDistribution.cs" />
     <Compile Include="Statistics\MaxLikelihoodProbabilityDistribution.cs" />
     <Compile Include="Statistics\SimpleGoodTuringProbabilityDistribution.cs" />
+    <Compile Include="Statistics\StatisticalMethods.cs" />
     <Compile Include="Statistics\WittenBellProbabilityDistribution.cs" />
-    <Compile Include="StringData.cs" />
+    <Compile Include="Morphology\Affix.cs" />
     <Compile Include="Rules\BatchPatternRuleSpec.cs" />
     <Compile Include="Rules\DefaultPatternRuleSpec.cs" />
     <Compile Include="Rules\IRule.cs" />
     <Compile Include="Rules\IPatternRuleSpec.cs" />
     <Compile Include="Rules\PatternRule.cs" />
-    <Compile Include="Span.cs" />
-    <Compile Include="SpanFactory.cs" />
     <Compile Include="FiniteState\State.cs" />
-    <Compile Include="Annotation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FiniteState\TagMapCommand.cs" />
     <Compile Include="FiniteState\Arc.cs" />

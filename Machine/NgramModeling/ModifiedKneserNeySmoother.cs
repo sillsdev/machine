@@ -75,7 +75,7 @@ namespace SIL.Machine.NgramModeling
 		public double GetProbability(TItem item, Ngram<TItem> context)
 		{
 			FrequencyDistribution<TItem> freqDist = _cfd[context];
-			if (context.Count == 0)
+			if (context.Length == 0)
 				return (double) freqDist[item] / freqDist.SampleOutcomeCount;
 			
 			if (freqDist.SampleOutcomeCount > 0)

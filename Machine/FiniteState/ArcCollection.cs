@@ -2,11 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using SIL.Collections;
+using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState
 {
-	public class ArcCollection<TData, TOffset> : ICollection<Arc<TData, TOffset>>, IFreezable where TData : IData<TOffset>
+	public class ArcCollection<TData, TOffset> : ICollection<Arc<TData, TOffset>>, IFreezable where TData : IAnnotatedData<TOffset>
 	{
 		private readonly State<TData, TOffset> _state;
 		private readonly List<Arc<TData, TOffset>> _arcs;

@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Rules
 {
-	public class ParallelRuleBatch<TData, TOffset> : RuleBatch<TData, TOffset> where TData : IData<TOffset>
+	public class ParallelRuleBatch<TData, TOffset> : RuleBatch<TData, TOffset> where TData : IAnnotatedData<TOffset>
 	{
 		public ParallelRuleBatch(IEnumerable<IRule<TData, TOffset>> rules)
 			: base(rules, false)

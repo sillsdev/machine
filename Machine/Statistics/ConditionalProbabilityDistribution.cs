@@ -10,9 +10,9 @@ namespace SIL.Machine.Statistics
 		private readonly Dictionary<TCondition, IProbabilityDistribution<TSample>> _probDists; 
 
 		public ConditionalProbabilityDistribution(ConditionalFrequencyDistribution<TCondition, TSample> cfd,
-			Func<FrequencyDistribution<TSample>, IProbabilityDistribution<TSample>> getProbDist)
+			Func<TCondition, FrequencyDistribution<TSample>, IProbabilityDistribution<TSample>> getProbDist)
 		{
-			_probDists = cfd.Conditions.ToDictionary(cond => cond, cond => getProbDist(cfd[cond]));
+			_probDists = cfd.Conditions.ToDictionary(cond => cond, cond => getProbDist(cond, cfd[cond]));
 		}
 
 		public IReadOnlyCollection<TCondition> Conditions

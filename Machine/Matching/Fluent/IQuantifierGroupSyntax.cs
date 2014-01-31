@@ -1,6 +1,8 @@
-﻿namespace SIL.Machine.Matching.Fluent
+﻿using SIL.Machine.Annotations;
+
+namespace SIL.Machine.Matching.Fluent
 {
-	public interface IQuantifierGroupSyntax<TData, TOffset> : IAlternationGroupSyntax<TData, TOffset> where TData : IData<TOffset>
+	public interface IQuantifierGroupSyntax<TData, TOffset> : IAlternationGroupSyntax<TData, TOffset> where TData : IAnnotatedData<TOffset>
 	{
 		IAlternationGroupSyntax<TData, TOffset> ZeroOrMore { get; }
 		IAlternationGroupSyntax<TData, TOffset> LazyZeroOrMore { get; }

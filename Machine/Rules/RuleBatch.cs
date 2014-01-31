@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using SIL.Collections;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Rules
 {
-	public class RuleBatch<TData, TOffset> : IRule<TData, TOffset> where TData : IData<TOffset>
+	public class RuleBatch<TData, TOffset> : IRule<TData, TOffset> where TData : IAnnotatedData<TOffset>
 	{
 		private readonly List<IRule<TData, TOffset>> _rules;
 		private readonly bool _disjunctive;

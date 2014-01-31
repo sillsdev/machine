@@ -1,9 +1,10 @@
 ﻿using System;
+using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState
 {
-	public class ReplaceOutput<TData, TOffset> : Output<TData, TOffset>, IEquatable<ReplaceOutput<TData, TOffset>> where TData : IData<TOffset>
+	public class ReplaceOutput<TData, TOffset> : Output<TData, TOffset>, IEquatable<ReplaceOutput<TData, TOffset>> where TData : IAnnotatedData<TOffset>
 	{
 		internal ReplaceOutput(FeatureStruct fs)
 			: base(fs)

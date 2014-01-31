@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using SIL.Collections;
+using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState
 {
-	internal abstract class TraversalMethod<TData, TOffset> where TData : IData<TOffset>
+	internal abstract class TraversalMethod<TData, TOffset> where TData : IAnnotatedData<TOffset>
 	{
 		private readonly IEqualityComparer<NullableValue<TOffset>[,]> _registersEqualityComparer;
 		private readonly Direction _dir;

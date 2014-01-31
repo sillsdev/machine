@@ -1,9 +1,10 @@
 ﻿using System;
+using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState
 {
-	public class InsertOutput<TData, TOffset> : Output<TData, TOffset>, IEquatable<InsertOutput<TData, TOffset>> where TData : IData<TOffset>
+	public class InsertOutput<TData, TOffset> : Output<TData, TOffset>, IEquatable<InsertOutput<TData, TOffset>> where TData : IAnnotatedData<TOffset>
 	{
 		internal InsertOutput(FeatureStruct fs)
 			: base(fs)

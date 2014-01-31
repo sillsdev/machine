@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Collections;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.FiniteState
 {
-	public class State<TData, TOffset> : IFreezable where TData : IData<TOffset>
+	public class State<TData, TOffset> : IFreezable where TData : IAnnotatedData<TOffset>
 	{
 		private readonly int _index;
 		private readonly ArcCollection<TData, TOffset> _arcs;

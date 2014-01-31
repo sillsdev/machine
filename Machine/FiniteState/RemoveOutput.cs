@@ -1,8 +1,9 @@
 ﻿using System;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.FiniteState
 {
-	public class RemoveOutput<TData, TOffset> : Output<TData, TOffset>, IEquatable<RemoveOutput<TData, TOffset>> where TData : IData<TOffset>
+	public class RemoveOutput<TData, TOffset> : Output<TData, TOffset>, IEquatable<RemoveOutput<TData, TOffset>> where TData : IAnnotatedData<TOffset>
 	{
 		internal RemoveOutput()
 			: base(null)

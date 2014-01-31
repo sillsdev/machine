@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Collections;
+using SIL.Machine.Annotations;
 using SIL.Machine.FiniteState;
 
 namespace SIL.Machine.Matching
@@ -9,7 +10,7 @@ namespace SIL.Machine.Matching
 	/// <summary>
 	/// This is the abstract class that all phonetic pattern nodes extend.
 	/// </summary>
-	public abstract class PatternNode<TData, TOffset> : OrderedBidirTreeNode<PatternNode<TData, TOffset>>, IDeepCloneable<PatternNode<TData, TOffset>>, IFreezable, IValueEquatable<PatternNode<TData, TOffset>> where TData : IData<TOffset>
+	public abstract class PatternNode<TData, TOffset> : OrderedBidirTreeNode<PatternNode<TData, TOffset>>, IDeepCloneable<PatternNode<TData, TOffset>>, IFreezable, IValueEquatable<PatternNode<TData, TOffset>> where TData : IAnnotatedData<TOffset>
 	{
 		private int _hashCode;
 

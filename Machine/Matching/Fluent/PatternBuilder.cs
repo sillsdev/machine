@@ -1,10 +1,11 @@
 using System;
 using SIL.Collections;
+using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.Matching.Fluent
 {
-	public class PatternBuilder<TData, TOffset> : PatternNodeBuilder<TData, TOffset>, IPatternSyntax<TData, TOffset>, IQuantifierPatternSyntax<TData, TOffset> where TData : IData<TOffset>
+	public class PatternBuilder<TData, TOffset> : PatternNodeBuilder<TData, TOffset>, IPatternSyntax<TData, TOffset>, IQuantifierPatternSyntax<TData, TOffset> where TData : IAnnotatedData<TOffset>
 	{
 		private readonly string _name;
 		private Func<Match<TData, TOffset>, bool> _acceptable = match => true;

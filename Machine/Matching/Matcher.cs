@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Collections;
+using SIL.Machine.Annotations;
 using SIL.Machine.FiniteState;
 
 namespace SIL.Machine.Matching
 {
-	public class Matcher<TData, TOffset> where TData : IData<TOffset>
+	public class Matcher<TData, TOffset> where TData : IAnnotatedData<TOffset>
 	{
 		public const string EntireMatch = "*entire*";
 

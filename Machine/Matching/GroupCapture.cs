@@ -1,4 +1,6 @@
-﻿namespace SIL.Machine.Matching
+﻿using SIL.Machine.Annotations;
+
+namespace SIL.Machine.Matching
 {
 	public class GroupCapture<TOffset>
 	{

@@ -1,9 +1,10 @@
 using System;
+using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.Matching.Fluent
 {
-	public interface IInitialNodesPatternSyntax<TData, TOffset> where TData : IData<TOffset>
+	public interface IInitialNodesPatternSyntax<TData, TOffset> where TData : IAnnotatedData<TOffset>
 	{
 		IQuantifierPatternSyntax<TData, TOffset> Group(string name, Func<IGroupSyntax<TData, TOffset>, IGroupSyntax<TData, TOffset>> build);
 		IQuantifierPatternSyntax<TData, TOffset> Group(Func<IGroupSyntax<TData, TOffset>, IGroupSyntax<TData, TOffset>> build);

@@ -510,7 +510,7 @@ namespace SIL.Collections
 
 		public static int GetSequenceHashCode<T>(this IEnumerable<T> source, IEqualityComparer<T> comparer)
 		{
-			return source.Aggregate(23, (code, item) => code * 31 + comparer.GetHashCode(item));
+			return source.Aggregate(23, (code, item) => code * 31 + (item == null ? 0 : comparer.GetHashCode(item)));
 		}
 
 		public static int SequenceCompare<T>(this IEnumerable<T> x, IEnumerable<T> y)
@@ -549,6 +549,11 @@ namespace SIL.Collections
 			}
 
 			return result;
+		}
+
+		public static IEnumerable<T> Items<T>(this IEnumerable<T> source, Direction dir)
+		{
+			return dir == Direction.LeftToRight ? source : source.Reverse();
 		}
 
 		#endregion

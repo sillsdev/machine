@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Rules
 {
-	public class PermutationRuleCascade<TData, TOffset> : RuleCascade<TData, TOffset> where TData : IData<TOffset>
+	public class PermutationRuleCascade<TData, TOffset> : RuleCascade<TData, TOffset> where TData : IAnnotatedData<TOffset>
 	{
 		public PermutationRuleCascade(IEnumerable<IRule<TData, TOffset>> rules)
 			: base(rules)

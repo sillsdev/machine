@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Collections;
+using SIL.Machine.Annotations;
 using SIL.Machine.FiniteState;
 
 namespace SIL.Machine.Matching
 {
-	public class Group<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Group<TData, TOffset>>, IValueEquatable<Group<TData, TOffset>> where TData : IData<TOffset>
+	public class Group<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Group<TData, TOffset>>, IValueEquatable<Group<TData, TOffset>> where TData : IAnnotatedData<TOffset>
 	{
 		private readonly string _name;
 

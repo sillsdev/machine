@@ -95,7 +95,7 @@ namespace SIL.Machine.NgramModeling
 
 		public double GetProbability(TItem item, Ngram<TItem> context)
 		{
-			if (context.Count != _ngramSize - 1)
+			if (context.Length != _ngramSize - 1)
 				throw new ArgumentException("The context size is not valid.", "context");
 			return _smoother.GetProbability(item, context);
 		}

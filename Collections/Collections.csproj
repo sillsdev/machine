@@ -43,6 +43,7 @@
     <Compile Include="BidirTreeNode.cs" />
     <Compile Include="BulkObservableList.cs" />
     <Compile Include="CollectionsExtensions.cs" />
+    <Compile Include="BloomFilter.cs" />
     <Compile Include="Freezable.cs" />
     <Compile Include="FreezableEqualityComparer.cs" />
     <Compile Include="FreezableList.cs" />

@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using SIL.Collections;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Rules
 {
-	public abstract class RuleCascade<TData, TOffset> : IRule<TData, TOffset> where TData : IData<TOffset>
+	public abstract class RuleCascade<TData, TOffset> : IRule<TData, TOffset> where TData : IAnnotatedData<TOffset>
 	{
 		private readonly ReadOnlyList<IRule<TData, TOffset>> _rules;
 		private readonly bool _multiApp;

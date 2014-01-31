@@ -1,8 +1,9 @@
 ﻿using System;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.FiniteState
 {
-	public class NullOutput<TData, TOffset> : Output<TData, TOffset>, IEquatable<NullOutput<TData, TOffset>> where TData : IData<TOffset>
+	public class NullOutput<TData, TOffset> : Output<TData, TOffset>, IEquatable<NullOutput<TData, TOffset>> where TData : IAnnotatedData<TOffset>
 	{
 		internal NullOutput()
 			: base(null)
