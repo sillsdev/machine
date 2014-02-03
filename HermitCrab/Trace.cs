@@ -78,37 +78,37 @@ namespace SIL.HermitCrab
 		ReportSuccess
 	}
 
-    /// <summary>
-    /// This class represents a trace record. All trace records inherit from this class.
-    /// A morph trace is a tree structure where each node in the tree is a <c>Trace</c> object.
-    /// </summary>
-    public class Trace : OrderedBidirTreeNode<Trace>
-    {
-    	private readonly TraceType _type;
-    	private readonly IHCRule _source;
+	/// <summary>
+	/// This class represents a trace record. All trace records inherit from this class.
+	/// A morph trace is a tree structure where each node in the tree is a <c>Trace</c> object.
+	/// </summary>
+	public class Trace : OrderedBidirTreeNode<Trace>
+	{
+		private readonly TraceType _type;
+		private readonly IHCRule _source;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Trace"/> class.
-        /// </summary>
-        internal Trace(TraceType type, IHCRule source)
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Trace"/> class.
+		/// </summary>
+		internal Trace(TraceType type, IHCRule source)
 			: base(begin => new Trace(TraceType.None, null))
-        {
-        	_type = type;
-        	_source = source;
-        }
+		{
+			_type = type;
+			_source = source;
+		}
 
-    	public TraceType Type
-    	{
-    		get { return _type; }
-    	}
+		public TraceType Type
+		{
+			get { return _type; }
+		}
 
-    	public IHCRule Source
-    	{
-    		get { return _source; }
-    	}
+		public IHCRule Source
+		{
+			get { return _source; }
+		}
 
 		public Word Input { get; internal set; }
 
 		public Word Output { get; internal set; }
-    }
+	}
 }

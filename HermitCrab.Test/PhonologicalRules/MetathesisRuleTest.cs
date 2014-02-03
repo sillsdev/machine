@@ -1,9 +1,9 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using SIL.HermitCrab.PhonologicalRules;
 using SIL.Machine.Annotations;
 using SIL.Machine.Matching;
 
-namespace SIL.HermitCrab.Test
+namespace SIL.HermitCrab.Test.PhonologicalRules
 {
 	public class MetathesisRuleTest : HermitCrabTestBase
 	{

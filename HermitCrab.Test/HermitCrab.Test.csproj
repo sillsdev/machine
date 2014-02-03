@@ -57,13 +57,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AffixProcessRuleTest.cs" />
     <Compile Include="AffixTemplateTest.cs" />
     <Compile Include="AllomorphEnvironmentTest.cs" />
-    <Compile Include="CompoundingRuleTest.cs" />
     <Compile Include="HermitCrabTestBase.cs" />
-    <Compile Include="MetathesisRuleTest.cs" />
-    <Compile Include="RewriteRuleTest.cs" />
+    <Compile Include="MorphologicalRules\AffixProcessRuleTest.cs" />
+    <Compile Include="MorphologicalRules\CompoundingRuleTest.cs" />
+    <Compile Include="PhonologicalRules\MetathesisRuleTest.cs" />
+    <Compile Include="PhonologicalRules\RewriteRuleTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
