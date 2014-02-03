@@ -106,10 +106,6 @@
       <Project>{08691159-167B-4E5A-AE88-67DEF10AF7D3}</Project>
       <Name>Collections</Name>
     </ProjectReference>
-    <ProjectReference Include="..\HermitCrabLib\HermitCrabLib.csproj">
-      <Project>{9E140FCF-0265-481B-B9A0-B0E7BCD3E814}</Project>
-      <Name>HermitCrabLib</Name>
-    </ProjectReference>
     <ProjectReference Include="..\lib\Machine\Machine\Machine.csproj">
       <Project>{8C9AB5D2-22CA-4559-ABB0-83E97D7F0E58}</Project>
       <Name>Machine</Name>
