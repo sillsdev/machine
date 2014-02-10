@@ -30,3 +30,14 @@ Machine includes a generic *n*-gram model implementation. The *n*-gram model is 
 
 ## Clustering
 Machine provides implementations of various clustering algorithms. These include density-based algorithms, such as DBSCAN and OPTICS, and hierarchical algorithms, such as UPGMA and Neighbor-joining.
+
+## Sequence Alignment
+
+### Pairwise
+Pairwise sequence alignment is implemented using a dynamic programming approach similar to most common implementations of the Levenshtein distance. It supports substitution, insertion, deletion, expansion, and compression. It also supports the following alignment modes: global, local, half-local, and semi-global.
+
+### Multiple
+The implementation of multiple sequence alignment is based on the CLUSTAL W algorithm.
+
+## Stemming
+Machine provides an unsupervised stemming algorithm specifically designed for resource-poor languages. The stemmer is trained using a list of words either derived from a corpus or a lexicon. The algorithm can also be used to identify possible affixes. It is based on the unsupervised stemming algorithm proposed in Harald Hammarström's doctoral dissertation.
