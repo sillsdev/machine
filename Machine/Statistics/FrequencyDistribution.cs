@@ -4,7 +4,7 @@ using SIL.Collections;
 
 namespace SIL.Machine.Statistics
 {
-	public class FrequencyDistribution<TSample>
+	public class FrequencyDistribution<TSample> : IDeepCloneable<FrequencyDistribution<TSample>>
 	{
 		private readonly Dictionary<TSample, int> _sampleCounts;
 		private int _sampleOutcomeCount;
@@ -12,6 +12,12 @@ namespace SIL.Machine.Statistics
 		public FrequencyDistribution()
 		{
 			_sampleCounts = new Dictionary<TSample, int>();
+		}
+
+		public FrequencyDistribution(FrequencyDistribution<TSample> fd)
+		{
+			_sampleCounts = new Dictionary<TSample, int>(fd._sampleCounts);
+			_sampleOutcomeCount = fd._sampleOutcomeCount;
 		}
 
 		public IReadOnlyCollection<TSample> ObservedSamples
@@ -81,6 +87,11 @@ namespace SIL.Machine.Statistics
 		{
 			_sampleCounts.Clear();
 			_sampleOutcomeCount = 0;
+		}
+
+		public FrequencyDistribution<TSample> DeepClone()
+		{
+			return new FrequencyDistribution<TSample>(this);
 		}
 	}
 }
