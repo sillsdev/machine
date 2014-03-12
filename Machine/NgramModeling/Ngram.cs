@@ -20,8 +20,8 @@ namespace SIL.Machine.NgramModeling
 		private readonly int _hashCode;
 
 		public Ngram(params TItem[] items)
+			: this((IEnumerable<TItem>) items)
 		{
-			_items = items;
 		}
 
 		public Ngram(IEnumerable<TItem> items)
