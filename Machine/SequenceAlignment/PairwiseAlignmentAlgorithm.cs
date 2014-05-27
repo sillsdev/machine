@@ -184,7 +184,10 @@ namespace SIL.Machine.SequenceAlignment
 
 		private double CalcNormalizedScore(int startIndex1, int endIndex1, int startIndex2, int endIndex2, int score)
 		{
-			return Math.Max(0.0, Math.Min(1.0, (double) score / Math.Max(CalcMaxScore1(startIndex1, endIndex1), CalcMaxScore2(startIndex2, endIndex2))));
+			int maxScore = Math.Max(CalcMaxScore1(startIndex1, endIndex1), CalcMaxScore2(startIndex2, endIndex2));
+			if (maxScore == 0)
+				return 0;
+			return Math.Max(0.0, Math.Min(1.0, (double) score / maxScore));
 		}
 
 		private int CalcMaxScore1(int startIndex, int endIndex)

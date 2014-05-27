@@ -75,27 +75,25 @@ namespace SIL.Machine.NgramModeling
 		public double GetProbability(TItem item, Ngram<TItem> context)
 		{
 			FrequencyDistribution<TItem> freqDist = _cfd[context];
+			if (freqDist.ObservedSamples.Count == 0)
+				return 0;
+
 			if (context.Length == 0)
 				return (double) freqDist[item] / freqDist.SampleOutcomeCount;
 			
-			if (freqDist.SampleOutcomeCount > 0)
-			{
-				int count = freqDist[item];
-				Tuple<int, int, int> bigN = _bigNs[context];
-				double gamma = ((_discount1 * bigN.Item1) + (_discount2 * bigN.Item2) + (_discount3 * bigN.Item3)) / freqDist.SampleOutcomeCount;
-				double d = 0;
-				if (count == 1)
-					d = _discount1;
-				else if (count == 2)
-					d = _discount2;
-				else if (count > 2)
-					d = _discount3;
+			int count = freqDist[item];
+			Tuple<int, int, int> bigN = _bigNs[context];
+			double gamma = ((_discount1 * bigN.Item1) + (_discount2 * bigN.Item2) + (_discount3 * bigN.Item3)) / freqDist.SampleOutcomeCount;
+			double d = 0;
+			if (count == 1)
+				d = _discount1;
+			else if (count == 2)
+				d = _discount2;
+			else if (count > 2)
+				d = _discount3;
 
-				double prob = (count - d) / freqDist.SampleOutcomeCount;
-				return prob + (gamma * _lowerOrderModel.GetProbability(item, context.SkipFirst(_dir)));
-			}
-
-			return 0;
+			double prob = (count - d) / freqDist.SampleOutcomeCount;
+			return prob + (gamma * _lowerOrderModel.GetProbability(item, context.SkipFirst(_dir)));
 		}
 
 		public NgramModel<TSeq, TItem> LowerOrderModel

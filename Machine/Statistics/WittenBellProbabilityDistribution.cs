@@ -14,8 +14,11 @@ namespace SIL.Machine.Statistics
 				throw new ArgumentOutOfRangeException("binCount");
 
 			_freqDist = freqDist;
-			int z = binCount - _freqDist.ObservedSamples.Count;
-			_probZero = (double) _freqDist.ObservedSamples.Count / (z * (_freqDist.SampleOutcomeCount + _freqDist.ObservedSamples.Count));
+			if (freqDist.ObservedSamples.Count > 0)
+			{
+				int z = binCount - _freqDist.ObservedSamples.Count;
+				_probZero = (double) _freqDist.ObservedSamples.Count / (z * (_freqDist.SampleOutcomeCount + _freqDist.ObservedSamples.Count));
+			}
 		}
 
 		public IReadOnlyCollection<TSample> Samples

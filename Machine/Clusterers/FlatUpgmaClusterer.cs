@@ -19,7 +19,6 @@ namespace SIL.Machine.Clusterers
 		public IEnumerable<Cluster<T>> GenerateClusters(IEnumerable<T> dataObjects)
 		{
 			var clusters = new List<Cluster<T>>(dataObjects.Select(obj => new Cluster<T>(obj.ToEnumerable()) {Description = obj.ToString()}));
-
 			while (clusters.Count >= 2)
 			{
 				int minI = 0, minJ = 0;
@@ -28,7 +27,13 @@ namespace SIL.Machine.Clusterers
 				{
 				    for (int j = i + 1; j < clusters.Count; j++)
 				    {
-				        double[] dists = clusters[i].DataObjects.SelectMany(o => clusters[j].DataObjects, (o1, o2) => _getDistance(o1, o2)).ToArray();
+				        double[] dists = clusters[i].DataObjects.SelectMany(o => clusters[j].DataObjects, (o1, o2) =>
+							{
+								double distance = _getDistance(o1, o2);
+								if (double.IsNaN(distance) || double.IsInfinity(distance) || distance < 0)
+									throw new ArgumentException("Invalid distance between data objects.", "dataObjects");
+								return distance;
+							}).ToArray();
 
 				        double mean = dists.Average();
 				        double sum = dists.Select(d => (d - mean) * (d - mean)).Sum();

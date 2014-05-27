@@ -131,7 +131,7 @@ namespace SIL.Machine.Morphology
 
 				double pw = affixProbDist[affix.Ngram.Length][affix.Ngram];
 				double npw = ngramProbDist[affix.Ngram.Length][affix.Ngram];
-				double randomAdj = Math.Abs(npw - 0) < double.Epsilon ? 1.0 : pw / npw;
+				double randomAdj = npw == 0 ? 1.0 : pw / npw;
 
 				double normalizedFreq = affix.Ngram.Length * Math.Log(freq);
 

@@ -93,7 +93,7 @@ namespace SIL.Machine.Tests.SequenceAlignment
 					var msa = new MultipleAlignmentAlgorithm<string, char>(scorer, new[] {"bar"}, GetChars);
 				});
 
-				Assert.Throws<ArgumentException>(() =>
+			Assert.Throws<ArgumentException>(() =>
 				{
 					var msa = new MultipleAlignmentAlgorithm<string, char>(scorer, new[] {"car", "bar"}, GetChars);
 				});
@@ -112,6 +112,22 @@ namespace SIL.Machine.Tests.SequenceAlignment
 				"| - - - |",
 				"| b a r |"
 				));
+		}
+
+		[Test]
+		public void ZeroMaxScore()
+		{
+			var scorer = new ZeroMaxScoreStringScorer();
+			var msa = new MultipleAlignmentAlgorithm<string, char>(scorer, new[] {"car", "bar", "carp"}, GetChars) {UseInputOrder = true};
+			msa.Compute();
+			Alignment<string, char> alignment = msa.GetAlignment();
+
+			AssertAlignmentsEqual(alignment, CreateAlignment(
+				"| c a r - |",
+				"| b a r - |",
+				"| c a r p |"
+				));
+			Assert.That(alignment.NormalizedScore, Is.EqualTo(0));
 		}
 	}
 }

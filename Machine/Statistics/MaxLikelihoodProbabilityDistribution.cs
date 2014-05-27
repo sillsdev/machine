@@ -20,6 +20,8 @@ namespace SIL.Machine.Statistics
 		{
 			get
 			{
+				if (_freqDist.ObservedSamples.Count == 0)
+					return 0;
 				return (double) _freqDist[sample] / _freqDist.SampleOutcomeCount;
 			}
 		}

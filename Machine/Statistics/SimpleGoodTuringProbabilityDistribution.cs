@@ -21,6 +21,11 @@ namespace SIL.Machine.Statistics
 
 			_freqDist = freqDist;
 			_binCount = binCount;
+			_probs = new Dictionary<int, double>();
+
+			if (freqDist.ObservedSamples.Count == 0)
+				return;
+
 			var r = new List<int>();
 			var nr = new List<int>();
 			int b = 0, i = 0;
@@ -86,7 +91,6 @@ namespace SIL.Machine.Statistics
 				samplesCountPrime += nr[j] * rstar[j];
 
 			_probZero = (double) _freqDist.ObservedSamples.Count(s => _freqDist[s] == 1) / _freqDist.SampleOutcomeCount;
-			_probs = new Dictionary<int, double>();
 			for (int j = 0; j < r.Count; j++)
 				_probs[r[j]] = (1.0 - _probZero) * rstar[j] / samplesCountPrime;
 		}
@@ -120,7 +124,12 @@ namespace SIL.Machine.Statistics
 
 		public double Discount
 		{
-			get { return GetSmoothedSamplesCount(1) / _freqDist.SampleOutcomeCount; }
+			get
+			{
+				if (_freqDist.ObservedSamples.Count == 0)
+					return 0;
+				return GetSmoothedSamplesCount(1) / _freqDist.SampleOutcomeCount;
+			}
 		}
 
 		public FrequencyDistribution<TSample> FrequencyDistribution

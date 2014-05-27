@@ -21,9 +21,14 @@ namespace SIL.Machine.SequenceAlignment
 
 		public Alignment(int rawScore, double normalizedScore, IEnumerable<Tuple<TSeq, AlignmentCell<TItem>, IEnumerable<AlignmentCell<TItem>>, AlignmentCell<TItem>>> sequences)
 		{
+			if (double.IsNaN(normalizedScore) || normalizedScore < 0 || normalizedScore > 1)
+				throw new ArgumentOutOfRangeException("normalizedScore");
+			Tuple<TSeq, AlignmentCell<TItem>, IEnumerable<AlignmentCell<TItem>>, AlignmentCell<TItem>>[] sequenceArray = sequences.ToArray();
+			if (sequenceArray.Length == 0)
+				throw new ArgumentException("No sequences specified.", "sequences");
+
 			_rawScore = rawScore;
 			_normalizedScore = normalizedScore;
-			Tuple<TSeq, AlignmentCell<TItem>, IEnumerable<AlignmentCell<TItem>>, AlignmentCell<TItem>>[] sequenceArray = sequences.ToArray();
 			var seqs = new TSeq[sequenceArray.Length];
 			var prefixes = new AlignmentCell<TItem>[sequenceArray.Length];
 			var suffixes = new AlignmentCell<TItem>[sequenceArray.Length];
@@ -36,6 +41,8 @@ namespace SIL.Machine.SequenceAlignment
 				AlignmentCell<TItem>[] columnArray = sequenceArray[i].Item3.ToArray();
 				if (_matrix == null)
 					_matrix = new AlignmentCell<TItem>[sequenceArray.Length, columnArray.Length];
+				else if (columnArray.Length != _matrix.GetLength(1))
+					throw new ArgumentException("All sequences are not the same length.", "sequences");
 				for (int j = 0; j < columnArray.Length; j++)
 					_matrix[i, j] = columnArray[j];
 

@@ -14,11 +14,13 @@ namespace SIL.Machine.Statistics
 		{
 			if (binCount <= freqDist.ObservedSamples.Count)
 				throw new ArgumentOutOfRangeException("binCount");
+			if (double.IsInfinity(gamma) || double.IsNaN(gamma) || gamma < 0)
+				throw new ArgumentOutOfRangeException("gamma");
 
 			_freqDist = freqDist;
 			_gamma = gamma;
 			_binCount = binCount;
-			_divisor = _freqDist.SampleOutcomeCount + _binCount * gamma;
+			_divisor = _freqDist.SampleOutcomeCount + (_binCount * gamma);
 		}
 
 		public IReadOnlyCollection<TSample> Samples
@@ -30,6 +32,8 @@ namespace SIL.Machine.Statistics
 		{
 			get
 			{
+				if (_freqDist.ObservedSamples.Count == 0)
+					return 0;
 				int count = _freqDist[sample];
 				return (count + _gamma) / _divisor;
 			}
@@ -39,6 +43,9 @@ namespace SIL.Machine.Statistics
 		{
 			get
 			{
+				if (_freqDist.ObservedSamples.Count == 0)
+					return 0;
+
 				double gb = _gamma * _binCount;
 				return gb / (_freqDist.SampleOutcomeCount + gb);
 			}

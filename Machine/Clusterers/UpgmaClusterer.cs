@@ -30,7 +30,12 @@ namespace SIL.Machine.Clusterers
 			for (int i = 0; i < clusters.Count; i++)
 			{
 				for (int j = i + 1; j < clusters.Count; j++)
-					distances[UnorderedTuple.Create(clusters[i], clusters[j])] = _getDistance(clusters[i].DataObjects.First(), clusters[j].DataObjects.First());
+				{
+					double distance = _getDistance(clusters[i].DataObjects.First(), clusters[j].DataObjects.First());
+					if (double.IsNaN(distance) || double.IsInfinity(distance) || distance < 0)
+						throw new ArgumentException("Invalid distance between data objects.", "dataObjects");
+					distances[UnorderedTuple.Create(clusters[i], clusters[j])] = distance;
+				}
 				heights[clusters[i]] = 0;
 			}
 

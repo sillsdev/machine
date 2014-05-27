@@ -16,6 +16,8 @@ namespace SIL.Machine.Statistics
 				obsTotal += t.Item1 * t.Item1;
 				expTotal += t.Item2 * t.Item2;
 			}
+			if (obsTotal == 0 || expTotal == 0)
+				return 0;
 			return dot / (Math.Sqrt(obsTotal) * Math.Sqrt(expTotal));
 		}
 
@@ -37,7 +39,7 @@ namespace SIL.Machine.Statistics
 
 		public static double KullbackLeiblerDivergence(IEnumerable<double> dist1, IEnumerable<double> dist2)
 		{
-			return dist1.Zip(dist2, (p1, p2) => Math.Abs(p1 - 0) < double.Epsilon ? 0 : Math.Log(p1 / p2, 2) * p1).Sum();
+			return dist1.Zip(dist2, (p1, p2) => p1 == 0 || p2 == 0 ? 0 : Math.Log(p1 / p2, 2) * p1).Sum();
 		}
 	}
 }

@@ -70,7 +70,10 @@
     <Compile Include="SequenceAlignment\MultipleAlignmentAlgorithmTests.cs" />
     <Compile Include="SequenceAlignment\PairwiseAlignmentAlgorithmTests.cs" />
     <Compile Include="SequenceAlignment\StringScorer.cs" />
+    <Compile Include="Statistics\LidstoneProbabilityDistributionTests.cs" />
+    <Compile Include="Statistics\MaxLikelihoodProbabilityDistributionTests.cs" />
     <Compile Include="Statistics\SimpleGoodTuringProbabilityDistributionTests.cs" />
+    <Compile Include="Statistics\WittenBellProbabilityDistributionTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Collections\Collections.csproj">

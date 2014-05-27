@@ -61,5 +61,18 @@ namespace SIL.Machine.Tests.SequenceAlignment
 					Assert.That(actual[i, j], Is.EqualTo(expected[i, j]));
 			}
 		}
+
+		protected class ZeroMaxScoreStringScorer : StringScorer
+		{
+			public override int GetMaxScore1(string sequence1, char p, string sequence2)
+			{
+				return 0;
+			}
+
+			public override int GetMaxScore2(string sequence1, string sequence2, char q)
+			{
+				return 0;
+			}
+		}
 	}
 }

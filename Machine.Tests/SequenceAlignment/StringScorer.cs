@@ -44,12 +44,12 @@ namespace SIL.Machine.Tests.SequenceAlignment
 			return score;
 		}
 
-		public int GetMaxScore1(string sequence1, char p, string sequence2)
+		public virtual int GetMaxScore1(string sequence1, char p, string sequence2)
 		{
 			return 100;
 		}
 
-		public int GetMaxScore2(string sequence1, string sequence2, char q)
+		public virtual int GetMaxScore2(string sequence1, string sequence2, char q)
 		{
 			return 100;
 		}

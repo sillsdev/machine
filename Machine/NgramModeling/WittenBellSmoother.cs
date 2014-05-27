@@ -22,6 +22,9 @@ namespace SIL.Machine.NgramModeling
 		public double GetProbability(TItem item, Ngram<TItem> context)
 		{
 			FrequencyDistribution<TItem> freqDist = _cfd[context];
+			if (freqDist.ObservedSamples.Count == 0)
+				return 0;
+
 			double numer = freqDist[item] + (freqDist.ObservedSamples.Count * (_lowerOrderModel == null ? 1.0 / freqDist.ObservedSamples.Count
 				: _lowerOrderModel.GetProbability(item, context.SkipFirst(_dir))));
 			double denom = freqDist.SampleOutcomeCount + freqDist.ObservedSamples.Count;

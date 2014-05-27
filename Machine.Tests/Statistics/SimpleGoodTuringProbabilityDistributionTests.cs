@@ -68,5 +68,15 @@ namespace SIL.Machine.Tests.Statistics
 					var sgt = new SimpleGoodTuringProbabilityDistribution<string>(_fd, _fd.ObservedSamples.Count);
 				}, Throws.TypeOf<ArgumentOutOfRangeException>());
 		}
+
+		[Test]
+		public void NoSamples()
+		{
+			var sgt = new SimpleGoodTuringProbabilityDistribution<string>(new FrequencyDistribution<string>(), 1);
+			Assert.That(sgt["a"], Is.EqualTo(0));
+			Assert.That(sgt["b"], Is.EqualTo(0));
+			Assert.That(sgt["c"], Is.EqualTo(0));
+			Assert.That(sgt.Discount, Is.EqualTo(0));
+		}
 	}
 }
