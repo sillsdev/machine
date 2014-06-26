@@ -3,7 +3,7 @@ using SIL.HermitCrab.PhonologicalRules;
 using SIL.Machine.Annotations;
 using SIL.Machine.Matching;
 
-namespace SIL.HermitCrab.Test.PhonologicalRules
+namespace SIL.HermitCrab.Tests.PhonologicalRules
 {
 	public class MetathesisRuleTest : HermitCrabTestBase
 	{

@@ -8,7 +8,7 @@ using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 
-namespace SIL.HermitCrab.Test.MorphologicalRules
+namespace SIL.HermitCrab.Tests.MorphologicalRules
 {
 	public class AffixProcessRuleTest : HermitCrabTestBase
 	{

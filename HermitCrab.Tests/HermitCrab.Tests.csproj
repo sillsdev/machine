@@ -8,8 +8,8 @@
     <ProjectGuid>{B91590D0-1519-48A0-866B-B17E326812AD}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SIL.HermitCrab.Test</RootNamespace>
-    <AssemblyName>SIL.HermitCrab.Test</AssemblyName>
+    <RootNamespace>SIL.HermitCrab.Tests</RootNamespace>
+    <AssemblyName>SIL.HermitCrab.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <FileUpgradeFlags>

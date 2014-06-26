@@ -5,7 +5,7 @@ using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 
-namespace SIL.HermitCrab.Test
+namespace SIL.HermitCrab.Tests
 {
 	[TestFixture]
 	public abstract class HermitCrabTestBase

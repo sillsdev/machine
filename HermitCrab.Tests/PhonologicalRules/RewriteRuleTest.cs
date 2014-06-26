@@ -5,7 +5,7 @@ using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 
-namespace SIL.HermitCrab.Test.PhonologicalRules
+namespace SIL.HermitCrab.Tests.PhonologicalRules
 {
 	public class RewriteRuleTest : HermitCrabTestBase
 	{
