@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Text;
+using System.Text.RegularExpressions;
 using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
@@ -7,7 +9,7 @@ using System.Linq;
 
 namespace SIL.HermitCrab
 {
-	public static class Extensions
+	public static class HermitCrabExtensions
 	{
 		public static FeatureSymbol Type(this ShapeNode node)
 		{
@@ -109,6 +111,73 @@ namespace SIL.HermitCrab
 					output.Add(word);
 			}
 			return output;
+		}
+
+		/// <summary>
+		/// Converts the specified phonetic shape to a valid regular expression string. Regular expressions
+		/// formatted for display purposes are NOT guaranteed to compile.
+		/// </summary>
+		/// <param name="shape">The phonetic shape.</param>
+		/// <param name="table">The symbol table.</param>
+		/// <param name="displayFormat">if <c>true</c> the result will be formatted for display, otherwise
+		/// it will be formatted for compilation.</param>
+		/// <returns>The regular expression string.</returns>
+		public static string ToRegexString(this Shape shape, SymbolTable table, bool displayFormat)
+		{
+			var sb = new StringBuilder();
+			if (!displayFormat)
+				sb.Append("^");
+			foreach (ShapeNode node in shape)
+			{
+				if (node.IsDeleted())
+					continue;
+
+				string[] strReps = table.GetMatchingStrReps(node).ToArray();
+				int strRepCount = strReps.Length;
+				if (strRepCount > 0)
+				{
+					if (strRepCount > 1)
+						sb.Append(displayFormat ? "[" : "(");
+					int i = 0;
+					foreach (string strRep in strReps)
+					{
+						if (strRep.Length > 1)
+							sb.Append("(");
+
+						sb.Append(displayFormat ? strRep : Regex.Escape(strRep));
+
+						if (strRep.Length > 1)
+							sb.Append(")");
+						if (i < strRepCount - 1 && !displayFormat)
+							sb.Append("|");
+						i++;
+					}
+					if (strReps.Length > 1)
+						sb.Append(displayFormat ? "]" : ")");
+
+					if (node.Annotation.Optional)
+						sb.Append("?");
+				}
+			}
+			if (!displayFormat)
+				sb.Append("$");
+			return sb.ToString();
+		}
+
+		public static string ToString(this IEnumerable<ShapeNode> nodes, SymbolTable table, bool includeBdry)
+		{
+			var sb = new StringBuilder();
+			foreach (ShapeNode node in nodes)
+			{
+				if ((!includeBdry && node.Annotation.Type() == HCFeatureSystem.Boundary) || node.IsDeleted())
+					continue;
+
+				IEnumerable<string> strReps = table.GetMatchingStrReps(node);
+				string strRep = strReps.FirstOrDefault();
+				if (strRep != null)
+					sb.Append(strRep);
+			}
+			return sb.ToString();
 		}
 	}
 }

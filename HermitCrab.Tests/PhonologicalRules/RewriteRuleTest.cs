@@ -803,7 +803,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			                   	});
 
 			morpher = new Morpher(SpanFactory, Language);
-			Assert.That(() => morpher.ParseWord("ipʰit"), Throws.TypeOf<MorphException>().With.Property("ErrorCode").EqualTo(MorphErrorCode.InfiniteLoop));
+			Assert.That(() => morpher.ParseWord("ipʰit"), Throws.TypeOf<InfiniteLoopException>());
 
 			Allophonic.PhonologicalRules.Clear();
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using ManyConsole;
-using SIL.Machine;
+using SIL.Machine.Annotations;
 
 namespace SIL.HermitCrab
 {
@@ -53,10 +53,9 @@ namespace SIL.HermitCrab
 			bool firstItem = true;
 			foreach (Annotation<ShapeNode> morph in result.Morphs)
 			{
-				var alloID = (string) morph.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
-				Allomorph allomorph = result.Allomorphs[alloID];
+				Allomorph allomorph = result.GetAllomorph(morph);
 				string gloss = string.IsNullOrEmpty(allomorph.Morpheme.Gloss) ? "?" : allomorph.Morpheme.Gloss;
-				string morphStr = result.Stratum.SymbolTable.ToString(result.Shape.GetNodes(morph.Span), false);
+				string morphStr = result.Shape.GetNodes(morph.Span).ToString(result.Stratum.SymbolTable, false);
 				int len = Math.Max(morphStr.Length, gloss.Length);
 				if (len > 0)
 				{
@@ -71,10 +70,9 @@ namespace SIL.HermitCrab
 			firstItem = true;
 			foreach (Annotation<ShapeNode> morph in result.Morphs)
 			{
-				var alloID = (string)morph.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
-				Allomorph allomorph = result.Allomorphs[alloID];
+				Allomorph allomorph = result.GetAllomorph(morph);
 				string gloss = string.IsNullOrEmpty(allomorph.Morpheme.Gloss) ? "?" : allomorph.Morpheme.Gloss;
-				string morphStr = result.Stratum.SymbolTable.ToString(result.Shape.GetNodes(morph.Span), false);
+				string morphStr = result.Shape.GetNodes(morph.Span).ToString(result.Stratum.SymbolTable, false);
 				int len = Math.Max(morphStr.Length, gloss.Length);
 				if (len > 0)
 				{
@@ -105,14 +103,14 @@ namespace SIL.HermitCrab
 				if (!first)
 					_context.Out.Write(", ");
 				SymbolTable table = trace.Input.Stratum.SymbolTable;
-				_context.Out.Write("Input: {0}", analysis ? table.ToRegexString(trace.Input.Shape, true) : table.ToString(trace.Input.Shape, true));
+				_context.Out.Write("Input: {0}", analysis ? trace.Input.Shape.ToRegexString(table, true) : trace.Input.Shape.ToString(table, true));
 			}
 			if (trace.Output != null)
 			{
 				if (!first)
 					_context.Out.Write(", ");
 				SymbolTable table = trace.Output.Stratum.SymbolTable;
-				_context.Out.Write("Output: {0}", analysis ? table.ToRegexString(trace.Output.Shape, true) : table.ToString(trace.Output.Shape, true));
+				_context.Out.Write("Output: {0}", analysis ? trace.Output.Shape.ToRegexString(table, true) : trace.Output.Shape.ToString(table, true));
 			}
 			_context.Out.WriteLine("]");
 

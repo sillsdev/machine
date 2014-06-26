@@ -91,9 +91,7 @@ namespace SIL.HermitCrab
 		public IEnumerable<Word> ParseWord(string word, out Trace trace)
 		{
 			// convert the word to its phonetic shape
-			Shape shape;
-			if (!_lang.SurfaceStratum.SymbolTable.ToShape(word, out shape))
-				throw new ArgumentException(string.Format("The word '{0}' cannot be converted to a shape.", word), "word");
+			Shape shape = _lang.SurfaceStratum.SymbolTable.Segment(word);
 
 			var input = new Word(_lang.SurfaceStratum, shape);
 			input.Freeze();
@@ -104,7 +102,7 @@ namespace SIL.HermitCrab
 			var validWordsStack = new ConcurrentStack<Word>();
 			IEnumerable<Word> analyses = _analysisRule.Apply(input);
 
-			MorphException exception = null;
+			Exception exception = null;
 			Parallel.ForEach(analyses, (analysisWord, state) =>
 				{
 					try
@@ -116,10 +114,10 @@ namespace SIL.HermitCrab
 								validWordsStack.PushRange(valid);
 						}
 					}
-					catch (MorphException me)
+					catch (Exception e)
 					{
 						state.Stop();
-						exception = me;
+						exception = e;
 					}
 				});
 

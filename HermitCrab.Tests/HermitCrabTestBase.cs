@@ -295,8 +295,7 @@ namespace SIL.HermitCrab.Tests
 		private LexEntry AddEntry(string id, string word, string gloss, FeatureStruct syntacticFS, Stratum stratum)
 		{
 			var entry = new LexEntry(id) { SyntacticFeatureStruct = syntacticFS, Gloss = gloss };
-			Shape shape;
-			stratum.SymbolTable.ToShape(word, out shape);
+			Shape shape = stratum.SymbolTable.Segment(word);
 			entry.Allomorphs.Add(new RootAllomorph(id + "_allo1", shape));
 			stratum.Entries.Add(entry);
 			Entries.Add(entry);

@@ -7,50 +7,50 @@ using SIL.Collections;
 
 namespace SIL.HermitCrab
 {
-    public class HermitCrabProgram
-    {
-        public static int Main(string[] args)
-        {
-            string inputFile = null;
-            string outputFile = null;
-        	string scriptFile = null;
-            bool showHelp = false;
-            bool quitOnError = true;
+	public class HermitCrabProgram
+	{
+		public static int Main(string[] args)
+		{
+			string inputFile = null;
+			string outputFile = null;
+			string scriptFile = null;
+			bool showHelp = false;
+			bool quitOnError = true;
 
 			var p = new OptionSet
-                    	{
-                    		{ "i|input-file=", "read configuration from {FILE}", value => inputFile = value },
+						{
+							{ "i|input-file=", "read configuration from {FILE}", value => inputFile = value },
 							{ "o|output-file=", "write results to {FILE}", value => outputFile = value },
 							{ "s|script-file=", "runs commands from {FILE}", value => scriptFile = value },
 							{ "c|continue", "continues when an error occurs", value => quitOnError = value == null },
 							{ "h|help", "show this help message and exit", value => showHelp = value != null }
-                    	};
+						};
 
-            try
-            {
-                p.Parse(args);
-            }
-            catch (OptionException)
-            {
-                ShowHelp(p);
-                return -1;
-            }
+			try
+			{
+				p.Parse(args);
+			}
+			catch (OptionException)
+			{
+				ShowHelp(p);
+				return -1;
+			}
 
-            if (showHelp || string.IsNullOrEmpty(inputFile))
-            {
-                ShowHelp(p);
-                return -1;
-            }
+			if (showHelp || string.IsNullOrEmpty(inputFile))
+			{
+				ShowHelp(p);
+				return -1;
+			}
 
-        	HCContext context;
-        	TextWriter output = null;
-            try
-            {
+			HCContext context;
+			TextWriter output = null;
+			try
+			{
 				if (!string.IsNullOrEmpty(outputFile))
 					output = new StreamWriter(outputFile);
 
 				Console.Write("Reading configuration file...");
-            	Language language = XmlLoader.Load(inputFile, quitOnError);
+				Language language = XmlLoader.Load(inputFile, quitOnError ? (Action<Exception>) null : ex => { });
 				Console.WriteLine("done.");
 
 				context = new HCContext(language, output ?? Console.Out);
@@ -58,29 +58,27 @@ namespace SIL.HermitCrab
 				context.Compile();
 				Console.WriteLine("done.");
 				Console.WriteLine("{0} loaded.", language.Description);
-            }
-            catch (IOException ioe)
-            {
+			}
+			catch (IOException ioe)
+			{
 				Console.WriteLine();
-                Console.WriteLine("IO Error: " + ioe.Message);
-            	if (output != null)
+				Console.WriteLine("IO Error: " + ioe.Message);
+				if (output != null)
 					output.Close();
-            	return -1;
-            }
-            catch (LoadException le)
-            {
+				return -1;
+			}
+			catch (Exception e)
+			{
 				Console.WriteLine();
-                Console.WriteLine("Load Error: " + le.Message);
-                if (le.InnerException != null)
-                    Console.WriteLine(le.InnerException.Message);
-            	if (output != null)
+				Console.WriteLine("Load Error: " + e.Message);
+				if (output != null)
 					output.Close();
-            	return -1;
-            }
+				return -1;
+			}
 
 			ConsoleCommand[] commands = { new ParseCommand(context), new TracingCommand(context) };
 
-        	string input = null;
+			string input = null;
 			if (!string.IsNullOrEmpty(scriptFile))
 			{
 				using (var scriptReader = new StreamReader(scriptFile))
@@ -118,18 +116,18 @@ namespace SIL.HermitCrab
 				}
 			}
 
-        	if (output != null)
+			if (output != null)
 				output.Close();
 
-        	return 0;
-        }
+			return 0;
+		}
 
-        private static void ShowHelp(OptionSet p)
-        {
-            Console.WriteLine("Usage: hc [OPTIONS]");
-            Console.WriteLine("HermitCrab.NET is a phonological and morphological parser.");
-            Console.WriteLine();
-            p.WriteOptionDescriptions(Console.Out);
-        }
-    }
+		private static void ShowHelp(OptionSet p)
+		{
+			Console.WriteLine("Usage: hc [OPTIONS]");
+			Console.WriteLine("HermitCrab.NET is a phonological and morphological parser.");
+			Console.WriteLine();
+			p.WriteOptionDescriptions(Console.Out);
+		}
+	}
 }

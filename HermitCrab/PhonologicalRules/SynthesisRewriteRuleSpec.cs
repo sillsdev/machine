@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.Matching;
@@ -19,7 +20,7 @@ namespace SIL.HermitCrab.PhonologicalRules
 				_pattern.Children.Add(new Group<Word, ShapeNode>("leftEnv", _subrule.LeftEnvironment.Children.DeepClone()));
 
 			var target = new Group<Word, ShapeNode>("target");
-			foreach (Constraint<Word, ShapeNode> constraint in lhs.Children)
+			foreach (Constraint<Word, ShapeNode> constraint in lhs.Children.Cast<Constraint<Word, ShapeNode>>())
 			{
 				var newConstraint = constraint.DeepClone();
 				newConstraint.FeatureStruct.AddValue(HCFeatureSystem.Modified, HCFeatureSystem.Clean);

@@ -232,6 +232,12 @@ namespace SIL.HermitCrab
 			return numApplies;
 		}
 
+		public Allomorph GetAllomorph(Annotation<ShapeNode> morph)
+		{
+			var alloID = (string) morph.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
+			return _allomorphs[alloID];
+		}
+
 		public Word CurrentNonHead
 		{
 			get
@@ -321,7 +327,7 @@ namespace SIL.HermitCrab
 
 		public override string ToString()
 		{
-			return Stratum.SymbolTable.ToRegexString(Shape, true);
+			return Shape.ToRegexString(Stratum.SymbolTable, true);
 		}
 	}
 }

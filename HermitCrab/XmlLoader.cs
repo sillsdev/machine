@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Xml.Linq;
 using System.Xml;
-using System.Xml.Schema;
 using System.Linq;
 using SIL.Collections;
 using SIL.HermitCrab.MorphologicalRules;
@@ -21,17 +20,17 @@ namespace SIL.HermitCrab
 	{
 		public static Language Load(string configPath)
 		{
-			return Load(configPath, false);
+			return Load(configPath, null);
 		}
 
-		public static Language Load(string configPath, bool quitOnError)
+		public static Language Load(string configPath, Action<Exception> errorHandler)
 		{
-			return Load(configPath, quitOnError, null);
+			return Load(configPath, errorHandler, null);
 		}
 
-		public static Language Load(string configPath, bool quitOnError, XmlResolver resolver)
+		public static Language Load(string configPath, Action<Exception> errorHandler, XmlResolver resolver)
 		{
-			var loader = new XmlLoader(configPath, quitOnError, resolver);
+			var loader = new XmlLoader(configPath, errorHandler, resolver);
 			return loader.Load();
 		}
 
@@ -148,7 +147,7 @@ namespace SIL.HermitCrab
 		private readonly ComplexFeature _footFeature;
 
 		private readonly string _configPath;
-		private readonly bool _quitOnError;
+		private readonly Action<Exception> _errorHandler;
 		private readonly Dictionary<string, string> _repIds;
 		private readonly ShapeSpanFactory _spanFactory;
 		private readonly XmlResolver _resolver;
@@ -166,10 +165,10 @@ namespace SIL.HermitCrab
 		private readonly IDBearerSet<Morpheme> _morphemes;
 		private readonly IDBearerSet<Allomorph> _allomorphs;
 
-		private XmlLoader(string configPath, bool quitOnError, XmlResolver resolver)
+		private XmlLoader(string configPath, Action<Exception> errorHandler, XmlResolver resolver)
 		{
 			_configPath = configPath;
-			_quitOnError = quitOnError;
+			_errorHandler = errorHandler;
 			_repIds = new Dictionary<string, string>();
 			_spanFactory = new ShapeSpanFactory();
 			_resolver = resolver;
@@ -193,43 +192,21 @@ namespace SIL.HermitCrab
 
 		private Language Load()
 		{
-			var settings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Parse };
-			if (Type.GetType("Mono.Runtime") == null)
-			{
-				settings.ValidationType = ValidationType.DTD;
-				settings.ValidationEventHandler += ValidationEventHandler;
-			}
-			else
-			{
-				// Mono's dtd processing seems to have bugs. Workaround	don't do DTD validation.
-				settings.ValidationType = ValidationType.None;
-			}
-			
+			var settings = new XmlReaderSettings
+				{
+					DtdProcessing = DtdProcessing.Parse,
+					ValidationType = Type.GetType("Mono.Runtime") == null ? ValidationType.DTD : ValidationType.None
+				};
+
 			if (_resolver != null)
 				settings.XmlResolver = _resolver;
 
-			XmlReader reader = XmlReader.Create(_configPath, settings);
-			XDocument doc;
-			try
+			using (XmlReader reader = XmlReader.Create(_configPath, settings))
 			{
-				doc = XDocument.Load(reader);
+				XDocument doc = XDocument.Load(reader);
+				LoadLanguage(doc.Elements("HermitCrabInput").Elements("Language").Single(IsActive));
+				return _language;
 			}
-			catch (XmlException xe)
-			{
-				throw new LoadException(LoadErrorCode.ParseError, string.Format("Unable to parser input file: {0}.", _configPath), xe);
-			}
-			finally
-			{
-				reader.Close();
-			}
-
-			LoadLanguage(doc.Elements("HermitCrabInput").Elements("Language").Single(IsActive));
-			return _language;
-		}
-
-		private static void ValidationEventHandler(object sender, ValidationEventArgs e)
-		{
-			throw new LoadException(LoadErrorCode.InvalidFormat, e.Message + " Line: " + e.Exception.LineNumber + ", Pos: " + e.Exception.LinePosition);
 		}
 
 		private static bool IsActive(XElement elem)
@@ -273,27 +250,19 @@ namespace SIL.HermitCrab
 
 			foreach (XElement mruleElem in langElem.Elements("MorphologicalRules").Elements().Where(IsActive))
 			{
-				try
+				switch (mruleElem.Name.LocalName)
 				{
-					switch (mruleElem.Name.LocalName)
-					{
-						case "MorphologicalRule":
-							LoadAffixProcessRule(mruleElem);
-							break;
+					case "MorphologicalRule":
+						LoadAffixProcessRule(mruleElem);
+						break;
 
-						case "RealizationalRule":
-							LoadRealizationalRule(mruleElem);
-							break;
+					case "RealizationalRule":
+						LoadRealizationalRule(mruleElem);
+						break;
 
-						case "CompoundingRule":
-							LoadCompoundingRule(mruleElem);
-							break;
-					}
-				}
-				catch (LoadException)
-				{
-					if (_quitOnError)
-						throw;
+					case "CompoundingRule":
+						LoadCompoundingRule(mruleElem);
+						break;
 				}
 			}
 
@@ -310,7 +279,7 @@ namespace SIL.HermitCrab
 				IMorphologicalRule rule;
 				if (!_templateRules.Contains(ruleId) && _mrules.TryGetValue(ruleId, out rule))
 				{
-					Stratum stratum = GetStratum((string) mruleElem.Attribute("stratum"));
+					Stratum stratum = _strata[(string) mruleElem.Attribute("stratum")];
 					stratum.MorphologicalRules.Add(rule);
 				}
 			}
@@ -319,17 +288,7 @@ namespace SIL.HermitCrab
 				_families.Add(new LexFamily((string) familyElem.Attribute("id")) { Description = (string) familyElem.Element("Name") });
 
 			foreach (XElement entryElem in langElem.Elements("Lexicon").Elements("LexicalEntry").Where(IsActive))
-			{
-				try
-				{
-					LoadLexEntry(entryElem);
-				}
-				catch (LoadException)
-				{
-					if (_quitOnError)
-						throw;
-				}
-			}
+				LoadLexEntry(entryElem);
 
 			// co-occurrence rules cannot be loaded until all of the morphemes and their allomorphs have been loaded
 			foreach (XElement morphemeElem in langElem.Elements("Lexicon").Elements("LexicalEntry").Concat(langElem.Elements("MorphologicalRules").Elements()).Where(IsActive))
@@ -338,24 +297,8 @@ namespace SIL.HermitCrab
 				Morpheme morpheme;
 				if (_morphemes.TryGetValue(morphemeID, out morpheme))
 				{
-					try
-					{
-						morpheme.RequiredMorphemeCoOccurrences.AddRange(LoadMorphemeCoOccurrenceRules(morphemeElem.Element("RequiredMorphemeCoOccurrences")));
-					}
-					catch (LoadException)
-					{
-						if (_quitOnError)
-							throw;
-					}
-					try
-					{
-						morpheme.ExcludedMorphemeCoOccurrences.AddRange(LoadMorphemeCoOccurrenceRules(morphemeElem.Element("ExcludedMorphemeCoOccurrences")));
-					}
-					catch (LoadException)
-					{
-						if (_quitOnError)
-							throw;
-					}
+					morpheme.RequiredMorphemeCoOccurrences.AddRange(LoadMorphemeCoOccurrenceRules(morphemeElem.Element("RequiredMorphemeCoOccurrences")));
+					morpheme.ExcludedMorphemeCoOccurrences.AddRange(LoadMorphemeCoOccurrenceRules(morphemeElem.Element("ExcludedMorphemeCoOccurrences")));
 				}
 
 				foreach (XElement alloElem in morphemeElem.Elements("Allomorphs").Elements("Allomorph")
@@ -365,24 +308,8 @@ namespace SIL.HermitCrab
 					Allomorph allomorph;
 					if (_allomorphs.TryGetValue(alloID, out allomorph))
 					{
-						try
-						{
-							allomorph.RequiredAllomorphCoOccurrences.AddRange(LoadAllomorphCoOccurrenceRules(alloElem.Element("RequiredAllomorphCoOccurrences")));
-						}
-						catch (LoadException)
-						{
-							if (_quitOnError)
-								throw;
-						}
-						try
-						{
-							allomorph.ExcludedAllomorphCoOccurrences.AddRange(LoadAllomorphCoOccurrenceRules(alloElem.Element("ExcludedAllomorphCoOccurrences")));
-						}
-						catch (LoadException)
-						{
-							if (_quitOnError)
-								throw;
-						}
+						allomorph.RequiredAllomorphCoOccurrences.AddRange(LoadAllomorphCoOccurrenceRules(alloElem.Element("RequiredAllomorphCoOccurrences")));
+						allomorph.ExcludedAllomorphCoOccurrences.AddRange(LoadAllomorphCoOccurrenceRules(alloElem.Element("ExcludedAllomorphCoOccurrences")));
 					}
 				}
 			}
@@ -402,9 +329,11 @@ namespace SIL.HermitCrab
 							break;
 					}
 				}
-				catch (LoadException)
+				catch (Exception e)
 				{
-					if (_quitOnError)
+					if (_errorHandler != null)
+						_errorHandler(e);
+					else
 						throw;
 				}
 			}
@@ -423,7 +352,7 @@ namespace SIL.HermitCrab
 
 		private void LoadStratum(XElement stratumElem)
 		{
-			var stratum = new Stratum((string) stratumElem.Attribute("id"), GetTable((string) stratumElem.Attribute("characterDefinitionTable")))
+			var stratum = new Stratum((string) stratumElem.Attribute("id"), _tables[(string) stratumElem.Attribute("characterDefinitionTable")])
 			              	{
 			              		Description = (string) stratumElem.Element("Name"),
 			              		MorphologicalRuleOrder = GetMorphologicalRuleOrder((string) stratumElem.Attribute("morphologicalRuleOrder"))
@@ -434,9 +363,7 @@ namespace SIL.HermitCrab
 			{
 				foreach (string tempID in tempIDsStr.Split(' '))
 				{
-					AffixTemplate template;
-					if (!_templates.TryGetValue(tempID, out template))
-						throw new LoadException(LoadErrorCode.UndefinedObject, string.Format("Unknown affix template '{0}'.", tempID));
+					AffixTemplate template = _templates[tempID];
 					stratum.AffixTemplates.Add(template);
 				}
 			}
@@ -468,13 +395,11 @@ namespace SIL.HermitCrab
 			var familyID = (string) entryElem.Attribute("family");
 			if (!string.IsNullOrEmpty(familyID))
 			{
-				LexFamily family;
-				if (!_families.TryGetValue(familyID, out family))
-					throw new LoadException(LoadErrorCode.UndefinedObject, string.Format("Unknown lexical family '{0}'.", familyID));
+				LexFamily family = _families[familyID];
 				family.Entries.Add(entry);
 			}
 
-			Stratum stratum = GetStratum((string) entryElem.Attribute("stratum"));
+			Stratum stratum = _strata[(string) entryElem.Attribute("stratum")];
 			foreach (XElement alloElem in entryElem.Elements("Allomorphs").Elements("Allomorph").Where(IsActive))
 			{
 				try
@@ -483,9 +408,11 @@ namespace SIL.HermitCrab
 					entry.Allomorphs.Add(allomorph);
 					_allomorphs.Add(allomorph);
 				}
-				catch (LoadException)
+				catch (Exception e)
 				{
-					if (_quitOnError)
+					if (_errorHandler != null)
+						_errorHandler(e);
+					else
 						throw;
 				}
 			}
@@ -502,12 +429,9 @@ namespace SIL.HermitCrab
 		{
 			var alloID = (string) alloElem.Attribute("id");
 			var shapeStr = (string) alloElem.Element("PhoneticShape");
-			Shape shape;
-			if (!table.ToShape(shapeStr, out shape) || shape.All(n => n.Type() == HCFeatureSystem.Boundary))
-			{
-				throw new LoadException(LoadErrorCode.InvalidShape,
-					string.Format("Failure to translate shape '{0}' of allomorph '{1}' into a phonetic shape using character table '{2}'.", shapeStr, alloID, table.ID));
-			}
+			Shape shape = table.Segment(shapeStr);
+			if (shape.All(n => n.Type() == HCFeatureSystem.Boundary))
+				throw new InvalidShapeException(shapeStr, 0);
 			var allomorph = new RootAllomorph(alloID, shape);
 
 			allomorph.RequiredEnvironments.AddRange(LoadAllomorphEnvironments(alloElem.Element("RequiredEnvironments")));
@@ -552,9 +476,7 @@ namespace SIL.HermitCrab
 			var morphemes = new IDBearerSet<Morpheme>();
 			foreach (string morphemeID in morphemeIDsStr.Split(' '))
 			{
-				Morpheme morpheme;
-				if (!_morphemes.TryGetValue(morphemeID, out morpheme))
-					throw new LoadException(LoadErrorCode.UndefinedObject, string.Format("Unknown morpheme '{0}'.", morphemeID));
+				Morpheme morpheme = _morphemes[morphemeID];
 				morphemes.Add(morpheme);
 			}
 			return new MorphemeCoOccurrenceRule(morphemes, adjacency);
@@ -576,9 +498,7 @@ namespace SIL.HermitCrab
 			var allomorphs = new IDBearerSet<Allomorph>();
 			foreach (string allomorphID in allomorphIDsStr.Split(' '))
 			{
-				Allomorph allomorph;
-				if (!_allomorphs.TryGetValue(allomorphID, out allomorph))
-					throw new LoadException(LoadErrorCode.UndefinedObject, string.Format("Unknown allomorph '{0}'.", allomorphID));
+				Allomorph allomorph = _allomorphs[allomorphID];
 				allomorphs.Add(allomorph);
 			}
 			return new AllomorphCoOccurrenceRule(allomorphs, adjacency);
@@ -598,12 +518,12 @@ namespace SIL.HermitCrab
 			var fs = new FeatureStruct();
 			foreach (XElement featValElem in elem.Elements("FeatureValueList").Where(IsActive))
 			{
-				Feature feature = GetFeature(_language.SyntacticFeatureSystem, (string) featValElem.Attribute("feature"));
+				Feature feature = _language.SyntacticFeatureSystem.GetFeature((string) featValElem.Attribute("feature"));
 				var valueIDsStr = (string) featValElem.Attribute("values");
 				if (!string.IsNullOrEmpty(valueIDsStr))
 				{
 					var sf = (SymbolicFeature) feature;
-					fs.AddValue(sf, valueIDsStr.Split(' ').Select(id => GetFeatureSymbol(sf, id)));
+					fs.AddValue(sf, valueIDsStr.Split(' ').Select(id => sf.PossibleSymbols[id]));
 				}
 				else
 				{
@@ -674,8 +594,8 @@ namespace SIL.HermitCrab
 			FeatureStruct fs = null;
 			foreach (XElement segElem in natClassElem.Elements("Segment"))
 			{
-				SymbolTable table = GetTable((string) segElem.Attribute("characterTable"));
-				string strRep = GetStrRep((string) segElem.Attribute("representation"));
+				SymbolTable table = _tables[(string) segElem.Attribute("characterTable")];
+				string strRep = _repIds[(string) segElem.Attribute("representation")];
 				FeatureStruct segFS = table.GetSymbolFeatureStruct(strRep);
 				if (fs == null)
 					fs = segFS.DeepClone();
@@ -694,8 +614,8 @@ namespace SIL.HermitCrab
 			fs.AddValue(HCFeatureSystem.Type, HCFeatureSystem.Segment);
 			foreach (XElement featValElem in elem.Elements("FeatureValuePair").Where(IsActive))
 			{
-				var feature = (SymbolicFeature) GetFeature(_language.PhoneticFeatureSystem, (string) featValElem.Attribute("feature"));
-				FeatureSymbol symbol = GetFeatureSymbol(feature, (string) featValElem.Attribute("value"));
+				var feature = _language.PhoneticFeatureSystem.GetFeature<SymbolicFeature>((string) featValElem.Attribute("feature"));
+				FeatureSymbol symbol = feature.PossibleSymbols[(string) featValElem.Attribute("value")];
 				fs.AddValue(feature, new SymbolicFeatureValue(symbol));
 			}
 			fs.Freeze();
@@ -719,7 +639,7 @@ namespace SIL.HermitCrab
 
 			var stratumIDsStr = (string) pruleElem.Attribute("ruleStrata");
 			foreach (string stratumID in stratumIDsStr.Split(' '))
-				GetStratum(stratumID).PhonologicalRules.Add(prule);
+				_strata[stratumID].PhonologicalRules.Add(prule);
 		}
 
 		private RewriteSubrule LoadRewriteSubrule(XElement psubruleElem, Dictionary<string, Tuple<string, SymbolicFeature>> variables)
@@ -763,7 +683,7 @@ namespace SIL.HermitCrab
 
 			var stratumIDsStr = (string) metathesisElem.Attribute("ruleStrata");
 			foreach (string stratumID in stratumIDsStr.Split(' '))
-				GetStratum(stratumID).PhonologicalRules.Add(metathesisRule);
+				_strata[stratumID].PhonologicalRules.Add(metathesisRule);
 		}
 
 		private void LoadAffixProcessRule(XElement mruleElem)
@@ -808,20 +728,22 @@ namespace SIL.HermitCrab
 			if (!string.IsNullOrEmpty(obligHeadIDsStr))
 			{
 				foreach (string obligHeadID in obligHeadIDsStr.Split(' '))
-					mrule.ObligatorySyntacticFeatures.Add(GetFeature(_language.SyntacticFeatureSystem, obligHeadID));
+					mrule.ObligatorySyntacticFeatures.Add(_language.SyntacticFeatureSystem.GetFeature(obligHeadID));
 			}
 
 			foreach (XElement subruleElem in mruleElem.Elements("MorphologicalSubrules").Elements("MorphologicalSubruleStructure").Where(IsActive))
 			{
 				try
 				{
-					AffixProcessAllomorph allomorph = LoadAffixProcessAllomorph(subruleElem, mrule.ID);
+					AffixProcessAllomorph allomorph = LoadAffixProcessAllomorph(subruleElem);
 					mrule.Allomorphs.Add(allomorph);
 					_allomorphs.Add(allomorph);
 				}
-				catch (LoadException)
+				catch (Exception e)
 				{
-					if (_quitOnError)
+					if (_errorHandler != null)
+						_errorHandler(e);
+					else
 						throw;
 				}
 			}
@@ -860,13 +782,15 @@ namespace SIL.HermitCrab
 			{
 				try
 				{
-					AffixProcessAllomorph allomorph = LoadAffixProcessAllomorph(subruleElem, realRule.ID);
+					AffixProcessAllomorph allomorph = LoadAffixProcessAllomorph(subruleElem);
 					realRule.Allomorphs.Add(allomorph);
 					_allomorphs.Add(allomorph);
 				}
-				catch (LoadException)
+				catch (Exception e)
 				{
-					if (_quitOnError)
+					if (_errorHandler != null)
+						_errorHandler(e);
+					else
 						throw;
 				}
 			}
@@ -878,7 +802,7 @@ namespace SIL.HermitCrab
 			}
 		}
 
-		private AffixProcessAllomorph LoadAffixProcessAllomorph(XElement msubruleElem, string mruleID)
+		private AffixProcessAllomorph LoadAffixProcessAllomorph(XElement msubruleElem)
 		{
 			var allomorph = new AffixProcessAllomorph((string) msubruleElem.Attribute("id"));
 
@@ -902,7 +826,7 @@ namespace SIL.HermitCrab
 			Debug.Assert(outputElem != null);
 
 			allomorph.ReduplicationHint = GetReduplicationHint((string) outputElem.Attribute("redupMorphType"));
-			LoadMorphologicalRhs(outputElem.Element("MorphologicalPhoneticOutput"), variables, mruleID, allomorph.Rhs);
+			LoadMorphologicalRhs(outputElem.Element("MorphologicalPhoneticOutput"), variables, allomorph.Rhs);
 
 			return allomorph;
 		}
@@ -913,7 +837,7 @@ namespace SIL.HermitCrab
 				lhs.Add(LoadPhoneticSequence(pseqElem, variables, true));
 		}
 
-		private void LoadMorphologicalRhs(XElement phonOutputElem, Dictionary<string, Tuple<string, SymbolicFeature>> variables, string ruleID, IList<MorphologicalOutputAction> rhs)
+		private void LoadMorphologicalRhs(XElement phonOutputElem, Dictionary<string, Tuple<string, SymbolicFeature>> variables, IList<MorphologicalOutputAction> rhs)
 		{
 			foreach (XElement partElem in phonOutputElem.Elements())
 			{
@@ -932,14 +856,9 @@ namespace SIL.HermitCrab
 						break;
 
 					case "InsertSegments":
-						SymbolTable table = GetTable((string) partElem.Attribute("characterTable"));
+						SymbolTable table = _tables[(string) partElem.Attribute("characterTable")];
 						var shapeStr = (string) partElem.Element("PhoneticShape");
-						Shape shape;
-						if (!table.ToShape(shapeStr, out shape))
-						{
-							throw new LoadException(LoadErrorCode.InvalidShape,
-								string.Format("Failure to translate shape '{0}' of rule '{1}' into a phonetic shape using character table '{2}'.", shapeStr, ruleID, table.ID));
-						}
+						Shape shape = table.Segment(shapeStr);
 						rhs.Add(new InsertShape(shape));
 						break;
 				}
@@ -1000,18 +919,20 @@ namespace SIL.HermitCrab
 			if (!string.IsNullOrEmpty(obligHeadIDsStr))
 			{
 				foreach (string obligHeadID in obligHeadIDsStr.Split(' '))
-					compRule.ObligatorySyntacticFeatures.Add(GetFeature(_language.SyntacticFeatureSystem, obligHeadID));
+					compRule.ObligatorySyntacticFeatures.Add(_language.SyntacticFeatureSystem.GetFeature(obligHeadID));
 			}
 
 			foreach (XElement subruleElem in compRuleElem.Elements("CompoundSubrules").Elements("CompoundSubruleStructure").Where(IsActive))
 			{
 				try
 				{
-					compRule.Subrules.Add(LoadCompoundSubrule(subruleElem, compRule.ID));
+					compRule.Subrules.Add(LoadCompoundSubrule(subruleElem));
 				}
-				catch (LoadException)
+				catch (Exception e)
 				{
-					if (_quitOnError)
+					if (_errorHandler != null)
+						_errorHandler(e);
+					else
 						throw;
 				}
 			}
@@ -1020,7 +941,7 @@ namespace SIL.HermitCrab
 				_mrules.Add(compRule);
 		}
 
-		private CompoundingSubrule LoadCompoundSubrule(XElement compSubruleElem, string compRuleID)
+		private CompoundingSubrule LoadCompoundSubrule(XElement compSubruleElem)
 		{
 			var subrule = new CompoundingSubrule((string) compSubruleElem.Attribute("id"));
 
@@ -1043,7 +964,7 @@ namespace SIL.HermitCrab
 			XElement outputElem = compSubruleElem.Element("OutputSideRecordStructure");
 			Debug.Assert(outputElem != null);
 
-			LoadMorphologicalRhs(outputElem.Element("MorphologicalPhoneticOutput"), variables, compRuleID, subrule.Rhs);
+			LoadMorphologicalRhs(outputElem.Element("MorphologicalPhoneticOutput"), variables, subrule.Rhs);
 
 			return subrule;
 		}
@@ -1063,18 +984,10 @@ namespace SIL.HermitCrab
 				IMorphologicalRule lastRule = null;
 				foreach (string ruleID in ruleIDsStr.Split(' '))
 				{
-					IMorphologicalRule rule;
-					if (_mrules.TryGetValue(ruleID, out rule))
-					{
-						slot.Rules.Add(rule);
-						_templateRules.Add(rule);
-						lastRule = rule;
-					}
-					else
-					{
-						if (_quitOnError)
-							throw new LoadException(LoadErrorCode.UndefinedObject, string.Format("Unknown morphological rule '{0}'.", ruleID));
-					}
+					IMorphologicalRule rule = _mrules[ruleID];
+					slot.Rules.Add(rule);
+					_templateRules.Add(rule);
+					lastRule = rule;
 				}
 
 				var optionalStr = (string) slotElem.Attribute("optional");
@@ -1095,12 +1008,7 @@ namespace SIL.HermitCrab
 			{
 				string[] posIDs = posIdsStr.Split(' ');
 				foreach (string posID in posIDs)
-				{
-					FeatureSymbol pos;
-					if (!_language.SyntacticFeatureSystem.TryGetSymbol(posID, out pos))
-						throw new LoadException(LoadErrorCode.UndefinedObject, string.Format("POS '{0}' is unknown.", posID));
-					yield return pos;
-				}
+					yield return _language.SyntacticFeatureSystem.GetSymbol(posID);
 			}
 		}
 
@@ -1110,12 +1018,7 @@ namespace SIL.HermitCrab
 				yield break;
 
 			foreach (string mprFeatID in mprFeatIDsStr.Split(' '))
-			{
-				MprFeature mprFeature;
-				if (!_mprFeatures.TryGetValue(mprFeatID, out mprFeature))
-					throw new LoadException(LoadErrorCode.UndefinedObject, string.Format("MPR Feature '{0}' is unknown.", mprFeatID));
-				yield return mprFeature;
-			}
+				yield return _mprFeatures[mprFeatID];
 		}
 
 		private Dictionary<string, Tuple<string, SymbolicFeature>> LoadVariables(XElement alphaVarsElem)
@@ -1126,7 +1029,7 @@ namespace SIL.HermitCrab
 				foreach (XElement varFeatElem in alphaVarsElem.Elements("VariableFeature"))
 				{
 					var varName = (string)varFeatElem.Attribute("name");
-					var feature = (SymbolicFeature)GetFeature(_language.PhoneticFeatureSystem, (string)varFeatElem.Attribute("phonologicalFeature"));
+					var feature = _language.PhoneticFeatureSystem.GetFeature<SymbolicFeature>((string) varFeatElem.Attribute("phonologicalFeature"));
 					variables[(string)varFeatElem.Attribute("id")] = Tuple.Create(varName, feature);
 				}
 			}
@@ -1146,8 +1049,8 @@ namespace SIL.HermitCrab
 
 					case "Segment":
 					case "BoundaryMarker":
-						SymbolTable symTable = GetTable((string) recElem.Attribute("characterTable"));
-						string strRep = GetStrRep((string) recElem.Attribute("representation"));
+						SymbolTable symTable = _tables[(string) recElem.Attribute("characterTable")];
+						string strRep = _repIds[(string) recElem.Attribute("representation")];
 						nodes = new Constraint<Word, ShapeNode>(symTable.GetSymbolFeatureStruct(strRep)).ToEnumerable();
 						break;
 
@@ -1160,14 +1063,9 @@ namespace SIL.HermitCrab
 						break;
 
 					case "Segments":
-						SymbolTable segsTable = GetTable((string) recElem.Attribute("characterTable"));
+						SymbolTable segsTable = _tables[(string) recElem.Attribute("characterTable")];
 						var shapeStr = (string) recElem.Element("PhoneticShape");
-						Shape shape;
-						if (!segsTable.ToShape(shapeStr, out shape))
-						{
-							throw new LoadException(LoadErrorCode.InvalidShape,
-								string.Format("Failure to translate shape '{0}' in a phonetic sequence into a phonetic shape using character table '{1}'.", shapeStr, segsTable.ID));
-						}
+						Shape shape = segsTable.Segment(shapeStr);
 						nodes = shape.Select(n => new Constraint<Word, ShapeNode>(n.Annotation.FeatureStruct));
 						break;
 				}
@@ -1189,17 +1087,12 @@ namespace SIL.HermitCrab
 		private FeatureStruct LoadNaturalClassFeatureStruct(XElement ctxtElem, Dictionary<string, Tuple<string, SymbolicFeature>> variables)
 		{
 			var natClassID = (string) ctxtElem.Attribute("naturalClass");
-			FeatureStruct fs;
-			if (!_natClasses.TryGetValue(natClassID, out fs))
-				throw new LoadException(LoadErrorCode.UndefinedObject, string.Format("Natural class '{0}' is unknown.", natClassID));
-
+			FeatureStruct fs = _natClasses[natClassID];
 			fs = fs.DeepClone();
 			foreach (XElement varElem in ctxtElem.Elements("AlphaVariables").Elements("AlphaVariable"))
 			{
-				var varID = (string)varElem.Attribute("variableFeature");
-				Tuple<string, SymbolicFeature> variable;
-				if (!variables.TryGetValue(varID, out variable))
-					throw new LoadException(LoadErrorCode.UndefinedObject, string.Format("Variable '{0}' is unknown.", varID));
+				var varID = (string) varElem.Attribute("variableFeature");
+				Tuple<string, SymbolicFeature> variable = variables[varID];
 				fs.AddValue(variable.Item2, new SymbolicFeatureValue(variable.Item2, variable.Item1, (string)varElem.Attribute("polarity") == "plus"));
 			}
 			fs.Freeze();
@@ -1229,46 +1122,6 @@ namespace SIL.HermitCrab
 			var pattern = new Pattern<Word, ShapeNode>((string) pseqElem.Attribute("id"), LoadPatternNodes(pseqElem, variables, createGroups));
 			pattern.Freeze();
 			return pattern;
-		}
-
-		private Stratum GetStratum(string id)
-		{
-			Stratum stratum;
-			if (!_strata.TryGetValue(id, out stratum))
-				throw new LoadException(LoadErrorCode.UndefinedObject, string.Format("Stratum '{0}' is unknown.", id));
-			return stratum;
-		}
-
-		private SymbolTable GetTable(string id)
-		{
-			SymbolTable table;
-			if (!_tables.TryGetValue(id, out table))
-				throw new LoadException(LoadErrorCode.UndefinedObject, string.Format("Character definition table {0} is unknown.", id));
-			return table;
-		}
-
-		private string GetStrRep(string id)
-		{
-			string strRep;
-			if (!_repIds.TryGetValue(id, out strRep))
-				throw new LoadException(LoadErrorCode.UndefinedObject, string.Format("Character definition {0} is unknown.", id));
-			return strRep;
-		}
-
-		private Feature GetFeature(FeatureSystem featSys, string id)
-		{
-			Feature feature;
-			if (!featSys.TryGetFeature(id, out feature))
-				throw new LoadException(LoadErrorCode.UndefinedObject, string.Format("Unknown feature '{0}'.", id));
-			return feature;
-		}
-
-		private FeatureSymbol GetFeatureSymbol(SymbolicFeature feature, string id)
-		{
-			FeatureSymbol symbol;
-			if (!feature.PossibleSymbols.TryGetValue(id, out symbol))
-				throw new LoadException(LoadErrorCode.UndefinedObject, string.Format("Unknown value '{0}' for feature '{1}'.", id, feature.ID));
-			return symbol;
 		}
 	}
 }

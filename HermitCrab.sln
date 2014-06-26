@@ -2,6 +2,9 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HermitCrabExe", "HermitCrabExe\HermitCrabExe.csproj", "{945FED88-A315-4692-96DD-770892A814DD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9E140FCF-0265-481B-B9A0-B0E7BCD3E814} = {9E140FCF-0265-481B-B9A0-B0E7BCD3E814}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Machine", "lib\Machine\Machine\Machine.csproj", "{8C9AB5D2-22CA-4559-ABB0-83E97D7F0E58}"
 EndProject

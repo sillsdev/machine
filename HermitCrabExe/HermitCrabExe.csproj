@@ -102,6 +102,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\HermitCrab\HermitCrab.csproj">
+      <Project>{9E140FCF-0265-481B-B9A0-B0E7BCD3E814}</Project>
+      <Name>HermitCrab</Name>
+    </ProjectReference>
     <ProjectReference Include="..\lib\Machine\Collections\Collections.csproj">
       <Project>{08691159-167B-4E5A-AE88-67DEF10AF7D3}</Project>
       <Name>Collections</Name>

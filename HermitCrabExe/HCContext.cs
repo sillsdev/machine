@@ -1,5 +1,5 @@
 ﻿using System.IO;
-using SIL.Machine;
+using SIL.Machine.Annotations;
 
 namespace SIL.HermitCrab
 {

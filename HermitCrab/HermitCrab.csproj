@@ -66,12 +66,12 @@
     <Compile Include="AnalysisAffixTemplateRule.cs" />
     <Compile Include="AllomorphEnvironment.cs" />
     <Compile Include="AnalysisStratumRule.cs" />
-    <Compile Include="Extensions.cs" />
+    <Compile Include="HermitCrabExtensions.cs" />
     <Compile Include="HCFeatureSystem.cs" />
     <Compile Include="IHCRule.cs" />
     <Compile Include="IMorphologicalRule.cs" />
+    <Compile Include="InvalidShapeException.cs" />
     <Compile Include="IPhonologicalRule.cs" />
-    <Compile Include="LoadException.cs" />
     <Compile Include="MorphCoOccurrenceRule.cs" />
     <Compile Include="MorphemeCoOccurrenceRule.cs" />
     <Compile Include="Morpher.cs" />
@@ -116,7 +116,7 @@
     <Compile Include="RootAllomorph.cs" />
     <Compile Include="LexEntry.cs" />
     <Compile Include="LexFamily.cs" />
-    <Compile Include="MorphException.cs" />
+    <Compile Include="InfiniteLoopException.cs" />
     <Compile Include="MprFeatureGroup.cs" />
     <Compile Include="MprFeatureSet.cs" />
     <Compile Include="AffixTemplateSlot.cs" />

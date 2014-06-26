@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using SIL.Collections;
 using SIL.Machine.Annotations;
@@ -80,7 +78,7 @@ namespace SIL.HermitCrab
 		/// </summary>
 		/// <param name="node">The phonetic shape node.</param>
 		/// <returns>The string representations.</returns>
-		protected virtual IEnumerable<string> GetMatchingStrReps(ShapeNode node)
+		public IEnumerable<string> GetMatchingStrReps(ShapeNode node)
 		{
 			foreach (KeyValuePair<string, FeatureStruct> symbol in _symbols)
 			{
@@ -89,7 +87,7 @@ namespace SIL.HermitCrab
 			}
 		}
 
-		protected virtual bool GetShapeNodes(string str, out IEnumerable<ShapeNode> nodes)
+		private bool GetShapeNodes(string str, out IEnumerable<ShapeNode> nodes, out int errorPos)
 		{
 			var nodesList = new List<ShapeNode>();
 			int i = 0;
@@ -114,20 +112,27 @@ namespace SIL.HermitCrab
 				if (!match)
 				{
 					nodes = null;
+					errorPos = i;
 					return false;
 				}
 			}
 			nodes = nodesList;
+			errorPos = -1;
 			return true;
 		}
 
-		public Shape ToShape(string str)
+		public Shape Segment(string str)
 		{
-			Shape shape;
-			if (ToShape(str, out shape))
+			IEnumerable<ShapeNode> nodes;
+			int errorPos;
+			if (GetShapeNodes(str, out nodes, out errorPos))
+			{
+				var shape = new Shape(_spanFactory, begin => new ShapeNode(_spanFactory, begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor));
+				shape.AddRange(nodes);
 				return shape;
+			}
 
-			throw new ArgumentException("The string '{0}' cannot be converted to a shape.", "str");
+			throw new InvalidShapeException(str, errorPos);
 		}
 
 		/// <summary>
@@ -135,12 +140,12 @@ namespace SIL.HermitCrab
 		/// first.
 		/// </summary>
 		/// <param name="str">The string.</param>
-		/// <param name="shape"></param>
-		/// <returns>The phonetic shape, <c>null</c> if the string contains invalid segments.</returns>
-		public bool ToShape(string str, out Shape shape)
+		/// <param name="shape">The shape.</param>
+		public bool TrySegment(string str, out Shape shape)
 		{
 			IEnumerable<ShapeNode> nodes;
-			if (GetShapeNodes(str, out nodes))
+			int errorPos;
+			if (GetShapeNodes(str, out nodes, out errorPos))
 			{
 				shape = new Shape(_spanFactory, begin => new ShapeNode(_spanFactory, begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor));
 				shape.AddRange(nodes);
@@ -149,72 +154,6 @@ namespace SIL.HermitCrab
 
 			shape = null;
 			return false;
-		}
-
-		/// <summary>
-		/// Converts the specified phonetic shape to a valid regular expression string. Regular expressions
-		/// formatted for display purposes are NOT guaranteed to compile.
-		/// </summary>
-		/// <param name="shape">The phonetic shape.</param>
-		/// <param name="displayFormat">if <c>true</c> the result will be formatted for display, otherwise
-		/// it will be formatted for compilation.</param>
-		/// <returns>The regular expression string.</returns>
-		public string ToRegexString(Shape shape, bool displayFormat)
-		{
-			var sb = new StringBuilder();
-			if (!displayFormat)
-				sb.Append("^");
-			foreach (ShapeNode node in shape)
-			{
-				if (node.IsDeleted())
-					continue;
-
-				string[] strReps = GetMatchingStrReps(node).ToArray();
-				int strRepCount = strReps.Length;
-				if (strRepCount > 0)
-				{
-					if (strRepCount > 1)
-						sb.Append(displayFormat ? "[" : "(");
-					int i = 0;
-					foreach (string strRep in strReps)
-					{
-						if (strRep.Length > 1)
-							sb.Append("(");
-
-						sb.Append(displayFormat ? strRep : Regex.Escape(strRep));
-
-						if (strRep.Length > 1)
-							sb.Append(")");
-						if (i < strRepCount - 1 && !displayFormat)
-							sb.Append("|");
-						i++;
-					}
-					if (strReps.Length > 1)
-						sb.Append(displayFormat ? "]" : ")");
-
-					if (node.Annotation.Optional)
-						sb.Append("?");
-				}
-			}
-			if (!displayFormat)
-				sb.Append("$");
-			return sb.ToString();
-		}
-
-		public string ToString(IEnumerable<ShapeNode> nodes, bool includeBdry)
-		{
-			var sb = new StringBuilder();
-			foreach (ShapeNode node in nodes)
-			{
-				if ((!includeBdry && node.Annotation.Type() == HCFeatureSystem.Boundary) || node.IsDeleted())
-					continue;
-
-				IEnumerable<string> strReps = GetMatchingStrReps(node);
-				string strRep = strReps.FirstOrDefault();
-				if (strRep != null)
-					sb.Append(strRep);
-			}
-			return sb.ToString();
 		}
 
 		/// <summary>
@@ -227,7 +166,7 @@ namespace SIL.HermitCrab
 		/// </returns>
 		public bool IsMatch(string word, Shape shape)
 		{
-			string pattern = ToRegexString(shape, false);
+			string pattern = shape.ToRegexString(this, false);
 			return Regex.IsMatch(word, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 		}
 	}

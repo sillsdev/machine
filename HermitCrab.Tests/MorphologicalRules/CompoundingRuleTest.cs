@@ -20,7 +20,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			                   	{
 			                   		HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
 									NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-									Rhs = { new CopyFromInput("head"), new InsertShape(Table3.ToShape("+")), new CopyFromInput("nonHead") }
+									Rhs = { new CopyFromInput("head"), new InsertShape(Table3.Segment("+")), new CopyFromInput("nonHead") }
 			                   	});
 
 			var morpher = new Morpher(SpanFactory, Language);
@@ -35,7 +35,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 								{
 									HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
 									NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-									Rhs = { new CopyFromInput("nonHead"), new InsertShape(Table3.ToShape("+")), new CopyFromInput("head") }
+									Rhs = { new CopyFromInput("nonHead"), new InsertShape(Table3.Segment("+")), new CopyFromInput("head") }
 								});
 
 			morpher = new Morpher(SpanFactory, Language);
@@ -57,7 +57,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			prefix.Allomorphs.Add(new AffixProcessAllomorph("prefix_allo1")
 									{
 										Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-										Rhs = { new InsertShape(Table3.ToShape("di+")), new CopyFromInput("1") }
+										Rhs = { new InsertShape(Table3.Segment("di+")), new CopyFromInput("1") }
 									});
 
 			morpher = new Morpher(SpanFactory, Language);
@@ -73,7 +73,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 								{
 									HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
 									NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-									Rhs = { new CopyFromInput("head"), new InsertShape(Table3.ToShape("+")), new CopyFromInput("nonHead") }
+									Rhs = { new CopyFromInput("head"), new InsertShape(Table3.Segment("+")), new CopyFromInput("nonHead") }
 								});
 
 			morpher = new Morpher(SpanFactory, Language) {MaxStemCount = 3};
@@ -89,7 +89,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 								{
 									HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
 									NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-									Rhs = { new CopyFromInput("nonHead"), new InsertShape(Table3.ToShape("+")), new CopyFromInput("head") },
+									Rhs = { new CopyFromInput("nonHead"), new InsertShape(Table3.Segment("+")), new CopyFromInput("head") },
 								});
 
 			morpher = new Morpher(SpanFactory, Language) {MaxStemCount = 3};
@@ -108,7 +108,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 								{
 									HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
 									NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-									Rhs = { new CopyFromInput("head"), new InsertShape(Table3.ToShape("+")), new CopyFromInput("nonHead") }
+									Rhs = { new CopyFromInput("head"), new InsertShape(Table3.Segment("+")), new CopyFromInput("nonHead") }
 								});
 
 			var morpher = new Morpher(SpanFactory, Language);
