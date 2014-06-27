@@ -50,17 +50,11 @@ namespace SIL.HermitCrab.PhonologicalRules
 
 		public IEnumerable<Word> Apply(Word input)
 		{
-			Trace trace = null;
-			if (_morpher.TraceRules.Contains(_rule))
-			{
-				trace = new Trace(TraceType.PhonologicalRuleSynthesis, _rule) { Input = input.DeepClone() };
-				input.CurrentTrace.Children.Add(trace);
-			}
+			_morpher.TraceManager.BeginApplyPhonologicalRule(_rule, input);
 
 			IEnumerable<Word> output = _patternRule.Apply(input);
 
-			if (trace != null)
-				trace.Output = input.DeepClone();
+			_morpher.TraceManager.EndApplyPhonologicalRule(_rule, input);
 
 			return output;
 		}

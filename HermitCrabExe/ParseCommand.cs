@@ -23,7 +23,7 @@ namespace SIL.HermitCrab
 		public override int Run(string[] remainingArguments)
 		{
 			string word = remainingArguments[0];
-			Trace trace;
+			object trace;
 			Stopwatch watch = Stopwatch.StartNew();
 			Word[] results = _context.Morpher.ParseWord(word, out trace).ToArray();
 			watch.Stop();
@@ -38,9 +38,9 @@ namespace SIL.HermitCrab
 				foreach (Word result in results)
 					PrintResult(result);
 			}
-			if (_context.Morpher.IsTracing)
+			if (_context.Morpher.TraceManager.IsTracing)
 			{
-				PrintTrace(trace, 0, new HashSet<int>());
+				PrintTrace((Trace) trace, 0, new HashSet<int>());
 				_context.Out.WriteLine();
 			}
 			_context.Out.WriteLine("Parse time: {0}ms", watch.ElapsedMilliseconds);

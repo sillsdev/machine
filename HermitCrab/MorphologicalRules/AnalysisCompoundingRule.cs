@@ -85,18 +85,13 @@ namespace SIL.HermitCrab.MorphologicalRules
 					outWord.MorphologicalRuleUnapplied(_rule, false);
 
 					outWord.Freeze();
-					if (_morpher.TraceRules.Contains(_rule))
-					{
-						var trace = new Trace(TraceType.MorphologicalRuleAnalysis, _rule) {Input = input, Output = outWord};
-						outWord.CurrentTrace.Children.Add(trace);
-						outWord.CurrentTrace = trace;
-					}
+					_morpher.TraceManager.MorphologicalRuleUnapplied(_rule, input, outWord, null);
 					output.Add(outWord);
 				}
 			}
 
-			if (output.Count == 0 && _morpher.TraceRules.Contains(_rule))
-				input.CurrentTrace.Children.Add(new Trace(TraceType.MorphologicalRuleAnalysis, _rule) {Input = input});
+			if (output.Count == 0)
+				_morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, input);
 
 			return output;
 		}

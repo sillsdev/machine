@@ -30,8 +30,7 @@ namespace SIL.HermitCrab
 			if (!input.SyntacticFeatureStruct.Unify(_template.RequiredSyntacticFeatureStruct, out fs))
 				return Enumerable.Empty<Word>();
 
-			if (_morpher.TraceRules.Contains(_template))
-				input.CurrentTrace.Children.Add(new Trace(TraceType.TemplateAnalysisInput, _template) {Input = input});
+			_morpher.TraceManager.BeginUnapplyTemplate(_template, input);
 
 			Word inWord = input.DeepClone();
 			inWord.Freeze();
@@ -56,8 +55,7 @@ namespace SIL.HermitCrab
 
 			                if (!_template.Slots[i].Optional)
 			                {
-			                    if (_morpher.TraceRules.Contains(_template))
-			                        work.Item1.CurrentTrace.Children.Add(new Trace(TraceType.TemplateAnalysisOutput, _template));
+								_morpher.TraceManager.EndUnapplyTemplate(_template, work.Item1, false);
 				                add = false;
 			                    break;
 			                }
@@ -65,8 +63,7 @@ namespace SIL.HermitCrab
 
 					    if (add)
 					    {
-						    if (_morpher.TraceRules.Contains(_template))
-							    work.Item1.CurrentTrace.Children.Add(new Trace(TraceType.TemplateAnalysisOutput, _template) {Output = work.Item1});
+							_morpher.TraceManager.EndUnapplyTemplate(_template, work.Item1, true);
 						    outStack.Push(work.Item1);
 					    }
 				    });

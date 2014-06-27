@@ -31,14 +31,14 @@ namespace SIL.HermitCrab.PhonologicalRules
 			foreach (RewriteSubrule sr in _rule.Subrules)
 			{
 				AnalysisRewriteRuleSpec ruleSpec = null;
-				RewriteApplicationMode mode = RewriteApplicationMode.Iterative;
-				ReapplyType reapplyType = ReapplyType.Normal;
+				var mode = RewriteApplicationMode.Iterative;
+				var reapplyType = ReapplyType.Normal;
 				if (_rule.Lhs.Children.Count == sr.Rhs.Children.Count)
 				{
 					ruleSpec = new FeatureAnalysisRewriteRuleSpec(rule.Lhs, sr);
 					if (_rule.ApplicationMode == RewriteApplicationMode.Simultaneous)
 					{
-						foreach (Constraint<Word, ShapeNode> constraint in sr.Rhs.Children)
+						foreach (Constraint<Word, ShapeNode> constraint in sr.Rhs.Children.Cast<Constraint<Word, ShapeNode>>())
 						{
 							if (constraint.Type() == HCFeatureSystem.Segment)
 							{
@@ -104,12 +104,7 @@ namespace SIL.HermitCrab.PhonologicalRules
 
 		public IEnumerable<Word> Apply(Word input)
 		{
-			Trace trace = null;
-			if (_morpher.TraceRules.Contains(_rule))
-			{
-				trace = new Trace(TraceType.PhonologicalRuleAnalysis, _rule) { Input = input.DeepClone() };
-				input.CurrentTrace.Children.Add(trace);
-			}
+			_morpher.TraceManager.BeginUnapplyPhonologicalRule(_rule, input);
 
 			bool applied = false;
 			foreach (Tuple<ReapplyType, PatternRule<Word, ShapeNode>> sr in _rules)
@@ -151,8 +146,7 @@ namespace SIL.HermitCrab.PhonologicalRules
 				}
 			}
 
-			if (trace != null)
-				trace.Output = input.DeepClone();
+			_morpher.TraceManager.EndUnapplyPhonologicalRule(_rule, input);
 
 			if (applied)
 				return input.ToEnumerable();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using SIL.Collections;
@@ -15,7 +16,7 @@ namespace SIL.HermitCrab
 		private readonly ObservableHashSet<AllomorphEnvironment> _excludedEnvironments;
 		private readonly ObservableHashSet<AllomorphCoOccurrenceRule> _requiredAllomorphCoOccurrences;
 		private readonly ObservableHashSet<AllomorphCoOccurrenceRule> _excludedAllomorphCoOccurrences; 
-		private readonly Dictionary<string, string> _properties;
+		private readonly Hashtable _properties;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Allomorph"/> class.
@@ -33,7 +34,7 @@ namespace SIL.HermitCrab
 			_requiredAllomorphCoOccurrences.CollectionChanged += AllomorphCoOccurrencesChanged;
 			_excludedAllomorphCoOccurrences = new ObservableHashSet<AllomorphCoOccurrenceRule>();
 			_excludedAllomorphCoOccurrences.CollectionChanged += AllomorphCoOccurrencesChanged;
-			_properties = new Dictionary<string, string>();
+			_properties = new Hashtable();
 		}
 
 		private void AllomorphCoOccurrencesChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -116,7 +117,7 @@ namespace SIL.HermitCrab
 		/// Gets or sets the properties.
 		/// </summary>
 		/// <value>The properties.</value>
-		public IDictionary<string, string> Properties
+		public IDictionary Properties
 		{
 			get { return _properties; }
 		}

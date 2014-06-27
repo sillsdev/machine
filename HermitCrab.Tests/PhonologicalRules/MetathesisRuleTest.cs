@@ -19,7 +19,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			            	};
 			Allophonic.PhonologicalRules.Add(rule1);
 
-			var morpher = new Morpher(SpanFactory, Language);
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("supuu"), "50");
 
 

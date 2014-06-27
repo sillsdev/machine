@@ -50,7 +50,7 @@ namespace SIL.HermitCrab
 					output = new StreamWriter(outputFile);
 
 				Console.Write("Reading configuration file...");
-				Language language = XmlLoader.Load(inputFile, quitOnError ? (Action<Exception>) null : ex => { });
+				Language language = XmlLoader.Load(inputFile, quitOnError ? (Action<Exception, string>) null : (ex, id) => { });
 				Console.WriteLine("done.");
 
 				context = new HCContext(language, output ?? Console.Out);

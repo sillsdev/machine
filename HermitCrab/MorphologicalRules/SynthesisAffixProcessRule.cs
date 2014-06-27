@@ -10,21 +10,19 @@ namespace SIL.HermitCrab.MorphologicalRules
 {
 	public class SynthesisAffixProcessRule : IRule<Word, ShapeNode>
 	{
-		private readonly SpanFactory<ShapeNode> _spanFactory;
 		private readonly Morpher _morpher;
 		private readonly AffixProcessRule _rule;
 		private readonly List<PatternRule<Word, ShapeNode>> _rules;
 
 		public SynthesisAffixProcessRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, AffixProcessRule rule)
 		{
-			_spanFactory = spanFactory;
 			_morpher = morpher;
 			_rule = rule;
 			_rules = new List<PatternRule<Word, ShapeNode>>();
 			foreach (AffixProcessAllomorph allo in rule.Allomorphs)
 			{
 				var ruleSpec = new SynthesisAffixProcessAllomorphRuleSpec(allo);
-				_rules.Add(new PatternRule<Word, ShapeNode>(_spanFactory, ruleSpec,
+				_rules.Add(new PatternRule<Word, ShapeNode>(spanFactory, ruleSpec,
 					new MatcherSettings<ShapeNode>
 						{
 							Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary) && !ann.IsDeleted(),
@@ -60,8 +58,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 					Word newWord;
 					if (_rule.Blockable && outWord.CheckBlocking(out newWord))
 					{
-						if (_morpher.TraceBlocking)
-							newWord.CurrentTrace.Children.Add(new Trace(TraceType.Blocking, _rule) {Output = newWord});
+						_morpher.TraceManager.Blocking(_rule, newWord);
 						outWord = newWord;
 					}
 					else
@@ -69,12 +66,8 @@ namespace SIL.HermitCrab.MorphologicalRules
 						outWord.Freeze();
 					}
 
-					if (_morpher.TraceRules.Contains(_rule))
-					{
-						var trace = new Trace(TraceType.MorphologicalRuleSynthesis, _rule) {Input = input, Output = outWord};
-						outWord.CurrentTrace.Children.Add(trace);
-						outWord.CurrentTrace = trace;
-					}
+					AffixProcessAllomorph allo = _rule.Allomorphs[i];
+					_morpher.TraceManager.MorphologicalRuleApplied(_rule, input, outWord, allo);
 					output.Add(outWord);
 
 					// return all word syntheses that match subrules that are constrained by environments,
@@ -84,7 +77,6 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 					// HC also checks for free fluctuation, if the next subrule has the same constraints, we
 					// do not treat them as disjunctive
-					AffixProcessAllomorph allo = _rule.Allomorphs[i];
 					if ((i != _rule.Allomorphs.Count - 1 && !allo.ConstraintsEqual(_rule.Allomorphs[i + 1]))
 						&& allo.RequiredEnvironments.Count == 0 && allo.ExcludedEnvironments.Count == 0)
 					{
@@ -93,8 +85,8 @@ namespace SIL.HermitCrab.MorphologicalRules
 				}
 			}
 
-			if (output.Count == 0 && _morpher.TraceRules.Contains(_rule))
-				input.CurrentTrace.Children.Add(new Trace(TraceType.MorphologicalRuleSynthesis, _rule) {Input = input});
+			if (output.Count == 0)
+				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, input);
 
 			return output;
 		}

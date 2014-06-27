@@ -125,7 +125,7 @@ namespace SIL.HermitCrab.Tests
 			verbTemplate.Slots.Add(slot2);
 			Morphophonemic.AffixTemplates.Add(verbTemplate);
 
-			var morpher = new Morpher(SpanFactory, Language);
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			Word[] output = morpher.ParseWord("sagd").ToArray();
 			AssertMorphsEqual(output, "32 ed_suffix");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
@@ -152,7 +152,7 @@ namespace SIL.HermitCrab.Tests
 					.Feature("evidential").EqualTo("witnessed")
 					.Feature("tense").EqualTo("pres")).Value;
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			output = morpher.ParseWord("sagzv").ToArray();
 			AssertMorphsEqual(output, "32 s_suffix evidential");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)

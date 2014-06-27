@@ -156,7 +156,7 @@ namespace SIL.HermitCrab
 			}
 		}
 
-		public Trace CurrentTrace { get; set; }
+		public object CurrentTrace { get; set; }
 
 		public IEnumerable<IMorphologicalRule> MorphologicalRules
 		{

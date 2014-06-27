@@ -19,13 +19,14 @@ namespace SIL.HermitCrab
 		private readonly IRule<Word, ShapeNode> _analysisRule;
 		private readonly IRule<Word, ShapeNode> _synthesisRule;
 		private readonly Dictionary<Stratum, Tuple<ShapeTrie, IDBearerSet<RootAllomorph>>> _allomorphTries;
+		private readonly TraceManagerBase _traceManager;
 
-		private readonly TraceRuleCollection _traceRules;
 		private readonly IDBearerSet<IHCRule> _rules; 
 
-		public Morpher(SpanFactory<ShapeNode> spanFactory, Language lang)
+		public Morpher(SpanFactory<ShapeNode> spanFactory, TraceManagerBase traceManager, Language lang)
 		{
 			_lang = lang;
+			_traceManager = traceManager;
 			_rules = new IDBearerSet<IHCRule>();
 			_lang.Traverse(rule => _rules.Add(rule));
 			_allomorphTries = new Dictionary<Stratum, Tuple<ShapeTrie, IDBearerSet<RootAllomorph>>>();
@@ -39,38 +40,12 @@ namespace SIL.HermitCrab
 			}
 			_analysisRule = lang.CompileAnalysisRule(spanFactory, this);
 			_synthesisRule = lang.CompileSynthesisRule(spanFactory, this);
-			_traceRules = new TraceRuleCollection(_rules);
 			MaxStemCount = 2;
 		}
 
-		public bool IsTracing
+		public TraceManagerBase TraceManager
 		{
-			get { return TraceBlocking || TraceLexicalLookup || TraceSuccess || _traceRules.Count > 0; }
-		}
-
-		public bool TraceAll
-		{
-			get { return TraceBlocking && TraceLexicalLookup && TraceSuccess && _traceRules.IsTracingAllRules; }
-			set
-			{
-				if (value)
-					_traceRules.AddAllRules();
-				else
-					_traceRules.Clear();
-				TraceBlocking = value;
-				TraceLexicalLookup = value;
-				TraceSuccess = value;
-			}
-		}
-
-		public bool TraceLexicalLookup { get; set; }
-		public bool TraceSuccess { get; set; }
-
-		public bool TraceBlocking { get; set; }
-
-		public TraceRuleCollection TraceRules
-		{
-			get { return _traceRules; }
+			get { return _traceManager; }
 		}
 
 		public int DeletionReapplications { get; set; }
@@ -84,19 +59,19 @@ namespace SIL.HermitCrab
 		/// <returns>All valid word synthesis records.</returns>
 		public IEnumerable<Word> ParseWord(string word)
 		{
-			Trace trace;
+			object trace;
 			return ParseWord(word, out trace);
 		}
 
-		public IEnumerable<Word> ParseWord(string word, out Trace trace)
+		public IEnumerable<Word> ParseWord(string word, out object trace)
 		{
 			// convert the word to its phonetic shape
 			Shape shape = _lang.SurfaceStratum.SymbolTable.Segment(word);
 
 			var input = new Word(_lang.SurfaceStratum, shape);
 			input.Freeze();
-			trace = new Trace(TraceType.WordAnalysis, _lang) {Input = input};
-			input.CurrentTrace = trace;
+			_traceManager.BeginAnalyzeWord(_lang, input);
+			trace = input.CurrentTrace;
 
 			// Unapply rules
 			var validWordsStack = new ConcurrentStack<Word>();
@@ -138,8 +113,7 @@ namespace SIL.HermitCrab
 
 					if (_lang.SurfaceStratum.SymbolTable.IsMatch(word, match.Shape))
 					{
-						if (TraceSuccess)
-							match.CurrentTrace.Children.Add(new Trace(TraceType.ReportSuccess, _lang) {Output = match});
+						_traceManager.ReportSuccess(_lang, match);
 						matchList.Add(match);
 					}
 					prevMatch = match;
@@ -157,24 +131,14 @@ namespace SIL.HermitCrab
 
 		private IEnumerable<Word> LexicalLookup(Word input)
 		{
-			Trace lookupTrace = null;
-			if (TraceLexicalLookup)
-			{
-				lookupTrace = new Trace(TraceType.LexicalLookup, input.Stratum) { Input = input.DeepClone() };
-				input.CurrentTrace.Children.Add(lookupTrace);
-			}
-			foreach (LexEntry entry in SearchRootAllomorphs(input.Stratum, input.Shape).Select(allo => allo.Morpheme).Distinct())
+			_traceManager.LexicalLookup(input.Stratum, input);
+			foreach (LexEntry entry in SearchRootAllomorphs(input.Stratum, input.Shape).Select(allo => allo.Morpheme).Cast<LexEntry>().Distinct())
 			{
 				foreach (RootAllomorph allomorph in entry.Allomorphs)
 				{
 					Word newWord = input.DeepClone();
 					newWord.RootAllomorph = allomorph;
-					if (lookupTrace != null)
-					{
-						var wsTrace = new Trace(TraceType.WordSynthesis, _lang) { Input = newWord.DeepClone() };
-						lookupTrace.Children.Add(wsTrace);
-						newWord.CurrentTrace = wsTrace;
-					}
+					_traceManager.BeginSynthesizeWord(_lang, newWord);
 					newWord.Freeze();
 					yield return newWord;
 				}

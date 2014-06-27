@@ -68,8 +68,8 @@ namespace SIL.HermitCrab
 				}
 			}
 
-			if (_morpher.TraceBlocking && best != input)
-				best.CurrentTrace.Children.Add(new Trace(TraceType.Blocking, _stratum) {Output = best});
+			if (best != input)
+				_morpher.TraceManager.Blocking(_stratum, best);
 			return best;
 		}
 	}

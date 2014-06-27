@@ -84,8 +84,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 						Word newWord;
 						if (_rule.Blockable && outWord.CheckBlocking(out newWord))
 						{
-							if (_morpher.TraceBlocking)
-								newWord.CurrentTrace.Children.Add(new Trace(TraceType.Blocking, _rule) {Output = newWord});
+							_morpher.TraceManager.Blocking(_rule, newWord);
 							outWord = newWord;
 						}
 						else
@@ -93,12 +92,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 							outWord.Freeze();
 						}
 
-						if (_morpher.TraceRules.Contains(_rule))
-						{
-							var trace = new Trace(TraceType.MorphologicalRuleSynthesis, _rule) {Input = input, Output = outWord};
-							outWord.CurrentTrace.Children.Add(trace);
-							outWord.CurrentTrace = trace;
-						}
+						_morpher.TraceManager.MorphologicalRuleApplied(_rule, input, outWord, null);
 
 						output.Add(outWord);
 						break;
@@ -106,8 +100,8 @@ namespace SIL.HermitCrab.MorphologicalRules
 				}
 			}
 
-			if (output.Count == 0 && _morpher.TraceRules.Contains(_rule))
-				input.CurrentTrace.Children.Add(new Trace(TraceType.MorphologicalRuleSynthesis, _rule) {Input = input});
+			if (output.Count == 0)
+				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, input);
 
 			return output;
 		}

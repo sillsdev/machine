@@ -23,7 +23,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 									Rhs = { new CopyFromInput("head"), new InsertShape(Table3.Segment("+")), new CopyFromInput("nonHead") }
 			                   	});
 
-			var morpher = new Morpher(SpanFactory, Language);
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			List<Word> output = morpher.ParseWord("pʰutdat").ToList();
 			AssertMorphsEqual(output, "5 8", "5 9");
 			AssertRootAllomorphsEquals(output, "5");
@@ -38,7 +38,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 									Rhs = { new CopyFromInput("nonHead"), new InsertShape(Table3.Segment("+")), new CopyFromInput("head") }
 								});
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			output = morpher.ParseWord("pʰutdat").ToList();
 			AssertMorphsEqual(output, "5 8", "5 9");
 			AssertRootAllomorphsEquals(output, "8", "9");
@@ -60,7 +60,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 										Rhs = { new InsertShape(Table3.Segment("di+")), new CopyFromInput("1") }
 									});
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			output = morpher.ParseWord("pʰutdidat").ToList();
 			AssertMorphsEqual(output, "5 prefix 9");
 			AssertRootAllomorphsEquals(output, "9");
@@ -76,7 +76,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 									Rhs = { new CopyFromInput("head"), new InsertShape(Table3.Segment("+")), new CopyFromInput("nonHead") }
 								});
 
-			morpher = new Morpher(SpanFactory, Language) {MaxStemCount = 3};
+			morpher = new Morpher(SpanFactory, TraceManager, Language) {MaxStemCount = 3};
 			output = morpher.ParseWord("pʰutdatpip").ToList();
 			AssertMorphsEqual(output, "5 8 41", "5 9 41");
 			AssertRootAllomorphsEquals(output, "5");
@@ -92,7 +92,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 									Rhs = { new CopyFromInput("nonHead"), new InsertShape(Table3.Segment("+")), new CopyFromInput("head") },
 								});
 
-			morpher = new Morpher(SpanFactory, Language) {MaxStemCount = 3};
+			morpher = new Morpher(SpanFactory, TraceManager, Language) {MaxStemCount = 3};
 			output = morpher.ParseWord("pʰutdatpip").ToList();
 			AssertMorphsEqual(output, "5 8 41", "5 9 41");
 			AssertRootAllomorphsEquals(output, "8", "9");
@@ -111,7 +111,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 									Rhs = { new CopyFromInput("head"), new InsertShape(Table3.Segment("+")), new CopyFromInput("nonHead") }
 								});
 
-			var morpher = new Morpher(SpanFactory, Language);
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			List<Word> output = morpher.ParseWord("pʰutdat").ToList();
 			AssertMorphsEqual(output, "5 9");
 			AssertRootAllomorphsEquals(output, "5");
@@ -120,7 +120,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 
 			rule1.OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value;
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			output = morpher.ParseWord("pʰutdat").ToList();
 			AssertMorphsEqual(output, "5 9");
 			AssertRootAllomorphsEquals(output, "5");
@@ -134,7 +134,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 					.Feature("pers").EqualTo("2")).Value;
 			rule1.NonHeadRequiredSyntacticFeatureStruct = FeatureStruct.New().Value;
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			output = morpher.ParseWord("ssagabba").ToList();
 			AssertMorphsEqual(output, "Perc0 39", "Perc0 40", "Perc3 39", "Perc3 40");
 			AssertRootAllomorphsEquals(output, "Perc0", "Perc3");

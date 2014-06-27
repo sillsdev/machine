@@ -41,9 +41,9 @@ namespace SIL.HermitCrab.MorphologicalRules
 			}
 
 			var output = new List<Word>();
-			foreach (PatternRule<Word, ShapeNode> rule in _rules)
+			for (int i = 0; i < _rules.Count; i++)
 			{
-				foreach (Word outWord in rule.Apply(input).RemoveDuplicates())
+				foreach (Word outWord in _rules[i].Apply(input).RemoveDuplicates())
 				{
 					if (!_rule.RequiredSyntacticFeatureStruct.IsEmpty)
 						outWord.SyntacticFeatureStruct.Add(_rule.RequiredSyntacticFeatureStruct);
@@ -51,17 +51,12 @@ namespace SIL.HermitCrab.MorphologicalRules
 						outWord.SyntacticFeatureStruct.Clear();
 					outWord.MorphologicalRuleUnapplied(_rule, false);
 					outWord.Freeze();
-					if (_morpher.TraceRules.Contains(_rule))
-					{
-						var trace = new Trace(TraceType.MorphologicalRuleAnalysis, _rule) {Input = input, Output = outWord};
-						outWord.CurrentTrace.Children.Add(trace);
-						outWord.CurrentTrace = trace;
-					}
+					_morpher.TraceManager.MorphologicalRuleUnapplied(_rule, input, outWord, _rule.Allomorphs[i]);
 					output.Add(outWord);
 				}
 			}
-			if (output.Count == 0 && _morpher.TraceRules.Contains(_rule))
-				input.CurrentTrace.Children.Add(new Trace(TraceType.MorphologicalRuleAnalysis, _rule) {Input = input});
+			if (output.Count == 0)
+				_morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, input);
 			return output;
 		}
 	}

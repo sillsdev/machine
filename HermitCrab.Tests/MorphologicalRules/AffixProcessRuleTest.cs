@@ -31,7 +31,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 										Rhs = { new CopyFromInput("1"), new InsertShape(Table3.Segment("s")) }
 									});
 
-			var morpher = new Morpher(SpanFactory, Language);
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			List<Word> output = morpher.ParseWord("sags").ToList();
 			AssertMorphsEqual(output, "32 s_suffix");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value);
@@ -39,7 +39,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			sSuffix.Gloss = "3.SG";
 			sSuffix.OutSyntacticFeatureStruct = FeatureStruct.New().Value;
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			output = morpher.ParseWord("sags").ToList();
 			AssertMorphsEqual(output, "32 s_suffix");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value);
@@ -48,7 +48,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			sSuffix.RequiredSyntacticFeatureStruct = FeatureStruct.New().Value;
 			sSuffix.OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value;
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			output = morpher.ParseWord("sags").ToList();
 			AssertMorphsEqual(output, "32 s_suffix");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value);
@@ -57,7 +57,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			sSuffix.RequiredSyntacticFeatureStruct = FeatureStruct.New().Value;
 			sSuffix.OutSyntacticFeatureStruct = FeatureStruct.New().Value;
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			output = morpher.ParseWord("sags").ToList();
 			AssertMorphsEqual(output, "32 s_suffix");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value);
@@ -77,7 +77,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 										Rhs = { new CopyFromInput("1"), new InsertShape(Table3.Segment("d")) }
 									});
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			Assert.That(morpher.ParseWord("sid"), Is.Empty);
 		}
 
@@ -104,7 +104,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 										Rhs = { new CopyFromInput("1"), new InsertShape(Table3.Segment("z")) }
 									});
 
-			var morpher = new Morpher(SpanFactory, Language);
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			List<Word> output = morpher.ParseWord("ssagz").ToList();
 			AssertMorphsEqual(output, "Perc0 rule1", "Perc3 rule1");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
@@ -117,7 +117,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("2", "3")).Value;
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			output = morpher.ParseWord("ssagz").ToList();
 			AssertMorphsEqual(output, "Perc0 rule1", "Perc2 rule1", "Perc3 rule1", "Perc4 rule1");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
@@ -133,7 +133,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("3")).Value;
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			output = morpher.ParseWord("ssagz").ToList();
 			AssertMorphsEqual(output, "Perc0 rule1", "Perc3 rule1");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
@@ -146,7 +146,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("2", "3")).Value;
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			output = morpher.ParseWord("ssagz").ToList();
 			AssertMorphsEqual(output, "Perc0 rule1", "Perc2 rule1", "Perc3 rule1", "Perc4 rule1");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
@@ -159,7 +159,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("4")).Value;
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			output = morpher.ParseWord("ssagz").ToList();
 			AssertMorphsEqual(output, "Perc0 rule1");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
@@ -173,7 +173,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 					.Feature("pers").EqualTo("2")).Value;
 			rule1.OutSyntacticFeatureStruct = FeatureStruct.New().Value;
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			output = morpher.ParseWord("ssagz").ToList();
 			AssertMorphsEqual(output, "Perc0 rule1", "Perc3 rule1");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
@@ -186,7 +186,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("2", "3")).Value;
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			output = morpher.ParseWord("ssagz").ToList();
 			AssertMorphsEqual(output, "Perc0 rule1", "Perc2 rule1", "Perc3 rule1", "Perc4 rule1");
 			AssertSyntacticFeatureStructsEqual(output.Where(w => w.RootAllomorph.Morpheme.ID.IsOneOf("Perc0", "Perc3")), FeatureStruct.New(Language.SyntacticFeatureSystem)
@@ -298,7 +298,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 										LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(cons).Value
 									});
 
-			var morpher = new Morpher(SpanFactory, Language);
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("sagz"), "32 s_suffix");
 			AssertMorphsEqual(morpher.ParseWord("sagd"), "32 ed_suffix");
 			AssertMorphsEqual(morpher.ParseWord("sasɯz"), "33 s_suffix");
@@ -325,7 +325,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 											Rhs = {new CopyFromInput("1"), new InsertShapeNode(FeatureStruct.New(Language.PhoneticFeatureSystem, alvStop).Feature("vd").EqualToVariable("a").Value)}
 										});
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("sagd"), "32 ed_suffix");
 			AssertMorphsEqual(morpher.ParseWord("sast"), "33 ed_suffix");
 			AssertMorphsEqual(morpher.ParseWord("sazd"), "34 ed_suffix");
@@ -422,7 +422,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 											Rhs = Pattern<Word, ShapeNode>.New().Annotation(unasp).Value,
 										});
 
-			var morpher = new Morpher(SpanFactory, Language);
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("zisag"), "s_prefix 32");
 			AssertMorphsEqual(morpher.ParseWord("stag"), "s_prefix 47");
 			AssertMorphsEqual(morpher.ParseWord("zabba"), "s_prefix 39", "s_prefix 40");
@@ -450,7 +450,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 											Rhs = { new InsertShapeNode(FeatureStruct.New(Language.PhoneticFeatureSystem, alvStop).Feature("vd").EqualToVariable("a").Value), new CopyFromInput("1") }
 										});
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("ditag"), "ed_prefix 47");
 			AssertMorphsEqual(morpher.ParseWord("tpag"), "ed_prefix 48");
 			AssertMorphsEqual(morpher.ParseWord("dabba"), "ed_prefix 39", "ed_prefix 40");
@@ -474,7 +474,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 												}
 										});
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("masg"), "ed_prefix 32");
 		}
 
@@ -579,7 +579,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 											Rhs = Pattern<Word, ShapeNode>.New().Annotation(unasp).Value,
 										});
 
-			var morpher = new Morpher(SpanFactory, Language);
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("katab"), "49 perf_act");
 			AssertMorphsEqual(morpher.ParseWord("kutib"), "49 perf_pass");
 			AssertMorphsEqual(morpher.ParseWord("aktub"), "imperf_act 49");
@@ -623,7 +623,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 											Rhs = { new CopyFromInput("1"), new ModifyFromInput("2", voiced) }
 										});
 
-			var morpher = new Morpher(SpanFactory, Language);
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("pib"), "41 simulfix");
 
 			simulfix.Allomorphs.Clear();
@@ -637,7 +637,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 											Rhs = { new ModifyFromInput("1", voiced), new CopyFromInput("2") }
 										});
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("bip"), "simulfix 41");
 
 			simulfix.RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value;
@@ -653,7 +653,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 											Rhs = { new CopyFromInput("1"), new ModifyFromInput("2", nonround), new CopyFromInput("3") }
 										});
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("bɯpu"), "46 simulfix");
 
 			simulfix.Allomorphs.Clear();
@@ -668,7 +668,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 											Rhs = { new CopyFromInput("1"), new ModifyFromInput("2", nonround), new CopyFromInput("3") }
 										});
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("sɯɯpu"), "50 simulfix");
 		}
 
@@ -705,7 +705,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 										Rhs = { new CopyFromInput("1"), new CopyFromInput("1"), new CopyFromInput("2") }
 									});
 
-			var morpher = new Morpher(SpanFactory, Language);
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("sasag"), "redup 32");
 
 			var voicing = new RewriteRule("voicing") { Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table1.GetSymbolFeatureStruct("s")).Value };
@@ -717,7 +717,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 										RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
 									});
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("sazag"), "redup 32");
 
 			var affrication = new RewriteRule("affrication") { Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table1.GetSymbolFeatureStruct("s")).Value };
@@ -728,7 +728,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 											LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.LeftSideAnchor).Value
 										});
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("tsazag"), "redup 32");
 
 			redup.Allomorphs.Clear();
@@ -742,7 +742,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 										Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new CopyFromInput("2") }
 									});
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("tsagag"), "32 redup");
 
 			Allophonic.PhonologicalRules.Clear();
@@ -758,7 +758,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 										Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new CopyFromInput("2") }
 									});
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("sagsag"), "32 redup");
 			AssertMorphsEqual(morpher.ParseWord("sasibudbud"), "38 redup");
 
@@ -781,7 +781,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 										RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
 									});
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("saag"), "32 redup");
 
 			gDelete.Subrules.Clear();
@@ -790,7 +790,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 										RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value
 									});
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("saga"), "32 redup");
 		}
 
@@ -822,7 +822,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 											Rhs = { new CopyFromInput("1") }
 										});
 
-			var morpher = new Morpher(SpanFactory, Language);
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("sa"), "32");
 
 			truncate.Allomorphs.Clear();
@@ -836,7 +836,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 											Rhs = { new CopyFromInput("2") }
 										});
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("ag"), "32");
 
 			truncate.Allomorphs.Clear();
@@ -850,7 +850,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 											Rhs = { new CopyFromInput("2") }
 										});
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("ag"), "32");
 
 			truncate.Allomorphs.Clear();
@@ -864,7 +864,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 											Rhs = { new CopyFromInput("1") }
 										});
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("sa"), "32");
 
 			truncate.Allomorphs.Clear();
@@ -878,7 +878,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 											Rhs = { new InsertShape(Table3.Segment("g")), new CopyFromInput("2") }
 										});
 
-			morpher = new Morpher(SpanFactory, Language);
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("gas"), "truncate 33");
 			AssertMorphsEqual(morpher.ParseWord("gbubibi"), "truncate 42");
 		}

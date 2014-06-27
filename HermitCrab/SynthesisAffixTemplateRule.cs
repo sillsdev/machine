@@ -22,8 +22,7 @@ namespace SIL.HermitCrab
 
 		public IEnumerable<Word> Apply(Word input)
 		{
-			if (_morpher.TraceRules.Contains(_template))
-				input.CurrentTrace.Children.Add(new Trace(TraceType.TemplateSynthesisInput, _template) {Input = input});
+			_morpher.TraceManager.BeginApplyTemplate(_template, input);
 			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
 			ApplySlots(input, 0, output);
 			return output;
@@ -38,14 +37,12 @@ namespace SIL.HermitCrab
 
 				if (!_template.Slots[i].Optional)
 				{
-					if (_morpher.TraceRules.Contains(_template))
-						input.CurrentTrace.Children.Add(new Trace(TraceType.TemplateSynthesisOutput, _template));
+					_morpher.TraceManager.EndApplyTemplate(_template, input, false);
 					return;
 				}
 			}
 
-			if (_morpher.TraceRules.Contains(_template))
-				input.CurrentTrace.Children.Add(new Trace(TraceType.TemplateSynthesisOutput, _template) {Output = input});
+			_morpher.TraceManager.EndApplyTemplate(_template, input, true);
 			output.Add(input);
 		}
 	}

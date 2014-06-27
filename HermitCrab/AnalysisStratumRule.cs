@@ -35,8 +35,7 @@ namespace SIL.HermitCrab
 
 		public IEnumerable<Word> Apply(Word input)
 		{
-			if (_morpher.TraceRules.Contains(_stratum))
-				input.CurrentTrace.Children.Add(new Trace(TraceType.StratumAnalysisInput, _stratum) {Input = input});
+			_morpher.TraceManager.BeginUnapplyStratum(_stratum, input);
 
 			input = input.DeepClone();
 			input.Stratum = _stratum;
@@ -51,11 +50,8 @@ namespace SIL.HermitCrab
 				output.Add(tempWord);
 			}
 
-			if (_morpher.TraceRules.Contains(_stratum))
-			{
-				foreach (Word outWord in output)
-					outWord.CurrentTrace.Children.Add(new Trace(TraceType.StratumAnalysisOutput, _stratum) {Output = outWord});
-			}
+			foreach (Word outWord in output)
+				_morpher.TraceManager.EndUnapplyStratum(_stratum, outWord);
 
 			return output;
 		}

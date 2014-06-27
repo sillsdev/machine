@@ -11,20 +11,18 @@ namespace SIL.HermitCrab.MorphologicalRules
 {
 	public class SynthesisRealizationalAffixProcessRule : IRule<Word, ShapeNode>
 	{
-		private readonly SpanFactory<ShapeNode> _spanFactory;
 		private readonly Morpher _morpher;
 		private readonly RealizationalAffixProcessRule _rule;
 		private readonly List<PatternRule<Word, ShapeNode>> _rules;
 
 		public SynthesisRealizationalAffixProcessRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, RealizationalAffixProcessRule rule)
 		{
-			_spanFactory = spanFactory;
 			_morpher = morpher;
 			_rule = rule;
 			_rules = new List<PatternRule<Word, ShapeNode>>();
 			foreach (AffixProcessAllomorph allo in rule.Allomorphs)
 			{
-				_rules.Add(new PatternRule<Word, ShapeNode>(_spanFactory, new SynthesisAffixProcessAllomorphRuleSpec(allo),
+				_rules.Add(new PatternRule<Word, ShapeNode>(spanFactory, new SynthesisAffixProcessAllomorphRuleSpec(allo),
 					new MatcherSettings<ShapeNode>
 						{
 							Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary) && !ann.IsDeleted(),
@@ -59,8 +57,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 					Word newWord;
 					if (_rule.Blockable && outWord.CheckBlocking(out newWord))
 					{
-						if (_morpher.TraceBlocking)
-							newWord.CurrentTrace.Children.Add(new Trace(TraceType.Blocking, _rule) {Output = newWord});
+						_morpher.TraceManager.Blocking(_rule, newWord);
 						outWord = newWord;
 					}
 					else
@@ -68,23 +65,18 @@ namespace SIL.HermitCrab.MorphologicalRules
 						outWord.Freeze();
 					}
 
-					if (_morpher.TraceRules.Contains(_rule))
-					{
-						var trace = new Trace(TraceType.MorphologicalRuleSynthesis, _rule) {Input = input, Output = outWord};
-						outWord.CurrentTrace.Children.Add(trace);
-						outWord.CurrentTrace = trace;
-					}
+					AffixProcessAllomorph allo = _rule.Allomorphs[i];
+					_morpher.TraceManager.MorphologicalRuleApplied(_rule, input, outWord, allo);
 
 					output.Add(outWord);
 
-					AffixProcessAllomorph allo = _rule.Allomorphs[i];
 					if (allo.RequiredEnvironments == null && allo.ExcludedEnvironments == null)
 						break;
 				}
 			}
 
-			if (output.Count == 0 && _morpher.TraceRules.Contains(_rule))
-				input.CurrentTrace.Children.Add(new Trace(TraceType.MorphologicalRuleSynthesis, _rule) {Input = input});
+			if (output.Count == 0)
+				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, input);
 			return output;
 		}
 

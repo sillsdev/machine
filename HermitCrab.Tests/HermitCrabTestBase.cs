@@ -11,6 +11,7 @@ namespace SIL.HermitCrab.Tests
 	public abstract class HermitCrabTestBase
 	{
 		protected SpanFactory<ShapeNode> SpanFactory;
+		protected TraceManager TraceManager;
 		protected SymbolTable Table1;
 		protected SymbolTable Table2;
 		protected SymbolTable Table3;
@@ -28,6 +29,7 @@ namespace SIL.HermitCrab.Tests
 		public void FixtureSetUp()
 		{
 			SpanFactory = new ShapeSpanFactory();
+			TraceManager = new TraceManager();
 			var phoneticFeatSys = new FeatureSystem
 			                      	{
 			                      		new SymbolicFeature("voc", new FeatureSymbol("voc+", "+"), new FeatureSymbol("voc-", "-")),

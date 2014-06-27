@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.Matching;
@@ -24,7 +25,7 @@ namespace SIL.HermitCrab.PhonologicalRules
 				if (group != null)
 				{
 					var newGroup = new Group<Word, ShapeNode>(group.Name);
-					foreach (Constraint<Word, ShapeNode> constraint in group.Children)
+					foreach (Constraint<Word, ShapeNode> constraint in group.Children.Cast<Constraint<Word, ShapeNode>>())
 					{
 						Constraint<Word, ShapeNode> newConstraint = constraint.DeepClone();
 						newConstraint.FeatureStruct.AddValue(HCFeatureSystem.Modified, HCFeatureSystem.Clean);
@@ -52,17 +53,11 @@ namespace SIL.HermitCrab.PhonologicalRules
 
 		public IEnumerable<Word> Apply(Word input)
 		{
-			Trace trace = null;
-			if (_morpher.TraceRules.Contains(_rule))
-			{
-				trace = new Trace(TraceType.PhonologicalRuleSynthesis, _rule) { Input = input.DeepClone() };
-				input.CurrentTrace.Children.Add(trace);
-			}
+			_morpher.TraceManager.BeginApplyPhonologicalRule(_rule, input);
 
 			IEnumerable<Word> output = _patternRule.Apply(input);
 
-			if (trace != null)
-				trace.Output = input.DeepClone();
+			_morpher.TraceManager.EndApplyPhonologicalRule(_rule, input);
 
 			return output;
 		}

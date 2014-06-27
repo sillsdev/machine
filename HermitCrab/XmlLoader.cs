@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Xml.Linq;
@@ -23,12 +24,12 @@ namespace SIL.HermitCrab
 			return Load(configPath, null);
 		}
 
-		public static Language Load(string configPath, Action<Exception> errorHandler)
+		public static Language Load(string configPath, Action<Exception, string> errorHandler)
 		{
 			return Load(configPath, errorHandler, null);
 		}
 
-		public static Language Load(string configPath, Action<Exception> errorHandler, XmlResolver resolver)
+		public static Language Load(string configPath, Action<Exception, string> errorHandler, XmlResolver resolver)
 		{
 			var loader = new XmlLoader(configPath, errorHandler, resolver);
 			return loader.Load();
@@ -147,7 +148,7 @@ namespace SIL.HermitCrab
 		private readonly ComplexFeature _footFeature;
 
 		private readonly string _configPath;
-		private readonly Action<Exception> _errorHandler;
+		private readonly Action<Exception, string> _errorHandler;
 		private readonly Dictionary<string, string> _repIds;
 		private readonly ShapeSpanFactory _spanFactory;
 		private readonly XmlResolver _resolver;
@@ -165,7 +166,7 @@ namespace SIL.HermitCrab
 		private readonly IDBearerSet<Morpheme> _morphemes;
 		private readonly IDBearerSet<Allomorph> _allomorphs;
 
-		private XmlLoader(string configPath, Action<Exception> errorHandler, XmlResolver resolver)
+		private XmlLoader(string configPath, Action<Exception, string> errorHandler, XmlResolver resolver)
 		{
 			_configPath = configPath;
 			_errorHandler = errorHandler;
@@ -332,7 +333,7 @@ namespace SIL.HermitCrab
 				catch (Exception e)
 				{
 					if (_errorHandler != null)
-						_errorHandler(e);
+						_errorHandler(e, (string) pruleElem.Attribute("id"));
 					else
 						throw;
 				}
@@ -411,7 +412,7 @@ namespace SIL.HermitCrab
 				catch (Exception e)
 				{
 					if (_errorHandler != null)
-						_errorHandler(e);
+						_errorHandler(e, entry.ID);
 					else
 						throw;
 				}
@@ -504,7 +505,7 @@ namespace SIL.HermitCrab
 			return new AllomorphCoOccurrenceRule(allomorphs, adjacency);
 		}
 
-		private void LoadProperties(XElement propsElem, IDictionary<string, string> props)
+		private void LoadProperties(XElement propsElem, IDictionary props)
 		{
 			if (propsElem == null)
 				return;
@@ -742,7 +743,7 @@ namespace SIL.HermitCrab
 				catch (Exception e)
 				{
 					if (_errorHandler != null)
-						_errorHandler(e);
+						_errorHandler(e, mrule.ID);
 					else
 						throw;
 				}
@@ -789,7 +790,7 @@ namespace SIL.HermitCrab
 				catch (Exception e)
 				{
 					if (_errorHandler != null)
-						_errorHandler(e);
+						_errorHandler(e, realRule.ID);
 					else
 						throw;
 				}
@@ -931,7 +932,7 @@ namespace SIL.HermitCrab
 				catch (Exception e)
 				{
 					if (_errorHandler != null)
-						_errorHandler(e);
+						_errorHandler(e, compRule.ID);
 					else
 						throw;
 				}
