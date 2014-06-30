@@ -34,7 +34,7 @@ namespace SIL.HermitCrab
 
 		public IEnumerable<Word> Apply(Word input)
 		{
-			if (input.RootAllomorph.Morpheme.Stratum.Depth > _stratum.Depth)
+			if (!_morpher.RuleSelector(_stratum) || input.RootAllomorph.Morpheme.Stratum.Depth > _stratum.Depth)
 				return input.ToEnumerable();
 
 			_morpher.TraceManager.BeginApplyStratum(_stratum, input);

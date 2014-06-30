@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Annotations;
@@ -34,6 +35,9 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 		public IEnumerable<Word> Apply(Word input)
 		{
+			if (!_morpher.RuleSelector(_rule))
+				return Enumerable.Empty<Word>();
+
 			if (input.NonHeadCount + 1 >= _morpher.MaxStemCount || input.GetUnapplicationCount(_rule) >= _rule.MaxApplicationCount
 				|| !_rule.OutSyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct))
 			{

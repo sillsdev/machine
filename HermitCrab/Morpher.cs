@@ -41,6 +41,8 @@ namespace SIL.HermitCrab
 			_analysisRule = lang.CompileAnalysisRule(spanFactory, this);
 			_synthesisRule = lang.CompileSynthesisRule(spanFactory, this);
 			MaxStemCount = 2;
+			LexEntrySelector = entry => true;
+			RuleSelector = rule => true;
 		}
 
 		public TraceManagerBase TraceManager
@@ -51,6 +53,9 @@ namespace SIL.HermitCrab
 		public int DeletionReapplications { get; set; }
 
 		public int MaxStemCount { get; set; }
+
+		public Func<LexEntry, bool> LexEntrySelector { get; set; }
+		public Func<IHCRule, bool> RuleSelector { get; set; } 
 
 		/// <summary>
 		/// Morphs the specified word.
@@ -132,7 +137,7 @@ namespace SIL.HermitCrab
 		private IEnumerable<Word> LexicalLookup(Word input)
 		{
 			_traceManager.LexicalLookup(input.Stratum, input);
-			foreach (LexEntry entry in SearchRootAllomorphs(input.Stratum, input.Shape).Select(allo => allo.Morpheme).Cast<LexEntry>().Distinct())
+			foreach (LexEntry entry in SearchRootAllomorphs(input.Stratum, input.Shape).Select(allo => allo.Morpheme).Cast<LexEntry>().Where(LexEntrySelector).Distinct())
 			{
 				foreach (RootAllomorph allomorph in entry.Allomorphs)
 				{

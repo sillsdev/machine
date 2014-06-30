@@ -104,6 +104,9 @@ namespace SIL.HermitCrab.PhonologicalRules
 
 		public IEnumerable<Word> Apply(Word input)
 		{
+			if (!_morpher.RuleSelector(_rule))
+				return Enumerable.Empty<Word>();
+
 			_morpher.TraceManager.BeginUnapplyPhonologicalRule(_rule, input);
 
 			bool applied = false;

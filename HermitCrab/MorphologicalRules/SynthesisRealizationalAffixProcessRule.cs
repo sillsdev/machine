@@ -34,6 +34,9 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 		public IEnumerable<Word> Apply(Word input)
 		{
+			if (!_morpher.RuleSelector(_rule))
+				return Enumerable.Empty<Word>();
+
 			if (!_rule.RealizationalFeatureStruct.Subsumes(input.RealizationalFeatureStruct))
 				return Enumerable.Empty<Word>();
 

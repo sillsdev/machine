@@ -5,26 +5,26 @@ using SIL.Collections;
 
 namespace SIL.HermitCrab
 {
-    /// <summary>
-    /// This class represents a morpheme. All morpheme objects should extend this class.
-    /// </summary>
-    public abstract class Morpheme : IDBearerBase
-    {
+	/// <summary>
+	/// This class represents a morpheme. All morpheme objects should extend this class.
+	/// </summary>
+	public abstract class Morpheme : IDBearerBase
+	{
 		private readonly ObservableCollection<MorphemeCoOccurrenceRule> _requiredMorphemeCoOccurrences;
 		private readonly ObservableCollection<MorphemeCoOccurrenceRule> _excludedMorphemeCoOccurrences; 
 
-    	/// <summary>
-    	/// Initializes a new instance of the <see cref="Morpheme"/> class.
-    	/// </summary>
-    	/// <param name="id">The id.</param>
-    	protected Morpheme(string id)
-            : base(id)
-        {
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Morpheme"/> class.
+		/// </summary>
+		/// <param name="id">The id.</param>
+		protected Morpheme(string id)
+			: base(id)
+		{
 			_requiredMorphemeCoOccurrences = new ObservableCollection<MorphemeCoOccurrenceRule>();
-    		_requiredMorphemeCoOccurrences.CollectionChanged += MorphemeCoOccurrencesChanged;
+			_requiredMorphemeCoOccurrences.CollectionChanged += MorphemeCoOccurrencesChanged;
 			_excludedMorphemeCoOccurrences = new ObservableCollection<MorphemeCoOccurrenceRule>();
-    		_excludedMorphemeCoOccurrences.CollectionChanged += MorphemeCoOccurrencesChanged;
-        }
+			_excludedMorphemeCoOccurrences.CollectionChanged += MorphemeCoOccurrencesChanged;
+		}
 
 		private void MorphemeCoOccurrencesChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
@@ -40,34 +40,34 @@ namespace SIL.HermitCrab
 			}
 		}
 
-    	/// <summary>
-    	/// Gets or sets the stratum.
-    	/// </summary>
-    	/// <value>The stratum.</value>
-    	public Stratum Stratum { get; set; }
+		/// <summary>
+		/// Gets or sets the stratum.
+		/// </summary>
+		/// <value>The stratum.</value>
+		public Stratum Stratum { get; set; }
 
-    	/// <summary>
-    	/// Gets or sets the morpheme's gloss.
-    	/// </summary>
-    	/// <value>The gloss.</value>
-    	public string Gloss { get; set; }
+		/// <summary>
+		/// Gets or sets the morpheme's gloss.
+		/// </summary>
+		/// <value>The gloss.</value>
+		public string Gloss { get; set; }
 
-    	/// <summary>
-    	/// Gets or sets the required morpheme co-occurrences.
-    	/// </summary>
-    	/// <value>The required morpheme co-occurrences.</value>
-    	public ICollection<MorphemeCoOccurrenceRule> RequiredMorphemeCoOccurrences
-    	{
-    		get { return _requiredMorphemeCoOccurrences; }
-    	}
+		/// <summary>
+		/// Gets or sets the required morpheme co-occurrences.
+		/// </summary>
+		/// <value>The required morpheme co-occurrences.</value>
+		public ICollection<MorphemeCoOccurrenceRule> RequiredMorphemeCoOccurrences
+		{
+			get { return _requiredMorphemeCoOccurrences; }
+		}
 
-    	/// <summary>
-    	/// Gets or sets the excluded morpheme co-occurrences.
-    	/// </summary>
-    	/// <value>The excluded morpheme co-occurrences.</value>
-    	public ICollection<MorphemeCoOccurrenceRule> ExcludedMorphemeCoOccurrences
-    	{
-    		get { return _excludedMorphemeCoOccurrences; }
-    	}
-    }
+		/// <summary>
+		/// Gets or sets the excluded morpheme co-occurrences.
+		/// </summary>
+		/// <value>The excluded morpheme co-occurrences.</value>
+		public ICollection<MorphemeCoOccurrenceRule> ExcludedMorphemeCoOccurrences
+		{
+			get { return _excludedMorphemeCoOccurrences; }
+		}
+	}
 }

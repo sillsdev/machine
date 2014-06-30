@@ -35,6 +35,9 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 		public IEnumerable<Word> Apply(Word input)
 		{
+			if (!_morpher.RuleSelector(_rule))
+				return Enumerable.Empty<Word>();
+
 			FeatureStruct realFS;
 			if (!_rule.RealizationalFeatureStruct.Unify(input.RealizationalFeatureStruct, out realFS))
 				return Enumerable.Empty<Word>();

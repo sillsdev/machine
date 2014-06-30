@@ -11,7 +11,7 @@ namespace SIL.HermitCrab
 	{
 		private readonly Morpher _morpher;
 		private readonly Stratum _stratum;
-		private readonly List<AffixTemplate> _templates; 
+		private readonly List<AffixTemplate> _templates;
 		private readonly List<IRule<Word, ShapeNode>> _templateRules; 
 
 		public SynthesisAffixTemplatesRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, Stratum stratum)
@@ -32,7 +32,7 @@ namespace SIL.HermitCrab
 			input = ChooseInflectionalStem(input);
 			for (int i = 0; i < _templateRules.Count; i++)
 			{
-				if (input.SyntacticFeatureStruct.IsUnifiable(_templates[i].RequiredSyntacticFeatureStruct))
+				if (_morpher.RuleSelector(_templates[i]) && input.SyntacticFeatureStruct.IsUnifiable(_templates[i].RequiredSyntacticFeatureStruct))
 				{
 					applicableTemplate = true;
 					output.UnionWith(_templateRules[i].Apply(input));

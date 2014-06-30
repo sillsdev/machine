@@ -26,6 +26,9 @@ namespace SIL.HermitCrab
 
 		public IEnumerable<Word> Apply(Word input)
 		{
+			if (!_morpher.RuleSelector(_template))
+				return Enumerable.Empty<Word>();
+
 			FeatureStruct fs;
 			if (!input.SyntacticFeatureStruct.Unify(_template.RequiredSyntacticFeatureStruct, out fs))
 				return Enumerable.Empty<Word>();

@@ -81,7 +81,7 @@ namespace SIL.HermitCrab
 		{
 			//return new PermutationRuleCascade<Word, ShapeNode>(_strata.Select(stratum => stratum.CompileAnalysisRule(spanFactory, morpher)).Reverse(),
 			//	FreezableEqualityComparer<Word>.Instance);
-			return new AnalysisLanguageRule(spanFactory, morpher, _strata);
+			return new AnalysisLanguageRule(spanFactory, morpher, this);
 		}
 
 		public IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
@@ -99,11 +99,15 @@ namespace SIL.HermitCrab
 
 		private class AnalysisLanguageRule : IRule<Word, ShapeNode>
 		{
-			private readonly List<IRule<Word, ShapeNode>> _rules; 
+			private readonly Morpher _morpher;
+			private readonly List<Stratum> _strata;
+			private readonly List<IRule<Word, ShapeNode>> _rules;
 
-			public AnalysisLanguageRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, IEnumerable<Stratum> strata)
+			public AnalysisLanguageRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, Language language)
 			{
-				_rules = strata.Select(stratum => stratum.CompileAnalysisRule(spanFactory, morpher)).Reverse().ToList();
+				_morpher = morpher;
+				_strata = language.Strata.Reverse().ToList();
+				_rules = _strata.Select(stratum => stratum.CompileAnalysisRule(spanFactory, morpher)).ToList();
 			}
 
 			public IEnumerable<Word> Apply(Word input)
@@ -113,6 +117,9 @@ namespace SIL.HermitCrab
 				var results = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
 				for (int i = 0; i < _rules.Count && inputSet.Count > 0; i++)
 				{
+					if (!_morpher.RuleSelector(_strata[i]))
+						continue;
+
 					HashSet<Word> outputSet = tempSet;
 					outputSet.Clear();
 
