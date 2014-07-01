@@ -174,8 +174,8 @@ namespace SIL.HermitCrab
 			_spanFactory = new ShapeSpanFactory();
 			_resolver = resolver;
 
-			_headFeature = new ComplexFeature(Guid.NewGuid().ToString()) { Description = "Head" };
-			_footFeature = new ComplexFeature(Guid.NewGuid().ToString()) { Description = "Foot" };
+			_headFeature = new ComplexFeature("head") { Description = "Head" };
+			_footFeature = new ComplexFeature("foot") { Description = "Foot" };
 
 			_tables = new IDBearerSet<SymbolTable>();
 			_mprFeatures = new IDBearerSet<MprFeature>();
@@ -220,7 +220,7 @@ namespace SIL.HermitCrab
 			var id = (string) langElem.Attribute("id");
 			_language = new Language(id) { Description = (string) langElem.Element("Name") };
 
-			_posFeature = new SymbolicFeature(Guid.NewGuid().ToString(), langElem.Elements("PartsOfSpeech").Elements("PartOfSpeech")
+			_posFeature = new SymbolicFeature("pos", langElem.Elements("PartsOfSpeech").Elements("PartOfSpeech")
 				.Select(e => new FeatureSymbol((string) e.Attribute("id"), (string) e))) { Description = "POS" };
 			_language.SyntacticFeatureSystem.Add(_posFeature);
 

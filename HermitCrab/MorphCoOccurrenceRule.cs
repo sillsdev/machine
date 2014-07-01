@@ -54,6 +54,16 @@ namespace SIL.HermitCrab
 
 		public T Key { get; internal set; }
 
+		public IEnumerable<T> Others
+		{
+			get { return _others; }
+		}
+
+		public MorphCoOccurrenceAdjacency Adjacency
+		{
+			get { return _adjacency; }
+		}
+
 		/// <summary>
 		/// Determines if all of the specified morphemes co-occur with the key morpheme.
 		/// </summary>

@@ -107,8 +107,6 @@ namespace SIL.HermitCrab.PhonologicalRules
 			if (!_morpher.RuleSelector(_rule))
 				return Enumerable.Empty<Word>();
 
-			_morpher.TraceManager.BeginUnapplyPhonologicalRule(_rule, input);
-
 			bool applied = false;
 			foreach (Tuple<ReapplyType, PatternRule<Word, ShapeNode>> sr in _rules)
 			{
@@ -149,10 +147,13 @@ namespace SIL.HermitCrab.PhonologicalRules
 				}
 			}
 
-			_morpher.TraceManager.EndUnapplyPhonologicalRule(_rule, input);
-
 			if (applied)
+			{
+				_morpher.TraceManager.PhonologicalRuleUnapplied(_rule, input, input);
 				return input.ToEnumerable();
+			}
+
+			_morpher.TraceManager.PhonologicalRuleNotUnapplied(_rule, input);
 			return Enumerable.Empty<Word>();
 		}
 	}

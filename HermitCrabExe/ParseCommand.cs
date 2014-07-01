@@ -102,6 +102,7 @@ namespace SIL.HermitCrab
 			{
 				if (!first)
 					_context.Out.Write(", ");
+				first = false;
 				SymbolTable table = trace.Input.Stratum.SymbolTable;
 				_context.Out.Write("Input: {0}", analysis ? trace.Input.Shape.ToRegexString(table, true) : trace.Input.Shape.ToString(table, true));
 			}
@@ -109,8 +110,15 @@ namespace SIL.HermitCrab
 			{
 				if (!first)
 					_context.Out.Write(", ");
+				first = false;
 				SymbolTable table = trace.Output.Stratum.SymbolTable;
 				_context.Out.Write("Output: {0}", analysis ? trace.Output.Shape.ToRegexString(table, true) : trace.Output.Shape.ToString(table, true));
+			}
+			if (trace.FailureReason != FailureReason.None)
+			{
+				if (!first)
+					_context.Out.Write(", ");
+				_context.Out.Write("Reason: {0}", trace.FailureReason);
 			}
 			_context.Out.WriteLine("]");
 
@@ -154,7 +162,8 @@ namespace SIL.HermitCrab
 					return true;
 
 				case TraceType.WordSynthesis:
-				case TraceType.ReportSuccess:
+				case TraceType.ParseSuccessful:
+				case TraceType.ParseFailed:
 				case TraceType.Blocking:
 				case TraceType.StratumSynthesisInput:
 				case TraceType.StratumSynthesisOutput:
@@ -187,8 +196,10 @@ namespace SIL.HermitCrab
 					return "Word Analysis";
 				case TraceType.WordSynthesis:
 					return "Word Synthesis";
-				case TraceType.ReportSuccess:
+				case TraceType.ParseSuccessful:
 					return "Successful Parse";
+				case TraceType.ParseFailed:
+					return "Failed Parse";
 				case TraceType.Blocking:
 					return "Blocking";
 				case TraceType.LexicalLookup:

@@ -73,9 +73,13 @@ namespace SIL.HermitCrab
 		/// </summary>
 		MorphologicalRuleSynthesis,
 		/// <summary>
-		/// Report success trace
+		/// Parse successful trace
 		/// </summary>
-		ReportSuccess
+		ParseSuccessful,
+		/// <summary>
+		/// Parse failed trace
+		/// </summary>
+		ParseFailed
 	}
 
 	/// <summary>
@@ -110,5 +114,7 @@ namespace SIL.HermitCrab
 		public Word Input { get; internal set; }
 
 		public Word Output { get; internal set; }
+
+		public FailureReason FailureReason { get; internal set; }
 	}
 }

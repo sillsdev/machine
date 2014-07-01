@@ -75,7 +75,7 @@ namespace SIL.HermitCrab
 
 			var input = new Word(_lang.SurfaceStratum, shape);
 			input.Freeze();
-			_traceManager.BeginAnalyzeWord(_lang, input);
+			_traceManager.AnalyzeWord(_lang, input);
 			trace = input.CurrentTrace;
 
 			// Unapply rules
@@ -110,19 +110,26 @@ namespace SIL.HermitCrab
 			{
 				// enforce the disjunctive property of allomorphs by ensuring that this word synthesis
 				// has the highest order of precedence for its allomorphs while also allowing for free fluctuation
-				Word prevMatch = null;
-				foreach (Word match in group.OrderBy(w => w.AllomorphsInMorphOrder, MorphsComparer))
+				Word[] words = group.OrderBy(w => w.AllomorphsInMorphOrder, MorphsComparer).ToArray();
+				int i;
+				for (i = 0; i < words.Length; i++)
 				{
-					if (prevMatch != null && match.AllomorphsInMorphOrder.Zip(prevMatch.AllomorphsInMorphOrder).Any(tuple => tuple.Item1 != tuple.Item2 && !tuple.Item1.ConstraintsEqual(tuple.Item2)))
+					if (i > 0 && words[i].AllomorphsInMorphOrder.Zip(words[i - 1].AllomorphsInMorphOrder).Any(tuple => tuple.Item1 != tuple.Item2 && !tuple.Item1.ConstraintsEqual(tuple.Item2)))
 						break;
 
-					if (_lang.SurfaceStratum.SymbolTable.IsMatch(word, match.Shape))
+					if (_lang.SurfaceStratum.SymbolTable.IsMatch(word, words[i].Shape))
 					{
-						_traceManager.ReportSuccess(_lang, match);
-						matchList.Add(match);
+						_traceManager.ParseSuccessful(_lang, words[i]);
+						matchList.Add(words[i]);
 					}
-					prevMatch = match;
+					else
+					{
+						_traceManager.ParseFailed(_lang, words[i], FailureReason.SurfaceFormMismatch, null);
+					}
 				}
+
+				for (; i < words.Length; i++)
+					_traceManager.ParseFailed(_lang, words[i], FailureReason.DisjunctiveAllomorph, null);
 			}
 
 			return matchList;
@@ -143,7 +150,7 @@ namespace SIL.HermitCrab
 				{
 					Word newWord = input.DeepClone();
 					newWord.RootAllomorph = allomorph;
-					_traceManager.BeginSynthesizeWord(_lang, newWord);
+					_traceManager.SynthesizeWord(_lang, newWord);
 					newWord.Freeze();
 					yield return newWord;
 				}
@@ -153,27 +160,48 @@ namespace SIL.HermitCrab
 		private bool IsWordValid(Word word)
 		{
 			if (!word.ObligatorySyntacticFeatures.All(feature => ContainsFeature(word.SyntacticFeatureStruct, feature, new HashSet<FeatureStruct>(new ReferenceEqualityComparer<FeatureStruct>()))))
+			{
+				_traceManager.ParseFailed(_lang, word, FailureReason.ObligatorySyntacticFeatures, null);
 				return false;
+			}
 
 			foreach (Allomorph allo in word.Allomorphs)
 			{
 				if (!allo.RequiredAllomorphCoOccurrences.All(c => c.CoOccurs(word)))
+				{
+					_traceManager.ParseFailed(_lang, word, FailureReason.RequiredAllomorphCoOccurrences, allo);
 					return false;
+				}
 
 				if (allo.ExcludedAllomorphCoOccurrences.Any(c => c.CoOccurs(word)))
+				{
+					_traceManager.ParseFailed(_lang, word, FailureReason.ExcludedAllomorphCoOccurrences, allo);
 					return false;
+				}
 
 				if (!allo.RequiredEnvironments.All(env => env.IsMatch(word)))
+				{
+					_traceManager.ParseFailed(_lang, word, FailureReason.RequiredEnvironments, allo);
 					return false;
+				}
 
 				if (allo.ExcludedEnvironments.Any(env => env.IsMatch(word)))
+				{
+					_traceManager.ParseFailed(_lang, word, FailureReason.ExcludedEnvironments, allo);
 					return false;
+				}
 
 				if (!allo.Morpheme.RequiredMorphemeCoOccurrences.All(c => c.CoOccurs(word)))
+				{
+					_traceManager.ParseFailed(_lang, word, FailureReason.RequiredMorphemeCoOccurrences, allo);
 					return false;
+				}
 
 				if (allo.Morpheme.ExcludedMorphemeCoOccurrences.Any(c => c.CoOccurs(word)))
+				{
+					_traceManager.ParseFailed(_lang, word, FailureReason.ExcludedMorphemeCoOccurrences, allo);
 					return false;
+				}
 			}
 
 			return true;

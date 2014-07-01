@@ -2,7 +2,7 @@
 {
 	public class TraceManager : TraceManagerBase
 	{
-		public override void BeginAnalyzeWord(Language lang, Word input)
+		public override void AnalyzeWord(Language lang, Word input)
 		{
 			if (IsTracing)
 				input.CurrentTrace = new Trace(TraceType.WordAnalysis, lang) {Input = input};
@@ -20,16 +20,16 @@
 				((Trace) output.CurrentTrace).Children.Add(new Trace(TraceType.StratumAnalysisOutput, stratum) {Output = output});
 		}
 
-		public override void BeginUnapplyPhonologicalRule(IPhonologicalRule rule, Word input)
+		public override void PhonologicalRuleUnapplied(IPhonologicalRule rule, Word input, Word output)
+		{
+			if (TracePhonologicalRules)
+				((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.PhonologicalRuleAnalysis, rule) {Input = input.DeepClone(), Output = output.DeepClone()});
+		}
+
+		public override void PhonologicalRuleNotUnapplied(IPhonologicalRule rule, Word input)
 		{
 			if (TracePhonologicalRules)
 				((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.PhonologicalRuleAnalysis, rule) {Input = input.DeepClone()});
-		}
-
-		public override void EndUnapplyPhonologicalRule(IPhonologicalRule rule, Word output)
-		{
-			if (TracePhonologicalRules)
-				((Trace) output.CurrentTrace).Children.Last.Output = output.DeepClone();
 		}
 
 		public override void BeginUnapplyTemplate(AffixTemplate template, Word input)
@@ -66,9 +66,9 @@
 				((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.LexicalLookup, stratum) {Input = input.DeepClone()});
 		}
 
-		public override void BeginSynthesizeWord(Language lang, Word input)
+		public override void SynthesizeWord(Language lang, Word input)
 		{
-			if (TraceLexicalLookup)
+			if (IsTracing)
 			{
 				var trace = new Trace(TraceType.WordSynthesis, lang) {Input = input.DeepClone()};
 				var curTrace = (Trace) input.CurrentTrace;
@@ -89,16 +89,16 @@
 				((Trace) output.CurrentTrace).Children.Add(new Trace(TraceType.StratumSynthesisOutput, stratum) {Output = output});
 		}
 
-		public override void BeginApplyPhonologicalRule(IPhonologicalRule rule, Word input)
+		public override void PhonologicalRuleApplied(IPhonologicalRule rule, Word input, Word output)
 		{
 			if (TracePhonologicalRules)
-				((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.PhonologicalRuleSynthesis, rule) {Input = input.DeepClone()});
+				((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.PhonologicalRuleSynthesis, rule) {Input = input.DeepClone(), Output = output.DeepClone()});
 		}
 
-		public override void EndApplyPhonologicalRule(IPhonologicalRule rule, Word output)
+		public override void PhonologicalRuleNotApplied(IPhonologicalRule rule, Word input, FailureReason reason)
 		{
 			if (TracePhonologicalRules)
-				((Trace) output.CurrentTrace).Children.Last.Output = output.DeepClone();
+				((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.PhonologicalRuleSynthesis, rule) {Input = input.DeepClone(), FailureReason = reason});
 		}
 
 		public override void BeginApplyTemplate(AffixTemplate template, Word input)
@@ -123,10 +123,10 @@
 			}
 		}
 
-		public override void MorphologicalRuleNotApplied(IMorphologicalRule rule, Word input)
+		public override void MorphologicalRuleNotApplied(IMorphologicalRule rule, Word input, FailureReason reason)
 		{
 			if (TraceMorphologicalRules)
-				((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.MorphologicalRuleSynthesis, rule) {Input = input});
+				((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.MorphologicalRuleSynthesis, rule) {Input = input, FailureReason = reason});
 		}
 
 		public override void Blocking(IHCRule rule, Word output)
@@ -135,10 +135,16 @@
 				((Trace) output.CurrentTrace).Children.Add(new Trace(TraceType.Blocking, rule) {Output = output});
 		}
 
-		public override void ReportSuccess(Language lang, Word output)
+		public override void ParseSuccessful(Language lang, Word word)
 		{
-			if (TraceSuccess)
-				((Trace) output.CurrentTrace).Children.Add(new Trace(TraceType.ReportSuccess, lang) {Output = output});
+			if (IsTracing)
+				((Trace) word.CurrentTrace).Children.Add(new Trace(TraceType.ParseSuccessful, lang) {Output = word});
+		}
+
+		public override void ParseFailed(Language lang, Word word, FailureReason reason, Allomorph allomorph)
+		{
+			if (IsTracing)
+				((Trace) word.CurrentTrace).Children.Add(new Trace(TraceType.ParseFailed, lang) {Output = word, FailureReason = reason});
 		}
 	}
 }

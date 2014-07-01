@@ -43,15 +43,23 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 		public IEnumerable<Word> Apply(Word input)
 		{
-			if (input.CurrentMorphologicalRule != _rule || input.GetApplicationCount(_rule) >= _rule.MaxApplicationCount
-				|| !_rule.NonHeadRequiredSyntacticFeatureStruct.IsUnifiable(input.CurrentNonHead.SyntacticFeatureStruct, true))
+			if (input.CurrentMorphologicalRule != _rule || input.GetApplicationCount(_rule) >= _rule.MaxApplicationCount)
 			{
+				return Enumerable.Empty<Word>();
+			}
+
+			if (!_rule.NonHeadRequiredSyntacticFeatureStruct.IsUnifiable(input.CurrentNonHead.SyntacticFeatureStruct, true))
+			{
+				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, input, FailureReason.NonHeadRequiredSyntacticFeatureStruct);
 				return Enumerable.Empty<Word>();
 			}
 
 			FeatureStruct syntacticFS;
 			if (!_rule.HeadRequiredSyntacticFeatureStruct.Unify(input.SyntacticFeatureStruct, true, out syntacticFS))
+			{
+				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, input, FailureReason.HeadRequiredSyntacticFeatureStruct);
 				return Enumerable.Empty<Word>();
+			}
 
 			var output = new List<Word>();
 			for (int i = 0; i < _rule.Subrules.Count; i++)
@@ -101,7 +109,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 			}
 
 			if (output.Count == 0)
-				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, input);
+				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, input, FailureReason.SubruleMismatch);
 
 			return output;
 		}

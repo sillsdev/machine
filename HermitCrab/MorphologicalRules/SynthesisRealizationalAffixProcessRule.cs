@@ -45,7 +45,10 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 			FeatureStruct syntacticFS;
 			if (!_rule.RequiredSyntacticFeatureStruct.Unify(input.SyntacticFeatureStruct, true, out syntacticFS))
+			{
+				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, input, FailureReason.RequiredSyntacticFeatureStruct);
 				return Enumerable.Empty<Word>();
+			}
 
 			var output = new List<Word>();
 			for (int i = 0; i < _rules.Count; i++)
@@ -79,7 +82,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 			}
 
 			if (output.Count == 0)
-				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, input);
+				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, input, FailureReason.SubruleMismatch);
 			return output;
 		}
 
