@@ -166,7 +166,7 @@ namespace SIL.Machine.FeatureModel
 		public void AddValue(IEnumerable<Feature> path, FeatureValue value)
 		{
 			CheckFrozen();
-		    Feature lastFeature;
+			Feature lastFeature;
 			FeatureStruct lastFS;
 			if (FollowPath(path, out lastFeature, out lastFS))
 				lastFS._definite[lastFeature] = value;
@@ -183,7 +183,7 @@ namespace SIL.Machine.FeatureModel
 		public void RemoveValue(IEnumerable<Feature> path)
 		{
 			CheckFrozen();
-		    Feature lastFeature;
+			Feature lastFeature;
 			FeatureStruct lastFS;
 			if (FollowPath(path, out lastFeature, out lastFS))
 				lastFS._definite.Remove(lastFeature);
@@ -540,6 +540,11 @@ namespace SIL.Machine.FeatureModel
 			throw new ArgumentException("The specified path is not valid.", "path");
 		}
 
+		public FeatureValue GetValue(params Feature[] path)
+		{
+			return GetValue((IEnumerable<Feature>) path);
+		}
+
 		public T GetValue<T>(IEnumerable<Feature> path) where T : FeatureValue
 		{
 			T value;
@@ -547,6 +552,11 @@ namespace SIL.Machine.FeatureModel
 				return value;
 
 			throw new ArgumentException("The specified path is not valid.", "path");
+		}
+
+		public T GetValue<T>(params Feature[] path) where T : FeatureValue
+		{
+			return GetValue<T>((IEnumerable<Feature>) path);
 		}
 
 		public FeatureValue GetValue(IEnumerable<string> path)
@@ -558,6 +568,11 @@ namespace SIL.Machine.FeatureModel
 			throw new ArgumentException("The specified path is not valid.", "path");
 		}
 
+		public FeatureValue GetValue(params string[] path)
+		{
+			return GetValue((IEnumerable<string>) path);
+		}
+
 		public T GetValue<T>(IEnumerable<string> path) where T : FeatureValue
 		{
 			T value;
@@ -565,6 +580,11 @@ namespace SIL.Machine.FeatureModel
 				return value;
 
 			throw new ArgumentException("The specified path is not valid.", "path");
+		}
+
+		public T GetValue<T>(params string[] path) where T : FeatureValue
+		{
+			return GetValue<T>((IEnumerable<string>) path);
 		}
 
 		public bool TryGetValue<T>(Feature feature, out T value) where T : FeatureValue
@@ -587,7 +607,7 @@ namespace SIL.Machine.FeatureModel
 
 		public bool TryGetValue<T>(IEnumerable<Feature> path, out T value) where T : FeatureValue
 		{
-		    Feature lastFeature;
+			Feature lastFeature;
 			FeatureStruct lastFS;
 			if (FollowPath(path, out lastFeature, out lastFS))
 			{
@@ -601,7 +621,7 @@ namespace SIL.Machine.FeatureModel
 
 		public bool TryGetValue<T>(IEnumerable<string> path, out T value) where T : FeatureValue
 		{
-		    string lastID;
+			string lastID;
 			FeatureStruct lastFS;
 			if (FollowPath(path, out lastID, out lastFS))
 			{
@@ -652,8 +672,8 @@ namespace SIL.Machine.FeatureModel
 					FeatureValue curValue;
 					if (!lastFS._definite.TryGetValue(lastID, out curValue) || !Dereference(curValue, out lastFS))
 					{
-					    lastID = null;
-                        lastFS = null;
+						lastID = null;
+						lastFS = null;
 						return false;
 					}
 				}
@@ -663,27 +683,27 @@ namespace SIL.Machine.FeatureModel
 			return true;
 		}
 
-        private bool FollowPath(IEnumerable<Feature> path, out Feature lastFeature, out FeatureStruct lastFS)
-        {
-            lastFS = this;
-            lastFeature = null;
-            foreach (Feature feature in path)
-            {
-                if (lastFeature != null)
-                {
-                    FeatureValue curValue;
-                    if (!lastFS._definite.TryGetValue(lastFeature, out curValue) || !Dereference(curValue, out lastFS))
-                    {
-                        lastFeature = null;
-                        lastFS = null;
-                        return false;
-                    }
-                }
-                lastFeature = feature;
-            }
+		private bool FollowPath(IEnumerable<Feature> path, out Feature lastFeature, out FeatureStruct lastFS)
+		{
+			lastFS = this;
+			lastFeature = null;
+			foreach (Feature feature in path)
+			{
+				if (lastFeature != null)
+				{
+					FeatureValue curValue;
+					if (!lastFS._definite.TryGetValue(lastFeature, out curValue) || !Dereference(curValue, out lastFS))
+					{
+						lastFeature = null;
+						lastFS = null;
+						return false;
+					}
+				}
+				lastFeature = feature;
+			}
 
-            return true;
-        }
+			return true;
+		}
 
 		public bool IsUnifiable(FeatureStruct other)
 		{
