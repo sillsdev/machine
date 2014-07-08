@@ -556,6 +556,20 @@ namespace SIL.Collections
 			return dir == Direction.LeftToRight ? source : source.Reverse();
 		}
 
+		public static int IndexOf<T>(this IEnumerable<T> source, T value)
+		{
+			return source.IndexOf(value, null);
+		}
+
+		public static int IndexOf<T>(this IEnumerable<T> source, T value, IEqualityComparer<T> comparer)
+		{
+			comparer = comparer ?? EqualityComparer<T>.Default;
+			var found = source
+				.Select((a, i) => new { a, i })
+				.FirstOrDefault(x => comparer.Equals(x.a, value));
+			return found == null ? -1 : found.i;
+		}
+
 		#endregion
 
 		#region Generic

@@ -34,15 +34,15 @@ namespace SIL.Machine.Matching
 
 		private bool MatchEquals(Match<TData, TOffset> x, Match<TData, TOffset> y)
 		{
-			return _spanFactory.EqualityComparer.Equals(x.Span.Start, y.Span.Start) && _spanFactory.EqualityComparer.Equals(x.Span.End, y.Span.End)
+			return EqualityComparer<TOffset>.Default.Equals(x.Span.Start, y.Span.Start) && EqualityComparer<TOffset>.Default.Equals(x.Span.End, y.Span.End)
 				&& x.PatternPath.SequenceEqual(y.PatternPath);
 		}
 
 		private int MatchGetHashCode(Match<TData, TOffset> m)
 		{
 			int code = 23;
-			code = code * 31 + (m.Span.Start == null ? 0 : _spanFactory.EqualityComparer.GetHashCode(m.Span.Start));
-			code = code * 31 + (m.Span.End == null ? 0 : _spanFactory.EqualityComparer.GetHashCode(m.Span.End));
+			code = code * 31 + (m.Span.Start == null ? 0 : EqualityComparer<TOffset>.Default.GetHashCode(m.Span.Start));
+			code = code * 31 + (m.Span.End == null ? 0 : EqualityComparer<TOffset>.Default.GetHashCode(m.Span.End));
 			code = code * 31 + m.PatternPath.GetSequenceHashCode();
 			return code;
 		}
@@ -59,7 +59,7 @@ namespace SIL.Machine.Matching
 
 		private void Compile(Pattern<TData, TOffset> pattern)
 		{
-			_fsa = new Fst<TData, TOffset>(_spanFactory.EqualityComparer) {Direction = _settings.Direction, Filter = _settings.Filter, UseUnification = _settings.MatchingMethod == MatchingMethod.Unification};
+			_fsa = new Fst<TData, TOffset>(EqualityComparer<TOffset>.Default) {Direction = _settings.Direction, Filter = _settings.Filter, UseUnification = _settings.MatchingMethod == MatchingMethod.Unification};
 			_fsa.StartState = _fsa.CreateState();
 			int nextPriority = 0;
 			bool deterministic = GeneratePatternNfa(_fsa.StartState, pattern, null, new Func<Match<TData, TOffset>, bool>[0], ref nextPriority);
@@ -106,7 +106,7 @@ namespace SIL.Machine.Matching
 				acceptables = acceptables.Concat(pattern.Acceptable).ToArray();
 			if (pattern.Children.All(node => node is Pattern<TData, TOffset>))
 			{
-				foreach (Pattern<TData, TOffset> childExpr in pattern.Children)
+				foreach (Pattern<TData, TOffset> childExpr in pattern.Children.Cast<Pattern<TData, TOffset>>())
 				{
 					if (!GeneratePatternNfa(startState, childExpr, name, acceptables, ref nextPriority))
 						deterministic = false;

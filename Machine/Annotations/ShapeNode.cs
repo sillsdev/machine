@@ -5,16 +5,17 @@ using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.Annotations
 {
-	public class ShapeNode : OrderedBidirListNode<ShapeNode>, IComparable<ShapeNode>, IComparable, IDeepCloneable<ShapeNode>
+	public class ShapeNode : OrderedBidirListNode<ShapeNode>, IComparable<ShapeNode>, IComparable, IDeepCloneable<ShapeNode>, IValueEquatable<ShapeNode>, IFreezable
 	{
 		private readonly SpanFactory<ShapeNode> _spanFactory; 
 		private readonly Annotation<ShapeNode> _ann;
+		private int _tag;
 
 		public ShapeNode(SpanFactory<ShapeNode> spanFactory, FeatureStruct fs)
 		{
 			_spanFactory = spanFactory;
 			_ann = new Annotation<ShapeNode>(spanFactory.Create(this), fs);
-			Tag = int.MinValue;
+			_tag = int.MinValue;
 		}
 
 		protected ShapeNode(ShapeNode node)
@@ -23,7 +24,15 @@ namespace SIL.Machine.Annotations
 			_ann.Optional = node.Annotation.Optional;
 		}
 
-		public int Tag { get; internal set; }
+		public int Tag
+		{
+			get { return _tag; }
+			internal set
+			{
+				CheckFrozen();
+				_tag = value;
+			}
+		}
 
 		public Annotation<ShapeNode> Annotation
 		{
@@ -58,6 +67,20 @@ namespace SIL.Machine.Annotations
 			return new ShapeNode(this);
 		}
 
+		public bool ValueEquals(ShapeNode other)
+		{
+			if (other == null)
+				return false;
+
+			if (this == other)
+				return true;
+
+			if (IsFrozen)
+				return _tag == other._tag;
+
+			return List.IndexOf(this) == other.List.IndexOf(other);
+		}
+
 		public override string ToString()
 		{
 			if (List != null)
@@ -76,6 +99,28 @@ namespace SIL.Machine.Annotations
 			}
 
 			return base.ToString();
+		}
+
+		private void CheckFrozen()
+		{
+			if (IsFrozen)
+				throw new InvalidOperationException("The shape node is immutable.");
+		}
+
+		public bool IsFrozen { get; private set; }
+
+		public void Freeze()
+		{
+			if (IsFrozen)
+				return;
+			IsFrozen = true;
+		}
+
+		public int GetFrozenHashCode()
+		{
+			if (!IsFrozen)
+				throw new InvalidOperationException("The shape node does not have a valid hash code, because it is mutable.");
+			return _tag;
 		}
 	}
 }
