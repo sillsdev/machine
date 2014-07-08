@@ -43,12 +43,23 @@ namespace SIL.Machine.Matching
 		{
 		}
 
+		public Pattern(params PatternNode<TData, TOffset>[] nodes)
+			: base(nodes)
+		{
+		}
+
 		public Pattern(string name)
 			: this(name, Enumerable.Empty<PatternNode<TData, TOffset>>())
 		{
 		}
 
 		public Pattern(string name, IEnumerable<PatternNode<TData, TOffset>> nodes)
+			: base(nodes)
+		{
+			_name = name;
+		}
+
+		public Pattern(string name, params PatternNode<TData, TOffset>[] nodes)
 			: base(nodes)
 		{
 			_name = name;
