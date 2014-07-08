@@ -10,14 +10,15 @@ namespace SIL.HermitCrab
 	{
 		private readonly IRule<Word, ShapeNode> _mrulesRule;
 		private readonly IRule<Word, ShapeNode> _prulesRule;
+		private readonly SynthesisAffixTemplatesRule _templatesRule; 
 		private readonly Stratum _stratum;
 		private readonly Morpher _morpher;
 
 		public SynthesisStratumRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, Stratum stratum)
 		{
-			var templatesRule = new SynthesisAffixTemplatesRule(spanFactory, morpher, stratum);
+			_templatesRule = new SynthesisAffixTemplatesRule(spanFactory, morpher, stratum);
 			_mrulesRule = null;
-			IEnumerable<IRule<Word, ShapeNode>> mrules = stratum.MorphologicalRules.Select(mrule => mrule.CompileSynthesisRule(spanFactory, morpher)).Concat(templatesRule);
+			IEnumerable<IRule<Word, ShapeNode>> mrules = stratum.MorphologicalRules.Select(mrule => mrule.CompileSynthesisRule(spanFactory, morpher));
 			switch (stratum.MorphologicalRuleOrder)
 			{
 				case MorphologicalRuleOrder.Linear:
@@ -40,7 +41,7 @@ namespace SIL.HermitCrab
 			_morpher.TraceManager.BeginApplyStratum(_stratum, input);
 
 			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
-			foreach (Word mruleOutWord in _mrulesRule.Apply(input))
+			foreach (Word mruleOutWord in ApplyMorphologicalRules(input))
 			{
 				Word newWord = mruleOutWord.DeepClone();
 				_prulesRule.Apply(newWord);
@@ -51,6 +52,32 @@ namespace SIL.HermitCrab
 			if (output.Count == 0)
 				_morpher.TraceManager.EndApplyStratum(_stratum, input);
 			return output;
+		}
+
+		private IEnumerable<Word> ApplyMorphologicalRules(Word input)
+		{
+			foreach (Word mruleOutWord in _mrulesRule.Apply(input).Concat(input))
+			{
+				switch (_stratum.MorphologicalRuleOrder)
+				{
+					case MorphologicalRuleOrder.Linear:
+						foreach (Word tempOutWord in _templatesRule.Apply(mruleOutWord))
+							yield return tempOutWord;
+						break;
+
+					case MorphologicalRuleOrder.Unordered:
+						foreach (Word tempOutWord in _templatesRule.Apply(mruleOutWord))
+						{
+							if (!FreezableEqualityComparer<Word>.Default.Equals(mruleOutWord, tempOutWord))
+							{
+								foreach (Word outWord in ApplyMorphologicalRules(tempOutWord))
+									yield return outWord;
+							}
+							yield return tempOutWord;
+						}
+						break;
+				}
+			}
 		}
 	}
 }

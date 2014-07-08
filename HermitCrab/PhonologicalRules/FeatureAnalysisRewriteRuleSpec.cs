@@ -11,23 +11,20 @@ namespace SIL.HermitCrab.PhonologicalRules
 {
 	public class FeatureAnalysisRewriteRuleSpec : AnalysisRewriteRuleSpec
 	{
-		private readonly RewriteSubrule _subrule;
 		private readonly Pattern<Word, ShapeNode> _analysisRhs;
 
 		public FeatureAnalysisRewriteRuleSpec(Pattern<Word, ShapeNode> lhs, RewriteSubrule subrule)
 		{
-			_subrule = subrule;
-
 			var rhsAntiFSs = new List<FeatureStruct>();
-			foreach (Constraint<Word, ShapeNode> constraint in _subrule.Rhs.Children.OfType<Constraint<Word, ShapeNode>>().Where(c => c.Type() == HCFeatureSystem.Segment))
+			foreach (Constraint<Word, ShapeNode> constraint in subrule.Rhs.Children.OfType<Constraint<Word, ShapeNode>>().Where(c => c.Type() == HCFeatureSystem.Segment))
 				rhsAntiFSs.Add(constraint.FeatureStruct.AntiFeatureStruct());
 
 			Pattern.Acceptable = match => IsUnapplicationNonvacuous(match, rhsAntiFSs);
 
 			_analysisRhs = new Pattern<Word, ShapeNode>();
-			AddEnvironment("leftEnv", _subrule.LeftEnvironment);
+			AddEnvironment("leftEnv", subrule.LeftEnvironment);
 			int i = 0;
-			foreach (Tuple<PatternNode<Word, ShapeNode>, PatternNode<Word, ShapeNode>> tuple in lhs.Children.Zip(_subrule.Rhs.Children))
+			foreach (Tuple<PatternNode<Word, ShapeNode>, PatternNode<Word, ShapeNode>> tuple in lhs.Children.Zip(subrule.Rhs.Children))
 			{
 				var lhsConstraint = (Constraint<Word, ShapeNode>) tuple.Item1;
 				var rhsConstraint = (Constraint<Word, ShapeNode>) tuple.Item2;
@@ -47,7 +44,7 @@ namespace SIL.HermitCrab.PhonologicalRules
 					i++;
 				}
 			}
-			AddEnvironment("rightEnv", _subrule.RightEnvironment);
+			AddEnvironment("rightEnv", subrule.RightEnvironment);
 		}
 
 		private bool IsUnapplicationNonvacuous(Match<Word, ShapeNode> match, IEnumerable<FeatureStruct> rhsAntiFSs)
@@ -66,13 +63,10 @@ namespace SIL.HermitCrab.PhonologicalRules
 
 		public override ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)
 		{
-			ShapeNode endNode = null;
 			int i = 0;
-			foreach (Constraint<Word, ShapeNode> constraint in _analysisRhs.Children)
+			foreach (Constraint<Word, ShapeNode> constraint in _analysisRhs.Children.Cast<Constraint<Word, ShapeNode>>())
 			{
 				ShapeNode node = match.GroupCaptures["target" + i].Span.GetStart(match.Matcher.Direction);
-				if (endNode == null || node.CompareTo(endNode, match.Matcher.Direction) > 0)
-					endNode = node;
 				FeatureStruct fs = node.Annotation.FeatureStruct.DeepClone();
 				fs.PriorityUnion(constraint.FeatureStruct);
 				node.Annotation.FeatureStruct.Union(fs, match.VariableBindings);
