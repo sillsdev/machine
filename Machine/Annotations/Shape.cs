@@ -25,9 +25,7 @@ namespace SIL.Machine.Annotations
 			_spanFactory = spanFactory;
 			_annotations = annotations;
 			Begin.Tag = int.MinValue;
-			Begin.Freeze();
 			End.Tag = int.MaxValue;
-			End.Freeze();
 			_annotations.Add(Begin.Annotation, false);
 			_annotations.Add(End.Annotation, false);
 		}
@@ -61,12 +59,14 @@ namespace SIL.Machine.Annotations
 				return;
 
 			IsFrozen = true;
+			Begin.Freeze();
 			int i = 0;
 			foreach (ShapeNode node in this)
 			{
 				node.Tag = i++;
 				node.Freeze();
 			}
+			End.Freeze();
 
 			_annotations.Freeze();
 
