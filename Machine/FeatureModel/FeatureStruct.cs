@@ -123,6 +123,9 @@ namespace SIL.Machine.FeatureModel
 
 		public void AddValue(SymbolicFeature feature, IEnumerable<FeatureSymbol> values)
 		{
+			if (values == null)
+				throw new ArgumentNullException("values");
+
 			FeatureSymbol[] vals = values.ToArray();
 			AddValue(feature, vals.Length == 0 ? new SymbolicFeatureValue(feature) : new SymbolicFeatureValue(vals));
 		}
@@ -139,6 +142,9 @@ namespace SIL.Machine.FeatureModel
 
 		public void AddValue(StringFeature feature, bool not, IEnumerable<string> values)
 		{
+			if (values == null)
+				throw new ArgumentNullException("values");
+
 			AddValue(feature, new StringFeatureValue(values, not));
 		}
 
@@ -159,12 +165,22 @@ namespace SIL.Machine.FeatureModel
 		/// <param name="value">The value.</param>
 		public void AddValue(Feature feature, FeatureValue value)
 		{
+			if (feature == null)
+				throw new ArgumentNullException("feature");
+			if (value == null)
+				throw new ArgumentNullException("value");
+
 			CheckFrozen();
 			_definite[feature] = value;
 		}
 
 		public void AddValue(IEnumerable<Feature> path, FeatureValue value)
 		{
+			if (path == null)
+				throw new ArgumentNullException("path");
+			if (value == null)
+				throw new ArgumentNullException("value");
+
 			CheckFrozen();
 			Feature lastFeature;
 			FeatureStruct lastFS;
@@ -176,12 +192,18 @@ namespace SIL.Machine.FeatureModel
 
 		public void RemoveValue(Feature feature)
 		{
+			if (feature == null)
+				throw new ArgumentNullException("feature");
+
 			CheckFrozen();
 			_definite.Remove(feature);
 		}
 
 		public void RemoveValue(IEnumerable<Feature> path)
 		{
+			if (path == null)
+				throw new ArgumentNullException("path");
+
 			CheckFrozen();
 			Feature lastFeature;
 			FeatureStruct lastFS;
@@ -269,6 +291,11 @@ namespace SIL.Machine.FeatureModel
 
 		public void PriorityUnion(FeatureStruct other, VariableBindings varBindings)
 		{
+			if (other == null)
+				throw new ArgumentNullException("other");
+			if (varBindings == null)
+				throw new ArgumentNullException("varBindings");
+
 			CheckFrozen();
 			PriorityUnion(other, varBindings, new Dictionary<FeatureValue, FeatureValue>());
 		}
@@ -341,6 +368,11 @@ namespace SIL.Machine.FeatureModel
 
 		public void Union(FeatureStruct other, VariableBindings varBindings)
 		{
+			if (other == null)
+				throw new ArgumentNullException("other");
+			if (varBindings == null)
+				throw new ArgumentNullException("varBindings");
+
 			CheckFrozen();
 			UnionImpl(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>());
 		}
@@ -380,6 +412,11 @@ namespace SIL.Machine.FeatureModel
 
 		public void Add(FeatureStruct other, VariableBindings varBindings)
 		{
+			if (other == null)
+				throw new ArgumentNullException("other");
+			if (varBindings == null)
+				throw new ArgumentNullException("varBindings");
+
 			CheckFrozen();
 			AddImpl(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>());
 		}
@@ -427,6 +464,11 @@ namespace SIL.Machine.FeatureModel
 
 		public void Subtract(FeatureStruct other, VariableBindings varBindings)
 		{
+			if (other == null)
+				throw new ArgumentNullException("other");
+			if (varBindings == null)
+				throw new ArgumentNullException("varBindings");
+
 			CheckFrozen();
 			SubtractImpl(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>());
 		}
@@ -589,6 +631,9 @@ namespace SIL.Machine.FeatureModel
 
 		public bool TryGetValue<T>(Feature feature, out T value) where T : FeatureValue
 		{
+			if (feature == null)
+				throw new ArgumentNullException("feature");
+
 			FeatureValue val;
 			if (_definite.TryGetValue(feature, out val))
 				return Dereference(val, out value);
@@ -598,6 +643,9 @@ namespace SIL.Machine.FeatureModel
 
 		public bool TryGetValue<T>(string featureID, out T value) where T : FeatureValue
 		{
+			if (featureID == null)
+				throw new ArgumentNullException("featureID");
+
 			FeatureValue val;
 			if (_definite.TryGetValue(featureID, out val))
 				return Dereference(val, out value);
@@ -607,6 +655,9 @@ namespace SIL.Machine.FeatureModel
 
 		public bool TryGetValue<T>(IEnumerable<Feature> path, out T value) where T : FeatureValue
 		{
+			if (path == null)
+				throw new ArgumentNullException("path");
+
 			Feature lastFeature;
 			FeatureStruct lastFS;
 			if (FollowPath(path, out lastFeature, out lastFS))
@@ -621,6 +672,9 @@ namespace SIL.Machine.FeatureModel
 
 		public bool TryGetValue<T>(IEnumerable<string> path, out T value) where T : FeatureValue
 		{
+			if (path == null)
+				throw new ArgumentNullException("path");
+
 			string lastID;
 			FeatureStruct lastFS;
 			if (FollowPath(path, out lastID, out lastFS))
@@ -635,16 +689,25 @@ namespace SIL.Machine.FeatureModel
 
 		public bool ContainsFeature(Feature feature)
 		{
+			if (feature == null)
+				throw new ArgumentNullException("feature");
+
 			return _definite.ContainsKey(feature);
 		}
 
 		public bool ContainsFeature(string featureID)
 		{
+			if (featureID == null)
+				throw new ArgumentNullException("featureID");
+
 			return _definite.ContainsKey(featureID);
 		}
 
 		public bool ContainsFeature(IEnumerable<Feature> path)
 		{
+			if (path == null)
+				throw new ArgumentNullException("path");
+
 			Feature lastFeature;
 			FeatureStruct lastFS;
 			if (FollowPath(path, out lastFeature, out lastFS))
@@ -654,6 +717,9 @@ namespace SIL.Machine.FeatureModel
 
 		public bool ContainsFeature(IEnumerable<string> path)
 		{
+			if (path == null)
+				throw new ArgumentNullException("path");
+
 			string lastID;
 			FeatureStruct lastFS;
 			if (FollowPath(path, out lastID, out lastFS))
@@ -734,6 +800,9 @@ namespace SIL.Machine.FeatureModel
 		/// </returns>
 		public bool IsUnifiable(FeatureStruct other, bool useDefaults, VariableBindings varBindings)
 		{
+			if (other == null)
+				throw new ArgumentNullException("other");
+
 			other = Dereference(other);
 
 			VariableBindings definiteVarBindings = varBindings == null ? new VariableBindings() : varBindings.DeepClone();
@@ -788,6 +857,9 @@ namespace SIL.Machine.FeatureModel
 
 		public bool Unify(FeatureStruct other, bool useDefaults, VariableBindings varBindings, out FeatureStruct output)
 		{
+			if (other == null)
+				throw new ArgumentNullException("other");
+
 			other = Dereference(other);
 
 			VariableBindings tempVarBindings = varBindings == null ? new VariableBindings() : varBindings.DeepClone();
@@ -821,6 +893,9 @@ namespace SIL.Machine.FeatureModel
 
 		public bool Subsumes(FeatureStruct other, bool useDefaults, VariableBindings varBindings)
 		{
+			if (other == null)
+				throw new ArgumentNullException("other");
+
 			other = Dereference(other);
 
 			VariableBindings tempVarBindings = varBindings == null ? new VariableBindings() : varBindings.DeepClone();
