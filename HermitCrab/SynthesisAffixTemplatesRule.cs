@@ -35,7 +35,17 @@ namespace SIL.HermitCrab
 				if (_morpher.RuleSelector(_templates[i]) && input.SyntacticFeatureStruct.IsUnifiable(_templates[i].RequiredSyntacticFeatureStruct))
 				{
 					applicableTemplate = true;
-					output.UnionWith(_templateRules[i].Apply(input));
+					foreach (Word outWord in _templateRules[i].Apply(input))
+					{
+						Word word = outWord;
+						if (word.IsLastAppliedRuleFinal != _templates[i].IsFinal)
+						{
+							word = outWord.DeepClone();
+							word.IsLastAppliedRuleFinal = _templates[i].IsFinal;
+							word.Freeze();
+						}
+						output.Add(word);
+					}
 				}
 			}
 

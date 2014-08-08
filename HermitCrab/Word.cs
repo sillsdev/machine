@@ -19,6 +19,7 @@ namespace SIL.HermitCrab
 		private readonly IDBearerSet<Feature> _obligatorySyntacticFeatures;
 		private FeatureStruct _realizationalFS;
 		private Stratum _stratum;
+		private bool _isLastAppliedRuleFinal;
 
 		public Word(RootAllomorph rootAllomorph, FeatureStruct realizationalFS)
 		{
@@ -33,6 +34,7 @@ namespace SIL.HermitCrab
 			_mrulesApplied = new Dictionary<IMorphologicalRule, int>();
 			_nonHeads = new Stack<Word>();
 			_obligatorySyntacticFeatures = new IDBearerSet<Feature>();
+			_isLastAppliedRuleFinal = true;
 		}
 
 		public Word(Stratum stratum, Shape shape)
@@ -49,6 +51,7 @@ namespace SIL.HermitCrab
 			_mrulesApplied = new Dictionary<IMorphologicalRule, int>();
 			_nonHeads = new Stack<Word>();
 			_obligatorySyntacticFeatures = new IDBearerSet<Feature>();
+			_isLastAppliedRuleFinal = true;
 		}
 
 		protected Word(Word word)
@@ -65,6 +68,7 @@ namespace SIL.HermitCrab
 			_mrulesApplied = new Dictionary<IMorphologicalRule, int>(word._mrulesApplied);
 			_nonHeads = new Stack<Word>(word._nonHeads.Reverse().DeepClone());
 			_obligatorySyntacticFeatures = new IDBearerSet<Feature>(word._obligatorySyntacticFeatures);
+			_isLastAppliedRuleFinal = word._isLastAppliedRuleFinal;
 			CurrentTrace = word.CurrentTrace;
 		}
 
@@ -219,6 +223,16 @@ namespace SIL.HermitCrab
 			MorphologicalRuleApplied(mrule);
 		}
 
+		public bool IsLastAppliedRuleFinal
+		{
+			get { return _isLastAppliedRuleFinal; }
+			set
+			{
+				CheckFrozen();
+				_isLastAppliedRuleFinal = value;
+			}
+		}
+
 		/// <summary>
 		/// Gets the number of times the specified morphological rule has been applied.
 		/// </summary>
@@ -307,6 +321,7 @@ namespace SIL.HermitCrab
 			code = code * 31 + _stratum.GetHashCode();
 			code = code * 31 + (_rootAllomorph == null ? 0 : _rootAllomorph.GetHashCode());
 			code = code * 31 + _mrules.GetSequenceHashCode();
+			code = code * 31 + _isLastAppliedRuleFinal.GetHashCode();
 			return code;
 		}
 
@@ -317,7 +332,7 @@ namespace SIL.HermitCrab
 
 			return _shape.ValueEquals(other._shape) && _realizationalFS.ValueEquals(other._realizationalFS)
 				&& _nonHeads.SequenceEqual(other._nonHeads, FreezableEqualityComparer<Word>.Default) && _stratum == other._stratum
-				&& _rootAllomorph == other._rootAllomorph && _mrules.SequenceEqual(other._mrules);
+				&& _rootAllomorph == other._rootAllomorph && _mrules.SequenceEqual(other._mrules) && _isLastAppliedRuleFinal == other._isLastAppliedRuleFinal;
 		}
 
 		public Word DeepClone()

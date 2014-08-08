@@ -10,7 +10,6 @@ namespace SIL.HermitCrab
 	{
 		private readonly IRule<Word, ShapeNode> _mrulesRule; 
 		private readonly IRule<Word, ShapeNode> _prulesRule;
-		private readonly IRule<Word, ShapeNode> _templatesRule;
 		private readonly Stratum _stratum;
 		private readonly Morpher _morpher;
 
@@ -19,16 +18,15 @@ namespace SIL.HermitCrab
 			_stratum = stratum;
 			_morpher = morpher;
 			_prulesRule = new LinearRuleCascade<Word, ShapeNode>(stratum.PhonologicalRules.Select(prule => prule.CompileAnalysisRule(spanFactory, morpher)).Reverse());
-			_templatesRule = new RuleBatch<Word, ShapeNode>(stratum.AffixTemplates.Select(template => template.CompileAnalysisRule(spanFactory, morpher)), false, FreezableEqualityComparer<Word>.Default);
-			_mrulesRule = null;
-			IEnumerable<IRule<Word, ShapeNode>> mrules = stratum.MorphologicalRules.Select(mrule => mrule.CompileAnalysisRule(spanFactory, morpher)).Reverse();
+			IEnumerable<IRule<Word, ShapeNode>> mrules = stratum.MorphologicalRules.Select(mrule => mrule.CompileAnalysisRule(spanFactory, morpher))
+				.Concat(stratum.AffixTemplates.Select(template => template.CompileAnalysisRule(spanFactory, morpher)));
 			switch (stratum.MorphologicalRuleOrder)
 			{
 				case MorphologicalRuleOrder.Linear:
-					_mrulesRule = new LinearRuleCascade<Word, ShapeNode>(mrules, true, FreezableEqualityComparer<Word>.Default);
+					_mrulesRule = new LinearRuleCascade<Word, ShapeNode>(mrules.Reverse(), true, FreezableEqualityComparer<Word>.Default);
 					break;
 				case MorphologicalRuleOrder.Unordered:
-					_mrulesRule = new TemplateCombinationRuleCascade(mrules, _templatesRule);
+					_mrulesRule = new ParallelCombinationRuleCascade<Word, ShapeNode>(mrules, true, FreezableEqualityComparer<Word>.Default);
 					break;
 			}
 		}
@@ -43,39 +41,14 @@ namespace SIL.HermitCrab
 			_prulesRule.Apply(input);
 			input.Freeze();
 
-			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default) {input};
-			foreach (Word tempWord in _templatesRule.Apply(input).Concat(input))
+			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
+			foreach (Word outWord in _mrulesRule.Apply(input).Concat(input))
 			{
-				output.UnionWith(_mrulesRule.Apply(tempWord));
-				output.Add(tempWord);
-			}
-
-			foreach (Word outWord in output)
 				_morpher.TraceManager.EndUnapplyStratum(_stratum, outWord);
+				output.Add(outWord);
+			}
 
 			return output;
-		}
-
-		private class TemplateCombinationRuleCascade : ParallelCombinationRuleCascade<Word, ShapeNode>
-		{
-			private readonly IRule<Word, ShapeNode> _templatesRule; 
-
-			public TemplateCombinationRuleCascade(IEnumerable<IRule<Word, ShapeNode>> rules, IRule<Word, ShapeNode> templatesRule)
-				: base(rules, true, FreezableEqualityComparer<Word>.Default)
-			{
-				_templatesRule = templatesRule;
-			}
-
-			protected override IEnumerable<Word> ApplyRule(IRule<Word, ShapeNode> rule, int index, Word input)
-			{
-				foreach (Word outWord in rule.Apply(input))
-				{
-					foreach (Word tempWord in _templatesRule.Apply(outWord))
-						yield return tempWord;
-
-					yield return outWord;
-				}
-			}
 		}
 	}
 }

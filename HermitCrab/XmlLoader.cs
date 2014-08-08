@@ -972,7 +972,7 @@ namespace SIL.HermitCrab
 
 		private void LoadAffixTemplate(XElement tempElem)
 		{
-			var template = new AffixTemplate((string) tempElem.Attribute("id")) { Description = (string) tempElem.Element("Name") };
+			var template = new AffixTemplate((string) tempElem.Attribute("id")) { Description = (string) tempElem.Element("Name"), IsFinal = (bool) tempElem.Attribute("final") };
 
 			var requiredPos = (string) tempElem.Attribute("requiredPartsOfSpeech");
 			if (!string.IsNullOrEmpty(requiredPos))

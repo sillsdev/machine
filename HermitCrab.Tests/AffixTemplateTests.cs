@@ -162,5 +162,139 @@ namespace SIL.HermitCrab.Tests
 					.Feature("tense").EqualTo("pres")
 					.Feature("evidential").EqualTo("witnessed")).Value);
 		}
+
+		[Test]
+		public void NonFinalTemplate()
+		{
+			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+			var alvStop = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+")
+				.Symbol("strident-")
+				.Symbol("del_rel-")
+				.Symbol("alveolar").Value;
+			var voicelessCons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+")
+				.Symbol("vd-").Value;
+			var voicelessLabiodental = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+")
+				.Symbol("labiodental")
+				.Symbol("vd-").Value;
+			var voiced = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("vd+").Value;
+			var strident = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+")
+				.Symbol("strident+").Value;
+
+			var edSuffix = new AffixProcessRule("ed_suffix")
+			               	{
+			               		Gloss = "PAST"
+			               	};
+
+			edSuffix.Allomorphs.Add(new AffixProcessAllomorph("ed_suffix_allo1")
+										{
+											Lhs =
+												{
+													Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
+													Pattern<Word, ShapeNode>.New("2").Annotation(alvStop).Value
+												},
+											Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new InsertShape(Table3.Segment("ɯd")) }
+										});
+			edSuffix.Allomorphs.Add(new AffixProcessAllomorph("ed_suffix_allo2")
+										{
+											Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Annotation(voicelessCons).Value },
+											Rhs = { new CopyFromInput("1"), new InsertShape(Table3.Segment("t")) }
+										});
+			edSuffix.Allomorphs.Add(new AffixProcessAllomorph("ed_suffix_allo3")
+										{
+											Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+											Rhs = { new CopyFromInput("1"), new InsertShape(Table3.Segment("d")) }
+										});
+
+			var verbTenseTemplate = new AffixTemplate("verbTense") { RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value };
+			var vtslot1 = new AffixTemplateSlot("vtslot1");
+			vtslot1.Rules.Add(edSuffix);
+			verbTenseTemplate.Slots.Add(vtslot1);
+			Morphophonemic.AffixTemplates.Add(verbTenseTemplate);
+
+			var sSuffix = new AffixProcessRule("s_suffix")
+			              	{
+			              		Gloss = "3SG"
+			              	};
+
+			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo1")
+									{
+										Lhs =
+											{
+												Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
+												Pattern<Word, ShapeNode>.New("2").Annotation(voicelessLabiodental).Value
+											},
+										Rhs = { new CopyFromInput("1"), new ModifyFromInput("2", voiced), new InsertShape(Table3.Segment("z")) }
+									});
+			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo2")
+									{
+										Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Annotation(strident).Value },
+										Rhs = { new CopyFromInput("1"), new InsertShape(Table3.Segment("ɯz")) }
+									});
+			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo3")
+									{
+										Lhs =
+											{
+												Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
+												Pattern<Word, ShapeNode>.New("2").Annotation(voicelessCons).Value
+											},
+										Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new InsertShape(Table3.Segment("s")) }
+									});
+			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo2")
+									{
+										Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+										Rhs = { new CopyFromInput("1"), new InsertShape(Table3.Segment("z")) }
+									});
+
+			var verbPersonTemplate = new AffixTemplate("verbPerson") { RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value };
+			var vpslot1 = new AffixTemplateSlot("vpslot1");
+			vpslot1.Rules.Add(sSuffix);
+			verbPersonTemplate.Slots.Add(vpslot1);
+			Morphophonemic.AffixTemplates.Add(verbPersonTemplate);
+
+			var nominalizer = new AffixProcessRule("nominalizer")
+								{
+									Gloss = "NOM",
+									RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+									OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value
+								};
+
+			nominalizer.Allomorphs.Add(new AffixProcessAllomorph("nominalizer_allo1")
+										{
+											Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+											Rhs = { new CopyFromInput("1"), new InsertShape(Table3.Segment("v")) }
+										});
+			Morphophonemic.MorphologicalRules.Add(nominalizer);
+
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			Word[] output = morpher.ParseWord("sagd").ToArray();
+			AssertMorphsEqual(output, "32 ed_suffix");
+
+			output = morpher.ParseWord("sagdz").ToArray();
+			AssertMorphsEqual(output, "32 ed_suffix s_suffix");
+
+			output = morpher.ParseWord("sagdv").ToArray();
+			AssertMorphsEqual(output, "32 ed_suffix nominalizer");
+
+			verbTenseTemplate.IsFinal = false;
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			output = morpher.ParseWord("sagd").ToArray();
+			Assert.That(output, Is.Empty);
+
+			output = morpher.ParseWord("sagdz").ToArray();
+			AssertMorphsEqual(output, "32 ed_suffix s_suffix");
+
+			output = morpher.ParseWord("sagdv").ToArray();
+			AssertMorphsEqual(output, "32 ed_suffix nominalizer");
+		}
 	}
 }

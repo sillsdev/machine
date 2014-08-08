@@ -229,6 +229,7 @@ N.B. Hermit Crab's text input uses "property setting records"
 <!ATTLIST AffixTemplate 
   id ID #REQUIRED
   isActive (yes | no) "yes"
+  final (true | false) "true"
   requiredPartsOfSpeech IDREFS #IMPLIED
   requiredSubcategorizedRules IDREFS #IMPLIED
 >
