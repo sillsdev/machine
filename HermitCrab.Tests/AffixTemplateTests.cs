@@ -7,10 +7,10 @@ using SIL.Machine.Matching;
 
 namespace SIL.HermitCrab.Tests
 {
-	public class AffixTemplateTest : HermitCrabTestBase
+	public class AffixTemplateTests : HermitCrabTestBase
 	{
 		[Test]
-		public void RealizationalRuleTest()
+		public void RealizationalRule()
 		{
 			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
 			var alvStop = FeatureStruct.New(Language.PhoneticFeatureSystem)

@@ -10,7 +10,7 @@ using SIL.Machine.Matching;
 
 namespace SIL.HermitCrab.Tests.MorphologicalRules
 {
-	public class AffixProcessRuleTest : HermitCrabTestBase
+	public class AffixProcessRuleTests : HermitCrabTestBase
 	{
 		[Test]
 		public void MorphosyntacticRules()

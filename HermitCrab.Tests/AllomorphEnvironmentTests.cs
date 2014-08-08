@@ -7,7 +7,7 @@ using SIL.Machine.Matching;
 
 namespace SIL.HermitCrab.Tests
 {
-	public class AllomorphEnvironmentTest : HermitCrabTestBase
+	public class AllomorphEnvironmentTests : HermitCrabTestBase
 	{
 		[Test]
 		public void EntryEnvironments()

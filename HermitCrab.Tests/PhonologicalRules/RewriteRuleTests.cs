@@ -7,7 +7,7 @@ using SIL.Machine.Matching;
 
 namespace SIL.HermitCrab.Tests.PhonologicalRules
 {
-	public class RewriteRuleTest : HermitCrabTestBase
+	public class RewriteRuleTests : HermitCrabTestBase
 	{
 		[Test]
 		public void SimpleRules()

@@ -5,7 +5,7 @@ using SIL.Machine.Matching;
 
 namespace SIL.HermitCrab.Tests.PhonologicalRules
 {
-	public class MetathesisRuleTest : HermitCrabTestBase
+	public class MetathesisRuleTests : HermitCrabTestBase
 	{
 		[Test]
 		public void SimpleRules()

@@ -8,7 +8,7 @@ using SIL.Machine.Matching;
 
 namespace SIL.HermitCrab.Tests.MorphologicalRules
 {
-	public class CompoundingRuleTest : HermitCrabTestBase
+	public class CompoundingRuleTests : HermitCrabTestBase
 	{
 		[Test]
 		public void SimpleRules()
