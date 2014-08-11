@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using SIL.Collections;
 
 namespace SIL.HermitCrab
@@ -125,6 +126,47 @@ namespace SIL.HermitCrab
 		public virtual bool ConstraintsEqual(Allomorph other)
 		{
 			return _requiredEnvironments.SetEquals(other._requiredEnvironments) && _excludedEnvironments.SetEquals(other._excludedEnvironments);
+		}
+
+		internal virtual bool IsWordValid(Morpher morpher, Word word)
+		{
+			if (!RequiredAllomorphCoOccurrences.All(c => c.CoOccurs(word)))
+			{
+				morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.RequiredAllomorphCoOccurrences, this);
+				return false;
+			}
+
+			if (ExcludedAllomorphCoOccurrences.Any(c => c.CoOccurs(word)))
+			{
+				morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.ExcludedAllomorphCoOccurrences, this);
+				return false;
+			}
+
+			if (!RequiredEnvironments.All(env => env.IsMatch(word)))
+			{
+				morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.RequiredEnvironments, this);
+				return false;
+			}
+
+			if (ExcludedEnvironments.Any(env => env.IsMatch(word)))
+			{
+				morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.ExcludedEnvironments, this);
+				return false;
+			}
+
+			if (!Morpheme.RequiredMorphemeCoOccurrences.All(c => c.CoOccurs(word)))
+			{
+				morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.RequiredMorphemeCoOccurrences, this);
+				return false;
+			}
+
+			if (Morpheme.ExcludedMorphemeCoOccurrences.Any(c => c.CoOccurs(word)))
+			{
+				morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.ExcludedMorphemeCoOccurrences, this);
+				return false;
+			}
+
+			return true;
 		}
 
 		public int CompareTo(Allomorph other)

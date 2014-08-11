@@ -165,6 +165,7 @@ namespace SIL.HermitCrab
 		private readonly IDBearerSet<LexEntry> _entries;
 		private readonly IDBearerSet<Morpheme> _morphemes;
 		private readonly IDBearerSet<Allomorph> _allomorphs;
+		private readonly IDBearerSet<StemName> _stemNames; 
 
 		private XmlLoader(string configPath, Action<Exception, string> errorHandler, XmlResolver resolver)
 		{
@@ -189,6 +190,7 @@ namespace SIL.HermitCrab
 			_entries = new IDBearerSet<LexEntry>();
 			_morphemes = new IDBearerSet<Morpheme>();
 			_allomorphs = new IDBearerSet<Allomorph>();
+			_stemNames = new IDBearerSet<StemName>();
 		}
 
 		private Language Load()
@@ -220,8 +222,16 @@ namespace SIL.HermitCrab
 			var id = (string) langElem.Attribute("id");
 			_language = new Language(id) { Description = (string) langElem.Element("Name") };
 
-			_posFeature = new SymbolicFeature("pos", langElem.Elements("PartsOfSpeech").Elements("PartOfSpeech")
-				.Select(e => new FeatureSymbol((string) e.Attribute("id"), (string) e))) { Description = "POS" };
+			IEnumerable<FeatureSymbol> posSymbols = langElem.Elements("PartsOfSpeech").Elements("PartOfSpeech")
+				.Select(e => new FeatureSymbol((string) e.Attribute("id"), (string) e.Element("Name")));
+			_posFeature = new SymbolicFeature("pos", posSymbols) { Description = "POS" };
+
+			foreach (XElement posElem in langElem.Elements("PartsOfSpeech").Elements("PartOfSpeech"))
+			{
+				foreach (XElement stemNameElem in posElem.Elements("StemNames").Elements("StemName"))
+					LoadStemName(stemNameElem, (string) posElem.Attribute("id"));
+			}
+
 			_language.SyntacticFeatureSystem.Add(_posFeature);
 
 			_mprFeatures.UnionWith(from elem in langElem.Elements("MorphologicalPhonologicalRuleFeatures").Elements("MorphologicalPhonologicalRuleFeature")
@@ -340,6 +350,19 @@ namespace SIL.HermitCrab
 			}
 		}
 
+		private void LoadStemName(XElement stemNameElem, string posID)
+		{
+			var regions = new List<FeatureStruct>();
+			foreach (XElement regionElem in stemNameElem.Elements("Regions").Elements("Region"))
+			{
+				FeatureStruct fs = LoadSyntacticFeatureStruct(regionElem);
+				fs.AddValue(_posFeature, _posFeature.PossibleSymbols[posID]);
+				regions.Add(fs);
+			}
+
+			_stemNames.Add(new StemName((string) stemNameElem.Attribute("id"), regions) { Description = (string) stemNameElem.Element("Name") });
+		}
+
 		private void LoadMprFeatGroup(XElement mprFeatGroupElem)
 		{
 			var group = new MprFeatureGroup((string) mprFeatGroupElem.Attribute("id")) { Description = (string) mprFeatGroupElem.Element("Name") };
@@ -437,6 +460,10 @@ namespace SIL.HermitCrab
 
 			allomorph.RequiredEnvironments.AddRange(LoadAllomorphEnvironments(alloElem.Element("RequiredEnvironments")));
 			allomorph.ExcludedEnvironments.AddRange(LoadAllomorphEnvironments(alloElem.Element("ExcludedEnvironments")));
+
+			var stemNameIDStr = (string) alloElem.Attribute("stemName");
+			if (!string.IsNullOrEmpty(stemNameIDStr))
+				allomorph.StemName = _stemNames[stemNameIDStr];
 
 			LoadProperties(alloElem.Element("Properties"), allomorph.Properties);
 
@@ -731,6 +758,10 @@ namespace SIL.HermitCrab
 				foreach (string obligHeadID in obligHeadIDsStr.Split(' '))
 					mrule.ObligatorySyntacticFeatures.Add(_language.SyntacticFeatureSystem.GetFeature(obligHeadID));
 			}
+
+			var stemNameIDStr = (string) mruleElem.Attribute("requiredStemName");
+			if (!string.IsNullOrEmpty(stemNameIDStr))
+				mrule.RequiredStemName = _stemNames[stemNameIDStr];
 
 			foreach (XElement subruleElem in mruleElem.Elements("MorphologicalSubrules").Elements("MorphologicalSubruleStructure").Where(IsActive))
 			{

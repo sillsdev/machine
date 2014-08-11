@@ -121,6 +121,7 @@
     <Compile Include="MprFeatureSet.cs" />
     <Compile Include="AffixTemplateSlot.cs" />
     <Compile Include="ShapeTrie.cs" />
+    <Compile Include="StemName.cs" />
     <Compile Include="SynthesisAffixTemplateRule.cs" />
     <Compile Include="Morpheme.cs" />
     <Compile Include="Language.cs" />

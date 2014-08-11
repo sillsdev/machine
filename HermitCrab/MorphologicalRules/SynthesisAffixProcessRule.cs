@@ -37,6 +37,12 @@ namespace SIL.HermitCrab.MorphologicalRules
 			if (input.CurrentMorphologicalRule != _rule || input.GetApplicationCount(_rule) >= _rule.MaxApplicationCount)
 				return Enumerable.Empty<Word>();
 
+			if (_rule.RequiredStemName != null && _rule.RequiredStemName != input.RootAllomorph.StemName)
+			{
+				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, input, FailureReason.StemName);
+				return Enumerable.Empty<Word>();
+			}
+
 			FeatureStruct syntacticFS;
 			if (!_rule.RequiredSyntacticFeatureStruct.Unify(input.SyntacticFeatureStruct, true, out syntacticFS))
 			{

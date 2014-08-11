@@ -55,7 +55,12 @@ namespace SIL.HermitCrab
 		public int MaxStemCount { get; set; }
 
 		public Func<LexEntry, bool> LexEntrySelector { get; set; }
-		public Func<IHCRule, bool> RuleSelector { get; set; } 
+		public Func<IHCRule, bool> RuleSelector { get; set; }
+
+		public Language Language
+		{
+			get { return _lang; }
+		}
 
 		/// <summary>
 		/// Morphs the specified word.
@@ -165,46 +170,7 @@ namespace SIL.HermitCrab
 				return false;
 			}
 
-			foreach (Allomorph allo in word.Allomorphs)
-			{
-				if (!allo.RequiredAllomorphCoOccurrences.All(c => c.CoOccurs(word)))
-				{
-					_traceManager.ParseFailed(_lang, word, FailureReason.RequiredAllomorphCoOccurrences, allo);
-					return false;
-				}
-
-				if (allo.ExcludedAllomorphCoOccurrences.Any(c => c.CoOccurs(word)))
-				{
-					_traceManager.ParseFailed(_lang, word, FailureReason.ExcludedAllomorphCoOccurrences, allo);
-					return false;
-				}
-
-				if (!allo.RequiredEnvironments.All(env => env.IsMatch(word)))
-				{
-					_traceManager.ParseFailed(_lang, word, FailureReason.RequiredEnvironments, allo);
-					return false;
-				}
-
-				if (allo.ExcludedEnvironments.Any(env => env.IsMatch(word)))
-				{
-					_traceManager.ParseFailed(_lang, word, FailureReason.ExcludedEnvironments, allo);
-					return false;
-				}
-
-				if (!allo.Morpheme.RequiredMorphemeCoOccurrences.All(c => c.CoOccurs(word)))
-				{
-					_traceManager.ParseFailed(_lang, word, FailureReason.RequiredMorphemeCoOccurrences, allo);
-					return false;
-				}
-
-				if (allo.Morpheme.ExcludedMorphemeCoOccurrences.Any(c => c.CoOccurs(word)))
-				{
-					_traceManager.ParseFailed(_lang, word, FailureReason.ExcludedMorphemeCoOccurrences, allo);
-					return false;
-				}
-			}
-
-			return true;
+			return word.Allomorphs.All(allo => allo.IsWordValid(this, word));
 		}
 
 		private bool ContainsFeature(FeatureStruct fs, Feature feature, ISet<FeatureStruct> visited)

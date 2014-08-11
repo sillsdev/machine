@@ -16,7 +16,8 @@
 		PatternMismatch,
 		RequiredSyntacticFeatureStruct,
 		HeadRequiredSyntacticFeatureStruct,
-		NonHeadRequiredSyntacticFeatureStruct
+		NonHeadRequiredSyntacticFeatureStruct,
+		StemName
 	}
 
 	public abstract class TraceManagerBase

@@ -32,13 +32,29 @@ namespace SIL.HermitCrab
 			}
 		}
 
+		public StemName StemName { get; set; }
+
 		public override bool ConstraintsEqual(Allomorph other)
 		{
 			var otherAllo = other as RootAllomorph;
 			if (otherAllo == null)
 				return false;
 
-			return base.ConstraintsEqual(other) && _shape.ValueEquals(otherAllo._shape);
+			return base.ConstraintsEqual(other) && _shape.ValueEquals(otherAllo._shape) && StemName == otherAllo.StemName;
+		}
+
+		internal override bool IsWordValid(Morpher morpher, Word word)
+		{
+			if (!base.IsWordValid(morpher, word))
+				return false;
+
+			if (StemName != null && !StemName.IsMatch(word.SyntacticFeatureStruct))
+			{
+				morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.StemName, this);
+				return false;
+			}
+
+			return true;
 		}
 	}
 }

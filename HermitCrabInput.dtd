@@ -13,14 +13,29 @@
 >
 <!--
    =====================
-   PartsOf Speech
+   PartsOfSpeech
    =====================
 -->
 <!ELEMENT PartsOfSpeech (PartOfSpeech*) >
-<!ELEMENT PartOfSpeech (#PCDATA) >
+<!ELEMENT PartOfSpeech (Name, StemNames?) >
 <!ATTLIST PartOfSpeech
   id ID #REQUIRED
 >
+
+
+<!--
+   =====================
+   StemNames
+   =====================
+-->
+<!ELEMENT StemNames (StemName+) >
+<!ELEMENT StemName (Name, Regions) >
+<!ATTLIST StemName
+  id ID #REQUIRED
+>
+<!ELEMENT Regions (Region+) >
+<!ELEMENT Region (FeatureValueList+) >
+  
 <!--
    =====================
    Lexicon
@@ -56,6 +71,7 @@
 <!ELEMENT Allomorph (PhoneticShape, RequiredEnvironments?, ExcludedEnvironments?, RequiredAllomorphCoOccurrences?, ExcludedAllomorphCoOccurrences?, Properties?) >
 <!ATTLIST Allomorph
   id ID #REQUIRED
+  stemName IDREF #IMPLIED
   isActive (yes | no) "yes"
 >
 
@@ -290,6 +306,7 @@ N.B. Hermit Crab's text input uses "property setting records"
   multipleApplication (0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9) "1"
   requiredPartsOfSpeech IDREFS #IMPLIED
   requiredSubcategorizedRules IDREFS #IMPLIED
+  requiredStemName IDREF #IMPLIED
   outputPartOfSpeech IDREF #IMPLIED
   outputSubcategorization IDREFS #IMPLIED
   outputObligatoryFeatures IDREFS #IMPLIED

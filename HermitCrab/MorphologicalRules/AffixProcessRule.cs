@@ -60,6 +60,8 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 		public FeatureStruct OutSyntacticFeatureStruct { get; set; }
 
+		public StemName RequiredStemName { get; set; }
+
 		public ICollection<Feature> ObligatorySyntacticFeatures
 		{
 			get { return _obligatorySyntacticFeatures; }
