@@ -357,6 +357,7 @@ namespace SIL.HermitCrab
 			{
 				FeatureStruct fs = LoadSyntacticFeatureStruct(regionElem);
 				fs.AddValue(_posFeature, _posFeature.PossibleSymbols[posID]);
+				fs.Freeze();
 				regions.Add(fs);
 			}
 
