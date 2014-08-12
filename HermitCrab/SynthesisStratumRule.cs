@@ -41,7 +41,7 @@ namespace SIL.HermitCrab
 			_morpher.TraceManager.BeginApplyStratum(_stratum, input);
 
 			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
-			foreach (Word mruleOutWord in ApplyMorphologicalRules(input))
+			foreach (Word mruleOutWord in ApplyMorphologicalRules(input).Concat(ApplyTemplates(input)))
 			{
 				if (mruleOutWord.IsLastAppliedRuleFinal)
 				{
@@ -59,35 +59,41 @@ namespace SIL.HermitCrab
 
 		private IEnumerable<Word> ApplyMorphologicalRules(Word input)
 		{
-			foreach (Word mruleOutWord in _mrulesRule.Apply(input).Concat(input))
+			foreach (Word mruleOutWord in _mrulesRule.Apply(input))
 			{
 				Word word = mruleOutWord;
-				if (word != input && !word.IsLastAppliedRuleFinal)
+				if (!word.IsLastAppliedRuleFinal)
 				{
 					word = word.DeepClone();
 					word.IsLastAppliedRuleFinal = true;
 					word.Freeze();
 				}
 
-				switch (_stratum.MorphologicalRuleOrder)
-				{
-					case MorphologicalRuleOrder.Linear:
-						foreach (Word tempOutWord in _templatesRule.Apply(word))
-							yield return tempOutWord;
-						break;
+				foreach (Word tempOutWord in ApplyTemplates(word))
+					yield return tempOutWord;
+			}
+		}
 
-					case MorphologicalRuleOrder.Unordered:
-						foreach (Word tempOutWord in _templatesRule.Apply(word))
+		private IEnumerable<Word> ApplyTemplates(Word input)
+		{
+			switch (_stratum.MorphologicalRuleOrder)
+			{
+				case MorphologicalRuleOrder.Linear:
+					foreach (Word tempOutWord in _templatesRule.Apply(input))
+						yield return tempOutWord;
+					break;
+
+				case MorphologicalRuleOrder.Unordered:
+					foreach (Word tempOutWord in _templatesRule.Apply(input))
+					{
+						if (!FreezableEqualityComparer<Word>.Default.Equals(input, tempOutWord))
 						{
-							if (!FreezableEqualityComparer<Word>.Default.Equals(word, tempOutWord))
-							{
-								foreach (Word outWord in ApplyMorphologicalRules(tempOutWord))
-									yield return outWord;
-							}
-							yield return tempOutWord;
+							foreach (Word outWord in ApplyMorphologicalRules(tempOutWord))
+								yield return outWord;
 						}
-						break;
-				}
+						yield return tempOutWord;
+					}
+					break;
 			}
 		}
 	}
