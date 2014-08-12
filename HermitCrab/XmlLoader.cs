@@ -226,12 +226,6 @@ namespace SIL.HermitCrab
 				.Select(e => new FeatureSymbol((string) e.Attribute("id"), (string) e.Element("Name")));
 			_posFeature = new SymbolicFeature("pos", posSymbols) { Description = "POS" };
 
-			foreach (XElement posElem in langElem.Elements("PartsOfSpeech").Elements("PartOfSpeech"))
-			{
-				foreach (XElement stemNameElem in posElem.Elements("StemNames").Elements("StemName"))
-					LoadStemName(stemNameElem, (string) posElem.Attribute("id"));
-			}
-
 			_language.SyntacticFeatureSystem.Add(_posFeature);
 
 			_mprFeatures.UnionWith(from elem in langElem.Elements("MorphologicalPhonologicalRuleFeatures").Elements("MorphologicalPhonologicalRuleFeature")
@@ -249,6 +243,12 @@ namespace SIL.HermitCrab
 			_language.SyntacticFeatureSystem.Add(_footFeature);
 			LoadFeatureSystem(langElem.Element("FootFeatures"), _language.SyntacticFeatureSystem);
 			_language.SyntacticFeatureSystem.Freeze();
+
+			foreach (XElement posElem in langElem.Elements("PartsOfSpeech").Elements("PartOfSpeech"))
+			{
+				foreach (XElement stemNameElem in posElem.Elements("StemNames").Elements("StemName"))
+					LoadStemName(stemNameElem, (string) posElem.Attribute("id"));
+			}
 
 			foreach (XElement charDefTableElem in langElem.Elements("CharacterDefinitionTable").Where(IsActive))
 				LoadSymbolTable(charDefTableElem);

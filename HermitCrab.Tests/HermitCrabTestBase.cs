@@ -280,7 +280,7 @@ namespace SIL.HermitCrab.Tests
 			           		PhoneticFeatureSystem = phoneticFeatSys,
 							SyntacticFeatureSystem = syntacticFeatSys,
 							Strata = { Morphophonemic, Allophonic, Surface }
-			           	} ;
+			           	};
 		}
 
 		[TearDown]
