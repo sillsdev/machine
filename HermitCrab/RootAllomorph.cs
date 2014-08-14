@@ -40,7 +40,7 @@ namespace SIL.HermitCrab
 			if (otherAllo == null)
 				return false;
 
-			return base.ConstraintsEqual(other) && _shape.ValueEquals(otherAllo._shape) && StemName == otherAllo.StemName;
+			return base.ConstraintsEqual(other) && StemName == otherAllo.StemName;
 		}
 
 		internal override bool IsWordValid(Morpher morpher, Word word)

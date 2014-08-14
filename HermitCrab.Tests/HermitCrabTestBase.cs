@@ -4,6 +4,7 @@ using NUnit.Framework;
 using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
+using SIL.Machine.Matching;
 
 namespace SIL.HermitCrab.Tests
 {
@@ -160,120 +161,129 @@ namespace SIL.HermitCrab.Tests
 					.Symbol("foo+").Symbol("baz-"))
 				.Feature("foot").EqualTo(foot => foot
 					.Symbol("fum-").Symbol("bar+")).Value;
-			AddEntry("1", "pʰit", fs, Allophonic);
+			AddEntry("1", fs, Allophonic, "pʰit");
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("N")
 				.Feature("head").EqualTo(head => head
 					.Symbol("foo+").Symbol("baz-"))
 				.Feature("foot").EqualTo(foot => foot
 					.Symbol("fum-").Symbol("bar+")).Value;
-			AddEntry("2", "pit", fs, Allophonic);
+			AddEntry("2", fs, Allophonic, "pit");
 
-			AddEntry("5", "pʰut", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic);
-			AddEntry("6", "kʰat", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic);
-			AddEntry("7", "kʰut", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic);
+			AddEntry("5", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "pʰut");
+			AddEntry("6", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "kʰat");
+			AddEntry("7", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "kʰut");
 
-			AddEntry("8", "dat", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic);
-			AddEntry("9", "dat", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Allophonic);
+			AddEntry("8", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "dat");
+			AddEntry("9", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Allophonic, "dat");
 
-			AddEntry("10", "ga̘p", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic);
-			AddEntry("11", "gab", FeatureStruct.New(syntacticFeatSys).Symbol("A").Value, Morphophonemic);
-			AddEntry("12", "ga+b", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Morphophonemic);
+			AddEntry("10", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "ga̘p");
+			AddEntry("11", FeatureStruct.New(syntacticFeatSys).Symbol("A").Value, Morphophonemic, "gab");
+			AddEntry("12", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Morphophonemic, "ga+b");
 
-			AddEntry("13", "bubabu", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic);
-			AddEntry("14", "bubabi", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic);
-			AddEntry("15", "bɯbabu", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic);
-			AddEntry("16", "bibabi", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic);
-			AddEntry("17", "bubi", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic);
-			AddEntry("18", "bibu", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic);
-			AddEntry("19", "b+ubu", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Morphophonemic);
-			AddEntry("20", "bubababi", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic);
-			AddEntry("21", "bibababu", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic);
-			AddEntry("22", "bubabababi", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic);
-			AddEntry("23", "bibabababu", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic);
-			AddEntry("24", "bubui", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic);
-			AddEntry("25", "buibu", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic);
-			AddEntry("26", "buibui", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic);
-			AddEntry("27", "buiibuii", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic);
-			AddEntry("28", "buitibuiti", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic);
-			AddEntry("29", "iibubu", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic);
+			AddEntry("13", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "bubabu");
+			AddEntry("14", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "bubabi");
+			AddEntry("15", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "bɯbabu");
+			AddEntry("16", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "bibabi");
+			AddEntry("17", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "bubi");
+			AddEntry("18", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "bibu");
+			AddEntry("19", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Morphophonemic, "b+ubu");
+			AddEntry("20", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "bubababi");
+			AddEntry("21", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "bibababu");
+			AddEntry("22", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "bubabababi");
+			AddEntry("23", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "bibabababu");
+			AddEntry("24", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "bubui");
+			AddEntry("25", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "buibu");
+			AddEntry("26", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "buibui");
+			AddEntry("27", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "buiibuii");
+			AddEntry("28", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "buitibuiti");
+			AddEntry("29", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "iibubu");
 
-			AddEntry("30", "bu+ib", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Morphophonemic);
-			AddEntry("31", "buib", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Morphophonemic);
+			AddEntry("30", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Morphophonemic, "bu+ib");
+			AddEntry("31", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Morphophonemic, "buib");
 
-			AddEntry("32", "sag", "sag", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic);
-			AddEntry("33", "sas", "sas", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic);
-			AddEntry("34", "saz", "saz", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic);
-			AddEntry("35", "sat", "sat", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic);
-			AddEntry("36", "sasibo", "liberty.port", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic);
-			AddEntry("37", "sasibut", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic);
-			AddEntry("38", "sasibud", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic);
+			AddEntry("32", "sag", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "sag");
+			AddEntry("33", "sas", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "sas");
+			AddEntry("34", "saz", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "saz");
+			AddEntry("35", "sat", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "sat");
+			AddEntry("36", "liberty.port", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "sasibo");
+			AddEntry("37", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "sasibut");
+			AddEntry("38", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "sasibud");
 
-			AddEntry("39", "ab+ba", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic);
-			AddEntry("40", "abba", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic);
+			AddEntry("39", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "ab+ba");
+			AddEntry("40", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "abba");
 
-			AddEntry("41", "pip", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Allophonic);
-			AddEntry("42", "bubibi", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic);
-			AddEntry("43", "bubibu", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic);
+			AddEntry("41", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Allophonic, "pip");
+			AddEntry("42", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "bubibi");
+			AddEntry("43", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "bubibu");
 
-			AddEntry("44", "gigigi", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic);
+			AddEntry("44", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "gigigi");
 
-			AddEntry("45", "nbinding", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic);
+			AddEntry("45", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "nbinding");
 
-			AddEntry("46", "bupu", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic);
+			AddEntry("46", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "bupu");
 
-			AddEntry("47", "tag", "tag", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic);
-			AddEntry("48", "pag", "pag", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic);
-			AddEntry("49", "ktb", "write", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic);
-			AddEntry("50", "suupu", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic);
+			AddEntry("47", "tag", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "tag");
+			AddEntry("48", "pag", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "pag");
+			AddEntry("49", "write", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "ktb");
+			AddEntry("50", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "suupu");
 
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
 				.Feature("head").EqualTo(head => head
 					.Feature("num").EqualTo("pl")).Value;
-			AddEntry("Perc0", "ssag", "ssag", fs, Morphophonemic);
+			AddEntry("Perc0", "ssag", fs, Morphophonemic, "ssag");
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
 				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("1")
 					.Feature("num").EqualTo("pl")).Value;
-			AddEntry("Perc1", "ssag", "ssag", fs, Morphophonemic);
+			AddEntry("Perc1", "ssag", fs, Morphophonemic, "ssag");
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
 				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("3")
 					.Feature("num").EqualTo("pl")).Value;
-			AddEntry("Perc2", "ssag", "ssag", fs, Morphophonemic);
+			AddEntry("Perc2", "ssag", fs, Morphophonemic, "ssag");
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
 				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("2", "3")
 					.Feature("num").EqualTo("pl")).Value;
-			AddEntry("Perc3", "ssag", "ssag", fs, Morphophonemic);
+			AddEntry("Perc3", "ssag", fs, Morphophonemic, "ssag");
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
 				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("1", "3")
 					.Feature("num").EqualTo("pl")).Value;
-			AddEntry("Perc4", "ssag", "ssag", fs, Morphophonemic);
+			AddEntry("Perc4", "ssag", fs, Morphophonemic, "ssag");
 
 			var seeFamily = new LexFamily("SEE");
-			seeFamily.Entries.Add(AddEntry("bl1", "si", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic));
+			seeFamily.Entries.Add(AddEntry("bl1", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "si"));
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
 				.Feature("head").EqualTo(head => head
 					.Feature("tense").EqualTo("past")).Value;
-			seeFamily.Entries.Add(AddEntry("bl2", "sau", fs, Morphophonemic));
+			seeFamily.Entries.Add(AddEntry("bl2", fs, Morphophonemic, "sau"));
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
 				.Feature("head").EqualTo(head => head
 					.Feature("tense").EqualTo("pres")).Value;
-			seeFamily.Entries.Add(AddEntry("bl3", "sis", fs, Morphophonemic));
+			seeFamily.Entries.Add(AddEntry("bl3", fs, Morphophonemic, "sis"));
 
-			LexEntry entry = AddEntry("pos1", "ba", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic);
+			LexEntry entry = AddEntry("pos1", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "ba");
 			entry.MprFeatures.Add(Latinate);
-			entry = AddEntry("pos2", "ba", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Morphophonemic);
+			entry = AddEntry("pos2", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Morphophonemic, "ba");
 			entry.MprFeatures.Add(Germanic);
+
+			AddEntry("free", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "taz", "tas");
+
+			entry = AddEntry("disj", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "baz", "bat", "bad", "bas");
+			var unroundedVowel = FeatureStruct.New(phoneticFeatSys).Symbol(HCFeatureSystem.Segment).Symbol("voc+").Symbol("round-").Value;
+			var vowel = FeatureStruct.New(phoneticFeatSys).Symbol(HCFeatureSystem.Segment).Symbol("voc+").Value;
+			entry.Allomorphs[0].RequiredEnvironments.Add(new AllomorphEnvironment(SpanFactory, null, Pattern<Word, ShapeNode>.New().Annotation(unroundedVowel).Value));
+			entry.Allomorphs[1].RequiredEnvironments.Add(new AllomorphEnvironment(SpanFactory, null, Pattern<Word, ShapeNode>.New().Annotation(vowel).Value));
+			entry.Allomorphs[2].RequiredEnvironments.Add(new AllomorphEnvironment(SpanFactory, null, Pattern<Word, ShapeNode>.New().Annotation(vowel).Value));
 
 			Language = new Language("lang1")
 			           	{
@@ -294,19 +304,22 @@ namespace SIL.HermitCrab.Tests
 			}
 		}
 
-		private LexEntry AddEntry(string id, string word, string gloss, FeatureStruct syntacticFS, Stratum stratum)
+		private LexEntry AddEntry(string id, string gloss, FeatureStruct syntacticFS, Stratum stratum, params string[] forms)
 		{
 			var entry = new LexEntry(id) { SyntacticFeatureStruct = syntacticFS, Gloss = gloss };
-			Shape shape = stratum.SymbolTable.Segment(word);
-			entry.Allomorphs.Add(new RootAllomorph(id + "_allo1", shape));
+			for (int i = 0; i < forms.Length; i++)
+			{
+				Shape shape = stratum.SymbolTable.Segment(forms[i]);
+				entry.Allomorphs.Add(new RootAllomorph(id + "_allo" + (i + 1), shape));
+			}
 			stratum.Entries.Add(entry);
 			Entries.Add(entry);
 			return entry;
 		}
 
-		private LexEntry AddEntry(string id, string word, FeatureStruct syntacticFS, Stratum stratum)
+		private LexEntry AddEntry(string id, FeatureStruct syntacticFS, Stratum stratum, params string[] forms)
 		{
-			return AddEntry(id, word, null, syntacticFS, stratum);
+			return AddEntry(id, null, syntacticFS, stratum, forms);
 		}
 
 		private void AddSegDef(SymbolTable table, FeatureSystem phoneticFeatSys, string strRep, params string[] symbols)

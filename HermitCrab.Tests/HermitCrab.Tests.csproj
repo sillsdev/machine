@@ -60,6 +60,7 @@
     <Compile Include="AffixTemplateTests.cs" />
     <Compile Include="AllomorphEnvironmentTests.cs" />
     <Compile Include="HermitCrabTestBase.cs" />
+    <Compile Include="LexEntryTests.cs" />
     <Compile Include="MorphologicalRules\AffixProcessRuleTests.cs" />
     <Compile Include="MorphologicalRules\CompoundingRuleTests.cs" />
     <Compile Include="PhonologicalRules\MetathesisRuleTests.cs" />

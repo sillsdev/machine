@@ -330,6 +330,9 @@ namespace SIL.HermitCrab
 			if (other == null)
 				return false;
 
+			if (IsFrozen && other.IsFrozen && GetFrozenHashCode() != other.GetFrozenHashCode())
+				return false;
+
 			return _shape.ValueEquals(other._shape) && _realizationalFS.ValueEquals(other._realizationalFS)
 				&& _nonHeads.SequenceEqual(other._nonHeads, FreezableEqualityComparer<Word>.Default) && _stratum == other._stratum
 				&& _rootAllomorph == other._rootAllomorph && _mrules.SequenceEqual(other._mrules) && _isLastAppliedRuleFinal == other._isLastAppliedRuleFinal;

@@ -882,5 +882,90 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			AssertMorphsEqual(morpher.ParseWord("gas"), "truncate 33");
 			AssertMorphsEqual(morpher.ParseWord("gbubibi"), "truncate 42");
 		}
+
+		[Test]
+		public void DisjunctiveAllomorphs()
+		{
+			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+			var vowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("voc+").Value;
+
+			var sSuffix = new AffixProcessRule("s_suffix")
+			              	{
+			              		Gloss = "3SG",
+			              		RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+								OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
+									.Feature("head").EqualTo(head => head
+										.Feature("pers").EqualTo("3")).Value
+			              	};
+			Morphophonemic.MorphologicalRules.Add(sSuffix);
+			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo1")
+									{
+										Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
+										Rhs = {new CopyFromInput("1"), new InsertShape(Table3.Segment("s"))},
+										RequiredEnvironments = {new AllomorphEnvironment(SpanFactory, null, Pattern<Word, ShapeNode>.New().Annotation(vowel).Value)}
+									});
+			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo2")
+									{
+										Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
+										Rhs = {new CopyFromInput("1"), new InsertShape(Table3.Segment("z"))}
+									});
+
+			var edSuffix = new AffixProcessRule("ed_suffix")
+							{
+								Gloss = "PAST",
+								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+								OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
+									.Feature("head").EqualTo(head => head
+										.Feature("tense").EqualTo("past")).Value
+							};
+			Morphophonemic.MorphologicalRules.Add(edSuffix);
+			edSuffix.Allomorphs.Add(new AffixProcessAllomorph("ed_suffix_allo1")
+										{
+											Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
+											Rhs = {new CopyFromInput("1"), new InsertShape(Table3.Segment("+ɯd"))}
+										});
+
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			AssertMorphsEqual(morpher.ParseWord("sagz"), "32 s_suffix");
+			Assert.That(morpher.ParseWord("sags"), Is.Empty);
+			AssertMorphsEqual(morpher.ParseWord("sagsɯd"), "32 s_suffix ed_suffix");
+			Assert.That(morpher.ParseWord("sagzɯd"), Is.Empty);
+		}
+
+		[Test]
+		public void FreeFluctuation()
+		{
+			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+
+			var sSuffix = new AffixProcessRule("s_suffix")
+			              	{
+			              		Gloss = "3SG",
+			              		RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+								OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
+									.Feature("head").EqualTo(head => head
+										.Feature("pers").EqualTo("3")).Value
+			              	};
+			Morphophonemic.MorphologicalRules.Add(sSuffix);
+			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo1")
+									{
+										Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
+										Rhs = {new CopyFromInput("1"), new InsertShape(Table3.Segment("s"))}
+									});
+			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo2")
+									{
+										Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
+										Rhs = {new CopyFromInput("1"), new InsertShape(Table3.Segment("z"))}
+									});
+
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			AssertMorphsEqual(morpher.ParseWord("sagz"), "32 s_suffix");
+			AssertMorphsEqual(morpher.ParseWord("sags"), "32 s_suffix");
+			AssertMorphsEqual(morpher.ParseWord("tass"), "free s_suffix");
+			AssertMorphsEqual(morpher.ParseWord("tazs"), "free s_suffix");
+			AssertMorphsEqual(morpher.ParseWord("tasz"), "free s_suffix");
+			AssertMorphsEqual(morpher.ParseWord("tazz"), "free s_suffix");
+		}
 	}
 }

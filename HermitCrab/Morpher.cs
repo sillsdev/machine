@@ -114,12 +114,14 @@ namespace SIL.HermitCrab
 			foreach (IGrouping<IEnumerable<Allomorph>, Word> group in validWords.GroupBy(validWord => validWord.AllomorphsInMorphOrder, MorphsEqualityComparer))
 			{
 				// enforce the disjunctive property of allomorphs by ensuring that this word synthesis
-				// has the highest order of precedence for its allomorphs while also allowing for free fluctuation
+				// has the highest order of precedence for its allomorphs
 				Word[] words = group.OrderBy(w => w.AllomorphsInMorphOrder, MorphsComparer).ToArray();
 				int i;
 				for (i = 0; i < words.Length; i++)
 				{
-					if (i > 0 && words[i].AllomorphsInMorphOrder.Zip(words[i - 1].AllomorphsInMorphOrder).Any(tuple => tuple.Item1 != tuple.Item2 && !tuple.Item1.ConstraintsEqual(tuple.Item2)))
+					// if there is no free fluctuation with any allomorphs in the previous parse,
+					// then the rest of the parses are invalid, because of disjunction
+					if (i > 0 && words[i].AllomorphsInMorphOrder.Zip(words[i - 1].AllomorphsInMorphOrder).All(tuple => tuple.Item1 == tuple.Item2 || !tuple.Item1.ConstraintsEqual(tuple.Item2)))
 						break;
 
 					if (_lang.SurfaceStratum.SymbolTable.IsMatch(word, words[i].Shape))
