@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using SIL.Collections;
 using SIL.Machine.Annotations;
@@ -28,7 +29,7 @@ namespace SIL.HermitCrab
 					_mrulesRule = new LinearRuleCascade<Word, ShapeNode>(mrules, true, FreezableEqualityComparer<Word>.Default);
 					break;
 				case MorphologicalRuleOrder.Unordered:
-					_mrulesRule = new TemplateCombinationRuleCascade(mrules, _templatesRule);
+					_mrulesRule = new ParallelCombinationRuleCascade<Word, ShapeNode>(mrules, true, FreezableEqualityComparer<Word>.Default);
 					break;
 			}
 		}
@@ -43,37 +44,69 @@ namespace SIL.HermitCrab
 			_prulesRule.Apply(input);
 			input.Freeze();
 
-			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default) {input};
-			foreach (Word tempWord in _templatesRule.Apply(input).Concat(input))
+			IEnumerable<Word> mruleOutWords = null;
+			switch (_stratum.MorphologicalRuleOrder)
 			{
-				output.UnionWith(_mrulesRule.Apply(tempWord));
-				output.Add(tempWord);
+				case MorphologicalRuleOrder.Linear:
+					mruleOutWords = ApplyTemplates(input);
+					break;
+
+				case MorphologicalRuleOrder.Unordered:
+					mruleOutWords = ApplyTemplates(input).Concat(ApplyMorphologicalRules(input));
+					break;
 			}
+			Debug.Assert(mruleOutWords != null);
 
-			foreach (Word outWord in output)
-				_morpher.TraceManager.EndUnapplyStratum(_stratum, outWord);
-
+			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default) {input};
+			_morpher.TraceManager.EndUnapplyStratum(_stratum, input);
+			foreach (Word mruleOutWord in mruleOutWords)
+			{
+				output.Add(mruleOutWord);
+				_morpher.TraceManager.EndUnapplyStratum(_stratum, mruleOutWord);
+			}
 			return output;
 		}
 
-		private class TemplateCombinationRuleCascade : ParallelCombinationRuleCascade<Word, ShapeNode>
+		private IEnumerable<Word> ApplyMorphologicalRules(Word input)
 		{
-			private readonly IRule<Word, ShapeNode> _templatesRule; 
-
-			public TemplateCombinationRuleCascade(IEnumerable<IRule<Word, ShapeNode>> rules, IRule<Word, ShapeNode> templatesRule)
-				: base(rules, true, FreezableEqualityComparer<Word>.Default)
+			foreach (Word mruleOutWord in _mrulesRule.Apply(input))
 			{
-				_templatesRule = templatesRule;
-			}
-
-			protected override IEnumerable<Word> ApplyRule(IRule<Word, ShapeNode> rule, int index, Word input)
-			{
-				foreach (Word outWord in rule.Apply(input))
+				switch (_stratum.MorphologicalRuleOrder)
 				{
-					foreach (Word tempWord in _templatesRule.Apply(outWord))
-						yield return tempWord;
+					case MorphologicalRuleOrder.Linear:
+						yield return mruleOutWord;
+						break;
 
-					yield return outWord;
+					case MorphologicalRuleOrder.Unordered:
+						foreach (Word tempOutWord in ApplyTemplates(mruleOutWord))
+							yield return tempOutWord;
+						yield return mruleOutWord;
+						break;
+				}
+			}
+		}
+
+		private IEnumerable<Word> ApplyTemplates(Word input)
+		{
+			foreach (Word tempOutWord in _templatesRule.Apply(input))
+			{
+				switch (_stratum.MorphologicalRuleOrder)
+				{
+					case MorphologicalRuleOrder.Linear:
+						foreach (Word outWord in ApplyMorphologicalRules(tempOutWord))
+							yield return outWord;
+						if (!FreezableEqualityComparer<Word>.Default.Equals(input, tempOutWord))
+							yield return tempOutWord;
+						break;
+
+					case MorphologicalRuleOrder.Unordered:
+						if (!FreezableEqualityComparer<Word>.Default.Equals(input, tempOutWord))
+						{
+							foreach (Word outWord in ApplyMorphologicalRules(tempOutWord))
+								yield return outWord;
+							yield return tempOutWord;
+						}
+						break;
 				}
 			}
 		}

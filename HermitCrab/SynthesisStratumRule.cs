@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using SIL.Collections;
 using SIL.Machine.Annotations;
@@ -40,8 +41,21 @@ namespace SIL.HermitCrab
 
 			_morpher.TraceManager.BeginApplyStratum(_stratum, input);
 
+			IEnumerable<Word> mruleOutWords = null;
+			switch (_stratum.MorphologicalRuleOrder)
+			{
+				case MorphologicalRuleOrder.Linear:
+					mruleOutWords = ApplyMorphologicalRules(input);
+					break;
+
+				case MorphologicalRuleOrder.Unordered:
+					mruleOutWords = ApplyMorphologicalRules(input).Concat(ApplyTemplates(input));
+					break;
+			}
+			Debug.Assert(mruleOutWords != null);
+
 			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
-			foreach (Word mruleOutWord in ApplyMorphologicalRules(input).Concat(ApplyTemplates(input)))
+			foreach (Word mruleOutWord in mruleOutWords)
 			{
 				if (mruleOutWord.IsLastAppliedRuleFinal)
 				{
@@ -71,29 +85,29 @@ namespace SIL.HermitCrab
 
 				foreach (Word tempOutWord in ApplyTemplates(word))
 					yield return tempOutWord;
+				yield return word;
 			}
 		}
 
 		private IEnumerable<Word> ApplyTemplates(Word input)
 		{
-			switch (_stratum.MorphologicalRuleOrder)
+			foreach (Word tempOutWord in _templatesRule.Apply(input))
 			{
-				case MorphologicalRuleOrder.Linear:
-					foreach (Word tempOutWord in _templatesRule.Apply(input))
+				switch (_stratum.MorphologicalRuleOrder)
+				{
+					case MorphologicalRuleOrder.Linear:
 						yield return tempOutWord;
-					break;
+						break;
 
-				case MorphologicalRuleOrder.Unordered:
-					foreach (Word tempOutWord in _templatesRule.Apply(input))
-					{
+					case MorphologicalRuleOrder.Unordered:
 						if (!FreezableEqualityComparer<Word>.Default.Equals(input, tempOutWord))
 						{
 							foreach (Word outWord in ApplyMorphologicalRules(tempOutWord))
 								yield return outWord;
 						}
 						yield return tempOutWord;
-					}
-					break;
+						break;
+				}
 			}
 		}
 	}
