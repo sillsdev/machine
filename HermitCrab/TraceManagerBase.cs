@@ -17,7 +17,8 @@
 		RequiredSyntacticFeatureStruct,
 		HeadRequiredSyntacticFeatureStruct,
 		NonHeadRequiredSyntacticFeatureStruct,
-		StemName
+		StemName,
+		PartialParse
 	}
 
 	public abstract class TraceManagerBase

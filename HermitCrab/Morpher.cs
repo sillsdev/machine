@@ -164,6 +164,12 @@ namespace SIL.HermitCrab
 
 		private bool IsWordValid(Word word)
 		{
+			if (!word.RealizationalFeatureStruct.IsUnifiable(word.SyntacticFeatureStruct) || word.CurrentMorphologicalRule != null)
+			{
+				_traceManager.ParseFailed(_lang, word, FailureReason.PartialParse, null);
+				return false;
+			}
+
 			if (!word.ObligatorySyntacticFeatures.All(feature => ContainsFeature(word.SyntacticFeatureStruct, feature, new HashSet<FeatureStruct>(new ReferenceEqualityComparer<FeatureStruct>()))))
 			{
 				_traceManager.ParseFailed(_lang, word, FailureReason.ObligatorySyntacticFeatures, null);
