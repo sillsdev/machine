@@ -1213,7 +1213,7 @@ namespace SIL.Machine.FeatureModel
 				bool firstFeature = true;
 				if (_definite.Count > 0)
 					sb.Append("[");
-				foreach (KeyValuePair<Feature, FeatureValue> kvp in _definite)
+				foreach (KeyValuePair<Feature, FeatureValue> kvp in _definite.OrderBy(kvp => kvp.Key.Description))
 				{
 					FeatureValue value = Dereference(kvp.Value);
 					if (!firstFeature)

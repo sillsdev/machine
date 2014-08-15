@@ -268,7 +268,7 @@ namespace SIL.Machine.FeatureModel
 				else
 				{
 					sb.Append('{');
-					foreach (string value in _values)
+					foreach (string value in _values.OrderBy(v => v))
 					{
 						if (!firstValue)
 							sb.Append(", ");

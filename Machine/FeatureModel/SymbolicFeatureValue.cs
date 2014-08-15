@@ -235,7 +235,7 @@ namespace SIL.Machine.FeatureModel
 			{
 				bool firstValue = true;
 				sb.Append("{");
-				foreach (FeatureSymbol value in values)
+				foreach (FeatureSymbol value in values.OrderBy(v => v.ToString()))
 				{
 					if (!firstValue)
 						sb.Append(", ");
