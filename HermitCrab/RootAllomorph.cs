@@ -34,7 +34,7 @@ namespace SIL.HermitCrab
 
 		public StemName StemName { get; set; }
 
-		public override bool ConstraintsEqual(Allomorph other)
+		protected override bool ConstraintsEqual(Allomorph other)
 		{
 			var otherAllo = other as RootAllomorph;
 			if (otherAllo == null)

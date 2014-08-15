@@ -123,7 +123,24 @@ namespace SIL.HermitCrab
 			get { return _properties; }
 		}
 
-		public virtual bool ConstraintsEqual(Allomorph other)
+		public bool FreeFluctuatesWith(Allomorph other)
+		{
+			if (this == other || Morpheme != other.Morpheme)
+				return false;
+
+			int minIndex = Math.Min(Index, other.Index);
+			int maxIndex = Math.Max(Index, other.Index);
+			for (int i = minIndex; i < maxIndex; i++)
+			{
+				Allomorph cur = Morpheme.GetAllomorph(i);
+				Allomorph next = Morpheme.GetAllomorph(i + 1);
+				if (!cur.ConstraintsEqual(next))
+					return false;
+			}
+			return true;
+		}
+
+		protected virtual bool ConstraintsEqual(Allomorph other)
 		{
 			return _requiredEnvironments.SetEquals(other._requiredEnvironments) && _excludedEnvironments.SetEquals(other._excludedEnvironments);
 		}

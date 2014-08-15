@@ -121,7 +121,7 @@ namespace SIL.HermitCrab
 				{
 					// if there is no free fluctuation with any allomorphs in the previous parse,
 					// then the rest of the parses are invalid, because of disjunction
-					if (i > 0 && words[i].AllomorphsInMorphOrder.Zip(words[i - 1].AllomorphsInMorphOrder).All(tuple => tuple.Item1 == tuple.Item2 || !tuple.Item1.ConstraintsEqual(tuple.Item2)))
+					if (i > 0 && words[i].AllomorphsInMorphOrder.Zip(words[i - 1].AllomorphsInMorphOrder).All(tuple => !tuple.Item1.FreeFluctuatesWith(tuple.Item2)))
 						break;
 
 					if (_lang.SurfaceStratum.SymbolTable.IsMatch(word, words[i].Shape))

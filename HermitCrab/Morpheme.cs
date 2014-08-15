@@ -52,6 +52,8 @@ namespace SIL.HermitCrab
 		/// <value>The gloss.</value>
 		public string Gloss { get; set; }
 
+		public abstract Allomorph GetAllomorph(int index);
+
 		/// <summary>
 		/// Gets or sets the required morpheme co-occurrences.
 		/// </summary>

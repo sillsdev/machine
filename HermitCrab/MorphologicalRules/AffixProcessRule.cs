@@ -88,5 +88,10 @@ namespace SIL.HermitCrab.MorphologicalRules
 		{
 			action(this);
 		}
+
+		public override Allomorph GetAllomorph(int index)
+		{
+			return _allomorphs[index];
+		}
 	}
 }

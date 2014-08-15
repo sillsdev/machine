@@ -67,7 +67,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 			get { return _outMprFeatures; }
 		}
 
-		public override bool ConstraintsEqual(Allomorph other)
+		protected override bool ConstraintsEqual(Allomorph other)
 		{
 			var otherAllo = other as AffixProcessAllomorph;
 			if (otherAllo == null)
