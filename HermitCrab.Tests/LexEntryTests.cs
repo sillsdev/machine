@@ -16,10 +16,7 @@ namespace SIL.HermitCrab.Tests
 			var edSuffix = new AffixProcessRule("ed_suffix")
 							{
 								Gloss = "PAST",
-								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
-								OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-									.Feature("head").EqualTo(head => head
-										.Feature("tense").EqualTo("past")).Value
+								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
 							};
 			Morphophonemic.MorphologicalRules.Add(edSuffix);
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph("ed_suffix_allo1")
@@ -62,10 +59,7 @@ namespace SIL.HermitCrab.Tests
 			var edSuffix = new AffixProcessRule("ed_suffix")
 							{
 								Gloss = "PAST",
-								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
-								OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-									.Feature("head").EqualTo(head => head
-										.Feature("tense").EqualTo("past")).Value
+								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
 							};
 			Morphophonemic.MorphologicalRules.Add(edSuffix);
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph("ed_suffix_allo1")
@@ -98,7 +92,45 @@ namespace SIL.HermitCrab.Tests
 		[Test]
 		public void StemNames()
 		{
-			
+			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+
+			var edSuffix = new AffixProcessRule("ed_suffix")
+							{
+								Gloss = "PAST",
+								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+								OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
+									.Feature("head").EqualTo(head => head
+										.Feature("tense").EqualTo("past")).Value
+							};
+			Morphophonemic.MorphologicalRules.Add(edSuffix);
+			edSuffix.Allomorphs.Add(new AffixProcessAllomorph("ed_suffix_allo1")
+										{
+											Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
+											Rhs = {new CopyFromInput("1"), new InsertShape(Table3.Segment("+ɯd"))}
+										});
+
+			var sSuffix = new AffixProcessRule("s_suffix")
+							{
+								Gloss = "PRES",
+								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+								OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
+									.Feature("head").EqualTo(head => head
+										.Feature("tense").EqualTo("pres")).Value
+							};
+			Morphophonemic.MorphologicalRules.Add(sSuffix);
+			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo1")
+										{
+											Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
+											Rhs = {new CopyFromInput("1"), new InsertShape(Table3.Segment("+s"))}
+										});
+
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			AssertMorphsEqual(morpher.ParseWord("sadɯd"), "stemname ed_suffix");
+			Assert.That(morpher.ParseWord("sanɯd"), Is.Empty);
+			Assert.That(morpher.ParseWord("sads"), Is.Empty);
+			AssertMorphsEqual(morpher.ParseWord("sans"), "stemname s_suffix");
+			Assert.That(morpher.ParseWord("sad"), Is.Empty);
+			AssertMorphsEqual(morpher.ParseWord("san"), "stemname");
 		}
 	}
 }

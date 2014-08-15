@@ -9,6 +9,11 @@ namespace SIL.HermitCrab
 	{
 		private readonly FeatureStruct[] _regions;
 
+		public StemName(string id, params FeatureStruct[] regions)
+			: this(id, (IEnumerable<FeatureStruct>) regions)
+		{
+		}
+
 		public StemName(string id, IEnumerable<FeatureStruct> regions)
 			: base(id)
 		{
@@ -22,7 +27,7 @@ namespace SIL.HermitCrab
 
 		public bool IsMatch(FeatureStruct fs)
 		{
-			return _regions.Any(r => r.IsUnifiable(fs));
+			return _regions.Any(r => r.Subsumes(fs));
 		}
 	}
 }
