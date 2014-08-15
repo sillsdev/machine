@@ -29,5 +29,10 @@ namespace SIL.HermitCrab.MorphologicalRules
 			ShapeNode newNode = output.Shape.Add(fs);
 			return Tuple.Create((ShapeNode) null, newNode).ToEnumerable();
 		}
+
+		public override string ToString()
+		{
+			return _fs.ToString();
+		}
 	}
 }

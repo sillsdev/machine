@@ -32,5 +32,10 @@ namespace SIL.HermitCrab.MorphologicalRules
 				mappings.Add(Tuple.Create((ShapeNode) null, outputNode));
 			return mappings;
 		}
+
+		public override string ToString()
+		{
+			return _shape.ToString();
+		}
 	}
 }

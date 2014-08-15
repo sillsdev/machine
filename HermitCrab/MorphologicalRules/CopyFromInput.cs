@@ -34,5 +34,10 @@ namespace SIL.HermitCrab.MorphologicalRules
 			}
 			return mappings;
 		}
+
+		public override string ToString()
+		{
+			return string.Format("<{0}>", PartName);
+		}
 	}
 }
