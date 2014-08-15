@@ -28,7 +28,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo1")
 									{
 										Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-										Rhs = { new CopyFromInput("1"), new InsertShape(Table3.Segment("s")) }
+										Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "s") }
 									});
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
@@ -74,7 +74,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo1")
 									{
 										Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-										Rhs = { new CopyFromInput("1"), new InsertShape(Table3.Segment("d")) }
+										Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "d") }
 									});
 
 			morpher = new Morpher(SpanFactory, TraceManager, Language);
@@ -101,7 +101,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			rule1.Allomorphs.Add(new AffixProcessAllomorph("rule1_allo1")
 									{
 										Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-										Rhs = { new CopyFromInput("1"), new InsertShape(Table3.Segment("z")) }
+										Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "z") }
 									});
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
@@ -248,17 +248,17 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo1")
 			                       	{
 										Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Annotation(strident).Value},
-										Rhs = {new CopyFromInput("1"), new InsertShape(Table3.Segment("ɯz"))}
+										Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "ɯz")}
 			                       	});
 			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo2")
 									{
 										Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Annotation(voicelessCons).Value},
-										Rhs = {new CopyFromInput("1"), new InsertShape(Table3.Segment("s"))}
+										Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "s")}
 									});
 			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo3")
 									{
 										Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-										Rhs = {new CopyFromInput("1"), new InsertShape(Table3.Segment("z"))}
+										Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "z")}
 									});
 
 			var edSuffix = new AffixProcessRule("ed_suffix")
@@ -277,17 +277,17 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 													Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
 													Pattern<Word, ShapeNode>.New("2").Annotation(alvStop).Value
 												},
-											Rhs = {new CopyFromInput("1"), new CopyFromInput("2"), new InsertShape(Table3.Segment("+ɯd"))}
+											Rhs = {new CopyFromInput("1"), new CopyFromInput("2"), new InsertShape(Table3, "+ɯd")}
 										});
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph("ed_suffix_allo2")
 										{
 											Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Annotation(voicelessCons).Value},
-											Rhs = {new CopyFromInput("1"), new InsertShape(Table3.Segment("+t"))}
+											Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "+t")}
 										});
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph("ed_suffix_allo3")
 										{
 											Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-											Rhs = {new CopyFromInput("1"), new InsertShape(Table3.Segment("+")), new InsertShapeNode(d)}
+											Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "+"), new InsertShapeNode(d)}
 										});
 
 			var prule1 = new RewriteRule("rule1") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("t")).Value};
@@ -377,17 +377,17 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			sPrefix.Allomorphs.Add(new AffixProcessAllomorph("s_prefix_allo1")
 			                		{
 			                			Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(strident).Annotation(any).OneOrMore.Value},
-										Rhs = {new InsertShape(Table3.Segment("zi")), new CopyFromInput("1")}
+										Rhs = {new InsertShape(Table3, "zi"), new CopyFromInput("1")}
 			                		});
 			sPrefix.Allomorphs.Add(new AffixProcessAllomorph("s_prefix_allo2")
 			                       	{
 										Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(voicelessCons).Annotation(any).OneOrMore.Value},
-										Rhs = {new InsertShape(Table3.Segment("s")), new CopyFromInput("1")}
+										Rhs = {new InsertShape(Table3, "s"), new CopyFromInput("1")}
 			                       	});
 			sPrefix.Allomorphs.Add(new AffixProcessAllomorph("s_prefix_allo3")
 									{
 										Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-										Rhs = {new InsertShape(Table3.Segment("z")), new CopyFromInput("1")}
+										Rhs = {new InsertShape(Table3, "z"), new CopyFromInput("1")}
 									});
 
 			var edPrefix = new AffixProcessRule("ed_prefix")
@@ -402,17 +402,17 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			edPrefix.Allomorphs.Add(new AffixProcessAllomorph("ed_prefix_allo1")
 								{
 									Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(alvStop).Annotation(any).OneOrMore.Value},
-									Rhs = {new InsertShape(Table3.Segment("di+")), new CopyFromInput("1")}
+									Rhs = {new InsertShape(Table3, "di+"), new CopyFromInput("1")}
 								});
 			edPrefix.Allomorphs.Add(new AffixProcessAllomorph("ed_prefix_allo2")
 								{
 									Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(voicelessCons).Annotation(any).OneOrMore.Value},
-									Rhs = {new InsertShape(Table3.Segment("t+")), new CopyFromInput("1")}
+									Rhs = {new InsertShape(Table3, "t+"), new CopyFromInput("1")}
 								});
 			edPrefix.Allomorphs.Add(new AffixProcessAllomorph("ed_prefix_allo3")
 								{
 									Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-									Rhs = {new InsertShape(Table3.Segment("d+")), new CopyFromInput("1")}
+									Rhs = {new InsertShape(Table3, "d+"), new CopyFromInput("1")}
 								});
 
 			var aspiration = new RewriteRule("aspiration") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(voicelessStop).Value};
@@ -467,7 +467,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 												},
 											Rhs =
 												{
-													new InsertShape(Table3.Segment("m")),
+													new InsertShape(Table3, "m"),
 													new InsertShapeNode(FeatureStruct.New(Language.PhoneticFeatureSystem, lowVowel).Feature("ATR").EqualToVariable("a").Value),
 													new CopyFromInput("1"),
 													new CopyFromInput("3")
@@ -507,7 +507,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 												Pattern<Word, ShapeNode>.New("2").Annotation(cons).Value,
 												Pattern<Word, ShapeNode>.New("3").Annotation(cons).Value
 											},
-										Rhs = { new CopyFromInput("1"), new InsertShape(Table3.Segment("a")), new CopyFromInput("2"), new InsertShape(Table3.Segment("a")), new CopyFromInput("3") }
+										Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "a"), new CopyFromInput("2"), new InsertShape(Table3, "a"), new CopyFromInput("3") }
 									});
 
 			var perfPass = new AffixProcessRule("perf_pass")
@@ -528,7 +528,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 													Pattern<Word, ShapeNode>.New("2").Annotation(cons).Value,
 													Pattern<Word, ShapeNode>.New("3").Annotation(cons).Value
 												},
-											Rhs = { new CopyFromInput("1"), new InsertShape(Table3.Segment("u")), new CopyFromInput("2"), new InsertShape(Table3.Segment("i")), new CopyFromInput("3") }
+											Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "u"), new CopyFromInput("2"), new InsertShape(Table3, "i"), new CopyFromInput("3") }
 										});
 
 			var imperfAct = new AffixProcessRule("imperf_act")
@@ -548,7 +548,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 													Pattern<Word, ShapeNode>.New("1").Annotation(cons).Annotation(cons).Value,
 													Pattern<Word, ShapeNode>.New("2").Annotation(cons).Value
 												},
-											Rhs = { new InsertShape(Table3.Segment("a")), new CopyFromInput("1"), new InsertShape(Table3.Segment("u")), new CopyFromInput("2") }
+											Rhs = { new InsertShape(Table3, "a"), new CopyFromInput("1"), new InsertShape(Table3, "u"), new CopyFromInput("2") }
 										});
 
 			var imperfPass = new AffixProcessRule("imperf_pass")
@@ -569,7 +569,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 													Pattern<Word, ShapeNode>.New("2").Annotation(cons).Value,
 													Pattern<Word, ShapeNode>.New("3").Annotation(cons).Value
 												},
-											Rhs = { new InsertShape(Table3.Segment("u")), new CopyFromInput("1"), new CopyFromInput("2"), new InsertShape(Table3.Segment("a")), new CopyFromInput("3") }
+											Rhs = { new InsertShape(Table3, "u"), new CopyFromInput("1"), new CopyFromInput("2"), new InsertShape(Table3, "a"), new CopyFromInput("3") }
 										});
 
 			var aspiration = new RewriteRule("aspiration") { Lhs = Pattern<Word, ShapeNode>.New().Annotation(voicelessStop).Value };
@@ -875,7 +875,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 													Pattern<Word, ShapeNode>.New("1").Annotation(Table3.GetSymbolFeatureStruct("s")).Optional.Value,
 													Pattern<Word, ShapeNode>.New("2").Annotation(any).OneOrMore.Value
 												},
-											Rhs = { new InsertShape(Table3.Segment("g")), new CopyFromInput("2") }
+											Rhs = { new InsertShape(Table3, "g"), new CopyFromInput("2") }
 										});
 
 			morpher = new Morpher(SpanFactory, TraceManager, Language);
@@ -903,13 +903,13 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo1")
 									{
 										Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-										Rhs = {new CopyFromInput("1"), new InsertShape(Table3.Segment("s"))},
+										Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "s")},
 										RequiredEnvironments = {new AllomorphEnvironment(SpanFactory, null, Pattern<Word, ShapeNode>.New().Annotation(vowel).Value)}
 									});
 			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo2")
 									{
 										Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-										Rhs = {new CopyFromInput("1"), new InsertShape(Table3.Segment("z"))}
+										Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "z")}
 									});
 
 			var edSuffix = new AffixProcessRule("ed_suffix")
@@ -924,7 +924,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph("ed_suffix_allo1")
 										{
 											Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-											Rhs = {new CopyFromInput("1"), new InsertShape(Table3.Segment("+ɯd"))}
+											Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "+ɯd")}
 										});
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
@@ -951,12 +951,12 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo1")
 									{
 										Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-										Rhs = {new CopyFromInput("1"), new InsertShape(Table3.Segment("s"))}
+										Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "s")}
 									});
 			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo2")
 									{
 										Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-										Rhs = {new CopyFromInput("1"), new InsertShape(Table3.Segment("z"))}
+										Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "z")}
 									});
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);

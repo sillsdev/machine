@@ -8,11 +8,18 @@ namespace SIL.HermitCrab.MorphologicalRules
 	public class InsertShape : MorphologicalOutputAction
 	{
 		private readonly Shape _shape;
+		private readonly SymbolTable _table;
 
-		public InsertShape(Shape shape)
+		public InsertShape(SymbolTable table, string shape)
+			: this(table, table.Segment(shape))
+		{
+		}
+
+		public InsertShape(SymbolTable table, Shape shape)
 			: base(null)
 		{
 			_shape = shape;
+			_table = table;
 		}
 
 		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IDictionary<string, Pattern<Word, ShapeNode>> partLookup)
@@ -35,7 +42,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 		public override string ToString()
 		{
-			return _shape.ToString();
+			return _shape.ToString(_table, true);
 		}
 	}
 }

@@ -891,8 +891,7 @@ namespace SIL.HermitCrab
 					case "InsertSegments":
 						SymbolTable table = _tables[(string) partElem.Attribute("characterTable")];
 						var shapeStr = (string) partElem.Element("PhoneticShape");
-						Shape shape = table.Segment(shapeStr);
-						rhs.Add(new InsertShape(shape));
+						rhs.Add(new InsertShape(table, shapeStr));
 						break;
 				}
 			}
