@@ -95,7 +95,11 @@ namespace SIL.HermitCrab
 
 		public override string ToString()
 		{
-			return string.Format("/ {0} _ {1}", _leftEnv == null ? "" : _leftEnv.ToString(), _rightEnv == null ? "" : _rightEnv.ToString());
+			if (_leftEnv == null)
+				return string.Format("/ _ {0}", _rightEnv);
+			if (_rightEnv == null)
+				return string.Format("/ {0} _", _leftEnv);
+			return string.Format("/ {0} _ {1}", _leftEnv, _rightEnv);
 		}
 	}
 }
