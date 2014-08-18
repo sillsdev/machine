@@ -92,5 +92,10 @@ namespace SIL.HermitCrab
 			code = code * 31 + (_rightEnv == null ? 0 : _rightEnv.GetFrozenHashCode());
 			return code;
 		}
+
+		public override string ToString()
+		{
+			return string.Format("/ {0} _ {1}", _leftEnv == null ? "" : _leftEnv.ToString(), _rightEnv == null ? "" : _rightEnv.ToString());
+		}
 	}
 }
