@@ -19,11 +19,11 @@ namespace SIL.HermitCrab
 		private readonly IRule<Word, ShapeNode> _analysisRule;
 		private readonly IRule<Word, ShapeNode> _synthesisRule;
 		private readonly Dictionary<Stratum, Tuple<ShapeTrie, IDBearerSet<RootAllomorph>>> _allomorphTries;
-		private readonly TraceManagerBase _traceManager;
+		private readonly ITraceManager _traceManager;
 
 		private readonly IDBearerSet<IHCRule> _rules; 
 
-		public Morpher(SpanFactory<ShapeNode> spanFactory, TraceManagerBase traceManager, Language lang)
+		public Morpher(SpanFactory<ShapeNode> spanFactory, ITraceManager traceManager, Language lang)
 		{
 			_lang = lang;
 			_traceManager = traceManager;
@@ -45,7 +45,7 @@ namespace SIL.HermitCrab
 			RuleSelector = rule => true;
 		}
 
-		public TraceManagerBase TraceManager
+		public ITraceManager TraceManager
 		{
 			get { return _traceManager; }
 		}

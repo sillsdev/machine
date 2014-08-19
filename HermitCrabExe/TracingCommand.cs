@@ -19,7 +19,7 @@ namespace SIL.HermitCrab
 		public override int Run(string[] remainingArguments)
 		{
 			if (remainingArguments.Length > 0)
-				_context.Morpher.TraceManager.TraceAll = remainingArguments[0] == "on";
+				_context.Morpher.TraceManager.IsTracing = remainingArguments[0] == "on";
 
 			_context.Out.WriteLine(_context.Morpher.TraceManager.IsTracing ? "Tracing is turned on." : "Tracing is turned off.");
 

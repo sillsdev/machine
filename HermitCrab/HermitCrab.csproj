@@ -133,7 +133,7 @@
     <Compile Include="SynthesisStratumRule.cs" />
     <Compile Include="Trace.cs" />
     <Compile Include="TraceManager.cs" />
-    <Compile Include="TraceManagerBase.cs" />
+    <Compile Include="ITraceManager.cs" />
     <Compile Include="Word.cs" />
     <Compile Include="XmlLoader.cs" />
   </ItemGroup>
