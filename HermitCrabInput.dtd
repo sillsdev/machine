@@ -352,7 +352,7 @@ N.B. Hermit Crab's text input uses "property setting records"
 
 <!ELEMENT MorphologicalSubrules (MorphologicalSubruleStructure+) >
 <!ELEMENT MorphologicalSubruleStructure (VariableFeatures?, InputSideRecordStructure, OutputSideRecordStructure, RequiredEnvironments?, ExcludedEnvironments?,
-										 RequiredAllomorphCoOccurrences?, ExcludedAllomorphCoOccurrences?, Properties?) >
+										 RequiredHeadFeatures?, RequiredFootFeatures?, RequiredAllomorphCoOccurrences?, ExcludedAllomorphCoOccurrences?, Properties?) >
 <!ATTLIST MorphologicalSubruleStructure
   id ID #REQUIRED
   isActive (yes | no) "yes"

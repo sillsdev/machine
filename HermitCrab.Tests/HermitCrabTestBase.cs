@@ -285,12 +285,14 @@ namespace SIL.HermitCrab.Tests
 			entry.Allomorphs[1].RequiredEnvironments.Add(new AllomorphEnvironment(SpanFactory, null, Pattern<Word, ShapeNode>.New().Annotation(vowel).Value));
 			entry.Allomorphs[2].RequiredEnvironments.Add(new AllomorphEnvironment(SpanFactory, null, Pattern<Word, ShapeNode>.New().Annotation(vowel).Value));
 
-			entry = AddEntry("stemname", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "sad", "san");
-			fs = FeatureStruct.New(syntacticFeatSys)
-				.Symbol("V")
-				.Feature("head").EqualTo(head => head
-					.Feature("tense").EqualTo("past")).Value;
-			entry.Allomorphs[0].StemName = new StemName("sn1", fs);
+			entry = AddEntry("stemname", FeatureStruct.New(syntacticFeatSys).Symbol("V").Feature("head").EqualTo(head => head.Feature("tense").EqualTo("pres")).Value, Morphophonemic, "sad", "san");
+			entry.Allomorphs[0].StemName = new StemName("sn1",
+				FeatureStruct.New(syntacticFeatSys)
+					.Symbol("V")
+					.Feature("head").EqualTo(head => head
+						.Feature("tense").EqualTo("past")).Value);
+
+			AddEntry("synfs", FeatureStruct.New(syntacticFeatSys).Symbol("V").Feature("head").EqualTo(head => head.Feature("tense").EqualTo("pres")).Value, Morphophonemic, "bag");
 
 			Language = new Language("lang1")
 			           	{

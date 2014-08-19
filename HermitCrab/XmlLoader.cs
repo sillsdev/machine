@@ -842,6 +842,16 @@ namespace SIL.HermitCrab
 			allomorph.RequiredEnvironments.AddRange(LoadAllomorphEnvironments(msubruleElem.Element("RequiredEnvironments")));
 			allomorph.ExcludedEnvironments.AddRange(LoadAllomorphEnvironments(msubruleElem.Element("ExcludedEnvironments")));
 
+			var fs = new FeatureStruct();
+			XElement requiredHeadFeatElem = msubruleElem.Element("RequiredHeadFeatures");
+			if (requiredHeadFeatElem != null)
+				fs.AddValue(_headFeature, LoadSyntacticFeatureStruct(requiredHeadFeatElem));
+			XElement requiredFootFeatElem = msubruleElem.Element("RequiredFootFeatures");
+			if (requiredFootFeatElem != null)
+				fs.AddValue(_footFeature, LoadSyntacticFeatureStruct(requiredFootFeatElem));
+			fs.Freeze();
+			allomorph.RequiredSyntacticFeatureStruct = fs;
+
 			LoadProperties(msubruleElem.Element("Properties"), allomorph.Properties);
 
 			Dictionary<string, Tuple<string, SymbolicFeature>> variables = LoadVariables(msubruleElem.Element("VariableFeatures"));

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SIL.Collections;
 using SIL.Machine.Annotations;
+using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 
 namespace SIL.HermitCrab.MorphologicalRules
@@ -38,6 +39,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 			_requiredMprFeatures = new MprFeatureSet();
 			_excludedMprFeatures = new MprFeatureSet();
 			_outMprFeatures = new MprFeatureSet();
+			RequiredSyntacticFeatureStruct = FeatureStruct.New().Value;
 		}
 
 		public ReduplicationHint ReduplicationHint { get; set; }
@@ -67,6 +69,8 @@ namespace SIL.HermitCrab.MorphologicalRules
 			get { return _outMprFeatures; }
 		}
 
+		public FeatureStruct RequiredSyntacticFeatureStruct { get; set; }
+
 		protected override bool ConstraintsEqual(Allomorph other)
 		{
 			var otherAllo = other as AffixProcessAllomorph;
@@ -74,7 +78,22 @@ namespace SIL.HermitCrab.MorphologicalRules
 				return false;
 
 			return base.ConstraintsEqual(other) && _requiredMprFeatures.SetEquals(otherAllo._requiredMprFeatures)
-				&& _excludedMprFeatures.SetEquals(otherAllo._excludedMprFeatures) && _lhs.SequenceEqual(otherAllo._lhs, FreezableEqualityComparer<Pattern<Word, ShapeNode>>.Default);
+				&& _excludedMprFeatures.SetEquals(otherAllo._excludedMprFeatures) && _lhs.SequenceEqual(otherAllo._lhs, FreezableEqualityComparer<Pattern<Word, ShapeNode>>.Default)
+				&& RequiredSyntacticFeatureStruct.ValueEquals(otherAllo.RequiredSyntacticFeatureStruct);
+		}
+
+		internal override bool IsWordValid(Morpher morpher, Word word)
+		{
+			if (!base.IsWordValid(morpher, word))
+				return false;
+
+			if (!RequiredSyntacticFeatureStruct.IsUnifiable(word.SyntacticFeatureStruct))
+			{
+				morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.RequiredSyntacticFeatureStruct, this);
+				return false;
+			}
+
+			return true;
 		}
 	}
 }

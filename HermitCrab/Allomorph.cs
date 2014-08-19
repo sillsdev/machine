@@ -147,18 +147,6 @@ namespace SIL.HermitCrab
 
 		internal virtual bool IsWordValid(Morpher morpher, Word word)
 		{
-			if (!RequiredAllomorphCoOccurrences.All(c => c.CoOccurs(word)))
-			{
-				morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.RequiredAllomorphCoOccurrences, this);
-				return false;
-			}
-
-			if (ExcludedAllomorphCoOccurrences.Any(c => c.CoOccurs(word)))
-			{
-				morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.ExcludedAllomorphCoOccurrences, this);
-				return false;
-			}
-
 			if (!RequiredEnvironments.All(env => env.IsMatch(word)))
 			{
 				morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.RequiredEnvironments, this);
@@ -168,6 +156,18 @@ namespace SIL.HermitCrab
 			if (ExcludedEnvironments.Any(env => env.IsMatch(word)))
 			{
 				morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.ExcludedEnvironments, this);
+				return false;
+			}
+
+			if (!RequiredAllomorphCoOccurrences.All(c => c.CoOccurs(word)))
+			{
+				morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.RequiredAllomorphCoOccurrences, this);
+				return false;
+			}
+
+			if (ExcludedAllomorphCoOccurrences.Any(c => c.CoOccurs(word)))
+			{
+				morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.ExcludedAllomorphCoOccurrences, this);
 				return false;
 			}
 

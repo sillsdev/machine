@@ -27,7 +27,7 @@ namespace SIL.HermitCrab
 		{
 			_slots = new ObservableCollection<AffixTemplateSlot>();
 			_slots.CollectionChanged += SlotsChanged;
-			RequiredSyntacticFeatureStruct = new FeatureStruct();
+			RequiredSyntacticFeatureStruct = FeatureStruct.New().Value;
 			IsFinal = true;
 		}
 

@@ -27,7 +27,7 @@ namespace SIL.HermitCrab
 
 		public bool IsMatch(FeatureStruct fs)
 		{
-			return _regions.Any(r => r.Subsumes(fs));
+			return _regions.Any(r => r.IsUnifiable(fs));
 		}
 	}
 }

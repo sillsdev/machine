@@ -884,7 +884,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 		}
 
 		[Test]
-		public void DisjunctiveAllomorphs()
+		public void RequiredEnvironments()
 		{
 			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
 			var vowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
@@ -932,6 +932,54 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			Assert.That(morpher.ParseWord("sags"), Is.Empty);
 			AssertMorphsEqual(morpher.ParseWord("sagsɯd"), "32 s_suffix ed_suffix");
 			Assert.That(morpher.ParseWord("sagzɯd"), Is.Empty);
+		}
+
+		[Test]
+		public void RequiredSyntacticFeatureStruct()
+		{
+			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+
+			var sSuffix = new AffixProcessRule("s_suffix")
+			              	{
+			              		Gloss = "3SG",
+			              		RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+								OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
+									.Feature("head").EqualTo(head => head
+										.Feature("pers").EqualTo("3")).Value
+			              	};
+			Morphophonemic.MorphologicalRules.Add(sSuffix);
+			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo1")
+									{
+										Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
+										Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "s")},
+										RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Feature("head").EqualTo(head => head.Feature("tense").EqualTo("past")).Value
+									});
+			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo2")
+									{
+										Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
+										Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "z")}
+									});
+
+			var edSuffix = new AffixProcessRule("ed_suffix")
+							{
+								Gloss = "PAST",
+								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+								OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
+									.Feature("head").EqualTo(head => head
+										.Feature("tense").EqualTo("past")).Value
+							};
+			Morphophonemic.MorphologicalRules.Add(edSuffix);
+			edSuffix.Allomorphs.Add(new AffixProcessAllomorph("ed_suffix_allo1")
+										{
+											Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
+											Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "+ɯd")}
+										});
+
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			AssertMorphsEqual(morpher.ParseWord("bagz"), "synfs s_suffix");
+			Assert.That(morpher.ParseWord("bags"), Is.Empty);
+			AssertMorphsEqual(morpher.ParseWord("bagsɯd"), "synfs s_suffix ed_suffix");
+			Assert.That(morpher.ParseWord("bagzɯd"), Is.Empty);
 		}
 
 		[Test]

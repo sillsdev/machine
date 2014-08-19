@@ -27,8 +27,8 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 			MaxApplicationCount = 1;
 			Blockable = true;
-			RequiredSyntacticFeatureStruct = new FeatureStruct();
-			OutSyntacticFeatureStruct = new FeatureStruct();
+			RequiredSyntacticFeatureStruct = FeatureStruct.New().Value;
+			OutSyntacticFeatureStruct = FeatureStruct.New().Value;
 			_obligatorySyntacticFeatures = new IDBearerSet<Feature>();
 		}
 
