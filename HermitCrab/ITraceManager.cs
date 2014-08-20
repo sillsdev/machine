@@ -18,7 +18,8 @@
 		HeadRequiredSyntacticFeatureStruct,
 		NonHeadRequiredSyntacticFeatureStruct,
 		StemName,
-		PartialParse
+		PartialParse,
+		BoundRoot
 	}
 
 	public interface ITraceManager

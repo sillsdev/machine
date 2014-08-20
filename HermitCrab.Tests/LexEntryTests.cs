@@ -132,5 +132,27 @@ namespace SIL.HermitCrab.Tests
 			Assert.That(morpher.ParseWord("sad"), Is.Empty);
 			AssertMorphsEqual(morpher.ParseWord("san"), "stemname");
 		}
+
+		[Test]
+		public void BoundRootAllomorph()
+		{
+			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+
+			var edSuffix = new AffixProcessRule("ed_suffix")
+							{
+								Gloss = "PAST",
+								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
+							};
+			Morphophonemic.MorphologicalRules.Add(edSuffix);
+			edSuffix.Allomorphs.Add(new AffixProcessAllomorph("ed_suffix_allo1")
+										{
+											Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
+											Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "+ɯd")}
+										});
+
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			Assert.That(morpher.ParseWord("dag"), Is.Empty);
+			AssertMorphsEqual(morpher.ParseWord("dagɯd"), "bound ed_suffix");
+		}
 	}
 }

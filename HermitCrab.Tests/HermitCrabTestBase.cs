@@ -294,6 +294,9 @@ namespace SIL.HermitCrab.Tests
 
 			AddEntry("synfs", FeatureStruct.New(syntacticFeatSys).Symbol("V").Feature("head").EqualTo(head => head.Feature("tense").EqualTo("pres")).Value, Morphophonemic, "bag");
 
+			entry = AddEntry("bound", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "dag");
+			entry.PrimaryAllomorph.IsBound = true;
+
 			Language = new Language("lang1")
 			           	{
 			           		PhoneticFeatureSystem = phoneticFeatSys,
