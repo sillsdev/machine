@@ -94,7 +94,10 @@ namespace SIL.HermitCrab
 			string ruleLabel = GetRuleLabelString(trace.Source);
 			if (!string.IsNullOrEmpty(ruleLabel))
 			{
-				_context.Out.Write("{0}: {1}", ruleLabel, trace.Source.Description);
+				if (trace.SubruleIndex >= 0)
+					_context.Out.Write("{0}: {1}({2})", ruleLabel, trace.Source.Description, trace.SubruleIndex);
+				else
+					_context.Out.Write("{0}: {1}", ruleLabel, trace.Source.Description);
 				first = false;
 			}
 			bool analysis = IsAnalysis(trace.Type);

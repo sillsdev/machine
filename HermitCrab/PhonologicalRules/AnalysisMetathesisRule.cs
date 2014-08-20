@@ -55,13 +55,14 @@ namespace SIL.HermitCrab.PhonologicalRules
 			if (!_morpher.RuleSelector(_rule))
 				return Enumerable.Empty<Word>();
 
-			Word[] output = _patternRule.Apply(input).ToArray();
-			if (output.Length > 0)
-				_morpher.TraceManager.PhonologicalRuleUnapplied(_rule, input, output[0]);
-			else
-				_morpher.TraceManager.PhonologicalRuleNotUnapplied(_rule, input);
+			if (_patternRule.Apply(input).Any())
+			{
+				_morpher.TraceManager.PhonologicalRuleUnapplied(_rule, -1, input);
+				return input.ToEnumerable();
+			}
 
-			return output;
+			_morpher.TraceManager.PhonologicalRuleNotUnapplied(_rule, -1, input);
+			return Enumerable.Empty<Word>();
 		}
 	}
 }

@@ -86,7 +86,7 @@ namespace SIL.HermitCrab
 		{
 			get { return _rootAllomorph; }
 
-			set
+			internal set
 			{
 				CheckFrozen();
 				_shape = value.Shape.DeepClone();
@@ -113,12 +113,12 @@ namespace SIL.HermitCrab
 			get { return _shape; }
 		}
 
-		public FeatureStruct SyntacticFeatureStruct { get; set; }
+		public FeatureStruct SyntacticFeatureStruct { get; internal set; }
 
 		public FeatureStruct RealizationalFeatureStruct
 		{
 			get { return _realizationalFS; }
-			set
+			internal set
 			{
 				CheckFrozen();
 				_realizationalFS = value;
@@ -153,7 +153,7 @@ namespace SIL.HermitCrab
 		public Stratum Stratum
 		{
 			get { return _stratum; }
-			set
+			internal set
 			{
 				CheckFrozen();
 				_stratum = value;
@@ -171,7 +171,7 @@ namespace SIL.HermitCrab
 		/// Gets the current rule.
 		/// </summary>
 		/// <value>The current rule.</value>
-		public IMorphologicalRule CurrentMorphologicalRule
+		internal IMorphologicalRule CurrentMorphologicalRule
 		{
 			get
 			{
@@ -186,7 +186,7 @@ namespace SIL.HermitCrab
 		/// </summary>
 		/// <param name="mrule">The morphological rule.</param>
 		/// <param name="realizational"> </param>
-		public void MorphologicalRuleUnapplied(IMorphologicalRule mrule, bool realizational)
+		internal void MorphologicalRuleUnapplied(IMorphologicalRule mrule, bool realizational)
 		{
 			CheckFrozen();
 			_mrulesUnapplied.UpdateValue(mrule, () => 0, count => count + 1);
@@ -199,7 +199,7 @@ namespace SIL.HermitCrab
 		/// </summary>
 		/// <param name="mrule">The morphological rule.</param>
 		/// <returns>The number of unapplications.</returns>
-		public int GetUnapplicationCount(IMorphologicalRule mrule)
+		internal int GetUnapplicationCount(IMorphologicalRule mrule)
 		{
 			int numUnapplies;
 			if (!_mrulesUnapplied.TryGetValue(mrule, out numUnapplies))
@@ -210,20 +210,20 @@ namespace SIL.HermitCrab
 		/// <summary>
 		/// Notifies this word synthesis that the specified morphological rule has applied.
 		/// </summary>
-		public void MorphologicalRuleApplied(IMorphologicalRule mrule)
+		internal void MorphologicalRuleApplied(IMorphologicalRule mrule)
 		{
 			CheckFrozen();
 			_mrulesApplied.UpdateValue(mrule, () => 0, count => count + 1);
 		}
 
-		public void CurrentMorphologicalRuleApplied()
+		internal void CurrentMorphologicalRuleApplied()
 		{
 			CheckFrozen();
 			IMorphologicalRule mrule = _mrules.Pop();
 			MorphologicalRuleApplied(mrule);
 		}
 
-		public bool IsLastAppliedRuleFinal
+		internal bool IsLastAppliedRuleFinal
 		{
 			get { return _isLastAppliedRuleFinal; }
 			set
@@ -238,7 +238,7 @@ namespace SIL.HermitCrab
 		/// </summary>
 		/// <param name="mrule">The morphological rule.</param>
 		/// <returns>The number of applications.</returns>
-		public int GetApplicationCount(IMorphologicalRule mrule)
+		internal int GetApplicationCount(IMorphologicalRule mrule)
 		{
 			int numApplies;
 			if (!_mrulesApplied.TryGetValue(mrule, out numApplies))
@@ -252,7 +252,7 @@ namespace SIL.HermitCrab
 			return _allomorphs[alloID];
 		}
 
-		public Word CurrentNonHead
+		internal Word CurrentNonHead
 		{
 			get
 			{
@@ -262,7 +262,7 @@ namespace SIL.HermitCrab
 			}
 		}
 
-		public int NonHeadCount
+		internal int NonHeadCount
 		{
 			get { return _nonHeads.Count; }
 		}
@@ -273,13 +273,13 @@ namespace SIL.HermitCrab
 			_nonHeads.Push(nonHead);
 		}
 
-		public void CurrentNonHeadApplied()
+		internal void CurrentNonHeadApplied()
 		{
 			CheckFrozen();
 			_nonHeads.Pop();
 		}
 
-		public bool CheckBlocking(out Word word)
+		internal bool CheckBlocking(out Word word)
 		{
 			word = null;
 			LexFamily family = ((LexEntry) RootAllomorph.Morpheme).Family;
@@ -299,12 +299,14 @@ namespace SIL.HermitCrab
 			return false;
 		}
 
-		public void ResetDirty()
+		internal void ResetDirty()
 		{
 			CheckFrozen();
 			foreach (ShapeNode node in _shape)
 				node.SetDirty(false);
 		}
+
+		internal IDictionary<int, FailureReason> CurrentRuleResults { get; set; }
 
 		protected override int FreezeImpl()
 		{

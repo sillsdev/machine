@@ -22,16 +22,16 @@
 				((Trace) output.CurrentTrace).Children.Add(new Trace(TraceType.StratumAnalysisOutput, stratum) {Output = output});
 		}
 
-		public void PhonologicalRuleUnapplied(IPhonologicalRule rule, Word input, Word output)
+		public void PhonologicalRuleUnapplied(IPhonologicalRule rule, int subruleIndex, Word output)
 		{
 			if (IsTracing)
-				((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.PhonologicalRuleAnalysis, rule) {Input = input.DeepClone(), Output = output.DeepClone()});
+				((Trace) output.CurrentTrace).Children.Add(new Trace(TraceType.PhonologicalRuleAnalysis, rule) {SubruleIndex = subruleIndex, Output = output.DeepClone()});
 		}
 
-		public void PhonologicalRuleNotUnapplied(IPhonologicalRule rule, Word input)
+		public void PhonologicalRuleNotUnapplied(IPhonologicalRule rule, int subruleIndex, Word input)
 		{
 			if (IsTracing)
-				((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.PhonologicalRuleAnalysis, rule) {Input = input.DeepClone()});
+				((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.PhonologicalRuleAnalysis, rule) {SubruleIndex = subruleIndex, Input = input.DeepClone()});
 		}
 
 		public void BeginUnapplyTemplate(AffixTemplate template, Word input)
@@ -46,20 +46,20 @@
 				((Trace) output.CurrentTrace).Children.Add(new Trace(TraceType.TemplateAnalysisOutput, template) {Output = unapplied ? output : null});
 		}
 
-		public void MorphologicalRuleUnapplied(IMorphologicalRule rule, Word input, Word output, Allomorph allomorph)
+		public void MorphologicalRuleUnapplied(IMorphologicalRule rule, int subruleIndex, Word input, Word output)
 		{
 			if (IsTracing)
 			{
-				var trace = new Trace(TraceType.MorphologicalRuleAnalysis, rule) {Input = input, Output = output};
+				var trace = new Trace(TraceType.MorphologicalRuleAnalysis, rule) {SubruleIndex = subruleIndex, Input = input, Output = output};
 				((Trace) output.CurrentTrace).Children.Add(trace);
 				output.CurrentTrace = trace;
 			}
 		}
 
-		public void MorphologicalRuleNotUnapplied(IMorphologicalRule rule, Word input)
+		public void MorphologicalRuleNotUnapplied(IMorphologicalRule rule, int subruleIndex, Word input)
 		{
 			if (IsTracing)
-				((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.MorphologicalRuleAnalysis, rule) {Input = input});
+				((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.MorphologicalRuleAnalysis, rule) {SubruleIndex = subruleIndex, Input = input});
 		}
 
 		public void LexicalLookup(Stratum stratum, Word input)
@@ -91,16 +91,16 @@
 				((Trace) output.CurrentTrace).Children.Add(new Trace(TraceType.StratumSynthesisOutput, stratum) {Output = output});
 		}
 
-		public void PhonologicalRuleApplied(IPhonologicalRule rule, Word input, Word output)
+		public void PhonologicalRuleApplied(IPhonologicalRule rule, int subruleIndex, Word output)
 		{
 			if (IsTracing)
-				((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.PhonologicalRuleSynthesis, rule) {Input = input.DeepClone(), Output = output.DeepClone()});
+				((Trace) output.CurrentTrace).Children.Add(new Trace(TraceType.PhonologicalRuleSynthesis, rule) {SubruleIndex = subruleIndex, Output = output.DeepClone()});
 		}
 
-		public void PhonologicalRuleNotApplied(IPhonologicalRule rule, Word input, FailureReason reason)
+		public void PhonologicalRuleNotApplied(IPhonologicalRule rule, int subruleIndex, Word input, FailureReason reason)
 		{
 			if (IsTracing)
-				((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.PhonologicalRuleSynthesis, rule) {Input = input.DeepClone(), FailureReason = reason});
+				((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.PhonologicalRuleSynthesis, rule) {SubruleIndex = subruleIndex, Input = input.DeepClone(), FailureReason = reason});
 		}
 
 		public void BeginApplyTemplate(AffixTemplate template, Word input)
@@ -115,20 +115,20 @@
 				((Trace) output.CurrentTrace).Children.Add(new Trace(TraceType.TemplateSynthesisOutput, template) {Output = applied ? output : null});
 		}
 
-		public void MorphologicalRuleApplied(IMorphologicalRule rule, Word input, Word output, Allomorph allomorph)
+		public void MorphologicalRuleApplied(IMorphologicalRule rule, int subruleIndex, Word input, Word output)
 		{
 			if (IsTracing)
 			{
-				var trace = new Trace(TraceType.MorphologicalRuleSynthesis, rule) {Input = input, Output = output};
+				var trace = new Trace(TraceType.MorphologicalRuleSynthesis, rule) {SubruleIndex = subruleIndex, Input = input, Output = output};
 				((Trace) output.CurrentTrace).Children.Add(trace);
 				output.CurrentTrace = trace;
 			}
 		}
 
-		public void MorphologicalRuleNotApplied(IMorphologicalRule rule, Word input, FailureReason reason)
+		public void MorphologicalRuleNotApplied(IMorphologicalRule rule, int subruleIndex, Word input, FailureReason reason)
 		{
 			if (IsTracing)
-				((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.MorphologicalRuleSynthesis, rule) {Input = input, FailureReason = reason});
+				((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.MorphologicalRuleSynthesis, rule) {SubruleIndex = subruleIndex, Input = input, FailureReason = reason});
 		}
 
 		public void Blocking(IHCRule rule, Word output)

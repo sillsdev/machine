@@ -19,14 +19,15 @@ namespace SIL.HermitCrab.PhonologicalRules
 			_rule = rule;
 
 			var ruleSpec = new BatchPatternRuleSpec<Word, ShapeNode>();
-			foreach (RewriteSubrule sr in rule.Subrules)
+			for (int i = 0; i < rule.Subrules.Count; i++)
 			{
+				RewriteSubrule sr = rule.Subrules[i];
 				if (rule.Lhs.Children.Count == sr.Rhs.Children.Count)
-					ruleSpec.RuleSpecs.Add(new FeatureSynthesisRewriteRuleSpec(rule.Lhs, sr));
+					ruleSpec.RuleSpecs.Add(new FeatureSynthesisRewriteRuleSpec(rule.Lhs, sr, i));
 				else if (rule.Lhs.Children.Count > sr.Rhs.Children.Count)
-					ruleSpec.RuleSpecs.Add(new NarrowSynthesisRewriteRuleSpec(rule.Lhs, sr));
+					ruleSpec.RuleSpecs.Add(new NarrowSynthesisRewriteRuleSpec(rule.Lhs, sr, i));
 				else if (rule.Lhs.Children.Count == 0)
-					ruleSpec.RuleSpecs.Add(new EpenthesisSynthesisRewriteRuleSpec(rule.Lhs, sr));
+					ruleSpec.RuleSpecs.Add(new EpenthesisSynthesisRewriteRuleSpec(rule.Lhs, sr, i));
 			}
 
 			var settings = new MatcherSettings<ShapeNode>
@@ -54,13 +55,29 @@ namespace SIL.HermitCrab.PhonologicalRules
 			if (!_morpher.RuleSelector(_rule))
 				return Enumerable.Empty<Word>();
 
-			Word[] output = _patternRule.Apply(input).ToArray();
-			if (output.Length > 0)
-				_morpher.TraceManager.PhonologicalRuleApplied(_rule, input, output[0]);
-			else
-				_morpher.TraceManager.PhonologicalRuleNotApplied(_rule, input, FailureReason.SubruleMismatch);
-
-			return output;
+			input.CurrentRuleResults = new Dictionary<int, FailureReason>();
+			bool applied = _patternRule.Apply(input).Any();
+			for (int i = 0; i < _rule.Subrules.Count; i++)
+			{
+				FailureReason reason;
+				if (input.CurrentRuleResults.TryGetValue(i, out reason))
+				{
+					if (reason == FailureReason.None)
+					{
+						_morpher.TraceManager.PhonologicalRuleApplied(_rule, i, input);
+						break;
+					}
+					_morpher.TraceManager.PhonologicalRuleNotApplied(_rule, i, input, reason);
+				}
+				else
+				{
+					_morpher.TraceManager.PhonologicalRuleNotApplied(_rule, i, input, FailureReason.PatternMismatch);
+				}
+			}
+			input.CurrentRuleResults = null;
+			if (applied)
+				input.ToEnumerable();
+			return Enumerable.Empty<Word>();
 		}
 	}
 }

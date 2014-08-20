@@ -12,14 +12,15 @@
 		ExcludedMorphemeCoOccurrences,
 		DisjunctiveAllomorph,
 		SurfaceFormMismatch,
-		SubruleMismatch,
 		PatternMismatch,
 		RequiredSyntacticFeatureStruct,
 		HeadRequiredSyntacticFeatureStruct,
 		NonHeadRequiredSyntacticFeatureStruct,
+		RequiredMprFeatures,
+		ExcludedMprFeatures,
 		StemName,
 		PartialParse,
-		BoundRoot
+		BoundRoot,
 	}
 
 	public interface ITraceManager
@@ -31,14 +32,14 @@
 		void BeginUnapplyStratum(Stratum stratum, Word input);
 		void EndUnapplyStratum(Stratum stratum, Word output);
 
-		void PhonologicalRuleUnapplied(IPhonologicalRule rule, Word input, Word output);
-		void PhonologicalRuleNotUnapplied(IPhonologicalRule rule, Word input);
+		void PhonologicalRuleUnapplied(IPhonologicalRule rule, int subruleIndex, Word output);
+		void PhonologicalRuleNotUnapplied(IPhonologicalRule rule, int subruleIndex, Word input);
 
 		void BeginUnapplyTemplate(AffixTemplate template, Word input);
 		void EndUnapplyTemplate(AffixTemplate template, Word output, bool unapplied);
 
-		void MorphologicalRuleUnapplied(IMorphologicalRule rule, Word input, Word output, Allomorph allomorph);
-		void MorphologicalRuleNotUnapplied(IMorphologicalRule rule, Word input);
+		void MorphologicalRuleUnapplied(IMorphologicalRule rule, int subruleIndex, Word input, Word output);
+		void MorphologicalRuleNotUnapplied(IMorphologicalRule rule, int subruleIndex, Word input);
 
 		void LexicalLookup(Stratum stratum, Word input);
 
@@ -47,14 +48,14 @@
 		void BeginApplyStratum(Stratum stratum, Word input);
 		void EndApplyStratum(Stratum stratum, Word output);
 
-		void PhonologicalRuleApplied(IPhonologicalRule rule, Word input, Word output);
-		void PhonologicalRuleNotApplied(IPhonologicalRule rule, Word input, FailureReason reason);
+		void PhonologicalRuleApplied(IPhonologicalRule rule, int subruleIndex, Word output);
+		void PhonologicalRuleNotApplied(IPhonologicalRule rule, int subruleIndex, Word input, FailureReason reason);
 
 		void BeginApplyTemplate(AffixTemplate template, Word input);
 		void EndApplyTemplate(AffixTemplate template, Word output, bool applied);
 
-		void MorphologicalRuleApplied(IMorphologicalRule rule, Word input, Word output, Allomorph allomorph);
-		void MorphologicalRuleNotApplied(IMorphologicalRule rule, Word input, FailureReason reason);
+		void MorphologicalRuleApplied(IMorphologicalRule rule, int subruleIndex, Word input, Word output);
+		void MorphologicalRuleNotApplied(IMorphologicalRule rule, int subruleIndex, Word input, FailureReason reason);
 
 		void Blocking(IHCRule rule, Word output);
 

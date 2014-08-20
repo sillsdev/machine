@@ -10,8 +10,8 @@ namespace SIL.HermitCrab.PhonologicalRules
 	{
 		private readonly Pattern<Word, ShapeNode> _rhs;
 
-		public EpenthesisSynthesisRewriteRuleSpec(Pattern<Word, ShapeNode> lhs, RewriteSubrule subrule)
-			: base(lhs, subrule)
+		public EpenthesisSynthesisRewriteRuleSpec(Pattern<Word, ShapeNode> lhs, RewriteSubrule subrule, int index)
+			: base(lhs, subrule, index)
 		{
 			_rhs = subrule.Rhs;
 		}
@@ -59,6 +59,7 @@ namespace SIL.HermitCrab.PhonologicalRules
 					curNode.SetDirty(true);
 			}
 			output = match.Input;
+			MarkSuccessfulApply(output);
 			return startNode.GetNext(match.Matcher.Settings.Direction);
 		}
 	}

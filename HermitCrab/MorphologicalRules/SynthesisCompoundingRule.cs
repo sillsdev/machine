@@ -50,23 +50,28 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 			if (!_rule.NonHeadRequiredSyntacticFeatureStruct.IsUnifiable(input.CurrentNonHead.SyntacticFeatureStruct, true))
 			{
-				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, input, FailureReason.NonHeadRequiredSyntacticFeatureStruct);
+				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.NonHeadRequiredSyntacticFeatureStruct);
 				return Enumerable.Empty<Word>();
 			}
 
 			FeatureStruct syntacticFS;
 			if (!_rule.HeadRequiredSyntacticFeatureStruct.Unify(input.SyntacticFeatureStruct, true, out syntacticFS))
 			{
-				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, input, FailureReason.HeadRequiredSyntacticFeatureStruct);
+				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.HeadRequiredSyntacticFeatureStruct);
 				return Enumerable.Empty<Word>();
 			}
 
 			var output = new List<Word>();
 			for (int i = 0; i < _rule.Subrules.Count; i++)
 			{
-				if (_rule.Subrules[i].RequiredMprFeatures.Count > 0 && !_rule.Subrules[i].RequiredMprFeatures.IsMatch(input.MprFeatures)
-					|| (_rule.Subrules[i].ExcludedMprFeatures.Count > 0 && _rule.Subrules[i].ExcludedMprFeatures.IsMatch(input.MprFeatures)))
+				if (_rule.Subrules[i].RequiredMprFeatures.Count > 0 && !_rule.Subrules[i].RequiredMprFeatures.IsMatch(input.MprFeatures))
 				{
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.RequiredMprFeatures);
+					continue;
+				}
+				if (_rule.Subrules[i].ExcludedMprFeatures.Count > 0 && _rule.Subrules[i].ExcludedMprFeatures.IsMatch(input.MprFeatures))
+				{
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.ExcludedMprFeatures);
 					continue;
 				}
 
@@ -100,16 +105,15 @@ namespace SIL.HermitCrab.MorphologicalRules
 							outWord.Freeze();
 						}
 
-						_morpher.TraceManager.MorphologicalRuleApplied(_rule, input, outWord, null);
+						_morpher.TraceManager.MorphologicalRuleApplied(_rule, i, input, outWord);
 
 						output.Add(outWord);
 						break;
 					}
 				}
-			}
 
-			if (output.Count == 0)
-				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, input, FailureReason.SubruleMismatch);
+				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.PatternMismatch);
+			}
 
 			return output;
 		}

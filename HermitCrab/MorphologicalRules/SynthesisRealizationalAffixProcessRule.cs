@@ -46,13 +46,25 @@ namespace SIL.HermitCrab.MorphologicalRules
 			FeatureStruct syntacticFS;
 			if (!_rule.RequiredSyntacticFeatureStruct.Unify(input.SyntacticFeatureStruct, true, out syntacticFS))
 			{
-				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, input, FailureReason.RequiredSyntacticFeatureStruct);
+				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.RequiredSyntacticFeatureStruct);
 				return Enumerable.Empty<Word>();
 			}
 
 			var output = new List<Word>();
 			for (int i = 0; i < _rules.Count; i++)
 			{
+				AffixProcessAllomorph allo = _rule.Allomorphs[i];
+				if (allo.RequiredMprFeatures.Count > 0 && !allo.RequiredMprFeatures.IsMatch(input.MprFeatures))
+				{
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.RequiredMprFeatures);
+					continue;
+				}
+				if (allo.ExcludedMprFeatures.Count > 0 && allo.ExcludedMprFeatures.IsMatch(input.MprFeatures))
+				{
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.ExcludedMprFeatures);
+					continue;
+				}
+
 				Word outWord = _rules[i].Apply(input).SingleOrDefault();
 				if (outWord != null)
 				{
@@ -71,8 +83,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 						outWord.Freeze();
 					}
 
-					AffixProcessAllomorph allo = _rule.Allomorphs[i];
-					_morpher.TraceManager.MorphologicalRuleApplied(_rule, input, outWord, allo);
+					_morpher.TraceManager.MorphologicalRuleApplied(_rule, i, input, outWord);
 
 					output.Add(outWord);
 
@@ -90,10 +101,12 @@ namespace SIL.HermitCrab.MorphologicalRules
 						break;
 					}
 				}
+				else
+				{
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.PatternMismatch);
+				}
 			}
 
-			if (output.Count == 0)
-				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, input, FailureReason.SubruleMismatch);
 			return output;
 		}
 

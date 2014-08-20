@@ -108,26 +108,28 @@ namespace SIL.HermitCrab.PhonologicalRules
 				return Enumerable.Empty<Word>();
 
 			bool applied = false;
-			foreach (Tuple<ReapplyType, PatternRule<Word, ShapeNode>> sr in _rules)
+			for (int i = 0; i < _rules.Count; i++)
 			{
+				Tuple<ReapplyType, PatternRule<Word, ShapeNode>> sr = _rules[i];
+				bool srApplied = false;
 				switch (sr.Item1)
 				{
 					case ReapplyType.Normal:
 						{
 							if (sr.Item2.Apply(input).Any())
-								applied = true;
+								srApplied = true;
 						}
 						break;
 
 					case ReapplyType.Deletion:
 						{
-							int i = 0;
+							int j = 0;
 							Word data = sr.Item2.Apply(input).SingleOrDefault();
 							while (data != null)
 							{
-								applied = true;
-								i++;
-								if (i > _morpher.DeletionReapplications)
+								srApplied = true;
+								j++;
+								if (j > _morpher.DeletionReapplications)
 									break;
 								data = sr.Item2.Apply(data).SingleOrDefault();
 							}
@@ -139,21 +141,26 @@ namespace SIL.HermitCrab.PhonologicalRules
 							Word data = sr.Item2.Apply(input).SingleOrDefault();
 							while (data != null)
 							{
-								applied = true;
+								srApplied = true;
 								data = sr.Item2.Apply(data).SingleOrDefault();
 							}
 						}
 						break;
 				}
+
+				if (srApplied)
+				{
+					_morpher.TraceManager.PhonologicalRuleUnapplied(_rule, i, input);
+					applied = true;
+				}
+				else
+				{
+					_morpher.TraceManager.PhonologicalRuleNotUnapplied(_rule, i, input);
+				}
 			}
 
 			if (applied)
-			{
-				_morpher.TraceManager.PhonologicalRuleUnapplied(_rule, input, input);
 				return input.ToEnumerable();
-			}
-
-			_morpher.TraceManager.PhonologicalRuleNotUnapplied(_rule, input);
 			return Enumerable.Empty<Word>();
 		}
 	}

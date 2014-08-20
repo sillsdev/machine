@@ -99,6 +99,7 @@ namespace SIL.HermitCrab
 		{
 			_type = type;
 			_source = source;
+			SubruleIndex = -1;
 		}
 
 		public TraceType Type
@@ -110,6 +111,8 @@ namespace SIL.HermitCrab
 		{
 			get { return _source; }
 		}
+
+		public int SubruleIndex { get; internal set; }
 
 		public Word Input { get; internal set; }
 

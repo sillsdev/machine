@@ -46,6 +46,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 			var output = new List<Word>();
 			for (int i = 0; i < _rules.Count; i++)
 			{
+				bool unapplied = false;
 				foreach (Word outWord in _rules[i].Apply(input).RemoveDuplicates())
 				{
 					if (!_rule.RequiredSyntacticFeatureStruct.IsEmpty)
@@ -54,12 +55,14 @@ namespace SIL.HermitCrab.MorphologicalRules
 						outWord.SyntacticFeatureStruct.Clear();
 					outWord.MorphologicalRuleUnapplied(_rule, false);
 					outWord.Freeze();
-					_morpher.TraceManager.MorphologicalRuleUnapplied(_rule, input, outWord, _rule.Allomorphs[i]);
+					_morpher.TraceManager.MorphologicalRuleUnapplied(_rule, i, input, outWord);
 					output.Add(outWord);
+					unapplied = true;
 				}
+
+				if (!unapplied)
+					_morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, i, input);
 			}
-			if (output.Count == 0)
-				_morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, input);
 			return output;
 		}
 	}

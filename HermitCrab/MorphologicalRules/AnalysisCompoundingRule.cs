@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Annotations;
@@ -45,10 +44,10 @@ namespace SIL.HermitCrab.MorphologicalRules
 			}
 
 			var output = new List<Word>();
-			foreach (IRule<Word, ShapeNode> rule in _rules)
+			for (int i = 0; i < _rules.Count; i++)
 			{
 				var srOutput = new List<Word>();
-				foreach (Word outWord in rule.Apply(input))
+				foreach (Word outWord in _rules[i].Apply(input))
 				{
 					// for computational complexity reasons, we ensure that the non-head is a root, otherwise we assume it is not
 					// a valid analysis and throw it away
@@ -57,13 +56,13 @@ namespace SIL.HermitCrab.MorphologicalRules
 						// check to see if this is a duplicate of another output analysis, this is not strictly necessary, but
 						// it helps to reduce the search space
 						bool add = true;
-						for (int i = 0; i < srOutput.Count; i++)
+						for (int j = 0; j < srOutput.Count; j++)
 						{
-							if (outWord.Shape.Duplicates(srOutput[i].Shape) && allo == srOutput[i].CurrentNonHead.RootAllomorph)
+							if (outWord.Shape.Duplicates(srOutput[j].Shape) && allo == srOutput[j].CurrentNonHead.RootAllomorph)
 							{
-								if (outWord.Shape.Count > srOutput[i].Shape.Count)
+								if (outWord.Shape.Count > srOutput[j].Shape.Count)
 									// if this is a duplicate and it is longer, then use this analysis and remove the previous one
-									srOutput.RemoveAt(i);
+									srOutput.RemoveAt(j);
 								else
 									// if it is shorter, then do not add it to the output list
 									add = false;
@@ -80,6 +79,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 					}
 				}
 
+				bool unapplied = false;
 				foreach (Word outWord in srOutput)
 				{
 					if (!_rule.HeadRequiredSyntacticFeatureStruct.IsEmpty)
@@ -89,13 +89,14 @@ namespace SIL.HermitCrab.MorphologicalRules
 					outWord.MorphologicalRuleUnapplied(_rule, false);
 
 					outWord.Freeze();
-					_morpher.TraceManager.MorphologicalRuleUnapplied(_rule, input, outWord, null);
+					_morpher.TraceManager.MorphologicalRuleUnapplied(_rule, i, input, outWord);
 					output.Add(outWord);
+					unapplied = true;
 				}
-			}
 
-			if (output.Count == 0)
-				_morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, input);
+				if (!unapplied)
+					_morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, i, input);
+			}
 
 			return output;
 		}

@@ -115,8 +115,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 		public bool IsApplicable(Word input)
 		{
-			return (_allomorph.RequiredMprFeatures.Count == 0 || _allomorph.RequiredMprFeatures.IsMatch(input.MprFeatures))
-				&& (_allomorph.ExcludedMprFeatures.Count == 0 || !_allomorph.ExcludedMprFeatures.IsMatch(input.MprFeatures));
+			return true;
 		}
 
 		public ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)

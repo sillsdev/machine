@@ -11,10 +11,12 @@ namespace SIL.HermitCrab.PhonologicalRules
 	{
 		private readonly Pattern<Word, ShapeNode> _pattern;
 		private readonly RewriteSubrule _subrule;
+		private readonly int _index;
 
-		protected SynthesisRewriteRuleSpec(Pattern<Word, ShapeNode> lhs, RewriteSubrule subrule)
+		protected SynthesisRewriteRuleSpec(Pattern<Word, ShapeNode> lhs, RewriteSubrule subrule, int index)
 		{
 			_subrule = subrule;
+			_index = index;
 			_pattern = new Pattern<Word, ShapeNode> {Acceptable = match => CheckTarget(match, lhs)};
 			if (_subrule.LeftEnvironment.Children.Count > 0)
 				_pattern.Children.Add(new Group<Word, ShapeNode>("leftEnv", _subrule.LeftEnvironment.Children.DeepClone()));
@@ -53,9 +55,30 @@ namespace SIL.HermitCrab.PhonologicalRules
 
 		public bool IsApplicable(Word input)
 		{
-			return input.SyntacticFeatureStruct.IsUnifiable(_subrule.RequiredSyntacticFeatureStruct)
-				&& (_subrule.RequiredMprFeatures.Count == 0 || _subrule.RequiredMprFeatures.IsMatch(input.MprFeatures))
-				&& (_subrule.ExcludedMprFeatures.Count == 0 || !_subrule.ExcludedMprFeatures.IsMatch(input.MprFeatures));
+			if (!_subrule.RequiredSyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct))
+			{
+				input.CurrentRuleResults[_index] = FailureReason.RequiredSyntacticFeatureStruct;
+				return false;
+			}
+
+			if (_subrule.RequiredMprFeatures.Count > 0 && !_subrule.RequiredMprFeatures.IsMatch(input.MprFeatures))
+			{
+				input.CurrentRuleResults[_index] = FailureReason.RequiredMprFeatures;
+				return false;
+			}
+
+			if (_subrule.ExcludedMprFeatures.Count > 0 && _subrule.ExcludedMprFeatures.IsMatch(input.MprFeatures))
+			{
+				input.CurrentRuleResults[_index] = FailureReason.ExcludedMprFeatures;
+				return false;
+			}
+
+			return true;
+		}
+
+		protected void MarkSuccessfulApply(Word word)
+		{
+			word.CurrentRuleResults[_index] = FailureReason.None;
 		}
 
 		public abstract ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output);

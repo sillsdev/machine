@@ -41,21 +41,25 @@ namespace SIL.HermitCrab.MorphologicalRules
 			FeatureStruct realFS;
 			if (!_rule.RealizationalFeatureStruct.Unify(input.RealizationalFeatureStruct, out realFS))
 				return Enumerable.Empty<Word>();
+
 			var output = new List<Word>();
 			for (int i = 0; i < _rules.Count; i++)
 			{
+				bool unapplied = false;
 				foreach (Word outWord in _rules[i].Apply(input).RemoveDuplicates())
 				{
 					outWord.RealizationalFeatureStruct = realFS;
 					outWord.MorphologicalRuleUnapplied(_rule, true);
 					
 					outWord.Freeze();
-					_morpher.TraceManager.MorphologicalRuleUnapplied(_rule, input, outWord, _rule.Allomorphs[i]);
+					_morpher.TraceManager.MorphologicalRuleUnapplied(_rule, i, input, outWord);
 					output.Add(outWord);
+					unapplied = true;
 				}
+
+				if (!unapplied)
+					_morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, i, input);
 			}
-			if (output.Count == 0)
-				_morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, input);
 			return output;
 		}
 	}

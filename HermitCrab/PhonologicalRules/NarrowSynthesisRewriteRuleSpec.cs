@@ -12,8 +12,8 @@ namespace SIL.HermitCrab.PhonologicalRules
 		private readonly Pattern<Word, ShapeNode> _rhs; 
 		private readonly int _targetCount;
 
-		public NarrowSynthesisRewriteRuleSpec(Pattern<Word, ShapeNode> lhs, RewriteSubrule subrule)
-			: base(lhs, subrule)
+		public NarrowSynthesisRewriteRuleSpec(Pattern<Word, ShapeNode> lhs, RewriteSubrule subrule, int index)
+			: base(lhs, subrule, index)
 		{
 			_rhs = subrule.Rhs;
 			_targetCount = lhs.Children.Count;
@@ -42,6 +42,7 @@ namespace SIL.HermitCrab.PhonologicalRules
 				nodes[i].SetDeleted(true);
 
 			output = match.Input;
+			MarkSuccessfulApply(output);
 			return resumeNode;
 		}
 	}
