@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using SIL.Collections;
 using SIL.Machine.Annotations;
@@ -41,21 +40,8 @@ namespace SIL.HermitCrab
 
 			_morpher.TraceManager.BeginApplyStratum(_stratum, input);
 
-			IEnumerable<Word> mruleOutWords = null;
-			switch (_stratum.MorphologicalRuleOrder)
-			{
-				case MorphologicalRuleOrder.Linear:
-					mruleOutWords = ApplyMorphologicalRules(input);
-					break;
-
-				case MorphologicalRuleOrder.Unordered:
-					mruleOutWords = ApplyMorphologicalRules(input).Concat(ApplyTemplates(input));
-					break;
-			}
-			Debug.Assert(mruleOutWords != null);
-
 			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
-			foreach (Word mruleOutWord in mruleOutWords)
+			foreach (Word mruleOutWord in ApplyMorphologicalRules(input).Concat(ApplyTemplates(input)))
 			{
 				if (mruleOutWord.IsLastAppliedRuleFinal)
 				{
