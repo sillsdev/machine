@@ -2,23 +2,23 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.HermitCrab
 {
-	public class SymbolTable : IDBearerBase, IEnumerable<string>
+	public class SymbolTable : IEnumerable<string>
 	{
 		private readonly Dictionary<string, FeatureStruct> _symbols;
 		private readonly SpanFactory<ShapeNode> _spanFactory;
 
-		public SymbolTable(SpanFactory<ShapeNode> spanFactory, string id)
-			: base(id)
+		public SymbolTable(SpanFactory<ShapeNode> spanFactory)
 		{
 			_spanFactory = spanFactory;
 			_symbols = new Dictionary<string, FeatureStruct>();
 		}
+
+		public string Name { get; set; }
 
 		public SpanFactory<ShapeNode> SpanFactory
 		{
@@ -168,6 +168,11 @@ namespace SIL.HermitCrab
 		{
 			string pattern = shape.ToRegexString(this, false);
 			return Regex.IsMatch(word, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+		}
+
+		public override string ToString()
+		{
+			return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
 		}
 	}
 }

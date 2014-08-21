@@ -18,25 +18,21 @@ namespace SIL.HermitCrab
 		private readonly Language _lang;
 		private readonly IRule<Word, ShapeNode> _analysisRule;
 		private readonly IRule<Word, ShapeNode> _synthesisRule;
-		private readonly Dictionary<Stratum, Tuple<ShapeTrie, IDBearerSet<RootAllomorph>>> _allomorphTries;
+		private readonly Dictionary<Stratum, RootAllomorphTrie> _allomorphTries;
 		private readonly ITraceManager _traceManager;
-
-		private readonly IDBearerSet<IHCRule> _rules; 
 
 		public Morpher(SpanFactory<ShapeNode> spanFactory, ITraceManager traceManager, Language lang)
 		{
 			_lang = lang;
 			_traceManager = traceManager;
-			_rules = new IDBearerSet<IHCRule>();
-			_lang.Traverse(rule => _rules.Add(rule));
-			_allomorphTries = new Dictionary<Stratum, Tuple<ShapeTrie, IDBearerSet<RootAllomorph>>>();
+			_allomorphTries = new Dictionary<Stratum, RootAllomorphTrie>();
 			foreach (Stratum stratum in _lang.Strata)
 			{
-				var allomorphs = new IDBearerSet<RootAllomorph>(stratum.Entries.SelectMany(entry => entry.Allomorphs));
-				var trie = new ShapeTrie(ann => ann.Type() == HCFeatureSystem.Segment);
+				var allomorphs = new HashSet<RootAllomorph>(stratum.Entries.SelectMany(entry => entry.Allomorphs));
+				var trie = new RootAllomorphTrie(ann => ann.Type() == HCFeatureSystem.Segment);
 				foreach (RootAllomorph allomorph in allomorphs)
-					trie.Add(allomorph.Shape, allomorph.ID);
-				_allomorphTries[stratum] = Tuple.Create(trie, allomorphs);
+					trie.Add(allomorph);
+				_allomorphTries[stratum] = trie;
 			}
 			_analysisRule = lang.CompileAnalysisRule(spanFactory, this);
 			_synthesisRule = lang.CompileSynthesisRule(spanFactory, this);
@@ -144,8 +140,8 @@ namespace SIL.HermitCrab
 
 		internal IEnumerable<RootAllomorph> SearchRootAllomorphs(Stratum stratum, Shape shape)
 		{
-			Tuple<ShapeTrie, IDBearerSet<RootAllomorph>> alloSearcher = _allomorphTries[stratum];
-			return alloSearcher.Item1.Search(shape).Select(id => alloSearcher.Item2[id]).Distinct();
+			RootAllomorphTrie alloSearcher = _allomorphTries[stratum];
+			return alloSearcher.Search(shape).Distinct();
 		}
 
 		private IEnumerable<Word> LexicalLookup(Word input)

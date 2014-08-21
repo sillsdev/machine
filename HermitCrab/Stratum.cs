@@ -1,9 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Linq;
-using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.Rules;
 
@@ -19,7 +16,7 @@ namespace SIL.HermitCrab
 	/// This class encapsulates the character definition table, rules, and lexicon for
 	/// a particular stratum.
 	/// </summary>
-	public class Stratum : IDBearerBase, IHCRule
+	public class Stratum : IHCRule
 	{
 		private readonly SymbolTable _symDefTable;
 
@@ -33,10 +30,8 @@ namespace SIL.HermitCrab
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Stratum"/> class.
 		/// </summary>
-		/// <param name="id">The ID.</param>
 		/// <param name="symDefTable"></param>
-		public Stratum(string id, SymbolTable symDefTable)
-			: base(id)
+		public Stratum(SymbolTable symDefTable)
 		{
 			Depth = -1;
 			_symDefTable = symDefTable;
@@ -94,6 +89,8 @@ namespace SIL.HermitCrab
 			}
 		}
 
+		public string Name { get; set; }
+
 		/// <summary>
 		/// Gets the symbol definition table.
 		/// </summary>
@@ -144,11 +141,9 @@ namespace SIL.HermitCrab
 			return new SynthesisStratumRule(spanFactory, morpher, this);
 		}
 
-		public void Traverse(Action<IHCRule> action)
+		public override string ToString()
 		{
-			action(this);
-			foreach (IHCRule rule in _mrules.Cast<IHCRule>().Concat(_prules).Concat(_templates))
-				rule.Traverse(action);
+			return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
 		}
 	}
 }

@@ -12,10 +12,8 @@ namespace SIL.HermitCrab
 		/// <summary>
 		/// Initializes a new instance of the <see cref="RootAllomorph"/> class.
 		/// </summary>
-		/// <param name="id">The id.</param>
 		/// <param name="shape">The shape.</param>
-		public RootAllomorph(string id, Shape shape)
-			: base(id)
+		public RootAllomorph(Shape shape)
 		{
 			_shape = shape;
 		}

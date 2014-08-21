@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using SIL.Collections;
 
 namespace SIL.HermitCrab
 {
 	/// <summary>
 	/// This class represents a morpheme. All morpheme objects should extend this class.
 	/// </summary>
-	public abstract class Morpheme : IDBearerBase
+	public abstract class Morpheme
 	{
 		private readonly ObservableCollection<MorphemeCoOccurrenceRule> _requiredMorphemeCoOccurrences;
 		private readonly ObservableCollection<MorphemeCoOccurrenceRule> _excludedMorphemeCoOccurrences; 
@@ -16,9 +15,7 @@ namespace SIL.HermitCrab
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Morpheme"/> class.
 		/// </summary>
-		/// <param name="id">The id.</param>
-		protected Morpheme(string id)
-			: base(id)
+		protected Morpheme()
 		{
 			_requiredMorphemeCoOccurrences = new ObservableCollection<MorphemeCoOccurrenceRule>();
 			_requiredMorphemeCoOccurrences.CollectionChanged += MorphemeCoOccurrencesChanged;

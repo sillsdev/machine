@@ -1,23 +1,23 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using SIL.Collections;
 
 namespace SIL.HermitCrab
 {
 	/// <summary>
 	/// This class represents a lexical family.
 	/// </summary>
-	public class LexFamily : IDBearerBase
+	public class LexFamily
 	{
 		private readonly ObservableCollection<LexEntry> _entries;
 
-		public LexFamily(string id)
-			: base(id)
+		public LexFamily()
 		{
 			_entries = new ObservableCollection<LexEntry>();
 			_entries.CollectionChanged += EntriesChanged;
 		}
+
+		public string Name { get; set; }
 
 		private void EntriesChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
@@ -36,6 +36,11 @@ namespace SIL.HermitCrab
 		public ICollection<LexEntry> Entries
 		{
 			get { return _entries; }
+		}
+
+		public override string ToString()
+		{
+			return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
 		}
 	}
 }

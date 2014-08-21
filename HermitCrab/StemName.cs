@@ -1,24 +1,24 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using SIL.Collections;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.HermitCrab
 {
-	public class StemName : IDBearerBase
+	public class StemName
 	{
 		private readonly FeatureStruct[] _regions;
 
-		public StemName(string id, params FeatureStruct[] regions)
-			: this(id, (IEnumerable<FeatureStruct>) regions)
+		public StemName(params FeatureStruct[] regions)
+			: this((IEnumerable<FeatureStruct>) regions)
 		{
 		}
 
-		public StemName(string id, IEnumerable<FeatureStruct> regions)
-			: base(id)
+		public StemName(IEnumerable<FeatureStruct> regions)
 		{
 			_regions = regions.ToArray();
 		}
+
+		public string Name { get; set; }
 
 		public IEnumerable<FeatureStruct> Regions
 		{
@@ -28,6 +28,11 @@ namespace SIL.HermitCrab
 		public bool IsMatch(FeatureStruct fs)
 		{
 			return _regions.Any(r => r.IsUnifiable(fs));
+		}
+
+		public override string ToString()
+		{
+			return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
 		}
 	}
 }

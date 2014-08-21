@@ -11,20 +11,19 @@ namespace SIL.HermitCrab
 	/// This class represents an allomorph of a morpheme. Allomorphs can be phonologically
 	/// conditioned using environments and are applied disjunctively within a morpheme.
 	/// </summary>
-	public abstract class Allomorph : IDBearerBase, IComparable<Allomorph>
+	public abstract class Allomorph : IComparable<Allomorph>
 	{
 		private readonly ObservableHashSet<AllomorphEnvironment> _requiredEnvironments;
 		private readonly ObservableHashSet<AllomorphEnvironment> _excludedEnvironments;
 		private readonly ObservableHashSet<AllomorphCoOccurrenceRule> _requiredAllomorphCoOccurrences;
 		private readonly ObservableHashSet<AllomorphCoOccurrenceRule> _excludedAllomorphCoOccurrences; 
 		private readonly Hashtable _properties;
+		private readonly string _id;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Allomorph"/> class.
 		/// </summary>
-		/// <param name="id">The id.</param>
-		protected Allomorph(string id)
-			: base(id)
+		protected Allomorph()
 		{
 			Index = -1;
 			_requiredEnvironments = new ObservableHashSet<AllomorphEnvironment>();
@@ -36,6 +35,7 @@ namespace SIL.HermitCrab
 			_excludedAllomorphCoOccurrences = new ObservableHashSet<AllomorphCoOccurrenceRule>();
 			_excludedAllomorphCoOccurrences.CollectionChanged += AllomorphCoOccurrencesChanged;
 			_properties = new Hashtable();
+			_id = Guid.NewGuid().ToString();
 		}
 
 		private void AllomorphCoOccurrencesChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -64,6 +64,11 @@ namespace SIL.HermitCrab
 				foreach (AllomorphEnvironment env in e.NewItems)
 					env.Allomorph = this;
 			}
+		}
+
+		internal string ID
+		{
+			get { return _id; }
 		}
 
 		/// <summary>
@@ -191,7 +196,7 @@ namespace SIL.HermitCrab
 			if (other == null)
 				return 1;
 
-			int res = string.CompareOrdinal(Morpheme.ID, other.Morpheme.ID);
+			int res = Morpheme.GetHashCode().CompareTo(other.Morpheme.GetHashCode());
 			if (res != 0)
 				return res;
 

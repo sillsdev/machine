@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using SIL.Collections;
 using SIL.Machine.Annotations;
@@ -11,16 +10,17 @@ namespace SIL.HermitCrab.PhonologicalRules
 	/// This class represents a metathesis rule. Metathesis rules are phonological rules that
 	/// reorder segments.
 	/// </summary>
-	public class MetathesisRule : IDBearerBase, IPhonologicalRule
+	public class MetathesisRule : IPhonologicalRule
 	{
 		private readonly List<string> _groupOrder;
 
-		public MetathesisRule(string id)
-			: base(id)
+		public MetathesisRule()
 		{
 			Pattern = Pattern<Word, ShapeNode>.New().Value;
 			_groupOrder = new List<string>();
 		}
+
+		public string Name { get; set; }
 
 		public Direction Direction { get; set; }
 
@@ -41,9 +41,9 @@ namespace SIL.HermitCrab.PhonologicalRules
 			return new SynthesisMetathesisRule(spanFactory, morpher, this);
 		}
 
-		public void Traverse(Action<IHCRule> action)
+		public override string ToString()
 		{
-			action(this);
+			return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
 		}
 	}
 }

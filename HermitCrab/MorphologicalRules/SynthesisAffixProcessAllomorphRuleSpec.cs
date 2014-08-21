@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using SIL.Collections;
 using SIL.Machine.Annotations;
-using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
 
@@ -145,35 +144,18 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 			if (existingMorphNodes.Count > 0)
 			{
-				foreach (Annotation<ShapeNode> morph in match.Input.Morphs)
+				foreach (Allomorph allomorph in match.Input.AllomorphsInMorphOrder)
 				{
 					List<ShapeNode> nodes;
-					if (existingMorphNodes.TryGetValue((string)morph.FeatureStruct.GetValue(HCFeatureSystem.Allomorph), out nodes))
-						MarkMorph(rule.SpanFactory, output, nodes, morph.FeatureStruct.DeepClone());
+					if (existingMorphNodes.TryGetValue(allomorph.ID, out nodes))
+						output.MarkMorph(nodes, allomorph);
 				}
 			}
 
-			if (newMorphNodes.Count > 0)
-			{
-				FeatureStruct fs = FeatureStruct.NewMutable()
-					.Symbol(HCFeatureSystem.Morph)
-					.Feature(HCFeatureSystem.Allomorph).EqualTo(_allomorph.ID).Value;
-				MarkMorph(rule.SpanFactory, output, newMorphNodes, fs);
-			}
-			output.Allomorphs.Add(_allomorph);
+			output.MarkMorph(newMorphNodes, _allomorph);
 			output.MprFeatures.AddOutput(_allomorph.OutMprFeatures);
 
 			return null;
-		}
-
-		private void MarkMorph(SpanFactory<ShapeNode> spanFactory, Word output, List<ShapeNode> nodes, FeatureStruct fs)
-		{
-			if (nodes.Count == 0)
-				return;
-
-			var ann = new Annotation<ShapeNode>(spanFactory.Create(nodes[0], nodes[nodes.Count - 1]), fs);
-			ann.Children.AddRange(nodes.Select(n => n.Annotation));
-			output.Annotations.Add(ann, false);
 		}
 	}
 }

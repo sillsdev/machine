@@ -1,4 +1,6 @@
-﻿using SIL.Collections;
+﻿using System.Collections.Generic;
+using System.Collections.Specialized;
+using SIL.Collections;
 
 namespace SIL.HermitCrab
 {
@@ -35,22 +37,32 @@ namespace SIL.HermitCrab
 	/// <summary>
 	/// This class represents a group of related MPR features.
 	/// </summary>
-	public class MprFeatureGroup : IDBearerSet<MprFeature>, IIDBearer
+	public class MprFeatureGroup
 	{
-		private readonly string _id;
+		private readonly ObservableHashSet<MprFeature> _mprFeatures;
 
-		public MprFeatureGroup(string id)
+		public MprFeatureGroup()
 		{
-			_id = id;
-			Description = id;
+			_mprFeatures = new ObservableHashSet<MprFeature>();
+			_mprFeatures.CollectionChanged += MprFeaturesChanged;
 		}
 
-		public string ID
+		private void MprFeaturesChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			get { return _id; }
+			if (e.OldItems != null)
+			{
+				foreach (MprFeature mf in e.OldItems)
+					mf.Group = null;
+			}
+
+			if (e.NewItems != null)
+			{
+				foreach (MprFeature mf in e.NewItems)
+					mf.Group = this;
+			}
 		}
 
-		public string Description { get; set; }
+		public string Name { get; set; }
 
 		/// <summary>
 		/// Gets or sets the type of matching that is used for MPR features in this group.
@@ -64,38 +76,14 @@ namespace SIL.HermitCrab
 		/// <value>The type of outputting.</value>
 		public MprFeatureGroupOutput Output { get; set; }
 
-		/// <summary>
-		/// Adds the MPR feature.
-		/// </summary>
-		/// <param name="mprFeature">The MPR feature.</param>
-		public override bool Add(MprFeature mprFeature)
+		public ICollection<MprFeature> MprFeatures
 		{
-			if (base.Add(mprFeature))
-			{
-				mprFeature.Group = this;
-				return true;
-			}
-			return false;
-		}
-
-		public override bool Remove(string id)
-		{
-			MprFeature mprFeature;
-			if (TryGetValue(id, out mprFeature))
-				mprFeature.Group = null;
-			return base.Remove(id);
-		}
-
-		public override void Clear()
-		{
-			foreach (MprFeature mprFeature in this)
-				mprFeature.Group = null;
-			base.Clear();
+			get { return _mprFeatures; }
 		}
 
 		public override string ToString()
 		{
-			return Description;
+			return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
 		}
 	}
 }

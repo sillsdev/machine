@@ -6,7 +6,7 @@ namespace SIL.HermitCrab
 	/// <summary>
 	/// This represents a set of MPR features.
 	/// </summary>
-	public class MprFeatureSet : IDBearerSet<MprFeature>, IDeepCloneable<MprFeatureSet>
+	public class MprFeatureSet : HashSet<MprFeature>, IDeepCloneable<MprFeatureSet>
 	{
 		public MprFeatureSet()
 		{
@@ -35,7 +35,7 @@ namespace SIL.HermitCrab
 			{
 				if (group.Output == MprFeatureGroupOutput.Overwrite)
 				{
-					foreach (MprFeature mprFeat in group)
+					foreach (MprFeature mprFeat in group.MprFeatures)
 					{
 						if (!mprFeats.Contains(mprFeat))
 							Remove(mprFeat);
@@ -51,7 +51,7 @@ namespace SIL.HermitCrab
 			foreach (MprFeatureGroup group in Groups)
 			{
 				bool match = true;
-				foreach (MprFeature feat in group)
+				foreach (MprFeature feat in group.MprFeatures)
 				{
 					if (Contains(feat))
 					{

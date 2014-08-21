@@ -36,7 +36,7 @@ namespace SIL.HermitCrab
 	/// This class represents a morpheme co-occurrence rule. Morpheme co-occurrence rules are used
 	/// to determine if a list of morphemes co-occur with a specific morpheme.
 	/// </summary>
-	public abstract class MorphCoOccurrenceRule<T> : IEquatable<MorphCoOccurrenceRule<T>> where T : IIDBearer
+	public abstract class MorphCoOccurrenceRule<T> : IEquatable<MorphCoOccurrenceRule<T>> where T : class
 	{
 		private readonly List<T> _others;
 		private readonly MorphCoOccurrenceAdjacency _adjacency;
@@ -72,21 +72,21 @@ namespace SIL.HermitCrab
 		public bool CoOccurs(Word word)
 		{
 			List<Allomorph> morphList = word.AllomorphsInMorphOrder.ToList();
-			var others = new List<string>(_others.Select(obj => obj.ID));
+			List<T> others = _others.ToList();
 
 			switch (_adjacency)
 			{
 				case MorphCoOccurrenceAdjacency.Anywhere:
 					foreach (Allomorph morph in morphList)
-						others.Remove(GetMorphID(morph));
+						others.Remove(GetMorphObject(morph));
 					break;
 
 				case MorphCoOccurrenceAdjacency.SomewhereToLeft:
 				case MorphCoOccurrenceAdjacency.AdjacentToLeft:
 					for (int i = 0; i < morphList.Count; i++)
 					{
-						string curMorphObj = GetMorphID(morphList[i]);
-						if (Key.ID == curMorphObj)
+						T curMorphObj = GetMorphObject(morphList[i]);
+						if (Key == curMorphObj)
 						{
 							break;
 						}
@@ -97,13 +97,13 @@ namespace SIL.HermitCrab
 								if (i == morphList.Count - 1)
 									return false;
 
-								string nextMorphObj = GetMorphID(morphList[i + 1]);
+								T nextMorphObj = GetMorphObject(morphList[i + 1]);
 								if (others.Count > 1)
 								{
 									if (others[1] != nextMorphObj)
 										return false;
 								}
-								else if (Key.ID != nextMorphObj)
+								else if (Key != nextMorphObj)
 								{
 									return false;
 								}
@@ -117,8 +117,8 @@ namespace SIL.HermitCrab
 				case MorphCoOccurrenceAdjacency.AdjacentToRight:
 					for (int i = morphList.Count - 1; i >= 0; i--)
 					{
-						string curMorphObj = GetMorphID(morphList[i]);
-						if (Key.ID == curMorphObj)
+						T curMorphObj = GetMorphObject(morphList[i]);
+						if (Key == curMorphObj)
 						{
 							break;
 						}
@@ -129,13 +129,13 @@ namespace SIL.HermitCrab
 								if (i == 0)
 									return false;
 
-								string prevMorphObj = GetMorphID(morphList[i - 1]);
+								T prevMorphObj = GetMorphObject(morphList[i - 1]);
 								if (others.Count > 1)
 								{
 									if (others[others.Count - 2] != prevMorphObj)
 										return false;
 								}
-								else if (Key.ID != prevMorphObj)
+								else if (Key != prevMorphObj)
 								{
 									return false;
 								}
@@ -149,7 +149,7 @@ namespace SIL.HermitCrab
 			return others.Count == 0;
 		}
 
-		protected abstract string GetMorphID(Allomorph morph);
+		protected abstract T GetMorphObject(Allomorph morph);
 
 		public bool Equals(MorphCoOccurrenceRule<T> other)
 		{

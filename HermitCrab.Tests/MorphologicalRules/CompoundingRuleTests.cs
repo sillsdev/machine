@@ -14,9 +14,9 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 		public void SimpleRules()
 		{
 			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
-			var rule1 = new CompoundingRule("rule1");
+			var rule1 = new CompoundingRule { Name = "rule1" };
 			Allophonic.MorphologicalRules.Add(rule1);
-			rule1.Subrules.Add(new CompoundingSubrule("rule1_sr1")
+			rule1.Subrules.Add(new CompoundingSubrule
 			                   	{
 			                   		HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
 									NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
@@ -31,7 +31,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			Assert.That(morpher.ParseWord("pʰusdat"), Is.Empty);
 
 			rule1.Subrules.Clear();
-			rule1.Subrules.Add(new CompoundingSubrule("rule1_sr1")
+			rule1.Subrules.Add(new CompoundingSubrule
 								{
 									HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
 									NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
@@ -45,16 +45,17 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			Assert.That(morpher.ParseWord("pʰutdas"), Is.Empty);
 			Assert.That(morpher.ParseWord("pʰusdat"), Is.Empty);
 
-			var prefix = new AffixProcessRule("prefix")
-			{
-				Gloss = "PAST",
-				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
-				OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-					.Feature("head").EqualTo(head => head
-						.Feature("tense").EqualTo("past")).Value
-			};
+			var prefix = new AffixProcessRule
+							{
+								Name = "prefix",
+								Gloss = "PAST",
+								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+								OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
+									.Feature("head").EqualTo(head => head
+										.Feature("tense").EqualTo("past")).Value
+							};
 			Allophonic.MorphologicalRules.Insert(0, prefix);
-			prefix.Allomorphs.Add(new AffixProcessAllomorph("prefix_allo1")
+			prefix.Allomorphs.Add(new AffixProcessAllomorph
 									{
 										Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
 										Rhs = { new InsertShape(Table3, "di+"), new CopyFromInput("1") }
@@ -62,14 +63,14 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 
 			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			output = morpher.ParseWord("pʰutdidat").ToList();
-			AssertMorphsEqual(output, "5 prefix 9");
+			AssertMorphsEqual(output, "5 PAST 9");
 			AssertRootAllomorphsEquals(output, "9");
 
 			Allophonic.MorphologicalRules.RemoveAt(0);
 
 			rule1.MaxApplicationCount = 2;
 			rule1.Subrules.Clear();
-			rule1.Subrules.Add(new CompoundingSubrule("rule1_sr1")
+			rule1.Subrules.Add(new CompoundingSubrule
 								{
 									HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
 									NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
@@ -83,9 +84,9 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 
 			rule1.MaxApplicationCount = 1;
 
-			var rule2 = new CompoundingRule("rule2");
+			var rule2 = new CompoundingRule { Name = "rule2" };
 			Allophonic.MorphologicalRules.Add(rule2);
-			rule2.Subrules.Add(new CompoundingSubrule("rule2_sr1")
+			rule2.Subrules.Add(new CompoundingSubrule
 								{
 									HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
 									NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
@@ -102,9 +103,9 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 		public void MorphosyntacticRules()
 		{
 			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
-			var rule1 = new CompoundingRule("rule1") { NonHeadRequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value };
+			var rule1 = new CompoundingRule { Name = "rule1", NonHeadRequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value };
 			Allophonic.MorphologicalRules.Add(rule1);
-			rule1.Subrules.Add(new CompoundingSubrule("rule1_sr1")
+			rule1.Subrules.Add(new CompoundingSubrule
 								{
 									HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
 									NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
@@ -142,7 +143,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 
 		private void AssertRootAllomorphsEquals(IEnumerable<Word> words, params string[] expected)
 		{
-			Assert.That(words.Select(w => w.RootAllomorph.Morpheme.ID).Distinct(), Is.EquivalentTo(expected));
+			Assert.That(words.Select(w => w.RootAllomorph.Morpheme.Gloss).Distinct(), Is.EquivalentTo(expected));
 		}
 	}
 }

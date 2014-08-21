@@ -65,6 +65,7 @@
     <Compile Include="AllomorphCoOccurrenceRule.cs" />
     <Compile Include="AnalysisAffixTemplateRule.cs" />
     <Compile Include="AllomorphEnvironment.cs" />
+    <Compile Include="AnalysisLanguageRule.cs" />
     <Compile Include="AnalysisStratumRule.cs" />
     <Compile Include="HermitCrabExtensions.cs" />
     <Compile Include="HCFeatureSystem.cs" />
@@ -120,7 +121,7 @@
     <Compile Include="MprFeatureGroup.cs" />
     <Compile Include="MprFeatureSet.cs" />
     <Compile Include="AffixTemplateSlot.cs" />
-    <Compile Include="ShapeTrie.cs" />
+    <Compile Include="RootAllomorphTrie.cs" />
     <Compile Include="StemName.cs" />
     <Compile Include="SynthesisAffixTemplateRule.cs" />
     <Compile Include="Morpheme.cs" />

@@ -19,7 +19,7 @@ namespace SIL.HermitCrab.Tests
 		protected MprFeature Latinate;
 		protected MprFeature Germanic;
 
-		protected IDBearerSet<LexEntry> Entries; 
+		protected Dictionary<string, LexEntry> Entries; 
 
 		protected Stratum Surface;
 		protected Stratum Allophonic;
@@ -68,7 +68,7 @@ namespace SIL.HermitCrab.Tests
 			                       	};
 			syntacticFeatSys.Freeze();
 
-			Table1 = new SymbolTable(SpanFactory, "table1");
+			Table1 = new SymbolTable(SpanFactory) { Name = "table1" };
 			AddSegDef(Table1, phoneticFeatSys, "a", "cons-", "voc+", "high-", "low+", "back+", "round-", "vd+");
 			AddSegDef(Table1, phoneticFeatSys, "i", "cons-", "voc+", "high+", "low-", "back-", "round-", "vd+");
 			AddSegDef(Table1, phoneticFeatSys, "u", "cons-", "voc+", "high+", "low-", "back+", "round+", "vd+");
@@ -94,7 +94,7 @@ namespace SIL.HermitCrab.Tests
 			AddSegDef(Table1, phoneticFeatSys, "f", "cons+", "voc-", "labiodental", "vd-", "asp-", "strident+", "cont+");
 			AddSegDef(Table1, phoneticFeatSys, "v", "cons+", "voc-", "labiodental", "vd+", "asp-", "strident+", "cont+");
 
-			Table2 = new SymbolTable(SpanFactory, "table2");
+			Table2 = new SymbolTable(SpanFactory) { Name = "table2" };
 			AddSegDef(Table2, phoneticFeatSys, "a", "cons-", "voc+", "high-", "low+", "back+", "round-", "vd+");
 			AddSegDef(Table2, phoneticFeatSys, "i", "cons-", "voc+", "high+", "low-", "back-", "round-", "vd+");
 			AddSegDef(Table2, phoneticFeatSys, "u", "cons-", "voc+", "high+", "low-", "back+", "round+", "vd+");
@@ -120,7 +120,7 @@ namespace SIL.HermitCrab.Tests
 			AddBdryDef(Table2, ".");
 			AddBdryDef(Table2, "$");
 
-			Table3 = new SymbolTable(SpanFactory, "table3");
+			Table3 = new SymbolTable(SpanFactory) { Name = "table3" };
 			AddSegDef(Table3, phoneticFeatSys, "a", "cons-", "voc+", "high-", "low+", "back+", "round-", "vd+", "ATR+", "cont+");
 			AddSegDef(Table3, phoneticFeatSys, "a̘", "cons-", "voc+", "high-", "low+", "back+", "round-", "vd+", "ATR-", "cont+");
 			AddSegDef(Table3, phoneticFeatSys, "i", "cons-", "voc+", "high+", "low-", "back-", "round-", "vd+", "cont+");
@@ -147,14 +147,14 @@ namespace SIL.HermitCrab.Tests
 			AddBdryDef(Table3, "!");
 			AddBdryDef(Table3, ".");
 
-			Latinate = new MprFeature("latinate");
-			Germanic = new MprFeature("germanic");
+			Latinate = new MprFeature { Name = "latinate" };
+			Germanic = new MprFeature { Name = "germanic" };
 
-			Morphophonemic = new Stratum("morphophonemic", Table3) { Description = "Morphophonemic", MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered };
-			Allophonic = new Stratum("allophonic", Table1) { Description = "Allophonic", MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered };
-			Surface = new Stratum("surface", Table1) { Description = "Surface", MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered };
+			Morphophonemic = new Stratum(Table3) { Name = "Morphophonemic", MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered };
+			Allophonic = new Stratum(Table1) { Name = "Allophonic", MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered };
+			Surface = new Stratum(Table1) { Name = "Surface", MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered };
 
-			Entries = new IDBearerSet<LexEntry>();
+			Entries = new Dictionary<string, LexEntry>();
 			var fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("N")
 				.Feature("head").EqualTo(head => head
@@ -202,11 +202,11 @@ namespace SIL.HermitCrab.Tests
 			AddEntry("30", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Morphophonemic, "bu+ib");
 			AddEntry("31", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Morphophonemic, "buib");
 
-			AddEntry("32", "sag", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "sag");
-			AddEntry("33", "sas", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "sas");
-			AddEntry("34", "saz", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "saz");
-			AddEntry("35", "sat", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "sat");
-			AddEntry("36", "liberty.port", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "sasibo");
+			AddEntry("32", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "sag");
+			AddEntry("33", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "sas");
+			AddEntry("34", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "saz");
+			AddEntry("35", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "sat");
+			AddEntry("36", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "sasibo");
 			AddEntry("37", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "sasibut");
 			AddEntry("38", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "sasibud");
 
@@ -223,42 +223,42 @@ namespace SIL.HermitCrab.Tests
 
 			AddEntry("46", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "bupu");
 
-			AddEntry("47", "tag", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "tag");
-			AddEntry("48", "pag", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "pag");
-			AddEntry("49", "write", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "ktb");
+			AddEntry("47", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "tag");
+			AddEntry("48", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "pag");
+			AddEntry("49", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "ktb");
 			AddEntry("50", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "suupu");
 
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
 				.Feature("head").EqualTo(head => head
 					.Feature("num").EqualTo("pl")).Value;
-			AddEntry("Perc0", "ssag", fs, Morphophonemic, "ssag");
+			AddEntry("Perc0", fs, Morphophonemic, "ssag");
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
 				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("1")
 					.Feature("num").EqualTo("pl")).Value;
-			AddEntry("Perc1", "ssag", fs, Morphophonemic, "ssag");
+			AddEntry("Perc1", fs, Morphophonemic, "ssag");
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
 				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("3")
 					.Feature("num").EqualTo("pl")).Value;
-			AddEntry("Perc2", "ssag", fs, Morphophonemic, "ssag");
+			AddEntry("Perc2", fs, Morphophonemic, "ssag");
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
 				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("2", "3")
 					.Feature("num").EqualTo("pl")).Value;
-			AddEntry("Perc3", "ssag", fs, Morphophonemic, "ssag");
+			AddEntry("Perc3", fs, Morphophonemic, "ssag");
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
 				.Feature("head").EqualTo(head => head
 					.Feature("pers").EqualTo("1", "3")
 					.Feature("num").EqualTo("pl")).Value;
-			AddEntry("Perc4", "ssag", fs, Morphophonemic, "ssag");
+			AddEntry("Perc4", fs, Morphophonemic, "ssag");
 
-			var seeFamily = new LexFamily("SEE");
+			var seeFamily = new LexFamily { Name = "SEE" };
 			seeFamily.Entries.Add(AddEntry("bl1", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "si"));
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
@@ -286,19 +286,20 @@ namespace SIL.HermitCrab.Tests
 			entry.Allomorphs[2].RequiredEnvironments.Add(new AllomorphEnvironment(SpanFactory, null, Pattern<Word, ShapeNode>.New().Annotation(vowel).Value));
 
 			entry = AddEntry("stemname", FeatureStruct.New(syntacticFeatSys).Symbol("V").Feature("head").EqualTo(head => head.Feature("tense").EqualTo("pres")).Value, Morphophonemic, "sad", "san");
-			entry.Allomorphs[0].StemName = new StemName("sn1",
+			entry.Allomorphs[0].StemName = new StemName(
 				FeatureStruct.New(syntacticFeatSys)
 					.Symbol("V")
 					.Feature("head").EqualTo(head => head
-						.Feature("tense").EqualTo("past")).Value);
+						.Feature("tense").EqualTo("past")).Value) { Name = "sn" };
 
 			AddEntry("synfs", FeatureStruct.New(syntacticFeatSys).Symbol("V").Feature("head").EqualTo(head => head.Feature("tense").EqualTo("pres")).Value, Morphophonemic, "bag");
 
 			entry = AddEntry("bound", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "dag");
 			entry.PrimaryAllomorph.IsBound = true;
 
-			Language = new Language("lang1")
+			Language = new Language
 			           	{
+							Name = "Test",
 			           		PhoneticFeatureSystem = phoneticFeatSys,
 							SyntacticFeatureSystem = syntacticFeatSys,
 							Strata = { Morphophonemic, Allophonic, Surface }
@@ -316,22 +317,17 @@ namespace SIL.HermitCrab.Tests
 			}
 		}
 
-		private LexEntry AddEntry(string id, string gloss, FeatureStruct syntacticFS, Stratum stratum, params string[] forms)
+		private LexEntry AddEntry(string gloss, FeatureStruct syntacticFS, Stratum stratum, params string[] forms)
 		{
-			var entry = new LexEntry(id) { SyntacticFeatureStruct = syntacticFS, Gloss = gloss };
-			for (int i = 0; i < forms.Length; i++)
+			var entry = new LexEntry { SyntacticFeatureStruct = syntacticFS, Gloss = gloss };
+			foreach (string form in forms)
 			{
-				Shape shape = stratum.SymbolTable.Segment(forms[i]);
-				entry.Allomorphs.Add(new RootAllomorph(id + "_allo" + (i + 1), shape));
+				Shape shape = stratum.SymbolTable.Segment(form);
+				entry.Allomorphs.Add(new RootAllomorph(shape));
 			}
 			stratum.Entries.Add(entry);
-			Entries.Add(entry);
+			Entries[gloss] = entry;
 			return entry;
-		}
-
-		private LexEntry AddEntry(string id, FeatureStruct syntacticFS, Stratum stratum, params string[] forms)
-		{
-			return AddEntry(id, null, syntacticFS, stratum, forms);
 		}
 
 		private void AddSegDef(SymbolTable table, FeatureSystem phoneticFeatSys, string strRep, params string[] symbols)
@@ -363,7 +359,7 @@ namespace SIL.HermitCrab.Tests
 				{
 					if (!first)
 						sb.Append(" ");
-					sb.Append(morph.Morpheme.ID);
+					sb.Append(morph.Morpheme.Gloss);
 					first = false;
 				}
 				actual.Add(sb.ToString());

@@ -11,14 +11,12 @@ namespace SIL.HermitCrab.MorphologicalRules
 {
 	public class SynthesisCompoundingRule : IRule<Word, ShapeNode>
 	{
-		private readonly SpanFactory<ShapeNode> _spanFactory;
 		private readonly Morpher _morpher;
 		private readonly CompoundingRule _rule;
 		private readonly List<Tuple<Matcher<Word, ShapeNode>, Matcher<Word, ShapeNode>>> _subruleMatchers;
 
 		public SynthesisCompoundingRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, CompoundingRule rule)
 		{
-			_spanFactory = spanFactory;
 			_morpher = morpher;
 			_rule = rule;
 			_subruleMatchers = new List<Tuple<Matcher<Word, ShapeNode>, Matcher<Word, ShapeNode>>>();
@@ -147,34 +145,17 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 			if (existingMorphNodes.Count > 0)
 			{
-				foreach (Annotation<ShapeNode> morph in headMatch.Input.Morphs)
+				foreach (Allomorph allomorph in headMatch.Input.AllomorphsInMorphOrder)
 				{
 					List<ShapeNode> nodes;
-					if (existingMorphNodes.TryGetValue((string) morph.FeatureStruct.GetValue(HCFeatureSystem.Allomorph), out nodes))
-						MarkMorph(output, nodes, morph.FeatureStruct.DeepClone());
+					if (existingMorphNodes.TryGetValue(allomorph.ID, out nodes))
+						output.MarkMorph(nodes, allomorph);
 				}
 			}
 
-			if (newMorphNodes.Count > 0)
-			{
-				FeatureStruct fs = FeatureStruct.New()
-					.Symbol(HCFeatureSystem.Morph)
-					.Feature(HCFeatureSystem.Allomorph).EqualTo(headMatch.Input.CurrentNonHead.RootAllomorph.ID).Value;
-				MarkMorph(output, newMorphNodes, fs);
-			}
-			output.Allomorphs.Add(headMatch.Input.CurrentNonHead.RootAllomorph);
+			output.MarkMorph(newMorphNodes, headMatch.Input.CurrentNonHead.RootAllomorph);
 
 			return output;
-		}
-
-		private void MarkMorph(Word output, List<ShapeNode> nodes, FeatureStruct fs)
-		{
-			if (nodes.Count == 0)
-				return;
-
-			var ann = new Annotation<ShapeNode>(_spanFactory.Create(nodes[0], nodes[nodes.Count - 1]), fs);
-			ann.Children.AddRange(nodes.Select(n => n.Annotation));
-			output.Annotations.Add(ann, false);
 		}
 	}
 }

@@ -8,7 +8,6 @@
   Note: at most one should be active at a time
   -->
 <!ATTLIST Language
-  id ID #REQUIRED
   isActive (yes | no) "yes"
 >
 <!--
@@ -254,7 +253,6 @@ N.B. Hermit Crab's text input uses "property setting records"
   morphologicalRules refers to one or more MorphologicalRule or RealizationalRule IDs; these are ordered
   -->
 <!ATTLIST Slot
-  id ID #REQUIRED
   isActive (yes | no) "yes"
   optional (true | false) #IMPLIED
   morphologicalRules IDREFS #REQUIRED
@@ -440,7 +438,6 @@ For OutputFootFeatures and RequiredFootFeatures, the Features need to be FootFea
 <!ELEMENT CompoundSubrules (CompoundSubruleStructure+) >
 <!ELEMENT CompoundSubruleStructure (HeadRecordStructure, NonHeadRecordStructure, OutputSideRecordStructure, VariableFeatures?) >
 <!ATTLIST CompoundSubruleStructure
-  id ID #REQUIRED
   isActive (yes | no) "yes"
 >
 <!ELEMENT HeadRecordStructure (RequiredPhoneticInput) >
@@ -620,7 +617,6 @@ N.B. Hermit Crab itself does not have phonological metathesis rules, but we will
 >
 <!ELEMENT MorphologicalPhonologicalRuleFeatureGroup (Name)>
 <!ATTLIST MorphologicalPhonologicalRuleFeatureGroup
-  id ID #REQUIRED
   isActive (yes | no) "yes"
   matchType (any | all) "any"
   outputType (overwrite | append) "overwrite"

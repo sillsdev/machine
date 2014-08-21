@@ -153,19 +153,17 @@ namespace SIL.HermitCrab
 		private readonly ShapeSpanFactory _spanFactory;
 		private readonly XmlResolver _resolver;
 
-		private readonly IDBearerSet<SymbolTable> _tables; 
-		private readonly IDBearerSet<MprFeature> _mprFeatures;
-		private readonly IDBearerSet<MprFeatureGroup> _mprFeatureGroups;
+		private readonly Dictionary<string, SymbolTable> _tables; 
+		private readonly Dictionary<string, MprFeature> _mprFeatures;
 		private readonly Dictionary<string, FeatureStruct> _natClasses;
-		private readonly IDBearerSet<IMorphologicalRule> _mrules;
-		private readonly IDBearerSet<AffixTemplate> _templates;
-		private readonly IDBearerSet<IMorphologicalRule> _templateRules; 
-		private readonly IDBearerSet<Stratum> _strata;
-		private readonly IDBearerSet<LexFamily> _families;
-		private readonly IDBearerSet<LexEntry> _entries;
-		private readonly IDBearerSet<Morpheme> _morphemes;
-		private readonly IDBearerSet<Allomorph> _allomorphs;
-		private readonly IDBearerSet<StemName> _stemNames; 
+		private readonly Dictionary<string, IMorphologicalRule> _mrules;
+		private readonly Dictionary<string, AffixTemplate> _templates;
+		private readonly HashSet<string> _templateRules; 
+		private readonly Dictionary<string, Stratum> _strata;
+		private readonly Dictionary<string, LexFamily> _families;
+		private readonly Dictionary<string, Morpheme> _morphemes;
+		private readonly Dictionary<string, Allomorph> _allomorphs;
+		private readonly Dictionary<string, StemName> _stemNames; 
 
 		private XmlLoader(string configPath, Action<Exception, string> errorHandler, XmlResolver resolver)
 		{
@@ -178,19 +176,17 @@ namespace SIL.HermitCrab
 			_headFeature = new ComplexFeature("head") { Description = "Head" };
 			_footFeature = new ComplexFeature("foot") { Description = "Foot" };
 
-			_tables = new IDBearerSet<SymbolTable>();
-			_mprFeatures = new IDBearerSet<MprFeature>();
-			_mprFeatureGroups = new IDBearerSet<MprFeatureGroup>();
+			_tables = new Dictionary<string, SymbolTable>();
+			_mprFeatures = new Dictionary<string, MprFeature>();
 			_natClasses = new Dictionary<string, FeatureStruct>();
-			_mrules = new IDBearerSet<IMorphologicalRule>();
-			_templates = new IDBearerSet<AffixTemplate>();
-			_templateRules = new IDBearerSet<IMorphologicalRule>();
-			_strata = new IDBearerSet<Stratum>();
-			_families = new IDBearerSet<LexFamily>();
-			_entries = new IDBearerSet<LexEntry>();
-			_morphemes = new IDBearerSet<Morpheme>();
-			_allomorphs = new IDBearerSet<Allomorph>();
-			_stemNames = new IDBearerSet<StemName>();
+			_mrules = new Dictionary<string, IMorphologicalRule>();
+			_templates = new Dictionary<string, AffixTemplate>();
+			_templateRules = new HashSet<string>();
+			_strata = new Dictionary<string, Stratum>();
+			_families = new Dictionary<string, LexFamily>();
+			_morphemes = new Dictionary<string, Morpheme>();
+			_allomorphs = new Dictionary<string, Allomorph>();
+			_stemNames = new Dictionary<string, StemName>();
 		}
 
 		private Language Load()
@@ -219,8 +215,7 @@ namespace SIL.HermitCrab
 
 		private void LoadLanguage(XElement langElem)
 		{
-			var id = (string) langElem.Attribute("id");
-			_language = new Language(id) { Description = (string) langElem.Element("Name") };
+			_language = new Language { Name = (string) langElem.Element("Name") };
 
 			IEnumerable<FeatureSymbol> posSymbols = langElem.Elements("PartsOfSpeech").Elements("PartOfSpeech")
 				.Select(e => new FeatureSymbol((string) e.Attribute("id"), (string) e.Element("Name")));
@@ -228,9 +223,8 @@ namespace SIL.HermitCrab
 
 			_language.SyntacticFeatureSystem.Add(_posFeature);
 
-			_mprFeatures.UnionWith(from elem in langElem.Elements("MorphologicalPhonologicalRuleFeatures").Elements("MorphologicalPhonologicalRuleFeature")
-								   where IsActive(elem)
-								   select new MprFeature((string) elem.Attribute("id")) { Description = (string) elem });
+			foreach (XElement mfElem in langElem.Elements("MorphologicalPhonologicalRuleFeatures").Elements("MorphologicalPhonologicalRuleFeature").Where(IsActive))
+				_mprFeatures[(string) mfElem.Attribute("id")] = new MprFeature { Name = (string) mfElem };
 
 			foreach (XElement mprFeatGroupElem in langElem.Elements("MorphologicalPhonologicalRuleFeatures").Elements("MorphologicalPhonologicalRuleFeatureGroup").Where(IsActive))
 				LoadMprFeatGroup(mprFeatGroupElem);
@@ -296,7 +290,7 @@ namespace SIL.HermitCrab
 			}
 
 			foreach (XElement familyElem in langElem.Elements("Lexicon").Elements("Families").Elements("Family").Where(IsActive))
-				_families.Add(new LexFamily((string) familyElem.Attribute("id")) { Description = (string) familyElem.Element("Name") });
+				_families[(string) familyElem.Attribute("id")] = new LexFamily { Name = (string) familyElem.Element("Name") };
 
 			foreach (XElement entryElem in langElem.Elements("Lexicon").Elements("LexicalEntry").Where(IsActive))
 				LoadLexEntry(entryElem);
@@ -361,25 +355,24 @@ namespace SIL.HermitCrab
 				regions.Add(fs);
 			}
 
-			_stemNames.Add(new StemName((string) stemNameElem.Attribute("id"), regions) { Description = (string) stemNameElem.Element("Name") });
+			_stemNames[(string) stemNameElem.Attribute("id")] = new StemName(regions) { Name = (string) stemNameElem.Element("Name") };
 		}
 
 		private void LoadMprFeatGroup(XElement mprFeatGroupElem)
 		{
-			var group = new MprFeatureGroup((string) mprFeatGroupElem.Attribute("id")) { Description = (string) mprFeatGroupElem.Element("Name") };
+			var group = new MprFeatureGroup { Name = (string) mprFeatGroupElem.Element("Name") };
 			group.MatchType = GetGroupMatchType((string) mprFeatGroupElem.Attribute("matchType"));
 			group.Output = GetGroupOutput((string) mprFeatGroupElem.Attribute("outputType"));
 			var mprFeatIdsStr = (string) mprFeatGroupElem.Attribute("features");
 			foreach (MprFeature mprFeat in LoadMprFeatures(mprFeatIdsStr))
-				group.Add(mprFeat);
-			_mprFeatureGroups.Add(group);
+				group.MprFeatures.Add(mprFeat);
 		}
 
 		private void LoadStratum(XElement stratumElem)
 		{
-			var stratum = new Stratum((string) stratumElem.Attribute("id"), _tables[(string) stratumElem.Attribute("characterDefinitionTable")])
+			var stratum = new Stratum(_tables[(string) stratumElem.Attribute("characterDefinitionTable")])
 			              	{
-			              		Description = (string) stratumElem.Element("Name"),
+			              		Name = (string) stratumElem.Element("Name"),
 			              		MorphologicalRuleOrder = GetMorphologicalRuleOrder((string) stratumElem.Attribute("morphologicalRuleOrder"))
 			              	};
 
@@ -394,12 +387,13 @@ namespace SIL.HermitCrab
 			}
 
 			_language.Strata.Add(stratum);
-			_strata.Add(stratum);
+			_strata[(string) stratumElem.Attribute("id")] = stratum;
 		}
 
 		private void LoadLexEntry(XElement entryElem)
 		{
-			var entry = new LexEntry((string) entryElem.Attribute("id")) { Gloss = (string) entryElem.Element("Gloss") };
+			var entryID = (string) entryElem.Attribute("id");
+			var entry = new LexEntry { Gloss = (string) entryElem.Element("Gloss") };
 
 			var fs = new FeatureStruct();
 			var pos = (string) entryElem.Attribute("partOfSpeech");
@@ -431,12 +425,12 @@ namespace SIL.HermitCrab
 				{
 					RootAllomorph allomorph = LoadRootAllomorph(alloElem, stratum.SymbolTable);
 					entry.Allomorphs.Add(allomorph);
-					_allomorphs.Add(allomorph);
+					_allomorphs[(string) alloElem.Attribute("id")] = allomorph;
 				}
 				catch (Exception e)
 				{
 					if (_errorHandler != null)
-						_errorHandler(e, entry.ID);
+						_errorHandler(e, entryID);
 					else
 						throw;
 				}
@@ -445,19 +439,17 @@ namespace SIL.HermitCrab
 			if (entry.Allomorphs.Count > 0)
 			{
 				stratum.Entries.Add(entry);
-				_entries.Add(entry);
-				_morphemes.Add(entry);
+				_morphemes[entryID] = entry;
 			}
 		}
 
 		private RootAllomorph LoadRootAllomorph(XElement alloElem, SymbolTable table)
 		{
-			var alloID = (string) alloElem.Attribute("id");
 			var shapeStr = (string) alloElem.Element("PhoneticShape");
 			Shape shape = table.Segment(shapeStr);
 			if (shape.All(n => n.Type() == HCFeatureSystem.Boundary))
 				throw new InvalidShapeException(shapeStr, 0);
-			var allomorph = new RootAllomorph(alloID, shape);
+			var allomorph = new RootAllomorph(shape);
 
 			allomorph.RequiredEnvironments.AddRange(LoadAllomorphEnvironments(alloElem.Element("RequiredEnvironments")));
 			allomorph.ExcludedEnvironments.AddRange(LoadAllomorphEnvironments(alloElem.Element("ExcludedEnvironments")));
@@ -502,7 +494,7 @@ namespace SIL.HermitCrab
 		{
 			MorphCoOccurrenceAdjacency adjacency = GetAdjacencyType((string) coOccurElem.Attribute("adjacency"));
 			var morphemeIDsStr = (string) coOccurElem.Attribute("morphemes");
-			var morphemes = new IDBearerSet<Morpheme>();
+			var morphemes = new List<Morpheme>();
 			foreach (string morphemeID in morphemeIDsStr.Split(' '))
 			{
 				Morpheme morpheme = _morphemes[morphemeID];
@@ -524,7 +516,7 @@ namespace SIL.HermitCrab
 		{
 			MorphCoOccurrenceAdjacency adjacency = GetAdjacencyType((string) coOccurElem.Attribute("adjacency"));
 			var allomorphIDsStr = (string) coOccurElem.Attribute("allomorphs");
-			var allomorphs = new IDBearerSet<Allomorph>();
+			var allomorphs = new List<Allomorph>();
 			foreach (string allomorphID in allomorphIDsStr.Split(' '))
 			{
 				Allomorph allomorph = _allomorphs[allomorphID];
@@ -595,7 +587,7 @@ namespace SIL.HermitCrab
 
 		private void LoadSymbolTable(XElement charDefTableElem)
 		{
-			var table = new SymbolTable(_spanFactory, (string) charDefTableElem.Attribute("id")) { Description = (string) charDefTableElem.Element("Name") };
+			var table = new SymbolTable(_spanFactory) { Name = (string) charDefTableElem.Element("Name") };
 			foreach (XElement segDefElem in charDefTableElem.Elements("SegmentDefinitions").Elements("SegmentDefinition").Where(IsActive))
 			{
 				XElement repElem = segDefElem.Element("Representation");
@@ -614,7 +606,7 @@ namespace SIL.HermitCrab
 				_repIds[(string) bdryDefElem.Attribute("id")] = strRep;
 			}
 
-			_tables.Add(table);
+			_tables[(string) charDefTableElem.Attribute("id")] = table;
 		}
 
 		private void LoadSegmentNaturalClass(XElement natClassElem)
@@ -654,9 +646,9 @@ namespace SIL.HermitCrab
 		private void LoadRewriteRule(XElement pruleElem)
 		{
 			var multAppOrderStr = (string) pruleElem.Attribute("multipleApplicationOrder");
-			var prule = new RewriteRule((string) pruleElem.Attribute("id"))
+			var prule = new RewriteRule
 			            	{
-			            		Description = (string) pruleElem.Element("Name"),
+			            		Name = (string) pruleElem.Element("Name"),
 			            		ApplicationMode = GetApplicationMode(multAppOrderStr),
 								Direction = GetDirection(multAppOrderStr)
 			            	};
@@ -698,9 +690,9 @@ namespace SIL.HermitCrab
 
 		private void LoadMetathesisRule(XElement metathesisElem)
 		{
-			var metathesisRule = new MetathesisRule((string) metathesisElem.Attribute("id"))
+			var metathesisRule = new MetathesisRule
 			                     	{
-			                     		Description = (string) metathesisElem.Element("Name"),
+			                     		Name = (string) metathesisElem.Element("Name"),
 										Direction = GetDirection((string) metathesisElem.Attribute("multipleApplicationOrder"))
 			                     	};
 
@@ -717,9 +709,10 @@ namespace SIL.HermitCrab
 
 		private void LoadAffixProcessRule(XElement mruleElem)
 		{
-			var mrule = new AffixProcessRule((string) mruleElem.Attribute("id"))
+			var mruleID = (string) mruleElem.Attribute("id");
+			var mrule = new AffixProcessRule
 			            	{
-			            		Description = (string) mruleElem.Element("Name"),
+			            		Name = (string) mruleElem.Element("Name"),
 								Gloss = (string) mruleElem.Element("Gloss"),
 								Blockable = (string) mruleElem.Attribute("blockable") == "true"
 			            	};
@@ -770,12 +763,12 @@ namespace SIL.HermitCrab
 				{
 					AffixProcessAllomorph allomorph = LoadAffixProcessAllomorph(subruleElem);
 					mrule.Allomorphs.Add(allomorph);
-					_allomorphs.Add(allomorph);
+					_allomorphs[(string) subruleElem.Attribute("id")] = allomorph;
 				}
 				catch (Exception e)
 				{
 					if (_errorHandler != null)
-						_errorHandler(e, mrule.ID);
+						_errorHandler(e, mruleID);
 					else
 						throw;
 				}
@@ -783,16 +776,17 @@ namespace SIL.HermitCrab
 
 			if (mrule.Allomorphs.Count > 0)
 			{
-				_mrules.Add(mrule);
-				_morphemes.Add(mrule);
+				_mrules[mruleID] = mrule;
+				_morphemes[mruleID] = mrule;
 			}
 		}
 
 		private void LoadRealizationalRule(XElement realRuleElem)
 		{
-			var realRule = new RealizationalAffixProcessRule((string) realRuleElem.Attribute("id"))
+			var realRuleID = (string) realRuleElem.Attribute("id");
+			var realRule = new RealizationalAffixProcessRule
 							{
-								Description = (string) realRuleElem.Element("Name"),
+								Name = (string) realRuleElem.Element("Name"),
 								Gloss = (string) realRuleElem.Element("Gloss"),
 								Blockable = (string) realRuleElem.Attribute("blockable") == "true"
 							};
@@ -817,12 +811,12 @@ namespace SIL.HermitCrab
 				{
 					AffixProcessAllomorph allomorph = LoadAffixProcessAllomorph(subruleElem);
 					realRule.Allomorphs.Add(allomorph);
-					_allomorphs.Add(allomorph);
+					_allomorphs[(string) subruleElem.Attribute("id")] = allomorph;
 				}
 				catch (Exception e)
 				{
 					if (_errorHandler != null)
-						_errorHandler(e, realRule.ID);
+						_errorHandler(e, (string) realRuleElem.Attribute("id"));
 					else
 						throw;
 				}
@@ -830,14 +824,14 @@ namespace SIL.HermitCrab
 
 			if (realRule.Allomorphs.Count > 0)
 			{
-				_mrules.Add(realRule);
-				_morphemes.Add(realRule);
+				_mrules[realRuleID] = realRule;
+				_morphemes[realRuleID] = realRule;
 			}
 		}
 
 		private AffixProcessAllomorph LoadAffixProcessAllomorph(XElement msubruleElem)
 		{
-			var allomorph = new AffixProcessAllomorph((string) msubruleElem.Attribute("id"));
+			var allomorph = new AffixProcessAllomorph();
 
 			allomorph.RequiredEnvironments.AddRange(LoadAllomorphEnvironments(msubruleElem.Element("RequiredEnvironments")));
 			allomorph.ExcludedEnvironments.AddRange(LoadAllomorphEnvironments(msubruleElem.Element("ExcludedEnvironments")));
@@ -909,9 +903,10 @@ namespace SIL.HermitCrab
 
 		private void LoadCompoundingRule(XElement compRuleElem)
 		{
-			var compRule = new CompoundingRule((string) compRuleElem.Attribute("id"))
+			var compRuleID = (string) compRuleElem.Attribute("id");
+			var compRule = new CompoundingRule
 			            	{
-			            		Description = (string) compRuleElem.Element("Name"),
+			            		Name = (string) compRuleElem.Element("Name"),
 								Blockable = (string) compRuleElem.Attribute("blockable") == "true"
 			            	};
 			var multApp = (string) compRuleElem.Attribute("multipleApplication");
@@ -973,19 +968,19 @@ namespace SIL.HermitCrab
 				catch (Exception e)
 				{
 					if (_errorHandler != null)
-						_errorHandler(e, compRule.ID);
+						_errorHandler(e, compRuleID);
 					else
 						throw;
 				}
 			}
 
 			if (compRule.Subrules.Count > 0)
-				_mrules.Add(compRule);
+				_mrules[compRuleID] = compRule;
 		}
 
 		private CompoundingSubrule LoadCompoundSubrule(XElement compSubruleElem)
 		{
-			var subrule = new CompoundingSubrule((string) compSubruleElem.Attribute("id"));
+			var subrule = new CompoundingSubrule();
 
 			Dictionary<string, Tuple<string, SymbolicFeature>> variables = LoadVariables(compSubruleElem.Element("VariableFeatures"));
 
@@ -1013,7 +1008,7 @@ namespace SIL.HermitCrab
 
 		private void LoadAffixTemplate(XElement tempElem)
 		{
-			var template = new AffixTemplate((string) tempElem.Attribute("id")) { Description = (string) tempElem.Element("Name"), IsFinal = (bool) tempElem.Attribute("final") };
+			var template = new AffixTemplate { Name = (string) tempElem.Element("Name"), IsFinal = (bool) tempElem.Attribute("final") };
 
 			var requiredPos = (string) tempElem.Attribute("requiredPartsOfSpeech");
 			if (!string.IsNullOrEmpty(requiredPos))
@@ -1021,14 +1016,14 @@ namespace SIL.HermitCrab
 
 			foreach (XElement slotElem in tempElem.Elements("Slot").Where(IsActive))
 			{
-				var slot = new AffixTemplateSlot((string) slotElem.Attribute("id")) { Description = (string) slotElem.Element("Name") };
+				var slot = new AffixTemplateSlot { Name = (string) slotElem.Element("Name") };
 				var ruleIDsStr = (string) slotElem.Attribute("morphologicalRules");
 				IMorphologicalRule lastRule = null;
 				foreach (string ruleID in ruleIDsStr.Split(' '))
 				{
 					IMorphologicalRule rule = _mrules[ruleID];
 					slot.Rules.Add(rule);
-					_templateRules.Add(rule);
+					_templateRules.Add(ruleID);
 					lastRule = rule;
 				}
 
@@ -1041,7 +1036,7 @@ namespace SIL.HermitCrab
 				template.Slots.Add(slot);
 			}
 
-			_templates.Add(template);
+			_templates[(string) tempElem.Attribute("id")] = template;
 		}
 
 		private IEnumerable<FeatureSymbol> ParsePartsOfSpeech(string posIdsStr)

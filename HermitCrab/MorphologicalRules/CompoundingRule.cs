@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using SIL.Collections;
 using SIL.Machine.Annotations;
@@ -10,13 +9,12 @@ namespace SIL.HermitCrab.MorphologicalRules
 	/// <summary>
 	/// This class represents a morphological rule which combines two words in to one word.
 	/// </summary>
-	public class CompoundingRule : IDBearerBase, IMorphologicalRule
+	public class CompoundingRule : IMorphologicalRule
 	{
 		private readonly List<CompoundingSubrule> _subrules;
 		private readonly IDBearerSet<Feature> _obligatorySyntacticFeatures; 
 
-		public CompoundingRule(string id)
-			: base(id)
+		public CompoundingRule()
 		{
 			MaxApplicationCount = 1;
 			Blockable = true;
@@ -28,6 +26,8 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 			_obligatorySyntacticFeatures = new IDBearerSet<Feature>();
 		}
+
+		public string Name { get; set; }
 
 		public IList<CompoundingSubrule> Subrules
 		{
@@ -61,9 +61,9 @@ namespace SIL.HermitCrab.MorphologicalRules
 			return new SynthesisCompoundingRule(spanFactory, morpher, this);
 		}
 
-		public void Traverse(Action<IHCRule> action)
+		public override string ToString()
 		{
-			action(this);
+			return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
 		}
 	}
 }

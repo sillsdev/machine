@@ -9,9 +9,9 @@ namespace SIL.HermitCrab
 		{
 		}
 
-		protected override string GetMorphID(Allomorph morph)
+		protected override Allomorph GetMorphObject(Allomorph morph)
 		{
-			return morph.ID;
+			return morph;
 		}
 	}
 }

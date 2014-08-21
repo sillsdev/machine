@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Rules;
@@ -13,7 +11,7 @@ namespace SIL.HermitCrab
 	/// This class represents an affix template. It is normally used to model inflectional
 	/// affixation.
 	/// </summary>
-	public class AffixTemplate : IDBearerBase, IHCRule
+	public class AffixTemplate : IHCRule
 	{
 		private Stratum _stratum;
 		private readonly ObservableCollection<AffixTemplateSlot> _slots;
@@ -21,9 +19,7 @@ namespace SIL.HermitCrab
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AffixTemplate"/> class.
 		/// </summary>
-		/// <param name="id">The ID.</param>
-		public AffixTemplate(string id)
-			: base(id)
+		public AffixTemplate()
 		{
 			_slots = new ObservableCollection<AffixTemplateSlot>();
 			_slots.CollectionChanged += SlotsChanged;
@@ -50,6 +46,8 @@ namespace SIL.HermitCrab
 				}
 			}
 		}
+
+		public string Name { get; set; }
 
 		public FeatureStruct RequiredSyntacticFeatureStruct { get; set; }
 
@@ -84,14 +82,9 @@ namespace SIL.HermitCrab
 			return new SynthesisAffixTemplateRule(spanFactory, morpher, this);
 		}
 
-		public void Traverse(Action<IHCRule> action)
+		public override string ToString()
 		{
-			action(this);
-			foreach (AffixTemplateSlot slot in _slots)
-			{
-				foreach (IMorphologicalRule rule in slot.Rules)
-					rule.Traverse(action);
-			}
+			return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
 		}
 	}
 }

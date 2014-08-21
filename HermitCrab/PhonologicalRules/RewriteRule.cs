@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using SIL.Collections;
 using SIL.Machine.Annotations;
@@ -13,16 +12,17 @@ namespace SIL.HermitCrab.PhonologicalRules
 		Simultaneous
 	}
 
-	public class RewriteRule : IDBearerBase, IPhonologicalRule
+	public class RewriteRule : IPhonologicalRule
 	{
 		private readonly List<RewriteSubrule> _subrules;
 
-		public RewriteRule(string id)
-			: base(id)
+		public RewriteRule()
 		{
 			Lhs = Pattern<Word, ShapeNode>.New().Value;
 			_subrules = new List<RewriteSubrule>();
 		}
+
+		public string Name { get; set; }
 
 		public Pattern<Word, ShapeNode> Lhs { get; set; }
 
@@ -45,9 +45,9 @@ namespace SIL.HermitCrab.PhonologicalRules
 			return new SynthesisRewriteRule(spanFactory, morpher, this);
 		}
 
-		public void Traverse(Action<IHCRule> action)
+		public override string ToString()
 		{
-			action(this);
+			return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
 		}
 	}
 }

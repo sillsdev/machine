@@ -26,7 +26,7 @@ namespace SIL.HermitCrab
 			return (FeatureSymbol) constraint.FeatureStruct.GetValue(HCFeatureSystem.Type);
 		}
 
-		public static FeatureStruct AntiFeatureStruct(this FeatureStruct fs)
+		internal static FeatureStruct AntiFeatureStruct(this FeatureStruct fs)
 		{
 			// TODO: handle reentrancy properly
 
@@ -50,17 +50,17 @@ namespace SIL.HermitCrab
 			return result;
 		}
 
-		public static bool IsDirty(this ShapeNode node)
+		internal static bool IsDirty(this ShapeNode node)
 		{
 			return ((FeatureSymbol) node.Annotation.FeatureStruct.GetValue(HCFeatureSystem.Modified)) == HCFeatureSystem.Dirty;
 		}
 
-		public static void SetDirty(this ShapeNode node, bool dirty)
+		internal static void SetDirty(this ShapeNode node, bool dirty)
 		{
 			node.Annotation.FeatureStruct.AddValue(HCFeatureSystem.Modified, dirty ? HCFeatureSystem.Dirty : HCFeatureSystem.Clean);
 		}
 
-		public static bool IsDeleted(this Annotation<ShapeNode> ann)
+		internal static bool IsDeleted(this Annotation<ShapeNode> ann)
 		{
 			SymbolicFeatureValue sfv;
 			if (ann.FeatureStruct.TryGetValue(HCFeatureSystem.Deletion, out sfv))
@@ -68,24 +68,24 @@ namespace SIL.HermitCrab
 			return false;
 		}
 
-		public static bool IsDeleted(this ShapeNode node)
+		internal static bool IsDeleted(this ShapeNode node)
 		{
 			return node.Annotation.IsDeleted();
 		}
 
-		public static void SetDeleted(this ShapeNode node, bool deleted)
+		internal static void SetDeleted(this ShapeNode node, bool deleted)
 		{
 			node.Annotation.FeatureStruct.AddValue(HCFeatureSystem.Deletion, deleted ? HCFeatureSystem.Deleted : HCFeatureSystem.NotDeleted);
 		}
 
 		private static readonly IEqualityComparer<ShapeNode> NodeComparer = new ProjectionEqualityComparer<ShapeNode, FeatureStruct>(node => node.Annotation.FeatureStruct,
 			FreezableEqualityComparer<FeatureStruct>.Default);
-		public static bool Duplicates(this Shape x, Shape y)
+		internal static bool Duplicates(this Shape x, Shape y)
 		{
 			return x.Where(n => !n.Annotation.Optional).SequenceEqual(y.Where(n => !n.Annotation.Optional), NodeComparer);
 		}
 
-		public static IEnumerable<Word> RemoveDuplicates(this IEnumerable<Word> words)
+		internal static IEnumerable<Word> RemoveDuplicates(this IEnumerable<Word> words)
 		{
 			var output = new List<Word>();
 			foreach (Word word in words)

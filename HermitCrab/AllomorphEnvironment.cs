@@ -51,7 +51,19 @@ namespace SIL.HermitCrab
 			}
 		}
 
-		public Allomorph Allomorph { get; internal set; }
+		public string Name { get; set; }
+
+		public Pattern<Word, ShapeNode> LeftEnvironment
+		{
+			get { return _leftEnv; }
+		}
+
+		public Pattern<Word, ShapeNode> RightEnvironment
+		{
+			get { return _rightEnv; }
+		}
+
+		internal Allomorph Allomorph { get; set; }
 
 		public bool IsMatch(Word word)
 		{

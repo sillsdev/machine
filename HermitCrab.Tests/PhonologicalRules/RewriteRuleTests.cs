@@ -19,7 +19,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-").Value;
 
-			var rule1 = new RewriteRule("rule1") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table1.GetSymbolFeatureStruct("t")).Value};
+			var rule1 = new RewriteRule { Name = "rule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table1.GetSymbolFeatureStruct("t")).Value };
 			Allophonic.PhonologicalRules.Add(rule1);
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -27,7 +27,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(nonCons).Value
 			                   	});
 
-			var rule2 = new RewriteRule("rule2") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("p")).Value};
+			var rule2 = new RewriteRule { Name = "rule2", Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("p")).Value};
 			Allophonic.PhonologicalRules.Add(rule2);
 			Morphophonemic.PhonologicalRules.Add(rule2);
 			rule2.Subrules.Add(new RewriteSubrule
@@ -67,7 +67,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 				.Symbol("voc+")
 				.Symbol("low+").Value;
 
-			var rule3 = new RewriteRule("rule3") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value};
+			var rule3 = new RewriteRule { Name = "rule3", Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value };
 			Allophonic.PhonologicalRules.Add(rule3);
 			rule3.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -105,7 +105,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 				.Symbol("cons-")
 				.Symbol("voc+").Value;
 
-			var rule3 = new RewriteRule("rule3") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(cons).Value};
+			var rule3 = new RewriteRule { Name = "rule3", Lhs = Pattern<Word, ShapeNode>.New().Annotation(cons).Value };
 			Allophonic.PhonologicalRules.Add(rule3);
 			rule3.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -178,7 +178,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 				.Symbol("back+")
 				.Symbol("round+").Value;
 
-			var rule3 = new RewriteRule("rule3") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value};
+			var rule3 = new RewriteRule { Name = "rule3", Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value };
 			Allophonic.PhonologicalRules.Add(rule3);
 			rule3.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -188,7 +188,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 										.Annotation(cons).Annotation(rndVowel).Value
 			                   	});
 
-			var rule4 = new RewriteRule("rule4") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value};
+			var rule4 = new RewriteRule { Name = "rule4", Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value };
 			Allophonic.PhonologicalRules.Add(rule4);
 			rule4.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -207,7 +207,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 
 			Allophonic.PhonologicalRules.Clear();
 
-			var rule1 = new RewriteRule("rule1") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value};
+			var rule1 = new RewriteRule { Name= "rule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value };
 			Allophonic.PhonologicalRules.Add(rule1);
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -246,7 +246,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 				.Symbol("vd-")
 				.Symbol("strident-").Value;
 
-			var rule1 = new RewriteRule("rule1") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Annotation(highVowel).Value};
+			var rule1 = new RewriteRule { Name = "rule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Annotation(highVowel).Value };
 			Allophonic.PhonologicalRules.Add(rule1);
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -257,7 +257,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("buuubuuu"), "27");
 
-			var rule2 = new RewriteRule("rule2") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(t).Value};
+			var rule2 = new RewriteRule { Name = "rule2", Lhs = Pattern<Word, ShapeNode>.New().Annotation(t).Value };
 			Allophonic.PhonologicalRules.Add(rule2);
 			rule2.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -332,7 +332,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("asp+").Value;
 
-			var rule1 = new RewriteRule("rule1") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value};
+			var rule1 = new RewriteRule { Name = "rule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value };
 			Morphophonemic.PhonologicalRules.Add(rule1);
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -380,7 +380,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			                   		RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("b")).Value
 			                   	});
 
-			var rule2 = new RewriteRule("rule2") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(backVowel).Value};
+			var rule2 = new RewriteRule { Name = "rule2", Lhs = Pattern<Word, ShapeNode>.New().Annotation(backVowel).Value };
 			Morphophonemic.PhonologicalRules.Add(rule2);
 			rule2.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -461,7 +461,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 
 			Morphophonemic.PhonologicalRules.Clear();
 
-			rule1 = new RewriteRule("rule1");
+			rule1 = new RewriteRule { Name = "rule1" };
 			Allophonic.PhonologicalRules.Add(rule1);
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -505,7 +505,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 				.Symbol("strident+")
 				.Symbol("cont+").Value;
 
-			var rule1 = new RewriteRule("rule1") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table1.GetSymbolFeatureStruct("p")).Value};
+			var rule1 = new RewriteRule { Name= "rule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table1.GetSymbolFeatureStruct("p")).Value };
 			Allophonic.PhonologicalRules.Add(rule1);
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -578,7 +578,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 				.Symbol("cont-")
 				.Symbol("nasal-").Value;
 
-			var rule1 = new RewriteRule("rule1") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value};
+			var rule1 = new RewriteRule { Name = "rule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value };
 			Morphophonemic.PhonologicalRules.Add(rule1);
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -711,7 +711,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 				.Symbol("back+")
 				.Symbol("round+").Value;
 
-			var rule4 = new RewriteRule("rule4") {ApplicationMode = RewriteApplicationMode.Simultaneous};
+			var rule4 = new RewriteRule { Name = "rule4", ApplicationMode = RewriteApplicationMode.Simultaneous };
 			Allophonic.PhonologicalRules.Add(rule4);
 			rule4.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -807,7 +807,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 
 			Allophonic.PhonologicalRules.Clear();
 
-			var rule1 = new RewriteRule("rule1") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value};
+			var rule1 = new RewriteRule { Name = "rule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value };
 			Allophonic.PhonologicalRules.Add(rule1);
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -815,7 +815,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highBackRndVowel).Value
 			                   	});
 
-			var rule2 = new RewriteRule("rule2");
+			var rule2 = new RewriteRule { Name = "rule2" };
 			Allophonic.PhonologicalRules.Add(rule2);
 			rule2.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -869,7 +869,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("vd+").Value;
 
-			var rule4 = new RewriteRule("rule4") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Value};
+			var rule4 = new RewriteRule { Name = "rule4", Lhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Value };
 			Allophonic.PhonologicalRules.Add(rule4);
 			rule4.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -916,8 +916,9 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("+")).Value
 			                   	});
 
-			var rule5 = new RewriteRule("rule5")
+			var rule5 = new RewriteRule
 			            	{
+								Name = "rule5",
 								Lhs = Pattern<Word, ShapeNode>.New()
 									.Annotation(Table3.GetSymbolFeatureStruct("u"))
 									.Annotation(Table3.GetSymbolFeatureStruct("b"))
@@ -930,7 +931,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value
 			                   	});
 
-			var rule1 = new RewriteRule("rule1") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("t")).Value};
+			var rule1 = new RewriteRule { Name = "rule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("t")).Value };
 			Morphophonemic.PhonologicalRules.Add(rule1);
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -1079,7 +1080,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 				.Symbol("vd-")
 				.Symbol("cont-").Value;
 
-			var disrule1 = new RewriteRule("disrule1") {Lhs = Pattern<Word, ShapeNode>.New().Annotation(stop).Value};
+			var disrule1 = new RewriteRule { Name = "disrule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(stop).Value };
 			Allophonic.PhonologicalRules.Add(disrule1);
 			disrule1.Subrules.Add(new RewriteSubrule
 			                      	{
@@ -1204,7 +1205,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 				.Symbol("cons+")
 				.Symbol("voc-").Value;
 
-			var rule1 = new RewriteRule("rule1") { ApplicationMode = RewriteApplicationMode.Simultaneous, Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value };
+			var rule1 = new RewriteRule { Name = "rule1", ApplicationMode = RewriteApplicationMode.Simultaneous, Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value };
 			Allophonic.PhonologicalRules.Add(rule1);
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{

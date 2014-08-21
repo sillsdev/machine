@@ -8,7 +8,7 @@ namespace SIL.HermitCrab
 {
 	public class Word : Freezable<Word>, IAnnotatedData<ShapeNode>, IDeepCloneable<Word>
 	{
-		private readonly IDBearerSet<Allomorph> _allomorphs; 
+		private readonly Dictionary<string, Allomorph> _allomorphs; 
 		private RootAllomorph _rootAllomorph;
 		private Shape _shape;
 		private readonly Stack<IMorphologicalRule> _mrules;
@@ -23,7 +23,7 @@ namespace SIL.HermitCrab
 
 		public Word(RootAllomorph rootAllomorph, FeatureStruct realizationalFS)
 		{
-			_allomorphs = new IDBearerSet<Allomorph>();
+			_allomorphs = new Dictionary<string, Allomorph>();
 			_mprFeatures = new MprFeatureSet();
 			_shape = rootAllomorph.Shape.DeepClone();
 			ResetDirty();
@@ -39,7 +39,7 @@ namespace SIL.HermitCrab
 
 		public Word(Stratum stratum, Shape shape)
 		{
-			_allomorphs = new IDBearerSet<Allomorph>();
+			_allomorphs = new Dictionary<string, Allomorph>();
 			Stratum = stratum;
 			_shape = shape;
 			ResetDirty();
@@ -56,7 +56,7 @@ namespace SIL.HermitCrab
 
 		protected Word(Word word)
 		{
-			_allomorphs = new IDBearerSet<Allomorph>(word._allomorphs);
+			_allomorphs = new Dictionary<string, Allomorph>(word._allomorphs);
 			Stratum = word.Stratum;
 			_shape = word._shape.DeepClone();
 			_rootAllomorph = word._rootAllomorph;
@@ -82,6 +82,11 @@ namespace SIL.HermitCrab
 			get { return Morphs.Select(morph => _allomorphs[(string) morph.FeatureStruct.GetValue(HCFeatureSystem.Allomorph)]); }
 		}
 
+		public ICollection<Allomorph> Allomorphs
+		{
+			get { return _allomorphs.Values; }
+		}
+
 		public RootAllomorph RootAllomorph
 		{
 			get { return _rootAllomorph; }
@@ -99,13 +104,10 @@ namespace SIL.HermitCrab
 			_rootAllomorph = rootAllomorph;
 			var entry = (LexEntry) _rootAllomorph.Morpheme;
 			Stratum = entry.Stratum;
-			_shape.Annotations.Add(_shape.First, _shape.Last, FeatureStruct.New()
-				.Symbol(HCFeatureSystem.Morph)
-				.Feature(HCFeatureSystem.Allomorph).EqualTo(_rootAllomorph.ID).Value);
+			MarkMorph(_shape, _rootAllomorph);
 			SyntacticFeatureStruct = entry.SyntacticFeatureStruct.DeepClone();
 			_mprFeatures.Clear();
 			_mprFeatures.UnionWith(entry.MprFeatures);
-			_allomorphs.Add(_rootAllomorph);
 		}
 
 		public Shape Shape
@@ -133,11 +135,6 @@ namespace SIL.HermitCrab
 		public ICollection<Feature> ObligatorySyntacticFeatures
 		{
 			get { return _obligatorySyntacticFeatures; }
-		}
-
-		public IDBearerSet<Allomorph> Allomorphs
-		{
-			get { return _allomorphs; }
 		}
 
 		public Span<ShapeNode> Span
@@ -179,6 +176,30 @@ namespace SIL.HermitCrab
 					return null;
 				return _mrules.Peek();
 			}
+		}
+
+		internal Annotation<ShapeNode> MarkMorph(IEnumerable<ShapeNode> nodes, Allomorph allomorph)
+		{
+			ShapeNode[] nodeArray = nodes.ToArray();
+			Annotation<ShapeNode> ann = null;
+			if (nodeArray.Length > 0)
+			{
+				ann = new Annotation<ShapeNode>(_shape.SpanFactory.Create(nodeArray[0], nodeArray[nodeArray.Length - 1]), FeatureStruct.New()
+					.Symbol(HCFeatureSystem.Morph)
+					.Feature(HCFeatureSystem.Allomorph).EqualTo(allomorph.ID).Value);
+				ann.Children.AddRange(nodeArray.Select(n => n.Annotation));
+				_shape.Annotations.Add(ann, false);
+			}
+			_allomorphs[allomorph.ID] = allomorph;
+			return ann;
+		}
+
+		internal void RemoveMorph(Annotation<ShapeNode> morphAnn)
+		{
+			var alloID = (string) morphAnn.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
+			_allomorphs.Remove(alloID);
+			foreach (ShapeNode node in _shape.GetNodes(morphAnn.Span).ToArray())
+				node.Remove();
 		}
 
 		/// <summary>

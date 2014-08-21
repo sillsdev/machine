@@ -10,8 +10,9 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 		[Test]
 		public void SimpleRules()
 		{
-			var rule1 = new MetathesisRule("rule1")
+			var rule1 = new MetathesisRule
 			            	{
+								Name = "rule1",
 			            		Pattern = Pattern<Word, ShapeNode>.New()
 			            			.Group("1", group => group.Annotation(Table1.GetSymbolFeatureStruct("u")))
 			            			.Group("2", group => group.Annotation(Table1.GetSymbolFeatureStruct("p"))).Value,
@@ -21,14 +22,6 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("supuu"), "50");
-
-
-		}
-
-		[Test]
-		public void EnvironmentRules()
-		{
-			
 		}
 	}
 }

@@ -12,8 +12,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 	{
 		private readonly ObservableCollection<AffixProcessAllomorph> _allomorphs;
 
-		public RealizationalAffixProcessRule(string id)
-			: base(id)
+		public RealizationalAffixProcessRule()
 		{
 			Blockable = true;
 			_allomorphs = new ObservableCollection<AffixProcessAllomorph>();
@@ -44,6 +43,8 @@ namespace SIL.HermitCrab.MorphologicalRules
 				_allomorphs[i].Index = i;
 		}
 
+		public string Name { get; set; }
+
 		public bool Blockable { get; set; }
 
 		public FeatureStruct RequiredSyntacticFeatureStruct { get; set; }
@@ -65,14 +66,14 @@ namespace SIL.HermitCrab.MorphologicalRules
 			return new SynthesisRealizationalAffixProcessRule(spanFactory, morpher, this);
 		}
 
-		public void Traverse(Action<IHCRule> action)
-		{
-			action(this);
-		}
-
 		public override Allomorph GetAllomorph(int index)
 		{
 			return _allomorphs[index];
+		}
+
+		public override string ToString()
+		{
+			return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
 		}
 	}
 }

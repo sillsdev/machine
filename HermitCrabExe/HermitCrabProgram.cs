@@ -57,7 +57,7 @@ namespace SIL.HermitCrab
 				Console.Write("Compiling rules...");
 				context.Compile();
 				Console.WriteLine("done.");
-				Console.WriteLine("{0} loaded.", language.Description);
+				Console.WriteLine("{0} loaded.", language.Name);
 			}
 			catch (IOException ioe)
 			{

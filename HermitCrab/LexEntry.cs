@@ -16,9 +16,7 @@ namespace SIL.HermitCrab
 		/// <summary>
 		/// Initializes a new instance of the <see cref="LexEntry"/> class.
 		/// </summary>
-		/// <param name="id">The ID.</param>
-		public LexEntry(string id)
-			: base(id)
+		public LexEntry()
 		{
 			MprFeatures = new MprFeatureSet();
 			SyntacticFeatureStruct = FeatureStruct.New().Value;
@@ -92,6 +90,11 @@ namespace SIL.HermitCrab
 		public override Allomorph GetAllomorph(int index)
 		{
 			return _allomorphs[index];
+		}
+
+		public override string ToString()
+		{
+			return _allomorphs.Count == 0 || Stratum == null ? base.ToString() : PrimaryAllomorph.Shape.ToString(Stratum.SymbolTable, true);
 		}
 	}
 }

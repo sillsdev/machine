@@ -35,15 +35,16 @@ namespace SIL.HermitCrab.Tests
 				.Symbol("cons+")
 				.Symbol("strident+").Value;
 
-			var edSuffix = new RealizationalAffixProcessRule("ed_suffix")
+			var edSuffix = new RealizationalAffixProcessRule
 			               	{
+								Name = "ed_suffix",
 								RealizationalFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
 									.Feature("head").EqualTo(head => head
 										.Feature("tense").EqualTo("past")).Value,
 			               		Gloss = "PAST"
 			               	};
 
-			edSuffix.Allomorphs.Add(new AffixProcessAllomorph("ed_suffix_allo1")
+			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs =
 												{
@@ -52,19 +53,20 @@ namespace SIL.HermitCrab.Tests
 												},
 											Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new InsertShape(Table3, "ɯd") }
 										});
-			edSuffix.Allomorphs.Add(new AffixProcessAllomorph("ed_suffix_allo2")
+			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Annotation(voicelessCons).Value },
 											Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "t") }
 										});
-			edSuffix.Allomorphs.Add(new AffixProcessAllomorph("ed_suffix_allo3")
+			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
 											Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "d") }
 										});
 
-			var sSuffix = new RealizationalAffixProcessRule("s_suffix")
+			var sSuffix = new RealizationalAffixProcessRule
 			              	{
+								Name = "s_suffix",
 								RealizationalFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
 									.Feature("head").EqualTo(head => head
 										.Feature("pers").EqualTo("3")
@@ -72,7 +74,7 @@ namespace SIL.HermitCrab.Tests
 			              		Gloss = "3SG"
 			              	};
 
-			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo1")
+			sSuffix.Allomorphs.Add(new AffixProcessAllomorph
 									{
 										Lhs =
 											{
@@ -81,12 +83,12 @@ namespace SIL.HermitCrab.Tests
 											},
 										Rhs = { new CopyFromInput("1"), new ModifyFromInput("2", voiced), new InsertShape(Table3, "z") }
 									});
-			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo2")
+			sSuffix.Allomorphs.Add(new AffixProcessAllomorph
 									{
 										Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Annotation(strident).Value },
 										Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "ɯz") }
 									});
-			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo3")
+			sSuffix.Allomorphs.Add(new AffixProcessAllomorph
 									{
 										Lhs =
 											{
@@ -95,45 +97,46 @@ namespace SIL.HermitCrab.Tests
 											},
 										Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new InsertShape(Table3, "s") }
 									});
-			sSuffix.Allomorphs.Add(new AffixProcessAllomorph("s_suffix_allo2")
+			sSuffix.Allomorphs.Add(new AffixProcessAllomorph
 									{
 										Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
 										Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "z") }
 									});
 
-			var evidential = new RealizationalAffixProcessRule("evidential")
+			var evidential = new RealizationalAffixProcessRule
 								{
+									Name = "evidential",
 									RealizationalFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
 										.Feature("head").EqualTo(head => head
 											.Feature("evidential").EqualTo("witnessed")).Value,
 									Gloss = "WIT"
 								};
 
-			evidential.Allomorphs.Add(new AffixProcessAllomorph("evidential_allo1")
+			evidential.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
 											Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "v") }
 										});
 
-			var verbTemplate = new AffixTemplate("verb") { RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value };
-			var slot1 = new AffixTemplateSlot("slot1") {Optional = true};
+			var verbTemplate = new AffixTemplate { Name = "verb", RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value };
+			var slot1 = new AffixTemplateSlot {Optional = true};
 			slot1.Rules.Add(sSuffix);
 			slot1.Rules.Add(edSuffix);
 			verbTemplate.Slots.Add(slot1);
-			var slot2 = new AffixTemplateSlot("slot2") {Optional = true};
+			var slot2 = new AffixTemplateSlot {Optional = true};
 			slot2.Rules.Add(evidential);
 			verbTemplate.Slots.Add(slot2);
 			Morphophonemic.AffixTemplates.Add(verbTemplate);
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			Word[] output = morpher.ParseWord("sagd").ToArray();
-			AssertMorphsEqual(output, "32 ed_suffix");
+			AssertMorphsEqual(output, "32 PAST");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
 				.Symbol("V")
 				.Feature("head").EqualTo(head => head
 					.Feature("tense").EqualTo("past")).Value);
 			output = morpher.ParseWord("sagdv").ToArray();
-			AssertMorphsEqual(output, "32 ed_suffix evidential");
+			AssertMorphsEqual(output, "32 PAST WIT");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
 				.Symbol("V")
 				.Feature("head").EqualTo(head => head
@@ -154,7 +157,7 @@ namespace SIL.HermitCrab.Tests
 
 			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			output = morpher.ParseWord("sagzv").ToArray();
-			AssertMorphsEqual(output, "32 s_suffix evidential");
+			AssertMorphsEqual(output, "32 3SG WIT");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
 				.Symbol("V")
 				.Feature("head").EqualTo(head => head
@@ -178,12 +181,13 @@ namespace SIL.HermitCrab.Tests
 				.Symbol("cons+")
 				.Symbol("vd-").Value;
 
-			var edSuffix = new AffixProcessRule("ed_suffix")
+			var edSuffix = new AffixProcessRule
 			               	{
+								Name = "ed_suffix",
 			               		Gloss = "PAST"
 			               	};
 
-			edSuffix.Allomorphs.Add(new AffixProcessAllomorph("ed_suffix_allo1")
+			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs =
 												{
@@ -192,31 +196,32 @@ namespace SIL.HermitCrab.Tests
 												},
 											Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new InsertShape(Table3, "ɯd") }
 										});
-			edSuffix.Allomorphs.Add(new AffixProcessAllomorph("ed_suffix_allo2")
+			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Annotation(voicelessCons).Value },
 											Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "t") }
 										});
-			edSuffix.Allomorphs.Add(new AffixProcessAllomorph("ed_suffix_allo3")
+			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
 											Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "d") }
 										});
 
-			var verbTemplate = new AffixTemplate("verb") { RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value };
-			var slot1 = new AffixTemplateSlot("slot1");
+			var verbTemplate = new AffixTemplate { Name = "verb", RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value };
+			var slot1 = new AffixTemplateSlot();
 			slot1.Rules.Add(edSuffix);
 			verbTemplate.Slots.Add(slot1);
 			Morphophonemic.AffixTemplates.Add(verbTemplate);
 
-			var nominalizer = new AffixProcessRule("nominalizer")
+			var nominalizer = new AffixProcessRule
 								{
+									Name = "nominalizer",
 									Gloss = "NOM",
 									RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
 									OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value
 								};
 
-			nominalizer.Allomorphs.Add(new AffixProcessAllomorph("nominalizer_allo1")
+			nominalizer.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
 											Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "v") }
@@ -224,13 +229,13 @@ namespace SIL.HermitCrab.Tests
 			Morphophonemic.MorphologicalRules.Add(nominalizer);
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
-			AssertMorphsEqual(morpher.ParseWord("sagd"), "32 ed_suffix");
-			AssertMorphsEqual(morpher.ParseWord("sagdv"), "32 ed_suffix nominalizer");
+			AssertMorphsEqual(morpher.ParseWord("sagd"), "32 PAST");
+			AssertMorphsEqual(morpher.ParseWord("sagdv"), "32 PAST NOM");
 
 			verbTemplate.IsFinal = false;
 			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			Assert.That(morpher.ParseWord("sagd"), Is.Empty);
-			AssertMorphsEqual(morpher.ParseWord("sagdv"), "32 ed_suffix nominalizer");
+			AssertMorphsEqual(morpher.ParseWord("sagdv"), "32 PAST NOM");
 		}
 	}
 }

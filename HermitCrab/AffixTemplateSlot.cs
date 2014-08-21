@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using SIL.Collections;
 
 namespace SIL.HermitCrab
 {
@@ -7,7 +6,7 @@ namespace SIL.HermitCrab
 	/// This class represents a slot in an affix template. It encapsulates a list of
 	/// affixal morphological rules.
 	/// </summary>
-	public class AffixTemplateSlot : IDBearerBase
+	public class AffixTemplateSlot
 	{
 		private readonly List<IMorphologicalRule> _rules;
 		private bool _isOptional;
@@ -15,12 +14,12 @@ namespace SIL.HermitCrab
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AffixTemplateSlot"/> class.
 		/// </summary>
-		/// <param name="id">The ID.</param>
-		public AffixTemplateSlot(string id)
-			: base(id)
+		public AffixTemplateSlot()
 		{
 			_rules = new List<IMorphologicalRule>();
 		}
+
+		public string Name { get; set; }
 
 		/// <summary>
 		/// Gets or sets a value indicating whether this slot is optional.
@@ -51,6 +50,11 @@ namespace SIL.HermitCrab
 		public ICollection<IMorphologicalRule> Rules
 		{
 			get { return _rules; }
+		}
+
+		public override string ToString()
+		{
+			return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
 		}
 	}
 }

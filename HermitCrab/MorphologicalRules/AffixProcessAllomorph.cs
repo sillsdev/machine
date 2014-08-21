@@ -31,8 +31,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 		private readonly MprFeatureSet _excludedMprFeatures;
 		private readonly MprFeatureSet _outMprFeatures;
 
-		public AffixProcessAllomorph(string id)
-			: base(id)
+		public AffixProcessAllomorph()
 		{
 			_lhs = new List<Pattern<Word, ShapeNode>>();
 			_rhs = new List<MorphologicalOutputAction>();
