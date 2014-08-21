@@ -120,7 +120,7 @@ namespace SIL.HermitCrab
 		}
 
 		/// <summary>
-		/// Gets or sets the properties.
+		/// Gets the custom properties.
 		/// </summary>
 		/// <value>The properties.</value>
 		public IDictionary Properties

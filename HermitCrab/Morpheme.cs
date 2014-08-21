@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
@@ -10,7 +11,8 @@ namespace SIL.HermitCrab
 	public abstract class Morpheme
 	{
 		private readonly ObservableCollection<MorphemeCoOccurrenceRule> _requiredMorphemeCoOccurrences;
-		private readonly ObservableCollection<MorphemeCoOccurrenceRule> _excludedMorphemeCoOccurrences; 
+		private readonly ObservableCollection<MorphemeCoOccurrenceRule> _excludedMorphemeCoOccurrences;
+		private readonly Hashtable _properties;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Morpheme"/> class.
@@ -21,6 +23,7 @@ namespace SIL.HermitCrab
 			_requiredMorphemeCoOccurrences.CollectionChanged += MorphemeCoOccurrencesChanged;
 			_excludedMorphemeCoOccurrences = new ObservableCollection<MorphemeCoOccurrenceRule>();
 			_excludedMorphemeCoOccurrences.CollectionChanged += MorphemeCoOccurrencesChanged;
+			_properties = new Hashtable();
 		}
 
 		private void MorphemeCoOccurrencesChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -67,6 +70,15 @@ namespace SIL.HermitCrab
 		public ICollection<MorphemeCoOccurrenceRule> ExcludedMorphemeCoOccurrences
 		{
 			get { return _excludedMorphemeCoOccurrences; }
+		}
+
+		/// <summary>
+		/// Gets the custom properties.
+		/// </summary>
+		/// <value>The properties.</value>
+		public IDictionary Properties
+		{
+			get { return _properties; }
 		}
 	}
 }
