@@ -48,6 +48,12 @@ namespace SIL.HermitCrab
 
 		public bool IsMatch(MprFeatureSet mprFeats)
 		{
+			MprFeatureGroup mismatchGroup;
+			return IsMatch(mprFeats, out mismatchGroup);
+		}
+
+		public bool IsMatch(MprFeatureSet mprFeats, out MprFeatureGroup mismatchGroup)
+		{
 			foreach (MprFeatureGroup group in Groups)
 			{
 				bool match = true;
@@ -76,14 +82,21 @@ namespace SIL.HermitCrab
 				}
 
 				if (!match)
+				{
+					mismatchGroup = null;
 					return false;
+				}
 			}
 
 			foreach (MprFeature feat in this)
 			{
 				if (feat.Group == null && !mprFeats.Contains(feat))
+				{
+					mismatchGroup = null;
 					return false;
+				}
 			}
+			mismatchGroup = null;
 			return true;
 		}
 
