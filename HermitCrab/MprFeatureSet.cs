@@ -83,7 +83,7 @@ namespace SIL.HermitCrab
 
 				if (!match)
 				{
-					mismatchGroup = null;
+					mismatchGroup = group;
 					return false;
 				}
 			}
