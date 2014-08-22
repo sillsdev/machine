@@ -13,7 +13,7 @@ namespace SIL.HermitCrab
 	/// This class acts as the main interface to the morphing capability of HC.NET. It encapsulates
 	/// the feature systems, rules, character definition tables, etc. for a particular language.
 	/// </summary>
-	public class Language : IHCRule
+	public class Language : HCRuleBase
 	{
 		private readonly ObservableCollection<Stratum> _strata;
 
@@ -38,8 +38,6 @@ namespace SIL.HermitCrab
 			for (int i = 0; i < _strata.Count; i++)
 				_strata[i].Depth = i;
 		}
-
-		public string Name { get; set; }
 
 		/// <summary>
 		/// Gets the surface stratum.
@@ -76,22 +74,17 @@ namespace SIL.HermitCrab
 			get { return _strata; }
 		}
 
-		public IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{
 			//return new PermutationRuleCascade<Word, ShapeNode>(_strata.Select(stratum => stratum.CompileAnalysisRule(spanFactory, morpher)).Reverse(),
 			//	FreezableEqualityComparer<Word>.Instance);
 			return new AnalysisLanguageRule(spanFactory, morpher, this);
 		}
 
-		public IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{
 			return new PipelineRuleCascade<Word, ShapeNode>(_strata.Select(stratum => stratum.CompileSynthesisRule(spanFactory, morpher)),
 				FreezableEqualityComparer<Word>.Default);
-		}
-
-		public override string ToString()
-		{
-			return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
 		}
 	}
 }

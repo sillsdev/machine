@@ -67,6 +67,7 @@
     <Compile Include="AllomorphEnvironment.cs" />
     <Compile Include="AnalysisLanguageRule.cs" />
     <Compile Include="AnalysisStratumRule.cs" />
+    <Compile Include="HCRuleBase.cs" />
     <Compile Include="HermitCrabExtensions.cs" />
     <Compile Include="HCFeatureSystem.cs" />
     <Compile Include="IHCRule.cs" />

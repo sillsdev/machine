@@ -16,7 +16,7 @@ namespace SIL.HermitCrab
 	/// This class encapsulates the character definition table, rules, and lexicon for
 	/// a particular stratum.
 	/// </summary>
-	public class Stratum : IHCRule
+	public class Stratum : HCRuleBase
 	{
 		private readonly SymbolTable _symDefTable;
 
@@ -89,8 +89,6 @@ namespace SIL.HermitCrab
 			}
 		}
 
-		public string Name { get; set; }
-
 		/// <summary>
 		/// Gets the symbol definition table.
 		/// </summary>
@@ -131,19 +129,14 @@ namespace SIL.HermitCrab
 		/// <value>The morphological rule order.</value>
 		public MorphologicalRuleOrder MorphologicalRuleOrder { get; set; }
 
-		public IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{
 			return new AnalysisStratumRule(spanFactory, morpher, this);
 		}
 
-		public IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{
 			return new SynthesisStratumRule(spanFactory, morpher, this);
-		}
-
-		public override string ToString()
-		{
-			return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
 		}
 	}
 }

@@ -9,7 +9,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 	/// <summary>
 	/// This class represents a morphological rule which combines two words in to one word.
 	/// </summary>
-	public class CompoundingRule : IMorphologicalRule
+	public class CompoundingRule : HCRuleBase, IMorphologicalRule
 	{
 		private readonly List<CompoundingSubrule> _subrules;
 		private readonly IDBearerSet<Feature> _obligatorySyntacticFeatures; 
@@ -26,8 +26,6 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 			_obligatorySyntacticFeatures = new IDBearerSet<Feature>();
 		}
-
-		public string Name { get; set; }
 
 		public IList<CompoundingSubrule> Subrules
 		{
@@ -51,19 +49,14 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 		public Stratum Stratum { get; set; }
 
-		public IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{
 			return new AnalysisCompoundingRule(spanFactory, morpher, this);
 		}
 
-		public IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{
 			return new SynthesisCompoundingRule(spanFactory, morpher, this);
-		}
-
-		public override string ToString()
-		{
-			return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
 		}
 	}
 }

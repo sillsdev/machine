@@ -11,7 +11,7 @@ namespace SIL.HermitCrab
 	/// This class represents an affix template. It is normally used to model inflectional
 	/// affixation.
 	/// </summary>
-	public class AffixTemplate : IHCRule
+	public class AffixTemplate : HCRuleBase
 	{
 		private Stratum _stratum;
 		private readonly ObservableCollection<AffixTemplateSlot> _slots;
@@ -47,8 +47,6 @@ namespace SIL.HermitCrab
 			}
 		}
 
-		public string Name { get; set; }
-
 		public FeatureStruct RequiredSyntacticFeatureStruct { get; set; }
 
 		public bool IsFinal { get; set; }
@@ -72,19 +70,14 @@ namespace SIL.HermitCrab
 			}
 		}
 
-		public IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{
 			return new AnalysisAffixTemplateRule(spanFactory, morpher, this);
 		}
 
-		public IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{
 			return new SynthesisAffixTemplateRule(spanFactory, morpher, this);
-		}
-
-		public override string ToString()
-		{
-			return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
 		}
 	}
 }

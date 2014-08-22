@@ -12,7 +12,7 @@ namespace SIL.HermitCrab.PhonologicalRules
 		Simultaneous
 	}
 
-	public class RewriteRule : IPhonologicalRule
+	public class RewriteRule : HCRuleBase, IPhonologicalRule
 	{
 		private readonly List<RewriteSubrule> _subrules;
 
@@ -21,8 +21,6 @@ namespace SIL.HermitCrab.PhonologicalRules
 			Lhs = Pattern<Word, ShapeNode>.New().Value;
 			_subrules = new List<RewriteSubrule>();
 		}
-
-		public string Name { get; set; }
 
 		public Pattern<Word, ShapeNode> Lhs { get; set; }
 
@@ -35,19 +33,14 @@ namespace SIL.HermitCrab.PhonologicalRules
 
 		public RewriteApplicationMode ApplicationMode { get; set; }
 
-		public IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{
 			return new AnalysisRewriteRule(spanFactory, morpher, this);
 		}
 
-		public IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{
 			return new SynthesisRewriteRule(spanFactory, morpher, this);
-		}
-
-		public override string ToString()
-		{
-			return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
 		}
 	}
 }
