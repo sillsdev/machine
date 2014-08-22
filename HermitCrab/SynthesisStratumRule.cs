@@ -38,7 +38,8 @@ namespace SIL.HermitCrab
 			if (!_morpher.RuleSelector(_stratum) || input.RootAllomorph.Morpheme.Stratum.Depth > _stratum.Depth)
 				return input.ToEnumerable();
 
-			_morpher.TraceManager.BeginApplyStratum(_stratum, input);
+			if (_morpher.TraceManager.IsTracing)
+				_morpher.TraceManager.BeginApplyStratum(_stratum, input);
 
 			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
 			foreach (Word mruleOutWord in ApplyMorphologicalRules(input).Concat(ApplyTemplates(input)))
@@ -48,11 +49,12 @@ namespace SIL.HermitCrab
 					Word newWord = mruleOutWord.DeepClone();
 					_prulesRule.Apply(newWord);
 					newWord.Freeze();
-					_morpher.TraceManager.EndApplyStratum(_stratum, newWord);
+					if (_morpher.TraceManager.IsTracing)
+						_morpher.TraceManager.EndApplyStratum(_stratum, newWord);
 					output.Add(newWord);
 				}
 			}
-			if (output.Count == 0)
+			if (_morpher.TraceManager.IsTracing && output.Count == 0)
 				_morpher.TraceManager.EndApplyStratum(_stratum, input);
 			return output;
 		}

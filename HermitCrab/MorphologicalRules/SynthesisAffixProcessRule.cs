@@ -39,14 +39,16 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 			if (_rule.RequiredStemName != null && _rule.RequiredStemName != input.RootAllomorph.StemName)
 			{
-				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.StemName);
+				if (_morpher.TraceManager.IsTracing)
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.StemName);
 				return Enumerable.Empty<Word>();
 			}
 
 			FeatureStruct syntacticFS;
 			if (!_rule.RequiredSyntacticFeatureStruct.Unify(input.SyntacticFeatureStruct, true, out syntacticFS))
 			{
-				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.RequiredSyntacticFeatureStruct);
+				if (_morpher.TraceManager.IsTracing)
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.RequiredSyntacticFeatureStruct);
 				return Enumerable.Empty<Word>();
 			}
 
@@ -56,12 +58,14 @@ namespace SIL.HermitCrab.MorphologicalRules
 				AffixProcessAllomorph allo = _rule.Allomorphs[i];
 				if (allo.RequiredMprFeatures.Count > 0 && !allo.RequiredMprFeatures.IsMatch(input.MprFeatures))
 				{
-					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.RequiredMprFeatures);
+					if (_morpher.TraceManager.IsTracing)
+						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.RequiredMprFeatures);
 					continue;
 				}
 				if (allo.ExcludedMprFeatures.Count > 0 && allo.ExcludedMprFeatures.IsMatch(input.MprFeatures))
 				{
-					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.ExcludedMprFeatures);
+					if (_morpher.TraceManager.IsTracing)
+						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.ExcludedMprFeatures);
 					continue;
 				}
 
@@ -79,7 +83,8 @@ namespace SIL.HermitCrab.MorphologicalRules
 					Word newWord;
 					if (_rule.Blockable && outWord.CheckBlocking(out newWord))
 					{
-						_morpher.TraceManager.Blocking(_rule, newWord);
+						if (_morpher.TraceManager.IsTracing)
+							_morpher.TraceManager.Blocking(_rule, newWord);
 						outWord = newWord;
 					}
 					else
@@ -87,7 +92,8 @@ namespace SIL.HermitCrab.MorphologicalRules
 						outWord.Freeze();
 					}
 
-					_morpher.TraceManager.MorphologicalRuleApplied(_rule, i, input, outWord);
+					if (_morpher.TraceManager.IsTracing)
+						_morpher.TraceManager.MorphologicalRuleApplied(_rule, i, input, outWord);
 					output.Add(outWord);
 
 					// return all word syntheses that match subrules that are constrained by environments,
@@ -104,7 +110,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 						break;
 					}
 				}
-				else
+				else if (_morpher.TraceManager.IsTracing)
 				{
 					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.PatternMismatch);
 				}

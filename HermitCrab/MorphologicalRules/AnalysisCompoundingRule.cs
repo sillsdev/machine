@@ -89,12 +89,13 @@ namespace SIL.HermitCrab.MorphologicalRules
 					outWord.MorphologicalRuleUnapplied(_rule, false);
 
 					outWord.Freeze();
-					_morpher.TraceManager.MorphologicalRuleUnapplied(_rule, i, input, outWord);
+					if (_morpher.TraceManager.IsTracing)
+						_morpher.TraceManager.MorphologicalRuleUnapplied(_rule, i, input, outWord);
 					output.Add(outWord);
 					unapplied = true;
 				}
 
-				if (!unapplied)
+				if (_morpher.TraceManager.IsTracing && !unapplied)
 					_morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, i, input);
 			}
 

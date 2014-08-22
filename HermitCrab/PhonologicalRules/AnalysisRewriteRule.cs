@@ -110,6 +110,10 @@ namespace SIL.HermitCrab.PhonologicalRules
 			bool applied = false;
 			for (int i = 0; i < _rules.Count; i++)
 			{
+				Word origInput = null;
+				if (_morpher.TraceManager.IsTracing)
+					origInput = input.DeepClone();
+
 				Tuple<ReapplyType, PatternRule<Word, ShapeNode>> sr = _rules[i];
 				bool srApplied = false;
 				switch (sr.Item1)
@@ -150,10 +154,11 @@ namespace SIL.HermitCrab.PhonologicalRules
 
 				if (srApplied)
 				{
-					_morpher.TraceManager.PhonologicalRuleUnapplied(_rule, i, input);
+					if (_morpher.TraceManager.IsTracing)
+						_morpher.TraceManager.PhonologicalRuleUnapplied(_rule, i, origInput, input);
 					applied = true;
 				}
-				else
+				else if (_morpher.TraceManager.IsTracing)
 				{
 					_morpher.TraceManager.PhonologicalRuleNotUnapplied(_rule, i, input);
 				}

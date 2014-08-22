@@ -32,7 +32,7 @@
 		void BeginUnapplyStratum(Stratum stratum, Word input);
 		void EndUnapplyStratum(Stratum stratum, Word output);
 
-		void PhonologicalRuleUnapplied(IPhonologicalRule rule, int subruleIndex, Word output);
+		void PhonologicalRuleUnapplied(IPhonologicalRule rule, int subruleIndex, Word input, Word output);
 		void PhonologicalRuleNotUnapplied(IPhonologicalRule rule, int subruleIndex, Word input);
 
 		void BeginUnapplyTemplate(AffixTemplate template, Word input);
@@ -48,7 +48,7 @@
 		void BeginApplyStratum(Stratum stratum, Word input);
 		void EndApplyStratum(Stratum stratum, Word output);
 
-		void PhonologicalRuleApplied(IPhonologicalRule rule, int subruleIndex, Word output);
+		void PhonologicalRuleApplied(IPhonologicalRule rule, int subruleIndex, Word input, Word output);
 		void PhonologicalRuleNotApplied(IPhonologicalRule rule, int subruleIndex, Word input, FailureReason reason);
 
 		void BeginApplyTemplate(AffixTemplate template, Word input);

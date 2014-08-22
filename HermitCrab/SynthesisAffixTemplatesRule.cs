@@ -78,7 +78,7 @@ namespace SIL.HermitCrab
 				}
 			}
 
-			if (best != input)
+			if (_morpher.TraceManager.IsTracing && best != input)
 				_morpher.TraceManager.Blocking(_stratum, best);
 			return best;
 		}

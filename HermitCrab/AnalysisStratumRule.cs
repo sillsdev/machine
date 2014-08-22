@@ -36,7 +36,8 @@ namespace SIL.HermitCrab
 
 		public IEnumerable<Word> Apply(Word input)
 		{
-			_morpher.TraceManager.BeginUnapplyStratum(_stratum, input);
+			if (_morpher.TraceManager.IsTracing)
+				_morpher.TraceManager.BeginUnapplyStratum(_stratum, input);
 
 			input = input.DeepClone();
 			input.Stratum = _stratum;
@@ -58,11 +59,13 @@ namespace SIL.HermitCrab
 			Debug.Assert(mruleOutWords != null);
 
 			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default) {input};
-			_morpher.TraceManager.EndUnapplyStratum(_stratum, input);
+			if (_morpher.TraceManager.IsTracing)
+				_morpher.TraceManager.EndUnapplyStratum(_stratum, input);
 			foreach (Word mruleOutWord in mruleOutWords)
 			{
 				output.Add(mruleOutWord);
-				_morpher.TraceManager.EndUnapplyStratum(_stratum, mruleOutWord);
+				if (_morpher.TraceManager.IsTracing)
+					_morpher.TraceManager.EndUnapplyStratum(_stratum, mruleOutWord);
 			}
 			return output;
 		}

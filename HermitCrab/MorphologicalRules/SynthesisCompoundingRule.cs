@@ -48,14 +48,16 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 			if (!_rule.NonHeadRequiredSyntacticFeatureStruct.IsUnifiable(input.CurrentNonHead.SyntacticFeatureStruct, true))
 			{
-				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.NonHeadRequiredSyntacticFeatureStruct);
+				if (_morpher.TraceManager.IsTracing)
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.NonHeadRequiredSyntacticFeatureStruct);
 				return Enumerable.Empty<Word>();
 			}
 
 			FeatureStruct syntacticFS;
 			if (!_rule.HeadRequiredSyntacticFeatureStruct.Unify(input.SyntacticFeatureStruct, true, out syntacticFS))
 			{
-				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.HeadRequiredSyntacticFeatureStruct);
+				if (_morpher.TraceManager.IsTracing)
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.HeadRequiredSyntacticFeatureStruct);
 				return Enumerable.Empty<Word>();
 			}
 
@@ -64,12 +66,14 @@ namespace SIL.HermitCrab.MorphologicalRules
 			{
 				if (_rule.Subrules[i].RequiredMprFeatures.Count > 0 && !_rule.Subrules[i].RequiredMprFeatures.IsMatch(input.MprFeatures))
 				{
-					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.RequiredMprFeatures);
+					if (_morpher.TraceManager.IsTracing)
+						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.RequiredMprFeatures);
 					continue;
 				}
 				if (_rule.Subrules[i].ExcludedMprFeatures.Count > 0 && _rule.Subrules[i].ExcludedMprFeatures.IsMatch(input.MprFeatures))
 				{
-					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.ExcludedMprFeatures);
+					if (_morpher.TraceManager.IsTracing)
+						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.ExcludedMprFeatures);
 					continue;
 				}
 
@@ -95,7 +99,8 @@ namespace SIL.HermitCrab.MorphologicalRules
 						Word newWord;
 						if (_rule.Blockable && outWord.CheckBlocking(out newWord))
 						{
-							_morpher.TraceManager.Blocking(_rule, newWord);
+							if (_morpher.TraceManager.IsTracing)
+								_morpher.TraceManager.Blocking(_rule, newWord);
 							outWord = newWord;
 						}
 						else
@@ -103,14 +108,16 @@ namespace SIL.HermitCrab.MorphologicalRules
 							outWord.Freeze();
 						}
 
-						_morpher.TraceManager.MorphologicalRuleApplied(_rule, i, input, outWord);
+						if (_morpher.TraceManager.IsTracing)
+							_morpher.TraceManager.MorphologicalRuleApplied(_rule, i, input, outWord);
 
 						output.Add(outWord);
 						break;
 					}
 				}
 
-				_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.PatternMismatch);
+				if (_morpher.TraceManager.IsTracing)
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.PatternMismatch);
 			}
 
 			return output;

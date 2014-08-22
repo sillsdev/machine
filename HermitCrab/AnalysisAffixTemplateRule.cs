@@ -33,7 +33,8 @@ namespace SIL.HermitCrab
 			if (!input.SyntacticFeatureStruct.Unify(_template.RequiredSyntacticFeatureStruct, out fs))
 				return Enumerable.Empty<Word>();
 
-			_morpher.TraceManager.BeginUnapplyTemplate(_template, input);
+			if (_morpher.TraceManager.IsTracing)
+				_morpher.TraceManager.BeginUnapplyTemplate(_template, input);
 
 			Word inWord = input.DeepClone();
 			inWord.Freeze();
@@ -58,7 +59,8 @@ namespace SIL.HermitCrab
 
 			                if (!_template.Slots[i].Optional)
 			                {
-								_morpher.TraceManager.EndUnapplyTemplate(_template, work.Item1, false);
+								if (_morpher.TraceManager.IsTracing)
+									_morpher.TraceManager.EndUnapplyTemplate(_template, work.Item1, false);
 				                add = false;
 			                    break;
 			                }
@@ -66,7 +68,8 @@ namespace SIL.HermitCrab
 
 					    if (add)
 					    {
-							_morpher.TraceManager.EndUnapplyTemplate(_template, work.Item1, true);
+							if (_morpher.TraceManager.IsTracing)
+								_morpher.TraceManager.EndUnapplyTemplate(_template, work.Item1, true);
 						    outStack.Push(work.Item1);
 					    }
 				    });

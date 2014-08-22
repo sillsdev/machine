@@ -55,26 +55,36 @@ namespace SIL.HermitCrab.PhonologicalRules
 			if (!_morpher.RuleSelector(_rule))
 				return Enumerable.Empty<Word>();
 
-			input.CurrentRuleResults = new Dictionary<int, FailureReason>();
-			bool applied = _patternRule.Apply(input).Any();
-			for (int i = 0; i < _rule.Subrules.Count; i++)
+			Word origInput = null;
+			if (_morpher.TraceManager.IsTracing)
 			{
-				FailureReason reason;
-				if (input.CurrentRuleResults.TryGetValue(i, out reason))
-				{
-					if (reason == FailureReason.None)
-					{
-						_morpher.TraceManager.PhonologicalRuleApplied(_rule, i, input);
-						break;
-					}
-					_morpher.TraceManager.PhonologicalRuleNotApplied(_rule, i, input, reason);
-				}
-				else
-				{
-					_morpher.TraceManager.PhonologicalRuleNotApplied(_rule, i, input, FailureReason.PatternMismatch);
-				}
+				origInput = input.DeepClone();
+				input.CurrentRuleResults = new Dictionary<int, FailureReason>();
 			}
-			input.CurrentRuleResults = null;
+
+			bool applied = _patternRule.Apply(input).Any();
+
+			if (_morpher.TraceManager.IsTracing)
+			{
+				for (int i = 0; i < _rule.Subrules.Count; i++)
+				{
+					FailureReason reason;
+					if (input.CurrentRuleResults.TryGetValue(i, out reason))
+					{
+						if (reason == FailureReason.None)
+						{
+							_morpher.TraceManager.PhonologicalRuleApplied(_rule, i, origInput, input);
+							break;
+						}
+						_morpher.TraceManager.PhonologicalRuleNotApplied(_rule, i, input, reason);
+					}
+					else
+					{
+						_morpher.TraceManager.PhonologicalRuleNotApplied(_rule, i, input, FailureReason.PatternMismatch);
+					}
+				}
+				input.CurrentRuleResults = null;
+			}
 			if (applied)
 				input.ToEnumerable();
 			return Enumerable.Empty<Word>();

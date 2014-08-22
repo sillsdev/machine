@@ -57,19 +57,22 @@ namespace SIL.HermitCrab.PhonologicalRules
 		{
 			if (!_subrule.RequiredSyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct))
 			{
-				input.CurrentRuleResults[_index] = FailureReason.RequiredSyntacticFeatureStruct;
+				if (input.CurrentRuleResults != null)
+					input.CurrentRuleResults[_index] = FailureReason.RequiredSyntacticFeatureStruct;
 				return false;
 			}
 
 			if (_subrule.RequiredMprFeatures.Count > 0 && !_subrule.RequiredMprFeatures.IsMatch(input.MprFeatures))
 			{
-				input.CurrentRuleResults[_index] = FailureReason.RequiredMprFeatures;
+				if (input.CurrentRuleResults != null)
+					input.CurrentRuleResults[_index] = FailureReason.RequiredMprFeatures;
 				return false;
 			}
 
 			if (_subrule.ExcludedMprFeatures.Count > 0 && _subrule.ExcludedMprFeatures.IsMatch(input.MprFeatures))
 			{
-				input.CurrentRuleResults[_index] = FailureReason.ExcludedMprFeatures;
+				if (input.CurrentRuleResults != null)
+					input.CurrentRuleResults[_index] = FailureReason.ExcludedMprFeatures;
 				return false;
 			}
 
@@ -78,7 +81,8 @@ namespace SIL.HermitCrab.PhonologicalRules
 
 		protected void MarkSuccessfulApply(Word word)
 		{
-			word.CurrentRuleResults[_index] = FailureReason.None;
+			if (word.CurrentRuleResults != null)
+				word.CurrentRuleResults[_index] = FailureReason.None;
 		}
 
 		public abstract ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output);
