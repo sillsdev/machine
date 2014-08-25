@@ -107,6 +107,8 @@ namespace SIL.HermitCrab
 
 		public override string ToString()
 		{
+			if (!string.IsNullOrEmpty(Name))
+				return Name;
 			if (_leftEnv == null || _leftEnv.IsLeaf)
 				return string.Format("/ _ {0}", _rightEnv);
 			if (_rightEnv == null || _rightEnv.IsLeaf)
