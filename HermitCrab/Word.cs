@@ -310,7 +310,7 @@ namespace SIL.HermitCrab
 
 			foreach (LexEntry entry in family.Entries)
 			{
-				if (entry != RootAllomorph.Morpheme && entry.Stratum == Stratum && entry.SyntacticFeatureStruct.ValueEquals(SyntacticFeatureStruct))
+				if (entry != RootAllomorph.Morpheme && entry.Stratum == Stratum && SyntacticFeatureStruct.Subsumes(entry.SyntacticFeatureStruct))
 				{
 					word = new Word(entry.PrimaryAllomorph, RealizationalFeatureStruct.DeepClone()) { CurrentTrace = CurrentTrace };
 					word.Freeze();
