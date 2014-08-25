@@ -73,7 +73,6 @@ namespace SIL.HermitCrab
 
 				foreach (Word tempOutWord in ApplyTemplates(word))
 					yield return tempOutWord;
-				yield return word;
 			}
 		}
 
