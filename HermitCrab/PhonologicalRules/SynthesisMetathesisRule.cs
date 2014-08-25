@@ -68,7 +68,7 @@ namespace SIL.HermitCrab.PhonologicalRules
 			}
 
 			if (_morpher.TraceManager.IsTracing)
-				_morpher.TraceManager.PhonologicalRuleNotApplied(_rule, -1, input, FailureReason.PatternMismatch);
+				_morpher.TraceManager.PhonologicalRuleNotApplied(_rule, -1, input, FailureReason.Pattern, null);
 			return Enumerable.Empty<Word>();
 		}
 	}

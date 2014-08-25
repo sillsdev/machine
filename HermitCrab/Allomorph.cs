@@ -152,45 +152,51 @@ namespace SIL.HermitCrab
 
 		internal virtual bool IsWordValid(Morpher morpher, Word word)
 		{
-			if (!RequiredEnvironments.All(env => env.IsMatch(word)))
+			AllomorphEnvironment env = RequiredEnvironments.FirstOrDefault(e => !e.IsMatch(word));
+			if (env != null)
 			{
 				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.RequiredEnvironments, this);
+					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.RequiredEnvironments, this, env);
 				return false;
 			}
 
-			if (ExcludedEnvironments.Any(env => env.IsMatch(word)))
+			env = ExcludedEnvironments.FirstOrDefault(e => e.IsMatch(word));
+			if (env != null)
 			{
 				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.ExcludedEnvironments, this);
+					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.ExcludedEnvironments, this, env);
 				return false;
 			}
 
-			if (!RequiredAllomorphCoOccurrences.All(c => c.CoOccurs(word)))
+			AllomorphCoOccurrenceRule alloRule = RequiredAllomorphCoOccurrences.FirstOrDefault(r => !r.CoOccurs(word));
+			if (alloRule != null)
 			{
 				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.RequiredAllomorphCoOccurrences, this);
+					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.RequiredAllomorphCoOccurrences, this, alloRule);
 				return false;
 			}
 
-			if (ExcludedAllomorphCoOccurrences.Any(c => c.CoOccurs(word)))
+			alloRule = ExcludedAllomorphCoOccurrences.FirstOrDefault(r => r.CoOccurs(word));
+			if (alloRule != null)
 			{
 				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.ExcludedAllomorphCoOccurrences, this);
+					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.ExcludedAllomorphCoOccurrences, this, alloRule);
 				return false;
 			}
 
-			if (!Morpheme.RequiredMorphemeCoOccurrences.All(c => c.CoOccurs(word)))
+			MorphemeCoOccurrenceRule morphemeRule = Morpheme.RequiredMorphemeCoOccurrences.FirstOrDefault(r => !r.CoOccurs(word));
+			if (morphemeRule != null)
 			{
 				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.RequiredMorphemeCoOccurrences, this);
+					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.RequiredMorphemeCoOccurrences, this, morphemeRule);
 				return false;
 			}
 
-			if (Morpheme.ExcludedMorphemeCoOccurrences.Any(c => c.CoOccurs(word)))
+			morphemeRule = Morpheme.ExcludedMorphemeCoOccurrences.FirstOrDefault(r => r.CoOccurs(word));
+			if (morphemeRule != null)
 			{
 				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.ExcludedMorphemeCoOccurrences, this);
+					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.ExcludedMorphemeCoOccurrences, this, morphemeRule);
 				return false;
 			}
 

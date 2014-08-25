@@ -89,7 +89,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 			if (!RequiredSyntacticFeatureStruct.IsUnifiable(word.SyntacticFeatureStruct))
 			{
 				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.RequiredSyntacticFeatureStruct, this);
+					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.RequiredSyntacticFeatureStruct, this, RequiredSyntacticFeatureStruct);
 				return false;
 			}
 

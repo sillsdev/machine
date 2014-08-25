@@ -12,7 +12,9 @@
 		ExcludedMorphemeCoOccurrences,
 		DisjunctiveAllomorph,
 		SurfaceFormMismatch,
-		PatternMismatch,
+		Pattern,
+		HeadPattern,
+		NonHeadPattern,
 		RequiredSyntacticFeatureStruct,
 		HeadRequiredSyntacticFeatureStruct,
 		NonHeadRequiredSyntacticFeatureStruct,
@@ -49,17 +51,17 @@
 		void EndApplyStratum(Stratum stratum, Word output);
 
 		void PhonologicalRuleApplied(IPhonologicalRule rule, int subruleIndex, Word input, Word output);
-		void PhonologicalRuleNotApplied(IPhonologicalRule rule, int subruleIndex, Word input, FailureReason reason);
+		void PhonologicalRuleNotApplied(IPhonologicalRule rule, int subruleIndex, Word input, FailureReason reason, object failureObj);
 
 		void BeginApplyTemplate(AffixTemplate template, Word input);
 		void EndApplyTemplate(AffixTemplate template, Word output, bool applied);
 
 		void MorphologicalRuleApplied(IMorphologicalRule rule, int subruleIndex, Word input, Word output);
-		void MorphologicalRuleNotApplied(IMorphologicalRule rule, int subruleIndex, Word input, FailureReason reason);
+		void MorphologicalRuleNotApplied(IMorphologicalRule rule, int subruleIndex, Word input, FailureReason reason, object failureObj);
 
 		void Blocking(IHCRule rule, Word output);
 
 		void ParseSuccessful(Language lang, Word word);
-		void ParseFailed(Language lang, Word word, FailureReason reason, Allomorph allomorph);
+		void ParseFailed(Language lang, Word word, FailureReason reason, Allomorph allomorph, object failureObj);
 	}
 }

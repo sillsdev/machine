@@ -47,7 +47,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 			if (!_rule.RequiredSyntacticFeatureStruct.Unify(input.SyntacticFeatureStruct, true, out syntacticFS))
 			{
 				if (_morpher.TraceManager.IsTracing)
-					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.RequiredSyntacticFeatureStruct);
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.RequiredSyntacticFeatureStruct, _rule.RequiredSyntacticFeatureStruct);
 				return Enumerable.Empty<Word>();
 			}
 
@@ -55,16 +55,17 @@ namespace SIL.HermitCrab.MorphologicalRules
 			for (int i = 0; i < _rules.Count; i++)
 			{
 				AffixProcessAllomorph allo = _rule.Allomorphs[i];
-				if (allo.RequiredMprFeatures.Count > 0 && !allo.RequiredMprFeatures.IsMatch(input.MprFeatures))
+				MprFeatureGroup group;
+				if (allo.RequiredMprFeatures.Count > 0 && !allo.RequiredMprFeatures.IsMatchRequired(input.MprFeatures, out group))
 				{
 					if (_morpher.TraceManager.IsTracing)
-						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.RequiredMprFeatures);
+						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.RequiredMprFeatures, group);
 					continue;
 				}
-				if (allo.ExcludedMprFeatures.Count > 0 && allo.ExcludedMprFeatures.IsMatch(input.MprFeatures))
+				if (allo.ExcludedMprFeatures.Count > 0 && !allo.ExcludedMprFeatures.IsMatchExcluded(input.MprFeatures, out group))
 				{
 					if (_morpher.TraceManager.IsTracing)
-						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.ExcludedMprFeatures);
+						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.ExcludedMprFeatures, group);
 					continue;
 				}
 
@@ -108,7 +109,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 				}
 				else if (_morpher.TraceManager.IsTracing)
 				{
-					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.PatternMismatch);
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.Pattern, null);
 				}
 			}
 

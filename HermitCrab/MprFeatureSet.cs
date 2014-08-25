@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using SIL.Collections;
 
 namespace SIL.HermitCrab
@@ -46,56 +47,54 @@ namespace SIL.HermitCrab
 			UnionWith(mprFeats);
 		}
 
-		public bool IsMatch(MprFeatureSet mprFeats)
+		public bool IsMatchRequired(MprFeatureSet mprFeats, out MprFeatureGroup mismatchGroup)
 		{
-			MprFeatureGroup mismatchGroup;
-			return IsMatch(mprFeats, out mismatchGroup);
-		}
-
-		public bool IsMatch(MprFeatureSet mprFeats, out MprFeatureGroup mismatchGroup)
-		{
-			foreach (MprFeatureGroup group in Groups)
+			foreach (IGrouping<MprFeatureGroup, MprFeature> group in this.GroupBy(mf => mf.Group))
 			{
-				bool match = true;
-				foreach (MprFeature feat in group.MprFeatures)
+				if (group.Key == null || group.Key.MatchType == MprFeatureGroupMatchType.All)
 				{
-					if (Contains(feat))
+					if (group.Any(mf => !mprFeats.Contains(mf)))
 					{
-						if (group.MatchType == MprFeatureGroupMatchType.All)
-						{
-							if (!mprFeats.Contains(feat))
-							{
-								match = false;
-								break;
-							}
-						}
-						else
-						{
-							if (mprFeats.Contains(feat))
-							{
-								match = true;
-								break;
-							}
-							match = false;
-						}
+						mismatchGroup = group.Key;
+						return false;
 					}
 				}
-
-				if (!match)
+				else
 				{
-					mismatchGroup = group;
-					return false;
+					if (group.All(mf => !mprFeats.Contains(mf)))
+					{
+						mismatchGroup = group.Key;
+						return false;
+					}
 				}
 			}
 
-			foreach (MprFeature feat in this)
+			mismatchGroup = null;
+			return true;
+		}
+
+		public bool IsMatchExcluded(MprFeatureSet mprFeats, out MprFeatureGroup mismatchGroup)
+		{
+			foreach (IGrouping<MprFeatureGroup, MprFeature> group in this.GroupBy(mf => mf.Group))
 			{
-				if (feat.Group == null && !mprFeats.Contains(feat))
+				if (group.Key == null || group.Key.MatchType == MprFeatureGroupMatchType.All)
 				{
-					mismatchGroup = null;
-					return false;
+					if (group.Any(mf => mprFeats.Contains(mf)))
+					{
+						mismatchGroup = group.Key;
+						return false;
+					}
+				}
+				else
+				{
+					if (group.All(mf => mprFeats.Contains(mf)))
+					{
+						mismatchGroup = group.Key;
+						return false;
+					}
 				}
 			}
+
 			mismatchGroup = null;
 			return true;
 		}

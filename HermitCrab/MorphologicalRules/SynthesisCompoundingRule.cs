@@ -49,7 +49,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 			if (!_rule.NonHeadRequiredSyntacticFeatureStruct.IsUnifiable(input.CurrentNonHead.SyntacticFeatureStruct, true))
 			{
 				if (_morpher.TraceManager.IsTracing)
-					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.NonHeadRequiredSyntacticFeatureStruct);
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.NonHeadRequiredSyntacticFeatureStruct, _rule.NonHeadRequiredSyntacticFeatureStruct);
 				return Enumerable.Empty<Word>();
 			}
 
@@ -57,23 +57,24 @@ namespace SIL.HermitCrab.MorphologicalRules
 			if (!_rule.HeadRequiredSyntacticFeatureStruct.Unify(input.SyntacticFeatureStruct, true, out syntacticFS))
 			{
 				if (_morpher.TraceManager.IsTracing)
-					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.HeadRequiredSyntacticFeatureStruct);
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.HeadRequiredSyntacticFeatureStruct, _rule.HeadRequiredSyntacticFeatureStruct);
 				return Enumerable.Empty<Word>();
 			}
 
 			var output = new List<Word>();
 			for (int i = 0; i < _rule.Subrules.Count; i++)
 			{
-				if (_rule.Subrules[i].RequiredMprFeatures.Count > 0 && !_rule.Subrules[i].RequiredMprFeatures.IsMatch(input.MprFeatures))
+				MprFeatureGroup group;
+				if (_rule.Subrules[i].RequiredMprFeatures.Count > 0 && !_rule.Subrules[i].RequiredMprFeatures.IsMatchRequired(input.MprFeatures, out group))
 				{
 					if (_morpher.TraceManager.IsTracing)
-						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.RequiredMprFeatures);
+						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.RequiredMprFeatures, group);
 					continue;
 				}
-				if (_rule.Subrules[i].ExcludedMprFeatures.Count > 0 && _rule.Subrules[i].ExcludedMprFeatures.IsMatch(input.MprFeatures))
+				if (_rule.Subrules[i].ExcludedMprFeatures.Count > 0 && !_rule.Subrules[i].ExcludedMprFeatures.IsMatchExcluded(input.MprFeatures, out group))
 				{
 					if (_morpher.TraceManager.IsTracing)
-						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.ExcludedMprFeatures);
+						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.ExcludedMprFeatures, group);
 					continue;
 				}
 
@@ -114,10 +115,15 @@ namespace SIL.HermitCrab.MorphologicalRules
 						output.Add(outWord);
 						break;
 					}
+					if (_morpher.TraceManager.IsTracing)
+					{
+						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.NonHeadPattern, null);
+					}
 				}
-
-				if (_morpher.TraceManager.IsTracing)
-					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.PatternMismatch);
+				else if (_morpher.TraceManager.IsTracing)
+				{
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.HeadPattern, null);
+				}
 			}
 
 			return output;

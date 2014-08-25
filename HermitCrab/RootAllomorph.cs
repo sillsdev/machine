@@ -51,14 +51,14 @@ namespace SIL.HermitCrab
 			if (IsBound && word.Allomorphs.Count == 1)
 			{
 				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.BoundRoot, this);
+					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.BoundRoot, this, null);
 				return false;
 			}
 
 			if (StemName != null && !StemName.IsMatch(word.SyntacticFeatureStruct))
 			{
 				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.StemName, this);
+					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.StemName, this, StemName);
 				return false;
 			}
 

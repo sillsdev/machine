@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using SIL.Collections;
 using SIL.Machine.Annotations;
@@ -327,7 +328,7 @@ namespace SIL.HermitCrab
 				node.SetDirty(false);
 		}
 
-		internal IDictionary<int, FailureReason> CurrentRuleResults { get; set; }
+		internal IDictionary<int, Tuple<FailureReason, object>> CurrentRuleResults { get; set; }
 
 		protected override int FreezeImpl()
 		{

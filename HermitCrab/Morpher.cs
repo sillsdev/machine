@@ -76,7 +76,8 @@ namespace SIL.HermitCrab
 
 			var input = new Word(_lang.SurfaceStratum, shape);
 			input.Freeze();
-			_traceManager.AnalyzeWord(_lang, input);
+			if (_traceManager.IsTracing)
+				_traceManager.AnalyzeWord(_lang, input);
 			trace = input.CurrentTrace;
 
 			// Unapply rules
@@ -122,17 +123,22 @@ namespace SIL.HermitCrab
 
 					if (_lang.SurfaceStratum.SymbolTable.IsMatch(word, words[i].Shape))
 					{
-						_traceManager.ParseSuccessful(_lang, words[i]);
+						if (_traceManager.IsTracing)
+							_traceManager.ParseSuccessful(_lang, words[i]);
 						matchList.Add(words[i]);
 					}
-					else
+					else if (_traceManager.IsTracing)
 					{
-						_traceManager.ParseFailed(_lang, words[i], FailureReason.SurfaceFormMismatch, null);
+						_traceManager.ParseFailed(_lang, words[i], FailureReason.SurfaceFormMismatch, null, word);
 					}
 				}
 
-				for (; i < words.Length; i++)
-					_traceManager.ParseFailed(_lang, words[i], FailureReason.DisjunctiveAllomorph, null);
+				if (_traceManager.IsTracing)
+				{
+					Word lastWord = words[i - 1];
+					for (; i < words.Length; i++)
+						_traceManager.ParseFailed(_lang, words[i], FailureReason.DisjunctiveAllomorph, null, lastWord);
+				}
 			}
 
 			return matchList;
@@ -146,14 +152,16 @@ namespace SIL.HermitCrab
 
 		private IEnumerable<Word> LexicalLookup(Word input)
 		{
-			_traceManager.LexicalLookup(input.Stratum, input);
+			if (_traceManager.IsTracing)
+				_traceManager.LexicalLookup(input.Stratum, input);
 			foreach (LexEntry entry in SearchRootAllomorphs(input.Stratum, input.Shape).Select(allo => allo.Morpheme).Cast<LexEntry>().Where(LexEntrySelector).Distinct())
 			{
 				foreach (RootAllomorph allomorph in entry.Allomorphs)
 				{
 					Word newWord = input.DeepClone();
 					newWord.RootAllomorph = allomorph;
-					_traceManager.SynthesizeWord(_lang, newWord);
+					if (_traceManager.IsTracing)
+						_traceManager.SynthesizeWord(_lang, newWord);
 					newWord.Freeze();
 					yield return newWord;
 				}
@@ -164,13 +172,16 @@ namespace SIL.HermitCrab
 		{
 			if (!word.RealizationalFeatureStruct.IsUnifiable(word.SyntacticFeatureStruct) || word.CurrentMorphologicalRule != null)
 			{
-				_traceManager.ParseFailed(_lang, word, FailureReason.PartialParse, null);
+				if (_traceManager.IsTracing)
+					_traceManager.ParseFailed(_lang, word, FailureReason.PartialParse, null, null);
 				return false;
 			}
 
-			if (!word.ObligatorySyntacticFeatures.All(feature => ContainsFeature(word.SyntacticFeatureStruct, feature, new HashSet<FeatureStruct>(new ReferenceEqualityComparer<FeatureStruct>()))))
+			Feature feature = word.ObligatorySyntacticFeatures.FirstOrDefault(f => !ContainsFeature(word.SyntacticFeatureStruct, f, new HashSet<FeatureStruct>(new ReferenceEqualityComparer<FeatureStruct>())));
+			if (feature != null)
 			{
-				_traceManager.ParseFailed(_lang, word, FailureReason.ObligatorySyntacticFeatures, null);
+				if (_traceManager.IsTracing)
+					_traceManager.ParseFailed(_lang, word, FailureReason.ObligatorySyntacticFeatures, null, feature);
 				return false;
 			}
 

@@ -79,7 +79,7 @@
 			((Trace) output.CurrentTrace).Children.Add(new Trace(TraceType.PhonologicalRuleSynthesis, rule) {SubruleIndex = subruleIndex, Input = input, Output = output.DeepClone()});
 		}
 
-		public void PhonologicalRuleNotApplied(IPhonologicalRule rule, int subruleIndex, Word input, FailureReason reason)
+		public void PhonologicalRuleNotApplied(IPhonologicalRule rule, int subruleIndex, Word input, FailureReason reason, object failureObj)
 		{
 			((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.PhonologicalRuleSynthesis, rule) {SubruleIndex = subruleIndex, Input = input.DeepClone(), FailureReason = reason});
 		}
@@ -101,7 +101,7 @@
 			output.CurrentTrace = trace;
 		}
 
-		public void MorphologicalRuleNotApplied(IMorphologicalRule rule, int subruleIndex, Word input, FailureReason reason)
+		public void MorphologicalRuleNotApplied(IMorphologicalRule rule, int subruleIndex, Word input, FailureReason reason, object failureObj)
 		{
 			((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.MorphologicalRuleSynthesis, rule) {SubruleIndex = subruleIndex, Input = input, FailureReason = reason});
 		}
@@ -116,7 +116,7 @@
 			((Trace) word.CurrentTrace).Children.Add(new Trace(TraceType.ParseSuccessful, lang) {Output = word});
 		}
 
-		public void ParseFailed(Language lang, Word word, FailureReason reason, Allomorph allomorph)
+		public void ParseFailed(Language lang, Word word, FailureReason reason, Allomorph allomorph, object failureObj)
 		{
 			((Trace) word.CurrentTrace).Children.Add(new Trace(TraceType.ParseFailed, lang) {Output = word, FailureReason = reason});
 		}

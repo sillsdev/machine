@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Collections;
@@ -59,7 +60,7 @@ namespace SIL.HermitCrab.PhonologicalRules
 			if (_morpher.TraceManager.IsTracing)
 			{
 				origInput = input.DeepClone();
-				input.CurrentRuleResults = new Dictionary<int, FailureReason>();
+				input.CurrentRuleResults = new Dictionary<int, Tuple<FailureReason, object>>();
 			}
 
 			bool applied = _patternRule.Apply(input).Any();
@@ -68,19 +69,19 @@ namespace SIL.HermitCrab.PhonologicalRules
 			{
 				for (int i = 0; i < _rule.Subrules.Count; i++)
 				{
-					FailureReason reason;
+					Tuple<FailureReason, object> reason;
 					if (input.CurrentRuleResults.TryGetValue(i, out reason))
 					{
-						if (reason == FailureReason.None)
+						if (reason.Item1 == FailureReason.None)
 						{
 							_morpher.TraceManager.PhonologicalRuleApplied(_rule, i, origInput, input);
 							break;
 						}
-						_morpher.TraceManager.PhonologicalRuleNotApplied(_rule, i, input, reason);
+						_morpher.TraceManager.PhonologicalRuleNotApplied(_rule, i, input, reason.Item1, reason.Item2);
 					}
 					else
 					{
-						_morpher.TraceManager.PhonologicalRuleNotApplied(_rule, i, input, FailureReason.PatternMismatch);
+						_morpher.TraceManager.PhonologicalRuleNotApplied(_rule, i, input, FailureReason.Pattern, null);
 					}
 				}
 				input.CurrentRuleResults = null;

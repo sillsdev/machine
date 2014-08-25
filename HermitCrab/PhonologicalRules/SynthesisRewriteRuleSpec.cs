@@ -58,21 +58,22 @@ namespace SIL.HermitCrab.PhonologicalRules
 			if (!_subrule.RequiredSyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct))
 			{
 				if (input.CurrentRuleResults != null)
-					input.CurrentRuleResults[_index] = FailureReason.RequiredSyntacticFeatureStruct;
+					input.CurrentRuleResults[_index] = new Tuple<FailureReason, object>(FailureReason.RequiredSyntacticFeatureStruct, _subrule.RequiredSyntacticFeatureStruct);
 				return false;
 			}
 
-			if (_subrule.RequiredMprFeatures.Count > 0 && !_subrule.RequiredMprFeatures.IsMatch(input.MprFeatures))
+			MprFeatureGroup group;
+			if (_subrule.RequiredMprFeatures.Count > 0 && !_subrule.RequiredMprFeatures.IsMatchRequired(input.MprFeatures, out group))
 			{
 				if (input.CurrentRuleResults != null)
-					input.CurrentRuleResults[_index] = FailureReason.RequiredMprFeatures;
+					input.CurrentRuleResults[_index] = new Tuple<FailureReason, object>(FailureReason.RequiredMprFeatures, group);
 				return false;
 			}
 
-			if (_subrule.ExcludedMprFeatures.Count > 0 && _subrule.ExcludedMprFeatures.IsMatch(input.MprFeatures))
+			if (_subrule.ExcludedMprFeatures.Count > 0 && !_subrule.ExcludedMprFeatures.IsMatchExcluded(input.MprFeatures, out group))
 			{
 				if (input.CurrentRuleResults != null)
-					input.CurrentRuleResults[_index] = FailureReason.ExcludedMprFeatures;
+					input.CurrentRuleResults[_index] = new Tuple<FailureReason, object>(FailureReason.ExcludedMprFeatures, group);
 				return false;
 			}
 
@@ -82,7 +83,7 @@ namespace SIL.HermitCrab.PhonologicalRules
 		protected void MarkSuccessfulApply(Word word)
 		{
 			if (word.CurrentRuleResults != null)
-				word.CurrentRuleResults[_index] = FailureReason.None;
+				word.CurrentRuleResults[_index] = new Tuple<FailureReason, object>(FailureReason.None, null);
 		}
 
 		public abstract ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output);
