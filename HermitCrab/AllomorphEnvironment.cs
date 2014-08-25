@@ -105,15 +105,20 @@ namespace SIL.HermitCrab
 			return code;
 		}
 
-		public override string ToString()
+		public string ToEnvString()
 		{
-			if (!string.IsNullOrEmpty(Name))
-				return Name;
 			if (_leftEnv == null || _leftEnv.IsLeaf)
 				return string.Format("/ _ {0}", _rightEnv);
 			if (_rightEnv == null || _rightEnv.IsLeaf)
 				return string.Format("/ {0} _", _leftEnv);
 			return string.Format("/ {0} _ {1}", _leftEnv, _rightEnv);
+		}
+
+		public override string ToString()
+		{
+			if (!string.IsNullOrEmpty(Name))
+				return Name;
+			return ToEnvString();
 		}
 	}
 }
