@@ -35,7 +35,7 @@ namespace SIL.HermitCrab
 		/// <summary>
 		/// Blocking trace
 		/// </summary>
-		Blocking,
+		ParseBlocked,
 		/// <summary>
 		/// Word synthesis trace
 		/// </summary>

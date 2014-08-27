@@ -48,6 +48,7 @@
 		void SynthesizeWord(Language lang, Word input);
 
 		void BeginApplyStratum(Stratum stratum, Word input);
+		void NonFinalTemplateAppliedLast(Stratum stratum, Word word);
 		void EndApplyStratum(Stratum stratum, Word output);
 
 		void PhonologicalRuleApplied(IPhonologicalRule rule, int subruleIndex, Word input, Word output);
@@ -59,7 +60,7 @@
 		void MorphologicalRuleApplied(IMorphologicalRule rule, int subruleIndex, Word input, Word output);
 		void MorphologicalRuleNotApplied(IMorphologicalRule rule, int subruleIndex, Word input, FailureReason reason, object failureObj);
 
-		void Blocking(IHCRule rule, Word output);
+		void ParseBlocked(IHCRule rule, Word output);
 
 		void ParseSuccessful(Language lang, Word word);
 		void ParseFailed(Language lang, Word word, FailureReason reason, Allomorph allomorph, object failureObj);

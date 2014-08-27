@@ -69,6 +69,11 @@
 			((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.StratumSynthesisInput, stratum) {Input = input});
 		}
 
+		public void NonFinalTemplateAppliedLast(Stratum stratum, Word word)
+		{
+			((Trace) word.CurrentTrace).Children.Add(new Trace(TraceType.StratumSynthesisOutput, stratum) {Output = word, FailureReason = FailureReason.PartialParse});
+		}
+
 		public void EndApplyStratum(Stratum stratum, Word output)
 		{
 			((Trace) output.CurrentTrace).Children.Add(new Trace(TraceType.StratumSynthesisOutput, stratum) {Output = output});
@@ -106,9 +111,9 @@
 			((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.MorphologicalRuleSynthesis, rule) {SubruleIndex = subruleIndex, Input = input, FailureReason = reason});
 		}
 
-		public void Blocking(IHCRule rule, Word output)
+		public void ParseBlocked(IHCRule rule, Word output)
 		{
-			((Trace) output.CurrentTrace).Children.Add(new Trace(TraceType.Blocking, rule) {Output = output});
+			((Trace) output.CurrentTrace).Children.Add(new Trace(TraceType.ParseBlocked, rule) {Output = output});
 		}
 
 		public void ParseSuccessful(Language lang, Word word)

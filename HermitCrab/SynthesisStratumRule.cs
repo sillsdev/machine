@@ -53,6 +53,10 @@ namespace SIL.HermitCrab
 						_morpher.TraceManager.EndApplyStratum(_stratum, newWord);
 					output.Add(newWord);
 				}
+				else if (_morpher.TraceManager.IsTracing)
+				{
+					_morpher.TraceManager.NonFinalTemplateAppliedLast(_stratum, mruleOutWord);
+				}
 			}
 			if (_morpher.TraceManager.IsTracing && output.Count == 0)
 				_morpher.TraceManager.EndApplyStratum(_stratum, input);
