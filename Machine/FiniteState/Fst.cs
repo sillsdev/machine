@@ -306,7 +306,9 @@ namespace SIL.Machine.FiniteState
 			if (_dir == Direction.RightToLeft)
 				compare = -compare;
 			if (IsDeterministic)
+			{
 				compare = x.IsLazy ? -compare : compare;
+			}
 			else if (compare == 0)
 			{
 				foreach (Tuple<int, int> priorityPair in x.Priorities.Zip(y.Priorities))
@@ -316,7 +318,9 @@ namespace SIL.Machine.FiniteState
 						break;
 				}
 			}
-			return compare;
+			if (compare != 0)
+				return compare;
+			return x.Order.CompareTo(y.Order);
 		}
 
 		public Fst<TData, TOffset> Determinize()

@@ -82,7 +82,7 @@ namespace SIL.Machine.FiniteState
 							resOutput = cloneable.DeepClone();
 
 						var candidate = new FstResult<TData, TOffset>(_registersEqualityComparer, acceptInfo.ID, matchRegisters, resOutput, varBindings.DeepClone(),
-							acceptInfo.Priority, arc.Target.IsLazy, ann, priorities);
+							acceptInfo.Priority, arc.Target.IsLazy, ann, priorities, curResults.Count);
 						if (acceptInfo.Acceptable == null || acceptInfo.Acceptable(_data, candidate))
 							curResults.Add(candidate);
 					}
@@ -94,7 +94,7 @@ namespace SIL.Machine.FiniteState
 					if (cloneable != null)
 						resOutput = cloneable.DeepClone();
 					curResults.Add(new FstResult<TData, TOffset>(_registersEqualityComparer, null, matchRegisters, resOutput, varBindings.DeepClone(), -1, arc.Target.IsLazy, ann,
-						priorities));
+						priorities, curResults.Count));
 				}
 			}
 		}

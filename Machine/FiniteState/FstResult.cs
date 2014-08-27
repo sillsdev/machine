@@ -17,9 +17,10 @@ namespace SIL.Machine.FiniteState
 		private readonly bool _isLazy;
 		private readonly Annotation<TOffset> _nextAnn;
 		private readonly int[] _priorities;
+		private readonly int _order;
 
 		internal FstResult(IEqualityComparer<NullableValue<TOffset>[,]> registersEqualityComparer, string id, NullableValue<TOffset>[,] registers, TData output, VariableBindings varBindings, int priority,
-			bool isLazy, Annotation<TOffset> nextAnn, int[] priorities)
+			bool isLazy, Annotation<TOffset> nextAnn, int[] priorities, int order)
 		{
 			_registersEqualityComparer = registersEqualityComparer;
 			_id = id;
@@ -30,6 +31,7 @@ namespace SIL.Machine.FiniteState
 			_isLazy = isLazy;
 			_nextAnn = nextAnn;
 			_priorities = priorities;
+			_order = order;
 		}
 
 		public string ID
@@ -70,6 +72,11 @@ namespace SIL.Machine.FiniteState
 		internal int[] Priorities
 		{
 			get { return _priorities; }
+		}
+
+		internal int Order
+		{
+			get { return _order; }
 		}
 
 		public override bool Equals(object obj)
