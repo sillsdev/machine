@@ -41,7 +41,8 @@
     
     <PropertyGroup>
         <!-- NuGet command -->
-        <NuGetExePath Condition=" '$(NuGetExePath)' == '' ">$(NuGetToolsPath)\nuget.exe</NuGetExePath>
+        <NuGetExeFilename Condition=" '$(NuGetExeFilename)' == '' ">NuGet.exe</NuGetExeFilename>
+        <NuGetExePath Condition=" '$(NuGetExePath)' == '' ">$(NuGetToolsPath)\$(NuGetExeFilename)</NuGetExePath>
         <PackageSources Condition=" $(PackageSources) == '' ">@(PackageSource)</PackageSources>
         
         <NuGetCommand Condition=" '$(OS)' == 'Windows_NT'">"$(NuGetExePath)"</NuGetCommand>
@@ -80,7 +81,11 @@
     </Target>
 
     <Target Name="_DownloadNuGet">
-        <DownloadNuGet OutputFilename="$(NuGetExePath)" Condition=" '$(DownloadNuGetExe)' == 'true' AND !Exists('$(NuGetExePath)')" />
+        <DownloadNuGet OutputFilename="$(NuGetExePath)"
+            Condition="'$(OS)' == 'Windows_NT' AND '$(DownloadNuGetExe)' == 'true' AND !Exists('$(NuGetExePath)')" />
+        <Exec Command="wget http://nuget.org/$(NuGetExeFilename) || curl -O -L http://nuget.org/$(NuGetExeFilename)"
+            WorkingDirectory="$(NuGetToolsPath)"
+            Condition="'$(OS)' != 'Windows_NT' AND '$(DownloadNuGetExe)' == 'true' AND !Exists('$(NuGetExePath)')" />
     </Target>
 
     <Target Name="RestorePackages" DependsOnTargets="CheckPrerequisites">
@@ -119,7 +124,7 @@
 
                     Log.LogMessage("Downloading latest version of NuGet.exe...");
                     WebClient webClient = new WebClient();
-                    webClient.DownloadFile("https://nuget.org/nuget.exe", OutputFilename);
+                    webClient.DownloadFile("https://nuget.org/NuGet.exe", OutputFilename);
 
                     return true;
                 }
