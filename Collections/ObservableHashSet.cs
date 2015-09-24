@@ -209,19 +209,21 @@ namespace SIL.Collections
 
 		protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
 		{
-			if (CollectionChanged != null)
+			NotifyCollectionChangedEventHandler handler = CollectionChanged;
+			if (handler != null)
 			{
 				using (_reentrancyMonitor.Enter())
-					CollectionChanged(this, e);
+					handler(this, e);
 			}
 		}
 
 		protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
 		{
-			if (PropertyChanged != null)
+			PropertyChangedEventHandler handler = PropertyChanged;
+			if (handler != null)
 			{
 				using (_reentrancyMonitor.Enter())
-					PropertyChanged(this, e);
+					handler(this, e);
 			}
 		}
 
