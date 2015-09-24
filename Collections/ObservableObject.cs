@@ -85,7 +85,7 @@ namespace SIL.Collections
 		{
 			VerifyPropertyName(propertyName);
 
-			var handler = PropertyChanging;
+			PropertyChangingEventHandler handler = PropertyChanging;
 			if (handler != null)
 			{
 				handler(this, new PropertyChangingEventArgs(propertyName));
@@ -106,7 +106,7 @@ namespace SIL.Collections
 		{
 			VerifyPropertyName(propertyName);
 
-			var handler = PropertyChanged;
+			PropertyChangedEventHandler handler = PropertyChanged;
 			if (handler != null)
 			{
 				handler(this, new PropertyChangedEventArgs(propertyName));
@@ -128,10 +128,10 @@ namespace SIL.Collections
 			Justification = "This syntax is more convenient than other alternatives.")]
 		protected virtual void RaisePropertyChanging<T>(Expression<Func<T>> propertyExpression)
 		{
-			var handler = PropertyChanging;
+			PropertyChangingEventHandler handler = PropertyChanging;
 			if (handler != null)
 			{
-				var propertyName = GetPropertyName(propertyExpression);
+				string propertyName = GetPropertyName(propertyExpression);
 				handler(this, new PropertyChangingEventArgs(propertyName));
 			}
 		}
@@ -151,10 +151,10 @@ namespace SIL.Collections
 			Justification = "This syntax is more convenient than other alternatives.")]
 		protected virtual void RaisePropertyChanged<T>(Expression<Func<T>> propertyExpression)
 		{
-			var handler = PropertyChanged;
+			PropertyChangedEventHandler handler = PropertyChanged;
 			if (handler != null)
 			{
-				var propertyName = GetPropertyName(propertyExpression);
+				string propertyName = GetPropertyName(propertyExpression);
 				handler(this, new PropertyChangedEventArgs(propertyName));
 			}
 		}
