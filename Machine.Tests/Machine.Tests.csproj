@@ -53,6 +53,7 @@
   <ItemGroup>
     <Compile Include="Annotations\AnnotationTests.cs" />
     <Compile Include="Clusterers\ClustererTestsBase.cs" />
+    <Compile Include="Clusterers\DbscanClustererTests.cs" />
     <Compile Include="Clusterers\FlatUpgmaClustererTests.cs" />
     <Compile Include="Clusterers\NeighborJoiningClustererTests.cs" />
     <Compile Include="Clusterers\UpgmaClustererTests.cs" />

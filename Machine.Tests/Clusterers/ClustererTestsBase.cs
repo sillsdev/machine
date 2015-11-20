@@ -62,12 +62,15 @@ namespace SIL.Machine.Tests.Clusterers
 		{
 			public bool Equals(Cluster<T> x, Cluster<T> y)
 			{
-				return x.DataObjects.SetEquals(y.DataObjects);
+				return x.DataObjects.SetEquals(y.DataObjects) && x.Noise == y.Noise;
 			}
 
 			public int GetHashCode(Cluster<T> obj)
 			{
-				return obj.DataObjects.Aggregate(0, (code, o) => code ^ o.GetHashCode());
+				int code = 23;
+				code = code * 31 + obj.DataObjects.Aggregate(0, (c, o) => c ^ o.GetHashCode());
+				code = code * 31 + obj.Noise.GetHashCode();
+				return code;
 			}
 		}
 	}

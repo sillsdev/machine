@@ -22,8 +22,8 @@ namespace SIL.Machine.Tests.Clusterers
 
 			var expected = new[]
 				{
-					new Cluster<char>(new[] {'B', 'C'}),
-					new Cluster<char>(new[] {'A', 'E', 'D'})
+					new Cluster<char>('B', 'C'),
+					new Cluster<char>('A', 'E', 'D')
 				};
 
 			Assert.That(clusters, Is.EquivalentTo(expected).Using(new ClusterEqualityComparer<char>()));
