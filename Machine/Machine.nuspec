@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>http://sil.mit-license.org/</licenseUrl>
+    <projectUrl>https://github.com/sillsdev/machine</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <copyright>Copyright 2015</copyright>
+    <tags>algorithms nlp computational linguistics statistics pattern matching alignment clustering</tags>
+  </metadata>
+</package>
