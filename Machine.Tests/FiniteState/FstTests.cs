@@ -1,4 +1,5 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using SIL.Machine.Annotations;
@@ -43,10 +44,6 @@ namespace SIL.Machine.Tests.FiniteState
 
 			s4.Arcs.Add(FeatureStruct.New(featSys).Feature("A").EqualTo("true").Value, FeatureStruct.New(featSys).Feature("A").EqualTo("true").Value, s4);
 
-			var writer = new System.IO.StreamWriter(string.Format("c:\\ltor-nfst.dot"));
-			fst.ToGraphViz(writer);
-			writer.Close();
-
 			Assert.That(fst.IsDeterminizable, Is.False);
 		}
 
@@ -72,16 +69,8 @@ namespace SIL.Machine.Tests.FiniteState
 			State<AnnotatedStringData, int> s3 = s2.Arcs.Add(FeatureStruct.New(featSys).Value, FeatureStruct.New(featSys).Value, nfst.CreateState());
 			s3.Arcs.Add(FeatureStruct.New(featSys).Feature("B").EqualTo("true").Value, FeatureStruct.New(featSys).Feature("B").EqualTo("true").Value, sa);
 
-			var writer = new System.IO.StreamWriter(string.Format("c:\\ltor-nfst.dot"));
-			nfst.ToGraphViz(writer);
-			writer.Close();
-
 			Fst<AnnotatedStringData, int> dfst;
 			Assert.That(nfst.TryDeterminize(out dfst), Is.True);
-
-			writer = new System.IO.StreamWriter(string.Format("c:\\ltor-dfst.dot"));
-			dfst.ToGraphViz(writer);
-			writer.Close();
 		}
 
 		[Test]
@@ -103,9 +92,15 @@ namespace SIL.Machine.Tests.FiniteState
 			fst2.StartState.Arcs.Add(FeatureStruct.New(featSys).Feature("value").EqualTo("y").Value, FeatureStruct.New(featSys).Feature("value").EqualTo("z").Value, fst2.StartState);
 
 			Fst<AnnotatedStringData, int> composedFsa = fst1.Compose(fst2);
-			var writer = new System.IO.StreamWriter(string.Format("c:\\ltor-composed-nfst.dot"));
+			var writer = new StringWriter();
 			composedFsa.ToGraphViz(writer);
-			writer.Close();
+			Assert.That(writer.ToString(), Is.EqualTo(@"digraph G {
+  0 [shape=""diamond"", color=""green""];
+  0 -> 1 [label=""[value:\""a\""],1:ε""];
+  1 [shape=""circle"", color=""red"", peripheries=""2""];
+  1 -> 1 [label=""[value:\""b\""],1:([value:\""z\""],∪)""];
+}
+"));
 		}
 
 		[Test]
@@ -124,15 +119,7 @@ namespace SIL.Machine.Tests.FiniteState
 			s2.Arcs.Add(FeatureStruct.New(PhoneticFeatSys).Symbol("nas+").Symbol("cor+").Value, fst.StartState);
 			s2.Arcs.Add(FeatureStruct.New(PhoneticFeatSys).Symbol("cor?").Symbol("nas+").Value, FeatureStruct.New(PhoneticFeatSys).Symbol("cor-").Value, s1);
 
-			var writer = new System.IO.StreamWriter(string.Format("c:\\ltor-nfst.dot"));
-			fst.ToGraphViz(writer);
-			writer.Close();
-
 			Fst<AnnotatedStringData, int> dfst = fst.Determinize();
-
-			writer = new System.IO.StreamWriter(string.Format("c:\\ltor-dfst.dot"));
-			fst.ToGraphViz(writer);
-			writer.Close();
 
 			AnnotatedStringData data = CreateStringData("caNp");
 			FstResult<AnnotatedStringData, int> result;
@@ -158,16 +145,7 @@ namespace SIL.Machine.Tests.FiniteState
 				.Arcs.Add(null, FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo(".").Value, s2);
 			s2.Arcs.Add(FeatureStruct.New(PhoneticFeatSys).Symbol("cons+").Value, fst.CreateAcceptingState());
 
-
-			writer = new System.IO.StreamWriter(string.Format("c:\\ltor-nfst.dot"));
-			fst.ToGraphViz(writer);
-			writer.Close();
-
 			dfst = fst.Determinize();
-
-			writer = new System.IO.StreamWriter(string.Format("c:\\ltor-dfst.dot"));
-			dfst.ToGraphViz(writer);
-			writer.Close();
 
 			data = CreateStringData("camp");
 			Assert.That(dfst.Transduce(data, data.Annotations.First, true, true, true, out result), Is.True);
