@@ -94,13 +94,13 @@ namespace SIL.Machine.Tests.FiniteState
 			Fst<AnnotatedStringData, int> composedFsa = fst1.Compose(fst2);
 			var writer = new StringWriter();
 			composedFsa.ToGraphViz(writer);
-			Assert.That(writer.ToString(), Is.EqualTo(@"digraph G {
+			Assert.That(writer.ToString().Replace("\r\n", "\n"), Is.EqualTo(@"digraph G {
   0 [shape=""diamond"", color=""green""];
   0 -> 1 [label=""[value:\""a\""],1:ε""];
   1 [shape=""circle"", color=""red"", peripheries=""2""];
   1 -> 1 [label=""[value:\""b\""],1:([value:\""z\""],∪)""];
 }
-"));
+".Replace("\r\n", "\n")));
 		}
 
 		[Test]
