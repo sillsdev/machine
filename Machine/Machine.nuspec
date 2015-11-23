@@ -13,4 +13,7 @@
     <copyright>Copyright 2015</copyright>
     <tags>algorithms nlp computational linguistics statistics pattern matching alignment clustering</tags>
   </metadata>
+  <files>
+    <file src="bin\$configuration$\*.pdb" target="lib\net40-Client" />
+  </files>
 </package>
