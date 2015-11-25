@@ -249,16 +249,16 @@ namespace SIL.Machine.FiniteState
 			else
 			{
 				if (IsDeterministic)
- 					traversalMethod = new DeterministicFsaTraversalMethod<TData, TOffset>(_registersEqualityComparer, _dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
+					traversalMethod = new DeterministicFsaTraversalMethod<TData, TOffset>(_registersEqualityComparer, _dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
 				else
 					traversalMethod = new NondeterministicFsaTraversalMethod<TData, TOffset>(_registersEqualityComparer, _dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
 			}
 			List<FstResult<TData, TOffset>> resultList = null;
 
-			Annotation<TOffset> ann = start;
+			int annIndex = traversalMethod.Annotations.IndexOf(start);
 
-			var initAnns = new HashSet<Annotation<TOffset>>();
-			while (ann != data.Annotations.GetEnd(_dir))
+			var initAnns = new HashSet<int>();
+			while (annIndex < traversalMethod.Annotations.Count)
 			{
 				var initRegisters = new NullableValue<TOffset>[_registerCount, 2];
 
@@ -266,12 +266,12 @@ namespace SIL.Machine.FiniteState
 				foreach (TagMapCommand cmd in _initializers)
 				{
 					if (cmd.Dest == 0)
-						initRegisters[cmd.Dest, 0].Value = ann.Span.GetStart(_dir);
+						initRegisters[cmd.Dest, 0].Value = traversalMethod.Annotations[annIndex].Span.GetStart(_dir);
 					else
 						cmds.Add(cmd);
 				}
 
-				List<FstResult<TData, TOffset>> curResults = traversalMethod.Traverse(ref ann, initRegisters, cmds, initAnns).ToList();
+				List<FstResult<TData, TOffset>> curResults = traversalMethod.Traverse(ref annIndex, initRegisters, cmds, initAnns).ToList();
 				if (curResults.Count > 0)
 				{
 					if (resultList == null)
@@ -1243,8 +1243,8 @@ namespace SIL.Machine.FiniteState
 
 		public void Minimize()
 		{
-		    if (!IsDeterministic)
-		        throw new InvalidOperationException("The FSA must be deterministic to be minimized.");
+			if (!IsDeterministic)
+				throw new InvalidOperationException("The FSA must be deterministic to be minimized.");
 
 			var acceptingStates = new HashSet<State<TData, TOffset>>();
 			var nonacceptingStates = new HashSet<State<TData, TOffset>>();
@@ -1311,20 +1311,20 @@ namespace SIL.Machine.FiniteState
 				.SelectMany(p => p.Where(state => !state.Equals(p.First())), (p, state) => new {Key = state, Value = p.First()}).ToDictionary(pair => pair.Key, pair => pair.Value);
 			if (nondistinguisablePairs.Count > 0)
 			{
-		        var statesToRemove = new HashSet<State<TData, TOffset>>(_states.Where(s => !s.Equals(StartState)));
-		        foreach (State<TData, TOffset> state in _states)
-		        {
-		            foreach (Arc<TData, TOffset> arc in state.Arcs)
-		            {
-		                State<TData, TOffset> curState = arc.Target;
-		                State<TData, TOffset> s;
-		                while (nondistinguisablePairs.TryGetValue(curState, out s))
-		                    curState = s;
-		                arc.Target = curState;
-		                statesToRemove.Remove(curState);
-		            }
-		        }
-		        _states.RemoveAll(statesToRemove.Contains);
+				var statesToRemove = new HashSet<State<TData, TOffset>>(_states.Where(s => !s.Equals(StartState)));
+				foreach (State<TData, TOffset> state in _states)
+				{
+					foreach (Arc<TData, TOffset> arc in state.Arcs)
+					{
+						State<TData, TOffset> curState = arc.Target;
+						State<TData, TOffset> s;
+						while (nondistinguisablePairs.TryGetValue(curState, out s))
+							curState = s;
+						arc.Target = curState;
+						statesToRemove.Remove(curState);
+					}
+				}
+				_states.RemoveAll(statesToRemove.Contains);
 			}
 		}
 

@@ -18,6 +18,7 @@ namespace SIL.Machine.Tests
 		protected FeatureSymbol VP;
 		protected FeatureSymbol Seg;
 		protected FeatureSymbol Bdry;
+		protected FeatureSymbol Allo;
 		protected Dictionary<char, FeatureStruct> Characters;
 
 		[TestFixtureSetUp]
@@ -54,8 +55,9 @@ namespace SIL.Machine.Tests
 			VP = new FeatureSymbol("VP");
 			Seg = new FeatureSymbol("Seg");
 			Bdry = new FeatureSymbol("Bdry");
+			Allo = new FeatureSymbol("Allo");
 
-			Type = new SymbolicFeature("Type", Word, NP, VP, Seg, Bdry);
+			Type = new SymbolicFeature("Type", Word, NP, VP, Seg, Bdry, Allo);
 
 			TypeFeatSys = new FeatureSystem {Type};
 

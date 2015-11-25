@@ -1144,12 +1144,13 @@ namespace SIL.Machine.Tests.Matching
 				.Group("first", first => first.Annotation(any).OneOrMore)
 				.Group("second", second => second.Annotation(any).OneOrMore).Value;
 
-			var matcher = new Matcher<AnnotatedStringData, int>(SpanFactory, pattern, new MatcherSettings<int>
-			                                                                 	{
-			                                                                 		AnchoredToStart = true,
-			                                                                 		AnchoredToEnd = true,
-			                                                                 		AllSubmatches = true
-			                                                                 	});
+			var matcher = new Matcher<AnnotatedStringData, int>(SpanFactory, pattern,
+				new MatcherSettings<int>
+				{
+					AnchoredToStart = true,
+					AnchoredToEnd = true,
+					AllSubmatches = true
+				});
 			var word = new AnnotatedStringData(SpanFactory, "test");
 			word.Annotations.Add(0, 1, FeatureStruct.New(PhoneticFeatSys).Feature("strRep").EqualTo("t").Value);
 			word.Annotations.Add(1, 2, FeatureStruct.New(PhoneticFeatSys).Feature("strRep").EqualTo("e").Value);
@@ -1169,6 +1170,36 @@ namespace SIL.Machine.Tests.Matching
 			Assert.AreEqual(SpanFactory.Create(0, 4), matches[2].Span);
 			Assert.AreEqual(SpanFactory.Create(0, 1), matches[2].GroupCaptures["first"].Span);
 			Assert.AreEqual(SpanFactory.Create(1, 4), matches[2].GroupCaptures["second"].Span);
+		}
+
+		[Test]
+		public void DiscontiguousAnnotation()
+		{
+			var pattern = Pattern<AnnotatedStringData, int>.New()
+				.Group("first", first => first
+					.Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Seg).Symbol("syl-").Value)
+					.Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Seg).Symbol("syl+").Value))
+				.Group("second", second => second.Annotation(FeatureStruct.New().Symbol(Seg).Value).OneOrMore).Value;
+
+			var matcher = new Matcher<AnnotatedStringData, int>(SpanFactory, pattern,
+				new MatcherSettings<int>
+				{
+					AnchoredToStart = true,
+					AnchoredToEnd = true
+				});
+			AnnotatedStringData word = CreateStringData("ketested");
+			Annotation<int> allo1 = new Annotation<int>(word.Span, FeatureStruct.New().Symbol(Allo).Value);
+			allo1.Children.AddRange(word.Annotations.GetNodes(0, 2).ToArray());
+			allo1.Children.AddRange(word.Annotations.GetNodes(6, 8).ToArray());
+			word.Annotations.Add(allo1, false);
+			Annotation<int> allo2 = new Annotation<int>(SpanFactory.Create(2, 6), FeatureStruct.New().Symbol(Allo).Value);
+			allo2.Children.AddRange(word.Annotations.GetNodes(2, 6).ToArray());
+			word.Annotations.Add(allo2, false);
+			Match<AnnotatedStringData, int> match = matcher.Match(word);
+			Assert.That(match.Success, Is.True);
+			Assert.That(match.Span, Is.EqualTo(SpanFactory.Create(0, 8)));
+			Assert.That(match.GroupCaptures["first"].Span, Is.EqualTo(SpanFactory.Create(0, 2)));
+			Assert.That(match.GroupCaptures["second"].Span, Is.EqualTo(SpanFactory.Create(2, 8)));
 		}
 	}
 }
