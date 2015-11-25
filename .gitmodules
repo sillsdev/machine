@@ -1,3 +1,0 @@
-[submodule "lib/Machine"]
-	path = lib/Machine
-	url = https://github.com/sillsdev/machine.git

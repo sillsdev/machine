@@ -1033,5 +1033,38 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			AssertMorphsEqual(morpher.ParseWord("tasz"), "free 3SG");
 			AssertMorphsEqual(morpher.ParseWord("tazz"), "free 3SG");
 		}
+
+		[Test]
+		public void CircumfixRules()
+		{
+			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+
+			var circumfix = new AffixProcessRule
+							{
+								Name = "circumfix",
+								Gloss = "OBJ"
+							};
+			Morphophonemic.MorphologicalRules.Add(circumfix);
+			circumfix.Allomorphs.Add(new AffixProcessAllomorph
+									{
+										Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
+										Rhs = {new InsertShape(Table3, "ta"), new CopyFromInput("1"), new InsertShape(Table3, "od")}
+									});
+
+			var sSuffix = new AffixProcessRule
+			              	{
+								Name = "s_suffix",
+			              		Gloss = "3SG"
+			              	};
+			Morphophonemic.MorphologicalRules.Add(sSuffix);
+			sSuffix.Allomorphs.Add(new AffixProcessAllomorph
+									{
+										Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
+										Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "s")}
+									});
+
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			AssertMorphsEqual(morpher.ParseWord("tasagods"), "OBJ 32 3SG");
+		}
 	}
 }
