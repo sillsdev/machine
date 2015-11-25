@@ -20,14 +20,14 @@ namespace SIL.Machine.FiniteState
 
 		public override IEnumerable<FstResult<TData, TOffset>> Traverse(ref int annIndex, NullableValue<TOffset>[,] initRegisters, IList<TagMapCommand> initCmds, ISet<int> initAnns)
 		{
-			Stack<FstInstance> instStack = InitializeStack(ref annIndex, initRegisters, initCmds, initAnns);
+			Stack<NondeterministicFstInstance> instStack = InitializeStack(ref annIndex, initRegisters, initCmds, initAnns);
 
 			var curResults = new List<FstResult<TData, TOffset>>();
 			var traversed = new HashSet<Tuple<State<TData, TOffset>, int, NullableValue<TOffset>[,], Output<TData, TOffset>[]>>(
 				AnonymousEqualityComparer.Create<Tuple<State<TData, TOffset>, int, NullableValue<TOffset>[,], Output<TData, TOffset>[]>>(KeyEquals, KeyGetHashCode));
 			while (instStack.Count != 0)
 			{
-				FstInstance inst = instStack.Pop();
+				NondeterministicFstInstance inst = instStack.Pop();
 
 				VariableBindings varBindings = null;
 				foreach (Arc<TData, TOffset> arc in inst.State.Arcs)
@@ -66,8 +66,10 @@ namespace SIL.Machine.FiniteState
 								arc.Outputs[0].UpdateOutput(output, outputAnn, _operations);
 								outputs = UpdateOutputs(outputs, arc.Outputs[0]);
 							}
-							FstInstance newInst = EpsilonAdvanceFst(inst.AnnotationIndex, registers, output, mappings, varBindings, visited, arc, curResults, inst.Priorities, outputs);
-							Tuple<State<TData, TOffset>, int, NullableValue<TOffset>[,], Output<TData, TOffset>[]> key = Tuple.Create(newInst.State, newInst.AnnotationIndex, newInst.Registers, outputs);
+							NondeterministicFstInstance newInst = EpsilonAdvanceFst(inst.AnnotationIndex, registers, output, mappings, varBindings, visited, arc,
+								curResults, inst.Priorities, outputs);
+							Tuple<State<TData, TOffset>, int, NullableValue<TOffset>[,], Output<TData, TOffset>[]> key = Tuple.Create(newInst.State, newInst.AnnotationIndex,
+								newInst.Registers, outputs);
 							if (!traversed.Contains(key))
 							{
 								instStack.Push(newInst);
@@ -101,10 +103,11 @@ namespace SIL.Machine.FiniteState
 								outputs = UpdateOutputs(outputs, arc.Outputs[0]);
 							}
 
-							foreach (FstInstance newInst in AdvanceFst(inst.AnnotationIndex, inst.Registers, output, mappings, varBindings, arc,
+							foreach (NondeterministicFstInstance newInst in AdvanceFst(inst.AnnotationIndex, inst.Registers, output, mappings, varBindings, arc,
 								curResults, inst.Priorities, outputs))
 							{
-								Tuple<State<TData, TOffset>, int, NullableValue<TOffset>[,], Output<TData, TOffset>[]> key = Tuple.Create(newInst.State, newInst.AnnotationIndex, newInst.Registers, outputs);
+								Tuple<State<TData, TOffset>, int, NullableValue<TOffset>[,], Output<TData, TOffset>[]> key = Tuple.Create(newInst.State, newInst.AnnotationIndex,
+									newInst.Registers, outputs);
 								if (!traversed.Contains(key))
 								{
 									instStack.Push(newInst);
@@ -119,6 +122,11 @@ namespace SIL.Machine.FiniteState
 			}
 
 			return curResults;
+		}
+
+		private static NondeterministicFstInstance CreateInstance()
+		{
+			return new NondeterministicFstInstance();
 		}
 
 		private static Output<TData, TOffset>[] UpdateOutputs(Output<TData, TOffset>[] outputs, Output<TData, TOffset> output)
@@ -145,103 +153,79 @@ namespace SIL.Machine.FiniteState
 			return code;
 		}
 
-		private Stack<FstInstance> InitializeStack(ref int annIndex, NullableValue<TOffset>[,] registers, IList<TagMapCommand> cmds, ISet<int> initAnns)
+		private Stack<NondeterministicFstInstance> InitializeStack(ref int annIndex, NullableValue<TOffset>[,] registers, IList<TagMapCommand> cmds, ISet<int> initAnns)
 		{
-			var instStack = new Stack<FstInstance>();
-			foreach (FstInstance inst in Initialize(ref annIndex, registers, cmds, initAnns, (state, startIndex, regs, vb) =>
-				{
-					TData o = ((IDeepCloneable<TData>) Data).DeepClone();
-					Dictionary<Annotation<TOffset>, Annotation<TOffset>> m = Data.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
-						.Zip(o.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
-					return new FstInstance(state, startIndex, regs, o, m, vb, new HashSet<State<TData, TOffset>>(), new int[0], new Output<TData, TOffset>[0]);
-				}))
+			var instStack = new Stack<NondeterministicFstInstance>();
+			foreach (NondeterministicFstInstance inst in Initialize(ref annIndex, registers, cmds, initAnns, CreateInstance))
 			{
+				inst.Output = ((IDeepCloneable<TData>) Data).DeepClone();
+				inst.Mappings = Data.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
+					.Zip(inst.Output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
+				inst.Visited = new HashSet<State<TData, TOffset>>();
+				inst.Priorities = new int[0];
+				inst.Outputs = new Output<TData, TOffset>[0];
 				instStack.Push(inst);
 			}
 			return instStack;
 		}
 
-		private IEnumerable<FstInstance> AdvanceFst(int annIndex, NullableValue<TOffset>[,] registers, TData output,
+		private IEnumerable<NondeterministicFstInstance> AdvanceFst(int annIndex, NullableValue<TOffset>[,] registers, TData output,
 			IDictionary<Annotation<TOffset>, Annotation<TOffset>> mappings, VariableBindings varBindings, Arc<TData, TOffset> arc,
 			List<FstResult<TData, TOffset>> curResults, int[] priorities, Output<TData, TOffset>[] outputs)
 		{
 			priorities = UpdatePriorities(priorities, arc.Priority);
-			return Advance(annIndex, registers, output, varBindings, arc, curResults, priorities,
-				(state, nextIndex, regs, vb, clone) =>
-					{
-						TData o = output;
-						IDictionary<Annotation<TOffset>, Annotation<TOffset>> m = mappings;
-						if (clone)
-						{
-							o = ((IDeepCloneable<TData>) output).DeepClone();
 
-							Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
-								.Zip(o.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
-							m = mappings.ToDictionary(kvp => kvp.Key, kvp => outputMappings[kvp.Value]);
-						}
-						return new FstInstance(state, nextIndex, regs, o, m, vb, new HashSet<State<TData, TOffset>>(), priorities, outputs);
-					});
+			bool clone = false;
+			foreach (NondeterministicFstInstance inst in Advance(annIndex, registers, output, varBindings, arc, curResults, priorities, CreateInstance))
+			{
+				TData o = output;
+				IDictionary<Annotation<TOffset>, Annotation<TOffset>> m = mappings;
+				if (clone)
+				{
+					o = ((IDeepCloneable<TData>) output).DeepClone();
+
+					Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
+						.Zip(o.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
+					m = mappings.ToDictionary(kvp => kvp.Key, kvp => outputMappings[kvp.Value]);
+				}
+				inst.Output = o;
+				inst.Mappings = m;
+				inst.Visited = new HashSet<State<TData, TOffset>>();
+				inst.Priorities = priorities;
+				inst.Outputs = outputs;
+				yield return inst;
+				clone = true;
+			}
 		}
 
-		private FstInstance EpsilonAdvanceFst(int annIndex, NullableValue<TOffset>[,] registers, TData output, IDictionary<Annotation<TOffset>,
+		private NondeterministicFstInstance EpsilonAdvanceFst(int annIndex, NullableValue<TOffset>[,] registers, TData output, IDictionary<Annotation<TOffset>,
 			Annotation<TOffset>> mappings, VariableBindings varBindings, ISet<State<TData, TOffset>> visited, Arc<TData, TOffset> arc,
 			List<FstResult<TData, TOffset>> curResults, int[] priorities, Output<TData, TOffset>[] outputs)
 		{
 			priorities = UpdatePriorities(priorities, arc.Priority);
 			visited.Add(arc.Target);
-			return EpsilonAdvance(annIndex, registers, output, varBindings, arc, curResults, priorities,
-				(state, i, regs, vb) => new FstInstance(state, i, regs, output, mappings, varBindings, visited, priorities, outputs));
+
+			NondeterministicFstInstance inst = EpsilonAdvance(annIndex, registers, output, varBindings, arc, curResults, priorities, CreateInstance);
+			inst.Output = output;
+			inst.Mappings = mappings;
+			inst.Visited = visited;
+			inst.Priorities = priorities;
+			inst.Outputs = outputs;
+			return inst;
 		}
 
-		private bool IsInstanceReuseable(FstInstance inst)
+		private bool IsInstanceReuseable(NondeterministicFstInstance inst)
 		{
 			return inst.State.Arcs.Count <= 1;
 		}
 
-		private class FstInstance : Instance
+		private class NondeterministicFstInstance : Instance
 		{
-			private readonly TData _output;
-			private readonly IDictionary<Annotation<TOffset>, Annotation<TOffset>> _mappings;
-			private readonly ISet<State<TData, TOffset>> _visited;
-			private readonly int[] _priorities;
-			private readonly Output<TData, TOffset>[] _outputs; 
-
-			public FstInstance(State<TData, TOffset> state, int annotationIndex, NullableValue<TOffset>[,] registers, TData output,
-				IDictionary<Annotation<TOffset>, Annotation<TOffset>> mappings, VariableBindings varBindings,
-				ISet<State<TData, TOffset>> visited, int[] priorities, Output<TData, TOffset>[] outputs)
-				: base(state, annotationIndex, registers, varBindings)
-			{
-				_output = output;
-				_mappings = mappings;
-				_visited = visited;
-				_priorities = priorities;
-				_outputs = outputs;
-			}
-
-			public TData Output
-			{
-				get { return _output; }
-			}
-
-			public IDictionary<Annotation<TOffset>, Annotation<TOffset>> Mappings
-			{
-				get { return _mappings; }
-			}
-
-			public ISet<State<TData, TOffset>> Visited
-			{
-				get { return _visited; }
-			}
-
-			public int[] Priorities
-			{
-				get { return _priorities; }
-			}
-
-			public Output<TData, TOffset>[] Outputs
-			{
-				get { return _outputs; }
-			}
+			public ISet<State<TData, TOffset>> Visited { get; set; }
+			public int[] Priorities { get; set; }
+			public TData Output { get; set; }
+			public IDictionary<Annotation<TOffset>, Annotation<TOffset>> Mappings { get; set; }
+			public Output<TData, TOffset>[] Outputs { get; set; }
 		}
 	}
 }

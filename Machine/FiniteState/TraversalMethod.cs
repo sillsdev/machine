@@ -119,7 +119,7 @@ namespace SIL.Machine.FiniteState
 		}
 
 		protected IEnumerable<TInst> Initialize<TInst>(ref int annIndex, NullableValue<TOffset>[,] registers,
-			IList<TagMapCommand> cmds, ISet<int> initAnns, Func<State<TData, TOffset>, int, NullableValue<TOffset>[,], VariableBindings, TInst> instFactory)
+			IList<TagMapCommand> cmds, ISet<int> initAnns, Func<TInst> instFactory) where TInst : Instance
 		{
 			var insts = new List<TInst>();
 			TOffset offset = _annotations[annIndex].Span.GetStart(_dir);
@@ -142,7 +142,12 @@ namespace SIL.Machine.FiniteState
 			{
 				if (!initAnns.Contains(annIndex))
 				{
-					insts.Add(instFactory(_startState, annIndex, cloneRegisters ? (NullableValue<TOffset>[,]) newRegisters.Clone() : newRegisters, new VariableBindings()));
+					TInst inst = instFactory();
+					inst.State = _startState;
+					inst.AnnotationIndex = annIndex;
+					inst.Registers = cloneRegisters ? (NullableValue<TOffset>[,]) newRegisters.Clone() : newRegisters;
+					inst.VariableBindings = new VariableBindings();
+					insts.Add(inst);
 					initAnns.Add(annIndex);
 					cloneRegisters = true;
 				}
@@ -152,8 +157,7 @@ namespace SIL.Machine.FiniteState
 		}
 
 		protected IEnumerable<TInst> Advance<TInst>(int annIndex, NullableValue<TOffset>[,] registers, TData output, VariableBindings varBindings,
-			Arc<TData, TOffset> arc, ICollection<FstResult<TData, TOffset>> curResults, int[] priorities,
-			Func<State<TData, TOffset>, int, NullableValue<TOffset>[,], VariableBindings, bool, TInst> instFactory)
+			Arc<TData, TOffset> arc, ICollection<FstResult<TData, TOffset>> curResults, int[] priorities, Func<TInst> instFactory) where TInst : Instance
 		{
 			int nextIndex = GetNextNonoverlappingAnnotationIndex(annIndex);
 			TOffset nextOffset = nextIndex < _annotations.Count ? _annotations[nextIndex].Span.GetStart(_dir) : _data.Annotations.GetLast(_dir, _filter).Span.GetEnd(_dir);
@@ -183,28 +187,42 @@ namespace SIL.Machine.FiniteState
 				bool cloneRegisters = false;
 				foreach (int curIndex in anns)
 				{
-					yield return instFactory(arc.Target, curIndex, cloneRegisters ? (NullableValue<TOffset>[,]) newRegisters.Clone() : newRegisters,
-						cloneOutputs ? varBindings.DeepClone() : varBindings, cloneOutputs);
+					TInst inst = instFactory();
+					inst.State = arc.Target;
+					inst.AnnotationIndex = curIndex;
+					inst.Registers = cloneRegisters ? (NullableValue<TOffset>[,]) newRegisters.Clone() : newRegisters;
+					inst.VariableBindings = cloneOutputs ? varBindings.DeepClone() : varBindings;
+					yield return inst;
 					cloneOutputs = true;
 					cloneRegisters = true;
 				}
 			}
 			else
 			{
-				yield return instFactory(arc.Target, nextIndex, newRegisters, varBindings, false);
+				TInst inst = instFactory();
+				inst.State = arc.Target;
+				inst.AnnotationIndex = nextIndex;
+				inst.Registers = newRegisters;
+				inst.VariableBindings = varBindings;
+				yield return inst;
 			}
 		}
 
 		protected TInst EpsilonAdvance<TInst>(int annIndex, NullableValue<TOffset>[,] registers, TData output, VariableBindings varBindings, Arc<TData, TOffset> arc,
-			ICollection<FstResult<TData, TOffset>> curResults, int[] priorities,
-			Func<State<TData, TOffset>, int, NullableValue<TOffset>[,], VariableBindings, TInst> instFactory)
+			ICollection<FstResult<TData, TOffset>> curResults, int[] priorities, Func<TInst> instFactory) where TInst : Instance
 		{
 			Annotation<TOffset> ann = annIndex < _annotations.Count ? _annotations[annIndex] : _data.Annotations.GetEnd(_dir);
 			int prevIndex = GetPrevNonoverlappingAnnotationIndex(annIndex);
 			Annotation<TOffset> prevAnn = _annotations[prevIndex];
 			ExecuteCommands(registers, arc.Commands, new NullableValue<TOffset>(ann.Span.GetStart(_dir)), new NullableValue<TOffset>(prevAnn.Span.GetEnd(_dir)));
 			CheckAccepting(annIndex, registers, output, varBindings, arc, curResults, priorities);
-			return instFactory(arc.Target, annIndex, registers, varBindings);
+
+			TInst inst = instFactory();
+			inst.State = arc.Target;
+			inst.AnnotationIndex = annIndex;
+			inst.Registers = registers;
+			inst.VariableBindings = varBindings;
+			return inst;
 		}
 
 		private int GetNextNonoverlappingAnnotationIndex(int start)
@@ -239,38 +257,10 @@ namespace SIL.Machine.FiniteState
 
 		protected class Instance
 		{
-			private readonly NullableValue<TOffset>[,] _registers;
-			private readonly VariableBindings _varBindings;
-			private readonly State<TData, TOffset> _state;
-			private readonly int _annotationIndex;
-
-			public Instance(State<TData, TOffset> state, int annotationIndex, NullableValue<TOffset>[,] registers, VariableBindings varBindings)
-			{
-				_state = state;
-				_annotationIndex = annotationIndex;
-				_registers = registers;
-				_varBindings = varBindings;
-			}
-
-			public State<TData, TOffset> State
-			{
-				get { return _state; }
-			}
-
-			public int AnnotationIndex
-			{
-				get { return _annotationIndex; }
-			}
-
-			public NullableValue<TOffset>[,] Registers
-			{
-				get { return _registers; }
-			}
-
-			public VariableBindings VariableBindings
-			{
-				get { return _varBindings; }
-			}
+			public State<TData, TOffset> State { get; set; }
+			public int AnnotationIndex { get; set; }
+			public NullableValue<TOffset>[,] Registers { get; set; }
+			public VariableBindings VariableBindings { get; set; }
 		}
 	}
 }

@@ -20,12 +20,12 @@ namespace SIL.Machine.FiniteState
 
 		public override IEnumerable<FstResult<TData, TOffset>> Traverse(ref int annIndex, NullableValue<TOffset>[,] initRegisters, IList<TagMapCommand> initCmds, ISet<int> initAnns)
 		{
-			Stack<FstInstance> instStack = InitializeStack(ref annIndex, initRegisters, initCmds, initAnns);
+			Stack<DeterministicFstInstance> instStack = InitializeStack(ref annIndex, initRegisters, initCmds, initAnns);
 
 			var curResults = new List<FstResult<TData, TOffset>>(); 
 			while (instStack.Count != 0)
 			{
-				FstInstance inst = instStack.Pop();
+				DeterministicFstInstance inst = instStack.Pop();
 
 				VariableBindings varBindings = null;
 				foreach (Arc<TData, TOffset> arc in inst.State.Arcs)
@@ -81,7 +81,7 @@ namespace SIL.Machine.FiniteState
 
 							ExecuteOutputs(arc.Outputs, output, mappings, queue);
 
-							foreach (FstInstance ni in AdvanceFst(inst.AnnotationIndex, inst.Registers, output, mappings, queue, varBindings, arc, curResults))
+							foreach (DeterministicFstInstance ni in AdvanceFst(inst.AnnotationIndex, inst.Registers, output, mappings, queue, varBindings, arc, curResults))
 								instStack.Push(ni);
 							break;
 						}
@@ -90,6 +90,11 @@ namespace SIL.Machine.FiniteState
 			}
 
 			return curResults;
+		}
+
+		private static DeterministicFstInstance CreateInstance()
+		{
+			return new DeterministicFstInstance();
 		}
 
 		private void ExecuteOutputs(IEnumerable<Output<TData, TOffset>> outputs, TData output, IDictionary<Annotation<TOffset>, Annotation<TOffset>> mappings,
@@ -112,88 +117,69 @@ namespace SIL.Machine.FiniteState
 			}
 		}
 
-		private Stack<FstInstance> InitializeStack(ref int annIndex, NullableValue<TOffset>[,] registers,
+		private Stack<DeterministicFstInstance> InitializeStack(ref int annIndex, NullableValue<TOffset>[,] registers,
 			IList<TagMapCommand> cmds, ISet<int> initAnns)
 		{
-			var instStack = new Stack<FstInstance>();
-			foreach (FstInstance inst in Initialize(ref annIndex, registers, cmds, initAnns,
-				(state, startIndex, regs, vb) =>
-					{
-						TData o = ((IDeepCloneable<TData>) Data).DeepClone();
-						Dictionary<Annotation<TOffset>, Annotation<TOffset>> m = Data.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
-							.Zip(o.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
-						var q = new Queue<Annotation<TOffset>>();
-						return new FstInstance(state, startIndex, regs, o, m, q, vb);
-					}))
+			var instStack = new Stack<DeterministicFstInstance>();
+			foreach (DeterministicFstInstance inst in Initialize(ref annIndex, registers, cmds, initAnns, CreateInstance))
+			{
+				inst.Output = ((IDeepCloneable<TData>) Data).DeepClone();
+				inst.Mappings = Data.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
+					.Zip(inst.Output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
+				inst.Queue = new Queue<Annotation<TOffset>>();
 				instStack.Push(inst);
+			}
 			return instStack;
 		}
 
-		private bool IsInstanceReuseable(FstInstance inst)
+		private bool IsInstanceReuseable(DeterministicFstInstance inst)
 		{
 			return inst.State.Arcs.All(a => !a.Input.IsEpsilon);
 		}
 
-		private IEnumerable<FstInstance> AdvanceFst(int index, NullableValue<TOffset>[,] registers, TData output,
+		private IEnumerable<DeterministicFstInstance> AdvanceFst(int index, NullableValue<TOffset>[,] registers, TData output,
 			IDictionary<Annotation<TOffset>, Annotation<TOffset>> mappings, Queue<Annotation<TOffset>> queue, VariableBindings varBindings, Arc<TData, TOffset> arc,
 			List<FstResult<TData, TOffset>> curResults)
 		{
-			return Advance(index, registers, output, varBindings, arc, curResults, null,
-				(state, nextIndex, regs, vb, clone) =>
-					{
-						TData o = output;
-						IDictionary<Annotation<TOffset>, Annotation<TOffset>> m = mappings;
-						Queue<Annotation<TOffset>> q = queue;
-						if (clone)
-						{
-							o = ((IDeepCloneable<TData>) output).DeepClone();
+			bool clone = false;
+			foreach (DeterministicFstInstance inst in Advance(index, registers, output, varBindings, arc, curResults, null, CreateInstance))
+			{
+				TData o = output;
+				IDictionary<Annotation<TOffset>, Annotation<TOffset>> m = mappings;
+				Queue<Annotation<TOffset>> q = queue;
+				if (clone)
+				{
+					o = ((IDeepCloneable<TData>) output).DeepClone();
 
-							Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
-								.Zip(o.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
-							m = mappings.ToDictionary(kvp => kvp.Key, kvp => outputMappings[kvp.Value]);
-							q = new Queue<Annotation<TOffset>>(queue);
-						}
-						return new FstInstance(state, nextIndex, regs, o, m, q, vb);
-					});
+					Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
+						.Zip(o.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
+					m = mappings.ToDictionary(kvp => kvp.Key, kvp => outputMappings[kvp.Value]);
+					q = new Queue<Annotation<TOffset>>(queue);
+				}
+				inst.Output = o;
+				inst.Mappings = m;
+				inst.Queue = q;
+				yield return inst;
+				clone = true;
+			}
 		}
 
-		private FstInstance EpsilonAdvanceFst(int annIndex, NullableValue<TOffset>[,] registers, TData output, IDictionary<Annotation<TOffset>,
+		private DeterministicFstInstance EpsilonAdvanceFst(int annIndex, NullableValue<TOffset>[,] registers, TData output, IDictionary<Annotation<TOffset>,
 			Annotation<TOffset>> mappings, Queue<Annotation<TOffset>> queue, VariableBindings varBindings, Arc<TData, TOffset> arc,
 			List<FstResult<TData, TOffset>> curResults)
 		{
-			return EpsilonAdvance(annIndex, registers, output, varBindings, arc, curResults, null,
-				(state, i, regs, vb) => new FstInstance(state, i, regs, output, mappings, queue, vb));
+			DeterministicFstInstance inst = EpsilonAdvance(annIndex, registers, output, varBindings, arc, curResults, null, CreateInstance);
+			inst.Output = output;
+			inst.Mappings = mappings;
+			inst.Queue = queue;
+			return inst;
 		}
 
-		private class FstInstance : Instance
+		private class DeterministicFstInstance : Instance
 		{
-			private readonly TData _output;
-			private readonly IDictionary<Annotation<TOffset>, Annotation<TOffset>> _mappings;
-			private readonly Queue<Annotation<TOffset>> _queue;
-
-			public FstInstance(State<TData, TOffset> state, int annotationIndex, NullableValue<TOffset>[,] registers, TData output,
-				IDictionary<Annotation<TOffset>, Annotation<TOffset>> mappings, Queue<Annotation<TOffset>> queue, VariableBindings varBindings)
-				: base(state, annotationIndex, registers, varBindings)
-			{
-				_output = output;
-				_mappings = mappings;
-				_queue = queue;
-			}
-
-			public TData Output
-			{
-				get { return _output; }
-			}
-
-			public IDictionary<Annotation<TOffset>, Annotation<TOffset>> Mappings
-			{
-				get { return _mappings; }
-			}
-
-			public Queue<Annotation<TOffset>> Queue
-			{
-				get { return _queue; }
-			}
+			public TData Output { get; set; }
+			public IDictionary<Annotation<TOffset>, Annotation<TOffset>> Mappings { get; set; }
+			public Queue<Annotation<TOffset>> Queue { get; set; }
 		}
 	}
 }

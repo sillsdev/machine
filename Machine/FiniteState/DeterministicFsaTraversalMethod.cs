@@ -37,11 +37,16 @@ namespace SIL.Machine.FiniteState
 			return curResults;
 		}
 
+		private static Instance CreateInstance()
+		{
+			return new Instance();
+		}
+
 		private Stack<Instance> InitializeStack(ref int annIndex, NullableValue<TOffset>[,] registers,
 			IList<TagMapCommand> cmds, ISet<int> initAnns)
 		{
 			var instStack = new Stack<Instance>();
-			foreach (Instance inst in Initialize(ref annIndex, registers, cmds, initAnns, (state, startIndex, regs, vb) => new Instance(state, startIndex, regs, vb)))
+			foreach (Instance inst in Initialize(ref annIndex, registers, cmds, initAnns, CreateInstance))
 				instStack.Push(inst);
 			return instStack;
 		}
@@ -49,8 +54,7 @@ namespace SIL.Machine.FiniteState
 		private IEnumerable<Instance> AdvanceFsa(int annIndex, NullableValue<TOffset>[,] registers, VariableBindings varBindings, Arc<TData, TOffset> arc,
 			List<FstResult<TData, TOffset>> curResults)
 		{
-			return Advance(annIndex, registers, default(TData), varBindings, arc, curResults, null,
-				(state, nextIndex, regs, vb, clone) => new Instance(state, nextIndex, regs, vb));
+			return Advance(annIndex, registers, default(TData), varBindings, arc, curResults, null, CreateInstance);
 		}
 	}
 }
