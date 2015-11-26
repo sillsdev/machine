@@ -137,11 +137,12 @@ namespace SIL.HermitCrab
 
 		/// <summary>
 		/// Converts the specified string to a phonetic shape. It matches the longest possible segment
-		/// first.
+		/// first. If the string segmented successfully, this will return -1, otherwise it will return
+		/// the position where the error occurred.
 		/// </summary>
 		/// <param name="str">The string.</param>
 		/// <param name="shape">The shape.</param>
-		public bool TrySegment(string str, out Shape shape)
+		public int TrySegment(string str, out Shape shape)
 		{
 			IEnumerable<ShapeNode> nodes;
 			int errorPos;
@@ -149,11 +150,11 @@ namespace SIL.HermitCrab
 			{
 				shape = new Shape(_spanFactory, begin => new ShapeNode(_spanFactory, begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor));
 				shape.AddRange(nodes);
-				return true;
+				return errorPos;
 			}
 
 			shape = null;
-			return false;
+			return errorPos;
 		}
 
 		/// <summary>
