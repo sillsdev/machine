@@ -203,6 +203,32 @@ namespace SIL.Collections
 			base.SetItem(index, item);
 		}
 
+		protected void ChangeItemKey(TItem item, TKey newKey)
+		{
+			if (!ContainsItem(item))
+				throw new ArgumentException("The specified item does not exist.", "item");
+
+			TKey keyForItem = GetKeyForItem(item);
+			if (!_comparer.Equals(keyForItem, newKey))
+			{
+				if (newKey != null)
+					AddKey(newKey, item);
+				if (keyForItem != null)
+					RemoveKey(keyForItem);
+			}
+		}
+
+		private bool ContainsItem(TItem item)
+		{
+			TKey keyForItem;
+			if (_dict == null || (keyForItem = GetKeyForItem(item)) == null)
+			{
+				return Items.Contains(item);
+			}
+			TItem x;
+			return _dict.TryGetValue(keyForItem, out x) && EqualityComparer<TItem>.Default.Equals(x, item);
+		}
+
 		private void AddKey(TKey key, TItem item)
 		{
 			if (_dict != null)
