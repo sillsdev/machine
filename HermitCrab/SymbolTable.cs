@@ -42,6 +42,11 @@ namespace SIL.HermitCrab
 			return _symbols.Remove(strRep);
 		}
 
+		public bool Contains(string strRep)
+		{
+			return _symbols.ContainsKey(strRep);
+		}
+
 		public void Clear()
 		{
 			_symbols.Clear();
