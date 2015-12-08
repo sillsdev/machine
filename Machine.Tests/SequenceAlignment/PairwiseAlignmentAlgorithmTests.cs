@@ -297,5 +297,69 @@ namespace SIL.Machine.Tests.SequenceAlignment
 				));
 			Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0));
 		}
+
+		[Test]
+		public void GlobalAlign_EmptySequence()
+		{
+			var scorer = new StringScorer();
+			var msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "", "", GetChars);
+			msa.Compute();
+			Alignment<string, char>[] alignments = msa.GetAlignments().ToArray();
+
+			Assert.That(alignments.Length, Is.EqualTo(1));
+			AssertAlignmentsEqual(alignments[0], CreateAlignment(
+				"||",
+				"||"
+				));
+			Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void LocalAlign_EmptySequence()
+		{
+			var scorer = new StringScorer();
+			var msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "", "", GetChars) {Mode = AlignmentMode.Local};
+			msa.Compute();
+			Alignment<string, char>[] alignments = msa.GetAlignments().ToArray();
+
+			Assert.That(alignments.Length, Is.EqualTo(1));
+			AssertAlignmentsEqual(alignments[0], CreateAlignment(
+				"||",
+				"||"
+				));
+			Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void HalfLocalAlign_EmptySequence()
+		{
+			var scorer = new StringScorer();
+			var msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "", "", GetChars) {Mode = AlignmentMode.HalfLocal};
+			msa.Compute();
+			Alignment<string, char>[] alignments = msa.GetAlignments().ToArray();
+
+			Assert.That(alignments.Length, Is.EqualTo(1));
+			AssertAlignmentsEqual(alignments[0], CreateAlignment(
+				"||",
+				"||"
+				));
+			Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void SemiGlobalAlign_EmptySequence()
+		{
+			var scorer = new StringScorer();
+			var msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "", "", GetChars) {Mode = AlignmentMode.SemiGlobal};
+			msa.Compute();
+			Alignment<string, char>[] alignments = msa.GetAlignments().ToArray();
+
+			Assert.That(alignments.Length, Is.EqualTo(1));
+			AssertAlignmentsEqual(alignments[0], CreateAlignment(
+				"||",
+				"||"
+				));
+			Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0));
+		}
 	}
 }

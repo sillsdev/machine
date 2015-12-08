@@ -94,7 +94,7 @@ namespace SIL.Machine.SequenceAlignment
 					}
 				}
 			}
-			_bestRawScore = Mode == AlignmentMode.Global ? _sim[_sim.GetLength(0) - 1, _sim.GetLength(1) - 1] : maxScore;
+			_bestRawScore = Mode == AlignmentMode.Global || maxScore == int.MinValue ? _sim[_sim.GetLength(0) - 1, _sim.GetLength(1) - 1] : maxScore;
 		}
 
 		private TItem Get1(int i)
@@ -134,31 +134,47 @@ namespace SIL.Machine.SequenceAlignment
 
 				case AlignmentMode.SemiGlobal:
 					{
-						for (int i = 1; i < _sim.GetLength(0); i++)
-						{
-							foreach (Alignment<TSeq, TItem> alignment in GetAlignments(i, _sim.GetLength(1) - 1, threshold))
-								yield return alignment;
-						}
+					    if (_sim.GetLength(0) == 1 && _sim.GetLength(1) == 1)
+					    {
+					        foreach (Alignment<TSeq, TItem> alignment in GetAlignments(0, 0, threshold))
+					            yield return alignment;
+					    }
+					    else
+					    {
+							for (int i = 1; i < _sim.GetLength(0); i++)
+							{
+								foreach (Alignment<TSeq, TItem> alignment in GetAlignments(i, _sim.GetLength(1) - 1, threshold))
+									yield return alignment;
+							}
 
-						for (int j = 1; j < _sim.GetLength(1) - 1; j++)
-						{
-							foreach (Alignment<TSeq, TItem> alignment in GetAlignments(_sim.GetLength(0) - 1, j, threshold))
-								yield return alignment;
-						}
+							for (int j = 1; j < _sim.GetLength(1) - 1; j++)
+							{
+								foreach (Alignment<TSeq, TItem> alignment in GetAlignments(_sim.GetLength(0) - 1, j, threshold))
+									yield return alignment;
+							}
+					    }
 					}
 					break;
 
 				case AlignmentMode.Local:
 				case AlignmentMode.HalfLocal:
 					{
-						for (int i = 1; i < _sim.GetLength(0); i++)
-						{
-							for (int j = 1; j < _sim.GetLength(1); j++)
+					    if (_sim.GetLength(0) == 1 && _sim.GetLength(1) == 1)
+					    {
+					        foreach (Alignment<TSeq, TItem> alignment in GetAlignments(0, 0, threshold))
+					            yield return alignment;
+					    }
+					    else
+					    {
+							for (int i = 1; i < _sim.GetLength(0); i++)
 							{
-								foreach (Alignment<TSeq, TItem> alignment in GetAlignments(i, j, threshold))
-									yield return alignment;
+								for (int j = 1; j < _sim.GetLength(1); j++)
+								{
+									foreach (Alignment<TSeq, TItem> alignment in GetAlignments(i, j, threshold))
+										yield return alignment;
+								}
 							}
-						}
+					    }
 					}
 					break;
 			}
