@@ -131,7 +131,7 @@ namespace SIL.Collections
 				throw new ArgumentOutOfRangeException("oldIndex");
 			if (count < 0 || count > Count - oldIndex)
 				throw new ArgumentOutOfRangeException("count");
-			if (newIndex < 0 || (newIndex >= oldIndex && newIndex < count - oldIndex))
+			if (newIndex < 0 || newIndex > Count - count)
 				throw new ArgumentOutOfRangeException("newIndex");
 
 			if (count == 0)
@@ -139,8 +139,6 @@ namespace SIL.Collections
 
 			IList moved = RemoveItems(oldIndex, count);
 			int index = newIndex;
-			if (newIndex > oldIndex)
-				index -= count;
 
 			bool prevUpdating = _updating;
 			_updating = true;

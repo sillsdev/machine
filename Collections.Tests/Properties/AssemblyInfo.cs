@@ -1,10 +1,11 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("SIL.Machine.Tests")]
+[assembly: AssemblyTitle("SIL.Collections.Tests")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("SIL")]
@@ -19,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("693e0b13-e912-4d25-8650-56d1bf750845")]
+[assembly: Guid("f9d37254-10fb-449c-b22d-d3f6088fe5b7")]
 
 // Version information for an assembly consists of the following four values:
 //
