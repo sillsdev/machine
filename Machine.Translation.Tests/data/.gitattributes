@@ -1,0 +1,3 @@
+toy_corpus/** -whitespace eol=lf
+*.hmm_lexnd binary
+*.hmm_alignd binary
