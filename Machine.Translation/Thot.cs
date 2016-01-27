@@ -9,13 +9,13 @@ namespace SIL.Machine.Translation
 		public static extern IntPtr decoder_open(string cfgFileName);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern IntPtr decoder_openSession(IntPtr decoderHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void decoder_saveModels(IntPtr decoderHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void decoder_close(IntPtr decoderHandle);
-
-		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern IntPtr decoder_startSession(IntPtr decoderHandle);
-
-		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern void decoder_endSession(IntPtr sessionHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern IntPtr session_translate(IntPtr sessionHandle, [MarshalAs(UnmanagedType.LPWStr)] string sentence);
@@ -31,6 +31,9 @@ namespace SIL.Machine.Translation
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void session_trainSentencePair(IntPtr sessionHandle, [MarshalAs(UnmanagedType.LPWStr)] string sourceSentence, [MarshalAs(UnmanagedType.LPWStr)] string targetSentence);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void session_close(IntPtr sessionHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		[return:MarshalAs(UnmanagedType.LPWStr)]

@@ -4,24 +4,29 @@ using SIL.Collections;
 
 namespace SIL.Machine.Translation
 {
-	public class ThotDecoder : DisposableBase
+	public class SmtEngine : DisposableBase
 	{
 		private readonly IntPtr _handle;
-		private readonly HashSet<ThotSession> _sessions; 
+		private readonly HashSet<SmtSession> _sessions; 
 
-		public ThotDecoder(string cfgFileName)
+		public SmtEngine(string cfgFileName)
 		{
-			_sessions = new HashSet<ThotSession>();
+			_sessions = new HashSet<SmtSession>();
 			_handle = Thot.decoder_open(cfgFileName);
 		}
 
-		public ThotSession StartSession()
+		public SmtSession StartSession()
 		{
 			CheckDisposed();
 
-			var session = new ThotSession(this);
+			var session = new SmtSession(this);
 			_sessions.Add(session);
 			return session;
+		}
+
+		public void SaveModels()
+		{
+			Thot.decoder_saveModels(_handle);
 		}
 
 		internal IntPtr Handle
@@ -29,7 +34,7 @@ namespace SIL.Machine.Translation
 			get { return _handle; }
 		}
 
-		internal void RemoveSession(ThotSession session)
+		internal void RemoveSession(SmtSession session)
 		{
 			_sessions.Remove(session);
 		}
@@ -37,7 +42,7 @@ namespace SIL.Machine.Translation
 		protected override void DisposeUnmanagedResources()
 		{
 			Thot.decoder_close(_handle);
-			foreach (ThotSession session in _sessions)
+			foreach (SmtSession session in _sessions)
 				session.Dispose();
 		}
 	}
