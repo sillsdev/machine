@@ -227,6 +227,8 @@ namespace SIL.HermitCrab.Tests
 			AddEntry("48", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "pag");
 			AddEntry("49", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "ktb");
 			AddEntry("50", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "suupu");
+			AddEntry("51", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Allophonic, "miu");
+			AddEntry("52", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Morphophonemic, "pu");
 
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")

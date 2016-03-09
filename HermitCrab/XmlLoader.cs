@@ -696,8 +696,10 @@ namespace SIL.HermitCrab
 										Direction = GetDirection((string) metathesisElem.Attribute("multipleApplicationOrder"))
 			                     	};
 
-			var changeIDsStr = (string) metathesisElem.Attribute("structuralChange");
-			metathesisRule.GroupOrder.AddRange(changeIDsStr.Split(' '));
+			var changeIdsStr = (string) metathesisElem.Attribute("structuralChange");
+			string[] changeIds = changeIdsStr.Split(' ');
+			metathesisRule.LeftGroupName = changeIds[0];
+			metathesisRule.RightGroupName = changeIds[1];
 
 			metathesisRule.Pattern = LoadPhoneticTemplate(metathesisElem.Elements("StructuralDescription").Elements("PhoneticTemplate").Single(),
 				new Dictionary<string, Tuple<string, SymbolicFeature>>(), true);

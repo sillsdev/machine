@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.Matching;
@@ -12,22 +11,18 @@ namespace SIL.HermitCrab.PhonologicalRules
 	/// </summary>
 	public class MetathesisRule : HCRuleBase, IPhonologicalRule
 	{
-		private readonly List<string> _groupOrder;
-
 		public MetathesisRule()
 		{
 			Pattern = Pattern<Word, ShapeNode>.New().Value;
-			_groupOrder = new List<string>();
 		}
 
 		public Direction Direction { get; set; }
 
 		public Pattern<Word, ShapeNode> Pattern { get; set; }
 
-		public IList<string> GroupOrder
-		{
-			get { return _groupOrder; }
-		}
+		public string LeftGroupName { get; set; }
+
+		public string RightGroupName { get; set; }
 
 		public override IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{

@@ -112,6 +112,7 @@
     <Compile Include="MorphologicalRules\SynthesisCompoundingRule.cs" />
     <Compile Include="MorphologicalRules\SynthesisRealizationalAffixProcessRule.cs" />
     <Compile Include="PhonologicalRules\AnalysisMetathesisRule.cs" />
+    <Compile Include="PhonologicalRules\AnalysisMetathesisRuleSpec.cs" />
     <Compile Include="PhonologicalRules\AnalysisRewriteRule.cs" />
     <Compile Include="PhonologicalRules\AnalysisRewriteRuleSpec.cs" />
     <Compile Include="PhonologicalRules\BacktrackingPatternRule.cs" />
@@ -120,7 +121,7 @@
     <Compile Include="PhonologicalRules\FeatureAnalysisRewriteRuleSpec.cs" />
     <Compile Include="PhonologicalRules\FeatureSynthesisRewriteRuleSpec.cs" />
     <Compile Include="PhonologicalRules\MetathesisRule.cs" />
-    <Compile Include="PhonologicalRules\MetathesisRuleSpec.cs" />
+    <Compile Include="PhonologicalRules\SynthesisMetathesisRuleSpec.cs" />
     <Compile Include="PhonologicalRules\NarrowAnalysisRewriteRuleSpec.cs" />
     <Compile Include="PhonologicalRules\NarrowSynthesisRewriteRuleSpec.cs" />
     <Compile Include="PhonologicalRules\RewriteRule.cs" />

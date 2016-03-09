@@ -39,7 +39,7 @@ namespace SIL.HermitCrab.PhonologicalRules
 				}
 			}
 
-			var ruleSpec = new MetathesisRuleSpec(pattern, rule.GroupOrder);
+			var ruleSpec = new SynthesisMetathesisRuleSpec(pattern, rule.LeftGroupName, rule.RightGroupName);
 
 			var settings = new MatcherSettings<ShapeNode>
 			               	{

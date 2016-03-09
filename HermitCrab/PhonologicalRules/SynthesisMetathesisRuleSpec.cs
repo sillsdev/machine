@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Linq;
 using SIL.Collections;
 using SIL.Machine.Annotations;
@@ -8,15 +7,17 @@ using SIL.Machine.Rules;
 
 namespace SIL.HermitCrab.PhonologicalRules
 {
-	public class MetathesisRuleSpec : IPatternRuleSpec<Word, ShapeNode>
+	public class SynthesisMetathesisRuleSpec : IPatternRuleSpec<Word, ShapeNode>
 	{
 		private readonly Pattern<Word, ShapeNode> _pattern;
-		private readonly List<string> _groupOrder; 
+		private readonly string _leftGroupName;
+		private readonly string _rightGroupName;
 
-		public MetathesisRuleSpec(Pattern<Word, ShapeNode> pattern, IEnumerable<string> groupOrder)
+		public SynthesisMetathesisRuleSpec(Pattern<Word, ShapeNode> pattern, string leftGroupName, string rightGroupName)
 		{
 			_pattern = pattern;
-			_groupOrder = groupOrder.ToList();
+			_leftGroupName = leftGroupName;
+			_rightGroupName = rightGroupName;
 		}
 
 		public Pattern<Word, ShapeNode> Pattern
@@ -48,23 +49,18 @@ namespace SIL.HermitCrab.PhonologicalRules
 
 			Direction dir = match.Matcher.Direction;
 			ShapeNode beforeMatchStart = match.Span.GetStart(dir).GetPrev(dir);
-			ShapeNode cur = start.Prev;
-			foreach (string name in _groupOrder)
-			{
-				GroupCapture<ShapeNode> group = match.GroupCaptures[name];
-				if (!group.Success)
-					continue;
 
-				foreach (ShapeNode node in match.Input.Shape.GetNodes(group.Span))
-				{
-					if (node != cur.Next)
-					{
-						node.Remove();
-						cur.AddAfter(node);
-					}
-					node.SetDirty(true);
-					cur = node;
-				}
+			GroupCapture<ShapeNode> leftGroup = match.GroupCaptures[_leftGroupName];
+			GroupCapture<ShapeNode> rightGroup = match.GroupCaptures[_rightGroupName];
+
+			ShapeNode cur = leftGroup.Span.End;
+
+			foreach (ShapeNode node in match.Input.Shape.GetNodes(rightGroup.Span))
+			{
+				node.Remove();
+				cur.AddAfter(node);
+				node.SetDirty(true);
+				cur = node;
 			}
 
 			foreach (var morph in morphs)

@@ -23,21 +23,14 @@ namespace SIL.HermitCrab.PhonologicalRules
 			var pattern = new Pattern<Word, ShapeNode>();
 			foreach (PatternNode<Word, ShapeNode> node in rule.Pattern.Children.TakeWhile(n => !(n is Group<Word, ShapeNode>)))
 				pattern.Children.Add(node.DeepClone());
-			foreach (string name in rule.GroupOrder)
-			{
-				var newGroup = new Group<Word, ShapeNode>(name);
-				foreach (Constraint<Word, ShapeNode> constraint in groups[name].Children.Cast<Constraint<Word, ShapeNode>>())
-				{
-					Constraint<Word, ShapeNode> newConstraint = constraint.DeepClone();
-					newConstraint.FeatureStruct.AddValue(HCFeatureSystem.Modified, HCFeatureSystem.Clean);
-					newGroup.Children.Add(newConstraint);
-				}
-				pattern.Children.Add(newGroup);
-			}
+
+			AddGroup(groups, pattern, rule.LeftGroupName);
+			AddGroup(groups, pattern, rule.RightGroupName);
+
 			foreach (PatternNode<Word, ShapeNode> node in rule.Pattern.Children.GetNodes(Direction.RightToLeft).TakeWhile(n => !(n is Group<Word, ShapeNode>)).Reverse())
 				pattern.Children.Add(node.DeepClone());
 
-			var ruleSpec = new MetathesisRuleSpec(pattern, groupOrder.Select(g => g.Name));
+			var ruleSpec = new AnalysisMetathesisRuleSpec(pattern, rule.LeftGroupName, rule.RightGroupName);
 
 			var settings = new MatcherSettings<ShapeNode>
 			               	{
@@ -48,6 +41,18 @@ namespace SIL.HermitCrab.PhonologicalRules
 			               	};
 
 			_patternRule = new BacktrackingPatternRule(spanFactory, ruleSpec, settings);
+		}
+
+		private static void AddGroup(Dictionary<string, Group<Word, ShapeNode>> groups, Pattern<Word, ShapeNode> pattern, string name)
+		{
+			var newGroup = new Group<Word, ShapeNode>(name);
+			foreach (Constraint<Word, ShapeNode> constraint in groups[name].Children.Cast<Constraint<Word, ShapeNode>>())
+			{
+				Constraint<Word, ShapeNode> newConstraint = constraint.DeepClone();
+				newConstraint.FeatureStruct.AddValue(HCFeatureSystem.Modified, HCFeatureSystem.Clean);
+				newGroup.Children.Add(newConstraint);
+			}
+			pattern.Children.Add(newGroup);
 		}
 
 		public IEnumerable<Word> Apply(Word input)
