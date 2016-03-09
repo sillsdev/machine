@@ -53,15 +53,9 @@ namespace SIL.HermitCrab.PhonologicalRules
 			GroupCapture<ShapeNode> leftGroup = match.GroupCaptures[_leftGroupName];
 			GroupCapture<ShapeNode> rightGroup = match.GroupCaptures[_rightGroupName];
 
-			ShapeNode cur = leftGroup.Span.End;
-
-			foreach (ShapeNode node in match.Input.Shape.GetNodes(rightGroup.Span))
-			{
-				node.Remove();
-				cur.AddAfter(node);
-				node.SetDirty(true);
-				cur = node;
-			}
+			ShapeNode beforeRightGroup = rightGroup.Span.Start.Prev;
+			MoveNodesAfter(match.Input.Shape, leftGroup.Span.End, rightGroup.Span);
+			MoveNodesAfter(match.Input.Shape, beforeRightGroup, leftGroup.Span);
 
 			foreach (var morph in morphs)
 			{
@@ -74,6 +68,20 @@ namespace SIL.HermitCrab.PhonologicalRules
 			output = match.Input;
 			ShapeNode matchStart = beforeMatchStart == null ? match.Input.Shape.GetBegin(dir) : beforeMatchStart.GetNext(dir);
 			return matchStart.GetNext(dir);
+		}
+
+		private static void MoveNodesAfter(Shape shape, ShapeNode cur, Span<ShapeNode> span)
+		{
+			foreach (ShapeNode node in shape.GetNodes(span).ToArray())
+			{
+				if (node.Type() == HCFeatureSystem.Segment)
+				{
+					node.Remove();
+					cur.AddAfter(node);
+					node.SetDirty(true);
+				}
+				cur = node;
+			}
 		}
 	}
 }
