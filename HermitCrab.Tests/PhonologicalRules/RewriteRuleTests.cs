@@ -386,8 +386,9 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			                   	{
 			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("a")).Value,
 									RightEnvironment = Pattern<Word, ShapeNode>.New()
-										.Annotation(Table3.GetSymbolFeatureStruct("+"))
-										.Annotation(Table3.GetSymbolFeatureStruct("b")).Value
+										.Group(group => group
+											.Annotation(Table3.GetSymbolFeatureStruct("+"))
+											.Annotation(Table3.GetSymbolFeatureStruct("b"))).Value
 			                   	});
 
 			morpher = new Morpher(SpanFactory, TraceManager, Language);
