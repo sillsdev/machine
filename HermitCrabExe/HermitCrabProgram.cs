@@ -1,11 +1,11 @@
 using System;
 using System.IO;
-using NDesk.Options;
 using ManyConsole;
 using ManyConsole.Internal;
+using NDesk.Options;
 using SIL.Collections;
 
-namespace SIL.HermitCrab
+namespace SIL.Machine.HermitCrab
 {
 	public class HermitCrabProgram
 	{

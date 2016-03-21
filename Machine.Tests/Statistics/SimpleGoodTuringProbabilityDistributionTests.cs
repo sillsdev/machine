@@ -9,7 +9,7 @@ namespace SIL.Machine.Tests.Statistics
 	{
 		private FrequencyDistribution<string> _fd;
 
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void FixtureSetUp()
 		{
 			_fd = new FrequencyDistribution<string>();

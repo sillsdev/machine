@@ -8,7 +8,7 @@
     <ProjectGuid>{945FED88-A315-4692-96DD-770892A814DD}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SIL.HermitCrab</RootNamespace>
+    <RootNamespace>SIL.Machine.HermitCrab</RootNamespace>
     <AssemblyName>hc</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -60,14 +60,6 @@
     <Reference Include="NDesk.Options">
       <HintPath>..\packages\NDesk.Options.0.2.1\lib\NDesk.Options.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.Collections, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SIL.Machine.1.0.0-build00002\lib\net40-Client\SIL.Collections.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="SIL.Machine, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SIL.Machine.1.0.0-build00002\lib\net40-Client\SIL.Machine.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -108,9 +100,17 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HermitCrab\HermitCrab.csproj">
+    <ProjectReference Include="..\Collections\Collections.csproj">
+      <Project>{08691159-167b-4e5a-ae88-67def10af7d3}</Project>
+      <Name>Collections</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Machine.HermitCrab\Machine.HermitCrab.csproj">
       <Project>{9E140FCF-0265-481B-B9A0-B0E7BCD3E814}</Project>
       <Name>HermitCrab</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Machine\Machine.csproj">
+      <Project>{8c9ab5d2-22ca-4559-abb0-83e97d7f0e58}</Project>
+      <Name>Machine</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

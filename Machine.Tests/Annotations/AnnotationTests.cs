@@ -11,7 +11,7 @@ namespace SIL.Machine.Tests.Annotations
 	{
 		private SpanFactory<int> _spanFactory;
 
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void FixtureSetUp()
 		{
 			_spanFactory = new IntegerSpanFactory();

@@ -21,7 +21,7 @@ namespace SIL.Machine.Tests
 		protected FeatureSymbol Allo;
 		protected Dictionary<char, FeatureStruct> Characters;
 
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public virtual void FixtureSetUp()
 		{
 			SpanFactory = new IntegerSpanFactory();

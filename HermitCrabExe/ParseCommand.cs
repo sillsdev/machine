@@ -5,7 +5,7 @@ using System.Linq;
 using ManyConsole;
 using SIL.Machine.Annotations;
 
-namespace SIL.HermitCrab
+namespace SIL.Machine.HermitCrab
 {
 	public class ParseCommand : ConsoleCommand
 	{
