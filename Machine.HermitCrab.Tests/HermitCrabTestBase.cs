@@ -26,7 +26,7 @@ namespace SIL.Machine.HermitCrab.Tests
 		protected Stratum Morphophonemic;
 		protected Language Language;
 
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void FixtureSetUp()
 		{
 			SpanFactory = new ShapeSpanFactory();

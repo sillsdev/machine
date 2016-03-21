@@ -129,7 +129,7 @@ namespace SIL.Machine.Tests.Morphology
 		public void LargeEnglishWordList()
 		{
 			var words = new List<string>();
-			using (var file = new StreamReader(Path.Combine("Morphology", "LEX")))
+			using (var file = new StreamReader(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Morphology", "LEX")))
 			{
 				string line;
 				while ((line = file.ReadLine()) != null)
