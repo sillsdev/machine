@@ -2,11 +2,11 @@
 Type=TeamCity
 Url=http://build.palaso.org
 
-[TC::bt223]
-Name=palaso-win32-master Continuous
+[TC::Libraries_ThotWin32masterContinuous]
+Name=thot-win32-master Continuous
 RevisionName=lastSuccessful
 RevisionValue=latest.lastSuccessful
 Condition=Windows
-Path=SIL.Core.pdb => ../lib/
-SIL.Core.dll => ../lib/
+Path=thot.dll => ../lib/
+pthreadVSE2.dll => ../lib/
 

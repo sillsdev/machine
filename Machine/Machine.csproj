@@ -239,10 +239,7 @@
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets. -->
   <Target Name="BeforeBuild">
-    <PropertyGroup>
-      <RootDir Condition="'$(RootDir)'==''">$(MSBuildProjectDirectory)/..</RootDir>
-    </PropertyGroup>
-    <Dependencies DependencyFile="Machine.dep" UseDependencyFile="true" KeepJobsFile="true" WorkingDir="$(RootDir)" />
+    <Dependencies DependencyFile="Machine.dep" UseDependencyFile="true" KeepJobsFile="true" />
   </Target>
   <Target Name="AfterBuild">
   </Target>
