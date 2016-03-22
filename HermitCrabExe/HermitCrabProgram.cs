@@ -3,7 +3,7 @@ using System.IO;
 using ManyConsole;
 using ManyConsole.Internal;
 using NDesk.Options;
-using SIL.Collections;
+using SIL.Extensions;
 
 namespace SIL.Machine.HermitCrab
 {

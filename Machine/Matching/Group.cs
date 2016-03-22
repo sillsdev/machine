@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
-using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.FiniteState;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Matching
 {
-	public class Group<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Group<TData, TOffset>>, IValueEquatable<Group<TData, TOffset>> where TData : IAnnotatedData<TOffset>
+	public class Group<TData, TOffset> : PatternNode<TData, TOffset>, ICloneable<Group<TData, TOffset>>, IValueEquatable<Group<TData, TOffset>> where TData : IAnnotatedData<TOffset>
 	{
 		private readonly string _name;
 
@@ -78,14 +78,14 @@ namespace SIL.Machine.Matching
 			return startState;
 		}
 
-		public new Group<TData, TOffset> DeepClone()
+		public new Group<TData, TOffset> Clone()
 		{
 			return new Group<TData, TOffset>(this);
 		}
 
-		protected override PatternNode<TData, TOffset> DeepCloneImpl()
+		protected override PatternNode<TData, TOffset> CloneImpl()
 		{
-			return DeepClone();
+			return Clone();
 		}
 
 		public override bool ValueEquals(PatternNode<TData, TOffset> other)

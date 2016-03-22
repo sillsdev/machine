@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SIL.Collections;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
@@ -59,7 +59,7 @@ namespace SIL.Machine.HermitCrab.PhonologicalRules
 			Word origInput = null;
 			if (_morpher.TraceManager.IsTracing)
 			{
-				origInput = input.DeepClone();
+				origInput = input.Clone();
 				input.CurrentRuleResults = new Dictionary<int, Tuple<FailureReason, object>>();
 			}
 
@@ -87,7 +87,7 @@ namespace SIL.Machine.HermitCrab.PhonologicalRules
 				input.CurrentRuleResults = null;
 			}
 			if (applied)
-				input.ToEnumerable();
+				return input.ToEnumerable();
 			return Enumerable.Empty<Word>();
 		}
 	}

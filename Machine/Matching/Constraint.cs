@@ -1,43 +1,43 @@
-using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.FiniteState;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Matching
 {
-    /// <summary>
-    /// This class represents a simple context in a phonetic pattern. Simple contexts are used to represent
-    /// natural classes and segments in a pattern.
-    /// </summary>
-	public class Constraint<TData, TOffset> : PatternNode<TData, TOffset>, IValueEquatable<Constraint<TData, TOffset>>, IDeepCloneable<Constraint<TData, TOffset>> where TData : IAnnotatedData<TOffset>
-    {
-    	private readonly FeatureStruct _fs;
+	/// <summary>
+	/// This class represents a simple context in a phonetic pattern. Simple contexts are used to represent
+	/// natural classes and segments in a pattern.
+	/// </summary>
+	public class Constraint<TData, TOffset> : PatternNode<TData, TOffset>, IValueEquatable<Constraint<TData, TOffset>>, ICloneable<Constraint<TData, TOffset>> where TData : IAnnotatedData<TOffset>
+	{
+		private readonly FeatureStruct _fs;
 
-        /// <summary>
+		/// <summary>
 		/// Initializes a new instance of the <see cref="Constraint{TData, TOffset}"/> class.
-        /// </summary>
+		/// </summary>
 		public Constraint(FeatureStruct fs)
 		{
 			_fs = fs;
 		}
 
-    	/// <summary>
-    	/// Copy constructor.
-    	/// </summary>
-    	/// <param name="constraint">The annotation constraints.</param>
+		/// <summary>
+		/// Copy constructor.
+		/// </summary>
+		/// <param name="constraint">The annotation constraints.</param>
 		protected Constraint(Constraint<TData, TOffset> constraint)
-        {
-            _fs = constraint._fs.DeepClone();
-        }
+		{
+			_fs = constraint._fs.Clone();
+		}
 
-        /// <summary>
-        /// Gets the feature values.
-        /// </summary>
-        /// <value>The feature values.</value>
-        public FeatureStruct FeatureStruct
-        {
-            get { return _fs; }
-        }
+		/// <summary>
+		/// Gets the feature values.
+		/// </summary>
+		/// <value>The feature values.</value>
+		public FeatureStruct FeatureStruct
+		{
+			get { return _fs; }
+		}
 
 		protected override bool CanAdd(PatternNode<TData, TOffset> child)
 		{
@@ -50,7 +50,7 @@ namespace SIL.Machine.Matching
 			FeatureStruct condition = _fs;
 			if (!_fs.IsFrozen)
 			{
-				condition = _fs.DeepClone();
+				condition = _fs.Clone();
 				condition.Freeze();
 			}
 			return startState.Arcs.Add(condition, fsa.CreateState());
@@ -64,15 +64,15 @@ namespace SIL.Machine.Matching
 			return code;
 		}
 
-		protected override PatternNode<TData, TOffset> DeepCloneImpl()
+		protected override PatternNode<TData, TOffset> CloneImpl()
 		{
-			return DeepClone();
+			return Clone();
 		}
 
-    	public new Constraint<TData, TOffset> DeepClone()
-    	{
+		public new Constraint<TData, TOffset> Clone()
+		{
 			return new Constraint<TData, TOffset>(this);
-    	}
+		}
 
 		public override bool ValueEquals(PatternNode<TData, TOffset> other)
 		{
@@ -85,9 +85,9 @@ namespace SIL.Machine.Matching
 			return _fs.ValueEquals(other._fs);
 		}
 
-    	public override string ToString()
+		public override string ToString()
 		{
 			return _fs.ToString();
 		}
-    }
+	}
 }

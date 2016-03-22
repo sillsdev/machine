@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Collections", "Collections\Collections.csproj", "{08691159-167B-4E5A-AE88-67DEF10AF7D3}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Machine", "Machine\Machine.csproj", "{8C9AB5D2-22CA-4559-ABB0-83E97D7F0E58}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{F27B1588-D555-45F5-955F-6BD135012C87}"
@@ -15,8 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{F27B15
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Machine.Tests", "Machine.Tests\Machine.Tests.csproj", "{3B8610C8-8EF2-4733-9D8F-5303318830DA}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Collections.Tests", "Collections.Tests\Collections.Tests.csproj", "{480631A4-8C41-4747-96F1-9EB379EA478F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Machine.Translation", "Machine.Translation\Machine.Translation.csproj", "{D89AFA6A-CC7B-42E4-B98D-86B8C328F07C}"
 EndProject
@@ -38,17 +34,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{08691159-167B-4E5A-AE88-67DEF10AF7D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{08691159-167B-4E5A-AE88-67DEF10AF7D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{08691159-167B-4E5A-AE88-67DEF10AF7D3}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{08691159-167B-4E5A-AE88-67DEF10AF7D3}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{08691159-167B-4E5A-AE88-67DEF10AF7D3}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{08691159-167B-4E5A-AE88-67DEF10AF7D3}.Debug|x86.Build.0 = Debug|Any CPU
-		{08691159-167B-4E5A-AE88-67DEF10AF7D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{08691159-167B-4E5A-AE88-67DEF10AF7D3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{08691159-167B-4E5A-AE88-67DEF10AF7D3}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{08691159-167B-4E5A-AE88-67DEF10AF7D3}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{08691159-167B-4E5A-AE88-67DEF10AF7D3}.Release|x86.ActiveCfg = Release|Any CPU
 		{8C9AB5D2-22CA-4559-ABB0-83E97D7F0E58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8C9AB5D2-22CA-4559-ABB0-83E97D7F0E58}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C9AB5D2-22CA-4559-ABB0-83E97D7F0E58}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -71,17 +56,6 @@ Global
 		{3B8610C8-8EF2-4733-9D8F-5303318830DA}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{3B8610C8-8EF2-4733-9D8F-5303318830DA}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{3B8610C8-8EF2-4733-9D8F-5303318830DA}.Release|x86.ActiveCfg = Release|Any CPU
-		{480631A4-8C41-4747-96F1-9EB379EA478F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{480631A4-8C41-4747-96F1-9EB379EA478F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{480631A4-8C41-4747-96F1-9EB379EA478F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{480631A4-8C41-4747-96F1-9EB379EA478F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{480631A4-8C41-4747-96F1-9EB379EA478F}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{480631A4-8C41-4747-96F1-9EB379EA478F}.Debug|x86.Build.0 = Debug|Any CPU
-		{480631A4-8C41-4747-96F1-9EB379EA478F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{480631A4-8C41-4747-96F1-9EB379EA478F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{480631A4-8C41-4747-96F1-9EB379EA478F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{480631A4-8C41-4747-96F1-9EB379EA478F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{480631A4-8C41-4747-96F1-9EB379EA478F}.Release|x86.ActiveCfg = Release|Any CPU
 		{D89AFA6A-CC7B-42E4-B98D-86B8C328F07C}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{D89AFA6A-CC7B-42E4-B98D-86B8C328F07C}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{D89AFA6A-CC7B-42E4-B98D-86B8C328F07C}.Debug|Mixed Platforms.Build.0 = Debug|x86

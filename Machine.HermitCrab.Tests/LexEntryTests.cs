@@ -1,7 +1,8 @@
 ﻿using System.Linq;
 using NUnit.Framework;
-using SIL.Collections;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.HermitCrab.MorphologicalRules;
 using SIL.Machine.Matching;
@@ -176,7 +177,7 @@ namespace SIL.Machine.HermitCrab.Tests
 
 			ShapeNode node = word.Shape.Last;
 			LexEntry nonHeadEntry = Entries["40"];
-			word.Shape.AddRange(nonHeadEntry.PrimaryAllomorph.Shape.AsEnumerable().DeepClone());
+			word.Shape.AddRange(nonHeadEntry.PrimaryAllomorph.Shape.AsEnumerable().CloneItems());
 			Annotation<ShapeNode> nonHeadMorph = word.MarkMorph(word.Shape.GetNodes(node.Next, word.Shape.Last), nonHeadEntry.PrimaryAllomorph);
 
 			Assert.That(env.IsMatch(word), Is.True);
@@ -184,7 +185,7 @@ namespace SIL.Machine.HermitCrab.Tests
 			word.RemoveMorph(nonHeadMorph);
 
 			nonHeadEntry = Entries["41"];
-			word.Shape.AddRange(nonHeadEntry.PrimaryAllomorph.Shape.AsEnumerable().DeepClone());
+			word.Shape.AddRange(nonHeadEntry.PrimaryAllomorph.Shape.AsEnumerable().CloneItems());
 			nonHeadMorph = word.MarkMorph(word.Shape.GetNodes(node.Next, word.Shape.Last), nonHeadEntry.PrimaryAllomorph);
 
 			Assert.That(env.IsMatch(word), Is.False);
@@ -198,7 +199,7 @@ namespace SIL.Machine.HermitCrab.Tests
 
 			node = word.Shape.First;
 			nonHeadEntry = Entries["40"];
-			word.Shape.AddRangeAfter(word.Shape.Begin, nonHeadEntry.PrimaryAllomorph.Shape.AsEnumerable().DeepClone());
+			word.Shape.AddRangeAfter(word.Shape.Begin, nonHeadEntry.PrimaryAllomorph.Shape.AsEnumerable().CloneItems());
 			nonHeadMorph = word.MarkMorph(word.Shape.GetNodes(word.Shape.First, node.Prev), nonHeadEntry.PrimaryAllomorph);
 
 			Assert.That(env.IsMatch(word), Is.True);
@@ -206,7 +207,7 @@ namespace SIL.Machine.HermitCrab.Tests
 			word.RemoveMorph(nonHeadMorph);
 
 			nonHeadEntry = Entries["41"];
-			word.Shape.AddRangeAfter(word.Shape.Begin, nonHeadEntry.PrimaryAllomorph.Shape.AsEnumerable().DeepClone());
+			word.Shape.AddRangeAfter(word.Shape.Begin, nonHeadEntry.PrimaryAllomorph.Shape.AsEnumerable().CloneItems());
 			word.MarkMorph(word.Shape.GetNodes(word.Shape.First, node.Prev), nonHeadEntry.PrimaryAllomorph);
 
 			Assert.That(env.IsMatch(word), Is.False);

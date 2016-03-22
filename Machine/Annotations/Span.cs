@@ -1,5 +1,5 @@
 using System;
-using SIL.Collections;
+using SIL.Machine.DataStructures;
 
 namespace SIL.Machine.Annotations
 {

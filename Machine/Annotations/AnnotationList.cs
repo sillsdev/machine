@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using SIL.Collections;
+using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Annotations
 {
-	public class AnnotationList<TOffset> : BidirList<Annotation<TOffset>>, IDeepCloneable<AnnotationList<TOffset>>, IFreezable, IValueEquatable<AnnotationList<TOffset>>
+	public class AnnotationList<TOffset> : BidirList<Annotation<TOffset>>, ICloneable<AnnotationList<TOffset>>, IFreezable, IValueEquatable<AnnotationList<TOffset>>
 	{
 		private readonly SpanFactory<TOffset> _spanFactory; 
 		private int _currentID;
@@ -23,7 +24,7 @@ namespace SIL.Machine.Annotations
 		protected AnnotationList(AnnotationList<TOffset> annList)
 			: this(annList._spanFactory)
 		{
-			AddRange(annList.Select(ann => ann.DeepClone()));
+			AddRange(annList.Select(ann => ann.Clone()));
 		}
 
 		internal AnnotationList(SpanFactory<TOffset> spanFactory, Annotation<TOffset> parent)
@@ -266,7 +267,7 @@ namespace SIL.Machine.Annotations
 			base.Clear();
 		}
 
-		public AnnotationList<TOffset> DeepClone()
+		public AnnotationList<TOffset> Clone()
 		{
 			return new AnnotationList<TOffset>(this);
 		}

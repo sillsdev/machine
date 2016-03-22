@@ -47,6 +47,9 @@
     <Reference Include="QuickGraph">
       <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.dll</HintPath>
     </Reference>
+    <Reference Include="SIL.Core">
+      <HintPath>..\lib\SIL.Core.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -79,10 +82,6 @@
     <Compile Include="Statistics\WittenBellProbabilityDistributionTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Collections\Collections.csproj">
-      <Project>{08691159-167B-4E5A-AE88-67DEF10AF7D3}</Project>
-      <Name>Collections</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Machine\Machine.csproj">
       <Project>{8C9AB5D2-22CA-4559-ABB0-83E97D7F0E58}</Project>
       <Name>Machine</Name>

@@ -18,7 +18,7 @@ namespace SIL.Machine.HermitCrab.MorphologicalRules
 
 		public override ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)
 		{
-			output = match.Input.DeepClone();
+			output = match.Input.Clone();
 			GenerateShape(_subrule.HeadLhs, output.Shape, match);
 			var nonHeadShape = new Shape(rule.SpanFactory, begin => new ShapeNode(rule.SpanFactory, begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor));
 			GenerateShape(_subrule.NonHeadLhs, nonHeadShape, match);

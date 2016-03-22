@@ -1,11 +1,13 @@
 using System;
 using System.Globalization;
-using SIL.Collections;
+using SIL.Extensions;
+using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Annotations
 {
-	public class ShapeNode : OrderedBidirListNode<ShapeNode>, IComparable<ShapeNode>, IComparable, IDeepCloneable<ShapeNode>, IValueEquatable<ShapeNode>, IFreezable
+	public class ShapeNode : OrderedBidirListNode<ShapeNode>, IComparable<ShapeNode>, IComparable, ICloneable<ShapeNode>, IValueEquatable<ShapeNode>, IFreezable
 	{
 		private readonly SpanFactory<ShapeNode> _spanFactory; 
 		private readonly Annotation<ShapeNode> _ann;
@@ -19,7 +21,7 @@ namespace SIL.Machine.Annotations
 		}
 
 		protected ShapeNode(ShapeNode node)
-			: this(node._spanFactory, node.Annotation.FeatureStruct.DeepClone())
+			: this(node._spanFactory, node.Annotation.FeatureStruct.Clone())
 		{
 			_ann.Optional = node.Annotation.Optional;
 		}
@@ -62,7 +64,7 @@ namespace SIL.Machine.Annotations
 			return CompareTo((ShapeNode)other);
 		}
 
-		public ShapeNode DeepClone()
+		public ShapeNode Clone()
 		{
 			return new ShapeNode(this);
 		}

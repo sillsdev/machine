@@ -1,5 +1,6 @@
 using System.Linq;
-using SIL.Collections;
+using SIL.Machine.DataStructures;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Annotations
 {

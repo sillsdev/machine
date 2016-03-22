@@ -44,6 +44,9 @@
       <HintPath>..\packages\NUnit.3.2.0\lib\net40\nunit.framework.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="SIL.Core">
+      <HintPath>..\lib\SIL.Core.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -61,10 +64,6 @@
     <Compile Include="StratumTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Collections\Collections.csproj">
-      <Project>{08691159-167b-4e5a-ae88-67def10af7d3}</Project>
-      <Name>Collections</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Machine.HermitCrab\Machine.HermitCrab.csproj">
       <Project>{9E140FCF-0265-481B-B9A0-B0E7BCD3E814}</Project>
       <Name>Machine.HermitCrab</Name>

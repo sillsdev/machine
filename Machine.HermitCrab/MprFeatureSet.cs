@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using SIL.Collections;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.HermitCrab
 {
 	/// <summary>
 	/// This represents a set of MPR features.
 	/// </summary>
-	public class MprFeatureSet : HashSet<MprFeature>, IDeepCloneable<MprFeatureSet>
+	public class MprFeatureSet : HashSet<MprFeature>, ICloneable<MprFeatureSet>
 	{
 		public MprFeatureSet()
 		{
@@ -99,7 +99,7 @@ namespace SIL.Machine.HermitCrab
 			return true;
 		}
 
-		public MprFeatureSet DeepClone()
+		public MprFeatureSet Clone()
 		{
 			return new MprFeatureSet(this);
 		}

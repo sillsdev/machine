@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using SIL.Collections;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
 using SIL.Machine.Matching;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Rules
 {
@@ -48,7 +50,7 @@ namespace SIL.Machine.Rules
 					IPatternRuleSpec<TData, TOffset> ruleSpec = rs; 
 					string id = "rule" + _curRuleId++;
 					_ruleIds[id] = ruleSpec;
-					var subpattern = new Pattern<TData, TOffset>(id, ruleSpec.Pattern.Children.DeepClone())
+					var subpattern = new Pattern<TData, TOffset>(id, ruleSpec.Pattern.Children.CloneItems())
 									{
 										Acceptable = match => ruleSpec.IsApplicable(match.Input) && ruleSpec.Pattern.Acceptable(match)
 									};

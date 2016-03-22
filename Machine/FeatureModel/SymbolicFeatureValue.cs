@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using SIL.Collections;
+using SIL.Extensions;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.FeatureModel
 {
-	public class SymbolicFeatureValue : SimpleFeatureValue, IDeepCloneable<SymbolicFeatureValue>
+	public class SymbolicFeatureValue : SimpleFeatureValue, ICloneable<SymbolicFeatureValue>
 	{
 		public static implicit operator SymbolicFeatureValue(FeatureSymbol symbol)
 		{
@@ -187,9 +188,9 @@ namespace SIL.Machine.FeatureModel
 				_flags = (~_flags & _feature.Mask) & otherSfv._flags;
 		}
 
-		protected override SimpleFeatureValue DeepCloneImpl()
+		protected override SimpleFeatureValue CloneImpl()
 		{
-			return DeepClone();
+			return Clone();
 		}
 
 		public override SimpleFeatureValue Negation()
@@ -217,7 +218,7 @@ namespace SIL.Machine.FeatureModel
 			return code * 31 + _flags.GetHashCode();
 		}
 
-		public new SymbolicFeatureValue DeepClone()
+		public new SymbolicFeatureValue Clone()
 		{
 			return new SymbolicFeatureValue(this);
 		}

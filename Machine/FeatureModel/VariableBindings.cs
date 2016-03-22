@@ -1,10 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using SIL.Collections;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.FeatureModel
 {
-	public class VariableBindings : IDictionary<string, SimpleFeatureValue>, IDeepCloneable<VariableBindings>
+	public class VariableBindings : IDictionary<string, SimpleFeatureValue>, ICloneable<VariableBindings>
 	{
 		private readonly Dictionary<string, SimpleFeatureValue> _varBindings;
 
@@ -17,7 +17,7 @@ namespace SIL.Machine.FeatureModel
 			: this()
 		{
 			foreach (KeyValuePair<string, SimpleFeatureValue> kvp in varBindings._varBindings)
-				_varBindings[kvp.Key] = kvp.Value.DeepClone();
+				_varBindings[kvp.Key] = kvp.Value.Clone();
 		}
 
 		public IEnumerable<string> VariableNames
@@ -117,7 +117,7 @@ namespace SIL.Machine.FeatureModel
 			get { return false; }
 		}
 
-		public VariableBindings DeepClone()
+		public VariableBindings Clone()
 		{
 			return new VariableBindings(this);
 		}

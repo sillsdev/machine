@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using SIL.Collections;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
@@ -27,7 +27,7 @@ namespace SIL.Machine.HermitCrab.PhonologicalRules
 					var newGroup = new Group<Word, ShapeNode>(group.Name);
 					foreach (Constraint<Word, ShapeNode> constraint in group.Children.Cast<Constraint<Word, ShapeNode>>())
 					{
-						Constraint<Word, ShapeNode> newConstraint = constraint.DeepClone();
+						Constraint<Word, ShapeNode> newConstraint = constraint.Clone();
 						newConstraint.FeatureStruct.AddValue(HCFeatureSystem.Modified, HCFeatureSystem.Clean);
 						newGroup.Children.Add(newConstraint);
 					}
@@ -35,7 +35,7 @@ namespace SIL.Machine.HermitCrab.PhonologicalRules
 				}
 				else
 				{
-					pattern.Children.Add(node.DeepClone());
+					pattern.Children.Add(node.Clone());
 				}
 			}
 
@@ -58,7 +58,7 @@ namespace SIL.Machine.HermitCrab.PhonologicalRules
 
 			Word origInput = null;
 			if (_morpher.TraceManager.IsTracing)
-				origInput = input.DeepClone();
+				origInput = input.Clone();
 
 			if (_patternRule.Apply(input).Any())
 			{

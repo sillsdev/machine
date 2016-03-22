@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Text;
-using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.FiniteState;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Matching
 {
-	public class Alternation<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Alternation<TData, TOffset>>, IValueEquatable<Alternation<TData, TOffset>> where TData : IAnnotatedData<TOffset>
+	public class Alternation<TData, TOffset> : PatternNode<TData, TOffset>, ICloneable<Alternation<TData, TOffset>>, IValueEquatable<Alternation<TData, TOffset>> where TData : IAnnotatedData<TOffset>
 	{
 		public Alternation()
 		{
@@ -40,19 +40,19 @@ namespace SIL.Machine.Matching
 			return endState;
 		}
 
-    	protected override bool CanAdd(PatternNode<TData, TOffset> child)
+		protected override bool CanAdd(PatternNode<TData, TOffset> child)
 		{
 			if (!base.CanAdd(child) || child is Pattern<TData, TOffset>)
 				return false;
 			return true;
 		}
 
-		protected override PatternNode<TData, TOffset> DeepCloneImpl()
+		protected override PatternNode<TData, TOffset> CloneImpl()
 		{
-			return DeepClone();
+			return Clone();
 		}
 
-		public new Alternation<TData, TOffset> DeepClone()
+		public new Alternation<TData, TOffset> Clone()
 		{
 			return new Alternation<TData, TOffset>(this);
 		}

@@ -410,7 +410,7 @@ namespace SIL.Machine.Tests
 			for (int i = 0; i < str.Length; i++)
 			{
 				FeatureStruct fs = Characters[str[i]];
-				stringData.Annotations.Add(i, i + 1, fs.DeepClone());
+				stringData.Annotations.Add(i, i + 1, fs.Clone());
 			}
 			return stringData;
 		}

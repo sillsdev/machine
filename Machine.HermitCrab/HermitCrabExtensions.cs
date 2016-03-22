@@ -2,10 +2,11 @@
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using SIL.Collections;
 using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.HermitCrab
 {
@@ -38,12 +39,12 @@ namespace SIL.Machine.HermitCrab
 				FeatureValue newValue;
 				if (childFS != null)
 				{
-					newValue = HCFeatureSystem.Instance.ContainsFeature(feature) ? childFS.DeepClone() : childFS.AntiFeatureStruct();
+					newValue = HCFeatureSystem.Instance.ContainsFeature(feature) ? childFS.Clone() : childFS.AntiFeatureStruct();
 				}
 				else
 				{
 					var childSfv = (SimpleFeatureValue) value;
-					newValue = HCFeatureSystem.Instance.ContainsFeature(feature) ? childSfv.DeepClone() : childSfv.Negation();
+					newValue = HCFeatureSystem.Instance.ContainsFeature(feature) ? childSfv.Clone() : childSfv.Negation();
 				}
 				result.AddValue(feature, newValue);
 			}

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
-using SIL.Collections;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Rules
 {

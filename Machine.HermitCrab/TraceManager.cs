@@ -21,12 +21,12 @@
 
 		public void PhonologicalRuleUnapplied(IPhonologicalRule rule, int subruleIndex, Word input, Word output)
 		{
-			((Trace) output.CurrentTrace).Children.Add(new Trace(TraceType.PhonologicalRuleAnalysis, rule) {SubruleIndex = subruleIndex, Input = input, Output = output.DeepClone()});
+			((Trace) output.CurrentTrace).Children.Add(new Trace(TraceType.PhonologicalRuleAnalysis, rule) {SubruleIndex = subruleIndex, Input = input, Output = output.Clone()});
 		}
 
 		public void PhonologicalRuleNotUnapplied(IPhonologicalRule rule, int subruleIndex, Word input)
 		{
-			((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.PhonologicalRuleAnalysis, rule) {SubruleIndex = subruleIndex, Input = input.DeepClone()});
+			((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.PhonologicalRuleAnalysis, rule) {SubruleIndex = subruleIndex, Input = input.Clone()});
 		}
 
 		public void BeginUnapplyTemplate(AffixTemplate template, Word input)
@@ -53,12 +53,12 @@
 
 		public void LexicalLookup(Stratum stratum, Word input)
 		{
-			((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.LexicalLookup, stratum) {Input = input.DeepClone()});
+			((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.LexicalLookup, stratum) {Input = input.Clone()});
 		}
 
 		public void SynthesizeWord(Language lang, Word input)
 		{
-			var trace = new Trace(TraceType.WordSynthesis, lang) {Input = input.DeepClone()};
+			var trace = new Trace(TraceType.WordSynthesis, lang) {Input = input.Clone()};
 			var curTrace = (Trace) input.CurrentTrace;
 			curTrace.Children.Last.Children.Add(trace);
 			input.CurrentTrace = trace;
@@ -81,12 +81,12 @@
 
 		public void PhonologicalRuleApplied(IPhonologicalRule rule, int subruleIndex, Word input, Word output)
 		{
-			((Trace) output.CurrentTrace).Children.Add(new Trace(TraceType.PhonologicalRuleSynthesis, rule) {SubruleIndex = subruleIndex, Input = input, Output = output.DeepClone()});
+			((Trace) output.CurrentTrace).Children.Add(new Trace(TraceType.PhonologicalRuleSynthesis, rule) {SubruleIndex = subruleIndex, Input = input, Output = output.Clone()});
 		}
 
 		public void PhonologicalRuleNotApplied(IPhonologicalRule rule, int subruleIndex, Word input, FailureReason reason, object failureObj)
 		{
-			((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.PhonologicalRuleSynthesis, rule) {SubruleIndex = subruleIndex, Input = input.DeepClone(), FailureReason = reason});
+			((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.PhonologicalRuleSynthesis, rule) {SubruleIndex = subruleIndex, Input = input.Clone(), FailureReason = reason});
 		}
 
 		public void BeginApplyTemplate(AffixTemplate template, Word input)

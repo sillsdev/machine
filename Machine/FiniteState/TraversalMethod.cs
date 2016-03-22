@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SIL.Collections;
 using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.FiniteState
 {
@@ -96,11 +97,11 @@ namespace SIL.Machine.FiniteState
 					foreach (AcceptInfo<TData, TOffset> acceptInfo in arc.Target.AcceptInfos)
 					{
 						TData resOutput = output;
-						var cloneable = resOutput as IDeepCloneable<TData>;
+						var cloneable = resOutput as ICloneable<TData>;
 						if (cloneable != null)
-							resOutput = cloneable.DeepClone();
+							resOutput = cloneable.Clone();
 
-						var candidate = new FstResult<TData, TOffset>(_registersEqualityComparer, acceptInfo.ID, matchRegisters, resOutput, varBindings.DeepClone(),
+						var candidate = new FstResult<TData, TOffset>(_registersEqualityComparer, acceptInfo.ID, matchRegisters, resOutput, varBindings.Clone(),
 							acceptInfo.Priority, arc.Target.IsLazy, ann, priorities, curResults.Count);
 						if (acceptInfo.Acceptable == null || acceptInfo.Acceptable(_data, candidate))
 							curResults.Add(candidate);
@@ -109,10 +110,10 @@ namespace SIL.Machine.FiniteState
 				else
 				{
 					TData resOutput = output;
-					var cloneable = resOutput as IDeepCloneable<TData>;
+					var cloneable = resOutput as ICloneable<TData>;
 					if (cloneable != null)
-						resOutput = cloneable.DeepClone();
-					curResults.Add(new FstResult<TData, TOffset>(_registersEqualityComparer, null, matchRegisters, resOutput, varBindings.DeepClone(), -1, arc.Target.IsLazy, ann,
+						resOutput = cloneable.Clone();
+					curResults.Add(new FstResult<TData, TOffset>(_registersEqualityComparer, null, matchRegisters, resOutput, varBindings.Clone(), -1, arc.Target.IsLazy, ann,
 						priorities, curResults.Count));
 				}
 			}
@@ -191,7 +192,7 @@ namespace SIL.Machine.FiniteState
 					inst.State = arc.Target;
 					inst.AnnotationIndex = curIndex;
 					inst.Registers = cloneRegisters ? (NullableValue<TOffset>[,]) newRegisters.Clone() : newRegisters;
-					inst.VariableBindings = cloneOutputs ? varBindings.DeepClone() : varBindings;
+					inst.VariableBindings = cloneOutputs ? varBindings.Clone() : varBindings;
 					yield return inst;
 					cloneOutputs = true;
 					cloneRegisters = true;

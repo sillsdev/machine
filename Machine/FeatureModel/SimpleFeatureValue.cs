@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Text;
-using SIL.Collections;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.FeatureModel
 {
-	public abstract class SimpleFeatureValue : FeatureValue, IDeepCloneable<SimpleFeatureValue>
+	public abstract class SimpleFeatureValue : FeatureValue, ICloneable<SimpleFeatureValue>
 	{
 		public static implicit operator SimpleFeatureValue(FeatureSymbol symbol)
 		{
@@ -323,13 +323,13 @@ namespace SIL.Machine.FeatureModel
 
 		internal SimpleFeatureValue GetVariableValue(bool agree)
 		{
-			return agree ? DeepClone() : Negation();
+			return agree ? Clone() : Negation();
 		}
 
 		protected override bool NondestructiveUnify(FeatureValue other, bool useDefaults, IDictionary<FeatureValue, FeatureValue> copies,
 			VariableBindings varBindings, out FeatureValue output)
 		{
-			FeatureValue copy = DeepClone();
+			FeatureValue copy = Clone();
 			copies[this] = copy;
 			copies[other] = copy;
 			if (!copy.DestructiveUnify(other, useDefaults, true, copies, varBindings))
@@ -341,7 +341,7 @@ namespace SIL.Machine.FeatureModel
 			return true;
 		}
 
-		internal override FeatureValue DeepCloneImpl(IDictionary<FeatureValue, FeatureValue> copies)
+		internal override FeatureValue CloneImpl(IDictionary<FeatureValue, FeatureValue> copies)
 		{
 			FeatureValue copy;
 			if (copies != null)
@@ -350,16 +350,16 @@ namespace SIL.Machine.FeatureModel
 					return copy;
 			}
 
-			copy = DeepClone();
+			copy = Clone();
 
 			if (copies != null)
 				copies[this] = copy;
 			return copy;
 		}
 
-		public new SimpleFeatureValue DeepClone()
+		public new SimpleFeatureValue Clone()
 		{
-			return DeepCloneImpl();
+			return CloneImpl();
 		}
 
 		public abstract SimpleFeatureValue Negation();
@@ -458,7 +458,7 @@ namespace SIL.Machine.FeatureModel
 		protected abstract void IntersectWith(bool not, SimpleFeatureValue other, bool notOther);
 		protected abstract void UnionWith(bool not, SimpleFeatureValue other, bool notOther);
 		protected abstract void ExceptWith(bool not, SimpleFeatureValue other, bool notOther);
-		protected abstract SimpleFeatureValue DeepCloneImpl();
+		protected abstract SimpleFeatureValue CloneImpl();
 		protected virtual bool IsSatisfiable
 		{
 			get { return IsVariable; }

@@ -1,6 +1,6 @@
 using System.Linq;
-using SIL.Collections;
 using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
@@ -26,7 +26,7 @@ namespace SIL.Machine.HermitCrab.PhonologicalRules
 			foreach (PatternNode<Word, ShapeNode> node in _rhs.Children.GetNodes(match.Matcher.Direction))
 			{
 				var constraint = (Constraint<Word, ShapeNode>) node;
-				FeatureStruct fs = constraint.FeatureStruct.DeepClone();
+				FeatureStruct fs = constraint.FeatureStruct.Clone();
 				fs.ReplaceVariables(match.VariableBindings);
 				endNode = match.Input.Shape.AddAfter(endNode, fs);
 				if (rule is BacktrackingPatternRule)

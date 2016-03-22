@@ -5,8 +5,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
-using SIL.Collections;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.HermitCrab.MorphologicalRules;
 using SIL.Machine.HermitCrab.PhonologicalRules;
@@ -619,7 +620,7 @@ namespace SIL.Machine.HermitCrab
 				string strRep = _repIds[(string) segElem.Attribute("representation")];
 				FeatureStruct segFS = table.GetSymbolFeatureStruct(strRep);
 				if (fs == null)
-					fs = segFS.DeepClone();
+					fs = segFS.Clone();
 				else
 					fs.Union(segFS);
 			}
@@ -1127,7 +1128,7 @@ namespace SIL.Machine.HermitCrab
 		{
 			var natClassID = (string) ctxtElem.Attribute("naturalClass");
 			FeatureStruct fs = _natClasses[natClassID];
-			fs = fs.DeepClone();
+			fs = fs.Clone();
 			foreach (XElement varElem in ctxtElem.Elements("AlphaVariables").Elements("AlphaVariable"))
 			{
 				var varID = (string) varElem.Attribute("variableFeature");

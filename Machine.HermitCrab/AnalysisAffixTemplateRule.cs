@@ -3,10 +3,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Rules;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.HermitCrab
 {
@@ -36,7 +36,7 @@ namespace SIL.Machine.HermitCrab
 			if (_morpher.TraceManager.IsTracing)
 				_morpher.TraceManager.BeginUnapplyTemplate(_template, input);
 
-			Word inWord = input.DeepClone();
+			Word inWord = input.Clone();
 			inWord.Freeze();
 			//var output = new HashSet<Word>(ValueEqualityComparer<Word>.Default);
 			//ApplySlots(temp, _rules.Count - 1, output);

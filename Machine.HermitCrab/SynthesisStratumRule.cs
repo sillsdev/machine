@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using SIL.Collections;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
 using SIL.Machine.Rules;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.HermitCrab
 {
@@ -46,7 +47,7 @@ namespace SIL.Machine.HermitCrab
 			{
 				if (mruleOutWord.IsLastAppliedRuleFinal)
 				{
-					Word newWord = mruleOutWord.DeepClone();
+					Word newWord = mruleOutWord.Clone();
 					_prulesRule.Apply(newWord);
 					newWord.Freeze();
 					if (_morpher.TraceManager.IsTracing)
@@ -70,7 +71,7 @@ namespace SIL.Machine.HermitCrab
 				Word word = mruleOutWord;
 				if (!word.IsLastAppliedRuleFinal)
 				{
-					word = word.DeepClone();
+					word = word.Clone();
 					word.IsLastAppliedRuleFinal = true;
 					word.Freeze();
 				}

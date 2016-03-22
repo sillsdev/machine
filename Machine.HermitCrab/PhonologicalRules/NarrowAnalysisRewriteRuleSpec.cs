@@ -1,4 +1,4 @@
-using SIL.Collections;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
@@ -18,7 +18,7 @@ namespace SIL.Machine.HermitCrab.PhonologicalRules
 
 			AddEnvironment("leftEnv", subrule.LeftEnvironment);
 			if (subrule.Rhs.Children.Count > 0)
-				Pattern.Children.Add(new Group<Word, ShapeNode>("target", subrule.Rhs.Children.DeepClone()));
+				Pattern.Children.Add(new Group<Word, ShapeNode>("target", subrule.Rhs.Children.CloneItems()));
 			AddEnvironment("rightEnv", subrule.RightEnvironment);
 		}
 
@@ -47,7 +47,7 @@ namespace SIL.Machine.HermitCrab.PhonologicalRules
 			ShapeNode curNode = startNode;
 			foreach (Constraint<Word, ShapeNode> constraint in _analysisRhs.Children)
 			{
-				FeatureStruct fs = constraint.FeatureStruct.DeepClone();
+				FeatureStruct fs = constraint.FeatureStruct.Clone();
 				fs.ReplaceVariables(match.VariableBindings);
 				curNode = match.Input.Shape.AddAfter(curNode, fs, true);
 			}

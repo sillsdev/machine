@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using SIL.Collections;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
 
@@ -22,13 +23,13 @@ namespace SIL.Machine.HermitCrab.PhonologicalRules
 			Dictionary<string, Group<Word, ShapeNode>> groups = groupOrder.ToDictionary(g => g.Name);
 			var pattern = new Pattern<Word, ShapeNode>();
 			foreach (PatternNode<Word, ShapeNode> node in rule.Pattern.Children.TakeWhile(n => !(n is Group<Word, ShapeNode>)))
-				pattern.Children.Add(node.DeepClone());
+				pattern.Children.Add(node.Clone());
 
 			AddGroup(groups, pattern, rule.LeftGroupName);
 			AddGroup(groups, pattern, rule.RightGroupName);
 
 			foreach (PatternNode<Word, ShapeNode> node in rule.Pattern.Children.GetNodes(Direction.RightToLeft).TakeWhile(n => !(n is Group<Word, ShapeNode>)).Reverse())
-				pattern.Children.Add(node.DeepClone());
+				pattern.Children.Add(node.Clone());
 
 			var ruleSpec = new AnalysisMetathesisRuleSpec(pattern, rule.LeftGroupName, rule.RightGroupName);
 
@@ -48,7 +49,7 @@ namespace SIL.Machine.HermitCrab.PhonologicalRules
 			var newGroup = new Group<Word, ShapeNode>(name);
 			foreach (Constraint<Word, ShapeNode> constraint in groups[name].Children.Cast<Constraint<Word, ShapeNode>>())
 			{
-				Constraint<Word, ShapeNode> newConstraint = constraint.DeepClone();
+				Constraint<Word, ShapeNode> newConstraint = constraint.Clone();
 				newConstraint.FeatureStruct.AddValue(HCFeatureSystem.Modified, HCFeatureSystem.Clean);
 				newGroup.Children.Add(newConstraint);
 			}
@@ -62,7 +63,7 @@ namespace SIL.Machine.HermitCrab.PhonologicalRules
 
 			Word origInput = null;
 			if (_morpher.TraceManager.IsTracing)
-				origInput = input.DeepClone();
+				origInput = input.Clone();
 
 			if (_patternRule.Apply(input).Any())
 			{

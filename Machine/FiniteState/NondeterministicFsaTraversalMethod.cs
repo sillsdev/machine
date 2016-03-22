@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using SIL.Collections;
 using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState
@@ -44,7 +44,7 @@ namespace SIL.Machine.FiniteState
 								registers = (NullableValue<TOffset>[,]) inst.Registers.Clone();
 
 								if (varBindings == null)
-									varBindings = inst.VariableBindings.DeepClone();
+									varBindings = inst.VariableBindings.Clone();
 								visited = new HashSet<State<TData, TOffset>>(inst.Visited);
 							}
 							NondeterministicFsaInstance newInst = EpsilonAdvanceFsa(inst.AnnotationIndex, registers, varBindings, visited, arc, curResults, inst.Priorities);
@@ -60,7 +60,7 @@ namespace SIL.Machine.FiniteState
 					else
 					{
 						if (varBindings == null)
-							varBindings = IsInstanceReuseable(inst) ? inst.VariableBindings : inst.VariableBindings.DeepClone();
+							varBindings = IsInstanceReuseable(inst) ? inst.VariableBindings : inst.VariableBindings.Clone();
 						if (CheckInputMatch(arc, inst.AnnotationIndex, varBindings))
 						{
 							foreach (NondeterministicFsaInstance newInst in AdvanceFsa(inst.AnnotationIndex, inst.Registers, varBindings, arc,

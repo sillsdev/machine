@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SIL.Collections;
 using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
+using SIL.ObjectModel;
+using SIL.Extensions;
 
 namespace SIL.Machine.FiniteState
 {
@@ -49,13 +51,13 @@ namespace SIL.Machine.FiniteState
 							{
 								registers = (NullableValue<TOffset>[,]) inst.Registers.Clone();
 
-								output = ((IDeepCloneable<TData>) inst.Output).DeepClone();
+								output = ((ICloneable<TData>) inst.Output).Clone();
 
 								Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = inst.Output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
 									.Zip(output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
 								mappings = inst.Mappings.ToDictionary(kvp => kvp.Key, kvp => outputMappings[kvp.Value]);
 								if (varBindings == null)
-									varBindings = inst.VariableBindings.DeepClone();
+									varBindings = inst.VariableBindings.Clone();
 								visited = new HashSet<State<TData, TOffset>>(inst.Visited);
 							}
 
@@ -81,14 +83,14 @@ namespace SIL.Machine.FiniteState
 					else
 					{
 						if (varBindings == null)
-							varBindings = IsInstanceReuseable(inst) ? inst.VariableBindings : inst.VariableBindings.DeepClone();
+							varBindings = IsInstanceReuseable(inst) ? inst.VariableBindings : inst.VariableBindings.Clone();
 						if (CheckInputMatch(arc, inst.AnnotationIndex, varBindings))
 						{
 							TData output = inst.Output;
 							IDictionary<Annotation<TOffset>, Annotation<TOffset>> mappings = inst.Mappings;
 							if (!IsInstanceReuseable(inst))
 							{
-								output = ((IDeepCloneable<TData>) inst.Output).DeepClone();
+								output = ((ICloneable<TData>) inst.Output).Clone();
 
 								Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = inst.Output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
 									.Zip(output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
@@ -158,7 +160,7 @@ namespace SIL.Machine.FiniteState
 			var instStack = new Stack<NondeterministicFstInstance>();
 			foreach (NondeterministicFstInstance inst in Initialize(ref annIndex, registers, cmds, initAnns, CreateInstance))
 			{
-				inst.Output = ((IDeepCloneable<TData>) Data).DeepClone();
+				inst.Output = ((ICloneable<TData>) Data).Clone();
 				inst.Mappings = Data.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
 					.Zip(inst.Output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
 				inst.Visited = new HashSet<State<TData, TOffset>>();
@@ -182,7 +184,7 @@ namespace SIL.Machine.FiniteState
 				IDictionary<Annotation<TOffset>, Annotation<TOffset>> m = mappings;
 				if (clone)
 				{
-					o = ((IDeepCloneable<TData>) output).DeepClone();
+					o = ((ICloneable<TData>) output).Clone();
 
 					Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
 						.Zip(o.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);

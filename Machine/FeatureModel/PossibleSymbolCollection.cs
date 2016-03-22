@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using SIL.Collections;
+using SIL.Machine.DataStructures;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.FeatureModel
 {
@@ -31,6 +32,11 @@ namespace SIL.Machine.FeatureModel
 		public FeatureSymbol this[string id]
 		{
 			get { return _symbols[id]; }
+		}
+
+		public bool TryGet(string key, out FeatureSymbol item)
+		{
+			return _symbols.TryGetValue(key, out item);
 		}
 
 		public bool Contains(string id)

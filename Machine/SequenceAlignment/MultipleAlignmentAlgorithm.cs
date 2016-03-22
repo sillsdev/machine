@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using QuickGraph;
 using QuickGraph.Algorithms;
-using SIL.Collections;
+using SIL.Extensions;
 using SIL.Machine.Clusterers;
 
 namespace SIL.Machine.SequenceAlignment

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.FiniteState;
+using SIL.Machine.DataStructures;
 
 namespace SIL.Machine.HermitCrab
 {
@@ -51,7 +51,7 @@ namespace SIL.Machine.HermitCrab
 			else
 			{
 				nextState = nextNode == node.List.End ? _fsa.CreateAcceptingState(id, (shape, match) => true, _shapeCount) : _fsa.CreateState();
-				FeatureStruct condition = node.Annotation.FeatureStruct.DeepClone();
+				FeatureStruct condition = node.Annotation.FeatureStruct.Clone();
 				condition.Freeze();
 				state.Arcs.Add(condition, nextState);
 			}

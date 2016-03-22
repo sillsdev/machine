@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using QuickGraph;
-using SIL.Collections;
+using SIL.Extensions;
 
 namespace SIL.Machine.Clusterers
 {

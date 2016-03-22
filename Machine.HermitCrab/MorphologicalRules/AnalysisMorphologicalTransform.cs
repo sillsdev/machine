@@ -53,7 +53,7 @@ namespace SIL.Machine.HermitCrab.MorphologicalRules
 					{
 						if ((FeatureSymbol) modifyFromFS.GetValue(HCFeatureSystem.Type) == node.Annotation.Type())
 						{
-							FeatureStruct fs = node.Annotation.FeatureStruct.DeepClone();
+							FeatureStruct fs = node.Annotation.FeatureStruct.Clone();
 							fs.PriorityUnion(modifyFromFS);
 							node.Annotation.FeatureStruct.Union(fs, match.VariableBindings);
 						}
@@ -73,7 +73,7 @@ namespace SIL.Machine.HermitCrab.MorphologicalRules
 				var constraint = node as Constraint<Word, ShapeNode>;
 				if (constraint != null && constraint.Type() == HCFeatureSystem.Segment)
 				{
-					FeatureStruct fs = constraint.FeatureStruct.DeepClone();
+					FeatureStruct fs = constraint.FeatureStruct.Clone();
 					fs.ReplaceVariables(varBindings);
 					output.Add(fs, optional);
 				}

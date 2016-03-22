@@ -30,7 +30,7 @@ namespace SIL.Machine.HermitCrab.PhonologicalRules
 				var constraint = node as Constraint<Word, ShapeNode>;
 				if (constraint != null && constraint.Type() != HCFeatureSystem.Boundary)
 				{
-					yield return constraint.DeepClone();
+					yield return constraint.Clone();
 					continue;
 				}
 

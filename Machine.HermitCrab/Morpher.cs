@@ -3,10 +3,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SIL.Collections;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Rules;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.HermitCrab
 {
@@ -158,7 +160,7 @@ namespace SIL.Machine.HermitCrab
 			{
 				foreach (RootAllomorph allomorph in entry.Allomorphs)
 				{
-					Word newWord = input.DeepClone();
+					Word newWord = input.Clone();
 					newWord.RootAllomorph = allomorph;
 					if (_traceManager.IsTracing)
 						_traceManager.SynthesizeWord(_lang, newWord);

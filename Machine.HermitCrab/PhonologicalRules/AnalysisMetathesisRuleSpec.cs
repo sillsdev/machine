@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
-using SIL.Collections;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
@@ -54,7 +55,7 @@ namespace SIL.Machine.HermitCrab.PhonologicalRules
 				if (tuple.Item1.Type() != HCFeatureSystem.Segment || tuple.Item2.Type() != HCFeatureSystem.Segment)
 					continue;
 
-				FeatureStruct fs = tuple.Item1.Annotation.FeatureStruct.DeepClone();
+				FeatureStruct fs = tuple.Item1.Annotation.FeatureStruct.Clone();
 				tuple.Item1.Annotation.FeatureStruct.Union(tuple.Item2.Annotation.FeatureStruct);
 				tuple.Item1.SetDirty(true);
 				tuple.Item2.Annotation.FeatureStruct.Union(fs);

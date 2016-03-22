@@ -1,10 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
-using SIL.Collections;
+using SIL.Extensions;
+using SIL.Machine.DataStructures;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Statistics
 {
-	public class ConditionalFrequencyDistribution<TCondition, TSample> : IDeepCloneable<ConditionalFrequencyDistribution<TCondition, TSample>>
+	public class ConditionalFrequencyDistribution<TCondition, TSample> : ICloneable<ConditionalFrequencyDistribution<TCondition, TSample>>
 	{
 		private readonly Dictionary<TCondition, FrequencyDistribution<TSample>> _freqDists;
 
@@ -15,7 +17,7 @@ namespace SIL.Machine.Statistics
 
 		public ConditionalFrequencyDistribution(ConditionalFrequencyDistribution<TCondition, TSample> cfd)
 		{
-			_freqDists = cfd._freqDists.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.DeepClone());
+			_freqDists = cfd._freqDists.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Clone());
 		}
 
 		public IReadOnlyCollection<TCondition> Conditions
@@ -33,7 +35,7 @@ namespace SIL.Machine.Statistics
 			get { return _freqDists.Values.Sum(fd => fd.SampleOutcomeCount); }
 		}
 
-		public ConditionalFrequencyDistribution<TCondition, TSample> DeepClone()
+		public ConditionalFrequencyDistribution<TCondition, TSample> Clone()
 		{
 			return new ConditionalFrequencyDistribution<TCondition, TSample>(this);
 		}

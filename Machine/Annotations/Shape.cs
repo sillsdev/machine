@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SIL.Collections;
+using SIL.Extensions;
+using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Annotations
 {
-	public class Shape : OrderedBidirList<ShapeNode>, IAnnotatedData<ShapeNode>, IDeepCloneable<Shape>, IFreezable, IValueEquatable<Shape>
+	public class Shape : OrderedBidirList<ShapeNode>, IAnnotatedData<ShapeNode>, ICloneable<Shape>, IFreezable, IValueEquatable<Shape>
 	{
 		private readonly Func<bool, ShapeNode> _marginSelector;
 		private readonly SpanFactory<ShapeNode> _spanFactory;
@@ -112,7 +114,7 @@ namespace SIL.Machine.Annotations
 			ShapeNode endNode = null;
 			foreach (ShapeNode node in GetNodes(srcSpan))
 			{
-				ShapeNode newNode = node.DeepClone();
+				ShapeNode newNode = node.Clone();
 				if (startNode == null)
 					startNode = newNode;
 				endNode = newNode;
@@ -135,7 +137,7 @@ namespace SIL.Machine.Annotations
 			}
 			else
 			{
-				var newAnn = new Annotation<ShapeNode>(_spanFactory.Create(mapping[ann.Span.Start], mapping[ann.Span.End]), ann.FeatureStruct.DeepClone());
+				var newAnn = new Annotation<ShapeNode>(_spanFactory.Create(mapping[ann.Span.Start], mapping[ann.Span.End]), ann.FeatureStruct.Clone());
 				destList.Add(newAnn, false);
 				if (!ann.IsLeaf)
 				{
@@ -257,7 +259,7 @@ namespace SIL.Machine.Annotations
 				else if (ann.Span.Start == node || ann.Span.End == node)
 				{
 					Span<ShapeNode> span = ann.Span.Start == node ? _spanFactory.Create(node.Next, ann.Span.End) : _spanFactory.Create(ann.Span.Start, node.Prev);
-					var newAnn = new Annotation<ShapeNode>(span, ann.FeatureStruct.DeepClone()) {Optional = ann.Optional};
+					var newAnn = new Annotation<ShapeNode>(span, ann.FeatureStruct.Clone()) {Optional = ann.Optional};
 					if (!ann.IsLeaf)
 					{
 						foreach (Annotation<ShapeNode> child in ann.Children.ToArray())
@@ -386,7 +388,7 @@ namespace SIL.Machine.Annotations
 			return _hashCode;
 		}
 
-		public Shape DeepClone()
+		public Shape Clone()
 		{
 			return new Shape(this);
 		}

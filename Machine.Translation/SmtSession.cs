@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using SIL.Collections;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
 {

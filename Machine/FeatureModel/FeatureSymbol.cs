@@ -1,4 +1,4 @@
-using SIL.Collections;
+using SIL.Machine.DataStructures;
 
 namespace SIL.Machine.FeatureModel
 {

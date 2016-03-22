@@ -18,7 +18,7 @@ namespace SIL.Machine.HermitCrab.PhonologicalRules
 			var target = new Group<Word, ShapeNode>("target");
 			foreach (Constraint<Word, ShapeNode> constraint in subrule.Rhs.Children.Cast<Constraint<Word, ShapeNode>>())
 			{
-				var newConstraint = constraint.DeepClone();
+				Constraint<Word, ShapeNode> newConstraint = constraint.Clone();
 				newConstraint.FeatureStruct.AddValue(HCFeatureSystem.Modified, HCFeatureSystem.Clean);
 				target.Children.Add(newConstraint);
 			}

@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using SIL.Collections;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.SequenceAlignment
 {

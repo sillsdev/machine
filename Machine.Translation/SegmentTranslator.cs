@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using SIL.Collections;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
 {

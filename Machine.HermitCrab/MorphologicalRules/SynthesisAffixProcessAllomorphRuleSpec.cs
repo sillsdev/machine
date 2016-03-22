@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SIL.Collections;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
 
@@ -104,7 +105,7 @@ namespace SIL.Machine.HermitCrab.MorphologicalRules
 
 			_pattern = new Pattern<Word, ShapeNode>();
 			foreach (Pattern<Word, ShapeNode> part in lhs)
-				_pattern.Children.Add(new Group<Word, ShapeNode>(part.Name, part.Children.DeepClone()));
+				_pattern.Children.Add(new Group<Word, ShapeNode>(part.Name, part.Children.CloneItems()));
 		}
 
 		public Pattern<Word, ShapeNode> Pattern
@@ -119,7 +120,7 @@ namespace SIL.Machine.HermitCrab.MorphologicalRules
 
 		public ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)
 		{
-			output = match.Input.DeepClone();
+			output = match.Input.Clone();
 			output.Shape.Clear();
 			var existingMorphNodes = new Dictionary<string, List<ShapeNode>>();
 			var newMorphNodes = new List<ShapeNode>();

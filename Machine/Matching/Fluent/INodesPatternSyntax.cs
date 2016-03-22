@@ -1,5 +1,4 @@
 using System;
-using SIL.Collections;
 using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Matching.Fluent

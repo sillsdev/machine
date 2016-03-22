@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using SIL.Collections;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
 
@@ -112,7 +113,7 @@ namespace SIL.Machine.HermitCrab.PhonologicalRules
 			{
 				Word origInput = null;
 				if (_morpher.TraceManager.IsTracing)
-					origInput = input.DeepClone();
+					origInput = input.Clone();
 
 				Tuple<ReapplyType, PatternRule<Word, ShapeNode>> sr = _rules[i];
 				bool srApplied = false;

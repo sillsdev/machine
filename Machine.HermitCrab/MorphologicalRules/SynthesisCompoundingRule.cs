@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SIL.Collections;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
@@ -28,7 +29,7 @@ namespace SIL.Machine.HermitCrab.MorphologicalRules
 		{
 			var pattern = new Pattern<Word, ShapeNode>();
 			foreach (Pattern<Word, ShapeNode> part in lhs)
-				pattern.Children.Add(new Group<Word, ShapeNode>(part.Name, part.Children.DeepClone()));
+				pattern.Children.Add(new Group<Word, ShapeNode>(part.Name, part.Children.CloneItems()));
 
 			return new Matcher<Word, ShapeNode>(spanFactory, pattern,
 				new MatcherSettings<ShapeNode>
@@ -132,7 +133,7 @@ namespace SIL.Machine.HermitCrab.MorphologicalRules
 		private Word ApplySubrule(CompoundingSubrule sr, Match<Word, ShapeNode> headMatch, Match<Word, ShapeNode> nonHeadMatch)
 		{
 			// TODO: unify the variable bindings from the head and non-head matches
-			Word output = headMatch.Input.DeepClone();
+			Word output = headMatch.Input.Clone();
 			output.Shape.Clear();
 
 			var existingMorphNodes = new Dictionary<string, List<ShapeNode>>();

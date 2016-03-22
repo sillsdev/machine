@@ -32,6 +32,9 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="SIL.Core">
+      <HintPath>..\lib\SIL.Core.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
   </ItemGroup>
@@ -49,12 +52,6 @@
     <Compile Include="TransferEngine.cs" />
     <Compile Include="TranslationEngine.cs" />
     <Compile Include="WordAnalysis.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Collections\Collections.csproj">
-      <Project>{08691159-167b-4e5a-ae88-67def10af7d3}</Project>
-      <Name>Collections</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\lib\pthreadVSE2.dll">

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Linq;
-using SIL.Collections;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
 using SIL.Machine.Matching;
 
 namespace SIL.Machine.HermitCrab

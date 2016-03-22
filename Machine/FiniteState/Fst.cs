@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using SIL.Collections;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.FiniteState
 {
@@ -217,14 +219,14 @@ namespace SIL.Machine.FiniteState
 
 		public bool Transduce(TData data, Annotation<TOffset> start, bool startAnchor, bool endAnchor, bool useDefaults, out IEnumerable<FstResult<TData, TOffset>> results)
 		{
-			if (_operations != null && !(data is IDeepCloneable<TData>))
+			if (_operations != null && !(data is ICloneable<TData>))
 				throw new ArgumentException("The input data must be cloneable.", "data");
 			return Transduce(data, start, startAnchor, endAnchor, true, useDefaults, out results);
 		}
 
 		public bool Transduce(TData data, Annotation<TOffset> start, bool startAnchor, bool endAnchor, bool useDefaults, out FstResult<TData, TOffset> result)
 		{
-			if (_operations != null && !(data is IDeepCloneable<TData>))
+			if (_operations != null && !(data is ICloneable<TData>))
 				throw new ArgumentException("The input data must be cloneable.", "data");
 			IEnumerable<FstResult<TData, TOffset>> results;
 			if (Transduce(data, start, startAnchor, endAnchor, false, useDefaults, out results))
@@ -1497,7 +1499,7 @@ namespace SIL.Machine.FiniteState
 						FeatureStruct compareFs;
 						if (arc1.Outputs[0] is PriorityUnionOutput<TData, TOffset>)
 						{
-							compareFs = arc1.Input.FeatureStruct.DeepClone();
+							compareFs = arc1.Input.FeatureStruct.Clone();
 							compareFs.PriorityUnion(arc1.Outputs[0].FeatureStruct);
 						}
 						else
@@ -1514,7 +1516,7 @@ namespace SIL.Machine.FiniteState
 								{
 									if (arc2.Outputs[0] is PriorityUnionOutput<TData, TOffset>)
 									{
-										FeatureStruct fs = arc1.Outputs[0].FeatureStruct.DeepClone();
+										FeatureStruct fs = arc1.Outputs[0].FeatureStruct.Clone();
 										fs.PriorityUnion(arc2.Outputs[0].FeatureStruct);
 										if (arc1.Outputs[0] is PriorityUnionOutput<TData, TOffset>)
 											output = new PriorityUnionOutput<TData, TOffset>(fs);

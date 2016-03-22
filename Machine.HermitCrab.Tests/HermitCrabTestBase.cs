@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
-using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.HermitCrab.Tests
 {

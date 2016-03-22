@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using SIL.Collections;
+using SIL.Extensions;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.FeatureModel
 {
-	public class StringFeatureValue : SimpleFeatureValue, IDeepCloneable<StringFeatureValue>
+	public class StringFeatureValue : SimpleFeatureValue, ICloneable<StringFeatureValue>
 	{
 		public static implicit operator StringFeatureValue(string str)
 		{
@@ -214,9 +215,9 @@ namespace SIL.Machine.FeatureModel
 			}
 		}
 
-		protected override SimpleFeatureValue DeepCloneImpl()
+		protected override SimpleFeatureValue CloneImpl()
 		{
-			return DeepClone();
+			return Clone();
 		}
 
 		public override SimpleFeatureValue Negation()
@@ -246,7 +247,7 @@ namespace SIL.Machine.FeatureModel
 			return code;
 		}
 
-		public new StringFeatureValue DeepClone()
+		public new StringFeatureValue Clone()
 		{
 			return new StringFeatureValue(this);
 		}

@@ -18,7 +18,7 @@ namespace SIL.Machine.HermitCrab.MorphologicalRules
 
 		public override ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)
 		{
-			output = match.Input.DeepClone();
+			output = match.Input.Clone();
 			GenerateShape(_allomorph.Lhs, output.Shape, match);
 			return null;
 		}

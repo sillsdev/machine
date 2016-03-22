@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using SIL.Collections;
+using SIL.Machine.DataStructures;
 using SIL.Machine.Statistics;
 
 namespace SIL.Machine.NgramModeling

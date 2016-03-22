@@ -1,5 +1,5 @@
-using SIL.Collections;
 using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
@@ -52,7 +52,7 @@ namespace SIL.Machine.HermitCrab.PhonologicalRules
 				if (match.Input.Shape.Count == 256)
 					throw new InfiniteLoopException("An epenthesis rewrite rule is stuck in an infinite loop.");
 				var constraint = (Constraint<Word, ShapeNode>) node;
-				FeatureStruct fs = constraint.FeatureStruct.DeepClone();
+				FeatureStruct fs = constraint.FeatureStruct.Clone();
 				fs.ReplaceVariables(match.VariableBindings);
 				curNode = match.Input.Shape.AddAfter(curNode, fs);
 				if (rule is BacktrackingPatternRule)

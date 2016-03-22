@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using System.Text;
-using SIL.Collections;
+using SIL.Machine.DataStructures;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Annotations
 {
-	public class AnnotatedStringData : IAnnotatedData<int>, IDeepCloneable<AnnotatedStringData>
+	public class AnnotatedStringData : IAnnotatedData<int>, ICloneable<AnnotatedStringData>
 	{
 		private readonly SpanFactory<int> _spanFactory;
 		private readonly StringBuilder _str;
@@ -24,7 +25,7 @@ namespace SIL.Machine.Annotations
 			_spanFactory = sd._spanFactory;
 			_str = new StringBuilder(sd._str.ToString());
 			_span = sd._span;
-			_annotations = sd._annotations.DeepClone();
+			_annotations = sd._annotations.Clone();
 		}
 
 		public string String
@@ -98,7 +99,7 @@ namespace SIL.Machine.Annotations
 			_span = _spanFactory.Create(0, _str.Length);
 		}
 
-		public AnnotatedStringData DeepClone()
+		public AnnotatedStringData Clone()
 		{
 			return new AnnotatedStringData(this);
 		}

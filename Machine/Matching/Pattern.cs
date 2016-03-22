@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.Matching.Fluent;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Matching
 {
-	public class Pattern<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Pattern<TData, TOffset>>, IValueEquatable<Pattern<TData, TOffset>> where TData : IAnnotatedData<TOffset>
+	public class Pattern<TData, TOffset> : PatternNode<TData, TOffset>, ICloneable<Pattern<TData, TOffset>>, IValueEquatable<Pattern<TData, TOffset>> where TData : IAnnotatedData<TOffset>
 	{
 		public static IPatternSyntax<TData, TOffset> New()
 		{
@@ -87,12 +87,12 @@ namespace SIL.Machine.Matching
 			}
 		}
 
-		protected override PatternNode<TData, TOffset> DeepCloneImpl()
+		protected override PatternNode<TData, TOffset> CloneImpl()
 		{
 			return new Pattern<TData, TOffset>(this);
 		}
 
-		public new Pattern<TData, TOffset> DeepClone()
+		public new Pattern<TData, TOffset> Clone()
 		{
 			return new Pattern<TData, TOffset>(this);
 		}

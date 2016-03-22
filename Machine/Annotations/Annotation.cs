@@ -1,11 +1,12 @@
 using System;
 using System.Linq;
-using SIL.Collections;
+using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Annotations
 {
-	public class Annotation<TOffset> : BidirListNode<Annotation<TOffset>>, IBidirTreeNode<Annotation<TOffset>>, IDeepCloneable<Annotation<TOffset>>, IComparable<Annotation<TOffset>>, IComparable, IFreezable, IValueEquatable<Annotation<TOffset>>
+	public class Annotation<TOffset> : BidirListNode<Annotation<TOffset>>, IBidirTreeNode<Annotation<TOffset>>, ICloneable<Annotation<TOffset>>, IComparable<Annotation<TOffset>>, IComparable, IFreezable, IValueEquatable<Annotation<TOffset>>
 	{
 		private AnnotationList<TOffset> _children;
 		private int _hashCode;
@@ -29,12 +30,12 @@ namespace SIL.Machine.Annotations
 		}
 
 		protected Annotation(Annotation<TOffset> ann)
-			: this(ann.Span, ann.FeatureStruct.DeepClone())
+			: this(ann.Span, ann.FeatureStruct.Clone())
 		{
 			Optional = ann.Optional;
 			_data = ann._data;
 			if (ann._children != null && ann._children.Count > 0)
-				Children.AddRange(ann.Children.Select(node => node.DeepClone()));
+				Children.AddRange(ann.Children.Select(node => node.Clone()));
 		}
 
 		public object Data
@@ -73,7 +74,7 @@ namespace SIL.Machine.Annotations
 			get { return Children; }
 		}
 
-		protected override void Clear()
+		protected internal override void Clear()
 		{
 			base.Clear();
 			Parent = null;
@@ -81,7 +82,7 @@ namespace SIL.Machine.Annotations
 			Root = this;
 		}
 
-		protected override void Init(BidirList<Annotation<TOffset>> list, int levels)
+		protected internal override void Init(BidirList<Annotation<TOffset>> list, int levels)
 		{
 			base.Init(list, levels);
 			Parent = ((AnnotationList<TOffset>) list).Parent;
@@ -130,7 +131,7 @@ namespace SIL.Machine.Annotations
 			return ((AnnotationList<TOffset>) List).Remove(this, preserveChildren);
 		}
 
-		public Annotation<TOffset> DeepClone()
+		public Annotation<TOffset> Clone()
 		{
 			return new Annotation<TOffset>(this);
 		}

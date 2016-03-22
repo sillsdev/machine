@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Rules;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.HermitCrab
 {
@@ -40,7 +40,7 @@ namespace SIL.Machine.HermitCrab
 						Word word = outWord;
 						if (word.IsLastAppliedRuleFinal != _templates[i].IsFinal)
 						{
-							word = outWord.DeepClone();
+							word = outWord.Clone();
 							word.IsLastAppliedRuleFinal = _templates[i].IsFinal;
 							word.Freeze();
 						}
@@ -68,11 +68,11 @@ namespace SIL.Machine.HermitCrab
 					&& input.RealizationalFeatureStruct.IsUnifiable(relative.SyntacticFeatureStruct)
 					&& best.SyntacticFeatureStruct.Subsumes(relative.SyntacticFeatureStruct))
 				{
-					FeatureStruct remainder = relative.SyntacticFeatureStruct.DeepClone();
+					FeatureStruct remainder = relative.SyntacticFeatureStruct.Clone();
 					remainder.Subtract(best.SyntacticFeatureStruct);
 					if (!remainder.IsEmpty && input.RealizationalFeatureStruct.IsUnifiable(remainder))
 					{
-						best = new Word(relative.PrimaryAllomorph, input.RealizationalFeatureStruct.DeepClone()) {CurrentTrace = input.CurrentTrace};
+						best = new Word(relative.PrimaryAllomorph, input.RealizationalFeatureStruct.Clone()) {CurrentTrace = input.CurrentTrace};
 						best.Freeze();
 					}
 				}

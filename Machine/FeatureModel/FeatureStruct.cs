@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using SIL.Collections;
+using SIL.Extensions;
+using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel.Fluent;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.FeatureModel
 {
-	public class FeatureStruct : FeatureValue, IDeepCloneable<FeatureStruct>, IFreezable, IValueEquatable<FeatureStruct>
+	public class FeatureStruct : FeatureValue, ICloneable<FeatureStruct>, IFreezable, IValueEquatable<FeatureStruct>
 	{
 		public static IFeatureStructSyntax New()
 		{
@@ -21,12 +23,12 @@ namespace SIL.Machine.FeatureModel
 
 		public static IFeatureStructSyntax New(FeatureStruct fs)
 		{
-			return new FeatureStructBuilder(fs.DeepClone());
+			return new FeatureStructBuilder(fs.Clone());
 		}
 
 		public static IFeatureStructSyntax New(FeatureSystem featSys, FeatureStruct fs)
 		{
-			return new FeatureStructBuilder(featSys, fs.DeepClone());
+			return new FeatureStructBuilder(featSys, fs.Clone());
 		}
 
 		public static IFeatureStructSyntax NewMutable()
@@ -41,12 +43,12 @@ namespace SIL.Machine.FeatureModel
 
 		public static IFeatureStructSyntax NewMutable(FeatureStruct fs)
 		{
-			return new FeatureStructBuilder(fs.DeepClone(), true);
+			return new FeatureStructBuilder(fs.Clone(), true);
 		}
 
 		public static IFeatureStructSyntax NewMutable(FeatureSystem featSys, FeatureStruct fs)
 		{
-			return new FeatureStructBuilder(featSys, fs.DeepClone(), true);
+			return new FeatureStructBuilder(featSys, fs.Clone(), true);
 		}
 
 		private readonly IDBearerDictionary<Feature, FeatureValue> _definite;
@@ -75,7 +77,7 @@ namespace SIL.Machine.FeatureModel
 		{
 			copies[other] = this;
 			foreach (KeyValuePair<Feature, FeatureValue> featVal in other._definite)
-				_definite[featVal.Key] = Dereference(featVal.Value).DeepCloneImpl(copies);
+				_definite[featVal.Key] = Dereference(featVal.Value).CloneImpl(copies);
 		}
 
 		/// <summary>
@@ -341,7 +343,7 @@ namespace SIL.Machine.FeatureModel
 						}
 						else
 						{
-							_definite[featVal.Key] = otherFS.DeepCloneImpl(copies);
+							_definite[featVal.Key] = otherFS.CloneImpl(copies);
 						}
 					}
 					else
@@ -351,12 +353,12 @@ namespace SIL.Machine.FeatureModel
 						if (otherSfv.IsVariable && varBindings.TryGetValue(otherSfv.VariableName, out binding))
 							_definite[featVal.Key] = binding.GetVariableValue(otherSfv.Agree);
 						else
-							_definite[featVal.Key] = otherSfv.DeepCloneImpl(copies);
+							_definite[featVal.Key] = otherSfv.CloneImpl(copies);
 					}
 				}
 				else
 				{
-					_definite[featVal.Key] = otherValue.DeepCloneImpl(copies);
+					_definite[featVal.Key] = otherValue.CloneImpl(copies);
 				}
 			}
 		}
@@ -805,7 +807,7 @@ namespace SIL.Machine.FeatureModel
 
 			other = Dereference(other);
 
-			VariableBindings definiteVarBindings = varBindings == null ? new VariableBindings() : varBindings.DeepClone();
+			VariableBindings definiteVarBindings = varBindings == null ? new VariableBindings() : varBindings.Clone();
 			if (IsUnifiableImpl(other, useDefaults, definiteVarBindings))
 			{
 				if (varBindings != null)
@@ -862,7 +864,7 @@ namespace SIL.Machine.FeatureModel
 
 			other = Dereference(other);
 
-			VariableBindings tempVarBindings = varBindings == null ? new VariableBindings() : varBindings.DeepClone();
+			VariableBindings tempVarBindings = varBindings == null ? new VariableBindings() : varBindings.Clone();
 			FeatureValue newFV;
 			if (!UnifyImpl(other, useDefaults, tempVarBindings, out newFV))
 			{
@@ -898,7 +900,7 @@ namespace SIL.Machine.FeatureModel
 
 			other = Dereference(other);
 
-			VariableBindings tempVarBindings = varBindings == null ? new VariableBindings() : varBindings.DeepClone();
+			VariableBindings tempVarBindings = varBindings == null ? new VariableBindings() : varBindings.Clone();
 			if (SubsumesImpl(other, useDefaults, tempVarBindings))
 			{
 				if (varBindings != null)
@@ -969,14 +971,14 @@ namespace SIL.Machine.FeatureModel
 				}
 				else if (useDefaults && featVal.Key.DefaultValue != null)
 				{
-					thisValue = featVal.Key.DefaultValue.DeepCloneImpl(null);
+					thisValue = featVal.Key.DefaultValue.CloneImpl(null);
 					_definite[featVal.Key] = thisValue;
 					if (!thisValue.DestructiveUnify(otherValue, true, preserveInput, copies, varBindings))
 						return false;
 				}
 				else
 				{
-					_definite[featVal.Key] = preserveInput ? otherValue.DeepCloneImpl(copies) : otherValue;
+					_definite[featVal.Key] = preserveInput ? otherValue.CloneImpl(copies) : otherValue;
 				}
 			}
 
@@ -1013,7 +1015,7 @@ namespace SIL.Machine.FeatureModel
 				}
 				else if (useDefaults && featVal.Key.DefaultValue != null)
 				{
-					thisValue = featVal.Key.DefaultValue.DeepCloneImpl(null);
+					thisValue = featVal.Key.DefaultValue.CloneImpl(null);
 					FeatureValue newValue;
 					if (!thisValue.UnifyImpl(otherValue, true, copies, varBindings, out newValue))
 					{
@@ -1024,21 +1026,21 @@ namespace SIL.Machine.FeatureModel
 				}
 				else
 				{
-					copy._definite[featVal.Key] = otherValue.DeepCloneImpl(copies);
+					copy._definite[featVal.Key] = otherValue.CloneImpl(copies);
 				}
 			}
 
 			foreach (KeyValuePair<Feature, FeatureValue> featVal in _definite)
 			{
 				if (!otherFS._definite.ContainsKey(featVal.Key))
-					copy._definite[featVal.Key] = Dereference(featVal.Value).DeepCloneImpl(copies);
+					copy._definite[featVal.Key] = Dereference(featVal.Value).CloneImpl(copies);
 			}
 
 			output = copy;
 			return true;
 		}
 
-		internal override FeatureValue DeepCloneImpl(IDictionary<FeatureValue, FeatureValue> copies)
+		internal override FeatureValue CloneImpl(IDictionary<FeatureValue, FeatureValue> copies)
 		{
 			if (copies != null)
 			{
@@ -1048,7 +1050,7 @@ namespace SIL.Machine.FeatureModel
 				return new FeatureStruct(this, copies);
 			}
 
-			return DeepClone();
+			return Clone();
 		}
 
 		internal override void FindReentrances(IDictionary<FeatureValue, bool> reentrances)
@@ -1068,7 +1070,7 @@ namespace SIL.Machine.FeatureModel
 			}
 		}
 
-		public new FeatureStruct DeepClone()
+		public new FeatureStruct Clone()
 		{
 			return new FeatureStruct(this);
 		}

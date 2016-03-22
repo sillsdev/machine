@@ -1,7 +1,8 @@
 using System;
 using System.Linq;
-using SIL.Collections;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
 
@@ -19,18 +20,18 @@ namespace SIL.Machine.HermitCrab.PhonologicalRules
 			_index = index;
 			_pattern = new Pattern<Word, ShapeNode> {Acceptable = match => CheckTarget(match, lhs)};
 			if (_subrule.LeftEnvironment.Children.Count > 0)
-				_pattern.Children.Add(new Group<Word, ShapeNode>("leftEnv", _subrule.LeftEnvironment.Children.DeepClone()));
+				_pattern.Children.Add(new Group<Word, ShapeNode>("leftEnv", _subrule.LeftEnvironment.Children.CloneItems()));
 
 			var target = new Group<Word, ShapeNode>("target");
 			foreach (Constraint<Word, ShapeNode> constraint in lhs.Children.Cast<Constraint<Word, ShapeNode>>())
 			{
-				var newConstraint = constraint.DeepClone();
+				Constraint<Word, ShapeNode> newConstraint = constraint.Clone();
 				newConstraint.FeatureStruct.AddValue(HCFeatureSystem.Modified, HCFeatureSystem.Clean);
 				target.Children.Add(newConstraint);
 			}
 			_pattern.Children.Add(target);
 			if (_subrule.RightEnvironment.Children.Count > 0)
-				_pattern.Children.Add(new Group<Word, ShapeNode>("rightEnv", _subrule.RightEnvironment.Children.DeepClone()));
+				_pattern.Children.Add(new Group<Word, ShapeNode>("rightEnv", _subrule.RightEnvironment.Children.CloneItems()));
 		}
 
 		private static bool CheckTarget(Match<Word, ShapeNode> match, Pattern<Word, ShapeNode> lhs)

@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Linq;
-using SIL.Collections;
 using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
 

@@ -1,16 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SIL.Collections;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
 using SIL.Machine.FiniteState;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Matching
 {
 	/// <summary>
 	/// This is the abstract class that all phonetic pattern nodes extend.
 	/// </summary>
-	public abstract class PatternNode<TData, TOffset> : OrderedBidirTreeNode<PatternNode<TData, TOffset>>, IDeepCloneable<PatternNode<TData, TOffset>>, IFreezable, IValueEquatable<PatternNode<TData, TOffset>> where TData : IAnnotatedData<TOffset>
+	public abstract class PatternNode<TData, TOffset> : OrderedBidirTreeNode<PatternNode<TData, TOffset>>, ICloneable<PatternNode<TData, TOffset>>, IFreezable, IValueEquatable<PatternNode<TData, TOffset>> where TData : IAnnotatedData<TOffset>
 	{
 		private int _hashCode;
 
@@ -27,7 +29,7 @@ namespace SIL.Machine.Matching
 		}
 
 		protected PatternNode(PatternNode<TData, TOffset> node)
-			: this(node.Children.DeepClone())
+			: this(node.Children.CloneItems())
 		{
 		}
 
@@ -53,9 +55,9 @@ namespace SIL.Machine.Matching
 			return startState;
 		}
 
-		public PatternNode<TData, TOffset> DeepClone()
+		public PatternNode<TData, TOffset> Clone()
 		{
-			return DeepCloneImpl();
+			return CloneImpl();
 		}
 
 		public bool IsFrozen { get; private set; }
@@ -120,11 +122,11 @@ namespace SIL.Machine.Matching
 			return !IsFrozen;
 		}
 
-		protected abstract PatternNode<TData, TOffset> DeepCloneImpl();
+		protected abstract PatternNode<TData, TOffset> CloneImpl();
 
 		private class Margin : PatternNode<TData, TOffset>
 		{
-			protected override PatternNode<TData, TOffset> DeepCloneImpl()
+			protected override PatternNode<TData, TOffset> CloneImpl()
 			{
 				return new Margin();
 			}

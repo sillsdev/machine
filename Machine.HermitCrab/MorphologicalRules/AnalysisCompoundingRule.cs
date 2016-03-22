@@ -72,7 +72,7 @@ namespace SIL.Machine.HermitCrab.MorphologicalRules
 
 						if (add)
 						{
-							Word newWord = outWord.DeepClone();
+							Word newWord = outWord.Clone();
 							newWord.CurrentNonHead.RootAllomorph = allo;
 							srOutput.Add(newWord);
 						}

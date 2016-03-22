@@ -1,16 +1,16 @@
 using System.Collections.Generic;
-using SIL.Collections;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.FeatureModel
 {
-	public abstract class FeatureValue : IDeepCloneable<FeatureValue>
+	public abstract class FeatureValue : ICloneable<FeatureValue>
 	{
 		internal FeatureValue Forward { get; set; }
 
 		internal abstract bool UnionImpl(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited);
 		internal abstract bool AddImpl(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited);
 		internal abstract bool SubtractImpl(FeatureValue other, VariableBindings varBindings, IDictionary<FeatureStruct, ISet<FeatureStruct>> visited);
-		internal abstract FeatureValue DeepCloneImpl(IDictionary<FeatureValue, FeatureValue> copies);
+		internal abstract FeatureValue CloneImpl(IDictionary<FeatureValue, FeatureValue> copies);
 		internal abstract bool ValueEqualsImpl(FeatureValue other, ISet<FeatureValue> visitedSelf, ISet<FeatureValue> visitedOther,
 			IDictionary<FeatureValue, FeatureValue> visitedPairs);
 		internal abstract int FreezeImpl(ISet<FeatureValue> visited);
@@ -92,9 +92,9 @@ namespace SIL.Machine.FeatureModel
 
 		public abstract bool ValueEquals(FeatureValue other);
 
-		public FeatureValue DeepClone()
+		public FeatureValue Clone()
 		{
-			return DeepCloneImpl(null);
+			return CloneImpl(null);
 		}
 	}
 }

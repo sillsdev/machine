@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SIL.Collections;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
@@ -31,7 +31,7 @@ namespace SIL.Machine.HermitCrab.PhonologicalRules
 
 				if (lhsConstraint.Type() == HCFeatureSystem.Segment && rhsConstraint.Type() == HCFeatureSystem.Segment)
 				{
-					var targetConstraint = lhsConstraint.DeepClone();
+					Constraint<Word, ShapeNode> targetConstraint = lhsConstraint.Clone();
 					targetConstraint.FeatureStruct.PriorityUnion(rhsConstraint.FeatureStruct);
 					targetConstraint.FeatureStruct.AddValue(HCFeatureSystem.Modified, HCFeatureSystem.Clean);
 					Pattern.Children.Add(new Group<Word, ShapeNode>("target" + i) {Children = {targetConstraint}});
@@ -67,7 +67,7 @@ namespace SIL.Machine.HermitCrab.PhonologicalRules
 			foreach (Constraint<Word, ShapeNode> constraint in _analysisRhs.Children.Cast<Constraint<Word, ShapeNode>>())
 			{
 				ShapeNode node = match.GroupCaptures["target" + i].Span.GetStart(match.Matcher.Direction);
-				FeatureStruct fs = node.Annotation.FeatureStruct.DeepClone();
+				FeatureStruct fs = node.Annotation.FeatureStruct.Clone();
 				fs.PriorityUnion(constraint.FeatureStruct);
 				node.Annotation.FeatureStruct.Union(fs, match.VariableBindings);
 				node.SetDirty(true);

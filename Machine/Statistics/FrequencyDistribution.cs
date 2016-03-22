@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
-using SIL.Collections;
+using SIL.Extensions;
+using SIL.Machine.DataStructures;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Statistics
 {
-	public class FrequencyDistribution<TSample> : IDeepCloneable<FrequencyDistribution<TSample>>
+	public class FrequencyDistribution<TSample> : ICloneable<FrequencyDistribution<TSample>>
 	{
 		private readonly Dictionary<TSample, int> _sampleCounts;
 		private int _sampleOutcomeCount;
@@ -89,7 +91,7 @@ namespace SIL.Machine.Statistics
 			_sampleOutcomeCount = 0;
 		}
 
-		public FrequencyDistribution<TSample> DeepClone()
+		public FrequencyDistribution<TSample> Clone()
 		{
 			return new FrequencyDistribution<TSample>(this);
 		}

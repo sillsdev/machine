@@ -20,6 +20,7 @@
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <NuGetPackageImportStamp>28deb2ef</NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -41,6 +42,9 @@
   <ItemGroup>
     <Reference Include="QuickGraph">
       <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.dll</HintPath>
+    </Reference>
+    <Reference Include="SIL.Core">
+      <HintPath>..\lib\SIL.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -76,6 +80,38 @@
     <Compile Include="Clusterers\OpticsRootedHierarchicalClusterer.cs" />
     <Compile Include="Clusterers\OpticsXiClusterer.cs" />
     <Compile Include="Clusterers\UpgmaClusterer.cs" />
+    <Compile Include="DataStructures\AnonymousComparer.cs" />
+    <Compile Include="DataStructures\AnonymousEqualityComparer.cs" />
+    <Compile Include="DataStructures\BidirList.cs" />
+    <Compile Include="DataStructures\BidirListNode.cs" />
+    <Compile Include="DataStructures\BidirTreeNode.cs" />
+    <Compile Include="DataStructures\BloomFilter.cs" />
+    <Compile Include="DataStructures\DataStructuresExtensions.cs" />
+    <Compile Include="DataStructures\IBidirList.cs" />
+    <Compile Include="DataStructures\IBidirListNode.cs" />
+    <Compile Include="DataStructures\IBidirTreeNode.cs" />
+    <Compile Include="DataStructures\IDBearerBase.cs" />
+    <Compile Include="DataStructures\IDBearerDictionary.cs" />
+    <Compile Include="DataStructures\IDBearerSet.cs" />
+    <Compile Include="DataStructures\IIDBearer.cs" />
+    <Compile Include="DataStructures\IOrderedBidirList.cs" />
+    <Compile Include="DataStructures\IOrderedBidirListNode.cs" />
+    <Compile Include="DataStructures\IOrderedBidirTreeNode.cs" />
+    <Compile Include="DataStructures\NullableValue.cs" />
+    <Compile Include="DataStructures\OrderedBidirList.cs" />
+    <Compile Include="DataStructures\OrderedBidirListNode.cs" />
+    <Compile Include="DataStructures\OrderedBidirTreeNode.cs" />
+    <Compile Include="DataStructures\PriorityQueue.cs" />
+    <Compile Include="DataStructures\ProjectionComparer.cs" />
+    <Compile Include="DataStructures\ProjectionEqualityComparer.cs" />
+    <Compile Include="DataStructures\ReferenceEqualityComparer.cs" />
+    <Compile Include="DataStructures\ReverseComparer.cs" />
+    <Compile Include="DataStructures\SequenceComparer.cs" />
+    <Compile Include="DataStructures\SequenceEqualityComparer.cs" />
+    <Compile Include="DataStructures\SkipList.cs" />
+    <Compile Include="DataStructures\SkipListNode.cs" />
+    <Compile Include="DataStructures\UnorderedTuple.cs" />
+    <Compile Include="DataStructures\WrapperEqualityComparer.cs" />
     <Compile Include="FeatureModel\FeaturePath.cs" />
     <Compile Include="FeatureModel\PossibleSymbolCollection.cs" />
     <Compile Include="FiniteState\DeterministicFsaTraversalMethod.cs" />
@@ -185,24 +221,29 @@
     <Compile Include="Rules\RuleBatch.cs" />
     <Compile Include="Rules\RuleCascade.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Collections\Collections.csproj">
-      <Project>{08691159-167B-4E5A-AE88-67DEF10AF7D3}</Project>
-      <Name>Collections</Name>
-    </ProjectReference>
-  </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <None Include="Machine.dep" />
     <None Include="Machine.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Import Project="..\packages\BuildDependencyTasks.0.2.3.0\build\BuildDependencyTasks.targets" Condition="Exists('..\packages\BuildDependencyTasks.0.2.3.0\build\BuildDependencyTasks.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\BuildDependencyTasks.0.2.3.0\build\BuildDependencyTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BuildDependencyTasks.0.2.3.0\build\BuildDependencyTasks.targets'))" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
+       Other similar extension points exist, see Microsoft.Common.targets. -->
   <Target Name="BeforeBuild">
+    <PropertyGroup>
+      <RootDir Condition="'$(RootDir)'==''">$(MSBuildProjectDirectory)/..</RootDir>
+    </PropertyGroup>
+    <Dependencies DependencyFile="Machine.dep" UseDependencyFile="true" KeepJobsFile="true" WorkingDir="$(RootDir)" />
   </Target>
   <Target Name="AfterBuild">
   </Target>
-  -->
 </Project>

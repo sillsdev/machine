@@ -34,3 +34,4 @@ _ReSharper*/
 packages/*
 !packages/repositories.config
 lib/
+*.files

@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SIL.Collections;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.HermitCrab
 {
-	public class Word : Freezable<Word>, IAnnotatedData<ShapeNode>, IDeepCloneable<Word>
+	public class Word : Freezable<Word>, IAnnotatedData<ShapeNode>, ICloneable<Word>
 	{
 		private readonly Dictionary<string, Allomorph> _allomorphs; 
 		private RootAllomorph _rootAllomorph;
@@ -26,7 +28,7 @@ namespace SIL.Machine.HermitCrab
 		{
 			_allomorphs = new Dictionary<string, Allomorph>();
 			_mprFeatures = new MprFeatureSet();
-			_shape = rootAllomorph.Shape.DeepClone();
+			_shape = rootAllomorph.Shape.Clone();
 			ResetDirty();
 			SetRootAllomorph(rootAllomorph);
 			RealizationalFeatureStruct = realizationalFS;
@@ -59,15 +61,15 @@ namespace SIL.Machine.HermitCrab
 		{
 			_allomorphs = new Dictionary<string, Allomorph>(word._allomorphs);
 			Stratum = word.Stratum;
-			_shape = word._shape.DeepClone();
+			_shape = word._shape.Clone();
 			_rootAllomorph = word._rootAllomorph;
-			SyntacticFeatureStruct = word.SyntacticFeatureStruct.DeepClone();
-			RealizationalFeatureStruct = word.RealizationalFeatureStruct.DeepClone();
-			_mprFeatures = word.MprFeatures.DeepClone();
+			SyntacticFeatureStruct = word.SyntacticFeatureStruct.Clone();
+			RealizationalFeatureStruct = word.RealizationalFeatureStruct.Clone();
+			_mprFeatures = word.MprFeatures.Clone();
 			_mrules = new Stack<IMorphologicalRule>(word._mrules.Reverse());
 			_mrulesUnapplied = new Dictionary<IMorphologicalRule, int>(word._mrulesUnapplied);
 			_mrulesApplied = new Dictionary<IMorphologicalRule, int>(word._mrulesApplied);
-			_nonHeads = new Stack<Word>(word._nonHeads.Reverse().DeepClone());
+			_nonHeads = new Stack<Word>(word._nonHeads.Reverse().CloneItems());
 			_obligatorySyntacticFeatures = new IDBearerSet<Feature>(word._obligatorySyntacticFeatures);
 			_isLastAppliedRuleFinal = word._isLastAppliedRuleFinal;
 			CurrentTrace = word.CurrentTrace;
@@ -95,7 +97,7 @@ namespace SIL.Machine.HermitCrab
 			internal set
 			{
 				CheckFrozen();
-				_shape = value.Shape.DeepClone();
+				_shape = value.Shape.Clone();
 				SetRootAllomorph(value);
 			}
 		}
@@ -106,7 +108,7 @@ namespace SIL.Machine.HermitCrab
 			var entry = (LexEntry) _rootAllomorph.Morpheme;
 			Stratum = entry.Stratum;
 			MarkMorph(_shape, _rootAllomorph);
-			SyntacticFeatureStruct = entry.SyntacticFeatureStruct.DeepClone();
+			SyntacticFeatureStruct = entry.SyntacticFeatureStruct.Clone();
 			_mprFeatures.Clear();
 			_mprFeatures.UnionWith(entry.MprFeatures);
 		}
@@ -312,7 +314,7 @@ namespace SIL.Machine.HermitCrab
 			{
 				if (entry != RootAllomorph.Morpheme && entry.Stratum == Stratum && SyntacticFeatureStruct.Subsumes(entry.SyntacticFeatureStruct))
 				{
-					word = new Word(entry.PrimaryAllomorph, RealizationalFeatureStruct.DeepClone()) { CurrentTrace = CurrentTrace };
+					word = new Word(entry.PrimaryAllomorph, RealizationalFeatureStruct.Clone()) { CurrentTrace = CurrentTrace };
 					word.Freeze();
 					return true;
 				}
@@ -362,7 +364,7 @@ namespace SIL.Machine.HermitCrab
 				&& _rootAllomorph == other._rootAllomorph && _mrules.SequenceEqual(other._mrules) && _isLastAppliedRuleFinal == other._isLastAppliedRuleFinal;
 		}
 
-		public Word DeepClone()
+		public Word Clone()
 		{
 			return new Word(this);
 		}

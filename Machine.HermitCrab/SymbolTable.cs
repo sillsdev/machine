@@ -105,7 +105,7 @@ namespace SIL.Machine.HermitCrab
 					FeatureStruct fs;
 					if (TryGetSymbolFeatureStruct(s, out fs))
 					{
-						var node = new ShapeNode(SpanFactory, fs.DeepClone());
+						var node = new ShapeNode(SpanFactory, fs.Clone());
 						node.Annotation.Optional = node.Annotation.Type() == HCFeatureSystem.Boundary;
 						nodesList.Add(node);
 						i += j;

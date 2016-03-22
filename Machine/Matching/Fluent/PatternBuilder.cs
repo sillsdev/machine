@@ -1,5 +1,4 @@
 using System;
-using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 

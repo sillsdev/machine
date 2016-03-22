@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.Rules;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.HermitCrab
 {
@@ -39,7 +39,7 @@ namespace SIL.Machine.HermitCrab
 			if (_morpher.TraceManager.IsTracing)
 				_morpher.TraceManager.BeginUnapplyStratum(_stratum, input);
 
-			input = input.DeepClone();
+			input = input.Clone();
 			input.Stratum = _stratum;
 
 			_prulesRule.Apply(input);
