@@ -79,7 +79,7 @@ namespace SIL.Machine.HermitCrab
 			}
 
 			if (_morpher.TraceManager.IsTracing && best != input)
-				_morpher.TraceManager.ParseBlocked(_stratum, best);
+				_morpher.TraceManager.Blocked(_stratum, best);
 			return best;
 		}
 	}

@@ -80,7 +80,7 @@ namespace SIL.Machine.HermitCrab.MorphologicalRules
 					if (_rule.Blockable && outWord.CheckBlocking(out newWord))
 					{
 						if (_morpher.TraceManager.IsTracing)
-							_morpher.TraceManager.ParseBlocked(_rule, newWord);
+							_morpher.TraceManager.Blocked(_rule, newWord);
 						outWord = newWord;
 					}
 					else

@@ -9,6 +9,10 @@ namespace SIL.Machine.HermitCrab
 	{
 		None,
 		/// <summary>
+		/// Generate words trace
+		/// </summary>
+		GenerateWords,
+		/// <summary>
 		/// Word analysis trace
 		/// </summary>
 		WordAnalysis,
@@ -35,7 +39,7 @@ namespace SIL.Machine.HermitCrab
 		/// <summary>
 		/// Blocking trace
 		/// </summary>
-		ParseBlocked,
+		Blocked,
 		/// <summary>
 		/// Word synthesis trace
 		/// </summary>
@@ -75,11 +79,11 @@ namespace SIL.Machine.HermitCrab
 		/// <summary>
 		/// Parse successful trace
 		/// </summary>
-		ParseSuccessful,
+		Successful,
 		/// <summary>
 		/// Parse failed trace
 		/// </summary>
-		ParseFailed
+		Failed
 	}
 
 	/// <summary>

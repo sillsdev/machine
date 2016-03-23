@@ -4,6 +4,11 @@
 	{
 		public bool IsTracing { get; set; }
 
+		public object GenerateWords(Language lang)
+		{
+			return new Trace(TraceType.GenerateWords, lang);
+		}
+
 		public void AnalyzeWord(Language lang, Word input)
 		{
 			input.CurrentTrace = new Trace(TraceType.WordAnalysis, lang) {Input = input};
@@ -111,19 +116,19 @@
 			((Trace) input.CurrentTrace).Children.Add(new Trace(TraceType.MorphologicalRuleSynthesis, rule) {SubruleIndex = subruleIndex, Input = input, FailureReason = reason});
 		}
 
-		public void ParseBlocked(IHCRule rule, Word output)
+		public void Blocked(IHCRule rule, Word output)
 		{
-			((Trace) output.CurrentTrace).Children.Add(new Trace(TraceType.ParseBlocked, rule) {Output = output});
+			((Trace) output.CurrentTrace).Children.Add(new Trace(TraceType.Blocked, rule) {Output = output});
 		}
 
-		public void ParseSuccessful(Language lang, Word word)
+		public void Successful(Language lang, Word word)
 		{
-			((Trace) word.CurrentTrace).Children.Add(new Trace(TraceType.ParseSuccessful, lang) {Output = word});
+			((Trace) word.CurrentTrace).Children.Add(new Trace(TraceType.Successful, lang) {Output = word});
 		}
 
-		public void ParseFailed(Language lang, Word word, FailureReason reason, Allomorph allomorph, object failureObj)
+		public void Failed(Language lang, Word word, FailureReason reason, Allomorph allomorph, object failureObj)
 		{
-			((Trace) word.CurrentTrace).Children.Add(new Trace(TraceType.ParseFailed, lang) {Output = word, FailureReason = reason});
+			((Trace) word.CurrentTrace).Children.Add(new Trace(TraceType.Failed, lang) {Output = word, FailureReason = reason});
 		}
 	}
 }

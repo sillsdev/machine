@@ -53,7 +53,7 @@ namespace SIL.Machine.HermitCrab.MorphologicalRules
 						outWord.SyntacticFeatureStruct.Add(_rule.RequiredSyntacticFeatureStruct);
 					else if (_rule.OutSyntacticFeatureStruct.IsEmpty)
 						outWord.SyntacticFeatureStruct.Clear();
-					outWord.MorphologicalRuleUnapplied(_rule, false);
+					outWord.MorphologicalRuleUnapplied(_rule);
 					outWord.Freeze();
 					if (_morpher.TraceManager.IsTracing)
 						_morpher.TraceManager.MorphologicalRuleUnapplied(_rule, i, input, outWord);

@@ -42,7 +42,7 @@ namespace SIL.Machine.HermitCrab.MorphologicalRules
 
 		public IEnumerable<Word> Apply(Word input)
 		{
-			if (input.CurrentMorphologicalRule != _rule || input.GetApplicationCount(_rule) >= _rule.MaxApplicationCount)
+			if (input.CurrentNonHead == null || input.GetApplicationCount(_rule) >= _rule.MaxApplicationCount)
 			{
 				return Enumerable.Empty<Word>();
 			}
@@ -95,14 +95,14 @@ namespace SIL.Machine.HermitCrab.MorphologicalRules
 						foreach (Feature feature in _rule.ObligatorySyntacticFeatures)
 							outWord.ObligatorySyntacticFeatures.Add(feature);
 
-						outWord.CurrentMorphologicalRuleApplied();
+						outWord.MorphologicalRuleApplied(_rule);
 						outWord.CurrentNonHeadApplied();
 
 						Word newWord;
 						if (_rule.Blockable && outWord.CheckBlocking(out newWord))
 						{
 							if (_morpher.TraceManager.IsTracing)
-								_morpher.TraceManager.ParseBlocked(_rule, newWord);
+								_morpher.TraceManager.Blocked(_rule, newWord);
 							outWord = newWord;
 						}
 						else

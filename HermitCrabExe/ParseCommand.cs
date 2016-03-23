@@ -165,9 +165,9 @@ namespace SIL.Machine.HermitCrab
 					return true;
 
 				case TraceType.WordSynthesis:
-				case TraceType.ParseSuccessful:
-				case TraceType.ParseFailed:
-				case TraceType.ParseBlocked:
+				case TraceType.Successful:
+				case TraceType.Failed:
+				case TraceType.Blocked:
 				case TraceType.StratumSynthesisInput:
 				case TraceType.StratumSynthesisOutput:
 				case TraceType.TemplateSynthesisInput:
@@ -199,11 +199,11 @@ namespace SIL.Machine.HermitCrab
 					return "Word Analysis";
 				case TraceType.WordSynthesis:
 					return "Word Synthesis";
-				case TraceType.ParseSuccessful:
+				case TraceType.Successful:
 					return "Successful Parse";
-				case TraceType.ParseFailed:
+				case TraceType.Failed:
 					return "Failed Parse";
-				case TraceType.ParseBlocked:
+				case TraceType.Blocked:
 					return "Blocked Parse";
 				case TraceType.LexicalLookup:
 					return "Lexical Lookup";

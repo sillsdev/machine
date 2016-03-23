@@ -49,7 +49,7 @@ namespace SIL.Machine.HermitCrab.MorphologicalRules
 				foreach (Word outWord in _rules[i].Apply(input).RemoveDuplicates())
 				{
 					outWord.RealizationalFeatureStruct = realFS;
-					outWord.MorphologicalRuleUnapplied(_rule, true);
+					outWord.MorphologicalRuleUnapplied(_rule);
 					
 					outWord.Freeze();
 					if (_morpher.TraceManager.IsTracing)

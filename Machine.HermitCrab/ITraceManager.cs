@@ -29,6 +29,8 @@
 	{
 		bool IsTracing { get; set; }
 
+		object GenerateWords(Language lang);
+
 		void AnalyzeWord(Language lang, Word input);
 
 		void BeginUnapplyStratum(Stratum stratum, Word input);
@@ -60,9 +62,9 @@
 		void MorphologicalRuleApplied(IMorphologicalRule rule, int subruleIndex, Word input, Word output);
 		void MorphologicalRuleNotApplied(IMorphologicalRule rule, int subruleIndex, Word input, FailureReason reason, object failureObj);
 
-		void ParseBlocked(IHCRule rule, Word output);
+		void Blocked(IHCRule rule, Word output);
 
-		void ParseSuccessful(Language lang, Word word);
-		void ParseFailed(Language lang, Word word, FailureReason reason, Allomorph allomorph, object failureObj);
+		void Successful(Language lang, Word word);
+		void Failed(Language lang, Word word, FailureReason reason, Allomorph allomorph, object failureObj);
 	}
 }

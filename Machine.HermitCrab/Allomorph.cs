@@ -156,7 +156,7 @@ namespace SIL.Machine.HermitCrab
 			if (env != null)
 			{
 				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.RequiredEnvironments, this, env);
+					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.RequiredEnvironments, this, env);
 				return false;
 			}
 
@@ -164,7 +164,7 @@ namespace SIL.Machine.HermitCrab
 			if (env != null)
 			{
 				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.ExcludedEnvironments, this, env);
+					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.ExcludedEnvironments, this, env);
 				return false;
 			}
 
@@ -172,7 +172,7 @@ namespace SIL.Machine.HermitCrab
 			if (alloRule != null)
 			{
 				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.RequiredAllomorphCoOccurrences, this, alloRule);
+					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.RequiredAllomorphCoOccurrences, this, alloRule);
 				return false;
 			}
 
@@ -180,7 +180,7 @@ namespace SIL.Machine.HermitCrab
 			if (alloRule != null)
 			{
 				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.ExcludedAllomorphCoOccurrences, this, alloRule);
+					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.ExcludedAllomorphCoOccurrences, this, alloRule);
 				return false;
 			}
 
@@ -188,7 +188,7 @@ namespace SIL.Machine.HermitCrab
 			if (morphemeRule != null)
 			{
 				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.RequiredMorphemeCoOccurrences, this, morphemeRule);
+					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.RequiredMorphemeCoOccurrences, this, morphemeRule);
 				return false;
 			}
 
@@ -196,7 +196,7 @@ namespace SIL.Machine.HermitCrab
 			if (morphemeRule != null)
 			{
 				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.ExcludedMorphemeCoOccurrences, this, morphemeRule);
+					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.ExcludedMorphemeCoOccurrences, this, morphemeRule);
 				return false;
 			}
 

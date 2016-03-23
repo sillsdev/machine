@@ -5,6 +5,7 @@ using SIL.Extensions;
 using SIL.Machine.Annotations;
 using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
+using SIL.Machine.HermitCrab.MorphologicalRules;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.HermitCrab
@@ -209,12 +210,11 @@ namespace SIL.Machine.HermitCrab
 		/// Notifies this analysis that the specified morphological rule was unapplied.
 		/// </summary>
 		/// <param name="mrule">The morphological rule.</param>
-		/// <param name="realizational"> </param>
-		internal void MorphologicalRuleUnapplied(IMorphologicalRule mrule, bool realizational)
+		internal void MorphologicalRuleUnapplied(IMorphologicalRule mrule)
 		{
 			CheckFrozen();
 			_mrulesUnapplied.UpdateValue(mrule, () => 0, count => count + 1);
-			if (!realizational)
+			if (mrule is AffixProcessRule)
 				_mrules.Push(mrule);
 		}
 
@@ -291,7 +291,7 @@ namespace SIL.Machine.HermitCrab
 			get { return _nonHeads.Count; }
 		}
 
-		public void NonHeadUnapplied(Word nonHead)
+		internal void NonHeadUnapplied(Word nonHead)
 		{
 			CheckFrozen();
 			_nonHeads.Push(nonHead);

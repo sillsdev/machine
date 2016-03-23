@@ -119,6 +119,8 @@ namespace SIL.Machine.HermitCrab.Tests.MorphologicalRules
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value);
 			Assert.That(morpher.ParseWord("pʰutbupu"), Is.Empty);
 
+			Assert.That(morpher.GenerateWords(Entries["5"], new [] {Entries["9"]}, Enumerable.Empty<IMorphologicalRule>(), new FeatureStruct()), Is.EquivalentTo(new[] {"pʰutdat"}));
+
 			rule1.OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value;
 
 			morpher = new Morpher(SpanFactory, TraceManager, Language);
