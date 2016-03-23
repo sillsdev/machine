@@ -126,16 +126,15 @@ namespace SIL.Machine.HermitCrab
 		/// <summary>
 		/// Generates surface forms from the specified word synthesis information.
 		/// </summary>
-		public IEnumerable<string> GenerateWords(LexEntry rootEntry, IEnumerable<LexEntry> nonHeadEntries, IEnumerable<IMorphologicalRule> rules, FeatureStruct realizationalFS)
+		public IEnumerable<string> GenerateWords(LexEntry rootEntry, IEnumerable<Morpheme> morphemes, FeatureStruct realizationalFS)
 		{
 			object trace;
-			return GenerateWords(rootEntry, nonHeadEntries, rules, realizationalFS, out trace);
+			return GenerateWords(rootEntry, morphemes, realizationalFS, out trace);
 		}
 
-		public IEnumerable<string> GenerateWords(LexEntry rootEntry, IEnumerable<LexEntry> nonHeadEntries, IEnumerable<IMorphologicalRule> rules, FeatureStruct realizationalFS, out object trace)
+		public IEnumerable<string> GenerateWords(LexEntry rootEntry, IEnumerable<Morpheme> morphemes, FeatureStruct realizationalFS, out object trace)
 		{
-			Stack<RootAllomorph>[] nonHeadAlloPermutations = PermuteNonHeadAllomorphs(nonHeadEntries.ToArray()).ToArray();
-			IMorphologicalRule[] rulesArray = rules.ToArray();
+			Stack<Tuple<IMorphologicalRule, RootAllomorph>>[] rulePermutations = PermuteRules(morphemes.ToArray()).ToArray();
 
 			object rootTrace = _traceManager.IsTracing ? _traceManager.GenerateWords(_lang) : null;
 			trace = rootTrace;
@@ -143,16 +142,17 @@ namespace SIL.Machine.HermitCrab
 			var validWordsStack = new ConcurrentStack<Word>();
 
 			Exception exception = null;
-			Parallel.ForEach(rootEntry.Allomorphs.SelectMany(a => nonHeadAlloPermutations, (a, p) => new {Allomorph = a, NonHeadAlloPermutation = p}), (synthesisInfo, state) =>
+			Parallel.ForEach(rootEntry.Allomorphs.SelectMany(a => rulePermutations, (a, p) => new {Allomorph = a, RulePermutation = p}), (synthesisInfo, state) =>
 			{
 				try
 				{
 					var synthesisWord = new Word(synthesisInfo.Allomorph, realizationalFS);
-					foreach (RootAllomorph nonHeadAllo in synthesisInfo.NonHeadAlloPermutation)
-						synthesisWord.NonHeadUnapplied(new Word(nonHeadAllo, new FeatureStruct()));
-
-					foreach (IMorphologicalRule rule in rulesArray)
-						synthesisWord.MorphologicalRuleUnapplied(rule);
+					foreach (Tuple<IMorphologicalRule, RootAllomorph> rule in synthesisInfo.RulePermutation)
+					{
+						synthesisWord.MorphologicalRuleUnapplied(rule.Item1);
+						if (rule.Item2 != null)
+							synthesisWord.NonHeadUnapplied(new Word(rule.Item2, new FeatureStruct()));
+					}
 
 					synthesisWord.CurrentTrace = rootTrace;
 
@@ -185,19 +185,31 @@ namespace SIL.Machine.HermitCrab
 			return words;
 		}
 
-		private IEnumerable<Stack<RootAllomorph>> PermuteNonHeadAllomorphs(LexEntry[] nonHeadEntries, int index = 0)
+		private IEnumerable<Stack<Tuple<IMorphologicalRule, RootAllomorph>>> PermuteRules(Morpheme[] morphemes, int index = 0)
 		{
-			if (index == nonHeadEntries.Length)
+			if (index == morphemes.Length)
 			{
-				yield return new Stack<RootAllomorph>();
+				yield return new Stack<Tuple<IMorphologicalRule, RootAllomorph>>();
 			}
 			else
 			{
-				foreach (RootAllomorph allo in nonHeadEntries[index].Allomorphs)
+				var entry = morphemes[index] as LexEntry;
+				if (entry != null)
 				{
-					foreach (Stack<RootAllomorph> permutation in PermuteNonHeadAllomorphs(nonHeadEntries, index + 1))
+					foreach (RootAllomorph allo in entry.Allomorphs)
 					{
-						permutation.Push(allo);
+						foreach (Stack<Tuple<IMorphologicalRule, RootAllomorph>> permutation in PermuteRules(morphemes, index + 1))
+						{
+							permutation.Push(Tuple.Create((IMorphologicalRule) null, allo));
+							yield return permutation;
+						}
+					}
+				}
+				else
+				{
+					foreach (Stack<Tuple<IMorphologicalRule, RootAllomorph>> permutation in PermuteRules(morphemes, index + 1))
+					{
+						permutation.Push(Tuple.Create((IMorphologicalRule) morphemes[index], (RootAllomorph) null));
 						yield return permutation;
 					}
 				}
@@ -257,7 +269,7 @@ namespace SIL.Machine.HermitCrab
 
 		private bool IsWordValid(Word word)
 		{
-			if (!word.RealizationalFeatureStruct.IsUnifiable(word.SyntacticFeatureStruct) || word.CurrentMorphologicalRule != null || word.CurrentNonHead != null)
+			if (!word.RealizationalFeatureStruct.IsUnifiable(word.SyntacticFeatureStruct) || !word.IsAllMorphologicalRulesApplied)
 			{
 				if (_traceManager.IsTracing)
 					_traceManager.Failed(_lang, word, FailureReason.PartialParse, null, null);

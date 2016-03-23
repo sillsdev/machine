@@ -315,11 +315,11 @@ namespace SIL.Machine.HermitCrab.Tests.MorphologicalRules
 			Assert.That(morpher.ParseWord("satɯs"), Is.Empty);
 			Assert.That(morpher.ParseWord("satz"), Is.Empty);
 
-			Assert.That(morpher.GenerateWords(Entries["32"], Enumerable.Empty<LexEntry>(), new IMorphologicalRule[] {sSuffix}, new FeatureStruct()), Is.EquivalentTo(new[] {"sagz"}));
-			Assert.That(morpher.GenerateWords(Entries["32"], Enumerable.Empty<LexEntry>(), new IMorphologicalRule[] {edSuffix}, new FeatureStruct()), Is.EquivalentTo(new[] {"sagd"}));
-			Assert.That(morpher.GenerateWords(Entries["33"], Enumerable.Empty<LexEntry>(), new IMorphologicalRule[] {sSuffix}, new FeatureStruct()), Is.EquivalentTo(new[] {"sasɯz"}));
-			Assert.That(morpher.GenerateWords(Entries["33"], Enumerable.Empty<LexEntry>(), new IMorphologicalRule[] {edSuffix}, new FeatureStruct()), Is.EquivalentTo(new[] {"sast"}));
-			Assert.That(morpher.GenerateWords(Entries["34"], Enumerable.Empty<LexEntry>(), new IMorphologicalRule[] {edSuffix}, new FeatureStruct()), Is.EquivalentTo(new[] {"sazd"}));
+			Assert.That(morpher.GenerateWords(Entries["32"], new Morpheme[] {sSuffix}, new FeatureStruct()), Is.EquivalentTo(new[] {"sagz"}));
+			Assert.That(morpher.GenerateWords(Entries["32"], new Morpheme[] {edSuffix}, new FeatureStruct()), Is.EquivalentTo(new[] {"sagd"}));
+			Assert.That(morpher.GenerateWords(Entries["33"], new Morpheme[] {sSuffix}, new FeatureStruct()), Is.EquivalentTo(new[] {"sasɯz"}));
+			Assert.That(morpher.GenerateWords(Entries["33"], new Morpheme[] {edSuffix}, new FeatureStruct()), Is.EquivalentTo(new[] {"sast"}));
+			Assert.That(morpher.GenerateWords(Entries["34"], new Morpheme[] {edSuffix}, new FeatureStruct()), Is.EquivalentTo(new[] {"sazd"}));
 
 			edSuffix.Allomorphs.RemoveAt(1);
 			edSuffix.Allomorphs.RemoveAt(1);

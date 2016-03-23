@@ -15,10 +15,12 @@ namespace SIL.Machine.HermitCrab
 		private readonly Dictionary<string, Allomorph> _allomorphs; 
 		private RootAllomorph _rootAllomorph;
 		private Shape _shape;
-		private readonly Stack<IMorphologicalRule> _mrules;
+		private readonly List<IMorphologicalRule> _mruleApps;
+		private int _mruleAppIndex = -1;
 		private readonly Dictionary<IMorphologicalRule, int> _mrulesUnapplied;
 		private readonly Dictionary<IMorphologicalRule, int> _mrulesApplied;
-		private readonly Stack<Word> _nonHeads;
+		private readonly List<Word> _nonHeadApps;
+		private int _nonHeadAppIndex = -1;
 		private readonly MprFeatureSet _mprFeatures;
 		private readonly IDBearerSet<Feature> _obligatorySyntacticFeatures;
 		private FeatureStruct _realizationalFS;
@@ -33,10 +35,10 @@ namespace SIL.Machine.HermitCrab
 			ResetDirty();
 			SetRootAllomorph(rootAllomorph);
 			RealizationalFeatureStruct = realizationalFS;
-			_mrules = new Stack<IMorphologicalRule>();
+			_mruleApps = new List<IMorphologicalRule>();
 			_mrulesUnapplied = new Dictionary<IMorphologicalRule, int>();
 			_mrulesApplied = new Dictionary<IMorphologicalRule, int>();
-			_nonHeads = new Stack<Word>();
+			_nonHeadApps = new List<Word>();
 			_obligatorySyntacticFeatures = new IDBearerSet<Feature>();
 			_isLastAppliedRuleFinal = true;
 		}
@@ -50,10 +52,10 @@ namespace SIL.Machine.HermitCrab
 			SyntacticFeatureStruct = new FeatureStruct();
 			RealizationalFeatureStruct = new FeatureStruct();
 			_mprFeatures = new MprFeatureSet();
-			_mrules = new Stack<IMorphologicalRule>();
+			_mruleApps = new List<IMorphologicalRule>();
 			_mrulesUnapplied = new Dictionary<IMorphologicalRule, int>();
 			_mrulesApplied = new Dictionary<IMorphologicalRule, int>();
-			_nonHeads = new Stack<Word>();
+			_nonHeadApps = new List<Word>();
 			_obligatorySyntacticFeatures = new IDBearerSet<Feature>();
 			_isLastAppliedRuleFinal = true;
 		}
@@ -67,10 +69,12 @@ namespace SIL.Machine.HermitCrab
 			SyntacticFeatureStruct = word.SyntacticFeatureStruct.Clone();
 			RealizationalFeatureStruct = word.RealizationalFeatureStruct.Clone();
 			_mprFeatures = word.MprFeatures.Clone();
-			_mrules = new Stack<IMorphologicalRule>(word._mrules.Reverse());
+			_mruleApps = new List<IMorphologicalRule>(word._mruleApps);
+			_mruleAppIndex = word._mruleAppIndex;
 			_mrulesUnapplied = new Dictionary<IMorphologicalRule, int>(word._mrulesUnapplied);
 			_mrulesApplied = new Dictionary<IMorphologicalRule, int>(word._mrulesApplied);
-			_nonHeads = new Stack<Word>(word._nonHeads.Reverse().CloneItems());
+			_nonHeadApps = new List<Word>(word._nonHeadApps.CloneItems());
+			_nonHeadAppIndex = word._nonHeadAppIndex;
 			_obligatorySyntacticFeatures = new IDBearerSet<Feature>(word._obligatorySyntacticFeatures);
 			_isLastAppliedRuleFinal = word._isLastAppliedRuleFinal;
 			CurrentTrace = word.CurrentTrace;
@@ -161,25 +165,37 @@ namespace SIL.Machine.HermitCrab
 			}
 		}
 
-		public object CurrentTrace { get; set; }
-
-		public IEnumerable<IMorphologicalRule> MorphologicalRules
-		{
-			get { return _mrules; }
-		}
-
-		/// <summary>
-		/// Gets the current rule.
-		/// </summary>
-		/// <value>The current rule.</value>
-		internal IMorphologicalRule CurrentMorphologicalRule
+		public IEnumerable<Morpheme> MorphemesInApplicationOrder
 		{
 			get
 			{
-				if (_mrules.Count == 0)
-					return null;
-				return _mrules.Peek();
+				yield return _rootAllomorph.Morpheme;
+				int j = _nonHeadApps.Count - 1;
+				for (int i = _mruleApps.Count - 1; i >= 0; i--)
+				{
+					IMorphologicalRule rule = _mruleApps[i];
+					if (rule == null || rule is CompoundingRule)
+						yield return _nonHeadApps[j--].RootAllomorph.Morpheme;
+					else
+						yield return (Morpheme) rule;
+				}
 			}
+		}
+
+		public object CurrentTrace { get; set; }
+
+		internal bool IsAllMorphologicalRulesApplied
+		{
+			get { return _mruleAppIndex == -1; }
+		}
+
+		internal bool IsMorphologicalRuleApplicable(IMorphologicalRule rule)
+		{
+			if (_mruleAppIndex < 0)
+				return false;
+
+			IMorphologicalRule curRule = _mruleApps[_mruleAppIndex];
+			return curRule == rule || (curRule == null && rule is CompoundingRule);
 		}
 
 		internal Annotation<ShapeNode> MarkMorph(IEnumerable<ShapeNode> nodes, Allomorph allomorph)
@@ -207,15 +223,21 @@ namespace SIL.Machine.HermitCrab
 		}
 
 		/// <summary>
-		/// Notifies this analysis that the specified morphological rule was unapplied.
+		/// Notifies this word that the specified morphological rule was unapplied. Null
+		/// indicates that an unknown compounding rule was unapplied. This is used when
+		/// generating a compound word, because the compounding rule is usually not known just
+		/// the non-head allomorph. 
 		/// </summary>
-		/// <param name="mrule">The morphological rule.</param>
 		internal void MorphologicalRuleUnapplied(IMorphologicalRule mrule)
 		{
 			CheckFrozen();
-			_mrulesUnapplied.UpdateValue(mrule, () => 0, count => count + 1);
-			if (mrule is AffixProcessRule)
-				_mrules.Push(mrule);
+			if (mrule != null)
+				_mrulesUnapplied.UpdateValue(mrule, () => 0, count => count + 1);
+			if (!(mrule is RealizationalAffixProcessRule))
+			{
+				_mruleApps.Add(mrule);
+				_mruleAppIndex++;
+			}
 		}
 
 		/// <summary>
@@ -237,14 +259,12 @@ namespace SIL.Machine.HermitCrab
 		internal void MorphologicalRuleApplied(IMorphologicalRule mrule)
 		{
 			CheckFrozen();
+			if (IsMorphologicalRuleApplicable(mrule))
+				_mruleAppIndex--;
+			// indicate that the current non-head was applied if this is a compounding rule
+			if (mrule is CompoundingRule)
+				_nonHeadAppIndex--;
 			_mrulesApplied.UpdateValue(mrule, () => 0, count => count + 1);
-		}
-
-		internal void CurrentMorphologicalRuleApplied()
-		{
-			CheckFrozen();
-			IMorphologicalRule mrule = _mrules.Pop();
-			MorphologicalRuleApplied(mrule);
 		}
 
 		internal bool IsLastAppliedRuleFinal
@@ -270,37 +290,32 @@ namespace SIL.Machine.HermitCrab
 			return numApplies;
 		}
 
-		public Allomorph GetAllomorph(Annotation<ShapeNode> morph)
-		{
-			var alloID = (string) morph.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
-			return _allomorphs[alloID];
-		}
-
 		internal Word CurrentNonHead
 		{
 			get
 			{
-				if (_nonHeads.Count == 0)
+				if (_nonHeadAppIndex == -1)
 					return null;
-				return _nonHeads.Peek();
+				return _nonHeadApps[_nonHeadAppIndex];
 			}
 		}
 
 		internal int NonHeadCount
 		{
-			get { return _nonHeads.Count; }
+			get { return _nonHeadApps.Count; }
 		}
 
 		internal void NonHeadUnapplied(Word nonHead)
 		{
 			CheckFrozen();
-			_nonHeads.Push(nonHead);
+			_nonHeadApps.Add(nonHead);
+			_nonHeadAppIndex++;
 		}
 
-		internal void CurrentNonHeadApplied()
+		public Allomorph GetAllomorph(Annotation<ShapeNode> morph)
 		{
-			CheckFrozen();
-			_nonHeads.Pop();
+			var alloID = (string) morph.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
+			return _allomorphs[alloID];
 		}
 
 		internal bool CheckBlocking(out Word word)
@@ -339,14 +354,16 @@ namespace SIL.Machine.HermitCrab
 			code = code * 31 + _shape.GetFrozenHashCode();
 			_realizationalFS.Freeze();
 			code = code * 31 + _realizationalFS.GetFrozenHashCode();
-			foreach (Word nonHead in _nonHeads)
+			foreach (Word nonHead in _nonHeadApps)
 			{
 				nonHead.Freeze();
 				code = code * 31 + nonHead.GetFrozenHashCode();
 			}
+			code = code * 31 + _nonHeadAppIndex.GetHashCode();
 			code = code * 31 + _stratum.GetHashCode();
 			code = code * 31 + (_rootAllomorph == null ? 0 : _rootAllomorph.GetHashCode());
-			code = code * 31 + _mrules.GetSequenceHashCode();
+			code = code * 31 + _mruleApps.GetSequenceHashCode();
+			code = code * 31 + _mruleAppIndex.GetHashCode();
 			code = code * 31 + _isLastAppliedRuleFinal.GetHashCode();
 			return code;
 		}
@@ -360,8 +377,9 @@ namespace SIL.Machine.HermitCrab
 				return false;
 
 			return _shape.ValueEquals(other._shape) && _realizationalFS.ValueEquals(other._realizationalFS)
-				&& _nonHeads.SequenceEqual(other._nonHeads, FreezableEqualityComparer<Word>.Default) && _stratum == other._stratum
-				&& _rootAllomorph == other._rootAllomorph && _mrules.SequenceEqual(other._mrules) && _isLastAppliedRuleFinal == other._isLastAppliedRuleFinal;
+				&& _nonHeadApps.SequenceEqual(other._nonHeadApps, FreezableEqualityComparer<Word>.Default) && _nonHeadAppIndex == other._nonHeadAppIndex
+				&& _stratum == other._stratum && _rootAllomorph == other._rootAllomorph && _mruleApps.SequenceEqual(other._mruleApps)
+				&& _mruleAppIndex == other._mruleAppIndex && _isLastAppliedRuleFinal == other._isLastAppliedRuleFinal;
 		}
 
 		public Word Clone()

@@ -34,7 +34,7 @@ namespace SIL.Machine.HermitCrab.MorphologicalRules
 
 		public IEnumerable<Word> Apply(Word input)
 		{
-			if (input.CurrentMorphologicalRule != _rule || input.GetApplicationCount(_rule) >= _rule.MaxApplicationCount)
+			if (!input.IsMorphologicalRuleApplicable(_rule) || input.GetApplicationCount(_rule) >= _rule.MaxApplicationCount)
 				return Enumerable.Empty<Word>();
 
 			if (_rule.RequiredStemName != null && _rule.RequiredStemName != input.RootAllomorph.StemName)
@@ -79,7 +79,7 @@ namespace SIL.Machine.HermitCrab.MorphologicalRules
 					foreach (Feature obligFeature in _rule.ObligatorySyntacticFeatures)
 						outWord.ObligatorySyntacticFeatures.Add(obligFeature);
 
-					outWord.CurrentMorphologicalRuleApplied();
+					outWord.MorphologicalRuleApplied(_rule);
 
 					Word newWord;
 					if (_rule.Blockable && outWord.CheckBlocking(out newWord))
