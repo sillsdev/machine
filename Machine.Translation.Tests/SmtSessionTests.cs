@@ -6,7 +6,7 @@ using NUnit.Framework;
 namespace SIL.Machine.Translation.Tests
 {
 	[TestFixture]
-	public class ThotSessionTests
+	public class SmtSessionTests
 	{
 		private static string ConfigFileName
 		{

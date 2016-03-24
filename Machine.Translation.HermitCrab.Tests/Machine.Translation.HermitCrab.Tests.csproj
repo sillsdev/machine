@@ -4,17 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{D89AFA6A-CC7B-42E4-B98D-86B8C328F07C}</ProjectGuid>
+    <ProjectGuid>{F23C4598-1EBF-4D75-80AA-A5DDE0286485}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SIL.Machine.Translation</RootNamespace>
-    <AssemblyName>SIL.Machine.Translation</AssemblyName>
+    <RootNamespace>SIL.Machine.Translation.HermitCrab.Tests</RootNamespace>
+    <AssemblyName>SIL.Machine.Translation.HermitCrab.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
-    <NuGetPackageImportStamp>8480a340</NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -35,6 +33,10 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="nunit.framework, Version=3.2.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnit.3.2.0\lib\net40\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="SIL.Core">
       <HintPath>..\lib\SIL.Core.dll</HintPath>
     </Reference>
@@ -42,40 +44,35 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GlossMorphemeMapper.cs" />
-    <Compile Include="IMorphemeMapper.cs" />
-    <Compile Include="ISourceAnalyzer.cs" />
-    <Compile Include="ITargetGenerator.cs" />
-    <Compile Include="MorphemeInfo.cs" />
+    <Compile Include="HermitCrabSourceAnalyzerTests.cs" />
+    <Compile Include="HermitCrabTargetGeneratorTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SegmentTranslator.cs" />
-    <Compile Include="Thot.cs" />
-    <Compile Include="SmtEngine.cs" />
-    <Compile Include="SmtResult.cs" />
-    <Compile Include="SmtSession.cs" />
-    <Compile Include="TransferEngine.cs" />
-    <Compile Include="TranslationEngine.cs" />
-    <Compile Include="WordAnalysis.cs" />
+    <Compile Include="TranslationHermitCrabTestBase.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\lib\pthreadVSE2.dll">
-      <Link>pthreadVSE2.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\lib\thot.dll">
-      <Link>thot.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Machine.Translation.dep" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\Machine.HermitCrab.Tests\Machine.HermitCrab.Tests.csproj">
+      <Project>{b91590d0-1519-48a0-866b-b17e326812ad}</Project>
+      <Name>Machine.HermitCrab.Tests</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Machine.HermitCrab\Machine.HermitCrab.csproj">
+      <Project>{9e140fcf-0265-481b-b9a0-b0e7bcd3e814}</Project>
+      <Name>Machine.HermitCrab</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Machine.Translation.HermitCrab\Machine.Translation.HermitCrab.csproj">
+      <Project>{4c572560-ce06-43ec-9eda-b4e30eb27fe5}</Project>
+      <Name>Machine.Translation.HermitCrab</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Machine.Translation\Machine.Translation.csproj">
+      <Project>{d89afa6a-cc7b-42e4-b98d-86b8c328f07c}</Project>
+      <Name>Machine.Translation</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Machine\Machine.csproj">
       <Project>{8c9ab5d2-22ca-4559-abb0-83e97d7f0e58}</Project>
       <Name>Machine</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
@@ -84,14 +81,12 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
-    <Error Condition="!Exists('..\packages\BuildDependencyTasks.0.2.3.0\build\BuildDependencyTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BuildDependencyTasks.0.2.3.0\build\BuildDependencyTasks.targets'))" />
   </Target>
-  <Import Project="..\packages\BuildDependencyTasks.0.2.3.0\build\BuildDependencyTasks.targets" Condition="Exists('..\packages\BuildDependencyTasks.0.2.3.0\build\BuildDependencyTasks.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.   -->
+       Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
-    <Dependencies DependencyFile="Machine.Translation.dep" UseDependencyFile="true" KeepJobsFile="true" />
   </Target>
   <Target Name="AfterBuild">
   </Target>
+  -->
 </Project>

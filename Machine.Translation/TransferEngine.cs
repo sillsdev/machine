@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace SIL.Machine.Translation
 {
@@ -17,16 +18,23 @@ namespace SIL.Machine.Translation
 
 		public bool TranslateWord(string sourceWord, out string targetWord)
 		{
-			WordAnalysis sourceAnalysis = _sourceAnalyzer.AnalyzeWord(sourceWord).FirstOrDefault();
-			if (sourceAnalysis == null)
+			targetWord = null;
+			foreach (WordAnalysis sourceAnalysis in _sourceAnalyzer.AnalyzeWord(sourceWord))
 			{
-				targetWord = null;
-				return false;
+				var targetMorphemes = new List<MorphemeInfo>();
+				foreach (MorphemeInfo sourceMorpheme in sourceAnalysis.Morphemes)
+				{
+					MorphemeInfo targetMorpheme;
+					if (!_morphemeMapper.TryGetTargetMorpheme(sourceMorpheme, out targetMorpheme))
+						return false;
+
+					targetMorphemes.Add(targetMorpheme);
+				}
+				var targetAnalysis = new WordAnalysis(targetMorphemes, sourceAnalysis.Category);
+				targetWord = _targetGenerator.GenerateWords(targetAnalysis).FirstOrDefault();
+				return targetWord != null;
 			}
-			// TODO: transfer rules should be applied here
-			WordAnalysis targetAnalysis = new WordAnalysis(sourceAnalysis.Morphemes.Select(m => _morphemeMapper.GetTargetMorpheme(m)), sourceAnalysis.Category, sourceAnalysis.Gloss);
-			targetWord = _targetGenerator.GenerateWord(targetAnalysis);
-			return true;
+			return false;
 		}
 	}
 }

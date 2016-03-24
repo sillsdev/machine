@@ -8,7 +8,6 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.HermitCrab.Tests
 {
-	[TestFixture]
 	public abstract class HermitCrabTestBase
 	{
 		protected SpanFactory<ShapeNode> SpanFactory;

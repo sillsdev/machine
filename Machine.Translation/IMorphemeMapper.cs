@@ -2,6 +2,6 @@
 {
 	public interface IMorphemeMapper
 	{
-		Morpheme GetTargetMorpheme(Morpheme sourceMorpheme);
+		bool TryGetTargetMorpheme(MorphemeInfo sourceMorpheme, out MorphemeInfo targetMorpheme);
 	}
 }

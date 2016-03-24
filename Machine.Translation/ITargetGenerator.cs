@@ -1,11 +1,12 @@
-﻿using SIL.ObjectModel;
+﻿using System.Collections.Generic;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
 {
 	public interface ITargetGenerator
 	{
-		IReadOnlyObservableCollection<Morpheme> Morphemes { get; }  
+		IReadOnlyObservableCollection<MorphemeInfo> Morphemes { get; }  
 
-		string GenerateWord(WordAnalysis wordAnalysis);
+		IEnumerable<string> GenerateWords(WordAnalysis wordAnalysis);
 	}
 }

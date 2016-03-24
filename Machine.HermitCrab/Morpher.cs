@@ -126,15 +126,15 @@ namespace SIL.Machine.HermitCrab
 		/// <summary>
 		/// Generates surface forms from the specified word synthesis information.
 		/// </summary>
-		public IEnumerable<string> GenerateWords(LexEntry rootEntry, IEnumerable<Morpheme> morphemes, FeatureStruct realizationalFS)
+		public IEnumerable<string> GenerateWords(LexEntry rootEntry, IEnumerable<Morpheme> otherMorphemes, FeatureStruct realizationalFS)
 		{
 			object trace;
-			return GenerateWords(rootEntry, morphemes, realizationalFS, out trace);
+			return GenerateWords(rootEntry, otherMorphemes, realizationalFS, out trace);
 		}
 
-		public IEnumerable<string> GenerateWords(LexEntry rootEntry, IEnumerable<Morpheme> morphemes, FeatureStruct realizationalFS, out object trace)
+		public IEnumerable<string> GenerateWords(LexEntry rootEntry, IEnumerable<Morpheme> otherMorphemes, FeatureStruct realizationalFS, out object trace)
 		{
-			Stack<Tuple<IMorphologicalRule, RootAllomorph>>[] rulePermutations = PermuteRules(morphemes.ToArray()).ToArray();
+			Stack<Tuple<IMorphologicalRule, RootAllomorph>>[] rulePermutations = PermuteRules(otherMorphemes.ToArray()).ToArray();
 
 			object rootTrace = _traceManager.IsTracing ? _traceManager.GenerateWords(_lang) : null;
 			trace = rootTrace;
