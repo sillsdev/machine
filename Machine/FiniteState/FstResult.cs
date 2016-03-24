@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using SIL.Machine.Annotations;
-using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.FiniteState
 {

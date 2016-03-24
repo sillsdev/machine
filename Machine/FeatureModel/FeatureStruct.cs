@@ -384,7 +384,7 @@ namespace SIL.Machine.FeatureModel
 			FeatureStruct otherFS;
 			if (Dereference(other, out otherFS))
 			{
-				ISet<FeatureStruct> visitedOthers = visited.GetValue(this, () => new HashSet<FeatureStruct>());
+				ISet<FeatureStruct> visitedOthers = visited.GetOrCreate(this, () => new HashSet<FeatureStruct>());
 				if (!visitedOthers.Contains(otherFS))
 				{
 					visitedOthers.Add(otherFS);
@@ -428,7 +428,7 @@ namespace SIL.Machine.FeatureModel
 			FeatureStruct otherFS;
 			if (Dereference(other, out otherFS))
 			{
-				ISet<FeatureStruct> visitedOthers = visited.GetValue(this, () => new HashSet<FeatureStruct>());
+				ISet<FeatureStruct> visitedOthers = visited.GetOrCreate(this, () => new HashSet<FeatureStruct>());
 				if (!visitedOthers.Contains(otherFS))
 				{
 					visitedOthers.Add(otherFS);
@@ -480,7 +480,7 @@ namespace SIL.Machine.FeatureModel
 			FeatureStruct otherFS;
 			if (Dereference(other, out otherFS))
 			{
-				ISet<FeatureStruct> visitedOthers = visited.GetValue(this, () => new HashSet<FeatureStruct>());
+				ISet<FeatureStruct> visitedOthers = visited.GetOrCreate(this, () => new HashSet<FeatureStruct>());
 				if (!visitedOthers.Contains(otherFS))
 				{
 					visitedOthers.Add(otherFS);

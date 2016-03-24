@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using SIL.Extensions;
 using SIL.Machine.Annotations;
-using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
@@ -150,7 +149,7 @@ namespace SIL.Machine.HermitCrab.MorphologicalRules
 						if (mapping.Item1 != null && mapping.Item1.Annotation.Parent != null)
 						{
 							var allomorphID = (string) mapping.Item1.Annotation.Parent.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
-							existingMorphNodes.GetValue(allomorphID, () => new List<ShapeNode>()).Add(mapping.Item2);
+							existingMorphNodes.GetOrCreate(allomorphID, () => new List<ShapeNode>()).Add(mapping.Item2);
 						}
 					}
 				}

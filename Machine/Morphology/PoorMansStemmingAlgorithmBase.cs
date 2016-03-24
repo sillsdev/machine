@@ -71,7 +71,7 @@ namespace SIL.Machine.Morphology
 					affixFreqDist[affix.Length].Increment(affix);
 					if (i < items.Count - 1 && affix.Length <= MaxAffixLength)
 					{
-						AffixInfo ai = affixes.GetValue(affix, () => new AffixInfo(sequences.Count, affix));
+						AffixInfo ai = affixes.GetOrCreate(affix, () => new AffixInfo(sequences.Count, affix));
 						stem = stem.SkipFirst(dir);
 						ai.Stems.Add(stem);
 						if (syllableStart.Contains(i))

@@ -5,6 +5,7 @@ using SIL.Extensions;
 using SIL.Machine.Annotations;
 using SIL.Machine.DataStructures;
 using SIL.Machine.FiniteState;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Matching
 {

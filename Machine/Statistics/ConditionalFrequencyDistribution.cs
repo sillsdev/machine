@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Extensions;
-using SIL.Machine.DataStructures;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Statistics
@@ -27,7 +26,7 @@ namespace SIL.Machine.Statistics
 
 		public FrequencyDistribution<TSample> this[TCondition condition]
 		{
-			get { return _freqDists.GetValue(condition, () => new FrequencyDistribution<TSample>()); }
+			get { return _freqDists.GetOrCreate(condition, () => new FrequencyDistribution<TSample>()); }
 		}
 
 		public int SampleOutcomeCount

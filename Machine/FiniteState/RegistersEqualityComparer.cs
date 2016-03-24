@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using SIL.Machine.DataStructures;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.FiniteState
 {

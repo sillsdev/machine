@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.DataStructures
 {
