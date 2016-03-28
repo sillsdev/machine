@@ -12,22 +12,30 @@ namespace SIL.Machine.Translation
 	public class WordAnalysis : IEquatable<WordAnalysis>
 	{
 		private readonly ReadOnlyList<MorphemeInfo> _morphemes;
+		private readonly int _rootMorphemeIndex;
 		private readonly string _category;
 
-		public WordAnalysis(IEnumerable<MorphemeInfo> morphemes, string category)
+		public WordAnalysis(IEnumerable<MorphemeInfo> morphemes, int rootMorphemeIndex, string category)
 		{
 			_morphemes = new ReadOnlyList<MorphemeInfo>(morphemes.ToArray());
+			_rootMorphemeIndex = rootMorphemeIndex;
 			_category = category;
 		}
 
 		/// <summary>
-		/// Gets all of the morphemes in the word analysis. The order of the morphemes is
-		/// important and depends on what the source analyzer outputs and what the target
-		/// generator expects.
+		/// Gets all of the morphemes in the order in which they occur in the word.
 		/// </summary>
 		public IReadOnlyList<MorphemeInfo> Morphemes
 		{
 			get { return _morphemes; }
+		}
+
+		/// <summary>
+		/// Gets the root morpheme.
+		/// </summary>
+		public int RootMorphemeIndex
+		{
+			get { return _rootMorphemeIndex; }
 		}
 
 		/// <summary>
@@ -46,20 +54,21 @@ namespace SIL.Machine.Translation
 
 		public bool Equals(WordAnalysis other)
 		{
-			return other != null && _morphemes.SequenceEqual(other._morphemes) && _category == other._category;
+			return other != null && _morphemes.SequenceEqual(other._morphemes) && _rootMorphemeIndex == other._rootMorphemeIndex && _category == other._category;
 		}
 
 		public override int GetHashCode()
 		{
 			int code = 23;
 			code += code * 31 + _morphemes.GetSequenceHashCode();
+			code += code * 31 + _rootMorphemeIndex.GetHashCode();
 			code += code * 31 + (_category == null ? 0 : _category.GetHashCode());
 			return code;
 		}
 
 		public override string ToString()
 		{
-			return string.Format("[{0}]", string.Join(" ", _morphemes));
+			return string.Format("[{0}]", string.Join(" ", _morphemes.Select((m, i) => i == _rootMorphemeIndex ? "*" + m : m.ToString())));
 		}
 	}
 }

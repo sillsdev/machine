@@ -14,7 +14,11 @@ namespace SIL.Machine.Translation.Tests
 			public TestEnvironment()
 			{
 				var sourceAnalyzer = Substitute.For<ISourceAnalyzer>();
-				sourceAnalyzer.AddAnalyses("caminé", new WordAnalysis(new[] {new MorphemeInfo("s1", "v", "walk", MorphemeType.Stem), new MorphemeInfo("s2", "v", "pst", MorphemeType.Affix)}, "v"));
+				sourceAnalyzer.AddAnalyses("caminé", new WordAnalysis(new[]
+				{
+					new MorphemeInfo("s1", "v", "walk", MorphemeType.Stem),
+					new MorphemeInfo("s2", "v", "pst", MorphemeType.Affix)
+				}, 0, "v"));
 				var targetGenerator = Substitute.For<ITargetGenerator>();
 				var targetMorphemes = new ReadOnlyObservableList<MorphemeInfo>(new ObservableList<MorphemeInfo>
 				{
@@ -22,9 +26,9 @@ namespace SIL.Machine.Translation.Tests
 					new MorphemeInfo("e2", "v", "pst", MorphemeType.Affix)
 				});
 				targetGenerator.Morphemes.Returns(targetMorphemes);
-				targetGenerator.AddGeneratedWords(new WordAnalysis(new[] {targetMorphemes[0], targetMorphemes[1]}, "v"), "walked");
-				var morphemeMapper = new GlossMorphemeMapper(targetGenerator);
-				_engine = new TranslationEngine(TestHelpers.ToyCorpusConfigFileName, sourceAnalyzer, morphemeMapper, targetGenerator);
+				targetGenerator.AddGeneratedWords(new WordAnalysis(new[] {targetMorphemes[0], targetMorphemes[1]}, 0, "v"), "walked");
+				var transferer = new SimpleTransferer(new GlossMorphemeMapper(targetGenerator));
+				_engine = new TranslationEngine(TestHelpers.ToyCorpusConfigFileName, sourceAnalyzer, transferer, targetGenerator);
 			}
 
 			public TranslationEngine Engine

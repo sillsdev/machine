@@ -27,10 +27,20 @@ namespace SIL.Machine.Translation.HermitCrab
 
 		private WordAnalysis CreateWordAnalysis(Word result)
 		{
-			return new WordAnalysis(result.MorphemesInApplicationOrder.Select(CreateMorpheme), _getCategory(result.SyntacticFeatureStruct));
+			int rootMorphemeIndex = -1;
+			var morphemes = new List<MorphemeInfo>();
+			int i = 0;
+			foreach (Allomorph allo in result.AllomorphsInMorphOrder)
+			{
+				morphemes.Add(CreateMorphemeInfo(allo.Morpheme));
+				if (allo == result.RootAllomorph)
+					rootMorphemeIndex = i;
+				i++;
+			}
+			return new WordAnalysis(morphemes, rootMorphemeIndex, _getCategory(result.SyntacticFeatureStruct));
 		}
 
-		private MorphemeInfo CreateMorpheme(Morpheme morpheme)
+		private MorphemeInfo CreateMorphemeInfo(Morpheme morpheme)
 		{
 			string id = _getMorphemeId(morpheme);
 			string category;

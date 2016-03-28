@@ -46,9 +46,11 @@
     <Compile Include="IMorphemeMapper.cs" />
     <Compile Include="ISourceAnalyzer.cs" />
     <Compile Include="ITargetGenerator.cs" />
+    <Compile Include="ITransferer.cs" />
     <Compile Include="MorphemeInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SegmentTranslator.cs" />
+    <Compile Include="SimpleTransferer.cs" />
     <Compile Include="Thot.cs" />
     <Compile Include="SmtEngine.cs" />
     <Compile Include="SmtResult.cs" />

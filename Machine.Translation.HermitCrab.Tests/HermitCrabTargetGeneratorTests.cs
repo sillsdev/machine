@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Linq;
+using NUnit.Framework;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.HermitCrab;
@@ -15,6 +16,19 @@ namespace SIL.Machine.Translation.HermitCrab.Tests
 		{
 			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
 
+			var siPrefix = new AffixProcessRule
+							{
+								Name = "si_prefix",
+								Gloss = "3SG",
+								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
+							};
+			Morphophonemic.MorphologicalRules.Add(siPrefix);
+			siPrefix.Allomorphs.Add(new AffixProcessAllomorph
+			                       	{
+										Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
+										Rhs = {new InsertShape(Table3, "si+"), new CopyFromInput("1")}
+			                       	});
+
 			var edSuffix = new AffixProcessRule
 							{
 								Name = "ed_suffix",
@@ -25,7 +39,7 @@ namespace SIL.Machine.Translation.HermitCrab.Tests
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-											Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "+d")}
+											Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "+ɯd")}
 										});
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
@@ -34,11 +48,13 @@ namespace SIL.Machine.Translation.HermitCrab.Tests
 
 			var analysis = new WordAnalysis(new[]
 			{
-				new MorphemeInfo("32", "V", "32", MorphemeType.Stem),
+				new MorphemeInfo("3SG", "V", "3SG", MorphemeType.Affix), 
+				new MorphemeInfo("33", "V", "33", MorphemeType.Stem),
 				new MorphemeInfo("PAST", "V", "PAST", MorphemeType.Affix)
-			}, "V");
+			}, 1, "V");
 
-			Assert.That(targetGenerator.GenerateWords(analysis), Is.EquivalentTo(new[] {"sagd"}));
+			string[] words = targetGenerator.GenerateWords(analysis).ToArray();
+			Assert.That(words, Is.EquivalentTo(new[] {"sisasɯd"}));
 		}
 
 		[Test]
@@ -56,7 +72,7 @@ namespace SIL.Machine.Translation.HermitCrab.Tests
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-											Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "+d")}
+											Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "+ɯd")}
 										});
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
@@ -67,7 +83,7 @@ namespace SIL.Machine.Translation.HermitCrab.Tests
 			{
 				new MorphemeInfo("32", "V", "32", MorphemeType.Stem),
 				new MorphemeInfo("3SG", "V", "3SG", MorphemeType.Affix)
-			}, "V");
+			}, 0, "V");
 
 			Assert.That(targetGenerator.GenerateWords(analysis), Is.Empty);
 		}

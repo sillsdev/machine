@@ -1,38 +1,31 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 
 namespace SIL.Machine.Translation
 {
 	public class TransferEngine
 	{
 		private readonly ISourceAnalyzer _sourceAnalyzer;
-		private readonly IMorphemeMapper _morphemeMapper;
+		private readonly ITransferer _transferer;
 		private readonly ITargetGenerator _targetGenerator;
 
-		public TransferEngine(ISourceAnalyzer sourceAnalyzer, IMorphemeMapper morphemeMapper, ITargetGenerator targetGenerator)
+		public TransferEngine(ISourceAnalyzer sourceAnalyzer, ITransferer transferer, ITargetGenerator targetGenerator)
 		{
 			_sourceAnalyzer = sourceAnalyzer;
-			_morphemeMapper = morphemeMapper;
+			_transferer = transferer;
 			_targetGenerator = targetGenerator;
 		}
 
-		public bool TranslateWord(string sourceWord, out string targetWord)
+		public bool TryTranslateWord(string sourceWord, out string targetWord)
 		{
 			targetWord = null;
 			foreach (WordAnalysis sourceAnalysis in _sourceAnalyzer.AnalyzeWord(sourceWord))
 			{
-				var targetMorphemes = new List<MorphemeInfo>();
-				foreach (MorphemeInfo sourceMorpheme in sourceAnalysis.Morphemes)
+				foreach (WordAnalysis targetAnalysis in _transferer.Transfer(sourceAnalysis))
 				{
-					MorphemeInfo targetMorpheme;
-					if (!_morphemeMapper.TryGetTargetMorpheme(sourceMorpheme, out targetMorpheme))
-						return false;
-
-					targetMorphemes.Add(targetMorpheme);
+					targetWord = _targetGenerator.GenerateWords(targetAnalysis).FirstOrDefault();
+					if (targetWord != null)
+						return true;
 				}
-				var targetAnalysis = new WordAnalysis(targetMorphemes, sourceAnalysis.Category);
-				targetWord = _targetGenerator.GenerateWords(targetAnalysis).FirstOrDefault();
-				return targetWord != null;
 			}
 			return false;
 		}

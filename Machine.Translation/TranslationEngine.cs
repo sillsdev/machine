@@ -14,11 +14,11 @@ namespace SIL.Machine.Translation
 		{
 		}
 
-		public TranslationEngine(string smtConfigFileName, ISourceAnalyzer sourceAnalyzer, IMorphemeMapper morphemeMapper, ITargetGenerator targetGenerator)
+		public TranslationEngine(string smtConfigFileName, ISourceAnalyzer sourceAnalyzer, ITransferer transferer, ITargetGenerator targetGenerator)
 		{
 			_smtEngine = new SmtEngine(smtConfigFileName);
-			if (sourceAnalyzer != null && morphemeMapper != null && targetGenerator != null)
-				_transferEngine = new TransferEngine(sourceAnalyzer, morphemeMapper, targetGenerator);
+			if (sourceAnalyzer != null && transferer != null && targetGenerator != null)
+				_transferEngine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
 			_smtSession = _smtEngine.StartSession();
 		}
 

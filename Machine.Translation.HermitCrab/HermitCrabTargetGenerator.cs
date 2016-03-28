@@ -74,19 +74,49 @@ namespace SIL.Machine.Translation.HermitCrab
 			if (wordAnalysis.Morphemes.Count == 0)
 				return Enumerable.Empty<string>();
 
-			Morpheme rootMorpheme;
-			if (!_hcMorphemes.TryGetValue(wordAnalysis.Morphemes[0].Id, out rootMorpheme))
-				return Enumerable.Empty<string>();
-
-			var otherMorphemes = new List<Morpheme>();
-			for (int i = 1; i < wordAnalysis.Morphemes.Count; i++)
+			var morphemes = new List<Morpheme>();
+			foreach (MorphemeInfo mi in wordAnalysis.Morphemes)
 			{
 				Morpheme morpheme;
-				if (!_hcMorphemes.TryGetValue(wordAnalysis.Morphemes[i].Id, out morpheme))
+				if (!_hcMorphemes.TryGetValue(mi.Id, out morpheme))
 					return Enumerable.Empty<string>();
-				otherMorphemes.Add(morpheme);
+				morphemes.Add(morpheme);
 			}
-			return _morpher.GenerateWords((LexEntry) rootMorpheme, otherMorphemes, new FeatureStruct());
+
+			var rootEntry = (LexEntry) morphemes[wordAnalysis.RootMorphemeIndex];
+			var realizationalFS = new FeatureStruct();
+			var results = new HashSet<string>();
+			foreach (Stack<Morpheme> otherMorphemes in PermuteOtherMorphemes(morphemes, wordAnalysis.RootMorphemeIndex - 1, wordAnalysis.RootMorphemeIndex + 1))
+				results.UnionWith(_morpher.GenerateWords(rootEntry, otherMorphemes, realizationalFS));
+			return results;
+		}
+
+		private IEnumerable<Stack<Morpheme>> PermuteOtherMorphemes(List<Morpheme> morphemes, int leftIndex, int rightIndex)
+		{
+			if (leftIndex == -1 && rightIndex == morphemes.Count)
+			{
+				yield return new Stack<Morpheme>();
+			}
+			else
+			{
+				if (rightIndex < morphemes.Count)
+				{
+					foreach (Stack<Morpheme> p in PermuteOtherMorphemes(morphemes, leftIndex, rightIndex + 1))
+					{
+						p.Push(morphemes[rightIndex]);
+						yield return p;
+					}
+				}
+
+				if (leftIndex > -1)
+				{
+					foreach (Stack<Morpheme> p in PermuteOtherMorphemes(morphemes, leftIndex - 1, rightIndex))
+					{
+						p.Push(morphemes[leftIndex]);
+						yield return p;
+					}
+				}
+			}
 		}
 	}
 }

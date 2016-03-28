@@ -57,7 +57,7 @@ namespace SIL.Machine.Translation
 			for (int i = 0; i < result.Translation.Count; i++)
 			{
 				string targetWord;
-				if (_transferEngine == null || result.WordConfidences[i] >= 0.001 || !_transferEngine.TranslateWord(result.Translation[i], out targetWord))
+				if (_transferEngine == null || result.WordConfidences[i] >= 0.001 || !_transferEngine.TryTranslateWord(result.Translation[i], out targetWord))
 					targetWord = result.Translation[i];
 				_currentTranslation.Add(targetWord);
 			}

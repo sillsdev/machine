@@ -38,7 +38,7 @@ namespace SIL.Machine.Translation.HermitCrab.Tests
 				{
 					new MorphemeInfo("32", "V", "32", MorphemeType.Stem),
 					new MorphemeInfo("PAST", "V", "PAST", MorphemeType.Affix)
-				}, "V")
+				}, 0, "V")
 			}));
 		}
 
