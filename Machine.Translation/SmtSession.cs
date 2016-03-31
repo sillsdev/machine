@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
@@ -20,7 +21,8 @@ namespace SIL.Machine.Translation
 			var confidences = new List<float>();
 			for (int i = 0; i < Thot.result_getWordCount(resultHandle); i++)
 				confidences.Add(Thot.result_getWordConfidence(resultHandle, i));
-			return new SmtResult(Thot.result_getTranslation(resultHandle), confidences);
+			string translation = Marshal.PtrToStringUni(Thot.result_getTranslation(resultHandle));
+			return new SmtResult(translation, confidences);
 		}
 
 		public SmtResult Translate(IEnumerable<string> segment)

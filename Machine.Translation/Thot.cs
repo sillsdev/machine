@@ -36,8 +36,7 @@ namespace SIL.Machine.Translation
 		public static extern void session_close(IntPtr sessionHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		[return:MarshalAs(UnmanagedType.LPWStr)]
-		public static extern string result_getTranslation(IntPtr resultHandle);
+		public static extern IntPtr result_getTranslation(IntPtr resultHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern float result_getWordConfidence(IntPtr resultHandle, int wordIndex);
