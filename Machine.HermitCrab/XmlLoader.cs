@@ -2,7 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Xml;
 using System.Xml.Linq;
 using SIL.Extensions;
@@ -20,6 +22,22 @@ namespace SIL.Machine.HermitCrab
 	/// </summary>
 	public class XmlLoader
 	{
+		private class ResourceXmlResolver : XmlUrlResolver
+		{
+			public override object GetEntity(Uri absoluteUri, string role, Type ofObjectToReturn)
+			{
+				string fileName = Path.GetFileName(absoluteUri.ToString());
+				if (fileName == "HermitCrabInput.dtd")
+					return GetType().Assembly.GetManifestResourceStream("SIL.Machine.HermitCrab.HermitCrabInput.dtd");
+				return base.GetEntity(absoluteUri, role, ofObjectToReturn);
+			}
+
+			public override ICredentials Credentials
+			{
+				set { throw new NotImplementedException(); }
+			}
+		}
+
 		public static Language Load(string configPath)
 		{
 			return Load(configPath, null);
@@ -27,12 +45,7 @@ namespace SIL.Machine.HermitCrab
 
 		public static Language Load(string configPath, Action<Exception, string> errorHandler)
 		{
-			return Load(configPath, errorHandler, null);
-		}
-
-		public static Language Load(string configPath, Action<Exception, string> errorHandler, XmlResolver resolver)
-		{
-			var loader = new XmlLoader(configPath, errorHandler, resolver);
+			var loader = new XmlLoader(configPath, errorHandler);
 			return loader.Load();
 		}
 
@@ -152,7 +165,6 @@ namespace SIL.Machine.HermitCrab
 		private readonly Action<Exception, string> _errorHandler;
 		private readonly Dictionary<string, string> _repIds;
 		private readonly ShapeSpanFactory _spanFactory;
-		private readonly XmlResolver _resolver;
 
 		private readonly Dictionary<string, SymbolTable> _tables; 
 		private readonly Dictionary<string, MprFeature> _mprFeatures;
@@ -166,13 +178,12 @@ namespace SIL.Machine.HermitCrab
 		private readonly Dictionary<string, Allomorph> _allomorphs;
 		private readonly Dictionary<string, StemName> _stemNames; 
 
-		private XmlLoader(string configPath, Action<Exception, string> errorHandler, XmlResolver resolver)
+		private XmlLoader(string configPath, Action<Exception, string> errorHandler)
 		{
 			_configPath = configPath;
 			_errorHandler = errorHandler;
 			_repIds = new Dictionary<string, string>();
 			_spanFactory = new ShapeSpanFactory();
-			_resolver = resolver;
 
 			_headFeature = new ComplexFeature("head") { Description = "Head" };
 			_footFeature = new ComplexFeature("foot") { Description = "Foot" };
@@ -195,11 +206,9 @@ namespace SIL.Machine.HermitCrab
 			var settings = new XmlReaderSettings
 				{
 					DtdProcessing = DtdProcessing.Parse,
-					ValidationType = Type.GetType("Mono.Runtime") == null ? ValidationType.DTD : ValidationType.None
+					ValidationType = Type.GetType("Mono.Runtime") == null ? ValidationType.DTD : ValidationType.None,
+					XmlResolver = new ResourceXmlResolver()
 				};
-
-			if (_resolver != null)
-				settings.XmlResolver = _resolver;
 
 			using (XmlReader reader = XmlReader.Create(_configPath, settings))
 			{

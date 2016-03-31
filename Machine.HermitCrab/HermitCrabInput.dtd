@@ -76,9 +76,6 @@
 
 <!ELEMENT PhoneticShape (#PCDATA) >
 <!ELEMENT Gloss (#PCDATA) >
-<!ATTLIST Gloss
-  id ID #REQUIRED
->
 <!-- Families are used to block analyses for irregular forms (e.g. preventing the regular form from also analyzing) -->
 <!ELEMENT Families (Family*) >
 <!ELEMENT Family (#PCDATA) >
@@ -215,7 +212,6 @@
 -->
 <!ELEMENT Strata (Stratum*, AffixTemplate*) >
 <!ATTLIST Strata
-  id ID #REQUIRED
   isActive (yes | no) "yes"
  >
 <!--
@@ -281,9 +277,6 @@ N.B. Hermit Crab's text input uses "property setting records"
    =====================
 -->
 <!ELEMENT MorphologicalRules (MorphologicalRule | RealizationalRule | CompoundingRule)* >
-<!ATTLIST MorphologicalRules
- id ID #REQUIRED
->
 <!ELEMENT MorphologicalRule (Name, Gloss?, MorphologicalSubrules, OutputSubcategorizationOverrides?, OutputHeadFeatures?, OutputFootFeatures?,
                                                             RequiredHeadFeatures?, RequiredFootFeatures?, RequiredMorphemeCoOccurrences?, ExcludedMorphemeCoOccurrences?) >
 <!--
@@ -375,9 +368,6 @@ N.B. Hermit Crab's text input uses "property setting records"
   redupMorphType (prefix | suffix | implicit) "implicit"
 >
 <!ELEMENT MorphologicalPhoneticOutput (CopyFromInput | InsertSimpleContext | ModifyFromInput | InsertSegments)* >
-<!ATTLIST MorphologicalPhoneticOutput
-  id ID #REQUIRED
->
 <!ELEMENT CopyFromInput EMPTY>
 <!--
   index refers to a RequiredPhoneticInput ID
