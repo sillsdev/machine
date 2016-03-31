@@ -28,6 +28,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Machine.Translation.HermitC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Machine.Translation.HermitCrab.Tests", "Machine.Translation.HermitCrab.Tests\Machine.Translation.HermitCrab.Tests.csproj", "{F23C4598-1EBF-4D75-80AA-A5DDE0286485}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Machine.Translation.TestApp", "Machine.Translation.TestApp\Machine.Translation.TestApp.csproj", "{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -138,6 +140,16 @@ Global
 		{F23C4598-1EBF-4D75-80AA-A5DDE0286485}.Release|Mixed Platforms.Build.0 = Release|x86
 		{F23C4598-1EBF-4D75-80AA-A5DDE0286485}.Release|x86.ActiveCfg = Release|x86
 		{F23C4598-1EBF-4D75-80AA-A5DDE0286485}.Release|x86.Build.0 = Release|x86
+		{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}.Debug|x86.ActiveCfg = Debug|x86
+		{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}.Debug|x86.Build.0 = Debug|x86
+		{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}.Release|Any CPU.ActiveCfg = Release|x86
+		{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}.Release|Mixed Platforms.Build.0 = Release|x86
+		{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}.Release|x86.ActiveCfg = Release|x86
+		{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

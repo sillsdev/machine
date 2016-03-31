@@ -22,7 +22,14 @@ namespace SIL.Machine.Translation.HermitCrab
 
 		public IEnumerable<WordAnalysis> AnalyzeWord(string word)
 		{
-			return _morpher.ParseWord(word).Select(CreateWordAnalysis);
+			try
+			{
+				return _morpher.ParseWord(word).Select(CreateWordAnalysis);
+			}
+			catch (InvalidShapeException)
+			{
+				return Enumerable.Empty<WordAnalysis>();
+			}
 		}
 
 		private WordAnalysis CreateWordAnalysis(Word result)

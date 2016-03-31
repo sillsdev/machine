@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Form
+	xmlns="http://schema.picoe.ca/eto.forms" 
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:local="clr-namespace:SIL.Machine.Translation.TestApp;assembly=TranslationTestApp"
+	Title="Machine.Translation"
+	ClientSize="800, 750"
+	>
+	<Form.DataContext>
+		<local:MainFormViewModel />
+	</Form.DataContext>
+	<TableLayout Padding="10">
+		<TableRow>
+			<StackLayout Orientation="Horizontal">
+				<Button Text="Open Project" Command="{Binding OpenProjectCommand}" />
+			</StackLayout>
+		</TableRow>
+		<TableRow ScaleHeight="True">
+			<TableLayout>
+				<TableRow ScaleHeight="True">
+					<TableCell ScaleWidth="True">
+						<GroupBox Text="Source Text">
+							<TextArea ReadOnly="True" Text="{Binding SourceText}" />
+						</GroupBox>
+					</TableCell>
+					<TableCell ScaleWidth="True">
+						<GroupBox Text="Target Text">
+							<TextArea ReadOnly="True" Text="{Binding TargetText}" />
+						</GroupBox>
+					</TableCell>
+				</TableRow>
+				<TableRow>
+					<TableCell />
+					<TableCell>
+					</TableCell>
+				</TableRow>
+				<TableRow>
+					<TableCell>
+						<GroupBox Text="Source Sentence" Padding="0,25,0,0">
+							<TextArea ReadOnly="True" Height="100" Text="{Binding SourceSegment}" />
+						</GroupBox>
+					</TableCell>
+					<TableCell>
+						<GroupBox Text="Target Sentence">
+							<StackLayout HorizontalContentAlignment="Stretch">
+								<Scrollable Height="25" Border="None">
+									<StackLayout x:Name="_suggestionsContainer" Orientation="Horizontal" Padding="5,0,5,0" Spacing="10" VerticalContentAlignment="Center" />
+								</Scrollable>
+								<TextArea x:Name="_targetSentenceTextArea" Height="100" AcceptsReturn="False" AcceptsTab="False" Text="{Binding TargetSegment}"
+										  CaretIndex="{Binding CurrentTargetSegmentIndex}" CaretIndexChanged="TargetSentenceCaretIndexChanged" />
+							</StackLayout>
+						</GroupBox>
+					</TableCell>
+				</TableRow>
+			</TableLayout>
+		</TableRow>
+		<TableRow>
+			<StackLayout HorizontalContentAlignment="Center">
+				<StackLayout Orientation="Horizontal" Spacing="5">
+					<Button Text="Previous" Command="{Binding GoToPrevSegmentCommand}" />
+					<Button Text="Next" Command="{Binding GoToNextSegmentCommand}" />
+				</StackLayout>
+			</StackLayout>
+		</TableRow>
+	</TableLayout>
+</Form>
