@@ -46,8 +46,8 @@ namespace SIL.Machine.Translation.Tests
 		public void CurrentTranslation_EmptyPrefixUsesTransferEngine_CorrectTranslation()
 		{
 			using (var env = new TestEnvironment())
-			using (SegmentTranslator translator = env.Engine.StartSegmentTranslation("caminé a mi habitación .".Split()))
 			{
+				SegmentTranslator translator = env.Engine.StartSegmentTranslation("caminé a mi habitación .".Split());
 				Assert.That(translator.CurrentTranslation, Is.EqualTo("walked to my room .".Split()));
 			}
 		}
@@ -56,8 +56,8 @@ namespace SIL.Machine.Translation.Tests
 		public void CurrentTranslation_PrefixUpdatedUsesTransferEngine_CorrectTranslation()
 		{
 			using (var env = new TestEnvironment())
-			using (SegmentTranslator translator = env.Engine.StartSegmentTranslation("caminé a mi habitación .".Split()))
 			{
+				SegmentTranslator translator = env.Engine.StartSegmentTranslation("caminé a mi habitación .".Split());
 				Assert.That(translator.CurrentTranslation, Is.EqualTo("walked to my room .".Split()));
 				translator.Prefix.Add("i");
 				Assert.That(translator.CurrentTranslation, Is.EqualTo("i walked to my room .".Split()));
@@ -69,17 +69,14 @@ namespace SIL.Machine.Translation.Tests
 		{
 			using (var env = new TestEnvironment())
 			{
-				using (SegmentTranslator translator = env.Engine.StartSegmentTranslation("caminé a mi habitación .".Split()))
-				{
-					Assert.That(translator.CurrentTranslation, Is.EqualTo("walked to my room .".Split()));
-					translator.Prefix.Add("i");
-					Assert.That(translator.CurrentTranslation, Is.EqualTo("i walked to my room .".Split()));
-				}
+				SegmentTranslator translator = env.Engine.StartSegmentTranslation("caminé a mi habitación .".Split());
+				Assert.That(translator.CurrentTranslation, Is.EqualTo("walked to my room .".Split()));
+				translator.Prefix.Add("i");
+				Assert.That(translator.CurrentTranslation, Is.EqualTo("i walked to my room .".Split()));
+				translator.Approve();
 
-				using (SegmentTranslator translator = env.Engine.StartSegmentTranslation("caminé a la montaña .".Split()))
-				{
-					Assert.That(translator.CurrentTranslation, Is.EqualTo("i walked to the mountain .".Split()));
-				}
+				translator = env.Engine.StartSegmentTranslation("caminé a la montaña .".Split());
+				Assert.That(translator.CurrentTranslation, Is.EqualTo("i walked to the mountain .".Split()));
 			}
 		}
 
@@ -87,8 +84,8 @@ namespace SIL.Machine.Translation.Tests
 		public void CurrentTranslation_UnknownWordEmptyPrefix_PartialTranslation()
 		{
 			using (var env = new TestEnvironment())
-			using (SegmentTranslator translator = env.Engine.StartSegmentTranslation("hablé con recepción .".Split()))
 			{
+				SegmentTranslator translator = env.Engine.StartSegmentTranslation("hablé con recepción .".Split());
 				Assert.That(translator.CurrentTranslation, Is.EqualTo("hablé with reception .".Split()));
 			}
 		}
@@ -97,8 +94,8 @@ namespace SIL.Machine.Translation.Tests
 		public void CurrentTranslation_UnknownWordPrefixUpdated_CorrectTranslation()
 		{
 			using (var env = new TestEnvironment())
-			using (SegmentTranslator translator = env.Engine.StartSegmentTranslation("hablé con recepción .".Split()))
 			{
+				SegmentTranslator translator = env.Engine.StartSegmentTranslation("hablé con recepción .".Split());
 				Assert.That(translator.CurrentTranslation, Is.EqualTo("hablé with reception .".Split()));
 				translator.Prefix.Add("i");
 				translator.Prefix.Add("talked");
@@ -111,18 +108,15 @@ namespace SIL.Machine.Translation.Tests
 		{
 			using (var env = new TestEnvironment())
 			{
-				using (SegmentTranslator translator = env.Engine.StartSegmentTranslation("hablé con recepción .".Split()))
-				{
-					Assert.That(translator.CurrentTranslation, Is.EqualTo("hablé with reception .".Split()));
-					translator.Prefix.Add("i");
-					translator.Prefix.Add("talked");
-					Assert.That(translator.CurrentTranslation, Is.EqualTo("i talked with reception .".Split()));
-				}
+				SegmentTranslator translator = env.Engine.StartSegmentTranslation("hablé con recepción .".Split());
+				Assert.That(translator.CurrentTranslation, Is.EqualTo("hablé with reception .".Split()));
+				translator.Prefix.Add("i");
+				translator.Prefix.Add("talked");
+				Assert.That(translator.CurrentTranslation, Is.EqualTo("i talked with reception .".Split()));
+				translator.Approve();
 
-				using (SegmentTranslator translator = env.Engine.StartSegmentTranslation("hablé hasta cinco en punto .".Split()))
-				{
-					Assert.That(translator.CurrentTranslation, Is.EqualTo("i talked until five o ' clock .".Split()));
-				}
+				translator = env.Engine.StartSegmentTranslation("hablé hasta cinco en punto .".Split());
+				Assert.That(translator.CurrentTranslation, Is.EqualTo("i talked until five o ' clock .".Split()));
 			}
 		}
 	}
