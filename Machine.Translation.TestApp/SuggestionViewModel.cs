@@ -23,6 +23,7 @@ namespace SIL.Machine.Translation.TestApp
 			if (sb.Length > 0)
 				sb.Append(" ");
 			sb.Append(_text);
+			sb.Append(" ");
 			_mainFormViewModel.TargetSegment = sb.ToString();
 			_mainFormViewModel.CurrentTargetSegmentIndex = _mainFormViewModel.TargetSegment.Length;
 		}

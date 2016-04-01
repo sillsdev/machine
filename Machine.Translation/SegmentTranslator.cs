@@ -11,9 +11,11 @@ namespace SIL.Machine.Translation
 
 		private readonly SmtSession _smtSession;
 		private readonly TransferEngine _transferEngine;
-		private readonly ReadOnlyList<string> _segment;
-		private readonly List<string> _currentTranslation;
-		private readonly ReadOnlyList<string> _readOnlyCurrentTranslation;
+		private readonly ReadOnlyList<string> _sourceSegment;
+		private readonly List<string> _translation;
+		private readonly ReadOnlyList<string> _readOnlyTranslation;
+		private readonly List<int> _sourceWordIndices;
+		private readonly ReadOnlyList<int> _readOnlySourceWordIndices; 
 		private readonly List<float> _wordConfidences;
 		private readonly ReadOnlyList<float> _readOnlyWordConfidences; 
 		private readonly BulkObservableList<string> _prefix;
@@ -22,14 +24,16 @@ namespace SIL.Machine.Translation
 		{
 			_smtSession = smtSession;
 			_transferEngine = transferEngine;
-			_segment = new ReadOnlyList<string>(segment.ToArray());
+			_sourceSegment = new ReadOnlyList<string>(segment.ToArray());
 			_prefix = new BulkObservableList<string>();
 			_prefix.CollectionChanged += PrefixChanged;
-			_currentTranslation = new List<string>();
-			_readOnlyCurrentTranslation = new ReadOnlyList<string>(_currentTranslation);
+			_translation = new List<string>();
+			_readOnlyTranslation = new ReadOnlyList<string>(_translation);
+			_sourceWordIndices = new List<int>();
+			_readOnlySourceWordIndices = new ReadOnlyList<int>(_sourceWordIndices);
 			_wordConfidences = new List<float>();
 			_readOnlyWordConfidences = new ReadOnlyList<float>(_wordConfidences);
-			ProcessResult(_smtSession.TranslateInteractively(_segment));
+			ProcessResult(_smtSession.TranslateInteractively(_sourceSegment));
 		}
 
 		private void PrefixChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -37,9 +41,9 @@ namespace SIL.Machine.Translation
 			ProcessResult(_smtSession.SetPrefix(_prefix));
 		}
 
-		public IReadOnlyList<string> Segment
+		public IReadOnlyList<string> SourceSegment
 		{
-			get { return _segment; }
+			get { return _sourceSegment; }
 		}
 
 		public BulkObservableList<string> Prefix
@@ -47,9 +51,14 @@ namespace SIL.Machine.Translation
 			get { return _prefix; }
 		}
 
-		public IReadOnlyList<string> CurrentTranslation
+		public IReadOnlyList<string> Translation
 		{
-			get { return _readOnlyCurrentTranslation; }
+			get { return _readOnlyTranslation; }
+		}
+
+		public IReadOnlyList<int> SourceWordIndices
+		{
+			get { return _readOnlySourceWordIndices; }
 		}
 
 		public IReadOnlyList<float> WordConfidences
@@ -59,12 +68,13 @@ namespace SIL.Machine.Translation
 
 		public void Approve()
 		{
-			_smtSession.Train(_segment, _prefix);
+			_smtSession.Train(_sourceSegment, _prefix);
 		}
 
 		private void ProcessResult(SmtResult result)
 		{
-			_currentTranslation.Clear();
+			_translation.Clear();
+			_sourceWordIndices.Clear();
 			_wordConfidences.Clear();
 			for (int i = 0; i < result.Translation.Count; i++)
 			{
@@ -80,7 +90,8 @@ namespace SIL.Machine.Translation
 					targetWord = result.Translation[i];
 					confidence = result.WordConfidences[i];
 				}
-				_currentTranslation.Add(targetWord);
+				_translation.Add(targetWord);
+				_sourceWordIndices.Add(result.SourceWordIndices[i]);
 				_wordConfidences.Add(confidence);
 			}
 		}

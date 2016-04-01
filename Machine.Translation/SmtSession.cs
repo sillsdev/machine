@@ -18,11 +18,15 @@ namespace SIL.Machine.Translation
 
 		private static SmtResult CreateResult(IntPtr resultHandle)
 		{
+			var sourceWordIndices = new List<int>();
 			var confidences = new List<float>();
 			for (int i = 0; i < Thot.result_getWordCount(resultHandle); i++)
+			{
+				sourceWordIndices.Add(Thot.result_getAlignedSourceWordIndex(resultHandle, i));
 				confidences.Add(Thot.result_getWordConfidence(resultHandle, i));
+			}
 			string translation = Marshal.PtrToStringUni(Thot.result_getTranslation(resultHandle));
-			return new SmtResult(translation, confidences);
+			return new SmtResult(translation, sourceWordIndices, confidences);
 		}
 
 		public SmtResult Translate(IEnumerable<string> segment)

@@ -41,6 +41,7 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly ReadOnlyObservableList<SuggestionViewModel> _readOnlySuggestions;
 		private string _sourceTextPath;
 		private string _targetTextPath;
+		private readonly List<string> _sourceSegmentWords; 
 
 		public MainFormViewModel()
 		{
@@ -56,6 +57,7 @@ namespace SIL.Machine.Translation.TestApp
 			_hcTraceManager = new TraceManager();
 			_suggestions = new BulkObservableList<SuggestionViewModel>();
 			_readOnlySuggestions = new ReadOnlyObservableList<SuggestionViewModel>(_suggestions);
+			_sourceSegmentWords = new List<string>();
 		}
 
 		public ICommand OpenProjectCommand
@@ -300,19 +302,22 @@ namespace SIL.Machine.Translation.TestApp
 		private void StartSegmentTranslation()
 		{
 			MatchCollection matches = TokenizeRegex.Matches(SourceSegment);
-			_translator = _engine.StartSegmentTranslation(matches.Cast<Match>().Select(m => m.Value.ToLowerInvariant()));
+			_sourceSegmentWords.AddRange(matches.Cast<Match>().Select(m => m.Value));
+			_translator = _engine.StartSegmentTranslation(_sourceSegmentWords.Select(w => w.ToLowerInvariant()));
 			UpdatePrefix();
 		}
 
 		private void UpdateSuggestions()
 		{
 			var suggestions = new List<SuggestionViewModel>();
-			int lookaheadCount = Math.Max(0, _translator.CurrentTranslation.Count - _translator.Segment.Count) + 1;
+			int lookaheadCount = Math.Max(0, _translator.Translation.Count - _translator.SourceSegment.Count) + 1;
 			int i = _translator.Prefix.Count;
 			bool inPhrase = false;
-			while (i < Math.Min(_translator.CurrentTranslation.Count, _translator.Prefix.Count + lookaheadCount) || inPhrase)
+			while (i < Math.Min(_translator.Translation.Count, _translator.Prefix.Count + lookaheadCount) || inPhrase)
 			{
-				string word = _translator.CurrentTranslation[i];
+				string word = _translator.Translation[i];
+				if (IsCapitalCase(_sourceSegmentWords[_translator.SourceWordIndices[i]]))
+					word = ToCapitalCase(word);
 				float confidence = _translator.WordConfidences[i];
 				bool isPunct = word.All(char.IsPunctuation);
 				if (confidence >= 0.1f && !isPunct)
@@ -331,6 +336,23 @@ namespace SIL.Machine.Translation.TestApp
 			_suggestions.ReplaceAll(suggestions);
 		}
 
+		private static bool IsCapitalCase(string word)
+		{
+			return word.Length > 0 && char.IsUpper(word, 0) && Enumerable.Range(1, word.Length - 1).All(i => char.IsLower(word, i));
+		}
+
+		private static string ToCapitalCase(string word)
+		{
+			if (word.Length == 0)
+				return word;
+
+			var sb = new StringBuilder();
+			sb.Append(word.Substring(0, 1).ToUpperInvariant());
+			if (word.Length > 1)
+				sb.Append(word.Substring(1, word.Length - 1).ToLowerInvariant());
+			return sb.ToString();
+		}
+
 		private void EndSegmentTranslation()
 		{
 			if (_translator != null)
@@ -343,6 +365,7 @@ namespace SIL.Machine.Translation.TestApp
 				}
 				_translator = null;
 			}
+			_sourceSegmentWords.Clear();
 			CurrentTargetSegmentIndex = 0;
 		}
 
@@ -415,6 +438,7 @@ namespace SIL.Machine.Translation.TestApp
 					sb.Append(" ");
 				sb.Append(suggestion.Text);
 			}
+			sb.Append(" ");
 
 			TargetSegment = sb.ToString();
 			CurrentTargetSegmentIndex = TargetSegment.Length;

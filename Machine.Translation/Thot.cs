@@ -39,6 +39,9 @@ namespace SIL.Machine.Translation
 		public static extern IntPtr result_getTranslation(IntPtr resultHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern int result_getAlignedSourceWordIndex(IntPtr resultHandle, int wordIndex);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern float result_getWordConfidence(IntPtr resultHandle, int wordIndex);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
