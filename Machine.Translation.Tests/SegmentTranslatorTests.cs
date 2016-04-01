@@ -73,6 +73,7 @@ namespace SIL.Machine.Translation.Tests
 				Assert.That(translator.CurrentTranslation, Is.EqualTo("walked to my room .".Split()));
 				translator.Prefix.Add("i");
 				Assert.That(translator.CurrentTranslation, Is.EqualTo("i walked to my room .".Split()));
+				translator.Prefix.AddRange(new[] {"walked", "to", "my", "room", "."});
 				translator.Approve();
 
 				translator = env.Engine.StartSegmentTranslation("caminé a la montaña .".Split());
@@ -113,6 +114,7 @@ namespace SIL.Machine.Translation.Tests
 				translator.Prefix.Add("i");
 				translator.Prefix.Add("talked");
 				Assert.That(translator.CurrentTranslation, Is.EqualTo("i talked with reception .".Split()));
+				translator.Prefix.AddRange(new[] {"with", "reception", "."});
 				translator.Approve();
 
 				translator = env.Engine.StartSegmentTranslation("hablé hasta cinco en punto .".Split());
