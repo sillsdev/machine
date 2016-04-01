@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Eto.Drawing;
 using Eto.Forms;
 using Eto.Serialization.Xaml;
 
@@ -9,7 +10,9 @@ namespace SIL.Machine.Translation.TestApp
 	public class MainForm : Form
 	{
 		private StackLayout _suggestionsContainer;
-		private TextArea _targetSentenceTextArea;
+		private RichTextArea _sourceSegmentTextArea;
+		private TextArea _targetSegmentTextArea;
+		private Range<int> _prevSourceSegmentSelection; 
 
 		public MainForm()
 		{
@@ -32,12 +35,12 @@ namespace SIL.Machine.Translation.TestApp
 			}
 		}
 
-		private void TargetSentenceCaretIndexChanged(object sender, EventArgs e)
+		private void TargetSegmentCaretIndexChanged(object sender, EventArgs e)
 		{
-			_targetSentenceTextArea.Focus();
+			_targetSegmentTextArea.Focus();
 		}
 
-		private void TargetSentenceKeyDown(object sender, KeyEventArgs e)
+		private void TargetSegmentKeyDown(object sender, KeyEventArgs e)
 		{
 			var vm = (MainFormViewModel) DataContext;
 
@@ -55,6 +58,15 @@ namespace SIL.Machine.Translation.TestApp
 					e.Handled = true;
 				}
 			}
+		}
+
+		private void SourceSegmentSelectionChanged(object sender, EventArgs e)
+		{
+			if (_sourceSegmentTextArea.Selection.Start == _sourceSegmentTextArea.Selection.End)
+				return;
+			_sourceSegmentTextArea.Buffer.SetForeground(_prevSourceSegmentSelection, Colors.Black);
+			_sourceSegmentTextArea.SelectionForeground = Colors.Red;
+			_prevSourceSegmentSelection = _sourceSegmentTextArea.Selection;
 		}
 
 		protected override void OnClosing(CancelEventArgs e)

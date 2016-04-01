@@ -37,7 +37,8 @@
 				<TableRow>
 					<TableCell>
 						<GroupBox Text="Source Sentence" Padding="0,25,0,0">
-							<TextArea ReadOnly="True" Height="100" Text="{Binding SourceSegment}" />
+							<RichTextArea x:Name="_sourceSegmentTextArea" ReadOnly="True" Height="100" Text="{Binding SourceSegment}" Selection="{Binding SourceSegmentSelection}"
+										  SelectionChanged="SourceSegmentSelectionChanged" />
 						</GroupBox>
 					</TableCell>
 					<TableCell>
@@ -46,8 +47,8 @@
 								<Scrollable Height="25" Border="None">
 									<StackLayout x:Name="_suggestionsContainer" Orientation="Horizontal" Padding="5,0,5,0" Spacing="10" VerticalContentAlignment="Center" />
 								</Scrollable>
-								<TextArea x:Name="_targetSentenceTextArea" Height="100" AcceptsReturn="False" AcceptsTab="False" Text="{Binding TargetSegment}"
-										  CaretIndex="{Binding CurrentTargetSegmentIndex}" CaretIndexChanged="TargetSentenceCaretIndexChanged" KeyDown="TargetSentenceKeyDown" />
+								<TextArea x:Name="_targetSegmentTextArea" Height="100" AcceptsReturn="False" AcceptsTab="False" Text="{Binding TargetSegment}"
+										  CaretIndex="{Binding CurrentTargetSegmentIndex}" CaretIndexChanged="TargetSegmentCaretIndexChanged" KeyDown="TargetSegmentKeyDown" />
 							</StackLayout>
 						</GroupBox>
 					</TableCell>

@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Eto.Forms;
 using GalaSoft.MvvmLight;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.HermitCrab;
@@ -41,7 +42,8 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly ReadOnlyObservableList<SuggestionViewModel> _readOnlySuggestions;
 		private string _sourceTextPath;
 		private string _targetTextPath;
-		private readonly List<string> _sourceSegmentWords; 
+		private readonly List<string> _sourceSegmentWords;
+		private Range<int> _sourceSegmentSelection; 
 
 		public MainFormViewModel()
 		{
@@ -305,6 +307,7 @@ namespace SIL.Machine.Translation.TestApp
 			_sourceSegmentWords.AddRange(matches.Cast<Match>().Select(m => m.Value));
 			_translator = _engine.StartSegmentTranslation(_sourceSegmentWords.Select(w => w.ToLowerInvariant()));
 			UpdatePrefix();
+			UpdateSourceSegmentSelection();
 		}
 
 		private void UpdateSuggestions()
@@ -410,7 +413,29 @@ namespace SIL.Machine.Translation.TestApp
 		public int CurrentTargetSegmentIndex
 		{
 			get { return _currentTargetSegmentIndex; }
-			set { Set(() => CurrentTargetSegmentIndex, ref _currentTargetSegmentIndex, value); }
+			set
+			{
+				if (Set(() => CurrentTargetSegmentIndex, ref _currentTargetSegmentIndex, value) && _translator != null)
+					UpdateSourceSegmentSelection();
+			}
+		}
+
+		private void UpdateSourceSegmentSelection()
+		{
+			int targetWordIndex = TokenizeRegex.Matches(TargetSegment).Cast<Match>()
+				.IndexOf(m => _currentTargetSegmentIndex >= m.Index && _currentTargetSegmentIndex <= m.Index + m.Length);
+			if (targetWordIndex != -1)
+			{
+				int sourceWordIndex = _translator.SourceWordIndices[targetWordIndex];
+				Match match = TokenizeRegex.Matches(SourceSegment)[sourceWordIndex];
+				SourceSegmentSelection = new Range<int>(match.Index, match.Index + match.Length);
+			}
+		}
+
+		public Range<int> SourceSegmentSelection
+		{
+			get { return _sourceSegmentSelection; }
+			set { Set(() => SourceSegmentSelection, ref _sourceSegmentSelection, value); }
 		}
 
 		private void UpdatePrefix()
