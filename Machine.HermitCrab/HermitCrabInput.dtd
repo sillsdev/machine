@@ -72,6 +72,7 @@
   id ID #REQUIRED
   stemName IDREF #IMPLIED
   isActive (yes | no) "yes"
+  isBound (true | false) "false"
 >
 
 <!ELEMENT PhoneticShape (#PCDATA) >

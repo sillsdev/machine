@@ -468,6 +468,8 @@ namespace SIL.Machine.HermitCrab
 			if (!string.IsNullOrEmpty(stemNameIDStr))
 				allomorph.StemName = _stemNames[stemNameIDStr];
 
+			allomorph.IsBound = (bool?) alloElem.Attribute("isBound") ?? false;
+
 			LoadProperties(alloElem.Element("Properties"), allomorph.Properties);
 
 			return allomorph;
