@@ -37,6 +37,26 @@ namespace SIL.Machine.Translation.TestApp
 			_targetSentenceTextArea.Focus();
 		}
 
+		private void TargetSentenceKeyDown(object sender, KeyEventArgs e)
+		{
+			var vm = (MainFormViewModel) DataContext;
+
+			if (vm.Suggestions.Count > 0 && e.Control)
+			{
+				if (e.Key == Keys.A)
+				{
+					vm.ApplyAllSuggestionsCommand.Execute(null);
+					e.Handled = true;
+				}
+				else if (e.Key >= Keys.D1 && e.Key <= Keys.D0 + vm.Suggestions.Count)
+				{
+					int index = e.Key - Keys.D1;
+					vm.Suggestions[index].Command.Execute(null);
+					e.Handled = true;
+				}
+			}
+		}
+
 		protected override void OnClosing(CancelEventArgs e)
 		{
 			var vm = (MainFormViewModel) DataContext;

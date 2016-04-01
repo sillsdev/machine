@@ -27,7 +27,8 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly RelayCommand<object> _openProjectCommand;
 		private readonly RelayCommand<object> _goToNextSegmentCommand;
 		private readonly RelayCommand<object> _goToPrevSegmentCommand;
-		private readonly RelayCommand<object> _closeCommand; 
+		private readonly RelayCommand<object> _closeCommand;
+		private readonly RelayCommand<object> _applyAllSuggestionsCommand; 
 		private readonly List<Segment> _sourceSegments;
 		private readonly List<Segment> _targetSegments;
 		private int _currentSegment = -1;
@@ -37,7 +38,9 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly TraceManager _hcTraceManager;
 		private readonly HashSet<int> _paragraphs;
 		private readonly BulkObservableList<SuggestionViewModel> _suggestions; 
-		private readonly ReadOnlyObservableList<SuggestionViewModel> _readOnlySuggestions; 
+		private readonly ReadOnlyObservableList<SuggestionViewModel> _readOnlySuggestions;
+		private string _sourceTextPath;
+		private string _targetTextPath;
 
 		public MainFormViewModel()
 		{
@@ -48,6 +51,7 @@ namespace SIL.Machine.Translation.TestApp
 			_goToNextSegmentCommand = new RelayCommand<object>(o => GoToNextSegment(), o => CanGoToNextSegment());
 			_goToPrevSegmentCommand = new RelayCommand<object>(o => GoToPrevSegment(), o => CanGoToPrevSegment());
 			_closeCommand = new RelayCommand<object>(o => Close());
+			_applyAllSuggestionsCommand = new RelayCommand<object>(o => ApplyAllSuggestions());
 			_spanFactory = new ShapeSpanFactory();
 			_hcTraceManager = new TraceManager();
 			_suggestions = new BulkObservableList<SuggestionViewModel>();
@@ -114,9 +118,11 @@ namespace SIL.Machine.Translation.TestApp
 
 			string configDir = Path.GetDirectoryName(fileName) ?? "";
 
-			LoadTextFile(Path.Combine(configDir, srcTextFile), _sourceSegments);
+			_sourceTextPath = Path.Combine(configDir, srcTextFile);
+			LoadSourceTextFile();
 			SourceText = GenerateText(_sourceSegments);
-			LoadTextFile(Path.Combine(configDir, trgTextFile), _targetSegments);
+			_targetTextPath = Path.Combine(configDir, trgTextFile);
+			LoadTargetTextFile();
 			while (_targetSegments.Count < _sourceSegments.Count)
 				_targetSegments.Add(new Segment());
 			TargetText = GenerateText(_targetSegments);
@@ -133,6 +139,7 @@ namespace SIL.Machine.Translation.TestApp
 
 			if (_sourceSegments.Count > 0)
 			{
+				_currentSegment = _targetSegments.FindIndex(s => string.IsNullOrEmpty(s.Text)) - 1;
 				GoToNextSegment();
 			}
 			else
@@ -153,20 +160,53 @@ namespace SIL.Machine.Translation.TestApp
 				_engine = null;
 			}
 
+			if (!string.IsNullOrEmpty(_targetTextPath))
+				SaveTargetText();
+
 			_sourceSegments.Clear();
 			_targetSegments.Clear();
 			SourceText = "";
 			TargetText = "";
 		}
 
-		private void LoadTextFile(string fileName, List<Segment> segments)
+		private void SaveTargetText()
 		{
-			foreach (string line in File.ReadAllLines(fileName))
+			using (var writer = new StreamWriter(_targetTextPath))
+			{
+				for (int i = 0; i < _targetSegments.Count; i++)
+				{
+					if (_paragraphs.Contains(i))
+						writer.WriteLine();
+					writer.WriteLine(_targetSegments[i].Text);
+				}
+			}
+		}
+
+		private void LoadSourceTextFile()
+		{
+			foreach (string line in File.ReadAllLines(_sourceTextPath))
 			{
 				if (line.Length > 0)
-					segments.Add(new Segment {Text = line});
+					_sourceSegments.Add(new Segment {Text = line});
 				else
-					_paragraphs.Add(segments.Count);
+					_paragraphs.Add(_sourceSegments.Count);
+			}
+		}
+
+		private void LoadTargetTextFile()
+		{
+			bool prevLinePara = false;
+			foreach (string line in File.ReadAllLines(_targetTextPath))
+			{
+				if (_paragraphs.Contains(_targetSegments.Count) && !prevLinePara)
+				{
+					prevLinePara = true;
+				}
+				else
+				{
+					_targetSegments.Add(new Segment {Text = line});
+					prevLinePara = false;
+				}
 			}
 		}
 
@@ -267,7 +307,10 @@ namespace SIL.Machine.Translation.TestApp
 		private void UpdateSuggestions()
 		{
 			var suggestions = new List<SuggestionViewModel>();
-			for (int i = _translator.Prefix.Count; i < Math.Min(_translator.CurrentTranslation.Count, _translator.Prefix.Count + 3) ; i++)
+			int lookaheadCount = Math.Max(0, _translator.CurrentTranslation.Count - _translator.Segment.Count) + 1;
+			int i = _translator.Prefix.Count;
+			bool inPhrase = false;
+			while (i < Math.Min(_translator.CurrentTranslation.Count, _translator.Prefix.Count + lookaheadCount) || inPhrase)
 			{
 				string word = _translator.CurrentTranslation[i];
 				float confidence = _translator.WordConfidences[i];
@@ -276,7 +319,13 @@ namespace SIL.Machine.Translation.TestApp
 				{
 					if (suggestions.All(s => s.Text != word))
 						suggestions.Add(new SuggestionViewModel(this, word));
+					inPhrase = true;
 				}
+				else
+				{
+					inPhrase = false;
+				}
+				i++;
 			}
 
 			_suggestions.ReplaceAll(suggestions);
@@ -286,7 +335,7 @@ namespace SIL.Machine.Translation.TestApp
 		{
 			if (_translator != null)
 			{
-				if (!string.IsNullOrEmpty(TargetSegment))
+				if (TargetSegment != _targetSegments[_currentSegment].Text)
 				{
 					_translator.Approve();
 					_targetSegments[_currentSegment].Text = TargetSegment;
@@ -350,6 +399,25 @@ namespace SIL.Machine.Translation.TestApp
 		public ReadOnlyObservableList<SuggestionViewModel> Suggestions
 		{
 			get { return _readOnlySuggestions; }
+		}
+
+		public ICommand ApplyAllSuggestionsCommand
+		{
+			get { return _applyAllSuggestionsCommand; }
+		}
+
+		private void ApplyAllSuggestions()
+		{
+			var sb = new StringBuilder(TargetSegment.Trim());
+			foreach (SuggestionViewModel suggestion in _suggestions)
+			{
+				if (sb.Length > 0)
+					sb.Append(" ");
+				sb.Append(suggestion.Text);
+			}
+
+			TargetSegment = sb.ToString();
+			CurrentTargetSegmentIndex = TargetSegment.Length;
 		}
 	}
 }
