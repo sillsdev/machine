@@ -49,21 +49,21 @@ namespace SIL.Machine.Translation
 			return result;
 		}
 
-		public SmtResult AddStringToPrefix(IEnumerable<string> addition)
+		public SmtResult AddToPrefix(IEnumerable<string> addition, bool isLastWordPartial)
 		{
 			CheckDisposed();
 
-			IntPtr resultHandle = Thot.session_addStringToPrefix(_handle, string.Join(" ", addition) + " ");
+			IntPtr resultHandle = Thot.session_addStringToPrefix(_handle, string.Join(" ", addition) + (isLastWordPartial ? "" : " "));
 			SmtResult result = CreateResult(resultHandle);
 			Thot.result_cleanup(resultHandle);
 			return result;
 		}
 
-		public SmtResult SetPrefix(IEnumerable<string> prefix)
+		public SmtResult SetPrefix(IEnumerable<string> prefix, bool isLastWordPartial)
 		{
 			CheckDisposed();
 
-			IntPtr resultHandle = Thot.session_setPrefix(_handle, string.Join(" ", prefix) + " ");
+			IntPtr resultHandle = Thot.session_setPrefix(_handle, string.Join(" ", prefix) + (isLastWordPartial ? "" : " "));
 			SmtResult result = CreateResult(resultHandle);
 			Thot.result_cleanup(resultHandle);
 			return result;

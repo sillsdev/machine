@@ -415,7 +415,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void UpdatePrefix()
 		{
-			_translator.Prefix.ReplaceAll(TokenizeRegex.Matches(TargetSegment).Cast<Match>().Select(m => m.Value.ToLowerInvariant()));
+			_translator.SetPrefix(TokenizeRegex.Matches(TargetSegment).Cast<Match>().Select(m => m.Value.ToLowerInvariant()), !TargetSegment.EndsWith(" "));
 			UpdateSuggestions();
 		}
 

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
+using SIL.Extensions;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
@@ -17,28 +17,26 @@ namespace SIL.Machine.Translation
 		private readonly List<int> _sourceWordIndices;
 		private readonly ReadOnlyList<int> _readOnlySourceWordIndices; 
 		private readonly List<float> _wordConfidences;
-		private readonly ReadOnlyList<float> _readOnlyWordConfidences; 
-		private readonly BulkObservableList<string> _prefix;
+		private readonly ReadOnlyList<float> _readOnlyWordConfidences;
+		private readonly List<string> _prefix;
+		private readonly ReadOnlyList<string> _readOnlyPrefix; 
+		private bool _isLastWordPartial;
 
 		internal SegmentTranslator(SmtSession smtSession, TransferEngine transferEngine, IEnumerable<string> segment)
 		{
 			_smtSession = smtSession;
 			_transferEngine = transferEngine;
 			_sourceSegment = new ReadOnlyList<string>(segment.ToArray());
-			_prefix = new BulkObservableList<string>();
-			_prefix.CollectionChanged += PrefixChanged;
+			_prefix = new List<string>();
+			_readOnlyPrefix = new ReadOnlyList<string>(_prefix);
 			_translation = new List<string>();
 			_readOnlyTranslation = new ReadOnlyList<string>(_translation);
 			_sourceWordIndices = new List<int>();
 			_readOnlySourceWordIndices = new ReadOnlyList<int>(_sourceWordIndices);
 			_wordConfidences = new List<float>();
 			_readOnlyWordConfidences = new ReadOnlyList<float>(_wordConfidences);
+			_isLastWordPartial = true;
 			ProcessResult(_smtSession.TranslateInteractively(_sourceSegment));
-		}
-
-		private void PrefixChanged(object sender, NotifyCollectionChangedEventArgs e)
-		{
-			ProcessResult(_smtSession.SetPrefix(_prefix));
 		}
 
 		public IReadOnlyList<string> SourceSegment
@@ -46,9 +44,37 @@ namespace SIL.Machine.Translation
 			get { return _sourceSegment; }
 		}
 
-		public BulkObservableList<string> Prefix
+		public IReadOnlyList<string> Prefix
 		{
-			get { return _prefix; }
+			get { return _readOnlyPrefix; }
+		}
+
+		public void SetPrefix(IEnumerable<string> prefix, bool isLastWordPartial)
+		{
+			_prefix.Clear();
+			_prefix.AddRange(prefix);
+			_isLastWordPartial = isLastWordPartial;
+			ProcessResult(_smtSession.SetPrefix(_prefix, _isLastWordPartial));
+		}
+
+		public void AddToPrefix(string addition, bool isWordPartial)
+		{
+			_prefix.Add(addition);
+			_isLastWordPartial = isWordPartial;
+			ProcessResult(_smtSession.AddToPrefix(addition.ToEnumerable(), _isLastWordPartial));
+		}
+
+		public void AddToPrefix(IEnumerable<string> addition, bool isLastWordPartial)
+		{
+			string[] additionArray = addition.ToArray();
+			_prefix.AddRange(additionArray);
+			_isLastWordPartial = isLastWordPartial;
+			ProcessResult(_smtSession.AddToPrefix(additionArray, _isLastWordPartial));
+		}
+
+		public bool IsLastWordPartial
+		{
+			get { return _isLastWordPartial; }
 		}
 
 		public IReadOnlyList<string> Translation

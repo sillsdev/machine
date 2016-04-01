@@ -35,9 +35,9 @@ namespace SIL.Machine.Translation.Tests
 			{
 				SmtResult result = session.TranslateInteractively("me marcho hoy por la tarde .".Split());
 				Assert.That(result.Translation, Is.EqualTo("i leave today in the afternoon .".Split()));
-				result = session.AddStringToPrefix("I am".Split());
+				result = session.AddToPrefix("I am".Split(), false);
 				Assert.That(result.Translation, Is.EqualTo("I am leave today in the afternoon .".Split()));
-				result = session.AddStringToPrefix("leaving".Split());
+				result = session.AddToPrefix("leaving".Split(), false);
 				Assert.That(result.Translation, Is.EqualTo("I am leaving today in the afternoon .".Split()));
 			}
 		}
@@ -50,9 +50,9 @@ namespace SIL.Machine.Translation.Tests
 			{
 				SmtResult result = session.TranslateInteractively("me marcho hoy por la tarde .".Split());
 				Assert.That(result.Translation, Is.EqualTo("i leave today in the afternoon .".Split()));
-				result = session.AddStringToPrefix("I am".Split());
+				result = session.AddToPrefix("I am".Split(), false);
 				Assert.That(result.Translation, Is.EqualTo("I am leave today in the afternoon .".Split()));
-				result = session.SetPrefix("I".Split());
+				result = session.SetPrefix("I".Split(), false);
 				Assert.That(result.Translation, Is.EqualTo("I leave today in the afternoon .".Split()));
 			}
 		}
