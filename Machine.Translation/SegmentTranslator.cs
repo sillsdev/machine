@@ -9,7 +9,7 @@ namespace SIL.Machine.Translation
 	{
 		public const float WordConfidenceThreshold = 0.03f;
 
-		private readonly SmtSession _smtSession;
+		private readonly ISmtSession _smtSession;
 		private readonly TransferEngine _transferEngine;
 		private readonly ReadOnlyList<string> _sourceSegment;
 		private readonly List<string> _translation;
@@ -22,7 +22,7 @@ namespace SIL.Machine.Translation
 		private readonly ReadOnlyList<string> _readOnlyPrefix; 
 		private bool _isLastWordPartial;
 
-		internal SegmentTranslator(SmtSession smtSession, TransferEngine transferEngine, IEnumerable<string> segment)
+		internal SegmentTranslator(ISmtSession smtSession, TransferEngine transferEngine, IEnumerable<string> segment)
 		{
 			_smtSession = smtSession;
 			_transferEngine = transferEngine;

@@ -16,21 +16,21 @@
     <RestorePackages>true</RestorePackages>
     <NuGetPackageImportStamp>8480a340</NuGetPackageImportStamp>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x86\Debug\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>bin\x86\Release\</OutputPath>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
@@ -44,6 +44,8 @@
   <ItemGroup>
     <Compile Include="GlossMorphemeMapper.cs" />
     <Compile Include="IMorphemeMapper.cs" />
+    <Compile Include="ISmtEngine.cs" />
+    <Compile Include="ISmtSession.cs" />
     <Compile Include="ISourceAnalyzer.cs" />
     <Compile Include="ITargetGenerator.cs" />
     <Compile Include="ITransferer.cs" />
@@ -52,22 +54,12 @@
     <Compile Include="SegmentTranslator.cs" />
     <Compile Include="SimpleTransferer.cs" />
     <Compile Include="Thot.cs" />
-    <Compile Include="SmtEngine.cs" />
+    <Compile Include="ThotSmtEngine.cs" />
     <Compile Include="SmtResult.cs" />
-    <Compile Include="SmtSession.cs" />
+    <Compile Include="ThotSmtSession.cs" />
     <Compile Include="TransferEngine.cs" />
     <Compile Include="TranslationEngine.cs" />
     <Compile Include="WordAnalysis.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\lib\pthreadVSE2.dll">
-      <Link>pthreadVSE2.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\lib\thot.dll">
-      <Link>thot.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="Machine.Translation.dep" />

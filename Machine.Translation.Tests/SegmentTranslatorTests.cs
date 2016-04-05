@@ -28,7 +28,9 @@ namespace SIL.Machine.Translation.Tests
 				targetGenerator.Morphemes.Returns(targetMorphemes);
 				targetGenerator.AddGeneratedWords(new WordAnalysis(new[] {targetMorphemes[0], targetMorphemes[1]}, 0, "v"), "walked");
 				var transferer = new SimpleTransferer(new GlossMorphemeMapper(targetGenerator));
-				_engine = new TranslationEngine(TestHelpers.ToyCorpusConfigFileName, sourceAnalyzer, transferer, targetGenerator);
+				var transferEngine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
+				var smtEngine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName);
+				_engine = new TranslationEngine(smtEngine, transferEngine);
 			}
 
 			public TranslationEngine Engine

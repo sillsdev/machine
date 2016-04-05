@@ -139,7 +139,9 @@ namespace SIL.Machine.Translation.TestApp
 			var trgMorpher = new Morpher(_spanFactory, _hcTraceManager, trgLang);
 			var trgGenerator = new HermitCrabTargetGenerator(GetMorphemeId, GetCategory, trgMorpher);
 
-			_engine = new TranslationEngine(Path.Combine(configDir, smtConfig), srcAnalyzer, new SimpleTransferer(new GlossMorphemeMapper(trgGenerator)), trgGenerator);
+			var transferEngine = new TransferEngine(srcAnalyzer, new SimpleTransferer(new GlossMorphemeMapper(trgGenerator)), trgGenerator);
+			var smtEngine = new ThotSmtEngine(Path.Combine(configDir, smtConfig));
+			_engine = new TranslationEngine(smtEngine, transferEngine);
 
 			if (_sourceSegments.Count > 0)
 			{

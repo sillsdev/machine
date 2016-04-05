@@ -3,13 +3,13 @@
 namespace SIL.Machine.Translation.Tests
 {
 	[TestFixture]
-	public class SmtSessionTests
+	public class ThotSmtSessionTests
 	{
 		[Test]
 		public void Translate_TranslationCorrect()
 		{
-			using (var decoder = new SmtEngine(TestHelpers.ToyCorpusConfigFileName))
-			using (SmtSession session = decoder.StartSession())
+			using (var decoder = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
+			using (ThotSmtSession session = decoder.StartSession())
 			{
 				SmtResult result = session.Translate("voy a marcharme hoy por la tarde .".Split());
 				Assert.That(result.Translation, Is.EqualTo("i am leaving today in the afternoon .".Split()));
@@ -19,8 +19,8 @@ namespace SIL.Machine.Translation.Tests
 		[Test]
 		public void TranslateInteractively_TranslationCorrect()
 		{
-			using (var decoder = new SmtEngine(TestHelpers.ToyCorpusConfigFileName))
-			using (SmtSession session = decoder.StartSession())
+			using (var decoder = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
+			using (ThotSmtSession session = decoder.StartSession())
 			{
 				SmtResult result = session.TranslateInteractively("me marcho hoy por la tarde .".Split());
 				Assert.That(result.Translation, Is.EqualTo("i leave today in the afternoon .".Split()));
@@ -30,8 +30,8 @@ namespace SIL.Machine.Translation.Tests
 		[Test]
 		public void AddStringToPrefix_TranslationCorrect()
 		{
-			using (var decoder = new SmtEngine(TestHelpers.ToyCorpusConfigFileName))
-			using (SmtSession session = decoder.StartSession())
+			using (var decoder = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
+			using (ThotSmtSession session = decoder.StartSession())
 			{
 				SmtResult result = session.TranslateInteractively("me marcho hoy por la tarde .".Split());
 				Assert.That(result.Translation, Is.EqualTo("i leave today in the afternoon .".Split()));
@@ -45,8 +45,8 @@ namespace SIL.Machine.Translation.Tests
 		[Test]
 		public void SetPrefix_TranslationCorrect()
 		{
-			using (var decoder = new SmtEngine(TestHelpers.ToyCorpusConfigFileName))
-			using (SmtSession session = decoder.StartSession())
+			using (var decoder = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
+			using (ThotSmtSession session = decoder.StartSession())
 			{
 				SmtResult result = session.TranslateInteractively("me marcho hoy por la tarde .".Split());
 				Assert.That(result.Translation, Is.EqualTo("i leave today in the afternoon .".Split()));
@@ -60,8 +60,8 @@ namespace SIL.Machine.Translation.Tests
 		[Test]
 		public void Train_TranslationCorrect()
 		{
-			using (var decoder = new SmtEngine(TestHelpers.ToyCorpusConfigFileName))
-			using (SmtSession session = decoder.StartSession())
+			using (var decoder = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
+			using (ThotSmtSession session = decoder.StartSession())
 			{
 				SmtResult result = session.Translate("esto es una prueba .".Split());
 				Assert.That(result.Translation, Is.EqualTo("esto is a prueba .".Split()));
@@ -74,8 +74,8 @@ namespace SIL.Machine.Translation.Tests
 		[Test]
 		public void Translate_WordConfidencesCorrect()
 		{
-			using (var decoder = new SmtEngine(TestHelpers.ToyCorpusConfigFileName))
-			using (SmtSession session = decoder.StartSession())
+			using (var decoder = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
+			using (ThotSmtSession session = decoder.StartSession())
 			{
 				SmtResult result = session.Translate("esto es una prueba .".Split());
 				Assert.That(result.WordConfidences[0], Is.EqualTo(0.0).Within(0.01));

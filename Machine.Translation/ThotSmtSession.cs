@@ -6,12 +6,12 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
 {
-	public class SmtSession : DisposableBase
+	public class ThotSmtSession : DisposableBase, ISmtSession
 	{
-		private readonly SmtEngine _decoder;
+		private readonly ThotSmtEngine _decoder;
 		private readonly IntPtr _handle;
 
-		internal SmtSession(SmtEngine decoder)
+		internal ThotSmtSession(ThotSmtEngine decoder)
 		{
 			_decoder = decoder;
 			_handle = Thot.decoder_openSession(_decoder.Handle);
@@ -77,10 +77,14 @@ namespace SIL.Machine.Translation
 			Thot.session_trainSentencePair(_handle, ConvertStringToNativeUtf8(string.Join(" ", sourceSentence)), ConvertStringToNativeUtf8(string.Join(" ", targetSentence)));
 		}
 
+		protected override void DisposeManagedResources()
+		{
+			_decoder.RemoveSession(this);
+		}
+
 		protected override void DisposeUnmanagedResources()
 		{
 			Thot.session_close(_handle);
-			_decoder.RemoveSession(this);
 		}
 
 		private static IntPtr ConvertStringToNativeUtf8(string managedString)

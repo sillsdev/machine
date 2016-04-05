@@ -6,19 +6,13 @@ namespace SIL.Machine.Translation
 	public class TranslationEngine : DisposableBase
 	{
 		private readonly TransferEngine _transferEngine;
-		private readonly SmtEngine _smtEngine;
-		private readonly SmtSession _smtSession;
+		private readonly ISmtEngine _smtEngine;
+		private readonly ISmtSession _smtSession;
 
-		public TranslationEngine(string smtConfigFileName)
-			: this(smtConfigFileName, null, null, null)
+		public TranslationEngine(ISmtEngine smtEngine, TransferEngine transferEngine = null)
 		{
-		}
-
-		public TranslationEngine(string smtConfigFileName, ISourceAnalyzer sourceAnalyzer, ITransferer transferer, ITargetGenerator targetGenerator)
-		{
-			_smtEngine = new SmtEngine(smtConfigFileName);
-			if (sourceAnalyzer != null && transferer != null && targetGenerator != null)
-				_transferEngine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
+			_smtEngine = smtEngine;
+			_transferEngine = transferEngine;
 			_smtSession = _smtEngine.StartSession();
 		}
 
