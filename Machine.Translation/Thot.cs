@@ -18,19 +18,19 @@ namespace SIL.Machine.Translation
 		public static extern void decoder_close(IntPtr decoderHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern IntPtr session_translate(IntPtr sessionHandle, [MarshalAs(UnmanagedType.LPWStr)] string sentence);
+		public static extern IntPtr session_translate(IntPtr sessionHandle, IntPtr sentence);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern IntPtr session_translateInteractively(IntPtr sessionHandle, [MarshalAs(UnmanagedType.LPWStr)] string sentence);
+		public static extern IntPtr session_translateInteractively(IntPtr sessionHandle, IntPtr sentence);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern IntPtr session_addStringToPrefix(IntPtr sessionHandle, [MarshalAs(UnmanagedType.LPWStr)] string addition);
+		public static extern IntPtr session_addStringToPrefix(IntPtr sessionHandle, IntPtr addition);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern IntPtr session_setPrefix(IntPtr sessionHandle, [MarshalAs(UnmanagedType.LPWStr)] string prefix);
+		public static extern IntPtr session_setPrefix(IntPtr sessionHandle, IntPtr prefix);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern void session_trainSentencePair(IntPtr sessionHandle, [MarshalAs(UnmanagedType.LPWStr)] string sourceSentence, [MarshalAs(UnmanagedType.LPWStr)] string targetSentence);
+		public static extern void session_trainSentencePair(IntPtr sessionHandle, IntPtr sourceSentence, IntPtr targetSentence);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void session_close(IntPtr sessionHandle);

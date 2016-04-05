@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Text;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
@@ -25,7 +26,7 @@ namespace SIL.Machine.Translation
 				sourceWordIndices.Add(Thot.result_getAlignedSourceWordIndex(resultHandle, i));
 				confidences.Add(Thot.result_getWordConfidence(resultHandle, i));
 			}
-			string translation = Marshal.PtrToStringUni(Thot.result_getTranslation(resultHandle));
+			string translation = ConvertNativeUtf8ToString(Thot.result_getTranslation(resultHandle));
 			return new SmtResult(translation, sourceWordIndices, confidences);
 		}
 
@@ -33,7 +34,7 @@ namespace SIL.Machine.Translation
 		{
 			CheckDisposed();
 
-			IntPtr resultHandle = Thot.session_translate(_handle, string.Join(" ", segment));
+			IntPtr resultHandle = Thot.session_translate(_handle, ConvertStringToNativeUtf8(string.Join(" ", segment)));
 			SmtResult result = CreateResult(resultHandle);
 			Thot.result_cleanup(resultHandle);
 			return result;
@@ -43,7 +44,7 @@ namespace SIL.Machine.Translation
 		{
 			CheckDisposed();
 
-			IntPtr resultHandle = Thot.session_translateInteractively(_handle, string.Join(" ", segment));
+			IntPtr resultHandle = Thot.session_translateInteractively(_handle, ConvertStringToNativeUtf8(string.Join(" ", segment)));
 			SmtResult result = CreateResult(resultHandle);
 			Thot.result_cleanup(resultHandle);
 			return result;
@@ -53,7 +54,7 @@ namespace SIL.Machine.Translation
 		{
 			CheckDisposed();
 
-			IntPtr resultHandle = Thot.session_addStringToPrefix(_handle, string.Join(" ", addition) + (isLastWordPartial ? "" : " "));
+			IntPtr resultHandle = Thot.session_addStringToPrefix(_handle, ConvertStringToNativeUtf8(string.Join(" ", addition) + (isLastWordPartial ? "" : " ")));
 			SmtResult result = CreateResult(resultHandle);
 			Thot.result_cleanup(resultHandle);
 			return result;
@@ -63,7 +64,7 @@ namespace SIL.Machine.Translation
 		{
 			CheckDisposed();
 
-			IntPtr resultHandle = Thot.session_setPrefix(_handle, string.Join(" ", prefix) + (isLastWordPartial ? "" : " "));
+			IntPtr resultHandle = Thot.session_setPrefix(_handle, ConvertStringToNativeUtf8(string.Join(" ", prefix) + (isLastWordPartial ? "" : " ")));
 			SmtResult result = CreateResult(resultHandle);
 			Thot.result_cleanup(resultHandle);
 			return result;
@@ -73,13 +74,33 @@ namespace SIL.Machine.Translation
 		{
 			CheckDisposed();
 
-			Thot.session_trainSentencePair(_handle, string.Join(" ", sourceSentence), string.Join(" ", targetSentence));
+			Thot.session_trainSentencePair(_handle, ConvertStringToNativeUtf8(string.Join(" ", sourceSentence)), ConvertStringToNativeUtf8(string.Join(" ", targetSentence)));
 		}
 
 		protected override void DisposeUnmanagedResources()
 		{
 			Thot.session_close(_handle);
 			_decoder.RemoveSession(this);
+		}
+
+		private static IntPtr ConvertStringToNativeUtf8(string managedString)
+		{
+			int len = Encoding.UTF8.GetByteCount(managedString);
+			var buffer = new byte[len + 1];
+			Encoding.UTF8.GetBytes(managedString, 0, managedString.Length, buffer, 0);
+			IntPtr nativeUtf8 = Marshal.AllocHGlobal(buffer.Length);
+			Marshal.Copy(buffer, 0, nativeUtf8, buffer.Length);
+			return nativeUtf8;
+		}
+
+		private static string ConvertNativeUtf8ToString(IntPtr nativeUtf8)
+		{
+			int len = 0;
+			while (Marshal.ReadByte(nativeUtf8, len) != 0)
+				len++;
+			var buffer = new byte[len];
+			Marshal.Copy(nativeUtf8, buffer, 0, buffer.Length);
+			return Encoding.UTF8.GetString(buffer);
 		}
 	}
 }
