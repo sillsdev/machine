@@ -316,19 +316,21 @@ namespace SIL.Machine.Translation.TestApp
 		{
 			var suggestions = new List<SuggestionViewModel>();
 			int lookaheadCount = Math.Max(0, _translator.Translation.Count - _translator.SourceSegment.Count) + 1;
-			int i = _translator.Prefix.Count;
+			int i = Math.Max(0, _translator.Prefix.Count - (_translator.IsLastWordPartial ? 1 : 0));
 			bool inPhrase = false;
 			while (i < Math.Min(_translator.Translation.Count, _translator.Prefix.Count + lookaheadCount) || inPhrase)
 			{
 				string word = _translator.Translation[i];
-				if (IsCapitalCase(_sourceSegmentWords[_translator.SourceWordIndices[i]]))
+				if (IsCapitalCase(_sourceSegmentWords[_translator.GetSourceWordIndex(i)]))
 					word = ToCapitalCase(word);
-				float confidence = _translator.WordConfidences[i];
 				bool isPunct = word.All(char.IsPunctuation);
-				if (confidence >= 0.1f && !isPunct)
+				if ((_translator.IsWordTransferred(i) || _translator.GetWordConfidence(i) >= 0.2f) && !isPunct)
 				{
-					if (suggestions.All(s => s.Text != word))
+					if ((suggestions.Count == 0 || suggestions[suggestions.Count - 1].Text != word)
+					    && (suggestions.Count > 0 || !TargetSegment.EndsWith(word)))
+					{
 						suggestions.Add(new SuggestionViewModel(this, word));
+					}
 					inPhrase = true;
 				}
 				else
@@ -428,7 +430,7 @@ namespace SIL.Machine.Translation.TestApp
 				.IndexOf(m => _currentTargetSegmentIndex >= m.Index && _currentTargetSegmentIndex <= m.Index + m.Length);
 			if (targetWordIndex != -1)
 			{
-				int sourceWordIndex = _translator.SourceWordIndices[targetWordIndex];
+				int sourceWordIndex = _translator.GetSourceWordIndex(targetWordIndex);
 				Match match = TokenizeRegex.Matches(SourceSegment)[sourceWordIndex];
 				SourceSegmentSelection = new Range<int>(match.Index, match.Index + match.Length);
 			}
@@ -458,17 +460,8 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void ApplyAllSuggestions()
 		{
-			var sb = new StringBuilder(TargetSegment.Trim());
-			foreach (SuggestionViewModel suggestion in _suggestions)
-			{
-				if (sb.Length > 0)
-					sb.Append(" ");
-				sb.Append(suggestion.Text);
-			}
-			sb.Append(" ");
-
-			TargetSegment = sb.ToString();
-			CurrentTargetSegmentIndex = TargetSegment.Length;
+			foreach (SuggestionViewModel suggestion in _suggestions.ToArray())
+				suggestion.InsertSuggestion();
 		}
 	}
 }

@@ -7,5 +7,7 @@ namespace SIL.Machine.Translation
 		ThotSmtSession StartSession();
 
 		void SaveModels();
+
+		float GetWordConfidence(string sourceWord, string targetWord);
 	}
 }

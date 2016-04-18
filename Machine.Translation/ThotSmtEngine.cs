@@ -29,6 +29,12 @@ namespace SIL.Machine.Translation
 			Thot.decoder_saveModels(_handle);
 		}
 
+		public float GetWordConfidence(string sourceWord, string targetWord)
+		{
+			return Thot.decoder_getWordConfidence(_handle, Thot.ConvertStringToNativeUtf8(sourceWord),
+				Thot.ConvertStringToNativeUtf8(targetWord));
+		}
+
 		internal IntPtr Handle
 		{
 			get { return _handle; }

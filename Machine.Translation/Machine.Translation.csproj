@@ -55,7 +55,6 @@
     <Compile Include="SimpleTransferer.cs" />
     <Compile Include="Thot.cs" />
     <Compile Include="ThotSmtEngine.cs" />
-    <Compile Include="SmtResult.cs" />
     <Compile Include="ThotSmtSession.cs" />
     <Compile Include="TransferEngine.cs" />
     <Compile Include="TranslationEngine.cs" />

@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using Eto.Forms;
 using GalaSoft.MvvmLight;
 
@@ -17,9 +18,16 @@ namespace SIL.Machine.Translation.TestApp
 			_command = new RelayCommand<object>(o => InsertSuggestion());
 		}
 
-		private void InsertSuggestion()
+		internal void InsertSuggestion()
 		{
 			var sb = new StringBuilder(_mainFormViewModel.TargetSegment.Trim());
+			if (!_mainFormViewModel.TargetSegment.EndsWith(" "))
+			{
+				int index = sb.ToString().LastIndexOf(" ", StringComparison.Ordinal);
+				if (index == -1)
+					index = 0;
+				sb.Remove(index, sb.Length - index);
+			}
 			if (sb.Length > 0)
 				sb.Append(" ");
 			sb.Append(_text);

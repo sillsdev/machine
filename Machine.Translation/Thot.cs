@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace SIL.Machine.Translation
 {
@@ -37,5 +38,22 @@ namespace SIL.Machine.Translation
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void session_close(IntPtr sessionHandle);
+
+		public static IntPtr ConvertStringToNativeUtf8(string managedString)
+		{
+			int len = Encoding.UTF8.GetByteCount(managedString);
+			var buffer = new byte[len + 1];
+			Encoding.UTF8.GetBytes(managedString, 0, managedString.Length, buffer, 0);
+			IntPtr nativeUtf8 = Marshal.AllocHGlobal(buffer.Length);
+			Marshal.Copy(buffer, 0, nativeUtf8, buffer.Length);
+			return nativeUtf8;
+		}
+
+		public static string ConvertNativeUtf8ToString(IntPtr nativeUtf8, int len)
+		{
+			var buffer = new byte[len];
+			Marshal.Copy(nativeUtf8, buffer, 0, buffer.Length);
+			return Encoding.UTF8.GetString(buffer);
+		}
 	}
 }

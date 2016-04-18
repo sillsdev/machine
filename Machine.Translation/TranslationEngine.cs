@@ -18,7 +18,7 @@ namespace SIL.Machine.Translation
 
 		public SegmentTranslator StartSegmentTranslation(IEnumerable<string> segment)
 		{
-			return new SegmentTranslator(_smtSession, _transferEngine, segment);
+			return new SegmentTranslator(_smtEngine, _smtSession, _transferEngine, segment);
 		}
 
 		public void Save()

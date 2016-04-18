@@ -5,13 +5,13 @@ namespace SIL.Machine.Translation
 {
 	public interface ISmtSession : IDisposable
 	{
-		SmtResult Translate(IEnumerable<string> segment);
+		IEnumerable<string> Translate(IEnumerable<string> segment);
 
-		SmtResult TranslateInteractively(IEnumerable<string> segment);
+		IEnumerable<string> TranslateInteractively(IEnumerable<string> segment);
 
-		SmtResult AddToPrefix(IEnumerable<string> addition, bool isLastWordPartial);
+		IEnumerable<string> AddToPrefix(IEnumerable<string> addition, bool isLastWordPartial);
 
-		SmtResult SetPrefix(IEnumerable<string> prefix, bool isLastWordPartial);
+		IEnumerable<string> SetPrefix(IEnumerable<string> prefix, bool isLastWordPartial);
 
 		void Train(IEnumerable<string> sourceSentence, IEnumerable<string> targetSentence);
 	}
