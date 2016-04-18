@@ -146,6 +146,8 @@ namespace SIL.Machine.Translation.TestApp
 			if (_sourceSegments.Count > 0)
 			{
 				_currentSegment = _targetSegments.FindIndex(s => string.IsNullOrEmpty(s.Text)) - 1;
+				if (_currentSegment == -2)
+					_currentSegment = -1;
 				GoToNextSegment();
 			}
 			else

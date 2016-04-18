@@ -9,6 +9,7 @@ namespace SIL.Machine.Translation
 	public class SegmentTranslator
 	{
 		public const float WordConfidenceThreshold = 0.03f;
+		private const float Alpha = 0.75f;
 
 		private readonly ISmtEngine _smtEngine;
 		private readonly ISmtSession _smtSession;
@@ -117,9 +118,9 @@ namespace SIL.Machine.Translation
 			List<string> translationWords = translation.ToList();
 			for (int i = 0; i < translationWords.Count; i++)
 			{
-				bool exactMatch = false;
 				float bestConfidence = 0;
 				int bestIndex = 0;
+				float bestAlignmentScore = 0;
 				for (int j = 0; j < _sourceSegment.Count; j++)
 				{
 					if (IsPunctuation(translationWords[i]) != IsPunctuation(_sourceSegment[j]))
@@ -135,25 +136,14 @@ namespace SIL.Machine.Translation
 						confidence = _smtEngine.GetWordConfidence(_sourceSegment[j], translationWords[i]);
 					}
 
-					if (confidence > bestConfidence)
+					float distance = (float) Math.Abs(i - j) / (Math.Max(translationWords.Count, _sourceSegment.Count) - 1);
+					float alignmentScore = ((translationWords[i] == _sourceSegment[j] ? 1.0f : confidence) * Alpha) + ((1.0f - distance) * (1.0f - Alpha));
+
+					if (alignmentScore > bestAlignmentScore)
 					{
 						bestConfidence = confidence;
 						bestIndex = j;
-						exactMatch = translationWords[i] == _sourceSegment[j];
-					}
-					else if (Math.Abs(confidence - bestConfidence) < float.Epsilon)
-					{
-						bool indexCloser = Math.Abs(i - j) < Math.Abs(i - bestIndex);
-						if (translationWords[i] == _sourceSegment[j])
-						{
-							if (!exactMatch || indexCloser)
-								bestIndex = j;
-							exactMatch = true;
-						}
-						else if (!exactMatch && indexCloser)
-						{
-							bestIndex = j;
-						}
+						bestAlignmentScore = alignmentScore;
 					}
 				}
 
