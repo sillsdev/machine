@@ -118,12 +118,7 @@ namespace SIL.Machine.Translation.TestApp
 				return false;
 
 			var hcSrcConfig = (string) engineElem.Element("SourceAnalyzerConfig");
-			if (hcSrcConfig == null)
-				return false;
-
 			var hcTrgConfig = (string) engineElem.Element("TargetGeneratorConfig");
-			if (hcTrgConfig == null)
-				return false;
 
 			XElement textElem = projectElem.Elements("Texts").Elements("Text").FirstOrDefault();
 			if (textElem == null)
@@ -148,15 +143,19 @@ namespace SIL.Machine.Translation.TestApp
 				_targetSegments.Add(new Segment());
 			TargetText = GenerateText(_targetSegments);
 
-			Language srcLang = XmlLoader.Load(Path.Combine(configDir, hcSrcConfig));
-			var srcMorpher = new Morpher(_spanFactory, _hcTraceManager, srcLang);
-			var srcAnalyzer = new HermitCrabSourceAnalyzer(GetMorphemeId, GetCategory, srcMorpher);
+			TransferEngine transferEngine = null;
+			if (hcSrcConfig != null && hcTrgConfig != null)
+			{
+				Language srcLang = XmlLoader.Load(Path.Combine(configDir, hcSrcConfig));
+				var srcMorpher = new Morpher(_spanFactory, _hcTraceManager, srcLang);
+				var srcAnalyzer = new HermitCrabSourceAnalyzer(GetMorphemeId, GetCategory, srcMorpher);
 
-			Language trgLang = XmlLoader.Load(Path.Combine(configDir, hcTrgConfig));
-			var trgMorpher = new Morpher(_spanFactory, _hcTraceManager, trgLang);
-			var trgGenerator = new HermitCrabTargetGenerator(GetMorphemeId, GetCategory, trgMorpher);
+				Language trgLang = XmlLoader.Load(Path.Combine(configDir, hcTrgConfig));
+				var trgMorpher = new Morpher(_spanFactory, _hcTraceManager, trgLang);
+				var trgGenerator = new HermitCrabTargetGenerator(GetMorphemeId, GetCategory, trgMorpher);
 
-			var transferEngine = new TransferEngine(srcAnalyzer, new SimpleTransferer(new GlossMorphemeMapper(trgGenerator)), trgGenerator);
+				transferEngine = new TransferEngine(srcAnalyzer, new SimpleTransferer(new GlossMorphemeMapper(trgGenerator)), trgGenerator);
+			}
 			var smtEngine = new ThotSmtEngine(Path.Combine(configDir, smtConfig));
 			_engine = new TranslationEngine(smtEngine, transferEngine);
 
