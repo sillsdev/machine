@@ -15,7 +15,7 @@
 				<TableRow ScaleHeight="True">
 					<TableCell ScaleWidth="True">
 						<StackLayout>
-							<Button Text="Open Project" Command="{Binding OpenProjectCommand}" />
+							<Button Text="Open" Command="{Binding OpenProjectCommand}" Click="SegmentNavigationClicked" />
 						</StackLayout>
 					</TableCell>
 					<TableCell ScaleWidth="True">
@@ -72,8 +72,8 @@
 		<TableRow>
 			<StackLayout HorizontalContentAlignment="Center">
 				<StackLayout Orientation="Horizontal" Spacing="5">
-					<Button Text="Previous" Command="{Binding GoToPrevSegmentCommand}" />
-					<Button Text="Next" Command="{Binding GoToNextSegmentCommand}" />
+					<Button Text="Previous" Command="{Binding GoToPrevSegmentCommand}" Click="SegmentNavigationClicked" />
+					<Button Text="Next" Command="{Binding GoToNextSegmentCommand}" Click="SegmentNavigationClicked" />
 				</StackLayout>
 			</StackLayout>
 		</TableRow>

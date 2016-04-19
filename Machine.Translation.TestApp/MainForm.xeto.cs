@@ -105,12 +105,14 @@ namespace SIL.Machine.Translation.TestApp
 		{
 			var vm = (MainFormViewModel) DataContext;
 			vm.SelectSourceSegmentCommand.Execute(FixRichTextAreaOutputRange(_sourceTextArea, _sourceTextArea.Selection).Start);
+			_targetSegmentTextArea.Focus();
 		}
 
 		private void TargetTextSelectionChanged(object sender, EventArgs e)
 		{
 			var vm = (MainFormViewModel) DataContext;
 			vm.SelectTargetSegmentCommand.Execute(FixRichTextAreaOutputRange(_targetTextArea, _targetTextArea.Selection).Start);
+			_targetSegmentTextArea.Focus();
 		}
 
 		private void TargetSegmentCaretIndexChanged(object sender, EventArgs e)
@@ -136,6 +138,11 @@ namespace SIL.Machine.Translation.TestApp
 					e.Handled = true;
 				}
 			}
+		}
+
+		private void SegmentNavigationClicked(object sender, EventArgs e)
+		{
+			_targetSegmentTextArea.Focus();
 		}
 
 		protected override void OnClosing(CancelEventArgs e)
