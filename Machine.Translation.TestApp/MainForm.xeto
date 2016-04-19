@@ -35,12 +35,12 @@
 				<TableRow ScaleHeight="True">
 					<TableCell ScaleWidth="True">
 						<GroupBox Text="Source Text">
-							<TextArea ReadOnly="True" Text="{Binding SourceText}" />
+							<RichTextArea x:Name="_sourceTextArea" ReadOnly="True" Text="{Binding SourceText}" SelectionChanged="SourceTextSelectionChanged" />
 						</GroupBox>
 					</TableCell>
 					<TableCell ScaleWidth="True">
 						<GroupBox Text="Target Text">
-							<TextArea ReadOnly="True" Text="{Binding TargetText}" />
+							<RichTextArea x:Name="_targetTextArea" ReadOnly="True" Text="{Binding TargetText}" SelectionChanged="TargetTextSelectionChanged" />
 						</GroupBox>
 					</TableCell>
 				</TableRow>

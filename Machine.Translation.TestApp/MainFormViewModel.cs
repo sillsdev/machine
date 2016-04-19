@@ -43,8 +43,12 @@ namespace SIL.Machine.Translation.TestApp
 		private string _sourceTextPath;
 		private string _targetTextPath;
 		private readonly List<string> _sourceSegmentWords;
+		private Range<int>? _sourceTextSelection;
 		private Range<int>? _sourceSegmentSelection;
+		private Range<int>? _targetTextSelection; 
 		private int _confidenceThreshold;
+		private readonly RelayCommand<int> _selectSourceSegmentCommand;
+		private readonly RelayCommand<int> _selectTargetSegmentCommand; 
 
 		public MainFormViewModel()
 		{
@@ -56,6 +60,8 @@ namespace SIL.Machine.Translation.TestApp
 			_goToPrevSegmentCommand = new RelayCommand<object>(o => GoToPrevSegment(), o => CanGoToPrevSegment());
 			_closeCommand = new RelayCommand<object>(o => Close());
 			_applyAllSuggestionsCommand = new RelayCommand<object>(o => ApplyAllSuggestions());
+			_selectSourceSegmentCommand = new RelayCommand<int>(SelectSourceSegment);
+			_selectTargetSegmentCommand = new RelayCommand<int>(SelectTargetSegment);
 			_spanFactory = new ShapeSpanFactory();
 			_hcTraceManager = new TraceManager();
 			_suggestions = new BulkObservableList<SuggestionViewModel>();
@@ -267,13 +273,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void GoToNextSegment()
 		{
-			EndSegmentTranslation();
-			_currentSegment++;
-			SourceSegment = _sourceSegments[_currentSegment].Text;
-			TargetSegment = _targetSegments[_currentSegment].Text;
-			_goToNextSegmentCommand.UpdateCanExecute();
-			_goToPrevSegmentCommand.UpdateCanExecute();
-			StartSegmentTranslation();
+			MoveSegment(_currentSegment + 1);
 		}
 
 		public ICommand GoToPrevSegmentCommand
@@ -288,10 +288,44 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void GoToPrevSegment()
 		{
+			MoveSegment(_currentSegment - 1);
+		}
+
+		public ICommand SelectSourceSegmentCommand
+		{
+			get { return _selectSourceSegmentCommand; }
+		}
+
+		private void SelectSourceSegment(int index)
+		{
+			int segmentIndex = _sourceSegments.IndexOf(s => s.StartIndex <= index && s.StartIndex + s.Text.Length > index);
+			if (segmentIndex != -1)
+				MoveSegment(segmentIndex);
+		}
+
+		public ICommand SelectTargetSegmentCommand
+		{
+			get { return _selectTargetSegmentCommand; }
+		}
+
+		private void SelectTargetSegment(int index)
+		{
+			int segmentIndex = _targetSegments.IndexOf(s => s.StartIndex <= index && s.StartIndex + s.Text.Length > index);
+			if (segmentIndex != -1)
+				MoveSegment(segmentIndex);
+		}
+
+		private void MoveSegment(int segmentIndex)
+		{
 			EndSegmentTranslation();
-			_currentSegment--;
-			SourceSegment = _sourceSegments[_currentSegment].Text;
-			TargetSegment = _targetSegments[_currentSegment].Text;
+			_currentSegment = segmentIndex;
+			Segment sourceSegment = _sourceSegments[_currentSegment];
+			Segment targetSegment = _targetSegments[_currentSegment];
+			SourceSegment = sourceSegment.Text;
+			TargetSegment = targetSegment.Text;
+
+			SourceTextSelection = new Range<int>(sourceSegment.StartIndex, sourceSegment.StartIndex + sourceSegment.Text.Length);
+			TargetTextSelection = new Range<int>(targetSegment.StartIndex, targetSegment.StartIndex + targetSegment.Text.Length);
 			_goToNextSegmentCommand.UpdateCanExecute();
 			_goToPrevSegmentCommand.UpdateCanExecute();
 			StartSegmentTranslation();
@@ -452,10 +486,22 @@ namespace SIL.Machine.Translation.TestApp
 			}
 		}
 
+		public Range<int>? SourceTextSelection
+		{
+			get { return _sourceTextSelection; }
+			private set { Set(() => SourceTextSelection, ref _sourceTextSelection, value); }
+		}
+
 		public Range<int>? SourceSegmentSelection
 		{
 			get { return _sourceSegmentSelection; }
 			private set { Set(() => SourceSegmentSelection, ref _sourceSegmentSelection, value); }
+		}
+
+		public Range<int>? TargetTextSelection
+		{
+			get { return _targetTextSelection; }
+			private set { Set(() => TargetTextSelection, ref _targetTextSelection, value); }
 		}
 
 		public int ConfidenceThreshold
