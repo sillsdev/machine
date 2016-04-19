@@ -8,12 +8,13 @@ namespace SIL.Machine.Translation
 {
 	public class SegmentTranslator
 	{
-		public const float WordConfidenceThreshold = 0.03f;
+		public const float NullWordConfidenceThreshold = 0.03f;
 		private const float Alpha = 0.75f;
 
 		private readonly ISmtEngine _smtEngine;
 		private readonly ISmtSession _smtSession;
 		private readonly TransferEngine _transferEngine;
+		private readonly Dictionary<string, string> _transferCache; 
 		private readonly ReadOnlyList<string> _sourceSegment;
 		private readonly List<string> _translation;
 		private readonly ReadOnlyList<string> _readOnlyTranslation;
@@ -21,13 +22,14 @@ namespace SIL.Machine.Translation
 		private readonly List<string> _prefix;
 		private readonly ReadOnlyList<string> _readOnlyPrefix; 
 		private bool _isLastWordPartial;
-		private readonly Dictionary<string, string> _transferedWords; 
 
-		internal SegmentTranslator(ISmtEngine smtEngine, ISmtSession smtSession, TransferEngine transferEngine, IEnumerable<string> segment)
+		internal SegmentTranslator(ISmtEngine smtEngine, ISmtSession smtSession, TransferEngine transferEngine, Dictionary<string, string> transferCache,
+			IEnumerable<string> segment)
 		{
 			_smtEngine = smtEngine;
 			_smtSession = smtSession;
 			_transferEngine = transferEngine;
+			_transferCache = transferCache;
 			_sourceSegment = new ReadOnlyList<string>(segment.ToArray());
 			_prefix = new List<string>();
 			_readOnlyPrefix = new ReadOnlyList<string>(_prefix);
@@ -35,7 +37,6 @@ namespace SIL.Machine.Translation
 			_readOnlyTranslation = new ReadOnlyList<string>(_translation);
 			_wordInfos = new List<WordInfo>();
 			_isLastWordPartial = true;
-			_transferedWords = new Dictionary<string, string>();
 			ProcessResult(_smtSession.TranslateInteractively(_sourceSegment));
 		}
 
@@ -150,10 +151,9 @@ namespace SIL.Machine.Translation
 				string sourceWord = _sourceSegment[bestIndex];
 				bool transferred = false;
 				string targetWord;
-				if (_transferEngine != null && bestConfidence < WordConfidenceThreshold && _transferEngine.TryTranslateWord(sourceWord, out targetWord))
+				if (bestConfidence < NullWordConfidenceThreshold && TryTransferWord(sourceWord, out targetWord))
 				{
 					bestConfidence = _smtEngine.GetWordConfidence(sourceWord, targetWord);
-					_transferedWords[sourceWord] = targetWord;
 					transferred = true;
 					if (_translation.Count == 1 && targetWord.StartsWith(_translation[0]))
 					{
@@ -165,12 +165,30 @@ namespace SIL.Machine.Translation
 				{
 					targetWord = translationWords[i];
 					string word;
-					if (i < _prefix.Count && _transferedWords.TryGetValue(sourceWord, out word) && word == targetWord)
+					if (i < _prefix.Count && TryTransferWord(sourceWord, out word) && word == targetWord)
 						transferred = true;
 				}
 				_translation.Add(targetWord);
 				_wordInfos.Add(new WordInfo(bestIndex, bestConfidence, transferred));
 			}
+		}
+
+		private bool TryTransferWord(string sourceWord, out string targetWord)
+		{
+			if (_transferEngine != null)
+			{
+				if (_transferCache.TryGetValue(sourceWord, out targetWord))
+					return true;
+
+				if (_transferEngine.TryTranslateWord(sourceWord, out targetWord))
+				{
+					_transferCache[sourceWord] = targetWord;
+					return true;
+				}
+			}
+
+			targetWord = null;
+			return false;
 		}
 
 		private static bool IsPunctuation(string word)

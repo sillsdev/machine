@@ -16,6 +16,14 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.TestApp
 {
+	public enum TranslationLevel
+	{
+		Unknown,
+		Transfer,
+		HighConfidence,
+		LowConfidence
+	}
+
 	public class MainFormViewModel : ViewModelBase
 	{
 		private static readonly Regex TokenizeRegex = new Regex(@"\w+([.,]\w+)*|\S+");
@@ -43,12 +51,13 @@ namespace SIL.Machine.Translation.TestApp
 		private string _sourceTextPath;
 		private string _targetTextPath;
 		private readonly List<string> _sourceSegmentWords;
-		private Range<int>? _sourceTextSelection;
-		private Range<int>? _sourceSegmentSelection;
-		private Range<int>? _targetTextSelection; 
+		private Range<int>? _currentSourceWordRange;
+		private Range<int>? _currentSourceSegmentRange;
+		private Range<int>? _currentTargetSegmentRange; 
 		private int _confidenceThreshold;
 		private readonly RelayCommand<int> _selectSourceSegmentCommand;
-		private readonly RelayCommand<int> _selectTargetSegmentCommand; 
+		private readonly RelayCommand<int> _selectTargetSegmentCommand;
+		private TranslationLevel _currentSourceWordLevel;
 
 		public MainFormViewModel()
 		{
@@ -324,8 +333,8 @@ namespace SIL.Machine.Translation.TestApp
 			SourceSegment = sourceSegment.Text;
 			TargetSegment = targetSegment.Text;
 
-			SourceTextSelection = new Range<int>(sourceSegment.StartIndex, sourceSegment.StartIndex + sourceSegment.Text.Length);
-			TargetTextSelection = new Range<int>(targetSegment.StartIndex, targetSegment.StartIndex + targetSegment.Text.Length);
+			CurrentSourceSegmentRange = new Range<int>(sourceSegment.StartIndex, sourceSegment.StartIndex + sourceSegment.Text.Length);
+			CurrentTargetSegmentRange = new Range<int>(targetSegment.StartIndex, targetSegment.StartIndex + targetSegment.Text.Length);
 			_goToNextSegmentCommand.UpdateCanExecute();
 			_goToPrevSegmentCommand.UpdateCanExecute();
 			StartSegmentTranslation();
@@ -477,31 +486,44 @@ namespace SIL.Machine.Translation.TestApp
 				{
 					int sourceWordIndex = _translator.GetSourceWordIndex(targetWordIndex);
 					Match match = TokenizeRegex.Matches(SourceSegment)[sourceWordIndex];
-					SourceSegmentSelection = new Range<int>(match.Index, match.Index + match.Length - 1);
+					if (_translator.IsWordTransferred(targetWordIndex))
+						CurrentSourceWordLevel = TranslationLevel.Transfer;
+					else if (_translator.GetWordConfidence(targetWordIndex) >= 0.5f)
+						CurrentSourceWordLevel = TranslationLevel.HighConfidence;
+					else
+						CurrentSourceWordLevel = TranslationLevel.LowConfidence;
+					CurrentSourceWordRange = new Range<int>(match.Index, match.Index + match.Length - 1);
 				}
 				else
 				{
-					SourceSegmentSelection = null;
+					CurrentSourceWordLevel = TranslationLevel.Unknown;
+					CurrentSourceWordRange = null;
 				}
 			}
 		}
 
-		public Range<int>? SourceTextSelection
+		public Range<int>? CurrentSourceSegmentRange
 		{
-			get { return _sourceTextSelection; }
-			private set { Set(() => SourceTextSelection, ref _sourceTextSelection, value); }
+			get { return _currentSourceSegmentRange; }
+			private set { Set(() => CurrentSourceSegmentRange, ref _currentSourceSegmentRange, value); }
 		}
 
-		public Range<int>? SourceSegmentSelection
+		public Range<int>? CurrentSourceWordRange
 		{
-			get { return _sourceSegmentSelection; }
-			private set { Set(() => SourceSegmentSelection, ref _sourceSegmentSelection, value); }
+			get { return _currentSourceWordRange; }
+			private set { Set(() => CurrentSourceWordRange, ref _currentSourceWordRange, value); }
 		}
 
-		public Range<int>? TargetTextSelection
+		public Range<int>? CurrentTargetSegmentRange
 		{
-			get { return _targetTextSelection; }
-			private set { Set(() => TargetTextSelection, ref _targetTextSelection, value); }
+			get { return _currentTargetSegmentRange; }
+			private set { Set(() => CurrentTargetSegmentRange, ref _currentTargetSegmentRange, value); }
+		}
+
+		public TranslationLevel CurrentSourceWordLevel
+		{
+			get { return _currentSourceWordLevel; }
+			private set { Set(() => CurrentSourceWordLevel, ref _currentSourceWordLevel, value); }
 		}
 
 		public int ConfidenceThreshold

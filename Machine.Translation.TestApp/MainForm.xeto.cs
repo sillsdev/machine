@@ -29,22 +29,37 @@ namespace SIL.Machine.Translation.TestApp
 			var vm = (MainFormViewModel) DataContext;
 			switch (e.PropertyName)
 			{
-				case "SourceSegmentSelection":
+				case "CurrentSourceWordRange":
 					_sourceSegmentTextArea.Buffer.SetBackground(new Range<int>(0, _sourceSegmentTextArea.Text.Length), Colors.White);
-					if (vm.SourceSegmentSelection != null)
-						_sourceSegmentTextArea.Buffer.SetBackground(FixRichTextAreaInputRange(_sourceSegmentTextArea, vm.SourceSegmentSelection.Value), Colors.DarkGray);
+					if (vm.CurrentSourceWordRange != null)
+					{
+						Color c = Colors.White;
+						switch (vm.CurrentSourceWordLevel)
+						{
+							case TranslationLevel.Transfer:
+								c = Colors.DarkGray;
+								break;
+							case TranslationLevel.LowConfidence:
+								c = Colors.SkyBlue;
+								break;
+							case TranslationLevel.HighConfidence:
+								c = Colors.Orange;
+								break;
+						}
+						_sourceSegmentTextArea.Buffer.SetBackground(FixRichTextAreaInputRange(_sourceSegmentTextArea, vm.CurrentSourceWordRange.Value), c);
+					}
 					break;
 
-				case "SourceTextSelection":
+				case "CurrentSourceSegmentRange":
 					_sourceTextArea.Buffer.SetForeground(new Range<int>(0, _sourceTextArea.Text.Length), Colors.Gray);
-					if (vm.SourceTextSelection != null)
-						_sourceTextArea.Buffer.SetForeground(FixRichTextAreaInputRange(_sourceTextArea, vm.SourceTextSelection.Value), Colors.Black);
+					if (vm.CurrentSourceSegmentRange != null)
+						_sourceTextArea.Buffer.SetForeground(FixRichTextAreaInputRange(_sourceTextArea, vm.CurrentSourceSegmentRange.Value), Colors.Black);
 					break;
 
-				case "TargetTextSelection":
+				case "CurrentTargetSegmentRange":
 					_targetTextArea.Buffer.SetForeground(new Range<int>(0, _targetTextArea.Text.Length), Colors.Gray);
-					if (vm.TargetTextSelection != null)
-						_targetTextArea.Buffer.SetForeground(FixRichTextAreaInputRange(_targetTextArea, vm.TargetTextSelection.Value), Colors.Black);
+					if (vm.CurrentTargetSegmentRange != null)
+						_targetTextArea.Buffer.SetForeground(FixRichTextAreaInputRange(_targetTextArea, vm.CurrentTargetSegmentRange.Value), Colors.Black);
 					break;
 			}
 		}
