@@ -11,9 +11,24 @@
 	</Form.DataContext>
 	<TableLayout Padding="10">
 		<TableRow>
-			<StackLayout Orientation="Horizontal">
-				<Button Text="Open Project" Command="{Binding OpenProjectCommand}" />
-			</StackLayout>
+			<TableLayout>
+				<TableRow ScaleHeight="True">
+					<TableCell ScaleWidth="True">
+						<StackLayout>
+							<Button Text="Open Project" Command="{Binding OpenProjectCommand}" />
+						</StackLayout>
+					</TableCell>
+					<TableCell ScaleWidth="True">
+						<StackLayout HorizontalContentAlignment="Right">
+							<StackLayout Orientation="Horizontal" Spacing="5">
+								<Label>Confidence threshold:</Label>
+								<Slider Orientation="Horizontal" MinValue="0" MaxValue="100" Width="150" Value="{Binding ConfidenceThreshold}" />
+								<NumericUpDown MinValue="0" MaxValue="100" Increment="5" Width="50" Value="{Binding ConfidenceThreshold}" />
+							</StackLayout>
+						</StackLayout>
+					</TableCell>
+				</TableRow>
+			</TableLayout>
 		</TableRow>
 		<TableRow ScaleHeight="True">
 			<TableLayout>
@@ -37,8 +52,7 @@
 				<TableRow>
 					<TableCell>
 						<GroupBox Text="Source Sentence" Padding="0,25,0,0">
-							<RichTextArea x:Name="_sourceSegmentTextArea" ReadOnly="True" Height="100" Text="{Binding SourceSegment}" Selection="{Binding SourceSegmentSelection}"
-										  SelectionChanged="SourceSegmentSelectionChanged" />
+							<RichTextArea x:Name="_sourceSegmentTextArea" ReadOnly="True" Height="100" Text="{Binding SourceSegment}" />
 						</GroupBox>
 					</TableCell>
 					<TableCell>

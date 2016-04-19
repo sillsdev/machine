@@ -12,7 +12,7 @@ namespace SIL.Machine.Translation.TestApp
 		private StackLayout _suggestionsContainer;
 		private RichTextArea _sourceSegmentTextArea;
 		private TextArea _targetSegmentTextArea;
-		private Range<int> _prevSourceSegmentSelection; 
+		private Range<int>? _prevSourceSegmentSelection; 
 
 		public MainForm()
 		{
@@ -20,6 +20,25 @@ namespace SIL.Machine.Translation.TestApp
 
 			var vm = (MainFormViewModel) DataContext;
 			vm.Suggestions.CollectionChanged += SuggestionsChanged;
+			vm.PropertyChanged += ViewModelPropertyChanged;
+		}
+
+		private void ViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			var vm = (MainFormViewModel) DataContext;
+			switch (e.PropertyName)
+			{
+				case "SourceSegmentSelection":
+					if (_prevSourceSegmentSelection != null)
+						_sourceSegmentTextArea.Buffer.SetBackground(_prevSourceSegmentSelection.Value, Colors.White);
+					if (vm.SourceSegmentSelection != null)
+					{
+						_sourceSegmentTextArea.Selection = vm.SourceSegmentSelection.Value;
+						_sourceSegmentTextArea.SelectionBackground = Colors.DarkGray;
+					}
+					_prevSourceSegmentSelection = vm.SourceSegmentSelection;
+					break;
+			}
 		}
 
 		private void SuggestionsChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -58,15 +77,6 @@ namespace SIL.Machine.Translation.TestApp
 					e.Handled = true;
 				}
 			}
-		}
-
-		private void SourceSegmentSelectionChanged(object sender, EventArgs e)
-		{
-			if (_sourceSegmentTextArea.Selection.Start == _sourceSegmentTextArea.Selection.End)
-				return;
-			_sourceSegmentTextArea.Buffer.SetForeground(_prevSourceSegmentSelection, Colors.Black);
-			_sourceSegmentTextArea.SelectionForeground = Colors.Red;
-			_prevSourceSegmentSelection = _sourceSegmentTextArea.Selection;
 		}
 
 		protected override void OnClosing(CancelEventArgs e)

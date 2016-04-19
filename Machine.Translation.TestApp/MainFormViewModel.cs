@@ -43,7 +43,8 @@ namespace SIL.Machine.Translation.TestApp
 		private string _sourceTextPath;
 		private string _targetTextPath;
 		private readonly List<string> _sourceSegmentWords;
-		private Range<int> _sourceSegmentSelection; 
+		private Range<int>? _sourceSegmentSelection;
+		private int _confidenceThreshold;
 
 		public MainFormViewModel()
 		{
@@ -60,6 +61,7 @@ namespace SIL.Machine.Translation.TestApp
 			_suggestions = new BulkObservableList<SuggestionViewModel>();
 			_readOnlySuggestions = new ReadOnlyObservableList<SuggestionViewModel>(_suggestions);
 			_sourceSegmentWords = new List<string>();
+			_confidenceThreshold = 20;
 		}
 
 		public ICommand OpenProjectCommand
@@ -326,7 +328,7 @@ namespace SIL.Machine.Translation.TestApp
 				if (IsCapitalCase(_sourceSegmentWords[_translator.GetSourceWordIndex(i)]))
 					word = ToCapitalCase(word);
 				bool isPunct = word.All(char.IsPunctuation);
-				if ((_translator.IsWordTransferred(i) || _translator.GetWordConfidence(i) >= 0.2f) && !isPunct)
+				if (IsWordSignificant(i) && !isPunct)
 				{
 					if ((suggestions.Count == 0 || suggestions[suggestions.Count - 1].Text != word)
 					    && (suggestions.Count > 0 || !TargetSegment.EndsWith(word)))
@@ -343,6 +345,11 @@ namespace SIL.Machine.Translation.TestApp
 			}
 
 			_suggestions.ReplaceAll(suggestions);
+		}
+
+		private bool IsWordSignificant(int index)
+		{
+			return _translator.IsWordTransferred(index) || _translator.GetWordConfidence(index) >= (_confidenceThreshold / 100.0f);
 		}
 
 		private static bool IsCapitalCase(string word)
@@ -432,16 +439,36 @@ namespace SIL.Machine.Translation.TestApp
 				.IndexOf(m => _currentTargetSegmentIndex >= m.Index && _currentTargetSegmentIndex <= m.Index + m.Length);
 			if (targetWordIndex != -1)
 			{
-				int sourceWordIndex = _translator.GetSourceWordIndex(targetWordIndex);
-				Match match = TokenizeRegex.Matches(SourceSegment)[sourceWordIndex];
-				SourceSegmentSelection = new Range<int>(match.Index, match.Index + match.Length);
+				if (IsWordSignificant(targetWordIndex))
+				{
+					int sourceWordIndex = _translator.GetSourceWordIndex(targetWordIndex);
+					Match match = TokenizeRegex.Matches(SourceSegment)[sourceWordIndex];
+					SourceSegmentSelection = new Range<int>(match.Index, match.Index + match.Length - 1);
+				}
+				else
+				{
+					SourceSegmentSelection = null;
+				}
 			}
 		}
 
-		public Range<int> SourceSegmentSelection
+		public Range<int>? SourceSegmentSelection
 		{
 			get { return _sourceSegmentSelection; }
-			set { Set(() => SourceSegmentSelection, ref _sourceSegmentSelection, value); }
+			private set { Set(() => SourceSegmentSelection, ref _sourceSegmentSelection, value); }
+		}
+
+		public int ConfidenceThreshold
+		{
+			get { return _confidenceThreshold; }
+			set
+			{
+				if (Set(() => ConfidenceThreshold, ref _confidenceThreshold, value))
+				{
+					UpdateSuggestions();
+					UpdateSourceSegmentSelection();
+				}
+			}
 		}
 
 		private void UpdatePrefix()
