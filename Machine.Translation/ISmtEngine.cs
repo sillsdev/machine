@@ -2,12 +2,10 @@
 
 namespace SIL.Machine.Translation
 {
-	public interface ISmtEngine : IDisposable
+	public interface ISmtEngine : ISingleWordAlignmentModel, IDisposable
 	{
-		ThotSmtSession StartSession();
+		ISmtSession StartSession();
 
 		void SaveModels();
-
-		float GetWordConfidence(string sourceWord, string targetWord);
 	}
 }

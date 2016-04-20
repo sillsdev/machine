@@ -15,7 +15,7 @@ namespace SIL.Machine.Translation
 			_handle = Thot.decoder_open(cfgFileName);
 		}
 
-		public ThotSmtSession StartSession()
+		public ISmtSession StartSession()
 		{
 			CheckDisposed();
 
@@ -29,10 +29,18 @@ namespace SIL.Machine.Translation
 			Thot.decoder_saveModels(_handle);
 		}
 
-		public float GetWordConfidence(string sourceWord, string targetWord)
+		public double GetTranslationProbability(string sourceWord, string targetWord)
 		{
-			return Thot.decoder_getWordConfidence(_handle, Thot.ConvertStringToNativeUtf8(sourceWord),
+			return Thot.decoder_getTranslationProbability(_handle, Thot.ConvertStringToNativeUtf8(sourceWord),
 				Thot.ConvertStringToNativeUtf8(targetWord));
+		}
+
+		public int[] GetBestAlignment(IList<string> sourceSegment, IList<string> targetSegment)
+		{
+			int[] alignment = new int[targetSegment.Count];
+			Thot.decoder_getBestAlignment(_handle, Thot.ConvertStringToNativeUtf8(string.Join(" ", sourceSegment)),
+				Thot.ConvertStringToNativeUtf8(string.Join(" ", targetSegment)), alignment, alignment.Length);
+			return alignment;
 		}
 
 		internal IntPtr Handle

@@ -16,7 +16,10 @@ namespace SIL.Machine.Translation
 		public static extern void decoder_saveModels(IntPtr decoderHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern float decoder_getWordConfidence(IntPtr decoderHandle, IntPtr sourceWord, IntPtr targetWord);
+		public static extern float decoder_getTranslationProbability(IntPtr decoderHandle, IntPtr sourceWord, IntPtr targetWord);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern int decoder_getBestAlignment(IntPtr decoderHandle, IntPtr sourceSentence, IntPtr targetSentence, int[] alignment, int capacity);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void decoder_close(IntPtr decoderHandle);

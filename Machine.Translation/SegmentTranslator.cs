@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using SIL.Extensions;
 using SIL.ObjectModel;
@@ -9,9 +8,7 @@ namespace SIL.Machine.Translation
 	public class SegmentTranslator
 	{
 		public const float NullWordConfidenceThreshold = 0.03f;
-		private const float Alpha = 0.75f;
 
-		private readonly ISmtEngine _smtEngine;
 		private readonly ISmtSession _smtSession;
 		private readonly TransferEngine _transferEngine;
 		private readonly Dictionary<string, string> _transferCache; 
@@ -22,11 +19,12 @@ namespace SIL.Machine.Translation
 		private readonly List<string> _prefix;
 		private readonly ReadOnlyList<string> _readOnlyPrefix; 
 		private bool _isLastWordPartial;
+		private readonly ISingleWordAlignmentModel _swAlignModel;
 
-		internal SegmentTranslator(ISmtEngine smtEngine, ISmtSession smtSession, TransferEngine transferEngine, Dictionary<string, string> transferCache,
+		internal SegmentTranslator(ISingleWordAlignmentModel swAlignModel, ISmtSession smtSession, TransferEngine transferEngine, Dictionary<string, string> transferCache,
 			IEnumerable<string> segment)
 		{
-			_smtEngine = smtEngine;
+			_swAlignModel = swAlignModel;
 			_smtSession = smtSession;
 			_transferEngine = transferEngine;
 			_transferCache = transferCache;
@@ -92,7 +90,7 @@ namespace SIL.Machine.Translation
 			return _wordInfos[index].SourceWordIndex;
 		}
 
-		public float GetWordConfidence(int index)
+		public double GetWordConfidence(int index)
 		{
 			return _wordInfos[index].Confidence;
 		}
@@ -116,44 +114,19 @@ namespace SIL.Machine.Translation
 		{
 			_translation.Clear();
 			_wordInfos.Clear();
-			List<string> translationWords = translation.ToList();
-			for (int i = 0; i < translationWords.Count; i++)
+			List<string> targetSegment = translation.ToList();
+			int[] alignment = _swAlignModel.GetBestAlignment(_sourceSegment, targetSegment);
+			for (int i = 0; i < targetSegment.Count; i++)
 			{
-				float bestConfidence = 0;
-				int bestIndex = 0;
-				float bestAlignmentScore = 0;
-				for (int j = 0; j < _sourceSegment.Count; j++)
-				{
-					if (IsPunctuation(translationWords[i]) != IsPunctuation(_sourceSegment[j]))
-						continue;
+				int sourceIndex = alignment[i];
+				double confidence = _swAlignModel.GetTranslationProbability(_sourceSegment[sourceIndex], targetSegment[i]);
 
-					float confidence;
-					if (IsNumber(translationWords[i]) && translationWords[i] == _sourceSegment[j])
-					{
-						confidence = 1;
-					}
-					else
-					{
-						confidence = _smtEngine.GetWordConfidence(_sourceSegment[j], translationWords[i]);
-					}
-
-					float distance = (float) Math.Abs(i - j) / (Math.Max(translationWords.Count, _sourceSegment.Count) - 1);
-					float alignmentScore = ((translationWords[i] == _sourceSegment[j] ? 1.0f : confidence) * Alpha) + ((1.0f - distance) * (1.0f - Alpha));
-
-					if (alignmentScore > bestAlignmentScore)
-					{
-						bestConfidence = confidence;
-						bestIndex = j;
-						bestAlignmentScore = alignmentScore;
-					}
-				}
-
-				string sourceWord = _sourceSegment[bestIndex];
+				string sourceWord = _sourceSegment[sourceIndex];
 				bool transferred = false;
 				string targetWord;
-				if (bestConfidence < NullWordConfidenceThreshold && TryTransferWord(sourceWord, out targetWord))
+				if (confidence < NullWordConfidenceThreshold && sourceWord == targetSegment[i] && TryTransferWord(sourceWord, out targetWord))
 				{
-					bestConfidence = _smtEngine.GetWordConfidence(sourceWord, targetWord);
+					confidence = _swAlignModel.GetTranslationProbability(sourceWord, targetWord);
 					transferred = true;
 					if (_translation.Count == 1 && targetWord.StartsWith(_translation[0]))
 					{
@@ -163,13 +136,13 @@ namespace SIL.Machine.Translation
 				}
 				else
 				{
-					targetWord = translationWords[i];
+					targetWord = targetSegment[i];
 					string word;
 					if (i < _prefix.Count && TryTransferWord(sourceWord, out word) && word == targetWord)
 						transferred = true;
 				}
 				_translation.Add(targetWord);
-				_wordInfos.Add(new WordInfo(bestIndex, bestConfidence, transferred));
+				_wordInfos.Add(new WordInfo(sourceIndex, confidence, transferred));
 			}
 		}
 
@@ -191,23 +164,13 @@ namespace SIL.Machine.Translation
 			return false;
 		}
 
-		private static bool IsPunctuation(string word)
-		{
-			return word.All(char.IsPunctuation);
-		}
-
-		private static bool IsNumber(string word)
-		{
-			return word.All(char.IsNumber);
-		}
-
 		private class WordInfo
 		{
 			private readonly int _sourceWordIndex;
-			private readonly float _confidence;
+			private readonly double _confidence;
 			private readonly bool _transferred;
 
-			public WordInfo(int sourceWordIndex, float confidence, bool transfered)
+			public WordInfo(int sourceWordIndex, double confidence, bool transfered)
 			{
 				_sourceWordIndex = sourceWordIndex;
 				_confidence = confidence;
@@ -219,7 +182,7 @@ namespace SIL.Machine.Translation
 				get { return _sourceWordIndex; }
 			}
 
-			public float Confidence
+			public double Confidence
 			{
 				get { return _confidence; }
 			}
