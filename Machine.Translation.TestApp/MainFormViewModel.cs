@@ -34,6 +34,7 @@ namespace SIL.Machine.Translation.TestApp
 		private string _targetSegment;
 		private int _currentTargetSegmentIndex;
 		private readonly RelayCommand<object> _openProjectCommand;
+		private readonly RelayCommand<object> _saveProjectCommand; 
 		private readonly RelayCommand<object> _goToNextSegmentCommand;
 		private readonly RelayCommand<object> _goToPrevSegmentCommand;
 		private readonly RelayCommand<object> _closeCommand;
@@ -58,6 +59,7 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly RelayCommand<int> _selectSourceSegmentCommand;
 		private readonly RelayCommand<int> _selectTargetSegmentCommand;
 		private TranslationLevel _currentSourceWordLevel;
+		private bool _updated;
 
 		public MainFormViewModel()
 		{
@@ -65,9 +67,10 @@ namespace SIL.Machine.Translation.TestApp
 			_targetSegments = new List<Segment>();
 			_paragraphs = new HashSet<int>();
 			_openProjectCommand = new RelayCommand<object>(o => OpenProject());
+			_saveProjectCommand = new RelayCommand<object>(o => SaveProject(), o => IsUpdated);
 			_goToNextSegmentCommand = new RelayCommand<object>(o => GoToNextSegment(), o => CanGoToNextSegment());
 			_goToPrevSegmentCommand = new RelayCommand<object>(o => GoToPrevSegment(), o => CanGoToPrevSegment());
-			_closeCommand = new RelayCommand<object>(o => Close());
+			_closeCommand = new RelayCommand<object>(o => Close(), o => CanClose());
 			_applyAllSuggestionsCommand = new RelayCommand<object>(o => ApplyAllSuggestions());
 			_selectSourceSegmentCommand = new RelayCommand<int>(SelectSourceSegment);
 			_selectTargetSegmentCommand = new RelayCommand<int>(SelectTargetSegment);
@@ -77,6 +80,19 @@ namespace SIL.Machine.Translation.TestApp
 			_readOnlySuggestions = new ReadOnlyObservableList<SuggestionViewModel>(_suggestions);
 			_sourceSegmentWords = new List<string>();
 			_confidenceThreshold = 20;
+		}
+
+		private bool IsUpdated
+		{
+			get { return _updated; }
+			set
+			{
+				if (_updated != value)
+				{
+					_updated = value;
+					_saveProjectCommand.UpdateCanExecute();
+				}
+			}
 		}
 
 		public ICommand OpenProjectCommand
@@ -170,8 +186,24 @@ namespace SIL.Machine.Translation.TestApp
 			{
 				ResetSegment();
 			}
-
+			IsUpdated = false;
+			_saveProjectCommand.UpdateCanExecute();
 			return true;
+		}
+
+		public ICommand SaveProjectCommand
+		{
+			get { return _saveProjectCommand; }
+		}
+
+		private void SaveProject()
+		{
+			if (_engine != null)
+				_engine.Save();
+			if (!string.IsNullOrEmpty(_targetTextPath))
+				SaveTargetText();
+			IsUpdated = false;
+
 		}
 
 		private void CloseProject()
@@ -179,13 +211,9 @@ namespace SIL.Machine.Translation.TestApp
 			ResetSegment();
 			if (_engine != null)
 			{
-				_engine.Save();
 				_engine.Dispose();
 				_engine = null;
 			}
-
-			if (!string.IsNullOrEmpty(_targetTextPath))
-				SaveTargetText();
 
 			_sourceSegments.Clear();
 			_targetSegments.Clear();
@@ -418,8 +446,9 @@ namespace SIL.Machine.Translation.TestApp
 				if (TargetSegment != _targetSegments[_currentSegment].Text)
 				{
 					_translator.Approve();
-					_targetSegments[_currentSegment].Text = TargetSegment;
+					_targetSegments[_currentSegment].Text = TargetSegment.Trim();
 					TargetText = GenerateText(_targetSegments);
+					IsUpdated = true;
 				}
 				_translator = null;
 			}
@@ -430,6 +459,28 @@ namespace SIL.Machine.Translation.TestApp
 		public ICommand CloseCommand
 		{
 			get { return _closeCommand; }
+		}
+
+		private bool CanClose()
+		{
+			if (IsUpdated)
+			{
+				DialogResult result = MessageBox.Show("Do you wish to save the project before exiting?", MessageBoxButtons.YesNoCancel, MessageBoxType.Question);
+				switch (result)
+				{
+					case DialogResult.Yes:
+						SaveProject();
+						return true;
+
+					case DialogResult.No:
+						return true;
+
+					case DialogResult.Cancel:
+						return false;
+				}
+			}
+
+			return true;
 		}
 
 		private void Close()
