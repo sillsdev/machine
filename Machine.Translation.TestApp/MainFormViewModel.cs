@@ -390,22 +390,35 @@ namespace SIL.Machine.Translation.TestApp
 		{
 			var suggestions = new List<SuggestionViewModel>();
 			int lookaheadCount = Math.Max(0, _translator.Translation.Count - _translator.SourceSegment.Count) + 1;
-			int i = Math.Max(0, _translator.Prefix.Count - (_translator.IsLastWordPartial ? 1 : 0));
+			int i = _translator.Prefix.Count;
+			if (_translator.IsLastWordPartial)
+			{
+				lookaheadCount--;
+				i--;
+			}
 			bool inPhrase = false;
-			while (i < Math.Min(_translator.Translation.Count, _translator.Prefix.Count + lookaheadCount) || inPhrase)
+			while (i < _translator.Translation.Count && (i < _translator.Prefix.Count + lookaheadCount || inPhrase))
 			{
 				string word = _translator.Translation[i];
-				if (IsCapitalCase(_sourceSegmentWords[_translator.GetSourceWordIndex(i)]))
-					word = ToCapitalCase(word);
-				bool isPunct = word.All(char.IsPunctuation);
-				if (IsWordSignificant(i) && !isPunct)
+				if (IsWordSignificant(i))
 				{
-					if ((suggestions.Count == 0 || suggestions[suggestions.Count - 1].Text != word)
-					    && (suggestions.Count > 0 || !TargetSegment.EndsWith(word)))
+					if (word.All(char.IsPunctuation))
 					{
-						suggestions.Add(new SuggestionViewModel(this, word));
+						if (word.IsOneOf(".", ",") && suggestions.Count > 0)
+						{
+							string prevWord = suggestions[suggestions.Count - 1].Text;
+							suggestions[suggestions.Count - 1] = new SuggestionViewModel(this, prevWord + word);
+						}
+						inPhrase = false;
 					}
-					inPhrase = true;
+					else
+					{
+						if (IsCapitalCase(_sourceSegmentWords[_translator.GetSourceWordIndex(i)]))
+							word = ToCapitalCase(word);
+						if (suggestions.Count == 0 || suggestions[suggestions.Count - 1].Text != word)
+							suggestions.Add(new SuggestionViewModel(this, word));
+						inPhrase = true;
+					}
 				}
 				else
 				{
@@ -591,7 +604,8 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void UpdatePrefix()
 		{
-			_translator.SetPrefix(TokenizeRegex.Matches(TargetSegment).Cast<Match>().Select(m => m.Value.ToLowerInvariant()), !TargetSegment.EndsWith(" "));
+			_translator.SetPrefix(TokenizeRegex.Matches(TargetSegment).Cast<Match>().Select(m => m.Value.ToLowerInvariant()),
+				TargetSegment.Length > 0 && !TargetSegment.EndsWith(" "));
 			UpdateSuggestions();
 		}
 
