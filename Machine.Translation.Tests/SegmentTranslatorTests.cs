@@ -73,13 +73,15 @@ namespace SIL.Machine.Translation.Tests
 			{
 				SegmentTranslator translator = env.Engine.StartSegmentTranslation("caminé a mi habitación .".Split());
 				Assert.That(translator.Translation, Is.EqualTo("walked to my room .".Split()));
+				Assert.That(translator.IsWordTransferred(0), Is.True);
 				translator.AddToPrefix("i", false);
 				Assert.That(translator.Translation, Is.EqualTo("i walked to my room .".Split()));
 				translator.AddToPrefix(new[] {"walked", "to", "my", "room", "."}, false);
 				translator.Approve();
 
 				translator = env.Engine.StartSegmentTranslation("caminé a la montaña .".Split());
-				Assert.That(translator.Translation, Is.EqualTo("i walked to the mountain .".Split()));
+				Assert.That(translator.Translation, Is.EqualTo("walked to the mountain .".Split()));
+				Assert.That(translator.IsWordTransferred(0), Is.False);
 			}
 		}
 
@@ -120,7 +122,7 @@ namespace SIL.Machine.Translation.Tests
 				translator.Approve();
 
 				translator = env.Engine.StartSegmentTranslation("hablé hasta cinco en punto .".Split());
-				Assert.That(translator.Translation, Is.EqualTo("i talked until five o ' clock .".Split()));
+				Assert.That(translator.Translation, Is.EqualTo("talked until five o ' clock .".Split()));
 			}
 		}
 	}

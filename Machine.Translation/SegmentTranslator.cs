@@ -19,9 +19,9 @@ namespace SIL.Machine.Translation
 		private readonly List<string> _prefix;
 		private readonly ReadOnlyList<string> _readOnlyPrefix; 
 		private bool _isLastWordPartial;
-		private readonly ISingleWordAlignmentModel _swAlignModel;
+		private readonly ISegmentAligner _swAlignModel;
 
-		internal SegmentTranslator(ISingleWordAlignmentModel swAlignModel, ISmtSession smtSession, TransferEngine transferEngine, Dictionary<string, string> transferCache,
+		internal SegmentTranslator(ISegmentAligner swAlignModel, ISmtSession smtSession, TransferEngine transferEngine, Dictionary<string, string> transferCache,
 			IEnumerable<string> segment)
 		{
 			_swAlignModel = swAlignModel;
@@ -115,16 +115,18 @@ namespace SIL.Machine.Translation
 			_translation.Clear();
 			_wordInfos.Clear();
 			List<string> targetSegment = translation.ToList();
-			int[] alignment = _swAlignModel.GetBestAlignment(_sourceSegment, targetSegment);
-			for (int i = 0; i < targetSegment.Count; i++)
+			WordAlignmentMatrix waMatrix;
+			_swAlignModel.GetBestAlignment(_sourceSegment, targetSegment, out waMatrix);
+			for (int j = 0; j < targetSegment.Count; j++)
 			{
-				int sourceIndex = alignment[i];
-				double confidence = _swAlignModel.GetTranslationProbability(_sourceSegment[sourceIndex], targetSegment[i]);
+				int sourceIndex = Enumerable.Range(0, waMatrix.I).First(i => waMatrix[i, j]);
+
+				double confidence = _swAlignModel.GetTranslationProbability(_sourceSegment[sourceIndex], targetSegment[j]);
 
 				string sourceWord = _sourceSegment[sourceIndex];
 				bool transferred = false;
 				string targetWord;
-				if (confidence < NullWordConfidenceThreshold && sourceWord == targetSegment[i] && TryTransferWord(sourceWord, out targetWord))
+				if (confidence < NullWordConfidenceThreshold && sourceWord == targetSegment[j] && TryTransferWord(sourceWord, out targetWord))
 				{
 					confidence = _swAlignModel.GetTranslationProbability(sourceWord, targetWord);
 					transferred = true;
@@ -136,9 +138,9 @@ namespace SIL.Machine.Translation
 				}
 				else
 				{
-					targetWord = targetSegment[i];
+					targetWord = targetSegment[j];
 					string word;
-					if (i < _prefix.Count && TryTransferWord(sourceWord, out word) && word == targetWord)
+					if (j < _prefix.Count && TryTransferWord(sourceWord, out word) && word == targetWord)
 						transferred = true;
 				}
 				_translation.Add(targetWord);

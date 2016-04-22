@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -16,10 +17,10 @@ namespace SIL.Machine.Translation
 		public static extern void decoder_saveModels(IntPtr decoderHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern float decoder_getTranslationProbability(IntPtr decoderHandle, IntPtr sourceWord, IntPtr targetWord);
+		public static extern IntPtr decoder_getSingleWordAlignmentModel(IntPtr decoderHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern int decoder_getBestAlignment(IntPtr decoderHandle, IntPtr sourceSentence, IntPtr targetSentence, int[] alignment, int capacity);
+		public static extern IntPtr decoder_getInverseSingleWordAlignmentModel(IntPtr decoderHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void decoder_close(IntPtr decoderHandle);
@@ -41,6 +42,41 @@ namespace SIL.Machine.Translation
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void session_close(IntPtr sessionHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern IntPtr swAlignModel_create();
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern IntPtr swAlignModel_open(string prefFileName);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void swAlignModel_addSentencePair(IntPtr swAlignModelHandle, IntPtr sourceSentence, IntPtr targetSentence);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void swAlignModel_train(IntPtr swAlignModelHandle, int numIters);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void swAlignModel_save(IntPtr swAlignModelHandle, string prefFileName);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern float swAlignModel_getTranslationProbability(IntPtr swAlignModelHandle, IntPtr sourceWord, IntPtr targetWord);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern float swAlignModel_getBestAlignment(IntPtr swAlignModelHandle, IntPtr sourceSentence, IntPtr targetSentence, IntPtr matrix, ref int iLen, ref int jLen);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void swAlignModel_close(IntPtr swAlignModelHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern bool giza_symmetr1(string lhsFileName, string rhsFileName, string outputFileName, bool transpose);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern bool phraseModel_generate(string alignmentFileName, int maxPhraseLength, string tableFileName);
+
+		public static IntPtr ConvertStringsToNativeUtf8(IEnumerable<string> managedStrings)
+		{
+			return ConvertStringToNativeUtf8(string.Join(" ", managedStrings));
+		}
 
 		public static IntPtr ConvertStringToNativeUtf8(string managedString)
 		{

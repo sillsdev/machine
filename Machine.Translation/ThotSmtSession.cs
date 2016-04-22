@@ -69,12 +69,21 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public void Train(IEnumerable<string> sourceSentence, IEnumerable<string> targetSentence)
+		public void Train(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment)
 		{
 			CheckDisposed();
 
-			Thot.session_trainSentencePair(_handle, Thot.ConvertStringToNativeUtf8(string.Join(" ", sourceSentence)),
-				Thot.ConvertStringToNativeUtf8(string.Join(" ", targetSentence)));
+			IntPtr nativeSourceSegment = Thot.ConvertStringsToNativeUtf8(sourceSegment);
+			IntPtr nativeTargetSegment = Thot.ConvertStringsToNativeUtf8(targetSegment);
+			try
+			{
+				Thot.session_trainSentencePair(_handle, nativeSourceSegment, nativeTargetSegment);
+			}
+			finally
+			{
+				Marshal.FreeHGlobal(nativeTargetSegment);
+				Marshal.FreeHGlobal(nativeSourceSegment);
+			}
 		}
 
 		protected override void DisposeManagedResources()

@@ -7,9 +7,14 @@ namespace SIL.Machine.Translation.Tests
 {
 	public static class TestHelpers
 	{
+		public static string ToyCorpusFolderName
+		{
+			get { return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "data", "toy_corpus"); }
+		}
+
 		public static string ToyCorpusConfigFileName
 		{
-			get { return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "data", "toy_corpus", "toy_corpus.cfg"); }
+			get { return Path.Combine(ToyCorpusFolderName, "toy_corpus.cfg"); }
 		}
 
 		public static void AddAnalyses(this ISourceAnalyzer sourceAnalyzer, string word, params WordAnalysis[] analyses)

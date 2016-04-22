@@ -13,6 +13,6 @@ namespace SIL.Machine.Translation
 
 		IEnumerable<string> SetPrefix(IEnumerable<string> prefix, bool isLastWordPartial);
 
-		void Train(IEnumerable<string> sourceSentence, IEnumerable<string> targetSentence);
+		void Train(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment);
 	}
 }

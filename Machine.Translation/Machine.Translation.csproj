@@ -44,7 +44,7 @@
   <ItemGroup>
     <Compile Include="GlossMorphemeMapper.cs" />
     <Compile Include="IMorphemeMapper.cs" />
-    <Compile Include="ISingleWordAlignmentModel.cs" />
+    <Compile Include="ISegmentAligner.cs" />
     <Compile Include="ISmtEngine.cs" />
     <Compile Include="ISmtSession.cs" />
     <Compile Include="ISourceAnalyzer.cs" />
@@ -53,13 +53,15 @@
     <Compile Include="MorphemeInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SegmentTranslator.cs" />
-    <Compile Include="SimpleSingleWordAlignmentModel.cs" />
+    <Compile Include="SimpleSegmentAligner.cs" />
     <Compile Include="SimpleTransferer.cs" />
     <Compile Include="Thot.cs" />
+    <Compile Include="ThotSingleWordAlignmentModel.cs" />
     <Compile Include="ThotSmtEngine.cs" />
     <Compile Include="ThotSmtSession.cs" />
     <Compile Include="TransferEngine.cs" />
     <Compile Include="TranslationEngine.cs" />
+    <Compile Include="WordAlignmentMatrix.cs" />
     <Compile Include="WordAnalysis.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -9,13 +9,13 @@ namespace SIL.Machine.Translation
 		private readonly ISmtEngine _smtEngine;
 		private readonly ISmtSession _smtSession;
 		private readonly Dictionary<string, string> _transferCache;
-		private readonly ISingleWordAlignmentModel _swAlignModel;
+		private readonly ISegmentAligner _segmentAligner;
 
 		public TranslationEngine(ISmtEngine smtEngine, TransferEngine transferEngine = null)
 		{
 			_smtEngine = smtEngine;
 			_transferEngine = transferEngine;
-			_swAlignModel = new SimpleSingleWordAlignmentModel(_smtEngine);
+			_segmentAligner = new SimpleSegmentAligner(_smtEngine.SegmentAligner);
 			if (_transferEngine != null)
 				_transferCache = new Dictionary<string, string>();
 			_smtSession = _smtEngine.StartSession();
@@ -23,7 +23,7 @@ namespace SIL.Machine.Translation
 
 		public SegmentTranslator StartSegmentTranslation(IEnumerable<string> segment)
 		{
-			return new SegmentTranslator(_swAlignModel, _smtSession, _transferEngine, _transferCache, segment);
+			return new SegmentTranslator(_segmentAligner, _smtSession, _transferEngine, _transferCache, segment);
 		}
 
 		public void Save()

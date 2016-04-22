@@ -2,9 +2,9 @@
 
 namespace SIL.Machine.Translation
 {
-	public interface ISingleWordAlignmentModel
+	public interface ISegmentAligner
 	{
-		int[] GetBestAlignment(IList<string> sourceSegment, IList<string> targetSegment);
+		double GetBestAlignment(IList<string> sourceSegment, IList<string> targetSegment, out WordAlignmentMatrix waMatrix);
 		double GetTranslationProbability(string sourceWord, string targetWord);
 	}
 }

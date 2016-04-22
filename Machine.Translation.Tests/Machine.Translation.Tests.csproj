@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SegmentTranslatorTests.cs" />
+    <Compile Include="ThotSingleWordAlignmentModelTests.cs" />
     <Compile Include="ThotSmtEngineTests.cs" />
     <Compile Include="ThotSmtSessionTests.cs" />
     <Compile Include="TestHelpers.cs" />
