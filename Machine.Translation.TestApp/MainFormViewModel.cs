@@ -71,7 +71,7 @@ namespace SIL.Machine.Translation.TestApp
 			_saveProjectCommand = new RelayCommand<object>(o => SaveProject(), o => IsUpdated);
 			_approveSegmentCommand = new RelayCommand<object>(o => ApproveSegment(), o => CanApproveSegment());
 			_closeCommand = new RelayCommand<object>(o => Close(), o => CanClose());
-			_applyAllSuggestionsCommand = new RelayCommand<object>(o => ApplyAllSuggestions());
+			_applyAllSuggestionsCommand = new RelayCommand<object>(o => ApplyAllSuggestions(), o => CanApplyAllSuggestions());
 			_selectSourceSegmentCommand = new RelayCommand<int>(SelectSourceSegment);
 			_selectTargetSegmentCommand = new RelayCommand<int>(SelectTargetSegment);
 			_spanFactory = new ShapeSpanFactory();
@@ -180,8 +180,8 @@ namespace SIL.Machine.Translation.TestApp
 
 			if (_sourceSegments.Count > 0)
 			{
-				int firstEmptySegment = _targetSegments.FindIndex(s => string.IsNullOrEmpty(s.Text));
-				MoveSegment(firstEmptySegment == -1 ? 0 : firstEmptySegment);
+				int unapprovedSegment = _targetSegments.FindIndex(s => !s.IsApproved);
+				MoveSegment(unapprovedSegment == -1 ? 0 : unapprovedSegment);
 			}
 			else
 			{
@@ -204,7 +204,6 @@ namespace SIL.Machine.Translation.TestApp
 			if (!string.IsNullOrEmpty(_targetTextPath))
 				SaveTargetText();
 			IsUpdated = false;
-
 		}
 
 		private void CloseProject()
@@ -218,9 +217,9 @@ namespace SIL.Machine.Translation.TestApp
 
 			_sourceSegments.Clear();
 			_targetSegments.Clear();
-			_unapprovedTargetSegmentRanges.Clear();
 			SourceText = "";
 			TargetText = "";
+			_unapprovedTargetSegmentRanges.Clear();
 		}
 
 		private void SaveTargetText()
@@ -304,7 +303,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		private bool CanApproveSegment()
 		{
-			return _currentSegment != -1 && (!_targetSegments[_currentSegment].IsApproved || TargetSegment != _targetSegments[_currentSegment].Text);
+			return _currentSegment != -1 && !_targetSegments[_currentSegment].IsApproved;
 		}
 
 		private void ApproveSegment()
@@ -312,7 +311,7 @@ namespace SIL.Machine.Translation.TestApp
 			_translator.Approve();
 			Segment targetSegment = _targetSegments[_currentSegment];
 			if (_currentSegment == _sourceSegments.Count - 1)
-				SaveCurrentTargetSegment();
+				UpdateTargetText();
 			else
 				MoveSegment(_currentSegment + 1);
 			targetSegment.IsApproved = true;
@@ -376,7 +375,9 @@ namespace SIL.Machine.Translation.TestApp
 			_currentSegment = -1;
 			SourceSegment = "";
 			TargetSegment = "";
+			_suggestions.Clear();
 			_approveSegmentCommand.UpdateCanExecute();
+			_applyAllSuggestionsCommand.UpdateCanExecute();
 		}
 
 		private void StartSegmentTranslation()
@@ -430,6 +431,7 @@ namespace SIL.Machine.Translation.TestApp
 			}
 
 			_suggestions.ReplaceAll(suggestions);
+			_applyAllSuggestionsCommand.UpdateCanExecute();
 		}
 
 		private bool IsWordSignificant(int index)
@@ -456,25 +458,15 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void EndSegmentTranslation()
 		{
-			SaveCurrentTargetSegment();
+			UpdateTargetText();
 			_translator = null;
 			_sourceSegmentWords.Clear();
 			CurrentTargetSegmentIndex = 0;
 		}
 
-		private void SaveCurrentTargetSegment()
+		private void UpdateTargetText()
 		{
-			if (_currentSegment == -1)
-				return;
-
-			Segment targetSegment = _targetSegments[_currentSegment];
-			if (TargetSegment != targetSegment.Text)
-			{
-				targetSegment.Text = TargetSegment.Trim();
-				TargetText = GenerateText(_targetSegments);
-				targetSegment.IsApproved = false;
-				IsUpdated = true;
-			}
+			TargetText = GenerateText(_targetSegments);
 		}
 
 		public ICommand CloseCommand
@@ -535,6 +527,12 @@ namespace SIL.Machine.Translation.TestApp
 				if (Set(() => TargetSegment, ref _targetSegment, value))
 				{
 					UpdatePrefix();
+					if (_currentSegment != -1 && TargetSegment.Trim() != _targetSegments[_currentSegment].Text)
+					{
+						_targetSegments[_currentSegment].Text = TargetSegment.Trim();
+						_targetSegments[_currentSegment].IsApproved = false;
+						IsUpdated = true;
+					}
 					_approveSegmentCommand.UpdateCanExecute();
 				}
 			}
@@ -634,6 +632,11 @@ namespace SIL.Machine.Translation.TestApp
 		public ICommand ApplyAllSuggestionsCommand
 		{
 			get { return _applyAllSuggestionsCommand; }
+		}
+
+		private bool CanApplyAllSuggestions()
+		{
+			return _suggestions.Count > 0;
 		}
 
 		private void ApplyAllSuggestions()

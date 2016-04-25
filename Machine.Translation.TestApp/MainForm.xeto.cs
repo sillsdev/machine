@@ -9,12 +9,6 @@ namespace SIL.Machine.Translation.TestApp
 {
 	public class MainForm : Form
 	{
-		private StackLayout _suggestionsContainer;
-		private RichTextArea _sourceTextArea;
-		private RichTextArea _sourceSegmentTextArea;
-		private RichTextArea _targetTextArea;
-		private TextArea _targetSegmentTextArea;
-
 		public MainForm()
 		{
 			XamlReader.Load(this);
@@ -24,16 +18,22 @@ namespace SIL.Machine.Translation.TestApp
 			vm.PropertyChanged += ViewModelPropertyChanged;
 			vm.UnapprovedTargetSegmentRanges.CollectionChanged += UnapprovedTargetSegmentRangesChanged;
 
-			_sourceTextArea.Cursor = new Cursor(CursorType.Pointer);
-			_targetTextArea.Cursor = new Cursor(CursorType.Pointer);
+			SourceTextArea.Cursor = Cursors.Pointer;
+			TargetTextArea.Cursor = Cursors.Pointer;
 		}
+
+		protected StackLayout SuggestionsContainer { get; set; }
+		protected RichTextArea SourceTextArea { get; set; }
+		protected RichTextArea SourceSegmentTextArea { get; set; }
+		protected RichTextArea TargetTextArea { get; set; }
+		protected TextArea TargetSegmentTextArea { get; set; }
 
 		private void UnapprovedTargetSegmentRangesChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			var vm = (MainFormViewModel) DataContext;
-			_targetTextArea.Buffer.SetBackground(new Range<int>(0, _targetTextArea.Text.Length), Colors.White);
+			TargetTextArea.Buffer.SetBackground(new Range<int>(0, TargetTextArea.Text.Length), Colors.White);
 			foreach (Range<int> range in vm.UnapprovedTargetSegmentRanges)
-				_targetTextArea.Buffer.SetBackground(FixRichTextAreaInputRange(_targetTextArea, range), Colors.LightYellow);
+				TargetTextArea.Buffer.SetBackground(FixRichTextAreaInputRange(TargetTextArea, range), Colors.LightYellow);
 		}
 
 		private void ViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -42,7 +42,7 @@ namespace SIL.Machine.Translation.TestApp
 			switch (e.PropertyName)
 			{
 				case "CurrentSourceWordRange":
-					_sourceSegmentTextArea.Buffer.SetBackground(new Range<int>(0, _sourceSegmentTextArea.Text.Length), Colors.White);
+					SourceSegmentTextArea.Buffer.SetBackground(new Range<int>(0, SourceSegmentTextArea.Text.Length), Colors.White);
 					if (vm.CurrentSourceWordRange != null)
 					{
 						Color c = Colors.White;
@@ -58,20 +58,20 @@ namespace SIL.Machine.Translation.TestApp
 								c = Colors.Orange;
 								break;
 						}
-						_sourceSegmentTextArea.Buffer.SetBackground(FixRichTextAreaInputRange(_sourceSegmentTextArea, vm.CurrentSourceWordRange.Value), c);
+						SourceSegmentTextArea.Buffer.SetBackground(FixRichTextAreaInputRange(SourceSegmentTextArea, vm.CurrentSourceWordRange.Value), c);
 					}
 					break;
 
 				case "CurrentSourceSegmentRange":
-					_sourceTextArea.Buffer.SetForeground(new Range<int>(0, _sourceTextArea.Text.Length), Colors.Gray);
+					SourceTextArea.Buffer.SetForeground(new Range<int>(0, SourceTextArea.Text.Length), Colors.Gray);
 					if (vm.CurrentSourceSegmentRange != null)
-						_sourceTextArea.Buffer.SetForeground(FixRichTextAreaInputRange(_sourceTextArea, vm.CurrentSourceSegmentRange.Value), Colors.Black);
+						SourceTextArea.Buffer.SetForeground(FixRichTextAreaInputRange(SourceTextArea, vm.CurrentSourceSegmentRange.Value), Colors.Black);
 					break;
 
 				case "CurrentTargetSegmentRange":
-					_targetTextArea.Buffer.SetForeground(new Range<int>(0, _targetTextArea.Text.Length), Colors.Gray);
+					TargetTextArea.Buffer.SetForeground(new Range<int>(0, TargetTextArea.Text.Length), Colors.Gray);
 					if (vm.CurrentTargetSegmentRange != null)
-						_targetTextArea.Buffer.SetForeground(FixRichTextAreaInputRange(_targetTextArea, vm.CurrentTargetSegmentRange.Value), Colors.Black);
+						TargetTextArea.Buffer.SetForeground(FixRichTextAreaInputRange(TargetTextArea, vm.CurrentTargetSegmentRange.Value), Colors.Black);
 					break;
 			}
 		}
@@ -118,36 +118,36 @@ namespace SIL.Machine.Translation.TestApp
 		private void SuggestionsChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			var vm = (MainFormViewModel) DataContext;
-			_suggestionsContainer.Items.Clear();
+			SuggestionsContainer.Items.Clear();
 			foreach (SuggestionViewModel suggestion in vm.Suggestions)
 			{
 				var button = new LinkButton {DataContext = suggestion};
 				button.TextBinding.BindDataContext((SuggestionViewModel svm) => svm.Text);
 				button.BindDataContext(b => b.Command, (SuggestionViewModel svm) => svm.Command);
-				_suggestionsContainer.Items.Add(new StackLayoutItem(button));
+				SuggestionsContainer.Items.Add(new StackLayoutItem(button));
 			}
 		}
 
-		private void SourceTextSelectionChanged(object sender, EventArgs e)
+		protected void SourceTextSelectionChanged(object sender, EventArgs e)
 		{
 			var vm = (MainFormViewModel) DataContext;
-			vm.SelectSourceSegmentCommand.Execute(FixRichTextAreaOutputRange(_sourceTextArea, _sourceTextArea.Selection).Start);
-			_targetSegmentTextArea.Focus();
+			vm.SelectSourceSegmentCommand.Execute(FixRichTextAreaOutputRange(SourceTextArea, SourceTextArea.Selection).Start);
+			TargetSegmentTextArea.Focus();
 		}
 
-		private void TargetTextSelectionChanged(object sender, EventArgs e)
+		protected void TargetTextSelectionChanged(object sender, EventArgs e)
 		{
 			var vm = (MainFormViewModel) DataContext;
-			vm.SelectTargetSegmentCommand.Execute(FixRichTextAreaOutputRange(_targetTextArea, _targetTextArea.Selection).Start);
-			_targetSegmentTextArea.Focus();
+			vm.SelectTargetSegmentCommand.Execute(FixRichTextAreaOutputRange(TargetTextArea, TargetTextArea.Selection).Start);
+			TargetSegmentTextArea.Focus();
 		}
 
-		private void TargetSegmentCaretIndexChanged(object sender, EventArgs e)
+		protected void TargetSegmentCaretIndexChanged(object sender, EventArgs e)
 		{
-			_targetSegmentTextArea.Focus();
+			TargetSegmentTextArea.Focus();
 		}
 
-		private void TargetSegmentKeyDown(object sender, KeyEventArgs e)
+		protected void TargetSegmentKeyDown(object sender, KeyEventArgs e)
 		{
 			var vm = (MainFormViewModel) DataContext;
 
@@ -167,9 +167,9 @@ namespace SIL.Machine.Translation.TestApp
 			}
 		}
 
-		private void SegmentNavigationClicked(object sender, EventArgs e)
+		protected void SegmentNavigationClicked(object sender, EventArgs e)
 		{
-			_targetSegmentTextArea.Focus();
+			TargetSegmentTextArea.Focus();
 		}
 
 		protected override void OnClosing(CancelEventArgs e)

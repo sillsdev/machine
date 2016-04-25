@@ -36,12 +36,12 @@
 				<TableRow ScaleHeight="True">
 					<TableCell ScaleWidth="True">
 						<GroupBox Text="Source Text">
-							<RichTextArea x:Name="_sourceTextArea" ReadOnly="True" Text="{Binding SourceText}" SelectionChanged="SourceTextSelectionChanged" />
+							<RichTextArea x:Name="SourceTextArea" ReadOnly="True" Text="{Binding SourceText}" SelectionChanged="SourceTextSelectionChanged" />
 						</GroupBox>
 					</TableCell>
 					<TableCell ScaleWidth="True">
 						<GroupBox Text="Target Text">
-							<RichTextArea x:Name="_targetTextArea" ReadOnly="True" Text="{Binding TargetText}" SelectionChanged="TargetTextSelectionChanged" />
+							<RichTextArea x:Name="TargetTextArea" ReadOnly="True" Text="{Binding TargetText}" SelectionChanged="TargetTextSelectionChanged" />
 						</GroupBox>
 					</TableCell>
 				</TableRow>
@@ -53,16 +53,19 @@
 				<TableRow>
 					<TableCell>
 						<GroupBox Text="Source Sentence" Padding="0,25,0,0">
-							<RichTextArea x:Name="_sourceSegmentTextArea" ReadOnly="True" Height="100" Text="{Binding SourceSegment}" />
+							<RichTextArea x:Name="SourceSegmentTextArea" ReadOnly="True" Height="100" Text="{Binding SourceSegment}" />
 						</GroupBox>
 					</TableCell>
 					<TableCell>
 						<GroupBox Text="Target Sentence">
 							<StackLayout HorizontalContentAlignment="Stretch">
-								<Scrollable Height="25" Border="None">
-									<StackLayout x:Name="_suggestionsContainer" Orientation="Horizontal" Padding="5,0,5,0" Spacing="5" VerticalContentAlignment="Center" />
-								</Scrollable>
-								<TextArea x:Name="_targetSegmentTextArea" Height="100" AcceptsReturn="False" AcceptsTab="False" Text="{Binding TargetSegment}"
+								<StackLayout Orientation="Horizontal" VerticalContentAlignment="Center">
+									<Button Text="&#x2193;" Width="16" Font="{Font Segoe UI, Style=Bold}" Command="{Binding ApplyAllSuggestionsCommand}" />
+									<Scrollable Height="25" Border="None">
+										<StackLayout x:Name="SuggestionsContainer" Orientation="Horizontal" Padding="5,0,5,0" Spacing="5" VerticalContentAlignment="Center" />
+									</Scrollable>
+								</StackLayout>
+								<TextArea x:Name="TargetSegmentTextArea" Height="100" AcceptsReturn="False" AcceptsTab="False" Text="{Binding TargetSegment}"
 										  CaretIndex="{Binding CurrentTargetSegmentIndex}" CaretIndexChanged="TargetSegmentCaretIndexChanged" KeyDown="TargetSegmentKeyDown" />
 							</StackLayout>
 						</GroupBox>
