@@ -35,8 +35,7 @@ namespace SIL.Machine.Translation.TestApp
 		private int _currentTargetSegmentIndex;
 		private readonly RelayCommand<object> _openProjectCommand;
 		private readonly RelayCommand<object> _saveProjectCommand; 
-		private readonly RelayCommand<object> _goToNextSegmentCommand;
-		private readonly RelayCommand<object> _goToPrevSegmentCommand;
+		private readonly RelayCommand<object> _approveSegmentCommand; 
 		private readonly RelayCommand<object> _closeCommand;
 		private readonly RelayCommand<object> _applyAllSuggestionsCommand; 
 		private readonly List<Segment> _sourceSegments;
@@ -60,6 +59,8 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly RelayCommand<int> _selectTargetSegmentCommand;
 		private TranslationLevel _currentSourceWordLevel;
 		private bool _updated;
+		private readonly BulkObservableList<Range<int>> _unapprovedTargetSegmentRanges;
+		private readonly ReadOnlyObservableList<Range<int>> _readonlyUnapprovedTargetSegmentRanges;
 
 		public MainFormViewModel()
 		{
@@ -68,8 +69,7 @@ namespace SIL.Machine.Translation.TestApp
 			_paragraphs = new HashSet<int>();
 			_openProjectCommand = new RelayCommand<object>(o => OpenProject());
 			_saveProjectCommand = new RelayCommand<object>(o => SaveProject(), o => IsUpdated);
-			_goToNextSegmentCommand = new RelayCommand<object>(o => GoToNextSegment(), o => CanGoToNextSegment());
-			_goToPrevSegmentCommand = new RelayCommand<object>(o => GoToPrevSegment(), o => CanGoToPrevSegment());
+			_approveSegmentCommand = new RelayCommand<object>(o => ApproveSegment(), o => CanApproveSegment());
 			_closeCommand = new RelayCommand<object>(o => Close(), o => CanClose());
 			_applyAllSuggestionsCommand = new RelayCommand<object>(o => ApplyAllSuggestions());
 			_selectSourceSegmentCommand = new RelayCommand<int>(SelectSourceSegment);
@@ -80,6 +80,8 @@ namespace SIL.Machine.Translation.TestApp
 			_readOnlySuggestions = new ReadOnlyObservableList<SuggestionViewModel>(_suggestions);
 			_sourceSegmentWords = new List<string>();
 			_confidenceThreshold = 20;
+			_unapprovedTargetSegmentRanges = new BulkObservableList<Range<int>>();
+			_readonlyUnapprovedTargetSegmentRanges = new ReadOnlyObservableList<Range<int>>(_unapprovedTargetSegmentRanges);
 		}
 
 		private bool IsUpdated
@@ -158,6 +160,7 @@ namespace SIL.Machine.Translation.TestApp
 			while (_targetSegments.Count < _sourceSegments.Count)
 				_targetSegments.Add(new Segment());
 			TargetText = GenerateText(_targetSegments);
+			UpdateUnapprovedTargetSegmentRanges();
 
 			TransferEngine transferEngine = null;
 			if (hcSrcConfig != null && hcTrgConfig != null)
@@ -177,10 +180,8 @@ namespace SIL.Machine.Translation.TestApp
 
 			if (_sourceSegments.Count > 0)
 			{
-				_currentSegment = _targetSegments.FindIndex(s => string.IsNullOrEmpty(s.Text)) - 1;
-				if (_currentSegment == -2)
-					_currentSegment = -1;
-				GoToNextSegment();
+				int firstEmptySegment = _targetSegments.FindIndex(s => string.IsNullOrEmpty(s.Text));
+				MoveSegment(firstEmptySegment == -1 ? 0 : firstEmptySegment);
 			}
 			else
 			{
@@ -217,6 +218,7 @@ namespace SIL.Machine.Translation.TestApp
 
 			_sourceSegments.Clear();
 			_targetSegments.Clear();
+			_unapprovedTargetSegmentRanges.Clear();
 			SourceText = "";
 			TargetText = "";
 		}
@@ -229,7 +231,7 @@ namespace SIL.Machine.Translation.TestApp
 				{
 					if (_paragraphs.Contains(i))
 						writer.WriteLine();
-					writer.WriteLine(_targetSegments[i].Text);
+					writer.WriteLine("{0}\t{1}", _targetSegments[i].IsApproved ? "1" : "0", _targetSegments[i].Text);
 				}
 			}
 		}
@@ -256,7 +258,10 @@ namespace SIL.Machine.Translation.TestApp
 				}
 				else
 				{
-					_targetSegments.Add(new Segment {Text = line});
+					int tabIndex = line.IndexOf("\t", StringComparison.Ordinal);
+					string approved = line.Substring(0, tabIndex);
+					string text = line.Substring(tabIndex + 1);
+					_targetSegments.Add(new Segment {Text = text, IsApproved = approved == "1"});
 					prevLinePara = false;
 				}
 			}
@@ -297,34 +302,27 @@ namespace SIL.Machine.Translation.TestApp
 			return null;
 		}
 
-		public ICommand GoToNextSegmentCommand
+		private bool CanApproveSegment()
 		{
-			get { return _goToNextSegmentCommand; }
+			return _currentSegment != -1 && (!_targetSegments[_currentSegment].IsApproved || TargetSegment != _targetSegments[_currentSegment].Text);
 		}
 
-		private bool CanGoToNextSegment()
+		private void ApproveSegment()
 		{
-			return _sourceSegments.Count > 0 && _currentSegment < _sourceSegments.Count - 1;
+			_translator.Approve();
+			Segment targetSegment = _targetSegments[_currentSegment];
+			if (_currentSegment == _sourceSegments.Count - 1)
+				SaveCurrentTargetSegment();
+			else
+				MoveSegment(_currentSegment + 1);
+			targetSegment.IsApproved = true;
+			UpdateUnapprovedTargetSegmentRanges();
+			IsUpdated = true;
 		}
 
-		private void GoToNextSegment()
+		public ICommand ApproveSegmentCommand
 		{
-			MoveSegment(_currentSegment + 1);
-		}
-
-		public ICommand GoToPrevSegmentCommand
-		{
-			get { return _goToPrevSegmentCommand; }
-		}
-
-		private bool CanGoToPrevSegment()
-		{
-			return _sourceSegments.Count > 0 && _currentSegment > 0;
-		}
-
-		private void GoToPrevSegment()
-		{
-			MoveSegment(_currentSegment - 1);
+			get { return _approveSegmentCommand; }
 		}
 
 		public ICommand SelectSourceSegmentCommand
@@ -336,7 +334,10 @@ namespace SIL.Machine.Translation.TestApp
 		{
 			int segmentIndex = _sourceSegments.IndexOf(s => s.StartIndex <= index && s.StartIndex + s.Text.Length > index);
 			if (segmentIndex != -1)
+			{
 				MoveSegment(segmentIndex);
+				UpdateUnapprovedTargetSegmentRanges();
+			}
 		}
 
 		public ICommand SelectTargetSegmentCommand
@@ -348,7 +349,10 @@ namespace SIL.Machine.Translation.TestApp
 		{
 			int segmentIndex = _targetSegments.IndexOf(s => s.StartIndex <= index && s.StartIndex + s.Text.Length > index);
 			if (segmentIndex != -1)
+			{
 				MoveSegment(segmentIndex);
+				UpdateUnapprovedTargetSegmentRanges();
+			}
 		}
 
 		private void MoveSegment(int segmentIndex)
@@ -362,8 +366,7 @@ namespace SIL.Machine.Translation.TestApp
 
 			CurrentSourceSegmentRange = new Range<int>(sourceSegment.StartIndex, sourceSegment.StartIndex + sourceSegment.Text.Length);
 			CurrentTargetSegmentRange = new Range<int>(targetSegment.StartIndex, targetSegment.StartIndex + targetSegment.Text.Length);
-			_goToNextSegmentCommand.UpdateCanExecute();
-			_goToPrevSegmentCommand.UpdateCanExecute();
+			_approveSegmentCommand.UpdateCanExecute();
 			StartSegmentTranslation();
 		}
 
@@ -373,8 +376,7 @@ namespace SIL.Machine.Translation.TestApp
 			_currentSegment = -1;
 			SourceSegment = "";
 			TargetSegment = "";
-			_goToNextSegmentCommand.UpdateCanExecute();
-			_goToPrevSegmentCommand.UpdateCanExecute();
+			_approveSegmentCommand.UpdateCanExecute();
 		}
 
 		private void StartSegmentTranslation()
@@ -454,19 +456,25 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void EndSegmentTranslation()
 		{
-			if (_translator != null)
-			{
-				if (TargetSegment != _targetSegments[_currentSegment].Text)
-				{
-					_translator.Approve();
-					_targetSegments[_currentSegment].Text = TargetSegment.Trim();
-					TargetText = GenerateText(_targetSegments);
-					IsUpdated = true;
-				}
-				_translator = null;
-			}
+			SaveCurrentTargetSegment();
+			_translator = null;
 			_sourceSegmentWords.Clear();
 			CurrentTargetSegmentIndex = 0;
+		}
+
+		private void SaveCurrentTargetSegment()
+		{
+			if (_currentSegment == -1)
+				return;
+
+			Segment targetSegment = _targetSegments[_currentSegment];
+			if (TargetSegment != targetSegment.Text)
+			{
+				targetSegment.Text = TargetSegment.Trim();
+				TargetText = GenerateText(_targetSegments);
+				targetSegment.IsApproved = false;
+				IsUpdated = true;
+			}
 		}
 
 		public ICommand CloseCommand
@@ -524,8 +532,11 @@ namespace SIL.Machine.Translation.TestApp
 			get { return _targetSegment; }
 			set
 			{
-				if (Set(() => TargetSegment, ref _targetSegment, value) && _translator != null)
+				if (Set(() => TargetSegment, ref _targetSegment, value))
+				{
 					UpdatePrefix();
+					_approveSegmentCommand.UpdateCanExecute();
+				}
 			}
 		}
 
@@ -534,13 +545,16 @@ namespace SIL.Machine.Translation.TestApp
 			get { return _currentTargetSegmentIndex; }
 			set
 			{
-				if (Set(() => CurrentTargetSegmentIndex, ref _currentTargetSegmentIndex, value) && _translator != null)
+				if (Set(() => CurrentTargetSegmentIndex, ref _currentTargetSegmentIndex, value))
 					UpdateSourceSegmentSelection();
 			}
 		}
 
 		private void UpdateSourceSegmentSelection()
 		{
+			if (_translator == null)
+				return;
+
 			int targetWordIndex = TokenizeRegex.Matches(TargetSegment).Cast<Match>()
 				.IndexOf(m => _currentTargetSegmentIndex >= m.Index && _currentTargetSegmentIndex <= m.Index + m.Length);
 			if (targetWordIndex != -1)
@@ -604,6 +618,9 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void UpdatePrefix()
 		{
+			if (_translator == null)
+				return;
+
 			_translator.SetPrefix(TokenizeRegex.Matches(TargetSegment).Cast<Match>().Select(m => m.Value.ToLowerInvariant()),
 				TargetSegment.Length > 0 && !TargetSegment.EndsWith(" "));
 			UpdateSuggestions();
@@ -623,6 +640,17 @@ namespace SIL.Machine.Translation.TestApp
 		{
 			foreach (SuggestionViewModel suggestion in _suggestions.ToArray())
 				suggestion.InsertSuggestion();
+		}
+
+		public ReadOnlyObservableList<Range<int>> UnapprovedTargetSegmentRanges
+		{
+			get { return _readonlyUnapprovedTargetSegmentRanges; }
+		}
+
+		private void UpdateUnapprovedTargetSegmentRanges()
+		{
+			_unapprovedTargetSegmentRanges.ReplaceAll(_targetSegments.Where(s => !s.IsApproved && !string.IsNullOrEmpty(s.Text))
+				.Select(s => new Range<int>(s.StartIndex, s.StartIndex + s.Text.Length)));
 		}
 	}
 }

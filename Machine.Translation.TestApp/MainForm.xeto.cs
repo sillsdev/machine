@@ -22,6 +22,18 @@ namespace SIL.Machine.Translation.TestApp
 			var vm = (MainFormViewModel) DataContext;
 			vm.Suggestions.CollectionChanged += SuggestionsChanged;
 			vm.PropertyChanged += ViewModelPropertyChanged;
+			vm.UnapprovedTargetSegmentRanges.CollectionChanged += UnapprovedTargetSegmentRangesChanged;
+
+			_sourceTextArea.Cursor = new Cursor(CursorType.Pointer);
+			_targetTextArea.Cursor = new Cursor(CursorType.Pointer);
+		}
+
+		private void UnapprovedTargetSegmentRangesChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			var vm = (MainFormViewModel) DataContext;
+			_targetTextArea.Buffer.SetBackground(new Range<int>(0, _targetTextArea.Text.Length), Colors.White);
+			foreach (Range<int> range in vm.UnapprovedTargetSegmentRanges)
+				_targetTextArea.Buffer.SetBackground(FixRichTextAreaInputRange(_targetTextArea, range), Colors.LightYellow);
 		}
 
 		private void ViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)

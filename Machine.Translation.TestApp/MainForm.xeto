@@ -73,8 +73,7 @@
 		<TableRow>
 			<StackLayout HorizontalContentAlignment="Center">
 				<StackLayout Orientation="Horizontal" Spacing="5">
-					<Button Text="Previous" Command="{Binding GoToPrevSegmentCommand}" Click="SegmentNavigationClicked" />
-					<Button Text="Next" Command="{Binding GoToNextSegmentCommand}" Click="SegmentNavigationClicked" />
+					<Button Text="Approve" Command="{Binding ApproveSegmentCommand}" Click="SegmentNavigationClicked" />
 				</StackLayout>
 			</StackLayout>
 		</TableRow>
