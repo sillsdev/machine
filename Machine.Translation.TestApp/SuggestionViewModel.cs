@@ -7,21 +7,21 @@ namespace SIL.Machine.Translation.TestApp
 {
 	public class SuggestionViewModel : ViewModelBase
 	{
-		private readonly MainFormViewModel _mainFormViewModel;
+		private readonly TextViewModel _textViewModel;
 		private readonly string _text;
 		private readonly RelayCommand<object> _command; 
 
-		public SuggestionViewModel(MainFormViewModel mainFormViewModel, string text)
+		public SuggestionViewModel(TextViewModel textViewModel, string text)
 		{
 			_text = text;
-			_mainFormViewModel = mainFormViewModel;
+			_textViewModel = textViewModel;
 			_command = new RelayCommand<object>(o => InsertSuggestion());
 		}
 
 		internal void InsertSuggestion()
 		{
-			var sb = new StringBuilder(_mainFormViewModel.TargetSegment.Trim());
-			if (!_mainFormViewModel.TargetSegment.EndsWith(" "))
+			var sb = new StringBuilder(_textViewModel.TargetSegment.Trim());
+			if (!_textViewModel.TargetSegment.EndsWith(" "))
 			{
 				int index = sb.ToString().LastIndexOf(" ", StringComparison.Ordinal);
 				if (index == -1)
@@ -32,8 +32,8 @@ namespace SIL.Machine.Translation.TestApp
 				sb.Append(" ");
 			sb.Append(_text);
 			sb.Append(" ");
-			_mainFormViewModel.TargetSegment = sb.ToString();
-			_mainFormViewModel.CurrentTargetSegmentIndex = _mainFormViewModel.TargetSegment.Length;
+			_textViewModel.TargetSegment = sb.ToString();
+			_textViewModel.CurrentTargetSegmentIndex = _textViewModel.TargetSegment.Length;
 		}
 
 		public string Text

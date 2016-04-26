@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Panel
+	xmlns="http://schema.picoe.ca/eto.forms" 
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:local="clr-namespace:SIL.Machine.Translation.TestApp;assembly=TranslationTestApp"
+	>
+	<TableLayout Spacing="5,5">
+		<TableRow ScaleHeight="True">
+			<TableLayout Spacing="8,2">
+				<TableRow ScaleHeight="True">
+					<TableCell ScaleWidth="True">
+						<TableLayout>
+							<TableRow>
+								<Label>Source</Label>
+							</TableRow>
+							<TableRow>
+								<local:Line Height="1" Color="Gray" />
+							</TableRow>
+							<TableRow>
+								<Panel Padding="0,4,0,0">
+									<RichTextArea x:Name="SourceTextArea" ReadOnly="True" Text="{Binding SourceText}" SelectionChanged="SourceTextSelectionChanged" />
+								</Panel>
+							</TableRow>
+						</TableLayout>
+					</TableCell>
+					<TableCell ScaleWidth="True">
+						<TableLayout>
+							<TableRow>
+								<Label>Target</Label>
+							</TableRow>
+							<TableRow>
+								<local:Line Height="1" Color="Gray" />
+							</TableRow>
+							<TableRow>
+								<Panel Padding="0,4,0,0">
+									<RichTextArea x:Name="TargetTextArea" ReadOnly="True" Text="{Binding TargetText}" SelectionChanged="TargetTextSelectionChanged" />
+								</Panel>
+							</TableRow>
+						</TableLayout>
+					</TableCell>
+				</TableRow>
+				<TableRow>
+					<TableCell />
+					<TableCell>
+					</TableCell>
+				</TableRow>
+				<TableRow>
+					<TableCell>
+						<Panel Padding="0,25,0,0">
+							<RichTextArea x:Name="SourceSegmentTextArea" ReadOnly="True" Height="100" Text="{Binding SourceSegment}" />
+						</Panel>
+					</TableCell>
+					<TableCell>
+						<StackLayout HorizontalContentAlignment="Stretch" Padding="0,0,0,0">
+							<StackLayout Orientation="Horizontal" VerticalContentAlignment="Center">
+								<Button Text="&#x2193;" Width="20" Height="20" Font="{Font Segoe UI, Style=Bold}" Command="{Binding ApplyAllSuggestionsCommand}" />
+								<Scrollable Height="25" Border="None">
+									<StackLayout x:Name="SuggestionsContainer" Orientation="Horizontal" Padding="5,0,5,0" Spacing="5" VerticalContentAlignment="Center" />
+								</Scrollable>
+							</StackLayout>
+							<TextArea x:Name="TargetSegmentTextArea" Height="100" AcceptsReturn="False" AcceptsTab="False" Text="{Binding TargetSegment}"
+										CaretIndex="{Binding CurrentTargetSegmentIndex}" CaretIndexChanged="TargetSegmentCaretIndexChanged" KeyDown="TargetSegmentKeyDown" />
+						</StackLayout>
+					</TableCell>
+				</TableRow>
+			</TableLayout>
+		</TableRow>
+		<TableRow>
+			<StackLayout HorizontalContentAlignment="Center">
+				<StackLayout Orientation="Horizontal" Spacing="5">
+					<Button Command="{Binding GoToPrevSegmentCommand}" Click="SegmentNavigationClicked">Previous</Button>
+					<Button Command="{Binding ApproveSegmentCommand}" Click="SegmentNavigationClicked">Approve</Button>
+					<Button Command="{Binding GoToNextSegmentCommand}" Click="SegmentNavigationClicked">Next</Button>
+				</StackLayout>
+			</StackLayout>
+		</TableRow>
+	</TableLayout>
+</Panel>
