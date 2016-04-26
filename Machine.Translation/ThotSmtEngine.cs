@@ -137,14 +137,30 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		private readonly IntPtr _handle;
+		private readonly string _cfgFileName;
+		private IntPtr _handle;
 		private readonly HashSet<ThotSmtSession> _sessions;
-		private readonly ThotSingleWordAlignmentModel _singleWordAlignmentModel;
+		private ThotSingleWordAlignmentModel _singleWordAlignmentModel;
 
 		public ThotSmtEngine(string cfgFileName)
 		{
+			_cfgFileName = cfgFileName;
 			_sessions = new HashSet<ThotSmtSession>();
-			_handle = Thot.decoder_open(cfgFileName);
+			OpenDecoder();
+		}
+
+		public void Train(IReadOnlyList<IEnumerable<string>> sourceCorpus, IReadOnlyList<IEnumerable<string>> targetCorpus)
+		{
+			ClearSessions();
+			_singleWordAlignmentModel = null;
+			Thot.decoder_close(_handle);
+			TrainModels(_cfgFileName, sourceCorpus, targetCorpus);
+			OpenDecoder();
+		}
+
+		private void OpenDecoder()
+		{
+			_handle = Thot.decoder_open(_cfgFileName);
 			_singleWordAlignmentModel = new ThotSingleWordAlignmentModel(Thot.decoder_getSingleWordAlignmentModel(_handle));
 		}
 
@@ -179,14 +195,20 @@ namespace SIL.Machine.Translation
 
 		protected override void DisposeManagedResources()
 		{
-			foreach (ThotSmtSession session in _sessions)
-				session.Dispose();
-			_sessions.Clear();
+			ClearSessions();
+			_singleWordAlignmentModel = null;
 		}
 
 		protected override void DisposeUnmanagedResources()
 		{
 			Thot.decoder_close(_handle);
+		}
+
+		private void ClearSessions()
+		{
+			foreach (ThotSmtSession session in _sessions)
+				session.Dispose();
+			_sessions.Clear();
 		}
 	}
 }
