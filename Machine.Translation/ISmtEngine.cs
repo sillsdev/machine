@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
 {
@@ -12,6 +11,6 @@ namespace SIL.Machine.Translation
 
 		ISegmentAligner SegmentAligner { get; }
 
-		void Train(IReadOnlyList<IEnumerable<string>> sourceCorpus, IReadOnlyList<IEnumerable<string>> targetCorpus);
+		void Train(IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus);
 	}
 }

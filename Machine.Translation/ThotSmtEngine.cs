@@ -11,7 +11,7 @@ namespace SIL.Machine.Translation
 {
 	public class ThotSmtEngine : DisposableBase, ISmtEngine
 	{
-		public static void TrainModels(string cfgFileName, IReadOnlyList<IEnumerable<string>> sourceCorpus, IReadOnlyList<IEnumerable<string>> targetCorpus)
+		public static void TrainModels(string cfgFileName, IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus)
 		{
 			string cfgDir = Path.GetDirectoryName(cfgFileName);
 			Debug.Assert(cfgDir != null);
@@ -40,7 +40,7 @@ namespace SIL.Machine.Translation
 			TrainTranslationModel(sourceCorpus, targetCorpus, tmPrefix);
 		}
 
-		private static void TrainLanguageModel(IReadOnlyList<IEnumerable<string>> targetCorpus, string lmPrefix, int ngramSize)
+		private static void TrainLanguageModel(IEnumerable<IEnumerable<string>> targetCorpus, string lmPrefix, int ngramSize)
 		{
 			string dir = Path.GetDirectoryName(lmPrefix);
 			Debug.Assert(dir != null);
@@ -52,7 +52,7 @@ namespace SIL.Machine.Translation
 			WriteWordPredictionFile(targetCorpus, lmPrefix);
 		}
 
-		private static void WriteNgramCountsFile(IReadOnlyList<IEnumerable<string>> targetCorpus, string lmPrefix, int ngramSize)
+		private static void WriteNgramCountsFile(IEnumerable<IEnumerable<string>> targetCorpus, string lmPrefix, int ngramSize)
 		{
 			int wordCount = 0;
 			var ngrams = new Dictionary<Ngram<string>, int>();
@@ -86,25 +86,25 @@ namespace SIL.Machine.Translation
 			File.WriteAllText(lmPrefix + ".weights", string.Format("{0} 3 10 {1}\n", ngramSize, string.Join(" ", Enumerable.Repeat("0.5", ngramSize * 3))));
 		}
 
-		private static void WriteWordPredictionFile(IReadOnlyList<IEnumerable<string>> targetCorpus, string lmPrefix)
+		private static void WriteWordPredictionFile(IEnumerable<IEnumerable<string>> targetCorpus, string lmPrefix)
 		{
 			var rand = new Random(31415);
 			using (var writer = new StreamWriter(lmPrefix + ".wp"))
 			{
-				foreach (int i in Enumerable.Range(0, Math.Min(100000, targetCorpus.Count)).OrderBy(i => rand.Next()))
-					writer.Write("{0}\n", string.Join(" ", targetCorpus[i]));
+				foreach (IEnumerable<string> segment in targetCorpus.Take(100000).OrderBy(i => rand.Next()))
+					writer.Write("{0}\n", string.Join(" ", segment));
 			}
 		}
 
-		private static void TrainTranslationModel(IReadOnlyList<IEnumerable<string>> sourceCorpus, IReadOnlyList<IEnumerable<string>> targetCorpus, string tmPrefix)
+		private static void TrainTranslationModel(IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus, string tmPrefix)
 		{
 			string dir = Path.GetDirectoryName(tmPrefix);
 			Debug.Assert(dir != null);
 			if (!Directory.Exists(dir))
 				Directory.CreateDirectory(dir);
 
-			TrainSingleWordAlignmentModel(sourceCorpus, targetCorpus, tmPrefix + "_swm");
-			TrainSingleWordAlignmentModel(targetCorpus, sourceCorpus, tmPrefix + "_invswm");
+			TrainSingleWordAlignmentModel(targetCorpus, sourceCorpus, tmPrefix + "_swm");
+			TrainSingleWordAlignmentModel(sourceCorpus, targetCorpus, tmPrefix + "_invswm");
 			Thot.giza_symmetr1(tmPrefix + "_swm.bestal", tmPrefix + "_invswm.bestal", tmPrefix + ".A3.final", true);
 			Thot.phraseModel_generate(tmPrefix + ".A3.final", 7, tmPrefix + ".ttable");
 			// TODO: keep the N-best source phrases for a particular target phrase in the phrase table
@@ -113,12 +113,12 @@ namespace SIL.Machine.Translation
 			File.WriteAllText(tmPrefix + ".trgsegmlentable", "Geometric");
 		}
 
-		private static void TrainSingleWordAlignmentModel(IReadOnlyList<IEnumerable<string>> sourceCorpus, IReadOnlyList<IEnumerable<string>> targetCorpus, string swmPrefix)
+		private static void TrainSingleWordAlignmentModel(IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus, string swmPrefix)
 		{
 			using (var swAlignModel = new ThotSingleWordAlignmentModel(swmPrefix, true))
 			{
-				for (int i = 0; i < targetCorpus.Count; i++)
-					swAlignModel.AddSegmentPair(sourceCorpus[i], targetCorpus[i]);
+				foreach (Tuple<IEnumerable<string>, IEnumerable<string>> pair in sourceCorpus.Zip(targetCorpus))
+					swAlignModel.AddSegmentPair(pair.Item1, pair.Item2);
 				swAlignModel.Train(5);
 				swAlignModel.Save();
 
@@ -126,12 +126,12 @@ namespace SIL.Machine.Translation
 
 				using (var writer = new StreamWriter(swmPrefix + ".bestal"))
 				{
-					for (int i = 0; i < targetCorpus.Count; i++)
+					foreach (Tuple<IEnumerable<string>, IEnumerable<string>> pair in sourceCorpus.Zip(targetCorpus))
 					{
 						WordAlignmentMatrix waMatrix;
-						double prob = swAlignModel.GetBestAlignment(sourceCorpus[i].ToArray(), targetCorpus[i].ToArray(), out waMatrix);
+						double prob = swAlignModel.GetBestAlignment(pair.Item1.ToArray(), pair.Item2.ToArray(), out waMatrix);
 						writer.Write("# Alignment probability= {0}\n", prob);
-						writer.Write(waMatrix.ToGizaFormat(sourceCorpus[i], targetCorpus[i]));
+						writer.Write(waMatrix.ToGizaFormat(pair.Item1, pair.Item2));
 					}
 				}
 			}
@@ -140,28 +140,28 @@ namespace SIL.Machine.Translation
 		private readonly string _cfgFileName;
 		private IntPtr _handle;
 		private readonly HashSet<ThotSmtSession> _sessions;
-		private ThotSingleWordAlignmentModel _singleWordAlignmentModel;
+		private readonly ThotSingleWordAlignmentModel _singleWordAlignmentModel;
 
 		public ThotSmtEngine(string cfgFileName)
 		{
 			_cfgFileName = cfgFileName;
 			_sessions = new HashSet<ThotSmtSession>();
-			OpenDecoder();
-		}
-
-		public void Train(IReadOnlyList<IEnumerable<string>> sourceCorpus, IReadOnlyList<IEnumerable<string>> targetCorpus)
-		{
-			ClearSessions();
-			_singleWordAlignmentModel = null;
-			Thot.decoder_close(_handle);
-			TrainModels(_cfgFileName, sourceCorpus, targetCorpus);
-			OpenDecoder();
-		}
-
-		private void OpenDecoder()
-		{
 			_handle = Thot.decoder_open(_cfgFileName);
 			_singleWordAlignmentModel = new ThotSingleWordAlignmentModel(Thot.decoder_getSingleWordAlignmentModel(_handle));
+		}
+
+		public void Train(IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus)
+		{
+			lock (_sessions)
+			{
+				if (_sessions.Count > 0)
+					throw new InvalidOperationException("The engine cannot be trained while there are active sessions open.");
+
+				Thot.decoder_close(_handle);
+				TrainModels(_cfgFileName, sourceCorpus, targetCorpus);
+				_handle = Thot.decoder_open(_cfgFileName);
+				_singleWordAlignmentModel.Handle = Thot.decoder_getSingleWordAlignmentModel(_handle);
+			}
 		}
 
 		public ISmtSession StartSession()
@@ -169,7 +169,8 @@ namespace SIL.Machine.Translation
 			CheckDisposed();
 
 			var session = new ThotSmtSession(this);
-			_sessions.Add(session);
+			lock (_sessions)
+				_sessions.Add(session);
 			return session;
 		}
 
@@ -190,25 +191,22 @@ namespace SIL.Machine.Translation
 
 		internal void RemoveSession(ThotSmtSession session)
 		{
-			_sessions.Remove(session);
+			lock (_sessions)
+				_sessions.Remove(session);
 		}
 
 		protected override void DisposeManagedResources()
 		{
-			ClearSessions();
-			_singleWordAlignmentModel = null;
+			lock (_sessions)
+			{
+				foreach (ThotSmtSession session in _sessions.ToArray())
+					session.Dispose();
+			}
 		}
 
 		protected override void DisposeUnmanagedResources()
 		{
 			Thot.decoder_close(_handle);
-		}
-
-		private void ClearSessions()
-		{
-			foreach (ThotSmtSession session in _sessions)
-				session.Dispose();
-			_sessions.Clear();
 		}
 	}
 }

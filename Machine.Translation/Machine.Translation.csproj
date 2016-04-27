@@ -52,7 +52,7 @@
     <Compile Include="ITransferer.cs" />
     <Compile Include="MorphemeInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SegmentTranslator.cs" />
+    <Compile Include="TranslationSession.cs" />
     <Compile Include="SimpleSegmentAligner.cs" />
     <Compile Include="SimpleTransferer.cs" />
     <Compile Include="Thot.cs" />

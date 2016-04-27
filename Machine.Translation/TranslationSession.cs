@@ -5,74 +5,50 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
 {
-	public class SegmentTranslator
+	public class TranslationSession : DisposableBase
 	{
 		public const float NullWordConfidenceThreshold = 0.03f;
 
+		private readonly TranslationEngine _engine;
 		private readonly ISmtSession _smtSession;
 		private readonly TransferEngine _transferEngine;
-		private readonly Dictionary<string, string> _transferCache; 
-		private readonly ReadOnlyList<string> _sourceSegment;
+		private readonly Dictionary<string, string> _transferCache;
+		private readonly List<string> _sourceSegment; 
+		private readonly ReadOnlyList<string> _readOnlySourceSegment;
 		private readonly List<string> _translation;
 		private readonly ReadOnlyList<string> _readOnlyTranslation;
 		private readonly List<WordInfo> _wordInfos;
 		private readonly List<string> _prefix;
 		private readonly ReadOnlyList<string> _readOnlyPrefix; 
 		private bool _isLastWordPartial;
-		private readonly ISegmentAligner _swAlignModel;
+		private readonly ISegmentAligner _segmentAligner;
 
-		internal SegmentTranslator(ISegmentAligner swAlignModel, ISmtSession smtSession, TransferEngine transferEngine, Dictionary<string, string> transferCache,
-			IEnumerable<string> segment)
+		internal TranslationSession(TranslationEngine engine, ISegmentAligner segmentAligner, ISmtSession smtSession, TransferEngine transferEngine)
 		{
-			_swAlignModel = swAlignModel;
+			_engine = engine;
+			_segmentAligner = segmentAligner;
 			_smtSession = smtSession;
 			_transferEngine = transferEngine;
-			_transferCache = transferCache;
-			_sourceSegment = new ReadOnlyList<string>(segment.ToArray());
+			if (_transferEngine != null)
+				_transferCache = new Dictionary<string, string>();
+			_sourceSegment = new List<string>();
+			_readOnlySourceSegment = new ReadOnlyList<string>(_sourceSegment);
 			_prefix = new List<string>();
 			_readOnlyPrefix = new ReadOnlyList<string>(_prefix);
 			_translation = new List<string>();
 			_readOnlyTranslation = new ReadOnlyList<string>(_translation);
 			_wordInfos = new List<WordInfo>();
 			_isLastWordPartial = true;
-			ProcessResult(_smtSession.TranslateInteractively(_sourceSegment));
 		}
 
 		public IReadOnlyList<string> SourceSegment
 		{
-			get { return _sourceSegment; }
+			get { return _readOnlySourceSegment; }
 		}
 
 		public IReadOnlyList<string> Prefix
 		{
 			get { return _readOnlyPrefix; }
-		}
-
-		public void SetPrefix(IEnumerable<string> prefix, bool isLastWordPartial)
-		{
-			string[] prefixArray = prefix.ToArray();
-			if (!_prefix.SequenceEqual(prefixArray) || _isLastWordPartial != isLastWordPartial)
-			{
-				_prefix.Clear();
-				_prefix.AddRange(prefixArray);
-				_isLastWordPartial = isLastWordPartial;
-				ProcessResult(_smtSession.SetPrefix(_prefix, _isLastWordPartial));
-			}
-		}
-
-		public void AddToPrefix(string addition, bool isWordPartial)
-		{
-			_prefix.Add(addition);
-			_isLastWordPartial = isWordPartial;
-			ProcessResult(_smtSession.AddToPrefix(addition.ToEnumerable(), _isLastWordPartial));
-		}
-
-		public void AddToPrefix(IEnumerable<string> addition, bool isLastWordPartial)
-		{
-			string[] additionArray = addition.ToArray();
-			_prefix.AddRange(additionArray);
-			_isLastWordPartial = isLastWordPartial;
-			ProcessResult(_smtSession.AddToPrefix(additionArray, _isLastWordPartial));
 		}
 
 		public bool IsLastWordPartial
@@ -100,35 +76,81 @@ namespace SIL.Machine.Translation
 			return _wordInfos[index].IsTransferred;
 		}
 
-		public void Approve()
+		public IEnumerable<string> Translate(IEnumerable<string> sourceSegment)
 		{
-			_smtSession.Train(_sourceSegment, _prefix);
-			for (int i = 0; i < _prefix.Count; i++)
+			var translation = new List<string>();
+			var wordInfos = new List<WordInfo>();
+			ProcessResult(_smtSession.Translate(sourceSegment), translation, wordInfos);
+			return translation;
+		}
+
+		public void TranslateInteractively(IEnumerable<string> sourceSegment)
+		{
+			Reset();
+			_sourceSegment.AddRange(sourceSegment);
+			ProcessResult(_smtSession.TranslateInteractively(_sourceSegment), _translation, _wordInfos);
+		}
+
+		public void Reset()
+		{
+			_sourceSegment.Clear();
+			_translation.Clear();
+			_wordInfos.Clear();
+			_prefix.Clear();
+			_isLastWordPartial = true;
+		}
+
+		public void SetPrefix(IEnumerable<string> prefix, bool isLastWordPartial)
+		{
+			string[] prefixArray = prefix.ToArray();
+			if (!_prefix.SequenceEqual(prefixArray) || _isLastWordPartial != isLastWordPartial)
 			{
-				if (_wordInfos[i].IsTransferred)
-					_smtSession.Train(new[] {_sourceSegment[_wordInfos[i].SourceWordIndex], "."}, new[] {_prefix[i], "."});
+				_prefix.Clear();
+				_prefix.AddRange(prefixArray);
+				_isLastWordPartial = isLastWordPartial;
+				ProcessResult(_smtSession.SetPrefix(_prefix, _isLastWordPartial), _translation, _wordInfos);
 			}
 		}
 
-		private void ProcessResult(IEnumerable<string> translation)
+		public void AddToPrefix(string addition, bool isWordPartial)
 		{
-			_translation.Clear();
-			_wordInfos.Clear();
-			List<string> targetSegment = translation.ToList();
+			_prefix.Add(addition);
+			_isLastWordPartial = isWordPartial;
+			ProcessResult(_smtSession.AddToPrefix(addition.ToEnumerable(), _isLastWordPartial), _translation, _wordInfos);
+		}
+
+		public void AddToPrefix(IEnumerable<string> addition, bool isLastWordPartial)
+		{
+			string[] additionArray = addition.ToArray();
+			_prefix.AddRange(additionArray);
+			_isLastWordPartial = isLastWordPartial;
+			ProcessResult(_smtSession.AddToPrefix(additionArray, _isLastWordPartial), _translation, _wordInfos);
+		}
+
+		public void Approve()
+		{
+			_smtSession.Train(_readOnlySourceSegment, _prefix);
+		}
+
+		private void ProcessResult(IEnumerable<string> result, List<string> translation, List<WordInfo> wordInfos)
+		{
+			translation.Clear();
+			wordInfos.Clear();
+			List<string> targetSegment = result.ToList();
 			WordAlignmentMatrix waMatrix;
-			_swAlignModel.GetBestAlignment(_sourceSegment, targetSegment, out waMatrix);
+			_segmentAligner.GetBestAlignment(_readOnlySourceSegment, targetSegment, out waMatrix);
 			for (int j = 0; j < targetSegment.Count; j++)
 			{
 				int sourceIndex = Enumerable.Range(0, waMatrix.I).First(i => waMatrix[i, j]);
 
-				double confidence = _swAlignModel.GetTranslationProbability(_sourceSegment[sourceIndex], targetSegment[j]);
+				double confidence = _segmentAligner.GetTranslationProbability(_readOnlySourceSegment[sourceIndex], targetSegment[j]);
 
-				string sourceWord = _sourceSegment[sourceIndex];
+				string sourceWord = _readOnlySourceSegment[sourceIndex];
 				bool transferred = false;
 				string targetWord;
 				if (confidence < NullWordConfidenceThreshold && sourceWord == targetSegment[j] && TryTransferWord(sourceWord, out targetWord))
 				{
-					confidence = _swAlignModel.GetTranslationProbability(sourceWord, targetWord);
+					confidence = _segmentAligner.GetTranslationProbability(sourceWord, targetWord);
 					transferred = true;
 					if (_translation.Count == 1 && targetWord.StartsWith(_translation[0]))
 					{
@@ -143,8 +165,8 @@ namespace SIL.Machine.Translation
 					if (j < _prefix.Count && TryTransferWord(sourceWord, out word) && word == targetWord)
 						transferred = true;
 				}
-				_translation.Add(targetWord);
-				_wordInfos.Add(new WordInfo(sourceIndex, confidence, transferred));
+				translation.Add(targetWord);
+				wordInfos.Add(new WordInfo(sourceIndex, confidence, transferred));
 			}
 		}
 
@@ -164,6 +186,12 @@ namespace SIL.Machine.Translation
 
 			targetWord = null;
 			return false;
+		}
+
+		protected override void DisposeManagedResources()
+		{
+			_smtSession.Dispose();
+			_engine.RemoveSession(this);
 		}
 
 		private class WordInfo

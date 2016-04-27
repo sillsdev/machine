@@ -15,8 +15,9 @@
 				<TableRow ScaleHeight="True">
 					<TableCell ScaleWidth="True">
 						<StackLayout Orientation="Horizontal" Spacing="5">
-							<Button Text="Open" Command="{Binding OpenProjectCommand}" />
-							<Button Text="Save" Command="{Binding SaveProjectCommand}" />
+							<Button Command="{Binding OpenProjectCommand}">Open</Button>
+							<Button Command="{Binding SaveProjectCommand}">Save</Button>
+							<Button Command="{Binding RebuildProjectCommand}">Rebuild</Button>
 						</StackLayout>
 					</TableCell>
 					<TableCell ScaleWidth="True">

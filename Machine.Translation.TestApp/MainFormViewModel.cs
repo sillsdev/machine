@@ -19,9 +19,11 @@ namespace SIL.Machine.Translation.TestApp
 
 		private readonly RelayCommand<object> _openProjectCommand;
 		private readonly RelayCommand<object> _saveProjectCommand;
+		private readonly RelayCommand<object> _rebuildProjectCommand; 
 		private readonly RelayCommand<object> _closeCommand;
 		private ISmtEngine _smtEngine;
 		private TranslationEngine _translationEngine;
+		private TranslationSession _translationSession;
 		private readonly ShapeSpanFactory _spanFactory;
 		private readonly TraceManager _hcTraceManager;
 		private int _confidenceThreshold;
@@ -34,6 +36,7 @@ namespace SIL.Machine.Translation.TestApp
 		{
 			_openProjectCommand = new RelayCommand<object>(o => OpenProject());
 			_saveProjectCommand = new RelayCommand<object>(o => SaveProject(), o => IsChanged);
+			_rebuildProjectCommand = new RelayCommand<object>(o => RebuildProject(), o => CanRebuildProject());
 			_closeCommand = new RelayCommand<object>(o => Close(), o => CanClose());
 			_spanFactory = new ShapeSpanFactory();
 			_hcTraceManager = new TraceManager();
@@ -152,6 +155,7 @@ namespace SIL.Machine.Translation.TestApp
 			}
 			_smtEngine = new ThotSmtEngine(Path.Combine(configDir, smtConfig));
 			_translationEngine = new TranslationEngine(_smtEngine, transferEngine);
+			_translationSession = _translationEngine.StartSession();
 
 			using (_texts.BulkUpdate())
 			{
@@ -167,7 +171,7 @@ namespace SIL.Machine.Translation.TestApp
 					if (trgTextFile == null)
 						return false;
 
-					var text = new TextViewModel(_translationEngine, name, Path.Combine(configDir, srcTextFile), Path.Combine(configDir, trgTextFile));
+					var text = new TextViewModel(name, Path.Combine(configDir, srcTextFile), Path.Combine(configDir, trgTextFile)) {TranslationSession = _translationSession};
 					text.PropertyChanged += TextPropertyChanged;
 					_texts.Add(text);
 				}
@@ -175,9 +179,12 @@ namespace SIL.Machine.Translation.TestApp
 			if (_texts.Count == 0)
 				return false;
 
-			CurrentText = _texts[0];
+			_translationEngine.SourceCorpus = _texts.SelectMany(t => t.SourceSegments).Where(s => s.IsApproved).Select(s => s.Words.Select(w => w.ToLowerInvariant()));
+			_translationEngine.TargetCorpus = _texts.SelectMany(t => t.TargetSegments).Where(s => s.IsApproved).Select(s => s.Words.Select(w => w.ToLowerInvariant()));
 
+			CurrentText = _texts[0];
 			AcceptChanges();
+			_rebuildProjectCommand.UpdateCanExecute();
 			return true;
 		}
 
@@ -188,7 +195,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void SaveProject()
 		{
-			_smtEngine.SaveModels();
+			_translationEngine.Save();
 			foreach (TextViewModel text in _texts)
 				text.SaveTargetText();
 			AcceptChanges();
@@ -196,6 +203,11 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void CloseProject()
 		{
+			if (_translationSession != null)
+			{
+				_translationSession.Dispose();
+				_translationSession = null;
+			}
 			if (_translationEngine != null)
 			{
 				_translationEngine.Dispose();
@@ -209,6 +221,29 @@ namespace SIL.Machine.Translation.TestApp
 			CurrentText = null;
 			_texts.Clear();
 			CurrentText = EmptyText;
+			_saveProjectCommand.UpdateCanExecute();
+			_rebuildProjectCommand.UpdateCanExecute();
+		}
+
+		public ICommand RebuildProjectCommand
+		{
+			get { return _rebuildProjectCommand; }
+		}
+
+		private bool CanRebuildProject()
+		{
+			return _translationEngine != null;
+		}
+
+		private void RebuildProject()
+		{
+			_currentText.IsActive = false;
+			_translationSession.Dispose();
+			_translationEngine.Rebuild();
+			_translationSession = _translationEngine.StartSession();
+			foreach (TextViewModel text in _texts)
+				text.TranslationSession = _translationSession;
+			_currentText.IsActive = true;
 		}
 
 		private static string GetMorphemeId(Morpheme morpheme)

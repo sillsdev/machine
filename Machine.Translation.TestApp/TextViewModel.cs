@@ -22,9 +22,6 @@ namespace SIL.Machine.Translation.TestApp
 
 	public class TextViewModel : ViewModelBase, IChangeTracking
 	{
-		private static readonly Regex TokenizeRegex = new Regex(@"\w+([.,-’']\w+)*|[\p{P}]");
-
-		private readonly TranslationEngine _engine;
 		private readonly string _name;
 		private readonly string _sourceFileName;
 		private readonly string _targetFileName;
@@ -41,7 +38,6 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly List<Segment> _sourceSegments;
 		private readonly List<Segment> _targetSegments;
 		private int _currentSegment = -1;
-		private SegmentTranslator _translator;
 		private readonly HashSet<int> _paragraphs;
 		private readonly BulkObservableList<SuggestionViewModel> _suggestions; 
 		private readonly ReadOnlyObservableList<SuggestionViewModel> _readOnlySuggestions;
@@ -57,10 +53,10 @@ namespace SIL.Machine.Translation.TestApp
 		private double _confidenceThreshold;
 		private bool _isChanged;
 		private bool _isActive;
+		private bool _isTranslating;
 
-		public TextViewModel(TranslationEngine engine, string name, string sourceFileName, string targetFileName)
+		public TextViewModel(string name, string sourceFileName, string targetFileName)
 		{
-			_engine = engine;
 			_name = name;
 			_sourceFileName = sourceFileName;
 			_targetFileName = targetFileName;
@@ -90,7 +86,7 @@ namespace SIL.Machine.Translation.TestApp
 		}
 
 		public TextViewModel()
-			: this(null, null, null, null)
+			: this(null, null, null)
 		{
 		}
 
@@ -98,6 +94,8 @@ namespace SIL.Machine.Translation.TestApp
 		{
 			get { return _name; }
 		}
+
+		internal TranslationSession TranslationSession { get; set; }
 
 		internal double ConfidenceThreshold
 		{
@@ -150,6 +148,16 @@ namespace SIL.Machine.Translation.TestApp
 			}
 		}
 
+		internal IList<Segment> SourceSegments
+		{
+			get { return _sourceSegments; }
+		}
+
+		internal IList<Segment> TargetSegments
+		{
+			get { return _targetSegments; }
+		}
+
 		private void LoadSourceTextFile()
 		{
 			if (string.IsNullOrEmpty(_sourceFileName))
@@ -179,9 +187,10 @@ namespace SIL.Machine.Translation.TestApp
 				else
 				{
 					int tabIndex = line.IndexOf("\t", StringComparison.Ordinal);
-					string approved = line.Substring(0, tabIndex);
+					bool isApproved = line.Substring(0, tabIndex) == "1";
 					string text = line.Substring(tabIndex + 1);
-					_targetSegments.Add(new Segment {Text = text, IsApproved = approved == "1"});
+					_targetSegments.Add(new Segment {Text = text, IsApproved = isApproved});
+					_sourceSegments[_targetSegments.Count - 1].IsApproved = isApproved;
 					prevLinePara = false;
 				}
 			}
@@ -251,8 +260,9 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void ApproveSegment()
 		{
-			_translator.Approve();
+			TranslationSession.Approve();
 			UpdateTargetText();
+			_sourceSegments[_currentSegment].IsApproved = true;
 			_targetSegments[_currentSegment].IsApproved = true;
 			UpdateUnapprovedTargetSegmentRanges();
 			_approveSegmentCommand.UpdateCanExecute();
@@ -316,11 +326,20 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void StartSegmentTranslation()
 		{
-			MatchCollection matches = TokenizeRegex.Matches(SourceSegment);
-			_sourceSegmentWords.AddRange(matches.Cast<Match>().Select(m => m.Value));
-			_translator = _engine.StartSegmentTranslation(_sourceSegmentWords.Select(w => w.ToLowerInvariant()));
+			_sourceSegmentWords.AddRange(_sourceSegments[_currentSegment].Words);
+			TranslationSession.TranslateInteractively(_sourceSegmentWords.Select(w => w.ToLowerInvariant()));
+			_isTranslating = true;
 			UpdatePrefix();
 			UpdateSourceSegmentSelection();
+		}
+
+		private void UpdatePrefix()
+		{
+			if (!_isTranslating)
+				return;
+
+			TranslationSession.SetPrefix(_targetSegments[_currentSegment].Words.Select(w => w.ToLowerInvariant()), TargetSegment.Length > 0 && !TargetSegment.EndsWith(" "));
+			UpdateSuggestions();
 		}
 
 		private void UpdateSuggestions()
@@ -329,17 +348,17 @@ namespace SIL.Machine.Translation.TestApp
 				return;
 
 			var suggestions = new List<SuggestionViewModel>();
-			int lookaheadCount = Math.Max(0, _translator.Translation.Count - _translator.SourceSegment.Count) + 1;
-			int i = _translator.Prefix.Count;
-			if (_translator.IsLastWordPartial)
+			int lookaheadCount = Math.Max(0, TranslationSession.Translation.Count - TranslationSession.SourceSegment.Count) + 1;
+			int i = TranslationSession.Prefix.Count;
+			if (TranslationSession.IsLastWordPartial)
 			{
 				lookaheadCount--;
 				i--;
 			}
 			bool inPhrase = false;
-			while (i < _translator.Translation.Count && (i < _translator.Prefix.Count + lookaheadCount || inPhrase))
+			while (i < TranslationSession.Translation.Count && (i < TranslationSession.Prefix.Count + lookaheadCount || inPhrase))
 			{
-				string word = _translator.Translation[i];
+				string word = TranslationSession.Translation[i];
 				if (IsWordSignificant(i))
 				{
 					if (word.All(char.IsPunctuation))
@@ -353,7 +372,7 @@ namespace SIL.Machine.Translation.TestApp
 					}
 					else
 					{
-						if (IsCapitalCase(_sourceSegmentWords[_translator.GetSourceWordIndex(i)]))
+						if (IsCapitalCase(_sourceSegmentWords[TranslationSession.GetSourceWordIndex(i)]))
 							word = ToCapitalCase(word);
 						if (suggestions.Count == 0 || suggestions[suggestions.Count - 1].Text != word)
 							suggestions.Add(new SuggestionViewModel(this, word));
@@ -373,7 +392,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		private bool IsWordSignificant(int index)
 		{
-			return _translator.IsWordTransferred(index) || _translator.GetWordConfidence(index) >= _confidenceThreshold;
+			return TranslationSession.IsWordTransferred(index) || TranslationSession.GetWordConfidence(index) >= _confidenceThreshold;
 		}
 
 		private static bool IsCapitalCase(string word)
@@ -395,8 +414,8 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void EndSegmentTranslation()
 		{
+			_isTranslating = false;
 			UpdateTargetText();
-			_translator = null;
 			_sourceSegmentWords.Clear();
 			_suggestions.Clear();
 			CurrentTargetSegmentIndex = 0;
@@ -436,6 +455,7 @@ namespace SIL.Machine.Translation.TestApp
 					if (_currentSegment != -1 && TargetSegment.Trim() != _targetSegments[_currentSegment].Text)
 					{
 						_targetSegments[_currentSegment].Text = TargetSegment.Trim();
+						_sourceSegments[_currentSegment].IsApproved = false;
 						_targetSegments[_currentSegment].IsApproved = false;
 						IsChanged = true;
 					}
@@ -457,31 +477,30 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void UpdateSourceSegmentSelection()
 		{
-			if (_translator == null)
+			if (!_isTranslating)
 				return;
 
-			int targetWordIndex = TokenizeRegex.Matches(TargetSegment).Cast<Match>()
+			int targetWordIndex = Segment.TokenizeRegex.Matches(TargetSegment).Cast<Match>()
 				.IndexOf(m => _currentTargetSegmentIndex >= m.Index && _currentTargetSegmentIndex <= m.Index + m.Length);
 			if (targetWordIndex != -1)
 			{
 				if (IsWordSignificant(targetWordIndex))
 				{
-					int sourceWordIndex = _translator.GetSourceWordIndex(targetWordIndex);
-					Match match = TokenizeRegex.Matches(SourceSegment)[sourceWordIndex];
-					if (_translator.IsWordTransferred(targetWordIndex))
+					int sourceWordIndex = TranslationSession.GetSourceWordIndex(targetWordIndex);
+					Match match = Segment.TokenizeRegex.Matches(SourceSegment)[sourceWordIndex];
+					if (TranslationSession.IsWordTransferred(targetWordIndex))
 						CurrentSourceWordLevel = TranslationLevel.Transfer;
-					else if (_translator.GetWordConfidence(targetWordIndex) >= 0.5f)
+					else if (TranslationSession.GetWordConfidence(targetWordIndex) >= 0.5f)
 						CurrentSourceWordLevel = TranslationLevel.HighConfidence;
 					else
 						CurrentSourceWordLevel = TranslationLevel.LowConfidence;
 					CurrentSourceWordRange = new Range<int>(match.Index, match.Index + match.Length - 1);
-				}
-				else
-				{
-					CurrentSourceWordLevel = TranslationLevel.Unknown;
-					CurrentSourceWordRange = null;
+					return;
 				}
 			}
+
+			CurrentSourceWordLevel = TranslationLevel.Unknown;
+			CurrentSourceWordRange = null;
 		}
 
 		public Range<int>? CurrentSourceSegmentRange
@@ -506,16 +525,6 @@ namespace SIL.Machine.Translation.TestApp
 		{
 			get { return _currentSourceWordLevel; }
 			private set { Set(() => CurrentSourceWordLevel, ref _currentSourceWordLevel, value); }
-		}
-
-		private void UpdatePrefix()
-		{
-			if (_translator == null)
-				return;
-
-			_translator.SetPrefix(TokenizeRegex.Matches(TargetSegment).Cast<Match>().Select(m => m.Value.ToLowerInvariant()),
-				TargetSegment.Length > 0 && !TargetSegment.EndsWith(" "));
-			UpdateSuggestions();
 		}
 
 		public ReadOnlyObservableList<SuggestionViewModel> Suggestions

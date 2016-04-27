@@ -8,7 +8,7 @@ namespace SIL.Machine.Translation
 {
 	public class ThotSingleWordAlignmentModel : DisposableBase, ISegmentAligner
 	{
-		private readonly IntPtr _handle;
+		private IntPtr _handle;
 		private readonly string _prefFileName;
 
 		internal ThotSingleWordAlignmentModel(IntPtr handle)
@@ -20,6 +20,12 @@ namespace SIL.Machine.Translation
 		{
 			_prefFileName = prefFileName;
 			_handle = createNew || !File.Exists(prefFileName + ".src") ? Thot.swAlignModel_create() : Thot.swAlignModel_open(_prefFileName);
+		}
+
+		internal IntPtr Handle
+		{
+			get { return _handle; }
+			set { _handle = value; }
 		}
 
 		public void AddSegmentPair(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment)

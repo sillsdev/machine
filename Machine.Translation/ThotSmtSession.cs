@@ -9,13 +9,13 @@ namespace SIL.Machine.Translation
 	{
 		private const int DefaultTranslationBufferLength = 1024;
 
-		private readonly ThotSmtEngine _decoder;
+		private readonly ThotSmtEngine _engine;
 		private readonly IntPtr _handle;
 
-		internal ThotSmtSession(ThotSmtEngine decoder)
+		internal ThotSmtSession(ThotSmtEngine engine)
 		{
-			_decoder = decoder;
-			_handle = Thot.decoder_openSession(_decoder.Handle);
+			_engine = engine;
+			_handle = Thot.decoder_openSession(_engine.Handle);
 		}
 
 		public IEnumerable<string> Translate(IEnumerable<string> segment)
@@ -88,7 +88,7 @@ namespace SIL.Machine.Translation
 
 		protected override void DisposeManagedResources()
 		{
-			_decoder.RemoveSession(this);
+			_engine.RemoveSession(this);
 		}
 
 		protected override void DisposeUnmanagedResources()

@@ -1,7 +1,13 @@
-﻿namespace SIL.Machine.Translation.TestApp
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace SIL.Machine.Translation.TestApp
 {
 	public class Segment
 	{
+		public static readonly Regex TokenizeRegex = new Regex(@"\w+([.,-’']\w+)*|[\p{P}]");
+
 		public Segment()
 		{
 			Text = string.Empty;
@@ -12,6 +18,11 @@
 		public int StartIndex { get; set; }
 
 		public bool IsApproved { get; set; }
+
+		public IEnumerable<string> Words
+		{
+			get { return TokenizeRegex.Matches(Text).Cast<Match>().Select(m => m.Value); }
+		}
 
 		public override string ToString()
 		{
