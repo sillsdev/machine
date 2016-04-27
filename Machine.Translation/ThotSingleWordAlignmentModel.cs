@@ -57,8 +57,8 @@ namespace SIL.Machine.Translation
 
 		public double GetTranslationProbability(string sourceWord, string targetWord)
 		{
-			IntPtr nativeSourceWord = Thot.ConvertStringToNativeUtf8(sourceWord);
-			IntPtr nativeTargetWord = Thot.ConvertStringToNativeUtf8(targetWord);
+			IntPtr nativeSourceWord = Thot.ConvertStringToNativeUtf8(sourceWord ?? "NULL");
+			IntPtr nativeTargetWord = Thot.ConvertStringToNativeUtf8(targetWord ?? "NULL");
 			try
 			{
 				return Thot.swAlignModel_getTranslationProbability(_handle, nativeSourceWord, nativeTargetWord);

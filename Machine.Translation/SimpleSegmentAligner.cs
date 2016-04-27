@@ -21,25 +21,16 @@ namespace SIL.Machine.Translation
 			double totalAlignmentScore = 0;
 			for (int j = 0; j < targetSegment.Count; j++)
 			{
-				int bestIndex = 0;
-				double bestAlignmentScore = double.MinValue;
+				int bestIndex = -1;
+				double bestAlignmentScore = ComputeAlignmentScore(_segmentAligner.GetTranslationProbability(null, targetSegment[j]), 0.5);
 				for (int i = 0; i < sourceSegment.Count; i++)
 				{
 					if (IsPunctuation(targetSegment[j]) != IsPunctuation(sourceSegment[i]))
 						continue;
 
-					double confidence;
-					if (IsNumber(targetSegment[j]) && targetSegment[j] == sourceSegment[i])
-					{
-						confidence = 1;
-					}
-					else
-					{
-						confidence = _segmentAligner.GetTranslationProbability(sourceSegment[i], targetSegment[j]);
-					}
-
+					double probability = targetSegment[j] == sourceSegment[i] ? 1.0 : _segmentAligner.GetTranslationProbability(sourceSegment[i], targetSegment[j]);
 					double distance = (double) Math.Abs(i - j) / (Math.Max(targetSegment.Count, sourceSegment.Count) - 1);
-					double alignmentScore = (Math.Log(targetSegment[j] == sourceSegment[i] ? 1.0f : confidence) * Alpha) + (Math.Log(1.0f - distance) * (1.0f - Alpha));
+					double alignmentScore = ComputeAlignmentScore(probability, distance);
 
 					if (alignmentScore > bestAlignmentScore)
 					{
@@ -47,10 +38,17 @@ namespace SIL.Machine.Translation
 						bestAlignmentScore = alignmentScore;
 					}
 				}
+
 				totalAlignmentScore += bestAlignmentScore;
-				waMatrix[bestIndex, j] = true;
+				if (bestIndex > -1)
+					waMatrix[bestIndex, j] = true;
 			}
-			return totalAlignmentScore / sourceSegment.Count;
+			return totalAlignmentScore;
+		}
+
+		private static double ComputeAlignmentScore(double probability, double distanceScore)
+		{
+			return (Math.Log(probability) * Alpha) + (Math.Log(1.0f - distanceScore) * (1.0f - Alpha));
 		}
 
 		public double GetTranslationProbability(string sourceWord, string targetWord)
@@ -61,11 +59,6 @@ namespace SIL.Machine.Translation
 		private static bool IsPunctuation(string word)
 		{
 			return word.All(char.IsPunctuation);
-		}
-
-		private static bool IsNumber(string word)
-		{
-			return word.All(char.IsNumber);
 		}
 	}
 }
