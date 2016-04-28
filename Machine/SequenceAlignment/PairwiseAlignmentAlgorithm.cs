@@ -42,6 +42,7 @@ namespace SIL.Machine.SequenceAlignment
 
 		public AlignmentMode Mode { get; set; }
 		public bool ExpansionCompressionEnabled { get; set; }
+		public bool TranspositionEnabled { get; set; }
 
 		public int BestRawScore
 		{
@@ -74,11 +75,13 @@ namespace SIL.Machine.SequenceAlignment
 					int m3 = _sim[i - 1, j - 1] + _scorer.GetSubstitutionScore(_sequence1, Get1(i), _sequence2, Get2(j));
 					int m4 = !ExpansionCompressionEnabled || j - 2 < 0 ? int.MinValue : _sim[i - 1, j - 2] + _scorer.GetExpansionScore(_sequence1, Get1(i), _sequence2, Get2(j - 1), Get2(j));
 					int m5 = !ExpansionCompressionEnabled || i - 2 < 0 ? int.MinValue : _sim[i - 2, j - 1] + _scorer.GetCompressionScore(_sequence1, Get1(i - 1), Get1(i), _sequence2, Get2(j));
+					int m6 = !TranspositionEnabled || i - 2 < 0 || j - 2 < 0 ? int.MinValue : _sim[i - 2, j - 2]
+						+ _scorer.GetTranspositionScore(_sequence1, Get1(i - 1), Get1(i), _sequence2, Get2(j - 1), Get2(j));
 
 					if (Mode == AlignmentMode.Local)
-						_sim[i, j] = new[] {m1, m2, m3, m4, m5, 0}.Max();
+						_sim[i, j] = new[] {m1, m2, m3, m4, m5, m6, 0}.Max();
 					else
-						_sim[i, j] = new[] {m1, m2, m3, m4, m5}.Max();
+						_sim[i, j] = new[] {m1, m2, m3, m4, m5, m6}.Max();
 
 					if (_sim[i, j] > maxScore)
 					{
@@ -306,6 +309,22 @@ namespace SIL.Machine.SequenceAlignment
 						{
 							alignment.Item1.Add(new AlignmentCell<TItem>(_items1[i - 2], _items1[i - 1]));
 							alignment.Item2.Add(new AlignmentCell<TItem>(_items2[j - 1]));
+							yield return alignment;
+						}
+					}
+				}
+
+				if (TranspositionEnabled && i - 2 >= 0 && j - 2 >= 0)
+				{
+					opScore = _scorer.GetTranspositionScore(_sequence1, Get1(i - 1), Get1(i), _sequence2, Get2(j - 1), Get2(j));
+					if (_sim[i - 2, j - 2] + opScore + score >= threshold)
+					{
+						foreach (Tuple<List<AlignmentCell<TItem>>, List<AlignmentCell<TItem>>, int, int, int> alignment in Retrieve(i - 2, j - 2, score + opScore, threshold))
+						{
+							alignment.Item1.Add(new AlignmentCell<TItem>(_items1[i - 2]));
+							alignment.Item1.Add(new AlignmentCell<TItem>(_items1[i - 1]));
+							alignment.Item2.Add(new AlignmentCell<TItem>(_items2[j - 1]));
+							alignment.Item2.Add(new AlignmentCell<TItem>(_items2[j - 2]));
 							yield return alignment;
 						}
 					}

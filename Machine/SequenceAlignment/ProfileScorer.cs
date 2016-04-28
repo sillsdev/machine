@@ -89,6 +89,11 @@ namespace SIL.Machine.SequenceAlignment
 			throw new NotImplementedException();
 		}
 
+		public int GetTranspositionScore(Profile<TSeq, TItem> sequence1, AlignmentCell<TItem>[] p1, AlignmentCell<TItem>[] p2, Profile<TSeq, TItem> sequence2, AlignmentCell<TItem>[] q1, AlignmentCell<TItem>[] q2)
+		{
+			throw new NotImplementedException();
+		}
+
 		public int GetMaxScore1(Profile<TSeq, TItem> sequence1, AlignmentCell<TItem>[] p, Profile<TSeq, TItem> sequence2)
 		{
 			int sum = 0;

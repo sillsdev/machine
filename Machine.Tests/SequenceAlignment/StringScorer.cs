@@ -44,6 +44,11 @@ namespace SIL.Machine.Tests.SequenceAlignment
 			return score;
 		}
 
+		public int GetTranspositionScore(string sequence1, char p1, char p2, string sequence2, char q1, char q2)
+		{
+			return p1 == q2 && p2 == q1 ? 100 : 0;
+		}
+
 		public virtual int GetMaxScore1(string sequence1, char p, string sequence2)
 		{
 			return 100;
