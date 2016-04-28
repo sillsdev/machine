@@ -1,4 +1,5 @@
-﻿using NSubstitute;
+﻿using System.Linq;
+using NSubstitute;
 using NUnit.Framework;
 using SIL.ObjectModel;
 
@@ -76,7 +77,7 @@ namespace SIL.Machine.Translation.Tests
 			{
 				session.TranslateInteractively("caminé a mi habitación .".Split());
 				Assert.That(session.Translation, Is.EqualTo("walked to my room .".Split()));
-				Assert.That(session.IsWordTransferred(0), Is.True);
+				Assert.That(session.GetAlignedSourceWords(0).First().Type, Is.EqualTo(AlignedWordType.Transferred));
 				session.AddToPrefix("i", false);
 				Assert.That(session.Translation, Is.EqualTo("i walked to my room .".Split()));
 				session.AddToPrefix(new[] {"walked", "to", "my", "room", "."}, false);
@@ -84,7 +85,7 @@ namespace SIL.Machine.Translation.Tests
 
 				session.TranslateInteractively("caminé a la montaña .".Split());
 				Assert.That(session.Translation, Is.EqualTo("walked to the mountain .".Split()));
-				Assert.That(session.IsWordTransferred(0), Is.False);
+				Assert.That(session.GetAlignedSourceWords(0).First().Type, Is.EqualTo(AlignedWordType.Normal));
 			}
 		}
 
