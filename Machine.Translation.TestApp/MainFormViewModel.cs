@@ -318,8 +318,8 @@ namespace SIL.Machine.Translation.TestApp
 						oldText.IsActive = false;
 					if (_currentText != null)
 					{
-						_currentText.IsActive = true;
 						_currentText.ConfidenceThreshold = _confidenceThreshold / 100.0;
+						_currentText.IsActive = true;
 					}
 				}
 			}

@@ -16,7 +16,7 @@ namespace SIL.Machine.Translation
 		{
 			_smtEngine = smtEngine;
 			_transferEngine = transferEngine;
-			_segmentAligner = new SimpleSegmentAligner(smtEngine.SegmentAligner);
+			_segmentAligner = new EditDistanceSegmentAligner(smtEngine.SegmentAligner);
 			_sessions = new HashSet<TranslationSession>();
 		}
 

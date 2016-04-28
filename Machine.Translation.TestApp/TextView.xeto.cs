@@ -34,6 +34,7 @@ namespace SIL.Machine.Translation.TestApp
 				_prevDataContext.Suggestions.CollectionChanged -= SuggestionsChanged;
 				_prevDataContext.PropertyChanged -= ViewModelPropertyChanged;
 				_prevDataContext.UnapprovedTargetSegmentRanges.CollectionChanged -= UnapprovedTargetSegmentRangesChanged;
+				_prevDataContext.AlignedSourceWords.CollectionChanged -= AlignedSourceWordsChanged;
 			}
 
 			var vm = DataContext as TextViewModel;
@@ -42,6 +43,7 @@ namespace SIL.Machine.Translation.TestApp
 				vm.Suggestions.CollectionChanged += SuggestionsChanged;
 				vm.PropertyChanged += ViewModelPropertyChanged;
 				vm.UnapprovedTargetSegmentRanges.CollectionChanged += UnapprovedTargetSegmentRangesChanged;
+				vm.AlignedSourceWords.CollectionChanged += AlignedSourceWordsChanged;
 
 				UpdateSuggestions(vm);
 				UpdateTargetTextBackground(vm);
@@ -51,6 +53,13 @@ namespace SIL.Machine.Translation.TestApp
 				TargetSegmentTextArea.Focus();
 			}
 			_prevDataContext = vm;
+		}
+
+		private void AlignedSourceWordsChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			var vm = DataContext as TextViewModel;
+			if (vm != null)
+				UpdateSourceSegmentBackground(vm);
 		}
 
 		private void UnapprovedTargetSegmentRangesChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -75,10 +84,6 @@ namespace SIL.Machine.Translation.TestApp
 
 			switch (e.PropertyName)
 			{
-				case "CurrentSourceWordRange":
-					UpdateSourceSegmentBackground(vm);
-					break;
-
 				case "CurrentSourceSegmentRange":
 					UpdateTextForeground(SourceTextArea, vm.CurrentSourceSegmentRange);
 					break;
@@ -92,22 +97,22 @@ namespace SIL.Machine.Translation.TestApp
 		private void UpdateSourceSegmentBackground(TextViewModel vm)
 		{
 			SourceSegmentTextArea.Buffer.SetBackground(new Range<int>(0, SourceSegmentTextArea.Text.Length), Colors.White);
-			if (vm.CurrentSourceWordRange != null)
+			foreach (AlignedWordViewModel alignedWord in vm.AlignedSourceWords)
 			{
 				Color c = Colors.White;
-				switch (vm.CurrentSourceWordLevel)
+				switch (alignedWord.Level)
 				{
-					case TranslationLevel.Transfer:
+					case WordTranslationLevel.Transfer:
 						c = Colors.DarkGray;
 						break;
-					case TranslationLevel.LowConfidence:
+					case WordTranslationLevel.LowConfidence:
 						c = Colors.SkyBlue;
 						break;
-					case TranslationLevel.HighConfidence:
+					case WordTranslationLevel.HighConfidence:
 						c = Colors.Orange;
 						break;
 				}
-				SourceSegmentTextArea.Buffer.SetBackground(FixRichTextAreaInputRange(SourceSegmentTextArea, vm.CurrentSourceWordRange.Value), c);
+				SourceSegmentTextArea.Buffer.SetBackground(FixRichTextAreaInputRange(SourceSegmentTextArea, alignedWord.Range), c);
 			}
 		}
 

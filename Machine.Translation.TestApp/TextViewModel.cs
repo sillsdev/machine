@@ -12,14 +12,6 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.TestApp
 {
-	public enum TranslationLevel
-	{
-		Unknown,
-		Transfer,
-		HighConfidence,
-		LowConfidence
-	}
-
 	public class TextViewModel : ViewModelBase, IChangeTracking
 	{
 		private readonly string _name;
@@ -42,12 +34,12 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly BulkObservableList<SuggestionViewModel> _suggestions; 
 		private readonly ReadOnlyObservableList<SuggestionViewModel> _readOnlySuggestions;
 		private readonly List<string> _sourceSegmentWords;
-		private Range<int>? _currentSourceWordRange;
+		private readonly BulkObservableList<AlignedWordViewModel> _alignedSourceWords;
+		private readonly ReadOnlyObservableList<AlignedWordViewModel> _readOnlyAlignedSourceWords;
 		private Range<int>? _currentSourceSegmentRange;
 		private Range<int>? _currentTargetSegmentRange; 
 		private readonly RelayCommand<int> _selectSourceSegmentCommand;
 		private readonly RelayCommand<int> _selectTargetSegmentCommand;
-		private TranslationLevel _currentSourceWordLevel;
 		private readonly BulkObservableList<Range<int>> _unapprovedTargetSegmentRanges;
 		private readonly ReadOnlyObservableList<Range<int>> _readonlyUnapprovedTargetSegmentRanges;
 		private double _confidenceThreshold;
@@ -75,6 +67,8 @@ namespace SIL.Machine.Translation.TestApp
 			_sourceSegmentWords = new List<string>();
 			_unapprovedTargetSegmentRanges = new BulkObservableList<Range<int>>();
 			_readonlyUnapprovedTargetSegmentRanges = new ReadOnlyObservableList<Range<int>>(_unapprovedTargetSegmentRanges);
+			_alignedSourceWords = new BulkObservableList<AlignedWordViewModel>();
+			_readOnlyAlignedSourceWords = new ReadOnlyObservableList<AlignedWordViewModel>(_alignedSourceWords);
 
 			LoadSourceTextFile();
 			SourceText = GenerateText(_sourceSegments);
@@ -356,10 +350,10 @@ namespace SIL.Machine.Translation.TestApp
 				i--;
 			}
 			bool inPhrase = false;
-			while (i < TranslationSession.Translation.Count && (i < TranslationSession.Prefix.Count + lookaheadCount || inPhrase))
+			while (i < TranslationSession.Translation.Count && (lookaheadCount > 0 || inPhrase))
 			{
 				string word = TranslationSession.Translation[i];
-				if (IsWordSignificant(i))
+				if (TranslationSession.GetWordConfidence(i) >= _confidenceThreshold || TranslationSession.GetAlignedSourceWords(i).Any(awi => awi.Type == AlignedWordType.Transferred))
 				{
 					if (word.All(char.IsPunctuation))
 					{
@@ -372,27 +366,25 @@ namespace SIL.Machine.Translation.TestApp
 					}
 					else
 					{
-						if (IsCapitalCase(_sourceSegmentWords[TranslationSession.GetSourceWordIndex(i)]))
+						if (TranslationSession.GetAlignedSourceWords(i).Any(awi => IsCapitalCase(_sourceSegmentWords[awi.Index])))
 							word = ToCapitalCase(word);
 						if (suggestions.Count == 0 || suggestions[suggestions.Count - 1].Text != word)
 							suggestions.Add(new SuggestionViewModel(this, word));
 						inPhrase = true;
 					}
+					lookaheadCount--;
 				}
 				else
 				{
 					inPhrase = false;
+					if (TranslationSession.GetAlignedSourceWords(i).Any())
+						lookaheadCount--;
 				}
 				i++;
 			}
 
 			_suggestions.ReplaceAll(suggestions);
 			_applyAllSuggestionsCommand.UpdateCanExecute();
-		}
-
-		private bool IsWordSignificant(int index)
-		{
-			return TranslationSession.IsWordTransferred(index) || TranslationSession.GetWordConfidence(index) >= _confidenceThreshold;
 		}
 
 		private static bool IsCapitalCase(string word)
@@ -480,27 +472,32 @@ namespace SIL.Machine.Translation.TestApp
 			if (!_isTranslating)
 				return;
 
+			var alignedSourceWords = new List<AlignedWordViewModel>();
 			int targetWordIndex = Segment.TokenizeRegex.Matches(TargetSegment).Cast<Match>()
 				.IndexOf(m => _currentTargetSegmentIndex >= m.Index && _currentTargetSegmentIndex <= m.Index + m.Length);
 			if (targetWordIndex != -1)
 			{
-				if (IsWordSignificant(targetWordIndex))
+				foreach (AlignedWordInfo awi in TranslationSession.GetAlignedSourceWords(targetWordIndex)
+					.Where(awi => awi.Type == AlignedWordType.Transferred || awi.Confidence >= _confidenceThreshold))
 				{
-					int sourceWordIndex = TranslationSession.GetSourceWordIndex(targetWordIndex);
-					Match match = Segment.TokenizeRegex.Matches(SourceSegment)[sourceWordIndex];
-					if (TranslationSession.IsWordTransferred(targetWordIndex))
-						CurrentSourceWordLevel = TranslationLevel.Transfer;
-					else if (TranslationSession.GetWordConfidence(targetWordIndex) >= 0.5f)
-						CurrentSourceWordLevel = TranslationLevel.HighConfidence;
+					WordTranslationLevel level;
+					Match match = Segment.TokenizeRegex.Matches(SourceSegment)[awi.Index];
+					if (awi.Type == AlignedWordType.Transferred)
+						level = WordTranslationLevel.Transfer;
+					else if (awi.Confidence >= 0.5f)
+						level = WordTranslationLevel.HighConfidence;
 					else
-						CurrentSourceWordLevel = TranslationLevel.LowConfidence;
-					CurrentSourceWordRange = new Range<int>(match.Index, match.Index + match.Length - 1);
-					return;
+						level = WordTranslationLevel.LowConfidence;
+					alignedSourceWords.Add(new AlignedWordViewModel(new Range<int>(match.Index, match.Index + match.Length - 1), level));
 				}
 			}
 
-			CurrentSourceWordLevel = TranslationLevel.Unknown;
-			CurrentSourceWordRange = null;
+			_alignedSourceWords.ReplaceAll(alignedSourceWords);
+		}
+
+		public ReadOnlyObservableList<AlignedWordViewModel> AlignedSourceWords
+		{
+			get { return _readOnlyAlignedSourceWords; }
 		}
 
 		public Range<int>? CurrentSourceSegmentRange
@@ -509,22 +506,10 @@ namespace SIL.Machine.Translation.TestApp
 			private set { Set(() => CurrentSourceSegmentRange, ref _currentSourceSegmentRange, value); }
 		}
 
-		public Range<int>? CurrentSourceWordRange
-		{
-			get { return _currentSourceWordRange; }
-			private set { Set(() => CurrentSourceWordRange, ref _currentSourceWordRange, value); }
-		}
-
 		public Range<int>? CurrentTargetSegmentRange
 		{
 			get { return _currentTargetSegmentRange; }
 			private set { Set(() => CurrentTargetSegmentRange, ref _currentTargetSegmentRange, value); }
-		}
-
-		public TranslationLevel CurrentSourceWordLevel
-		{
-			get { return _currentSourceWordLevel; }
-			private set { Set(() => CurrentSourceWordLevel, ref _currentSourceWordLevel, value); }
 		}
 
 		public ReadOnlyObservableList<SuggestionViewModel> Suggestions
