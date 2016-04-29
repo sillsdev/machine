@@ -50,25 +50,25 @@
     <Compile Include="TranslationHermitCrabTestBase.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Machine.HermitCrab.Tests\Machine.HermitCrab.Tests.csproj">
+    <ProjectReference Include="..\SIL.Machine.HermitCrab.Tests\SIL.Machine.HermitCrab.Tests.csproj">
       <Project>{b91590d0-1519-48a0-866b-b17e326812ad}</Project>
-      <Name>Machine.HermitCrab.Tests</Name>
+      <Name>SIL.Machine.HermitCrab.Tests</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Machine.HermitCrab\Machine.HermitCrab.csproj">
+    <ProjectReference Include="..\SIL.Machine.HermitCrab\SIL.Machine.HermitCrab.csproj">
       <Project>{9e140fcf-0265-481b-b9a0-b0e7bcd3e814}</Project>
-      <Name>Machine.HermitCrab</Name>
+      <Name>SIL.Machine.HermitCrab</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Machine.Translation.HermitCrab\Machine.Translation.HermitCrab.csproj">
+    <ProjectReference Include="..\SIL.Machine.Translation.HermitCrab\SIL.Machine.Translation.HermitCrab.csproj">
       <Project>{4c572560-ce06-43ec-9eda-b4e30eb27fe5}</Project>
-      <Name>Machine.Translation.HermitCrab</Name>
+      <Name>SIL.Machine.Translation.HermitCrab</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Machine.Translation\Machine.Translation.csproj">
+    <ProjectReference Include="..\SIL.Machine.Translation\SIL.Machine.Translation.csproj">
       <Project>{d89afa6a-cc7b-42e4-b98d-86b8c328f07c}</Project>
-      <Name>Machine.Translation</Name>
+      <Name>SIL.Machine.Translation</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Machine\Machine.csproj">
+    <ProjectReference Include="..\SIL.Machine\SIL.Machine.csproj">
       <Project>{8c9ab5d2-22ca-4559-abb0-83e97d7f0e58}</Project>
-      <Name>Machine</Name>
+      <Name>SIL.Machine</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

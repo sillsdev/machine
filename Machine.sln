@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Machine", "Machine\Machine.csproj", "{8C9AB5D2-22CA-4559-ABB0-83E97D7F0E58}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine", "SIL.Machine\SIL.Machine.csproj", "{8C9AB5D2-22CA-4559-ABB0-83E97D7F0E58}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{F27B1588-D555-45F5-955F-6BD135012C87}"
 	ProjectSection(SolutionItems) = preProject
@@ -12,23 +12,23 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{F27B15
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Machine.Tests", "Machine.Tests\Machine.Tests.csproj", "{3B8610C8-8EF2-4733-9D8F-5303318830DA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Tests", "SIL.Machine.Tests\SIL.Machine.Tests.csproj", "{3B8610C8-8EF2-4733-9D8F-5303318830DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Machine.Translation", "Machine.Translation\Machine.Translation.csproj", "{D89AFA6A-CC7B-42E4-B98D-86B8C328F07C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Translation", "SIL.Machine.Translation\SIL.Machine.Translation.csproj", "{D89AFA6A-CC7B-42E4-B98D-86B8C328F07C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Machine.Translation.Tests", "Machine.Translation.Tests\Machine.Translation.Tests.csproj", "{305C1A93-6BF6-4B70-B8F5-81FCBD6A10F3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Translation.Tests", "SIL.Machine.Translation.Tests\SIL.Machine.Translation.Tests.csproj", "{305C1A93-6BF6-4B70-B8F5-81FCBD6A10F3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Machine.HermitCrab", "Machine.HermitCrab\Machine.HermitCrab.csproj", "{9E140FCF-0265-481B-B9A0-B0E7BCD3E814}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.HermitCrab", "SIL.Machine.HermitCrab\SIL.Machine.HermitCrab.csproj", "{9E140FCF-0265-481B-B9A0-B0E7BCD3E814}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Machine.HermitCrab.Tests", "Machine.HermitCrab.Tests\Machine.HermitCrab.Tests.csproj", "{B91590D0-1519-48A0-866B-B17E326812AD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.HermitCrab.Tests", "SIL.Machine.HermitCrab.Tests\SIL.Machine.HermitCrab.Tests.csproj", "{B91590D0-1519-48A0-866B-B17E326812AD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HermitCrabExe", "HermitCrabExe\HermitCrabExe.csproj", "{945FED88-A315-4692-96DD-770892A814DD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Machine.Translation.HermitCrab", "Machine.Translation.HermitCrab\Machine.Translation.HermitCrab.csproj", "{4C572560-CE06-43EC-9EDA-B4E30EB27FE5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Translation.HermitCrab", "SIL.Machine.Translation.HermitCrab\SIL.Machine.Translation.HermitCrab.csproj", "{4C572560-CE06-43EC-9EDA-B4E30EB27FE5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Machine.Translation.HermitCrab.Tests", "Machine.Translation.HermitCrab.Tests\Machine.Translation.HermitCrab.Tests.csproj", "{F23C4598-1EBF-4D75-80AA-A5DDE0286485}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Translation.HermitCrab.Tests", "SIL.Machine.Translation.HermitCrab.Tests\SIL.Machine.Translation.HermitCrab.Tests.csproj", "{F23C4598-1EBF-4D75-80AA-A5DDE0286485}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Machine.Translation.TestApp", "Machine.Translation.TestApp\Machine.Translation.TestApp.csproj", "{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Translation.TestApp", "SIL.Machine.Translation.TestApp\SIL.Machine.Translation.TestApp.csproj", "{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

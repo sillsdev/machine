@@ -64,13 +64,13 @@
     <Compile Include="StratumTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Machine.HermitCrab\Machine.HermitCrab.csproj">
+    <ProjectReference Include="..\SIL.Machine.HermitCrab\SIL.Machine.HermitCrab.csproj">
       <Project>{9E140FCF-0265-481B-B9A0-B0E7BCD3E814}</Project>
-      <Name>Machine.HermitCrab</Name>
+      <Name>SIL.Machine.HermitCrab</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Machine\Machine.csproj">
+    <ProjectReference Include="..\SIL.Machine\SIL.Machine.csproj">
       <Project>{8c9ab5d2-22ca-4559-abb0-83e97d7f0e58}</Project>
-      <Name>Machine</Name>
+      <Name>SIL.Machine</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

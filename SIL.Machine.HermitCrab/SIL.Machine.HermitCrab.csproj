@@ -172,9 +172,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Machine\Machine.csproj">
+    <ProjectReference Include="..\SIL.Machine\SIL.Machine.csproj">
       <Project>{8c9ab5d2-22ca-4559-abb0-83e97d7f0e58}</Project>
-      <Name>Machine</Name>
+      <Name>SIL.Machine</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

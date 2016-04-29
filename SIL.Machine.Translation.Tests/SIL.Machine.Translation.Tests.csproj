@@ -57,9 +57,9 @@
     <Compile Include="TransferEngineTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Machine.Translation\Machine.Translation.csproj">
+    <ProjectReference Include="..\SIL.Machine.Translation\SIL.Machine.Translation.csproj">
       <Project>{d89afa6a-cc7b-42e4-b98d-86b8c328f07c}</Project>
-      <Name>Machine.Translation</Name>
+      <Name>SIL.Machine.Translation</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

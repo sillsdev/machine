@@ -82,9 +82,9 @@
     <Compile Include="Statistics\WittenBellProbabilityDistributionTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Machine\Machine.csproj">
+    <ProjectReference Include="..\SIL.Machine\SIL.Machine.csproj">
       <Project>{8C9AB5D2-22CA-4559-ABB0-83E97D7F0E58}</Project>
-      <Name>Machine</Name>
+      <Name>SIL.Machine</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
