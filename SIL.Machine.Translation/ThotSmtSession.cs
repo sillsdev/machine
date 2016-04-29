@@ -10,7 +10,7 @@ namespace SIL.Machine.Translation
 	{
 		private const int DefaultTranslationBufferLength = 1024;
 		private const float NullWordConfidenceThreshold = 0.03f;
-		private const int MaxSegmentLengthDelta = 5;
+		private const int MinUntranslatedSuffixLength = 5;
 
 		private readonly ThotSmtEngine _engine;
 		private readonly IntPtr _handle;
@@ -121,33 +121,34 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		private TranslationResult CreateResult(IList<string> sourceSegment, IList<string> targetSegment, IList<string> prefix)
+		private IList<string> ShortenUntranslatedSuffix(IList<string> sourceSegment, IList<string> targetSegment, IList<string> prefix)
 		{
-			// remove excessive untranslated suffix after prefix
-			if (targetSegment.Count - sourceSegment.Count > MaxSegmentLengthDelta && prefix.Count > 0)
+			if (targetSegment.Count - sourceSegment.Count > MinUntranslatedSuffixLength && prefix.Count > MinUntranslatedSuffixLength)
 			{
-				for (int i = 0; i < sourceSegment.Count; i++)
+				int j = targetSegment.Count - 1;
+				for (int i = sourceSegment.Count - 1; i >= 0 && j >= prefix.Count; i--, j--)
 				{
-					int k = prefix.Count;
-					for (int j = i; j < sourceSegment.Count && k < targetSegment.Count; j++, k++)
-					{
-						if (sourceSegment[j] != targetSegment[k] || (prefix.Count + targetSegment.Count - k) - sourceSegment.Count <= MaxSegmentLengthDelta)
-						{
-							break;
-						}
-					}
-
-					if (k > prefix.Count)
-					{
-						var newTargetSegment = new List<string>(targetSegment.Take(prefix.Count));
-						for (; k < targetSegment.Count; k++)
-							newTargetSegment.Add(targetSegment[k]);
-						targetSegment = newTargetSegment;
+					if (sourceSegment[i] != targetSegment[j])
 						break;
-					}
+				}
+
+				if (j == prefix.Count - 1)
+				{
+					int removeCount = targetSegment.Count - (Math.Max(prefix.Count, sourceSegment.Count) + MinUntranslatedSuffixLength);
+					j += 1 + removeCount;
+					var newTargetSegment = new List<string>(targetSegment.Take(prefix.Count));
+					for (; j < targetSegment.Count; j++)
+						newTargetSegment.Add(targetSegment[j]);
+					return newTargetSegment;
 				}
 			}
+			return targetSegment;
+		}
 
+		private TranslationResult CreateResult(IList<string> sourceSegment, IList<string> targetSegment, IList<string> prefix)
+		{
+			// shorten an excessively long untranslated suffix if necessary
+			targetSegment = ShortenUntranslatedSuffix(sourceSegment, targetSegment, prefix);
 			WordAlignmentMatrix waMatrix;
 			_segmentAligner.GetBestAlignment(sourceSegment, targetSegment, out waMatrix);
 			var confidences = new double[targetSegment.Count];
