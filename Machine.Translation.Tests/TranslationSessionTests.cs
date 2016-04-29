@@ -51,8 +51,8 @@ namespace SIL.Machine.Translation.Tests
 			using (var env = new TestEnvironment())
 			using (TranslationSession session = env.Engine.StartSession())
 			{
-				session.TranslateInteractively("caminé a mi habitación .".Split());
-				Assert.That(session.Translation, Is.EqualTo("walked to my room .".Split()));
+				TranslationResult result = session.TranslateInteractively("caminé a mi habitación .".Split());
+				Assert.That(result.TargetSegment, Is.EqualTo("walked to my room .".Split()));
 			}
 		}
 
@@ -62,10 +62,10 @@ namespace SIL.Machine.Translation.Tests
 			using (var env = new TestEnvironment())
 			using (TranslationSession session = env.Engine.StartSession())
 			{
-				session.TranslateInteractively("caminé a mi habitación .".Split());
-				Assert.That(session.Translation, Is.EqualTo("walked to my room .".Split()));
-				session.AddToPrefix("i", false);
-				Assert.That(session.Translation, Is.EqualTo("i walked to my room .".Split()));
+				TranslationResult result = session.TranslateInteractively("caminé a mi habitación .".Split());
+				Assert.That(result.TargetSegment, Is.EqualTo("walked to my room .".Split()));
+				result = session.AddToPrefix("i", false);
+				Assert.That(result.TargetSegment, Is.EqualTo("i walked to my room .".Split()));
 			}
 		}
 
@@ -75,17 +75,17 @@ namespace SIL.Machine.Translation.Tests
 			using (var env = new TestEnvironment())
 			using (TranslationSession session = env.Engine.StartSession())
 			{
-				session.TranslateInteractively("caminé a mi habitación .".Split());
-				Assert.That(session.Translation, Is.EqualTo("walked to my room .".Split()));
-				Assert.That(session.GetAlignedSourceWords(0).First().Type, Is.EqualTo(AlignedWordType.Transferred));
-				session.AddToPrefix("i", false);
-				Assert.That(session.Translation, Is.EqualTo("i walked to my room .".Split()));
+				TranslationResult result = session.TranslateInteractively("caminé a mi habitación .".Split());
+				Assert.That(result.TargetSegment, Is.EqualTo("walked to my room .".Split()));
+				Assert.That(result.GetTargetWordPairs(0).First().Sources, Is.EqualTo(TranslationSources.Transfer));
+				result = session.AddToPrefix("i", false);
+				Assert.That(result.TargetSegment, Is.EqualTo("i walked to my room .".Split()));
 				session.AddToPrefix(new[] {"walked", "to", "my", "room", "."}, false);
 				session.Approve();
 
-				session.TranslateInteractively("caminé a la montaña .".Split());
-				Assert.That(session.Translation, Is.EqualTo("walked to the mountain .".Split()));
-				Assert.That(session.GetAlignedSourceWords(0).First().Type, Is.EqualTo(AlignedWordType.Normal));
+				result = session.TranslateInteractively("caminé a la montaña .".Split());
+				Assert.That(result.TargetSegment, Is.EqualTo("walked to the mountain .".Split()));
+				Assert.That(result.GetTargetWordPairs(0).First().Sources, Is.EqualTo(TranslationSources.Smt | TranslationSources.Transfer));
 			}
 		}
 
@@ -95,8 +95,8 @@ namespace SIL.Machine.Translation.Tests
 			using (var env = new TestEnvironment())
 			using (TranslationSession session = env.Engine.StartSession())
 			{
-				session.TranslateInteractively("hablé con recepción .".Split());
-				Assert.That(session.Translation, Is.EqualTo("hablé with reception .".Split()));
+				TranslationResult result = session.TranslateInteractively("hablé con recepción .".Split());
+				Assert.That(result.TargetSegment, Is.EqualTo("hablé with reception .".Split()));
 			}
 		}
 
@@ -106,11 +106,10 @@ namespace SIL.Machine.Translation.Tests
 			using (var env = new TestEnvironment())
 			using (TranslationSession session = env.Engine.StartSession())
 			{
-				session.TranslateInteractively("hablé con recepción .".Split());
-				Assert.That(session.Translation, Is.EqualTo("hablé with reception .".Split()));
-				session.AddToPrefix("i", false);
-				session.AddToPrefix("talked", false);
-				Assert.That(session.Translation, Is.EqualTo("i talked with reception .".Split()));
+				TranslationResult result = session.TranslateInteractively("hablé con recepción .".Split());
+				Assert.That(result.TargetSegment, Is.EqualTo("hablé with reception .".Split()));
+				result = session.AddToPrefix(new[] {"i", "talked"}, false);
+				Assert.That(result.TargetSegment, Is.EqualTo("i talked with reception .".Split()));
 			}
 		}
 
@@ -120,16 +119,15 @@ namespace SIL.Machine.Translation.Tests
 			using (var env = new TestEnvironment())
 			using (TranslationSession session = env.Engine.StartSession())
 			{
-				session.TranslateInteractively("hablé con recepción .".Split());
-				Assert.That(session.Translation, Is.EqualTo("hablé with reception .".Split()));
-				session.AddToPrefix("i", false);
-				session.AddToPrefix("talked", false);
-				Assert.That(session.Translation, Is.EqualTo("i talked with reception .".Split()));
+				TranslationResult result = session.TranslateInteractively("hablé con recepción .".Split());
+				Assert.That(result.TargetSegment, Is.EqualTo("hablé with reception .".Split()));
+				result = session.AddToPrefix(new[] {"i", "talked"}, false);
+				Assert.That(result.TargetSegment, Is.EqualTo("i talked with reception .".Split()));
 				session.AddToPrefix(new[] {"with", "reception", "."}, false);
 				session.Approve();
 
-				session.TranslateInteractively("hablé hasta cinco en punto .".Split());
-				Assert.That(session.Translation, Is.EqualTo("talked until five o ' clock .".Split()));
+				result = session.TranslateInteractively("hablé hasta cinco en punto .".Split());
+				Assert.That(result.TargetSegment, Is.EqualTo("talked until five o ' clock .".Split()));
 			}
 		}
 	}

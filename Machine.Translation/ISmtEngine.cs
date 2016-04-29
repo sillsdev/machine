@@ -9,8 +9,6 @@ namespace SIL.Machine.Translation
 
 		void SaveModels();
 
-		ISegmentAligner SegmentAligner { get; }
-
 		void Train(IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus);
 	}
 }

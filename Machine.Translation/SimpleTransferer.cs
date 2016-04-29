@@ -11,18 +11,40 @@ namespace SIL.Machine.Translation
 			_morphemeMapper = morphemeMapper;
 		}
 
-		public IEnumerable<WordAnalysis> Transfer(WordAnalysis sourceAnalysis)
+		public IEnumerable<WordAnalysis> Transfer(IEnumerable<IEnumerable<WordAnalysis>> sourceAnalyses, out WordAlignmentMatrix waMatrix)
 		{
-			var targetMorphemes = new List<MorphemeInfo>();
-			foreach (MorphemeInfo sourceMorpheme in sourceAnalysis.Morphemes)
+			var targetAnalyses = new List<WordAnalysis>();
+			foreach (IEnumerable<WordAnalysis> sourceAnalysisOptions in sourceAnalyses)
 			{
-				MorphemeInfo targetMorpheme;
-				if (!_morphemeMapper.TryGetTargetMorpheme(sourceMorpheme, out targetMorpheme))
-					yield break;
+				bool found = false;
+				foreach (WordAnalysis sourceAnalysisOption in sourceAnalysisOptions)
+				{
+					var targetMorphemes = new List<MorphemeInfo>();
+					foreach (MorphemeInfo sourceMorpheme in sourceAnalysisOption.Morphemes)
+					{
+						MorphemeInfo targetMorpheme;
+						if (!_morphemeMapper.TryGetTargetMorpheme(sourceMorpheme, out targetMorpheme))
+							break;
 
-				targetMorphemes.Add(targetMorpheme);
+						targetMorphemes.Add(targetMorpheme);
+					}
+					if (targetMorphemes.Count == sourceAnalysisOption.Morphemes.Count)
+					{
+						targetAnalyses.Add(new WordAnalysis(targetMorphemes, sourceAnalysisOption.RootMorphemeIndex, sourceAnalysisOption.Category));
+						found = true;
+						break;
+					}
+				}
+
+				if (!found)
+					targetAnalyses.Add(null);
 			}
-			yield return new WordAnalysis(targetMorphemes, sourceAnalysis.RootMorphemeIndex, sourceAnalysis.Category);
+
+			waMatrix = new WordAlignmentMatrix(targetAnalyses.Count, targetAnalyses.Count);
+			for (int j = 0; j < targetAnalyses.Count; j++)
+				waMatrix[j, j] = true;
+
+			return targetAnalyses;
 		}
 	}
 }

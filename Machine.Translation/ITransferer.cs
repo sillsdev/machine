@@ -4,6 +4,6 @@ namespace SIL.Machine.Translation
 {
 	public interface ITransferer
 	{
-		IEnumerable<WordAnalysis> Transfer(WordAnalysis sourceAnalysis);
+		IEnumerable<WordAnalysis> Transfer(IEnumerable<IEnumerable<WordAnalysis>> sourceAnalyses, out WordAlignmentMatrix waMatrix);
 	}
 }

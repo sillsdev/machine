@@ -140,6 +140,7 @@ namespace SIL.Machine.Translation
 		private readonly string _cfgFileName;
 		private IntPtr _handle;
 		private readonly HashSet<ThotSmtSession> _sessions;
+		private readonly ISegmentAligner _segmentAligner;
 		private readonly ThotSingleWordAlignmentModel _singleWordAlignmentModel;
 
 		public ThotSmtEngine(string cfgFileName)
@@ -148,6 +149,7 @@ namespace SIL.Machine.Translation
 			_sessions = new HashSet<ThotSmtSession>();
 			_handle = Thot.decoder_open(_cfgFileName);
 			_singleWordAlignmentModel = new ThotSingleWordAlignmentModel(Thot.decoder_getSingleWordAlignmentModel(_handle));
+			_segmentAligner = new FuzzyEditDistanceSegmentAligner(_singleWordAlignmentModel);
 		}
 
 		public void Train(IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus)
@@ -181,7 +183,7 @@ namespace SIL.Machine.Translation
 
 		public ISegmentAligner SegmentAligner
 		{
-			get { return _singleWordAlignmentModel; }
+			get { return _segmentAligner; }
 		}
 
 		internal IntPtr Handle

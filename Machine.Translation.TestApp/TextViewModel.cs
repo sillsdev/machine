@@ -45,7 +45,7 @@ namespace SIL.Machine.Translation.TestApp
 		private double _confidenceThreshold;
 		private bool _isChanged;
 		private bool _isActive;
-		private bool _isTranslating;
+		private TranslationResult _currentTranslationResult;
 
 		public TextViewModel(string name, string sourceFileName, string targetFileName)
 		{
@@ -259,6 +259,7 @@ namespace SIL.Machine.Translation.TestApp
 			_sourceSegments[_currentSegment].IsApproved = true;
 			_targetSegments[_currentSegment].IsApproved = true;
 			UpdateUnapprovedTargetSegmentRanges();
+			UpdateSuggestions();
 			_approveSegmentCommand.UpdateCanExecute();
 			IsChanged = true;
 		}
@@ -321,68 +322,71 @@ namespace SIL.Machine.Translation.TestApp
 		private void StartSegmentTranslation()
 		{
 			_sourceSegmentWords.AddRange(_sourceSegments[_currentSegment].Words);
-			TranslationSession.TranslateInteractively(_sourceSegmentWords.Select(w => w.ToLowerInvariant()));
-			_isTranslating = true;
+			_currentTranslationResult = TranslationSession.TranslateInteractively(_sourceSegmentWords.Select(w => w.ToLowerInvariant()));
 			UpdatePrefix();
 			UpdateSourceSegmentSelection();
 		}
 
 		private void UpdatePrefix()
 		{
-			if (!_isTranslating)
+			if (_currentTranslationResult == null)
 				return;
 
-			TranslationSession.SetPrefix(_targetSegments[_currentSegment].Words.Select(w => w.ToLowerInvariant()), TargetSegment.Length > 0 && !TargetSegment.EndsWith(" "));
+			_currentTranslationResult = TranslationSession.SetPrefix(_targetSegments[_currentSegment].Words.Select(w => w.ToLowerInvariant()),
+				TargetSegment.Length > 0 && !TargetSegment.EndsWith(" "));
 			UpdateSuggestions();
 		}
 
 		private void UpdateSuggestions()
 		{
-			if (_currentSegment == -1 || _targetSegments[_currentSegment].IsApproved)
+			if (_currentSegment == -1)
 				return;
 
 			var suggestions = new List<SuggestionViewModel>();
-			int lookaheadCount = Math.Max(0, TranslationSession.Translation.Count - TranslationSession.SourceSegment.Count) + 1;
-			int i = TranslationSession.Prefix.Count;
-			if (TranslationSession.IsLastWordPartial)
+			if (!_targetSegments[_currentSegment].IsApproved)
 			{
-				lookaheadCount--;
-				i--;
-			}
-			bool inPhrase = false;
-			while (i < TranslationSession.Translation.Count && (lookaheadCount > 0 || inPhrase))
-			{
-				string word = TranslationSession.Translation[i];
-				if (TranslationSession.GetWordConfidence(i) >= _confidenceThreshold || TranslationSession.GetAlignedSourceWords(i).Any(awi => awi.Type == AlignedWordType.Transferred))
+				int lookaheadCount = Math.Max(0, _currentTranslationResult.TargetSegment.Count - _currentTranslationResult.SourceSegment.Count) + 1;
+				int i = TranslationSession.Prefix.Count;
+				if (TranslationSession.IsLastWordPartial)
 				{
-					if (word.All(char.IsPunctuation))
+					lookaheadCount--;
+					i--;
+				}
+				bool inPhrase = false;
+				while (i < _currentTranslationResult.TargetSegment.Count && (lookaheadCount > 0 || inPhrase))
+				{
+					string word = _currentTranslationResult.TargetSegment[i];
+					if (_currentTranslationResult.GetTargetWordConfidence(i) >= _confidenceThreshold
+					    || _currentTranslationResult.GetTargetWordPairs(i).Any(awi => (awi.Sources & TranslationSources.Transfer) == TranslationSources.Transfer))
 					{
-						if (word.IsOneOf(".", ",") && suggestions.Count > 0)
+						if (word.All(char.IsPunctuation))
 						{
-							string prevWord = suggestions[suggestions.Count - 1].Text;
-							suggestions[suggestions.Count - 1] = new SuggestionViewModel(this, prevWord + word);
+							if (word.IsOneOf(".", ",") && suggestions.Count > 0)
+							{
+								string prevWord = suggestions[suggestions.Count - 1].Text;
+								suggestions[suggestions.Count - 1] = new SuggestionViewModel(this, prevWord + word);
+							}
+							inPhrase = false;
 						}
-						inPhrase = false;
+						else
+						{
+							if (_currentTranslationResult.GetTargetWordPairs(i).Any(awi => IsCapitalCase(_sourceSegmentWords[awi.SourceIndex])))
+								word = ToCapitalCase(word);
+							if (suggestions.Count == 0 || suggestions[suggestions.Count - 1].Text != word)
+								suggestions.Add(new SuggestionViewModel(this, word));
+							inPhrase = true;
+						}
+						lookaheadCount--;
 					}
 					else
 					{
-						if (TranslationSession.GetAlignedSourceWords(i).Any(awi => IsCapitalCase(_sourceSegmentWords[awi.Index])))
-							word = ToCapitalCase(word);
-						if (suggestions.Count == 0 || suggestions[suggestions.Count - 1].Text != word)
-							suggestions.Add(new SuggestionViewModel(this, word));
-						inPhrase = true;
+						inPhrase = false;
+						if (_currentTranslationResult.GetTargetWordPairs(i).Any())
+							lookaheadCount--;
 					}
-					lookaheadCount--;
+					i++;
 				}
-				else
-				{
-					inPhrase = false;
-					if (TranslationSession.GetAlignedSourceWords(i).Any())
-						lookaheadCount--;
-				}
-				i++;
 			}
-
 			_suggestions.ReplaceAll(suggestions);
 			_applyAllSuggestionsCommand.UpdateCanExecute();
 		}
@@ -406,7 +410,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void EndSegmentTranslation()
 		{
-			_isTranslating = false;
+			_currentTranslationResult = null;
 			UpdateTargetText();
 			_sourceSegmentWords.Clear();
 			_suggestions.Clear();
@@ -469,7 +473,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void UpdateSourceSegmentSelection()
 		{
-			if (!_isTranslating)
+			if (_currentTranslationResult == null)
 				return;
 
 			var alignedSourceWords = new List<AlignedWordViewModel>();
@@ -477,12 +481,12 @@ namespace SIL.Machine.Translation.TestApp
 				.IndexOf(m => _currentTargetSegmentIndex >= m.Index && _currentTargetSegmentIndex <= m.Index + m.Length);
 			if (targetWordIndex != -1)
 			{
-				foreach (AlignedWordInfo awi in TranslationSession.GetAlignedSourceWords(targetWordIndex)
-					.Where(awi => awi.Type == AlignedWordType.Transferred || awi.Confidence >= _confidenceThreshold))
+				foreach (AlignedWordPair awi in _currentTranslationResult.GetTargetWordPairs(targetWordIndex)
+					.Where(awi => (awi.Sources & TranslationSources.Transfer) == TranslationSources.Transfer || awi.Confidence >= _confidenceThreshold))
 				{
 					WordTranslationLevel level;
-					Match match = Segment.TokenizeRegex.Matches(SourceSegment)[awi.Index];
-					if (awi.Type == AlignedWordType.Transferred)
+					Match match = Segment.TokenizeRegex.Matches(SourceSegment)[awi.SourceIndex];
+					if ((awi.Sources & TranslationSources.Transfer) == TranslationSources.Transfer)
 						level = WordTranslationLevel.Transfer;
 					else if (awi.Confidence >= 0.5f)
 						level = WordTranslationLevel.HighConfidence;

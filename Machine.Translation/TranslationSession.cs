@@ -1,216 +1,150 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using SIL.Extensions;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
 {
-	public class TranslationSession : DisposableBase
+	public class TranslationSession : DisposableBase, IInteractiveTranslator
 	{
-		private const float NullWordConfidenceThreshold = 0.03f;
+		private const double SecondaryEngineThreshold = 0.05;
 
 		private readonly TranslationEngine _engine;
 		private readonly ISmtSession _smtSession;
 		private readonly TransferEngine _transferEngine;
-		private readonly Dictionary<string, string> _transferCache;
-		private readonly List<string> _sourceSegment; 
-		private readonly ReadOnlyList<string> _readOnlySourceSegment;
-		private readonly List<string> _translation;
-		private readonly ReadOnlyList<string> _readOnlyTranslation;
-		private readonly List<Tuple<List<AlignedWordInfo>, double>> _targetWordInfos;
-		private readonly List<string> _prefix;
-		private readonly ReadOnlyList<string> _readOnlyPrefix; 
-		private bool _isLastWordPartial;
-		private readonly ISegmentAligner _segmentAligner;
+		private TranslationResult _transferResult;
 
-		internal TranslationSession(TranslationEngine engine, ISegmentAligner segmentAligner, ISmtSession smtSession, TransferEngine transferEngine)
+		internal TranslationSession(TranslationEngine engine, ISmtSession smtSession, TransferEngine transferEngine)
 		{
 			_engine = engine;
-			_segmentAligner = segmentAligner;
 			_smtSession = smtSession;
 			_transferEngine = transferEngine;
-			if (_transferEngine != null)
-				_transferCache = new Dictionary<string, string>();
-			_sourceSegment = new List<string>();
-			_readOnlySourceSegment = new ReadOnlyList<string>(_sourceSegment);
-			_prefix = new List<string>();
-			_readOnlyPrefix = new ReadOnlyList<string>(_prefix);
-			_translation = new List<string>();
-			_readOnlyTranslation = new ReadOnlyList<string>(_translation);
-			_targetWordInfos = new List<Tuple<List<AlignedWordInfo>, double>>();
-			_isLastWordPartial = true;
+		}
+
+		public TranslationResult Translate(IEnumerable<string> sourceSegment)
+		{
+			TranslationResult smtResult = _smtSession.Translate(sourceSegment);
+			TranslationResult transferResult = _transferEngine.Translate(smtResult.SourceSegment);
+			return MergeTranslationResults(smtResult, transferResult);
 		}
 
 		public IReadOnlyList<string> SourceSegment
 		{
-			get { return _readOnlySourceSegment; }
+			get { return _smtSession.SourceSegment; }
 		}
 
 		public IReadOnlyList<string> Prefix
 		{
-			get { return _readOnlyPrefix; }
+			get { return _smtSession.Prefix; }
 		}
 
 		public bool IsLastWordPartial
 		{
-			get { return _isLastWordPartial; }
+			get { return _smtSession.IsLastWordPartial; }
 		}
 
-		public IReadOnlyList<string> Translation
+		public TranslationResult TranslateInteractively(IEnumerable<string> sourceSegment)
 		{
-			get { return _readOnlyTranslation; }
+			TranslationResult smtResult = _smtSession.TranslateInteractively(sourceSegment);
+			_transferResult = _transferEngine.Translate(smtResult.SourceSegment);
+			return MergeTranslationResults(smtResult, _transferResult);
 		}
 
-		public IEnumerable<AlignedWordInfo> GetAlignedSourceWords(int index)
+		public TranslationResult SetPrefix(IEnumerable<string> prefix, bool isLastWordPartial)
 		{
-			return _targetWordInfos[index].Item1;
+			return MergeTranslationResults(_smtSession.SetPrefix(prefix, isLastWordPartial), _transferResult);
 		}
 
-		public double GetWordConfidence(int index)
+		public TranslationResult AddToPrefix(IEnumerable<string> addition, bool isLastWordPartial)
 		{
-			return _targetWordInfos[index].Item2;
-		}
-
-		public IEnumerable<string> Translate(IEnumerable<string> sourceSegment)
-		{
-			var translation = new List<string>();
-			var wordInfos = new List<Tuple<List<AlignedWordInfo>, double>>();
-			ProcessResult(_smtSession.Translate(sourceSegment), translation, wordInfos);
-			return translation;
-		}
-
-		public void TranslateInteractively(IEnumerable<string> sourceSegment)
-		{
-			Reset();
-			_sourceSegment.AddRange(sourceSegment);
-			ProcessResult(_smtSession.TranslateInteractively(_sourceSegment), _translation, _targetWordInfos);
+			return MergeTranslationResults(_smtSession.AddToPrefix(addition, isLastWordPartial), _transferResult);
 		}
 
 		public void Reset()
 		{
-			_sourceSegment.Clear();
-			_translation.Clear();
-			_targetWordInfos.Clear();
-			_prefix.Clear();
-			_isLastWordPartial = true;
-		}
-
-		public void SetPrefix(IEnumerable<string> prefix, bool isLastWordPartial)
-		{
-			string[] prefixArray = prefix.ToArray();
-			if (!_prefix.SequenceEqual(prefixArray) || _isLastWordPartial != isLastWordPartial)
-			{
-				_prefix.Clear();
-				_prefix.AddRange(prefixArray);
-				_isLastWordPartial = isLastWordPartial;
-				ProcessResult(_smtSession.SetPrefix(_prefix, _isLastWordPartial), _translation, _targetWordInfos);
-			}
-		}
-
-		public void AddToPrefix(string addition, bool isWordPartial)
-		{
-			_prefix.Add(addition);
-			_isLastWordPartial = isWordPartial;
-			ProcessResult(_smtSession.AddToPrefix(addition.ToEnumerable(), _isLastWordPartial), _translation, _targetWordInfos);
-		}
-
-		public void AddToPrefix(IEnumerable<string> addition, bool isLastWordPartial)
-		{
-			string[] additionArray = addition.ToArray();
-			_prefix.AddRange(additionArray);
-			_isLastWordPartial = isLastWordPartial;
-			ProcessResult(_smtSession.AddToPrefix(additionArray, _isLastWordPartial), _translation, _targetWordInfos);
+			_transferResult = null;
+			_smtSession.Reset();
 		}
 
 		public void Approve()
 		{
-			_smtSession.Train(_readOnlySourceSegment, _prefix);
+			_smtSession.Train(_smtSession.SourceSegment, _smtSession.Prefix);
 		}
 
-		private void ProcessResult(IEnumerable<string> result, List<string> translation, List<Tuple<List<AlignedWordInfo>, double>> targetWordInfos)
+		private TranslationResult MergeTranslationResults(TranslationResult primaryResult, TranslationResult secondaryResult)
 		{
-			translation.Clear();
-			targetWordInfos.Clear();
-			List<string> targetSegment = result.ToList();
-			WordAlignmentMatrix waMatrix;
-			_segmentAligner.GetBestAlignment(_readOnlySourceSegment, targetSegment, out waMatrix);
-			for (int j = 0; j < targetSegment.Count; j++)
+			IReadOnlyList<string> sourceSegment = primaryResult.SourceSegment;
+			var targetSegment = new List<string>();
+			var confidences = new List<double>();
+			var alignment = new Dictionary<Tuple<int, int>, AlignedWordPair>();
+			for (int j = 0; j < primaryResult.TargetSegment.Count; j++)
 			{
-				int[] sourceIndices = Enumerable.Range(0, waMatrix.I).Where(i => waMatrix[i, j]).ToArray();
-				string targetWord = null;
-				var alignedSourceWords = new List<AlignedWordInfo>();
-				double bestConfidence = 0;
-				if (sourceIndices.Length == 0)
+				AlignedWordPair[] smtWordPairs = primaryResult.GetTargetWordPairs(j).ToArray();
+
+				if (smtWordPairs.Length == 0)
 				{
-					targetWord = targetSegment[j];
-					bestConfidence = _segmentAligner.GetTranslationProbability(null, targetWord);
+					targetSegment.Add(primaryResult.TargetSegment[j]);
+					confidences.Add(primaryResult.GetTargetWordConfidence(j));
 				}
 				else
 				{
-					bool transferred = false;
-					foreach (int sourceIndex in sourceIndices)
+					if (primaryResult.GetTargetWordConfidence(j) >= SecondaryEngineThreshold)
 					{
-						AlignedWordType type = AlignedWordType.Normal;
-						string sourceWord = _readOnlySourceSegment[sourceIndex];
-						double confidence = _segmentAligner.GetTranslationProbability(sourceWord, targetSegment[j]);
-						if (confidence < NullWordConfidenceThreshold && sourceWord == targetSegment[j])
+						targetSegment.Add(primaryResult.TargetSegment[j]);
+						confidences.Add(primaryResult.GetTargetWordConfidence(j));
+						foreach (AlignedWordPair smtWordPair in smtWordPairs)
 						{
-							if (!transferred && TryTransferWord(sourceWord, out targetWord))
+							TranslationSources sources = smtWordPair.Sources;
+							foreach (AlignedWordPair transferWordPair in secondaryResult.GetSourceWordPairs(smtWordPair.SourceIndex))
 							{
-								confidence = _segmentAligner.GetTranslationProbability(sourceWord, targetWord);
-								transferred = true;
-								type = AlignedWordType.Transferred;
-								if (_translation.Count == 1 && targetWord.StartsWith(_translation[0]))
+								if (transferWordPair.Sources != TranslationSources.None
+									&& secondaryResult.TargetSegment[transferWordPair.TargetIndex] == primaryResult.TargetSegment[j])
 								{
-									_translation.Clear();
-									_targetWordInfos.Clear();
+									sources |= transferWordPair.Sources;
 								}
 							}
-							else
-							{
-								targetWord = targetSegment[j];
-								type = AlignedWordType.NotTranslated;
-							}
+
+							alignment[Tuple.Create(smtWordPair.SourceIndex, targetSegment.Count - 1)] = new AlignedWordPair(smtWordPair.SourceIndex,
+								targetSegment.Count - 1, smtWordPair.Confidence, sources);
 						}
-						else
+					}
+					else
+					{
+						bool found = false;
+						foreach (AlignedWordPair smtWordPair in smtWordPairs)
 						{
-							targetWord = targetSegment[j];
-							string word;
-							if (!transferred && j < _prefix.Count && TryTransferWord(sourceWord, out word) && word == targetWord)
+							foreach (AlignedWordPair transferWordPair in secondaryResult.GetSourceWordPairs(smtWordPair.SourceIndex))
 							{
-								transferred = true;
-								type = AlignedWordType.Transferred;
+								if (transferWordPair.Sources != TranslationSources.None)
+								{
+									targetSegment.Add(secondaryResult.TargetSegment[transferWordPair.TargetIndex]);
+									confidences.Add(transferWordPair.Confidence);
+									alignment[Tuple.Create(transferWordPair.SourceIndex, targetSegment.Count - 1)] = new AlignedWordPair(transferWordPair.SourceIndex,
+										targetSegment.Count - 1, transferWordPair.Confidence, transferWordPair.Sources);
+									found = true;
+								}
 							}
 						}
-						if (confidence > bestConfidence)
-							bestConfidence = confidence;
-						alignedSourceWords.Add(new AlignedWordInfo(sourceIndex, confidence, type));
+
+						if (!found)
+						{
+							targetSegment.Add(primaryResult.TargetSegment[j]);
+							confidences.Add(primaryResult.GetTargetWordConfidence(j));
+							foreach (AlignedWordPair smtWordPair in smtWordPairs)
+							{
+								alignment[Tuple.Create(smtWordPair.SourceIndex, targetSegment.Count - 1)] = new AlignedWordPair(smtWordPair.SourceIndex,
+									targetSegment.Count - 1, smtWordPair.Confidence, smtWordPair.Sources);
+							}
+						}
 					}
 				}
-				Debug.Assert(targetWord != null);
-				translation.Add(targetWord);
-				targetWordInfos.Add(Tuple.Create(alignedSourceWords, bestConfidence));
-			}
-		}
-
-		private bool TryTransferWord(string sourceWord, out string targetWord)
-		{
-			if (_transferEngine != null)
-			{
-				if (_transferCache.TryGetValue(sourceWord, out targetWord))
-					return true;
-
-				if (_transferEngine.TryTranslateWord(sourceWord, out targetWord))
-				{
-					_transferCache[sourceWord] = targetWord;
-					return true;
-				}
 			}
 
-			targetWord = null;
-			return false;
+			AlignedWordPair[,] alignmentMatrix = new AlignedWordPair[sourceSegment.Count, targetSegment.Count];
+			foreach (KeyValuePair<Tuple<int, int>, AlignedWordPair> kvp in alignment)
+				alignmentMatrix[kvp.Key.Item1, kvp.Key.Item2] = kvp.Value;
+
+			return new TranslationResult(primaryResult.SourceSegment, targetSegment, confidences, alignmentMatrix);
 		}
 
 		protected override void DisposeManagedResources()

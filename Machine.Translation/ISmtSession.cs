@@ -3,16 +3,8 @@ using System.Collections.Generic;
 
 namespace SIL.Machine.Translation
 {
-	public interface ISmtSession : IDisposable
+	public interface ISmtSession : IInteractiveTranslator, IDisposable
 	{
-		IEnumerable<string> Translate(IEnumerable<string> segment);
-
-		IEnumerable<string> TranslateInteractively(IEnumerable<string> segment);
-
-		IEnumerable<string> AddToPrefix(IEnumerable<string> addition, bool isLastWordPartial);
-
-		IEnumerable<string> SetPrefix(IEnumerable<string> prefix, bool isLastWordPartial);
-
 		void Train(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment);
 	}
 }

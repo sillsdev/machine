@@ -42,8 +42,9 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AlignedWordInfo.cs" />
+    <Compile Include="AlignedWordPair.cs" />
     <Compile Include="GlossMorphemeMapper.cs" />
+    <Compile Include="IInteractiveTranslator.cs" />
     <Compile Include="IMorphemeMapper.cs" />
     <Compile Include="ISegmentAligner.cs" />
     <Compile Include="ISmtEngine.cs" />
@@ -52,9 +53,12 @@
     <Compile Include="ITargetGenerator.cs" />
     <Compile Include="ITransferer.cs" />
     <Compile Include="EditDistanceSegmentAligner.cs" />
+    <Compile Include="ITranslator.cs" />
     <Compile Include="MorphemeInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SegmentScorer.cs" />
+    <Compile Include="TranslationExtensions.cs" />
+    <Compile Include="TranslationResult.cs" />
     <Compile Include="TranslationSession.cs" />
     <Compile Include="FuzzyEditDistanceSegmentAligner.cs" />
     <Compile Include="SimpleTransferer.cs" />

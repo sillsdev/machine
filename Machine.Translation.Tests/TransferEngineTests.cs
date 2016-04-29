@@ -8,7 +8,7 @@ namespace SIL.Machine.Translation.Tests
 	public class TransferEngineTests
 	{
 		[Test]
-		public void TryTranslateWord_CanTranslate_ReturnsTrue()
+		public void Translate_CanTranslate_ReturnsCorrectTranslation()
 		{
 			var sourceAnalyzer = Substitute.For<ISourceAnalyzer>();
 			sourceAnalyzer.AddAnalyses("habló", new WordAnalysis(new[]
@@ -26,13 +26,11 @@ namespace SIL.Machine.Translation.Tests
 			targetGenerator.AddGeneratedWords(new WordAnalysis(new[] {targetMorphemes[0], targetMorphemes[1]}, 0, "v"), "talked");
 			var transferer = new SimpleTransferer(new GlossMorphemeMapper(targetGenerator));
 			var engine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
-			string targetWord;
-			Assert.That(engine.TryTranslateWord("habló", out targetWord), Is.True);
-			Assert.That(targetWord, Is.EqualTo("talked"));
+			Assert.That(engine.TranslateWord("habló"), Is.EqualTo("talked".Split(' ')));
 		}
 
 		[Test]
-		public void TryTranslateWord_CannotAnalyze_ReturnsFalse()
+		public void Translate_CannotAnalyze_ReturnsEmptyTranslation()
 		{
 			var sourceAnalyzer = Substitute.For<ISourceAnalyzer>();
 			sourceAnalyzer.AddAnalyses("habló");
@@ -46,12 +44,11 @@ namespace SIL.Machine.Translation.Tests
 			targetGenerator.AddGeneratedWords(new WordAnalysis(new[] {targetMorphemes[0], targetMorphemes[1]}, 0, "v"), "talked");
 			var transferer = new SimpleTransferer(new GlossMorphemeMapper(targetGenerator));
 			var engine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
-			string targetWord;
-			Assert.That(engine.TryTranslateWord("habló", out targetWord), Is.False);
+			Assert.That(engine.TranslateWord("habló"), Is.Empty);
 		}
 
 		[Test]
-		public void TryTranslateWord_CannotGenerate_ReturnsFalse()
+		public void Translate_CannotGenerate_ReturnsEmptyTranslation()
 		{
 			var sourceAnalyzer = Substitute.For<ISourceAnalyzer>();
 			sourceAnalyzer.AddAnalyses("habló", new WordAnalysis(new[]
@@ -69,12 +66,11 @@ namespace SIL.Machine.Translation.Tests
 			targetGenerator.AddGeneratedWords(new WordAnalysis(new[] {targetMorphemes[0], targetMorphemes[1]}, 0, "v"));
 			var transferer = new SimpleTransferer(new GlossMorphemeMapper(targetGenerator));
 			var engine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
-			string targetWord;
-			Assert.That(engine.TryTranslateWord("habló", out targetWord), Is.False);
+			Assert.That(engine.TranslateWord("habló"), Is.Empty);
 		}
 
 		[Test]
-		public void TryTranslateWord_CannotMapMorphemes_ReturnsFalse()
+		public void Translate_CannotMapMorphemes_ReturnsEmptyTranslation()
 		{
 			var sourceAnalyzer = Substitute.For<ISourceAnalyzer>();
 			sourceAnalyzer.AddAnalyses("habló", new WordAnalysis(new[]
@@ -87,8 +83,7 @@ namespace SIL.Machine.Translation.Tests
 			targetGenerator.Morphemes.Returns(targetMorphemes);
 			var transferer = new SimpleTransferer(new GlossMorphemeMapper(targetGenerator));
 			var engine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
-			string targetWord;
-			Assert.That(engine.TryTranslateWord("habló", out targetWord), Is.False);
+			Assert.That(engine.TranslateWord("habló"), Is.Empty);
 		}
 	}
 }

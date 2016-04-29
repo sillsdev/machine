@@ -1,8 +1,9 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace SIL.Machine.Translation
 {
-	public class TransferEngine
+	public class TransferEngine : ITranslator
 	{
 		private readonly ISourceAnalyzer _sourceAnalyzer;
 		private readonly ITransferer _transferer;
@@ -15,19 +16,46 @@ namespace SIL.Machine.Translation
 			_targetGenerator = targetGenerator;
 		}
 
-		public bool TryTranslateWord(string sourceWord, out string targetWord)
+		public TranslationResult Translate(IEnumerable<string> segment)
 		{
-			targetWord = null;
-			foreach (WordAnalysis sourceAnalysis in _sourceAnalyzer.AnalyzeWord(sourceWord))
+			string[] segmentArray = segment.ToArray();
+			IEnumerable<IEnumerable<WordAnalysis>> sourceAnalyses = segmentArray.Select(word => _sourceAnalyzer.AnalyzeWord(word));
+
+			WordAlignmentMatrix waMatrix;
+			WordAnalysis[] targetAnalyses = _transferer.Transfer(sourceAnalyses, out waMatrix).ToArray();
+
+			var translation = new List<string>();
+			var confidences = new List<double>();
+			var alignment = new AlignedWordPair[segmentArray.Length, targetAnalyses.Length];
+			for (int j = 0; j < targetAnalyses.Length; j++)
 			{
-				foreach (WordAnalysis targetAnalysis in _transferer.Transfer(sourceAnalysis))
+				int[] sourceIndices = Enumerable.Range(0, waMatrix.I).Where(i => waMatrix[i, j]).ToArray();
+				string targetWord = targetAnalyses[j] != null ? _targetGenerator.GenerateWords(targetAnalyses[j]).FirstOrDefault() : null;
+				double confidence = 1.0;
+				if (targetWord == null)
 				{
-					targetWord = _targetGenerator.GenerateWords(targetAnalysis).FirstOrDefault();
-					if (targetWord != null)
-						return true;
+					if (sourceIndices.Length > 0)
+					{
+						int i = sourceIndices[0];
+						targetWord = segmentArray[i];
+						confidence = 0;
+						alignment[i, j] = new AlignedWordPair(i, j, confidence, TranslationSources.None);
+					}
+				}
+				else
+				{
+					foreach (int i in sourceIndices)
+						alignment[i, j] = new AlignedWordPair(i, j, confidence, TranslationSources.Transfer);
+				}
+
+				if (targetWord != null)
+				{
+					translation.Add(targetWord);
+					confidences.Add(confidence);
 				}
 			}
-			return false;
+
+			return new TranslationResult(segmentArray, translation, confidences, alignment);
 		}
 	}
 }

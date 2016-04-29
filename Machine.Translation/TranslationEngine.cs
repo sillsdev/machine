@@ -9,14 +9,12 @@ namespace SIL.Machine.Translation
 	{
 		private readonly TransferEngine _transferEngine;
 		private readonly ISmtEngine _smtEngine;
-		private readonly ISegmentAligner _segmentAligner;
 		private readonly HashSet<TranslationSession> _sessions;
 
 		public TranslationEngine(ISmtEngine smtEngine, TransferEngine transferEngine = null)
 		{
 			_smtEngine = smtEngine;
 			_transferEngine = transferEngine;
-			_segmentAligner = new FuzzyEditDistanceSegmentAligner(smtEngine.SegmentAligner);
 			_sessions = new HashSet<TranslationSession>();
 		}
 
@@ -42,7 +40,7 @@ namespace SIL.Machine.Translation
 
 		public TranslationSession StartSession()
 		{
-			var session = new TranslationSession(this, _segmentAligner, _smtEngine.StartSession(), _transferEngine);
+			var session = new TranslationSession(this, _smtEngine.StartSession(), _transferEngine);
 			lock (_sessions)
 				_sessions.Add(session);
 			return session;
