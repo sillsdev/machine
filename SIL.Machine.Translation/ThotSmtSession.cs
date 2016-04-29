@@ -10,6 +10,7 @@ namespace SIL.Machine.Translation
 	{
 		private const int DefaultTranslationBufferLength = 1024;
 		private const float NullWordConfidenceThreshold = 0.03f;
+		private const int MaxSegmentLengthDelta = 5;
 
 		private readonly ThotSmtEngine _engine;
 		private readonly IntPtr _handle;
@@ -38,7 +39,7 @@ namespace SIL.Machine.Translation
 			CheckDisposed();
 
 			string[] segmentArray = segment.ToArray();
-			return CreateResult(segmentArray, DoTranslate(Thot.session_translate, segmentArray));
+			return CreateResult(segmentArray, DoTranslate(Thot.session_translate, segmentArray), new string[0]);
 		}
 
 		public IReadOnlyList<string> SourceSegment
@@ -63,7 +64,7 @@ namespace SIL.Machine.Translation
 			Reset();
 			_sourceSegment.AddRange(segment);
 			_isTranslatingInteractively = true;
-			return CreateResult(_sourceSegment, DoTranslate(Thot.session_translateInteractively, _sourceSegment));
+			return CreateResult(_sourceSegment, DoTranslate(Thot.session_translateInteractively, _sourceSegment), _prefix);
 		}
 
 		public TranslationResult AddToPrefix(IEnumerable<string> addition, bool isLastWordPartial)
@@ -74,7 +75,7 @@ namespace SIL.Machine.Translation
 
 			string[] additionArray = addition.ToArray();
 			_prefix.AddRange(additionArray);
-			return CreateResult(_sourceSegment, DoTranslate(Thot.session_addStringToPrefix, additionArray, !isLastWordPartial));
+			return CreateResult(_sourceSegment, DoTranslate(Thot.session_addStringToPrefix, additionArray, !isLastWordPartial), _prefix);
 		}
 
 		public TranslationResult SetPrefix(IEnumerable<string> prefix, bool isLastWordPartial)
@@ -86,7 +87,7 @@ namespace SIL.Machine.Translation
 			_prefix.Clear();
 			_prefix.AddRange(prefix);
 			_isLastWordPartial = isLastWordPartial;
-			return CreateResult(_sourceSegment, DoTranslate(Thot.session_setPrefix, _prefix, !isLastWordPartial));
+			return CreateResult(_sourceSegment, DoTranslate(Thot.session_setPrefix, _prefix, !isLastWordPartial), _prefix);
 		}
 
 		public void Reset()
@@ -120,8 +121,33 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		private TranslationResult CreateResult(IList<string> sourceSegment, IList<string> targetSegment)
+		private TranslationResult CreateResult(IList<string> sourceSegment, IList<string> targetSegment, IList<string> prefix)
 		{
+			// remove excessive untranslated suffix after prefix
+			if (targetSegment.Count - sourceSegment.Count > MaxSegmentLengthDelta && prefix.Count > 0)
+			{
+				for (int i = 0; i < sourceSegment.Count; i++)
+				{
+					int k = prefix.Count;
+					for (int j = i; j < sourceSegment.Count && k < targetSegment.Count; j++, k++)
+					{
+						if (sourceSegment[j] != targetSegment[k] || (prefix.Count + targetSegment.Count - k) - sourceSegment.Count <= MaxSegmentLengthDelta)
+						{
+							break;
+						}
+					}
+
+					if (k > prefix.Count)
+					{
+						var newTargetSegment = new List<string>(targetSegment.Take(prefix.Count));
+						for (; k < targetSegment.Count; k++)
+							newTargetSegment.Add(targetSegment[k]);
+						targetSegment = newTargetSegment;
+						break;
+					}
+				}
+			}
+
 			WordAlignmentMatrix waMatrix;
 			_segmentAligner.GetBestAlignment(sourceSegment, targetSegment, out waMatrix);
 			var confidences = new double[targetSegment.Count];
