@@ -140,8 +140,8 @@ namespace SIL.Machine.Translation
 		private readonly string _cfgFileName;
 		private IntPtr _handle;
 		private readonly HashSet<ThotSmtSession> _sessions;
-		private readonly ISegmentAligner _segmentAligner;
 		private readonly ThotSingleWordAlignmentModel _singleWordAlignmentModel;
+		private readonly ThotSingleWordAlignmentModel _inverseSingleWordAlignmentModel;
 
 		public ThotSmtEngine(string cfgFileName)
 		{
@@ -149,7 +149,7 @@ namespace SIL.Machine.Translation
 			_sessions = new HashSet<ThotSmtSession>();
 			_handle = Thot.decoder_open(_cfgFileName);
 			_singleWordAlignmentModel = new ThotSingleWordAlignmentModel(Thot.decoder_getSingleWordAlignmentModel(_handle));
-			_segmentAligner = new FuzzyEditDistanceSegmentAligner(_singleWordAlignmentModel);
+			_inverseSingleWordAlignmentModel = new ThotSingleWordAlignmentModel(Thot.decoder_getInverseSingleWordAlignmentModel(_handle));
 		}
 
 		public void Train(IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus)
@@ -163,6 +163,7 @@ namespace SIL.Machine.Translation
 				TrainModels(_cfgFileName, sourceCorpus, targetCorpus);
 				_handle = Thot.decoder_open(_cfgFileName);
 				_singleWordAlignmentModel.Handle = Thot.decoder_getSingleWordAlignmentModel(_handle);
+				_inverseSingleWordAlignmentModel.Handle = Thot.decoder_getInverseSingleWordAlignmentModel(_handle);
 			}
 		}
 
@@ -181,9 +182,14 @@ namespace SIL.Machine.Translation
 			Thot.decoder_saveModels(_handle);
 		}
 
-		public ISegmentAligner SegmentAligner
+		public ISegmentAligner SingleWordAlignmentModel
 		{
-			get { return _segmentAligner; }
+			get { return _singleWordAlignmentModel; }
+		}
+
+		public ISegmentAligner InverseSingleWordAlignmentModel
+		{
+			get { return _inverseSingleWordAlignmentModel; }
 		}
 
 		internal IntPtr Handle

@@ -16,7 +16,8 @@ namespace SIL.Machine.Translation
 		private readonly List<string> _sourceSegment; 
 		private readonly ReadOnlyList<string> _readOnlySourceSegment;
 		private readonly List<string> _prefix;
-		private readonly ReadOnlyList<string> _readOnlyPrefix; 
+		private readonly ReadOnlyList<string> _readOnlyPrefix;
+		private readonly ISegmentAligner _segmentAligner;
 		private bool _isLastWordPartial;
 		private bool _isTranslatingInteractively;
 
@@ -24,6 +25,7 @@ namespace SIL.Machine.Translation
 		{
 			_engine = engine;
 			_handle = Thot.decoder_openSession(_engine.Handle);
+			_segmentAligner = new FuzzyEditDistanceSegmentAligner(_engine.SingleWordAlignmentModel);
 			_sourceSegment = new List<string>();
 			_readOnlySourceSegment = new ReadOnlyList<string>(_sourceSegment);
 			_prefix = new List<string>();
@@ -121,7 +123,7 @@ namespace SIL.Machine.Translation
 		private TranslationResult CreateResult(IList<string> sourceSegment, IList<string> targetSegment)
 		{
 			WordAlignmentMatrix waMatrix;
-			_engine.SegmentAligner.GetBestAlignment(sourceSegment, targetSegment, out waMatrix);
+			_segmentAligner.GetBestAlignment(sourceSegment, targetSegment, out waMatrix);
 			var confidences = new double[targetSegment.Count];
 			AlignedWordPair[,] alignment = new AlignedWordPair[waMatrix.I, waMatrix.J];
 			for (int j = 0; j < waMatrix.J; j++)
@@ -134,7 +136,7 @@ namespace SIL.Machine.Translation
 					if (waMatrix[i, j])
 					{
 						string sourceWord = sourceSegment[i];
-						double prob = _engine.SegmentAligner.GetTranslationProbability(sourceWord, targetWord);
+						double prob = _segmentAligner.GetTranslationProbability(sourceWord, targetWord);
 						TranslationSources sources = TranslationSources.Smt;
 						if (prob < NullWordConfidenceThreshold && sourceWord == targetWord)
 						{
@@ -147,7 +149,7 @@ namespace SIL.Machine.Translation
 					}
 				}
 
-				confidences[j] = alignedWordCount == 0 ? _engine.SegmentAligner.GetTranslationProbability(null, targetWord) : totalProb / alignedWordCount;
+				confidences[j] = alignedWordCount == 0 ? _segmentAligner.GetTranslationProbability(null, targetWord) : totalProb / alignedWordCount;
 			}
 
 			return new TranslationResult(sourceSegment, targetSegment, confidences, alignment);
