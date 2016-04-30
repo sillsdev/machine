@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using SIL.ObjectModel;
+using SIL.Progress;
 
 namespace SIL.Machine.Translation
 {
@@ -21,7 +22,7 @@ namespace SIL.Machine.Translation
 		public IEnumerable<IEnumerable<string>> SourceCorpus { get; set; }
 		public IEnumerable<IEnumerable<string>> TargetCorpus { get; set; }
 
-		public void Rebuild()
+		public void Rebuild(IProgress progress = null)
 		{
 			lock (_sessions)
 			{
@@ -29,7 +30,7 @@ namespace SIL.Machine.Translation
 					throw new InvalidOperationException("The engine cannot be trained while there are active sessions open.");
 
 				if (SourceCorpus != null && TargetCorpus != null)
-					_smtEngine.Train(SourceCorpus, TargetCorpus);
+					_smtEngine.Train(SourceCorpus, TargetCorpus, progress);
 			}
 		}
 

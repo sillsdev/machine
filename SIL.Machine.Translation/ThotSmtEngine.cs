@@ -6,13 +6,19 @@ using System.Linq;
 using SIL.Extensions;
 using SIL.Machine.NgramModeling;
 using SIL.ObjectModel;
+using SIL.Progress;
 
 namespace SIL.Machine.Translation
 {
 	public class ThotSmtEngine : DisposableBase, ISmtEngine
 	{
-		public static void TrainModels(string cfgFileName, IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus)
+		private const int TrainingStepCount = 16;
+
+		public static void TrainModels(string cfgFileName, IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus, IProgress progress = null)
 		{
+			if (progress == null)
+				progress = new NullProgress();
+
 			string cfgDir = Path.GetDirectoryName(cfgFileName);
 			Debug.Assert(cfgDir != null);
 			string tmPrefix = null, lmPrefix = null;
@@ -35,9 +41,48 @@ namespace SIL.Machine.Translation
 
 			if (string.IsNullOrEmpty(lmPrefix))
 				throw new InvalidOperationException("The configuration file does not specify the language model parameter.");
+			if (string.IsNullOrEmpty(tmPrefix))
+				throw new InvalidOperationException("The configuration file does not specify the translation model parameter.");
 
-			TrainLanguageModel(targetCorpus, lmPrefix, 3);
-			TrainTranslationModel(sourceCorpus, targetCorpus, tmPrefix);
+			string lmDir = Path.GetDirectoryName(lmPrefix);
+			Debug.Assert(lmDir != null);
+			string tempLMDir = Path.Combine(lmDir, "temp");
+			string tempLMPrefix = Path.Combine(tempLMDir, Path.GetFileName(lmPrefix));
+			string tmDir = Path.GetDirectoryName(tmPrefix);
+			Debug.Assert(tmDir != null);
+			string tempTMDir = Path.Combine(tmDir, "temp");
+			string tempTMPrefix = Path.Combine(tempTMDir, Path.GetFileName(tmPrefix));
+
+			try
+			{
+				progress.WriteMessage("Training target language model...");
+				TrainLanguageModel(targetCorpus, tempLMPrefix, 3);
+				if (progress.CancelRequested)
+					return;
+				progress.ProgressIndicator.PercentCompleted += 100 / TrainingStepCount;
+				TrainTranslationModel(sourceCorpus, targetCorpus, tempTMPrefix, progress);
+				if (progress.CancelRequested)
+					return;
+
+				CopyFiles(tempLMDir, lmDir);
+				CopyFiles(tempTMDir, tmDir);
+				progress.ProgressIndicator.PercentCompleted += 100 / TrainingStepCount;
+			}
+			finally
+			{
+				Directory.Delete(tempLMDir, true);
+				Directory.Delete(tempTMDir, true);
+			}
+		}
+
+		private static void CopyFiles(string srcDir, string destDir)
+		{
+			foreach (string srcFile in Directory.EnumerateFiles(srcDir))
+			{
+				string fileName = Path.GetFileName(srcFile);
+				Debug.Assert(fileName != null);
+				File.Copy(srcFile, Path.Combine(destDir, fileName), true);
+			}
 		}
 
 		private static void TrainLanguageModel(IEnumerable<IEnumerable<string>> targetCorpus, string lmPrefix, int ngramSize)
@@ -96,34 +141,53 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		private static void TrainTranslationModel(IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus, string tmPrefix)
+		private static void TrainTranslationModel(IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus, string tmPrefix, IProgress progress)
 		{
 			string dir = Path.GetDirectoryName(tmPrefix);
 			Debug.Assert(dir != null);
 			if (!Directory.Exists(dir))
 				Directory.CreateDirectory(dir);
 
-			TrainSingleWordAlignmentModel(targetCorpus, sourceCorpus, tmPrefix + "_swm");
-			TrainSingleWordAlignmentModel(sourceCorpus, targetCorpus, tmPrefix + "_invswm");
+			progress.WriteMessage("Training single word alignment model...");
+			TrainSingleWordAlignmentModel(targetCorpus, sourceCorpus, tmPrefix + "_swm", progress);
+			if (progress.CancelRequested)
+				return;
+			progress.WriteMessage("Training inverse single word alignment model...");
+			TrainSingleWordAlignmentModel(sourceCorpus, targetCorpus, tmPrefix + "_invswm", progress);
+			if (progress.CancelRequested)
+				return;
+			progress.WriteMessage("Merging alignments...");
 			Thot.giza_symmetr1(tmPrefix + "_swm.bestal", tmPrefix + "_invswm.bestal", tmPrefix + ".A3.final", true);
+			progress.ProgressIndicator.PercentCompleted += 100 / TrainingStepCount;
+			if (progress.CancelRequested)
+				return;
+			progress.WriteMessage("Generating phrase table...");
 			Thot.phraseModel_generate(tmPrefix + ".A3.final", 7, tmPrefix + ".ttable");
+			progress.ProgressIndicator.PercentCompleted += 100 / TrainingStepCount;
+			if (progress.CancelRequested)
+				return;
 			// TODO: keep the N-best source phrases for a particular target phrase in the phrase table
 			File.WriteAllText(tmPrefix + ".lambda", "0.01");
 			File.WriteAllText(tmPrefix + ".srcsegmlentable", "Uniform");
 			File.WriteAllText(tmPrefix + ".trgsegmlentable", "Geometric");
 		}
 
-		private static void TrainSingleWordAlignmentModel(IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus, string swmPrefix)
+		private static void TrainSingleWordAlignmentModel(IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus, string swmPrefix, IProgress progress)
 		{
 			using (var swAlignModel = new ThotSingleWordAlignmentModel(swmPrefix, true))
 			{
 				foreach (Tuple<IEnumerable<string>, IEnumerable<string>> pair in sourceCorpus.Zip(targetCorpus))
 					swAlignModel.AddSegmentPair(pair.Item1, pair.Item2);
-				swAlignModel.Train(5);
+				for (int i = 0; i < 5; i++)
+				{
+					swAlignModel.Train(1);
+					progress.ProgressIndicator.PercentCompleted += 100 / TrainingStepCount;
+					if (progress.CancelRequested)
+						return;
+				}
 				swAlignModel.Save();
-
 				// TODO: prune lex table by a probability threshold
-
+				progress.WriteMessage("Generating best alignments...");
 				using (var writer = new StreamWriter(swmPrefix + ".bestal"))
 				{
 					foreach (Tuple<IEnumerable<string>, IEnumerable<string>> pair in sourceCorpus.Zip(targetCorpus))
@@ -132,8 +196,11 @@ namespace SIL.Machine.Translation
 						double prob = swAlignModel.GetBestAlignment(pair.Item1.ToArray(), pair.Item2.ToArray(), out waMatrix);
 						writer.Write("# Alignment probability= {0}\n", prob);
 						writer.Write(waMatrix.ToGizaFormat(pair.Item1, pair.Item2));
+						if (progress.CancelRequested)
+							return;
 					}
 				}
+				progress.ProgressIndicator.PercentCompleted += 100 / TrainingStepCount;
 			}
 		}
 
@@ -152,7 +219,7 @@ namespace SIL.Machine.Translation
 			_inverseSingleWordAlignmentModel = new ThotSingleWordAlignmentModel(Thot.decoder_getInverseSingleWordAlignmentModel(_handle));
 		}
 
-		public void Train(IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus)
+		public void Train(IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus, IProgress progress = null)
 		{
 			lock (_sessions)
 			{
@@ -160,7 +227,7 @@ namespace SIL.Machine.Translation
 					throw new InvalidOperationException("The engine cannot be trained while there are active sessions open.");
 
 				Thot.decoder_close(_handle);
-				TrainModels(_cfgFileName, sourceCorpus, targetCorpus);
+				TrainModels(_cfgFileName, sourceCorpus, targetCorpus, progress);
 				_handle = Thot.decoder_open(_cfgFileName);
 				_singleWordAlignmentModel.Handle = Thot.decoder_getSingleWordAlignmentModel(_handle);
 				_inverseSingleWordAlignmentModel.Handle = Thot.decoder_getInverseSingleWordAlignmentModel(_handle);

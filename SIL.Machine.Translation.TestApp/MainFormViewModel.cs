@@ -238,8 +238,17 @@ namespace SIL.Machine.Translation.TestApp
 		private void RebuildProject()
 		{
 			_currentText.IsActive = false;
+			SaveProject();
 			_translationSession.Dispose();
-			_translationEngine.Rebuild();
+			var progressViewModel = new ProgressViewModel(vm => _translationEngine.Rebuild(vm))
+			{
+				DisplayName = "Rebuilding..."
+			};
+			using (var progressDialog = new ProgressDialog())
+			{
+				progressDialog.DataContext = progressViewModel;
+				progressDialog.ShowModal();
+			}
 			_translationSession = _translationEngine.StartSession();
 			foreach (TextViewModel text in _texts)
 				text.TranslationSession = _translationSession;

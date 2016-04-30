@@ -75,6 +75,11 @@
     </Compile>
     <Compile Include="MainFormViewModel.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="ProgressDialog.xeto.cs">
+      <DependentUpon>ProgressDialog.xeto</DependentUpon>
+      <SubType>Eto.Forms</SubType>
+    </Compile>
+    <Compile Include="ProgressViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Segment.cs" />
     <Compile Include="SuggestionViewModel.cs" />
@@ -95,6 +100,9 @@
     <None Include="app.config" />
     <None Include="packages.config" />
     <EmbeddedResource Include="TextView.xeto">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ProgressDialog.xeto">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
