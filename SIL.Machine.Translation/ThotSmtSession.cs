@@ -165,7 +165,7 @@ namespace SIL.Machine.Translation
 						string sourceWord = sourceSegment[i];
 						double prob = _segmentAligner.GetTranslationProbability(sourceWord, targetWord);
 						TranslationSources sources = TranslationSources.Smt;
-						if (prob < NullWordConfidenceThreshold && sourceWord == targetWord)
+						if (prob < NullWordConfidenceThreshold && !sourceWord.All(char.IsPunctuation) && sourceWord == targetWord)
 						{
 							prob = 0;
 							sources = TranslationSources.None;
