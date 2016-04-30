@@ -12,6 +12,7 @@ namespace SIL.Machine.Translation
 		private readonly TranslationEngine _engine;
 		private readonly ISmtSession _smtSession;
 		private readonly TransferEngine _transferEngine;
+		private TranslationResult _lastResult;
 		private TranslationResult _transferResult;
 
 		internal TranslationSession(TranslationEngine engine, ISmtSession smtSession, TransferEngine transferEngine)
@@ -47,21 +48,25 @@ namespace SIL.Machine.Translation
 		{
 			TranslationResult smtResult = _smtSession.TranslateInteractively(sourceSegment);
 			_transferResult = _transferEngine.Translate(smtResult.SourceSegment);
-			return MergeTranslationResults(smtResult, _transferResult);
+			_lastResult = MergeTranslationResults(smtResult, _transferResult);
+			return _lastResult;
 		}
 
 		public TranslationResult SetPrefix(IEnumerable<string> prefix, bool isLastWordPartial)
 		{
-			return MergeTranslationResults(_smtSession.SetPrefix(prefix, isLastWordPartial), _transferResult);
+			_lastResult = MergeTranslationResults(_smtSession.SetPrefix(prefix, isLastWordPartial), _transferResult);
+			return _lastResult;
 		}
 
 		public TranslationResult AddToPrefix(IEnumerable<string> addition, bool isLastWordPartial)
 		{
-			return MergeTranslationResults(_smtSession.AddToPrefix(addition, isLastWordPartial), _transferResult);
+			_lastResult = MergeTranslationResults(_smtSession.AddToPrefix(addition, isLastWordPartial), _transferResult);
+			return _lastResult;
 		}
 
 		public void Reset()
 		{
+			_lastResult = null;
 			_transferResult = null;
 			_smtSession.Reset();
 		}
@@ -69,6 +74,14 @@ namespace SIL.Machine.Translation
 		public void Approve()
 		{
 			_smtSession.Train(_smtSession.SourceSegment, _smtSession.Prefix);
+			for (int j = 0; j < _lastResult.TargetSegment.Count; j++)
+			{
+				foreach (AlignedWordPair wp in _lastResult.GetTargetWordPairs(j))
+				{
+					if (wp.Sources == TranslationSources.Transfer)
+						_smtSession.Train(new[] {_lastResult.SourceSegment[wp.SourceIndex], "."}, new[] {_lastResult.TargetSegment[j], "."});
+				}
+			}
 		}
 
 		private TranslationResult MergeTranslationResults(TranslationResult primaryResult, TranslationResult secondaryResult)
