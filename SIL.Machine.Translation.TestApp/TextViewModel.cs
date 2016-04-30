@@ -345,19 +345,31 @@ namespace SIL.Machine.Translation.TestApp
 			var suggestions = new List<SuggestionViewModel>();
 			if (!_targetSegments[_currentSegment].IsApproved)
 			{
-				int lookaheadCount = Math.Max(0, _currentTranslationResult.TargetSegment.Count - _currentTranslationResult.SourceSegment.Count) + 1;
-				int i = TranslationSession.Prefix.Count;
-				if (TranslationSession.IsLastWordPartial)
+				int lookaheadCount = 1;
+				for (int i = 0; i < _currentTranslationResult.SourceSegment.Count; i++)
 				{
-					lookaheadCount--;
-					i--;
+					int wordPairCount = _currentTranslationResult.GetSourceWordPairs(i).Count();
+					if (wordPairCount == 0)
+						lookaheadCount++;
+					else
+						lookaheadCount += wordPairCount - 1;
 				}
-				bool inPhrase = false;
-				while (i < _currentTranslationResult.TargetSegment.Count && (lookaheadCount > 0 || inPhrase))
+				int j;
+				for (j = 0; j < _currentTranslationResult.TargetSegment.Count; j++)
 				{
-					string word = _currentTranslationResult.TargetSegment[i];
-					if (_currentTranslationResult.GetTargetWordConfidence(i) >= _confidenceThreshold
-					    || _currentTranslationResult.GetTargetWordPairs(i).Any(awi => (awi.Sources & TranslationSources.Transfer) == TranslationSources.Transfer))
+					int wordPairCount = _currentTranslationResult.GetTargetWordPairs(j).Count();
+					if (wordPairCount == 0)
+						lookaheadCount++;
+				}
+				j = TranslationSession.Prefix.Count;
+				if (TranslationSession.IsLastWordPartial)
+					j--;
+				bool inPhrase = false;
+				while (j < _currentTranslationResult.TargetSegment.Count && (lookaheadCount > 0 || inPhrase))
+				{
+					string word = _currentTranslationResult.TargetSegment[j];
+					if (_currentTranslationResult.GetTargetWordConfidence(j) >= _confidenceThreshold
+					    || _currentTranslationResult.GetTargetWordPairs(j).Any(awi => (awi.Sources & TranslationSources.Transfer) == TranslationSources.Transfer))
 					{
 						if (word.All(char.IsPunctuation))
 						{
@@ -370,7 +382,7 @@ namespace SIL.Machine.Translation.TestApp
 						}
 						else
 						{
-							if (_currentTranslationResult.GetTargetWordPairs(i).Any(awi => IsCapitalCase(_sourceSegmentWords[awi.SourceIndex])))
+							if (_currentTranslationResult.GetTargetWordPairs(j).Any(awi => IsCapitalCase(_sourceSegmentWords[awi.SourceIndex])))
 								word = ToCapitalCase(word);
 							if (suggestions.Count == 0 || suggestions[suggestions.Count - 1].Text != word)
 								suggestions.Add(new SuggestionViewModel(this, word));
@@ -381,10 +393,10 @@ namespace SIL.Machine.Translation.TestApp
 					else
 					{
 						inPhrase = false;
-						if (_currentTranslationResult.GetTargetWordPairs(i).Any())
+						if (_currentTranslationResult.GetTargetWordPairs(j).Any())
 							lookaheadCount--;
 					}
-					i++;
+					j++;
 				}
 			}
 			_suggestions.ReplaceAll(suggestions);
