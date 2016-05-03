@@ -4,6 +4,7 @@ using System.ComponentModel;
 using Eto.Forms;
 using Eto.Drawing;
 using Eto.Serialization.Xaml;
+using SIL.Extensions;
 
 namespace SIL.Machine.Translation.TestApp
 {
@@ -231,6 +232,17 @@ namespace SIL.Machine.Translation.TestApp
 		protected void SegmentNavigationClicked(object sender, EventArgs e)
 		{
 			TargetSegmentTextArea.Focus();
+		}
+
+		protected void TargetSegmentTextChanged(object sender, EventArgs e)
+		{
+			string text = TargetSegmentTextArea.Text;
+			if (text.Length >= 2 && text[text.Length - 2] == ' ' && text[text.Length - 1].IsOneOf('.', ',', ';'))
+			{
+				Range<int> selection = TargetSegmentTextArea.Selection;
+				TargetSegmentTextArea.Text = text.Substring(0, text.Length - 2) + text.Substring(text.Length - 1) + " ";
+				TargetSegmentTextArea.Selection = selection;
+			}
 		}
 	}
 }

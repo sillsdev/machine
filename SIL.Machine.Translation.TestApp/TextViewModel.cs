@@ -362,39 +362,36 @@ namespace SIL.Machine.Translation.TestApp
 						lookaheadCount++;
 				}
 				j = TranslationSession.Prefix.Count;
+				// ensure that we include a partial word as a suggestion
 				if (TranslationSession.IsLastWordPartial)
 					j--;
 				bool inPhrase = false;
 				while (j < _currentTranslationResult.TargetSegment.Count && (lookaheadCount > 0 || inPhrase))
 				{
 					string word = _currentTranslationResult.TargetSegment[j];
+					// stop suggesting at punctuation
+					if (word.All(char.IsPunctuation))
+						break;
+
 					if (_currentTranslationResult.GetTargetWordConfidence(j) >= _confidenceThreshold
 					    || _currentTranslationResult.GetTargetWordPairs(j).Any(awi => (awi.Sources & TranslationSources.Transfer) == TranslationSources.Transfer))
 					{
-						if (word.All(char.IsPunctuation))
-						{
-							if (word.IsOneOf(".", ",") && suggestions.Count > 0)
-							{
-								string prevWord = suggestions[suggestions.Count - 1].Text;
-								suggestions[suggestions.Count - 1] = new SuggestionViewModel(this, prevWord + word);
-							}
-							inPhrase = false;
-						}
-						else
-						{
-							if (_currentTranslationResult.GetTargetWordPairs(j).Any(awi => IsCapitalCase(_sourceSegmentWords[awi.SourceIndex])))
-								word = ToCapitalCase(word);
-							if (suggestions.Count == 0 || suggestions[suggestions.Count - 1].Text != word)
-								suggestions.Add(new SuggestionViewModel(this, word));
-							inPhrase = true;
-						}
+						if (_currentTranslationResult.GetTargetWordPairs(j).Any(awi => IsCapitalCase(_sourceSegmentWords[awi.SourceIndex])))
+							word = ToCapitalCase(word);
+						suggestions.Add(new SuggestionViewModel(this, word));
+						inPhrase = true;
 						lookaheadCount--;
 					}
 					else
 					{
-						inPhrase = false;
+						// skip over inserted words
 						if (_currentTranslationResult.GetTargetWordPairs(j).Any())
+						{
 							lookaheadCount--;
+							// only suggest the first word/phrase we find
+							if (inPhrase)
+								break;
+						}
 					}
 					j++;
 				}

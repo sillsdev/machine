@@ -58,7 +58,7 @@
 									<StackLayout x:Name="SuggestionsContainer" Orientation="Horizontal" Padding="5,0,5,0" Spacing="5" VerticalContentAlignment="Center" />
 								</Scrollable>
 							</StackLayout>
-							<TextArea x:Name="TargetSegmentTextArea" Height="100" AcceptsReturn="False" AcceptsTab="False" Text="{Binding TargetSegment}"
+							<TextArea x:Name="TargetSegmentTextArea" Height="100" AcceptsReturn="False" AcceptsTab="False" Text="{Binding TargetSegment}" TextChanged="TargetSegmentTextChanged"
 										CaretIndex="{Binding CurrentTargetSegmentIndex}" CaretIndexChanged="TargetSegmentCaretIndexChanged" KeyDown="TargetSegmentKeyDown" />
 						</StackLayout>
 					</TableCell>
