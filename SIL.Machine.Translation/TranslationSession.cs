@@ -74,11 +74,11 @@ namespace SIL.Machine.Translation
 		public void Approve()
 		{
 			_smtSession.Train(_smtSession.SourceSegment, _smtSession.Prefix);
-			for (int j = 0; j < _lastResult.TargetSegment.Count; j++)
+			for (int j = 0; j < _smtSession.Prefix.Count; j++)
 			{
 				foreach (AlignedWordPair wp in _lastResult.GetTargetWordPairs(j))
 				{
-					if (wp.Sources == TranslationSources.Transfer)
+					if ((wp.Sources & TranslationSources.Transfer) == TranslationSources.Transfer)
 						_smtSession.Train(new[] {_lastResult.SourceSegment[wp.SourceIndex], "."}, new[] {_lastResult.TargetSegment[j], "."});
 				}
 			}
