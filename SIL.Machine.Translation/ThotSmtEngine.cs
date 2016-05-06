@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using SIL.Extensions;
@@ -12,7 +13,7 @@ namespace SIL.Machine.Translation
 {
 	public class ThotSmtEngine : DisposableBase, ISmtEngine
 	{
-		private const int TrainingStepCount = 16;
+		private const int TrainingStepCount = 17;
 
 		public static void TrainModels(string cfgFileName, IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus, IProgress progress = null)
 		{
@@ -104,6 +105,8 @@ namespace SIL.Machine.Translation
 			foreach (IEnumerable<string> segment in targetCorpus)
 			{
 				List<string> words = segment.ToList();
+				if (words.Count == 0)
+					continue;
 				words.Insert(0, "<s>");
 				words.Add("</s>");
 				wordCount += words.Count;
@@ -136,7 +139,7 @@ namespace SIL.Machine.Translation
 			var rand = new Random(31415);
 			using (var writer = new StreamWriter(lmPrefix + ".wp"))
 			{
-				foreach (IEnumerable<string> segment in targetCorpus.Take(100000).OrderBy(i => rand.Next()))
+				foreach (IEnumerable<string> segment in targetCorpus.Where(s => s.Any()).Take(100000).OrderBy(i => rand.Next()))
 					writer.Write("{0}\n", string.Join(" ", segment));
 			}
 		}
@@ -148,59 +151,184 @@ namespace SIL.Machine.Translation
 			if (!Directory.Exists(dir))
 				Directory.CreateDirectory(dir);
 
-			progress.WriteMessage("Training single word alignment model...");
-			TrainSingleWordAlignmentModel(targetCorpus, sourceCorpus, tmPrefix + "_swm", progress);
-			if (progress.CancelRequested)
-				return;
-			progress.WriteMessage("Training inverse single word alignment model...");
-			TrainSingleWordAlignmentModel(sourceCorpus, targetCorpus, tmPrefix + "_invswm", progress);
-			if (progress.CancelRequested)
-				return;
+			string swmPrefix = tmPrefix + "_swm";
+			GenerateSingleWordAlignmentModel(swmPrefix, targetCorpus, sourceCorpus, progress, "source-to-target");
+
+			string invswmPrefix = tmPrefix + "_invswm";
+			GenerateSingleWordAlignmentModel(invswmPrefix, sourceCorpus, targetCorpus, progress, "target-to-source");
+
 			progress.WriteMessage("Merging alignments...");
-			Thot.giza_symmetr1(tmPrefix + "_swm.bestal", tmPrefix + "_invswm.bestal", tmPrefix + ".A3.final", true);
+			Thot.giza_symmetr1(swmPrefix + ".bestal", invswmPrefix + ".bestal", tmPrefix + ".A3.final", true);
 			progress.ProgressIndicator.PercentCompleted += 100 / TrainingStepCount;
 			if (progress.CancelRequested)
 				return;
+
 			progress.WriteMessage("Generating phrase table...");
 			Thot.phraseModel_generate(tmPrefix + ".A3.final", 7, tmPrefix + ".ttable");
 			progress.ProgressIndicator.PercentCompleted += 100 / TrainingStepCount;
 			if (progress.CancelRequested)
 				return;
-			// TODO: keep the N-best source phrases for a particular target phrase in the phrase table
+
+			progress.WriteMessage("Filtering phrase table...");
+			FilterPhraseTable(tmPrefix + ".ttable", 20);
+			progress.ProgressIndicator.PercentCompleted += 100 / TrainingStepCount;
+			if (progress.CancelRequested)
+				return;
+
 			File.WriteAllText(tmPrefix + ".lambda", "0.01");
 			File.WriteAllText(tmPrefix + ".srcsegmlentable", "Uniform");
 			File.WriteAllText(tmPrefix + ".trgsegmlentable", "Geometric");
 		}
 
-		private static void TrainSingleWordAlignmentModel(IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus, string swmPrefix, IProgress progress)
+		private static void GenerateSingleWordAlignmentModel(string swmPrefix, IEnumerable<IEnumerable<string>> sourceCorpus,
+			IEnumerable<IEnumerable<string>> targetCorpus, IProgress progress, string name)
 		{
 			using (var swAlignModel = new ThotSingleWordAlignmentModel(swmPrefix, true))
 			{
-				foreach (Tuple<IEnumerable<string>, IEnumerable<string>> pair in sourceCorpus.Zip(targetCorpus))
-					swAlignModel.AddSegmentPair(pair.Item1, pair.Item2);
-				for (int i = 0; i < 5; i++)
+				progress.WriteMessage("Training {0} single word model...", name);
+				TrainSingleWordAlignmentModel(swAlignModel, sourceCorpus, targetCorpus, progress);
+				if (progress.CancelRequested)
+					return;
+
+				PruneLexTable(swmPrefix + ".hmm_lexnd", 0.00001);
+
+				progress.WriteMessage("Generating best {0} alignments...", name);
+				GenerateBestAlignments(swAlignModel, swmPrefix + ".bestal", sourceCorpus, targetCorpus, progress);
+				progress.ProgressIndicator.PercentCompleted += 100 / TrainingStepCount;
+			}
+		}
+
+		private static void PruneLexTable(string fileName, double threshold)
+		{
+			var entries = new List<Tuple<uint, uint, float, float>>();
+			using (var reader = new BinaryReader(File.Open(fileName, FileMode.Open)))
+			{
+				int pos = 0;
+				int length = (int) reader.BaseStream.Length;
+				while (pos < length)
 				{
-					swAlignModel.Train(1);
-					progress.ProgressIndicator.PercentCompleted += 100 / TrainingStepCount;
+					uint srcIndex = reader.ReadUInt32();
+					pos += sizeof(uint);
+					uint trgIndex = reader.ReadUInt32();
+					pos += sizeof(uint);
+					float numer = reader.ReadSingle();
+					pos += sizeof(float);
+					float denom = reader.ReadSingle();
+					pos += sizeof(float);
+
+					entries.Add(Tuple.Create(srcIndex, trgIndex, numer, denom));
+				}
+			}
+
+			using (var writer = new BinaryWriter(File.Open(fileName, FileMode.Create)))
+			{
+				foreach (IGrouping<uint, Tuple<uint, uint, float, float>> g in entries.GroupBy(e => e.Item1).OrderBy(g => g.Key))
+				{
+					Tuple<uint, uint, float, float>[] groupEntries = g.OrderByDescending(e => e.Item3).ToArray();
+
+					float lcSrc = groupEntries.Select(e => e.Item3).Skip(1).Aggregate(groupEntries[0].Item3, SumLog);
+
+					float newLcSrc = -99;
+					int count = 0;
+					foreach (Tuple<uint, uint, float, float> entry in groupEntries)
+					{
+						float prob = (float) Math.Exp(entry.Item3 - lcSrc);
+						if (prob < threshold)
+							break;
+						newLcSrc = SumLog(newLcSrc, entry.Item3);
+						count++;
+					}
+
+					for (int i = 0; i < count; i++)
+					{
+						writer.Write(groupEntries[i].Item1);
+						writer.Write(groupEntries[i].Item2);
+						writer.Write(groupEntries[i].Item3);
+						writer.Write(newLcSrc);
+					}
+				}
+			}
+		}
+
+		private static float SumLog(float logx, float logy)
+		{
+			if (logx > logy)
+				return (float) (logx + Math.Log(1 + Math.Exp(logy - logx)));
+			return (float) (logy + Math.Log(1 + Math.Exp(logx - logy)));
+		}
+
+		private static void TrainSingleWordAlignmentModel(ThotSingleWordAlignmentModel swAlignModel, IEnumerable<IEnumerable<string>> sourceCorpus,
+			IEnumerable<IEnumerable<string>> targetCorpus, IProgress progress)
+		{
+			foreach (Tuple<string[], string[]> pair in sourceCorpus.Select(s => s.ToArray()).Zip(targetCorpus.Select(s => s.ToArray()))
+				.Where(p => p.Item1.Length > 0 && p.Item2.Length > 0))
+			{
+				swAlignModel.AddSegmentPair(pair.Item1, pair.Item2);
+			}
+			for (int i = 0; i < 5; i++)
+			{
+				swAlignModel.Train(1);
+				progress.ProgressIndicator.PercentCompleted += 100 / TrainingStepCount;
+				if (progress.CancelRequested)
+					return;
+			}
+			swAlignModel.Save();
+		}
+
+		private static void GenerateBestAlignments(ThotSingleWordAlignmentModel swAlignModel, string fileName, IEnumerable<IEnumerable<string>> sourceCorpus,
+			IEnumerable<IEnumerable<string>> targetCorpus, IProgress progress)
+		{
+			using (var writer = new StreamWriter(fileName))
+			{
+				foreach (Tuple<string[], string[]> pair in sourceCorpus.Select(s => s.ToArray()).Zip(targetCorpus.Select(s => s.ToArray()))
+					.Where(p => p.Item1.Length > 0 && p.Item2.Length > 0))
+				{
+					WordAlignmentMatrix waMatrix;
+					double prob = swAlignModel.GetBestAlignment(pair.Item1, pair.Item2, out waMatrix);
+					writer.Write("# Alignment probability= {0}\n", prob);
+					writer.Write(waMatrix.ToGizaFormat(pair.Item1, pair.Item2));
 					if (progress.CancelRequested)
 						return;
 				}
-				swAlignModel.Save();
-				// TODO: prune lex table by a probability threshold
-				progress.WriteMessage("Generating best alignments...");
-				using (var writer = new StreamWriter(swmPrefix + ".bestal"))
+			}
+		}
+
+		private static void FilterPhraseTable(string fileName, int n)
+		{
+			var entries = new List<Tuple<string, string, float, float>>();
+			using (var reader = new StreamReader(fileName))
+			{
+				string line;
+				while ((line = reader.ReadLine()) != null)
 				{
-					foreach (Tuple<IEnumerable<string>, IEnumerable<string>> pair in sourceCorpus.Zip(targetCorpus))
+					string[] fields = line.Split(new[] {"|||"}, StringSplitOptions.RemoveEmptyEntries);
+					string counts = fields[2].Trim();
+					int index = counts.IndexOf(" ", StringComparison.Ordinal);
+					entries.Add(Tuple.Create(fields[0].Trim(), fields[1].Trim(), float.Parse(counts.Substring(0, index), CultureInfo.InvariantCulture),
+						float.Parse(counts.Substring(index + 1), CultureInfo.InvariantCulture)));
+				}
+			}
+
+			using (var writer = new StreamWriter(fileName))
+			{
+				foreach (IGrouping<string, Tuple<string, string, float, float>> g in entries.GroupBy(e => e.Item2).OrderBy(g => g.Key.Split(' ').Length).ThenBy(g => g.Key))
+				{
+					int count = 0;
+					float remainder = 0;
+					foreach (Tuple<string, string, float, float> entry in g.OrderByDescending(e => e.Item4).ThenBy(e => e.Item1.Split(' ').Length))
 					{
-						WordAlignmentMatrix waMatrix;
-						double prob = swAlignModel.GetBestAlignment(pair.Item1.ToArray(), pair.Item2.ToArray(), out waMatrix);
-						writer.Write("# Alignment probability= {0}\n", prob);
-						writer.Write(waMatrix.ToGizaFormat(pair.Item1, pair.Item2));
-						if (progress.CancelRequested)
-							return;
+						count++;
+						if (count <= n)
+							writer.Write("{0} ||| {1} ||| {2:0.00000000} {3:0.00000000}\n", entry.Item1, entry.Item2, entry.Item3, entry.Item4);
+						else
+							remainder += entry.Item4;
+					}
+
+					if (remainder > 0)
+					{
+						writer.Write("<UNUSED_WORD> ||| {0} ||| 0 {1:0.00000000}\n", g.Key, remainder);
 					}
 				}
-				progress.ProgressIndicator.PercentCompleted += 100 / TrainingStepCount;
 			}
 		}
 

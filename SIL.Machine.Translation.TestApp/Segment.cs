@@ -6,7 +6,7 @@ namespace SIL.Machine.Translation.TestApp
 {
 	public class Segment
 	{
-		public static readonly Regex TokenizeRegex = new Regex(@"\w+([.,-’']\w+)*|[\p{P}]");
+		public static readonly Regex TokenizeRegex = new Regex(@"[\p{P}]|(\w+([.,\-’']\w+)*)");
 
 		public Segment()
 		{
