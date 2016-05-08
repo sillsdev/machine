@@ -102,13 +102,25 @@ namespace SIL.Machine.Translation
 		{
 			int wordCount = 0;
 			var ngrams = new Dictionary<Ngram<string>, int>();
+			var vocab = new HashSet<string>();
 			foreach (IEnumerable<string> segment in targetCorpus)
 			{
-				List<string> words = segment.ToList();
-				if (words.Count == 0)
-					continue;
-				words.Insert(0, "<s>");
+				var words = new List<string> {"<s>"};
+				foreach (string word in segment)
+				{
+					if (vocab.Contains(word))
+					{
+						words.Add(word);
+					}
+					else
+					{
+						vocab.Add(word);
+						words.Add("<unk>");
+					}
+				}
 				words.Add("</s>");
+				if (words.Count == 2)
+					continue;
 				wordCount += words.Count;
 				for (int n = 1; n <= ngramSize; n++)
 				{
