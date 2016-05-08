@@ -47,7 +47,7 @@
 				<TableRow>
 					<TableCell>
 						<Panel Padding="0,25,0,0">
-							<RichTextArea x:Name="SourceSegmentTextArea" ReadOnly="True" Height="100" Text="{Binding SourceSegment}" />
+							<RichTextArea x:Name="SourceSegmentTextArea" ReadOnly="True" Height="150" Text="{Binding SourceSegment}" />
 						</Panel>
 					</TableCell>
 					<TableCell>
@@ -58,7 +58,7 @@
 									<StackLayout x:Name="SuggestionsContainer" Orientation="Horizontal" Padding="5,0,5,0" Spacing="5" VerticalContentAlignment="Center" />
 								</Scrollable>
 							</StackLayout>
-							<TextArea x:Name="TargetSegmentTextArea" Height="100" AcceptsReturn="False" AcceptsTab="False" Text="{Binding TargetSegment}" TextChanged="TargetSegmentTextChanged"
+							<TextArea x:Name="TargetSegmentTextArea" Height="150" AcceptsReturn="False" AcceptsTab="False" Text="{Binding TargetSegment}" TextChanged="TargetSegmentTextChanged"
 										CaretIndex="{Binding CurrentTargetSegmentIndex}" CaretIndexChanged="TargetSegmentCaretIndexChanged" KeyDown="TargetSegmentKeyDown" />
 						</StackLayout>
 					</TableCell>
