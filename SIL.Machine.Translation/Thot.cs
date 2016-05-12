@@ -26,22 +26,37 @@ namespace SIL.Machine.Translation
 		public static extern void decoder_close(IntPtr decoderHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern int session_translate(IntPtr sessionHandle, IntPtr sentence, IntPtr translation, int capacity);
+		public static extern int session_translate(IntPtr sessionHandle, IntPtr sentence, IntPtr translation, int capacity, out IntPtr data);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern int session_translateInteractively(IntPtr sessionHandle, IntPtr sentence, IntPtr translation, int capacity);
+		public static extern int session_translateInteractively(IntPtr sessionHandle, IntPtr sentence, IntPtr translation, int capacity, out IntPtr data);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern int session_addStringToPrefix(IntPtr sessionHandle, IntPtr addition, IntPtr translation, int capacity);
+		public static extern int session_addStringToPrefix(IntPtr sessionHandle, IntPtr addition, IntPtr translation, int capacity, out IntPtr data);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern int session_setPrefix(IntPtr sessionHandle, IntPtr prefix, IntPtr translation, int capacity);
+		public static extern int session_setPrefix(IntPtr sessionHandle, IntPtr prefix, IntPtr translation, int capacity, out IntPtr data);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void session_trainSentencePair(IntPtr sessionHandle, IntPtr sourceSentence, IntPtr targetSentence);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void session_close(IntPtr sessionHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern int tdata_getPhraseCount(IntPtr dataHandle);
+		
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern int tdata_getSourceSegmentation(IntPtr dataHandle, IntPtr sourceSegmentation, int capacity);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern int tdata_getTargetSegmentCuts(IntPtr dataHandle, IntPtr targetSegmentCuts, int capacity);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern int tdata_getUnknownPhrases(IntPtr dataHandle, IntPtr unknownPhrases, int capacity);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void tdata_destroy(IntPtr dataHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern IntPtr swAlignModel_create();

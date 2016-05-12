@@ -7,15 +7,19 @@ namespace SIL.Machine.Translation
 {
 	public class FuzzyEditDistanceSegmentAligner : ISegmentAligner
 	{
-		private const float Alpha = 0.2f;
-		private const int MaxDistance = 5;
+		private const double DefaultAlpha = 0.2f;
+		private const int DefaultMaxDistance = 3;
 
 		private readonly ISegmentAligner _segmentAligner;
 		private readonly SegmentScorer _scorer;
+		private readonly int _maxDistance;
+		private readonly double _alpha;
 
-		public FuzzyEditDistanceSegmentAligner(ISegmentAligner segmentAligner)
+		public FuzzyEditDistanceSegmentAligner(ISegmentAligner segmentAligner, double alpha = DefaultAlpha, int maxDistance = DefaultMaxDistance)
 		{
 			_segmentAligner = segmentAligner;
+			_alpha = alpha;
+			_maxDistance = maxDistance;
 			_scorer = new SegmentScorer(_segmentAligner);
 		}
 
@@ -57,7 +61,7 @@ namespace SIL.Machine.Translation
 					}
 
 					int bestIndex = -1;
-					for (int i = minIndex; i >= Math.Max(0, minIndex - MaxDistance); i--)
+					for (int i = minIndex; i >= Math.Max(0, minIndex - _maxDistance); i--)
 					{
 						double prob = _segmentAligner.GetTranslationProbability(sourceSegment[i], targetSegment[j]);
 						double distanceScore = ComputeDistanceScore(i, minIndex + 1, sourceSegment.Count);
@@ -69,7 +73,7 @@ namespace SIL.Machine.Translation
 						}
 					}
 
-					for (int i = maxIndex; i < Math.Min(sourceSegment.Count, maxIndex + MaxDistance); i++)
+					for (int i = maxIndex; i < Math.Min(sourceSegment.Count, maxIndex + _maxDistance); i++)
 					{
 						double prob = _segmentAligner.GetTranslationProbability(sourceSegment[i], targetSegment[j]);
 						double distanceScore = ComputeDistanceScore(i, maxIndex - 1, sourceSegment.Count);
@@ -112,9 +116,9 @@ namespace SIL.Machine.Translation
 			return (double) Math.Abs(i1 - i2) / (sourceLength - 1);
 		}
 
-		private static double ComputeAlignmentScore(double probability, double distanceScore)
+		private double ComputeAlignmentScore(double probability, double distanceScore)
 		{
-			return (Math.Log(probability) * Alpha) + (Math.Log(1.0f - distanceScore) * (1.0f - Alpha));
+			return (Math.Log(probability) * _alpha) + (Math.Log(1.0f - distanceScore) * (1.0f - _alpha));
 		}
 
 		public double GetTranslationProbability(string sourceWord, string targetWord)

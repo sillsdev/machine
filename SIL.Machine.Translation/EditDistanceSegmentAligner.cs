@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.SequenceAlignment;
 
@@ -35,7 +36,7 @@ namespace SIL.Machine.Translation
 				}
 			}
 
-			return alignment.RawScore;
+			return Math.Log(alignment.NormalizedScore);
 		}
 
 		private static IEnumerable<int> GetWordIndices(IList<string> sequence, out int index, out int count)

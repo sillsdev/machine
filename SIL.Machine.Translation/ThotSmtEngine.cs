@@ -185,7 +185,7 @@ namespace SIL.Machine.Translation
 			progress.WriteMessage("Filtering phrase table...");
 			FilterPhraseTable(tmPrefix + ".ttable", 20);
 
-			File.WriteAllText(tmPrefix + ".lambda", "0.01");
+			File.WriteAllText(tmPrefix + ".lambda", "0.9");
 			File.WriteAllText(tmPrefix + ".srcsegmlentable", "Uniform");
 			File.WriteAllText(tmPrefix + ".trgsegmlentable", "Geometric");
 			progress.ProgressIndicator.PercentCompleted += ProgressIncrement;

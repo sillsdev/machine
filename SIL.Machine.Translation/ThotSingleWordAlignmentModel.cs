@@ -97,24 +97,18 @@ namespace SIL.Machine.Translation
 					IntPtr array = Marshal.ReadIntPtr(nativeMatrix, i * sizeOfPtr);
 					for (int j = 0; j < matrix.J; j++)
 						matrix[i, j] = Marshal.ReadInt32(array, j * sizeOfInt) == 1;
-					Marshal.FreeHGlobal(array);
 				}
-				Marshal.FreeHGlobal(nativeMatrix);
-				nativeMatrix = IntPtr.Zero;
 
 				return prob;
 			}
 			finally
 			{
-				if (nativeMatrix != IntPtr.Zero)
+				for (int i = 0; i < iLen; i++)
 				{
-					for (int i = 0; i < iLen; i++)
-					{
-						IntPtr array = Marshal.ReadIntPtr(nativeMatrix, i * sizeOfPtr);
-						Marshal.FreeHGlobal(array);
-					}
-					Marshal.FreeHGlobal(nativeMatrix);
+					IntPtr array = Marshal.ReadIntPtr(nativeMatrix, i * sizeOfPtr);
+					Marshal.FreeHGlobal(array);
 				}
+				Marshal.FreeHGlobal(nativeMatrix);
 
 				Marshal.FreeHGlobal(nativeTargetSegment);
 				Marshal.FreeHGlobal(nativeSourceSegment);
