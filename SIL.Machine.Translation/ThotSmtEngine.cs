@@ -27,13 +27,13 @@ namespace SIL.Machine.Translation
 			foreach (string line in File.ReadAllLines(cfgFileName))
 			{
 				string l = line.Trim();
-				if (l.StartsWith("-tm"))
+				if (l.StartsWith("-tm "))
 				{
 					tmPrefix = l.Substring(4).Trim();
 					if (!Path.IsPathRooted(tmPrefix))
 						tmPrefix = Path.Combine(cfgDir, tmPrefix);
 				}
-				else if (l.StartsWith("-lm"))
+				else if (l.StartsWith("-lm "))
 				{
 					lmPrefix = l.Substring(4).Trim();
 					if (!Path.IsPathRooted(lmPrefix))
