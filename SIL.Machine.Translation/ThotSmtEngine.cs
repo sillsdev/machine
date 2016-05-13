@@ -446,5 +446,10 @@ namespace SIL.Machine.Translation
 		{
 			Thot.decoder_close(_handle);
 		}
+
+		IImtSession IImtEngine.StartSession()
+		{
+			return StartSession();
+		}
 	}
 }

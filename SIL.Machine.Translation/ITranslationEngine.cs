@@ -2,7 +2,7 @@
 
 namespace SIL.Machine.Translation
 {
-	public interface ITranslator
+	public interface ITranslationEngine
 	{
 		TranslationResult Translate(IEnumerable<string> segment);
 	}

@@ -6,11 +6,11 @@ using SIL.ObjectModel;
 namespace SIL.Machine.Translation.Tests
 {
 	[TestFixture]
-	public class TranslationSessionTests
+	public class HybridTranslationSessionTests
 	{
 		private class TestEnvironment : DisposableBase
 		{
-			private readonly TranslationEngine _engine;
+			private readonly HybridTranslationEngine _engine;
 
 			public TestEnvironment()
 			{
@@ -31,10 +31,10 @@ namespace SIL.Machine.Translation.Tests
 				var transferer = new SimpleTransferer(new GlossMorphemeMapper(targetGenerator));
 				var transferEngine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
 				var smtEngine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName);
-				_engine = new TranslationEngine(smtEngine, transferEngine);
+				_engine = new HybridTranslationEngine(smtEngine, transferEngine);
 			}
 
-			public TranslationEngine Engine
+			public HybridTranslationEngine Engine
 			{
 				get { return _engine; }
 			}
@@ -49,7 +49,7 @@ namespace SIL.Machine.Translation.Tests
 		public void TranslateInteractively_EmptyPrefixUsesTransferEngine_CorrectTranslation()
 		{
 			using (var env = new TestEnvironment())
-			using (TranslationSession session = env.Engine.StartSession())
+			using (IImtSession session = env.Engine.StartSession())
 			{
 				TranslationResult result = session.TranslateInteractively("caminé a mi habitación .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("walked to my room .".Split()));
@@ -60,7 +60,7 @@ namespace SIL.Machine.Translation.Tests
 		public void AddToPrefix_PrefixUpdatedUsesTransferEngine_CorrectTranslation()
 		{
 			using (var env = new TestEnvironment())
-			using (TranslationSession session = env.Engine.StartSession())
+			using (IImtSession session = env.Engine.StartSession())
 			{
 				TranslationResult result = session.TranslateInteractively("caminé a mi habitación .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("walked to my room .".Split()));
@@ -73,7 +73,7 @@ namespace SIL.Machine.Translation.Tests
 		public void Approve_TwoSegmentsUsesTransferEngineMissingWord_LearnsMissingWord()
 		{
 			using (var env = new TestEnvironment())
-			using (TranslationSession session = env.Engine.StartSession())
+			using (IImtSession session = env.Engine.StartSession())
 			{
 				TranslationResult result = session.TranslateInteractively("caminé a mi habitación .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("walked to my room .".Split()));
@@ -93,7 +93,7 @@ namespace SIL.Machine.Translation.Tests
 		public void TranslateInteractively_UnknownWordEmptyPrefix_PartialTranslation()
 		{
 			using (var env = new TestEnvironment())
-			using (TranslationSession session = env.Engine.StartSession())
+			using (IImtSession session = env.Engine.StartSession())
 			{
 				TranslationResult result = session.TranslateInteractively("hablé con recepción .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("hablé with reception .".Split()));
@@ -104,7 +104,7 @@ namespace SIL.Machine.Translation.Tests
 		public void AddToPrefix_UnknownWordPrefixUpdated_CorrectTranslation()
 		{
 			using (var env = new TestEnvironment())
-			using (TranslationSession session = env.Engine.StartSession())
+			using (IImtSession session = env.Engine.StartSession())
 			{
 				TranslationResult result = session.TranslateInteractively("hablé con recepción .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("hablé with reception .".Split()));
@@ -117,7 +117,7 @@ namespace SIL.Machine.Translation.Tests
 		public void Approve_TwoSegmentsUnknownWord_LearnsUnknownWord()
 		{
 			using (var env = new TestEnvironment())
-			using (TranslationSession session = env.Engine.StartSession())
+			using (IImtSession session = env.Engine.StartSession())
 			{
 				TranslationResult result = session.TranslateInteractively("hablé con recepción .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("hablé with reception .".Split()));

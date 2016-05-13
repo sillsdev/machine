@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace SIL.Machine.Translation
 {
-	public class TransferEngine : ITranslator
+	public class TransferEngine : ITranslationEngine
 	{
 		private readonly ISourceAnalyzer _sourceAnalyzer;
 		private readonly ITransferer _transferer;

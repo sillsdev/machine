@@ -49,7 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TranslationSessionTests.cs" />
+    <Compile Include="HybridTranslationSessionTests.cs" />
     <Compile Include="ThotSingleWordAlignmentModelTests.cs" />
     <Compile Include="ThotSmtEngineTests.cs" />
     <Compile Include="ThotSmtSessionTests.cs" />

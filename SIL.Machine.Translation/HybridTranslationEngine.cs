@@ -6,17 +6,17 @@ using SIL.Progress;
 
 namespace SIL.Machine.Translation
 {
-	public class TranslationEngine : DisposableBase
+	public class HybridTranslationEngine : DisposableBase, IImtEngine
 	{
-		private readonly TransferEngine _transferEngine;
+		private readonly ITranslationEngine _transferEngine;
 		private readonly ISmtEngine _smtEngine;
-		private readonly HashSet<TranslationSession> _sessions;
+		private readonly HashSet<HybridTranslationSession> _sessions;
 
-		public TranslationEngine(ISmtEngine smtEngine, TransferEngine transferEngine = null)
+		public HybridTranslationEngine(ISmtEngine smtEngine, ITranslationEngine transferEngine = null)
 		{
 			_smtEngine = smtEngine;
 			_transferEngine = transferEngine;
-			_sessions = new HashSet<TranslationSession>();
+			_sessions = new HashSet<HybridTranslationSession>();
 		}
 
 		public IEnumerable<IEnumerable<string>> SourceCorpus { get; set; }
@@ -39,15 +39,15 @@ namespace SIL.Machine.Translation
 			_smtEngine.SaveModels();
 		}
 
-		public TranslationSession StartSession()
+		public IImtSession StartSession()
 		{
-			var session = new TranslationSession(this, _smtEngine.StartSession(), _transferEngine);
+			var session = new HybridTranslationSession(this, _smtEngine.StartSession(), _transferEngine);
 			lock (_sessions)
 				_sessions.Add(session);
 			return session;
 		}
 
-		internal void RemoveSession(TranslationSession session)
+		internal void RemoveSession(HybridTranslationSession session)
 		{
 			lock (_sessions)
 				_sessions.Remove(session);
@@ -57,7 +57,7 @@ namespace SIL.Machine.Translation
 		{
 			lock (_sessions)
 			{
-				foreach (TranslationSession session in _sessions.ToArray())
+				foreach (HybridTranslationSession session in _sessions.ToArray())
 					session.Dispose();
 			}
 		}

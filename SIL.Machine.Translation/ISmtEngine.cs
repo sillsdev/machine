@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using SIL.Progress;
 
 namespace SIL.Machine.Translation
 {
-	public interface ISmtEngine : IDisposable
+	public interface ISmtEngine : IImtEngine
 	{
-		ISmtSession StartSession();
+		new ISmtSession StartSession();
 
 		void SaveModels();
 

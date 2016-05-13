@@ -5,17 +5,17 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
 {
-	public class TranslationSession : DisposableBase, IInteractiveTranslator
+	internal class HybridTranslationSession : DisposableBase, IImtSession
 	{
 		private const double SecondaryEngineThreshold = 0.05;
 
-		private readonly TranslationEngine _engine;
+		private readonly HybridTranslationEngine _engine;
 		private readonly ISmtSession _smtSession;
-		private readonly TransferEngine _transferEngine;
+		private readonly ITranslationEngine _transferEngine;
 		private TranslationResult _lastResult;
 		private TranslationResult _transferResult;
 
-		internal TranslationSession(TranslationEngine engine, ISmtSession smtSession, TransferEngine transferEngine)
+		public HybridTranslationSession(HybridTranslationEngine engine, ISmtSession smtSession, ITranslationEngine transferEngine)
 		{
 			_engine = engine;
 			_smtSession = smtSession;
@@ -73,7 +73,7 @@ namespace SIL.Machine.Translation
 
 		public void Approve()
 		{
-			_smtSession.Train(_smtSession.SourceSegment, _smtSession.Prefix);
+			_smtSession.Approve();
 			for (int j = 0; j < _smtSession.Prefix.Count; j++)
 			{
 				foreach (AlignedWordPair wp in _lastResult.GetTargetWordPairs(j))

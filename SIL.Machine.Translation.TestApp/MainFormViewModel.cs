@@ -22,8 +22,8 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly RelayCommand<object> _rebuildProjectCommand; 
 		private readonly RelayCommand<object> _closeCommand;
 		private ISmtEngine _smtEngine;
-		private TranslationEngine _translationEngine;
-		private TranslationSession _translationSession;
+		private HybridTranslationEngine _translationEngine;
+		private IImtSession _translationSession;
 		private readonly ShapeSpanFactory _spanFactory;
 		private readonly TraceManager _hcTraceManager;
 		private int _confidenceThreshold;
@@ -154,7 +154,7 @@ namespace SIL.Machine.Translation.TestApp
 				transferEngine = new TransferEngine(srcAnalyzer, new SimpleTransferer(new GlossMorphemeMapper(trgGenerator)), trgGenerator);
 			}
 			_smtEngine = new ThotSmtEngine(Path.Combine(configDir, smtConfig));
-			_translationEngine = new TranslationEngine(_smtEngine, transferEngine);
+			_translationEngine = new HybridTranslationEngine(_smtEngine, transferEngine);
 			_translationSession = _translationEngine.StartSession();
 
 			using (_texts.BulkUpdate())

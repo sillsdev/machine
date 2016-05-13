@@ -6,7 +6,7 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
 {
-	public class ThotSmtSession : DisposableBase, ISmtSession
+	internal class ThotSmtSession : DisposableBase, ISmtSession
 	{
 		private delegate int TranslateFunc(IntPtr sessionHandle, IntPtr sourceSegment, IntPtr result, int capacity, out IntPtr data);
 
@@ -22,7 +22,7 @@ namespace SIL.Machine.Translation
 		private bool _isLastWordPartial;
 		private bool _isTranslatingInteractively;
 
-		internal ThotSmtSession(ThotSmtEngine engine)
+		public ThotSmtSession(ThotSmtEngine engine)
 		{
 			_engine = engine;
 			_handle = Thot.decoder_openSession(_engine.Handle);
@@ -96,6 +96,11 @@ namespace SIL.Machine.Translation
 			_prefix.Clear();
 			_isLastWordPartial = true;
 			_isTranslatingInteractively = false;
+		}
+
+		public void Approve()
+		{
+			Train(_sourceSegment, _prefix);
 		}
 
 		private TranslationResult DoTranslate(TranslateFunc translateFunc, IEnumerable<string> input, bool addTrailingSpace, IList<string> sourceSegment)

@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
 {
-	public interface IInteractiveTranslator : ITranslator
+	public interface IImtSession : IDisposable
 	{
 		IReadOnlyList<string> SourceSegment { get; }
 
@@ -18,5 +19,9 @@ namespace SIL.Machine.Translation
 		TranslationResult SetPrefix(IEnumerable<string> prefix, bool isLastWordPartial);
 
 		void Reset();
+
+		void Approve();
+
+		TranslationResult Translate(IEnumerable<string> segment);
 	}
 }
