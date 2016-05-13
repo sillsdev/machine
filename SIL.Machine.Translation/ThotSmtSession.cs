@@ -132,7 +132,7 @@ namespace SIL.Machine.Translation
 			int phraseCount = Thot.tdata_getPhraseCount(data);
 			IList<Tuple<int, int>> sourceSegmentation = GetSourceSegmentation(data, phraseCount);
 			IList<int> targetSegmentCuts = GetTargetSegmentCuts(data, phraseCount);
-			IList<bool> unknownPhrases = GetUnknownPhrases(data, phraseCount);
+			ISet<int> targetUnknownWords = GetTargetUnknownWords(data, targetSegment.Count);
 
 			var confidences = new double[targetSegment.Count];
 			AlignedWordPair[,] alignment = new AlignedWordPair[sourceSegment.Count, targetSegment.Count];
@@ -142,14 +142,10 @@ namespace SIL.Machine.Translation
 				int srcPhraseLen = sourceSegmentation[k].Item2 - sourceSegmentation[k].Item1 + 1;
 				int trgPhraseLen = targetSegmentCuts[k] - trgPhraseStartIndex + 1;
 				WordAlignmentMatrix waMatrix;
-				if (srcPhraseLen == 1 || trgPhraseLen == 1)
+				if (srcPhraseLen == 1 && trgPhraseLen == 1)
 				{
-					waMatrix = new WordAlignmentMatrix(srcPhraseLen, trgPhraseLen);
-					for (int i = 0; i < srcPhraseLen; i++)
-					{
-						for (int j = 0; j < trgPhraseLen; j++)
-							waMatrix[i, j] = true;
-					}
+					waMatrix = new WordAlignmentMatrix(1, 1);
+					waMatrix[0, 0] = true;
 				}
 				else
 				{
@@ -173,7 +169,7 @@ namespace SIL.Machine.Translation
 							string sourceWord = sourceSegment[i];
 							double prob = _segmentAligner.GetTranslationProbability(sourceWord, targetWord);
 							TranslationSources sources = TranslationSources.Smt;
-							if (unknownPhrases[k])
+							if (targetUnknownWords.Contains(j))
 							{
 								prob = 0;
 								sources = TranslationSources.None;
@@ -242,20 +238,21 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		private IList<bool> GetUnknownPhrases(IntPtr data, int phraseCount)
+		private ISet<int> GetTargetUnknownWords(IntPtr data, int targetWordCount)
 		{
-			IntPtr nativeUnknownPhrases = Marshal.AllocHGlobal(phraseCount);
+			int sizeOfInt = Marshal.SizeOf(typeof(int));
+			IntPtr nativeTargetUnknownWords = Marshal.AllocHGlobal(targetWordCount * sizeOfInt);
 			try
 			{
-				Thot.tdata_getUnknownPhrases(data, nativeUnknownPhrases, phraseCount);
-				var unknownPhrases = new bool[phraseCount];
-				for (int i = 0; i < phraseCount; i++)
-					unknownPhrases[i] = Marshal.ReadByte(nativeUnknownPhrases, i) == 1;
-				return unknownPhrases;
+				int count = Thot.tdata_getTargetUnknownWords(data, nativeTargetUnknownWords, targetWordCount);
+				var targetUnknownWords = new HashSet<int>();
+				for (int i = 0; i < count; i++)
+					targetUnknownWords.Add(Marshal.ReadInt32(nativeTargetUnknownWords, i * sizeOfInt) - 1);
+				return targetUnknownWords;
 			}
 			finally
 			{
-				Marshal.FreeHGlobal(nativeUnknownPhrases);
+				Marshal.FreeHGlobal(nativeTargetUnknownWords);
 			}
 		}
 

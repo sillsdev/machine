@@ -53,7 +53,7 @@ namespace SIL.Machine.Translation
 		public static extern int tdata_getTargetSegmentCuts(IntPtr dataHandle, IntPtr targetSegmentCuts, int capacity);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern int tdata_getUnknownPhrases(IntPtr dataHandle, IntPtr unknownPhrases, int capacity);
+		public static extern int tdata_getTargetUnknownWords(IntPtr dataHandle, IntPtr targetUnknownWords, int capacity);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void tdata_destroy(IntPtr dataHandle);
