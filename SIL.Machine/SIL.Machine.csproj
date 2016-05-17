@@ -20,7 +20,7 @@
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
-    <NuGetPackageImportStamp>28deb2ef</NuGetPackageImportStamp>
+    <NuGetPackageImportStamp>0e052fae</NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -239,18 +239,18 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <Import Project="..\packages\BuildDependencyTasks.0.2.3.0\build\BuildDependencyTasks.targets" Condition="Exists('..\packages\BuildDependencyTasks.0.2.3.0\build\BuildDependencyTasks.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\BuildDependencyTasks.0.2.3.0\build\BuildDependencyTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BuildDependencyTasks.0.2.3.0\build\BuildDependencyTasks.targets'))" />
-  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets. -->
   <Target Name="BeforeBuild">
     <Dependencies DependencyFile="SIL.Machine.dep" UseDependencyFile="true" KeepJobsFile="true" />
   </Target>
   <Target Name="AfterBuild">
+  </Target>
+  <Import Project="..\packages\BuildDependencyTasks.0.2.5.0\build\BuildDependencyTasks.targets" Condition="Exists('..\packages\BuildDependencyTasks.0.2.5.0\build\BuildDependencyTasks.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\BuildDependencyTasks.0.2.5.0\build\BuildDependencyTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BuildDependencyTasks.0.2.5.0\build\BuildDependencyTasks.targets'))" />
   </Target>
 </Project>
