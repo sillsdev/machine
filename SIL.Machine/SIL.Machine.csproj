@@ -159,11 +159,15 @@
     <Compile Include="Matching\Match.cs" />
     <Compile Include="Matching\PatternNode.cs" />
     <Compile Include="Matching\Quantifier.cs" />
+    <Compile Include="Morphology\IMorphologicalAnalyzer.cs" />
+    <Compile Include="Morphology\IMorphologicalGenerator.cs" />
+    <Compile Include="Morphology\Morpheme.cs" />
     <Compile Include="Morphology\PoorMansStemmer.cs" />
     <Compile Include="Morphology\IStemmer.cs" />
     <Compile Include="Morphology\PoorMansAffixIdentifier.cs" />
     <Compile Include="Morphology\IAffixIdentifier.cs" />
     <Compile Include="Morphology\PoorMansStemmingAlgorithmBase.cs" />
+    <Compile Include="Morphology\WordAnalysis.cs" />
     <Compile Include="NgramModeling\INgramModelSmoother.cs" />
     <Compile Include="NgramModeling\MaxLikelihoodSmoother.cs" />
     <Compile Include="NgramModeling\ModifiedKneserNeySmoother.cs" />
@@ -209,11 +213,27 @@
     <Compile Include="FiniteState\Arc.cs" />
     <Compile Include="Rules\RuleBatch.cs" />
     <Compile Include="Rules\RuleCascade.cs" />
+    <Compile Include="Translation\AlignedWordPair.cs" />
+    <Compile Include="Translation\GlossMorphemeMapper.cs" />
+    <Compile Include="Translation\HybridTranslationEngine.cs" />
+    <Compile Include="Translation\HybridTranslationSession.cs" />
+    <Compile Include="Translation\IImtEngine.cs" />
+    <Compile Include="Translation\IImtSession.cs" />
+    <Compile Include="Translation\IMorphemeMapper.cs" />
+    <Compile Include="Translation\ISmtEngine.cs" />
+    <Compile Include="Translation\ISmtSession.cs" />
+    <Compile Include="Translation\ITransferer.cs" />
+    <Compile Include="Translation\ITranslationEngine.cs" />
+    <Compile Include="Translation\SimpleTransferer.cs" />
+    <Compile Include="Translation\TransferEngine.cs" />
+    <Compile Include="Translation\TranslationExtensions.cs" />
+    <Compile Include="Translation\TranslationResult.cs" />
+    <Compile Include="Translation\WordAlignmentMatrix.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <None Include="Machine.dep" />
-    <None Include="Machine.nuspec" />
+    <None Include="SIL.Machine.dep" />
+    <None Include="SIL.Machine.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -228,7 +248,7 @@
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets. -->
   <Target Name="BeforeBuild">
-    <Dependencies DependencyFile="Machine.dep" UseDependencyFile="true" KeepJobsFile="true" />
+    <Dependencies DependencyFile="SIL.Machine.dep" UseDependencyFile="true" KeepJobsFile="true" />
   </Target>
   <Target Name="AfterBuild">
   </Target>

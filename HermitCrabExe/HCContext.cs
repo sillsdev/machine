@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using SIL.Machine.Annotations;
 
-namespace SIL.Machine.HermitCrab
+namespace SIL.Machine.Morphology.HermitCrab
 {
 	public class HCContext
 	{

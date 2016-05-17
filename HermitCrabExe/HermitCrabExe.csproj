@@ -8,7 +8,7 @@
     <ProjectGuid>{945FED88-A315-4692-96DD-770892A814DD}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SIL.Machine.HermitCrab</RootNamespace>
+    <RootNamespace>SIL.Machine.Morphology.HermitCrab</RootNamespace>
     <AssemblyName>hc</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -103,9 +103,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SIL.Machine.HermitCrab\SIL.Machine.HermitCrab.csproj">
+    <ProjectReference Include="..\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj">
       <Project>{9e140fcf-0265-481b-b9a0-b0e7bcd3e814}</Project>
-      <Name>SIL.Machine.HermitCrab</Name>
+      <Name>SIL.Machine.Morphology.HermitCrab</Name>
     </ProjectReference>
     <ProjectReference Include="..\SIL.Machine\SIL.Machine.csproj">
       <Project>{8c9ab5d2-22ca-4559-abb0-83e97d7f0e58}</Project>

@@ -107,17 +107,13 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SIL.Machine.HermitCrab\SIL.Machine.HermitCrab.csproj">
+    <ProjectReference Include="..\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj">
       <Project>{9e140fcf-0265-481b-b9a0-b0e7bcd3e814}</Project>
-      <Name>SIL.Machine.HermitCrab</Name>
+      <Name>SIL.Machine.Morphology.HermitCrab</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SIL.Machine.Translation.HermitCrab\SIL.Machine.Translation.HermitCrab.csproj">
-      <Project>{4c572560-ce06-43ec-9eda-b4e30eb27fe5}</Project>
-      <Name>SIL.Machine.Translation.HermitCrab</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SIL.Machine.Translation\SIL.Machine.Translation.csproj">
+    <ProjectReference Include="..\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj">
       <Project>{d89afa6a-cc7b-42e4-b98d-86b8c328f07c}</Project>
-      <Name>SIL.Machine.Translation</Name>
+      <Name>SIL.Machine.Translation.Thot</Name>
     </ProjectReference>
     <ProjectReference Include="..\SIL.Machine\SIL.Machine.csproj">
       <Project>{8c9ab5d2-22ca-4559-abb0-83e97d7f0e58}</Project>

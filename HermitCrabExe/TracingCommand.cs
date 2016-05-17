@@ -1,6 +1,6 @@
 ﻿using ManyConsole;
 
-namespace SIL.Machine.HermitCrab
+namespace SIL.Machine.Morphology.HermitCrab
 {
 	public class TracingCommand : ConsoleCommand
 	{

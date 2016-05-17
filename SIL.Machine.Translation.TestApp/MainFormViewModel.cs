@@ -7,8 +7,8 @@ using Eto.Forms;
 using GalaSoft.MvvmLight;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
-using SIL.Machine.HermitCrab;
-using SIL.Machine.Translation.HermitCrab;
+using SIL.Machine.Morphology.HermitCrab;
+using SIL.Machine.Translation.Thot;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.TestApp
@@ -145,11 +145,11 @@ namespace SIL.Machine.Translation.TestApp
 			{
 				Language srcLang = XmlLoader.Load(Path.Combine(configDir, hcSrcConfig));
 				var srcMorpher = new Morpher(_spanFactory, _hcTraceManager, srcLang);
-				var srcAnalyzer = new HermitCrabSourceAnalyzer(GetMorphemeId, GetCategory, srcMorpher);
+				var srcAnalyzer = new HermitCrabMorphologicalAnalyzer(GetMorphemeId, GetCategory, srcMorpher);
 
 				Language trgLang = XmlLoader.Load(Path.Combine(configDir, hcTrgConfig));
 				var trgMorpher = new Morpher(_spanFactory, _hcTraceManager, trgLang);
-				var trgGenerator = new HermitCrabTargetGenerator(GetMorphemeId, GetCategory, trgMorpher);
+				var trgGenerator = new HermitCrabMorphologicalGenerator(GetMorphemeId, GetCategory, trgMorpher);
 
 				transferEngine = new TransferEngine(srcAnalyzer, new SimpleTransferer(new GlossMorphemeMapper(trgGenerator)), trgGenerator);
 			}
