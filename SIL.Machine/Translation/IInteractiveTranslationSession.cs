@@ -4,7 +4,7 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
 {
-	public interface IImtSession : IDisposable
+	public interface IInteractiveTranslationSession : IDisposable
 	{
 		IReadOnlyList<string> SourceSegment { get; }
 
@@ -21,7 +21,5 @@ namespace SIL.Machine.Translation
 		void Reset();
 
 		void Approve();
-
-		TranslationResult Translate(IEnumerable<string> segment);
 	}
 }

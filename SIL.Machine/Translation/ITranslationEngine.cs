@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace SIL.Machine.Translation
 {
-	public interface ITranslationEngine
+	public interface ITranslationEngine : IDisposable
 	{
 		TranslationResult Translate(IEnumerable<string> segment);
 	}

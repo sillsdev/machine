@@ -15,7 +15,7 @@ namespace SIL.Machine.Tests.Translation
 		private class TestEnvironment : DisposableBase
 		{
 			private readonly HybridTranslationEngine _engine;
-			private readonly IImtSession _session;
+			private readonly IInteractiveTranslationSession _session;
 
 			public TestEnvironment()
 			{
@@ -35,8 +35,8 @@ namespace SIL.Machine.Tests.Translation
 				targetGenerator.AddGeneratedWords(new WordAnalysis(new[] {targetMorphemes[0], targetMorphemes[1]}, 0, "v"), "walked");
 				var transferer = new SimpleTransferer(new GlossMorphemeMapper(targetGenerator));
 				var transferEngine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
-				var smtEngine = Substitute.For<ISmtEngine>();
-				var smtSession = Substitute.For<ISmtSession>();
+				var smtEngine = Substitute.For<IInteractiveSmtEngine>();
+				var smtSession = Substitute.For<IInteractiveSmtSession>();
 
 				var alignment = new Dictionary<Tuple<int, int>, AlignedWordPair>();
 				AddWordPair(alignment, 0, 0, 0, TranslationSources.None);
@@ -58,7 +58,7 @@ namespace SIL.Machine.Tests.Translation
 				_session = _engine.StartSession();
 			}
 
-			private static void AddTranslation(ISmtSession session, string sourceSegment, string targetSegment, Dictionary<Tuple<int, int>, AlignedWordPair> alignment)
+			private static void AddTranslation(IInteractiveSmtSession session, string sourceSegment, string targetSegment, Dictionary<Tuple<int, int>, AlignedWordPair> alignment)
 			{
 				string[] sourceSegmentArray = sourceSegment.Split();
 				string[] targetSegmentArray = targetSegment.Split();
@@ -80,7 +80,7 @@ namespace SIL.Machine.Tests.Translation
 				alignment[Tuple.Create(i, j)] = new AlignedWordPair(i, j, confidence, sources);
 			}
 
-			public IImtSession Session
+			public IInteractiveTranslationSession Session
 			{
 				get { return _session; }
 			}

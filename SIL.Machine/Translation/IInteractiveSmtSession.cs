@@ -2,7 +2,7 @@
 
 namespace SIL.Machine.Translation
 {
-	public interface ISmtSession : IImtSession
+	public interface IInteractiveSmtSession : IInteractiveTranslationSession
 	{
 		void Train(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment);
 	}

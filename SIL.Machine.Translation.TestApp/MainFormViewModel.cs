@@ -21,9 +21,9 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly RelayCommand<object> _saveProjectCommand;
 		private readonly RelayCommand<object> _rebuildProjectCommand; 
 		private readonly RelayCommand<object> _closeCommand;
-		private ISmtEngine _smtEngine;
+		private IInteractiveSmtEngine _smtEngine;
 		private HybridTranslationEngine _translationEngine;
-		private IImtSession _translationSession;
+		private IInteractiveTranslationSession _translationSession;
 		private readonly ShapeSpanFactory _spanFactory;
 		private readonly TraceManager _hcTraceManager;
 		private int _confidenceThreshold;

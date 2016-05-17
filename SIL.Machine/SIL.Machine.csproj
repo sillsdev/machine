@@ -217,11 +217,12 @@
     <Compile Include="Translation\GlossMorphemeMapper.cs" />
     <Compile Include="Translation\HybridTranslationEngine.cs" />
     <Compile Include="Translation\HybridTranslationSession.cs" />
-    <Compile Include="Translation\IImtEngine.cs" />
-    <Compile Include="Translation\IImtSession.cs" />
+    <Compile Include="Translation\IInteractiveTranslationEngine.cs" />
+    <Compile Include="Translation\IInteractiveTranslationSession.cs" />
     <Compile Include="Translation\IMorphemeMapper.cs" />
+    <Compile Include="Translation\IInteractiveSmtEngine.cs" />
+    <Compile Include="Translation\IInteractiveSmtSession.cs" />
     <Compile Include="Translation\ISmtEngine.cs" />
-    <Compile Include="Translation\ISmtSession.cs" />
     <Compile Include="Translation\ITransferer.cs" />
     <Compile Include="Translation\ITranslationEngine.cs" />
     <Compile Include="Translation\SimpleTransferer.cs" />

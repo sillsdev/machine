@@ -48,6 +48,16 @@ namespace SIL.Machine.Translation.Thot.Tests
 			}
 		}
 
+		[Test]
+		public void Translate_TranslationCorrect()
+		{
+			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
+			{
+				TranslationResult result = engine.Translate("voy a marcharme hoy por la tarde .".Split());
+				Assert.That(result.TargetSegment, Is.EqualTo("i am leaving today in the afternoon .".Split()));
+			}
+		}
+
 		private static string CreateTempDirectory(string name)
 		{
 			string path = Path.Combine(Path.GetTempPath(), name);

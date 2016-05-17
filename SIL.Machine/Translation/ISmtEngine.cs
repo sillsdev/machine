@@ -3,11 +3,9 @@ using SIL.Progress;
 
 namespace SIL.Machine.Translation
 {
-	public interface ISmtEngine : IImtEngine
+	public interface ISmtEngine : ITranslationEngine
 	{
-		new ISmtSession StartSession();
-
-		void SaveModels();
+		void Save();
 
 		void Train(IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus, IProgress progress = null);
 	}

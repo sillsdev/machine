@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Morphology;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
 {
-	public class TransferEngine : ITranslationEngine
+	public class TransferEngine : DisposableBase, ITranslationEngine
 	{
 		private readonly IMorphologicalAnalyzer _sourceAnalyzer;
 		private readonly ITransferer _transferer;

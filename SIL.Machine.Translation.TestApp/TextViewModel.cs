@@ -89,7 +89,7 @@ namespace SIL.Machine.Translation.TestApp
 			get { return _name; }
 		}
 
-		internal IImtSession TranslationSession { get; set; }
+		internal IInteractiveTranslationSession TranslationSession { get; set; }
 
 		internal double ConfidenceThreshold
 		{

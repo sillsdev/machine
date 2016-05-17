@@ -6,7 +6,7 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.Thot
 {
-	internal class ThotSmtSession : DisposableBase, ISmtSession
+	internal class ThotSmtSession : DisposableBase, IInteractiveSmtSession
 	{
 		private delegate int TranslateFunc(IntPtr sessionHandle, IntPtr sourceSegment, IntPtr result, int capacity, out IntPtr data);
 

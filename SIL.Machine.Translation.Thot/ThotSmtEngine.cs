@@ -11,7 +11,7 @@ using SIL.Progress;
 
 namespace SIL.Machine.Translation.Thot
 {
-	public class ThotSmtEngine : DisposableBase, ISmtEngine
+	public class ThotSmtEngine : DisposableBase, IInteractiveSmtEngine
 	{
 		private const int TrainingStepCount = 17;
 		private const int ProgressIncrement = 99 / TrainingStepCount + 1;
@@ -370,6 +370,7 @@ namespace SIL.Machine.Translation.Thot
 		private readonly string _cfgFileName;
 		private IntPtr _handle;
 		private readonly HashSet<ThotSmtSession> _sessions;
+		private ThotSmtSession _globalSession;
 		private readonly ThotSingleWordAlignmentModel _singleWordAlignmentModel;
 		private readonly ThotSingleWordAlignmentModel _inverseSingleWordAlignmentModel;
 
@@ -397,17 +398,31 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public ISmtSession StartSession()
+		public TranslationResult Translate(IEnumerable<string> segment)
 		{
-			CheckDisposed();
-
-			var session = new ThotSmtSession(this);
 			lock (_sessions)
-				_sessions.Add(session);
-			return session;
+			{
+				if (_globalSession == null)
+				{
+					_globalSession = new ThotSmtSession(this);
+					_sessions.Add(_globalSession);
+				}
+			}
+			return _globalSession.Translate(segment);
 		}
 
-		public void SaveModels()
+		public IInteractiveSmtSession StartSession()
+		{
+			CheckDisposed();
+			lock (_sessions)
+			{
+				var session = new ThotSmtSession(this);
+				_sessions.Add(session);
+				return session;
+			}
+		}
+
+		public void Save()
 		{
 			Thot.decoder_saveModels(_handle);
 		}
@@ -447,7 +462,7 @@ namespace SIL.Machine.Translation.Thot
 			Thot.decoder_close(_handle);
 		}
 
-		IImtSession IImtEngine.StartSession()
+		IInteractiveTranslationSession IInteractiveTranslationEngine.StartSession()
 		{
 			return StartSession();
 		}
