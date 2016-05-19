@@ -9,17 +9,20 @@ namespace SIL.Machine.Translation.Thot
 	public class ThotSingleWordAlignmentModel : DisposableBase, ISegmentAligner
 	{
 		private IntPtr _handle;
+		private readonly bool _closeOnDispose;
 		private readonly string _prefFileName;
 
 		internal ThotSingleWordAlignmentModel(IntPtr handle)
 		{
 			_handle = handle;
+			_closeOnDispose = false;
 		}
 
 		public ThotSingleWordAlignmentModel(string prefFileName, bool createNew = false)
 		{
 			_prefFileName = prefFileName;
 			_handle = createNew || !File.Exists(prefFileName + ".src") ? Thot.swAlignModel_create() : Thot.swAlignModel_open(_prefFileName);
+			_closeOnDispose = true;
 		}
 
 		internal IntPtr Handle
@@ -117,7 +120,7 @@ namespace SIL.Machine.Translation.Thot
 
 		protected override void DisposeUnmanagedResources()
 		{
-			if (!string.IsNullOrEmpty(_prefFileName))
+			if (_closeOnDispose)
 				Thot.swAlignModel_close(_handle);
 		}
 	}

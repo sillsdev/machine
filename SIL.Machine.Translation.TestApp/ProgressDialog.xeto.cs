@@ -30,6 +30,7 @@ namespace SIL.Machine.Translation.TestApp
 			base.OnLoad(e);
 			var vm = (ProgressViewModel) DataContext;
 			Title = vm.DisplayName;
+			ProgressBar.Indeterminate = vm.IsIndeterminate;
 			vm.PropertyChanged += ViewModelPropertyChanged;
 			vm.Execute();
 		}
@@ -76,6 +77,15 @@ namespace SIL.Machine.Translation.TestApp
 						var vm = (ProgressViewModel) DataContext;
 						ProgressBar.Value = vm.PercentCompleted;
 						Title = string.Format("{0}% completed", vm.PercentCompleted);
+					});
+					break;
+
+				case "IsIndeterminate":
+					DispatcherHelper.CheckBeginInvokeOnUI(() =>
+					{
+						var vm = (ProgressViewModel) DataContext;
+						ProgressBar.Indeterminate = vm.IsIndeterminate;
+						Title = vm.DisplayName;
 					});
 					break;
 			}

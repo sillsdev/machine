@@ -88,6 +88,15 @@ namespace SIL.Machine.Translation.Thot
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern bool phraseModel_generate(string alignmentFileName, int maxPhraseLength, string tableFileName);
 
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern IntPtr langModel_open(string prefFileName);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern float langModel_getSentenceProbability(IntPtr lmHandle, IntPtr sentence);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void langModel_close(IntPtr lmHandle);
+
 		public static IntPtr ConvertStringsToNativeUtf8(IEnumerable<string> managedStrings)
 		{
 			return ConvertStringToNativeUtf8(string.Join(" ", managedStrings));

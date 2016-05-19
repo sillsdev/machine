@@ -6,7 +6,7 @@
 	>
 	<StackLayout Padding="10" Spacing="5">
 		<Label x:Name="MessageLabel" />
-		<ProgressBar x:Name="ProgressBar" Indeterminate="{Binding IsIndeterminate}" Width="250" Height="20" />
+		<ProgressBar x:Name="ProgressBar" Width="250" Height="20" />
 		<StackLayoutItem HorizontalAlignment="Right">
 			<Button Command="{Binding CancelCommand}">Cancel</Button>
 		</StackLayoutItem>

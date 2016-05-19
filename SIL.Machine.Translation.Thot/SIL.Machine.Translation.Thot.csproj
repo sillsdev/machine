@@ -48,6 +48,7 @@
     <Compile Include="SegmentScorer.cs" />
     <Compile Include="FuzzyEditDistanceSegmentAligner.cs" />
     <Compile Include="Thot.cs" />
+    <Compile Include="ThotLanguageModel.cs" />
     <Compile Include="ThotSingleWordAlignmentModel.cs" />
     <Compile Include="ThotSmtEngine.cs" />
     <Compile Include="ThotSmtSession.cs" />

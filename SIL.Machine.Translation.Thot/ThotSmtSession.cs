@@ -8,10 +8,6 @@ namespace SIL.Machine.Translation.Thot
 {
 	internal class ThotSmtSession : DisposableBase, IInteractiveSmtSession
 	{
-		private delegate int TranslateFunc(IntPtr sessionHandle, IntPtr sourceSegment, IntPtr result, int capacity, out IntPtr data);
-
-		private const int DefaultTranslationBufferLength = 1024;
-
 		private readonly ThotSmtEngine _engine;
 		private readonly IntPtr _handle;
 		private readonly List<string> _sourceSegment; 
@@ -39,7 +35,7 @@ namespace SIL.Machine.Translation.Thot
 			CheckDisposed();
 
 			string[] segmentArray = segment.ToArray();
-			return DoTranslate(Thot.session_translate, segmentArray, false, segmentArray);
+			return ThotSmtEngine.DoTranslate(_handle, Thot.session_translate, segmentArray, false, segmentArray, CreateResult);
 		}
 
 		public IReadOnlyList<string> SourceSegment
@@ -64,7 +60,7 @@ namespace SIL.Machine.Translation.Thot
 			Reset();
 			_sourceSegment.AddRange(segment);
 			_isTranslatingInteractively = true;
-			return DoTranslate(Thot.session_translateInteractively, _sourceSegment, false, _sourceSegment);
+			return ThotSmtEngine.DoTranslate(_handle, Thot.session_translateInteractively, _sourceSegment, false, _sourceSegment, CreateResult);
 		}
 
 		public TranslationResult AddToPrefix(IEnumerable<string> addition, bool isLastWordPartial)
@@ -75,7 +71,7 @@ namespace SIL.Machine.Translation.Thot
 
 			string[] additionArray = addition.ToArray();
 			_prefix.AddRange(additionArray);
-			return DoTranslate(Thot.session_addStringToPrefix, additionArray, !isLastWordPartial, _sourceSegment);
+			return ThotSmtEngine.DoTranslate(_handle, Thot.session_addStringToPrefix, additionArray, !isLastWordPartial, _sourceSegment, CreateResult);
 		}
 
 		public TranslationResult SetPrefix(IEnumerable<string> prefix, bool isLastWordPartial)
@@ -87,7 +83,7 @@ namespace SIL.Machine.Translation.Thot
 			_prefix.Clear();
 			_prefix.AddRange(prefix);
 			_isLastWordPartial = isLastWordPartial;
-			return DoTranslate(Thot.session_setPrefix, _prefix, !isLastWordPartial, _sourceSegment);
+			return ThotSmtEngine.DoTranslate(_handle, Thot.session_setPrefix, _prefix, !isLastWordPartial, _sourceSegment, CreateResult);
 		}
 
 		public void Reset()
@@ -101,33 +97,6 @@ namespace SIL.Machine.Translation.Thot
 		public void Approve()
 		{
 			Train(_sourceSegment, _prefix);
-		}
-
-		private TranslationResult DoTranslate(TranslateFunc translateFunc, IEnumerable<string> input, bool addTrailingSpace, IList<string> sourceSegment)
-		{
-			IntPtr inputPtr = Thot.ConvertStringToNativeUtf8(string.Join(" ", input) + (addTrailingSpace ? " " : ""));
-			IntPtr translationPtr = Marshal.AllocHGlobal(DefaultTranslationBufferLength);
-			IntPtr data = IntPtr.Zero;
-			try
-			{
-				int len = translateFunc(_handle, inputPtr, translationPtr, DefaultTranslationBufferLength, out data);
-				if (len > DefaultTranslationBufferLength)
-				{
-					Thot.tdata_destroy(data);
-					translationPtr = Marshal.ReAllocHGlobal(translationPtr, (IntPtr) len);
-					len = translateFunc(_handle, inputPtr, translationPtr, len, out data);
-				}
-				string translation = Thot.ConvertNativeUtf8ToString(translationPtr, len);
-				string[] targetSegment = translation.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries);
-				return CreateResult(sourceSegment, targetSegment, data);
-			}
-			finally
-			{
-				if (data != IntPtr.Zero)
-					Thot.tdata_destroy(data);
-				Marshal.FreeHGlobal(translationPtr);
-				Marshal.FreeHGlobal(inputPtr);
-			}
 		}
 
 		private TranslationResult CreateResult(IList<string> sourceSegment, IList<string> targetSegment, IntPtr data)
