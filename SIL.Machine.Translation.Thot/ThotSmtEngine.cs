@@ -78,10 +78,21 @@ namespace SIL.Machine.Translation.Thot
 				File.Copy(cfgFileName, trainCfgFileName);
 				UpdateConfigPaths(trainCfgFileName, trainLMPrefix, trainTMPrefix);
 
-				int corpusCount = sourceCorpus.Count();
+				int corpusCount = 0;
+				var emptyIndices = new HashSet<int>();
+				int index = 0;
+				foreach (Tuple<IEnumerable<string>, IEnumerable<string>> pair in sourceCorpus.Zip(targetCorpus))
+				{
+					if (pair.Item1.Any() && pair.Item2.Any())
+						corpusCount++;
+					else
+						emptyIndices.Add(index);
+					index++;
+				}
 				int tuneCorpusCount = Math.Min((int) (corpusCount * 0.1), 1000);
 				var r = new Random(31415);
-				var tuneCorpusIndices = new HashSet<int>(Enumerable.Range(0, corpusCount).OrderBy(i => r.Next()).Take(tuneCorpusCount));
+				var tuneCorpusIndices = new HashSet<int>(Enumerable.Range(0, corpusCount + emptyIndices.Count).Where(i => !emptyIndices.Contains(i))
+					.OrderBy(i => r.Next()).Take(tuneCorpusCount));
 
 				progress.WriteMessage("Training target language model...");
 				TrainLanguageModel(trainLMPrefix, targetCorpus, tuneCorpusIndices, 3);
@@ -220,7 +231,7 @@ namespace SIL.Machine.Translation.Thot
 
 		private static void WriteLanguageModelWeightsFile(string lmPrefix, int ngramSize, IEnumerable<double> weights)
 		{
-			File.WriteAllText(lmPrefix + ".weights", string.Format("{0} 3 10 {1}\n", ngramSize, string.Join(" ", weights)));
+			File.WriteAllText(lmPrefix + ".weights", string.Format("{0} 3 10 {1}\n", ngramSize, string.Join(" ", weights.Select(w => w.ToString("0.######")))));
 		}
 
 		private static void WriteWordPredictionFile(IEnumerable<IEnumerable<string>> targetCorpus, ISet<int> tuneCorpusIndices, string lmPrefix)
@@ -257,7 +268,7 @@ namespace SIL.Machine.Translation.Thot
 			progress.WriteMessage("Filtering phrase table...");
 			FilterPhraseTableNBest(tmPrefix + ".ttable", 20);
 
-			File.WriteAllText(tmPrefix + ".lambda", "0.9");
+			File.WriteAllText(tmPrefix + ".lambda", "0.7");
 			File.WriteAllText(tmPrefix + ".srcsegmlentable", "Uniform");
 			File.WriteAllText(tmPrefix + ".trgsegmlentable", "Geometric");
 			progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
