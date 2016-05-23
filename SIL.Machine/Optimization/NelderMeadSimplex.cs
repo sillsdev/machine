@@ -1,5 +1,6 @@
 ﻿// Converted from code relased with a MIT liscense available at https://code.google.com/p/nelder-mead-simplex/
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SIL.Machine.Optimization
@@ -30,7 +31,7 @@ namespace SIL.Machine.Optimization
 		/// <param name="objectiveFunction">The objective function</param>
 		/// <param name="initialGuess">The intial guess</param>
 		/// <returns>The minimum point</returns>
-		public MinimizationResult FindMinimum(Func<Vector, double> objectiveFunction, Vector initialGuess)
+		public MinimizationResult FindMinimum(Func<Vector, double> objectiveFunction, IEnumerable<double> initialGuess)
 		{
 			// confirm that we are in a position to commence
 			if (objectiveFunction == null)
@@ -40,9 +41,10 @@ namespace SIL.Machine.Optimization
 				throw new ArgumentNullException("initialGuess");
 
 			// create the initial simplex
-			int numDimensions = initialGuess.Count;
+			var initialGuessVector = new Vector(initialGuess);
+			int numDimensions = initialGuessVector.Count;
 			int numVertices = numDimensions + 1;
-			Vector[] vertices = InitializeVertices(initialGuess);
+			Vector[] vertices = InitializeVertices(initialGuessVector);
 
 			int evaluationCount = 0;
 			MinimizationExitCondition exitCondition;
@@ -56,7 +58,7 @@ namespace SIL.Machine.Optimization
 				errorProfile = EvaluateSimplex(errorValues);
 
 				// see if the range in point heights is small enough to exit
-				if (HasConverged(ConvergenceTolerance, errorValues))
+				if (HasConverged(errorValues))
 				{
 					exitCondition = MinimizationExitCondition.Converged;
 					break;
@@ -116,10 +118,9 @@ namespace SIL.Machine.Optimization
 		/// Check whether the points in the error profile have so little range that we
 		/// consider ourselves to have converged
 		/// </summary>
-		/// <param name="convergenceTolerance"></param>
 		/// <param name="errorValues"></param>
 		/// <returns></returns>
-		private static bool HasConverged(double convergenceTolerance, double[] errorValues)
+		private bool HasConverged(double[] errorValues)
 		{
 			double avg = errorValues.Average();
 			double range = 0;
@@ -127,7 +128,7 @@ namespace SIL.Machine.Optimization
 				range += Math.Pow(ev - avg, 2) / (errorValues.Length - 1);
 			range = Math.Sqrt(range);
 
-			return range < convergenceTolerance;
+			return range < ConvergenceTolerance;
 		}
 
 		/// <summary>

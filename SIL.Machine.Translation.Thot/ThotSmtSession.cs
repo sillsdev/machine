@@ -40,17 +40,29 @@ namespace SIL.Machine.Translation.Thot
 
 		public IReadOnlyList<string> SourceSegment
 		{
-			get { return _readOnlySourceSegment; }
+			get
+			{
+				CheckDisposed();
+				return _readOnlySourceSegment;
+			}
 		}
 
 		public IReadOnlyList<string> Prefix
 		{
-			get { return _readOnlyPrefix; }
+			get
+			{
+				CheckDisposed();
+				return _readOnlyPrefix;
+			}
 		}
 
 		public bool IsLastWordPartial
 		{
-			get { return _isLastWordPartial; }
+			get
+			{
+				CheckDisposed();
+				return _isLastWordPartial;
+			}
 		}
 
 		public TranslationResult TranslateInteractively(IEnumerable<string> segment)
@@ -88,6 +100,8 @@ namespace SIL.Machine.Translation.Thot
 
 		public void Reset()
 		{
+			CheckDisposed();
+
 			_sourceSegment.Clear();
 			_prefix.Clear();
 			_isLastWordPartial = true;
@@ -96,6 +110,8 @@ namespace SIL.Machine.Translation.Thot
 
 		public void Approve()
 		{
+			CheckDisposed();
+
 			Train(_sourceSegment, _prefix);
 		}
 
@@ -234,17 +250,7 @@ namespace SIL.Machine.Translation.Thot
 		{
 			CheckDisposed();
 
-			IntPtr nativeSourceSegment = Thot.ConvertStringsToNativeUtf8(sourceSegment);
-			IntPtr nativeTargetSegment = Thot.ConvertStringsToNativeUtf8(targetSegment);
-			try
-			{
-				Thot.session_trainSentencePair(_handle, nativeSourceSegment, nativeTargetSegment);
-			}
-			finally
-			{
-				Marshal.FreeHGlobal(nativeTargetSegment);
-				Marshal.FreeHGlobal(nativeSourceSegment);
-			}
+			ThotSmtEngine.TrainSegmentPair(_handle, sourceSegment, targetSegment);
 		}
 
 		protected override void DisposeManagedResources()

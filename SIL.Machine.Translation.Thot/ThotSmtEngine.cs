@@ -18,7 +18,7 @@ namespace SIL.Machine.Translation.Thot
 
 	public class ThotSmtEngine : DisposableBase, IInteractiveSmtEngine
 	{
-		private const int TrainingStepCount = 17;
+		private const int TrainingStepCount = 20;
 		private const int ProgressIncrement = 99 / TrainingStepCount + 1;
 		private const int DefaultTranslationBufferLength = 1024;
 
@@ -26,24 +26,6 @@ namespace SIL.Machine.Translation.Thot
 		{
 			if (progress == null)
 				progress = new NullProgress();
-
-			List<IEnumerable<string>> trainSourceCorpus = sourceCorpus.ToList();
-			List<IEnumerable<string>> trainTargetCorpus = targetCorpus.ToList();
-			if (trainSourceCorpus.Count != trainTargetCorpus.Count)
-				throw new ArgumentException("The source and target corpora are not the same size");
-
-			int tuneCorpusCount = Math.Min((int) (trainSourceCorpus.Count * 0.1), 1000);
-			var tuneSourceCorpus = new List<IEnumerable<string>>();
-			var tuneTargetCorpus = new List<IEnumerable<string>>();
-			var r = new Random(31415);
-			//foreach (int index in Enumerable.Range(0, 66).Reverse())
-			foreach (int index in Enumerable.Range(0, trainSourceCorpus.Count).OrderBy(i => r.Next()).Take(tuneCorpusCount).OrderByDescending(i => i))
-			{
-				tuneSourceCorpus.Add(trainSourceCorpus[index]);
-				tuneTargetCorpus.Add(trainTargetCorpus[index]);
-				trainSourceCorpus.RemoveAt(index);
-				trainTargetCorpus.RemoveAt(index);
-			}
 
 			string cfgDir = Path.GetDirectoryName(cfgFileName);
 			Debug.Assert(cfgDir != null);
@@ -81,7 +63,9 @@ namespace SIL.Machine.Translation.Thot
 					fullTMPrefix = Path.Combine(cfgDir, tmPrefix);
 
 				string lmDir = Path.GetDirectoryName(fullLMPrefix);
+				Debug.Assert(lmDir != null);
 				string tmDir = Path.GetDirectoryName(fullTMPrefix);
+				Debug.Assert(tmDir != null);
 
 				string trainLMDir = Path.Combine(tempDir, "lm");
 				Directory.CreateDirectory(trainLMDir);
@@ -94,13 +78,18 @@ namespace SIL.Machine.Translation.Thot
 				File.Copy(cfgFileName, trainCfgFileName);
 				UpdateConfigPaths(trainCfgFileName, trainLMPrefix, trainTMPrefix);
 
+				int corpusCount = sourceCorpus.Count();
+				int tuneCorpusCount = Math.Min((int) (corpusCount * 0.1), 1000);
+				var r = new Random(31415);
+				var tuneCorpusIndices = new HashSet<int>(Enumerable.Range(0, corpusCount).OrderBy(i => r.Next()).Take(tuneCorpusCount));
+
 				progress.WriteMessage("Training target language model...");
-				TrainLanguageModel(trainTargetCorpus, trainLMPrefix, 3);
+				TrainLanguageModel(trainLMPrefix, targetCorpus, tuneCorpusIndices, 3);
 				progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
 				if (progress.CancelRequested)
 					return;
 
-				TrainTranslationModel(trainSourceCorpus, trainTargetCorpus, trainTMPrefix, progress);
+				TrainTranslationModel(trainTMPrefix, sourceCorpus, targetCorpus, tuneCorpusIndices, progress);
 				if (progress.CancelRequested)
 					return;
 
@@ -112,24 +101,38 @@ namespace SIL.Machine.Translation.Thot
 				string tuneCfgFileName = Path.Combine(tempDir, "tune.cfg");
 				File.Copy(trainCfgFileName, tuneCfgFileName);
 				UpdateConfigPaths(tuneCfgFileName, trainLMPrefix, tuneTMPrefix);
-				progress.ProgressIndicator.PercentCompleted = 100;
 
-				progress.ProgressIndicator.IndicateUnknownProgress();
+				IEnumerable<string>[] tuneSourceCorpus = sourceCorpus.Where((s, i) => tuneCorpusIndices.Contains(i)).ToArray();
+				IEnumerable<string>[] tuneTargetCorpus = targetCorpus.Where((s, i) => tuneCorpusIndices.Contains(i)).ToArray();
+
 				progress.WriteMessage("Tuning language model...");
-				TuneLanguageModel(tuneTargetCorpus, trainLMPrefix, 3);
+				TuneLanguageModel(trainLMPrefix, tuneTargetCorpus, 3);
+				progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
 				if (progress.CancelRequested)
 					return;
 
 				progress.WriteMessage("Tuning translation model...");
-				TuneTranslationModel(tuneSourceCorpus, tuneTargetCorpus, tuneCfgFileName, tuneTMPrefix);
+				TuneTranslationModel(tuneCfgFileName, tuneTMPrefix, tuneSourceCorpus, tuneTargetCorpus);
+				progress.ProgressIndicator.PercentCompleted += ProgressIncrement * 2;
 				if (progress.CancelRequested)
 					return;
 
-				UpdateConfigPaths(tuneCfgFileName, lmPrefix, tmPrefix);
+				progress.WriteMessage("Finalizing...");
+				File.Copy(tuneCfgFileName, trainCfgFileName, true);
+				UpdateConfigPaths(trainCfgFileName, trainLMPrefix, trainTMPrefix);
+				TrainTuneCorpus(trainCfgFileName, tuneSourceCorpus, tuneTargetCorpus);
+				if (progress.CancelRequested)
+					return;
 
+				if (!Directory.Exists(lmDir))
+					Directory.CreateDirectory(lmDir);
 				CopyFiles(trainLMDir, lmDir, lmFilePrefix);
+				if (!Directory.Exists(tmDir))
+					Directory.CreateDirectory(tmDir);
 				CopyFiles(trainTMDir, tmDir, tmFilePrefix);
-				File.Copy(tuneCfgFileName, cfgFileName, true);
+				UpdateConfigPaths(trainCfgFileName, lmPrefix, tmPrefix);
+				File.Copy(trainCfgFileName, cfgFileName, true);
+				progress.ProgressIndicator.PercentCompleted = 100;
 			}
 			finally
 			{
@@ -165,19 +168,19 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private static void TrainLanguageModel(IList<IEnumerable<string>> targetCorpus, string lmPrefix, int ngramSize)
+		private static void TrainLanguageModel(string lmPrefix, IEnumerable<IEnumerable<string>> targetCorpus, ISet<int> tuneCorpusIndices, int ngramSize)
 		{
-			WriteNgramCountsFile(targetCorpus, lmPrefix, ngramSize);
+			WriteNgramCountsFile(lmPrefix, targetCorpus, tuneCorpusIndices, ngramSize);
 			WriteLanguageModelWeightsFile(lmPrefix, ngramSize, Enumerable.Repeat(0.5, ngramSize * 3));
-			WriteWordPredictionFile(targetCorpus, lmPrefix);
+			WriteWordPredictionFile(targetCorpus, tuneCorpusIndices, lmPrefix);
 		}
 
-		private static void WriteNgramCountsFile(IList<IEnumerable<string>> targetCorpus, string lmPrefix, int ngramSize)
+		private static void WriteNgramCountsFile(string lmPrefix, IEnumerable<IEnumerable<string>> targetCorpus, ISet<int> tuneCorpusIndices, int ngramSize)
 		{
 			int wordCount = 0;
 			var ngrams = new Dictionary<Ngram<string>, int>();
 			var vocab = new HashSet<string>();
-			foreach (IEnumerable<string> segment in targetCorpus)
+			foreach (IEnumerable<string> segment in targetCorpus.Where((s, i) => !tuneCorpusIndices.Contains(i)))
 			{
 				var words = new List<string> {"<s>"};
 				foreach (string word in segment)
@@ -220,24 +223,24 @@ namespace SIL.Machine.Translation.Thot
 			File.WriteAllText(lmPrefix + ".weights", string.Format("{0} 3 10 {1}\n", ngramSize, string.Join(" ", weights)));
 		}
 
-		private static void WriteWordPredictionFile(IList<IEnumerable<string>> targetCorpus, string lmPrefix)
+		private static void WriteWordPredictionFile(IEnumerable<IEnumerable<string>> targetCorpus, ISet<int> tuneCorpusIndices, string lmPrefix)
 		{
 			var rand = new Random(31415);
 			using (var writer = new StreamWriter(lmPrefix + ".wp"))
 			{
-				foreach (IEnumerable<string> segment in targetCorpus.Where(s => s.Any()).Take(100000).OrderBy(i => rand.Next()))
+				foreach (IEnumerable<string> segment in targetCorpus.Where((s, i) => !tuneCorpusIndices.Contains(i) && s.Any()).Take(100000).OrderBy(i => rand.Next()))
 					writer.Write("{0}\n", string.Join(" ", segment));
 			}
 		}
 
-		private static void TrainTranslationModel(IList<IEnumerable<string>> sourceCorpus, IList<IEnumerable<string>> targetCorpus, string tmPrefix,
-			IProgress progress)
+		private static void TrainTranslationModel(string tmPrefix, IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus,
+			ISet<int> tuneCorpusIndices, IProgress progress)
 		{
 			string swmPrefix = tmPrefix + "_swm";
-			GenerateSingleWordAlignmentModel(swmPrefix, targetCorpus, sourceCorpus, progress, "source-to-target");
+			GenerateSingleWordAlignmentModel(swmPrefix, targetCorpus, sourceCorpus, tuneCorpusIndices, progress, "source-to-target");
 
 			string invswmPrefix = tmPrefix + "_invswm";
-			GenerateSingleWordAlignmentModel(invswmPrefix, sourceCorpus, targetCorpus, progress, "target-to-source");
+			GenerateSingleWordAlignmentModel(invswmPrefix, sourceCorpus, targetCorpus, tuneCorpusIndices, progress, "target-to-source");
 
 			progress.WriteMessage("Merging alignments...");
 			Thot.giza_symmetr1(swmPrefix + ".bestal", invswmPrefix + ".bestal", tmPrefix + ".A3.final", true);
@@ -260,11 +263,11 @@ namespace SIL.Machine.Translation.Thot
 			progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
 		}
 
-		private static void GenerateSingleWordAlignmentModel(string swmPrefix, IList<IEnumerable<string>> sourceCorpus,
-			IList<IEnumerable<string>> targetCorpus, IProgress progress, string name)
+		private static void GenerateSingleWordAlignmentModel(string swmPrefix, IEnumerable<IEnumerable<string>> sourceCorpus,
+			IEnumerable<IEnumerable<string>> targetCorpus, ISet<int> tuneCorpusIndices, IProgress progress, string name)
 		{
 			progress.WriteMessage("Training {0} single word model...", name);
-			TrainSingleWordAlignmentModel(swmPrefix, sourceCorpus, targetCorpus, progress);
+			TrainSingleWordAlignmentModel(swmPrefix, sourceCorpus, targetCorpus, tuneCorpusIndices, progress);
 			if (progress.CancelRequested)
 				return;
 
@@ -273,7 +276,7 @@ namespace SIL.Machine.Translation.Thot
 				return;
 
 			progress.WriteMessage("Generating best {0} alignments...", name);
-			GenerateBestAlignments(swmPrefix, swmPrefix + ".bestal", sourceCorpus, targetCorpus, progress);
+			GenerateBestAlignments(swmPrefix, swmPrefix + ".bestal", sourceCorpus, targetCorpus, tuneCorpusIndices, progress);
 			progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
 		}
 
@@ -357,13 +360,13 @@ namespace SIL.Machine.Translation.Thot
 			return logy + Math.Log(1 + Math.Exp(logx - logy));
 		}
 
-		private static void TrainSingleWordAlignmentModel(string swmPrefix, IList<IEnumerable<string>> sourceCorpus,
-			IList<IEnumerable<string>> targetCorpus, IProgress progress)
+		private static void TrainSingleWordAlignmentModel(string swmPrefix, IEnumerable<IEnumerable<string>> sourceCorpus,
+			IEnumerable<IEnumerable<string>> targetCorpus, ISet<int> tuneCorpusIndices, IProgress progress)
 		{
 			using (var swAlignModel = new ThotSingleWordAlignmentModel(swmPrefix, true))
 			{
 				foreach (Tuple<string[], string[]> pair in sourceCorpus.Select(s => s.ToArray()).Zip(targetCorpus.Select(s => s.ToArray()))
-					.Where(p => p.Item1.Length > 0 && p.Item2.Length > 0))
+					.Where((p, i) => !tuneCorpusIndices.Contains(i) && p.Item1.Length > 0 && p.Item2.Length > 0))
 				{
 					swAlignModel.AddSegmentPair(pair.Item1, pair.Item2);
 				}
@@ -378,14 +381,14 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private static void GenerateBestAlignments(string swmPrefix, string fileName, IList<IEnumerable<string>> sourceCorpus,
-			IList<IEnumerable<string>> targetCorpus, IProgress progress)
+		private static void GenerateBestAlignments(string swmPrefix, string fileName, IEnumerable<IEnumerable<string>> sourceCorpus,
+			IEnumerable<IEnumerable<string>> targetCorpus, ISet<int> tuneCorpusIndices, IProgress progress)
 		{
 			using (var swAlignModel = new ThotSingleWordAlignmentModel(swmPrefix))
 			using (var writer = new StreamWriter(fileName))
 			{
 				foreach (Tuple<string[], string[]> pair in sourceCorpus.Select(s => s.ToArray()).Zip(targetCorpus.Select(s => s.ToArray()))
-					.Where(p => p.Item1.Length > 0 && p.Item2.Length > 0))
+					.Where((p, i) => !tuneCorpusIndices.Contains(i) && p.Item1.Length > 0 && p.Item2.Length > 0))
 				{
 					WordAlignmentMatrix waMatrix;
 					double prob = swAlignModel.GetBestAlignment(pair.Item1, pair.Item2, out waMatrix);
@@ -413,6 +416,7 @@ namespace SIL.Machine.Translation.Thot
 				}
 			}
 
+			//TODO: do not sort phrase table in memory
 			using (var writer = new StreamWriter(fileName))
 			{
 				foreach (IGrouping<string, Tuple<string, string, float, float>> g in entries.GroupBy(e => e.Item2).OrderBy(g => g.Key.Split(' ').Length).ThenBy(g => g.Key))
@@ -436,15 +440,14 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private static void TuneLanguageModel(IList<IEnumerable<string>> targetCorpus, string lmPrefix, int ngramSize)
+		private static void TuneLanguageModel(string lmPrefix, IList<IEnumerable<string>> tuneTargetCorpus, int ngramSize)
 		{
 			var simplex = new NelderMeadSimplex(0.1, 200, 1.0);
-			var initialGuess = new Vector(Enumerable.Repeat(0.5, ngramSize * 3));
-			MinimizationResult result = simplex.FindMinimum(w => CalculatePerplexity(targetCorpus, lmPrefix, ngramSize, w), initialGuess);
+			MinimizationResult result = simplex.FindMinimum(w => CalculatePerplexity(tuneTargetCorpus, lmPrefix, ngramSize, w), Enumerable.Repeat(0.5, ngramSize * 3));
 			WriteLanguageModelWeightsFile(lmPrefix, ngramSize, result.MinimizingPoint);
 		}
 
-		private static double CalculatePerplexity(IList<IEnumerable<string>> targetCorpus, string lmPrefix, int ngramSize, Vector weights)
+		private static double CalculatePerplexity(IList<IEnumerable<string>> tuneTargetCorpus, string lmPrefix, int ngramSize, Vector weights)
 		{
 			if (weights.Any(w => w < 0 || w >= 1.0))
 				return 999999;
@@ -454,7 +457,7 @@ namespace SIL.Machine.Translation.Thot
 			int wordCount = 0;
 			using (var lm = new ThotLanguageModel(lmPrefix))
 			{
-				foreach (IEnumerable<string> segment in targetCorpus)
+				foreach (IEnumerable<string> segment in tuneTargetCorpus)
 				{
 					string[] segmentArray = segment.ToArray();
 					lp += lm.GetSegmentProbability(segmentArray);
@@ -462,22 +465,21 @@ namespace SIL.Machine.Translation.Thot
 				}
 			}
 
-			return Math.Exp(-(lp / (wordCount + targetCorpus.Count)) * Math.Log(10));
+			return Math.Exp(-(lp / (wordCount + tuneTargetCorpus.Count)) * Math.Log(10));
 		}
 
-		private static void TuneTranslationModel(IList<IEnumerable<string>> sourceCorpus, IList<IEnumerable<string>> targetCorpus, string cfgFileName, string tmPrefix)
+		private static void TuneTranslationModel(string tuneCfgFileName, string tuneTMPrefix, IList<IEnumerable<string>> tuneSourceCorpus, IList<IEnumerable<string>> tuneTargetCorpus)
 		{
-			string phraseTableFileName = tmPrefix + ".ttable";
-			FilterPhraseTableUsingCorpus(phraseTableFileName, sourceCorpus);
+			string phraseTableFileName = tuneTMPrefix + ".ttable";
+			FilterPhraseTableUsingCorpus(phraseTableFileName, tuneSourceCorpus);
 			FilterPhraseTableNBest(phraseTableFileName, 20);
 
 			var simplex = new NelderMeadSimplex(0.001, 200, 1.0);
-			var initialGuess = new Vector(new[] {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
-			MinimizationResult result = simplex.FindMinimum(w => CalculateBleu(sourceCorpus, targetCorpus, cfgFileName, w), initialGuess);
-			UpdateConfigWeights(cfgFileName, result.MinimizingPoint);
+			MinimizationResult result = simplex.FindMinimum(w => CalculateBleu(tuneCfgFileName, tuneSourceCorpus, tuneTargetCorpus, w), Enumerable.Repeat(1.0, 7));
+			UpdateConfigWeights(tuneCfgFileName, result.MinimizingPoint);
 		}
 
-		private static void FilterPhraseTableUsingCorpus(string fileName, IList<IEnumerable<string>> sourceCorpus)
+		private static void FilterPhraseTableUsingCorpus(string fileName, IEnumerable<IEnumerable<string>> sourceCorpus)
 		{
 			var phrases = new HashSet<string>();
 			foreach (IEnumerable<string> segment in sourceCorpus)
@@ -516,15 +518,15 @@ namespace SIL.Machine.Translation.Thot
 			File.Delete(tempFileName);
 		}
 
-		private static double CalculateBleu(IList<IEnumerable<string>> sourceCorpus, IList<IEnumerable<string>> targetCorpus, string cfgFileName, Vector weights)
+		private static double CalculateBleu(string tuneCfgFileName, IList<IEnumerable<string>> sourceCorpus, IList<IEnumerable<string>> tuneTargetCorpus, Vector weights)
 		{
-			UpdateConfigWeights(cfgFileName, weights);
+			UpdateConfigWeights(tuneCfgFileName, weights);
 			IntPtr decoderHandle = IntPtr.Zero, sessionHandle = IntPtr.Zero;
 			try
 			{
-				decoderHandle = Thot.decoder_open(cfgFileName);
+				decoderHandle = Thot.decoder_open(tuneCfgFileName);
 				sessionHandle = Thot.decoder_openSession(decoderHandle);
-				double bleu = Evaluation.CalculateBleu(GenerateTranslations(sessionHandle, sourceCorpus), targetCorpus);
+				double bleu = Evaluation.CalculateBleu(GenerateTranslations(sessionHandle, sourceCorpus), tuneTargetCorpus);
 				double penalty = 0;
 				for (int i = 0; i < weights.Count; i++)
 				{
@@ -545,7 +547,7 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private static void UpdateConfigWeights(string cfgFileName, IEnumerable<double> weights)
+		private static void UpdateConfigWeights(string cfgFileName, Vector weights)
 		{
 			string[] lines = File.ReadAllLines(cfgFileName);
 			using (var writer = new StreamWriter(cfgFileName))
@@ -570,17 +572,37 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private static void WriteWeights(StreamWriter writer, IEnumerable<double> weights)
+		private static void WriteWeights(StreamWriter writer, Vector weights)
 		{
 			writer.Write("-tmw {0} 0\n", string.Join(" ", weights.Select(w => w.ToString("0.######"))));
 		}
 
-		private static IEnumerable<IEnumerable<string>> GenerateTranslations(IntPtr sessionHandle, IList<IEnumerable<string>> sourceCorpus)
+		private static IEnumerable<IEnumerable<string>> GenerateTranslations(IntPtr sessionHandle, IEnumerable<IEnumerable<string>> sourceCorpus)
 		{
 			foreach (IEnumerable<string> segment in sourceCorpus)
 			{
 				string[] segmentArray = segment.ToArray();
 				yield return DoTranslate(sessionHandle, Thot.session_translate, segmentArray, false, segmentArray, (s, t, d) => t);
+			}
+		}
+
+		private static void TrainTuneCorpus(string cfgFileName, IList<IEnumerable<string>> tuneSourceCorpus, IList<IEnumerable<string>> tuneTargetCorpus)
+		{
+			IntPtr decoderHandle = IntPtr.Zero, sessionHandle = IntPtr.Zero;
+			try
+			{
+				decoderHandle = Thot.decoder_open(cfgFileName);
+				sessionHandle = Thot.decoder_openSession(decoderHandle);
+				for (int i = 0; i < tuneSourceCorpus.Count; i++)
+					TrainSegmentPair(sessionHandle, tuneSourceCorpus[i], tuneTargetCorpus[i]);
+				Thot.decoder_saveModels(decoderHandle);
+			}
+			finally
+			{
+				if (sessionHandle != IntPtr.Zero)
+					Thot.session_close(sessionHandle);
+				if (decoderHandle != IntPtr.Zero)
+					Thot.decoder_close(decoderHandle);
 			}
 		}
 
@@ -609,6 +631,21 @@ namespace SIL.Machine.Translation.Thot
 					Thot.tdata_destroy(data);
 				Marshal.FreeHGlobal(translationPtr);
 				Marshal.FreeHGlobal(inputPtr);
+			}
+		}
+
+		internal static void TrainSegmentPair(IntPtr sessionHandle, IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment)
+		{
+			IntPtr nativeSourceSegment = Thot.ConvertStringsToNativeUtf8(sourceSegment);
+			IntPtr nativeTargetSegment = Thot.ConvertStringsToNativeUtf8(targetSegment);
+			try
+			{
+				Thot.session_trainSentencePair(sessionHandle, nativeSourceSegment, nativeTargetSegment);
+			}
+			finally
+			{
+				Marshal.FreeHGlobal(nativeTargetSegment);
+				Marshal.FreeHGlobal(nativeSourceSegment);
 			}
 		}
 
