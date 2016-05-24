@@ -453,6 +453,9 @@ namespace SIL.Machine.Translation.Thot
 
 		private static void TuneLanguageModel(string lmPrefix, IList<IEnumerable<string>> tuneTargetCorpus, int ngramSize)
 		{
+			if (tuneTargetCorpus.Count == 0)
+				return;
+
 			var simplex = new NelderMeadSimplex(0.1, 200, 1.0);
 			MinimizationResult result = simplex.FindMinimum(w => CalculatePerplexity(tuneTargetCorpus, lmPrefix, ngramSize, w), Enumerable.Repeat(0.5, ngramSize * 3));
 			WriteLanguageModelWeightsFile(lmPrefix, ngramSize, result.MinimizingPoint);
@@ -481,6 +484,9 @@ namespace SIL.Machine.Translation.Thot
 
 		private static void TuneTranslationModel(string tuneCfgFileName, string tuneTMPrefix, IList<IEnumerable<string>> tuneSourceCorpus, IList<IEnumerable<string>> tuneTargetCorpus)
 		{
+			if (tuneSourceCorpus.Count == 0)
+				return;
+
 			string phraseTableFileName = tuneTMPrefix + ".ttable";
 			FilterPhraseTableUsingCorpus(phraseTableFileName, tuneSourceCorpus);
 			FilterPhraseTableNBest(phraseTableFileName, 20);
@@ -599,6 +605,9 @@ namespace SIL.Machine.Translation.Thot
 
 		private static void TrainTuneCorpus(string cfgFileName, IList<IEnumerable<string>> tuneSourceCorpus, IList<IEnumerable<string>> tuneTargetCorpus)
 		{
+			if (tuneSourceCorpus.Count == 0)
+				return;
+
 			IntPtr decoderHandle = IntPtr.Zero, sessionHandle = IntPtr.Zero;
 			try
 			{

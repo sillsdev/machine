@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using NUnit.Framework;
 using SIL.ObjectModel;
@@ -10,7 +12,7 @@ namespace SIL.Machine.Translation.Thot.Tests
 	public class ThotSmtEngineTests
 	{
 		[Test]
-		public void TrainModels()
+		public void TrainModels_NonEmptyCorpus_GeneratesModels()
 		{
 			string tempDir = CreateTempDirectory("ThotSmtEngineTests");
 			try
@@ -36,6 +38,28 @@ namespace SIL.Machine.Translation.Thot.Tests
 				});
 				ThotSmtEngine.TrainModels(cfgFileName, sourceCorpus, targetCorpus);
 
+				Assert.That(File.Exists(Path.Combine(tempDir, "lm", "trg.lm")), Is.True);
+				Assert.That(File.Exists(Path.Combine(tempDir, "tm", "src_trg_swm.hmm_alignd")), Is.True);
+				Assert.That(File.Exists(Path.Combine(tempDir, "tm", "src_trg_invswm.hmm_alignd")), Is.True);
+				Assert.That(File.Exists(Path.Combine(tempDir, "tm", "src_trg.ttable")), Is.True);
+				// TODO: test for more than just existence of files
+			}
+			finally
+			{
+				DeleteFolderThatMayBeInUse(tempDir);
+			}
+		}
+
+		[Test]
+		public void TrainModels_EmptyCorpus_GeneratesModels()
+		{
+			string tempDir = CreateTempDirectory("ThotSmtEngineTests");
+			try
+			{
+				string cfgFileName = Path.Combine(tempDir, "test.cfg");
+				File.WriteAllText(cfgFileName, "-tm tm/src_trg\n-lm lm/trg.lm\n");
+
+				ThotSmtEngine.TrainModels(cfgFileName, Enumerable.Empty<IEnumerable<string>>(), Enumerable.Empty<IEnumerable<string>>());
 				Assert.That(File.Exists(Path.Combine(tempDir, "lm", "trg.lm")), Is.True);
 				Assert.That(File.Exists(Path.Combine(tempDir, "tm", "src_trg_swm.hmm_alignd")), Is.True);
 				Assert.That(File.Exists(Path.Combine(tempDir, "tm", "src_trg_invswm.hmm_alignd")), Is.True);
