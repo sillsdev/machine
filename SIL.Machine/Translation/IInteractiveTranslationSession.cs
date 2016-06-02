@@ -6,9 +6,9 @@ namespace SIL.Machine.Translation
 {
 	public interface IInteractiveTranslationSession : IDisposable
 	{
-		IReadOnlyList<string> SourceSegment { get; }
+		ReadOnlyList<string> SourceSegment { get; }
 
-		IReadOnlyList<string> Prefix { get; }
+		ReadOnlyList<string> Prefix { get; }
 
 		bool IsLastWordPartial { get; }
 

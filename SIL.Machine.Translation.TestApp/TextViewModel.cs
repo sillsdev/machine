@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Windows.Input;
 using Eto.Forms;
 using GalaSoft.MvvmLight;
 using SIL.Extensions;

@@ -1,0 +1,14 @@
+﻿{
+  "supports": {},
+  "dependencies": {
+    "Microsoft.NETCore.Portable.Compatibility": "1.0.1-rc2-24027",
+    "NETStandard.Library": "1.5.0-rc2-24027",
+    "QuickGraphPCL": "3.6.61114.2",
+    "System.Threading.Tasks.Parallel": "4.0.1-rc2-24027"
+  },
+  "frameworks": {
+    "netstandard1.3": {
+      "imports": "portable-win+net4+sl5+wp8+win8+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10"
+    }
+  }
+}

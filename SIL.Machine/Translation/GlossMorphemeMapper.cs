@@ -11,7 +11,7 @@ namespace SIL.Machine.Translation
 
 		public GlossMorphemeMapper(IMorphologicalGenerator targetGenerator)
 		{
-			_morphemes = targetGenerator.Morphemes.ToDictionary(m => m.Gloss, StringComparer.InvariantCultureIgnoreCase);
+			_morphemes = targetGenerator.Morphemes.ToDictionary(m => m.Gloss, StringComparer.OrdinalIgnoreCase);
 		}
 
 		public bool TryGetTargetMorpheme(Morpheme sourceMorpheme, out Morpheme targetMorpheme)

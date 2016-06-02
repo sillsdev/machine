@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Windows.Input;
 using Eto.Forms;
 using GalaSoft.MvvmLight;
 

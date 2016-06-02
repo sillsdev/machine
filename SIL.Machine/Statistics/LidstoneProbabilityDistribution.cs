@@ -23,7 +23,7 @@ namespace SIL.Machine.Statistics
 			_divisor = _freqDist.SampleOutcomeCount + (_binCount * gamma);
 		}
 
-		public IReadOnlyCollection<TSample> Samples
+		public ReadOnlyCollection<TSample> Samples
 		{
 			get { return _freqDist.ObservedSamples; }
 		}

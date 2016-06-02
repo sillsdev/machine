@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Eto.Forms;
 using GalaSoft.MvvmLight;
 using SIL.Progress;

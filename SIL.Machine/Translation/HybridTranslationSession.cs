@@ -18,12 +18,12 @@ namespace SIL.Machine.Translation
 			_transferEngine = transferEngine;
 		}
 
-		public IReadOnlyList<string> SourceSegment
+		public ReadOnlyList<string> SourceSegment
 		{
 			get { return _smtSession.SourceSegment; }
 		}
 
-		public IReadOnlyList<string> Prefix
+		public ReadOnlyList<string> Prefix
 		{
 			get { return _smtSession.Prefix; }
 		}

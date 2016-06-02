@@ -105,7 +105,7 @@ namespace SIL.Machine.Statistics
 			return Math.Pow(r + 1, 2) * (nr1 / Math.Pow(nr, 2)) * (1.0 + (double) nr1 / nr);
 		}
 
-		public IReadOnlyCollection<TSample> Samples
+		public ReadOnlyCollection<TSample> Samples
 		{
 			get { return _freqDist.ObservedSamples; }
 		}

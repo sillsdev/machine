@@ -8,7 +8,7 @@ namespace SIL.Machine.Translation.Thot.Tests
 	{
 		public static string ToyCorpusFolderName
 		{
-			get { return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "data", "toy_corpus"); }
+			get { return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "data", "toy_corpus"); }
 		}
 
 		public static string ToyCorpusConfigFileName

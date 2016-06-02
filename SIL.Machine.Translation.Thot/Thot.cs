@@ -116,7 +116,7 @@ namespace SIL.Machine.Translation.Thot
 		{
 			var buffer = new byte[len];
 			Marshal.Copy(nativeUtf8, buffer, 0, buffer.Length);
-			return Encoding.UTF8.GetString(buffer);
+			return Encoding.UTF8.GetString(buffer, 0, buffer.Length);
 		}
 	}
 }

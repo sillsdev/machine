@@ -12,7 +12,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 	{
 		private readonly ObservableCollection<MorphemeCoOccurrenceRule> _requiredMorphemeCoOccurrences;
 		private readonly ObservableCollection<MorphemeCoOccurrenceRule> _excludedMorphemeCoOccurrences;
-		private readonly Hashtable _properties;
+		private readonly Dictionary<object, object> _properties;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Morpheme"/> class.
@@ -23,7 +23,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			_requiredMorphemeCoOccurrences.CollectionChanged += MorphemeCoOccurrencesChanged;
 			_excludedMorphemeCoOccurrences = new ObservableCollection<MorphemeCoOccurrenceRule>();
 			_excludedMorphemeCoOccurrences.CollectionChanged += MorphemeCoOccurrencesChanged;
-			_properties = new Hashtable();
+			_properties = new Dictionary<object, object>();
 		}
 
 		private void MorphemeCoOccurrencesChanged(object sender, NotifyCollectionChangedEventArgs e)

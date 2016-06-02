@@ -154,7 +154,7 @@ namespace SIL.Machine.Translation.Thot
 		private static void UpdateConfigPaths(string cfgFileName, string lmPrefix, string tmPrefix)
 		{
 			string[] lines = File.ReadAllLines(cfgFileName);
-			using (var writer = new StreamWriter(cfgFileName))
+			using (var writer = new StreamWriter(File.Open(cfgFileName, FileMode.Open)))
 			{
 				foreach (string line in lines)
 				{
@@ -220,7 +220,7 @@ namespace SIL.Machine.Translation.Thot
 				}
 			}
 
-			using (var writer = new StreamWriter(lmPrefix))
+			using (var writer = new StreamWriter(File.Open(lmPrefix, FileMode.Create)))
 			{
 				foreach (KeyValuePair<Ngram<string>, int> kvp in ngrams.OrderBy(kvp => kvp.Key.Length).ThenBy(kvp => string.Join(" ", kvp.Key)))
 				{
@@ -237,7 +237,7 @@ namespace SIL.Machine.Translation.Thot
 		private static void WriteWordPredictionFile(IEnumerable<IEnumerable<string>> targetCorpus, ISet<int> tuneCorpusIndices, string lmPrefix)
 		{
 			var rand = new Random(31415);
-			using (var writer = new StreamWriter(lmPrefix + ".wp"))
+			using (var writer = new StreamWriter(File.Open(lmPrefix + ".wp", FileMode.Create)))
 			{
 				foreach (IEnumerable<string> segment in targetCorpus.Where((s, i) => !tuneCorpusIndices.Contains(i) && s.Any()).Take(100000).OrderBy(i => rand.Next()))
 					writer.Write("{0}\n", string.Join(" ", segment));
@@ -396,7 +396,7 @@ namespace SIL.Machine.Translation.Thot
 			IEnumerable<IEnumerable<string>> targetCorpus, ISet<int> tuneCorpusIndices, IProgress progress)
 		{
 			using (var swAlignModel = new ThotSingleWordAlignmentModel(swmPrefix))
-			using (var writer = new StreamWriter(fileName))
+			using (var writer = new StreamWriter(File.Open(fileName, FileMode.Create)))
 			{
 				foreach (Tuple<string[], string[]> pair in sourceCorpus.Select(s => s.ToArray()).Zip(targetCorpus.Select(s => s.ToArray()))
 					.Where((p, i) => !tuneCorpusIndices.Contains(i) && p.Item1.Length > 0 && p.Item2.Length > 0))
@@ -414,7 +414,7 @@ namespace SIL.Machine.Translation.Thot
 		private static void FilterPhraseTableNBest(string fileName, int n)
 		{
 			var entries = new List<Tuple<string, string, float, float>>();
-			using (var reader = new StreamReader(fileName))
+			using (var reader = new StreamReader(File.Open(fileName, FileMode.Open)))
 			{
 				string line;
 				while ((line = reader.ReadLine()) != null)
@@ -428,7 +428,7 @@ namespace SIL.Machine.Translation.Thot
 			}
 
 			//TODO: do not sort phrase table in memory
-			using (var writer = new StreamWriter(fileName))
+			using (var writer = new StreamWriter(File.Open(fileName, FileMode.Create)))
 			{
 				foreach (IGrouping<string, Tuple<string, string, float, float>> g in entries.GroupBy(e => e.Item2).OrderBy(g => g.Key.Split(' ').Length).ThenBy(g => g.Key))
 				{
@@ -519,8 +519,8 @@ namespace SIL.Machine.Translation.Thot
 			}
 
 			string tempFileName = fileName + ".temp";
-			using (var reader = new StreamReader(fileName))
-			using (var writer = new StreamWriter(tempFileName))
+			using (var reader = new StreamReader(File.Open(fileName, FileMode.Open)))
+			using (var writer = new StreamWriter(File.Open(tempFileName, FileMode.Create)))
 			{
 				string line;
 				while ((line = reader.ReadLine()) != null)
@@ -567,7 +567,7 @@ namespace SIL.Machine.Translation.Thot
 		private static void UpdateConfigWeights(string cfgFileName, Vector weights)
 		{
 			string[] lines = File.ReadAllLines(cfgFileName);
-			using (var writer = new StreamWriter(cfgFileName))
+			using (var writer = new StreamWriter(File.Open(cfgFileName, FileMode.Create)))
 			{
 				bool weightsWritten = false;
 				foreach (string line in lines)

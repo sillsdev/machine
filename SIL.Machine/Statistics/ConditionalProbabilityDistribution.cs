@@ -16,7 +16,7 @@ namespace SIL.Machine.Statistics
 			_probDists = cfd.Conditions.ToDictionary(cond => cond, cond => getProbDist(cond, cfd[cond]));
 		}
 
-		public IReadOnlyCollection<TCondition> Conditions
+		public ReadOnlyCollection<TCondition> Conditions
 		{
 			get { return _probDists.Keys.ToReadOnlyCollection(); }
 		}

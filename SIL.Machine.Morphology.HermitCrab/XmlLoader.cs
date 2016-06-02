@@ -2,9 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Xml;
 using System.Xml.Linq;
 using SIL.Extensions;
@@ -22,21 +20,23 @@ namespace SIL.Machine.Morphology.HermitCrab
 	/// </summary>
 	public class XmlLoader
 	{
+#if NET4
 		private class ResourceXmlResolver : XmlUrlResolver
 		{
 			public override object GetEntity(Uri absoluteUri, string role, Type ofObjectToReturn)
 			{
-				string fileName = Path.GetFileName(absoluteUri.ToString());
+				string fileName = System.IO.Path.GetFileName(absoluteUri.ToString());
 				if (fileName == "HermitCrabInput.dtd")
 					return GetType().Assembly.GetManifestResourceStream("SIL.Machine.Morphology.HermitCrab.HermitCrabInput.dtd");
 				return base.GetEntity(absoluteUri, role, ofObjectToReturn);
 			}
 
-			public override ICredentials Credentials
+			public override System.Net.ICredentials Credentials
 			{
 				set { throw new NotImplementedException(); }
 			}
 		}
+#endif
 
 		public static Language Load(string configPath)
 		{
@@ -204,11 +204,15 @@ namespace SIL.Machine.Morphology.HermitCrab
 		private Language Load()
 		{
 			var settings = new XmlReaderSettings
-				{
-					DtdProcessing = DtdProcessing.Parse,
-					ValidationType = Type.GetType("Mono.Runtime") == null ? ValidationType.DTD : ValidationType.None,
-					XmlResolver = new ResourceXmlResolver()
-				};
+			{
+#if NET4
+				DtdProcessing = DtdProcessing.Parse,
+				ValidationType = Type.GetType("Mono.Runtime") == null ? ValidationType.DTD : ValidationType.None,
+				XmlResolver = new ResourceXmlResolver()
+#elif NET_STD13
+				DtdProcessing = DtdProcessing.Ignore
+#endif
+			};
 
 			using (XmlReader reader = XmlReader.Create(_configPath, settings))
 			{
@@ -220,7 +224,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
 		private static bool IsActive(XElement elem)
 		{
-			return (string) elem.Attribute("isActive") == "yes";
+			return ((string) elem.Attribute("isActive") ?? "yes") == "yes";
 		}
 
 		private void LoadLanguage(XElement langElem)

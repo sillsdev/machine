@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Windows.Input;
 using System.Xml.Linq;
 using Eto.Forms;
 using GalaSoft.MvvmLight;

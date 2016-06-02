@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using SIL.Machine.Annotations;
 using SIL.Machine.Rules;
 
@@ -10,7 +11,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
 		protected HCRuleBase()
 		{
-			_properties = new Hashtable();
+			_properties = new Dictionary<object, object>();
 		}
 
 		public string Name { get; set; }

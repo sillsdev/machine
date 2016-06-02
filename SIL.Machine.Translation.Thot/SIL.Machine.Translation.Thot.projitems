@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>62c4b0d7-5d95-4458-a904-6eff0eb4dc97</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>SIL.Machine.Translation.Thot</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)EditDistanceSegmentAligner.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FuzzyEditDistanceSegmentAligner.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ISegmentAligner.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SegmentScorer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Thot.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ThotLanguageModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ThotSingleWordAlignmentModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ThotSmtEngine.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ThotSmtSession.cs" />
+  </ItemGroup>
+</Project>

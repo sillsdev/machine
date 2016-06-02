@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using SIL.Extensions;
-using SIL.Machine.DataStructures;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Statistics
@@ -22,7 +21,7 @@ namespace SIL.Machine.Statistics
 			_sampleOutcomeCount = fd._sampleOutcomeCount;
 		}
 
-		public IReadOnlyCollection<TSample> ObservedSamples
+		public ReadOnlyCollection<TSample> ObservedSamples
 		{
 			get { return _sampleCounts.Keys.ToReadOnlyCollection(); }
 		}

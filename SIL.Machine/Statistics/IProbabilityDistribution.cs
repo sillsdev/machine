@@ -4,7 +4,7 @@ namespace SIL.Machine.Statistics
 {
 	public interface IProbabilityDistribution<TSample>
 	{
-		IReadOnlyCollection<TSample> Samples { get; }
+		ReadOnlyCollection<TSample> Samples { get; }
 		double this[TSample sample] { get; }
 	}
 }

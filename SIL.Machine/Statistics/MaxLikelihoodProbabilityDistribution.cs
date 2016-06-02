@@ -11,7 +11,7 @@ namespace SIL.Machine.Statistics
 			_freqDist = freqDist;
 		}
 
-		public IReadOnlyCollection<TSample> Samples
+		public ReadOnlyCollection<TSample> Samples
 		{
 			get { return _freqDist.ObservedSamples; }
 		}

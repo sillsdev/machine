@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>0ff2bb0b-755e-4bb7-b427-246443c0f806</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>SIL</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Code\SimpleMonitor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\CollectionExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ComparerExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ObjectExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\AnonymousComparer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\AnonymousEqualityComparer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\BulkObservableList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\DisposableBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\Freezable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\FreezableEqualityComparer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\FreezableList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\ICloneable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IFreezable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IKeyedCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IObservableCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IObservableDictionary.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IObservableList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IObservableSet.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IReadOnlyCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IReadOnlyDictionary.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IReadOnlyKeyedCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IReadOnlyList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IReadOnlyObservableCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IReadOnlyObservableList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IReadOnlySet.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IValueEquatable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\KeyedBulkObservableList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\KeyedList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\NullableValue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\ObservableDictionary.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\ObservableHashSet.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\ObservableList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\ObservableObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\ProjectionComparer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\ProjectionEqualityComparer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\ReadOnlyCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\ReadOnlyDictionary.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\ReadOnlyKeyedCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\ReadOnlyList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\ReadOnlyObservableCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\ReadOnlyObservableList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\ReadOnlySet.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\ReferenceEqualityComparer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\ReverseComparer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\SequenceComparer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\SequenceEqualityComparer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\StructuralEqualityComparer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\UnorderedTuple.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\WrapperEqualityComparer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Progress\IProgress.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Progress\IProgressIndicator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Progress\NullProgress.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Progress\NullProgressIndicator.cs" />
+  </ItemGroup>
+</Project>

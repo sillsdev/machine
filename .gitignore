@@ -35,3 +35,7 @@ packages/*
 !packages/repositories.config
 lib/
 *.files
+*.VC.db
+*.VC.opendb
+*.lock.json
+.vs

@@ -38,7 +38,7 @@ namespace SIL.Machine.Translation.Thot
 			return ThotSmtEngine.DoTranslate(_handle, Thot.session_translate, segmentArray, false, segmentArray, CreateResult);
 		}
 
-		public IReadOnlyList<string> SourceSegment
+		public ReadOnlyList<string> SourceSegment
 		{
 			get
 			{
@@ -47,7 +47,7 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public IReadOnlyList<string> Prefix
+		public ReadOnlyList<string> Prefix
 		{
 			get
 			{

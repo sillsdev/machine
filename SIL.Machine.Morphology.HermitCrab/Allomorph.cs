@@ -17,7 +17,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 		private readonly ObservableHashSet<AllomorphEnvironment> _excludedEnvironments;
 		private readonly ObservableHashSet<AllomorphCoOccurrenceRule> _requiredAllomorphCoOccurrences;
 		private readonly ObservableHashSet<AllomorphCoOccurrenceRule> _excludedAllomorphCoOccurrences; 
-		private readonly Hashtable _properties;
+		private readonly Dictionary<object, object> _properties;
 		private readonly string _id;
 
 		/// <summary>
@@ -34,7 +34,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			_requiredAllomorphCoOccurrences.CollectionChanged += AllomorphCoOccurrencesChanged;
 			_excludedAllomorphCoOccurrences = new ObservableHashSet<AllomorphCoOccurrenceRule>();
 			_excludedAllomorphCoOccurrences.CollectionChanged += AllomorphCoOccurrencesChanged;
-			_properties = new Hashtable();
+			_properties = new Dictionary<object, object>();
 			_id = Guid.NewGuid().ToString();
 		}
 
