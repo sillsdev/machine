@@ -95,17 +95,16 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SIL.Core.NETStd13\SIL.Core.NETStd13.csproj">
+    <ProjectReference Include="..\..\src\SIL.Core.NETStd13\SIL.Core.NETStd13.csproj">
       <Project>{c1241431-829a-4019-97a2-6d6042e00da8}</Project>
       <Name>SIL.Core.NETStd13</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SIL.Machine.NETStd13\SIL.Machine.NETStd13.csproj">
+    <ProjectReference Include="..\..\src\SIL.Machine.NETStd13\SIL.Machine.NETStd13.csproj">
       <Project>{ddcd6096-cdaa-4eaa-bcb7-fb122577d1a4}</Project>
       <Name>SIL.Machine.NETStd13</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -55,10 +55,10 @@
   <Import Project="..\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
+       Other similar extension points exist, see Microsoft.Common.targets. -->
   <Target Name="BeforeBuild">
+    <Dependencies DependencyFile="SIL.Machine.Translation.Thot.NETStd13.dep" UseDependencyFile="true" KeepJobsFile="true" />
   </Target>
   <Target Name="AfterBuild">
   </Target>
-  -->
 </Project>

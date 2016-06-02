@@ -13,9 +13,9 @@
     <copyright>Copyright 2016</copyright>
     <tags>algorithms nlp computational linguistics statistics pattern matching alignment clustering machine translation</tags>
     <dependencies>
-	  <group targetFramework="net40-Client">
-	    <dependency id="QuickGraphPCL" version="3.6.61114.2" />
-	  </group>
+      <group targetFramework="net40-Client">
+        <dependency id="QuickGraphPCL" version="3.6.61114.2" />
+      </group>
       <group targetFramework="net46">
         <dependency id="QuickGraphPCL" version="3.6.61114.2" />
         <dependency id="System.IO.FileSystem" version="4.0.1-rc2-24027" />
@@ -48,22 +48,22 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="SIL.Core.NET4\bin\Release\SIL.Core.dll" target="lib\net40-Client" />
-    <file src="SIL.Core.NET4\bin\Release\SIL.Core.pdb" target="lib\net40-Client" />
-    <file src="SIL.Machine.NET4\bin\Release\SIL.Machine.dll" target="lib\net40-Client" />
-    <file src="SIL.Machine.NET4\bin\Release\SIL.Machine.pdb" target="lib\net40-Client" />
-    <file src="SIL.Machine.Translation.Thot.NET4\bin\Release\SIL.Machine.Translation.Thot.dll" target="lib\net40-Client" />
-    <file src="SIL.Machine.Translation.Thot.NET4\bin\Release\SIL.Machine.Translation.Thot.pdb" target="lib\net40-Client" />
-    <file src="SIL.Machine.Morphology.HermitCrab.NET4\bin\Release\SIL.Machine.Morphology.HermitCrab.dll" target="lib\net40-Client" />
-    <file src="SIL.Machine.Morphology.HermitCrab.NET4\bin\Release\SIL.Machine.Morphology.HermitCrab.pdb" target="lib\net40-Client" />
-    <file src="SIL.Core.NETStd13\bin\Release\SIL.Core.dll" target="lib\netstandard1.3" />
-    <file src="SIL.Core.NETStd13\bin\Release\SIL.Core.pdb" target="lib\netstandard1.3" />
-    <file src="SIL.Machine.NETStd13\bin\Release\SIL.Machine.dll" target="lib\netstandard1.3" />
-    <file src="SIL.Machine.NETStd13\bin\Release\SIL.Machine.pdb" target="lib\netstandard1.3" />
-    <file src="SIL.Machine.Translation.Thot.NETStd13\bin\Release\SIL.Machine.Translation.Thot.dll" target="lib\netstandard1.3" />
-    <file src="SIL.Machine.Translation.Thot.NETStd13\bin\Release\SIL.Machine.Translation.Thot.pdb" target="lib\netstandard1.3" />
-    <file src="SIL.Machine.Morphology.HermitCrab.NETStd13\bin\Release\SIL.Machine.Morphology.HermitCrab.dll" target="lib\netstandard1.3" />
-    <file src="SIL.Machine.Morphology.HermitCrab.NETStd13\bin\Release\SIL.Machine.Morphology.HermitCrab.pdb" target="lib\netstandard1.3" />
+    <file src="src\SIL.Core.NET4\bin\Release\SIL.Core.dll" target="lib\net40-Client" />
+    <file src="src\SIL.Core.NET4\bin\Release\SIL.Core.pdb" target="lib\net40-Client" />
+    <file src="src\SIL.Machine.NET4\bin\Release\SIL.Machine.dll" target="lib\net40-Client" />
+    <file src="src\SIL.Machine.NET4\bin\Release\SIL.Machine.pdb" target="lib\net40-Client" />
+    <file src="src\SIL.Machine.Translation.Thot.NET4\bin\Release\SIL.Machine.Translation.Thot.dll" target="lib\net40-Client" />
+    <file src="src\SIL.Machine.Translation.Thot.NET4\bin\Release\SIL.Machine.Translation.Thot.pdb" target="lib\net40-Client" />
+    <file src="src\SIL.Machine.Morphology.HermitCrab.NET4\bin\Release\SIL.Machine.Morphology.HermitCrab.dll" target="lib\net40-Client" />
+    <file src="src\SIL.Machine.Morphology.HermitCrab.NET4\bin\Release\SIL.Machine.Morphology.HermitCrab.pdb" target="lib\net40-Client" />
+    <file src="src\SIL.Core.NETStd13\bin\Release\SIL.Core.dll" target="lib\netstandard1.3" />
+    <file src="src\SIL.Core.NETStd13\bin\Release\SIL.Core.pdb" target="lib\netstandard1.3" />
+    <file src="src\SIL.Machine.NETStd13\bin\Release\SIL.Machine.dll" target="lib\netstandard1.3" />
+    <file src="src\SIL.Machine.NETStd13\bin\Release\SIL.Machine.pdb" target="lib\netstandard1.3" />
+    <file src="src\SIL.Machine.Translation.Thot.NETStd13\bin\Release\SIL.Machine.Translation.Thot.dll" target="lib\netstandard1.3" />
+    <file src="src\SIL.Machine.Translation.Thot.NETStd13\bin\Release\SIL.Machine.Translation.Thot.pdb" target="lib\netstandard1.3" />
+    <file src="src\SIL.Machine.Morphology.HermitCrab.NETStd13\bin\Release\SIL.Machine.Morphology.HermitCrab.dll" target="lib\netstandard1.3" />
+    <file src="src\SIL.Machine.Morphology.HermitCrab.NETStd13\bin\Release\SIL.Machine.Morphology.HermitCrab.pdb" target="lib\netstandard1.3" />
     <file src="lib\x86\thot.dll" target="runtimes\win-x86\native" />
     <file src="lib\x86\pthreadVC2.dll" target="runtimes\win-x86\native" />
     <file src="lib\x64\thot.dll" target="runtimes\win-x64\native" />
