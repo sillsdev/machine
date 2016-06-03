@@ -22,7 +22,6 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly RelayCommand<object> _saveProjectCommand;
 		private readonly RelayCommand<object> _rebuildProjectCommand; 
 		private readonly RelayCommand<object> _closeCommand;
-		private IInteractiveSmtEngine _smtEngine;
 		private HybridTranslationEngine _translationEngine;
 		private IInteractiveTranslationSession _translationSession;
 		private readonly ShapeSpanFactory _spanFactory;
@@ -154,8 +153,8 @@ namespace SIL.Machine.Translation.TestApp
 
 				transferEngine = new TransferEngine(srcAnalyzer, new SimpleTransferer(new GlossMorphemeMapper(trgGenerator)), trgGenerator);
 			}
-			_smtEngine = new ThotSmtEngine(Path.Combine(configDir, smtConfig));
-			_translationEngine = new HybridTranslationEngine(_smtEngine, transferEngine);
+			var smtEngine = new ThotSmtEngine(Path.Combine(configDir, smtConfig));
+			_translationEngine = new HybridTranslationEngine(smtEngine, transferEngine);
 			_translationSession = _translationEngine.StartSession();
 
 			using (_texts.BulkUpdate())
@@ -213,11 +212,6 @@ namespace SIL.Machine.Translation.TestApp
 			{
 				_translationEngine.Dispose();
 				_translationEngine = null;
-			}
-			if (_smtEngine != null)
-			{
-				_smtEngine.Dispose();
-				_smtEngine = null;
 			}
 			CurrentText = null;
 			_texts.Clear();

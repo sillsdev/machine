@@ -145,6 +145,9 @@ namespace SIL.Machine.Translation
 				foreach (HybridTranslationSession session in _sessions.ToArray())
 					session.Dispose();
 			}
+
+			_smtEngine.Dispose();
+			_ruleBasedEngine.Dispose();
 		}
 	}
 }
