@@ -40,49 +40,49 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Eto, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Eto.Forms.2.2.0\lib\net45\Eto.dll</HintPath>
+      <HintPath>..\..\packages\Eto.Forms.2.2.0\lib\net45\Eto.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Eto.Gtk2, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Eto.Platform.Gtk.2.2.0\lib\net45\Eto.Gtk2.dll</HintPath>
+      <HintPath>..\..\packages\Eto.Platform.Gtk.2.2.0\lib\net45\Eto.Gtk2.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Eto.Serialization.Xaml, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Eto.Serialization.Xaml.2.2.0\lib\net45\Eto.Serialization.Xaml.dll</HintPath>
+      <HintPath>..\..\packages\Eto.Serialization.Xaml.2.2.0\lib\net45\Eto.Serialization.Xaml.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Eto.Wpf, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Eto.Platform.Wpf.2.2.0\lib\net45\Eto.Wpf.dll</HintPath>
+      <HintPath>..\..\packages\Eto.Platform.Wpf.2.2.0\lib\net45\Eto.Wpf.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="GalaSoft.MvvmLight, Version=5.3.0.19026, Culture=neutral, PublicKeyToken=e7570ab207bcb616, processorArchitecture=MSIL">
-      <HintPath>..\packages\MvvmLightLibs.5.3.0.0\lib\net45\GalaSoft.MvvmLight.dll</HintPath>
+      <HintPath>..\..\packages\MvvmLightLibs.5.3.0.0\lib\net45\GalaSoft.MvvmLight.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="GalaSoft.MvvmLight.Extras, Version=5.3.0.19032, Culture=neutral, PublicKeyToken=669f0b5e8f868abf, processorArchitecture=MSIL">
-      <HintPath>..\packages\MvvmLightLibs.5.3.0.0\lib\net45\GalaSoft.MvvmLight.Extras.dll</HintPath>
+      <HintPath>..\..\packages\MvvmLightLibs.5.3.0.0\lib\net45\GalaSoft.MvvmLight.Extras.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="GalaSoft.MvvmLight.Platform, Version=5.3.0.19032, Culture=neutral, PublicKeyToken=5f873c45e98af8a1, processorArchitecture=MSIL">
-      <HintPath>..\packages\MvvmLightLibs.5.3.0.0\lib\net45\GalaSoft.MvvmLight.Platform.dll</HintPath>
+      <HintPath>..\..\packages\MvvmLightLibs.5.3.0.0\lib\net45\GalaSoft.MvvmLight.Platform.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Practices.ServiceLocation, Version=1.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\CommonServiceLocator.1.3\lib\portable-net4+sl5+netcore45+wpa81+wp8\Microsoft.Practices.ServiceLocation.dll</HintPath>
+      <HintPath>..\..\packages\CommonServiceLocator.1.3\lib\portable-net4+sl5+netcore45+wpa81+wp8\Microsoft.Practices.ServiceLocation.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Portable.Xaml, Version=0.6.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Portable.Xaml.0.6.1\lib\dotnet\Portable.Xaml.dll</HintPath>
+      <HintPath>..\..\packages\Portable.Xaml.0.6.1\lib\dotnet\Portable.Xaml.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.IO.FileSystem, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IO.FileSystem.4.0.1-rc2-24027\lib\net46\System.IO.FileSystem.dll</HintPath>
+      <HintPath>..\..\packages\System.IO.FileSystem.4.0.1-rc2-24027\lib\net46\System.IO.FileSystem.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.IO.FileSystem.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IO.FileSystem.Primitives.4.0.1-rc2-24027\lib\net46\System.IO.FileSystem.Primitives.dll</HintPath>
+      <HintPath>..\..\packages\System.IO.FileSystem.Primitives.4.0.1-rc2-24027\lib\net46\System.IO.FileSystem.Primitives.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.XML" />
