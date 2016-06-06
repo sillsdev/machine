@@ -20,6 +20,9 @@ namespace SIL.Machine.Translation.Thot
 
 		public ThotSingleWordAlignmentModel(string prefFileName, bool createNew = false)
 		{
+			if (!createNew && !File.Exists(prefFileName + ".src"))
+				throw new FileNotFoundException("The single-word alignment model configuration could not be found.");
+
 			_prefFileName = prefFileName;
 			_handle = createNew || !File.Exists(prefFileName + ".src") ? Thot.swAlignModel_create() : Thot.swAlignModel_open(_prefFileName);
 			_closeOnDispose = true;

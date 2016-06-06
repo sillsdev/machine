@@ -678,6 +678,8 @@ namespace SIL.Machine.Translation.Thot
 
 		public ThotSmtEngine(string cfgFileName)
 		{
+			if (!File.Exists(cfgFileName))
+				throw new FileNotFoundException("The Thot configuration file could not be found.", cfgFileName);
 			_cfgFileName = cfgFileName;
 			_sessions = new HashSet<ThotSmtSession>();
 			_handle = Thot.decoder_open(_cfgFileName);
