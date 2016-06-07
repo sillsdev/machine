@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Threading;
 using Microsoft.Extensions.Options;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
@@ -20,6 +20,8 @@ namespace SIL.Machine.WebApi.Models
 		private readonly EngineOptions _options;
 		private readonly Dictionary<Tuple<string, string>, EngineContext> _engines;
 		private readonly ISessionService _sessionService;
+		private readonly Timer _cleanupTimer;
+		private bool _isTimerStopped;
 
 		public EngineService(IOptions<EngineOptions> options, ISessionService sessionService)
 		{
@@ -35,57 +37,76 @@ namespace SIL.Machine.WebApi.Models
 				Tuple<string, string> key = Tuple.Create(sourceLanguageTag, targetLanguageTag);
 				_engines[key] = new EngineContext(sourceLanguageTag, targetLanguageTag);
 			}
+			_cleanupTimer = new Timer(CleanupUnusedEngines, null, _options.UnusedEngineCleanupFrequency, _options.UnusedEngineCleanupFrequency);
+		}
+
+		private void CleanupUnusedEngines(object state)
+		{
+			if (_isTimerStopped)
+				return;
+
+			foreach (EngineContext engineContext in _engines.Values)
+			{
+				lock (engineContext)
+				{
+					if (engineContext.Engine != null && engineContext.SessionCount == 0)
+					{
+						engineContext.Engine.Dispose();
+						engineContext.Engine = null;
+					}
+				}
+			}
 		}
 
 		public IEnumerable<EngineContext> GetAll()
 		{
-			lock (_engines)
-				return _engines.Values.ToArray();
+			return _engines.Values.ToArray();
 		}
 
 		public bool TryGet(string sourceLanguageTag, string targetLanguageTag, out EngineContext engineContext)
 		{
-			lock (_engines)
-				return _engines.TryGetValue(Tuple.Create(sourceLanguageTag, targetLanguageTag), out engineContext);
+			return _engines.TryGetValue(Tuple.Create(sourceLanguageTag, targetLanguageTag), out engineContext);
 		}
 
-		public async Task<SessionContext> TryCreateSession(string sourceLanguageTag, string targetLanguageTag)
+		public bool TryCreateSession(string sourceLanguageTag, string targetLanguageTag, out SessionContext sessionContext)
 		{
 			EngineContext engineContext;
-			lock (_engines)
+			if (!_engines.TryGetValue(Tuple.Create(sourceLanguageTag, targetLanguageTag), out engineContext))
 			{
-				if (!_engines.TryGetValue(Tuple.Create(sourceLanguageTag, targetLanguageTag), out engineContext))
-					return null;
+				sessionContext = null;
+				return false;
 			}
 
-			using (await engineContext.Mutex.LockAsync().ConfigureAwait(false))
+			lock (engineContext)
 			{
 				if (engineContext.Engine == null)
-					engineContext.Engine = await Task.Run(() => LoadEngine(sourceLanguageTag, targetLanguageTag)).ConfigureAwait(false);
+					engineContext.Engine = LoadEngine(sourceLanguageTag, targetLanguageTag);
 				Debug.Assert(engineContext.Engine != null);
 				string id = Guid.NewGuid().ToString();
-				var sessionContext = new SessionContext(id, engineContext, engineContext.Engine.StartSession());
-				_sessionService.Add(sessionContext);
-				return sessionContext;
+				sessionContext = new SessionContext(id, engineContext, engineContext.Engine.StartSession());
+				engineContext.SessionCount++;
 			}
+			_sessionService.Add(sessionContext);
+			return true;
 		}
 
-		public async Task<string> TryTranslate(string sourceLanguageTag, string targetLanguageTag, string segment)
+		public bool TryTranslate(string sourceLanguageTag, string targetLanguageTag, string segment, out string result)
 		{
 			EngineContext engineContext;
-			lock (_engines)
+			if (!_engines.TryGetValue(Tuple.Create(sourceLanguageTag, targetLanguageTag), out engineContext))
 			{
-				if (!_engines.TryGetValue(Tuple.Create(sourceLanguageTag, targetLanguageTag), out engineContext))
-					return null;
+				result = null;
+				return false;
 			}
 
-			using (await engineContext.Mutex.LockAsync().ConfigureAwait(false))
+			lock (engineContext)
 			{
 				if (engineContext.Engine == null)
-					engineContext.Engine = await Task.Run(() => LoadEngine(sourceLanguageTag, targetLanguageTag)).ConfigureAwait(false);
+					engineContext.Engine = LoadEngine(sourceLanguageTag, targetLanguageTag);
 				Debug.Assert(engineContext.Engine != null);
-				TranslationResult result = engineContext.Engine.Translate(engineContext.Tokenizer.TokenizeToStrings(segment));
-				return engineContext.Detokenizer.Detokenize(Enumerable.Range(0, result.TargetSegment.Count).Select(j => result.RecaseTargetWord(j)));
+				TranslationResult translationResult = engineContext.Engine.Translate(engineContext.Tokenizer.TokenizeToStrings(segment));
+				result = engineContext.Detokenizer.Detokenize(Enumerable.Range(0, translationResult.TargetSegment.Count).Select(j => translationResult.RecaseTargetWord(j)));
+				return true;
 			}
 		}
 
@@ -132,14 +153,16 @@ namespace SIL.Machine.WebApi.Models
 
 		protected override void DisposeManagedResources()
 		{
-			lock (_engines)
+			_isTimerStopped = true;
+			_cleanupTimer.Dispose();
+
+			foreach (EngineContext engineContext in _engines.Values)
 			{
-				foreach (EngineContext engineContext in _engines.Values)
+				lock (engineContext)
 				{
-					using (engineContext.Mutex.Lock())
-						engineContext.Engine.Dispose();
+					engineContext.Engine.Dispose();
+					engineContext.Engine = null;
 				}
-				_engines.Clear();
 			}
 		}
 	}

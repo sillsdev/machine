@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using SIL.Machine.WebApi.Models;
 
@@ -32,19 +31,19 @@ namespace SIL.Machine.WebApi.Controllers
 		}
 
 		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/actions/start-session")]
-		public async Task<IActionResult> StartSession(string sourceLanguageTag, string targetLanguageTag)
+		public IActionResult StartSession(string sourceLanguageTag, string targetLanguageTag)
 		{
-			SessionContext sessionContext = await _engineService.TryCreateSession(sourceLanguageTag, targetLanguageTag);
-			if (sessionContext != null)
+			SessionContext sessionContext;
+			if (_engineService.TryCreateSession(sourceLanguageTag, targetLanguageTag, out sessionContext))
 				return new ObjectResult(sessionContext.CreateDto());
 			return NotFound();
 		}
 
 		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/actions/translate")]
-		public async Task<IActionResult> Translate(string sourceLanguageTag, string targetLanguageTag, [FromBody] string segment)
+		public IActionResult Translate(string sourceLanguageTag, string targetLanguageTag, [FromBody] string segment)
 		{
-			string result = await _engineService.TryTranslate(sourceLanguageTag, targetLanguageTag, segment);
-			if (result != null)
+			string result;
+			if (_engineService.TryTranslate(sourceLanguageTag, targetLanguageTag, segment, out result))
 				return new ObjectResult(result);
 			return NotFound();
 		}

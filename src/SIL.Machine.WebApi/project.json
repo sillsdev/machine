@@ -14,7 +14,6 @@
     "Microsoft.Extensions.Logging.Console": "1.0.0-rc2-final",
     "Microsoft.Extensions.Logging.Debug": "1.0.0-rc2-final",
     "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0-rc2-final",
-    "Nito.AsyncEx": "3.0.1",
     "SIL.Machine": "1.1.0-*"
   },
 

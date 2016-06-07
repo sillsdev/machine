@@ -12,6 +12,7 @@ namespace SIL.Machine.WebApi.Models
 			SourceSegment = "";
 			Prefix = "";
 			Session = session;
+			IsActive = true;
 		}
 
 		public string Id { get; }
@@ -20,5 +21,6 @@ namespace SIL.Machine.WebApi.Models
 		public double ConfidenceThreshold { get; set; }
 		public EngineContext EngineContext { get; }
 		public IInteractiveTranslationSession Session { get; }
+		public bool IsActive { get; set; }
 	}
 }

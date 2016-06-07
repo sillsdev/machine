@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nito.AsyncEx;
 using SIL.Machine.Annotations;
 using SIL.Machine.Tokenization;
 using SIL.Machine.Translation;
@@ -16,7 +15,6 @@ namespace SIL.Machine.WebApi.Models
 		{
 			SourceLanguageTag = sourceLanguageTag;
 			TargetLanguageTag = targetLanguageTag;
-			Mutex = new AsyncLock();
 			Tokenizer = new RegexTokenizer(new IntegerSpanFactory(), @"[\p{P}]|(\w+([.,\-’']\w+)*)");
 			Detokenizer = new SimpleStringDetokenizer(GetDetokenizeOperation);
 		}
@@ -37,9 +35,9 @@ namespace SIL.Machine.WebApi.Models
 
 		public string SourceLanguageTag { get; }
 		public string TargetLanguageTag { get; }
-		public AsyncLock Mutex { get; }
 		public HybridTranslationEngine Engine { get; set; }
 		public ITokenizer<string, int> Tokenizer { get; }
 		public IDetokenizer<string, string> Detokenizer { get; }
+		public int SessionCount { get; set; }
 	}
 }

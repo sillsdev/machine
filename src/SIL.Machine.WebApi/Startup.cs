@@ -28,6 +28,7 @@ namespace SIL.Machine.WebApi
 			services.AddMvc();
 
 			services.Configure<EngineOptions>(Configuration);
+			services.Configure<SessionOptions>(Configuration);
 
 			services.AddSingleton<IEngineService, EngineService>();
 			services.AddSingleton<ISessionService, SessionService>();

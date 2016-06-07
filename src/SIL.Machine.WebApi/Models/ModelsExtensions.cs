@@ -43,7 +43,7 @@ namespace SIL.Machine.WebApi.Models
 
 		public static SessionDto CreateDto(this SessionContext sessionContext)
 		{
-			using (sessionContext.EngineContext.Mutex.Lock())
+			lock (sessionContext.EngineContext)
 			{
 				return new SessionDto
 				{
