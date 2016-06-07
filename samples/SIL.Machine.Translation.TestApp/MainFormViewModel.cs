@@ -9,6 +9,7 @@ using GalaSoft.MvvmLight;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Morphology.HermitCrab;
+using SIL.Machine.Tokenization;
 using SIL.Machine.Translation.Thot;
 using SIL.ObjectModel;
 
@@ -16,8 +17,7 @@ namespace SIL.Machine.Translation.TestApp
 {
 	public class MainFormViewModel : ViewModelBase
 	{
-		private static readonly TextViewModel EmptyText = new TextViewModel();
-
+		private readonly RegexTokenizer _tokenizer;
 		private readonly RelayCommand<object> _openProjectCommand;
 		private readonly RelayCommand<object> _saveProjectCommand;
 		private readonly RelayCommand<object> _rebuildProjectCommand; 
@@ -34,6 +34,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		public MainFormViewModel()
 		{
+			_tokenizer = new RegexTokenizer(new IntegerSpanFactory(), @"[\p{P}]|(\w+([.,\-’']\w+)*)");
 			_openProjectCommand = new RelayCommand<object>(o => OpenProject());
 			_saveProjectCommand = new RelayCommand<object>(o => SaveProject(), o => IsChanged);
 			_rebuildProjectCommand = new RelayCommand<object>(o => RebuildProject(), o => CanRebuildProject());
@@ -43,7 +44,7 @@ namespace SIL.Machine.Translation.TestApp
 			_confidenceThreshold = 20;
 			_texts = new BulkObservableList<TextViewModel>();
 			_readOnlyTexts = new ReadOnlyObservableList<TextViewModel>(_texts);
-			_currentText = EmptyText;
+			_currentText = new TextViewModel(_tokenizer);
 		}
 
 		private void TextPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -171,7 +172,7 @@ namespace SIL.Machine.Translation.TestApp
 					if (trgTextFile == null)
 						return false;
 
-					var text = new TextViewModel(name, Path.Combine(configDir, srcTextFile), Path.Combine(configDir, trgTextFile)) {TranslationSession = _translationSession};
+					var text = new TextViewModel(_tokenizer, name, Path.Combine(configDir, srcTextFile), Path.Combine(configDir, trgTextFile)) {TranslationSession = _translationSession};
 					text.PropertyChanged += TextPropertyChanged;
 					_texts.Add(text);
 				}
@@ -179,8 +180,10 @@ namespace SIL.Machine.Translation.TestApp
 			if (_texts.Count == 0)
 				return false;
 
-			_translationEngine.SourceCorpus = _texts.SelectMany(t => t.SourceSegments).Where(s => s.IsApproved).Select(s => s.Words.Select(w => w.ToLowerInvariant()));
-			_translationEngine.TargetCorpus = _texts.SelectMany(t => t.TargetSegments).Where(s => s.IsApproved).Select(s => s.Words.Select(w => w.ToLowerInvariant()));
+			_translationEngine.SourceCorpus = _texts.SelectMany(t => t.SourceSegments).Where(s => s.IsApproved)
+				.Select(s => _tokenizer.TokenizeToStrings(s.Text.ToLowerInvariant()));
+			_translationEngine.TargetCorpus = _texts.SelectMany(t => t.TargetSegments).Where(s => s.IsApproved)
+				.Select(s => _tokenizer.TokenizeToStrings(s.Text.ToLowerInvariant()));
 
 			CurrentText = _texts[0];
 			AcceptChanges();
@@ -215,7 +218,7 @@ namespace SIL.Machine.Translation.TestApp
 			}
 			CurrentText = null;
 			_texts.Clear();
-			CurrentText = EmptyText;
+			CurrentText = new TextViewModel(_tokenizer);
 			_saveProjectCommand.UpdateCanExecute();
 			_rebuildProjectCommand.UpdateCanExecute();
 		}

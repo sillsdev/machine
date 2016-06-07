@@ -4,17 +4,19 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Windows.Input;
 using Eto.Forms;
 using GalaSoft.MvvmLight;
 using SIL.Extensions;
+using SIL.Machine.Annotations;
+using SIL.Machine.Tokenization;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.TestApp
 {
 	public class TextViewModel : ViewModelBase, IChangeTracking
 	{
+		private readonly ITokenizer<string, int> _tokenizer;
 		private readonly string _name;
 		private readonly string _sourceFileName;
 		private readonly string _targetFileName;
@@ -48,11 +50,12 @@ namespace SIL.Machine.Translation.TestApp
 		private bool _isActive;
 		private bool _isTranslating;
 
-		public TextViewModel(string name, string sourceFileName, string targetFileName)
+		public TextViewModel(ITokenizer<string, int> tokenizer, string name, string sourceFileName, string targetFileName)
 		{
 			_name = name;
 			_sourceFileName = sourceFileName;
 			_targetFileName = targetFileName;
+			_tokenizer = tokenizer;
 
 			_sourceSegments = new List<Segment>();
 			_targetSegments = new List<Segment>();
@@ -80,8 +83,8 @@ namespace SIL.Machine.Translation.TestApp
 			UpdateUnapprovedTargetSegmentRanges();
 		}
 
-		public TextViewModel()
-			: this(null, null, null)
+		public TextViewModel(ITokenizer<string, int> tokenizer)
+			: this(tokenizer, null, null, null)
 		{
 		}
 
@@ -322,7 +325,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void StartSegmentTranslation()
 		{
-			_sourceSegmentWords.AddRange(_sourceSegments[_currentSegment].Words);
+			_sourceSegmentWords.AddRange(_tokenizer.TokenizeToStrings(_sourceSegments[_currentSegment].Text));
 			TranslationSession.TranslateInteractively(_sourceSegmentWords.Select(w => w.ToLowerInvariant()));
 			_isTranslating = true;
 			UpdatePrefix();
@@ -334,7 +337,7 @@ namespace SIL.Machine.Translation.TestApp
 			if (!_isTranslating)
 				return;
 
-			TranslationSession.SetPrefix(_targetSegments[_currentSegment].Words.Select(w => w.ToLowerInvariant()),
+			TranslationSession.SetPrefix(_tokenizer.TokenizeToStrings(_targetSegments[_currentSegment].Text.ToLowerInvariant()),
 				TargetSegment.Length > 0 && !TargetSegment.EndsWith(" "));
 			UpdateSuggestions();
 		}
@@ -450,22 +453,22 @@ namespace SIL.Machine.Translation.TestApp
 				return;
 
 			var alignedSourceWords = new List<AlignedWordViewModel>();
-			int targetWordIndex = Segment.TokenizeRegex.Matches(TargetSegment).Cast<Match>()
-				.IndexOf(m => _currentTargetSegmentIndex >= m.Index && _currentTargetSegmentIndex <= m.Index + m.Length);
+			int targetWordIndex = _tokenizer.Tokenize(TargetSegment)
+				.IndexOf(s => _currentTargetSegmentIndex >= s.Start && _currentTargetSegmentIndex <= s.End);
 			if (targetWordIndex != -1)
 			{
 				foreach (AlignedWordPair awi in TranslationSession.CurrenTranslationResult.GetTargetWordPairs(targetWordIndex)
 					.Where(awi => (awi.Sources & TranslationSources.Transfer) == TranslationSources.Transfer || awi.Confidence >= _confidenceThreshold))
 				{
 					WordTranslationLevel level;
-					Match match = Segment.TokenizeRegex.Matches(SourceSegment)[awi.SourceIndex];
+					Span<int> span = _tokenizer.Tokenize(SourceSegment).ElementAt(awi.SourceIndex);
 					if ((awi.Sources & TranslationSources.Transfer) == TranslationSources.Transfer)
 						level = WordTranslationLevel.Transfer;
 					else if (awi.Confidence >= 0.5f)
 						level = WordTranslationLevel.HighConfidence;
 					else
 						level = WordTranslationLevel.LowConfidence;
-					alignedSourceWords.Add(new AlignedWordViewModel(new Range<int>(match.Index, match.Index + match.Length - 1), level));
+					alignedSourceWords.Add(new AlignedWordViewModel(new Range<int>(span.Start, span.End - 1), level));
 				}
 			}
 

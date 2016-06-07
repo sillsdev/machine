@@ -171,6 +171,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Statistics\SimpleGoodTuringProbabilityDistribution.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Statistics\StatisticalMethods.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Statistics\WittenBellProbabilityDistribution.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\IDetokenizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\ITokenizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\RegexTokenizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\SimpleStringDetokenizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\TokenizationExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\AlignedWordPair.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\Evaluation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\GlossMorphemeMapper.cs" />
