@@ -26,6 +26,8 @@ namespace SIL.Machine.Translation
 
 		public void Rebuild(IProgress progress = null)
 		{
+			CheckDisposed();
+
 			lock (_sessions)
 			{
 				if (_sessions.Count > 0)
@@ -38,11 +40,15 @@ namespace SIL.Machine.Translation
 
 		public void Save()
 		{
+			CheckDisposed();
+
 			_smtEngine.Save();
 		}
 
 		public TranslationResult Translate(IEnumerable<string> sourceSegment)
 		{
+			CheckDisposed();
+
 			TranslationResult smtResult = _smtEngine.Translate(sourceSegment);
 			TranslationResult transferResult = _ruleBasedEngine.Translate(smtResult.SourceSegment);
 			return MergeTranslationResults(smtResult, transferResult);
@@ -126,6 +132,8 @@ namespace SIL.Machine.Translation
 
 		public IInteractiveTranslationSession StartSession()
 		{
+			CheckDisposed();
+
 			var session = new HybridTranslationSession(this, _smtEngine.StartSession(), _ruleBasedEngine);
 			lock (_sessions)
 				_sessions.Add(session);

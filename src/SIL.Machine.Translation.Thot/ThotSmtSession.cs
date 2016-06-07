@@ -17,6 +17,7 @@ namespace SIL.Machine.Translation.Thot
 		private readonly ISegmentAligner _segmentAligner;
 		private bool _isLastWordPartial;
 		private bool _isTranslatingInteractively;
+		private TranslationResult _currentResult;
 
 		public ThotSmtSession(ThotSmtEngine engine)
 		{
@@ -65,6 +66,15 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
+		public TranslationResult CurrenTranslationResult
+		{
+			get
+			{
+				CheckDisposed();
+				return _currentResult;
+			}
+		}
+
 		public TranslationResult TranslateInteractively(IEnumerable<string> segment)
 		{
 			CheckDisposed();
@@ -72,7 +82,8 @@ namespace SIL.Machine.Translation.Thot
 			Reset();
 			_sourceSegment.AddRange(segment);
 			_isTranslatingInteractively = true;
-			return ThotSmtEngine.DoTranslate(_handle, Thot.session_translateInteractively, _sourceSegment, false, _sourceSegment, CreateResult);
+			_currentResult = ThotSmtEngine.DoTranslate(_handle, Thot.session_translateInteractively, _sourceSegment, false, _sourceSegment, CreateResult);
+			return _currentResult;
 		}
 
 		public TranslationResult AddToPrefix(IEnumerable<string> addition, bool isLastWordPartial)
@@ -83,7 +94,8 @@ namespace SIL.Machine.Translation.Thot
 
 			string[] additionArray = addition.ToArray();
 			_prefix.AddRange(additionArray);
-			return ThotSmtEngine.DoTranslate(_handle, Thot.session_addStringToPrefix, additionArray, !isLastWordPartial, _sourceSegment, CreateResult);
+			_currentResult = ThotSmtEngine.DoTranslate(_handle, Thot.session_addStringToPrefix, additionArray, !isLastWordPartial, _sourceSegment, CreateResult);
+			return _currentResult;
 		}
 
 		public TranslationResult SetPrefix(IEnumerable<string> prefix, bool isLastWordPartial)
@@ -95,7 +107,8 @@ namespace SIL.Machine.Translation.Thot
 			_prefix.Clear();
 			_prefix.AddRange(prefix);
 			_isLastWordPartial = isLastWordPartial;
-			return ThotSmtEngine.DoTranslate(_handle, Thot.session_setPrefix, _prefix, !isLastWordPartial, _sourceSegment, CreateResult);
+			_currentResult = ThotSmtEngine.DoTranslate(_handle, Thot.session_setPrefix, _prefix, !isLastWordPartial, _sourceSegment, CreateResult);
+			return _currentResult;
 		}
 
 		public void Reset()
@@ -106,6 +119,7 @@ namespace SIL.Machine.Translation.Thot
 			_prefix.Clear();
 			_isLastWordPartial = true;
 			_isTranslatingInteractively = false;
+			_currentResult = null;
 		}
 
 		public void Approve()

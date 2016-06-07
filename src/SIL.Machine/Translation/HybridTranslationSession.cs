@@ -8,7 +8,7 @@ namespace SIL.Machine.Translation
 		private readonly HybridTranslationEngine _engine;
 		private readonly IInteractiveSmtSession _smtSession;
 		private readonly ITranslationEngine _transferEngine;
-		private TranslationResult _lastResult;
+		private TranslationResult _currentResult;
 		private TranslationResult _transferResult;
 
 		public HybridTranslationSession(HybridTranslationEngine engine, IInteractiveSmtSession smtSession, ITranslationEngine transferEngine)
@@ -20,55 +20,86 @@ namespace SIL.Machine.Translation
 
 		public ReadOnlyList<string> SourceSegment
 		{
-			get { return _smtSession.SourceSegment; }
+			get
+			{
+				CheckDisposed();
+				return _smtSession.SourceSegment;
+			}
 		}
 
 		public ReadOnlyList<string> Prefix
 		{
-			get { return _smtSession.Prefix; }
+			get
+			{
+				CheckDisposed();
+				return _smtSession.Prefix;
+			}
 		}
 
 		public bool IsLastWordPartial
 		{
-			get { return _smtSession.IsLastWordPartial; }
+			get
+			{
+				CheckDisposed();
+				return _smtSession.IsLastWordPartial;
+			}
+		}
+
+		public TranslationResult CurrenTranslationResult
+		{
+			get
+			{
+				CheckDisposed();
+				return _currentResult;
+			}
 		}
 
 		public TranslationResult TranslateInteractively(IEnumerable<string> sourceSegment)
 		{
+			CheckDisposed();
+
 			TranslationResult smtResult = _smtSession.TranslateInteractively(sourceSegment);
 			_transferResult = _transferEngine.Translate(smtResult.SourceSegment);
-			_lastResult = HybridTranslationEngine.MergeTranslationResults(smtResult, _transferResult);
-			return _lastResult;
+			_currentResult = HybridTranslationEngine.MergeTranslationResults(smtResult, _transferResult);
+			return _currentResult;
 		}
 
 		public TranslationResult SetPrefix(IEnumerable<string> prefix, bool isLastWordPartial)
 		{
-			_lastResult = HybridTranslationEngine.MergeTranslationResults(_smtSession.SetPrefix(prefix, isLastWordPartial), _transferResult);
-			return _lastResult;
+			CheckDisposed();
+
+			_currentResult = HybridTranslationEngine.MergeTranslationResults(_smtSession.SetPrefix(prefix, isLastWordPartial), _transferResult);
+			return _currentResult;
 		}
 
 		public TranslationResult AddToPrefix(IEnumerable<string> addition, bool isLastWordPartial)
 		{
-			_lastResult = HybridTranslationEngine.MergeTranslationResults(_smtSession.AddToPrefix(addition, isLastWordPartial), _transferResult);
-			return _lastResult;
+			CheckDisposed();
+
+			_currentResult = HybridTranslationEngine.MergeTranslationResults(_smtSession.AddToPrefix(addition, isLastWordPartial), _transferResult);
+			return _currentResult;
 		}
 
 		public void Reset()
 		{
-			_lastResult = null;
+			CheckDisposed();
+
+			_currentResult = null;
 			_transferResult = null;
 			_smtSession.Reset();
 		}
 
 		public void Approve()
 		{
+			CheckDisposed();
+
 			_smtSession.Approve();
 			for (int j = 0; j < _smtSession.Prefix.Count; j++)
 			{
-				foreach (AlignedWordPair wp in _lastResult.GetTargetWordPairs(j))
+				foreach (AlignedWordPair wp in _currentResult.GetTargetWordPairs(j))
 				{
 					if ((wp.Sources & TranslationSources.Transfer) == TranslationSources.Transfer)
-						_smtSession.Train(new[] {_lastResult.SourceSegment[wp.SourceIndex], "."}, new[] {_lastResult.TargetSegment[j], "."});
+						_smtSession.Train(new[] {_currentResult.SourceSegment[wp.SourceIndex], "."}, new[] {_currentResult.TargetSegment[j], "."});
 				}
 			}
 		}

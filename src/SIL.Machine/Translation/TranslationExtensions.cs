@@ -18,5 +18,58 @@ namespace SIL.Machine.Translation
 				return Enumerable.Empty<string>();
 			return result.TargetSegment;
 		}
+
+		public static IEnumerable<int> GetSuggestedWordIndices(this IInteractiveTranslationSession session, double confidenceThreshold)
+		{
+			TranslationResult result = session.CurrenTranslationResult;
+			int lookaheadCount = 1;
+			for (int i = 0; i < result.SourceSegment.Count; i++)
+			{
+				int wordPairCount = result.GetSourceWordPairs(i).Count();
+				if (wordPairCount == 0)
+					lookaheadCount++;
+				else
+					lookaheadCount += wordPairCount - 1;
+			}
+			int j;
+			for (j = 0; j < result.TargetSegment.Count; j++)
+			{
+				int wordPairCount = result.GetTargetWordPairs(j).Count();
+				if (wordPairCount == 0)
+					lookaheadCount++;
+			}
+			j = session.Prefix.Count;
+			// ensure that we include a partial word as a suggestion
+			if (session.IsLastWordPartial)
+				j--;
+			bool inPhrase = false;
+			while (j < result.TargetSegment.Count && (lookaheadCount > 0 || inPhrase))
+			{
+				string word = result.TargetSegment[j];
+				// stop suggesting at punctuation
+				if (word.All(char.IsPunctuation))
+					break;
+
+				if (result.GetTargetWordConfidence(j) >= confidenceThreshold
+					|| result.GetTargetWordPairs(j).Any(awi => (awi.Sources & TranslationSources.Transfer) == TranslationSources.Transfer))
+				{
+					yield return j;
+					inPhrase = true;
+					lookaheadCount--;
+				}
+				else
+				{
+					// skip over inserted words
+					if (result.GetTargetWordPairs(j).Any())
+					{
+						lookaheadCount--;
+						// only suggest the first word/phrase we find
+						if (inPhrase)
+							break;
+					}
+				}
+				j++;
+			}
+		}
 	}
 }

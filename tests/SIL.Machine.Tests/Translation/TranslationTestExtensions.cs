@@ -3,7 +3,7 @@ using SIL.Machine.Morphology;
 
 namespace SIL.Machine.Tests.Translation
 {
-	internal static class TranslationExtensions
+	internal static class TranslationTestExtensions
 	{
 		public static void AddAnalyses(this IMorphologicalAnalyzer sourceAnalyzer, string word, params WordAnalysis[] analyses)
 		{

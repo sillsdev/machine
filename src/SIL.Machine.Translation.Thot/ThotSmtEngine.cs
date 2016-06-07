@@ -689,6 +689,8 @@ namespace SIL.Machine.Translation.Thot
 
 		public void Train(IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus, IProgress progress = null)
 		{
+			CheckDisposed();
+
 			lock (_sessions)
 			{
 				if (_sessions.Count > 0)
@@ -704,6 +706,8 @@ namespace SIL.Machine.Translation.Thot
 
 		public TranslationResult Translate(IEnumerable<string> segment)
 		{
+			CheckDisposed();
+
 			lock (_sessions)
 			{
 				if (_globalSession == null)
@@ -718,6 +722,7 @@ namespace SIL.Machine.Translation.Thot
 		public IInteractiveSmtSession StartSession()
 		{
 			CheckDisposed();
+
 			lock (_sessions)
 			{
 				var session = new ThotSmtSession(this);
@@ -733,12 +738,22 @@ namespace SIL.Machine.Translation.Thot
 
 		public ISegmentAligner SingleWordAlignmentModel
 		{
-			get { return _singleWordAlignmentModel; }
+			get
+			{
+				CheckDisposed();
+
+				return _singleWordAlignmentModel;
+			}
 		}
 
 		public ISegmentAligner InverseSingleWordAlignmentModel
 		{
-			get { return _inverseSingleWordAlignmentModel; }
+			get
+			{
+				CheckDisposed();
+
+				return _inverseSingleWordAlignmentModel;
+			}
 		}
 
 		internal IntPtr Handle

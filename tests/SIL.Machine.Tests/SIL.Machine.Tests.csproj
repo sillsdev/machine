@@ -86,7 +86,8 @@
     <Compile Include="Statistics\WittenBellProbabilityDistributionTests.cs" />
     <Compile Include="Translation\HybridTranslationSessionTests.cs" />
     <Compile Include="Translation\TransferEngineTests.cs" />
-    <Compile Include="Translation\TranslationExtensions.cs" />
+    <Compile Include="Translation\TranslationTestExtensions.cs" />
+    <Compile Include="Translation\TranslationExtensionsTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Morphology\LEX">

@@ -12,6 +12,8 @@ namespace SIL.Machine.Translation
 
 		bool IsLastWordPartial { get; }
 
+		TranslationResult CurrenTranslationResult { get; }
+
 		TranslationResult TranslateInteractively(IEnumerable<string> segment);
 
 		TranslationResult AddToPrefix(IEnumerable<string> addition, bool isLastWordPartial);
