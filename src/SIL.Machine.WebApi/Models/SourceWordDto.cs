@@ -2,13 +2,7 @@
 {
 	public class SourceWordDto
 	{
-		public SourceWordDto(RangeDto range, double confidence)
-		{
-			Range = range;
-			Confidence = confidence;
-		}
-
-		public RangeDto Range { get; }
-		public double Confidence { get; }
+		public int[] Range { get; set; }
+		public double Confidence { get; set; }
 	}
 }

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Morphology.HermitCrab;
+using SIL.Machine.Tokenization;
 using SIL.Machine.Translation;
 using SIL.Machine.Translation.Thot;
 using SIL.ObjectModel;
@@ -69,7 +70,7 @@ namespace SIL.Machine.WebApi.Models
 			}
 		}
 
-		public async Task<TranslationResult> TryTranslate(string sourceLanguageTag, string targetLanguageTag, string segment)
+		public async Task<string> TryTranslate(string sourceLanguageTag, string targetLanguageTag, string segment)
 		{
 			EngineContext engineContext;
 			lock (_engines)
@@ -83,7 +84,8 @@ namespace SIL.Machine.WebApi.Models
 				if (engineContext.Engine == null)
 					engineContext.Engine = await Task.Run(() => LoadEngine(sourceLanguageTag, targetLanguageTag)).ConfigureAwait(false);
 				Debug.Assert(engineContext.Engine != null);
-				return engineContext.Engine.Translate(segment.Tokenize());
+				TranslationResult result = engineContext.Engine.Translate(engineContext.Tokenizer.TokenizeToStrings(segment));
+				return engineContext.Detokenizer.Detokenize(Enumerable.Range(0, result.TargetSegment.Count).Select(j => result.RecaseTargetWord(j)));
 			}
 		}
 

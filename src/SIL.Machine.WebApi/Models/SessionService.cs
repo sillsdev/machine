@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using SIL.Machine.Annotations;
+using SIL.Machine.Tokenization;
 using SIL.Machine.Translation;
 using SIL.ObjectModel;
 
@@ -60,8 +62,8 @@ namespace SIL.Machine.WebApi.Models
 			{
 				sessionContext.SourceSegment = segment;
 				sessionContext.Prefix = "";
-				TranslationResult result = sessionContext.Session.TranslateInteractively(segment.Tokenize());
-				suggestion = CreateSuggestion(sessionContext, result);
+				sessionContext.Session.TranslateInteractively(sessionContext.EngineContext.Tokenizer.TokenizeToStrings(segment));
+				suggestion = CreateSuggestion(sessionContext);
 				return true;
 			}
 		}
@@ -81,67 +83,20 @@ namespace SIL.Machine.WebApi.Models
 			using (sessionContext.EngineContext.Mutex.Lock())
 			{
 				sessionContext.Prefix = prefix;
-				TranslationResult result = sessionContext.Session.SetPrefix(prefix.Tokenize(), !prefix.EndsWith(" "));
-				suggestion = CreateSuggestion(sessionContext, result);
+				sessionContext.Session.SetPrefix(sessionContext.EngineContext.Tokenizer.TokenizeToStrings(prefix), !prefix.EndsWith(" "));
+				suggestion = CreateSuggestion(sessionContext);
 				return true;
 			}
 		}
 
-		private static Suggestion CreateSuggestion(SessionContext sessionContext, TranslationResult result)
+		private static Suggestion CreateSuggestion(SessionContext sessionContext)
 		{
-			return new Suggestion(result, GetSuggestedWordIndices(sessionContext, result), sessionContext.SourceSegment, sessionContext.Prefix);
-		}
-
-		private static IEnumerable<int> GetSuggestedWordIndices(SessionContext sessionContext, TranslationResult result)
-		{
-			int lookaheadCount = 1;
-			for (int i = 0; i < result.SourceSegment.Count; i++)
-			{
-				int wordPairCount = result.GetSourceWordPairs(i).Count();
-				if (wordPairCount == 0)
-					lookaheadCount++;
-				else
-					lookaheadCount += wordPairCount - 1;
-			}
-			int j;
-			for (j = 0; j < result.TargetSegment.Count; j++)
-			{
-				int wordPairCount = result.GetTargetWordPairs(j).Count();
-				if (wordPairCount == 0)
-					lookaheadCount++;
-			}
-			j = sessionContext.Session.Prefix.Count;
-			// ensure that we include a partial word as a suggestion
-			if (sessionContext.Session.IsLastWordPartial)
-				j--;
-			bool inPhrase = false;
-			while (j < result.TargetSegment.Count && (lookaheadCount > 0 || inPhrase))
-			{
-				string word = result.TargetSegment[j];
-				// stop suggesting at punctuation
-				if (word.All(char.IsPunctuation))
-					break;
-
-				if (result.GetTargetWordConfidence(j) >= sessionContext.ConfidenceThreshold
-					|| result.GetTargetWordPairs(j).Any(awi => (awi.Sources & TranslationSources.Transfer) == TranslationSources.Transfer))
-				{
-					yield return j;
-					inPhrase = true;
-					lookaheadCount--;
-				}
-				else
-				{
-					// skip over inserted words
-					if (result.GetTargetWordPairs(j).Any())
-					{
-						lookaheadCount--;
-						// only suggest the first word/phrase we find
-						if (inPhrase)
-							break;
-					}
-				}
-				j++;
-			}
+			IEnumerable<string> suggestedWords = sessionContext.Session.GetSuggestedWordIndices(sessionContext.ConfidenceThreshold)
+				.Select(j => sessionContext.Session.CurrenTranslationResult.RecaseTargetWord(j));
+			IEnumerable<Span<int>> sourceSegmentTokens = sessionContext.EngineContext.Tokenizer.Tokenize(sessionContext.SourceSegment);
+			IEnumerable<Span<int>> prefixTokens = sessionContext.EngineContext.Tokenizer.Tokenize(sessionContext.Prefix);
+			TranslationResult result = sessionContext.Session.CurrenTranslationResult;
+			return new Suggestion(suggestedWords, sourceSegmentTokens, prefixTokens, result);
 		}
 
 		public bool TryApprove(string id)

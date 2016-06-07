@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using SIL.Machine.Translation;
 using SIL.Machine.WebApi.Models;
 
 namespace SIL.Machine.WebApi.Controllers
@@ -44,9 +43,9 @@ namespace SIL.Machine.WebApi.Controllers
 		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/actions/translate")]
 		public async Task<IActionResult> Translate(string sourceLanguageTag, string targetLanguageTag, [FromBody] string segment)
 		{
-			TranslationResult result = await _engineService.TryTranslate(sourceLanguageTag, targetLanguageTag, segment);
+			string result = await _engineService.TryTranslate(sourceLanguageTag, targetLanguageTag, segment);
 			if (result != null)
-				return new ObjectResult(Enumerable.Range(0, result.TargetSegment.Count).Select(result.RecaseTargetWord).Detokenize());
+				return new ObjectResult(result);
 			return NotFound();
 		}
 	}
