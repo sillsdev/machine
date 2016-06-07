@@ -51,10 +51,10 @@ namespace SIL.Machine.Translation
 
 			TranslationResult smtResult = _smtEngine.Translate(sourceSegment);
 			TranslationResult transferResult = _ruleBasedEngine.Translate(smtResult.SourceSegment);
-			return MergeTranslationResults(smtResult, transferResult);
+			return MergeTranslationResults(0, smtResult, transferResult);
 		}
 
-		internal static TranslationResult MergeTranslationResults(TranslationResult primaryResult, TranslationResult secondaryResult)
+		internal static TranslationResult MergeTranslationResults(int prefixCount, TranslationResult primaryResult, TranslationResult secondaryResult)
 		{
 			IReadOnlyList<string> sourceSegment = primaryResult.SourceSegment;
 			var targetSegment = new List<string>();
@@ -71,7 +71,7 @@ namespace SIL.Machine.Translation
 				}
 				else
 				{
-					if (primaryResult.GetTargetWordConfidence(j) >= SecondaryEngineThreshold)
+					if (j < prefixCount || primaryResult.GetTargetWordConfidence(j) >= SecondaryEngineThreshold)
 					{
 						targetSegment.Add(primaryResult.TargetSegment[j]);
 						confidences.Add(primaryResult.GetTargetWordConfidence(j));

@@ -60,7 +60,7 @@ namespace SIL.Machine.Translation
 
 			TranslationResult smtResult = _smtSession.TranslateInteractively(sourceSegment);
 			_transferResult = _transferEngine.Translate(smtResult.SourceSegment);
-			_currentResult = HybridTranslationEngine.MergeTranslationResults(smtResult, _transferResult);
+			_currentResult = HybridTranslationEngine.MergeTranslationResults(0, smtResult, _transferResult);
 			return _currentResult;
 		}
 
@@ -68,7 +68,11 @@ namespace SIL.Machine.Translation
 		{
 			CheckDisposed();
 
-			_currentResult = HybridTranslationEngine.MergeTranslationResults(_smtSession.SetPrefix(prefix, isLastWordPartial), _transferResult);
+			TranslationResult smtResult = _smtSession.SetPrefix(prefix, isLastWordPartial);
+			int prefixCount = _smtSession.Prefix.Count;
+			if (_smtSession.IsLastWordPartial)
+				prefixCount--;
+			_currentResult = HybridTranslationEngine.MergeTranslationResults(prefixCount, smtResult, _transferResult);
 			return _currentResult;
 		}
 
@@ -76,7 +80,11 @@ namespace SIL.Machine.Translation
 		{
 			CheckDisposed();
 
-			_currentResult = HybridTranslationEngine.MergeTranslationResults(_smtSession.AddToPrefix(addition, isLastWordPartial), _transferResult);
+			TranslationResult smtResult = _smtSession.AddToPrefix(addition, isLastWordPartial);
+			int prefixCount = _smtSession.Prefix.Count;
+			if (_smtSession.IsLastWordPartial)
+				prefixCount--;
+			_currentResult = HybridTranslationEngine.MergeTranslationResults(prefixCount, smtResult, _transferResult);
 			return _currentResult;
 		}
 

@@ -206,6 +206,9 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void CloseProject()
 		{
+			CurrentText = null;
+			_texts.Clear();
+			CurrentText = new TextViewModel(_tokenizer);
 			if (_translationSession != null)
 			{
 				_translationSession.Dispose();
@@ -216,9 +219,6 @@ namespace SIL.Machine.Translation.TestApp
 				_translationEngine.Dispose();
 				_translationEngine = null;
 			}
-			CurrentText = null;
-			_texts.Clear();
-			CurrentText = new TextViewModel(_tokenizer);
 			_saveProjectCommand.UpdateCanExecute();
 			_rebuildProjectCommand.UpdateCanExecute();
 		}
