@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using SIL.Machine.Annotations;
 using SIL.Machine.Translation;
 
 namespace SIL.Machine.WebApi.Models
@@ -19,6 +21,8 @@ namespace SIL.Machine.WebApi.Models
 
 		public string Id { get; }
 		public string SourceSegment { get; set; }
+		public IList<string> SourceSegmentTokens { get; set; }
+		public IList<Span<int>> SourceSegmentTokenSpans { get; set; }
 		public string Prefix { get; set; }
 		public double ConfidenceThreshold { get; set; }
 		public EngineContext EngineContext { get; }

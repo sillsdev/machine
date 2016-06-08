@@ -113,7 +113,9 @@ namespace SIL.Machine.WebApi.Models
 				}
 				sessionContext.SourceSegment = segment;
 				sessionContext.Prefix = "";
-				sessionContext.Session.TranslateInteractively(sessionContext.EngineContext.Tokenizer.TokenizeToStrings(segment.ToLowerInvariant()));
+				sessionContext.SourceSegmentTokenSpans = sessionContext.EngineContext.Tokenizer.Tokenize(segment).ToArray();
+				sessionContext.SourceSegmentTokens = sessionContext.SourceSegmentTokenSpans.Select(span => segment.Substring(span.Start, span.Length)).ToArray();
+				sessionContext.Session.TranslateInteractively(sessionContext.SourceSegmentTokens.Select(w => w.ToLowerInvariant()));
 				suggestion = CreateSuggestion(sessionContext);
 				sessionContext.LastActiveTime = DateTime.Now;
 				return true;
@@ -146,21 +148,19 @@ namespace SIL.Machine.WebApi.Models
 
 		private static SuggestionDto CreateSuggestion(SessionContext sessionContext)
 		{
-			Span<int>[] sourceSegmentTokens = sessionContext.EngineContext.Tokenizer.Tokenize(sessionContext.SourceSegment).ToArray();
-			TranslationResult result = sessionContext.Session.CurrenTranslationResult;
 			return new SuggestionDto
 			{
 				Suggestion = sessionContext.Session.GetSuggestedWordIndices(sessionContext.ConfidenceThreshold)
-					.Select(j => sessionContext.Session.CurrenTranslationResult.RecaseTargetWord(j)).ToArray(),
+					.Select(j => sessionContext.Session.CurrenTranslationResult.RecaseTargetWord(sessionContext.SourceSegmentTokens, j)).ToArray(),
 				Alignment = sessionContext.EngineContext.Tokenizer.Tokenize(sessionContext.Prefix).Select((prefixSpan, j) => new TargetWordDto
 				{
 					Range = new[] {prefixSpan.Start, prefixSpan.End},
-					SourceWords = result.GetTargetWordPairs(j).Select(wp =>
+					SourceWords = sessionContext.Session.CurrenTranslationResult.GetTargetWordPairs(j).Select(wp =>
 					{
-						Span<int> sourceSpan = sourceSegmentTokens[wp.SourceIndex];
+						Span<int> sourceSpan = sessionContext.SourceSegmentTokenSpans[wp.SourceIndex];
 						return new SourceWordDto
 						{
-							Range = new[] { sourceSpan.Start, sourceSpan.End },
+							Range = new[] {sourceSpan.Start, sourceSpan.End},
 							Confidence = wp.Confidence
 						};
 					}).ToArray()

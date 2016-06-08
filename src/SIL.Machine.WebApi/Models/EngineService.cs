@@ -113,8 +113,10 @@ namespace SIL.Machine.WebApi.Models
 				if (engineContext.Engine == null)
 					engineContext.Engine = LoadEngine(sourceLanguageTag, targetLanguageTag);
 				Debug.Assert(engineContext.Engine != null);
-				TranslationResult translationResult = engineContext.Engine.Translate(engineContext.Tokenizer.TokenizeToStrings(segment.ToLowerInvariant()));
-				result = engineContext.Detokenizer.Detokenize(Enumerable.Range(0, translationResult.TargetSegment.Count).Select(j => translationResult.RecaseTargetWord(j)));
+				string[] sourceSegment = engineContext.Tokenizer.TokenizeToStrings(segment).ToArray();
+				TranslationResult translationResult = engineContext.Engine.Translate(sourceSegment.Select(w => w.ToLowerInvariant()));
+				result = engineContext.Detokenizer.Detokenize(Enumerable.Range(0, translationResult.TargetSegment.Count)
+					.Select(j => translationResult.RecaseTargetWord(sourceSegment, j)));
 				return true;
 			}
 		}

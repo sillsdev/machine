@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using SIL.Machine.Translation;
 
@@ -6,10 +7,10 @@ namespace SIL.Machine.WebApi.Models
 {
 	internal static class ModelsExtensions
 	{
-		public static string RecaseTargetWord(this TranslationResult result, int targetIndex)
+		public static string RecaseTargetWord(this TranslationResult result, IList<string> sourceSegment, int targetIndex)
 		{
 			string token = result.TargetSegment[targetIndex];
-			if (result.GetTargetWordPairs(targetIndex).Any(awi => IsCapitalCase(result.SourceSegment[awi.SourceIndex])))
+			if (result.GetTargetWordPairs(targetIndex).Any(awi => IsCapitalCase(sourceSegment[awi.SourceIndex])))
 				token = ToCapitalCase(token);
 			return token;
 		}
