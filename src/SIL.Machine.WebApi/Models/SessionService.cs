@@ -113,7 +113,7 @@ namespace SIL.Machine.WebApi.Models
 				}
 				sessionContext.SourceSegment = segment;
 				sessionContext.Prefix = "";
-				sessionContext.Session.TranslateInteractively(sessionContext.EngineContext.Tokenizer.TokenizeToStrings(segment));
+				sessionContext.Session.TranslateInteractively(sessionContext.EngineContext.Tokenizer.TokenizeToStrings(segment.ToLowerInvariant()));
 				suggestion = CreateSuggestion(sessionContext);
 				sessionContext.LastActiveTime = DateTime.Now;
 				return true;
@@ -137,7 +137,7 @@ namespace SIL.Machine.WebApi.Models
 					return false;
 				}
 				sessionContext.Prefix = prefix;
-				sessionContext.Session.SetPrefix(sessionContext.EngineContext.Tokenizer.TokenizeToStrings(prefix), !prefix.EndsWith(" "));
+				sessionContext.Session.SetPrefix(sessionContext.EngineContext.Tokenizer.TokenizeToStrings(prefix.ToLowerInvariant()), !prefix.EndsWith(" "));
 				suggestion = CreateSuggestion(sessionContext);
 				sessionContext.LastActiveTime = DateTime.Now;
 				return true;
