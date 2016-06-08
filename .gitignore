@@ -21,3 +21,4 @@ obj/
 _ReSharper*/
 .vs/
 *.lock.json
+appsettings.user.json

@@ -16,6 +16,7 @@ namespace SIL.Machine.WebApi
 				.SetBasePath(env.ContentRootPath)
 				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
 				.AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+				.AddJsonFile("appsettings.user.json", optional: true)
 				.AddEnvironmentVariables();
 			Configuration = builder.Build();
 		}
@@ -29,8 +30,8 @@ namespace SIL.Machine.WebApi
 			services.AddMvc()
 				.AddJsonOptions(a => a.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
 
-			services.Configure<EngineOptions>(Configuration);
-			services.Configure<SessionOptions>(Configuration);
+			services.Configure<EngineOptions>(Configuration.GetSection("Engine"));
+			services.Configure<SessionOptions>(Configuration.GetSection("Session"));
 
 			services.AddSingleton<IEngineService, EngineService>();
 			services.AddSingleton<ISessionService, SessionService>();
