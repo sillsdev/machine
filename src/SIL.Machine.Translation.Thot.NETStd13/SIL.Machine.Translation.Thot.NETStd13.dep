@@ -2,13 +2,19 @@
 Type=TeamCity
 Url=http://build.palaso.org
 
-[TC::Libraries_ThotWin32masterContinuous]
+[TC::Machine_ThotWin32masterContinuous]
 Name=thot-win32-master Continuous
 RevisionName=lastSuccessful
 RevisionValue=latest.lastSuccessful
-Condition=Windows
-Path=x86/thot.dll => ../../lib/
-x86/pthreadVC2.dll => ../../lib/
-x64/thot.dll => ../../lib/
-x64/pthreadVC2.dll => ../../lib/
+Path=x86/thot.dll => ../../lib/win/
+x86/pthreadVC2.dll => ../../lib/win/
+x64/thot.dll => ../../lib/win/
+x64/pthreadVC2.dll => ../../lib/win/
+
+
+[TC::Machine_ThotTrusty64masterContinuous]
+Name=thot-trusty64-master Continuous
+RevisionName=lastSuccessful
+RevisionValue=latest.lastSuccessful
+Path=x64/libthot.so => ../../lib/linux/
 
