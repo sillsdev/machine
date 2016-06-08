@@ -30,8 +30,8 @@ namespace SIL.Machine.WebApi
 			services.AddMvc()
 				.AddJsonOptions(a => a.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
 
-			services.Configure<EngineOptions>(Configuration.GetSection("Engine"));
-			services.Configure<SessionOptions>(Configuration.GetSection("Session"));
+			services.Configure<EngineOptions>(Configuration.GetSection("TranslationEngine"));
+			services.Configure<SessionOptions>(Configuration.GetSection("TranslationSession"));
 
 			services.AddSingleton<IEngineService, EngineService>();
 			services.AddSingleton<ISessionService, SessionService>();
