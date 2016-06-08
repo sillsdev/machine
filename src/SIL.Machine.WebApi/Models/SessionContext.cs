@@ -1,4 +1,5 @@
-﻿using SIL.Machine.Translation;
+﻿using System;
+using SIL.Machine.Translation;
 
 namespace SIL.Machine.WebApi.Models
 {
@@ -12,6 +13,7 @@ namespace SIL.Machine.WebApi.Models
 			SourceSegment = "";
 			Prefix = "";
 			Session = session;
+			LastActiveTime = DateTime.Now;
 			IsActive = true;
 		}
 
@@ -22,5 +24,6 @@ namespace SIL.Machine.WebApi.Models
 		public EngineContext EngineContext { get; }
 		public IInteractiveTranslationSession Session { get; }
 		public bool IsActive { get; set; }
+		public DateTime LastActiveTime { get; set; }
 	}
 }

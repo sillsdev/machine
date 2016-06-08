@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -12,9 +13,7 @@ namespace SIL.Machine.WebApi.Models
 {
 	public class SessionService : DisposableBase, ISessionService
 	{
-		private readonly object _lockObject;
-		private readonly Dictionary<string, SessionContext> _sessions;
-		private readonly Dictionary<string, DateTime> _lastActiveTimes;
+		private readonly ConcurrentDictionary<string, SessionContext> _sessions;
 		private readonly Timer _cleanupTimer;
 		private readonly SessionOptions _options;
 		private bool _isTimerStopped;
@@ -22,9 +21,7 @@ namespace SIL.Machine.WebApi.Models
 		public SessionService(IOptions<SessionOptions> options)
 		{
 			_options = options.Value;
-			_lockObject = new object();
-			_sessions = new Dictionary<string, SessionContext>();
-			_lastActiveTimes = new Dictionary<string, DateTime>();
+			_sessions = new ConcurrentDictionary<string, SessionContext>();
 			_cleanupTimer = new Timer(CleanupStaleSessions, null, _options.StaleSessionCleanupFrequency, _options.StaleSessionCleanupFrequency);
 		}
 
@@ -33,58 +30,61 @@ namespace SIL.Machine.WebApi.Models
 			if (_isTimerStopped)
 				return;
 
-			SessionContext[] staleSessionContexts;
-			lock (_lockObject)
-			{
-				staleSessionContexts = _sessions.Values.Where(sc => DateTime.Now - _lastActiveTimes[sc.Id] > _options.SessionIdleTimeout).ToArray();
-				foreach (SessionContext sessionContext in staleSessionContexts)
-				{
-					_sessions.Remove(sessionContext.Id);
-					_lastActiveTimes.Remove(sessionContext.Id);
-				}
-			}
-
-			foreach (SessionContext sessionContext in staleSessionContexts)
+			var staleSessionIds = new List<string>();
+			DateTime now = DateTime.Now;
+			foreach (SessionContext sessionContext in _sessions.Values)
 			{
 				lock (sessionContext.EngineContext)
 				{
-					sessionContext.Session.Dispose();
-					sessionContext.IsActive = false;
-					sessionContext.EngineContext.SessionCount--;
+					if (now - sessionContext.LastActiveTime > _options.SessionIdleTimeout)
+					{
+						sessionContext.Session.Dispose();
+						sessionContext.IsActive = false;
+						sessionContext.EngineContext.SessionCount--;
+						staleSessionIds.Add(sessionContext.Id);
+					}
 				}
+			}
+
+			foreach (string sessionId in staleSessionIds)
+			{
+				SessionContext sessionContext;
+				_sessions.TryRemove(sessionId, out sessionContext);
 			}
 		}
 
 		public void Add(SessionContext sessionContext)
 		{
-			lock (_lockObject)
-			{
-				_sessions[sessionContext.Id] = sessionContext;
-				_lastActiveTimes[sessionContext.Id] = DateTime.Now;
-			}
+			_sessions[sessionContext.Id] = sessionContext;
 		}
 
-		public bool TryGet(string id, out SessionContext sessionContext)
+		public bool TryGet(string id, out SessionDto session)
 		{
-			lock (_lockObject)
-				return _sessions.TryGetValue(id, out sessionContext);
+			SessionContext sessionContext;
+			if (!_sessions.TryGetValue(id, out sessionContext))
+			{
+				session = null;
+				return false;
+			}
+
+			lock (sessionContext.EngineContext)
+			{
+				if (!sessionContext.IsActive)
+				{
+					session = null;
+					return false;
+				}
+
+				session = sessionContext.CreateDto();
+				return true;
+			}
 		}
 
 		public bool Remove(string id)
 		{
 			SessionContext sessionContext;
-			lock (_lockObject)
-			{
-				if (_sessions.TryGetValue(id, out sessionContext))
-				{
-					_sessions.Remove(id);
-					_lastActiveTimes.Remove(id);
-				}
-				else
-				{
-					return false;
-				}
-			}
+			if (!_sessions.TryRemove(id, out sessionContext))
+				return false;
 
 			lock (sessionContext.EngineContext)
 			{
@@ -95,20 +95,13 @@ namespace SIL.Machine.WebApi.Models
 			}
 		}
 
-		public bool TryStartTranslation(string id, string segment, out Suggestion suggestion)
+		public bool TryStartTranslation(string id, string segment, out SuggestionDto suggestion)
 		{
 			SessionContext sessionContext;
-			lock (_lockObject)
+			if (!_sessions.TryGetValue(id, out sessionContext))
 			{
-				if (_sessions.TryGetValue(id, out sessionContext))
-				{
-					_lastActiveTimes[id] = DateTime.Now;
-				}
-				else
-				{
-					suggestion = null;
-					return false;
-				}
+				suggestion = null;
+				return false;
 			}
 
 			lock (sessionContext.EngineContext)
@@ -122,24 +115,18 @@ namespace SIL.Machine.WebApi.Models
 				sessionContext.Prefix = "";
 				sessionContext.Session.TranslateInteractively(sessionContext.EngineContext.Tokenizer.TokenizeToStrings(segment));
 				suggestion = CreateSuggestion(sessionContext);
+				sessionContext.LastActiveTime = DateTime.Now;
 				return true;
 			}
 		}
 
-		public bool TryUpdatePrefix(string id, string prefix, out Suggestion suggestion)
+		public bool TryUpdatePrefix(string id, string prefix, out SuggestionDto suggestion)
 		{
 			SessionContext sessionContext;
-			lock (_lockObject)
+			if (!_sessions.TryGetValue(id, out sessionContext))
 			{
-				if (_sessions.TryGetValue(id, out sessionContext))
-				{
-					_lastActiveTimes[id] = DateTime.Now;
-				}
-				else
-				{
-					suggestion = null;
-					return false;
-				}
+				suggestion = null;
+				return false;
 			}
 
 			lock (sessionContext.EngineContext)
@@ -152,36 +139,47 @@ namespace SIL.Machine.WebApi.Models
 				sessionContext.Prefix = prefix;
 				sessionContext.Session.SetPrefix(sessionContext.EngineContext.Tokenizer.TokenizeToStrings(prefix), !prefix.EndsWith(" "));
 				suggestion = CreateSuggestion(sessionContext);
+				sessionContext.LastActiveTime = DateTime.Now;
 				return true;
 			}
 		}
 
-		private static Suggestion CreateSuggestion(SessionContext sessionContext)
+		private static SuggestionDto CreateSuggestion(SessionContext sessionContext)
 		{
-			IEnumerable<string> suggestedWords = sessionContext.Session.GetSuggestedWordIndices(sessionContext.ConfidenceThreshold)
-				.Select(j => sessionContext.Session.CurrenTranslationResult.RecaseTargetWord(j));
-			IEnumerable<Span<int>> sourceSegmentTokens = sessionContext.EngineContext.Tokenizer.Tokenize(sessionContext.SourceSegment);
-			IEnumerable<Span<int>> prefixTokens = sessionContext.EngineContext.Tokenizer.Tokenize(sessionContext.Prefix);
+			Span<int>[] sourceSegmentTokens = sessionContext.EngineContext.Tokenizer.Tokenize(sessionContext.SourceSegment).ToArray();
 			TranslationResult result = sessionContext.Session.CurrenTranslationResult;
-			return new Suggestion(suggestedWords, sourceSegmentTokens, prefixTokens, result);
+			return new SuggestionDto
+			{
+				Suggestion = sessionContext.Session.GetSuggestedWordIndices(sessionContext.ConfidenceThreshold)
+					.Select(j => sessionContext.Session.CurrenTranslationResult.RecaseTargetWord(j)).ToArray(),
+				Alignment = sessionContext.EngineContext.Tokenizer.Tokenize(sessionContext.Prefix).Select((prefixSpan, j) => new TargetWordDto
+				{
+					Range = new[] {prefixSpan.Start, prefixSpan.End},
+					SourceWords = result.GetTargetWordPairs(j).Select(wp =>
+					{
+						Span<int> sourceSpan = sourceSegmentTokens[wp.SourceIndex];
+						return new SourceWordDto
+						{
+							Range = new[] { sourceSpan.Start, sourceSpan.End },
+							Confidence = wp.Confidence
+						};
+					}).ToArray()
+				}).ToArray()
+			};
 		}
 
 		public bool TryApprove(string id)
 		{
 			SessionContext sessionContext;
-			lock (_lockObject)
-			{
-				if (_sessions.TryGetValue(id, out sessionContext))
-					_lastActiveTimes[id] = DateTime.Now;
-				else
-					return false;
-			}
+			if (!_sessions.TryGetValue(id, out sessionContext))
+				return false;
 
 			lock (sessionContext.EngineContext)
 			{
 				if (!sessionContext.IsActive)
 					return false;
 				sessionContext.Session.Approve();
+				sessionContext.LastActiveTime = DateTime.Now;
 				return true;
 			}
 		}
@@ -191,19 +189,16 @@ namespace SIL.Machine.WebApi.Models
 			_isTimerStopped = true;
 			_cleanupTimer.Dispose();
 
-			lock (_lockObject)
+			foreach (SessionContext sessionContext in _sessions.Values)
 			{
-				foreach (SessionContext sessionContext in _sessions.Values)
+				lock (sessionContext.EngineContext)
 				{
-					lock (sessionContext.EngineContext)
-					{
-						sessionContext.Session.Dispose();
-						sessionContext.IsActive = false;
-						sessionContext.EngineContext.SessionCount--;
-					}
+					sessionContext.Session.Dispose();
+					sessionContext.IsActive = false;
+					sessionContext.EngineContext.SessionCount--;
 				}
-				_sessions.Clear();
 			}
+			_sessions.Clear();
 		}
 	}
 }

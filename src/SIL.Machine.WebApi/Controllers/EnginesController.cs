@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using SIL.Machine.WebApi.Models;
 
@@ -18,24 +17,24 @@ namespace SIL.Machine.WebApi.Controllers
 		[HttpGet]
 		public IEnumerable<EngineDto> GetAll()
 		{
-			return _engineService.GetAll().Select(e => e.CreateDto());
+			return _engineService.GetAll();
 		}
 
 		[HttpGet("{sourceLanguageTag}/{targetLanguageTag}")]
 		public IActionResult Get(string sourceLanguageTag, string targetLanguageTag)
 		{
-			EngineContext engineContext;
-			if (_engineService.TryGet(sourceLanguageTag, targetLanguageTag, out engineContext))
-				return new ObjectResult(engineContext.CreateDto());
+			EngineDto engine;
+			if (_engineService.TryGet(sourceLanguageTag, targetLanguageTag, out engine))
+				return new ObjectResult(engine);
 			return NotFound();
 		}
 
 		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/actions/start-session")]
 		public IActionResult StartSession(string sourceLanguageTag, string targetLanguageTag)
 		{
-			SessionContext sessionContext;
-			if (_engineService.TryCreateSession(sourceLanguageTag, targetLanguageTag, out sessionContext))
-				return new ObjectResult(sessionContext.CreateDto());
+			SessionDto session;
+			if (_engineService.TryCreateSession(sourceLanguageTag, targetLanguageTag, out session))
+				return new ObjectResult(session);
 			return NotFound();
 		}
 

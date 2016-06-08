@@ -58,22 +58,30 @@ namespace SIL.Machine.WebApi.Models
 			}
 		}
 
-		public IEnumerable<EngineContext> GetAll()
+		public IEnumerable<EngineDto> GetAll()
 		{
-			return _engines.Values.ToArray();
+			return _engines.Values.Select(ec => ec.CreateDto());
 		}
 
-		public bool TryGet(string sourceLanguageTag, string targetLanguageTag, out EngineContext engineContext)
-		{
-			return _engines.TryGetValue(Tuple.Create(sourceLanguageTag, targetLanguageTag), out engineContext);
-		}
-
-		public bool TryCreateSession(string sourceLanguageTag, string targetLanguageTag, out SessionContext sessionContext)
+		public bool TryGet(string sourceLanguageTag, string targetLanguageTag, out EngineDto engine)
 		{
 			EngineContext engineContext;
 			if (!_engines.TryGetValue(Tuple.Create(sourceLanguageTag, targetLanguageTag), out engineContext))
 			{
-				sessionContext = null;
+				engine = null;
+				return false;
+			}
+
+			engine = engineContext.CreateDto();
+			return true;
+		}
+
+		public bool TryCreateSession(string sourceLanguageTag, string targetLanguageTag, out SessionDto session)
+		{
+			EngineContext engineContext;
+			if (!_engines.TryGetValue(Tuple.Create(sourceLanguageTag, targetLanguageTag), out engineContext))
+			{
+				session = null;
 				return false;
 			}
 
@@ -83,11 +91,12 @@ namespace SIL.Machine.WebApi.Models
 					engineContext.Engine = LoadEngine(sourceLanguageTag, targetLanguageTag);
 				Debug.Assert(engineContext.Engine != null);
 				string id = Guid.NewGuid().ToString();
-				sessionContext = new SessionContext(id, engineContext, engineContext.Engine.StartSession());
+				var sessionContext = new SessionContext(id, engineContext, engineContext.Engine.StartSession());
 				engineContext.SessionCount++;
+				_sessionService.Add(sessionContext);
+				session = sessionContext.CreateDto();
+				return true;
 			}
-			_sessionService.Add(sessionContext);
-			return true;
 		}
 
 		public bool TryTranslate(string sourceLanguageTag, string targetLanguageTag, string segment, out string result)

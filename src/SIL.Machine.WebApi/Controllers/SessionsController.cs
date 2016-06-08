@@ -16,9 +16,9 @@ namespace SIL.Machine.WebApi.Controllers
 		[HttpGet("{id}")]
 		public IActionResult Get(string id)
 		{
-			SessionContext sessionContext;
-			if (_sessionService.TryGet(id, out sessionContext))
-				return new ObjectResult(sessionContext.CreateDto());
+			SessionDto session;
+			if (_sessionService.TryGet(id, out session))
+				return new ObjectResult(session);
 			return NotFound();
 		}
 
@@ -33,18 +33,18 @@ namespace SIL.Machine.WebApi.Controllers
 		[HttpPost("{id}/actions/start")]
 		public IActionResult Translate(string id, [FromBody] string segment)
 		{
-			Suggestion suggestion;
+			SuggestionDto suggestion;
 			if (_sessionService.TryStartTranslation(id, segment, out suggestion))
-				return new ObjectResult(suggestion.CreateDto());
+				return new ObjectResult(suggestion);
 			return NotFound();
 		}
 
 		[HttpPost("{id}/actions/update")]
 		public IActionResult UpdatePrefix(string id, [FromBody] string prefix)
 		{
-			Suggestion suggestion;
+			SuggestionDto suggestion;
 			if (_sessionService.TryUpdatePrefix(id, prefix, out suggestion))
-				return new ObjectResult(suggestion.CreateDto());
+				return new ObjectResult(suggestion);
 			return NotFound();
 		}
 

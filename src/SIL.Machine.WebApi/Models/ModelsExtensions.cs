@@ -1,11 +1,10 @@
 ﻿using System.Linq;
 using System.Text;
-using SIL.Machine.Annotations;
 using SIL.Machine.Translation;
 
 namespace SIL.Machine.WebApi.Models
 {
-	public static class ModelsExtensions
+	internal static class ModelsExtensions
 	{
 		public static string RecaseTargetWord(this TranslationResult result, int targetIndex)
 		{
@@ -43,36 +42,12 @@ namespace SIL.Machine.WebApi.Models
 
 		public static SessionDto CreateDto(this SessionContext sessionContext)
 		{
-			lock (sessionContext.EngineContext)
+			return new SessionDto
 			{
-				return new SessionDto
-				{
-					Id = sessionContext.Id,
-					SourceSegment = sessionContext.SourceSegment,
-					Prefix = sessionContext.Prefix,
-					ConfidenceThreshold = sessionContext.ConfidenceThreshold
-				};
-			}
-		}
-
-		public static SuggestionDto CreateDto(this Suggestion suggestion)
-		{
-			return new SuggestionDto
-			{
-				Suggestion = suggestion.Words.ToArray(),
-				Alignment = suggestion.PrefixTokens.Select((prefixSpan, j) => new TargetWordDto
-				{
-					Range = new[] {prefixSpan.Start, prefixSpan.End},
-					SourceWords = suggestion.TranslationResult.GetTargetWordPairs(j).Select(wp =>
-					{
-						Span<int> sourceSpan = suggestion.SourceSegmentTokens[wp.SourceIndex];
-						return new SourceWordDto
-						{
-							Range = new[] {sourceSpan.Start, sourceSpan.End},
-							Confidence = wp.Confidence
-						};
-					}).ToArray()
-				}).ToArray()
+				Id = sessionContext.Id,
+				SourceSegment = sessionContext.SourceSegment,
+				Prefix = sessionContext.Prefix,
+				ConfidenceThreshold = sessionContext.ConfidenceThreshold
 			};
 		}
 	}
