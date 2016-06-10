@@ -12,8 +12,8 @@ namespace SIL.Machine.FiniteState
 		private readonly IFstOperations<TData, TOffset> _operations;
 
 		public DeterministicFstTraversalMethod(IEqualityComparer<NullableValue<TOffset>[,]> registersEqualityComparer, IFstOperations<TData, TOffset> operations, Direction dir, Func<Annotation<TOffset>, bool> filter,
-			State<TData, TOffset> startState, TData data, bool endAnchor, bool unification, bool useDefaults)
-			: base(registersEqualityComparer, dir, filter, startState, data, endAnchor, unification, useDefaults)
+			State<TData, TOffset> startState, TData data, bool endAnchor, bool unification, bool useDefaults, bool ignoreVariables)
+			: base(registersEqualityComparer, dir, filter, startState, data, endAnchor, unification, useDefaults, ignoreVariables)
 		{
 			_operations = operations;
 		}
@@ -38,7 +38,7 @@ namespace SIL.Machine.FiniteState
 						NullableValue<TOffset>[,] registers = inst.Registers;
 						if (IsInstanceReuseable(inst))
 						{
-							if (varBindings == null)
+							if (!IgnoreVariables && varBindings == null)
 								varBindings = inst.VariableBindings;
 						}
 						else
@@ -50,7 +50,7 @@ namespace SIL.Machine.FiniteState
 								.Zip(output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
 							mappings = inst.Mappings.ToDictionary(kvp => kvp.Key, kvp => outputMappings[kvp.Value]);
 							queue = new Queue<Annotation<TOffset>>(inst.Queue);
-							if (varBindings == null)
+							if (!IgnoreVariables && varBindings == null)
 								varBindings = inst.VariableBindings.DeepClone();
 						}
 						ExecuteOutputs(arc.Outputs, output, mappings, queue);
@@ -59,7 +59,7 @@ namespace SIL.Machine.FiniteState
 					}
 					else
 					{
-						if (varBindings == null)
+						if (!IgnoreVariables && varBindings == null)
 							varBindings = IsInstanceReuseable(inst) ? inst.VariableBindings : inst.VariableBindings.DeepClone();
 						if (CheckInputMatch(arc, inst.AnnotationIndex, varBindings))
 						{

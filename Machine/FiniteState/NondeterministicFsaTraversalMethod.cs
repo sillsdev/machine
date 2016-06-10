@@ -9,8 +9,8 @@ namespace SIL.Machine.FiniteState
 	internal class NondeterministicFsaTraversalMethod<TData, TOffset> : TraversalMethod<TData, TOffset> where TData : IAnnotatedData<TOffset>
 	{
 		public NondeterministicFsaTraversalMethod(IEqualityComparer<NullableValue<TOffset>[,]> registersEqualityComparer, Direction dir,
-			Func<Annotation<TOffset>, bool> filter, State<TData, TOffset> startState, TData data, bool endAnchor, bool unification, bool useDefaults)
-			: base(registersEqualityComparer, dir, filter, startState, data, endAnchor, unification, useDefaults)
+			Func<Annotation<TOffset>, bool> filter, State<TData, TOffset> startState, TData data, bool endAnchor, bool unification, bool useDefaults, bool ignoreVariables)
+			: base(registersEqualityComparer, dir, filter, startState, data, endAnchor, unification, useDefaults, ignoreVariables)
 		{
 		}
 
@@ -36,14 +36,14 @@ namespace SIL.Machine.FiniteState
 							ISet<State<TData, TOffset>> visited = inst.Visited;
 							if (IsInstanceReuseable(inst))
 							{
-								if (varBindings == null)
+								if (!IgnoreVariables && varBindings == null)
 									varBindings = inst.VariableBindings;
 							}
 							else
 							{
 								registers = (NullableValue<TOffset>[,]) inst.Registers.Clone();
 
-								if (varBindings == null)
+								if (!IgnoreVariables && varBindings == null)
 									varBindings = inst.VariableBindings.DeepClone();
 								visited = new HashSet<State<TData, TOffset>>(inst.Visited);
 							}
@@ -59,7 +59,7 @@ namespace SIL.Machine.FiniteState
 					}
 					else
 					{
-						if (varBindings == null)
+						if (!IgnoreVariables && varBindings == null)
 							varBindings = IsInstanceReuseable(inst) ? inst.VariableBindings : inst.VariableBindings.DeepClone();
 						if (CheckInputMatch(arc, inst.AnnotationIndex, varBindings))
 						{

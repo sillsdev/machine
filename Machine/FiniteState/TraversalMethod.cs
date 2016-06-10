@@ -16,11 +16,12 @@ namespace SIL.Machine.FiniteState
 		private readonly bool _endAnchor;
 		private readonly bool _unification;
 		private readonly bool _useDefaults;
+		private readonly bool _ignoreVariables;
 		private readonly Func<Annotation<TOffset>, bool> _filter;
 		private readonly List<Annotation<TOffset>> _annotations; 
 
 		protected TraversalMethod(IEqualityComparer<NullableValue<TOffset>[,]> registersEqualityComparer, Direction dir, Func<Annotation<TOffset>, bool> filter, State<TData, TOffset> startState,
-			TData data, bool endAnchor, bool unification, bool useDefaults)
+			TData data, bool endAnchor, bool unification, bool useDefaults, bool ignoreVariables)
 		{
 			_registersEqualityComparer = registersEqualityComparer;
 			_dir = dir;
@@ -30,6 +31,7 @@ namespace SIL.Machine.FiniteState
 			_endAnchor = endAnchor;
 			_unification = unification;
 			_useDefaults = useDefaults;
+			_ignoreVariables = ignoreVariables;
 			IEnumerable<Annotation<TOffset>> anns = _data.Annotations.GetNodes(_dir).SelectMany(a => a.GetNodesDepthFirst(_dir)).Where(a => _filter(a));
 			switch (_dir)
 			{
@@ -51,6 +53,11 @@ namespace SIL.Machine.FiniteState
 		protected IEqualityComparer<NullableValue<TOffset>[,]> RegistersEqualityComparer
 		{
 			get { return _registersEqualityComparer; }
+		}
+
+		protected bool IgnoreVariables
+		{
+			get { return _ignoreVariables; }
 		}
 
 		public IList<Annotation<TOffset>> Annotations
@@ -100,8 +107,8 @@ namespace SIL.Machine.FiniteState
 						if (cloneable != null)
 							resOutput = cloneable.DeepClone();
 
-						var candidate = new FstResult<TData, TOffset>(_registersEqualityComparer, acceptInfo.ID, matchRegisters, resOutput, varBindings.DeepClone(),
-							acceptInfo.Priority, arc.Target.IsLazy, ann, priorities, curResults.Count);
+						var candidate = new FstResult<TData, TOffset>(_registersEqualityComparer, acceptInfo.ID, matchRegisters, resOutput,
+							_ignoreVariables ? null : varBindings.DeepClone(), acceptInfo.Priority, arc.Target.IsLazy, ann, priorities, curResults.Count);
 						if (acceptInfo.Acceptable == null || acceptInfo.Acceptable(_data, candidate))
 							curResults.Add(candidate);
 					}
@@ -112,8 +119,8 @@ namespace SIL.Machine.FiniteState
 					var cloneable = resOutput as IDeepCloneable<TData>;
 					if (cloneable != null)
 						resOutput = cloneable.DeepClone();
-					curResults.Add(new FstResult<TData, TOffset>(_registersEqualityComparer, null, matchRegisters, resOutput, varBindings.DeepClone(), -1, arc.Target.IsLazy, ann,
-						priorities, curResults.Count));
+					curResults.Add(new FstResult<TData, TOffset>(_registersEqualityComparer, null, matchRegisters, resOutput,
+						_ignoreVariables ? null : varBindings.DeepClone(), -1, arc.Target.IsLazy, ann, priorities, curResults.Count));
 				}
 			}
 		}
@@ -146,7 +153,8 @@ namespace SIL.Machine.FiniteState
 					inst.State = _startState;
 					inst.AnnotationIndex = annIndex;
 					inst.Registers = cloneRegisters ? (NullableValue<TOffset>[,]) newRegisters.Clone() : newRegisters;
-					inst.VariableBindings = new VariableBindings();
+					if (!_ignoreVariables)
+						inst.VariableBindings = new VariableBindings();
 					insts.Add(inst);
 					initAnns.Add(annIndex);
 					cloneRegisters = true;
@@ -191,7 +199,7 @@ namespace SIL.Machine.FiniteState
 					inst.State = arc.Target;
 					inst.AnnotationIndex = curIndex;
 					inst.Registers = cloneRegisters ? (NullableValue<TOffset>[,]) newRegisters.Clone() : newRegisters;
-					inst.VariableBindings = cloneOutputs ? varBindings.DeepClone() : varBindings;
+					inst.VariableBindings = !_ignoreVariables && cloneOutputs ? varBindings.DeepClone() : varBindings;
 					yield return inst;
 					cloneOutputs = true;
 					cloneRegisters = true;

@@ -64,28 +64,34 @@ namespace SIL.Machine.FeatureModel
 			}
 			else if (IsVariable && !otherSfv.IsVariable)
 			{
-				SimpleFeatureValue binding;
-				if (varBindings.TryGetValue(VariableName, out binding))
+				if (varBindings != null)
 				{
-					if (!binding.Overlaps(!Agree, otherSfv, false))
-						return false;
-				}
-				else
-				{
-					varBindings[VariableName] = otherSfv.GetVariableValue(Agree);
+					SimpleFeatureValue binding;
+					if (varBindings.TryGetValue(VariableName, out binding))
+					{
+						if (!binding.Overlaps(!Agree, otherSfv, false))
+							return false;
+					}
+					else
+					{
+						varBindings[VariableName] = otherSfv.GetVariableValue(Agree);
+					}
 				}
 			}
 			else if (!IsVariable && otherSfv.IsVariable)
 			{
-				SimpleFeatureValue binding;
-				if (varBindings.TryGetValue(otherSfv.VariableName, out binding))
+				if (varBindings != null)
 				{
-					if (!Overlaps(false, binding, !otherSfv.Agree))
-						return false;
-				}
-				else
-				{
-					varBindings[otherSfv.VariableName] = GetVariableValue(otherSfv.Agree);
+					SimpleFeatureValue binding;
+					if (varBindings.TryGetValue(otherSfv.VariableName, out binding))
+					{
+						if (!Overlaps(false, binding, !otherSfv.Agree))
+							return false;
+					}
+					else
+					{
+						varBindings[otherSfv.VariableName] = GetVariableValue(otherSfv.Agree);
+					}
 				}
 			}
 			else
@@ -110,28 +116,34 @@ namespace SIL.Machine.FeatureModel
 			}
 			else if (IsVariable && !otherSfv.IsVariable)
 			{
-				SimpleFeatureValue binding;
-				if (varBindings.TryGetValue(VariableName, out binding))
+				if (varBindings != null)
 				{
-					if (!binding.IsSupersetOf(!Agree, otherSfv, false))
-						return false;
-				}
-				else
-				{
-					varBindings[VariableName] = otherSfv.GetVariableValue(Agree);
+					SimpleFeatureValue binding;
+					if (varBindings.TryGetValue(VariableName, out binding))
+					{
+						if (!binding.IsSupersetOf(!Agree, otherSfv, false))
+							return false;
+					}
+					else
+					{
+						varBindings[VariableName] = otherSfv.GetVariableValue(Agree);
+					}
 				}
 			}
 			else if (!IsVariable && otherSfv.IsVariable)
 			{
-				SimpleFeatureValue binding;
-				if (varBindings.TryGetValue(otherSfv.VariableName, out binding))
+				if (varBindings != null)
 				{
-					if (!IsSupersetOf(false, binding, !otherSfv.Agree))
-						return false;
-				}
-				else
-				{
-					varBindings[otherSfv.VariableName] = GetVariableValue(otherSfv.Agree);
+					SimpleFeatureValue binding;
+					if (varBindings.TryGetValue(otherSfv.VariableName, out binding))
+					{
+						if (!IsSupersetOf(false, binding, !otherSfv.Agree))
+							return false;
+					}
+					else
+					{
+						varBindings[otherSfv.VariableName] = GetVariableValue(otherSfv.Agree);
+					}
 				}
 			}
 			else
@@ -160,33 +172,43 @@ namespace SIL.Machine.FeatureModel
 			}
 			else if (IsVariable && !otherSfv.IsVariable)
 			{
-				SimpleFeatureValue binding;
-				if (varBindings.TryGetValue(VariableName, out binding))
+				if (varBindings != null)
 				{
-					if (!binding.Overlaps(!Agree, otherSfv, false))
-						return false;
-					UnionWith(false, binding, !Agree);
-					IntersectWith(false, otherSfv, false);
+					SimpleFeatureValue binding;
+					if (varBindings.TryGetValue(VariableName, out binding))
+					{
+						if (!binding.Overlaps(!Agree, otherSfv, false))
+							return false;
+						UnionWith(false, binding, !Agree);
+						IntersectWith(false, otherSfv, false);
+					}
+					else
+					{
+						UnionWith(false, otherSfv, false);
+						varBindings[VariableName] = otherSfv.GetVariableValue(Agree);
+					}
 				}
 				else
 				{
 					UnionWith(false, otherSfv, false);
-					varBindings[VariableName] = otherSfv.GetVariableValue(Agree);
 				}
 				VariableName = null;
 			}
 			else if (!IsVariable && otherSfv.IsVariable)
 			{
-				SimpleFeatureValue binding;
-				if (varBindings.TryGetValue(otherSfv.VariableName, out binding))
+				if (varBindings != null)
 				{
-					if (!Overlaps(false, binding, !otherSfv.Agree))
-						return false;
-					IntersectWith(false, binding, !otherSfv.Agree);
-				}
-				else
-				{
-					varBindings[otherSfv.VariableName] = GetVariableValue(otherSfv.Agree);
+					SimpleFeatureValue binding;
+					if (varBindings.TryGetValue(otherSfv.VariableName, out binding))
+					{
+						if (!Overlaps(false, binding, !otherSfv.Agree))
+							return false;
+						IntersectWith(false, binding, !otherSfv.Agree);
+					}
+					else
+					{
+						varBindings[otherSfv.VariableName] = GetVariableValue(otherSfv.Agree);
+					}
 				}
 			}
 			else
@@ -225,50 +247,67 @@ namespace SIL.Machine.FeatureModel
 			}
 			else if (IsVariable && !otherSfv.IsVariable)
 			{
-				SimpleFeatureValue binding;
-				if (varBindings.TryGetValue(VariableName, out binding))
+				if (varBindings != null)
 				{
-					UnionWith(false, binding, !Agree);
-					UnionWith(false, otherSfv, false);
+					SimpleFeatureValue binding;
+					if (varBindings.TryGetValue(VariableName, out binding))
+					{
+						UnionWith(false, binding, !Agree);
+						UnionWith(false, otherSfv, false);
+					}
+					else
+					{
+						UnionWith(false, otherSfv, false);
+						varBindings[VariableName] = otherSfv.GetVariableValue(Agree);
+					}
 				}
 				else
 				{
 					UnionWith(false, otherSfv, false);
-					varBindings[VariableName] = otherSfv.GetVariableValue(Agree);
 				}
 				VariableName = null;
 			}
 			else if (!IsVariable && otherSfv.IsVariable)
 			{
-				SimpleFeatureValue binding;
-				if (varBindings.TryGetValue(otherSfv.VariableName, out binding))
-					UnionWith(false, binding, !otherSfv.Agree);
-				else
-					varBindings[otherSfv.VariableName] = GetVariableValue(otherSfv.Agree);
+				if (varBindings != null)
+				{
+					SimpleFeatureValue binding;
+					if (varBindings.TryGetValue(otherSfv.VariableName, out binding))
+						UnionWith(false, binding, !otherSfv.Agree);
+					else
+						varBindings[otherSfv.VariableName] = GetVariableValue(otherSfv.Agree);
+				}
 			}
 			else
 			{
-				SimpleFeatureValue binding;
-				if (varBindings.TryGetValue(VariableName, out binding))
+				if (varBindings != null)
 				{
-					UnionWith(false, binding, !Agree);
-					SimpleFeatureValue otherBinding;
-					if (varBindings.TryGetValue(otherSfv.VariableName, out otherBinding))
-						UnionWith(false, otherBinding, !otherSfv.Agree);
-					VariableName = null;
-				}
-				else
-				{
-					SimpleFeatureValue otherBinding;
-					if (varBindings.TryGetValue(otherSfv.VariableName, out otherBinding))
+					SimpleFeatureValue binding;
+					if (varBindings.TryGetValue(VariableName, out binding))
 					{
-						UnionWith(false, otherBinding, !otherSfv.Agree);
+						UnionWith(false, binding, !Agree);
+						SimpleFeatureValue otherBinding;
+						if (varBindings.TryGetValue(otherSfv.VariableName, out otherBinding))
+							UnionWith(false, otherBinding, !otherSfv.Agree);
 						VariableName = null;
 					}
 					else
 					{
-						return VariableName == otherSfv.VariableName && Agree == otherSfv.Agree;
+						SimpleFeatureValue otherBinding;
+						if (varBindings.TryGetValue(otherSfv.VariableName, out otherBinding))
+						{
+							UnionWith(false, otherBinding, !otherSfv.Agree);
+							VariableName = null;
+						}
+						else
+						{
+							return VariableName == otherSfv.VariableName && Agree == otherSfv.Agree;
+						}
 					}
+				}
+				else
+				{
+					return VariableName == otherSfv.VariableName && Agree == otherSfv.Agree;
 				}
 			}
 
@@ -287,32 +326,45 @@ namespace SIL.Machine.FeatureModel
 			}
 			else if (IsVariable && !otherSfv.IsVariable)
 			{
-				SimpleFeatureValue binding;
-				if (varBindings.TryGetValue(VariableName, out binding))
+				if (varBindings != null)
 				{
-					UnionWith(false, binding, !Agree);
-					ExceptWith(false, otherSfv, false);
-					VariableName = null;
+					SimpleFeatureValue binding;
+					if (varBindings.TryGetValue(VariableName, out binding))
+					{
+						UnionWith(false, binding, !Agree);
+						ExceptWith(false, otherSfv, false);
+						VariableName = null;
+					}
 				}
 			}
 			else if (!IsVariable && otherSfv.IsVariable)
 			{
-				SimpleFeatureValue binding;
-				if (varBindings.TryGetValue(otherSfv.VariableName, out binding))
-					ExceptWith(false, binding, !otherSfv.Agree);
+				if (varBindings != null)
+				{
+					SimpleFeatureValue binding;
+					if (varBindings.TryGetValue(otherSfv.VariableName, out binding))
+						ExceptWith(false, binding, !otherSfv.Agree);
+				}
 			}
 			else
 			{
-				SimpleFeatureValue binding;
-				if (varBindings.TryGetValue(VariableName, out binding))
+				if (varBindings != null)
 				{
-					UnionWith(false, binding, !Agree);
-					SimpleFeatureValue otherBinding;
-					if (varBindings.TryGetValue(otherSfv.VariableName, out otherBinding))
-						ExceptWith(false, otherSfv, false);
-					VariableName = null;
+					SimpleFeatureValue binding;
+					if (varBindings.TryGetValue(VariableName, out binding))
+					{
+						UnionWith(false, binding, !Agree);
+						SimpleFeatureValue otherBinding;
+						if (varBindings.TryGetValue(otherSfv.VariableName, out otherBinding))
+							ExceptWith(false, otherSfv, false);
+						VariableName = null;
+					}
+					else if (!varBindings.ContainsVariable(otherSfv.VariableName))
+					{
+						return VariableName != otherSfv.VariableName || Agree != otherSfv.Agree;
+					}
 				}
-				else if (!varBindings.ContainsVariable(otherSfv.VariableName))
+				else
 				{
 					return VariableName != otherSfv.VariableName || Agree != otherSfv.Agree;
 				}

@@ -12,8 +12,8 @@ namespace SIL.Machine.FiniteState
 		private readonly IFstOperations<TData, TOffset> _operations;
 
 		public NondeterministicFstTraversalMethod(IEqualityComparer<NullableValue<TOffset>[,]> registersEqualityComparer, IFstOperations<TData, TOffset> operations, Direction dir,
-			Func<Annotation<TOffset>, bool> filter, State<TData, TOffset> startState, TData data, bool endAnchor, bool unification, bool useDefaults)
-			: base(registersEqualityComparer, dir, filter, startState, data, endAnchor, unification, useDefaults)
+			Func<Annotation<TOffset>, bool> filter, State<TData, TOffset> startState, TData data, bool endAnchor, bool unification, bool useDefaults, bool ignoreVariables)
+			: base(registersEqualityComparer, dir, filter, startState, data, endAnchor, unification, useDefaults, ignoreVariables)
 		{
 			_operations = operations;
 		}
@@ -42,7 +42,7 @@ namespace SIL.Machine.FiniteState
 							ISet<State<TData, TOffset>> visited = inst.Visited;
 							if (IsInstanceReuseable(inst))
 							{
-								if (varBindings == null)
+								if (!IgnoreVariables && varBindings == null)
 									varBindings = inst.VariableBindings;
 							}
 							else
@@ -54,7 +54,7 @@ namespace SIL.Machine.FiniteState
 								Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = inst.Output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
 									.Zip(output.Annotations.SelectMany(a => a.GetNodesBreadthFirst())).ToDictionary(t => t.Item1, t => t.Item2);
 								mappings = inst.Mappings.ToDictionary(kvp => kvp.Key, kvp => outputMappings[kvp.Value]);
-								if (varBindings == null)
+								if (!IgnoreVariables && varBindings == null)
 									varBindings = inst.VariableBindings.DeepClone();
 								visited = new HashSet<State<TData, TOffset>>(inst.Visited);
 							}
@@ -80,7 +80,7 @@ namespace SIL.Machine.FiniteState
 					}
 					else
 					{
-						if (varBindings == null)
+						if (!IgnoreVariables && varBindings == null)
 							varBindings = IsInstanceReuseable(inst) ? inst.VariableBindings : inst.VariableBindings.DeepClone();
 						if (CheckInputMatch(arc, inst.AnnotationIndex, varBindings))
 						{

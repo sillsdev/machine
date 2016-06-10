@@ -23,6 +23,7 @@ namespace SIL.Machine.FiniteState
 		private readonly IEqualityComparer<TOffset> _offsetEqualityComparer; 
 		private bool _unification;
 		private State<TData, TOffset> _startState;
+		private bool _ignoreVariables;
 
 		public Fst()
 			: this(null, EqualityComparer<TOffset>.Default)
@@ -196,6 +197,17 @@ namespace SIL.Machine.FiniteState
 			}
 		}
 
+		public bool IgnoreVariables
+		{
+			get { return _ignoreVariables; }
+			set
+			{
+				CheckFrozen();
+
+				_ignoreVariables = value;
+			}
+		}
+
 		public IReadOnlyCollection<State<TData, TOffset>> States
 		{
 			get { return _readonlyStates; }
@@ -242,16 +254,28 @@ namespace SIL.Machine.FiniteState
 			if (_operations != null)
 			{
 				if (IsDeterministic)
-					traversalMethod = new DeterministicFstTraversalMethod<TData, TOffset>(_registersEqualityComparer, _operations, _dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
+				{
+					traversalMethod = new DeterministicFstTraversalMethod<TData, TOffset>(_registersEqualityComparer, _operations, _dir, _filter, StartState, data,
+						endAnchor, _unification, useDefaults, _ignoreVariables);
+				}
 				else
-					traversalMethod = new NondeterministicFstTraversalMethod<TData, TOffset>(_registersEqualityComparer, _operations, _dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
+				{
+					traversalMethod = new NondeterministicFstTraversalMethod<TData, TOffset>(_registersEqualityComparer, _operations, _dir, _filter, StartState, data,
+						endAnchor, _unification, useDefaults, _ignoreVariables);
+				}
 			}
 			else
 			{
 				if (IsDeterministic)
-					traversalMethod = new DeterministicFsaTraversalMethod<TData, TOffset>(_registersEqualityComparer, _dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
+				{
+					traversalMethod = new DeterministicFsaTraversalMethod<TData, TOffset>(_registersEqualityComparer, _dir, _filter, StartState, data, endAnchor,
+						_unification, useDefaults, _ignoreVariables);
+				}
 				else
-					traversalMethod = new NondeterministicFsaTraversalMethod<TData, TOffset>(_registersEqualityComparer, _dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
+				{
+					traversalMethod = new NondeterministicFsaTraversalMethod<TData, TOffset>(_registersEqualityComparer, _dir, _filter, StartState, data, endAnchor,
+						_unification, useDefaults, _ignoreVariables);
+				}
 			}
 			List<FstResult<TData, TOffset>> resultList = null;
 

@@ -9,8 +9,8 @@ namespace SIL.Machine.FiniteState
 	internal class DeterministicFsaTraversalMethod<TData, TOffset> : TraversalMethod<TData, TOffset> where TData : IAnnotatedData<TOffset>
 	{
 		public DeterministicFsaTraversalMethod(IEqualityComparer<NullableValue<TOffset>[,]> registersEqualityComparer, Direction dir, Func<Annotation<TOffset>, bool> filter,
-			State<TData, TOffset> startState, TData data, bool endAnchor, bool unification, bool useDefaults)
-			: base(registersEqualityComparer, dir, filter, startState, data, endAnchor, unification, useDefaults)
+			State<TData, TOffset> startState, TData data, bool endAnchor, bool unification, bool useDefaults, bool ignoreVariables)
+			: base(registersEqualityComparer, dir, filter, startState, data, endAnchor, unification, useDefaults, ignoreVariables)
 		{
 		}
 
