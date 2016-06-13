@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.Matching;
 
@@ -16,7 +15,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IDictionary<string, Pattern<Word, ShapeNode>> partLookup)
 		{
 			Pattern<Word, ShapeNode> pattern = partLookup[PartName];
-			analysisLhs.Children.Add(new Group<Word, ShapeNode>(PartName, pattern.Children.DeepClone()));
+			analysisLhs.Children.Add(new Group<Word, ShapeNode>(PartName, pattern.Children.DeepCloneExceptBoundaries()));
 		}
 
 		public override IEnumerable<Tuple<ShapeNode, ShapeNode>> Apply(Match<Word, ShapeNode> match, Word output)

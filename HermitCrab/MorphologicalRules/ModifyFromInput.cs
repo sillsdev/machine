@@ -26,7 +26,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IDictionary<string, Pattern<Word, ShapeNode>> partLookup)
 		{
 			Pattern<Word, ShapeNode> pattern = partLookup[PartName];
-			var group = new Group<Word, ShapeNode>(PartName, pattern.Children.DeepClone());
+			var group = new Group<Word, ShapeNode>(PartName, pattern.Children.DeepCloneExceptBoundaries());
 			foreach (Constraint<Word, ShapeNode> constraint in group.GetNodesDepthFirst().OfType<Constraint<Word, ShapeNode>>().Where(c => c.Type() == (FeatureSymbol) _fs.GetValue(HCFeatureSystem.Type)))
 				constraint.FeatureStruct.PriorityUnion(_fs);
 			analysisLhs.Children.Add(group);

@@ -113,6 +113,54 @@ namespace SIL.HermitCrab
 			return output;
 		}
 
+		internal static IEnumerable<PatternNode<Word, ShapeNode>> DeepCloneExceptBoundaries(this IEnumerable<PatternNode<Word, ShapeNode>> nodes)
+		{
+			foreach (PatternNode<Word, ShapeNode> node in nodes)
+			{
+				var constraint = node as Constraint<Word, ShapeNode>;
+				if (constraint != null && (constraint.FeatureStruct.IsEmpty || constraint.Type() != HCFeatureSystem.Boundary))
+				{
+					yield return constraint.DeepClone();
+					continue;
+				}
+
+				var alternation = node as Alternation<Word, ShapeNode>;
+				if (alternation != null)
+				{
+					var newAlteration = new Alternation<Word, ShapeNode>(alternation.Children.DeepCloneExceptBoundaries());
+					if (newAlteration.Children.Count > 0)
+						yield return newAlteration;
+					continue;
+				}
+
+				var group = node as Group<Word, ShapeNode>;
+				if (group != null)
+				{
+					var newGroup = new Group<Word, ShapeNode>(group.Name, group.Children.DeepCloneExceptBoundaries());
+					if (newGroup.Children.Count > 0)
+						yield return newGroup;
+					continue;
+				}
+
+				var quantifier = node as Quantifier<Word, ShapeNode>;
+				if (quantifier != null)
+				{
+					var newQuantifier = new Quantifier<Word, ShapeNode>(quantifier.MinOccur, quantifier.MaxOccur, quantifier.Children.DeepCloneExceptBoundaries().SingleOrDefault());
+					if (newQuantifier.Children.Count > 0)
+						yield return newQuantifier;
+					continue;
+				}
+
+				var pattern = node as Pattern<Word, ShapeNode>;
+				if (pattern != null)
+				{
+					var newPattern = new Pattern<Word, ShapeNode>(pattern.Name, pattern.Children.DeepCloneExceptBoundaries());
+					if (newPattern.Children.Count > 0)
+						yield return newPattern;
+				}
+			}
+		}
+
 		/// <summary>
 		/// Converts the specified phonetic shape to a valid regular expression string. Regular expressions
 		/// formatted for display purposes are NOT guaranteed to compile.

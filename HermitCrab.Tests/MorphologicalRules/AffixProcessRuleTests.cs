@@ -450,7 +450,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 											Lhs =
 												{
 													Pattern<Word, ShapeNode>.New("1")
-														.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem).Feature("vd").EqualToVariable("a").Value)
+														.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem).Symbol(HCFeatureSystem.Segment).Feature("vd").EqualToVariable("a").Value)
 														.Annotation(any).OneOrMore.Value
 												},
 											Rhs = { new InsertShapeNode(FeatureStruct.New(Language.PhoneticFeatureSystem, alvStop).Feature("vd").EqualToVariable("a").Value), new CopyFromInput("1") }
@@ -1065,6 +1065,44 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("tasagods"), "OBJ 32 3SG");
+		}
+
+		[Test]
+		public void BoundaryRules()
+		{
+			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+			var cons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+").Value;
+			var vowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-").Value;
+
+			var sSuffix = new AffixProcessRule
+			              	{
+								Name = "s_suffix",
+			              		Gloss = "3SG",
+			              		RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+								OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
+									.Feature("head").EqualTo(head => head
+										.Feature("pers").EqualTo("3")).Value
+			              	};
+			Morphophonemic.MorphologicalRules.Add(sSuffix);
+			sSuffix.Allomorphs.Add(new AffixProcessAllomorph
+									{
+										Lhs =
+										{
+											Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
+											Pattern<Word, ShapeNode>.New("2")
+												.Annotation(FeatureStruct.New().Symbol(HCFeatureSystem.Boundary).Feature(HCFeatureSystem.StrRep).EqualTo("+").Value)
+												.Annotation(cons)
+												.Annotation(vowel).Value
+										},
+										Rhs = {new CopyFromInput("1"), new CopyFromInput("2"), new InsertShape(Table3, "s")}
+									});
+
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			AssertMorphsEqual(morpher.ParseWord("abbas"), "39 3SG");
 		}
 	}
 }
