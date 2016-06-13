@@ -70,33 +70,29 @@ namespace SIL.Machine.Matching
 			bool hasVariables = GeneratePatternNfa(_fsa.StartState, pattern, null, new Func<Match<TData, TOffset>, bool>[0], ref nextPriority);
 
 #if FST_GRAPHS
-			var writer = new System.IO.StreamWriter(string.Format("c:\\{0}-nfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
-			_fsa.ToGraphViz(writer);
-			writer.Close();
+			using (var writer = new System.IO.StreamWriter(string.Format("{0}-nfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol")))
+				_fsa.ToGraphViz(writer);
 #endif
 
 			if (!_settings.Nondeterministic && !hasVariables && !_settings.AllSubmatches)
 			{
 				_fsa = _fsa.Determinize();
 #if FST_GRAPHS
-				writer = new System.IO.StreamWriter(string.Format("c:\\{0}-dfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
-				_fsa.ToGraphViz(writer);
-				writer.Close();
+				using (var writer = new System.IO.StreamWriter(string.Format("{0}-dfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol")))
+					_fsa.ToGraphViz(writer);
 #endif
 				_fsa.Minimize();
 #if FST_GRAPHS
-				writer = new System.IO.StreamWriter(string.Format("c:\\{0}-mindfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
-				_fsa.ToGraphViz(writer);
-				writer.Close();
+				using (var writer = new System.IO.StreamWriter(string.Format("{0}-mindfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol")))
+					_fsa.ToGraphViz(writer);
 #endif
 			}
 			else
 			{
 				_fsa = _fsa.EpsilonRemoval();
 #if FST_GRAPHS
-				writer = new System.IO.StreamWriter(string.Format("c:\\{0}-ernfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol"));
-				_fsa.ToGraphViz(writer);
-				writer.Close();
+				using (var writer = new System.IO.StreamWriter(string.Format("{0}-ernfa.dot", _settings.Direction == Direction.LeftToRight ? "ltor" : "rtol")))
+					_fsa.ToGraphViz(writer);
 #endif
 			}
 			_fsa.IgnoreVariables = !hasVariables;
