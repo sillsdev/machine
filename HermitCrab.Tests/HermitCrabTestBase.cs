@@ -52,7 +52,8 @@ namespace SIL.HermitCrab.Tests
 
 			var syntacticFeatSys = new FeatureSystem
 			                       	{
-			                       		new SymbolicFeature("pos", new FeatureSymbol("N", "Noun"), new FeatureSymbol("V", "Verb"), new FeatureSymbol("A", "Adjective")),
+			                       		new SymbolicFeature("pos", new FeatureSymbol("N", "Noun"), new FeatureSymbol("V", "Verb"), new FeatureSymbol("TV", "Transitive Verb"),
+											new FeatureSymbol("IV", "Intransitive Verb"), new FeatureSymbol("A", "Adjective")),
 			                       		new SymbolicFeature("foo", new FeatureSymbol("foo+", "+"), new FeatureSymbol("foo-", "-")),
 			                       		new SymbolicFeature("baz", new FeatureSymbol("baz+", "+"), new FeatureSymbol("baz-", "-")),
 			                       		new SymbolicFeature("num", new FeatureSymbol("sg"), new FeatureSymbol("pl")),

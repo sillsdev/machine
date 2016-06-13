@@ -237,5 +237,54 @@ namespace SIL.HermitCrab.Tests
 			Assert.That(morpher.ParseWord("sagd"), Is.Empty);
 			AssertMorphsEqual(morpher.ParseWord("sagdv"), "32 PAST NOM");
 		}
+
+		[Test]
+		public void SameRuleUsedInMultipleTemplates()
+		{
+			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+
+			var edSuffix = new AffixProcessRule
+			               	{
+								Name = "ed_suffix",
+			               		Gloss = "PAST",
+								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V", "IV", "TV").Value
+			               	};
+
+			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
+										{
+											Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+											Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "d") }
+										});
+
+			var transitiveVerbTemplate = new AffixTemplate { Name = "Transitive Verb", RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("TV").Value };
+			var slot1 = new AffixTemplateSlot();
+			slot1.Rules.Add(edSuffix);
+			transitiveVerbTemplate.Slots.Add(slot1);
+			Morphophonemic.AffixTemplates.Add(transitiveVerbTemplate);
+
+			var intransitiveVerbTemplate = new AffixTemplate { Name = "Intransitive Verb", RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("IV").Value };
+			slot1 = new AffixTemplateSlot();
+			slot1.Rules.Add(edSuffix);
+			intransitiveVerbTemplate.Slots.Add(slot1);
+			Morphophonemic.AffixTemplates.Add(intransitiveVerbTemplate);
+
+			var nominalizer = new AffixProcessRule
+								{
+									Name = "intransitive verbalizer",
+									Gloss = "IVERB",
+									RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
+									OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("IV").Value
+								};
+
+			nominalizer.Allomorphs.Add(new AffixProcessAllomorph
+										{
+											Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+											Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "v") }
+										});
+			Morphophonemic.MorphologicalRules.Add(nominalizer);
+
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			AssertMorphsEqual(morpher.ParseWord("mivd"), "53 IVERB PAST");
+		}
 	}
 }

@@ -38,8 +38,6 @@ namespace SIL.HermitCrab
 
 			Word inWord = input.DeepClone();
 			inWord.Freeze();
-			//var output = new HashSet<Word>(ValueEqualityComparer<Word>.Default);
-			//ApplySlots(temp, _rules.Count - 1, output);
 
 			var outStack = new ConcurrentStack<Word>();
 			var from = new ConcurrentStack<Tuple<Word, int>>();
@@ -80,28 +78,8 @@ namespace SIL.HermitCrab
 
 			Word[] output = outStack.Distinct(FreezableEqualityComparer<Word>.Default).ToArray();
 			foreach (Word outWord in output)
-				outWord.SyntacticFeatureStruct = fs;
+				outWord.SyntacticFeatureStruct.Add(fs);
 			return output;
 		}
-
-		//private void ApplySlots(Word input, int index, HashSet<Word> output)
-		//{
-		//    for (int i = index; i >= 0; i--)
-		//    {
-		//        foreach (Word outWord in _rules[i].Apply(input))
-		//            ApplySlots(outWord, i - 1, output);
-
-		//        if (!_template.Slots[i].Optional)
-		//        {
-		//            if (_morpher.TraceRules.Contains(_template))
-		//                input.CurrentTrace.Children.Add(new Trace(TraceType.TemplateAnalysisOutput, _template));
-		//            return;
-		//        }
-		//    }
-
-		//    if (_morpher.TraceRules.Contains(_template))
-		//        input.CurrentTrace.Children.Add(new Trace(TraceType.TemplateAnalysisOutput, _template) {Output = input});
-		//    output.Add(input);
-		//}
 	}
 }
