@@ -250,17 +250,17 @@ namespace SIL.Machine.FiniteState
 
 		private bool Transduce(TData data, Annotation<TOffset> start, bool startAnchor, bool endAnchor, bool allMatches, bool useDefaults, out IEnumerable<FstResult<TData, TOffset>> results)
 		{
-			TraversalMethod<TData, TOffset> traversalMethod;
+			ITraversalMethod<TData, TOffset> traversalMethod;
 			if (_operations != null)
 			{
 				if (IsDeterministic)
 				{
-					traversalMethod = new DeterministicFstTraversalMethod<TData, TOffset>(_registersEqualityComparer, _operations, _dir, _filter, StartState, data,
+					traversalMethod = new DeterministicFstTraversalMethod<TData, TOffset>(_registersEqualityComparer, _registerCount, _operations, _dir, _filter, StartState, data,
 						endAnchor, _unification, useDefaults, _ignoreVariables);
 				}
 				else
 				{
-					traversalMethod = new NondeterministicFstTraversalMethod<TData, TOffset>(_registersEqualityComparer, _operations, _dir, _filter, StartState, data,
+					traversalMethod = new NondeterministicFstTraversalMethod<TData, TOffset>(_registersEqualityComparer, _registerCount, _operations, _dir, _filter, StartState, data,
 						endAnchor, _unification, useDefaults, _ignoreVariables);
 				}
 			}
@@ -268,12 +268,12 @@ namespace SIL.Machine.FiniteState
 			{
 				if (IsDeterministic)
 				{
-					traversalMethod = new DeterministicFsaTraversalMethod<TData, TOffset>(_registersEqualityComparer, _dir, _filter, StartState, data, endAnchor,
+					traversalMethod = new DeterministicFsaTraversalMethod<TData, TOffset>(_registersEqualityComparer, _registerCount, _dir, _filter, StartState, data, endAnchor,
 						_unification, useDefaults, _ignoreVariables);
 				}
 				else
 				{
-					traversalMethod = new NondeterministicFsaTraversalMethod<TData, TOffset>(_registersEqualityComparer, _dir, _filter, StartState, data, endAnchor,
+					traversalMethod = new NondeterministicFsaTraversalMethod<TData, TOffset>(_registersEqualityComparer, _registerCount, _dir, _filter, StartState, data, endAnchor,
 						_unification, useDefaults, _ignoreVariables);
 				}
 			}

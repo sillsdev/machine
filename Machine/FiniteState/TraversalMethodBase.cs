@@ -7,9 +7,11 @@ using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState
 {
-	internal abstract class TraversalMethod<TData, TOffset> where TData : IAnnotatedData<TOffset>
+	internal abstract class TraversalMethodBase<TData, TOffset, TInst> : ITraversalMethod<TData, TOffset>
+		where TData : IAnnotatedData<TOffset> where TInst : TraversalInstance<TData, TOffset>
 	{
 		private readonly IEqualityComparer<NullableValue<TOffset>[,]> _registersEqualityComparer;
+		private readonly int _registerCount;
 		private readonly Direction _dir;
 		private readonly State<TData, TOffset> _startState;
 		private readonly TData _data;
@@ -18,12 +20,14 @@ namespace SIL.Machine.FiniteState
 		private readonly bool _useDefaults;
 		private readonly bool _ignoreVariables;
 		private readonly Func<Annotation<TOffset>, bool> _filter;
-		private readonly List<Annotation<TOffset>> _annotations; 
+		private readonly List<Annotation<TOffset>> _annotations;
+		private readonly Queue<TInst> _cachedInstances;
 
-		protected TraversalMethod(IEqualityComparer<NullableValue<TOffset>[,]> registersEqualityComparer, Direction dir, Func<Annotation<TOffset>, bool> filter, State<TData, TOffset> startState,
-			TData data, bool endAnchor, bool unification, bool useDefaults, bool ignoreVariables)
+		protected TraversalMethodBase(IEqualityComparer<NullableValue<TOffset>[,]> registersEqualityComparer, int registerCount, Direction dir, Func<Annotation<TOffset>, bool> filter,
+			State<TData, TOffset> startState, TData data, bool endAnchor, bool unification, bool useDefaults, bool ignoreVariables)
 		{
 			_registersEqualityComparer = registersEqualityComparer;
+			_registerCount = registerCount;
 			_dir = dir;
 			_filter = filter;
 			_startState = startState;
@@ -43,6 +47,7 @@ namespace SIL.Machine.FiniteState
 					break;
 			}
 			_annotations = anns.ToList();
+			_cachedInstances = new Queue<TInst>();
 		}
 
 		protected TData Data
@@ -53,11 +58,6 @@ namespace SIL.Machine.FiniteState
 		protected IEqualityComparer<NullableValue<TOffset>[,]> RegistersEqualityComparer
 		{
 			get { return _registersEqualityComparer; }
-		}
-
-		protected bool IgnoreVariables
-		{
-			get { return _ignoreVariables; }
 		}
 
 		public IList<Annotation<TOffset>> Annotations
@@ -91,7 +91,7 @@ namespace SIL.Machine.FiniteState
 		}
 
 		private void CheckAccepting(int annIndex, NullableValue<TOffset>[,] registers, TData output,
-			VariableBindings varBindings, Arc<TData, TOffset> arc, ICollection<FstResult<TData, TOffset>> curResults, int[] priorities)
+			VariableBindings varBindings, Arc<TData, TOffset> arc, ICollection<FstResult<TData, TOffset>> curResults, IList<int> priorities)
 		{
 			if (arc.Target.IsAccepting && (!_endAnchor || annIndex == _annotations.Count))
 			{
@@ -108,7 +108,8 @@ namespace SIL.Machine.FiniteState
 							resOutput = cloneable.DeepClone();
 
 						var candidate = new FstResult<TData, TOffset>(_registersEqualityComparer, acceptInfo.ID, matchRegisters, resOutput,
-							_ignoreVariables ? null : varBindings.DeepClone(), acceptInfo.Priority, arc.Target.IsLazy, ann, priorities, curResults.Count);
+							varBindings == null ? null : varBindings.DeepClone(), acceptInfo.Priority, arc.Target.IsLazy, ann,
+							priorities == null ? null : priorities.ToArray(), curResults.Count);
 						if (acceptInfo.Acceptable == null || acceptInfo.Acceptable(_data, candidate))
 							curResults.Add(candidate);
 					}
@@ -120,19 +121,17 @@ namespace SIL.Machine.FiniteState
 					if (cloneable != null)
 						resOutput = cloneable.DeepClone();
 					curResults.Add(new FstResult<TData, TOffset>(_registersEqualityComparer, null, matchRegisters, resOutput,
-						_ignoreVariables ? null : varBindings.DeepClone(), -1, arc.Target.IsLazy, ann, priorities, curResults.Count));
+						varBindings == null ? null : varBindings.DeepClone(), -1, arc.Target.IsLazy, ann,
+						priorities == null ? null : priorities.ToArray(), curResults.Count));
 				}
 			}
 		}
 
-		protected IEnumerable<TInst> Initialize<TInst>(ref int annIndex, NullableValue<TOffset>[,] registers,
-			IList<TagMapCommand> cmds, ISet<int> initAnns, Func<TInst> instFactory) where TInst : Instance
+		protected IEnumerable<TInst> Initialize(ref int annIndex, NullableValue<TOffset>[,] registers,
+			IList<TagMapCommand> cmds, ISet<int> initAnns)
 		{
 			var insts = new List<TInst>();
 			TOffset offset = _annotations[annIndex].Span.GetStart(_dir);
-
-			var newRegisters = (NullableValue<TOffset>[,]) registers.Clone();
-			ExecuteCommands(newRegisters, cmds, new NullableValue<TOffset>(offset), new NullableValue<TOffset>());
 
 			for (int i = annIndex; i < _annotations.Count && _annotations[i].Span.GetStart(_dir).Equals(offset); i++)
 			{
@@ -140,40 +139,35 @@ namespace SIL.Machine.FiniteState
 				{
 					int nextIndex = GetNextNonoverlappingAnnotationIndex(i);
 					if (nextIndex != -1)
-						insts.AddRange(Initialize(ref nextIndex, registers, cmds, initAnns, instFactory));
+						insts.AddRange(Initialize(ref nextIndex, (NullableValue<TOffset>[,]) registers.Clone(), cmds, initAnns));
 				}
 			}
 
-			bool cloneRegisters = false;
+			ExecuteCommands(registers, cmds, new NullableValue<TOffset>(offset), new NullableValue<TOffset>());
+
 			for (; annIndex < _annotations.Count && _annotations[annIndex].Span.GetStart(_dir).Equals(offset); annIndex++)
 			{
 				if (!initAnns.Contains(annIndex))
 				{
-					TInst inst = instFactory();
+					TInst inst = GetCachedInstance();
 					inst.State = _startState;
 					inst.AnnotationIndex = annIndex;
-					inst.Registers = cloneRegisters ? (NullableValue<TOffset>[,]) newRegisters.Clone() : newRegisters;
-					if (!_ignoreVariables)
-						inst.VariableBindings = new VariableBindings();
+					Array.Copy(registers, inst.Registers, registers.Length);
 					insts.Add(inst);
 					initAnns.Add(annIndex);
-					cloneRegisters = true;
 				}
 			}
 
 			return insts;
 		}
 
-		protected IEnumerable<TInst> Advance<TInst>(int annIndex, NullableValue<TOffset>[,] registers, TData output, VariableBindings varBindings,
-			Arc<TData, TOffset> arc, ICollection<FstResult<TData, TOffset>> curResults, int[] priorities, Func<TInst> instFactory) where TInst : Instance
+		protected IEnumerable<TInst> Advance(TInst inst, VariableBindings varBindings, Arc<TData, TOffset> arc, ICollection<FstResult<TData, TOffset>> curResults)
 		{
-			int nextIndex = GetNextNonoverlappingAnnotationIndex(annIndex);
+			if (inst.Priorities != null)
+				inst.Priorities.Add(arc.Priority);
+			int nextIndex = GetNextNonoverlappingAnnotationIndex(inst.AnnotationIndex);
 			TOffset nextOffset = nextIndex < _annotations.Count ? _annotations[nextIndex].Span.GetStart(_dir) : _data.Annotations.GetLast(_dir, _filter).Span.GetEnd(_dir);
-			TOffset end = _annotations[annIndex].Span.GetEnd(_dir);
-			var newRegisters = (NullableValue<TOffset>[,]) registers.Clone();
-			ExecuteCommands(newRegisters, arc.Commands, new NullableValue<TOffset>(nextOffset), new NullableValue<TOffset>(end));
-
-			CheckAccepting(nextIndex, newRegisters, output, varBindings, arc, curResults, priorities);
+			TOffset end = _annotations[inst.AnnotationIndex].Span.GetEnd(_dir);
 
 			if (nextIndex < _annotations.Count)
 			{
@@ -183,7 +177,9 @@ namespace SIL.Machine.FiniteState
 				{
 					if (_annotations[i].Optional)
 					{
-						foreach (TInst ni in Advance(i, registers, output, varBindings, arc, curResults, priorities, instFactory))
+						TInst ti = CopyInstance(inst);
+						ti.AnnotationIndex = i;
+						foreach (TInst ni in Advance(ti, varBindings, arc, curResults))
 						{
 							yield return ni;
 							cloneOutputs = true;
@@ -192,44 +188,44 @@ namespace SIL.Machine.FiniteState
 					anns.Add(i);
 				}
 
-				bool cloneRegisters = false;
+				ExecuteCommands(inst.Registers, arc.Commands, new NullableValue<TOffset>(nextOffset), new NullableValue<TOffset>(end));
+				CheckAccepting(nextIndex, inst.Registers, inst.Output, varBindings, arc, curResults, inst.Priorities);
+
+				inst.State = arc.Target;
+
+				bool first = true;
 				foreach (int curIndex in anns)
 				{
-					TInst inst = instFactory();
-					inst.State = arc.Target;
-					inst.AnnotationIndex = curIndex;
-					inst.Registers = cloneRegisters ? (NullableValue<TOffset>[,]) newRegisters.Clone() : newRegisters;
-					inst.VariableBindings = !_ignoreVariables && cloneOutputs ? varBindings.DeepClone() : varBindings;
-					yield return inst;
+					TInst ni = first ? inst : CopyInstance(inst);
+					ni.AnnotationIndex = curIndex;
+					if (varBindings != null)
+						inst.VariableBindings = cloneOutputs ? varBindings.DeepClone() : varBindings;
+					yield return ni;
 					cloneOutputs = true;
-					cloneRegisters = true;
+					first = false;
 				}
 			}
 			else
 			{
-				TInst inst = instFactory();
+				ExecuteCommands(inst.Registers, arc.Commands, new NullableValue<TOffset>(nextOffset), new NullableValue<TOffset>(end));
+				CheckAccepting(nextIndex, inst.Registers, inst.Output, varBindings, arc, curResults, inst.Priorities);
+
 				inst.State = arc.Target;
 				inst.AnnotationIndex = nextIndex;
-				inst.Registers = newRegisters;
 				inst.VariableBindings = varBindings;
 				yield return inst;
 			}
 		}
 
-		protected TInst EpsilonAdvance<TInst>(int annIndex, NullableValue<TOffset>[,] registers, TData output, VariableBindings varBindings, Arc<TData, TOffset> arc,
-			ICollection<FstResult<TData, TOffset>> curResults, int[] priorities, Func<TInst> instFactory) where TInst : Instance
+		protected TInst EpsilonAdvance(TInst inst, Arc<TData, TOffset> arc, ICollection<FstResult<TData, TOffset>> curResults)
 		{
-			Annotation<TOffset> ann = annIndex < _annotations.Count ? _annotations[annIndex] : _data.Annotations.GetEnd(_dir);
-			int prevIndex = GetPrevNonoverlappingAnnotationIndex(annIndex);
+			Annotation<TOffset> ann = inst.AnnotationIndex < _annotations.Count ? _annotations[inst.AnnotationIndex] : _data.Annotations.GetEnd(_dir);
+			int prevIndex = GetPrevNonoverlappingAnnotationIndex(inst.AnnotationIndex);
 			Annotation<TOffset> prevAnn = _annotations[prevIndex];
-			ExecuteCommands(registers, arc.Commands, new NullableValue<TOffset>(ann.Span.GetStart(_dir)), new NullableValue<TOffset>(prevAnn.Span.GetEnd(_dir)));
-			CheckAccepting(annIndex, registers, output, varBindings, arc, curResults, priorities);
+			ExecuteCommands(inst.Registers, arc.Commands, new NullableValue<TOffset>(ann.Span.GetStart(_dir)), new NullableValue<TOffset>(prevAnn.Span.GetEnd(_dir)));
+			CheckAccepting(inst.AnnotationIndex, inst.Registers, inst.Output, inst.VariableBindings, arc, curResults, inst.Priorities);
 
-			TInst inst = instFactory();
 			inst.State = arc.Target;
-			inst.AnnotationIndex = annIndex;
-			inst.Registers = registers;
-			inst.VariableBindings = varBindings;
 			return inst;
 		}
 
@@ -255,20 +251,28 @@ namespace SIL.Machine.FiniteState
 			return -1;
 		}
 
-		protected static int[] UpdatePriorities(int[] priorities, int priority)
+		private TInst GetCachedInstance()
 		{
-			var p = new int[priorities.Length + 1];
-			priorities.CopyTo(p, 0);
-			p[p.Length - 1] = priority;
-			return p;
+			if (_cachedInstances.Count == 0)
+				return CreateInstance(_registerCount, _ignoreVariables);
+
+			TInst inst = _cachedInstances.Dequeue();
+			inst.Clear();
+			return inst;
 		}
 
-		protected class Instance
+		protected TInst CopyInstance(TInst inst)
 		{
-			public State<TData, TOffset> State { get; set; }
-			public int AnnotationIndex { get; set; }
-			public NullableValue<TOffset>[,] Registers { get; set; }
-			public VariableBindings VariableBindings { get; set; }
+			TInst ni = GetCachedInstance();
+			inst.CopyTo(ni);
+			return ni;
+		}
+
+		protected abstract TInst CreateInstance(int registerCount, bool ignoreVariables);
+
+		protected void ReleaseInstance(TInst inst)
+		{
+			_cachedInstances.Enqueue(inst);
 		}
 	}
 }

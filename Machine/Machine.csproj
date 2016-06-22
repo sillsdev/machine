@@ -78,12 +78,17 @@
     <Compile Include="Clusterers\UpgmaClusterer.cs" />
     <Compile Include="FeatureModel\FeaturePath.cs" />
     <Compile Include="FeatureModel\PossibleSymbolCollection.cs" />
+    <Compile Include="FiniteState\DeterministicFsaTraversalInstance.cs" />
     <Compile Include="FiniteState\DeterministicFsaTraversalMethod.cs" />
+    <Compile Include="FiniteState\DeterministicFstTraversalInstance.cs" />
     <Compile Include="FiniteState\DeterministicFstTraversalMethod.cs" />
     <Compile Include="FiniteState\IFstOperations.cs" />
     <Compile Include="FiniteState\InsertOutput.cs" />
     <Compile Include="FiniteState\ArcCollection.cs" />
+    <Compile Include="FiniteState\ITraversalMethod.cs" />
+    <Compile Include="FiniteState\NondeterministicFsaTraversalInstance.cs" />
     <Compile Include="FiniteState\NondeterministicFsaTraversalMethod.cs" />
+    <Compile Include="FiniteState\NondeterministicFstTraversalInstance.cs" />
     <Compile Include="FiniteState\NondeterministicFstTraversalMethod.cs" />
     <Compile Include="FiniteState\NullOutput.cs" />
     <Compile Include="FiniteState\FstResult.cs" />
@@ -94,7 +99,8 @@
     <Compile Include="FiniteState\RegistersEqualityComparer.cs" />
     <Compile Include="FiniteState\RemoveOutput.cs" />
     <Compile Include="FiniteState\ReplaceOutput.cs" />
-    <Compile Include="FiniteState\TraversalMethod.cs" />
+    <Compile Include="FiniteState\TraversalInstance.cs" />
+    <Compile Include="FiniteState\TraversalMethodBase.cs" />
     <Compile Include="Matching\GroupCaptureCollection.cs" />
     <Compile Include="FeatureModel\ComplexFeature.cs" />
     <Compile Include="FeatureModel\Feature.cs" />
