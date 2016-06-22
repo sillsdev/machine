@@ -226,16 +226,14 @@ namespace SIL.Collections
 
 		public static IEnumerable<TNode> GetNodesDepthFirst<TNode>(this IBidirTreeNode<TNode> root, Direction dir) where TNode : class, IBidirTreeNode<TNode>
 		{
-			var stack = new Stack<TNode>();
-			stack.Push((TNode) root);
-			while (stack.Count > 0)
+			yield return (TNode) root;
+
+			if (!root.IsLeaf)
 			{
-				TNode node = stack.Pop();
-				yield return node;
-				if (!node.IsLeaf)
+				foreach (TNode child in root.Children.GetNodes(dir))
 				{
-					foreach (TNode child in node.Children.GetNodes(dir).Reverse())
-						stack.Push(child);
+					foreach (TNode node in child.GetNodesDepthFirst(dir))
+						yield return node;
 				}
 			}
 		}

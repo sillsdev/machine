@@ -38,21 +38,27 @@ namespace SIL.Machine.FiniteState
 			_ignoreVariables = ignoreVariables;
 			_annotations = new List<Annotation<TOffset>>();
 			// insertion sort
-			foreach (Annotation<TOffset> ann in _data.Annotations.GetNodes(_dir).SelectMany(a => a.GetNodesDepthFirst(_dir)).Where(a => _filter(a)))
+			foreach (Annotation<TOffset> topAnn in _data.Annotations.GetNodes(_dir))
 			{
-				int i = _annotations.Count - 1;
-				while (i >= 0 && CompareAnnotations(_annotations[i], ann) > 0)
+				foreach (Annotation<TOffset> ann in topAnn.GetNodesDepthFirst(_dir))
 				{
+					if (!_filter(ann))
+						continue;
+
+					int i = _annotations.Count - 1;
+					while (i >= 0 && CompareAnnotations(_annotations[i], ann) > 0)
+					{
+						if (i + 1 == _annotations.Count)
+							_annotations.Add(_annotations[i]);
+						else
+							_annotations[i + 1] = _annotations[i];
+						i--;
+					}
 					if (i + 1 == _annotations.Count)
-						_annotations.Add(_annotations[i]);
+						_annotations.Add(ann);
 					else
-						_annotations[i + 1] = _annotations[i];
-					i--;
+						_annotations[i + 1] = ann;
 				}
-				if (i + 1 == _annotations.Count)
-					_annotations.Add(ann);
-				else
-					_annotations[i + 1] = ann;
 			}
 			_cachedInstances = new Queue<TInst>();
 		}
