@@ -36,18 +36,34 @@ namespace SIL.Machine.FiniteState
 			_unification = unification;
 			_useDefaults = useDefaults;
 			_ignoreVariables = ignoreVariables;
-			IEnumerable<Annotation<TOffset>> anns = _data.Annotations.GetNodes(_dir).SelectMany(a => a.GetNodesDepthFirst(_dir)).Where(a => _filter(a));
-			switch (_dir)
+			_annotations = new List<Annotation<TOffset>>();
+			// insertion sort
+			foreach (Annotation<TOffset> ann in _data.Annotations.GetNodes(_dir).SelectMany(a => a.GetNodesDepthFirst(_dir)).Where(a => _filter(a)))
 			{
-				case Direction.LeftToRight:
-					anns = anns.OrderBy(a => a.Span).ThenBy(a => a.Depth);
-					break;
-				case Direction.RightToLeft:
-					anns = anns.OrderByDescending(a => a.Span).ThenBy(a => a.Depth);
-					break;
+				int i = _annotations.Count - 1;
+				while (i >= 0 && CompareAnnotations(_annotations[i], ann) > 0)
+				{
+					if (i + 1 == _annotations.Count)
+						_annotations.Add(_annotations[i]);
+					else
+						_annotations[i + 1] = _annotations[i];
+					i--;
+				}
+				if (i + 1 == _annotations.Count)
+					_annotations.Add(ann);
+				else
+					_annotations[i + 1] = ann;
 			}
-			_annotations = anns.ToList();
 			_cachedInstances = new Queue<TInst>();
+		}
+
+		private int CompareAnnotations(Annotation<TOffset> x, Annotation<TOffset> y)
+		{
+			int res = x.Span.CompareTo(y.Span);
+			if (res != 0)
+				return _dir == Direction.LeftToRight ? res : -res;
+
+			return x.Depth.CompareTo(y.Depth);
 		}
 
 		protected TData Data
