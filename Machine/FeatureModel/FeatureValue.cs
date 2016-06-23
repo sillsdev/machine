@@ -73,21 +73,16 @@ namespace SIL.Machine.FeatureModel
 		{
 			value = Dereference(value);
 
-			if (!(value is T))
-			{
-				actualValue = null;
-				return false;
-			}
-
-			actualValue = (T) value;
-			return true;
+			actualValue = value as T;
+			return actualValue != null;
 		}
 
 		protected static T Dereference<T>(T value) where T : FeatureValue
 		{
-			while (value.Forward != null)
-				value = (T) value.Forward;
-			return value;
+			FeatureValue fv = value;
+			while (fv.Forward != null)
+				fv = fv.Forward;
+			return (T) fv;
 		}
 
 		public abstract bool ValueEquals(FeatureValue other);
