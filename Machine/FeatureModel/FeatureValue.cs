@@ -52,17 +52,29 @@ namespace SIL.Machine.FeatureModel
 			}
 			else if (fv1 != null && fv2 != null)
 			{
-				fv1.DestructiveUnify(fv2, useDefaults, false, copies, varBindings);
+				if (!fv1.DestructiveUnify(fv2, useDefaults, false, copies, varBindings))
+				{
+					output = null;
+					return false;
+				}
 				output = fv1;
 			}
 			else if (fv1 != null)
 			{
-				fv1.DestructiveUnify(other, useDefaults, true, copies, varBindings);
+				if (!fv1.DestructiveUnify(other, useDefaults, true, copies, varBindings))
+				{
+					output = null;
+					return false;
+				}
 				output = fv1;
 			}
 			else
 			{
-				fv2.DestructiveUnify(this, useDefaults, true, copies, varBindings);
+				if (!fv2.DestructiveUnify(this, useDefaults, true, copies, varBindings))
+				{
+					output = null;
+					return false;
+				}
 				output = fv2;
 			}
 
