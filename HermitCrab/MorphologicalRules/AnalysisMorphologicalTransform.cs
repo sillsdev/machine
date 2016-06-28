@@ -52,11 +52,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 					foreach (ShapeNode node in output.GetNodes(outputSpan))
 					{
 						if ((FeatureSymbol) modifyFromFS.GetValue(HCFeatureSystem.Type) == node.Annotation.Type())
-						{
-							FeatureStruct fs = node.Annotation.FeatureStruct.DeepClone();
-							fs.PriorityUnion(modifyFromFS);
-							node.Annotation.FeatureStruct.Union(fs, match.VariableBindings);
-						}
+							node.Annotation.FeatureStruct.Add(modifyFromFS, match.VariableBindings);
 					}
 				}
 			}
