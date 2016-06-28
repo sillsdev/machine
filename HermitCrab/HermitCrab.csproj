@@ -58,11 +58,11 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="SIL.Collections, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SIL.Machine.1.0.0-build00007\lib\net40-Client\SIL.Collections.dll</HintPath>
+      <HintPath>..\packages\SIL.Machine.1.0.0-build00011\lib\net40-Client\SIL.Collections.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="SIL.Machine, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SIL.Machine.1.0.0-build00007\lib\net40-Client\SIL.Machine.dll</HintPath>
+      <HintPath>..\packages\SIL.Machine.1.0.0-build00011\lib\net40-Client\SIL.Machine.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
