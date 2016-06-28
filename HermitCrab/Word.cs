@@ -344,7 +344,7 @@ namespace SIL.HermitCrab
 			}
 			code = code * 31 + _stratum.GetHashCode();
 			code = code * 31 + (_rootAllomorph == null ? 0 : _rootAllomorph.GetHashCode());
-			code = code * 31 + _mrules.GetSequenceHashCode();
+			code = code * 31 + _mrulesUnapplied.Aggregate(0, (i, kvp) => i ^ kvp.Key.GetHashCode() ^ kvp.Value.GetHashCode());
 			code = code * 31 + _isLastAppliedRuleFinal.GetHashCode();
 			return code;
 		}
@@ -357,9 +357,19 @@ namespace SIL.HermitCrab
 			if (IsFrozen && other.IsFrozen && GetFrozenHashCode() != other.GetFrozenHashCode())
 				return false;
 
+			if (_mrulesUnapplied.Count != other._mrulesUnapplied.Count)
+				return false;
+
+			foreach (KeyValuePair<IMorphologicalRule, int> kvp in _mrulesUnapplied)
+			{
+				int numUnapplies;
+				if (!other._mrulesUnapplied.TryGetValue(kvp.Key, out numUnapplies) || numUnapplies != kvp.Value)
+					return false;
+			}
+
 			return _shape.ValueEquals(other._shape) && _realizationalFS.ValueEquals(other._realizationalFS)
 				&& _nonHeads.SequenceEqual(other._nonHeads, FreezableEqualityComparer<Word>.Default) && _stratum == other._stratum
-				&& _rootAllomorph == other._rootAllomorph && _mrules.SequenceEqual(other._mrules) && _isLastAppliedRuleFinal == other._isLastAppliedRuleFinal;
+				&& _rootAllomorph == other._rootAllomorph && _isLastAppliedRuleFinal == other._isLastAppliedRuleFinal;
 		}
 
 		public Word DeepClone()
