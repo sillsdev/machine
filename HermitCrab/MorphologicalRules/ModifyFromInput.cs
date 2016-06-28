@@ -23,13 +23,16 @@ namespace SIL.HermitCrab.MorphologicalRules
 			get { return _fs; }
 		}
 
-		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IDictionary<string, Pattern<Word, ShapeNode>> partLookup)
+		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IDictionary<string, Pattern<Word, ShapeNode>> partLookup, IDictionary<string, int> capturedParts)
 		{
 			Pattern<Word, ShapeNode> pattern = partLookup[PartName];
-			var group = new Group<Word, ShapeNode>(PartName, pattern.Children.DeepCloneExceptBoundaries());
+			int count = capturedParts.GetValue(PartName, () => 0);
+			string groupName = AnalysisMorphologicalTransform.GetGroupName(PartName, count);
+			var group = new Group<Word, ShapeNode>(groupName, pattern.Children.DeepCloneExceptBoundaries());
 			foreach (Constraint<Word, ShapeNode> constraint in group.GetNodesDepthFirst().OfType<Constraint<Word, ShapeNode>>().Where(c => c.Type() == (FeatureSymbol) _fs.GetValue(HCFeatureSystem.Type)))
 				constraint.FeatureStruct.PriorityUnion(_fs);
 			analysisLhs.Children.Add(group);
+			capturedParts[PartName]++;
 		}
 
 		public override IEnumerable<Tuple<ShapeNode, ShapeNode>> Apply(Match<Word, ShapeNode> match, Word output)

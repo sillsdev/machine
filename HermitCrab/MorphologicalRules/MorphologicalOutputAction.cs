@@ -23,7 +23,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 			get { return _partName; }
 		}
 
-		public abstract void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IDictionary<string, Pattern<Word, ShapeNode>> partLookup);
+		public abstract void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IDictionary<string, Pattern<Word, ShapeNode>> partLookup, IDictionary<string, int> capturedParts);
 
 		/// <summary>
 		/// Applies this output record to the specified word synthesis.

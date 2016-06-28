@@ -13,7 +13,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 			: base(allomorph.Lhs, allomorph.Rhs)
 		{
 			_allomorph = allomorph;
-			Pattern.Acceptable = match => _allomorph.Lhs.Any(part => match.GroupCaptures.Captured(part.Name));
+			Pattern.Acceptable = match => _allomorph.Lhs.Any(part => IsPartCaptured(match, part.Name));
 		}
 
 		public override ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)

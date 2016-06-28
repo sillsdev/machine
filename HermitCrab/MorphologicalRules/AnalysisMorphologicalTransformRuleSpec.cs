@@ -17,6 +17,20 @@ namespace SIL.HermitCrab.MorphologicalRules
 			return true;
 		}
 
+		protected bool IsPartCaptured(Match<Word, ShapeNode> match, string partName)
+		{
+			int count;
+			if (CapturedParts.TryGetValue(partName, out count))
+			{
+				for (int i = 0; i < count; i++)
+				{
+					if (match.GroupCaptures.Captured(GetGroupName(partName, i)))
+						return true;
+				}
+			}
+			return false;
+		}
+
 		public abstract ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output);
 	}
 }

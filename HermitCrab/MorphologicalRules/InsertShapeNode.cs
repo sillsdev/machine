@@ -17,7 +17,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 			_fs = fs;
 		}
 
-		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IDictionary<string, Pattern<Word, ShapeNode>> partLookup)
+		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IDictionary<string, Pattern<Word, ShapeNode>> partLookup, IDictionary<string, int> capturedParts)
 		{
 			analysisLhs.Children.Add(new Constraint<Word, ShapeNode>(_fs.DeepClone()));
 		}

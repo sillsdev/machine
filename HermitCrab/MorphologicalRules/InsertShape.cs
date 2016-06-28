@@ -22,7 +22,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 			_table = table;
 		}
 
-		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IDictionary<string, Pattern<Word, ShapeNode>> partLookup)
+		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IDictionary<string, Pattern<Word, ShapeNode>> partLookup, IDictionary<string, int> capturedParts)
 		{
 			foreach (ShapeNode node in _shape)
 			{

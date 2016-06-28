@@ -10,20 +10,32 @@ namespace SIL.HermitCrab.MorphologicalRules
 	{
 		private readonly Pattern<Word, ShapeNode> _pattern;
 		private readonly Dictionary<string, FeatureStruct> _modifyFrom;
+		private readonly Dictionary<string, int> _capturedParts;
 
 		public AnalysisMorphologicalTransform(IEnumerable<Pattern<Word, ShapeNode>> lhs, IList<MorphologicalOutputAction> rhs)
 		{
 			Dictionary<string, Pattern<Word, ShapeNode>> partLookup = lhs.ToDictionary(p => p.Name);
 			_modifyFrom = new Dictionary<string, FeatureStruct>();
 			_pattern = new Pattern<Word, ShapeNode>();
+			_capturedParts = new Dictionary<string, int>();
 			foreach (MorphologicalOutputAction outputAction in rhs)
 			{
-				outputAction.GenerateAnalysisLhs(_pattern, partLookup);
+				outputAction.GenerateAnalysisLhs(_pattern, partLookup, _capturedParts);
 
 				var modifyFromInput = outputAction as ModifyFromInput;
 				if (modifyFromInput != null)
 					_modifyFrom[modifyFromInput.PartName] = modifyFromInput.FeatureStruct.AntiFeatureStruct();
 			}
+		}
+
+		internal static string GetGroupName(string partName, int index)
+		{
+			return string.Format("{0}_{1}", partName, index);
+		}
+
+		protected IDictionary<string, int> CapturedParts
+		{
+			get { return _capturedParts; }
 		}
 
 		public Pattern<Word, ShapeNode> Pattern
@@ -40,26 +52,32 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 		private void AddPartNodes(Pattern<Word, ShapeNode> part, Match<Word, ShapeNode> match, Shape output)
 		{
-			GroupCapture<ShapeNode> inputGroup = match.GroupCaptures[part.Name];
-			if (inputGroup.Success)
+			int count;
+			if (_capturedParts.TryGetValue(part.Name, out count))
 			{
-				FeatureStruct modifyFromFS;
-				if (!_modifyFrom.TryGetValue(part.Name, out modifyFromFS))
-					modifyFromFS = null;
-				Span<ShapeNode> outputSpan = match.Input.Shape.CopyTo(inputGroup.Span, output);
-				if (modifyFromFS != null)
+				for (int i = 0; i < count; i++)
 				{
-					foreach (ShapeNode node in output.GetNodes(outputSpan))
+					GroupCapture<ShapeNode> inputGroup = match.GroupCaptures[GetGroupName(part.Name, i)];
+					if (inputGroup.Success)
 					{
-						if ((FeatureSymbol) modifyFromFS.GetValue(HCFeatureSystem.Type) == node.Annotation.Type())
-							node.Annotation.FeatureStruct.Add(modifyFromFS, match.VariableBindings);
+						FeatureStruct modifyFromFS;
+						if (!_modifyFrom.TryGetValue(part.Name, out modifyFromFS))
+							modifyFromFS = null;
+						Span<ShapeNode> outputSpan = match.Input.Shape.CopyTo(inputGroup.Span, output);
+						if (modifyFromFS != null)
+						{
+							foreach (ShapeNode node in output.GetNodes(outputSpan))
+							{
+								if ((FeatureSymbol) modifyFromFS.GetValue(HCFeatureSystem.Type) == node.Annotation.Type())
+									node.Annotation.FeatureStruct.Add(modifyFromFS, match.VariableBindings);
+							}
+						}
+						return;
 					}
 				}
 			}
-			else
-			{
-				Untruncate(part, output, false, match.VariableBindings);
-			}
+
+			Untruncate(part, output, false, match.VariableBindings);
 		}
 
 		private void Untruncate(PatternNode<Word, ShapeNode> patternNode, Shape output, bool optional, VariableBindings varBindings)
