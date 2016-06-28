@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+#if OUTPUT_ANALYSES
+using System.IO;
+#endif
 using System.Linq;
 using System.Threading.Tasks;
 using SIL.Collections;
@@ -83,6 +86,18 @@ namespace SIL.HermitCrab
 			// Unapply rules
 			var validWordsStack = new ConcurrentStack<Word>();
 			IEnumerable<Word> analyses = _analysisRule.Apply(input);
+
+#if OUTPUT_ANALYSES
+			var lines = new List<string>();
+			foreach (Word w in analyses)
+			{
+				string shapeStr = w.ToString();
+				string rulesStr = string.Join(", ", w.MorphologicalRules.Select(r => r.Name));
+				lines.Add(string.Format("{0} : {1}", shapeStr, rulesStr));
+			}
+
+			File.WriteAllLines("analyses.txt", lines.OrderBy(l => l));
+#endif
 
 			Exception exception = null;
 			Parallel.ForEach(analyses, (analysisWord, state) =>

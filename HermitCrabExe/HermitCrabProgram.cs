@@ -58,6 +58,7 @@ namespace SIL.HermitCrab
 				context.Compile();
 				Console.WriteLine("done.");
 				Console.WriteLine("{0} loaded.", language.Name);
+				Console.WriteLine();
 			}
 			catch (IOException ioe)
 			{
@@ -86,7 +87,7 @@ namespace SIL.HermitCrab
 					input = scriptReader.ReadLine();
 					while (input != null && input.Trim() != "exit")
 					{
-						if (!input.Trim().StartsWith("#"))
+						if (!input.Trim().StartsWith("#") && input.Trim() != "")
 						{
 							string[] cmdArgs = CommandLineParser.Parse(input);
 							ConsoleCommandDispatcher.DispatchCommand(commands, cmdArgs, context.Out);

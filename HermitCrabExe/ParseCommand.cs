@@ -23,28 +23,39 @@ namespace SIL.HermitCrab
 		public override int Run(string[] remainingArguments)
 		{
 			string word = remainingArguments[0];
-			object trace;
-			Stopwatch watch = Stopwatch.StartNew();
-			Word[] results = _context.Morpher.ParseWord(word, out trace).ToArray();
-			watch.Stop();
-			_context.Out.WriteLine("Parsing \"{0}\"", word);
-			if (results.Length == 0)
+			try
 			{
-				_context.Out.WriteLine("No valid parses.");
+				_context.Out.WriteLine("Parsing \"{0}\"", word);
+				object trace;
+				Stopwatch watch = Stopwatch.StartNew();
+				Word[] results = _context.Morpher.ParseWord(word, out trace).ToArray();
+				watch.Stop();
+				if (results.Length == 0)
+				{
+					_context.Out.WriteLine("No valid parses.");
+				}
+				else
+				{
+					for (int i = 0; i < results.Length; i++)
+					{
+						_context.Out.WriteLine("Parse {0}", i + 1);
+						PrintResult(results[i]);
+					}
+				}
+				if (_context.Morpher.TraceManager.IsTracing)
+				{
+					PrintTrace((Trace) trace, 0, new HashSet<int>());
+				}
+				_context.Out.WriteLine("Parse time: {0}ms", watch.ElapsedMilliseconds);
 				_context.Out.WriteLine();
+				return 0;
 			}
-			else
+			catch (InvalidShapeException ise)
 			{
-				foreach (Word result in results)
-					PrintResult(result);
-			}
-			if (_context.Morpher.TraceManager.IsTracing)
-			{
-				PrintTrace((Trace) trace, 0, new HashSet<int>());
+				_context.Out.WriteLine("The word contains an invalid segment at position {0}.", ise.Position + 1);
 				_context.Out.WriteLine();
+				return 1;
 			}
-			_context.Out.WriteLine("Parse time: {0}ms", watch.ElapsedMilliseconds);
-			return 0;
 		}
 
 		private void PrintResult(Word result)
@@ -82,7 +93,6 @@ namespace SIL.HermitCrab
 					firstItem = false;
 				}
 			}
-			_context.Out.WriteLine();
 			_context.Out.WriteLine();
 		}
 
