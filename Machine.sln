@@ -1,17 +1,42 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Tests", "tests\SIL.Machine.Tests\SIL.Machine.Tests.csproj", "{3B8610C8-8EF2-4733-9D8F-5303318830DA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C1241431-829A-4019-97A2-6D6042E00DA8} = {C1241431-829A-4019-97A2-6D6042E00DA8}
+		{DDCD6096-CDAA-4EAA-BCB7-FB122577D1A4} = {DDCD6096-CDAA-4EAA-BCB7-FB122577D1A4}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Translation.Thot.Tests", "tests\SIL.Machine.Translation.Thot.Tests\SIL.Machine.Translation.Thot.Tests.csproj", "{305C1A93-6BF6-4B70-B8F5-81FCBD6A10F3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{262D7524-4627-44EE-A788-3437B4AE6F0F} = {262D7524-4627-44EE-A788-3437B4AE6F0F}
+		{C1241431-829A-4019-97A2-6D6042E00DA8} = {C1241431-829A-4019-97A2-6D6042E00DA8}
+		{DDCD6096-CDAA-4EAA-BCB7-FB122577D1A4} = {DDCD6096-CDAA-4EAA-BCB7-FB122577D1A4}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Morphology.HermitCrab.Tests", "tests\SIL.Machine.Morphology.HermitCrab.Tests\SIL.Machine.Morphology.HermitCrab.Tests.csproj", "{B91590D0-1519-48A0-866B-B17E326812AD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C1241431-829A-4019-97A2-6D6042E00DA8} = {C1241431-829A-4019-97A2-6D6042E00DA8}
+		{D9C1284C-C143-4B3F-AC5B-433910238D13} = {D9C1284C-C143-4B3F-AC5B-433910238D13}
+		{DDCD6096-CDAA-4EAA-BCB7-FB122577D1A4} = {DDCD6096-CDAA-4EAA-BCB7-FB122577D1A4}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HermitCrabExe", "src\HermitCrabExe\HermitCrabExe.csproj", "{945FED88-A315-4692-96DD-770892A814DD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{89FF4251-6DAF-43F1-869C-0D76DE2CDC3F} = {89FF4251-6DAF-43F1-869C-0D76DE2CDC3F}
+		{06B55ABB-059C-4340-ADF5-EF0E229FE7AA} = {06B55ABB-059C-4340-ADF5-EF0E229FE7AA}
+		{761BD6F6-F1CF-49F0-8C67-84D5515FAF00} = {761BD6F6-F1CF-49F0-8C67-84D5515FAF00}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Translation.TestApp", "samples\SIL.Machine.Translation.TestApp\SIL.Machine.Translation.TestApp.csproj", "{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}"
+	ProjectSection(ProjectDependencies) = postProject
+		{262D7524-4627-44EE-A788-3437B4AE6F0F} = {262D7524-4627-44EE-A788-3437B4AE6F0F}
+		{C1241431-829A-4019-97A2-6D6042E00DA8} = {C1241431-829A-4019-97A2-6D6042E00DA8}
+		{D9C1284C-C143-4B3F-AC5B-433910238D13} = {D9C1284C-C143-4B3F-AC5B-433910238D13}
+		{DDCD6096-CDAA-4EAA-BCB7-FB122577D1A4} = {DDCD6096-CDAA-4EAA-BCB7-FB122577D1A4}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Core.NETStd13", "src\SIL.Core.NETStd13\SIL.Core.NETStd13.csproj", "{C1241431-829A-4019-97A2-6D6042E00DA8}"
 EndProject
@@ -53,18 +78,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		src\SIL.Machine\SIL.Machine.projitems*{eb8af4db-99d6-48a9-a209-f679bf230e9a}*SharedItemsImports = 13
-		src\SIL.Core\SIL.Core.projitems*{89ff4251-6daf-43f1-869c-0d76de2cdc3f}*SharedItemsImports = 4
-		src\SIL.Machine\SIL.Machine.projitems*{ddcd6096-cdaa-4eaa-bcb7-fb122577d1a4}*SharedItemsImports = 4
 		src\SIL.Machine\SIL.Machine.projitems*{06b55abb-059c-4340-adf5-ef0e229fe7aa}*SharedItemsImports = 4
-		src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.projitems*{761bd6f6-f1cf-49f0-8c67-84d5515faf00}*SharedItemsImports = 4
-		src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.projitems*{93753ce2-1c65-4861-8b08-89b55b142844}*SharedItemsImports = 4
-		src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.projitems*{c71c1db2-de43-45cf-aeb5-0d00a052da9f}*SharedItemsImports = 13
-		src\SIL.Core\SIL.Core.projitems*{c1241431-829a-4019-97a2-6d6042e00da8}*SharedItemsImports = 4
-		src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.projitems*{62c4b0d7-5d95-4458-a904-6eff0eb4dc97}*SharedItemsImports = 13
-		src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.projitems*{262d7524-4627-44ee-a788-3437b4ae6f0f}*SharedItemsImports = 4
-		src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.projitems*{d9c1284c-c143-4b3f-ac5b-433910238d13}*SharedItemsImports = 4
 		src\SIL.Core\SIL.Core.projitems*{0ff2bb0b-755e-4bb7-b427-246443c0f806}*SharedItemsImports = 13
+		src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.projitems*{262d7524-4627-44ee-a788-3437b4ae6f0f}*SharedItemsImports = 4
+		src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.projitems*{62c4b0d7-5d95-4458-a904-6eff0eb4dc97}*SharedItemsImports = 13
+		src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.projitems*{761bd6f6-f1cf-49f0-8c67-84d5515faf00}*SharedItemsImports = 4
+		src\SIL.Core\SIL.Core.projitems*{89ff4251-6daf-43f1-869c-0d76de2cdc3f}*SharedItemsImports = 4
+		src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.projitems*{93753ce2-1c65-4861-8b08-89b55b142844}*SharedItemsImports = 4
+		src\SIL.Core\SIL.Core.projitems*{c1241431-829a-4019-97a2-6d6042e00da8}*SharedItemsImports = 4
+		src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.projitems*{c71c1db2-de43-45cf-aeb5-0d00a052da9f}*SharedItemsImports = 13
+		src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.projitems*{d9c1284c-c143-4b3f-ac5b-433910238d13}*SharedItemsImports = 4
+		src\SIL.Machine\SIL.Machine.projitems*{ddcd6096-cdaa-4eaa-bcb7-fb122577d1a4}*SharedItemsImports = 4
+		src\SIL.Machine\SIL.Machine.projitems*{eb8af4db-99d6-48a9-a209-f679bf230e9a}*SharedItemsImports = 13
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
