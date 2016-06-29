@@ -173,7 +173,7 @@ namespace SIL.HermitCrab
 		public bool IsMatch(string word, Shape shape)
 		{
 			string pattern = shape.ToRegexString(this, false);
-			return Regex.IsMatch(word, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+			return Regex.IsMatch(word, pattern, RegexOptions.CultureInvariant);
 		}
 
 		public override string ToString()
