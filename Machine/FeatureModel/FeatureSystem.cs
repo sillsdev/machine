@@ -6,20 +6,20 @@ using SIL.Collections;
 
 namespace SIL.Machine.FeatureModel
 {
-    /// <summary>
-    /// This class represents a feature system. It encapsulates all of the valid features and symbols.
-    /// </summary>
-    public class FeatureSystem : ICollection<Feature>, IFreezable
-    {
-    	private readonly IDBearerSet<Feature> _features;
+	/// <summary>
+	/// This class represents a feature system. It encapsulates all of the valid features and symbols.
+	/// </summary>
+	public class FeatureSystem : ICollection<Feature>, IFreezable
+	{
+		private readonly IDBearerSet<Feature> _features;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FeatureSystem"/> class.
-        /// </summary>
-        public FeatureSystem()
-        {
-            _features = new IDBearerSet<Feature>();
-        }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FeatureSystem"/> class.
+		/// </summary>
+		public FeatureSystem()
+		{
+			_features = new IDBearerSet<Feature>();
+		}
 
 		public Feature GetFeature(string id)
 		{
@@ -79,27 +79,27 @@ namespace SIL.Machine.FeatureModel
 			return _features.Contains(feature);
 		}
 
-        /// <summary>
-        /// Gets the feature value associated with the specified ID.
-        /// </summary>
-        /// <param name="id">The ID.</param>
-        /// <returns>The feature value.</returns>
-        public FeatureSymbol GetSymbol(string id)
-        {
-        	FeatureSymbol symbol;
+		/// <summary>
+		/// Gets the feature value associated with the specified ID.
+		/// </summary>
+		/// <param name="id">The ID.</param>
+		/// <returns>The feature value.</returns>
+		public FeatureSymbol GetSymbol(string id)
+		{
+			FeatureSymbol symbol;
 			if (TryGetSymbol(id, out symbol))
 				return symbol;
 
 			throw new ArgumentException(string.Format("The symbol '{0}' could not be found.", id), "id");
-        }
+		}
 
-    	/// <summary>
-    	/// Gets the feature value associated with the specified ID.
-    	/// </summary>
-    	/// <param name="id">The ID.</param>
-    	/// <param name="symbol"> </param>
-    	/// <returns>The feature value.</returns>
-    	public bool TryGetSymbol(string id, out FeatureSymbol symbol)
+		/// <summary>
+		/// Gets the feature value associated with the specified ID.
+		/// </summary>
+		/// <param name="id">The ID.</param>
+		/// <param name="symbol"> </param>
+		/// <returns>The feature value.</returns>
+		public bool TryGetSymbol(string id, out FeatureSymbol symbol)
 		{
 			foreach (SymbolicFeature sf in _features.OfType<SymbolicFeature>())
 			{
@@ -122,82 +122,82 @@ namespace SIL.Machine.FeatureModel
 			return ContainsSymbol(symbol.ID);
 		}
 
-    	IEnumerator<Feature> IEnumerable<Feature>.GetEnumerator()
-    	{
-    		return ((IEnumerable<Feature>) _features).GetEnumerator();
-    	}
+		IEnumerator<Feature> IEnumerable<Feature>.GetEnumerator()
+		{
+			return ((IEnumerable<Feature>) _features).GetEnumerator();
+		}
 
-    	IEnumerator IEnumerable.GetEnumerator()
-    	{
-    		return ((IEnumerable<Feature>) this).GetEnumerator();
-    	}
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return ((IEnumerable<Feature>) this).GetEnumerator();
+		}
 
-    	public void Add(Feature feature)
-    	{
+		public virtual void Add(Feature feature)
+		{
 			CheckFrozen();
 			_features.Add(feature);
-    	}
+		}
 
-    	public void Clear()
-    	{
+		public virtual void Clear()
+		{
 			CheckFrozen();
-    		_features.Clear();
-    	}
+			_features.Clear();
+		}
 
 		bool ICollection<Feature>.Contains(Feature feature)
 		{
 			return _features.Contains(feature);
 		}
 
-    	void ICollection<Feature>.CopyTo(Feature[] array, int arrayIndex)
-    	{
-    		_features.CopyTo(array, arrayIndex);
-    	}
+		void ICollection<Feature>.CopyTo(Feature[] array, int arrayIndex)
+		{
+			_features.CopyTo(array, arrayIndex);
+		}
 
-		public bool Remove(Feature feature)
+		public virtual bool Remove(Feature feature)
 		{
 			CheckFrozen();
 			return _features.Remove(feature);
 		}
 
-		public bool Remove(string featureID)
+		public virtual bool Remove(string featureID)
 		{
 			CheckFrozen();
 			return _features.Remove(featureID);
 		}
 
-		private void CheckFrozen()
+		protected void CheckFrozen()
 		{
 			if (IsFrozen)
 				throw new InvalidOperationException("The feature system is immutable.");
 		}
 
-    	public int Count
-    	{
+		public int Count
+		{
 			get { return _features.Count; }
-    	}
+		}
 
-	    public bool IsReadOnly
-	    {
-		    get { return IsFrozen; }
-	    }
+		public bool IsReadOnly
+		{
+			get { return IsFrozen; }
+		}
 
-	    public bool IsFrozen { get; private set; }
+		public bool IsFrozen { get; private set; }
 
-	    public void Freeze()
-	    {
-		    if (IsFrozen)
-			    return;
+		public void Freeze()
+		{
+			if (IsFrozen)
+				return;
 
-		    IsFrozen = true;
+			IsFrozen = true;
 
 			foreach (Feature feature in _features)
 				feature.Freeze();
-	    }
+		}
 
-	    public int GetFrozenHashCode()
-	    {
-		    return GetHashCode();
-	    }
-    }
+		public int GetFrozenHashCode()
+		{
+			return GetHashCode();
+		}
+	}
 }
