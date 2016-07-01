@@ -18,8 +18,8 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			            		Pattern = Pattern<Word, ShapeNode>.New()
 			            			.Group("1", group => group.Annotation(Table3.GetSymbolFeatureStruct("i")))
 			            			.Group("2", group => group.Annotation(Table3.GetSymbolFeatureStruct("u"))).Value,
-			            		LeftGroupName = "2",
-								RightGroupName = "1"
+			            		LeftSwitchName = "2",
+								RightSwitchName = "1"
 			            	};
 			Morphophonemic.PhonologicalRules.Add(rule1);
 
@@ -40,8 +40,8 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 									.Group("middle", group => group.Annotation(Table3.GetSymbolFeatureStruct("+")))
 			            			.Group("2", group => group.Annotation(Table3.GetSymbolFeatureStruct("u")))
 									.Group("rightEnv", group => group.Annotation(HCFeatureSystem.RightSideAnchor)).Value,
-			            		LeftGroupName = "2",
-								RightGroupName = "1"
+			            		LeftSwitchName = "2",
+								RightSwitchName = "1"
 			            	};
 			Morphophonemic.PhonologicalRules.Add(rule1);
 
@@ -54,7 +54,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			uSuffix.Allomorphs.Add(new AffixProcessAllomorph
 									{
 										Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-										Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "+u")}
+										Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+u")}
 									});
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
@@ -72,8 +72,8 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			            		Pattern = Pattern<Word, ShapeNode>.New()
 			            			.Group("1", group => group.Annotation(Table3.GetSymbolFeatureStruct("i")))
 			            			.Group("2", group => group.Annotation(Table3.GetSymbolFeatureStruct("u"))).Value,
-			            		LeftGroupName = "2",
-								RightGroupName = "1"
+			            		LeftSwitchName = "2",
+								RightSwitchName = "1"
 			            	};
 			Morphophonemic.PhonologicalRules.Add(prule);
 
@@ -86,7 +86,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			iSuffix.Allomorphs.Add(new AffixProcessAllomorph
 									{
 										Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-										Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "i")}
+										Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "i")}
 									});
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);

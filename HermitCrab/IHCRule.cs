@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using SIL.Machine.Annotations;
+﻿using SIL.Machine.Annotations;
 using SIL.Machine.Rules;
 
 namespace SIL.HermitCrab
@@ -10,7 +9,5 @@ namespace SIL.HermitCrab
 
 		IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher);
 		IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher);
-
-		IDictionary Properties { get; }
 	}
 }

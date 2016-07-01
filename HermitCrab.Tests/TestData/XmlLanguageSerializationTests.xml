@@ -1,0 +1,429 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>Test</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="pos1">
+        <Name>POS 1</Name>
+      </PartOfSpeech>
+      <PartOfSpeech id="pos2">
+        <Name>POS 2</Name>
+      </PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="pfeat1" defaultSymbol="pval2">
+        <Name>phon feature 1</Name>
+        <Symbols>
+          <Symbol id="pval1">phon value 1</Symbol>
+          <Symbol id="pval2">phon value 2</Symbol>
+          <Symbol id="pval3">phon value 3</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="pfeat2">
+        <Name>phon feature 2</Name>
+        <Symbols>
+          <Symbol id="pval4">phon value 4</Symbol>
+          <Symbol id="pval5">phon value 5</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <HeadFeatures>
+      <SymbolicFeature id="hfeat1">
+        <Name>head feature 1</Name>
+        <Symbols>
+          <Symbol id="hval1">head value 1</Symbol>
+          <Symbol id="hval2">head value 2</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <ComplexFeature id="hfeat2">
+        <Name>head feature 2</Name>
+      </ComplexFeature>
+    </HeadFeatures>
+    <FootFeatures>
+      <SymbolicFeature id="ffeat1">
+        <Name>foot feature 1</Name>
+        <Symbols>
+          <Symbol id="fval1">foot value 1</Symbol>
+          <Symbol id="fval2">foot value 2</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </FootFeatures>
+    <MorphologicalPhonologicalRuleFeatures>
+      <MorphologicalPhonologicalRuleFeature id="mpr1">MPR Feature 1</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="mpr2">MPR Feature 2</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="mpr3">MPR Feature 3</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="mpr4">MPR Feature 4</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeatureGroup matchType="all" outputType="append" features="mpr1 mpr2">
+        <Name>MPR Group 1</Name>
+      </MorphologicalPhonologicalRuleFeatureGroup>
+      <MorphologicalPhonologicalRuleFeatureGroup features="mpr3 mpr4">
+        <Name>MPR Group 2</Name>
+      </MorphologicalPhonologicalRuleFeatureGroup>
+    </MorphologicalPhonologicalRuleFeatures>
+    <StemNames>
+      <StemName id="stemName1" partsOfSpeech="pos1 pos2">
+        <Name>stem name 1</Name>
+        <Regions>
+          <Region>
+            <AssignedHeadFeatures>
+              <FeatureValue feature="hfeat1" symbolValues="hval1" />
+            </AssignedHeadFeatures>
+            <AssignedFootFeatures>
+              <FeatureValue feature="ffeat1" symbolValues="fval2" />
+            </AssignedFootFeatures>
+          </Region>
+        </Regions>
+      </StemName>
+    </StemNames>
+    <CharacterDefinitionTable id="table1">
+      <Name>table 1</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="char1">
+          <Representations>
+            <Representation>a</Representation>
+            <Representation>A</Representation>
+          </Representations>
+          <FeatureValue feature="pfeat1" symbolValues="pval1" />
+          <FeatureValue feature="pfeat2" symbolValues="pval4" />
+        </SegmentDefinition>
+        <SegmentDefinition id="char2">
+          <Representations>
+            <Representation>b</Representation>
+            <Representation>B</Representation>
+          </Representations>
+          <FeatureValue feature="pfeat1" symbolValues="pval2" />
+          <FeatureValue feature="pfeat2" symbolValues="pval4" />
+        </SegmentDefinition>
+        <SegmentDefinition id="char3">
+          <Representations>
+            <Representation>c</Representation>
+            <Representation>C</Representation>
+          </Representations>
+          <FeatureValue feature="pfeat1" symbolValues="pval3" />
+          <FeatureValue feature="pfeat2" symbolValues="pval5" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+      <BoundaryDefinitions>
+        <BoundaryDefinition id="char4">
+          <Representations>
+            <Representation>+</Representation>
+          </Representations>
+        </BoundaryDefinition>
+      </BoundaryDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="nc1">
+        <Name>natural class 1</Name>
+        <FeatureValue feature="pfeat2" symbolValues="pval4" />
+      </FeatureNaturalClass>
+      <SegmentNaturalClass id="nc2">
+        <Name>natural class 2</Name>
+        <Segment segment="char1" />
+        <Segment segment="char3" />
+      </SegmentNaturalClass>
+      <FeatureNaturalClass id="nc3">
+        <Name>natural class 3</Name>
+      </FeatureNaturalClass>
+    </NaturalClasses>
+    <Families>
+      <Family id="family1">family 1</Family>
+    </Families>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prule1" multipleApplicationOrder="simultaneous">
+        <Name>phon rule 1</Name>
+        <VariableFeatures>
+          <VariableFeature id="var1" name="α" phonologicalFeature="pfeat1" />
+        </VariableFeatures>
+        <PhoneticInput>
+          <PhoneticSequence>
+            <Segment segment="char1" />
+            <SimpleContext naturalClass="nc1">
+              <AlphaVariables>
+                <AlphaVariable variableFeature="var1" polarity="minus" />
+              </AlphaVariables>
+            </SimpleContext>
+            <OptionalSegmentSequence min="1" max="3">
+              <Segments characterDefinitionTable="table1">
+                <PhoneticShape>b</PhoneticShape>
+              </Segments>
+            </OptionalSegmentSequence>
+            <BoundaryMarker boundary="char4" />
+          </PhoneticSequence>
+        </PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule requiredPartsOfSpeech="pos1" requiredMPRFeatures="mpr1" excludedMPRFeatures="mpr2">
+            <PhoneticOutput>
+              <PhoneticSequence>
+                <Segment segment="char2" />
+              </PhoneticSequence>
+            </PhoneticOutput>
+            <Environment>
+              <LeftEnvironment>
+                <PhoneticTemplate initialBoundaryCondition="true">
+                  <PhoneticSequence>
+                    <Segment segment="char1" />
+                  </PhoneticSequence>
+                </PhoneticTemplate>
+              </LeftEnvironment>
+              <RightEnvironment>
+                <PhoneticTemplate finalBoundaryCondition="true">
+                  <PhoneticSequence>
+                    <Segment segment="char3" />
+                  </PhoneticSequence>
+                </PhoneticTemplate>
+              </RightEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <MetathesisRule id="prule2" leftSwitch="prule2_r" rightSwitch="prule2_l" multipleApplicationOrder="rightToLeftIterative">
+        <Name>phon rule 2</Name>
+        <StructuralDescription>
+          <PhoneticTemplate>
+            <PhoneticSequence>
+              <SimpleContext naturalClass="nc1" />
+              <Segment id="prule2_l" segment="char1" />
+              <Segment id="prule2_r" segment="char2" />
+              <SimpleContext naturalClass="nc2" />
+            </PhoneticSequence>
+          </PhoneticTemplate>
+        </StructuralDescription>
+      </MetathesisRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" phonologicalRules="prule1 prule2" morphologicalRules="mrule1">
+        <Name>stratum 1</Name>
+        <MorphologicalRuleDefinitions>
+          <CompoundingRule id="mrule1" blockable="false" multipleApplication="3" headPartsOfSpeech="pos1" nonHeadPartsOfSpeech="pos2" outputPartOfSpeech="pos2" outputObligatoryFeatures="hfeat2">
+            <Name>compounding rule 1</Name>
+            <CompoundingSubrules>
+              <CompoundingSubrule>
+                <VariableFeatures>
+                  <VariableFeature id="var2" name="α" phonologicalFeature="pfeat2" />
+                </VariableFeatures>
+                <HeadMorphologicalInput requiredMPRFeatures="mpr1" excludedMPRFeatures="mpr2">
+                  <PhoneticSequence id="mrule1_1_head_1">
+                    <SimpleContext naturalClass="nc3" />
+                  </PhoneticSequence>
+                  <PhoneticSequence id="mrule1_1_head_2">
+                    <SimpleContext naturalClass="nc1">
+                      <AlphaVariables>
+                        <AlphaVariable variableFeature="var2" />
+                      </AlphaVariables>
+                    </SimpleContext>
+                  </PhoneticSequence>
+                </HeadMorphologicalInput>
+                <NonHeadMorphologicalInput>
+                  <PhoneticSequence id="mrule1_1_nonhead_1">
+                    <OptionalSegmentSequence min="1" max="-1">
+                      <SimpleContext naturalClass="nc3" />
+                    </OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </NonHeadMorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mpr2">
+                  <CopyFromInput index="mrule1_1_head_1" />
+                  <CopyFromInput index="mrule1_1_head_2" />
+                  <CopyFromInput index="mrule1_1_nonhead_1" />
+                </MorphologicalOutput>
+              </CompoundingSubrule>
+            </CompoundingSubrules>
+            <OutputHeadFeatures>
+              <FeatureValue feature="hfeat2">
+                <FeatureValue feature="hfeat1" symbolValues="hval1" />
+              </FeatureValue>
+            </OutputHeadFeatures>
+            <OutputFootFeatures>
+              <FeatureValue feature="ffeat1" symbolValues="fval2" />
+            </OutputFootFeatures>
+            <HeadRequiredHeadFeatures>
+              <FeatureValue feature="hfeat2">
+                <FeatureValue feature="hfeat1" symbolValues="hval2" />
+              </FeatureValue>
+            </HeadRequiredHeadFeatures>
+            <NonHeadRequiredHeadFeatures>
+              <FeatureValue feature="hfeat2">
+                <FeatureValue feature="hfeat1" symbolValues="hval2" />
+              </FeatureValue>
+            </NonHeadRequiredHeadFeatures>
+            <HeadRequiredFootFeatures>
+              <FeatureValue feature="ffeat1" symbolValues="fval1" />
+            </HeadRequiredFootFeatures>
+            <NonHeadRequiredFootFeatures>
+              <FeatureValue feature="ffeat1" symbolValues="fval1" />
+            </NonHeadRequiredFootFeatures>
+          </CompoundingRule>
+          <MorphologicalRule id="mrule2" blockable="false" multipleApplication="2" requiredPartsOfSpeech="pos1" requiredStemName="stemName1" outputPartOfSpeech="pos2" outputObligatoryFeatures="hfeat1">
+            <Name>morph rule 1</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="msubrule1">
+                <VariableFeatures>
+                  <VariableFeature id="var3" name="α" phonologicalFeature="pfeat2" />
+                </VariableFeatures>
+                <MorphologicalInput requiredMPRFeatures="mpr1" excludedMPRFeatures="mpr2">
+                  <PhoneticSequence id="msubrule1_1">
+                    <SimpleContext naturalClass="nc3" />
+                  </PhoneticSequence>
+                  <PhoneticSequence id="msubrule1_2">
+                    <SimpleContext naturalClass="nc1">
+                      <AlphaVariables>
+                        <AlphaVariable variableFeature="var3" />
+                      </AlphaVariables>
+                    </SimpleContext>
+                  </PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mpr2" redupMorphType="prefix">
+                  <CopyFromInput index="msubrule1_1" />
+                  <InsertSegments characterDefinitionTable="table1">
+                    <PhoneticShape>ac</PhoneticShape>
+                  </InsertSegments>
+                </MorphologicalOutput>
+                <RequiredHeadFeatures>
+                  <FeatureValue feature="hfeat2">
+                    <FeatureValue feature="hfeat1" symbolValues="hval2" />
+                  </FeatureValue>
+                </RequiredHeadFeatures>
+                <RequiredFootFeatures>
+                  <FeatureValue feature="ffeat1" symbolValues="fval1" />
+                </RequiredFootFeatures>
+                <RequiredEnvironments>
+                  <Environment>
+                    <LeftEnvironment>
+                      <PhoneticTemplate>
+                        <PhoneticSequence>
+                          <SimpleContext naturalClass="nc3" />
+                        </PhoneticSequence>
+                      </PhoneticTemplate>
+                    </LeftEnvironment>
+                    <RightEnvironment>
+                      <PhoneticTemplate>
+                        <PhoneticSequence>
+                          <SimpleContext naturalClass="nc1" />
+                        </PhoneticSequence>
+                      </PhoneticTemplate>
+                    </RightEnvironment>
+                  </Environment>
+                </RequiredEnvironments>
+                <ExcludedEnvironments>
+                  <Environment>
+                    <LeftEnvironment>
+                      <PhoneticTemplate>
+                        <PhoneticSequence>
+                          <Segment segment="char1" />
+                        </PhoneticSequence>
+                      </PhoneticTemplate>
+                    </LeftEnvironment>
+                  </Environment>
+                </ExcludedEnvironments>
+                <Properties>
+                  <Property name="prop1">value1</Property>
+                  <Property name="prop2">value2</Property>
+                </Properties>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputHeadFeatures>
+              <FeatureValue feature="hfeat2">
+                <FeatureValue feature="hfeat1" symbolValues="hval1" />
+              </FeatureValue>
+            </OutputHeadFeatures>
+            <OutputFootFeatures>
+              <FeatureValue feature="ffeat1" symbolValues="fval2" />
+            </OutputFootFeatures>
+            <RequiredHeadFeatures>
+              <FeatureValue feature="hfeat2">
+                <FeatureValue feature="hfeat1" symbolValues="hval2" />
+              </FeatureValue>
+            </RequiredHeadFeatures>
+            <RequiredFootFeatures>
+              <FeatureValue feature="ffeat1" symbolValues="fval1" />
+            </RequiredFootFeatures>
+            <Gloss>gloss 1</Gloss>
+            <Properties>
+              <Property name="prop3">value3</Property>
+            </Properties>
+          </MorphologicalRule>
+          <RealizationalRule id="mrule3">
+            <Name>morph rule 2</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="msubrule2">
+                <MorphologicalInput>
+                  <PhoneticSequence id="msubrule2_1">
+                    <SimpleContext naturalClass="nc3" />
+                  </PhoneticSequence>
+                  <PhoneticSequence id="msubrule2_2">
+                    <SimpleContext naturalClass="nc1" />
+                  </PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="msubrule2_1" />
+                  <ModifyFromInput index="msubrule2_2">
+                    <SimpleContext naturalClass="nc2" />
+                  </ModifyFromInput>
+                  <InsertSimpleContext>
+                    <SimpleContext naturalClass="nc2" />
+                  </InsertSimpleContext>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <RealizationalFeatures>
+              <FeatureValue feature="hfeat1" symbolValues="hval2" />
+            </RealizationalFeatures>
+            <RequiredHeadFeatures>
+              <FeatureValue feature="hfeat2">
+                <FeatureValue feature="hfeat1" symbolValues="hval2" />
+              </FeatureValue>
+            </RequiredHeadFeatures>
+            <RequiredFootFeatures>
+              <FeatureValue feature="ffeat1" symbolValues="fval1" />
+            </RequiredFootFeatures>
+            <Gloss>gloss 2</Gloss>
+            <Properties>
+              <Property name="prop4">value4</Property>
+            </Properties>
+          </RealizationalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <AffixTemplate final="false" requiredPartsOfSpeech="pos1">
+            <Name>template 1</Name>
+            <Slot optional="true" morphologicalRules="mrule2">
+              <Name>slot 1</Name>
+            </Slot>
+            <Slot morphologicalRules="mrule3">
+              <Name>slot 2</Name>
+            </Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="entry1" family="family1" partOfSpeech="pos2" ruleFeatures="mpr1">
+            <Allomorphs>
+              <Allomorph id="allo1" stemName="stemName1">
+                <PhoneticShape>ab</PhoneticShape>
+                <Properties>
+                  <Property name="prop5">value5</Property>
+                </Properties>
+              </Allomorph>
+            </Allomorphs>
+            <AssignedHeadFeatures>
+              <FeatureValue feature="hfeat2">
+                <FeatureValue feature="hfeat1" symbolValues="hval1" />
+              </FeatureValue>
+            </AssignedHeadFeatures>
+            <AssignedFootFeatures>
+              <FeatureValue feature="ffeat1" symbolValues="fval2" />
+            </AssignedFootFeatures>
+            <Gloss>gloss 3</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+      <Stratum characterDefinitionTable="table1">
+        <Name>stratum 2</Name>
+      </Stratum>
+    </Strata>
+    <MorphemeCoOccurrenceRules>
+      <MorphemeCoOccurrenceRule type="require" primaryMorpheme="mrule2" otherMorphemes="mrule3" adjacency="somewhereToRight" />
+    </MorphemeCoOccurrenceRules>
+    <AllomorphCoOccurrenceRules>
+      <AllomorphCoOccurrenceRule primaryAllomorph="msubrule1" otherAllomorphs="msubrule2" />
+    </AllomorphCoOccurrenceRules>
+  </Language>
+</HermitCrabInput>

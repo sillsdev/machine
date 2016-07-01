@@ -20,9 +20,9 @@ namespace SIL.HermitCrab.PhonologicalRules
 
 		public Pattern<Word, ShapeNode> Pattern { get; set; }
 
-		public string LeftGroupName { get; set; }
+		public string LeftSwitchName { get; set; }
 
-		public string RightGroupName { get; set; }
+		public string RightSwitchName { get; set; }
 
 		public override IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{

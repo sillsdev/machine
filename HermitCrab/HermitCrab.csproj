@@ -58,11 +58,11 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="SIL.Collections, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SIL.Machine.1.0.0-build00011\lib\net40-Client\SIL.Collections.dll</HintPath>
+      <HintPath>..\packages\SIL.Machine.1.0.0-build00012\lib\net40-Client\SIL.Collections.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="SIL.Machine, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SIL.Machine.1.0.0-build00011\lib\net40-Client\SIL.Machine.dll</HintPath>
+      <HintPath>..\packages\SIL.Machine.1.0.0-build00012\lib\net40-Client\SIL.Machine.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -80,6 +80,8 @@
     <Compile Include="AllomorphEnvironment.cs" />
     <Compile Include="AnalysisLanguageRule.cs" />
     <Compile Include="AnalysisStratumRule.cs" />
+    <Compile Include="CharacterDefinition.cs" />
+    <Compile Include="ConstraintType.cs" />
     <Compile Include="HCRuleBase.cs" />
     <Compile Include="HermitCrabExtensions.cs" />
     <Compile Include="HCFeatureSystem.cs" />
@@ -102,8 +104,8 @@
     <Compile Include="MorphologicalRules\CompoundingRule.cs" />
     <Compile Include="MorphologicalRules\CompoundingSubrule.cs" />
     <Compile Include="MorphologicalRules\CopyFromInput.cs" />
-    <Compile Include="MorphologicalRules\InsertShape.cs" />
-    <Compile Include="MorphologicalRules\InsertShapeNode.cs" />
+    <Compile Include="MorphologicalRules\InsertSegments.cs" />
+    <Compile Include="MorphologicalRules\InsertSimpleContext.cs" />
     <Compile Include="MorphologicalRules\ModifyFromInput.cs" />
     <Compile Include="MorphologicalRules\MorphologicalOutputAction.cs" />
     <Compile Include="MorphologicalRules\RealizationalAffixProcessRule.cs" />
@@ -111,6 +113,7 @@
     <Compile Include="MorphologicalRules\SynthesisAffixProcessRule.cs" />
     <Compile Include="MorphologicalRules\SynthesisCompoundingRule.cs" />
     <Compile Include="MorphologicalRules\SynthesisRealizationalAffixProcessRule.cs" />
+    <Compile Include="NaturalClass.cs" />
     <Compile Include="PhonologicalRules\AnalysisMetathesisRule.cs" />
     <Compile Include="PhonologicalRules\AnalysisMetathesisRuleSpec.cs" />
     <Compile Include="PhonologicalRules\AnalysisRewriteRule.cs" />
@@ -129,6 +132,7 @@
     <Compile Include="PhonologicalRules\SynthesisMetathesisRule.cs" />
     <Compile Include="PhonologicalRules\SynthesisRewriteRule.cs" />
     <Compile Include="PhonologicalRules\SynthesisRewriteRuleSpec.cs" />
+    <Compile Include="Properties.cs" />
     <Compile Include="RootAllomorph.cs" />
     <Compile Include="LexEntry.cs" />
     <Compile Include="LexFamily.cs" />
@@ -137,21 +141,26 @@
     <Compile Include="MprFeatureSet.cs" />
     <Compile Include="AffixTemplateSlot.cs" />
     <Compile Include="RootAllomorphTrie.cs" />
+    <Compile Include="SegmentNaturalClass.cs" />
+    <Compile Include="Segments.cs" />
+    <Compile Include="SimpleContext.cs" />
     <Compile Include="StemName.cs" />
+    <Compile Include="SyntacticFeatureSystem.cs" />
     <Compile Include="SynthesisAffixTemplateRule.cs" />
     <Compile Include="Morpheme.cs" />
     <Compile Include="Language.cs" />
     <Compile Include="MprFeature.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Stratum.cs" />
-    <Compile Include="SymbolTable.cs" />
+    <Compile Include="CharacterDefinitionTable.cs" />
     <Compile Include="SynthesisAffixTemplatesRule.cs" />
     <Compile Include="SynthesisStratumRule.cs" />
     <Compile Include="Trace.cs" />
     <Compile Include="TraceManager.cs" />
     <Compile Include="ITraceManager.cs" />
     <Compile Include="Word.cs" />
-    <Compile Include="XmlLoader.cs" />
+    <Compile Include="XmlLanguageLoader.cs" />
+    <Compile Include="XmlLanguageWriter.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -181,6 +190,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="HermitCrabInput.dtd" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

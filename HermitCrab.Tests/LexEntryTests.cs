@@ -25,7 +25,7 @@ namespace SIL.HermitCrab.Tests
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-											Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "+ɯd")}
+											Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd")}
 										});
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
@@ -40,17 +40,17 @@ namespace SIL.HermitCrab.Tests
 		public void FreeFluctuation()
 		{
 			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
-			var voicelessCons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var voicelessCons = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("vd-").Value;
-			var alvStop = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var alvStop = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("strident-")
 				.Symbol("alveolar")
 				.Symbol("nasal-").Value;
-			var d = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var d = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("strident-")
@@ -73,17 +73,17 @@ namespace SIL.HermitCrab.Tests
 													Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
 													Pattern<Word, ShapeNode>.New("2").Annotation(alvStop).Value
 												},
-											Rhs = {new CopyFromInput("1"), new CopyFromInput("2"), new InsertShape(Table3, "+ɯd")}
+											Rhs = {new CopyFromInput("1"), new CopyFromInput("2"), new InsertSegments(Table3, "+ɯd")}
 										});
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Annotation(voicelessCons).Value},
-											Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "+t")}
+											Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+t")}
 										});
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-											Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "+"), new InsertShapeNode(d)}
+											Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+"), new InsertSimpleContext(d)}
 										});
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
@@ -104,14 +104,14 @@ namespace SIL.HermitCrab.Tests
 								Gloss = "PAST",
 								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
 								OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-									.Feature("head").EqualTo(head => head
+									.Feature(Head).EqualTo(head => head
 										.Feature("tense").EqualTo("past")).Value
 							};
 			Morphophonemic.MorphologicalRules.Add(edSuffix);
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-											Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "+ɯd")}
+											Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd")}
 										});
 
 			var sSuffix = new AffixProcessRule
@@ -120,14 +120,14 @@ namespace SIL.HermitCrab.Tests
 								Gloss = "PRES",
 								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
 								OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-									.Feature("head").EqualTo(head => head
+									.Feature(Head).EqualTo(head => head
 										.Feature("tense").EqualTo("pres")).Value
 							};
 			Morphophonemic.MorphologicalRules.Add(sSuffix);
 			sSuffix.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-											Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "+s")}
+											Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+s")}
 										});
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
@@ -154,7 +154,7 @@ namespace SIL.HermitCrab.Tests
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-											Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "+ɯd")}
+											Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd")}
 										});
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
@@ -165,12 +165,12 @@ namespace SIL.HermitCrab.Tests
 		[Test]
 		public void AllomorphEnvironments()
 		{
-			var vowel = FeatureStruct.New(Language.PhoneticFeatureSystem).Symbol("voc+").Value;
+			var vowel = FeatureStruct.New(Language.PhonologicalFeatureSystem).Symbol("voc+").Value;
 
 			LexEntry headEntry = Entries["32"];
 			Pattern<Word, ShapeNode> envPattern = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value;
-			var env = new AllomorphEnvironment(SpanFactory, null, envPattern);
-			headEntry.PrimaryAllomorph.RequiredEnvironments.Add(env);
+			var env = new AllomorphEnvironment(SpanFactory, ConstraintType.Require, null, envPattern);
+			headEntry.PrimaryAllomorph.Environments.Add(env);
 
 			var word = new Word(headEntry.PrimaryAllomorph, FeatureStruct.New().Value);
 
@@ -179,7 +179,7 @@ namespace SIL.HermitCrab.Tests
 			word.Shape.AddRange(nonHeadEntry.PrimaryAllomorph.Shape.AsEnumerable().DeepClone());
 			Annotation<ShapeNode> nonHeadMorph = word.MarkMorph(word.Shape.GetNodes(node.Next, word.Shape.Last), nonHeadEntry.PrimaryAllomorph);
 
-			Assert.That(env.IsMatch(word), Is.True);
+			Assert.That(env.IsWordValid(word), Is.True);
 
 			word.RemoveMorph(nonHeadMorph);
 
@@ -187,12 +187,12 @@ namespace SIL.HermitCrab.Tests
 			word.Shape.AddRange(nonHeadEntry.PrimaryAllomorph.Shape.AsEnumerable().DeepClone());
 			nonHeadMorph = word.MarkMorph(word.Shape.GetNodes(node.Next, word.Shape.Last), nonHeadEntry.PrimaryAllomorph);
 
-			Assert.That(env.IsMatch(word), Is.False);
+			Assert.That(env.IsWordValid(word), Is.False);
 
-			headEntry.PrimaryAllomorph.RequiredEnvironments.Clear();
+			headEntry.PrimaryAllomorph.Environments.Clear();
 
-			env = new AllomorphEnvironment(SpanFactory, envPattern, null);
-			headEntry.PrimaryAllomorph.RequiredEnvironments.Add(env);
+			env = new AllomorphEnvironment(SpanFactory, ConstraintType.Require, envPattern, null);
+			headEntry.PrimaryAllomorph.Environments.Add(env);
 
 			word.RemoveMorph(nonHeadMorph);
 
@@ -201,7 +201,7 @@ namespace SIL.HermitCrab.Tests
 			word.Shape.AddRangeAfter(word.Shape.Begin, nonHeadEntry.PrimaryAllomorph.Shape.AsEnumerable().DeepClone());
 			nonHeadMorph = word.MarkMorph(word.Shape.GetNodes(word.Shape.First, node.Prev), nonHeadEntry.PrimaryAllomorph);
 
-			Assert.That(env.IsMatch(word), Is.True);
+			Assert.That(env.IsWordValid(word), Is.True);
 
 			word.RemoveMorph(nonHeadMorph);
 
@@ -209,7 +209,7 @@ namespace SIL.HermitCrab.Tests
 			word.Shape.AddRangeAfter(word.Shape.Begin, nonHeadEntry.PrimaryAllomorph.Shape.AsEnumerable().DeepClone());
 			word.MarkMorph(word.Shape.GetNodes(word.Shape.First, node.Prev), nonHeadEntry.PrimaryAllomorph);
 
-			Assert.That(env.IsMatch(word), Is.False);
+			Assert.That(env.IsWordValid(word), Is.False);
 		}
 	}
 }

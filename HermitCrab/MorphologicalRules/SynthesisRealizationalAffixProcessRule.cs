@@ -101,8 +101,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 					// HC also checks for free fluctuation, if the next subrule has the same constraints, we
 					// do not treat them as disjunctive
 					if ((i != _rule.Allomorphs.Count - 1 && !allo.FreeFluctuatesWith(_rule.Allomorphs[i + 1]))
-						&& allo.RequiredEnvironments.Count == 0 && allo.ExcludedEnvironments.Count == 0
-						&& allo.RequiredSyntacticFeatureStruct.IsEmpty)
+						&& allo.Environments.Count == 0 && allo.RequiredSyntacticFeatureStruct.IsEmpty)
 					{
 						break;
 					}

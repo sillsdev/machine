@@ -66,7 +66,7 @@ namespace SIL.HermitCrab
 			{
 				Allomorph allomorph = result.GetAllomorph(morph);
 				string gloss = string.IsNullOrEmpty(allomorph.Morpheme.Gloss) ? "?" : allomorph.Morpheme.Gloss;
-				string morphStr = result.Shape.GetNodes(morph.Span).ToString(result.Stratum.SymbolTable, false);
+				string morphStr = result.Shape.GetNodes(morph.Span).ToString(result.Stratum.CharacterDefinitionTable, false);
 				int len = Math.Max(morphStr.Length, gloss.Length);
 				if (len > 0)
 				{
@@ -83,7 +83,7 @@ namespace SIL.HermitCrab
 			{
 				Allomorph allomorph = result.GetAllomorph(morph);
 				string gloss = string.IsNullOrEmpty(allomorph.Morpheme.Gloss) ? "?" : allomorph.Morpheme.Gloss;
-				string morphStr = result.Shape.GetNodes(morph.Span).ToString(result.Stratum.SymbolTable, false);
+				string morphStr = result.Shape.GetNodes(morph.Span).ToString(result.Stratum.CharacterDefinitionTable, false);
 				int len = Math.Max(morphStr.Length, gloss.Length);
 				if (len > 0)
 				{
@@ -116,7 +116,7 @@ namespace SIL.HermitCrab
 				if (!first)
 					_context.Out.Write(", ");
 				first = false;
-				SymbolTable table = trace.Input.Stratum.SymbolTable;
+				CharacterDefinitionTable table = trace.Input.Stratum.CharacterDefinitionTable;
 				_context.Out.Write("Input: {0}", analysis ? trace.Input.Shape.ToRegexString(table, true) : trace.Input.Shape.ToString(table, true));
 			}
 			if (trace.Output != null)
@@ -124,7 +124,7 @@ namespace SIL.HermitCrab
 				if (!first)
 					_context.Out.Write(", ");
 				first = false;
-				SymbolTable table = trace.Output.Stratum.SymbolTable;
+				CharacterDefinitionTable table = trace.Output.Stratum.CharacterDefinitionTable;
 				_context.Out.Write("Output: {0}", analysis ? trace.Output.Shape.ToRegexString(table, true) : trace.Output.Shape.ToString(table, true));
 			}
 			if (trace.FailureReason != FailureReason.None)

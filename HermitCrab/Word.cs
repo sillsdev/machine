@@ -379,7 +379,7 @@ namespace SIL.HermitCrab
 
 		public override string ToString()
 		{
-			return Shape.ToRegexString(Stratum.SymbolTable, true);
+			return Shape.ToRegexString(Stratum.CharacterDefinitionTable, true);
 		}
 	}
 }

@@ -13,9 +13,9 @@ namespace SIL.HermitCrab.Tests
 	{
 		protected SpanFactory<ShapeNode> SpanFactory;
 		protected TraceManager TraceManager;
-		protected SymbolTable Table1;
-		protected SymbolTable Table2;
-		protected SymbolTable Table3;
+		protected CharacterDefinitionTable Table1;
+		protected CharacterDefinitionTable Table2;
+		protected CharacterDefinitionTable Table3;
 		protected MprFeature Latinate;
 		protected MprFeature Germanic;
 
@@ -26,12 +26,15 @@ namespace SIL.HermitCrab.Tests
 		protected Stratum Morphophonemic;
 		protected Language Language;
 
+		protected ComplexFeature Head;
+		protected ComplexFeature Foot;
+
 		[TestFixtureSetUp]
 		public void FixtureSetUp()
 		{
 			SpanFactory = new ShapeSpanFactory();
 			TraceManager = new TraceManager();
-			var phoneticFeatSys = new FeatureSystem
+			var phonologicalFeatSys = new FeatureSystem
 			                      	{
 			                      		new SymbolicFeature("voc", new FeatureSymbol("voc+", "+"), new FeatureSymbol("voc-", "-")),
 			                      		new SymbolicFeature("cons", new FeatureSymbol("cons+", "+"), new FeatureSymbol("cons-", "-")),
@@ -48,12 +51,10 @@ namespace SIL.HermitCrab.Tests
 			                      		new SymbolicFeature("nasal", new FeatureSymbol("nasal+", "+"), new FeatureSymbol("nasal-", "-")),
 			                      		new SymbolicFeature("poa", new FeatureSymbol("bilabial"), new FeatureSymbol("labiodental"), new FeatureSymbol("alveolar"), new FeatureSymbol("velar"))
 			                      	};
-			phoneticFeatSys.Freeze();
+			phonologicalFeatSys.Freeze();
 
-			var syntacticFeatSys = new FeatureSystem
+			var syntacticFeatSys = new SyntacticFeatureSystem
 			                       	{
-			                       		new SymbolicFeature("pos", new FeatureSymbol("N", "Noun"), new FeatureSymbol("V", "Verb"), new FeatureSymbol("TV", "Transitive Verb"),
-											new FeatureSymbol("IV", "Intransitive Verb"), new FeatureSymbol("A", "Adjective")),
 			                       		new SymbolicFeature("foo", new FeatureSymbol("foo+", "+"), new FeatureSymbol("foo-", "-")),
 			                       		new SymbolicFeature("baz", new FeatureSymbol("baz+", "+"), new FeatureSymbol("baz-", "-")),
 			                       		new SymbolicFeature("num", new FeatureSymbol("sg"), new FeatureSymbol("pl")),
@@ -63,86 +64,88 @@ namespace SIL.HermitCrab.Tests
 			                       		new SymbolicFeature("aspect", new FeatureSymbol("perf"), new FeatureSymbol("impf")),
 			                       		new SymbolicFeature("mood", new FeatureSymbol("active"), new FeatureSymbol("passive")),
 			                       		new SymbolicFeature("fum", new FeatureSymbol("fum+", "+"), new FeatureSymbol("fum-", "-")),
-			                       		new SymbolicFeature("bar", new FeatureSymbol("bar+", "+"), new FeatureSymbol("bar-", "-")),
-			                       		new ComplexFeature("head"),
-			                       		new ComplexFeature("foot")
+			                       		new SymbolicFeature("bar", new FeatureSymbol("bar+", "+"), new FeatureSymbol("bar-", "-"))
 			                       	};
+			syntacticFeatSys.AddPartsOfSpeech(new FeatureSymbol("N", "Noun"), new FeatureSymbol("V", "Verb"), new FeatureSymbol("TV", "Transitive Verb"),
+				new FeatureSymbol("IV", "Intransitive Verb"), new FeatureSymbol("A", "Adjective"));
+			Head = syntacticFeatSys.AddHeadFeature();
+			Foot = syntacticFeatSys.AddFootFeature();
 			syntacticFeatSys.Freeze();
 
-			Table1 = new SymbolTable(SpanFactory) { Name = "table1" };
-			AddSegDef(Table1, phoneticFeatSys, "a", "cons-", "voc+", "high-", "low+", "back+", "round-", "vd+");
-			AddSegDef(Table1, phoneticFeatSys, "i", "cons-", "voc+", "high+", "low-", "back-", "round-", "vd+");
-			AddSegDef(Table1, phoneticFeatSys, "u", "cons-", "voc+", "high+", "low-", "back+", "round+", "vd+");
-			AddSegDef(Table1, phoneticFeatSys, "o", "cons-", "voc+", "high-", "low-", "back+", "round+", "vd+");
-			AddSegDef(Table1, phoneticFeatSys, "y", "cons-", "voc+", "high+", "low-", "back-", "round+", "vd+");
-			AddSegDef(Table1, phoneticFeatSys, "ɯ", "cons-", "voc+", "high+", "low-", "back+", "round-", "vd+");
-			AddSegDef(Table1, phoneticFeatSys, "p", "cons+", "voc-", "bilabial", "vd-", "asp-", "strident-", "cont-", "nasal-");
-			AddSegDef(Table1, phoneticFeatSys, "t", "cons+", "voc-", "alveolar", "vd-", "asp-", "del_rel-", "strident-", "cont-", "nasal-");
-			AddSegDef(Table1, phoneticFeatSys, "k", "cons+", "voc-", "velar", "vd-", "asp-", "strident-", "cont-", "nasal-");
-			AddSegDef(Table1, phoneticFeatSys, "ts", "cons+", "voc-", "alveolar", "vd-", "asp-", "del_rel+", "strident+", "cont-", "nasal-");
-			AddSegDef(Table1, phoneticFeatSys, "pʰ", "cons+", "voc-", "bilabial", "vd-", "asp+", "strident-", "cont-", "nasal-");
-			AddSegDef(Table1, phoneticFeatSys, "tʰ", "cons+", "voc-", "alveolar", "vd-", "asp+", "del_rel-", "strident-", "cont-", "nasal-");
-			AddSegDef(Table1, phoneticFeatSys, "kʰ", "cons+", "voc-", "velar", "vd-", "asp+", "strident-", "cont-", "nasal-");
-			AddSegDef(Table1, phoneticFeatSys, "tsʰ", "cons+", "voc-", "alveolar", "vd-", "asp+", "del_rel+", "strident+", "cont-", "nasal-");
-			AddSegDef(Table1, phoneticFeatSys, "b", "cons+", "voc-", "bilabial", "vd+", "cont-", "nasal-");
-			AddSegDef(Table1, phoneticFeatSys, "d", "cons+", "voc-", "alveolar", "vd+", "strident-", "cont-", "nasal-");
-			AddSegDef(Table1, phoneticFeatSys, "g", "cons+", "voc-", "velar", "vd+", "cont-", "nasal-");
-			AddSegDef(Table1, phoneticFeatSys, "m", "cons+", "voc-", "bilabial", "vd+", "cont-", "nasal+");
-			AddSegDef(Table1, phoneticFeatSys, "n", "cons+", "voc-", "alveolar", "vd+", "strident-", "cont-", "nasal+");
-			AddSegDef(Table1, phoneticFeatSys, "ŋ", "cons+", "voc-", "velar", "vd+", "cont-", "nasal+");
-			AddSegDef(Table1, phoneticFeatSys, "s", "cons+", "voc-", "alveolar", "vd-", "asp-", "del_rel-", "strident+", "cont+");
-			AddSegDef(Table1, phoneticFeatSys, "z", "cons+", "voc-", "alveolar", "vd+", "asp-", "del_rel-", "strident+", "cont+");
-			AddSegDef(Table1, phoneticFeatSys, "f", "cons+", "voc-", "labiodental", "vd-", "asp-", "strident+", "cont+");
-			AddSegDef(Table1, phoneticFeatSys, "v", "cons+", "voc-", "labiodental", "vd+", "asp-", "strident+", "cont+");
+			Table1 = new CharacterDefinitionTable(SpanFactory) { Name = "table1" };
+			AddSegDef(Table1, phonologicalFeatSys, "a", "cons-", "voc+", "high-", "low+", "back+", "round-", "vd+");
+			AddSegDef(Table1, phonologicalFeatSys, "i", "cons-", "voc+", "high+", "low-", "back-", "round-", "vd+");
+			AddSegDef(Table1, phonologicalFeatSys, "u", "cons-", "voc+", "high+", "low-", "back+", "round+", "vd+");
+			AddSegDef(Table1, phonologicalFeatSys, "o", "cons-", "voc+", "high-", "low-", "back+", "round+", "vd+");
+			AddSegDef(Table1, phonologicalFeatSys, "y", "cons-", "voc+", "high+", "low-", "back-", "round+", "vd+");
+			AddSegDef(Table1, phonologicalFeatSys, "ɯ", "cons-", "voc+", "high+", "low-", "back+", "round-", "vd+");
+			AddSegDef(Table1, phonologicalFeatSys, "p", "cons+", "voc-", "bilabial", "vd-", "asp-", "strident-", "cont-", "nasal-");
+			AddSegDef(Table1, phonologicalFeatSys, "t", "cons+", "voc-", "alveolar", "vd-", "asp-", "del_rel-", "strident-", "cont-", "nasal-");
+			AddSegDef(Table1, phonologicalFeatSys, "k", "cons+", "voc-", "velar", "vd-", "asp-", "strident-", "cont-", "nasal-");
+			AddSegDef(Table1, phonologicalFeatSys, "ts", "cons+", "voc-", "alveolar", "vd-", "asp-", "del_rel+", "strident+", "cont-", "nasal-");
+			AddSegDef(Table1, phonologicalFeatSys, "pʰ", "cons+", "voc-", "bilabial", "vd-", "asp+", "strident-", "cont-", "nasal-");
+			AddSegDef(Table1, phonologicalFeatSys, "tʰ", "cons+", "voc-", "alveolar", "vd-", "asp+", "del_rel-", "strident-", "cont-", "nasal-");
+			AddSegDef(Table1, phonologicalFeatSys, "kʰ", "cons+", "voc-", "velar", "vd-", "asp+", "strident-", "cont-", "nasal-");
+			AddSegDef(Table1, phonologicalFeatSys, "tsʰ", "cons+", "voc-", "alveolar", "vd-", "asp+", "del_rel+", "strident+", "cont-", "nasal-");
+			AddSegDef(Table1, phonologicalFeatSys, "b", "cons+", "voc-", "bilabial", "vd+", "cont-", "nasal-");
+			AddSegDef(Table1, phonologicalFeatSys, "d", "cons+", "voc-", "alveolar", "vd+", "strident-", "cont-", "nasal-");
+			AddSegDef(Table1, phonologicalFeatSys, "g", "cons+", "voc-", "velar", "vd+", "cont-", "nasal-");
+			AddSegDef(Table1, phonologicalFeatSys, "m", "cons+", "voc-", "bilabial", "vd+", "cont-", "nasal+");
+			AddSegDef(Table1, phonologicalFeatSys, "n", "cons+", "voc-", "alveolar", "vd+", "strident-", "cont-", "nasal+");
+			AddSegDef(Table1, phonologicalFeatSys, "ŋ", "cons+", "voc-", "velar", "vd+", "cont-", "nasal+");
+			AddSegDef(Table1, phonologicalFeatSys, "s", "cons+", "voc-", "alveolar", "vd-", "asp-", "del_rel-", "strident+", "cont+");
+			AddSegDef(Table1, phonologicalFeatSys, "z", "cons+", "voc-", "alveolar", "vd+", "asp-", "del_rel-", "strident+", "cont+");
+			AddSegDef(Table1, phonologicalFeatSys, "f", "cons+", "voc-", "labiodental", "vd-", "asp-", "strident+", "cont+");
+			AddSegDef(Table1, phonologicalFeatSys, "v", "cons+", "voc-", "labiodental", "vd+", "asp-", "strident+", "cont+");
 
-			Table2 = new SymbolTable(SpanFactory) { Name = "table2" };
-			AddSegDef(Table2, phoneticFeatSys, "a", "cons-", "voc+", "high-", "low+", "back+", "round-", "vd+");
-			AddSegDef(Table2, phoneticFeatSys, "i", "cons-", "voc+", "high+", "low-", "back-", "round-", "vd+");
-			AddSegDef(Table2, phoneticFeatSys, "u", "cons-", "voc+", "high+", "low-", "back+", "round+", "vd+");
-			AddSegDef(Table2, phoneticFeatSys, "y", "cons-", "voc+", "high+", "low-", "back-", "round+", "vd+");
-			AddSegDef(Table2, phoneticFeatSys, "o", "cons-", "voc+", "high-", "low-", "back+", "round+", "vd+");
-			AddSegDef(Table2, phoneticFeatSys, "p", "cons+", "voc-", "bilabial", "vd-");
-			AddSegDef(Table2, phoneticFeatSys, "t", "cons+", "voc-", "alveolar", "vd-", "del_rel-", "strident-");
-			AddSegDef(Table2, phoneticFeatSys, "k", "cons+", "voc-", "velar", "vd-");
-			AddSegDef(Table2, phoneticFeatSys, "ts", "cons+", "voc-", "alveolar", "vd-", "del_rel+", "strident+");
-			AddSegDef(Table2, phoneticFeatSys, "b", "cons+", "voc-", "bilabial", "vd+");
-			AddSegDef(Table2, phoneticFeatSys, "d", "cons+", "voc-", "alveolar", "vd+", "strident-");
-			AddSegDef(Table2, phoneticFeatSys, "g", "cons+", "voc-", "velar", "vd+");
-			AddSegDef(Table2, phoneticFeatSys, "m", "cons+", "voc-", "bilabial", "vd+", "cont-", "nasal+");
-			AddSegDef(Table2, phoneticFeatSys, "n", "cons+", "voc-", "alveolar", "vd+", "cont-", "nasal+");
-			AddSegDef(Table2, phoneticFeatSys, "ŋ", "cons+", "voc-", "velar", "vd+", "cont-", "nasal+");
-			AddSegDef(Table2, phoneticFeatSys, "s", "cons+", "voc-", "alveolar", "vd-", "asp-", "del_rel-", "strident+", "cont+");
-			AddSegDef(Table2, phoneticFeatSys, "z", "cons+", "voc-", "alveolar", "vd+", "asp-", "del_rel-", "strident+", "cont+");
-			AddSegDef(Table2, phoneticFeatSys, "f", "cons+", "voc-", "labiodental", "vd-", "asp-", "strident+", "cont+");
-			AddSegDef(Table2, phoneticFeatSys, "v", "cons+", "voc-", "labiodental", "vd+", "asp-", "strident+", "cont+");
+			Table2 = new CharacterDefinitionTable(SpanFactory) { Name = "table2" };
+			AddSegDef(Table2, phonologicalFeatSys, "a", "cons-", "voc+", "high-", "low+", "back+", "round-", "vd+");
+			AddSegDef(Table2, phonologicalFeatSys, "i", "cons-", "voc+", "high+", "low-", "back-", "round-", "vd+");
+			AddSegDef(Table2, phonologicalFeatSys, "u", "cons-", "voc+", "high+", "low-", "back+", "round+", "vd+");
+			AddSegDef(Table2, phonologicalFeatSys, "y", "cons-", "voc+", "high+", "low-", "back-", "round+", "vd+");
+			AddSegDef(Table2, phonologicalFeatSys, "o", "cons-", "voc+", "high-", "low-", "back+", "round+", "vd+");
+			AddSegDef(Table2, phonologicalFeatSys, "p", "cons+", "voc-", "bilabial", "vd-");
+			AddSegDef(Table2, phonologicalFeatSys, "t", "cons+", "voc-", "alveolar", "vd-", "del_rel-", "strident-");
+			AddSegDef(Table2, phonologicalFeatSys, "k", "cons+", "voc-", "velar", "vd-");
+			AddSegDef(Table2, phonologicalFeatSys, "ts", "cons+", "voc-", "alveolar", "vd-", "del_rel+", "strident+");
+			AddSegDef(Table2, phonologicalFeatSys, "b", "cons+", "voc-", "bilabial", "vd+");
+			AddSegDef(Table2, phonologicalFeatSys, "d", "cons+", "voc-", "alveolar", "vd+", "strident-");
+			AddSegDef(Table2, phonologicalFeatSys, "g", "cons+", "voc-", "velar", "vd+");
+			AddSegDef(Table2, phonologicalFeatSys, "m", "cons+", "voc-", "bilabial", "vd+", "cont-", "nasal+");
+			AddSegDef(Table2, phonologicalFeatSys, "n", "cons+", "voc-", "alveolar", "vd+", "cont-", "nasal+");
+			AddSegDef(Table2, phonologicalFeatSys, "ŋ", "cons+", "voc-", "velar", "vd+", "cont-", "nasal+");
+			AddSegDef(Table2, phonologicalFeatSys, "s", "cons+", "voc-", "alveolar", "vd-", "asp-", "del_rel-", "strident+", "cont+");
+			AddSegDef(Table2, phonologicalFeatSys, "z", "cons+", "voc-", "alveolar", "vd+", "asp-", "del_rel-", "strident+", "cont+");
+			AddSegDef(Table2, phonologicalFeatSys, "f", "cons+", "voc-", "labiodental", "vd-", "asp-", "strident+", "cont+");
+			AddSegDef(Table2, phonologicalFeatSys, "v", "cons+", "voc-", "labiodental", "vd+", "asp-", "strident+", "cont+");
 			AddBdryDef(Table2, "+");
 			AddBdryDef(Table2, "#");
 			AddBdryDef(Table2, "!");
 			AddBdryDef(Table2, ".");
 			AddBdryDef(Table2, "$");
 
-			Table3 = new SymbolTable(SpanFactory) { Name = "table3" };
-			AddSegDef(Table3, phoneticFeatSys, "a", "cons-", "voc+", "high-", "low+", "back+", "round-", "vd+", "ATR+", "cont+");
-			AddSegDef(Table3, phoneticFeatSys, "a̘", "cons-", "voc+", "high-", "low+", "back+", "round-", "vd+", "ATR-", "cont+");
-			AddSegDef(Table3, phoneticFeatSys, "i", "cons-", "voc+", "high+", "low-", "back-", "round-", "vd+", "cont+");
-			AddSegDef(Table3, phoneticFeatSys, "u", "cons-", "voc+", "high+", "low-", "back+", "round+", "vd+", "cont+");
-			AddSegDef(Table3, phoneticFeatSys, "y", "cons-", "voc+", "high+", "low-", "back-", "round+", "vd+", "cont+");
-			AddSegDef(Table3, phoneticFeatSys, "ɯ", "cons-", "voc+", "high+", "low-", "back+", "round-", "vd+", "cont+");
-			AddSegDef(Table3, phoneticFeatSys, "o", "cons-", "voc+", "high-", "low-", "back+", "round+", "vd+", "cont+");
-			AddSegDef(Table3, phoneticFeatSys, "p", "cons+", "voc-", "bilabial", "vd-", "cont-", "nasal-");
-			AddSegDef(Table3, phoneticFeatSys, "t", "cons+", "voc-", "alveolar", "vd-", "del_rel-", "strident-", "cont-", "nasal-");
-			AddSegDef(Table3, phoneticFeatSys, "k", "cons+", "voc-", "velar", "vd-", "cont-", "nasal-");
-			AddSegDef(Table3, phoneticFeatSys, "ts", "cons+", "voc-", "alveolar", "vd-", "del_rel+", "strident+", "cont-", "nasal-");
-			AddSegDef(Table3, phoneticFeatSys, "b", "cons+", "voc-", "bilabial", "vd+", "cont-", "nasal-");
-			AddSegDef(Table3, phoneticFeatSys, "d", "cons+", "voc-", "alveolar", "vd+", "strident-", "cont-", "nasal-");
-			AddSegDef(Table3, phoneticFeatSys, "g", "cons+", "voc-", "velar", "vd+", "cont-", "nasal-");
-			AddSegDef(Table3, phoneticFeatSys, "m", "cons+", "voc-", "bilabial", "vd+", "cont-", "nasal+");
-			AddSegDef(Table3, phoneticFeatSys, "n", "cons+", "voc-", "alveolar", "vd+", "strident-", "cont-", "nasal+");
-			AddSegDef(Table3, phoneticFeatSys, "ŋ", "cons+", "voc-", "velar", "vd+", "cont-", "nasal+");
-			AddSegDef(Table3, phoneticFeatSys, "s", "cons+", "voc-", "alveolar", "vd-", "asp-", "del_rel-", "strident+", "cont+");
-			AddSegDef(Table3, phoneticFeatSys, "z", "cons+", "voc-", "alveolar", "vd+", "asp-", "del_rel-", "strident+", "cont+");
-			AddSegDef(Table3, phoneticFeatSys, "f", "cons+", "voc-", "labiodental", "vd-", "asp-", "strident+", "cont+");
-			AddSegDef(Table3, phoneticFeatSys, "v", "cons+", "voc-", "labiodental", "vd+", "asp-", "strident+", "cont+");
+			Table3 = new CharacterDefinitionTable(SpanFactory) { Name = "table3" };
+			AddSegDef(Table3, phonologicalFeatSys, "a", "cons-", "voc+", "high-", "low+", "back+", "round-", "vd+", "ATR+", "cont+");
+			AddSegDef(Table3, phonologicalFeatSys, "a̘", "cons-", "voc+", "high-", "low+", "back+", "round-", "vd+", "ATR-", "cont+");
+			AddSegDef(Table3, phonologicalFeatSys, "i", "cons-", "voc+", "high+", "low-", "back-", "round-", "vd+", "cont+");
+			AddSegDef(Table3, phonologicalFeatSys, "u", "cons-", "voc+", "high+", "low-", "back+", "round+", "vd+", "cont+");
+			AddSegDef(Table3, phonologicalFeatSys, "y", "cons-", "voc+", "high+", "low-", "back-", "round+", "vd+", "cont+");
+			AddSegDef(Table3, phonologicalFeatSys, "ɯ", "cons-", "voc+", "high+", "low-", "back+", "round-", "vd+", "cont+");
+			AddSegDef(Table3, phonologicalFeatSys, "o", "cons-", "voc+", "high-", "low-", "back+", "round+", "vd+", "cont+");
+			AddSegDef(Table3, phonologicalFeatSys, "p", "cons+", "voc-", "bilabial", "vd-", "cont-", "nasal-");
+			AddSegDef(Table3, phonologicalFeatSys, "t", "cons+", "voc-", "alveolar", "vd-", "del_rel-", "strident-", "cont-", "nasal-");
+			AddSegDef(Table3, phonologicalFeatSys, "k", "cons+", "voc-", "velar", "vd-", "cont-", "nasal-");
+			AddSegDef(Table3, phonologicalFeatSys, "ts", "cons+", "voc-", "alveolar", "vd-", "del_rel+", "strident+", "cont-", "nasal-");
+			AddSegDef(Table3, phonologicalFeatSys, "b", "cons+", "voc-", "bilabial", "vd+", "cont-", "nasal-");
+			AddSegDef(Table3, phonologicalFeatSys, "d", "cons+", "voc-", "alveolar", "vd+", "strident-", "cont-", "nasal-");
+			AddSegDef(Table3, phonologicalFeatSys, "g", "cons+", "voc-", "velar", "vd+", "cont-", "nasal-");
+			AddSegDef(Table3, phonologicalFeatSys, "m", "cons+", "voc-", "bilabial", "vd+", "cont-", "nasal+");
+			AddSegDef(Table3, phonologicalFeatSys, "n", "cons+", "voc-", "alveolar", "vd+", "strident-", "cont-", "nasal+");
+			AddSegDef(Table3, phonologicalFeatSys, "ŋ", "cons+", "voc-", "velar", "vd+", "cont-", "nasal+");
+			AddSegDef(Table3, phonologicalFeatSys, "s", "cons+", "voc-", "alveolar", "vd-", "asp-", "del_rel-", "strident+", "cont+");
+			AddSegDef(Table3, phonologicalFeatSys, "z", "cons+", "voc-", "alveolar", "vd+", "asp-", "del_rel-", "strident+", "cont+");
+			AddSegDef(Table3, phonologicalFeatSys, "f", "cons+", "voc-", "labiodental", "vd-", "asp-", "strident+", "cont+");
+			AddSegDef(Table3, phonologicalFeatSys, "v", "cons+", "voc-", "labiodental", "vd+", "asp-", "strident+", "cont+");
 			AddBdryDef(Table3, "+");
 			AddBdryDef(Table3, "#");
 			AddBdryDef(Table3, "!");
@@ -158,16 +161,16 @@ namespace SIL.HermitCrab.Tests
 			Entries = new Dictionary<string, LexEntry>();
 			var fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("N")
-				.Feature("head").EqualTo(head => head
+				.Feature(Head).EqualTo(head => head
 					.Symbol("foo+").Symbol("baz-"))
-				.Feature("foot").EqualTo(foot => foot
+				.Feature(Foot).EqualTo(foot => foot
 					.Symbol("fum-").Symbol("bar+")).Value;
 			AddEntry("1", fs, Allophonic, "pʰit");
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("N")
-				.Feature("head").EqualTo(head => head
+				.Feature(Head).EqualTo(head => head
 					.Symbol("foo+").Symbol("baz-"))
-				.Feature("foot").EqualTo(foot => foot
+				.Feature(Foot).EqualTo(foot => foot
 					.Symbol("fum-").Symbol("bar+")).Value;
 			AddEntry("2", fs, Allophonic, "pit");
 
@@ -234,30 +237,30 @@ namespace SIL.HermitCrab.Tests
 
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
-				.Feature("head").EqualTo(head => head
+				.Feature(Head).EqualTo(head => head
 					.Feature("num").EqualTo("pl")).Value;
 			AddEntry("Perc0", fs, Morphophonemic, "ssag");
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
-				.Feature("head").EqualTo(head => head
+				.Feature(Head).EqualTo(head => head
 					.Feature("pers").EqualTo("1")
 					.Feature("num").EqualTo("pl")).Value;
 			AddEntry("Perc1", fs, Morphophonemic, "ssag");
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
-				.Feature("head").EqualTo(head => head
+				.Feature(Head).EqualTo(head => head
 					.Feature("pers").EqualTo("3")
 					.Feature("num").EqualTo("pl")).Value;
 			AddEntry("Perc2", fs, Morphophonemic, "ssag");
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
-				.Feature("head").EqualTo(head => head
+				.Feature(Head).EqualTo(head => head
 					.Feature("pers").EqualTo("2", "3")
 					.Feature("num").EqualTo("pl")).Value;
 			AddEntry("Perc3", fs, Morphophonemic, "ssag");
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
-				.Feature("head").EqualTo(head => head
+				.Feature(Head).EqualTo(head => head
 					.Feature("pers").EqualTo("1", "3")
 					.Feature("num").EqualTo("pl")).Value;
 			AddEntry("Perc4", fs, Morphophonemic, "ssag");
@@ -266,12 +269,12 @@ namespace SIL.HermitCrab.Tests
 			seeFamily.Entries.Add(AddEntry("bl1", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "si"));
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
-				.Feature("head").EqualTo(head => head
+				.Feature(Head).EqualTo(head => head
 					.Feature("tense").EqualTo("past")).Value;
 			seeFamily.Entries.Add(AddEntry("bl2", fs, Morphophonemic, "sau"));
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
-				.Feature("head").EqualTo(head => head
+				.Feature(Head).EqualTo(head => head
 					.Feature("tense").EqualTo("pres")).Value;
 			seeFamily.Entries.Add(AddEntry("bl3", fs, Morphophonemic, "sis"));
 
@@ -283,20 +286,20 @@ namespace SIL.HermitCrab.Tests
 			AddEntry("free", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "taz", "tas");
 
 			entry = AddEntry("disj", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "baz", "bat", "bad", "bas");
-			var unroundedVowel = FeatureStruct.New(phoneticFeatSys).Symbol(HCFeatureSystem.Segment).Symbol("voc+").Symbol("round-").Value;
-			var vowel = FeatureStruct.New(phoneticFeatSys).Symbol(HCFeatureSystem.Segment).Symbol("voc+").Value;
-			entry.Allomorphs[0].RequiredEnvironments.Add(new AllomorphEnvironment(SpanFactory, null, Pattern<Word, ShapeNode>.New().Annotation(unroundedVowel).Value));
-			entry.Allomorphs[1].RequiredEnvironments.Add(new AllomorphEnvironment(SpanFactory, null, Pattern<Word, ShapeNode>.New().Annotation(vowel).Value));
-			entry.Allomorphs[2].RequiredEnvironments.Add(new AllomorphEnvironment(SpanFactory, null, Pattern<Word, ShapeNode>.New().Annotation(vowel).Value));
+			var unroundedVowel = FeatureStruct.New(phonologicalFeatSys).Symbol(HCFeatureSystem.Segment).Symbol("voc+").Symbol("round-").Value;
+			var vowel = FeatureStruct.New(phonologicalFeatSys).Symbol(HCFeatureSystem.Segment).Symbol("voc+").Value;
+			entry.Allomorphs[0].Environments.Add(new AllomorphEnvironment(SpanFactory, ConstraintType.Require, null, Pattern<Word, ShapeNode>.New().Annotation(unroundedVowel).Value));
+			entry.Allomorphs[1].Environments.Add(new AllomorphEnvironment(SpanFactory, ConstraintType.Require, null, Pattern<Word, ShapeNode>.New().Annotation(vowel).Value));
+			entry.Allomorphs[2].Environments.Add(new AllomorphEnvironment(SpanFactory, ConstraintType.Require, null, Pattern<Word, ShapeNode>.New().Annotation(vowel).Value));
 
-			entry = AddEntry("stemname", FeatureStruct.New(syntacticFeatSys).Symbol("V").Feature("head").EqualTo(head => head.Feature("tense").EqualTo("pres")).Value, Morphophonemic, "sad", "san");
+			entry = AddEntry("stemname", FeatureStruct.New(syntacticFeatSys).Symbol("V").Feature(Head).EqualTo(head => head.Feature("tense").EqualTo("pres")).Value, Morphophonemic, "sad", "san");
 			entry.Allomorphs[0].StemName = new StemName(
 				FeatureStruct.New(syntacticFeatSys)
 					.Symbol("V")
-					.Feature("head").EqualTo(head => head
+					.Feature(Head).EqualTo(head => head
 						.Feature("tense").EqualTo("past")).Value) { Name = "sn" };
 
-			AddEntry("synfs", FeatureStruct.New(syntacticFeatSys).Symbol("V").Feature("head").EqualTo(head => head.Feature("tense").EqualTo("pres")).Value, Morphophonemic, "bag");
+			AddEntry("synfs", FeatureStruct.New(syntacticFeatSys).Symbol("V").Feature(Head).EqualTo(head => head.Feature("tense").EqualTo("pres")).Value, Morphophonemic, "bag");
 
 			entry = AddEntry("bound", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "dag");
 			entry.PrimaryAllomorph.IsBound = true;
@@ -304,7 +307,7 @@ namespace SIL.HermitCrab.Tests
 			Language = new Language
 			           	{
 							Name = "Test",
-			           		PhoneticFeatureSystem = phoneticFeatSys,
+			           		PhonologicalFeatureSystem = phonologicalFeatSys,
 							SyntacticFeatureSystem = syntacticFeatSys,
 							Strata = { Morphophonemic, Allophonic, Surface }
 			           	};
@@ -326,7 +329,7 @@ namespace SIL.HermitCrab.Tests
 			var entry = new LexEntry { SyntacticFeatureStruct = syntacticFS, Gloss = gloss };
 			foreach (string form in forms)
 			{
-				Shape shape = stratum.SymbolTable.Segment(form);
+				Shape shape = stratum.CharacterDefinitionTable.Segment(form);
 				entry.Allomorphs.Add(new RootAllomorph(shape));
 			}
 			stratum.Entries.Add(entry);
@@ -334,7 +337,7 @@ namespace SIL.HermitCrab.Tests
 			return entry;
 		}
 
-		private void AddSegDef(SymbolTable table, FeatureSystem phoneticFeatSys, string strRep, params string[] symbols)
+		private void AddSegDef(CharacterDefinitionTable table, FeatureSystem phoneticFeatSys, string strRep, params string[] symbols)
 		{
 			var fs = new FeatureStruct();
 			foreach (string symbolID in symbols)
@@ -347,7 +350,7 @@ namespace SIL.HermitCrab.Tests
 			table.Add(strRep, fs);
 		}
 
-		private void AddBdryDef(SymbolTable table, string strRep)
+		private void AddBdryDef(CharacterDefinitionTable table, string strRep)
 		{
 			table.Add(strRep, FeatureStruct.New().Symbol(HCFeatureSystem.Boundary).Feature(HCFeatureSystem.StrRep).EqualTo(strRep).Value);
 		}
@@ -375,6 +378,11 @@ namespace SIL.HermitCrab.Tests
 		protected void AssertSyntacticFeatureStructsEqual(IEnumerable<Word> words, FeatureStruct expected)
 		{
 			Assert.That(words, Has.All.Property("SyntacticFeatureStruct").EqualTo(expected).Using(FreezableEqualityComparer<FeatureStruct>.Default));
+		}
+
+		protected SymbolicFeatureValue Variable(string featureID, string variable, bool agree = true)
+		{
+			return new SymbolicFeatureValue(Language.PhonologicalFeatureSystem.GetFeature<SymbolicFeature>(featureID), variable, agree);
 		}
 	}
 }

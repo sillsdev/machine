@@ -38,18 +38,26 @@ namespace SIL.HermitCrab
 	/// </summary>
 	public abstract class MorphCoOccurrenceRule<T> : IEquatable<MorphCoOccurrenceRule<T>> where T : class
 	{
+		private readonly ConstraintType _type;
 		private readonly List<T> _others;
 		private readonly MorphCoOccurrenceAdjacency _adjacency;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MorphCoOccurrenceRule{T}"/> class.
 		/// </summary>
+		/// <param name="type">The type.</param>
 		/// <param name="others">The others.</param>
 		/// <param name="adjacency">The adjacency.</param>
-		protected MorphCoOccurrenceRule(IEnumerable<T> others, MorphCoOccurrenceAdjacency adjacency)
+		protected MorphCoOccurrenceRule(ConstraintType type, IEnumerable<T> others, MorphCoOccurrenceAdjacency adjacency)
 		{
+			_type = type;
 			_others = others.ToList();
 			_adjacency = adjacency;
+		}
+
+		public ConstraintType Type
+		{
+			get { return _type; }
 		}
 
 		public T Key { get; internal set; }
@@ -64,12 +72,19 @@ namespace SIL.HermitCrab
 			get { return _adjacency; }
 		}
 
+		public bool IsWordValid(Word word)
+		{
+			if (_type == ConstraintType.Exclude)
+				return !CoOccurs(word);
+			return CoOccurs(word);
+		}
+
 		/// <summary>
 		/// Determines if all of the specified morphemes co-occur with the key morpheme.
 		/// </summary>
 		/// <param name="word">The word.</param>
 		/// <returns></returns>
-		public bool CoOccurs(Word word)
+		private bool CoOccurs(Word word)
 		{
 			List<Allomorph> morphList = word.AllomorphsInMorphOrder.ToList();
 			List<T> others = _others.ToList();
@@ -156,7 +171,7 @@ namespace SIL.HermitCrab
 			if (other == null)
 				return false;
 
-			return _adjacency == other._adjacency && _others.SequenceEqual(other._others);
+			return _type == other._type && _adjacency == other._adjacency && _others.SequenceEqual(other._others);
 		}
 
 		public override bool Equals(object other)
@@ -167,8 +182,11 @@ namespace SIL.HermitCrab
 
 		public override int GetHashCode()
 		{
-			int code = _others.GetSequenceHashCode();
-			return code * 31 + _adjacency.GetHashCode();
+			int code = 23;
+			code = code * 31 + _type.GetHashCode();
+			code = code * 31 + _adjacency.GetHashCode();
+			code = code * 31 + _others.GetSequenceHashCode();
+			return code;
 		}
 	}
 }

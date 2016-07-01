@@ -24,13 +24,13 @@ namespace SIL.HermitCrab.PhonologicalRules
 			foreach (PatternNode<Word, ShapeNode> node in rule.Pattern.Children.TakeWhile(n => !(n is Group<Word, ShapeNode>)))
 				pattern.Children.Add(node.DeepClone());
 
-			AddGroup(groups, pattern, rule.LeftGroupName);
-			AddGroup(groups, pattern, rule.RightGroupName);
+			AddGroup(groups, pattern, rule.LeftSwitchName);
+			AddGroup(groups, pattern, rule.RightSwitchName);
 
 			foreach (PatternNode<Word, ShapeNode> node in rule.Pattern.Children.GetNodes(Direction.RightToLeft).TakeWhile(n => !(n is Group<Word, ShapeNode>)).Reverse())
 				pattern.Children.Add(node.DeepClone());
 
-			var ruleSpec = new AnalysisMetathesisRuleSpec(pattern, rule.LeftGroupName, rule.RightGroupName);
+			var ruleSpec = new AnalysisMetathesisRuleSpec(pattern, rule.LeftSwitchName, rule.RightSwitchName);
 
 			var settings = new MatcherSettings<ShapeNode>
 			               	{

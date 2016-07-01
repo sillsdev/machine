@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using SIL.Collections;
@@ -170,7 +171,7 @@ namespace SIL.HermitCrab
 		/// <param name="displayFormat">if <c>true</c> the result will be formatted for display, otherwise
 		/// it will be formatted for compilation.</param>
 		/// <returns>The regular expression string.</returns>
-		public static string ToRegexString(this Shape shape, SymbolTable table, bool displayFormat)
+		public static string ToRegexString(this Shape shape, CharacterDefinitionTable table, bool displayFormat)
 		{
 			var sb = new StringBuilder();
 			if (!displayFormat)
@@ -212,7 +213,7 @@ namespace SIL.HermitCrab
 			return sb.ToString();
 		}
 
-		public static string ToString(this IEnumerable<ShapeNode> nodes, SymbolTable table, bool includeBdry)
+		public static string ToString(this IEnumerable<ShapeNode> nodes, CharacterDefinitionTable table, bool includeBdry)
 		{
 			var sb = new StringBuilder();
 			foreach (ShapeNode node in nodes)
@@ -226,6 +227,32 @@ namespace SIL.HermitCrab
 					sb.Append(strRep);
 			}
 			return sb.ToString();
+		}
+
+		public static IEnumerable<FeatureSymbol> PartsOfSpeech(this FeatureStruct fs)
+		{
+			SymbolicFeatureValue pos;
+			if (fs.TryGetValue(SyntacticFeatureSystem.PartOfSpeechID, out pos))
+			{
+				return pos.Values;
+			}
+			return Enumerable.Empty<FeatureSymbol>();
+		}
+
+		public static FeatureStruct Head(this FeatureStruct fs)
+		{
+			FeatureStruct head;
+			if (fs.TryGetValue(SyntacticFeatureSystem.HeadID, out head))
+				return head;
+			return null;
+		}
+
+		public static FeatureStruct Foot(this FeatureStruct fs)
+		{
+			FeatureStruct head;
+			if (fs.TryGetValue(SyntacticFeatureSystem.FootID, out head))
+				return head;
+			return null;
 		}
 	}
 }

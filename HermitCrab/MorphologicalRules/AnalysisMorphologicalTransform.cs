@@ -24,7 +24,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 				var modifyFromInput = outputAction as ModifyFromInput;
 				if (modifyFromInput != null)
-					_modifyFrom[modifyFromInput.PartName] = modifyFromInput.FeatureStruct.AntiFeatureStruct();
+					_modifyFrom[modifyFromInput.PartName] = modifyFromInput.SimpleContext.FeatureStruct.AntiFeatureStruct();
 			}
 		}
 

@@ -94,7 +94,7 @@ namespace SIL.HermitCrab
 
 		public override string ToString()
 		{
-			return _allomorphs.Count == 0 || Stratum == null ? base.ToString() : PrimaryAllomorph.Shape.ToString(Stratum.SymbolTable, true);
+			return _allomorphs.Count == 0 || Stratum == null ? base.ToString() : PrimaryAllomorph.Shape.ToString(Stratum.CharacterDefinitionTable, true);
 		}
 	}
 }

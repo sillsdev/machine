@@ -10,12 +10,21 @@ using SIL.Machine.Rules;
 namespace SIL.HermitCrab
 {
 	/// <summary>
-	/// This class acts as the main interface to the morphing capability of HC.NET. It encapsulates
-	/// the feature systems, rules, character definition tables, etc. for a particular language.
+	/// This class represents all of the information required to parse words in a particular language.
+	/// It encapsulates the feature systems, rules, character definition tables, etc. for the language.
 	/// </summary>
 	public class Language : HCRuleBase
 	{
 		private readonly ObservableCollection<Stratum> _strata;
+		private readonly List<NaturalClass> _naturalClasses;
+		private readonly List<StemName> _stemNames;
+		private readonly List<MprFeature> _mprFeatures;
+		private readonly List<MprFeatureGroup> _mprFeatureGroups;
+		private readonly List<CharacterDefinitionTable> _tables;
+		private readonly List<LexFamily> _families;
+		private readonly List<IPhonologicalRule> _prules;
+		private readonly List<MorphemeCoOccurrenceRule> _morphemeCoOccurRules;
+		private readonly List<AllomorphCoOccurrenceRule> _allomorphCoOccurRules;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Language"/> class.
@@ -24,8 +33,17 @@ namespace SIL.HermitCrab
 		{
 			_strata = new ObservableCollection<Stratum>();
 			_strata.CollectionChanged += StrataChanged;
-			PhoneticFeatureSystem = new FeatureSystem();
-			SyntacticFeatureSystem = new FeatureSystem();
+			PhonologicalFeatureSystem = new FeatureSystem();
+			SyntacticFeatureSystem = new SyntacticFeatureSystem();
+			_naturalClasses = new List<NaturalClass>();
+			_stemNames = new List<StemName>();
+			_mprFeatures = new List<MprFeature>();
+			_mprFeatureGroups = new List<MprFeatureGroup>();
+			_tables = new List<CharacterDefinitionTable>();
+			_families = new List<LexFamily>();
+			_prules = new List<IPhonologicalRule>();
+			_morphemeCoOccurRules = new List<MorphemeCoOccurrenceRule>();
+			_allomorphCoOccurRules = new List<AllomorphCoOccurrenceRule>();
 		}
 
 		private void StrataChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -54,16 +72,16 @@ namespace SIL.HermitCrab
 		}
 
 		/// <summary>
-		/// Gets the phonetic feature system.
+		/// Gets the phonological feature system.
 		/// </summary>
-		/// <value>The phonetic feature system.</value>
-		public FeatureSystem PhoneticFeatureSystem { get; set; }
+		/// <value>The phonological feature system.</value>
+		public FeatureSystem PhonologicalFeatureSystem { get; set; }
 
 		/// <summary>
 		/// Gets the syntactic feature system.
 		/// </summary>
 		/// <value>The syntactic feature system.</value>
-		public FeatureSystem SyntacticFeatureSystem { get; set; }
+		public SyntacticFeatureSystem SyntacticFeatureSystem { get; set; }
 
 		/// <summary>
 		/// Gets all strata, including the surface stratum.
@@ -74,10 +92,53 @@ namespace SIL.HermitCrab
 			get { return _strata; }
 		}
 
+		public ICollection<NaturalClass> NaturalClasses
+		{
+			get { return _naturalClasses; }
+		}
+
+		public ICollection<StemName> StemNames
+		{
+			get { return _stemNames; }
+		}
+
+		public ICollection<MprFeature> MprFeatures
+		{
+			get { return _mprFeatures; }
+		}
+
+		public ICollection<MprFeatureGroup> MprFeatureGroups
+		{
+			get { return _mprFeatureGroups; }
+		}
+
+		public ICollection<CharacterDefinitionTable> CharacterDefinitionTables
+		{
+			get { return _tables; }
+		}
+
+		public ICollection<LexFamily> Families
+		{
+			get { return _families; }
+		}
+
+		public ICollection<IPhonologicalRule> PhonologicalRules
+		{
+			get { return _prules; }
+		}
+
+		public ICollection<MorphemeCoOccurrenceRule> MorphemeCoOccurrenceRules
+		{
+			get { return _morphemeCoOccurRules; }
+		}
+
+		public ICollection<AllomorphCoOccurrenceRule> AllomorphCoOccurrenceRules
+		{
+			get { return _allomorphCoOccurRules; }
+		}
+
 		public override IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{
-			//return new PermutationRuleCascade<Word, ShapeNode>(_strata.Select(stratum => stratum.CompileAnalysisRule(spanFactory, morpher)).Reverse(),
-			//	FreezableEqualityComparer<Word>.Instance);
 			return new AnalysisLanguageRule(spanFactory, morpher, this);
 		}
 

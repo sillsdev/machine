@@ -5,26 +5,34 @@ using SIL.Machine.Matching;
 
 namespace SIL.HermitCrab.MorphologicalRules
 {
-	public class InsertShape : MorphologicalOutputAction
+	public class InsertSegments : MorphologicalOutputAction
 	{
-		private readonly Shape _shape;
-		private readonly SymbolTable _table;
+		private readonly Segments _segments;
 
-		public InsertShape(SymbolTable table, string shape)
-			: this(table, table.Segment(shape))
+		public InsertSegments(CharacterDefinitionTable table, string representation, Shape shape)
+			: this(new Segments(table, representation, shape))
 		{
 		}
 
-		public InsertShape(SymbolTable table, Shape shape)
+		public InsertSegments(CharacterDefinitionTable table, string representation)
+			: this(new Segments(table, representation))
+		{
+		}
+
+		public InsertSegments(Segments segments)
 			: base(null)
 		{
-			_shape = shape;
-			_table = table;
+			_segments = segments;
+		}
+
+		public Segments Segments
+		{
+			get { return _segments; }
 		}
 
 		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IDictionary<string, Pattern<Word, ShapeNode>> partLookup, IDictionary<string, int> capturedParts)
 		{
-			foreach (ShapeNode node in _shape)
+			foreach (ShapeNode node in _segments.Shape)
 			{
 				if (node.Annotation.Type() != HCFeatureSystem.Boundary)
 					analysisLhs.Children.Add(new Constraint<Word, ShapeNode>(node.Annotation.FeatureStruct));
@@ -33,8 +41,9 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 		public override IEnumerable<Tuple<ShapeNode, ShapeNode>> Apply(Match<Word, ShapeNode> match, Word output)
 		{
+			Shape shape = _segments.Shape;
 			var mappings = new List<Tuple<ShapeNode, ShapeNode>>();
-			Span<ShapeNode> outputSpan = _shape.CopyTo(_shape.SpanFactory.Create(_shape.First, _shape.Last), output.Shape);
+			Span<ShapeNode> outputSpan = shape.CopyTo(shape.SpanFactory.Create(shape.First, shape.Last), output.Shape);
 			foreach (ShapeNode outputNode in output.Shape.GetNodes(outputSpan))
 				mappings.Add(Tuple.Create((ShapeNode) null, outputNode));
 			return mappings;
@@ -42,7 +51,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 		public override string ToString()
 		{
-			return _shape.ToString(_table, true);
+			return _segments.ToString();
 		}
 	}
 }

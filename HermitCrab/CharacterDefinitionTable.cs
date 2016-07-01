@@ -2,20 +2,23 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.HermitCrab
 {
-	public class SymbolTable : IEnumerable<string>
+	public class CharacterDefinitionTable : ICollection<CharacterDefinition>
 	{
-		private readonly Dictionary<string, FeatureStruct> _symbols;
 		private readonly SpanFactory<ShapeNode> _spanFactory;
+		private readonly Dictionary<string, CharacterDefinition> _charDefLookup;
+		private readonly HashSet<CharacterDefinition> _charDefs;
 
-		public SymbolTable(SpanFactory<ShapeNode> spanFactory)
+		public CharacterDefinitionTable(SpanFactory<ShapeNode> spanFactory)
 		{
 			_spanFactory = spanFactory;
-			_symbols = new Dictionary<string, FeatureStruct>();
+			_charDefLookup = new Dictionary<string, CharacterDefinition>();
+			_charDefs = new HashSet<CharacterDefinition>();
 		}
 
 		public string Name { get; set; }
@@ -25,41 +28,23 @@ namespace SIL.HermitCrab
 			get { return _spanFactory; }
 		}
 
+		public CharacterDefinition Add(string strRep, FeatureStruct fs)
+		{
+			return Add(strRep.ToEnumerable(), fs);
+		}
+
 		/// <summary>
-		/// Adds the segment definition.
+		/// Adds the character definition.
 		/// </summary>
 		/// <param name="strRep"></param>
 		/// <param name="fs"></param>
-		public void Add(string strRep, FeatureStruct fs)
+		public CharacterDefinition Add(IEnumerable<string> strRep, FeatureStruct fs)
 		{
 			if (!fs.IsFrozen)
 				throw new ArgumentException("The feature structure must be immutable.", "fs");
-			_symbols[strRep] = fs;
-		}
-
-		public bool Remove(string strRep)
-		{
-			return _symbols.Remove(strRep);
-		}
-
-		public bool Contains(string strRep)
-		{
-			return _symbols.ContainsKey(strRep);
-		}
-
-		public void Clear()
-		{
-			_symbols.Clear();
-		}
-
-		IEnumerator<string> IEnumerable<string>.GetEnumerator()
-		{
-			return _symbols.Keys.GetEnumerator();
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return _symbols.Keys.GetEnumerator();
+			var cd = new CharacterDefinition(strRep, fs);
+			Add(cd);
+			return cd;
 		}
 
 		/// <summary>
@@ -70,12 +55,20 @@ namespace SIL.HermitCrab
 		/// <returns></returns>
 		public bool TryGetSymbolFeatureStruct(string strRep, out FeatureStruct fs)
 		{
-			return _symbols.TryGetValue(strRep, out fs);
+			CharacterDefinition charDef;
+			if (TryGetValue(strRep, out charDef))
+			{
+				fs = charDef.FeatureStruct;
+				return true;
+			}
+
+			fs = null;
+			return false;
 		}
 
 		public FeatureStruct GetSymbolFeatureStruct(string strRep)
 		{
-			return _symbols[strRep];
+			return this[strRep].FeatureStruct;
 		}
 
 		/// <summary>
@@ -85,10 +78,13 @@ namespace SIL.HermitCrab
 		/// <returns>The string representations.</returns>
 		public IEnumerable<string> GetMatchingStrReps(ShapeNode node)
 		{
-			foreach (KeyValuePair<string, FeatureStruct> symbol in _symbols)
+			foreach (CharacterDefinition cd in this)
 			{
-				if (symbol.Value.IsUnifiable(node.Annotation.FeatureStruct))
-					yield return symbol.Key;
+				if (cd.FeatureStruct.IsUnifiable(node.Annotation.FeatureStruct))
+				{
+					foreach (string representation in cd.Representations)
+						yield return representation;
+				}
 			}
 		}
 
@@ -174,6 +170,79 @@ namespace SIL.HermitCrab
 		{
 			string pattern = shape.ToRegexString(this, false);
 			return Regex.IsMatch(word, pattern, RegexOptions.CultureInvariant);
+		}
+
+		public IEnumerator<CharacterDefinition> GetEnumerator()
+		{
+			return _charDefs.GetEnumerator();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public void Add(CharacterDefinition item)
+		{
+			_charDefs.Add(item);
+			foreach (string rep in item.Representations)
+				_charDefLookup[rep] = item;
+			item.CharacterDefinitionTable = this;
+		}
+
+		public void Clear()
+		{
+			foreach (CharacterDefinition cd in _charDefs)
+				cd.CharacterDefinitionTable = null;
+			_charDefs.Clear();
+			_charDefLookup.Clear();
+		}
+
+		public bool Contains(CharacterDefinition item)
+		{
+			return _charDefs.Contains(item);
+		}
+
+		public void CopyTo(CharacterDefinition[] array, int arrayIndex)
+		{
+			_charDefs.CopyTo(array, arrayIndex);
+		}
+
+		public bool Remove(CharacterDefinition item)
+		{
+			if (_charDefs.Remove(item))
+			{
+				foreach (string rep in item.Representations)
+					_charDefLookup.Remove(rep);
+				item.CharacterDefinitionTable = null;
+				return true;
+			}
+			return false;
+		}
+
+		public int Count
+		{
+			get { return _charDefs.Count; }
+		}
+
+		bool ICollection<CharacterDefinition>.IsReadOnly
+		{
+			get { return false; }
+		}
+
+		public bool TryGetValue(string key, out CharacterDefinition value)
+		{
+			return _charDefLookup.TryGetValue(key, out value);
+		}
+
+		public bool Contains(string key)
+		{
+			return _charDefLookup.ContainsKey(key);
+		}
+
+		public CharacterDefinition this[string key]
+		{
+			get { return _charDefLookup[key]; }
 		}
 
 		public override string ToString()

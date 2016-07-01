@@ -13,24 +13,24 @@ namespace SIL.HermitCrab.Tests
 		public void RealizationalRule()
 		{
 			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
-			var alvStop = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var alvStop = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("strident-")
 				.Symbol("del_rel-")
 				.Symbol("alveolar").Value;
-			var voicelessCons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var voicelessCons = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("vd-").Value;
-			var labiodental = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var labiodental = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("labiodental").Value;
-			var voiced = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var voiced = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("vd+").Value;
-			var strident = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var strident = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("strident+").Value;
@@ -39,7 +39,7 @@ namespace SIL.HermitCrab.Tests
 			               	{
 								Name = "ed_suffix",
 								RealizationalFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-									.Feature("head").EqualTo(head => head
+									.Feature(Head).EqualTo(head => head
 										.Feature("tense").EqualTo("past")).Value,
 			               		Gloss = "PAST"
 			               	};
@@ -51,24 +51,24 @@ namespace SIL.HermitCrab.Tests
 													Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
 													Pattern<Word, ShapeNode>.New("2").Annotation(alvStop).Value
 												},
-											Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new InsertShape(Table3, "ɯd") }
+											Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new InsertSegments(Table3, "ɯd") }
 										});
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Annotation(voicelessCons).Value },
-											Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "t") }
+											Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "t") }
 										});
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-											Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "d") }
+											Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "d") }
 										});
 
 			var sSuffix = new RealizationalAffixProcessRule
 			              	{
 								Name = "s_suffix",
 								RealizationalFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-									.Feature("head").EqualTo(head => head
+									.Feature(Head).EqualTo(head => head
 										.Feature("pers").EqualTo("3")
 										.Feature("tense").EqualTo("pres")).Value,
 			              		Gloss = "3SG"
@@ -81,12 +81,12 @@ namespace SIL.HermitCrab.Tests
 												Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
 												Pattern<Word, ShapeNode>.New("2").Annotation(labiodental).Value
 											},
-										Rhs = { new CopyFromInput("1"), new ModifyFromInput("2", voiced), new InsertShape(Table3, "z") }
+										Rhs = { new CopyFromInput("1"), new ModifyFromInput("2", voiced), new InsertSegments(Table3, "z") }
 									});
 			sSuffix.Allomorphs.Add(new AffixProcessAllomorph
 									{
 										Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Annotation(strident).Value },
-										Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "ɯz") }
+										Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "ɯz") }
 									});
 			sSuffix.Allomorphs.Add(new AffixProcessAllomorph
 									{
@@ -95,19 +95,19 @@ namespace SIL.HermitCrab.Tests
 												Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
 												Pattern<Word, ShapeNode>.New("2").Annotation(voicelessCons).Value
 											},
-										Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new InsertShape(Table3, "s") }
+										Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new InsertSegments(Table3, "s") }
 									});
 			sSuffix.Allomorphs.Add(new AffixProcessAllomorph
 									{
 										Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-										Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "z") }
+										Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "z") }
 									});
 
 			var evidential = new RealizationalAffixProcessRule
 								{
 									Name = "evidential",
 									RealizationalFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-										.Feature("head").EqualTo(head => head
+										.Feature(Head).EqualTo(head => head
 											.Feature("evidential").EqualTo("witnessed")).Value,
 									Gloss = "WIT"
 								};
@@ -115,7 +115,7 @@ namespace SIL.HermitCrab.Tests
 			evidential.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-											Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "v") }
+											Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "v") }
 										});
 
 			var verbTemplate = new AffixTemplate { Name = "verb", RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value };
@@ -133,13 +133,13 @@ namespace SIL.HermitCrab.Tests
 			AssertMorphsEqual(output, "32 PAST");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
 				.Symbol("V")
-				.Feature("head").EqualTo(head => head
+				.Feature(Head).EqualTo(head => head
 					.Feature("tense").EqualTo("past")).Value);
 			output = morpher.ParseWord("sagdv").ToArray();
 			AssertMorphsEqual(output, "32 PAST WIT");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
 				.Symbol("V")
-				.Feature("head").EqualTo(head => head
+				.Feature(Head).EqualTo(head => head
 					.Feature("tense").EqualTo("past")
 					.Feature("evidential").EqualTo("witnessed")).Value);
 			Assert.That(morpher.ParseWord("sid"), Is.Empty);
@@ -147,11 +147,11 @@ namespace SIL.HermitCrab.Tests
 			AssertMorphsEqual(output, "bl2");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
 				.Symbol("V")
-				.Feature("head").EqualTo(head => head
+				.Feature(Head).EqualTo(head => head
 					.Feature("tense").EqualTo("past")).Value);
 
 			evidential.RealizationalFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-				.Feature("head").EqualTo(head => head
+				.Feature(Head).EqualTo(head => head
 					.Feature("evidential").EqualTo("witnessed")
 					.Feature("tense").EqualTo("pres")).Value;
 
@@ -160,7 +160,7 @@ namespace SIL.HermitCrab.Tests
 			AssertMorphsEqual(output, "32 3SG WIT");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
 				.Symbol("V")
-				.Feature("head").EqualTo(head => head
+				.Feature(Head).EqualTo(head => head
 					.Feature("pers").EqualTo("3")
 					.Feature("tense").EqualTo("pres")
 					.Feature("evidential").EqualTo("witnessed")).Value);
@@ -170,13 +170,13 @@ namespace SIL.HermitCrab.Tests
 		public void NonFinalTemplate()
 		{
 			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
-			var alvStop = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var alvStop = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("strident-")
 				.Symbol("del_rel-")
 				.Symbol("alveolar").Value;
-			var voicelessCons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var voicelessCons = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("vd-").Value;
@@ -194,17 +194,17 @@ namespace SIL.HermitCrab.Tests
 													Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
 													Pattern<Word, ShapeNode>.New("2").Annotation(alvStop).Value
 												},
-											Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new InsertShape(Table3, "ɯd") }
+											Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new InsertSegments(Table3, "ɯd") }
 										});
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Annotation(voicelessCons).Value },
-											Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "t") }
+											Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "t") }
 										});
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-											Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "d") }
+											Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "d") }
 										});
 
 			var verbTemplate = new AffixTemplate { Name = "verb", RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value };
@@ -224,7 +224,7 @@ namespace SIL.HermitCrab.Tests
 			nominalizer.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-											Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "v") }
+											Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "v") }
 										});
 			Morphophonemic.MorphologicalRules.Add(nominalizer);
 
@@ -253,7 +253,7 @@ namespace SIL.HermitCrab.Tests
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-											Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "d") }
+											Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "d") }
 										});
 
 			var transitiveVerbTemplate = new AffixTemplate { Name = "Transitive Verb", RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("TV").Value };
@@ -279,7 +279,7 @@ namespace SIL.HermitCrab.Tests
 			nominalizer.Allomorphs.Add(new AffixProcessAllomorph
 										{
 											Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-											Rhs = { new CopyFromInput("1"), new InsertShape(Table3, "v") }
+											Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "v") }
 										});
 			Morphophonemic.MorphologicalRules.Add(nominalizer);
 

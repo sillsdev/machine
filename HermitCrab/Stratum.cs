@@ -18,7 +18,7 @@ namespace SIL.HermitCrab
 	/// </summary>
 	public class Stratum : HCRuleBase
 	{
-		private readonly SymbolTable _symDefTable;
+		private readonly CharacterDefinitionTable _symDefTable;
 
 		private readonly ObservableCollection<IMorphologicalRule> _mrules;
 		private readonly List<IPhonologicalRule> _prules;
@@ -31,7 +31,7 @@ namespace SIL.HermitCrab
 		/// Initializes a new instance of the <see cref="Stratum"/> class.
 		/// </summary>
 		/// <param name="symDefTable"></param>
-		public Stratum(SymbolTable symDefTable)
+		public Stratum(CharacterDefinitionTable symDefTable)
 		{
 			Depth = -1;
 			_symDefTable = symDefTable;
@@ -93,7 +93,7 @@ namespace SIL.HermitCrab
 		/// Gets the symbol definition table.
 		/// </summary>
 		/// <value>The symbol definition table.</value>
-		public SymbolTable SymbolTable
+		public CharacterDefinitionTable CharacterDefinitionTable
 		{
 			get
 			{

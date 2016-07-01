@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
@@ -10,23 +9,20 @@ namespace SIL.HermitCrab
 	/// </summary>
 	public abstract class Morpheme
 	{
-		private readonly ObservableCollection<MorphemeCoOccurrenceRule> _requiredMorphemeCoOccurrences;
-		private readonly ObservableCollection<MorphemeCoOccurrenceRule> _excludedMorphemeCoOccurrences;
-		private readonly Hashtable _properties;
+		private readonly ObservableCollection<MorphemeCoOccurrenceRule> _morphemeCoOccurrenceRules;
+		private readonly Properties _properties;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Morpheme"/> class.
 		/// </summary>
 		protected Morpheme()
 		{
-			_requiredMorphemeCoOccurrences = new ObservableCollection<MorphemeCoOccurrenceRule>();
-			_requiredMorphemeCoOccurrences.CollectionChanged += MorphemeCoOccurrencesChanged;
-			_excludedMorphemeCoOccurrences = new ObservableCollection<MorphemeCoOccurrenceRule>();
-			_excludedMorphemeCoOccurrences.CollectionChanged += MorphemeCoOccurrencesChanged;
-			_properties = new Hashtable();
+			_morphemeCoOccurrenceRules = new ObservableCollection<MorphemeCoOccurrenceRule>();
+			_morphemeCoOccurrenceRules.CollectionChanged += MorphemeCoOccurrenceRuleRulesChanged;
+			_properties = new Properties();
 		}
 
-		private void MorphemeCoOccurrencesChanged(object sender, NotifyCollectionChangedEventArgs e)
+		private void MorphemeCoOccurrenceRuleRulesChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			if (e.OldItems != null)
 			{
@@ -55,28 +51,19 @@ namespace SIL.HermitCrab
 		public abstract Allomorph GetAllomorph(int index);
 
 		/// <summary>
-		/// Gets or sets the required morpheme co-occurrences.
+		/// Gets the morpheme co-occurrence rules.
 		/// </summary>
-		/// <value>The required morpheme co-occurrences.</value>
-		public ICollection<MorphemeCoOccurrenceRule> RequiredMorphemeCoOccurrences
+		/// <value>The morpheme co-occurrence rules.</value>
+		public ICollection<MorphemeCoOccurrenceRule> MorphemeCoOccurrenceRules
 		{
-			get { return _requiredMorphemeCoOccurrences; }
-		}
-
-		/// <summary>
-		/// Gets or sets the excluded morpheme co-occurrences.
-		/// </summary>
-		/// <value>The excluded morpheme co-occurrences.</value>
-		public ICollection<MorphemeCoOccurrenceRule> ExcludedMorphemeCoOccurrences
-		{
-			get { return _excludedMorphemeCoOccurrences; }
+			get { return _morphemeCoOccurrenceRules; }
 		}
 
 		/// <summary>
 		/// Gets the custom properties.
 		/// </summary>
 		/// <value>The properties.</value>
-		public IDictionary Properties
+		public IDictionary<string, object> Properties
 		{
 			get { return _properties; }
 		}

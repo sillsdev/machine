@@ -1,12 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using SIL.Collections;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.HermitCrab
 {
 	public class StemName
 	{
-		private readonly FeatureStruct[] _regions;
+		private readonly ReadOnlyCollection<FeatureStruct> _regions;
 
 		public StemName(params FeatureStruct[] regions)
 			: this((IEnumerable<FeatureStruct>) regions)
@@ -15,12 +17,15 @@ namespace SIL.HermitCrab
 
 		public StemName(IEnumerable<FeatureStruct> regions)
 		{
-			_regions = regions.ToArray();
+			FeatureStruct[] regionsArray = regions.ToArray();
+			if (regionsArray.Length == 0)
+				throw new ArgumentException("A region must be specified.", "regions");
+			_regions = new ReadOnlyCollection<FeatureStruct>(regionsArray);
 		}
 
 		public string Name { get; set; }
 
-		public IEnumerable<FeatureStruct> Regions
+		public ReadOnlyCollection<FeatureStruct> Regions
 		{
 			get { return _regions; }
 		}

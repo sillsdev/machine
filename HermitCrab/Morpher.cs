@@ -75,7 +75,7 @@ namespace SIL.HermitCrab
 		public IEnumerable<Word> ParseWord(string word, out object trace)
 		{
 			// convert the word to its phonetic shape
-			Shape shape = _lang.SurfaceStratum.SymbolTable.Segment(word);
+			Shape shape = _lang.SurfaceStratum.CharacterDefinitionTable.Segment(word);
 
 			var input = new Word(_lang.SurfaceStratum, shape);
 			input.Freeze();
@@ -136,7 +136,7 @@ namespace SIL.HermitCrab
 					if (i > 0 && words[i].AllomorphsInMorphOrder.Zip(words[i - 1].AllomorphsInMorphOrder).All(tuple => !tuple.Item1.FreeFluctuatesWith(tuple.Item2)))
 						break;
 
-					if (_lang.SurfaceStratum.SymbolTable.IsMatch(word, words[i].Shape))
+					if (_lang.SurfaceStratum.CharacterDefinitionTable.IsMatch(word, words[i].Shape))
 					{
 						if (_traceManager.IsTracing)
 							_traceManager.ParseSuccessful(_lang, words[i]);

@@ -11,6 +11,7 @@ namespace SIL.HermitCrab
 	/// </summary>
 	public class AllomorphEnvironment : IEquatable<AllomorphEnvironment>
 	{
+		private readonly ConstraintType _type;
 		private readonly Pattern<Word, ShapeNode> _leftEnv; 
 		private readonly Matcher<Word, ShapeNode> _leftEnvMatcher;
 		private readonly Pattern<Word, ShapeNode> _rightEnv; 
@@ -19,11 +20,13 @@ namespace SIL.HermitCrab
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AllomorphEnvironment"/> class.
 		/// </summary>
-		/// <param name="spanFactory"> </param>
+		/// <param name="spanFactory">The span factory.</param>
+		/// <param name="type">The constraint type.</param>
 		/// <param name="leftEnv">The left environment.</param>
 		/// <param name="rightEnv">The right environment.</param>
-		public AllomorphEnvironment(SpanFactory<ShapeNode> spanFactory, Pattern<Word, ShapeNode> leftEnv, Pattern<Word, ShapeNode> rightEnv)
+		public AllomorphEnvironment(SpanFactory<ShapeNode> spanFactory, ConstraintType type, Pattern<Word, ShapeNode> leftEnv, Pattern<Word, ShapeNode> rightEnv)
 		{
+			_type = type;
 			if (leftEnv != null && !leftEnv.IsLeaf)
 			{
 				if (!leftEnv.IsFrozen)
@@ -51,6 +54,11 @@ namespace SIL.HermitCrab
 			}
 		}
 
+		public ConstraintType Type
+		{
+			get { return _type; }
+		}
+
 		public string Name { get; set; }
 
 		public Pattern<Word, ShapeNode> LeftEnvironment
@@ -65,9 +73,16 @@ namespace SIL.HermitCrab
 
 		internal Allomorph Allomorph { get; set; }
 
-		public bool IsMatch(Word word)
+		public bool IsWordValid(Word word)
 		{
-			foreach (Annotation<ShapeNode> morph in word.Morphs.Where(ann => ((string) ann.FeatureStruct.GetValue(HCFeatureSystem.Allomorph)) == Allomorph.ID))
+			if (_type == ConstraintType.Exclude)
+				return !IsMatch(word);
+			return IsMatch(word);
+		}
+
+		private bool IsMatch(Word word)
+		{
+			foreach (Annotation<ShapeNode> morph in word.Morphs.Where(ann => (string) ann.FeatureStruct.GetValue(HCFeatureSystem.Allomorph) == Allomorph.ID))
 			{
 				if (_leftEnvMatcher != null && !_leftEnvMatcher.IsMatch(word, morph.Span.Start.Prev))
 					return false;
@@ -81,6 +96,9 @@ namespace SIL.HermitCrab
 		public bool Equals(AllomorphEnvironment other)
 		{
 			if (other == null)
+				return false;
+
+			if (_type != other._type)
 				return false;
 
 			if (_leftEnv == null)
@@ -100,6 +118,7 @@ namespace SIL.HermitCrab
 		public override int GetHashCode()
 		{
 			int code = 23;
+			code = code * 31 + _type.GetHashCode();
 			code = code * 31 + (_leftEnv == null ? 0 : _leftEnv.GetFrozenHashCode());
 			code = code * 31 + (_rightEnv == null ? 0 : _rightEnv.GetFrozenHashCode());
 			return code;

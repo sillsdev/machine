@@ -1,0 +1,608 @@
+<!-- Hermit Crab input file DTD
+       Based on Maxwell, Mike.  1999.  "Hermit Crab Parsing Engine Specification."  SIL ms. 
+-->
+<!ELEMENT HermitCrabInput (Language+) >
+<!ELEMENT Language (Name, PartsOfSpeech, PhonologicalFeatureSystem*, HeadFeatures?, FootFeatures?, MorphologicalPhonologicalRuleFeatures?, StemNames?, 
+                    CharacterDefinitionTable+, NaturalClasses?, Families?, PhonologicalRuleDefinitions?, Strata, MorphemeCoOccurrenceRules?, AllomorphCoOccurrenceRules?, SyntacticRules?) >
+<!--
+  Note: at most one should be active at a time
+  -->
+<!ATTLIST Language
+  isActive (yes | no) "yes"
+>
+
+<!--
+   =====================
+   PartsOfSpeech
+   =====================
+-->
+<!ELEMENT PartsOfSpeech (PartOfSpeech+) >
+<!ELEMENT PartOfSpeech (Name) >
+<!ATTLIST PartOfSpeech
+  id ID #REQUIRED
+>
+
+<!--
+   =====================
+   FeatureSystems
+   =====================
+-->
+<!ELEMENT PhonologicalFeatureSystem (SymbolicFeature*) >
+<!--
+  Note: at most one should be active at a time
+  -->
+<!ATTLIST PhonologicalFeatureSystem
+  isActive (yes | no) "yes"
+>
+<!ELEMENT HeadFeatures ((SymbolicFeature | ComplexFeature)*) >
+<!ELEMENT FootFeatures ((SymbolicFeature | ComplexFeature)*) >
+
+<!ELEMENT SymbolicFeature (Name, Symbols) >
+<!ATTLIST SymbolicFeature
+  id ID #REQUIRED
+  isActive (yes | no) "yes"
+  defaultSymbol IDREF #IMPLIED
+>
+<!-- Note: for phonlogical features like [son:+] and [nas:+], we create separate values for "+"; potentially we could reuse them -->
+<!ELEMENT Symbols (Symbol+) >
+<!ELEMENT Symbol (#PCDATA) >
+<!ATTLIST Symbol
+  id ID #REQUIRED
+>
+
+<!ELEMENT ComplexFeature (Name) >
+<!ATTLIST ComplexFeature
+  id ID #REQUIRED
+  isActive (yes | no) "yes"
+>
+
+<!ELEMENT FeatureValue (FeatureValue*)>
+<!--
+  feature refers to a SymbolicFeature or ComplexFeature ID
+  symbolValues refers to one or more Symbol IDs
+  -->
+<!ATTLIST FeatureValue
+  isActive (yes | no) "yes"
+  feature IDREF #REQUIRED
+  symbolValues IDREFS #IMPLIED
+>
+
+<!--
+   =====================
+   MorphologicalPhonologicalRuleFeatures
+   =====================
+-->
+<!ELEMENT MorphologicalPhonologicalRuleFeatures (MorphologicalPhonologicalRuleFeature+, MorphologicalPhonologicalRuleFeatureGroup*) >
+<!ELEMENT MorphologicalPhonologicalRuleFeature (#PCDATA) >
+<!ATTLIST MorphologicalPhonologicalRuleFeature
+  id ID #REQUIRED
+  isActive (yes | no) "yes"
+>
+<!ELEMENT MorphologicalPhonologicalRuleFeatureGroup (Name)>
+<!ATTLIST MorphologicalPhonologicalRuleFeatureGroup
+  isActive (yes | no) "yes"
+  matchType (any | all) "any"
+  outputType (overwrite | append) "overwrite"
+  features IDREFS #REQUIRED
+>
+
+<!--
+   =====================
+   StemNames
+   =====================
+-->
+<!ELEMENT StemNames (StemName+) >
+<!ELEMENT StemName (Name, Regions) >
+<!ATTLIST StemName
+  id ID #REQUIRED
+  partsOfSpeech IDREFS #REQUIRED
+>
+<!ELEMENT Regions (Region+) >
+<!ELEMENT Region (AssignedHeadFeatures?, AssignedFootFeatures?) >
+
+<!--
+   =====================
+   CharacterDefinitionTable
+   =====================
+-->
+<!ELEMENT CharacterDefinitionTable (Name, SegmentDefinitions, BoundaryDefinitions? ) >
+<!ATTLIST CharacterDefinitionTable
+  id ID #REQUIRED
+  isActive (yes | no) "yes"
+>
+
+<!ELEMENT Name (#PCDATA) >
+
+<!ELEMENT SegmentDefinitions (SegmentDefinition+) >
+
+<!ELEMENT SegmentDefinition (Representations, FeatureValue*) >
+<!ATTLIST SegmentDefinition
+  id ID #REQUIRED
+  isActive (yes | no) "yes"
+>
+
+<!ELEMENT Representations (Representation+) >
+
+<!ELEMENT Representation (#PCDATA) >
+
+<!ELEMENT BoundaryDefinitions (BoundaryDefinition+) >
+
+<!ELEMENT BoundaryDefinition (Representations) >
+<!ATTLIST BoundaryDefinition
+  id ID #REQUIRED
+  isActive (yes | no) "yes"
+>
+
+<!--
+   =====================
+   NaturalClasses
+   =====================
+-->
+<!ELEMENT NaturalClasses (FeatureNaturalClass | SegmentNaturalClass)+ >
+
+<!ELEMENT FeatureNaturalClass (Name, FeatureValue*) >
+<!ATTLIST FeatureNaturalClass 
+  id ID #REQUIRED
+  isActive (yes | no) "yes"
+>
+
+<!ELEMENT SegmentNaturalClass (Name, Segment*) >
+<!ATTLIST SegmentNaturalClass 
+  id ID #REQUIRED
+  isActive (yes | no) "yes"
+>
+
+<!--
+   =====================
+   Families
+   =====================
+-->
+<!-- Families are used to block analyses for irregular forms (e.g. preventing the regular form from also analyzing) -->
+<!ELEMENT Families (Family*) >
+<!ELEMENT Family (#PCDATA) >
+<!ATTLIST Family
+  id ID #REQUIRED
+  isActive (yes | no) "yes"
+>
+
+<!--
+   =====================
+   PhonologicalRuleDefinitions
+   =====================
+-->
+<!ELEMENT PhonologicalRuleDefinitions (PhonologicalRule | MetathesisRule)*>
+
+<!ELEMENT PhonologicalRule (Name, VariableFeatures?, PhoneticInput, PhonologicalSubrules)>
+<!ATTLIST PhonologicalRule
+  id ID #REQUIRED
+  isActive (yes | no) "yes"
+  multipleApplicationOrder (leftToRightIterative | rightToLeftIterative | simultaneous) "leftToRightIterative"
+>
+
+<!ELEMENT PhoneticInput (PhoneticSequence?) >
+
+<!ELEMENT PhonologicalSubrules (PhonologicalSubrule+) >
+<!ELEMENT PhonologicalSubrule (PhoneticOutput, Environment?, PreviousWord?, NextWord?) >
+<!--
+  requiredPartsOfSpeech refers to one or more PartOfSpeech IDs
+  requiredMPRFeatures refers to one or more MorphologicalPhonologicalRuleFeature IDs
+  excludedMPRFeatures refers to one or more MorphologicalPhonologicalRuleFeature IDs
+-->  
+<!ATTLIST PhonologicalSubrule
+  isActive (yes | no) "yes"
+  requiredPartsOfSpeech IDREFS #IMPLIED
+  requiredMPRFeatures IDREFS #IMPLIED
+  excludedMPRFeatures IDREFS #IMPLIED
+>
+
+<!ELEMENT PhoneticOutput (PhoneticSequence?) >
+  
+<!ELEMENT LeftEnvironment (PhoneticTemplate) >
+<!ELEMENT RightEnvironment (PhoneticTemplate) >
+
+<!ELEMENT PreviousWord (PhoneticTemplate | Null) >
+<!ATTLIST PreviousWord
+  id ID #REQUIRED
+  >
+<!ELEMENT NextWord (PhoneticTemplate | Null) >
+<!ATTLIST NextWord
+  id ID #REQUIRED
+  >
+
+<!ELEMENT Null EMPTY >
+<!ATTLIST Null
+  id ID #REQUIRED
+>
+
+<!ELEMENT MetathesisRule (Name, StructuralDescription) >
+<!ATTLIST MetathesisRule
+  isActive (yes | no) "yes"
+  id ID #REQUIRED
+  leftSwitch IDREF #REQUIRED
+  rightSwitch IDREF #REQUIRED
+  multipleApplicationOrder (leftToRightIterative | rightToLeftIterative) "leftToRightIterative"
+>
+
+<!ELEMENT StructuralDescription (PhoneticTemplate) >
+
+<!--
+   =====================
+   Strata
+   =====================
+-->
+<!ELEMENT Strata (Stratum+) >
+ 
+<!ELEMENT Stratum (Name, MorphologicalRuleDefinitions?, AffixTemplates?, LexicalEntries?) >
+<!--
+  characterDefinitionTable refers to a CharacterDefinitionTable ID
+  -->
+<!ATTLIST Stratum
+  isActive (yes | no) "yes"
+  characterDefinitionTable IDREF #REQUIRED
+  cyclicity (cyclic | noncyclic) "noncyclic"
+  phonologicalRuleOrder (linear | simultaneous) "linear"
+  morphologicalRuleOrder (linear | unordered) "linear"
+  phonologicalRules IDREFS #IMPLIED
+  morphologicalRules IDREFS #IMPLIED
+>
+
+<!ELEMENT AffixTemplates (AffixTemplate+) >
+
+<!ELEMENT AffixTemplate (Name, Slot+) >
+<!--
+  slots refers to one or more Slot IDs
+  requiredPartsOfSpeech refers to one or more PartOfSpeech IDs
+  requiredSubcategorizedRules refers to one or more SyntacticRule IDs
+  -->
+<!ATTLIST AffixTemplate 
+  isActive (yes | no) "yes"
+  final (true | false) "true"
+  requiredPartsOfSpeech IDREFS #IMPLIED
+  requiredSubcategorizedRules IDREFS #IMPLIED
+>
+<!ELEMENT Slot (Name) >
+<!--
+  morphologicalRules refers to one or more MorphologicalRule or RealizationalRule IDs; these are ordered
+  -->
+<!ATTLIST Slot
+  isActive (yes | no) "yes"
+  optional (true | false) "false"
+  morphologicalRules IDREFS #REQUIRED
+>
+
+<!--
+   =====================
+   LexicalEntries
+   =====================
+-->
+<!ELEMENT LexicalEntries (LexicalEntry+) >
+
+<!ELEMENT LexicalEntry  (Allomorphs, AssignedHeadFeatures?, AssignedFootFeatures?, Gloss?, Properties?)>
+<!--
+    family refers to a family element ID
+    partOfSpeech refers to a PartOfSpeech ID
+    morphologicalRules refers to one or more MorphologicalRule, RealizationalRule and/or CompoundingRule IDs
+    subcategorizations refers to one or more SyntacticRule IDs
+    ruleFeatures refers to one or more MorphologicalPhonologicalRuleFeature IDs 
+    obligatoryHeadFeatures refers to one or more (HeadFeature) FeatureDefinition IDs
+    obligatoryFootFeatures refers to one or more (FootFeature) FeatureDefinition IDs
+    -->
+<!ATTLIST LexicalEntry
+  id ID #REQUIRED
+  isActive (yes | no) "yes"
+  family IDREF #IMPLIED
+  partOfSpeech IDREF #IMPLIED
+  morphologicalRules IDREFS #IMPLIED
+  subcategorizations IDREFS #IMPLIED
+  ruleFeatures IDREFS #IMPLIED
+  obligatoryHeadFeatures IDREFS #IMPLIED
+  obligatoryFootFeatures IDREFS #IMPLIED
+>
+
+<!ELEMENT Allomorphs (Allomorph+) >
+
+<!ELEMENT Allomorph (PhoneticShape, RequiredEnvironments?, ExcludedEnvironments?, Properties?) >
+<!ATTLIST Allomorph
+  id ID #REQUIRED
+  stemName IDREF #IMPLIED
+  isActive (yes | no) "yes"
+>
+
+<!ELEMENT PhoneticShape (#PCDATA) >
+<!ELEMENT Gloss (#PCDATA) >
+
+<!ELEMENT AssignedHeadFeatures (FeatureValue+) >
+<!ELEMENT AssignedFootFeatures (FeatureValue+) >
+
+<!ELEMENT RequiredEnvironments (Environment+) >
+<!ELEMENT ExcludedEnvironments (Environment+) >
+<!ELEMENT Environment (LeftEnvironment?, RightEnvironment?) >
+
+<!ELEMENT Properties (Property+) >
+<!ELEMENT Property (#PCDATA) >
+<!ATTLIST Property
+  name CDATA #REQUIRED
+ >
+
+<!--
+   =====================
+   MorphologicalRuleDefinitions
+   =====================
+-->
+<!ELEMENT MorphologicalRuleDefinitions (MorphologicalRule | RealizationalRule | CompoundingRule)* >
+
+<!ELEMENT MorphologicalRule (Name, MorphologicalSubrules, OutputSubcategorizationOverrides?, OutputHeadFeatures?, OutputFootFeatures?, RequiredHeadFeatures?,
+                             RequiredFootFeatures?, Gloss?, Properties?) >
+<!--
+  requiredPartsOfSpeech refers to one or more PartOfSpeech IDs
+  requiredSubcategorizedRules refers to one or more SyntacticRule IDs
+  outputPartOfSpeech refers to a PartOfSpeech ID
+  outputSubcategorization refers to one or more SyntacticRule IDs
+  outputObligatoryFeatures refers to one or more (HeadFeature) FeatureDefinition IDs
+  (Note: what was Output Subcategorization (sub) in the text form of Hermit Crab has been split into
+    the outputSubcategorization attribute plus the OutputSubcategorizationOverrides element (and its content).)
+  -->
+<!ATTLIST MorphologicalRule
+  id ID #REQUIRED
+  isActive (yes | no) "yes"
+  blockable (true | false) "true"
+  multipleApplication (0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9) "1"
+  requiredPartsOfSpeech IDREFS #IMPLIED
+  requiredSubcategorizedRules IDREFS #IMPLIED
+  requiredStemName IDREF #IMPLIED
+  outputPartOfSpeech IDREF #IMPLIED
+  outputSubcategorization IDREFS #IMPLIED
+  outputObligatoryFeatures IDREFS #IMPLIED
+>
+
+<!ELEMENT RealizationalRule (Name, MorphologicalSubrules, RealizationalFeatures?, RequiredHeadFeatures?, RequiredFootFeatures?, Gloss?, Properties?) >
+<!ATTLIST RealizationalRule
+  id ID #REQUIRED
+  isActive (yes | no) "yes"
+  blockable (true | false) "true"
+>
+
+<!--
+  headPartsOfSpeech refers to one or more PartOfSpeech IDs
+  nonheadPartsOfSpeech refers to one or more PartOfSpeech IDs
+  headSubcategorizedRules refers to one or more SyntacticRule IDs
+  nonheadSubcategorizedRules refers to one or more SyntacticRule IDs
+  outputPartOfSpeech refers to a PartOfSpeech ID
+  outputSubcategorization refers to one or more SyntacticRule IDs
+  outputObligatoryFeatures refers to one or more (HeadFeature) FeatureDefinition IDs
+  (Note: what was Output Subcategorization (sub) in the text form of Hermit Crab has been split into
+    the outputSubcategorization attribute plus the OutputSubcategorizationOverrides element (and its content).)
+  -->
+<!ELEMENT CompoundingRule (Name, CompoundingSubrules, OutputSubcategorizationOverrides?, OutputHeadFeatures?, OutputFootFeatures?,
+                           HeadRequiredHeadFeatures?, NonHeadRequiredHeadFeatures?, HeadRequiredFootFeatures?, NonHeadRequiredFootFeatures?) >
+<!ATTLIST CompoundingRule
+  id ID #REQUIRED
+  isActive (yes | no) "yes"
+  blockable (true | false) "true"
+  multipleApplication (0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9) "1"
+  headPartsOfSpeech IDREFS #IMPLIED
+  nonHeadPartsOfSpeech IDREFS #IMPLIED
+  headSubcategorizedRules IDREFS #IMPLIED
+  nonHeadSubcategorizedRules IDREFS #IMPLIED
+  outputPartOfSpeech IDREF #IMPLIED
+  outputSubcategorization IDREFS #IMPLIED
+  outputObligatoryFeatures IDREFS #IMPLIED
+>
+
+<!ELEMENT MorphologicalSubrules (MorphologicalSubrule+) >
+<!ELEMENT MorphologicalSubrule (VariableFeatures?, MorphologicalInput, MorphologicalOutput, RequiredHeadFeatures?, RequiredFootFeatures?,
+                                RequiredEnvironments?, ExcludedEnvironments?, Properties?) >
+<!ATTLIST MorphologicalSubrule
+  id ID #REQUIRED
+  isActive (yes | no) "yes"
+>
+
+<!ELEMENT MorphologicalInput (PhoneticSequence+) >
+<!--
+    requiredMPRFeatures refers to one or more MorphologicalPhonologicalRuleFeature IDs
+    excludedMPRFeatures refers to one or more MorphologicalPhonologicalRuleFeature IDs
+-->
+<!ATTLIST MorphologicalInput
+  requiredMPRFeatures IDREFS #IMPLIED
+  excludedMPRFeatures IDREFS #IMPLIED
+>
+
+<!ELEMENT MorphologicalOutput (CopyFromInput | InsertSimpleContext | ModifyFromInput | InsertSegments)* >
+<!--
+    MPRFeatures refers to one or more MorphologicalPhonologicalRuleFeature IDs
+-->
+<!ATTLIST MorphologicalOutput
+  MPRFeatures IDREFS #IMPLIED
+  redupMorphType (prefix | suffix | implicit) "implicit"
+>
+
+<!ELEMENT CopyFromInput EMPTY>
+<!--
+  index refers to a RequiredPhoneticInput ID
+  -->
+<!ATTLIST CopyFromInput
+  index IDREF #REQUIRED
+>
+
+<!ELEMENT InsertSimpleContext (SimpleContext) >
+
+<!ELEMENT ModifyFromInput (SimpleContext)>
+<!--
+  index refers to a RequiredPhoneticInput ID
+  -->
+<!ATTLIST ModifyFromInput
+  index IDREF #REQUIRED
+>
+
+<!ELEMENT InsertSegments (PhoneticShape) >
+<!--
+  characterDefinitionTable refers to a CharacterDefinitionTable ID
+  -->
+<!ATTLIST InsertSegments
+  characterDefinitionTable IDREF #REQUIRED
+>
+
+<!ELEMENT VariableFeatures (VariableFeature+) >
+
+<!ELEMENT VariableFeature EMPTY >
+<!--
+  phonologicalFeature refers to a (PhonologicalFeatureSystem) Feature ID
+  -->
+<!ATTLIST VariableFeature
+  id ID #REQUIRED
+  name (α | β | γ | δ | ε | ζ | η | θ | ι | κ | λ | μ | ν | ξ | ο | π | ρ | σ | τ | υ | φ | χ | ψ | ω) #REQUIRED
+  phonologicalFeature IDREF #REQUIRED
+>
+
+<!--
+ For OutputHeadFeatures and RequiredHeadFeatures, the Features need to be HeadFeatures. 
+For OutputFootFeatures and RequiredFootFeatures, the Features need to be FootFeatures. 
+-->
+<!ELEMENT OutputHeadFeatures (FeatureValue+) >
+<!ELEMENT OutputFootFeatures (FeatureValue+) >
+<!ELEMENT RequiredHeadFeatures (FeatureValue+) >
+<!ELEMENT RequiredFootFeatures (FeatureValue+) >
+<!ELEMENT RealizationalFeatures (FeatureValue+) >
+<!ELEMENT HeadRequiredHeadFeatures (FeatureValue+) >
+<!ELEMENT HeadRequiredFootFeatures (FeatureValue+) >
+<!ELEMENT NonHeadRequiredHeadFeatures (FeatureValue+) >
+<!ELEMENT NonHeadRequiredFootFeatures (FeatureValue+) >
+<!ELEMENT OutputSubcategorizationOverrides (OutputSubcategorizationOverride+) >
+<!ELEMENT OutputSubcategorizationOverride EMPTY >
+<!--
+  inputSubcategorization refers to a SyntacticRule ID 
+  outputSubcategorization refers to a SyntacticRule ID
+  -->
+<!ATTLIST OutputSubcategorizationOverride
+  isActive (yes | no) "yes"
+  inputSubcategorization IDREF #REQUIRED
+  outputSubcategorization IDREF #IMPLIED
+>
+
+<!ELEMENT CompoundingSubrules (CompoundingSubrule+) >
+<!ELEMENT CompoundingSubrule (VariableFeatures?, HeadMorphologicalInput, NonHeadMorphologicalInput, MorphologicalOutput) >
+<!ATTLIST CompoundingSubrule
+  isActive (yes | no) "yes"
+>
+
+<!ELEMENT HeadMorphologicalInput (PhoneticSequence+) >
+<!--
+    requiredMPRFeatures refers to one or more MorphologicalPhonologicalRuleFeature IDs
+    excludedMPRFeatures refers to one or more MorphologicalPhonologicalRuleFeature IDs
+-->
+<!ATTLIST HeadMorphologicalInput
+  requiredMPRFeatures IDREFS #IMPLIED
+  excludedMPRFeatures IDREFS #IMPLIED
+>
+
+<!ELEMENT NonHeadMorphologicalInput (PhoneticSequence+) >
+
+<!--
+   =====================
+   PhoneticSequence
+   =====================
+-->
+<!ELEMENT PhoneticSequence (Segment | Segments | SimpleContext | OptionalSegmentSequence | BoundaryMarker)* >
+<!ATTLIST PhoneticSequence
+  id ID #IMPLIED
+>
+<!ELEMENT Segment EMPTY>
+<!--
+  The id is only needed for a metathesis rule
+  segment refers to a SegmentDefinition ID
+  -->
+<!ATTLIST Segment
+  id ID #IMPLIED
+  segment IDREF #REQUIRED
+>
+<!ELEMENT Segments (PhoneticShape) >
+<!ATTLIST Segments
+  id ID #IMPLIED
+  characterDefinitionTable IDREF #REQUIRED
+>
+<!ELEMENT BoundaryMarker EMPTY>
+<!--
+  The id is only needed for a metathesis rule
+  boundary refers to a BoundaryDefinition ID
+  -->
+<!ATTLIST BoundaryMarker
+  id ID #IMPLIED
+  boundary IDREF #REQUIRED
+>
+<!ELEMENT SimpleContext (AlphaVariables?) >
+<!--
+  The id is only needed for a metathesis rule
+  naturalClass refers to a NaturalClass ID
+  -->
+<!ATTLIST SimpleContext
+  id ID #IMPLIED
+  naturalClass IDREF #REQUIRED
+>
+<!ELEMENT AlphaVariables (AlphaVariable+)>
+<!ELEMENT AlphaVariable EMPTY >
+<!--
+  variableFeature refers to a VariableFeature ID
+  -->
+<!ATTLIST AlphaVariable
+  variableFeature IDREF #REQUIRED
+  polarity (plus | minus) "plus"
+>
+<!ELEMENT OptionalSegmentSequence (Segment | Segments | SimpleContext | BoundaryMarker)+ >
+<!--
+  The id is only needed for a metathesis rule
+  min is an integer, zero or higher 
+  max is an integer, -1 or higher
+  -->
+<!ATTLIST OptionalSegmentSequence
+  id ID #IMPLIED
+  min CDATA #IMPLIED
+  max CDATA #IMPLIED
+>
+<!ELEMENT PhoneticTemplate (PhoneticSequence) >
+<!ATTLIST PhoneticTemplate
+  initialBoundaryCondition (true | false) "false"
+  finalBoundaryCondition (true | false) "false"
+>
+
+<!--
+   =====================
+   MorphemeCoOccurrenceRules
+   =====================
+-->
+<!ELEMENT MorphemeCoOccurrenceRules (MorphemeCoOccurrenceRule+) >
+
+<!ELEMENT MorphemeCoOccurrenceRule EMPTY >
+<!ATTLIST MorphemeCoOccurrenceRule
+  isActive (yes | no) "yes"
+  type (exclude | require) "exclude"
+  primaryMorpheme IDREF #REQUIRED
+  otherMorphemes IDREFS #REQUIRED
+  adjacency (anywhere | somewhereToLeft | somewhereToRight | adjacentToLeft | adjacentToRight) "anywhere"
+>
+
+<!--
+   =====================
+   AllomorphCoOccurrenceRules
+   =====================
+-->
+<!ELEMENT AllomorphCoOccurrenceRules (AllomorphCoOccurrenceRule+) >
+
+<!ELEMENT AllomorphCoOccurrenceRule EMPTY >
+<!ATTLIST AllomorphCoOccurrenceRule
+  isActive (yes | no) "yes"
+  type (exclude | require) "exclude"
+  primaryAllomorph IDREF #REQUIRED
+  otherAllomorphs IDREFS #REQUIRED
+  adjacency (anywhere | somewhereToLeft | somewhereToRight | adjacentToLeft | adjacentToRight) "anywhere"
+>
+
+<!--
+   =====================
+   SyntacticRules
+   =====================
+-->
+<!ELEMENT SyntacticRules (SyntacticRule*) >
+<!ELEMENT SyntacticRule (#PCDATA) >
+<!ATTLIST SyntacticRule 
+  id ID #REQUIRED
+>

@@ -4,8 +4,8 @@ namespace SIL.HermitCrab
 {
 	public class AllomorphCoOccurrenceRule : MorphCoOccurrenceRule<Allomorph>
 	{
-		public AllomorphCoOccurrenceRule(IEnumerable<Allomorph> others, MorphCoOccurrenceAdjacency adjacency)
-			: base(others, adjacency)
+		public AllomorphCoOccurrenceRule(ConstraintType type, IEnumerable<Allomorph> others, MorphCoOccurrenceAdjacency adjacency)
+			: base(type, others, adjacency)
 		{
 		}
 

@@ -12,10 +12,10 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 		[Test]
 		public void SimpleRules()
 		{
-			var asp = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var asp = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("asp+").Value;
-			var nonCons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var nonCons = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-").Value;
 
@@ -45,23 +45,23 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 		[Test]
 		public void LongDistanceRules()
 		{
-			var highVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var highVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-").Symbol("voc+")
 				.Symbol("high+").Value;
-			var backRnd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var backRnd = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("back+")
 				.Symbol("round+").Value;
-			var rndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var rndVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("round+").Value;
-			var cons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var cons = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+").Value;
-			var lowVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var lowVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
@@ -92,15 +92,15 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 		[Test]
 		public void AnchorRules()
 		{
-			var cons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var cons = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("voc-").Value;
-			var vlUnasp = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var vlUnasp = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("vd-")
 				.Symbol("asp-").Value;
-			var vowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var vowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+").Value;
@@ -150,28 +150,28 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 		[Test]
 		public void QuantifierRules()
 		{
-			var highVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var highVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("high+").Value;
-			var backRnd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var backRnd = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("back+")
 				.Symbol("round+").Value;
-			var cons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var cons = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+").Value;
-			var lowVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var lowVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("low+").Value;
-			var rndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var rndVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment).Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("round+").Value;
-			var backRndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var backRndVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
@@ -222,22 +222,22 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 		[Test]
 		public void MultipleSegmentRules()
 		{
-			var highVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var highVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("high+").Value;
-			var backRnd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var backRnd = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("back+")
 				.Symbol("round+").Value;
-			var backRndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var backRndVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("back+")
 				.Symbol("round+").Value;
-			var t = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var t = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("alveolar")
@@ -271,64 +271,64 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 		[Test]
 		public void BoundaryRules()
 		{
-			var highVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var highVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("high+").Value;
-			var backRndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var backRndVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("back+")
 				.Symbol("round+").Value;
-			var backRnd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var backRnd = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("back+")
 				.Symbol("round+").Value;
-			var unbackUnrnd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var unbackUnrnd = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("back-")
 				.Symbol("round-").Value;
-			var unbackUnrndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var unbackUnrndVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("back-")
 				.Symbol("round-").Value;
-			var backVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var backVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("back+").Value;
-			var unrndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var unrndVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("round-").Value;
-			var lowBack = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var lowBack = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("back+")
 				.Symbol("low+")
 				.Symbol("high-").Value;
-			var bilabialCons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var bilabialCons = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("voc-")
 				.Symbol("bilabial").Value;
-			var unvdUnasp = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var unvdUnasp = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("vd-")
 				.Symbol("asp-").Value;
-			var vowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var vowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+").Value;
-			var cons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var cons = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("voc-").Value;
-			var asp = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var asp = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("asp+").Value;
 
@@ -495,11 +495,11 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 		[Test]
 		public void CommonFeatureRules()
 		{
-			var vowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var vowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+").Value;
-			var vdLabFric = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var vdLabFric = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("labiodental")
 				.Symbol("vd+")
@@ -533,36 +533,36 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 		[Test]
 		public void AlphaVariableRules()
 		{
-			var highVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var highVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("high+").Value;
-			var cons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var cons = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("voc-").Value;
-			var nasalCons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var nasalCons = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("voc-")
 				.Symbol("nasal+").Value;
-			var voicelessStop = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var voicelessStop = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("vd-")
 				.Symbol("cont-").Value;
-			var asp = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var asp = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("asp+").Value;
-			var vowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var vowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+").Value;
-			var unasp = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var unasp = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("asp-").Value;
-			var k = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var k = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("voc-")
@@ -570,7 +570,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 				.Symbol("vd-")
 				.Symbol("cont-")
 				.Symbol("nasal-").Value;
-			var g = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var g = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("voc-")
@@ -584,12 +584,12 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
 			                   		Rhs = Pattern<Word, ShapeNode>.New()
-										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem)
+										.Annotation(FeatureStruct.New(Language.PhonologicalFeatureSystem)
 											.Symbol(HCFeatureSystem.Segment)
 											.Feature("back").EqualToVariable("a")
 											.Feature("round").EqualToVariable("b").Value).Value,
 									LeftEnvironment = Pattern<Word, ShapeNode>.New()
-										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, highVowel)
+										.Annotation(FeatureStruct.New(Language.PhonologicalFeatureSystem, highVowel)
 											.Feature("back").EqualToVariable("a")
 											.Feature("round").EqualToVariable("b").Value)
 										.Annotation(cons).Value
@@ -603,11 +603,11 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
 			                   		Rhs = Pattern<Word, ShapeNode>.New()
-										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem)
+										.Annotation(FeatureStruct.New(Language.PhonologicalFeatureSystem)
 											.Symbol(HCFeatureSystem.Segment)
 											.Feature("poa").EqualToVariable("a").Value).Value,
 									RightEnvironment = Pattern<Word, ShapeNode>.New()
-										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, cons)
+										.Annotation(FeatureStruct.New(Language.PhonologicalFeatureSystem, cons)
 											.Feature("poa").EqualToVariable("a").Value).Value
 			                   	});
 
@@ -618,14 +618,14 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			Allophonic.PhonologicalRules.Add(rule1);
 
 			rule1.Lhs = Pattern<Word, ShapeNode>.New()
-				.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, voicelessStop)
+				.Annotation(FeatureStruct.New(Language.PhonologicalFeatureSystem, voicelessStop)
 					.Feature("poa").EqualToVariable("a").Value).Value;
 			rule1.Subrules.Clear();
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
 			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(asp).Value,
 									LeftEnvironment = Pattern<Word, ShapeNode>.New()
-										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, voicelessStop)
+										.Annotation(FeatureStruct.New(Language.PhonologicalFeatureSystem, voicelessStop)
 											.Feature("poa").EqualToVariable("a").Value)
 										.Annotation(vowel).Value
 			                   	});
@@ -643,12 +643,12 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			                   	{
 			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(Table1.GetSymbolFeatureStruct("f")).Value,
 									LeftEnvironment = Pattern<Word, ShapeNode>.New()
-										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, vowel)
+										.Annotation(FeatureStruct.New(Language.PhonologicalFeatureSystem, vowel)
 											.Feature("high").EqualToVariable("a")
 											.Feature("back").EqualToVariable("b")
 											.Feature("round").EqualToVariable("c").Value).Value,
 									RightEnvironment = Pattern<Word, ShapeNode>.New()
-										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, vowel)
+										.Annotation(FeatureStruct.New(Language.PhonologicalFeatureSystem, vowel)
 											.Feature("high").EqualToVariable("a")
 											.Feature("back").EqualToVariable("b")
 											.Feature("round").EqualToVariable("c").Value).Value
@@ -664,10 +664,10 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
 			                   		Rhs = Pattern<Word, ShapeNode>.New()
-										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, k)
+										.Annotation(FeatureStruct.New(Language.PhonologicalFeatureSystem, k)
 											.Feature("asp").EqualToVariable("a").Value).Value,
 									LeftEnvironment = Pattern<Word, ShapeNode>.New()
-										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, g)
+										.Annotation(FeatureStruct.New(Language.PhonologicalFeatureSystem, g)
 											.Feature("asp").EqualToVariable("a").Value).Value,
 									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value
 			                   	});
@@ -679,34 +679,34 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 		[Test]
 		public void EpenthesisRules()
 		{
-			var highVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var highVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("high+").Value;
-			var highFrontUnrndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var highFrontUnrndVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("high+")
 				.Symbol("back-")
 				.Symbol("round-").Value;
-			var highBackRndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var highBackRndVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("high+")
 				.Symbol("back+")
 				.Symbol("round+").Value;
-			var cons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var cons = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("voc-").Value;
-			var vowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var vowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+").Value;
-			var highBackRnd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var highBackRnd = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("high+")
 				.Symbol("back+")
@@ -772,11 +772,11 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			rule4.Subrules.Add(new RewriteSubrule
 			                   	{
 			                   		Rhs = Pattern<Word, ShapeNode>.New()
-										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, highVowel)
+										.Annotation(FeatureStruct.New(Language.PhonologicalFeatureSystem, highVowel)
 											.Feature("back").EqualToVariable("a")
 											.Feature("round").EqualToVariable("b").Value).Value,
 									LeftEnvironment = Pattern<Word, ShapeNode>.New()
-										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, highVowel)
+										.Annotation(FeatureStruct.New(Language.PhonologicalFeatureSystem, highVowel)
 											.Feature("back").EqualToVariable("a")
 											.Feature("round").EqualToVariable("b").Value).Value
 			                   	});
@@ -832,7 +832,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 		[Test]
 		public void DeletionRules()
 		{
-			var highFrontUnrndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var highFrontUnrndVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
@@ -840,33 +840,33 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 				.Symbol("low-")
 				.Symbol("back-")
 				.Symbol("round-").Value;
-			var highVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var highVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("high+").Value;
-			var cons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var cons = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("voc-").Value;
-			var highBackRndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var highBackRndVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("high+")
 				.Symbol("back+")
 				.Symbol("round+").Value;
-			var asp = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var asp = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("asp+").Value;
-			var nonCons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var nonCons = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-").Value;
-			var vowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var vowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+").Value;
-			var voiced = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var voiced = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("vd+").Value;
 
@@ -964,7 +964,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			Morphophonemic.PhonologicalRules.Add(rule5);
 
 			rule4.Lhs = Pattern<Word, ShapeNode>.New()
-				.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, cons)
+				.Annotation(FeatureStruct.New(Language.PhonologicalFeatureSystem, cons)
 					.Feature("poa").EqualToVariable("a")
 					.Feature("vd").EqualToVariable("b")
 					.Feature("cont").EqualToVariable("c")
@@ -973,7 +973,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			rule4.Subrules.Add(new RewriteSubrule
 			                   	{
 			                   		RightEnvironment = Pattern<Word, ShapeNode>.New()
-										.Annotation(FeatureStruct.New(Language.PhoneticFeatureSystem, cons)
+										.Annotation(FeatureStruct.New(Language.PhonologicalFeatureSystem, cons)
 											.Feature("poa").EqualToVariable("a")
 											.Feature("vd").EqualToVariable("b")
 											.Feature("cont").EqualToVariable("c")
@@ -996,86 +996,86 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 		[Test]
 		public void DisjunctiveRules()
 		{
-			var stop = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var stop = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("cont-").Value;
-			var asp = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var asp = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("asp+").Value;
-			var unasp = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var unasp = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("asp-").Value;
-			var highVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var highVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("high+").Value;
-			var backRnd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var backRnd = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("back+")
 				.Symbol("round+").Value;
-			var backRndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var backRndVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("back+")
 				.Symbol("round+").Value;
-			var cons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var cons = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("voc-").Value;
-			var highFrontVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var highFrontVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("high+")
 				.Symbol("back-").Value;
-			var frontRnd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var frontRnd = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("back-")
 				.Symbol("round+").Value;
-			var frontRndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var frontRndVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("back-")
 				.Symbol("round+").Value;
-			var backUnrnd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var backUnrnd = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("back+")
 				.Symbol("round-").Value;
-			var backUnrndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var backUnrndVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("back+")
 				.Symbol("round-").Value;
-			var frontUnrnd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var frontUnrnd = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("back-")
 				.Symbol("round-").Value;
-			var frontUnrndVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var frontUnrndVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("back-")
 				.Symbol("round-").Value;
-			var p = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var p = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("cont-")
 				.Symbol("vd-")
 				.Symbol("asp-")
 				.Symbol("bilabial").Value;
-			var vd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var vd = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("vd+").Value;
-			var vowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var vowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+").Value;
-			var voicelessStop = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var voicelessStop = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("vd-")
@@ -1185,23 +1185,23 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 		[Test]
 		public void MultipleApplicationRules()
 		{
-			var highVowel = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var highVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("high+").Value;
-			var backRnd = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var backRnd = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("back+")
 				.Symbol("round+").Value;
-			var i = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var i = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-")
 				.Symbol("voc+")
 				.Symbol("high+")
 				.Symbol("back-")
 				.Symbol("round-").Value;
-			var cons = FeatureStruct.New(Language.PhoneticFeatureSystem)
+			var cons = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
 				.Symbol("voc-").Value;

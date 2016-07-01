@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -13,11 +12,9 @@ namespace SIL.HermitCrab
 	/// </summary>
 	public abstract class Allomorph : IComparable<Allomorph>
 	{
-		private readonly ObservableHashSet<AllomorphEnvironment> _requiredEnvironments;
-		private readonly ObservableHashSet<AllomorphEnvironment> _excludedEnvironments;
-		private readonly ObservableHashSet<AllomorphCoOccurrenceRule> _requiredAllomorphCoOccurrences;
-		private readonly ObservableHashSet<AllomorphCoOccurrenceRule> _excludedAllomorphCoOccurrences; 
-		private readonly Hashtable _properties;
+		private readonly ObservableHashSet<AllomorphEnvironment> _environments;
+		private readonly ObservableHashSet<AllomorphCoOccurrenceRule> _allomorphCoOccurrenceRules;
+		private readonly Properties _properties;
 		private readonly string _id;
 
 		/// <summary>
@@ -26,19 +23,15 @@ namespace SIL.HermitCrab
 		protected Allomorph()
 		{
 			Index = -1;
-			_requiredEnvironments = new ObservableHashSet<AllomorphEnvironment>();
-			_requiredEnvironments.CollectionChanged += EnvironmentsChanged;
-			_excludedEnvironments = new ObservableHashSet<AllomorphEnvironment>();
-			_excludedEnvironments.CollectionChanged += EnvironmentsChanged;
-			_requiredAllomorphCoOccurrences = new ObservableHashSet<AllomorphCoOccurrenceRule>();
-			_requiredAllomorphCoOccurrences.CollectionChanged += AllomorphCoOccurrencesChanged;
-			_excludedAllomorphCoOccurrences = new ObservableHashSet<AllomorphCoOccurrenceRule>();
-			_excludedAllomorphCoOccurrences.CollectionChanged += AllomorphCoOccurrencesChanged;
-			_properties = new Hashtable();
+			_environments = new ObservableHashSet<AllomorphEnvironment>();
+			_environments.CollectionChanged += EnvironmentsChanged;
+			_allomorphCoOccurrenceRules = new ObservableHashSet<AllomorphCoOccurrenceRule>();
+			_allomorphCoOccurrenceRules.CollectionChanged += AllomorphCoOccurrenceRuleRulesChanged;
+			_properties = new Properties();
 			_id = Guid.NewGuid().ToString();
 		}
 
-		private void AllomorphCoOccurrencesChanged(object sender, NotifyCollectionChangedEventArgs e)
+		private void AllomorphCoOccurrenceRuleRulesChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			if (e.OldItems != null)
 			{
@@ -84,46 +77,28 @@ namespace SIL.HermitCrab
 		public int Index { get; internal set; }
 
 		/// <summary>
-		/// Gets or sets the required environments.
+		/// Gets the environments.
 		/// </summary>
 		/// <value>The required environments.</value>
-		public ICollection<AllomorphEnvironment> RequiredEnvironments
+		public ICollection<AllomorphEnvironment> Environments
 		{
-			get { return _requiredEnvironments; }
+			get { return _environments; }
 		}
 
 		/// <summary>
-		/// Gets or sets the excluded environments.
+		/// Gets the allomorph co-occurrence rules.
 		/// </summary>
-		/// <value>The excluded environments.</value>
-		public ICollection<AllomorphEnvironment> ExcludedEnvironments
+		/// <value>The allomorph co-occurrence rules.</value>
+		public ICollection<AllomorphCoOccurrenceRule> AllomorphCoOccurrenceRules
 		{
-			get { return _excludedEnvironments; }
-		}
-
-		/// <summary>
-		/// Gets or sets the required allomorph co-occurrences.
-		/// </summary>
-		/// <value>The required allomorph co-occurrences.</value>
-		public ICollection<AllomorphCoOccurrenceRule> RequiredAllomorphCoOccurrences
-		{
-			get { return _requiredAllomorphCoOccurrences; }
-		}
-
-		/// <summary>
-		/// Gets or sets the excluded allomorph co-occurrences.
-		/// </summary>
-		/// <value>The excluded allomorph co-occurrences.</value>
-		public ICollection<AllomorphCoOccurrenceRule> ExcludedAllomorphCoOccurrences
-		{
-			get { return _excludedAllomorphCoOccurrences; }
+			get { return _allomorphCoOccurrenceRules; }
 		}
 
 		/// <summary>
 		/// Gets the custom properties.
 		/// </summary>
 		/// <value>The properties.</value>
-		public IDictionary Properties
+		public IDictionary<string, object> Properties
 		{
 			get { return _properties; }
 		}
@@ -147,56 +122,32 @@ namespace SIL.HermitCrab
 
 		protected virtual bool ConstraintsEqual(Allomorph other)
 		{
-			return _requiredEnvironments.SetEquals(other._requiredEnvironments) && _excludedEnvironments.SetEquals(other._excludedEnvironments);
+			return _environments.SetEquals(other._environments);
 		}
 
 		internal virtual bool IsWordValid(Morpher morpher, Word word)
 		{
-			AllomorphEnvironment env = RequiredEnvironments.FirstOrDefault(e => !e.IsMatch(word));
+			AllomorphEnvironment env = Environments.FirstOrDefault(e => !e.IsWordValid(word));
 			if (env != null)
 			{
 				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.RequiredEnvironments, this, env);
+					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.Environments, this, env);
 				return false;
 			}
 
-			env = ExcludedEnvironments.FirstOrDefault(e => e.IsMatch(word));
-			if (env != null)
-			{
-				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.ExcludedEnvironments, this, env);
-				return false;
-			}
-
-			AllomorphCoOccurrenceRule alloRule = RequiredAllomorphCoOccurrences.FirstOrDefault(r => !r.CoOccurs(word));
+			AllomorphCoOccurrenceRule alloRule = AllomorphCoOccurrenceRules.FirstOrDefault(r => !r.IsWordValid(word));
 			if (alloRule != null)
 			{
 				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.RequiredAllomorphCoOccurrences, this, alloRule);
+					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.AllomorphCoOccurrenceRules, this, alloRule);
 				return false;
 			}
 
-			alloRule = ExcludedAllomorphCoOccurrences.FirstOrDefault(r => r.CoOccurs(word));
-			if (alloRule != null)
-			{
-				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.ExcludedAllomorphCoOccurrences, this, alloRule);
-				return false;
-			}
-
-			MorphemeCoOccurrenceRule morphemeRule = Morpheme.RequiredMorphemeCoOccurrences.FirstOrDefault(r => !r.CoOccurs(word));
+			MorphemeCoOccurrenceRule morphemeRule = Morpheme.MorphemeCoOccurrenceRules.FirstOrDefault(r => !r.IsWordValid(word));
 			if (morphemeRule != null)
 			{
 				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.RequiredMorphemeCoOccurrences, this, morphemeRule);
-				return false;
-			}
-
-			morphemeRule = Morpheme.ExcludedMorphemeCoOccurrences.FirstOrDefault(r => r.CoOccurs(word));
-			if (morphemeRule != null)
-			{
-				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.ExcludedMorphemeCoOccurrences, this, morphemeRule);
+					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.MorphemeCoOccurrenceRules, this, morphemeRule);
 				return false;
 			}
 
