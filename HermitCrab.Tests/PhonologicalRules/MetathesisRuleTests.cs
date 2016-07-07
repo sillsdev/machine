@@ -16,8 +16,8 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			            	{
 								Name = "rule1",
 			            		Pattern = Pattern<Word, ShapeNode>.New()
-			            			.Group("1", group => group.Annotation(Table3.GetSymbolFeatureStruct("i")))
-			            			.Group("2", group => group.Annotation(Table3.GetSymbolFeatureStruct("u"))).Value,
+			            			.Group("1", group => group.Annotation(Char(Table3, "i")))
+			            			.Group("2", group => group.Annotation(Char(Table3, "u"))).Value,
 			            		LeftSwitchName = "2",
 								RightSwitchName = "1"
 			            	};
@@ -36,9 +36,9 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			            	{
 								Name = "rule1",
 			            		Pattern = Pattern<Word, ShapeNode>.New()
-			            			.Group("1", group => group.Annotation(Table3.GetSymbolFeatureStruct("i")))
-									.Group("middle", group => group.Annotation(Table3.GetSymbolFeatureStruct("+")))
-			            			.Group("2", group => group.Annotation(Table3.GetSymbolFeatureStruct("u")))
+			            			.Group("1", group => group.Annotation(Char(Table3, "i")))
+									.Group("middle", group => group.Annotation(Char(Table3, "+")))
+			            			.Group("2", group => group.Annotation(Char(Table3, "u")))
 									.Group("rightEnv", group => group.Annotation(HCFeatureSystem.RightSideAnchor)).Value,
 			            		LeftSwitchName = "2",
 								RightSwitchName = "1"
@@ -70,8 +70,8 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			            	{
 								Name = "rule1",
 			            		Pattern = Pattern<Word, ShapeNode>.New()
-			            			.Group("1", group => group.Annotation(Table3.GetSymbolFeatureStruct("i")))
-			            			.Group("2", group => group.Annotation(Table3.GetSymbolFeatureStruct("u"))).Value,
+			            			.Group("1", group => group.Annotation(Char(Table3, "i")))
+			            			.Group("2", group => group.Annotation(Char(Table3, "u"))).Value,
 			            		LeftSwitchName = "2",
 								RightSwitchName = "1"
 			            	};

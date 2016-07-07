@@ -577,17 +577,18 @@ namespace SIL.HermitCrab
 			var table = new CharacterDefinitionTable(_spanFactory) { Name = (string) charDefTableElem.Element("Name") };
 			foreach (XElement segDefElem in charDefTableElem.Elements("SegmentDefinitions").Elements("SegmentDefinition").Where(IsActive))
 			{
-				string[] reps = segDefElem.Elements("Representations").Elements("Representation").Select(e => (string) e).ToArray();
-				FeatureStruct fs = _language.PhonologicalFeatureSystem.Count > 0 ? LoadPhoneticFeatureStruct(segDefElem)
-					: FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Feature(HCFeatureSystem.StrRep).EqualTo(reps).Value;
-				CharacterDefinition cd = table.Add(reps, fs);
+				IEnumerable<string> reps = segDefElem.Elements("Representations").Elements("Representation").Select(e => (string) e);
+				FeatureStruct fs = null;
+				if (_language.PhonologicalFeatureSystem.Count > 0)
+					fs = LoadFeatureStruct(segDefElem, _language.PhonologicalFeatureSystem);
+				CharacterDefinition cd = table.AddSegment(reps, fs);
 				_charDefs[(string) segDefElem.Attribute("id")] = cd;
 			}
 
 			foreach (XElement bdryDefElem in charDefTableElem.Elements("BoundaryDefinitions").Elements("BoundaryDefinition").Where(IsActive))
 			{
-				string[] reps = bdryDefElem.Elements("Representations").Elements("Representation").Select(e => (string) e).ToArray();
-				CharacterDefinition cd = table.Add(reps, FeatureStruct.New().Symbol(HCFeatureSystem.Boundary).Feature(HCFeatureSystem.StrRep).EqualTo(reps).Value);
+				IEnumerable<string> reps = bdryDefElem.Elements("Representations").Elements("Representation").Select(e => (string) e);
+				CharacterDefinition cd = table.AddBoundary(reps);
 				_charDefs[(string) bdryDefElem.Attribute("id")] = cd;
 			}
 
@@ -601,7 +602,7 @@ namespace SIL.HermitCrab
 			switch (natClassElem.Name.LocalName)
 			{
 				case "FeatureNaturalClass":
-					nc = new NaturalClass(LoadPhoneticFeatureStruct(natClassElem))
+					nc = new NaturalClass(LoadFeatureStruct(natClassElem, _language.PhonologicalFeatureSystem))
 					{
 						Name = (string) natClassElem.Element("Name")
 					};
@@ -617,14 +618,6 @@ namespace SIL.HermitCrab
 
 			_language.NaturalClasses.Add(nc);
 			_natClasses[(string) natClassElem.Attribute("id")] = nc;
-		}
-
-		private FeatureStruct LoadPhoneticFeatureStruct(XElement elem)
-		{
-			FeatureStruct fs = LoadFeatureStruct(elem, _language.PhonologicalFeatureSystem);
-			fs.AddValue(HCFeatureSystem.Type, HCFeatureSystem.Segment);
-			fs.Freeze();
-			return fs;
 		}
 
 		private void LoadPhonologicalRule(XElement pruleElem)

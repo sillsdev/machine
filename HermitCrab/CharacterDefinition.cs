@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using SIL.Collections;
 using SIL.Machine.FeatureModel;
 
@@ -10,9 +9,9 @@ namespace SIL.HermitCrab
 		private readonly ReadOnlyCollection<string> _representations;
 		private readonly FeatureStruct _fs;
 
-		public CharacterDefinition(IEnumerable<string> representations, FeatureStruct fs)
+		internal CharacterDefinition(IList<string> representations, FeatureStruct fs)
 		{
-			_representations = new ReadOnlyCollection<string>(representations.ToArray());
+			_representations = new ReadOnlyCollection<string>(representations);
 			_fs = fs;
 		}
 

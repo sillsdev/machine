@@ -294,7 +294,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 											Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+"), new InsertSimpleContext(d)}
 										});
 
-			var prule1 = new RewriteRule { Name = "rule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("t")).Value };
+			var prule1 = new RewriteRule { Name = "rule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table3, "t")).Value };
 			Allophonic.PhonologicalRules.Add(prule1);
 			prule1.Subrules.Add(new RewriteSubrule
 									{
@@ -720,7 +720,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("sasag"), "RED 32");
 
-			var voicing = new RewriteRule { Name = "voicing", Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table1.GetSymbolFeatureStruct("s")).Value };
+			var voicing = new RewriteRule { Name = "voicing", Lhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table1, "s")).Value };
 			Allophonic.PhonologicalRules.Add(voicing);
 			voicing.Subrules.Add(new RewriteSubrule
 									{
@@ -732,7 +732,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("sazag"), "RED 32");
 
-			var affrication = new RewriteRule { Name = "affrication", Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table1.GetSymbolFeatureStruct("s")).Value };
+			var affrication = new RewriteRule { Name = "affrication", Lhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table1, "s")).Value };
 			Allophonic.PhonologicalRules.Add(affrication);
 			affrication.Subrules.Add(new RewriteSubrule
 										{
@@ -785,7 +785,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 										Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new CopyFromInput("2") }
 									});
 
-			var gDelete = new RewriteRule { Name = "g_delete", Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table1.GetSymbolFeatureStruct("g")).Value };
+			var gDelete = new RewriteRule { Name = "g_delete", Lhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table1, "g")).Value };
 			Allophonic.PhonologicalRules.Add(gDelete);
 			gDelete.Subrules.Add(new RewriteSubrule
 									{
@@ -830,7 +830,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 											Lhs =
 												{
 													Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
-													Pattern<Word, ShapeNode>.New("2").Annotation(Table3.GetSymbolFeatureStruct("g")).Value
+													Pattern<Word, ShapeNode>.New("2").Annotation(Char(Table3, "g")).Value
 												},
 											Rhs = { new CopyFromInput("1") }
 										});
@@ -843,7 +843,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 										{
 											Lhs =
 												{
-													Pattern<Word, ShapeNode>.New("1").Annotation(Table3.GetSymbolFeatureStruct("s")).Value,
+													Pattern<Word, ShapeNode>.New("1").Annotation(Char(Table3, "s")).Value,
 													Pattern<Word, ShapeNode>.New("2").Annotation(any).OneOrMore.Value
 												},
 											Rhs = { new CopyFromInput("2") }
@@ -885,7 +885,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 										{
 											Lhs =
 												{
-													Pattern<Word, ShapeNode>.New("1").Annotation(Table3.GetSymbolFeatureStruct("s")).Optional.Value,
+													Pattern<Word, ShapeNode>.New("1").Annotation(Char(Table3, "s")).Optional.Value,
 													Pattern<Word, ShapeNode>.New("2").Annotation(any).OneOrMore.Value
 												},
 											Rhs = { new InsertSegments(Table3, "g"), new CopyFromInput("2") }

@@ -19,7 +19,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons-").Value;
 
-			var rule1 = new RewriteRule { Name = "rule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table1.GetSymbolFeatureStruct("t")).Value };
+			var rule1 = new RewriteRule { Name = "rule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table1, "t")).Value };
 			Allophonic.PhonologicalRules.Add(rule1);
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -27,7 +27,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(nonCons).Value
 			                   	});
 
-			var rule2 = new RewriteRule { Name = "rule2", Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("p")).Value};
+			var rule2 = new RewriteRule { Name = "rule2", Lhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table3, "p")).Value};
 			Allophonic.PhonologicalRules.Add(rule2);
 			Morphophonemic.PhonologicalRules.Add(rule2);
 			rule2.Subrules.Add(new RewriteSubrule
@@ -337,7 +337,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
 			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Value,
-									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Annotation(Table3.GetSymbolFeatureStruct("+")).Value
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Annotation(Char(Table3, "+")).Value
 			                   	});
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
@@ -347,7 +347,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
 			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(unbackUnrnd).Value,
-									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("+")).Annotation(unbackUnrndVowel).Value
+									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Char(Table3, "+")).Annotation(unbackUnrndVowel).Value
 			                   	});
 
 			morpher = new Morpher(SpanFactory, TraceManager, Language);
@@ -373,32 +373,32 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("biib"), "30", "31");
 
-			rule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("i")).Value;
+			rule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table3, "i")).Value;
 			rule1.Subrules.Clear();
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
-			                   		RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("b")).Value
+			                   		RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Char(Table3, "b")).Value
 			                   	});
 
 			var rule2 = new RewriteRule { Name = "rule2", Lhs = Pattern<Word, ShapeNode>.New().Annotation(backVowel).Value };
 			Morphophonemic.PhonologicalRules.Add(rule2);
 			rule2.Subrules.Add(new RewriteSubrule
 			                   	{
-			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("a")).Value,
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table3, "a")).Value,
 									RightEnvironment = Pattern<Word, ShapeNode>.New()
 										.Group(group => group
-											.Annotation(Table3.GetSymbolFeatureStruct("+"))
-											.Annotation(Table3.GetSymbolFeatureStruct("b"))).Value
+											.Annotation(Char(Table3, "+"))
+											.Annotation(Char(Table3, "b"))).Value
 			                   	});
 
 			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("bab"), "30");
 
-			rule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("u")).Value;
+			rule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table3, "u")).Value;
 			rule1.Subrules.Clear();
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
-									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("b")).Value
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Char(Table3, "b")).Value
 			                   	});
 
 			rule2.Lhs = Pattern<Word, ShapeNode>.New().Annotation(unrndVowel).Value;
@@ -407,8 +407,8 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			                   	{
 			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(lowBack).Value,
 									LeftEnvironment = Pattern<Word, ShapeNode>.New()
-										.Annotation(Table3.GetSymbolFeatureStruct("b"))
-										.Annotation(Table3.GetSymbolFeatureStruct("+")).Value
+										.Annotation(Char(Table3, "b"))
+										.Annotation(Char(Table3, "+")).Value
 			                   	});
 
 			morpher = new Morpher(SpanFactory, TraceManager, Language);
@@ -418,13 +418,13 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 
 			rule1.Lhs = Pattern<Word, ShapeNode>.New()
 				.Annotation(bilabialCons)
-				.Annotation(Table3.GetSymbolFeatureStruct("+"))
+				.Annotation(Char(Table3, "+"))
 				.Annotation(bilabialCons).Value;
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
 			                   		Rhs = Pattern<Word, ShapeNode>.New()
 										.Annotation(unvdUnasp)
-										.Annotation(Table3.GetSymbolFeatureStruct("+"))
+										.Annotation(Char(Table3, "+"))
 										.Annotation(unvdUnasp).Value,
 									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
 									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
@@ -454,7 +454,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
 			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(asp).Value,
-									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("+")).Value
+									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Char(Table3, "+")).Value
 			                   	});
 
 			morpher = new Morpher(SpanFactory, TraceManager, Language);
@@ -467,8 +467,8 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
 			                   		Rhs = Pattern<Word, ShapeNode>.New()
-										.Annotation(Table1.GetSymbolFeatureStruct("t"))
-										.Annotation(Table1.GetSymbolFeatureStruct("a")).Value,
+										.Annotation(Char(Table1, "t"))
+										.Annotation(Char(Table1, "a")).Value,
 									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.LeftSideAnchor).Value,
 									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(cons).Annotation(vowel).Annotation(HCFeatureSystem.RightSideAnchor).Value,
 									RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value
@@ -506,7 +506,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 				.Symbol("strident+")
 				.Symbol("cont+").Value;
 
-			var rule1 = new RewriteRule { Name= "rule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table1.GetSymbolFeatureStruct("p")).Value };
+			var rule1 = new RewriteRule { Name= "rule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table1, "p")).Value };
 			Allophonic.PhonologicalRules.Add(rule1);
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -521,7 +521,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			rule1.Subrules.Clear();
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
-			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(Table1.GetSymbolFeatureStruct("v")).Value,
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table1, "v")).Value,
 									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
 									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
 			                   	});
@@ -641,7 +641,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			rule1.Subrules.Clear();
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
-			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(Table1.GetSymbolFeatureStruct("f")).Value,
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table1, "f")).Value,
 									LeftEnvironment = Pattern<Word, ShapeNode>.New()
 										.Annotation(FeatureStruct.New(Language.PhonologicalFeatureSystem, vowel)
 											.Feature("high").EqualToVariable("a")
@@ -726,7 +726,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			rule4.Subrules.Clear();
 			rule4.Subrules.Add(new RewriteSubrule
 			                   	{
-			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(Table1.GetSymbolFeatureStruct("i")).Value,
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table1, "i")).Value,
 									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
 			                   	});
 
@@ -820,7 +820,7 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			Allophonic.PhonologicalRules.Add(rule2);
 			rule2.Subrules.Add(new RewriteSubrule
 			                   	{
-			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(Table1.GetSymbolFeatureStruct("t")).Value,
+			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table1, "t")).Value,
 									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
 									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
 			                   	});
@@ -909,30 +909,30 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			Allophonic.PhonologicalRules.Clear();
 			Morphophonemic.PhonologicalRules.Add(rule4);
 
-			rule4.Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("b")).Value;
+			rule4.Lhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table3, "b")).Value;
 			rule4.Subrules.Clear();
 			rule4.Subrules.Add(new RewriteSubrule
 			                   	{
 			                   		LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.LeftSideAnchor).Value,
-									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("+")).Value
+									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Char(Table3, "+")).Value
 			                   	});
 
 			var rule5 = new RewriteRule
 			            	{
 								Name = "rule5",
 								Lhs = Pattern<Word, ShapeNode>.New()
-									.Annotation(Table3.GetSymbolFeatureStruct("u"))
-									.Annotation(Table3.GetSymbolFeatureStruct("b"))
-									.Annotation(Table3.GetSymbolFeatureStruct("u")).Value
+									.Annotation(Char(Table3, "u"))
+									.Annotation(Char(Table3, "b"))
+									.Annotation(Char(Table3, "u")).Value
 			            	};
 			Morphophonemic.PhonologicalRules.Add(rule5);
 			rule5.Subrules.Add(new RewriteSubrule
 			                   	{
-			                   		LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("+")).Value,
+			                   		LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Char(Table3, "+")).Value,
 									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value
 			                   	});
 
-			var rule1 = new RewriteRule { Name = "rule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(Table3.GetSymbolFeatureStruct("t")).Value };
+			var rule1 = new RewriteRule { Name = "rule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table3, "t")).Value };
 			Morphophonemic.PhonologicalRules.Add(rule1);
 			rule1.Subrules.Add(new RewriteSubrule
 			                   	{
@@ -951,9 +951,9 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 			rule4.Subrules[0].LeftEnvironment = Pattern<Word, ShapeNode>.New().Value;
 
 			rule5.Lhs = Pattern<Word, ShapeNode>.New()
-				.Annotation(Table3.GetSymbolFeatureStruct("u"))
-				.Annotation(Table3.GetSymbolFeatureStruct("b"))
-				.Annotation(Table3.GetSymbolFeatureStruct("i")).Value;
+				.Annotation(Char(Table3, "u"))
+				.Annotation(Char(Table3, "b"))
+				.Annotation(Char(Table3, "i")).Value;
 			rule5.Subrules[0].RightEnvironment = Pattern<Word, ShapeNode>.New().Value;
 
 			morpher = new Morpher(SpanFactory, TraceManager, Language);

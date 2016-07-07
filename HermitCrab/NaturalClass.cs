@@ -6,6 +6,11 @@ namespace SIL.HermitCrab
 	{
 		public NaturalClass(FeatureStruct fs)
 		{
+			if (!fs.IsFrozen)
+			{
+				fs.AddValue(HCFeatureSystem.Type, HCFeatureSystem.Segment);
+				fs.Freeze();
+			}
 			FeatureStruct = fs;
 		}
 

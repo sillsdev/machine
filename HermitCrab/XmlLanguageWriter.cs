@@ -59,6 +59,25 @@ namespace SIL.HermitCrab
 			throw new InvalidEnumArgumentException();
 		}
 
+		private static XAttribute WriteIDs<T>(string name, IEnumerable<T> items, IDictionary<T, string> ids)
+		{
+			return new XAttribute(name, string.Join(" ", items.Select(i => ids[i])));
+		}
+
+		private static void WritePartsOfSpeechIfPresent(XElement elem, string name, FeatureStruct fs)
+		{
+			string posStr = string.Join(" ", fs.PartsOfSpeech().Select(v => Normalize(v.ID)));
+			if (!string.IsNullOrEmpty(posStr))
+				elem.Add(new XAttribute(name, posStr));
+		}
+
+		private static string Normalize(string str)
+		{
+			if (str == null)
+				return null;
+			return str.Normalize();
+		}
+
 		private readonly Language _language;
 
 		private int _nextTableIndex = 1;
@@ -97,18 +116,6 @@ namespace SIL.HermitCrab
 			_phonologicalRules = new Dictionary<IPhonologicalRule, string>();
 		}
 
-		private XAttribute WriteIDs<T>(string name, IEnumerable<T> items, IDictionary<T, string> ids)
-		{
-			return new XAttribute(name, string.Join(" ", items.Select(i => ids[i])));
-		}
-
-		private void WritePartsOfSpeechIfPresent(XElement elem, string name, FeatureStruct fs)
-		{
-			string posStr = string.Join(" ", fs.PartsOfSpeech().Select(v => v.ID));
-			if (!string.IsNullOrEmpty(posStr))
-				elem.Add(new XAttribute(name, posStr));
-		}
-
 		private void Save(TextWriter writer)
 		{
 			var doc = new XDocument(
@@ -121,7 +128,7 @@ namespace SIL.HermitCrab
 		private XElement WriteLanguage()
 		{
 			var langElem = new XElement("Language",
-				new XElement("Name", _language.Name));
+				new XElement("Name", Normalize(_language.Name)));
 
 			langElem.Add(new XElement("PartsOfSpeech", _language.SyntacticFeatureSystem.PartOfSpeechFeature.PossibleSymbols.Select(WritePartOfSpeech)));
 
@@ -168,8 +175,8 @@ namespace SIL.HermitCrab
 		private XElement WritePartOfSpeech(FeatureSymbol pos)
 		{
 			return new XElement("PartOfSpeech",
-				new XAttribute("id", pos.ID),
-				new XElement("Name", pos.Description));
+				new XAttribute("id", Normalize(pos.ID)),
+				new XElement("Name", Normalize(pos.Description)));
 		}
 
 		private XElement WriteFeature(Feature feature)
@@ -177,19 +184,19 @@ namespace SIL.HermitCrab
 			var symbolicFeature = feature as SymbolicFeature;
 			if (symbolicFeature != null)
 			{
-				var symFeatElem = new XElement("SymbolicFeature", new XAttribute("id", symbolicFeature.ID));
+				var symFeatElem = new XElement("SymbolicFeature", new XAttribute("id", Normalize(symbolicFeature.ID)));
 				if (symbolicFeature.DefaultValue != null)
-					symFeatElem.Add(new XAttribute("defaultSymbol", ((SymbolicFeatureValue) symbolicFeature.DefaultValue).Values.First().ID));
-				symFeatElem.Add(new XElement("Name", symbolicFeature.Description));
+					symFeatElem.Add(new XAttribute("defaultSymbol", Normalize(((SymbolicFeatureValue) symbolicFeature.DefaultValue).Values.First().ID)));
+				symFeatElem.Add(new XElement("Name", Normalize(symbolicFeature.Description)));
 				symFeatElem.Add(new XElement("Symbols", symbolicFeature.PossibleSymbols.Select(symbol => new XElement("Symbol",
-					new XAttribute("id", symbol.ID),
-					symbol.Description))));
+					new XAttribute("id", Normalize(symbol.ID)),
+					Normalize(symbol.Description)))));
 				return symFeatElem;
 			}
 
 			return new XElement("ComplexFeature",
-				new XAttribute("id", feature.ID),
-				new XElement("Name", feature.Description));
+				new XAttribute("id", Normalize(feature.ID)),
+				new XElement("Name", Normalize(feature.Description)));
 		}
 
 		private XElement WriteMprFeature(MprFeature mprFeature)
@@ -198,7 +205,7 @@ namespace SIL.HermitCrab
 			_mprFeatures[mprFeature] = id;
 			return new XElement("MorphologicalPhonologicalRuleFeature",
 				new XAttribute("id", id),
-				mprFeature.Name);
+				Normalize(mprFeature.Name));
 		}
 
 		private XElement WriteMprFeatureGroup(MprFeatureGroup mprFeatureGroup)
@@ -231,7 +238,7 @@ namespace SIL.HermitCrab
 			if (mprFeatureGroup.Output == MprFeatureGroupOutput.Append)
 				mprGroupElem.Add(new XAttribute("outputType", outputTypeStr));
 			mprGroupElem.Add(WriteIDs("features", mprFeatureGroup.MprFeatures, _mprFeatures));
-			mprGroupElem.Add(new XElement("Name", mprFeatureGroup.Name));
+			mprGroupElem.Add(new XElement("Name", Normalize(mprFeatureGroup.Name)));
 			return mprGroupElem;
 		}
 
@@ -241,8 +248,8 @@ namespace SIL.HermitCrab
 			_stemNames[stemName] = id;
 			return new XElement("StemName",
 				new XAttribute("id", id),
-				new XAttribute("partsOfSpeech", string.Join(" ", stemName.Regions.First().PartsOfSpeech().Select(pos => pos.ID))),
-				new XElement("Name", stemName.Name),
+				new XAttribute("partsOfSpeech", string.Join(" ", stemName.Regions.First().PartsOfSpeech().Select(pos => Normalize(pos.ID)))),
+				new XElement("Name", Normalize(stemName.Name)),
 				new XElement("Regions", stemName.Regions.Select(WriteRegion)));
 		}
 
@@ -264,7 +271,7 @@ namespace SIL.HermitCrab
 			_tables[table] = id;
 			var tableElem = new XElement("CharacterDefinitionTable",
 				new XAttribute("id", id),
-				new XElement("Name", table.Name),
+				new XElement("Name", Normalize(table.Name)),
 				new XElement("SegmentDefinitions", table.Where(cd => cd.Type == HCFeatureSystem.Segment).Select(WriteSegmentDefinition)));
 			CharacterDefinition[] boundaries = table.Where(cd => cd.Type == HCFeatureSystem.Boundary).ToArray();
 			if (boundaries.Length > 0)
@@ -278,7 +285,7 @@ namespace SIL.HermitCrab
 			_charDefs[segDef] = id;
 			return new XElement("SegmentDefinition",
 				new XAttribute("id", id),
-				new XElement("Representations", segDef.Representations.Select(rep => new XElement("Representation", rep))),
+				new XElement("Representations", segDef.Representations.Select(rep => new XElement("Representation", Normalize(rep)))),
 				WriteFeatureStruct(segDef.FeatureStruct));
 		}
 
@@ -288,7 +295,7 @@ namespace SIL.HermitCrab
 			_charDefs[bdryDef] = id;
 			return new XElement("BoundaryDefinition",
 				new XAttribute("id", id),
-				new XElement("Representations", bdryDef.Representations.Select(rep => new XElement("Representation", rep))));
+				new XElement("Representations", bdryDef.Representations.Select(rep => new XElement("Representation", Normalize(rep)))));
 		}
 
 		private XElement WriteNaturalClass(NaturalClass nc)
@@ -301,13 +308,13 @@ namespace SIL.HermitCrab
 			{
 				return new XElement("SegmentNaturalClass",
 					new XAttribute("id", id),
-					new XElement("Name", segmentNC.Name),
+					new XElement("Name", Normalize(segmentNC.Name)),
 					segmentNC.Segments.Select(seg => WriteSegment(seg, null)));
 			}
 
 			return new XElement("FeatureNaturalClass",
 				new XAttribute("id", id),
-				new XElement("Name", nc.Name),
+				new XElement("Name", Normalize(nc.Name)),
 				WriteFeatureStruct(nc.FeatureStruct));
 		}
 
@@ -317,7 +324,7 @@ namespace SIL.HermitCrab
 			_families[family] = id;
 			return new XElement("Family",
 				new XAttribute("id", id),
-				family.Name);
+				Normalize(family.Name));
 		}
 
 		private XElement WritePhonologicalRule(IPhonologicalRule prule)
@@ -347,7 +354,7 @@ namespace SIL.HermitCrab
 			}
 			if (multipleAppOrderStr != "leftToRightIterative")
 				pruleElem.Add(new XAttribute("multipleApplicationOrder", multipleAppOrderStr));
-			pruleElem.Add(new XElement("Name", rewriteRule.Name));
+			pruleElem.Add(new XElement("Name", Normalize(rewriteRule.Name)));
 
 			var variables = new Dictionary<string, Tuple<string, SymbolicFeature>>();
 			var phonInputSeqElem = new XElement("PhoneticInput");
@@ -395,11 +402,11 @@ namespace SIL.HermitCrab
 			string prefix = id + "_";
 			var metathesisRuleElem = new XElement("MetathesisRule",
 				new XAttribute("id", id),
-				new XAttribute("leftSwitch", prefix + metathesisRule.LeftSwitchName),
-				new XAttribute("rightSwitch", prefix + metathesisRule.RightSwitchName));
+				new XAttribute("leftSwitch", Normalize(prefix + metathesisRule.LeftSwitchName)),
+				new XAttribute("rightSwitch", Normalize(prefix + metathesisRule.RightSwitchName)));
 			if (metathesisRule.Direction == Direction.RightToLeft)
 				metathesisRuleElem.Add(new XAttribute("multipleApplicationOrder", "rightToLeftIterative"));
-			metathesisRuleElem.Add(new XElement("Name", metathesisRule.Name));
+			metathesisRuleElem.Add(new XElement("Name", Normalize(metathesisRule.Name)));
 			metathesisRuleElem.Add(new XElement("StructuralDescription", WritePhoneticTemplate(metathesisRule.Pattern, null, prefix)));
 			return metathesisRuleElem;
 		}
@@ -410,19 +417,19 @@ namespace SIL.HermitCrab
 				variables.Select(kvp => new XElement("VariableFeature",
 					new XAttribute("id", kvp.Value.Item1),
 					new XAttribute("name", kvp.Key),
-					new XAttribute("phonologicalFeature", kvp.Value.Item2.ID))));
+					new XAttribute("phonologicalFeature", Normalize(kvp.Value.Item2.ID)))));
 		}
 
 		private IEnumerable<XElement> WriteFeatureStruct(FeatureStruct fs)
 		{
 			foreach (Feature feature in fs.Features.Where(f => !f.IsOneOf(HCFeatureSystem.Type, HCFeatureSystem.StrRep)))
 			{
-				var fvElem = new XElement("FeatureValue", new XAttribute("feature", feature.ID));
+				var fvElem = new XElement("FeatureValue", new XAttribute("feature", Normalize(feature.ID)));
 				var symbolicFeature = feature as SymbolicFeature;
 				if (symbolicFeature != null)
 				{
 					SymbolicFeatureValue value = fs.GetValue(symbolicFeature);
-					fvElem.Add(new XAttribute("symbolValues", string.Join(" ", value.Values.Select(v => v.ID))));
+					fvElem.Add(new XAttribute("symbolValues", string.Join(" ", value.Values.Select(v => Normalize(v.ID)))));
 				}
 				else
 				{
@@ -451,7 +458,7 @@ namespace SIL.HermitCrab
 				stratumElem.Add(WriteIDs("phonologicalRules", stratum.PhonologicalRules, _phonologicalRules));
 			if (stratum.MorphologicalRules.Count > 0)
 				stratumElem.Add(WriteIDs("morphologicalRules", stratum.MorphologicalRules, mrules));
-			stratumElem.Add(new XElement("Name", stratum.Name));
+			stratumElem.Add(new XElement("Name", Normalize(stratum.Name)));
 
 			if (mrules.Count > 0)
 				stratumElem.Add(new XElement("MorphologicalRuleDefinitions", mrules.Keys.Select(mrule => WriteMorphologicalRule(mrule, mrules))));
@@ -499,9 +506,9 @@ namespace SIL.HermitCrab
 			WritePartsOfSpeechIfPresent(ruleElem, "outputPartOfSpeech", affixProcessRule.OutSyntacticFeatureStruct);
 
 			if (affixProcessRule.ObligatorySyntacticFeatures.Count > 0)
-				ruleElem.Add(new XAttribute("outputObligatoryFeatures", string.Join(" ", affixProcessRule.ObligatorySyntacticFeatures.Select(f => f.ID))));
+				ruleElem.Add(new XAttribute("outputObligatoryFeatures", string.Join(" ", affixProcessRule.ObligatorySyntacticFeatures.Select(f => Normalize(f.ID)))));
 
-			ruleElem.Add(new XElement("Name", affixProcessRule.Name));
+			ruleElem.Add(new XElement("Name", Normalize(affixProcessRule.Name)));
 
 			ruleElem.Add(new XElement("MorphologicalSubrules", affixProcessRule.Allomorphs.Select(WriteMorphologicalSubrule)));
 
@@ -586,7 +593,7 @@ namespace SIL.HermitCrab
 			if (!realRule.Blockable)
 				ruleElem.Add(new XAttribute("blockable", "false"));
 
-			ruleElem.Add(new XElement("Name", realRule.Name));
+			ruleElem.Add(new XElement("Name", Normalize(realRule.Name)));
 
 			ruleElem.Add(new XElement("MorphologicalSubrules", realRule.Allomorphs.Select(WriteMorphologicalSubrule)));
 
@@ -623,9 +630,9 @@ namespace SIL.HermitCrab
 			WritePartsOfSpeechIfPresent(ruleElem, "outputPartOfSpeech", crule.OutSyntacticFeatureStruct);
 
 			if (crule.ObligatorySyntacticFeatures.Count > 0)
-				ruleElem.Add(new XAttribute("outputObligatoryFeatures", string.Join(" ", crule.ObligatorySyntacticFeatures.Select(f => f.ID))));
+				ruleElem.Add(new XAttribute("outputObligatoryFeatures", string.Join(" ", crule.ObligatorySyntacticFeatures.Select(f => Normalize(f.ID)))));
 
-			ruleElem.Add(new XElement("Name", crule.Name));
+			ruleElem.Add(new XElement("Name", Normalize(crule.Name)));
 
 			ruleElem.Add(new XElement("CompoundingSubrules", crule.Subrules.Select((sr, i) => WriteCompoundingSubrule(sr, string.Format("{0}_{1}_", id, i + 1)))));
 
@@ -688,7 +695,7 @@ namespace SIL.HermitCrab
 			if (copy != null)
 			{
 				return new XElement("CopyFromInput",
-					new XAttribute("index", prefix + copy.PartName));
+					new XAttribute("index", Normalize(prefix + copy.PartName)));
 			}
 
 			var insertShapeNode = action as InsertSimpleContext;
@@ -702,14 +709,14 @@ namespace SIL.HermitCrab
 			if (modify != null)
 			{
 				return new XElement("ModifyFromInput",
-					new XAttribute("index", prefix + modify.PartName),
+					new XAttribute("index", Normalize(prefix + modify.PartName)),
 					WriteSimpleContext(modify.SimpleContext, variables));
 			}
 
 			var insertShape = (InsertSegments) action;
 			return new XElement("InsertSegments", 
 				new XAttribute("characterDefinitionTable", _tables[insertShape.Segments.CharacterDefinitionTable]),
-				new XElement("PhoneticShape", insertShape.Segments.Representation));
+				new XElement("PhoneticShape", Normalize(insertShape.Segments.Representation)));
 		}
 
 		private XElement WriteAffixTemplate(AffixTemplate template, Dictionary<IMorphologicalRule, string> mrules)
@@ -721,7 +728,7 @@ namespace SIL.HermitCrab
 
 			WritePartsOfSpeechIfPresent(templateElem, "requiredPartsOfSpeech", template.RequiredSyntacticFeatureStruct);
 
-			templateElem.Add(new XElement("Name", template.Name));
+			templateElem.Add(new XElement("Name", Normalize(template.Name)));
 
 			foreach (AffixTemplateSlot slot in template.Slots)
 			{
@@ -729,7 +736,7 @@ namespace SIL.HermitCrab
 				if (slot.Optional)
 					slotElem.Add(new XAttribute("optional", "true"));
 				slotElem.Add(WriteIDs("morphologicalRules", slot.Rules, mrules));
-				slotElem.Add(new XElement("Name", slot.Name));
+				slotElem.Add(new XElement("Name", Normalize(slot.Name)));
 				templateElem.Add(slotElem);
 			}
 			return templateElem;
@@ -782,7 +789,7 @@ namespace SIL.HermitCrab
 		private void WriteMorphemeElements(XElement morphemeElem, Morpheme morpheme)
 		{
 			if (!string.IsNullOrEmpty(morpheme.Gloss))
-				morphemeElem.Add(new XElement("Gloss", morpheme.Gloss));
+				morphemeElem.Add(new XElement("Gloss", Normalize(morpheme.Gloss)));
 			if (morpheme.Properties.Count > 0)
 				morphemeElem.Add(WriteProperties(morpheme.Properties));
 		}
@@ -837,8 +844,8 @@ namespace SIL.HermitCrab
 		{
 			return new XElement("Properties",
 				properties.Select(kvp => new XElement("Property",
-					new XAttribute("name", kvp.Key),
-					kvp.Value)));
+					new XAttribute("name", Normalize(kvp.Key)),
+					Normalize(kvp.Value.ToString()))));
 		}
 
 		private XElement WritePhoneticTemplate(Pattern<Word, ShapeNode> pattern, Dictionary<string, Tuple<string, SymbolicFeature>> variables = null, string prefix = null)
@@ -864,7 +871,7 @@ namespace SIL.HermitCrab
 		{
 			var seqElem = new XElement("PhoneticSequence");
 			if (!string.IsNullOrEmpty(pattern.Name))
-				seqElem.Add(new XAttribute("id", (prefix ?? "") + pattern.Name));
+				seqElem.Add(new XAttribute("id", Normalize((prefix ?? "") + pattern.Name)));
 			foreach (PatternNode<Word, ShapeNode> node in pattern.Children)
 				seqElem.Add(WritePatternNodes(node, variables, prefix ?? "", null));
 			return seqElem;
@@ -923,7 +930,7 @@ namespace SIL.HermitCrab
 		{
 			var brdyElem = new XElement("BoundaryMarker");
 			if (!string.IsNullOrEmpty(id))
-				brdyElem.Add(new XAttribute("id", id));
+				brdyElem.Add(new XAttribute("id", Normalize(id)));
 			brdyElem.Add(new XAttribute("boundary", _charDefs[charDef]));
 			return brdyElem;
 		}
@@ -932,7 +939,7 @@ namespace SIL.HermitCrab
 		{
 			var segElem = new XElement("Segment");
 			if (!string.IsNullOrEmpty(id))
-				segElem.Add(new XAttribute("id", id));
+				segElem.Add(new XAttribute("id", Normalize(id)));
 			segElem.Add(new XAttribute("segment", _charDefs[charDef]));
 			return segElem;
 		}
@@ -941,7 +948,7 @@ namespace SIL.HermitCrab
 		{
 			var ctxtElem = new XElement("SimpleContext");
 			if (!string.IsNullOrEmpty(id))
-				ctxtElem.Add(new XAttribute("id", id));
+				ctxtElem.Add(new XAttribute("id", Normalize(id)));
 			ctxtElem.Add(new XAttribute("naturalClass", _naturalClasses[simpleCtxt.NaturalClass]));
 			if (simpleCtxt.Variables.Count > 0)
 			{
@@ -965,7 +972,7 @@ namespace SIL.HermitCrab
 		{
 			var optSegSeqElem = new XElement("OptionalSegmentSequence");
 			if (!string.IsNullOrEmpty(id))
-				optSegSeqElem.Add(new XAttribute("id", id));
+				optSegSeqElem.Add(new XAttribute("id", Normalize(id)));
 			optSegSeqElem.Add(new XAttribute("min", quantifier.MinOccur));
 			optSegSeqElem.Add(new XAttribute("max", quantifier.MaxOccur));
 			optSegSeqElem.Add(WritePatternNodes(quantifier.Children.First, variables, "", null));
@@ -976,15 +983,15 @@ namespace SIL.HermitCrab
 		{
 			var segsElem = new XElement("Segments");
 			if (!string.IsNullOrEmpty(id))
-				segsElem.Add(new XAttribute("id", id));
+				segsElem.Add(new XAttribute("id", Normalize(id)));
 			segsElem.Add(new XAttribute("characterDefinitionTable", _tables[segments.CharacterDefinitionTable]));
-			segsElem.Add(new XElement("PhoneticShape", segments.Representation));
+			segsElem.Add(new XElement("PhoneticShape", Normalize(segments.Representation)));
 			return segsElem;
 		}
 
 		private XElement WritePhoneticShape(CharacterDefinitionTable table, Shape shape)
 		{
-			return new XElement("PhoneticShape", shape.ToString(table, true));
+			return new XElement("PhoneticShape", Normalize(shape.ToString(table, true)));
 		}
 	}
 }

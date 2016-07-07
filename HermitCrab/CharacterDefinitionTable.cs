@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using SIL.Collections;
 using SIL.Machine.Annotations;
@@ -28,47 +30,49 @@ namespace SIL.HermitCrab
 			get { return _spanFactory; }
 		}
 
-		public CharacterDefinition Add(string strRep, FeatureStruct fs)
+		public CharacterDefinition AddSegment(string strRep, FeatureStruct fs = null)
 		{
-			return Add(strRep.ToEnumerable(), fs);
+			return AddSegment(strRep.ToEnumerable(), fs);
+		}
+
+		public CharacterDefinition AddBoundary(string strRep)
+		{
+			return AddBoundary(strRep.ToEnumerable());
+		}
+
+		public CharacterDefinition AddSegment(IEnumerable<string> strRep, FeatureStruct fs = null)
+		{
+			return Add(strRep, HCFeatureSystem.Segment, fs);
+		}
+
+		public CharacterDefinition AddBoundary(IEnumerable<string> strRep)
+		{
+			return Add(strRep, HCFeatureSystem.Boundary, null);
 		}
 
 		/// <summary>
 		/// Adds the character definition.
 		/// </summary>
-		/// <param name="strRep"></param>
-		/// <param name="fs"></param>
-		public CharacterDefinition Add(IEnumerable<string> strRep, FeatureStruct fs)
+		private CharacterDefinition Add(IEnumerable<string> strReps, FeatureSymbol type, FeatureStruct fs)
 		{
-			if (!fs.IsFrozen)
-				throw new ArgumentException("The feature structure must be immutable.", "fs");
-			var cd = new CharacterDefinition(strRep, fs);
-			Add(cd);
-			return cd;
-		}
-
-		/// <summary>
-		/// Gets the segment definition for the specified string representation.
-		/// </summary>
-		/// <param name="strRep">The string representation.</param>
-		/// <param name="fs">The symbol definition.</param>
-		/// <returns></returns>
-		public bool TryGetSymbolFeatureStruct(string strRep, out FeatureStruct fs)
-		{
-			CharacterDefinition charDef;
-			if (TryGetValue(strRep, out charDef))
+			string[] strRepsArray = strReps.ToArray();
+			string[] normalizedStrRepsArray = strRepsArray.Select(s => s.Normalize(NormalizationForm.FormD)).ToArray();
+			if (fs == null)
 			{
-				fs = charDef.FeatureStruct;
-				return true;
+				fs = FeatureStruct.New().Symbol(type).Feature(HCFeatureSystem.StrRep).EqualTo(normalizedStrRepsArray).Value;
+			}
+			else
+			{
+				fs.AddValue(HCFeatureSystem.Type, type);
+				fs.Freeze();
 			}
 
-			fs = null;
-			return false;
-		}
-
-		public FeatureStruct GetSymbolFeatureStruct(string strRep)
-		{
-			return this[strRep].FeatureStruct;
+			var cd = new CharacterDefinition(strRepsArray, fs);
+			_charDefs.Add(cd);
+			foreach (string rep in normalizedStrRepsArray)
+				_charDefLookup[rep] = cd;
+			cd.CharacterDefinitionTable = this;
+			return cd;
 		}
 
 		/// <summary>
@@ -92,16 +96,17 @@ namespace SIL.HermitCrab
 		{
 			var nodesList = new List<ShapeNode>();
 			int i = 0;
-			while (i < str.Length)
+			string normalized = str.Normalize(NormalizationForm.FormD);
+			while (i < normalized.Length)
 			{
 				bool match = false;
-				for (int j = str.Length - i; j > 0; j--)
+				for (int j = normalized.Length - i; j > 0; j--)
 				{
-					string s = str.Substring(i, j);
-					FeatureStruct fs;
-					if (TryGetSymbolFeatureStruct(s, out fs))
+					string s = normalized.Substring(i, j);
+					CharacterDefinition cd;
+					if (_charDefLookup.TryGetValue(s, out cd))
 					{
-						var node = new ShapeNode(SpanFactory, fs.DeepClone());
+						var node = new ShapeNode(SpanFactory, cd.FeatureStruct.DeepClone());
 						node.Annotation.Optional = node.Annotation.Type() == HCFeatureSystem.Boundary;
 						nodesList.Add(node);
 						i += j;
@@ -114,6 +119,8 @@ namespace SIL.HermitCrab
 				{
 					nodes = null;
 					errorPos = i;
+					if (!str.IsNormalized(NormalizationForm.FormD))
+						errorPos = normalized.Substring(0, errorPos).Normalize().Length;
 					return false;
 				}
 			}
@@ -182,12 +189,9 @@ namespace SIL.HermitCrab
 			return GetEnumerator();
 		}
 
-		public void Add(CharacterDefinition item)
+		void ICollection<CharacterDefinition>.Add(CharacterDefinition item)
 		{
-			_charDefs.Add(item);
-			foreach (string rep in item.Representations)
-				_charDefLookup[rep] = item;
-			item.CharacterDefinitionTable = this;
+			throw new NotSupportedException();
 		}
 
 		public void Clear()
@@ -232,7 +236,7 @@ namespace SIL.HermitCrab
 
 		public bool TryGetValue(string key, out CharacterDefinition value)
 		{
-			return _charDefLookup.TryGetValue(key, out value);
+			return _charDefLookup.TryGetValue(key.Normalize(NormalizationForm.FormD), out value);
 		}
 
 		public bool Contains(string key)
@@ -242,7 +246,7 @@ namespace SIL.HermitCrab
 
 		public CharacterDefinition this[string key]
 		{
-			get { return _charDefLookup[key]; }
+			get { return _charDefLookup[key.Normalize(NormalizationForm.FormD)]; }
 		}
 
 		public override string ToString()

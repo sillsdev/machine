@@ -345,14 +345,17 @@ namespace SIL.HermitCrab.Tests
 				FeatureSymbol symbol = phoneticFeatSys.GetSymbol(symbolID);
 				fs.AddValue(symbol.Feature, new SymbolicFeatureValue(symbol));
 			}
-			fs.AddValue(HCFeatureSystem.Type, HCFeatureSystem.Segment);
-			fs.Freeze();
-			table.Add(strRep, fs);
+			table.AddSegment(strRep, fs);
 		}
 
 		private void AddBdryDef(CharacterDefinitionTable table, string strRep)
 		{
-			table.Add(strRep, FeatureStruct.New().Symbol(HCFeatureSystem.Boundary).Feature(HCFeatureSystem.StrRep).EqualTo(strRep).Value);
+			table.AddBoundary(strRep);
+		}
+
+		protected FeatureStruct Char(CharacterDefinitionTable table, string strRep)
+		{
+			return table[strRep].FeatureStruct;
 		}
 
 		protected void AssertMorphsEqual(IEnumerable<Word> words, params string[] expected)
