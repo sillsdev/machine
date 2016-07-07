@@ -57,6 +57,9 @@ namespace SIL.HermitCrab
 		{
 			string[] strRepsArray = strReps.ToArray();
 			string[] normalizedStrRepsArray = strRepsArray.Select(s => s.Normalize(NormalizationForm.FormD)).ToArray();
+			if (normalizedStrRepsArray.Any(s => _charDefLookup.ContainsKey(s)))
+				throw new ArgumentException("The table already contains a character definition with one of the specified representations.", "strReps");
+
 			if (fs == null)
 			{
 				fs = FeatureStruct.New().Symbol(type).Feature(HCFeatureSystem.StrRep).EqualTo(normalizedStrRepsArray).Value;
@@ -176,7 +179,7 @@ namespace SIL.HermitCrab
 		public bool IsMatch(string word, Shape shape)
 		{
 			string pattern = shape.ToRegexString(this, false);
-			return Regex.IsMatch(word, pattern, RegexOptions.CultureInvariant);
+			return Regex.IsMatch(word.Normalize(NormalizationForm.FormD), pattern.Normalize(NormalizationForm.FormD), RegexOptions.CultureInvariant);
 		}
 
 		public IEnumerator<CharacterDefinition> GetEnumerator()
@@ -217,7 +220,7 @@ namespace SIL.HermitCrab
 			if (_charDefs.Remove(item))
 			{
 				foreach (string rep in item.Representations)
-					_charDefLookup.Remove(rep);
+					_charDefLookup.Remove(rep.Normalize(NormalizationForm.FormD));
 				item.CharacterDefinitionTable = null;
 				return true;
 			}
@@ -241,7 +244,7 @@ namespace SIL.HermitCrab
 
 		public bool Contains(string key)
 		{
-			return _charDefLookup.ContainsKey(key);
+			return _charDefLookup.ContainsKey(key.Normalize(NormalizationForm.FormD));
 		}
 
 		public CharacterDefinition this[string key]
