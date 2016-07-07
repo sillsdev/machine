@@ -1201,5 +1201,23 @@ namespace SIL.Machine.Tests.Matching
 			Assert.That(match.GroupCaptures["first"].Span, Is.EqualTo(SpanFactory.Create(0, 2)));
 			Assert.That(match.GroupCaptures["second"].Span, Is.EqualTo(SpanFactory.Create(2, 8)));
 		}
+
+		[Test]
+		public void SingleOptionalAnnotation()
+		{
+			var pattern = Pattern<AnnotatedStringData, int>.New()
+				.Annotation(FeatureStruct.New().Symbol(Seg).Value).OneOrMore.Value;
+
+			var matcher = new Matcher<AnnotatedStringData, int>(SpanFactory, pattern,
+				new MatcherSettings<int>
+				{
+					AnchoredToStart = true,
+					AnchoredToEnd = true
+				});
+			AnnotatedStringData word = CreateStringData("k");
+			word.Annotations.First.Optional = true;
+			Match<AnnotatedStringData, int> match = matcher.Match(word);
+			Assert.That(match.Success, Is.True);
+		}
 	}
 }

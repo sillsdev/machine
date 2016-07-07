@@ -160,7 +160,7 @@ namespace SIL.Machine.FiniteState
 				if (_annotations[i].Optional)
 				{
 					int nextIndex = GetNextNonoverlappingAnnotationIndex(i);
-					if (nextIndex != -1)
+					if (nextIndex != _annotations.Count)
 						insts.AddRange(Initialize(ref nextIndex, (NullableValue<TOffset>[,]) registers.Clone(), cmds, initAnns));
 				}
 			}
