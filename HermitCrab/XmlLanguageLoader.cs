@@ -232,7 +232,9 @@ namespace SIL.HermitCrab
 				.Select(e => new FeatureSymbol((string) e.Attribute("id"), (string) e.Element("Name")));
 			_posFeature = _language.SyntacticFeatureSystem.AddPartsOfSpeech(posSymbols);
 
-			LoadPhonologicalFeatureSystem(langElem.Elements("PhonologicalFeatureSystem").SingleOrDefault(IsActive));
+			XElement phonFeatSysElem = langElem.Elements("PhonologicalFeatureSystem").SingleOrDefault(IsActive);
+			if (phonFeatSysElem != null)
+				LoadPhonologicalFeatureSystem(phonFeatSysElem);
 			_language.PhonologicalFeatureSystem.Freeze();
 
 			XElement headFeatsElem = langElem.Element("HeadFeatures");
