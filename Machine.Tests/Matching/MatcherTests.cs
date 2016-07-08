@@ -1172,8 +1172,8 @@ namespace SIL.Machine.Tests.Matching
 			Assert.AreEqual(SpanFactory.Create(1, 4), matches[2].GroupCaptures["second"].Span);
 
 			pattern = Pattern<AnnotatedStringData, int>.New()
-				.Group("first", g => g.Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Seg).Symbol("syl+").Value))
-				.Group("second", g => g.Annotation(FeatureStruct.New().Symbol(Seg).Value).ZeroOrMore).Value;
+				.Group("first", g1 => g1.Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Seg).Symbol("syl+").Value))
+				.Group("second", g2 => g2.Group("third", g3 => g3.Annotation(FeatureStruct.New().Symbol(Seg).Value).Optional).ZeroOrMore).Value;
 
 			matcher = new Matcher<AnnotatedStringData, int>(SpanFactory, pattern,
 				new MatcherSettings<int>
@@ -1182,6 +1182,7 @@ namespace SIL.Machine.Tests.Matching
 					AnchoredToEnd = true,
 					AllSubmatches = true
 				});
+
 			word = CreateStringData("etested");
 			matches = matcher.AllMatches(word).ToArray();
 			Assert.That(matches.Length, Is.EqualTo(1));
@@ -1189,6 +1190,7 @@ namespace SIL.Machine.Tests.Matching
 			Assert.That(matches[0].Span, Is.EqualTo(SpanFactory.Create(0, 7)));
 			Assert.That(matches[0].GroupCaptures["first"].Span, Is.EqualTo(SpanFactory.Create(0, 1)));
 			Assert.That(matches[0].GroupCaptures["second"].Span, Is.EqualTo(SpanFactory.Create(1, 7)));
+			Assert.That(matches[0].GroupCaptures["third"].Span, Is.EqualTo(SpanFactory.Create(6, 7)));
 
 			word = CreateStringData("e");
 			matches = matcher.AllMatches(word).ToArray();
@@ -1197,6 +1199,33 @@ namespace SIL.Machine.Tests.Matching
 			Assert.That(matches[0].Span, Is.EqualTo(SpanFactory.Create(0, 1)));
 			Assert.That(matches[0].GroupCaptures["first"].Span, Is.EqualTo(SpanFactory.Create(0, 1)));
 			Assert.That(matches[0].GroupCaptures["second"].Success, Is.False);
+			Assert.That(matches[0].GroupCaptures["third"].Success, Is.False);
+
+			pattern = Pattern<AnnotatedStringData, int>.New()
+				.Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Seg).Symbol("syl+").Value)
+				.Group("first", g => g.Annotation(FeatureStruct.New().Symbol(Seg).Value).ZeroOrMore).Value;
+
+			matcher = new Matcher<AnnotatedStringData, int>(SpanFactory, pattern,
+				new MatcherSettings<int>
+				{
+					AnchoredToStart = true,
+					AnchoredToEnd = true,
+					AllSubmatches = true
+				});
+
+			word = CreateStringData("etested");
+			matches = matcher.AllMatches(word).ToArray();
+			Assert.That(matches.Length, Is.EqualTo(1));
+			Assert.That(matches[0].Success, Is.True);
+			Assert.That(matches[0].Span, Is.EqualTo(SpanFactory.Create(0, 7)));
+			Assert.That(matches[0].GroupCaptures["first"].Span, Is.EqualTo(SpanFactory.Create(1, 7)));
+
+			word = CreateStringData("e");
+			matches = matcher.AllMatches(word).ToArray();
+			Assert.That(matches.Length, Is.EqualTo(1));
+			Assert.That(matches[0].Success, Is.True);
+			Assert.That(matches[0].Span, Is.EqualTo(SpanFactory.Create(0, 1)));
+			Assert.That(matches[0].GroupCaptures["first"].Success, Is.False);
 		}
 
 		[Test]

@@ -654,6 +654,22 @@ namespace SIL.Machine.FiniteState
 					CreateOptimizedArc(newFst, subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, t.Item1, t.Item2, t.Item3, t.Item4);
 			}
 
+			if (!newFst.IsDeterministic)
+			{
+				// for non-deterministic FSTs, remove finishers for any start tags that occur after an accepting state that does not
+				// have an incoming arc from another accepting state.
+				// this can result in spurious group captures.
+				foreach (SubsetState subsetState in subsetStates.Values.Where(s => s.State.IsAccepting))
+				{
+					State<TData, TOffset> acceptingState = subsetState.State;
+					if (subsetStates.Values.Where(s => s.State.Arcs.Any(a => a.Target == acceptingState)).All(s => !s.State.IsAccepting))
+					{
+						var startTags = new HashSet<int>(subsetState.NfaStates.SelectMany(s => s.NfaState.Arcs).Where(a => a.Tag % 2 == 0).Select(a => a.Tag));
+						acceptingState.Finishers.RemoveAll(c => startTags.Contains(c.Dest));
+					}
+				}
+			}
+
 			var regNums = new Dictionary<int, int>();
 			for (newFst._registerCount = 0; newFst._registerCount < _nextTag; newFst._registerCount++)
 				regNums[newFst._registerCount] = newFst._registerCount;
@@ -752,12 +768,6 @@ namespace SIL.Machine.FiniteState
 				AcceptInfo<TData, TOffset>[] acceptInfos = acceptingStates.SelectMany(state => state.NfaState.AcceptInfos).ToArray();
 				bool isLazy = IsLazyAcceptingState(subsetState);
 
-				// for non-deterministic FSTs, do not add finishers for any start tags that occur after this accepting state.
-				// this can result in spurious group captures
-				HashSet<int> startTags = null;
-				if (!newFst.IsDeterministic)
-					startTags = new HashSet<int>(subsetState.NfaStates.SelectMany(s => s.NfaState.Arcs).Where(a => a.Tag % 2 == 0).Select(a => a.Tag));
-
 				var finishers = new List<TagMapCommand>();
 				var finishedTags = new HashSet<int>();
 				var remaining = new List<NfaStateInfo>();
@@ -771,8 +781,7 @@ namespace SIL.Machine.FiniteState
 
 					foreach (KeyValuePair<int, int> tag in acceptingState.Tags)
 					{
-						if (tag.Value > 0 && !finishedTags.Contains(tag.Key)
-							&& (startTags == null || !startTags.Contains(GetRegisterIndex(registerIndices, tag.Key, 0))))
+						if (tag.Value > 0 && !finishedTags.Contains(tag.Key))
 						{
 							finishedTags.Add(tag.Key);
 							int src = GetRegisterIndex(registerIndices, tag.Key, tag.Value);
