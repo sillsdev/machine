@@ -661,12 +661,10 @@ namespace SIL.Machine.FiniteState
 				// this can result in spurious group captures.
 				foreach (SubsetState subsetState in subsetStates.Values.Where(s => s.State.IsAccepting))
 				{
+					var startTags = new HashSet<int>(subsetState.NfaStates.SelectMany(s => s.NfaState.Arcs).Where(a => a.Tag % 2 == 0).Select(a => a.Tag));
 					State<TData, TOffset> acceptingState = subsetState.State;
-					if (subsetStates.Values.Where(s => s.State.Arcs.Any(a => a.Target == acceptingState)).All(s => !s.State.IsAccepting))
-					{
-						var startTags = new HashSet<int>(subsetState.NfaStates.SelectMany(s => s.NfaState.Arcs).Where(a => a.Tag % 2 == 0).Select(a => a.Tag));
+					if (startTags.Count > 0 && subsetStates.Values.Where(s => s.State.Arcs.Any(a => a.Target == acceptingState)).All(s => !s.State.IsAccepting))
 						acceptingState.Finishers.RemoveAll(c => startTags.Contains(c.Dest));
-					}
 				}
 			}
 
