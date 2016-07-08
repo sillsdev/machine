@@ -654,18 +654,15 @@ namespace SIL.Machine.FiniteState
 					CreateOptimizedArc(newFst, subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, t.Item1, t.Item2, t.Item3, t.Item4);
 			}
 
-			if (!newFst.IsDeterministic)
+			// remove finishers for any start tags that occur after the first accepting state in a chain of accepting states.
+			// this can result in spurious group captures.
+			// Not sure how general this is, but this seems to be the only case where this happens.
+			foreach (SubsetState subsetState in subsetStates.Values.Where(s => s.State.IsAccepting && s.State.Arcs.Count == 1 && s.State.Arcs[0].Target.IsAccepting))
 			{
-				// for non-deterministic FSTs, remove finishers for any start tags that occur after an accepting state that does not
-				// have an incoming arc from another accepting state.
-				// this can result in spurious group captures.
-				foreach (SubsetState subsetState in subsetStates.Values.Where(s => s.State.IsAccepting))
-				{
-					var startTags = new HashSet<int>(subsetState.NfaStates.SelectMany(s => s.NfaState.Arcs).Where(a => a.Tag % 2 == 0).Select(a => a.Tag));
-					State<TData, TOffset> acceptingState = subsetState.State;
-					if (startTags.Count > 0 && subsetStates.Values.Where(s => s.State.Arcs.Any(a => a.Target == acceptingState)).All(s => !s.State.IsAccepting))
-						acceptingState.Finishers.RemoveAll(c => startTags.Contains(c.Dest));
-				}
+				var startTags = new HashSet<int>(subsetState.NfaStates.SelectMany(s => s.NfaState.Arcs).Where(a => a.Tag % 2 == 0).Select(a => a.Tag));
+				State<TData, TOffset> acceptingState = subsetState.State;
+				if (startTags.Count > 0 && subsetStates.Values.Where(s => s.State.Arcs.Any(a => a.Target == acceptingState)).All(s => !s.State.IsAccepting))
+					acceptingState.Finishers.RemoveAll(c => startTags.Contains(c.Dest));
 			}
 
 			var regNums = new Dictionary<int, int>();
