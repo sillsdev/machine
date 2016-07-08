@@ -752,6 +752,12 @@ namespace SIL.Machine.FiniteState
 				AcceptInfo<TData, TOffset>[] acceptInfos = acceptingStates.SelectMany(state => state.NfaState.AcceptInfos).ToArray();
 				bool isLazy = IsLazyAcceptingState(subsetState);
 
+				// for non-deterministic FSTs, do not add finishers for any start tags that occur after this accepting state.
+				// this can result in spurious group captures
+				HashSet<int> startTags = null;
+				if (!newFst.IsDeterministic)
+					startTags = new HashSet<int>(subsetState.NfaStates.SelectMany(s => s.NfaState.Arcs).Where(a => a.Tag % 2 == 0).Select(a => a.Tag));
+
 				var finishers = new List<TagMapCommand>();
 				var finishedTags = new HashSet<int>();
 				var remaining = new List<NfaStateInfo>();
@@ -765,7 +771,8 @@ namespace SIL.Machine.FiniteState
 
 					foreach (KeyValuePair<int, int> tag in acceptingState.Tags)
 					{
-						if (tag.Value > 0 && !finishedTags.Contains(tag.Key))
+						if (tag.Value > 0 && !finishedTags.Contains(tag.Key)
+							&& (startTags == null || !startTags.Contains(GetRegisterIndex(registerIndices, tag.Key, 0))))
 						{
 							finishedTags.Add(tag.Key);
 							int src = GetRegisterIndex(registerIndices, tag.Key, tag.Value);
@@ -796,41 +803,25 @@ namespace SIL.Machine.FiniteState
 
 		private bool IsLazyAcceptingState(SubsetState state)
 		{
-			//Arc<TData, TOffset> arc = state.NfaStates.SelectMany(s => s.NfaState.Arcs).MinBy(a => a.Priority);
-			//State<TData, TOffset> curState = arc.Target;
-			//while (!curState.IsAccepting)
-			//{
-			//    Arc<TData, TOffset> highestPriArc = curState.Arcs.MinBy(a => a.Priority);
-			//    if (highestPriArc.Condition != null)
-			//        break;
-			//    curState = highestPriArc.Target;
-			//}
-			//return curState.IsAccepting;
+			State<TData, TOffset> curState = state.NfaStates.Min().NfaState;
+			while (!curState.IsAccepting)
+			{
+				Arc<TData, TOffset> highestPriArc = curState.Arcs.MinBy(a => a.Priority);
+				if (!highestPriArc.Input.IsEpsilon)
+					break;
+				curState = highestPriArc.Target;
+			}
 
-			//foreach (Arc<TData, TOffset> arc in state.NfaStates.Min().NfaState.Arcs)
-			//{
-				//State<TData, TOffset> curState = arc.Target;
-				State<TData, TOffset> curState = state.NfaStates.Min().NfaState;
-				while (!curState.IsAccepting)
+			if (curState.IsAccepting)
+			{
+				if ((from s in state.NfaStates
+					 from tran in s.NfaState.Arcs
+					 where !tran.Input.IsEpsilon
+					 select tran.Input).Any())
 				{
-					Arc<TData, TOffset> highestPriArc = curState.Arcs.MinBy(a => a.Priority);
-					if (!highestPriArc.Input.IsEpsilon)
-						break;
-					curState = highestPriArc.Target;
+					return true;
 				}
-
-				if (curState.IsAccepting)
-				{
-					if ((from s in state.NfaStates
-						 from tran in s.NfaState.Arcs
-						 where !tran.Input.IsEpsilon
-						 select tran.Input).Any())
-					{
-						return true;
-					}
-					//break;
-				}
-			//}
+			}
 			return false;
 		}
 
