@@ -100,22 +100,22 @@ namespace SIL.Machine.FiniteState
 			get { return _operations == null; }
 		}
 
-		public bool GetOffsets(string groupName, NullableValue<TOffset>[,] registers, out TOffset start, out TOffset end)
+		public bool GetOffsets(string groupName, Register<TOffset>[,] registers, out TOffset start, out TOffset end)
 		{
 			int tag = _groups[groupName];
-			NullableValue<TOffset> startValue = registers[tag, 0];
-			NullableValue<TOffset> endValue = registers[tag + 1, 1];
-			if (startValue.HasValue && endValue.HasValue)
+			Register<TOffset> startValue = registers[tag, 0];
+			Register<TOffset> endValue = registers[tag + 1, 1];
+			if (startValue.HasOffset && endValue.HasOffset && !startValue.ValueEquals(endValue, _offsetEqualityComparer))
 			{
 				if (_dir == Direction.LeftToRight)
 				{
-					start = startValue.Value;
-					end = endValue.Value;
+					start = startValue.Offset;
+					end = endValue.Offset;
 				}
 				else
 				{
-					start = endValue.Value;
-					end = startValue.Value;
+					start = endValue.Offset;
+					end = startValue.Offset;
 				}
 				return true;
 			}
@@ -284,13 +284,13 @@ namespace SIL.Machine.FiniteState
 			var initAnns = new HashSet<int>();
 			while (annIndex < traversalMethod.Annotations.Count)
 			{
-				var initRegisters = new NullableValue<TOffset>[_registerCount, 2];
+				var initRegisters = new Register<TOffset>[_registerCount, 2];
 
 				var cmds = new List<TagMapCommand>();
 				foreach (TagMapCommand cmd in _initializers)
 				{
 					if (cmd.Dest == 0)
-						initRegisters[cmd.Dest, 0].Value = traversalMethod.Annotations[annIndex].Span.GetStart(_dir);
+						initRegisters[cmd.Dest, 0].SetOffset(traversalMethod.Annotations[annIndex].Span.GetStart(_dir), true);
 					else
 						cmds.Add(cmd);
 				}
@@ -652,17 +652,6 @@ namespace SIL.Machine.FiniteState
 
 				foreach (Tuple<SubsetState, Input, IEnumerable<Output<TData, TOffset>>, int> t in arcsSelector(curSubsetState))
 					CreateOptimizedArc(newFst, subsetStates, unmarkedSubsetStates, registerIndices, curSubsetState, t.Item1, t.Item2, t.Item3, t.Item4);
-			}
-
-			// remove finishers for any start tags that occur after the first accepting state in a chain of accepting states.
-			// this can result in spurious group captures.
-			// Not sure how general this is, but this seems to be the only case where this happens.
-			foreach (SubsetState subsetState in subsetStates.Values.Where(s => s.State.IsAccepting && s.State.Arcs.Count == 1 && s.State.Arcs[0].Target.IsAccepting))
-			{
-				var startTags = new HashSet<int>(subsetState.NfaStates.SelectMany(s => s.NfaState.Arcs).Where(a => a.Tag % 2 == 0).Select(a => a.Tag));
-				State<TData, TOffset> acceptingState = subsetState.State;
-				if (startTags.Count > 0 && subsetStates.Values.Where(s => s.State.Arcs.Any(a => a.Target == acceptingState)).All(s => !s.State.IsAccepting))
-					acceptingState.Finishers.RemoveAll(c => startTags.Contains(c.Dest));
 			}
 
 			var regNums = new Dictionary<int, int>();

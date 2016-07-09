@@ -8,12 +8,12 @@ namespace SIL.Machine.FiniteState
 {
 	internal abstract class TraversalInstance<TData, TOffset> where TData : IAnnotatedData<TOffset>
 	{
-		private readonly NullableValue<TOffset>[,] _registers;
+		private readonly Register<TOffset>[,] _registers;
 		private readonly List<int> _priorities;
 
 		protected TraversalInstance(int registerCount, bool ignoreVariables, bool deterministic)
 		{
-			_registers = new NullableValue<TOffset>[registerCount, 2];
+			_registers = new Register<TOffset>[registerCount, 2];
 			if (!ignoreVariables)
 				VariableBindings = new VariableBindings();
 			if (!deterministic)
@@ -29,7 +29,7 @@ namespace SIL.Machine.FiniteState
 			get { return _priorities; }
 		}
 
-		public NullableValue<TOffset>[,] Registers
+		public Register<TOffset>[,] Registers
 		{
 			get { return _registers; }
 		}

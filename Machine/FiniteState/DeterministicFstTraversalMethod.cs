@@ -11,14 +11,14 @@ namespace SIL.Machine.FiniteState
 	{
 		private readonly IFstOperations<TData, TOffset> _operations;
 
-		public DeterministicFstTraversalMethod(IEqualityComparer<NullableValue<TOffset>[,]> registersEqualityComparer, int registerCount, IFstOperations<TData, TOffset> operations, Direction dir,
+		public DeterministicFstTraversalMethod(IEqualityComparer<Register<TOffset>[,]> registersEqualityComparer, int registerCount, IFstOperations<TData, TOffset> operations, Direction dir,
 			Func<Annotation<TOffset>, bool> filter, State<TData, TOffset> startState, TData data, bool endAnchor, bool unification, bool useDefaults, bool ignoreVariables)
 			: base(registersEqualityComparer, registerCount, dir, filter, startState, data, endAnchor, unification, useDefaults, ignoreVariables)
 		{
 			_operations = operations;
 		}
 
-		public override IEnumerable<FstResult<TData, TOffset>> Traverse(ref int annIndex, NullableValue<TOffset>[,] initRegisters, IList<TagMapCommand> initCmds, ISet<int> initAnns)
+		public override IEnumerable<FstResult<TData, TOffset>> Traverse(ref int annIndex, Register<TOffset>[,] initRegisters, IList<TagMapCommand> initCmds, ISet<int> initAnns)
 		{
 			Stack<DeterministicFstTraversalInstance<TData, TOffset>> instStack = InitializeStack(ref annIndex, initRegisters, initCmds, initAnns);
 
@@ -105,7 +105,7 @@ namespace SIL.Machine.FiniteState
 			}
 		}
 
-		private Stack<DeterministicFstTraversalInstance<TData, TOffset>> InitializeStack(ref int annIndex, NullableValue<TOffset>[,] registers,
+		private Stack<DeterministicFstTraversalInstance<TData, TOffset>> InitializeStack(ref int annIndex, Register<TOffset>[,] registers,
 			IList<TagMapCommand> cmds, ISet<int> initAnns)
 		{
 			var instStack = new Stack<DeterministicFstTraversalInstance<TData, TOffset>>();

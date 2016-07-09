@@ -90,6 +90,7 @@
     <Compile Include="FiniteState\NondeterministicFsaTraversalMethod.cs" />
     <Compile Include="FiniteState\NondeterministicFstTraversalInstance.cs" />
     <Compile Include="FiniteState\NondeterministicFstTraversalMethod.cs" />
+    <Compile Include="FiniteState\Register.cs" />
     <Compile Include="FiniteState\NullOutput.cs" />
     <Compile Include="FiniteState\FstResult.cs" />
     <Compile Include="FiniteState\Input.cs" />

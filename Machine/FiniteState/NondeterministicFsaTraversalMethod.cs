@@ -8,19 +8,19 @@ namespace SIL.Machine.FiniteState
 {
 	internal class NondeterministicFsaTraversalMethod<TData, TOffset> : TraversalMethodBase<TData, TOffset, NondeterministicFsaTraversalInstance<TData, TOffset>> where TData : IAnnotatedData<TOffset>
 	{
-		public NondeterministicFsaTraversalMethod(IEqualityComparer<NullableValue<TOffset>[,]> registersEqualityComparer, int registerCount, Direction dir,
+		public NondeterministicFsaTraversalMethod(IEqualityComparer<Register<TOffset>[,]> registersEqualityComparer, int registerCount, Direction dir,
 			Func<Annotation<TOffset>, bool> filter, State<TData, TOffset> startState, TData data, bool endAnchor, bool unification, bool useDefaults, bool ignoreVariables)
 			: base(registersEqualityComparer, registerCount, dir, filter, startState, data, endAnchor, unification, useDefaults, ignoreVariables)
 		{
 		}
 
-		public override IEnumerable<FstResult<TData, TOffset>> Traverse(ref int annIndex, NullableValue<TOffset>[,] initRegisters, IList<TagMapCommand> initCmds, ISet<int> initAnns)
+		public override IEnumerable<FstResult<TData, TOffset>> Traverse(ref int annIndex, Register<TOffset>[,] initRegisters, IList<TagMapCommand> initCmds, ISet<int> initAnns)
 		{
 			Stack<NondeterministicFsaTraversalInstance<TData, TOffset>> instStack = InitializeStack(ref annIndex, initRegisters, initCmds, initAnns);
 
 			var curResults = new List<FstResult<TData, TOffset>>();
-			var traversed = new HashSet<Tuple<State<TData, TOffset>, int, NullableValue<TOffset>[,]>>(
-				AnonymousEqualityComparer.Create<Tuple<State<TData, TOffset>, int, NullableValue<TOffset>[,]>>(KeyEquals, KeyGetHashCode));
+			var traversed = new HashSet<Tuple<State<TData, TOffset>, int, Register<TOffset>[,]>>(
+				AnonymousEqualityComparer.Create<Tuple<State<TData, TOffset>, int, Register<TOffset>[,]>>(KeyEquals, KeyGetHashCode));
 			while (instStack.Count != 0)
 			{
 				NondeterministicFsaTraversalInstance<TData, TOffset> inst = instStack.Pop();
@@ -50,7 +50,7 @@ namespace SIL.Machine.FiniteState
 
 							ti.Visited.Add(arc.Target);
 							NondeterministicFsaTraversalInstance<TData, TOffset> newInst = EpsilonAdvance(ti, arc, curResults);
-							Tuple<State<TData, TOffset>, int, NullableValue<TOffset>[,]> key = Tuple.Create(newInst.State, newInst.AnnotationIndex, newInst.Registers);
+							Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> key = Tuple.Create(newInst.State, newInst.AnnotationIndex, newInst.Registers);
 							if (!traversed.Contains(key))
 							{
 								instStack.Push(newInst);
@@ -72,7 +72,7 @@ namespace SIL.Machine.FiniteState
 							foreach (NondeterministicFsaTraversalInstance<TData, TOffset> newInst in Advance(ti, varBindings, arc, curResults))
 							{
 								newInst.Visited.Clear();
-								Tuple<State<TData, TOffset>, int, NullableValue<TOffset>[,]> key = Tuple.Create(newInst.State, newInst.AnnotationIndex, newInst.Registers);
+								Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> key = Tuple.Create(newInst.State, newInst.AnnotationIndex, newInst.Registers);
 								if (!traversed.Contains(key))
 								{
 									instStack.Push(newInst);
@@ -99,12 +99,12 @@ namespace SIL.Machine.FiniteState
 			return new NondeterministicFsaTraversalInstance<TData, TOffset>(registerCount, ignoreVariables);
 		}
 
-		private bool KeyEquals(Tuple<State<TData, TOffset>, int, NullableValue<TOffset>[,]> x, Tuple<State<TData, TOffset>, int, NullableValue<TOffset>[,]> y)
+		private bool KeyEquals(Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> x, Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> y)
 		{
 			return x.Item1.Equals(y.Item1) && x.Item2.Equals(y.Item2) && RegistersEqualityComparer.Equals(x.Item3, y.Item3);
 		}
 
-		private int KeyGetHashCode(Tuple<State<TData, TOffset>, int, NullableValue<TOffset>[,]> m)
+		private int KeyGetHashCode(Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> m)
 		{
 			int code = 23;
 			code = code * 31 + m.Item1.GetHashCode();
@@ -113,7 +113,7 @@ namespace SIL.Machine.FiniteState
 			return code;
 		}
 
-		private Stack<NondeterministicFsaTraversalInstance<TData, TOffset>> InitializeStack(ref int annIndex, NullableValue<TOffset>[,] registers,
+		private Stack<NondeterministicFsaTraversalInstance<TData, TOffset>> InitializeStack(ref int annIndex, Register<TOffset>[,] registers,
 			IList<TagMapCommand> cmds, ISet<int> initAnns)
 		{
 			var instStack = new Stack<NondeterministicFsaTraversalInstance<TData, TOffset>>();

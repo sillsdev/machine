@@ -8,8 +8,8 @@ namespace SIL.Machine.FiniteState
 {
 	public class FstResult<TData, TOffset> : IEquatable<FstResult<TData, TOffset>>
 	{
-		private readonly IEqualityComparer<NullableValue<TOffset>[,]> _registersEqualityComparer;
-		private readonly NullableValue<TOffset>[,] _registers;
+		private readonly IEqualityComparer<Register<TOffset>[,]> _registersEqualityComparer;
+		private readonly Register<TOffset>[,] _registers;
 		private readonly TData _output;
 		private readonly VariableBindings _varBindings;
 		private readonly string _id;
@@ -19,7 +19,7 @@ namespace SIL.Machine.FiniteState
 		private readonly int[] _priorities;
 		private readonly int _order;
 
-		internal FstResult(IEqualityComparer<NullableValue<TOffset>[,]> registersEqualityComparer, string id, NullableValue<TOffset>[,] registers, TData output, VariableBindings varBindings, int priority,
+		internal FstResult(IEqualityComparer<Register<TOffset>[,]> registersEqualityComparer, string id, Register<TOffset>[,] registers, TData output, VariableBindings varBindings, int priority,
 			bool isLazy, Annotation<TOffset> nextAnn, int[] priorities, int order)
 		{
 			_registersEqualityComparer = registersEqualityComparer;
@@ -39,7 +39,7 @@ namespace SIL.Machine.FiniteState
 			get { return _id; }
 		}
 
-		public NullableValue<TOffset>[,] Registers
+		public Register<TOffset>[,] Registers
 		{
 			get { return _registers; }
 		}

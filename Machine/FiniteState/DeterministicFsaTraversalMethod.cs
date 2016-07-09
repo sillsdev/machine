@@ -7,13 +7,13 @@ namespace SIL.Machine.FiniteState
 {
 	internal class DeterministicFsaTraversalMethod<TData, TOffset> : TraversalMethodBase<TData, TOffset, DeterministicFsaTraversalInstance<TData, TOffset>> where TData : IAnnotatedData<TOffset>
 	{
-		public DeterministicFsaTraversalMethod(IEqualityComparer<NullableValue<TOffset>[,]> registersEqualityComparer, int registerCount, Direction dir, Func<Annotation<TOffset>, bool> filter,
+		public DeterministicFsaTraversalMethod(IEqualityComparer<Register<TOffset>[,]> registersEqualityComparer, int registerCount, Direction dir, Func<Annotation<TOffset>, bool> filter,
 			State<TData, TOffset> startState, TData data, bool endAnchor, bool unification, bool useDefaults, bool ignoreVariables)
 			: base(registersEqualityComparer, registerCount, dir, filter, startState, data, endAnchor, unification, useDefaults, ignoreVariables)
 		{
 		}
 
-		public override IEnumerable<FstResult<TData, TOffset>> Traverse(ref int annIndex, NullableValue<TOffset>[,] initRegisters, IList<TagMapCommand> initCmds, ISet<int> initAnns)
+		public override IEnumerable<FstResult<TData, TOffset>> Traverse(ref int annIndex, Register<TOffset>[,] initRegisters, IList<TagMapCommand> initCmds, ISet<int> initAnns)
 		{
 			Stack<DeterministicFsaTraversalInstance<TData, TOffset>> instStack = InitializeStack(ref annIndex, initRegisters, initCmds, initAnns);
 
@@ -46,7 +46,7 @@ namespace SIL.Machine.FiniteState
 			return new DeterministicFsaTraversalInstance<TData, TOffset>(registerCount, ignoreVariables);
 		}
 
-		private Stack<DeterministicFsaTraversalInstance<TData, TOffset>> InitializeStack(ref int annIndex, NullableValue<TOffset>[,] registers,
+		private Stack<DeterministicFsaTraversalInstance<TData, TOffset>> InitializeStack(ref int annIndex, Register<TOffset>[,] registers,
 			IList<TagMapCommand> cmds, ISet<int> initAnns)
 		{
 			var instStack = new Stack<DeterministicFsaTraversalInstance<TData, TOffset>>();

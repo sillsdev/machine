@@ -80,7 +80,6 @@
     <Compile Include="KeyedList.cs" />
     <Compile Include="KeyedBulkObservableList.cs" />
     <Compile Include="ReadOnlyKeyedCollection.cs" />
-    <Compile Include="NullableValue.cs" />
     <Compile Include="ObservableDictionary.cs" />
     <Compile Include="ObservableHashSet.cs" />
     <Compile Include="ObservableIDBearerSet.cs" />

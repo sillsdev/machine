@@ -10,7 +10,7 @@ namespace SIL.Machine.FiniteState
 	internal abstract class TraversalMethodBase<TData, TOffset, TInst> : ITraversalMethod<TData, TOffset>
 		where TData : IAnnotatedData<TOffset> where TInst : TraversalInstance<TData, TOffset>
 	{
-		private readonly IEqualityComparer<NullableValue<TOffset>[,]> _registersEqualityComparer;
+		private readonly IEqualityComparer<Register<TOffset>[,]> _registersEqualityComparer;
 		private readonly int _registerCount;
 		private readonly Direction _dir;
 		private readonly State<TData, TOffset> _startState;
@@ -23,7 +23,7 @@ namespace SIL.Machine.FiniteState
 		private readonly List<Annotation<TOffset>> _annotations;
 		private readonly Queue<TInst> _cachedInstances;
 
-		protected TraversalMethodBase(IEqualityComparer<NullableValue<TOffset>[,]> registersEqualityComparer, int registerCount, Direction dir, Func<Annotation<TOffset>, bool> filter,
+		protected TraversalMethodBase(IEqualityComparer<Register<TOffset>[,]> registersEqualityComparer, int registerCount, Direction dir, Func<Annotation<TOffset>, bool> filter,
 			State<TData, TOffset> startState, TData data, bool endAnchor, bool unification, bool useDefaults, bool ignoreVariables)
 		{
 			_registersEqualityComparer = registersEqualityComparer;
@@ -77,7 +77,7 @@ namespace SIL.Machine.FiniteState
 			get { return _data; }
 		}
 
-		protected IEqualityComparer<NullableValue<TOffset>[,]> RegistersEqualityComparer
+		protected IEqualityComparer<Register<TOffset>[,]> RegistersEqualityComparer
 		{
 			get { return _registersEqualityComparer; }
 		}
@@ -87,10 +87,10 @@ namespace SIL.Machine.FiniteState
 			get { return _annotations; }
 		}
 
-		public abstract IEnumerable<FstResult<TData, TOffset>> Traverse(ref int annIndex, NullableValue<TOffset>[,] initRegisters, IList<TagMapCommand> initCmds, ISet<int> initAnns);
+		public abstract IEnumerable<FstResult<TData, TOffset>> Traverse(ref int annIndex, Register<TOffset>[,] initRegisters, IList<TagMapCommand> initCmds, ISet<int> initAnns);
 
-		protected static void ExecuteCommands(NullableValue<TOffset>[,] registers, IEnumerable<TagMapCommand> cmds,
-			NullableValue<TOffset> start, NullableValue<TOffset> end)
+		protected static void ExecuteCommands(Register<TOffset>[,] registers, IEnumerable<TagMapCommand> cmds,
+			Register<TOffset> start, Register<TOffset> end)
 		{
 			foreach (TagMapCommand cmd in cmds)
 			{
@@ -112,14 +112,14 @@ namespace SIL.Machine.FiniteState
 			return annIndex < _annotations.Count && arc.Input.Matches(_annotations[annIndex].FeatureStruct, _unification, _useDefaults, varBindings);
 		}
 
-		private void CheckAccepting(int annIndex, NullableValue<TOffset>[,] registers, TData output,
+		private void CheckAccepting(int annIndex, Register<TOffset>[,] registers, TData output,
 			VariableBindings varBindings, Arc<TData, TOffset> arc, ICollection<FstResult<TData, TOffset>> curResults, IList<int> priorities)
 		{
 			if (arc.Target.IsAccepting && (!_endAnchor || annIndex == _annotations.Count))
 			{
 				Annotation<TOffset> ann = annIndex < _annotations.Count ? _annotations[annIndex] : _data.Annotations.GetEnd(_dir);
-				var matchRegisters = (NullableValue<TOffset>[,]) registers.Clone();
-				ExecuteCommands(matchRegisters, arc.Target.Finishers, new NullableValue<TOffset>(), new NullableValue<TOffset>());
+				var matchRegisters = (Register<TOffset>[,]) registers.Clone();
+				ExecuteCommands(matchRegisters, arc.Target.Finishers, new Register<TOffset>(), new Register<TOffset>());
 				if (arc.Target.AcceptInfos.Count > 0)
 				{
 					foreach (AcceptInfo<TData, TOffset> acceptInfo in arc.Target.AcceptInfos)
@@ -149,7 +149,7 @@ namespace SIL.Machine.FiniteState
 			}
 		}
 
-		protected IEnumerable<TInst> Initialize(ref int annIndex, NullableValue<TOffset>[,] registers,
+		protected IEnumerable<TInst> Initialize(ref int annIndex, Register<TOffset>[,] registers,
 			IList<TagMapCommand> cmds, ISet<int> initAnns)
 		{
 			var insts = new List<TInst>();
@@ -161,11 +161,11 @@ namespace SIL.Machine.FiniteState
 				{
 					int nextIndex = GetNextNonoverlappingAnnotationIndex(i);
 					if (nextIndex != _annotations.Count)
-						insts.AddRange(Initialize(ref nextIndex, (NullableValue<TOffset>[,]) registers.Clone(), cmds, initAnns));
+						insts.AddRange(Initialize(ref nextIndex, (Register<TOffset>[,]) registers.Clone(), cmds, initAnns));
 				}
 			}
 
-			ExecuteCommands(registers, cmds, new NullableValue<TOffset>(offset), new NullableValue<TOffset>());
+			ExecuteCommands(registers, cmds, new Register<TOffset>(offset, true), new Register<TOffset>());
 
 			for (; annIndex < _annotations.Count && _annotations[annIndex].Span.GetStart(_dir).Equals(offset); annIndex++)
 			{
@@ -188,7 +188,18 @@ namespace SIL.Machine.FiniteState
 			if (inst.Priorities != null)
 				inst.Priorities.Add(arc.Priority);
 			int nextIndex = GetNextNonoverlappingAnnotationIndex(inst.AnnotationIndex);
-			TOffset nextOffset = nextIndex < _annotations.Count ? _annotations[nextIndex].Span.GetStart(_dir) : _data.Annotations.GetLast(_dir, _filter).Span.GetEnd(_dir);
+			TOffset nextOffset;
+			bool nextStart;
+			if (nextIndex < _annotations.Count)
+			{
+				nextOffset = _annotations[nextIndex].Span.GetStart(_dir);
+				nextStart = true;
+			}
+			else
+			{
+				nextOffset = _data.Annotations.GetLast(_dir, _filter).Span.GetEnd(_dir);
+				nextStart = false;
+			}
 			TOffset end = _annotations[inst.AnnotationIndex].Span.GetEnd(_dir);
 
 			if (nextIndex < _annotations.Count)
@@ -210,7 +221,7 @@ namespace SIL.Machine.FiniteState
 					anns.Add(i);
 				}
 
-				ExecuteCommands(inst.Registers, arc.Commands, new NullableValue<TOffset>(nextOffset), new NullableValue<TOffset>(end));
+				ExecuteCommands(inst.Registers, arc.Commands, new Register<TOffset>(nextOffset, nextStart), new Register<TOffset>(end, false));
 				CheckAccepting(nextIndex, inst.Registers, inst.Output, varBindings, arc, curResults, inst.Priorities);
 
 				inst.State = arc.Target;
@@ -229,7 +240,7 @@ namespace SIL.Machine.FiniteState
 			}
 			else
 			{
-				ExecuteCommands(inst.Registers, arc.Commands, new NullableValue<TOffset>(nextOffset), new NullableValue<TOffset>(end));
+				ExecuteCommands(inst.Registers, arc.Commands, new Register<TOffset>(nextOffset, nextStart), new Register<TOffset>(end, false));
 				CheckAccepting(nextIndex, inst.Registers, inst.Output, varBindings, arc, curResults, inst.Priorities);
 
 				inst.State = arc.Target;
@@ -244,7 +255,7 @@ namespace SIL.Machine.FiniteState
 			Annotation<TOffset> ann = inst.AnnotationIndex < _annotations.Count ? _annotations[inst.AnnotationIndex] : _data.Annotations.GetEnd(_dir);
 			int prevIndex = GetPrevNonoverlappingAnnotationIndex(inst.AnnotationIndex);
 			Annotation<TOffset> prevAnn = _annotations[prevIndex];
-			ExecuteCommands(inst.Registers, arc.Commands, new NullableValue<TOffset>(ann.Span.GetStart(_dir)), new NullableValue<TOffset>(prevAnn.Span.GetEnd(_dir)));
+			ExecuteCommands(inst.Registers, arc.Commands, new Register<TOffset>(ann.Span.GetStart(_dir), true), new Register<TOffset>(prevAnn.Span.GetEnd(_dir), false));
 			CheckAccepting(inst.AnnotationIndex, inst.Registers, inst.Output, inst.VariableBindings, arc, curResults, inst.Priorities);
 
 			inst.State = arc.Target;
