@@ -1,4 +1,5 @@
-﻿using SIL.Machine.Annotations;
+﻿using System.Linq;
+using SIL.Machine.Annotations;
 
 namespace SIL.HermitCrab
 {
@@ -40,7 +41,7 @@ namespace SIL.HermitCrab
 			if (otherAllo == null)
 				return false;
 
-			return base.ConstraintsEqual(other) && StemName == otherAllo.StemName && IsBound == otherAllo.IsBound;
+			return base.ConstraintsEqual(other) && IsBound == otherAllo.IsBound;
 		}
 
 		internal override bool IsWordValid(Morpher morpher, Word word)
@@ -55,11 +56,21 @@ namespace SIL.HermitCrab
 				return false;
 			}
 
-			if (StemName != null && !StemName.IsMatch(word.SyntacticFeatureStruct))
+			if (StemName != null && !StemName.IsRequiredMatch(word.SyntacticFeatureStruct))
 			{
 				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.StemName, this, StemName);
+					morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.RequiredStemName, this, StemName);
 				return false;
+			}
+
+			foreach (RootAllomorph otherAllo in ((LexEntry) Morpheme).Allomorphs.Where(a => a != this && a.StemName != null))
+			{
+				if (!otherAllo.StemName.IsExcludedMatch(word.SyntacticFeatureStruct, StemName))
+				{
+					if (morpher.TraceManager.IsTracing)
+						morpher.TraceManager.ParseFailed(morpher.Language, word, FailureReason.ExcludedStemName, this, otherAllo.StemName);
+					return false;
+				}
 			}
 
 			return true;

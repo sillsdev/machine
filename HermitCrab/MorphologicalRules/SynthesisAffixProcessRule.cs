@@ -40,7 +40,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 			if (_rule.RequiredStemName != null && _rule.RequiredStemName != input.RootAllomorph.StemName)
 			{
 				if (_morpher.TraceManager.IsTracing)
-					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.StemName, _rule.RequiredStemName);
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.RequiredStemName, _rule.RequiredStemName);
 				return Enumerable.Empty<Word>();
 			}
 

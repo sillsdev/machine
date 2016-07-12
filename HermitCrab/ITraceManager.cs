@@ -17,7 +17,8 @@
 		NonHeadRequiredSyntacticFeatureStruct,
 		RequiredMprFeatures,
 		ExcludedMprFeatures,
-		StemName,
+		RequiredStemName,
+		ExcludedStemName,
 		PartialParse,
 		BoundRoot,
 	}

@@ -30,9 +30,14 @@ namespace SIL.HermitCrab
 			get { return _regions; }
 		}
 
-		public bool IsMatch(FeatureStruct fs)
+		public bool IsRequiredMatch(FeatureStruct fs)
 		{
-			return _regions.Any(r => r.IsUnifiable(fs));
+			return _regions.Any(r => r.Subsumes(fs));
+		}
+
+		public bool IsExcludedMatch(FeatureStruct fs, StemName stemName)
+		{
+			return _regions.Except(stemName == null ? Enumerable.Empty<FeatureStruct>() : stemName.Regions, FreezableEqualityComparer<FeatureStruct>.Default).All(r => !r.Subsumes(fs));
 		}
 
 		public override string ToString()

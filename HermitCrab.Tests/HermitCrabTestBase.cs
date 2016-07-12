@@ -35,37 +35,37 @@ namespace SIL.HermitCrab.Tests
 			SpanFactory = new ShapeSpanFactory();
 			TraceManager = new TraceManager();
 			var phonologicalFeatSys = new FeatureSystem
-			                      	{
-			                      		new SymbolicFeature("voc", new FeatureSymbol("voc+", "+"), new FeatureSymbol("voc-", "-")),
-			                      		new SymbolicFeature("cons", new FeatureSymbol("cons+", "+"), new FeatureSymbol("cons-", "-")),
-			                      		new SymbolicFeature("high", new FeatureSymbol("high+", "+"), new FeatureSymbol("high-", "-")),
-			                      		new SymbolicFeature("low", new FeatureSymbol("low+", "+"), new FeatureSymbol("low-", "-")),
-			                      		new SymbolicFeature("back", new FeatureSymbol("back+", "+"), new FeatureSymbol("back-", "-")),
-			                      		new SymbolicFeature("round", new FeatureSymbol("round+", "+"), new FeatureSymbol("round-", "-")),
-										new SymbolicFeature("vd", new FeatureSymbol("vd+", "+"), new FeatureSymbol("vd-", "-")),
-			                      		new SymbolicFeature("asp", new FeatureSymbol("asp+", "+"), new FeatureSymbol("asp-", "-")),
-			                      		new SymbolicFeature("del_rel", new FeatureSymbol("del_rel+", "+"), new FeatureSymbol("del_rel-", "-")),
-			                      		new SymbolicFeature("ATR", new FeatureSymbol("ATR+", "+"), new FeatureSymbol("ATR-", "-")),
-			                      		new SymbolicFeature("strident", new FeatureSymbol("strident+", "+"), new FeatureSymbol("strident-", "-")),
-			                      		new SymbolicFeature("cont", new FeatureSymbol("cont+", "+"), new FeatureSymbol("cont-", "-")),
-			                      		new SymbolicFeature("nasal", new FeatureSymbol("nasal+", "+"), new FeatureSymbol("nasal-", "-")),
-			                      		new SymbolicFeature("poa", new FeatureSymbol("bilabial"), new FeatureSymbol("labiodental"), new FeatureSymbol("alveolar"), new FeatureSymbol("velar"))
-			                      	};
+			{
+			    new SymbolicFeature("voc", new FeatureSymbol("voc+", "+"), new FeatureSymbol("voc-", "-")),
+			    new SymbolicFeature("cons", new FeatureSymbol("cons+", "+"), new FeatureSymbol("cons-", "-")),
+			    new SymbolicFeature("high", new FeatureSymbol("high+", "+"), new FeatureSymbol("high-", "-")),
+			    new SymbolicFeature("low", new FeatureSymbol("low+", "+"), new FeatureSymbol("low-", "-")),
+			    new SymbolicFeature("back", new FeatureSymbol("back+", "+"), new FeatureSymbol("back-", "-")),
+			    new SymbolicFeature("round", new FeatureSymbol("round+", "+"), new FeatureSymbol("round-", "-")),
+				new SymbolicFeature("vd", new FeatureSymbol("vd+", "+"), new FeatureSymbol("vd-", "-")),
+			    new SymbolicFeature("asp", new FeatureSymbol("asp+", "+"), new FeatureSymbol("asp-", "-")),
+			    new SymbolicFeature("del_rel", new FeatureSymbol("del_rel+", "+"), new FeatureSymbol("del_rel-", "-")),
+			    new SymbolicFeature("ATR", new FeatureSymbol("ATR+", "+"), new FeatureSymbol("ATR-", "-")),
+			    new SymbolicFeature("strident", new FeatureSymbol("strident+", "+"), new FeatureSymbol("strident-", "-")),
+			    new SymbolicFeature("cont", new FeatureSymbol("cont+", "+"), new FeatureSymbol("cont-", "-")),
+			    new SymbolicFeature("nasal", new FeatureSymbol("nasal+", "+"), new FeatureSymbol("nasal-", "-")),
+			    new SymbolicFeature("poa", new FeatureSymbol("bilabial"), new FeatureSymbol("labiodental"), new FeatureSymbol("alveolar"), new FeatureSymbol("velar"))
+			};
 			phonologicalFeatSys.Freeze();
 
 			var syntacticFeatSys = new SyntacticFeatureSystem
-			                       	{
-			                       		new SymbolicFeature("foo", new FeatureSymbol("foo+", "+"), new FeatureSymbol("foo-", "-")),
-			                       		new SymbolicFeature("baz", new FeatureSymbol("baz+", "+"), new FeatureSymbol("baz-", "-")),
-			                       		new SymbolicFeature("num", new FeatureSymbol("sg"), new FeatureSymbol("pl")),
-			                       		new SymbolicFeature("pers", new FeatureSymbol("1"), new FeatureSymbol("2"), new FeatureSymbol("3"), new FeatureSymbol("4")),
-			                       		new SymbolicFeature("tense", new FeatureSymbol("past"), new FeatureSymbol("pres")),
-			                       		new SymbolicFeature("evidential", new FeatureSymbol("witnessed")),
-			                       		new SymbolicFeature("aspect", new FeatureSymbol("perf"), new FeatureSymbol("impf")),
-			                       		new SymbolicFeature("mood", new FeatureSymbol("active"), new FeatureSymbol("passive")),
-			                       		new SymbolicFeature("fum", new FeatureSymbol("fum+", "+"), new FeatureSymbol("fum-", "-")),
-			                       		new SymbolicFeature("bar", new FeatureSymbol("bar+", "+"), new FeatureSymbol("bar-", "-"))
-			                       	};
+			{
+			    new SymbolicFeature("foo", new FeatureSymbol("foo+", "+"), new FeatureSymbol("foo-", "-")),
+			    new SymbolicFeature("baz", new FeatureSymbol("baz+", "+"), new FeatureSymbol("baz-", "-")),
+			    new SymbolicFeature("num", new FeatureSymbol("sg"), new FeatureSymbol("pl")),
+			    new SymbolicFeature("pers", new FeatureSymbol("1"), new FeatureSymbol("2"), new FeatureSymbol("3"), new FeatureSymbol("4")),
+			    new SymbolicFeature("tense", new FeatureSymbol("past"), new FeatureSymbol("pres")),
+			    new SymbolicFeature("evidential", new FeatureSymbol("witnessed")),
+			    new SymbolicFeature("aspect", new FeatureSymbol("perf"), new FeatureSymbol("impf")),
+			    new SymbolicFeature("mood", new FeatureSymbol("active"), new FeatureSymbol("passive")),
+			    new SymbolicFeature("fum", new FeatureSymbol("fum+", "+"), new FeatureSymbol("fum-", "-")),
+			    new SymbolicFeature("bar", new FeatureSymbol("bar+", "+"), new FeatureSymbol("bar-", "-"))
+			};
 			syntacticFeatSys.AddPartsOfSpeech(new FeatureSymbol("N", "Noun"), new FeatureSymbol("V", "Verb"), new FeatureSymbol("TV", "Transitive Verb"),
 				new FeatureSymbol("IV", "Intransitive Verb"), new FeatureSymbol("A", "Adjective"));
 			Head = syntacticFeatSys.AddHeadFeature();
@@ -292,12 +292,26 @@ namespace SIL.HermitCrab.Tests
 			entry.Allomorphs[1].Environments.Add(new AllomorphEnvironment(SpanFactory, ConstraintType.Require, null, Pattern<Word, ShapeNode>.New().Annotation(vowel).Value));
 			entry.Allomorphs[2].Environments.Add(new AllomorphEnvironment(SpanFactory, ConstraintType.Require, null, Pattern<Word, ShapeNode>.New().Annotation(vowel).Value));
 
-			entry = AddEntry("stemname", FeatureStruct.New(syntacticFeatSys).Symbol("V").Feature(Head).EqualTo(head => head.Feature("tense").EqualTo("pres")).Value, Morphophonemic, "sad", "san");
-			entry.Allomorphs[0].StemName = new StemName(
+			entry = AddEntry("stemname", FeatureStruct.New(syntacticFeatSys).Symbol("V").Feature(Head).EqualTo(head => head.Feature("tense").EqualTo("pres")).Value, Morphophonemic, "san", "sad", "sap");
+			entry.Allomorphs[1].StemName = new StemName(
 				FeatureStruct.New(syntacticFeatSys)
 					.Symbol("V")
 					.Feature(Head).EqualTo(head => head
-						.Feature("tense").EqualTo("past")).Value) { Name = "sn" };
+						.Feature("pers").EqualTo("1")).Value,
+				FeatureStruct.New(syntacticFeatSys)
+					.Symbol("V")
+					.Feature(Head).EqualTo(head => head
+						.Feature("pers").EqualTo("2")).Value) {Name = "sn1"};
+			entry.Allomorphs[2].StemName = new StemName(
+				FeatureStruct.New(syntacticFeatSys)
+					.Symbol("V")
+					.Feature(Head).EqualTo(head => head
+						.Feature("pers").EqualTo("1")).Value,
+				FeatureStruct.New(syntacticFeatSys)
+					.Symbol("V")
+					.Feature(Head).EqualTo(head => head
+						.Feature("pers").EqualTo("3")).Value) {Name = "sn2"};
+
 
 			AddEntry("synfs", FeatureStruct.New(syntacticFeatSys).Symbol("V").Feature(Head).EqualTo(head => head.Feature("tense").EqualTo("pres")).Value, Morphophonemic, "bag");
 
@@ -305,12 +319,12 @@ namespace SIL.HermitCrab.Tests
 			entry.PrimaryAllomorph.IsBound = true;
 
 			Language = new Language
-			           	{
-							Name = "Test",
-			           		PhonologicalFeatureSystem = phonologicalFeatSys,
-							SyntacticFeatureSystem = syntacticFeatSys,
-							Strata = { Morphophonemic, Allophonic, Surface }
-			           	};
+			{
+				Name = "Test",
+			    PhonologicalFeatureSystem = phonologicalFeatSys,
+				SyntacticFeatureSystem = syntacticFeatSys,
+				Strata = { Morphophonemic, Allophonic, Surface }
+			};
 		}
 
 		[TearDown]
