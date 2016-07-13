@@ -40,16 +40,6 @@ namespace SIL.HermitCrab.Tests
 		public void FreeFluctuation()
 		{
 			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
-			var voicelessCons = FeatureStruct.New(Language.PhonologicalFeatureSystem)
-				.Symbol(HCFeatureSystem.Segment)
-				.Symbol("cons+")
-				.Symbol("vd-").Value;
-			var alvStop = FeatureStruct.New(Language.PhonologicalFeatureSystem)
-				.Symbol(HCFeatureSystem.Segment)
-				.Symbol("cons+")
-				.Symbol("strident-")
-				.Symbol("alveolar")
-				.Symbol("nasal-").Value;
 			var d = FeatureStruct.New(Language.PhonologicalFeatureSystem)
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("cons+")
@@ -68,16 +58,7 @@ namespace SIL.HermitCrab.Tests
 			Morphophonemic.MorphologicalRules.Add(edSuffix);
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 										{
-											Lhs =
-												{
-													Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
-													Pattern<Word, ShapeNode>.New("2").Annotation(alvStop).Value
-												},
-											Rhs = {new CopyFromInput("1"), new CopyFromInput("2"), new InsertSegments(Table3, "+ɯd")}
-										});
-			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
-										{
-											Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Annotation(voicelessCons).Value},
+											Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
 											Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+t")}
 										});
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
@@ -89,8 +70,8 @@ namespace SIL.HermitCrab.Tests
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("tazd"), "free PAST");
 			AssertMorphsEqual(morpher.ParseWord("tast"), "free PAST");
-			AssertMorphsEqual(morpher.ParseWord("badɯd"), "disj PAST");
-			AssertMorphsEqual(morpher.ParseWord("batɯd"), "disj PAST");
+			AssertMorphsEqual(morpher.ParseWord("tazt"), "free PAST");
+			AssertMorphsEqual(morpher.ParseWord("tasd"), "free PAST");
 		}
 
 		[Test]

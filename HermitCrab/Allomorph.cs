@@ -105,7 +105,10 @@ namespace SIL.HermitCrab
 
 		public bool FreeFluctuatesWith(Allomorph other)
 		{
-			if (this == other || Morpheme != other.Morpheme)
+			if (this == other)
+				return true;
+
+			if (Morpheme != other.Morpheme)
 				return false;
 
 			int minIndex = Math.Min(Index, other.Index);

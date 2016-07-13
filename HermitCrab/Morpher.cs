@@ -133,7 +133,7 @@ namespace SIL.HermitCrab
 				{
 					// if there is no free fluctuation with any allomorphs in the previous parse,
 					// then the rest of the parses are invalid, because of disjunction
-					if (i > 0 && words[i].AllomorphsInMorphOrder.Zip(words[i - 1].AllomorphsInMorphOrder).All(tuple => !tuple.Item1.FreeFluctuatesWith(tuple.Item2)))
+					if (i > 0 && !CheckFreeFluctuation(words[i], words[i - 1]))
 						break;
 
 					if (_lang.SurfaceStratum.CharacterDefinitionTable.IsMatch(word, words[i].Shape))
@@ -155,8 +155,12 @@ namespace SIL.HermitCrab
 						_traceManager.ParseFailed(_lang, words[i], FailureReason.DisjunctiveAllomorph, null, lastWord);
 				}
 			}
-
 			return matchList;
+		}
+
+		private bool CheckFreeFluctuation(Word word, Word prevWord)
+		{
+			return word.AllomorphsInMorphOrder.Zip(prevWord.AllomorphsInMorphOrder).All(tuple => tuple.Item1.FreeFluctuatesWith(tuple.Item2));
 		}
 
 		internal IEnumerable<RootAllomorph> SearchRootAllomorphs(Stratum stratum, Shape shape)

@@ -283,11 +283,12 @@ namespace SIL.HermitCrab.Tests
 			entry = AddEntry("pos2", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Morphophonemic, "ba");
 			entry.MprFeatures.Add(Germanic);
 
-			AddEntry("free", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "taz", "tas");
+			var vowel = FeatureStruct.New(phonologicalFeatSys).Symbol(HCFeatureSystem.Segment).Symbol("voc+").Value;
+			entry = AddEntry("free", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "tap", "taz", "tas");
+			entry.Allomorphs[0].Environments.Add(new AllomorphEnvironment(SpanFactory, ConstraintType.Require, null, Pattern<Word, ShapeNode>.New().Annotation(vowel).Value));
 
 			entry = AddEntry("disj", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "baz", "bat", "bad", "bas");
 			var unroundedVowel = FeatureStruct.New(phonologicalFeatSys).Symbol(HCFeatureSystem.Segment).Symbol("voc+").Symbol("round-").Value;
-			var vowel = FeatureStruct.New(phonologicalFeatSys).Symbol(HCFeatureSystem.Segment).Symbol("voc+").Value;
 			entry.Allomorphs[0].Environments.Add(new AllomorphEnvironment(SpanFactory, ConstraintType.Require, null, Pattern<Word, ShapeNode>.New().Annotation(unroundedVowel).Value));
 			entry.Allomorphs[1].Environments.Add(new AllomorphEnvironment(SpanFactory, ConstraintType.Require, null, Pattern<Word, ShapeNode>.New().Annotation(vowel).Value));
 			entry.Allomorphs[2].Environments.Add(new AllomorphEnvironment(SpanFactory, ConstraintType.Require, null, Pattern<Word, ShapeNode>.New().Annotation(vowel).Value));
