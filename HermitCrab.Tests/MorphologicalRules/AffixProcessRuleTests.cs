@@ -804,6 +804,24 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 
 			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("saga"), "32 RED");
+			
+			Allophonic.PhonologicalRules.Clear();
+			redup.RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value;
+			redup.OutSyntacticFeatureStruct = FeatureStruct.New().Value;
+			redup.Allomorphs.Clear();
+			redup.Allomorphs.Add(new AffixProcessAllomorph
+			{
+				Lhs =
+				{
+					Pattern<Word, ShapeNode>.New("1").Annotation(cons).Value,
+					Pattern<Word, ShapeNode>.New("2").Annotation(vowel).Annotation(vowel).Value,
+					Pattern<Word, ShapeNode>.New("3").Annotation(cons).Value
+				},
+				Rhs = {new CopyFromInput("1"), new CopyFromInput("2"), new CopyFromInput("2"), new CopyFromInput("3")}
+			});
+
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			AssertMorphsEqual(morpher.ParseWord("buiuib"), "30 RED", "31 RED");
 		}
 
 		[Test]

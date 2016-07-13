@@ -94,7 +94,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 					{
 						int index = rhs.IndexOf(partActions[j]);
 						if ((start == -1 && j == partActions.Count - 1)
-							|| (index >= start && index < start + lhs.Count))
+							|| (start != -1 && index >= start && index < start + lhs.Count))
 						{
 							_nonAllomorphActions.Add(partActions[j]);
 						}
