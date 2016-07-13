@@ -1259,7 +1259,7 @@ namespace SIL.Machine.Tests.Matching
 		}
 
 		[Test]
-		public void SingleOptionalAnnotation()
+		public void OptionalAnnotation()
 		{
 			var pattern = Pattern<AnnotatedStringData, int>.New()
 				.Annotation(FeatureStruct.New().Symbol(Seg).Value).OneOrMore.Value;
@@ -1274,6 +1274,26 @@ namespace SIL.Machine.Tests.Matching
 			word.Annotations.First.Optional = true;
 			Match<AnnotatedStringData, int> match = matcher.Match(word);
 			Assert.That(match.Success, Is.True);
+
+			pattern = Pattern<AnnotatedStringData, int>.New()
+				.Group("first", g1 => g1.Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Seg).Symbol("syl+").Value))
+				.Group("second", g2 => g2.Annotation(FeatureStruct.New().Symbol(Seg).Value).OneOrMore).Value;
+
+			matcher = new Matcher<AnnotatedStringData, int>(SpanFactory, pattern,
+				new MatcherSettings<int>
+				{
+					AnchoredToStart = true,
+					AnchoredToEnd = true
+				});
+			word = CreateStringData("+e+tested+");
+			word.Annotations.First.Optional = true;
+			word.Annotations.ElementAt(2).Optional = true;
+			word.Annotations.Last.Optional = true;
+			match = matcher.Match(word);
+			Assert.That(match.Success, Is.True);
+			Assert.That(match.Span, Is.EqualTo(SpanFactory.Create(0, 10)));
+			Assert.That(match.GroupCaptures["first"].Span, Is.EqualTo(SpanFactory.Create(1, 3)));
+			Assert.That(match.GroupCaptures["second"].Span, Is.EqualTo(SpanFactory.Create(3, 10)));
 		}
 	}
 }
