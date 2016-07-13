@@ -1104,5 +1104,65 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("abbas"), "39 3SG");
 		}
+
+		[Test]
+		public void WordSynthesisWithBoundaryAtBeginning()
+		{
+			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+			var cons = FeatureStruct.New(Language.PhonologicalFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+").Value;
+			var vowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-").Value;
+
+			var htSuffix = new AffixProcessRule
+			{
+				Name = "ht_suffix",
+				Gloss = "prefix",
+				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
+			};
+			Morphophonemic.MorphologicalRules.Add(htSuffix);
+			htSuffix.Allomorphs.Add(new AffixProcessAllomorph
+			{
+				Lhs =
+				{
+					Pattern<Word, ShapeNode>.New("1").Annotation(any).ZeroOrMore.Value,
+					Pattern<Word, ShapeNode>.New("2").Annotation(cons).Value,
+					Pattern<Word, ShapeNode>.New("3").Annotation(vowel).Value,
+					Pattern<Word, ShapeNode>.New("4").Annotation(cons).Value
+				},
+				Rhs =
+				{
+					new CopyFromInput("1"),
+					new InsertSegments(Table3, "+pa"),
+					new CopyFromInput("2"),
+					new InsertSegments(Table3, "t"),
+					new CopyFromInput("3"),
+					new CopyFromInput("4")
+				}
+			});
+
+			var edSuffix = new AffixProcessRule
+			{
+				Name = "ed_suffix",
+				Gloss = "PST",
+				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+				OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
+					.Feature(Head).EqualTo(head => head
+						.Feature("tense").EqualTo("past")).Value
+			};
+			Morphophonemic.MorphologicalRules.Add(edSuffix);
+			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
+			{
+				Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
+				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd")}
+			});
+
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			Word[] results = morpher.ParseWord("pastagɯd").ToArray();
+			AssertMorphsEqual(results, "prefix 32 PST");
+			Assert.That(results[0].Shape.First.Type(), Is.EqualTo(HCFeatureSystem.Boundary));
+		}
 	}
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using SIL.Machine.Annotations;
 using SIL.Machine.Matching;
 
@@ -31,5 +32,20 @@ namespace SIL.HermitCrab.MorphologicalRules
 		/// <param name="match">The match.</param>
 		/// <param name="output">The output word synthesis.</param>
 		public abstract IEnumerable<Tuple<ShapeNode, ShapeNode>> Apply(Match<Word, ShapeNode> match, Word output);
+
+		protected IEnumerable<ShapeNode> GetSkippedOptionalNodes(Shape shape, Span<ShapeNode> span)
+		{
+			ShapeNode node = span.Start.Prev;
+			var skippedNodes = new List<ShapeNode>();
+			while (node.Annotation.Optional)
+			{
+				skippedNodes.Add(node);
+				node = node.Prev;
+			}
+
+			if (node == shape.Begin)
+				return ((IEnumerable<ShapeNode>) skippedNodes).Reverse();
+			return Enumerable.Empty<ShapeNode>();
+		}
 	}
 }

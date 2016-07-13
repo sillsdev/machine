@@ -52,7 +52,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 		{
 			var mappings = new List<Tuple<ShapeNode, ShapeNode>>();
 			GroupCapture<ShapeNode> inputGroup = match.GroupCaptures[PartName];
-			foreach (ShapeNode inputNode in match.Input.Shape.GetNodes(inputGroup.Span))
+			foreach (ShapeNode inputNode in GetSkippedOptionalNodes(match.Input.Shape, inputGroup.Span).Concat(match.Input.Shape.GetNodes(inputGroup.Span)))
 			{
 				ShapeNode outputNode = inputNode.DeepClone();
 				if (outputNode.Annotation.Type() == (FeatureSymbol) _simpleCtxt.FeatureStruct.GetValue(HCFeatureSystem.Type))

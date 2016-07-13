@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.Matching;
@@ -28,7 +29,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 			GroupCapture<ShapeNode> inputGroup = match.GroupCaptures[PartName];
 			if (inputGroup.Success)
 			{
-				foreach (ShapeNode inputNode in match.Input.Shape.GetNodes(inputGroup.Span))
+				foreach (ShapeNode inputNode in GetSkippedOptionalNodes(match.Input.Shape, inputGroup.Span).Concat(match.Input.Shape.GetNodes(inputGroup.Span)))
 				{
 					ShapeNode outputNode = inputNode.DeepClone();
 					output.Shape.Add(outputNode);
