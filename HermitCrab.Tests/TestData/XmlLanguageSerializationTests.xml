@@ -398,6 +398,15 @@
             <Allomorphs>
               <Allomorph id="allo1" stemName="stemName1">
                 <PhoneticShape>ab</PhoneticShape>
+                <RequiredEnvironments>
+                  <Environment>
+                    <LeftEnvironment>
+                      <PhoneticTemplate initialBoundaryCondition="true">
+                        <PhoneticSequence />
+                      </PhoneticTemplate>
+                    </LeftEnvironment>
+                  </Environment>
+                </RequiredEnvironments>
                 <Properties>
                   <Property name="prop5">value5</Property>
                 </Properties>
