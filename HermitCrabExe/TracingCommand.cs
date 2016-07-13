@@ -2,7 +2,7 @@
 
 namespace SIL.HermitCrab
 {
-	public class TracingCommand : ConsoleCommand
+	internal class TracingCommand : ConsoleCommand
 	{
 		private readonly HCContext _context;
 

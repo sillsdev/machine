@@ -3,7 +3,7 @@ using SIL.Machine.Annotations;
 
 namespace SIL.HermitCrab
 {
-	public class HCContext
+	internal class HCContext
 	{
 		private readonly Language _language;
 		private Morpher _morpher;
@@ -33,6 +33,32 @@ namespace SIL.HermitCrab
 		public TextWriter Out
 		{
 			get { return _outWriter; }
+		}
+
+		public int ParseCount { get; set; }
+		public int SuccessfulParseCount { get; set; }
+		public int FailedParseCount { get; set; }
+		public int ErrorParseCount { get; set; }
+
+		public int TestCount { get; set; }
+		public int PassedTestCount { get; set; }
+		public int FailedTestCount { get; set; }
+		public int ErrorTestCount { get; set; }
+
+		public void ResetParseStats()
+		{
+			ParseCount = 0;
+			SuccessfulParseCount = 0;
+			FailedParseCount = 0;
+			ErrorParseCount = 0;
+		}
+
+		public void ResetTestStats()
+		{
+			TestCount = 0;
+			PassedTestCount = 0;
+			FailedTestCount = 0;
+			ErrorTestCount = 0;
 		}
 	}
 }

@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using ManyConsole;
-using SIL.Machine.Annotations;
 
 namespace SIL.HermitCrab
 {
-	public class ParseCommand : ConsoleCommand
+	internal class ParseCommand : ConsoleCommand
 	{
 		private readonly HCContext _context;
 
@@ -25,6 +24,7 @@ namespace SIL.HermitCrab
 			string word = remainingArguments[0];
 			try
 			{
+				_context.ParseCount++;
 				_context.Out.WriteLine("Parsing \"{0}\"", word);
 				object trace;
 				Stopwatch watch = Stopwatch.StartNew();
@@ -32,14 +32,16 @@ namespace SIL.HermitCrab
 				watch.Stop();
 				if (results.Length == 0)
 				{
+					_context.FailedParseCount++;
 					_context.Out.WriteLine("No valid parses.");
 				}
 				else
 				{
+					_context.SuccessfulParseCount++;
 					for (int i = 0; i < results.Length; i++)
 					{
 						_context.Out.WriteLine("Parse {0}", i + 1);
-						PrintResult(results[i]);
+						_context.Out.WriteParse(results[i].GetMorphInfos());
 					}
 				}
 				if (_context.Morpher.TraceManager.IsTracing)
@@ -52,48 +54,11 @@ namespace SIL.HermitCrab
 			}
 			catch (InvalidShapeException ise)
 			{
+				_context.ErrorParseCount++;
 				_context.Out.WriteLine("The word contains an invalid segment at position {0}.", ise.Position + 1);
 				_context.Out.WriteLine();
 				return 1;
 			}
-		}
-
-		private void PrintResult(Word result)
-		{
-			_context.Out.Write("Morphs: ");
-			bool firstItem = true;
-			foreach (Annotation<ShapeNode> morph in result.Morphs)
-			{
-				Allomorph allomorph = result.GetAllomorph(morph);
-				string gloss = string.IsNullOrEmpty(allomorph.Morpheme.Gloss) ? "?" : allomorph.Morpheme.Gloss;
-				string morphStr = result.Shape.GetNodes(morph.Span).ToString(result.Stratum.CharacterDefinitionTable, false);
-				int len = Math.Max(morphStr.Length, gloss.Length);
-				if (len > 0)
-				{
-					if (!firstItem)
-						_context.Out.Write(" ");
-					_context.Out.Write(morphStr.PadRight(len));
-					firstItem = false;
-				}
-			}
-			_context.Out.WriteLine();
-			_context.Out.Write("Gloss:  ");
-			firstItem = true;
-			foreach (Annotation<ShapeNode> morph in result.Morphs)
-			{
-				Allomorph allomorph = result.GetAllomorph(morph);
-				string gloss = string.IsNullOrEmpty(allomorph.Morpheme.Gloss) ? "?" : allomorph.Morpheme.Gloss;
-				string morphStr = result.Shape.GetNodes(morph.Span).ToString(result.Stratum.CharacterDefinitionTable, false);
-				int len = Math.Max(morphStr.Length, gloss.Length);
-				if (len > 0)
-				{
-					if (!firstItem)
-						_context.Out.Write(" ");
-					_context.Out.Write(gloss.PadRight(len));
-					firstItem = false;
-				}
-			}
-			_context.Out.WriteLine();
 		}
 
 		private void PrintTrace(Trace trace, int indent, HashSet<int> lineIndices)
