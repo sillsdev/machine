@@ -851,19 +851,19 @@ namespace SIL.HermitCrab
 		private XElement WritePhoneticTemplate(Pattern<Word, ShapeNode> pattern, Dictionary<string, Tuple<string, SymbolicFeature>> variables = null, string prefix = null)
 		{
 			var phonTempElem = new XElement("PhoneticTemplate");
-			if (IsAnchor(pattern.Children.First))
+			if (IsAnchor(pattern.Children.First, HCFeatureSystem.LeftSide))
 				phonTempElem.Add(new XAttribute("initialBoundaryCondition", "true"));
 			phonTempElem.Add(WritePhoneticSequence(pattern, variables, prefix));
-			if (IsAnchor(pattern.Children.Last))
+			if (IsAnchor(pattern.Children.Last, HCFeatureSystem.RightSide))
 				phonTempElem.Add(new XAttribute("finalBoundaryCondition", "true"));
 			return phonTempElem;
 		}
 
-		private bool IsAnchor(PatternNode<Word, ShapeNode> node)
+		private bool IsAnchor(PatternNode<Word, ShapeNode> node, FeatureSymbol type)
 		{
 			var constraint = node as Constraint<Word, ShapeNode>;
 			if (constraint != null)
-				return constraint.Type() == HCFeatureSystem.Anchor;
+				return constraint.Type() == HCFeatureSystem.Anchor && (FeatureSymbol) constraint.FeatureStruct.GetValue(HCFeatureSystem.AnchorType) == type;
 			return false;
 		}
 
