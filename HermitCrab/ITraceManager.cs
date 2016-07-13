@@ -47,6 +47,7 @@
 
 		void BeginApplyStratum(Stratum stratum, Word input);
 		void NonFinalTemplateAppliedLast(Stratum stratum, Word word);
+		void ApplicableTemplatesNotApplied(Stratum stratum, Word word);
 		void EndApplyStratum(Stratum stratum, Word output);
 
 		void PhonologicalRuleApplied(IPhonologicalRule rule, int subruleIndex, Word input, Word output);

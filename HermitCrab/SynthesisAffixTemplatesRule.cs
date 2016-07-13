@@ -49,8 +49,15 @@ namespace SIL.HermitCrab
 				}
 			}
 
-			if (!applicableTemplate)
+			if (applicableTemplate)
+			{
+				if (_morpher.TraceManager.IsTracing && output.Count == 0)
+					_morpher.TraceManager.ApplicableTemplatesNotApplied(_stratum, input);
+			}
+			else
+			{
 				output.Add(input);
+			}
 
 			return output;
 		}
