@@ -93,7 +93,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 					for (int j = 0; j < partActions.Count; j++)
 					{
 						int index = rhs.IndexOf(partActions[j]);
-						if ((start == -1 && j == partActions.Count - 1)
+						if ((start == -1 && j == (_allomorph.ReduplicationHint == ReduplicationHint.Prefix ? partActions.Count - 1 : 0))
 							|| (start != -1 && index >= start && index < start + lhs.Count))
 						{
 							_nonAllomorphActions.Add(partActions[j]);
