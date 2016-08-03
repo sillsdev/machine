@@ -37,6 +37,9 @@ namespace SIL.HermitCrab.MorphologicalRules
 			if (input.CurrentMorphologicalRule != _rule || input.GetApplicationCount(_rule) >= _rule.MaxApplicationCount)
 				return Enumerable.Empty<Word>();
 
+			if (!_rule.IsTemplateRule && input.IsLastAppliedRuleFinal && !input.IsPartial && !_rule.IsPartial)
+				return Enumerable.Empty<Word>();
+
 			if (_rule.RequiredStemName != null && _rule.RequiredStemName != input.RootAllomorph.StemName)
 			{
 				if (_morpher.TraceManager.IsTracing)
@@ -78,6 +81,14 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 					foreach (Feature obligFeature in _rule.ObligatorySyntacticFeatures)
 						outWord.ObligatorySyntacticFeatures.Add(obligFeature);
+
+					if (!_rule.IsTemplateRule)
+					{
+						if (_rule.IsPartial)
+							outWord.IsPartial = true;
+						if (!outWord.IsPartial)
+							outWord.IsLastAppliedRuleFinal = false;
+					}
 
 					outWord.CurrentMorphologicalRuleApplied();
 

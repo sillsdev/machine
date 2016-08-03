@@ -33,16 +33,22 @@ namespace SIL.HermitCrab
 			{
 				foreach (AffixTemplateSlot slot in e.OldItems)
 				{
-					foreach (IMorphologicalRule rule in slot.Rules)
+					foreach (MorphemicMorphologicalRule rule in slot.Rules)
+					{
 						rule.Stratum = null;
+						rule.IsTemplateRule = false;
+					}
 				}
 			}
 			if (e.NewItems != null)
 			{
 				foreach (AffixTemplateSlot slot in e.NewItems)
 				{
-					foreach (IMorphologicalRule rule in slot.Rules)
+					foreach (MorphemicMorphologicalRule rule in slot.Rules)
+					{
 						rule.Stratum = Stratum;
+						rule.IsTemplateRule = true;
+					}
 				}
 			}
 		}
@@ -64,7 +70,7 @@ namespace SIL.HermitCrab
 				_stratum = value;
 				foreach (AffixTemplateSlot slot in _slots)
 				{
-					foreach (IMorphologicalRule rule in slot.Rules)
+					foreach (MorphemicMorphologicalRule rule in slot.Rules)
 						rule.Stratum = value;
 				}
 			}

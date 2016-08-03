@@ -48,6 +48,7 @@ namespace SIL.HermitCrab
 				{
 					Word newWord = mruleOutWord.DeepClone();
 					_prulesRule.Apply(newWord);
+					newWord.IsLastAppliedRuleFinal = false;
 					newWord.Freeze();
 					if (_morpher.TraceManager.IsTracing)
 						_morpher.TraceManager.EndApplyStratum(_stratum, newWord);
@@ -67,16 +68,15 @@ namespace SIL.HermitCrab
 		{
 			foreach (Word mruleOutWord in _mrulesRule.Apply(input))
 			{
-				Word word = mruleOutWord;
-				if (!word.IsLastAppliedRuleFinal)
+				if (mruleOutWord.IsLastAppliedRuleFinal)
 				{
-					word = word.DeepClone();
-					word.IsLastAppliedRuleFinal = true;
-					word.Freeze();
+					yield return mruleOutWord;
 				}
-
-				foreach (Word tempOutWord in ApplyTemplates(word))
-					yield return tempOutWord;
+				else
+				{
+					foreach (Word tempOutWord in ApplyTemplates(mruleOutWord))
+						yield return tempOutWord;
+				}
 			}
 		}
 

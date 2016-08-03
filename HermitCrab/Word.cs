@@ -21,6 +21,7 @@ namespace SIL.HermitCrab
 		private FeatureStruct _realizationalFS;
 		private Stratum _stratum;
 		private bool _isLastAppliedRuleFinal;
+		private bool _isPartial;
 
 		public Word(RootAllomorph rootAllomorph, FeatureStruct realizationalFS)
 		{
@@ -35,7 +36,7 @@ namespace SIL.HermitCrab
 			_mrulesApplied = new Dictionary<IMorphologicalRule, int>();
 			_nonHeads = new Stack<Word>();
 			_obligatorySyntacticFeatures = new IDBearerSet<Feature>();
-			_isLastAppliedRuleFinal = true;
+			_isLastAppliedRuleFinal = false;
 		}
 
 		public Word(Stratum stratum, Shape shape)
@@ -52,7 +53,8 @@ namespace SIL.HermitCrab
 			_mrulesApplied = new Dictionary<IMorphologicalRule, int>();
 			_nonHeads = new Stack<Word>();
 			_obligatorySyntacticFeatures = new IDBearerSet<Feature>();
-			_isLastAppliedRuleFinal = true;
+			_isLastAppliedRuleFinal = false;
+			_isPartial = false;
 		}
 
 		protected Word(Word word)
@@ -70,6 +72,7 @@ namespace SIL.HermitCrab
 			_nonHeads = new Stack<Word>(word._nonHeads.Reverse().DeepClone());
 			_obligatorySyntacticFeatures = new IDBearerSet<Feature>(word._obligatorySyntacticFeatures);
 			_isLastAppliedRuleFinal = word._isLastAppliedRuleFinal;
+			_isPartial = word._isPartial;
 			CurrentTrace = word.CurrentTrace;
 		}
 
@@ -109,6 +112,7 @@ namespace SIL.HermitCrab
 			SyntacticFeatureStruct = entry.SyntacticFeatureStruct.DeepClone();
 			_mprFeatures.Clear();
 			_mprFeatures.UnionWith(entry.MprFeatures);
+			_isPartial = entry.IsPartial;
 		}
 
 		public Shape Shape
@@ -159,6 +163,16 @@ namespace SIL.HermitCrab
 		}
 
 		public object CurrentTrace { get; set; }
+
+		public bool IsPartial
+		{
+			get { return _isPartial; }
+			internal set
+			{
+				CheckFrozen();
+				_isPartial = value;
+			}
+		}
 
 		public IEnumerable<IMorphologicalRule> MorphologicalRules
 		{

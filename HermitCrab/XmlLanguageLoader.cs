@@ -420,6 +420,8 @@ namespace SIL.HermitCrab
 				family.Entries.Add(entry);
 			}
 
+			entry.IsPartial = (bool?) entryElem.Attribute("partial") ?? false;
+
 			LoadProperties(entryElem.Element("Properties"), entry.Properties);
 
 			foreach (XElement alloElem in entryElem.Elements("Allomorphs").Elements("Allomorph").Where(IsActive))
@@ -712,11 +714,12 @@ namespace SIL.HermitCrab
 		{
 			var id = (string) mruleElem.Attribute("id");
 			var affixProcessRule = new AffixProcessRule
-							{
-								Name = (string) mruleElem.Element("Name"),
-								Gloss = (string) mruleElem.Element("Gloss"),
-								Blockable = (string) mruleElem.Attribute("blockable") == "true"
-							};
+			{
+				Name = (string) mruleElem.Element("Name"),
+				Gloss = (string) mruleElem.Element("Gloss"),
+				Blockable = (bool?) mruleElem.Attribute("blockable") ?? true,
+				IsPartial = (bool?) mruleElem.Attribute("partial") ?? false
+			};
 			var multApp = (string) mruleElem.Attribute("multipleApplication");
 			if (!string.IsNullOrEmpty(multApp))
 				affixProcessRule.MaxApplicationCount = int.Parse(multApp);
@@ -1050,7 +1053,7 @@ namespace SIL.HermitCrab
 
 			foreach (XElement slotElem in tempElem.Elements("Slot").Where(IsActive))
 			{
-				var slot = new AffixTemplateSlot { Name = (string) slotElem.Element("Name") };
+				var rules = new List<MorphemicMorphologicalRule>();
 				var ruleIDsStr = (string) slotElem.Attribute("morphologicalRules");
 				IMorphologicalRule lastRule = null;
 				foreach (string ruleID in ruleIDsStr.Split(' '))
@@ -1058,10 +1061,11 @@ namespace SIL.HermitCrab
 					IMorphologicalRule rule;
 					if (mrules.TryGetValue(ruleID, out rule))
 					{
-						slot.Rules.Add(rule);
+						rules.Add((MorphemicMorphologicalRule) rule);
 						lastRule = rule;
 					}
 				}
+				var slot = new AffixTemplateSlot(rules) {Name = (string) slotElem.Element("Name")};
 
 				var optionalStr = (string) slotElem.Attribute("optional");
 				var realRule = lastRule as RealizationalAffixProcessRule;

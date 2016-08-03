@@ -297,6 +297,7 @@
   ruleFeatures IDREFS #IMPLIED
   obligatoryHeadFeatures IDREFS #IMPLIED
   obligatoryFootFeatures IDREFS #IMPLIED
+  partial (true | false) "false"
 >
 
 <!ELEMENT Allomorphs (Allomorph+) >
@@ -353,6 +354,7 @@
   outputPartOfSpeech IDREF #IMPLIED
   outputSubcategorization IDREFS #IMPLIED
   outputObligatoryFeatures IDREFS #IMPLIED
+  partial (true | false) "false"
 >
 
 <!ELEMENT RealizationalRule (Name, MorphologicalSubrules, RealizationalFeatures?, RequiredHeadFeatures?, RequiredFootFeatures?, Gloss?, Properties?) >

@@ -87,6 +87,8 @@ namespace SIL.HermitCrab
 		/// <value>The lexical family.</value>
 		public LexFamily Family { get; internal set; }
 
+		public bool IsPartial { get; set; }
+
 		public override Allomorph GetAllomorph(int index)
 		{
 			return _allomorphs[index];

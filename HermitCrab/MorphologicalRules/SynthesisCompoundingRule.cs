@@ -32,19 +32,20 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 			return new Matcher<Word, ShapeNode>(spanFactory, pattern,
 				new MatcherSettings<ShapeNode>
-					{
-						Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary) && !ann.IsDeleted(),
-						AnchoredToStart = true,
-						AnchoredToEnd = true
-					});
+				{
+					Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary) && !ann.IsDeleted(),
+					AnchoredToStart = true,
+					AnchoredToEnd = true
+				});
 		}
 
 		public IEnumerable<Word> Apply(Word input)
 		{
 			if (input.CurrentMorphologicalRule != _rule || input.GetApplicationCount(_rule) >= _rule.MaxApplicationCount)
-			{
 				return Enumerable.Empty<Word>();
-			}
+
+			if (input.IsLastAppliedRuleFinal && !input.IsPartial)
+				return Enumerable.Empty<Word>();
 
 			if (!_rule.NonHeadRequiredSyntacticFeatureStruct.IsUnifiable(input.CurrentNonHead.SyntacticFeatureStruct, true))
 			{
@@ -93,6 +94,8 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 						foreach (Feature feature in _rule.ObligatorySyntacticFeatures)
 							outWord.ObligatorySyntacticFeatures.Add(feature);
+
+						outWord.IsLastAppliedRuleFinal = false;
 
 						outWord.CurrentMorphologicalRuleApplied();
 						outWord.CurrentNonHeadApplied();

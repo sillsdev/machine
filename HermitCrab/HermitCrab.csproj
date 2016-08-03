@@ -91,6 +91,7 @@
     <Compile Include="IPhonologicalRule.cs" />
     <Compile Include="MorphCoOccurrenceRule.cs" />
     <Compile Include="MorphemeCoOccurrenceRule.cs" />
+    <Compile Include="MorphemicMorphologicalRule.cs" />
     <Compile Include="Morpher.cs" />
     <Compile Include="MorphologicalRules\AffixProcessAllomorph.cs" />
     <Compile Include="MorphologicalRules\AffixProcessRule.cs" />

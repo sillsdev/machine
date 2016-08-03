@@ -253,7 +253,7 @@
               <FeatureValue feature="ffeat1" symbolValues="fval1" />
             </NonHeadRequiredFootFeatures>
           </CompoundingRule>
-          <MorphologicalRule id="mrule2" blockable="false" multipleApplication="2" requiredPartsOfSpeech="pos1" requiredStemName="stemName1" outputPartOfSpeech="pos2" outputObligatoryFeatures="hfeat1">
+          <MorphologicalRule id="mrule2" blockable="false" multipleApplication="2" requiredPartsOfSpeech="pos1" requiredStemName="stemName1" outputPartOfSpeech="pos2" outputObligatoryFeatures="hfeat1" partial="true">
             <Name>morph rule 1</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="msubrule1">
@@ -394,7 +394,7 @@
           </AffixTemplate>
         </AffixTemplates>
         <LexicalEntries>
-          <LexicalEntry id="entry1" family="family1" partOfSpeech="pos2" ruleFeatures="mpr1">
+          <LexicalEntry id="entry1" family="family1" partOfSpeech="pos2" ruleFeatures="mpr1" partial="true">
             <Allomorphs>
               <Allomorph id="allo1" stemName="stemName1">
                 <PhoneticShape>ab</PhoneticShape>

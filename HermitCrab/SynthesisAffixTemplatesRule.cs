@@ -49,14 +49,21 @@ namespace SIL.HermitCrab
 				}
 			}
 
-			if (applicableTemplate)
+			if (!input.IsPartial && applicableTemplate)
 			{
 				if (_morpher.TraceManager.IsTracing && output.Count == 0)
 					_morpher.TraceManager.ApplicableTemplatesNotApplied(_stratum, input);
 			}
-			else
+			else if (output.Count == 0)
 			{
-				output.Add(input);
+				Word word = input;
+				if (!word.IsLastAppliedRuleFinal)
+				{
+					word = input.DeepClone();
+					word.IsLastAppliedRuleFinal = true;
+					word.Freeze();
+				}
+				output.Add(word);
 			}
 
 			return output;

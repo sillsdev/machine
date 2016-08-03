@@ -508,6 +508,9 @@ namespace SIL.HermitCrab
 			if (affixProcessRule.ObligatorySyntacticFeatures.Count > 0)
 				ruleElem.Add(new XAttribute("outputObligatoryFeatures", string.Join(" ", affixProcessRule.ObligatorySyntacticFeatures.Select(f => Normalize(f.ID)))));
 
+			if (affixProcessRule.IsPartial)
+				ruleElem.Add(new XAttribute("partial", "true"));
+
 			ruleElem.Add(new XElement("Name", Normalize(affixProcessRule.Name)));
 
 			ruleElem.Add(new XElement("MorphologicalSubrules", affixProcessRule.Allomorphs.Select(WriteMorphologicalSubrule)));
@@ -756,6 +759,9 @@ namespace SIL.HermitCrab
 
 			if (entry.MprFeatures.Count > 0)
 				entryElem.Add(WriteIDs("ruleFeatures", entry.MprFeatures, _mprFeatures));
+
+			if (entry.IsPartial)
+				entryElem.Add(new XAttribute("partial", "true"));
 
 			CharacterDefinitionTable table = entry.Stratum.CharacterDefinitionTable;
 			entryElem.Add(new XElement("Allomorphs", entry.Allomorphs.Select(a => WriteAllomorph(table, a))));
