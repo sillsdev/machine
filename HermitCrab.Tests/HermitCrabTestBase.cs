@@ -234,6 +234,7 @@ namespace SIL.HermitCrab.Tests
 			AddEntry("51", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Morphophonemic, "miu");
 			AddEntry("52", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Morphophonemic, "pu");
 			AddEntry("53", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Morphophonemic, "mi");
+			AddEntry("54", FeatureStruct.New().Value, Morphophonemic, "pi");
 
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")
@@ -341,7 +342,12 @@ namespace SIL.HermitCrab.Tests
 
 		private LexEntry AddEntry(string gloss, FeatureStruct syntacticFS, Stratum stratum, params string[] forms)
 		{
-			var entry = new LexEntry { SyntacticFeatureStruct = syntacticFS, Gloss = gloss };
+			var entry = new LexEntry
+			{
+				SyntacticFeatureStruct = syntacticFS,
+				Gloss = gloss,
+				IsPartial = syntacticFS.IsEmpty
+			};
 			foreach (string form in forms)
 			{
 				Shape shape = stratum.CharacterDefinitionTable.Segment(form);
