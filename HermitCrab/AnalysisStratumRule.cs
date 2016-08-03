@@ -29,7 +29,11 @@ namespace SIL.HermitCrab
 					_mrulesRule = new LinearRuleCascade<Word, ShapeNode>(mrules, true, FreezableEqualityComparer<Word>.Default);
 					break;
 				case MorphologicalRuleOrder.Unordered:
+#if SINGLE_THREADED
+					_mrulesRule = new CombinationRuleCascade<Word, ShapeNode>(mrules, true, FreezableEqualityComparer<Word>.Default);
+#else
 					_mrulesRule = new ParallelCombinationRuleCascade<Word, ShapeNode>(mrules, true, FreezableEqualityComparer<Word>.Default);
+#endif
 					break;
 			}
 		}

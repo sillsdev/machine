@@ -1,11 +1,13 @@
 ﻿using System;
+#if !SINGLE_THREADED
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
+#endif
 using System.Collections.Generic;
 #if OUTPUT_ANALYSES
 using System.IO;
 #endif
 using System.Linq;
-using System.Threading.Tasks;
 using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
@@ -84,7 +86,6 @@ namespace SIL.HermitCrab
 			trace = input.CurrentTrace;
 
 			// Unapply rules
-			var validWordsStack = new ConcurrentStack<Word>();
 			IEnumerable<Word> analyses = _analysisRule.Apply(input);
 
 #if OUTPUT_ANALYSES
@@ -99,29 +100,12 @@ namespace SIL.HermitCrab
 			File.WriteAllLines("analyses.txt", lines.OrderBy(l => l));
 #endif
 
-			Exception exception = null;
-			Parallel.ForEach(analyses, (analysisWord, state) =>
-				{
-					try
-					{
-						foreach (Word synthesisWord in LexicalLookup(analysisWord))
-						{
-							Word[] valid = _synthesisRule.Apply(synthesisWord).Where(IsWordValid).ToArray();
-							if (valid.Length > 0)
-								validWordsStack.PushRange(valid);
-						}
-					}
-					catch (Exception e)
-					{
-						state.Stop();
-						exception = e;
-					}
-				});
+#if SINGLE_THREADED
+			IEnumerable<Word> validWords = Synthesize(analyses);
+#else
+			IEnumerable<Word> validWords = ParallelSynthesize(analyses);
+#endif
 
-			if (exception != null)
-				throw exception;
-
-			Word[] validWords = validWordsStack.Distinct(FreezableEqualityComparer<Word>.Default).ToArray();
 			var matchList = new List<Word>();
 			foreach (IGrouping<IEnumerable<Allomorph>, Word> group in validWords.GroupBy(validWord => validWord.AllomorphsInMorphOrder, MorphsEqualityComparer))
 			{
@@ -157,6 +141,46 @@ namespace SIL.HermitCrab
 			}
 			return matchList;
 		}
+
+#if SINGLE_THREADED
+		private IEnumerable<Word> Synthesize(IEnumerable<Word> analyses)
+		{
+			var validWords = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
+			foreach (Word analysisWord in analyses)
+			{
+				foreach (Word synthesisWord in LexicalLookup(analysisWord))
+					validWords.UnionWith(_synthesisRule.Apply(synthesisWord).Where(IsWordValid));
+			}
+			return validWords;
+		}
+#else
+		private IEnumerable<Word> ParallelSynthesize(IEnumerable<Word> analyses)
+		{
+			var validWordsStack = new ConcurrentStack<Word>();
+			Exception exception = null;
+			Parallel.ForEach(analyses, (analysisWord, state) =>
+			{
+				try
+				{
+					foreach (Word synthesisWord in LexicalLookup(analysisWord))
+					{
+						Word[] valid = _synthesisRule.Apply(synthesisWord).Where(IsWordValid).ToArray();
+						if (valid.Length > 0)
+							validWordsStack.PushRange(valid);
+					}
+				}
+				catch (Exception e)
+				{
+					state.Stop();
+					exception = e;
+				}
+			});
+
+			if (exception != null)
+				throw exception;
+			return validWordsStack.Distinct(FreezableEqualityComparer<Word>.Default);
+		}
+#endif
 
 		private bool CheckFreeFluctuation(Word word, Word prevWord)
 		{
