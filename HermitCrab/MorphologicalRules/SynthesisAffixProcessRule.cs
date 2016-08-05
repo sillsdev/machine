@@ -41,10 +41,6 @@ namespace SIL.HermitCrab.MorphologicalRules
 			if (!_rule.IsTemplateRule && input.IsLastAppliedRuleFinal && !input.IsPartial && !_rule.IsPartial)
 				return Enumerable.Empty<Word>();
 
-			// if the root is partial, do not allow this rule to apply
-			if (!_rule.IsTemplateRule && input.IsPartial && ((LexEntry) input.RootAllomorph.Morpheme).IsPartial)
-				return Enumerable.Empty<Word>();
-
 			if (_rule.RequiredStemName != null && _rule.RequiredStemName != input.RootAllomorph.StemName)
 			{
 				if (_morpher.TraceManager.IsTracing)

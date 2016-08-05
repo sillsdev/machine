@@ -181,7 +181,6 @@ namespace SIL.HermitCrab.Tests
 				Name = "ed_suffix",
 			    Gloss = "PAST",
 			};
-
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 			{
 				Lhs =
@@ -241,7 +240,6 @@ namespace SIL.HermitCrab.Tests
 			    Gloss = "PL",
 				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
 			};
-
 			sSuffix.Allomorphs.Add(new AffixProcessAllomorph
 			{
 				Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},

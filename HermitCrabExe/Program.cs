@@ -49,12 +49,12 @@ namespace SIL.HermitCrab
 				if (!string.IsNullOrEmpty(outputFile))
 					output = new StreamWriter(outputFile);
 
-				Console.Write("Reading configuration file \"{0}\"...", Path.GetFileName(inputFile));
+				Console.Write("Reading configuration file \"{0}\"... ", Path.GetFileName(inputFile));
 				Language language = XmlLanguageLoader.Load(inputFile, quitOnError ? (Action<Exception, string>) null : (ex, id) => { });
 				Console.WriteLine("done.");
 
 				context = new HCContext(language, output ?? Console.Out);
-				Console.Write("Compiling rules...");
+				Console.Write("Compiling rules... ");
 				context.Compile();
 				Console.WriteLine("done.");
 				Console.WriteLine("{0} loaded.", language.Name);

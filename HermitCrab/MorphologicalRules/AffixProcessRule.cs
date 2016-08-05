@@ -68,8 +68,6 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 		public bool Blockable { get; set; }
 
-		public bool IsPartial { get; set; }
-
 		public IList<AffixProcessAllomorph> Allomorphs
 		{
 			get { return _allomorphs; }

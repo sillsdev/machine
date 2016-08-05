@@ -48,6 +48,11 @@ namespace SIL.HermitCrab
 		/// <value>The gloss.</value>
 		public string Gloss { get; set; }
 
+		/// <summary>
+		/// Gets or sets a value indicating whether this morpheme is partially analyzed.
+		/// </summary>
+		public bool IsPartial { get; set; }
+
 		public abstract Allomorph GetAllomorph(int index);
 
 		/// <summary>

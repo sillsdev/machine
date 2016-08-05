@@ -32,7 +32,9 @@ namespace SIL.HermitCrab
 			input = ChooseInflectionalStem(input);
 			for (int i = 0; i < _templateRules.Count; i++)
 			{
-				if (_morpher.RuleSelector(_templates[i]) && input.SyntacticFeatureStruct.IsUnifiable(_templates[i].RequiredSyntacticFeatureStruct))
+				if (_morpher.RuleSelector(_templates[i])
+					&& input.SyntacticFeatureStruct.IsUnifiable(_templates[i].RequiredSyntacticFeatureStruct)
+					&& !input.RootAllomorph.Morpheme.IsPartial)
 				{
 					applicableTemplate = true;
 					foreach (Word outWord in _templateRules[i].Apply(input))
@@ -49,21 +51,24 @@ namespace SIL.HermitCrab
 				}
 			}
 
-			if (!input.IsPartial && applicableTemplate)
+			if (output.Count == 0)
 			{
-				if (_morpher.TraceManager.IsTracing && output.Count == 0)
-					_morpher.TraceManager.ApplicableTemplatesNotApplied(_stratum, input);
-			}
-			else if (output.Count == 0)
-			{
-				Word word = input;
-				if (!word.IsLastAppliedRuleFinal)
+				if (!input.IsPartial && applicableTemplate)
 				{
-					word = input.DeepClone();
-					word.IsLastAppliedRuleFinal = true;
-					word.Freeze();
+					if (_morpher.TraceManager.IsTracing)
+						_morpher.TraceManager.ApplicableTemplatesNotApplied(_stratum, input);
 				}
-				output.Add(word);
+				else
+				{
+					Word word = input;
+					if (!word.IsLastAppliedRuleFinal)
+					{
+						word = input.DeepClone();
+						word.IsLastAppliedRuleFinal = true;
+						word.Freeze();
+					}
+					output.Add(word);
+				}
 			}
 
 			return output;

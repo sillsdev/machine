@@ -21,12 +21,12 @@ namespace SIL.HermitCrab.Tests
 				Gloss = "PAST",
 				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
 			};
-			Morphophonemic.MorphologicalRules.Add(edSuffix);
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 			{
 				Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
 				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd")}
 			});
+			Morphophonemic.MorphologicalRules.Add(edSuffix);
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("bazɯd"), "disj PAST");
@@ -55,7 +55,6 @@ namespace SIL.HermitCrab.Tests
 				Gloss = "PAST",
 				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
 			};
-			Morphophonemic.MorphologicalRules.Add(edSuffix);
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 			{
 				Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
@@ -66,6 +65,7 @@ namespace SIL.HermitCrab.Tests
 				Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
 				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+"), new InsertSimpleContext(d)}
 			});
+			Morphophonemic.MorphologicalRules.Add(edSuffix);
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("tazd"), "free PAST");
@@ -88,12 +88,12 @@ namespace SIL.HermitCrab.Tests
 					.Feature(Head).EqualTo(head => head
 						.Feature("pers").EqualTo("1")).Value
 			};
-			Morphophonemic.MorphologicalRules.Add(edSuffix);
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 			{
 				Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
 				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd")}
 			});
+			Morphophonemic.MorphologicalRules.Add(edSuffix);
 
 			var tSuffix = new AffixProcessRule
 			{
@@ -104,12 +104,12 @@ namespace SIL.HermitCrab.Tests
 					.Feature(Head).EqualTo(head => head
 						.Feature("pers").EqualTo("2")).Value
 			};
-			Morphophonemic.MorphologicalRules.Add(tSuffix);
 			tSuffix.Allomorphs.Add(new AffixProcessAllomorph
 			{
 				Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
 				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+t")}
 			});
+			Morphophonemic.MorphologicalRules.Add(tSuffix);
 
 			var sSuffix = new AffixProcessRule
 			{
@@ -120,12 +120,12 @@ namespace SIL.HermitCrab.Tests
 					.Feature(Head).EqualTo(head => head
 						.Feature("pers").EqualTo("3")).Value
 			};
-			Morphophonemic.MorphologicalRules.Add(sSuffix);
 			sSuffix.Allomorphs.Add(new AffixProcessAllomorph
 			{
 				Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
 				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+s")}
 			});
+			Morphophonemic.MorphologicalRules.Add(sSuffix);
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 
@@ -238,7 +238,29 @@ namespace SIL.HermitCrab.Tests
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("pi"), "54");
-			AssertMorphsEqual(morpher.ParseWord("piv"));
+			AssertMorphsEqual(morpher.ParseWord("piv"), "54 NOM");
+
+			Morphophonemic.MorphologicalRules.Clear();
+
+			var sSuffix = new AffixProcessRule
+			{
+				Name = "s_suffix",
+			    Gloss = "PAST",
+				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+			};
+			sSuffix.Allomorphs.Add(new AffixProcessAllomorph
+			{
+				Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
+				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "s")}
+			});
+
+			var verbTemplate = new AffixTemplate {Name = "verb", RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value};
+			verbTemplate.Slots.Add(new AffixTemplateSlot(sSuffix) {Optional = true});
+			Morphophonemic.AffixTemplates.Add(verbTemplate);
+
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			AssertMorphsEqual(morpher.ParseWord("pi"), "54");
+			AssertMorphsEqual(morpher.ParseWord("pis"));
 		}
 	}
 }
