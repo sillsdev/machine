@@ -62,16 +62,15 @@ namespace SIL.HermitCrab
 			}
 			Debug.Assert(mruleOutWords != null);
 
-			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default) {input};
 			if (_morpher.TraceManager.IsTracing)
 				_morpher.TraceManager.EndUnapplyStratum(_stratum, input);
+			yield return input;
 			foreach (Word mruleOutWord in mruleOutWords)
 			{
-				output.Add(mruleOutWord);
 				if (_morpher.TraceManager.IsTracing)
 					_morpher.TraceManager.EndUnapplyStratum(_stratum, mruleOutWord);
+				yield return mruleOutWord;
 			}
-			return output;
 		}
 
 		private IEnumerable<Word> ApplyMorphologicalRules(Word input)
