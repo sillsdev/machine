@@ -149,6 +149,8 @@ namespace SIL.HermitCrab.MorphologicalRules
 					List<ShapeNode> nodes;
 					if (existingMorphNodes.TryGetValue(allomorph.ID, out nodes))
 						output.MarkMorph(nodes, allomorph);
+					else
+						output.MarkMorph(newMorphNodes, allomorph, true);
 				}
 			}
 

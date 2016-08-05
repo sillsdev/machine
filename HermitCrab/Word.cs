@@ -193,7 +193,7 @@ namespace SIL.HermitCrab
 			}
 		}
 
-		internal Annotation<ShapeNode> MarkMorph(IEnumerable<ShapeNode> nodes, Allomorph allomorph)
+		internal Annotation<ShapeNode> MarkMorph(IEnumerable<ShapeNode> nodes, Allomorph allomorph, bool empty = false)
 		{
 			ShapeNode[] nodeArray = nodes.ToArray();
 			Annotation<ShapeNode> ann = null;
@@ -202,7 +202,8 @@ namespace SIL.HermitCrab
 				ann = new Annotation<ShapeNode>(_shape.SpanFactory.Create(nodeArray[0], nodeArray[nodeArray.Length - 1]), FeatureStruct.New()
 					.Symbol(HCFeatureSystem.Morph)
 					.Feature(HCFeatureSystem.Allomorph).EqualTo(allomorph.ID).Value);
-				ann.Children.AddRange(nodeArray.Select(n => n.Annotation));
+				if (!empty)
+					ann.Children.AddRange(nodeArray.Select(n => n.Annotation));
 				_shape.Annotations.Add(ann, false);
 			}
 			_allomorphs[allomorph.ID] = allomorph;

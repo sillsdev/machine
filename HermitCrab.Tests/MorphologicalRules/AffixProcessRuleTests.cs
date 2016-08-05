@@ -1315,5 +1315,48 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			AssertMorphsEqual(morpher.ParseWord("pugunɯs"), "52 3SG PL");
 			AssertMorphsEqual(morpher.ParseWord("pugus"), "52 3SG PL");
 		}
+
+		[Test]
+		public void TruncatedAffix()
+		{
+			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+			var vowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-").Value;
+
+			var uSuffix = new AffixProcessRule
+			{
+				Name = "u_suffix",
+			    Gloss = "3SG",
+			    RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+			};
+			uSuffix.Allomorphs.Add(new AffixProcessAllomorph
+			{
+				Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
+				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "u")}
+			});
+			Morphophonemic.MorphologicalRules.Add(uSuffix);
+
+			var sSuffix = new AffixProcessRule
+			{
+				Name = "s_suffix",
+			    Gloss = "PAST",
+			    RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+			};
+			sSuffix.Allomorphs.Add(new AffixProcessAllomorph
+			{
+				Lhs =
+				{
+					Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
+					Pattern<Word, ShapeNode>.New("2").Annotation(vowel).Value
+				},
+				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "s")}
+			});
+			Morphophonemic.MorphologicalRules.Add(sSuffix);
+
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			AssertMorphsEqual(morpher.ParseWord("tagu"), "47 3SG");
+			AssertMorphsEqual(morpher.ParseWord("tags"), "47 3SG PAST");
+		}
 	}
 }
