@@ -111,32 +111,52 @@ namespace SIL.HermitCrab
 			{
 				// enforce the disjunctive property of allomorphs by ensuring that this word synthesis
 				// has the highest order of precedence for its allomorphs
-				Word[] words = group.OrderBy(w => w.AllomorphsInMorphOrder, MorphsComparer).ToArray();
-				int i;
-				for (i = 0; i < words.Length; i++)
+				List<Word> words = group.OrderBy(w => w.AllomorphsInMorphOrder, MorphsComparer).ToList();
+				while (words.Count > 0)
 				{
-					// if there is no free fluctuation with any allomorphs in the previous parse,
-					// then the rest of the parses are invalid, because of disjunction
-					if (i > 0 && !CheckFreeFluctuation(words[i], words[i - 1]))
-						break;
-
-					if (_lang.SurfaceStratum.CharacterDefinitionTable.IsMatch(word, words[i].Shape))
+					var newWords = new List<Word>();
+					Word prevWord = null;
+					int i;
+					for (i = 0; i < words.Count; i++)
 					{
-						if (_traceManager.IsTracing)
-							_traceManager.ParseSuccessful(_lang, words[i]);
-						matchList.Add(words[i]);
-					}
-					else if (_traceManager.IsTracing)
-					{
-						_traceManager.ParseFailed(_lang, words[i], FailureReason.SurfaceFormMismatch, null, word);
-					}
-				}
+						if (prevWord != null)
+						{
+							// if there is no free fluctuation with any allomorphs in the previous parse,
+							// then the rest of the parses are invalid, because of disjunction
+							if (!CheckFreeFluctuation(words[i], prevWord))
+							{
+								if (CheckAllAllomorphsLowerPriority(words[i], prevWord))
+									break;
 
-				if (_traceManager.IsTracing)
-				{
-					Word lastWord = words[i - 1];
-					for (; i < words.Length; i++)
-						_traceManager.ParseFailed(_lang, words[i], FailureReason.DisjunctiveAllomorph, null, lastWord);
+								newWords.Add(words[i]);
+								continue;
+							}
+						}
+
+						if (_lang.SurfaceStratum.CharacterDefinitionTable.IsMatch(word, words[i].Shape))
+						{
+							if (_traceManager.IsTracing)
+								_traceManager.ParseSuccessful(_lang, words[i]);
+							matchList.Add(words[i]);
+						}
+						else if (_traceManager.IsTracing)
+						{
+							_traceManager.ParseFailed(_lang, words[i], FailureReason.SurfaceFormMismatch, null, word);
+						}
+						prevWord = words[i];
+					}
+
+					if (_traceManager.IsTracing)
+					{
+						for (; i < words.Count; i++)
+						{
+							if (!CheckAllAllomorphsLowerPriority(words[i], prevWord))
+								newWords.Add(words[i]);
+							_traceManager.ParseFailed(_lang, words[i], FailureReason.DisjunctiveAllomorph, null, prevWord);
+						}
+					}
+
+					words = newWords;
 				}
 			}
 			return matchList;
@@ -185,6 +205,11 @@ namespace SIL.HermitCrab
 		private bool CheckFreeFluctuation(Word word, Word prevWord)
 		{
 			return word.AllomorphsInMorphOrder.Zip(prevWord.AllomorphsInMorphOrder).All(tuple => tuple.Item1.FreeFluctuatesWith(tuple.Item2));
+		}
+
+		private bool CheckAllAllomorphsLowerPriority(Word word, Word prevWord)
+		{
+			return word.AllomorphsInMorphOrder.Zip(prevWord.AllomorphsInMorphOrder).All(tuple => tuple.Item1.Index >= tuple.Item2.Index);
 		}
 
 		internal IEnumerable<RootAllomorph> SearchRootAllomorphs(Stratum stratum, Shape shape)
