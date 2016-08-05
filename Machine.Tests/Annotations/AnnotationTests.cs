@@ -158,6 +158,7 @@ namespace SIL.Machine.Tests.Annotations
 			annList.Add(24, 25, FeatureStruct.New().Value);
 			annList.Add(49, 50, FeatureStruct.New().Value);
 			annList.Add(99, 100, FeatureStruct.New().Value);
+			annList.Add(99, 100, FeatureStruct.New().Value);
 			annList.Add(new Annotation<int>(_spanFactory.Create(20, 70), FeatureStruct.New().Value), false);
 
 			Annotation<int> result;
