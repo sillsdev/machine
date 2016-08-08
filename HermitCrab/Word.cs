@@ -78,12 +78,24 @@ namespace SIL.HermitCrab
 
 		public IEnumerable<Annotation<ShapeNode>> Morphs
 		{
-			get { return Annotations.Where(ann => ann.Type() == HCFeatureSystem.Morph); }
+			get
+			{
+				var morphs = new List<Annotation<ShapeNode>>();
+				foreach (Annotation<ShapeNode> ann in Annotations)
+				{
+					ann.PostorderTraverse(a =>
+					{
+						if (a.Type() == HCFeatureSystem.Morph)
+							morphs.Add(a);
+					});
+				}
+				return morphs;
+			}
 		}
 
 		public IEnumerable<Allomorph> AllomorphsInMorphOrder
 		{
-			get { return Morphs.Select(morph => _allomorphs[(string) morph.FeatureStruct.GetValue(HCFeatureSystem.Allomorph)]); }
+			get { return Morphs.Select(GetAllomorph); }
 		}
 
 		public ICollection<Allomorph> Allomorphs
@@ -193,7 +205,7 @@ namespace SIL.HermitCrab
 			}
 		}
 
-		internal Annotation<ShapeNode> MarkMorph(IEnumerable<ShapeNode> nodes, Allomorph allomorph, bool empty = false)
+		internal Annotation<ShapeNode> MarkMorph(IEnumerable<ShapeNode> nodes, Allomorph allomorph)
 		{
 			ShapeNode[] nodeArray = nodes.ToArray();
 			Annotation<ShapeNode> ann = null;
@@ -202,10 +214,19 @@ namespace SIL.HermitCrab
 				ann = new Annotation<ShapeNode>(_shape.SpanFactory.Create(nodeArray[0], nodeArray[nodeArray.Length - 1]), FeatureStruct.New()
 					.Symbol(HCFeatureSystem.Morph)
 					.Feature(HCFeatureSystem.Allomorph).EqualTo(allomorph.ID).Value);
-				if (!empty)
-					ann.Children.AddRange(nodeArray.Select(n => n.Annotation));
+				ann.Children.AddRange(nodeArray.Select(n => n.Annotation));
 				_shape.Annotations.Add(ann, false);
 			}
+			_allomorphs[allomorph.ID] = allomorph;
+			return ann;
+		}
+
+		internal Annotation<ShapeNode> MarkSubsumedMorph(Annotation<ShapeNode> morph, Allomorph allomorph)
+		{
+			Annotation<ShapeNode> ann = new Annotation<ShapeNode>(morph.Span, FeatureStruct.New()
+				.Symbol(HCFeatureSystem.Morph)
+				.Feature(HCFeatureSystem.Allomorph).EqualTo(allomorph.ID).Value);
+			morph.Children.Add(ann, false);
 			_allomorphs[allomorph.ID] = allomorph;
 			return ann;
 		}

@@ -1317,7 +1317,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 		}
 
 		[Test]
-		public void TruncatedAffix()
+		public void SubsumedAffix()
 		{
 			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
 			var vowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
@@ -1354,9 +1354,25 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			});
 			Morphophonemic.MorphologicalRules.Add(sSuffix);
 
+			var nominalizer = new AffixProcessRule
+			{
+				Name = "nominalizer",
+				Gloss = "NOM",
+				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+				OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value
+			};
+
+			nominalizer.Allomorphs.Add(new AffixProcessAllomorph
+			{
+				Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
+				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "v")}
+			});
+			Morphophonemic.MorphologicalRules.Add(nominalizer);
+
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("tagu"), "47 3SG");
 			AssertMorphsEqual(morpher.ParseWord("tags"), "47 3SG PAST");
+			AssertMorphsEqual(morpher.ParseWord("tagsv"), "47 3SG PAST NOM");
 		}
 	}
 }

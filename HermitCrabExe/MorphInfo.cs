@@ -17,7 +17,7 @@ namespace SIL.HermitCrab
 
 		public MorphInfo(Word parse, Annotation<ShapeNode> morph)
 		{
-			_form = morph.Children.Select(a => a.Span.Start).ToString(parse.Stratum.CharacterDefinitionTable, false);
+			_form = morph.Children.Where(a => a.Type() != HCFeatureSystem.Morph).Select(a => a.Span.Start).ToString(parse.Stratum.CharacterDefinitionTable, false);
 			_gloss = parse.GetAllomorph(morph).Morpheme.Gloss;
 			if (string.IsNullOrEmpty(_gloss))
 				_gloss = "?";
