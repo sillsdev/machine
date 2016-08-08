@@ -18,6 +18,7 @@ namespace SIL.HermitCrab
 			_representation = representation;
 			_table = table;
 			_shape = shape;
+			_shape.Freeze();
 		}
 
 		public string Representation

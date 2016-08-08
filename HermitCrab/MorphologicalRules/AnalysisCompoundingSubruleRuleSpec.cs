@@ -14,6 +14,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 		{
 			_subrule = subrule;
 			Pattern.Acceptable = match => _subrule.HeadLhs.Any(part => IsPartCaptured(match, part.Name));
+			Pattern.Freeze();
 		}
 
 		public override ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)
