@@ -44,11 +44,11 @@ namespace SIL.HermitCrab
 			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
 			foreach (Word mruleOutWord in ApplyMorphologicalRules(input).Concat(ApplyTemplates(input)))
 			{
-				if (mruleOutWord.IsLastAppliedRuleFinal)
+				if (mruleOutWord.IsLastAppliedRuleFinal ?? false)
 				{
 					Word newWord = mruleOutWord.DeepClone();
 					_prulesRule.Apply(newWord);
-					newWord.IsLastAppliedRuleFinal = false;
+					newWord.IsLastAppliedRuleFinal = null;
 					newWord.Freeze();
 					if (_morpher.TraceManager.IsTracing)
 						_morpher.TraceManager.EndApplyStratum(_stratum, newWord);
@@ -68,7 +68,7 @@ namespace SIL.HermitCrab
 		{
 			foreach (Word mruleOutWord in _mrulesRule.Apply(input))
 			{
-				if (mruleOutWord.IsLastAppliedRuleFinal)
+				if (mruleOutWord.IsLastAppliedRuleFinal ?? false)
 				{
 					yield return mruleOutWord;
 				}

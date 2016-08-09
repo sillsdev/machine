@@ -1264,6 +1264,10 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			AssertMorphsEqual(morpher.ParseWord("sagsv"), "32 PARTIAL NOM");
 			AssertMorphsEqual(morpher.ParseWord("sagstv"), "32 PARTIAL PAST NOM");
 			AssertMorphsEqual(morpher.ParseWord("sagdst"));
+
+			verbTemplate.IsFinal = false;
+			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			AssertMorphsEqual(morpher.ParseWord("sagds"));
 		}
 
 		[Test]

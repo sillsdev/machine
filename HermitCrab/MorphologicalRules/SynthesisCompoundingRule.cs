@@ -44,7 +44,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 			if (input.CurrentMorphologicalRule != _rule || input.GetApplicationCount(_rule) >= _rule.MaxApplicationCount)
 				return Enumerable.Empty<Word>();
 
-			if (input.IsLastAppliedRuleFinal && !input.IsPartial)
+			if ((input.IsLastAppliedRuleFinal ?? false) && !input.IsPartial)
 				return Enumerable.Empty<Word>();
 
 			if (!_rule.NonHeadRequiredSyntacticFeatureStruct.IsUnifiable(input.CurrentNonHead.SyntacticFeatureStruct, true))

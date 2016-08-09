@@ -20,7 +20,7 @@ namespace SIL.HermitCrab
 		private readonly IDBearerSet<Feature> _obligatorySyntacticFeatures;
 		private FeatureStruct _realizationalFS;
 		private Stratum _stratum;
-		private bool _isLastAppliedRuleFinal;
+		private bool? _isLastAppliedRuleFinal;
 		private bool _isPartial;
 
 		public Word(RootAllomorph rootAllomorph, FeatureStruct realizationalFS)
@@ -36,7 +36,7 @@ namespace SIL.HermitCrab
 			_mrulesApplied = new Dictionary<IMorphologicalRule, int>();
 			_nonHeads = new Stack<Word>();
 			_obligatorySyntacticFeatures = new IDBearerSet<Feature>();
-			_isLastAppliedRuleFinal = false;
+			_isLastAppliedRuleFinal = null;
 		}
 
 		public Word(Stratum stratum, Shape shape)
@@ -53,7 +53,7 @@ namespace SIL.HermitCrab
 			_mrulesApplied = new Dictionary<IMorphologicalRule, int>();
 			_nonHeads = new Stack<Word>();
 			_obligatorySyntacticFeatures = new IDBearerSet<Feature>();
-			_isLastAppliedRuleFinal = false;
+			_isLastAppliedRuleFinal = null;
 			_isPartial = false;
 		}
 
@@ -281,7 +281,7 @@ namespace SIL.HermitCrab
 			MorphologicalRuleApplied(mrule);
 		}
 
-		internal bool IsLastAppliedRuleFinal
+		internal bool? IsLastAppliedRuleFinal
 		{
 			get { return _isLastAppliedRuleFinal; }
 			set

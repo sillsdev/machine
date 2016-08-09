@@ -38,7 +38,11 @@ namespace SIL.HermitCrab.MorphologicalRules
 				return Enumerable.Empty<Word>();
 
 			// if a final template was last applied, only allow this rule to apply if the input or rule is partial
-			if (!_rule.IsTemplateRule && input.IsLastAppliedRuleFinal && !input.IsPartial && !_rule.IsPartial)
+			if (!_rule.IsTemplateRule && (input.IsLastAppliedRuleFinal ?? false) && !input.IsPartial && !_rule.IsPartial)
+				return Enumerable.Empty<Word>();
+
+			// if a non-final template was last applied, only allow this rule to apply if the input is partial or the rule is not partial
+			if (!_rule.IsTemplateRule && input.IsLastAppliedRuleFinal.HasValue && !input.IsLastAppliedRuleFinal.Value && !input.IsPartial && _rule.IsPartial)
 				return Enumerable.Empty<Word>();
 
 			if (_rule.RequiredStemName != null && _rule.RequiredStemName != input.RootAllomorph.StemName)

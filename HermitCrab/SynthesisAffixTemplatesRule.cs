@@ -40,10 +40,11 @@ namespace SIL.HermitCrab
 					foreach (Word outWord in _templateRules[i].Apply(input))
 					{
 						Word word = outWord;
-						if (word.IsLastAppliedRuleFinal != _templates[i].IsFinal)
+						bool templateFinal = outWord.IsPartial || _templates[i].IsFinal;
+						if (word.IsLastAppliedRuleFinal != templateFinal)
 						{
 							word = outWord.DeepClone();
-							word.IsLastAppliedRuleFinal = _templates[i].IsFinal;
+							word.IsLastAppliedRuleFinal = templateFinal;
 							word.Freeze();
 						}
 						output.Add(word);
@@ -61,7 +62,7 @@ namespace SIL.HermitCrab
 				else
 				{
 					Word word = input;
-					if (!word.IsLastAppliedRuleFinal)
+					if (!word.IsLastAppliedRuleFinal.HasValue || !word.IsLastAppliedRuleFinal.Value)
 					{
 						word = input.DeepClone();
 						word.IsLastAppliedRuleFinal = true;
