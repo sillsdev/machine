@@ -1378,5 +1378,44 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			AssertMorphsEqual(morpher.ParseWord("tags"), "47 3SG PAST");
 			AssertMorphsEqual(morpher.ParseWord("tagsv"), "47 3SG PAST NOM");
 		}
+
+		[Test]
+		public void ModifyFromInputRules()
+		{
+			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+			var vowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-").Value;
+			var lowRound = FeatureStruct.New(Language.PhonologicalFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("high-")
+				.Symbol("round+").Value;
+
+			var sSuffix = new AffixProcessRule
+			{
+				Name = "s_suffix",
+			    Gloss = "PL",
+			    RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
+			};
+			sSuffix.Allomorphs.Add(new AffixProcessAllomorph
+			{
+				Lhs =
+				{
+					Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
+					Pattern<Word, ShapeNode>.New("2").Annotation(vowel).Value
+				},
+				Rhs =
+				{
+					new CopyFromInput("1"),
+					new CopyFromInput("2"),
+					new InsertSegments(Table3, "s"),
+					new ModifyFromInput("2", lowRound)
+				}
+			});
+			Morphophonemic.MorphologicalRules.Add(sSuffix);
+
+			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			AssertMorphsEqual(morpher.ParseWord("puso"), "52 PL");
+		}
 	}
 }
