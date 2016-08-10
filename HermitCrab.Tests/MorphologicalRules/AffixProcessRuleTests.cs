@@ -1199,7 +1199,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			var edSuffix = new AffixProcessRule
 			{
 				Name = "ed_suffix",
-			    Gloss = "PAST",
+			    Gloss = "TEMP_VERB",
 			};
 
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
@@ -1229,7 +1229,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			var sSuffix = new AffixProcessRule
 			{
 				Name = "s_suffix",
-			    Gloss = "PARTIAL",
+			    Gloss = "PART_VERB",
 				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
 				IsPartial = true
 			};
@@ -1244,7 +1244,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			var nominalizer = new AffixProcessRule
 			{
 				Name = "nominalizer",
-				Gloss = "NOM",
+				Gloss = "DERIV",
 				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
 				OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value
 			};
@@ -1256,14 +1256,47 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			});
 			Morphophonemic.MorphologicalRules.Add(nominalizer);
 
+			var uSuffix = new AffixProcessRule
+			{
+				Name = "u_suffix",
+			    Gloss = "PART_NOUN",
+			    RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
+				IsPartial = true
+			};
+			uSuffix.Allomorphs.Add(new AffixProcessAllomorph
+			{
+				Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
+				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "u")}
+			});
+			Morphophonemic.MorphologicalRules.Add(uSuffix);
+
+			var pSuffix = new AffixProcessRule
+			{
+				Name = "p_suffix",
+			    Gloss = "TEMP_NOUN",
+				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
+			};
+			pSuffix.Allomorphs.Add(new AffixProcessAllomorph
+			{
+				Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
+				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "p")}
+			});
+
+			var nounTemplate = new AffixTemplate {Name = "noun", RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value};
+			nounTemplate.Slots.Add(new AffixTemplateSlot(pSuffix) {Optional = true});
+			Morphophonemic.AffixTemplates.Add(nounTemplate);
+
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
-			AssertMorphsEqual(morpher.ParseWord("sagd"), "32 PAST");
-			AssertMorphsEqual(morpher.ParseWord("sagds"), "32 PAST PARTIAL");
-			AssertMorphsEqual(morpher.ParseWord("sagst"), "32 PARTIAL PAST");
-			AssertMorphsEqual(morpher.ParseWord("sags"), "32 PARTIAL");
-			AssertMorphsEqual(morpher.ParseWord("sagsv"), "32 PARTIAL NOM");
-			AssertMorphsEqual(morpher.ParseWord("sagstv"), "32 PARTIAL PAST NOM");
+			AssertMorphsEqual(morpher.ParseWord("sagd"), "32 TEMP_VERB");
+			AssertMorphsEqual(morpher.ParseWord("sagds"), "32 TEMP_VERB PART_VERB");
+			AssertMorphsEqual(morpher.ParseWord("sagst"), "32 PART_VERB TEMP_VERB");
+			AssertMorphsEqual(morpher.ParseWord("sags"), "32 PART_VERB");
+			AssertMorphsEqual(morpher.ParseWord("sagsv"), "32 PART_VERB DERIV");
+			AssertMorphsEqual(morpher.ParseWord("sagstv"), "32 PART_VERB TEMP_VERB DERIV");
 			AssertMorphsEqual(morpher.ParseWord("sagdst"));
+
+			AssertMorphsEqual(morpher.ParseWord("sagvu"), "32 DERIV PART_NOUN");
+			AssertMorphsEqual(morpher.ParseWord("sagvup"), "32 DERIV PART_NOUN TEMP_NOUN");
 
 			verbTemplate.IsFinal = false;
 			morpher = new Morpher(SpanFactory, TraceManager, Language);

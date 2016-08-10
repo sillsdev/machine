@@ -95,7 +95,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 						foreach (Feature feature in _rule.ObligatorySyntacticFeatures)
 							outWord.ObligatorySyntacticFeatures.Add(feature);
 
-						outWord.IsLastAppliedRuleFinal = false;
+						outWord.IsLastAppliedRuleFinal = null;
 
 						outWord.CurrentMorphologicalRuleApplied();
 						outWord.CurrentNonHeadApplied();

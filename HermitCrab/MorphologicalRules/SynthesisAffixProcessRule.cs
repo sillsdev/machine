@@ -92,7 +92,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 						if (_rule.IsPartial)
 							outWord.IsPartial = true;
 						if (!outWord.IsPartial)
-							outWord.IsLastAppliedRuleFinal = false;
+							outWord.IsLastAppliedRuleFinal = null;
 					}
 
 					outWord.CurrentMorphologicalRuleApplied();
