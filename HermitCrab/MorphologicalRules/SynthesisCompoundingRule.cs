@@ -41,11 +41,22 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 		public IEnumerable<Word> Apply(Word input)
 		{
-			if (input.CurrentMorphologicalRule != _rule || input.GetApplicationCount(_rule) >= _rule.MaxApplicationCount)
+			if (input.CurrentMorphologicalRule != _rule)
 				return Enumerable.Empty<Word>();
 
-			if ((input.IsLastAppliedRuleFinal ?? false) && !input.IsPartial)
+			if (input.GetApplicationCount(_rule) >= _rule.MaxApplicationCount)
+			{
+				if (_morpher.TraceManager.IsTracing)
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.MaxApplicationCount, _rule.MaxApplicationCount);
 				return Enumerable.Empty<Word>();
+			}
+
+			if ((input.IsLastAppliedRuleFinal ?? false) && !input.IsPartial)
+			{
+				if (_morpher.TraceManager.IsTracing)
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.NonPartialRuleProhibitedAfterFinalTemplate, null);
+				return Enumerable.Empty<Word>();
+			}
 
 			if (!_rule.NonHeadRequiredSyntacticFeatureStruct.IsUnifiable(input.CurrentNonHead.SyntacticFeatureStruct, true))
 			{

@@ -34,16 +34,31 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 		public IEnumerable<Word> Apply(Word input)
 		{
-			if (input.CurrentMorphologicalRule != _rule || input.GetApplicationCount(_rule) >= _rule.MaxApplicationCount)
+			if (input.CurrentMorphologicalRule != _rule)
 				return Enumerable.Empty<Word>();
 
-			// if a final template was last applied, only allow this rule to apply if the input or rule is partial
+			if (input.GetApplicationCount(_rule) >= _rule.MaxApplicationCount)
+			{
+				if (_morpher.TraceManager.IsTracing)
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.MaxApplicationCount, _rule.MaxApplicationCount);
+				return Enumerable.Empty<Word>();
+			}
+
+			// if a final template was last applied, do not allow a non-partial rule to apply unless the input is partial
 			if (!_rule.IsTemplateRule && (input.IsLastAppliedRuleFinal ?? false) && !input.IsPartial && !_rule.IsPartial)
+			{
+				if (_morpher.TraceManager.IsTracing)
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.NonPartialRuleProhibitedAfterFinalTemplate, null);
 				return Enumerable.Empty<Word>();
+			}
 
-			// if a non-final template was last applied, only allow this rule to apply if the input is partial or the rule is not partial
+			// if a non-final template was last applied, only allow a non-partial rule to apply unless the input is partial
 			if (!_rule.IsTemplateRule && input.IsLastAppliedRuleFinal.HasValue && !input.IsLastAppliedRuleFinal.Value && !input.IsPartial && _rule.IsPartial)
+			{
+				if (_morpher.TraceManager.IsTracing)
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.NonPartialRuleRequiredAfterNonFinalTemplate, null);
 				return Enumerable.Empty<Word>();
+			}
 
 			if (_rule.RequiredStemName != null && _rule.RequiredStemName != input.RootAllomorph.StemName)
 			{

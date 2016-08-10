@@ -21,6 +21,9 @@
 		ExcludedStemName,
 		PartialParse,
 		BoundRoot,
+		NonPartialRuleProhibitedAfterFinalTemplate,
+		NonPartialRuleRequiredAfterNonFinalTemplate,
+		MaxApplicationCount
 	}
 
 	public interface ITraceManager
