@@ -66,12 +66,14 @@ namespace SIL.HermitCrab.PhonologicalRules
 				Debug.Assert(ruleSpec != null);
 
 				var settings = new MatcherSettings<ShapeNode>
-				               	{
-				               		Direction = rule.Direction == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight,
-				               		Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Anchor),
-									MatchingMethod = MatchingMethod.Unification,
-									UseDefaults = true
-				               	};
+				{
+				    Direction = rule.Direction == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight,
+				    Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Anchor),
+					MatchingMethod = MatchingMethod.Unification,
+					UseDefaults = true,
+					// during analysis shape nodes can have features that are underspecified, so this must be non-deterministic
+					Nondeterministic = true
+				};
 
 				PatternRule<Word, ShapeNode> patternRule = null;
 				switch (mode)

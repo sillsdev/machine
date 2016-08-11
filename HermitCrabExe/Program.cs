@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using NDesk.Options;
 using ManyConsole;
 using ManyConsole.Internal;
@@ -11,6 +12,8 @@ namespace SIL.HermitCrab
 	{
 		public static int Main(string[] args)
 		{
+			Console.OutputEncoding = Encoding.UTF8;
+
 			string inputFile = null;
 			string outputFile = null;
 			string scriptFile = null;

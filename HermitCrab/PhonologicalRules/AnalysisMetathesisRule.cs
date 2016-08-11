@@ -33,12 +33,14 @@ namespace SIL.HermitCrab.PhonologicalRules
 			var ruleSpec = new AnalysisMetathesisRuleSpec(pattern, rule.LeftSwitchName, rule.RightSwitchName);
 
 			var settings = new MatcherSettings<ShapeNode>
-			               	{
-			               		Direction = rule.Direction == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight,
-			               		Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Anchor),
-								MatchingMethod = MatchingMethod.Unification,
-								UseDefaults = true
-			               	};
+			{
+			    Direction = rule.Direction == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight,
+			    Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Anchor),
+				MatchingMethod = MatchingMethod.Unification,
+				UseDefaults = true,
+				// during analysis shape nodes can have features that are underspecified, so this must be non-deterministic
+				Nondeterministic = true
+			};
 
 			_patternRule = new BacktrackingPatternRule(spanFactory, ruleSpec, settings);
 		}
