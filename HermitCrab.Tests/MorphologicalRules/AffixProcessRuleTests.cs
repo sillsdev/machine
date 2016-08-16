@@ -1304,7 +1304,7 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 		}
 
 		[Test]
-		public void MixedAllomorphPriorities()
+		public void DisjunctiveAllomorphs()
 		{
 			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
 			var vowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
@@ -1351,6 +1351,9 @@ namespace SIL.HermitCrab.Tests.MorphologicalRules
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("pugunɯs"), "52 3SG PL");
 			AssertMorphsEqual(morpher.ParseWord("pugus"), "52 3SG PL");
+			AssertMorphsEqual(morpher.ParseWord("puguɯs"));
+			AssertMorphsEqual(morpher.ParseWord("pus"), "52 PL");
+			AssertMorphsEqual(morpher.ParseWord("puɯs"));
 		}
 
 		[Test]

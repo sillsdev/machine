@@ -18,7 +18,6 @@ namespace SIL.HermitCrab
 	public class Morpher
 	{
 		private static readonly IEqualityComparer<IEnumerable<Allomorph>> MorphsEqualityComparer = SequenceEqualityComparer.Create(ProjectionEqualityComparer<Allomorph>.Create(allo => allo.Morpheme));
-		private static readonly IComparer<IEnumerable<Allomorph>> MorphsComparer = SequenceComparer.Create(ProjectionComparer<Allomorph>.Create(allo => allo.Index));
 
 		private readonly Language _lang;
 		private readonly IRule<Word, ShapeNode> _analysisRule;
@@ -111,28 +110,29 @@ namespace SIL.HermitCrab
 			{
 				// enforce the disjunctive property of allomorphs by ensuring that this word synthesis
 				// has the highest order of precedence for its allomorphs
-				List<Word> words = group.OrderBy(w => w.AllomorphsInMorphOrder, MorphsComparer).ToList();
-				while (words.Count > 0)
+				Word[] words = group.ToArray();
+				for (int i = 0; i < words.Length; i++)
 				{
-					var newWords = new List<Word>();
-					Word prevWord = null;
-					int i;
-					for (i = 0; i < words.Count; i++)
+					bool disjunctive = false;
+					for (int j = 0; j < words.Length; j++)
 					{
-						if (prevWord != null)
+						if (i == j)
+							continue;
+
+						// if the two parses differ by one allomorph and that allomorph does not free fluctuate and has a lower precedence, than the parse fails
+						Tuple<Allomorph, Allomorph>[] differentAllomorphs = words[i].AllomorphsInMorphOrder.Zip(words[j].AllomorphsInMorphOrder).Where(t => t.Item1 != t.Item2).ToArray();
+						if (differentAllomorphs.Length == 1 && !differentAllomorphs[0].Item1.FreeFluctuatesWith(differentAllomorphs[0].Item2)
+							&& differentAllomorphs[0].Item1.Index >= differentAllomorphs[0].Item2.Index)
 						{
-							// if there is no free fluctuation with any allomorphs in the previous parse,
-							// then the rest of the parses are invalid, because of disjunction
-							if (!CheckFreeFluctuation(words[i], prevWord))
-							{
-								if (CheckAllAllomorphsLowerPriority(words[i], prevWord))
-									break;
-
-								newWords.Add(words[i]);
-								continue;
-							}
+							disjunctive = true;
+							if (_traceManager.IsTracing)
+								_traceManager.ParseFailed(_lang, words[i], FailureReason.DisjunctiveAllomorph, null, words[j]);
+							break;
 						}
+					}
 
+					if (!disjunctive)
+					{
 						if (_lang.SurfaceStratum.CharacterDefinitionTable.IsMatch(word, words[i].Shape))
 						{
 							if (_traceManager.IsTracing)
@@ -143,20 +143,7 @@ namespace SIL.HermitCrab
 						{
 							_traceManager.ParseFailed(_lang, words[i], FailureReason.SurfaceFormMismatch, null, word);
 						}
-						prevWord = words[i];
 					}
-
-					if (_traceManager.IsTracing)
-					{
-						for (; i < words.Count; i++)
-						{
-							if (!CheckAllAllomorphsLowerPriority(words[i], prevWord))
-								newWords.Add(words[i]);
-							_traceManager.ParseFailed(_lang, words[i], FailureReason.DisjunctiveAllomorph, null, prevWord);
-						}
-					}
-
-					words = newWords;
 				}
 			}
 			return matchList;
@@ -201,16 +188,6 @@ namespace SIL.HermitCrab
 			return validWordsStack.Distinct(FreezableEqualityComparer<Word>.Default);
 		}
 #endif
-
-		private bool CheckFreeFluctuation(Word word, Word prevWord)
-		{
-			return word.AllomorphsInMorphOrder.Zip(prevWord.AllomorphsInMorphOrder).All(tuple => tuple.Item1.FreeFluctuatesWith(tuple.Item2));
-		}
-
-		private bool CheckAllAllomorphsLowerPriority(Word word, Word prevWord)
-		{
-			return word.AllomorphsInMorphOrder.Zip(prevWord.AllomorphsInMorphOrder).All(tuple => tuple.Item1.Index >= tuple.Item2.Index);
-		}
 
 		internal IEnumerable<RootAllomorph> SearchRootAllomorphs(Stratum stratum, Shape shape)
 		{
