@@ -53,8 +53,24 @@ namespace SIL.HermitCrab.PhonologicalRules
 			foreach (FeatureStruct fs in rhsAntiFSs)
 			{
 				ShapeNode node = match.GroupCaptures["target" + i].Span.GetStart(match.Matcher.Direction);
-				if (!node.Annotation.FeatureStruct.IsUnifiable(fs, match.VariableBindings))
-					return true;
+				foreach (SymbolicFeature sf in fs.Features.OfType<SymbolicFeature>())
+				{
+					SymbolicFeatureValue sfv = fs.GetValue(sf);
+					SymbolicFeatureValue nodeSfv;
+					if (node.Annotation.FeatureStruct.TryGetValue(sf, out nodeSfv))
+					{
+						if (sfv.IsVariable)
+						{
+							SymbolicFeatureValue varSfv;
+							if (!match.VariableBindings.TryGetValue(sfv.VariableName, out varSfv) || !nodeSfv.IsSupersetOf(varSfv, !sfv.Agree))
+								return true;
+						}
+						else if (!nodeSfv.IsSupersetOf(sfv))
+						{
+							return true;
+						}
+					}
+				}
 				i++;
 			}
 

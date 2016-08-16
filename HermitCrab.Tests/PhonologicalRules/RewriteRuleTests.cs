@@ -1206,13 +1206,18 @@ namespace SIL.HermitCrab.Tests.PhonologicalRules
 				.Symbol("cons+")
 				.Symbol("voc-").Value;
 
-			var rule1 = new RewriteRule { Name = "rule1", ApplicationMode = RewriteApplicationMode.Simultaneous, Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value };
-			Allophonic.PhonologicalRules.Add(rule1);
+			var rule1 = new RewriteRule
+			{
+				Name = "rule1",
+				ApplicationMode = RewriteApplicationMode.Simultaneous,
+				Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
+			};
 			rule1.Subrules.Add(new RewriteSubrule
-			                   	{
-			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Value,
-									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(i).Annotation(cons).Value
-			                   	});
+			{
+			    Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Value,
+				LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(i).Annotation(cons).Value
+			});
+			Allophonic.PhonologicalRules.Add(rule1);
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("gigugu"), "44");
