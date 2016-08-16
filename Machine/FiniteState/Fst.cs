@@ -8,6 +8,15 @@ using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState
 {
+	/// <summary>
+	/// A finite state transducer that works withs annotations with feature structures.
+	/// 
+	/// Note: Deterministic FSTs do not work properly with input annotations that have feature structures with
+	/// underspecified feature values, i.e. symbolic or string feature values with more than one symbol or string.
+	/// These underspecified feature values can make the input ambiguous and cause a deterministic FST to have
+	/// different results than the equivalent non-deterministic FST for the same input. If it is possible
+	/// for the input to contain underspecified feature values, then a non-deterministic FST should be used.
+	/// </summary>
 	public class Fst<TData, TOffset> : IFreezable where TData : IAnnotatedData<TOffset>
 	{
 		private int _nextTag;

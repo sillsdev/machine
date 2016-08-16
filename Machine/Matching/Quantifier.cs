@@ -6,16 +6,16 @@ using SIL.Machine.FiniteState;
 
 namespace SIL.Machine.Matching
 {
-    /// <summary>
-    /// This class represents a nested phonetic pattern within another phonetic pattern.
-    /// </summary>
+	/// <summary>
+	/// This class represents a nested phonetic pattern within another phonetic pattern.
+	/// </summary>
 	public class Quantifier<TData, TOffset> : PatternNode<TData, TOffset>, IDeepCloneable<Quantifier<TData, TOffset>>, IValueEquatable<Quantifier<TData, TOffset>> where TData : IAnnotatedData<TOffset>
-    {
-    	public const int Infinite = -1;
+	{
+		public const int Infinite = -1;
 
-    	private int _minOccur;
-    	private int _maxOccur;
-    	private bool _greedy;
+		private int _minOccur;
+		private int _maxOccur;
+		private bool _greedy;
 
 		public Quantifier()
 			: this(0, Infinite)
@@ -27,73 +27,73 @@ namespace SIL.Machine.Matching
 		{
 		}
 
-    	public Quantifier(int minOccur, int maxOccur)
+		public Quantifier(int minOccur, int maxOccur)
 			: this(minOccur, maxOccur, null)
 		{
 		}
 
-    	/// <summary>
-    	/// Initializes a new instance of the <see cref="Quantifier{TData, TOffset}"/> class.
-    	/// </summary>
-    	/// <param name="minOccur">The minimum number of occurrences.</param>
-    	/// <param name="maxOccur">The maximum number of occurrences.</param>
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Quantifier{TData, TOffset}"/> class.
+		/// </summary>
+		/// <param name="minOccur">The minimum number of occurrences.</param>
+		/// <param name="maxOccur">The maximum number of occurrences.</param>
 
-    	/// <param name="node">The pattern node.</param>
+		/// <param name="node">The pattern node.</param>
 		public Quantifier(int minOccur, int maxOccur, PatternNode<TData, TOffset> node)
 			: base(node == null ? Enumerable.Empty<PatternNode<TData, TOffset>>() : node.ToEnumerable())
-        {
-    		_greedy = true;
-    		_minOccur = minOccur;
-            _maxOccur = maxOccur;
-        }
+		{
+			_greedy = true;
+			_minOccur = minOccur;
+			_maxOccur = maxOccur;
+		}
 
 		protected Quantifier(Quantifier<TData, TOffset> quantifier)
 			: base(quantifier)
-        {
-            _minOccur = quantifier._minOccur;
-            _maxOccur = quantifier._maxOccur;
-    		_greedy = quantifier._greedy;
-        }
+		{
+			_minOccur = quantifier._minOccur;
+			_maxOccur = quantifier._maxOccur;
+			_greedy = quantifier._greedy;
+		}
 
-    	/// <summary>
-    	/// Gets the minimum number of occurrences of this pattern.
-    	/// </summary>
-    	/// <value>The minimum number of occurrences.</value>
-    	public int MinOccur
-    	{
-    		get { return _minOccur; }
+		/// <summary>
+		/// Gets the minimum number of occurrences of this pattern.
+		/// </summary>
+		/// <value>The minimum number of occurrences.</value>
+		public int MinOccur
+		{
+			get { return _minOccur; }
 			set
 			{
 				CheckFrozen();
 				_minOccur = value;
 			}
-    	}
+		}
 
-    	/// <summary>
-    	/// Gets the maximum number of occurrences of this pattern.
-    	/// </summary>
-    	/// <value>The maximum number of occurrences.</value>
-    	public int MaxOccur
-    	{
-    		get { return _maxOccur; }
+		/// <summary>
+		/// Gets the maximum number of occurrences of this pattern.
+		/// </summary>
+		/// <value>The maximum number of occurrences.</value>
+		public int MaxOccur
+		{
+			get { return _maxOccur; }
 			set
 			{
 				CheckFrozen();
 				_maxOccur = value;
 			}
-    	}
+		}
 
-    	public bool IsGreedy
-    	{
-    		get { return _greedy; }
+		public bool IsGreedy
+		{
+			get { return _greedy; }
 			set
 			{
 				CheckFrozen();
 				_greedy = value;
 			}
-    	}
+		}
 
-    	protected override bool CanAdd(PatternNode<TData, TOffset> child)
+		protected override bool CanAdd(PatternNode<TData, TOffset> child)
 		{
 			if (!base.CanAdd(child) || child is Pattern<TData, TOffset>)
 				return false;
@@ -154,10 +154,10 @@ namespace SIL.Machine.Matching
 			return code;
 		}
 
-    	public new Quantifier<TData, TOffset> DeepClone()
-    	{
+		public new Quantifier<TData, TOffset> DeepClone()
+		{
 			return new Quantifier<TData, TOffset>(this);
-    	}
+		}
 
 		protected override PatternNode<TData, TOffset> DeepCloneImpl()
 		{
@@ -175,9 +175,9 @@ namespace SIL.Machine.Matching
 			return MinOccur == other.MinOccur && MaxOccur == other.MaxOccur && IsGreedy == other.IsGreedy && base.ValueEquals(other);
 		}
 
-    	public override string ToString()
-        {
-        	string quantifierStr;
+		public override string ToString()
+		{
+			string quantifierStr;
 			if (MinOccur == 0 && MaxOccur == Infinite)
 				quantifierStr = "*";
 			else if (MinOccur == 1 && MaxOccur == Infinite)
@@ -188,7 +188,7 @@ namespace SIL.Machine.Matching
 				quantifierStr = string.Format("[{0},]", MinOccur);
 			else
 				quantifierStr = string.Format("[{0},{1}]", MinOccur, MaxOccur);
-        	return string.Concat(Children) + quantifierStr;
-        }
-    }
+			return string.Concat(Children) + quantifierStr;
+		}
+	}
 }
