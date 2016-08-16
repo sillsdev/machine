@@ -22,13 +22,13 @@ namespace SIL.HermitCrab.MorphologicalRules
 			{
 				_rules.Add(new MultiplePatternRule<Word, ShapeNode>(spanFactory, new AnalysisCompoundingSubruleRuleSpec(sr),
 					new MatcherSettings<ShapeNode>
-						{
-							Filter = ann => ann.Type() == HCFeatureSystem.Segment,
-							MatchingMethod = MatchingMethod.Unification,
-							AnchoredToStart = true,
-							AnchoredToEnd = true,
-							AllSubmatches = true
-						}));
+					{
+						Filter = ann => ann.Type() == HCFeatureSystem.Segment,
+						MatchingMethod = MatchingMethod.Unification,
+						AnchoredToStart = true,
+						AnchoredToEnd = true,
+						AllSubmatches = true
+					}));
 			}
 		}
 
@@ -53,6 +53,9 @@ namespace SIL.HermitCrab.MorphologicalRules
 					// a valid analysis and throw it away
 					foreach (RootAllomorph allo in _morpher.SearchRootAllomorphs(_rule.Stratum, outWord.CurrentNonHead.Shape))
 					{
+						if (!_rule.NonHeadRequiredSyntacticFeatureStruct.IsUnifiable(((LexEntry) allo.Morpheme).SyntacticFeatureStruct, true))
+							continue;
+
 						// check to see if this is a duplicate of another output analysis, this is not strictly necessary, but
 						// it helps to reduce the search space
 						bool add = true;
