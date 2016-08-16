@@ -106,7 +106,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 					{
 						if (_rule.IsPartial)
 							outWord.IsPartial = true;
-						if (!outWord.IsPartial)
+						else
 							outWord.IsLastAppliedRuleFinal = null;
 					}
 
