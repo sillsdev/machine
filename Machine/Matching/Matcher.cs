@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SIL.Collections;
 using SIL.Machine.Annotations;
+using SIL.Machine.FeatureModel;
 using SIL.Machine.FiniteState;
 
 namespace SIL.Machine.Matching
@@ -25,7 +26,7 @@ namespace SIL.Machine.Matching
 		{
 			_spanFactory = spanFactory;
 			_settings = settings;
-			_settings.ReadOnly = true;
+			_settings.Freeze();
 
 			_matchComparer = AnonymousEqualityComparer.Create<Match<TData, TOffset>>(MatchEquals, MatchGetHashCode);
 
@@ -124,10 +125,10 @@ namespace SIL.Machine.Matching
 				if (acceptables.Length > 0)
 				{
 					acceptable = (input, match) =>
-						{
-							Match<TData, TOffset> patMatch = CreatePatternMatch(input, match);
-							return acceptables.All(a => a(patMatch));
-						};
+					{
+						Match<TData, TOffset> patMatch = CreatePatternMatch(input, match);
+						return acceptables.All(a => a(patMatch));
+					};
 				}
 				State<TData, TOffset> acceptingState = _fsa.CreateAcceptingState(name, acceptable, nextPriority++);
 				startState.Arcs.Add(acceptingState);
@@ -168,69 +169,69 @@ namespace SIL.Machine.Matching
 				string.IsNullOrEmpty(match.ID) ? new string[0] : match.ID.Split('*'), match.VariableBindings, match.NextAnnotation);
 		}
 
-		public bool IsMatch(TData input)
+		public bool IsMatch(TData input, VariableBindings varBindings = null)
 		{
-			return Match(input).Success;
+			return Match(input, varBindings).Success;
 		}
 
-		public bool IsMatch(TData input, TOffset start)
+		public bool IsMatch(TData input, TOffset start, VariableBindings varBindings = null)
 		{
-			return Match(input, start).Success;
+			return Match(input, start, varBindings).Success;
 		}
 
-		public Match<TData, TOffset> Match(TData input)
+		public Match<TData, TOffset> Match(TData input, VariableBindings varBindings = null)
 		{
-			return Match(input, GetStartAnnotation(input));
+			return Match(input, GetStartAnnotation(input), varBindings);
 		}
 
-		public Match<TData, TOffset> Match(TData input, TOffset start)
+		public Match<TData, TOffset> Match(TData input, TOffset start, VariableBindings varBindings = null)
 		{
-			return Match(input, GetStartAnnotation(input, start));
+			return Match(input, GetStartAnnotation(input, start), varBindings);
 		}
 
-		public IEnumerable<Match<TData, TOffset>> Matches(TData input)
+		public IEnumerable<Match<TData, TOffset>> Matches(TData input, VariableBindings varBindings = null)
 		{
-			return Matches(input, GetStartAnnotation(input));
+			return Matches(input, GetStartAnnotation(input), varBindings);
 		}
 
-		public IEnumerable<Match<TData, TOffset>> Matches(TData input, TOffset start)
+		public IEnumerable<Match<TData, TOffset>> Matches(TData input, TOffset start, VariableBindings varBindings = null)
 		{
-			return Matches(input, GetStartAnnotation(input, start));
+			return Matches(input, GetStartAnnotation(input, start), varBindings);
 		}
 
-		public IEnumerable<Match<TData, TOffset>> AllMatches(TData input)
+		public IEnumerable<Match<TData, TOffset>> AllMatches(TData input, VariableBindings varBindings = null)
 		{
-			return AllMatches(input, GetStartAnnotation(input));
+			return AllMatches(input, GetStartAnnotation(input), varBindings);
 		}
 
-		public IEnumerable<Match<TData, TOffset>> AllMatches(TData input, TOffset start)
+		public IEnumerable<Match<TData, TOffset>> AllMatches(TData input, TOffset start, VariableBindings varBindings = null)
 		{
-			return AllMatches(input, GetStartAnnotation(input, start));
+			return AllMatches(input, GetStartAnnotation(input, start), varBindings);
 		}
 
-		internal Match<TData, TOffset> Match(TData input, Annotation<TOffset> startAnn)
+		internal Match<TData, TOffset> Match(TData input, Annotation<TOffset> startAnn, VariableBindings varBindings)
 		{
 			FstResult<TData, TOffset> result;
-			if (_fsa.Transduce(input, startAnn, _settings.AnchoredToStart, _settings.AnchoredToEnd, _settings.UseDefaults, out result))
+			if (_fsa.Transduce(input, startAnn, varBindings, _settings.AnchoredToStart, _settings.AnchoredToEnd, _settings.UseDefaults, out result))
 				return CreatePatternMatch(input, result);
 
 			return new Match<TData, TOffset>(this, _spanFactory.Empty, input);
 		}
 
-		internal IEnumerable<Match<TData, TOffset>> Matches(TData input, Annotation<TOffset> startAnn)
+		internal IEnumerable<Match<TData, TOffset>> Matches(TData input, Annotation<TOffset> startAnn, VariableBindings varBindings)
 		{
-			Match<TData, TOffset> match = Match(input, startAnn);
+			Match<TData, TOffset> match = Match(input, startAnn, varBindings);
 			while (match.Success)
 			{
 				yield return match;
-				match = match.NextMatch();
+				match = match.NextMatch(varBindings);
 			}
 		}
 
-		private IEnumerable<Match<TData, TOffset>> AllMatches(TData input, Annotation<TOffset> startAnn)
+		private IEnumerable<Match<TData, TOffset>> AllMatches(TData input, Annotation<TOffset> startAnn, VariableBindings varBindings)
 		{
 			IEnumerable<FstResult<TData, TOffset>> results;
-			if (_fsa.Transduce(input, startAnn, _settings.AnchoredToStart, _settings.AnchoredToEnd, _settings.UseDefaults, out results))
+			if (_fsa.Transduce(input, startAnn, varBindings, _settings.AnchoredToStart, _settings.AnchoredToEnd, _settings.UseDefaults, out results))
 			{
 				IEnumerable<Match<TData, TOffset>> matches = results.Select(fm => CreatePatternMatch(input, fm));
 				if (!_fsa.IsDeterministic && !_settings.AllSubmatches)

@@ -8,9 +8,8 @@ namespace SIL.Machine.FiniteState
 {
 	internal class NondeterministicFsaTraversalMethod<TData, TOffset> : TraversalMethodBase<TData, TOffset, NondeterministicFsaTraversalInstance<TData, TOffset>> where TData : IAnnotatedData<TOffset>
 	{
-		public NondeterministicFsaTraversalMethod(IEqualityComparer<Register<TOffset>[,]> registersEqualityComparer, int registerCount, Direction dir,
-			Func<Annotation<TOffset>, bool> filter, State<TData, TOffset> startState, TData data, bool endAnchor, bool unification, bool useDefaults, bool ignoreVariables)
-			: base(registersEqualityComparer, registerCount, dir, filter, startState, data, endAnchor, unification, useDefaults, ignoreVariables)
+		public NondeterministicFsaTraversalMethod(Fst<TData, TOffset> fst, TData data, VariableBindings varBindings, bool startAnchor, bool endAnchor, bool useDefaults)
+			: base(fst, data, varBindings, startAnchor, endAnchor, useDefaults)
 		{
 		}
 
@@ -94,14 +93,14 @@ namespace SIL.Machine.FiniteState
 			return curResults;
 		}
 
-		protected override NondeterministicFsaTraversalInstance<TData, TOffset> CreateInstance(int registerCount, bool ignoreVariables)
+		protected override NondeterministicFsaTraversalInstance<TData, TOffset> CreateInstance()
 		{
-			return new NondeterministicFsaTraversalInstance<TData, TOffset>(registerCount, ignoreVariables);
+			return new NondeterministicFsaTraversalInstance<TData, TOffset>(Fst.RegisterCount);
 		}
 
 		private bool KeyEquals(Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> x, Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> y)
 		{
-			return x.Item1.Equals(y.Item1) && x.Item2.Equals(y.Item2) && RegistersEqualityComparer.Equals(x.Item3, y.Item3);
+			return x.Item1.Equals(y.Item1) && x.Item2.Equals(y.Item2) && Fst.RegistersEqualityComparer.Equals(x.Item3, y.Item3);
 		}
 
 		private int KeyGetHashCode(Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> m)
@@ -109,7 +108,7 @@ namespace SIL.Machine.FiniteState
 			int code = 23;
 			code = code * 31 + m.Item1.GetHashCode();
 			code = code * 31 + m.Item2.GetHashCode();
-			code = code * 31 + RegistersEqualityComparer.GetHashCode(m.Item3);
+			code = code * 31 + Fst.RegistersEqualityComparer.GetHashCode(m.Item3);
 			return code;
 		}
 

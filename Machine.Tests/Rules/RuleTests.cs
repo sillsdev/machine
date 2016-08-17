@@ -29,14 +29,13 @@ namespace SIL.Machine.Tests.Rules
 						.Symbol("cons+")
 						.Feature("voice").Not.EqualToVariable("a").Value)).Value;
 
-			var ruleSpec = new DefaultPatternRuleSpec<AnnotatedStringData, int>(pattern, (PatternRule<AnnotatedStringData, int> r, Match<AnnotatedStringData, int> match, out AnnotatedStringData output) =>
-			                                  	{
-													GroupCapture<int> target = match.GroupCaptures["target"];
-			                                  		foreach (Annotation<int> ann in match.Input.Annotations.GetNodes(target.Span))
-			                                  			ann.FeatureStruct.PriorityUnion(FeatureStruct.New(PhoneticFeatSys).Symbol("low-").Value);
-			                                  		output = match.Input;
-			                                  		return target.Span.End;
-			                                  	});
+			var ruleSpec = new DefaultPatternRuleSpec<AnnotatedStringData, int>(pattern, (r, match) =>
+				{
+					GroupCapture<int> target = match.GroupCaptures["target"];
+					foreach (Annotation<int> ann in match.Input.Annotations.GetNodes(target.Span))
+						ann.FeatureStruct.PriorityUnion(FeatureStruct.New(PhoneticFeatSys).Symbol("low-").Value);
+					return match.Input;
+				});
 
 			var rule = new PatternRule<AnnotatedStringData, int>(SpanFactory, ruleSpec);
 			AnnotatedStringData inputWord = CreateStringData("fazk");
@@ -63,29 +62,27 @@ namespace SIL.Machine.Tests.Rules
 						.Symbol("cons+")
 						.Feature("voice").Not.EqualToVariable("a").Value)).Value;
 
-			var ruleSpec1 = new DefaultPatternRuleSpec<AnnotatedStringData, int>(pattern, (PatternRule<AnnotatedStringData, int> r, Match<AnnotatedStringData, int> match, out AnnotatedStringData output) =>
-												{
-													GroupCapture<int> target = match.GroupCaptures["target"];
-													foreach (Annotation<int> ann in match.Input.Annotations.GetNodes(target.Span))
-														ann.FeatureStruct.PriorityUnion(FeatureStruct.New(PhoneticFeatSys)
-															.Symbol("low-")
-															.Symbol("mid-").Value);
-													output = match.Input;
-													return target.Span.End;
-												},
-												input => input.Annotations.Single(ann => ((FeatureSymbol) ann.FeatureStruct.GetValue(Type)) == Word)
-													.FeatureStruct.IsUnifiable(FeatureStruct.New(WordFeatSys).Symbol("verb").Value));
+			var ruleSpec1 = new DefaultPatternRuleSpec<AnnotatedStringData, int>(pattern, (r, match) =>
+				{
+					GroupCapture<int> target = match.GroupCaptures["target"];
+					foreach (Annotation<int> ann in match.Input.Annotations.GetNodes(target.Span))
+						ann.FeatureStruct.PriorityUnion(FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("low-")
+							.Symbol("mid-").Value);
+					return match.Input;
+				},
+				input => input.Annotations.Single(ann => ((FeatureSymbol) ann.FeatureStruct.GetValue(Type)) == Word)
+					.FeatureStruct.IsUnifiable(FeatureStruct.New(WordFeatSys).Symbol("verb").Value));
 
-			var ruleSpec2 = new DefaultPatternRuleSpec<AnnotatedStringData, int>(pattern, (PatternRule<AnnotatedStringData, int> r, Match<AnnotatedStringData, int> match, out AnnotatedStringData output) =>
-												{
-													GroupCapture<int> target = match.GroupCaptures["target"];
-													foreach (Annotation<int> ann in match.Input.Annotations.GetNodes(target.Span))
-														ann.FeatureStruct.PriorityUnion(FeatureStruct.New(PhoneticFeatSys)
-															.Symbol("low-")
-															.Symbol("mid+").Value);
-													output = match.Input;
-													return target.Span.End;
-												});
+			var ruleSpec2 = new DefaultPatternRuleSpec<AnnotatedStringData, int>(pattern, (r, match) =>
+				{
+					GroupCapture<int> target = match.GroupCaptures["target"];
+					foreach (Annotation<int> ann in match.Input.Annotations.GetNodes(target.Span))
+						ann.FeatureStruct.PriorityUnion(FeatureStruct.New(PhoneticFeatSys)
+							.Symbol("low-")
+							.Symbol("mid+").Value);
+					return match.Input;
+				});
 
 			var batchSpec = new BatchPatternRuleSpec<AnnotatedStringData, int>(new[] {ruleSpec1, ruleSpec2});
 			var rule = new PatternRule<AnnotatedStringData, int>(SpanFactory, batchSpec);

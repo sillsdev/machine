@@ -11,11 +11,9 @@ namespace SIL.Machine.FiniteState
 		private readonly Register<TOffset>[,] _registers;
 		private readonly List<int> _priorities;
 
-		protected TraversalInstance(int registerCount, bool ignoreVariables, bool deterministic)
+		protected TraversalInstance(int registerCount, bool deterministic)
 		{
 			_registers = new Register<TOffset>[registerCount, 2];
-			if (!ignoreVariables)
-				VariableBindings = new VariableBindings();
 			if (!deterministic)
 				_priorities = new List<int>();
 		}
@@ -53,8 +51,7 @@ namespace SIL.Machine.FiniteState
 			Output = default(TData);
 			if (_priorities != null)
 				_priorities.Clear();
-			if (VariableBindings != null)
-				VariableBindings.Clear();
+			VariableBindings = null;
 		}
 	}
 }

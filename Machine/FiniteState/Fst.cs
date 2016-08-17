@@ -227,6 +227,16 @@ namespace SIL.Machine.FiniteState
 			get { return _operations; }
 		}
 
+		internal IEqualityComparer<Register<TOffset>[,]> RegistersEqualityComparer
+		{
+			get { return _registersEqualityComparer; }
+		}
+
+		internal int RegisterCount
+		{
+			get { return _registerCount; }
+		}
+
 		public void Reset()
 		{
 			CheckFrozen();
@@ -236,19 +246,21 @@ namespace SIL.Machine.FiniteState
 			IsDeterministic = false;
 		}
 
-		public bool Transduce(TData data, Annotation<TOffset> start, bool startAnchor, bool endAnchor, bool useDefaults, out IEnumerable<FstResult<TData, TOffset>> results)
+		public bool Transduce(TData data, Annotation<TOffset> start, VariableBindings varBindings, bool startAnchor, bool endAnchor, bool useDefaults,
+			out IEnumerable<FstResult<TData, TOffset>> results)
 		{
 			if (_operations != null && !(data is IDeepCloneable<TData>))
 				throw new ArgumentException("The input data must be cloneable.", "data");
-			return Transduce(data, start, startAnchor, endAnchor, true, useDefaults, out results);
+			return Transduce(data, start, varBindings, startAnchor, endAnchor, true, useDefaults, out results);
 		}
 
-		public bool Transduce(TData data, Annotation<TOffset> start, bool startAnchor, bool endAnchor, bool useDefaults, out FstResult<TData, TOffset> result)
+		public bool Transduce(TData data, Annotation<TOffset> start, VariableBindings varBindings, bool startAnchor, bool endAnchor, bool useDefaults,
+			out FstResult<TData, TOffset> result)
 		{
 			if (_operations != null && !(data is IDeepCloneable<TData>))
 				throw new ArgumentException("The input data must be cloneable.", "data");
 			IEnumerable<FstResult<TData, TOffset>> results;
-			if (Transduce(data, start, startAnchor, endAnchor, false, useDefaults, out results))
+			if (Transduce(data, start, varBindings, startAnchor, endAnchor, false, useDefaults, out results))
 			{
 				result = results.First();
 				return true;
@@ -257,34 +269,23 @@ namespace SIL.Machine.FiniteState
 			return false;
 		}
 
-		private bool Transduce(TData data, Annotation<TOffset> start, bool startAnchor, bool endAnchor, bool allMatches, bool useDefaults, out IEnumerable<FstResult<TData, TOffset>> results)
+		private bool Transduce(TData data, Annotation<TOffset> start, VariableBindings varBindings, bool startAnchor, bool endAnchor, bool allMatches,
+			bool useDefaults, out IEnumerable<FstResult<TData, TOffset>> results)
 		{
 			ITraversalMethod<TData, TOffset> traversalMethod;
 			if (_operations != null)
 			{
 				if (IsDeterministic)
-				{
-					traversalMethod = new DeterministicFstTraversalMethod<TData, TOffset>(_registersEqualityComparer, _registerCount, _operations, _dir, _filter, StartState, data,
-						endAnchor, _unification, useDefaults, _ignoreVariables);
-				}
+					traversalMethod = new DeterministicFstTraversalMethod<TData, TOffset>(this, data, varBindings, startAnchor, endAnchor, useDefaults);
 				else
-				{
-					traversalMethod = new NondeterministicFstTraversalMethod<TData, TOffset>(_registersEqualityComparer, _registerCount, _operations, _dir, _filter, StartState, data,
-						endAnchor, _unification, useDefaults, _ignoreVariables);
-				}
+					traversalMethod = new NondeterministicFstTraversalMethod<TData, TOffset>(this, data, varBindings, startAnchor, endAnchor, useDefaults);
 			}
 			else
 			{
 				if (IsDeterministic)
-				{
-					traversalMethod = new DeterministicFsaTraversalMethod<TData, TOffset>(_registersEqualityComparer, _registerCount, _dir, _filter, StartState, data, endAnchor,
-						_unification, useDefaults, _ignoreVariables);
-				}
+					traversalMethod = new DeterministicFsaTraversalMethod<TData, TOffset>(this, data, varBindings, startAnchor, endAnchor, useDefaults);
 				else
-				{
-					traversalMethod = new NondeterministicFsaTraversalMethod<TData, TOffset>(_registersEqualityComparer, _registerCount, _dir, _filter, StartState, data, endAnchor,
-						_unification, useDefaults, _ignoreVariables);
-				}
+					traversalMethod = new NondeterministicFsaTraversalMethod<TData, TOffset>(this, data, varBindings, startAnchor, endAnchor, useDefaults);
 			}
 			List<FstResult<TData, TOffset>> resultList = null;
 

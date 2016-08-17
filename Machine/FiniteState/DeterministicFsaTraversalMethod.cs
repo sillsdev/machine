@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using SIL.Collections;
+﻿using System.Collections.Generic;
 using SIL.Machine.Annotations;
+using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState
 {
 	internal class DeterministicFsaTraversalMethod<TData, TOffset> : TraversalMethodBase<TData, TOffset, DeterministicFsaTraversalInstance<TData, TOffset>> where TData : IAnnotatedData<TOffset>
 	{
-		public DeterministicFsaTraversalMethod(IEqualityComparer<Register<TOffset>[,]> registersEqualityComparer, int registerCount, Direction dir, Func<Annotation<TOffset>, bool> filter,
-			State<TData, TOffset> startState, TData data, bool endAnchor, bool unification, bool useDefaults, bool ignoreVariables)
-			: base(registersEqualityComparer, registerCount, dir, filter, startState, data, endAnchor, unification, useDefaults, ignoreVariables)
+		public DeterministicFsaTraversalMethod(Fst<TData, TOffset> fst, TData data, VariableBindings varBindings, bool startAnchor, bool endAnchor, bool useDefaults)
+			: base(fst, data, varBindings, startAnchor, endAnchor, useDefaults)
 		{
 		}
 
@@ -41,9 +39,9 @@ namespace SIL.Machine.FiniteState
 			return curResults;
 		}
 
-		protected override DeterministicFsaTraversalInstance<TData, TOffset> CreateInstance(int registerCount, bool ignoreVariables)
+		protected override DeterministicFsaTraversalInstance<TData, TOffset> CreateInstance()
 		{
-			return new DeterministicFsaTraversalInstance<TData, TOffset>(registerCount, ignoreVariables);
+			return new DeterministicFsaTraversalInstance<TData, TOffset>(Fst.RegisterCount);
 		}
 
 		private Stack<DeterministicFsaTraversalInstance<TData, TOffset>> InitializeStack(ref int annIndex, Register<TOffset>[,] registers,

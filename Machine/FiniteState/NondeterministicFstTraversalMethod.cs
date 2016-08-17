@@ -9,13 +9,9 @@ namespace SIL.Machine.FiniteState
 {
 	internal class NondeterministicFstTraversalMethod<TData, TOffset> : TraversalMethodBase<TData, TOffset, NondeterministicFstTraversalInstance<TData, TOffset>> where TData : IAnnotatedData<TOffset>
 	{
-		private readonly IFstOperations<TData, TOffset> _operations;
-
-		public NondeterministicFstTraversalMethod(IEqualityComparer<Register<TOffset>[,]> registersEqualityComparer, int registerCount, IFstOperations<TData, TOffset> operations, Direction dir,
-			Func<Annotation<TOffset>, bool> filter, State<TData, TOffset> startState, TData data, bool endAnchor, bool unification, bool useDefaults, bool ignoreVariables)
-			: base(registersEqualityComparer, registerCount, dir, filter, startState, data, endAnchor, unification, useDefaults, ignoreVariables)
+		public NondeterministicFstTraversalMethod(Fst<TData, TOffset> fst, TData data, VariableBindings varBindings, bool startAnchor, bool endAnchor, bool useDefaults)
+			: base(fst, data, varBindings, startAnchor, endAnchor, useDefaults)
 		{
-			_operations = operations;
 		}
 
 		public override IEnumerable<FstResult<TData, TOffset>> Traverse(ref int annIndex, Register<TOffset>[,] initRegisters, IList<TagMapCommand> initCmds, ISet<int> initAnns)
@@ -55,7 +51,7 @@ namespace SIL.Machine.FiniteState
 							if (arc.Outputs.Count == 1)
 							{
 								Annotation<TOffset> outputAnn = ti.Mappings[Annotations[inst.AnnotationIndex]];
-								arc.Outputs[0].UpdateOutput(ti.Output, outputAnn, _operations);
+								arc.Outputs[0].UpdateOutput(ti.Output, outputAnn, Fst.Operations);
 								ti.Outputs.Add(arc.Outputs[0]);
 							}
 
@@ -84,7 +80,7 @@ namespace SIL.Machine.FiniteState
 							if (arc.Outputs.Count == 1)
 							{
 								Annotation<TOffset> outputAnn = ti.Mappings[Annotations[inst.AnnotationIndex]];
-								arc.Outputs[0].UpdateOutput(ti.Output, outputAnn, _operations);
+								arc.Outputs[0].UpdateOutput(ti.Output, outputAnn, Fst.Operations);
 								ti.Outputs.Add(arc.Outputs[0]);
 							}
 
@@ -114,15 +110,15 @@ namespace SIL.Machine.FiniteState
 			return curResults;
 		}
 
-		protected override NondeterministicFstTraversalInstance<TData, TOffset> CreateInstance(int registerCount, bool ignoreVariables)
+		protected override NondeterministicFstTraversalInstance<TData, TOffset> CreateInstance()
 		{
-			return new NondeterministicFstTraversalInstance<TData, TOffset>(registerCount, ignoreVariables);
+			return new NondeterministicFstTraversalInstance<TData, TOffset>(Fst.RegisterCount);
 		}
 
 		private bool KeyEquals(Tuple<State<TData, TOffset>, int, Register<TOffset>[,], Output<TData, TOffset>[]> x,
 			Tuple<State<TData, TOffset>, int, Register<TOffset>[,], Output<TData, TOffset>[]> y)
 		{
-			return x.Item1.Equals(y.Item1) && x.Item2.Equals(y.Item2) && RegistersEqualityComparer.Equals(x.Item3, y.Item3) && x.Item4.SequenceEqual(y.Item4);
+			return x.Item1.Equals(y.Item1) && x.Item2.Equals(y.Item2) && Fst.RegistersEqualityComparer.Equals(x.Item3, y.Item3) && x.Item4.SequenceEqual(y.Item4);
 		}
 
 		private int KeyGetHashCode(Tuple<State<TData, TOffset>, int, Register<TOffset>[,], Output<TData, TOffset>[]> m)
@@ -130,7 +126,7 @@ namespace SIL.Machine.FiniteState
 			int code = 23;
 			code = code * 31 + m.Item1.GetHashCode();
 			code = code * 31 + m.Item2.GetHashCode();
-			code = code * 31 + RegistersEqualityComparer.GetHashCode(m.Item3);
+			code = code * 31 + Fst.RegistersEqualityComparer.GetHashCode(m.Item3);
 			code = code * 31 + m.Item4.GetSequenceHashCode();
 			return code;
 		}

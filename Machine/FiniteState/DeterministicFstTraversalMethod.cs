@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using SIL.Collections;
 using SIL.Machine.Annotations;
@@ -9,13 +8,9 @@ namespace SIL.Machine.FiniteState
 {
 	internal class DeterministicFstTraversalMethod<TData, TOffset> : TraversalMethodBase<TData, TOffset, DeterministicFstTraversalInstance<TData, TOffset>> where TData : IAnnotatedData<TOffset>
 	{
-		private readonly IFstOperations<TData, TOffset> _operations;
-
-		public DeterministicFstTraversalMethod(IEqualityComparer<Register<TOffset>[,]> registersEqualityComparer, int registerCount, IFstOperations<TData, TOffset> operations, Direction dir,
-			Func<Annotation<TOffset>, bool> filter, State<TData, TOffset> startState, TData data, bool endAnchor, bool unification, bool useDefaults, bool ignoreVariables)
-			: base(registersEqualityComparer, registerCount, dir, filter, startState, data, endAnchor, unification, useDefaults, ignoreVariables)
+		public DeterministicFstTraversalMethod(Fst<TData, TOffset> fst, TData data, VariableBindings varBindings, bool startAnchor, bool endAnchor, bool useDefaults)
+			: base(fst, data, varBindings, startAnchor, endAnchor, useDefaults)
 		{
-			_operations = operations;
 		}
 
 		public override IEnumerable<FstResult<TData, TOffset>> Traverse(ref int annIndex, Register<TOffset>[,] initRegisters, IList<TagMapCommand> initCmds, ISet<int> initAnns)
@@ -80,9 +75,9 @@ namespace SIL.Machine.FiniteState
 			return curResults;
 		}
 
-		protected override DeterministicFstTraversalInstance<TData, TOffset> CreateInstance(int registerCount, bool ignoreVariables)
+		protected override DeterministicFstTraversalInstance<TData, TOffset> CreateInstance()
 		{
-			return new DeterministicFstTraversalInstance<TData, TOffset>(registerCount, ignoreVariables);
+			return new DeterministicFstTraversalInstance<TData, TOffset>(Fst.RegisterCount);
 		}
 
 		private void ExecuteOutputs(IEnumerable<Output<TData, TOffset>> outputs, TData output, IDictionary<Annotation<TOffset>, Annotation<TOffset>> mappings,
@@ -101,7 +96,7 @@ namespace SIL.Machine.FiniteState
 					Annotation<TOffset> inputAnn = queue.Dequeue();
 					outputAnn = mappings[inputAnn];
 				}
-				prevNewAnn = outputAction.UpdateOutput(output, outputAnn, _operations);
+				prevNewAnn = outputAction.UpdateOutput(output, outputAnn, Fst.Operations);
 			}
 		}
 

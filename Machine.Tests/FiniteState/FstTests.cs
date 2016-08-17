@@ -123,15 +123,15 @@ namespace SIL.Machine.Tests.FiniteState
 
 			AnnotatedStringData data = CreateStringData("caNp");
 			FstResult<AnnotatedStringData, int> result;
-			Assert.That(dfst.Transduce(data, data.Annotations.First, true, true, true, out result), Is.True);
+			Assert.That(dfst.Transduce(data, data.Annotations.First, null, true, true, true, out result), Is.True);
 			Assert.That(result.Output.String, Is.EqualTo("camp"));
 
 			data = CreateStringData("caN");
-			Assert.That(dfst.Transduce(data, data.Annotations.First, true, true, true, out result), Is.True);
+			Assert.That(dfst.Transduce(data, data.Annotations.First, null, true, true, true, out result), Is.True);
 			Assert.That(result.Output.String, Is.EqualTo("can"));
 
 			data = CreateStringData("carp");
-			Assert.That(dfst.Transduce(data, data.Annotations.First, true, true, true, out result), Is.True);
+			Assert.That(dfst.Transduce(data, data.Annotations.First, null, true, true, true, out result), Is.True);
 			Assert.That(result.Output.String, Is.EqualTo("carp"));
 
 			fst = new Fst<AnnotatedStringData, int>(_operations) {UseUnification = false};
@@ -148,12 +148,12 @@ namespace SIL.Machine.Tests.FiniteState
 			dfst = fst.Determinize();
 
 			data = CreateStringData("camp");
-			Assert.That(dfst.Transduce(data, data.Annotations.First, true, true, true, out result), Is.True);
+			Assert.That(dfst.Transduce(data, data.Annotations.First, null, true, true, true, out result), Is.True);
 			Assert.That(result.Output.String, Is.EqualTo("cap"));
 
 			data = CreateStringData("casp");
 			IEnumerable<FstResult<AnnotatedStringData, int>> results;
-			Assert.That(dfst.Transduce(data, data.Annotations.First, true, true, true, out results), Is.True);
+			Assert.That(dfst.Transduce(data, data.Annotations.First, null, true, true, true, out results), Is.True);
 			FstResult<AnnotatedStringData, int>[] resultsArray = results.ToArray();
 			Assert.That(resultsArray.Length, Is.EqualTo(2));
 			Assert.That(resultsArray.Select(r => r.Output.String), Is.EquivalentTo(new [] {"cas+.p", "cas.p"}));

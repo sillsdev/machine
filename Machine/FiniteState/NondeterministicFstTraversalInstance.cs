@@ -11,8 +11,8 @@ namespace SIL.Machine.FiniteState
 		private readonly Dictionary<Annotation<TOffset>, Annotation<TOffset>> _mappings;
 		private readonly List<Output<TData, TOffset>> _outputs;
 
-		public NondeterministicFstTraversalInstance(int registerCount, bool ignoreVariables)
-			: base(registerCount, ignoreVariables, false)
+		public NondeterministicFstTraversalInstance(int registerCount)
+			: base(registerCount, false)
 		{
 			_visited = new HashSet<State<TData, TOffset>>();
 			_mappings = new Dictionary<Annotation<TOffset>, Annotation<TOffset>>();
