@@ -1,4 +1,3 @@
-using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.Matching;
 
@@ -10,6 +9,6 @@ namespace SIL.Machine.Rules
 
 		bool IsApplicable(TData input);
 
-		TOffset ApplyRhs(PatternRule<TData, TOffset> rule, Match<TData, TOffset> match, out TData output);
+		TData ApplyRhs(PatternRule<TData, TOffset> rule, Match<TData, TOffset> match);
 	}
 }
