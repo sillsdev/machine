@@ -235,6 +235,7 @@ namespace SIL.HermitCrab.Tests
 			AddEntry("52", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Morphophonemic, "pu");
 			AddEntry("53", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Morphophonemic, "mi");
 			AddEntry("54", FeatureStruct.New().Value, Morphophonemic, "pi");
+			AddEntry("55", FeatureStruct.New(syntacticFeatSys).Symbol("N").Value, Morphophonemic, "mim+ɯɯ");
 
 			fs = FeatureStruct.New(syntacticFeatSys)
 				.Symbol("V")

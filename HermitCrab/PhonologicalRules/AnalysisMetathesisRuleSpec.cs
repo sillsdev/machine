@@ -1,14 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using SIL.Collections;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
-using SIL.Machine.Rules;
 
 namespace SIL.HermitCrab.PhonologicalRules
 {
-	public class AnalysisMetathesisRuleSpec : IPatternRuleSpec<Word, ShapeNode>
+	public class AnalysisMetathesisRuleSpec : IPhonologicalPatternRuleSpec, IPhonologicalPatternSubruleSpec
 	{
 		private readonly Pattern<Word, ShapeNode> _pattern;
 		private readonly string _leftGroupName;
@@ -16,9 +17,33 @@ namespace SIL.HermitCrab.PhonologicalRules
 
 		public AnalysisMetathesisRuleSpec(Pattern<Word, ShapeNode> pattern, string leftGroupName, string rightGroupName)
 		{
-			_pattern = pattern;
 			_leftGroupName = leftGroupName;
 			_rightGroupName = rightGroupName;
+
+			Group<Word, ShapeNode>[] groupOrder = pattern.Children.OfType<Group<Word, ShapeNode>>().ToArray();
+			Dictionary<string, Group<Word, ShapeNode>> groups = groupOrder.ToDictionary(g => g.Name);
+			_pattern = new Pattern<Word, ShapeNode>();
+			foreach (PatternNode<Word, ShapeNode> node in pattern.Children.TakeWhile(n => !(n is Group<Word, ShapeNode>)))
+				_pattern.Children.Add(node.DeepClone());
+
+			AddGroup(groups, leftGroupName);
+			AddGroup(groups, rightGroupName);
+
+			foreach (PatternNode<Word, ShapeNode> node in pattern.Children.GetNodes(Direction.RightToLeft).TakeWhile(n => !(n is Group<Word, ShapeNode>)).Reverse())
+				_pattern.Children.Add(node.DeepClone());
+			_pattern.Freeze();
+		}
+
+		private void AddGroup(Dictionary<string, Group<Word, ShapeNode>> groups, string name)
+		{
+			var newGroup = new Group<Word, ShapeNode>(name);
+			foreach (Constraint<Word, ShapeNode> constraint in groups[name].Children.Cast<Constraint<Word, ShapeNode>>())
+			{
+				Constraint<Word, ShapeNode> newConstraint = constraint.DeepClone();
+				newConstraint.FeatureStruct.AddValue(HCFeatureSystem.Modified, HCFeatureSystem.Clean);
+				newGroup.Children.Add(newConstraint);
+			}
+			_pattern.Children.Add(newGroup);
 		}
 
 		public Pattern<Word, ShapeNode> Pattern
@@ -26,15 +51,31 @@ namespace SIL.HermitCrab.PhonologicalRules
 			get { return _pattern; }
 		}
 
-		public bool IsApplicable(Word input)
+		public bool MatchSubrule(PhonologicalPatternRule rule, Match<Word, ShapeNode> match, out PhonologicalSubruleMatch subruleMatch)
+		{
+			subruleMatch = new PhonologicalSubruleMatch(this, match.Span, match.VariableBindings);
+			return true;
+		}
+
+		Matcher<Word, ShapeNode> IPhonologicalPatternSubruleSpec.LeftEnvironmentMatcher
+		{
+			get { return null; }
+		}
+
+		Matcher<Word, ShapeNode> IPhonologicalPatternSubruleSpec.RightEnvironmentMatcher
+		{
+			get { return null; }
+		}
+
+		bool IPhonologicalPatternSubruleSpec.IsApplicable(Word input)
 		{
 			return true;
 		}
 
-		public ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)
+		void IPhonologicalPatternSubruleSpec.ApplyRhs(Match<Word, ShapeNode> targetMatch, Span<ShapeNode> span, VariableBindings varBindings)
 		{
 			ShapeNode start = null, end = null;
-			foreach (GroupCapture<ShapeNode> gc in match.GroupCaptures)
+			foreach (GroupCapture<ShapeNode> gc in targetMatch.GroupCaptures)
 			{
 				if (start == null || gc.Span.Start.CompareTo(start) < 0)
 					start = gc.Span.Start;
@@ -43,13 +84,10 @@ namespace SIL.HermitCrab.PhonologicalRules
 			}
 			Debug.Assert(start != null && end != null);
 
-			Direction dir = match.Matcher.Direction;
-			ShapeNode beforeMatchStart = match.Span.GetStart(dir).GetPrev(dir);
+			GroupCapture<ShapeNode> leftGroup = targetMatch.GroupCaptures[_leftGroupName];
+			GroupCapture<ShapeNode> rightGroup = targetMatch.GroupCaptures[_rightGroupName];
 
-			GroupCapture<ShapeNode> leftGroup = match.GroupCaptures[_leftGroupName];
-			GroupCapture<ShapeNode> rightGroup = match.GroupCaptures[_rightGroupName];
-
-			foreach (Tuple<ShapeNode, ShapeNode> tuple in match.Input.Shape.GetNodes(leftGroup.Span).Zip(match.Input.Shape.GetNodes(rightGroup.Span)))
+			foreach (Tuple<ShapeNode, ShapeNode> tuple in targetMatch.Input.Shape.GetNodes(leftGroup.Span).Zip(targetMatch.Input.Shape.GetNodes(rightGroup.Span)))
 			{
 				if (tuple.Item1.Type() != HCFeatureSystem.Segment || tuple.Item2.Type() != HCFeatureSystem.Segment)
 					continue;
@@ -60,10 +98,6 @@ namespace SIL.HermitCrab.PhonologicalRules
 				tuple.Item2.Annotation.FeatureStruct.Union(fs);
 				tuple.Item2.SetDirty(true);
 			}
-
-			output = match.Input;
-			ShapeNode matchStart = beforeMatchStart == null ? match.Input.Shape.GetBegin(dir) : beforeMatchStart.GetNext(dir);
-			return matchStart.GetNext(dir);
 		}
 	}
 }

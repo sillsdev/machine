@@ -1,35 +1,34 @@
 using System.Linq;
 using SIL.Machine.Annotations;
+using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
-using SIL.Machine.Rules;
 
 namespace SIL.HermitCrab.PhonologicalRules
 {
-	public class EpenthesisAnalysisRewriteRuleSpec : AnalysisRewriteRuleSpec
+	public class EpenthesisAnalysisRewriteRuleSpec : RewriteRuleSpec
 	{
 		private readonly int _targetCount;
 
-		public EpenthesisAnalysisRewriteRuleSpec(RewriteSubrule subrule)
+		public EpenthesisAnalysisRewriteRuleSpec(SpanFactory<ShapeNode> spanFactory, MatcherSettings<ShapeNode> matcherSettings, RewriteSubrule subrule)
+			: base(false)
 		{
 			Pattern.Acceptable = IsUnapplicationNonvacuous;
 			_targetCount = subrule.Rhs.Children.Count;
 
-			AddEnvironment("leftEnv", subrule.LeftEnvironment);
-			var target = new Group<Word, ShapeNode>("target");
 			foreach (Constraint<Word, ShapeNode> constraint in subrule.Rhs.Children.Cast<Constraint<Word, ShapeNode>>())
 			{
 				var newConstraint = constraint.DeepClone();
 				newConstraint.FeatureStruct.AddValue(HCFeatureSystem.Modified, HCFeatureSystem.Clean);
-				target.Children.Add(newConstraint);
+				Pattern.Children.Add(newConstraint);
 			}
-			Pattern.Children.Add(target);
-			AddEnvironment("rightEnv", subrule.RightEnvironment);
+			Pattern.Freeze();
+
+			SubruleSpecs.Add(new AnalysisRewriteSubruleSpec(spanFactory, matcherSettings, subrule, Unapply));
 		}
 
 		private static bool IsUnapplicationNonvacuous(Match<Word, ShapeNode> match)
 		{
-			GroupCapture<ShapeNode> target = match.GroupCaptures["target"];
-			foreach (ShapeNode node in match.Input.Shape.GetNodes(target.Span))
+			foreach (ShapeNode node in match.Input.Shape.GetNodes(match.Span))
 			{
 				if (!node.Annotation.Optional)
 					return true;
@@ -38,19 +37,15 @@ namespace SIL.HermitCrab.PhonologicalRules
 			return false;
 		}
 
-		public override ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)
+		private void Unapply(Match<Word, ShapeNode> targetMatch, Span<ShapeNode> span, VariableBindings varBindings)
 		{
-			GroupCapture<ShapeNode> target = match.GroupCaptures["target"];
-			ShapeNode curNode = target.Span.GetStart(match.Matcher.Direction);
+			ShapeNode curNode = span.Start;
 			for (int i = 0; i < _targetCount; i++)
 			{
 				curNode.Annotation.Optional = true;
 				curNode.SetDirty(true);
-				curNode = curNode.GetNext(match.Matcher.Direction);
+				curNode = curNode.Next;
 			}
-
-			output = match.Input;
-			return match.Span.GetStart(match.Matcher.Direction).GetNext(match.Matcher.Direction);
 		}
 	}
 }

@@ -117,9 +117,9 @@ namespace SIL.HermitCrab.MorphologicalRules
 			return true;
 		}
 
-		public ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)
+		public Word ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match)
 		{
-			output = match.Input.DeepClone();
+			Word output = match.Input.DeepClone();
 			output.Shape.Clear();
 			var existingMorphNodes = new Dictionary<Allomorph, List<ShapeNode>>();
 			var newMorphNodes = new List<ShapeNode>();
@@ -162,7 +162,7 @@ namespace SIL.HermitCrab.MorphologicalRules
 
 			output.MprFeatures.AddOutput(_allomorph.OutMprFeatures);
 
-			return null;
+			return output;
 		}
 
 		private void MarkSubsumedMorphs(Word input, Word output, Annotation<ShapeNode> inputMorph, Annotation<ShapeNode> outputMorph)

@@ -31,6 +31,6 @@ namespace SIL.HermitCrab.MorphologicalRules
 			return false;
 		}
 
-		public abstract ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output);
+		public abstract Word ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match);
 	}
 }

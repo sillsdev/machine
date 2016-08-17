@@ -58,11 +58,11 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="SIL.Collections, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SIL.Machine.1.0.0-build00021\lib\net40-Client\SIL.Collections.dll</HintPath>
+      <HintPath>..\packages\SIL.Machine.1.0.0-build00022\lib\net40-Client\SIL.Collections.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="SIL.Machine, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SIL.Machine.1.0.0-build00021\lib\net40-Client\SIL.Machine.dll</HintPath>
+      <HintPath>..\packages\SIL.Machine.1.0.0-build00022\lib\net40-Client\SIL.Machine.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -118,21 +118,29 @@
     <Compile Include="PhonologicalRules\AnalysisMetathesisRule.cs" />
     <Compile Include="PhonologicalRules\AnalysisMetathesisRuleSpec.cs" />
     <Compile Include="PhonologicalRules\AnalysisRewriteRule.cs" />
-    <Compile Include="PhonologicalRules\AnalysisRewriteRuleSpec.cs" />
-    <Compile Include="PhonologicalRules\BacktrackingPatternRule.cs" />
+    <Compile Include="PhonologicalRules\AnalysisRewriteSubruleSpec.cs" />
+    <Compile Include="PhonologicalRules\IPhonologicalPatternRuleSpec.cs" />
+    <Compile Include="PhonologicalRules\IPhonologicalPatternSubruleSpec.cs" />
+    <Compile Include="PhonologicalRules\IterativePhonologicalPatternRule.cs" />
     <Compile Include="PhonologicalRules\EpenthesisAnalysisRewriteRuleSpec.cs" />
-    <Compile Include="PhonologicalRules\EpenthesisSynthesisRewriteRuleSpec.cs" />
+    <Compile Include="PhonologicalRules\EpenthesisSynthesisRewriteSubruleSpec.cs" />
     <Compile Include="PhonologicalRules\FeatureAnalysisRewriteRuleSpec.cs" />
-    <Compile Include="PhonologicalRules\FeatureSynthesisRewriteRuleSpec.cs" />
+    <Compile Include="PhonologicalRules\FeatureSynthesisRewriteSubruleSpec.cs" />
     <Compile Include="PhonologicalRules\MetathesisRule.cs" />
+    <Compile Include="PhonologicalRules\RewriteRuleSpec.cs" />
+    <Compile Include="PhonologicalRules\PhonologicalPatternRule.cs" />
+    <Compile Include="PhonologicalRules\PhonologicalSubruleMatch.cs" />
+    <Compile Include="PhonologicalRules\RewriteSubruleSpec.cs" />
+    <Compile Include="PhonologicalRules\SimultaneousPhonologicalPatternRule.cs" />
     <Compile Include="PhonologicalRules\SynthesisMetathesisRuleSpec.cs" />
     <Compile Include="PhonologicalRules\NarrowAnalysisRewriteRuleSpec.cs" />
-    <Compile Include="PhonologicalRules\NarrowSynthesisRewriteRuleSpec.cs" />
+    <Compile Include="PhonologicalRules\NarrowSynthesisRewriteSubruleSpec.cs" />
     <Compile Include="PhonologicalRules\RewriteRule.cs" />
     <Compile Include="PhonologicalRules\RewriteSubrule.cs" />
     <Compile Include="PhonologicalRules\SynthesisMetathesisRule.cs" />
     <Compile Include="PhonologicalRules\SynthesisRewriteRule.cs" />
     <Compile Include="PhonologicalRules\SynthesisRewriteRuleSpec.cs" />
+    <Compile Include="PhonologicalRules\SynthesisRewriteSubruleSpec.cs" />
     <Compile Include="Properties.cs" />
     <Compile Include="RootAllomorph.cs" />
     <Compile Include="LexEntry.cs" />

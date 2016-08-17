@@ -15,11 +15,11 @@ namespace SIL.HermitCrab.MorphologicalRules
 			Pattern.Freeze();
 		}
 
-		public override ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)
+		public override Word ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match)
 		{
-			output = match.Input.DeepClone();
+			Word output = match.Input.DeepClone();
 			GenerateShape(_allomorph.Lhs, output.Shape, match);
-			return null;
+			return output;
 		}
 	}
 }
