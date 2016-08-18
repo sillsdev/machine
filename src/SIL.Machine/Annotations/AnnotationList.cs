@@ -200,7 +200,7 @@ namespace SIL.Machine.Annotations
 					result = result.Prev;
 			}
 
-			if (offset.Equals(result.GetNext(dir).Span.GetStart(dir)))
+			if (!offset.Equals(result.Span.GetStart(dir)) && offset.Equals(result.GetNext(dir).Span.GetStart(dir)))
 				result = result.GetNext(dir);
 			return offset.Equals(result.Span.GetStart(dir));
 		}

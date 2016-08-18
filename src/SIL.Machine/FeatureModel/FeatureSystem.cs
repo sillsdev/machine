@@ -133,13 +133,13 @@ namespace SIL.Machine.FeatureModel
 			return ((IEnumerable<Feature>) this).GetEnumerator();
 		}
 
-		public void Add(Feature feature)
+		public virtual void Add(Feature feature)
 		{
 			CheckFrozen();
 			_features.Add(feature);
 		}
 
-		public void Clear()
+		public virtual void Clear()
 		{
 			CheckFrozen();
 			_features.Clear();
@@ -155,19 +155,19 @@ namespace SIL.Machine.FeatureModel
 			_features.CopyTo(array, arrayIndex);
 		}
 
-		public bool Remove(Feature feature)
+		public virtual bool Remove(Feature feature)
 		{
 			CheckFrozen();
 			return _features.Remove(feature);
 		}
 
-		public bool Remove(string featureID)
+		public virtual bool Remove(string featureID)
 		{
 			CheckFrozen();
 			return _features.Remove(featureID);
 		}
 
-		private void CheckFrozen()
+		protected void CheckFrozen()
 		{
 			if (IsFrozen)
 				throw new InvalidOperationException("The feature system is immutable.");

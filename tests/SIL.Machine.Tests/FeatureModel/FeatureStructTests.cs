@@ -46,6 +46,8 @@ namespace SIL.Machine.Tests.FeatureModel
 					.Feature("cx2").ReferringTo(1).Value,
 				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol(1, "a2"))
 					.Feature("cx2").EqualTo(cx2 => cx2.Feature("a").ReferringTo(1)).Value,
+				featSys => null,
+				featSys => null,
 
 				// cyclic
 				featSys => null,
@@ -148,6 +150,8 @@ namespace SIL.Machine.Tests.FeatureModel
 				featSys => true,
 				featSys => true,
 				featSys => true,
+				featSys => false,
+				featSys => false,
 
 				// cyclic
 				featSys => false,
@@ -205,6 +209,10 @@ namespace SIL.Machine.Tests.FeatureModel
 					.Feature("cx2").ReferringTo(1).Value,
 				featSys => FeatureStruct.New(featSys).Feature("cx2").EqualTo(cx2 => cx2.Symbol(1, "a2", "a3", "a4"))
 					.Feature("cx1").EqualTo(cx1 => cx1.Feature("a").ReferringTo(1)).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx2").EqualTo(1, cx2 => cx2.Symbol("a3"))
+					.Feature("cx1").ReferringTo(1).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx2").EqualTo(1, cx2 => cx2.Symbol("a2", "a3", "a4"))
+					.Feature("cx1").ReferringTo(1).Value,
 
 				// cyclic
 				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
@@ -258,6 +266,8 @@ namespace SIL.Machine.Tests.FeatureModel
 				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1.Symbol("a1", "a2"))
 					.Feature("cx2").ReferringTo(1).Value,
 				featSys => FeatureStruct.New().Value,
+				featSys => FeatureStruct.New().Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1", "a2", "a3")).Value,
 				featSys => FeatureStruct.New().Value,
 
 				// cyclic
@@ -315,6 +325,9 @@ namespace SIL.Machine.Tests.FeatureModel
 					.Feature("cx2").ReferringTo(1).Value,
 				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol(1, "a1"))
 					.Feature("cx2").EqualTo(cx2 => cx2.Feature("a").ReferringTo(1)).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1", "a2")).Value,
+				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(1, cx1 => cx1.Symbol("a1"))
+					.Feature("cx2").ReferringTo(1).Value,
 
 				// cyclic
 				featSys => FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1").Symbol("b1")).Value,
@@ -428,6 +441,17 @@ namespace SIL.Machine.Tests.FeatureModel
 				.Feature("cx1").EqualTo(cx1 => cx1.Feature("a").ReferringTo(1)).Value;
 			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[9](featSys)).Using(comparer));
 
+			fs1 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1", "a2")).Value;
+			fs2 = FeatureStruct.NewMutable(featSys).Feature("cx2").EqualTo(1, cx2 => cx2.Symbol("a3"))
+				.Feature("cx1").ReferringTo(1).Value;
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[10](featSys)).Using(comparer));
+
+			fs1 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(1, cx1 => cx1.Symbol("a1"))
+				.Feature("cx2").ReferringTo(1).Value;
+			fs2 = FeatureStruct.NewMutable(featSys).Feature("cx2").EqualTo(1, cx2 => cx2.Symbol("a2", "a3", "a4"))
+				.Feature("cx1").ReferringTo(1).Value;
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[11](featSys)).Using(comparer));
+
 			// cyclic
 			featSys = new FeatureSystem
 			          	{
@@ -443,31 +467,31 @@ namespace SIL.Machine.Tests.FeatureModel
 				.Symbol("a1").Symbol("b1")).Value;
 			fs2 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
 				.Symbol("a2").Feature("cx2").ReferringTo(1)).Value;
-			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[10](featSys)).Using(comparer));
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[12](featSys)).Using(comparer));
 
 			fs1 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
 				.Symbol("a1", "a2").Feature("cx2").ReferringTo(1)).Value;
 			fs2 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(cx1 => cx1
 				.Symbol("a2").Symbol("b2")).Value;
-			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[11](featSys)).Using(comparer));
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[13](featSys)).Using(comparer));
 
 			fs1 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(cx1 => cx1
 				.Symbol("a1", "a2").Symbol("b1").Feature("cx2").EqualTo(cx2 => cx2.Symbol("c1"))).Value;
 			fs2 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
 				.Symbol("a2").Feature("cx2").ReferringTo(1)).Value;
-			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[12](featSys)).Using(comparer));
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[14](featSys)).Using(comparer));
 
 			fs1 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(cx1 => cx1
 				.Symbol("a1").Symbol("b1").Feature("cx2").EqualTo(cx2 => cx2.Symbol("c1", "c2"))).Value;
 			fs2 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
 				.Symbol("a2").Symbol("c2").Feature("cx2").ReferringTo(1)).Value;
-			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[13](featSys)).Using(comparer));
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[15](featSys)).Using(comparer));
 
 			fs1 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
 				.Symbol("a1").Symbol("b1").Symbol("c1").Feature("cx2").ReferringTo(1)).Value;
 			fs2 = FeatureStruct.NewMutable(featSys).Feature("cx1").EqualTo(1, cx1 => cx1
 				.Symbol("a2").Symbol("c2").Feature("cx2").ReferringTo(1)).Value;
-			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[14](featSys)).Using(comparer));
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[16](featSys)).Using(comparer));
 
 			// variable
 			featSys = new FeatureSystem
@@ -485,7 +509,7 @@ namespace SIL.Machine.Tests.FeatureModel
 				.Feature("a").Not.EqualToVariable("var1")
 				.Symbol("b-").Value;
 
-			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[15](featSys)).Using(comparer));
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[17](featSys)).Using(comparer));
 
 			fs1 = FeatureStruct.NewMutable(featSys)
 				.Feature("a").EqualToVariable("var1")
@@ -495,7 +519,7 @@ namespace SIL.Machine.Tests.FeatureModel
 				.Symbol("a+")
 				.Symbol("b-").Value;
 
-			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[16](featSys)).Using(comparer));
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[18](featSys)).Using(comparer));
 
 			fs1 = FeatureStruct.NewMutable(featSys)
 				.Symbol("a+")
@@ -505,7 +529,7 @@ namespace SIL.Machine.Tests.FeatureModel
 				.Feature("a").Not.EqualToVariable("var1")
 				.Symbol("b-").Value;
 
-			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[17](featSys)).Using(comparer));
+			Assert.That(resultsSelector(fs1, fs2), Is.EqualTo(expectedSelectors[19](featSys)).Using(comparer));
 
 			fs1 = FeatureStruct.NewMutable(featSys)
 				.Symbol("a+")
@@ -517,7 +541,7 @@ namespace SIL.Machine.Tests.FeatureModel
 
 			var varBindings = new VariableBindings();
 			varBindings["var1"] = new SymbolicFeatureValue(featSys.GetSymbol("a-"));
-			Assert.That(varResultsSelector(fs1, fs2, varBindings), Is.EqualTo(expectedSelectors[18](featSys)).Using(comparer));
+			Assert.That(varResultsSelector(fs1, fs2, varBindings), Is.EqualTo(expectedSelectors[20](featSys)).Using(comparer));
 
 			fs1 = FeatureStruct.NewMutable(featSys)
 				.Symbol("a+")
@@ -529,7 +553,7 @@ namespace SIL.Machine.Tests.FeatureModel
 
 			varBindings = new VariableBindings();
 			varBindings["var1"] = new SymbolicFeatureValue(featSys.GetSymbol("a+"));
-			Assert.That(varResultsSelector(fs1, fs2, varBindings), Is.EqualTo(expectedSelectors[19](featSys)).Using(comparer));
+			Assert.That(varResultsSelector(fs1, fs2, varBindings), Is.EqualTo(expectedSelectors[21](featSys)).Using(comparer));
 		}
 	}
 }

@@ -87,6 +87,11 @@ namespace SIL.Machine.Matching
 			}
 		}
 
+		public bool IsEmpty
+		{
+			get { return IsLeaf; }
+		}
+
 		protected override PatternNode<TData, TOffset> CloneImpl()
 		{
 			return new Pattern<TData, TOffset>(this);

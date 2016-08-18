@@ -51,9 +51,22 @@ namespace SIL.Machine.FeatureModel
 			return _varBindings.Remove(variableName);
 		}
 
-		public bool TryGetValue(string variableName, out SimpleFeatureValue value)
+		public bool TryGetValue(string key, out SimpleFeatureValue value)
 		{
-			return _varBindings.TryGetValue(variableName, out value);
+			return _varBindings.TryGetValue(key, out value);
+		}
+
+		public bool TryGetValue<T>(string variableName, out T value) where T : SimpleFeatureValue
+		{
+			SimpleFeatureValue sfv;
+			if (_varBindings.TryGetValue(variableName, out sfv))
+			{
+				value = (T) sfv;
+				return true;
+			}
+
+			value = default(T);
+			return false;
 		}
 
 		public SimpleFeatureValue this[string variableName]

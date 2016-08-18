@@ -83,6 +83,16 @@ namespace SIL.Machine.FeatureModel
 			}
 		}
 
+		public bool IsSupersetOf(SymbolicFeatureValue other, bool notOther = false)
+		{
+			return IsSupersetOf(false, other, notOther);
+		}
+
+		public bool Overlaps(SymbolicFeatureValue other, bool notOther = false)
+		{
+			return Overlaps(false, other, notOther);
+		}
+
 		private void SetFirst()
 		{
 			_first = _flags == 0 ? null : _feature.PossibleSymbols.First(Get);

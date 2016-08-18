@@ -31,6 +31,7 @@ namespace SIL.Machine.Matching
 		protected PatternNode(PatternNode<TData, TOffset> node)
 			: this(node.Children.CloneItems())
 		{
+			Tag = node.Tag;
 		}
 
 		protected Pattern<TData, TOffset> Pattern
@@ -59,6 +60,8 @@ namespace SIL.Machine.Matching
 		{
 			return CloneImpl();
 		}
+
+		public object Tag { get; set; }
 
 		public bool IsFrozen { get; private set; }
 

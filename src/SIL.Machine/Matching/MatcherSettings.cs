@@ -1,6 +1,7 @@
 ﻿using System;
 using SIL.Machine.Annotations;
 using SIL.Machine.DataStructures;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Matching
 {
@@ -10,7 +11,7 @@ namespace SIL.Machine.Matching
 		Unification
 	}
 
-	public sealed class MatcherSettings<TOffset>
+	public sealed class MatcherSettings<TOffset> : Freezable<MatcherSettings<TOffset>>, ICloneable<MatcherSettings<TOffset>>
 	{
 		private Direction _dir;
 		private Func<Annotation<TOffset>, bool> _filter;
@@ -26,14 +27,24 @@ namespace SIL.Machine.Matching
 			_filter = ann => true;
 		}
 
-		internal bool ReadOnly { get; set; }
+		private MatcherSettings(MatcherSettings<TOffset> other)
+		{
+			_dir = other._dir;
+			_filter = other._filter;
+			_useDefaults = other._useDefaults;
+			_nondeterministic = other._nondeterministic;
+			_anchoredToStart = other._anchoredToStart;
+			_anchoredToEnd = other._anchoredToEnd;
+			_allSubmatches = other._allSubmatches;
+			_matchingMethod = other._matchingMethod;
+		}
 
 		public Direction Direction
 		{
 			get { return _dir; }
 			set
 			{
-				CheckReadOnly();
+				CheckFrozen();
 				_dir = value;
 			}
 		}
@@ -43,7 +54,7 @@ namespace SIL.Machine.Matching
 			get { return _filter; }
 			set
 			{
-				CheckReadOnly();
+				CheckFrozen();
 				_filter = value;
 			}
 		}
@@ -53,7 +64,7 @@ namespace SIL.Machine.Matching
 			get { return _useDefaults; }
 			set
 			{
-				CheckReadOnly();
+				CheckFrozen();
 				_useDefaults = value;
 			}
 		}
@@ -63,7 +74,7 @@ namespace SIL.Machine.Matching
 			get { return _nondeterministic; }
 			set
 			{
-				CheckReadOnly();
+				CheckFrozen();
 				_nondeterministic = value;
 			}
 		}
@@ -73,7 +84,7 @@ namespace SIL.Machine.Matching
 			get { return _anchoredToStart; }
 			set
 			{
-				CheckReadOnly();
+				CheckFrozen();
 				_anchoredToStart = value;
 			}
 		}
@@ -83,7 +94,7 @@ namespace SIL.Machine.Matching
 			get { return _anchoredToEnd; }
 			set
 			{
-				CheckReadOnly();
+				CheckFrozen();
 				_anchoredToEnd = value;
 			}
 		}
@@ -93,7 +104,7 @@ namespace SIL.Machine.Matching
 			get { return _allSubmatches; }
 			set
 			{
-				CheckReadOnly();
+				CheckFrozen();
 				_allSubmatches = value;
 			}
 		}
@@ -103,15 +114,35 @@ namespace SIL.Machine.Matching
 			get { return _matchingMethod; }
 			set
 			{
-				CheckReadOnly();
+				CheckFrozen();
 				_matchingMethod = value;
 			}
 		}
 
-		private void CheckReadOnly()
+		public override bool ValueEquals(MatcherSettings<TOffset> other)
 		{
-			if (ReadOnly)
-				throw new InvalidOperationException("Settings cannot be changed after a Matcher object has been created.");
+			return other != null && _dir == other._dir && _filter == other._filter && _useDefaults == other._useDefaults
+			    && _nondeterministic == other._nondeterministic && _anchoredToStart == other._anchoredToStart && _anchoredToEnd == other._anchoredToEnd
+			    && _allSubmatches == other._allSubmatches && _matchingMethod == other._matchingMethod;
+		}
+
+		protected override int FreezeImpl()
+		{
+			int code = 23;
+			code = code * 31 + _dir.GetHashCode();
+			code = code * 31 + _filter.GetHashCode();
+			code = code * 31 + _useDefaults.GetHashCode();
+			code = code * 31 + _nondeterministic.GetHashCode();
+			code = code * 31 + _anchoredToStart.GetHashCode();
+			code = code * 31 + _anchoredToEnd.GetHashCode();
+			code = code * 31 + _allSubmatches.GetHashCode();
+			code = code * 31 + _matchingMethod.GetHashCode();
+			return code;
+		}
+
+		public MatcherSettings<TOffset> Clone()
+		{
+			return new MatcherSettings<TOffset>(this);
 		}
 	}
 }

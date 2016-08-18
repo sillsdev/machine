@@ -37,7 +37,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IValueEquatable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\KeyedBulkObservableList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\KeyedList.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\NullableValue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\ObservableDictionary.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\ObservableHashSet.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\ObservableList.cs" />

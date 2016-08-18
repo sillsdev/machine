@@ -57,11 +57,7 @@ namespace SIL.Machine.Rules
 		{
 			Match<TData, TOffset> match = _matcher.Match(input, start);
 			if (match.Success)
-			{
-				TData outputData;
-				_ruleSpec.ApplyRhs(this, match, out outputData);
-				return outputData.ToEnumerable();
-			}
+				return _ruleSpec.ApplyRhs(this, match).ToEnumerable();
 			return Enumerable.Empty<TData>();
 		}
 	}

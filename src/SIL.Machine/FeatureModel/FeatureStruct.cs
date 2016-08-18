@@ -288,15 +288,13 @@ namespace SIL.Machine.FeatureModel
 
 		public void PriorityUnion(FeatureStruct other)
 		{
-			PriorityUnion(other, new VariableBindings());
+			PriorityUnion(other, null);
 		}
 
 		public void PriorityUnion(FeatureStruct other, VariableBindings varBindings)
 		{
 			if (other == null)
 				throw new ArgumentNullException("other");
-			if (varBindings == null)
-				throw new ArgumentNullException("varBindings");
 
 			CheckFrozen();
 			PriorityUnion(other, varBindings, new Dictionary<FeatureValue, FeatureValue>());
@@ -350,7 +348,7 @@ namespace SIL.Machine.FeatureModel
 					{
 						var otherSfv = (SimpleFeatureValue) otherValue;
 						SimpleFeatureValue binding;
-						if (otherSfv.IsVariable && varBindings.TryGetValue(otherSfv.VariableName, out binding))
+						if (otherSfv.IsVariable && varBindings != null && varBindings.TryGetValue(otherSfv.VariableName, out binding))
 							_definite[featVal.Key] = binding.GetVariableValue(otherSfv.Agree);
 						else
 							_definite[featVal.Key] = otherSfv.CloneImpl(copies);
@@ -365,15 +363,13 @@ namespace SIL.Machine.FeatureModel
 
 		public void Union(FeatureStruct other)
 		{
-			Union(other, new VariableBindings());
+			Union(other, null);
 		}
 
 		public void Union(FeatureStruct other, VariableBindings varBindings)
 		{
 			if (other == null)
 				throw new ArgumentNullException("other");
-			if (varBindings == null)
-				throw new ArgumentNullException("varBindings");
 
 			CheckFrozen();
 			UnionImpl(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>());
@@ -409,15 +405,13 @@ namespace SIL.Machine.FeatureModel
 
 		public void Add(FeatureStruct other)
 		{
-			Add(other, new VariableBindings());
+			Add(other, null);
 		}
 
 		public void Add(FeatureStruct other, VariableBindings varBindings)
 		{
 			if (other == null)
 				throw new ArgumentNullException("other");
-			if (varBindings == null)
-				throw new ArgumentNullException("varBindings");
 
 			CheckFrozen();
 			AddImpl(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>());
@@ -461,15 +455,13 @@ namespace SIL.Machine.FeatureModel
 
 		public void Subtract(FeatureStruct other)
 		{
-			Subtract(other, new VariableBindings());
+			Subtract(other, null);
 		}
 
 		public void Subtract(FeatureStruct other, VariableBindings varBindings)
 		{
 			if (other == null)
 				throw new ArgumentNullException("other");
-			if (varBindings == null)
-				throw new ArgumentNullException("varBindings");
 
 			CheckFrozen();
 			SubtractImpl(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>());
@@ -807,7 +799,7 @@ namespace SIL.Machine.FeatureModel
 
 			other = Dereference(other);
 
-			VariableBindings definiteVarBindings = varBindings == null ? new VariableBindings() : varBindings.Clone();
+			VariableBindings definiteVarBindings = varBindings == null ? null : varBindings.Clone();
 			if (IsUnifiableImpl(other, useDefaults, definiteVarBindings))
 			{
 				if (varBindings != null)
@@ -864,7 +856,7 @@ namespace SIL.Machine.FeatureModel
 
 			other = Dereference(other);
 
-			VariableBindings tempVarBindings = varBindings == null ? new VariableBindings() : varBindings.Clone();
+			VariableBindings tempVarBindings = varBindings == null ? null : varBindings.Clone();
 			FeatureValue newFV;
 			if (!UnifyImpl(other, useDefaults, tempVarBindings, out newFV))
 			{
@@ -900,7 +892,7 @@ namespace SIL.Machine.FeatureModel
 
 			other = Dereference(other);
 
-			VariableBindings tempVarBindings = varBindings == null ? new VariableBindings() : varBindings.Clone();
+			VariableBindings tempVarBindings = varBindings == null ? null : varBindings.Clone();
 			if (SubsumesImpl(other, useDefaults, tempVarBindings))
 			{
 				if (varBindings != null)

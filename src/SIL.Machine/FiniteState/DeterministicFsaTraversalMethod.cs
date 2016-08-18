@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using SIL.Machine.Annotations;
 using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
@@ -7,55 +6,53 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.FiniteState
 {
-	internal class DeterministicFsaTraversalMethod<TData, TOffset> : TraversalMethod<TData, TOffset> where TData : IAnnotatedData<TOffset>
+	internal class DeterministicFsaTraversalMethod<TData, TOffset> : TraversalMethodBase<TData, TOffset, DeterministicFsaTraversalInstance<TData, TOffset>> where TData : IAnnotatedData<TOffset>
 	{
-		public DeterministicFsaTraversalMethod(IEqualityComparer<NullableValue<TOffset>[,]> registersEqualityComparer, Direction dir, Func<Annotation<TOffset>, bool> filter,
-			State<TData, TOffset> startState, TData data, bool endAnchor, bool unification, bool useDefaults)
-			: base(registersEqualityComparer, dir, filter, startState, data, endAnchor, unification, useDefaults)
+		public DeterministicFsaTraversalMethod(Fst<TData, TOffset> fst, TData data, VariableBindings varBindings, bool startAnchor, bool endAnchor, bool useDefaults)
+			: base(fst, data, varBindings, startAnchor, endAnchor, useDefaults)
 		{
 		}
 
-		public override IEnumerable<FstResult<TData, TOffset>> Traverse(ref int annIndex, NullableValue<TOffset>[,] initRegisters, IList<TagMapCommand> initCmds, ISet<int> initAnns)
+		public override IEnumerable<FstResult<TData, TOffset>> Traverse(ref int annIndex, Register<TOffset>[,] initRegisters, IList<TagMapCommand> initCmds, ISet<int> initAnns)
 		{
-			Stack<Instance> instStack = InitializeStack(ref annIndex, initRegisters, initCmds, initAnns);
+			Stack<DeterministicFsaTraversalInstance<TData, TOffset>> instStack = InitializeStack(ref annIndex, initRegisters, initCmds, initAnns);
 
 			var curResults = new List<FstResult<TData, TOffset>>(); 
 			while (instStack.Count != 0)
 			{
-				Instance inst = instStack.Pop();
+				DeterministicFsaTraversalInstance<TData, TOffset> inst = instStack.Pop();
 
+				bool releaseInstance = true;
 				foreach (Arc<TData, TOffset> arc in inst.State.Arcs)
 				{
 					if (CheckInputMatch(arc, inst.AnnotationIndex, inst.VariableBindings))
 					{
-						foreach (Instance ni in AdvanceFsa(inst.AnnotationIndex, inst.Registers, inst.VariableBindings, arc, curResults))
+						foreach (DeterministicFsaTraversalInstance<TData, TOffset> ni in Advance(inst, inst.VariableBindings, arc, curResults))
 							instStack.Push(ni);
+						releaseInstance = false;
 						break;
 					}
 				}
+
+				if (releaseInstance)
+					ReleaseInstance(inst);
 			}
 
 			return curResults;
 		}
 
-		private static Instance CreateInstance()
+		protected override DeterministicFsaTraversalInstance<TData, TOffset> CreateInstance()
 		{
-			return new Instance();
+			return new DeterministicFsaTraversalInstance<TData, TOffset>(Fst.RegisterCount);
 		}
 
-		private Stack<Instance> InitializeStack(ref int annIndex, NullableValue<TOffset>[,] registers,
+		private Stack<DeterministicFsaTraversalInstance<TData, TOffset>> InitializeStack(ref int annIndex, Register<TOffset>[,] registers,
 			IList<TagMapCommand> cmds, ISet<int> initAnns)
 		{
-			var instStack = new Stack<Instance>();
-			foreach (Instance inst in Initialize(ref annIndex, registers, cmds, initAnns, CreateInstance))
+			var instStack = new Stack<DeterministicFsaTraversalInstance<TData, TOffset>>();
+			foreach (DeterministicFsaTraversalInstance<TData, TOffset> inst in Initialize(ref annIndex, registers, cmds, initAnns))
 				instStack.Push(inst);
 			return instStack;
-		}
-
-		private IEnumerable<Instance> AdvanceFsa(int annIndex, NullableValue<TOffset>[,] registers, VariableBindings varBindings, Arc<TData, TOffset> arc,
-			List<FstResult<TData, TOffset>> curResults)
-		{
-			return Advance(annIndex, registers, default(TData), varBindings, arc, curResults, null, CreateInstance);
 		}
 	}
 }

@@ -10,6 +10,15 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.FiniteState
 {
+	/// <summary>
+	/// A finite state transducer that works withs annotations with feature structures.
+	/// 
+	/// Note: Deterministic FSTs do not work properly with input annotations that have feature structures with
+	/// underspecified feature values, i.e. symbolic or string feature values with more than one symbol or string.
+	/// These underspecified feature values can make the input ambiguous and cause a deterministic FST to have
+	/// different results than the equivalent non-deterministic FST for the same input. If it is possible
+	/// for the input to contain underspecified feature values, then a non-deterministic FST should be used.
+	/// </summary>
 	public class Fst<TData, TOffset> : IFreezable where TData : IAnnotatedData<TOffset>
 	{
 		private int _nextTag;
@@ -25,6 +34,7 @@ namespace SIL.Machine.FiniteState
 		private readonly IEqualityComparer<TOffset> _offsetEqualityComparer; 
 		private bool _unification;
 		private State<TData, TOffset> _startState;
+		private bool _ignoreVariables;
 
 		public Fst()
 			: this(null, EqualityComparer<TOffset>.Default)
@@ -101,22 +111,22 @@ namespace SIL.Machine.FiniteState
 			get { return _operations == null; }
 		}
 
-		public bool GetOffsets(string groupName, NullableValue<TOffset>[,] registers, out TOffset start, out TOffset end)
+		public bool GetOffsets(string groupName, Register<TOffset>[,] registers, out TOffset start, out TOffset end)
 		{
 			int tag = _groups[groupName];
-			NullableValue<TOffset> startValue = registers[tag, 0];
-			NullableValue<TOffset> endValue = registers[tag + 1, 1];
-			if (startValue.HasValue && endValue.HasValue)
+			Register<TOffset> startValue = registers[tag, 0];
+			Register<TOffset> endValue = registers[tag + 1, 1];
+			if (startValue.HasOffset && endValue.HasOffset && !startValue.ValueEquals(endValue, _offsetEqualityComparer))
 			{
 				if (_dir == Direction.LeftToRight)
 				{
-					start = startValue.Value;
-					end = endValue.Value;
+					start = startValue.Offset;
+					end = endValue.Offset;
 				}
 				else
 				{
-					start = endValue.Value;
-					end = startValue.Value;
+					start = endValue.Offset;
+					end = startValue.Offset;
 				}
 				return true;
 			}
@@ -198,6 +208,17 @@ namespace SIL.Machine.FiniteState
 			}
 		}
 
+		public bool IgnoreVariables
+		{
+			get { return _ignoreVariables; }
+			set
+			{
+				CheckFrozen();
+
+				_ignoreVariables = value;
+			}
+		}
+
 		public IReadOnlyCollection<State<TData, TOffset>> States
 		{
 			get { return _readonlyStates; }
@@ -206,6 +227,16 @@ namespace SIL.Machine.FiniteState
 		public IFstOperations<TData, TOffset> Operations
 		{
 			get { return _operations; }
+		}
+
+		internal IEqualityComparer<Register<TOffset>[,]> RegistersEqualityComparer
+		{
+			get { return _registersEqualityComparer; }
+		}
+
+		internal int RegisterCount
+		{
+			get { return _registerCount; }
 		}
 
 		public void Reset()
@@ -217,19 +248,21 @@ namespace SIL.Machine.FiniteState
 			IsDeterministic = false;
 		}
 
-		public bool Transduce(TData data, Annotation<TOffset> start, bool startAnchor, bool endAnchor, bool useDefaults, out IEnumerable<FstResult<TData, TOffset>> results)
+		public bool Transduce(TData data, Annotation<TOffset> start, VariableBindings varBindings, bool startAnchor, bool endAnchor, bool useDefaults,
+			out IEnumerable<FstResult<TData, TOffset>> results)
 		{
 			if (_operations != null && !(data is ICloneable<TData>))
 				throw new ArgumentException("The input data must be cloneable.", "data");
-			return Transduce(data, start, startAnchor, endAnchor, true, useDefaults, out results);
+			return Transduce(data, start, varBindings, startAnchor, endAnchor, true, useDefaults, out results);
 		}
 
-		public bool Transduce(TData data, Annotation<TOffset> start, bool startAnchor, bool endAnchor, bool useDefaults, out FstResult<TData, TOffset> result)
+		public bool Transduce(TData data, Annotation<TOffset> start, VariableBindings varBindings, bool startAnchor, bool endAnchor, bool useDefaults,
+			out FstResult<TData, TOffset> result)
 		{
 			if (_operations != null && !(data is ICloneable<TData>))
 				throw new ArgumentException("The input data must be cloneable.", "data");
 			IEnumerable<FstResult<TData, TOffset>> results;
-			if (Transduce(data, start, startAnchor, endAnchor, false, useDefaults, out results))
+			if (Transduce(data, start, varBindings, startAnchor, endAnchor, false, useDefaults, out results))
 			{
 				result = results.First();
 				return true;
@@ -238,22 +271,23 @@ namespace SIL.Machine.FiniteState
 			return false;
 		}
 
-		private bool Transduce(TData data, Annotation<TOffset> start, bool startAnchor, bool endAnchor, bool allMatches, bool useDefaults, out IEnumerable<FstResult<TData, TOffset>> results)
+		private bool Transduce(TData data, Annotation<TOffset> start, VariableBindings varBindings, bool startAnchor, bool endAnchor, bool allMatches,
+			bool useDefaults, out IEnumerable<FstResult<TData, TOffset>> results)
 		{
-			TraversalMethod<TData, TOffset> traversalMethod;
+			ITraversalMethod<TData, TOffset> traversalMethod;
 			if (_operations != null)
 			{
 				if (IsDeterministic)
-					traversalMethod = new DeterministicFstTraversalMethod<TData, TOffset>(_registersEqualityComparer, _operations, _dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
+					traversalMethod = new DeterministicFstTraversalMethod<TData, TOffset>(this, data, varBindings, startAnchor, endAnchor, useDefaults);
 				else
-					traversalMethod = new NondeterministicFstTraversalMethod<TData, TOffset>(_registersEqualityComparer, _operations, _dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
+					traversalMethod = new NondeterministicFstTraversalMethod<TData, TOffset>(this, data, varBindings, startAnchor, endAnchor, useDefaults);
 			}
 			else
 			{
 				if (IsDeterministic)
-					traversalMethod = new DeterministicFsaTraversalMethod<TData, TOffset>(_registersEqualityComparer, _dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
+					traversalMethod = new DeterministicFsaTraversalMethod<TData, TOffset>(this, data, varBindings, startAnchor, endAnchor, useDefaults);
 				else
-					traversalMethod = new NondeterministicFsaTraversalMethod<TData, TOffset>(_registersEqualityComparer, _dir, _filter, StartState, data, endAnchor, _unification, useDefaults);
+					traversalMethod = new NondeterministicFsaTraversalMethod<TData, TOffset>(this, data, varBindings, startAnchor, endAnchor, useDefaults);
 			}
 			List<FstResult<TData, TOffset>> resultList = null;
 
@@ -262,13 +296,13 @@ namespace SIL.Machine.FiniteState
 			var initAnns = new HashSet<int>();
 			while (annIndex < traversalMethod.Annotations.Count)
 			{
-				var initRegisters = new NullableValue<TOffset>[_registerCount, 2];
+				var initRegisters = new Register<TOffset>[_registerCount, 2];
 
 				var cmds = new List<TagMapCommand>();
 				foreach (TagMapCommand cmd in _initializers)
 				{
 					if (cmd.Dest == 0)
-						initRegisters[cmd.Dest, 0].Value = traversalMethod.Annotations[annIndex].Span.GetStart(_dir);
+						initRegisters[cmd.Dest, 0].SetOffset(traversalMethod.Annotations[annIndex].Span.GetStart(_dir), true);
 					else
 						cmds.Add(cmd);
 				}
@@ -774,41 +808,25 @@ namespace SIL.Machine.FiniteState
 
 		private bool IsLazyAcceptingState(SubsetState state)
 		{
-			//Arc<TData, TOffset> arc = state.NfaStates.SelectMany(s => s.NfaState.Arcs).MinBy(a => a.Priority);
-			//State<TData, TOffset> curState = arc.Target;
-			//while (!curState.IsAccepting)
-			//{
-			//    Arc<TData, TOffset> highestPriArc = curState.Arcs.MinBy(a => a.Priority);
-			//    if (highestPriArc.Condition != null)
-			//        break;
-			//    curState = highestPriArc.Target;
-			//}
-			//return curState.IsAccepting;
+			State<TData, TOffset> curState = state.NfaStates.Min().NfaState;
+			while (!curState.IsAccepting)
+			{
+				Arc<TData, TOffset> highestPriArc = curState.Arcs.MinBy(a => a.Priority);
+				if (!highestPriArc.Input.IsEpsilon)
+					break;
+				curState = highestPriArc.Target;
+			}
 
-			//foreach (Arc<TData, TOffset> arc in state.NfaStates.Min().NfaState.Arcs)
-			//{
-				//State<TData, TOffset> curState = arc.Target;
-				State<TData, TOffset> curState = state.NfaStates.Min().NfaState;
-				while (!curState.IsAccepting)
+			if (curState.IsAccepting)
+			{
+				if ((from s in state.NfaStates
+					 from tran in s.NfaState.Arcs
+					 where !tran.Input.IsEpsilon
+					 select tran.Input).Any())
 				{
-					Arc<TData, TOffset> highestPriArc = curState.Arcs.MinBy(a => a.Priority);
-					if (!highestPriArc.Input.IsEpsilon)
-						break;
-					curState = highestPriArc.Target;
+					return true;
 				}
-
-				if (curState.IsAccepting)
-				{
-					if ((from s in state.NfaStates
-						 from tran in s.NfaState.Arcs
-						 where !tran.Input.IsEpsilon
-						 select tran.Input).Any())
-					{
-						return true;
-					}
-					//break;
-				}
-			//}
+			}
 			return false;
 		}
 

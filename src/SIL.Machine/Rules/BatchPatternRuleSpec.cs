@@ -36,7 +36,7 @@ namespace SIL.Machine.Rules
 			if (e.OldStartingIndex > -1)
 			{
 				PatternNode<TData, TOffset> startNode = _pattern.Children.ElementAt(e.OldStartingIndex);
-				foreach (Pattern<TData, TOffset> node in startNode.GetNodes().Take(e.OldItems.Count).ToArray())
+				foreach (Pattern<TData, TOffset> node in startNode.GetNodes().Take(e.OldItems.Count).Cast<Pattern<TData, TOffset>>().ToArray())
 				{
 					_ruleIds.Remove(node.Name);
 					node.Remove();
@@ -51,9 +51,9 @@ namespace SIL.Machine.Rules
 					string id = "rule" + _curRuleId++;
 					_ruleIds[id] = ruleSpec;
 					var subpattern = new Pattern<TData, TOffset>(id, ruleSpec.Pattern.Children.CloneItems())
-									{
-										Acceptable = match => ruleSpec.IsApplicable(match.Input) && ruleSpec.Pattern.Acceptable(match)
-									};
+						{
+							Acceptable = match => ruleSpec.IsApplicable(match.Input) && ruleSpec.Pattern.Acceptable(match)
+						};
 					startNode.AddAfter(subpattern);
 					startNode = subpattern;
 				}
@@ -76,12 +76,12 @@ namespace SIL.Machine.Rules
 			return true;
 		}
 
-		public TOffset ApplyRhs(PatternRule<TData, TOffset> rule, Match<TData, TOffset> match, out TData output)
+		public TData ApplyRhs(PatternRule<TData, TOffset> rule, Match<TData, TOffset> match)
 		{
 			IPatternRuleSpec<TData, TOffset> ruleSpec = _ruleIds[match.PatternPath.First()];
 			var newMatch = new Match<TData, TOffset>(match.Matcher, match.Span, match.Input, match.GroupCaptures, match.PatternPath.Skip(1).ToArray(),
 				match.VariableBindings, match.NextAnnotation);
-			return ruleSpec.ApplyRhs(rule, newMatch, out output);
+			return ruleSpec.ApplyRhs(rule, newMatch);
 		}
 	}
 }

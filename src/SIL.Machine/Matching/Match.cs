@@ -61,9 +61,9 @@ namespace SIL.Machine.Matching
 			get { return _groupCaptures; }
 		}
 
-		public Match<TData, TOffset> NextMatch()
+		public Match<TData, TOffset> NextMatch(VariableBindings varBindings = null)
 		{
-			return _matcher.Match(_input, _nextAnn);
+			return _matcher.Match(_input, _nextAnn, varBindings);
 		}
 
 		internal Annotation<TOffset> NextAnnotation

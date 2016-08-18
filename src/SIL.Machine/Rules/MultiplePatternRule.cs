@@ -20,11 +20,7 @@ namespace SIL.Machine.Rules
 		{
 			var results = new List<TData>();
 			foreach (Match<TData, TOffset> match in Matcher.AllMatches(input, start))
-			{
-				TData outputData;
-				RuleSpec.ApplyRhs(this, match, out outputData);
-				results.Add(outputData);
-			}
+				results.Add(RuleSpec.ApplyRhs(this, match));
 			return results;
 		}
 	}
