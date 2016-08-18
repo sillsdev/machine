@@ -1,8 +1,13 @@
 ﻿using System;
+#if !SINGLE_THREADED
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+#endif
+using System.Collections.Generic;
+#if OUTPUT_ANALYSES
+using System.IO;
+#endif
+using System.Linq;
 using SIL.Extensions;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
@@ -14,7 +19,6 @@ namespace SIL.Machine.Morphology.HermitCrab
 	public class Morpher
 	{
 		private static readonly IEqualityComparer<IEnumerable<Allomorph>> MorphsEqualityComparer = SequenceEqualityComparer.Create(ProjectionEqualityComparer<Allomorph>.Create(allo => allo.Morpheme));
-		private static readonly IComparer<IEnumerable<Allomorph>> MorphsComparer = SequenceComparer.Create(ProjectionComparer<Allomorph>.Create(allo => allo.Index));
 
 		private readonly Language _lang;
 		private readonly IRule<Word, ShapeNode> _analysisRule;
@@ -71,7 +75,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 		public IEnumerable<Word> ParseWord(string word, out object trace)
 		{
 			// convert the word to its phonetic shape
-			Shape shape = _lang.SurfaceStratum.SymbolTable.Segment(word);
+			Shape shape = _lang.SurfaceStratum.CharacterDefinitionTable.Segment(word);
 
 			var input = new Word(_lang.SurfaceStratum, shape);
 			input.Freeze();
@@ -80,35 +84,30 @@ namespace SIL.Machine.Morphology.HermitCrab
 			trace = input.CurrentTrace;
 
 			// Unapply rules
-			var validWordsStack = new ConcurrentStack<Word>();
 			IEnumerable<Word> analyses = _analysisRule.Apply(input);
 
-			Exception exception = null;
-			Parallel.ForEach(analyses, (analysisWord, state) =>
+#if OUTPUT_ANALYSES
+			var lines = new List<string>();
+			foreach (Word w in analyses)
 			{
-				try
-				{
-					foreach (Word synthesisWord in LexicalLookup(analysisWord))
-					{
-						Word[] valid = _synthesisRule.Apply(synthesisWord).Where(IsWordValid).ToArray();
-						if (valid.Length > 0)
-							validWordsStack.PushRange(valid);
-					}
-				}
-				catch (Exception e)
-				{
-					state.Stop();
-					exception = e;
-				}
-			});
+				string shapeStr = w.ToString();
+				string rulesStr = string.Join(", ", w.MorphologicalRules.Select(r => r.Name));
+				lines.Add(string.Format("{0} : {1}", shapeStr, rulesStr));
+			}
 
-			if (exception != null)
-				throw exception;
+			File.WriteAllLines("analyses.txt", lines.OrderBy(l => l));
+#endif
+
+#if SINGLE_THREADED
+			IEnumerable<Word> validWords = Synthesize(analyses);
+#else
+			IEnumerable<Word> validWords = ParallelSynthesize(analyses);
+#endif
 
 			var matchList = new List<Word>();
-			foreach (Word w in CheckDisjunction(validWordsStack.Distinct(FreezableEqualityComparer<Word>.Default)))
+			foreach (Word w in CheckDisjunction(validWords))
 			{
-				if (_lang.SurfaceStratum.SymbolTable.IsMatch(word, w.Shape))
+				if (_lang.SurfaceStratum.CharacterDefinitionTable.IsMatch(word, w.Shape))
 				{
 					if (_traceManager.IsTracing)
 						_traceManager.Successful(_lang, w);
@@ -179,7 +178,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			{
 				if (_traceManager.IsTracing)
 					_traceManager.Successful(_lang, w);
-				words.Add(w.Shape.ToString(_lang.SurfaceStratum.SymbolTable, false));
+				words.Add(w.Shape.ToString(_lang.SurfaceStratum.CharacterDefinitionTable, false));
 			}
 			return words;
 		}
@@ -221,26 +220,71 @@ namespace SIL.Machine.Morphology.HermitCrab
 			{
 				// enforce the disjunctive property of allomorphs by ensuring that this word synthesis
 				// has the highest order of precedence for its allomorphs
-				Word[] words = group.OrderBy(w => w.AllomorphsInMorphOrder, MorphsComparer).ToArray();
-				int i;
-				for (i = 0; i < words.Length; i++)
+				Word[] words = group.ToArray();
+				for (int i = 0; i < words.Length; i++)
 				{
-					// if there is no free fluctuation with any allomorphs in the previous parse,
-					// then the rest of the parses are invalid, because of disjunction
-					if (i > 0 && words[i].AllomorphsInMorphOrder.Zip(words[i - 1].AllomorphsInMorphOrder).All(tuple => !tuple.Item1.FreeFluctuatesWith(tuple.Item2)))
-						break;
+					bool disjunctive = false;
+					for (int j = 0; j < words.Length; j++)
+					{
+						if (i == j)
+							continue;
 
-					yield return words[i];
-				}
+						// if the two parses differ by one allomorph and that allomorph does not free fluctuate and has a lower precedence, than the parse fails
+						Tuple<Allomorph, Allomorph>[] differentAllomorphs = words[i].AllomorphsInMorphOrder.Zip(words[j].AllomorphsInMorphOrder).Where(t => t.Item1 != t.Item2).ToArray();
+						if (differentAllomorphs.Length == 1 && !differentAllomorphs[0].Item1.FreeFluctuatesWith(differentAllomorphs[0].Item2)
+							&& differentAllomorphs[0].Item1.Index >= differentAllomorphs[0].Item2.Index)
+						{
+							disjunctive = true;
+							if (_traceManager.IsTracing)
+								_traceManager.Failed(_lang, words[i], FailureReason.DisjunctiveAllomorph, null, words[j]);
+							break;
+						}
+					}
 
-				if (_traceManager.IsTracing)
-				{
-					Word lastWord = words[i - 1];
-					for (; i < words.Length; i++)
-						_traceManager.Failed(_lang, words[i], FailureReason.DisjunctiveAllomorph, null, lastWord);
+					if (!disjunctive)
+						yield return words[i];
 				}
 			}
 		}
+
+#if SINGLE_THREADED
+		private IEnumerable<Word> Synthesize(IEnumerable<Word> analyses)
+		{
+			var validWords = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
+			foreach (Word analysisWord in analyses)
+			{
+				foreach (Word synthesisWord in LexicalLookup(analysisWord))
+					validWords.UnionWith(_synthesisRule.Apply(synthesisWord).Where(IsWordValid));
+			}
+			return validWords;
+		}
+#else
+		private IEnumerable<Word> ParallelSynthesize(IEnumerable<Word> analyses)
+		{
+			var validWordsStack = new ConcurrentStack<Word>();
+			Exception exception = null;
+			Parallel.ForEach(analyses, (analysisWord, state) =>
+			{
+				try
+				{
+					foreach (Word synthesisWord in LexicalLookup(analysisWord))
+					{
+						Word[] valid = _synthesisRule.Apply(synthesisWord).Where(IsWordValid).ToArray();
+						if (valid.Length > 0)
+							validWordsStack.PushRange(valid);
+					}
+				}
+				catch (Exception e)
+				{
+					state.Stop();
+					exception = e;
+				}
+			});
+			if (exception != null)
+				throw exception;
+			return validWordsStack.Distinct(FreezableEqualityComparer<Word>.Default);
+		}
+#endif
 
 		internal IEnumerable<RootAllomorph> SearchRootAllomorphs(Stratum stratum, Shape shape)
 		{

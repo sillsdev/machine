@@ -144,11 +144,11 @@ namespace SIL.Machine.Translation.TestApp
 			TransferEngine transferEngine = null;
 			if (hcSrcConfig != null && hcTrgConfig != null)
 			{
-				Language srcLang = XmlLoader.Load(Path.Combine(configDir, hcSrcConfig));
+				Language srcLang = XmlLanguageLoader.Load(Path.Combine(configDir, hcSrcConfig));
 				var srcMorpher = new Morpher(_spanFactory, _hcTraceManager, srcLang);
 				var srcAnalyzer = new HermitCrabMorphologicalAnalyzer(GetMorphemeId, GetCategory, srcMorpher);
 
-				Language trgLang = XmlLoader.Load(Path.Combine(configDir, hcTrgConfig));
+				Language trgLang = XmlLanguageLoader.Load(Path.Combine(configDir, hcTrgConfig));
 				var trgMorpher = new Morpher(_spanFactory, _hcTraceManager, trgLang);
 				var trgGenerator = new HermitCrabMorphologicalGenerator(GetMorphemeId, GetCategory, trgMorpher);
 

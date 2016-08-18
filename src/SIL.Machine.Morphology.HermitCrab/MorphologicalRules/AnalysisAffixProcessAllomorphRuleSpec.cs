@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using SIL.Machine.Annotations;
+﻿using SIL.Machine.Annotations;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
 
@@ -13,14 +12,14 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			: base(allomorph.Lhs, allomorph.Rhs)
 		{
 			_allomorph = allomorph;
-			Pattern.Acceptable = match => _allomorph.Lhs.Any(part => match.GroupCaptures.Captured(part.Name));
+			Pattern.Freeze();
 		}
 
-		public override ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)
+		public override Word ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match)
 		{
-			output = match.Input.Clone();
+			Word output = match.Input.Clone();
 			GenerateShape(_allomorph.Lhs, output.Shape, match);
-			return null;
+			return output;
 		}
 	}
 }

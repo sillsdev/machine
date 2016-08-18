@@ -4,12 +4,9 @@
 	{
 		None,
 		ObligatorySyntacticFeatures,
-		RequiredAllomorphCoOccurrences,
-		ExcludedAllomorphCoOccurrences,
-		RequiredEnvironments,
-		ExcludedEnvironments,
-		RequiredMorphemeCoOccurrences,
-		ExcludedMorphemeCoOccurrences,
+		AllomorphCoOccurrenceRules,
+		Environments,
+		MorphemeCoOccurrenceRules,
 		DisjunctiveAllomorph,
 		SurfaceFormMismatch,
 		Pattern,
@@ -20,9 +17,13 @@
 		NonHeadRequiredSyntacticFeatureStruct,
 		RequiredMprFeatures,
 		ExcludedMprFeatures,
-		StemName,
+		RequiredStemName,
+		ExcludedStemName,
 		PartialParse,
 		BoundRoot,
+		NonPartialRuleProhibitedAfterFinalTemplate,
+		NonPartialRuleRequiredAfterNonFinalTemplate,
+		MaxApplicationCount
 	}
 
 	public interface ITraceManager
@@ -51,6 +52,7 @@
 
 		void BeginApplyStratum(Stratum stratum, Word input);
 		void NonFinalTemplateAppliedLast(Stratum stratum, Word word);
+		void ApplicableTemplatesNotApplied(Stratum stratum, Word word);
 		void EndApplyStratum(Stratum stratum, Word output);
 
 		void PhonologicalRuleApplied(IPhonologicalRule rule, int subruleIndex, Word input, Word output);

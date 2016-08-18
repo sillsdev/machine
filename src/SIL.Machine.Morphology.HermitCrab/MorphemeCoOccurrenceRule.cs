@@ -4,8 +4,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 {
 	public class MorphemeCoOccurrenceRule : MorphCoOccurrenceRule<Morpheme>
 	{
-		public MorphemeCoOccurrenceRule(IEnumerable<Morpheme> others, MorphCoOccurrenceAdjacency adjacency)
-			: base(others, adjacency)
+		public MorphemeCoOccurrenceRule(ConstraintType type, IEnumerable<Morpheme> others, MorphCoOccurrenceAdjacency adjacency)
+			: base(type, others, adjacency)
 		{
 		}
 

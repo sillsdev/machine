@@ -14,7 +14,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 	/// such as prefixation, suffixation, infixation, circumfixation, simulfixation, reduplication,
 	/// and truncation.
 	/// </summary>
-	public class AffixProcessRule : Morpheme, IMorphologicalRule
+	public class AffixProcessRule : MorphemicMorphologicalRule
 	{ 
 		private readonly ObservableCollection<AffixProcessAllomorph> _allomorphs;
 		private readonly IDBearerSet<Feature> _obligatorySyntacticFeatures; 
@@ -53,8 +53,6 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 				_allomorphs[i].Index = i;
 		}
 
-		public string Name { get; set; }
-
 		public int MaxApplicationCount { get; set; }
 
 		public FeatureStruct RequiredSyntacticFeatureStruct { get; set; }
@@ -75,12 +73,12 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			get { return _allomorphs; }
 		}
 
-		public IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{
 			return new AnalysisAffixProcessRule(spanFactory, morpher, this);
 		}
 
-		public IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{
 			return new SynthesisAffixProcessRule(spanFactory, morpher, this);
 		}

@@ -34,13 +34,36 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
 		public IEnumerable<Word> Apply(Word input)
 		{
-			if (!input.IsMorphologicalRuleApplicable(_rule) || input.GetApplicationCount(_rule) >= _rule.MaxApplicationCount)
+			if (!input.IsMorphologicalRuleApplicable(_rule))
 				return Enumerable.Empty<Word>();
+
+			if (input.GetApplicationCount(_rule) >= _rule.MaxApplicationCount)
+			{
+				if (_morpher.TraceManager.IsTracing)
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.MaxApplicationCount, _rule.MaxApplicationCount);
+				return Enumerable.Empty<Word>();
+			}
+
+			// if a final template was last applied, do not allow a non-partial rule to apply unless the input is partial
+			if (!_rule.IsTemplateRule && (input.IsLastAppliedRuleFinal ?? false) && !input.IsPartial && !_rule.IsPartial)
+			{
+				if (_morpher.TraceManager.IsTracing)
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.NonPartialRuleProhibitedAfterFinalTemplate, null);
+				return Enumerable.Empty<Word>();
+			}
+
+			// if a non-final template was last applied, only allow a non-partial rule to apply unless the input is partial
+			if (!_rule.IsTemplateRule && input.IsLastAppliedRuleFinal.HasValue && !input.IsLastAppliedRuleFinal.Value && !input.IsPartial && _rule.IsPartial)
+			{
+				if (_morpher.TraceManager.IsTracing)
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.NonPartialRuleRequiredAfterNonFinalTemplate, null);
+				return Enumerable.Empty<Word>();
+			}
 
 			if (_rule.RequiredStemName != null && _rule.RequiredStemName != input.RootAllomorph.StemName)
 			{
 				if (_morpher.TraceManager.IsTracing)
-					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.StemName, _rule.RequiredStemName);
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.RequiredStemName, _rule.RequiredStemName);
 				return Enumerable.Empty<Word>();
 			}
 
@@ -79,6 +102,14 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 					foreach (Feature obligFeature in _rule.ObligatorySyntacticFeatures)
 						outWord.ObligatorySyntacticFeatures.Add(obligFeature);
 
+					if (!_rule.IsTemplateRule)
+					{
+						if (_rule.IsPartial)
+							outWord.IsPartial = true;
+						else
+							outWord.IsLastAppliedRuleFinal = null;
+					}
+
 					outWord.MorphologicalRuleApplied(_rule);
 
 					Word newWord;
@@ -105,8 +136,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 					// HC also checks for free fluctuation, if the next subrule has the same constraints, we
 					// do not treat them as disjunctive
 					if ((i != _rule.Allomorphs.Count - 1 && !allo.FreeFluctuatesWith(_rule.Allomorphs[i + 1]))
-						&& allo.RequiredEnvironments.Count == 0 && allo.ExcludedEnvironments.Count == 0
-						&& allo.RequiredSyntacticFeatureStruct.IsEmpty)
+						&& allo.Environments.Count == 0 && allo.RequiredSyntacticFeatureStruct.IsEmpty)
 					{
 						break;
 					}

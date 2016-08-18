@@ -32,17 +32,29 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
 			return new Matcher<Word, ShapeNode>(spanFactory, pattern,
 				new MatcherSettings<ShapeNode>
-					{
-						Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary) && !ann.IsDeleted(),
-						AnchoredToStart = true,
-						AnchoredToEnd = true
-					});
+				{
+					Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary) && !ann.IsDeleted(),
+					AnchoredToStart = true,
+					AnchoredToEnd = true
+				});
 		}
 
 		public IEnumerable<Word> Apply(Word input)
 		{
-			if (!input.IsMorphologicalRuleApplicable(_rule) || input.GetApplicationCount(_rule) >= _rule.MaxApplicationCount)
+			if (!input.IsMorphologicalRuleApplicable(_rule))
+				return Enumerable.Empty<Word>();
+
+			if (input.GetApplicationCount(_rule) >= _rule.MaxApplicationCount)
 			{
+				if (_morpher.TraceManager.IsTracing)
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.MaxApplicationCount, _rule.MaxApplicationCount);
+				return Enumerable.Empty<Word>();
+			}
+
+			if ((input.IsLastAppliedRuleFinal ?? false) && !input.IsPartial)
+			{
+				if (_morpher.TraceManager.IsTracing)
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.NonPartialRuleProhibitedAfterFinalTemplate, null);
 				return Enumerable.Empty<Word>();
 			}
 
@@ -93,6 +105,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
 						foreach (Feature feature in _rule.ObligatorySyntacticFeatures)
 							outWord.ObligatorySyntacticFeatures.Add(feature);
+
+						outWord.IsLastAppliedRuleFinal = null;
 
 						outWord.MorphologicalRuleApplied(_rule);
 

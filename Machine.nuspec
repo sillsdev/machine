@@ -18,6 +18,7 @@
       </group>
       <group targetFramework="net46">
         <dependency id="QuickGraphPCL" version="3.6.61114.2" />
+        <dependency id="System.Globalization.Extensions" version="4.0.1" />
         <dependency id="System.IO.FileSystem" version="4.0.1" />
         <dependency id="System.IO.FileSystem.Primitives" version="4.0.1" />
       </group>
@@ -27,6 +28,7 @@
         <dependency id="System.Collections.Concurrent" version="4.0.12" />
         <dependency id="System.Diagnostics.Debug" version="4.0.11" />
         <dependency id="System.Globalization" version="4.0.11" />
+        <dependency id="System.Globalization.Extensions" version="4.0.1" />
         <dependency id="System.IO" version="4.1.0" />
         <dependency id="System.IO.FileSystem" version="4.0.1" />
         <dependency id="System.IO.FileSystem.Primitives" version="4.0.1" />
@@ -51,6 +53,7 @@
         <dependency id="System.Collections.Concurrent" version="4.0.12" />
         <dependency id="System.Diagnostics.Debug" version="4.0.11" />
         <dependency id="System.Globalization" version="4.0.11" />
+        <dependency id="System.Globalization.Extensions" version="4.0.1" />
         <dependency id="System.IO" version="4.1.0" />
         <dependency id="System.IO.FileSystem" version="4.0.1" />
         <dependency id="System.IO.FileSystem.Primitives" version="4.0.1" />

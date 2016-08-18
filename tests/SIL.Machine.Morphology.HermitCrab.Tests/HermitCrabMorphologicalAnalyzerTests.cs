@@ -15,30 +15,30 @@ namespace SIL.Machine.Morphology.HermitCrab.Tests
 			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
 
 			var edSuffix = new AffixProcessRule
-							{
-								Name = "ed_suffix",
-								Gloss = "PAST",
-								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
-							};
+			{
+				Name = "ed_suffix",
+				Gloss = "PAST",
+				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
+			};
 			Morphophonemic.MorphologicalRules.Add(edSuffix);
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
-										{
-											Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-											Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "+d")}
-										});
+				{
+					Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
+					Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+d")}
+				});
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 
 			var sourceAnalyzer = new HermitCrabMorphologicalAnalyzer(GetMorphemeId, GetCategory, morpher);
 
 			Assert.That(sourceAnalyzer.AnalyzeWord("sagd"), Is.EquivalentTo(new[]
-			{
-				new WordAnalysis(new[]
 				{
-					new Morphology.Morpheme("32", "V", "32", MorphemeType.Stem),
-					new Morphology.Morpheme("PAST", "V", "PAST", MorphemeType.Affix)
-				}, 0, "V")
-			}));
+					new WordAnalysis(new[]
+						{
+							new Morphology.Morpheme("32", "V", "32", MorphemeType.Stem),
+							new Morphology.Morpheme("PAST", "V", "PAST", MorphemeType.Affix)
+						}, 0, "V")
+				}));
 		}
 
 		[Test]
@@ -47,17 +47,17 @@ namespace SIL.Machine.Morphology.HermitCrab.Tests
 			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
 
 			var edSuffix = new AffixProcessRule
-							{
-								Name = "ed_suffix",
-								Gloss = "PAST",
-								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
-							};
+			{
+				Name = "ed_suffix",
+				Gloss = "PAST",
+				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
+			};
 			Morphophonemic.MorphologicalRules.Add(edSuffix);
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
-										{
-											Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-											Rhs = {new CopyFromInput("1"), new InsertShape(Table3, "+d")}
-										});
+				{
+					Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
+					Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+d")}
+				});
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 

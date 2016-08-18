@@ -25,7 +25,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 		private readonly IDBearerSet<Feature> _obligatorySyntacticFeatures;
 		private FeatureStruct _realizationalFS;
 		private Stratum _stratum;
-		private bool _isLastAppliedRuleFinal;
+		private bool? _isLastAppliedRuleFinal;
+		private bool _isPartial;
 
 		public Word(RootAllomorph rootAllomorph, FeatureStruct realizationalFS)
 		{
@@ -40,7 +41,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			_mrulesApplied = new Dictionary<IMorphologicalRule, int>();
 			_nonHeadApps = new List<Word>();
 			_obligatorySyntacticFeatures = new IDBearerSet<Feature>();
-			_isLastAppliedRuleFinal = true;
+			_isLastAppliedRuleFinal = null;
 		}
 
 		public Word(Stratum stratum, Shape shape)
@@ -57,7 +58,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 			_mrulesApplied = new Dictionary<IMorphologicalRule, int>();
 			_nonHeadApps = new List<Word>();
 			_obligatorySyntacticFeatures = new IDBearerSet<Feature>();
-			_isLastAppliedRuleFinal = true;
+			_isLastAppliedRuleFinal = null;
+			_isPartial = false;
 		}
 
 		protected Word(Word word)
@@ -77,17 +79,30 @@ namespace SIL.Machine.Morphology.HermitCrab
 			_nonHeadAppIndex = word._nonHeadAppIndex;
 			_obligatorySyntacticFeatures = new IDBearerSet<Feature>(word._obligatorySyntacticFeatures);
 			_isLastAppliedRuleFinal = word._isLastAppliedRuleFinal;
+			_isPartial = word._isPartial;
 			CurrentTrace = word.CurrentTrace;
 		}
 
 		public IEnumerable<Annotation<ShapeNode>> Morphs
 		{
-			get { return Annotations.Where(ann => ann.Type() == HCFeatureSystem.Morph); }
+			get
+			{
+				var morphs = new List<Annotation<ShapeNode>>();
+				foreach (Annotation<ShapeNode> ann in Annotations)
+				{
+					ann.PostorderTraverse(a =>
+					{
+						if (a.Type() == HCFeatureSystem.Morph)
+							morphs.Add(a);
+					});
+				}
+				return morphs;
+			}
 		}
 
 		public IEnumerable<Allomorph> AllomorphsInMorphOrder
 		{
-			get { return Morphs.Select(morph => _allomorphs[(string) morph.FeatureStruct.GetValue(HCFeatureSystem.Allomorph)]); }
+			get { return Morphs.Select(GetAllomorph); }
 		}
 
 		public ICollection<Allomorph> Allomorphs
@@ -116,6 +131,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			SyntacticFeatureStruct = entry.SyntacticFeatureStruct.Clone();
 			_mprFeatures.Clear();
 			_mprFeatures.UnionWith(entry.MprFeatures);
+			_isPartial = entry.IsPartial;
 		}
 
 		public Shape Shape
@@ -177,12 +193,22 @@ namespace SIL.Machine.Morphology.HermitCrab
 					if (rule == null || rule is CompoundingRule)
 						yield return _nonHeadApps[j--].RootAllomorph.Morpheme;
 					else
-						yield return (Morpheme) rule;
+						yield return (MorphemicMorphologicalRule) rule;
 				}
 			}
 		}
 
 		public object CurrentTrace { get; set; }
+
+		public bool IsPartial
+		{
+			get { return _isPartial; }
+			internal set
+			{
+				CheckFrozen();
+				_isPartial = value;
+			}
+		}
 
 		internal bool IsAllMorphologicalRulesApplied
 		{
@@ -198,6 +224,17 @@ namespace SIL.Machine.Morphology.HermitCrab
 			return curRule == rule || (curRule == null && rule is CompoundingRule);
 		}
 
+		internal bool HasRemainingRulesFromStratum(Stratum stratum)
+		{
+			if (_mruleAppIndex < 0)
+				return false;
+
+			IMorphologicalRule curRule = _mruleApps[_mruleAppIndex];
+			if (curRule == null)
+				return CurrentNonHead != null && CurrentNonHead.Stratum == stratum;
+			return curRule.Stratum == stratum;
+		}
+
 		internal Annotation<ShapeNode> MarkMorph(IEnumerable<ShapeNode> nodes, Allomorph allomorph)
 		{
 			ShapeNode[] nodeArray = nodes.ToArray();
@@ -210,6 +247,16 @@ namespace SIL.Machine.Morphology.HermitCrab
 				ann.Children.AddRange(nodeArray.Select(n => n.Annotation));
 				_shape.Annotations.Add(ann, false);
 			}
+			_allomorphs[allomorph.ID] = allomorph;
+			return ann;
+		}
+
+		internal Annotation<ShapeNode> MarkSubsumedMorph(Annotation<ShapeNode> morph, Allomorph allomorph)
+		{
+			Annotation<ShapeNode> ann = new Annotation<ShapeNode>(morph.Span, FeatureStruct.New()
+				.Symbol(HCFeatureSystem.Morph)
+				.Feature(HCFeatureSystem.Allomorph).EqualTo(allomorph.ID).Value);
+			morph.Children.Add(ann, false);
 			_allomorphs[allomorph.ID] = allomorph;
 			return ann;
 		}
@@ -267,7 +314,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			_mrulesApplied.UpdateValue(mrule, () => 0, count => count + 1);
 		}
 
-		internal bool IsLastAppliedRuleFinal
+		internal bool? IsLastAppliedRuleFinal
 		{
 			get { return _isLastAppliedRuleFinal; }
 			set
@@ -389,7 +436,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
 		public override string ToString()
 		{
-			return Shape.ToRegexString(Stratum.SymbolTable, true);
+			return Shape.ToRegexString(Stratum.CharacterDefinitionTable, true);
 		}
 	}
 }

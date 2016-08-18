@@ -45,18 +45,25 @@ namespace SIL.Machine.Morphology.HermitCrab
 			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
 			foreach (Word mruleOutWord in ApplyMorphologicalRules(input).Concat(ApplyTemplates(input)))
 			{
-				if (mruleOutWord.IsLastAppliedRuleFinal)
+				if (!(mruleOutWord.IsLastAppliedRuleFinal ?? false))
+				{
+					if (_morpher.TraceManager.IsTracing)
+						_morpher.TraceManager.NonFinalTemplateAppliedLast(_stratum, mruleOutWord);
+				}
+				else if (mruleOutWord.HasRemainingRulesFromStratum(_stratum))
+				{
+					if (_morpher.TraceManager.IsTracing)
+						_morpher.TraceManager.Failed(_morpher.Language, mruleOutWord, FailureReason.PartialParse, null, null);
+				}
+				else
 				{
 					Word newWord = mruleOutWord.Clone();
 					_prulesRule.Apply(newWord);
+					newWord.IsLastAppliedRuleFinal = null;
 					newWord.Freeze();
 					if (_morpher.TraceManager.IsTracing)
 						_morpher.TraceManager.EndApplyStratum(_stratum, newWord);
 					output.Add(newWord);
-				}
-				else if (_morpher.TraceManager.IsTracing)
-				{
-					_morpher.TraceManager.NonFinalTemplateAppliedLast(_stratum, mruleOutWord);
 				}
 			}
 			if (_morpher.TraceManager.IsTracing && output.Count == 0)
@@ -68,16 +75,15 @@ namespace SIL.Machine.Morphology.HermitCrab
 		{
 			foreach (Word mruleOutWord in _mrulesRule.Apply(input))
 			{
-				Word word = mruleOutWord;
-				if (!word.IsLastAppliedRuleFinal)
+				if (mruleOutWord.IsLastAppliedRuleFinal ?? false)
 				{
-					word = word.Clone();
-					word.IsLastAppliedRuleFinal = true;
-					word.Freeze();
+					yield return mruleOutWord;
 				}
-
-				foreach (Word tempOutWord in ApplyTemplates(word))
-					yield return tempOutWord;
+				else
+				{
+					foreach (Word tempOutWord in ApplyTemplates(mruleOutWord))
+						yield return tempOutWord;
+				}
 			}
 		}
 

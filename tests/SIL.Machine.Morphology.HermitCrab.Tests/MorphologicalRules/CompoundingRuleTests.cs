@@ -14,14 +14,14 @@ namespace SIL.Machine.Morphology.HermitCrab.Tests.MorphologicalRules
 		public void SimpleRules()
 		{
 			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
-			var rule1 = new CompoundingRule { Name = "rule1" };
+			var rule1 = new CompoundingRule {Name = "rule1"};
 			Allophonic.MorphologicalRules.Add(rule1);
 			rule1.Subrules.Add(new CompoundingSubrule
-			                   	{
-			                   		HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
-									NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-									Rhs = { new CopyFromInput("head"), new InsertShape(Table3, "+"), new CopyFromInput("nonHead") }
-			                   	});
+			{
+			    HeadLhs = {Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value},
+				NonHeadLhs = {Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value},
+				Rhs = {new CopyFromInput("head"), new InsertSegments(Table3, "+"), new CopyFromInput("nonHead")}
+			});
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			List<Word> output = morpher.ParseWord("pʰutdat").ToList();
@@ -32,11 +32,11 @@ namespace SIL.Machine.Morphology.HermitCrab.Tests.MorphologicalRules
 
 			rule1.Subrules.Clear();
 			rule1.Subrules.Add(new CompoundingSubrule
-								{
-									HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
-									NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-									Rhs = { new CopyFromInput("nonHead"), new InsertShape(Table3, "+"), new CopyFromInput("head") }
-								});
+			{
+				HeadLhs = {Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value},
+				NonHeadLhs = {Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value},
+				Rhs = {new CopyFromInput("nonHead"), new InsertSegments(Table3, "+"), new CopyFromInput("head")}
+			});
 
 			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			output = morpher.ParseWord("pʰutdat").ToList();
@@ -46,20 +46,20 @@ namespace SIL.Machine.Morphology.HermitCrab.Tests.MorphologicalRules
 			Assert.That(morpher.ParseWord("pʰusdat"), Is.Empty);
 
 			var prefix = new AffixProcessRule
-							{
-								Name = "prefix",
-								Gloss = "PAST",
-								RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
-								OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
-									.Feature("head").EqualTo(head => head
-										.Feature("tense").EqualTo("past")).Value
-							};
+			{
+				Name = "prefix",
+				Gloss = "PAST",
+				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+				OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
+					.Feature(Head).EqualTo(head => head
+						.Feature("tense").EqualTo("past")).Value
+			};
 			Allophonic.MorphologicalRules.Insert(0, prefix);
 			prefix.Allomorphs.Add(new AffixProcessAllomorph
-									{
-										Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-										Rhs = { new InsertShape(Table3, "di+"), new CopyFromInput("1") }
-									});
+			{
+				Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
+				Rhs = {new InsertSegments(Table3, "di+"), new CopyFromInput("1")}
+			});
 
 			morpher = new Morpher(SpanFactory, TraceManager, Language);
 			output = morpher.ParseWord("pʰutdidat").ToList();
@@ -71,11 +71,11 @@ namespace SIL.Machine.Morphology.HermitCrab.Tests.MorphologicalRules
 			rule1.MaxApplicationCount = 2;
 			rule1.Subrules.Clear();
 			rule1.Subrules.Add(new CompoundingSubrule
-								{
-									HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
-									NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-									Rhs = { new CopyFromInput("head"), new InsertShape(Table3, "+"), new CopyFromInput("nonHead") }
-								});
+			{
+				HeadLhs = {Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value},
+				NonHeadLhs = {Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value},
+				Rhs = {new CopyFromInput("head"), new InsertSegments(Table3, "+"), new CopyFromInput("nonHead")}
+			});
 
 			morpher = new Morpher(SpanFactory, TraceManager, Language) {MaxStemCount = 3};
 			output = morpher.ParseWord("pʰutdatpip").ToList();
@@ -87,11 +87,11 @@ namespace SIL.Machine.Morphology.HermitCrab.Tests.MorphologicalRules
 			var rule2 = new CompoundingRule { Name = "rule2" };
 			Allophonic.MorphologicalRules.Add(rule2);
 			rule2.Subrules.Add(new CompoundingSubrule
-								{
-									HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
-									NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-									Rhs = { new CopyFromInput("nonHead"), new InsertShape(Table3, "+"), new CopyFromInput("head") },
-								});
+			{
+				HeadLhs = {Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value},
+				NonHeadLhs = {Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value},
+				Rhs = {new CopyFromInput("nonHead"), new InsertSegments(Table3, "+"), new CopyFromInput("head")}
+			});
 
 			morpher = new Morpher(SpanFactory, TraceManager, Language) {MaxStemCount = 3};
 			output = morpher.ParseWord("pʰutdatpip").ToList();
@@ -106,11 +106,11 @@ namespace SIL.Machine.Morphology.HermitCrab.Tests.MorphologicalRules
 			var rule1 = new CompoundingRule { Name = "rule1", NonHeadRequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value };
 			Allophonic.MorphologicalRules.Add(rule1);
 			rule1.Subrules.Add(new CompoundingSubrule
-								{
-									HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
-									NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-									Rhs = { new CopyFromInput("head"), new InsertShape(Table3, "+"), new CopyFromInput("nonHead") }
-								});
+			{
+				HeadLhs = {Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value},
+				NonHeadLhs = {Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value},
+				Rhs = {new CopyFromInput("head"), new InsertSegments(Table3, "+"), new CopyFromInput("nonHead")}
+			});
 
 			var morpher = new Morpher(SpanFactory, TraceManager, Language);
 			List<Word> output = morpher.ParseWord("pʰutdat").ToList();
@@ -133,7 +133,7 @@ namespace SIL.Machine.Morphology.HermitCrab.Tests.MorphologicalRules
 			Morphophonemic.MorphologicalRules.Add(rule1);
 			rule1.HeadRequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
 				.Symbol("V")
-				.Feature("head").EqualTo(head => head
+				.Feature(Head).EqualTo(head => head
 					.Feature("pers").EqualTo("2")).Value;
 			rule1.NonHeadRequiredSyntacticFeatureStruct = FeatureStruct.New().Value;
 

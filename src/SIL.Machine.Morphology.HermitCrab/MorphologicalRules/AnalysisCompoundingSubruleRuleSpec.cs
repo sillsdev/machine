@@ -13,17 +13,18 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			: base(subrule.HeadLhs.Concat(subrule.NonHeadLhs), subrule.Rhs)
 		{
 			_subrule = subrule;
-			Pattern.Acceptable = match => _subrule.HeadLhs.Any(part => match.GroupCaptures.Captured(part.Name));
+			Pattern.Acceptable = match => _subrule.HeadLhs.Any(part => IsPartCaptured(match, part.Name));
+			Pattern.Freeze();
 		}
 
-		public override ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)
+		public override Word ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match)
 		{
-			output = match.Input.Clone();
+			Word output = match.Input.Clone();
 			GenerateShape(_subrule.HeadLhs, output.Shape, match);
 			var nonHeadShape = new Shape(rule.SpanFactory, begin => new ShapeNode(rule.SpanFactory, begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor));
 			GenerateShape(_subrule.NonHeadLhs, nonHeadShape, match);
 			output.NonHeadUnapplied(new Word(output.Stratum, nonHeadShape));
-			return null;
+			return output;
 		}
 	}
 }

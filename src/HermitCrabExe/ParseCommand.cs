@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using ManyConsole;
-using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
-	public class ParseCommand : ConsoleCommand
+	internal class ParseCommand : ConsoleCommand
 	{
 		private readonly HCContext _context;
 
@@ -23,67 +21,43 @@ namespace SIL.Machine.Morphology.HermitCrab
 		public override int Run(string[] remainingArguments)
 		{
 			string word = remainingArguments[0];
-			object trace;
-			Stopwatch watch = Stopwatch.StartNew();
-			Word[] results = _context.Morpher.ParseWord(word, out trace).ToArray();
-			watch.Stop();
-			_context.Out.WriteLine("Parsing \"{0}\"", word);
-			if (results.Length == 0)
+			try
 			{
-				_context.Out.WriteLine("No valid parses.");
-				_context.Out.WriteLine();
-			}
-			else
-			{
-				foreach (Word result in results)
-					PrintResult(result);
-			}
-			if (_context.Morpher.TraceManager.IsTracing)
-			{
-				PrintTrace((Trace) trace, 0, new HashSet<int>());
-				_context.Out.WriteLine();
-			}
-			_context.Out.WriteLine("Parse time: {0}ms", watch.ElapsedMilliseconds);
-			return 0;
-		}
-
-		private void PrintResult(Word result)
-		{
-			_context.Out.Write("Morphs: ");
-			bool firstItem = true;
-			foreach (Annotation<ShapeNode> morph in result.Morphs)
-			{
-				Allomorph allomorph = result.GetAllomorph(morph);
-				string gloss = string.IsNullOrEmpty(allomorph.Morpheme.Gloss) ? "?" : allomorph.Morpheme.Gloss;
-				string morphStr = result.Shape.GetNodes(morph.Span).ToString(result.Stratum.SymbolTable, false);
-				int len = Math.Max(morphStr.Length, gloss.Length);
-				if (len > 0)
+				_context.ParseCount++;
+				_context.Out.WriteLine("Parsing \"{0}\"", word);
+				object trace;
+				Stopwatch watch = Stopwatch.StartNew();
+				Word[] results = _context.Morpher.ParseWord(word, out trace).ToArray();
+				watch.Stop();
+				if (results.Length == 0)
 				{
-					if (!firstItem)
-						_context.Out.Write(" ");
-					_context.Out.Write(morphStr.PadRight(len));
-					firstItem = false;
+					_context.FailedParseCount++;
+					_context.Out.WriteLine("No valid parses.");
 				}
-			}
-			_context.Out.WriteLine();
-			_context.Out.Write("Gloss:  ");
-			firstItem = true;
-			foreach (Annotation<ShapeNode> morph in result.Morphs)
-			{
-				Allomorph allomorph = result.GetAllomorph(morph);
-				string gloss = string.IsNullOrEmpty(allomorph.Morpheme.Gloss) ? "?" : allomorph.Morpheme.Gloss;
-				string morphStr = result.Shape.GetNodes(morph.Span).ToString(result.Stratum.SymbolTable, false);
-				int len = Math.Max(morphStr.Length, gloss.Length);
-				if (len > 0)
+				else
 				{
-					if (!firstItem)
-						_context.Out.Write(" ");
-					_context.Out.Write(gloss.PadRight(len));
-					firstItem = false;
+					_context.SuccessfulParseCount++;
+					for (int i = 0; i < results.Length; i++)
+					{
+						_context.Out.WriteLine("Parse {0}", i + 1);
+						_context.Out.WriteParse(results[i].GetMorphInfos());
+					}
 				}
+				if (_context.Morpher.TraceManager.IsTracing)
+				{
+					PrintTrace((Trace) trace, 0, new HashSet<int>());
+				}
+				_context.Out.WriteLine("Parse time: {0}ms", watch.ElapsedMilliseconds);
+				_context.Out.WriteLine();
+				return 0;
 			}
-			_context.Out.WriteLine();
-			_context.Out.WriteLine();
+			catch (InvalidShapeException ise)
+			{
+				_context.ErrorParseCount++;
+				_context.Out.WriteLine("The word contains an invalid segment at position {0}.", ise.Position + 1);
+				_context.Out.WriteLine();
+				return 1;
+			}
 		}
 
 		private void PrintTrace(Trace trace, int indent, HashSet<int> lineIndices)
@@ -106,7 +80,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 				if (!first)
 					_context.Out.Write(", ");
 				first = false;
-				SymbolTable table = trace.Input.Stratum.SymbolTable;
+				CharacterDefinitionTable table = trace.Input.Stratum.CharacterDefinitionTable;
 				_context.Out.Write("Input: {0}", analysis ? trace.Input.Shape.ToRegexString(table, true) : trace.Input.Shape.ToString(table, true));
 			}
 			if (trace.Output != null)
@@ -114,7 +88,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 				if (!first)
 					_context.Out.Write(", ");
 				first = false;
-				SymbolTable table = trace.Output.Stratum.SymbolTable;
+				CharacterDefinitionTable table = trace.Output.Stratum.CharacterDefinitionTable;
 				_context.Out.Write("Output: {0}", analysis ? trace.Output.Shape.ToRegexString(table, true) : trace.Output.Shape.ToString(table, true));
 			}
 			if (trace.FailureReason != FailureReason.None)

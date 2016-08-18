@@ -93,8 +93,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 					for (int j = 0; j < partActions.Count; j++)
 					{
 						int index = rhs.IndexOf(partActions[j]);
-						if ((start == -1 && j == partActions.Count - 1)
-							|| (index >= start && index < start + lhs.Count))
+						if ((start == -1 && j == (_allomorph.ReduplicationHint == ReduplicationHint.Prefix ? partActions.Count - 1 : 0))
+							|| (start != -1 && index >= start && index < start + lhs.Count))
 						{
 							_nonAllomorphActions.Add(partActions[j]);
 						}
@@ -117,11 +117,11 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			return true;
 		}
 
-		public ShapeNode ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match, out Word output)
+		public Word ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match)
 		{
-			output = match.Input.Clone();
+			Word output = match.Input.Clone();
 			output.Shape.Clear();
-			var existingMorphNodes = new Dictionary<string, List<ShapeNode>>();
+			var existingMorphNodes = new Dictionary<Allomorph, List<ShapeNode>>();
 			var newMorphNodes = new List<ShapeNode>();
 			foreach (MorphologicalOutputAction outputAction in _allomorph.Rhs)
 			{
@@ -131,8 +131,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 					{
 						if (mapping.Item1.Annotation.Parent != null)
 						{
-							var allomorphID = (string) mapping.Item1.Annotation.Parent.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
-							existingMorphNodes.GetOrCreate(allomorphID, () => new List<ShapeNode>()).Add(mapping.Item2);
+							Allomorph allomorph = match.Input.GetAllomorph(mapping.Item1.Annotation.Parent);
+							existingMorphNodes.GetOrCreate(allomorph, () => new List<ShapeNode>()).Add(mapping.Item2);
 						}
 					}
 					else
@@ -142,20 +142,40 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 				}
 			}
 
-			if (existingMorphNodes.Count > 0)
+			Annotation<ShapeNode> outputNewMorph = output.MarkMorph(newMorphNodes, _allomorph);
+
+			foreach (Annotation<ShapeNode> inputMorph in match.Input.Morphs)
 			{
-				foreach (Allomorph allomorph in match.Input.AllomorphsInMorphOrder)
+				Allomorph allomorph = match.Input.GetAllomorph(inputMorph);
+				List<ShapeNode> nodes;
+				if (existingMorphNodes.TryGetValue(allomorph, out nodes))
 				{
-					List<ShapeNode> nodes;
-					if (existingMorphNodes.TryGetValue(allomorph.ID, out nodes))
-						output.MarkMorph(nodes, allomorph);
+					Annotation<ShapeNode> outputMorph = output.MarkMorph(nodes, allomorph);
+					MarkSubsumedMorphs(match.Input, output, inputMorph, outputMorph);
+				}
+				else if (inputMorph.Parent == null)
+				{
+					Annotation<ShapeNode> outputMorph = output.MarkSubsumedMorph(outputNewMorph, allomorph);
+					MarkSubsumedMorphs(match.Input, output, inputMorph, outputMorph);
 				}
 			}
 
-			output.MarkMorph(newMorphNodes, _allomorph);
 			output.MprFeatures.AddOutput(_allomorph.OutMprFeatures);
 
-			return null;
+			return output;
+		}
+
+		private void MarkSubsumedMorphs(Word input, Word output, Annotation<ShapeNode> inputMorph, Annotation<ShapeNode> outputMorph)
+		{
+			if (inputMorph.IsLeaf)
+				return;
+
+			foreach (Annotation<ShapeNode> inputChild in inputMorph.Children.Where(ann => ann.Type() == HCFeatureSystem.Morph))
+			{
+				Allomorph allomorph = input.GetAllomorph(inputChild);
+				Annotation<ShapeNode> outputChild = output.MarkSubsumedMorph(outputMorph, allomorph);
+				MarkSubsumedMorphs(input, output, inputChild, outputChild);
+			}
 		}
 	}
 }

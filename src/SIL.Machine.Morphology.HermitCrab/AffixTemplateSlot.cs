@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
@@ -8,15 +10,20 @@ namespace SIL.Machine.Morphology.HermitCrab
 	/// </summary>
 	public class AffixTemplateSlot
 	{
-		private readonly List<IMorphologicalRule> _rules;
+		private readonly ReadOnlyCollection<MorphemicMorphologicalRule> _rules;
 		private bool _isOptional;
+
+		public AffixTemplateSlot(params MorphemicMorphologicalRule[] rules)
+			: this((IEnumerable<MorphemicMorphologicalRule>) rules)
+		{
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AffixTemplateSlot"/> class.
 		/// </summary>
-		public AffixTemplateSlot()
+		public AffixTemplateSlot(IEnumerable<MorphemicMorphologicalRule> rules)
 		{
-			_rules = new List<IMorphologicalRule>();
+			_rules = new ReadOnlyCollection<MorphemicMorphologicalRule>(rules.ToArray());
 		}
 
 		public string Name { get; set; }
@@ -47,7 +54,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 		/// Gets the morphological rules.
 		/// </summary>
 		/// <value>The morphological rules.</value>
-		public ICollection<IMorphologicalRule> Rules
+		public ReadOnlyCollection<MorphemicMorphologicalRule> Rules
 		{
 			get { return _rules; }
 		}

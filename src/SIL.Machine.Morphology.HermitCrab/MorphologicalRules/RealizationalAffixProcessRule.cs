@@ -8,7 +8,7 @@ using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 {
-	public class RealizationalAffixProcessRule : Morpheme, IMorphologicalRule
+	public class RealizationalAffixProcessRule : MorphemicMorphologicalRule
 	{
 		private readonly ObservableCollection<AffixProcessAllomorph> _allomorphs;
 
@@ -43,8 +43,6 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 				_allomorphs[i].Index = i;
 		}
 
-		public string Name { get; set; }
-
 		public bool Blockable { get; set; }
 
 		public FeatureStruct RequiredSyntacticFeatureStruct { get; set; }
@@ -56,12 +54,12 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			get { return _allomorphs; }
 		}
 
-		public IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{
 			return new AnalysisRealizationalAffixProcessRule(spanFactory, morpher, this);
 		}
 
-		public IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{
 			return new SynthesisRealizationalAffixProcessRule(spanFactory, morpher, this);
 		}

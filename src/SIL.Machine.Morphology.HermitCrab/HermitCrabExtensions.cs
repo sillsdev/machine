@@ -113,6 +113,54 @@ namespace SIL.Machine.Morphology.HermitCrab
 			return output;
 		}
 
+		internal static IEnumerable<PatternNode<Word, ShapeNode>> DeepCloneExceptBoundaries(this IEnumerable<PatternNode<Word, ShapeNode>> nodes)
+		{
+			foreach (PatternNode<Word, ShapeNode> node in nodes)
+			{
+				var constraint = node as Constraint<Word, ShapeNode>;
+				if (constraint != null && (constraint.FeatureStruct.IsEmpty || constraint.Type() != HCFeatureSystem.Boundary))
+				{
+					yield return constraint.Clone();
+					continue;
+				}
+
+				var alternation = node as Alternation<Word, ShapeNode>;
+				if (alternation != null)
+				{
+					var newAlteration = new Alternation<Word, ShapeNode>(alternation.Children.DeepCloneExceptBoundaries());
+					if (newAlteration.Children.Count > 0)
+						yield return newAlteration;
+					continue;
+				}
+
+				var group = node as Group<Word, ShapeNode>;
+				if (group != null)
+				{
+					var newGroup = new Group<Word, ShapeNode>(group.Name, group.Children.DeepCloneExceptBoundaries());
+					if (newGroup.Children.Count > 0)
+						yield return newGroup;
+					continue;
+				}
+
+				var quantifier = node as Quantifier<Word, ShapeNode>;
+				if (quantifier != null)
+				{
+					var newQuantifier = new Quantifier<Word, ShapeNode>(quantifier.MinOccur, quantifier.MaxOccur, quantifier.Children.DeepCloneExceptBoundaries().SingleOrDefault());
+					if (newQuantifier.Children.Count > 0)
+						yield return newQuantifier;
+					continue;
+				}
+
+				var pattern = node as Pattern<Word, ShapeNode>;
+				if (pattern != null)
+				{
+					var newPattern = new Pattern<Word, ShapeNode>(pattern.Name, pattern.Children.DeepCloneExceptBoundaries());
+					if (newPattern.Children.Count > 0)
+						yield return newPattern;
+				}
+			}
+		}
+
 		/// <summary>
 		/// Converts the specified phonetic shape to a valid regular expression string. Regular expressions
 		/// formatted for display purposes are NOT guaranteed to compile.
@@ -122,7 +170,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 		/// <param name="displayFormat">if <c>true</c> the result will be formatted for display, otherwise
 		/// it will be formatted for compilation.</param>
 		/// <returns>The regular expression string.</returns>
-		public static string ToRegexString(this Shape shape, SymbolTable table, bool displayFormat)
+		public static string ToRegexString(this Shape shape, CharacterDefinitionTable table, bool displayFormat)
 		{
 			var sb = new StringBuilder();
 			if (!displayFormat)
@@ -164,7 +212,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			return sb.ToString();
 		}
 
-		public static string ToString(this IEnumerable<ShapeNode> nodes, SymbolTable table, bool includeBdry)
+		public static string ToString(this IEnumerable<ShapeNode> nodes, CharacterDefinitionTable table, bool includeBdry)
 		{
 			var sb = new StringBuilder();
 			foreach (ShapeNode node in nodes)
@@ -178,6 +226,32 @@ namespace SIL.Machine.Morphology.HermitCrab
 					sb.Append(strRep);
 			}
 			return sb.ToString();
+		}
+
+		public static IEnumerable<FeatureSymbol> PartsOfSpeech(this FeatureStruct fs)
+		{
+			SymbolicFeatureValue pos;
+			if (fs.TryGetValue(SyntacticFeatureSystem.PartOfSpeechID, out pos))
+			{
+				return pos.Values;
+			}
+			return Enumerable.Empty<FeatureSymbol>();
+		}
+
+		public static FeatureStruct Head(this FeatureStruct fs)
+		{
+			FeatureStruct head;
+			if (fs.TryGetValue(SyntacticFeatureSystem.HeadID, out head))
+				return head;
+			return null;
+		}
+
+		public static FeatureStruct Foot(this FeatureStruct fs)
+		{
+			FeatureStruct head;
+			if (fs.TryGetValue(SyntacticFeatureSystem.FootID, out head))
+				return head;
+			return null;
 		}
 	}
 }

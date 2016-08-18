@@ -21,22 +21,32 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 
 		private readonly Morpher _morpher;
 		private readonly RewriteRule _rule;
-		private readonly List<Tuple<ReapplyType, PatternRule<Word, ShapeNode>>> _rules;  
+		private readonly List<Tuple<ReapplyType, PhonologicalPatternRule>> _rules;  
 
 		public AnalysisRewriteRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, RewriteRule rule)
 		{
 			_morpher = morpher;
 			_rule = rule;
 
-			_rules = new List<Tuple<ReapplyType, PatternRule<Word, ShapeNode>>>();
+			var settings = new MatcherSettings<ShapeNode>
+			{
+				Direction = rule.Direction == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight,
+				Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Anchor),
+				MatchingMethod = MatchingMethod.Unification,
+				UseDefaults = true,
+				// during analysis shape nodes can have features that are underspecified, so this must be non-deterministic
+				Nondeterministic = true
+			};
+
+			_rules = new List<Tuple<ReapplyType, PhonologicalPatternRule>>();
 			foreach (RewriteSubrule sr in _rule.Subrules)
 			{
-				AnalysisRewriteRuleSpec ruleSpec = null;
+				IPhonologicalPatternRuleSpec ruleSpec = null;
 				var mode = RewriteApplicationMode.Iterative;
 				var reapplyType = ReapplyType.Normal;
 				if (_rule.Lhs.Children.Count == sr.Rhs.Children.Count)
 				{
-					ruleSpec = new FeatureAnalysisRewriteRuleSpec(rule.Lhs, sr);
+					ruleSpec = new FeatureAnalysisRewriteRuleSpec(spanFactory, settings, rule.Lhs, sr);
 					if (_rule.ApplicationMode == RewriteApplicationMode.Simultaneous)
 					{
 						foreach (Constraint<Word, ShapeNode> constraint in sr.Rhs.Children.Cast<Constraint<Word, ShapeNode>>())
@@ -54,35 +64,27 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 				}
 				else if (_rule.Lhs.Children.Count > sr.Rhs.Children.Count)
 				{
-					ruleSpec = new NarrowAnalysisRewriteRuleSpec(_rule.Lhs, sr);
+					ruleSpec = new NarrowAnalysisRewriteRuleSpec(spanFactory, settings, _rule.Lhs, sr);
 					mode = RewriteApplicationMode.Simultaneous;
 					reapplyType = ReapplyType.Deletion;
 				}
 				else if (_rule.Lhs.Children.Count == 0)
 				{
-					ruleSpec = new EpenthesisAnalysisRewriteRuleSpec(sr);
+					ruleSpec = new EpenthesisAnalysisRewriteRuleSpec(spanFactory, settings, sr);
 					if (_rule.ApplicationMode == RewriteApplicationMode.Simultaneous)
 						reapplyType = ReapplyType.SelfOpaquing;
 				}
 				Debug.Assert(ruleSpec != null);
 
-				var settings = new MatcherSettings<ShapeNode>
-				               	{
-				               		Direction = rule.Direction == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight,
-				               		Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Anchor),
-									MatchingMethod = MatchingMethod.Unification,
-									UseDefaults = true
-				               	};
-
-				PatternRule<Word, ShapeNode> patternRule = null;
+				PhonologicalPatternRule patternRule = null;
 				switch (mode)
 				{
 					case RewriteApplicationMode.Iterative:
-						patternRule = new BacktrackingPatternRule(spanFactory, ruleSpec, settings);
+						patternRule = new IterativePhonologicalPatternRule(spanFactory, ruleSpec, settings);
 						break;
 
 					case RewriteApplicationMode.Simultaneous:
-						patternRule = new SimultaneousPatternRule<Word, ShapeNode>(spanFactory, ruleSpec, settings);
+						patternRule = new SimultaneousPhonologicalPatternRule(spanFactory, ruleSpec, settings);
 						break;
 				}
 
@@ -115,7 +117,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 				if (_morpher.TraceManager.IsTracing)
 					origInput = input.Clone();
 
-				Tuple<ReapplyType, PatternRule<Word, ShapeNode>> sr = _rules[i];
+				Tuple<ReapplyType, PhonologicalPatternRule> sr = _rules[i];
 				bool srApplied = false;
 				switch (sr.Item1)
 				{

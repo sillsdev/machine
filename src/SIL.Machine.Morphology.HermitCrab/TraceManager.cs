@@ -79,6 +79,11 @@
 			((Trace) word.CurrentTrace).Children.Add(new Trace(TraceType.StratumSynthesisOutput, stratum) {Output = word, FailureReason = FailureReason.PartialParse});
 		}
 
+		public void ApplicableTemplatesNotApplied(Stratum stratum, Word word)
+		{
+			((Trace) word.CurrentTrace).Children.Add(new Trace(TraceType.StratumSynthesisOutput, stratum) {Output = word, FailureReason = FailureReason.PartialParse});
+		}
+
 		public void EndApplyStratum(Stratum stratum, Word output)
 		{
 			((Trace) output.CurrentTrace).Children.Add(new Trace(TraceType.StratumSynthesisOutput, stratum) {Output = output});
