@@ -88,10 +88,10 @@
     <file src="src\SIL.Machine.Translation.Thot.NETStd13\bin\Release\SIL.Machine.Translation.Thot.pdb" target="lib\netstandard1.3" />
     <file src="src\SIL.Machine.Morphology.HermitCrab.NETStd13\bin\Release\SIL.Machine.Morphology.HermitCrab.dll" target="lib\netstandard1.3" />
     <file src="src\SIL.Machine.Morphology.HermitCrab.NETStd13\bin\Release\SIL.Machine.Morphology.HermitCrab.pdb" target="lib\netstandard1.3" />
-    <file src="lib\win\x86\thot.dll" target="runtimes\win-x86\native" />
-    <file src="lib\win\x86\pthreadVC2.dll" target="runtimes\win-x86\native" />
-    <file src="lib\win\x64\thot.dll" target="runtimes\win-x64\native" />
-    <file src="lib\win\x64\pthreadVC2.dll" target="runtimes\win-x64\native" />
+    <file src="lib\win\x86\thot.dll" target="runtimes\win7-x86\native" />
+    <file src="lib\win\x86\pthreadVC2.dll" target="runtimes\win7-x86\native" />
+    <file src="lib\win\x64\thot.dll" target="runtimes\win7-x64\native" />
+    <file src="lib\win\x64\pthreadVC2.dll" target="runtimes\win7-x64\native" />
     <file src="lib\linux\x64\libthot.so" target="runtimes\debian-x64\native" />
   </files>
 </package>
