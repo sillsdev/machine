@@ -59,6 +59,11 @@
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets. -->
+  <PropertyGroup Condition="'$(NuGetPackageRoot)' == ''">
+    <NuGetPackageRoot>$(UserProfile)\.nuget\packages\</NuGetPackageRoot>
+    <BuildDependencyTasksPath Condition="$(BuildDependencyTasksPath) == '' Or $(BuildDependencyTasksPath) == '*Undefined*'">$(NuGetPackageRoot)\BuildDependencyTasks\0.2.9</BuildDependencyTasksPath>
+  </PropertyGroup>
+  <UsingTask TaskName="Dependencies" AssemblyFile="$(BuildDependencyTasksPath)\BuildDependencyTasks.dll" />
   <Target Name="BeforeBuild">
     <Dependencies DependencyFile="SIL.Machine.Translation.Thot.NETStd13.dep" UseDependencyFile="true" KeepJobsFile="true" />
   </Target>

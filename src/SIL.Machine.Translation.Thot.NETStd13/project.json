@@ -1,7 +1,7 @@
 ﻿{
   "supports": {},
   "dependencies": {
-    "BuildDependencyTasks": "0.2.6",
+    "BuildDependencyTasks": "0.2.9",
     "NETStandard.Library": "1.6.0"
   },
   "frameworks": {
