@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using SIL.Machine.Annotations;
@@ -345,6 +344,7 @@ namespace SIL.Machine.Morphology.HermitCrab.Tests
 		{
 			var entry = new LexEntry
 			{
+				Id = gloss,
 				SyntacticFeatureStruct = syntacticFS,
 				Gloss = gloss,
 				IsPartial = syntacticFS.IsEmpty
@@ -408,19 +408,6 @@ namespace SIL.Machine.Morphology.HermitCrab.Tests
 		protected SymbolicFeatureValue Variable(string featureID, string variable, bool agree = true)
 		{
 			return new SymbolicFeatureValue(Language.PhonologicalFeatureSystem.GetFeature<SymbolicFeature>(featureID), variable, agree);
-		}
-
-		protected static string GetMorphemeId(Morpheme morpheme)
-		{
-			return morpheme.Gloss;
-		}
-
-		protected static string GetCategory(FeatureStruct fs)
-		{
-			SymbolicFeatureValue value;
-			if (fs.TryGetValue(SyntacticFeatureSystem.PartOfSpeechID, out value))
-				return value.Values.First().ID;
-			return null;
 		}
 	}
 }

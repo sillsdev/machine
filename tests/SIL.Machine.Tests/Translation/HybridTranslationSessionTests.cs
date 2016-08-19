@@ -21,16 +21,16 @@ namespace SIL.Machine.Tests.Translation
 			{
 				var sourceAnalyzer = Substitute.For<IMorphologicalAnalyzer>();
 				sourceAnalyzer.AddAnalyses("caminé", new WordAnalysis(new[]
-				{
-					new Morpheme("s1", "v", "walk", MorphemeType.Stem),
-					new Morpheme("s2", "v", "pst", MorphemeType.Affix)
-				}, 0, "v"));
+					{
+						new TestMorpheme("s1", "v", "walk", MorphemeType.Stem),
+						new TestMorpheme("s2", "v", "pst", MorphemeType.Affix)
+					}, 0, "v"));
 				var targetGenerator = Substitute.For<IMorphologicalGenerator>();
-				var targetMorphemes = new ReadOnlyObservableList<Morpheme>(new ObservableList<Morpheme>
-				{
-					new Morpheme("e1", "v", "walk", MorphemeType.Stem),
-					new Morpheme("e2", "v", "pst", MorphemeType.Affix)
-				});
+				var targetMorphemes = new ReadOnlyObservableList<IMorpheme>(new ObservableList<IMorpheme>
+					{
+						new TestMorpheme("e1", "v", "walk", MorphemeType.Stem),
+						new TestMorpheme("e2", "v", "pst", MorphemeType.Affix)
+					});
 				targetGenerator.Morphemes.Returns(targetMorphemes);
 				targetGenerator.AddGeneratedWords(new WordAnalysis(new[] {targetMorphemes[0], targetMorphemes[1]}, 0, "v"), "walked");
 				var transferer = new SimpleTransferer(new GlossMorphemeMapper(targetGenerator));

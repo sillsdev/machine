@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Linq;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Rules;
@@ -62,6 +63,15 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 		public override IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
 		{
 			return new SynthesisRealizationalAffixProcessRule(spanFactory, morpher, this);
+		}
+
+		public override string Category
+		{
+			get
+			{
+				FeatureSymbol pos = RequiredSyntacticFeatureStruct.PartsOfSpeech().FirstOrDefault();
+				return pos?.ID;
+			}
 		}
 
 		public override Allomorph GetAllomorph(int index)

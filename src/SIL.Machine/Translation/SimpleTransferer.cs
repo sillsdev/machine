@@ -20,10 +20,10 @@ namespace SIL.Machine.Translation
 				bool found = false;
 				foreach (WordAnalysis sourceAnalysisOption in sourceAnalysisOptions)
 				{
-					var targetMorphemes = new List<Morpheme>();
-					foreach (Morpheme sourceMorpheme in sourceAnalysisOption.Morphemes)
+					var targetMorphemes = new List<IMorpheme>();
+					foreach (IMorpheme sourceMorpheme in sourceAnalysisOption.Morphemes)
 					{
-						Morpheme targetMorpheme;
+						IMorpheme targetMorpheme;
 						if (!_morphemeMapper.TryGetTargetMorpheme(sourceMorpheme, out targetMorpheme))
 							break;
 

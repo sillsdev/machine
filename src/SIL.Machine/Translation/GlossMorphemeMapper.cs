@@ -7,14 +7,14 @@ namespace SIL.Machine.Translation
 {
 	public class GlossMorphemeMapper : IMorphemeMapper
 	{
-		private readonly Dictionary<string, Morpheme> _morphemes; 
+		private readonly Dictionary<string, IMorpheme> _morphemes; 
 
 		public GlossMorphemeMapper(IMorphologicalGenerator targetGenerator)
 		{
 			_morphemes = targetGenerator.Morphemes.ToDictionary(m => m.Gloss, StringComparer.OrdinalIgnoreCase);
 		}
 
-		public bool TryGetTargetMorpheme(Morpheme sourceMorpheme, out Morpheme targetMorpheme)
+		public bool TryGetTargetMorpheme(IMorpheme sourceMorpheme, out IMorpheme targetMorpheme)
 		{
 			return _morphemes.TryGetValue(sourceMorpheme.Gloss, out targetMorpheme);
 		}

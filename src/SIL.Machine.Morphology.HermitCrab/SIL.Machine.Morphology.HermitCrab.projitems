@@ -23,8 +23,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)HCFeatureSystem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HCRuleBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HermitCrabExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)HermitCrabMorphologicalAnalyzer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)HermitCrabMorphologicalGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IHCRule.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IMorphologicalRule.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)InfiniteLoopException.cs" />

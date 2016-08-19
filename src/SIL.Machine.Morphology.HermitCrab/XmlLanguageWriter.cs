@@ -796,6 +796,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 
 		private void WriteMorphemeElements(XElement morphemeElem, Morpheme morpheme)
 		{
+			if (!string.IsNullOrEmpty(morpheme.Id))
+				morphemeElem.Add(new XElement("MorphemeId", morpheme.Id));
 			if (!string.IsNullOrEmpty(morpheme.Gloss))
 				morphemeElem.Add(new XElement("Gloss", Normalize(morpheme.Gloss)));
 			if (morpheme.Properties.Count > 0)

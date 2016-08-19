@@ -130,7 +130,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Morphology\IMorphologicalAnalyzer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Morphology\IMorphologicalGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Morphology\IStemmer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Morphology\Morpheme.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Morphology\IMorpheme.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Morphology\PoorMansAffixIdentifier.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Morphology\PoorMansStemmer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Morphology\PoorMansStemmingAlgorithmBase.cs" />

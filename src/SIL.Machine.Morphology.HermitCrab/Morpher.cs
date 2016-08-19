@@ -11,12 +11,13 @@ using System.Linq;
 using SIL.Extensions;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
+using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
 using SIL.Machine.Rules;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
-	public class Morpher
+	public class Morpher : IMorphologicalAnalyzer, IMorphologicalGenerator
 	{
 		private static readonly IEqualityComparer<IEnumerable<Allomorph>> MorphsEqualityComparer = SequenceEqualityComparer.Create(ProjectionEqualityComparer<Allomorph>.Create(allo => allo.Morpheme));
 
@@ -25,12 +26,14 @@ namespace SIL.Machine.Morphology.HermitCrab
 		private readonly IRule<Word, ShapeNode> _synthesisRule;
 		private readonly Dictionary<Stratum, RootAllomorphTrie> _allomorphTries;
 		private readonly ITraceManager _traceManager;
+		private readonly ReadOnlyObservableCollection<Morpheme> _morphemes;
 
 		public Morpher(SpanFactory<ShapeNode> spanFactory, ITraceManager traceManager, Language lang)
 		{
 			_lang = lang;
 			_traceManager = traceManager;
 			_allomorphTries = new Dictionary<Stratum, RootAllomorphTrie>();
+			var morphemes = new ObservableList<Morpheme>();
 			foreach (Stratum stratum in _lang.Strata)
 			{
 				var allomorphs = new HashSet<RootAllomorph>(stratum.Entries.SelectMany(entry => entry.Allomorphs));
@@ -38,12 +41,18 @@ namespace SIL.Machine.Morphology.HermitCrab
 				foreach (RootAllomorph allomorph in allomorphs)
 					trie.Add(allomorph);
 				_allomorphTries[stratum] = trie;
+
+				morphemes.AddRange(stratum.Entries);
+				morphemes.AddRange(stratum.MorphologicalRules.OfType<AffixProcessRule>());
+				morphemes.AddRange(stratum.AffixTemplates.SelectMany(t => t.Slots).SelectMany(s => s.Rules).Distinct());
 			}
 			_analysisRule = lang.CompileAnalysisRule(spanFactory, this);
 			_synthesisRule = lang.CompileSynthesisRule(spanFactory, this);
 			MaxStemCount = 2;
 			LexEntrySelector = entry => true;
 			RuleSelector = rule => true;
+
+			_morphemes = new ReadOnlyObservableCollection<Morpheme>(morphemes);
 		}
 
 		public ITraceManager TraceManager
@@ -342,6 +351,82 @@ namespace SIL.Machine.Morphology.HermitCrab
 				return true;
 
 			return false;
+		}
+
+		public IEnumerable<WordAnalysis> AnalyzeWord(string word)
+		{
+			try
+			{
+				return ParseWord(word).Select(CreateWordAnalysis);
+			}
+			catch (InvalidShapeException)
+			{
+				return Enumerable.Empty<WordAnalysis>();
+			}
+		}
+
+		private WordAnalysis CreateWordAnalysis(Word result)
+		{
+			int rootMorphemeIndex = -1;
+			var morphemes = new List<IMorpheme>();
+			int i = 0;
+			foreach (Allomorph allo in result.AllomorphsInMorphOrder)
+			{
+				morphemes.Add(allo.Morpheme);
+				if (allo == result.RootAllomorph)
+					rootMorphemeIndex = i;
+				i++;
+			}
+
+			FeatureSymbol pos = result.SyntacticFeatureStruct.PartsOfSpeech().FirstOrDefault();
+			return new WordAnalysis(morphemes, rootMorphemeIndex, pos?.ID);
+		}
+
+		public IReadOnlyObservableCollection<IMorpheme> Morphemes
+		{
+			get { return _morphemes; }
+		}
+
+		public IEnumerable<string> GenerateWords(WordAnalysis wordAnalysis)
+		{
+			if (wordAnalysis.Morphemes.Count == 0)
+				return Enumerable.Empty<string>();
+
+			List<Morpheme> morphemes = wordAnalysis.Morphemes.Cast<Morpheme>().ToList();
+			var rootEntry = (LexEntry) morphemes[wordAnalysis.RootMorphemeIndex];
+			var realizationalFS = new FeatureStruct();
+			var results = new HashSet<string>();
+			foreach (Stack<Morpheme> otherMorphemes in PermuteOtherMorphemes(morphemes, wordAnalysis.RootMorphemeIndex - 1, wordAnalysis.RootMorphemeIndex + 1))
+				results.UnionWith(GenerateWords(rootEntry, otherMorphemes, realizationalFS));
+			return results;
+		}
+
+		private IEnumerable<Stack<Morpheme>> PermuteOtherMorphemes(List<Morpheme> morphemes, int leftIndex, int rightIndex)
+		{
+			if (leftIndex == -1 && rightIndex == morphemes.Count)
+			{
+				yield return new Stack<Morpheme>();
+			}
+			else
+			{
+				if (rightIndex < morphemes.Count)
+				{
+					foreach (Stack<Morpheme> p in PermuteOtherMorphemes(morphemes, leftIndex, rightIndex + 1))
+					{
+						p.Push(morphemes[rightIndex]);
+						yield return p;
+					}
+				}
+
+				if (leftIndex > -1)
+				{
+					foreach (Stack<Morpheme> p in PermuteOtherMorphemes(morphemes, leftIndex - 1, rightIndex))
+					{
+						p.Push(morphemes[leftIndex]);
+						yield return p;
+					}
+				}
+			}
 		}
 	}
 }

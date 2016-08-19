@@ -277,7 +277,7 @@
 -->
 <!ELEMENT LexicalEntries (LexicalEntry+) >
 
-<!ELEMENT LexicalEntry  (Allomorphs, AssignedHeadFeatures?, AssignedFootFeatures?, Gloss?, Properties?)>
+<!ELEMENT LexicalEntry  (Allomorphs, AssignedHeadFeatures?, AssignedFootFeatures?, MorphemeId?, Gloss?, Properties?)>
 <!--
     family refers to a family element ID
     partOfSpeech refers to a PartOfSpeech ID
@@ -311,6 +311,7 @@
 
 <!ELEMENT PhoneticShape (#PCDATA) >
 <!ELEMENT Gloss (#PCDATA) >
+<!ELEMENT MorphemeId (#PCDATA) >
 
 <!ELEMENT AssignedHeadFeatures (FeatureValue+) >
 <!ELEMENT AssignedFootFeatures (FeatureValue+) >
@@ -333,7 +334,7 @@
 <!ELEMENT MorphologicalRuleDefinitions (MorphologicalRule | RealizationalRule | CompoundingRule)* >
 
 <!ELEMENT MorphologicalRule (Name, MorphologicalSubrules, OutputSubcategorizationOverrides?, OutputHeadFeatures?, OutputFootFeatures?, RequiredHeadFeatures?,
-                             RequiredFootFeatures?, Gloss?, Properties?) >
+                             RequiredFootFeatures?, MorphemeId?, Gloss?, Properties?) >
 <!--
   requiredPartsOfSpeech refers to one or more PartOfSpeech IDs
   requiredSubcategorizedRules refers to one or more SyntacticRule IDs
@@ -357,7 +358,7 @@
   partial (true | false) "false"
 >
 
-<!ELEMENT RealizationalRule (Name, MorphologicalSubrules, RealizationalFeatures?, RequiredHeadFeatures?, RequiredFootFeatures?, Gloss?, Properties?) >
+<!ELEMENT RealizationalRule (Name, MorphologicalSubrules, RealizationalFeatures?, RequiredHeadFeatures?, RequiredFootFeatures?, MorphemeId?, Gloss?, Properties?) >
 <!ATTLIST RealizationalRule
   id ID #REQUIRED
   isActive (yes | no) "yes"

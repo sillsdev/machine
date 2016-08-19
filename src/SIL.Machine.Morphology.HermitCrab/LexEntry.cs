@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Linq;
 using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.Morphology.HermitCrab
@@ -86,6 +87,20 @@ namespace SIL.Machine.Morphology.HermitCrab
 		/// </summary>
 		/// <value>The lexical family.</value>
 		public LexFamily Family { get; internal set; }
+
+		public override string Category
+		{
+			get
+			{
+				FeatureSymbol pos = SyntacticFeatureStruct.PartsOfSpeech().FirstOrDefault();
+				return pos?.ID;
+			}
+		}
+
+		public override MorphemeType MorphemeType
+		{
+			get { return MorphemeType.Stem; }
+		}
 
 		public override Allomorph GetAllomorph(int index)
 		{

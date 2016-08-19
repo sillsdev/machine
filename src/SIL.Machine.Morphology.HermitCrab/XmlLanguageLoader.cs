@@ -401,7 +401,11 @@ namespace SIL.Machine.Morphology.HermitCrab
 		private bool TryLoadLexEntry(XElement entryElem, CharacterDefinitionTable table, out LexEntry entry)
 		{
 			var id = (string) entryElem.Attribute("id");
-			entry = new LexEntry {Gloss = (string) entryElem.Element("Gloss")};
+			entry = new LexEntry
+			{
+				Id = (string) entryElem.Element("MorphemeId"),
+				Gloss = (string) entryElem.Element("Gloss"),
+			};
 
 			var fs = new FeatureStruct();
 			var pos = (string) entryElem.Attribute("partOfSpeech");
@@ -722,6 +726,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			var affixProcessRule = new AffixProcessRule
 			{
 				Name = (string) mruleElem.Element("Name"),
+				Id = (string) mruleElem.Element("MorphemeId"),
 				Gloss = (string) mruleElem.Element("Gloss"),
 				Blockable = (bool?) mruleElem.Attribute("blockable") ?? true,
 				IsPartial = (bool?) mruleElem.Attribute("partial") ?? false
@@ -803,6 +808,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			var realRule = new RealizationalAffixProcessRule
 			{
 				Name = (string) realRuleElem.Element("Name"),
+				Id = (string) realRuleElem.Element("MorphemeId"),
 				Gloss = (string) realRuleElem.Element("Gloss"),
 				Blockable = (bool?) realRuleElem.Attribute("blockable") ?? true
 			};

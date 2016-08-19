@@ -7,7 +7,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 	/// <summary>
 	/// This class represents a morpheme. All morpheme objects should extend this class.
 	/// </summary>
-	public abstract class Morpheme
+	public abstract class Morpheme : IMorpheme
 	{
 		private readonly ObservableCollection<MorphemeCoOccurrenceRule> _morphemeCoOccurrenceRules;
 		private readonly Properties _properties;
@@ -42,11 +42,17 @@ namespace SIL.Machine.Morphology.HermitCrab
 		/// <value>The stratum.</value>
 		public Stratum Stratum { get; set; }
 
+		public string Id { get; set; }
+
+		public abstract string Category { get; }
+
 		/// <summary>
 		/// Gets or sets the morpheme's gloss.
 		/// </summary>
 		/// <value>The gloss.</value>
 		public string Gloss { get; set; }
+
+		public abstract MorphemeType MorphemeType { get; }
 
 		/// <summary>
 		/// Gets or sets a value indicating whether this morpheme is partially analyzed.

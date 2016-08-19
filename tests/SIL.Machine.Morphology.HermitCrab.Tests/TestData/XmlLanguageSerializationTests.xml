@@ -337,6 +337,7 @@
             <RequiredFootFeatures>
               <FeatureValue feature="ffeat1" symbolValues="fval1" />
             </RequiredFootFeatures>
+            <MorphemeId>mrule1</MorphemeId>
             <Gloss>gloss 1</Gloss>
             <Properties>
               <Property name="prop3">value3</Property>
@@ -376,6 +377,7 @@
             <RequiredFootFeatures>
               <FeatureValue feature="ffeat1" symbolValues="fval1" />
             </RequiredFootFeatures>
+            <MorphemeId>mrule2</MorphemeId>
             <Gloss>gloss 2</Gloss>
             <Properties>
               <Property name="prop4">value4</Property>
@@ -420,6 +422,7 @@
             <AssignedFootFeatures>
               <FeatureValue feature="ffeat1" symbolValues="fval2" />
             </AssignedFootFeatures>
+            <MorphemeId>entry1</MorphemeId>
             <Gloss>gloss 3</Gloss>
           </LexicalEntry>
         </LexicalEntries>

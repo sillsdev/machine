@@ -5,7 +5,7 @@ namespace SIL.Machine.Morphology
 {
 	public interface IMorphologicalGenerator
 	{
-		IReadOnlyObservableCollection<Morpheme> Morphemes { get; }  
+		IReadOnlyObservableCollection<IMorpheme> Morphemes { get; }  
 
 		IEnumerable<string> GenerateWords(WordAnalysis wordAnalysis);
 	}

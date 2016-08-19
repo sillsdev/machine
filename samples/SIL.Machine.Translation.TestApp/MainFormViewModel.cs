@@ -146,13 +146,11 @@ namespace SIL.Machine.Translation.TestApp
 			{
 				Language srcLang = XmlLanguageLoader.Load(Path.Combine(configDir, hcSrcConfig));
 				var srcMorpher = new Morpher(_spanFactory, _hcTraceManager, srcLang);
-				var srcAnalyzer = new HermitCrabMorphologicalAnalyzer(GetMorphemeId, GetCategory, srcMorpher);
 
 				Language trgLang = XmlLanguageLoader.Load(Path.Combine(configDir, hcTrgConfig));
 				var trgMorpher = new Morpher(_spanFactory, _hcTraceManager, trgLang);
-				var trgGenerator = new HermitCrabMorphologicalGenerator(GetMorphemeId, GetCategory, trgMorpher);
 
-				transferEngine = new TransferEngine(srcAnalyzer, new SimpleTransferer(new GlossMorphemeMapper(trgGenerator)), trgGenerator);
+				transferEngine = new TransferEngine(srcMorpher, new SimpleTransferer(new GlossMorphemeMapper(trgMorpher)), trgMorpher);
 			}
 			var smtEngine = new ThotSmtEngine(Path.Combine(configDir, smtConfig));
 			_translationEngine = new HybridTranslationEngine(smtEngine, transferEngine);
