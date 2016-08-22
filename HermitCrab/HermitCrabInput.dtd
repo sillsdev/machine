@@ -305,8 +305,9 @@
 <!ELEMENT Allomorph (PhoneticShape, RequiredEnvironments?, ExcludedEnvironments?, Properties?) >
 <!ATTLIST Allomorph
   id ID #REQUIRED
-  stemName IDREF #IMPLIED
   isActive (yes | no) "yes"
+  stemName IDREF #IMPLIED
+  isBound (true | false) "false"
 >
 
 <!ELEMENT PhoneticShape (#PCDATA) >

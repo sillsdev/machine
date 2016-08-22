@@ -457,7 +457,10 @@ namespace SIL.HermitCrab
 			Shape shape = table.Segment(shapeStr);
 			if (shape.All(n => n.Type() == HCFeatureSystem.Boundary))
 				throw new InvalidShapeException(shapeStr, 0);
-			var allomorph = new RootAllomorph(shape);
+			var allomorph = new RootAllomorph(shape)
+			{
+			    IsBound = (bool?) alloElem.Attribute("isBound") ?? false
+			};
 
 			allomorph.Environments.AddRange(LoadAllomorphEnvironments(alloElem.Element("RequiredEnvironments"), ConstraintType.Require));
 			allomorph.Environments.AddRange(LoadAllomorphEnvironments(alloElem.Element("ExcludedEnvironments"), ConstraintType.Exclude));
@@ -798,7 +801,7 @@ namespace SIL.HermitCrab
 			{
 				Name = (string) realRuleElem.Element("Name"),
 				Gloss = (string) realRuleElem.Element("Gloss"),
-				Blockable = (string) realRuleElem.Attribute("blockable") == "true"
+				Blockable = (bool?) realRuleElem.Attribute("blockable") ?? true
 			};
 
 			var fs = new FeatureStruct();

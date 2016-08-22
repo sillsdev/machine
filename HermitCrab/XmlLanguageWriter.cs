@@ -787,6 +787,8 @@ namespace SIL.HermitCrab
 				new XAttribute("id", id));
 			if (allomorph.StemName != null)
 				alloElem.Add(new XAttribute("stemName", _stemNames[allomorph.StemName]));
+			if (allomorph.IsBound)
+				alloElem.Add(new XAttribute("isBound", allomorph.IsBound));
 			alloElem.Add(WritePhoneticShape(table, allomorph.Shape));
 			WriteAllomorphElements(alloElem, allomorph);
 			return alloElem;

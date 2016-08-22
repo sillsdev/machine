@@ -396,7 +396,7 @@
         <LexicalEntries>
           <LexicalEntry id="entry1" family="family1" partOfSpeech="pos2" ruleFeatures="mpr1" partial="true">
             <Allomorphs>
-              <Allomorph id="allo1" stemName="stemName1">
+              <Allomorph id="allo1" stemName="stemName1" isBound="true">
                 <PhoneticShape>ab</PhoneticShape>
                 <RequiredEnvironments>
                   <Environment>
