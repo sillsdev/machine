@@ -27,6 +27,13 @@
           <Symbol id="pval5">phon value 5</Symbol>
         </Symbols>
       </SymbolicFeature>
+      <SymbolicFeature id="pfeat3">
+        <Name>phon feature 3</Name>
+        <Symbols>
+          <Symbol id="pval6">phon value 6</Symbol>
+          <Symbol id="pval7">phon value 7</Symbol>
+        </Symbols>
+      </SymbolicFeature>
     </PhonologicalFeatureSystem>
     <HeadFeatures>
       <SymbolicFeature id="hfeat1">
@@ -111,6 +118,20 @@
           </Representations>
         </BoundaryDefinition>
       </BoundaryDefinitions>
+    </CharacterDefinitionTable>
+    <CharacterDefinitionTable id="table2">
+      <Name>table 2</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="char5">
+          <Representations>
+            <Representation>a</Representation>
+            <Representation>A</Representation>
+          </Representations>
+          <FeatureValue feature="pfeat1" symbolValues="pval1" />
+          <FeatureValue feature="pfeat2" symbolValues="pval4" />
+          <FeatureValue feature="pfeat3" symbolValues="pval6" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
     </CharacterDefinitionTable>
     <NaturalClasses>
       <FeatureNaturalClass id="nc1">
@@ -274,8 +295,11 @@
                 </MorphologicalInput>
                 <MorphologicalOutput MPRFeatures="mpr2" redupMorphType="prefix">
                   <CopyFromInput index="msubrule1_1" />
-                  <InsertSegments characterDefinitionTable="table1">
+                  <InsertSegments>
                     <PhoneticShape>ac</PhoneticShape>
+                  </InsertSegments>
+                  <InsertSegments characterDefinitionTable="table2">
+                    <PhoneticShape>a</PhoneticShape>
                   </InsertSegments>
                 </MorphologicalOutput>
                 <RequiredHeadFeatures>
@@ -354,6 +378,11 @@
                   <PhoneticSequence id="msubrule2_2">
                     <SimpleContext naturalClass="nc1" />
                   </PhoneticSequence>
+                  <PhoneticSequence id="msubrule2_3">
+                    <Segments>
+                      <PhoneticShape>a</PhoneticShape>
+                    </Segments>
+                  </PhoneticSequence>
                 </MorphologicalInput>
                 <MorphologicalOutput>
                   <CopyFromInput index="msubrule2_1" />
@@ -398,7 +427,7 @@
         <LexicalEntries>
           <LexicalEntry id="entry1" family="family1" partOfSpeech="pos2" ruleFeatures="mpr1" partial="true">
             <Allomorphs>
-              <Allomorph id="allo1" stemName="stemName1">
+              <Allomorph id="allo1" stemName="stemName1" isBound="true">
                 <PhoneticShape>ab</PhoneticShape>
                 <RequiredEnvironments>
                   <Environment>

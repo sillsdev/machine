@@ -305,8 +305,9 @@
 <!ELEMENT Allomorph (PhoneticShape, RequiredEnvironments?, ExcludedEnvironments?, Properties?) >
 <!ATTLIST Allomorph
   id ID #REQUIRED
-  stemName IDREF #IMPLIED
   isActive (yes | no) "yes"
+  stemName IDREF #IMPLIED
+  isBound (true | false) "false"
 >
 
 <!ELEMENT PhoneticShape (#PCDATA) >
@@ -442,7 +443,7 @@
   characterDefinitionTable refers to a CharacterDefinitionTable ID
   -->
 <!ATTLIST InsertSegments
-  characterDefinitionTable IDREF #REQUIRED
+  characterDefinitionTable IDREF #IMPLIED
 >
 
 <!ELEMENT VariableFeatures (VariableFeature+) >
@@ -521,7 +522,7 @@ For OutputFootFeatures and RequiredFootFeatures, the Features need to be FootFea
 <!ELEMENT Segments (PhoneticShape) >
 <!ATTLIST Segments
   id ID #IMPLIED
-  characterDefinitionTable IDREF #REQUIRED
+  characterDefinitionTable IDREF #IMPLIED
 >
 <!ELEMENT BoundaryMarker EMPTY>
 <!--

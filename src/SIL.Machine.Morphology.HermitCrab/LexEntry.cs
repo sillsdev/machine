@@ -109,7 +109,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
 		public override string ToString()
 		{
-			return _allomorphs.Count == 0 || Stratum == null ? base.ToString() : PrimaryAllomorph.Shape.ToString(Stratum.CharacterDefinitionTable, true);
+			return _allomorphs.Count == 0 || Stratum == null ? base.ToString() : PrimaryAllomorph.Segments.ToString();
 		}
 	}
 }

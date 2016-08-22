@@ -18,7 +18,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 	/// </summary>
 	public class Stratum : HCRuleBase
 	{
-		private readonly CharacterDefinitionTable _symDefTable;
+		private readonly CharacterDefinitionTable _charDefTable;
 
 		private readonly ObservableCollection<IMorphologicalRule> _mrules;
 		private readonly List<IPhonologicalRule> _prules;
@@ -30,11 +30,11 @@ namespace SIL.Machine.Morphology.HermitCrab
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Stratum"/> class.
 		/// </summary>
-		/// <param name="symDefTable"></param>
-		public Stratum(CharacterDefinitionTable symDefTable)
+		/// <param name="charDefTable"></param>
+		public Stratum(CharacterDefinitionTable charDefTable)
 		{
 			Depth = -1;
-			_symDefTable = symDefTable;
+			_charDefTable = charDefTable;
 
 			_mrules = new ObservableCollection<IMorphologicalRule>();
 			_mrules.CollectionChanged += MorphologicalRulesChanged;
@@ -90,15 +90,11 @@ namespace SIL.Machine.Morphology.HermitCrab
 		}
 
 		/// <summary>
-		/// Gets the symbol definition table.
+		/// Gets the character definition table.
 		/// </summary>
-		/// <value>The symbol definition table.</value>
 		public CharacterDefinitionTable CharacterDefinitionTable
 		{
-			get
-			{
-				return _symDefTable;
-			}
+			get { return _charDefTable; }
 		}
 
 		public IList<IMorphologicalRule> MorphologicalRules

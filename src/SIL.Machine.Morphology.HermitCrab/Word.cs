@@ -32,7 +32,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 		{
 			_allomorphs = new Dictionary<string, Allomorph>();
 			_mprFeatures = new MprFeatureSet();
-			_shape = rootAllomorph.Shape.Clone();
+			_shape = rootAllomorph.Segments.Shape.Clone();
 			ResetDirty();
 			SetRootAllomorph(rootAllomorph);
 			RealizationalFeatureStruct = realizationalFS;
@@ -117,7 +117,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			internal set
 			{
 				CheckFrozen();
-				_shape = value.Shape.Clone();
+				_shape = value.Segments.Shape.Clone();
 				SetRootAllomorph(value);
 			}
 		}

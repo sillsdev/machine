@@ -358,15 +358,15 @@ namespace SIL.Machine.Morphology.HermitCrab
 				switch (mruleElem.Name.LocalName)
 				{
 					case "MorphologicalRule":
-						loaded = TryLoadAffixProcessRule(mruleElem, out mrule);
+						loaded = TryLoadAffixProcessRule(mruleElem, stratum.CharacterDefinitionTable, out mrule);
 						break;
 
 					case "RealizationalRule":
-						loaded = TryLoadRealizationalRule(mruleElem, out mrule);
+						loaded = TryLoadRealizationalRule(mruleElem, stratum.CharacterDefinitionTable, out mrule);
 						break;
 
 					case "CompoundingRule":
-						loaded = TryLoadCompoundingRule(mruleElem, out mrule);
+						loaded = TryLoadCompoundingRule(mruleElem, stratum.CharacterDefinitionTable, out mrule);
 						break;
 				}
 
@@ -464,13 +464,16 @@ namespace SIL.Machine.Morphology.HermitCrab
 		private RootAllomorph LoadRootAllomorph(XElement alloElem, CharacterDefinitionTable table)
 		{
 			var shapeStr = (string) alloElem.Element("PhoneticShape");
-			Shape shape = table.Segment(shapeStr);
-			if (shape.All(n => n.Type() == HCFeatureSystem.Boundary))
+			Segments segments = new Segments(table, shapeStr);
+			if (segments.Shape.All(n => n.Type() == HCFeatureSystem.Boundary))
 				throw new InvalidShapeException(shapeStr, 0);
-			var allomorph = new RootAllomorph(shape);
+			var allomorph = new RootAllomorph(segments)
+			{
+				IsBound = (bool?) alloElem.Attribute("isBound") ?? false
+			};
 
-			allomorph.Environments.AddRange(LoadAllomorphEnvironments(alloElem.Element("RequiredEnvironments"), ConstraintType.Require));
-			allomorph.Environments.AddRange(LoadAllomorphEnvironments(alloElem.Element("ExcludedEnvironments"), ConstraintType.Exclude));
+			allomorph.Environments.AddRange(LoadAllomorphEnvironments(alloElem.Element("RequiredEnvironments"), ConstraintType.Require, table));
+			allomorph.Environments.AddRange(LoadAllomorphEnvironments(alloElem.Element("ExcludedEnvironments"), ConstraintType.Exclude, table));
 
 			var stemNameIDStr = (string) alloElem.Attribute("stemName");
 			if (!string.IsNullOrEmpty(stemNameIDStr))
@@ -481,21 +484,21 @@ namespace SIL.Machine.Morphology.HermitCrab
 			return allomorph;
 		}
 
-		private IEnumerable<AllomorphEnvironment> LoadAllomorphEnvironments(XElement envsElem, ConstraintType type)
+		private IEnumerable<AllomorphEnvironment> LoadAllomorphEnvironments(XElement envsElem, ConstraintType type, CharacterDefinitionTable defaultTable)
 		{
 			if (envsElem == null)
 				yield break;
 
 			foreach (XElement envElem in envsElem.Elements("Environment"))
-				yield return LoadAllomorphEnvironment(envElem, type);
+				yield return LoadAllomorphEnvironment(envElem, type, defaultTable);
 		}
 
-		private AllomorphEnvironment LoadAllomorphEnvironment(XElement envElem, ConstraintType type)
+		private AllomorphEnvironment LoadAllomorphEnvironment(XElement envElem, ConstraintType type, CharacterDefinitionTable defaultTable)
 		{
 			var variables = new Dictionary<string, Tuple<string, SymbolicFeature>>();
 
-			Pattern<Word, ShapeNode> leftEnv = LoadPhoneticTemplate(envElem.Elements("LeftEnvironment").Elements("PhoneticTemplate").SingleOrDefault(), variables);
-			Pattern<Word, ShapeNode> rightEnv = LoadPhoneticTemplate(envElem.Elements("RightEnvironment").Elements("PhoneticTemplate").SingleOrDefault(), variables);
+			Pattern<Word, ShapeNode> leftEnv = LoadPhoneticTemplate(envElem.Elements("LeftEnvironment").Elements("PhoneticTemplate").SingleOrDefault(), variables, defaultTable);
+			Pattern<Word, ShapeNode> rightEnv = LoadPhoneticTemplate(envElem.Elements("RightEnvironment").Elements("PhoneticTemplate").SingleOrDefault(), variables, defaultTable);
 			return new AllomorphEnvironment(_spanFactory, type, leftEnv, rightEnv);
 		}
 
@@ -714,13 +717,13 @@ namespace SIL.Machine.Morphology.HermitCrab
 				{(string) metathesisElem.Attribute("rightSwitch"), "l"}
 			};
 			metathesisRule.Pattern = LoadPhoneticTemplate(metathesisElem.Elements("StructuralDescription").Elements("PhoneticTemplate").Single(),
-				new Dictionary<string, Tuple<string, SymbolicFeature>>(), groupNames);
+				new Dictionary<string, Tuple<string, SymbolicFeature>>(), null, groupNames);
 
 			_language.PhonologicalRules.Add(metathesisRule);
 			_prules[(string) metathesisElem.Attribute("id")] = metathesisRule;
 		}
 
-		private bool TryLoadAffixProcessRule(XElement mruleElem, out IMorphologicalRule mrule)
+		private bool TryLoadAffixProcessRule(XElement mruleElem, CharacterDefinitionTable defaultTable, out IMorphologicalRule mrule)
 		{
 			var id = (string) mruleElem.Attribute("id");
 			var affixProcessRule = new AffixProcessRule
@@ -778,7 +781,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			{
 				try
 				{
-					AffixProcessAllomorph allomorph = LoadAffixProcessAllomorph(subruleElem);
+					AffixProcessAllomorph allomorph = LoadAffixProcessAllomorph(subruleElem, defaultTable);
 					affixProcessRule.Allomorphs.Add(allomorph);
 					_allomorphs[(string) subruleElem.Attribute("id")] = allomorph;
 				}
@@ -802,7 +805,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			return false;
 		}
 
-		private bool TryLoadRealizationalRule(XElement realRuleElem, out IMorphologicalRule mrule)
+		private bool TryLoadRealizationalRule(XElement realRuleElem, CharacterDefinitionTable defaultTable, out IMorphologicalRule mrule)
 		{
 			var realRuleID = (string) realRuleElem.Attribute("id");
 			var realRule = new RealizationalAffixProcessRule
@@ -832,7 +835,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			{
 				try
 				{
-					AffixProcessAllomorph allomorph = LoadAffixProcessAllomorph(subruleElem);
+					AffixProcessAllomorph allomorph = LoadAffixProcessAllomorph(subruleElem, defaultTable);
 					realRule.Allomorphs.Add(allomorph);
 					_allomorphs[(string) subruleElem.Attribute("id")] = allomorph;
 				}
@@ -856,12 +859,12 @@ namespace SIL.Machine.Morphology.HermitCrab
 			return false;
 		}
 
-		private AffixProcessAllomorph LoadAffixProcessAllomorph(XElement msubruleElem)
+		private AffixProcessAllomorph LoadAffixProcessAllomorph(XElement msubruleElem, CharacterDefinitionTable defaultTable)
 		{
 			var allomorph = new AffixProcessAllomorph();
 
-			allomorph.Environments.AddRange(LoadAllomorphEnvironments(msubruleElem.Element("RequiredEnvironments"), ConstraintType.Require));
-			allomorph.Environments.AddRange(LoadAllomorphEnvironments(msubruleElem.Element("ExcludedEnvironments"), ConstraintType.Exclude));
+			allomorph.Environments.AddRange(LoadAllomorphEnvironments(msubruleElem.Element("RequiredEnvironments"), ConstraintType.Require, defaultTable));
+			allomorph.Environments.AddRange(LoadAllomorphEnvironments(msubruleElem.Element("ExcludedEnvironments"), ConstraintType.Exclude, defaultTable));
 
 			var fs = new FeatureStruct();
 			XElement requiredHeadFeatElem = msubruleElem.Element("RequiredHeadFeatures");
@@ -884,20 +887,20 @@ namespace SIL.Machine.Morphology.HermitCrab
 			allomorph.ExcludedMprFeatures.UnionWith(LoadMprFeatures((string) inputElem.Attribute("excludedMPRFeatures")));
 
 			var partNames = new Dictionary<string, string>();
-			LoadMorphologicalLhs(inputElem, variables, partNames, allomorph.Lhs);
+			LoadMorphologicalLhs(inputElem, variables, partNames, allomorph.Lhs, defaultTable);
 
 			XElement outputElem = msubruleElem.Element("MorphologicalOutput");
 			Debug.Assert(outputElem != null);
 
 			allomorph.OutMprFeatures.UnionWith(LoadMprFeatures((string) outputElem.Attribute("MPRFeatures")));
 			allomorph.ReduplicationHint = GetReduplicationHint((string) outputElem.Attribute("redupMorphType"));
-			LoadMorphologicalRhs(outputElem, variables, partNames, allomorph.Rhs);
+			LoadMorphologicalRhs(outputElem, variables, partNames, allomorph.Rhs, defaultTable);
 
 			return allomorph;
 		}
 
 		private void LoadMorphologicalLhs(XElement reqPhonInputElem, Dictionary<string, Tuple<string, SymbolicFeature>> variables,
-			Dictionary<string, string> partNames, IList<Pattern<Word, ShapeNode>> lhs, string partNamePrefix = null)
+			Dictionary<string, string> partNames, IList<Pattern<Word, ShapeNode>> lhs, CharacterDefinitionTable defaultTable, string partNamePrefix = null)
 		{
 			int i = 1;
 			foreach (XElement pseqElem in reqPhonInputElem.Elements("PhoneticSequence"))
@@ -909,13 +912,13 @@ namespace SIL.Machine.Morphology.HermitCrab
 					name = (partNamePrefix ?? "") + i;
 					partNames[id] = name;
 				}
-				lhs.Add(LoadPhoneticSequence(pseqElem, variables, name));
+				lhs.Add(LoadPhoneticSequence(pseqElem, variables, defaultTable, name));
 				i++;
 			}
 		}
 
 		private void LoadMorphologicalRhs(XElement phonOutputElem, Dictionary<string, Tuple<string, SymbolicFeature>> variables,
-			Dictionary<string, string> partNames, IList<MorphologicalOutputAction> rhs)
+			Dictionary<string, string> partNames, IList<MorphologicalOutputAction> rhs, CharacterDefinitionTable defaultTable)
 		{
 			foreach (XElement partElem in phonOutputElem.Elements())
 			{
@@ -934,7 +937,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 						break;
 
 					case "InsertSegments":
-						CharacterDefinitionTable table = _tables[(string) partElem.Attribute("characterDefinitionTable")];
+						string tableId = (string) partElem.Attribute("characterDefinitionTable");
+						CharacterDefinitionTable table = tableId == null ? defaultTable : _tables[tableId];
 						var shapeStr = (string) partElem.Element("PhoneticShape");
 						rhs.Add(new InsertSegments(new Segments(table, shapeStr)));
 						break;
@@ -942,14 +946,14 @@ namespace SIL.Machine.Morphology.HermitCrab
 			}
 		}
 
-		private bool TryLoadCompoundingRule(XElement compRuleElem, out IMorphologicalRule mrule)
+		private bool TryLoadCompoundingRule(XElement compRuleElem, CharacterDefinitionTable defaultTable, out IMorphologicalRule mrule)
 		{
 			var compRuleID = (string) compRuleElem.Attribute("id");
 			var compRule = new CompoundingRule
-							{
-								Name = (string) compRuleElem.Element("Name"),
-								Blockable = (string) compRuleElem.Attribute("blockable") == "true"
-							};
+			{
+				Name = (string) compRuleElem.Element("Name"),
+				Blockable = (bool?) compRuleElem.Attribute("blockable") ?? true
+			};
 			var multApp = (string) compRuleElem.Attribute("multipleApplication");
 			if (!string.IsNullOrEmpty(multApp))
 				compRule.MaxApplicationCount = int.Parse(multApp);
@@ -1004,7 +1008,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			{
 				try
 				{
-					compRule.Subrules.Add(LoadCompoundingSubrule(subruleElem));
+					compRule.Subrules.Add(LoadCompoundingSubrule(subruleElem, defaultTable));
 				}
 				catch (Exception e)
 				{
@@ -1025,7 +1029,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			return false;
 		}
 
-		private CompoundingSubrule LoadCompoundingSubrule(XElement compSubruleElem)
+		private CompoundingSubrule LoadCompoundingSubrule(XElement compSubruleElem, CharacterDefinitionTable defaultTable)
 		{
 			var subrule = new CompoundingSubrule();
 
@@ -1038,19 +1042,19 @@ namespace SIL.Machine.Morphology.HermitCrab
 			subrule.ExcludedMprFeatures.UnionWith(LoadMprFeatures((string) headElem.Attribute("excludedMPRFeatures")));
 
 			var partNames = new Dictionary<string, string>();
-			LoadMorphologicalLhs(headElem, variables, partNames, subrule.HeadLhs, "head_");
+			LoadMorphologicalLhs(headElem, variables, partNames, subrule.HeadLhs, defaultTable, "head_");
 
 			XElement nonHeadElem = compSubruleElem.Element("NonHeadMorphologicalInput");
 			Debug.Assert(nonHeadElem != null);
 
-			LoadMorphologicalLhs(nonHeadElem, variables, partNames, subrule.NonHeadLhs, "nonhead_");
+			LoadMorphologicalLhs(nonHeadElem, variables, partNames, subrule.NonHeadLhs, defaultTable, "nonhead_");
 
 			XElement outputElem = compSubruleElem.Element("MorphologicalOutput");
 			Debug.Assert(outputElem != null);
 
 			subrule.OutMprFeatures.UnionWith(LoadMprFeatures((string) outputElem.Attribute("MPRFeatures")));
 
-			LoadMorphologicalRhs(outputElem, variables, partNames, subrule.Rhs);
+			LoadMorphologicalRhs(outputElem, variables, partNames, subrule.Rhs, defaultTable);
 
 			return subrule;
 		}
@@ -1126,7 +1130,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 		}
 
 		private IEnumerable<PatternNode<Word, ShapeNode>> LoadPatternNodes(XElement pseqElem, Dictionary<string, Tuple<string, SymbolicFeature>> variables,
-			Dictionary<string, string> groupNames)
+			CharacterDefinitionTable defaultTable, Dictionary<string, string> groupNames)
 		{
 			foreach (XElement recElem in pseqElem.Elements())
 			{
@@ -1149,11 +1153,11 @@ namespace SIL.Machine.Morphology.HermitCrab
 						int min = string.IsNullOrEmpty(minStr) ? 0 : int.Parse(minStr);
 						var maxStr = (string) recElem.Attribute("max");
 						int max = string.IsNullOrEmpty(maxStr) ? -1 : int.Parse(maxStr);
-						node = new Quantifier<Word, ShapeNode>(min, max, new Group<Word, ShapeNode>(LoadPatternNodes(recElem, variables, groupNames)));
+						node = new Quantifier<Word, ShapeNode>(min, max, new Group<Word, ShapeNode>(LoadPatternNodes(recElem, variables, defaultTable, groupNames)));
 						break;
 
 					case "Segments":
-						CharacterDefinitionTable segsTable = _tables[(string) recElem.Attribute("characterDefinitionTable")];
+						CharacterDefinitionTable segsTable = GetTable(recElem, defaultTable);
 						var shapeStr = (string) recElem.Element("PhoneticShape");
 						var segments = new Segments(segsTable, shapeStr);
 						node = new Group<Word, ShapeNode>(segments.Shape.Select(n => new Constraint<Word, ShapeNode>(n.Annotation.FeatureStruct))) {Tag = segments};
@@ -1185,14 +1189,14 @@ namespace SIL.Machine.Morphology.HermitCrab
 		}
 
 		private Pattern<Word, ShapeNode> LoadPhoneticTemplate(XElement ptempElem, Dictionary<string, Tuple<string, SymbolicFeature>> variables,
-			Dictionary<string, string> groupNames = null)
+			CharacterDefinitionTable defaultTable = null, Dictionary<string, string> groupNames = null)
 		{
 			var pattern = new Pattern<Word, ShapeNode>();
 			if (ptempElem != null)
 			{
 				if ((string) ptempElem.Attribute("initialBoundaryCondition") == "true")
 					pattern.Children.Add(new Constraint<Word, ShapeNode>(HCFeatureSystem.LeftSideAnchor));
-				foreach (PatternNode<Word, ShapeNode> node in LoadPatternNodes(ptempElem.Element("PhoneticSequence"), variables, groupNames))
+				foreach (PatternNode<Word, ShapeNode> node in LoadPatternNodes(ptempElem.Element("PhoneticSequence"), variables, defaultTable, groupNames))
 					pattern.Children.Add(node);
 				if ((string) ptempElem.Attribute("finalBoundaryCondition") == "true")
 					pattern.Children.Add(new Constraint<Word, ShapeNode>(HCFeatureSystem.RightSideAnchor));
@@ -1201,13 +1205,20 @@ namespace SIL.Machine.Morphology.HermitCrab
 			return pattern;
 		}
 
-		private Pattern<Word, ShapeNode> LoadPhoneticSequence(XElement pseqElem, Dictionary<string, Tuple<string, SymbolicFeature>> variables, string name = null)
+		private Pattern<Word, ShapeNode> LoadPhoneticSequence(XElement pseqElem, Dictionary<string, Tuple<string, SymbolicFeature>> variables,
+			CharacterDefinitionTable defaultTable = null, string name = null)
 		{
 			if (pseqElem == null)
 				return Pattern<Word, ShapeNode>.New().Value;
-			var pattern = new Pattern<Word, ShapeNode>(name, LoadPatternNodes(pseqElem, variables, null));
+			var pattern = new Pattern<Word, ShapeNode>(name, LoadPatternNodes(pseqElem, variables, defaultTable, null));
 			pattern.Freeze();
 			return pattern;
+		}
+
+		private CharacterDefinitionTable GetTable(XElement elem, CharacterDefinitionTable defaultTable)
+		{
+			string tableId = (string) elem.Attribute("characterDefinitionTable");
+			return tableId == null ? defaultTable : _tables[tableId];
 		}
 	}
 }

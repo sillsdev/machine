@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
@@ -8,27 +7,22 @@ namespace SIL.Machine.Morphology.HermitCrab
 	/// </summary>
 	public class RootAllomorph : Allomorph
 	{
-		private readonly Shape _shape;
+		private readonly Segments _segments;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="RootAllomorph"/> class.
 		/// </summary>
-		/// <param name="shape">The shape.</param>
-		public RootAllomorph(Shape shape)
+		public RootAllomorph(Segments segments)
 		{
-			_shape = shape;
+			_segments = segments;
 		}
 
 		/// <summary>
-		/// Gets the phonetic shape.
+		/// Gets the segments.
 		/// </summary>
-		/// <value>The phonetic shape.</value>
-		public Shape Shape
+		public Segments Segments
 		{
-			get
-			{
-				return _shape;
-			}
+			get { return _segments; }
 		}
 
 		public StemName StemName { get; set; }

@@ -26,8 +26,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 		public void Add(RootAllomorph allomorph)
 		{
 			_allomorphs[allomorph.ID] = allomorph;
-			ShapeNode first = allomorph.Shape.GetFirst(n => _filter(n.Annotation));
-			if (first == allomorph.Shape.End)
+			ShapeNode first = allomorph.Segments.Shape.GetFirst(n => _filter(n.Annotation));
+			if (first == allomorph.Segments.Shape.End)
 				_fsa.StartState.Arcs.Add(_fsa.CreateAcceptingState(allomorph.ID, (s, match) => true, _shapeCount));
 			else
 				AddNode(first, _fsa.StartState, allomorph.ID);
