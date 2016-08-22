@@ -442,7 +442,7 @@
   characterDefinitionTable refers to a CharacterDefinitionTable ID
   -->
 <!ATTLIST InsertSegments
-  characterDefinitionTable IDREF #REQUIRED
+  characterDefinitionTable IDREF #IMPLIED
 >
 
 <!ELEMENT VariableFeatures (VariableFeature+) >
@@ -521,7 +521,7 @@ For OutputFootFeatures and RequiredFootFeatures, the Features need to be FootFea
 <!ELEMENT Segments (PhoneticShape) >
 <!ATTLIST Segments
   id ID #IMPLIED
-  characterDefinitionTable IDREF #REQUIRED
+  characterDefinitionTable IDREF #IMPLIED
 >
 <!ELEMENT BoundaryMarker EMPTY>
 <!--

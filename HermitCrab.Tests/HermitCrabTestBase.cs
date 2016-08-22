@@ -349,11 +349,8 @@ namespace SIL.HermitCrab.Tests
 				Gloss = gloss,
 				IsPartial = syntacticFS.IsEmpty
 			};
-			foreach (string form in forms)
-			{
-				Shape shape = stratum.CharacterDefinitionTable.Segment(form);
-				entry.Allomorphs.Add(new RootAllomorph(shape));
-			}
+		    foreach (string form in forms)
+		        entry.Allomorphs.Add(new RootAllomorph(new Segments(stratum.CharacterDefinitionTable, form)));
 			stratum.Entries.Add(entry);
 			Entries[gloss] = entry;
 			return entry;
