@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Options;
 using SIL.Machine.Annotations;
-using SIL.Machine.FeatureModel;
 using SIL.Machine.Morphology.HermitCrab;
 using SIL.Machine.Tokenization;
 using SIL.Machine.Translation;
@@ -135,33 +134,17 @@ namespace SIL.Machine.WebApi.Models
 				var spanFactory = new ShapeSpanFactory();
 				var hcTraceManager = new TraceManager();
 
-				Language srcLang = XmlLoader.Load(hcSrcConfigFileName);
+				Language srcLang = XmlLanguageLoader.Load(hcSrcConfigFileName);
 				var srcMorpher = new Morpher(spanFactory, hcTraceManager, srcLang);
-				var srcAnalyzer = new HermitCrabMorphologicalAnalyzer(GetMorphemeId, GetCategory, srcMorpher);
 
-				Language trgLang = XmlLoader.Load(hcTrgConfigFileName);
+				Language trgLang = XmlLanguageLoader.Load(hcTrgConfigFileName);
 				var trgMorpher = new Morpher(spanFactory, hcTraceManager, trgLang);
-				var trgGenerator = new HermitCrabMorphologicalGenerator(GetMorphemeId, GetCategory, trgMorpher);
 
-				transferEngine = new TransferEngine(srcAnalyzer, new SimpleTransferer(new GlossMorphemeMapper(trgGenerator)), trgGenerator);
+				transferEngine = new TransferEngine(srcMorpher, new SimpleTransferer(new GlossMorphemeMapper(trgMorpher)), trgMorpher);
 			}
 
 			return new HybridTranslationEngine(smtEngine, transferEngine);
 		}
-
-		private static string GetMorphemeId(Morpheme morpheme)
-		{
-			return morpheme.Gloss;
-		}
-
-		private static string GetCategory(FeatureStruct fs)
-		{
-			SymbolicFeatureValue value;
-			if (fs.TryGetValue("pos", out value))
-				return value.Values.First().ID;
-			return null;
-		}
-
 		protected override void DisposeManagedResources()
 		{
 			_isTimerStopped = true;
