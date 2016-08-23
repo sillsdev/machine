@@ -154,8 +154,11 @@ namespace SIL.Machine.WebApi.Models
 			{
 				lock (engineContext)
 				{
-					engineContext.Engine.Dispose();
-					engineContext.Engine = null;
+					if (engineContext.Engine != null)
+					{
+						engineContext.Engine.Dispose();
+						engineContext.Engine = null;
+					}
 				}
 			}
 		}
