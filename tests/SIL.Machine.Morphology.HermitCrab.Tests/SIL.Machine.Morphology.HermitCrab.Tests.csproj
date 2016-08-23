@@ -50,18 +50,6 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Globalization.Extensions, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Globalization.Extensions.4.0.1\lib\net46\System.Globalization.Extensions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.IO.FileSystem, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.IO.FileSystem.4.0.1\lib\net46\System.IO.FileSystem.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.IO.FileSystem.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.IO.FileSystem.Primitives.4.0.1\lib\net46\System.IO.FileSystem.Primitives.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AffixTemplateTests.cs" />
@@ -76,24 +64,24 @@
     <Compile Include="XmlLanguageSerializationTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\SIL.Core.NETStd13\SIL.Core.NETStd13.csproj">
-      <Project>{c1241431-829a-4019-97a2-6d6042e00da8}</Project>
-      <Name>SIL.Core.NETStd13</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\SIL.Machine.Morphology.HermitCrab.NETStd13\SIL.Machine.Morphology.HermitCrab.NETStd13.csproj">
-      <Project>{d9c1284c-c143-4b3f-ac5b-433910238d13}</Project>
-      <Name>SIL.Machine.Morphology.HermitCrab.NETStd13</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\SIL.Machine.NETStd13\SIL.Machine.NETStd13.csproj">
-      <Project>{ddcd6096-cdaa-4eaa-bcb7-fb122577d1a4}</Project>
-      <Name>SIL.Machine.NETStd13</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="TestData\XmlLanguageSerializationTests.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\SIL.Core.NET4\SIL.Core.NET4.csproj">
+      <Project>{89ff4251-6daf-43f1-869c-0d76de2cdc3f}</Project>
+      <Name>SIL.Core.NET4</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\SIL.Machine.Morphology.HermitCrab.NET4\SIL.Machine.Morphology.HermitCrab.NET4.csproj">
+      <Project>{761bd6f6-f1cf-49f0-8c67-84d5515faf00}</Project>
+      <Name>SIL.Machine.Morphology.HermitCrab.NET4</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\SIL.Machine.NET4\SIL.Machine.NET4.csproj">
+      <Project>{06b55abb-059c-4340-adf5-ef0e229fe7aa}</Project>
+      <Name>SIL.Machine.NET4</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
