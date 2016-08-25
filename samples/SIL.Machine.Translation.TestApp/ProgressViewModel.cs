@@ -18,7 +18,6 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly RelayCommand<object> _cancelCommand;
 		private bool _indeterminate;
 		private string _displayName;
-		private Exception _exception;
 
 		public ProgressViewModel(Action<ProgressViewModel> action)
 		{
@@ -62,15 +61,9 @@ namespace SIL.Machine.Translation.TestApp
 			set { Set(() => CancelRequested, ref _cancelRequested, value); }
 		}
 
-		public Exception Exception
-		{
-			get { return _exception; }
-		}
+		public Exception Exception { get; private set; }
 
-		public ICommand CancelCommand
-		{
-			get { return _cancelCommand; }
-		}
+		public ICommand CancelCommand => _cancelCommand;
 
 		public void Execute()
 		{
@@ -83,7 +76,7 @@ namespace SIL.Machine.Translation.TestApp
 				}
 				catch (Exception ex)
 				{
-					_exception = ex;
+					Exception = ex;
 				}
 				finally
 				{
@@ -114,7 +107,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		void IProgress.WriteException(Exception error)
 		{
-			_exception = error;
+			Exception = error;
 		}
 
 		void IProgress.WriteError(string message, params object[] args)

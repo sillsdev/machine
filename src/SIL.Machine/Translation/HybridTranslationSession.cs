@@ -3,7 +3,7 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
 {
-	internal class HybridTranslationSession : DisposableBase, IInteractiveTranslationSession
+	public class HybridTranslationSession : DisposableBase, IInteractiveTranslationSession
 	{
 		private readonly HybridTranslationEngine _engine;
 		private readonly IInteractiveSmtSession _smtSession;
@@ -11,7 +11,7 @@ namespace SIL.Machine.Translation
 		private TranslationResult _currentResult;
 		private TranslationResult _transferResult;
 
-		public HybridTranslationSession(HybridTranslationEngine engine, IInteractiveSmtSession smtSession, ITranslationEngine transferEngine)
+		internal HybridTranslationSession(HybridTranslationEngine engine, IInteractiveSmtSession smtSession, ITranslationEngine transferEngine)
 		{
 			_engine = engine;
 			_smtSession = smtSession;
@@ -64,6 +64,14 @@ namespace SIL.Machine.Translation
 			return _currentResult;
 		}
 
+		public TranslationResult TranslateInteractively(string sourceSegment)
+		{
+			CheckDisposed();
+			_engine.CheckSourceTokenizer();
+
+			return TranslateInteractively(HybridTranslationEngine.Preprocess(_engine.SourcePreprocessor, _engine.SourceTokenizer, sourceSegment));
+		}
+
 		public TranslationResult SetPrefix(IEnumerable<string> prefix, bool isLastWordPartial)
 		{
 			CheckDisposed();
@@ -76,6 +84,14 @@ namespace SIL.Machine.Translation
 			return _currentResult;
 		}
 
+		public TranslationResult SetPrefix(string prefix, bool isLastWordPartial)
+		{
+			CheckDisposed();
+			_engine.CheckTargetTokenizer();
+
+			return SetPrefix(HybridTranslationEngine.Preprocess(_engine.TargetPreprocessor, _engine.TargetTokenizer, prefix), isLastWordPartial);
+		}
+
 		public TranslationResult AddToPrefix(IEnumerable<string> addition, bool isLastWordPartial)
 		{
 			CheckDisposed();
@@ -86,6 +102,14 @@ namespace SIL.Machine.Translation
 				prefixCount--;
 			_currentResult = HybridTranslationEngine.MergeTranslationResults(prefixCount, smtResult, _transferResult);
 			return _currentResult;
+		}
+
+		public TranslationResult AddToPrefix(string addition, bool isLastWordPartial)
+		{
+			CheckDisposed();
+			_engine.CheckTargetTokenizer();
+
+			return AddToPrefix(HybridTranslationEngine.Preprocess(_engine.TargetPreprocessor, _engine.TargetTokenizer, addition), isLastWordPartial);
 		}
 
 		public void Reset()

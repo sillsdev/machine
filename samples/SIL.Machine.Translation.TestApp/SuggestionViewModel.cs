@@ -9,12 +9,11 @@ namespace SIL.Machine.Translation.TestApp
 	public class SuggestionViewModel : ViewModelBase
 	{
 		private readonly TextViewModel _textViewModel;
-		private readonly string _text;
 		private readonly RelayCommand<object> _command; 
 
 		public SuggestionViewModel(TextViewModel textViewModel, string text)
 		{
-			_text = text;
+			Text = text;
 			_textViewModel = textViewModel;
 			_command = new RelayCommand<object>(o => InsertSuggestion());
 		}
@@ -31,20 +30,14 @@ namespace SIL.Machine.Translation.TestApp
 			}
 			if (sb.Length > 0)
 				sb.Append(" ");
-			sb.Append(_text);
+			sb.Append(Text);
 			sb.Append(" ");
 			_textViewModel.TargetSegment = sb.ToString();
 			_textViewModel.CurrentTargetSegmentIndex = _textViewModel.TargetSegment.Length;
 		}
 
-		public string Text
-		{
-			get { return _text; }
-		}
+		public string Text { get; }
 
-		public ICommand Command
-		{
-			get { return _command; }
-		}
+		public ICommand Command => _command;
 	}
 }

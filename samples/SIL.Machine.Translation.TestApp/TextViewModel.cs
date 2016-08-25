@@ -17,7 +17,6 @@ namespace SIL.Machine.Translation.TestApp
 	public class TextViewModel : ViewModelBase, IChangeTracking
 	{
 		private readonly ITokenizer<string, int> _tokenizer;
-		private readonly string _name;
 		private readonly string _sourceFileName;
 		private readonly string _targetFileName;
 
@@ -52,7 +51,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		public TextViewModel(ITokenizer<string, int> tokenizer, string name, string sourceFileName, string targetFileName)
 		{
-			_name = name;
+			Name = name;
 			_sourceFileName = sourceFileName;
 			_targetFileName = targetFileName;
 			_tokenizer = tokenizer;
@@ -88,12 +87,9 @@ namespace SIL.Machine.Translation.TestApp
 		{
 		}
 
-		public string Name
-		{
-			get { return _name; }
-		}
+		public string Name { get; }
 
-		internal IInteractiveTranslationSession TranslationSession { get; set; }
+		internal HybridTranslationSession TranslationSession { get; set; }
 
 		internal double ConfidenceThreshold
 		{
@@ -146,15 +142,8 @@ namespace SIL.Machine.Translation.TestApp
 			}
 		}
 
-		internal IList<Segment> SourceSegments
-		{
-			get { return _sourceSegments; }
-		}
-
-		internal IList<Segment> TargetSegments
-		{
-			get { return _targetSegments; }
-		}
+		internal IList<Segment> SourceSegments => _sourceSegments;
+		internal IList<Segment> TargetSegments => _targetSegments;
 
 		private void LoadSourceTextFile()
 		{
@@ -216,10 +205,7 @@ namespace SIL.Machine.Translation.TestApp
 			return sb.ToString();
 		}
 
-		public ICommand GoToNextSegmentCommand
-		{
-			get { return _goToNextSegmentCommand; }
-		}
+		public ICommand GoToNextSegmentCommand => _goToNextSegmentCommand;
 
 		private bool CanGoToNextSegment()
 		{
@@ -231,10 +217,7 @@ namespace SIL.Machine.Translation.TestApp
 			MoveSegment(_currentSegment + 1);
 		}
 
-		public ICommand GoToPrevSegmentCommand
-		{
-			get { return _goToPrevSegmentCommand; }
-		}
+		public ICommand GoToPrevSegmentCommand => _goToPrevSegmentCommand;
 
 		private bool CanGoToPrevSegment()
 		{
@@ -246,10 +229,7 @@ namespace SIL.Machine.Translation.TestApp
 			MoveSegment(_currentSegment - 1);
 		}
 
-		public ICommand ApproveSegmentCommand
-		{
-			get { return _approveSegmentCommand; }
-		}
+		public ICommand ApproveSegmentCommand => _approveSegmentCommand;
 
 		private bool CanApproveSegment()
 		{
@@ -268,10 +248,7 @@ namespace SIL.Machine.Translation.TestApp
 			IsChanged = true;
 		}
 
-		public ICommand SelectSourceSegmentCommand
-		{
-			get { return _selectSourceSegmentCommand; }
-		}
+		public ICommand SelectSourceSegmentCommand => _selectSourceSegmentCommand;
 
 		private void SelectSourceSegment(int index)
 		{
@@ -283,10 +260,7 @@ namespace SIL.Machine.Translation.TestApp
 			}
 		}
 
-		public ICommand SelectTargetSegmentCommand
-		{
-			get { return _selectTargetSegmentCommand; }
-		}
+		public ICommand SelectTargetSegmentCommand => _selectTargetSegmentCommand;
 
 		private void SelectTargetSegment(int index)
 		{
@@ -326,7 +300,7 @@ namespace SIL.Machine.Translation.TestApp
 		private void StartSegmentTranslation()
 		{
 			_sourceSegmentWords.AddRange(_tokenizer.TokenizeToStrings(_sourceSegments[_currentSegment].Text));
-			TranslationSession.TranslateInteractively(_sourceSegmentWords.Select(w => w.ToLowerInvariant()));
+			TranslationSession.TranslateInteractively(_sourceSegments[_currentSegment].Text);
 			_isTranslating = true;
 			UpdatePrefix();
 			UpdateSourceSegmentSelection();
@@ -337,8 +311,7 @@ namespace SIL.Machine.Translation.TestApp
 			if (!_isTranslating)
 				return;
 
-			TranslationSession.SetPrefix(_tokenizer.TokenizeToStrings(_targetSegments[_currentSegment].Text.ToLowerInvariant()),
-				TargetSegment.Length > 0 && !TargetSegment.EndsWith(" "));
+			TranslationSession.SetPrefix(_targetSegments[_currentSegment].Text, TargetSegment.Length > 0 && !TargetSegment.EndsWith(" "));
 			UpdateSuggestions();
 		}
 
@@ -475,10 +448,7 @@ namespace SIL.Machine.Translation.TestApp
 			_alignedSourceWords.ReplaceAll(alignedSourceWords);
 		}
 
-		public ReadOnlyObservableList<AlignedWordViewModel> AlignedSourceWords
-		{
-			get { return _readOnlyAlignedSourceWords; }
-		}
+		public ReadOnlyObservableList<AlignedWordViewModel> AlignedSourceWords => _readOnlyAlignedSourceWords;
 
 		public Range<int>? CurrentSourceSegmentRange
 		{
@@ -492,15 +462,9 @@ namespace SIL.Machine.Translation.TestApp
 			private set { Set(() => CurrentTargetSegmentRange, ref _currentTargetSegmentRange, value); }
 		}
 
-		public ReadOnlyObservableList<SuggestionViewModel> Suggestions
-		{
-			get { return _readOnlySuggestions; }
-		}
+		public ReadOnlyObservableList<SuggestionViewModel> Suggestions => _readOnlySuggestions;
 
-		public ICommand ApplyAllSuggestionsCommand
-		{
-			get { return _applyAllSuggestionsCommand; }
-		}
+		public ICommand ApplyAllSuggestionsCommand => _applyAllSuggestionsCommand;
 
 		private bool CanApplyAllSuggestions()
 		{
@@ -513,10 +477,7 @@ namespace SIL.Machine.Translation.TestApp
 				suggestion.InsertSuggestion();
 		}
 
-		public ReadOnlyObservableList<Range<int>> UnapprovedTargetSegmentRanges
-		{
-			get { return _readonlyUnapprovedTargetSegmentRanges; }
-		}
+		public ReadOnlyObservableList<Range<int>> UnapprovedTargetSegmentRanges => _readonlyUnapprovedTargetSegmentRanges;
 
 		private void UpdateUnapprovedTargetSegmentRanges()
 		{

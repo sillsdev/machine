@@ -13,23 +13,14 @@ namespace SIL.Machine.Translation.TestApp
 
 	public class AlignedWordViewModel : ViewModelBase
 	{
-		private readonly Range<int> _range;
-		private readonly WordTranslationLevel _level;
-
 		public AlignedWordViewModel(Range<int> range, WordTranslationLevel level)
 		{
-			_range = range;
-			_level = level;
+			Range = range;
+			Level = level;
 		}
 
-		public Range<int> Range
-		{
-			get { return _range; }
-		}
+		public Range<int> Range { get; }
 
-		public WordTranslationLevel Level
-		{
-			get { return _level; }
-		}
+		public WordTranslationLevel Level { get; }
 	}
 }

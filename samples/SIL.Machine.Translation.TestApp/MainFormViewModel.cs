@@ -23,7 +23,7 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly RelayCommand<object> _rebuildProjectCommand; 
 		private readonly RelayCommand<object> _closeCommand;
 		private HybridTranslationEngine _translationEngine;
-		private IInteractiveTranslationSession _translationSession;
+		private HybridTranslationSession _translationSession;
 		private readonly ShapeSpanFactory _spanFactory;
 		private readonly TraceManager _hcTraceManager;
 		private int _confidenceThreshold;
@@ -78,10 +78,7 @@ namespace SIL.Machine.Translation.TestApp
 				text.AcceptChanges();
 		}
 
-		public ICommand OpenProjectCommand
-		{
-			get { return _openProjectCommand; }
-		}
+		public ICommand OpenProjectCommand => _openProjectCommand;
 
 		private void OpenProject()
 		{
@@ -196,10 +193,7 @@ namespace SIL.Machine.Translation.TestApp
 			return true;
 		}
 
-		public ICommand SaveProjectCommand
-		{
-			get { return _saveProjectCommand; }
-		}
+		public ICommand SaveProjectCommand => _saveProjectCommand;
 
 		private void SaveProject()
 		{
@@ -228,10 +222,7 @@ namespace SIL.Machine.Translation.TestApp
 			_rebuildProjectCommand.UpdateCanExecute();
 		}
 
-		public ICommand RebuildProjectCommand
-		{
-			get { return _rebuildProjectCommand; }
-		}
+		public ICommand RebuildProjectCommand => _rebuildProjectCommand;
 
 		private bool CanRebuildProject()
 		{
@@ -259,10 +250,7 @@ namespace SIL.Machine.Translation.TestApp
 			_currentText.IsActive = true;
 		}
 
-		public ICommand CloseCommand
-		{
-			get { return _closeCommand; }
-		}
+		public ICommand CloseCommand => _closeCommand;
 
 		private bool CanClose()
 		{
@@ -301,10 +289,7 @@ namespace SIL.Machine.Translation.TestApp
 			}
 		}
 
-		public ReadOnlyObservableList<TextViewModel> Texts
-		{
-			get { return _readOnlyTexts; }
-		}
+		public ReadOnlyObservableList<TextViewModel> Texts => _readOnlyTexts;
 
 		public TextViewModel CurrentText
 		{

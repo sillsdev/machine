@@ -37,15 +37,12 @@ namespace SIL.Machine.Translation
 		public void Rebuild(IProgress progress = null)
 		{
 			CheckDisposed();
-
+			CheckSourceTokenizer();
+			CheckTargetTokenizer();
 			if (SourceCorpus == null)
 				throw new InvalidOperationException("A source corpus is not specified.");
 			if (TargetCorpus == null)
 				throw new InvalidOperationException("A target corpus is not specified");
-			if (SourceTokenizer == null)
-				throw new InvalidOperationException("A source tokenizer is not specified.");
-			if (TargetTokenizer == null)
-				throw new InvalidOperationException("A target tokenizer is not specified.");
 
 			lock (_sessions)
 			{
@@ -70,6 +67,26 @@ namespace SIL.Machine.Translation
 			TranslationResult smtResult = _smtEngine.Translate(sourceSegment);
 			TranslationResult transferResult = _ruleBasedEngine.Translate(smtResult.SourceSegment);
 			return MergeTranslationResults(0, smtResult, transferResult);
+		}
+
+		public TranslationResult Translate(string sourceSegment)
+		{
+			CheckDisposed();
+			CheckSourceTokenizer();
+
+			return Translate(Preprocess(SourcePreprocessor, SourceTokenizer, sourceSegment));
+		}
+
+		internal void CheckSourceTokenizer()
+		{
+			if (SourceTokenizer == null)
+				throw new InvalidOperationException("A source tokenizer is not specified.");
+		}
+
+		internal void CheckTargetTokenizer()
+		{
+			if (TargetTokenizer == null)
+				throw new InvalidOperationException("A target tokenizer is not specified.");
 		}
 
 		internal static TranslationResult MergeTranslationResults(int prefixCount, TranslationResult primaryResult, TranslationResult secondaryResult)
@@ -148,7 +165,12 @@ namespace SIL.Machine.Translation
 			return new TranslationResult(primaryResult.SourceSegment, targetSegment, confidences, alignmentMatrix);
 		}
 
-		public IInteractiveTranslationSession StartSession()
+		IInteractiveTranslationSession IInteractiveTranslationEngine.StartSession()
+		{
+			return StartSession();
+		}
+
+		public HybridTranslationSession StartSession()
 		{
 			CheckDisposed();
 
@@ -156,6 +178,11 @@ namespace SIL.Machine.Translation
 			lock (_sessions)
 				_sessions.Add(session);
 			return session;
+		}
+
+		internal static IEnumerable<string> Preprocess(Func<string, string> preprocessor, ITokenizer<string, int> tokenizer, string segment)
+		{
+			return tokenizer.TokenizeToStrings(preprocessor(segment));
 		}
 
 		internal void RemoveSession(HybridTranslationSession session)
