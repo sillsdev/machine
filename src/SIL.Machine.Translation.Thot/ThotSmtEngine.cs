@@ -7,8 +7,10 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using SIL.Extensions;
+using SIL.Machine.Corpora;
 using SIL.Machine.NgramModeling;
 using SIL.Machine.Optimization;
+using SIL.Machine.Tokenization;
 using SIL.ObjectModel;
 using SIL.Progress;
 
@@ -22,7 +24,8 @@ namespace SIL.Machine.Translation.Thot
 		private const int ProgressIncrement = 99 / TrainingStepCount + 1;
 		private const int DefaultTranslationBufferLength = 1024;
 
-		public static void TrainModels(string cfgFileName, IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus, IProgress progress = null)
+		public static void TrainModels(string cfgFileName, Func<string, string> sourcePreprocessor, ITokenizer<string, int> sourceTokenizer, ITextCorpus sourceCorpus,
+			Func<string, string> targetPreprocessor, ITokenizer<string, int> targetTokenizer, ITextCorpus targetCorpus, IProgress progress = null)
 		{
 			if (progress == null)
 				progress = new NullProgress();
@@ -78,15 +81,16 @@ namespace SIL.Machine.Translation.Thot
 				File.Copy(cfgFileName, trainCfgFileName);
 				UpdateConfigPaths(trainCfgFileName, trainLMPrefix, trainTMPrefix);
 
+				var corpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
 				int corpusCount = 0;
 				var emptyIndices = new HashSet<int>();
 				int index = 0;
-				foreach (Tuple<IEnumerable<string>, IEnumerable<string>> pair in sourceCorpus.Zip(targetCorpus))
+				foreach (ParallelTextSegment segment in corpus.Texts.SelectMany(t => t.Segments))
 				{
-					if (pair.Item1.Any() && pair.Item2.Any())
-						corpusCount++;
-					else
+					if (!segment.IsEmpty)
 						emptyIndices.Add(index);
+					else
+						corpusCount++;
 					index++;
 				}
 				int tuneCorpusCount = Math.Min((int) (corpusCount * 0.1), 1000);
@@ -95,12 +99,13 @@ namespace SIL.Machine.Translation.Thot
 					.OrderBy(i => r.Next()).Take(tuneCorpusCount));
 
 				progress.WriteMessage("Training target language model...");
-				TrainLanguageModel(trainLMPrefix, targetCorpus, tuneCorpusIndices, 3);
+				TrainLanguageModel(trainLMPrefix, targetPreprocessor, targetTokenizer, corpus, tuneCorpusIndices, 3);
 				progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
 				if (progress.CancelRequested)
 					return;
 
-				TrainTranslationModel(trainTMPrefix, sourceCorpus, targetCorpus, tuneCorpusIndices, progress);
+				TrainTranslationModel(trainTMPrefix, sourcePreprocessor, sourceTokenizer, targetPreprocessor, targetTokenizer, corpus,
+					tuneCorpusIndices, progress);
 				if (progress.CancelRequested)
 					return;
 
@@ -113,8 +118,13 @@ namespace SIL.Machine.Translation.Thot
 				File.Copy(trainCfgFileName, tuneCfgFileName);
 				UpdateConfigPaths(tuneCfgFileName, trainLMPrefix, tuneTMPrefix);
 
-				IEnumerable<string>[] tuneSourceCorpus = sourceCorpus.Where((s, i) => tuneCorpusIndices.Contains(i)).ToArray();
-				IEnumerable<string>[] tuneTargetCorpus = targetCorpus.Where((s, i) => tuneCorpusIndices.Contains(i)).ToArray();
+				var tuneSourceCorpus = new List<IList<string>>(tuneCorpusIndices.Count);
+				var tuneTargetCorpus = new List<IList<string>>(tuneCorpusIndices.Count);
+				foreach (ParallelTextSegment segment in corpus.Segments.Where((s, i) => tuneCorpusIndices.Contains(i)))
+				{
+					tuneSourceCorpus.Add(sourceTokenizer.TokenizeToStrings(sourcePreprocessor(segment.SourceValue)).ToArray());
+					tuneTargetCorpus.Add(targetTokenizer.TokenizeToStrings(targetPreprocessor(segment.TargetValue)).ToArray());
+				}
 
 				progress.WriteMessage("Tuning language model...");
 				TuneLanguageModel(trainLMPrefix, tuneTargetCorpus, 3);
@@ -179,22 +189,24 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private static void TrainLanguageModel(string lmPrefix, IEnumerable<IEnumerable<string>> targetCorpus, ISet<int> tuneCorpusIndices, int ngramSize)
+		private static void TrainLanguageModel(string lmPrefix, Func<string, string> targetPreprocessor, ITokenizer<string, int> targetTokenizer,
+			ParallelTextCorpus corpus, ISet<int> tuneCorpusIndices, int ngramSize)
 		{
-			WriteNgramCountsFile(lmPrefix, targetCorpus, tuneCorpusIndices, ngramSize);
+			WriteNgramCountsFile(lmPrefix, targetPreprocessor, targetTokenizer, corpus, tuneCorpusIndices, ngramSize);
 			WriteLanguageModelWeightsFile(lmPrefix, ngramSize, Enumerable.Repeat(0.5, ngramSize * 3));
-			WriteWordPredictionFile(targetCorpus, tuneCorpusIndices, lmPrefix);
+			WriteWordPredictionFile(targetPreprocessor, targetTokenizer, corpus, tuneCorpusIndices, lmPrefix);
 		}
 
-		private static void WriteNgramCountsFile(string lmPrefix, IEnumerable<IEnumerable<string>> targetCorpus, ISet<int> tuneCorpusIndices, int ngramSize)
+		private static void WriteNgramCountsFile(string lmPrefix, Func<string, string> targetPreprocessor, ITokenizer<string, int> targetTokenizer, ParallelTextCorpus corpus,
+			ISet<int> tuneCorpusIndices, int ngramSize)
 		{
 			int wordCount = 0;
 			var ngrams = new Dictionary<Ngram<string>, int>();
 			var vocab = new HashSet<string>();
-			foreach (IEnumerable<string> segment in targetCorpus.Where((s, i) => !tuneCorpusIndices.Contains(i)))
+			foreach (TextSegment segment in corpus.TargetSegments.Where((s, i) => !tuneCorpusIndices.Contains(i) && !s.IsEmpty))
 			{
 				var words = new List<string> {"<s>"};
-				foreach (string word in segment)
+				foreach (string word in targetTokenizer.TokenizeToStrings(targetPreprocessor(segment.Value)))
 				{
 					if (vocab.Contains(word))
 					{
@@ -234,24 +246,30 @@ namespace SIL.Machine.Translation.Thot
 			File.WriteAllText(lmPrefix + ".weights", string.Format("{0} 3 10 {1}\n", ngramSize, string.Join(" ", weights.Select(w => w.ToString("0.######")))));
 		}
 
-		private static void WriteWordPredictionFile(IEnumerable<IEnumerable<string>> targetCorpus, ISet<int> tuneCorpusIndices, string lmPrefix)
+		private static void WriteWordPredictionFile(Func<string, string> targetPreprocessor, ITokenizer<string, int> targetTokenizer, ParallelTextCorpus corpus,
+			ISet<int> tuneCorpusIndices, string lmPrefix)
 		{
 			var rand = new Random(31415);
 			using (var writer = new StreamWriter(File.Open(lmPrefix + ".wp", FileMode.Create)))
 			{
-				foreach (IEnumerable<string> segment in targetCorpus.Where((s, i) => !tuneCorpusIndices.Contains(i) && s.Any()).Take(100000).OrderBy(i => rand.Next()))
-					writer.Write("{0}\n", string.Join(" ", segment));
+				foreach (TextSegment segment in corpus.TargetSegments.Where((s, i) => !tuneCorpusIndices.Contains(i) && !s.IsEmpty)
+					.Take(100000).OrderBy(i => rand.Next()))
+				{
+					writer.Write("{0}\n", string.Join(" ", targetTokenizer.TokenizeToStrings(targetPreprocessor(segment.Value))));
+				}
 			}
 		}
 
-		private static void TrainTranslationModel(string tmPrefix, IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus,
-			ISet<int> tuneCorpusIndices, IProgress progress)
+		private static void TrainTranslationModel(string tmPrefix, Func<string, string> sourcePreprocessor, ITokenizer<string, int> sourceTokenizer,
+			Func<string, string> targetPreprocessor, ITokenizer<string, int> targetTokenizer, ParallelTextCorpus corpus, ISet<int> tuneCorpusIndices, IProgress progress)
 		{
 			string swmPrefix = tmPrefix + "_swm";
-			GenerateSingleWordAlignmentModel(swmPrefix, targetCorpus, sourceCorpus, tuneCorpusIndices, progress, "source-to-target");
+			GenerateSingleWordAlignmentModel(swmPrefix, targetPreprocessor, targetTokenizer, sourcePreprocessor, sourceTokenizer, corpus.Inverse(),
+				tuneCorpusIndices, progress, "source-to-target");
 
 			string invswmPrefix = tmPrefix + "_invswm";
-			GenerateSingleWordAlignmentModel(invswmPrefix, sourceCorpus, targetCorpus, tuneCorpusIndices, progress, "target-to-source");
+			GenerateSingleWordAlignmentModel(invswmPrefix, sourcePreprocessor, sourceTokenizer, targetPreprocessor, targetTokenizer, corpus,
+				tuneCorpusIndices, progress, "target-to-source");
 
 			progress.WriteMessage("Merging alignments...");
 			Thot.giza_symmetr1(swmPrefix + ".bestal", invswmPrefix + ".bestal", tmPrefix + ".A3.final", true);
@@ -274,11 +292,11 @@ namespace SIL.Machine.Translation.Thot
 			progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
 		}
 
-		private static void GenerateSingleWordAlignmentModel(string swmPrefix, IEnumerable<IEnumerable<string>> sourceCorpus,
-			IEnumerable<IEnumerable<string>> targetCorpus, ISet<int> tuneCorpusIndices, IProgress progress, string name)
+		private static void GenerateSingleWordAlignmentModel(string swmPrefix, Func<string, string> sourcePreprocessor, ITokenizer<string, int> sourceTokenizer,
+			Func<string, string> targetPreprocessor, ITokenizer<string, int> targetTokenizer, ParallelTextCorpus corpus, ISet<int> tuneCorpusIndices, IProgress progress, string name)
 		{
 			progress.WriteMessage("Training {0} single word model...", name);
-			TrainSingleWordAlignmentModel(swmPrefix, sourceCorpus, targetCorpus, tuneCorpusIndices, progress);
+			TrainSingleWordAlignmentModel(swmPrefix, sourcePreprocessor, sourceTokenizer, targetPreprocessor, targetTokenizer, corpus, tuneCorpusIndices, progress);
 			if (progress.CancelRequested)
 				return;
 
@@ -287,7 +305,7 @@ namespace SIL.Machine.Translation.Thot
 				return;
 
 			progress.WriteMessage("Generating best {0} alignments...", name);
-			GenerateBestAlignments(swmPrefix, swmPrefix + ".bestal", sourceCorpus, targetCorpus, tuneCorpusIndices, progress);
+			GenerateBestAlignments(swmPrefix, swmPrefix + ".bestal", sourcePreprocessor, sourceTokenizer, targetPreprocessor, targetTokenizer, corpus, tuneCorpusIndices, progress);
 			progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
 		}
 
@@ -371,15 +389,16 @@ namespace SIL.Machine.Translation.Thot
 			return logy + Math.Log(1 + Math.Exp(logx - logy));
 		}
 
-		private static void TrainSingleWordAlignmentModel(string swmPrefix, IEnumerable<IEnumerable<string>> sourceCorpus,
-			IEnumerable<IEnumerable<string>> targetCorpus, ISet<int> tuneCorpusIndices, IProgress progress)
+		private static void TrainSingleWordAlignmentModel(string swmPrefix, Func<string, string> sourcePreprocessor, ITokenizer<string, int> sourceTokenizer,
+			Func<string, string> targetPreprocessor, ITokenizer<string, int> targetTokenizer, ParallelTextCorpus corpus, ISet<int> tuneCorpusIndices, IProgress progress)
 		{
 			using (var swAlignModel = new ThotSingleWordAlignmentModel(swmPrefix, true))
 			{
-				foreach (Tuple<string[], string[]> pair in sourceCorpus.Select(s => s.ToArray()).Zip(targetCorpus.Select(s => s.ToArray()))
-					.Where((p, i) => !tuneCorpusIndices.Contains(i) && p.Item1.Length > 0 && p.Item2.Length > 0))
+				foreach (ParallelTextSegment segment in corpus.Segments.Where((s, i) => !tuneCorpusIndices.Contains(i) && !s.IsEmpty))
 				{
-					swAlignModel.AddSegmentPair(pair.Item1, pair.Item2);
+					IEnumerable<string> sourceTokens = sourceTokenizer.TokenizeToStrings(sourcePreprocessor(segment.SourceValue));
+					IEnumerable<string> targetTokens = targetTokenizer.TokenizeToStrings(targetPreprocessor(segment.TargetValue));
+					swAlignModel.AddSegmentPair(sourceTokens, targetTokens);
 				}
 				for (int i = 0; i < 5; i++)
 				{
@@ -392,19 +411,21 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private static void GenerateBestAlignments(string swmPrefix, string fileName, IEnumerable<IEnumerable<string>> sourceCorpus,
-			IEnumerable<IEnumerable<string>> targetCorpus, ISet<int> tuneCorpusIndices, IProgress progress)
+		private static void GenerateBestAlignments(string swmPrefix, string fileName, Func<string, string> sourcePreprocessor, ITokenizer<string, int> sourceTokenizer,
+			Func<string, string> targetPreprocessor, ITokenizer<string, int> targetTokenizer, ParallelTextCorpus corpus, ISet<int> tuneCorpusIndices, IProgress progress)
 		{
 			using (var swAlignModel = new ThotSingleWordAlignmentModel(swmPrefix))
 			using (var writer = new StreamWriter(File.Open(fileName, FileMode.Create)))
 			{
-				foreach (Tuple<string[], string[]> pair in sourceCorpus.Select(s => s.ToArray()).Zip(targetCorpus.Select(s => s.ToArray()))
-					.Where((p, i) => !tuneCorpusIndices.Contains(i) && p.Item1.Length > 0 && p.Item2.Length > 0))
+				foreach (ParallelTextSegment segment in corpus.Segments.Where((s, i) => !tuneCorpusIndices.Contains(i) && !s.IsEmpty))
 				{
+					string[] sourceTokens = sourceTokenizer.TokenizeToStrings(sourcePreprocessor(segment.SourceValue)).ToArray();
+					string[] targetTokens = targetTokenizer.TokenizeToStrings(targetPreprocessor(segment.TargetValue)).ToArray();
+
 					WordAlignmentMatrix waMatrix;
-					double prob = swAlignModel.GetBestAlignment(pair.Item1, pair.Item2, out waMatrix);
+					double prob = swAlignModel.GetBestAlignment(sourceTokens, targetTokens, out waMatrix);
 					writer.Write("# Alignment probability= {0:0.######}\n", prob);
-					writer.Write(waMatrix.ToGizaFormat(pair.Item1, pair.Item2));
+					writer.Write(waMatrix.ToGizaFormat(sourceTokens, targetTokens));
 					if (progress.CancelRequested)
 						return;
 				}
@@ -451,7 +472,7 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private static void TuneLanguageModel(string lmPrefix, IList<IEnumerable<string>> tuneTargetCorpus, int ngramSize)
+		private static void TuneLanguageModel(string lmPrefix, IList<IList<string>> tuneTargetCorpus, int ngramSize)
 		{
 			if (tuneTargetCorpus.Count == 0)
 				return;
@@ -461,7 +482,7 @@ namespace SIL.Machine.Translation.Thot
 			WriteLanguageModelWeightsFile(lmPrefix, ngramSize, result.MinimizingPoint);
 		}
 
-		private static double CalculatePerplexity(IList<IEnumerable<string>> tuneTargetCorpus, string lmPrefix, int ngramSize, Vector weights)
+		private static double CalculatePerplexity(IList<IList<string>> tuneTargetCorpus, string lmPrefix, int ngramSize, Vector weights)
 		{
 			if (weights.Any(w => w < 0 || w >= 1.0))
 				return 999999;
@@ -471,18 +492,17 @@ namespace SIL.Machine.Translation.Thot
 			int wordCount = 0;
 			using (var lm = new ThotLanguageModel(lmPrefix))
 			{
-				foreach (IEnumerable<string> segment in tuneTargetCorpus)
+				foreach (IList<string> segment in tuneTargetCorpus)
 				{
-					string[] segmentArray = segment.ToArray();
-					lp += lm.GetSegmentProbability(segmentArray);
-					wordCount += segmentArray.Length;
+					lp += lm.GetSegmentProbability(segment);
+					wordCount += segment.Count;
 				}
 			}
 
 			return Math.Exp(-(lp / (wordCount + tuneTargetCorpus.Count)) * Math.Log(10));
 		}
 
-		private static void TuneTranslationModel(string tuneCfgFileName, string tuneTMPrefix, IList<IEnumerable<string>> tuneSourceCorpus, IList<IEnumerable<string>> tuneTargetCorpus)
+		private static void TuneTranslationModel(string tuneCfgFileName, string tuneTMPrefix, IList<IList<string>> tuneSourceCorpus, IList<IList<string>> tuneTargetCorpus)
 		{
 			if (tuneSourceCorpus.Count == 0)
 				return;
@@ -535,7 +555,7 @@ namespace SIL.Machine.Translation.Thot
 			File.Delete(tempFileName);
 		}
 
-		private static double CalculateBleu(string tuneCfgFileName, IList<IEnumerable<string>> sourceCorpus, IList<IEnumerable<string>> tuneTargetCorpus, Vector weights)
+		private static double CalculateBleu(string tuneCfgFileName, IList<IList<string>> sourceCorpus, IList<IList<string>> tuneTargetCorpus, Vector weights)
 		{
 			UpdateConfigWeights(tuneCfgFileName, weights);
 			IntPtr decoderHandle = IntPtr.Zero, sessionHandle = IntPtr.Zero;
@@ -594,16 +614,13 @@ namespace SIL.Machine.Translation.Thot
 			writer.Write("-tmw {0} 0\n", string.Join(" ", weights.Select(w => w.ToString("0.######"))));
 		}
 
-		private static IEnumerable<IEnumerable<string>> GenerateTranslations(IntPtr sessionHandle, IEnumerable<IEnumerable<string>> sourceCorpus)
+		private static IEnumerable<IList<string>> GenerateTranslations(IntPtr sessionHandle, IList<IList<string>> sourceCorpus)
 		{
-			foreach (IEnumerable<string> segment in sourceCorpus)
-			{
-				string[] segmentArray = segment.ToArray();
-				yield return DoTranslate(sessionHandle, Thot.session_translate, segmentArray, false, segmentArray, (s, t, d) => t);
-			}
+			foreach (IList<string> segment in sourceCorpus)
+				yield return DoTranslate(sessionHandle, Thot.session_translate, segment, false, segment, (s, t, d) => t);
 		}
 
-		private static void TrainTuneCorpus(string cfgFileName, IList<IEnumerable<string>> tuneSourceCorpus, IList<IEnumerable<string>> tuneTargetCorpus)
+		private static void TrainTuneCorpus(string cfgFileName, IList<IList<string>> tuneSourceCorpus, IList<IList<string>> tuneTargetCorpus)
 		{
 			if (tuneSourceCorpus.Count == 0)
 				return;
@@ -687,7 +704,8 @@ namespace SIL.Machine.Translation.Thot
 			_inverseSingleWordAlignmentModel = new ThotSingleWordAlignmentModel(Thot.decoder_getInverseSingleWordAlignmentModel(_handle));
 		}
 
-		public void Train(IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus, IProgress progress = null)
+		public void Train(Func<string, string> sourcePreprocessor, ITokenizer<string, int> sourceTokenizer, ITextCorpus sourceCorpus,
+			Func<string, string> targetPreprocessor, ITokenizer<string, int> targetTokenizer, ITextCorpus targetCorpus, IProgress progress = null)
 		{
 			CheckDisposed();
 
@@ -697,7 +715,7 @@ namespace SIL.Machine.Translation.Thot
 					throw new InvalidOperationException("The engine cannot be trained while there are active sessions open.");
 
 				Thot.decoder_close(_handle);
-				TrainModels(_cfgFileName, sourceCorpus, targetCorpus, progress);
+				TrainModels(_cfgFileName, sourcePreprocessor, sourceTokenizer, sourceCorpus, targetPreprocessor, targetTokenizer, targetCorpus, progress);
 				_handle = Thot.decoder_open(_cfgFileName);
 				_singleWordAlignmentModel.Handle = Thot.decoder_getSingleWordAlignmentModel(_handle);
 				_inverseSingleWordAlignmentModel.Handle = Thot.decoder_getInverseSingleWordAlignmentModel(_handle);

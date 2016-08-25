@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using SIL.Extensions;
 
 namespace SIL.Machine.Translation
@@ -9,16 +8,16 @@ namespace SIL.Machine.Translation
 	{
 		private const int BleuN = 4;
 
-		public static double CalculateBleu(IEnumerable<IEnumerable<string>> translations, IEnumerable<IEnumerable<string>> references)
+		public static double CalculateBleu(IEnumerable<IList<string>> translations, IEnumerable<IList<string>> references)
 		{
 			var precs = new double[BleuN];
 			var total = new double[BleuN];
 			int transWordCount = 0, refWordCount = 0;
 
-			foreach (Tuple<string[], string[]> pair in translations.Select(s => s.ToArray()).Zip(references.Select(s => s.ToArray())))
+			foreach (Tuple<IList<string>, IList<string>> pair in translations.Zip(references))
 			{
-				transWordCount += pair.Item1.Length;
-				refWordCount += pair.Item2.Length;
+				transWordCount += pair.Item1.Count;
+				refWordCount += pair.Item2.Count;
 				for (int n = 1; n <= BleuN; n++)
 				{
 					int segPrec, segTotal;

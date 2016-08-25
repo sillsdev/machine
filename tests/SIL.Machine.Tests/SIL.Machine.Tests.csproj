@@ -66,6 +66,9 @@
     <Compile Include="Clusterers\FlatUpgmaClustererTests.cs" />
     <Compile Include="Clusterers\NeighborJoiningClustererTests.cs" />
     <Compile Include="Clusterers\UpgmaClustererTests.cs" />
+    <Compile Include="Corpora\CorporaTestHelpers.cs" />
+    <Compile Include="Corpora\UsfmTextCorpusTests.cs" />
+    <Compile Include="Corpora\UsfmTextTests.cs" />
     <Compile Include="FeatureModel\FeatureStructTests.cs" />
     <Compile Include="FiniteState\FstTests.cs" />
     <Compile Include="FiniteState\PhoneticFstOperations.cs" />
@@ -91,6 +94,15 @@
     <Compile Include="Translation\TranslationExtensionsTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Corpora\TestData\Tes\41MATTes.SFM">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Corpora\TestData\Tes\42MRKTest.SFM">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Corpora\TestData\usfm.sty">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Morphology\LEX">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -106,6 +118,7 @@
       <Name>SIL.Machine.NET4</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

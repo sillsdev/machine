@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using SIL.Machine.Corpora;
+using SIL.Machine.Tokenization;
 using SIL.Progress;
 
 namespace SIL.Machine.Translation
@@ -7,6 +9,7 @@ namespace SIL.Machine.Translation
 	{
 		void Save();
 
-		void Train(IEnumerable<IEnumerable<string>> sourceCorpus, IEnumerable<IEnumerable<string>> targetCorpus, IProgress progress = null);
+		void Train(Func<string, string> sourcePreprocessor, ITokenizer<string, int> sourceTokenizer, ITextCorpus sourceCorpus,
+			Func<string, string> targetPreprocessor, ITokenizer<string, int> targetTokenizer, ITextCorpus targetCorpus, IProgress progress = null);
 	}
 }

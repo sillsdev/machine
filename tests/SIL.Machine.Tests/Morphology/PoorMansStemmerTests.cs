@@ -135,7 +135,7 @@ namespace SIL.Machine.Tests.Morphology
 				while ((line = file.ReadLine()) != null)
 				{
 					string word = line.Substring(6);
-					if (word.All(Char.IsLetter))
+					if (word.All(char.IsLetter))
 						words.Add(word);
 				}
 			}

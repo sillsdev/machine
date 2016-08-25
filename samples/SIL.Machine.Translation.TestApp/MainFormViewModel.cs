@@ -1,13 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Windows.Input;
 using System.Xml.Linq;
 using Eto.Forms;
 using GalaSoft.MvvmLight;
 using SIL.Machine.Annotations;
-using SIL.Machine.FeatureModel;
+using SIL.Machine.Corpora;
 using SIL.Machine.Morphology.HermitCrab;
 using SIL.Machine.Tokenization;
 using SIL.Machine.Translation.Thot;
@@ -156,6 +156,8 @@ namespace SIL.Machine.Translation.TestApp
 			_translationEngine = new HybridTranslationEngine(smtEngine, transferEngine);
 			_translationSession = _translationEngine.StartSession();
 
+			var sourceTexts = new List<IText>();
+			var targetTexts = new List<IText>();
 			using (_texts.BulkUpdate())
 			{
 				foreach (XElement textElem in projectElem.Elements("Texts").Elements("Text"))
@@ -173,15 +175,20 @@ namespace SIL.Machine.Translation.TestApp
 					var text = new TextViewModel(_tokenizer, name, Path.Combine(configDir, srcTextFile), Path.Combine(configDir, trgTextFile)) {TranslationSession = _translationSession};
 					text.PropertyChanged += TextPropertyChanged;
 					_texts.Add(text);
+
+					sourceTexts.Add(new TextAdapter(text, true));
+					targetTexts.Add(new TextAdapter(text, false));
 				}
 			}
 			if (_texts.Count == 0)
 				return false;
 
-			_translationEngine.SourceCorpus = _texts.SelectMany(t => t.SourceSegments).Where(s => s.IsApproved)
-				.Select(s => _tokenizer.TokenizeToStrings(s.Text.ToLowerInvariant()));
-			_translationEngine.TargetCorpus = _texts.SelectMany(t => t.TargetSegments).Where(s => s.IsApproved)
-				.Select(s => _tokenizer.TokenizeToStrings(s.Text.ToLowerInvariant()));
+			_translationEngine.SourcePreprocessor = s => s.ToLowerInvariant();
+			_translationEngine.SourceTokenizer = _tokenizer;
+			_translationEngine.SourceCorpus = new DictionaryTextCorpus(sourceTexts);
+			_translationEngine.TargetPreprocessor = s => s.ToLowerInvariant();
+			_translationEngine.TargetTokenizer = _tokenizer;
+			_translationEngine.TargetCorpus = new DictionaryTextCorpus(targetTexts);
 
 			CurrentText = _texts[0];
 			AcceptChanges();
@@ -250,19 +257,6 @@ namespace SIL.Machine.Translation.TestApp
 			foreach (TextViewModel text in _texts)
 				text.TranslationSession = _translationSession;
 			_currentText.IsActive = true;
-		}
-
-		private static string GetMorphemeId(Morpheme morpheme)
-		{
-			return morpheme.Gloss;
-		}
-
-		private static string GetCategory(FeatureStruct fs)
-		{
-			SymbolicFeatureValue value;
-			if (fs.TryGetValue("pos", out value))
-				return value.Values.First().ID;
-			return null;
 		}
 
 		public ICommand CloseCommand

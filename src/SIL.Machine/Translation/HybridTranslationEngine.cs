@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SIL.Machine.Corpora;
+using SIL.Machine.Tokenization;
 using SIL.ObjectModel;
 using SIL.Progress;
 
@@ -19,22 +21,38 @@ namespace SIL.Machine.Translation
 			_smtEngine = smtEngine;
 			_ruleBasedEngine = ruleBasedEngine;
 			_sessions = new HashSet<HybridTranslationSession>();
+			SourcePreprocessor = s => s;
+			TargetPreprocessor = s => s;
 		}
 
-		public IEnumerable<IEnumerable<string>> SourceCorpus { get; set; }
-		public IEnumerable<IEnumerable<string>> TargetCorpus { get; set; }
+		public Func<string, string> SourcePreprocessor { get; set; }
+		public Func<string, string> TargetPreprocessor { get; set; }
+
+		public ITokenizer<string, int> SourceTokenizer { get; set; }
+		public ITokenizer<string, int> TargetTokenizer { get; set; }
+
+		public ITextCorpus SourceCorpus { get; set; }
+		public ITextCorpus TargetCorpus { get; set; }
 
 		public void Rebuild(IProgress progress = null)
 		{
 			CheckDisposed();
+
+			if (SourceCorpus == null)
+				throw new InvalidOperationException("A source corpus is not specified.");
+			if (TargetCorpus == null)
+				throw new InvalidOperationException("A target corpus is not specified");
+			if (SourceTokenizer == null)
+				throw new InvalidOperationException("A source tokenizer is not specified.");
+			if (TargetTokenizer == null)
+				throw new InvalidOperationException("A target tokenizer is not specified.");
 
 			lock (_sessions)
 			{
 				if (_sessions.Count > 0)
 					throw new InvalidOperationException("The engine cannot be trained while there are active sessions open.");
 
-				if (SourceCorpus != null && TargetCorpus != null)
-					_smtEngine.Train(SourceCorpus, TargetCorpus, progress);
+				_smtEngine.Train(SourcePreprocessor, SourceTokenizer, SourceCorpus, TargetPreprocessor, TargetTokenizer, TargetCorpus, progress);
 			}
 		}
 
