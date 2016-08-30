@@ -51,7 +51,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public void Train(int iterCount)
 		{
-			Thot.swAlignModel_train(_handle, iterCount);
+			Thot.swAlignModel_train(_handle, (uint) iterCount);
 		}
 
 		public void Save()
@@ -78,31 +78,30 @@ namespace SIL.Machine.Translation.Thot
 
 		public double GetBestAlignment(IList<string> sourceSegment, IList<string> targetSegment, out WordAlignmentMatrix matrix)
 		{
-			int iLen = sourceSegment.Count;
-			int jLen = targetSegment.Count;
-
 			IntPtr nativeSourceSegment = Thot.ConvertStringsToNativeUtf8(sourceSegment);
 			IntPtr nativeTargetSegment = Thot.ConvertStringsToNativeUtf8(targetSegment);
 
 			int sizeOfPtr = Marshal.SizeOf(typeof(IntPtr));
-			int sizeOfInt = Marshal.SizeOf(typeof(int));
-			IntPtr nativeMatrix = Marshal.AllocHGlobal(iLen * sizeOfPtr);
-			for (int i = 0; i < iLen; i++)
+			int sizeOfUInt = Marshal.SizeOf(typeof(uint));
+			IntPtr nativeMatrix = Marshal.AllocHGlobal(sourceSegment.Count * sizeOfPtr);
+			for (int i = 0; i < sourceSegment.Count; i++)
 			{
-				IntPtr array = Marshal.AllocHGlobal(jLen * sizeOfInt);
+				IntPtr array = Marshal.AllocHGlobal(targetSegment.Count * sizeOfUInt);
 				Marshal.WriteIntPtr(nativeMatrix, i * sizeOfPtr, array);
 			}
 
+			uint iLen = (uint) sourceSegment.Count;
+			uint jLen = (uint) targetSegment.Count;
 			try
 			{
 				float prob = Thot.swAlignModel_getBestAlignment(_handle, nativeSourceSegment, nativeTargetSegment, nativeMatrix, ref iLen, ref jLen);
 
-				matrix = new WordAlignmentMatrix(iLen, jLen);
+				matrix = new WordAlignmentMatrix((int) iLen, (int) jLen);
 				for (int i = 0; i < matrix.I; i++)
 				{
 					IntPtr array = Marshal.ReadIntPtr(nativeMatrix, i * sizeOfPtr);
 					for (int j = 0; j < matrix.J; j++)
-						matrix[i, j] = Marshal.ReadInt32(array, j * sizeOfInt) == 1;
+						matrix[i, j] = (uint) Marshal.ReadInt32(array, j * sizeOfUInt) == 1;
 				}
 
 				return prob;

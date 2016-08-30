@@ -26,16 +26,16 @@ namespace SIL.Machine.Translation.Thot
 		public static extern void decoder_close(IntPtr decoderHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern int session_translate(IntPtr sessionHandle, IntPtr sentence, IntPtr translation, int capacity, out IntPtr data);
+		public static extern uint session_translate(IntPtr sessionHandle, IntPtr sentence, IntPtr translation, uint capacity, out IntPtr data);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern int session_translateInteractively(IntPtr sessionHandle, IntPtr sentence, IntPtr translation, int capacity, out IntPtr data);
+		public static extern uint session_translateInteractively(IntPtr sessionHandle, IntPtr sentence, IntPtr translation, uint capacity, out IntPtr data);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern int session_addStringToPrefix(IntPtr sessionHandle, IntPtr addition, IntPtr translation, int capacity, out IntPtr data);
+		public static extern uint session_addStringToPrefix(IntPtr sessionHandle, IntPtr addition, IntPtr translation, uint capacity, out IntPtr data);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern int session_setPrefix(IntPtr sessionHandle, IntPtr prefix, IntPtr translation, int capacity, out IntPtr data);
+		public static extern uint session_setPrefix(IntPtr sessionHandle, IntPtr prefix, IntPtr translation, uint capacity, out IntPtr data);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void session_trainSentencePair(IntPtr sessionHandle, IntPtr sourceSentence, IntPtr targetSentence);
@@ -44,16 +44,16 @@ namespace SIL.Machine.Translation.Thot
 		public static extern void session_close(IntPtr sessionHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern int tdata_getPhraseCount(IntPtr dataHandle);
+		public static extern uint tdata_getPhraseCount(IntPtr dataHandle);
 		
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern int tdata_getSourceSegmentation(IntPtr dataHandle, IntPtr sourceSegmentation, int capacity);
+		public static extern uint tdata_getSourceSegmentation(IntPtr dataHandle, IntPtr sourceSegmentation, uint capacity);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern int tdata_getTargetSegmentCuts(IntPtr dataHandle, IntPtr targetSegmentCuts, int capacity);
+		public static extern uint tdata_getTargetSegmentCuts(IntPtr dataHandle, IntPtr targetSegmentCuts, uint capacity);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern int tdata_getTargetUnknownWords(IntPtr dataHandle, IntPtr targetUnknownWords, int capacity);
+		public static extern uint tdata_getTargetUnknownWords(IntPtr dataHandle, IntPtr targetUnknownWords, uint capacity);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void tdata_destroy(IntPtr dataHandle);
@@ -68,7 +68,7 @@ namespace SIL.Machine.Translation.Thot
 		public static extern void swAlignModel_addSentencePair(IntPtr swAlignModelHandle, IntPtr sourceSentence, IntPtr targetSentence);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern void swAlignModel_train(IntPtr swAlignModelHandle, int numIters);
+		public static extern void swAlignModel_train(IntPtr swAlignModelHandle, uint numIters);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void swAlignModel_save(IntPtr swAlignModelHandle, string prefFileName);
@@ -77,7 +77,7 @@ namespace SIL.Machine.Translation.Thot
 		public static extern float swAlignModel_getTranslationProbability(IntPtr swAlignModelHandle, IntPtr sourceWord, IntPtr targetWord);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern float swAlignModel_getBestAlignment(IntPtr swAlignModelHandle, IntPtr sourceSentence, IntPtr targetSentence, IntPtr matrix, ref int iLen, ref int jLen);
+		public static extern float swAlignModel_getBestAlignment(IntPtr swAlignModelHandle, IntPtr sourceSentence, IntPtr targetSentence, IntPtr matrix, ref uint iLen, ref uint jLen);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void swAlignModel_close(IntPtr swAlignModelHandle);
@@ -112,7 +112,7 @@ namespace SIL.Machine.Translation.Thot
 			return nativeUtf8;
 		}
 
-		public static string ConvertNativeUtf8ToString(IntPtr nativeUtf8, int len)
+		public static string ConvertNativeUtf8ToString(IntPtr nativeUtf8, uint len)
 		{
 			var buffer = new byte[len];
 			Marshal.Copy(nativeUtf8, buffer, 0, buffer.Length);

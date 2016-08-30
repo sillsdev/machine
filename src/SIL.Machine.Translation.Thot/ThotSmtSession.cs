@@ -133,7 +133,7 @@ namespace SIL.Machine.Translation.Thot
 		{
 			// TODO: find a better way to handle long untranslated suffixes
 
-			int phraseCount = Thot.tdata_getPhraseCount(data);
+			uint phraseCount = Thot.tdata_getPhraseCount(data);
 			IList<Tuple<int, int>> sourceSegmentation = GetSourceSegmentation(data, phraseCount);
 			IList<int> targetSegmentCuts = GetTargetSegmentCuts(data, phraseCount);
 			ISet<int> targetUnknownWords = GetTargetUnknownWords(data, targetSegment.Count);
@@ -148,8 +148,7 @@ namespace SIL.Machine.Translation.Thot
 				WordAlignmentMatrix waMatrix;
 				if (srcPhraseLen == 1 && trgPhraseLen == 1)
 				{
-					waMatrix = new WordAlignmentMatrix(1, 1);
-					waMatrix[0, 0] = true;
+					waMatrix = new WordAlignmentMatrix(1, 1) {[0, 0] = true};
 				}
 				else
 				{
@@ -191,14 +190,14 @@ namespace SIL.Machine.Translation.Thot
 			return new TranslationResult(sourceSegment, targetSegment, confidences, alignment);
 		}
 
-		private IList<Tuple<int, int>> GetSourceSegmentation(IntPtr data, int phraseCount)
+		private IList<Tuple<int, int>> GetSourceSegmentation(IntPtr data, uint phraseCount)
 		{
 			int sizeOfPtr = Marshal.SizeOf(typeof(IntPtr));
-			int sizeOfInt = Marshal.SizeOf(typeof(int));
-			IntPtr nativeSourceSegmentation = Marshal.AllocHGlobal(phraseCount * sizeOfPtr);
+			int sizeOfUInt = Marshal.SizeOf(typeof(uint));
+			IntPtr nativeSourceSegmentation = Marshal.AllocHGlobal((int) phraseCount * sizeOfPtr);
 			for (int i = 0; i < phraseCount; i++)
 			{
-				IntPtr array = Marshal.AllocHGlobal(2 * sizeOfInt);
+				IntPtr array = Marshal.AllocHGlobal(2 * sizeOfUInt);
 				Marshal.WriteIntPtr(nativeSourceSegmentation, i * sizeOfPtr, array);
 			}
 
@@ -209,7 +208,7 @@ namespace SIL.Machine.Translation.Thot
 				for (int i = 0; i < phraseCount; i++)
 				{
 					IntPtr array = Marshal.ReadIntPtr(nativeSourceSegmentation, i * sizeOfPtr);
-					sourceSegmentation[i] = Tuple.Create(Marshal.ReadInt32(array, 0 * sizeOfInt) - 1, Marshal.ReadInt32(array, 1 * sizeOfInt) - 1);
+					sourceSegmentation[i] = Tuple.Create(Marshal.ReadInt32(array, 0 * sizeOfUInt) - 1, Marshal.ReadInt32(array, 1 * sizeOfUInt) - 1);
 				}
 				return sourceSegmentation;
 			}
@@ -224,16 +223,16 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private IList<int> GetTargetSegmentCuts(IntPtr data, int phraseCount)
+		private IList<int> GetTargetSegmentCuts(IntPtr data, uint phraseCount)
 		{
-			int sizeOfInt = Marshal.SizeOf(typeof(int));
-			IntPtr nativeTargetSegmentCuts = Marshal.AllocHGlobal(phraseCount * sizeOfInt);
+			int sizeOfUInt = Marshal.SizeOf(typeof(uint));
+			IntPtr nativeTargetSegmentCuts = Marshal.AllocHGlobal((int) phraseCount * sizeOfUInt);
 			try
 			{
 				Thot.tdata_getTargetSegmentCuts(data, nativeTargetSegmentCuts, phraseCount);
 				var targetSegmentCuts = new int[phraseCount];
 				for (int i = 0; i < phraseCount; i++)
-					targetSegmentCuts[i] = Marshal.ReadInt32(nativeTargetSegmentCuts, i * sizeOfInt) - 1;
+					targetSegmentCuts[i] = Marshal.ReadInt32(nativeTargetSegmentCuts, i * sizeOfUInt) - 1;
 				return targetSegmentCuts;
 			}
 			finally
@@ -244,14 +243,14 @@ namespace SIL.Machine.Translation.Thot
 
 		private ISet<int> GetTargetUnknownWords(IntPtr data, int targetWordCount)
 		{
-			int sizeOfInt = Marshal.SizeOf(typeof(int));
-			IntPtr nativeTargetUnknownWords = Marshal.AllocHGlobal(targetWordCount * sizeOfInt);
+			int sizeOfUInt = Marshal.SizeOf(typeof(uint));
+			IntPtr nativeTargetUnknownWords = Marshal.AllocHGlobal(targetWordCount * sizeOfUInt);
 			try
 			{
-				int count = Thot.tdata_getTargetUnknownWords(data, nativeTargetUnknownWords, targetWordCount);
+				uint count = Thot.tdata_getTargetUnknownWords(data, nativeTargetUnknownWords, (uint) targetWordCount);
 				var targetUnknownWords = new HashSet<int>();
 				for (int i = 0; i < count; i++)
-					targetUnknownWords.Add(Marshal.ReadInt32(nativeTargetUnknownWords, i * sizeOfInt) - 1);
+					targetUnknownWords.Add(Marshal.ReadInt32(nativeTargetUnknownWords, i * sizeOfUInt) - 1);
 				return targetUnknownWords;
 			}
 			finally

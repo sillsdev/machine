@@ -16,7 +16,7 @@ using SIL.Progress;
 
 namespace SIL.Machine.Translation.Thot
 {
-	internal delegate int TranslateFunc(IntPtr sessionHandle, IntPtr sourceSegment, IntPtr result, int capacity, out IntPtr data);
+	internal delegate uint TranslateFunc(IntPtr sessionHandle, IntPtr sourceSegment, IntPtr result, uint capacity, out IntPtr data);
 
 	public class ThotSmtEngine : DisposableBase, IInteractiveSmtEngine
 	{
@@ -87,7 +87,7 @@ namespace SIL.Machine.Translation.Thot
 				int index = 0;
 				foreach (ParallelTextSegment segment in corpus.Texts.SelectMany(t => t.Segments))
 				{
-					if (!segment.IsEmpty)
+					if (segment.IsEmpty)
 						emptyIndices.Add(index);
 					else
 						corpusCount++;
@@ -164,7 +164,7 @@ namespace SIL.Machine.Translation.Thot
 		private static void UpdateConfigPaths(string cfgFileName, string lmPrefix, string tmPrefix)
 		{
 			string[] lines = File.ReadAllLines(cfgFileName);
-			using (var writer = new StreamWriter(File.Open(cfgFileName, FileMode.Open)))
+			using (var writer = new StreamWriter(File.Open(cfgFileName, FileMode.Create)))
 			{
 				foreach (string line in lines)
 				{
@@ -278,7 +278,7 @@ namespace SIL.Machine.Translation.Thot
 				return;
 
 			progress.WriteMessage("Generating phrase table...");
-			Thot.phraseModel_generate(tmPrefix + ".A3.final", 7, tmPrefix + ".ttable");
+			Thot.phraseModel_generate(tmPrefix + ".A3.final", 10, tmPrefix + ".ttable");
 			progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
 			if (progress.CancelRequested)
 				return;
@@ -286,8 +286,9 @@ namespace SIL.Machine.Translation.Thot
 			progress.WriteMessage("Filtering phrase table...");
 			FilterPhraseTableNBest(tmPrefix + ".ttable", 20);
 
-			File.WriteAllText(tmPrefix + ".lambda", "0.7");
+			File.WriteAllText(tmPrefix + ".lambda", "0.7 0.7");
 			File.WriteAllText(tmPrefix + ".srcsegmlentable", "Uniform");
+			File.WriteAllText(tmPrefix + ".trgcutstable", "0.999");
 			File.WriteAllText(tmPrefix + ".trgsegmlentable", "Geometric");
 			progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
 		}
@@ -356,7 +357,7 @@ namespace SIL.Machine.Translation.Thot
 
 					double lcSrc = groupEntries.Select(e => e.Item3).Skip(1).Aggregate((double) groupEntries[0].Item3, (a, n) => SumLog(a, n));
 
-					double newLcSrc = -99;
+					double newLcSrc = -99999;
 					int count = 0;
 					foreach (Tuple<uint, uint, float> entry in groupEntries)
 					{
@@ -593,7 +594,7 @@ namespace SIL.Machine.Translation.Thot
 				foreach (string line in lines)
 				{
 					string l = line.Trim();
-					if (l.Contains("-tmw"))
+					if (l.StartsWith("-tmw "))
 					{
 						WriteWeights(writer, weights);
 						weightsWritten = true;
@@ -651,7 +652,7 @@ namespace SIL.Machine.Translation.Thot
 			IntPtr data = IntPtr.Zero;
 			try
 			{
-				int len = translateFunc(sessionHandle, inputPtr, translationPtr, DefaultTranslationBufferLength, out data);
+				uint len = translateFunc(sessionHandle, inputPtr, translationPtr, DefaultTranslationBufferLength, out data);
 				if (len > DefaultTranslationBufferLength)
 				{
 					Thot.tdata_destroy(data);
