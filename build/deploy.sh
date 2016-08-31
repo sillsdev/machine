@@ -8,6 +8,7 @@ DEPLOY_PATH=/var/www/languageforge.org_cat/machine
 pushd .. > /dev/null
 
 sudo rm -rf $BUILD_OUTPUT
+dotnet restore || exit 1
 dotnet publish -c Release -o $BUILD_OUTPUT/package src/$PROJECT/project.json || exit 1
 tar -cvzf $PACKAGE_FILE -C $BUILD_OUTPUT/package . > /dev/null || exit 1
 
