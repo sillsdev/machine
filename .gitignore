@@ -22,3 +22,4 @@ _ReSharper*/
 .vs/
 *.lock.json
 appsettings.user.json
+artifacts
