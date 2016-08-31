@@ -3,7 +3,7 @@
 PROJECT=SIL.Machine.WebApi
 BUILD_OUTPUT=artifacts
 PACKAGE_FILE=$BUILD_OUTPUT/machine-web-api.tgz
-DEPLOY_PATH=/var/www/languageforge.org_cat/machine
+DEPLOY_PATH=/var/www/languageforge.org_cat/machine/
 
 pushd .. > /dev/null
 
