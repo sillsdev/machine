@@ -6,14 +6,17 @@ namespace SIL.Machine.Translation
 	public class HybridTranslationSession : DisposableBase, IInteractiveTranslationSession
 	{
 		private readonly HybridTranslationEngine _engine;
-		private readonly IInteractiveSmtSession _smtSession;
+		private readonly IInteractiveSmtEngine _smtEngine;
+		private readonly IInteractiveTranslationSession _smtSession;
 		private readonly ITranslationEngine _transferEngine;
 		private TranslationResult _currentResult;
 		private TranslationResult _transferResult;
 
-		internal HybridTranslationSession(HybridTranslationEngine engine, IInteractiveSmtSession smtSession, ITranslationEngine transferEngine)
+		internal HybridTranslationSession(HybridTranslationEngine engine, IInteractiveSmtEngine smtEngine, IInteractiveTranslationSession smtSession,
+			ITranslationEngine transferEngine)
 		{
 			_engine = engine;
+			_smtEngine = smtEngine;
 			_smtSession = smtSession;
 			_transferEngine = transferEngine;
 		}
@@ -125,15 +128,44 @@ namespace SIL.Machine.Translation
 		{
 			CheckDisposed();
 
-			_smtSession.Approve();
-			for (int j = 0; j < _smtSession.Prefix.Count; j++)
+			TranslationResult smtResult = _smtEngine.GetBestPhraseAlignment(SourceSegment, Prefix);
+			TranslationResult hybridResult = HybridTranslationEngine.MergeTranslationResults(Prefix.Count, smtResult, _transferResult);
+
+			var matrix = new WordAlignmentMatrix(SourceSegment.Count, Prefix.Count, AlignmentType.Unknown);
+			var iAligned = new HashSet<int>();
+			for (int j = 0; j < Prefix.Count; j++)
 			{
-				foreach (AlignedWordPair wp in _currentResult.GetTargetWordPairs(j))
+				bool jAligned = false;
+				foreach (AlignedWordPair wp in hybridResult.GetTargetWordPairs(j))
 				{
-					if ((wp.Sources & TranslationSources.Transfer) == TranslationSources.Transfer)
-						_smtSession.Train(new[] {_currentResult.SourceSegment[wp.SourceIndex], "."}, new[] {_currentResult.TargetSegment[j], "."});
+					if ((wp.Sources & TranslationSources.Transfer) > 0)
+					{
+						matrix[wp.SourceIndex, j] = AlignmentType.Aligned;
+						iAligned.Add(wp.SourceIndex);
+						jAligned = true;
+					}
+				}
+
+				if (jAligned)
+				{
+					for (int i = 0; i < SourceSegment.Count; i++)
+					{
+						if (matrix[i, j] == AlignmentType.Unknown)
+							matrix[i, j] = AlignmentType.NotAligned;
+					}
 				}
 			}
+
+			foreach (int i in iAligned)
+			{
+				for (int j = 0; j < Prefix.Count; j++)
+				{
+					if (matrix[i, j] == AlignmentType.Unknown)
+						matrix[i, j] = AlignmentType.NotAligned;
+				}
+			}
+
+			_smtEngine.Train(SourceSegment, Prefix, matrix);
 		}
 
 		protected override void DisposeManagedResources()

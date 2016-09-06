@@ -36,7 +36,7 @@ namespace SIL.Machine.Tests.Translation
 				var transferer = new SimpleTransferer(new GlossMorphemeMapper(targetGenerator));
 				var transferEngine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
 				var smtEngine = Substitute.For<IInteractiveSmtEngine>();
-				var smtSession = Substitute.For<IInteractiveSmtSession>();
+				var smtSession = Substitute.For<IInteractiveTranslationSession>();
 
 				var alignment = new Dictionary<Tuple<int, int>, AlignedWordPair>();
 				AddWordPair(alignment, 0, 0, 0, TranslationSources.None);
@@ -58,7 +58,7 @@ namespace SIL.Machine.Tests.Translation
 				_session = _engine.StartSession();
 			}
 
-			private static void AddTranslation(IInteractiveSmtSession session, string sourceSegment, string targetSegment, Dictionary<Tuple<int, int>, AlignedWordPair> alignment)
+			private static void AddTranslation(IInteractiveTranslationSession session, string sourceSegment, string targetSegment, Dictionary<Tuple<int, int>, AlignedWordPair> alignment)
 			{
 				string[] sourceSegmentArray = sourceSegment.Split();
 				string[] targetSegmentArray = targetSegment.Split();

@@ -632,7 +632,7 @@ namespace SIL.Machine.Translation.Thot
 				decoderHandle = Thot.decoder_open(cfgFileName);
 				sessionHandle = Thot.decoder_openSession(decoderHandle);
 				for (int i = 0; i < tuneSourceCorpus.Count; i++)
-					TrainSegmentPair(sessionHandle, tuneSourceCorpus[i], tuneTargetCorpus[i]);
+					TrainSegmentPair(sessionHandle, tuneSourceCorpus[i], tuneTargetCorpus[i], null);
 				Thot.decoder_saveModels(decoderHandle);
 			}
 			finally
@@ -672,16 +672,26 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		internal static void TrainSegmentPair(IntPtr sessionHandle, IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment)
+		internal static void TrainSegmentPair(IntPtr sessionHandle, IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment, WordAlignmentMatrix matrix)
 		{
 			IntPtr nativeSourceSegment = Thot.ConvertStringsToNativeUtf8(sourceSegment);
 			IntPtr nativeTargetSegment = Thot.ConvertStringsToNativeUtf8(targetSegment);
+			IntPtr nativeMatrix = IntPtr.Zero;
+			uint iLen = 0, jLen = 0;
+			if (matrix != null)
+			{
+				nativeMatrix = Thot.ConvertWordAlignmentMatrixToNativeMatrix(matrix);
+				iLen = (uint) matrix.I;
+				jLen = (uint) matrix.J;
+			}
+
 			try
 			{
-				Thot.session_trainSentencePair(sessionHandle, nativeSourceSegment, nativeTargetSegment);
+				Thot.session_trainSentencePair(sessionHandle, nativeSourceSegment, nativeTargetSegment, nativeMatrix, iLen, jLen);
 			}
 			finally
 			{
+				Thot.FreeNativeMatrix(nativeMatrix, iLen);
 				Marshal.FreeHGlobal(nativeTargetSegment);
 				Marshal.FreeHGlobal(nativeSourceSegment);
 			}
@@ -723,22 +733,28 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
+		public void Train(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment, WordAlignmentMatrix matrix = null)
+		{
+			CheckDisposed();
+
+			GlobalSession.Train(sourceSegment, targetSegment, matrix);
+		}
+
 		public TranslationResult Translate(IEnumerable<string> segment)
 		{
 			CheckDisposed();
 
-			lock (_sessions)
-			{
-				if (_globalSession == null)
-				{
-					_globalSession = new ThotSmtSession(this);
-					_sessions.Add(_globalSession);
-				}
-			}
-			return _globalSession.Translate(segment);
+			return GlobalSession.Translate(segment);
 		}
 
-		public IInteractiveSmtSession StartSession()
+		public TranslationResult GetBestPhraseAlignment(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment)
+		{
+			CheckDisposed();
+
+			return GlobalSession.GetBestPhraseAlignment(sourceSegment, targetSegment);
+		}
+
+		public IInteractiveTranslationSession StartSession()
 		{
 			CheckDisposed();
 
@@ -775,10 +791,7 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		internal IntPtr Handle
-		{
-			get { return _handle; }
-		}
+		internal IntPtr Handle => _handle;
 
 		internal void RemoveSession(ThotSmtSession session)
 		{
@@ -795,14 +808,25 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
+		private ThotSmtSession GlobalSession
+		{
+			get
+			{
+				lock (_sessions)
+				{
+					if (_globalSession == null)
+					{
+						_globalSession = new ThotSmtSession(this);
+						_sessions.Add(_globalSession);
+					}
+				}
+				return _globalSession;
+			}
+		}
+
 		protected override void DisposeUnmanagedResources()
 		{
 			Thot.decoder_close(_handle);
-		}
-
-		IInteractiveTranslationSession IInteractiveTranslationEngine.StartSession()
-		{
-			return StartSession();
 		}
 	}
 }

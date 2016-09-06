@@ -29,6 +29,9 @@ namespace SIL.Machine.Translation.Thot
 		public static extern uint session_translate(IntPtr sessionHandle, IntPtr sentence, IntPtr translation, uint capacity, out IntPtr data);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern IntPtr session_getBestPhraseAlignment(IntPtr sessionHandle, IntPtr sentence, IntPtr translation);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern uint session_translateInteractively(IntPtr sessionHandle, IntPtr sentence, IntPtr translation, uint capacity, out IntPtr data);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
@@ -38,7 +41,7 @@ namespace SIL.Machine.Translation.Thot
 		public static extern uint session_setPrefix(IntPtr sessionHandle, IntPtr prefix, IntPtr translation, uint capacity, out IntPtr data);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern void session_trainSentencePair(IntPtr sessionHandle, IntPtr sourceSentence, IntPtr targetSentence);
+		public static extern void session_trainSentencePair(IntPtr sessionHandle, IntPtr sourceSentence, IntPtr targetSentence, IntPtr matrix, uint iLen, uint jLen);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void session_close(IntPtr sessionHandle);
@@ -65,7 +68,7 @@ namespace SIL.Machine.Translation.Thot
 		public static extern IntPtr swAlignModel_open(string prefFileName);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern void swAlignModel_addSentencePair(IntPtr swAlignModelHandle, IntPtr sourceSentence, IntPtr targetSentence);
+		public static extern void swAlignModel_addSentencePair(IntPtr swAlignModelHandle, IntPtr sourceSentence, IntPtr targetSentence, IntPtr matrix, uint iLen, uint jLen);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void swAlignModel_train(IntPtr swAlignModelHandle, uint numIters);
@@ -96,6 +99,73 @@ namespace SIL.Machine.Translation.Thot
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void langModel_close(IntPtr lmHandle);
+
+		public static IntPtr AllocNativeMatrix(int iLen, int jLen)
+		{
+			int sizeOfPtr = Marshal.SizeOf(typeof(IntPtr));
+			int sizeOfInt = Marshal.SizeOf(typeof(int));
+			IntPtr nativeMatrix = Marshal.AllocHGlobal(iLen * sizeOfPtr);
+			for (int i = 0; i < iLen; i++)
+			{
+				IntPtr array = Marshal.AllocHGlobal(jLen * sizeOfInt);
+				for (int j = 0; j < jLen; j++)
+					Marshal.WriteInt32(array, j * sizeOfInt, -1);
+				Marshal.WriteIntPtr(nativeMatrix, i * sizeOfPtr, array);
+			}
+
+			return nativeMatrix;
+		}
+
+		public static IntPtr ConvertWordAlignmentMatrixToNativeMatrix(WordAlignmentMatrix matrix)
+		{
+			int sizeOfPtr = Marshal.SizeOf(typeof(IntPtr));
+			int sizeOfInt = Marshal.SizeOf(typeof(int));
+			IntPtr nativeMatrix = Marshal.AllocHGlobal(matrix.I * sizeOfPtr);
+			for (int i = 0; i < matrix.I; i++)
+			{
+				IntPtr array = Marshal.AllocHGlobal(matrix.J * sizeOfInt);
+				for (int j = 0; j < matrix.J; j++)
+					Marshal.WriteInt32(array, j * sizeOfInt, (int) matrix[i, j]);
+				Marshal.WriteIntPtr(nativeMatrix, i * sizeOfPtr, array);
+			}
+			return nativeMatrix;
+		}
+
+		public static WordAlignmentMatrix ConvertNativeMatrixToWordAlignmentMatrix(IntPtr nativeMatrix, uint iLen, uint jLen)
+		{
+			int sizeOfPtr = Marshal.SizeOf(typeof(IntPtr));
+			int sizeOfInt = Marshal.SizeOf(typeof(int));
+			var matrix = new WordAlignmentMatrix((int) iLen, (int) jLen);
+			for (int i = 0; i < matrix.I; i++)
+			{
+				IntPtr array = Marshal.ReadIntPtr(nativeMatrix, i * sizeOfPtr);
+				for (int j = 0; j < matrix.J; j++)
+				{
+					int intVal = Marshal.ReadInt32(array, j * sizeOfInt);
+					AlignmentType value;
+					if (intVal > 0)
+						value = AlignmentType.Aligned;
+					else if (intVal == 0)
+						value = AlignmentType.NotAligned;
+					else
+						value = AlignmentType.Unknown;
+					matrix[i, j] = value;
+				}
+			}
+
+			return matrix;
+		}
+
+		public static void FreeNativeMatrix(IntPtr nativeMatrix, uint iLen)
+		{
+			int sizeOfPtr = Marshal.SizeOf(typeof(IntPtr));
+			for (int i = 0; i < iLen; i++)
+			{
+				IntPtr array = Marshal.ReadIntPtr(nativeMatrix, i * sizeOfPtr);
+				Marshal.FreeHGlobal(array);
+			}
+			Marshal.FreeHGlobal(nativeMatrix);
+		}
 
 		public static IntPtr ConvertStringsToNativeUtf8(IEnumerable<string> managedStrings)
 		{

@@ -204,7 +204,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Translation\HybridTranslationEngine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\HybridTranslationSession.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\IInteractiveSmtEngine.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Translation\IInteractiveSmtSession.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\IInteractiveTranslationEngine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\IInteractiveTranslationSession.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\IMorphemeMapper.cs" />

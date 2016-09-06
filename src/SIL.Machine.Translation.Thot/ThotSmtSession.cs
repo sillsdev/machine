@@ -6,7 +6,7 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.Thot
 {
-	internal class ThotSmtSession : DisposableBase, IInteractiveSmtSession
+	internal class ThotSmtSession : DisposableBase, IInteractiveTranslationSession
 	{
 		private readonly ThotSmtEngine _engine;
 		private readonly IntPtr _handle;
@@ -37,6 +37,36 @@ namespace SIL.Machine.Translation.Thot
 
 			string[] segmentArray = segment.ToArray();
 			return ThotSmtEngine.DoTranslate(_handle, Thot.session_translate, segmentArray, false, segmentArray, CreateResult);
+		}
+
+		public TranslationResult GetBestPhraseAlignment(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment)
+		{
+			CheckDisposed();
+
+			string[] sourceSegmentArray = sourceSegment.ToArray();
+			string[] targetSegmentArray = targetSegment.ToArray();
+			IntPtr nativeSourceSegment = Thot.ConvertStringsToNativeUtf8(sourceSegmentArray);
+			IntPtr nativeTargetSegment = Thot.ConvertStringsToNativeUtf8(targetSegmentArray);
+			IntPtr data = IntPtr.Zero;
+			try
+			{
+				data = Thot.session_getBestPhraseAlignment(_handle, nativeSourceSegment, nativeTargetSegment);
+				return CreateResult(sourceSegmentArray, targetSegmentArray, data);
+			}
+			finally
+			{
+				if (data != IntPtr.Zero)
+					Thot.tdata_destroy(data);
+				Marshal.FreeHGlobal(nativeTargetSegment);
+				Marshal.FreeHGlobal(nativeSourceSegment);
+			}
+		}
+
+		public void Train(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment, WordAlignmentMatrix matrix = null)
+		{
+			CheckDisposed();
+
+			ThotSmtEngine.TrainSegmentPair(_handle, sourceSegment, targetSegment, matrix);
 		}
 
 		public ReadOnlyList<string> SourceSegment
@@ -148,7 +178,7 @@ namespace SIL.Machine.Translation.Thot
 				WordAlignmentMatrix waMatrix;
 				if (srcPhraseLen == 1 && trgPhraseLen == 1)
 				{
-					waMatrix = new WordAlignmentMatrix(1, 1) {[0, 0] = true};
+					waMatrix = new WordAlignmentMatrix(1, 1) {[0, 0] = AlignmentType.Aligned};
 				}
 				else
 				{
@@ -167,7 +197,7 @@ namespace SIL.Machine.Translation.Thot
 					int alignedWordCount = 0;
 					for (int i = sourceSegmentation[k].Item1; i <= sourceSegmentation[k].Item2; i++)
 					{
-						if (waMatrix[i - sourceSegmentation[k].Item1, j - trgPhraseStartIndex])
+						if (waMatrix[i - sourceSegmentation[k].Item1, j - trgPhraseStartIndex] == AlignmentType.Aligned)
 						{
 							string sourceWord = sourceSegment[i];
 							double prob = _segmentAligner.GetTranslationProbability(sourceWord, targetWord);
@@ -257,13 +287,6 @@ namespace SIL.Machine.Translation.Thot
 			{
 				Marshal.FreeHGlobal(nativeTargetUnknownWords);
 			}
-		}
-
-		public void Train(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment)
-		{
-			CheckDisposed();
-
-			ThotSmtEngine.TrainSegmentPair(_handle, sourceSegment, targetSegment);
 		}
 
 		protected override void DisposeManagedResources()

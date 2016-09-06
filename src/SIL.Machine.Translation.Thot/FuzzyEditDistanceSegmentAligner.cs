@@ -89,13 +89,13 @@ namespace SIL.Machine.Translation.Thot
 					{
 						if (!alignment[0, c].IsNull)
 						{
-							waMatrix[minIndex + 1, j] = true;
-							waMatrix[maxIndex - 1, j] = true;
+							waMatrix[minIndex + 1, j] = AlignmentType.Aligned;
+							waMatrix[maxIndex - 1, j] = AlignmentType.Aligned;
 						}
 					}
 					else
 					{
-						waMatrix[bestIndex, j] = true;
+						waMatrix[bestIndex, j] = AlignmentType.Aligned;
 					}
 					totalScore += bestScore;
 				}

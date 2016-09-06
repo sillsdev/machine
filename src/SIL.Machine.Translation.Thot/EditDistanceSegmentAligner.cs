@@ -32,7 +32,7 @@ namespace SIL.Machine.Translation.Thot
 				foreach (int i in alignment[0, c])
 				{
 					foreach (int j in alignment[1, c])
-						waMatrix[i, j] = true;
+						waMatrix[i, j] = AlignmentType.Aligned;
 				}
 			}
 

@@ -2,6 +2,5 @@
 {
 	public interface IInteractiveSmtEngine : IInteractiveTranslationEngine, ISmtEngine
 	{
-		new IInteractiveSmtSession StartSession();
 	}
 }

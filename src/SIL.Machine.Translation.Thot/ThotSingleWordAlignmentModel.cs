@@ -34,16 +34,26 @@ namespace SIL.Machine.Translation.Thot
 			set { _handle = value; }
 		}
 
-		public void AddSegmentPair(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment)
+		public void AddSegmentPair(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment, WordAlignmentMatrix matrix = null)
 		{
 			IntPtr nativeSourceSegment = Thot.ConvertStringsToNativeUtf8(sourceSegment);
 			IntPtr nativeTargetSegment = Thot.ConvertStringsToNativeUtf8(targetSegment);
+			IntPtr nativeMatrix = IntPtr.Zero;
+			uint iLen = 0, jLen = 0;
+			if (matrix != null)
+			{
+				nativeMatrix = Thot.ConvertWordAlignmentMatrixToNativeMatrix(matrix);
+				iLen = (uint) matrix.I;
+				jLen = (uint) matrix.J;
+			}
+
 			try
 			{
-				Thot.swAlignModel_addSentencePair(_handle, nativeSourceSegment, nativeTargetSegment);
+				Thot.swAlignModel_addSentencePair(_handle, nativeSourceSegment, nativeTargetSegment, nativeMatrix, iLen, jLen);
 			}
 			finally
 			{
+				Thot.FreeNativeMatrix(nativeMatrix, iLen);
 				Marshal.FreeHGlobal(nativeTargetSegment);
 				Marshal.FreeHGlobal(nativeSourceSegment);
 			}
@@ -80,15 +90,7 @@ namespace SIL.Machine.Translation.Thot
 		{
 			IntPtr nativeSourceSegment = Thot.ConvertStringsToNativeUtf8(sourceSegment);
 			IntPtr nativeTargetSegment = Thot.ConvertStringsToNativeUtf8(targetSegment);
-
-			int sizeOfPtr = Marshal.SizeOf(typeof(IntPtr));
-			int sizeOfUInt = Marshal.SizeOf(typeof(uint));
-			IntPtr nativeMatrix = Marshal.AllocHGlobal(sourceSegment.Count * sizeOfPtr);
-			for (int i = 0; i < sourceSegment.Count; i++)
-			{
-				IntPtr array = Marshal.AllocHGlobal(targetSegment.Count * sizeOfUInt);
-				Marshal.WriteIntPtr(nativeMatrix, i * sizeOfPtr, array);
-			}
+			IntPtr nativeMatrix = Thot.AllocNativeMatrix(sourceSegment.Count, targetSegment.Count);
 
 			uint iLen = (uint) sourceSegment.Count;
 			uint jLen = (uint) targetSegment.Count;
@@ -96,25 +98,13 @@ namespace SIL.Machine.Translation.Thot
 			{
 				float prob = Thot.swAlignModel_getBestAlignment(_handle, nativeSourceSegment, nativeTargetSegment, nativeMatrix, ref iLen, ref jLen);
 
-				matrix = new WordAlignmentMatrix((int) iLen, (int) jLen);
-				for (int i = 0; i < matrix.I; i++)
-				{
-					IntPtr array = Marshal.ReadIntPtr(nativeMatrix, i * sizeOfPtr);
-					for (int j = 0; j < matrix.J; j++)
-						matrix[i, j] = (uint) Marshal.ReadInt32(array, j * sizeOfUInt) == 1;
-				}
+				matrix = Thot.ConvertNativeMatrixToWordAlignmentMatrix(nativeMatrix, iLen, jLen);
 
 				return prob;
 			}
 			finally
 			{
-				for (int i = 0; i < iLen; i++)
-				{
-					IntPtr array = Marshal.ReadIntPtr(nativeMatrix, i * sizeOfPtr);
-					Marshal.FreeHGlobal(array);
-				}
-				Marshal.FreeHGlobal(nativeMatrix);
-
+				Thot.FreeNativeMatrix(nativeMatrix, iLen);
 				Marshal.FreeHGlobal(nativeTargetSegment);
 				Marshal.FreeHGlobal(nativeSourceSegment);
 			}

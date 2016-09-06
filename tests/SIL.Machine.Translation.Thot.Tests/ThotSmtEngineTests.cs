@@ -98,6 +98,76 @@ namespace SIL.Machine.Translation.Thot.Tests
 			}
 		}
 
+		[Test]
+		public void Train_TranslationCorrect()
+		{
+			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
+			{
+				TranslationResult result = engine.Translate("esto es una prueba .".Split());
+				Assert.That(result.TargetSegment, Is.EqualTo("esto is a prueba .".Split()));
+				engine.Train("esto es una prueba .".Split(), "this is a test .".Split());
+				result = engine.Translate("esto es una prueba .".Split());
+				Assert.That(result.TargetSegment, Is.EqualTo("this is a test .".Split()));
+			}
+		}
+
+		[Test]
+		public void Train_AlignmentSpecified_TranslationCorrect()
+		{
+			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
+			{
+				TranslationResult result = engine.Translate("maria no dio una bofetada a la bruja verde .".Split());
+				Assert.That(result.TargetSegment, Is.EqualTo("maria no dio a bofetada to bruja verde .".Split()));
+
+				var matrix = new WordAlignmentMatrix(10, 7, AlignmentType.Unknown);
+				SetAligned(matrix, 1, 1);
+				SetAligned(matrix, 2, 2);
+				SetAligned(matrix, 3, 2);
+				SetAligned(matrix, 4, 2);
+				SetSourceNotAligned(matrix, 5);
+				SetAligned(matrix, 8, 4);
+				engine.Train("maria no dio una bofetada a la bruja verde .".Split(), "mary didn't slap the green witch .".Split(), matrix);
+				result = engine.Translate("maria es una bruja .".Split());
+				Assert.That(result.TargetSegment, Is.EqualTo("mary is a witch .".Split()));
+			}
+		}
+
+		[Test]
+		public void GetBestPhraseAlignment_TranslationCorrect()
+		{
+			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
+			{
+				TranslationResult result = engine.GetBestPhraseAlignment("esto es una prueba .".Split(), "this is a test .".Split());
+				Assert.That(result.TargetSegment, Is.EqualTo("this is a test .".Split()));
+			}
+		}
+
+		private static void SetAligned(WordAlignmentMatrix matrix, int i, int j)
+		{
+			matrix[i, j] = AlignmentType.Aligned;
+
+			for (int ti = 0; ti < matrix.I; ti++)
+			{
+				if (matrix[ti, j] == AlignmentType.Unknown)
+					matrix[ti, j] = AlignmentType.NotAligned;
+			}
+
+			for (int tj = 0; tj < matrix.J; tj++)
+			{
+				if (matrix[i, tj] == AlignmentType.Unknown)
+					matrix[i, tj] = AlignmentType.NotAligned;
+			}
+		}
+
+		private static void SetSourceNotAligned(WordAlignmentMatrix matrix, int i)
+		{
+			for (int j = 0; j < matrix.J; j++)
+			{
+				if (matrix[i, j] == AlignmentType.Unknown)
+					matrix[i, j] = AlignmentType.NotAligned;
+			}
+		}
+
 		private static string CreateTempDirectory(string name)
 		{
 			string path = Path.Combine(Path.GetTempPath(), name);

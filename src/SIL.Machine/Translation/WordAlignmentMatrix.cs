@@ -5,39 +5,65 @@ using SIL.Extensions;
 
 namespace SIL.Machine.Translation
 {
+	public enum AlignmentType
+	{
+		Unknown = -1,
+		NotAligned = 0,
+		Aligned = 1
+	}
+
 	public class WordAlignmentMatrix
 	{
-		private readonly byte[,] _matrix;
+		private readonly AlignmentType[,] _matrix;
 
-		public WordAlignmentMatrix(int i, int j)
+		public WordAlignmentMatrix(int i, int j, AlignmentType defaultValue = AlignmentType.NotAligned)
 		{
-			_matrix = new byte[i, j];
+			_matrix = new AlignmentType[i, j];
+			if (defaultValue != AlignmentType.NotAligned)
+				SetAll(defaultValue);
 		}
 
-		public int I
-		{
-			get { return _matrix.GetLength(0); }
-		}
+		public int I => _matrix.GetLength(0);
 
-		public int J
-		{
-			get { return _matrix.GetLength(1); }
-		}
+		public int J => _matrix.GetLength(1);
 
-		public bool this[int i, int j]
-		{
-			get { return _matrix[i, j] == 1; }
-			set { _matrix[i, j] = (byte) (value ? 1 : 0); }
-		}
-
-		public bool IsJAligned(int j)
+		public void SetAll(AlignmentType value)
 		{
 			for (int i = 0; i < I; i++)
 			{
-				if (_matrix[i, j] != 0)
-					return true;
+				for (int j = 0; j < J; j++)
+					_matrix[i, j] = value;
 			}
-			return false;
+		}
+
+		public AlignmentType this[int i, int j]
+		{
+			get { return _matrix[i, j]; }
+			set { _matrix[i, j] = value; }
+		}
+
+		public AlignmentType IsIAligned(int i)
+		{
+			for (int j = 0; j < J; j++)
+			{
+				if (_matrix[i, j] == AlignmentType.Aligned)
+					return AlignmentType.Aligned;
+				if (_matrix[i, j] == AlignmentType.Unknown)
+					return AlignmentType.Unknown;
+			}
+			return AlignmentType.NotAligned;
+		}
+
+		public AlignmentType IsJAligned(int j)
+		{
+			for (int i = 0; i < I; i++)
+			{
+				if (_matrix[i, j] == AlignmentType.Aligned)
+					return AlignmentType.Aligned;
+				if (_matrix[i, j] == AlignmentType.Unknown)
+					return AlignmentType.Unknown;
+			}
+			return AlignmentType.NotAligned;
 		}
 
 		public string ToGizaFormat(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment)
@@ -56,22 +82,16 @@ namespace SIL.Machine.Translation
 				{
 					if (i == 0)
 					{
-						if (!IsJAligned(j))
+						if (IsJAligned(j) == AlignmentType.NotAligned)
 						{
 							sb.Append(j + 1);
 							sb.Append(" ");
 						}
 					}
-					else
+					else if (_matrix[i - 1, j] == AlignmentType.Aligned)
 					{
-						if (_matrix[i - 1, j] != 0)
-						{
-							for (int n = 0; n < _matrix[i - 1, j]; n++)
-							{
-								sb.Append(j + 1);
-								sb.Append(" ");
-							}
-						}
+						sb.Append(j + 1);
+						sb.Append(" ");
 					}
 				}
 

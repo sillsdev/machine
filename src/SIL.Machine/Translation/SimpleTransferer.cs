@@ -43,7 +43,7 @@ namespace SIL.Machine.Translation
 
 			waMatrix = new WordAlignmentMatrix(targetAnalyses.Count, targetAnalyses.Count);
 			for (int j = 0; j < targetAnalyses.Count; j++)
-				waMatrix[j, j] = true;
+				waMatrix[j, j] = AlignmentType.Aligned;
 
 			return targetAnalyses;
 		}

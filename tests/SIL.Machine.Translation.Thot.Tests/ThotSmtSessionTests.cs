@@ -9,7 +9,7 @@ namespace SIL.Machine.Translation.Thot.Tests
 		public void TranslateInteractively_TranslationCorrect()
 		{
 			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
-			using (IInteractiveSmtSession session = engine.StartSession())
+			using (IInteractiveTranslationSession session = engine.StartSession())
 			{
 				TranslationResult result = session.TranslateInteractively("me marcho hoy por la tarde .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
@@ -20,7 +20,7 @@ namespace SIL.Machine.Translation.Thot.Tests
 		public void AddToPrefix_TranslationCorrect()
 		{
 			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
-			using (IInteractiveSmtSession session = engine.StartSession())
+			using (IInteractiveTranslationSession session = engine.StartSession())
 			{
 				TranslationResult result = session.TranslateInteractively("me marcho hoy por la tarde .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
@@ -35,7 +35,7 @@ namespace SIL.Machine.Translation.Thot.Tests
 		public void AddToPrefix_MissingWord_TranslationCorrect()
 		{
 			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
-			using (IInteractiveSmtSession session = engine.StartSession())
+			using (IInteractiveTranslationSession session = engine.StartSession())
 			{
 				TranslationResult result = session.TranslateInteractively("caminé a mi habitación .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("caminé to my room .".Split()));
@@ -48,7 +48,7 @@ namespace SIL.Machine.Translation.Thot.Tests
 		public void SetPrefix_TranslationCorrect()
 		{
 			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
-			using (IInteractiveSmtSession session = engine.StartSession())
+			using (IInteractiveTranslationSession session = engine.StartSession())
 			{
 				TranslationResult result = session.TranslateInteractively("me marcho hoy por la tarde .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
@@ -60,24 +60,10 @@ namespace SIL.Machine.Translation.Thot.Tests
 		}
 
 		[Test]
-		public void Train_TranslationCorrect()
-		{
-			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
-			using (IInteractiveSmtSession session = engine.StartSession())
-			{
-				TranslationResult result = session.TranslateInteractively("esto es una prueba .".Split());
-				Assert.That(result.TargetSegment, Is.EqualTo("esto is a prueba .".Split()));
-				session.Train("esto es una prueba .".Split(), "this is a test .".Split());
-				result = session.TranslateInteractively("esto es una prueba .".Split());
-				Assert.That(result.TargetSegment, Is.EqualTo("this is a test .".Split()));
-			}
-		}
-
-		[Test]
 		public void Approve_TwoSegmentsUnknownWord_LearnsUnknownWord()
 		{
 			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
-			using (IInteractiveSmtSession session = engine.StartSession())
+			using (IInteractiveTranslationSession session = engine.StartSession())
 			{
 				TranslationResult result = session.TranslateInteractively("hablé con recepción .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("hablé with reception .".Split()));

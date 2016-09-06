@@ -174,7 +174,7 @@ namespace SIL.Machine.Translation
 		{
 			CheckDisposed();
 
-			var session = new HybridTranslationSession(this, _smtEngine.StartSession(), _ruleBasedEngine);
+			var session = new HybridTranslationSession(this, _smtEngine, _smtEngine.StartSession(), _ruleBasedEngine);
 			lock (_sessions)
 				_sessions.Add(session);
 			return session;

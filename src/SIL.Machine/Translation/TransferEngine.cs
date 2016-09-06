@@ -31,7 +31,7 @@ namespace SIL.Machine.Translation
 			var alignment = new AlignedWordPair[segmentArray.Length, targetAnalyses.Length];
 			for (int j = 0; j < targetAnalyses.Length; j++)
 			{
-				int[] sourceIndices = Enumerable.Range(0, waMatrix.I).Where(i => waMatrix[i, j]).ToArray();
+				int[] sourceIndices = Enumerable.Range(0, waMatrix.I).Where(i => waMatrix[i, j] == AlignmentType.Aligned).ToArray();
 				string targetWord = targetAnalyses[j] != null ? _targetGenerator.GenerateWords(targetAnalyses[j]).FirstOrDefault() : null;
 				double confidence = 1.0;
 				if (targetWord == null)
