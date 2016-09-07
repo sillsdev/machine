@@ -11,21 +11,6 @@
 					<TableCell ScaleWidth="True">
 						<TableLayout>
 							<TableRow>
-								<Label>Source</Label>
-							</TableRow>
-							<TableRow>
-								<local:Line Height="1" Color="Gray" />
-							</TableRow>
-							<TableRow>
-								<Panel Padding="0,4,0,0">
-									<RichTextArea x:Name="SourceTextArea" ReadOnly="True" Text="{Binding SourceText}" SelectionChanged="SourceTextSelectionChanged" />
-								</Panel>
-							</TableRow>
-						</TableLayout>
-					</TableCell>
-					<TableCell ScaleWidth="True">
-						<TableLayout>
-							<TableRow>
 								<Label>Target</Label>
 							</TableRow>
 							<TableRow>
@@ -38,6 +23,21 @@
 							</TableRow>
 						</TableLayout>
 					</TableCell>
+					<TableCell ScaleWidth="True">
+						<TableLayout>
+							<TableRow>
+								<Label>Source</Label>
+							</TableRow>
+							<TableRow>
+								<local:Line Height="1" Color="Gray" />
+							</TableRow>
+							<TableRow>
+								<Panel Padding="0,4,0,0">
+									<RichTextArea x:Name="SourceTextArea" ReadOnly="True" Text="{Binding SourceText}" SelectionChanged="SourceTextSelectionChanged" />
+								</Panel>
+							</TableRow>
+						</TableLayout>
+					</TableCell>
 				</TableRow>
 				<TableRow>
 					<TableCell />
@@ -45,11 +45,6 @@
 					</TableCell>
 				</TableRow>
 				<TableRow>
-					<TableCell>
-						<Panel Padding="0,25,0,0">
-							<RichTextArea x:Name="SourceSegmentTextArea" ReadOnly="True" Height="150" Text="{Binding SourceSegment}" />
-						</Panel>
-					</TableCell>
 					<TableCell>
 						<StackLayout HorizontalContentAlignment="Stretch" Padding="0,0,0,0">
 							<StackLayout Orientation="Horizontal" VerticalContentAlignment="Center">
@@ -59,8 +54,13 @@
 								</Scrollable>
 							</StackLayout>
 							<TextArea x:Name="TargetSegmentTextArea" Height="150" AcceptsReturn="False" AcceptsTab="False" Text="{Binding TargetSegment}" TextChanged="TargetSegmentTextChanged"
-										CaretIndex="{Binding CurrentTargetSegmentIndex}" CaretIndexChanged="TargetSegmentCaretIndexChanged" KeyDown="TargetSegmentKeyDown" />
+												CaretIndex="{Binding CurrentTargetSegmentIndex}" CaretIndexChanged="TargetSegmentCaretIndexChanged" KeyDown="TargetSegmentKeyDown" />
 						</StackLayout>
+					</TableCell>
+					<TableCell>
+						<Panel Padding="0,25,0,0">
+							<RichTextArea x:Name="SourceSegmentTextArea" ReadOnly="True" Height="150" Text="{Binding SourceSegment}" />
+						</Panel>
 					</TableCell>
 				</TableRow>
 			</TableLayout>
