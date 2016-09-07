@@ -109,7 +109,10 @@ namespace SIL.Machine.Translation
 			{
 				for (int j = 0; j < J; j++)
 				{
-					sb.Append(_matrix[i, j]);
+					if (_matrix[i, j] == AlignmentType.Unknown)
+						sb.Append("U");
+					else
+						sb.Append((int) _matrix[i, j]);
 					sb.Append(" ");
 				}
 				sb.AppendLine();
