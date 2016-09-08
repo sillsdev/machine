@@ -212,6 +212,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Translation\ITranslationEngine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\SimpleTransferer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TransferEngine.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\TransferResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordAlignmentMatrix.cs" />

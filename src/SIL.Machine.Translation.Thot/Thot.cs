@@ -26,25 +26,31 @@ namespace SIL.Machine.Translation.Thot
 		public static extern void decoder_close(IntPtr decoderHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern uint session_translate(IntPtr sessionHandle, IntPtr sentence, IntPtr translation, uint capacity, out IntPtr data);
+		public static extern IntPtr session_translate(IntPtr sessionHandle, IntPtr sentence);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern uint session_translateNBest(IntPtr sessionHandle, uint n, IntPtr sentence, IntPtr[] results);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern IntPtr session_getBestPhraseAlignment(IntPtr sessionHandle, IntPtr sentence, IntPtr translation);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern uint session_translateInteractively(IntPtr sessionHandle, IntPtr sentence, IntPtr translation, uint capacity, out IntPtr data);
+		public static extern IntPtr session_translateInteractively(IntPtr sessionHandle, IntPtr sentence);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern uint session_addStringToPrefix(IntPtr sessionHandle, IntPtr addition, IntPtr translation, uint capacity, out IntPtr data);
+		public static extern IntPtr session_addStringToPrefix(IntPtr sessionHandle, IntPtr addition);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern uint session_setPrefix(IntPtr sessionHandle, IntPtr prefix, IntPtr translation, uint capacity, out IntPtr data);
+		public static extern IntPtr session_setPrefix(IntPtr sessionHandle, IntPtr prefix);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void session_trainSentencePair(IntPtr sessionHandle, IntPtr sourceSentence, IntPtr targetSentence, IntPtr matrix, uint iLen, uint jLen);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void session_close(IntPtr sessionHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern uint tdata_getTarget(IntPtr dataHandle, IntPtr target, uint capacity);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern uint tdata_getPhraseCount(IntPtr dataHandle);
@@ -57,6 +63,12 @@ namespace SIL.Machine.Translation.Thot
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern uint tdata_getTargetUnknownWords(IntPtr dataHandle, IntPtr targetUnknownWords, uint capacity);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern double tdata_getScore(IntPtr dataHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern uint tdata_getScoreComponents(IntPtr dataHandle, double[] scoreComps, uint capacity);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void tdata_destroy(IntPtr dataHandle);

@@ -20,44 +20,52 @@ namespace SIL.Machine.Translation
 
 		public TranslationResult Translate(IEnumerable<string> segment)
 		{
+			return Translate(1, segment).First();
+		}
+
+		public IEnumerable<TranslationResult> Translate(int n, IEnumerable<string> segment)
+		{
 			string[] segmentArray = segment.ToArray();
 			IEnumerable<IEnumerable<WordAnalysis>> sourceAnalyses = segmentArray.Select(word => _sourceAnalyzer.AnalyzeWord(word));
 
-			WordAlignmentMatrix waMatrix;
-			WordAnalysis[] targetAnalyses = _transferer.Transfer(sourceAnalyses, out waMatrix).ToArray();
-
-			var translation = new List<string>();
-			var confidences = new List<double>();
-			var alignment = new AlignedWordPair[segmentArray.Length, targetAnalyses.Length];
-			for (int j = 0; j < targetAnalyses.Length; j++)
+			foreach (TransferResult transferResult in _transferer.Transfer(sourceAnalyses).Take(n))
 			{
-				int[] sourceIndices = Enumerable.Range(0, waMatrix.I).Where(i => waMatrix[i, j] == AlignmentType.Aligned).ToArray();
-				string targetWord = targetAnalyses[j] != null ? _targetGenerator.GenerateWords(targetAnalyses[j]).FirstOrDefault() : null;
-				double confidence = 1.0;
-				if (targetWord == null)
+				IReadOnlyList<WordAnalysis> targetAnalyses = transferResult.TargetAnalyses;
+				WordAlignmentMatrix waMatrix = transferResult.WordAlignmentMatrix;
+
+				var translation = new List<string>();
+				var confidences = new List<double>();
+				var alignment = new AlignedWordPair[segmentArray.Length, targetAnalyses.Count];
+				for (int j = 0; j < targetAnalyses.Count; j++)
 				{
-					if (sourceIndices.Length > 0)
+					int[] sourceIndices = Enumerable.Range(0, waMatrix.I).Where(i => waMatrix[i, j] == AlignmentType.Aligned).ToArray();
+					string targetWord = targetAnalyses[j].IsEmpty ? null : _targetGenerator.GenerateWords(targetAnalyses[j]).FirstOrDefault();
+					double confidence = 1.0;
+					if (targetWord == null)
 					{
-						int i = sourceIndices[0];
-						targetWord = segmentArray[i];
-						confidence = 0;
-						alignment[i, j] = new AlignedWordPair(i, j, confidence, TranslationSources.None);
+						if (sourceIndices.Length > 0)
+						{
+							int i = sourceIndices[0];
+							targetWord = segmentArray[i];
+							confidence = 0;
+							alignment[i, j] = new AlignedWordPair(i, j, confidence, TranslationSources.None);
+						}
+					}
+					else
+					{
+						foreach (int i in sourceIndices)
+							alignment[i, j] = new AlignedWordPair(i, j, confidence, TranslationSources.Transfer);
+					}
+
+					if (targetWord != null)
+					{
+						translation.Add(targetWord);
+						confidences.Add(confidence);
 					}
 				}
-				else
-				{
-					foreach (int i in sourceIndices)
-						alignment[i, j] = new AlignedWordPair(i, j, confidence, TranslationSources.Transfer);
-				}
 
-				if (targetWord != null)
-				{
-					translation.Add(targetWord);
-					confidences.Add(confidence);
-				}
+				yield return new TranslationResult(segmentArray, translation, confidences, alignment);
 			}
-
-			return new TranslationResult(segmentArray, translation, confidences, alignment);
 		}
 	}
 }

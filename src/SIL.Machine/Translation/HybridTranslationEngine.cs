@@ -12,14 +12,14 @@ namespace SIL.Machine.Translation
 	{
 		private const double SecondaryEngineThreshold = 0.05;
 
-		private readonly ITranslationEngine _ruleBasedEngine;
+		private readonly ITranslationEngine _ruleEngine;
 		private readonly IInteractiveSmtEngine _smtEngine;
 		private readonly HashSet<HybridTranslationSession> _sessions;
 
-		public HybridTranslationEngine(IInteractiveSmtEngine smtEngine, ITranslationEngine ruleBasedEngine = null)
+		public HybridTranslationEngine(IInteractiveSmtEngine smtEngine, ITranslationEngine ruleEngine = null)
 		{
 			_smtEngine = smtEngine;
-			_ruleBasedEngine = ruleBasedEngine;
+			_ruleEngine = ruleEngine;
 			_sessions = new HashSet<HybridTranslationSession>();
 			SourcePreprocessor = s => s;
 			TargetPreprocessor = s => s;
@@ -60,13 +60,21 @@ namespace SIL.Machine.Translation
 			_smtEngine.Save();
 		}
 
-		public TranslationResult Translate(IEnumerable<string> sourceSegment)
+		public TranslationResult Translate(IEnumerable<string> segment)
 		{
 			CheckDisposed();
 
-			TranslationResult smtResult = _smtEngine.Translate(sourceSegment);
-			TranslationResult transferResult = _ruleBasedEngine.Translate(smtResult.SourceSegment);
-			return MergeTranslationResults(0, smtResult, transferResult);
+			TranslationResult ruleResult = _ruleEngine.Translate(segment);
+			TranslationResult smtResult = _smtEngine.Translate(ruleResult.SourceSegment);
+			return MergeTranslationResults(0, smtResult, ruleResult);
+		}
+
+		public IEnumerable<TranslationResult> Translate(int n, IEnumerable<string> segment)
+		{
+			CheckDisposed();
+
+			TranslationResult ruleResult = _ruleEngine.Translate(segment);
+			return _smtEngine.Translate(n, ruleResult.SourceSegment).Select(smtResult => MergeTranslationResults(0, smtResult, ruleResult));
 		}
 
 		public TranslationResult Translate(string sourceSegment)
@@ -89,34 +97,34 @@ namespace SIL.Machine.Translation
 				throw new InvalidOperationException("A target tokenizer is not specified.");
 		}
 
-		internal static TranslationResult MergeTranslationResults(int prefixCount, TranslationResult primaryResult, TranslationResult secondaryResult)
+		internal static TranslationResult MergeTranslationResults(int prefixCount, TranslationResult smtResult, TranslationResult ruleResult)
 		{
-			IReadOnlyList<string> sourceSegment = primaryResult.SourceSegment;
+			IReadOnlyList<string> sourceSegment = smtResult.SourceSegment;
 			var targetSegment = new List<string>();
 			var confidences = new List<double>();
 			var alignment = new Dictionary<Tuple<int, int>, AlignedWordPair>();
-			for (int j = 0; j < primaryResult.TargetSegment.Count; j++)
+			for (int j = 0; j < smtResult.TargetSegment.Count; j++)
 			{
-				AlignedWordPair[] smtWordPairs = primaryResult.GetTargetWordPairs(j).ToArray();
+				AlignedWordPair[] smtWordPairs = smtResult.GetTargetWordPairs(j).ToArray();
 
 				if (smtWordPairs.Length == 0)
 				{
-					targetSegment.Add(primaryResult.TargetSegment[j]);
-					confidences.Add(primaryResult.GetTargetWordConfidence(j));
+					targetSegment.Add(smtResult.TargetSegment[j]);
+					confidences.Add(smtResult.GetTargetWordConfidence(j));
 				}
 				else
 				{
-					if (j < prefixCount || primaryResult.GetTargetWordConfidence(j) >= SecondaryEngineThreshold)
+					if (j < prefixCount || smtResult.GetTargetWordConfidence(j) >= SecondaryEngineThreshold)
 					{
-						targetSegment.Add(primaryResult.TargetSegment[j]);
-						confidences.Add(primaryResult.GetTargetWordConfidence(j));
+						targetSegment.Add(smtResult.TargetSegment[j]);
+						confidences.Add(smtResult.GetTargetWordConfidence(j));
 						foreach (AlignedWordPair smtWordPair in smtWordPairs)
 						{
 							TranslationSources sources = smtWordPair.Sources;
-							foreach (AlignedWordPair transferWordPair in secondaryResult.GetSourceWordPairs(smtWordPair.SourceIndex))
+							foreach (AlignedWordPair transferWordPair in ruleResult.GetSourceWordPairs(smtWordPair.SourceIndex))
 							{
 								if (transferWordPair.Sources != TranslationSources.None
-									&& secondaryResult.TargetSegment[transferWordPair.TargetIndex] == primaryResult.TargetSegment[j])
+									&& ruleResult.TargetSegment[transferWordPair.TargetIndex] == smtResult.TargetSegment[j])
 								{
 									sources |= transferWordPair.Sources;
 								}
@@ -131,11 +139,11 @@ namespace SIL.Machine.Translation
 						bool found = false;
 						foreach (AlignedWordPair smtWordPair in smtWordPairs)
 						{
-							foreach (AlignedWordPair transferWordPair in secondaryResult.GetSourceWordPairs(smtWordPair.SourceIndex))
+							foreach (AlignedWordPair transferWordPair in ruleResult.GetSourceWordPairs(smtWordPair.SourceIndex))
 							{
 								if (transferWordPair.Sources != TranslationSources.None)
 								{
-									targetSegment.Add(secondaryResult.TargetSegment[transferWordPair.TargetIndex]);
+									targetSegment.Add(ruleResult.TargetSegment[transferWordPair.TargetIndex]);
 									confidences.Add(transferWordPair.Confidence);
 									alignment[Tuple.Create(transferWordPair.SourceIndex, targetSegment.Count - 1)] = new AlignedWordPair(transferWordPair.SourceIndex,
 										targetSegment.Count - 1, transferWordPair.Confidence, transferWordPair.Sources);
@@ -146,8 +154,8 @@ namespace SIL.Machine.Translation
 
 						if (!found)
 						{
-							targetSegment.Add(primaryResult.TargetSegment[j]);
-							confidences.Add(primaryResult.GetTargetWordConfidence(j));
+							targetSegment.Add(smtResult.TargetSegment[j]);
+							confidences.Add(smtResult.GetTargetWordConfidence(j));
 							foreach (AlignedWordPair smtWordPair in smtWordPairs)
 							{
 								alignment[Tuple.Create(smtWordPair.SourceIndex, targetSegment.Count - 1)] = new AlignedWordPair(smtWordPair.SourceIndex,
@@ -162,7 +170,7 @@ namespace SIL.Machine.Translation
 			foreach (KeyValuePair<Tuple<int, int>, AlignedWordPair> kvp in alignment)
 				alignmentMatrix[kvp.Key.Item1, kvp.Key.Item2] = kvp.Value;
 
-			return new TranslationResult(primaryResult.SourceSegment, targetSegment, confidences, alignmentMatrix);
+			return new TranslationResult(smtResult.SourceSegment, targetSegment, confidences, alignmentMatrix);
 		}
 
 		IInteractiveTranslationSession IInteractiveTranslationEngine.StartSession()
@@ -174,7 +182,7 @@ namespace SIL.Machine.Translation
 		{
 			CheckDisposed();
 
-			var session = new HybridTranslationSession(this, _smtEngine, _smtEngine.StartSession(), _ruleBasedEngine);
+			var session = new HybridTranslationSession(this, _smtEngine, _smtEngine.StartSession(), _ruleEngine);
 			lock (_sessions)
 				_sessions.Add(session);
 			return session;
@@ -200,7 +208,7 @@ namespace SIL.Machine.Translation
 			}
 
 			_smtEngine.Dispose();
-			_ruleBasedEngine.Dispose();
+			_ruleEngine.Dispose();
 		}
 	}
 }

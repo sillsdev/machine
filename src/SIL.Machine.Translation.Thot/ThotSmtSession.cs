@@ -39,6 +39,14 @@ namespace SIL.Machine.Translation.Thot
 			return ThotSmtEngine.DoTranslate(_handle, Thot.session_translate, segmentArray, false, segmentArray, CreateResult);
 		}
 
+		public IEnumerable<TranslationResult> Translate(int n, IEnumerable<string> segment)
+		{
+			CheckDisposed();
+
+			string[] segmentArray = segment.ToArray();
+			return ThotSmtEngine.DoTranslateNBest(_handle, Thot.session_translateNBest, n, segmentArray, false, segmentArray, CreateResult);
+		}
+
 		public TranslationResult GetBestPhraseAlignment(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment)
 		{
 			CheckDisposed();

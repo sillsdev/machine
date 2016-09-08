@@ -16,8 +16,6 @@ using SIL.Progress;
 
 namespace SIL.Machine.Translation.Thot
 {
-	internal delegate uint TranslateFunc(IntPtr sessionHandle, IntPtr sourceSegment, IntPtr result, uint capacity, out IntPtr data);
-
 	public class ThotSmtEngine : DisposableBase, IInteractiveSmtEngine
 	{
 		private const int TrainingStepCount = 20;
@@ -644,20 +642,52 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		internal static T DoTranslate<T>(IntPtr sessionHandle, TranslateFunc translateFunc, IEnumerable<string> input, bool addTrailingSpace,
+		internal static T DoTranslate<T>(IntPtr sessionHandle, Func<IntPtr, IntPtr, IntPtr> translateFunc, IEnumerable<string> input, bool addTrailingSpace,
 			IList<string> sourceSegment, Func<IList<string>, IList<string>, IntPtr, T> createResult)
 		{
 			IntPtr inputPtr = Thot.ConvertStringToNativeUtf8(string.Join(" ", input) + (addTrailingSpace ? " " : ""));
-			IntPtr translationPtr = Marshal.AllocHGlobal(DefaultTranslationBufferLength);
 			IntPtr data = IntPtr.Zero;
 			try
 			{
-				uint len = translateFunc(sessionHandle, inputPtr, translationPtr, DefaultTranslationBufferLength, out data);
+				data = translateFunc(sessionHandle, inputPtr);
+				return DoCreateResult(sourceSegment, data, createResult);
+			}
+			finally
+			{
+				if (data != IntPtr.Zero)
+					Thot.tdata_destroy(data);
+				Marshal.FreeHGlobal(inputPtr);
+			}
+		}
+
+		internal static IEnumerable<T> DoTranslateNBest<T>(IntPtr sessionHandle, Func<IntPtr, uint, IntPtr, IntPtr[], uint> translateFunc, int n, IEnumerable<string> input,
+			bool addTrailingSpace, IList<string> sourceSegment, Func<IList<string>, IList<string>, IntPtr, T> createResult)
+		{
+			IntPtr inputPtr = Thot.ConvertStringToNativeUtf8(string.Join(" ", input) + (addTrailingSpace ? " " : ""));
+			var results = new IntPtr[n];
+			try
+			{
+				uint len = translateFunc(sessionHandle, (uint) n, inputPtr, results);
+				return results.Take((int) len).Select(data => DoCreateResult(sourceSegment, data, createResult)).ToArray();
+			}
+			finally
+			{
+				foreach (IntPtr data in results.Where(d => d != IntPtr.Zero))
+					Thot.tdata_destroy(data);
+				Marshal.FreeHGlobal(inputPtr);
+			}
+		}
+
+		private static T DoCreateResult<T>(IList<string> sourceSegment, IntPtr data, Func<IList<string>, IList<string>, IntPtr, T> createResult)
+		{
+			IntPtr translationPtr = Marshal.AllocHGlobal(DefaultTranslationBufferLength);
+			try
+			{
+				uint len = Thot.tdata_getTarget(data, translationPtr, DefaultTranslationBufferLength);
 				if (len > DefaultTranslationBufferLength)
 				{
-					Thot.tdata_destroy(data);
-					translationPtr = Marshal.ReAllocHGlobal(translationPtr, (IntPtr) len);
-					len = translateFunc(sessionHandle, inputPtr, translationPtr, len, out data);
+					translationPtr = Marshal.ReAllocHGlobal(translationPtr, (IntPtr)len);
+					len = Thot.tdata_getTarget(data, translationPtr, len);
 				}
 				string translation = Thot.ConvertNativeUtf8ToString(translationPtr, len);
 				string[] targetSegment = translation.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries);
@@ -665,10 +695,7 @@ namespace SIL.Machine.Translation.Thot
 			}
 			finally
 			{
-				if (data != IntPtr.Zero)
-					Thot.tdata_destroy(data);
 				Marshal.FreeHGlobal(translationPtr);
-				Marshal.FreeHGlobal(inputPtr);
 			}
 		}
 
@@ -745,6 +772,13 @@ namespace SIL.Machine.Translation.Thot
 			CheckDisposed();
 
 			return GlobalSession.Translate(segment);
+		}
+
+		public IEnumerable<TranslationResult> Translate(int n, IEnumerable<string> segment)
+		{
+			CheckDisposed();
+
+			return GlobalSession.Translate(n, segment);
 		}
 
 		public TranslationResult GetBestPhraseAlignment(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment)

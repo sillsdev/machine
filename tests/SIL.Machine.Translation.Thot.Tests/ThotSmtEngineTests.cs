@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -95,6 +96,26 @@ namespace SIL.Machine.Translation.Thot.Tests
 			{
 				TranslationResult result = engine.Translate("voy a marcharme hoy por la tarde .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("i am leaving today in the afternoon .".Split()));
+			}
+		}
+
+		[Test]
+		public void Translate_NBestLessThanN_TranslationsCorrect()
+		{
+			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
+			{
+				IEnumerable<TranslationResult> results = engine.Translate(3, "voy a marcharme hoy por la tarde .".Split());
+				Assert.That(results.Select(tr => tr.TargetSegment), Is.EqualTo(new[] {"i am leaving today in the afternoon .".Split()}));
+			}
+		}
+
+		[Test]
+		public void Translate_NBest_TranslationsCorrect()
+		{
+			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
+			{
+				IEnumerable<TranslationResult> results = engine.Translate(2, "hablé hasta cinco en punto .".Split());
+				Assert.That(results.Select(tr => tr.TargetSegment), Is.EqualTo(new[] {"hablé until five o ' clock .".Split(), "hablé until five o ' clock for".Split()}));
 			}
 		}
 

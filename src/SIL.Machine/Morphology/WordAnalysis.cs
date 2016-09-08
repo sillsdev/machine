@@ -11,40 +11,34 @@ namespace SIL.Machine.Morphology
 	/// </summary>
 	public class WordAnalysis : IEquatable<WordAnalysis>
 	{
-		private readonly ReadOnlyList<IMorpheme> _morphemes;
-		private readonly int _rootMorphemeIndex;
-		private readonly string _category;
+		public WordAnalysis()
+			: this(Enumerable.Empty<IMorpheme>(), -1, null)
+		{
+		}
 
 		public WordAnalysis(IEnumerable<IMorpheme> morphemes, int rootMorphemeIndex, string category)
 		{
-			_morphemes = new ReadOnlyList<IMorpheme>(morphemes.ToArray());
-			_rootMorphemeIndex = rootMorphemeIndex;
-			_category = category;
+			Morphemes = new ReadOnlyList<IMorpheme>(morphemes.ToArray());
+			RootMorphemeIndex = rootMorphemeIndex;
+			Category = category;
 		}
 
 		/// <summary>
 		/// Gets all of the morphemes in the order in which they occur in the word.
 		/// </summary>
-		public IReadOnlyList<IMorpheme> Morphemes
-		{
-			get { return _morphemes; }
-		}
+		public IReadOnlyList<IMorpheme> Morphemes { get; }
 
 		/// <summary>
 		/// Gets the root morpheme.
 		/// </summary>
-		public int RootMorphemeIndex
-		{
-			get { return _rootMorphemeIndex; }
-		}
+		public int RootMorphemeIndex { get; }
 
 		/// <summary>
 		/// Gets the category or part of speech.
 		/// </summary>
-		public string Category
-		{
-			get { return _category; }
-		}
+		public string Category { get; }
+
+		public bool IsEmpty => Morphemes.Count == 0;
 
 		public override bool Equals(object obj)
 		{
@@ -54,22 +48,22 @@ namespace SIL.Machine.Morphology
 
 		public bool Equals(WordAnalysis other)
 		{
-			return other != null && _morphemes.Select(m => m.Id).SequenceEqual(other._morphemes.Select(m => m.Id))
-				&& _rootMorphemeIndex == other._rootMorphemeIndex && _category == other._category;
+			return other != null && Morphemes.Select(m => m.Id).SequenceEqual(other.Morphemes.Select(m => m.Id))
+				&& RootMorphemeIndex == other.RootMorphemeIndex && Category == other.Category;
 		}
 
 		public override int GetHashCode()
 		{
 			int code = 23;
-			code += code * 31 + _morphemes.Select(m => m.Id).GetSequenceHashCode();
-			code += code * 31 + _rootMorphemeIndex.GetHashCode();
-			code += code * 31 + (_category == null ? 0 : _category.GetHashCode());
+			code += code * 31 + Morphemes.Select(m => m.Id).GetSequenceHashCode();
+			code += code * 31 + RootMorphemeIndex.GetHashCode();
+			code += code * 31 + Category?.GetHashCode() ?? 0;
 			return code;
 		}
 
 		public override string ToString()
 		{
-			return string.Format("[{0}]", string.Join(" ", _morphemes.Select((m, i) => i == _rootMorphemeIndex ? "*" + m : m.ToString())));
+			return string.Format("[{0}]", string.Join(" ", Morphemes.Select((m, i) => i == RootMorphemeIndex ? "*" + m : m.ToString())));
 		}
 	}
 }
