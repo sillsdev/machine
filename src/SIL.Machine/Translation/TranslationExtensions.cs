@@ -50,8 +50,9 @@ namespace SIL.Machine.Translation
 				if (word.All(char.IsPunctuation))
 					break;
 
-				if (result.GetTargetWordConfidence(j) >= confidenceThreshold
+				if ((result.GetTargetWordConfidence(j) >= confidenceThreshold
 					|| result.GetTargetWordPairs(j).Any(awi => (awi.Sources & TranslationSources.Transfer) == TranslationSources.Transfer))
+					&& (inPhrase || !session.IsLastWordPartial || result.TargetSegment[j].StartsWith(session.Prefix[session.Prefix.Count - 1])))
 				{
 					yield return j;
 					inPhrase = true;
