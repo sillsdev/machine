@@ -12,8 +12,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)EditDistanceSegmentAligner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FuzzyEditDistanceSegmentAligner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ISegmentAligner.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ILLWeightTuner.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MiraLLWeightTuner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SegmentScorer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SimplexLLWeightTuner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Thot.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ThotBatchTrainer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ThotLanguageModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ThotSingleWordAlignmentModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ThotSmtEngine.cs" />

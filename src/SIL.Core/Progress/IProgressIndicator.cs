@@ -4,7 +4,7 @@ namespace SIL.Progress
 {
 	public interface IProgressIndicator
 	{
-		int PercentCompleted { get; set; }
+		double PercentCompleted { get; set; }
 		void Finish();
 		void Initialize();
 		void IndicateUnknownProgress();

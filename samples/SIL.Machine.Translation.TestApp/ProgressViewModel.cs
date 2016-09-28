@@ -11,7 +11,7 @@ namespace SIL.Machine.Translation.TestApp
 	public class ProgressViewModel : ViewModelBase, IProgress, IProgressIndicator
 	{
 		private readonly Action<ProgressViewModel> _action;
-		private int _percentCompleted;
+		private double _percentCompleted;
 		private string _text;
 		private bool _executing;
 		private bool _cancelRequested;
@@ -37,7 +37,7 @@ namespace SIL.Machine.Translation.TestApp
 			set { Set(() => Text, ref _text, value); }
 		}
 
-		public int PercentCompleted
+		public double PercentCompleted
 		{
 			get { return _percentCompleted; }
 			set { Set(() => PercentCompleted, ref _percentCompleted, value); }

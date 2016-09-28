@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -7,6 +8,8 @@ namespace SIL.Machine.Translation.Thot
 {
 	internal static class Thot
 	{
+		private const int DefaultTranslationBufferLength = 1024;
+
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern IntPtr decoder_open(string cfgFileName);
 
@@ -21,6 +24,9 @@ namespace SIL.Machine.Translation.Thot
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern IntPtr decoder_getInverseSingleWordAlignmentModel(IntPtr decoderHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void decoder_setLlWeights(IntPtr decoderHandle, float[] weights, uint capacity);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void decoder_close(IntPtr decoderHandle);
@@ -112,6 +118,16 @@ namespace SIL.Machine.Translation.Thot
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void langModel_close(IntPtr lmHandle);
 
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern IntPtr llWeightUpdater_create();
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void llWeightUpdater_updateClosedCorpus(IntPtr llWeightUpdaterHandle, IntPtr[] references, IntPtr nblists, IntPtr scoreComps, uint[] nblistLens,
+			double[] weights, uint numSents, uint numWeights);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void llWeightUpdater_close(IntPtr llWeightUpdaterHandle);
+
 		public static IntPtr AllocNativeMatrix(int iLen, int jLen)
 		{
 			int sizeOfPtr = Marshal.SizeOf(typeof(IntPtr));
@@ -199,6 +215,88 @@ namespace SIL.Machine.Translation.Thot
 			var buffer = new byte[len];
 			Marshal.Copy(nativeUtf8, buffer, 0, buffer.Length);
 			return Encoding.UTF8.GetString(buffer, 0, buffer.Length);
+		}
+
+		public static T DoTranslate<T>(IntPtr sessionHandle, Func<IntPtr, IntPtr, IntPtr> translateFunc, IEnumerable<string> input, bool addTrailingSpace,
+			IList<string> sourceSegment, Func<IList<string>, IList<string>, IntPtr, T> createResult)
+		{
+			IntPtr inputPtr = ConvertStringToNativeUtf8(string.Join(" ", input) + (addTrailingSpace ? " " : ""));
+			IntPtr data = IntPtr.Zero;
+			try
+			{
+				data = translateFunc(sessionHandle, inputPtr);
+				return DoCreateResult(sourceSegment, data, createResult);
+			}
+			finally
+			{
+				if (data != IntPtr.Zero)
+					tdata_destroy(data);
+				Marshal.FreeHGlobal(inputPtr);
+			}
+		}
+
+		public static IEnumerable<T> DoTranslateNBest<T>(IntPtr sessionHandle, Func<IntPtr, uint, IntPtr, IntPtr[], uint> translateFunc, int n, IEnumerable<string> input,
+			bool addTrailingSpace, IList<string> sourceSegment, Func<IList<string>, IList<string>, IntPtr, T> createResult)
+		{
+			IntPtr inputPtr = ConvertStringToNativeUtf8(string.Join(" ", input) + (addTrailingSpace ? " " : ""));
+			var results = new IntPtr[n];
+			try
+			{
+				uint len = translateFunc(sessionHandle, (uint) n, inputPtr, results);
+				return results.Take((int) len).Select(data => DoCreateResult(sourceSegment, data, createResult)).ToArray();
+			}
+			finally
+			{
+				foreach (IntPtr data in results.Where(d => d != IntPtr.Zero))
+					tdata_destroy(data);
+				Marshal.FreeHGlobal(inputPtr);
+			}
+		}
+
+		private static T DoCreateResult<T>(IList<string> sourceSegment, IntPtr data, Func<IList<string>, IList<string>, IntPtr, T> createResult)
+		{
+			IntPtr translationPtr = Marshal.AllocHGlobal(DefaultTranslationBufferLength);
+			try
+			{
+				uint len = tdata_getTarget(data, translationPtr, DefaultTranslationBufferLength);
+				if (len > DefaultTranslationBufferLength)
+				{
+					translationPtr = Marshal.ReAllocHGlobal(translationPtr, (IntPtr)len);
+					len = tdata_getTarget(data, translationPtr, len);
+				}
+				string translation = ConvertNativeUtf8ToString(translationPtr, len);
+				string[] targetSegment = translation.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+				return createResult(sourceSegment, targetSegment, data);
+			}
+			finally
+			{
+				Marshal.FreeHGlobal(translationPtr);
+			}
+		}
+
+		public static void TrainSegmentPair(IntPtr sessionHandle, IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment, WordAlignmentMatrix matrix)
+		{
+			IntPtr nativeSourceSegment = ConvertStringsToNativeUtf8(sourceSegment);
+			IntPtr nativeTargetSegment = ConvertStringsToNativeUtf8(targetSegment);
+			IntPtr nativeMatrix = IntPtr.Zero;
+			uint iLen = 0, jLen = 0;
+			if (matrix != null)
+			{
+				nativeMatrix = ConvertWordAlignmentMatrixToNativeMatrix(matrix);
+				iLen = (uint) matrix.I;
+				jLen = (uint) matrix.J;
+			}
+
+			try
+			{
+				session_trainSentencePair(sessionHandle, nativeSourceSegment, nativeTargetSegment, nativeMatrix, iLen, jLen);
+			}
+			finally
+			{
+				FreeNativeMatrix(nativeMatrix, iLen);
+				Marshal.FreeHGlobal(nativeTargetSegment);
+				Marshal.FreeHGlobal(nativeSourceSegment);
+			}
 		}
 	}
 }

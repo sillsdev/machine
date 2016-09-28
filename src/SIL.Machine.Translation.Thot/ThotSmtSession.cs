@@ -36,7 +36,7 @@ namespace SIL.Machine.Translation.Thot
 			CheckDisposed();
 
 			string[] segmentArray = segment.ToArray();
-			return ThotSmtEngine.DoTranslate(_handle, Thot.session_translate, segmentArray, false, segmentArray, CreateResult);
+			return Thot.DoTranslate(_handle, Thot.session_translate, segmentArray, false, segmentArray, CreateResult);
 		}
 
 		public IEnumerable<TranslationResult> Translate(int n, IEnumerable<string> segment)
@@ -44,7 +44,7 @@ namespace SIL.Machine.Translation.Thot
 			CheckDisposed();
 
 			string[] segmentArray = segment.ToArray();
-			return ThotSmtEngine.DoTranslateNBest(_handle, Thot.session_translateNBest, n, segmentArray, false, segmentArray, CreateResult);
+			return Thot.DoTranslateNBest(_handle, Thot.session_translateNBest, n, segmentArray, false, segmentArray, CreateResult);
 		}
 
 		public TranslationResult GetBestPhraseAlignment(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment)
@@ -74,7 +74,7 @@ namespace SIL.Machine.Translation.Thot
 		{
 			CheckDisposed();
 
-			ThotSmtEngine.TrainSegmentPair(_handle, sourceSegment, targetSegment, matrix);
+			Thot.TrainSegmentPair(_handle, sourceSegment, targetSegment, matrix);
 		}
 
 		public ReadOnlyList<string> SourceSegment
@@ -120,7 +120,7 @@ namespace SIL.Machine.Translation.Thot
 			Reset();
 			_sourceSegment.AddRange(segment);
 			_isTranslatingInteractively = true;
-			_currentResult = ThotSmtEngine.DoTranslate(_handle, Thot.session_translateInteractively, _sourceSegment, false, _sourceSegment, CreateResult);
+			_currentResult = Thot.DoTranslate(_handle, Thot.session_translateInteractively, _sourceSegment, false, _sourceSegment, CreateResult);
 			return _currentResult;
 		}
 
@@ -132,7 +132,7 @@ namespace SIL.Machine.Translation.Thot
 
 			string[] additionArray = addition.ToArray();
 			_prefix.AddRange(additionArray);
-			_currentResult = ThotSmtEngine.DoTranslate(_handle, Thot.session_addStringToPrefix, additionArray, !isLastWordPartial, _sourceSegment, CreateResult);
+			_currentResult = Thot.DoTranslate(_handle, Thot.session_addStringToPrefix, additionArray, !isLastWordPartial, _sourceSegment, CreateResult);
 			return _currentResult;
 		}
 
@@ -145,7 +145,7 @@ namespace SIL.Machine.Translation.Thot
 			_prefix.Clear();
 			_prefix.AddRange(prefix);
 			_isLastWordPartial = isLastWordPartial;
-			_currentResult = ThotSmtEngine.DoTranslate(_handle, Thot.session_setPrefix, _prefix, !isLastWordPartial, _sourceSegment, CreateResult);
+			_currentResult = Thot.DoTranslate(_handle, Thot.session_setPrefix, _prefix, !isLastWordPartial, _sourceSegment, CreateResult);
 			return _currentResult;
 		}
 

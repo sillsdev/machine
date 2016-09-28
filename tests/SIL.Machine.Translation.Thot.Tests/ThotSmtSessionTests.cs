@@ -39,8 +39,8 @@ namespace SIL.Machine.Translation.Thot.Tests
 			{
 				TranslationResult result = session.TranslateInteractively("caminé a mi habitación .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("caminé to my room .".Split()));
-				result = session.AddToPrefix("i", false);
-				Assert.That(result.TargetSegment, Is.EqualTo("i caminé to my room .".Split()));
+				result = session.AddToPrefix("i walked ", false);
+				Assert.That(result.TargetSegment, Is.EqualTo("i walked to my room .".Split()));
 			}
 		}
 

@@ -4,7 +4,7 @@ namespace SIL.Progress
 {
 	public class NullProgressIndicator : IProgressIndicator
 	{
-		public int PercentCompleted { get; set; }
+		public double PercentCompleted { get; set; }
 
 		public void Finish()
 		{

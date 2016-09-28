@@ -75,8 +75,8 @@ namespace SIL.Machine.Translation.TestApp
 					DispatcherHelper.CheckBeginInvokeOnUI(() =>
 					{
 						var vm = (ProgressViewModel) DataContext;
-						ProgressBar.Value = vm.PercentCompleted;
-						Title = string.Format("{0}% completed", vm.PercentCompleted);
+						ProgressBar.Value = (int) Math.Round(vm.PercentCompleted, 0, MidpointRounding.AwayFromZero);
+						Title = string.Format("{0}% completed", ProgressBar.Value);
 					});
 					break;
 
