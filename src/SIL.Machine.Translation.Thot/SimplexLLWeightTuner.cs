@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using SIL.Machine.Optimization;
 using SIL.Extensions;
 using SIL.Progress;
@@ -9,52 +11,79 @@ namespace SIL.Machine.Translation.Thot
 {
 	public class SimplexLLWeightTuner : ILLWeightTuner
 	{
-		public double ProgressIncrement { get; set; }
+		public SimplexLLWeightTuner()
+		{
+			ConvergenceTolerance = 0.001;
+			MaxFunctionEvaluations = 100;
+		}
 
-		public double[] Tune(string cfgFileName, IList<IList<string>> tuneSourceCorpus, IList<IList<string>> tuneTargetCorpus, double[] initialWeights, IProgress progress = null)
+		public double ConvergenceTolerance { get; set; }
+		public int MaxFunctionEvaluations { get; set; }
+		public double ProgressIncrement { get; set; }
+		public int ProgressIncrementInterval { get; set; }
+
+		public double[] Tune(string cfgFileName, IList<IList<string>> tuneSourceCorpus, IList<IList<string>> tuneTargetCorpus, double[] initialWeights, IProgress progress)
 		{
 			double sentLenWeight = initialWeights[7];
-			var simplex = new NelderMeadSimplex(0.001, 200, 1.0);
-			MinimizationResult result = simplex.FindMinimum(w => CalculateBleu(cfgFileName, tuneSourceCorpus, tuneTargetCorpus, w, sentLenWeight),
-				initialWeights.Take(7));
+			int numFuncEvals = 0;
+			Func<Vector, double> evalFunc = w =>
+			{
+				double quality = CalculateBleu(cfgFileName, tuneSourceCorpus, tuneTargetCorpus, w, sentLenWeight);
+				numFuncEvals++;
+				if (ProgressIncrementInterval > 0 && numFuncEvals % ProgressIncrementInterval == 0)
+					progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
+				return quality;
+			};
+			var simplex = new NelderMeadSimplex(ConvergenceTolerance, MaxFunctionEvaluations, 1.0) {IsCanceled = () => progress.CancelRequested};
+			MinimizationResult result = simplex.FindMinimum(evalFunc, initialWeights.Take(7));
 			return result.MinimizingPoint.Concat(sentLenWeight).ToArray();
 		}
 
 		private static double CalculateBleu(string tuneCfgFileName, IList<IList<string>> sourceCorpus, IList<IList<string>> tuneTargetCorpus, Vector weights,
 			double sentLenWeight)
 		{
-			IntPtr decoderHandle = IntPtr.Zero, sessionHandle = IntPtr.Zero;
-			try
+			IEnumerable<IList<string>> translations = GenerateTranslations(tuneCfgFileName, sourceCorpus, weights, sentLenWeight);
+			double bleu = Evaluation.CalculateBleu(translations, tuneTargetCorpus);
+			double penalty = 0;
+			for (int i = 0; i < weights.Count; i++)
 			{
-				decoderHandle = Thot.decoder_open(tuneCfgFileName);
-				float[] weightArray = weights.Select(w => (float) w).Concat((float) sentLenWeight).ToArray();
-				Thot.decoder_setLlWeights(decoderHandle, weightArray, (uint) weightArray.Length);
-				sessionHandle = Thot.decoder_openSession(decoderHandle);
-				double bleu = Evaluation.CalculateBleu(GenerateTranslations(sessionHandle, sourceCorpus), tuneTargetCorpus);
-				double penalty = 0;
-				for (int i = 0; i < weights.Count; i++)
-				{
-					if (i == 0 || i == 2)
-						continue;
+				if (i == 0 || i == 2)
+					continue;
 
-					if (weights[i] < 0)
-						penalty += weights[i] * 1000 * -1;
-				}
-				return (1.0 - bleu) + penalty;
+				if (weights[i] < 0)
+					penalty += weights[i] * 1000 * -1;
 			}
-			finally
-			{
-				if (sessionHandle != IntPtr.Zero)
-					Thot.session_close(sessionHandle);
-				if (decoderHandle != IntPtr.Zero)
-					Thot.decoder_close(decoderHandle);
-			}
+			return (1.0 - bleu) + penalty;
 		}
 
-		private static IEnumerable<IList<string>> GenerateTranslations(IntPtr sessionHandle, IList<IList<string>> sourceCorpus)
+		private static IEnumerable<IList<string>> GenerateTranslations(string tuneCfgFileName, IList<IList<string>> sourceCorpus, IEnumerable<double> weights,
+			double sentLenWeight)
 		{
-			foreach (IList<string> segment in sourceCorpus)
-				yield return Thot.DoTranslate(sessionHandle, Thot.session_translate, segment, false, segment, (s, t, d) => t);
+			float[] weightArray = weights.Select(w => (float) w).Concat((float) sentLenWeight).ToArray();
+			var results = new IList<string>[sourceCorpus.Count];
+			Parallel.ForEach(Partitioner.Create(0, sourceCorpus.Count), range =>
+				{
+					IntPtr decoderHandle = IntPtr.Zero, sessionHandle = IntPtr.Zero;
+					try
+					{
+						decoderHandle = Thot.decoder_open(tuneCfgFileName);
+						Thot.decoder_setLlWeights(decoderHandle, weightArray, (uint) weightArray.Length);
+						sessionHandle = Thot.decoder_openSession(decoderHandle);
+						for (int i = range.Item1; i < range.Item2; i++)
+						{
+							IList<string> segment = sourceCorpus[i];
+							results[i] = Thot.DoTranslate(sessionHandle, Thot.session_translate, segment, false, segment, (s, t, d) => t);
+						}
+					}
+					finally
+					{
+						if (sessionHandle != IntPtr.Zero)
+							Thot.session_close(sessionHandle);
+						if (decoderHandle != IntPtr.Zero)
+							Thot.decoder_close(decoderHandle);
+					}
+				});
+			return results;
 		}
 	}
 }

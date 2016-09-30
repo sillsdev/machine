@@ -4,42 +4,26 @@
 	{
 		None,
 		Converged,
-		MaxFunctionEvaluations
+		MaxFunctionEvaluations,
+		Canceled
 	}
 
 	public class MinimizationResult
 	{
-		private readonly MinimizationExitCondition _reasonForExit;
-		private readonly int _functionEvaluationCount;
-		private readonly Vector _minimizingPoint;
-		private readonly double _errorValue;
-
 		public MinimizationResult(MinimizationExitCondition reasonForExit, Vector minimizingPoint, double errorValue, int functionEvaluationCount)
 		{
-			_reasonForExit = reasonForExit;
-			_minimizingPoint = minimizingPoint;
-			_errorValue = errorValue;
-			_functionEvaluationCount = functionEvaluationCount;
+			ReasonForExit = reasonForExit;
+			MinimizingPoint = minimizingPoint;
+			ErrorValue = errorValue;
+			FunctionEvaluationCount = functionEvaluationCount;
 		}
 
-		public MinimizationExitCondition ReasonForExit
-		{
-			get { return _reasonForExit; }
-		}
+		public MinimizationExitCondition ReasonForExit { get; }
 
-		public Vector MinimizingPoint
-		{
-			get { return _minimizingPoint; }
-		}
+		public Vector MinimizingPoint { get; }
 
-		public double ErrorValue
-		{
-			get { return _errorValue; }
-		}
+		public double ErrorValue { get; }
 
-		public int FunctionEvaluationCount
-		{
-			get { return _functionEvaluationCount; }
-		}
+		public int FunctionEvaluationCount { get; }
 	}
 }

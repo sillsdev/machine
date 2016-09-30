@@ -22,7 +22,7 @@ namespace SIL.Machine.Translation.TestApp
 		public ProgressViewModel(Action<ProgressViewModel> action)
 		{
 			_action = action;
-			_cancelCommand = new RelayCommand<object>(o => CancelRequested = true);
+			_cancelCommand = new RelayCommand<object>(Cancel, CanCancel);
 		}
 
 		public string DisplayName
@@ -83,6 +83,18 @@ namespace SIL.Machine.Translation.TestApp
 					((IProgressIndicator) this).Finish();
 				}
 			});
+		}
+
+		private void Cancel(object o)
+		{
+			CancelRequested = true;
+			Text = "Canceling...";
+			_cancelCommand.UpdateCanExecute();
+		}
+
+		private bool CanCancel(object o)
+		{
+			return !CancelRequested;
 		}
 
 		void IProgress.WriteStatus(string message, params object[] args)

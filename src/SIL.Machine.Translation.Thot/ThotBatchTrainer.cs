@@ -116,13 +116,18 @@ namespace SIL.Machine.Translation.Thot
 				File.Copy(_cfgFileName, trainCfgFileName);
 				UpdateConfigPaths(trainCfgFileName, trainLMPrefix, trainTMPrefix);
 
-				progress.WriteMessage("Training target language model...");
-				TrainLanguageModel(trainLMPrefix, 3);
-				progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
 				if (progress.CancelRequested)
 					return;
 
+				progress.WriteMessage("Training target language model...");
+				TrainLanguageModel(trainLMPrefix, 3);
+
+				if (progress.CancelRequested)
+					return;
+				progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
+
 				TrainTranslationModel(trainTMPrefix, progress);
+
 				if (progress.CancelRequested)
 					return;
 
@@ -143,22 +148,28 @@ namespace SIL.Machine.Translation.Thot
 					tuneTargetCorpus.Add(_targetTokenizer.TokenizeToStrings(_targetPreprocessor(segment.TargetValue)).ToArray());
 				}
 
-				progress.WriteMessage("Tuning language model...");
-				TuneLanguageModel(trainLMPrefix, tuneTargetCorpus, 3);
-				progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
 				if (progress.CancelRequested)
 					return;
 
-				progress.WriteMessage("Tuning translation model...");
-				TuneTranslationModel(tuneCfgFileName, tuneTMPrefix, tuneSourceCorpus, tuneTargetCorpus, progress);
-				progress.ProgressIndicator.PercentCompleted = ProgressIncrement * (TrainingStepCount - 1);
+				progress.WriteMessage("Tuning language model...");
+				TuneLanguageModel(trainLMPrefix, tuneTargetCorpus, 3);
+
 				if (progress.CancelRequested)
 					return;
+				progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
+
+				progress.WriteMessage("Tuning translation model...");
+				TuneTranslationModel(tuneCfgFileName, tuneTMPrefix, tuneSourceCorpus, tuneTargetCorpus, progress);
+
+				if (progress.CancelRequested)
+					return;
+				progress.ProgressIndicator.PercentCompleted = ProgressIncrement * (TrainingStepCount - 1);
 
 				progress.WriteMessage("Finalizing...");
 				File.Copy(tuneCfgFileName, trainCfgFileName, true);
 				UpdateConfigPaths(trainCfgFileName, trainLMPrefix, trainTMPrefix);
 				TrainTuneCorpus(trainCfgFileName, tuneSourceCorpus, tuneTargetCorpus);
+
 				if (progress.CancelRequested)
 					return;
 
@@ -284,17 +295,22 @@ namespace SIL.Machine.Translation.Thot
 			GenerateSingleWordAlignmentModel(invswmPrefix, _sourcePreprocessor, _sourceTokenizer, _targetPreprocessor, _targetTokenizer, _parallelCorpus,
 				"target-to-source", progress);
 
-			progress.WriteMessage("Merging alignments...");
-			Thot.giza_symmetr1(swmPrefix + ".bestal", invswmPrefix + ".bestal", tmPrefix + ".A3.final", true);
-			progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
 			if (progress.CancelRequested)
 				return;
 
-			progress.WriteMessage("Generating phrase table...");
-			Thot.phraseModel_generate(tmPrefix + ".A3.final", 10, tmPrefix + ".ttable");
-			progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
+			progress.WriteMessage("Merging alignments...");
+			Thot.giza_symmetr1(swmPrefix + ".bestal", invswmPrefix + ".bestal", tmPrefix + ".A3.final", true);
+
 			if (progress.CancelRequested)
 				return;
+			progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
+
+			progress.WriteMessage("Generating phrase table...");
+			Thot.phraseModel_generate(tmPrefix + ".A3.final", 10, tmPrefix + ".ttable");
+
+			if (progress.CancelRequested)
+				return;
+			progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
 
 			progress.WriteMessage("Filtering phrase table...");
 			FilterPhraseTableNBest(tmPrefix + ".ttable", 20);
@@ -303,23 +319,34 @@ namespace SIL.Machine.Translation.Thot
 			File.WriteAllText(tmPrefix + ".srcsegmlentable", "Uniform");
 			File.WriteAllText(tmPrefix + ".trgcutstable", "0.999");
 			File.WriteAllText(tmPrefix + ".trgsegmlentable", "Geometric");
+
+			if (progress.CancelRequested)
+				return;
 			progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
 		}
 
 		private void GenerateSingleWordAlignmentModel(string swmPrefix, Func<string, string> sourcePreprocessor, ITokenizer<string, int> sourceTokenizer,
 			Func<string, string> targetPreprocessor, ITokenizer<string, int> targetTokenizer, ParallelTextCorpus corpus, string name, IProgress progress)
 		{
+			if (progress.CancelRequested)
+				return;
+
 			progress.WriteMessage("Training {0} single word model...", name);
 			TrainSingleWordAlignmentModel(swmPrefix, sourcePreprocessor, sourceTokenizer, targetPreprocessor, targetTokenizer, corpus, progress);
+
 			if (progress.CancelRequested)
 				return;
 
 			PruneLexTable(swmPrefix + ".hmm_lexnd", 0.00001);
+
 			if (progress.CancelRequested)
 				return;
 
 			progress.WriteMessage("Generating best {0} alignments...", name);
 			GenerateBestAlignments(swmPrefix, swmPrefix + ".bestal", sourcePreprocessor, sourceTokenizer, targetPreprocessor, targetTokenizer, corpus, progress);
+
+			if (progress.CancelRequested)
+				return;
 			progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
 		}
 
@@ -417,9 +444,10 @@ namespace SIL.Machine.Translation.Thot
 				for (int i = 0; i < 5; i++)
 				{
 					swAlignModel.Train(1);
-					progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
+
 					if (progress.CancelRequested)
 						return;
+					progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
 				}
 				swAlignModel.Save();
 			}
@@ -440,6 +468,7 @@ namespace SIL.Machine.Translation.Thot
 					double prob = swAlignModel.GetBestAlignment(sourceTokens, targetTokens, out waMatrix);
 					writer.Write("# Alignment probability= {0:0.######}\n", prob);
 					writer.Write(waMatrix.ToGizaFormat(sourceTokens, targetTokens));
+
 					if (progress.CancelRequested)
 						return;
 				}

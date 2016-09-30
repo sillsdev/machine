@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using SIL.Extensions;
 using SIL.Progress;
 
@@ -19,11 +21,8 @@ namespace SIL.Machine.Translation.Thot
 		public int K { get; set; }
 		public int MaxIterations { get; set; }
 
-		public double[] Tune(string cfgFileName, IList<IList<string>> tuneSourceCorpus, IList<IList<string>> tuneTargetCorpus, double[] initialWeights, IProgress progress = null)
+		public double[] Tune(string cfgFileName, IList<IList<string>> tuneSourceCorpus, IList<IList<string>> tuneTargetCorpus, double[] initialWeights, IProgress progress)
 		{
-			if (progress == null)
-				progress = new NullProgress();
-
 			IntPtr weightUpdaterHandle = Thot.llWeightUpdater_create();
 			try
 			{
@@ -62,6 +61,8 @@ namespace SIL.Machine.Translation.Thot
 
 					iter++;
 
+					if (progress.CancelRequested)
+						return bestWeights;
 					progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
 				}
 
@@ -75,23 +76,31 @@ namespace SIL.Machine.Translation.Thot
 
 		private IEnumerable<IList<TranslationInfo>> GetNBestLists(string cfgFileName, IList<IList<string>> sourceCorpus, IEnumerable<double> weights)
 		{
-			IntPtr decoderHandle = IntPtr.Zero, sessionHandle = IntPtr.Zero;
-			try
-			{
-				decoderHandle = Thot.decoder_open(cfgFileName);
-				float[] weightArray = weights.Select(w => (float) w).ToArray();
-				Thot.decoder_setLlWeights(decoderHandle, weightArray, (uint) weightArray.Length);
-				sessionHandle = Thot.decoder_openSession(decoderHandle);
-				foreach (IList<string> sourceSegment in sourceCorpus)
-					yield return Thot.DoTranslateNBest(sessionHandle, Thot.session_translateNBest, K, sourceSegment, false, sourceSegment, CreateTranslationInfo).ToArray();
-			}
-			finally
-			{
-				if (sessionHandle != IntPtr.Zero)
-					Thot.session_close(sessionHandle);
-				if (decoderHandle != IntPtr.Zero)
-					Thot.decoder_close(decoderHandle);
-			}
+			var results = new IList<TranslationInfo>[sourceCorpus.Count];
+			float[] weightArray = weights.Select(w => (float) w).ToArray();
+			Parallel.ForEach(Partitioner.Create(0, sourceCorpus.Count), range =>
+				{
+					IntPtr decoderHandle = IntPtr.Zero, sessionHandle = IntPtr.Zero;
+					try
+					{
+						decoderHandle = Thot.decoder_open(cfgFileName);
+						Thot.decoder_setLlWeights(decoderHandle, weightArray, (uint) weightArray.Length);
+						sessionHandle = Thot.decoder_openSession(decoderHandle);
+						for (int i = range.Item1; i < range.Item2; i++)
+						{
+							IList<string> sourceSegment = sourceCorpus[i];
+							results[i] = Thot.DoTranslateNBest(sessionHandle, Thot.session_translateNBest, K, sourceSegment, false, sourceSegment, CreateTranslationInfo).ToArray();
+						}
+					}
+					finally
+					{
+						if (sessionHandle != IntPtr.Zero)
+							Thot.session_close(sessionHandle);
+						if (decoderHandle != IntPtr.Zero)
+							Thot.decoder_close(decoderHandle);
+					}
+				});
+			return results;
 		}
 
 		private static void UpdateWeights(IntPtr weightUpdaterHandle, IList<IList<string>> tuneTargetCorpus, HashSet<TranslationInfo>[] nbestLists, double[] curWeights)

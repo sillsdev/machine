@@ -17,6 +17,7 @@ namespace SIL.Machine.Optimization
 		public double ConvergenceTolerance { get; set; }
 		public int MaxFunctionEvaluations { get; set; }
 		public double Scale { get; set; }
+		public Func<bool> IsCanceled { get; set; }
 
 		public NelderMeadSimplex(double convergenceTolerance, int maxFunctionEvaluations, double scale)
 		{
@@ -93,6 +94,11 @@ namespace SIL.Machine.Optimization
 				if (evaluationCount >= MaxFunctionEvaluations)
 				{
 					exitCondition = MinimizationExitCondition.MaxFunctionEvaluations;
+					break;
+				}
+				if (IsCanceled != null && IsCanceled())
+				{
+					exitCondition = MinimizationExitCondition.Canceled;
 					break;
 				}
 			}
