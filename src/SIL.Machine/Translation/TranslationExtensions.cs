@@ -23,23 +23,34 @@ namespace SIL.Machine.Translation
 		{
 			TranslationResult result = session.CurrenTranslationResult;
 			int lookaheadCount = 1;
-			for (int i = 0; i < result.SourceSegment.Count; i++)
+			int i = -1, j;
+			for (j = session.Prefix.Count; j < result.TargetSegment.Count; j++)
 			{
-				int wordPairCount = result.GetSourceWordPairs(i).Count();
-				if (wordPairCount == 0)
+				AlignedWordPair[] wordPairs = result.GetTargetWordPairs(j).ToArray();
+				if (wordPairs.Length == 0)
+				{
 					lookaheadCount++;
+				}
 				else
-					lookaheadCount += wordPairCount - 1;
+				{
+					lookaheadCount += wordPairs.Length - 1;
+					foreach (AlignedWordPair wordPair in wordPairs)
+					{
+						if (i == -1 || wordPair.SourceIndex < i)
+							i = wordPair.SourceIndex;
+					}
+				}
 			}
-			int j;
-			for (j = 0; j < result.TargetSegment.Count; j++)
+			if (i == -1)
+				i = 0;
+			for (; i < result.SourceSegment.Count; i++)
 			{
-				int wordPairCount = result.GetTargetWordPairs(j).Count();
-				if (wordPairCount == 0)
+				if (!result.GetSourceWordPairs(i).Any())
 					lookaheadCount++;
 			}
 			j = session.Prefix.Count;
 			// ensure that we include a partial word as a suggestion
+			// TODO: only include the last word if it has been completed by the SMT
 			if (session.IsLastWordPartial)
 				j--;
 			bool inPhrase = false;
