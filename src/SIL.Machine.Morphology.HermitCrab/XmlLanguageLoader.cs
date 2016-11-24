@@ -19,7 +19,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 	/// </summary>
 	public class XmlLanguageLoader
 	{
-#if NET4
+#if NETFX
 		private class ResourceXmlResolver : XmlUrlResolver
 		{
 			public override object GetEntity(Uri absoluteUri, string role, Type ofObjectToReturn)
@@ -208,11 +208,11 @@ namespace SIL.Machine.Morphology.HermitCrab
 		{
 			var settings = new XmlReaderSettings
 			{
-#if NET4
+#if NETFX
 				DtdProcessing = DtdProcessing.Parse,
 				ValidationType = Type.GetType("Mono.Runtime") == null ? ValidationType.DTD : ValidationType.None,
 				XmlResolver = new ResourceXmlResolver()
-#elif NET_STD13
+#elif NETSTD
 				DtdProcessing = DtdProcessing.Ignore
 #endif
 			};

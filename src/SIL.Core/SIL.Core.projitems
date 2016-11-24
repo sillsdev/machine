@@ -27,10 +27,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IObservableDictionary.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IObservableList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IObservableSet.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IReadOnlyCollection.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IReadOnlyDictionary.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IReadOnlyKeyedCollection.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IReadOnlyList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IReadOnlyObservableCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IReadOnlyObservableList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\IReadOnlySet.cs" />

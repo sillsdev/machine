@@ -1,6 +1,4 @@
-﻿#if NET_STD13
-using System.Collections.Generic;
-#endif
+﻿using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
