@@ -5,24 +5,26 @@
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{D9C1284C-C143-4B3F-AC5B-433910238D13}</ProjectGuid>
+    <ProjectGuid>{DDCD6096-CDAA-4EAA-BCB7-FB122577D1A4}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SIL.Machine.Morphology.HermitCrab</RootNamespace>
-    <AssemblyName>SIL.Machine.Morphology.HermitCrab</AssemblyName>
+    <RootNamespace>SIL.Machine</RootNamespace>
+    <AssemblyName>SIL.Machine</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;NET_STD13</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -30,19 +32,15 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;NET_STD13</DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
-    <ProjectReference Include="..\SIL.Core.NETStd13\SIL.Core.NETStd13.csproj">
+    <ProjectReference Include="..\SIL.Core.NETStd\SIL.Core.NETStd.csproj">
       <Project>{c1241431-829a-4019-97a2-6d6042e00da8}</Project>
-      <Name>SIL.Core.NETStd13</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SIL.Machine.NETStd13\SIL.Machine.NETStd13.csproj">
-      <Project>{ddcd6096-cdaa-4eaa-bcb7-fb122577d1a4}</Project>
-      <Name>SIL.Machine.NETStd13</Name>
+      <Name>SIL.Core.NETStd</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -54,7 +52,7 @@
   <ItemGroup>
     <None Include="project.json" />
   </ItemGroup>
-  <Import Project="..\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.projitems" Label="Shared" />
+  <Import Project="..\SIL.Machine\SIL.Machine.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

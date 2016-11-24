@@ -66,17 +66,17 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\SIL.Core.NET4\SIL.Core.NET4.csproj">
+    <ProjectReference Include="..\..\src\SIL.Core.NETFx\SIL.Core.NETFx.csproj">
       <Project>{89ff4251-6daf-43f1-869c-0d76de2cdc3f}</Project>
-      <Name>SIL.Core.NET4</Name>
+      <Name>SIL.Core.NETFx</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\SIL.Machine.NET4\SIL.Machine.NET4.csproj">
+    <ProjectReference Include="..\..\src\SIL.Machine.NETFx\SIL.Machine.NETFx.csproj">
       <Project>{06b55abb-059c-4340-adf5-ef0e229fe7aa}</Project>
-      <Name>SIL.Machine.NET4</Name>
+      <Name>SIL.Machine.NETFx</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\SIL.Machine.Translation.Thot.NET4\SIL.Machine.Translation.Thot.NET4.csproj">
+    <ProjectReference Include="..\..\src\SIL.Machine.Translation.Thot.NETFx\SIL.Machine.Translation.Thot.NETFx.csproj">
       <Project>{93753ce2-1c65-4861-8b08-89b55b142844}</Project>
-      <Name>SIL.Machine.Translation.Thot.NET4</Name>
+      <Name>SIL.Machine.Translation.Thot.NETFx</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

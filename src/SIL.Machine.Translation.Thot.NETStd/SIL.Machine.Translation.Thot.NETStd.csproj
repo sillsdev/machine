@@ -46,13 +46,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SIL.Core.NETStd13\SIL.Core.NETStd13.csproj">
+    <ProjectReference Include="..\SIL.Core.NETStd\SIL.Core.NETStd.csproj">
       <Project>{c1241431-829a-4019-97a2-6d6042e00da8}</Project>
-      <Name>SIL.Core.NETStd13</Name>
+      <Name>SIL.Core.NETStd</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SIL.Machine.NETStd13\SIL.Machine.NETStd13.csproj">
+    <ProjectReference Include="..\SIL.Machine.NETStd\SIL.Machine.NETStd.csproj">
       <Project>{ddcd6096-cdaa-4eaa-bcb7-fb122577d1a4}</Project>
-      <Name>SIL.Machine.NETStd13</Name>
+      <Name>SIL.Machine.NETStd</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.projitems" Label="Shared" />

@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{06B55ABB-059C-4340-ADF5-EF0E229FE7AA}</ProjectGuid>
+    <ProjectGuid>{93753CE2-1C65-4861-8B08-89B55B142844}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SIL.Machine</RootNamespace>
-    <AssemblyName>SIL.Machine</AssemblyName>
+    <RootNamespace>SIL.Machine.Translation.Thot</RootNamespace>
+    <AssemblyName>SIL.Machine.Translation.Thot</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
@@ -31,10 +31,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="QuickGraph, Version=3.6.61114.0, Culture=neutral, PublicKeyToken=f3fb40175eec2af3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\QuickGraphPCL.3.6.61114.2\lib\net40-client\QuickGraph.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
   </ItemGroup>
@@ -45,15 +41,16 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SIL.Core.NET4\SIL.Core.NET4.csproj">
+    <ProjectReference Include="..\SIL.Core.NETFx\SIL.Core.NETFx.csproj">
       <Project>{89ff4251-6daf-43f1-869c-0d76de2cdc3f}</Project>
-      <Name>SIL.Core.NET4</Name>
+      <Name>SIL.Core.NETFx</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SIL.Machine.NETFx\SIL.Machine.NETFx.csproj">
+      <Project>{06b55abb-059c-4340-adf5-ef0e229fe7aa}</Project>
+      <Name>SIL.Machine.NETFx</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="..\SIL.Machine\SIL.Machine.projitems" Label="Shared" />
+  <Import Project="..\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

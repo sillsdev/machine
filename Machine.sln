@@ -38,29 +38,29 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Translation.Tes
 		{DDCD6096-CDAA-4EAA-BCB7-FB122577D1A4} = {DDCD6096-CDAA-4EAA-BCB7-FB122577D1A4}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Core.NETStd13", "src\SIL.Core.NETStd13\SIL.Core.NETStd13.csproj", "{C1241431-829A-4019-97A2-6D6042E00DA8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Core.NETStd", "src\SIL.Core.NETStd\SIL.Core.NETStd.csproj", "{C1241431-829A-4019-97A2-6D6042E00DA8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.NETStd13", "src\SIL.Machine.NETStd13\SIL.Machine.NETStd13.csproj", "{DDCD6096-CDAA-4EAA-BCB7-FB122577D1A4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.NETStd", "src\SIL.Machine.NETStd\SIL.Machine.NETStd.csproj", "{DDCD6096-CDAA-4EAA-BCB7-FB122577D1A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Morphology.HermitCrab.NETStd13", "src\SIL.Machine.Morphology.HermitCrab.NETStd13\SIL.Machine.Morphology.HermitCrab.NETStd13.csproj", "{D9C1284C-C143-4B3F-AC5B-433910238D13}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Morphology.HermitCrab.NETStd", "src\SIL.Machine.Morphology.HermitCrab.NETStd\SIL.Machine.Morphology.HermitCrab.NETStd.csproj", "{D9C1284C-C143-4B3F-AC5B-433910238D13}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SIL.Core", "src\SIL.Core\SIL.Core.shproj", "{0FF2BB0B-755E-4BB7-B427-246443C0F806}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Core.NET4", "src\SIL.Core.NET4\SIL.Core.NET4.csproj", "{89FF4251-6DAF-43F1-869C-0D76DE2CDC3F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Core.NETFx", "src\SIL.Core.NETFx\SIL.Core.NETFx.csproj", "{89FF4251-6DAF-43F1-869C-0D76DE2CDC3F}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SIL.Machine", "src\SIL.Machine\SIL.Machine.shproj", "{EB8AF4DB-99D6-48A9-A209-F679BF230E9A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.NET4", "src\SIL.Machine.NET4\SIL.Machine.NET4.csproj", "{06B55ABB-059C-4340-ADF5-EF0E229FE7AA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.NETFx", "src\SIL.Machine.NETFx\SIL.Machine.NETFx.csproj", "{06B55ABB-059C-4340-ADF5-EF0E229FE7AA}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SIL.Machine.Translation.Thot", "src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.shproj", "{62C4B0D7-5D95-4458-A904-6EFF0EB4DC97}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Translation.Thot.NET4", "src\SIL.Machine.Translation.Thot.NET4\SIL.Machine.Translation.Thot.NET4.csproj", "{93753CE2-1C65-4861-8B08-89B55B142844}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Translation.Thot.NETFx", "src\SIL.Machine.Translation.Thot.NETFx\SIL.Machine.Translation.Thot.NETFx.csproj", "{93753CE2-1C65-4861-8B08-89B55B142844}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SIL.Machine.Morphology.HermitCrab", "src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.shproj", "{C71C1DB2-DE43-45CF-AEB5-0D00A052DA9F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Morphology.HermitCrab.NET4", "src\SIL.Machine.Morphology.HermitCrab.NET4\SIL.Machine.Morphology.HermitCrab.NET4.csproj", "{761BD6F6-F1CF-49F0-8C67-84D5515FAF00}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Morphology.HermitCrab.NETFx", "src\SIL.Machine.Morphology.HermitCrab.NETFx\SIL.Machine.Morphology.HermitCrab.NETFx.csproj", "{761BD6F6-F1CF-49F0-8C67-84D5515FAF00}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Translation.Thot.NETStd13", "src\SIL.Machine.Translation.Thot.NETStd13\SIL.Machine.Translation.Thot.NETStd13.csproj", "{262D7524-4627-44EE-A788-3437B4AE6F0F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Translation.Thot.NETStd", "src\SIL.Machine.Translation.Thot.NETStd\SIL.Machine.Translation.Thot.NETStd.csproj", "{262D7524-4627-44EE-A788-3437B4AE6F0F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}"
 EndProject
