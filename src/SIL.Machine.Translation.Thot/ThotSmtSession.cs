@@ -15,9 +15,9 @@ namespace SIL.Machine.Translation.Thot
 		private readonly List<string> _prefix;
 		private readonly ReadOnlyList<string> _readOnlyPrefix;
 		private readonly ISegmentAligner _segmentAligner;
-		private bool _isLastWordPartial;
-		private bool _isTranslatingInteractively;
+		private bool _isLastWordComplete;
 		private TranslationResult _currentResult;
+		private ErrorCorrectingWordGraphProcessor _wordGraphProcessor;
 
 		public ThotSmtSession(ThotSmtEngine engine)
 		{
@@ -28,7 +28,7 @@ namespace SIL.Machine.Translation.Thot
 			_readOnlySourceSegment = new ReadOnlyList<string>(_sourceSegment);
 			_prefix = new List<string>();
 			_readOnlyPrefix = new ReadOnlyList<string>(_prefix);
-			_isLastWordPartial = true;
+			_isLastWordComplete = true;
 		}
 
 		public TranslationResult Translate(IEnumerable<string> segment)
@@ -95,12 +95,12 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public bool IsLastWordPartial
+		public bool IsLastWordComplete
 		{
 			get
 			{
 				CheckDisposed();
-				return _isLastWordPartial;
+				return _isLastWordComplete;
 			}
 		}
 
@@ -119,33 +119,72 @@ namespace SIL.Machine.Translation.Thot
 
 			Reset();
 			_sourceSegment.AddRange(segment);
-			_isTranslatingInteractively = true;
-			_currentResult = Thot.DoTranslate(_handle, Thot.session_translateInteractively, _sourceSegment, false, _sourceSegment, CreateResult);
+
+			WordGraph wordGraph = GetWordGraph();
+			_wordGraphProcessor = new ErrorCorrectingWordGraphProcessor(_engine.ErrorCorrectingModel, wordGraph);
+
+			_currentResult = CreateInteractiveResult();
+
 			return _currentResult;
 		}
 
-		public TranslationResult AddToPrefix(IEnumerable<string> addition, bool isLastWordPartial)
+		private WordGraph GetWordGraph()
+		{
+			IntPtr nativeSentence = Thot.ConvertStringsToNativeUtf8(_sourceSegment);
+			IntPtr wordGraph = IntPtr.Zero;
+			IntPtr nativeWordGraphStr = IntPtr.Zero;
+			try
+			{
+				wordGraph = Thot.session_translateWordGraph(_handle, nativeSentence);
+
+				uint len = Thot.wg_getString(wordGraph, IntPtr.Zero, 0);
+				nativeWordGraphStr = Marshal.AllocHGlobal((int) len);
+				Thot.wg_getString(wordGraph, nativeWordGraphStr, len);
+				string wordGraphStr = Thot.ConvertNativeUtf8ToString(nativeWordGraphStr, len);
+				double initialStateScore = Thot.wg_getInitialStateScore(wordGraph);
+				return new WordGraph(wordGraphStr, initialStateScore);
+			}
+			finally
+			{
+				if (nativeWordGraphStr != IntPtr.Zero)
+					Marshal.FreeHGlobal(nativeWordGraphStr);
+				if (wordGraph != IntPtr.Zero)
+					Thot.wg_destroy(wordGraph);
+				Marshal.FreeHGlobal(nativeSentence);
+			}
+		}
+
+		private TranslationResult CreateInteractiveResult()
+		{
+			TranslationData correction = _wordGraphProcessor.Correct(_prefix, _isLastWordComplete, 1).FirstOrDefault();
+			if (correction == null)
+				return new TranslationResult(_sourceSegment, Enumerable.Empty<string>(), Enumerable.Empty<double>(), new AlignedWordPair[0, 0]);
+
+			return CreateResult(_sourceSegment, correction.Target, correction.SourceSegmentation, correction.TargetSegmentCuts, correction.TargetUnknownWords);
+		}
+
+		public TranslationResult AddToPrefix(IEnumerable<string> addition, bool isLastWordComplete)
 		{
 			CheckDisposed();
-			if (!_isTranslatingInteractively)
+			if (_wordGraphProcessor == null)
 				throw new InvalidOperationException("An interactive translation has not been started.");
 
-			string[] additionArray = addition.ToArray();
-			_prefix.AddRange(additionArray);
-			_currentResult = Thot.DoTranslate(_handle, Thot.session_addStringToPrefix, additionArray, !isLastWordPartial, _sourceSegment, CreateResult);
+			_prefix.AddRange(addition);
+			_isLastWordComplete = isLastWordComplete;
+			_currentResult = CreateInteractiveResult();
 			return _currentResult;
 		}
 
-		public TranslationResult SetPrefix(IEnumerable<string> prefix, bool isLastWordPartial)
+		public TranslationResult SetPrefix(IEnumerable<string> prefix, bool isLastWordComplete)
 		{
 			CheckDisposed();
-			if (!_isTranslatingInteractively)
+			if (_wordGraphProcessor == null)
 				throw new InvalidOperationException("An interactive translation has not been started.");
 
 			_prefix.Clear();
 			_prefix.AddRange(prefix);
-			_isLastWordPartial = isLastWordPartial;
-			_currentResult = Thot.DoTranslate(_handle, Thot.session_setPrefix, _prefix, !isLastWordPartial, _sourceSegment, CreateResult);
+			_isLastWordComplete = isLastWordComplete;
+			_currentResult = CreateInteractiveResult();
 			return _currentResult;
 		}
 
@@ -155,8 +194,8 @@ namespace SIL.Machine.Translation.Thot
 
 			_sourceSegment.Clear();
 			_prefix.Clear();
-			_isLastWordPartial = true;
-			_isTranslatingInteractively = false;
+			_isLastWordComplete = true;
+			_wordGraphProcessor = null;
 			_currentResult = null;
 		}
 
@@ -169,20 +208,29 @@ namespace SIL.Machine.Translation.Thot
 
 		private TranslationResult CreateResult(IList<string> sourceSegment, IList<string> targetSegment, IntPtr data)
 		{
-			// TODO: find a better way to handle long untranslated suffixes
-
 			uint phraseCount = Thot.tdata_getPhraseCount(data);
 			IList<Tuple<int, int>> sourceSegmentation = GetSourceSegmentation(data, phraseCount);
 			IList<int> targetSegmentCuts = GetTargetSegmentCuts(data, phraseCount);
 			ISet<int> targetUnknownWords = GetTargetUnknownWords(data, targetSegment.Count);
+			return CreateResult(sourceSegment, targetSegment, sourceSegmentation, targetSegmentCuts, targetUnknownWords);
+		}
+
+		private TranslationResult CreateResult(IList<string> sourceSegment, IList<string> targetSegment, IList<Tuple<int, int>> sourceSegmentation,
+			IList<int> targetSegmentCuts, ISet<int> targetUnknownWords)
+		{
+			// TODO: find a better way to handle long untranslated suffixes
 
 			var confidences = new double[targetSegment.Count];
 			AlignedWordPair[,] alignment = new AlignedWordPair[sourceSegment.Count, targetSegment.Count];
 			int trgPhraseStartIndex = 0;
-			for (int k = 0; k < phraseCount; k++)
+			for (int k = 0; k < sourceSegmentation.Count; k++)
 			{
-				int srcPhraseLen = sourceSegmentation[k].Item2 - sourceSegmentation[k].Item1 + 1;
-				int trgPhraseLen = targetSegmentCuts[k] - trgPhraseStartIndex + 1;
+				int srcStartIndex = sourceSegmentation[k].Item1 - 1;
+				int srcEndIndex = sourceSegmentation[k].Item2 - 1;
+				int trgCut = targetSegmentCuts[k] - 1;
+
+				int srcPhraseLen = srcStartIndex - srcEndIndex + 1;
+				int trgPhraseLen = trgCut - trgPhraseStartIndex + 1;
 				WordAlignmentMatrix waMatrix;
 				if (srcPhraseLen == 1 && trgPhraseLen == 1)
 				{
@@ -191,26 +239,26 @@ namespace SIL.Machine.Translation.Thot
 				else
 				{
 					var srcPhrase = new List<string>();
-					for (int i = sourceSegmentation[k].Item1; i <= sourceSegmentation[k].Item2; i++)
+					for (int i = srcStartIndex; i <= srcEndIndex; i++)
 						srcPhrase.Add(sourceSegment[i]);
 					var trgPhrase = new List<string>();
-					for (int j = trgPhraseStartIndex; j <= targetSegmentCuts[k]; j++)
+					for (int j = trgPhraseStartIndex; j <= trgCut; j++)
 						trgPhrase.Add(targetSegment[j]);
 					_segmentAligner.GetBestAlignment(srcPhrase, trgPhrase, out waMatrix);
 				}
-				for (int j = trgPhraseStartIndex; j <= targetSegmentCuts[k]; j++)
+				for (int j = trgPhraseStartIndex; j <= trgCut; j++)
 				{
 					string targetWord = targetSegment[j];
 					double totalProb = 0;
 					int alignedWordCount = 0;
-					for (int i = sourceSegmentation[k].Item1; i <= sourceSegmentation[k].Item2; i++)
+					for (int i = srcStartIndex; i <= srcEndIndex; i++)
 					{
-						if (waMatrix[i - sourceSegmentation[k].Item1, j - trgPhraseStartIndex] == AlignmentType.Aligned)
+						if (waMatrix[i - srcStartIndex, j - trgPhraseStartIndex] == AlignmentType.Aligned)
 						{
 							string sourceWord = sourceSegment[i];
 							double prob = _segmentAligner.GetTranslationProbability(sourceWord, targetWord);
 							TranslationSources sources = TranslationSources.Smt;
-							if (targetUnknownWords.Contains(j))
+							if (targetUnknownWords.Contains(j + 1))
 							{
 								prob = 0;
 								sources = TranslationSources.None;
@@ -246,7 +294,7 @@ namespace SIL.Machine.Translation.Thot
 				for (int i = 0; i < phraseCount; i++)
 				{
 					IntPtr array = Marshal.ReadIntPtr(nativeSourceSegmentation, i * sizeOfPtr);
-					sourceSegmentation[i] = Tuple.Create(Marshal.ReadInt32(array, 0 * sizeOfUInt) - 1, Marshal.ReadInt32(array, 1 * sizeOfUInt) - 1);
+					sourceSegmentation[i] = Tuple.Create(Marshal.ReadInt32(array, 0 * sizeOfUInt), Marshal.ReadInt32(array, 1 * sizeOfUInt));
 				}
 				return sourceSegmentation;
 			}
@@ -270,7 +318,7 @@ namespace SIL.Machine.Translation.Thot
 				Thot.tdata_getTargetSegmentCuts(data, nativeTargetSegmentCuts, phraseCount);
 				var targetSegmentCuts = new int[phraseCount];
 				for (int i = 0; i < phraseCount; i++)
-					targetSegmentCuts[i] = Marshal.ReadInt32(nativeTargetSegmentCuts, i * sizeOfUInt) - 1;
+					targetSegmentCuts[i] = Marshal.ReadInt32(nativeTargetSegmentCuts, i * sizeOfUInt);
 				return targetSegmentCuts;
 			}
 			finally
@@ -288,7 +336,7 @@ namespace SIL.Machine.Translation.Thot
 				uint count = Thot.tdata_getTargetUnknownWords(data, nativeTargetUnknownWords, (uint) targetWordCount);
 				var targetUnknownWords = new HashSet<int>();
 				for (int i = 0; i < count; i++)
-					targetUnknownWords.Add(Marshal.ReadInt32(nativeTargetUnknownWords, i * sizeOfUInt) - 1);
+					targetUnknownWords.Add(Marshal.ReadInt32(nativeTargetUnknownWords, i * sizeOfUInt));
 				return targetUnknownWords;
 			}
 			finally

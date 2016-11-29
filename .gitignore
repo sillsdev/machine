@@ -39,3 +39,4 @@ lib/
 *.VC.opendb
 *.lock.json
 .vs
+**/Bridge/output/

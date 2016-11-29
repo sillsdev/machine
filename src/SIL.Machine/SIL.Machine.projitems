@@ -198,7 +198,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Tokenization\SimpleStringDetokenizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tokenization\TokenizationExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tokenization\WhitespaceTokenizer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Translation\AlignedWordPair.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\Evaluation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\GlossMorphemeMapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\HybridTranslationEngine.cs" />
@@ -214,7 +213,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TransferEngine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TransferResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordAlignmentMatrix.cs" />
   </ItemGroup>
 </Project>

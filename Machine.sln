@@ -76,8 +76,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SIL.Machine.Shared", "src\SIL.Machine.Shared\SIL.Machine.Shared.shproj", "{C91D680F-267B-45BD-82A9-45BF7D8AA496}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.JS", "src\SIL.Machine.JS\SIL.Machine.JS.csproj", "{CA453C16-D1DA-4469-8BC3-62C67DA44ECE}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		src\SIL.Machine.Shared\SIL.Machine.Shared.projitems*{06b55abb-059c-4340-adf5-ef0e229fe7aa}*SharedItemsImports = 4
 		src\SIL.Machine\SIL.Machine.projitems*{06b55abb-059c-4340-adf5-ef0e229fe7aa}*SharedItemsImports = 4
 		src\SIL.Core\SIL.Core.projitems*{0ff2bb0b-755e-4bb7-b427-246443c0f806}*SharedItemsImports = 13
 		src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.projitems*{262d7524-4627-44ee-a788-3437b4ae6f0f}*SharedItemsImports = 4
@@ -87,7 +92,10 @@ Global
 		src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.projitems*{93753ce2-1c65-4861-8b08-89b55b142844}*SharedItemsImports = 4
 		src\SIL.Core\SIL.Core.projitems*{c1241431-829a-4019-97a2-6d6042e00da8}*SharedItemsImports = 4
 		src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.projitems*{c71c1db2-de43-45cf-aeb5-0d00a052da9f}*SharedItemsImports = 13
+		src\SIL.Machine.Shared\SIL.Machine.Shared.projitems*{c91d680f-267b-45bd-82a9-45bf7d8aa496}*SharedItemsImports = 13
+		src\SIL.Machine.Shared\SIL.Machine.Shared.projitems*{ca453c16-d1da-4469-8bc3-62c67da44ece}*SharedItemsImports = 4
 		src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.projitems*{d9c1284c-c143-4b3f-ac5b-433910238d13}*SharedItemsImports = 4
+		src\SIL.Machine.Shared\SIL.Machine.Shared.projitems*{ddcd6096-cdaa-4eaa-bcb7-fb122577d1a4}*SharedItemsImports = 4
 		src\SIL.Machine\SIL.Machine.projitems*{ddcd6096-cdaa-4eaa-bcb7-fb122577d1a4}*SharedItemsImports = 4
 		src\SIL.Machine\SIL.Machine.projitems*{eb8af4db-99d6-48a9-a209-f679bf230e9a}*SharedItemsImports = 13
 	EndGlobalSection
@@ -148,6 +156,10 @@ Global
 		{262D7524-4627-44EE-A788-3437B4AE6F0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{262D7524-4627-44EE-A788-3437B4AE6F0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{262D7524-4627-44EE-A788-3437B4AE6F0F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA453C16-D1DA-4469-8BC3-62C67DA44ECE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA453C16-D1DA-4469-8BC3-62C67DA44ECE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA453C16-D1DA-4469-8BC3-62C67DA44ECE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA453C16-D1DA-4469-8BC3-62C67DA44ECE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -170,5 +182,7 @@ Global
 		{C71C1DB2-DE43-45CF-AEB5-0D00A052DA9F} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
 		{761BD6F6-F1CF-49F0-8C67-84D5515FAF00} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
 		{262D7524-4627-44EE-A788-3437B4AE6F0F} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
+		{C91D680F-267B-45BD-82A9-45BF7D8AA496} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
+		{CA453C16-D1DA-4469-8BC3-62C67DA44ECE} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
 	EndGlobalSection
 EndGlobal

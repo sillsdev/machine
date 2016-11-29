@@ -24,9 +24,9 @@ namespace SIL.Machine.Translation.Thot.Tests
 			{
 				TranslationResult result = session.TranslateInteractively("me marcho hoy por la tarde .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
-				result = session.AddToPrefix("i am".Split(), false);
+				result = session.AddToPrefix("i am".Split(), true);
 				Assert.That(result.TargetSegment, Is.EqualTo("i am leave today in the afternoon .".Split()));
-				result = session.AddToPrefix("leaving".Split(), false);
+				result = session.AddToPrefix("leaving".Split(), true);
 				Assert.That(result.TargetSegment, Is.EqualTo("i am leaving today in the afternoon .".Split()));
 			}
 		}
@@ -39,7 +39,7 @@ namespace SIL.Machine.Translation.Thot.Tests
 			{
 				TranslationResult result = session.TranslateInteractively("caminé a mi habitación .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("caminé to my room .".Split()));
-				result = session.AddToPrefix("i walked ", false);
+				result = session.AddToPrefix("i walked".Split(), true);
 				Assert.That(result.TargetSegment, Is.EqualTo("i walked to my room .".Split()));
 			}
 		}
@@ -52,9 +52,9 @@ namespace SIL.Machine.Translation.Thot.Tests
 			{
 				TranslationResult result = session.TranslateInteractively("me marcho hoy por la tarde .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
-				result = session.AddToPrefix("i am".Split(), false);
+				result = session.AddToPrefix("i am".Split(), true);
 				Assert.That(result.TargetSegment, Is.EqualTo("i am leave today in the afternoon .".Split()));
-				result = session.SetPrefix("i".Split(), false);
+				result = session.SetPrefix("i".Split(), true);
 				Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
 			}
 		}
@@ -67,9 +67,9 @@ namespace SIL.Machine.Translation.Thot.Tests
 			{
 				TranslationResult result = session.TranslateInteractively("hablé con recepción .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("hablé with reception .".Split()));
-				result = session.AddToPrefix(new[] {"i", "talked"}, false);
+				result = session.AddToPrefix("i talked".Split(), true);
 				Assert.That(result.TargetSegment, Is.EqualTo("i talked with reception .".Split()));
-				session.AddToPrefix(new[] {"with", "reception", "."}, false);
+				session.AddToPrefix("with reception .".Split(), true);
 				session.Approve();
 
 				result = session.TranslateInteractively("hablé hasta cinco en punto .".Split());

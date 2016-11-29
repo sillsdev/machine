@@ -15,7 +15,7 @@ namespace SIL.Machine.Tests.Translation
 		{
 			IInteractiveTranslationSession session = Substitute.For<IInteractiveTranslationSession>();
 			session.Prefix.Returns(new ReadOnlyList<string>(new string[0]));
-			session.IsLastWordPartial.Returns(false);
+			session.IsLastWordComplete.Returns(true);
 			session.CurrenTranslationResult.Returns(CreateResult(5, "this is a test .", 0.5, 0.5, 0.5, 0.5, 0.5));
 
 			Assert.That(session.GetSuggestedWordIndices(0.2), Is.EqualTo(new[] {0, 1, 2, 3}));
@@ -26,7 +26,7 @@ namespace SIL.Machine.Tests.Translation
 		{
 			IInteractiveTranslationSession session = Substitute.For<IInteractiveTranslationSession>();
 			session.Prefix.Returns(new ReadOnlyList<string>(new string[0]));
-			session.IsLastWordPartial.Returns(false);
+			session.IsLastWordComplete.Returns(true);
 			session.CurrenTranslationResult.Returns(CreateResult(5, "this is a test .", 0.5, 0.5, 0, 0.5, 0.5));
 
 			Assert.That(session.GetSuggestedWordIndices(0.2), Is.EqualTo(new[] {0, 1}));
@@ -37,7 +37,7 @@ namespace SIL.Machine.Tests.Translation
 		{
 			IInteractiveTranslationSession session = Substitute.For<IInteractiveTranslationSession>();
 			session.Prefix.Returns(new ReadOnlyList<string>("th".Split()));
-			session.IsLastWordPartial.Returns(true);
+			session.IsLastWordComplete.Returns(false);
 			session.CurrenTranslationResult.Returns(CreateResult(5, "this is a test .", 0.5, 0.5, 0.5, 0.5, 0.5));
 
 			Assert.That(session.GetSuggestedWordIndices(0.2), Is.EqualTo(new[] {0, 1, 2, 3}));
@@ -48,7 +48,7 @@ namespace SIL.Machine.Tests.Translation
 		{
 			IInteractiveTranslationSession session = Substitute.For<IInteractiveTranslationSession>();
 			session.Prefix.Returns(new ReadOnlyList<string>(new string[0]));
-			session.IsLastWordPartial.Returns(false);
+			session.IsLastWordComplete.Returns(true);
 			session.CurrenTranslationResult.Returns(CreateResult(4, "this is a test .", -1, 0.5, 0.5, 0.5, 0.5));
 
 			Assert.That(session.GetSuggestedWordIndices(0.2), Is.EqualTo(new[] {1, 2, 3}));
@@ -59,7 +59,7 @@ namespace SIL.Machine.Tests.Translation
 		{
 			IInteractiveTranslationSession session = Substitute.For<IInteractiveTranslationSession>();
 			session.Prefix.Returns(new ReadOnlyList<string>(new string[0]));
-			session.IsLastWordPartial.Returns(false);
+			session.IsLastWordComplete.Returns(true);
 			session.CurrenTranslationResult.Returns(CreateResult(6, "this is a test .", -1, 0.5, 0.5, 0.5, 0.5, 0.5));
 
 			Assert.That(session.GetSuggestedWordIndices(0.2), Is.EqualTo(new[] {0, 1, 2, 3}));

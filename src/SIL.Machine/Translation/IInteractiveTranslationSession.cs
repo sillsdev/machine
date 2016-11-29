@@ -10,15 +10,15 @@ namespace SIL.Machine.Translation
 
 		ReadOnlyList<string> Prefix { get; }
 
-		bool IsLastWordPartial { get; }
+		bool IsLastWordComplete { get; }
 
 		TranslationResult CurrenTranslationResult { get; }
 
 		TranslationResult TranslateInteractively(IEnumerable<string> segment);
 
-		TranslationResult AddToPrefix(IEnumerable<string> addition, bool isLastWordPartial);
+		TranslationResult AddToPrefix(IEnumerable<string> addition, bool isLastWordComplete);
 
-		TranslationResult SetPrefix(IEnumerable<string> prefix, bool isLastWordPartial);
+		TranslationResult SetPrefix(IEnumerable<string> prefix, bool isLastWordComplete);
 
 		void Reset();
 

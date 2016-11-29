@@ -33,17 +33,14 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly List<Segment> _targetSegments;
 		private int _currentSegment = -1;
 		private readonly HashSet<int> _paragraphs;
-		private readonly BulkObservableList<SuggestionViewModel> _suggestions; 
-		private readonly ReadOnlyObservableList<SuggestionViewModel> _readOnlySuggestions;
+		private readonly BulkObservableList<SuggestionViewModel> _suggestions;
 		private readonly List<string> _sourceSegmentWords;
 		private readonly BulkObservableList<AlignedWordViewModel> _alignedSourceWords;
-		private readonly ReadOnlyObservableList<AlignedWordViewModel> _readOnlyAlignedSourceWords;
 		private Range<int>? _currentSourceSegmentRange;
 		private Range<int>? _currentTargetSegmentRange; 
 		private readonly RelayCommand<int> _selectSourceSegmentCommand;
 		private readonly RelayCommand<int> _selectTargetSegmentCommand;
 		private readonly BulkObservableList<Range<int>> _unapprovedTargetSegmentRanges;
-		private readonly ReadOnlyObservableList<Range<int>> _readonlyUnapprovedTargetSegmentRanges;
 		private double _confidenceThreshold;
 		private bool _isChanged;
 		private bool _isActive;
@@ -66,12 +63,12 @@ namespace SIL.Machine.Translation.TestApp
 			_selectSourceSegmentCommand = new RelayCommand<int>(SelectSourceSegment);
 			_selectTargetSegmentCommand = new RelayCommand<int>(SelectTargetSegment);
 			_suggestions = new BulkObservableList<SuggestionViewModel>();
-			_readOnlySuggestions = new ReadOnlyObservableList<SuggestionViewModel>(_suggestions);
+			Suggestions = new ReadOnlyObservableList<SuggestionViewModel>(_suggestions);
 			_sourceSegmentWords = new List<string>();
 			_unapprovedTargetSegmentRanges = new BulkObservableList<Range<int>>();
-			_readonlyUnapprovedTargetSegmentRanges = new ReadOnlyObservableList<Range<int>>(_unapprovedTargetSegmentRanges);
+			UnapprovedTargetSegmentRanges = new ReadOnlyObservableList<Range<int>>(_unapprovedTargetSegmentRanges);
 			_alignedSourceWords = new BulkObservableList<AlignedWordViewModel>();
-			_readOnlyAlignedSourceWords = new ReadOnlyObservableList<AlignedWordViewModel>(_alignedSourceWords);
+			AlignedSourceWords = new ReadOnlyObservableList<AlignedWordViewModel>(_alignedSourceWords);
 
 			LoadSourceTextFile();
 			SourceText = GenerateText(_sourceSegments);
@@ -311,7 +308,7 @@ namespace SIL.Machine.Translation.TestApp
 			if (!_isTranslating)
 				return;
 
-			TranslationSession.SetPrefix(_targetSegments[_currentSegment].Text, TargetSegment.Length > 0 && !TargetSegment.EndsWith(" "));
+			TranslationSession.SetPrefix(_targetSegments[_currentSegment].Text, TargetSegment.Length == 0 || TargetSegment.EndsWith(" "));
 			UpdateSuggestions();
 		}
 
@@ -448,7 +445,7 @@ namespace SIL.Machine.Translation.TestApp
 			_alignedSourceWords.ReplaceAll(alignedSourceWords);
 		}
 
-		public ReadOnlyObservableList<AlignedWordViewModel> AlignedSourceWords => _readOnlyAlignedSourceWords;
+		public ReadOnlyObservableList<AlignedWordViewModel> AlignedSourceWords { get; }
 
 		public Range<int>? CurrentSourceSegmentRange
 		{
@@ -462,7 +459,7 @@ namespace SIL.Machine.Translation.TestApp
 			private set { Set(() => CurrentTargetSegmentRange, ref _currentTargetSegmentRange, value); }
 		}
 
-		public ReadOnlyObservableList<SuggestionViewModel> Suggestions => _readOnlySuggestions;
+		public ReadOnlyObservableList<SuggestionViewModel> Suggestions { get; }
 
 		public ICommand ApplyAllSuggestionsCommand => _applyAllSuggestionsCommand;
 
@@ -477,7 +474,7 @@ namespace SIL.Machine.Translation.TestApp
 				suggestion.InsertSuggestion();
 		}
 
-		public ReadOnlyObservableList<Range<int>> UnapprovedTargetSegmentRanges => _readonlyUnapprovedTargetSegmentRanges;
+		public ReadOnlyObservableList<Range<int>> UnapprovedTargetSegmentRanges { get; }
 
 		private void UpdateUnapprovedTargetSegmentRanges()
 		{

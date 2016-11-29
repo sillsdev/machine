@@ -38,6 +38,9 @@ namespace SIL.Machine.Translation.Thot
 		public static extern uint session_translateNBest(IntPtr sessionHandle, uint n, IntPtr sentence, IntPtr[] results);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern IntPtr session_translateWordGraph(IntPtr sessionHandle, IntPtr sentence);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern IntPtr session_getBestPhraseAlignment(IntPtr sessionHandle, IntPtr sentence, IntPtr translation);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
@@ -78,6 +81,15 @@ namespace SIL.Machine.Translation.Thot
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void tdata_destroy(IntPtr dataHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern uint wg_getString(IntPtr wgHandle, IntPtr wordGraphStr, uint capacity);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern double wg_getInitialStateScore(IntPtr wgHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void wg_destroy(IntPtr wgHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern IntPtr swAlignModel_create();

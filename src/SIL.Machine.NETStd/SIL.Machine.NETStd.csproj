@@ -53,6 +53,7 @@
     <None Include="project.json" />
   </ItemGroup>
   <Import Project="..\SIL.Machine\SIL.Machine.projitems" Label="Shared" />
+  <Import Project="..\SIL.Machine.Shared\SIL.Machine.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

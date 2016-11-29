@@ -39,12 +39,12 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public bool IsLastWordPartial
+		public bool IsLastWordComplete
 		{
 			get
 			{
 				CheckDisposed();
-				return _smtSession.IsLastWordPartial;
+				return _smtSession.IsLastWordComplete;
 			}
 		}
 
@@ -63,7 +63,7 @@ namespace SIL.Machine.Translation
 
 			_ruleResult = _ruleEngine.Translate(sourceSegment);
 			TranslationResult smtResult = _smtSession.TranslateInteractively(_ruleResult.SourceSegment);
-			_currentResult = HybridTranslationEngine.MergeTranslationResults(0, smtResult, _ruleResult);
+			_currentResult = smtResult.Merge(0, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
 			return _currentResult;
 		}
 
@@ -75,44 +75,44 @@ namespace SIL.Machine.Translation
 			return TranslateInteractively(HybridTranslationEngine.Preprocess(_engine.SourcePreprocessor, _engine.SourceTokenizer, sourceSegment));
 		}
 
-		public TranslationResult SetPrefix(IEnumerable<string> prefix, bool isLastWordPartial)
+		public TranslationResult SetPrefix(IEnumerable<string> prefix, bool isLastWordComplete)
 		{
 			CheckDisposed();
 
-			TranslationResult smtResult = _smtSession.SetPrefix(prefix, isLastWordPartial);
+			TranslationResult smtResult = _smtSession.SetPrefix(prefix, isLastWordComplete);
 			int prefixCount = _smtSession.Prefix.Count;
-			if (_smtSession.IsLastWordPartial)
+			if (!_smtSession.IsLastWordComplete)
 				prefixCount--;
-			_currentResult = HybridTranslationEngine.MergeTranslationResults(prefixCount, smtResult, _ruleResult);
+			_currentResult = smtResult.Merge(prefixCount, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
 			return _currentResult;
 		}
 
-		public TranslationResult SetPrefix(string prefix, bool isLastWordPartial)
+		public TranslationResult SetPrefix(string prefix, bool isLastWordComplete)
 		{
 			CheckDisposed();
 			_engine.CheckTargetTokenizer();
 
-			return SetPrefix(HybridTranslationEngine.Preprocess(_engine.TargetPreprocessor, _engine.TargetTokenizer, prefix), isLastWordPartial);
+			return SetPrefix(HybridTranslationEngine.Preprocess(_engine.TargetPreprocessor, _engine.TargetTokenizer, prefix), isLastWordComplete);
 		}
 
-		public TranslationResult AddToPrefix(IEnumerable<string> addition, bool isLastWordPartial)
+		public TranslationResult AddToPrefix(IEnumerable<string> addition, bool isLastWordComplete)
 		{
 			CheckDisposed();
 
-			TranslationResult smtResult = _smtSession.AddToPrefix(addition, isLastWordPartial);
+			TranslationResult smtResult = _smtSession.AddToPrefix(addition, isLastWordComplete);
 			int prefixCount = _smtSession.Prefix.Count;
-			if (_smtSession.IsLastWordPartial)
+			if (!_smtSession.IsLastWordComplete)
 				prefixCount--;
-			_currentResult = HybridTranslationEngine.MergeTranslationResults(prefixCount, smtResult, _ruleResult);
+			_currentResult = smtResult.Merge(prefixCount, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
 			return _currentResult;
 		}
 
-		public TranslationResult AddToPrefix(string addition, bool isLastWordPartial)
+		public TranslationResult AddToPrefix(string addition, bool isLastWordComplete)
 		{
 			CheckDisposed();
 			_engine.CheckTargetTokenizer();
 
-			return AddToPrefix(HybridTranslationEngine.Preprocess(_engine.TargetPreprocessor, _engine.TargetTokenizer, addition), isLastWordPartial);
+			return AddToPrefix(HybridTranslationEngine.Preprocess(_engine.TargetPreprocessor, _engine.TargetTokenizer, addition), isLastWordComplete);
 		}
 
 		public void Reset()
@@ -129,7 +129,7 @@ namespace SIL.Machine.Translation
 			CheckDisposed();
 
 			TranslationResult smtResult = _smtEngine.GetBestPhraseAlignment(SourceSegment, Prefix);
-			TranslationResult hybridResult = HybridTranslationEngine.MergeTranslationResults(Prefix.Count, smtResult, _ruleResult);
+			TranslationResult hybridResult = smtResult.Merge(Prefix.Count, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
 
 			var matrix = new WordAlignmentMatrix(SourceSegment.Count, Prefix.Count, AlignmentType.Unknown);
 			var iAligned = new HashSet<int>();

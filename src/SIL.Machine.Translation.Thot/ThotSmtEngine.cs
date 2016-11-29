@@ -34,6 +34,7 @@ namespace SIL.Machine.Translation.Thot
 			_handle = Thot.decoder_open(_cfgFileName);
 			_singleWordAlignmentModel = new ThotSingleWordAlignmentModel(Thot.decoder_getSingleWordAlignmentModel(_handle));
 			_inverseSingleWordAlignmentModel = new ThotSingleWordAlignmentModel(Thot.decoder_getInverseSingleWordAlignmentModel(_handle));
+			ErrorCorrectingModel = new ErrorCorrectingModel();
 		}
 
 		public void Train(Func<string, string> sourcePreprocessor, ITokenizer<string, int> sourceTokenizer, ITextCorpus sourceCorpus,
@@ -126,6 +127,8 @@ namespace SIL.Machine.Translation.Thot
 			lock (_sessions)
 				_sessions.Remove(session);
 		}
+
+		internal ErrorCorrectingModel ErrorCorrectingModel { get; }
 
 		protected override void DisposeManagedResources()
 		{
