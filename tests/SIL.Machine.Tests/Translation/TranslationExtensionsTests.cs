@@ -75,7 +75,7 @@ namespace SIL.Machine.Tests.Translation
 			{
 				if (confidence >= 0)
 				{
-					alignment[i, j] = new AlignedWordPair(i, j, confidence, confidence <= 0 ? TranslationSources.None : TranslationSources.Smt);
+					alignment[i, j] = new AlignedWordPair(i, j, confidence <= 0 ? TranslationSources.None : TranslationSources.Smt);
 					targetConfidences[j] = confidence;
 					i++;
 					j++;

@@ -76,6 +76,13 @@ namespace SIL.Machine.Translation.Thot
 			return GlobalSession.Translate(n, segment);
 		}
 
+		public WordGraph GetWordGraph(IEnumerable<string> segment)
+		{
+			CheckDisposed();
+
+			return GlobalSession.GetWordGraph(segment);
+		}
+
 		public TranslationResult GetBestPhraseAlignment(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment)
 		{
 			CheckDisposed();

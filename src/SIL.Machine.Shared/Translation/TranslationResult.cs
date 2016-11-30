@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Collections.ObjectModel;
 
 namespace SIL.Machine.Translation
 {
@@ -12,8 +11,8 @@ namespace SIL.Machine.Translation
 
 		public TranslationResult(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment, IEnumerable<double> confidences, AlignedWordPair[,] alignment)
 		{
-			SourceSegment = new ReadOnlyCollection<string>(sourceSegment.ToArray());
-			TargetSegment = new ReadOnlyCollection<string>(targetSegment.ToArray());
+			SourceSegment = sourceSegment.ToArray();
+			TargetSegment = targetSegment.ToArray();
 			_confidences = confidences.ToArray();
 			_alignment = alignment;
 		}
@@ -56,9 +55,9 @@ namespace SIL.Machine.Translation
 			var alignment = new Dictionary<Tuple<int, int>, AlignedWordPair>();
 			for (int j = 0; j < TargetSegment.Count; j++)
 			{
-				AlignedWordPair[] smtWordPairs = GetTargetWordPairs(j).ToArray();
+				AlignedWordPair[] wordPairs = GetTargetWordPairs(j).ToArray();
 
-				if (smtWordPairs.Length == 0)
+				if (wordPairs.Length == 0)
 				{
 					targetSegment.Add(TargetSegment[j]);
 					confidences.Add(GetTargetWordConfidence(j));
@@ -69,10 +68,10 @@ namespace SIL.Machine.Translation
 					{
 						targetSegment.Add(TargetSegment[j]);
 						confidences.Add(GetTargetWordConfidence(j));
-						foreach (AlignedWordPair smtWordPair in smtWordPairs)
+						foreach (AlignedWordPair wordPair in wordPairs)
 						{
-							TranslationSources sources = smtWordPair.Sources;
-							foreach (AlignedWordPair transferWordPair in otherResult.GetSourceWordPairs(smtWordPair.SourceIndex))
+							TranslationSources sources = wordPair.Sources;
+							foreach (AlignedWordPair transferWordPair in otherResult.GetSourceWordPairs(wordPair.SourceIndex))
 							{
 								if (transferWordPair.Sources != TranslationSources.None
 									&& otherResult.TargetSegment[transferWordPair.TargetIndex] == TargetSegment[j])
@@ -81,23 +80,23 @@ namespace SIL.Machine.Translation
 								}
 							}
 
-							alignment[Tuple.Create(smtWordPair.SourceIndex, targetSegment.Count - 1)] = new AlignedWordPair(smtWordPair.SourceIndex,
-								targetSegment.Count - 1, smtWordPair.Confidence, sources);
+							alignment[Tuple.Create(wordPair.SourceIndex, targetSegment.Count - 1)] = new AlignedWordPair(wordPair.SourceIndex,
+								targetSegment.Count - 1, sources);
 						}
 					}
 					else
 					{
 						bool found = false;
-						foreach (AlignedWordPair smtWordPair in smtWordPairs)
+						foreach (AlignedWordPair wordPair in wordPairs)
 						{
-							foreach (AlignedWordPair transferWordPair in otherResult.GetSourceWordPairs(smtWordPair.SourceIndex))
+							foreach (AlignedWordPair otherWordPair in otherResult.GetSourceWordPairs(wordPair.SourceIndex))
 							{
-								if (transferWordPair.Sources != TranslationSources.None)
+								if (otherWordPair.Sources != TranslationSources.None)
 								{
-									targetSegment.Add(otherResult.TargetSegment[transferWordPair.TargetIndex]);
-									confidences.Add(transferWordPair.Confidence);
-									alignment[Tuple.Create(transferWordPair.SourceIndex, targetSegment.Count - 1)] = new AlignedWordPair(transferWordPair.SourceIndex,
-										targetSegment.Count - 1, transferWordPair.Confidence, transferWordPair.Sources);
+									targetSegment.Add(otherResult.TargetSegment[otherWordPair.TargetIndex]);
+									confidences.Add(otherResult.GetTargetWordConfidence(otherWordPair.TargetIndex));
+									alignment[Tuple.Create(otherWordPair.SourceIndex, targetSegment.Count - 1)] = new AlignedWordPair(otherWordPair.SourceIndex,
+										targetSegment.Count - 1, otherWordPair.Sources);
 									found = true;
 								}
 							}
@@ -107,10 +106,10 @@ namespace SIL.Machine.Translation
 						{
 							targetSegment.Add(TargetSegment[j]);
 							confidences.Add(GetTargetWordConfidence(j));
-							foreach (AlignedWordPair smtWordPair in smtWordPairs)
+							foreach (AlignedWordPair wordPair in wordPairs)
 							{
-								alignment[Tuple.Create(smtWordPair.SourceIndex, targetSegment.Count - 1)] = new AlignedWordPair(smtWordPair.SourceIndex,
-									targetSegment.Count - 1, smtWordPair.Confidence, smtWordPair.Sources);
+								alignment[Tuple.Create(wordPair.SourceIndex, targetSegment.Count - 1)] = new AlignedWordPair(wordPair.SourceIndex,
+									targetSegment.Count - 1, wordPair.Sources);
 							}
 						}
 					}

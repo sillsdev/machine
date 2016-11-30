@@ -230,7 +230,7 @@ namespace SIL.Machine.Translation.Thot
 		}
 
 		public static T DoTranslate<T>(IntPtr sessionHandle, Func<IntPtr, IntPtr, IntPtr> translateFunc, IEnumerable<string> input, bool addTrailingSpace,
-			IList<string> sourceSegment, Func<IList<string>, IList<string>, IntPtr, T> createResult)
+			IReadOnlyList<string> sourceSegment, Func<IReadOnlyList<string>, IReadOnlyList<string>, IntPtr, T> createResult)
 		{
 			IntPtr inputPtr = ConvertStringToNativeUtf8(string.Join(" ", input) + (addTrailingSpace ? " " : ""));
 			IntPtr data = IntPtr.Zero;
@@ -248,7 +248,7 @@ namespace SIL.Machine.Translation.Thot
 		}
 
 		public static IEnumerable<T> DoTranslateNBest<T>(IntPtr sessionHandle, Func<IntPtr, uint, IntPtr, IntPtr[], uint> translateFunc, int n, IEnumerable<string> input,
-			bool addTrailingSpace, IList<string> sourceSegment, Func<IList<string>, IList<string>, IntPtr, T> createResult)
+			bool addTrailingSpace, IReadOnlyList<string> sourceSegment, Func<IReadOnlyList<string>, IReadOnlyList<string>, IntPtr, T> createResult)
 		{
 			IntPtr inputPtr = ConvertStringToNativeUtf8(string.Join(" ", input) + (addTrailingSpace ? " " : ""));
 			var results = new IntPtr[n];
@@ -265,7 +265,7 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private static T DoCreateResult<T>(IList<string> sourceSegment, IntPtr data, Func<IList<string>, IList<string>, IntPtr, T> createResult)
+		private static T DoCreateResult<T>(IReadOnlyList<string> sourceSegment, IntPtr data, Func<IReadOnlyList<string>, IReadOnlyList<string>, IntPtr, T> createResult)
 		{
 			IntPtr translationPtr = Marshal.AllocHGlobal(DefaultTranslationBufferLength);
 			try

@@ -39,45 +39,40 @@ namespace SIL.Machine.Tests.Translation
 				var smtSession = Substitute.For<IInteractiveTranslationSession>();
 
 				var alignment = new Dictionary<Tuple<int, int>, AlignedWordPair>();
-				AddWordPair(alignment, 0, 0, 0, TranslationSources.None);
-				AddWordPair(alignment, 1, 1, 0.5, TranslationSources.Smt);
-				AddWordPair(alignment, 2, 2, 0.5, TranslationSources.Smt);
-				AddWordPair(alignment, 3, 3, 0.5, TranslationSources.Smt);
-				AddWordPair(alignment, 4, 4, 0.5, TranslationSources.Smt);
-				AddTranslation(smtSession, "caminé a mi habitación .", "caminé to my room .", alignment);
+				AddWordPair(alignment, 0, 0, TranslationSources.None);
+				AddWordPair(alignment, 1, 1, TranslationSources.Smt);
+				AddWordPair(alignment, 2, 2, TranslationSources.Smt);
+				AddWordPair(alignment, 3, 3, TranslationSources.Smt);
+				AddWordPair(alignment, 4, 4, TranslationSources.Smt);
+				AddTranslation(smtSession, "caminé a mi habitación .", "caminé to my room .", new[] {0, 0.5, 0.5, 0.5, 0.5}, alignment);
 
 				alignment = new Dictionary<Tuple<int, int>, AlignedWordPair>();
-				AddWordPair(alignment, 0, 0, 0, TranslationSources.None);
-				AddWordPair(alignment, 1, 1, 0.5, TranslationSources.Smt);
-				AddWordPair(alignment, 2, 2, 0.5, TranslationSources.Smt);
-				AddWordPair(alignment, 3, 3, 0.5, TranslationSources.Smt);
-				AddTranslation(smtSession, "hablé con recepción .", "hablé with reception .", alignment);
+				AddWordPair(alignment, 0, 0, TranslationSources.None);
+				AddWordPair(alignment, 1, 1, TranslationSources.Smt);
+				AddWordPair(alignment, 2, 2, TranslationSources.Smt);
+				AddWordPair(alignment, 3, 3, TranslationSources.Smt);
+				AddTranslation(smtSession, "hablé con recepción .", "hablé with reception .", new[] {0, 0.5, 0.5, 0.5}, alignment);
 
 				smtEngine.StartSession().Returns(smtSession);
 				_engine = new HybridTranslationEngine(smtEngine, transferEngine);
 				_session = _engine.StartSession();
 			}
 
-			private static void AddTranslation(IInteractiveTranslationSession session, string sourceSegment, string targetSegment, Dictionary<Tuple<int, int>, AlignedWordPair> alignment)
+			private static void AddTranslation(IInteractiveTranslationSession session, string sourceSegment, string targetSegment, double[] confidences,
+				Dictionary<Tuple<int, int>, AlignedWordPair> alignment)
 			{
 				string[] sourceSegmentArray = sourceSegment.Split();
 				string[] targetSegmentArray = targetSegment.Split();
 				AlignedWordPair[,] alignmentMatrix = new AlignedWordPair[sourceSegmentArray.Length, targetSegmentArray.Length];
-				var confidences = new double[targetSegmentArray.Length];
-				for (int i = 0; i < confidences.Length; i++)
-					confidences[i] = -1;
 				foreach (KeyValuePair<Tuple<int, int>, AlignedWordPair> kvp in alignment)
-				{
 					alignmentMatrix[kvp.Key.Item1, kvp.Key.Item2] = kvp.Value;
-					confidences[kvp.Key.Item2] = confidences[kvp.Key.Item2] < 0 ? kvp.Value.Confidence : (confidences[kvp.Key.Item2] + kvp.Value.Confidence) / 2;
-				}
 				session.TranslateInteractively(Arg.Is<IEnumerable<string>>(ss => ss.SequenceEqual(sourceSegmentArray))).Returns(new TranslationResult(sourceSegmentArray, targetSegmentArray,
 					confidences, alignmentMatrix));
 			}
 
-			private static void AddWordPair(Dictionary<Tuple<int, int>, AlignedWordPair> alignment, int i, int j, double confidence, TranslationSources sources)
+			private static void AddWordPair(Dictionary<Tuple<int, int>, AlignedWordPair> alignment, int i, int j, TranslationSources sources)
 			{
-				alignment[Tuple.Create(i, j)] = new AlignedWordPair(i, j, confidence, sources);
+				alignment[Tuple.Create(i, j)] = new AlignedWordPair(i, j, sources);
 			}
 
 			public IInteractiveTranslationSession Session

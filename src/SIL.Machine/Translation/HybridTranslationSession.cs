@@ -21,7 +21,7 @@ namespace SIL.Machine.Translation
 			_ruleEngine = ruleEngine;
 		}
 
-		public ReadOnlyList<string> SourceSegment
+		public IReadOnlyList<string> SourceSegment
 		{
 			get
 			{
@@ -30,7 +30,7 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public ReadOnlyList<string> Prefix
+		public IReadOnlyList<string> Prefix
 		{
 			get
 			{

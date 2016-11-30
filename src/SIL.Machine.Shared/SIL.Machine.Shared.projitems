@@ -10,13 +10,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Translation\AlignedWordPair.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\PhraseInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\EcmScoreInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\EditDistance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\ErrorCorrectingModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\ErrorCorrectingWordGraphProcessor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\SegmentEditDistance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\WordAlignmentMatrix.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordSuggester.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordEditDistance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordGraph.cs" />

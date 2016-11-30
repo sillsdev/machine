@@ -86,7 +86,7 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public double GetBestAlignment(IList<string> sourceSegment, IList<string> targetSegment, out WordAlignmentMatrix matrix)
+		public double GetBestAlignment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment, out WordAlignmentMatrix matrix)
 		{
 			IntPtr nativeSourceSegment = Thot.ConvertStringsToNativeUtf8(sourceSegment);
 			IntPtr nativeTargetSegment = Thot.ConvertStringsToNativeUtf8(targetSegment);

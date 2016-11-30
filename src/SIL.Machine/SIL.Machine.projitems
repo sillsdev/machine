@@ -213,6 +213,5 @@
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TransferEngine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TransferResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Translation\WordAlignmentMatrix.cs" />
   </ItemGroup>
 </Project>

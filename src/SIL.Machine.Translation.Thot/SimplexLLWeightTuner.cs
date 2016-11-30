@@ -22,7 +22,8 @@ namespace SIL.Machine.Translation.Thot
 		public double ProgressIncrement { get; set; }
 		public int ProgressIncrementInterval { get; set; }
 
-		public double[] Tune(string cfgFileName, IList<IList<string>> tuneSourceCorpus, IList<IList<string>> tuneTargetCorpus, double[] initialWeights, IProgress progress)
+		public IReadOnlyList<double> Tune(string cfgFileName, IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus, IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus,
+			IReadOnlyList<double> initialWeights, IProgress progress)
 		{
 			double sentLenWeight = initialWeights[7];
 			int numFuncEvals = 0;
@@ -39,10 +40,10 @@ namespace SIL.Machine.Translation.Thot
 			return result.MinimizingPoint.Concat(sentLenWeight).ToArray();
 		}
 
-		private static double CalculateBleu(string tuneCfgFileName, IList<IList<string>> sourceCorpus, IList<IList<string>> tuneTargetCorpus, Vector weights,
-			double sentLenWeight)
+		private static double CalculateBleu(string tuneCfgFileName, IReadOnlyList<IReadOnlyList<string>> sourceCorpus, IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus,
+			Vector weights, double sentLenWeight)
 		{
-			IEnumerable<IList<string>> translations = GenerateTranslations(tuneCfgFileName, sourceCorpus, weights, sentLenWeight);
+			IEnumerable<IReadOnlyList<string>> translations = GenerateTranslations(tuneCfgFileName, sourceCorpus, weights, sentLenWeight);
 			double bleu = Evaluation.CalculateBleu(translations, tuneTargetCorpus);
 			double penalty = 0;
 			for (int i = 0; i < weights.Count; i++)
@@ -56,11 +57,11 @@ namespace SIL.Machine.Translation.Thot
 			return (1.0 - bleu) + penalty;
 		}
 
-		private static IEnumerable<IList<string>> GenerateTranslations(string tuneCfgFileName, IList<IList<string>> sourceCorpus, IEnumerable<double> weights,
+		private static IEnumerable<IReadOnlyList<string>> GenerateTranslations(string tuneCfgFileName, IReadOnlyList<IReadOnlyList<string>> sourceCorpus, IEnumerable<double> weights,
 			double sentLenWeight)
 		{
 			float[] weightArray = weights.Select(w => (float) w).Concat((float) sentLenWeight).ToArray();
-			var results = new IList<string>[sourceCorpus.Count];
+			var results = new IReadOnlyList<string>[sourceCorpus.Count];
 			Parallel.ForEach(Partitioner.Create(0, sourceCorpus.Count), range =>
 				{
 					IntPtr decoderHandle = IntPtr.Zero, sessionHandle = IntPtr.Zero;
@@ -71,7 +72,7 @@ namespace SIL.Machine.Translation.Thot
 						sessionHandle = Thot.decoder_openSession(decoderHandle);
 						for (int i = range.Item1; i < range.Item2; i++)
 						{
-							IList<string> segment = sourceCorpus[i];
+							IReadOnlyList<string> segment = sourceCorpus[i];
 							results[i] = Thot.DoTranslate(sessionHandle, Thot.session_translate, segment, false, segment, (s, t, d) => t);
 						}
 					}

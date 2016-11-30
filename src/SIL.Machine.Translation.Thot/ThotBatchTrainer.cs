@@ -140,8 +140,8 @@ namespace SIL.Machine.Translation.Thot
 				File.Copy(trainCfgFileName, tuneCfgFileName);
 				UpdateConfigPaths(tuneCfgFileName, trainLMPrefix, tuneTMPrefix);
 
-				var tuneSourceCorpus = new List<IList<string>>(_tuneCorpusIndices.Count);
-				var tuneTargetCorpus = new List<IList<string>>(_tuneCorpusIndices.Count);
+				var tuneSourceCorpus = new List<IReadOnlyList<string>>(_tuneCorpusIndices.Count);
+				var tuneTargetCorpus = new List<IReadOnlyList<string>>(_tuneCorpusIndices.Count);
 				foreach (ParallelTextSegment segment in _parallelCorpus.Segments.Where((s, i) => _tuneCorpusIndices.Contains(i)))
 				{
 					tuneSourceCorpus.Add(_sourceTokenizer.TokenizeToStrings(_sourcePreprocessor(segment.SourceValue)).ToArray());
@@ -515,7 +515,7 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private static void TuneLanguageModel(string lmPrefix, IList<IList<string>> tuneTargetCorpus, int ngramSize)
+		private static void TuneLanguageModel(string lmPrefix, IList<IReadOnlyList<string>> tuneTargetCorpus, int ngramSize)
 		{
 			if (tuneTargetCorpus.Count == 0)
 				return;
@@ -525,7 +525,7 @@ namespace SIL.Machine.Translation.Thot
 			WriteLanguageModelWeightsFile(lmPrefix, ngramSize, result.MinimizingPoint);
 		}
 
-		private static double CalculatePerplexity(IList<IList<string>> tuneTargetCorpus, string lmPrefix, int ngramSize, Vector weights)
+		private static double CalculatePerplexity(IList<IReadOnlyList<string>> tuneTargetCorpus, string lmPrefix, int ngramSize, Vector weights)
 		{
 			if (weights.Any(w => w < 0 || w >= 1.0))
 				return 999999;
@@ -535,7 +535,7 @@ namespace SIL.Machine.Translation.Thot
 			int wordCount = 0;
 			using (var lm = new ThotLanguageModel(lmPrefix))
 			{
-				foreach (IList<string> segment in tuneTargetCorpus)
+				foreach (IReadOnlyList<string> segment in tuneTargetCorpus)
 				{
 					lp += lm.GetSegmentProbability(segment);
 					wordCount += segment.Count;
@@ -545,7 +545,8 @@ namespace SIL.Machine.Translation.Thot
 			return Math.Exp(-(lp / (wordCount + tuneTargetCorpus.Count)) * Math.Log(10));
 		}
 
-		private void TuneTranslationModel(string tuneCfgFileName, string tuneTMPrefix, IList<IList<string>> tuneSourceCorpus, IList<IList<string>> tuneTargetCorpus, IProgress progress)
+		private void TuneTranslationModel(string tuneCfgFileName, string tuneTMPrefix, IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
+			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, IProgress progress)
 		{
 			if (tuneSourceCorpus.Count == 0)
 				return;
@@ -555,7 +556,7 @@ namespace SIL.Machine.Translation.Thot
 			FilterPhraseTableNBest(phraseTableFileName, 20);
 
 			double[] initialWeights = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0};
-			double[] bestWeights = _llWeightTuner.Tune(tuneCfgFileName, tuneSourceCorpus, tuneTargetCorpus, initialWeights, progress);
+			IReadOnlyList<double> bestWeights = _llWeightTuner.Tune(tuneCfgFileName, tuneSourceCorpus, tuneTargetCorpus, initialWeights, progress);
 			UpdateConfigWeights(tuneCfgFileName, bestWeights);
 		}
 
@@ -598,7 +599,7 @@ namespace SIL.Machine.Translation.Thot
 			File.Delete(tempFileName);
 		}
 
-		private static void UpdateConfigWeights(string cfgFileName, IEnumerable<double> weights)
+		private static void UpdateConfigWeights(string cfgFileName, IReadOnlyList<double> weights)
 		{
 			string[] lines = File.ReadAllLines(cfgFileName);
 			using (var writer = new StreamWriter(File.Open(cfgFileName, FileMode.Create)))
@@ -628,7 +629,7 @@ namespace SIL.Machine.Translation.Thot
 			writer.Write("-tmw {0}\n", string.Join(" ", weights.Select(w => w.ToString("0.######"))));
 		}
 
-		private static void TrainTuneCorpus(string cfgFileName, IList<IList<string>> tuneSourceCorpus, IList<IList<string>> tuneTargetCorpus)
+		private static void TrainTuneCorpus(string cfgFileName, IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus, IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus)
 		{
 			if (tuneSourceCorpus.Count == 0)
 				return;

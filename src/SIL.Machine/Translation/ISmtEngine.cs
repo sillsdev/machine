@@ -10,6 +10,8 @@ namespace SIL.Machine.Translation
 	{
 		TranslationResult GetBestPhraseAlignment(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment);
 
+		WordGraph GetWordGraph(IEnumerable<string> segment);
+
 		void Save();
 
 		void Train(Func<string, string> sourcePreprocessor, ITokenizer<string, int> sourceTokenizer, ITextCorpus sourceCorpus,

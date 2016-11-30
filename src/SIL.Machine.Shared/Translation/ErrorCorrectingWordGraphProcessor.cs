@@ -13,7 +13,7 @@ namespace SIL.Machine.Translation
 		private readonly List<List<EcmScoreInfo>> _arcEcmScoreInfos;
 		private readonly List<List<double>> _stateBestScores;
 		private readonly List<double> _stateWordGraphScores;
-		private readonly List<List<int>> _stateBestPreds;
+		private readonly List<List<int>> _stateBestPrevArcs;
 		private readonly HashSet<int> _statesInvolvedInArcs;
 		private string[] _prevPrefix;
 		private bool _prevIsLastWordComplete;
@@ -30,7 +30,7 @@ namespace SIL.Machine.Translation
 			_arcEcmScoreInfos = new List<List<EcmScoreInfo>>();
 			_stateBestScores = new List<List<double>>();
 			_stateWordGraphScores = new List<double>();
-			_stateBestPreds = new List<List<int>>();
+			_stateBestPrevArcs = new List<List<int>>();
 			_statesInvolvedInArcs = new HashSet<int>();
 			_prevPrefix = new string[0];
 
@@ -45,10 +45,10 @@ namespace SIL.Machine.Translation
 				_stateEcmScoreInfos.Add(new EcmScoreInfo());
 				_stateWordGraphScores.Add(0);
 				_stateBestScores.Add(new List<double>());
-				_stateBestPreds.Add(new List<int>());
+				_stateBestPrevArcs.Add(new List<int>());
 			}
 
-			_ecm.SetupInitialEsi(_stateEcmScoreInfos[0]);
+			_ecm.SetupInitialEsi(_stateEcmScoreInfos[WordGraph.InitialState]);
 			UpdateInitialStateBestScores();
 		}
 
@@ -59,7 +59,7 @@ namespace SIL.Machine.Translation
 				WordGraphArc arc = _wordGraph.Arcs[arcIndex];
 
 				// init ecm score info for each word of arc
-				EcmScoreInfo prevEsi = _stateEcmScoreInfos[arc.PredStateIndex];
+				EcmScoreInfo prevEsi = _stateEcmScoreInfos[arc.PrevState];
 				var esis = new List<EcmScoreInfo>();
 				foreach (string word in arc.Words)
 				{
@@ -73,27 +73,27 @@ namespace SIL.Machine.Translation
 				// init best scores for the arc's successive state
 				UpdateStateBestScores(arcIndex, 0);
 
-				_statesInvolvedInArcs.Add(arc.PredStateIndex);
-				_statesInvolvedInArcs.Add(arc.SuccStateIndex);
+				_statesInvolvedInArcs.Add(arc.PrevState);
+				_statesInvolvedInArcs.Add(arc.NextState);
 			}
 		}
 
 		private void UpdateInitialStateBestScores()
 		{
-			EcmScoreInfo esi = _stateEcmScoreInfos[0];
+			EcmScoreInfo esi = _stateEcmScoreInfos[WordGraph.InitialState];
 
-			_stateWordGraphScores[0] = _wordGraph.InitialStateScore;
+			_stateWordGraphScores[WordGraph.InitialState] = _wordGraph.InitialStateScore;
 
-			List<double> bestScores = _stateBestScores[0];
-			List<int> bestPreds = _stateBestPreds[0];
+			List<double> bestScores = _stateBestScores[WordGraph.InitialState];
+			List<int> bestPrevArcs = _stateBestPrevArcs[WordGraph.InitialState];
 
 			bestScores.Clear();
-			bestPreds.Clear();
+			bestPrevArcs.Clear();
 
 			foreach (double score in esi.Scores)
 			{
 				bestScores.Add((EcmWeight * -score) + (WordGraphWeight * _wordGraph.InitialStateScore));
-				bestPreds.Add(int.MaxValue);
+				bestPrevArcs.Add(int.MaxValue);
 			}
 		}
 
@@ -102,12 +102,12 @@ namespace SIL.Machine.Translation
 			WordGraphArc arc = _wordGraph.Arcs[arcIndex];
 			List<EcmScoreInfo> arcEsis = _arcEcmScoreInfos[arcIndex];
 
-			EcmScoreInfo prevEsi = arcEsis.Count == 0 ? _stateEcmScoreInfos[arc.PredStateIndex] : arcEsis[arcEsis.Count - 1];
+			EcmScoreInfo prevEsi = arcEsis.Count == 0 ? _stateEcmScoreInfos[arc.PrevState] : arcEsis[arcEsis.Count - 1];
 
-			double wordGraphScore = _stateWordGraphScores[arc.PredStateIndex] + arc.Score;
+			double wordGraphScore = _stateWordGraphScores[arc.PrevState] + arc.Score;
 
-			List<double> succStateBestScores = _stateBestScores[arc.SuccStateIndex];
-			List<int> succStateBestPreds = _stateBestPreds[arc.SuccStateIndex];
+			List<double> nextStateBestScores = _stateBestScores[arc.NextState];
+			List<int> nextStateBestPrevArcs = _stateBestPrevArcs[arc.NextState];
 
 			var positions = new List<int>();
 			int startPos = prefixDiffSize == 0 ? 0 : prevEsi.Scores.Count - prefixDiffSize;
@@ -115,17 +115,17 @@ namespace SIL.Machine.Translation
 			{
 				double newScore = (EcmWeight * -prevEsi.Scores[i]) + (WordGraphWeight * wordGraphScore);
 
-				if (i == succStateBestScores.Count || succStateBestScores[i] < newScore)
+				if (i == nextStateBestScores.Count || nextStateBestScores[i] < newScore)
 				{
-					AddOrReplace(succStateBestScores, i, newScore);
+					AddOrReplace(nextStateBestScores, i, newScore);
 					positions.Add(i);
-					AddOrReplace(succStateBestPreds, i, arcIndex);
+					AddOrReplace(nextStateBestPrevArcs, i, arcIndex);
 				}
 			}
 
-			_stateEcmScoreInfos[arc.SuccStateIndex].UpdatePositions(prevEsi, positions);
+			_stateEcmScoreInfos[arc.NextState].UpdatePositions(prevEsi, positions);
 
-			_stateWordGraphScores[arc.SuccStateIndex] = wordGraphScore;
+			_stateWordGraphScores[arc.NextState] = wordGraphScore;
 		}
 
 		private void AddOrReplace<T>(List<T> list, int index, T item)
@@ -142,7 +142,7 @@ namespace SIL.Machine.Translation
 		public double EcmWeight { get; }
 		public double WordGraphWeight { get; }
 
-		public IEnumerable<TranslationData> Correct(IReadOnlyList<string> prefix, bool isLastWordComplete, int n)
+		public IEnumerable<TranslationInfo> Correct(IReadOnlyList<string> prefix, bool isLastWordComplete, int n)
 		{
 			// get valid portion of the processed prefix vector
 			int validProcPrefixCount = 0;
@@ -171,18 +171,18 @@ namespace SIL.Machine.Translation
 					foreach (EcmScoreInfo esi in esis)
 					{
 						for (int i = 0; i < diffSize; i++)
-							esi.RemoveLastPosition();
+							esi.RemoveLast();
 					}
 				}
 
 				// adjust size of info for states
-				foreach (int stateIndex in _statesInvolvedInArcs)
+				foreach (int state in _statesInvolvedInArcs)
 				{
 					for (int i = 0; i < diffSize; i++)
 					{
-						_stateEcmScoreInfos[stateIndex].RemoveLastPosition();
-						_stateBestScores[stateIndex].RemoveAt(_stateBestScores[stateIndex].Count - 1);
-						_stateBestPreds[stateIndex].RemoveAt(_stateBestPreds[stateIndex].Count - 1);
+						_stateEcmScoreInfos[state].RemoveLast();
+						_stateBestScores[state].RemoveAt(_stateBestScores[state].Count - 1);
+						_stateBestPrevArcs[state].RemoveAt(_stateBestPrevArcs[state].Count - 1);
 					}
 				}
 			}
@@ -195,13 +195,15 @@ namespace SIL.Machine.Translation
 			// process word-graph given prefix difference
 			ProcessWordGraphForPrefixDiff(prefixDiff, isLastWordComplete);
 
-			IEnumerable<HypState> nbestHypStates = GetNBestHypStates(n);
-			IEnumerable<HypSubState> nbestHypSubStates = GetNBestHypSubStates(n);
+			var candidates = new List<Candidate>();
+			GetNBestStateCandidates(candidates, n);
+			GetNBestSubStateCandidates(candidates, n);
 
-			IEnumerable<TranslationData> nbestCorrections = GetNBestCorrections(prefix, isLastWordComplete, n, nbestHypStates, nbestHypSubStates);
+			TranslationInfo[] nbestCorrections = candidates.Select(c => GetCorrectionForCandidate(prefix, isLastWordComplete, c)).ToArray();
 
 			_prevPrefix = prefix.ToArray();
 			_prevIsLastWordComplete = isLastWordComplete;
+
 			return nbestCorrections;
 		}
 
@@ -210,8 +212,8 @@ namespace SIL.Machine.Translation
 			if (prefixDiff.Count == 0)
 				return;
 
-			EcmScoreInfo prevInitialEsi = _stateEcmScoreInfos[0];
-			_ecm.ExtendInitialEsi(_stateEcmScoreInfos[0], prevInitialEsi, prefixDiff);
+			EcmScoreInfo prevInitialEsi = _stateEcmScoreInfos[WordGraph.InitialState];
+			_ecm.ExtendInitialEsi(_stateEcmScoreInfos[WordGraph.InitialState], prevInitialEsi, prefixDiff);
 			UpdateInitialStateBestScores();
 
 			for (int arcIndex = 0; arcIndex < _wordGraph.Arcs.Count; arcIndex++)
@@ -219,7 +221,7 @@ namespace SIL.Machine.Translation
 				WordGraphArc arc = _wordGraph.Arcs[arcIndex];
 
 				// update ecm score info for each word of arc
-				EcmScoreInfo prevEsi = _stateEcmScoreInfos[arc.PredStateIndex];
+				EcmScoreInfo prevEsi = _stateEcmScoreInfos[arc.PrevState];
 				List<EcmScoreInfo> esis = _arcEcmScoreInfos[arcIndex];
 				while (esis.Count < arc.Words.Count)
 					esis.Add(new EcmScoreInfo());
@@ -235,204 +237,134 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		private IEnumerable<HypState> GetNBestHypStates(int n)
+		private void GetNBestStateCandidates(List<Candidate> candidates, int n)
 		{
-			var states = new List<HypState>();
-			foreach (int stateIndex in _statesInvolvedInArcs)
+			foreach (int state in _statesInvolvedInArcs)
 			{
-				double restScore = _restScores[stateIndex];
-				List<double> bestScores = _stateBestScores[stateIndex];
+				double restScore = _restScores[state];
+				List<double> bestScores = _stateBestScores[state];
 
 				double score = bestScores[bestScores.Count - 1] + (WordGraphWeight * restScore);
-				AddToNBestList(states, n, new HypState(score, stateIndex));
+				AddToNBestList(candidates, n, new Candidate(score, state));
 			}
-			return states;
 		}
 
-		private IEnumerable<HypSubState> GetNBestHypSubStates(int n)
+		private void GetNBestSubStateCandidates(List<Candidate> candidates, int n)
 		{
-			var subStates = new List<HypSubState>();
-
 			for (int arcIndex = 0; arcIndex < _wordGraph.Arcs.Count; arcIndex++)
 			{
 				WordGraphArc arc = _wordGraph.Arcs[arcIndex];
 				if (arc.Words.Count > 1)
 				{
-					double wordGraphScore = _stateWordGraphScores[arc.PredStateIndex];
+					double wordGraphScore = _stateWordGraphScores[arc.PrevState];
 
 					for (int i = 0; i < arc.Words.Count - 1; i++)
 					{
 						EcmScoreInfo esi = _arcEcmScoreInfos[arcIndex][i];
-						double score = (WordGraphWeight * wordGraphScore) + (EcmWeight * -esi.Scores[esi.Scores.Count - 1]) + (WordGraphWeight * _restScores[arc.PredStateIndex]);
-						AddToNBestList(subStates, n, new HypSubState(score, arcIndex, i));
+						double score = (WordGraphWeight * wordGraphScore) + (EcmWeight * -esi.Scores[esi.Scores.Count - 1]) + (WordGraphWeight * _restScores[arc.PrevState]);
+						AddToNBestList(candidates, n, new Candidate(score, arc.NextState, arcIndex, i));
 					}
 				}
 			}
-
-			return subStates;
 		}
 
-		private IEnumerable<TranslationData> GetNBestCorrections(IReadOnlyList<string> prefix, bool isLastWordComplete, int n, IEnumerable<HypState> nbestHypStates,
-			IEnumerable<HypSubState> nbestHypSubStates)
+		private TranslationInfo GetCorrectionForCandidate(IReadOnlyList<string> prefix, bool isLastWordComplete, Candidate candidate)
 		{
-			var corrections = new List<TranslationData>();
-			foreach (HypState state in nbestHypStates)
+			var correction = new TranslationInfo {Score = candidate.Score};
+
+			int uncorrectedPrefixLen;
+			if (candidate.ArcIndex == -1)
 			{
-				TranslationData translationData = GetCorrectionForHypState(prefix, isLastWordComplete, state.StateIndex);
-				translationData.Score = state.Score;
-				AddToNBestList(corrections, n, translationData);
+				AddBestUncorrectedPrefixState(correction, prefix.Count, candidate.State);
+				uncorrectedPrefixLen = correction.Target.Count;
+			}
+			else
+			{
+				AddBestUncorrectedPrefixSubState(correction, prefix.Count, candidate.ArcIndex, candidate.ArcWordIndex);
+				WordGraphArc firstArc = _wordGraph.Arcs[candidate.ArcIndex];
+				uncorrectedPrefixLen = correction.Target.Count - firstArc.Words.Count - candidate.ArcWordIndex + 1;
 			}
 
-			foreach (HypSubState subState in nbestHypSubStates)
-			{
-				TranslationData translationData = GetCorrectionForHypSubState(prefix, isLastWordComplete, subState.ArcIndex, subState.ArcWordIndex);
-				translationData.Score = subState.Score;
-				AddToNBestList(corrections, n, translationData);
-			}
+			int alignmentColsToAddCount = _ecm.CorrectPrefix(correction, uncorrectedPrefixLen, prefix, isLastWordComplete);
 
-			return corrections;
-		}
-
-		private TranslationData GetCorrectionForHypState(IReadOnlyList<string> prefix, bool isLastWordComplete, int stateIndex)
-		{
-			var correction = new TranslationData();
-
-			IReadOnlyList<string> uncorrectedPrefix = GetBestUncorrectedPrefixHypState(prefix.Count, stateIndex,
-				correction.SourceSegmentation, correction.TargetSegmentCuts);
-
-			UpdateCorrectionFromPrefix(correction, uncorrectedPrefix, prefix, isLastWordComplete);
-
-			foreach (WordGraphArc arc in _wordGraph.GetBestPathFromFinalStateToState(stateIndex).Reverse())
-				UpdateCorrectionFromArc(correction, arc, 0);
-
-			RemoveLastSpace(correction.Target);
+			foreach (WordGraphArc arc in _wordGraph.GetBestPathFromFinalStateToState(candidate.State).Reverse())
+				UpdateCorrectionFromArc(correction, arc, false, alignmentColsToAddCount);
 
 			return correction;
 		}
 
-		private IReadOnlyList<string> GetBestUncorrectedPrefixHypState(int procPrefixPos, int stateIndex, IList<Tuple<int, int>> sourceSegmentation,
-			IList<int> targetSegmentCuts)
+		private void AddBestUncorrectedPrefixState(TranslationInfo correction, int procPrefixPos, int state)
 		{
-			var results = new Stack<string>();
-			var srcSeg = new Stack<Tuple<int, int>>();
-			var phraseSizes = new Stack<int>();
+			var arcs = new Stack<WordGraphArc>();
 
-			int curStateIndex = stateIndex;
+			int curState = state;
 			int curProcPrefixPos = procPrefixPos;
-			while (curStateIndex != 0)
+			while (curState != 0)
 			{
-				int arcIndex = _stateBestPreds[curStateIndex][curProcPrefixPos];
+				int arcIndex = _stateBestPrevArcs[curState][curProcPrefixPos];
 				WordGraphArc arc = _wordGraph.Arcs[arcIndex];
 
 				for (int i = arc.Words.Count - 1; i >= 0; i--)
 				{
-					IReadOnlyList<int> predPrefixWords = _ecm.GetLastInsPrefixWordFromEsi(_arcEcmScoreInfos[arcIndex][i]);
+					IReadOnlyList<int> predPrefixWords = _arcEcmScoreInfos[arcIndex][i].GetLastInsPrefixWordFromEsi();
 					curProcPrefixPos = predPrefixWords[curProcPrefixPos];
 				}
 
-				curStateIndex = arc.PredStateIndex;
+				arcs.Push(arc);
 
-				foreach (string word in arc.Words.Reverse())
-					results.Push(word);
-
-				srcSeg.Push(Tuple.Create(arc.SrcStartIndex, arc.SrcEndIndex));
-				phraseSizes.Push(arc.Words.Count);
+				curState = arc.PrevState;
 			}
 
-			foreach (Tuple<int, int> seg in srcSeg)
-				sourceSegmentation.Add(seg);
-
-			bool first = true;
-			foreach (int phraseSize in phraseSizes)
-			{
-				int lastPos = first ? 0 : targetSegmentCuts[targetSegmentCuts.Count - 1];
-				targetSegmentCuts.Add(lastPos + phraseSize);
-				first = false;
-			}
-
-			return results.ToArray();
+			foreach (WordGraphArc arc in arcs)
+				UpdateCorrectionFromArc(correction, arc, true, 0);
 		}
 
-		private TranslationData GetCorrectionForHypSubState(IReadOnlyList<string> prefix, bool isLastWordComplete, int arcIndex, int arcWordIndex)
-		{
-			var correction = new TranslationData();
-
-			IReadOnlyList<string> uncorrectedPrefix = GetBestUncorrectedPrefixHypSubState(prefix.Count, arcIndex, arcWordIndex,
-				correction.SourceSegmentation, correction.TargetSegmentCuts);
-
-			UpdateCorrectionFromPrefix(correction, uncorrectedPrefix, prefix, isLastWordComplete);
-
-			WordGraphArc firstArc = _wordGraph.Arcs[arcIndex];
-			UpdateCorrectionFromArc(correction, firstArc, arcWordIndex + 1);
-
-			foreach (WordGraphArc arc in _wordGraph.GetBestPathFromFinalStateToState(firstArc.SuccStateIndex).Reverse())
-				UpdateCorrectionFromArc(correction, arc, 0);
-
-			RemoveLastSpace(correction.Target);
-
-			return correction;
-		}
-
-		private IReadOnlyList<string> GetBestUncorrectedPrefixHypSubState(int procPrefixPos, int arcIndex, int arcWordIndex,
-			IList<Tuple<int, int>> sourceSegmentation, IList<int> targetSegmentCuts)
+		private void AddBestUncorrectedPrefixSubState(TranslationInfo correction, int procPrefixPos, int arcIndex, int arcWordIndex)
 		{
 			WordGraphArc arc = _wordGraph.Arcs[arcIndex];
 
 			int curProcPrefixPos = procPrefixPos;
 			for (int i = arcWordIndex; i >= 0; i--)
 			{
-				IReadOnlyList<int> predPrefixWords = _ecm.GetLastInsPrefixWordFromEsi(_arcEcmScoreInfos[arcIndex][i]);
+				IReadOnlyList<int> predPrefixWords = _arcEcmScoreInfos[arcIndex][i].GetLastInsPrefixWordFromEsi();
 				curProcPrefixPos = predPrefixWords[curProcPrefixPos];
 			}
 
-			IReadOnlyList<string> uncorrectedPrefix = GetBestUncorrectedPrefixHypState(curProcPrefixPos, arc.PredStateIndex, sourceSegmentation, targetSegmentCuts);
-			var result = new string[uncorrectedPrefix.Count + arcWordIndex + 1];
-			int resultIndex = 0;
-			foreach (string word in uncorrectedPrefix)
-			{
-				result[resultIndex] = word;
-				resultIndex++;
-			}
+			AddBestUncorrectedPrefixState(correction, curProcPrefixPos, arc.PrevState);
 
-			for (int i = 0; i <= arcWordIndex; i++)
-			{
-				result[resultIndex] = arc.Words[i];
-				resultIndex++;
-			}
-
-			return result;
+			UpdateCorrectionFromArc(correction, arc, true, 0);
 		}
 
-		private void UpdateCorrectionFromPrefix(TranslationData translationData, IReadOnlyList<string> uncorrectedPrefix, IReadOnlyList<string> prefix, bool isLastWordComplete)
+		private void UpdateCorrectionFromArc(TranslationInfo correction, WordGraphArc arc, bool isPrefix, int alignmentColsToAddCount)
 		{
-			if (uncorrectedPrefix.Count == 0)
+			for (int i = 0; i < arc.Words.Count; i++)
 			{
-				foreach (string w in prefix)
-					translationData.Target.Add(w);
-				RemoveLastSpace(translationData.Target);
+				correction.Target.Add(arc.Words[i]);
+				correction.TargetConfidences.Add(arc.WordConfidences[i]);
+				if (!isPrefix && arc.IsUnknown)
+					correction.TargetUnknownWords.Add(correction.Target.Count - 1);
 			}
-			else
-			{
-				_ecm.CorrectPrefix(uncorrectedPrefix, prefix, isLastWordComplete, translationData.Target, translationData.SourceSegmentation, translationData.TargetSegmentCuts);
-			}
-		}
 
-		private void UpdateCorrectionFromArc(TranslationData translationData, WordGraphArc arc, int startWordIndex)
-		{
-			for (int i = startWordIndex; i < arc.Words.Count; i++)
+			WordAlignmentMatrix alignment = arc.Alignment;
+			if (alignmentColsToAddCount > 0)
 			{
-				translationData.Target.Add(arc.Words[i]);
-				if (arc.IsUnknown)
-					translationData.TargetUnknownWords.Add(translationData.Target.Count);
+				var newAlignment = new WordAlignmentMatrix(alignment.I, alignment.J + alignmentColsToAddCount);
+				for (int j = 0; j < alignment.J; j++)
+				{
+					for (int i = 0; i < alignment.I; i++)
+						newAlignment[i, alignmentColsToAddCount + j] = alignment[i, j];
+				}
+				alignment = newAlignment;
 			}
-			translationData.SourceSegmentation.Add(Tuple.Create(arc.SrcStartIndex, arc.SrcEndIndex));
-			translationData.TargetSegmentCuts.Add(translationData.Target.Count);
-		}
 
-		private static void RemoveLastSpace(IList<string> segment)
-		{
-			if (segment.Count > 0)
-				segment[segment.Count - 1] = segment[segment.Count - 1].TrimEnd();
+			var phrase = new PhraseInfo
+			{
+				SourceStartIndex = arc.SourceStartIndex,
+				SourceEndIndex = arc.SourceEndIndex,
+				TargetCut = correction.Target.Count - 1,
+				Alignment = alignment
+			};
+			correction.Phrases.Add(phrase);
 		}
 
 		private static void AddToNBestList<T>(List<T> nbestList, int n, T item) where T : IComparable<T>
@@ -440,6 +372,8 @@ namespace SIL.Machine.Translation
 			int index = nbestList.BinarySearch(item);
 			if (index < 0)
 				index = ~index;
+			else
+				index++;
 			if (nbestList.Count < n)
 			{
 				nbestList.Insert(index, item);
@@ -451,37 +385,22 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		private class HypState : IComparable<HypState>
+		private class Candidate : IComparable<Candidate>
 		{
-			public HypState(double score, int stateIndex)
+			public Candidate(double score, int state, int arcIndex = -1, int arcWordIndex = -1)
 			{
 				Score = score;
-				StateIndex = stateIndex;
-			}
-
-			public double Score { get; }
-			public int StateIndex { get; }
-
-			public int CompareTo(HypState other)
-			{
-				return -Score.CompareTo(other.Score);
-			}
-		}
-
-		private class HypSubState : IComparable<HypSubState>
-		{
-			public HypSubState(double score, int arcIndex, int arcWordIndex)
-			{
-				Score = score;
+				State = state;
 				ArcIndex = arcIndex;
 				ArcWordIndex = arcWordIndex;
 			}
 
 			public double Score { get; }
+			public int State { get; }
 			public int ArcIndex { get; }
 			public int ArcWordIndex { get; }
 
-			public int CompareTo(HypSubState other)
+			public int CompareTo(Candidate other)
 			{
 				return -Score.CompareTo(other.Score);
 			}

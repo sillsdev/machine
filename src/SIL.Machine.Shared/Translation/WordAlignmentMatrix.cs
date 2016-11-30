@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Generic;
 using System.Text;
-using SIL.Extensions;
 
 namespace SIL.Machine.Translation
 {
@@ -71,8 +69,11 @@ namespace SIL.Machine.Translation
 			var sb = new StringBuilder();
 			sb.AppendFormat("{0}\n", string.Join(" ", targetSegment));
 
+			var sourceWords = new List<string> {"NULL"};
+			sourceWords.AddRange(sourceSegment);
+
 			int i = 0;
-			foreach (string sourceWord in "NULL".ToEnumerable().Concat(sourceSegment))
+			foreach (string sourceWord in sourceWords)
 			{
 				if (i > 0)
 					sb.Append(" ");

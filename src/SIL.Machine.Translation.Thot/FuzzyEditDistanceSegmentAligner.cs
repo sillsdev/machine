@@ -23,16 +23,16 @@ namespace SIL.Machine.Translation.Thot
 			_scorer = new SegmentScorer(_segmentAligner);
 		}
 
-		public double GetBestAlignment(IList<string> sourceSegment, IList<string> targetSegment, out WordAlignmentMatrix waMatrix)
+		public double GetBestAlignment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment, out WordAlignmentMatrix waMatrix)
 		{
-			var paa = new PairwiseAlignmentAlgorithm<IList<string>, int>(_scorer, sourceSegment, targetSegment, GetWordIndices)
+			var paa = new PairwiseAlignmentAlgorithm<IReadOnlyList<string>, int>(_scorer, sourceSegment, targetSegment, GetWordIndices)
 			{
 				Mode = AlignmentMode.Global,
 				ExpansionCompressionEnabled = true,
 				TranspositionEnabled = true
 			};
 			paa.Compute();
-			Alignment<IList<string>, int> alignment = paa.GetAlignments().First();
+			Alignment<IReadOnlyList<string>, int> alignment = paa.GetAlignments().First();
 			waMatrix = new WordAlignmentMatrix(sourceSegment.Count, targetSegment.Count);
 			double totalScore = 0;
 			for (int c = 0; c < alignment.ColumnCount; c++)
@@ -104,7 +104,7 @@ namespace SIL.Machine.Translation.Thot
 			return totalScore;
 		}
 
-		private static IEnumerable<int> GetWordIndices(IList<string> sequence, out int index, out int count)
+		private static IEnumerable<int> GetWordIndices(IReadOnlyList<string> sequence, out int index, out int count)
 		{
 			index = 0;
 			count = sequence.Count;

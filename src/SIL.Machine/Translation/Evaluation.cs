@@ -8,13 +8,13 @@ namespace SIL.Machine.Translation
 	{
 		private const int BleuN = 4;
 
-		public static double CalculateBleu(IEnumerable<IList<string>> translations, IEnumerable<IList<string>> references)
+		public static double CalculateBleu(IEnumerable<IReadOnlyList<string>> translations, IEnumerable<IReadOnlyList<string>> references)
 		{
 			var precs = new double[BleuN];
 			var total = new double[BleuN];
 			int transWordCount = 0, refWordCount = 0;
 
-			foreach (Tuple<IList<string>, IList<string>> pair in translations.Zip(references))
+			foreach (Tuple<IReadOnlyList<string>, IReadOnlyList<string>> pair in translations.Zip(references))
 			{
 				transWordCount += pair.Item1.Count;
 				refWordCount += pair.Item2.Count;
@@ -40,7 +40,7 @@ namespace SIL.Machine.Translation
 			return bleu;
 		}
 
-		private static void CalculatePrecision(IList<string> translation, IList<string> reference, int n, out int prec, out int total)
+		private static void CalculatePrecision(IReadOnlyList<string> translation, IReadOnlyList<string> reference, int n, out int prec, out int total)
 		{
 			total = n > translation.Count ? 0 : translation.Count - n + 1;
 			int refTotal = n > reference.Count ? 0 : reference.Count - n + 1;

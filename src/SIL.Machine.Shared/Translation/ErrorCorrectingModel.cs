@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace SIL.Machine.Translation
@@ -61,19 +62,27 @@ namespace SIL.Machine.Translation
 				esi.Operations.Add(op);
 		}
 
-		public void CorrectPrefix(IReadOnlyList<string> uncorrectedPrefix, IReadOnlyList<string> prefix, bool isLastWordComplete, IList<string> correctedPrefix,
-			IList<Tuple<int, int>> sourceSegmentation, IList<int> targetSegmentCuts)
+		public int CorrectPrefix(TranslationInfo correction, int uncorrectedPrefixLen, IReadOnlyList<string> prefix, bool isLastWordComplete)
 		{
+			if (uncorrectedPrefixLen == 0)
+			{
+				foreach (string w in prefix)
+				{
+					correction.Target.Add(w);
+					correction.TargetConfidences.Add(-1);
+				}
+				return prefix.Count;
+			}
+
 			IReadOnlyList<EditOperation> wordOps, charOps;
-			_segmentEditDistance.ComputePrefix(uncorrectedPrefix, prefix, isLastWordComplete, false, out wordOps, out charOps);
-			CorrectPrefix(wordOps, charOps, uncorrectedPrefix, prefix, isLastWordComplete, correctedPrefix, sourceSegmentation, targetSegmentCuts);
+			_segmentEditDistance.ComputePrefix(correction.Target.Take(uncorrectedPrefixLen).ToArray(), prefix, isLastWordComplete, false, out wordOps, out charOps);
+			return CorrectPrefix(correction, wordOps, charOps, prefix, isLastWordComplete);
 		}
 
-		private void CorrectPrefix(IReadOnlyList<EditOperation> wordOps, IReadOnlyList<EditOperation> charOps,
-			IReadOnlyList<string> uncorrectedPrefix, IReadOnlyList<string> prefix, bool isLastWordComplete, IList<string> correctedPrefix,
-			IList<Tuple<int, int>> sourceSegmentation, IList<int> targetSegmentCuts)
+		private int CorrectPrefix(TranslationInfo correction, IReadOnlyList<EditOperation> wordOps, IReadOnlyList<EditOperation> charOps,
+			IReadOnlyList<string> prefix, bool isLastWordComplete)
 		{
-			correctedPrefix.Clear();
+			var alignmentColsToCopy = new List<int>();
 
 			int i = 0, j = 0, k = 0;
 			foreach (EditOperation wordOp in wordOps)
@@ -81,50 +90,98 @@ namespace SIL.Machine.Translation
 				switch (wordOp)
 				{
 					case EditOperation.Insert:
-						correctedPrefix.Add(prefix[j]);
-
+						correction.Target.Insert(j, prefix[j]);
+						correction.TargetConfidences.Insert(j, -1);
+						alignmentColsToCopy.Add(-1);
+						for (int l = k; l < correction.Phrases.Count; l++)
+							correction.Phrases[l].TargetCut++;
 						j++;
-						for (int l = 0; l < targetSegmentCuts.Count; l++)
-							targetSegmentCuts[l]++;
 						break;
 
 					case EditOperation.Delete:
+						correction.Target.RemoveAt(j);
+						correction.TargetConfidences.RemoveAt(j);
 						i++;
-						if (k < targetSegmentCuts.Count)
+						if (k < correction.Phrases.Count)
 						{
-							for (int l = 0; l < targetSegmentCuts.Count; l++)
-								targetSegmentCuts[l]--;
-							if (targetSegmentCuts[k] == 0 || (k > 0 && targetSegmentCuts[k] == targetSegmentCuts[k - 1]))
+							for (int l = k; l < correction.Phrases.Count; l++)
+								correction.Phrases[l].TargetCut--;
+
+							if (correction.Phrases[k].TargetCut < 0 || (k > 0 && correction.Phrases[k].TargetCut == correction.Phrases[k - 1].TargetCut))
 							{
-								sourceSegmentation.RemoveAt(k);
-								targetSegmentCuts.RemoveAt(k);
+								correction.Phrases.RemoveAt(k);
+								alignmentColsToCopy.Clear();
+								i = 0;
+							}
+							else if (j > correction.Phrases[k].TargetCut)
+							{
+								ResizeAlignment(correction, k, alignmentColsToCopy);
+								alignmentColsToCopy.Clear();
+								i = 0;
+								k++;
 							}
 						}
 						break;
 
 					case EditOperation.Hit:
-						if (j < prefix.Count - 1 || isLastWordComplete)
-							correctedPrefix.Add(prefix[j]);
-						else
-							correctedPrefix.Add(CorrectWord(charOps, uncorrectedPrefix[i], prefix[j]));
-						i++;
-						j++;
-						if (k < targetSegmentCuts.Count && correctedPrefix.Count >= targetSegmentCuts[k])
-							k++;
-						break;
-
 					case EditOperation.Substitute:
-						correctedPrefix.Add(prefix[j]);
+						if (wordOp == EditOperation.Substitute || j < prefix.Count - 1 || isLastWordComplete)
+							correction.Target[j] = prefix[j];
+						else
+							correction.Target[j] = CorrectWord(charOps, correction.Target[j], prefix[j]);
+
+						if (wordOp == EditOperation.Substitute)
+							correction.TargetConfidences[j] = -1;
+
+						alignmentColsToCopy.Add(i);
+
 						i++;
 						j++;
-						if (k < targetSegmentCuts.Count && correctedPrefix.Count >= targetSegmentCuts[k])
+						if (k < correction.Phrases.Count && j > correction.Phrases[k].TargetCut)
+						{
+							ResizeAlignment(correction, k, alignmentColsToCopy);
+							alignmentColsToCopy.Clear();
+							i = 0;
 							k++;
+						}
 						break;
 				}
 			}
 
-			for (; i < uncorrectedPrefix.Count; i++)
-				correctedPrefix.Add(uncorrectedPrefix[i]);
+			while (j < correction.Target.Count)
+			{
+				alignmentColsToCopy.Add(i);
+
+				i++;
+				j++;
+				if (k < correction.Phrases.Count && j > correction.Phrases[k].TargetCut)
+				{
+					ResizeAlignment(correction, k, alignmentColsToCopy);
+					alignmentColsToCopy.Clear();
+					break;
+				}
+			}
+
+			return alignmentColsToCopy.Count;
+		}
+
+		private void ResizeAlignment(TranslationInfo correction, int phraseIndex, IList<int> colsToCopy)
+		{
+			WordAlignmentMatrix curAlignment = correction.Phrases[phraseIndex].Alignment;
+			if (colsToCopy.Count == curAlignment.J)
+				return;
+
+			var newAlignment = new WordAlignmentMatrix(curAlignment.I, colsToCopy.Count);
+			for (int j = 0; j < newAlignment.J; j++)
+			{
+				if (colsToCopy[j] != -1)
+				{
+					for (int i = 0; i < newAlignment.I; i++)
+						newAlignment[i, j] = curAlignment[i, colsToCopy[j]];
+				}
+			}
+
+			correction.Phrases[phraseIndex].Alignment = newAlignment;
 		}
 
 		private string CorrectWord(IReadOnlyList<EditOperation> charOps, string word, string prefix)
@@ -160,44 +217,6 @@ namespace SIL.Machine.Translation
 
 			sb.Append(word.Substring(i));
 			return sb.ToString();
-		}
-
-		public IReadOnlyList<int> GetLastInsPrefixWordFromEsi(EcmScoreInfo esi)
-		{
-			var results = new int[esi.Operations.Count];
-
-			for (int j = esi.Operations.Count - 1; j >= 0; j--)
-			{
-				switch (esi.Operations[j])
-				{
-					case EditOperation.Hit:
-						results[j] = j - 1;
-						break;
-
-					case EditOperation.Insert:
-						int tj = j;
-						while (tj >= 0 && esi.Operations[tj] == EditOperation.Insert)
-							tj--;
-						if (esi.Operations[tj] == EditOperation.Hit || esi.Operations[tj] == EditOperation.Substitute)
-							tj--;
-						results[j] = tj;
-						break;
-
-					case EditOperation.Delete:
-						results[j] = j;
-						break;
-
-					case EditOperation.Substitute:
-						results[j] = j - 1;
-						break;
-
-					case EditOperation.None:
-						results[j] = 0;
-						break;
-				}
-			}
-
-			return results;
 		}
 	}
 }

@@ -23,12 +23,50 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public void RemoveLastPosition()
+		public void RemoveLast()
 		{
 			if (Scores.Count > 1)
 				Scores.RemoveAt(Scores.Count - 1);
 			if (Operations.Count > 1)
 				Operations.RemoveAt(Operations.Count - 1);
+		}
+
+		public IReadOnlyList<int> GetLastInsPrefixWordFromEsi()
+		{
+			var results = new int[Operations.Count];
+
+			for (int j = Operations.Count - 1; j >= 0; j--)
+			{
+				switch (Operations[j])
+				{
+					case EditOperation.Hit:
+						results[j] = j - 1;
+						break;
+
+					case EditOperation.Insert:
+						int tj = j;
+						while (tj >= 0 && Operations[tj] == EditOperation.Insert)
+							tj--;
+						if (Operations[tj] == EditOperation.Hit || Operations[tj] == EditOperation.Substitute)
+							tj--;
+						results[j] = tj;
+						break;
+
+					case EditOperation.Delete:
+						results[j] = j;
+						break;
+
+					case EditOperation.Substitute:
+						results[j] = j - 1;
+						break;
+
+					case EditOperation.None:
+						results[j] = 0;
+						break;
+				}
+			}
+
+			return results;
 		}
 	}
 }

@@ -48,13 +48,13 @@ namespace SIL.Machine.Translation
 							int i = sourceIndices[0];
 							targetWord = segmentArray[i];
 							confidence = 0;
-							alignment[i, j] = new AlignedWordPair(i, j, confidence, TranslationSources.None);
+							alignment[i, j] = new AlignedWordPair(i, j, TranslationSources.None);
 						}
 					}
 					else
 					{
 						foreach (int i in sourceIndices)
-							alignment[i, j] = new AlignedWordPair(i, j, confidence, TranslationSources.Transfer);
+							alignment[i, j] = new AlignedWordPair(i, j, TranslationSources.Transfer);
 					}
 
 					if (targetWord != null)

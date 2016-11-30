@@ -51,28 +51,9 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public override double Compute(IReadOnlyList<string> x, IReadOnlyList<string> y)
-		{
-			return base.Compute(PreprocessSegment(x), PreprocessSegment(y));
-		}
-
-		public override double Compute(IReadOnlyList<string> x, IReadOnlyList<string> y, out IReadOnlyList<EditOperation> ops)
-		{
-			return base.Compute(PreprocessSegment(x), PreprocessSegment(y), out ops);
-		}
-
-		public override double ComputePrefix(IReadOnlyList<string> x, IReadOnlyList<string> y, bool isLastItemComplete, bool usePrefixDelOp,
-			out IReadOnlyList<EditOperation> ops)
-		{
-			return base.ComputePrefix(PreprocessSegment(x), PreprocessSegment(y), isLastItemComplete, usePrefixDelOp, out ops);
-		}
-
 		public double ComputePrefix(IReadOnlyList<string> x, IReadOnlyList<string> y, bool isLastItemComplete, bool usePrefixDelOp,
 			out IReadOnlyList<EditOperation> wordOps, out IReadOnlyList<EditOperation> charOps)
 		{
-			x = PreprocessSegment(x);
-			y = PreprocessSegment(y);
-
 			double[,] distMatrix;
 			double dist = Compute(x, y, isLastItemComplete, usePrefixDelOp, out distMatrix);
 
@@ -100,8 +81,6 @@ namespace SIL.Machine.Translation
 
 		public void IncrComputePrefixFirstRow(IList<double> scores, IList<double> prevScores, IReadOnlyList<string> yIncr)
 		{
-			yIncr = PreprocessSegment(yIncr);
-
 			if (scores != prevScores)
 			{
 				scores.Clear();
@@ -122,11 +101,10 @@ namespace SIL.Machine.Translation
 
 		public IEnumerable<EditOperation> IncrComputePrefix(IList<double> scores, IList<double> prevScores, string xWord, IReadOnlyList<string> yIncr, bool isLastItemComplete)
 		{
-			IReadOnlyList<string> x = PreprocessSegment(new[] {xWord});
-			var yArray = new string[prevScores.Count - 1];
+			var x = new[] {xWord};
+			var y = new string[prevScores.Count - 1];
 			for (int i = 0; i < yIncr.Count; i++)
-				yArray[prevScores.Count - yIncr.Count - 1 + i] = yIncr[i];
-			IReadOnlyList<string> y = PreprocessSegment(yArray);
+				y[prevScores.Count - yIncr.Count - 1 + i] = yIncr[i];
 
 			double[,] distMatrix = InitDistMatrix(x, y);
 
@@ -146,7 +124,7 @@ namespace SIL.Machine.Translation
 				int j = startPos + jIncr;
 				int iPred, jPred;
 				EditOperation op;
-				double dist = ProcessMatrixCell(x, y, distMatrix, false, j != y.Count || isLastItemComplete,
+				double dist = ProcessMatrixCell(x, y, distMatrix, false, j != y.Length || isLastItemComplete,
 					1, j, out iPred, out jPred, out op);
 				scores[j] = dist;
 				distMatrix[1, j] = dist;
@@ -229,17 +207,6 @@ namespace SIL.Machine.Translation
 		protected override bool IsHit(string x, string y, bool isComplete)
 		{
 			return x == y || (!isComplete && x.StartsWith(y));
-		}
-
-		private static IReadOnlyList<string> PreprocessSegment(IReadOnlyList<string> segment)
-		{
-			var newSegment = new string[segment.Count];
-			// add blank characters in between words
-			for (int i = 0; i < segment.Count - 1; i++)
-				newSegment[i] = segment[i] + " ";
-			if (segment.Count > 0)
-				newSegment[newSegment.Length - 1] = segment[segment.Count - 1];
-			return newSegment;
 		}
 	}
 }

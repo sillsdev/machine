@@ -5,23 +5,28 @@ namespace SIL.Machine.Translation
 {
 	public class WordGraphArc
 	{
-		public WordGraphArc(int predStateIndex, int succStateIndex, double score, IEnumerable<string> words, int srcStartIndex, int srcEndIndex, bool isUnknown)
+		public WordGraphArc(int prevState, int nextState, double score, IEnumerable<string> words, WordAlignmentMatrix alignment,
+			IEnumerable<double> wordConfidences, int sourceStartIndex, int sourceEndIndex, bool isUnknown)
 		{
-			PredStateIndex = predStateIndex;
-			SuccStateIndex = succStateIndex;
+			PrevState = prevState;
+			NextState = nextState;
 			Score = score;
 			Words = words.ToArray();
-			SrcStartIndex = srcStartIndex;
-			SrcEndIndex = srcEndIndex;
+			Alignment = alignment;
+			WordConfidences = wordConfidences.ToArray();
+			SourceStartIndex = sourceStartIndex;
+			SourceEndIndex = sourceEndIndex;
 			IsUnknown = isUnknown;
 		}
 
-		public int PredStateIndex { get; }
-		public int SuccStateIndex { get; }
+		public int PrevState { get; }
+		public int NextState { get; }
 		public double Score { get; }
 		public IReadOnlyList<string> Words { get; }
-		public int SrcStartIndex { get; }
-		public int SrcEndIndex { get; }
+		public WordAlignmentMatrix Alignment { get; }
+		public IReadOnlyList<double> WordConfidences { get; }
+		public int SourceStartIndex { get; }
+		public int SourceEndIndex { get; }
 		public bool IsUnknown { get; }
 	}
 }

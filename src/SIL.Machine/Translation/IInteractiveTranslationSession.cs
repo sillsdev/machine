@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
 {
 	public interface IInteractiveTranslationSession : IDisposable
 	{
-		ReadOnlyList<string> SourceSegment { get; }
+		IReadOnlyList<string> SourceSegment { get; }
 
-		ReadOnlyList<string> Prefix { get; }
+		IReadOnlyList<string> Prefix { get; }
 
 		bool IsLastWordComplete { get; }
 

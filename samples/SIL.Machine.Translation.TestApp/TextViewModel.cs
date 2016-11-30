@@ -425,16 +425,18 @@ namespace SIL.Machine.Translation.TestApp
 			var alignedSourceWords = new List<AlignedWordViewModel>();
 			int targetWordIndex = _tokenizer.Tokenize(TargetSegment)
 				.IndexOf(s => _currentTargetSegmentIndex >= s.Start && _currentTargetSegmentIndex <= s.End);
+			TranslationResult result = TranslationSession.CurrenTranslationResult;
 			if (targetWordIndex != -1)
 			{
-				foreach (AlignedWordPair awi in TranslationSession.CurrenTranslationResult.GetTargetWordPairs(targetWordIndex)
-					.Where(awi => (awi.Sources & TranslationSources.Transfer) == TranslationSources.Transfer || awi.Confidence >= _confidenceThreshold))
+				double confidence = result.GetTargetWordConfidence(targetWordIndex);
+				foreach (AlignedWordPair awi in result.GetTargetWordPairs(targetWordIndex)
+					.Where(awi => confidence >= _confidenceThreshold || (awi.Sources & TranslationSources.Transfer) != 0))
 				{
 					WordTranslationLevel level;
 					Span<int> span = _tokenizer.Tokenize(SourceSegment).ElementAt(awi.SourceIndex);
 					if ((awi.Sources & TranslationSources.Transfer) == TranslationSources.Transfer)
 						level = WordTranslationLevel.Transfer;
-					else if (awi.Confidence >= 0.5f)
+					else if (confidence >= 0.5f)
 						level = WordTranslationLevel.HighConfidence;
 					else
 						level = WordTranslationLevel.LowConfidence;
