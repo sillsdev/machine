@@ -6,14 +6,13 @@ namespace SIL.Machine.Translation
 {
 	public class TranslationResult
 	{
-		private readonly double[] _confidences; 
 		private readonly AlignedWordPair[,] _alignment;
 
 		public TranslationResult(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment, IEnumerable<double> confidences, AlignedWordPair[,] alignment)
 		{
 			SourceSegment = sourceSegment.ToArray();
 			TargetSegment = targetSegment.ToArray();
-			_confidences = confidences.ToArray();
+			TargetWordConfidences = confidences.ToArray();
 			_alignment = alignment;
 		}
 
@@ -21,10 +20,7 @@ namespace SIL.Machine.Translation
 
 		public IReadOnlyList<string> TargetSegment { get; }
 
-		public double GetTargetWordConfidence(int targetIndex)
-		{
-			return _confidences[targetIndex];
-		}
+		public IReadOnlyList<double> TargetWordConfidences { get; }
 
 		public IEnumerable<AlignedWordPair> GetSourceWordPairs(int sourceIndex)
 		{
@@ -60,14 +56,14 @@ namespace SIL.Machine.Translation
 				if (wordPairs.Length == 0)
 				{
 					targetSegment.Add(TargetSegment[j]);
-					confidences.Add(GetTargetWordConfidence(j));
+					confidences.Add(TargetWordConfidences[j]);
 				}
 				else
 				{
-					if (j < prefixCount || GetTargetWordConfidence(j) >= threshold)
+					if (j < prefixCount || TargetWordConfidences[j] >= threshold)
 					{
 						targetSegment.Add(TargetSegment[j]);
-						confidences.Add(GetTargetWordConfidence(j));
+						confidences.Add(TargetWordConfidences[j]);
 						foreach (AlignedWordPair wordPair in wordPairs)
 						{
 							TranslationSources sources = wordPair.Sources;
@@ -94,7 +90,7 @@ namespace SIL.Machine.Translation
 								if (otherWordPair.Sources != TranslationSources.None)
 								{
 									targetSegment.Add(otherResult.TargetSegment[otherWordPair.TargetIndex]);
-									confidences.Add(otherResult.GetTargetWordConfidence(otherWordPair.TargetIndex));
+									confidences.Add(otherResult.TargetWordConfidences[otherWordPair.TargetIndex]);
 									alignment[Tuple.Create(otherWordPair.SourceIndex, targetSegment.Count - 1)] = new AlignedWordPair(otherWordPair.SourceIndex,
 										targetSegment.Count - 1, otherWordPair.Sources);
 									found = true;
@@ -105,7 +101,7 @@ namespace SIL.Machine.Translation
 						if (!found)
 						{
 							targetSegment.Add(TargetSegment[j]);
-							confidences.Add(GetTargetWordConfidence(j));
+							confidences.Add(TargetWordConfidences[j]);
 							foreach (AlignedWordPair wordPair in wordPairs)
 							{
 								alignment[Tuple.Create(wordPair.SourceIndex, targetSegment.Count - 1)] = new AlignedWordPair(wordPair.SourceIndex,

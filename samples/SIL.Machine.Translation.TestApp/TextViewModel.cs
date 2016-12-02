@@ -428,7 +428,7 @@ namespace SIL.Machine.Translation.TestApp
 			TranslationResult result = TranslationSession.CurrenTranslationResult;
 			if (targetWordIndex != -1)
 			{
-				double confidence = result.GetTargetWordConfidence(targetWordIndex);
+				double confidence = result.TargetWordConfidences[targetWordIndex];
 				foreach (AlignedWordPair awi in result.GetTargetWordPairs(targetWordIndex)
 					.Where(awi => confidence >= _confidenceThreshold || (awi.Sources & TranslationSources.Transfer) != 0))
 				{

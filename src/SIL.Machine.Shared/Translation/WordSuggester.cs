@@ -46,7 +46,7 @@ namespace SIL.Machine.Translation
 				if (word.All(char.IsPunctuation))
 					break;
 
-				if ((result.GetTargetWordConfidence(j) >= confidenceThreshold
+				if ((result.TargetWordConfidences[j] >= confidenceThreshold
 					|| result.GetTargetWordPairs(j).Any(awi => (awi.Sources & TranslationSources.Transfer) == TranslationSources.Transfer))
 					&& (inPhrase || isLastWordComplete || result.TargetSegment[j].StartsWith(prefix[prefix.Count - 1])))
 				{
