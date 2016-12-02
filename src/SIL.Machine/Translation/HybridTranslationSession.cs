@@ -6,19 +6,14 @@ namespace SIL.Machine.Translation
 	public class HybridTranslationSession : DisposableBase, IInteractiveTranslationSession
 	{
 		private readonly HybridTranslationEngine _engine;
-		private readonly IInteractiveSmtEngine _smtEngine;
 		private readonly IInteractiveTranslationSession _smtSession;
-		private readonly ITranslationEngine _ruleEngine;
 		private TranslationResult _currentResult;
 		private TranslationResult _ruleResult;
 
-		internal HybridTranslationSession(HybridTranslationEngine engine, IInteractiveSmtEngine smtEngine, IInteractiveTranslationSession smtSession,
-			ITranslationEngine ruleEngine)
+		internal HybridTranslationSession(HybridTranslationEngine engine, IInteractiveTranslationSession smtSession)
 		{
 			_engine = engine;
-			_smtEngine = smtEngine;
 			_smtSession = smtSession;
-			_ruleEngine = ruleEngine;
 		}
 
 		public IReadOnlyList<string> SourceSegment
@@ -61,9 +56,16 @@ namespace SIL.Machine.Translation
 		{
 			CheckDisposed();
 
-			_ruleResult = _ruleEngine.Translate(sourceSegment);
-			TranslationResult smtResult = _smtSession.TranslateInteractively(_ruleResult.SourceSegment);
-			_currentResult = smtResult.Merge(0, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
+			TranslationResult smtResult = _smtSession.TranslateInteractively(sourceSegment);
+			if (_engine.RuleEngine == null)
+			{
+				_currentResult = smtResult;
+			}
+			else
+			{
+				_ruleResult = _engine.RuleEngine.Translate(smtResult.SourceSegment);
+				_currentResult = smtResult.Merge(0, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
+			}
 			return _currentResult;
 		}
 
@@ -83,7 +85,7 @@ namespace SIL.Machine.Translation
 			int prefixCount = _smtSession.Prefix.Count;
 			if (!_smtSession.IsLastWordComplete)
 				prefixCount--;
-			_currentResult = smtResult.Merge(prefixCount, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
+			_currentResult = _ruleResult == null ? smtResult : smtResult.Merge(prefixCount, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
 			return _currentResult;
 		}
 
@@ -103,7 +105,7 @@ namespace SIL.Machine.Translation
 			int prefixCount = _smtSession.Prefix.Count;
 			if (!_smtSession.IsLastWordComplete)
 				prefixCount--;
-			_currentResult = smtResult.Merge(prefixCount, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
+			_currentResult = _ruleResult == null ? smtResult : smtResult.Merge(prefixCount, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
 			return _currentResult;
 		}
 
@@ -128,8 +130,8 @@ namespace SIL.Machine.Translation
 		{
 			CheckDisposed();
 
-			TranslationResult smtResult = _smtEngine.GetBestPhraseAlignment(SourceSegment, Prefix);
-			TranslationResult hybridResult = smtResult.Merge(Prefix.Count, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
+			TranslationResult smtResult = _engine.SmtEngine.GetBestPhraseAlignment(SourceSegment, Prefix);
+			TranslationResult hybridResult = _ruleResult == null ? smtResult : smtResult.Merge(Prefix.Count, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
 
 			var matrix = new WordAlignmentMatrix(SourceSegment.Count, Prefix.Count, AlignmentType.Unknown);
 			var iAligned = new HashSet<int>();
@@ -165,7 +167,7 @@ namespace SIL.Machine.Translation
 				}
 			}
 
-			_smtEngine.Train(SourceSegment, Prefix, matrix);
+			_engine.SmtEngine.Train(SourceSegment, Prefix, matrix);
 		}
 
 		protected override void DisposeManagedResources()

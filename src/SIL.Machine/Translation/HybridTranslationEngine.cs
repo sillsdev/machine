@@ -12,18 +12,19 @@ namespace SIL.Machine.Translation
 	{
 		internal const double RuleEngineThreshold = 0.05;
 
-		private readonly ITranslationEngine _ruleEngine;
-		private readonly IInteractiveSmtEngine _smtEngine;
 		private readonly HashSet<HybridTranslationSession> _sessions;
 
 		public HybridTranslationEngine(IInteractiveSmtEngine smtEngine, ITranslationEngine ruleEngine = null)
 		{
-			_smtEngine = smtEngine;
-			_ruleEngine = ruleEngine;
+			SmtEngine = smtEngine;
+			RuleEngine = ruleEngine;
 			_sessions = new HashSet<HybridTranslationSession>();
 			SourcePreprocessor = s => s;
 			TargetPreprocessor = s => s;
 		}
+
+		public IInteractiveSmtEngine SmtEngine { get; }
+		public ITranslationEngine RuleEngine { get; }
 
 		public Func<string, string> SourcePreprocessor { get; set; }
 		public Func<string, string> TargetPreprocessor { get; set; }
@@ -49,7 +50,7 @@ namespace SIL.Machine.Translation
 				if (_sessions.Count > 0)
 					throw new InvalidOperationException("The engine cannot be trained while there are active sessions open.");
 
-				_smtEngine.Train(SourcePreprocessor, SourceTokenizer, SourceCorpus, TargetPreprocessor, TargetTokenizer, TargetCorpus, progress);
+				SmtEngine.Train(SourcePreprocessor, SourceTokenizer, SourceCorpus, TargetPreprocessor, TargetTokenizer, TargetCorpus, progress);
 			}
 		}
 
@@ -57,15 +58,18 @@ namespace SIL.Machine.Translation
 		{
 			CheckDisposed();
 
-			_smtEngine.Save();
+			SmtEngine.Save();
 		}
 
 		public TranslationResult Translate(IEnumerable<string> segment)
 		{
 			CheckDisposed();
 
-			TranslationResult ruleResult = _ruleEngine.Translate(segment);
-			TranslationResult smtResult = _smtEngine.Translate(ruleResult.SourceSegment);
+			TranslationResult smtResult = SmtEngine.Translate(segment);
+			if (RuleEngine == null)
+				return smtResult;
+
+			TranslationResult ruleResult = RuleEngine.Translate(smtResult.SourceSegment);
 			return smtResult.Merge(0, RuleEngineThreshold, ruleResult);
 		}
 
@@ -73,9 +77,20 @@ namespace SIL.Machine.Translation
 		{
 			CheckDisposed();
 
-			TranslationResult ruleResult = _ruleEngine.Translate(segment);
-			return _smtEngine.Translate(n, ruleResult.SourceSegment)
-				.Select(smtResult => smtResult.Merge(0, RuleEngineThreshold, ruleResult));
+			TranslationResult ruleResult = null;
+			foreach (TranslationResult smtResult in SmtEngine.Translate(n, segment))
+			{
+				if (RuleEngine == null)
+				{
+					yield return smtResult;
+				}
+				else
+				{
+					if (ruleResult == null)
+						ruleResult = RuleEngine.Translate(smtResult.SourceSegment);
+					yield return smtResult.Merge(0, RuleEngineThreshold, ruleResult);
+				}
+			}
 		}
 
 		public TranslationResult Translate(string sourceSegment)
@@ -107,7 +122,7 @@ namespace SIL.Machine.Translation
 		{
 			CheckDisposed();
 
-			var session = new HybridTranslationSession(this, _smtEngine, _smtEngine.StartSession(), _ruleEngine);
+			var session = new HybridTranslationSession(this, SmtEngine.StartSession());
 			lock (_sessions)
 				_sessions.Add(session);
 			return session;
@@ -132,8 +147,8 @@ namespace SIL.Machine.Translation
 					session.Dispose();
 			}
 
-			_smtEngine.Dispose();
-			_ruleEngine.Dispose();
+			SmtEngine.Dispose();
+			RuleEngine?.Dispose();
 		}
 	}
 }
