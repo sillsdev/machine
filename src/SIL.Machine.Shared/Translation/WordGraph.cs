@@ -32,6 +32,8 @@ namespace SIL.Machine.Translation
 		public IReadOnlyList<WordGraphArc> Arcs { get; }
 		public int StateCount { get; }
 
+		public IEnumerable<int> FinalStates => _finalStates;
+
 		public bool IsEmpty => Arcs.Count == 0;
 
 		public IEnumerable<double> ComputeRestScores()
