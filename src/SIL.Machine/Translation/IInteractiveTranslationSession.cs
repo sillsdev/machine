@@ -11,7 +11,7 @@ namespace SIL.Machine.Translation
 
 		bool IsLastWordComplete { get; }
 
-		TranslationResult CurrenTranslationResult { get; }
+		TranslationResult CurrentTranslationResult { get; }
 
 		TranslationResult AddToPrefix(IEnumerable<string> addition, bool isLastWordComplete);
 

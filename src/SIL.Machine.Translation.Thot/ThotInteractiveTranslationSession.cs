@@ -51,7 +51,7 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public TranslationResult CurrenTranslationResult
+		public TranslationResult CurrentTranslationResult
 		{
 			get
 			{

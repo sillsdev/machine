@@ -22,7 +22,7 @@ namespace SIL.Machine.Translation
 
 		public static IEnumerable<int> GetSuggestedWordIndices(this IInteractiveTranslationSession session, double confidenceThreshold)
 		{
-			return WordSuggester.GetSuggestedWordIndices(session.Prefix, session.IsLastWordComplete, session.CurrenTranslationResult, confidenceThreshold);
+			return WordSuggester.GetSuggestedWordIndices(session.Prefix, session.IsLastWordComplete, session.CurrentTranslationResult, confidenceThreshold);
 		}
 
 		public static string RecaseTargetWord(this TranslationResult result, IReadOnlyList<string> sourceSegment, int targetIndex)

@@ -15,8 +15,8 @@ namespace SIL.Machine.Translation
 			_engine = engine;
 			_smtSession = smtSession;
 			_ruleResult = ruleResult;
-			_currentResult = _ruleResult == null ? _smtSession.CurrenTranslationResult
-				: _smtSession.CurrenTranslationResult.Merge(0, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
+			_currentResult = _ruleResult == null ? _smtSession.CurrentTranslationResult
+				: _smtSession.CurrentTranslationResult.Merge(0, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
 		}
 
 		public IReadOnlyList<string> SourceSegment
@@ -46,7 +46,7 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public TranslationResult CurrenTranslationResult
+		public TranslationResult CurrentTranslationResult
 		{
 			get
 			{

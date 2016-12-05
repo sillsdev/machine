@@ -11,7 +11,7 @@ namespace SIL.Machine.Translation.Thot.Tests
 			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
 			using (IInteractiveTranslationSession session = engine.TranslateInteractively("me marcho hoy por la tarde .".Split()))
 			{
-				TranslationResult result = session.CurrenTranslationResult;
+				TranslationResult result = session.CurrentTranslationResult;
 				Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
 			}
 		}
@@ -22,7 +22,7 @@ namespace SIL.Machine.Translation.Thot.Tests
 			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
 			using (IInteractiveTranslationSession session = engine.TranslateInteractively("me marcho hoy por la tarde .".Split()))
 			{
-				TranslationResult result = session.CurrenTranslationResult;
+				TranslationResult result = session.CurrentTranslationResult;
 				Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
 				result = session.AddToPrefix("i am".Split(), true);
 				Assert.That(result.TargetSegment, Is.EqualTo("i am leave today in the afternoon .".Split()));
@@ -37,7 +37,7 @@ namespace SIL.Machine.Translation.Thot.Tests
 			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
 			using (IInteractiveTranslationSession session = engine.TranslateInteractively("caminé a mi habitación .".Split()))
 			{
-				TranslationResult result = session.CurrenTranslationResult;
+				TranslationResult result = session.CurrentTranslationResult;
 				Assert.That(result.TargetSegment, Is.EqualTo("caminé to my room .".Split()));
 				result = session.AddToPrefix("i walked".Split(), true);
 				Assert.That(result.TargetSegment, Is.EqualTo("i walked to my room .".Split()));
@@ -50,7 +50,7 @@ namespace SIL.Machine.Translation.Thot.Tests
 			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
 			using (IInteractiveTranslationSession session = engine.TranslateInteractively("me marcho hoy por la tarde .".Split()))
 			{
-				TranslationResult result = session.CurrenTranslationResult;
+				TranslationResult result = session.CurrentTranslationResult;
 				Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
 				result = session.AddToPrefix("i am".Split(), true);
 				Assert.That(result.TargetSegment, Is.EqualTo("i am leave today in the afternoon .".Split()));
@@ -66,7 +66,7 @@ namespace SIL.Machine.Translation.Thot.Tests
 			{
 				using (IInteractiveTranslationSession session = engine.TranslateInteractively("hablé con recepción .".Split()))
 				{
-					TranslationResult result = session.CurrenTranslationResult;
+					TranslationResult result = session.CurrentTranslationResult;
 					Assert.That(result.TargetSegment, Is.EqualTo("hablé with reception .".Split()));
 					result = session.AddToPrefix("i talked".Split(), true);
 					Assert.That(result.TargetSegment, Is.EqualTo("i talked with reception .".Split()));
@@ -76,7 +76,7 @@ namespace SIL.Machine.Translation.Thot.Tests
 
 				using (IInteractiveTranslationSession session = engine.TranslateInteractively("hablé hasta cinco en punto .".Split()))
 				{
-					TranslationResult result = session.CurrenTranslationResult;
+					TranslationResult result = session.CurrentTranslationResult;
 					Assert.That(result.TargetSegment, Is.EqualTo("talked until five o ' clock .".Split()));
 				}
 			}

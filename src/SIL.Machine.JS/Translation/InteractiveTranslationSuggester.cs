@@ -62,10 +62,10 @@ namespace SIL.Machine.Translation
 				}
 			};
 
-			request.Open("POST", string.Format("{0}/translation/engines/{1}/{2}/actions/train", _engine.BaseUrl,
+			request.Open("POST", string.Format("{0}/translation/engines/{1}/{2}/actions/train-segment", _engine.BaseUrl,
 				_engine.SourceLanguageTag, _engine.TargetLanguageTag));
 			request.SetRequestHeader("Content-Type", "application/json");
-			request.Send(JSON.Stringify(new {source = _sourceSegment, target = Prefix}));
+			request.Send(JSON.Stringify(new {sourceSegment = _sourceSegment, targetSegment = Prefix}));
 		}
 
 		private TranslationResult CreateResult(TranslationInfo info)
