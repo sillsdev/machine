@@ -1,35 +1,20 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using SIL.Machine.Translation;
 
 namespace SIL.Machine.WebApi.Models
 {
 	internal static class ModelsExtensions
 	{
-		public static string RecaseTargetWord(this TranslationResult result, IList<string> sourceSegment, int targetIndex)
+		private static string RecaseTargetWord(this WordAlignmentMatrix alignment, IReadOnlyList<string> sourceSegment, int sourceStartIndex, IReadOnlyList<string> targetSegment, int targetIndex)
 		{
-			string token = result.TargetSegment[targetIndex];
-			if (result.GetTargetWordPairs(targetIndex).Any(awi => IsCapitalCase(sourceSegment[awi.SourceIndex])))
-				token = ToCapitalCase(token);
-			return token;
-		}
-
-		private static bool IsCapitalCase(string token)
-		{
-			return token.Length > 0 && char.IsUpper(token, 0) && Enumerable.Range(1, token.Length - 1).All(i => char.IsLower(token, i));
-		}
-
-		private static string ToCapitalCase(string word)
-		{
-			if (word.Length == 0)
-				return word;
-
-			var sb = new StringBuilder();
-			sb.Append(word.Substring(0, 1).ToUpperInvariant());
-			if (word.Length > 1)
-				sb.Append(word.Substring(1, word.Length - 1).ToLowerInvariant());
-			return sb.ToString();
+			string targetWord = targetSegment[targetIndex];
+			for (int i = 0; i < alignment.I; i++)
+			{
+				if (alignment[i, targetIndex] == AlignmentType.Aligned && sourceSegment[sourceStartIndex + i].IsTitleCase())
+					return targetWord.ToTitleCase();
+			}
+			return targetWord;
 		}
 
 		public static EngineDto CreateDto(this EngineContext engineContext)
@@ -41,15 +26,65 @@ namespace SIL.Machine.WebApi.Models
 			};
 		}
 
-		public static SessionDto CreateDto(this SessionContext sessionContext)
+		public static TranslationResultDto CreateDto(this TranslationResult result, IReadOnlyList<string> sourceSegment)
 		{
-			return new SessionDto
+			var wordPairs = new List<AlignedWordPairDto>();
+			for (int i = 0; i < result.SourceSegment.Count; i++)
 			{
-				Id = sessionContext.Id,
-				SourceSegment = sessionContext.SourceSegment,
-				Prefix = sessionContext.Prefix,
-				ConfidenceThreshold = sessionContext.ConfidenceThreshold
+				for (int j = 0; j < result.TargetSegment.Count; j++)
+				{
+					AlignedWordPair awp;
+					if (result.TryGetWordPair(i, j, out awp))
+						wordPairs.Add(new AlignedWordPairDto {SourceIndex = i, TargetIndex = j, Sources = awp.Sources});
+				}
+			}
+
+			return new TranslationResultDto
+			{
+				Target = Enumerable.Range(0, result.TargetSegment.Count).Select(j => result.RecaseTargetWord(sourceSegment, j)).ToArray(),
+				Confidences = result.TargetWordConfidences,
+				Alignment = wordPairs
 			};
+		}
+
+		public static WordGraphDto CreateDto(this WordGraph wordGraph, IReadOnlyList<string> sourceSegment)
+		{
+			return new WordGraphDto
+			{
+				InitialStateScore = wordGraph.InitialStateScore,
+				FinalStates = wordGraph.FinalStates.ToArray(),
+				Arcs = wordGraph.Arcs.Select(a => a.CreateDto(sourceSegment)).ToArray()
+			};
+		}
+
+		public static WordGraphArcDto CreateDto(this WordGraphArc arc, IReadOnlyList<string> sourceSegment)
+		{
+			return new WordGraphArcDto
+			{
+				PrevState = arc.PrevState,
+				NextState = arc.NextState,
+				Score = arc.Score,
+				Words = Enumerable.Range(0, arc.Words.Count).Select(j => arc.Alignment.RecaseTargetWord(sourceSegment, arc.SourceStartIndex, arc.Words, j)).ToArray(),
+				Confidences = arc.WordConfidences,
+				SourceStartIndex = arc.SourceStartIndex,
+				SourceEndIndex = arc.SourceEndIndex,
+				IsUnknown = arc.IsUnknown,
+				Alignment = arc.Alignment.CreateDto()
+			};
+		}
+
+		public static IReadOnlyList<AlignedWordPairDto> CreateDto(this WordAlignmentMatrix matrix)
+		{
+			var wordPairs = new List<AlignedWordPairDto>();
+			for (int i = 0; i < matrix.I; i++)
+			{
+				for (int j = 0; j < matrix.J; j++)
+				{
+					if (matrix[i, j] == AlignmentType.Aligned)
+						wordPairs.Add(new AlignedWordPairDto {SourceIndex = i, TargetIndex = j});
+				}
+			}
+			return wordPairs;
 		}
 	}
 }

@@ -29,21 +29,29 @@ namespace SIL.Machine.WebApi.Controllers
 			return NotFound();
 		}
 
-		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/actions/start-session")]
-		public IActionResult StartSession(string sourceLanguageTag, string targetLanguageTag)
-		{
-			SessionDto session;
-			if (_engineService.TryCreateSession(sourceLanguageTag, targetLanguageTag, out session))
-				return new ObjectResult(session);
-			return NotFound();
-		}
-
 		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/actions/translate")]
 		public IActionResult Translate(string sourceLanguageTag, string targetLanguageTag, [FromBody] string segment)
 		{
 			string result;
 			if (_engineService.TryTranslate(sourceLanguageTag, targetLanguageTag, segment, out result))
 				return new ObjectResult(result);
+			return NotFound();
+		}
+
+		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/actions/interactive-translate")]
+		public IActionResult InteractiveTranslate(string sourceLanguageTag, string targetLanguageTag, [FromBody] string[] segment)
+		{
+			InteractiveTranslationResultDto result;
+			if (_engineService.TryInteractiveTranslate(sourceLanguageTag, targetLanguageTag, segment, out result))
+				return new ObjectResult(result);
+			return NotFound();
+		}
+
+		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/actions/train-segment")]
+		public IActionResult TrainSegment(string sourceLanguageTag, string targetLanguageTag, [FromBody] SegmentPairDto segmentPair)
+		{
+			if (_engineService.TryTrainSegment(sourceLanguageTag, targetLanguageTag, segmentPair))
+				return Ok();
 			return NotFound();
 		}
 	}

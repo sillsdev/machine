@@ -18,14 +18,12 @@ namespace SIL.Machine.WebApi.Models
 	{
 		private readonly EngineOptions _options;
 		private readonly Dictionary<Tuple<string, string>, EngineContext> _engines;
-		private readonly ISessionService _sessionService;
 		private readonly Timer _cleanupTimer;
 		private bool _isTimerStopped;
 
-		public EngineService(IOptions<EngineOptions> options, ISessionService sessionService)
+		public EngineService(IOptions<EngineOptions> options)
 		{
 			_options = options.Value;
-			_sessionService = sessionService;
 			_engines = new Dictionary<Tuple<string, string>, EngineContext>();
 			foreach (string configDir in Directory.EnumerateDirectories(_options.RootDir))
 			{
@@ -75,29 +73,6 @@ namespace SIL.Machine.WebApi.Models
 			return true;
 		}
 
-		public bool TryCreateSession(string sourceLanguageTag, string targetLanguageTag, out SessionDto session)
-		{
-			EngineContext engineContext;
-			if (!_engines.TryGetValue(Tuple.Create(sourceLanguageTag, targetLanguageTag), out engineContext))
-			{
-				session = null;
-				return false;
-			}
-
-			lock (engineContext)
-			{
-				if (engineContext.Engine == null)
-					engineContext.Engine = LoadEngine(sourceLanguageTag, targetLanguageTag);
-				Debug.Assert(engineContext.Engine != null);
-				string id = Guid.NewGuid().ToString();
-				var sessionContext = new SessionContext(id, engineContext, engineContext.Engine.StartSession());
-				engineContext.SessionCount++;
-				_sessionService.Add(sessionContext);
-				session = sessionContext.CreateDto();
-				return true;
-			}
-		}
-
 		public bool TryTranslate(string sourceLanguageTag, string targetLanguageTag, string segment, out string result)
 		{
 			EngineContext engineContext;
@@ -116,6 +91,48 @@ namespace SIL.Machine.WebApi.Models
 				TranslationResult translationResult = engineContext.Engine.Translate(sourceSegment.Select(w => w.ToLowerInvariant()));
 				result = engineContext.Detokenizer.Detokenize(Enumerable.Range(0, translationResult.TargetSegment.Count)
 					.Select(j => translationResult.RecaseTargetWord(sourceSegment, j)));
+				return true;
+			}
+		}
+
+		public bool TryInteractiveTranslate(string sourceLanguageTag, string targetLanguageTag, IReadOnlyList<string> segment, out InteractiveTranslationResultDto result)
+		{
+			EngineContext engineContext;
+			if (!_engines.TryGetValue(Tuple.Create(sourceLanguageTag, targetLanguageTag), out engineContext))
+			{
+				result = null;
+				return false;
+			}
+
+			lock (engineContext)
+			{
+				if (engineContext.Engine == null)
+					engineContext.Engine = LoadEngine(sourceLanguageTag, targetLanguageTag);
+				Debug.Assert(engineContext.Engine != null);
+				string[] sourceSegment = segment.Select(s => s.ToLowerInvariant()).ToArray();
+
+
+				WordGraph smtWordGraph = engineContext.Engine.SmtEngine.GetWordGraph(sourceSegment);
+				TranslationResult ruleResult = engineContext.Engine.RuleEngine.Translate(sourceSegment);
+
+				result = new InteractiveTranslationResultDto {WordGraph = smtWordGraph.CreateDto(segment), RuleResult = ruleResult.CreateDto(segment)};
+				return true;
+			}
+		}
+
+		public bool TryTrainSegment(string sourceLanguageTag, string targetLanguageTag, SegmentPairDto segmentPair)
+		{
+			EngineContext engineContext;
+			if (!_engines.TryGetValue(Tuple.Create(sourceLanguageTag, targetLanguageTag), out engineContext))
+				return false;
+
+			lock (engineContext)
+			{
+				if (engineContext.Engine == null)
+					engineContext.Engine = LoadEngine(sourceLanguageTag, targetLanguageTag);
+				Debug.Assert(engineContext.Engine != null);
+
+				engineContext.Engine.TrainSegment(segmentPair.SourceSegment.Select(s => s.ToLowerInvariant()), segmentPair.TargetSegment.Select(s => s.ToLowerInvariant()));
 				return true;
 			}
 		}

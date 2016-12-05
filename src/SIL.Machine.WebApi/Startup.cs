@@ -27,14 +27,21 @@ namespace SIL.Machine.WebApi
 		public void ConfigureServices(IServiceCollection services)
 		{
 			// Add framework services.
+			services.AddCors(options =>
+				{
+					options.AddPolicy("GlobalPolicy", policy => policy
+						.AllowAnyOrigin()
+						.AllowAnyMethod()
+						.AllowAnyHeader()
+						.AllowCredentials());
+				});
+
 			services.AddMvc()
 				.AddJsonOptions(a => a.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
 
 			services.Configure<EngineOptions>(Configuration.GetSection("TranslationEngine"));
-			services.Configure<SessionOptions>(Configuration.GetSection("TranslationSession"));
 
 			services.AddSingleton<IEngineService, EngineService>();
-			services.AddSingleton<ISessionService, SessionService>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -42,6 +49,8 @@ namespace SIL.Machine.WebApi
 		{
 			loggerFactory.AddConsole(Configuration.GetSection("Logging"));
 			loggerFactory.AddDebug();
+
+			app.UseCors("GlobalPolicy");
 
 			app.UseMvc();
 		}
