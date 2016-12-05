@@ -1,5 +1,6 @@
 {
   "output": "Bridge/output",
+  "fileNameCasing":  "Lowercase", 
   "generateTypeScript": true
 
   // More options available at: 

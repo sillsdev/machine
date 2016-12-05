@@ -120,20 +120,20 @@ namespace SIL.Machine.Translation.Thot.Tests
 		}
 
 		[Test]
-		public void Train_TranslationCorrect()
+		public void TrainSegment_TranslationCorrect()
 		{
 			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
 			{
 				TranslationResult result = engine.Translate("esto es una prueba .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("esto is a prueba .".Split()));
-				engine.Train("esto es una prueba .".Split(), "this is a test .".Split());
+				engine.TrainSegment("esto es una prueba .".Split(), "this is a test .".Split());
 				result = engine.Translate("esto es una prueba .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("this is a test .".Split()));
 			}
 		}
 
 		[Test]
-		public void Train_AlignmentSpecified_TranslationCorrect()
+		public void TrainSegment_AlignmentSpecified_TranslationCorrect()
 		{
 			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
 			{
@@ -147,7 +147,7 @@ namespace SIL.Machine.Translation.Thot.Tests
 				SetAligned(matrix, 4, 2);
 				SetSourceNotAligned(matrix, 5);
 				SetAligned(matrix, 8, 4);
-				engine.Train("maria no dio una bofetada a la bruja verde .".Split(), "mary didn't slap the green witch .".Split(), matrix);
+				engine.TrainSegment("maria no dio una bofetada a la bruja verde .".Split(), "mary didn't slap the green witch .".Split(), matrix);
 				result = engine.Translate("maria es una bruja .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("mary is a witch .".Split()));
 			}

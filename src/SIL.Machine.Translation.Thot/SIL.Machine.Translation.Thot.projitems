@@ -21,6 +21,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)ThotLanguageModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ThotSingleWordAlignmentModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ThotSmtEngine.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ThotSmtSession.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ThotInteractiveTranslationSession.cs" />
   </ItemGroup>
 </Project>

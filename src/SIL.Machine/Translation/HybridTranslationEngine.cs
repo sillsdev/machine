@@ -12,13 +12,13 @@ namespace SIL.Machine.Translation
 	{
 		internal const double RuleEngineThreshold = 0.05;
 
-		private readonly HashSet<HybridTranslationSession> _sessions;
+		private readonly HashSet<HybridInteractiveTranslationSession> _sessions;
 
 		public HybridTranslationEngine(IInteractiveSmtEngine smtEngine, ITranslationEngine ruleEngine = null)
 		{
 			SmtEngine = smtEngine;
 			RuleEngine = ruleEngine;
-			_sessions = new HashSet<HybridTranslationSession>();
+			_sessions = new HashSet<HybridInteractiveTranslationSession>();
 			SourcePreprocessor = s => s;
 			TargetPreprocessor = s => s;
 		}
@@ -101,6 +101,93 @@ namespace SIL.Machine.Translation
 			return Translate(Preprocess(SourcePreprocessor, SourceTokenizer, sourceSegment));
 		}
 
+		IInteractiveTranslationSession IInteractiveTranslationEngine.TranslateInteractively(IEnumerable<string> segment)
+		{
+			return TranslateInteractively(segment);
+		}
+
+		public HybridInteractiveTranslationSession TranslateInteractively(IEnumerable<string> segment)
+		{
+			CheckDisposed();
+
+			IInteractiveTranslationSession smtSession = SmtEngine.TranslateInteractively(segment);
+			TranslationResult ruleResult = RuleEngine?.Translate(smtSession.SourceSegment);
+			var session = new HybridInteractiveTranslationSession(this, smtSession, ruleResult);
+			lock (_sessions)
+				_sessions.Add(session);
+			return session;
+		}
+
+		public HybridInteractiveTranslationSession TranslateInteractively(string segment)
+		{
+			CheckDisposed();
+			CheckSourceTokenizer();
+
+			return TranslateInteractively(Preprocess(SourcePreprocessor, SourceTokenizer, segment));
+		}
+
+		public void TrainSegment(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment)
+		{
+			CheckDisposed();
+
+			string[] sourceSegmentArray = sourceSegment.ToArray();
+			string[] targetSegmentArray = targetSegment.ToArray();
+
+			TranslationResult ruleResult = RuleEngine?.Translate(sourceSegmentArray);
+			TrainSegment(sourceSegmentArray, targetSegmentArray, ruleResult);
+		}
+
+		public void TrainSegment(string sourceSegment, string targetSegment)
+		{
+			CheckDisposed();
+			CheckSourceTokenizer();
+			CheckTargetTokenizer();
+
+			TrainSegment(Preprocess(SourcePreprocessor, SourceTokenizer, sourceSegment), Preprocess(TargetPreprocessor, TargetTokenizer, targetSegment));
+		}
+
+		internal void TrainSegment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment, TranslationResult ruleResult)
+		{
+			TranslationResult smtResult = SmtEngine.GetBestPhraseAlignment(sourceSegment, targetSegment);
+			TranslationResult hybridResult = ruleResult == null ? smtResult : smtResult.Merge(targetSegment.Count, RuleEngineThreshold, ruleResult);
+
+			var matrix = new WordAlignmentMatrix(sourceSegment.Count, targetSegment.Count, AlignmentType.Unknown);
+			var iAligned = new HashSet<int>();
+			for (int j = 0; j < targetSegment.Count; j++)
+			{
+				bool jAligned = false;
+				foreach (AlignedWordPair wp in hybridResult.GetTargetWordPairs(j))
+				{
+					if ((wp.Sources & TranslationSources.Transfer) > 0)
+					{
+						matrix[wp.SourceIndex, j] = AlignmentType.Aligned;
+						iAligned.Add(wp.SourceIndex);
+						jAligned = true;
+					}
+				}
+
+				if (jAligned)
+				{
+					for (int i = 0; i < sourceSegment.Count; i++)
+					{
+						if (matrix[i, j] == AlignmentType.Unknown)
+							matrix[i, j] = AlignmentType.NotAligned;
+					}
+				}
+			}
+
+			foreach (int i in iAligned)
+			{
+				for (int j = 0; j < targetSegment.Count; j++)
+				{
+					if (matrix[i, j] == AlignmentType.Unknown)
+						matrix[i, j] = AlignmentType.NotAligned;
+				}
+			}
+
+			SmtEngine.TrainSegment(sourceSegment, targetSegment, matrix);
+		}
+
 		internal void CheckSourceTokenizer()
 		{
 			if (SourceTokenizer == null)
@@ -113,27 +200,12 @@ namespace SIL.Machine.Translation
 				throw new InvalidOperationException("A target tokenizer is not specified.");
 		}
 
-		IInteractiveTranslationSession IInteractiveTranslationEngine.StartSession()
-		{
-			return StartSession();
-		}
-
-		public HybridTranslationSession StartSession()
-		{
-			CheckDisposed();
-
-			var session = new HybridTranslationSession(this, SmtEngine.StartSession());
-			lock (_sessions)
-				_sessions.Add(session);
-			return session;
-		}
-
 		internal static IEnumerable<string> Preprocess(Func<string, string> preprocessor, ITokenizer<string, int> tokenizer, string segment)
 		{
 			return tokenizer.TokenizeToStrings(preprocessor(segment));
 		}
 
-		internal void RemoveSession(HybridTranslationSession session)
+		internal void RemoveSession(HybridInteractiveTranslationSession session)
 		{
 			lock (_sessions)
 				_sessions.Remove(session);
@@ -143,7 +215,7 @@ namespace SIL.Machine.Translation
 		{
 			lock (_sessions)
 			{
-				foreach (HybridTranslationSession session in _sessions.ToArray())
+				foreach (HybridInteractiveTranslationSession session in _sessions.ToArray())
 					session.Dispose();
 			}
 

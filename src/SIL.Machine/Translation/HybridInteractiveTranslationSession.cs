@@ -3,17 +3,20 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
 {
-	public class HybridTranslationSession : DisposableBase, IInteractiveTranslationSession
+	public class HybridInteractiveTranslationSession : DisposableBase, IInteractiveTranslationSession
 	{
 		private readonly HybridTranslationEngine _engine;
 		private readonly IInteractiveTranslationSession _smtSession;
+		private readonly TranslationResult _ruleResult;
 		private TranslationResult _currentResult;
-		private TranslationResult _ruleResult;
 
-		internal HybridTranslationSession(HybridTranslationEngine engine, IInteractiveTranslationSession smtSession)
+		internal HybridInteractiveTranslationSession(HybridTranslationEngine engine, IInteractiveTranslationSession smtSession, TranslationResult ruleResult)
 		{
 			_engine = engine;
 			_smtSession = smtSession;
+			_ruleResult = ruleResult;
+			_currentResult = _ruleResult == null ? _smtSession.CurrenTranslationResult
+				: _smtSession.CurrenTranslationResult.Merge(0, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
 		}
 
 		public IReadOnlyList<string> SourceSegment
@@ -50,31 +53,6 @@ namespace SIL.Machine.Translation
 				CheckDisposed();
 				return _currentResult;
 			}
-		}
-
-		public TranslationResult TranslateInteractively(IEnumerable<string> sourceSegment)
-		{
-			CheckDisposed();
-
-			TranslationResult smtResult = _smtSession.TranslateInteractively(sourceSegment);
-			if (_engine.RuleEngine == null)
-			{
-				_currentResult = smtResult;
-			}
-			else
-			{
-				_ruleResult = _engine.RuleEngine.Translate(smtResult.SourceSegment);
-				_currentResult = smtResult.Merge(0, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
-			}
-			return _currentResult;
-		}
-
-		public TranslationResult TranslateInteractively(string sourceSegment)
-		{
-			CheckDisposed();
-			_engine.CheckSourceTokenizer();
-
-			return TranslateInteractively(HybridTranslationEngine.Preprocess(_engine.SourcePreprocessor, _engine.SourceTokenizer, sourceSegment));
 		}
 
 		public TranslationResult SetPrefix(IEnumerable<string> prefix, bool isLastWordComplete)
@@ -117,57 +95,11 @@ namespace SIL.Machine.Translation
 			return AddToPrefix(HybridTranslationEngine.Preprocess(_engine.TargetPreprocessor, _engine.TargetTokenizer, addition), isLastWordComplete);
 		}
 
-		public void Reset()
-		{
-			CheckDisposed();
-
-			_currentResult = null;
-			_ruleResult = null;
-			_smtSession.Reset();
-		}
-
 		public void Approve()
 		{
 			CheckDisposed();
 
-			TranslationResult smtResult = _engine.SmtEngine.GetBestPhraseAlignment(SourceSegment, Prefix);
-			TranslationResult hybridResult = _ruleResult == null ? smtResult : smtResult.Merge(Prefix.Count, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
-
-			var matrix = new WordAlignmentMatrix(SourceSegment.Count, Prefix.Count, AlignmentType.Unknown);
-			var iAligned = new HashSet<int>();
-			for (int j = 0; j < Prefix.Count; j++)
-			{
-				bool jAligned = false;
-				foreach (AlignedWordPair wp in hybridResult.GetTargetWordPairs(j))
-				{
-					if ((wp.Sources & TranslationSources.Transfer) > 0)
-					{
-						matrix[wp.SourceIndex, j] = AlignmentType.Aligned;
-						iAligned.Add(wp.SourceIndex);
-						jAligned = true;
-					}
-				}
-
-				if (jAligned)
-				{
-					for (int i = 0; i < SourceSegment.Count; i++)
-					{
-						if (matrix[i, j] == AlignmentType.Unknown)
-							matrix[i, j] = AlignmentType.NotAligned;
-					}
-				}
-			}
-
-			foreach (int i in iAligned)
-			{
-				for (int j = 0; j < Prefix.Count; j++)
-				{
-					if (matrix[i, j] == AlignmentType.Unknown)
-						matrix[i, j] = AlignmentType.NotAligned;
-				}
-			}
-
-			_engine.SmtEngine.Train(SourceSegment, Prefix, matrix);
+			_engine.TrainSegment(SourceSegment, Prefix, _ruleResult);
 		}
 
 		protected override void DisposeManagedResources()

@@ -1,7 +1,9 @@
-﻿namespace SIL.Machine.Translation
+﻿using System.Collections.Generic;
+
+namespace SIL.Machine.Translation
 {
 	public interface IInteractiveTranslationEngine : ITranslationEngine
 	{
-		IInteractiveTranslationSession StartSession();
+		IInteractiveTranslationSession TranslateInteractively(IEnumerable<string> segment);
 	}
 }

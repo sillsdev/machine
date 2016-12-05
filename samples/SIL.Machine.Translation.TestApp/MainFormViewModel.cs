@@ -22,8 +22,7 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly RelayCommand<object> _saveProjectCommand;
 		private readonly RelayCommand<object> _rebuildProjectCommand; 
 		private readonly RelayCommand<object> _closeCommand;
-		private HybridTranslationEngine _translationEngine;
-		private HybridTranslationSession _translationSession;
+		private HybridTranslationEngine _engine;
 		private readonly ShapeSpanFactory _spanFactory;
 		private readonly TraceManager _hcTraceManager;
 		private int _confidenceThreshold;
@@ -150,8 +149,7 @@ namespace SIL.Machine.Translation.TestApp
 				transferEngine = new TransferEngine(srcMorpher, new SimpleTransferer(new GlossMorphemeMapper(trgMorpher)), trgMorpher);
 			}
 			var smtEngine = new ThotSmtEngine(Path.Combine(configDir, smtConfig));
-			_translationEngine = new HybridTranslationEngine(smtEngine, transferEngine);
-			_translationSession = _translationEngine.StartSession();
+			_engine = new HybridTranslationEngine(smtEngine, transferEngine);
 
 			var sourceTexts = new List<IText>();
 			var targetTexts = new List<IText>();
@@ -169,7 +167,7 @@ namespace SIL.Machine.Translation.TestApp
 					if (trgTextFile == null)
 						return false;
 
-					var text = new TextViewModel(_tokenizer, name, Path.Combine(configDir, srcTextFile), Path.Combine(configDir, trgTextFile)) {TranslationSession = _translationSession};
+					var text = new TextViewModel(_tokenizer, name, Path.Combine(configDir, srcTextFile), Path.Combine(configDir, trgTextFile), _engine);
 					text.PropertyChanged += TextPropertyChanged;
 					_texts.Add(text);
 
@@ -180,12 +178,12 @@ namespace SIL.Machine.Translation.TestApp
 			if (_texts.Count == 0)
 				return false;
 
-			_translationEngine.SourcePreprocessor = s => s.ToLowerInvariant();
-			_translationEngine.SourceTokenizer = _tokenizer;
-			_translationEngine.SourceCorpus = new DictionaryTextCorpus(sourceTexts);
-			_translationEngine.TargetPreprocessor = s => s.ToLowerInvariant();
-			_translationEngine.TargetTokenizer = _tokenizer;
-			_translationEngine.TargetCorpus = new DictionaryTextCorpus(targetTexts);
+			_engine.SourcePreprocessor = s => s.ToLowerInvariant();
+			_engine.SourceTokenizer = _tokenizer;
+			_engine.SourceCorpus = new DictionaryTextCorpus(sourceTexts);
+			_engine.TargetPreprocessor = s => s.ToLowerInvariant();
+			_engine.TargetTokenizer = _tokenizer;
+			_engine.TargetCorpus = new DictionaryTextCorpus(targetTexts);
 
 			CurrentText = _texts[0];
 			AcceptChanges();
@@ -197,7 +195,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void SaveProject()
 		{
-			_translationEngine.Save();
+			_engine.Save();
 			foreach (TextViewModel text in _texts)
 				text.SaveTargetText();
 			AcceptChanges();
@@ -208,15 +206,10 @@ namespace SIL.Machine.Translation.TestApp
 			CurrentText = null;
 			_texts.Clear();
 			CurrentText = new TextViewModel(_tokenizer);
-			if (_translationSession != null)
+			if (_engine != null)
 			{
-				_translationSession.Dispose();
-				_translationSession = null;
-			}
-			if (_translationEngine != null)
-			{
-				_translationEngine.Dispose();
-				_translationEngine = null;
+				_engine.Dispose();
+				_engine = null;
 			}
 			_saveProjectCommand.UpdateCanExecute();
 			_rebuildProjectCommand.UpdateCanExecute();
@@ -226,7 +219,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		private bool CanRebuildProject()
 		{
-			return _translationEngine != null;
+			return _engine != null;
 		}
 
 		private void RebuildProject()
@@ -234,8 +227,7 @@ namespace SIL.Machine.Translation.TestApp
 			_currentText.IsActive = false;
 			if (IsChanged)
 				SaveProject();
-			_translationSession.Dispose();
-			var progressViewModel = new ProgressViewModel(vm => _translationEngine.Rebuild(vm))
+			var progressViewModel = new ProgressViewModel(vm => _engine.Rebuild(vm))
 			{
 				DisplayName = "Rebuilding..."
 			};
@@ -244,9 +236,6 @@ namespace SIL.Machine.Translation.TestApp
 				progressDialog.DataContext = progressViewModel;
 				progressDialog.ShowModal();
 			}
-			_translationSession = _translationEngine.StartSession();
-			foreach (TextViewModel text in _texts)
-				text.TranslationSession = _translationSession;
 			_currentText.IsActive = true;
 		}
 
