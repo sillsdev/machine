@@ -332,26 +332,9 @@ namespace SIL.Machine.Translation.TestApp
 		private string RecaseWord(TranslationResult result, int j)
 		{
 			string word = result.TargetSegment[j];
-			if (result.GetTargetWordPairs(j).Any(awi => IsCapitalCase(_sourceSegmentWords[awi.SourceIndex])))
-				word = ToCapitalCase(word);
+			if (result.GetTargetWordPairs(j).Any(awi => _sourceSegmentWords[awi.SourceIndex].IsTitleCase()))
+				word = word.ToTitleCase();
 			return word;
-		}
-
-		private static bool IsCapitalCase(string word)
-		{
-			return word.Length > 0 && char.IsUpper(word, 0) && Enumerable.Range(1, word.Length - 1).All(i => char.IsLower(word, i));
-		}
-
-		private static string ToCapitalCase(string word)
-		{
-			if (word.Length == 0)
-				return word;
-
-			var sb = new StringBuilder();
-			sb.Append(word.Substring(0, 1).ToUpperInvariant());
-			if (word.Length > 1)
-				sb.Append(word.Substring(1, word.Length - 1).ToLowerInvariant());
-			return sb.ToString();
 		}
 
 		private void EndSegmentTranslation()
