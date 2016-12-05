@@ -320,21 +320,13 @@ namespace SIL.Machine.Translation.TestApp
 			if (!_targetSegments[_currentSegment].IsApproved)
 			{
 				_suggestions.ReplaceAll(TranslationSession.GetSuggestedWordIndices(_confidenceThreshold)
-					.Select(j => new SuggestionViewModel(this, RecaseWord(TranslationSession.CurrenTranslationResult, j))));
+					.Select(j => new SuggestionViewModel(this, TranslationSession.CurrenTranslationResult.RecaseTargetWord(_sourceSegmentWords, j))));
 			}
 			else
 			{
 				_suggestions.Clear();
 			}
 			_applyAllSuggestionsCommand.UpdateCanExecute();
-		}
-
-		private string RecaseWord(TranslationResult result, int j)
-		{
-			string word = result.TargetSegment[j];
-			if (result.GetTargetWordPairs(j).Any(awi => _sourceSegmentWords[awi.SourceIndex].IsTitleCase()))
-				word = word.ToTitleCase();
-			return word;
 		}
 
 		private void EndSegmentTranslation()

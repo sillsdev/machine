@@ -25,6 +25,14 @@ namespace SIL.Machine.Translation
 			return WordSuggester.GetSuggestedWordIndices(session.Prefix, session.IsLastWordComplete, session.CurrenTranslationResult, confidenceThreshold);
 		}
 
+		public static string RecaseTargetWord(this TranslationResult result, IReadOnlyList<string> sourceSegment, int targetIndex)
+		{
+			string token = result.TargetSegment[targetIndex];
+			if (result.GetTargetWordPairs(targetIndex).Any(awi => sourceSegment[awi.SourceIndex].IsTitleCase()))
+				token = token.ToTitleCase();
+			return token;
+		}
+
 		public static bool IsTitleCase(this string str)
 		{
 			return str.Length > 0 && char.IsUpper(str, 0) && Enumerable.Range(1, str.Length - 1).All(i => char.IsLower(str, i));
