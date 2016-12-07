@@ -1,16 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using Bridge.Html5;
+using SIL.Machine.Web;
 
 namespace SIL.Machine.Translation
 {
 	public class TranslationEngine
 	{
 		public TranslationEngine(string baseUrl, string sourceLanguageTag, string targetLanguageTag)
+			: this(baseUrl, sourceLanguageTag, targetLanguageTag, new AjaxWebClient())
+		{
+		}
+
+		public TranslationEngine(string baseUrl, string sourceLanguageTag, string targetLanguageTag, IWebClient webClient)
 		{
 			BaseUrl = baseUrl;
 			SourceLanguageTag = sourceLanguageTag;
 			TargetLanguageTag = targetLanguageTag;
+			WebClient = webClient;
 			ErrorCorrectingModel = new ErrorCorrectingModel();
 			ConfidenceThreshold = 0.2;
 		}
@@ -19,38 +26,22 @@ namespace SIL.Machine.Translation
 		public string TargetLanguageTag { get; }
 		public string BaseUrl { get; }
 		public double ConfidenceThreshold { get; set; }
+		internal IWebClient WebClient { get; }
 		internal ErrorCorrectingModel ErrorCorrectingModel { get; }
 
 		public void GetSuggester(string[] sourceSegment, Action<InteractiveTranslationSuggester> onFinished)
 		{
-			var request = new XMLHttpRequest();
-			request.OnReadyStateChange = () =>
-			{
-				if (request.ReadyState != AjaxReadyState.Done)
-					return;
-
-				if (request.Status == 200 || request.Status == 304)
-				{
-					onFinished(CreateSuggester(sourceSegment, JSON.Parse(request.ResponseText)));
-				}
-				else
-				{
-					onFinished(null);
-				}
-			};
-
 			string url = string.Format("{0}/translation/engines/{1}/{2}/actions/interactive-translate", BaseUrl, SourceLanguageTag, TargetLanguageTag);
-			request.Open("POST", url);
 			string body = JSON.Stringify(sourceSegment);
-			request.SetRequestHeader("Content-type", "application/json");
-			request.Send(body);
+			WebClient.Send("POST", url, body, "application/json", responseText => onFinished(CreateSuggester(sourceSegment, JSON.Parse(responseText))),
+				status => onFinished(null));
 		}
 
 		private InteractiveTranslationSuggester CreateSuggester(string[] sourceSegment, dynamic json)
 		{
 			WordGraph wordGraph = ParseWordGraph(json["wordGraph"]);
-			TranslationResult transferResult = ParseRuleResult(sourceSegment, json["ruleResult"]);
-			return new InteractiveTranslationSuggester(this, wordGraph, transferResult, sourceSegment);
+			TranslationResult ruleResult = ParseRuleResult(sourceSegment, json["ruleResult"]);
+			return new InteractiveTranslationSuggester(this, wordGraph, ruleResult, sourceSegment);
 		}
 
 		private WordGraph ParseWordGraph(dynamic jsonWordGraph)

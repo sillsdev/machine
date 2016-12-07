@@ -1,10 +1,10 @@
 {
   "output": "Bridge/output",
   "fileNameCasing": "Lowercase",
+  "outputFormatting": "Formatted",
   "cleanOutputFolderBeforeBuild": "true",
   "outputBy": "Project",
-  "fileName": "sil.machine.js",
-  "generateTypeScript": true
+  "fileName": "sil.machine.tests.js"
 
   // More options available at:
   // http://bridge.net/docs/global-configuration

@@ -80,6 +80,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SIL.Machine.Shared", "src\S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.JS", "src\SIL.Machine.JS\SIL.Machine.JS.csproj", "{CA453C16-D1DA-4469-8BC3-62C67DA44ECE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.JS.Tests", "tests\SIL.Machine.JS.Tests\SIL.Machine.JS.Tests.csproj", "{4E17DF5D-E308-479A-A3E1-61E50B616F01}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\SIL.Machine.Shared\SIL.Machine.Shared.projitems*{06b55abb-059c-4340-adf5-ef0e229fe7aa}*SharedItemsImports = 4
@@ -160,6 +162,10 @@ Global
 		{CA453C16-D1DA-4469-8BC3-62C67DA44ECE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA453C16-D1DA-4469-8BC3-62C67DA44ECE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA453C16-D1DA-4469-8BC3-62C67DA44ECE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E17DF5D-E308-479A-A3E1-61E50B616F01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E17DF5D-E308-479A-A3E1-61E50B616F01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E17DF5D-E308-479A-A3E1-61E50B616F01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E17DF5D-E308-479A-A3E1-61E50B616F01}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -184,5 +190,6 @@ Global
 		{262D7524-4627-44EE-A788-3437B4AE6F0F} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
 		{C91D680F-267B-45BD-82A9-45BF7D8AA496} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
 		{CA453C16-D1DA-4469-8BC3-62C67DA44ECE} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
+		{4E17DF5D-E308-479A-A3E1-61E50B616F01} = {66246A1C-8D45-40FB-A660-C58577122CA7}
 	EndGlobalSection
 EndGlobal

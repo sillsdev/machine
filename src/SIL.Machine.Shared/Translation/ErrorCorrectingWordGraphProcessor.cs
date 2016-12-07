@@ -48,8 +48,11 @@ namespace SIL.Machine.Translation
 				_stateBestPrevArcs.Add(new List<int>());
 			}
 
-			_ecm.SetupInitialEsi(_stateEcmScoreInfos[WordGraph.InitialState]);
-			UpdateInitialStateBestScores();
+			if (!_wordGraph.IsEmpty)
+			{
+				_ecm.SetupInitialEsi(_stateEcmScoreInfos[WordGraph.InitialState]);
+				UpdateInitialStateBestScores();
+			}
 		}
 
 		private void InitArcs()
@@ -212,9 +215,12 @@ namespace SIL.Machine.Translation
 			if (prefixDiff.Count == 0)
 				return;
 
-			EcmScoreInfo prevInitialEsi = _stateEcmScoreInfos[WordGraph.InitialState];
-			_ecm.ExtendInitialEsi(_stateEcmScoreInfos[WordGraph.InitialState], prevInitialEsi, prefixDiff);
-			UpdateInitialStateBestScores();
+			if (!_wordGraph.IsEmpty)
+			{
+				EcmScoreInfo prevInitialEsi = _stateEcmScoreInfos[WordGraph.InitialState];
+				_ecm.ExtendInitialEsi(_stateEcmScoreInfos[WordGraph.InitialState], prevInitialEsi, prefixDiff);
+				UpdateInitialStateBestScores();
+			}
 
 			for (int arcIndex = 0; arcIndex < _wordGraph.Arcs.Count; arcIndex++)
 			{
