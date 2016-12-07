@@ -42,7 +42,7 @@ namespace SIL.Machine.WebApi.Models
 			return new TranslationResultDto
 			{
 				Target = Enumerable.Range(0, result.TargetSegment.Count).Select(j => result.RecaseTargetWord(sourceSegment, j)).ToArray(),
-				Confidences = result.TargetWordConfidences,
+				Confidences = result.TargetWordConfidences.Select(c => (float) c).ToArray(),
 				Alignment = wordPairs
 			};
 		}
@@ -51,7 +51,7 @@ namespace SIL.Machine.WebApi.Models
 		{
 			return new WordGraphDto
 			{
-				InitialStateScore = wordGraph.InitialStateScore,
+				InitialStateScore = (float) wordGraph.InitialStateScore,
 				FinalStates = wordGraph.FinalStates.ToArray(),
 				Arcs = wordGraph.Arcs.Select(a => a.CreateDto(sourceSegment)).ToArray()
 			};
@@ -63,9 +63,9 @@ namespace SIL.Machine.WebApi.Models
 			{
 				PrevState = arc.PrevState,
 				NextState = arc.NextState,
-				Score = arc.Score,
+				Score = (float) arc.Score,
 				Words = Enumerable.Range(0, arc.Words.Count).Select(j => arc.Alignment.RecaseTargetWord(sourceSegment, arc.SourceStartIndex, arc.Words, j)).ToArray(),
-				Confidences = arc.WordConfidences,
+				Confidences = arc.WordConfidences.Select(c => (float) c).ToArray(),
 				SourceStartIndex = arc.SourceStartIndex,
 				SourceEndIndex = arc.SourceEndIndex,
 				IsUnknown = arc.IsUnknown,
