@@ -22,10 +22,15 @@ namespace SIL.Machine.Translation
 
 		public static string RecaseTargetWord(this TranslationResult result, IReadOnlyList<string> sourceSegment, int targetIndex)
 		{
-			string token = result.TargetSegment[targetIndex];
-			if (result.Alignment.GetColumnWordAlignedIndices(targetIndex).Any(i => sourceSegment[i].IsTitleCase()))
-				token = token.ToTitleCase();
-			return token;
+			return result.Alignment.RecaseTargetWord(sourceSegment, 0, result.TargetSegment, targetIndex);
+		}
+
+		public static string RecaseTargetWord(this WordAlignmentMatrix alignment, IReadOnlyList<string> sourceSegment, int sourceStartIndex, IReadOnlyList<string> targetSegment, int targetIndex)
+		{
+			string targetWord = targetSegment[targetIndex];
+			if (alignment.GetColumnWordAlignedIndices(targetIndex).Any(i => sourceSegment[sourceStartIndex + i].IsTitleCase()))
+				return targetWord.ToTitleCase();
+			return targetWord;
 		}
 
 		public static bool IsTitleCase(this string str)
