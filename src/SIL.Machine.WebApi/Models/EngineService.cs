@@ -111,11 +111,14 @@ namespace SIL.Machine.WebApi.Models
 				Debug.Assert(engineContext.Engine != null);
 				string[] sourceSegment = segment.Select(s => s.ToLowerInvariant()).ToArray();
 
-
 				WordGraph smtWordGraph = engineContext.Engine.SmtEngine.GetWordGraph(sourceSegment);
-				TranslationResult ruleResult = engineContext.Engine.RuleEngine.Translate(sourceSegment);
+				TranslationResult ruleResult = engineContext.Engine.RuleEngine?.Translate(sourceSegment);
 
-				result = new InteractiveTranslationResultDto {WordGraph = smtWordGraph.CreateDto(segment), RuleResult = ruleResult.CreateDto(segment)};
+				result = new InteractiveTranslationResultDto
+				{
+					WordGraph = smtWordGraph.CreateDto(segment),
+					RuleResult = ruleResult?.CreateDto(segment)
+				};
 				return true;
 			}
 		}
