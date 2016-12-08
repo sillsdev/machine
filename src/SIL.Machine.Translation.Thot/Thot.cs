@@ -160,11 +160,11 @@ namespace SIL.Machine.Translation.Thot
 		{
 			int sizeOfPtr = Marshal.SizeOf(typeof(IntPtr));
 			int sizeOfInt = Marshal.SizeOf(typeof(int));
-			IntPtr nativeMatrix = Marshal.AllocHGlobal(matrix.I * sizeOfPtr);
-			for (int i = 0; i < matrix.I; i++)
+			IntPtr nativeMatrix = Marshal.AllocHGlobal(matrix.RowCount * sizeOfPtr);
+			for (int i = 0; i < matrix.RowCount; i++)
 			{
-				IntPtr array = Marshal.AllocHGlobal(matrix.J * sizeOfInt);
-				for (int j = 0; j < matrix.J; j++)
+				IntPtr array = Marshal.AllocHGlobal(matrix.ColumnCount * sizeOfInt);
+				for (int j = 0; j < matrix.ColumnCount; j++)
 					Marshal.WriteInt32(array, j * sizeOfInt, (int) matrix[i, j]);
 				Marshal.WriteIntPtr(nativeMatrix, i * sizeOfPtr, array);
 			}
@@ -176,10 +176,10 @@ namespace SIL.Machine.Translation.Thot
 			int sizeOfPtr = Marshal.SizeOf(typeof(IntPtr));
 			int sizeOfInt = Marshal.SizeOf(typeof(int));
 			var matrix = new WordAlignmentMatrix((int) iLen, (int) jLen);
-			for (int i = 0; i < matrix.I; i++)
+			for (int i = 0; i < matrix.RowCount; i++)
 			{
 				IntPtr array = Marshal.ReadIntPtr(nativeMatrix, i * sizeOfPtr);
-				for (int j = 0; j < matrix.J; j++)
+				for (int j = 0; j < matrix.ColumnCount; j++)
 				{
 					int intVal = Marshal.ReadInt32(array, j * sizeOfInt);
 					AlignmentType value;
@@ -295,8 +295,8 @@ namespace SIL.Machine.Translation.Thot
 			if (matrix != null)
 			{
 				nativeMatrix = ConvertWordAlignmentMatrixToNativeMatrix(matrix);
-				iLen = (uint) matrix.I;
-				jLen = (uint) matrix.J;
+				iLen = (uint) matrix.RowCount;
+				jLen = (uint) matrix.ColumnCount;
 			}
 
 			try

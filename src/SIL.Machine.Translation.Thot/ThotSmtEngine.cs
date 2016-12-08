@@ -263,10 +263,14 @@ namespace SIL.Machine.Translation.Thot
 		internal TranslationResult CreateResult(IReadOnlyList<string> sourceSegment, TranslationInfo info)
 		{
 			if (info == null)
-				return new TranslationResult(sourceSegment, Enumerable.Empty<string>(), Enumerable.Empty<double>(), new AlignedWordPair[0, 0]);
+			{
+				return new TranslationResult(sourceSegment, Enumerable.Empty<string>(), Enumerable.Empty<double>(),
+					Enumerable.Empty<TranslationSources>(), new WordAlignmentMatrix(sourceSegment.Count, 0));
+			}
 
 			double[] confidences = info.TargetConfidences.ToArray();
-			AlignedWordPair[,] alignment = new AlignedWordPair[sourceSegment.Count, info.Target.Count];
+			var sources = new TranslationSources[info.Target.Count];
+			var alignment = new WordAlignmentMatrix(sourceSegment.Count, info.Target.Count);
 			int trgPhraseStartIndex = 0;
 			foreach (PhraseInfo phrase in info.Phrases)
 			{
@@ -282,14 +286,9 @@ namespace SIL.Machine.Translation.Thot
 						{
 							string sourceWord = sourceSegment[i];
 							double prob = 0;
-							TranslationSources sources = TranslationSources.None;
-							if (!info.TargetUnknownWords.Contains(j))
-							{
-								if (confidence < 0)
-									prob = _segmentAligner.GetTranslationProbability(sourceWord, targetWord);
-								sources = TranslationSources.Smt;
-							}
-							alignment[i, j] = new AlignedWordPair(i, j, sources);
+							if (!info.TargetUnknownWords.Contains(j) && confidence < 0)
+								prob = _segmentAligner.GetTranslationProbability(sourceWord, targetWord);
+							alignment[i, j] = AlignmentType.Aligned;
 							totalProb += prob;
 							alignedWordCount++;
 						}
@@ -297,11 +296,12 @@ namespace SIL.Machine.Translation.Thot
 
 					if (confidence < 0)
 						confidences[j] = alignedWordCount == 0 ? _segmentAligner.GetTranslationProbability(null, targetWord) : totalProb / alignedWordCount;
+					sources[j] = info.TargetUnknownWords.Contains(j) ? TranslationSources.None : TranslationSources.Smt;
 				}
 				trgPhraseStartIndex = phrase.TargetCut + 1;
 			}
 
-			return new TranslationResult(sourceSegment, info.Target, confidences, alignment);
+			return new TranslationResult(sourceSegment, info.Target, confidences, sources, alignment);
 		}
 
 		private TranslationResult CreateResult(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment, IntPtr dataPtr)

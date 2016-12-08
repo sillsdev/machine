@@ -35,12 +35,14 @@ namespace SIL.Machine.Translation
 
 				var translation = new List<string>();
 				var confidences = new List<double>();
-				var alignment = new AlignedWordPair[segmentArray.Length, targetAnalyses.Count];
+				var sources = new List<TranslationSources>();
+				var alignment = new WordAlignmentMatrix(segmentArray.Length, targetAnalyses.Count);
 				for (int j = 0; j < targetAnalyses.Count; j++)
 				{
-					int[] sourceIndices = Enumerable.Range(0, waMatrix.I).Where(i => waMatrix[i, j] == AlignmentType.Aligned).ToArray();
+					int[] sourceIndices = Enumerable.Range(0, waMatrix.RowCount).Where(i => waMatrix[i, j] == AlignmentType.Aligned).ToArray();
 					string targetWord = targetAnalyses[j].IsEmpty ? null : _targetGenerator.GenerateWords(targetAnalyses[j]).FirstOrDefault();
 					double confidence = 1.0;
+					TranslationSources source = TranslationSources.Transfer;
 					if (targetWord == null)
 					{
 						if (sourceIndices.Length > 0)
@@ -48,23 +50,25 @@ namespace SIL.Machine.Translation
 							int i = sourceIndices[0];
 							targetWord = segmentArray[i];
 							confidence = 0;
-							alignment[i, j] = new AlignedWordPair(i, j, TranslationSources.None);
+							source = TranslationSources.None;
+							alignment[i, j] = AlignmentType.Aligned;
 						}
 					}
 					else
 					{
 						foreach (int i in sourceIndices)
-							alignment[i, j] = new AlignedWordPair(i, j, TranslationSources.Transfer);
+							alignment[i, j] = AlignmentType.Aligned;
 					}
 
 					if (targetWord != null)
 					{
 						translation.Add(targetWord);
 						confidences.Add(confidence);
+						sources.Add(source);
 					}
 				}
 
-				yield return new TranslationResult(segmentArray, translation, confidences, alignment);
+				yield return new TranslationResult(segmentArray, translation, confidences, sources, alignment);
 			}
 		}
 	}

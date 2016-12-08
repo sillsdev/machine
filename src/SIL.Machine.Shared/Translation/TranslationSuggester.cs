@@ -11,18 +11,18 @@ namespace SIL.Machine.Translation
 			int i = -1, j;
 			for (j = prefix.Count; j < result.TargetSegment.Count; j++)
 			{
-				AlignedWordPair[] wordPairs = result.GetTargetWordPairs(j).ToArray();
-				if (wordPairs.Length == 0)
+				int[] sourceIndices = result.Alignment.GetColumnWordAlignedIndices(j).ToArray();
+				if (sourceIndices.Length == 0)
 				{
 					lookaheadCount++;
 				}
 				else
 				{
-					lookaheadCount += wordPairs.Length - 1;
-					foreach (AlignedWordPair wordPair in wordPairs)
+					lookaheadCount += sourceIndices.Length - 1;
+					foreach (int ti in sourceIndices)
 					{
-						if (i == -1 || wordPair.SourceIndex < i)
-							i = wordPair.SourceIndex;
+						if (i == -1 || ti < i)
+							i = ti;
 					}
 				}
 			}
@@ -30,7 +30,7 @@ namespace SIL.Machine.Translation
 				i = 0;
 			for (; i < result.SourceSegment.Count; i++)
 			{
-				if (!result.GetSourceWordPairs(i).Any())
+				if (result.Alignment.IsRowWordAligned(i) == AlignmentType.NotAligned)
 					lookaheadCount++;
 			}
 			j = prefix.Count;
@@ -46,9 +46,11 @@ namespace SIL.Machine.Translation
 				if (word.All(char.IsPunctuation))
 					break;
 
-				if ((result.TargetWordConfidences[j] >= confidenceThreshold
-					|| result.GetTargetWordPairs(j).Any(awi => (awi.Sources & TranslationSources.Transfer) == TranslationSources.Transfer))
-					&& (inPhrase || isLastWordComplete || result.TargetSegment[j].StartsWith(prefix[prefix.Count - 1])))
+				double confidence = result.TargetWordConfidences[j];
+				TranslationSources sources = result.TargetWordSources[j];
+
+				if ((confidence >= confidenceThreshold || (sources & TranslationSources.Transfer) != 0)
+					&& (inPhrase || isLastWordComplete || word.StartsWith(prefix[prefix.Count - 1])))
 				{
 					yield return j;
 					inPhrase = true;
@@ -57,7 +59,7 @@ namespace SIL.Machine.Translation
 				else
 				{
 					// skip over inserted words
-					if (result.GetTargetWordPairs(j).Any())
+					if (result.Alignment.IsColumnWordAligned(j) == AlignmentType.Aligned)
 					{
 						lookaheadCount--;
 						// only suggest the first word/phrase we find

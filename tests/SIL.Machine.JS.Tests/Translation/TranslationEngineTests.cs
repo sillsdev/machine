@@ -96,13 +96,14 @@ namespace SIL.Machine.JS.Tests.Translation
 				{
 					target = new[] {"Esto", "es", "una", "test", "."},
 					confidences = new[] {0.0, 0.0, 0.0, 1.0, 0.0},
+					sources = new[] {TranslationSources.None, TranslationSources.None, TranslationSources.None, TranslationSources.Transfer, TranslationSources.None},
 					alignment = new[]
 					{
-						new {sourceIndex = 0, targetIndex = 0, sources = 0},
-						new {sourceIndex = 1, targetIndex = 1, sources = 0},
-						new {sourceIndex = 2, targetIndex = 2, sources = 0},
-						new {sourceIndex = 3, targetIndex = 3, sources = 2},
-						new {sourceIndex = 4, targetIndex = 4, sources = 0}
+						new {sourceIndex = 0, targetIndex = 0},
+						new {sourceIndex = 1, targetIndex = 1},
+						new {sourceIndex = 2, targetIndex = 2},
+						new {sourceIndex = 3, targetIndex = 3},
+						new {sourceIndex = 4, targetIndex = 4}
 					}
 				}
 			};
@@ -134,11 +135,13 @@ namespace SIL.Machine.JS.Tests.Translation
 					TranslationResult ruleResult = session.RuleResult;
 					assert.DeepEqual(ruleResult.TargetSegment.ToArray(), new[] {"Esto", "es", "una", "test", "."});
 					assert.DeepEqual(ruleResult.TargetWordConfidences.ToArray(), new[] {0.0, 0.0, 0.0, 1.0, 0.0});
-					AlignedWordPair wordPair;
-					assert.Ok(ruleResult.TryGetWordPair(0, 0, out wordPair));
-					assert.Equal(wordPair.Sources, TranslationSources.None);
-					assert.Ok(ruleResult.TryGetWordPair(3, 3, out wordPair));
-					assert.Equal(wordPair.Sources, TranslationSources.Transfer);
+					assert.DeepEqual(ruleResult.TargetWordSources.ToArray(),
+						new[] {TranslationSources.None, TranslationSources.None, TranslationSources.None, TranslationSources.Transfer, TranslationSources.None});
+					assert.Equal(ruleResult.Alignment[0, 0], AlignmentType.Aligned);
+					assert.Equal(ruleResult.Alignment[1, 1], AlignmentType.Aligned);
+					assert.Equal(ruleResult.Alignment[2, 2], AlignmentType.Aligned);
+					assert.Equal(ruleResult.Alignment[3, 3], AlignmentType.Aligned);
+					assert.Equal(ruleResult.Alignment[4, 4], AlignmentType.Aligned);
 				});
 		}
 

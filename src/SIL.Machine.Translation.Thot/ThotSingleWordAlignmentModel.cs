@@ -43,8 +43,8 @@ namespace SIL.Machine.Translation.Thot
 			if (matrix != null)
 			{
 				nativeMatrix = Thot.ConvertWordAlignmentMatrixToNativeMatrix(matrix);
-				iLen = (uint) matrix.I;
-				jLen = (uint) matrix.J;
+				iLen = (uint) matrix.RowCount;
+				jLen = (uint) matrix.ColumnCount;
 			}
 
 			try

@@ -6,93 +6,88 @@ namespace SIL.Machine.Translation
 {
 	public class TranslationResult
 	{
-		private readonly AlignedWordPair[,] _alignment;
-
-		public TranslationResult(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment, IEnumerable<double> confidences, AlignedWordPair[,] alignment)
+		public TranslationResult(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment, IEnumerable<double> confidences,
+			IEnumerable<TranslationSources> sources, WordAlignmentMatrix alignment)
 		{
 			SourceSegment = sourceSegment.ToArray();
 			TargetSegment = targetSegment.ToArray();
 			TargetWordConfidences = confidences.ToArray();
-			_alignment = alignment;
+			if (TargetWordConfidences.Count != TargetSegment.Count)
+				throw new ArgumentException("The confidences must be the same length as the target segment.", nameof(confidences));
+			TargetWordSources = sources.ToArray();
+			if (TargetWordSources.Count != TargetSegment.Count)
+				throw new ArgumentException("The sources must be the same length as the target segment.", nameof(sources));
+			Alignment = alignment;
+			if (Alignment.RowCount != SourceSegment.Count)
+				throw new ArgumentException("The alignment source length must be the same length as the source segment.", nameof(alignment));
+			if (Alignment.ColumnCount != TargetSegment.Count)
+				throw new ArgumentException("The alignment target length must be the same length as the target segment.", nameof(alignment));
 		}
 
 		public IReadOnlyList<string> SourceSegment { get; }
-
 		public IReadOnlyList<string> TargetSegment { get; }
-
 		public IReadOnlyList<double> TargetWordConfidences { get; }
-
-		public IEnumerable<AlignedWordPair> GetSourceWordPairs(int sourceIndex)
-		{
-			return Enumerable.Range(0, TargetSegment.Count).Where(j => _alignment[sourceIndex, j] != null).Select(j => _alignment[sourceIndex, j]);
-		}
-
-		public IEnumerable<AlignedWordPair> GetTargetWordPairs(int targetIndex)
-		{
-			return Enumerable.Range(0, SourceSegment.Count).Where(i => _alignment[i, targetIndex] != null).Select(i => _alignment[i, targetIndex]);
-		}
-
-		public bool TryGetWordPair(int sourceIndex, int targetIndex, out AlignedWordPair wordPair)
-		{
-			if (_alignment[sourceIndex, targetIndex] != null)
-			{
-				wordPair = _alignment[sourceIndex, targetIndex];
-				return true;
-			}
-
-			wordPair = null;
-			return false;
-		}
+		public IReadOnlyList<TranslationSources> TargetWordSources { get; }
+		public WordAlignmentMatrix Alignment { get; }
 
 		public TranslationResult Merge(int prefixCount, double threshold, TranslationResult otherResult)
 		{
-			var targetSegment = new List<string>();
-			var confidences = new List<double>();
-			var alignment = new Dictionary<Tuple<int, int>, AlignedWordPair>();
+			var mergedTargetSegment = new List<string>();
+			var mergedConfidences = new List<double>();
+			var mergedSources = new List<TranslationSources>();
+			var mergedAlignment = new HashSet<Tuple<int, int>>();
 			for (int j = 0; j < TargetSegment.Count; j++)
 			{
-				AlignedWordPair[] wordPairs = GetTargetWordPairs(j).ToArray();
-
-				if (wordPairs.Length == 0)
+				int[] sourceIndices = Alignment.GetColumnWordAlignedIndices(j).ToArray();
+				if (sourceIndices.Length == 0)
 				{
-					targetSegment.Add(TargetSegment[j]);
-					confidences.Add(TargetWordConfidences[j]);
+					// target word doesn't align with anything
+					mergedTargetSegment.Add(TargetSegment[j]);
+					mergedConfidences.Add(TargetWordConfidences[j]);
+					mergedSources.Add(TargetWordSources[j]);
 				}
 				else
 				{
+					// target word aligns with some source words
 					if (j < prefixCount || TargetWordConfidences[j] >= threshold)
 					{
-						targetSegment.Add(TargetSegment[j]);
-						confidences.Add(TargetWordConfidences[j]);
-						foreach (AlignedWordPair wordPair in wordPairs)
+						// use target word of this result
+						mergedTargetSegment.Add(TargetSegment[j]);
+						mergedConfidences.Add(TargetWordConfidences[j]);
+						TranslationSources sources = TargetWordSources[j];
+						foreach (int i in sourceIndices)
 						{
-							TranslationSources sources = wordPair.Sources;
-							foreach (AlignedWordPair transferWordPair in otherResult.GetSourceWordPairs(wordPair.SourceIndex))
+							// combine sources for any words that both this result and the other result translated the same
+							foreach (int jOther in otherResult.Alignment.GetRowWordAlignedIndices(i))
 							{
-								if (transferWordPair.Sources != TranslationSources.None
-									&& otherResult.TargetSegment[transferWordPair.TargetIndex] == TargetSegment[j])
+								TranslationSources otherSources = otherResult.TargetWordSources[jOther];
+								if (otherSources != TranslationSources.None
+									&& otherResult.TargetSegment[jOther] == TargetSegment[j])
 								{
-									sources |= transferWordPair.Sources;
+									sources |= otherSources;
 								}
 							}
 
-							alignment[Tuple.Create(wordPair.SourceIndex, targetSegment.Count - 1)] = new AlignedWordPair(wordPair.SourceIndex,
-								targetSegment.Count - 1, sources);
+							mergedAlignment.Add(Tuple.Create(i, mergedTargetSegment.Count - 1));
 						}
+						mergedSources.Add(sources);
 					}
 					else
 					{
+						// use target words of other result
 						bool found = false;
-						foreach (AlignedWordPair wordPair in wordPairs)
+						foreach (int i in sourceIndices)
 						{
-							foreach (AlignedWordPair otherWordPair in otherResult.GetSourceWordPairs(wordPair.SourceIndex))
+							foreach (int jOther in otherResult.Alignment.GetRowWordAlignedIndices(i))
 							{
-								if (otherWordPair.Sources != TranslationSources.None)
+								// look for any translated words from other result
+								TranslationSources otherSources = otherResult.TargetWordSources[jOther];
+								if (otherSources != TranslationSources.None)
 								{
-									targetSegment.Add(otherResult.TargetSegment[otherWordPair.TargetIndex]);
-									confidences.Add(otherResult.TargetWordConfidences[otherWordPair.TargetIndex]);
-									alignment[Tuple.Create(otherWordPair.SourceIndex, targetSegment.Count - 1)] = new AlignedWordPair(otherWordPair.SourceIndex,
-										targetSegment.Count - 1, otherWordPair.Sources);
+									mergedTargetSegment.Add(otherResult.TargetSegment[jOther]);
+									mergedConfidences.Add(otherResult.TargetWordConfidences[jOther]);
+									mergedSources.Add(otherSources);
+									mergedAlignment.Add(Tuple.Create(i, mergedTargetSegment.Count - 1));
 									found = true;
 								}
 							}
@@ -100,23 +95,21 @@ namespace SIL.Machine.Translation
 
 						if (!found)
 						{
-							targetSegment.Add(TargetSegment[j]);
-							confidences.Add(TargetWordConfidences[j]);
-							foreach (AlignedWordPair wordPair in wordPairs)
-							{
-								alignment[Tuple.Create(wordPair.SourceIndex, targetSegment.Count - 1)] = new AlignedWordPair(wordPair.SourceIndex,
-									targetSegment.Count - 1, wordPair.Sources);
-							}
+							// the other result had no translated words, so just use this result's target word
+							mergedTargetSegment.Add(TargetSegment[j]);
+							mergedConfidences.Add(TargetWordConfidences[j]);
+							mergedSources.Add(TargetWordSources[j]);
+							foreach (int i in sourceIndices)
+								mergedAlignment.Add(Tuple.Create(i, mergedTargetSegment.Count - 1));
 						}
 					}
 				}
 			}
 
-			AlignedWordPair[,] alignmentMatrix = new AlignedWordPair[SourceSegment.Count, targetSegment.Count];
-			foreach (KeyValuePair<Tuple<int, int>, AlignedWordPair> kvp in alignment)
-				alignmentMatrix[kvp.Key.Item1, kvp.Key.Item2] = kvp.Value;
-
-			return new TranslationResult(SourceSegment, targetSegment, confidences, alignmentMatrix);
+			var alignment = new WordAlignmentMatrix(SourceSegment.Count, mergedTargetSegment.Count);
+			foreach (Tuple<int, int> t in mergedAlignment)
+				alignment[t.Item1, t.Item2] = AlignmentType.Aligned;
+			return new TranslationResult(SourceSegment, mergedTargetSegment, mergedConfidences, mergedSources, alignment);
 		}
 	}
 }

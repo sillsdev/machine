@@ -167,13 +167,13 @@ namespace SIL.Machine.Translation.Thot.Tests
 		{
 			matrix[i, j] = AlignmentType.Aligned;
 
-			for (int ti = 0; ti < matrix.I; ti++)
+			for (int ti = 0; ti < matrix.RowCount; ti++)
 			{
 				if (matrix[ti, j] == AlignmentType.Unknown)
 					matrix[ti, j] = AlignmentType.NotAligned;
 			}
 
-			for (int tj = 0; tj < matrix.J; tj++)
+			for (int tj = 0; tj < matrix.ColumnCount; tj++)
 			{
 				if (matrix[i, tj] == AlignmentType.Unknown)
 					matrix[i, tj] = AlignmentType.NotAligned;
@@ -182,7 +182,7 @@ namespace SIL.Machine.Translation.Thot.Tests
 
 		private static void SetSourceNotAligned(WordAlignmentMatrix matrix, int i)
 		{
-			for (int j = 0; j < matrix.J; j++)
+			for (int j = 0; j < matrix.ColumnCount; j++)
 			{
 				if (matrix[i, j] == AlignmentType.Unknown)
 					matrix[i, j] = AlignmentType.NotAligned;

@@ -94,10 +94,14 @@ namespace SIL.Machine.Translation
 		private TranslationResult CreateResult(TranslationInfo info)
 		{
 			if (info == null)
-				return new TranslationResult(SourceSegment, Enumerable.Empty<string>(), Enumerable.Empty<double>(), new AlignedWordPair[0, 0]);
+			{
+				return new TranslationResult(SourceSegment, Enumerable.Empty<string>(), Enumerable.Empty<double>(),
+					Enumerable.Empty<TranslationSources>(), new WordAlignmentMatrix(SourceSegment.Length, 0));
+			}
 
 			double[] confidences = info.TargetConfidences.ToArray();
-			AlignedWordPair[,] alignment = new AlignedWordPair[SourceSegment.Length, info.Target.Count];
+			var sources = new TranslationSources[info.Target.Count];
+			var alignment = new WordAlignmentMatrix(SourceSegment.Length, info.Target.Count);
 			int trgPhraseStartIndex = 0;
 			foreach (PhraseInfo phrase in info.Phrases)
 			{
@@ -106,18 +110,14 @@ namespace SIL.Machine.Translation
 					for (int i = phrase.SourceStartIndex; i <= phrase.SourceEndIndex; i++)
 					{
 						if (phrase.Alignment[i - phrase.SourceStartIndex, j - trgPhraseStartIndex] == AlignmentType.Aligned)
-						{
-							TranslationSources sources = TranslationSources.None;
-							if (!info.TargetUnknownWords.Contains(j))
-								sources = TranslationSources.Smt;
-							alignment[i, j] = new AlignedWordPair(i, j, sources);
-						}
+							alignment[i, j] = AlignmentType.Aligned;
 					}
+					sources[j] = info.TargetUnknownWords.Contains(j) ? TranslationSources.None : TranslationSources.Smt;
 				}
 				trgPhraseStartIndex = phrase.TargetCut + 1;
 			}
 
-			return new TranslationResult(SourceSegment, info.Target, confidences, alignment);
+			return new TranslationResult(SourceSegment, info.Target, confidences, sources, alignment);
 		}
 	}
 }

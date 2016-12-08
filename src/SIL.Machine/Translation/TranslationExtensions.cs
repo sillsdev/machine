@@ -10,7 +10,7 @@ namespace SIL.Machine.Translation
 		public static IEnumerable<string> TranslateWord(this ITranslationEngine engine, string sourceWord)
 		{
 			TranslationResult result = engine.Translate(sourceWord.ToEnumerable());
-			if (result.GetSourceWordPairs(0).Any(wp => wp.Sources == TranslationSources.None))
+			if (result.TargetWordSources.Any(s => s == TranslationSources.None))
 				return Enumerable.Empty<string>();
 			return result.TargetSegment;
 		}
@@ -23,7 +23,7 @@ namespace SIL.Machine.Translation
 		public static string RecaseTargetWord(this TranslationResult result, IReadOnlyList<string> sourceSegment, int targetIndex)
 		{
 			string token = result.TargetSegment[targetIndex];
-			if (result.GetTargetWordPairs(targetIndex).Any(awi => sourceSegment[awi.SourceIndex].IsTitleCase()))
+			if (result.Alignment.GetColumnWordAlignedIndices(targetIndex).Any(i => sourceSegment[i].IsTitleCase()))
 				token = token.ToTitleCase();
 			return token;
 		}

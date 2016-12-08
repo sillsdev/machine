@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using NSubstitute;
 using NUnit.Framework;
@@ -34,44 +33,41 @@ namespace SIL.Machine.Tests.Translation
 				var transferEngine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
 				var smtEngine = Substitute.For<IInteractiveSmtEngine>();
 
-				var alignment = new Dictionary<Tuple<int, int>, AlignedWordPair>();
-				AddWordPair(alignment, 0, 0, TranslationSources.None);
-				AddWordPair(alignment, 1, 1, TranslationSources.Smt);
-				AddWordPair(alignment, 2, 2, TranslationSources.Smt);
-				AddWordPair(alignment, 3, 3, TranslationSources.Smt);
-				AddWordPair(alignment, 4, 4, TranslationSources.Smt);
+				var alignment = new WordAlignmentMatrix(5, 5)
+				{
+					[0, 0] = AlignmentType.Aligned,
+					[1, 1] = AlignmentType.Aligned,
+					[2, 2] = AlignmentType.Aligned,
+					[3, 3] = AlignmentType.Aligned,
+					[4, 4] = AlignmentType.Aligned
+				};
 				AddTranslation(smtEngine, "caminé a mi habitación .", "caminé to my room .", new[] {0, 0.5, 0.5, 0.5, 0.5}, alignment);
 
-				alignment = new Dictionary<Tuple<int, int>, AlignedWordPair>();
-				AddWordPair(alignment, 0, 0, TranslationSources.None);
-				AddWordPair(alignment, 1, 1, TranslationSources.Smt);
-				AddWordPair(alignment, 2, 2, TranslationSources.Smt);
-				AddWordPair(alignment, 3, 3, TranslationSources.Smt);
+				alignment = new WordAlignmentMatrix(4, 4)
+				{
+					[0, 0] = AlignmentType.Aligned,
+					[1, 1] = AlignmentType.Aligned,
+					[2, 2] = AlignmentType.Aligned,
+					[3, 3] = AlignmentType.Aligned
+				};
 				AddTranslation(smtEngine, "hablé con recepción .", "hablé with reception .", new[] {0, 0.5, 0.5, 0.5}, alignment);
 
 				Engine = new HybridTranslationEngine(smtEngine, transferEngine);
 			}
 
 			private static void AddTranslation(IInteractiveSmtEngine engine, string sourceSegment, string targetSegment, double[] confidences,
-				Dictionary<Tuple<int, int>, AlignedWordPair> alignment)
+				WordAlignmentMatrix alignment)
 			{
 				string[] sourceSegmentArray = sourceSegment.Split();
 				string[] targetSegmentArray = targetSegment.Split();
-				AlignedWordPair[,] alignmentMatrix = new AlignedWordPair[sourceSegmentArray.Length, targetSegmentArray.Length];
-				foreach (KeyValuePair<Tuple<int, int>, AlignedWordPair> kvp in alignment)
-					alignmentMatrix[kvp.Key.Item1, kvp.Key.Item2] = kvp.Value;
-
+				TranslationSources[] sources = new TranslationSources[confidences.Length];
+				for (int j = 0; j < sources.Length; j++)
+					sources[j] = confidences[j] <= 0 ? TranslationSources.None : TranslationSources.Smt;
 				var smtSession = Substitute.For<IInteractiveTranslationSession>();
 				smtSession.SourceSegment.Returns(sourceSegmentArray);
-				smtSession.CurrentResult.Returns(new TranslationResult(sourceSegmentArray, targetSegmentArray,
-					confidences, alignmentMatrix));
+				smtSession.CurrentResult.Returns(new TranslationResult(sourceSegmentArray, targetSegmentArray, confidences, sources, alignment));
 
 				engine.TranslateInteractively(Arg.Is<IEnumerable<string>>(ss => ss.SequenceEqual(sourceSegmentArray))).Returns(smtSession);
-			}
-
-			private static void AddWordPair(Dictionary<Tuple<int, int>, AlignedWordPair> alignment, int i, int j, TranslationSources sources)
-			{
-				alignment[Tuple.Create(i, j)] = new AlignedWordPair(i, j, sources);
 			}
 
 			public HybridTranslationEngine Engine { get; }

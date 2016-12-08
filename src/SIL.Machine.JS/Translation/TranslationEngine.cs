@@ -104,17 +104,21 @@ namespace SIL.Machine.Translation
 			foreach (var jsonConfidence in jsonConfidences)
 				confidences.Add(jsonConfidence);
 
+			var jsonSources = jsonResult["sources"];
+			var sources = new List<TranslationSources>();
+			foreach (var jsonSource in jsonSources)
+				sources.Add((TranslationSources) jsonSource);
+
 			var jsonAlignment = jsonResult["alignment"];
-			var alignment = new AlignedWordPair[sourceSegment.Length, targetSegment.Count];
+			var alignment = new WordAlignmentMatrix(sourceSegment.Length, targetSegment.Count);
 			foreach (var jsonAligned in jsonAlignment)
 			{
 				int i = jsonAligned["sourceIndex"];
 				int j = jsonAligned["targetIndex"];
-				var sources = (TranslationSources) jsonAligned["sources"];
-				alignment[i, j] = new AlignedWordPair(i, j, sources);
+				alignment[i, j] = AlignmentType.Aligned;
 			}
 
-			return new TranslationResult(sourceSegment, targetSegment, confidences, alignment);
+			return new TranslationResult(sourceSegment, targetSegment, confidences, sources, alignment);
 		}
 	}
 }

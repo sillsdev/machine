@@ -156,12 +156,12 @@ namespace SIL.Machine.Translation
 			for (int j = 0; j < targetSegment.Count; j++)
 			{
 				bool jAligned = false;
-				foreach (AlignedWordPair wp in hybridResult.GetTargetWordPairs(j))
+				if ((hybridResult.TargetWordSources[j] & TranslationSources.Transfer) != 0)
 				{
-					if ((wp.Sources & TranslationSources.Transfer) > 0)
+					foreach (int i in hybridResult.Alignment.GetColumnWordAlignedIndices(j))
 					{
-						matrix[wp.SourceIndex, j] = AlignmentType.Aligned;
-						iAligned.Add(wp.SourceIndex);
+						matrix[i, j] = AlignmentType.Aligned;
+						iAligned.Add(i);
 						jAligned = true;
 					}
 				}

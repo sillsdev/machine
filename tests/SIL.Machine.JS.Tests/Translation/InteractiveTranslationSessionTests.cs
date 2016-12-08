@@ -450,17 +450,28 @@ namespace SIL.Machine.JS.Tests.Translation
 			ruleResult = new
 			{
 				target = new[] {"In", "el", "principio", "la", "Palabra", "ya", "existía", "."},
-				confidences = new[] {1.0, 0.0, 0.0, 0.0, 0.0},
+				confidences = new[] {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+				sources = new[]
+				{
+					TranslationSources.Transfer,
+					TranslationSources.None,
+					TranslationSources.None,
+					TranslationSources.None,
+					TranslationSources.None,
+					TranslationSources.None,
+					TranslationSources.None,
+					TranslationSources.None
+				},
 				alignment = new[]
 				{
-					new {sourceIndex = 0, targetIndex = 0, sources = 2},
-					new {sourceIndex = 1, targetIndex = 1, sources = 0},
-					new {sourceIndex = 2, targetIndex = 2, sources = 0},
-					new {sourceIndex = 3, targetIndex = 3, sources = 0},
-					new {sourceIndex = 4, targetIndex = 4, sources = 0},
-					new {sourceIndex = 5, targetIndex = 5, sources = 0},
-					new {sourceIndex = 6, targetIndex = 6, sources = 0},
-					new {sourceIndex = 7, targetIndex = 7, sources = 0}
+					new {sourceIndex = 0, targetIndex = 0},
+					new {sourceIndex = 1, targetIndex = 1},
+					new {sourceIndex = 2, targetIndex = 2},
+					new {sourceIndex = 3, targetIndex = 3},
+					new {sourceIndex = 4, targetIndex = 4},
+					new {sourceIndex = 5, targetIndex = 5},
+					new {sourceIndex = 6, targetIndex = 6},
+					new {sourceIndex = 7, targetIndex = 7}
 				}
 			}
 		};
@@ -516,7 +527,7 @@ namespace SIL.Machine.JS.Tests.Translation
 					assert.NotEqual(session, null);
 					session.SetPrefix("In".Split(" "), true);
 
-					assert.DeepEqual(session.SetPrefix("t".Split(" "), false), "the beginning the Word already".Split(" "));
+					assert.DeepEqual(session.SetPrefix("In t".Split(" "), false), "the beginning the Word already".Split(" "));
 				});
 		}
 

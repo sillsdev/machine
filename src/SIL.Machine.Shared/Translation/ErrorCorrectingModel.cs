@@ -168,15 +168,15 @@ namespace SIL.Machine.Translation
 		private void ResizeAlignment(TranslationInfo correction, int phraseIndex, IList<int> colsToCopy)
 		{
 			WordAlignmentMatrix curAlignment = correction.Phrases[phraseIndex].Alignment;
-			if (colsToCopy.Count == curAlignment.J)
+			if (colsToCopy.Count == curAlignment.ColumnCount)
 				return;
 
-			var newAlignment = new WordAlignmentMatrix(curAlignment.I, colsToCopy.Count);
-			for (int j = 0; j < newAlignment.J; j++)
+			var newAlignment = new WordAlignmentMatrix(curAlignment.RowCount, colsToCopy.Count);
+			for (int j = 0; j < newAlignment.ColumnCount; j++)
 			{
 				if (colsToCopy[j] != -1)
 				{
-					for (int i = 0; i < newAlignment.I; i++)
+					for (int i = 0; i < newAlignment.RowCount; i++)
 						newAlignment[i, j] = curAlignment[i, colsToCopy[j]];
 				}
 			}

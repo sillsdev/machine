@@ -410,18 +410,21 @@ namespace SIL.Machine.Translation.TestApp
 			if (targetWordIndex != -1)
 			{
 				double confidence = result.TargetWordConfidences[targetWordIndex];
-				foreach (AlignedWordPair awi in result.GetTargetWordPairs(targetWordIndex)
-					.Where(awi => confidence >= _confidenceThreshold || (awi.Sources & TranslationSources.Transfer) != 0))
+				TranslationSources sources = result.TargetWordSources[targetWordIndex];
+				if (confidence >= _confidenceThreshold || (sources & TranslationSources.Transfer) != 0)
 				{
-					WordTranslationLevel level;
-					Span<int> span = _tokenizer.Tokenize(SourceSegment).ElementAt(awi.SourceIndex);
-					if ((awi.Sources & TranslationSources.Transfer) == TranslationSources.Transfer)
-						level = WordTranslationLevel.Transfer;
-					else if (confidence >= 0.5f)
-						level = WordTranslationLevel.HighConfidence;
-					else
-						level = WordTranslationLevel.LowConfidence;
-					alignedSourceWords.Add(new AlignedWordViewModel(new Range<int>(span.Start, span.End - 1), level));
+					foreach (int sourceIndex in result.Alignment.GetColumnWordAlignedIndices(targetWordIndex))
+					{
+						WordTranslationLevel level;
+						Span<int> span = _tokenizer.Tokenize(SourceSegment).ElementAt(sourceIndex);
+						if ((sources & TranslationSources.Transfer) != 0)
+							level = WordTranslationLevel.Transfer;
+						else if (confidence >= 0.5f)
+							level = WordTranslationLevel.HighConfidence;
+						else
+							level = WordTranslationLevel.LowConfidence;
+						alignedSourceWords.Add(new AlignedWordViewModel(new Range<int>(span.Start, span.End - 1), level));
+					}
 				}
 			}
 

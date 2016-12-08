@@ -31,9 +31,9 @@ namespace SIL.Machine.Tests.Translation
 			Assert.That(ti.Target, Is.EqualTo(prefix));
 			Assert.That(ti.Phrases.Count, Is.EqualTo(2));
 			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(1));
-			Assert.That(ti.Phrases[0].Alignment.J, Is.EqualTo(2));
+			Assert.That(ti.Phrases[0].Alignment.ColumnCount, Is.EqualTo(2));
 			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(2));
-			Assert.That(ti.Phrases[1].Alignment.J, Is.EqualTo(1));
+			Assert.That(ti.Phrases[1].Alignment.ColumnCount, Is.EqualTo(1));
 		}
 
 		[Test]
@@ -47,13 +47,13 @@ namespace SIL.Machine.Tests.Translation
 			Assert.That(ti.Target, Is.EqualTo("this is a test and only a test".Split()));
 			Assert.That(ti.Phrases.Count, Is.EqualTo(4));
 			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(1));
-			Assert.That(ti.Phrases[0].Alignment.J, Is.EqualTo(2));
+			Assert.That(ti.Phrases[0].Alignment.ColumnCount, Is.EqualTo(2));
 			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(2));
-			Assert.That(ti.Phrases[1].Alignment.J, Is.EqualTo(1));
+			Assert.That(ti.Phrases[1].Alignment.ColumnCount, Is.EqualTo(1));
 			Assert.That(ti.Phrases[2].TargetCut, Is.EqualTo(5));
-			Assert.That(ti.Phrases[2].Alignment.J, Is.EqualTo(3));
+			Assert.That(ti.Phrases[2].Alignment.ColumnCount, Is.EqualTo(3));
 			Assert.That(ti.Phrases[3].TargetCut, Is.EqualTo(7));
-			Assert.That(ti.Phrases[3].Alignment.J, Is.EqualTo(2));
+			Assert.That(ti.Phrases[3].Alignment.ColumnCount, Is.EqualTo(2));
 		}
 
 		[Test]
@@ -67,9 +67,9 @@ namespace SIL.Machine.Tests.Translation
 			Assert.That(ti.Target, Is.EqualTo(prefix));
 			Assert.That(ti.Phrases.Count, Is.EqualTo(2));
 			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(1));
-			Assert.That(ti.Phrases[0].Alignment.J, Is.EqualTo(2));
+			Assert.That(ti.Phrases[0].Alignment.ColumnCount, Is.EqualTo(2));
 			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(4));
-			Assert.That(ti.Phrases[1].Alignment.J, Is.EqualTo(3));
+			Assert.That(ti.Phrases[1].Alignment.ColumnCount, Is.EqualTo(3));
 		}
 
 		[Test]
@@ -83,9 +83,9 @@ namespace SIL.Machine.Tests.Translation
 			Assert.That(ti.Target, Is.EqualTo(prefix));
 			Assert.That(ti.Phrases.Count, Is.EqualTo(2));
 			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(2));
-			Assert.That(ti.Phrases[0].Alignment.J, Is.EqualTo(3));
+			Assert.That(ti.Phrases[0].Alignment.ColumnCount, Is.EqualTo(3));
 			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(4));
-			Assert.That(ti.Phrases[1].Alignment.J, Is.EqualTo(2));
+			Assert.That(ti.Phrases[1].Alignment.ColumnCount, Is.EqualTo(2));
 		}
 
 		[Test]
@@ -99,9 +99,9 @@ namespace SIL.Machine.Tests.Translation
 			Assert.That(ti.Target, Is.EqualTo(prefix));
 			Assert.That(ti.Phrases.Count, Is.EqualTo(2));
 			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(1));
-			Assert.That(ti.Phrases[0].Alignment.J, Is.EqualTo(2));
+			Assert.That(ti.Phrases[0].Alignment.ColumnCount, Is.EqualTo(2));
 			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(2));
-			Assert.That(ti.Phrases[1].Alignment.J, Is.EqualTo(1));
+			Assert.That(ti.Phrases[1].Alignment.ColumnCount, Is.EqualTo(1));
 		}
 
 		[Test]
@@ -115,13 +115,13 @@ namespace SIL.Machine.Tests.Translation
 			Assert.That(ti.Target, Is.EqualTo("this is a and only a test".Split()));
 			Assert.That(ti.Phrases.Count, Is.EqualTo(4));
 			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(1));
-			Assert.That(ti.Phrases[0].Alignment.J, Is.EqualTo(2));
+			Assert.That(ti.Phrases[0].Alignment.ColumnCount, Is.EqualTo(2));
 			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(2));
-			Assert.That(ti.Phrases[1].Alignment.J, Is.EqualTo(1));
+			Assert.That(ti.Phrases[1].Alignment.ColumnCount, Is.EqualTo(1));
 			Assert.That(ti.Phrases[2].TargetCut, Is.EqualTo(4));
-			Assert.That(ti.Phrases[2].Alignment.J, Is.EqualTo(2));
+			Assert.That(ti.Phrases[2].Alignment.ColumnCount, Is.EqualTo(2));
 			Assert.That(ti.Phrases[3].TargetCut, Is.EqualTo(6));
-			Assert.That(ti.Phrases[3].Alignment.J, Is.EqualTo(2));
+			Assert.That(ti.Phrases[3].Alignment.ColumnCount, Is.EqualTo(2));
 		}
 
 		[Test]
@@ -135,9 +135,9 @@ namespace SIL.Machine.Tests.Translation
 			Assert.That(ti.Target, Is.EqualTo(prefix));
 			Assert.That(ti.Phrases.Count, Is.EqualTo(2));
 			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(0));
-			Assert.That(ti.Phrases[0].Alignment.J, Is.EqualTo(1));
+			Assert.That(ti.Phrases[0].Alignment.ColumnCount, Is.EqualTo(1));
 			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(2));
-			Assert.That(ti.Phrases[1].Alignment.J, Is.EqualTo(2));
+			Assert.That(ti.Phrases[1].Alignment.ColumnCount, Is.EqualTo(2));
 		}
 
 		[Test]
@@ -151,9 +151,9 @@ namespace SIL.Machine.Tests.Translation
 			Assert.That(ti.Target, Is.EqualTo(prefix));
 			Assert.That(ti.Phrases.Count, Is.EqualTo(2));
 			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(1));
-			Assert.That(ti.Phrases[0].Alignment.J, Is.EqualTo(2));
+			Assert.That(ti.Phrases[0].Alignment.ColumnCount, Is.EqualTo(2));
 			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(3));
-			Assert.That(ti.Phrases[1].Alignment.J, Is.EqualTo(2));
+			Assert.That(ti.Phrases[1].Alignment.ColumnCount, Is.EqualTo(2));
 		}
 
 		private static TranslationInfo CreateTranslationInfo(string target, params int[] cuts)

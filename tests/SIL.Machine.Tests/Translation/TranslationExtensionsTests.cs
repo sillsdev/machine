@@ -69,14 +69,16 @@ namespace SIL.Machine.Tests.Translation
 		{
 			string[] targetArray = target.Split();
 			var targetConfidences = new double[targetArray.Length];
-			var alignment = new AlignedWordPair[sourceLen, targetArray.Length];
+			var targetSources = new TranslationSources[targetArray.Length];
+			var alignment = new WordAlignmentMatrix(sourceLen, targetArray.Length);
 			int i = 0, j = 0;
 			foreach (double confidence in confidences)
 			{
 				if (confidence >= 0)
 				{
-					alignment[i, j] = new AlignedWordPair(i, j, confidence <= 0 ? TranslationSources.None : TranslationSources.Smt);
+					alignment[i, j] = AlignmentType.Aligned;
 					targetConfidences[j] = confidence;
+					targetSources[j] = confidence <= 0 ? TranslationSources.None : TranslationSources.Smt;
 					i++;
 					j++;
 				}
@@ -94,7 +96,7 @@ namespace SIL.Machine.Tests.Translation
 					throw new ArgumentException("A confidence was incorrectly set below 0.", nameof(confidences));
 				}
 			}
-			return new TranslationResult(Enumerable.Range(0, sourceLen).Select(index => index.ToString()), targetArray, targetConfidences, alignment);
+			return new TranslationResult(Enumerable.Range(0, sourceLen).Select(index => index.ToString()), targetArray, targetConfidences, targetSources, alignment);
 		}
 	}
 }

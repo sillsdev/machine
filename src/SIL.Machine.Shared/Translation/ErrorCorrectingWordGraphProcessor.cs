@@ -354,10 +354,10 @@ namespace SIL.Machine.Translation
 			WordAlignmentMatrix alignment = arc.Alignment;
 			if (alignmentColsToAddCount > 0)
 			{
-				var newAlignment = new WordAlignmentMatrix(alignment.I, alignment.J + alignmentColsToAddCount);
-				for (int j = 0; j < alignment.J; j++)
+				var newAlignment = new WordAlignmentMatrix(alignment.RowCount, alignment.ColumnCount + alignmentColsToAddCount);
+				for (int j = 0; j < alignment.ColumnCount; j++)
 				{
-					for (int i = 0; i < alignment.I; i++)
+					for (int i = 0; i < alignment.RowCount; i++)
 						newAlignment[i, alignmentColsToAddCount + j] = alignment[i, j];
 				}
 				alignment = newAlignment;
