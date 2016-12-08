@@ -6,17 +6,6 @@ namespace SIL.Machine.WebApi.Models
 {
 	internal static class ModelsExtensions
 	{
-		private static string RecaseTargetWord(this WordAlignmentMatrix alignment, IReadOnlyList<string> sourceSegment, int sourceStartIndex, IReadOnlyList<string> targetSegment, int targetIndex)
-		{
-			string targetWord = targetSegment[targetIndex];
-			for (int i = 0; i < alignment.I; i++)
-			{
-				if (alignment[i, targetIndex] == AlignmentType.Aligned && sourceSegment[sourceStartIndex + i].IsTitleCase())
-					return targetWord.ToTitleCase();
-			}
-			return targetWord;
-		}
-
 		public static EngineDto CreateDto(this EngineContext engineContext)
 		{
 			return new EngineDto
@@ -28,22 +17,12 @@ namespace SIL.Machine.WebApi.Models
 
 		public static TranslationResultDto CreateDto(this TranslationResult result, IReadOnlyList<string> sourceSegment)
 		{
-			var wordPairs = new List<AlignedWordPairDto>();
-			for (int i = 0; i < result.SourceSegment.Count; i++)
-			{
-				for (int j = 0; j < result.TargetSegment.Count; j++)
-				{
-					AlignedWordPair awp;
-					if (result.TryGetWordPair(i, j, out awp))
-						wordPairs.Add(new AlignedWordPairDto {SourceIndex = i, TargetIndex = j, Sources = awp.Sources});
-				}
-			}
-
 			return new TranslationResultDto
 			{
 				Target = Enumerable.Range(0, result.TargetSegment.Count).Select(j => result.RecaseTargetWord(sourceSegment, j)).ToArray(),
 				Confidences = result.TargetWordConfidences.Select(c => (float) c).ToArray(),
-				Alignment = wordPairs
+				Sources = result.TargetWordSources,
+				Alignment = result.Alignment.CreateDto()
 			};
 		}
 
@@ -76,9 +55,9 @@ namespace SIL.Machine.WebApi.Models
 		public static IReadOnlyList<AlignedWordPairDto> CreateDto(this WordAlignmentMatrix matrix)
 		{
 			var wordPairs = new List<AlignedWordPairDto>();
-			for (int i = 0; i < matrix.I; i++)
+			for (int i = 0; i < matrix.RowCount; i++)
 			{
-				for (int j = 0; j < matrix.J; j++)
+				for (int j = 0; j < matrix.ColumnCount; j++)
 				{
 					if (matrix[i, j] == AlignmentType.Aligned)
 						wordPairs.Add(new AlignedWordPairDto {SourceIndex = i, TargetIndex = j});
