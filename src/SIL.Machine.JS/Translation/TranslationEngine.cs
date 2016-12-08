@@ -19,32 +19,30 @@ namespace SIL.Machine.Translation
 			TargetLanguageTag = targetLanguageTag;
 			WebClient = webClient;
 			ErrorCorrectingModel = new ErrorCorrectingModel();
-			ConfidenceThreshold = 0.2;
 		}
 
 		public string SourceLanguageTag { get; }
 		public string TargetLanguageTag { get; }
 		public string BaseUrl { get; }
-		public double ConfidenceThreshold { get; set; }
 		internal IWebClient WebClient { get; }
 		internal ErrorCorrectingModel ErrorCorrectingModel { get; }
 
-		public void GetSuggester(string[] sourceSegment, Action<InteractiveTranslationSuggester> onFinished)
+		public void TranslateInteractively(string[] sourceSegment, double confidenceThreshold, Action<InteractiveTranslationSession> onFinished)
 		{
 			string url = string.Format("{0}/translation/engines/{1}/{2}/actions/interactive-translate", BaseUrl, SourceLanguageTag, TargetLanguageTag);
 			string body = JSON.Stringify(sourceSegment);
-			WebClient.Send("POST", url, body, "application/json", responseText => onFinished(CreateSuggester(sourceSegment, JSON.Parse(responseText))),
+			WebClient.Send("POST", url, body, "application/json", responseText => onFinished(CreateSession(sourceSegment, confidenceThreshold, JSON.Parse(responseText))),
 				status => onFinished(null));
 		}
 
-		private InteractiveTranslationSuggester CreateSuggester(string[] sourceSegment, dynamic json)
+		private InteractiveTranslationSession CreateSession(string[] sourceSegment, double confidenceThreshold, dynamic json)
 		{
-			WordGraph wordGraph = ParseWordGraph(json["wordGraph"]);
-			TranslationResult ruleResult = ParseRuleResult(sourceSegment, json["ruleResult"]);
-			return new InteractiveTranslationSuggester(this, wordGraph, ruleResult, sourceSegment);
+			WordGraph wordGraph = CreateWordGraph(json["wordGraph"]);
+			TranslationResult ruleResult = CreateRuleResult(sourceSegment, json["ruleResult"]);
+			return new InteractiveTranslationSession(this, sourceSegment, confidenceThreshold, wordGraph, ruleResult);
 		}
 
-		private WordGraph ParseWordGraph(dynamic jsonWordGraph)
+		private WordGraph CreateWordGraph(dynamic jsonWordGraph)
 		{
 			double initialStateScore = jsonWordGraph["initialStateScore"];
 
@@ -91,8 +89,11 @@ namespace SIL.Machine.Translation
 			return new WordGraph(arcs, finalStates, initialStateScore);
 		}
 
-		private TranslationResult ParseRuleResult(string[] sourceSegment, dynamic jsonResult)
+		private TranslationResult CreateRuleResult(string[] sourceSegment, dynamic jsonResult)
 		{
+			if (jsonResult == null)
+				return null;
+
 			var jsonTarget = jsonResult["target"];
 			var targetSegment = new List<string>();
 			foreach (var jsonWord in jsonTarget)

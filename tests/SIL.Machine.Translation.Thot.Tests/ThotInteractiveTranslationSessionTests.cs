@@ -11,48 +11,48 @@ namespace SIL.Machine.Translation.Thot.Tests
 			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
 			using (IInteractiveTranslationSession session = engine.TranslateInteractively("me marcho hoy por la tarde .".Split()))
 			{
-				TranslationResult result = session.CurrentTranslationResult;
+				TranslationResult result = session.CurrentResult;
 				Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
 			}
 		}
 
 		[Test]
-		public void AddToPrefix_TranslationCorrect()
+		public void SetPrefix_AddWord_TranslationCorrect()
 		{
 			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
 			using (IInteractiveTranslationSession session = engine.TranslateInteractively("me marcho hoy por la tarde .".Split()))
 			{
-				TranslationResult result = session.CurrentTranslationResult;
+				TranslationResult result = session.CurrentResult;
 				Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
-				result = session.AddToPrefix("i am".Split(), true);
+				result = session.SetPrefix("i am".Split(), true);
 				Assert.That(result.TargetSegment, Is.EqualTo("i am leave today in the afternoon .".Split()));
-				result = session.AddToPrefix("leaving".Split(), true);
+				result = session.SetPrefix("i am leaving".Split(), true);
 				Assert.That(result.TargetSegment, Is.EqualTo("i am leaving today in the afternoon .".Split()));
 			}
 		}
 
 		[Test]
-		public void AddToPrefix_MissingWord_TranslationCorrect()
+		public void SetPrefix_MissingWord_TranslationCorrect()
 		{
 			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
 			using (IInteractiveTranslationSession session = engine.TranslateInteractively("caminé a mi habitación .".Split()))
 			{
-				TranslationResult result = session.CurrentTranslationResult;
+				TranslationResult result = session.CurrentResult;
 				Assert.That(result.TargetSegment, Is.EqualTo("caminé to my room .".Split()));
-				result = session.AddToPrefix("i walked".Split(), true);
+				result = session.SetPrefix("i walked".Split(), true);
 				Assert.That(result.TargetSegment, Is.EqualTo("i walked to my room .".Split()));
 			}
 		}
 
 		[Test]
-		public void SetPrefix_TranslationCorrect()
+		public void SetPrefix_RemoveWord_TranslationCorrect()
 		{
 			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
 			using (IInteractiveTranslationSession session = engine.TranslateInteractively("me marcho hoy por la tarde .".Split()))
 			{
-				TranslationResult result = session.CurrentTranslationResult;
+				TranslationResult result = session.CurrentResult;
 				Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
-				result = session.AddToPrefix("i am".Split(), true);
+				result = session.SetPrefix("i am".Split(), true);
 				Assert.That(result.TargetSegment, Is.EqualTo("i am leave today in the afternoon .".Split()));
 				result = session.SetPrefix("i".Split(), true);
 				Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
@@ -66,17 +66,17 @@ namespace SIL.Machine.Translation.Thot.Tests
 			{
 				using (IInteractiveTranslationSession session = engine.TranslateInteractively("hablé con recepción .".Split()))
 				{
-					TranslationResult result = session.CurrentTranslationResult;
+					TranslationResult result = session.CurrentResult;
 					Assert.That(result.TargetSegment, Is.EqualTo("hablé with reception .".Split()));
-					result = session.AddToPrefix("i talked".Split(), true);
+					result = session.SetPrefix("i talked".Split(), true);
 					Assert.That(result.TargetSegment, Is.EqualTo("i talked with reception .".Split()));
-					session.AddToPrefix("with reception .".Split(), true);
+					session.SetPrefix("i talked with reception .".Split(), true);
 					session.Approve();
 				}
 
 				using (IInteractiveTranslationSession session = engine.TranslateInteractively("hablé hasta cinco en punto .".Split()))
 				{
-					TranslationResult result = session.CurrentTranslationResult;
+					TranslationResult result = session.CurrentResult;
 					Assert.That(result.TargetSegment, Is.EqualTo("talked until five o ' clock .".Split()));
 				}
 			}

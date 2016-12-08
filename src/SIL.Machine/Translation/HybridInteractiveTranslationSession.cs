@@ -15,8 +15,8 @@ namespace SIL.Machine.Translation
 			_engine = engine;
 			_smtSession = smtSession;
 			_ruleResult = ruleResult;
-			_currentResult = _ruleResult == null ? _smtSession.CurrentTranslationResult
-				: _smtSession.CurrentTranslationResult.Merge(0, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
+			_currentResult = _ruleResult == null ? _smtSession.CurrentResult
+				: _smtSession.CurrentResult.Merge(0, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
 		}
 
 		public IReadOnlyList<string> SourceSegment
@@ -46,7 +46,7 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public TranslationResult CurrentTranslationResult
+		public TranslationResult CurrentResult
 		{
 			get
 			{
@@ -73,26 +73,6 @@ namespace SIL.Machine.Translation
 			_engine.CheckTargetTokenizer();
 
 			return SetPrefix(HybridTranslationEngine.Preprocess(_engine.TargetPreprocessor, _engine.TargetTokenizer, prefix), isLastWordComplete);
-		}
-
-		public TranslationResult AddToPrefix(IEnumerable<string> addition, bool isLastWordComplete)
-		{
-			CheckDisposed();
-
-			TranslationResult smtResult = _smtSession.AddToPrefix(addition, isLastWordComplete);
-			int prefixCount = _smtSession.Prefix.Count;
-			if (!_smtSession.IsLastWordComplete)
-				prefixCount--;
-			_currentResult = _ruleResult == null ? smtResult : smtResult.Merge(prefixCount, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
-			return _currentResult;
-		}
-
-		public TranslationResult AddToPrefix(string addition, bool isLastWordComplete)
-		{
-			CheckDisposed();
-			_engine.CheckTargetTokenizer();
-
-			return AddToPrefix(HybridTranslationEngine.Preprocess(_engine.TargetPreprocessor, _engine.TargetTokenizer, addition), isLastWordComplete);
 		}
 
 		public void Approve()

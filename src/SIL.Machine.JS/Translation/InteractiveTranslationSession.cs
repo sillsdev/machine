@@ -4,22 +4,26 @@ using Bridge.Html5;
 
 namespace SIL.Machine.Translation
 {
-	public class InteractiveTranslationSuggester
+	public class InteractiveTranslationSession
 	{
 		private const double RuleEngineThreshold = 0.05;
 
 		private readonly TranslationEngine _engine;
 		private readonly ErrorCorrectingWordGraphProcessor _wordGraphProcessor;
+		private TranslationResult _curResult;
+		private double _confidenceThreshold;
 
-		internal InteractiveTranslationSuggester(TranslationEngine engine, WordGraph smtWordGraph, TranslationResult ruleResult, string[] sourceSegment)
+		internal InteractiveTranslationSession(TranslationEngine engine, string[] sourceSegment, double confidenceThreshold, WordGraph smtWordGraph,
+			TranslationResult ruleResult)
 		{
 			_engine = engine;
+			SourceSegment = sourceSegment;
+			_confidenceThreshold = confidenceThreshold;
 			RuleResult = ruleResult;
 			SmtWordGraph = smtWordGraph;
-			SourceSegment = sourceSegment;
 
 			_wordGraphProcessor = new ErrorCorrectingWordGraphProcessor(_engine.ErrorCorrectingModel, SmtWordGraph);
-			UpdatePrefix(new string[0], true);
+			SetPrefix(new string[0], true);
 		}
 
 		public WordGraph SmtWordGraph { get; }
@@ -27,26 +31,57 @@ namespace SIL.Machine.Translation
 
 		public string[] SourceSegment { get; }
 
+		public double ConfidenceThreshold
+		{
+			get { return _confidenceThreshold; }
+			set
+			{
+				if (_confidenceThreshold != value)
+				{
+					_confidenceThreshold = value;
+					UpdateSuggestion();
+				}
+			}
+		}
+
 		public string[] Prefix { get; private set; }
 
 		public bool IsLastWordComplete { get; private set; }
 
-		public string[] CurrentSuggestions { get; private set; }
+		public string[] CurrentSuggestion { get; private set; }
 
-		public string[] UpdatePrefix(string[] prefix, bool isLastWordComplete)
+		public string[] SetPrefix(string[] prefix, bool isLastWordComplete)
 		{
 			Prefix = prefix;
 			IsLastWordComplete = isLastWordComplete;
-			TranslationInfo correction = _wordGraphProcessor.Correct(prefix, isLastWordComplete, 1).FirstOrDefault();
+
+			TranslationInfo correction = _wordGraphProcessor.Correct(Prefix, IsLastWordComplete, 1).FirstOrDefault();
 			TranslationResult smtResult = CreateResult(correction);
 
-			TranslationResult hybridResult = smtResult.Merge(prefix.Length, RuleEngineThreshold, RuleResult);
+			if (RuleResult == null)
+			{
+				_curResult = smtResult;
+			}
+			else
+			{
+				int prefixCount = Prefix.Length;
+				if (!IsLastWordComplete)
+					prefixCount--;
 
-			string[] suggestions = WordSuggester.GetSuggestedWordIndices(prefix, isLastWordComplete, hybridResult, _engine.ConfidenceThreshold)
-				.Select(j => hybridResult.TargetSegment[j]).ToArray();
+				_curResult = smtResult.Merge(prefixCount, RuleEngineThreshold, RuleResult);
+			}
 
-			CurrentSuggestions = suggestions;
-			return CurrentSuggestions;
+			UpdateSuggestion();
+
+			return CurrentSuggestion;
+		}
+
+		private void UpdateSuggestion()
+		{
+			string[] suggestions = TranslationSuggester.GetSuggestedWordIndices(Prefix, IsLastWordComplete, _curResult, _confidenceThreshold)
+				.Select(j => _curResult.TargetSegment[j]).ToArray();
+
+			CurrentSuggestion = suggestions;
 		}
 
 		public void Approve(Action<bool> onFinished)

@@ -63,7 +63,7 @@ namespace SIL.Machine.Tests.Translation
 
 				var smtSession = Substitute.For<IInteractiveTranslationSession>();
 				smtSession.SourceSegment.Returns(sourceSegmentArray);
-				smtSession.CurrentTranslationResult.Returns(new TranslationResult(sourceSegmentArray, targetSegmentArray,
+				smtSession.CurrentResult.Returns(new TranslationResult(sourceSegmentArray, targetSegmentArray,
 					confidences, alignmentMatrix));
 
 				engine.TranslateInteractively(Arg.Is<IEnumerable<string>>(ss => ss.SequenceEqual(sourceSegmentArray))).Returns(smtSession);
@@ -88,7 +88,7 @@ namespace SIL.Machine.Tests.Translation
 			using (var env = new TestEnvironment())
 			using (IInteractiveTranslationSession session = env.Engine.TranslateInteractively("caminé a mi habitación .".Split()))
 			{
-				TranslationResult result = session.CurrentTranslationResult;
+				TranslationResult result = session.CurrentResult;
 				Assert.That(result.TargetSegment, Is.EqualTo("walked to my room .".Split()));
 			}
 		}
@@ -99,7 +99,7 @@ namespace SIL.Machine.Tests.Translation
 			using (var env = new TestEnvironment())
 			using (IInteractiveTranslationSession session = env.Engine.TranslateInteractively("hablé con recepción .".Split()))
 			{
-				TranslationResult result = session.CurrentTranslationResult;
+				TranslationResult result = session.CurrentResult;
 				Assert.That(result.TargetSegment, Is.EqualTo("hablé with reception .".Split()));
 			}
 		}

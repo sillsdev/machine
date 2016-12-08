@@ -5,7 +5,7 @@ using SIL.Machine.Translation;
 
 namespace SIL.Machine.JS.Tests.Translation
 {
-	public static class InteractiveTranslationSuggesterTests
+	public static class InteractiveTranslationSessionTests
 	{
 		private static readonly dynamic Json = new
 		{
@@ -475,72 +475,72 @@ namespace SIL.Machine.JS.Tests.Translation
 		[Ready]
 		public static void RunTests()
 		{
-			QUnit.Module(nameof(InteractiveTranslationSuggesterTests));
+			QUnit.Module(nameof(InteractiveTranslationSessionTests));
 
-			QUnit.Test(nameof(CurrentSuggestions_EmptyPrefix_ReturnsSuggestions), CurrentSuggestions_EmptyPrefix_ReturnsSuggestions);
-			QUnit.Test(nameof(UpdatePrefix_AddOneCompleteWord_ReturnsSuggestions), UpdatePrefix_AddOneCompleteWord_ReturnsSuggestions);
-			QUnit.Test(nameof(UpdatePrefix_AddOnePartialWord_ReturnsSuggestions), UpdatePrefix_AddOnePartialWord_ReturnsSuggestions);
-			QUnit.Test(nameof(UpdatePrefix_RemoveOneWord_ReturnsSuggestions), UpdatePrefix_RemoveOneWord_ReturnsSuggestions);
-			QUnit.Test(nameof(UpdatePrefix_RemoveEntirePrefix_ReturnsSuggestions), UpdatePrefix_RemoveEntirePrefix_ReturnsSuggestions);
+			QUnit.Test(nameof(CurrentSuggestion_EmptyPrefix_ReturnsSuggestion), CurrentSuggestion_EmptyPrefix_ReturnsSuggestion);
+			QUnit.Test(nameof(SetPrefix_AddOneCompleteWord_ReturnsSuggestion), SetPrefix_AddOneCompleteWord_ReturnsSuggestion);
+			QUnit.Test(nameof(SetPrefix_AddOnePartialWord_ReturnsSuggestion), SetPrefix_AddOnePartialWord_ReturnsSuggestion);
+			QUnit.Test(nameof(SetPrefix_RemoveOneWord_ReturnsSuggestion), SetPrefix_RemoveOneWord_ReturnsSuggestion);
+			QUnit.Test(nameof(SetPrefix_RemoveEntirePrefix_ReturnsSuggestion), SetPrefix_RemoveEntirePrefix_ReturnsSuggestion);
 			QUnit.Test(nameof(Approve_Success_ReturnsTrue), Approve_Success_ReturnsTrue);
 			QUnit.Test(nameof(Approve_Error_ReturnsFalse), Approve_Error_ReturnsFalse);
 		}
 
-		private static void CurrentSuggestions_EmptyPrefix_ReturnsSuggestions(Assert assert)
+		private static void CurrentSuggestion_EmptyPrefix_ReturnsSuggestion(Assert assert)
 		{
 			var engine = new TranslationEngine("http://localhost", "es", "en", CreateWebClient());
-			engine.GetSuggester("En el principio la Palabra ya existía .".Split(" "), suggester =>
+			engine.TranslateInteractively("En el principio la Palabra ya existía .".Split(" "), 0.2, session =>
 				{
-					assert.NotEqual(suggester, null);
+					assert.NotEqual(session, null);
 
-					assert.DeepEqual(suggester.CurrentSuggestions, "In the beginning the Word already".Split(" "));
+					assert.DeepEqual(session.CurrentSuggestion, "In the beginning the Word already".Split(" "));
 				});
 		}
 
-		private static void UpdatePrefix_AddOneCompleteWord_ReturnsSuggestions(Assert assert)
+		private static void SetPrefix_AddOneCompleteWord_ReturnsSuggestion(Assert assert)
 		{
 			var engine = new TranslationEngine("http://localhost", "es", "en", CreateWebClient());
-			engine.GetSuggester("En el principio la Palabra ya existía .".Split(" "), suggester =>
+			engine.TranslateInteractively("En el principio la Palabra ya existía .".Split(" "), 0.2, session =>
 				{
-					assert.NotEqual(suggester, null);
+					assert.NotEqual(session, null);
 
-					assert.DeepEqual(suggester.UpdatePrefix("In".Split(" "), true), "the beginning the Word already".Split(" "));
+					assert.DeepEqual(session.SetPrefix("In".Split(" "), true), "the beginning the Word already".Split(" "));
 				});
 		}
 
-		private static void UpdatePrefix_AddOnePartialWord_ReturnsSuggestions(Assert assert)
+		private static void SetPrefix_AddOnePartialWord_ReturnsSuggestion(Assert assert)
 		{
 			var engine = new TranslationEngine("http://localhost", "es", "en", CreateWebClient());
-			engine.GetSuggester("En el principio la Palabra ya existía .".Split(" "), suggester =>
+			engine.TranslateInteractively("En el principio la Palabra ya existía .".Split(" "), 0.2, session =>
 				{
-					assert.NotEqual(suggester, null);
-					suggester.UpdatePrefix("In".Split(" "), true);
+					assert.NotEqual(session, null);
+					session.SetPrefix("In".Split(" "), true);
 
-					assert.DeepEqual(suggester.UpdatePrefix("t".Split(" "), false), "the beginning the Word already".Split(" "));
+					assert.DeepEqual(session.SetPrefix("t".Split(" "), false), "the beginning the Word already".Split(" "));
 				});
 		}
 
-		private static void UpdatePrefix_RemoveOneWord_ReturnsSuggestions(Assert assert)
+		private static void SetPrefix_RemoveOneWord_ReturnsSuggestion(Assert assert)
 		{
 			var engine = new TranslationEngine("http://localhost", "es", "en", CreateWebClient());
-			engine.GetSuggester("En el principio la Palabra ya existía .".Split(" "), suggester =>
+			engine.TranslateInteractively("En el principio la Palabra ya existía .".Split(" "), 0.2, session =>
 				{
-					assert.NotEqual(suggester, null);
-					suggester.UpdatePrefix("In the beginning".Split(" "), true);
+					assert.NotEqual(session, null);
+					session.SetPrefix("In the beginning".Split(" "), true);
 
-					assert.DeepEqual(suggester.UpdatePrefix("In the".Split(" "), true), "beginning the Word already".Split(" "));
+					assert.DeepEqual(session.SetPrefix("In the".Split(" "), true), "beginning the Word already".Split(" "));
 				});
 		}
 
-		private static void UpdatePrefix_RemoveEntirePrefix_ReturnsSuggestions(Assert assert)
+		private static void SetPrefix_RemoveEntirePrefix_ReturnsSuggestion(Assert assert)
 		{
 			var engine = new TranslationEngine("http://localhost", "es", "en", CreateWebClient());
-			engine.GetSuggester("En el principio la Palabra ya existía .".Split(" "), suggester =>
+			engine.TranslateInteractively("En el principio la Palabra ya existía .".Split(" "), 0.2, session =>
 				{
-					assert.NotEqual(suggester, null);
-					suggester.UpdatePrefix("In the beginning".Split(" "), true);
+					assert.NotEqual(session, null);
+					session.SetPrefix("In the beginning".Split(" "), true);
 
-					assert.DeepEqual(suggester.UpdatePrefix("".Split(" "), true), "In the beginning the Word already".Split(" "));
+					assert.DeepEqual(session.SetPrefix("".Split(" "), true), "In the beginning the Word already".Split(" "));
 				});
 		}
 
@@ -563,12 +563,12 @@ namespace SIL.Machine.JS.Tests.Translation
 				});
 
 			var engine = new TranslationEngine("http://localhost", "es", "en", webClient);
-			engine.GetSuggester(sourceSegment, suggester =>
+			engine.TranslateInteractively(sourceSegment, 0.2, session =>
 				{
-					assert.NotEqual(suggester, null);
-					suggester.UpdatePrefix(prefix, true);
+					assert.NotEqual(session, null);
+					session.SetPrefix(prefix, true);
 
-					suggester.Approve(success => assert.Ok(success));
+					session.Approve(success => assert.Ok(success));
 				});
 		}
 
@@ -578,12 +578,12 @@ namespace SIL.Machine.JS.Tests.Translation
 			webClient.Requests.Add(new MockRequest {Url = "http://localhost/translation/engines/es/en/actions/train-segment", ErrorStatus = 404});
 
 			var engine = new TranslationEngine("http://localhost", "es", "en", webClient);
-			engine.GetSuggester("En el principio la Palabra ya existía .".Split(" "), suggester =>
+			engine.TranslateInteractively("En el principio la Palabra ya existía .".Split(" "), 0.2, session =>
 				{
-					assert.NotEqual(suggester, null);
-					suggester.UpdatePrefix("In the beginning the Word already existed .".Split(" "), true);
+					assert.NotEqual(session, null);
+					session.SetPrefix("In the beginning the Word already existed .".Split(" "), true);
 
-					suggester.Approve(success => assert.NotOk(success));
+					session.Approve(success => assert.NotOk(success));
 				});
 		}
 	}

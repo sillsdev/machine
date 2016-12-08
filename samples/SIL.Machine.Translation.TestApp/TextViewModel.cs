@@ -321,7 +321,7 @@ namespace SIL.Machine.Translation.TestApp
 			if (!_targetSegments[_currentSegment].IsApproved)
 			{
 				_suggestions.ReplaceAll(_curSession.GetSuggestedWordIndices(_confidenceThreshold)
-					.Select(j => new SuggestionViewModel(this, _curSession.CurrentTranslationResult.RecaseTargetWord(_sourceSegmentWords, j))));
+					.Select(j => new SuggestionViewModel(this, _curSession.CurrentResult.RecaseTargetWord(_sourceSegmentWords, j))));
 			}
 			else
 			{
@@ -406,7 +406,7 @@ namespace SIL.Machine.Translation.TestApp
 			var alignedSourceWords = new List<AlignedWordViewModel>();
 			int targetWordIndex = _tokenizer.Tokenize(TargetSegment)
 				.IndexOf(s => _currentTargetSegmentIndex >= s.Start && _currentTargetSegmentIndex <= s.End);
-			TranslationResult result = _curSession.CurrentTranslationResult;
+			TranslationResult result = _curSession.CurrentResult;
 			if (targetWordIndex != -1)
 			{
 				double confidence = result.TargetWordConfidences[targetWordIndex];

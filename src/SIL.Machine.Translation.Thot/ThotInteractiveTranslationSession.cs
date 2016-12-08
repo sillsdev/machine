@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using SIL.ObjectModel;
 
@@ -51,7 +50,7 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public TranslationResult CurrentTranslationResult
+		public TranslationResult CurrentResult
 		{
 			get
 			{
@@ -66,23 +65,9 @@ namespace SIL.Machine.Translation.Thot
 			return _engine.CreateResult(_sourceSegment, correction);
 		}
 
-		public TranslationResult AddToPrefix(IEnumerable<string> addition, bool isLastWordComplete)
-		{
-			CheckDisposed();
-			if (_wordGraphProcessor == null)
-				throw new InvalidOperationException("An interactive translation has not been started.");
-
-			_prefix.AddRange(addition);
-			_isLastWordComplete = isLastWordComplete;
-			_currentResult = CreateInteractiveResult();
-			return _currentResult;
-		}
-
 		public TranslationResult SetPrefix(IEnumerable<string> prefix, bool isLastWordComplete)
 		{
 			CheckDisposed();
-			if (_wordGraphProcessor == null)
-				throw new InvalidOperationException("An interactive translation has not been started.");
 
 			_prefix.Clear();
 			_prefix.AddRange(prefix);

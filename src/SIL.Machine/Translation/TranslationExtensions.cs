@@ -7,11 +7,6 @@ namespace SIL.Machine.Translation
 {
 	public static class TranslationExtensions
 	{
-		public static TranslationResult AddToPrefix(this IInteractiveTranslationSession session, string addition, bool isLastWordComplete)
-		{
-			return session.AddToPrefix(addition.ToEnumerable(), isLastWordComplete);
-		}
-
 		public static IEnumerable<string> TranslateWord(this ITranslationEngine engine, string sourceWord)
 		{
 			TranslationResult result = engine.Translate(sourceWord.ToEnumerable());
@@ -22,7 +17,7 @@ namespace SIL.Machine.Translation
 
 		public static IEnumerable<int> GetSuggestedWordIndices(this IInteractiveTranslationSession session, double confidenceThreshold)
 		{
-			return WordSuggester.GetSuggestedWordIndices(session.Prefix, session.IsLastWordComplete, session.CurrentTranslationResult, confidenceThreshold);
+			return TranslationSuggester.GetSuggestedWordIndices(session.Prefix, session.IsLastWordComplete, session.CurrentResult, confidenceThreshold);
 		}
 
 		public static string RecaseTargetWord(this TranslationResult result, IReadOnlyList<string> sourceSegment, int targetIndex)

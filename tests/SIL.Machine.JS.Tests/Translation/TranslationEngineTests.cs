@@ -13,11 +13,12 @@ namespace SIL.Machine.JS.Tests.Translation
 		{
 			QUnit.Module(nameof(TranslationEngineTests));
 
-			QUnit.Test(nameof(GetSuggester_Success_ReturnsSuggester), GetSuggester_Success_ReturnsSuggester);
-			QUnit.Test(nameof(GetSuggester_Error_ReturnsNull), GetSuggester_Error_ReturnsNull);
+			QUnit.Test(nameof(TranslateInteractively_Success_ReturnsSession), TranslateInteractively_Success_ReturnsSession);
+			QUnit.Test(nameof(TranslateInteractively_Error_ReturnsNull), TranslateInteractively_Error_ReturnsNull);
+			QUnit.Test(nameof(TranslateInteractively_NoRuleResult_ReturnsSession), TranslateInteractively_NoRuleResult_ReturnsSession);
 		}
 
-		private static void GetSuggester_Success_ReturnsSuggester(Assert assert)
+		private static void TranslateInteractively_Success_ReturnsSession(Assert assert)
 		{
 			var webClient = new MockWebClient();
 			dynamic json = new
@@ -108,11 +109,11 @@ namespace SIL.Machine.JS.Tests.Translation
 			webClient.Requests.Add(new MockRequest {ResponseText = JSON.Stringify(json)});
 
 			var engine = new TranslationEngine("http://localhost", "es", "en", webClient);
-			engine.GetSuggester("Esto es una prueba .".Split(" "), suggester =>
+			engine.TranslateInteractively("Esto es una prueba .".Split(" "), 0.2, session =>
 				{
-					assert.NotEqual(suggester, null);
+					assert.NotEqual(session, null);
 
-					WordGraph wordGraph = suggester.SmtWordGraph;
+					WordGraph wordGraph = session.SmtWordGraph;
 					assert.Equal(wordGraph.InitialStateScore, -111.111);
 					assert.DeepEqual(wordGraph.FinalStates.ToArray(), new[] {4});
 					assert.Equal(wordGraph.Arcs.Count, 4);
@@ -127,8 +128,10 @@ namespace SIL.Machine.JS.Tests.Translation
 					assert.Equal(arc.IsUnknown, false);
 					assert.Equal(arc.Alignment[0, 0], AlignmentType.Aligned);
 					assert.Equal(arc.Alignment[1, 1], AlignmentType.Aligned);
+					arc = wordGraph.Arcs[2];
+					assert.Equal(arc.IsUnknown, true);
 
-					TranslationResult ruleResult = suggester.RuleResult;
+					TranslationResult ruleResult = session.RuleResult;
 					assert.DeepEqual(ruleResult.TargetSegment.ToArray(), new[] {"Esto", "es", "una", "test", "."});
 					assert.DeepEqual(ruleResult.TargetWordConfidences.ToArray(), new[] {0.0, 0.0, 0.0, 1.0, 0.0});
 					AlignedWordPair wordPair;
@@ -139,15 +142,39 @@ namespace SIL.Machine.JS.Tests.Translation
 				});
 		}
 
-		private static void GetSuggester_Error_ReturnsNull(Assert assert)
+		private static void TranslateInteractively_Error_ReturnsNull(Assert assert)
 		{
 			var webClient = new MockWebClient();
 			webClient.Requests.Add(new MockRequest {ErrorStatus = 404});
 
 			var engine = new TranslationEngine("http://localhost", "es", "en", webClient);
-			engine.GetSuggester("Esto es una prueba .".Split(" "), suggester =>
+			engine.TranslateInteractively("Esto es una prueba .".Split(" "), 0.2, session =>
 				{
-					assert.Equal(suggester, null);
+					assert.Equal(session, null);
+				});
+		}
+
+		private static void TranslateInteractively_NoRuleResult_ReturnsSession(Assert assert)
+		{
+			var webClient = new MockWebClient();
+			dynamic json = new
+			{
+				wordGraph = new
+				{
+					initialStateScore = -111.111,
+					finalStates = new string[0],
+					arcs = new DOMStringList[0]
+				},
+				ruleResult = (string) null
+			};
+			webClient.Requests.Add(new MockRequest { ResponseText = JSON.Stringify(json) });
+
+			var engine = new TranslationEngine("http://localhost", "es", "en", webClient);
+			engine.TranslateInteractively("Esto es una prueba .".Split(" "), 0.2, session =>
+				{
+					assert.NotEqual(session, null);
+					assert.NotEqual(session.SmtWordGraph, null);
+					assert.Equal(session.RuleResult, null);
 				});
 		}
 	}

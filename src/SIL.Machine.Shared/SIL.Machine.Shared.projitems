@@ -19,7 +19,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Translation\SegmentEditDistance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordAlignmentMatrix.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Translation\WordSuggester.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationSuggester.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordEditDistance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordGraph.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordGraphArc.cs" />

@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace SIL.Machine.Translation
 {
-	public static class WordSuggester
+	public static class TranslationSuggester
 	{
 		public static IEnumerable<int> GetSuggestedWordIndices(IReadOnlyList<string> prefix, bool isLastWordComplete, TranslationResult result, double confidenceThreshold)
 		{
