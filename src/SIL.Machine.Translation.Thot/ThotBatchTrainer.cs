@@ -19,7 +19,6 @@ namespace SIL.Machine.Translation.Thot
 		private const int TrainingStepCount = 27;
 		private const double ProgressIncrement = 100.0 / TrainingStepCount;
 
-		private readonly string _cfgFileName;
 		private readonly Func<string, string> _sourcePreprocessor;
 		private readonly ITokenizer<string, int> _sourceTokenizer;
 		private readonly Func<string, string> _targetPreprocessor;
@@ -28,10 +27,13 @@ namespace SIL.Machine.Translation.Thot
 		private readonly HashSet<int> _tuneCorpusIndices;
 		private readonly ILLWeightTuner _llWeightTuner;
 
-		public ThotBatchTrainer(string cfgFileName, Func<string, string> sourcePreprocessor, ITokenizer<string, int> sourceTokenizer, ITextCorpus sourceCorpus,
-			Func<string, string> targetPreprocessor, ITokenizer<string, int> targetTokenizer, ITextCorpus targetCorpus)
+		public ThotBatchTrainer(string tmFileNamePrefix, string lmFileNamePrefix, ThotSmtParameters parameters, Func<string, string> sourcePreprocessor,
+			ITokenizer<string, int> sourceTokenizer, ITextCorpus sourceCorpus, Func<string, string> targetPreprocessor, ITokenizer<string, int> targetTokenizer,
+			ITextCorpus targetCorpus)
 		{
-			_cfgFileName = cfgFileName;
+			TranslationModelFileNamePrefix = tmFileNamePrefix;
+			LanguageModelFileNamePrefix = lmFileNamePrefix;
+			Parameters = parameters;
 			_sourcePreprocessor = sourcePreprocessor;
 			_sourceTokenizer = sourceTokenizer;
 			_targetPreprocessor = targetPreprocessor;
@@ -40,6 +42,10 @@ namespace SIL.Machine.Translation.Thot
 			_llWeightTuner = new MiraLLWeightTuner {ProgressIncrement = ProgressIncrement};
 			_tuneCorpusIndices = CreateTuneCorpus();
 		}
+
+		public string TranslationModelFileNamePrefix { get; }
+		public string LanguageModelFileNamePrefix { get; }
+		public ThotSmtParameters Parameters { get; private set; }
 
 		private HashSet<int> CreateTuneCorpus()
 		{
@@ -65,23 +71,6 @@ namespace SIL.Machine.Translation.Thot
 			if (progress == null)
 				progress = new NullProgress();
 
-			string cfgDir = Path.GetDirectoryName(_cfgFileName);
-			Debug.Assert(cfgDir != null);
-			string tmPrefix = null, lmPrefix = null;
-			foreach (string line in File.ReadAllLines(_cfgFileName))
-			{
-				string l = line.Trim();
-				if (l.StartsWith("-tm "))
-					tmPrefix = l.Substring(4).Trim();
-				else if (l.StartsWith("-lm "))
-					lmPrefix = l.Substring(4).Trim();
-			}
-
-			if (string.IsNullOrEmpty(lmPrefix))
-				throw new InvalidOperationException("The configuration file does not specify the language model parameter.");
-			if (string.IsNullOrEmpty(tmPrefix))
-				throw new InvalidOperationException("The configuration file does not specify the translation model parameter.");
-
 			string tempDir;
 			do
 			{
@@ -90,19 +79,14 @@ namespace SIL.Machine.Translation.Thot
 			Directory.CreateDirectory(tempDir);
 			try
 			{
-				string lmFilePrefix = Path.GetFileName(lmPrefix);
-				string tmFilePrefix = Path.GetFileName(tmPrefix);
+				string lmFilePrefix = Path.GetFileName(LanguageModelFileNamePrefix);
+				Debug.Assert(lmFilePrefix != null);
+				string tmFilePrefix = Path.GetFileName(TranslationModelFileNamePrefix);
+				Debug.Assert(tmFilePrefix != null);
 
-				string fullLMPrefix = lmPrefix;
-				if (!Path.IsPathRooted(lmPrefix))
-					fullLMPrefix = Path.Combine(cfgDir, lmPrefix);
-				string fullTMPrefix = tmPrefix;
-				if (!Path.IsPathRooted(tmPrefix))
-					fullTMPrefix = Path.Combine(cfgDir, tmPrefix);
-
-				string lmDir = Path.GetDirectoryName(fullLMPrefix);
+				string lmDir = Path.GetDirectoryName(LanguageModelFileNamePrefix);
 				Debug.Assert(lmDir != null);
-				string tmDir = Path.GetDirectoryName(fullTMPrefix);
+				string tmDir = Path.GetDirectoryName(TranslationModelFileNamePrefix);
 				Debug.Assert(tmDir != null);
 
 				string trainLMDir = Path.Combine(tempDir, "lm");
@@ -111,10 +95,6 @@ namespace SIL.Machine.Translation.Thot
 				string trainTMDir = Path.Combine(tempDir, "tm_train");
 				Directory.CreateDirectory(trainTMDir);
 				string trainTMPrefix = Path.Combine(trainTMDir, tmFilePrefix);
-
-				string trainCfgFileName = Path.Combine(tempDir, "train.cfg");
-				File.Copy(_cfgFileName, trainCfgFileName);
-				UpdateConfigPaths(trainCfgFileName, trainLMPrefix, trainTMPrefix);
 
 				if (progress.CancelRequested)
 					return;
@@ -136,10 +116,6 @@ namespace SIL.Machine.Translation.Thot
 				string tuneTMPrefix = Path.Combine(tuneTMDir, tmFilePrefix);
 				CopyFiles(trainTMDir, tuneTMDir, tmFilePrefix);
 
-				string tuneCfgFileName = Path.Combine(tempDir, "tune.cfg");
-				File.Copy(trainCfgFileName, tuneCfgFileName);
-				UpdateConfigPaths(tuneCfgFileName, trainLMPrefix, tuneTMPrefix);
-
 				var tuneSourceCorpus = new List<IReadOnlyList<string>>(_tuneCorpusIndices.Count);
 				var tuneTargetCorpus = new List<IReadOnlyList<string>>(_tuneCorpusIndices.Count);
 				foreach (ParallelTextSegment segment in _parallelCorpus.Segments.Where((s, i) => _tuneCorpusIndices.Contains(i)))
@@ -159,16 +135,14 @@ namespace SIL.Machine.Translation.Thot
 				progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
 
 				progress.WriteMessage("Tuning translation model...");
-				TuneTranslationModel(tuneCfgFileName, tuneTMPrefix, tuneSourceCorpus, tuneTargetCorpus, progress);
+				TuneTranslationModel(tuneTMPrefix, trainLMPrefix, tuneSourceCorpus, tuneTargetCorpus, progress);
 
 				if (progress.CancelRequested)
 					return;
 				progress.ProgressIndicator.PercentCompleted = ProgressIncrement * (TrainingStepCount - 1);
 
 				progress.WriteMessage("Finalizing...");
-				File.Copy(tuneCfgFileName, trainCfgFileName, true);
-				UpdateConfigPaths(trainCfgFileName, trainLMPrefix, trainTMPrefix);
-				TrainTuneCorpus(trainCfgFileName, tuneSourceCorpus, tuneTargetCorpus);
+				TrainTuneCorpus(trainTMPrefix, trainLMPrefix, tuneSourceCorpus, tuneTargetCorpus);
 
 				if (progress.CancelRequested)
 					return;
@@ -179,31 +153,11 @@ namespace SIL.Machine.Translation.Thot
 				if (!Directory.Exists(tmDir))
 					Directory.CreateDirectory(tmDir);
 				CopyFiles(trainTMDir, tmDir, tmFilePrefix);
-				UpdateConfigPaths(trainCfgFileName, lmPrefix, tmPrefix);
-				File.Copy(trainCfgFileName, _cfgFileName, true);
 				progress.ProgressIndicator.PercentCompleted = 100;
 			}
 			finally
 			{
 				Directory.Delete(tempDir, true);
-			}
-		}
-
-		private static void UpdateConfigPaths(string cfgFileName, string lmPrefix, string tmPrefix)
-		{
-			string[] lines = File.ReadAllLines(cfgFileName);
-			using (var writer = new StreamWriter(File.Open(cfgFileName, FileMode.Create)))
-			{
-				foreach (string line in lines)
-				{
-					string l = line.Trim();
-					if (l.StartsWith("-tm "))
-						writer.Write("-tm {0}\n", tmPrefix);
-					else if (l.StartsWith("-lm "))
-						writer.Write("-lm {0}\n", lmPrefix);
-					else
-						writer.Write("{0}\n", line);
-				}
 			}
 		}
 
@@ -545,7 +499,7 @@ namespace SIL.Machine.Translation.Thot
 			return Math.Exp(-(lp / (wordCount + tuneTargetCorpus.Count)) * Math.Log(10));
 		}
 
-		private void TuneTranslationModel(string tuneCfgFileName, string tuneTMPrefix, IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
+		private void TuneTranslationModel(string tuneTMPrefix, string tuneLMPrefix, IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
 			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, IProgress progress)
 		{
 			if (tuneSourceCorpus.Count == 0)
@@ -555,9 +509,11 @@ namespace SIL.Machine.Translation.Thot
 			FilterPhraseTableUsingCorpus(phraseTableFileName, tuneSourceCorpus);
 			FilterPhraseTableNBest(phraseTableFileName, 20);
 
-			double[] initialWeights = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0};
-			IReadOnlyList<double> bestWeights = _llWeightTuner.Tune(tuneCfgFileName, tuneSourceCorpus, tuneTargetCorpus, initialWeights, progress);
-			UpdateConfigWeights(tuneCfgFileName, bestWeights);
+			float[] initialWeights = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0f};
+			IReadOnlyList<float> bestWeights = _llWeightTuner.Tune(tuneTMPrefix, tuneLMPrefix, Parameters, tuneSourceCorpus, tuneTargetCorpus, initialWeights, progress);
+			Parameters = Parameters.Clone();
+			Parameters.ModelWeights = bestWeights;
+			Parameters.Freeze();
 		}
 
 		private static void FilterPhraseTableUsingCorpus(string fileName, IEnumerable<IEnumerable<string>> sourceCorpus)
@@ -599,56 +555,17 @@ namespace SIL.Machine.Translation.Thot
 			File.Delete(tempFileName);
 		}
 
-		private static void UpdateConfigWeights(string cfgFileName, IReadOnlyList<double> weights)
-		{
-			string[] lines = File.ReadAllLines(cfgFileName);
-			using (var writer = new StreamWriter(File.Open(cfgFileName, FileMode.Create)))
-			{
-				bool weightsWritten = false;
-				foreach (string line in lines)
-				{
-					string l = line.Trim();
-					if (l.StartsWith("-tmw "))
-					{
-						WriteWeights(writer, weights);
-						weightsWritten = true;
-					}
-					else
-					{
-						writer.Write("{0}\n", line);
-					}
-				}
-
-				if (!weightsWritten)
-					WriteWeights(writer, weights);
-			}
-		}
-
-		private static void WriteWeights(StreamWriter writer, IEnumerable<double> weights)
-		{
-			writer.Write("-tmw {0}\n", string.Join(" ", weights.Select(w => w.ToString("0.######"))));
-		}
-
-		private static void TrainTuneCorpus(string cfgFileName, IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus, IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus)
+		private void TrainTuneCorpus(string trainTMPrefix, string trainLMPrefix, IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
+			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus)
 		{
 			if (tuneSourceCorpus.Count == 0)
 				return;
 
-			IntPtr decoderHandle = IntPtr.Zero, sessionHandle = IntPtr.Zero;
-			try
+			using (var smtModel = new ThotSmtModel(trainTMPrefix, trainLMPrefix, Parameters))
+			using (IInteractiveSmtEngine engine = smtModel.CreateEngine())
 			{
-				decoderHandle = Thot.decoder_open(cfgFileName);
-				sessionHandle = Thot.decoder_openSession(decoderHandle);
 				for (int i = 0; i < tuneSourceCorpus.Count; i++)
-					Thot.TrainSegmentPair(sessionHandle, tuneSourceCorpus[i], tuneTargetCorpus[i], null);
-				Thot.decoder_saveModels(decoderHandle);
-			}
-			finally
-			{
-				if (sessionHandle != IntPtr.Zero)
-					Thot.session_close(sessionHandle);
-				if (decoderHandle != IntPtr.Zero)
-					Thot.decoder_close(decoderHandle);
+					engine.TrainSegment(tuneSourceCorpus[i], tuneTargetCorpus[i]);
 			}
 		}
 	}

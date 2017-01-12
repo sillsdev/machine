@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
 using SIL.ObjectModel;
-using SIL.Progress;
 
 namespace SIL.Machine.Translation
 {
@@ -31,35 +29,6 @@ namespace SIL.Machine.Translation
 
 		public ITokenizer<string, int> SourceTokenizer { get; set; }
 		public ITokenizer<string, int> TargetTokenizer { get; set; }
-
-		public ITextCorpus SourceCorpus { get; set; }
-		public ITextCorpus TargetCorpus { get; set; }
-
-		public void Rebuild(IProgress progress = null)
-		{
-			CheckDisposed();
-			CheckSourceTokenizer();
-			CheckTargetTokenizer();
-			if (SourceCorpus == null)
-				throw new InvalidOperationException("A source corpus is not specified.");
-			if (TargetCorpus == null)
-				throw new InvalidOperationException("A target corpus is not specified");
-
-			lock (_sessions)
-			{
-				if (_sessions.Count > 0)
-					throw new InvalidOperationException("The engine cannot be trained while there are active sessions open.");
-
-				SmtEngine.Train(SourcePreprocessor, SourceTokenizer, SourceCorpus, TargetPreprocessor, TargetTokenizer, TargetCorpus, progress);
-			}
-		}
-
-		public void Save()
-		{
-			CheckDisposed();
-
-			SmtEngine.Save();
-		}
 
 		public TranslationResult Translate(IEnumerable<string> segment)
 		{

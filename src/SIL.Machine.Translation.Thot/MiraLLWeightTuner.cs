@@ -21,22 +21,25 @@ namespace SIL.Machine.Translation.Thot
 		public int K { get; set; }
 		public int MaxIterations { get; set; }
 
-		public IReadOnlyList<double> Tune(string cfgFileName, IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus, IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus,
-			IReadOnlyList<double> initialWeights, IProgress progress)
+		public IReadOnlyList<float> Tune(string tmFileNamePrefix, string lmFileNamePrefix, ThotSmtParameters parameters, IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
+			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, IReadOnlyList<float> initialWeights, IProgress progress)
 		{
 			IntPtr weightUpdaterHandle = Thot.llWeightUpdater_create();
 			try
 			{
 				var iterQualities = new List<double>();
 				double bestQuality = double.MinValue;
-				double[] bestWeights = null;
+				float[] bestWeights = null;
 				int iter = 1;
 				HashSet<TranslationInfo>[] curNBestLists = null;
-				double[] curWeights = initialWeights.ToArray();
+				float[] curWeights = initialWeights.ToArray();
 
 				while (true)
 				{
-					IList<TranslationInfo>[] nbestLists = GetNBestLists(cfgFileName, tuneSourceCorpus, curWeights).ToArray();
+					ThotSmtParameters newParameters = parameters.Clone();
+					newParameters.ModelWeights = curWeights;
+					newParameters.Freeze();
+					IList<TranslationInfo>[] nbestLists = GetNBestLists(tmFileNamePrefix, lmFileNamePrefix, newParameters, tuneSourceCorpus).ToArray();
 					double quality = Evaluation.CalculateBleu(nbestLists.Select(nbl => nbl.First().Translation), tuneTargetCorpus);
 					iterQualities.Add(quality);
 					if (quality > bestQuality)
@@ -75,37 +78,36 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private IEnumerable<IList<TranslationInfo>> GetNBestLists(string cfgFileName, IReadOnlyList<IReadOnlyList<string>> sourceCorpus, IEnumerable<double> weights)
+		private IEnumerable<IList<TranslationInfo>> GetNBestLists(string tmFileNamePrefix, string lmFileNamePrefix, ThotSmtParameters parameters,
+			IReadOnlyList<IReadOnlyList<string>> sourceCorpus)
 		{
 			var results = new IList<TranslationInfo>[sourceCorpus.Count];
-			float[] weightArray = weights.Select(w => (float) w).ToArray();
 			Parallel.ForEach(Partitioner.Create(0, sourceCorpus.Count), range =>
 				{
-					IntPtr decoderHandle = IntPtr.Zero, sessionHandle = IntPtr.Zero;
+					IntPtr smtModelHandle = IntPtr.Zero, decoderHandle = IntPtr.Zero;
 					try
 					{
-						decoderHandle = Thot.decoder_open(cfgFileName);
-						Thot.decoder_setLlWeights(decoderHandle, weightArray, (uint) weightArray.Length);
-						sessionHandle = Thot.decoder_openSession(decoderHandle);
+						smtModelHandle = Thot.LoadSmtModel(tmFileNamePrefix, lmFileNamePrefix, parameters);
+						decoderHandle = Thot.LoadDecoder(smtModelHandle, parameters);
 						for (int i = range.Item1; i < range.Item2; i++)
 						{
 							IReadOnlyList<string> sourceSegment = sourceCorpus[i];
-							results[i] = Thot.DoTranslateNBest(sessionHandle, Thot.session_translateNBest, K, sourceSegment, false, sourceSegment, CreateTranslationInfo).ToArray();
+							results[i] = Thot.DoTranslateNBest(decoderHandle, Thot.decoder_translateNBest, K, sourceSegment, false, sourceSegment, CreateTranslationInfo).ToArray();
 						}
 					}
 					finally
 					{
-						if (sessionHandle != IntPtr.Zero)
-							Thot.session_close(sessionHandle);
 						if (decoderHandle != IntPtr.Zero)
 							Thot.decoder_close(decoderHandle);
+						if (smtModelHandle != IntPtr.Zero)
+							Thot.smtModel_close(smtModelHandle);
 					}
 				});
 			return results;
 		}
 
 		private static void UpdateWeights(IntPtr weightUpdaterHandle, IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus,
-			HashSet<TranslationInfo>[] nbestLists, double[] curWeights)
+			HashSet<TranslationInfo>[] nbestLists, float[] curWeights)
 		{
 			IntPtr[] nativeTuneTargetCorpus = tuneTargetCorpus.Select(Thot.ConvertStringsToNativeUtf8).ToArray();
 
@@ -138,7 +140,7 @@ namespace SIL.Machine.Translation.Thot
 			try
 			{
 				Thot.llWeightUpdater_updateClosedCorpus(weightUpdaterHandle, nativeTuneTargetCorpus, nativeNBestLists, nativeScoreComps, nativeNBestListLens,
-					curWeights, (uint) nbestLists.Length, (uint) curWeights.Length - 1);
+					curWeights.Select(w => (double) w).ToArray(), (uint) nbestLists.Length, (uint) curWeights.Length - 1);
 			}
 			finally
 			{

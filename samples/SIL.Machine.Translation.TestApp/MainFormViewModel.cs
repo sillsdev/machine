@@ -21,13 +21,14 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly RelayCommand<object> _openProjectCommand;
 		private readonly RelayCommand<object> _saveProjectCommand;
 		private readonly RelayCommand<object> _rebuildProjectCommand; 
-		private readonly RelayCommand<object> _closeCommand;
 		private HybridTranslationEngine _engine;
+		private ThotSmtModel _smtModel;
+		private ITextCorpus _sourceCorpus;
+		private ITextCorpus _targetCorpus;
 		private readonly ShapeSpanFactory _spanFactory;
 		private readonly TraceManager _hcTraceManager;
 		private int _confidenceThreshold;
 		private readonly BulkObservableList<TextViewModel> _texts;
-		private readonly ReadOnlyObservableList<TextViewModel> _readOnlyTexts;
 		private TextViewModel _currentText;
 		private bool _isChanged;
 
@@ -37,12 +38,12 @@ namespace SIL.Machine.Translation.TestApp
 			_openProjectCommand = new RelayCommand<object>(o => OpenProject());
 			_saveProjectCommand = new RelayCommand<object>(o => SaveProject(), o => IsChanged);
 			_rebuildProjectCommand = new RelayCommand<object>(o => RebuildProject(), o => CanRebuildProject());
-			_closeCommand = new RelayCommand<object>(o => Close(), o => CanClose());
+			CloseCommand = new RelayCommand<object>(o => Close(), o => CanClose());
 			_spanFactory = new ShapeSpanFactory();
 			_hcTraceManager = new TraceManager();
 			_confidenceThreshold = 20;
 			_texts = new BulkObservableList<TextViewModel>();
-			_readOnlyTexts = new ReadOnlyObservableList<TextViewModel>(_texts);
+			Texts = new ReadOnlyObservableList<TextViewModel>(_texts);
 			_currentText = new TextViewModel(_tokenizer);
 		}
 
@@ -148,8 +149,10 @@ namespace SIL.Machine.Translation.TestApp
 
 				transferEngine = new TransferEngine(srcMorpher, new SimpleTransferer(new GlossMorphemeMapper(trgMorpher)), trgMorpher);
 			}
-			var smtEngine = new ThotSmtEngine(Path.Combine(configDir, smtConfig));
-			_engine = new HybridTranslationEngine(smtEngine, transferEngine);
+
+			_smtModel = new ThotSmtModel(Path.Combine(configDir, smtConfig));
+
+			_engine = new HybridTranslationEngine(_smtModel.CreateEngine(), transferEngine);
 
 			var sourceTexts = new List<IText>();
 			var targetTexts = new List<IText>();
@@ -178,12 +181,13 @@ namespace SIL.Machine.Translation.TestApp
 			if (_texts.Count == 0)
 				return false;
 
-			_engine.SourcePreprocessor = s => s.ToLowerInvariant();
+			_sourceCorpus = new DictionaryTextCorpus(sourceTexts);
+			_targetCorpus = new DictionaryTextCorpus(targetTexts);
+
+			_engine.SourcePreprocessor = Preprocess;
 			_engine.SourceTokenizer = _tokenizer;
-			_engine.SourceCorpus = new DictionaryTextCorpus(sourceTexts);
-			_engine.TargetPreprocessor = s => s.ToLowerInvariant();
+			_engine.TargetPreprocessor = Preprocess;
 			_engine.TargetTokenizer = _tokenizer;
-			_engine.TargetCorpus = new DictionaryTextCorpus(targetTexts);
 
 			CurrentText = _texts[0];
 			AcceptChanges();
@@ -195,7 +199,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void SaveProject()
 		{
-			_engine.Save();
+			_smtModel.Save();
 			foreach (TextViewModel text in _texts)
 				text.SaveTargetText();
 			AcceptChanges();
@@ -206,10 +210,17 @@ namespace SIL.Machine.Translation.TestApp
 			CurrentText = null;
 			_texts.Clear();
 			CurrentText = new TextViewModel(_tokenizer);
+			_sourceCorpus = null;
+			_targetCorpus = null;
 			if (_engine != null)
 			{
 				_engine.Dispose();
 				_engine = null;
+			}
+			if (_smtModel != null)
+			{
+				_smtModel.Dispose();
+				_smtModel = null;
 			}
 			_saveProjectCommand.UpdateCanExecute();
 			_rebuildProjectCommand.UpdateCanExecute();
@@ -227,7 +238,7 @@ namespace SIL.Machine.Translation.TestApp
 			_currentText.IsActive = false;
 			if (IsChanged)
 				SaveProject();
-			var progressViewModel = new ProgressViewModel(vm => _engine.Rebuild(vm))
+			var progressViewModel = new ProgressViewModel(vm => _smtModel.Train(Preprocess, _tokenizer, _sourceCorpus, Preprocess, _tokenizer, _targetCorpus, vm))
 			{
 				DisplayName = "Rebuilding..."
 			};
@@ -239,7 +250,7 @@ namespace SIL.Machine.Translation.TestApp
 			_currentText.IsActive = true;
 		}
 
-		public ICommand CloseCommand => _closeCommand;
+		public ICommand CloseCommand { get; }
 
 		private bool CanClose()
 		{
@@ -278,7 +289,7 @@ namespace SIL.Machine.Translation.TestApp
 			}
 		}
 
-		public ReadOnlyObservableList<TextViewModel> Texts => _readOnlyTexts;
+		public ReadOnlyObservableList<TextViewModel> Texts { get; }
 
 		public TextViewModel CurrentText
 		{
@@ -297,6 +308,11 @@ namespace SIL.Machine.Translation.TestApp
 					}
 				}
 			}
+		}
+
+		private static string Preprocess(string str)
+		{
+			return str.ToLowerInvariant();
 		}
 	}
 }

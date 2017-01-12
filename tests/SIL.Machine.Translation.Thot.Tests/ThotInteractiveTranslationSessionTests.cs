@@ -8,7 +8,8 @@ namespace SIL.Machine.Translation.Thot.Tests
 		[Test]
 		public void TranslateInteractively_TranslationCorrect()
 		{
-			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
+			using (var smtModel = new ThotSmtModel(TestHelpers.ToyCorpusConfigFileName))
+			using (IInteractiveSmtEngine engine = smtModel.CreateEngine())
 			using (IInteractiveTranslationSession session = engine.TranslateInteractively("me marcho hoy por la tarde .".Split()))
 			{
 				TranslationResult result = session.CurrentResult;
@@ -19,7 +20,8 @@ namespace SIL.Machine.Translation.Thot.Tests
 		[Test]
 		public void SetPrefix_AddWord_TranslationCorrect()
 		{
-			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
+			using (var smtModel = new ThotSmtModel(TestHelpers.ToyCorpusConfigFileName))
+			using (IInteractiveSmtEngine engine = smtModel.CreateEngine())
 			using (IInteractiveTranslationSession session = engine.TranslateInteractively("me marcho hoy por la tarde .".Split()))
 			{
 				TranslationResult result = session.CurrentResult;
@@ -34,7 +36,8 @@ namespace SIL.Machine.Translation.Thot.Tests
 		[Test]
 		public void SetPrefix_MissingWord_TranslationCorrect()
 		{
-			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
+			using (var smtModel = new ThotSmtModel(TestHelpers.ToyCorpusConfigFileName))
+			using (IInteractiveSmtEngine engine = smtModel.CreateEngine())
 			using (IInteractiveTranslationSession session = engine.TranslateInteractively("caminé a mi habitación .".Split()))
 			{
 				TranslationResult result = session.CurrentResult;
@@ -47,7 +50,8 @@ namespace SIL.Machine.Translation.Thot.Tests
 		[Test]
 		public void SetPrefix_RemoveWord_TranslationCorrect()
 		{
-			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
+			using (var smtModel = new ThotSmtModel(TestHelpers.ToyCorpusConfigFileName))
+			using (IInteractiveSmtEngine engine = smtModel.CreateEngine())
 			using (IInteractiveTranslationSession session = engine.TranslateInteractively("me marcho hoy por la tarde .".Split()))
 			{
 				TranslationResult result = session.CurrentResult;
@@ -62,7 +66,8 @@ namespace SIL.Machine.Translation.Thot.Tests
 		[Test]
 		public void Approve_TwoSegmentsUnknownWord_LearnsUnknownWord()
 		{
-			using (var engine = new ThotSmtEngine(TestHelpers.ToyCorpusConfigFileName))
+			using (var smtModel = new ThotSmtModel(TestHelpers.ToyCorpusConfigFileName))
+			using (IInteractiveSmtEngine engine = smtModel.CreateEngine())
 			{
 				using (IInteractiveTranslationSession session = engine.TranslateInteractively("hablé con recepción .".Split()))
 				{

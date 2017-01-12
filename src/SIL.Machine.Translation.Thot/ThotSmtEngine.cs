@@ -1,44 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using SIL.Machine.Corpora;
-using SIL.Machine.Tokenization;
 using SIL.ObjectModel;
-using SIL.Progress;
 
 namespace SIL.Machine.Translation.Thot
 {
-	public class ThotSmtEngine : DisposableBase, IInteractiveSmtEngine
+	internal class ThotSmtEngine : DisposableBase, IInteractiveSmtEngine
 	{
-		public static void TrainModels(string cfgFileName, Func<string, string> sourcePreprocessor, ITokenizer<string, int> sourceTokenizer, ITextCorpus sourceCorpus,
-			Func<string, string> targetPreprocessor, ITokenizer<string, int> targetTokenizer, ITextCorpus targetCorpus, IProgress progress = null)
-		{
-			var trainer = new ThotBatchTrainer(cfgFileName, sourcePreprocessor, sourceTokenizer, sourceCorpus, targetPreprocessor, targetTokenizer, targetCorpus);
-			trainer.Train(progress);
-		}
-
-		private readonly string _cfgFileName;
+		private readonly ThotSmtModel _smtModel;
 		private readonly HashSet<ThotInteractiveTranslationSession> _sessions;
-		private readonly ThotSingleWordAlignmentModel _singleWordAlignmentModel;
-		private readonly ThotSingleWordAlignmentModel _inverseSingleWordAlignmentModel;
 		private readonly ISegmentAligner _segmentAligner;
-		private IntPtr _decoderHandle;
-		private IntPtr _sessionHandle;
+		private readonly IntPtr _decoderHandle;
 
-		public ThotSmtEngine(string cfgFileName)
+		public ThotSmtEngine(ThotSmtModel smtModel)
 		{
-			if (!File.Exists(cfgFileName))
-				throw new FileNotFoundException("The Thot configuration file could not be found.", cfgFileName);
-			_cfgFileName = cfgFileName;
+			_smtModel = smtModel;
 			_sessions = new HashSet<ThotInteractiveTranslationSession>();
-			_decoderHandle = Thot.decoder_open(_cfgFileName);
-			_sessionHandle = Thot.decoder_openSession(_decoderHandle);
-			_singleWordAlignmentModel = new ThotSingleWordAlignmentModel(Thot.decoder_getSingleWordAlignmentModel(_decoderHandle));
-			_inverseSingleWordAlignmentModel = new ThotSingleWordAlignmentModel(Thot.decoder_getInverseSingleWordAlignmentModel(_decoderHandle));
-			_segmentAligner = new FuzzyEditDistanceSegmentAligner(_singleWordAlignmentModel);
+			_decoderHandle = Thot.LoadDecoder(smtModel.Handle, smtModel.Parameters);
+			_segmentAligner = new FuzzyEditDistanceSegmentAligner(_smtModel.SingleWordAlignmentModel);
 			ErrorCorrectingModel = new ErrorCorrectingModel();
 		}
 
@@ -47,7 +28,7 @@ namespace SIL.Machine.Translation.Thot
 			CheckDisposed();
 
 			string[] segmentArray = segment.ToArray();
-			return Thot.DoTranslate(_sessionHandle, Thot.session_translate, segmentArray, false, segmentArray, CreateResult);
+			return Thot.DoTranslate(_decoderHandle, Thot.decoder_translate, segmentArray, false, segmentArray, CreateResult);
 		}
 
 		public IEnumerable<TranslationResult> Translate(int n, IEnumerable<string> segment)
@@ -55,7 +36,7 @@ namespace SIL.Machine.Translation.Thot
 			CheckDisposed();
 
 			string[] segmentArray = segment.ToArray();
-			return Thot.DoTranslateNBest(_sessionHandle, Thot.session_translateNBest, n, segmentArray, false, segmentArray, CreateResult);
+			return Thot.DoTranslateNBest(_decoderHandle, Thot.decoder_translateNBest, n, segmentArray, false, segmentArray, CreateResult);
 		}
 
 		public IInteractiveTranslationSession TranslateInteractively(IEnumerable<string> segment)
@@ -81,7 +62,7 @@ namespace SIL.Machine.Translation.Thot
 			IntPtr nativeWordGraphStr = IntPtr.Zero;
 			try
 			{
-				wordGraph = Thot.session_translateWordGraph(_sessionHandle, nativeSentence);
+				wordGraph = Thot.decoder_getWordGraph(_decoderHandle, nativeSentence);
 
 				uint len = Thot.wg_getString(wordGraph, IntPtr.Zero, 0);
 				nativeWordGraphStr = Marshal.AllocHGlobal((int)len);
@@ -196,7 +177,7 @@ namespace SIL.Machine.Translation.Thot
 			IntPtr data = IntPtr.Zero;
 			try
 			{
-				data = Thot.session_getBestPhraseAlignment(_sessionHandle, nativeSourceSegment, nativeTargetSegment);
+				data = Thot.decoder_getBestPhraseAlignment(_decoderHandle, nativeSourceSegment, nativeTargetSegment);
 				return CreateResult(sourceSegmentArray, targetSegmentArray, data);
 			}
 			finally
@@ -208,56 +189,11 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public void Save()
-		{
-			Thot.decoder_saveModels(_decoderHandle);
-		}
-
-		public void Train(Func<string, string> sourcePreprocessor, ITokenizer<string, int> sourceTokenizer, ITextCorpus sourceCorpus,
-			Func<string, string> targetPreprocessor, ITokenizer<string, int> targetTokenizer, ITextCorpus targetCorpus, IProgress progress = null)
-		{
-			CheckDisposed();
-
-			lock (_sessions)
-			{
-				if (_sessions.Count > 0)
-					throw new InvalidOperationException("The engine cannot be trained while there are active sessions open.");
-
-				Thot.session_close(_sessionHandle);
-				Thot.decoder_close(_decoderHandle);
-				TrainModels(_cfgFileName, sourcePreprocessor, sourceTokenizer, sourceCorpus, targetPreprocessor, targetTokenizer, targetCorpus, progress);
-				_decoderHandle = Thot.decoder_open(_cfgFileName);
-				_sessionHandle = Thot.decoder_openSession(_decoderHandle);
-				_singleWordAlignmentModel.Handle = Thot.decoder_getSingleWordAlignmentModel(_decoderHandle);
-				_inverseSingleWordAlignmentModel.Handle = Thot.decoder_getInverseSingleWordAlignmentModel(_decoderHandle);
-			}
-		}
-
 		public void TrainSegment(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment, WordAlignmentMatrix matrix = null)
 		{
 			CheckDisposed();
 
-			Thot.TrainSegmentPair(_sessionHandle, sourceSegment, targetSegment, matrix);
-		}
-
-		public ISegmentAligner SingleWordAlignmentModel
-		{
-			get
-			{
-				CheckDisposed();
-
-				return _singleWordAlignmentModel;
-			}
-		}
-
-		public ISegmentAligner InverseSingleWordAlignmentModel
-		{
-			get
-			{
-				CheckDisposed();
-
-				return _inverseSingleWordAlignmentModel;
-			}
+			Thot.TrainSegmentPair(_decoderHandle, sourceSegment, targetSegment, matrix);
 		}
 
 		internal TranslationResult CreateResult(IReadOnlyList<string> sourceSegment, TranslationInfo info)
@@ -435,11 +371,11 @@ namespace SIL.Machine.Translation.Thot
 				foreach (ThotInteractiveTranslationSession session in _sessions.ToArray())
 					session.Dispose();
 			}
+			_smtModel.RemoveEngine(this);
 		}
 
 		protected override void DisposeUnmanagedResources()
 		{
-			Thot.session_close(_sessionHandle);
 			Thot.decoder_close(_decoderHandle);
 		}
 	}

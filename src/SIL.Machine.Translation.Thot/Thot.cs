@@ -11,52 +11,77 @@ namespace SIL.Machine.Translation.Thot
 		private const int DefaultTranslationBufferLength = 1024;
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern IntPtr decoder_open(string cfgFileName);
+		public static extern IntPtr smtModel_create();
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern IntPtr decoder_openSession(IntPtr decoderHandle);
+		public static extern bool smtModel_loadTranslationModel(IntPtr smtModelHandle, string tmFileNamePrefix);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern void decoder_saveModels(IntPtr decoderHandle);
+		public static extern bool smtModel_loadLanguageModel(IntPtr smtModelHandle, string lmFileName);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern IntPtr decoder_getSingleWordAlignmentModel(IntPtr decoderHandle);
+		public static extern void smtModel_setNonMonotonicity(IntPtr smtModelHandle, uint nomon);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern IntPtr decoder_getInverseSingleWordAlignmentModel(IntPtr decoderHandle);
+		public static extern void smtModel_setW(IntPtr smtModelHandle, float w);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern void decoder_setLlWeights(IntPtr decoderHandle, float[] weights, uint capacity);
+		public static extern void smtModel_setA(IntPtr smtModelHandle, uint a);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void smtModel_setE(IntPtr smtModelHandle, uint e);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void smtModel_setHeuristic(IntPtr smtModelHandle, uint heuristic);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void smtModel_setOnlineTrainingParameters(IntPtr smtModelHandle, uint algorithm, uint learningRatePolicy,
+			float learnStepSize, uint emIters, uint e, uint r);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void smtModel_setWeights(IntPtr smtModelHandle, float[] weights, uint capacity);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern IntPtr smtModel_getSingleWordAlignmentModel(IntPtr smtModelHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern IntPtr smtModel_getInverseSingleWordAlignmentModel(IntPtr smtModelHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern bool smtModel_saveModels(IntPtr smtModelHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void smtModel_close(IntPtr smtModelHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern IntPtr decoder_create(IntPtr smtModelHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void decoder_setS(IntPtr decoderHandle, uint s);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void decoder_setBreadthFirst(IntPtr decoderHandle, bool breadthFirst);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void decoder_setG(IntPtr decoderHandle, uint g);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern IntPtr decoder_translate(IntPtr decoderHandle, IntPtr sentence);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern uint decoder_translateNBest(IntPtr decoderHandle, uint n, IntPtr sentence, IntPtr[] results);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern IntPtr decoder_getWordGraph(IntPtr decoderHandle, IntPtr sentence);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern IntPtr decoder_getBestPhraseAlignment(IntPtr decoderHandle, IntPtr sentence, IntPtr translation);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern bool decoder_trainSentencePair(IntPtr decoderHandle, IntPtr sourceSentence, IntPtr targetSentence, IntPtr matrix, uint iLen, uint jLen);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void decoder_close(IntPtr decoderHandle);
-
-		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern IntPtr session_translate(IntPtr sessionHandle, IntPtr sentence);
-
-		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern uint session_translateNBest(IntPtr sessionHandle, uint n, IntPtr sentence, IntPtr[] results);
-
-		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern IntPtr session_translateWordGraph(IntPtr sessionHandle, IntPtr sentence);
-
-		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern IntPtr session_getBestPhraseAlignment(IntPtr sessionHandle, IntPtr sentence, IntPtr translation);
-
-		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern IntPtr session_translateInteractively(IntPtr sessionHandle, IntPtr sentence);
-
-		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern IntPtr session_addStringToPrefix(IntPtr sessionHandle, IntPtr addition);
-
-		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern IntPtr session_setPrefix(IntPtr sessionHandle, IntPtr prefix);
-
-		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern void session_trainSentencePair(IntPtr sessionHandle, IntPtr sourceSentence, IntPtr targetSentence, IntPtr matrix, uint iLen, uint jLen);
-
-		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern void session_close(IntPtr sessionHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern uint tdata_getTarget(IntPtr dataHandle, IntPtr target, uint capacity);
@@ -229,14 +254,14 @@ namespace SIL.Machine.Translation.Thot
 			return Encoding.UTF8.GetString(buffer, 0, buffer.Length);
 		}
 
-		public static T DoTranslate<T>(IntPtr sessionHandle, Func<IntPtr, IntPtr, IntPtr> translateFunc, IEnumerable<string> input, bool addTrailingSpace,
+		public static T DoTranslate<T>(IntPtr decoderHandle, Func<IntPtr, IntPtr, IntPtr> translateFunc, IEnumerable<string> input, bool addTrailingSpace,
 			IReadOnlyList<string> sourceSegment, Func<IReadOnlyList<string>, IReadOnlyList<string>, IntPtr, T> createResult)
 		{
 			IntPtr inputPtr = ConvertStringToNativeUtf8(string.Join(" ", input) + (addTrailingSpace ? " " : ""));
 			IntPtr data = IntPtr.Zero;
 			try
 			{
-				data = translateFunc(sessionHandle, inputPtr);
+				data = translateFunc(decoderHandle, inputPtr);
 				return DoCreateResult(sourceSegment, data, createResult);
 			}
 			finally
@@ -247,14 +272,14 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public static IEnumerable<T> DoTranslateNBest<T>(IntPtr sessionHandle, Func<IntPtr, uint, IntPtr, IntPtr[], uint> translateFunc, int n, IEnumerable<string> input,
+		public static IEnumerable<T> DoTranslateNBest<T>(IntPtr decoderHandle, Func<IntPtr, uint, IntPtr, IntPtr[], uint> translateFunc, int n, IEnumerable<string> input,
 			bool addTrailingSpace, IReadOnlyList<string> sourceSegment, Func<IReadOnlyList<string>, IReadOnlyList<string>, IntPtr, T> createResult)
 		{
 			IntPtr inputPtr = ConvertStringToNativeUtf8(string.Join(" ", input) + (addTrailingSpace ? " " : ""));
 			var results = new IntPtr[n];
 			try
 			{
-				uint len = translateFunc(sessionHandle, (uint) n, inputPtr, results);
+				uint len = translateFunc(decoderHandle, (uint) n, inputPtr, results);
 				return results.Take((int) len).Select(data => DoCreateResult(sourceSegment, data, createResult)).ToArray();
 			}
 			finally
@@ -286,7 +311,7 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public static void TrainSegmentPair(IntPtr sessionHandle, IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment, WordAlignmentMatrix matrix)
+		public static void TrainSegmentPair(IntPtr decoderHandle, IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment, WordAlignmentMatrix matrix)
 		{
 			IntPtr nativeSourceSegment = ConvertStringsToNativeUtf8(sourceSegment);
 			IntPtr nativeTargetSegment = ConvertStringsToNativeUtf8(targetSegment);
@@ -301,7 +326,7 @@ namespace SIL.Machine.Translation.Thot
 
 			try
 			{
-				session_trainSentencePair(sessionHandle, nativeSourceSegment, nativeTargetSegment, nativeMatrix, iLen, jLen);
+				decoder_trainSentencePair(decoderHandle, nativeSourceSegment, nativeTargetSegment, nativeMatrix, iLen, jLen);
 			}
 			finally
 			{
@@ -309,6 +334,32 @@ namespace SIL.Machine.Translation.Thot
 				Marshal.FreeHGlobal(nativeTargetSegment);
 				Marshal.FreeHGlobal(nativeSourceSegment);
 			}
+		}
+
+		public static IntPtr LoadSmtModel(string tmFileNamePrefix, string lmFileNamePrefix, ThotSmtParameters parameters)
+		{
+			IntPtr handle = smtModel_create();
+			smtModel_loadTranslationModel(handle, tmFileNamePrefix);
+			smtModel_loadLanguageModel(handle, lmFileNamePrefix);
+			smtModel_setNonMonotonicity(handle, parameters.ModelNonMonotonicity);
+			smtModel_setW(handle, parameters.ModelW);
+			smtModel_setA(handle, parameters.ModelA);
+			smtModel_setE(handle, parameters.ModelE);
+			smtModel_setHeuristic(handle, (uint) parameters.ModelHeuristic);
+			smtModel_setOnlineTrainingParameters(handle, (uint) parameters.LearningAlgorithm, (uint) parameters.LearningRatePolicy,
+				parameters.LearningStepSize, parameters.LearningEMIters, parameters.LearningE, parameters.LearningR);
+			if (parameters.ModelWeights != null)
+				smtModel_setWeights(handle, parameters.ModelWeights.ToArray(), (uint) parameters.ModelWeights.Count);
+			return handle;
+		}
+
+		public static IntPtr LoadDecoder(IntPtr smtModelHandle, ThotSmtParameters parameters)
+		{
+			IntPtr handle = decoder_create(smtModelHandle);
+			decoder_setS(handle, parameters.DecoderS);
+			decoder_setBreadthFirst(handle, parameters.DecoderBreadthFirst);
+			decoder_setG(handle, parameters.DecoderG);
+			return handle;
 		}
 	}
 }

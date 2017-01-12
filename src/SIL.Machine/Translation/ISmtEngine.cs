@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using SIL.Machine.Corpora;
-using SIL.Machine.Tokenization;
-using SIL.Progress;
+﻿using System.Collections.Generic;
 
 namespace SIL.Machine.Translation
 {
@@ -11,11 +7,6 @@ namespace SIL.Machine.Translation
 		TranslationResult GetBestPhraseAlignment(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment);
 
 		WordGraph GetWordGraph(IEnumerable<string> segment);
-
-		void Save();
-
-		void Train(Func<string, string> sourcePreprocessor, ITokenizer<string, int> sourceTokenizer, ITextCorpus sourceCorpus,
-			Func<string, string> targetPreprocessor, ITokenizer<string, int> targetTokenizer, ITextCorpus targetCorpus, IProgress progress = null);
 
 		void TrainSegment(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment, WordAlignmentMatrix matrix = null);
 	}

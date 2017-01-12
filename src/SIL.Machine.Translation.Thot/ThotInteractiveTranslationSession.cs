@@ -13,7 +13,7 @@ namespace SIL.Machine.Translation.Thot
 		private TranslationResult _currentResult;
 		private readonly ErrorCorrectingWordGraphProcessor _wordGraphProcessor;
 
-		internal ThotInteractiveTranslationSession(ThotSmtEngine engine, IReadOnlyList<string> sourceSegment, WordGraph wordGraph)
+		public ThotInteractiveTranslationSession(ThotSmtEngine engine, IReadOnlyList<string> sourceSegment, WordGraph wordGraph)
 		{
 			_engine = engine;
 			_sourceSegment = sourceSegment;
