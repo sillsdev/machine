@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Options;
-using SIL.Machine.Annotations;
-using SIL.Machine.Morphology.HermitCrab;
 using SIL.Machine.Tokenization;
 using SIL.Machine.Translation;
-using SIL.Machine.Translation.Thot;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.WebApi.Models
@@ -46,11 +42,8 @@ namespace SIL.Machine.WebApi.Models
 			{
 				lock (engineContext)
 				{
-					if (engineContext.Engine != null && engineContext.SessionCount == 0)
-					{
-						engineContext.Engine.Dispose();
-						engineContext.Engine = null;
-					}
+					if (engineContext.IsLoaded && DateTime.Now - engineContext.LastUsedTime > _options.EngineTimeout)
+						engineContext.Unload();
 				}
 			}
 		}
@@ -84,13 +77,13 @@ namespace SIL.Machine.WebApi.Models
 
 			lock (engineContext)
 			{
-				if (engineContext.Engine == null)
-					engineContext.Engine = LoadEngine(sourceLanguageTag, targetLanguageTag);
-				Debug.Assert(engineContext.Engine != null);
+				if (!engineContext.IsLoaded)
+					engineContext.Load(_options.RootDir);
 				string[] sourceSegment = engineContext.Tokenizer.TokenizeToStrings(segment).ToArray();
 				TranslationResult translationResult = engineContext.Engine.Translate(sourceSegment.Select(w => w.ToLowerInvariant()));
 				result = engineContext.Detokenizer.Detokenize(Enumerable.Range(0, translationResult.TargetSegment.Count)
 					.Select(j => translationResult.RecaseTargetWord(sourceSegment, j)));
+				engineContext.LastUsedTime = DateTime.Now;
 				return true;
 			}
 		}
@@ -106,9 +99,8 @@ namespace SIL.Machine.WebApi.Models
 
 			lock (engineContext)
 			{
-				if (engineContext.Engine == null)
-					engineContext.Engine = LoadEngine(sourceLanguageTag, targetLanguageTag);
-				Debug.Assert(engineContext.Engine != null);
+				if (!engineContext.IsLoaded)
+					engineContext.Load(_options.RootDir);
 				string[] sourceSegment = segment.Select(s => s.ToLowerInvariant()).ToArray();
 
 				WordGraph smtWordGraph = engineContext.Engine.SmtEngine.GetWordGraph(sourceSegment);
@@ -119,6 +111,7 @@ namespace SIL.Machine.WebApi.Models
 					WordGraph = smtWordGraph.CreateDto(segment),
 					RuleResult = ruleResult?.CreateDto(segment)
 				};
+				engineContext.LastUsedTime = DateTime.Now;
 				return true;
 			}
 		}
@@ -131,40 +124,15 @@ namespace SIL.Machine.WebApi.Models
 
 			lock (engineContext)
 			{
-				if (engineContext.Engine == null)
-					engineContext.Engine = LoadEngine(sourceLanguageTag, targetLanguageTag);
-				Debug.Assert(engineContext.Engine != null);
+				if (!engineContext.IsLoaded)
+					engineContext.Load(_options.RootDir);
 
 				engineContext.Engine.TrainSegment(segmentPair.SourceSegment.Select(s => s.ToLowerInvariant()), segmentPair.TargetSegment.Select(s => s.ToLowerInvariant()));
+				engineContext.LastUsedTime = DateTime.Now;
 				return true;
 			}
 		}
 
-		private HybridTranslationEngine LoadEngine(string sourceLanguageTag, string targetLanguageTag)
-		{
-			string configDir = Path.Combine(_options.RootDir, string.Format("{0}_{1}", sourceLanguageTag, targetLanguageTag));
-			string smtConfigFileName = Path.Combine(configDir, "smt.cfg");
-			var smtEngine = new ThotSmtEngine(smtConfigFileName);
-
-			string hcSrcConfigFileName = Path.Combine(configDir, string.Format("{0}-hc.xml", sourceLanguageTag));
-			string hcTrgConfigFileName = Path.Combine(configDir, string.Format("{0}-hc.xml", targetLanguageTag));
-			TransferEngine transferEngine = null;
-			if (File.Exists(hcSrcConfigFileName) && File.Exists(hcTrgConfigFileName))
-			{
-				var spanFactory = new ShapeSpanFactory();
-				var hcTraceManager = new TraceManager();
-
-				Language srcLang = XmlLanguageLoader.Load(hcSrcConfigFileName);
-				var srcMorpher = new Morpher(spanFactory, hcTraceManager, srcLang);
-
-				Language trgLang = XmlLanguageLoader.Load(hcTrgConfigFileName);
-				var trgMorpher = new Morpher(spanFactory, hcTraceManager, trgLang);
-
-				transferEngine = new TransferEngine(srcMorpher, new SimpleTransferer(new GlossMorphemeMapper(trgMorpher)), trgMorpher);
-			}
-
-			return new HybridTranslationEngine(smtEngine, transferEngine);
-		}
 		protected override void DisposeManagedResources()
 		{
 			_isTimerStopped = true;
@@ -174,11 +142,8 @@ namespace SIL.Machine.WebApi.Models
 			{
 				lock (engineContext)
 				{
-					if (engineContext.Engine != null)
-					{
-						engineContext.Engine.Dispose();
-						engineContext.Engine = null;
-					}
+					if (engineContext.IsLoaded)
+						engineContext.Unload();
 				}
 			}
 		}
