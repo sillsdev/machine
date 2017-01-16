@@ -5,7 +5,7 @@ namespace SIL.Machine.WebApi.Models
 	public class EngineOptions
 	{
 		public string RootDir { get; set; }
-		public TimeSpan UnusedEngineCleanupFrequency { get; set; }
-		public TimeSpan EngineTimeout { get; set; }
+		public TimeSpan EngineUpdateFrequency { get; set; }
+		public TimeSpan InactiveEngineTimeout { get; set; }
 	}
 }

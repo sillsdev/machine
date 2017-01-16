@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,14 +14,29 @@ namespace SIL.Machine.WebApi.Models
 	public class EngineService : DisposableBase, IEngineService
 	{
 		private readonly EngineOptions _options;
-		private readonly Dictionary<Tuple<string, string>, EngineContext> _engines;
-		private readonly Timer _cleanupTimer;
-		private bool _isTimerStopped;
+		private readonly ConcurrentDictionary<Tuple<string, string>, EngineContext> _engines;
+		private readonly Timer _updateTimer;
+		private bool _isUpdateTimerStopped;
 
 		public EngineService(IOptions<EngineOptions> options)
 		{
 			_options = options.Value;
-			_engines = new Dictionary<Tuple<string, string>, EngineContext>();
+			_engines = new ConcurrentDictionary<Tuple<string, string>, EngineContext>();
+			UpdateEngines();
+			_updateTimer = new Timer(UpdateEnginesCallback, null, _options.EngineUpdateFrequency, _options.EngineUpdateFrequency);
+		}
+
+		private void UpdateEnginesCallback(object state)
+		{
+			if (_isUpdateTimerStopped)
+				return;
+
+			UpdateEngines();
+		}
+
+		private void UpdateEngines()
+		{
+			var enginesToRemove = new HashSet<Tuple<string, string>>(_engines.Keys);
 			foreach (string configDir in Directory.EnumerateDirectories(_options.RootDir))
 			{
 				string dirName = Path.GetFileName(configDir);
@@ -28,22 +44,30 @@ namespace SIL.Machine.WebApi.Models
 				string sourceLanguageTag = parts[0];
 				string targetLanguageTag = parts[1];
 				Tuple<string, string> key = Tuple.Create(sourceLanguageTag, targetLanguageTag);
-				_engines[key] = new EngineContext(sourceLanguageTag, targetLanguageTag);
-			}
-			_cleanupTimer = new Timer(CleanupUnusedEngines, null, _options.UnusedEngineCleanupFrequency, _options.UnusedEngineCleanupFrequency);
-		}
-
-		private void CleanupUnusedEngines(object state)
-		{
-			if (_isTimerStopped)
-				return;
-
-			foreach (EngineContext engineContext in _engines.Values)
-			{
+				EngineContext engineContext = _engines.GetOrAdd(key, k => new EngineContext(configDir, sourceLanguageTag, targetLanguageTag));
 				lock (engineContext)
 				{
-					if (engineContext.IsLoaded && DateTime.Now - engineContext.LastUsedTime > _options.EngineTimeout)
-						engineContext.Unload();
+					if (engineContext.IsLoaded)
+					{
+						if (DateTime.Now - engineContext.LastUsedTime > _options.InactiveEngineTimeout)
+							engineContext.Unload();
+						else
+							engineContext.Save();
+					}
+				}
+				enginesToRemove.Remove(key);
+			}
+
+			foreach (Tuple<string, string> key in enginesToRemove)
+			{
+				EngineContext engineContext;
+				if (_engines.TryRemove(key, out engineContext))
+				{
+					lock (engineContext)
+					{
+						if (engineContext.IsLoaded)
+							engineContext.Unload();
+					}
 				}
 			}
 		}
@@ -78,7 +102,7 @@ namespace SIL.Machine.WebApi.Models
 			lock (engineContext)
 			{
 				if (!engineContext.IsLoaded)
-					engineContext.Load(_options.RootDir);
+					engineContext.Load();
 				string[] sourceSegment = engineContext.Tokenizer.TokenizeToStrings(segment).ToArray();
 				TranslationResult translationResult = engineContext.Engine.Translate(sourceSegment.Select(w => w.ToLowerInvariant()));
 				result = engineContext.Detokenizer.Detokenize(Enumerable.Range(0, translationResult.TargetSegment.Count)
@@ -100,7 +124,7 @@ namespace SIL.Machine.WebApi.Models
 			lock (engineContext)
 			{
 				if (!engineContext.IsLoaded)
-					engineContext.Load(_options.RootDir);
+					engineContext.Load();
 				string[] sourceSegment = segment.Select(s => s.ToLowerInvariant()).ToArray();
 
 				WordGraph smtWordGraph = engineContext.Engine.SmtEngine.GetWordGraph(sourceSegment);
@@ -125,9 +149,10 @@ namespace SIL.Machine.WebApi.Models
 			lock (engineContext)
 			{
 				if (!engineContext.IsLoaded)
-					engineContext.Load(_options.RootDir);
+					engineContext.Load();
 
 				engineContext.Engine.TrainSegment(segmentPair.SourceSegment.Select(s => s.ToLowerInvariant()), segmentPair.TargetSegment.Select(s => s.ToLowerInvariant()));
+				engineContext.MarkUpdated();
 				engineContext.LastUsedTime = DateTime.Now;
 				return true;
 			}
@@ -135,8 +160,8 @@ namespace SIL.Machine.WebApi.Models
 
 		protected override void DisposeManagedResources()
 		{
-			_isTimerStopped = true;
-			_cleanupTimer.Dispose();
+			_isUpdateTimerStopped = true;
+			_updateTimer.Dispose();
 
 			foreach (EngineContext engineContext in _engines.Values)
 			{

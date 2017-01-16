@@ -15,12 +15,16 @@ namespace SIL.Machine.WebApi.Models
 		private static readonly HashSet<string> MergeRightTokens = new HashSet<string> {"‘", "“", "(", "¿", "¡", "«"};
 		private static readonly HashSet<string> MergeRightFirstLeftSecondTokens = new HashSet<string> {"\"", "'"};
 
+		private readonly string _configDir;
 		private ThotSmtModel _smtModel;
+		private bool _isUpdated;
 
-		public EngineContext(string sourceLanguageTag, string targetLanguageTag)
+		public EngineContext(string configDir, string sourceLanguageTag, string targetLanguageTag)
 		{
+			_configDir = configDir;
 			SourceLanguageTag = sourceLanguageTag;
 			TargetLanguageTag = targetLanguageTag;
+			LastUsedTime = DateTime.Now;
 			Tokenizer = new RegexTokenizer(new IntegerSpanFactory(), @"[\p{P}]|(\w+([.,\-’']\w+)*)");
 			Detokenizer = new SimpleStringDetokenizer(GetDetokenizeOperation);
 		}
@@ -39,17 +43,38 @@ namespace SIL.Machine.WebApi.Models
 			return DetokenizeOperation.NoOperation;
 		}
 
-		public void Load(string rootDir)
+		public string SourceLanguageTag { get; }
+		public string TargetLanguageTag { get; }
+		public bool IsLoaded { get; private set; }
+		public DateTime LastUsedTime { get; set; }
+		public HybridTranslationEngine Engine { get; set; }
+		public ITokenizer<string, int> Tokenizer { get; }
+		public IDetokenizer<string, string> Detokenizer { get; }
+
+		public void MarkUpdated()
+		{
+			_isUpdated = true;
+		}
+
+		public void Save()
+		{
+			if (_isUpdated)
+			{
+				_smtModel.Save();
+				_isUpdated = false;
+			}
+		}
+
+		public void Load()
 		{
 			if (IsLoaded)
 				return;
 
-			string configDir = Path.Combine(rootDir, string.Format("{0}_{1}", SourceLanguageTag, TargetLanguageTag));
-			string smtConfigFileName = Path.Combine(configDir, "smt.cfg");
+			string smtConfigFileName = Path.Combine(_configDir, "smt.cfg");
 			_smtModel = new ThotSmtModel(smtConfigFileName);
 
-			string hcSrcConfigFileName = Path.Combine(configDir, string.Format("{0}-hc.xml", SourceLanguageTag));
-			string hcTrgConfigFileName = Path.Combine(configDir, string.Format("{0}-hc.xml", TargetLanguageTag));
+			string hcSrcConfigFileName = Path.Combine(_configDir, string.Format("{0}-hc.xml", SourceLanguageTag));
+			string hcTrgConfigFileName = Path.Combine(_configDir, string.Format("{0}-hc.xml", TargetLanguageTag));
 			TransferEngine transferEngine = null;
 			if (File.Exists(hcSrcConfigFileName) && File.Exists(hcTrgConfigFileName))
 			{
@@ -76,18 +101,10 @@ namespace SIL.Machine.WebApi.Models
 
 			Engine.Dispose();
 			Engine = null;
-			_smtModel.Save();
+			Save();
 			_smtModel.Dispose();
 			_smtModel = null;
 			IsLoaded = false;
 		}
-
-		public string SourceLanguageTag { get; }
-		public string TargetLanguageTag { get; }
-		public bool IsLoaded { get; private set; }
-		public DateTime LastUsedTime { get; set; }
-		public HybridTranslationEngine Engine { get; set; }
-		public ITokenizer<string, int> Tokenizer { get; }
-		public IDetokenizer<string, string> Detokenizer { get; }
 	}
 }
