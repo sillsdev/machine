@@ -13,6 +13,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CollectionExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ComparerExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ObjectExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IO\TempDirectory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\AnonymousComparer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\AnonymousEqualityComparer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ObjectModel\BulkObservableList.cs" />
