@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using SIL.Machine.Annotations;
-using SIL.Machine.Morphology.HermitCrab;
 using SIL.Machine.Tokenization;
 using SIL.Machine.Translation;
-using SIL.Machine.Translation.Thot;
 
 namespace SIL.Machine.WebApi.Models
 {
@@ -15,13 +12,12 @@ namespace SIL.Machine.WebApi.Models
 		private static readonly HashSet<string> MergeRightTokens = new HashSet<string> {"‘", "“", "(", "¿", "¡", "«"};
 		private static readonly HashSet<string> MergeRightFirstLeftSecondTokens = new HashSet<string> {"\"", "'"};
 
-		private readonly string _configDir;
-		private ThotSmtModel _smtModel;
+		private IInteractiveSmtModel _smtModel;
 		private bool _isUpdated;
 
 		public EngineContext(string configDir, string sourceLanguageTag, string targetLanguageTag)
 		{
-			_configDir = configDir;
+			ConfigDirectory = configDir;
 			SourceLanguageTag = sourceLanguageTag;
 			TargetLanguageTag = targetLanguageTag;
 			LastUsedTime = DateTime.Now;
@@ -43,6 +39,7 @@ namespace SIL.Machine.WebApi.Models
 			return DetokenizeOperation.NoOperation;
 		}
 
+		public string ConfigDirectory { get; }
 		public string SourceLanguageTag { get; }
 		public string TargetLanguageTag { get; }
 		public bool IsLoaded { get; private set; }
@@ -65,32 +62,15 @@ namespace SIL.Machine.WebApi.Models
 			}
 		}
 
-		public void Load()
+		public void Load(ISmtModelFactory smtModelFactory, ITranslationEngineFactory ruleEngineFactory)
 		{
 			if (IsLoaded)
 				return;
 
-			string smtConfigFileName = Path.Combine(_configDir, "smt.cfg");
-			_smtModel = new ThotSmtModel(smtConfigFileName);
+			_smtModel = smtModelFactory.Create(this);
+			ITranslationEngine ruleEngine = ruleEngineFactory.Create(this);
 
-			string hcSrcConfigFileName = Path.Combine(_configDir, string.Format("{0}-hc.xml", SourceLanguageTag));
-			string hcTrgConfigFileName = Path.Combine(_configDir, string.Format("{0}-hc.xml", TargetLanguageTag));
-			TransferEngine transferEngine = null;
-			if (File.Exists(hcSrcConfigFileName) && File.Exists(hcTrgConfigFileName))
-			{
-				var spanFactory = new ShapeSpanFactory();
-				var hcTraceManager = new TraceManager();
-
-				Language srcLang = XmlLanguageLoader.Load(hcSrcConfigFileName);
-				var srcMorpher = new Morpher(spanFactory, hcTraceManager, srcLang);
-
-				Language trgLang = XmlLanguageLoader.Load(hcTrgConfigFileName);
-				var trgMorpher = new Morpher(spanFactory, hcTraceManager, trgLang);
-
-				transferEngine = new TransferEngine(srcMorpher, new SimpleTransferer(new GlossMorphemeMapper(trgMorpher)), trgMorpher);
-			}
-
-			Engine = new HybridTranslationEngine(_smtModel.CreateEngine(), transferEngine);
+			Engine = new HybridTranslationEngine(_smtModel.CreateInteractiveEngine(), ruleEngine);
 			IsLoaded = true;
 		}
 

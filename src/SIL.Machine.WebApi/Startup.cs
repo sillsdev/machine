@@ -41,6 +41,8 @@ namespace SIL.Machine.WebApi
 
 			services.Configure<EngineOptions>(Configuration.GetSection("TranslationEngine"));
 
+			services.AddSingleton<ISmtModelFactory, ThotSmtModelFactory>();
+			services.AddSingleton<ITranslationEngineFactory, TransferEngineFactory>();
 			services.AddSingleton<IEngineService, EngineService>();
 		}
 

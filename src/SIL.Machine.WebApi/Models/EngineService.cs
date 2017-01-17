@@ -15,12 +15,16 @@ namespace SIL.Machine.WebApi.Models
 	{
 		private readonly EngineOptions _options;
 		private readonly ConcurrentDictionary<Tuple<string, string>, EngineContext> _engines;
+		private readonly ISmtModelFactory _smtModelFactory;
+		private readonly ITranslationEngineFactory _ruleEngineFactory;
 		private readonly Timer _updateTimer;
 		private bool _isUpdateTimerStopped;
 
-		public EngineService(IOptions<EngineOptions> options)
+		public EngineService(IOptions<EngineOptions> options, ISmtModelFactory smtModelFactory, ITranslationEngineFactory ruleEngineFactory)
 		{
 			_options = options.Value;
+			_smtModelFactory = smtModelFactory;
+			_ruleEngineFactory = ruleEngineFactory;
 			_engines = new ConcurrentDictionary<Tuple<string, string>, EngineContext>();
 			UpdateEngines();
 			_updateTimer = new Timer(UpdateEnginesCallback, null, _options.EngineUpdateFrequency, _options.EngineUpdateFrequency);
@@ -34,7 +38,7 @@ namespace SIL.Machine.WebApi.Models
 			UpdateEngines();
 		}
 
-		private void UpdateEngines()
+		internal void UpdateEngines()
 		{
 			var enginesToRemove = new HashSet<Tuple<string, string>>(_engines.Keys);
 			foreach (string configDir in Directory.EnumerateDirectories(_options.RootDir))
@@ -102,7 +106,8 @@ namespace SIL.Machine.WebApi.Models
 			lock (engineContext)
 			{
 				if (!engineContext.IsLoaded)
-					engineContext.Load();
+					engineContext.Load(_smtModelFactory, _ruleEngineFactory);
+
 				string[] sourceSegment = engineContext.Tokenizer.TokenizeToStrings(segment).ToArray();
 				TranslationResult translationResult = engineContext.Engine.Translate(sourceSegment.Select(w => w.ToLowerInvariant()));
 				result = engineContext.Detokenizer.Detokenize(Enumerable.Range(0, translationResult.TargetSegment.Count)
@@ -124,12 +129,11 @@ namespace SIL.Machine.WebApi.Models
 			lock (engineContext)
 			{
 				if (!engineContext.IsLoaded)
-					engineContext.Load();
-				string[] sourceSegment = segment.Select(s => s.ToLowerInvariant()).ToArray();
+					engineContext.Load(_smtModelFactory, _ruleEngineFactory);
 
+				string[] sourceSegment = segment.Select(s => s.ToLowerInvariant()).ToArray();
 				WordGraph smtWordGraph = engineContext.Engine.SmtEngine.GetWordGraph(sourceSegment);
 				TranslationResult ruleResult = engineContext.Engine.RuleEngine?.Translate(sourceSegment);
-
 				result = new InteractiveTranslationResultDto
 				{
 					WordGraph = smtWordGraph.CreateDto(segment),
@@ -149,9 +153,11 @@ namespace SIL.Machine.WebApi.Models
 			lock (engineContext)
 			{
 				if (!engineContext.IsLoaded)
-					engineContext.Load();
+					engineContext.Load(_smtModelFactory, _ruleEngineFactory);
 
-				engineContext.Engine.TrainSegment(segmentPair.SourceSegment.Select(s => s.ToLowerInvariant()), segmentPair.TargetSegment.Select(s => s.ToLowerInvariant()));
+				string[] sourceSegment = engineContext.Tokenizer.TokenizeToStrings(segmentPair.SourceSegment).ToArray();
+				string[] targetSegment = engineContext.Tokenizer.TokenizeToStrings(segmentPair.TargetSegment).ToArray();
+				engineContext.Engine.TrainSegment(sourceSegment.Select(s => s.ToLowerInvariant()), targetSegment.Select(s => s.ToLowerInvariant()));
 				engineContext.MarkUpdated();
 				engineContext.LastUsedTime = DateTime.Now;
 				return true;
