@@ -10,7 +10,7 @@ using SIL.Progress;
 
 namespace SIL.Machine.Translation.Thot
 {
-	public class ThotSmtModel : DisposableBase
+	public class ThotSmtModel : DisposableBase, IInteractiveSmtModel
 	{
 		private readonly ThotSingleWordAlignmentModel _singleWordAlignmentModel;
 		private readonly ThotSingleWordAlignmentModel _inverseSingleWordAlignmentModel;
@@ -173,7 +173,12 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public IInteractiveSmtEngine CreateEngine()
+		public ISmtEngine CreateEngine()
+		{
+			return CreateInteractiveEngine();
+		}
+
+		public IInteractiveSmtEngine CreateInteractiveEngine()
 		{
 			var engine = new ThotSmtEngine(this);
 			lock (_engines)

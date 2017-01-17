@@ -203,10 +203,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)Translation\HybridTranslationEngine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\HybridInteractiveTranslationSession.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\IInteractiveSmtEngine.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\IInteractiveSmtModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\IInteractiveTranslationEngine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\IInteractiveTranslationSession.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\IMorphemeMapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\ISmtEngine.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\ISmtModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\ITransferer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\ITranslationEngine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\SimpleTransferer.cs" />

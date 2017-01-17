@@ -11,7 +11,7 @@ namespace SIL.Machine.Translation.Thot.Tests
 		public void Translate_TranslationCorrect()
 		{
 			using (var smtModel = new ThotSmtModel(TestHelpers.ToyCorpusConfigFileName))
-			using (IInteractiveSmtEngine engine = smtModel.CreateEngine())
+			using (ISmtEngine engine = smtModel.CreateEngine())
 			{
 				TranslationResult result = engine.Translate("voy a marcharme hoy por la tarde .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("i am leaving today in the afternoon .".Split()));
@@ -22,7 +22,7 @@ namespace SIL.Machine.Translation.Thot.Tests
 		public void Translate_NBestLessThanN_TranslationsCorrect()
 		{
 			using (var smtModel = new ThotSmtModel(TestHelpers.ToyCorpusConfigFileName))
-			using (IInteractiveSmtEngine engine = smtModel.CreateEngine())
+			using (ISmtEngine engine = smtModel.CreateEngine())
 			{
 				IEnumerable<TranslationResult> results = engine.Translate(3, "voy a marcharme hoy por la tarde .".Split());
 				Assert.That(results.Select(tr => tr.TargetSegment), Is.EqualTo(new[] {"i am leaving today in the afternoon .".Split()}));
@@ -33,7 +33,7 @@ namespace SIL.Machine.Translation.Thot.Tests
 		public void Translate_NBest_TranslationsCorrect()
 		{
 			using (var smtModel = new ThotSmtModel(TestHelpers.ToyCorpusConfigFileName))
-			using (IInteractiveSmtEngine engine = smtModel.CreateEngine())
+			using (ISmtEngine engine = smtModel.CreateEngine())
 			{
 				IEnumerable<TranslationResult> results = engine.Translate(2, "hablé hasta cinco en punto .".Split());
 				Assert.That(results.Select(tr => tr.TargetSegment), Is.EqualTo(new[] {"hablé until five o ' clock .".Split(), "hablé until five o ' clock for".Split()}));
@@ -44,7 +44,7 @@ namespace SIL.Machine.Translation.Thot.Tests
 		public void TrainSegment_TranslationCorrect()
 		{
 			using (var smtModel = new ThotSmtModel(TestHelpers.ToyCorpusConfigFileName))
-			using (IInteractiveSmtEngine engine = smtModel.CreateEngine())
+			using (ISmtEngine engine = smtModel.CreateEngine())
 			{
 				TranslationResult result = engine.Translate("esto es una prueba .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("esto is a prueba .".Split()));
@@ -58,7 +58,7 @@ namespace SIL.Machine.Translation.Thot.Tests
 		public void TrainSegment_AlignmentSpecified_TranslationCorrect()
 		{
 			using (var smtModel = new ThotSmtModel(TestHelpers.ToyCorpusConfigFileName))
-			using (IInteractiveSmtEngine engine = smtModel.CreateEngine())
+			using (ISmtEngine engine = smtModel.CreateEngine())
 			{
 				TranslationResult result = engine.Translate("maria no dio una bofetada a la bruja verde .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("maria no dio a bofetada to bruja verde .".Split()));
@@ -80,7 +80,7 @@ namespace SIL.Machine.Translation.Thot.Tests
 		public void GetBestPhraseAlignment_TranslationCorrect()
 		{
 			using (var smtModel = new ThotSmtModel(TestHelpers.ToyCorpusConfigFileName))
-			using (IInteractiveSmtEngine engine = smtModel.CreateEngine())
+			using (ISmtEngine engine = smtModel.CreateEngine())
 			{
 				TranslationResult result = engine.GetBestPhraseAlignment("esto es una prueba .".Split(), "this is a test .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("this is a test .".Split()));

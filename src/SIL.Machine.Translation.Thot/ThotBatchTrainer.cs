@@ -562,7 +562,7 @@ namespace SIL.Machine.Translation.Thot
 				return;
 
 			using (var smtModel = new ThotSmtModel(trainTMPrefix, trainLMPrefix, Parameters))
-			using (IInteractiveSmtEngine engine = smtModel.CreateEngine())
+			using (ISmtEngine engine = smtModel.CreateEngine())
 			{
 				for (int i = 0; i < tuneSourceCorpus.Count; i++)
 					engine.TrainSegment(tuneSourceCorpus[i], tuneTargetCorpus[i]);

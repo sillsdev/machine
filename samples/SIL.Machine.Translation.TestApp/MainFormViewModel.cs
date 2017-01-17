@@ -136,7 +136,7 @@ namespace SIL.Machine.Translation.TestApp
 			var hcSrcConfig = (string) engineElem.Element("SourceAnalyzerConfig");
 			var hcTrgConfig = (string) engineElem.Element("TargetGeneratorConfig");
 
-			string configDir = Path.GetDirectoryName(fileName) ?? "";
+			string configDir = Path.GetDirectoryName(fileName);
 
 			TransferEngine transferEngine = null;
 			if (hcSrcConfig != null && hcTrgConfig != null)
@@ -152,7 +152,7 @@ namespace SIL.Machine.Translation.TestApp
 
 			_smtModel = new ThotSmtModel(Path.Combine(configDir, smtConfig));
 
-			_engine = new HybridTranslationEngine(_smtModel.CreateEngine(), transferEngine);
+			_engine = new HybridTranslationEngine(_smtModel.CreateInteractiveEngine(), transferEngine);
 
 			var sourceTexts = new List<IText>();
 			var targetTexts = new List<IText>();
