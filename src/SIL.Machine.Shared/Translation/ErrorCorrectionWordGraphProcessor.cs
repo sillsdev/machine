@@ -4,11 +4,11 @@ using System.Linq;
 
 namespace SIL.Machine.Translation
 {
-	public class ErrorCorrectingWordGraphProcessor
+	public class ErrorCorrectionWordGraphProcessor
 	{
 		private readonly WordGraph _wordGraph;
 		private readonly double[] _restScores;
-		private readonly ErrorCorrectingModel _ecm;
+		private readonly ErrorCorrectionModel _ecm;
 		private readonly List<EcmScoreInfo> _stateEcmScoreInfos;
 		private readonly List<List<EcmScoreInfo>> _arcEcmScoreInfos;
 		private readonly List<List<double>> _stateBestScores;
@@ -18,7 +18,7 @@ namespace SIL.Machine.Translation
 		private string[] _prevPrefix;
 		private bool _prevIsLastWordComplete;
 
-		public ErrorCorrectingWordGraphProcessor(ErrorCorrectingModel ecm, WordGraph wordGraph, double ecmWeight = 1, double wordGraphWeight = 1)
+		public ErrorCorrectionWordGraphProcessor(ErrorCorrectionModel ecm, WordGraph wordGraph, double ecmWeight = 1, double wordGraphWeight = 1)
 		{
 			_ecm = ecm;
 			_wordGraph = wordGraph;

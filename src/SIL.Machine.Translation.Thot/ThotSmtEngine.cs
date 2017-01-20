@@ -20,7 +20,7 @@ namespace SIL.Machine.Translation.Thot
 			_sessions = new HashSet<ThotInteractiveTranslationSession>();
 			_decoderHandle = Thot.LoadDecoder(smtModel.Handle, smtModel.Parameters);
 			_segmentAligner = new FuzzyEditDistanceSegmentAligner(_smtModel.SingleWordAlignmentModel);
-			ErrorCorrectingModel = new ErrorCorrectingModel();
+			ErrorCorrectionModel = new ErrorCorrectionModel();
 		}
 
 		public TranslationResult Translate(IEnumerable<string> segment)
@@ -196,7 +196,7 @@ namespace SIL.Machine.Translation.Thot
 			Thot.TrainSegmentPair(_decoderHandle, sourceSegment, targetSegment, matrix);
 		}
 
-		internal TranslationResult CreateResult(IReadOnlyList<string> sourceSegment, TranslationInfo info)
+		internal TranslationResult CreateResult(IReadOnlyList<string> sourceSegment, int prefixCount, TranslationInfo info)
 		{
 			if (info == null)
 			{
@@ -232,7 +232,21 @@ namespace SIL.Machine.Translation.Thot
 
 					if (confidence < 0)
 						confidences[j] = alignedWordCount == 0 ? _segmentAligner.GetTranslationProbability(null, targetWord) : totalProb / alignedWordCount;
-					sources[j] = info.TargetUnknownWords.Contains(j) ? TranslationSources.None : TranslationSources.Smt;
+
+					if (j < prefixCount)
+					{
+						sources[j] = TranslationSources.Prefix;
+						if (info.TargetUncorrectedPrefixWords.Contains(j))
+							sources[j] |= TranslationSources.Smt;
+					}
+					else if (info.TargetUnknownWords.Contains(j))
+					{
+						sources[j] = TranslationSources.None;
+					}
+					else
+					{
+						sources[j] = TranslationSources.Smt;
+					}
 				}
 				trgPhraseStartIndex = phrase.TargetCut + 1;
 			}
@@ -286,7 +300,7 @@ namespace SIL.Machine.Translation.Thot
 				trgPhraseStartIndex += trgPhraseLen;
 			}
 
-			return CreateResult(sourceSegment, data);
+			return CreateResult(sourceSegment, 0, data);
 		}
 
 		private IReadOnlyList<Tuple<int, int>> GetSourceSegmentation(IntPtr data, uint phraseCount)
@@ -362,7 +376,7 @@ namespace SIL.Machine.Translation.Thot
 				_sessions.Remove(session);
 		}
 
-		internal ErrorCorrectingModel ErrorCorrectingModel { get; }
+		internal ErrorCorrectionModel ErrorCorrectionModel { get; }
 
 		protected override void DisposeManagedResources()
 		{

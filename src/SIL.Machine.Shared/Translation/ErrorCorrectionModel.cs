@@ -5,11 +5,11 @@ using System.Text;
 
 namespace SIL.Machine.Translation
 {
-	public class ErrorCorrectingModel
+	public class ErrorCorrectionModel
 	{
 		private readonly SegmentEditDistance _segmentEditDistance;
 
-		public ErrorCorrectingModel()
+		public ErrorCorrectionModel()
 		{
 			_segmentEditDistance = new SegmentEditDistance();
 			SetErrorModelParameters(128, 0.8, 1, 1, 1);
@@ -132,6 +132,8 @@ namespace SIL.Machine.Translation
 
 						if (wordOp == EditOperation.Substitute)
 							correction.TargetConfidences[j] = -1;
+						else if (wordOp == EditOperation.Hit)
+							correction.TargetUncorrectedPrefixWords.Add(j);
 
 						alignmentColsToCopy.Add(i);
 

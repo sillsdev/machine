@@ -4,9 +4,9 @@ using SIL.Machine.Translation;
 namespace SIL.Machine.Tests.Translation
 {
 	[TestFixture]
-	public class ErrorCorrectingModelTests
+	public class ErrorCorrectionModelTests
 	{
-		private readonly ErrorCorrectingModel _ecm = new ErrorCorrectingModel();
+		private readonly ErrorCorrectionModel _ecm = new ErrorCorrectionModel();
 
 		[Test]
 		public void CorrectPrefix_EmptyUncorrectedPrefix_AppendsPrefix()

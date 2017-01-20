@@ -7,6 +7,18 @@ namespace SIL.Machine.Translation
 	{
 		public static IEnumerable<int> GetSuggestedWordIndices(IReadOnlyList<string> prefix, bool isLastWordComplete, TranslationResult result, double confidenceThreshold)
 		{
+			int startingJ = prefix.Count;
+			if (!isLastWordComplete)
+			{
+				// if the prefix ends with a partial word and it has been completed,
+				// then make sure it is included as a suggestion,
+				// otherwise, don't return any suggestions
+				if ((result.TargetWordSources[startingJ - 1] & TranslationSources.Smt) != 0)
+					startingJ--;
+				else
+					yield break;
+			}
+
 			int lookaheadCount = 1;
 			int i = -1, j;
 			for (j = prefix.Count; j < result.TargetSegment.Count; j++)
@@ -33,11 +45,8 @@ namespace SIL.Machine.Translation
 				if (result.Alignment.IsRowWordAligned(i) == AlignmentType.NotAligned)
 					lookaheadCount++;
 			}
-			j = prefix.Count;
-			// ensure that we include a partial word as a suggestion
-			// TODO: only include the last word of prefix if it has not been corrected
-			if (!isLastWordComplete)
-				j--;
+
+			j = startingJ;
 			bool inPhrase = false;
 			while (j < result.TargetSegment.Count && (lookaheadCount > 0 || inPhrase))
 			{
@@ -46,11 +55,13 @@ namespace SIL.Machine.Translation
 				if (word.All(char.IsPunctuation))
 					break;
 
+				// criteria for suggesting a word
+				// the word must either:
+				// - meet the confidence threshold
+				// - come from a transfer engine
 				double confidence = result.TargetWordConfidences[j];
 				TranslationSources sources = result.TargetWordSources[j];
-
-				if ((confidence >= confidenceThreshold || (sources & TranslationSources.Transfer) != 0)
-					&& (inPhrase || isLastWordComplete || word.StartsWith(prefix[prefix.Count - 1])))
+				if (confidence >= confidenceThreshold || (sources & TranslationSources.Transfer) != 0)
 				{
 					yield return j;
 					inPhrase = true;

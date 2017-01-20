@@ -8,6 +8,7 @@ namespace SIL.Machine.Translation
 		public IList<double> TargetConfidences { get; } = new List<double>();
 		public IList<PhraseInfo> Phrases { get; } = new List<PhraseInfo>();
 		public ISet<int> TargetUnknownWords { get; } = new HashSet<int>();
+		public ISet<int> TargetUncorrectedPrefixWords { get; } = new HashSet<int>();
 		public double Score { get; set; }
 	}
 }
