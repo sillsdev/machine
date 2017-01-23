@@ -5,15 +5,18 @@ namespace SIL.Machine.Corpora
 {
 	public class ParallelTextCorpus
 	{
-		public ParallelTextCorpus(ITextCorpus sourceCorpus, ITextCorpus targetCorpus)
+		public ParallelTextCorpus(ITextCorpus sourceCorpus, ITextCorpus targetCorpus, ITextAlignmentCorpus textAlignmentCorpus = null)
 		{
 			SourceCorpus = sourceCorpus;
 			TargetCorpus = targetCorpus;
+			TextAlignmentCorpus = textAlignmentCorpus;
 		}
 
 		public ITextCorpus SourceCorpus { get; }
 
 		public ITextCorpus TargetCorpus { get; }
+
+		public ITextAlignmentCorpus TextAlignmentCorpus { get; }
 
 		public IEnumerable<ParallelText> Texts
 		{
@@ -23,7 +26,15 @@ namespace SIL.Machine.Corpora
 				{
 					IText text2;
 					if (TargetCorpus.TryGetText(text1.Id, out text2))
-						yield return new ParallelText(text1, text2);
+					{
+						ITextAlignmentCollection textAlignmentCollection = null;
+						if (TextAlignmentCorpus != null)
+						{
+							if (!TextAlignmentCorpus.TryGetTextAlignmentCollection(text1.Id, out textAlignmentCollection))
+								textAlignmentCollection = null;
+						}
+						yield return new ParallelText(text1, text2, textAlignmentCollection);
+					}
 				}
 			}
 		}
@@ -43,9 +54,9 @@ namespace SIL.Machine.Corpora
 			get { return Texts.SelectMany(t => t.TargetText.Segments); }
 		}
 
-		public ParallelTextCorpus Inverse()
+		public ParallelTextCorpus Invert()
 		{
-			return new ParallelTextCorpus(TargetCorpus, SourceCorpus);
+			return new ParallelTextCorpus(TargetCorpus, SourceCorpus, TextAlignmentCorpus?.Invert());
 		}
 	}
 }

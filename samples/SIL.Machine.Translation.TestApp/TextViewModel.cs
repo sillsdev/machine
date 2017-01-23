@@ -298,7 +298,7 @@ namespace SIL.Machine.Translation.TestApp
 		private void StartSegmentTranslation()
 		{
 			_sourceSegmentWords.AddRange(_tokenizer.TokenizeToStrings(_sourceSegments[_currentSegment].Text));
-			_curSession = _engine.TranslateInteractively(_sourceSegments[_currentSegment].Text);
+			_curSession = _engine.TranslateInteractively(_sourceSegmentWords.Select(w => w.ToLowerInvariant()));
 			_isTranslating = true;
 			UpdatePrefix();
 			UpdateSourceSegmentSelection();
@@ -309,7 +309,8 @@ namespace SIL.Machine.Translation.TestApp
 			if (!_isTranslating)
 				return;
 
-			_curSession.SetPrefix(_targetSegments[_currentSegment].Text, TargetSegment.Length == 0 || TargetSegment.EndsWith(" "));
+			_curSession.SetPrefix(_tokenizer.TokenizeToStrings(_targetSegments[_currentSegment].Text).Select(w => w.ToLowerInvariant()),
+				TargetSegment.Length == 0 || TargetSegment.EndsWith(" "));
 			UpdateSuggestions();
 		}
 

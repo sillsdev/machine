@@ -1,22 +1,24 @@
-﻿namespace SIL.Machine.Corpora
+﻿using System.Collections.Generic;
+
+namespace SIL.Machine.Corpora
 {
 	public class TextSegment
 	{
-		public TextSegment(TextSegmentRef segRef, string value)
+		public TextSegment(TextSegmentRef segRef, IReadOnlyList<string> segment)
 		{
 			SegmentRef = segRef;
-			Value = value;
+			Segment = segment;
 		}
 
 		public TextSegmentRef SegmentRef { get; }
 
-		public bool IsEmpty => string.IsNullOrEmpty(Value);
+		public bool IsEmpty => Segment.Count == 0;
 
-		public string Value { get; }
+		public IReadOnlyList<string> Segment { get; }
 
 		public override string ToString()
 		{
-			return string.Format("{0} - {1}", SegmentRef, Value);
+			return string.Format("{0} - {1}", SegmentRef, string.Join(" ", Segment));
 		}
 	}
 }

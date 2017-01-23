@@ -5,16 +5,13 @@ namespace SIL.Machine.Corpora
 {
 	public class MemoryText : IText
 	{
-		private readonly TextSegment[] _segments;
-
 		public MemoryText(string id, IEnumerable<TextSegment> segments)
 		{
 			Id = id;
-			_segments = segments.ToArray();
+			Segments = segments.ToArray();
 		}
 
 		public string Id { get; }
-
-		public IEnumerable<TextSegment> Segments => _segments;
+		public IEnumerable<TextSegment> Segments { get; }
 	}
 }

@@ -2,7 +2,9 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
+using SIL.Machine.Tokenization;
 
 namespace SIL.Machine.Corpora
 {
@@ -11,12 +13,14 @@ namespace SIL.Machine.Corpora
 		private readonly string _fileName;
 		private readonly UsfmParser _parser;
 		private readonly Encoding _encoding;
+		private readonly ITokenizer<string, int> _tokenizer;
 
-		public UsfmText(UsfmStylesheet stylesheet, Encoding encoding, string fileName)
+		public UsfmText(UsfmStylesheet stylesheet, Encoding encoding, string fileName, ITokenizer<string, int> tokenizer)
 		{
 			_fileName = fileName;
 			_parser = new UsfmParser(stylesheet);
 			_encoding = encoding;
+			_tokenizer = tokenizer;
 			string name = Path.GetFileNameWithoutExtension(fileName);
 			Debug.Assert(name != null);
 			Id = name.Substring(0, name.StartsWith("100") ? 6 : 5);
@@ -39,7 +43,7 @@ namespace SIL.Machine.Corpora
 						case UsfmTokenType.Chapter:
 							if (inVerse)
 							{
-								yield return new TextSegment(new TextSegmentRef(chapter, verse), sb.ToString().Trim());
+								yield return new TextSegment(new TextSegmentRef(chapter, verse), _tokenizer.TokenizeToStrings(sb.ToString().Trim()).ToArray());
 								sb.Clear();
 								inVerse = false;
 							}
@@ -53,7 +57,7 @@ namespace SIL.Machine.Corpora
 						case UsfmTokenType.Verse:
 							if (inVerse)
 							{
-								yield return new TextSegment(new TextSegmentRef(chapter, verse), sb.ToString().Trim());
+								yield return new TextSegment(new TextSegmentRef(chapter, verse), _tokenizer.TokenizeToStrings(sb.ToString().Trim()).ToArray());
 								sb.Clear();
 							}
 							else
@@ -75,7 +79,7 @@ namespace SIL.Machine.Corpora
 				}
 
 				if (inVerse)
-					yield return new TextSegment(new TextSegmentRef(chapter, verse), sb.ToString().Trim());
+					yield return new TextSegment(new TextSegmentRef(chapter, verse), _tokenizer.TokenizeToStrings(sb.ToString().Trim()).ToArray());
 			}
 		}
 	}

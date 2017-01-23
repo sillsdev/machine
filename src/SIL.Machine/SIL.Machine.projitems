@@ -37,10 +37,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)Clusterers\OpticsRootedHierarchicalClusterer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Clusterers\OpticsXiClusterer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Clusterers\UpgmaClusterer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Corpora\DictionaryTextAlignmentCorpus.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Corpora\IText.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Corpora\ITextAlignmentCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Corpora\ITextCorpus.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Corpora\ITextAlignmentCorpus.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Corpora\MemoryText.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Corpora\DictionaryTextCorpus.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Corpora\MemoryTextAlignments.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Corpora\TextAlignment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Corpora\TextFileText.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Corpora\TextSegment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Corpora\ParallelText.cs" />

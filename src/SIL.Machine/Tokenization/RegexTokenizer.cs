@@ -7,6 +7,11 @@ namespace SIL.Machine.Tokenization
 {
 	public class RegexTokenizer : ITokenizer<string, int>
 	{
+		public static RegexTokenizer CreateLatinTokenizer(SpanFactory<int> spanFactory)
+		{
+			return new RegexTokenizer(spanFactory, @"[\p{P}]|(\w+([.,\-’']\w+)*)");
+		}
+
 		private readonly SpanFactory<int> _spanFactory;
 		private readonly Regex _regex;
 

@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using SIL.Machine.Tokenization;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
@@ -17,18 +15,10 @@ namespace SIL.Machine.Translation
 			SmtEngine = smtEngine;
 			RuleEngine = ruleEngine;
 			_sessions = new HashSet<HybridInteractiveTranslationSession>();
-			SourcePreprocessor = s => s;
-			TargetPreprocessor = s => s;
 		}
 
 		public IInteractiveSmtEngine SmtEngine { get; }
 		public ITranslationEngine RuleEngine { get; }
-
-		public Func<string, string> SourcePreprocessor { get; set; }
-		public Func<string, string> TargetPreprocessor { get; set; }
-
-		public ITokenizer<string, int> SourceTokenizer { get; set; }
-		public ITokenizer<string, int> TargetTokenizer { get; set; }
 
 		public TranslationResult Translate(IEnumerable<string> segment)
 		{
@@ -62,14 +52,6 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public TranslationResult Translate(string sourceSegment)
-		{
-			CheckDisposed();
-			CheckSourceTokenizer();
-
-			return Translate(Preprocess(SourcePreprocessor, SourceTokenizer, sourceSegment));
-		}
-
 		IInteractiveTranslationSession IInteractiveTranslationEngine.TranslateInteractively(IEnumerable<string> segment)
 		{
 			return TranslateInteractively(segment);
@@ -87,14 +69,6 @@ namespace SIL.Machine.Translation
 			return session;
 		}
 
-		public HybridInteractiveTranslationSession TranslateInteractively(string segment)
-		{
-			CheckDisposed();
-			CheckSourceTokenizer();
-
-			return TranslateInteractively(Preprocess(SourcePreprocessor, SourceTokenizer, segment));
-		}
-
 		public void TrainSegment(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment)
 		{
 			CheckDisposed();
@@ -104,15 +78,6 @@ namespace SIL.Machine.Translation
 
 			TranslationResult ruleResult = RuleEngine?.Translate(sourceSegmentArray);
 			TrainSegment(sourceSegmentArray, targetSegmentArray, ruleResult);
-		}
-
-		public void TrainSegment(string sourceSegment, string targetSegment)
-		{
-			CheckDisposed();
-			CheckSourceTokenizer();
-			CheckTargetTokenizer();
-
-			TrainSegment(Preprocess(SourcePreprocessor, SourceTokenizer, sourceSegment), Preprocess(TargetPreprocessor, TargetTokenizer, targetSegment));
 		}
 
 		internal void TrainSegment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment, TranslationResult ruleResult)
@@ -155,23 +120,6 @@ namespace SIL.Machine.Translation
 			}
 
 			SmtEngine.TrainSegment(sourceSegment, targetSegment, matrix);
-		}
-
-		internal void CheckSourceTokenizer()
-		{
-			if (SourceTokenizer == null)
-				throw new InvalidOperationException("A source tokenizer is not specified.");
-		}
-
-		internal void CheckTargetTokenizer()
-		{
-			if (TargetTokenizer == null)
-				throw new InvalidOperationException("A target tokenizer is not specified.");
-		}
-
-		internal static IEnumerable<string> Preprocess(Func<string, string> preprocessor, ITokenizer<string, int> tokenizer, string segment)
-		{
-			return tokenizer.TokenizeToStrings(preprocessor(segment));
 		}
 
 		internal void RemoveSession(HybridInteractiveTranslationSession session)

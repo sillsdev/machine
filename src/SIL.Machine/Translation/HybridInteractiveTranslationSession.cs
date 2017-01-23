@@ -67,14 +67,6 @@ namespace SIL.Machine.Translation
 			return _currentResult;
 		}
 
-		public TranslationResult SetPrefix(string prefix, bool isLastWordComplete)
-		{
-			CheckDisposed();
-			_engine.CheckTargetTokenizer();
-
-			return SetPrefix(HybridTranslationEngine.Preprocess(_engine.TargetPreprocessor, _engine.TargetTokenizer, prefix), isLastWordComplete);
-		}
-
 		public void Approve()
 		{
 			CheckDisposed();

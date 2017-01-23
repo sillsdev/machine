@@ -34,7 +34,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		public MainFormViewModel()
 		{
-			_tokenizer = new RegexTokenizer(new IntegerSpanFactory(), @"[\p{P}]|(\w+([.,\-’']\w+)*)");
+			_tokenizer = RegexTokenizer.CreateLatinTokenizer(new IntegerSpanFactory());
 			_openProjectCommand = new RelayCommand<object>(o => OpenProject());
 			_saveProjectCommand = new RelayCommand<object>(o => SaveProject(), o => IsChanged);
 			_rebuildProjectCommand = new RelayCommand<object>(o => RebuildProject(), o => CanRebuildProject());
@@ -174,8 +174,8 @@ namespace SIL.Machine.Translation.TestApp
 					text.PropertyChanged += TextPropertyChanged;
 					_texts.Add(text);
 
-					sourceTexts.Add(new TextAdapter(text, true));
-					targetTexts.Add(new TextAdapter(text, false));
+					sourceTexts.Add(new TextAdapter(text, true, _tokenizer));
+					targetTexts.Add(new TextAdapter(text, false, _tokenizer));
 				}
 			}
 			if (_texts.Count == 0)
@@ -183,11 +183,6 @@ namespace SIL.Machine.Translation.TestApp
 
 			_sourceCorpus = new DictionaryTextCorpus(sourceTexts);
 			_targetCorpus = new DictionaryTextCorpus(targetTexts);
-
-			_engine.SourcePreprocessor = Preprocess;
-			_engine.SourceTokenizer = _tokenizer;
-			_engine.TargetPreprocessor = Preprocess;
-			_engine.TargetTokenizer = _tokenizer;
 
 			CurrentText = _texts[0];
 			AcceptChanges();
@@ -238,7 +233,8 @@ namespace SIL.Machine.Translation.TestApp
 			_currentText.IsActive = false;
 			if (IsChanged)
 				SaveProject();
-			var progressViewModel = new ProgressViewModel(vm => _smtModel.Train(Preprocess, _tokenizer, _sourceCorpus, Preprocess, _tokenizer, _targetCorpus, vm))
+			Func<string, string> preprocess = word => word.ToLowerInvariant();
+			var progressViewModel = new ProgressViewModel(vm => _smtModel.Train(preprocess, _sourceCorpus, preprocess, _targetCorpus, null, vm))
 			{
 				DisplayName = "Rebuilding..."
 			};
@@ -308,11 +304,6 @@ namespace SIL.Machine.Translation.TestApp
 					}
 				}
 			}
-		}
-
-		private static string Preprocess(string str)
-		{
-			return str.ToLowerInvariant();
 		}
 	}
 }

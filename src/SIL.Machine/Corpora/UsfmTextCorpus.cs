@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using SIL.Machine.Tokenization;
 
 namespace SIL.Machine.Corpora
 {
@@ -11,12 +12,14 @@ namespace SIL.Machine.Corpora
 		private readonly string _projectPath;
 		private readonly UsfmStylesheet _stylesheet;
 		private readonly Encoding _encoding;
+		private readonly ITokenizer<string, int> _tokenizer;
 
-		public UsfmTextCorpus(string stylesheetFileName, Encoding encoding, string projectPath)
+		public UsfmTextCorpus(string stylesheetFileName, Encoding encoding, string projectPath, ITokenizer<string, int> tokenizer)
 		{
 			_projectPath = projectPath;
 			_stylesheet = new UsfmStylesheet(stylesheetFileName);
 			_encoding = encoding;
+			_tokenizer = tokenizer;
 		}
 
 		public IEnumerable<IText> Texts
@@ -24,16 +27,16 @@ namespace SIL.Machine.Corpora
 			get
 			{
 				foreach (string sfmFileName in Directory.EnumerateFiles(_projectPath, "*.SFM"))
-					yield return new UsfmText(_stylesheet, _encoding, sfmFileName);
+					yield return new UsfmText(_stylesheet, _encoding, sfmFileName, _tokenizer);
 			}
 		}
 
 		public bool TryGetText(string id, out IText text)
 		{
-			string sfmFileName = Directory.EnumerateFiles(_projectPath, string.Format("{0}*.SFM", id)).FirstOrDefault();
+			string sfmFileName = Directory.EnumerateFiles(_projectPath, $"{id}*.SFM").FirstOrDefault();
 			if (sfmFileName != null)
 			{
-				text = new UsfmText(_stylesheet, _encoding, sfmFileName);
+				text = new UsfmText(_stylesheet, _encoding, sfmFileName, _tokenizer);
 				return true;
 			}
 

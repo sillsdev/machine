@@ -4,7 +4,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using SIL.Machine.Corpora;
-using SIL.Machine.Tokenization;
 using SIL.ObjectModel;
 using SIL.Progress;
 
@@ -191,8 +190,8 @@ namespace SIL.Machine.Translation.Thot
 			Thot.smtModel_saveModels(Handle);
 		}
 
-		public void Train(Func<string, string> sourcePreprocessor, ITokenizer<string, int> sourceTokenizer, ITextCorpus sourceCorpus,
-			Func<string, string> targetPreprocessor, ITokenizer<string, int> targetTokenizer, ITextCorpus targetCorpus, IProgress progress = null)
+		public void Train(Func<string, string> sourcePreprocessor, ITextCorpus sourceCorpus, Func<string, string> targetPreprocessor,
+			ITextCorpus targetCorpus, ITextAlignmentCorpus alignmentCorpus = null, IProgress progress = null)
 		{
 			CheckDisposed();
 
@@ -203,8 +202,8 @@ namespace SIL.Machine.Translation.Thot
 
 				Thot.smtModel_close(Handle);
 
-				var trainer = new ThotBatchTrainer(TranslationModelFileNamePrefix, LanguageModelFileNamePrefix, Parameters, sourcePreprocessor, sourceTokenizer,
-					sourceCorpus, targetPreprocessor, targetTokenizer, targetCorpus);
+				var trainer = new ThotBatchTrainer(TranslationModelFileNamePrefix, LanguageModelFileNamePrefix, Parameters, sourcePreprocessor,
+					sourceCorpus, targetPreprocessor, targetCorpus, alignmentCorpus);
 				trainer.Train(progress);
 				Parameters = trainer.Parameters;
 

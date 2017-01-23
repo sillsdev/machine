@@ -82,6 +82,17 @@ namespace SIL.Machine.Translation
 			}
 		}
 
+		public WordAlignmentMatrix Transpose()
+		{
+			var newMatrix = new WordAlignmentMatrix(ColumnCount, RowCount);
+			for (int i = 0; i < RowCount; i++)
+			{
+				for (int j = 0; j < ColumnCount; j++)
+					newMatrix._matrix[j, i] = _matrix[i, j];
+			}
+			return newMatrix;
+		}
+
 		public string ToGizaFormat(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment)
 		{
 			var sb = new StringBuilder();
