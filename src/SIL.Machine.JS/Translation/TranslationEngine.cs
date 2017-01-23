@@ -18,14 +18,14 @@ namespace SIL.Machine.Translation
 			SourceLanguageTag = sourceLanguageTag;
 			TargetLanguageTag = targetLanguageTag;
 			WebClient = webClient;
-			ErrorCorrectingModel = new ErrorCorrectingModel();
+			ErrorCorrectionModel = new ErrorCorrectionModel();
 		}
 
 		public string SourceLanguageTag { get; }
 		public string TargetLanguageTag { get; }
 		public string BaseUrl { get; }
 		internal IWebClient WebClient { get; }
-		internal ErrorCorrectingModel ErrorCorrectingModel { get; }
+		internal ErrorCorrectionModel ErrorCorrectionModel { get; }
 
 		public void TranslateInteractively(string[] sourceSegment, double confidenceThreshold, Action<InteractiveTranslationSession> onFinished)
 		{

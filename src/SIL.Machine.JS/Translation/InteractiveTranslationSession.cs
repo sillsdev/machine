@@ -9,7 +9,7 @@ namespace SIL.Machine.Translation
 		private const double RuleEngineThreshold = 0.05;
 
 		private readonly TranslationEngine _engine;
-		private readonly ErrorCorrectingWordGraphProcessor _wordGraphProcessor;
+		private readonly ErrorCorrectionWordGraphProcessor _wordGraphProcessor;
 		private TranslationResult _curResult;
 		private double _confidenceThreshold;
 
@@ -22,7 +22,7 @@ namespace SIL.Machine.Translation
 			RuleResult = ruleResult;
 			SmtWordGraph = smtWordGraph;
 
-			_wordGraphProcessor = new ErrorCorrectingWordGraphProcessor(_engine.ErrorCorrectingModel, SmtWordGraph);
+			_wordGraphProcessor = new ErrorCorrectionWordGraphProcessor(_engine.ErrorCorrectionModel, SmtWordGraph);
 			SetPrefix(new string[0], true);
 		}
 
