@@ -67,6 +67,7 @@
     <Compile Include="Clusterers\NeighborJoiningClustererTests.cs" />
     <Compile Include="Clusterers\UpgmaClustererTests.cs" />
     <Compile Include="Corpora\CorporaTestHelpers.cs" />
+    <Compile Include="Corpora\ParallelTextTests.cs" />
     <Compile Include="Corpora\UsfmTextCorpusTests.cs" />
     <Compile Include="Corpora\UsfmTextTests.cs" />
     <Compile Include="FeatureModel\FeatureStructTests.cs" />
