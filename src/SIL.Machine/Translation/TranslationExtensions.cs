@@ -28,7 +28,7 @@ namespace SIL.Machine.Translation
 		public static string RecaseTargetWord(this WordAlignmentMatrix alignment, IReadOnlyList<string> sourceSegment, int sourceStartIndex, IReadOnlyList<string> targetSegment, int targetIndex)
 		{
 			string targetWord = targetSegment[targetIndex];
-			if (alignment.GetColumnWordAlignedIndices(targetIndex).Any(i => sourceSegment[sourceStartIndex + i].IsTitleCase()))
+			if (alignment.GetColumnAlignedIndices(targetIndex).Any(i => sourceSegment[sourceStartIndex + i].IsTitleCase()))
 				return targetWord.ToTitleCase();
 			return targetWord;
 		}

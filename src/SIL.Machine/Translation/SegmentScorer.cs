@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using SIL.Machine.SequenceAlignment;
 
-namespace SIL.Machine.Translation.Thot
+namespace SIL.Machine.Translation
 {
 	public class SegmentScorer : IPairwiseAlignmentScorer<IReadOnlyList<string>, int>
 	{

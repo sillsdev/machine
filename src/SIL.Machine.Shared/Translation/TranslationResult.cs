@@ -38,7 +38,7 @@ namespace SIL.Machine.Translation
 			var mergedAlignment = new HashSet<Tuple<int, int>>();
 			for (int j = 0; j < TargetSegment.Count; j++)
 			{
-				int[] sourceIndices = Alignment.GetColumnWordAlignedIndices(j).ToArray();
+				int[] sourceIndices = Alignment.GetColumnAlignedIndices(j).ToArray();
 				if (sourceIndices.Length == 0)
 				{
 					// target word doesn't align with anything
@@ -58,7 +58,7 @@ namespace SIL.Machine.Translation
 						foreach (int i in sourceIndices)
 						{
 							// combine sources for any words that both this result and the other result translated the same
-							foreach (int jOther in otherResult.Alignment.GetRowWordAlignedIndices(i))
+							foreach (int jOther in otherResult.Alignment.GetRowAlignedIndices(i))
 							{
 								TranslationSources otherSources = otherResult.TargetWordSources[jOther];
 								if (otherSources != TranslationSources.None
@@ -78,7 +78,7 @@ namespace SIL.Machine.Translation
 						bool found = false;
 						foreach (int i in sourceIndices)
 						{
-							foreach (int jOther in otherResult.Alignment.GetRowWordAlignedIndices(i))
+							foreach (int jOther in otherResult.Alignment.GetRowAlignedIndices(i))
 							{
 								// look for any translated words from other result
 								TranslationSources otherSources = otherResult.TargetWordSources[jOther];

@@ -86,7 +86,7 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public double GetBestAlignment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment, out WordAlignmentMatrix matrix)
+		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
 		{
 			IntPtr nativeSourceSegment = Thot.ConvertStringsToNativeUtf8(sourceSegment);
 			IntPtr nativeTargetSegment = Thot.ConvertStringsToNativeUtf8(targetSegment);
@@ -96,11 +96,8 @@ namespace SIL.Machine.Translation.Thot
 			uint jLen = (uint) targetSegment.Count;
 			try
 			{
-				float prob = Thot.swAlignModel_getBestAlignment(_handle, nativeSourceSegment, nativeTargetSegment, nativeMatrix, ref iLen, ref jLen);
-
-				matrix = Thot.ConvertNativeMatrixToWordAlignmentMatrix(nativeMatrix, iLen, jLen);
-
-				return prob;
+				Thot.swAlignModel_getBestAlignment(_handle, nativeSourceSegment, nativeTargetSegment, nativeMatrix, ref iLen, ref jLen);
+				return Thot.ConvertNativeMatrixToWordAlignmentMatrix(nativeMatrix, iLen, jLen);
 			}
 			finally
 			{

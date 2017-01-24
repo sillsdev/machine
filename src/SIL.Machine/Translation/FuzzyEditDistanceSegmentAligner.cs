@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.SequenceAlignment;
 
-namespace SIL.Machine.Translation.Thot
+namespace SIL.Machine.Translation
 {
 	public class FuzzyEditDistanceSegmentAligner : ISegmentAligner
 	{
@@ -23,7 +23,7 @@ namespace SIL.Machine.Translation.Thot
 			_scorer = new SegmentScorer(_segmentAligner);
 		}
 
-		public double GetBestAlignment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment, out WordAlignmentMatrix waMatrix)
+		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
 		{
 			var paa = new PairwiseAlignmentAlgorithm<IReadOnlyList<string>, int>(_scorer, sourceSegment, targetSegment, GetWordIndices)
 			{
@@ -33,8 +33,7 @@ namespace SIL.Machine.Translation.Thot
 			};
 			paa.Compute();
 			Alignment<IReadOnlyList<string>, int> alignment = paa.GetAlignments().First();
-			waMatrix = new WordAlignmentMatrix(sourceSegment.Count, targetSegment.Count);
-			double totalScore = 0;
+			var waMatrix = new WordAlignmentMatrix(sourceSegment.Count, targetSegment.Count);
 			for (int c = 0; c < alignment.ColumnCount; c++)
 			{
 				foreach (int j in alignment[1, c])
@@ -97,11 +96,10 @@ namespace SIL.Machine.Translation.Thot
 					{
 						waMatrix[bestIndex, j] = AlignmentType.Aligned;
 					}
-					totalScore += bestScore;
 				}
 			}
 
-			return totalScore;
+			return waMatrix;
 		}
 
 		private static IEnumerable<int> GetWordIndices(IReadOnlyList<string> sequence, out int index, out int count)

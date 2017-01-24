@@ -412,9 +412,8 @@ namespace SIL.Machine.Translation.Thot
 					string[] sourceTokens = segment.SourceSegment.Select(sourcePreprocessor).ToArray();
 					string[] targetTokens = segment.TargetSegment.Select(targetPreprocessor).ToArray();
 
-					WordAlignmentMatrix waMatrix;
-					double prob = swAlignModel.GetBestAlignment(sourceTokens, targetTokens, out waMatrix);
-					writer.Write("# Alignment probability= {0:0.######}\n", prob);
+					WordAlignmentMatrix waMatrix = swAlignModel.GetBestAlignment(sourceTokens, targetTokens);
+					writer.Write("#\n");
 					writer.Write(waMatrix.ToGizaFormat(sourceTokens, targetTokens));
 
 					if (progress.CancelRequested)

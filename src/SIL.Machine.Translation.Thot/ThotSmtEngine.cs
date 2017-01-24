@@ -19,7 +19,7 @@ namespace SIL.Machine.Translation.Thot
 			_smtModel = smtModel;
 			_sessions = new HashSet<ThotInteractiveTranslationSession>();
 			_decoderHandle = Thot.LoadDecoder(smtModel.Handle, smtModel.Parameters);
-			_segmentAligner = new FuzzyEditDistanceSegmentAligner(_smtModel.SingleWordAlignmentModel);
+			_segmentAligner = new FuzzyEditDistanceSegmentAligner(new SymmetrizationSegmentAligner(_smtModel.SingleWordAlignmentModel, _smtModel.InverseSingleWordAlignmentModel));
 			ErrorCorrectionModel = new ErrorCorrectionModel();
 		}
 
@@ -132,7 +132,7 @@ namespace SIL.Machine.Translation.Thot
 				{
 					var srcPhrase = new string[srcPhraseLen];
 					Array.Copy(segment, srcStartIndex, srcPhrase, 0, srcPhraseLen);
-					_segmentAligner.GetBestAlignment(srcPhrase, words, out waMatrix);
+					waMatrix = _segmentAligner.GetBestAlignment(srcPhrase, words);
 				}
 
 				var confidences = new double[trgPhraseLen];
@@ -293,7 +293,7 @@ namespace SIL.Machine.Translation.Thot
 					var trgPhrase = new string[trgPhraseLen];
 					for (int j = 0; j < trgPhraseLen; j++)
 						trgPhrase[j] = targetSegment[trgPhraseStartIndex + j];
-					_segmentAligner.GetBestAlignment(srcPhrase, trgPhrase, out waMatrix);
+					waMatrix = _segmentAligner.GetBestAlignment(srcPhrase, trgPhrase);
 				}
 				phrase.Alignment = waMatrix;
 				data.Phrases.Add(phrase);

@@ -92,7 +92,7 @@ namespace SIL.Machine.Translation
 				bool jAligned = false;
 				if ((hybridResult.TargetWordSources[j] & TranslationSources.Transfer) != 0)
 				{
-					foreach (int i in hybridResult.Alignment.GetColumnWordAlignedIndices(j))
+					foreach (int i in hybridResult.Alignment.GetColumnAlignedIndices(j))
 					{
 						matrix[i, j] = AlignmentType.Aligned;
 						iAligned.Add(i);

@@ -23,7 +23,7 @@ namespace SIL.Machine.Translation
 			int i = -1, j;
 			for (j = prefix.Count; j < result.TargetSegment.Count; j++)
 			{
-				int[] sourceIndices = result.Alignment.GetColumnWordAlignedIndices(j).ToArray();
+				int[] sourceIndices = result.Alignment.GetColumnAlignedIndices(j).ToArray();
 				if (sourceIndices.Length == 0)
 				{
 					lookaheadCount++;
@@ -42,7 +42,7 @@ namespace SIL.Machine.Translation
 				i = 0;
 			for (; i < result.SourceSegment.Count; i++)
 			{
-				if (result.Alignment.IsRowWordAligned(i) == AlignmentType.NotAligned)
+				if (result.Alignment.IsRowAligned(i) == AlignmentType.NotAligned)
 					lookaheadCount++;
 			}
 
@@ -70,7 +70,7 @@ namespace SIL.Machine.Translation
 				else
 				{
 					// skip over inserted words
-					if (result.Alignment.IsColumnWordAligned(j) == AlignmentType.Aligned)
+					if (result.Alignment.IsColumnAligned(j) == AlignmentType.Aligned)
 					{
 						lookaheadCount--;
 						// only suggest the first word/phrase we find

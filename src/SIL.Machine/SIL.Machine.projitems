@@ -203,7 +203,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Tokenization\SimpleStringDetokenizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tokenization\TokenizationExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tokenization\WhitespaceTokenizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\EditDistanceSegmentAligner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\Evaluation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\FuzzyEditDistanceSegmentAligner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\GlossMorphemeMapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\HybridTranslationEngine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\HybridInteractiveTranslationSession.cs" />
@@ -212,11 +214,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)Translation\IInteractiveTranslationEngine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\IInteractiveTranslationSession.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\IMorphemeMapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\ISegmentAligner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\ISmtEngine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\ISmtModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\ITransferer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\ITranslationEngine.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\SegmentScorer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\SimpleTransferer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\SymmetrizationSegmentAligner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TransferEngine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TransferResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationExtensions.cs" />

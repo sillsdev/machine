@@ -414,7 +414,7 @@ namespace SIL.Machine.Translation.TestApp
 				TranslationSources sources = result.TargetWordSources[targetWordIndex];
 				if (confidence >= _confidenceThreshold || (sources & TranslationSources.Transfer) != 0)
 				{
-					foreach (int sourceIndex in result.Alignment.GetColumnWordAlignedIndices(targetWordIndex))
+					foreach (int sourceIndex in result.Alignment.GetColumnAlignedIndices(targetWordIndex))
 					{
 						WordTranslationLevel level;
 						Span<int> span = _tokenizer.Tokenize(SourceSegment).ElementAt(sourceIndex);

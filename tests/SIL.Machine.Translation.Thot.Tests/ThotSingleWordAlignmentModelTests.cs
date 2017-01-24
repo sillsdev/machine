@@ -13,8 +13,7 @@ namespace SIL.Machine.Translation.Thot.Tests
 			{
 				string[] sourceSegment = "por favor , ¿ podríamos ver otra habitación ?".Split(' ');
 				string[] targetSegment = "could we see another room , please ?".Split(' ');
-				WordAlignmentMatrix waMatrix;
-				swAlignModel.GetBestAlignment(sourceSegment, targetSegment, out waMatrix);
+				WordAlignmentMatrix waMatrix = swAlignModel.GetBestAlignment(sourceSegment, targetSegment);
 				Assert.That(waMatrix.ToGizaFormat(sourceSegment, targetSegment), Is.EqualTo("could we see another room , please ?\n"
 					+ "NULL ({ }) por ({ 6 }) favor ({ 7 }) , ({ }) ¿ ({ 8 }) podríamos ({ 1 2 }) ver ({ 3 }) otra ({ 4 }) habitación ({ 5 }) ? ({ })\n"));
 			}
