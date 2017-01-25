@@ -2,8 +2,9 @@
 using SIL.Machine.Annotations;
 using SIL.Machine.Morphology.HermitCrab;
 using SIL.Machine.Translation;
+using SIL.Machine.WebApi.Models;
 
-namespace SIL.Machine.WebApi.Models
+namespace SIL.Machine.WebApi.Services
 {
 	public class TransferEngineFactory : ITranslationEngineFactory
 	{

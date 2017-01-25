@@ -7,11 +7,12 @@ using System.Threading;
 using Microsoft.Extensions.Options;
 using SIL.Machine.Tokenization;
 using SIL.Machine.Translation;
+using SIL.Machine.WebApi.Models;
 using SIL.ObjectModel;
 
-namespace SIL.Machine.WebApi.Models
+namespace SIL.Machine.WebApi.Services
 {
-	public class EngineService : DisposableBase, IEngineService
+	public class EngineService : DisposableBase
 	{
 		private readonly EngineOptions _options;
 		private readonly ConcurrentDictionary<Tuple<string, string>, EngineContext> _engines;
@@ -26,7 +27,16 @@ namespace SIL.Machine.WebApi.Models
 			_smtModelFactory = smtModelFactory;
 			_ruleEngineFactory = ruleEngineFactory;
 			_engines = new ConcurrentDictionary<Tuple<string, string>, EngineContext>();
-			UpdateEngines();
+			foreach (string configDir in Directory.EnumerateDirectories(_options.RootDir))
+			{
+				string dirName = Path.GetFileName(configDir);
+				string[] parts = dirName.Split('_');
+				if (parts.Length > 2)
+					continue;
+				string sourceLanguageTag = parts[0];
+				string targetLanguageTag = parts[1];
+				_engines[Tuple.Create(sourceLanguageTag, targetLanguageTag)] = new EngineContext(configDir, sourceLanguageTag, targetLanguageTag);
+			}
 			_updateTimer = new Timer(UpdateEnginesCallback, null, _options.EngineUpdateFrequency, _options.EngineUpdateFrequency);
 		}
 
@@ -35,22 +45,13 @@ namespace SIL.Machine.WebApi.Models
 			if (_isUpdateTimerStopped)
 				return;
 
-			UpdateEngines();
-		}
-
-		internal void UpdateEngines()
-		{
-			var enginesToRemove = new HashSet<Tuple<string, string>>(_engines.Keys);
-			foreach (string configDir in Directory.EnumerateDirectories(_options.RootDir))
+			foreach (EngineContext engineContext in _engines.Values)
 			{
-				string dirName = Path.GetFileName(configDir);
-				string[] parts = dirName.Split('_');
-				string sourceLanguageTag = parts[0];
-				string targetLanguageTag = parts[1];
-				Tuple<string, string> key = Tuple.Create(sourceLanguageTag, targetLanguageTag);
-				EngineContext engineContext = _engines.GetOrAdd(key, k => new EngineContext(configDir, sourceLanguageTag, targetLanguageTag));
 				lock (engineContext)
 				{
+					if (engineContext.IsRemoved)
+						continue;
+
 					if (engineContext.IsLoaded)
 					{
 						if (DateTime.Now - engineContext.LastUsedTime > _options.InactiveEngineTimeout)
@@ -59,26 +60,19 @@ namespace SIL.Machine.WebApi.Models
 							engineContext.Save();
 					}
 				}
-				enginesToRemove.Remove(key);
-			}
-
-			foreach (Tuple<string, string> key in enginesToRemove)
-			{
-				EngineContext engineContext;
-				if (_engines.TryRemove(key, out engineContext))
-				{
-					lock (engineContext)
-					{
-						if (engineContext.IsLoaded)
-							engineContext.Unload();
-					}
-				}
 			}
 		}
 
 		public IEnumerable<EngineDto> GetAll()
 		{
-			return _engines.Values.Select(ec => ec.CreateDto());
+			foreach (EngineContext engineContext in _engines.Values)
+			{
+				lock (engineContext)
+				{
+					if (!engineContext.IsRemoved)
+						yield return engineContext.CreateDto();
+				}
+			}
 		}
 
 		public bool TryGet(string sourceLanguageTag, string targetLanguageTag, out EngineDto engine)
@@ -90,8 +84,17 @@ namespace SIL.Machine.WebApi.Models
 				return false;
 			}
 
-			engine = engineContext.CreateDto();
-			return true;
+			lock (engineContext)
+			{
+				if (engineContext.IsRemoved)
+				{
+					engine = null;
+					return false;
+				}
+
+				engine = engineContext.CreateDto();
+				return true;
+			}
 		}
 
 		public bool TryTranslate(string sourceLanguageTag, string targetLanguageTag, string segment, out string result)
@@ -105,6 +108,12 @@ namespace SIL.Machine.WebApi.Models
 
 			lock (engineContext)
 			{
+				if (engineContext.IsRemoved)
+				{
+					result = null;
+					return false;
+				}
+
 				if (!engineContext.IsLoaded)
 					engineContext.Load(_smtModelFactory, _ruleEngineFactory);
 
@@ -128,6 +137,12 @@ namespace SIL.Machine.WebApi.Models
 
 			lock (engineContext)
 			{
+				if (engineContext.IsRemoved)
+				{
+					result = null;
+					return false;
+				}
+
 				if (!engineContext.IsLoaded)
 					engineContext.Load(_smtModelFactory, _ruleEngineFactory);
 
@@ -152,6 +167,9 @@ namespace SIL.Machine.WebApi.Models
 
 			lock (engineContext)
 			{
+				if (engineContext.IsRemoved)
+					return false;
+
 				if (!engineContext.IsLoaded)
 					engineContext.Load(_smtModelFactory, _ruleEngineFactory);
 
@@ -162,6 +180,47 @@ namespace SIL.Machine.WebApi.Models
 				engineContext.LastUsedTime = DateTime.Now;
 				return true;
 			}
+		}
+
+		public bool Add(string sourceLanguageTag, string targetLanguageTag, out EngineDto engine)
+		{
+			string configDir = Path.Combine(_options.RootDir, $"{sourceLanguageTag}_{targetLanguageTag}");
+			if (!Directory.Exists(configDir))
+			{
+				engine = null;
+				return false;
+			}
+
+			EngineContext engineContext = _engines.GetOrAdd(Tuple.Create(sourceLanguageTag, targetLanguageTag),
+				k => new EngineContext(configDir, sourceLanguageTag, targetLanguageTag));
+			lock (engineContext)
+			{
+				if (engineContext.IsRemoved)
+				{
+					engine = null;
+					return false;
+				}
+
+				engine = engineContext.CreateDto();
+				return true;
+			}
+		}
+
+		public bool Remove(string sourceLanguageTag, string targetLanguageTag)
+		{
+			EngineContext engineContext;
+			if (_engines.TryRemove(Tuple.Create(sourceLanguageTag, targetLanguageTag), out engineContext))
+			{
+				lock (engineContext)
+				{
+					if (engineContext.IsLoaded)
+						engineContext.Unload();
+					engineContext.MarkRemoved();
+				}
+				return true;
+			}
+
+			return false;
 		}
 
 		protected override void DisposeManagedResources()
@@ -175,6 +234,7 @@ namespace SIL.Machine.WebApi.Models
 				{
 					if (engineContext.IsLoaded)
 						engineContext.Unload();
+					engineContext.MarkRemoved();
 				}
 			}
 		}

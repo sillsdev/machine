@@ -4,6 +4,7 @@ using System.Linq;
 using SIL.Machine.Annotations;
 using SIL.Machine.Tokenization;
 using SIL.Machine.Translation;
+using SIL.Machine.WebApi.Services;
 
 namespace SIL.Machine.WebApi.Models
 {
@@ -11,6 +12,7 @@ namespace SIL.Machine.WebApi.Models
 	{
 		private static readonly HashSet<string> MergeRightTokens = new HashSet<string> {"‘", "“", "(", "¿", "¡", "«"};
 		private static readonly HashSet<string> MergeRightFirstLeftSecondTokens = new HashSet<string> {"\"", "'"};
+		private static readonly SpanFactory<int> SpanFactory = new IntegerSpanFactory();
 
 		private IInteractiveSmtModel _smtModel;
 		private bool _isUpdated;
@@ -21,7 +23,7 @@ namespace SIL.Machine.WebApi.Models
 			SourceLanguageTag = sourceLanguageTag;
 			TargetLanguageTag = targetLanguageTag;
 			LastUsedTime = DateTime.Now;
-			Tokenizer = new RegexTokenizer(new IntegerSpanFactory(), @"[\p{P}]|(\w+([.,\-’']\w+)*)");
+			Tokenizer = RegexTokenizer.CreateLatinTokenizer(SpanFactory);
 			Detokenizer = new SimpleStringDetokenizer(GetDetokenizeOperation);
 		}
 
@@ -43,6 +45,7 @@ namespace SIL.Machine.WebApi.Models
 		public string SourceLanguageTag { get; }
 		public string TargetLanguageTag { get; }
 		public bool IsLoaded { get; private set; }
+		public bool IsRemoved { get; private set; }
 		public DateTime LastUsedTime { get; set; }
 		public HybridTranslationEngine Engine { get; set; }
 		public ITokenizer<string, int> Tokenizer { get; }
@@ -51,6 +54,11 @@ namespace SIL.Machine.WebApi.Models
 		public void MarkUpdated()
 		{
 			_isUpdated = true;
+		}
+
+		public void MarkRemoved()
+		{
+			IsRemoved = true;
 		}
 
 		public void Save()

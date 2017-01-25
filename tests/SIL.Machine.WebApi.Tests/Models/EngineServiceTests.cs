@@ -8,6 +8,7 @@ using NUnit.Framework;
 using SIL.IO;
 using SIL.Machine.Translation;
 using SIL.Machine.WebApi.Models;
+using SIL.Machine.WebApi.Services;
 
 namespace SIL.Machine.WebApi.Tests.Models
 {
@@ -32,7 +33,7 @@ namespace SIL.Machine.WebApi.Tests.Models
 				Directory.CreateDirectory(Path.Combine(tempDir.Path, "es_en"));
 				Directory.CreateDirectory(Path.Combine(tempDir.Path, "fr_en"));
 				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
-				Assert.That(service.GetAll().Select(e => string.Format("{0}_{1}", e.SourceLanguageTag, e.TargetLanguageTag)), Is.EquivalentTo(new[] {"es_en", "fr_en"}));
+				Assert.That(service.GetAll().Select(e => $"{e.SourceLanguageTag}_{e.TargetLanguageTag}"), Is.EquivalentTo(new[] {"es_en", "fr_en"}));
 			}
 		}
 
@@ -142,21 +143,32 @@ namespace SIL.Machine.WebApi.Tests.Models
 		}
 
 		[Test]
-		public void UpdateEngines_EngineDirectoryAdded_EngineAvailable()
+		public void Add_EngineDirectoryAdded_ReturnsTrue()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
 			{
 				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
-				EngineDto engineDto;
-				Assert.That(service.TryGet("es", "en", out engineDto), Is.False);
 				Directory.CreateDirectory(Path.Combine(tempDir.Path, "es_en"));
-				service.UpdateEngines();
+				EngineDto engineDto;
+				Assert.That(service.Add("es", "en", out engineDto), Is.True);
 				Assert.That(service.TryGet("es", "en", out engineDto), Is.True);
 			}
 		}
 
 		[Test]
-		public void UpdateEngines_EngineDirectoryRemoved_EngineNotAvailable()
+		public void Add_EngineDirectoryNotAdded_ReturnsFalse()
+		{
+			using (var tempDir = new TempDirectory("EngineServiceTests"))
+			{
+				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
+				EngineDto engineDto;
+				Assert.That(service.Add("es", "en", out engineDto), Is.False);
+				Assert.That(service.TryGet("es", "en", out engineDto), Is.False);
+			}
+		}
+
+		[Test]
+		public void Remove_EngineDirectoryRemoved_ReturnsTrue()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
 			{
@@ -165,8 +177,18 @@ namespace SIL.Machine.WebApi.Tests.Models
 				EngineDto engineDto;
 				Assert.That(service.TryGet("es", "en", out engineDto), Is.True);
 				Directory.Delete(Path.Combine(tempDir.Path, "es_en"), true);
-				service.UpdateEngines();
+				Assert.That(service.Remove("es", "en"), Is.True);
 				Assert.That(service.TryGet("es", "en", out engineDto), Is.False);
+			}
+		}
+
+		[Test]
+		public void Remove_EngineDoesNotExist_ReturnsFalse()
+		{
+			using (var tempDir = new TempDirectory("EngineServiceTests"))
+			{
+				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
+				Assert.That(service.Remove("es", "en"), Is.False);
 			}
 		}
 

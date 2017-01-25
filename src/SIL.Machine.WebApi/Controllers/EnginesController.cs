@@ -1,15 +1,17 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
+using SIL.Machine.WebApi.Filters;
 using SIL.Machine.WebApi.Models;
+using SIL.Machine.WebApi.Services;
 
 namespace SIL.Machine.WebApi.Controllers
 {
 	[Route("translation/[controller]")]
 	public class EnginesController : Controller
 	{
-		private readonly IEngineService _engineService;
+		private readonly EngineService _engineService;
 
-		public EnginesController(IEngineService engineService)
+		public EnginesController(EngineService engineService)
 		{
 			_engineService = engineService;
 		}
@@ -51,6 +53,25 @@ namespace SIL.Machine.WebApi.Controllers
 		public IActionResult TrainSegment(string sourceLanguageTag, string targetLanguageTag, [FromBody] SegmentPairDto segmentPair)
 		{
 			if (_engineService.TryTrainSegment(sourceLanguageTag, targetLanguageTag, segmentPair))
+				return Ok();
+			return NotFound();
+		}
+
+		[InternalApi]
+		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}")]
+		public IActionResult Add(string sourceLanguageTag, string targetLanguageTag)
+		{
+			EngineDto engine;
+			if (_engineService.Add(sourceLanguageTag, targetLanguageTag, out engine))
+				return new ObjectResult(engine);
+			return NotFound();
+		}
+
+		[InternalApi]
+		[HttpDelete("{sourceLanguageTag}/{targetLanguageTag}")]
+		public IActionResult Remove(string sourceLanguageTag, string targetLanguageTag)
+		{
+			if (_engineService.Remove(sourceLanguageTag, targetLanguageTag))
 				return Ok();
 			return NotFound();
 		}

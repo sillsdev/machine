@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Serialization;
 using SIL.Machine.WebApi.Models;
+using SIL.Machine.WebApi.Services;
 
 namespace SIL.Machine.WebApi
 {
@@ -40,10 +42,11 @@ namespace SIL.Machine.WebApi
 				.AddJsonOptions(a => a.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
 
 			services.Configure<EngineOptions>(Configuration.GetSection("TranslationEngine"));
+			services.Configure<SecurityOptions>(Configuration.GetSection("Security"));
 
 			services.AddSingleton<ISmtModelFactory, ThotSmtModelFactory>();
 			services.AddSingleton<ITranslationEngineFactory, TransferEngineFactory>();
-			services.AddSingleton<IEngineService, EngineService>();
+			services.AddSingleton<EngineService>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -51,6 +54,11 @@ namespace SIL.Machine.WebApi
 		{
 			loggerFactory.AddConsole(Configuration.GetSection("Logging"));
 			loggerFactory.AddDebug();
+
+			app.UseForwardedHeaders(new ForwardedHeadersOptions
+				{
+					ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+				});
 
 			app.UseCors("GlobalPolicy");
 

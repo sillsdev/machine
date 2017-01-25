@@ -1,8 +1,9 @@
 ﻿using System.IO;
 using SIL.Machine.Translation;
 using SIL.Machine.Translation.Thot;
+using SIL.Machine.WebApi.Models;
 
-namespace SIL.Machine.WebApi.Models
+namespace SIL.Machine.WebApi.Services
 {
 	public class ThotSmtModelFactory : ISmtModelFactory
 	{
