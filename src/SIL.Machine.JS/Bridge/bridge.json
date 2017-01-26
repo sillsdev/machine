@@ -4,7 +4,7 @@
   "cleanOutputFolderBeforeBuild": "true",
   "outputBy": "Project",
   "fileName": "sil.machine.js",
-  "generateTypeScript": true
+  "generateTypeScript": false
 
   // More options available at:
   // http://bridge.net/docs/global-configuration

@@ -65,11 +65,19 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\..\packages\PhantomJS.2.1.1\tools\phantomjs\phantomjs.exe">
+      <Link>phantomjs.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Bridge\output\bridge.collections.js" />
     <Content Include="Bridge\output\bridge.js" />
     <Content Include="Bridge\output\sil.machine.js" />
     <Content Include="Bridge\output\sil.machine.tests.js" />
     <Content Include="Bridge\www\test.html" />
+    <Content Include="Scripts\qunit-1.18.0.css" />
+    <Content Include="Scripts\qunit-1.18.0.js" />
+    <Content Include="Scripts\QUnitTeamCityDriver.js" />
+    <Content Include="Scripts\QUnitTeamCityDriver.phantom.js" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
