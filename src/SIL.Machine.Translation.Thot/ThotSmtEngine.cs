@@ -45,9 +45,7 @@ namespace SIL.Machine.Translation.Thot
 
 			string[] segmentArray = segment.ToArray();
 			var session = new ThotInteractiveTranslationSession(this, segmentArray, GetWordGraph(segmentArray));
-
-			lock (_sessions)
-				_sessions.Add(session);
+			_sessions.Add(session);
 			return session;
 		}
 
@@ -372,19 +370,15 @@ namespace SIL.Machine.Translation.Thot
 
 		internal void RemoveSession(ThotInteractiveTranslationSession session)
 		{
-			lock (_sessions)
-				_sessions.Remove(session);
+			_sessions.Remove(session);
 		}
 
 		internal ErrorCorrectionModel ErrorCorrectionModel { get; }
 
 		protected override void DisposeManagedResources()
-		{
-			lock (_sessions)
-			{
-				foreach (ThotInteractiveTranslationSession session in _sessions.ToArray())
-					session.Dispose();
-			}
+	{
+			foreach (ThotInteractiveTranslationSession session in _sessions.ToArray())
+				session.Dispose();
 			_smtModel.RemoveEngine(this);
 		}
 

@@ -180,8 +180,7 @@ namespace SIL.Machine.Translation.Thot
 		public IInteractiveSmtEngine CreateInteractiveEngine()
 		{
 			var engine = new ThotSmtEngine(this);
-			lock (_engines)
-				_engines.Add(engine);
+			_engines.Add(engine);
 			return engine;
 		}
 
@@ -195,37 +194,30 @@ namespace SIL.Machine.Translation.Thot
 		{
 			CheckDisposed();
 
-			lock (_engines)
-			{
-				if (_engines.Count > 0)
-					throw new InvalidOperationException("The model cannot be trained while there are active engines open.");
+			if (_engines.Count > 0)
+				throw new InvalidOperationException("The model cannot be trained while there are active engines open.");
 
-				Thot.smtModel_close(Handle);
+			Thot.smtModel_close(Handle);
 
-				var trainer = new ThotBatchTrainer(TranslationModelFileNamePrefix, LanguageModelFileNamePrefix, Parameters, sourcePreprocessor,
-					sourceCorpus, targetPreprocessor, targetCorpus, alignmentCorpus);
-				trainer.Train(progress);
-				Parameters = trainer.Parameters;
+			var trainer = new ThotBatchTrainer(TranslationModelFileNamePrefix, LanguageModelFileNamePrefix, Parameters, sourcePreprocessor,
+				sourceCorpus, targetPreprocessor, targetCorpus, alignmentCorpus);
+			trainer.Train(progress);
+			Parameters = trainer.Parameters;
 
-				Handle = Thot.LoadSmtModel(TranslationModelFileNamePrefix, LanguageModelFileNamePrefix, Parameters);
-				_singleWordAlignmentModel.Handle = Thot.smtModel_getSingleWordAlignmentModel(Handle);
-				_inverseSingleWordAlignmentModel.Handle = Thot.smtModel_getInverseSingleWordAlignmentModel(Handle);
-			}
+			Handle = Thot.LoadSmtModel(TranslationModelFileNamePrefix, LanguageModelFileNamePrefix, Parameters);
+			_singleWordAlignmentModel.Handle = Thot.smtModel_getSingleWordAlignmentModel(Handle);
+			_inverseSingleWordAlignmentModel.Handle = Thot.smtModel_getInverseSingleWordAlignmentModel(Handle);
 		}
 
 		internal void RemoveEngine(ThotSmtEngine engine)
 		{
-			lock (_engines)
-				_engines.Remove(engine);
+			_engines.Remove(engine);
 		}
 
 		protected override void DisposeManagedResources()
 		{
-			lock (_engines)
-			{
-				foreach (ThotSmtEngine engine in _engines.ToArray())
-					engine.Dispose();
-			}
+			foreach (ThotSmtEngine engine in _engines.ToArray())
+				engine.Dispose();
 		}
 
 		protected override void DisposeUnmanagedResources()

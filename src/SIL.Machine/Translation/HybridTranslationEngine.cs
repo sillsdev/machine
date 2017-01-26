@@ -64,8 +64,7 @@ namespace SIL.Machine.Translation
 			IInteractiveTranslationSession smtSession = SmtEngine.TranslateInteractively(segment);
 			TranslationResult ruleResult = RuleEngine?.Translate(smtSession.SourceSegment);
 			var session = new HybridInteractiveTranslationSession(this, smtSession, ruleResult);
-			lock (_sessions)
-				_sessions.Add(session);
+			_sessions.Add(session);
 			return session;
 		}
 
@@ -124,17 +123,13 @@ namespace SIL.Machine.Translation
 
 		internal void RemoveSession(HybridInteractiveTranslationSession session)
 		{
-			lock (_sessions)
-				_sessions.Remove(session);
+			_sessions.Remove(session);
 		}
 
 		protected override void DisposeManagedResources()
 		{
-			lock (_sessions)
-			{
-				foreach (HybridInteractiveTranslationSession session in _sessions.ToArray())
-					session.Dispose();
-			}
+			foreach (HybridInteractiveTranslationSession session in _sessions.ToArray())
+				session.Dispose();
 
 			SmtEngine.Dispose();
 			RuleEngine?.Dispose();
