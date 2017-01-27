@@ -18,6 +18,8 @@ tar -xzf $PACKAGE_FILE -C $DEPLOY_PATH > /dev/null || exit 1
 sudo chown -R root:www-data $DEPLOY_PATH || exit 1
 sudo chmod -R 755 $DEPLOY_PATH || exit 1
 
-rsync -vprogzlt --chown=root:www-data --delete-during --rsh="ssh -v -i $DEPLOY_CREDENTIALS" $DEPLOY_PATH $DEPLOY_DESTINATION || exit 1
+rsync -vprogzlt --chown=root:www-data --delete-during --rsh="ssh -v -i $DEPLOY_CREDENTIALS" $DEPLOY_PATH root@$DEPLOY_DESTINATION:$DEPLOY_PATH || exit 1
+
+ssh root@$DEPLOY_DESTINATION "service machine-web-api restart"
 
 popd > /dev/null
