@@ -57,7 +57,7 @@ namespace SIL.Machine.WebApi
 
 			app.UseForwardedHeaders(new ForwardedHeadersOptions
 				{
-					ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+					ForwardedHeaders = ForwardedHeaders.XForwardedFor
 				});
 
 			app.UseCors("GlobalPolicy");

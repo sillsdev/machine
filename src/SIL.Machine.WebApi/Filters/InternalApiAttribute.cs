@@ -25,10 +25,10 @@ namespace SIL.Machine.WebApi.Filters
 
 			public void OnActionExecuting(ActionExecutingContext context)
 			{
-				string ipAddress = context.HttpContext.Connection.RemoteIpAddress.ToString();
+				string ipAddress = context.HttpContext.Connection.RemoteIpAddress?.ToString();
 				if (ipAddress == "::1")
 					ipAddress = "127.0.0.1";
-				if (!_whitelistAddresses.Contains(ipAddress))
+				if (ipAddress == null || !_whitelistAddresses.Contains(ipAddress))
 					context.Result = new StatusCodeResult(403);
 			}
 
