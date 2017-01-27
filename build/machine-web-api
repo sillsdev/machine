@@ -10,8 +10,9 @@
 ### END INIT INFO
 
 name=`basename $0`
+socket_file="/tmp/$name.sock"
 dir="/var/www/languageforge.org_cat/machine"
-cmd="./SIL.Machine.WebApi"
+cmd="./SIL.Machine.WebApi --server.urls=http://unix:$socket_file"
 user="www-data"
 
 pid_file="/var/run/$name.pid"
@@ -34,8 +35,10 @@ case "$1" in
         echo "Starting $name"
         cd "$dir"
         if [ -z "$user" ]; then
+            sudo rm -f "$socket_file"
             sudo $cmd >> "$stdout_log" 2>> "$stderr_log" &
         else
+            sudo -u "$user" rm -f "$socket_file"
             sudo -u "$user" $cmd >> "$stdout_log" 2>> "$stderr_log" &
         fi
         echo $! > "$pid_file"
