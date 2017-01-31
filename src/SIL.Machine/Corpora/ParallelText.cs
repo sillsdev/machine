@@ -51,7 +51,7 @@ namespace SIL.Machine.Corpora
 							} while (compare2 < 0);
 
 							yield return new ParallelTextSegment(enumerator1.Current.SegmentRef, enumerator1.Current.Segment, enumerator2.Current.Segment,
-								compare2 == 0 ? enumerator3.Current.Alignment : null);
+								compare2 == 0 ? enumerator3.Current.AlignedWords : null);
 							completed = !enumerator1.MoveNext() || !enumerator2.MoveNext();
 						}
 					}

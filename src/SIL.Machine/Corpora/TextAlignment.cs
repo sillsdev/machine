@@ -1,17 +1,19 @@
-﻿using SIL.Machine.Translation;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SIL.Machine.Corpora
 {
 	public class TextAlignment
 	{
-		public TextAlignment(TextSegmentRef segRef, WordAlignmentMatrix alignment)
+		public TextAlignment(TextSegmentRef segRef, IEnumerable<Tuple<int, int>> alignedWords)
 		{
 			SegmentRef = segRef;
-			Alignment = alignment;
+			AlignedWords = alignedWords.ToArray();
 		}
 
 		public TextSegmentRef SegmentRef { get; }
 
-		public WordAlignmentMatrix Alignment { get; }
+		public IEnumerable<Tuple<int, int>> AlignedWords { get; }
 	}
 }

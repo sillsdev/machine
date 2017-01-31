@@ -44,9 +44,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Corpora\ITextAlignmentCorpus.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Corpora\MemoryText.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Corpora\DictionaryTextCorpus.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Corpora\MemoryTextAlignments.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Corpora\MemoryTextAlignmentCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Corpora\TextAlignment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Corpora\TextFileText.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Corpora\TextFileTextAlignmentCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Corpora\TextSegment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Corpora\ParallelText.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Corpora\ParallelTextCorpus.cs" />

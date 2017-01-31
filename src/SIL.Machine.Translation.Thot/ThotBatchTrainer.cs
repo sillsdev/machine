@@ -387,7 +387,7 @@ namespace SIL.Machine.Translation.Thot
 				{
 					IEnumerable<string> sourceTokens = segment.SourceSegment.Select(sourcePreprocessor);
 					IEnumerable<string> targetTokens = segment.TargetSegment.Select(targetPreprocessor);
-					swAlignModel.AddSegmentPair(sourceTokens, targetTokens, segment.Alignment);
+					swAlignModel.AddSegmentPair(sourceTokens, targetTokens, segment.GetAlignmentMatrix(true));
 				}
 				for (int i = 0; i < 5; i++)
 				{

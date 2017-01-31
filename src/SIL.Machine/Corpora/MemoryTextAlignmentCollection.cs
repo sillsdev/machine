@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using SIL.Machine.Translation;
 
 namespace SIL.Machine.Corpora
 {
@@ -18,12 +18,8 @@ namespace SIL.Machine.Corpora
 
 		public ITextAlignmentCollection Invert()
 		{
-			return new MemoryTextAlignmentCollection(Id, Alignments.Select(ta =>
-				{
-					WordAlignmentMatrix newMatrix = ta.Alignment.Clone();
-					newMatrix.Transpose();
-					return new TextAlignment(ta.SegmentRef, newMatrix);
-				}));
+			return new MemoryTextAlignmentCollection(Id,
+				Alignments.Select(ta => new TextAlignment(ta.SegmentRef, ta.AlignedWords.Select(a => Tuple.Create(a.Item2, a.Item1)))));
 		}
 	}
 }

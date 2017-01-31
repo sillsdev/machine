@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using SIL.IO;
@@ -42,11 +43,11 @@ namespace SIL.Machine.Translation.Thot.Tests
 					{
 						new MemoryTextAlignmentCollection("text1", new[]
 							{
-								new TextAlignment(new TextSegmentRef(1, 1), new WordAlignmentMatrix(13, 13, AlignmentType.Unknown) {[8, 9] = AlignmentType.Aligned}),
-								new TextAlignment(new TextSegmentRef(1, 2), new WordAlignmentMatrix(19, 21, AlignmentType.Unknown) {[6, 10] = AlignmentType.Aligned}),
-								new TextAlignment(new TextSegmentRef(1, 3), new WordAlignmentMatrix(10, 10, AlignmentType.Unknown) {[6, 8] = AlignmentType.Aligned}),
-								new TextAlignment(new TextSegmentRef(1, 4), new WordAlignmentMatrix(8, 6, AlignmentType.Unknown) {[6, 4] = AlignmentType.Aligned}),
-								new TextAlignment(new TextSegmentRef(1, 5), new WordAlignmentMatrix(7, 8, AlignmentType.Unknown))     
+								new TextAlignment(new TextSegmentRef(1, 1), new[] {Tuple.Create(8, 9)}),
+								new TextAlignment(new TextSegmentRef(1, 2), new[] {Tuple.Create(6, 10)}),
+								new TextAlignment(new TextSegmentRef(1, 3), new[] {Tuple.Create(6, 8)}),
+								new TextAlignment(new TextSegmentRef(1, 4), new[] {Tuple.Create(6, 4)}),
+								new TextAlignment(new TextSegmentRef(1, 5), new Tuple<int, int>[0])     
 							})
 					});
 

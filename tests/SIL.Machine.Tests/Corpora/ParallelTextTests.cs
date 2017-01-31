@@ -1,7 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using NUnit.Framework;
 using SIL.Machine.Corpora;
-using SIL.Machine.Translation;
 
 namespace SIL.Machine.Tests.Corpora
 {
@@ -34,9 +34,9 @@ namespace SIL.Machine.Tests.Corpora
 				});
 			var alignments = new MemoryTextAlignmentCollection("text1", new[]
 				{
-					new TextAlignment(new TextSegmentRef(1, 1), new WordAlignmentMatrix(4, 4) {[0, 0] = AlignmentType.Aligned}),
-					new TextAlignment(new TextSegmentRef(1, 2), new WordAlignmentMatrix(4, 4) {[1, 1] = AlignmentType.Aligned}),
-					new TextAlignment(new TextSegmentRef(1, 3), new WordAlignmentMatrix(4, 4) {[2, 2] = AlignmentType.Aligned})   
+					new TextAlignment(new TextSegmentRef(1, 1), new[] {Tuple.Create(0, 0)}),
+					new TextAlignment(new TextSegmentRef(1, 2), new[] {Tuple.Create(1, 1)}),
+					new TextAlignment(new TextSegmentRef(1, 3), new[] {Tuple.Create(2, 2)})   
 				});
 
 			var parallelText = new ParallelText(sourceText, targetText, alignments);
@@ -44,10 +44,10 @@ namespace SIL.Machine.Tests.Corpora
 			Assert.That(segments.Length, Is.EqualTo(3));
 			Assert.That(segments[0].SourceSegment, Is.EqualTo("source segment 1 1 .".Split()));
 			Assert.That(segments[0].TargetSegment, Is.EqualTo("target segment 1 1 .".Split()));
-			Assert.That(segments[0].Alignment[0, 0], Is.EqualTo(AlignmentType.Aligned));
+			Assert.That(segments[0].AlignedWords, Is.EquivalentTo(new[] {Tuple.Create(0, 0)}));
 			Assert.That(segments[2].SourceSegment, Is.EqualTo("source segment 1 3 .".Split()));
 			Assert.That(segments[2].TargetSegment, Is.EqualTo("target segment 1 3 .".Split()));
-			Assert.That(segments[2].Alignment[2, 2], Is.EqualTo(AlignmentType.Aligned));
+			Assert.That(segments[2].AlignedWords, Is.EquivalentTo(new[] {Tuple.Create(2, 2)}));
 		}
 
 		[Test]
@@ -66,8 +66,8 @@ namespace SIL.Machine.Tests.Corpora
 				});
 			var alignments = new MemoryTextAlignmentCollection("text1", new[]
 				{
-					new TextAlignment(new TextSegmentRef(1, 1), new WordAlignmentMatrix(4, 4) {[0, 0] = AlignmentType.Aligned}),
-					new TextAlignment(new TextSegmentRef(1, 3), new WordAlignmentMatrix(4, 4) {[2, 2] = AlignmentType.Aligned})
+					new TextAlignment(new TextSegmentRef(1, 1), new[] {Tuple.Create(0, 0)}),
+					new TextAlignment(new TextSegmentRef(1, 3), new[] {Tuple.Create(2, 2)})
 				});
 
 			var parallelText = new ParallelText(sourceText, targetText, alignments);
@@ -75,10 +75,10 @@ namespace SIL.Machine.Tests.Corpora
 			Assert.That(segments.Length, Is.EqualTo(2));
 			Assert.That(segments[0].SourceSegment, Is.EqualTo("source segment 1 1 .".Split()));
 			Assert.That(segments[0].TargetSegment, Is.EqualTo("target segment 1 1 .".Split()));
-			Assert.That(segments[0].Alignment[0, 0], Is.EqualTo(AlignmentType.Aligned));
+			Assert.That(segments[0].AlignedWords, Is.EquivalentTo(new[] {Tuple.Create(0, 0)}));
 			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 1 3 .".Split()));
 			Assert.That(segments[1].TargetSegment, Is.EqualTo("target segment 1 3 .".Split()));
-			Assert.That(segments[1].Alignment[2, 2], Is.EqualTo(AlignmentType.Aligned));
+			Assert.That(segments[1].AlignedWords, Is.EquivalentTo(new[] {Tuple.Create(2, 2)}));
 		}
 
 		[Test]
@@ -97,8 +97,8 @@ namespace SIL.Machine.Tests.Corpora
 				});
 			var alignments = new MemoryTextAlignmentCollection("text1", new[]
 				{
-					new TextAlignment(new TextSegmentRef(1, 1), new WordAlignmentMatrix(4, 4) {[0, 0] = AlignmentType.Aligned}),
-					new TextAlignment(new TextSegmentRef(1, 3), new WordAlignmentMatrix(4, 4) {[2, 2] = AlignmentType.Aligned})
+					new TextAlignment(new TextSegmentRef(1, 1), new[] {Tuple.Create(0, 0)}),
+					new TextAlignment(new TextSegmentRef(1, 3), new[] {Tuple.Create(2, 2)})
 				});
 
 			var parallelText = new ParallelText(sourceText, targetText, alignments);
@@ -106,10 +106,10 @@ namespace SIL.Machine.Tests.Corpora
 			Assert.That(segments.Length, Is.EqualTo(2));
 			Assert.That(segments[0].SourceSegment, Is.EqualTo("source segment 1 1 .".Split()));
 			Assert.That(segments[0].TargetSegment, Is.EqualTo("target segment 1 1 .".Split()));
-			Assert.That(segments[0].Alignment[0, 0], Is.EqualTo(AlignmentType.Aligned));
+			Assert.That(segments[0].AlignedWords, Is.EquivalentTo(new[] {Tuple.Create(0, 0)}));
 			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 1 3 .".Split()));
 			Assert.That(segments[1].TargetSegment, Is.EqualTo("target segment 1 3 .".Split()));
-			Assert.That(segments[1].Alignment[2, 2], Is.EqualTo(AlignmentType.Aligned));
+			Assert.That(segments[1].AlignedWords, Is.EquivalentTo(new[] {Tuple.Create(2, 2)}));
 		}
 
 		[Test]
@@ -128,8 +128,8 @@ namespace SIL.Machine.Tests.Corpora
 				});
 			var alignments = new MemoryTextAlignmentCollection("text1", new[]
 				{
-					new TextAlignment(new TextSegmentRef(1, 1), new WordAlignmentMatrix(4, 4) {[0, 0] = AlignmentType.Aligned}),
-					new TextAlignment(new TextSegmentRef(1, 2), new WordAlignmentMatrix(4, 4) {[1, 1] = AlignmentType.Aligned})
+					new TextAlignment(new TextSegmentRef(1, 1), new[] {Tuple.Create(0, 0)}),
+					new TextAlignment(new TextSegmentRef(1, 2), new[] {Tuple.Create(1, 1)})
 				});
 
 			var parallelText = new ParallelText(sourceText, targetText, alignments);
@@ -137,10 +137,10 @@ namespace SIL.Machine.Tests.Corpora
 			Assert.That(segments.Length, Is.EqualTo(2));
 			Assert.That(segments[0].SourceSegment, Is.EqualTo("source segment 1 1 .".Split()));
 			Assert.That(segments[0].TargetSegment, Is.EqualTo("target segment 1 1 .".Split()));
-			Assert.That(segments[0].Alignment[0, 0], Is.EqualTo(AlignmentType.Aligned));
+			Assert.That(segments[0].AlignedWords, Is.EquivalentTo(new[] {Tuple.Create(0, 0)}));
 			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 1 2 .".Split()));
 			Assert.That(segments[1].TargetSegment, Is.EqualTo("target segment 1 2 .".Split()));
-			Assert.That(segments[1].Alignment[1, 1], Is.EqualTo(AlignmentType.Aligned));
+			Assert.That(segments[1].AlignedWords, Is.EquivalentTo(new[] {Tuple.Create(1, 1)}));
 		}
 
 		[Test]
@@ -159,8 +159,8 @@ namespace SIL.Machine.Tests.Corpora
 				});
 			var alignments = new MemoryTextAlignmentCollection("text1", new[]
 				{
-					new TextAlignment(new TextSegmentRef(1, 1), new WordAlignmentMatrix(4, 4) {[0, 0] = AlignmentType.Aligned}),
-					new TextAlignment(new TextSegmentRef(1, 2), new WordAlignmentMatrix(4, 4) {[1, 1] = AlignmentType.Aligned})
+					new TextAlignment(new TextSegmentRef(1, 1), new[] {Tuple.Create(0, 0)}),
+					new TextAlignment(new TextSegmentRef(1, 2), new[] {Tuple.Create(1, 1)})
 				});
 
 			var parallelText = new ParallelText(sourceText, targetText, alignments);
@@ -168,10 +168,10 @@ namespace SIL.Machine.Tests.Corpora
 			Assert.That(segments.Length, Is.EqualTo(2));
 			Assert.That(segments[0].SourceSegment, Is.EqualTo("source segment 1 1 .".Split()));
 			Assert.That(segments[0].TargetSegment, Is.EqualTo("target segment 1 1 .".Split()));
-			Assert.That(segments[0].Alignment[0, 0], Is.EqualTo(AlignmentType.Aligned));
+			Assert.That(segments[0].AlignedWords, Is.EquivalentTo(new[] {Tuple.Create(0, 0)}));
 			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 1 2 .".Split()));
 			Assert.That(segments[1].TargetSegment, Is.EqualTo("target segment 1 2 .".Split()));
-			Assert.That(segments[1].Alignment[1, 1], Is.EqualTo(AlignmentType.Aligned));
+			Assert.That(segments[1].AlignedWords, Is.EquivalentTo(new[] {Tuple.Create(1, 1)}));
 		}
 
 		[Test]
@@ -190,8 +190,8 @@ namespace SIL.Machine.Tests.Corpora
 				});
 			var alignments = new MemoryTextAlignmentCollection("text1", new[]
 				{
-					new TextAlignment(new TextSegmentRef(1, 2), new WordAlignmentMatrix(4, 4) {[1, 1] = AlignmentType.Aligned}),
-					new TextAlignment(new TextSegmentRef(1, 3), new WordAlignmentMatrix(4, 4) {[2, 2] = AlignmentType.Aligned})
+					new TextAlignment(new TextSegmentRef(1, 2), new[] {Tuple.Create(1, 1)}),
+					new TextAlignment(new TextSegmentRef(1, 3), new[] {Tuple.Create(2, 2)})
 				});
 
 			var parallelText = new ParallelText(sourceText, targetText, alignments);
@@ -199,10 +199,10 @@ namespace SIL.Machine.Tests.Corpora
 			Assert.That(segments.Length, Is.EqualTo(2));
 			Assert.That(segments[0].SourceSegment, Is.EqualTo("source segment 1 2 .".Split()));
 			Assert.That(segments[0].TargetSegment, Is.EqualTo("target segment 1 2 .".Split()));
-			Assert.That(segments[0].Alignment[1, 1], Is.EqualTo(AlignmentType.Aligned));
+			Assert.That(segments[0].AlignedWords, Is.EquivalentTo(new[] {Tuple.Create(1, 1)}));
 			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 1 3 .".Split()));
 			Assert.That(segments[1].TargetSegment, Is.EqualTo("target segment 1 3 .".Split()));
-			Assert.That(segments[1].Alignment[2, 2], Is.EqualTo(AlignmentType.Aligned));
+			Assert.That(segments[1].AlignedWords, Is.EquivalentTo(new[] {Tuple.Create(2, 2)}));
 		}
 
 		[Test]
@@ -221,8 +221,8 @@ namespace SIL.Machine.Tests.Corpora
 				});
 			var alignments = new MemoryTextAlignmentCollection("text1", new[]
 				{
-					new TextAlignment(new TextSegmentRef(1, 2), new WordAlignmentMatrix(4, 4) {[1, 1] = AlignmentType.Aligned}),
-					new TextAlignment(new TextSegmentRef(1, 3), new WordAlignmentMatrix(4, 4) {[2, 2] = AlignmentType.Aligned})
+					new TextAlignment(new TextSegmentRef(1, 2), new[] {Tuple.Create(1, 1)}),
+					new TextAlignment(new TextSegmentRef(1, 3), new[] {Tuple.Create(2, 2)})
 				});
 
 			var parallelText = new ParallelText(sourceText, targetText, alignments);
@@ -230,10 +230,10 @@ namespace SIL.Machine.Tests.Corpora
 			Assert.That(segments.Length, Is.EqualTo(2));
 			Assert.That(segments[0].SourceSegment, Is.EqualTo("source segment 1 2 .".Split()));
 			Assert.That(segments[0].TargetSegment, Is.EqualTo("target segment 1 2 .".Split()));
-			Assert.That(segments[0].Alignment[1, 1], Is.EqualTo(AlignmentType.Aligned));
+			Assert.That(segments[0].AlignedWords, Is.EquivalentTo(new[] {Tuple.Create(1, 1)}));
 			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 1 3 .".Split()));
 			Assert.That(segments[1].TargetSegment, Is.EqualTo("target segment 1 3 .".Split()));
-			Assert.That(segments[1].Alignment[2, 2], Is.EqualTo(AlignmentType.Aligned));
+			Assert.That(segments[1].AlignedWords, Is.EquivalentTo(new[] {Tuple.Create(2, 2)}));
 		}
 	}
 }
