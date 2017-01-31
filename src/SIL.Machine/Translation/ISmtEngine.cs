@@ -4,10 +4,10 @@ namespace SIL.Machine.Translation
 {
 	public interface ISmtEngine : ITranslationEngine
 	{
-		TranslationResult GetBestPhraseAlignment(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment);
+		TranslationResult GetBestPhraseAlignment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment);
 
-		WordGraph GetWordGraph(IEnumerable<string> segment);
+		WordGraph GetWordGraph(IReadOnlyList<string> segment);
 
-		void TrainSegment(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment, WordAlignmentMatrix matrix = null);
+		void TrainSegment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment, WordAlignmentMatrix matrix = null);
 	}
 }

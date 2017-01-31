@@ -18,15 +18,14 @@ namespace SIL.Machine.Translation
 			_targetGenerator = targetGenerator;
 		}
 
-		public TranslationResult Translate(IEnumerable<string> segment)
+		public TranslationResult Translate(IReadOnlyList<string> segment)
 		{
 			return Translate(1, segment).First();
 		}
 
-		public IEnumerable<TranslationResult> Translate(int n, IEnumerable<string> segment)
+		public IEnumerable<TranslationResult> Translate(int n, IReadOnlyList<string> segment)
 		{
-			string[] segmentArray = segment.ToArray();
-			IEnumerable<IEnumerable<WordAnalysis>> sourceAnalyses = segmentArray.Select(word => _sourceAnalyzer.AnalyzeWord(word));
+			IEnumerable<IEnumerable<WordAnalysis>> sourceAnalyses = segment.Select(word => _sourceAnalyzer.AnalyzeWord(word));
 
 			foreach (TransferResult transferResult in _transferer.Transfer(sourceAnalyses).Take(n))
 			{
@@ -36,7 +35,7 @@ namespace SIL.Machine.Translation
 				var translation = new List<string>();
 				var confidences = new List<double>();
 				var sources = new List<TranslationSources>();
-				var alignment = new WordAlignmentMatrix(segmentArray.Length, targetAnalyses.Count);
+				var alignment = new WordAlignmentMatrix(segment.Count, targetAnalyses.Count);
 				for (int j = 0; j < targetAnalyses.Count; j++)
 				{
 					int[] sourceIndices = Enumerable.Range(0, waMatrix.RowCount).Where(i => waMatrix[i, j] == AlignmentType.Aligned).ToArray();
@@ -48,7 +47,7 @@ namespace SIL.Machine.Translation
 						if (sourceIndices.Length > 0)
 						{
 							int i = sourceIndices[0];
-							targetWord = segmentArray[i];
+							targetWord = segment[i];
 							confidence = 0;
 							source = TranslationSources.None;
 							alignment[i, j] = AlignmentType.Aligned;
@@ -68,7 +67,7 @@ namespace SIL.Machine.Translation
 					}
 				}
 
-				yield return new TranslationResult(segmentArray, translation, confidences, sources, alignment);
+				yield return new TranslationResult(segment, translation, confidences, sources, alignment);
 			}
 		}
 	}

@@ -13,7 +13,7 @@ namespace SIL.Machine.Translation
 
 		TranslationResult CurrentResult { get; }
 
-		TranslationResult SetPrefix(IEnumerable<string> prefix, bool isLastWordComplete);
+		TranslationResult SetPrefix(IReadOnlyList<string> prefix, bool isLastWordComplete);
 
 		void Approve();
 	}

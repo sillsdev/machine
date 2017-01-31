@@ -4,6 +4,6 @@ namespace SIL.Machine.Translation
 {
 	public interface IInteractiveTranslationEngine : ITranslationEngine
 	{
-		IInteractiveTranslationSession TranslateInteractively(IEnumerable<string> segment);
+		IInteractiveTranslationSession TranslateInteractively(IReadOnlyList<string> segment);
 	}
 }

@@ -55,23 +55,30 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public TranslationResult SetPrefix(IEnumerable<string> prefix, bool isLastWordComplete)
+		public TranslationResult SetPrefix(IReadOnlyList<string> prefix, bool isLastWordComplete)
 		{
 			CheckDisposed();
 
 			TranslationResult smtResult = _smtSession.SetPrefix(prefix, isLastWordComplete);
-			int prefixCount = _smtSession.Prefix.Count;
+			int prefixCount = prefix.Count;
 			if (!_smtSession.IsLastWordComplete)
 				prefixCount--;
 			_currentResult = _ruleResult == null ? smtResult : smtResult.Merge(prefixCount, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
 			return _currentResult;
 		}
 
-		public void Approve()
+		void IInteractiveTranslationSession.Approve()
+		{
+			Approve();
+		}
+
+		public WordAlignmentMatrix Approve()
 		{
 			CheckDisposed();
 
-			_engine.TrainSegment(SourceSegment, Prefix, _ruleResult);
+			WordAlignmentMatrix matrix = _engine.GetHintMatrix(SourceSegment, Prefix, _ruleResult);
+			_engine.SmtEngine.TrainSegment(SourceSegment, Prefix, matrix);
+			return matrix;
 		}
 
 		protected override void DisposeManagedResources()

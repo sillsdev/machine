@@ -23,39 +23,34 @@ namespace SIL.Machine.Translation.Thot
 			ErrorCorrectionModel = new ErrorCorrectionModel();
 		}
 
-		public TranslationResult Translate(IEnumerable<string> segment)
+		public TranslationResult Translate(IReadOnlyList<string> segment)
 		{
 			CheckDisposed();
 
-			string[] segmentArray = segment.ToArray();
-			return Thot.DoTranslate(_decoderHandle, Thot.decoder_translate, segmentArray, false, segmentArray, CreateResult);
+			return Thot.DoTranslate(_decoderHandle, Thot.decoder_translate, segment, false, segment, CreateResult);
 		}
 
-		public IEnumerable<TranslationResult> Translate(int n, IEnumerable<string> segment)
+		public IEnumerable<TranslationResult> Translate(int n, IReadOnlyList<string> segment)
 		{
 			CheckDisposed();
 
-			string[] segmentArray = segment.ToArray();
-			return Thot.DoTranslateNBest(_decoderHandle, Thot.decoder_translateNBest, n, segmentArray, false, segmentArray, CreateResult);
+			return Thot.DoTranslateNBest(_decoderHandle, Thot.decoder_translateNBest, n, segment, false, segment, CreateResult);
 		}
 
-		public IInteractiveTranslationSession TranslateInteractively(IEnumerable<string> segment)
+		public IInteractiveTranslationSession TranslateInteractively(IReadOnlyList<string> segment)
 		{
 			CheckDisposed();
 
-			string[] segmentArray = segment.ToArray();
-			var session = new ThotInteractiveTranslationSession(this, segmentArray, GetWordGraph(segmentArray));
+			var session = new ThotInteractiveTranslationSession(this, segment, GetWordGraph(segment));
 			_sessions.Add(session);
 			return session;
 		}
 
-		public WordGraph GetWordGraph(IEnumerable<string> segment)
+		public WordGraph GetWordGraph(IReadOnlyList<string> segment)
 		{
 			CheckDisposed();
 
-			string[] segmentArray = segment.ToArray();
-
-			IntPtr nativeSentence = Thot.ConvertStringsToNativeUtf8(segmentArray);
+			IntPtr nativeSentence = Thot.ConvertStringsToNativeUtf8(segment);
 			IntPtr wordGraph = IntPtr.Zero;
 			IntPtr nativeWordGraphStr = IntPtr.Zero;
 			try
@@ -67,7 +62,7 @@ namespace SIL.Machine.Translation.Thot
 				Thot.wg_getString(wordGraph, nativeWordGraphStr, len);
 				string wordGraphStr = Thot.ConvertNativeUtf8ToString(nativeWordGraphStr, len);
 				double initialStateScore = Thot.wg_getInitialStateScore(wordGraph);
-				return CreateWordGraph(segmentArray, wordGraphStr, initialStateScore);
+				return CreateWordGraph(segment, wordGraphStr, initialStateScore);
 			}
 			finally
 			{
@@ -79,16 +74,17 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private WordGraph CreateWordGraph(string[] segment, string wordGraphStr, double initialStateScore)
+		private WordGraph CreateWordGraph(IReadOnlyList<string> segment, string wordGraphStr, double initialStateScore)
 		{
-			string[] lines = wordGraphStr.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+			string[] lines = wordGraphStr.Split(new[] {'\n'}, StringSplitOptions.RemoveEmptyEntries);
 			int i = 0;
 			if (lines[i].StartsWith("#"))
 				i++;
 
-			int[] finalStates = Split(lines[i]).Select(s => int.Parse(s)).ToArray();
+			int[] finalStates = Split(lines[i]).Select(int.Parse).ToArray();
 			i++;
 
+			string[] segmentArray = segment.ToArray();
 			var arcs = new List<WordGraphArc>();
 			for (; i < lines.Length; i++)
 			{
@@ -129,7 +125,7 @@ namespace SIL.Machine.Translation.Thot
 				else
 				{
 					var srcPhrase = new string[srcPhraseLen];
-					Array.Copy(segment, srcStartIndex, srcPhrase, 0, srcPhraseLen);
+					Array.Copy(segmentArray, srcStartIndex, srcPhrase, 0, srcPhraseLen);
 					waMatrix = _segmentAligner.GetBestAlignment(srcPhrase, words);
 				}
 
@@ -161,22 +157,20 @@ namespace SIL.Machine.Translation.Thot
 
 		private static string[] Split(string line)
 		{
-			return line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+			return line.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
 		}
 
-		public TranslationResult GetBestPhraseAlignment(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment)
+		public TranslationResult GetBestPhraseAlignment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
 		{
 			CheckDisposed();
 
-			string[] sourceSegmentArray = sourceSegment.ToArray();
-			string[] targetSegmentArray = targetSegment.ToArray();
-			IntPtr nativeSourceSegment = Thot.ConvertStringsToNativeUtf8(sourceSegmentArray);
-			IntPtr nativeTargetSegment = Thot.ConvertStringsToNativeUtf8(targetSegmentArray);
+			IntPtr nativeSourceSegment = Thot.ConvertStringsToNativeUtf8(sourceSegment);
+			IntPtr nativeTargetSegment = Thot.ConvertStringsToNativeUtf8(targetSegment);
 			IntPtr data = IntPtr.Zero;
 			try
 			{
 				data = Thot.decoder_getBestPhraseAlignment(_decoderHandle, nativeSourceSegment, nativeTargetSegment);
-				return CreateResult(sourceSegmentArray, targetSegmentArray, data);
+				return CreateResult(sourceSegment, targetSegment, data);
 			}
 			finally
 			{
@@ -187,7 +181,7 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public void TrainSegment(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment, WordAlignmentMatrix matrix = null)
+		public void TrainSegment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment, WordAlignmentMatrix matrix = null)
 		{
 			CheckDisposed();
 

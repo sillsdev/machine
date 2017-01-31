@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using SIL.Extensions;
 
 namespace SIL.Machine.Translation
 {
@@ -9,7 +8,7 @@ namespace SIL.Machine.Translation
 	{
 		public static IEnumerable<string> TranslateWord(this ITranslationEngine engine, string sourceWord)
 		{
-			TranslationResult result = engine.Translate(sourceWord.ToEnumerable());
+			TranslationResult result = engine.Translate(new[] {sourceWord});
 			if (result.TargetWordSources.Any(s => s == TranslationSources.None))
 				return Enumerable.Empty<string>();
 			return result.TargetSegment;

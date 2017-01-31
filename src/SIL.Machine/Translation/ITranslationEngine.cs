@@ -5,8 +5,8 @@ namespace SIL.Machine.Translation
 {
 	public interface ITranslationEngine : IDisposable
 	{
-		TranslationResult Translate(IEnumerable<string> segment);
+		TranslationResult Translate(IReadOnlyList<string> segment);
 
-		IEnumerable<TranslationResult> Translate(int n, IEnumerable<string> segment);
+		IEnumerable<TranslationResult> Translate(int n, IReadOnlyList<string> segment);
 	}
 }

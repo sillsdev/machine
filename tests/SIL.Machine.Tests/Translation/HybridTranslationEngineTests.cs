@@ -67,7 +67,7 @@ namespace SIL.Machine.Tests.Translation
 				smtSession.SourceSegment.Returns(sourceSegmentArray);
 				smtSession.CurrentResult.Returns(new TranslationResult(sourceSegmentArray, targetSegmentArray, confidences, sources, alignment));
 
-				engine.TranslateInteractively(Arg.Is<IEnumerable<string>>(ss => ss.SequenceEqual(sourceSegmentArray))).Returns(smtSession);
+				engine.TranslateInteractively(Arg.Is<IReadOnlyList<string>>(ss => ss.SequenceEqual(sourceSegmentArray))).Returns(smtSession);
 			}
 
 			public HybridTranslationEngine Engine { get; }

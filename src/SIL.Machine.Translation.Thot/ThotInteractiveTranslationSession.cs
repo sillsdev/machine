@@ -65,7 +65,7 @@ namespace SIL.Machine.Translation.Thot
 			return _engine.CreateResult(_sourceSegment, _prefix.Count, correction);
 		}
 
-		public TranslationResult SetPrefix(IEnumerable<string> prefix, bool isLastWordComplete)
+		public TranslationResult SetPrefix(IReadOnlyList<string> prefix, bool isLastWordComplete)
 		{
 			CheckDisposed();
 
