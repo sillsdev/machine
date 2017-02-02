@@ -28,7 +28,10 @@ namespace SIL.Machine.Corpora
 					int lineNum = 1;
 					string line;
 					while ((line = reader.ReadLine()) != null)
+					{
 						yield return new TextSegment(new TextSegmentRef(1, lineNum), _tokenizer.TokenizeToStrings(line).ToArray());
+						lineNum++;
+					}
 				}
 			}
 		}

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace SIL.Machine.Translation
 {
@@ -13,10 +14,18 @@ namespace SIL.Machine.Translation
 			_trgSrcAligner = trgSrcAligner;
 		}
 
-		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
+		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
+			WordAlignmentMatrix hintMatrix = null)
 		{
-			WordAlignmentMatrix matrix = _srcTrgAligner.GetBestAlignment(sourceSegment, targetSegment);
-			WordAlignmentMatrix invMatrix = _trgSrcAligner.GetBestAlignment(targetSegment, sourceSegment);
+			WordAlignmentMatrix matrix = _srcTrgAligner.GetBestAlignment(sourceSegment, targetSegment, hintMatrix);
+
+			WordAlignmentMatrix invHintMatrix = null;
+			if (hintMatrix != null)
+			{
+				invHintMatrix = hintMatrix.Clone();
+				invHintMatrix.Transpose();
+			}
+			WordAlignmentMatrix invMatrix = _trgSrcAligner.GetBestAlignment(targetSegment, sourceSegment, invHintMatrix);
 
 			invMatrix.Transpose();
 			matrix.SymmetrizeWith(invMatrix);
@@ -27,7 +36,7 @@ namespace SIL.Machine.Translation
 		{
 			double prob = _srcTrgAligner.GetTranslationProbability(sourceWord, targetWord);
 			double invProb = _trgSrcAligner.GetTranslationProbability(targetWord, sourceWord);
-			return (prob + invProb) / 2;
+			return Math.Max(prob, invProb);
 		}
 	}
 }

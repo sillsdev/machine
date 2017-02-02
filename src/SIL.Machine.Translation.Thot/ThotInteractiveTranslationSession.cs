@@ -69,10 +69,13 @@ namespace SIL.Machine.Translation.Thot
 		{
 			CheckDisposed();
 
-			_prefix.Clear();
-			_prefix.AddRange(prefix);
-			_isLastWordComplete = isLastWordComplete;
-			_currentResult = CreateInteractiveResult();
+			if (!_prefix.SequenceEqual(prefix) || _isLastWordComplete != isLastWordComplete)
+			{
+				_prefix.Clear();
+				_prefix.AddRange(prefix);
+				_isLastWordComplete = isLastWordComplete;
+				_currentResult = CreateInteractiveResult();
+			}
 			return _currentResult;
 		}
 

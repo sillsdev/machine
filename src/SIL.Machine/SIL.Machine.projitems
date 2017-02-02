@@ -38,6 +38,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Clusterers\OpticsXiClusterer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Clusterers\UpgmaClusterer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Corpora\DictionaryTextAlignmentCorpus.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Corpora\FilteredText.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Corpora\IText.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Corpora\ITextAlignmentCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Corpora\ITextCorpus.cs" />

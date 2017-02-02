@@ -11,35 +11,21 @@ namespace SIL.Machine.Translation.Thot
 {
 	public class ThotSmtModel : DisposableBase, IInteractiveSmtModel
 	{
+		private readonly string _cfgFileName;
 		private readonly ThotSingleWordAlignmentModel _singleWordAlignmentModel;
 		private readonly ThotSingleWordAlignmentModel _inverseSingleWordAlignmentModel;
 		private readonly HashSet<ThotSmtEngine> _engines = new HashSet<ThotSmtEngine>();
 
 		public ThotSmtModel(string cfgFileName)
 		{
+			_cfgFileName = cfgFileName;
 			Parameters = new ThotSmtParameters();
 			string cfgDirPath = Path.GetDirectoryName(cfgFileName);
 			foreach (string line in File.ReadAllLines(cfgFileName))
 			{
-				string l = line.Trim();
-				if (l.StartsWith("#"))
-					continue;
-
 				string name, value;
-				int index = l.IndexOf(" ", StringComparison.Ordinal);
-				if (index == -1)
-				{
-					name = l;
-					value = null;
-				}
-				else
-				{
-					name = l.Substring(0, index);
-					value = l.Substring(index + 1).Trim();
-				}
-
-				if (name.StartsWith("-"))
-					name = name.Substring(1);
+				if (!GetConfigParameter(line, out name, out value))
+					continue;
 
 				switch (name)
 				{
@@ -203,10 +189,68 @@ namespace SIL.Machine.Translation.Thot
 				sourceCorpus, targetPreprocessor, targetCorpus, alignmentCorpus);
 			trainer.Train(progress);
 			Parameters = trainer.Parameters;
+			SaveParameters();
 
 			Handle = Thot.LoadSmtModel(TranslationModelFileNamePrefix, LanguageModelFileNamePrefix, Parameters);
 			_singleWordAlignmentModel.Handle = Thot.smtModel_getSingleWordAlignmentModel(Handle);
 			_inverseSingleWordAlignmentModel.Handle = Thot.smtModel_getInverseSingleWordAlignmentModel(Handle);
+		}
+
+		private void SaveParameters()
+		{
+			if (string.IsNullOrEmpty(_cfgFileName))
+				return;
+
+			string[] lines = File.ReadAllLines(_cfgFileName);
+			using (var writer = new StreamWriter(File.Open(_cfgFileName, FileMode.Create)))
+			{
+				bool weightsWritten = false;
+				foreach (string line in lines)
+				{
+					string name, value;
+					if (GetConfigParameter(line, out name, out value) && name == "tmw")
+					{
+						WriteModelWeights(writer);
+						weightsWritten = true;
+					}
+					else
+					{
+						writer.Write($"{line}\n");
+					}
+				}
+
+				if (!weightsWritten)
+					WriteModelWeights(writer);
+			}
+		}
+
+		private void WriteModelWeights(StreamWriter writer)
+		{
+			writer.Write($"-tmw {string.Join(" ", Parameters.ModelWeights.Select(w => w.ToString("0.######")))}\n");
+		}
+
+		private static bool GetConfigParameter(string line, out string name, out string value)
+		{
+			name = null;
+			value = null;
+			string l = line.Trim();
+			if (l.StartsWith("#"))
+				return false;
+
+			int index = l.IndexOf(' ');
+			if (index == -1)
+			{
+				name = l;
+			}
+			else
+			{
+				name = l.Substring(0, index);
+				value = l.Substring(index + 1).Trim();
+			}
+
+			if (name.StartsWith("-"))
+				name = name.Substring(1);
+			return true;
 		}
 
 		internal void RemoveEngine(ThotSmtEngine engine)
@@ -222,6 +266,8 @@ namespace SIL.Machine.Translation.Thot
 
 		protected override void DisposeUnmanagedResources()
 		{
+			_singleWordAlignmentModel.Dispose();
+			_inverseSingleWordAlignmentModel.Dispose();
 			Thot.smtModel_close(Handle);
 		}
 	}

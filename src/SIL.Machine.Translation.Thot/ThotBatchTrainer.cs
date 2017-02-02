@@ -22,7 +22,7 @@ namespace SIL.Machine.Translation.Thot
 		private readonly Func<string, string> _targetPreprocessor;
 		private readonly ParallelTextCorpus _parallelCorpus;
 		private readonly HashSet<int> _tuneCorpusIndices;
-		private readonly ILLWeightTuner _llWeightTuner;
+		private readonly IParameterTuner _modelWeightTuner;
 
 		public ThotBatchTrainer(string tmFileNamePrefix, string lmFileNamePrefix, ThotSmtParameters parameters, Func<string, string> sourcePreprocessor,
 			ITextCorpus sourceCorpus, Func<string, string> targetPreprocessor, ITextCorpus targetCorpus, ITextAlignmentCorpus alignmentCorpus = null)
@@ -33,7 +33,12 @@ namespace SIL.Machine.Translation.Thot
 			_sourcePreprocessor = sourcePreprocessor;
 			_targetPreprocessor = targetPreprocessor;
 			_parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignmentCorpus);
-			_llWeightTuner = new MiraLLWeightTuner {ProgressIncrement = ProgressIncrement};
+			//_modelWeightTuner = new MiraModelWeightTuner {ProgressIncrement = ProgressIncrement};
+			_modelWeightTuner = new SimplexModelWeightTuner
+			{
+				ProgressIncrementInterval = 10,
+				ProgressIncrement = ProgressIncrement
+			};
 			_tuneCorpusIndices = CreateTuneCorpus();
 		}
 
@@ -217,7 +222,7 @@ namespace SIL.Machine.Translation.Thot
 
 		private static void WriteLanguageModelWeightsFile(string lmPrefix, int ngramSize, IEnumerable<double> weights)
 		{
-			File.WriteAllText(lmPrefix + ".weights", string.Format("{0} 3 10 {1}\n", ngramSize, string.Join(" ", weights.Select(w => w.ToString("0.######")))));
+			File.WriteAllText(lmPrefix + ".weights", $"{ngramSize} 3 10 {string.Join(" ", weights.Select(w => w.ToString("0.######")))}\n");
 		}
 
 		private void WriteWordPredictionFile(string lmPrefix)
@@ -385,9 +390,9 @@ namespace SIL.Machine.Translation.Thot
 			{
 				foreach (ParallelTextSegment segment in corpus.Segments.Where((s, i) => !_tuneCorpusIndices.Contains(i) && !s.IsEmpty))
 				{
-					IEnumerable<string> sourceTokens = segment.SourceSegment.Select(sourcePreprocessor);
-					IEnumerable<string> targetTokens = segment.TargetSegment.Select(targetPreprocessor);
-					swAlignModel.AddSegmentPair(sourceTokens, targetTokens, segment.GetAlignmentMatrix(true));
+					string[] sourceTokens = segment.SourceSegment.Select(sourcePreprocessor).ToArray();
+					string[] targetTokens = segment.TargetSegment.Select(targetPreprocessor).ToArray();
+					swAlignModel.AddSegmentPair(sourceTokens, targetTokens, segment.CreateAlignmentMatrix(true));
 				}
 				for (int i = 0; i < 5; i++)
 				{
@@ -411,8 +416,8 @@ namespace SIL.Machine.Translation.Thot
 				{
 					string[] sourceTokens = segment.SourceSegment.Select(sourcePreprocessor).ToArray();
 					string[] targetTokens = segment.TargetSegment.Select(targetPreprocessor).ToArray();
+					WordAlignmentMatrix waMatrix = swAlignModel.GetBestAlignment(sourceTokens, targetTokens, segment.CreateAlignmentMatrix(true));
 
-					WordAlignmentMatrix waMatrix = swAlignModel.GetBestAlignment(sourceTokens, targetTokens);
 					writer.Write("#\n");
 					writer.Write(waMatrix.ToGizaFormat(sourceTokens, targetTokens));
 
@@ -502,11 +507,10 @@ namespace SIL.Machine.Translation.Thot
 			FilterPhraseTableUsingCorpus(phraseTableFileName, tuneSourceCorpus);
 			FilterPhraseTableNBest(phraseTableFileName, 20);
 
-			float[] initialWeights = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0f};
-			IReadOnlyList<float> bestWeights = _llWeightTuner.Tune(tuneTMPrefix, tuneLMPrefix, Parameters, tuneSourceCorpus, tuneTargetCorpus, initialWeights, progress);
-			Parameters = Parameters.Clone();
-			Parameters.ModelWeights = bestWeights;
-			Parameters.Freeze();
+			ThotSmtParameters initialParameters = Parameters.Clone();
+			initialParameters.ModelWeights = new[] {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0f};
+			initialParameters.Freeze();
+			Parameters = _modelWeightTuner.Tune(tuneTMPrefix, tuneLMPrefix, initialParameters, tuneSourceCorpus, tuneTargetCorpus, progress);
 		}
 
 		private static void FilterPhraseTableUsingCorpus(string fileName, IEnumerable<IEnumerable<string>> sourceCorpus)

@@ -15,7 +15,8 @@ namespace SIL.Machine.Translation
 			_scorer = new SegmentScorer(_segmentAligner);
 		}
 
-		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
+		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
+			WordAlignmentMatrix hintMatrix = null)
 		{
 			var paa = new PairwiseAlignmentAlgorithm<IReadOnlyList<string>, int>(_scorer, sourceSegment, targetSegment, GetWordIndices)
 			{

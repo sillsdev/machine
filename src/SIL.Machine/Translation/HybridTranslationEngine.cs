@@ -130,9 +130,6 @@ namespace SIL.Machine.Translation
 		{
 			foreach (HybridInteractiveTranslationSession session in _sessions.ToArray())
 				session.Dispose();
-
-			SmtEngine.Dispose();
-			RuleEngine?.Dispose();
 		}
 	}
 }

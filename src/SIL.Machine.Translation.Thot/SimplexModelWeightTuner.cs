@@ -9,9 +9,9 @@ using SIL.Progress;
 
 namespace SIL.Machine.Translation.Thot
 {
-	public class SimplexLLWeightTuner : ILLWeightTuner
+	public class SimplexModelWeightTuner : IParameterTuner
 	{
-		public SimplexLLWeightTuner()
+		public SimplexModelWeightTuner()
 		{
 			ConvergenceTolerance = 0.001;
 			MaxFunctionEvaluations = 100;
@@ -22,10 +22,10 @@ namespace SIL.Machine.Translation.Thot
 		public double ProgressIncrement { get; set; }
 		public int ProgressIncrementInterval { get; set; }
 
-		public IReadOnlyList<float> Tune(string tmFileNamePrefix, string lmFileNamePrefix, ThotSmtParameters parameters, IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
-			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, IReadOnlyList<float> initialWeights, IProgress progress)
+		public ThotSmtParameters Tune(string tmFileNamePrefix, string lmFileNamePrefix, ThotSmtParameters parameters, IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
+			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, IProgress progress)
 		{
-			float sentLenWeight = initialWeights[7];
+			float sentLenWeight = parameters.ModelWeights[7];
 			int numFuncEvals = 0;
 			Func<Vector, double> evalFunc = weights =>
 			{
@@ -39,8 +39,12 @@ namespace SIL.Machine.Translation.Thot
 				return quality;
 			};
 			var simplex = new NelderMeadSimplex(ConvergenceTolerance, MaxFunctionEvaluations, 1.0) {IsCanceled = () => progress.CancelRequested};
-			MinimizationResult result = simplex.FindMinimum(evalFunc, initialWeights.Select(w => (double) w).Take(7));
-			return result.MinimizingPoint.Select(w => (float) w).Concat(sentLenWeight).ToArray();
+			MinimizationResult result = simplex.FindMinimum(evalFunc, parameters.ModelWeights.Select(w => (double) w).Take(7));
+
+			ThotSmtParameters bestParameters = parameters.Clone();
+			bestParameters.ModelWeights = result.MinimizingPoint.Select(w => (float) w).Concat(sentLenWeight).ToArray();
+			bestParameters.Freeze();
+			return bestParameters;
 		}
 
 		private static double CalculateBleu(string tmFileNamePrefix, string lmFileNamePrefix, ThotSmtParameters parameters, IReadOnlyList<IReadOnlyList<string>> sourceCorpus,

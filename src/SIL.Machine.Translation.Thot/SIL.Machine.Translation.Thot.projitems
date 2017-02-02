@@ -9,9 +9,9 @@
     <Import_RootNamespace>SIL.Machine.Translation.Thot</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)ILLWeightTuner.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)MiraLLWeightTuner.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SimplexLLWeightTuner.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IParameterTuner.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MiraModelWeightTuner.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SimplexModelWeightTuner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Thot.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ThotBatchTrainer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ThotLanguageModel.cs" />

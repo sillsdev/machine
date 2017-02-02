@@ -160,7 +160,7 @@ namespace SIL.Machine.Translation.Thot
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void llWeightUpdater_updateClosedCorpus(IntPtr llWeightUpdaterHandle, IntPtr[] references, IntPtr nblists, IntPtr scoreComps, uint[] nblistLens,
-			double[] weights, uint numSents, uint numWeights);
+			float[] weights, uint numSents, uint numWeights);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void llWeightUpdater_close(IntPtr llWeightUpdaterHandle);

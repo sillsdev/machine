@@ -9,9 +9,9 @@ using SIL.Progress;
 
 namespace SIL.Machine.Translation.Thot
 {
-	public class MiraLLWeightTuner : ILLWeightTuner
+	public class MiraModelWeightTuner : IParameterTuner
 	{
-		public MiraLLWeightTuner()
+		public MiraModelWeightTuner()
 		{
 			MaxIterations = 10;
 			K = 100;
@@ -21,18 +21,18 @@ namespace SIL.Machine.Translation.Thot
 		public int K { get; set; }
 		public int MaxIterations { get; set; }
 
-		public IReadOnlyList<float> Tune(string tmFileNamePrefix, string lmFileNamePrefix, ThotSmtParameters parameters, IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
-			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, IReadOnlyList<float> initialWeights, IProgress progress)
+		public ThotSmtParameters Tune(string tmFileNamePrefix, string lmFileNamePrefix, ThotSmtParameters parameters, IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
+			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, IProgress progress)
 		{
 			IntPtr weightUpdaterHandle = Thot.llWeightUpdater_create();
 			try
 			{
 				var iterQualities = new List<double>();
 				double bestQuality = double.MinValue;
-				float[] bestWeights = null;
+				ThotSmtParameters bestParameters = null;
 				int iter = 1;
 				HashSet<TranslationInfo>[] curNBestLists = null;
-				float[] curWeights = initialWeights.ToArray();
+				float[] curWeights = parameters.ModelWeights.ToArray();
 
 				while (true)
 				{
@@ -45,7 +45,7 @@ namespace SIL.Machine.Translation.Thot
 					if (quality > bestQuality)
 					{
 						bestQuality = quality;
-						bestWeights = curWeights;
+						bestParameters = newParameters;
 					}
 
 					if (iter >= MaxIterations || IsTuningConverged(iterQualities))
@@ -65,12 +65,12 @@ namespace SIL.Machine.Translation.Thot
 
 					iter++;
 
-					if (progress.CancelRequested)
-						return bestWeights;
 					progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
+					if (progress.CancelRequested)
+						break;
 				}
 
-				return bestWeights;
+				return bestParameters;
 			}
 			finally
 			{
@@ -140,7 +140,7 @@ namespace SIL.Machine.Translation.Thot
 			try
 			{
 				Thot.llWeightUpdater_updateClosedCorpus(weightUpdaterHandle, nativeTuneTargetCorpus, nativeNBestLists, nativeScoreComps, nativeNBestListLens,
-					curWeights.Select(w => (double) w).ToArray(), (uint) nbestLists.Length, (uint) curWeights.Length - 1);
+					curWeights, (uint) nbestLists.Length, (uint) curWeights.Length - 1);
 			}
 			finally
 			{

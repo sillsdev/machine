@@ -11,8 +11,6 @@
 
 		public int StartIndex { get; set; }
 
-		public bool IsApproved { get; set; }
-
 		public override string ToString()
 		{
 			return Text;

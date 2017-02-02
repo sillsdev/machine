@@ -9,6 +9,7 @@ using Eto.Forms;
 using GalaSoft.MvvmLight;
 using SIL.Extensions;
 using SIL.Machine.Annotations;
+using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
 using SIL.ObjectModel;
 
@@ -16,10 +17,10 @@ namespace SIL.Machine.Translation.TestApp
 {
 	public class TextViewModel : ViewModelBase, IChangeTracking
 	{
-		private readonly HybridTranslationEngine _engine;
 		private readonly ITokenizer<string, int> _tokenizer;
-		private readonly string _sourceFileName;
+		private readonly string _metadataFileName;
 		private readonly string _targetFileName;
+		private readonly string _alignmentFileName;
 
 		private string _sourceText;
 		private string _targetText;
@@ -32,6 +33,8 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly RelayCommand<object> _applyAllSuggestionsCommand; 
 		private readonly List<Segment> _sourceSegments;
 		private readonly List<Segment> _targetSegments;
+		private readonly HashSet<int> _approvedSegments;
+		private readonly List<Tuple<int, int>[]> _alignments; 
 		private int _currentSegment = -1;
 		private readonly HashSet<int> _paragraphs;
 		private readonly BulkObservableList<SuggestionViewModel> _suggestions;
@@ -48,16 +51,18 @@ namespace SIL.Machine.Translation.TestApp
 		private bool _isTranslating;
 		private HybridInteractiveTranslationSession _curSession;
 
-		public TextViewModel(ITokenizer<string, int> tokenizer, string name, string sourceFileName, string targetFileName, HybridTranslationEngine engine)
+		public TextViewModel(ITokenizer<string, int> tokenizer, string name, string metadataFileName, string sourceFileName, string targetFileName, string alignmentFileName)
 		{
 			Name = name;
-			_sourceFileName = sourceFileName;
+			_metadataFileName = metadataFileName;
 			_targetFileName = targetFileName;
+			_alignmentFileName = alignmentFileName;
 			_tokenizer = tokenizer;
-			_engine = engine;
 
 			_sourceSegments = new List<Segment>();
 			_targetSegments = new List<Segment>();
+			_approvedSegments = new HashSet<int>();
+			_alignments = new List<Tuple<int, int>[]>();
 			_paragraphs = new HashSet<int>();
 			_goToNextSegmentCommand = new RelayCommand<object>(o => GoToNextSegment(), o => CanGoToNextSegment());
 			_goToPrevSegmentCommand = new RelayCommand<object>(o => GoToPrevSegment(), o => CanGoToPrevSegment());
@@ -73,21 +78,23 @@ namespace SIL.Machine.Translation.TestApp
 			_alignedSourceWords = new BulkObservableList<AlignedWordViewModel>();
 			AlignedSourceWords = new ReadOnlyObservableList<AlignedWordViewModel>(_alignedSourceWords);
 
-			LoadSourceTextFile();
+			LoadMetadataFile();
+			LoadTextFile(sourceFileName, _sourceSegments);
 			SourceText = GenerateText(_sourceSegments);
-			LoadTargetTextFile();
-			while (_targetSegments.Count < _sourceSegments.Count)
-				_targetSegments.Add(new Segment());
+			LoadTextFile(_targetFileName, _targetSegments);
 			TargetText = GenerateText(_targetSegments);
+			LoadAlignmentsFile();
 			UpdateUnapprovedTargetSegmentRanges();
 		}
 
 		public TextViewModel(ITokenizer<string, int> tokenizer)
-			: this(tokenizer, null, null, null, null)
+			: this(tokenizer, null, null, null, null, null)
 		{
 		}
 
 		public string Name { get; }
+
+		internal HybridTranslationEngine Engine { get; set; }
 
 		internal double ConfidenceThreshold
 		{
@@ -103,15 +110,32 @@ namespace SIL.Machine.Translation.TestApp
 			}
 		}
 
-		internal void SaveTargetText()
+		internal void Save()
 		{
-			using (var writer = new StreamWriter(_targetFileName))
+			if (!IsChanged)
+				return;
+
+			using (var metadataWriter = new StreamWriter(_metadataFileName))
+			using (var textWriter = new StreamWriter(_targetFileName))
 			{
 				for (int i = 0; i < _targetSegments.Count; i++)
 				{
-					if (_paragraphs.Contains(i))
-						writer.WriteLine();
-					writer.WriteLine("{0}\t{1}", _targetSegments[i].IsApproved ? "1" : "0", _targetSegments[i].Text);
+					metadataWriter.WriteLine("{0}\t{1}", _paragraphs.Contains(i) || i == 0 ? "1" : "0", _approvedSegments.Contains(i) ? "1" : "0");
+					textWriter.WriteLine(_targetSegments[i].Text);
+				}
+			}
+
+			if (!string.IsNullOrEmpty(_alignmentFileName))
+			{
+				using (var alignmentsWriter = new StreamWriter(_alignmentFileName))
+				{
+					foreach (Tuple<int, int>[] alignment in _alignments)
+					{
+						if (alignment != null)
+							alignmentsWriter.WriteLine(string.Join(" ", alignment.Select(t => $"{t.Item1}-{t.Item2}")));
+						else
+							alignmentsWriter.WriteLine();
+					}
 				}
 			}
 		}
@@ -128,8 +152,8 @@ namespace SIL.Machine.Translation.TestApp
 					{
 						if (_sourceSegments.Count > 0)
 						{
-							int unapprovedSegment = _targetSegments.FindIndex(s => !s.IsApproved);
-							MoveSegment(unapprovedSegment == -1 ? 0 : unapprovedSegment);
+							int unapprovedSegment = Enumerable.Range(0, _sourceSegments.Count).FirstOrDefault(i => !_approvedSegments.Contains(i));
+							MoveSegment(unapprovedSegment);
 						}
 					}
 					else
@@ -140,43 +164,66 @@ namespace SIL.Machine.Translation.TestApp
 			}
 		}
 
-		internal IList<Segment> SourceSegments => _sourceSegments;
-		internal IList<Segment> TargetSegments => _targetSegments;
-
-		private void LoadSourceTextFile()
+		internal bool IsApproved(TextSegmentRef segmentRef)
 		{
-			if (string.IsNullOrEmpty(_sourceFileName))
+			return _approvedSegments.Contains(segmentRef.SegmentNumber - 1);
+		}
+
+		private void LoadMetadataFile()
+		{
+			if (string.IsNullOrEmpty(_metadataFileName))
 				return;
 
-			foreach (string line in File.ReadAllLines(_sourceFileName))
+			foreach (string line in File.ReadAllLines(_metadataFileName))
 			{
-				if (line.Length > 0)
-					_sourceSegments.Add(new Segment {Text = line});
-				else
+				if (line == string.Empty)
+					continue;
+
+				int tabIndex = line.IndexOf('\t');
+				if (line.Substring(0, tabIndex) == "1" && _sourceSegments.Count != 0)
 					_paragraphs.Add(_sourceSegments.Count);
+				if (line.Substring(tabIndex + 1) == "1")
+					_approvedSegments.Add(_sourceSegments.Count);
+				_sourceSegments.Add(new Segment());
+				_targetSegments.Add(new Segment());
+				_alignments.Add(null);
 			}
 		}
 
-		private void LoadTargetTextFile()
+		private void LoadTextFile(string fileName, List<Segment> segments)
 		{
-			if (string.IsNullOrEmpty(_targetFileName))
+			if (string.IsNullOrEmpty(fileName))
 				return;
 
-			bool prevLinePara = false;
-			foreach (string line in File.ReadAllLines(_targetFileName))
+			int i = 0;
+			foreach (string line in File.ReadAllLines(fileName))
 			{
-				if (_paragraphs.Contains(_targetSegments.Count) && !prevLinePara)
+				if (i >= segments.Count)
+					break;
+
+				segments[i].Text = line;
+				i++;
+			}
+		}
+
+		private void LoadAlignmentsFile()
+		{
+			if (string.IsNullOrEmpty(_alignmentFileName))
+				return;
+
+			int i = 0;
+			foreach (string line in File.ReadAllLines(_alignmentFileName))
+			{
+				if (i >= _alignments.Count)
+					break;
+
+				string[] tokens = line.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries);
+				_alignments[i] = new Tuple<int, int>[tokens.Length];
+				for (int j = 0; j < tokens.Length; j++)
 				{
-					prevLinePara = true;
-				}
-				else
-				{
-					int tabIndex = line.IndexOf("\t", StringComparison.Ordinal);
-					bool isApproved = line.Substring(0, tabIndex) == "1";
-					string text = line.Substring(tabIndex + 1);
-					_targetSegments.Add(new Segment {Text = text, IsApproved = isApproved});
-					_sourceSegments[_targetSegments.Count - 1].IsApproved = isApproved;
-					prevLinePara = false;
+					string token = tokens[j];
+					int index = token.IndexOf('-');
+					_alignments[i][j] = Tuple.Create(int.Parse(token.Substring(0, index)), int.Parse(token.Substring(index + 1)));
 				}
 			}
 		}
@@ -231,19 +278,25 @@ namespace SIL.Machine.Translation.TestApp
 
 		private bool CanApproveSegment()
 		{
-			return _currentSegment != -1 && !_targetSegments[_currentSegment].IsApproved;
+			return _currentSegment != -1 && !_approvedSegments.Contains(_currentSegment);
 		}
 
 		private void ApproveSegment()
 		{
-			_curSession.Approve();
+			WordAlignmentMatrix matrix = _curSession.Approve();
 			UpdateTargetText();
-			_sourceSegments[_currentSegment].IsApproved = true;
-			_targetSegments[_currentSegment].IsApproved = true;
+			_approvedSegments.Add(_currentSegment);
+			_alignments[_currentSegment] = GetAlignedWords(matrix);
 			UpdateUnapprovedTargetSegmentRanges();
 			UpdateSuggestions();
 			_approveSegmentCommand.UpdateCanExecute();
 			IsChanged = true;
+		}
+
+		private Tuple<int, int>[] GetAlignedWords(WordAlignmentMatrix matrix)
+		{
+			return Enumerable.Range(0, matrix.RowCount).SelectMany(i => Enumerable.Range(0, matrix.ColumnCount), Tuple.Create)
+				.Where(t => matrix[t.Item1, t.Item2] == AlignmentType.Aligned).ToArray();
 		}
 
 		public ICommand SelectSourceSegmentCommand => _selectSourceSegmentCommand;
@@ -298,7 +351,7 @@ namespace SIL.Machine.Translation.TestApp
 		private void StartSegmentTranslation()
 		{
 			_sourceSegmentWords.AddRange(_tokenizer.TokenizeToStrings(_sourceSegments[_currentSegment].Text));
-			_curSession = _engine.TranslateInteractively(_sourceSegmentWords.Select(w => w.ToLowerInvariant()).ToArray());
+			_curSession = Engine.TranslateInteractively(_sourceSegmentWords.Select(w => w.ToLowerInvariant()).ToArray());
 			_isTranslating = true;
 			UpdatePrefix();
 			UpdateSourceSegmentSelection();
@@ -319,7 +372,7 @@ namespace SIL.Machine.Translation.TestApp
 			if (_currentSegment == -1)
 				return;
 
-			if (!_targetSegments[_currentSegment].IsApproved)
+			if (!_approvedSegments.Contains(_currentSegment))
 			{
 				_suggestions.ReplaceAll(_curSession.GetSuggestedWordIndices(_confidenceThreshold)
 					.Select(j => new SuggestionViewModel(this, _curSession.CurrentResult.RecaseTargetWord(_sourceSegmentWords, j))));
@@ -379,8 +432,7 @@ namespace SIL.Machine.Translation.TestApp
 					if (_currentSegment != -1 && TargetSegment.Trim() != _targetSegments[_currentSegment].Text)
 					{
 						_targetSegments[_currentSegment].Text = TargetSegment.Trim();
-						_sourceSegments[_currentSegment].IsApproved = false;
-						_targetSegments[_currentSegment].IsApproved = false;
+						_approvedSegments.Remove(_currentSegment);
 						IsChanged = true;
 					}
 					_approveSegmentCommand.UpdateCanExecute();
@@ -465,7 +517,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void UpdateUnapprovedTargetSegmentRanges()
 		{
-			_unapprovedTargetSegmentRanges.ReplaceAll(_targetSegments.Where(s => !s.IsApproved && !string.IsNullOrEmpty(s.Text))
+			_unapprovedTargetSegmentRanges.ReplaceAll(_targetSegments.Where((s, i) => !_approvedSegments.Contains(i) && !string.IsNullOrEmpty(s.Text))
 				.Select(s => new Range<int>(s.StartIndex, s.StartIndex + s.Text.Length)));
 		}
 

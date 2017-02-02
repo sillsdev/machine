@@ -25,7 +25,7 @@ namespace SIL.Machine.Corpora
 
 		public IEnumerable<Tuple<int, int>> AlignedWords { get; }
 
-		public WordAlignmentMatrix GetAlignmentMatrix(bool isUnknown)
+		public WordAlignmentMatrix CreateAlignmentMatrix(bool isUnknown)
 		{
 			if (AlignedWords == null)
 				return null;

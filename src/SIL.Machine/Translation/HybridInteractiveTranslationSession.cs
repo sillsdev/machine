@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
@@ -59,11 +60,14 @@ namespace SIL.Machine.Translation
 		{
 			CheckDisposed();
 
-			TranslationResult smtResult = _smtSession.SetPrefix(prefix, isLastWordComplete);
-			int prefixCount = prefix.Count;
-			if (!_smtSession.IsLastWordComplete)
-				prefixCount--;
-			_currentResult = _ruleResult == null ? smtResult : smtResult.Merge(prefixCount, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
+			if (!_smtSession.Prefix.SequenceEqual(prefix) || _smtSession.IsLastWordComplete != isLastWordComplete)
+			{
+				TranslationResult smtResult = _smtSession.SetPrefix(prefix, isLastWordComplete);
+				int prefixCount = prefix.Count;
+				if (!_smtSession.IsLastWordComplete)
+					prefixCount--;
+				_currentResult = _ruleResult == null ? smtResult : smtResult.Merge(prefixCount, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
+			}
 			return _currentResult;
 		}
 

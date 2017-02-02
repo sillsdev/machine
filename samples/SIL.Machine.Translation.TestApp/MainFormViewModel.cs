@@ -21,10 +21,13 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly RelayCommand<object> _openProjectCommand;
 		private readonly RelayCommand<object> _saveProjectCommand;
 		private readonly RelayCommand<object> _rebuildProjectCommand; 
-		private HybridTranslationEngine _engine;
+		private HybridTranslationEngine _hybridEngine;
+		private TransferEngine _transferEngine;
 		private ThotSmtModel _smtModel;
+		private IInteractiveSmtEngine _smtEngine;
 		private ITextCorpus _sourceCorpus;
 		private ITextCorpus _targetCorpus;
+		private ITextAlignmentCorpus _alignmentCorpus;
 		private readonly ShapeSpanFactory _spanFactory;
 		private readonly TraceManager _hcTraceManager;
 		private int _confidenceThreshold;
@@ -138,7 +141,7 @@ namespace SIL.Machine.Translation.TestApp
 
 			string configDir = Path.GetDirectoryName(fileName);
 
-			TransferEngine transferEngine = null;
+			_transferEngine = null;
 			if (hcSrcConfig != null && hcTrgConfig != null)
 			{
 				Language srcLang = XmlLanguageLoader.Load(Path.Combine(configDir, hcSrcConfig));
@@ -147,35 +150,51 @@ namespace SIL.Machine.Translation.TestApp
 				Language trgLang = XmlLanguageLoader.Load(Path.Combine(configDir, hcTrgConfig));
 				var trgMorpher = new Morpher(_spanFactory, _hcTraceManager, trgLang);
 
-				transferEngine = new TransferEngine(srcMorpher, new SimpleTransferer(new GlossMorphemeMapper(trgMorpher)), trgMorpher);
+				_transferEngine = new TransferEngine(srcMorpher, new SimpleTransferer(new GlossMorphemeMapper(trgMorpher)), trgMorpher);
 			}
 
 			_smtModel = new ThotSmtModel(Path.Combine(configDir, smtConfig));
+			_smtEngine = _smtModel.CreateInteractiveEngine();
 
-			_engine = new HybridTranslationEngine(_smtModel.CreateInteractiveEngine(), transferEngine);
+			_hybridEngine = new HybridTranslationEngine(_smtEngine, _transferEngine);
 
 			var sourceTexts = new List<IText>();
 			var targetTexts = new List<IText>();
+			var alignmentCollections = new List<ITextAlignmentCollection>();
 			using (_texts.BulkUpdate())
 			{
 				foreach (XElement textElem in projectElem.Elements("Texts").Elements("Text"))
 				{
 					var name = (string) textElem.Attribute("name");
 
-					var srcTextFile = (string) textElem.Element("SourceFile");
-					if (srcTextFile == null)
+					var metadataFileName = (string) textElem.Element("MetadataFile");
+					if (metadataFileName == null)
 						return false;
+					metadataFileName = Path.Combine(configDir, metadataFileName);
 
-					var trgTextFile = (string) textElem.Element("TargetFile");
-					if (trgTextFile == null)
+					var srcTextFileName = (string) textElem.Element("SourceFile");
+					if (srcTextFileName == null)
 						return false;
+					srcTextFileName = Path.Combine(configDir, srcTextFileName);
 
-					var text = new TextViewModel(_tokenizer, name, Path.Combine(configDir, srcTextFile), Path.Combine(configDir, trgTextFile), _engine);
+					var trgTextFileName = (string) textElem.Element("TargetFile");
+					if (trgTextFileName == null)
+						return false;
+					trgTextFileName = Path.Combine(configDir, trgTextFileName);
+
+					var alignmentsFileName = (string) textElem.Element("AlignmentsFile");
+					if (alignmentsFileName != null)
+						alignmentsFileName = Path.Combine(configDir, alignmentsFileName);
+
+					var text = new TextViewModel(_tokenizer, name, metadataFileName, srcTextFileName, trgTextFileName, alignmentsFileName);
 					text.PropertyChanged += TextPropertyChanged;
 					_texts.Add(text);
 
-					sourceTexts.Add(new TextAdapter(text, true, _tokenizer));
-					targetTexts.Add(new TextAdapter(text, false, _tokenizer));
+					Func<TextSegment, bool> segmentFilter = s => text.IsApproved(s.SegmentRef);
+					sourceTexts.Add(new FilteredText(new TextFileText(name, srcTextFileName, _tokenizer), segmentFilter));
+					targetTexts.Add(new FilteredText(new TextFileText(name, trgTextFileName, _tokenizer), segmentFilter));
+					if (alignmentsFileName != null)
+						alignmentCollections.Add(new TextFileTextAlignmentCollection(name, alignmentsFileName));
 				}
 			}
 			if (_texts.Count == 0)
@@ -183,6 +202,7 @@ namespace SIL.Machine.Translation.TestApp
 
 			_sourceCorpus = new DictionaryTextCorpus(sourceTexts);
 			_targetCorpus = new DictionaryTextCorpus(targetTexts);
+			_alignmentCorpus = new DictionaryTextAlignmentCorpus(alignmentCollections);
 
 			CurrentText = _texts[0];
 			AcceptChanges();
@@ -196,7 +216,7 @@ namespace SIL.Machine.Translation.TestApp
 		{
 			_smtModel.Save();
 			foreach (TextViewModel text in _texts)
-				text.SaveTargetText();
+				text.Save();
 			AcceptChanges();
 		}
 
@@ -207,15 +227,25 @@ namespace SIL.Machine.Translation.TestApp
 			CurrentText = new TextViewModel(_tokenizer);
 			_sourceCorpus = null;
 			_targetCorpus = null;
-			if (_engine != null)
+			if (_hybridEngine != null)
 			{
-				_engine.Dispose();
-				_engine = null;
+				_hybridEngine.Dispose();
+				_hybridEngine = null;
+			}
+			if (_smtEngine != null)
+			{
+				_smtEngine.Dispose();
+				_smtEngine = null;
 			}
 			if (_smtModel != null)
 			{
 				_smtModel.Dispose();
 				_smtModel = null;
+			}
+			if (_transferEngine != null)
+			{
+				_transferEngine.Dispose();
+				_transferEngine = null;
 			}
 			_saveProjectCommand.UpdateCanExecute();
 			_rebuildProjectCommand.UpdateCanExecute();
@@ -225,7 +255,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		private bool CanRebuildProject()
 		{
-			return _engine != null;
+			return _hybridEngine != null;
 		}
 
 		private void RebuildProject()
@@ -233,8 +263,14 @@ namespace SIL.Machine.Translation.TestApp
 			_currentText.IsActive = false;
 			if (IsChanged)
 				SaveProject();
+
+			_smtEngine.Dispose();
+			_smtEngine = null;
+			_hybridEngine.Dispose();
+			_hybridEngine = null;
+
 			Func<string, string> preprocess = word => word.ToLowerInvariant();
-			var progressViewModel = new ProgressViewModel(vm => _smtModel.Train(preprocess, _sourceCorpus, preprocess, _targetCorpus, null, vm))
+			var progressViewModel = new ProgressViewModel(vm => _smtModel.Train(preprocess, _sourceCorpus, preprocess, _targetCorpus, _alignmentCorpus, vm))
 			{
 				DisplayName = "Rebuilding..."
 			};
@@ -243,6 +279,11 @@ namespace SIL.Machine.Translation.TestApp
 				progressDialog.DataContext = progressViewModel;
 				progressDialog.ShowModal();
 			}
+
+			_smtEngine = _smtModel.CreateInteractiveEngine();
+			_hybridEngine = new HybridTranslationEngine(_smtEngine, _transferEngine);
+			foreach (TextViewModel text in _texts)
+				text.Engine = _hybridEngine;
 			_currentText.IsActive = true;
 		}
 
