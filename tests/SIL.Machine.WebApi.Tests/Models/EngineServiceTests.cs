@@ -219,14 +219,14 @@ namespace SIL.Machine.WebApi.Tests.Models
 					[3, 3] = AlignmentType.Aligned,
 					[4, 4] = AlignmentType.Aligned
 				});
-			smtEngine.Translate(Arg.Any<IEnumerable<string>>()).Returns(translationResult);
-			smtEngine.GetWordGraph(Arg.Any<IEnumerable<string>>()).Returns(new WordGraph(new[]
+			smtEngine.Translate(Arg.Any<IReadOnlyList<string>>()).Returns(translationResult);
+			smtEngine.GetWordGraph(Arg.Any<IReadOnlyList<string>>()).Returns(new WordGraph(new[]
 				{
 					new WordGraphArc(0, 1, 1.0, "this is".Split(), new WordAlignmentMatrix(2, 2) {[0, 0] = AlignmentType.Aligned, [1, 1] = AlignmentType.Aligned}, new[] {1.0, 1.0}, 0, 1, false),
 					new WordGraphArc(1, 2, 1.0, "a test".Split(), new WordAlignmentMatrix(2, 2) {[0, 0] = AlignmentType.Aligned, [1, 1] = AlignmentType.Aligned}, new[] {1.0, 1.0}, 2, 3, false),
 					new WordGraphArc(2, 3, 1.0, new[] {"."}, new WordAlignmentMatrix(1, 1) {[0, 0] = AlignmentType.Aligned}, new[] {1.0}, 4, 4, false)  
 				}, new[] {3}));
-			smtEngine.GetBestPhraseAlignment(Arg.Any<IEnumerable<string>>(), Arg.Any<IEnumerable<string>>()).Returns(translationResult);
+			smtEngine.GetBestPhraseAlignment(Arg.Any<IReadOnlyList<string>>(), Arg.Any<IReadOnlyList<string>>()).Returns(translationResult);
 			smtModel.CreateInteractiveEngine().Returns(smtEngine);
 			factory.Create(Arg.Any<EngineContext>()).Returns(smtModel);
 			return factory;
@@ -236,7 +236,7 @@ namespace SIL.Machine.WebApi.Tests.Models
 		{
 			var factory = Substitute.For<ITranslationEngineFactory>();
 			var engine = Substitute.For<ITranslationEngine>();
-			engine.Translate(Arg.Any<IEnumerable<string>>()).Returns(new TranslationResult("esto es una prueba .".Split(), "this is a test .".Split(),
+			engine.Translate(Arg.Any<IReadOnlyList<string>>()).Returns(new TranslationResult("esto es una prueba .".Split(), "this is a test .".Split(),
 				new[] {1.0, 1.0, 1.0, 1.0, 1.0}, new[] {TranslationSources.Transfer, TranslationSources.Transfer, TranslationSources.Transfer, TranslationSources.Transfer, TranslationSources.Transfer},
 				new WordAlignmentMatrix(5, 5)
 				{

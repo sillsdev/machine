@@ -15,6 +15,8 @@ namespace SIL.Machine.WebApi.Models
 		private static readonly SpanFactory<int> SpanFactory = new IntegerSpanFactory();
 
 		private IInteractiveSmtModel _smtModel;
+		private IInteractiveSmtEngine _smtEngine;
+		private ITranslationEngine _ruleEngine;
 		private bool _isUpdated;
 
 		public EngineContext(string configDir, string sourceLanguageTag, string targetLanguageTag)
@@ -76,9 +78,11 @@ namespace SIL.Machine.WebApi.Models
 				return;
 
 			_smtModel = smtModelFactory.Create(this);
-			ITranslationEngine ruleEngine = ruleEngineFactory.Create(this);
+			_smtEngine = _smtModel.CreateInteractiveEngine();
 
-			Engine = new HybridTranslationEngine(_smtModel.CreateInteractiveEngine(), ruleEngine);
+			_ruleEngine = ruleEngineFactory.Create(this);
+
+			Engine = new HybridTranslationEngine(_smtEngine, _ruleEngine);
 			IsLoaded = true;
 		}
 
@@ -87,9 +91,19 @@ namespace SIL.Machine.WebApi.Models
 			if (!IsLoaded)
 				return;
 
+			Save();
+
 			Engine.Dispose();
 			Engine = null;
-			Save();
+
+			if (_ruleEngine != null)
+			{
+				_ruleEngine.Dispose();
+				_ruleEngine = null;
+			}
+
+			_smtEngine.Dispose();
+			_smtEngine = null;
 			_smtModel.Dispose();
 			_smtModel = null;
 			IsLoaded = false;

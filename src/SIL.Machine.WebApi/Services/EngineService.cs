@@ -118,7 +118,7 @@ namespace SIL.Machine.WebApi.Services
 					engineContext.Load(_smtModelFactory, _ruleEngineFactory);
 
 				string[] sourceSegment = engineContext.Tokenizer.TokenizeToStrings(segment).ToArray();
-				TranslationResult translationResult = engineContext.Engine.Translate(sourceSegment.Select(w => w.ToLowerInvariant()));
+				TranslationResult translationResult = engineContext.Engine.Translate(sourceSegment.Select(w => w.ToLowerInvariant()).ToArray());
 				result = engineContext.Detokenizer.Detokenize(Enumerable.Range(0, translationResult.TargetSegment.Count)
 					.Select(j => translationResult.RecaseTargetWord(sourceSegment, j)));
 				engineContext.LastUsedTime = DateTime.Now;
@@ -173,9 +173,9 @@ namespace SIL.Machine.WebApi.Services
 				if (!engineContext.IsLoaded)
 					engineContext.Load(_smtModelFactory, _ruleEngineFactory);
 
-				string[] sourceSegment = engineContext.Tokenizer.TokenizeToStrings(segmentPair.SourceSegment).ToArray();
-				string[] targetSegment = engineContext.Tokenizer.TokenizeToStrings(segmentPair.TargetSegment).ToArray();
-				engineContext.Engine.TrainSegment(sourceSegment.Select(s => s.ToLowerInvariant()), targetSegment.Select(s => s.ToLowerInvariant()));
+				string[] sourceSegment = engineContext.Tokenizer.TokenizeToStrings(segmentPair.SourceSegment).Select(s => s.ToLowerInvariant()).ToArray();
+				string[] targetSegment = engineContext.Tokenizer.TokenizeToStrings(segmentPair.TargetSegment).Select(s => s.ToLowerInvariant()).ToArray();
+				engineContext.Engine.TrainSegment(sourceSegment, targetSegment);
 				engineContext.MarkUpdated();
 				engineContext.LastUsedTime = DateTime.Now;
 				return true;
