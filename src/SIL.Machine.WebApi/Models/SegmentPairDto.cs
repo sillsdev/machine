@@ -1,8 +1,10 @@
-﻿namespace SIL.Machine.WebApi.Models
+﻿using System.Collections.Generic;
+
+namespace SIL.Machine.WebApi.Models
 {
 	public class SegmentPairDto
 	{
-		public string SourceSegment { get; set; }
-		public string TargetSegment { get; set; }
+		public IReadOnlyList<string> SourceSegment { get; set; }
+		public IReadOnlyList<string> TargetSegment { get; set; }
 	}
 }

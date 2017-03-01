@@ -5,6 +5,6 @@ namespace SIL.Machine.WebApi.Services
 {
 	public interface ITranslationEngineFactory
 	{
-		ITranslationEngine Create(EngineContext engineContext);
+		ITranslationEngine Create(Engine engine);
 	}
 }

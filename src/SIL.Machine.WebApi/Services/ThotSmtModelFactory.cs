@@ -7,9 +7,9 @@ namespace SIL.Machine.WebApi.Services
 {
 	public class ThotSmtModelFactory : ISmtModelFactory
 	{
-		public IInteractiveSmtModel Create(EngineContext engineContext)
+		public IInteractiveSmtModel Create(Engine engine)
 		{
-			string smtConfigFileName = Path.Combine(engineContext.ConfigDirectory, "smt.cfg");
+			string smtConfigFileName = Path.Combine(engine.ConfigDirectory, "smt.cfg");
 			return new ThotSmtModel(smtConfigFileName);
 		}
 	}

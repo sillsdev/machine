@@ -6,12 +6,22 @@ namespace SIL.Machine.WebApi.Models
 {
 	internal static class ModelsExtensions
 	{
-		public static EngineDto CreateDto(this EngineContext engineContext)
+		public static LanguagePairDto CreateDto(this LanguagePair languagePair)
 		{
-			return new EngineDto
+			return new LanguagePairDto
 			{
-				SourceLanguageTag = engineContext.SourceLanguageTag,
-				TargetLanguageTag = engineContext.TargetLanguageTag
+				SourceLanguageTag = languagePair.SourceLanguageTag,
+				TargetLanguageTag = languagePair.TargetLanguageTag,
+				Projects = languagePair.Projects.Select(p => p.CreateDto()).ToArray()
+			};
+		}
+
+		public static ProjectDto CreateDto(this Project project)
+		{
+			return new ProjectDto
+			{
+				Id = project.Id,
+				IsShared = project.IsShared
 			};
 		}
 
