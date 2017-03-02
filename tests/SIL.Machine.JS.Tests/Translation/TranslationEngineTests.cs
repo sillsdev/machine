@@ -109,7 +109,7 @@ namespace SIL.Machine.JS.Tests.Translation
 			};
 			webClient.Requests.Add(new MockRequest {ResponseText = JSON.Stringify(json)});
 
-			var engine = new TranslationEngine("http://localhost", "es", "en", webClient);
+			var engine = new TranslationEngine("http://localhost", "es", "en", "project1", webClient);
 			engine.TranslateInteractively("Esto es una prueba .".Split(" "), 0.2, session =>
 				{
 					assert.NotEqual(session, null);
@@ -150,7 +150,7 @@ namespace SIL.Machine.JS.Tests.Translation
 			var webClient = new MockWebClient();
 			webClient.Requests.Add(new MockRequest {ErrorStatus = 404});
 
-			var engine = new TranslationEngine("http://localhost", "es", "en", webClient);
+			var engine = new TranslationEngine("http://localhost", "es", "en", "project1", webClient);
 			engine.TranslateInteractively("Esto es una prueba .".Split(" "), 0.2, session =>
 				{
 					assert.Equal(session, null);
@@ -172,7 +172,7 @@ namespace SIL.Machine.JS.Tests.Translation
 			};
 			webClient.Requests.Add(new MockRequest { ResponseText = JSON.Stringify(json) });
 
-			var engine = new TranslationEngine("http://localhost", "es", "en", webClient);
+			var engine = new TranslationEngine("http://localhost", "es", "en", "project1", webClient);
 			engine.TranslateInteractively("Esto es una prueba .".Split(" "), 0.2, session =>
 				{
 					assert.NotEqual(session, null);

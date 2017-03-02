@@ -23,7 +23,7 @@ namespace SIL.Machine.Translation
 			SmtWordGraph = smtWordGraph;
 
 			_wordGraphProcessor = new ErrorCorrectionWordGraphProcessor(_engine.ErrorCorrectionModel, SmtWordGraph);
-			SetPrefix(new string[0], true);
+			UpdatePrefix(new string[0], true);
 		}
 
 		public WordGraph SmtWordGraph { get; }
@@ -50,7 +50,7 @@ namespace SIL.Machine.Translation
 
 		public string[] CurrentSuggestion { get; private set; }
 
-		public string[] SetPrefix(string[] prefix, bool isLastWordComplete)
+		public string[] UpdatePrefix(string[] prefix, bool isLastWordComplete)
 		{
 			Prefix = prefix;
 			IsLastWordComplete = isLastWordComplete;
@@ -86,7 +86,8 @@ namespace SIL.Machine.Translation
 
 		public void Approve(Action<bool> onFinished)
 		{
-			string url = string.Format("{0}/translation/engines/{1}/{2}/actions/train-segment", _engine.BaseUrl, _engine.SourceLanguageTag, _engine.TargetLanguageTag);
+			string url = string.Format("{0}/translation/engines/{1}/{2}/projects/{3}/actions/train-segment", _engine.BaseUrl, _engine.SourceLanguageTag,
+				_engine.TargetLanguageTag, _engine.ProjectId);
 			string body = JSON.Stringify(new {sourceSegment = SourceSegment, targetSegment = Prefix});
 			_engine.WebClient.Send("POST", url, body, "application/json", responseText => onFinished(true), status => onFinished(false));
 		}

@@ -7,29 +7,31 @@ namespace SIL.Machine.Translation
 {
 	public class TranslationEngine
 	{
-		public TranslationEngine(string baseUrl, string sourceLanguageTag, string targetLanguageTag)
-			: this(baseUrl, sourceLanguageTag, targetLanguageTag, new AjaxWebClient())
+		public TranslationEngine(string baseUrl, string sourceLanguageTag, string targetLanguageTag, string projectId)
+			: this(baseUrl, sourceLanguageTag, targetLanguageTag, projectId, new AjaxWebClient())
 		{
 		}
 
-		public TranslationEngine(string baseUrl, string sourceLanguageTag, string targetLanguageTag, IWebClient webClient)
+		public TranslationEngine(string baseUrl, string sourceLanguageTag, string targetLanguageTag, string projectId, IWebClient webClient)
 		{
 			BaseUrl = baseUrl;
 			SourceLanguageTag = sourceLanguageTag;
 			TargetLanguageTag = targetLanguageTag;
+			ProjectId = projectId;
 			WebClient = webClient;
 			ErrorCorrectionModel = new ErrorCorrectionModel();
 		}
 
 		public string SourceLanguageTag { get; }
 		public string TargetLanguageTag { get; }
+		public string ProjectId { get; }
 		public string BaseUrl { get; }
 		internal IWebClient WebClient { get; }
 		internal ErrorCorrectionModel ErrorCorrectionModel { get; }
 
 		public void TranslateInteractively(string[] sourceSegment, double confidenceThreshold, Action<InteractiveTranslationSession> onFinished)
 		{
-			string url = string.Format("{0}/translation/engines/{1}/{2}/actions/interactive-translate", BaseUrl, SourceLanguageTag, TargetLanguageTag);
+			string url = string.Format("{0}/translation/engines/{1}/{2}/projects/{3}/actions/interactive-translate", BaseUrl, SourceLanguageTag, TargetLanguageTag, ProjectId);
 			string body = JSON.Stringify(sourceSegment);
 			WebClient.Send("POST", url, body, "application/json", responseText => onFinished(CreateSession(sourceSegment, confidenceThreshold, JSON.Parse(responseText))),
 				status => onFinished(null));
