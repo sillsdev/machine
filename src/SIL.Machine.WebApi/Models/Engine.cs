@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using SIL.Machine.Translation;
 using SIL.Machine.WebApi.Services;
 using SIL.ObjectModel;
@@ -30,6 +31,12 @@ namespace SIL.Machine.WebApi.Models
 			TargetLanguageTag = targetLanguageTag;
 			_lastUsedTime = DateTime.Now;
 			Projects = new HashSet<Project>();
+
+			if (!Directory.Exists(ConfigDirectory))
+			{
+				Directory.CreateDirectory(ConfigDirectory);
+				_smtModelFactory.InitNewModel(this);
+			}
 		}
 
 		public string ConfigDirectory { get; }

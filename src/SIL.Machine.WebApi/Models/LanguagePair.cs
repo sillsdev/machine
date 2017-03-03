@@ -16,6 +16,6 @@ namespace SIL.Machine.WebApi.Models
 		public string TargetLanguageTag { get; }
 		public string ConfigDirectory { get; }
 		public IKeyedCollection<string, Project> Projects { get; }
-		public Engine Engine { get; set; }
+		public Engine SharedEngine { get; set; }
 	}
 }

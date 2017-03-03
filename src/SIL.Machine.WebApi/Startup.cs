@@ -42,6 +42,7 @@ namespace SIL.Machine.WebApi
 				.AddJsonOptions(a => a.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
 
 			services.Configure<EngineOptions>(Configuration.GetSection("TranslationEngine"));
+			services.Configure<ThotSmtModelOptions>(Configuration.GetSection("ThotSmtModel"));
 			services.Configure<SecurityOptions>(Configuration.GetSection("Security"));
 
 			services.AddSingleton<ISmtModelFactory, ThotSmtModelFactory>();

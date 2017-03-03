@@ -10,8 +10,8 @@ namespace SIL.Machine.WebApi.Services
 	{
 		public ITranslationEngine Create(Engine engine)
 		{
-			string hcSrcConfigFileName = Path.Combine(engine.ConfigDirectory, string.Format("{0}-hc.xml", engine.SourceLanguageTag));
-			string hcTrgConfigFileName = Path.Combine(engine.ConfigDirectory, string.Format("{0}-hc.xml", engine.TargetLanguageTag));
+			string hcSrcConfigFileName = Path.Combine(engine.ConfigDirectory, "src-hc.xml");
+			string hcTrgConfigFileName = Path.Combine(engine.ConfigDirectory, "trg-hc.xml");
 			TransferEngine transferEngine = null;
 			if (File.Exists(hcSrcConfigFileName) && File.Exists(hcTrgConfigFileName))
 			{

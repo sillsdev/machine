@@ -165,14 +165,13 @@ namespace SIL.Machine.WebApi.Services
 							if (project.Engine.Projects.Count == 0)
 							{
 								project.Engine.Dispose();
-								if (project.Engine == languagePair.Engine)
-									languagePair.Engine = null;
+								if (project.Engine == languagePair.SharedEngine)
+									languagePair.SharedEngine = null;
+								if (Directory.Exists(project.Engine.ConfigDirectory))
+									Directory.Delete(project.Engine.ConfigDirectory, true);
 							}
 						}
 
-						string projectDir = Path.Combine(languagePair.ConfigDirectory, projectId);
-						if (Directory.Exists(projectDir))
-							Directory.Delete(projectDir, true);
 						SaveLanguagePairConfig(languagePair);
 						return true;
 					}
@@ -261,7 +260,7 @@ namespace SIL.Machine.WebApi.Services
 				{
 					if (projectId == null)
 					{
-						engine = languagePair.Engine;
+						engine = languagePair.SharedEngine;
 						return true;
 					}
 
@@ -283,26 +282,26 @@ namespace SIL.Machine.WebApi.Services
 			Engine engine;
 			if (isShared)
 			{
-				if (languagePair.Engine == null)
-				{
-					languagePair.Engine = new Engine(_smtModelFactory, _ruleEngineFactory, _options.InactiveEngineTimeout, languagePair.ConfigDirectory,
-						languagePair.SourceLanguageTag, languagePair.TargetLanguageTag);
-				}
-				engine = languagePair.Engine;
+				if (languagePair.SharedEngine == null)
+					languagePair.SharedEngine = CreateEngine(languagePair, Path.Combine(languagePair.ConfigDirectory, "shared-engine"));
+				engine = languagePair.SharedEngine;
 			}
 			else
 			{
 				string projectDir = Path.Combine(languagePair.ConfigDirectory, id);
-				if (!Directory.Exists(projectDir))
-					Directory.CreateDirectory(projectDir);
-				engine = new Engine(_smtModelFactory, _ruleEngineFactory, _options.InactiveEngineTimeout, projectDir,
-					languagePair.SourceLanguageTag, languagePair.TargetLanguageTag);
+				engine = CreateEngine(languagePair, projectDir);
 			}
 
 			var project = new Project(id, isShared, engine);
 			languagePair.Projects.Add(project);
 			engine.Projects.Add(project);
 			return project;
+		}
+
+		private Engine CreateEngine(LanguagePair languagePair, string configDir)
+		{
+			return new Engine(_smtModelFactory, _ruleEngineFactory, _options.InactiveEngineTimeout, configDir,
+				languagePair.SourceLanguageTag, languagePair.TargetLanguageTag);
 		}
 
 		private void SaveLanguagePairConfig(LanguagePair languagePair)

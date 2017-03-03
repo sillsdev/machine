@@ -14,7 +14,8 @@
     "Microsoft.Extensions.Logging.Debug": "1.1.0",
     "Microsoft.Extensions.Options.ConfigurationExtensions": "1.1.0",
     "Microsoft.AspNetCore.Mvc.Cors": "1.1.1",
-    "Microsoft.AspNetCore.HttpOverrides": "1.1.0"
+    "Microsoft.AspNetCore.HttpOverrides": "1.1.0",
+    "SharpZipLib.NETStandard": "0.86.0.1"
   },
 
   "tools": {

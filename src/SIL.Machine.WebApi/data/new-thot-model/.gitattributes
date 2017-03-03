@@ -1,0 +1,5 @@
+lm/* eol=lf
+tm/* eol=lf
+tm/*.hmm_alignd binary
+tm/*.hmm_lexnd binary
+smt.cfg eol=lf

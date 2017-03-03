@@ -6,5 +6,6 @@ namespace SIL.Machine.WebApi.Services
 	public interface ISmtModelFactory
 	{
 		IInteractiveSmtModel Create(Engine engine);
+		void InitNewModel(Engine engine);
 	}
 }
