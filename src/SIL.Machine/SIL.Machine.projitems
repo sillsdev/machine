@@ -13,12 +13,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Annotations\Annotation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Annotations\AnnotationList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Annotations\IAnnotatedData.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Annotations\IntegerSpanFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Annotations\Shape.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Annotations\ShapeNode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Annotations\ShapeSpanFactory.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Annotations\Span.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Annotations\SpanFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Clusterers\Cluster.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Clusterers\ClusterEdge.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Clusterers\ClusterExtensions.cs" />
@@ -199,12 +196,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Statistics\SimpleGoodTuringProbabilityDistribution.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Statistics\StatisticalMethods.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Statistics\WittenBellProbabilityDistribution.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\IDetokenizer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\ITokenizer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\RegexTokenizer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\SimpleStringDetokenizer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\TokenizationExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\WhitespaceTokenizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\EditDistanceSegmentAligner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\Evaluation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\FuzzyEditDistanceSegmentAligner.cs" />

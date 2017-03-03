@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Tokenization

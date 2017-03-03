@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Bridge.Html5;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Translation
 {
@@ -23,7 +24,7 @@ namespace SIL.Machine.Translation
 			SmtWordGraph = smtWordGraph;
 
 			_wordGraphProcessor = new ErrorCorrectionWordGraphProcessor(_engine.ErrorCorrectionModel, SmtWordGraph);
-			UpdatePrefix(new string[0], true);
+			UpdatePrefix("");
 		}
 
 		public WordGraph SmtWordGraph { get; }
@@ -50,10 +51,11 @@ namespace SIL.Machine.Translation
 
 		public string[] CurrentSuggestion { get; private set; }
 
-		public string[] UpdatePrefix(string[] prefix, bool isLastWordComplete)
+		public string[] UpdatePrefix(string prefix)
 		{
-			Prefix = prefix;
-			IsLastWordComplete = isLastWordComplete;
+			Span<int>[] tokenSpans = _engine.TargetTokenizer.Tokenize(prefix).ToArray();
+			Prefix = tokenSpans.Select(s => prefix.Substring(s.Start, s.Length)).ToArray();
+			IsLastWordComplete = tokenSpans.Length == 0 || tokenSpans[tokenSpans.Length - 1].End != prefix.Length;
 
 			TranslationInfo correction = _wordGraphProcessor.Correct(Prefix, IsLastWordComplete, 1).FirstOrDefault();
 			TranslationResult smtResult = CreateResult(correction);

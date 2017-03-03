@@ -17,7 +17,7 @@ namespace SIL.Machine.Translation.TestApp
 {
 	public class MainFormViewModel : ViewModelBase
 	{
-		private readonly RegexTokenizer _tokenizer;
+		private readonly ITokenizer<string, int> _tokenizer;
 		private readonly RelayCommand<object> _openProjectCommand;
 		private readonly RelayCommand<object> _saveProjectCommand;
 		private readonly RelayCommand<object> _rebuildProjectCommand; 
@@ -37,7 +37,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		public MainFormViewModel()
 		{
-			_tokenizer = RegexTokenizer.CreateLatinTokenizer(new IntegerSpanFactory());
+			_tokenizer = new LatinWordTokenizer();
 			_openProjectCommand = new RelayCommand<object>(o => OpenProject());
 			_saveProjectCommand = new RelayCommand<object>(o => SaveProject(), o => IsChanged);
 			_rebuildProjectCommand = new RelayCommand<object>(o => RebuildProject(), o => CanRebuildProject());

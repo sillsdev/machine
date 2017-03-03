@@ -2,8 +2,6 @@ using System.Collections.Generic;
 
 namespace SIL.Machine.DataStructures
 {
-	public enum Direction { LeftToRight, RightToLeft };
-
 	public interface IBidirList<TNode> : ICollection<TNode> where TNode : class, IBidirListNode<TNode>
 	{
 		TNode Begin { get; }

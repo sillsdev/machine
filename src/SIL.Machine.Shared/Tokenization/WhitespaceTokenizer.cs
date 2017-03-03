@@ -1,18 +1,23 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Tokenization
 {
 	public class WhitespaceTokenizer : ITokenizer<string, int>
 	{
-		private readonly SpanFactory<int> _spanFactory;
+		public WhitespaceTokenizer()
+			: this(new IntegerSpanFactory())
+		{
+		}
 
 		public WhitespaceTokenizer(SpanFactory<int> spanFactory)
 		{
-			_spanFactory = spanFactory;
+			SpanFactory = spanFactory;
 		}
 
-		public IEnumerable<Span<int>> Tokenize(string data)
+		protected SpanFactory<int> SpanFactory { get; }
+
+		public virtual IEnumerable<Span<int>> Tokenize(string data)
 		{
 			int startIndex = -1;
 			for (int i = 0; i < data.Length; i++)
@@ -20,7 +25,7 @@ namespace SIL.Machine.Tokenization
 				if (char.IsWhiteSpace(data[i]))
 				{
 					if (startIndex != -1)
-						yield return _spanFactory.Create(startIndex, i);
+						yield return SpanFactory.Create(startIndex, i);
 					startIndex = -1;
 				}
 				else if (startIndex == -1)
@@ -28,6 +33,9 @@ namespace SIL.Machine.Tokenization
 					startIndex = i;
 				}
 			}
+
+			if (startIndex != -1)
+				yield return SpanFactory.Create(startIndex, data.Length);
 		}
 	}
 }

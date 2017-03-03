@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Text;
 using NUnit.Framework;
-using SIL.Machine.Annotations;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
 
@@ -13,7 +12,7 @@ namespace SIL.Machine.Tests.Corpora
 		[Test]
 		public void Segments_NonEmptyText()
 		{
-			var tokenizer = RegexTokenizer.CreateLatinTokenizer(new IntegerSpanFactory());
+			var tokenizer = new LatinWordTokenizer();
 			var corpus = new UsfmTextCorpus(CorporaTestHelpers.UsfmStylesheetPath, Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath, tokenizer);
 
 			IText text = corpus.GetText("41MAT");
@@ -32,7 +31,7 @@ namespace SIL.Machine.Tests.Corpora
 		[Test]
 		public void Segments_EmptyText()
 		{
-			var tokenizer = RegexTokenizer.CreateLatinTokenizer(new IntegerSpanFactory());
+			var tokenizer = new LatinWordTokenizer();
 			var corpus = new UsfmTextCorpus(CorporaTestHelpers.UsfmStylesheetPath, Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath, tokenizer);
 
 			IText text = corpus.GetText("42MRK");

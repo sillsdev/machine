@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Bridge.Html5;
+using SIL.Machine.Tokenization;
 using SIL.Machine.Web;
 
 namespace SIL.Machine.Translation
@@ -8,16 +10,30 @@ namespace SIL.Machine.Translation
 	public class TranslationEngine
 	{
 		public TranslationEngine(string baseUrl, string sourceLanguageTag, string targetLanguageTag, string projectId)
-			: this(baseUrl, sourceLanguageTag, targetLanguageTag, projectId, new AjaxWebClient())
+			: this(baseUrl, sourceLanguageTag, targetLanguageTag, projectId, new LatinWordTokenizer())
 		{
 		}
 
-		public TranslationEngine(string baseUrl, string sourceLanguageTag, string targetLanguageTag, string projectId, IWebClient webClient)
+		public TranslationEngine(string baseUrl, string sourceLanguageTag, string targetLanguageTag, string projectId, ITokenizer<string, int> tokenizer)
+			: this(baseUrl, sourceLanguageTag, targetLanguageTag, projectId, tokenizer, tokenizer)
+		{
+		}
+
+		public TranslationEngine(string baseUrl, string sourceLanguageTag, string targetLanguageTag, string projectId, ITokenizer<string, int> sourceTokenizer,
+			ITokenizer<string, int> targetTokenizer)
+			: this(baseUrl, sourceLanguageTag, targetLanguageTag, projectId, sourceTokenizer, targetTokenizer, new AjaxWebClient())
+		{
+		}
+
+		public TranslationEngine(string baseUrl, string sourceLanguageTag, string targetLanguageTag, string projectId, ITokenizer<string, int> sourceTokenizer,
+			ITokenizer<string, int> targetTokenizer, IWebClient webClient)
 		{
 			BaseUrl = baseUrl;
 			SourceLanguageTag = sourceLanguageTag;
 			TargetLanguageTag = targetLanguageTag;
 			ProjectId = projectId;
+			SourceTokenizer = sourceTokenizer;
+			TargetTokenizer = targetTokenizer;
 			WebClient = webClient;
 			ErrorCorrectionModel = new ErrorCorrectionModel();
 		}
@@ -27,13 +43,16 @@ namespace SIL.Machine.Translation
 		public string ProjectId { get; }
 		public string BaseUrl { get; }
 		internal IWebClient WebClient { get; }
+		internal ITokenizer<string, int> SourceTokenizer { get; }
+		internal ITokenizer<string, int> TargetTokenizer { get; }
 		internal ErrorCorrectionModel ErrorCorrectionModel { get; }
 
-		public void TranslateInteractively(string[] sourceSegment, double confidenceThreshold, Action<InteractiveTranslationSession> onFinished)
+		public void TranslateInteractively(string sourceSegment, double confidenceThreshold, Action<InteractiveTranslationSession> onFinished)
 		{
+			string[] tokens = SourceTokenizer.TokenizeToStrings(sourceSegment).ToArray();
 			string url = string.Format("{0}/translation/engines/{1}/{2}/projects/{3}/actions/interactive-translate", BaseUrl, SourceLanguageTag, TargetLanguageTag, ProjectId);
-			string body = JSON.Stringify(sourceSegment);
-			WebClient.Send("POST", url, body, "application/json", responseText => onFinished(CreateSession(sourceSegment, confidenceThreshold, JSON.Parse(responseText))),
+			string body = JSON.Stringify(tokens);
+			WebClient.Send("POST", url, body, "application/json", responseText => onFinished(CreateSession(tokens, confidenceThreshold, JSON.Parse(responseText))),
 				status => onFinished(null));
 		}
 

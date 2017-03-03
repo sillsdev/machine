@@ -88,6 +88,7 @@
     <Compile Include="Statistics\MaxLikelihoodProbabilityDistributionTests.cs" />
     <Compile Include="Statistics\SimpleGoodTuringProbabilityDistributionTests.cs" />
     <Compile Include="Statistics\WittenBellProbabilityDistributionTests.cs" />
+    <Compile Include="Tokenization\LatinWordTokenizerTests.cs" />
     <Compile Include="Translation\ErrorCorrectionModelTests.cs" />
     <Compile Include="Translation\HybridTranslationEngineTests.cs" />
     <Compile Include="Translation\TestMorpheme.cs" />

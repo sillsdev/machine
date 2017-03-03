@@ -9,6 +9,17 @@
     <Import_RootNamespace>SIL.Machine</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Annotations\IntegerSpanFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Annotations\Span.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Annotations\SpanFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataStructures\Direction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\IDetokenizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\ITokenizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\LatinWordTokenizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\RegexTokenizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\SimpleStringDetokenizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\TokenizationExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\WhitespaceTokenizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\PhraseInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\EcmScoreInfo.cs" />
