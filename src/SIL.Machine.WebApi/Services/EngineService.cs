@@ -306,7 +306,7 @@ namespace SIL.Machine.WebApi.Services
 
 		private void SaveLanguagePairConfig(LanguagePair languagePair)
 		{
-			File.WriteAllText(Path.Combine(languagePair.ConfigDirectory, "config.json"), JsonConvert.SerializeObject(languagePair.CreateDto()));
+			File.WriteAllText(Path.Combine(languagePair.ConfigDirectory, "config.json"), JsonConvert.SerializeObject(languagePair.CreateDto(), Formatting.Indented));
 		}
 
 		protected override void DisposeManagedResources()
