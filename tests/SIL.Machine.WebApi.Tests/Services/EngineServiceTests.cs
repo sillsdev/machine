@@ -5,28 +5,28 @@ using System.Linq;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using NSubstitute;
-using NUnit.Framework;
 using SIL.IO;
 using SIL.Machine.Translation;
 using SIL.Machine.WebApi.Models;
 using SIL.Machine.WebApi.Services;
+using Xunit;
+using FluentAssertions;
 
 namespace SIL.Machine.WebApi.Tests.Services
 {
-	[TestFixture]
 	public class EngineServiceTests
 	{
-		[Test]
+		[Fact]
 		public void GetAllLanguagePairs_NoLanguagePairs_ReturnsEmpty()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
 			{
 				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
-				Assert.That(service.GetAllLanguagePairs(), Is.Empty);
+				service.GetAllLanguagePairs().Should().BeEmpty();
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void GetAllLanguagePairs_HasLanguagePairs_ReturnsLanguagePairDtos()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
@@ -34,22 +34,22 @@ namespace SIL.Machine.WebApi.Tests.Services
 				CreateLanguagePair(tempDir.Path, "es", "en");
 				CreateLanguagePair(tempDir.Path, "fr", "en");
 				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
-				Assert.That(service.GetAllLanguagePairs().Select(e => $"{e.SourceLanguageTag}_{e.TargetLanguageTag}"), Is.EquivalentTo(new[] {"es_en", "fr_en"}));
+				service.GetAllLanguagePairs().Select(e => $"{e.SourceLanguageTag}_{e.TargetLanguageTag}").Should().BeEquivalentTo(new[] { "es_en", "fr_en" });
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void GetAllProjects_LanguagePairDoesNotExist_ReturnsFalse()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
 			{
 				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
 				IReadOnlyList<ProjectDto> projects;
-				Assert.That(service.GetAllProjects("es", "en", out projects), Is.False);
+				service.GetAllProjects("es", "en", out projects).Should().BeFalse();
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void GetAllProjects_LanguagePairExists_ReturnsTrue()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
@@ -57,23 +57,23 @@ namespace SIL.Machine.WebApi.Tests.Services
 				CreateLanguagePair(tempDir.Path, "es", "en");
 				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
 				IReadOnlyList<ProjectDto> projects;
-				Assert.That(service.GetAllProjects("es", "en", out projects), Is.True);
-				Assert.That(projects.Select(p => p.Id), Is.EquivalentTo(new[] {"project1", "project2"}));
+				service.GetAllProjects("es", "en", out projects).Should().BeTrue();
+				projects.Select(p => p.Id).Should().BeEquivalentTo(new[] {"project1", "project2"});
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void TryGetLanguagePair_LanguagePairDoesNotExist_ReturnsFalse()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
 			{
 				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
 				LanguagePairDto languagePair;
-				Assert.That(service.TryGetLanguagePair("es", "en", out languagePair), Is.False);
+				service.TryGetLanguagePair("es", "en", out languagePair).Should().BeFalse();
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void TryGetLanguagePair_LanguagePairExists_ReturnsTrue()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
@@ -81,24 +81,24 @@ namespace SIL.Machine.WebApi.Tests.Services
 				CreateLanguagePair(tempDir.Path, "es", "en");
 				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
 				LanguagePairDto languagePair;
-				Assert.That(service.TryGetLanguagePair("es", "en", out languagePair), Is.True);
-				Assert.That(languagePair.SourceLanguageTag, Is.EqualTo("es"));
-				Assert.That(languagePair.TargetLanguageTag, Is.EqualTo("en"));
+				service.TryGetLanguagePair("es", "en", out languagePair).Should().BeTrue();
+				languagePair.SourceLanguageTag.Should().Be("es");
+				languagePair.TargetLanguageTag.Should().Be("en");
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void TryGetProject_LanguagePairDoesNotExist_ReturnsFalse()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
 			{
 				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
 				ProjectDto project;
-				Assert.That(service.TryGetProject("es", "en", "project1", out project), Is.False);
+				service.TryGetProject("es", "en", "project1", out project).Should().BeFalse();
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void TryGetProject_ProjectDoesNotExist_ReturnsFalse()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
@@ -106,11 +106,11 @@ namespace SIL.Machine.WebApi.Tests.Services
 				CreateLanguagePair(tempDir.Path, "es", "en");
 				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
 				ProjectDto project;
-				Assert.That(service.TryGetProject("es", "en", "project3", out project), Is.False);
+				service.TryGetProject("es", "en", "project3", out project).Should().BeFalse();
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void TryGetProject_ProjectExists_ReturnsTrue()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
@@ -118,23 +118,23 @@ namespace SIL.Machine.WebApi.Tests.Services
 				CreateLanguagePair(tempDir.Path, "es", "en");
 				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
 				ProjectDto project;
-				Assert.That(service.TryGetProject("es", "en", "project1", out project), Is.True);
-				Assert.That(project.Id, Is.EqualTo("project1"));
+				service.TryGetProject("es", "en", "project1", out project).Should().BeTrue();
+				project.Id.Should().Be("project1");
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void TryTranslate_LanguagePairDoesNotExist_ReturnsFalse()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
 			{
 				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
 				IReadOnlyList<string> result;
-				Assert.That(service.TryTranslate("es", "en", null, "Esto es una prueba .".Split(), out result), Is.False);
+				service.TryTranslate("es", "en", null, "Esto es una prueba .".Split(), out result).Should().BeFalse();
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void TryTranslate_SharedEngine_ReturnsTrue()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
@@ -142,12 +142,12 @@ namespace SIL.Machine.WebApi.Tests.Services
 				CreateLanguagePair(tempDir.Path, "es", "en");
 				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
 				IReadOnlyList<string> result;
-				Assert.That(service.TryTranslate("es", "en", null, "Esto es una prueba .".Split(), out result), Is.True);
-				Assert.That(result, Is.EqualTo("This is a test .".Split()));
+				service.TryTranslate("es", "en", null, "Esto es una prueba .".Split(), out result).Should().BeTrue();
+				result.Should().Equal("This is a test .".Split());
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void TryTranslate_ProjectEngine_ReturnsTrue()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
@@ -155,23 +155,23 @@ namespace SIL.Machine.WebApi.Tests.Services
 				CreateLanguagePair(tempDir.Path, "es", "en");
 				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
 				IReadOnlyList<string> result;
-				Assert.That(service.TryTranslate("es", "en", "project2", "Esto es una prueba .".Split(), out result), Is.True);
-				Assert.That(result, Is.EqualTo("This is a test .".Split()));
+				service.TryTranslate("es", "en", "project2", "Esto es una prueba .".Split(), out result).Should().BeTrue();
+				result.Should().Equal("This is a test .".Split());
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void TryInteractiveTranslate_LanguagePairDoesNotExist_ReturnsFalse()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
 			{
 				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
 				InteractiveTranslationResultDto result;
-				Assert.That(service.TryInteractiveTranslate("es", "en", null, "Esto es una prueba .".Split(), out result), Is.False);
+				service.TryInteractiveTranslate("es", "en", null, "Esto es una prueba .".Split(), out result).Should().BeFalse();
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void TryInteractiveTranslate_SharedEngine_ReturnsTrue()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
@@ -179,13 +179,13 @@ namespace SIL.Machine.WebApi.Tests.Services
 				CreateLanguagePair(tempDir.Path, "es", "en");
 				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
 				InteractiveTranslationResultDto result;
-				Assert.That(service.TryInteractiveTranslate("es", "en", null, "Esto es una prueba .".Split(), out result), Is.True);
-				Assert.That(result.RuleResult.Target, Is.EqualTo("This is a test .".Split()));
-				Assert.That(result.WordGraph.Arcs.SelectMany(a => a.Words), Is.EqualTo("This is a test .".Split()));
+				service.TryInteractiveTranslate("es", "en", null, "Esto es una prueba .".Split(), out result).Should().BeTrue();
+				result.RuleResult.Target.Should().Equal("This is a test .".Split());
+				result.WordGraph.Arcs.SelectMany(a => a.Words).Should().Equal("This is a test .".Split());
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void TryInteractiveTranslate_ProjectEngine_ReturnsTrue()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
@@ -193,13 +193,13 @@ namespace SIL.Machine.WebApi.Tests.Services
 				CreateLanguagePair(tempDir.Path, "es", "en");
 				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
 				InteractiveTranslationResultDto result;
-				Assert.That(service.TryInteractiveTranslate("es", "en", "project2", "Esto es una prueba .".Split(), out result), Is.True);
-				Assert.That(result.RuleResult.Target, Is.EqualTo("This is a test .".Split()));
-				Assert.That(result.WordGraph.Arcs.SelectMany(a => a.Words), Is.EqualTo("This is a test .".Split()));
+				service.TryInteractiveTranslate("es", "en", "project2", "Esto es una prueba .".Split(), out result).Should().BeTrue();
+				result.RuleResult.Target.Should().Equal("This is a test .".Split());
+				result.WordGraph.Arcs.SelectMany(a => a.Words).Should().Equal("This is a test .".Split());
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void TryTrainSegment_LanguagePairDoesNotExist_ReturnsFalse()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
@@ -210,11 +210,11 @@ namespace SIL.Machine.WebApi.Tests.Services
 					SourceSegment = "Esto es una prueba .".Split(),
 					TargetSegment = "This is a test .".Split()
 				};
-				Assert.That(service.TryTrainSegment("es", "en", null, pairDto), Is.False);
+				service.TryTrainSegment("es", "en", null, pairDto).Should().BeFalse();
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void TryTrainSegment_SharedEngine_ReturnsTrue()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
@@ -226,11 +226,11 @@ namespace SIL.Machine.WebApi.Tests.Services
 					SourceSegment = "Esto es una prueba .".Split(),
 					TargetSegment = "This is a test .".Split()
 				};
-				Assert.That(service.TryTrainSegment("es", "en", null, pairDto), Is.True);
+				service.TryTrainSegment("es", "en", null, pairDto).Should().BeTrue();
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void TryTrainSegment_ProjectEngine_ReturnsTrue()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
@@ -242,11 +242,11 @@ namespace SIL.Machine.WebApi.Tests.Services
 					SourceSegment = "Esto es una prueba .".Split(),
 					TargetSegment = "This is a test .".Split()
 				};
-				Assert.That(service.TryTrainSegment("es", "en", "project2", pairDto), Is.True);
+				service.TryTrainSegment("es", "en", "project2", pairDto).Should().BeTrue();
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void AddProject_LanguagePairDoesNotExist_ReturnsTrue()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
@@ -254,11 +254,11 @@ namespace SIL.Machine.WebApi.Tests.Services
 				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
 				service.AddProject("es", "en", new ProjectDto {Id = "project1", IsShared = true});
 				ProjectDto project;
-				Assert.That(service.TryGetProject("es", "en", "project1", out project), Is.True);
+				service.TryGetProject("es", "en", "project1", out project).Should().BeTrue();
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void AddProject_LanguagePairExists_ReturnsTrue()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
@@ -267,11 +267,11 @@ namespace SIL.Machine.WebApi.Tests.Services
 				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
 				service.AddProject("es", "en", new ProjectDto {Id = "project3", IsShared = true});
 				ProjectDto project;
-				Assert.That(service.TryGetProject("es", "en", "project3", out project), Is.True);
+				service.TryGetProject("es", "en", "project3", out project).Should().BeTrue();
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void AddProject_ProjectExists_ReturnsTrue()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
@@ -280,41 +280,41 @@ namespace SIL.Machine.WebApi.Tests.Services
 				CreateLanguagePair(tempDir.Path, "es", "en");
 				service.AddProject("es", "en", new ProjectDto {Id = "project1", IsShared = true});
 				ProjectDto project;
-				Assert.That(service.TryGetProject("es", "en", "project1", out project), Is.True);
+				service.TryGetProject("es", "en", "project1", out project).Should().BeTrue();
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void RemoveProject_ProjectExists_ReturnsTrue()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
 			{
 				CreateLanguagePair(tempDir.Path, "es", "en");
 				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
-				Assert.That(service.RemoveProject("es", "en", "project1"), Is.True);
+				service.RemoveProject("es", "en", "project1").Should().BeTrue();
 				ProjectDto project;
-				Assert.That(service.TryGetProject("es", "en", "project1", out project), Is.False);
+				service.TryGetProject("es", "en", "project1", out project).Should().BeFalse();
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void RemoveProject_ProjectDoesNotExist_ReturnsFalse()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
 			{
 				CreateLanguagePair(tempDir.Path, "es", "en");
 				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
-				Assert.That(service.RemoveProject("es", "en", "project3"), Is.False);
+				service.RemoveProject("es", "en", "project3").Should().BeFalse();
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void RemoveProject_LanguagePairDoesNotExist_ReturnsFalse()
 		{
 			using (var tempDir = new TempDirectory("EngineServiceTests"))
 			{
 				var service = new EngineService(CreateOptions(tempDir.Path), CreateSmtModelFactory(), CreateRuleEngineFactory());
-				Assert.That(service.RemoveProject("es", "en", "project2"), Is.False);
+				service.RemoveProject("es", "en", "project2").Should().BeFalse();
 			}
 		}
 

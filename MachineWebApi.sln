@@ -1,21 +1,20 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{CD016E7C-4091-433C-886B-D571CE405276}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EEF72A7-153A-48A7-BAA3-2B3EF93B0534}"
 	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
 		NuGet.config = NuGet.config
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SIL.Machine.WebApi", "src\SIL.Machine.WebApi\SIL.Machine.WebApi.xproj", "{234544DF-9004-40A6-932E-339AF3A3FD3F}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{69406EDE-847E-4D19-BCC8-30D0351D3DDC}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SIL.Machine.WebApi.Tests", "tests\SIL.Machine.WebApi.Tests\SIL.Machine.WebApi.Tests.xproj", "{545911B2-09CA-4C18-88B4-28F470367376}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.WebApi", "src\SIL.Machine.WebApi\SIL.Machine.WebApi.csproj", "{234544DF-9004-40A6-932E-339AF3A3FD3F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.WebApi.Tests", "tests\SIL.Machine.WebApi.Tests\SIL.Machine.WebApi.Tests.csproj", "{545911B2-09CA-4C18-88B4-28F470367376}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
