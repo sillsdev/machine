@@ -11,4 +11,8 @@
     <DefineConstants>$(DefineConstants);NETFX</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
+    <DefineConstants>$(DefineConstants);NETSTD</DefineConstants>
+  </PropertyGroup>
+
 </Project>

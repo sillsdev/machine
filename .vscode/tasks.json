@@ -8,7 +8,7 @@
     "tasks": [
         {
             "taskName": "build",
-            "args": [],
+            "args": ["${workspaceRoot}/src/SIL.Machine.WebApi/SIL.Machine.WebApi.csproj"],
             "isBuildCommand": true,
             "showOutput": "silent",
             "problemMatcher": "$msCompile"
