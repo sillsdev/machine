@@ -294,7 +294,10 @@ namespace SIL.Machine.Translation
 			int alignmentColsToAddCount = _ecm.CorrectPrefix(correction, uncorrectedPrefixLen, prefix, isLastWordComplete);
 
 			foreach (WordGraphArc arc in _wordGraph.GetBestPathFromFinalStateToState(candidate.State).Reverse())
+			{
 				UpdateCorrectionFromArc(correction, arc, false, alignmentColsToAddCount);
+				alignmentColsToAddCount = 0;
+			}
 
 			return correction;
 		}
