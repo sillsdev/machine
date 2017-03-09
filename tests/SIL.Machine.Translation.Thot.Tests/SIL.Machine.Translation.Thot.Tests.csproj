@@ -67,18 +67,21 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\SIL.Core.NETFx\SIL.Core.NETFx.csproj">
-      <Project>{89ff4251-6daf-43f1-869c-0d76de2cdc3f}</Project>
-      <Name>SIL.Core.NETFx</Name>
+    <ProjectReference Include="..\..\src\SIL.Core\SIL.Core.csproj">
+      <Project>{be961952-794a-4a70-8c95-4dfc0e2be105}</Project>
+      <Name>SIL.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\SIL.Machine.NETFx\SIL.Machine.NETFx.csproj">
-      <Project>{06b55abb-059c-4340-adf5-ef0e229fe7aa}</Project>
-      <Name>SIL.Machine.NETFx</Name>
+    <ProjectReference Include="..\..\src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj">
+      <Project>{e633bc22-93a1-4f15-93b1-3af775315c7a}</Project>
+      <Name>SIL.Machine.Translation.Thot</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\SIL.Machine.Translation.Thot.NETFx\SIL.Machine.Translation.Thot.NETFx.csproj">
-      <Project>{93753ce2-1c65-4861-8b08-89b55b142844}</Project>
-      <Name>SIL.Machine.Translation.Thot.NETFx</Name>
+    <ProjectReference Include="..\..\src\SIL.Machine\SIL.Machine.csproj">
+      <Project>{1a20aae4-42e9-484f-a25a-607e8469eca4}</Project>
+      <Name>SIL.Machine</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
