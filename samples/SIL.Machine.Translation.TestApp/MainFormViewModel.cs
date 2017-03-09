@@ -186,7 +186,7 @@ namespace SIL.Machine.Translation.TestApp
 					if (alignmentsFileName != null)
 						alignmentsFileName = Path.Combine(configDir, alignmentsFileName);
 
-					var text = new TextViewModel(_tokenizer, name, metadataFileName, srcTextFileName, trgTextFileName, alignmentsFileName);
+					var text = new TextViewModel(_tokenizer, name, metadataFileName, srcTextFileName, trgTextFileName, alignmentsFileName) {Engine = _hybridEngine};
 					text.PropertyChanged += TextPropertyChanged;
 					_texts.Add(text);
 
