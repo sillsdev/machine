@@ -12,7 +12,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SIL.Machine" Version="1.1.0-build*" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.1.1" />
@@ -28,6 +27,13 @@
     <PackageReference Include="Microsoft.AspNetCore.HttpOverrides" Version="1.1.1" />
     <PackageReference Include="SharpZipLib.NETStandard" Version="0.86.0.1" />
     <PackageReference Include="MongoDB.Driver" Version="2.4.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SIL.Core\SIL.Core.csproj" />
+    <ProjectReference Include="..\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj" />
+    <ProjectReference Include="..\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj" />
+    <ProjectReference Include="..\SIL.Machine\SIL.Machine.csproj" />
   </ItemGroup>
 
 </Project>
