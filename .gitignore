@@ -40,3 +40,5 @@ lib/
 *.lock.json
 .vs
 **/Bridge/output/
+appsettings.user.json
+artifacts
