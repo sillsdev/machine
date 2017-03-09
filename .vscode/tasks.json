@@ -8,10 +8,15 @@
     "tasks": [
         {
             "taskName": "build",
-            "args": [ "**/project.json" ],
+            "args": [],
             "isBuildCommand": true,
             "showOutput": "silent",
             "problemMatcher": "$msCompile"
+        },
+        {
+            "taskName": "test",
+            "args": ["${workspaceRoot}/tests/SIL.Machine.WebApi.Tests/SIL.Machine.WebApi.Tests.csproj"],
+            "isTestCommand": true
         }
     ]
 }

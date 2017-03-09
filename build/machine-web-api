@@ -14,6 +14,7 @@ socket_file="/tmp/$name.sock"
 dir="/var/www/languageforge.org_cat/machine"
 cmd="./SIL.Machine.WebApi --server.urls=http://unix:$socket_file"
 user="www-data"
+ASPNETCORE_ENVIRONMENT="Development"
 
 pid_file="/var/run/$name.pid"
 stdout_log="/var/log/$name.log"
@@ -39,7 +40,7 @@ case "$1" in
             sudo $cmd >> "$stdout_log" 2>> "$stderr_log" &
         else
             sudo -u "$user" rm -f "$socket_file"
-            sudo -u "$user" $cmd >> "$stdout_log" 2>> "$stderr_log" &
+            sudo -u "$user" "ASPNETCORE_ENVIRONMENT=$ASPNETCORE_ENVIRONMENT" $cmd >> "$stdout_log" 2>> "$stderr_log" &
         fi
         echo $! > "$pid_file"
         if ! is_running; then
