@@ -8,19 +8,11 @@
   <Import Project="../AssemblyInfo.props" />
 
   <ItemGroup>
-    <PackageReference Include="BuildDependencyTasks" Version="0.2.9" />
+    <PackageReference Include="Thot" Version="1.0.0-build00045" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SIL.Core\SIL.Core.csproj" />
     <ProjectReference Include="..\SIL.Machine\SIL.Machine.csproj" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <BuildDependencyTasksPath Condition="$(BuildDependencyTasksPath) == '' Or $(BuildDependencyTasksPath) == '*Undefined*'">$(NuGetPackageRoot)\BuildDependencyTasks\0.2.9</BuildDependencyTasksPath>
-  </PropertyGroup>
-  <UsingTask TaskName="Dependencies" AssemblyFile="$(BuildDependencyTasksPath)\BuildDependencyTasks.dll" />
-  <Target Name="DownloadThot" Condition="'$(TargetFramework)'=='netstandard1.3'" AfterTargets="Build">
-    <Dependencies DependencyFile="SIL.Machine.Translation.Thot.dep" UseDependencyFile="true" KeepJobsFile="true" />
-  </Target>
 </Project>
