@@ -18,13 +18,13 @@ tar -cvzf $THOT_NEW_MODEL_FILE -C src/$PROJECT/data/thot-new-model --exclude=".g
 tar -cvzf $PACKAGE_FILE -C $BUILD_OUTPUT/package . > /dev/null || exit 1
 
 sudo rm -rf $DEPLOY_PATH
-sudo mkdir $DEPLOY_PATH || exit 1
+sudo mkdir -p $DEPLOY_PATH || exit 1
 sudo tar -xzf $PACKAGE_FILE -C $DEPLOY_PATH > /dev/null || exit 1
 sudo chown -R root:www-data $DEPLOY_PATH || exit 1
 sudo chmod -R 755 $DEPLOY_PATH || exit 1
 
 if [ ! -d $PROJECTS_PATH ]; then
-    sudo mkdir $PROJECTS_PATH || exit 1
+    sudo mkdir -p $PROJECTS_PATH || exit 1
     sudo chown -R www-data:www-data $PROJECTS_PATH || exit 1
     sudo chmod -R 755 $PROJECTS_PATH || exit 1
 fi
