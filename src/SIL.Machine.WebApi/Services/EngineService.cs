@@ -318,11 +318,11 @@ namespace SIL.Machine.WebApi.Services
 			{
 				lock (languagePair)
 				{
-					foreach (Engine engineContext in languagePair.Projects.Select(p => p.Engine).Distinct())
+					foreach (Engine engine in languagePair.Projects.Select(p => p.Engine).Distinct())
 					{
-						lock (engineContext)
+						lock (engine)
 						{
-							engineContext.Dispose();
+							engine.Dispose();
 						}
 					}
 				}
