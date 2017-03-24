@@ -99,6 +99,15 @@ namespace SIL.Machine.WebApi.Models
 			return result;
 		}
 
+		public IEnumerable<TranslationResult> Translate(int n, IReadOnlyList<string> segment)
+		{
+			Load();
+
+			IEnumerable<TranslationResult> results = _hybridEngine.Translate(n, segment);
+			_lastUsedTime = DateTime.Now;
+			return results;
+		}
+
 		public void InteractiveTranslate(IReadOnlyList<string> segment, out WordGraph smtWordGraph, out TranslationResult ruleResult)
 		{
 			Load();

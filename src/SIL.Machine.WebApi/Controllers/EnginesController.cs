@@ -34,9 +34,18 @@ namespace SIL.Machine.WebApi.Controllers
 		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/actions/translate")]
 		public IActionResult Translate(string sourceLanguageTag, string targetLanguageTag, [FromBody] string[] segment)
 		{
-			IReadOnlyList<string> result;
+			TranslationResultDto result;
 			if (_engineService.TryTranslate(sourceLanguageTag, targetLanguageTag, null, segment, out result))
 				return new ObjectResult(result);
+			return NotFound();
+		}
+
+		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/actions/translate/{n}")]
+		public IActionResult Translate(string sourceLanguageTag, string targetLanguageTag, int n, [FromBody] string[] segment)
+		{
+			IReadOnlyList<TranslationResultDto> results;
+			if (_engineService.TryTranslate(sourceLanguageTag, targetLanguageTag, null, n, segment, out results))
+				return new ObjectResult(results);
 			return NotFound();
 		}
 
@@ -70,9 +79,18 @@ namespace SIL.Machine.WebApi.Controllers
 		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/projects/{projectId}/actions/translate")]
 		public IActionResult Translate(string sourceLanguageTag, string targetLanguageTag, string projectId, [FromBody] string[] segment)
 		{
-			IReadOnlyList<string> result;
+			TranslationResultDto result;
 			if (_engineService.TryTranslate(sourceLanguageTag, targetLanguageTag, projectId, segment, out result))
 				return new ObjectResult(result);
+			return NotFound();
+		}
+
+		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/projects/{projectId}/actions/translate/{n}")]
+		public IActionResult Translate(string sourceLanguageTag, string targetLanguageTag, string projectId, int n, [FromBody] string[] segment)
+		{
+			IReadOnlyList<TranslationResultDto> results;
+			if (_engineService.TryTranslate(sourceLanguageTag, targetLanguageTag, projectId, n, segment, out results))
+				return new ObjectResult(results);
 			return NotFound();
 		}
 

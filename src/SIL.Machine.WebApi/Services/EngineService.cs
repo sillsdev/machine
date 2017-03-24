@@ -180,7 +180,7 @@ namespace SIL.Machine.WebApi.Services
 			return false;
 		}
 
-		public bool TryTranslate(string sourceLanguageTag, string targetLanguageTag, string projectId, IReadOnlyList<string> segment, out IReadOnlyList<string> result)
+		public bool TryTranslate(string sourceLanguageTag, string targetLanguageTag, string projectId, IReadOnlyList<string> segment, out TranslationResultDto result)
 		{
 			Engine engine;
 			if (TryGetEngine(sourceLanguageTag, targetLanguageTag, projectId, out engine))
@@ -194,12 +194,35 @@ namespace SIL.Machine.WebApi.Services
 					}
 
 					TranslationResult tr = engine.Translate(segment.Select(w => w.ToLowerInvariant()).ToArray());
-					result = Enumerable.Range(0, tr.TargetSegment.Count).Select(j => tr.RecaseTargetWord(segment, j)).ToArray();
+					result = tr.CreateDto(segment);
 					return true;
 				}
 			}
 
 			result = null;
+			return false;
+		}
+
+		public bool TryTranslate(string sourceLanguageTag, string targetLanguageTag, string projectId, int n, IReadOnlyList<string> segment, out IReadOnlyList<TranslationResultDto> results)
+		{
+			Engine engine;
+			if (TryGetEngine(sourceLanguageTag, targetLanguageTag, projectId, out engine))
+			{
+				lock (engine)
+				{
+					if (engine.IsDisposed)
+					{
+						results = null;
+						return false;
+					}
+
+					IEnumerable<TranslationResult> trs = engine.Translate(n, segment.Select(w => w.ToLowerInvariant()).ToArray());
+				    results = trs.Select(tr => tr.CreateDto(segment)).ToArray();
+					return true;
+				}
+			}
+
+			results = null;
 			return false;
 		}
 
