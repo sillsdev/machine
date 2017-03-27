@@ -51,9 +51,12 @@ namespace SIL.Machine.Translation.Thot.Tests
 							})
 					});
 
-				var trainer = new ThotBatchTrainer(Path.Combine(tempDir.Path, "tm", "src_trg"), Path.Combine(tempDir.Path, "lm", "trg.lm"), new ThotSmtParameters(),
-					s => s, sourceCorpus, s => s, targetCorpus, alignmentCorpus);
-				trainer.Train();
+				using (var trainer = new ThotBatchTrainer(Path.Combine(tempDir.Path, "tm", "src_trg"), Path.Combine(tempDir.Path, "lm", "trg.lm"), new ThotSmtParameters(),
+					s => s, sourceCorpus, s => s, targetCorpus, alignmentCorpus))
+				{
+					if (trainer.Train())
+						trainer.SaveModels();
+				}
 
 				Assert.That(File.Exists(Path.Combine(tempDir.Path, "lm", "trg.lm")), Is.True);
 				Assert.That(File.Exists(Path.Combine(tempDir.Path, "tm", "src_trg_swm.hmm_alignd")), Is.True);
@@ -72,9 +75,12 @@ namespace SIL.Machine.Translation.Thot.Tests
 				var targetCorpus = new DictionaryTextCorpus(Enumerable.Empty<MemoryText>());
 				var alignmentCorpus = new DictionaryTextAlignmentCorpus(Enumerable.Empty<MemoryTextAlignmentCollection>());
 
-				var trainer = new ThotBatchTrainer(Path.Combine(tempDir.Path, "tm", "src_trg"), Path.Combine(tempDir.Path, "lm", "trg.lm"), new ThotSmtParameters(),
-					s => s, sourceCorpus, s => s, targetCorpus, alignmentCorpus);
-				trainer.Train();
+				using (var trainer = new ThotBatchTrainer(Path.Combine(tempDir.Path, "tm", "src_trg"), Path.Combine(tempDir.Path, "lm", "trg.lm"), new ThotSmtParameters(),
+					s => s, sourceCorpus, s => s, targetCorpus, alignmentCorpus))
+				{
+					if (trainer.Train())
+						trainer.SaveModels();
+				}
 
 				Assert.That(File.Exists(Path.Combine(tempDir.Path, "lm", "trg.lm")), Is.True);
 				Assert.That(File.Exists(Path.Combine(tempDir.Path, "tm", "src_trg_swm.hmm_alignd")), Is.True);

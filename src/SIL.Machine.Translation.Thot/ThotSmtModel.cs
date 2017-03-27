@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using SIL.Machine.Corpora;
 using SIL.ObjectModel;
 using SIL.Progress;
@@ -15,6 +16,8 @@ namespace SIL.Machine.Translation.Thot
 		private readonly ThotSingleWordAlignmentModel _singleWordAlignmentModel;
 		private readonly ThotSingleWordAlignmentModel _inverseSingleWordAlignmentModel;
 		private readonly HashSet<ThotSmtEngine> _engines = new HashSet<ThotSmtEngine>();
+		private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
+		private bool _isTraining;
 
 		public ThotSmtModel(string cfgFileName)
 		{
@@ -116,8 +119,8 @@ namespace SIL.Machine.Translation.Thot
 
 			Handle = Thot.LoadSmtModel(TranslationModelFileNamePrefix, LanguageModelFileNamePrefix, Parameters);
 
-			_singleWordAlignmentModel = new ThotSingleWordAlignmentModel(Thot.smtModel_getSingleWordAlignmentModel(Handle));
-			_inverseSingleWordAlignmentModel = new ThotSingleWordAlignmentModel(Thot.smtModel_getInverseSingleWordAlignmentModel(Handle));
+			_singleWordAlignmentModel = new ThotSingleWordAlignmentModel(this, Thot.smtModel_getSingleWordAlignmentModel(Handle));
+			_inverseSingleWordAlignmentModel = new ThotSingleWordAlignmentModel(this, Thot.smtModel_getInverseSingleWordAlignmentModel(Handle));
 		}
 
 		public ThotSmtModel(string tmFileNamePrefix, string lmFileNamePrefix, ThotSmtParameters parameters)
@@ -129,14 +132,33 @@ namespace SIL.Machine.Translation.Thot
 
 			Handle = Thot.LoadSmtModel(TranslationModelFileNamePrefix, LanguageModelFileNamePrefix, Parameters);
 
-			_singleWordAlignmentModel = new ThotSingleWordAlignmentModel(Thot.smtModel_getSingleWordAlignmentModel(Handle));
-			_inverseSingleWordAlignmentModel = new ThotSingleWordAlignmentModel(Thot.smtModel_getInverseSingleWordAlignmentModel(Handle));
+			_singleWordAlignmentModel = new ThotSingleWordAlignmentModel(this, Thot.smtModel_getSingleWordAlignmentModel(Handle));
+			_inverseSingleWordAlignmentModel = new ThotSingleWordAlignmentModel(this, Thot.smtModel_getInverseSingleWordAlignmentModel(Handle));
 		}
 
 		public string TranslationModelFileNamePrefix { get; }
 		public string LanguageModelFileNamePrefix { get; }
 		public ThotSmtParameters Parameters { get; private set; }
 		internal IntPtr Handle { get; private set; }
+
+		internal bool IsTraining
+		{
+			get
+			{
+				using (ReadLock())
+					return _isTraining;
+			}
+		}
+
+		internal IDisposable ReadLock()
+		{
+			return new ReadLockDisposable(_lock);
+		}
+
+		internal IDisposable WriteLock()
+		{
+			return new WriteLockDisposable(_lock);
+		}
 
 		public ISegmentAligner SingleWordAlignmentModel
 		{
@@ -165,14 +187,21 @@ namespace SIL.Machine.Translation.Thot
 
 		public IInteractiveSmtEngine CreateInteractiveEngine()
 		{
-			var engine = new ThotSmtEngine(this);
-			_engines.Add(engine);
-			return engine;
+			using (WriteLock())
+			{
+				var engine = new ThotSmtEngine(this);
+				_engines.Add(engine);
+				return engine;
+			}
 		}
 
 		public void Save()
 		{
-			Thot.smtModel_saveModels(Handle);
+			using (ReadLock())
+			{
+				if (!_isTraining)
+					Thot.smtModel_saveModels(Handle);
+			}
 		}
 
 		public void Train(Func<string, string> sourcePreprocessor, ITextCorpus sourceCorpus, Func<string, string> targetPreprocessor,
@@ -180,20 +209,42 @@ namespace SIL.Machine.Translation.Thot
 		{
 			CheckDisposed();
 
-			if (_engines.Count > 0)
-				throw new InvalidOperationException("The model cannot be trained while there are active engines open.");
+			using (WriteLock())
+			{
+				_isTraining = true;
+			}
 
-			Thot.smtModel_close(Handle);
+			using (var trainer = new ThotBatchTrainer(TranslationModelFileNamePrefix, LanguageModelFileNamePrefix, Parameters, sourcePreprocessor,
+				sourceCorpus, targetPreprocessor, targetCorpus, alignmentCorpus))
+			{
+				bool res = trainer.Train(progress);
 
-			var trainer = new ThotBatchTrainer(TranslationModelFileNamePrefix, LanguageModelFileNamePrefix, Parameters, sourcePreprocessor,
-				sourceCorpus, targetPreprocessor, targetCorpus, alignmentCorpus);
-			trainer.Train(progress);
-			Parameters = trainer.Parameters;
-			SaveParameters();
+				using (WriteLock())
+				{
+					if (res)
+					{
+						foreach (ThotSmtEngine engine in _engines)
+							engine.CloseHandle();
+						Thot.smtModel_close(Handle);
 
-			Handle = Thot.LoadSmtModel(TranslationModelFileNamePrefix, LanguageModelFileNamePrefix, Parameters);
-			_singleWordAlignmentModel.Handle = Thot.smtModel_getSingleWordAlignmentModel(Handle);
-			_inverseSingleWordAlignmentModel.Handle = Thot.smtModel_getInverseSingleWordAlignmentModel(Handle);
+						Parameters = trainer.Parameters;
+						SaveParameters();
+						trainer.SaveModels();
+
+						Handle = Thot.LoadSmtModel(TranslationModelFileNamePrefix, LanguageModelFileNamePrefix, Parameters);
+						_singleWordAlignmentModel.Handle = Thot.smtModel_getSingleWordAlignmentModel(Handle);
+						_inverseSingleWordAlignmentModel.Handle = Thot.smtModel_getInverseSingleWordAlignmentModel(Handle);
+						foreach (ThotSmtEngine engine in _engines)
+							engine.TrainingCompleted();
+					}
+					else
+					{
+						foreach (ThotSmtEngine engine in _engines)
+							engine.TrainingCancelled();
+					}
+					_isTraining = false;
+				}
+			}
 		}
 
 		private void SaveParameters()
@@ -255,20 +306,57 @@ namespace SIL.Machine.Translation.Thot
 
 		internal void RemoveEngine(ThotSmtEngine engine)
 		{
-			_engines.Remove(engine);
+			using (WriteLock())
+				_engines.Remove(engine);
 		}
 
 		protected override void DisposeManagedResources()
 		{
-			foreach (ThotSmtEngine engine in _engines.ToArray())
-				engine.Dispose();
+			using (WriteLock())
+			{
+				foreach (ThotSmtEngine engine in _engines.ToArray())
+					engine.Dispose();
+			}
+			_singleWordAlignmentModel.Dispose();
+			_inverseSingleWordAlignmentModel.Dispose();
+			_lock.Dispose();
 		}
 
 		protected override void DisposeUnmanagedResources()
 		{
-			_singleWordAlignmentModel.Dispose();
-			_inverseSingleWordAlignmentModel.Dispose();
 			Thot.smtModel_close(Handle);
+		}
+
+		private class ReadLockDisposable : DisposableBase
+		{
+			private readonly ReaderWriterLockSlim _lock;
+
+			public ReadLockDisposable(ReaderWriterLockSlim rwLock)
+			{
+				_lock = rwLock;
+				_lock.EnterReadLock();
+			}
+
+			protected override void DisposeManagedResources()
+			{
+				_lock.ExitReadLock();
+			}
+		}
+
+		private class WriteLockDisposable : DisposableBase
+		{
+			private readonly ReaderWriterLockSlim _lock;
+
+			public WriteLockDisposable(ReaderWriterLockSlim rwLock)
+			{
+				_lock = rwLock;
+				_lock.EnterWriteLock();
+			}
+
+			protected override void DisposeManagedResources()
+			{
+				_lock.ExitWriteLock();
+			}
 		}
 	}
 }

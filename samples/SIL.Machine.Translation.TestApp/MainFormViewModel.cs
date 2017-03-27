@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Xml.Linq;
 using Eto.Forms;
 using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Threading;
 using SIL.Machine.Annotations;
 using SIL.Machine.Corpora;
 using SIL.Machine.Morphology.HermitCrab;
@@ -39,7 +40,7 @@ namespace SIL.Machine.Translation.TestApp
 		{
 			_tokenizer = new LatinWordTokenizer();
 			_openProjectCommand = new RelayCommand<object>(o => OpenProject());
-			_saveProjectCommand = new RelayCommand<object>(o => SaveProject(), o => IsChanged);
+			_saveProjectCommand = new RelayCommand<object>(o => SaveProject(), o => CanSaveProject());
 			_rebuildProjectCommand = new RelayCommand<object>(o => RebuildProject(), o => CanRebuildProject());
 			CloseCommand = new RelayCommand<object>(o => Close(), o => CanClose());
 			_spanFactory = new ShapeSpanFactory();
@@ -48,6 +49,27 @@ namespace SIL.Machine.Translation.TestApp
 			_texts = new BulkObservableList<TextViewModel>();
 			Texts = new ReadOnlyObservableList<TextViewModel>(_texts);
 			_currentText = new TextViewModel(_tokenizer);
+			RebuildProgress = new ProgressViewModel(vm =>
+				{
+					Func<string, string> preprocess = word => word.ToLowerInvariant();
+					_smtModel.Train(preprocess, _sourceCorpus, preprocess, _targetCorpus, _alignmentCorpus, vm);
+				});
+			RebuildProgress.PropertyChanged += RebuildProgressPropertyChanged;
+		}
+
+		private void RebuildProgressPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			switch (e.PropertyName)
+			{
+				case "Executing":
+					if (!((ProgressViewModel) sender).Executing)
+						DispatcherHelper.CheckBeginInvokeOnUI(() =>
+							{
+								_saveProjectCommand.UpdateCanExecute();
+								_rebuildProjectCommand.UpdateCanExecute();
+							});
+					break;
+			}
 		}
 
 		private void TextPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -212,6 +234,11 @@ namespace SIL.Machine.Translation.TestApp
 
 		public ICommand SaveProjectCommand => _saveProjectCommand;
 
+		private bool CanSaveProject()
+		{
+			return _isChanged && !RebuildProgress.Executing;
+		}
+
 		private void SaveProject()
 		{
 			_smtModel.Save();
@@ -260,31 +287,10 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void RebuildProject()
 		{
-			_currentText.IsActive = false;
 			if (IsChanged)
 				SaveProject();
-
-			_smtEngine.Dispose();
-			_smtEngine = null;
-			_hybridEngine.Dispose();
-			_hybridEngine = null;
-
-			Func<string, string> preprocess = word => word.ToLowerInvariant();
-			var progressViewModel = new ProgressViewModel(vm => _smtModel.Train(preprocess, _sourceCorpus, preprocess, _targetCorpus, _alignmentCorpus, vm))
-			{
-				DisplayName = "Rebuilding..."
-			};
-			using (var progressDialog = new ProgressDialog())
-			{
-				progressDialog.DataContext = progressViewModel;
-				progressDialog.ShowModal();
-			}
-
-			_smtEngine = _smtModel.CreateInteractiveEngine();
-			_hybridEngine = new HybridTranslationEngine(_smtEngine, _transferEngine);
-			foreach (TextViewModel text in _texts)
-				text.Engine = _hybridEngine;
-			_currentText.IsActive = true;
+			RebuildProgress.Execute();
+			_saveProjectCommand.UpdateCanExecute();
 		}
 
 		public ICommand CloseCommand { get; }
@@ -346,5 +352,7 @@ namespace SIL.Machine.Translation.TestApp
 				}
 			}
 		}
+
+		public ProgressViewModel RebuildProgress { get; }
 	}
 }

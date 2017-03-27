@@ -8,6 +8,7 @@
   <Import Project="../AssemblyInfo.props" />
 
   <ItemGroup>
+    <PackageReference Include="System.ValueTuple" Version="4.3.0" />
     <PackageReference Include="Thot" Version="1.0.0-build00049" />
   </ItemGroup>
 

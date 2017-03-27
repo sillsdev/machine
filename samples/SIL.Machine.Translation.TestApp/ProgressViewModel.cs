@@ -17,18 +17,11 @@ namespace SIL.Machine.Translation.TestApp
 		private bool _cancelRequested;
 		private readonly RelayCommand<object> _cancelCommand;
 		private bool _indeterminate;
-		private string _displayName;
 
 		public ProgressViewModel(Action<ProgressViewModel> action)
 		{
 			_action = action;
 			_cancelCommand = new RelayCommand<object>(Cancel, CanCancel);
-		}
-
-		public string DisplayName
-		{
-			get { return _displayName; }
-			set { Set(() => DisplayName, ref _displayName, value); }
 		}
 
 		public string Text
@@ -67,6 +60,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		public void Execute()
 		{
+			CancelRequested = false;
 			Task.Factory.StartNew(() =>
 			{
 				((IProgressIndicator) this).Initialize();
@@ -88,7 +82,7 @@ namespace SIL.Machine.Translation.TestApp
 		private void Cancel(object o)
 		{
 			CancelRequested = true;
-			Text = "Canceling...";
+			Text = "Canceling";
 			_cancelCommand.UpdateCanExecute();
 		}
 

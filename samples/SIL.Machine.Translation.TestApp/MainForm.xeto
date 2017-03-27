@@ -17,14 +17,17 @@
 						<StackLayout Orientation="Horizontal" Spacing="5">
 							<Button Command="{Binding OpenProjectCommand}">Open</Button>
 							<Button Command="{Binding SaveProjectCommand}">Save</Button>
-							<Button Command="{Binding RebuildProjectCommand}">Rebuild</Button>
+              <StackLayout>
+                <Button x:Name="RebuildButton" Command="{Binding RebuildProjectCommand}">Rebuild</Button>
+                <local:ProgressView x:Name="RebuildProgressView" Visible="False" />
+              </StackLayout>
 						</StackLayout>
 					</TableCell>
-					<TableCell ScaleWidth="True">
+					<TableCell>
 						<StackLayout HorizontalContentAlignment="Right">
 							<StackLayout Orientation="Horizontal" Spacing="5">
 								<Label>Confidence threshold:</Label>
-								<Slider Orientation="Horizontal" MinValue="0" MaxValue="100" Width="150" Value="{Binding ConfidenceThreshold}" />
+								<Slider Orientation="Horizontal" MinValue="0" MaxValue="100" Width="125" Value="{Binding ConfidenceThreshold}" />
 								<NumericUpDown MinValue="0" MaxValue="100" Increment="5" Width="50" Value="{Binding ConfidenceThreshold}" />
 							</StackLayout>
 						</StackLayout>

@@ -88,8 +88,8 @@
     <Compile Include="Line.cs" />
     <Compile Include="MainFormViewModel.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="ProgressDialog.xeto.cs">
-      <DependentUpon>ProgressDialog.xeto</DependentUpon>
+    <Compile Include="ProgressView.xeto.cs">
+      <DependentUpon>ProgressView.xeto</DependentUpon>
     </Compile>
     <Compile Include="ProgressViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -112,7 +112,7 @@
     <EmbeddedResource Include="TextView.xeto">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="ProgressDialog.xeto">
+    <EmbeddedResource Include="ProgressView.xeto">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>

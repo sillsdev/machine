@@ -9,11 +9,12 @@ using SIL.Extensions;
 using SIL.Machine.Corpora;
 using SIL.Machine.NgramModeling;
 using SIL.Machine.Optimization;
+using SIL.ObjectModel;
 using SIL.Progress;
 
 namespace SIL.Machine.Translation.Thot
 {
-	public class ThotBatchTrainer
+	public class ThotBatchTrainer : DisposableBase
 	{
 		private const int TrainingStepCount = 27;
 		private const double ProgressIncrement = 100.0 / TrainingStepCount;
@@ -23,6 +24,11 @@ namespace SIL.Machine.Translation.Thot
 		private readonly ParallelTextCorpus _parallelCorpus;
 		private readonly HashSet<int> _tuneCorpusIndices;
 		private readonly IParameterTuner _modelWeightTuner;
+		private readonly string _tempDir;
+		private readonly string _lmFilePrefix;
+		private readonly string _tmFilePrefix;
+		private readonly string _trainLMDir;
+		private readonly string _trainTMDir;
 
 		public ThotBatchTrainer(string tmFileNamePrefix, string lmFileNamePrefix, ThotSmtParameters parameters, Func<string, string> sourcePreprocessor,
 			ITextCorpus sourceCorpus, Func<string, string> targetPreprocessor, ITextCorpus targetCorpus, ITextAlignmentCorpus alignmentCorpus = null)
@@ -40,6 +46,17 @@ namespace SIL.Machine.Translation.Thot
 				ProgressIncrement = ProgressIncrement
 			};
 			_tuneCorpusIndices = CreateTuneCorpus();
+
+			do
+			{
+				_tempDir = Path.Combine(Path.GetTempPath(), "thot-train-" + Guid.NewGuid());
+			} while (Directory.Exists(_tempDir));
+			Directory.CreateDirectory(_tempDir);
+
+			_lmFilePrefix = Path.GetFileName(LanguageModelFileNamePrefix);
+			_tmFilePrefix = Path.GetFileName(TranslationModelFileNamePrefix);
+			_trainLMDir = Path.Combine(_tempDir, "lm");
+			_trainTMDir = Path.Combine(_tempDir, "tm_train");
 		}
 
 		public string TranslationModelFileNamePrefix { get; }
@@ -65,99 +82,81 @@ namespace SIL.Machine.Translation.Thot
 				.OrderBy(i => r.Next()).Take(tuneCorpusCount));
 		}
 
-		public void Train(IProgress progress = null)
+		public bool Train(IProgress progress = null)
 		{
 			if (progress == null)
 				progress = new NullProgress();
 
-			string tempDir;
-			do
+			Directory.CreateDirectory(_trainLMDir);
+			string trainLMPrefix = Path.Combine(_trainLMDir, _lmFilePrefix);
+			Directory.CreateDirectory(_trainTMDir);
+			string trainTMPrefix = Path.Combine(_trainTMDir, _tmFilePrefix);
+
+			if (progress.CancelRequested)
+				return false;
+
+			progress.WriteMessage("Training target language model");
+			TrainLanguageModel(trainLMPrefix, 3);
+
+			if (progress.CancelRequested)
+				return false;
+			progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
+
+			TrainTranslationModel(trainTMPrefix, progress);
+
+			if (progress.CancelRequested)
+				return false;
+
+			string tuneTMDir = Path.Combine(_tempDir, "tm_tune");
+			Directory.CreateDirectory(tuneTMDir);
+			string tuneTMPrefix = Path.Combine(tuneTMDir, _tmFilePrefix);
+			CopyFiles(_trainTMDir, tuneTMDir, _tmFilePrefix);
+
+			var tuneSourceCorpus = new List<IReadOnlyList<string>>(_tuneCorpusIndices.Count);
+			var tuneTargetCorpus = new List<IReadOnlyList<string>>(_tuneCorpusIndices.Count);
+			foreach (ParallelTextSegment segment in _parallelCorpus.Segments.Where((s, i) => _tuneCorpusIndices.Contains(i)))
 			{
-				tempDir = Path.Combine(Path.GetTempPath(), "thot-train-" + Guid.NewGuid());
-			} while (Directory.Exists(tempDir));
-			Directory.CreateDirectory(tempDir);
-			try
-			{
-				string lmFilePrefix = Path.GetFileName(LanguageModelFileNamePrefix);
-				Debug.Assert(lmFilePrefix != null);
-				string tmFilePrefix = Path.GetFileName(TranslationModelFileNamePrefix);
-				Debug.Assert(tmFilePrefix != null);
-
-				string lmDir = Path.GetDirectoryName(LanguageModelFileNamePrefix);
-				Debug.Assert(lmDir != null);
-				string tmDir = Path.GetDirectoryName(TranslationModelFileNamePrefix);
-				Debug.Assert(tmDir != null);
-
-				string trainLMDir = Path.Combine(tempDir, "lm");
-				Directory.CreateDirectory(trainLMDir);
-				string trainLMPrefix = Path.Combine(trainLMDir, lmFilePrefix);
-				string trainTMDir = Path.Combine(tempDir, "tm_train");
-				Directory.CreateDirectory(trainTMDir);
-				string trainTMPrefix = Path.Combine(trainTMDir, tmFilePrefix);
-
-				if (progress.CancelRequested)
-					return;
-
-				progress.WriteMessage("Training target language model...");
-				TrainLanguageModel(trainLMPrefix, 3);
-
-				if (progress.CancelRequested)
-					return;
-				progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
-
-				TrainTranslationModel(trainTMPrefix, progress);
-
-				if (progress.CancelRequested)
-					return;
-
-				string tuneTMDir = Path.Combine(tempDir, "tm_tune");
-				Directory.CreateDirectory(tuneTMDir);
-				string tuneTMPrefix = Path.Combine(tuneTMDir, tmFilePrefix);
-				CopyFiles(trainTMDir, tuneTMDir, tmFilePrefix);
-
-				var tuneSourceCorpus = new List<IReadOnlyList<string>>(_tuneCorpusIndices.Count);
-				var tuneTargetCorpus = new List<IReadOnlyList<string>>(_tuneCorpusIndices.Count);
-				foreach (ParallelTextSegment segment in _parallelCorpus.Segments.Where((s, i) => _tuneCorpusIndices.Contains(i)))
-				{
-					tuneSourceCorpus.Add(segment.SourceSegment.Select(w => _sourcePreprocessor(w)).ToArray());
-					tuneTargetCorpus.Add(segment.TargetSegment.Select(w => _targetPreprocessor(w)).ToArray());
-				}
-
-				if (progress.CancelRequested)
-					return;
-
-				progress.WriteMessage("Tuning language model...");
-				TuneLanguageModel(trainLMPrefix, tuneTargetCorpus, 3);
-
-				if (progress.CancelRequested)
-					return;
-				progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
-
-				progress.WriteMessage("Tuning translation model...");
-				TuneTranslationModel(tuneTMPrefix, trainLMPrefix, tuneSourceCorpus, tuneTargetCorpus, progress);
-
-				if (progress.CancelRequested)
-					return;
-				progress.ProgressIndicator.PercentCompleted = ProgressIncrement * (TrainingStepCount - 1);
-
-				progress.WriteMessage("Finalizing...");
-				TrainTuneCorpus(trainTMPrefix, trainLMPrefix, tuneSourceCorpus, tuneTargetCorpus);
-
-				if (progress.CancelRequested)
-					return;
-
-				if (!Directory.Exists(lmDir))
-					Directory.CreateDirectory(lmDir);
-				CopyFiles(trainLMDir, lmDir, lmFilePrefix);
-				if (!Directory.Exists(tmDir))
-					Directory.CreateDirectory(tmDir);
-				CopyFiles(trainTMDir, tmDir, tmFilePrefix);
-				progress.ProgressIndicator.PercentCompleted = 100;
+				tuneSourceCorpus.Add(segment.SourceSegment.Select(w => _sourcePreprocessor(w)).ToArray());
+				tuneTargetCorpus.Add(segment.TargetSegment.Select(w => _targetPreprocessor(w)).ToArray());
 			}
-			finally
-			{
-				Directory.Delete(tempDir, true);
-			}
+
+			if (progress.CancelRequested)
+				return false;
+
+			progress.WriteMessage("Tuning language model");
+			TuneLanguageModel(trainLMPrefix, tuneTargetCorpus, 3);
+
+			if (progress.CancelRequested)
+				return false;
+			progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
+
+			progress.WriteMessage("Tuning translation model");
+			TuneTranslationModel(tuneTMPrefix, trainLMPrefix, tuneSourceCorpus, tuneTargetCorpus, progress);
+
+			if (progress.CancelRequested)
+				return false;
+			progress.ProgressIndicator.PercentCompleted = ProgressIncrement * (TrainingStepCount - 1);
+
+			progress.WriteMessage("Finalizing");
+			TrainTuneCorpus(trainTMPrefix, trainLMPrefix, tuneSourceCorpus, tuneTargetCorpus);
+
+			progress.ProgressIndicator.PercentCompleted = 100;
+			return true;
+		}
+
+		public void SaveModels()
+		{
+			string lmDir = Path.GetDirectoryName(LanguageModelFileNamePrefix);
+			Debug.Assert(lmDir != null);
+			string tmDir = Path.GetDirectoryName(TranslationModelFileNamePrefix);
+			Debug.Assert(tmDir != null);
+
+			if (!Directory.Exists(lmDir))
+				Directory.CreateDirectory(lmDir);
+			CopyFiles(_trainLMDir, lmDir, _lmFilePrefix);
+			if (!Directory.Exists(tmDir))
+				Directory.CreateDirectory(tmDir);
+			CopyFiles(_trainTMDir, tmDir, _tmFilePrefix);
 		}
 
 		private static void CopyFiles(string srcDir, string destDir, string filePrefix)
@@ -251,21 +250,21 @@ namespace SIL.Machine.Translation.Thot
 			if (progress.CancelRequested)
 				return;
 
-			progress.WriteMessage("Merging alignments...");
+			progress.WriteMessage("Merging alignments");
 			Thot.giza_symmetr1(swmPrefix + ".bestal", invswmPrefix + ".bestal", tmPrefix + ".A3.final", true);
 
 			if (progress.CancelRequested)
 				return;
 			progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
 
-			progress.WriteMessage("Generating phrase table...");
+			progress.WriteMessage("Generating phrase table");
 			Thot.phraseModel_generate(tmPrefix + ".A3.final", 10, tmPrefix + ".ttable");
 
 			if (progress.CancelRequested)
 				return;
 			progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
 
-			progress.WriteMessage("Filtering phrase table...");
+			progress.WriteMessage("Filtering phrase table");
 			FilterPhraseTableNBest(tmPrefix + ".ttable", 20);
 
 			File.WriteAllText(tmPrefix + ".lambda", "0.7 0.7");
@@ -284,7 +283,7 @@ namespace SIL.Machine.Translation.Thot
 			if (progress.CancelRequested)
 				return;
 
-			progress.WriteMessage("Training {0} single word model...", name);
+			progress.WriteMessage("Training {0} single word model", name);
 			TrainSingleWordAlignmentModel(swmPrefix, sourcePreprocessor, targetPreprocessor, corpus, progress);
 
 			if (progress.CancelRequested)
@@ -295,7 +294,7 @@ namespace SIL.Machine.Translation.Thot
 			if (progress.CancelRequested)
 				return;
 
-			progress.WriteMessage("Generating best {0} alignments...", name);
+			progress.WriteMessage("Generating best {0} alignments", name);
 			GenerateBestAlignments(swmPrefix, swmPrefix + ".bestal", sourcePreprocessor, targetPreprocessor, corpus, progress);
 
 			if (progress.CancelRequested)
@@ -564,6 +563,11 @@ namespace SIL.Machine.Translation.Thot
 				for (int i = 0; i < tuneSourceCorpus.Count; i++)
 					engine.TrainSegment(tuneSourceCorpus[i], tuneTargetCorpus[i]);
 			}
+		}
+
+		protected override void DisposeManagedResources()
+		{
+			Directory.Delete(_tempDir, true);
 		}
 	}
 }
