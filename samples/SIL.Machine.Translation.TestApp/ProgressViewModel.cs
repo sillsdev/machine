@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Eto.Forms;
 using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Threading;
 using SIL.Progress;
 
 namespace SIL.Machine.Translation.TestApp
@@ -26,32 +27,37 @@ namespace SIL.Machine.Translation.TestApp
 
 		public string Text
 		{
-			get { return _text; }
+			get => _text;
 			set { Set(() => Text, ref _text, value); }
 		}
 
 		public double PercentCompleted
 		{
-			get { return _percentCompleted; }
-			set { Set(() => PercentCompleted, ref _percentCompleted, value); }
+			get => _percentCompleted;
+			set => Set(nameof(PercentCompleted), ref _percentCompleted, value);
 		}
 
 		public bool Executing
 		{
-			get { return _executing; }
-			set { Set(() => Executing, ref _executing, value); }
+			get => _executing;
+			set => Set(nameof(Executing), ref _executing, value);
 		}
 
 		public bool IsIndeterminate
 		{
-			get { return _indeterminate; }
-			set { Set(() => IsIndeterminate, ref _indeterminate, value); }
+			get => _indeterminate;
+			set => Set(nameof(IsIndeterminate), ref _indeterminate, value);
 		}
 
 		public bool CancelRequested
 		{
-			get { return _cancelRequested; }
-			set { Set(() => CancelRequested, ref _cancelRequested, value); }
+			get => _cancelRequested;
+			set => Set(nameof(CancelRequested), ref _cancelRequested, value);
+		}
+
+		public override void RaisePropertyChanged(string propertyName = null)
+		{
+			DispatcherHelper.CheckBeginInvokeOnUI(() => base.RaisePropertyChanged(propertyName));
 		}
 
 		public Exception Exception { get; private set; }
@@ -131,8 +137,8 @@ namespace SIL.Machine.Translation.TestApp
 
 		IProgressIndicator IProgress.ProgressIndicator
 		{
-			get { return this; }
-			set { throw new NotSupportedException(); }
+			get => this;
+			set => throw new NotSupportedException();
 		}
 
 		void IProgressIndicator.Finish()

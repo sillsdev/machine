@@ -406,28 +406,28 @@ namespace SIL.Machine.Translation.TestApp
 
 		public string SourceText
 		{
-			get { return _sourceText; }
-			private set { Set(() => SourceText, ref _sourceText, value); }
+			get => _sourceText;
+			private set => Set(nameof(SourceText), ref _sourceText, value);
 		}
 
 		public string TargetText
 		{
-			get { return _targetText; }
-			private set { Set(() => TargetText, ref _targetText, value); }
+			get => _targetText;
+			private set => Set(nameof(TargetText), ref _targetText, value);
 		}
 
 		public string SourceSegment
 		{
-			get { return _sourceSegment; }
-			private set { Set(() => SourceSegment, ref _sourceSegment, value); }
+			get => _sourceSegment;
+			private set => Set(nameof(SourceSegment), ref _sourceSegment, value);
 		}
 
 		public string TargetSegment
 		{
-			get { return _targetSegment; }
+			get => _targetSegment;
 			set
 			{
-				if (Set(() => TargetSegment, ref _targetSegment, value))
+				if (Set(nameof(TargetSegment), ref _targetSegment, value))
 				{
 					if (_currentSegment != -1 && TargetSegment.Trim() != _targetSegments[_currentSegment].Text)
 					{
@@ -443,10 +443,10 @@ namespace SIL.Machine.Translation.TestApp
 
 		public int CurrentTargetSegmentIndex
 		{
-			get { return _currentTargetSegmentIndex; }
+			get => _currentTargetSegmentIndex;
 			set
 			{
-				if (Set(() => CurrentTargetSegmentIndex, ref _currentTargetSegmentIndex, value))
+				if (Set(nameof(CurrentTargetSegmentIndex), ref _currentTargetSegmentIndex, value))
 					UpdateSourceSegmentSelection();
 			}
 		}
@@ -488,14 +488,14 @@ namespace SIL.Machine.Translation.TestApp
 
 		public Range<int>? CurrentSourceSegmentRange
 		{
-			get { return _currentSourceSegmentRange; }
-			private set { Set(() => CurrentSourceSegmentRange, ref _currentSourceSegmentRange, value); }
+			get => _currentSourceSegmentRange;
+			private set => Set(nameof(CurrentSourceSegmentRange), ref _currentSourceSegmentRange, value);
 		}
 
 		public Range<int>? CurrentTargetSegmentRange
 		{
-			get { return _currentTargetSegmentRange; }
-			private set { Set(() => CurrentTargetSegmentRange, ref _currentTargetSegmentRange, value); }
+			get => _currentTargetSegmentRange;
+			private set => Set(nameof(CurrentTargetSegmentRange), ref _currentTargetSegmentRange, value);
 		}
 
 		public ReadOnlyObservableList<SuggestionViewModel> Suggestions { get; }
@@ -528,8 +528,8 @@ namespace SIL.Machine.Translation.TestApp
 
 		public bool IsChanged
 		{
-			get { return _isChanged; }
-			private set { Set(() => IsChanged, ref _isChanged, value); }
+			get => _isChanged;
+			private set => Set(nameof(IsChanged), ref _isChanged, value);
 		}
 
 		public override string ToString()

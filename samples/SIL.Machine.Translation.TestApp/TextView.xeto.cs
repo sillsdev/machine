@@ -85,11 +85,11 @@ namespace SIL.Machine.Translation.TestApp
 
 			switch (e.PropertyName)
 			{
-				case "CurrentSourceSegmentRange":
+				case nameof(TextViewModel.CurrentSourceSegmentRange):
 					UpdateTextForeground(SourceTextArea, vm.CurrentSourceSegmentRange);
 					break;
 
-				case "CurrentTargetSegmentRange":
+				case nameof(TextViewModel.CurrentTargetSegmentRange):
 					UpdateTextForeground(TargetTextArea, vm.CurrentTargetSegmentRange);
 					break;
 			}
@@ -210,10 +210,7 @@ namespace SIL.Machine.Translation.TestApp
 		protected void TargetSegmentKeyDown(object sender, KeyEventArgs e)
 		{
 			var vm = DataContext as TextViewModel;
-			if (vm == null)
-				return;
-
-			if (vm.Suggestions.Count > 0 && e.Control)
+			if (vm?.Suggestions.Count > 0 && e.Control)
 			{
 				if (e.Key == Keys.A)
 				{

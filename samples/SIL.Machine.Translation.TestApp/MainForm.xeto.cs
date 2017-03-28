@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel;
 using Eto.Forms;
 using Eto.Serialization.Xaml;
-using GalaSoft.MvvmLight.Threading;
 
 namespace SIL.Machine.Translation.TestApp
 {
@@ -14,7 +13,7 @@ namespace SIL.Machine.Translation.TestApp
 			var vm = (MainFormViewModel) DataContext;
 			TextView.Bind(tv => tv.DataContext, vm, m => m.CurrentText);
 			RebuildProgressView.Bind(rpv => rpv.DataContext, vm, m => m.RebuildProgress);
-			vm.RebuildProgress.PropertyChanged += RebuildProgressViewModelPropertyChanged;
+			RebuildButton.Bind(c => c.Visible, vm.RebuildProgress, Binding.Property((ProgressViewModel m) => m.Executing).Convert(b => !b));
 		}
 
 		protected TextView TextView { get; set; }
@@ -28,31 +27,6 @@ namespace SIL.Machine.Translation.TestApp
 			if (!e.Cancel)
 				vm.CloseCommand.Execute(null);
 			base.OnClosing(e);
-		}
-
-		private void RebuildProgressViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			switch (e.PropertyName)
-			{
-				case "Executing":
-					if (((ProgressViewModel) sender).Executing)
-					{
-						DispatcherHelper.CheckBeginInvokeOnUI(() =>
-						{
-							RebuildProgressView.Visible = true;
-							RebuildButton.Visible = false;
-						});
-					}
-					else
-					{
-						DispatcherHelper.CheckBeginInvokeOnUI(() =>
-						{
-							RebuildProgressView.Visible = false;
-							RebuildButton.Visible = true;
-						});
-					}
-					break;
-			}
 		}
 	}
 }

@@ -19,7 +19,7 @@
 							<Button Command="{Binding SaveProjectCommand}">Save</Button>
               <StackLayout>
                 <Button x:Name="RebuildButton" Command="{Binding RebuildProjectCommand}">Rebuild</Button>
-                <local:ProgressView x:Name="RebuildProgressView" Visible="False" />
+                <local:ProgressView x:Name="RebuildProgressView" Visible="{Binding Executing}" />
               </StackLayout>
 						</StackLayout>
 					</TableCell>

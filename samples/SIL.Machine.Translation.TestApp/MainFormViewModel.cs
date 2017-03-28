@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Windows.Input;
 using System.Xml.Linq;
@@ -61,12 +62,13 @@ namespace SIL.Machine.Translation.TestApp
 		{
 			switch (e.PropertyName)
 			{
-				case "Executing":
-					if (!((ProgressViewModel) sender).Executing)
+				case nameof(RebuildProgress.Executing):
+					if (!RebuildProgress.Executing)
 						DispatcherHelper.CheckBeginInvokeOnUI(() =>
 							{
 								_saveProjectCommand.UpdateCanExecute();
-								_rebuildProjectCommand.UpdateCanExecute();
+								if (RebuildProgress.Exception != null)
+									throw RebuildProgress.Exception;
 							});
 					break;
 			}
@@ -76,7 +78,7 @@ namespace SIL.Machine.Translation.TestApp
 		{
 			switch (e.PropertyName)
 			{
-				case "IsChanged":
+				case nameof(TextViewModel.IsChanged):
 					if (((TextViewModel) sender).IsChanged)
 						IsChanged = true;
 					break;
@@ -162,6 +164,7 @@ namespace SIL.Machine.Translation.TestApp
 			var hcTrgConfig = (string) engineElem.Element("TargetGeneratorConfig");
 
 			string configDir = Path.GetDirectoryName(fileName);
+			Debug.Assert(configDir != null);
 
 			_transferEngine = null;
 			if (hcSrcConfig != null && hcTrgConfig != null)
@@ -324,10 +327,10 @@ namespace SIL.Machine.Translation.TestApp
 
 		public int ConfidenceThreshold
 		{
-			get { return _confidenceThreshold; }
+			get => _confidenceThreshold;
 			set
 			{
-				if (Set(() => ConfidenceThreshold, ref _confidenceThreshold, value))
+				if (Set(nameof(ConfidenceThreshold), ref _confidenceThreshold, value))
 					_currentText.ConfidenceThreshold = _confidenceThreshold / 100.0;
 			}
 		}
@@ -336,11 +339,11 @@ namespace SIL.Machine.Translation.TestApp
 
 		public TextViewModel CurrentText
 		{
-			get { return _currentText; }
+			get => _currentText;
 			set
 			{
 				TextViewModel oldText = _currentText;
-				if (Set(() => CurrentText, ref _currentText, value))
+				if (Set(nameof(CurrentText), ref _currentText, value))
 				{
 					if (oldText != null)
 						oldText.IsActive = false;
