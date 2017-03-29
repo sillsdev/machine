@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using SIL.Machine.Optimization;
 using SIL.Extensions;
-using SIL.Progress;
 
 namespace SIL.Machine.Translation.Thot
 {
@@ -19,11 +18,10 @@ namespace SIL.Machine.Translation.Thot
 
 		public double ConvergenceTolerance { get; set; }
 		public int MaxFunctionEvaluations { get; set; }
-		public double ProgressIncrement { get; set; }
 		public int ProgressIncrementInterval { get; set; }
 
 		public ThotSmtParameters Tune(string tmFileNamePrefix, string lmFileNamePrefix, ThotSmtParameters parameters, IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
-			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, IProgress progress)
+			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, ThotTrainProgressReporter reporter)
 		{
 			float sentLenWeight = parameters.ModelWeights[7];
 			int numFuncEvals = 0;
@@ -34,11 +32,11 @@ namespace SIL.Machine.Translation.Thot
 				newParameters.Freeze();
 				double quality = CalculateBleu(tmFileNamePrefix, lmFileNamePrefix, newParameters, tuneSourceCorpus, tuneTargetCorpus);
 				numFuncEvals++;
-				if (ProgressIncrementInterval > 0 && numFuncEvals % ProgressIncrementInterval == 0)
-					progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
+				if (numFuncEvals < MaxFunctionEvaluations && ProgressIncrementInterval > 0 && numFuncEvals % ProgressIncrementInterval == 0)
+					reporter.Step();
 				return quality;
 			};
-			var simplex = new NelderMeadSimplex(ConvergenceTolerance, MaxFunctionEvaluations, 1.0) {IsCanceled = () => progress.CancelRequested};
+			var simplex = new NelderMeadSimplex(ConvergenceTolerance, MaxFunctionEvaluations, 1.0) {IsCanceled = () => reporter.IsCanceled};
 			MinimizationResult result = simplex.FindMinimum(evalFunc, parameters.ModelWeights.Select(w => (double) w).Take(7));
 
 			ThotSmtParameters bestParameters = parameters.Clone();

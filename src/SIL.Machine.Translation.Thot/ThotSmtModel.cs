@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading;
 using SIL.Machine.Corpora;
 using SIL.ObjectModel;
-using SIL.Progress;
 
 namespace SIL.Machine.Translation.Thot
 {
@@ -198,14 +197,11 @@ namespace SIL.Machine.Translation.Thot
 		public void Save()
 		{
 			using (ReadLock())
-			{
-				if (!_isTraining)
-					Thot.smtModel_saveModels(Handle);
-			}
+				Thot.smtModel_saveModels(Handle);
 		}
 
 		public void Train(Func<string, string> sourcePreprocessor, ITextCorpus sourceCorpus, Func<string, string> targetPreprocessor,
-			ITextCorpus targetCorpus, ITextAlignmentCorpus alignmentCorpus = null, IProgress progress = null)
+			ITextCorpus targetCorpus, ITextAlignmentCorpus alignmentCorpus = null, IProgress<SmtTrainProgress> progress = null, Func<bool> canceled = null)
 		{
 			CheckDisposed();
 
@@ -217,8 +213,7 @@ namespace SIL.Machine.Translation.Thot
 			using (var trainer = new ThotBatchTrainer(TranslationModelFileNamePrefix, LanguageModelFileNamePrefix, Parameters, sourcePreprocessor,
 				sourceCorpus, targetPreprocessor, targetCorpus, alignmentCorpus))
 			{
-				bool res = trainer.Train(progress);
-
+				bool res = trainer.Train(progress, canceled);
 				using (WriteLock())
 				{
 					if (res)

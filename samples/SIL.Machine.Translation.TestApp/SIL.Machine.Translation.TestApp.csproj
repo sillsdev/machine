@@ -85,16 +85,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AlignedWordViewModel.cs" />
+    <Compile Include="AsyncRelayCommand.cs" />
     <Compile Include="Line.cs" />
     <Compile Include="MainFormViewModel.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="ProgressView.xeto.cs">
-      <DependentUpon>ProgressView.xeto</DependentUpon>
-    </Compile>
-    <Compile Include="ProgressViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RelayCommand.cs" />
     <Compile Include="Segment.cs" />
     <Compile Include="SuggestionViewModel.cs" />
+    <Compile Include="TaskViewModel.cs" />
     <Compile Include="TextView.xeto.cs">
       <DependentUpon>TextView.xeto</DependentUpon>
     </Compile>
@@ -110,9 +109,6 @@
     <None Include="app.config" />
     <None Include="packages.config" />
     <EmbeddedResource Include="TextView.xeto">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ProgressView.xeto">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Text;
 using System.Windows.Input;
-using Eto.Forms;
 using GalaSoft.MvvmLight;
 
 namespace SIL.Machine.Translation.TestApp
@@ -9,13 +8,13 @@ namespace SIL.Machine.Translation.TestApp
 	public class SuggestionViewModel : ViewModelBase
 	{
 		private readonly TextViewModel _textViewModel;
-		private readonly RelayCommand<object> _command; 
+		private readonly RelayCommand _command; 
 
 		public SuggestionViewModel(TextViewModel textViewModel, string text)
 		{
 			Text = text;
 			_textViewModel = textViewModel;
-			_command = new RelayCommand<object>(o => InsertSuggestion());
+			_command = new RelayCommand(InsertSuggestion);
 		}
 
 		internal void InsertSuggestion()

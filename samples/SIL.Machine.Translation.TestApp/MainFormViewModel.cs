@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Xml.Linq;
 using Eto.Forms;
 using GalaSoft.MvvmLight;
-using GalaSoft.MvvmLight.Threading;
 using SIL.Machine.Annotations;
 using SIL.Machine.Corpora;
 using SIL.Machine.Morphology.HermitCrab;
@@ -20,9 +21,8 @@ namespace SIL.Machine.Translation.TestApp
 	public class MainFormViewModel : ViewModelBase
 	{
 		private readonly ITokenizer<string, int> _tokenizer;
-		private readonly RelayCommand<object> _openProjectCommand;
-		private readonly RelayCommand<object> _saveProjectCommand;
-		private readonly RelayCommand<object> _rebuildProjectCommand; 
+		private readonly RelayCommand _openProjectCommand;
+		private readonly RelayCommand _saveProjectCommand;
 		private HybridTranslationEngine _hybridEngine;
 		private TransferEngine _transferEngine;
 		private ThotSmtModel _smtModel;
@@ -36,42 +36,21 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly BulkObservableList<TextViewModel> _texts;
 		private TextViewModel _currentText;
 		private bool _isChanged;
+		private bool _isRebuilding;
 
 		public MainFormViewModel()
 		{
 			_tokenizer = new LatinWordTokenizer();
-			_openProjectCommand = new RelayCommand<object>(o => OpenProject());
-			_saveProjectCommand = new RelayCommand<object>(o => SaveProject(), o => CanSaveProject());
-			_rebuildProjectCommand = new RelayCommand<object>(o => RebuildProject(), o => CanRebuildProject());
-			CloseCommand = new RelayCommand<object>(o => Close(), o => CanClose());
+			_openProjectCommand = new RelayCommand(OpenProject);
+			_saveProjectCommand = new RelayCommand(SaveProject, CanSaveProject);
+			CloseCommand = new RelayCommand(Close, CanClose);
 			_spanFactory = new ShapeSpanFactory();
 			_hcTraceManager = new TraceManager();
 			_confidenceThreshold = 20;
 			_texts = new BulkObservableList<TextViewModel>();
 			Texts = new ReadOnlyObservableList<TextViewModel>(_texts);
 			_currentText = new TextViewModel(_tokenizer);
-			RebuildProgress = new ProgressViewModel(vm =>
-				{
-					Func<string, string> preprocess = word => word.ToLowerInvariant();
-					_smtModel.Train(preprocess, _sourceCorpus, preprocess, _targetCorpus, _alignmentCorpus, vm);
-				});
-			RebuildProgress.PropertyChanged += RebuildProgressPropertyChanged;
-		}
-
-		private void RebuildProgressPropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			switch (e.PropertyName)
-			{
-				case nameof(RebuildProgress.Executing):
-					if (!RebuildProgress.Executing)
-						DispatcherHelper.CheckBeginInvokeOnUI(() =>
-							{
-								_saveProjectCommand.UpdateCanExecute();
-								if (RebuildProgress.Exception != null)
-									throw RebuildProgress.Exception;
-							});
-					break;
-			}
+			RebuildTask = new TaskViewModel<SmtTrainProgress>(RebuildAsync, () => _hybridEngine != null, p => p.PercentCompleted, p => p.CurrentStepMessage);
 		}
 
 		private void TextPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -231,7 +210,7 @@ namespace SIL.Machine.Translation.TestApp
 
 			CurrentText = _texts[0];
 			AcceptChanges();
-			_rebuildProjectCommand.UpdateCanExecute();
+			RebuildTask.UpdateCanExecute();
 			return true;
 		}
 
@@ -239,7 +218,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		private bool CanSaveProject()
 		{
-			return _isChanged && !RebuildProgress.Executing;
+			return _isChanged && !_isRebuilding;
 		}
 
 		private void SaveProject()
@@ -278,21 +257,21 @@ namespace SIL.Machine.Translation.TestApp
 				_transferEngine = null;
 			}
 			_saveProjectCommand.UpdateCanExecute();
-			_rebuildProjectCommand.UpdateCanExecute();
+			RebuildTask.UpdateCanExecute();
 		}
 
-		public ICommand RebuildProjectCommand => _rebuildProjectCommand;
-
-		private bool CanRebuildProject()
-		{
-			return _hybridEngine != null;
-		}
-
-		private void RebuildProject()
+		private async Task RebuildAsync(IProgress<SmtTrainProgress> progress, CancellationToken token)
 		{
 			if (IsChanged)
 				SaveProject();
-			RebuildProgress.Execute();
+
+			_isRebuilding = true;
+			await Task.Run(() =>
+				{
+					Func<string, string> preprocess = word => word.ToLowerInvariant();
+					_smtModel.Train(preprocess, _sourceCorpus, preprocess, _targetCorpus, _alignmentCorpus, progress, () => token.IsCancellationRequested);
+				}, token);
+			_isRebuilding = false;
 			_saveProjectCommand.UpdateCanExecute();
 		}
 
@@ -356,6 +335,6 @@ namespace SIL.Machine.Translation.TestApp
 			}
 		}
 
-		public ProgressViewModel RebuildProgress { get; }
+		public TaskViewModel<SmtTrainProgress> RebuildTask { get; }
 	}
 }

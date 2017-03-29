@@ -5,7 +5,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using SIL.Extensions;
-using SIL.Progress;
 
 namespace SIL.Machine.Translation.Thot
 {
@@ -17,12 +16,11 @@ namespace SIL.Machine.Translation.Thot
 			K = 100;
 		}
 
-		public double ProgressIncrement { get; set; }
 		public int K { get; set; }
 		public int MaxIterations { get; set; }
 
 		public ThotSmtParameters Tune(string tmFileNamePrefix, string lmFileNamePrefix, ThotSmtParameters parameters, IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
-			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, IProgress progress)
+			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, ThotTrainProgressReporter reporter)
 		{
 			IntPtr weightUpdaterHandle = Thot.llWeightUpdater_create();
 			try
@@ -65,8 +63,7 @@ namespace SIL.Machine.Translation.Thot
 
 					iter++;
 
-					progress.ProgressIndicator.PercentCompleted += ProgressIncrement;
-					if (progress.CancelRequested)
+					if (reporter.Step())
 						break;
 				}
 

@@ -10,15 +10,30 @@ namespace SIL.Machine.Translation.TestApp
 		{
 			XamlReader.Load(this);
 
-			var vm = (MainFormViewModel) DataContext;
-			TextView.Bind(tv => tv.DataContext, vm, m => m.CurrentText);
-			RebuildProgressView.Bind(rpv => rpv.DataContext, vm, m => m.RebuildProgress);
-			RebuildButton.Bind(c => c.Visible, vm.RebuildProgress, Binding.Property((ProgressViewModel m) => m.Executing).Convert(b => !b));
+			RebuildProgressBar = new ProgressBar
+			{
+				Width = RebuildProgressContainer.Width,
+				Height = RebuildProgressContainer.Height
+			};
+			RebuildProgressContainer.Add(RebuildProgressBar, 0, 0);
+			RebuildProgressBar.BindDataContext(c => c.Value, (TaskViewModel<SmtTrainProgress> vm) => vm.PercentCompleted);
+			RebuildMessageLabel = new Label
+			{
+				Width = RebuildProgressContainer.Width - 3,
+				Height = RebuildProgressContainer.Height,
+				VerticalAlignment = VerticalAlignment.Center
+			};
+			RebuildProgressContainer.Add(RebuildMessageLabel, 3, 0);
+			RebuildMessageLabel.TextBinding.BindDataContext((TaskViewModel<SmtTrainProgress> vm) => vm.Message);
+
+			TextView.Bind(tv => tv.DataContext, (MainFormViewModel) DataContext, vm => vm.CurrentText);
 		}
 
 		protected TextView TextView { get; set; }
-		protected ProgressView RebuildProgressView { get; set; }
 		protected Button RebuildButton { get; set; }
+		protected PixelLayout RebuildProgressContainer { get; set; }
+		protected Label RebuildMessageLabel { get; set; }
+		protected ProgressBar RebuildProgressBar { get; set; }
 
 		protected override void OnClosing(CancelEventArgs e)
 		{

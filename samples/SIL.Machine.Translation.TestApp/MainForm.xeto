@@ -2,12 +2,12 @@
 <Form
 	xmlns="http://schema.picoe.ca/eto.forms" 
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:local="clr-namespace:SIL.Machine.Translation.TestApp;assembly=TranslationTestApp"
+	xmlns:l="clr-namespace:SIL.Machine.Translation.TestApp;assembly=TranslationTestApp"
 	Title="Machine.Translation"
 	ClientSize="800, 750"
 	>
 	<Form.DataContext>
-		<local:MainFormViewModel />
+		<l:MainFormViewModel />
 	</Form.DataContext>
 	<TableLayout Padding="10" Spacing="5,5">
 		<TableRow>
@@ -17,9 +17,12 @@
 						<StackLayout Orientation="Horizontal" Spacing="5">
 							<Button Command="{Binding OpenProjectCommand}">Open</Button>
 							<Button Command="{Binding SaveProjectCommand}">Save</Button>
-              <StackLayout>
-                <Button x:Name="RebuildButton" Command="{Binding RebuildProjectCommand}">Rebuild</Button>
-                <local:ProgressView x:Name="RebuildProgressView" Visible="{Binding Executing}" />
+              <StackLayout DataContext="{Binding RebuildTask}">
+                <Button x:Name="RebuildButton" Command="{Binding StartTaskCommand}" Visible="{Binding IsNotExecuting}">Rebuild</Button>
+                <StackLayout Spacing="5" Orientation="Horizontal" Visible="{Binding IsExecuting}">
+                  <PixelLayout x:Name="RebuildProgressContainer" Width="250" Height="23" />
+                  <Button Command="{Binding CancelCommand}" Width="20" Height="23">&#x2715;</Button>
+                </StackLayout>
               </StackLayout>
 						</StackLayout>
 					</TableCell>
@@ -43,7 +46,7 @@
 							<Label>Texts</Label>
 						</TableRow>
 						<TableRow>
-							<local:Line Height="1" Color="Gray" />
+							<l:Line Height="1" Color="Gray" />
 						</TableRow>
 						<TableRow ScaleHeight="True">
 							<Panel Padding="0,4,0,0">
@@ -53,7 +56,7 @@
 					</TableLayout>
 				</Splitter.Panel1>
 				<Splitter.Panel2>
-					<local:TextView x:Name="TextView" />
+					<l:TextView x:Name="TextView" />
 				</Splitter.Panel2>
 			</Splitter>
 		</TableRow>
