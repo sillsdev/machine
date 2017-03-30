@@ -20,7 +20,7 @@ namespace SIL.Machine.Translation.Thot
 		public int MaxFunctionEvaluations { get; set; }
 		public int ProgressIncrementInterval { get; set; }
 
-		public ThotSmtParameters Tune(string tmFileNamePrefix, string lmFileNamePrefix, ThotSmtParameters parameters, IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
+		public ThotSmtParameters Tune(ThotSmtParameters parameters, IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
 			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, ThotTrainProgressReporter reporter)
 		{
 			float sentLenWeight = parameters.ModelWeights[7];
@@ -30,13 +30,15 @@ namespace SIL.Machine.Translation.Thot
 				ThotSmtParameters newParameters = parameters.Clone();
 				newParameters.ModelWeights = weights.Select(w => (float) w).Concat(sentLenWeight).ToArray();
 				newParameters.Freeze();
-				double quality = CalculateBleu(tmFileNamePrefix, lmFileNamePrefix, newParameters, tuneSourceCorpus, tuneTargetCorpus);
+				double quality = CalculateBleu(newParameters, tuneSourceCorpus, tuneTargetCorpus);
 				numFuncEvals++;
 				if (numFuncEvals < MaxFunctionEvaluations && ProgressIncrementInterval > 0 && numFuncEvals % ProgressIncrementInterval == 0)
 					reporter.Step();
+				else
+					reporter.CheckCanceled();
 				return quality;
 			};
-			var simplex = new NelderMeadSimplex(ConvergenceTolerance, MaxFunctionEvaluations, 1.0) {IsCanceled = () => reporter.IsCanceled};
+			var simplex = new NelderMeadSimplex(ConvergenceTolerance, MaxFunctionEvaluations, 1.0);
 			MinimizationResult result = simplex.FindMinimum(evalFunc, parameters.ModelWeights.Select(w => (double) w).Take(7));
 
 			ThotSmtParameters bestParameters = parameters.Clone();
@@ -45,10 +47,10 @@ namespace SIL.Machine.Translation.Thot
 			return bestParameters;
 		}
 
-		private static double CalculateBleu(string tmFileNamePrefix, string lmFileNamePrefix, ThotSmtParameters parameters, IReadOnlyList<IReadOnlyList<string>> sourceCorpus,
+		private static double CalculateBleu(ThotSmtParameters parameters, IReadOnlyList<IReadOnlyList<string>> sourceCorpus,
 			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus)
 		{
-			IEnumerable<IReadOnlyList<string>> translations = GenerateTranslations(tmFileNamePrefix, lmFileNamePrefix, parameters, sourceCorpus);
+			IEnumerable<IReadOnlyList<string>> translations = GenerateTranslations(parameters, sourceCorpus);
 			double bleu = Evaluation.CalculateBleu(translations, tuneTargetCorpus);
 			double penalty = 0;
 			for (int i = 0; i < parameters.ModelWeights.Count; i++)
@@ -62,8 +64,7 @@ namespace SIL.Machine.Translation.Thot
 			return (1.0 - bleu) + penalty;
 		}
 
-		private static IEnumerable<IReadOnlyList<string>> GenerateTranslations(string tmFileNamePrefix, string lmFileNamePrefix, ThotSmtParameters parameters,
-			IReadOnlyList<IReadOnlyList<string>> sourceCorpus)
+		private static IEnumerable<IReadOnlyList<string>> GenerateTranslations(ThotSmtParameters parameters, IReadOnlyList<IReadOnlyList<string>> sourceCorpus)
 		{
 			var results = new IReadOnlyList<string>[sourceCorpus.Count];
 			Parallel.ForEach(Partitioner.Create(0, sourceCorpus.Count), range =>
@@ -71,7 +72,7 @@ namespace SIL.Machine.Translation.Thot
 					IntPtr smtModelHandle = IntPtr.Zero, decoderHandle = IntPtr.Zero;
 					try
 					{
-						smtModelHandle = Thot.LoadSmtModel(tmFileNamePrefix, lmFileNamePrefix, parameters);
+						smtModelHandle = Thot.LoadSmtModel(parameters);
 						decoderHandle = Thot.LoadDecoder(smtModelHandle, parameters);
 						for (int i = range.Item1; i < range.Item2; i++)
 						{

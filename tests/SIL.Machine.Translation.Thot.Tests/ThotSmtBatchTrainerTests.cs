@@ -8,7 +8,7 @@ using SIL.Machine.Corpora;
 namespace SIL.Machine.Translation.Thot.Tests
 {
 	[TestFixture]
-	public class ThotBatchTrainerTests
+	public class ThotSmtBatchTrainerTests
 	{
 		[Test]
 		public void Train_NonEmptyCorpus_GeneratesModels()
@@ -51,11 +51,16 @@ namespace SIL.Machine.Translation.Thot.Tests
 							})
 					});
 
-				using (var trainer = new ThotBatchTrainer(Path.Combine(tempDir.Path, "tm", "src_trg"), Path.Combine(tempDir.Path, "lm", "trg.lm"), new ThotSmtParameters(),
-					s => s, sourceCorpus, s => s, targetCorpus, alignmentCorpus))
+				var parameters = new ThotSmtParameters
 				{
-					if (trainer.Train())
-						trainer.SaveModels();
+					TranslationModelFileNamePrefix = Path.Combine(tempDir.Path, "tm", "src_trg"),
+					LanguageModelFileNamePrefix = Path.Combine(tempDir.Path, "lm", "trg.lm")
+				};
+
+				using (var trainer = new ThotSmtBatchTrainer(parameters, s => s, sourceCorpus, s => s, targetCorpus, alignmentCorpus))
+				{
+					trainer.Train();
+					trainer.Save();
 				}
 
 				Assert.That(File.Exists(Path.Combine(tempDir.Path, "lm", "trg.lm")), Is.True);
@@ -75,11 +80,16 @@ namespace SIL.Machine.Translation.Thot.Tests
 				var targetCorpus = new DictionaryTextCorpus(Enumerable.Empty<MemoryText>());
 				var alignmentCorpus = new DictionaryTextAlignmentCorpus(Enumerable.Empty<MemoryTextAlignmentCollection>());
 
-				using (var trainer = new ThotBatchTrainer(Path.Combine(tempDir.Path, "tm", "src_trg"), Path.Combine(tempDir.Path, "lm", "trg.lm"), new ThotSmtParameters(),
-					s => s, sourceCorpus, s => s, targetCorpus, alignmentCorpus))
+				var parameters = new ThotSmtParameters
 				{
-					if (trainer.Train())
-						trainer.SaveModels();
+					TranslationModelFileNamePrefix = Path.Combine(tempDir.Path, "tm", "src_trg"),
+					LanguageModelFileNamePrefix = Path.Combine(tempDir.Path, "lm", "trg.lm")
+				};
+
+				using (var trainer = new ThotSmtBatchTrainer(parameters, s => s, sourceCorpus, s => s, targetCorpus, alignmentCorpus))
+				{
+					trainer.Train();
+					trainer.Save();
 				}
 
 				Assert.That(File.Exists(Path.Combine(tempDir.Path, "lm", "trg.lm")), Is.True);

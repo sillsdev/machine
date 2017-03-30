@@ -19,7 +19,7 @@ namespace SIL.Machine.Translation.Thot
 		public int K { get; set; }
 		public int MaxIterations { get; set; }
 
-		public ThotSmtParameters Tune(string tmFileNamePrefix, string lmFileNamePrefix, ThotSmtParameters parameters, IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
+		public ThotSmtParameters Tune(ThotSmtParameters parameters, IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
 			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, ThotTrainProgressReporter reporter)
 		{
 			IntPtr weightUpdaterHandle = Thot.llWeightUpdater_create();
@@ -37,7 +37,7 @@ namespace SIL.Machine.Translation.Thot
 					ThotSmtParameters newParameters = parameters.Clone();
 					newParameters.ModelWeights = curWeights;
 					newParameters.Freeze();
-					IList<TranslationInfo>[] nbestLists = GetNBestLists(tmFileNamePrefix, lmFileNamePrefix, newParameters, tuneSourceCorpus).ToArray();
+					IList<TranslationInfo>[] nbestLists = GetNBestLists(newParameters, tuneSourceCorpus).ToArray();
 					double quality = Evaluation.CalculateBleu(nbestLists.Select(nbl => nbl.First().Translation), tuneTargetCorpus);
 					iterQualities.Add(quality);
 					if (quality > bestQuality)
@@ -63,8 +63,7 @@ namespace SIL.Machine.Translation.Thot
 
 					iter++;
 
-					if (reporter.Step())
-						break;
+					reporter.Step();
 				}
 
 				return bestParameters;
@@ -75,8 +74,7 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private IEnumerable<IList<TranslationInfo>> GetNBestLists(string tmFileNamePrefix, string lmFileNamePrefix, ThotSmtParameters parameters,
-			IReadOnlyList<IReadOnlyList<string>> sourceCorpus)
+		private IEnumerable<IList<TranslationInfo>> GetNBestLists(ThotSmtParameters parameters, IReadOnlyList<IReadOnlyList<string>> sourceCorpus)
 		{
 			var results = new IList<TranslationInfo>[sourceCorpus.Count];
 			Parallel.ForEach(Partitioner.Create(0, sourceCorpus.Count), range =>
@@ -84,7 +82,7 @@ namespace SIL.Machine.Translation.Thot
 					IntPtr smtModelHandle = IntPtr.Zero, decoderHandle = IntPtr.Zero;
 					try
 					{
-						smtModelHandle = Thot.LoadSmtModel(tmFileNamePrefix, lmFileNamePrefix, parameters);
+						smtModelHandle = Thot.LoadSmtModel(parameters);
 						decoderHandle = Thot.LoadDecoder(smtModelHandle, parameters);
 						for (int i = range.Item1; i < range.Item2; i++)
 						{

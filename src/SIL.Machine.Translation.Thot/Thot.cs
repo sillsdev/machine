@@ -336,11 +336,11 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public static IntPtr LoadSmtModel(string tmFileNamePrefix, string lmFileNamePrefix, ThotSmtParameters parameters)
+		public static IntPtr LoadSmtModel(ThotSmtParameters parameters)
 		{
 			IntPtr handle = smtModel_create();
-			smtModel_loadTranslationModel(handle, tmFileNamePrefix);
-			smtModel_loadLanguageModel(handle, lmFileNamePrefix);
+			smtModel_loadTranslationModel(handle, parameters.TranslationModelFileNamePrefix);
+			smtModel_loadLanguageModel(handle, parameters.LanguageModelFileNamePrefix);
 			smtModel_setNonMonotonicity(handle, parameters.ModelNonMonotonicity);
 			smtModel_setW(handle, parameters.ModelW);
 			smtModel_setA(handle, parameters.ModelA);

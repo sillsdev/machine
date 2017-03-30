@@ -13,16 +13,14 @@ namespace SIL.Machine.Translation.Thot
 		private readonly HashSet<ThotInteractiveTranslationSession> _sessions;
 		private readonly ISegmentAligner _segmentAligner;
 		private IntPtr _decoderHandle;
-		private readonly List<(IReadOnlyList<string> Source, IReadOnlyList<string> Target, WordAlignmentMatrix Matrix)> _trainedSegments;
 
 		public ThotSmtEngine(ThotSmtModel smtModel)
 		{
 			_smtModel = smtModel;
 			_sessions = new HashSet<ThotInteractiveTranslationSession>();
-			_decoderHandle = Thot.LoadDecoder(_smtModel.Handle, _smtModel.Parameters);
+			LoadHandle();
 			_segmentAligner = new FuzzyEditDistanceSegmentAligner(new SymmetrizationSegmentAligner(_smtModel.SingleWordAlignmentModel, _smtModel.InverseSingleWordAlignmentModel));
 			ErrorCorrectionModel = new ErrorCorrectionModel();
-			_trainedSegments = new List<(IReadOnlyList<string> Source, IReadOnlyList<string> Target, WordAlignmentMatrix Matrix)>();
 		}
 
 		internal void CloseHandle()
@@ -30,34 +28,23 @@ namespace SIL.Machine.Translation.Thot
 			Thot.decoder_close(_decoderHandle);
 		}
 
-		internal void TrainingCompleted()
+		internal void LoadHandle()
 		{
 			_decoderHandle = Thot.LoadDecoder(_smtModel.Handle, _smtModel.Parameters);
-
-			foreach (var trainedSegment in _trainedSegments)
-				Thot.TrainSegmentPair(_decoderHandle, trainedSegment.Source, trainedSegment.Target, trainedSegment.Matrix);
-			_trainedSegments.Clear();
-		}
-
-		internal void TrainingCancelled()
-		{
-			_trainedSegments.Clear();
 		}
 
 		public TranslationResult Translate(IReadOnlyList<string> segment)
 		{
 			CheckDisposed();
 
-			using (_smtModel.ReadLock())
-				return Thot.DoTranslate(_decoderHandle, Thot.decoder_translate, segment, false, segment, CreateResult);
+			return Thot.DoTranslate(_decoderHandle, Thot.decoder_translate, segment, false, segment, CreateResult);
 		}
 
 		public IEnumerable<TranslationResult> Translate(int n, IReadOnlyList<string> segment)
 		{
 			CheckDisposed();
 
-			using (_smtModel.ReadLock())
-				return Thot.DoTranslateNBest(_decoderHandle, Thot.decoder_translateNBest, n, segment, false, segment, CreateResult);
+			return Thot.DoTranslateNBest(_decoderHandle, Thot.decoder_translateNBest, n, segment, false, segment, CreateResult);
 		}
 
 		public IInteractiveTranslationSession TranslateInteractively(IReadOnlyList<string> segment)
@@ -73,30 +60,27 @@ namespace SIL.Machine.Translation.Thot
 		{
 			CheckDisposed();
 
-			using (_smtModel.ReadLock())
+			IntPtr nativeSentence = Thot.ConvertStringsToNativeUtf8(segment);
+			IntPtr wordGraph = IntPtr.Zero;
+			IntPtr nativeWordGraphStr = IntPtr.Zero;
+			try
 			{
-				IntPtr nativeSentence = Thot.ConvertStringsToNativeUtf8(segment);
-				IntPtr wordGraph = IntPtr.Zero;
-				IntPtr nativeWordGraphStr = IntPtr.Zero;
-				try
-				{
-					wordGraph = Thot.decoder_getWordGraph(_decoderHandle, nativeSentence);
+				wordGraph = Thot.decoder_getWordGraph(_decoderHandle, nativeSentence);
 
-					uint len = Thot.wg_getString(wordGraph, IntPtr.Zero, 0);
-					nativeWordGraphStr = Marshal.AllocHGlobal((int) len);
-					Thot.wg_getString(wordGraph, nativeWordGraphStr, len);
-					string wordGraphStr = Thot.ConvertNativeUtf8ToString(nativeWordGraphStr, len);
-					double initialStateScore = Thot.wg_getInitialStateScore(wordGraph);
-					return CreateWordGraph(segment, wordGraphStr, initialStateScore);
-				}
-				finally
-				{
-					if (nativeWordGraphStr != IntPtr.Zero)
-						Marshal.FreeHGlobal(nativeWordGraphStr);
-					if (wordGraph != IntPtr.Zero)
-						Thot.wg_destroy(wordGraph);
-					Marshal.FreeHGlobal(nativeSentence);
-				}
+				uint len = Thot.wg_getString(wordGraph, IntPtr.Zero, 0);
+				nativeWordGraphStr = Marshal.AllocHGlobal((int) len);
+				Thot.wg_getString(wordGraph, nativeWordGraphStr, len);
+				string wordGraphStr = Thot.ConvertNativeUtf8ToString(nativeWordGraphStr, len);
+				double initialStateScore = Thot.wg_getInitialStateScore(wordGraph);
+				return CreateWordGraph(segment, wordGraphStr, initialStateScore);
+			}
+			finally
+			{
+				if (nativeWordGraphStr != IntPtr.Zero)
+					Marshal.FreeHGlobal(nativeWordGraphStr);
+				if (wordGraph != IntPtr.Zero)
+					Thot.wg_destroy(wordGraph);
+				Marshal.FreeHGlobal(nativeSentence);
 			}
 		}
 
@@ -190,23 +174,20 @@ namespace SIL.Machine.Translation.Thot
 		{
 			CheckDisposed();
 
-			using (_smtModel.ReadLock())
+			IntPtr nativeSourceSegment = Thot.ConvertStringsToNativeUtf8(sourceSegment);
+			IntPtr nativeTargetSegment = Thot.ConvertStringsToNativeUtf8(targetSegment);
+			IntPtr data = IntPtr.Zero;
+			try
 			{
-				IntPtr nativeSourceSegment = Thot.ConvertStringsToNativeUtf8(sourceSegment);
-				IntPtr nativeTargetSegment = Thot.ConvertStringsToNativeUtf8(targetSegment);
-				IntPtr data = IntPtr.Zero;
-				try
-				{
-					data = Thot.decoder_getBestPhraseAlignment(_decoderHandle, nativeSourceSegment, nativeTargetSegment);
-					return CreateResult(sourceSegment, targetSegment, data);
-				}
-				finally
-				{
-					if (data != IntPtr.Zero)
-						Thot.tdata_destroy(data);
-					Marshal.FreeHGlobal(nativeTargetSegment);
-					Marshal.FreeHGlobal(nativeSourceSegment);
-				}
+				data = Thot.decoder_getBestPhraseAlignment(_decoderHandle, nativeSourceSegment, nativeTargetSegment);
+				return CreateResult(sourceSegment, targetSegment, data);
+			}
+			finally
+			{
+				if (data != IntPtr.Zero)
+					Thot.tdata_destroy(data);
+				Marshal.FreeHGlobal(nativeTargetSegment);
+				Marshal.FreeHGlobal(nativeSourceSegment);
 			}
 		}
 
@@ -214,13 +195,7 @@ namespace SIL.Machine.Translation.Thot
 		{
 			CheckDisposed();
 
-			using (_smtModel.WriteLock())
-			{
-				Thot.TrainSegmentPair(_decoderHandle, sourceSegment, targetSegment, matrix);
-
-				if (_smtModel.IsTraining)
-					_trainedSegments.Add((sourceSegment.ToArray(), targetSegment.ToArray(), matrix?.Clone()));
-			}
+			Thot.TrainSegmentPair(_decoderHandle, sourceSegment, targetSegment, matrix);
 		}
 
 		internal TranslationResult CreateResult(IReadOnlyList<string> sourceSegment, int prefixCount, TranslationInfo info)
@@ -231,57 +206,54 @@ namespace SIL.Machine.Translation.Thot
 					Enumerable.Empty<TranslationSources>(), new WordAlignmentMatrix(sourceSegment.Count, 0));
 			}
 
-			using (_smtModel.ReadLock())
+			double[] confidences = info.TargetConfidences.ToArray();
+			var sources = new TranslationSources[info.Target.Count];
+			var alignment = new WordAlignmentMatrix(sourceSegment.Count, info.Target.Count);
+			int trgPhraseStartIndex = 0;
+			foreach (PhraseInfo phrase in info.Phrases)
 			{
-				double[] confidences = info.TargetConfidences.ToArray();
-				var sources = new TranslationSources[info.Target.Count];
-				var alignment = new WordAlignmentMatrix(sourceSegment.Count, info.Target.Count);
-				int trgPhraseStartIndex = 0;
-				foreach (PhraseInfo phrase in info.Phrases)
+				for (int j = trgPhraseStartIndex; j <= phrase.TargetCut; j++)
 				{
-					for (int j = trgPhraseStartIndex; j <= phrase.TargetCut; j++)
+					string targetWord = info.Target[j];
+					double confidence = info.TargetConfidences[j];
+					double totalProb = 0;
+					int alignedWordCount = 0;
+					for (int i = phrase.SourceStartIndex; i <= phrase.SourceEndIndex; i++)
 					{
-						string targetWord = info.Target[j];
-						double confidence = info.TargetConfidences[j];
-						double totalProb = 0;
-						int alignedWordCount = 0;
-						for (int i = phrase.SourceStartIndex; i <= phrase.SourceEndIndex; i++)
+						if (phrase.Alignment[i - phrase.SourceStartIndex, j - trgPhraseStartIndex] == AlignmentType.Aligned)
 						{
-							if (phrase.Alignment[i - phrase.SourceStartIndex, j - trgPhraseStartIndex] == AlignmentType.Aligned)
-							{
-								string sourceWord = sourceSegment[i];
-								double prob = 0;
-								if (!info.TargetUnknownWords.Contains(j) && confidence < 0)
-									prob = _segmentAligner.GetTranslationProbability(sourceWord, targetWord);
-								alignment[i, j] = AlignmentType.Aligned;
-								totalProb += prob;
-								alignedWordCount++;
-							}
-						}
-
-						if (confidence < 0)
-							confidences[j] = alignedWordCount == 0 ? _segmentAligner.GetTranslationProbability(null, targetWord) : totalProb / alignedWordCount;
-
-						if (j < prefixCount)
-						{
-							sources[j] = TranslationSources.Prefix;
-							if (info.TargetUncorrectedPrefixWords.Contains(j))
-								sources[j] |= TranslationSources.Smt;
-						}
-						else if (info.TargetUnknownWords.Contains(j))
-						{
-							sources[j] = TranslationSources.None;
-						}
-						else
-						{
-							sources[j] = TranslationSources.Smt;
+							string sourceWord = sourceSegment[i];
+							double prob = 0;
+							if (!info.TargetUnknownWords.Contains(j) && confidence < 0)
+								prob = _segmentAligner.GetTranslationProbability(sourceWord, targetWord);
+							alignment[i, j] = AlignmentType.Aligned;
+							totalProb += prob;
+							alignedWordCount++;
 						}
 					}
-					trgPhraseStartIndex = phrase.TargetCut + 1;
-				}
 
-				return new TranslationResult(sourceSegment, info.Target, confidences, sources, alignment);
+					if (confidence < 0)
+						confidences[j] = alignedWordCount == 0 ? _segmentAligner.GetTranslationProbability(null, targetWord) : totalProb / alignedWordCount;
+
+					if (j < prefixCount)
+					{
+						sources[j] = TranslationSources.Prefix;
+						if (info.TargetUncorrectedPrefixWords.Contains(j))
+							sources[j] |= TranslationSources.Smt;
+					}
+					else if (info.TargetUnknownWords.Contains(j))
+					{
+						sources[j] = TranslationSources.None;
+					}
+					else
+					{
+						sources[j] = TranslationSources.Smt;
+					}
+				}
+				trgPhraseStartIndex = phrase.TargetCut + 1;
 			}
+
+			return new TranslationResult(sourceSegment, info.Target, confidences, sources, alignment);
 		}
 
 		private TranslationResult CreateResult(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment, IntPtr dataPtr)

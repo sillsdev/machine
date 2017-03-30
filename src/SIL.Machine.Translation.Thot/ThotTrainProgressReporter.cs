@@ -6,26 +6,28 @@ namespace SIL.Machine.Translation.Thot
 	{
 		private readonly int _stepCount;
 		private readonly IProgress<SmtTrainProgress> _progress;
-		private readonly Func<bool> _canceled;
+		private readonly Action _checkCanceled;
 		private int _currentStep = -1;
 		private string _currentStepMessage;
 
-		public ThotTrainProgressReporter(int stepCount, IProgress<SmtTrainProgress> progress, Func<bool> canceled)
+		public ThotTrainProgressReporter(int stepCount, IProgress<SmtTrainProgress> progress, Action checkCanceled)
 		{
 			_stepCount = stepCount;
 			_progress = progress;
-			_canceled = canceled;
+			_checkCanceled = checkCanceled;
 		}
 
-		public bool IsCanceled => _canceled != null && _canceled();
-
-		public bool Step(string message = null, int step = -1)
+		public void CheckCanceled()
 		{
-			if (IsCanceled)
-				return true;
+			_checkCanceled?.Invoke();
+		}
+
+		public void Step(string message = null, int step = -1)
+		{
+			CheckCanceled();
 
 			if (_progress == null)
-				return false;
+				return;
 
 			if (step < 0)
 				_currentStep++;
@@ -36,7 +38,6 @@ namespace SIL.Machine.Translation.Thot
 				_currentStepMessage = message;
 
 			_progress.Report(new SmtTrainProgress(_currentStep, _currentStepMessage, _stepCount));
-			return false;
 		}
 	}
 }

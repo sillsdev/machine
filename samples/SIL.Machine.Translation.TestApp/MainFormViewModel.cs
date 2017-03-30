@@ -266,13 +266,24 @@ namespace SIL.Machine.Translation.TestApp
 				SaveProject();
 
 			_isRebuilding = true;
-			await Task.Run(() =>
+			try
+			{
+				Func<string, string> preprocess = word => word.ToLowerInvariant();
+				using (ISmtBatchTrainer trainer = _smtModel.CreateBatchTrainer(preprocess, _sourceCorpus, preprocess, _targetCorpus, _alignmentCorpus))
 				{
-					Func<string, string> preprocess = word => word.ToLowerInvariant();
-					_smtModel.Train(preprocess, _sourceCorpus, preprocess, _targetCorpus, _alignmentCorpus, progress, () => token.IsCancellationRequested);
-				}, token);
-			_isRebuilding = false;
-			_saveProjectCommand.UpdateCanExecute();
+					await Task.Run(() => trainer.Train(progress, token.ThrowIfCancellationRequested), token);
+					trainer.Save();
+				}
+			}
+			catch (OperationCanceledException)
+			{
+				// the user canceled rebuilding
+			}
+			finally
+			{
+				_isRebuilding = false;
+				_saveProjectCommand.UpdateCanExecute();
+			}
 		}
 
 		public ICommand CloseCommand { get; }

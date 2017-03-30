@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using SIL.Extensions;
 using SIL.ObjectModel;
@@ -29,6 +32,126 @@ namespace SIL.Machine.Translation.Thot
 
 	public class ThotSmtParameters : Freezable<ThotSmtParameters>, ICloneable<ThotSmtParameters>
 	{
+		public static ThotSmtParameters Load(string cfgFileName)
+		{
+			var parameters = new ThotSmtParameters();
+			string cfgDirPath = Path.GetDirectoryName(cfgFileName);
+			foreach (string line in File.ReadAllLines(cfgFileName))
+			{
+				string name, value;
+				if (!GetConfigParameter(line, out name, out value))
+					continue;
+
+				switch (name)
+				{
+					case "tm":
+						if (string.IsNullOrEmpty(value))
+							throw new ArgumentException("The -tm parameter does not have a value.", nameof(cfgFileName));
+						parameters.TranslationModelFileNamePrefix = value;
+						if (!Path.IsPathRooted(parameters.TranslationModelFileNamePrefix) && !string.IsNullOrEmpty(cfgDirPath))
+							parameters.TranslationModelFileNamePrefix = Path.Combine(cfgDirPath, parameters.TranslationModelFileNamePrefix);
+						break;
+					case "lm":
+						if (string.IsNullOrEmpty(value))
+							throw new ArgumentException("The -lm parameter does not have a value.", nameof(cfgFileName));
+						parameters.LanguageModelFileNamePrefix = value;
+						if (!Path.IsPathRooted(parameters.LanguageModelFileNamePrefix) && !string.IsNullOrEmpty(cfgDirPath))
+							parameters.LanguageModelFileNamePrefix = Path.Combine(cfgDirPath, parameters.LanguageModelFileNamePrefix);
+						break;
+					case "W":
+						if (string.IsNullOrEmpty(value))
+							throw new ArgumentException("The -W parameter does not have a value.", nameof(cfgFileName));
+						parameters.ModelW = float.Parse(value, CultureInfo.InvariantCulture);
+						break;
+					case "S":
+						if (string.IsNullOrEmpty(value))
+							throw new ArgumentException("The -S parameter does not have a value.", nameof(cfgFileName));
+						parameters.DecoderS = uint.Parse(value);
+						break;
+					case "A":
+						if (string.IsNullOrEmpty(value))
+							throw new ArgumentException("The -A parameter does not have a value.", nameof(cfgFileName));
+						parameters.ModelA = uint.Parse(value);
+						break;
+					case "E":
+						if (string.IsNullOrEmpty(value))
+							throw new ArgumentException("The -E parameter does not have a value.", nameof(cfgFileName));
+						parameters.ModelE = uint.Parse(value);
+						break;
+					case "nomon":
+						if (string.IsNullOrEmpty(value))
+							throw new ArgumentException("The -nomon parameter does not have a value.", nameof(cfgFileName));
+						parameters.ModelNonMonotonicity = uint.Parse(value);
+						break;
+					case "be":
+						parameters.DecoderBreadthFirst = false;
+						break;
+					case "G":
+						if (string.IsNullOrEmpty(value))
+							throw new ArgumentException("The -G parameter does not have a value.", nameof(cfgFileName));
+						parameters.DecoderG = uint.Parse(value);
+						break;
+					case "h":
+						if (string.IsNullOrEmpty(value))
+							throw new ArgumentException("The -h parameter does not have a value.", nameof(cfgFileName));
+						parameters.ModelHeuristic = (ModelHeuristic)uint.Parse(value);
+						break;
+					case "olp":
+						if (string.IsNullOrEmpty(value))
+							throw new ArgumentException("The -olp parameter does not have a value.", nameof(cfgFileName));
+						string[] tokens = value.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+						if (tokens.Length >= 1)
+							parameters.LearningAlgorithm = (LearningAlgorithm) uint.Parse(tokens[0]);
+						if (tokens.Length >= 2)
+							parameters.LearningRatePolicy = (LearningRatePolicy) uint.Parse(tokens[1]);
+						if (tokens.Length >= 3)
+							parameters.LearningStepSize = float.Parse(tokens[2], CultureInfo.InvariantCulture);
+						if (tokens.Length >= 4)
+							parameters.LearningEMIters = uint.Parse(tokens[3]);
+						if (tokens.Length >= 5)
+							parameters.LearningE = uint.Parse(tokens[4]);
+						if (tokens.Length >= 6)
+							parameters.LearningR = uint.Parse(tokens[5]);
+						break;
+					case "tmw":
+						if (string.IsNullOrEmpty(value))
+							throw new ArgumentException("The -tmw parameter does not have a value.", nameof(cfgFileName));
+
+						parameters.ModelWeights = value.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries)
+							.Select(t => float.Parse(t, CultureInfo.InvariantCulture)).ToArray();
+						break;
+				}
+			}
+
+			return parameters;
+		}
+
+		internal static bool GetConfigParameter(string line, out string name, out string value)
+		{
+			name = null;
+			value = null;
+			string l = line.Trim();
+			if (l.StartsWith("#"))
+				return false;
+
+			int index = l.IndexOf(' ');
+			if (index == -1)
+			{
+				name = l;
+			}
+			else
+			{
+				name = l.Substring(0, index);
+				value = l.Substring(index + 1).Trim();
+			}
+
+			if (name.StartsWith("-"))
+				name = name.Substring(1);
+			return true;
+		}
+
+		private string _tmFileNamePrefix;
+		private string _lmFileNamePrefix;
 		private uint _modelNonMonotonicity;
 		private float _modelW = 0.4f;
 		private uint _modelA = 10;
@@ -51,6 +174,8 @@ namespace SIL.Machine.Translation.Thot
 
 		private ThotSmtParameters(ThotSmtParameters other)
 		{
+			_tmFileNamePrefix = other._tmFileNamePrefix;
+			_lmFileNamePrefix = other._lmFileNamePrefix;
 			_modelNonMonotonicity = other._modelNonMonotonicity;
 			_modelW = other._modelW;
 			_modelA = other._modelA;
@@ -68,9 +193,29 @@ namespace SIL.Machine.Translation.Thot
 			_decoderG = other._decoderG;
 		}
 
+		public string TranslationModelFileNamePrefix
+		{
+			get => _tmFileNamePrefix;
+			set
+			{
+				CheckFrozen();
+				_tmFileNamePrefix = value;
+			}
+		}
+
+		public string LanguageModelFileNamePrefix
+		{
+			get => _lmFileNamePrefix;
+			set
+			{
+				CheckFrozen();
+				_lmFileNamePrefix = value;
+			}
+		}
+
 		public uint ModelNonMonotonicity
 		{
-			get { return _modelNonMonotonicity; }
+			get => _modelNonMonotonicity;
 			set
 			{
 				CheckFrozen();
@@ -80,7 +225,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public float ModelW
 		{
-			get { return _modelW; }
+			get => _modelW;
 			set
 			{
 				CheckFrozen();
@@ -90,7 +235,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public uint ModelA
 		{
-			get { return _modelA; }
+			get => _modelA;
 			set
 			{
 				CheckFrozen();
@@ -100,7 +245,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public uint ModelE
 		{
-			get { return _modelE; }
+			get => _modelE;
 			set
 			{
 				CheckFrozen();
@@ -110,7 +255,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public ModelHeuristic ModelHeuristic
 		{
-			get { return _modelHeuristic; }
+			get => _modelHeuristic;
 			set
 			{
 				CheckFrozen();
@@ -120,7 +265,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public IReadOnlyList<float> ModelWeights
 		{
-			get { return _modelWeights; }
+			get => _modelWeights;
 			set
 			{
 				CheckFrozen();
@@ -130,7 +275,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public LearningAlgorithm LearningAlgorithm
 		{
-			get { return _learningAlgorithm; }
+			get => _learningAlgorithm;
 			set
 			{
 				CheckFrozen();
@@ -140,7 +285,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public LearningRatePolicy LearningRatePolicy
 		{
-			get { return _learningRatePolicy; }
+			get => _learningRatePolicy;
 			set
 			{
 				CheckFrozen();
@@ -150,7 +295,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public float LearningStepSize
 		{
-			get { return _learningStepSize; }
+			get => _learningStepSize;
 			set
 			{
 				CheckFrozen();
@@ -160,7 +305,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public uint LearningEMIters
 		{
-			get { return _learningEMIters; }
+			get => _learningEMIters;
 			set
 			{
 				CheckFrozen();
@@ -170,7 +315,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public uint LearningE
 		{
-			get { return _learningE; }
+			get => _learningE;
 			set
 			{
 				CheckFrozen();
@@ -180,7 +325,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public uint LearningR
 		{
-			get { return _learningR; }
+			get => _learningR;
 			set
 			{
 				CheckFrozen();
@@ -190,7 +335,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public uint DecoderS
 		{
-			get { return _decoderS; }
+			get => _decoderS;
 			set
 			{
 				CheckFrozen();
@@ -200,7 +345,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public bool DecoderBreadthFirst
 		{
-			get { return _decoderBreadthFirst; }
+			get => _decoderBreadthFirst;
 			set
 			{
 				CheckFrozen();
@@ -210,7 +355,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public uint DecoderG
 		{
-			get { return _decoderG; }
+			get => _decoderG;
 			set
 			{
 				CheckFrozen();
@@ -233,8 +378,8 @@ namespace SIL.Machine.Translation.Thot
 				return false;
 			}
 
-			return _modelNonMonotonicity == other._modelNonMonotonicity && _modelW == other._modelW && _modelA == other._modelA
-				&& _modelE == other._modelE && _modelHeuristic == other._modelHeuristic
+			return _tmFileNamePrefix == other._tmFileNamePrefix && _lmFileNamePrefix == other._lmFileNamePrefix && _modelNonMonotonicity == other._modelNonMonotonicity
+				&& _modelW == other._modelW && _modelA == other._modelA && _modelE == other._modelE && _modelHeuristic == other._modelHeuristic
 				&& _learningAlgorithm == other._learningAlgorithm && _learningRatePolicy == other._learningRatePolicy
 				&& _learningStepSize == other._learningStepSize && _learningEMIters == other._learningEMIters && _learningE == other._learningE
 				&& _learningR == other._learningR
@@ -244,6 +389,8 @@ namespace SIL.Machine.Translation.Thot
 		protected override int FreezeImpl()
 		{
 			int code = 23;
+			code = code * 31 + _tmFileNamePrefix.GetHashCode();
+			code = code * 31 + _lmFileNamePrefix.GetHashCode();
 			code = code * 31 + _modelNonMonotonicity.GetHashCode();
 			code = code * 31 + _modelW.GetHashCode();
 			code = code * 31 + _modelA.GetHashCode();
