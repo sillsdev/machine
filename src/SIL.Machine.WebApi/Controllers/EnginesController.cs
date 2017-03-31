@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using SIL.Machine.WebApi.Filters;
 using SIL.Machine.WebApi.Models;
@@ -17,113 +18,131 @@ namespace SIL.Machine.WebApi.Controllers
 		}
 
 		[HttpGet]
-		public IEnumerable<LanguagePairDto> GetAllLanguagePairs()
+		public async Task<IReadOnlyCollection<LanguagePairDto>> GetAllLanguagePairs()
 		{
-			return _engineService.GetAllLanguagePairs();
+			return await _engineService.GetLanguagePairsAsync();
 		}
 
 		[HttpGet("{sourceLanguageTag}/{targetLanguageTag}")]
-		public IActionResult GetLanguagePair(string sourceLanguageTag, string targetLanguageTag)
+		public async Task<IActionResult> GetLanguagePair(string sourceLanguageTag, string targetLanguageTag)
 		{
-			LanguagePairDto languagePair;
-			if (_engineService.TryGetLanguagePair(sourceLanguageTag, targetLanguageTag, out languagePair))
-				return new ObjectResult(languagePair);
+			LanguagePairDto result = await _engineService.GetLanguagePairAsync(sourceLanguageTag, targetLanguageTag);
+			if (result != null)
+				return new ObjectResult(result);
 			return NotFound();
 		}
 
 		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/actions/translate")]
-		public IActionResult Translate(string sourceLanguageTag, string targetLanguageTag, [FromBody] string[] segment)
+		public async Task<IActionResult> Translate(string sourceLanguageTag, string targetLanguageTag, [FromBody] string[] segment)
 		{
-			TranslationResultDto result;
-			if (_engineService.TryTranslate(sourceLanguageTag, targetLanguageTag, null, segment, out result))
+			TranslationResultDto result = await _engineService.TranslateAsync(sourceLanguageTag, targetLanguageTag, null, segment);
+			if (result != null)
 				return new ObjectResult(result);
 			return NotFound();
 		}
 
 		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/actions/translate/{n}")]
-		public IActionResult Translate(string sourceLanguageTag, string targetLanguageTag, int n, [FromBody] string[] segment)
+		public async Task<IActionResult> Translate(string sourceLanguageTag, string targetLanguageTag, int n, [FromBody] string[] segment)
 		{
-			IReadOnlyList<TranslationResultDto> results;
-			if (_engineService.TryTranslate(sourceLanguageTag, targetLanguageTag, null, n, segment, out results))
+			IReadOnlyList<TranslationResultDto> results = await _engineService.TranslateAsync(sourceLanguageTag, targetLanguageTag, null, n, segment);
+			if (results != null)
 				return new ObjectResult(results);
 			return NotFound();
 		}
 
 		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/actions/interactive-translate")]
-		public IActionResult InteractiveTranslate(string sourceLanguageTag, string targetLanguageTag, [FromBody] string[] segment)
+		public async Task<IActionResult> InteractiveTranslate(string sourceLanguageTag, string targetLanguageTag, [FromBody] string[] segment)
 		{
-			InteractiveTranslationResultDto result;
-			if (_engineService.TryInteractiveTranslate(sourceLanguageTag, targetLanguageTag, null, segment, out result))
+			InteractiveTranslationResultDto result = await _engineService.InteractiveTranslateAsync(sourceLanguageTag, targetLanguageTag, null, segment);
+			if (result != null)
 				return new ObjectResult(result);
 			return NotFound();
 		}
 
 		[HttpGet("{sourceLanguageTag}/{targetLanguageTag}/projects")]
-		public IActionResult GetAllProjects(string sourceLanguageTag, string targetLanguageTag)
+		public async Task<IActionResult> GetAllProjects(string sourceLanguageTag, string targetLanguageTag)
 		{
-			IReadOnlyList<ProjectDto> projects;
-			if (_engineService.GetAllProjects(sourceLanguageTag, targetLanguageTag, out projects))
-				return new ObjectResult(projects);
+			IReadOnlyCollection<ProjectDto> results = await _engineService.GetProjectsAsync(sourceLanguageTag, targetLanguageTag);
+			if (results != null)
+				return new ObjectResult(results);
 			return NotFound();
 		}
 
 		[HttpGet("{sourceLanguageTag}/{targetLanguageTag}/projects/{projectId}")]
-		public IActionResult GetProject(string sourceLanguageTag, string targetLanguageTag, string projectId)
+		public async Task<IActionResult> GetProject(string sourceLanguageTag, string targetLanguageTag, string projectId)
 		{
-			ProjectDto project;
-			if (_engineService.TryGetProject(sourceLanguageTag, targetLanguageTag, projectId, out project))
-				return new ObjectResult(project);
+			ProjectDto result = await _engineService.GetProjectAsync(sourceLanguageTag, targetLanguageTag, projectId);
+			if (result != null)
+				return new ObjectResult(result);
 			return NotFound();
 		}
 
 		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/projects/{projectId}/actions/translate")]
-		public IActionResult Translate(string sourceLanguageTag, string targetLanguageTag, string projectId, [FromBody] string[] segment)
+		public async Task<IActionResult> Translate(string sourceLanguageTag, string targetLanguageTag, string projectId, [FromBody] string[] segment)
 		{
-			TranslationResultDto result;
-			if (_engineService.TryTranslate(sourceLanguageTag, targetLanguageTag, projectId, segment, out result))
+			TranslationResultDto result = await _engineService.TranslateAsync(sourceLanguageTag, targetLanguageTag, projectId, segment);
+			if (result != null)
 				return new ObjectResult(result);
 			return NotFound();
 		}
 
 		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/projects/{projectId}/actions/translate/{n}")]
-		public IActionResult Translate(string sourceLanguageTag, string targetLanguageTag, string projectId, int n, [FromBody] string[] segment)
+		public async Task<IActionResult> Translate(string sourceLanguageTag, string targetLanguageTag, string projectId, int n, [FromBody] string[] segment)
 		{
-			IReadOnlyList<TranslationResultDto> results;
-			if (_engineService.TryTranslate(sourceLanguageTag, targetLanguageTag, projectId, n, segment, out results))
+			IReadOnlyList<TranslationResultDto> results = await _engineService.TranslateAsync(sourceLanguageTag, targetLanguageTag, projectId, n, segment);
+			if (results != null)
 				return new ObjectResult(results);
 			return NotFound();
 		}
 
 		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/projects/{projectId}/actions/interactive-translate")]
-		public IActionResult InteractiveTranslate(string sourceLanguageTag, string targetLanguageTag, string projectId, [FromBody] string[] segment)
+		public async Task<IActionResult> InteractiveTranslate(string sourceLanguageTag, string targetLanguageTag, string projectId, [FromBody] string[] segment)
 		{
-			InteractiveTranslationResultDto result;
-			if (_engineService.TryInteractiveTranslate(sourceLanguageTag, targetLanguageTag, projectId, segment, out result))
+			InteractiveTranslationResultDto result = await _engineService.InteractiveTranslateAsync(sourceLanguageTag, targetLanguageTag, projectId, segment);
+			if (result != null)
 				return new ObjectResult(result);
 			return NotFound();
 		}
 
 		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/projects/{projectId}/actions/train-segment")]
-		public IActionResult TrainSegment(string sourceLanguageTag, string targetLanguageTag, string projectId, [FromBody] SegmentPairDto segmentPair)
+		public async Task<IActionResult> TrainSegment(string sourceLanguageTag, string targetLanguageTag, string projectId, [FromBody] SegmentPairDto segmentPair)
 		{
-			if (_engineService.TryTrainSegment(sourceLanguageTag, targetLanguageTag, projectId, segmentPair))
+			if (await _engineService.TrainSegmentAsync(sourceLanguageTag, targetLanguageTag, projectId, segmentPair))
 				return Ok();
 			return NotFound();
 		}
 
 		[InternalApi]
 		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/projects")]
-		public IActionResult AddProject(string sourceLanguageTag, string targetLanguageTag, [FromBody] ProjectDto newProject)
+		public async Task<IActionResult> AddProject(string sourceLanguageTag, string targetLanguageTag, [FromBody] ProjectDto newProject)
 		{
-			ProjectDto project = _engineService.AddProject(sourceLanguageTag, targetLanguageTag, newProject);
+			ProjectDto project = await _engineService.AddProjectAsync(sourceLanguageTag, targetLanguageTag, newProject);
 			return new ObjectResult(project);
 		}
 
 		[InternalApi]
 		[HttpDelete("{sourceLanguageTag}/{targetLanguageTag}/projects/{projectId}")]
-		public IActionResult RemoveProject(string sourceLanguageTag, string targetLanguageTag, string projectId)
+		public async Task<IActionResult> RemoveProject(string sourceLanguageTag, string targetLanguageTag, string projectId)
 		{
-			if (_engineService.RemoveProject(sourceLanguageTag, targetLanguageTag, projectId))
+			if (await _engineService.RemoveProjectAsync(sourceLanguageTag, targetLanguageTag, projectId))
+				return Ok();
+			return NotFound();
+		}
+
+		[InternalApi]
+		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/projects/{projectId}/actions/start-rebuild")]
+		public async Task<IActionResult> StartRebuild(string sourceLanguageTag, string targetLanguageTag, string projectId)
+		{
+			if (await _engineService.StartRebuildAsync(sourceLanguageTag, targetLanguageTag, projectId))
+				return Ok();
+			return NotFound();
+		}
+
+		[InternalApi]
+		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/projects/{projectId}/actions/cancel-rebuild")]
+		public async Task<IActionResult> CancelRebuild(string sourceLanguageTag, string targetLanguageTag, string projectId)
+		{
+			if (await _engineService.CancelRebuildAsync(sourceLanguageTag, targetLanguageTag, projectId))
 				return Ok();
 			return NotFound();
 		}

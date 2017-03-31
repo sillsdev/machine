@@ -2,16 +2,15 @@
 using SIL.Machine.Annotations;
 using SIL.Machine.Morphology.HermitCrab;
 using SIL.Machine.Translation;
-using SIL.Machine.WebApi.Models;
 
 namespace SIL.Machine.WebApi.Services
 {
-	public class TransferEngineFactory : ITranslationEngineFactory
+	public class TransferEngineFactory : IRuleEngineFactory
 	{
-		public ITranslationEngine Create(Engine engine)
+		public ITranslationEngine Create(string configDir)
 		{
-			string hcSrcConfigFileName = Path.Combine(engine.ConfigDirectory, "src-hc.xml");
-			string hcTrgConfigFileName = Path.Combine(engine.ConfigDirectory, "trg-hc.xml");
+			string hcSrcConfigFileName = Path.Combine(configDir, "src-hc.xml");
+			string hcTrgConfigFileName = Path.Combine(configDir, "trg-hc.xml");
 			TransferEngine transferEngine = null;
 			if (File.Exists(hcSrcConfigFileName) && File.Exists(hcTrgConfigFileName))
 			{

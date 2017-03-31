@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Serialization;
-using SIL.Machine.WebApi.Models;
+using SIL.Machine.WebApi.Options;
 using SIL.Machine.WebApi.Services;
 
 namespace SIL.Machine.WebApi
@@ -42,11 +42,38 @@ namespace SIL.Machine.WebApi
 				.AddJsonOptions(a => a.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
 
 			services.Configure<EngineOptions>(Configuration.GetSection("TranslationEngine"));
-			services.Configure<ThotSmtModelOptions>(Configuration.GetSection("ThotSmtModel"));
 			services.Configure<SecurityOptions>(Configuration.GetSection("Security"));
 
-			services.AddSingleton<ISmtModelFactory, ThotSmtModelFactory>();
-			services.AddSingleton<ITranslationEngineFactory, TransferEngineFactory>();
+			IConfigurationSection smtModelConfig = Configuration.GetSection("SmtModel");
+			switch (smtModelConfig.GetValue<string>("Type"))
+			{
+				case "Thot":
+					services.Configure<ThotSmtModelOptions>(smtModelConfig);
+					services.AddSingleton<ISmtModelFactory, ThotSmtModelFactory>();
+					break;
+			}
+
+			IConfigurationSection ruleEngineConfig = Configuration.GetSection("RuleEngine");
+			switch (ruleEngineConfig.GetValue<string>("Type"))
+			{
+				case "Transfer":
+					services.AddSingleton<IRuleEngineFactory, TransferEngineFactory>();
+					break;
+			}
+
+			IConfigurationSection textCorpusConfig = Configuration.GetSection("TextCorpus");
+			switch (textCorpusConfig.GetValue<string>("Type"))
+			{
+				case "ShareDBMongo":
+					services.Configure<ShareDBMongoTextCorpusOptions>(textCorpusConfig);
+					services.AddSingleton<ITextCorpusFactory, ShareDBMongoTextCorpusFactory>();
+					break;
+
+				case "TextFile":
+					services.AddSingleton<ITextCorpusFactory, TextFileTextCorpusFactory>();
+					break;
+			}
+
 			services.AddSingleton<EngineService>();
 		}
 

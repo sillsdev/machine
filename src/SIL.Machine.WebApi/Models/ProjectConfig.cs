@@ -1,6 +1,6 @@
 ﻿namespace SIL.Machine.WebApi.Models
 {
-	public class ProjectDto
+	public class ProjectConfig
 	{
 		public string Id { get; set; }
 		public bool IsShared { get; set; }

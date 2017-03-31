@@ -4,7 +4,7 @@ using ICSharpCode.SharpZipLib.Tar;
 using Microsoft.Extensions.Options;
 using SIL.Machine.Translation;
 using SIL.Machine.Translation.Thot;
-using SIL.Machine.WebApi.Models;
+using SIL.Machine.WebApi.Options;
 
 namespace SIL.Machine.WebApi.Services
 {
@@ -17,19 +17,19 @@ namespace SIL.Machine.WebApi.Services
 			_options = options.Value;
 		}
 
-		public IInteractiveSmtModel Create(Engine engine)
+		public IInteractiveSmtModel Create(string configDir)
 		{
-			string smtConfigFileName = Path.Combine(engine.ConfigDirectory, "smt.cfg");
+			string smtConfigFileName = Path.Combine(configDir, "smt.cfg");
 			return new ThotSmtModel(smtConfigFileName);
 		}
 
-		public void InitNewModel(Engine engine)
+		public void InitNewModel(string configDir)
 		{
 			using (Stream fileStream = File.OpenRead(_options.NewModelFile))
 			using (Stream gzipStream = new GZipInputStream(fileStream))
 			using (TarArchive archive = TarArchive.CreateInputTarArchive(gzipStream))
 			{
-				archive.ExtractContents(engine.ConfigDirectory);
+				archive.ExtractContents(configDir);
 			}
 		}
 	}

@@ -1,18 +1,20 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using SIL.Machine.Translation;
+using SIL.Machine.WebApi.Models;
 
-namespace SIL.Machine.WebApi.Models
+namespace SIL.Machine.WebApi.Services
 {
-	internal static class ModelsExtensions
+	internal static class ServicesExtensions
 	{
-		public static LanguagePairDto CreateDto(this LanguagePair languagePair)
+		public static async Task<LanguagePairDto> CreateDtoAsync(this LanguagePair languagePair)
 		{
 			return new LanguagePairDto
 			{
 				SourceLanguageTag = languagePair.SourceLanguageTag,
 				TargetLanguageTag = languagePair.TargetLanguageTag,
-				Projects = languagePair.Projects.Select(p => p.CreateDto()).ToArray()
+				Projects = (await languagePair.GetProjectsAsync()).Select(p => p.CreateDto()).ToArray()
 			};
 		}
 

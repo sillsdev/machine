@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Options;
-using SIL.Machine.WebApi.Models;
+using SIL.Machine.WebApi.Options;
 
 namespace SIL.Machine.WebApi.Filters
 {

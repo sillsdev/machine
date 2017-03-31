@@ -3,353 +3,253 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using SIL.Machine.Translation;
 using SIL.Machine.WebApi.Models;
+using SIL.Machine.WebApi.Options;
 using SIL.ObjectModel;
+using SIL.Threading;
 
 namespace SIL.Machine.WebApi.Services
 {
 	public class EngineService : DisposableBase
 	{
 		private readonly EngineOptions _options;
-		private readonly ConcurrentDictionary<Tuple<string, string>, LanguagePair> _languagePairs;
+		private readonly ConcurrentDictionary<(string SourceLanguageTag, string TargetLanguageTag), LanguagePair> _languagePairs;
 		private readonly ISmtModelFactory _smtModelFactory;
-		private readonly ITranslationEngineFactory _ruleEngineFactory;
-		private readonly Timer _commitTimer;
-		private bool _isCommitTimerStopped;
+		private readonly IRuleEngineFactory _ruleEngineFactory;
+		private readonly ITextCorpusFactory _textCorpusFactory;
+		private readonly StoppableTimer _commitTimer;
 
-		public EngineService(IOptions<EngineOptions> options, ISmtModelFactory smtModelFactory, ITranslationEngineFactory ruleEngineFactory)
+		public EngineService(IOptions<EngineOptions> options, ISmtModelFactory smtModelFactory, IRuleEngineFactory ruleEngineFactory, ITextCorpusFactory textCorpusFactory)
 		{
 			_options = options.Value;
 			_smtModelFactory = smtModelFactory;
 			_ruleEngineFactory = ruleEngineFactory;
-			_languagePairs = new ConcurrentDictionary<Tuple<string, string>, LanguagePair>();
+			_textCorpusFactory = textCorpusFactory;
+			_languagePairs = new ConcurrentDictionary<(string SourceLanguageTag, string TargetLanguageTag), LanguagePair>();
 			foreach (string configDir in Directory.EnumerateDirectories(_options.RootDir))
 			{
 				string configFileName = Path.Combine(configDir, "config.json");
 				if (!File.Exists(configFileName))
 					continue;
-				LanguagePairDto languagePairConfig = JsonConvert.DeserializeObject<LanguagePairDto>(File.ReadAllText(configFileName));
-				var languagePair = new LanguagePair(languagePairConfig.SourceLanguageTag, languagePairConfig.TargetLanguageTag, configDir);
-				foreach (ProjectDto projectConfig in languagePairConfig.Projects)
-					CreateProject(languagePair, projectConfig.Id, projectConfig.IsShared);
-				_languagePairs[Tuple.Create(languagePair.SourceLanguageTag, languagePair.TargetLanguageTag)] = languagePair;
+				var languagePair = new LanguagePair(_smtModelFactory, _ruleEngineFactory, _textCorpusFactory, _options.InactiveEngineTimeout, _options.TrainProgressDir,
+					configDir);
+				// TODO: need to handle conflicting language pairs better
+				if (!_languagePairs.TryAdd((languagePair.SourceLanguageTag, languagePair.TargetLanguageTag), languagePair))
+					languagePair.Dispose();
 			}
-			_commitTimer = new Timer(EngineCommitCallback, null, _options.EngineCommitFrequency, _options.EngineCommitFrequency);
+			_commitTimer = new StoppableTimer(EngineCommitAsync);
+			_commitTimer.Start(_options.EngineCommitFrequency);
 		}
 
-		private void EngineCommitCallback(object state)
-		{
-			if (_isCommitTimerStopped)
-				return;
-
-			foreach (LanguagePair languagePair in _languagePairs.Values)
-			{
-				Engine[] engines;
-				lock (languagePair)
-				{
-					engines = languagePair.Projects.Select(p => p.Engine).Distinct().ToArray();
-				}
-
-				foreach (Engine engine in engines)
-				{
-					lock (engine)
-					{
-						if (engine.IsDisposed)
-							continue;
-
-						engine.Commit();
-					}
-				}
-			}
-		}
-
-		public IEnumerable<LanguagePairDto> GetAllLanguagePairs()
+		private async void EngineCommitAsync()
 		{
 			foreach (LanguagePair languagePair in _languagePairs.Values)
 			{
-				lock (languagePair)
-					yield return languagePair.CreateDto();
-			}
-		}
-
-		public bool TryGetLanguagePair(string sourceLanguageTag, string targetLanguageTag, out LanguagePairDto languagePair)
-		{
-			LanguagePair lp;
-			if (_languagePairs.TryGetValue(Tuple.Create(sourceLanguageTag, targetLanguageTag), out lp))
-			{
-				lock (lp)
+				foreach (Engine engine in await languagePair.GetEnginesAsync())
 				{
-					if (lp.Projects.Count > 0)
+					try
 					{
-						languagePair = lp.CreateDto();
-						return true;
+						await engine.CommitAsync();
+					}
+					catch (ObjectDisposedException)
+					{
 					}
 				}
 			}
+		}
 
-			languagePair = null;
+		public async Task<IReadOnlyCollection<LanguagePairDto>> GetLanguagePairsAsync()
+		{
+			var lps = new List<LanguagePairDto>();
+			foreach (LanguagePair languagePair in _languagePairs.Values)
+			{
+				LanguagePairDto dto = await languagePair.CreateDtoAsync();
+				if (dto.Projects.Count > 0)
+					lps.Add(dto);
+			}
+			return lps;
+		}
+
+		public async Task<LanguagePairDto> GetLanguagePairAsync(string sourceLanguageTag, string targetLanguageTag)
+		{
+			if (_languagePairs.TryGetValue((sourceLanguageTag, targetLanguageTag), out LanguagePair languagePair))
+			{
+				LanguagePairDto dto = await languagePair.CreateDtoAsync();
+				return dto.Projects.Count == 0 ? null : dto;
+			}
+
+			return null;
+		}
+
+		public async Task<IReadOnlyCollection<ProjectDto>> GetProjectsAsync(string sourceLanguageTag, string targetLanguageTag)
+		{
+			if (_languagePairs.TryGetValue((sourceLanguageTag, targetLanguageTag), out LanguagePair languagePair))
+			{
+				IReadOnlyCollection<Project> projects = await languagePair.GetProjectsAsync();
+				return projects.Select(p => p.CreateDto()).ToArray();
+			}
+
+			return null;
+		}
+
+		public async Task<ProjectDto> GetProjectAsync(string sourceLanguageTag, string targetLanguageTag, string projectId)
+		{
+			if (_languagePairs.TryGetValue((sourceLanguageTag, targetLanguageTag), out LanguagePair languagePair))
+			{
+				Project project = await languagePair.GetProjectAsync(projectId);
+				if (project != null)
+					return project.CreateDto();
+			}
+
+			return null;
+		}
+
+		public async Task<ProjectDto> AddProjectAsync(string sourceLanguageTag, string targetLanguageTag, ProjectDto newProject)
+		{
+			LanguagePair languagePair = _languagePairs.GetOrAdd((sourceLanguageTag, targetLanguageTag),
+				k => new LanguagePair(_smtModelFactory, _ruleEngineFactory, _textCorpusFactory, _options.InactiveEngineTimeout, _options.TrainProgressDir,
+					_options.RootDir, sourceLanguageTag, targetLanguageTag));
+			Project project = await languagePair.AddProjectAsync(newProject.Id, newProject.IsShared);
+			return project.CreateDto();
+		}
+
+		public async Task<bool> RemoveProjectAsync(string sourceLanguageTag, string targetLanguageTag, string projectId)
+		{
+			if (_languagePairs.TryGetValue((sourceLanguageTag, targetLanguageTag), out LanguagePair languagePair))
+				return await languagePair.RemoveProjectAsync(projectId);
 			return false;
 		}
 
-		public bool GetAllProjects(string sourceLanguageTag, string targetLanguageTag, out IReadOnlyList<ProjectDto> projects)
+		public async Task<TranslationResultDto> TranslateAsync(string sourceLanguageTag, string targetLanguageTag, string projectId, IReadOnlyList<string> segment)
 		{
-			LanguagePair languagePair;
-			if (_languagePairs.TryGetValue(Tuple.Create(sourceLanguageTag, targetLanguageTag), out languagePair))
+			Engine engine = await GetEngineAsync(sourceLanguageTag, targetLanguageTag, projectId);
+			if (engine != null)
 			{
-				lock (languagePair)
+				try
 				{
-					if (languagePair.Projects.Count > 0)
-					{
-						projects = languagePair.Projects.Select(p => p.CreateDto()).ToArray();
-						return true;
-					}
+					TranslationResult tr = await engine.TranslateAsync(segment.Select(w => w.ToLowerInvariant()).ToArray());
+					return tr.CreateDto(segment);
+				}
+				catch (ObjectDisposedException)
+				{
 				}
 			}
 
-			projects = null;
-			return false;
+			return null;
 		}
 
-		public bool TryGetProject(string sourceLanguageTag, string targetLanguageTag, string projectId, out ProjectDto project)
+		public async Task<IReadOnlyList<TranslationResultDto>> TranslateAsync(string sourceLanguageTag, string targetLanguageTag, string projectId, int n, IReadOnlyList<string> segment)
 		{
-			LanguagePair languagePair;
-			if (_languagePairs.TryGetValue(Tuple.Create(sourceLanguageTag, targetLanguageTag), out languagePair))
+			Engine engine = await GetEngineAsync(sourceLanguageTag, targetLanguageTag, projectId);
+			if (engine != null)
 			{
-				lock (languagePair)
+				try
 				{
-					Project p;
-					if (languagePair.Projects.TryGet(projectId, out p))
-					{
-						project = p.CreateDto();
-						return true;
-					}
+					IReadOnlyList<TranslationResult> trs = await engine.TranslateAsync(n, segment.Select(w => w.ToLowerInvariant()).ToArray());
+					return trs.Select(tr => tr.CreateDto(segment)).ToArray();
+				}
+				catch (ObjectDisposedException)
+				{
 				}
 			}
 
-			project = null;
-			return false;
+			return null;
 		}
 
-		public ProjectDto AddProject(string sourceLanguageTag, string targetLanguageTag, ProjectDto newProject)
+		public async Task<InteractiveTranslationResultDto> InteractiveTranslateAsync(string sourceLanguageTag, string targetLanguageTag, string projectId, IReadOnlyList<string> segment)
 		{
-			LanguagePair languagePair = _languagePairs.GetOrAdd(Tuple.Create(sourceLanguageTag, targetLanguageTag),
-				k => new LanguagePair(sourceLanguageTag, targetLanguageTag, Path.Combine(_options.RootDir, $"{sourceLanguageTag}_{targetLanguageTag}")));
-			lock (languagePair)
+			Engine engine = await GetEngineAsync(sourceLanguageTag, targetLanguageTag, projectId);
+			if (engine != null)
 			{
-				if (!Directory.Exists(languagePair.ConfigDirectory))
-					Directory.CreateDirectory(languagePair.ConfigDirectory);
-				Project project = CreateProject(languagePair, newProject.Id, newProject.IsShared);
-				SaveLanguagePairConfig(languagePair);
-				return project.CreateDto();
-			}
-		}
-
-		public bool RemoveProject(string sourceLanguageTag, string targetLanguageTag, string projectId)
-		{
-			LanguagePair languagePair;
-			if (_languagePairs.TryGetValue(Tuple.Create(sourceLanguageTag, targetLanguageTag), out languagePair))
-			{
-				lock (languagePair)
+				try
 				{
-					Project project;
-					if (languagePair.Projects.TryGet(projectId, out project))
+					(WordGraph WordGraph, TranslationResult RuleResult) result = await engine.InteractiveTranslateAsync(segment.Select(s => s.ToLowerInvariant()).ToArray());
+					return new InteractiveTranslationResultDto
 					{
-						languagePair.Projects.Remove(projectId);
-						lock (project.Engine)
-						{
-							project.Engine.Projects.Remove(project);
-							if (project.Engine.Projects.Count == 0)
-							{
-								project.Engine.Dispose();
-								if (project.Engine == languagePair.SharedEngine)
-									languagePair.SharedEngine = null;
-								if (Directory.Exists(project.Engine.ConfigDirectory))
-									Directory.Delete(project.Engine.ConfigDirectory, true);
-							}
-						}
-
-						SaveLanguagePairConfig(languagePair);
-						return true;
-					}
-				}
-			}
-			return false;
-		}
-
-		public bool TryTranslate(string sourceLanguageTag, string targetLanguageTag, string projectId, IReadOnlyList<string> segment, out TranslationResultDto result)
-		{
-			Engine engine;
-			if (TryGetEngine(sourceLanguageTag, targetLanguageTag, projectId, out engine))
-			{
-				lock (engine)
-				{
-					if (engine.IsDisposed)
-					{
-						result = null;
-						return false;
-					}
-
-					TranslationResult tr = engine.Translate(segment.Select(w => w.ToLowerInvariant()).ToArray());
-					result = tr.CreateDto(segment);
-					return true;
-				}
-			}
-
-			result = null;
-			return false;
-		}
-
-		public bool TryTranslate(string sourceLanguageTag, string targetLanguageTag, string projectId, int n, IReadOnlyList<string> segment, out IReadOnlyList<TranslationResultDto> results)
-		{
-			Engine engine;
-			if (TryGetEngine(sourceLanguageTag, targetLanguageTag, projectId, out engine))
-			{
-				lock (engine)
-				{
-					if (engine.IsDisposed)
-					{
-						results = null;
-						return false;
-					}
-
-					IEnumerable<TranslationResult> trs = engine.Translate(n, segment.Select(w => w.ToLowerInvariant()).ToArray());
-				    results = trs.Select(tr => tr.CreateDto(segment)).ToArray();
-					return true;
-				}
-			}
-
-			results = null;
-			return false;
-		}
-
-		public bool TryInteractiveTranslate(string sourceLanguageTag, string targetLanguageTag, string projectId, IReadOnlyList<string> segment, out InteractiveTranslationResultDto result)
-		{
-			Engine engine;
-			if (TryGetEngine(sourceLanguageTag, targetLanguageTag, projectId, out engine))
-			{
-				lock (engine)
-				{
-					if (engine.IsDisposed)
-					{
-						result = null;
-						return false;
-					}
-
-					WordGraph smtWordGraph;
-					TranslationResult ruleResult;
-					engine.InteractiveTranslate(segment.Select(s => s.ToLowerInvariant()).ToArray(), out smtWordGraph, out ruleResult);
-					result = new InteractiveTranslationResultDto
-					{
-						WordGraph = smtWordGraph.CreateDto(segment),
-						RuleResult = ruleResult?.CreateDto(segment)
+						WordGraph = result.WordGraph.CreateDto(segment),
+						RuleResult = result.RuleResult?.CreateDto(segment)
 					};
-					return true;
+				}
+				catch (ObjectDisposedException)
+				{
 				}
 			}
 
-			result = null;
-			return false;
+			return null;
 		}
 
-		public bool TryTrainSegment(string sourceLanguageTag, string targetLanguageTag, string projectId, SegmentPairDto segmentPair)
+		public async Task<bool> TrainSegmentAsync(string sourceLanguageTag, string targetLanguageTag, string projectId, SegmentPairDto segmentPair)
 		{
-			Engine engine;
-			if (TryGetEngine(sourceLanguageTag, targetLanguageTag, projectId, out engine))
+			Engine engine = await GetEngineAsync(sourceLanguageTag, targetLanguageTag, projectId);
+			if (engine != null)
 			{
-				lock (engine)
+				try
 				{
-					if (engine.IsDisposed)
-						return false;
-
-					engine.TrainSegmentPair(segmentPair.SourceSegment.Select(s => s.ToLowerInvariant()).ToArray(),
+					await engine.TrainSegmentPairAsync(segmentPair.SourceSegment.Select(s => s.ToLowerInvariant()).ToArray(),
 						segmentPair.TargetSegment.Select(s => s.ToLowerInvariant()).ToArray());
 					return true;
 				}
-			}
-
-			return false;
-		}
-
-		private bool TryGetEngine(string sourceLanguageTag, string targetLanguageTag, string projectId, out Engine engine)
-		{
-			LanguagePair languagePair;
-			if (_languagePairs.TryGetValue(Tuple.Create(sourceLanguageTag, targetLanguageTag), out languagePair))
-			{
-				lock (languagePair)
+				catch (ObjectDisposedException)
 				{
-					if (projectId == null)
-					{
-						engine = languagePair.SharedEngine;
-						return true;
-					}
-
-					Project project;
-					if (languagePair.Projects.TryGet(projectId, out project))
-					{
-						engine = project.Engine;
-						return true;
-					}
 				}
 			}
 
-			engine = null;
 			return false;
 		}
 
-		private Project CreateProject(LanguagePair languagePair, string id, bool isShared)
-		{
-			Engine engine;
-			if (isShared)
-			{
-				if (languagePair.SharedEngine == null)
-					languagePair.SharedEngine = CreateEngine(languagePair, Path.Combine(languagePair.ConfigDirectory, "shared-engine"));
-				engine = languagePair.SharedEngine;
-			}
-			else
-			{
-				string projectDir = Path.Combine(languagePair.ConfigDirectory, id);
-				engine = CreateEngine(languagePair, projectDir);
-			}
+	    public async Task<bool> StartRebuildAsync(string sourceLanguageTag, string targetLanguageTag, string projectId)
+	    {
+		    Engine engine = await GetEngineAsync(sourceLanguageTag, targetLanguageTag, projectId);
+		    if (engine != null)
+		    {
+			    try
+			    {
+				    await engine.StartRebuildAsync();
+				    return true;
+			    }
+			    catch (ObjectDisposedException)
+			    {
+			    }
+		    }
 
-			var project = new Project(id, isShared, engine);
-			languagePair.Projects.Add(project);
-			engine.Projects.Add(project);
-			return project;
+			return false;
 		}
 
-		private Engine CreateEngine(LanguagePair languagePair, string configDir)
+		public async Task<bool> CancelRebuildAsync(string sourceLanguageTag, string targetLanguageTag, string projectId)
 		{
-			return new Engine(_smtModelFactory, _ruleEngineFactory, _options.InactiveEngineTimeout, configDir,
-				languagePair.SourceLanguageTag, languagePair.TargetLanguageTag);
+			Engine engine = await GetEngineAsync(sourceLanguageTag, targetLanguageTag, projectId);
+			if (engine != null)
+			{
+				try
+				{
+					await engine.CancelRebuildAsync();
+					return true;
+				}
+				catch (ObjectDisposedException)
+				{
+				}
+			}
+
+			return false;
 		}
 
-		private void SaveLanguagePairConfig(LanguagePair languagePair)
+		private async Task<Engine> GetEngineAsync(string sourceLanguageTag, string targetLanguageTag, string projectId)
 		{
-			File.WriteAllText(Path.Combine(languagePair.ConfigDirectory, "config.json"), JsonConvert.SerializeObject(languagePair.CreateDto(), Formatting.Indented));
+			if (_languagePairs.TryGetValue((sourceLanguageTag, targetLanguageTag), out LanguagePair languagePair))
+				return await languagePair.GetEngineAsync(projectId);
+
+			return null;
 		}
 
 		protected override void DisposeManagedResources()
 		{
-			_isCommitTimerStopped = true;
 			_commitTimer.Dispose();
 
 			foreach (LanguagePair languagePair in _languagePairs.Values)
-			{
-				lock (languagePair)
-				{
-					foreach (Engine engine in languagePair.Projects.Select(p => p.Engine).Distinct())
-					{
-						lock (engine)
-						{
-							engine.Dispose();
-						}
-					}
-				}
-			}
+				languagePair.Dispose();
 
 			_languagePairs.Clear();
 		}
