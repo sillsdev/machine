@@ -48,6 +48,7 @@ namespace SIL.Machine.WebApi.Tests.Models
 							checkCanceled();
 					}));
 				await env.Engine.StartRebuildAsync();
+				await Task.Delay(10);
 				await env.Engine.CancelRebuildAsync();
 				env.Engine.WaitForRebuildToComplete();
 				env.BatchTrainer.Received().Train(Arg.Any<IProgress<SmtTrainProgress>>(), Arg.Any<Action>());
