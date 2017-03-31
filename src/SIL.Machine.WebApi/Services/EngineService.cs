@@ -20,7 +20,7 @@ namespace SIL.Machine.WebApi.Services
 		private readonly ISmtModelFactory _smtModelFactory;
 		private readonly IRuleEngineFactory _ruleEngineFactory;
 		private readonly ITextCorpusFactory _textCorpusFactory;
-		private readonly StoppableTimer _commitTimer;
+		private readonly AsyncTimer _commitTimer;
 
 		public EngineService(IOptions<EngineOptions> options, ISmtModelFactory smtModelFactory, IRuleEngineFactory ruleEngineFactory, ITextCorpusFactory textCorpusFactory)
 		{
@@ -40,19 +40,19 @@ namespace SIL.Machine.WebApi.Services
 				if (!_languagePairs.TryAdd((languagePair.SourceLanguageTag, languagePair.TargetLanguageTag), languagePair))
 					languagePair.Dispose();
 			}
-			_commitTimer = new StoppableTimer(EngineCommit);
+			_commitTimer = new AsyncTimer(EngineCommitAsync);
 			_commitTimer.Start(_options.EngineCommitFrequency);
 		}
 
-		private void EngineCommit()
+		private async Task EngineCommitAsync()
 		{
 			foreach (LanguagePair languagePair in _languagePairs.Values)
 			{
-				foreach (Engine engine in languagePair.GetEngines())
+				foreach (Engine engine in await languagePair.GetEnginesAsync())
 				{
 					try
 					{
-						engine.Commit();
+						await engine.CommitAsync();
 					}
 					catch (ObjectDisposedException)
 					{

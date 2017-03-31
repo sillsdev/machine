@@ -22,7 +22,7 @@ namespace SIL.Machine.WebApi.Tests.Services
 	public class EngineServiceTests
 	{
 		[Fact]
-		public async Task GetAllLanguagePairsAsync_NoLanguagePairs_ReturnsEmpty()
+		public async Task GetLanguagePairsAsync_NoLanguagePairs_ReturnsEmpty()
 		{
 			using (var env = new TestEnvironment())
 			{
@@ -32,7 +32,7 @@ namespace SIL.Machine.WebApi.Tests.Services
 		}
 
 		[Fact]
-		public async Task GetAllLanguagePairsAsync_HasLanguagePairs_ReturnsLanguagePairDtos()
+		public async Task GetLanguagePairsAsync_HasLanguagePairs_ReturnsLanguagePairDtos()
 		{
 			using (var env = new TestEnvironment())
 			{
@@ -44,7 +44,7 @@ namespace SIL.Machine.WebApi.Tests.Services
 		}
 
 		[Fact]
-		public async Task GetAllProjectsAsync_LanguagePairDoesNotExist_ReturnsNull()
+		public async Task GetProjectsAsync_LanguagePairDoesNotExist_ReturnsNull()
 		{
 			using (var env = new TestEnvironment())
 			{
@@ -54,7 +54,7 @@ namespace SIL.Machine.WebApi.Tests.Services
 		}
 
 		[Fact]
-		public async Task GetAllProjectsAsync_LanguagePairExists_ReturnsProjectDtos()
+		public async Task GetProjectsAsync_LanguagePairExists_ReturnsProjectDtos()
 		{
 			using (var env = new TestEnvironment())
 			{

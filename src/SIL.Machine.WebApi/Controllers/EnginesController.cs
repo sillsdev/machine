@@ -18,7 +18,7 @@ namespace SIL.Machine.WebApi.Controllers
 		}
 
 		[HttpGet]
-		public async Task<IReadOnlyCollection<LanguagePairDto>> GetAllLanguagePairs()
+		public async Task<IReadOnlyCollection<LanguagePairDto>> GetLanguagePairs()
 		{
 			return await _engineService.GetLanguagePairsAsync();
 		}
@@ -60,7 +60,7 @@ namespace SIL.Machine.WebApi.Controllers
 		}
 
 		[HttpGet("{sourceLanguageTag}/{targetLanguageTag}/projects")]
-		public async Task<IActionResult> GetAllProjects(string sourceLanguageTag, string targetLanguageTag)
+		public async Task<IActionResult> GetProjects(string sourceLanguageTag, string targetLanguageTag)
 		{
 			IReadOnlyCollection<ProjectDto> results = await _engineService.GetProjectsAsync(sourceLanguageTag, targetLanguageTag);
 			if (results != null)

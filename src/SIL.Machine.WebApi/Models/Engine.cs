@@ -166,9 +166,9 @@ namespace SIL.Machine.WebApi.Models
 			}
 		}
 
-		public void Commit()
+		public async Task CommitAsync()
 		{
-			using (_lock.Wait())
+			using (await _lock.WaitAsync())
 			{
 				CheckDisposed();
 

@@ -1,43 +1,42 @@
 ﻿using System;
 using System.Threading;
 using SIL.ObjectModel;
+using System.Threading.Tasks;
 
 namespace SIL.Threading
 {
-	public class StoppableTimer : DisposableBase
+	public class AsyncTimer : DisposableBase
 	{
 		private readonly Timer _timer;
-		private readonly Action _callback;
-		private readonly object _syncObject = new object();
+		private readonly Func<Task> _callback;
+		private readonly AsyncLock _lock;
 		private bool _running;
 
-		public StoppableTimer(Action callback)
+		public AsyncTimer(Func<Task> callback)
 		{
 			_callback = callback;
-			_timer = new Timer(s => ((StoppableTimer) s).FireTimer(), this, Timeout.Infinite, Timeout.Infinite);
+			_lock = new AsyncLock();
+			_timer = new Timer(FireTimerAsync, null, Timeout.Infinite, Timeout.Infinite);
 		}
 
 		public void Start(TimeSpan period)
 		{
-			lock (_syncObject)
-			{
-				_running = true;
-				_timer.Change(period, period);
-			}
+			_running = true;
+			_timer.Change(period, period);
 		}
 
-		private void FireTimer()
+		private async void FireTimerAsync(object state)
 		{
-			lock (_syncObject)
+			using (await _lock.WaitAsync())
 			{
 				if (_running)
-					_callback();
+					await _callback();
 			}
 		}
 
 		public void Stop()
 		{
-			lock (_syncObject)
+			using (_lock.Wait())
 			{
 				// FireTimer is *not* running _callback (since we got the lock)
 				_timer.Change(Timeout.Infinite, Timeout.Infinite);
