@@ -135,6 +135,14 @@ namespace SIL.Machine.WebApi.Models
 				return _projects.Select(p => p.Engine).Distinct().ToArray();
 		}
 
+		public IReadOnlyCollection<Engine> GetEngines()
+		{
+			CheckDisposed();
+
+			using (_lock.Wait())
+				return _projects.Select(p => p.Engine).Distinct().ToArray();
+		}
+
 		public async Task<Engine> GetEngineAsync(string projectId)
 		{
 			CheckDisposed();

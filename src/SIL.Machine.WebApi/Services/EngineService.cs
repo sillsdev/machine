@@ -40,19 +40,19 @@ namespace SIL.Machine.WebApi.Services
 				if (!_languagePairs.TryAdd((languagePair.SourceLanguageTag, languagePair.TargetLanguageTag), languagePair))
 					languagePair.Dispose();
 			}
-			_commitTimer = new StoppableTimer(EngineCommitAsync);
+			_commitTimer = new StoppableTimer(EngineCommit);
 			_commitTimer.Start(_options.EngineCommitFrequency);
 		}
 
-		private async void EngineCommitAsync()
+		private void EngineCommit()
 		{
 			foreach (LanguagePair languagePair in _languagePairs.Values)
 			{
-				foreach (Engine engine in await languagePair.GetEnginesAsync())
+				foreach (Engine engine in languagePair.GetEngines())
 				{
 					try
 					{
-						await engine.CommitAsync();
+						engine.Commit();
 					}
 					catch (ObjectDisposedException)
 					{

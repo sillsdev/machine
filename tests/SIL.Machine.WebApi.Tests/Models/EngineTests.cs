@@ -58,7 +58,7 @@ namespace SIL.Machine.WebApi.Tests.Models
 		}
 
 		[Fact]
-		public void Constructor_RebuildRequired_RebuildExecuted()
+		public void InitExisting_RebuildRequired_RebuildExecuted()
 		{
 			using (var env = new TestEnvironment())
 			{
@@ -78,7 +78,7 @@ namespace SIL.Machine.WebApi.Tests.Models
 		}
 
 		[Fact]
-		public async Task CommitAsync_LoadedInactive_Unloaded()
+		public async Task Commit_LoadedInactive_Unloaded()
 		{
 			using (var env = new TestEnvironment())
 			{
@@ -86,21 +86,21 @@ namespace SIL.Machine.WebApi.Tests.Models
 				env.Engine.InitNew();
 				await env.Engine.TrainSegmentPairAsync("esto es una prueba .".Split(), "this is a test .".Split());
 				await Task.Delay(10);
-				await env.Engine.CommitAsync();
+				env.Engine.Commit();
 				env.SmtModel.Received().Save();
 				env.Engine.IsLoaded.Should().BeFalse();
 			}
 		}
 
 		[Fact]
-		public async Task CommitAsync_LoadedActive_Loaded()
+		public async Task Commit_LoadedActive_Loaded()
 		{
 			using (var env = new TestEnvironment())
 			{
 				env.CreateEngine(TimeSpan.FromHours(1));
 				env.Engine.InitNew();
 				await env.Engine.TrainSegmentPairAsync("esto es una prueba .".Split(), "this is a test .".Split());
-				await env.Engine.CommitAsync();
+				env.Engine.Commit();
 				env.SmtModel.Received().Save();
 				env.Engine.IsLoaded.Should().BeTrue();
 			}
