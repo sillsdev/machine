@@ -34,7 +34,7 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly List<Segment> _sourceSegments;
 		private readonly List<Segment> _targetSegments;
 		private readonly HashSet<int> _approvedSegments;
-		private readonly List<Tuple<int, int>[]> _alignments; 
+		private readonly List<(int, int)[]> _alignments; 
 		private int _currentSegment = -1;
 		private readonly HashSet<int> _paragraphs;
 		private readonly BulkObservableList<SuggestionViewModel> _suggestions;
@@ -62,7 +62,7 @@ namespace SIL.Machine.Translation.TestApp
 			_sourceSegments = new List<Segment>();
 			_targetSegments = new List<Segment>();
 			_approvedSegments = new HashSet<int>();
-			_alignments = new List<Tuple<int, int>[]>();
+			_alignments = new List<(int, int)[]>();
 			_paragraphs = new HashSet<int>();
 			_goToNextSegmentCommand = new RelayCommand(GoToNextSegment, CanGoToNextSegment);
 			_goToPrevSegmentCommand = new RelayCommand(GoToPrevSegment, CanGoToPrevSegment);
@@ -129,10 +129,10 @@ namespace SIL.Machine.Translation.TestApp
 			{
 				using (var alignmentsWriter = new StreamWriter(_alignmentFileName))
 				{
-					foreach (Tuple<int, int>[] alignment in _alignments)
+					foreach ((int SourceIndex, int TargetIndex)[] alignment in _alignments)
 					{
 						if (alignment != null)
-							alignmentsWriter.WriteLine(string.Join(" ", alignment.Select(t => $"{t.Item1}-{t.Item2}")));
+							alignmentsWriter.WriteLine(string.Join(" ", alignment.Select(t => $"{t.SourceIndex}-{t.TargetIndex}")));
 						else
 							alignmentsWriter.WriteLine();
 					}
@@ -218,12 +218,12 @@ namespace SIL.Machine.Translation.TestApp
 					break;
 
 				string[] tokens = line.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries);
-				_alignments[i] = new Tuple<int, int>[tokens.Length];
+				_alignments[i] = new (int, int)[tokens.Length];
 				for (int j = 0; j < tokens.Length; j++)
 				{
 					string token = tokens[j];
 					int index = token.IndexOf('-');
-					_alignments[i][j] = Tuple.Create(int.Parse(token.Substring(0, index)), int.Parse(token.Substring(index + 1)));
+					_alignments[i][j] = (int.Parse(token.Substring(0, index)), int.Parse(token.Substring(index + 1)));
 				}
 			}
 		}
@@ -293,10 +293,10 @@ namespace SIL.Machine.Translation.TestApp
 			IsChanged = true;
 		}
 
-		private Tuple<int, int>[] GetAlignedWords(WordAlignmentMatrix matrix)
+		private (int, int)[] GetAlignedWords(WordAlignmentMatrix matrix)
 		{
-			return Enumerable.Range(0, matrix.RowCount).SelectMany(i => Enumerable.Range(0, matrix.ColumnCount), Tuple.Create)
-				.Where(t => matrix[t.Item1, t.Item2] == AlignmentType.Aligned).ToArray();
+			return Enumerable.Range(0, matrix.RowCount).SelectMany(i => Enumerable.Range(0, matrix.ColumnCount), (s, t) => (SourceIndex: s, TargetIndex: t))
+				.Where(t => matrix[t.SourceIndex, t.TargetIndex] == AlignmentType.Aligned).ToArray();
 		}
 
 		public ICommand SelectSourceSegmentCommand => _selectSourceSegmentCommand;
@@ -351,7 +351,7 @@ namespace SIL.Machine.Translation.TestApp
 		private void StartSegmentTranslation()
 		{
 			_sourceSegmentWords.AddRange(_tokenizer.TokenizeToStrings(_sourceSegments[_currentSegment].Text));
-			_curSession = Engine.TranslateInteractively(_sourceSegmentWords.Select(w => w.ToLowerInvariant()).ToArray());
+			_curSession = Engine.TranslateInteractively(_sourceSegmentWords.Select(Preprocessors.Lowercase).ToArray());
 			_isTranslating = true;
 			UpdatePrefix();
 			UpdateSourceSegmentSelection();
@@ -362,7 +362,7 @@ namespace SIL.Machine.Translation.TestApp
 			if (!_isTranslating)
 				return;
 
-			_curSession.SetPrefix(_tokenizer.TokenizeToStrings(_targetSegments[_currentSegment].Text).Select(w => w.ToLowerInvariant()).ToArray(),
+			_curSession.SetPrefix(_tokenizer.TokenizeToStrings(_targetSegments[_currentSegment].Text).Select(Preprocessors.Lowercase).ToArray(),
 				TargetSegment.Length == 0 || TargetSegment.EndsWith(" "));
 			UpdateSuggestions();
 		}

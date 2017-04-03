@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace SIL.Machine.Corpora
 {
 	public class TextAlignment
 	{
-		public TextAlignment(TextSegmentRef segRef, IEnumerable<Tuple<int, int>> alignedWords)
+		public TextAlignment(TextSegmentRef segRef, IEnumerable<(int SourceIndex, int TargetIndex)> alignedWords)
 		{
 			SegmentRef = segRef;
 			AlignedWords = alignedWords.ToArray();
@@ -14,6 +13,6 @@ namespace SIL.Machine.Corpora
 
 		public TextSegmentRef SegmentRef { get; }
 
-		public IEnumerable<Tuple<int, int>> AlignedWords { get; }
+		public IEnumerable<(int SourceIndex, int TargetIndex)> AlignedWords { get; }
 	}
 }

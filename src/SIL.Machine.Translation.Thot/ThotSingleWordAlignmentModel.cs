@@ -11,6 +11,12 @@ namespace SIL.Machine.Translation.Thot
 		private readonly bool _closeOnDispose;
 		private readonly string _prefFileName;
 
+		public ThotSingleWordAlignmentModel()
+		{
+			Handle = Thot.swAlignModel_create();
+			_closeOnDispose = true;
+		}
+
 		internal ThotSingleWordAlignmentModel(IntPtr handle)
 		{
 			Handle = handle;

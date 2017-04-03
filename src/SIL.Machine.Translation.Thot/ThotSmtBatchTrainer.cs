@@ -359,7 +359,7 @@ namespace SIL.Machine.Translation.Thot
 						writer.Write(groupEntries[i].Item1);
 						writer.Write(groupEntries[i].Item2);
 						writer.Write(groupEntries[i].Item3);
-						writer.Write((float)newLcSrc);
+						writer.Write((float) newLcSrc);
 #endif
 					}
 				}

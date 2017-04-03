@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace SIL.Machine.Translation
@@ -238,20 +239,8 @@ namespace SIL.Machine.Translation
 
 		public override string ToString()
 		{
-			var sb = new StringBuilder();
-			for (int i = RowCount - 1; i >= 0; i--)
-			{
-				for (int j = 0; j < ColumnCount; j++)
-				{
-					if (_matrix[i, j] == AlignmentType.Unknown)
-						sb.Append("U");
-					else
-						sb.Append((int) _matrix[i, j]);
-					sb.Append(" ");
-				}
-				sb.AppendLine();
-			}
-			return sb.ToString();
+			return string.Join(" ", Enumerable.Range(0, RowCount).SelectMany(i => Enumerable.Range(0, ColumnCount), Tuple.Create)
+				.Where(t => _matrix[t.Item1, t.Item2] == AlignmentType.Aligned).Select(t => $"{t.Item1}-{t.Item2}"));
 		}
 
 		public WordAlignmentMatrix Clone()

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Translation;
 
@@ -7,7 +6,8 @@ namespace SIL.Machine.Corpora
 {
 	public class ParallelTextSegment
 	{
-		public ParallelTextSegment(TextSegmentRef segRef, IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment, IEnumerable<Tuple<int, int>> alignedWords = null)
+		public ParallelTextSegment(TextSegmentRef segRef, IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
+			IEnumerable<(int SourceIndex, int TargetIndex)> alignedWords = null)
 		{
 			SegmentRef = segRef;
 			SourceSegment = sourceSegment;
@@ -23,7 +23,7 @@ namespace SIL.Machine.Corpora
 
 		public IReadOnlyList<string> TargetSegment { get; }
 
-		public IEnumerable<Tuple<int, int>> AlignedWords { get; }
+		public IEnumerable<(int SourceIndex, int TargetIndex)> AlignedWords { get; }
 
 		public WordAlignmentMatrix CreateAlignmentMatrix(bool isUnknown)
 		{
@@ -31,21 +31,21 @@ namespace SIL.Machine.Corpora
 				return null;
 
 			var matrix = new WordAlignmentMatrix(SourceSegment.Count, TargetSegment.Count, isUnknown ? AlignmentType.Unknown : AlignmentType.NotAligned);
-			foreach (Tuple<int, int> alignment in AlignedWords)
+			foreach ((int SourceIndex, int TargetIndex) alignment in AlignedWords)
 			{
-				matrix[alignment.Item1, alignment.Item2] = AlignmentType.Aligned;
+				matrix[alignment.SourceIndex, alignment.TargetIndex] = AlignmentType.Aligned;
 				if (isUnknown)
 				{
 					for (int i = 0; i < SourceSegment.Count; i++)
 					{
-						if (matrix[i, alignment.Item2] == AlignmentType.Unknown)
-							matrix[i, alignment.Item2] = AlignmentType.NotAligned;
+						if (matrix[i, alignment.TargetIndex] == AlignmentType.Unknown)
+							matrix[i, alignment.TargetIndex] = AlignmentType.NotAligned;
 					}
 
 					for (int j = 0; j < TargetSegment.Count; j++)
 					{
-						if (matrix[alignment.Item1, j] == AlignmentType.Unknown)
-							matrix[alignment.Item1, j] = AlignmentType.NotAligned;
+						if (matrix[alignment.SourceIndex, j] == AlignmentType.Unknown)
+							matrix[alignment.SourceIndex, j] = AlignmentType.NotAligned;
 					}
 				}
 			}

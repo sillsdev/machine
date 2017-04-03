@@ -67,16 +67,14 @@ namespace SIL.Machine.Morphology.HermitCrab
 			{
 				Console.WriteLine();
 				Console.WriteLine("IO Error: " + ioe.Message);
-				if (output != null)
-					output.Close();
+				output?.Close();
 				return -1;
 			}
 			catch (Exception e)
 			{
 				Console.WriteLine();
 				Console.WriteLine("Load Error: " + e.Message);
-				if (output != null)
-					output.Close();
+				output?.Close();
 				return -1;
 			}
 
@@ -119,8 +117,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 				}
 			}
 
-			if (output != null)
-				output.Close();
+			output?.Close();
 
 			return 0;
 		}

@@ -21,6 +21,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Tokenization\TokenizationExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tokenization\WhitespaceTokenizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\PhraseInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\Preprocessors.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\EcmScoreInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\EditDistance.cs" />

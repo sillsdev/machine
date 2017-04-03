@@ -251,8 +251,7 @@ namespace SIL.Machine.WebApi.Models
 
 			ITextCorpus sourceCorpus = _textCorpusFactory.Create(_projects, _wordTokenizer, TextCorpusType.Source);
 			ITextCorpus targetCorpus = _textCorpusFactory.Create(_projects, _wordTokenizer, TextCorpusType.Target);
-			Func<string, string> preprocess = s => s.ToLowerInvariant();
-			_batchTrainer = _smtModel.CreateBatchTrainer(preprocess, sourceCorpus, preprocess, targetCorpus);
+			_batchTrainer = _smtModel.CreateBatchTrainer(Preprocessors.Lowercase, sourceCorpus, Preprocessors.Lowercase, targetCorpus);
 			_cts?.Dispose();
 			_cts = new CancellationTokenSource();
 			CancellationToken token = _cts.Token;

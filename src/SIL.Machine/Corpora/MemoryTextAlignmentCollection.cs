@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace SIL.Machine.Corpora
@@ -19,7 +18,7 @@ namespace SIL.Machine.Corpora
 		public ITextAlignmentCollection Invert()
 		{
 			return new MemoryTextAlignmentCollection(Id,
-				Alignments.Select(ta => new TextAlignment(ta.SegmentRef, ta.AlignedWords.Select(a => Tuple.Create(a.Item2, a.Item1)))));
+				Alignments.Select(ta => new TextAlignment(ta.SegmentRef, ta.AlignedWords.Select(a => (a.TargetIndex, a.SourceIndex)))));
 		}
 	}
 }

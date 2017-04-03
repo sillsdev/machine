@@ -130,7 +130,7 @@ namespace SIL.Machine.WebApi.Services
 			{
 				try
 				{
-					TranslationResult tr = await engine.TranslateAsync(segment.Select(w => w.ToLowerInvariant()).ToArray());
+					TranslationResult tr = await engine.TranslateAsync(segment.Select(Preprocessors.Lowercase).ToArray());
 					return tr.CreateDto(segment);
 				}
 				catch (ObjectDisposedException)
@@ -148,7 +148,7 @@ namespace SIL.Machine.WebApi.Services
 			{
 				try
 				{
-					IReadOnlyList<TranslationResult> trs = await engine.TranslateAsync(n, segment.Select(w => w.ToLowerInvariant()).ToArray());
+					IReadOnlyList<TranslationResult> trs = await engine.TranslateAsync(n, segment.Select(Preprocessors.Lowercase).ToArray());
 					return trs.Select(tr => tr.CreateDto(segment)).ToArray();
 				}
 				catch (ObjectDisposedException)
@@ -166,7 +166,7 @@ namespace SIL.Machine.WebApi.Services
 			{
 				try
 				{
-					(WordGraph WordGraph, TranslationResult RuleResult) result = await engine.InteractiveTranslateAsync(segment.Select(s => s.ToLowerInvariant()).ToArray());
+					(WordGraph WordGraph, TranslationResult RuleResult) result = await engine.InteractiveTranslateAsync(segment.Select(Preprocessors.Lowercase).ToArray());
 					return new InteractiveTranslationResultDto
 					{
 						WordGraph = result.WordGraph.CreateDto(segment),
@@ -188,8 +188,8 @@ namespace SIL.Machine.WebApi.Services
 			{
 				try
 				{
-					await engine.TrainSegmentPairAsync(segmentPair.SourceSegment.Select(s => s.ToLowerInvariant()).ToArray(),
-						segmentPair.TargetSegment.Select(s => s.ToLowerInvariant()).ToArray());
+					await engine.TrainSegmentPairAsync(segmentPair.SourceSegment.Select(Preprocessors.Lowercase).ToArray(),
+						segmentPair.TargetSegment.Select(Preprocessors.Lowercase).ToArray());
 					return true;
 				}
 				catch (ObjectDisposedException)
