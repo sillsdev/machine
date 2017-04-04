@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 
-namespace SIL.Console
+namespace SIL.CommandLine
 {
 	/// <summary>
 	/// An ASCII progress bar

@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using SIL.IO;
@@ -43,11 +42,11 @@ namespace SIL.Machine.Translation.Thot.Tests
 					{
 						new MemoryTextAlignmentCollection("text1", new[]
 							{
-								new TextAlignment(new TextSegmentRef(1, 1), new[] {Tuple.Create(8, 9)}),
-								new TextAlignment(new TextSegmentRef(1, 2), new[] {Tuple.Create(6, 10)}),
-								new TextAlignment(new TextSegmentRef(1, 3), new[] {Tuple.Create(6, 8)}),
-								new TextAlignment(new TextSegmentRef(1, 4), new[] {Tuple.Create(6, 4)}),
-								new TextAlignment(new TextSegmentRef(1, 5), new Tuple<int, int>[0])     
+								new TextAlignment(new TextSegmentRef(1, 1), new[] {(8, 9)}),
+								new TextAlignment(new TextSegmentRef(1, 2), new[] {(6, 10)}),
+								new TextAlignment(new TextSegmentRef(1, 3), new[] {(6, 8)}),
+								new TextAlignment(new TextSegmentRef(1, 4), new[] {(6, 4)}),
+								new TextAlignment(new TextSegmentRef(1, 5), new (int, int)[0])     
 							})
 					});
 

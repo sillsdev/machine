@@ -1,8 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Microsoft.Extensions.CommandLineUtils;
-using SIL.Console;
+using SIL.CommandLine;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
 using SIL.Machine.Translation.Thot;
@@ -16,9 +17,11 @@ namespace SIL.Machine.Translation
 			var app = new CommandLineApplication(false)
 			{
 				Name = "aligner",
-				Description = "Aligns words in a parallel text corpus."
+				FullName = "Machine Aligner"
 			};
 			app.HelpOption("-?|-h|--help");
+			string version = Assembly.GetEntryAssembly().GetName().Version.ToString();
+			app.VersionOption("-v|--version", version);
 
 			CommandOption corpus1Option = app.Option("-c1|--corpus1 <path>", "The first corpus file(s).", CommandOptionType.MultipleValue);
 			CommandOption corpus2Option = app.Option("-c2|--corpus2 <path>", "The second corpus file(s).", CommandOptionType.MultipleValue);
@@ -27,15 +30,21 @@ namespace SIL.Machine.Translation
 
 			app.OnExecute(() =>
 				{
+					if (args.Length == 0)
+					{
+						app.ShowHelp();
+						return 0;
+					}
+
 					if (!corpus1Option.HasValue())
 					{
-						app.Out.WriteLine("A first corpus file was not specified.");
+						app.Out.WriteLine("A file was not specified for the first corpus.");
 						return 1;
 					}
 
 					if (!corpus2Option.HasValue())
 					{
-						app.Out.WriteLine("A second corpus file was not specified.");
+						app.Out.WriteLine("A file was not specified for the second corpus.");
 						return 1;
 					}
 
@@ -47,7 +56,7 @@ namespace SIL.Machine.Translation
 
 					if (corpus1Option.Values.Count != corpus2Option.Values.Count)
 					{
-						app.Out.WriteLine("The number of corpus files are not the same.");
+						app.Out.WriteLine("The number of files in the two corpora are not the same.");
 						return 1;
 					}
 
