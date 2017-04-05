@@ -28,6 +28,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Translation\ErrorCorrectionModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\ErrorCorrectionWordGraphProcessor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\SegmentEditDistance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationRestClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationSources.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordAlignmentMatrix.cs" />
@@ -35,5 +36,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordEditDistance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordGraph.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordGraphArc.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Web\HttpResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Web\IHttpClient.cs" />
   </ItemGroup>
 </Project>

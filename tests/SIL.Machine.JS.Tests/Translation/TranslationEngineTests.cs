@@ -1,9 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Bridge.Html5;
 using Bridge.QUnit;
 using SIL.Machine.JS.Tests.Web;
 using SIL.Machine.Tokenization;
 using SIL.Machine.Translation;
+using SIL.Machine.Web;
 
 namespace SIL.Machine.JS.Tests.Translation
 {
@@ -22,7 +24,7 @@ namespace SIL.Machine.JS.Tests.Translation
 		private static void TranslateInteractively_Success_ReturnsSession(Assert assert)
 		{
 			var tokenizer = new LatinWordTokenizer();
-			var webClient = new MockWebClient();
+			var httpClient = new MockHttpClient();
 			dynamic json = new
 			{
 				wordGraph = new
@@ -109,9 +111,14 @@ namespace SIL.Machine.JS.Tests.Translation
 					}
 				}
 			};
-			webClient.Requests.Add(new MockRequest {ResponseText = JSON.Stringify(json)});
+			httpClient.Requests.Add(new MockRequest
+				{
+					Method = HttpRequestMethod.Post,
+					ResponseText = JSON.Stringify(json)
+				});
 
-			var engine = new TranslationEngine("http://localhost", "es", "en", "project1", tokenizer, tokenizer, webClient);
+			var engine = new TranslationEngine("http://localhost/", "es", "en", "project1", tokenizer, tokenizer, httpClient);
+			Action done = assert.Async();
 			engine.TranslateInteractively("Esto es una prueba.", 0.2, session =>
 				{
 					assert.NotEqual(session, null);
@@ -144,26 +151,33 @@ namespace SIL.Machine.JS.Tests.Translation
 					assert.Equal(ruleResult.Alignment[2, 2], AlignmentType.Aligned);
 					assert.Equal(ruleResult.Alignment[3, 3], AlignmentType.Aligned);
 					assert.Equal(ruleResult.Alignment[4, 4], AlignmentType.Aligned);
+					done();
 				});
 		}
 
 		private static void TranslateInteractively_Error_ReturnsNull(Assert assert)
 		{
 			var tokenizer = new LatinWordTokenizer();
-			var webClient = new MockWebClient();
-			webClient.Requests.Add(new MockRequest {ErrorStatus = 404});
+			var httpClient = new MockHttpClient();
+			httpClient.Requests.Add(new MockRequest
+				{
+					Method = HttpRequestMethod.Post,
+					ErrorStatus = 404
+				});
 
-			var engine = new TranslationEngine("http://localhost", "es", "en", "project1", tokenizer, tokenizer, webClient);
+			var engine = new TranslationEngine("http://localhost/", "es", "en", "project1", tokenizer, tokenizer, httpClient);
+			Action done = assert.Async();
 			engine.TranslateInteractively("Esto es una prueba.", 0.2, session =>
 				{
 					assert.Equal(session, null);
+					done();
 				});
 		}
 
 		private static void TranslateInteractively_NoRuleResult_ReturnsSession(Assert assert)
 		{
 			var tokenizer = new LatinWordTokenizer();
-			var webClient = new MockWebClient();
+			var httpClient = new MockHttpClient();
 			dynamic json = new
 			{
 				wordGraph = new
@@ -174,14 +188,20 @@ namespace SIL.Machine.JS.Tests.Translation
 				},
 				ruleResult = (string) null
 			};
-			webClient.Requests.Add(new MockRequest { ResponseText = JSON.Stringify(json) });
+			httpClient.Requests.Add(new MockRequest
+				{
+					Method = HttpRequestMethod.Post,
+					ResponseText = JSON.Stringify(json)
+				});
 
-			var engine = new TranslationEngine("http://localhost", "es", "en", "project1", tokenizer, tokenizer, webClient);
+			var engine = new TranslationEngine("http://localhost/", "es", "en", "project1", tokenizer, tokenizer, httpClient);
+			Action done = assert.Async();
 			engine.TranslateInteractively("Esto es una prueba.", 0.2, session =>
 				{
 					assert.NotEqual(session, null);
 					assert.NotEqual(session.SmtWordGraph, null);
 					assert.Equal(session.RuleResult, null);
+					done();
 				});
 		}
 	}

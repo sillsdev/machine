@@ -38,7 +38,7 @@
     <Compile Include="Translation\InteractiveTranslationSessionTests.cs" />
     <Compile Include="Translation\TranslationEngineTests.cs" />
     <Compile Include="Web\MockRequest.cs" />
-    <Compile Include="Web\MockWebClient.cs" />
+    <Compile Include="Web\MockHttpClient.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Bridge\bridge.json" />

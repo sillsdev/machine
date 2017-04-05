@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using Bridge.Html5;
+using System.Threading.Tasks;
 using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Translation
@@ -88,10 +88,8 @@ namespace SIL.Machine.Translation
 
 		public void Approve(Action<bool> onFinished)
 		{
-			string url = string.Format("{0}/translation/engines/{1}/{2}/projects/{3}/actions/train-segment", _engine.BaseUrl, _engine.SourceLanguageTag,
-				_engine.TargetLanguageTag, _engine.ProjectId);
-			string body = JSON.Stringify(new {sourceSegment = SourceSegment, targetSegment = Prefix});
-			_engine.WebClient.Send("POST", url, body, "application/json", responseText => onFinished(true), status => onFinished(false));
+			Task<bool> task = _engine.RestClient.TrainSegmentPairAsync(SourceSegment, Prefix);
+			task.ContinueWith(t => onFinished(t.Result));
 		}
 
 		private TranslationResult CreateResult(TranslationInfo info)
