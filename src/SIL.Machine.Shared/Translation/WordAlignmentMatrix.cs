@@ -51,8 +51,8 @@ namespace SIL.Machine.Translation
 
 		public AlignmentType this[int i, int j]
 		{
-			get { return _matrix[i, j]; }
-			set { _matrix[i, j] = value; }
+			get => _matrix[i, j];
+			set => _matrix[i, j] = value;
 		}
 
 		public AlignmentType IsRowAligned(int i)

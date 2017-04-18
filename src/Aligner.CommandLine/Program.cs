@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -20,13 +21,20 @@ namespace SIL.Machine.Translation
 				FullName = "Machine Aligner"
 			};
 			app.HelpOption("-?|-h|--help");
-			string version = Assembly.GetEntryAssembly().GetName().Version.ToString();
+			string version = Assembly.GetEntryAssembly().GetName().Version.ToString();                                           
 			app.VersionOption("-v|--version", version);
 
-			CommandOption corpus1Option = app.Option("-c1|--corpus1 <path>", "The first corpus file(s).", CommandOptionType.MultipleValue);
-			CommandOption corpus2Option = app.Option("-c2|--corpus2 <path>", "The second corpus file(s).", CommandOptionType.MultipleValue);
-			CommandOption alignmentsOption = app.Option("-a|--alignments <path>", "The partial alignment file(s).", CommandOptionType.MultipleValue);
-			CommandOption outputOption = app.Option("-o|--output <path>", "The output alignment file(s).", CommandOptionType.MultipleValue);
+			CommandOption corpus1Option = app.Option("-c1|--corpus1 <path>", "The first corpus file(s).",
+				CommandOptionType.MultipleValue);
+			CommandOption corpus2Option = app.Option("-c2|--corpus2 <path>", "The second corpus file(s).",
+				CommandOptionType.MultipleValue);
+			CommandOption alignmentsOption = app.Option("-a|--alignments <path>", "The partial alignment file(s).",
+				CommandOptionType.MultipleValue);
+			CommandOption outputOption = app.Option("-o|--output <path>", "The output alignment file(s).",
+				CommandOptionType.MultipleValue);
+			CommandOption probOption = app.Option("-p|--probabilities", "Include probabilities in the output.",
+				CommandOptionType.NoValue);
+
 
 			app.OnExecute(() =>
 				{
@@ -73,11 +81,16 @@ namespace SIL.Machine.Translation
 					}
 
 					var wordTokenizer = new WhitespaceTokenizer();
-					var sourceCorpus = new DictionaryTextCorpus(corpus1Option.Values.Select((p, i) => new TextFileText(i.ToString(), p, wordTokenizer)));
-					var targetCorpus = new DictionaryTextCorpus(corpus2Option.Values.Select((p, i) => new TextFileText(i.ToString(), p, wordTokenizer)));
+					var sourceCorpus = new DictionaryTextCorpus(corpus1Option.Values
+						.Select((p, i) => new TextFileText(i.ToString(), p, wordTokenizer)));
+					var targetCorpus = new DictionaryTextCorpus(corpus2Option.Values
+						.Select((p, i) => new TextFileText(i.ToString(), p, wordTokenizer)));
 					ITextAlignmentCorpus alignmentCorpus = null;
 					if (alignmentsOption.HasValue())
-						alignmentCorpus = new DictionaryTextAlignmentCorpus(alignmentsOption.Values.Select((p, i) => new TextFileTextAlignmentCollection(i.ToString(), p)));
+					{
+						alignmentCorpus = new DictionaryTextAlignmentCorpus(alignmentsOption.Values
+							.Select((p, i) => new TextFileTextAlignmentCollection(i.ToString(), p)));
+					}
 
 					var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignmentCorpus);
 					using (var swaModel = new ThotSingleWordAlignmentModel())
@@ -95,33 +108,11 @@ namespace SIL.Machine.Translation
 						app.Out.WriteLine("done.");
 
 						app.Out.Write("Aligning... ");
+						var aligner = new SymmetrizationSegmentAligner(swaModel, invSwaModel);
 						using (var progress = new ConsoleProgressBar(app.Out))
 						{
-							var aligner = new SymmetrizationSegmentAligner(swaModel, invSwaModel);
-							int i = 0, j = 0;
-							foreach (ParallelText text in parallelCorpus.Texts)
-							{
-								using (var writer = new StreamWriter(File.Open(outputOption.Values[i], FileMode.Create)))
-								{
-									foreach (ParallelTextSegment segment in text.Segments)
-									{
-										if (segment.IsEmpty)
-										{
-											writer.WriteLine();
-										}
-										else
-										{
-											string[] sourceTokens = segment.SourceSegment.Select(Preprocessors.Lowercase).ToArray();
-											string[] targetTokens = segment.TargetSegment.Select(Preprocessors.Lowercase).ToArray();
-											WordAlignmentMatrix alignment = aligner.GetBestAlignment(sourceTokens, targetTokens, segment.CreateAlignmentMatrix(true));
-											writer.WriteLine(alignment.ToString());
-											j++;
-											progress.Report((double) j / segmentCount);
-										}
-									}
-								}
-								i++;
-							}
+							AlignCorpus(parallelCorpus, aligner, outputOption.Values, segmentCount, probOption.HasValue(),
+								progress);
 						}
 						app.Out.WriteLine("done.");
 					}
@@ -152,6 +143,58 @@ namespace SIL.Machine.Translation
 				swAlignModel.Train(1);
 				progress.Report((double) (startStep + i + 1) / 10);
 			}
+		}
+
+		private static void AlignCorpus(ParallelTextCorpus parallelCorpus, ISegmentAligner aligner,
+			IReadOnlyList<string> outputPaths, int segmentCount, bool includeProbs, IProgress<double> progress)
+		{
+			int i = 0, j = 0;
+			foreach (ParallelText text in parallelCorpus.Texts)
+			{
+				using (var writer = new StreamWriter(File.Open(outputPaths[i], FileMode.Create)))
+				{
+					foreach (ParallelTextSegment segment in text.Segments)
+					{
+						if (segment.IsEmpty)
+						{
+							writer.WriteLine();
+						}
+						else
+						{
+							string[] sourceTokens = segment.SourceSegment.Select(Preprocessors.Lowercase).ToArray();
+							string[] targetTokens = segment.TargetSegment.Select(Preprocessors.Lowercase).ToArray();
+							WordAlignmentMatrix alignment = aligner.GetBestAlignment(sourceTokens, targetTokens,
+								segment.CreateAlignmentMatrix(true));
+							writer.WriteLine(OutputAlignmentString(alignment, aligner, sourceTokens, targetTokens,
+								includeProbs));
+							j++;
+							progress.Report((double) j / segmentCount);
+						}
+					}
+				}
+				i++;
+			}
+		}
+
+		private static string OutputAlignmentString(WordAlignmentMatrix matrix, ISegmentAligner aligner,
+			IReadOnlyList<string> source, IReadOnlyList<string> target, bool includeProbs)
+		{
+			return string.Join(" ", Enumerable.Range(0, matrix.RowCount)
+				.SelectMany(si => Enumerable.Range(0, matrix.ColumnCount), (si, ti) => (SourceIndex: si, TargetIndex: ti))
+				.Where(t => matrix[t.SourceIndex, t.TargetIndex] == AlignmentType.Aligned)
+				.Select(t => AlignedWordsString(t.SourceIndex, t.TargetIndex, aligner, source, target, includeProbs)));
+		}
+
+		private static string AlignedWordsString(int sourceIndex, int targetIndex, ISegmentAligner aligner,
+			IReadOnlyList<string> source, IReadOnlyList<string> target, bool includeProbs)
+		{
+			if (includeProbs)
+			{
+				double prob = aligner.GetTranslationProbability(source[sourceIndex], target[targetIndex]);
+				return $"{sourceIndex}-{targetIndex}:{prob:0.########}";
+			}
+
+			return $"{sourceIndex}-{targetIndex}";
 		}
 	}
 }
