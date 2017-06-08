@@ -42,3 +42,4 @@ lib/
 **/Bridge/output/
 appsettings.user.json
 artifacts
+launchSettings.json
