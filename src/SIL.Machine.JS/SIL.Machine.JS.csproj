@@ -56,8 +56,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Bridge.Collections, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Bridge.Collections.1.3.4\lib\net40\Bridge.Collections.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\..\packages\Bridge.Collections.1.3.5\lib\net40\Bridge.Collections.dll</HintPath>
     </Reference>
     <Reference Include="Bridge.Html5, Version=15.7.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Bridge.Html5.15.7.0\lib\net40\Bridge.Html5.dll</HintPath>
