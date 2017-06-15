@@ -13,19 +13,20 @@ namespace SIL.Machine.Translation
 		{
 		}
 
-		public TranslationEngine(string baseUrl, string sourceLanguageTag, string targetLanguageTag, string projectId, ITokenizer<string, int> tokenizer)
+		public TranslationEngine(string baseUrl, string sourceLanguageTag, string targetLanguageTag, string projectId,
+			ITokenizer<string, int> tokenizer)
 			: this(baseUrl, sourceLanguageTag, targetLanguageTag, projectId, tokenizer, tokenizer)
 		{
 		}
 
-		public TranslationEngine(string baseUrl, string sourceLanguageTag, string targetLanguageTag, string projectId, ITokenizer<string, int> sourceTokenizer,
-			ITokenizer<string, int> targetTokenizer)
+		public TranslationEngine(string baseUrl, string sourceLanguageTag, string targetLanguageTag, string projectId,
+			ITokenizer<string, int> sourceTokenizer, ITokenizer<string, int> targetTokenizer)
 			: this(baseUrl, sourceLanguageTag, targetLanguageTag, projectId, sourceTokenizer, targetTokenizer, new AjaxHttpClient())
 		{
 		}
 
-		public TranslationEngine(string baseUrl, string sourceLanguageTag, string targetLanguageTag, string projectId, ITokenizer<string, int> sourceTokenizer,
-			ITokenizer<string, int> targetTokenizer, IHttpClient httpClient)
+		public TranslationEngine(string baseUrl, string sourceLanguageTag, string targetLanguageTag, string projectId,
+			ITokenizer<string, int> sourceTokenizer, ITokenizer<string, int> targetTokenizer, IHttpClient httpClient)
 		{
 			SourceTokenizer = sourceTokenizer;
 			TargetTokenizer = targetTokenizer;
@@ -40,11 +41,13 @@ namespace SIL.Machine.Translation
 		internal ITokenizer<string, int> TargetTokenizer { get; }
 		internal ErrorCorrectionModel ErrorCorrectionModel { get; }
 
-		public void TranslateInteractively(string sourceSegment, double confidenceThreshold, Action<InteractiveTranslationSession> onFinished)
+		public void TranslateInteractively(string sourceSegment, double confidenceThreshold,
+			Action<InteractiveTranslationSession> onFinished)
 		{
 			string[] tokens = SourceTokenizer.TokenizeToStrings(sourceSegment).ToArray();
-			Task<Tuple<WordGraph, TranslationResult>> task = RestClient.TranslateInteractivelyAsync(tokens);
-			task.ContinueWith(t => onFinished(t.Result == null ? null : new InteractiveTranslationSession(this, tokens, confidenceThreshold, t.Result.Item1, t.Result.Item2)));
+			Task<InteractiveTranslationResult> task = RestClient.TranslateInteractivelyAsync(tokens);
+			task.ContinueWith(t => onFinished(t.Result == null ? null
+				: new InteractiveTranslationSession(this, tokens, confidenceThreshold, t.Result)));
 		}
 	}
 }

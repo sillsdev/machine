@@ -1,80 +1,57 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Newtonsoft.Json;
 using NSubstitute;
-using SIL.IO;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
 using SIL.Machine.Translation;
+using SIL.Machine.WebApi.DataAccess;
 using SIL.Machine.WebApi.Models;
-using SIL.Machine.WebApi.Services;
 using SIL.ObjectModel;
 using Xunit;
 
-namespace SIL.Machine.WebApi.Tests.Models
+namespace SIL.Machine.WebApi.Services
 {
-	public class EngineTests
+	public class EngineRunnerTests
 	{
 		[Fact]
-		public async Task StartRebuildAsync_BatchTrainerCalled()
+		public async Task StartBuildAsync_BatchTrainerCalled()
 		{
 			using (var env = new TestEnvironment())
 			{
 				env.CreateEngine();
-				env.Engine.InitNew();
-				await env.Engine.StartRebuildAsync();
-				env.Engine.WaitForRebuildToComplete();
+				await env.EngineRunner.InitNewAsync();
+				Build build = await env.EngineRunner.StartBuildAsync(env.Engine);
+				env.EngineRunner.WaitForBuildToComplete();
 				env.BatchTrainer.Received().Train(Arg.Any<IProgress<SmtTrainProgress>>(), Arg.Any<Action>());
 				env.BatchTrainer.Received().Save();
-				EngineConfig config = env.LoadConfig();
-				config.IsRebuildRequired.Should().BeFalse();
+				build = await env.BuildRepository.GetAsync(build.Id);
+				build.Should().BeNull();
 			}
 		}
 
 		[Fact]
-		public async Task CancelRebuildAsync_BatchTrainerCalled()
+		public async Task CancelBuildAsync_BatchTrainerCalled()
 		{
 			using (var env = new TestEnvironment())
 			{
 				env.CreateEngine();
-				env.Engine.InitNew();
+				await env.EngineRunner.InitNewAsync();
 				env.BatchTrainer.Train(Arg.Any<IProgress<SmtTrainProgress>>(), Arg.Do<Action>(checkCanceled =>
 					{
 						while (true)
 							checkCanceled();
 					}));
-				await env.Engine.StartRebuildAsync();
+				Build build = await env.EngineRunner.StartBuildAsync(env.Engine);
 				await Task.Delay(10);
-				await env.Engine.CancelRebuildAsync();
-				env.Engine.WaitForRebuildToComplete();
+				await env.EngineRunner.CancelBuildAsync();
+				env.EngineRunner.WaitForBuildToComplete();
 				env.BatchTrainer.Received().Train(Arg.Any<IProgress<SmtTrainProgress>>(), Arg.Any<Action>());
 				env.BatchTrainer.DidNotReceive().Save();
-				EngineConfig config = env.LoadConfig();
-				config.IsRebuildRequired.Should().BeFalse();
-			}
-		}
-
-		[Fact]
-		public void InitExisting_RebuildRequired_RebuildExecuted()
-		{
-			using (var env = new TestEnvironment())
-			{
-				var config = new EngineConfig
-				{
-					IsRebuildRequired = true
-				};
-				env.SaveConfig(config);
-				env.CreateEngine();
-				env.Engine.InitExisting();
-				env.Engine.WaitForRebuildToComplete();
-				env.BatchTrainer.Received().Train(Arg.Any<IProgress<SmtTrainProgress>>(), Arg.Any<Action>());
-				env.BatchTrainer.Received().Save();
-				config = env.LoadConfig();
-				config.IsRebuildRequired.Should().BeFalse();
+				build = await env.BuildRepository.GetAsync(build.Id);
+				build.Should().BeNull();
 			}
 		}
 
@@ -84,12 +61,12 @@ namespace SIL.Machine.WebApi.Tests.Models
 			using (var env = new TestEnvironment())
 			{
 				env.CreateEngine();
-				env.Engine.InitNew();
-				await env.Engine.TrainSegmentPairAsync("esto es una prueba .".Split(), "this is a test .".Split());
+				await env.EngineRunner.InitNewAsync();
+				await env.EngineRunner.TrainSegmentPairAsync("esto es una prueba .".Split(), "this is a test .".Split());
 				await Task.Delay(10);
-				await env.Engine.CommitAsync();
+				await env.EngineRunner.CommitAsync();
 				env.SmtModel.Received().Save();
-				env.Engine.IsLoaded.Should().BeFalse();
+				env.EngineRunner.IsLoaded.Should().BeFalse();
 			}
 		}
 
@@ -99,47 +76,41 @@ namespace SIL.Machine.WebApi.Tests.Models
 			using (var env = new TestEnvironment())
 			{
 				env.CreateEngine(TimeSpan.FromHours(1));
-				env.Engine.InitNew();
-				await env.Engine.TrainSegmentPairAsync("esto es una prueba .".Split(), "this is a test .".Split());
-				await env.Engine.CommitAsync();
+				await env.EngineRunner.InitNewAsync();
+				await env.EngineRunner.TrainSegmentPairAsync("esto es una prueba .".Split(), "this is a test .".Split());
+				await env.EngineRunner.CommitAsync();
 				env.SmtModel.Received().Save();
-				env.Engine.IsLoaded.Should().BeTrue();
+				env.EngineRunner.IsLoaded.Should().BeTrue();
 			}
 		}
 
 		private class TestEnvironment : DisposableBase
 		{
-			private readonly TempDirectory _tempDir;
-
 			public TestEnvironment()
 			{
-				_tempDir = new TempDirectory("EngineTests");
+				BuildRepository = new MemoryBuildRepository(new MemoryEngineRepository());
 				BatchTrainer = Substitute.For<ISmtBatchTrainer>();
 				SmtModel = Substitute.For<IInteractiveSmtModel>();
 			}
 
-			private Project Project { get; set; }
 			public Engine Engine { get; private set; }
+			public EngineRunner EngineRunner { get; private set; }
+			public IBuildRepository BuildRepository { get; }
 			public ISmtBatchTrainer BatchTrainer { get; }
 			public IInteractiveSmtModel SmtModel { get; }
-			private string ConfigFileName => Path.Combine(_tempDir.Path, "config.json");
-
-			public void SaveConfig(EngineConfig config)
-			{
-				File.WriteAllText(ConfigFileName, JsonConvert.SerializeObject(config, Formatting.Indented));
-			}
-
-			public EngineConfig LoadConfig()
-			{
-				return JsonConvert.DeserializeObject<EngineConfig>(File.ReadAllText(ConfigFileName));
-			}
 
 			public void CreateEngine(TimeSpan inactiveTimeout = default(TimeSpan))
 			{
-				Engine = new Engine(CreateSmtModelFactory(), CreateRuleEngineFactory(), CreateTextCorpusFactory(), inactiveTimeout,
-					_tempDir.Path, _tempDir.Path, "es", "en");
-				Project = new Project("project1", false, _tempDir.Path, Engine);
-				Engine.AddProject(Project);
+				Engine = new Engine
+				{
+					Id = "engine1",
+					SourceLanguageTag = "es",
+					TargetLanguageTag = "en",
+					IsShared = false,
+					Projects = {"project1"}
+				};
+				EngineRunner = new EngineRunner(BuildRepository, CreateSmtModelFactory(), CreateRuleEngineFactory(),
+					CreateTextCorpusFactory(), inactiveTimeout, Engine.Id);
 			}
 
 			private ISmtModelFactory CreateSmtModelFactory()
@@ -195,15 +166,14 @@ namespace SIL.Machine.WebApi.Tests.Models
 			private ITextCorpusFactory CreateTextCorpusFactory()
 			{
 				var factory = Substitute.For<ITextCorpusFactory>();
-				factory.Create(Arg.Any<IEnumerable<Project>>(), Arg.Any<ITokenizer<string, int>>(), Arg.Any<TextCorpusType>())
+				factory.Create(Arg.Any<IEnumerable<string>>(), Arg.Any<ITokenizer<string, int>>(), Arg.Any<TextCorpusType>())
 					.Returns(new DictionaryTextCorpus(Enumerable.Empty<IText>()));
 				return factory;
 			}
 
 			protected override void DisposeManagedResources()
 			{
-				Engine.Dispose();
-				_tempDir.Dispose();
+				EngineRunner.Dispose();
 			}
 		}
 	}

@@ -1,4 +1,4 @@
-﻿namespace SIL.Machine.WebApi.Services
+﻿namespace SIL.Machine.WebApi.Controllers
 {
 	public class InteractiveTranslationResultDto
 	{

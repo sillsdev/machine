@@ -4,6 +4,6 @@ namespace SIL.Machine.WebApi.Services
 {
 	public interface IRuleEngineFactory
 	{
-		ITranslationEngine Create(string configDir);
+		ITranslationEngine Create(string engineId);
 	}
 }

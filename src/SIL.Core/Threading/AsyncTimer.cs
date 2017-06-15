@@ -27,7 +27,7 @@ namespace SIL.Threading
 
 		private async void FireTimerAsync(object state)
 		{
-			using (await _lock.WaitAsync())
+			using (await _lock.LockAsync())
 			{
 				if (_running)
 					await _callback();
@@ -36,7 +36,7 @@ namespace SIL.Threading
 
 		public void Stop()
 		{
-			using (_lock.Wait())
+			using (_lock.Lock())
 			{
 				// FireTimer is *not* running _callback (since we got the lock)
 				_timer.Change(Timeout.Infinite, Timeout.Infinite);

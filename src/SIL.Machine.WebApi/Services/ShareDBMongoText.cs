@@ -6,11 +6,11 @@ using MongoDB.Bson;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
 
-namespace SIL.Machine.WebApi.Models
+namespace SIL.Machine.WebApi.Services
 {
-    public class ShareDBMongoText : IText
-    {
-	    private readonly string _projectId;
+	public class ShareDBMongoText : IText
+	{
+		private readonly string _projectId;
 		private readonly BsonDocument _doc;
 		private readonly ITokenizer<string, int> _wordTokenizer;
 
@@ -20,7 +20,7 @@ namespace SIL.Machine.WebApi.Models
 			_doc = doc;
 			_wordTokenizer = wordTokenizer;
 		}
-        public string Id
+		public string Id
 		{
 			get
 			{
@@ -30,7 +30,7 @@ namespace SIL.Machine.WebApi.Models
 			}
 		}
 
-        public IEnumerable<TextSegment> Segments 
+		public IEnumerable<TextSegment> Segments 
 		{
 			get
 			{
@@ -41,8 +41,11 @@ namespace SIL.Machine.WebApi.Models
 
 				string[] segments = sb.ToString().Split('\n');
 				for (int i = 0; i < segments.Length; i++)
-					yield return new TextSegment(new TextSegmentRef(1, i + 1), TokenizationExtensions.TokenizeToStrings(_wordTokenizer, segments[i]).ToArray());
+				{
+					yield return new TextSegment(new TextSegmentRef(1, i + 1),
+						_wordTokenizer.TokenizeToStrings(segments[i]).ToArray());
+				}
 			}
 		}
-    }
+	}
 }

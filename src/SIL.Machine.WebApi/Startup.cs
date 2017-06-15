@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Serialization;
+using SIL.Machine.WebApi.DataAccess;
 using SIL.Machine.WebApi.Options;
 using SIL.Machine.WebApi.Services;
 
@@ -70,10 +71,13 @@ namespace SIL.Machine.WebApi
 					break;
 
 				case "TextFile":
+					services.Configure<TextFileTextCorpusOptions>(textCorpusConfig);
 					services.AddSingleton<ITextCorpusFactory, TextFileTextCorpusFactory>();
 					break;
 			}
 
+			services.AddSingleton<IEngineRepository, MemoryEngineRepository>();
+			services.AddSingleton<IBuildRepository, MemoryBuildRepository>();
 			services.AddSingleton<EngineService>();
 		}
 

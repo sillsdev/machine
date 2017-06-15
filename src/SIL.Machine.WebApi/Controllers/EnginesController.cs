@@ -1,150 +1,99 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using SIL.Machine.WebApi.Filters;
+using SIL.Machine.Translation;
+using SIL.Machine.WebApi.DataAccess;
 using SIL.Machine.WebApi.Models;
 using SIL.Machine.WebApi.Services;
 
 namespace SIL.Machine.WebApi.Controllers
 {
-	[Route("translation/[controller]")]
+	[Area("Translation")]
+	[Route("[area]/[controller]")]
 	public class EnginesController : Controller
 	{
+		private readonly IEngineRepository _engineRepo;
 		private readonly EngineService _engineService;
 
-		public EnginesController(EngineService engineService)
+		public EnginesController(IEngineRepository engineRepo, EngineService engineService)
 		{
+			_engineRepo = engineRepo;
 			_engineService = engineService;
 		}
 
 		[HttpGet]
-		public async Task<IReadOnlyCollection<LanguagePairDto>> GetLanguagePairs()
+		public async Task<IEnumerable<EngineDto>> GetAllAsync()
 		{
-			return await _engineService.GetLanguagePairsAsync();
+			IEnumerable<Engine> engines = await _engineRepo.GetAllAsync();
+			return engines.Select(e => e.ToDto());
 		}
 
-		[HttpGet("{sourceLanguageTag}/{targetLanguageTag}")]
-		public async Task<IActionResult> GetLanguagePair(string sourceLanguageTag, string targetLanguageTag)
+		[HttpGet("{locatorType}:{locator}")]
+		public async Task<IActionResult> GetAsync(string locatorType, string locator)
 		{
-			LanguagePairDto result = await _engineService.GetLanguagePairAsync(sourceLanguageTag, targetLanguageTag);
-			if (result != null)
-				return new ObjectResult(result);
-			return NotFound();
+			Engine engine = await _engineRepo.GetByLocatorAsync(GetLocatorType(locatorType), locator);
+			if (engine == null)
+				return NotFound();
+
+			return Ok(engine.ToDto());
 		}
 
-		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/actions/translate")]
-		public async Task<IActionResult> Translate(string sourceLanguageTag, string targetLanguageTag, [FromBody] string[] segment)
+		[HttpPost("{locatorType}:{locator}/actions/translate")]
+		public async Task<IActionResult> TranslateAsync(string locatorType, string locator, [FromBody] string[] segment)
 		{
-			TranslationResultDto result = await _engineService.TranslateAsync(sourceLanguageTag, targetLanguageTag, null, segment);
-			if (result != null)
-				return new ObjectResult(result);
-			return NotFound();
+			TranslationResult result = await _engineService.TranslateAsync(GetLocatorType(locatorType),
+				locator, segment);
+			if (result == null)
+				return NotFound();
+			return Ok(result.ToDto(segment));
 		}
 
-		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/actions/translate/{n}")]
-		public async Task<IActionResult> Translate(string sourceLanguageTag, string targetLanguageTag, int n, [FromBody] string[] segment)
+		[HttpPost("{locatorType}:{locator}/actions/translate/{n}")]
+		public async Task<IActionResult> TranslateAsync(string locatorType, string locator, int n, [FromBody] string[] segment)
 		{
-			IReadOnlyList<TranslationResultDto> results = await _engineService.TranslateAsync(sourceLanguageTag, targetLanguageTag, null, n, segment);
-			if (results != null)
-				return new ObjectResult(results);
-			return NotFound();
+			IEnumerable<TranslationResult> results = await _engineService.TranslateAsync(
+				GetLocatorType(locatorType), locator, n, segment);
+			if (results == null)
+				return NotFound();
+			return Ok(results.Select(tr => tr.ToDto(segment)));
 		}
 
-		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/actions/interactive-translate")]
-		public async Task<IActionResult> InteractiveTranslate(string sourceLanguageTag, string targetLanguageTag, [FromBody] string[] segment)
+		[HttpPost("{locatorType}:{locator}/actions/interactiveTranslate")]
+		public async Task<IActionResult> InteractiveTranslateAsync(string locatorType, string locator,
+			[FromBody] string[] segment)
 		{
-			InteractiveTranslationResultDto result = await _engineService.InteractiveTranslateAsync(sourceLanguageTag, targetLanguageTag, null, segment);
-			if (result != null)
-				return new ObjectResult(result);
-			return NotFound();
+			InteractiveTranslationResult result = await _engineService.InteractiveTranslateAsync(
+				GetLocatorType(locatorType), locator, segment);
+			if (result == null)
+				return NotFound();
+			return Ok(result.ToDto(segment));
 		}
 
-		[HttpGet("{sourceLanguageTag}/{targetLanguageTag}/projects")]
-		public async Task<IActionResult> GetProjects(string sourceLanguageTag, string targetLanguageTag)
+		[HttpPost("{locatorType}:{locator}/actions/trainSegment")]
+		public async Task<IActionResult> TrainSegmentAsync(string locatorType, string locator,
+			[FromBody] SegmentPairDto segmentPair)
 		{
-			IReadOnlyCollection<ProjectDto> results = await _engineService.GetProjectsAsync(sourceLanguageTag, targetLanguageTag);
-			if (results != null)
-				return new ObjectResult(results);
-			return NotFound();
+			if (!await _engineService.TrainSegmentAsync(GetLocatorType(locatorType), locator, segmentPair.SourceSegment,
+				segmentPair.TargetSegment))
+			{
+				return NotFound();
+			}
+			return Ok();
 		}
 
-		[HttpGet("{sourceLanguageTag}/{targetLanguageTag}/projects/{projectId}")]
-		public async Task<IActionResult> GetProject(string sourceLanguageTag, string targetLanguageTag, string projectId)
+		private static EngineLocatorType GetLocatorType(string type)
 		{
-			ProjectDto result = await _engineService.GetProjectAsync(sourceLanguageTag, targetLanguageTag, projectId);
-			if (result != null)
-				return new ObjectResult(result);
-			return NotFound();
-		}
-
-		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/projects/{projectId}/actions/translate")]
-		public async Task<IActionResult> Translate(string sourceLanguageTag, string targetLanguageTag, string projectId, [FromBody] string[] segment)
-		{
-			TranslationResultDto result = await _engineService.TranslateAsync(sourceLanguageTag, targetLanguageTag, projectId, segment);
-			if (result != null)
-				return new ObjectResult(result);
-			return NotFound();
-		}
-
-		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/projects/{projectId}/actions/translate/{n}")]
-		public async Task<IActionResult> Translate(string sourceLanguageTag, string targetLanguageTag, string projectId, int n, [FromBody] string[] segment)
-		{
-			IReadOnlyList<TranslationResultDto> results = await _engineService.TranslateAsync(sourceLanguageTag, targetLanguageTag, projectId, n, segment);
-			if (results != null)
-				return new ObjectResult(results);
-			return NotFound();
-		}
-
-		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/projects/{projectId}/actions/interactive-translate")]
-		public async Task<IActionResult> InteractiveTranslate(string sourceLanguageTag, string targetLanguageTag, string projectId, [FromBody] string[] segment)
-		{
-			InteractiveTranslationResultDto result = await _engineService.InteractiveTranslateAsync(sourceLanguageTag, targetLanguageTag, projectId, segment);
-			if (result != null)
-				return new ObjectResult(result);
-			return NotFound();
-		}
-
-		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/projects/{projectId}/actions/train-segment")]
-		public async Task<IActionResult> TrainSegment(string sourceLanguageTag, string targetLanguageTag, string projectId, [FromBody] SegmentPairDto segmentPair)
-		{
-			if (await _engineService.TrainSegmentAsync(sourceLanguageTag, targetLanguageTag, projectId, segmentPair))
-				return Ok();
-			return NotFound();
-		}
-
-		[InternalApi]
-		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/projects")]
-		public async Task<IActionResult> AddProject(string sourceLanguageTag, string targetLanguageTag, [FromBody] ProjectDto newProject)
-		{
-			ProjectDto project = await _engineService.AddProjectAsync(sourceLanguageTag, targetLanguageTag, newProject);
-			return new ObjectResult(project);
-		}
-
-		[InternalApi]
-		[HttpDelete("{sourceLanguageTag}/{targetLanguageTag}/projects/{projectId}")]
-		public async Task<IActionResult> RemoveProject(string sourceLanguageTag, string targetLanguageTag, string projectId)
-		{
-			if (await _engineService.RemoveProjectAsync(sourceLanguageTag, targetLanguageTag, projectId))
-				return Ok();
-			return NotFound();
-		}
-
-		[InternalApi]
-		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/projects/{projectId}/actions/start-rebuild")]
-		public async Task<IActionResult> StartRebuild(string sourceLanguageTag, string targetLanguageTag, string projectId)
-		{
-			if (await _engineService.StartRebuildAsync(sourceLanguageTag, targetLanguageTag, projectId))
-				return Ok();
-			return NotFound();
-		}
-
-		[InternalApi]
-		[HttpPost("{sourceLanguageTag}/{targetLanguageTag}/projects/{projectId}/actions/cancel-rebuild")]
-		public async Task<IActionResult> CancelRebuild(string sourceLanguageTag, string targetLanguageTag, string projectId)
-		{
-			if (await _engineService.CancelRebuildAsync(sourceLanguageTag, targetLanguageTag, projectId))
-				return Ok();
-			return NotFound();
+			switch (type)
+			{
+				case "id":
+					return EngineLocatorType.Id;
+				case "langTag":
+					return EngineLocatorType.LanguageTag;
+				case "project":
+					return EngineLocatorType.Project;
+			}
+			return EngineLocatorType.Id;
 		}
 	}
 }

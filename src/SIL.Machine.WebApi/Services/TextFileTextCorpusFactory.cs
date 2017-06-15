@@ -1,17 +1,25 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using Microsoft.Extensions.Options;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
-using SIL.Machine.WebApi.Models;
+using SIL.Machine.WebApi.Options;
 
 namespace SIL.Machine.WebApi.Services
 {
 	public class TextFileTextCorpusFactory : ITextCorpusFactory
 	{
-		public ITextCorpus Create(IEnumerable<Project> projects, ITokenizer<string, int> wordTokenizer, TextCorpusType type)
+		private readonly string _textFileDir;
+
+		public TextFileTextCorpusFactory(IOptions<TextFileTextCorpusOptions> options)
+		{
+			_textFileDir = options.Value.TextFileDir;
+		}
+
+		public ITextCorpus Create(IEnumerable<string> projects, ITokenizer<string, int> wordTokenizer, TextCorpusType type)
 		{
 			var texts = new List<IText>();
-			foreach (Project project in projects)
+			foreach (string projectId in projects)
 			{
 				string dir = null;
 				switch (type)
@@ -24,8 +32,8 @@ namespace SIL.Machine.WebApi.Services
 						break;
 				}
 
-				foreach (string file in Directory.EnumerateFiles(Path.Combine(project.Directory, dir), "*.txt"))
-					texts.Add(new TextFileText($"{project.Id}_{Path.GetFileNameWithoutExtension(file)}", file, wordTokenizer));
+				foreach (string file in Directory.EnumerateFiles(Path.Combine(_textFileDir, projectId, dir), "*.txt"))
+					texts.Add(new TextFileText($"{projectId}_{Path.GetFileNameWithoutExtension(file)}", file, wordTokenizer));
 			}
 
 			return new DictionaryTextCorpus(texts);

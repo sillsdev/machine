@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using SIL.Machine.Translation;
 
-namespace SIL.Machine.WebApi.Services
+namespace SIL.Machine.WebApi.Controllers
 {
 	public class TranslationResultDto
 	{

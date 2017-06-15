@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using SIL.Machine.Translation;
+using SIL.Machine.WebApi.DataAccess;
 using SIL.Machine.WebApi.Models;
 using SIL.Machine.WebApi.Options;
 using SIL.ObjectModel;
@@ -13,245 +11,262 @@ using SIL.Threading;
 
 namespace SIL.Machine.WebApi.Services
 {
+	public enum StartBuildStatus
+	{
+		Success,
+		EngineNotFound,
+		AlreadyBuilding
+	}
+
 	public class EngineService : DisposableBase
 	{
 		private readonly EngineOptions _options;
-		private readonly ConcurrentDictionary<(string SourceLanguageTag, string TargetLanguageTag), LanguagePair> _languagePairs;
+		private readonly Dictionary<string, EngineRunner> _runners;
+		private readonly AsyncReaderWriterLock _lock;
+		private readonly IEngineRepository _engineRepo;
+		private readonly IBuildRepository _buildRepo;
 		private readonly ISmtModelFactory _smtModelFactory;
 		private readonly IRuleEngineFactory _ruleEngineFactory;
 		private readonly ITextCorpusFactory _textCorpusFactory;
 		private readonly AsyncTimer _commitTimer;
 
-		public EngineService(IOptions<EngineOptions> options, ISmtModelFactory smtModelFactory, IRuleEngineFactory ruleEngineFactory, ITextCorpusFactory textCorpusFactory)
+		public EngineService(IOptions<EngineOptions> options, IEngineRepository engineRepo, IBuildRepository buildRepo,
+			ISmtModelFactory smtModelFactory, IRuleEngineFactory ruleEngineFactory, ITextCorpusFactory textCorpusFactory)
 		{
 			_options = options.Value;
+			_engineRepo = engineRepo;
+			_buildRepo = buildRepo;
 			_smtModelFactory = smtModelFactory;
 			_ruleEngineFactory = ruleEngineFactory;
 			_textCorpusFactory = textCorpusFactory;
-			_languagePairs = new ConcurrentDictionary<(string SourceLanguageTag, string TargetLanguageTag), LanguagePair>();
-			foreach (string configDir in Directory.EnumerateDirectories(_options.RootDir))
-			{
-				string configFileName = Path.Combine(configDir, "config.json");
-				if (!File.Exists(configFileName))
-					continue;
-				var languagePair = new LanguagePair(_smtModelFactory, _ruleEngineFactory, _textCorpusFactory, _options.InactiveEngineTimeout, _options.TrainProgressDir,
-					configDir);
-				// TODO: need to handle conflicting language pairs better
-				if (!_languagePairs.TryAdd((languagePair.SourceLanguageTag, languagePair.TargetLanguageTag), languagePair))
-					languagePair.Dispose();
-			}
+			_runners = new Dictionary<string, EngineRunner>();
+			_lock = new AsyncReaderWriterLock();
 			_commitTimer = new AsyncTimer(EngineCommitAsync);
+
+			// restart any builds that didn't finish before the last shutdown
+			foreach (Build build in _buildRepo.GetAll())
+			{
+				if (_engineRepo.TryGet(build.EngineId, out Engine engine))
+				{
+					EngineRunner runner = CreateRunner(engine.Id);
+					runner.RestartUnfinishedBuild(build, engine);
+				}
+				else
+				{
+					// orphaned build, so delete it
+					_buildRepo.Delete(build);
+				}
+			}
 			_commitTimer.Start(_options.EngineCommitFrequency);
 		}
 
 		private async Task EngineCommitAsync()
 		{
-			foreach (LanguagePair languagePair in _languagePairs.Values)
+			using (await _lock.ReaderLockAsync())
 			{
-				foreach (Engine engine in await languagePair.GetEnginesAsync())
+				foreach (EngineRunner runner in _runners.Values)
+					await runner.CommitAsync();
+			}
+		}
+
+		public async Task<TranslationResult> TranslateAsync(EngineLocatorType locatorType,
+			string locator, IReadOnlyList<string> segment)
+		{
+			CheckDisposed();
+
+			using (var upgradeKey = await _lock.UpgradeableReaderLockAsync())
+			{
+				Engine engine = await _engineRepo.GetByLocatorAsync(locatorType, locator);
+				if (engine == null)
+					return null;
+				EngineRunner runner = await GetOrCreateRunnerAsync(upgradeKey, engine.Id);
+				return await runner.TranslateAsync(segment.Select(Preprocessors.Lowercase).ToArray());
+			}
+		}
+
+		public async Task<IEnumerable<TranslationResult>> TranslateAsync(
+			EngineLocatorType locatorType, string locator, int n, IReadOnlyList<string> segment)
+		{
+			CheckDisposed();
+
+			using (var upgradeKey = await _lock.UpgradeableReaderLockAsync())
+			{
+				Engine engine = await _engineRepo.GetByLocatorAsync(locatorType, locator);
+				if (engine == null)
+					return null;
+				EngineRunner runner = await GetOrCreateRunnerAsync(upgradeKey, engine.Id);
+				return await runner.TranslateAsync(n, segment.Select(Preprocessors.Lowercase).ToArray());
+			}
+		}
+
+		public async Task<InteractiveTranslationResult> InteractiveTranslateAsync(
+			EngineLocatorType locatorType, string locator, IReadOnlyList<string> segment)
+		{
+			CheckDisposed();
+
+			using (var upgradeKey = await _lock.UpgradeableReaderLockAsync())
+			{
+				Engine engine = await _engineRepo.GetByLocatorAsync(locatorType, locator);
+				if (engine == null)
+					return null;
+				EngineRunner runner = await GetOrCreateRunnerAsync(upgradeKey, engine.Id);
+				return await runner.InteractiveTranslateAsync(segment.Select(Preprocessors.Lowercase).ToArray());
+			}
+		}
+
+		public async Task<bool> TrainSegmentAsync(EngineLocatorType locatorType, string locator,
+			IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
+		{
+			CheckDisposed();
+
+			using (var upgradeKey = await _lock.UpgradeableReaderLockAsync())
+			{
+				Engine engine = await _engineRepo.GetByLocatorAsync(locatorType, locator);
+				if (engine == null)
+					return false;
+				EngineRunner runner = await GetOrCreateRunnerAsync(upgradeKey, engine.Id);
+				await runner.TrainSegmentPairAsync(sourceSegment.Select(Preprocessors.Lowercase).ToArray(),
+					targetSegment.Select(Preprocessors.Lowercase).ToArray());
+				return true;
+			}
+		}
+
+		public async Task<(Engine Engine, bool ProjectAdded)> AddProjectAsync(string sourceLanguageTag, string targetLanguageTag,
+			string projectId, bool isShared)
+		{
+			CheckDisposed();
+
+			using (await _lock.WriterLockAsync())
+			{
+				Engine engine = isShared ? await _engineRepo.GetByLanguageTagAsync(sourceLanguageTag, targetLanguageTag) : null;
+				if (engine == null)
 				{
-					try
+					// no existing shared engine or a project-specific engine
+					engine = new Engine
 					{
-						await engine.CommitAsync();
-					}
-					catch (ObjectDisposedException)
-					{
-					}
-				}
-			}
-		}
-
-		public async Task<IReadOnlyCollection<LanguagePairDto>> GetLanguagePairsAsync()
-		{
-			var lps = new List<LanguagePairDto>();
-			foreach (LanguagePair languagePair in _languagePairs.Values)
-			{
-				LanguagePairDto dto = await languagePair.CreateDtoAsync();
-				if (dto.Projects.Count > 0)
-					lps.Add(dto);
-			}
-			return lps;
-		}
-
-		public async Task<LanguagePairDto> GetLanguagePairAsync(string sourceLanguageTag, string targetLanguageTag)
-		{
-			if (_languagePairs.TryGetValue((sourceLanguageTag, targetLanguageTag), out LanguagePair languagePair))
-			{
-				LanguagePairDto dto = await languagePair.CreateDtoAsync();
-				return dto.Projects.Count == 0 ? null : dto;
-			}
-
-			return null;
-		}
-
-		public async Task<IReadOnlyCollection<ProjectDto>> GetProjectsAsync(string sourceLanguageTag, string targetLanguageTag)
-		{
-			if (_languagePairs.TryGetValue((sourceLanguageTag, targetLanguageTag), out LanguagePair languagePair))
-			{
-				IReadOnlyCollection<Project> projects = await languagePair.GetProjectsAsync();
-				return projects.Select(p => p.CreateDto()).ToArray();
-			}
-
-			return null;
-		}
-
-		public async Task<ProjectDto> GetProjectAsync(string sourceLanguageTag, string targetLanguageTag, string projectId)
-		{
-			if (_languagePairs.TryGetValue((sourceLanguageTag, targetLanguageTag), out LanguagePair languagePair))
-			{
-				Project project = await languagePair.GetProjectAsync(projectId);
-				if (project != null)
-					return project.CreateDto();
-			}
-
-			return null;
-		}
-
-		public async Task<ProjectDto> AddProjectAsync(string sourceLanguageTag, string targetLanguageTag, ProjectDto newProject)
-		{
-			LanguagePair languagePair = _languagePairs.GetOrAdd((sourceLanguageTag, targetLanguageTag),
-				k => new LanguagePair(_smtModelFactory, _ruleEngineFactory, _textCorpusFactory, _options.InactiveEngineTimeout, _options.TrainProgressDir,
-					_options.RootDir, sourceLanguageTag, targetLanguageTag));
-			Project project = await languagePair.AddProjectAsync(newProject.Id, newProject.IsShared);
-			return project.CreateDto();
-		}
-
-		public async Task<bool> RemoveProjectAsync(string sourceLanguageTag, string targetLanguageTag, string projectId)
-		{
-			if (_languagePairs.TryGetValue((sourceLanguageTag, targetLanguageTag), out LanguagePair languagePair))
-				return await languagePair.RemoveProjectAsync(projectId);
-			return false;
-		}
-
-		public async Task<TranslationResultDto> TranslateAsync(string sourceLanguageTag, string targetLanguageTag, string projectId, IReadOnlyList<string> segment)
-		{
-			Engine engine = await GetEngineAsync(sourceLanguageTag, targetLanguageTag, projectId);
-			if (engine != null)
-			{
-				try
-				{
-					TranslationResult tr = await engine.TranslateAsync(segment.Select(Preprocessors.Lowercase).ToArray());
-					return tr.CreateDto(segment);
-				}
-				catch (ObjectDisposedException)
-				{
-				}
-			}
-
-			return null;
-		}
-
-		public async Task<IReadOnlyList<TranslationResultDto>> TranslateAsync(string sourceLanguageTag, string targetLanguageTag, string projectId, int n, IReadOnlyList<string> segment)
-		{
-			Engine engine = await GetEngineAsync(sourceLanguageTag, targetLanguageTag, projectId);
-			if (engine != null)
-			{
-				try
-				{
-					IReadOnlyList<TranslationResult> trs = await engine.TranslateAsync(n, segment.Select(Preprocessors.Lowercase).ToArray());
-					return trs.Select(tr => tr.CreateDto(segment)).ToArray();
-				}
-				catch (ObjectDisposedException)
-				{
-				}
-			}
-
-			return null;
-		}
-
-		public async Task<InteractiveTranslationResultDto> InteractiveTranslateAsync(string sourceLanguageTag, string targetLanguageTag, string projectId, IReadOnlyList<string> segment)
-		{
-			Engine engine = await GetEngineAsync(sourceLanguageTag, targetLanguageTag, projectId);
-			if (engine != null)
-			{
-				try
-				{
-					(WordGraph WordGraph, TranslationResult RuleResult) result = await engine.InteractiveTranslateAsync(segment.Select(Preprocessors.Lowercase).ToArray());
-					return new InteractiveTranslationResultDto
-					{
-						WordGraph = result.WordGraph.CreateDto(segment),
-						RuleResult = result.RuleResult?.CreateDto(segment)
+						Projects = {projectId},
+						IsShared = isShared,
+						SourceLanguageTag = sourceLanguageTag,
+						TargetLanguageTag = targetLanguageTag
 					};
+					await _engineRepo.InsertAsync(engine);
+					EngineRunner runner = CreateRunner(engine.Id);
+					await runner.InitNewAsync();
 				}
-				catch (ObjectDisposedException)
+				else
 				{
+					// found an existing shared engine
+					// TODO: should UpdateAsync determine if there is a conflict?
+					if (engine.Projects.Contains(projectId))
+						return (engine, false);
+					engine.Projects.Add(projectId);
+					await UpdateEngineAsync(engine);
 				}
-			}
 
-			return null;
+				return (engine, true);
+			}
 		}
 
-		public async Task<bool> TrainSegmentAsync(string sourceLanguageTag, string targetLanguageTag, string projectId, SegmentPairDto segmentPair)
+		public async Task<bool> RemoveProjectAsync(string projectId)
 		{
-			Engine engine = await GetEngineAsync(sourceLanguageTag, targetLanguageTag, projectId);
-			if (engine != null)
+			CheckDisposed();
+
+			using (await _lock.WriterLockAsync())
 			{
-				try
+				Engine engine = await _engineRepo.GetByProjectIdAsync(projectId);
+				if (engine == null)
+					return false;
+
+				if (!engine.Projects.Remove(projectId))
+					return false;
+
+				if (engine.Projects.Count == 0)
 				{
-					await engine.TrainSegmentPairAsync(segmentPair.SourceSegment.Select(Preprocessors.Lowercase).ToArray(),
-						segmentPair.TargetSegment.Select(Preprocessors.Lowercase).ToArray());
-					return true;
+					// the engine has no associated projects so remove it
+					await _engineRepo.DeleteAsync(engine);
+					if (_runners.TryGetValue(engine.Id, out EngineRunner runner))
+					{
+						_runners.Remove(engine.Id);
+						await runner.DeleteDataAsync();
+						runner.Dispose();
+					}
 				}
-				catch (ObjectDisposedException)
+				else
 				{
+					// engine still has associated projects so just update it
+					await UpdateEngineAsync(engine);
 				}
+				return true;
 			}
-
-			return false;
 		}
 
-	    public async Task<bool> StartRebuildAsync(string sourceLanguageTag, string targetLanguageTag, string projectId)
-	    {
-		    Engine engine = await GetEngineAsync(sourceLanguageTag, targetLanguageTag, projectId);
-		    if (engine != null)
-		    {
-			    try
-			    {
-				    await engine.StartRebuildAsync();
-				    return true;
-			    }
-			    catch (ObjectDisposedException)
-			    {
-			    }
-		    }
-
-			return false;
-		}
-
-		public async Task<bool> CancelRebuildAsync(string sourceLanguageTag, string targetLanguageTag, string projectId)
+		private async Task UpdateEngineAsync(Engine engine)
 		{
-			Engine engine = await GetEngineAsync(sourceLanguageTag, targetLanguageTag, projectId);
-			if (engine != null)
+			await _engineRepo.UpdateAsync(engine);
+			// TODO: restart the build if it is already running
+			if (!_runners.TryGetValue(engine.Id, out EngineRunner runner))
+				runner = CreateRunner(engine.Id);
+			await runner.StartBuildAsync(engine);
+		}
+
+		public async Task<(Build Build, StartBuildStatus Status)> StartBuildAsync(EngineLocatorType locatorType, string locator)
+		{
+			CheckDisposed();
+
+			using (var upgradeKey = await _lock.UpgradeableReaderLockAsync())
 			{
-				try
-				{
-					await engine.CancelRebuildAsync();
-					return true;
-				}
-				catch (ObjectDisposedException)
-				{
-				}
+				Engine engine = await _engineRepo.GetByLocatorAsync(locatorType, locator);
+				if (engine == null)
+					return (null, StartBuildStatus.EngineNotFound);
+				EngineRunner runner = await GetOrCreateRunnerAsync(upgradeKey, engine.Id);
+				Build build = await runner.StartBuildAsync(engine);
+				if (build == null)
+					return (null, StartBuildStatus.AlreadyBuilding);
+				return (build, StartBuildStatus.Success);
 			}
-
-			return false;
 		}
 
-		private async Task<Engine> GetEngineAsync(string sourceLanguageTag, string targetLanguageTag, string projectId)
+		public async Task<bool> CancelBuildAsync(BuildLocatorType locatorType, string locator)
 		{
-			if (_languagePairs.TryGetValue((sourceLanguageTag, targetLanguageTag), out LanguagePair languagePair))
-				return await languagePair.GetEngineAsync(projectId);
+			CheckDisposed();
 
-			return null;
+			using (await _lock.ReaderLockAsync())
+			{
+				Build build = await _buildRepo.GetByLocatorAsync(locatorType, locator);
+				if (build == null)
+					return false;
+				if (_runners.TryGetValue(build.EngineId, out EngineRunner runner))
+					await runner.CancelBuildAsync();
+				return true;
+			}
+		}
+
+		private async Task<EngineRunner> GetOrCreateRunnerAsync(AsyncReaderWriterLock.UpgradeableReaderKey upgradeKey,
+			string engineId)
+		{
+			if (!_runners.TryGetValue(engineId, out EngineRunner runner))
+			{
+				using (await upgradeKey.UpgradeAsync())
+					runner = CreateRunner(engineId);
+			}
+			return runner;
+		}
+
+		private EngineRunner CreateRunner(string engineId)
+		{
+			var runner = new EngineRunner(_buildRepo, _smtModelFactory, _ruleEngineFactory, _textCorpusFactory,
+				_options.InactiveEngineTimeout, engineId);
+			_runners[engineId] = runner;
+			return runner;
 		}
 
 		protected override void DisposeManagedResources()
 		{
 			_commitTimer.Dispose();
-
-			foreach (LanguagePair languagePair in _languagePairs.Values)
-				languagePair.Dispose();
-
-			_languagePairs.Clear();
+			foreach (EngineRunner runner in _runners.Values)
+				runner.Dispose();
+			_runners.Clear();
 		}
 	}
 }
+

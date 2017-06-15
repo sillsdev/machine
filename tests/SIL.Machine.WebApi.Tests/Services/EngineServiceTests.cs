@@ -1,292 +1,168 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using NSubstitute;
-using SIL.IO;
-using SIL.Machine.Translation;
-using SIL.Machine.WebApi.Models;
-using SIL.Machine.WebApi.Services;
-using Xunit;
 using FluentAssertions;
+using Microsoft.Extensions.Options;
+using NSubstitute;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
+using SIL.Machine.Translation;
+using SIL.Machine.WebApi.DataAccess;
+using SIL.Machine.WebApi.Models;
 using SIL.Machine.WebApi.Options;
 using SIL.ObjectModel;
+using Xunit;
 
-namespace SIL.Machine.WebApi.Tests.Services
+namespace SIL.Machine.WebApi.Services
 {
 	public class EngineServiceTests
 	{
 		[Fact]
-		public async Task GetLanguagePairsAsync_NoLanguagePairs_ReturnsEmpty()
+		public async Task TranslateAsync_EngineDoesNotExist_ReturnsNull()
 		{
 			using (var env = new TestEnvironment())
 			{
 				env.CreateEngineService();
-				(await env.Service.GetLanguagePairsAsync()).Should().BeEmpty();
+				TranslationResult result = await env.Service.TranslateAsync(EngineLocatorType.Id, "engine1",
+					"Esto es una prueba .".Split());
+				result.Should().BeNull();
 			}
 		}
 
 		[Fact]
-		public async Task GetLanguagePairsAsync_HasLanguagePairs_ReturnsLanguagePairDtos()
+		public async Task TranslateAsync_EngineExists_ReturnsResult()
 		{
 			using (var env = new TestEnvironment())
 			{
-				env.CreateLanguagePair("es", "en");
-				env.CreateLanguagePair("fr", "en");
+				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
 				env.CreateEngineService();
-				(await env.Service.GetLanguagePairsAsync()).Select(e => $"{e.SourceLanguageTag}_{e.TargetLanguageTag}").Should().BeEquivalentTo("es_en", "fr_en");
+				TranslationResult result = await env.Service.TranslateAsync(EngineLocatorType.Id, engineId,
+					"Esto es una prueba .".Split());
+				result.TargetSegment.Should().Equal("this is a test .".Split());
 			}
 		}
 
 		[Fact]
-		public async Task GetProjectsAsync_LanguagePairDoesNotExist_ReturnsNull()
+		public async Task InteractiveTranslateAsync_EngineDoesNotExist_ReturnsNull()
 		{
 			using (var env = new TestEnvironment())
 			{
 				env.CreateEngineService();
-				(await env.Service.GetProjectsAsync("es", "en")).Should().BeNull();
+				InteractiveTranslationResult result = await env.Service.InteractiveTranslateAsync(EngineLocatorType.Id,
+					"engine1", "Esto es una prueba .".Split());
+				result.Should().BeNull();
 			}
 		}
 
 		[Fact]
-		public async Task GetProjectsAsync_LanguagePairExists_ReturnsProjectDtos()
+		public async Task InteractiveTranslateAsync_EngineExists_ReturnsResult()
 		{
 			using (var env = new TestEnvironment())
 			{
-				env.CreateLanguagePair("es", "en");
+				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
 				env.CreateEngineService();
-				IReadOnlyCollection<ProjectDto> projects = await env.Service.GetProjectsAsync("es", "en");
-				projects.Select(p => p.Id).Should().BeEquivalentTo("project1", "project2");
+				InteractiveTranslationResult result = await env.Service.InteractiveTranslateAsync(EngineLocatorType.Id,
+					engineId, "Esto es una prueba .".Split());
+				result.RuleResult.TargetSegment.Should().Equal("this is a test .".Split());
+				result.SmtWordGraph.Arcs.SelectMany(a => a.Words).Should().Equal("this is a test .".Split());
 			}
 		}
 
 		[Fact]
-		public async Task GetLanguagePairAsync_LanguagePairDoesNotExist_ReturnsNull()
+		public async Task TrainSegmentAsync_EngineDoesNotExist_ReturnsFalse()
 		{
 			using (var env = new TestEnvironment())
 			{
 				env.CreateEngineService();
-				(await env.Service.GetLanguagePairAsync("es", "en")).Should().BeNull();
-			}
-		}
-
-		[Fact]
-		public async Task GetLanguagePairAsync_LanguagePairExists_ReturnsLanguagePairDto()
-		{
-			using (var env = new TestEnvironment())
-			{
-				env.CreateLanguagePair("es", "en");
-				env.CreateEngineService();
-				LanguagePairDto languagePair = await env.Service.GetLanguagePairAsync("es", "en");
-				languagePair.SourceLanguageTag.Should().Be("es");
-				languagePair.TargetLanguageTag.Should().Be("en");
-			}
-		}
-
-		[Fact]
-		public async Task GetProjectAsync_LanguagePairDoesNotExist_ReturnsNull()
-		{
-			using (var env = new TestEnvironment())
-			{
-				env.CreateEngineService();
-				(await env.Service.GetProjectAsync("es", "en", "project1")).Should().BeNull();
-			}
-		}
-
-		[Fact]
-		public async Task GetProjectAsync_ProjectDoesNotExist_ReturnsNull()
-		{
-			using (var env = new TestEnvironment())
-			{
-				env.CreateLanguagePair("es", "en");
-				env.CreateEngineService();
-				(await env.Service.GetProjectAsync("es", "en", "project3")).Should().BeNull();
-			}
-		}
-
-		[Fact]
-		public async Task GetProjectAsync_ProjectExists_ReturnsProjectDto()
-		{
-			using (var env = new TestEnvironment())
-			{
-				env.CreateLanguagePair("es", "en");
-				env.CreateEngineService();
-				ProjectDto project = await env.Service.GetProjectAsync("es", "en", "project1");
-				project.Id.Should().Be("project1");
-			}
-		}
-
-		[Fact]
-		public async Task TranslateAsync_LanguagePairDoesNotExist_ReturnsNull()
-		{
-			using (var env = new TestEnvironment())
-			{
-				env.CreateEngineService();
-				(await env.Service.TranslateAsync("es", "en", null, "Esto es una prueba .".Split())).Should().BeNull();
-			}
-		}
-
-		[Fact]
-		public async Task TranslateAsync_SharedEngine_ReturnsResultDto()
-		{
-			using (var env = new TestEnvironment())
-			{
-				env.CreateLanguagePair("es", "en");
-				env.CreateEngineService();
-				TranslationResultDto result = await env.Service.TranslateAsync("es", "en", null, "Esto es una prueba .".Split());
-				result.Target.Should().Equal("This is a test .".Split());
-			}
-		}
-
-		[Fact]
-		public async Task TranslateAsync_ProjectEngine_ReturnsResultDto()
-		{
-			using (var env = new TestEnvironment())
-			{
-				env.CreateLanguagePair("es", "en");
-				env.CreateEngineService();
-				TranslationResultDto result = await env.Service.TranslateAsync("es", "en", "project2", "Esto es una prueba .".Split());
-				result.Target.Should().Equal("This is a test .".Split());
-			}
-		}
-
-		[Fact]
-		public async Task InteractiveTranslateAsync_LanguagePairDoesNotExist_ReturnsNull()
-		{
-			using (var env = new TestEnvironment())
-			{
-				env.CreateEngineService();
-				(await env.Service.InteractiveTranslateAsync("es", "en", null, "Esto es una prueba .".Split())).Should().BeNull();
-			}
-		}
-
-		[Fact]
-		public async Task InteractiveTranslateAsync_SharedEngine_ReturnsResultDto()
-		{
-			using (var env = new TestEnvironment())
-			{
-				env.CreateLanguagePair("es", "en");
-				env.CreateEngineService();
-				InteractiveTranslationResultDto result = await env.Service.InteractiveTranslateAsync("es", "en", null, "Esto es una prueba .".Split());
-				result.RuleResult.Target.Should().Equal("This is a test .".Split());
-				result.WordGraph.Arcs.SelectMany(a => a.Words).Should().Equal("This is a test .".Split());
-			}
-		}
-
-		[Fact]
-		public async Task InteractiveTranslateAsync_ProjectEngine_ReturnsResultDto()
-		{
-			using (var env = new TestEnvironment())
-			{
-				env.CreateLanguagePair("es", "en");
-				env.CreateEngineService();
-				InteractiveTranslationResultDto result = await env.Service.InteractiveTranslateAsync("es", "en", "project2", "Esto es una prueba .".Split());
-				result.RuleResult.Target.Should().Equal("This is a test .".Split());
-				result.WordGraph.Arcs.SelectMany(a => a.Words).Should().Equal("This is a test .".Split());
-			}
-		}
-
-		[Fact]
-		public async Task TrainSegmentAsync_LanguagePairDoesNotExist_ReturnsFalse()
-		{
-			using (var env = new TestEnvironment())
-			{
-				env.CreateEngineService();
-				var pairDto = new SegmentPairDto
-				{
-					SourceSegment = "Esto es una prueba .".Split(),
-					TargetSegment = "This is a test .".Split()
-				};
-				(await env.Service.TrainSegmentAsync("es", "en", null, pairDto)).Should().BeFalse();
+				bool result = await env.Service.TrainSegmentAsync(EngineLocatorType.Id, "engine1",
+					"Esto es una prueba .".Split(), "This is a test .".Split());
+				result.Should().BeFalse();
 			}
 
 		}
 
 		[Fact]
-		public async Task TrainSegmentAsync_SharedEngine_ReturnsTrue()
+		public async Task TrainSegmentAsync_EngineExists_ReturnsTrue()
 		{
 			using (var env = new TestEnvironment())
 			{
-				env.CreateLanguagePair("es", "en");
+				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
 				env.CreateEngineService();
-				var pairDto = new SegmentPairDto
-				{
-					SourceSegment = "Esto es una prueba .".Split(),
-					TargetSegment = "This is a test .".Split()
-				};
-				(await env.Service.TrainSegmentAsync("es", "en", null, pairDto)).Should().BeTrue();
+				bool result = await env.Service.TrainSegmentAsync(EngineLocatorType.Id, engineId,
+					"Esto es una prueba .".Split(), "This is a test .".Split());
+				result.Should().BeTrue();
 			}
 		}
 
 		[Fact]
-		public async Task TrainSegmentAsync_ProjectEngine_ReturnsTrue()
+		public async Task AddProjectAsync_EngineDoesNotExist_EngineCreated()
 		{
 			using (var env = new TestEnvironment())
 			{
-				env.CreateLanguagePair("es", "en");
 				env.CreateEngineService();
-				var pairDto = new SegmentPairDto
-				{
-					SourceSegment = "Esto es una prueba .".Split(),
-					TargetSegment = "This is a test .".Split()
-				};
-				(await env.Service.TrainSegmentAsync("es", "en", "project2", pairDto)).Should().BeTrue();
+				(Engine Engine, bool ProjectAdded) result = await env.Service.AddProjectAsync("es", "en", "project1", true);
+				result.ProjectAdded.Should().BeTrue();
+
+				Engine engine = await env.EngineRepository.GetAsync(result.Engine.Id);
+				engine.Projects.Should().Contain("project1");
 			}
 		}
 
 		[Fact]
-		public async Task AddProjectAsync_LanguagePairDoesNotExist_ProjectAdded()
+		public async Task AddProjectAsync_SharedEngineExists_ProjectAdded()
 		{
 			using (var env = new TestEnvironment())
 			{
+				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
 				env.CreateEngineService();
-				await env.Service.AddProjectAsync("es", "en", new ProjectDto {Id = "project1", IsShared = true});
-				ProjectDto project = await env.Service.GetProjectAsync("es", "en", "project1");
-				project.Should().NotBeNull();
+				(Engine Engine, bool ProjectAdded) result = await env.Service.AddProjectAsync("es", "en", "project2", true);
+				result.ProjectAdded.Should().BeTrue();
+
+				Engine engine = await env.EngineRepository.GetAsync(result.Engine.Id);
+				engine.Id.Should().Be(engineId);
+				engine.Projects.Should().Contain("project2");
 			}
 		}
 
 		[Fact]
-		public async Task AddProjectAsync_LanguagePairExists_ProjectAdded()
+		public async Task AddProjectAsync_ProjectEngineExists_EngineCreated()
 		{
 			using (var env = new TestEnvironment())
 			{
-				env.CreateLanguagePair("es", "en");
+				string engineId = (await env.CreateEngineAsync("es", "en", false)).Id;
 				env.CreateEngineService();
-				await env.Service.AddProjectAsync("es", "en", new ProjectDto {Id = "project3", IsShared = true});
-				ProjectDto project = await env.Service.GetProjectAsync("es", "en", "project3");
-				project.Should().NotBeNull();
+				(Engine Engine, bool ProjectAdded) result = await env.Service.AddProjectAsync("es", "en", "project2", true);
+				result.ProjectAdded.Should().BeTrue();
+
+				Engine engine = await env.EngineRepository.GetAsync(result.Engine.Id);
+				engine.Id.Should().NotBe(engineId);
+				engine.Projects.Should().Contain("project2");
 			}
 		}
 
 		[Fact]
-		public async Task AddProjectAsync_ProjectExists_NothingChanged()
+		public async Task AddProjectAsync_SharedProjectExists_ReturnsError()
 		{
 			using (var env = new TestEnvironment())
 			{
+				await env.CreateEngineAsync("es", "en", true);
 				env.CreateEngineService();
-				env.CreateLanguagePair("es", "en");
-				await env.Service.AddProjectAsync("es", "en", new ProjectDto {Id = "project1", IsShared = true});
-				ProjectDto project = await env.Service.GetProjectAsync("es", "en", "project1");
-				project.Should().NotBeNull();
+				(Engine Engine, bool ProjectAdded) result = await env.Service.AddProjectAsync("es", "en", "project1", true);
+				result.ProjectAdded.Should().BeFalse();
 			}
 		}
 
 		[Fact]
-		public async Task RemoveProjectAsync_ProjectExists_ProjectRemoved()
+		public async Task RemoveProjectAsync_NonsharedProjectExists_EngineRemoved()
 		{
 			using (var env = new TestEnvironment())
 			{
-				env.CreateLanguagePair("es", "en");
+				string engineId = (await env.CreateEngineAsync("es", "en", false)).Id;
 				env.CreateEngineService();
-				(await env.Service.RemoveProjectAsync("es", "en", "project1")).Should().BeTrue();
-				ProjectDto project = await env.Service.GetProjectAsync("es", "en", "project1");
-				project.Should().BeNull();
+				(await env.Service.RemoveProjectAsync("project1")).Should().BeTrue();
+				Engine engine = await env.EngineRepository.GetAsync(engineId);
+				engine.Should().BeNull();
 			}
 		}
 
@@ -295,58 +171,74 @@ namespace SIL.Machine.WebApi.Tests.Services
 		{
 			using (var env = new TestEnvironment())
 			{
-				env.CreateLanguagePair("es", "en");
+				await env.CreateEngineAsync("es", "en", false);
 				env.CreateEngineService();
-				(await env.Service.RemoveProjectAsync("es", "en", "project3")).Should().BeFalse();
+				(await env.Service.RemoveProjectAsync("project3")).Should().BeFalse();
 			}
 		}
 
 		[Fact]
-		public async Task RemoveProjectAsync_LanguagePairDoesNotExist_ReturnsFalse()
+		public async Task StartBuildAsync_EngineExists_ReturnsSuccess()
 		{
 			using (var env = new TestEnvironment())
 			{
+				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
 				env.CreateEngineService();
-				(await env.Service.RemoveProjectAsync("es", "en", "project2")).Should().BeFalse();
+				(Build Build, StartBuildStatus Status) result = await env.Service.StartBuildAsync(EngineLocatorType.Id,
+					engineId);
+				result.Status.Should().Be(StartBuildStatus.Success);
 			}
 		}
 
 		[Fact]
-		public async Task StartRebuildAsync_ProjectExists_ReturnsTrue()
+		public async Task CancelBuildAsync_ProjectExistsNotBuilding_ReturnsTrue()
 		{
 			using (var env = new TestEnvironment())
 			{
-				env.CreateLanguagePair("es", "en");
+				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
 				env.CreateEngineService();
-				(await env.Service.StartRebuildAsync("es", "en", "project1")).Should().BeTrue();
+				(await env.Service.CancelBuildAsync(BuildLocatorType.Engine, engineId)).Should().BeFalse();
 			}
 		}
 
 		[Fact]
-		public async Task CancelRebuildAsync_ProjectExists_ReturnsTrue()
+		public async Task Constructor_UnfinishedBuild_BuildStarted()
 		{
 			using (var env = new TestEnvironment())
 			{
-				env.CreateLanguagePair("es", "en");
+				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
+				var build = new Build {Id = "build1", EngineId = engineId};
+				await env.BuildRepository.InsertAsync(build);
 				env.CreateEngineService();
-				(await env.Service.CancelRebuildAsync("es", "en", "project1")).Should().BeTrue();
+				// ensures that the build is completed
+				env.DisposeEngineService();
+				build = await env.BuildRepository.GetAsync("build1");
+				build.Should().BeNull();
 			}
 		}
 
 		private class TestEnvironment : DisposableBase
 		{
-			private readonly TempDirectory _tempDir;
-
 			public TestEnvironment()
 			{
-				_tempDir = new TempDirectory("EngineServiceTests");
+				EngineRepository = new MemoryEngineRepository();
+				BuildRepository = new MemoryBuildRepository(EngineRepository);
 			}
 
+			public IEngineRepository EngineRepository { get; }
+			public IBuildRepository BuildRepository { get; }
 			public EngineService Service { get; private set; }
 
 			public void CreateEngineService()
 			{
-				Service = new EngineService(CreateOptions(), CreateSmtModelFactory(), CreateRuleEngineFactory(), CreateTextCorpusFactory());
+				Service = new EngineService(CreateOptions(), EngineRepository, BuildRepository, CreateSmtModelFactory(),
+					CreateRuleEngineFactory(), CreateTextCorpusFactory());
+			}
+
+			public void DisposeEngineService()
+			{
+				Service?.Dispose();
+				Service = null;
 			}
 
 			private IOptions<EngineOptions> CreateOptions()
@@ -355,8 +247,7 @@ namespace SIL.Machine.WebApi.Tests.Services
 				options.Value.Returns(new EngineOptions
 				{
 					EngineCommitFrequency = TimeSpan.FromMinutes(5),
-					InactiveEngineTimeout = TimeSpan.FromMinutes(10),
-					RootDir = _tempDir.Path
+					InactiveEngineTimeout = TimeSpan.FromMinutes(10)
 				});
 				return options;
 			}
@@ -416,36 +307,27 @@ namespace SIL.Machine.WebApi.Tests.Services
 			private ITextCorpusFactory CreateTextCorpusFactory()
 			{
 				var factory = Substitute.For<ITextCorpusFactory>();
-				factory.Create(Arg.Any<IEnumerable<Project>>(), Arg.Any<ITokenizer<string, int>>(), Arg.Any<TextCorpusType>())
+				factory.Create(Arg.Any<IEnumerable<string>>(), Arg.Any<ITokenizer<string, int>>(), Arg.Any<TextCorpusType>())
 					.Returns(new DictionaryTextCorpus(Enumerable.Empty<IText>()));
 				return factory;
 			}
 
-			public void CreateLanguagePair(string sourceLanguageTag, string targetLanguageTag)
+			public async Task<Engine> CreateEngineAsync(string sourceLanguageTag, string targetLanguageTag, bool isShared)
 			{
-				string configDir = Path.Combine(_tempDir.Path, $"{sourceLanguageTag}_{targetLanguageTag}");
-				Directory.CreateDirectory(configDir);
-				string json = JsonConvert.SerializeObject(new LanguagePairConfig
+				var engine = new Engine
 				{
 					SourceLanguageTag = sourceLanguageTag,
 					TargetLanguageTag = targetLanguageTag,
-					Projects = new[] {new ProjectConfig {Id = "project1", IsShared = true}, new ProjectConfig {Id = "project2", IsShared = false}}
-				});
-				File.WriteAllText(Path.Combine(configDir, "config.json"), json);
-				CreateEngineDirectory(Path.Combine(configDir, "shared-engine"));
-				CreateEngineDirectory(Path.Combine(configDir, "project2"));
-			}
-
-			private void CreateEngineDirectory(string dir)
-			{
-				Directory.CreateDirectory(dir);
-				File.WriteAllText(Path.Combine(dir, "config.json"), JsonConvert.SerializeObject(new EngineConfig()));
+					IsShared = isShared,
+					Projects = {"project1"}
+				};
+				await EngineRepository.InsertAsync(engine);
+				return engine;
 			}
 
 			protected override void DisposeManagedResources()
 			{
-				Service?.Dispose();
-				_tempDir.Dispose();
+				DisposeEngineService();
 			}
 		}
 	}

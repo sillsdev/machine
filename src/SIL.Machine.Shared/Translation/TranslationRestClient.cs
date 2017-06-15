@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using SIL.Machine.Web;
 
@@ -7,7 +6,8 @@ namespace SIL.Machine.Translation
 {
 	public class TranslationRestClient
 	{
-		public TranslationRestClient(string baseUrl, string sourceLanguageTag, string targetLanguageTag, string projectId, IHttpClient httpClient)
+		public TranslationRestClient(string baseUrl, string sourceLanguageTag, string targetLanguageTag, string projectId,
+			IHttpClient httpClient)
 		{
 			SourceLanguageTag = sourceLanguageTag;
 			TargetLanguageTag = targetLanguageTag;
@@ -24,9 +24,10 @@ namespace SIL.Machine.Translation
 		internal IHttpClient HttpClient { get; }
 		internal ErrorCorrectionModel ErrorCorrectionModel { get; }
 
-		public async Task<Tuple<WordGraph, TranslationResult>> TranslateInteractivelyAsync(IReadOnlyList<string> sourceSegment)
+		public async Task<InteractiveTranslationResult> TranslateInteractivelyAsync(IReadOnlyList<string> sourceSegment)
 		{
-			string url = string.Format("translation/engines/{0}/{1}/projects/{2}/actions/interactive-translate", SourceLanguageTag, TargetLanguageTag, ProjectId);
+			string url = string.Format("translation/engines/{0}/{1}/projects/{2}/actions/interactive-translate",
+				SourceLanguageTag, TargetLanguageTag, ProjectId);
 			string body = HttpClient.ToJson(sourceSegment);
 			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Post, url, body, "application/json");
 			if (response.IsSuccess)
@@ -34,7 +35,7 @@ namespace SIL.Machine.Translation
 				dynamic json = HttpClient.ParseJson(response.Content);
 				WordGraph wordGraph = CreateWordGraph(json["wordGraph"]);
 				TranslationResult ruleResult = CreateRuleResult(sourceSegment, json["ruleResult"]);
-				return Tuple.Create(wordGraph, ruleResult);
+				return new InteractiveTranslationResult(wordGraph, ruleResult);
 			}
 
 			return null;
@@ -42,7 +43,8 @@ namespace SIL.Machine.Translation
 
 		public async Task<bool> TrainSegmentPairAsync(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
 		{
-			string url = string.Format("translation/engines/{0}/{1}/projects/{2}/actions/train-segment", SourceLanguageTag, TargetLanguageTag, ProjectId);
+			string url = string.Format("translation/engines/{0}/{1}/projects/{2}/actions/train-segment", SourceLanguageTag,
+				TargetLanguageTag, ProjectId);
 			string body = HttpClient.ToJson(new {sourceSegment, targetSegment});
 			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Post, url, body, "application/json");
 			return response.IsSuccess;

@@ -14,6 +14,7 @@ namespace SIL.Machine.Translation
 		public int CurrentStep { get; }
 		public string CurrentStepMessage { get; }
 		public int StepCount { get; }
-		public int PercentCompleted => (int) Math.Round(((double) CurrentStep / StepCount) * 100.0, 0, MidpointRounding.AwayFromZero);
+		public int PercentCompleted => (int) Math.Round(((double) CurrentStep / StepCount) * 100.0, 0,
+			MidpointRounding.AwayFromZero);
 	}
 }

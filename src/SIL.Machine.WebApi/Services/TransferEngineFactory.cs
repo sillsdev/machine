@@ -1,16 +1,26 @@
 ﻿using System.IO;
+using Microsoft.Extensions.Options;
 using SIL.Machine.Annotations;
 using SIL.Machine.Morphology.HermitCrab;
 using SIL.Machine.Translation;
+using SIL.Machine.WebApi.Options;
 
 namespace SIL.Machine.WebApi.Services
 {
 	public class TransferEngineFactory : IRuleEngineFactory
 	{
-		public ITranslationEngine Create(string configDir)
+		private readonly string _rootDir;
+
+		public TransferEngineFactory(IOptions<EngineOptions> engineOptions)
 		{
-			string hcSrcConfigFileName = Path.Combine(configDir, "src-hc.xml");
-			string hcTrgConfigFileName = Path.Combine(configDir, "trg-hc.xml");
+			_rootDir = engineOptions.Value.RootDir;
+		}
+
+		public ITranslationEngine Create(string engineId)
+		{
+			string engineDir = Path.Combine(_rootDir, engineId);
+			string hcSrcConfigFileName = Path.Combine(engineDir, "src-hc.xml");
+			string hcTrgConfigFileName = Path.Combine(engineDir, "trg-hc.xml");
 			TransferEngine transferEngine = null;
 			if (File.Exists(hcSrcConfigFileName) && File.Exists(hcTrgConfigFileName))
 			{

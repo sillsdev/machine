@@ -14,14 +14,14 @@ namespace SIL.Machine.Translation
 		private TranslationResult _curResult;
 		private double _confidenceThreshold;
 
-		internal InteractiveTranslationSession(TranslationEngine engine, string[] sourceSegment, double confidenceThreshold, WordGraph smtWordGraph,
-			TranslationResult ruleResult)
+		internal InteractiveTranslationSession(TranslationEngine engine, string[] sourceSegment, double confidenceThreshold,
+			InteractiveTranslationResult result)
 		{
 			_engine = engine;
 			SourceSegment = sourceSegment;
 			_confidenceThreshold = confidenceThreshold;
-			RuleResult = ruleResult;
-			SmtWordGraph = smtWordGraph;
+			RuleResult = result.RuleResult;
+			SmtWordGraph = result.SmtWordGraph;
 
 			_wordGraphProcessor = new ErrorCorrectionWordGraphProcessor(_engine.ErrorCorrectionModel, SmtWordGraph);
 			UpdatePrefix("");
