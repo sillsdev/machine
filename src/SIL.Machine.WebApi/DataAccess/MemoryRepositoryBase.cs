@@ -9,13 +9,20 @@ namespace SIL.Machine.WebApi.DataAccess
 {
 	public class MemoryRepositoryBase<T> : IRepository<T> where T : class, IEntity<T>
 	{
-		protected MemoryRepositoryBase()
+		protected MemoryRepositoryBase(IRepository<T> persistenceRepo = null)
 		{
 			Lock = new AsyncReaderWriterLock();
 			Entities = new Dictionary<string, T>();
 			Indices = new KeyedList<string, UniqueEntityIndex<T>>(i => i.Name);
+			PersistenceRepository = persistenceRepo;
+			if (PersistenceRepository != null)
+			{
+				foreach (T entity in PersistenceRepository.GetAll())
+					Entities[entity.Id] = entity;
+			}
 		}
 
+		protected IRepository<T> PersistenceRepository { get; }
 		protected AsyncReaderWriterLock Lock { get; }
 		protected IDictionary<string, T> Entities { get; }
 		protected IKeyedCollection<string, UniqueEntityIndex<T>> Indices { get; }
@@ -35,19 +42,28 @@ namespace SIL.Machine.WebApi.DataAccess
 		public void Insert(T entity)
 		{
 			using (Lock.WriterLock())
+			{
 				InsertEntity(entity);
+				PersistenceRepository?.Insert(entity);
+			}
 		}
 
 		public void Update(T entity, bool checkConflict = false)
 		{
 			using (Lock.WriterLock())
+			{
 				UpdateEntity(entity, checkConflict);
+				PersistenceRepository?.Update(entity);
+			}
 		}
 
 		public void Delete(T entity, bool checkConflict = false)
 		{
 			using (Lock.WriterLock())
+			{
 				DeleteEntity(entity, checkConflict);
+				PersistenceRepository?.Delete(entity);
+			}
 		}
 
 		public async Task<IEnumerable<T>> GetAllAsync()
@@ -69,19 +85,31 @@ namespace SIL.Machine.WebApi.DataAccess
 		public async Task InsertAsync(T entity)
 		{
 			using (await Lock.WriterLockAsync())
+			{
 				InsertEntity(entity);
+				if (PersistenceRepository != null)
+					await PersistenceRepository.InsertAsync(entity);
+			}
 		}
 
 		public async Task UpdateAsync(T entity, bool checkConflict = false)
 		{
 			using (await Lock.WriterLockAsync())
+			{
 				UpdateEntity(entity, checkConflict);
+				if (PersistenceRepository != null)
+					await PersistenceRepository.UpdateAsync(entity);
+			}
 		}
 
 		public async Task DeleteAsync(T entity, bool checkConflict = false)
 		{
 			using (await Lock.WriterLockAsync())
+			{
 				DeleteEntity(entity, checkConflict);
+				if (PersistenceRepository != null)
+					await PersistenceRepository.DeleteAsync(entity);
+			}
 		}
 
 		private IEnumerable<T> GetAllEntities()

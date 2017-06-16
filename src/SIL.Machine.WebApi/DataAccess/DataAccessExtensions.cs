@@ -105,8 +105,10 @@ namespace SIL.Machine.WebApi.DataAccess
 			services.Configure<NoDbDataAccessOptions>(dataAccessConfig);
 			services.AddNoDbForEntity<Engine>();
 			services.AddNoDbForEntity<Build>();
-			services.AddSingleton<IEngineRepository, NoDbEngineRepository>();
-			services.AddSingleton<IBuildRepository, NoDbBuildRepository>();
+			services.AddSingleton<IEngineRepository>(sp => new MemoryEngineRepository(
+				new NoDbEngineRepository(sp.GetService<IBasicCommands<Engine>>(), sp.GetService<IBasicQueries<Engine>>())));
+			services.AddSingleton<IBuildRepository>(sp => new MemoryBuildRepository(
+				new NoDbBuildRepository(sp.GetService<IBasicCommands<Build>>(), sp.GetService<IBasicQueries<Build>>())));
 			return services;
 		}
 

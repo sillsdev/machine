@@ -59,6 +59,12 @@ namespace SIL.Machine.WebApi.DataAccess
 			}
 		}
 
+		public void PopulateIndex(IEnumerable<T> entities)
+		{
+			foreach (T entity in entities)
+				EntityUpdated(entity);
+		}
+
 		public void EntityUpdated(T entity)
 		{
 			if (_filter != null && !_filter(entity))

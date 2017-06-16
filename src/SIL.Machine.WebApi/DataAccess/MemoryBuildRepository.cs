@@ -7,9 +7,13 @@ namespace SIL.Machine.WebApi.DataAccess
 	{
 		private const string EngineIndexName = "Engine";
 
-		public MemoryBuildRepository()
+		public MemoryBuildRepository(IBuildRepository persistenceRepo = null)
+			: base(persistenceRepo)
 		{
-			Indices.Add(new UniqueEntityIndex<Build>(EngineIndexName, b => b.EngineId));
+			var engineIndex = new UniqueEntityIndex<Build>(EngineIndexName, b => b.EngineId);
+			if (PersistenceRepository != null)
+				engineIndex.PopulateIndex(PersistenceRepository.GetAll());
+			Indices.Add(engineIndex);
 		}
 
 		public async Task<Build> GetByEngineIdAsync(string engineId)
