@@ -142,13 +142,25 @@ namespace SIL.Machine.WebApi.Services
 		}
 
 		[Fact]
-		public async Task AddProjectAsync_SharedProjectExists_ReturnsError()
+		public async Task AddProjectAsync_SharedProjectExists_ReturnsProjectNotAdded()
 		{
 			using (var env = new TestEnvironment())
 			{
 				await env.CreateEngineAsync("es", "en", true);
 				env.CreateEngineService();
 				(Engine Engine, bool ProjectAdded) result = await env.Service.AddProjectAsync("es", "en", "project1", true);
+				result.ProjectAdded.Should().BeFalse();
+			}
+		}
+
+		[Fact]
+		public async Task AddProjectAsync_NonsharedProjectExists_ReturnsProjectNotAdded()
+		{
+			using (var env = new TestEnvironment())
+			{
+				await env.CreateEngineAsync("es", "en", false);
+				env.CreateEngineService();
+				(Engine Engine, bool ProjectAdded) result = await env.Service.AddProjectAsync("es", "en", "project1", false);
 				result.ProjectAdded.Should().BeFalse();
 			}
 		}

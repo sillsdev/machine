@@ -49,5 +49,50 @@ namespace SIL.Machine.WebApi.DataAccess
 			}
 			return null;
 		}
+
+		public static async Task<T> ConcurrentUpdateAsync<T>(this IRepository<T> repo, T entity, Action<T> changeAction)
+			where T : class, IEntity<T>
+		{
+			while (true)
+			{
+				try
+				{
+					changeAction(entity);
+					await repo.UpdateAsync(entity, true);
+					break;
+				}
+				catch (ConcurrencyConflictException)
+				{
+					entity = await repo.GetAsync(entity.Id);
+					if (entity == null)
+						return null;
+				}
+			}
+			return entity;
+		}
+
+		public static bool TryConcurrentUpdate<T>(this IRepository<T> repo, T entity, Action<T> changeAction, out T newEntity)
+			where T : class, IEntity<T>
+		{
+			while (true)
+			{
+				try
+				{
+					changeAction(entity);
+					repo.Update(entity, true);
+					break;
+				}
+				catch (ConcurrencyConflictException)
+				{
+					if (!repo.TryGet(entity.Id, out entity))
+					{
+						newEntity = null;
+						return false;
+					}
+				}
+			}
+			newEntity = entity;
+			return true;
+		}
 	}
 }

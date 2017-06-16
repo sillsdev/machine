@@ -9,6 +9,7 @@ namespace SIL.Machine.WebApi.DataAccess
 		{
 		}
 
+		public string IndexName { get; set; }
 		public object Entity { get; set; }
 	}
 }

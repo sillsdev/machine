@@ -38,16 +38,16 @@ namespace SIL.Machine.WebApi.DataAccess
 				InsertEntity(entity);
 		}
 
-		public void Update(T entity)
+		public void Update(T entity, bool checkConflict = false)
 		{
 			using (Lock.WriterLock())
-				UpdateEntity(entity);
+				UpdateEntity(entity, checkConflict);
 		}
 
-		public void Delete(T entity)
+		public void Delete(T entity, bool checkConflict = false)
 		{
 			using (Lock.WriterLock())
-				DeleteEntity(entity);
+				DeleteEntity(entity, checkConflict);
 		}
 
 		public async Task<IEnumerable<T>> GetAllAsync()
@@ -72,16 +72,16 @@ namespace SIL.Machine.WebApi.DataAccess
 				InsertEntity(entity);
 		}
 
-		public async Task UpdateAsync(T entity)
+		public async Task UpdateAsync(T entity, bool checkConflict = false)
 		{
 			using (await Lock.WriterLockAsync())
-				UpdateEntity(entity);
+				UpdateEntity(entity, checkConflict);
 		}
 
-		public async Task DeleteAsync(T entity)
+		public async Task DeleteAsync(T entity, bool checkConflict = false)
 		{
 			using (await Lock.WriterLockAsync())
-				DeleteEntity(entity);
+				DeleteEntity(entity, checkConflict);
 		}
 
 		private IEnumerable<T> GetAllEntities()
@@ -109,6 +109,7 @@ namespace SIL.Machine.WebApi.DataAccess
 			{
 				throw new KeyAlreadyExistsException("An entity with the same identifier already exists.")
 				{
+					IndexName = "Id",
 					Entity = otherEntity
 				};
 			}
@@ -122,11 +123,12 @@ namespace SIL.Machine.WebApi.DataAccess
 				index.EntityUpdated(internalEntity);
 		}
 
-		private void UpdateEntity(T entity)
+		private void UpdateEntity(T entity, bool checkConflict)
 		{
 			foreach (UniqueEntityIndex<T> index in Indices)
 				index.CheckKeyConflict(entity);
-			CheckForConcurrencyConflict(entity);
+			if (checkConflict)
+				CheckForConcurrencyConflict(entity);
 
 			entity.Revision++;
 			T internalEntity = entity.Clone();
@@ -136,17 +138,21 @@ namespace SIL.Machine.WebApi.DataAccess
 				index.EntityUpdated(internalEntity);
 		}
 
-		private void DeleteEntity(T entity)
+		private void DeleteEntity(T entity, bool checkConflict)
 		{
-			T internalEntity = CheckForConcurrencyConflict(entity);
+			if (checkConflict)
+				CheckForConcurrencyConflict(entity);
 
-			Entities.Remove(entity.Id);
+			if (Entities.TryGetValue(entity.Id, out T internalEntity))
+			{
+				Entities.Remove(entity.Id);
 
-			foreach (UniqueEntityIndex<T> index in Indices)
-				index.EntityDeleted(internalEntity);
+				foreach (UniqueEntityIndex<T> index in Indices)
+					index.EntityDeleted(internalEntity);
+			}
 		}
 
-		private T CheckForConcurrencyConflict(T entity)
+		private void CheckForConcurrencyConflict(T entity)
 		{
 			if (!Entities.TryGetValue(entity.Id, out T internalEntity))
 			{
@@ -164,7 +170,6 @@ namespace SIL.Machine.WebApi.DataAccess
 					ActualRevision = internalEntity.Revision
 				};
 			}
-			return internalEntity;
 		}
 	}
 }

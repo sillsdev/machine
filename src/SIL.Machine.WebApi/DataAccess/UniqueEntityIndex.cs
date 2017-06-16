@@ -51,6 +51,7 @@ namespace SIL.Machine.WebApi.DataAccess
 					{
 						throw new KeyAlreadyExistsException("An entity with the same key already exists.")
 						{
+							IndexName = Name,
 							Entity = otherEntity
 						};
 					}

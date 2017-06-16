@@ -9,13 +9,13 @@ namespace SIL.Machine.WebApi.DataAccess
 		IEnumerable<T> GetAll();
 		bool TryGet(string id, out T entity);
 		void Insert(T entity);
-		void Update(T entity);
-		void Delete(T entity);
+		void Update(T entity, bool checkConflict = false);
+		void Delete(T entity, bool checkConflict = false);
 
 		Task<IEnumerable<T>> GetAllAsync();	
 		Task<T> GetAsync(string id);
 		Task InsertAsync(T entity);
-		Task UpdateAsync(T entity);
-		Task DeleteAsync(T entity);
+		Task UpdateAsync(T entity, bool checkConflict = false);
+		Task DeleteAsync(T entity, bool checkConflict = false);
 	}
 }

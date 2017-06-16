@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
@@ -139,28 +140,34 @@ namespace SIL.Machine.WebApi.Services
 			using (await _lock.WriterLockAsync())
 			{
 				Engine engine = isShared ? await _engineRepo.GetByLanguageTagAsync(sourceLanguageTag, targetLanguageTag) : null;
-				if (engine == null)
+				try
 				{
-					// no existing shared engine or a project-specific engine
-					engine = new Engine
+					if (engine == null)
 					{
-						Projects = {projectId},
-						IsShared = isShared,
-						SourceLanguageTag = sourceLanguageTag,
-						TargetLanguageTag = targetLanguageTag
-					};
-					await _engineRepo.InsertAsync(engine);
-					EngineRunner runner = CreateRunner(engine.Id);
-					await runner.InitNewAsync();
+						// no existing shared engine or a project-specific engine
+						engine = new Engine
+						{
+							Projects = {projectId},
+							IsShared = isShared,
+							SourceLanguageTag = sourceLanguageTag,
+							TargetLanguageTag = targetLanguageTag
+						};
+						await _engineRepo.InsertAsync(engine);
+						EngineRunner runner = CreateRunner(engine.Id);
+						await runner.InitNewAsync();
+					}
+					else
+					{
+						// found an existing shared engine
+						if (engine.Projects.Contains(projectId))
+							return (engine, false);
+						engine = await UpdateEngineAsync(engine, e => e.Projects.Add(projectId));
+					}
 				}
-				else
+				catch (KeyAlreadyExistsException)
 				{
-					// found an existing shared engine
-					// TODO: should UpdateAsync determine if there is a conflict?
-					if (engine.Projects.Contains(projectId))
-						return (engine, false);
-					engine.Projects.Add(projectId);
-					await UpdateEngineAsync(engine);
+					// a project with the same id already exists
+					return (engine, false);
 				}
 
 				return (engine, true);
@@ -177,12 +184,9 @@ namespace SIL.Machine.WebApi.Services
 				if (engine == null)
 					return false;
 
-				if (!engine.Projects.Remove(projectId))
-					return false;
-
-				if (engine.Projects.Count == 0)
+				if (engine.Projects.Count == 1 && engine.Projects.Contains(projectId))
 				{
-					// the engine has no associated projects so remove it
+					// the engine will have no associated projects, so remove it
 					await _engineRepo.DeleteAsync(engine);
 					if (_runners.TryGetValue(engine.Id, out EngineRunner runner))
 					{
@@ -193,20 +197,21 @@ namespace SIL.Machine.WebApi.Services
 				}
 				else
 				{
-					// engine still has associated projects so just update it
-					await UpdateEngineAsync(engine);
+					// engine will still have associated projects, so just update it
+					await UpdateEngineAsync(engine, e => e.Projects.Remove(projectId));
 				}
 				return true;
 			}
 		}
 
-		private async Task UpdateEngineAsync(Engine engine)
+		private async Task<Engine> UpdateEngineAsync(Engine engine, Action<Engine> changeFunc)
 		{
-			await _engineRepo.UpdateAsync(engine);
+			engine = await _engineRepo.ConcurrentUpdateAsync(engine, changeFunc);
 			// TODO: restart the build if it is already running
 			if (!_runners.TryGetValue(engine.Id, out EngineRunner runner))
 				runner = CreateRunner(engine.Id);
 			await runner.StartBuildAsync(engine);
+			return engine;
 		}
 
 		public async Task<(Build Build, StartBuildStatus Status)> StartBuildAsync(EngineLocatorType locatorType, string locator)
@@ -269,4 +274,6 @@ namespace SIL.Machine.WebApi.Services
 		}
 	}
 }
+
+
 
