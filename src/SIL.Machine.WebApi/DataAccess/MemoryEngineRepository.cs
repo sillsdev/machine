@@ -1,22 +1,40 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using SIL.Machine.WebApi.Models;
 
 namespace SIL.Machine.WebApi.DataAccess
 {
 	public class MemoryEngineRepository : MemoryRepositoryBase<Engine>, IEngineRepository
 	{
-		public Task<Engine> GetByLanguageTagAsync(string sourceLanguageTag, string targetLanguageTag)
+		private const string LangTagIndexName = "LangTag";
+		private const string ProjectIndexName = "Project";
+
+		public MemoryEngineRepository()
 		{
-			Engine engine = Entities.Values.Select(ew => ew.Entity).SingleOrDefault(e => e.IsShared
-				&& e.SourceLanguageTag == sourceLanguageTag && e.TargetLanguageTag == targetLanguageTag);
-			return Task.FromResult(engine?.Clone());
+			Indices.Add(new UniqueEntityIndex<Engine>(LangTagIndexName, e => (e.SourceLanguageTag, e.TargetLanguageTag),
+				e => e.IsShared));
+			Indices.Add(new UniqueEntityIndex<Engine>(ProjectIndexName, e => e.Projects));
 		}
 
-		public Task<Engine> GetByProjectIdAsync(string projectId)
+		public async Task<Engine> GetByLanguageTagAsync(string sourceLanguageTag, string targetLanguageTag)
 		{
-			Engine engine = Entities.Values.Select(ew => ew.Entity).SingleOrDefault(e => e.Projects.Contains(projectId));
-			return Task.FromResult(engine?.Clone());
+			using (await Lock.ReaderLockAsync())
+			{
+				UniqueEntityIndex<Engine> index = Indices[LangTagIndexName];
+				if (index.TryGetEntity((sourceLanguageTag, targetLanguageTag), out Engine engine))
+					return engine;
+				return null;
+			}
+		}
+
+		public async Task<Engine> GetByProjectIdAsync(string projectId)
+		{
+			using (await Lock.ReaderLockAsync())
+			{
+				UniqueEntityIndex<Engine> index = Indices[ProjectIndexName];
+				if (index.TryGetEntity(projectId, out Engine engine))
+					return engine;
+				return null;
+			}
 		}
 	}
 }

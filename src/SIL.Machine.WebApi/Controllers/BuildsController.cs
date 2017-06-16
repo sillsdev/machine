@@ -13,13 +13,11 @@ namespace SIL.Machine.WebApi.Controllers
 	public class BuildsController : Controller
 	{
 		private readonly IBuildRepository _buildRepo;
-		private readonly IEngineRepository _engineRepo;
 		private readonly EngineService _engineService;
 
 		public BuildsController(IBuildRepository buildRepo, IEngineRepository engineRepo, EngineService engineService)
 		{
 			_buildRepo = buildRepo;
-			_engineRepo = engineRepo;
 			_engineService = engineService;
 		}
 
@@ -72,8 +70,6 @@ namespace SIL.Machine.WebApi.Controllers
 					return BuildLocatorType.Id;
 				case "engine":
 					return BuildLocatorType.Engine;
-				case "project":
-					return BuildLocatorType.Project;
 			}
 			return BuildLocatorType.Id;
 		}

@@ -222,7 +222,7 @@ namespace SIL.Machine.WebApi.Services
 			public TestEnvironment()
 			{
 				EngineRepository = new MemoryEngineRepository();
-				BuildRepository = new MemoryBuildRepository(EngineRepository);
+				BuildRepository = new MemoryBuildRepository();
 			}
 
 			public IEngineRepository EngineRepository { get; }

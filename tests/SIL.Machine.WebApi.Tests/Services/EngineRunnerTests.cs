@@ -88,7 +88,7 @@ namespace SIL.Machine.WebApi.Services
 		{
 			public TestEnvironment()
 			{
-				BuildRepository = new MemoryBuildRepository(new MemoryEngineRepository());
+				BuildRepository = new MemoryBuildRepository();
 				BatchTrainer = Substitute.For<ISmtBatchTrainer>();
 				SmtModel = Substitute.For<IInteractiveSmtModel>();
 			}

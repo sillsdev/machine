@@ -14,8 +14,7 @@ namespace SIL.Machine.WebApi.DataAccess
 	public enum BuildLocatorType
 	{
 		Id,
-		Engine,
-		Project
+		Engine
 	}
 
 	public static class DataAccessExtensions
@@ -47,8 +46,6 @@ namespace SIL.Machine.WebApi.DataAccess
 					return await buildRepo.GetAsync(locator);
 				case BuildLocatorType.Engine:
 					return await buildRepo.GetByEngineIdAsync(locator);
-				case BuildLocatorType.Project:
-					return await buildRepo.GetByProjectIdAsync(locator);
 			}
 			return null;
 		}

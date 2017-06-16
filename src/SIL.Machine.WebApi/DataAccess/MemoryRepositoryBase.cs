@@ -1,27 +1,99 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SIL.Machine.WebApi.Models;
+using SIL.ObjectModel;
 using SIL.Threading;
 
 namespace SIL.Machine.WebApi.DataAccess
 {
 	public class MemoryRepositoryBase<T> : IRepository<T> where T : class, IEntity<T>
 	{
-		protected ConcurrentDictionary<string, EntityWrapper> Entities { get; } = new ConcurrentDictionary<string, EntityWrapper>();
+		protected MemoryRepositoryBase()
+		{
+			Lock = new AsyncReaderWriterLock();
+			Entities = new Dictionary<string, T>();
+			Indices = new KeyedList<string, UniqueEntityIndex<T>>(i => i.Name);
+		}
+
+		protected AsyncReaderWriterLock Lock { get; }
+		protected IDictionary<string, T> Entities { get; }
+		protected IKeyedCollection<string, UniqueEntityIndex<T>> Indices { get; }
 
 		public IEnumerable<T> GetAll()
 		{
-			return Entities.Values.Select(ew => ew.Entity.Clone()).ToArray();
+			using (Lock.ReaderLock())
+				return GetAllEntities();
 		}
 
 		public bool TryGet(string id, out T entity)
 		{
-			if (Entities.TryGetValue(id, out EntityWrapper ew))
+			using (Lock.ReaderLock())
+				return TryGetEntity(id, out entity);
+		}
+
+		public void Insert(T entity)
+		{
+			using (Lock.WriterLock())
+				InsertEntity(entity);
+		}
+
+		public void Update(T entity)
+		{
+			using (Lock.WriterLock())
+				UpdateEntity(entity);
+		}
+
+		public void Delete(T entity)
+		{
+			using (Lock.WriterLock())
+				DeleteEntity(entity);
+		}
+
+		public async Task<IEnumerable<T>> GetAllAsync()
+		{
+			using (await Lock.ReaderLockAsync())
+				return GetAllEntities();
+		}
+
+		public async Task<T> GetAsync(string id)
+		{
+			using (await Lock.ReaderLockAsync())
 			{
-				entity = ew.Entity.Clone();
+				if (TryGetEntity(id, out T entity))
+					return entity;
+				return null;
+			}
+		}
+
+		public async Task InsertAsync(T entity)
+		{
+			using (await Lock.WriterLockAsync())
+				InsertEntity(entity);
+		}
+
+		public async Task UpdateAsync(T entity)
+		{
+			using (await Lock.WriterLockAsync())
+				UpdateEntity(entity);
+		}
+
+		public async Task DeleteAsync(T entity)
+		{
+			using (await Lock.WriterLockAsync())
+				DeleteEntity(entity);
+		}
+
+		private IEnumerable<T> GetAllEntities()
+		{
+			return Entities.Values.Select(e => e.Clone()).ToArray();
+		}
+
+		private bool TryGetEntity(string id, out T entity)
+		{
+			if (Entities.TryGetValue(id, out T e))
+			{
+				entity = e.Clone();
 				return true;
 			}
 
@@ -29,93 +101,70 @@ namespace SIL.Machine.WebApi.DataAccess
 			return false;
 		}
 
-		public void Insert(T entity)
+		private void InsertEntity(T entity)
 		{
 			if (string.IsNullOrEmpty(entity.Id))
 				entity.Id = ObjectId.GenerateNewId().ToString();
-			if (!Entities.TryAdd(entity.Id, new EntityWrapper(entity.Clone())))
-				throw new InvalidOperationException("An entity with the specified identifier already exists.");
+			if (Entities.TryGetValue(entity.Id, out T otherEntity))
+			{
+				throw new KeyAlreadyExistsException("An entity with the same identifier already exists.")
+				{
+					Entity = otherEntity
+				};
+			}
+			foreach (UniqueEntityIndex<T> index in Indices)
+				index.CheckKeyConflict(entity);
+
+			T internalEntity = entity.Clone();
+			Entities.Add(entity.Id, internalEntity);
+
+			foreach (UniqueEntityIndex<T> index in Indices)
+				index.EntityUpdated(internalEntity);
 		}
 
-		public void Update(T entity)
+		private void UpdateEntity(T entity)
 		{
-			T oldEntity = entity.Clone();
+			foreach (UniqueEntityIndex<T> index in Indices)
+				index.CheckKeyConflict(entity);
+			CheckForConcurrencyConflict(entity);
+
 			entity.Revision++;
-			if (!Entities.TryUpdate(entity.Id, new EntityWrapper(entity.Clone()), new EntityWrapper(oldEntity)))
-				throw new ConcurrencyConflictException("The entity has been updated or deleted in another thread.");
+			T internalEntity = entity.Clone();
+			Entities[entity.Id] = internalEntity;
+
+			foreach (UniqueEntityIndex<T> index in Indices)
+				index.EntityUpdated(internalEntity);
 		}
 
-		public void Delete(T entity)
+		private void DeleteEntity(T entity)
 		{
-			if (Entities.TryRemove(entity.Id, out EntityWrapper oldWrapper))
+			T internalEntity = CheckForConcurrencyConflict(entity);
+
+			Entities.Remove(entity.Id);
+
+			foreach (UniqueEntityIndex<T> index in Indices)
+				index.EntityDeleted(internalEntity);
+		}
+
+		private T CheckForConcurrencyConflict(T entity)
+		{
+			if (!Entities.TryGetValue(entity.Id, out T internalEntity))
 			{
-				if (entity.Revision != oldWrapper.Entity.Revision)
-					throw new ConcurrencyConflictException("The entity has been updated in another thread.");
-			}
-			else
-			{
-				throw new ConcurrencyConflictException("The entity has been deleted in another thread.");
-			}
-		}
-
-		public Task<IEnumerable<T>> GetAllAsync()
-		{
-			return Task.FromResult(GetAll());
-		}
-
-		public Task<T> GetAsync(string id)
-		{
-			if (TryGet(id, out T entity))
-				return Task.FromResult(entity);
-			return Task.FromResult<T>(null);
-		}
-
-		public Task InsertAsync(T entity)
-		{
-			Insert(entity);
-			return TaskConstants<object>.Default;
-		}
-
-		public Task UpdateAsync(T entity)
-		{
-			Update(entity);
-			return TaskConstants<object>.Default;
-		}
-
-		public Task DeleteAsync(T entity)
-		{
-			Delete(entity);
-			return TaskConstants<object>.Default;
-		}
-
-		protected struct EntityWrapper : IEquatable<EntityWrapper>
-		{
-			public EntityWrapper(T entity)
-			{
-				Entity = entity;
+				throw new ConcurrencyConflictException("The entity has been deleted.")
+				{
+					ExpectedRevision = entity.Revision
+				};
 			}
 
-			public T Entity { get; }
-
-			public override bool Equals(object obj)
+			if (entity.Revision != internalEntity.Revision)
 			{
-				if (ReferenceEquals(null, obj))
-					return false;
-				return obj is EntityWrapper && Equals((EntityWrapper) obj);
+				throw new ConcurrencyConflictException("The entity has been updated.")
+				{
+					ExpectedRevision = entity.Revision,
+					ActualRevision = internalEntity.Revision
+				};
 			}
-
-			public bool Equals(EntityWrapper other)
-			{
-				return Entity.Id == other.Entity.Id && Entity.Revision == other.Entity.Revision;
-			}
-
-			public override int GetHashCode()
-			{
-				int code = 23;
-				code = code * 31 + Entity.Id.GetHashCode();
-				code = code * 31 + Entity.Revision.GetHashCode();
-				return code;
-			}
+			return internalEntity;
 		}
 	}
 }
