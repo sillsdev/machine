@@ -76,8 +76,18 @@ namespace SIL.Machine.WebApi
 					break;
 			}
 
-			services.AddSingleton<IEngineRepository, MemoryEngineRepository>();
-			services.AddSingleton<IBuildRepository, MemoryBuildRepository>();
+			IConfigurationSection dataAccessConfig = Configuration.GetSection("DataAccess");
+			switch (dataAccessConfig.GetValue<string>("Type"))
+			{
+				case "Memory":
+					services.AddMemoryDataAccess();
+					break;
+
+				case "NoDb":
+					services.AddNoDbDataAccess(dataAccessConfig);
+					break;
+			}
+
 			services.AddSingleton<EngineService>();
 		}
 
