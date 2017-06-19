@@ -2,10 +2,9 @@
 using System.Linq;
 using NSubstitute;
 using NUnit.Framework;
-using SIL.Machine.Translation;
 using SIL.ObjectModel;
 
-namespace SIL.Machine.Tests.Translation
+namespace SIL.Machine.Translation
 {
 	[TestFixture]
 	public class TranslationExtensionsTests

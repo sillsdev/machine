@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using QuickGraph;
-using SIL.Machine.Clusterers;
 
-namespace SIL.Machine.Tests.Clusterers
+namespace SIL.Machine.Clusterers
 {
 	[TestFixture]
 	public abstract class ClustererTestsBase

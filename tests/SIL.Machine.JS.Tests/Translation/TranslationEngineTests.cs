@@ -2,12 +2,10 @@
 using System.Linq;
 using Bridge.Html5;
 using Bridge.QUnit;
-using SIL.Machine.JS.Tests.Web;
 using SIL.Machine.Tokenization;
-using SIL.Machine.Translation;
 using SIL.Machine.Web;
 
-namespace SIL.Machine.JS.Tests.Translation
+namespace SIL.Machine.Translation
 {
 	public static class TranslationEngineTests
 	{

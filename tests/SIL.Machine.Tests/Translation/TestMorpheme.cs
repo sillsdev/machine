@@ -1,6 +1,6 @@
 ﻿using SIL.Machine.Morphology;
 
-namespace SIL.Machine.Tests.Translation
+namespace SIL.Machine.Translation
 {
 	/// <summary>
 	/// This class contains information about a morpheme.

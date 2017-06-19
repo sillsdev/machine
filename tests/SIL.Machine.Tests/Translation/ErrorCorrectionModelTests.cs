@@ -1,7 +1,6 @@
 ﻿using NUnit.Framework;
-using SIL.Machine.Translation;
 
-namespace SIL.Machine.Tests.Translation
+namespace SIL.Machine.Translation
 {
 	[TestFixture]
 	public class ErrorCorrectionModelTests

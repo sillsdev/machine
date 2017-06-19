@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace SIL.Machine.Translation.Thot.Tests
+namespace SIL.Machine.Translation.Thot
 {
 	public static class TestHelpers
 	{

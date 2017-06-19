@@ -8,7 +8,7 @@
     <ProjectGuid>{3B8610C8-8EF2-4733-9D8F-5303318830DA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SIL.Machine.Tests</RootNamespace>
+    <RootNamespace>SIL.Machine</RootNamespace>
     <AssemblyName>SIL.Machine.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

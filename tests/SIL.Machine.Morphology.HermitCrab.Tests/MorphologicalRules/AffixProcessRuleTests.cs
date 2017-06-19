@@ -5,10 +5,9 @@ using SIL.Extensions;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
-using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
 using SIL.Machine.Morphology.HermitCrab.PhonologicalRules;
 
-namespace SIL.Machine.Morphology.HermitCrab.Tests.MorphologicalRules
+namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 {
 	public class AffixProcessRuleTests : HermitCrabTestBase
 	{

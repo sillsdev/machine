@@ -3,9 +3,8 @@ using System.Globalization;
 using System.Linq;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
-using SIL.Machine.FiniteState;
 
-namespace SIL.Machine.Tests.FiniteState
+namespace SIL.Machine.FiniteState
 {
 	public class PhoneticFstOperations : IFstOperations<AnnotatedStringData, int>
 	{

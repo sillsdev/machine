@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using SIL.Machine.Morphology;
 
-namespace SIL.Machine.Tests.Morphology
+namespace SIL.Machine.Morphology
 {
 	[TestFixture]
 	public class PoorMansStemmerTests

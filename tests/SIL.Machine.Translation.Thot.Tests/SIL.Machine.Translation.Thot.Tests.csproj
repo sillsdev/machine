@@ -8,7 +8,7 @@
     <ProjectGuid>{305C1A93-6BF6-4B70-B8F5-81FCBD6A10F3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SIL.Machine.Translation.Thot.Tests</RootNamespace>
+    <RootNamespace>SIL.Machine.Translation.Thot</RootNamespace>
     <AssemblyName>SIL.Machine.Translation.Thot.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

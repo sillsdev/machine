@@ -1,8 +1,7 @@
 ﻿using System.Linq;
 using NUnit.Framework;
-using SIL.Machine.Clusterers;
 
-namespace SIL.Machine.Tests.Clusterers
+namespace SIL.Machine.Clusterers
 {
 	[TestFixture]
 	public class DbscanClustererTests : ClustererTestsBase

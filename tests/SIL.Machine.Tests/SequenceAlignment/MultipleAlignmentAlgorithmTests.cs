@@ -1,9 +1,8 @@
 using System;
 using System.Linq;
 using NUnit.Framework;
-using SIL.Machine.SequenceAlignment;
 
-namespace SIL.Machine.Tests.SequenceAlignment
+namespace SIL.Machine.SequenceAlignment
 {
 	[TestFixture]
 	public class MultipleAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase

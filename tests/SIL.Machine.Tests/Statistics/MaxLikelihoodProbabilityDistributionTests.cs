@@ -1,7 +1,6 @@
 ﻿using NUnit.Framework;
-using SIL.Machine.Statistics;
 
-namespace SIL.Machine.Tests.Statistics
+namespace SIL.Machine.Statistics
 {
 	[TestFixture]
 	public class MaxLikelihoodProbabilityDistributionTests

@@ -3,7 +3,7 @@ using NUnit.Framework;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 
-namespace SIL.Machine.Tests
+namespace SIL.Machine
 {
 	[TestFixture]
 	public abstract class PhoneticTestsBase

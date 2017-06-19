@@ -1,8 +1,7 @@
 ﻿using System.Linq;
 using NUnit.Framework;
-using SIL.Machine.Corpora;
 
-namespace SIL.Machine.Tests.Corpora
+namespace SIL.Machine.Corpora
 {
 	[TestFixture]
 	public class ParallelTextTests

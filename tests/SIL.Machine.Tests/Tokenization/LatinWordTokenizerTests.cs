@@ -1,7 +1,6 @@
 ﻿using NUnit.Framework;
-using SIL.Machine.Tokenization;
 
-namespace SIL.Machine.Tests.Tokenization
+namespace SIL.Machine.Tokenization
 {
 	[TestFixture]
 	public class LatinWordTokenizerTests

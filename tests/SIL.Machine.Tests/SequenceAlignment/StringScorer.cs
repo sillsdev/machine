@@ -1,6 +1,4 @@
-using SIL.Machine.SequenceAlignment;
-
-namespace SIL.Machine.Tests.SequenceAlignment
+namespace SIL.Machine.SequenceAlignment
 {
 	public class StringScorer : IPairwiseAlignmentScorer<string, char>
 	{

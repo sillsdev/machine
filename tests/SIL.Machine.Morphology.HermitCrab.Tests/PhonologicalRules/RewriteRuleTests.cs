@@ -3,9 +3,8 @@ using SIL.Machine.Annotations;
 using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
-using SIL.Machine.Morphology.HermitCrab.PhonologicalRules;
 
-namespace SIL.Machine.Morphology.HermitCrab.Tests.PhonologicalRules
+namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 {
 	public class RewriteRuleTests : HermitCrabTestBase
 	{

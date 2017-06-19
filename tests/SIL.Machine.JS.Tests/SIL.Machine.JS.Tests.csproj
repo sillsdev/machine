@@ -7,7 +7,7 @@
     <ProjectGuid>{4E17DF5D-E308-479A-A3E1-61E50B616F01}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SIL.Machine.JS.Tests</RootNamespace>
+    <RootNamespace>SIL.Machine</RootNamespace>
     <AssemblyName>SIL.Machine.JS.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace SIL.Machine.Tests.Corpora
+namespace SIL.Machine.Corpora
 {
 	internal static class CorporaTestHelpers
 	{

@@ -2,7 +2,7 @@
 using System.IO;
 using NUnit.Framework;
 
-namespace SIL.Machine.Morphology.HermitCrab.Tests
+namespace SIL.Machine.Morphology.HermitCrab
 {
 	[TestFixture]
 	public class XmlLanguageSerializationTests

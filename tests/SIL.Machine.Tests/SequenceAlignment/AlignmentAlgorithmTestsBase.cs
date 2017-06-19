@@ -2,9 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
-using SIL.Machine.SequenceAlignment;
 
-namespace SIL.Machine.Tests.SequenceAlignment
+namespace SIL.Machine.SequenceAlignment
 {
 	[TestFixture]
 	public abstract class AlignmentAlgorithmTestsBase

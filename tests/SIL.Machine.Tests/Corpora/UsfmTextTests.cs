@@ -1,10 +1,9 @@
 ﻿using System.Linq;
 using System.Text;
 using NUnit.Framework;
-using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
 
-namespace SIL.Machine.Tests.Corpora
+namespace SIL.Machine.Corpora
 {
 	[TestFixture]
 	public class UsfmTextTests

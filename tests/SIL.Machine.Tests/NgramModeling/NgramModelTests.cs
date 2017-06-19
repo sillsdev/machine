@@ -1,9 +1,8 @@
 using System.Linq;
 using NUnit.Framework;
 using SIL.Machine.DataStructures;
-using SIL.Machine.NgramModeling;
 
-namespace SIL.Machine.Tests.NgramModeling
+namespace SIL.Machine.NgramModeling
 {
 	[TestFixture]
 	public class NgramModelTests

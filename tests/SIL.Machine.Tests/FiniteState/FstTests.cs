@@ -4,9 +4,8 @@ using System.Linq;
 using NUnit.Framework;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
-using SIL.Machine.FiniteState;
 
-namespace SIL.Machine.Tests.FiniteState
+namespace SIL.Machine.FiniteState
 {
 	[TestFixture]
 	public class FstTests : PhoneticTestsBase

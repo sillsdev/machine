@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using SIL.Machine.FeatureModel;
 using SIL.ObjectModel;
 
-namespace SIL.Machine.Tests.FeatureModel
+namespace SIL.Machine.FeatureModel
 {
 	[TestFixture]
 	public class FeatureStructTests

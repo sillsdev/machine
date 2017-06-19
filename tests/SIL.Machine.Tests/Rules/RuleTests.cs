@@ -3,9 +3,8 @@ using NUnit.Framework;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
-using SIL.Machine.Rules;
 
-namespace SIL.Machine.Tests.Rules
+namespace SIL.Machine.Rules
 {
 	public class RuleTests : PhoneticTestsBase
 	{

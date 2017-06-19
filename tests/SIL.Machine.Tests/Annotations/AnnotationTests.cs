@@ -1,10 +1,9 @@
 using System.Linq;
 using NUnit.Framework;
-using SIL.Machine.Annotations;
 using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
 
-namespace SIL.Machine.Tests.Annotations
+namespace SIL.Machine.Annotations
 {
 	[TestFixture]
 	public class AnnotationTests

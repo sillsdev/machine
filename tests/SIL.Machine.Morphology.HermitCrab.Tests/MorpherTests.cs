@@ -5,7 +5,7 @@ using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
 
-namespace SIL.Machine.Morphology.HermitCrab.Tests
+namespace SIL.Machine.Morphology.HermitCrab
 {
 	[TestFixture]
 	public class MorpherTests : HermitCrabTestBase

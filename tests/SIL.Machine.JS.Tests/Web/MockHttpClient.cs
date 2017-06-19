@@ -2,9 +2,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Bridge.Html5;
-using SIL.Machine.Web;
 
-namespace SIL.Machine.JS.Tests.Web
+namespace SIL.Machine.Web
 {
 	public class MockHttpClient : IHttpClient
 	{

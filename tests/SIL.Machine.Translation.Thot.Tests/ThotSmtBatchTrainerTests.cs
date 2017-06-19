@@ -4,7 +4,7 @@ using NUnit.Framework;
 using SIL.IO;
 using SIL.Machine.Corpora;
 
-namespace SIL.Machine.Translation.Thot.Tests
+namespace SIL.Machine.Translation.Thot
 {
 	[TestFixture]
 	public class ThotSmtBatchTrainerTests

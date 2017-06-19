@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace SIL.Machine.Translation.Thot.Tests
+namespace SIL.Machine.Translation.Thot
 {
 	[TestFixture]
 	public class ThotInteractiveTranslationSessionTests

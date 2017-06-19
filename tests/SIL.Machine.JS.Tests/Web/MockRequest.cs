@@ -1,7 +1,6 @@
 ﻿using System;
-using SIL.Machine.Web;
 
-namespace SIL.Machine.JS.Tests.Web
+namespace SIL.Machine.Web
 {
 	public class MockRequest
 	{

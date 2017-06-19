@@ -1,7 +1,7 @@
 ﻿using NSubstitute;
 using SIL.Machine.Morphology;
 
-namespace SIL.Machine.Tests.Translation
+namespace SIL.Machine.Translation
 {
 	internal static class TranslationTestExtensions
 	{

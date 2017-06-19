@@ -6,7 +6,7 @@ using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.ObjectModel;
 
-namespace SIL.Machine.Morphology.HermitCrab.Tests
+namespace SIL.Machine.Morphology.HermitCrab
 {
 	public abstract class HermitCrabTestBase
 	{
