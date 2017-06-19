@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using NoDb;
 using SIL.Machine.WebApi.Models;
@@ -74,6 +75,11 @@ namespace SIL.Machine.WebApi.DataAccess
 			if (checkConflict)
 				await CheckForConcurrencyConflictAsync(entity);
 			await Commands.DeleteAsync(NoDbProjectId, entity.Id);
+		}
+
+		public Task<IDisposable> SubscribeAsync(string id, Action<T> listener)
+		{
+			throw new NotSupportedException();
 		}
 
 		private async Task CheckForConcurrencyConflictAsync(T entity)

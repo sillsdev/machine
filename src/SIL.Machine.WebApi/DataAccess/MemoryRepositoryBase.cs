@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SIL.Machine.WebApi.Models;
@@ -9,12 +10,15 @@ namespace SIL.Machine.WebApi.DataAccess
 {
 	public class MemoryRepositoryBase<T> : IRepository<T> where T : class, IEntity<T>
 	{
+		private readonly Dictionary<string, Action<T>> _changeListeners;
+
 		protected MemoryRepositoryBase(IRepository<T> persistenceRepo = null)
 		{
 			Lock = new AsyncReaderWriterLock();
 			Entities = new Dictionary<string, T>();
 			Indices = new KeyedList<string, UniqueEntityIndex<T>>(i => i.Name);
 			PersistenceRepository = persistenceRepo;
+			_changeListeners = new Dictionary<string, Action<T>>();
 			if (PersistenceRepository != null)
 			{
 				foreach (T entity in PersistenceRepository.GetAll())
@@ -50,20 +54,26 @@ namespace SIL.Machine.WebApi.DataAccess
 
 		public void Update(T entity, bool checkConflict = false)
 		{
+			Action<T> changeListener;
 			using (Lock.WriterLock())
 			{
 				UpdateEntity(entity, checkConflict);
 				PersistenceRepository?.Update(entity);
+				_changeListeners.TryGetValue(entity.Id, out changeListener);
 			}
+			changeListener?.Invoke(entity.Clone());
 		}
 
 		public void Delete(T entity, bool checkConflict = false)
 		{
+			Action<T> changeListener;
 			using (Lock.WriterLock())
 			{
 				DeleteEntity(entity, checkConflict);
 				PersistenceRepository?.Delete(entity);
+				_changeListeners.TryGetValue(entity.Id, out changeListener);
 			}
+			changeListener?.Invoke(null);
 		}
 
 		public async Task<IEnumerable<T>> GetAllAsync()
@@ -94,21 +104,36 @@ namespace SIL.Machine.WebApi.DataAccess
 
 		public async Task UpdateAsync(T entity, bool checkConflict = false)
 		{
+			Action<T> changeListener;
 			using (await Lock.WriterLockAsync())
 			{
 				UpdateEntity(entity, checkConflict);
 				if (PersistenceRepository != null)
 					await PersistenceRepository.UpdateAsync(entity);
+				_changeListeners.TryGetValue(entity.Id, out changeListener);
 			}
+			changeListener?.Invoke(entity.Clone());
 		}
 
 		public async Task DeleteAsync(T entity, bool checkConflict = false)
 		{
+			Action<T> changeListener;
 			using (await Lock.WriterLockAsync())
 			{
 				DeleteEntity(entity, checkConflict);
 				if (PersistenceRepository != null)
 					await PersistenceRepository.DeleteAsync(entity);
+				_changeListeners.TryGetValue(entity.Id, out changeListener);
+			}
+			changeListener?.Invoke(null);
+		}
+
+		public async Task<IDisposable> SubscribeAsync(string id, Action<T> listener)
+		{
+			using (await Lock.WriterLockAsync())
+			{
+				_changeListeners[id] = listener;
+				return new Subscription(this, id);
 			}
 		}
 
@@ -197,6 +222,24 @@ namespace SIL.Machine.WebApi.DataAccess
 					ExpectedRevision = entity.Revision,
 					ActualRevision = internalEntity.Revision
 				};
+			}
+		}
+
+		private class Subscription : DisposableBase
+		{
+			private readonly MemoryRepositoryBase<T> _repo;
+			private readonly string _id;
+
+			public Subscription(MemoryRepositoryBase<T> repo, string id)
+			{
+				_repo = repo;
+				_id = id;
+			}
+
+			protected override void DisposeManagedResources()
+			{
+				using (_repo.Lock.WriterLock())
+					_repo._changeListeners.Remove(_id);
 			}
 		}
 	}

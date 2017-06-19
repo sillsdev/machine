@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NoDb;
 using SIL.Machine.WebApi.Models;
 using SIL.Machine.WebApi.Options;
+using SIL.Threading;
 
 namespace SIL.Machine.WebApi.DataAccess
 {
@@ -97,6 +98,28 @@ namespace SIL.Machine.WebApi.DataAccess
 			}
 			newEntity = entity;
 			return true;
+		}
+
+		public static async Task<T> GetNewerRevisionAsync<T>(this IRepository<T> repo, string id, long minRevision)
+			where T : class, IEntity<T>
+		{
+			var changeEvent = new AsyncAutoResetEvent();
+			T curEntity, newEntity = null;
+			void HandleChange(T e)
+			{
+				newEntity = e;
+				changeEvent.Set();
+			}
+			using (await repo.SubscribeAsync(id, HandleChange))
+			{
+				curEntity = await repo.GetAsync(id);
+				while (curEntity != null && minRevision >= curEntity.Revision)
+				{
+					await changeEvent.WaitAsync();
+					curEntity = newEntity;
+				}
+			}
+			return curEntity;
 		}
 
 		public static IServiceCollection AddNoDbDataAccess(this IServiceCollection services, IConfigurationRoot config)

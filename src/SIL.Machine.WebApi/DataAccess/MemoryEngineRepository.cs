@@ -8,7 +8,7 @@ namespace SIL.Machine.WebApi.DataAccess
 		private const string LangTagIndexName = "LangTag";
 		private const string ProjectIndexName = "Project";
 
-		public MemoryEngineRepository(IEngineRepository persistenceRepo)
+		public MemoryEngineRepository(IEngineRepository persistenceRepo = null)
 			: base(persistenceRepo)
 		{
 			var langTagIndex = new UniqueEntityIndex<Engine>(LangTagIndexName, e => (e.SourceLanguageTag, e.TargetLanguageTag),

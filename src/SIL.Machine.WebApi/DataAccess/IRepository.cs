@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using SIL.Machine.WebApi.Models;
 
@@ -17,5 +18,7 @@ namespace SIL.Machine.WebApi.DataAccess
 		Task InsertAsync(T entity);
 		Task UpdateAsync(T entity, bool checkConflict = false);
 		Task DeleteAsync(T entity, bool checkConflict = false);
+
+		Task<IDisposable> SubscribeAsync(string id, Action<T> listener);
 	}
 }
