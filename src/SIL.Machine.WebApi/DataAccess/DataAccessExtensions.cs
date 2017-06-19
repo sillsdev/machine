@@ -99,10 +99,9 @@ namespace SIL.Machine.WebApi.DataAccess
 			return true;
 		}
 
-		public static IServiceCollection AddNoDbDataAccess(this IServiceCollection services,
-			IConfigurationSection dataAccessConfig)
+		public static IServiceCollection AddNoDbDataAccess(this IServiceCollection services, IConfigurationRoot config)
 		{
-			services.Configure<NoDbDataAccessOptions>(dataAccessConfig);
+			services.Configure<NoDbDataAccessOptions>(config.GetSection("NoDbDataAccess"));
 			services.AddNoDbForEntity<Engine>();
 			services.AddNoDbForEntity<Build>();
 			services.AddSingleton<IEngineRepository>(sp => new MemoryEngineRepository(

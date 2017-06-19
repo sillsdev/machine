@@ -46,46 +46,43 @@ namespace SIL.Machine.WebApi
 			services.Configure<EngineOptions>(Configuration.GetSection("TranslationEngine"));
 			services.Configure<SecurityOptions>(Configuration.GetSection("Security"));
 
-			IConfigurationSection smtModelConfig = Configuration.GetSection("SmtModel");
-			switch (smtModelConfig.GetValue<string>("Type"))
+			var smtModel = Configuration.GetValue<string>("SmtModel");
+			switch (smtModel)
 			{
 				case "Thot":
-					services.Configure<ThotSmtModelOptions>(smtModelConfig);
-					services.AddSingleton<ISmtModelFactory, ThotSmtModelFactory>();
+					services.AddThotSmtModel(Configuration);
 					break;
 			}
 
-			IConfigurationSection ruleEngineConfig = Configuration.GetSection("RuleEngine");
-			switch (ruleEngineConfig.GetValue<string>("Type"))
+			var ruleEngine = Configuration.GetValue<string>("RuleEngine");
+			switch (ruleEngine)
 			{
 				case "Transfer":
-					services.AddSingleton<IRuleEngineFactory, TransferEngineFactory>();
+					services.AddTransferEngine();
 					break;
 			}
 
-			IConfigurationSection textCorpusConfig = Configuration.GetSection("TextCorpus");
-			switch (textCorpusConfig.GetValue<string>("Type"))
+			var textCorpus = Configuration.GetValue<string>("TextCorpus");
+			switch (textCorpus)
 			{
 				case "ShareDBMongo":
-					services.Configure<ShareDBMongoTextCorpusOptions>(textCorpusConfig);
-					services.AddSingleton<ITextCorpusFactory, ShareDBMongoTextCorpusFactory>();
+					services.AddShareDBMongoTextCorpus(Configuration);
 					break;
 
 				case "TextFile":
-					services.Configure<TextFileTextCorpusOptions>(textCorpusConfig);
-					services.AddSingleton<ITextCorpusFactory, TextFileTextCorpusFactory>();
+					services.AddTextFileTextCorpus(Configuration);
 					break;
 			}
 
-			IConfigurationSection dataAccessConfig = Configuration.GetSection("DataAccess");
-			switch (dataAccessConfig.GetValue<string>("Type"))
+			var dataAccess = Configuration.GetValue<string>("DataAccess");
+			switch (dataAccess)
 			{
 				case "Memory":
 					services.AddMemoryDataAccess();
 					break;
 
 				case "NoDb":
-					services.AddNoDbDataAccess(dataAccessConfig);
+					services.AddNoDbDataAccess(Configuration);
 					break;
 			}
 
