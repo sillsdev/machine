@@ -41,6 +41,7 @@ namespace SIL.Machine.WebApi
 
 			services.AddMvc()
 				.AddJsonOptions(a => a.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
+			services.AddRouting(options => options.LowercaseUrls = true);
 
 			services.Configure<EngineOptions>(Configuration.GetSection("TranslationEngine"));
 			services.Configure<SecurityOptions>(Configuration.GetSection("Security"));

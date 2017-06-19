@@ -9,7 +9,7 @@ using SIL.Machine.WebApi.Services;
 namespace SIL.Machine.WebApi.Controllers
 {
 	[Area("Translation")]
-	[Route("[area]/[controller]")]
+	[Route("[area]/[controller]", Name = RouteNames.Projects)]
 	public class ProjectsController : Controller
 	{
 		private readonly IEngineRepository _engineRepo;
@@ -25,7 +25,7 @@ namespace SIL.Machine.WebApi.Controllers
 		public async Task<IEnumerable<ProjectDto>> GetAllAsync()
 		{
 			IEnumerable<Engine> engines = await _engineRepo.GetAllAsync();
-			return engines.SelectMany(e => e.Projects, (e, p) => e.ToProjectDto(p));
+			return engines.SelectMany(e => e.Projects, (e, p) => e.ToProjectDto(p, Url));
 		}
 
 		[HttpGet("id:{id}")]
@@ -35,7 +35,7 @@ namespace SIL.Machine.WebApi.Controllers
 			if (engine == null)
 				return NotFound();
 
-			return Ok(engine.ToProjectDto(id));
+			return Ok(engine.ToProjectDto(id, Url));
 		}
 
 		[HttpPost]
@@ -46,8 +46,8 @@ namespace SIL.Machine.WebApi.Controllers
 			if (!result.ProjectAdded)
 				return StatusCode(409);
 
-			string url = Url.Action(nameof(GetAsync), new {id = newProject.Id});
-			return Created(url, result.Engine.ToProjectDto(newProject.Id));
+			ProjectDto dto = result.Engine.ToProjectDto(newProject.Id, Url);
+			return Created(dto.Href, dto);
 		}
 
 		[HttpDelete("id:{id}")]

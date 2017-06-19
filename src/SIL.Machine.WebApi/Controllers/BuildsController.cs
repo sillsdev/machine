@@ -9,7 +9,7 @@ using SIL.Machine.WebApi.Services;
 namespace SIL.Machine.WebApi.Controllers
 {
 	[Area("Translation")]
-	[Route("[area]/[controller]")]
+	[Route("[area]/[controller]", Name = RouteNames.Builds)]
 	public class BuildsController : Controller
 	{
 		private readonly IBuildRepository _buildRepo;
@@ -25,7 +25,7 @@ namespace SIL.Machine.WebApi.Controllers
 		public async Task<IEnumerable<BuildDto>> GetAllAsync()
 		{
 			IEnumerable<Build> builds = await _buildRepo.GetAllAsync();
-			return builds.Select(b => b.ToDto());
+			return builds.Select(b => b.ToDto(Url));
 		}
 
 		[HttpGet("{locatorType}:{locator}")]
@@ -35,7 +35,7 @@ namespace SIL.Machine.WebApi.Controllers
 			if (build == null)
 				return NotFound();
 
-			return Ok(build.ToDto());
+			return Ok(build.ToDto(Url));
 		}
 
 		[HttpPost]
@@ -50,8 +50,8 @@ namespace SIL.Machine.WebApi.Controllers
 					return StatusCode(409);
 			}
 
-			string url = Url.Action(nameof(GetAsync), new {locatorType = "id", locator = result.Build.Id});
-			return Created(url, result.Build.ToDto());
+			BuildDto dto = result.Build.ToDto(Url);
+			return Created(dto.Href, dto);
 		}
 
 		[HttpDelete("{locatorType}:{locator}")]

@@ -10,7 +10,7 @@ using SIL.Machine.WebApi.Services;
 namespace SIL.Machine.WebApi.Controllers
 {
 	[Area("Translation")]
-	[Route("[area]/[controller]")]
+	[Route("[area]/[controller]", Name = RouteNames.Engines)]
 	public class EnginesController : Controller
 	{
 		private readonly IEngineRepository _engineRepo;
@@ -26,7 +26,7 @@ namespace SIL.Machine.WebApi.Controllers
 		public async Task<IEnumerable<EngineDto>> GetAllAsync()
 		{
 			IEnumerable<Engine> engines = await _engineRepo.GetAllAsync();
-			return engines.Select(e => e.ToDto());
+			return engines.Select(e => e.ToDto(Url));
 		}
 
 		[HttpGet("{locatorType}:{locator}")]
@@ -36,7 +36,7 @@ namespace SIL.Machine.WebApi.Controllers
 			if (engine == null)
 				return NotFound();
 
-			return Ok(engine.ToDto());
+			return Ok(engine.ToDto(Url));
 		}
 
 		[HttpPost("{locatorType}:{locator}/actions/translate")]
