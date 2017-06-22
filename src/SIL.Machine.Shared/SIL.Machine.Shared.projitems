@@ -23,13 +23,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)Translation\InteractiveTranslationResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\PhraseInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\Preprocessors.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\SmtTrainProgress.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\EcmScoreInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\EditDistance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\ErrorCorrectionModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\ErrorCorrectionWordGraphProcessor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\SegmentEditDistance.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationRestClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationSources.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordAlignmentMatrix.cs" />
@@ -37,7 +37,19 @@
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordEditDistance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordGraph.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordGraphArc.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Web\HttpResponse.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Web\IHttpClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Client\HttpException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Client\HttpResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Client\IHttpClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Client\TranslationRestClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\AlignedWordPairDto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\BuildDto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\EngineDto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\InteractiveTranslationResultDto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\LinkDto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\ProjectDto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\SegmentPairDto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\TranslationResultDto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\WordGraphArcDto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\WordGraphDto.cs" />
   </ItemGroup>
 </Project>

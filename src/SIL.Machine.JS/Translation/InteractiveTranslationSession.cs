@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Threading.Tasks;
 using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Translation
@@ -88,8 +87,7 @@ namespace SIL.Machine.Translation
 
 		public void Approve(Action<bool> onFinished)
 		{
-			Task<bool> task = _engine.RestClient.TrainSegmentPairAsync(SourceSegment, Prefix);
-			task.ContinueWith(t => onFinished(t.Result));
+			_engine.RestClient.TrainSegmentPairAsync(SourceSegment, Prefix).ContinueWith(t => onFinished(!t.IsFaulted));
 		}
 
 		private TranslationResult CreateResult(TranslationInfo info)

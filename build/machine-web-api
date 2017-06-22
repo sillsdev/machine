@@ -12,7 +12,7 @@
 name=`basename $0`
 socket_file="/tmp/$name.sock"
 dir="/var/www/languageforge.org_cat/machine"
-cmd="./SIL.Machine.WebApi --server.urls=http://unix:$socket_file"
+cmd="./SIL.Machine.WebApi.Server --server.urls=http://unix:$socket_file"
 user="www-data"
 ASPNETCORE_ENVIRONMENT="Development"
 

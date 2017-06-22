@@ -2,37 +2,36 @@
 using System.Linq;
 using System.Threading.Tasks;
 using SIL.Machine.Tokenization;
-using SIL.Machine.Web;
+using SIL.Machine.WebApi.Client;
 
 namespace SIL.Machine.Translation
 {
 	public class TranslationEngine
 	{
-		public TranslationEngine(string baseUrl, string sourceLanguageTag, string targetLanguageTag, string projectId)
-			: this(baseUrl, sourceLanguageTag, targetLanguageTag, projectId, new LatinWordTokenizer())
+		public TranslationEngine(string baseUrl, string projectId)
+			: this(baseUrl, projectId, new LatinWordTokenizer())
 		{
 		}
 
-		public TranslationEngine(string baseUrl, string sourceLanguageTag, string targetLanguageTag, string projectId,
-			ITokenizer<string, int> tokenizer)
-			: this(baseUrl, sourceLanguageTag, targetLanguageTag, projectId, tokenizer, tokenizer)
+		public TranslationEngine(string baseUrl, string projectId, ITokenizer<string, int> tokenizer)
+			: this(baseUrl, projectId, tokenizer, tokenizer)
 		{
 		}
 
-		public TranslationEngine(string baseUrl, string sourceLanguageTag, string targetLanguageTag, string projectId,
-			ITokenizer<string, int> sourceTokenizer, ITokenizer<string, int> targetTokenizer)
-			: this(baseUrl, sourceLanguageTag, targetLanguageTag, projectId, sourceTokenizer, targetTokenizer, new AjaxHttpClient())
+		public TranslationEngine(string baseUrl, string projectId, ITokenizer<string, int> sourceTokenizer,
+			ITokenizer<string, int> targetTokenizer)
+			: this(baseUrl, projectId, sourceTokenizer, targetTokenizer, new AjaxHttpClient())
 		{
 		}
 
-		public TranslationEngine(string baseUrl, string sourceLanguageTag, string targetLanguageTag, string projectId,
-			ITokenizer<string, int> sourceTokenizer, ITokenizer<string, int> targetTokenizer, IHttpClient httpClient)
+		public TranslationEngine(string baseUrl, string projectId, ITokenizer<string, int> sourceTokenizer,
+			ITokenizer<string, int> targetTokenizer, IHttpClient httpClient)
 		{
 			SourceTokenizer = sourceTokenizer;
 			TargetTokenizer = targetTokenizer;
 			if (!baseUrl.EndsWith("/"))
 				baseUrl += "/";
-			RestClient = new TranslationRestClient(baseUrl, sourceLanguageTag, targetLanguageTag, projectId, httpClient);
+			RestClient = new TranslationRestClient(baseUrl, projectId, httpClient);
 			ErrorCorrectionModel = new ErrorCorrectionModel();
 		}
 
@@ -46,8 +45,13 @@ namespace SIL.Machine.Translation
 		{
 			string[] tokens = SourceTokenizer.TokenizeToStrings(sourceSegment).ToArray();
 			Task<InteractiveTranslationResult> task = RestClient.TranslateInteractivelyAsync(tokens);
-			task.ContinueWith(t => onFinished(t.Result == null ? null
+			task.ContinueWith(t => onFinished(t.IsFaulted ? null
 				: new InteractiveTranslationSession(this, tokens, confidenceThreshold, t.Result)));
+		}
+
+		public void Train(Action<SmtTrainProgress> onStatusUpdate, Action<bool> onFinished)
+		{
+			RestClient.TrainAsync(onStatusUpdate).ContinueWith(t => onFinished(!t.IsFaulted));
 		}
 	}
 }

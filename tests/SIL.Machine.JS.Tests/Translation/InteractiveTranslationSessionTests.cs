@@ -2,458 +2,461 @@
 using System.Linq;
 using Bridge.Html5;
 using Bridge.QUnit;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using SIL.Machine.Tokenization;
-using SIL.Machine.Web;
+using SIL.Machine.WebApi.Client;
+using SIL.Machine.WebApi.Dtos;
 
 namespace SIL.Machine.Translation
 {
 	public static class InteractiveTranslationSessionTests
 	{
-		private static readonly dynamic Json = new
+		private static readonly InteractiveTranslationResultDto ResultDto = new InteractiveTranslationResultDto
 		{
-			wordGraph = new
+			WordGraph = new WordGraphDto
 			{
-				initialStateScore = -191.0998,
-				finalStates = new [] {12, 13, 14, 15, 16, 17, 18, 19, 20, 21},
-				arcs = new[]
+				InitialStateScore = -191.0998f,
+				FinalStates = new[] {12, 13, 14, 15, 16, 17, 18, 19, 20, 21},
+				Arcs = new[]
 				{
-					new
+					new WordGraphArcDto
 					{
-						prevState = 0,
-						nextState = 1,
-						score = -22.4162,
-						words = new[] {"now", "It"},
-						confidences = new[] {0.00006755903, 0.0116618536},
-						sourceStartIndex = 0,
-						sourceEndIndex = 1,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 0,
+						NextState = 1,
+						Score = -22.4162f,
+						Words = new[] {"now", "It"},
+						Confidences = new[] {0.00006755903f, 0.0116618536f},
+						SourceStartIndex = 0,
+						SourceEndIndex = 1,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 1},
-							new {sourceIndex = 1, targetIndex = 0}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 1},
+							new AlignedWordPairDto {SourceIndex = 1, TargetIndex = 0}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 0,
-						nextState = 2,
-						score = -23.5761,
-						words = new[] {"In", "your"},
-						confidences = new[] {0.355293363, 0.0000941652761},
-						sourceStartIndex = 0,
-						sourceEndIndex = 1,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 0,
+						NextState = 2,
+						Score = -23.5761f,
+						Words = new[] {"In", "your"},
+						Confidences = new[] {0.355293363f, 0.0000941652761f},
+						SourceStartIndex = 0,
+						SourceEndIndex = 1,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0},
-							new {sourceIndex = 1, targetIndex = 1}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0},
+							new AlignedWordPairDto {SourceIndex = 1, TargetIndex = 1}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 0,
-						nextState = 3,
-						score = -11.1167,
-						words = new[] {"In", "the"},
-						confidences = new[] {0.355293363, 0.5004668},
-						sourceStartIndex = 0,
-						sourceEndIndex = 1,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 0,
+						NextState = 3,
+						Score = -11.1167f,
+						Words = new[] {"In", "the"},
+						Confidences = new[] {0.355293363f, 0.5004668f},
+						SourceStartIndex = 0,
+						SourceEndIndex = 1,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0},
-							new {sourceIndex = 1, targetIndex = 1}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0},
+							new AlignedWordPairDto {SourceIndex = 1, TargetIndex = 1}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 0,
-						nextState = 4,
-						score = -13.7804,
-						words = new[] {"In"},
-						confidences = new[] {0.355293363},
-						sourceStartIndex = 0,
-						sourceEndIndex = 0,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 0,
+						NextState = 4,
+						Score = -13.7804f,
+						Words = new[] {"In"},
+						Confidences = new[] {0.355293363f},
+						SourceStartIndex = 0,
+						SourceEndIndex = 0,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 3,
-						nextState = 5,
-						score = -12.9695,
-						words = new[] {"beginning"},
-						confidences = new[] {0.348795831},
-						sourceStartIndex = 2,
-						sourceEndIndex = 2,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 3,
+						NextState = 5,
+						Score = -12.9695f,
+						Words = new[] {"beginning"},
+						Confidences = new[] {0.348795831f},
+						SourceStartIndex = 2,
+						SourceEndIndex = 2,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 4,
-						nextState = 5,
-						score = -7.68319,
-						words = new[] {"the", "beginning"},
-						confidences = new[] {0.5004668, 0.348795831},
-						sourceStartIndex = 1,
-						sourceEndIndex = 2,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 4,
+						NextState = 5,
+						Score = -7.68319f,
+						Words = new[] {"the", "beginning"},
+						Confidences = new[] {0.5004668f, 0.348795831f},
+						SourceStartIndex = 1,
+						SourceEndIndex = 2,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0},
-							new {sourceIndex = 1, targetIndex = 1}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0},
+							new AlignedWordPairDto {SourceIndex = 1, TargetIndex = 1}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 4,
-						nextState = 3,
-						score = -14.4373,
-						words = new[] {"the"},
-						confidences = new[] {0.5004668},
-						sourceStartIndex = 1,
-						sourceEndIndex = 1,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 4,
+						NextState = 3,
+						Score = -14.4373f,
+						Words = new[] {"the"},
+						Confidences = new[] {0.5004668f},
+						SourceStartIndex = 1,
+						SourceEndIndex = 1,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 5,
-						nextState = 6,
-						score = -19.3042,
-						words = new[] {"his", "Word"},
-						confidences = new[] {0.00347203249, 0.477621228},
-						sourceStartIndex = 3,
-						sourceEndIndex = 4,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 5,
+						NextState = 6,
+						Score = -19.3042f,
+						Words = new[] {"his", "Word"},
+						Confidences = new[] {0.00347203249f, 0.477621228f},
+						SourceStartIndex = 3,
+						SourceEndIndex = 4,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0},
-							new {sourceIndex = 1, targetIndex = 1}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0},
+							new AlignedWordPairDto {SourceIndex = 1, TargetIndex = 1}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 5,
-						nextState = 7,
-						score = -8.49148,
-						words = new[] {"the", "Word"},
-						confidences = new[] {0.346071422, 0.477621228},
-						sourceStartIndex = 3,
-						sourceEndIndex = 4,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 5,
+						NextState = 7,
+						Score = -8.49148f,
+						Words = new[] {"the", "Word"},
+						Confidences = new[] {0.346071422f, 0.477621228f},
+						SourceStartIndex = 3,
+						SourceEndIndex = 4,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0},
-							new {sourceIndex = 1, targetIndex = 1}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0},
+							new AlignedWordPairDto {SourceIndex = 1, TargetIndex = 1}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 1,
-						nextState = 8,
-						score = -15.2926,
-						words = new[] {"beginning"},
-						confidences = new[] {0.348795831},
-						sourceStartIndex = 2,
-						sourceEndIndex = 2,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 1,
+						NextState = 8,
+						Score = -15.2926f,
+						Words = new[] {"beginning"},
+						Confidences = new[] {0.348795831f},
+						SourceStartIndex = 2,
+						SourceEndIndex = 2,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 2,
-						nextState = 9,
-						score = -15.2926,
-						words = new[] {"beginning"},
-						confidences = new[] {0.348795831},
-						sourceStartIndex = 2,
-						sourceEndIndex = 2,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 2,
+						NextState = 9,
+						Score = -15.2926f,
+						Words = new[] {"beginning"},
+						Confidences = new[] {0.348795831f},
+						SourceStartIndex = 2,
+						SourceEndIndex = 2,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 7,
-						nextState = 10,
-						score = -14.3453,
-						words = new[] {"already"},
-						confidences = new[] {0.2259867},
-						sourceStartIndex = 5,
-						sourceEndIndex = 5,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 7,
+						NextState = 10,
+						Score = -14.3453f,
+						Words = new[] {"already"},
+						Confidences = new[] {0.2259867f},
+						SourceStartIndex = 5,
+						SourceEndIndex = 5,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 8,
-						nextState = 6,
-						score = -19.3042,
-						words = new[] {"his", "Word"},
-						confidences = new[] {0.00347203249, 0.477621228},
-						sourceStartIndex = 3,
-						sourceEndIndex = 4,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 8,
+						NextState = 6,
+						Score = -19.3042f,
+						Words = new[] {"his", "Word"},
+						Confidences = new[] {0.00347203249f, 0.477621228f},
+						SourceStartIndex = 3,
+						SourceEndIndex = 4,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0},
-							new {sourceIndex = 1, targetIndex = 1}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0},
+							new AlignedWordPairDto {SourceIndex = 1, TargetIndex = 1}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 8,
-						nextState = 7,
-						score = -8.49148,
-						words = new[] {"the", "Word"},
-						confidences = new[] {0.346071422, 0.477621228},
-						sourceStartIndex = 3,
-						sourceEndIndex = 4,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 8,
+						NextState = 7,
+						Score = -8.49148f,
+						Words = new[] {"the", "Word"},
+						Confidences = new[] {0.346071422f, 0.477621228f},
+						SourceStartIndex = 3,
+						SourceEndIndex = 4,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0},
-							new {sourceIndex = 1, targetIndex = 1}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0},
+							new AlignedWordPairDto {SourceIndex = 1, TargetIndex = 1}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 9,
-						nextState = 6,
-						score = -19.3042,
-						words = new[] {"his", "Word"},
-						confidences = new[] {0.00347203249, 0.477621228},
-						sourceStartIndex = 3,
-						sourceEndIndex = 4,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 9,
+						NextState = 6,
+						Score = -19.3042f,
+						Words = new[] {"his", "Word"},
+						Confidences = new[] {0.00347203249f, 0.477621228f},
+						SourceStartIndex = 3,
+						SourceEndIndex = 4,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0},
-							new {sourceIndex = 1, targetIndex = 1}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0},
+							new AlignedWordPairDto {SourceIndex = 1, TargetIndex = 1}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 9,
-						nextState = 7,
-						score = -8.49148,
-						words = new[] {"the", "Word"},
-						confidences = new[] {0.346071422, 0.477621228},
-						sourceStartIndex = 3,
-						sourceEndIndex = 4,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 9,
+						NextState = 7,
+						Score = -8.49148f,
+						Words = new[] {"the", "Word"},
+						Confidences = new[] {0.346071422f, 0.477621228f},
+						SourceStartIndex = 3,
+						SourceEndIndex = 4,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0},
-							new {sourceIndex = 1, targetIndex = 1}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0},
+							new AlignedWordPairDto {SourceIndex = 1, TargetIndex = 1}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 6,
-						nextState = 10,
-						score = -14.0526,
-						words = new[] {"already"},
-						confidences = new[] {0.2259867},
-						sourceStartIndex = 5,
-						sourceEndIndex = 5,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 6,
+						NextState = 10,
+						Score = -14.0526f,
+						Words = new[] {"already"},
+						Confidences = new[] {0.2259867f},
+						SourceStartIndex = 5,
+						SourceEndIndex = 5,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 10,
-						nextState = 11,
-						score = 51.1117,
-						words = new[] {"existía"},
-						confidences = new[] {0.0},
-						sourceStartIndex = 6,
-						sourceEndIndex = 6,
-						isUnknown = true,
-						alignment = new[]
+						PrevState = 10,
+						NextState = 11,
+						Score = 51.1117f,
+						Words = new[] {"existía"},
+						Confidences = new[] {0.0f},
+						SourceStartIndex = 6,
+						SourceEndIndex = 6,
+						IsUnknown = true,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 11,
-						nextState = 12,
-						score = -29.0049,
-						words = new[] {"you", "."},
-						confidences = new[] {0.005803475, 0.317073762},
-						sourceStartIndex = 7,
-						sourceEndIndex = 7,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 11,
+						NextState = 12,
+						Score = -29.0049f,
+						Words = new[] {"you", "."},
+						Confidences = new[] {0.005803475f, 0.317073762f},
+						SourceStartIndex = 7,
+						SourceEndIndex = 7,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 1}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 1}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 11,
-						nextState = 13,
-						score = -27.7143,
-						words = new[] {"to"},
-						confidences = new[] {0.038961038},
-						sourceStartIndex = 7,
-						sourceEndIndex = 7,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 11,
+						NextState = 13,
+						Score = -27.7143f,
+						Words = new[] {"to"},
+						Confidences = new[] {0.038961038f},
+						SourceStartIndex = 7,
+						SourceEndIndex = 7,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 11,
-						nextState = 14,
-						score = -30.0868,
-						words = new[] {".", "‘"},
-						confidences = new[] {0.317073762, 0.06190489},
-						sourceStartIndex = 7,
-						sourceEndIndex = 7,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 11,
+						NextState = 14,
+						Score = -30.0868f,
+						Words = new[] {".", "‘"},
+						Confidences = new[] {0.317073762f, 0.06190489f},
+						SourceStartIndex = 7,
+						SourceEndIndex = 7,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 11,
-						nextState = 15,
-						score = -30.1586,
-						words = new[] {".", "he"},
-						confidences = new[] {0.317073762, 0.06702433},
-						sourceStartIndex = 7,
-						sourceEndIndex = 7,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 11,
+						NextState = 15,
+						Score = -30.1586f,
+						Words = new[] {".", "he"},
+						Confidences = new[] {0.317073762f, 0.06702433f},
+						SourceStartIndex = 7,
+						SourceEndIndex = 7,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 11,
-						nextState = 16,
-						score = -28.2444,
-						words = new[] {".", "the"},
-						confidences = new[] {0.317073762, 0.115540564},
-						sourceStartIndex = 7,
-						sourceEndIndex = 7,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 11,
+						NextState = 16,
+						Score = -28.2444f,
+						Words = new[] {".", "the"},
+						Confidences = new[] {0.317073762f, 0.115540564f},
+						SourceStartIndex = 7,
+						SourceEndIndex = 7,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 11,
-						nextState = 17,
-						score = -23.8056,
-						words = new[] {"and"},
-						confidences = new[] {0.08047272},
-						sourceStartIndex = 7,
-						sourceEndIndex = 7,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 11,
+						NextState = 17,
+						Score = -23.8056f,
+						Words = new[] {"and"},
+						Confidences = new[] {0.08047272f},
+						SourceStartIndex = 7,
+						SourceEndIndex = 7,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 11,
-						nextState = 18,
-						score = -23.5842,
-						words = new[] {"the"},
-						confidences = new[] {0.09361572},
-						sourceStartIndex = 7,
-						sourceEndIndex = 7,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 11,
+						NextState = 18,
+						Score = -23.5842f,
+						Words = new[] {"the"},
+						Confidences = new[] {0.09361572f},
+						SourceStartIndex = 7,
+						SourceEndIndex = 7,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 11,
-						nextState = 19,
-						score = -18.8988,
-						words = new[] {","},
-						confidences = new[] {0.1428188},
-						sourceStartIndex = 7,
-						sourceEndIndex = 7,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 11,
+						NextState = 19,
+						Score = -18.8988f,
+						Words = new[] {","},
+						Confidences = new[] {0.1428188f},
+						SourceStartIndex = 7,
+						SourceEndIndex = 7,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 11,
-						nextState = 20,
-						score = -11.9218,
-						words = new[] {".", "’"},
-						confidences = new[] {0.317073762, 0.018057242},
-						sourceStartIndex = 7,
-						sourceEndIndex = 7,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 11,
+						NextState = 20,
+						Score = -11.9218f,
+						Words = new[] {".", "’"},
+						Confidences = new[] {0.317073762f, 0.018057242f},
+						SourceStartIndex = 7,
+						SourceEndIndex = 7,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0}
 						}
 					},
-					new
+					new WordGraphArcDto
 					{
-						prevState = 11,
-						nextState = 21,
-						score = -3.51852,
-						words = new[] {"."},
-						confidences = new[] {0.317073762},
-						sourceStartIndex = 7,
-						sourceEndIndex = 7,
-						isUnknown = false,
-						alignment = new[]
+						PrevState = 11,
+						NextState = 21,
+						Score = -3.51852f,
+						Words = new[] {"."},
+						Confidences = new[] {0.317073762f},
+						SourceStartIndex = 7,
+						SourceEndIndex = 7,
+						IsUnknown = false,
+						Alignment = new[]
 						{
-							new {sourceIndex = 0, targetIndex = 0}
+							new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0}
 						}
 					}
 				}
 			},
-			ruleResult = new
+			RuleResult = new TranslationResultDto
 			{
-				target = new[] {"In", "el", "principio", "la", "Palabra", "ya", "existía", "."},
-				confidences = new[] {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-				sources = new[]
+				Target = new[] {"In", "el", "principio", "la", "Palabra", "ya", "existía", "."},
+				Confidences = new[] {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+				Sources = new[]
 				{
 					TranslationSources.Transfer,
 					TranslationSources.None,
@@ -464,16 +467,16 @@ namespace SIL.Machine.Translation
 					TranslationSources.None,
 					TranslationSources.None
 				},
-				alignment = new[]
+				Alignment = new[]
 				{
-					new {sourceIndex = 0, targetIndex = 0},
-					new {sourceIndex = 1, targetIndex = 1},
-					new {sourceIndex = 2, targetIndex = 2},
-					new {sourceIndex = 3, targetIndex = 3},
-					new {sourceIndex = 4, targetIndex = 4},
-					new {sourceIndex = 5, targetIndex = 5},
-					new {sourceIndex = 6, targetIndex = 6},
-					new {sourceIndex = 7, targetIndex = 7}
+					new AlignedWordPairDto {SourceIndex = 0, TargetIndex = 0},
+					new AlignedWordPairDto {SourceIndex = 1, TargetIndex = 1},
+					new AlignedWordPairDto {SourceIndex = 2, TargetIndex = 2},
+					new AlignedWordPairDto {SourceIndex = 3, TargetIndex = 3},
+					new AlignedWordPairDto {SourceIndex = 4, TargetIndex = 4},
+					new AlignedWordPairDto {SourceIndex = 5, TargetIndex = 5},
+					new AlignedWordPairDto {SourceIndex = 6, TargetIndex = 6},
+					new AlignedWordPairDto {SourceIndex = 7, TargetIndex = 7}
 				}
 			}
 		};
@@ -484,8 +487,11 @@ namespace SIL.Machine.Translation
 			httpClient.Requests.Add(new MockRequest
 				{
 					Method = HttpRequestMethod.Post,
-					Url = "translation/engines/es/en/projects/project1/actions/interactive-translate",
-					ResponseText = JSON.Stringify(Json)
+					Url = "translation/engines/project:project1/actions/interactiveTranslate",
+					ResponseText = JsonConvert.SerializeObject(ResultDto, new JsonSerializerSettings
+						{
+							ContractResolver = new CamelCasePropertyNamesContractResolver()
+						})
 				});
 			return httpClient;
 		}
@@ -508,7 +514,7 @@ namespace SIL.Machine.Translation
 		{
 			var tokenizer = new LatinWordTokenizer();
 
-			var engine = new TranslationEngine("http://localhost/", "es", "en", "project1", tokenizer, tokenizer, CreateWebClient());
+			var engine = new TranslationEngine("http://localhost/", "project1", tokenizer, tokenizer, CreateWebClient());
 			Action done = assert.Async();
 			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
 				{
@@ -523,7 +529,7 @@ namespace SIL.Machine.Translation
 		{
 			var tokenizer = new LatinWordTokenizer();
 
-			var engine = new TranslationEngine("http://localhost/", "es", "en", "project1", tokenizer, tokenizer, CreateWebClient());
+			var engine = new TranslationEngine("http://localhost/", "project1", tokenizer, tokenizer, CreateWebClient());
 			Action done = assert.Async();
 			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
 				{
@@ -538,7 +544,7 @@ namespace SIL.Machine.Translation
 		{
 			var tokenizer = new LatinWordTokenizer();
 
-			var engine = new TranslationEngine("http://localhost/", "es", "en", "project1", tokenizer, tokenizer, CreateWebClient());
+			var engine = new TranslationEngine("http://localhost/", "project1", tokenizer, tokenizer, CreateWebClient());
 			Action done = assert.Async();
 			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
 				{
@@ -554,7 +560,7 @@ namespace SIL.Machine.Translation
 		{
 			var tokenizer = new LatinWordTokenizer();
 
-			var engine = new TranslationEngine("http://localhost/", "es", "en", "project1", tokenizer, tokenizer, CreateWebClient());
+			var engine = new TranslationEngine("http://localhost/", "project1", tokenizer, tokenizer, CreateWebClient());
 			Action done = assert.Async();
 			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
 				{
@@ -570,7 +576,7 @@ namespace SIL.Machine.Translation
 		{
 			var tokenizer = new LatinWordTokenizer();
 
-			var engine = new TranslationEngine("http://localhost/", "es", "en", "project1", tokenizer, tokenizer, CreateWebClient());
+			var engine = new TranslationEngine("http://localhost/", "project1", tokenizer, tokenizer, CreateWebClient());
 			Action done = assert.Async();
 			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
 				{
@@ -592,7 +598,7 @@ namespace SIL.Machine.Translation
 			httpClient.Requests.Add(new MockRequest
 				{
 					Method = HttpRequestMethod.Post,
-					Url = "translation/engines/es/en/projects/project1/actions/train-segment",
+					Url = "translation/engines/project:project1/actions/trainSegment",
 					CheckBody = body =>
 					{
 						dynamic json = JSON.Parse(body);
@@ -602,7 +608,7 @@ namespace SIL.Machine.Translation
 					ResponseText = ""
 				});
 
-			var engine = new TranslationEngine("http://localhost/", "es", "en", "project1", tokenizer, tokenizer, httpClient);
+			var engine = new TranslationEngine("http://localhost/", "project1", tokenizer, tokenizer, httpClient);
 			Action done = assert.Async();
 			engine.TranslateInteractively(sourceSegment, 0.2, session =>
 				{
@@ -624,11 +630,11 @@ namespace SIL.Machine.Translation
 			httpClient.Requests.Add(new MockRequest
 				{
 					Method = HttpRequestMethod.Post,
-					Url = "translation/engines/es/en/projects/project1/actions/train-segment",
+					Url = "translation/engines/project:project1/actions/trainSegment",
 					ErrorStatus = 404
 				});
 
-			var engine = new TranslationEngine("http://localhost/", "es", "en", "project1", tokenizer, tokenizer, httpClient);
+			var engine = new TranslationEngine("http://localhost/", "project1", tokenizer, tokenizer, httpClient);
 			Action done = assert.Async();
 			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
 				{

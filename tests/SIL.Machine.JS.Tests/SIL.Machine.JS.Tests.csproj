@@ -37,8 +37,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Translation\InteractiveTranslationSessionTests.cs" />
     <Compile Include="Translation\TranslationEngineTests.cs" />
-    <Compile Include="Web\MockRequest.cs" />
-    <Compile Include="Web\MockHttpClient.cs" />
+    <Compile Include="WebApi\Client\MockRequest.cs" />
+    <Compile Include="WebApi\Client\MockHttpClient.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Bridge\bridge.json" />
@@ -51,38 +51,39 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Bridge\output\bridge.collections.js" />
     <Content Include="Bridge\output\bridge.js" />
+    <Content Include="Bridge\output\newtonsoft.json.js" />
     <Content Include="Bridge\output\sil.machine.js" />
+    <Content Include="Bridge\output\sil.machine.meta.js" />
     <Content Include="Bridge\output\sil.machine.tests.js" />
     <Content Include="Bridge\www\test.html" />
     <Content Include="Scripts\qunit-1.18.0.css" />
     <Content Include="Scripts\qunit-1.18.0.js" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Bridge, Version=15.7.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Bridge.Core.15.7.0\lib\net40\Bridge.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Bridge.Html5, Version=15.7.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Bridge.Html5.15.7.0\lib\net40\Bridge.Html5.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Bridge.QUnit, Version=1.8.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Bridge.QUnit.1.8.3\lib\net40\Bridge.QUnit.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Bridge, Version=16.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Bridge.Core.16.0.0-beta3\lib\net40\Bridge.dll</HintPath>
+    </Reference>
+    <Reference Include="Bridge.Html5, Version=16.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Bridge.Html5.16.0.0-beta3\lib\net40\Bridge.Html5.dll</HintPath>
+    </Reference>
+    <Reference Include="Bridge.QUnit, Version=1.8.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Bridge.QUnit.1.8.4-beta3\lib\net40\Bridge.QUnit.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Bridge.Newtonsoft.Json.1.0.0-beta3\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\..\packages\Bridge.Min.15.7.0\build\Bridge.Min.targets" Condition="Exists('..\..\packages\Bridge.Min.15.7.0\build\Bridge.Min.targets')" />
+  <Import Project="..\..\packages\Bridge.Min.16.0.0-beta3\build\Bridge.Min.targets" Condition="Exists('..\..\packages\Bridge.Min.16.0.0-beta3\build\Bridge.Min.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\Bridge.Min.15.7.0\build\Bridge.Min.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Bridge.Min.15.7.0\build\Bridge.Min.targets'))" />
+    <Error Condition="!Exists('..\..\packages\Bridge.Min.16.0.0-beta3\build\Bridge.Min.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Bridge.Min.16.0.0-beta3\build\Bridge.Min.targets'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
