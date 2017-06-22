@@ -3,22 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SIL.Machine.WebApi.Server.Models;
-using SIL.ObjectModel;
 using SIL.Threading;
 
 namespace SIL.Machine.WebApi.Server.DataAccess
 {
 	public class MemoryRepositoryBase<T> : IRepository<T> where T : class, IEntity<T>
 	{
-		private readonly Dictionary<string, Action<T>> _changeListeners;
+		private readonly Dictionary<string, Action<EntityChange<T>>> _changeListeners;
 
 		protected MemoryRepositoryBase(IRepository<T> persistenceRepo = null)
 		{
 			Lock = new AsyncReaderWriterLock();
 			Entities = new Dictionary<string, T>();
-			Indices = new KeyedList<string, UniqueEntityIndex<T>>(i => i.Name);
 			PersistenceRepository = persistenceRepo;
-			_changeListeners = new Dictionary<string, Action<T>>();
+			_changeListeners = new Dictionary<string, Action<EntityChange<T>>>();
 			if (PersistenceRepository != null)
 			{
 				foreach (T entity in PersistenceRepository.GetAll())
@@ -29,7 +27,6 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		protected IRepository<T> PersistenceRepository { get; }
 		protected AsyncReaderWriterLock Lock { get; }
 		protected IDictionary<string, T> Entities { get; }
-		protected IKeyedCollection<string, UniqueEntityIndex<T>> Indices { get; }
 
 		public IEnumerable<T> GetAll()
 		{
@@ -45,47 +42,50 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 
 		public void Insert(T entity)
 		{
+			var changeListeners = new List<Action<EntityChange<T>>>();
+			T internalEntity;
 			using (Lock.WriterLock())
 			{
-				InsertEntity(entity);
+				internalEntity = InsertEntity(entity, changeListeners);
 				PersistenceRepository?.Insert(entity);
 			}
+			SendToSubscribers(changeListeners, EntityChangeType.Insert, internalEntity);
 		}
 
 		public void Update(T entity, bool checkConflict = false)
 		{
-			Action<T> changeListener;
+			var changeListeners = new List<Action<EntityChange<T>>>();
+			T internalEntity;
 			using (Lock.WriterLock())
 			{
-				UpdateEntity(entity, checkConflict);
+				internalEntity = UpdateEntity(entity, changeListeners, checkConflict);
 				PersistenceRepository?.Update(entity);
-				_changeListeners.TryGetValue(entity.Id, out changeListener);
 			}
-			changeListener?.Invoke(entity.Clone());
+			SendToSubscribers(changeListeners, EntityChangeType.Update, internalEntity);
 		}
 
 		public void Delete(T entity, bool checkConflict = false)
 		{
-			Action<T> changeListener;
+			var changeListeners = new List<Action<EntityChange<T>>>();
+			T internalEntity;
 			using (Lock.WriterLock())
 			{
-				DeleteEntity(entity, checkConflict);
+				internalEntity = DeleteEntity(entity, changeListeners, checkConflict);
 				PersistenceRepository?.Delete(entity);
-				_changeListeners.TryGetValue(entity.Id, out changeListener);
 			}
-			changeListener?.Invoke(null);
+			SendToSubscribers(changeListeners, EntityChangeType.Delete, internalEntity);
 		}
 
 		public void Delete(string id)
 		{
-			Action<T> changeListener;
+			var changeListeners = new List<Action<EntityChange<T>>>();
+			T internalEntity;
 			using (Lock.WriterLock())
 			{
-				DeleteEntity(id);
+				internalEntity = DeleteEntity(id, changeListeners);
 				PersistenceRepository?.Delete(id);
-				_changeListeners.TryGetValue(id, out changeListener);
 			}
-			changeListener?.Invoke(null);
+			SendToSubscribers(changeListeners, EntityChangeType.Delete, internalEntity);
 		}
 
 		public async Task<IEnumerable<T>> GetAllAsync()
@@ -106,59 +106,62 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 
 		public async Task InsertAsync(T entity)
 		{
+			var changeListeners = new List<Action<EntityChange<T>>>();
+			T internalEntity;
 			using (await Lock.WriterLockAsync())
 			{
-				InsertEntity(entity);
+				internalEntity = InsertEntity(entity, changeListeners);
 				if (PersistenceRepository != null)
 					await PersistenceRepository.InsertAsync(entity);
 			}
+			SendToSubscribers(changeListeners, EntityChangeType.Insert, internalEntity);
 		}
 
 		public async Task UpdateAsync(T entity, bool checkConflict = false)
 		{
-			Action<T> changeListener;
+			var changeListeners = new List<Action<EntityChange<T>>>();
+			T internalEntity;
 			using (await Lock.WriterLockAsync())
 			{
-				UpdateEntity(entity, checkConflict);
+				internalEntity = UpdateEntity(entity, changeListeners, checkConflict);
 				if (PersistenceRepository != null)
 					await PersistenceRepository.UpdateAsync(entity);
-				_changeListeners.TryGetValue(entity.Id, out changeListener);
 			}
-			changeListener?.Invoke(entity.Clone());
+			SendToSubscribers(changeListeners, EntityChangeType.Update, internalEntity);
 		}
 
 		public async Task DeleteAsync(T entity, bool checkConflict = false)
 		{
-			Action<T> changeListener;
+			var changeListeners = new List<Action<EntityChange<T>>>();
+			T internalEntity;
 			using (await Lock.WriterLockAsync())
 			{
-				DeleteEntity(entity, checkConflict);
+				internalEntity = DeleteEntity(entity, changeListeners, checkConflict);
 				if (PersistenceRepository != null)
 					await PersistenceRepository.DeleteAsync(entity);
-				_changeListeners.TryGetValue(entity.Id, out changeListener);
 			}
-			changeListener?.Invoke(null);
+			SendToSubscribers(changeListeners, EntityChangeType.Delete, internalEntity);
 		}
 
 		public async Task DeleteAsync(string id)
 		{
-			Action<T> changeListener;
+			var changeListeners = new List<Action<EntityChange<T>>>();
+			T internalEntity;
 			using (await Lock.WriterLockAsync())
 			{
-				DeleteEntity(id);
+				internalEntity = DeleteEntity(id, changeListeners);
 				if (PersistenceRepository != null)
 					await PersistenceRepository.DeleteAsync(id);
-				_changeListeners.TryGetValue(id, out changeListener);
 			}
-			changeListener?.Invoke(null);
+			SendToSubscribers(changeListeners, EntityChangeType.Delete, internalEntity);
 		}
 
-		public async Task<IDisposable> SubscribeAsync(string id, Action<T> listener)
+		public async Task<IDisposable> SubscribeAsync(string id, Action<EntityChange<T>> listener)
 		{
 			using (await Lock.WriterLockAsync())
 			{
 				_changeListeners[id] = listener;
-				return new Subscription(this, id);
+				return new Subscription<string, T>(Lock, _changeListeners, id);
 			}
 		}
 
@@ -179,7 +182,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			return false;
 		}
 
-		private void InsertEntity(T entity)
+		private T InsertEntity(T entity, IList<Action<EntityChange<T>>> changeListeners)
 		{
 			if (string.IsNullOrEmpty(entity.Id))
 				entity.Id = ObjectId.GenerateNewId().ToString();
@@ -187,24 +190,23 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			{
 				throw new KeyAlreadyExistsException("An entity with the same identifier already exists.")
 				{
-					IndexName = "Id",
 					Entity = otherEntity
 				};
 			}
-			foreach (UniqueEntityIndex<T> index in Indices)
-				index.CheckKeyConflict(entity);
+			OnBeforeEntityInserted(entity);
 
 			T internalEntity = entity.Clone();
 			Entities.Add(entity.Id, internalEntity);
 
-			foreach (UniqueEntityIndex<T> index in Indices)
-				index.EntityUpdated(internalEntity);
+			OnEntityInserted(internalEntity, changeListeners);
+
+			return internalEntity;
 		}
 
-		private void UpdateEntity(T entity, bool checkConflict)
+		private T UpdateEntity(T entity, IList<Action<EntityChange<T>>> changeListeners, bool checkConflict)
 		{
-			foreach (UniqueEntityIndex<T> index in Indices)
-				index.CheckKeyConflict(entity);
+			OnBeforeEntityUpdated(entity);
+
 			if (checkConflict)
 				CheckForConcurrencyConflict(entity);
 
@@ -212,27 +214,34 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			T internalEntity = entity.Clone();
 			Entities[entity.Id] = internalEntity;
 
-			foreach (UniqueEntityIndex<T> index in Indices)
-				index.EntityUpdated(internalEntity);
+			if (_changeListeners.TryGetValue(entity.Id, out Action<EntityChange<T>> changeListener))
+				changeListeners.Add(changeListener);
+
+			OnEntityUpdated(internalEntity, changeListeners);
+
+			return internalEntity;
 		}
 
-		private void DeleteEntity(T entity, bool checkConflict)
+		private T DeleteEntity(T entity, IList<Action<EntityChange<T>>> changeListeners, bool checkConflict)
 		{
 			if (checkConflict)
 				CheckForConcurrencyConflict(entity);
 
-			DeleteEntity(entity.Id);
+			return DeleteEntity(entity.Id, changeListeners);
 		}
 
-		private void DeleteEntity(string id)
+		private T DeleteEntity(string id, IList<Action<EntityChange<T>>> changeListeners)
 		{
 			if (Entities.TryGetValue(id, out T internalEntity))
 			{
 				Entities.Remove(id);
 
-				foreach (UniqueEntityIndex<T> index in Indices)
-					index.EntityDeleted(internalEntity);
+				if (_changeListeners.TryGetValue(id, out Action<EntityChange<T>> changeListener))
+					changeListeners.Add(changeListener);
+
+				OnEntityDeleted(internalEntity, changeListeners);
 			}
+			return internalEntity;
 		}
 
 		private void CheckForConcurrencyConflict(T entity)
@@ -255,22 +264,30 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			}
 		}
 
-		private class Subscription : DisposableBase
+		private void SendToSubscribers(IList<Action<EntityChange<T>>> changeListeners, EntityChangeType type, T entity)
 		{
-			private readonly MemoryRepositoryBase<T> _repo;
-			private readonly string _id;
+			foreach (Action<EntityChange<T>> changeListener in changeListeners)
+				changeListener(new EntityChange<T>(type, entity.Clone()));
+		}
 
-			public Subscription(MemoryRepositoryBase<T> repo, string id)
-			{
-				_repo = repo;
-				_id = id;
-			}
+		protected virtual void OnBeforeEntityInserted(T entity)
+		{
+		}
 
-			protected override void DisposeManagedResources()
-			{
-				using (_repo.Lock.WriterLock())
-					_repo._changeListeners.Remove(_id);
-			}
+		protected virtual void OnBeforeEntityUpdated(T entity)
+		{
+		}
+
+		protected virtual void OnEntityInserted(T internalEntity, IList<Action<EntityChange<T>>> changeListeners)
+		{
+		}
+
+		protected virtual void OnEntityUpdated(T internalEntity, IList<Action<EntityChange<T>>> changeListeners)
+		{
+		}
+
+		protected virtual void OnEntityDeleted(T internalEntity, IList<Action<EntityChange<T>>> changeListeners)
+		{
 		}
 	}
 }

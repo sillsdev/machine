@@ -21,6 +21,6 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		Task DeleteAsync(T entity, bool checkConflict = false);
 		Task DeleteAsync(string id);
 
-		Task<IDisposable> SubscribeAsync(string id, Action<T> listener);
+		Task<IDisposable> SubscribeAsync(string id, Action<EntityChange<T>> listener);
 	}
 }

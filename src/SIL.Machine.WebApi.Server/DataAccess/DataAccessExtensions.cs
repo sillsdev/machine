@@ -100,26 +100,54 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			return true;
 		}
 
-		public static async Task<T> GetNewerRevisionAsync<T>(this IRepository<T> repo, string id, long minRevision)
+		public static Task<T> GetNewerRevisionAsync<T>(this IRepository<T> repo, string id, long minRevision)
 			where T : class, IEntity<T>
 		{
-			var changeEvent = new AsyncAutoResetEvent();
-			T curEntity, newEntity = null;
-			void HandleChange(T e)
+			return GetNewerRevisionAsync(repo.SubscribeAsync, repo.GetAsync, id, minRevision);
+		}
+
+		public static Task<Build> GetNewerRevisionByEngineIdAsync(this IBuildRepository repo, string engineId, long minRevision)
+		{
+			return GetNewerRevisionAsync(repo.SubscribeByEngineIdAsync, repo.GetByEngineIdAsync, engineId, minRevision);
+		}
+
+		public static Task<Build> GetNewerRevisionAsync(this IBuildRepository repo, BuildLocatorType locatorType, string locator,
+			long minRevision)
+		{
+			switch (locatorType)
 			{
-				newEntity = e;
+				case BuildLocatorType.Id:
+					return repo.GetNewerRevisionAsync(locator, minRevision);
+				case BuildLocatorType.Engine:
+					return repo.GetNewerRevisionByEngineIdAsync(locator, minRevision);
+			}
+			return null;
+		}
+
+		private static async Task<TEntity> GetNewerRevisionAsync<TKey, TEntity>(
+			Func<TKey, Action<EntityChange<TEntity>>, Task<IDisposable>> subscribe, Func<TKey, Task<TEntity>> getEntity, TKey key,
+			long minRevision) where TEntity : class, IEntity<TEntity>
+		{
+			var changeEvent = new AsyncAutoResetEvent();
+			TEntity entity;
+			var change = new EntityChange<TEntity>();
+			void HandleChange(EntityChange<TEntity> c)
+			{
+				change = c;
 				changeEvent.Set();
 			}
-			using (await repo.SubscribeAsync(id, HandleChange))
+			using (await subscribe(key, HandleChange))
 			{
-				curEntity = await repo.GetAsync(id);
-				while (curEntity != null && minRevision > curEntity.Revision)
+				entity = await getEntity(key);
+				while (entity == null || minRevision > entity.Revision)
 				{
 					await changeEvent.WaitAsync();
-					curEntity = newEntity;
+					if (change.Type == EntityChangeType.Delete)
+						return null;
+					entity = change.Entity;
 				}
 			}
-			return curEntity;
+			return entity;
 		}
 
 		public static IServiceCollection AddNoDbDataAccess(this IServiceCollection services, IConfigurationRoot config)

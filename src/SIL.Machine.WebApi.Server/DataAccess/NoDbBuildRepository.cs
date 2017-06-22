@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using NoDb;
@@ -17,6 +18,11 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		{
 			IEnumerable<Build> builds = await Queries.GetAllAsync(NoDbProjectId);
 			return builds.SingleOrDefault(b => b.EngineId == engineId);
+		}
+
+		public Task<IDisposable> SubscribeByEngineIdAsync(string engineId, Action<EntityChange<Build>> listener)
+		{
+			throw new NotSupportedException();
 		}
 	}
 }

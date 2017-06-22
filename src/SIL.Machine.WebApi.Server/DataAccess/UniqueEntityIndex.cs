@@ -2,33 +2,33 @@
 using System.Collections.Generic;
 using SIL.Extensions;
 using SIL.Machine.WebApi.Server.Models;
+using SIL.Threading;
 
 namespace SIL.Machine.WebApi.Server.DataAccess
 {
-	public class UniqueEntityIndex<T> where T : class, IEntity<T>
+	internal class UniqueEntityIndex<TKey, TEntity> where TEntity : class, IEntity<TEntity>
 	{
-		private readonly Dictionary<object, T> _index;
-		private readonly Func<T, IEnumerable<object>> _keySelector;
-		private readonly Func<T, bool> _filter;
+		private readonly Dictionary<TKey, TEntity> _index;
+		private readonly Func<TEntity, IEnumerable<TKey>> _keySelector;
+		private readonly Func<TEntity, bool> _filter;
+		private readonly Dictionary<TKey, Action<EntityChange<TEntity>>> _changeListeners;
 
-		public UniqueEntityIndex(string name, Func<T, object> keySelector, Func<T, bool> filter = null)
-			: this(name, e => keySelector(e).ToEnumerable(), filter)
+		public UniqueEntityIndex(Func<TEntity, TKey> keySelector, Func<TEntity, bool> filter = null)
+			: this(e => keySelector(e).ToEnumerable(), filter)
 		{
 		}
 
-		public UniqueEntityIndex(string name, Func<T, IEnumerable<object>> keySelector, Func<T, bool> filter = null)
+		public UniqueEntityIndex(Func<TEntity, IEnumerable<TKey>> keySelector, Func<TEntity, bool> filter = null)
 		{
-			Name = name;
-			_index = new Dictionary<object, T>();
+			_index = new Dictionary<TKey, TEntity>();
 			_keySelector = keySelector;
 			_filter = filter;
+			_changeListeners = new Dictionary<TKey, Action<EntityChange<TEntity>>>();
 		}
 
-		public string Name { get; }
-
-		public bool TryGetEntity(object key, out T entity)
+		public bool TryGetEntity(TKey key, out TEntity entity)
 		{
-			if (_index.TryGetValue(key, out T e))
+			if (_index.TryGetValue(key, out TEntity e))
 			{
 				entity = e.Clone();
 				return true;
@@ -38,20 +38,19 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			return false;
 		}
 
-		public void CheckKeyConflict(T entity)
+		public void CheckKeyConflict(TEntity entity)
 		{
 			if (_filter != null && !_filter(entity))
 				return;
 
-			foreach (object key in _keySelector(entity))
+			foreach (TKey key in _keySelector(entity))
 			{
-				if (_index.TryGetValue(key, out T otherEntity))
+				if (_index.TryGetValue(key, out TEntity otherEntity))
 				{
 					if (entity.Id != otherEntity.Id)
 					{
 						throw new KeyAlreadyExistsException("An entity with the same key already exists.")
 						{
-							IndexName = Name,
 							Entity = otherEntity
 						};
 					}
@@ -59,28 +58,65 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			}
 		}
 
-		public void PopulateIndex(IEnumerable<T> entities)
+		public void PopulateIndex(IEnumerable<TEntity> entities)
 		{
-			foreach (T entity in entities)
-				EntityUpdated(entity);
+			foreach (TEntity entity in entities)
+				OnEntityInserted(entity, null);
 		}
 
-		public void EntityUpdated(T entity)
+		public void OnEntityInserted(TEntity entity, IList<Action<EntityChange<TEntity>>> changeListeners)
 		{
 			if (_filter != null && !_filter(entity))
 				return;
 
-			foreach (object key in _keySelector(entity))
+			foreach (TKey key in _keySelector(entity))
+			{
 				_index[key] = entity;
+
+				if (changeListeners != null)
+				{
+					if (_changeListeners.TryGetValue(key, out Action<EntityChange<TEntity>> changeListener))
+						changeListeners.Add(changeListener);
+				}
+			}
 		}
 
-		public void EntityDeleted(T entity)
+		public void OnEntityUpdated(TEntity entity, IList<Action<EntityChange<TEntity>>> changeListeners)
 		{
 			if (_filter != null && !_filter(entity))
 				return;
 
-			foreach (object key in _keySelector(entity))
+			foreach (TKey key in _keySelector(entity))
+			{
+				if (changeListeners != null)
+				{
+					if (_changeListeners.TryGetValue(key, out Action<EntityChange<TEntity>> changeListener))
+						changeListeners.Add(changeListener);
+				}
+			}
+		}
+
+		public void OnEntityDeleted(TEntity entity, IList<Action<EntityChange<TEntity>>> changeListeners)
+		{
+			if (_filter != null && !_filter(entity))
+				return;
+
+			foreach (TKey key in _keySelector(entity))
+			{
 				_index.Remove(key);
+
+				if (changeListeners != null)
+				{
+					if (_changeListeners.TryGetValue(key, out Action<EntityChange<TEntity>> changeListener))
+						changeListeners.Add(changeListener);
+				}
+			}
+		}
+
+		public IDisposable Subscribe(AsyncReaderWriterLock repoLock, TKey key, Action<EntityChange<TEntity>> listener)
+		{
+			_changeListeners[key] = listener;
+			return new Subscription<TKey, TEntity>(repoLock, _changeListeners, key);
 		}
 	}
 }

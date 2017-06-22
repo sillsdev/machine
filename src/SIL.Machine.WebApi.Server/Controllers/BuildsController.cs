@@ -32,16 +32,14 @@ namespace SIL.Machine.WebApi.Server.Controllers
 		[HttpGet("{locatorType}:{locator}")]
 		public async Task<IActionResult> GetAsync(string locatorType, string locator, [FromQuery] long? minRevision)
 		{
-			Build build = await _buildRepo.GetByLocatorAsync(GetLocatorType(locatorType), locator);
+			Build build;
+			if (minRevision != null)
+				build = await _buildRepo.GetNewerRevisionAsync(GetLocatorType(locatorType), locator, (long) minRevision);
+			else
+				build = await _buildRepo.GetByLocatorAsync(GetLocatorType(locatorType), locator);
+
 			if (build == null)
 				return NotFound();
-
-			if (minRevision != null && minRevision > build.Revision)
-			{
-				build = await _buildRepo.GetNewerRevisionAsync(build.Id, (long) minRevision);
-				if (build == null)
-					return NotFound();
-			}
 
 			return Ok(CreateDto(build));
 		}

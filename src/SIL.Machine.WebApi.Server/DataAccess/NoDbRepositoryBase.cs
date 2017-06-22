@@ -87,7 +87,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			await Commands.DeleteAsync(NoDbProjectId, id);
 		}
 
-		public Task<IDisposable> SubscribeAsync(string id, Action<T> listener)
+		public Task<IDisposable> SubscribeAsync(string id, Action<EntityChange<T>> listener)
 		{
 			throw new NotSupportedException();
 		}
