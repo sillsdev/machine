@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJECT=SIL.Machine.WebApi
+PROJECT=SIL.Machine.WebApi.Server
 CONFIGURATION=${CONFIGURATION:-Release}
 DEPLOY_RUNTIME=${DEPLOY_RUNTIME:-ubuntu.16.04-x64}
 BUILD_OUTPUT=artifacts
