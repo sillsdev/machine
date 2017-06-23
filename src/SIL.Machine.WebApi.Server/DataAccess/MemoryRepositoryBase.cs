@@ -193,19 +193,19 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 					Entity = otherEntity
 				};
 			}
-			OnBeforeEntityInserted(entity);
+			OnBeforeEntityChanged(EntityChangeType.Insert, entity);
 
 			T internalEntity = entity.Clone();
 			Entities.Add(entity.Id, internalEntity);
 
-			OnEntityInserted(internalEntity, changeListeners);
+			OnEntityChanged(EntityChangeType.Insert, internalEntity, changeListeners);
 
 			return internalEntity;
 		}
 
 		private T UpdateEntity(T entity, IList<Action<EntityChange<T>>> changeListeners, bool checkConflict)
 		{
-			OnBeforeEntityUpdated(entity);
+			OnBeforeEntityChanged(EntityChangeType.Update, entity);
 
 			if (checkConflict)
 				CheckForConcurrencyConflict(entity);
@@ -217,7 +217,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			if (_changeListeners.TryGetValue(entity.Id, out Action<EntityChange<T>> changeListener))
 				changeListeners.Add(changeListener);
 
-			OnEntityUpdated(internalEntity, changeListeners);
+			OnEntityChanged(EntityChangeType.Update, internalEntity, changeListeners);
 
 			return internalEntity;
 		}
@@ -239,7 +239,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 				if (_changeListeners.TryGetValue(id, out Action<EntityChange<T>> changeListener))
 					changeListeners.Add(changeListener);
 
-				OnEntityDeleted(internalEntity, changeListeners);
+				OnEntityChanged(EntityChangeType.Delete, internalEntity, changeListeners);
 			}
 			return internalEntity;
 		}
@@ -270,23 +270,12 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 				changeListener(new EntityChange<T>(type, entity.Clone()));
 		}
 
-		protected virtual void OnBeforeEntityInserted(T entity)
+		protected virtual void OnBeforeEntityChanged(EntityChangeType type, T entity)
 		{
 		}
 
-		protected virtual void OnBeforeEntityUpdated(T entity)
-		{
-		}
-
-		protected virtual void OnEntityInserted(T internalEntity, IList<Action<EntityChange<T>>> changeListeners)
-		{
-		}
-
-		protected virtual void OnEntityUpdated(T internalEntity, IList<Action<EntityChange<T>>> changeListeners)
-		{
-		}
-
-		protected virtual void OnEntityDeleted(T internalEntity, IList<Action<EntityChange<T>>> changeListeners)
+		protected virtual void OnEntityChanged(EntityChangeType type, T internalEntity,
+			IList<Action<EntityChange<T>>> changeListeners)
 		{
 		}
 	}

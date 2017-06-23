@@ -599,7 +599,7 @@ namespace SIL.Machine.Translation
 				{
 					Method = HttpRequestMethod.Post,
 					Url = "translation/engines/project:project1/actions/trainSegment",
-					CheckBody = body =>
+					Action = body =>
 					{
 						dynamic json = JSON.Parse(body);
 						assert.DeepEqual(json["sourceSegment"], tokenizer.TokenizeToStrings(sourceSegment).ToArray());

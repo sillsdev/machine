@@ -55,13 +55,30 @@ namespace SIL.Machine.WebApi.Client
 
 		public async Task TrainAsync(Action<SmtTrainProgress> progress)
 		{
+			string engineId = await GetEngineIdAsync();
+			BuildDto buildDto = await CreateBuildAsync(engineId);
+			await PollBuildProgressAsync(buildDto, progress);
+		}
+
+		public async Task ListenForTrainingStatus(Action<SmtTrainProgress> progress)
+		{
+			string engineId = await GetEngineIdAsync();
+			string url = string.Format("translation/builds/engine:{0}?waitNew=true", engineId);
+			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url);
+			if (!response.IsSuccess)
+				throw new HttpException("Error getting build.") {StatusCode = response.StatusCode};
+			BuildDto buildDto = JsonConvert.DeserializeObject<BuildDto>(response.Content, _serializerSettings);
+			await PollBuildProgressAsync(buildDto, progress);
+		}
+
+		private async Task<string> GetEngineIdAsync()
+		{
 			string url = string.Format("translation/engines/project:{0}", ProjectId);
 			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url);
 			if (!response.IsSuccess)
 				throw new HttpException("Error getting engine identifier.") {StatusCode = response.StatusCode};
 			var engineDto = JsonConvert.DeserializeObject<EngineDto>(response.Content, _serializerSettings);
-			BuildDto buildDto = await CreateBuildAsync(engineDto.Id);
-			await PollBuildProgressAsync(buildDto, progress);
+			return engineDto.Id;
 		}
 
 		private async Task<BuildDto> CreateBuildAsync(string engineId)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Bridge.Html5;
 using Bridge.QUnit;
 using Newtonsoft.Json;
@@ -28,6 +29,7 @@ namespace SIL.Machine.Translation
 				TranslateInteractively_NoRuleResult_ReturnsSession);
 			QUnit.Test(nameof(Train_NoErrors_ReturnsTrue), Train_NoErrors_ReturnsTrue);
 			QUnit.Test(nameof(Train_ErrorCreatingBuild_ReturnsFalse), Train_ErrorCreatingBuild_ReturnsFalse);
+			QUnit.Test(nameof(ListenForTrainingStatus_NoErrors_ReturnsTrue), ListenForTrainingStatus_NoErrors_ReturnsTrue);
 		}
 
 		private static void TranslateInteractively_Success_ReturnsSession(Assert assert)
@@ -261,13 +263,15 @@ namespace SIL.Machine.Translation
 					{
 						Method = HttpRequestMethod.Get,
 						Url = string.Format("translation/builds/id:build1?minRevision={0}", buildDto.Revision),
+						Action = async body => await Task.Delay(10),
 						ResponseText = JsonConvert.SerializeObject(buildDto, SerializerSettings)
 					});
 			}
 			var engine = new TranslationEngine("http://localhost/", "project1", tokenizer, tokenizer, httpClient);
 			Action done = assert.Async();
 			int expectedStep = -1;
-			engine.Train(progress =>
+			engine.Train(
+				progress =>
 				{
 					expectedStep++;
 					assert.Equal(progress.CurrentStep, expectedStep);
@@ -302,10 +306,66 @@ namespace SIL.Machine.Translation
 			});
 			var engine = new TranslationEngine("http://localhost/", "project1", tokenizer, tokenizer, httpClient);
 			Action done = assert.Async();
-			engine.Train(progress => {},
+			engine.Train(
+				progress => {},
 				success =>
 				{
 					assert.Equal(success, false);
+					done();
+				});
+		}
+
+		private static void ListenForTrainingStatus_NoErrors_ReturnsTrue(Assert assert)
+		{
+			var tokenizer = new LatinWordTokenizer();
+			var httpClient = new MockHttpClient();
+			var engineDto = new EngineDto
+			{
+				Id = "engine1"
+			};
+			httpClient.Requests.Add(new MockRequest
+			{
+				Method = HttpRequestMethod.Get,
+				Url = "translation/engines/project:project1",
+				ResponseText = JsonConvert.SerializeObject(engineDto, SerializerSettings)
+			});
+			var buildDto = new BuildDto
+			{
+				Id = "build1",
+				StepCount = 10
+			};
+			httpClient.Requests.Add(new MockRequest
+			{
+				Method = HttpRequestMethod.Get,
+				Url = "translation/builds/engine:engine1?minRevision=0",
+				Action = async body => await Task.Delay(10),
+				ResponseText = JsonConvert.SerializeObject(buildDto, SerializerSettings)
+			});
+			for (int i = 0; i < 10; i++)
+			{
+				buildDto.CurrentStep++;
+				buildDto.Revision++;
+				httpClient.Requests.Add(new MockRequest
+				{
+					Method = HttpRequestMethod.Get,
+					Url = string.Format("translation/builds/id:build1?minRevision={0}", buildDto.Revision),
+					Action = async body => await Task.Delay(10),
+					ResponseText = JsonConvert.SerializeObject(buildDto, SerializerSettings)
+				});
+			}
+			var engine = new TranslationEngine("http://localhost/", "project1", tokenizer, tokenizer, httpClient);
+			Action done = assert.Async();
+			int expectedStep = -1;
+			engine.ListenForTrainingStatus(
+				progress =>
+				{
+					expectedStep++;
+					assert.Equal(progress.CurrentStep, expectedStep);
+				},
+				success =>
+				{
+					assert.Equal(expectedStep, 10);
+					assert.Equal(success, true);
 					done();
 				});
 		}

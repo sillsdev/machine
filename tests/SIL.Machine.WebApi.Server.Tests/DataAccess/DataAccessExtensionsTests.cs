@@ -17,7 +17,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 				var build = new Build {EngineId = "engine1", CurrentStep = 1};
 				await buildRepo.InsertAsync(build);
 			});
-			Build newBuild = await buildRepo.GetNewerRevisionByEngineIdAsync("engine1", 0);
+			Build newBuild = await buildRepo.GetNewerRevisionByEngineIdAsync("engine1", 0, true);
 			await task;
 			newBuild.Revision.Should().Be(0);
 			newBuild.CurrentStep.Should().Be(1);
@@ -35,7 +35,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 					build.CurrentStep = 1;
 					buildRepo.Update(build);
 				});
-			Build newBuild = await buildRepo.GetNewerRevisionAsync(build.Id, 1);
+			Build newBuild = await buildRepo.GetNewerRevisionAsync(build.Id, 1, false);
 			await task;
 			newBuild.Revision.Should().Be(1);
 			newBuild.CurrentStep.Should().Be(1);
@@ -52,7 +52,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 					await Task.Delay(10);
 					buildRepo.Delete(build);
 				});
-			Build newBuild = await buildRepo.GetNewerRevisionAsync(build.Id, 1);
+			Build newBuild = await buildRepo.GetNewerRevisionAsync(build.Id, 1, false);
 			await task;
 			newBuild.Should().BeNull();
 		}

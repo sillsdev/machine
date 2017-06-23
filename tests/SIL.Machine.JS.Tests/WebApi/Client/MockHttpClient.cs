@@ -17,7 +17,7 @@ namespace SIL.Machine.WebApi.Client
 			HttpResponse response;
 			if (request != null)
 			{
-				request.CheckBody?.Invoke(body);
+				request.Action?.Invoke(body);
 				response = request.ResponseText == null
 					? new HttpResponse(false, request.ErrorStatus)
 					: new HttpResponse(true, 200, request.ResponseText);

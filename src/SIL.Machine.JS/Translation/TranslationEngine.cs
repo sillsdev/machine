@@ -53,5 +53,10 @@ namespace SIL.Machine.Translation
 		{
 			RestClient.TrainAsync(onStatusUpdate).ContinueWith(t => onFinished(!t.IsFaulted));
 		}
+
+		public void ListenForTrainingStatus(Action<SmtTrainProgress> onStatusUpdate, Action<bool> onFinished)
+		{
+			RestClient.ListenForTrainingStatus(onStatusUpdate).ContinueWith(t => onFinished(!t.IsFaulted));
+		}
 	}
 }

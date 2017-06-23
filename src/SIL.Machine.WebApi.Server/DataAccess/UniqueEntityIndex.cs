@@ -61,24 +61,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		public void PopulateIndex(IEnumerable<TEntity> entities)
 		{
 			foreach (TEntity entity in entities)
-				OnEntityInserted(entity, null);
-		}
-
-		public void OnEntityInserted(TEntity entity, IList<Action<EntityChange<TEntity>>> changeListeners)
-		{
-			if (_filter != null && !_filter(entity))
-				return;
-
-			foreach (TKey key in _keySelector(entity))
-			{
-				_index[key] = entity;
-
-				if (changeListeners != null)
-				{
-					if (_changeListeners.TryGetValue(key, out Action<EntityChange<TEntity>> changeListener))
-						changeListeners.Add(changeListener);
-				}
-			}
+				OnEntityUpdated(entity, null);
 		}
 
 		public void OnEntityUpdated(TEntity entity, IList<Action<EntityChange<TEntity>>> changeListeners)
@@ -88,6 +71,8 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 
 			foreach (TKey key in _keySelector(entity))
 			{
+				_index[key] = entity;
+
 				if (changeListeners != null)
 				{
 					if (_changeListeners.TryGetValue(key, out Action<EntityChange<TEntity>> changeListener))

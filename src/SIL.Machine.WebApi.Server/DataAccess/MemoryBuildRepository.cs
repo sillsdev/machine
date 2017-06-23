@@ -33,29 +33,25 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 				return _engineIdIndex.Subscribe(Lock, engineId, listener);
 		}
 
-		protected override void OnBeforeEntityInserted(Build build)
+		protected override void OnBeforeEntityChanged(EntityChangeType type, Build build)
 		{
 			_engineIdIndex.CheckKeyConflict(build);
 		}
 
-		protected override void OnBeforeEntityUpdated(Build build)
+		protected override void OnEntityChanged(EntityChangeType type, Build internalBuild,
+			IList<Action<EntityChange<Build>>> changeListeners)
 		{
-			_engineIdIndex.CheckKeyConflict(build);
-		}
-
-		protected override void OnEntityInserted(Build internalBuild, IList<Action<EntityChange<Build>>> changeListeners)
-		{
-			_engineIdIndex.OnEntityInserted(internalBuild, changeListeners);
-		}
-
-		protected override void OnEntityUpdated(Build internalBuild, IList<Action<EntityChange<Build>>> changeListeners)
-		{
-			_engineIdIndex.OnEntityUpdated(internalBuild, changeListeners);
-		}
-
-		protected override void OnEntityDeleted(Build internalBuild, IList<Action<EntityChange<Build>>> changeListeners)
-		{
-			_engineIdIndex.OnEntityDeleted(internalBuild, changeListeners);
+			switch (type)
+			{
+				case EntityChangeType.Insert:
+				case EntityChangeType.Update:
+					_engineIdIndex.OnEntityUpdated(internalBuild, changeListeners);
+					break;
+				case EntityChangeType.Delete:
+					_engineIdIndex.OnEntityDeleted(internalBuild, changeListeners);
+					break;
+			}
+			
 		}
 	}
 }

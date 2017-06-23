@@ -100,33 +100,35 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			return true;
 		}
 
-		public static Task<T> GetNewerRevisionAsync<T>(this IRepository<T> repo, string id, long minRevision)
+		public static Task<T> GetNewerRevisionAsync<T>(this IRepository<T> repo, string id, long minRevision, bool waitNew)
 			where T : class, IEntity<T>
 		{
-			return GetNewerRevisionAsync(repo.SubscribeAsync, repo.GetAsync, id, minRevision);
+			return GetNewerRevisionAsync(repo.SubscribeAsync, repo.GetAsync, id, minRevision, waitNew);
 		}
 
-		public static Task<Build> GetNewerRevisionByEngineIdAsync(this IBuildRepository repo, string engineId, long minRevision)
+		public static Task<Build> GetNewerRevisionByEngineIdAsync(this IBuildRepository repo, string engineId, long minRevision,
+			bool waitNew)
 		{
-			return GetNewerRevisionAsync(repo.SubscribeByEngineIdAsync, repo.GetByEngineIdAsync, engineId, minRevision);
+			return GetNewerRevisionAsync(repo.SubscribeByEngineIdAsync, repo.GetByEngineIdAsync, engineId, minRevision,
+				waitNew);
 		}
 
 		public static Task<Build> GetNewerRevisionAsync(this IBuildRepository repo, BuildLocatorType locatorType, string locator,
-			long minRevision)
+			long minRevision, bool waitNew)
 		{
 			switch (locatorType)
 			{
 				case BuildLocatorType.Id:
-					return repo.GetNewerRevisionAsync(locator, minRevision);
+					return repo.GetNewerRevisionAsync(locator, minRevision, waitNew);
 				case BuildLocatorType.Engine:
-					return repo.GetNewerRevisionByEngineIdAsync(locator, minRevision);
+					return repo.GetNewerRevisionByEngineIdAsync(locator, minRevision, waitNew);
 			}
 			return null;
 		}
 
 		private static async Task<TEntity> GetNewerRevisionAsync<TKey, TEntity>(
-			Func<TKey, Action<EntityChange<TEntity>>, Task<IDisposable>> subscribe, Func<TKey, Task<TEntity>> getEntity, TKey key,
-			long minRevision) where TEntity : class, IEntity<TEntity>
+			Func<TKey, Action<EntityChange<TEntity>>, Task<IDisposable>> subscribe, Func<TKey, Task<TEntity>> getEntity,
+			TKey key, long minRevision, bool waitNew) where TEntity : class, IEntity<TEntity>
 		{
 			var changeEvent = new AsyncAutoResetEvent();
 			TEntity entity;
@@ -139,6 +141,8 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			using (await subscribe(key, HandleChange))
 			{
 				entity = await getEntity(key);
+				if (entity == null && !waitNew)
+					return null;
 				while (entity == null || minRevision > entity.Revision)
 				{
 					await changeEvent.WaitAsync();

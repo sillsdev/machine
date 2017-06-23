@@ -30,13 +30,19 @@ namespace SIL.Machine.WebApi.Server.Controllers
 		}
 
 		[HttpGet("{locatorType}:{locator}")]
-		public async Task<IActionResult> GetAsync(string locatorType, string locator, [FromQuery] long? minRevision)
+		public async Task<IActionResult> GetAsync(string locatorType, string locator, [FromQuery] long? minRevision,
+			[FromQuery] bool? waitNew)
 		{
 			Build build;
-			if (minRevision != null)
-				build = await _buildRepo.GetNewerRevisionAsync(GetLocatorType(locatorType), locator, (long) minRevision);
+			if (minRevision != null || waitNew != null)
+			{
+				build = await _buildRepo.GetNewerRevisionAsync(GetLocatorType(locatorType), locator, minRevision ?? 0,
+					waitNew ?? false);
+			}
 			else
+			{
 				build = await _buildRepo.GetByLocatorAsync(GetLocatorType(locatorType), locator);
+			}
 
 			if (build == null)
 				return NotFound();

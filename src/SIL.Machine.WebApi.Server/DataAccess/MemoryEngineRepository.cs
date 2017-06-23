@@ -43,34 +43,27 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			}
 		}
 
-		protected override void OnBeforeEntityInserted(Engine engine)
+		protected override void OnBeforeEntityChanged(EntityChangeType type, Engine engine)
 		{
 			_langTagIndex.CheckKeyConflict(engine);
 			_projectIndex.CheckKeyConflict(engine);
 		}
 
-		protected override void OnBeforeEntityUpdated(Engine engine)
+		protected override void OnEntityChanged(EntityChangeType type, Engine internalEngine,
+			IList<Action<EntityChange<Engine>>> changeListeners)
 		{
-			_langTagIndex.CheckKeyConflict(engine);
-			_projectIndex.CheckKeyConflict(engine);
-		}
-
-		protected override void OnEntityInserted(Engine internalEngine, IList<Action<EntityChange<Engine>>> changeListeners)
-		{
-			_langTagIndex.OnEntityInserted(internalEngine, changeListeners);
-			_projectIndex.OnEntityInserted(internalEngine, changeListeners);
-		}
-
-		protected override void OnEntityUpdated(Engine internalEngine, IList<Action<EntityChange<Engine>>> changeListeners)
-		{
-			_langTagIndex.OnEntityUpdated(internalEngine, changeListeners);
-			_projectIndex.OnEntityUpdated(internalEngine, changeListeners);
-		}
-
-		protected override void OnEntityDeleted(Engine internalEngine, IList<Action<EntityChange<Engine>>> changeListeners)
-		{
-			_langTagIndex.OnEntityDeleted(internalEngine, changeListeners);
-			_projectIndex.OnEntityDeleted(internalEngine, changeListeners);
+			switch (type)
+			{
+				case EntityChangeType.Insert:
+				case EntityChangeType.Update:
+					_langTagIndex.OnEntityUpdated(internalEngine, changeListeners);
+					_projectIndex.OnEntityUpdated(internalEngine, changeListeners);
+					break;
+				case EntityChangeType.Delete:
+					_langTagIndex.OnEntityDeleted(internalEngine, changeListeners);
+					_projectIndex.OnEntityDeleted(internalEngine, changeListeners);
+					break;
+			}
 		}
 	}
 }
