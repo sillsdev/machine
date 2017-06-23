@@ -337,7 +337,7 @@ namespace SIL.Machine.Translation
 			httpClient.Requests.Add(new MockRequest
 			{
 				Method = HttpRequestMethod.Get,
-				Url = "translation/builds/engine:engine1?minRevision=0",
+				Url = "translation/builds/engine:engine1?waitNew=true",
 				Action = async body => await Task.Delay(10),
 				ResponseText = JsonConvert.SerializeObject(buildDto, SerializerSettings)
 			});
