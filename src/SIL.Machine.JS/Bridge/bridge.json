@@ -2,7 +2,6 @@
   "output": "Bridge/output",
   "fileNameCasing": "Lowercase",
   "cleanOutputFolderBeforeBuild": "true",
-  "outputBy": "Project",
   "fileName": "sil.machine.js",
   "generateTypeScript": false
 

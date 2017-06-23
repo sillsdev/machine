@@ -3,7 +3,6 @@
   "fileNameCasing": "Lowercase",
   "outputFormatting": "Formatted",
   "cleanOutputFolderBeforeBuild": "true",
-  "outputBy": "Project",
   "fileName": "sil.machine.tests.js"
 
   // More options available at:
