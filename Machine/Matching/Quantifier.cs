@@ -126,6 +126,8 @@ namespace SIL.Machine.Matching
 			if (MaxOccur == Infinite)
 			{
 				endState.Arcs.Add(currentState, priorityType);
+				if (MinOccur == 0)
+					endState = fsa.CreateState();
 			}
 			else
 			{

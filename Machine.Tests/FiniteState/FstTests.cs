@@ -16,7 +16,7 @@ namespace SIL.Machine.Tests.FiniteState
 		public override void FixtureSetUp()
 		{
 			base.FixtureSetUp();
-			_operations = new PhoneticFstOperations(SpanFactory, Characters);
+			_operations = new PhoneticFstOperations(StringSpanFactory, Characters);
 		}
 
 

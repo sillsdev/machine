@@ -8,7 +8,8 @@ namespace SIL.Machine.Tests
 	[TestFixture]
 	public abstract class PhoneticTestsBase
 	{
-		protected SpanFactory<int> SpanFactory;
+		protected SpanFactory<int> StringSpanFactory;
+		protected ShapeSpanFactory ShapeSpanFactory;
 		protected FeatureSystem PhoneticFeatSys;
 		protected FeatureSystem WordFeatSys;
 		protected FeatureSystem TypeFeatSys;
@@ -19,12 +20,14 @@ namespace SIL.Machine.Tests
 		protected FeatureSymbol Seg;
 		protected FeatureSymbol Bdry;
 		protected FeatureSymbol Allo;
+		protected FeatureSymbol Anchor;
 		protected Dictionary<char, FeatureStruct> Characters;
 
 		[TestFixtureSetUp]
 		public virtual void FixtureSetUp()
 		{
-			SpanFactory = new IntegerSpanFactory();
+			StringSpanFactory = new IntegerSpanFactory();
+			ShapeSpanFactory = new ShapeSpanFactory();
 
 			PhoneticFeatSys = new FeatureSystem
 			{
@@ -56,8 +59,9 @@ namespace SIL.Machine.Tests
 			Seg = new FeatureSymbol("Seg");
 			Bdry = new FeatureSymbol("Bdry");
 			Allo = new FeatureSymbol("Allo");
+			Anchor = new FeatureSymbol("Anchor");
 
-			Type = new SymbolicFeature("Type", Word, NP, VP, Seg, Bdry, Allo);
+			Type = new SymbolicFeature("Type", Word, NP, VP, Seg, Bdry, Allo, Anchor);
 
 			TypeFeatSys = new FeatureSystem {Type};
 
@@ -400,19 +404,34 @@ namespace SIL.Machine.Tests
 						.Feature("strRep").EqualTo(" ").Value},
 				{'.', FeatureStruct.New(PhoneticFeatSys)
 						.Symbol(Bdry)
-						.Feature("strRep").EqualTo(".").Value}
+						.Feature("strRep").EqualTo(".").Value},
+				{'0', FeatureStruct.New(PhoneticFeatSys)
+						.Symbol(Bdry)
+						.Feature("strRep").EqualTo("0").Value}
 			};
 		}
 
 		protected AnnotatedStringData CreateStringData(string str)
 		{
-			var stringData = new AnnotatedStringData(SpanFactory, str);
+			var stringData = new AnnotatedStringData(StringSpanFactory, str);
 			for (int i = 0; i < str.Length; i++)
 			{
 				FeatureStruct fs = Characters[str[i]];
 				stringData.Annotations.Add(i, i + 1, fs.DeepClone());
 			}
 			return stringData;
+		}
+
+		protected Shape CreateShapeData(string str)
+		{
+			var shape = new Shape(ShapeSpanFactory, begin => new ShapeNode(ShapeSpanFactory, FeatureStruct.New().Symbol(Anchor).Value));
+			foreach (char c in str)
+			{
+				FeatureStruct fs = Characters[c];
+				shape.Add(fs.DeepClone());
+			}
+			shape.Freeze();
+			return shape;
 		}
 	}
 }

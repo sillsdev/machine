@@ -40,7 +40,7 @@ namespace SIL.Machine.Matching
 			return endState;
 		}
 
-    	protected override bool CanAdd(PatternNode<TData, TOffset> child)
+		protected override bool CanAdd(PatternNode<TData, TOffset> child)
 		{
 			if (!base.CanAdd(child) || child is Pattern<TData, TOffset>)
 				return false;

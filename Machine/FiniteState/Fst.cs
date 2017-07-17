@@ -508,15 +508,15 @@ namespace SIL.Machine.FiniteState
 		private static IEnumerable<Tuple<SubsetState, Input, IEnumerable<Output<TData, TOffset>>, int>> DeterministicGetArcs(SubsetState from)
 		{
 			ILookup<Input, NfaStateInfo> conditions = from.NfaStates
-				.SelectMany(state => state.NfaState.Arcs, (state, arc) => new { State = state, Arc = arc} )
+				.SelectMany(state => state.NfaState.Arcs, (state, arc) => new {State = state, Arc = arc})
 				.Where(stateArc => !stateArc.Arc.Input.IsEpsilon)
 				.ToLookup(stateArc => stateArc.Arc.Input, stateArc => new NfaStateInfo(stateArc.Arc.Target, stateArc.State.Outputs.Concat(stateArc.Arc.Outputs),
 					Math.Max(stateArc.Arc.Priority, stateArc.State.MaxPriority), stateArc.Arc.Priority, stateArc.State.Tags));
 
 			var preprocessedConditions = new List<Tuple<FeatureStruct, IEnumerable<FeatureStruct>, IEnumerable<NfaStateInfo>>>
-				{
-					Tuple.Create((FeatureStruct) null, Enumerable.Empty<FeatureStruct>(), Enumerable.Empty<NfaStateInfo>())
-				};
+			{
+				Tuple.Create((FeatureStruct) null, Enumerable.Empty<FeatureStruct>(), Enumerable.Empty<NfaStateInfo>())
+			};
 			foreach (IGrouping<Input, NfaStateInfo> cond in conditions)
 			{
 				var temp = new List<Tuple<FeatureStruct, IEnumerable<FeatureStruct>, IEnumerable<NfaStateInfo>>>();
@@ -584,7 +584,8 @@ namespace SIL.Machine.FiniteState
 						state.Outputs.RemoveRange(0, commonPrefix.Count);
 				}
 
-				yield return Tuple.Create(new SubsetState(targetStates), new Input(input.FeatureStruct, input.NegatedFeatureStructs, enqueueCount), (IEnumerable<Output<TData, TOffset>>) commonPrefix, 0);
+				yield return Tuple.Create(new SubsetState(targetStates), new Input(input.FeatureStruct, input.NegatedFeatureStructs, enqueueCount),
+					(IEnumerable<Output<TData, TOffset>>) commonPrefix, 0);
 			}
 			else
 			{
@@ -611,19 +612,26 @@ namespace SIL.Machine.FiniteState
 
 		private void MarkArcPriorities()
 		{
+			var arcs = new Dictionary<ArcPriorityType, List<Arc<TData, TOffset>>>();
 			var visited = new HashSet<State<TData, TOffset>>();
-			var todo = new Stack<Arc<TData, TOffset>>(StartState.Arcs.Reverse());
-			int nextPriority = 0;
+			var todo = new Stack<Arc<TData, TOffset>>(StartState.Arcs);
 			while (todo.Count > 0)
 			{
 				Arc<TData, TOffset> arc = todo.Pop();
-				arc.Priority = nextPriority++;
+				arcs.GetValue(arc.PriorityType, () => new List<Arc<TData, TOffset>>()).Add(arc);
 				if (!visited.Contains(arc.Target))
 				{
 					visited.Add(arc.Target);
 					foreach (Arc<TData, TOffset> nextArc in arc.Target.Arcs)
 						todo.Push(nextArc);
 				}
+			}
+
+			int nextPriority = 0;
+			foreach (KeyValuePair<ArcPriorityType, List<Arc<TData, TOffset>>> kvp in arcs.OrderBy(kvp => kvp.Key))
+			{
+				foreach (Arc<TData, TOffset> arc in kvp.Value)
+					arc.Priority = nextPriority++;
 			}
 		}
 
@@ -649,8 +657,7 @@ namespace SIL.Machine.FiniteState
 				foreach (KeyValuePair<int, int> kvp in state.Tags)
 					cmdTags[kvp.Key] = kvp.Value;
 			}
-			newFst._initializers.AddRange(from kvp in cmdTags
-										  select new TagMapCommand(GetRegisterIndex(registerIndices, kvp.Key, kvp.Value), TagMapCommand.CurrentPosition));
+			newFst._initializers.AddRange(cmdTags.Select(kvp => new TagMapCommand(GetRegisterIndex(registerIndices, kvp.Key, kvp.Value), TagMapCommand.CurrentPosition)));
 
 			var subsetStates = new Dictionary<SubsetState, SubsetState> { {subsetStart, subsetStart} };
 			var unmarkedSubsetStates = new Queue<SubsetState>();
@@ -1609,8 +1616,25 @@ namespace SIL.Machine.FiniteState
 
 				foreach (Arc<TData, TOffset> arc in state.Arcs)
 				{
-					writer.WriteLine("  {0} -> {1} [label=\"{2}\"];", state.Index, arc.Target.Index,
+					writer.Write("  {0} -> {1} [label=\"{2}", state.Index, arc.Target.Index,
 						arc.ToString().Replace("\"", "\\\""));
+					if (arc.PriorityType != ArcPriorityType.Medium)
+					{
+						writer.Write(", ");
+						switch (arc.PriorityType)
+						{
+							case ArcPriorityType.High:
+								writer.Write("High");
+								break;
+							case ArcPriorityType.Low:
+								writer.Write("Low");
+								break;
+							case ArcPriorityType.VeryLow:
+								writer.Write("VeryLow");
+								break;
+						}
+					}
+					writer.WriteLine("\"];");
 					if (!processed.Contains(arc.Target) && !stack.Contains(arc.Target))
 						stack.Push(arc.Target);
 				}
