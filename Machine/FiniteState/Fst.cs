@@ -945,6 +945,9 @@ namespace SIL.Machine.FiniteState
 		{
 			get
 			{
+				if (IsAcceptor)
+					return true;
+
 				if (HasEpsilonLoop)
 					return false;
 
@@ -975,7 +978,7 @@ namespace SIL.Machine.FiniteState
 			visitedStates.Add(state2);
 			foreach (Arc<TData, TOffset> arc in state2.Arcs)
 			{
-				if (arc.Input == null && !visitedArcs.Contains(arc))
+				if (arc.Input.IsEpsilon && !visitedArcs.Contains(arc))
 				{
 					visitedArcs.Add(arc);
 					if (arc.Target.Equals(state1))
@@ -1106,7 +1109,7 @@ namespace SIL.Machine.FiniteState
 		private static IEnumerable<FeatureStruct> ClosuredInputs(Arc<TData, TOffset> arc)
 		{
 			return EpsilonClosure(arc.Target).SelectMany(s => s.Arcs, (s, a) => a.Input).Concat(arc.Input)
-				.Where(input => input != null).Select(input => input.FeatureStruct).Distinct(FreezableEqualityComparer<FeatureStruct>.Default);
+				.Where(input => !input.IsEpsilon).Select(input => input.FeatureStruct).Distinct(FreezableEqualityComparer<FeatureStruct>.Default);
 		}
 
 		private static IEnumerable<State<TData, TOffset>> EpsilonClosure(State<TData, TOffset> state)
