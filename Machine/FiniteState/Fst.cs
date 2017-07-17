@@ -612,26 +612,19 @@ namespace SIL.Machine.FiniteState
 
 		private void MarkArcPriorities()
 		{
-			var arcs = new Dictionary<ArcPriorityType, List<Arc<TData, TOffset>>>();
 			var visited = new HashSet<State<TData, TOffset>>();
-			var todo = new Stack<Arc<TData, TOffset>>(StartState.Arcs);
+			var todo = new Stack<Arc<TData, TOffset>>(StartState.Arcs.Reverse());
+			int nextPriority = 0;
 			while (todo.Count > 0)
 			{
 				Arc<TData, TOffset> arc = todo.Pop();
-				arcs.GetValue(arc.PriorityType, () => new List<Arc<TData, TOffset>>()).Add(arc);
+				arc.Priority = nextPriority++;
 				if (!visited.Contains(arc.Target))
 				{
 					visited.Add(arc.Target);
 					foreach (Arc<TData, TOffset> nextArc in arc.Target.Arcs)
 						todo.Push(nextArc);
 				}
-			}
-
-			int nextPriority = 0;
-			foreach (KeyValuePair<ArcPriorityType, List<Arc<TData, TOffset>>> kvp in arcs.OrderBy(kvp => kvp.Key))
-			{
-				foreach (Arc<TData, TOffset> arc in kvp.Value)
-					arc.Priority = nextPriority++;
 			}
 		}
 
