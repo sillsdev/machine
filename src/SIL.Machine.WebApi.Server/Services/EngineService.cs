@@ -43,7 +43,10 @@ namespace SIL.Machine.WebApi.Server.Services
 			_runners = new Dictionary<string, EngineRunner>();
 			_lock = new AsyncReaderWriterLock();
 			_commitTimer = new AsyncTimer(EngineCommitAsync);
+		}
 
+		public void Init()
+		{
 			// restart any builds that didn't finish before the last shutdown
 			foreach (Build build in _buildRepo.GetAll())
 			{

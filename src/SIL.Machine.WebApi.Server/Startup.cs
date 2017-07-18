@@ -103,6 +103,8 @@ namespace SIL.Machine.WebApi.Server
 			app.UseCors("GlobalPolicy");
 
 			app.UseMvc();
+
+			app.InitEngineService();
 		}
 	}
 }

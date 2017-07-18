@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SIL.Machine.WebApi.Server.Options;
 
@@ -31,6 +32,12 @@ namespace SIL.Machine.WebApi.Server.Services
 			services.Configure<TextFileTextCorpusOptions>(config.GetSection("TextFileTextCorpus"));
 			services.AddSingleton<ITextCorpusFactory, TextFileTextCorpusFactory>();
 			return services;
+		}
+
+		public static IApplicationBuilder InitEngineService(this IApplicationBuilder app)
+		{
+			app.ApplicationServices.GetService<EngineService>().Init();
+			return app;
 		}
 	}
 }
