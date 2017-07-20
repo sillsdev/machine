@@ -87,6 +87,9 @@ namespace SIL.Machine.Translation.Thot
 		private WordGraph CreateWordGraph(IReadOnlyList<string> segment, string wordGraphStr, double initialStateScore)
 		{
 			string[] lines = wordGraphStr.Split(new[] {'\n'}, StringSplitOptions.RemoveEmptyEntries);
+			if (lines.Length == 0)
+				return new WordGraph(Enumerable.Empty<WordGraphArc>(), Enumerable.Empty<int>(), initialStateScore);
+
 			int i = 0;
 			if (lines[i].StartsWith("#"))
 				i++;

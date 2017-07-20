@@ -87,6 +87,17 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
+		[Test]
+		public void GetWordGraph_EmptySegment_ReturnsEmptyGraph()
+		{
+			using (var smtModel = new ThotSmtModel(TestHelpers.ToyCorpusConfigFileName))
+			using (ISmtEngine engine = smtModel.CreateEngine())
+			{
+				WordGraph wordGraph = engine.GetWordGraph(new string[0]);
+				Assert.That(wordGraph.IsEmpty, Is.True);
+			}
+		}
+
 		private static void SetAligned(WordAlignmentMatrix matrix, int i, int j)
 		{
 			matrix[i, j] = AlignmentType.Aligned;
