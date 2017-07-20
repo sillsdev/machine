@@ -59,7 +59,10 @@ namespace SIL.Machine.WebApi.Server.Services
 			CheckDisposed();
 
 			using (await _lock.LockAsync())
+			{
 				_smtModelFactory.InitNewModel(_engineId);
+				_ruleEngineFactory.InitNewEngine(_engineId);
+			}
 		}
 
 		public async Task<TranslationResult> TranslateAsync(IReadOnlyList<string> segment)
@@ -132,21 +135,25 @@ namespace SIL.Machine.WebApi.Server.Services
 			}
 		}
 
-		public async Task<(Build Build, bool AlreadyBuilding)> StartBuildAsync(Engine engine)
+		public async Task<Build> StartBuildAsync(Engine engine)
 		{
 			CheckDisposed();
 
 			using (await _lock.LockAsync())
 			{
 				if (IsBuilding)
-					return (await _buildRepo.GetAsync(_buildId), true);
+				{
+					_cts.Cancel();
+					await _buildRepo.DeleteAsync(_buildId);
+					await _buildTask;
+				}
 
 				var build = new Build {EngineId = _engineId};
 				await _buildRepo.InsertAsync(build);
 				_buildId = build.Id;
 				Build clone = build.Clone();
 				StartBuildInternal(engine, build);
-				return (clone, false);
+				return clone;
 			}
 		}
 
@@ -172,8 +179,10 @@ namespace SIL.Machine.WebApi.Server.Services
 			using (await _lock.LockAsync())
 			{
 				if (IsBuilding)
+				{
 					_cts.Cancel();
-				await _buildRepo.DeleteAsync(_buildId);
+					await _buildRepo.DeleteAsync(_buildId);
+				}
 			}
 		}
 
@@ -209,10 +218,13 @@ namespace SIL.Machine.WebApi.Server.Services
 			using (await _lock.LockAsync())
 			{
 				if (IsBuilding)
+				{
 					_cts.Cancel();
-				await _buildRepo.DeleteAsync(_buildId);
+					await _buildRepo.DeleteAsync(_buildId);
+				}
 				Unload();
-				_smtModelFactory.Delete(_engineId);
+				_smtModelFactory.CleanupModel(_engineId);
+				_ruleEngineFactory.CleanupEngine(_engineId);
 			}
 		}
 

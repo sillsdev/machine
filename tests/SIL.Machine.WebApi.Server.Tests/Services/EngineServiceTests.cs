@@ -101,10 +101,10 @@ namespace SIL.Machine.WebApi.Server.Services
 			using (var env = new TestEnvironment())
 			{
 				env.CreateEngineService();
-				(Engine Engine, bool ProjectAdded) result = await env.Service.AddProjectAsync("es", "en", "project1", true);
-				result.ProjectAdded.Should().BeTrue();
+				Engine engine = await env.Service.AddProjectAsync("es", "en", "project1", true);
+				engine.Should().NotBeNull();
 
-				Engine engine = await env.EngineRepository.GetAsync(result.Engine.Id);
+				engine = await env.EngineRepository.GetAsync(engine.Id);
 				engine.Projects.Should().Contain("project1");
 			}
 		}
@@ -116,10 +116,10 @@ namespace SIL.Machine.WebApi.Server.Services
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
 				env.CreateEngineService();
-				(Engine Engine, bool ProjectAdded) result = await env.Service.AddProjectAsync("es", "en", "project2", true);
-				result.ProjectAdded.Should().BeTrue();
+				Engine engine = await env.Service.AddProjectAsync("es", "en", "project2", true);
+				engine.Should().NotBeNull();
 
-				Engine engine = await env.EngineRepository.GetAsync(result.Engine.Id);
+				engine = await env.EngineRepository.GetAsync(engine.Id);
 				engine.Id.Should().Be(engineId);
 				engine.Projects.Should().Contain("project2");
 			}
@@ -132,36 +132,36 @@ namespace SIL.Machine.WebApi.Server.Services
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", false)).Id;
 				env.CreateEngineService();
-				(Engine Engine, bool ProjectAdded) result = await env.Service.AddProjectAsync("es", "en", "project2", true);
-				result.ProjectAdded.Should().BeTrue();
+				Engine engine = await env.Service.AddProjectAsync("es", "en", "project2", true);
+				engine.Should().NotBeNull();
 
-				Engine engine = await env.EngineRepository.GetAsync(result.Engine.Id);
+				engine = await env.EngineRepository.GetAsync(engine.Id);
 				engine.Id.Should().NotBe(engineId);
 				engine.Projects.Should().Contain("project2");
 			}
 		}
 
 		[Fact]
-		public async Task AddProjectAsync_SharedProjectExists_ReturnsProjectNotAdded()
+		public async Task AddProjectAsync_SharedProjectExists_ReturnsNull()
 		{
 			using (var env = new TestEnvironment())
 			{
 				await env.CreateEngineAsync("es", "en", true);
 				env.CreateEngineService();
-				(Engine Engine, bool ProjectAdded) result = await env.Service.AddProjectAsync("es", "en", "project1", true);
-				result.ProjectAdded.Should().BeFalse();
+				Engine engine = await env.Service.AddProjectAsync("es", "en", "project1", true);
+				engine.Should().BeNull();
 			}
 		}
 
 		[Fact]
-		public async Task AddProjectAsync_NonsharedProjectExists_ReturnsProjectNotAdded()
+		public async Task AddProjectAsync_NonsharedProjectExists_ReturnsNull()
 		{
 			using (var env = new TestEnvironment())
 			{
 				await env.CreateEngineAsync("es", "en", false);
 				env.CreateEngineService();
-				(Engine Engine, bool ProjectAdded) result = await env.Service.AddProjectAsync("es", "en", "project1", false);
-				result.ProjectAdded.Should().BeFalse();
+				Engine engine = await env.Service.AddProjectAsync("es", "en", "project1", false);
+				engine.Should().BeNull();
 			}
 		}
 
@@ -190,15 +190,14 @@ namespace SIL.Machine.WebApi.Server.Services
 		}
 
 		[Fact]
-		public async Task StartBuildAsync_EngineExists_ReturnsSuccess()
+		public async Task StartBuildAsync_EngineExists_BuildStarted()
 		{
 			using (var env = new TestEnvironment())
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
 				env.CreateEngineService();
-				(Build Build, StartBuildStatus Status) result = await env.Service.StartBuildAsync(EngineLocatorType.Id,
-					engineId);
-				result.Status.Should().Be(StartBuildStatus.Success);
+				Build build = await env.Service.StartBuildAsync(EngineLocatorType.Id, engineId);
+				build.Should().NotBeNull();
 			}
 		}
 
@@ -245,6 +244,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			{
 				Service = new EngineService(CreateOptions(), EngineRepository, BuildRepository, CreateSmtModelFactory(),
 					CreateRuleEngineFactory(), CreateTextCorpusFactory());
+				Service.Init();
 			}
 
 			public void DisposeEngineService()

@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using ICSharpCode.SharpZipLib.GZip;
 using ICSharpCode.SharpZipLib.Tar;
 using Microsoft.Extensions.Options;
@@ -38,9 +39,11 @@ namespace SIL.Machine.WebApi.Server.Services
 			}
 		}
 
-		public void Delete(string engineId)
+		public void CleanupModel(string engineId)
 		{
 			string engineDir = Path.Combine(_rootDir, engineId);
+			if (!Directory.Exists(engineDir))
+				return;
 			string lmDir = Path.Combine(engineDir, "lm");
 			if (Directory.Exists(lmDir))
 				Directory.Delete(lmDir, true);
@@ -50,6 +53,8 @@ namespace SIL.Machine.WebApi.Server.Services
 			string smtConfigFileName = Path.Combine(engineDir, "smt.cfg");
 			if (File.Exists(smtConfigFileName))
 				File.Delete(smtConfigFileName);
+			if (!Directory.EnumerateFileSystemEntries(engineDir).Any())
+				Directory.Delete(engineDir);
 		}
 	}
 }

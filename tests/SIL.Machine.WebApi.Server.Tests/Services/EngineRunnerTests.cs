@@ -23,12 +23,12 @@ namespace SIL.Machine.WebApi.Server.Services
 			{
 				env.CreateEngine();
 				await env.EngineRunner.InitNewAsync();
-				(Build Build, bool AlreadyBuilding) result = await env.EngineRunner.StartBuildAsync(env.Engine);
-				result.AlreadyBuilding.Should().BeFalse();
+				Build build = await env.EngineRunner.StartBuildAsync(env.Engine);
+				build.Should().NotBeNull();
 				env.EngineRunner.WaitForBuildToComplete();
 				env.BatchTrainer.Received().Train(Arg.Any<IProgress<SmtTrainProgress>>(), Arg.Any<Action>());
 				env.BatchTrainer.Received().Save();
-				Build build = await env.BuildRepository.GetAsync(result.Build.Id);
+				build = await env.BuildRepository.GetAsync(build.Id);
 				build.Should().BeNull();
 			}
 		}
@@ -45,14 +45,14 @@ namespace SIL.Machine.WebApi.Server.Services
 						while (true)
 							checkCanceled();
 					}));
-				(Build Build, bool AlreadyBuilding) result = await env.EngineRunner.StartBuildAsync(env.Engine);
-				result.AlreadyBuilding.Should().BeFalse();
+				Build build = await env.EngineRunner.StartBuildAsync(env.Engine);
+				build.Should().NotBeNull();
 				await Task.Delay(10);
 				await env.EngineRunner.CancelBuildAsync();
 				env.EngineRunner.WaitForBuildToComplete();
 				env.BatchTrainer.Received().Train(Arg.Any<IProgress<SmtTrainProgress>>(), Arg.Any<Action>());
 				env.BatchTrainer.DidNotReceive().Save();
-				Build build = await env.BuildRepository.GetAsync(result.Build.Id);
+				build = await env.BuildRepository.GetAsync(build.Id);
 				build.Should().BeNull();
 			}
 		}

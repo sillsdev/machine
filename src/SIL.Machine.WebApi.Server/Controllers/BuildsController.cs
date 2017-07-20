@@ -53,14 +53,11 @@ namespace SIL.Machine.WebApi.Server.Controllers
 		[HttpPost]
 		public async Task<IActionResult> CreateAsync([FromBody] string engineId)
 		{
-			(Build Build, StartBuildStatus Status) result = await _engineService.StartBuildAsync(EngineLocatorType.Id, engineId);
-			if (result.Status == StartBuildStatus.EngineNotFound)
+			Build build = await _engineService.StartBuildAsync(EngineLocatorType.Id, engineId);
+			if (build == null)
 				return StatusCode(422);
 
-			BuildDto dto = CreateDto(result.Build);
-			if (result.Status == StartBuildStatus.AlreadyBuilding)
-				return Ok(dto);
-
+			BuildDto dto = CreateDto(build);
 			return Created(dto.Href, dto);
 		}
 

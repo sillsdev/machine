@@ -8,14 +8,14 @@
     "tasks": [
         {
             "taskName": "build",
-            "args": ["${workspaceRoot}/src/SIL.Machine.WebApi/SIL.Machine.WebApi.csproj"],
+            "args": ["${workspaceRoot}/src/SIL.Machine.WebApi.Server/SIL.Machine.WebApi.Server.csproj"],
             "isBuildCommand": true,
             "showOutput": "silent",
             "problemMatcher": "$msCompile"
         },
         {
             "taskName": "test",
-            "args": ["${workspaceRoot}/tests/SIL.Machine.WebApi.Tests/SIL.Machine.WebApi.Tests.csproj"],
+            "args": ["${workspaceRoot}/tests/SIL.Machine.WebApi.Server.Tests/SIL.Machine.WebApi.Server.Tests.csproj"],
             "isTestCommand": true
         }
     ]

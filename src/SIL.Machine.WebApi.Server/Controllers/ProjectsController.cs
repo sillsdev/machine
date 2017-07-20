@@ -42,12 +42,12 @@ namespace SIL.Machine.WebApi.Server.Controllers
 		[HttpPost]
 		public async Task<IActionResult> CreateAsync([FromBody] ProjectDto newProject)
 		{
-			(Engine Engine, bool ProjectAdded) result = await _engineService.AddProjectAsync(newProject.SourceLanguageTag,
+			Engine engine = await _engineService.AddProjectAsync(newProject.SourceLanguageTag,
 				newProject.TargetLanguageTag, newProject.Id, newProject.IsShared);
-			if (!result.ProjectAdded)
+			if (engine == null)
 				return StatusCode(409);
 
-			ProjectDto dto = CreateDto(result.Engine, newProject.Id);
+			ProjectDto dto = CreateDto(engine, newProject.Id);
 			return Created(dto.Href, dto);
 		}
 

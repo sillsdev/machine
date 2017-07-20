@@ -6,6 +6,6 @@ namespace SIL.Machine.WebApi.Server.Services
 	{
 		IInteractiveSmtModel Create(string engineId);
 		void InitNewModel(string engineId);
-		void Delete(string engineId);
+		void CleanupModel(string engineId);
 	}
 }

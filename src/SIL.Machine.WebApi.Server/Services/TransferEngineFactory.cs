@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Linq;
 using Microsoft.Extensions.Options;
 using SIL.Machine.Annotations;
 using SIL.Machine.Morphology.HermitCrab;
@@ -37,5 +39,25 @@ namespace SIL.Machine.WebApi.Server.Services
 			}
 			return transferEngine;
 		}
-	}
+
+		public void InitNewEngine(string engineId)
+		{
+			// TODO: generate source and target config files
+		}
+
+		public void CleanupEngine(string engineId)
+		{
+			string engineDir = Path.Combine(_rootDir, engineId);
+			if (!Directory.Exists(engineDir))
+				return;
+			string hcSrcConfigFileName = Path.Combine(engineDir, "src-hc.xml");
+			if (File.Exists(hcSrcConfigFileName))
+				File.Delete(hcSrcConfigFileName);
+			string hcTrgConfigFileName = Path.Combine(engineDir, "trg-hc.xml");
+			if (File.Exists(hcTrgConfigFileName))
+				File.Delete(hcTrgConfigFileName);
+			if (!Directory.EnumerateFileSystemEntries(engineDir).Any())
+				Directory.Delete(engineDir);
+		}
+    }
 }

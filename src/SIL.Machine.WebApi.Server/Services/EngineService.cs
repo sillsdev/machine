@@ -12,13 +12,6 @@ using SIL.Threading;
 
 namespace SIL.Machine.WebApi.Server.Services
 {
-	public enum StartBuildStatus
-	{
-		Success,
-		EngineNotFound,
-		AlreadyBuilding
-	}
-
 	public class EngineService : DisposableBase
 	{
 		private readonly EngineOptions _options;
@@ -135,7 +128,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			}
 		}
 
-		public async Task<(Engine Engine, bool ProjectAdded)> AddProjectAsync(string sourceLanguageTag, string targetLanguageTag,
+		public async Task<Engine> AddProjectAsync(string sourceLanguageTag, string targetLanguageTag,
 			string projectId, bool isShared)
 		{
 			CheckDisposed();
@@ -158,22 +151,23 @@ namespace SIL.Machine.WebApi.Server.Services
 						await _engineRepo.InsertAsync(engine);
 						EngineRunner runner = CreateRunner(engine.Id);
 						await runner.InitNewAsync();
+						await runner.StartBuildAsync(engine);
 					}
 					else
 					{
 						// found an existing shared engine
 						if (engine.Projects.Contains(projectId))
-							return (engine, false);
+							return null;
 						engine = await UpdateEngineAsync(engine, e => e.Projects.Add(projectId));
 					}
 				}
 				catch (KeyAlreadyExistsException)
 				{
 					// a project with the same id already exists
-					return (engine, false);
+					return null;
 				}
 
-				return (engine, true);
+				return engine;
 			}
 		}
 
@@ -217,7 +211,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			return engine;
 		}
 
-		public async Task<(Build Build, StartBuildStatus Status)> StartBuildAsync(EngineLocatorType locatorType, string locator)
+		public async Task<Build> StartBuildAsync(EngineLocatorType locatorType, string locator)
 		{
 			CheckDisposed();
 
@@ -225,12 +219,9 @@ namespace SIL.Machine.WebApi.Server.Services
 			{
 				Engine engine = await _engineRepo.GetByLocatorAsync(locatorType, locator);
 				if (engine == null)
-					return (null, StartBuildStatus.EngineNotFound);
+					return null;
 				EngineRunner runner = await GetOrCreateRunnerAsync(upgradeKey, engine.Id);
-				(Build Build, bool AlreadyBuilding) result = await runner.StartBuildAsync(engine);
-				if (result.AlreadyBuilding)
-					return (result.Build, StartBuildStatus.AlreadyBuilding);
-				return (result.Build, StartBuildStatus.Success);
+				return await runner.StartBuildAsync(engine);
 			}
 		}
 
