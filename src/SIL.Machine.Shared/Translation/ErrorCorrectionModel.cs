@@ -167,7 +167,7 @@ namespace SIL.Machine.Translation
 			return alignmentColsToCopy.Count;
 		}
 
-		private void ResizeAlignment(TranslationInfo correction, int phraseIndex, IList<int> colsToCopy)
+		private void ResizeAlignment(TranslationInfo correction, int phraseIndex, List<int> colsToCopy)
 		{
 			WordAlignmentMatrix curAlignment = correction.Phrases[phraseIndex].Alignment;
 			if (colsToCopy.Count == curAlignment.ColumnCount)
