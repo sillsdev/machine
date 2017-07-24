@@ -37,7 +37,10 @@ namespace SIL.Machine.WebApi.Server.Services
 				var ops = (BsonArray) _doc["ops"];
 				var sb = new StringBuilder();
 				foreach (BsonDocument op in ops.Cast<BsonDocument>())
-					sb.Append(op["insert"]);
+				{
+					if (op.TryGetValue("insert", out BsonValue value))
+						sb.Append(value);
+				}
 
 				string[] segments = sb.ToString().Split('\n');
 				for (int i = 0; i < segments.Length; i++)
