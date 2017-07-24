@@ -198,7 +198,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			T internalEntity = entity.Clone();
 			Entities.Add(entity.Id, internalEntity);
 
-			OnEntityChanged(EntityChangeType.Insert, internalEntity, changeListeners);
+			OnEntityChanged(EntityChangeType.Insert, null, internalEntity, changeListeners);
 
 			return internalEntity;
 		}
@@ -211,15 +211,16 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 				CheckForConcurrencyConflict(entity);
 
 			entity.Revision++;
-			T internalEntity = entity.Clone();
-			Entities[entity.Id] = internalEntity;
+			T newEntity = entity.Clone();
+			T oldEntity = Entities[entity.Id];
+			Entities[entity.Id] = newEntity;
 
 			if (_changeListeners.TryGetValue(entity.Id, out Action<EntityChange<T>> changeListener))
 				changeListeners.Add(changeListener);
 
-			OnEntityChanged(EntityChangeType.Update, internalEntity, changeListeners);
+			OnEntityChanged(EntityChangeType.Update, oldEntity, newEntity, changeListeners);
 
-			return internalEntity;
+			return newEntity;
 		}
 
 		private T DeleteEntity(T entity, IList<Action<EntityChange<T>>> changeListeners, bool checkConflict)
@@ -232,16 +233,16 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 
 		private T DeleteEntity(string id, IList<Action<EntityChange<T>>> changeListeners)
 		{
-			if (Entities.TryGetValue(id, out T internalEntity))
+			if (Entities.TryGetValue(id, out T oldEntity))
 			{
 				Entities.Remove(id);
 
 				if (_changeListeners.TryGetValue(id, out Action<EntityChange<T>> changeListener))
 					changeListeners.Add(changeListener);
 
-				OnEntityChanged(EntityChangeType.Delete, internalEntity, changeListeners);
+				OnEntityChanged(EntityChangeType.Delete, oldEntity, null, changeListeners);
 			}
-			return internalEntity;
+			return oldEntity;
 		}
 
 		private void CheckForConcurrencyConflict(T entity)
@@ -274,7 +275,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		{
 		}
 
-		protected virtual void OnEntityChanged(EntityChangeType type, T internalEntity,
+		protected virtual void OnEntityChanged(EntityChangeType type, T oldEntity, T newEntity,
 			IList<Action<EntityChange<T>>> changeListeners)
 		{
 		}

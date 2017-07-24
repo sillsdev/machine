@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using SIL.Extensions;
 using SIL.Machine.WebApi.Server.Models;
 using SIL.Threading;
@@ -61,24 +62,28 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		public void PopulateIndex(IEnumerable<TEntity> entities)
 		{
 			foreach (TEntity entity in entities)
-				OnEntityUpdated(entity, null);
+				OnEntityUpdated(null, entity, null);
 		}
 
-		public void OnEntityUpdated(TEntity entity, IList<Action<EntityChange<TEntity>>> changeListeners)
+		public void OnEntityUpdated(TEntity oldEntity, TEntity newEntity, IList<Action<EntityChange<TEntity>>> changeListeners)
 		{
-			if (_filter != null && !_filter(entity))
+			if (_filter != null && !_filter(newEntity))
 				return;
 
-			foreach (TKey key in _keySelector(entity))
+			var keysToRemove = new HashSet<TKey>(oldEntity == null ? Enumerable.Empty<TKey>() : _keySelector(oldEntity));
+			foreach (TKey key in _keySelector(newEntity))
 			{
-				_index[key] = entity;
-
+				_index[key] = newEntity;
+				keysToRemove.Remove(key);
 				if (changeListeners != null)
 				{
 					if (_changeListeners.TryGetValue(key, out Action<EntityChange<TEntity>> changeListener))
 						changeListeners.Add(changeListener);
 				}
 			}
+
+			foreach (TKey key in keysToRemove)
+				_index.Remove(key);
 		}
 
 		public void OnEntityDeleted(TEntity entity, IList<Action<EntityChange<TEntity>>> changeListeners)

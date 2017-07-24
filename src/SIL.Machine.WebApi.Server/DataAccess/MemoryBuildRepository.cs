@@ -38,17 +38,17 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			_engineIdIndex.CheckKeyConflict(build);
 		}
 
-		protected override void OnEntityChanged(EntityChangeType type, Build internalBuild,
+		protected override void OnEntityChanged(EntityChangeType type, Build oldBuild, Build newBulid,
 			IList<Action<EntityChange<Build>>> changeListeners)
 		{
 			switch (type)
 			{
 				case EntityChangeType.Insert:
 				case EntityChangeType.Update:
-					_engineIdIndex.OnEntityUpdated(internalBuild, changeListeners);
+					_engineIdIndex.OnEntityUpdated(oldBuild, newBulid, changeListeners);
 					break;
 				case EntityChangeType.Delete:
-					_engineIdIndex.OnEntityDeleted(internalBuild, changeListeners);
+					_engineIdIndex.OnEntityDeleted(oldBuild, changeListeners);
 					break;
 			}
 			

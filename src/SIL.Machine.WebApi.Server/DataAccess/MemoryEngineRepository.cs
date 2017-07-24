@@ -49,19 +49,19 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			_projectIndex.CheckKeyConflict(engine);
 		}
 
-		protected override void OnEntityChanged(EntityChangeType type, Engine internalEngine,
+		protected override void OnEntityChanged(EntityChangeType type, Engine oldEngine, Engine newEngine,
 			IList<Action<EntityChange<Engine>>> changeListeners)
 		{
 			switch (type)
 			{
 				case EntityChangeType.Insert:
 				case EntityChangeType.Update:
-					_langTagIndex.OnEntityUpdated(internalEngine, changeListeners);
-					_projectIndex.OnEntityUpdated(internalEngine, changeListeners);
+					_langTagIndex.OnEntityUpdated(oldEngine, newEngine, changeListeners);
+					_projectIndex.OnEntityUpdated(oldEngine, newEngine, changeListeners);
 					break;
 				case EntityChangeType.Delete:
-					_langTagIndex.OnEntityDeleted(internalEngine, changeListeners);
-					_projectIndex.OnEntityDeleted(internalEngine, changeListeners);
+					_langTagIndex.OnEntityDeleted(oldEngine, changeListeners);
+					_projectIndex.OnEntityDeleted(oldEngine, changeListeners);
 					break;
 			}
 		}
