@@ -1,0 +1,49 @@
+{
+  // The folder to output JavaScript (.js) files.
+  "output": "Bridge/output",
+
+  // Enable the Bridge Console.
+  // Default is false.
+  "console": {
+    "enabled": false
+  },
+
+  // Enable browser debugging of C# files.
+  // Default is false.
+  "sourceMap": {
+    "enabled": true
+  },
+
+  // Set to true to disable Reflection metadata generation.
+  // Default is false.
+  "reflection": {
+    "disabled": false
+  },
+
+  // Generate TypeScript Definition (.d.ts) files.
+  // Default is false.
+  "generateTypeScript": false,
+
+  // Delete everything from the output folder
+  // Default is false
+  "cleanOutputFolderBeforeBuild": false,
+
+  // Set to false to disable Report generation.
+  // Default is false.
+  "report": {
+    "enabled": false
+  },
+
+  "html": {
+    "disabled": true
+  },
+
+  "fileNameCasing": "Lowercase",
+
+  "outputFormatting": "Formatted",
+
+  "fileName": "sil.machine.tests.js"
+
+  // More config options available at
+  // https://github.com/bridgedotnet/Bridge/wiki/global-configuration
+}

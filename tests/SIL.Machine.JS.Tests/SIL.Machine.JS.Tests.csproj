@@ -41,7 +41,7 @@
     <Compile Include="WebApi\Client\MockHttpClient.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Bridge\bridge.json" />
+    <None Include="bridge.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

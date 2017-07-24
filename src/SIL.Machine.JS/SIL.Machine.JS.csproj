@@ -42,14 +42,8 @@
     <Compile Include="WebApi\Client\AjaxHttpClient.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Bridge\bridge.json" />
+    <None Include="bridge.json" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Bridge\output\bridge.js" />
-    <Content Include="Bridge\output\newtonsoft.json.js" />
-    <Content Include="Bridge\output\sil.machine.js" />
-    <Content Include="Bridge\output\sil.machine.meta.js" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Bridge, Version=16.0.0.0, Culture=neutral, processorArchitecture=MSIL">
