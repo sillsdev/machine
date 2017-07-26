@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Autofac.Features.OwnedInstances;
 using Microsoft.Extensions.Options;
 using SIL.Machine.Translation;
 using SIL.Machine.WebApi.Server.DataAccess;
@@ -15,25 +16,21 @@ namespace SIL.Machine.WebApi.Server.Services
 	public class EngineService : DisposableBase
 	{
 		private readonly EngineOptions _options;
-		private readonly Dictionary<string, EngineRunner> _runners;
+		private readonly Dictionary<string, Owned<EngineRunner>> _runners;
 		private readonly AsyncReaderWriterLock _lock;
 		private readonly IEngineRepository _engineRepo;
 		private readonly IBuildRepository _buildRepo;
-		private readonly ISmtModelFactory _smtModelFactory;
-		private readonly IRuleEngineFactory _ruleEngineFactory;
-		private readonly ITextCorpusFactory _textCorpusFactory;
+		private readonly Func<string, Owned<EngineRunner>> _engineRunnerFactory;
 		private readonly AsyncTimer _commitTimer;
 
 		public EngineService(IOptions<EngineOptions> options, IEngineRepository engineRepo, IBuildRepository buildRepo,
-			ISmtModelFactory smtModelFactory, IRuleEngineFactory ruleEngineFactory, ITextCorpusFactory textCorpusFactory)
+			Func<string, Owned<EngineRunner>> engineRunnerFactory)
 		{
 			_options = options.Value;
 			_engineRepo = engineRepo;
 			_buildRepo = buildRepo;
-			_smtModelFactory = smtModelFactory;
-			_ruleEngineFactory = ruleEngineFactory;
-			_textCorpusFactory = textCorpusFactory;
-			_runners = new Dictionary<string, EngineRunner>();
+			_engineRunnerFactory = engineRunnerFactory;
+			_runners = new Dictionary<string, Owned<EngineRunner>>();
 			_lock = new AsyncReaderWriterLock();
 			_commitTimer = new AsyncTimer(EngineCommitAsync);
 		}
@@ -61,8 +58,8 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			using (await _lock.ReaderLockAsync())
 			{
-				foreach (EngineRunner runner in _runners.Values)
-					await runner.CommitAsync();
+				foreach (Owned<EngineRunner> runner in _runners.Values)
+					await runner.Value.CommitAsync();
 			}
 		}
 
@@ -151,14 +148,13 @@ namespace SIL.Machine.WebApi.Server.Services
 						await _engineRepo.InsertAsync(engine);
 						EngineRunner runner = CreateRunner(engine.Id);
 						await runner.InitNewAsync();
-						await runner.StartBuildAsync(engine);
 					}
 					else
 					{
 						// found an existing shared engine
 						if (engine.Projects.Contains(projectId))
 							return null;
-						engine = await UpdateEngineAsync(engine, e => e.Projects.Add(projectId));
+						engine = await _engineRepo.ConcurrentUpdateAsync(engine, e => e.Projects.Add(projectId));
 					}
 				}
 				catch (KeyAlreadyExistsException)
@@ -185,30 +181,21 @@ namespace SIL.Machine.WebApi.Server.Services
 				{
 					// the engine will have no associated projects, so remove it
 					await _engineRepo.DeleteAsync(engine);
-					if (_runners.TryGetValue(engine.Id, out EngineRunner runner))
+					if (_runners.TryGetValue(engine.Id, out Owned<EngineRunner> runner))
 					{
 						_runners.Remove(engine.Id);
-						await runner.DeleteDataAsync();
+						await runner.Value.DeleteDataAsync();
 						runner.Dispose();
 					}
 				}
 				else
 				{
 					// engine will still have associated projects, so just update it
-					await UpdateEngineAsync(engine, e => e.Projects.Remove(projectId));
+					await _engineRepo.ConcurrentUpdateAsync(engine, e => e.Projects.Remove(projectId));
+					await GetOrCreateRunner(engine.Id).StartBuildAsync(engine);
 				}
 				return true;
 			}
-		}
-
-		private async Task<Engine> UpdateEngineAsync(Engine engine, Action<Engine> changeFunc)
-		{
-			engine = await _engineRepo.ConcurrentUpdateAsync(engine, changeFunc);
-			// TODO: restart the build if it is already running
-			if (!_runners.TryGetValue(engine.Id, out EngineRunner runner))
-				runner = CreateRunner(engine.Id);
-			await runner.StartBuildAsync(engine);
-			return engine;
 		}
 
 		public async Task<Build> StartBuildAsync(EngineLocatorType locatorType, string locator)
@@ -234,8 +221,8 @@ namespace SIL.Machine.WebApi.Server.Services
 				Build build = await _buildRepo.GetByLocatorAsync(locatorType, locator);
 				if (build == null)
 					return false;
-				if (_runners.TryGetValue(build.EngineId, out EngineRunner runner))
-					await runner.CancelBuildAsync();
+				if (_runners.TryGetValue(build.EngineId, out Owned<EngineRunner> runner))
+					await runner.Value.CancelBuildAsync();
 				return true;
 			}
 		}
@@ -243,31 +230,34 @@ namespace SIL.Machine.WebApi.Server.Services
 		private async Task<EngineRunner> GetOrCreateRunnerAsync(AsyncReaderWriterLock.UpgradeableReaderKey upgradeKey,
 			string engineId)
 		{
-			if (!_runners.TryGetValue(engineId, out EngineRunner runner))
-			{
-				using (await upgradeKey.UpgradeAsync())
-					runner = CreateRunner(engineId);
-			}
-			return runner;
+			if (_runners.TryGetValue(engineId, out Owned<EngineRunner> runner))
+				return runner.Value;
+
+			using (await upgradeKey.UpgradeAsync())
+				return CreateRunner(engineId);
+		}
+
+		private EngineRunner GetOrCreateRunner(string engineId)
+		{
+			if (_runners.TryGetValue(engineId, out Owned<EngineRunner> runner))
+				return runner.Value;
+
+			return CreateRunner(engineId);
 		}
 
 		private EngineRunner CreateRunner(string engineId)
 		{
-			var runner = new EngineRunner(_buildRepo, _smtModelFactory, _ruleEngineFactory, _textCorpusFactory,
-				_options.InactiveEngineTimeout, engineId);
+			Owned<EngineRunner> runner = _engineRunnerFactory(engineId);
 			_runners[engineId] = runner;
-			return runner;
+			return runner.Value;
 		}
 
 		protected override void DisposeManagedResources()
 		{
 			_commitTimer.Dispose();
-			foreach (EngineRunner runner in _runners.Values)
+			foreach (Owned<EngineRunner> runner in _runners.Values)
 				runner.Dispose();
 			_runners.Clear();
 		}
 	}
 }
-
-
-

@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Autofac.Features.OwnedInstances;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using SIL.Machine.Corpora;
@@ -230,10 +232,23 @@ namespace SIL.Machine.WebApi.Server.Services
 
 		private class TestEnvironment : DisposableBase
 		{
+			private readonly IOptions<EngineOptions> _engineOptions;
+			private readonly ISmtModelFactory _smtModelFactory;
+			private readonly IRuleEngineFactory _ruleEngineFactory;
+			private readonly ITextCorpusFactory _textCorpusFactory;
+
 			public TestEnvironment()
 			{
 				EngineRepository = new MemoryEngineRepository();
 				BuildRepository = new MemoryBuildRepository();
+				_engineOptions = new OptionsWrapper<EngineOptions>(new EngineOptions
+					{
+						EngineCommitFrequency = TimeSpan.FromMinutes(5),
+						InactiveEngineTimeout = TimeSpan.FromMinutes(10)
+					});
+				_smtModelFactory = CreateSmtModelFactory();
+				_ruleEngineFactory = CreateRuleEngineFactory();
+				_textCorpusFactory = CreateTextCorpusFactory();
 			}
 
 			public IEngineRepository EngineRepository { get; }
@@ -242,8 +257,8 @@ namespace SIL.Machine.WebApi.Server.Services
 
 			public void CreateEngineService()
 			{
-				Service = new EngineService(CreateOptions(), EngineRepository, BuildRepository, CreateSmtModelFactory(),
-					CreateRuleEngineFactory(), CreateTextCorpusFactory());
+				Service = new EngineService(_engineOptions, EngineRepository, BuildRepository,
+					CreateEngineRunner);
 				Service.Init();
 			}
 
@@ -253,15 +268,11 @@ namespace SIL.Machine.WebApi.Server.Services
 				Service = null;
 			}
 
-			private IOptions<EngineOptions> CreateOptions()
+			private Owned<EngineRunner> CreateEngineRunner(string engineId)
 			{
-				var options = Substitute.For<IOptions<EngineOptions>>();
-				options.Value.Returns(new EngineOptions
-				{
-					EngineCommitFrequency = TimeSpan.FromMinutes(5),
-					InactiveEngineTimeout = TimeSpan.FromMinutes(10)
-				});
-				return options;
+				var runner = new EngineRunner(_engineOptions, BuildRepository, _smtModelFactory, _ruleEngineFactory,
+					_textCorpusFactory, Substitute.For<ILogger<EngineRunner>>(), engineId);
+				return new Owned<EngineRunner>(runner, runner);
 			}
 
 			private ISmtModelFactory CreateSmtModelFactory()
@@ -271,7 +282,15 @@ namespace SIL.Machine.WebApi.Server.Services
 
 				var smtEngine = Substitute.For<IInteractiveSmtEngine>();
 				var translationResult = new TranslationResult("esto es una prueba .".Split(), "this is a test .".Split(),
-					new[] { 1.0, 1.0, 1.0, 1.0, 1.0 }, new[] { TranslationSources.Smt, TranslationSources.Smt, TranslationSources.Smt, TranslationSources.Smt, TranslationSources.Smt },
+					new[] { 1.0, 1.0, 1.0, 1.0, 1.0 },
+					new[]
+					{
+						TranslationSources.Smt,
+						TranslationSources.Smt,
+						TranslationSources.Smt,
+						TranslationSources.Smt,
+						TranslationSources.Smt
+					},
 					new WordAlignmentMatrix(5, 5)
 					{
 						[0, 0] = AlignmentType.Aligned,
@@ -283,16 +302,23 @@ namespace SIL.Machine.WebApi.Server.Services
 				smtEngine.Translate(Arg.Any<IReadOnlyList<string>>()).Returns(translationResult);
 				smtEngine.GetWordGraph(Arg.Any<IReadOnlyList<string>>()).Returns(new WordGraph(new[]
 				{
-					new WordGraphArc(0, 1, 1.0, "this is".Split(), new WordAlignmentMatrix(2, 2) {[0, 0] = AlignmentType.Aligned, [1, 1] = AlignmentType.Aligned}, new[] {1.0, 1.0}, 0, 1, false),
-					new WordGraphArc(1, 2, 1.0, "a test".Split(), new WordAlignmentMatrix(2, 2) {[0, 0] = AlignmentType.Aligned, [1, 1] = AlignmentType.Aligned}, new[] {1.0, 1.0}, 2, 3, false),
-					new WordGraphArc(2, 3, 1.0, new[] {"."}, new WordAlignmentMatrix(1, 1) {[0, 0] = AlignmentType.Aligned}, new[] {1.0}, 4, 4, false)
-				}, new[] { 3 }));
-				smtEngine.GetBestPhraseAlignment(Arg.Any<IReadOnlyList<string>>(), Arg.Any<IReadOnlyList<string>>()).Returns(translationResult);
+					new WordGraphArc(0, 1, 1.0, "this is".Split(),
+						new WordAlignmentMatrix(2, 2) {[0, 0] = AlignmentType.Aligned, [1, 1] = AlignmentType.Aligned},
+						new[] {1.0, 1.0}, 0, 1, false),
+					new WordGraphArc(1, 2, 1.0, "a test".Split(),
+						new WordAlignmentMatrix(2, 2) {[0, 0] = AlignmentType.Aligned, [1, 1] = AlignmentType.Aligned},
+						new[] {1.0, 1.0}, 2, 3, false),
+					new WordGraphArc(2, 3, 1.0, new[] {"."}, new WordAlignmentMatrix(1, 1) {[0, 0] = AlignmentType.Aligned},
+						new[] {1.0}, 4, 4, false)
+				}, new[] {3}));
+				smtEngine.GetBestPhraseAlignment(Arg.Any<IReadOnlyList<string>>(), Arg.Any<IReadOnlyList<string>>())
+					.Returns(translationResult);
 				smtModel.CreateInteractiveEngine().Returns(smtEngine);
 
 				var batchTrainer = Substitute.For<ISmtBatchTrainer>();
-				smtModel.CreateBatchTrainer(Arg.Any<Func<string, string>>(), Arg.Any<ITextCorpus>(), Arg.Any<Func<string, string>>(), Arg.Any<ITextCorpus>(),
-					Arg.Any<ITextAlignmentCorpus>()).Returns(batchTrainer);
+				smtModel.CreateBatchTrainer(Arg.Any<Func<string, string>>(), Arg.Any<ITextCorpus>(),
+					Arg.Any<Func<string, string>>(), Arg.Any<ITextCorpus>(), Arg.Any<ITextAlignmentCorpus>())
+					.Returns(batchTrainer);
 
 				factory.Create(Arg.Any<string>()).Returns(smtModel);
 				return factory;
@@ -302,8 +328,17 @@ namespace SIL.Machine.WebApi.Server.Services
 			{
 				var factory = Substitute.For<IRuleEngineFactory>();
 				var engine = Substitute.For<ITranslationEngine>();
-				engine.Translate(Arg.Any<IReadOnlyList<string>>()).Returns(new TranslationResult("esto es una prueba .".Split(), "this is a test .".Split(),
-					new[] { 1.0, 1.0, 1.0, 1.0, 1.0 }, new[] { TranslationSources.Transfer, TranslationSources.Transfer, TranslationSources.Transfer, TranslationSources.Transfer, TranslationSources.Transfer },
+				engine.Translate(Arg.Any<IReadOnlyList<string>>()).Returns(new TranslationResult("esto es una prueba .".Split(),
+					"this is a test .".Split(),
+					new[] {1.0, 1.0, 1.0, 1.0, 1.0},
+					new[]
+					{
+						TranslationSources.Transfer,
+						TranslationSources.Transfer,
+						TranslationSources.Transfer,
+						TranslationSources.Transfer,
+						TranslationSources.Transfer
+					},
 					new WordAlignmentMatrix(5, 5)
 					{
 						[0, 0] = AlignmentType.Aligned,

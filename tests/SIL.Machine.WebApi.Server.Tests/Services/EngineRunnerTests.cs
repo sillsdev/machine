@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
 using SIL.Machine.Translation;
 using SIL.Machine.WebApi.Server.DataAccess;
 using SIL.Machine.WebApi.Server.Models;
+using SIL.Machine.WebApi.Server.Options;
 using SIL.ObjectModel;
 using Xunit;
 
@@ -111,8 +114,10 @@ namespace SIL.Machine.WebApi.Server.Services
 					IsShared = false,
 					Projects = {"project1"}
 				};
-				EngineRunner = new EngineRunner(BuildRepository, CreateSmtModelFactory(), CreateRuleEngineFactory(),
-					CreateTextCorpusFactory(), inactiveTimeout, Engine.Id);
+				var options = new EngineOptions {InactiveEngineTimeout = inactiveTimeout};
+				EngineRunner = new EngineRunner(new OptionsWrapper<EngineOptions>(options), BuildRepository,
+					CreateSmtModelFactory(), CreateRuleEngineFactory(), CreateTextCorpusFactory(),
+					Substitute.For<ILogger<EngineRunner>>(), Engine.Id);
 			}
 
 			private ISmtModelFactory CreateSmtModelFactory()
@@ -121,7 +126,15 @@ namespace SIL.Machine.WebApi.Server.Services
 
 				var smtEngine = Substitute.For<IInteractiveSmtEngine>();
 				var translationResult = new TranslationResult("esto es una prueba .".Split(), "this is a test .".Split(),
-					new[] { 1.0, 1.0, 1.0, 1.0, 1.0 }, new[] { TranslationSources.Smt, TranslationSources.Smt, TranslationSources.Smt, TranslationSources.Smt, TranslationSources.Smt },
+					new[] {1.0, 1.0, 1.0, 1.0, 1.0},
+					new[]
+					{
+						TranslationSources.Smt,
+						TranslationSources.Smt,
+						TranslationSources.Smt,
+						TranslationSources.Smt,
+						TranslationSources.Smt
+					},
 					new WordAlignmentMatrix(5, 5)
 					{
 						[0, 0] = AlignmentType.Aligned,
@@ -132,16 +145,24 @@ namespace SIL.Machine.WebApi.Server.Services
 					});
 				smtEngine.Translate(Arg.Any<IReadOnlyList<string>>()).Returns(translationResult);
 				smtEngine.GetWordGraph(Arg.Any<IReadOnlyList<string>>()).Returns(new WordGraph(new[]
-				{
-					new WordGraphArc(0, 1, 1.0, "this is".Split(), new WordAlignmentMatrix(2, 2) {[0, 0] = AlignmentType.Aligned, [1, 1] = AlignmentType.Aligned}, new[] {1.0, 1.0}, 0, 1, false),
-					new WordGraphArc(1, 2, 1.0, "a test".Split(), new WordAlignmentMatrix(2, 2) {[0, 0] = AlignmentType.Aligned, [1, 1] = AlignmentType.Aligned}, new[] {1.0, 1.0}, 2, 3, false),
-					new WordGraphArc(2, 3, 1.0, new[] {"."}, new WordAlignmentMatrix(1, 1) {[0, 0] = AlignmentType.Aligned}, new[] {1.0}, 4, 4, false)
-				}, new[] { 3 }));
-				smtEngine.GetBestPhraseAlignment(Arg.Any<IReadOnlyList<string>>(), Arg.Any<IReadOnlyList<string>>()).Returns(translationResult);
+					{
+						new WordGraphArc(0, 1, 1.0, "this is".Split(),
+							new WordAlignmentMatrix(2, 2) {[0, 0] = AlignmentType.Aligned, [1, 1] = AlignmentType.Aligned},
+							new[] {1.0, 1.0}, 0, 1, false),
+						new WordGraphArc(1, 2, 1.0, "a test".Split(),
+							new WordAlignmentMatrix(2, 2) {[0, 0] = AlignmentType.Aligned, [1, 1] = AlignmentType.Aligned},
+							new[] {1.0, 1.0}, 2, 3, false),
+						new WordGraphArc(2, 3, 1.0, new[] {"."},
+							new WordAlignmentMatrix(1, 1) {[0, 0] = AlignmentType.Aligned},
+							new[] {1.0}, 4, 4, false)
+					}, new[] {3}));
+				smtEngine.GetBestPhraseAlignment(Arg.Any<IReadOnlyList<string>>(), Arg.Any<IReadOnlyList<string>>())
+					.Returns(translationResult);
 				SmtModel.CreateInteractiveEngine().Returns(smtEngine);
 
-				SmtModel.CreateBatchTrainer(Arg.Any<Func<string, string>>(), Arg.Any<ITextCorpus>(), Arg.Any<Func<string, string>>(), Arg.Any<ITextCorpus>(),
-					Arg.Any<ITextAlignmentCorpus>()).Returns(BatchTrainer);
+				SmtModel.CreateBatchTrainer(Arg.Any<Func<string, string>>(), Arg.Any<ITextCorpus>(),
+					Arg.Any<Func<string, string>>(), Arg.Any<ITextCorpus>(), Arg.Any<ITextAlignmentCorpus>())
+					.Returns(BatchTrainer);
 
 				factory.Create(Arg.Any<string>()).Returns(SmtModel);
 				return factory;
@@ -151,8 +172,17 @@ namespace SIL.Machine.WebApi.Server.Services
 			{
 				var factory = Substitute.For<IRuleEngineFactory>();
 				var engine = Substitute.For<ITranslationEngine>();
-				engine.Translate(Arg.Any<IReadOnlyList<string>>()).Returns(new TranslationResult("esto es una prueba .".Split(), "this is a test .".Split(),
-					new[] { 1.0, 1.0, 1.0, 1.0, 1.0 }, new[] { TranslationSources.Transfer, TranslationSources.Transfer, TranslationSources.Transfer, TranslationSources.Transfer, TranslationSources.Transfer },
+				engine.Translate(Arg.Any<IReadOnlyList<string>>()).Returns(new TranslationResult("esto es una prueba .".Split(),
+					"this is a test .".Split(),
+					new[] {1.0, 1.0, 1.0, 1.0, 1.0},
+					new[]
+					{
+						TranslationSources.Transfer,
+						TranslationSources.Transfer,
+						TranslationSources.Transfer,
+						TranslationSources.Transfer,
+						TranslationSources.Transfer
+					},
 					new WordAlignmentMatrix(5, 5)
 					{
 						[0, 0] = AlignmentType.Aligned,

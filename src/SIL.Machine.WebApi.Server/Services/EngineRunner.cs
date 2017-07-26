@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
 using SIL.Machine.Translation;
 using SIL.Machine.WebApi.Server.DataAccess;
 using SIL.Machine.WebApi.Server.Models;
+using SIL.Machine.WebApi.Server.Options;
 using SIL.ObjectModel;
 using SIL.Threading;
 
@@ -20,6 +24,7 @@ namespace SIL.Machine.WebApi.Server.Services
 		private readonly IRuleEngineFactory _ruleEngineFactory;
 		private readonly ITextCorpusFactory _textCorpusFactory;
 		private readonly TimeSpan _inactiveTimeout;
+		private readonly ILogger<EngineRunner> _logger;
 		private readonly string _engineId;
 		private readonly List<(IReadOnlyList<string> Source, IReadOnlyList<string> Target)> _trainedSegments;
 		private readonly AsyncLock _lock;
@@ -36,14 +41,16 @@ namespace SIL.Machine.WebApi.Server.Services
 		private bool _isUpdated;
 		private DateTime _lastUsedTime;
 
-		public EngineRunner(IBuildRepository buildRepo, ISmtModelFactory smtModelFactory, IRuleEngineFactory ruleEngineFactory,
-			ITextCorpusFactory textCorpusFactory, TimeSpan inactiveTimeout, string engineId)
+		public EngineRunner(IOptions<EngineOptions> options, IBuildRepository buildRepo, ISmtModelFactory smtModelFactory,
+			IRuleEngineFactory ruleEngineFactory, ITextCorpusFactory textCorpusFactory, ILogger<EngineRunner> logger,
+			string engineId)
 		{
 			_buildRepo = buildRepo;
 			_smtModelFactory = smtModelFactory;
 			_ruleEngineFactory = ruleEngineFactory;
 			_textCorpusFactory = textCorpusFactory;
-			_inactiveTimeout = inactiveTimeout;
+			_inactiveTimeout = options.Value.InactiveEngineTimeout;
+			_logger = logger;
 			_engineId = engineId;
 			_trainedSegments = new List<(IReadOnlyList<string> Source, IReadOnlyList<string> Target)>();
 			_lock = new AsyncLock();
@@ -277,17 +284,30 @@ namespace SIL.Machine.WebApi.Server.Services
 
 		private async Task BuildAsync(Build build, CancellationToken token)
 		{
-			var progress = new BuildProgress(_buildRepo, build);
-			_batchTrainer.Train(progress, token.ThrowIfCancellationRequested);
-			using (await _lock.LockAsync(token))
+			try
 			{
-				_batchTrainer.Save();
-				foreach ((IReadOnlyList<string> Source, IReadOnlyList<string> Target) trainedSegment in _trainedSegments)
-					_hybridEngine.TrainSegment(trainedSegment.Source, trainedSegment.Target);
-				_trainedSegments.Clear();
-				_batchTrainer.Dispose();
-				_batchTrainer = null;
-				await _buildRepo.DeleteAsync(build);
+				_logger.LogInformation("Build starting ({0})", _engineId);
+				var stopwatch = new Stopwatch();
+				stopwatch.Start();
+				var progress = new BuildProgress(_buildRepo, build);
+				_batchTrainer.Train(progress, token.ThrowIfCancellationRequested);
+				using (await _lock.LockAsync(token))
+				{
+					_batchTrainer.Save();
+					foreach ((IReadOnlyList<string> Source, IReadOnlyList<string> Target) trainedSegment in _trainedSegments)
+						_hybridEngine.TrainSegment(trainedSegment.Source, trainedSegment.Target);
+					_trainedSegments.Clear();
+					_batchTrainer.Dispose();
+					_batchTrainer = null;
+					await _buildRepo.DeleteAsync(build);
+				}
+				stopwatch.Stop();
+				_logger.LogInformation("Build finished in {0}ms ({1})", stopwatch.Elapsed.TotalMilliseconds, _engineId);
+			}
+			catch (Exception e)
+			{
+				_logger.LogError(0, e, "Error occurred while building ({0})", _engineId);
+				throw;
 			}
 		}
 
