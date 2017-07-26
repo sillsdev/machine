@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac.Features.OwnedInstances;
-using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
+using NUnit.Framework;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
 using SIL.Machine.Translation;
@@ -14,13 +14,13 @@ using SIL.Machine.WebApi.Server.DataAccess;
 using SIL.Machine.WebApi.Server.Models;
 using SIL.Machine.WebApi.Server.Options;
 using SIL.ObjectModel;
-using Xunit;
 
 namespace SIL.Machine.WebApi.Server.Services
 {
+	[TestFixture]
 	public class EngineServiceTests
 	{
-		[Fact]
+		[Test]
 		public async Task TranslateAsync_EngineDoesNotExist_ReturnsNull()
 		{
 			using (var env = new TestEnvironment())
@@ -28,11 +28,11 @@ namespace SIL.Machine.WebApi.Server.Services
 				env.CreateEngineService();
 				TranslationResult result = await env.Service.TranslateAsync(EngineLocatorType.Id, "engine1",
 					"Esto es una prueba .".Split());
-				result.Should().BeNull();
+				Assert.That(result, Is.Null);
 			}
 		}
 
-		[Fact]
+		[Test]
 		public async Task TranslateAsync_EngineExists_ReturnsResult()
 		{
 			using (var env = new TestEnvironment())
@@ -41,11 +41,11 @@ namespace SIL.Machine.WebApi.Server.Services
 				env.CreateEngineService();
 				TranslationResult result = await env.Service.TranslateAsync(EngineLocatorType.Id, engineId,
 					"Esto es una prueba .".Split());
-				result.TargetSegment.Should().Equal("this is a test .".Split());
+				Assert.That(result.TargetSegment, Is.EqualTo("this is a test .".Split()));
 			}
 		}
 
-		[Fact]
+		[Test]
 		public async Task InteractiveTranslateAsync_EngineDoesNotExist_ReturnsNull()
 		{
 			using (var env = new TestEnvironment())
@@ -53,11 +53,11 @@ namespace SIL.Machine.WebApi.Server.Services
 				env.CreateEngineService();
 				InteractiveTranslationResult result = await env.Service.InteractiveTranslateAsync(EngineLocatorType.Id,
 					"engine1", "Esto es una prueba .".Split());
-				result.Should().BeNull();
+				Assert.That(result, Is.Null);
 			}
 		}
 
-		[Fact]
+		[Test]
 		public async Task InteractiveTranslateAsync_EngineExists_ReturnsResult()
 		{
 			using (var env = new TestEnvironment())
@@ -66,12 +66,12 @@ namespace SIL.Machine.WebApi.Server.Services
 				env.CreateEngineService();
 				InteractiveTranslationResult result = await env.Service.InteractiveTranslateAsync(EngineLocatorType.Id,
 					engineId, "Esto es una prueba .".Split());
-				result.RuleResult.TargetSegment.Should().Equal("this is a test .".Split());
-				result.SmtWordGraph.Arcs.SelectMany(a => a.Words).Should().Equal("this is a test .".Split());
+				Assert.That(result.RuleResult.TargetSegment, Is.EqualTo("this is a test .".Split()));
+				Assert.That(result.SmtWordGraph.Arcs.SelectMany(a => a.Words), Is.EqualTo("this is a test .".Split()));
 			}
 		}
 
-		[Fact]
+		[Test]
 		public async Task TrainSegmentAsync_EngineDoesNotExist_ReturnsFalse()
 		{
 			using (var env = new TestEnvironment())
@@ -79,12 +79,12 @@ namespace SIL.Machine.WebApi.Server.Services
 				env.CreateEngineService();
 				bool result = await env.Service.TrainSegmentAsync(EngineLocatorType.Id, "engine1",
 					"Esto es una prueba .".Split(), "This is a test .".Split());
-				result.Should().BeFalse();
+				Assert.That(result, Is.False);
 			}
 
 		}
 
-		[Fact]
+		[Test]
 		public async Task TrainSegmentAsync_EngineExists_ReturnsTrue()
 		{
 			using (var env = new TestEnvironment())
@@ -93,25 +93,25 @@ namespace SIL.Machine.WebApi.Server.Services
 				env.CreateEngineService();
 				bool result = await env.Service.TrainSegmentAsync(EngineLocatorType.Id, engineId,
 					"Esto es una prueba .".Split(), "This is a test .".Split());
-				result.Should().BeTrue();
+				Assert.That(result, Is.True);
 			}
 		}
 
-		[Fact]
+		[Test]
 		public async Task AddProjectAsync_EngineDoesNotExist_EngineCreated()
 		{
 			using (var env = new TestEnvironment())
 			{
 				env.CreateEngineService();
 				Engine engine = await env.Service.AddProjectAsync("es", "en", "project1", true);
-				engine.Should().NotBeNull();
+				Assert.That(engine, Is.Not.Null);
 
 				engine = await env.EngineRepository.GetAsync(engine.Id);
-				engine.Projects.Should().Contain("project1");
+				Assert.That(engine.Projects, Contains.Item("project1"));
 			}
 		}
 
-		[Fact]
+		[Test]
 		public async Task AddProjectAsync_SharedEngineExists_ProjectAdded()
 		{
 			using (var env = new TestEnvironment())
@@ -119,15 +119,15 @@ namespace SIL.Machine.WebApi.Server.Services
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
 				env.CreateEngineService();
 				Engine engine = await env.Service.AddProjectAsync("es", "en", "project2", true);
-				engine.Should().NotBeNull();
+				Assert.That(engine, Is.Not.Null);
 
 				engine = await env.EngineRepository.GetAsync(engine.Id);
-				engine.Id.Should().Be(engineId);
-				engine.Projects.Should().Contain("project2");
+				Assert.That(engine.Id, Is.EqualTo(engineId));
+				Assert.That(engine.Projects, Contains.Item("project2"));
 			}
 		}
 
-		[Fact]
+		[Test]
 		public async Task AddProjectAsync_ProjectEngineExists_EngineCreated()
 		{
 			using (var env = new TestEnvironment())
@@ -135,15 +135,15 @@ namespace SIL.Machine.WebApi.Server.Services
 				string engineId = (await env.CreateEngineAsync("es", "en", false)).Id;
 				env.CreateEngineService();
 				Engine engine = await env.Service.AddProjectAsync("es", "en", "project2", true);
-				engine.Should().NotBeNull();
+				Assert.That(engine, Is.Not.Null);
 
 				engine = await env.EngineRepository.GetAsync(engine.Id);
-				engine.Id.Should().NotBe(engineId);
-				engine.Projects.Should().Contain("project2");
+				Assert.That(engine.Id, Is.Not.EqualTo(engineId));
+				Assert.That(engine.Projects, Contains.Item("project2"));
 			}
 		}
 
-		[Fact]
+		[Test]
 		public async Task AddProjectAsync_SharedProjectExists_ReturnsNull()
 		{
 			using (var env = new TestEnvironment())
@@ -151,11 +151,11 @@ namespace SIL.Machine.WebApi.Server.Services
 				await env.CreateEngineAsync("es", "en", true);
 				env.CreateEngineService();
 				Engine engine = await env.Service.AddProjectAsync("es", "en", "project1", true);
-				engine.Should().BeNull();
+				Assert.That(engine, Is.Null);
 			}
 		}
 
-		[Fact]
+		[Test]
 		public async Task AddProjectAsync_NonsharedProjectExists_ReturnsNull()
 		{
 			using (var env = new TestEnvironment())
@@ -163,35 +163,37 @@ namespace SIL.Machine.WebApi.Server.Services
 				await env.CreateEngineAsync("es", "en", false);
 				env.CreateEngineService();
 				Engine engine = await env.Service.AddProjectAsync("es", "en", "project1", false);
-				engine.Should().BeNull();
+				Assert.That(engine, Is.Null);
 			}
 		}
 
-		[Fact]
+		[Test]
 		public async Task RemoveProjectAsync_NonsharedProjectExists_EngineRemoved()
 		{
 			using (var env = new TestEnvironment())
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", false)).Id;
 				env.CreateEngineService();
-				(await env.Service.RemoveProjectAsync("project1")).Should().BeTrue();
+				bool result = await env.Service.RemoveProjectAsync("project1");
+				Assert.That(result, Is.True);
 				Engine engine = await env.EngineRepository.GetAsync(engineId);
-				engine.Should().BeNull();
+				Assert.That(engine, Is.Null);
 			}
 		}
 
-		[Fact]
+		[Test]
 		public async Task RemoveProjectAsync_ProjectDoesNotExist_ReturnsFalse()
 		{
 			using (var env = new TestEnvironment())
 			{
 				await env.CreateEngineAsync("es", "en", false);
 				env.CreateEngineService();
-				(await env.Service.RemoveProjectAsync("project3")).Should().BeFalse();
+				bool result = await env.Service.RemoveProjectAsync("project3");
+				Assert.That(result, Is.False);
 			}
 		}
 
-		[Fact]
+		[Test]
 		public async Task StartBuildAsync_EngineExists_BuildStarted()
 		{
 			using (var env = new TestEnvironment())
@@ -199,22 +201,23 @@ namespace SIL.Machine.WebApi.Server.Services
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
 				env.CreateEngineService();
 				Build build = await env.Service.StartBuildAsync(EngineLocatorType.Id, engineId);
-				build.Should().NotBeNull();
+				Assert.That(build, Is.Not.Null);
 			}
 		}
 
-		[Fact]
+		[Test]
 		public async Task CancelBuildAsync_ProjectExistsNotBuilding_ReturnsTrue()
 		{
 			using (var env = new TestEnvironment())
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
 				env.CreateEngineService();
-				(await env.Service.CancelBuildAsync(BuildLocatorType.Engine, engineId)).Should().BeFalse();
+				bool result = await env.Service.CancelBuildAsync(BuildLocatorType.Engine, engineId);
+				Assert.That(result, Is.False);
 			}
 		}
 
-		[Fact]
+		[Test]
 		public async Task Constructor_UnfinishedBuild_BuildStarted()
 		{
 			using (var env = new TestEnvironment())
@@ -226,7 +229,7 @@ namespace SIL.Machine.WebApi.Server.Services
 				// ensures that the build is completed
 				env.DisposeEngineService();
 				build = await env.BuildRepository.GetAsync("build1");
-				build.Should().BeNull();
+				Assert.That(build, Is.Null);
 			}
 		}
 

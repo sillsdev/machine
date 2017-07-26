@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
+using NUnit.Framework;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
 using SIL.Machine.Translation;
@@ -13,13 +13,13 @@ using SIL.Machine.WebApi.Server.DataAccess;
 using SIL.Machine.WebApi.Server.Models;
 using SIL.Machine.WebApi.Server.Options;
 using SIL.ObjectModel;
-using Xunit;
 
 namespace SIL.Machine.WebApi.Server.Services
 {
+	[TestFixture]
 	public class EngineRunnerTests
 	{
-		[Fact]
+		[Test]
 		public async Task StartBuildAsync_BatchTrainerCalled()
 		{
 			using (var env = new TestEnvironment())
@@ -27,16 +27,16 @@ namespace SIL.Machine.WebApi.Server.Services
 				env.CreateEngine();
 				await env.EngineRunner.InitNewAsync();
 				Build build = await env.EngineRunner.StartBuildAsync(env.Engine);
-				build.Should().NotBeNull();
+				Assert.That(build, Is.Not.Null);
 				env.EngineRunner.WaitForBuildToComplete();
 				env.BatchTrainer.Received().Train(Arg.Any<IProgress<SmtTrainProgress>>(), Arg.Any<Action>());
 				env.BatchTrainer.Received().Save();
 				build = await env.BuildRepository.GetAsync(build.Id);
-				build.Should().BeNull();
+				Assert.That(build, Is.Null);
 			}
 		}
 
-		[Fact]
+		[Test]
 		public async Task CancelBuildAsync_BatchTrainerCalled()
 		{
 			using (var env = new TestEnvironment())
@@ -49,18 +49,18 @@ namespace SIL.Machine.WebApi.Server.Services
 							checkCanceled();
 					}));
 				Build build = await env.EngineRunner.StartBuildAsync(env.Engine);
-				build.Should().NotBeNull();
+				Assert.That(build, Is.Not.Null);
 				await Task.Delay(10);
 				await env.EngineRunner.CancelBuildAsync();
 				env.EngineRunner.WaitForBuildToComplete();
 				env.BatchTrainer.Received().Train(Arg.Any<IProgress<SmtTrainProgress>>(), Arg.Any<Action>());
 				env.BatchTrainer.DidNotReceive().Save();
 				build = await env.BuildRepository.GetAsync(build.Id);
-				build.Should().BeNull();
+				Assert.That(build, Is.Null);
 			}
 		}
 
-		[Fact]
+		[Test]
 		public async Task CommitAsync_LoadedInactive_Unloaded()
 		{
 			using (var env = new TestEnvironment())
@@ -71,11 +71,11 @@ namespace SIL.Machine.WebApi.Server.Services
 				await Task.Delay(10);
 				await env.EngineRunner.CommitAsync();
 				env.SmtModel.Received().Save();
-				env.EngineRunner.IsLoaded.Should().BeFalse();
+				Assert.That(env.EngineRunner.IsLoaded, Is.False);
 			}
 		}
 
-		[Fact]
+		[Test]
 		public async Task CommitAsync_LoadedActive_Loaded()
 		{
 			using (var env = new TestEnvironment())
@@ -85,7 +85,7 @@ namespace SIL.Machine.WebApi.Server.Services
 				await env.EngineRunner.TrainSegmentPairAsync("esto es una prueba .".Split(), "this is a test .".Split());
 				await env.EngineRunner.CommitAsync();
 				env.SmtModel.Received().Save();
-				env.EngineRunner.IsLoaded.Should().BeTrue();
+				Assert.That(env.EngineRunner.IsLoaded, Is.True);
 			}
 		}
 

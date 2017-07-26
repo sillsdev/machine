@@ -8,7 +8,7 @@
     <PackageId>SIL.Machine.WebApi.Server</PackageId>
     <RuntimeIdentifiers>win7-x64;win7-x86;ubuntu.16.04-x64;ubuntu.14.04-x64</RuntimeIdentifiers>
     <RuntimeFrameworkVersion>1.1.1</RuntimeFrameworkVersion>
-    <PackageTargetFallback>$(PackageTargetFallback);dotnet5.6;portable-net45+win8</PackageTargetFallback>
+    <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8</PackageTargetFallback>
     <RootNamespace>SIL.Machine.WebApi.Server</RootNamespace>
   </PropertyGroup>
 

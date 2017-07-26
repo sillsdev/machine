@@ -1,13 +1,13 @@
 ﻿using System.Threading.Tasks;
-using FluentAssertions;
+using NUnit.Framework;
 using SIL.Machine.WebApi.Server.Models;
-using Xunit;
 
 namespace SIL.Machine.WebApi.Server.DataAccess
 {
+	[TestFixture]
 	public class DataAccessExtensionsTests
 	{
-		[Fact]
+		[Test]
 		public async Task GetNewerRevisionByEngineIdAsync_Insert_ReturnsInsertedEntity()
 		{
 			var buildRepo = new MemoryBuildRepository();
@@ -19,11 +19,11 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			});
 			Build newBuild = await buildRepo.GetNewerRevisionByEngineIdAsync("engine1", 0, true);
 			await task;
-			newBuild.Revision.Should().Be(0);
-			newBuild.CurrentStep.Should().Be(1);
+			Assert.That(newBuild.Revision, Is.EqualTo(0));
+			Assert.That(newBuild.CurrentStep, Is.EqualTo(1));
 		}
 
-		[Fact]
+		[Test]
 		public async Task GetNewerRevisionAsync_Update_ReturnsUpdatedEntity()
 		{
 			var buildRepo = new MemoryBuildRepository();
@@ -37,11 +37,11 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 				});
 			Build newBuild = await buildRepo.GetNewerRevisionAsync(build.Id, 1, false);
 			await task;
-			newBuild.Revision.Should().Be(1);
-			newBuild.CurrentStep.Should().Be(1);
+			Assert.That(newBuild.Revision, Is.EqualTo(1));
+			Assert.That(newBuild.CurrentStep, Is.EqualTo(1));
 		}
 
-		[Fact]
+		[Test]
 		public async Task GetNewerRevisionAsync_Delete_ReturnsNull()
 		{
 			var buildRepo = new MemoryBuildRepository();
@@ -54,7 +54,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 				});
 			Build newBuild = await buildRepo.GetNewerRevisionAsync(build.Id, 1, false);
 			await task;
-			newBuild.Should().BeNull();
+			Assert.That(newBuild, Is.Null);
 		}
 	}
 }
