@@ -1,136 +1,21 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{3B8610C8-8EF2-4733-9D8F-5303318830DA}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>    
+    <TargetFrameworks>netcoreapp1.1;net46</TargetFrameworks>
+    <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8</PackageTargetFallback>
     <RootNamespace>SIL.Machine</RootNamespace>
-    <AssemblyName>SIL.Machine.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
-    <OldToolsVersion>3.5</OldToolsVersion>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="NSubstitute, Version=2.0.3.0, Culture=neutral, PublicKeyToken=92dd2e9066daa5ca, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NSubstitute.2.0.3\lib\net45\NSubstitute.dll</HintPath>
-    </Reference>
-    <Reference Include="nunit.framework, Version=3.7.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NUnit.3.7.1\lib\net45\nunit.framework.dll</HintPath>
-    </Reference>
-    <Reference Include="QuickGraph, Version=3.6.61114.0, Culture=neutral, PublicKeyToken=f3fb40175eec2af3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\QuickGraphPCL.3.6.61114.2\lib\net40-client\QuickGraph.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.ValueTuple, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.ValueTuple.4.3.1\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
-    </Reference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
+    <PackageReference Include="NSubstitute" Version="2.0.3" />
+    <PackageReference Include="NUnit" Version="3.7.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.8.0" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="Annotations\AnnotationTests.cs" />
-    <Compile Include="Clusterers\ClustererTestsBase.cs" />
-    <Compile Include="Clusterers\DbscanClustererTests.cs" />
-    <Compile Include="Clusterers\FlatUpgmaClustererTests.cs" />
-    <Compile Include="Clusterers\NeighborJoiningClustererTests.cs" />
-    <Compile Include="Clusterers\UpgmaClustererTests.cs" />
-    <Compile Include="Corpora\CorporaTestHelpers.cs" />
-    <Compile Include="Corpora\ParallelTextTests.cs" />
-    <Compile Include="Corpora\UsfmTextCorpusTests.cs" />
-    <Compile Include="Corpora\UsfmTextTests.cs" />
-    <Compile Include="FeatureModel\FeatureStructTests.cs" />
-    <Compile Include="FiniteState\FstTests.cs" />
-    <Compile Include="FiniteState\PhoneticFstOperations.cs" />
-    <Compile Include="Matching\MatcherTests.cs" />
-    <Compile Include="Morphology\PoorMansAffixIdentifierTests.cs" />
-    <Compile Include="Morphology\PoorMansStemmerTests.cs" />
-    <Compile Include="NgramModeling\NgramModelTests.cs" />
-    <Compile Include="PhoneticTestsBase.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rules\RuleTests.cs" />
-    <Compile Include="SequenceAlignment\AlignmentAlgorithmTestsBase.cs" />
-    <Compile Include="SequenceAlignment\MultipleAlignmentAlgorithmTests.cs" />
-    <Compile Include="SequenceAlignment\PairwiseAlignmentAlgorithmTests.cs" />
-    <Compile Include="SequenceAlignment\StringScorer.cs" />
-    <Compile Include="Statistics\LidstoneProbabilityDistributionTests.cs" />
-    <Compile Include="Statistics\MaxLikelihoodProbabilityDistributionTests.cs" />
-    <Compile Include="Statistics\SimpleGoodTuringProbabilityDistributionTests.cs" />
-    <Compile Include="Statistics\WittenBellProbabilityDistributionTests.cs" />
-    <Compile Include="Tokenization\LatinWordTokenizerTests.cs" />
-    <Compile Include="Translation\ErrorCorrectionModelTests.cs" />
-    <Compile Include="Translation\HybridTranslationEngineTests.cs" />
-    <Compile Include="Translation\TestMorpheme.cs" />
-    <Compile Include="Translation\TransferEngineTests.cs" />
-    <Compile Include="Translation\TranslationTestExtensions.cs" />
-    <Compile Include="Translation\TranslationExtensionsTests.cs" />
+    <ProjectReference Include="..\..\src\SIL.Core\SIL.Core.csproj" />
+    <ProjectReference Include="..\..\src\SIL.Machine\SIL.Machine.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Corpora\TestData\Tes\41MATTes.SFM">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Corpora\TestData\Tes\42MRKTest.SFM">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Corpora\TestData\usfm.sty">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Morphology\LEX">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\SIL.Core\SIL.Core.csproj">
-      <Project>{be961952-794a-4a70-8c95-4dfc0e2be105}</Project>
-      <Name>SIL.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\SIL.Machine\SIL.Machine.csproj">
-      <Project>{1a20aae4-42e9-484f-a25a-607e8469eca4}</Project>
-      <Name>SIL.Machine</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
-    <PackageTargetFallback Condition="'$(TargetFramework)'=='netstandard1.3'">$(PackageTargetFallback);portable-win+net4+sl5+wp8+win8+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10</PackageTargetFallback>
+    <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8</PackageTargetFallback>
   </PropertyGroup>
 
   <Import Project="../AssemblyInfo.props" />
@@ -10,14 +10,6 @@
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
     <PackageReference Include="System.Globalization.Extensions" Version="4.3.0" />
   </ItemGroup>
-
-  <PropertyGroup Condition="'$(TargetFramework)'=='net45'">
-    <DefineConstants>$(DefineConstants);NETFX</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
-    <DefineConstants>$(DefineConstants);NETSTD</DefineConstants>
-  </PropertyGroup>
 
   <ItemGroup>
     <None Remove="HermitCrabInput.dtd" />

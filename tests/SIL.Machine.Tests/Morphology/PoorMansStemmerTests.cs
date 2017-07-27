@@ -128,7 +128,8 @@ namespace SIL.Machine.Morphology
 		public void LargeEnglishWordList()
 		{
 			var words = new List<string>();
-			using (var file = new StreamReader(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Morphology", "LEX")))
+			string path = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "Morphology", "LEX");
+			using (var file = new StreamReader(File.OpenRead(path)))
 			{
 				string line;
 				while ((line = file.ReadLine()) != null)

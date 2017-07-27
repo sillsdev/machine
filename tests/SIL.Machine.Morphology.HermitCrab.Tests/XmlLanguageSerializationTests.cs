@@ -7,15 +7,10 @@ namespace SIL.Machine.Morphology.HermitCrab
 	[TestFixture]
 	public class XmlLanguageSerializationTests
 	{
-		private static string TestXmlFileName
-		{
-			get { return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "TestData", "XmlLanguageSerializationTests.xml"); }
-		}
+		private static string TestXmlFileName => Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "TestData",
+			"XmlLanguageSerializationTests.xml");
 
-		private static string TempXmlFileName
-		{
-			get { return Path.Combine(Path.GetTempPath(), "XmlLanguageSerializationTests.xml"); }
-		}
+		private static string TempXmlFileName => Path.Combine(Path.GetTempPath(), "XmlLanguageSerializationTests.xml");
 
 		[Test]
 		public void RoundTripXml()

@@ -1,14 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.12
+VisualStudioVersion = 15.0.26430.16
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Tests", "tests\SIL.Machine.Tests\SIL.Machine.Tests.csproj", "{3B8610C8-8EF2-4733-9D8F-5303318830DA}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Translation.Thot.Tests", "tests\SIL.Machine.Translation.Thot.Tests\SIL.Machine.Translation.Thot.Tests.csproj", "{305C1A93-6BF6-4B70-B8F5-81FCBD6A10F3}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Morphology.HermitCrab.Tests", "tests\SIL.Machine.Morphology.HermitCrab.Tests\SIL.Machine.Morphology.HermitCrab.Tests.csproj", "{B91590D0-1519-48A0-866B-B17E326812AD}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Translation.TestApp", "samples\SIL.Machine.Translation.TestApp\SIL.Machine.Translation.TestApp.csproj", "{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}"
@@ -33,11 +27,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.JS.Tests", "tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Core", "src\SIL.Core\SIL.Core.csproj", "{BE961952-794A-4A70-8C95-4DFC0E2BE105}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine", "src\SIL.Machine\SIL.Machine.csproj", "{1A20AAE4-42E9-484F-A25A-607E8469ECA4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine", "src\SIL.Machine\SIL.Machine.csproj", "{1A20AAE4-42E9-484F-A25A-607E8469ECA4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Translation.Thot", "src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj", "{E633BC22-93A1-4F15-93B1-3AF775315C7A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Morphology.HermitCrab", "src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj", "{71A076A8-92DF-493D-80E7-CDD9DC7FEDC9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Morphology.HermitCrab", "src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj", "{71A076A8-92DF-493D-80E7-CDD9DC7FEDC9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aligner.CommandLine", "src\Aligner.CommandLine\Aligner.CommandLine.csproj", "{47AE9537-46DB-4EFA-A95D-8E8610B74DC2}"
 EndProject
@@ -46,6 +40,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.WebApi.Server", "src\SIL.Machine.WebApi.Server\SIL.Machine.WebApi.Server.csproj", "{4319AB92-3501-4841-8F41-8B24D335BD14}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.WebApi.Server.Tests", "tests\SIL.Machine.WebApi.Server.Tests\SIL.Machine.WebApi.Server.Tests.csproj", "{BC2ABD6A-CC0C-4BCA-B828-FFA068BE8C31}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Tests", "tests\SIL.Machine.Tests\SIL.Machine.Tests.csproj", "{FEED0E9B-807F-45D1-9D7F-D75CD719CA98}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Morphology.HermitCrab.Tests", "tests\SIL.Machine.Morphology.HermitCrab.Tests\SIL.Machine.Morphology.HermitCrab.Tests.csproj", "{FE409E52-B03C-4AF8-A9E1-8A8062925BAE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Translation.Thot.Tests", "tests\SIL.Machine.Translation.Thot.Tests\SIL.Machine.Translation.Thot.Tests.csproj", "{0F72FFF6-A957-410C-8BBD-07333A6BB19C}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -57,18 +57,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{3B8610C8-8EF2-4733-9D8F-5303318830DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3B8610C8-8EF2-4733-9D8F-5303318830DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3B8610C8-8EF2-4733-9D8F-5303318830DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3B8610C8-8EF2-4733-9D8F-5303318830DA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{305C1A93-6BF6-4B70-B8F5-81FCBD6A10F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{305C1A93-6BF6-4B70-B8F5-81FCBD6A10F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{305C1A93-6BF6-4B70-B8F5-81FCBD6A10F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{305C1A93-6BF6-4B70-B8F5-81FCBD6A10F3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B91590D0-1519-48A0-866B-B17E326812AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B91590D0-1519-48A0-866B-B17E326812AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B91590D0-1519-48A0-866B-B17E326812AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B91590D0-1519-48A0-866B-B17E326812AD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -113,14 +101,23 @@ Global
 		{BC2ABD6A-CC0C-4BCA-B828-FFA068BE8C31}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BC2ABD6A-CC0C-4BCA-B828-FFA068BE8C31}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BC2ABD6A-CC0C-4BCA-B828-FFA068BE8C31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FEED0E9B-807F-45D1-9D7F-D75CD719CA98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEED0E9B-807F-45D1-9D7F-D75CD719CA98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEED0E9B-807F-45D1-9D7F-D75CD719CA98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEED0E9B-807F-45D1-9D7F-D75CD719CA98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE409E52-B03C-4AF8-A9E1-8A8062925BAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE409E52-B03C-4AF8-A9E1-8A8062925BAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE409E52-B03C-4AF8-A9E1-8A8062925BAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE409E52-B03C-4AF8-A9E1-8A8062925BAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F72FFF6-A957-410C-8BBD-07333A6BB19C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F72FFF6-A957-410C-8BBD-07333A6BB19C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F72FFF6-A957-410C-8BBD-07333A6BB19C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F72FFF6-A957-410C-8BBD-07333A6BB19C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{3B8610C8-8EF2-4733-9D8F-5303318830DA} = {66246A1C-8D45-40FB-A660-C58577122CA7}
-		{305C1A93-6BF6-4B70-B8F5-81FCBD6A10F3} = {66246A1C-8D45-40FB-A660-C58577122CA7}
-		{B91590D0-1519-48A0-866B-B17E326812AD} = {66246A1C-8D45-40FB-A660-C58577122CA7}
 		{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16} = {2402D5F7-53C2-44B4-879D-3ACEDA7D97C1}
 		{C91D680F-267B-45BD-82A9-45BF7D8AA496} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
 		{CA453C16-D1DA-4469-8BC3-62C67DA44ECE} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
@@ -133,5 +130,8 @@ Global
 		{945FED88-A315-4692-96DD-770892A814DD} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
 		{4319AB92-3501-4841-8F41-8B24D335BD14} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
 		{BC2ABD6A-CC0C-4BCA-B828-FFA068BE8C31} = {66246A1C-8D45-40FB-A660-C58577122CA7}
+		{FEED0E9B-807F-45D1-9D7F-D75CD719CA98} = {66246A1C-8D45-40FB-A660-C58577122CA7}
+		{FE409E52-B03C-4AF8-A9E1-8A8062925BAE} = {66246A1C-8D45-40FB-A660-C58577122CA7}
+		{0F72FFF6-A957-410C-8BBD-07333A6BB19C} = {66246A1C-8D45-40FB-A660-C58577122CA7}
 	EndGlobalSection
 EndGlobal

@@ -6,13 +6,5 @@
   </PropertyGroup>
 
   <Import Project="../AssemblyInfo.props" />
-  
-  <PropertyGroup Condition="'$(TargetFramework)'=='net45'">
-    <DefineConstants>$(DefineConstants);NETFX</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
-    <DefineConstants>$(DefineConstants);NETSTD</DefineConstants>
-  </PropertyGroup>
 
 </Project>
