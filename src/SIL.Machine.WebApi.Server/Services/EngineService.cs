@@ -135,6 +135,7 @@ namespace SIL.Machine.WebApi.Server.Services
 				Engine engine = isShared ? await _engineRepo.GetByLanguageTagAsync(sourceLanguageTag, targetLanguageTag) : null;
 				try
 				{
+					EngineRunner runner;
 					if (engine == null)
 					{
 						// no existing shared engine or a project-specific engine
@@ -146,7 +147,7 @@ namespace SIL.Machine.WebApi.Server.Services
 							TargetLanguageTag = targetLanguageTag
 						};
 						await _engineRepo.InsertAsync(engine);
-						EngineRunner runner = CreateRunner(engine.Id);
+						runner = CreateRunner(engine.Id);
 						await runner.InitNewAsync();
 					}
 					else
@@ -155,7 +156,9 @@ namespace SIL.Machine.WebApi.Server.Services
 						if (engine.Projects.Contains(projectId))
 							return null;
 						engine = await _engineRepo.ConcurrentUpdateAsync(engine, e => e.Projects.Add(projectId));
+						runner = GetOrCreateRunner(engine.Id);
 					}
+					await runner.StartBuildAsync(engine);
 				}
 				catch (KeyAlreadyExistsException)
 				{
