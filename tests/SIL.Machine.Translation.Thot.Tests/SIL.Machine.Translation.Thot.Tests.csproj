@@ -6,13 +6,17 @@
     <RootNamespace>SIL.Machine.Translation.Thot</RootNamespace>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(TargetFramework)'=='net46'">
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
     <PackageReference Include="NSubstitute" Version="2.0.3" />
     <PackageReference Include="NUnit" Version="3.7.1" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.8.0" />
     <PackageReference Include="TeamCity.VSTest.TestAdapter" Version="1.0.0" />
-    <PackageReference Include="Thot" Version="1.0.0-build00052" />
+    <PackageReference Include="Thot" Version="1.0.0-build00053" />
   </ItemGroup>
 
   <ItemGroup>
