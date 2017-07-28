@@ -35,6 +35,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tokenization\LatinWordTokenizerTests.cs" />
     <Compile Include="Translation\InteractiveTranslationSessionTests.cs" />
     <Compile Include="Translation\TranslationEngineTests.cs" />
     <Compile Include="WebApi\Client\MockRequest.cs" />
