@@ -10,23 +10,25 @@ namespace SIL.Machine.Translation
 		private const double DefaultAlpha = 0.2f;
 		private const int DefaultMaxDistance = 3;
 
-		private readonly ISegmentAligner _segmentAligner;
+		private readonly Func<string, string, double> _getTranslationProb;
 		private readonly SegmentScorer _scorer;
 		private readonly int _maxDistance;
 		private readonly double _alpha;
 
-		public FuzzyEditDistanceSegmentAligner(ISegmentAligner segmentAligner, double alpha = DefaultAlpha, int maxDistance = DefaultMaxDistance)
+		public FuzzyEditDistanceSegmentAligner(Func<string, string, double> getTranslationProb, double alpha = DefaultAlpha,
+			int maxDistance = DefaultMaxDistance)
 		{
-			_segmentAligner = segmentAligner;
+			_getTranslationProb = getTranslationProb;
 			_alpha = alpha;
 			_maxDistance = maxDistance;
-			_scorer = new SegmentScorer(_segmentAligner);
+			_scorer = new SegmentScorer(_getTranslationProb);
 		}
 
 		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
 			WordAlignmentMatrix hintMatrix = null)
 		{
-			var paa = new PairwiseAlignmentAlgorithm<IReadOnlyList<string>, int>(_scorer, sourceSegment, targetSegment, GetWordIndices)
+			var paa = new PairwiseAlignmentAlgorithm<IReadOnlyList<string>, int>(_scorer, sourceSegment, targetSegment,
+				GetWordIndices)
 			{
 				Mode = AlignmentMode.Global,
 				ExpansionCompressionEnabled = true,
@@ -43,7 +45,7 @@ namespace SIL.Machine.Translation
 					int minIndex, maxIndex;
 					if (alignment[0, c].IsNull)
 					{
-						double prob = _segmentAligner.GetTranslationProbability(null, targetSegment[j]);
+						double prob = _getTranslationProb(null, targetSegment[j]);
 						bestScore = ComputeAlignmentScore(prob, 0);
 						int tc = c - 1;
 						while (tc >= 0 && alignment[0, tc].IsNull)
@@ -54,7 +56,7 @@ namespace SIL.Machine.Translation
 					}
 					else
 					{
-						double prob = alignment[0, c].Average(i => _segmentAligner.GetTranslationProbability(sourceSegment[i], targetSegment[j]));
+						double prob = alignment[0, c].Average(i => _getTranslationProb(sourceSegment[i], targetSegment[j]));
 						bestScore = ComputeAlignmentScore(prob, 0);
 						minIndex = alignment[0, c].First - 1;
 						maxIndex = alignment[0, c].Last + 1;
@@ -63,7 +65,7 @@ namespace SIL.Machine.Translation
 					int bestIndex = -1;
 					for (int i = minIndex; i >= Math.Max(0, minIndex - _maxDistance); i--)
 					{
-						double prob = _segmentAligner.GetTranslationProbability(sourceSegment[i], targetSegment[j]);
+						double prob = _getTranslationProb(sourceSegment[i], targetSegment[j]);
 						double distanceScore = ComputeDistanceScore(i, minIndex + 1, sourceSegment.Count);
 						double score = ComputeAlignmentScore(prob, distanceScore);
 						if (score > bestScore)
@@ -75,7 +77,7 @@ namespace SIL.Machine.Translation
 
 					for (int i = maxIndex; i < Math.Min(sourceSegment.Count, maxIndex + _maxDistance); i++)
 					{
-						double prob = _segmentAligner.GetTranslationProbability(sourceSegment[i], targetSegment[j]);
+						double prob = _getTranslationProb(sourceSegment[i], targetSegment[j]);
 						double distanceScore = ComputeDistanceScore(i, maxIndex - 1, sourceSegment.Count);
 						double score = ComputeAlignmentScore(prob, distanceScore);
 						if (score > bestScore)
@@ -118,11 +120,6 @@ namespace SIL.Machine.Translation
 		private double ComputeAlignmentScore(double probability, double distanceScore)
 		{
 			return (Math.Log(probability) * _alpha) + (Math.Log(1.0f - distanceScore) * (1.0f - _alpha));
-		}
-
-		public double GetTranslationProbability(string sourceWord, string targetWord)
-		{
-			return _segmentAligner.GetTranslationProbability(sourceWord, targetWord);
 		}
 	}
 }

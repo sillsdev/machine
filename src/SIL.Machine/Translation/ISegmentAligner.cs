@@ -6,6 +6,5 @@ namespace SIL.Machine.Translation
 	{
 		WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
 			WordAlignmentMatrix hintMatrix = null);
-		double GetTranslationProbability(string sourceWord, string targetWord);
 	}
 }

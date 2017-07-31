@@ -111,8 +111,36 @@ namespace SIL.Machine.Translation
 						var aligner = new SymmetrizationSegmentAligner(swaModel, invSwaModel);
 						using (var progress = new ConsoleProgressBar(app.Out))
 						{
-							AlignCorpus(parallelCorpus, aligner, outputOption.Values, segmentCount, probOption.HasValue(),
-								progress);
+							int i = 0, j = 0;
+							foreach (ParallelText text in parallelCorpus.Texts)
+							{
+								using (var writer = new StreamWriter(File.Open(outputOption.Values[i], FileMode.Create)))
+								{
+									foreach (ParallelTextSegment segment in text.Segments)
+									{
+										if (segment.IsEmpty)
+										{
+											writer.WriteLine();
+										}
+										else
+										{
+											string[] sourceTokens = segment.SourceSegment.Select(Preprocessors.Lowercase)
+												.ToArray();
+											string[] targetTokens = segment.TargetSegment.Select(Preprocessors.Lowercase)
+												.ToArray();
+											WordAlignmentMatrix matrix = aligner.GetBestAlignment(sourceTokens, targetTokens,
+												segment.CreateAlignmentMatrix(true));
+											WordAlignmentMatrix invMatrix = matrix.Clone();
+											invMatrix.Transpose();
+											writer.WriteLine(OutputAlignmentString(swaModel, invSwaModel, probOption.HasValue(),
+												sourceTokens, targetTokens, matrix, invMatrix));
+											j++;
+											progress.Report((double) j / segmentCount);
+										}
+									}
+								}
+								i++;
+							}
 						}
 						app.Out.WriteLine("done.");
 					}
@@ -145,53 +173,30 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		private static void AlignCorpus(ParallelTextCorpus parallelCorpus, ISegmentAligner aligner,
-			IReadOnlyList<string> outputPaths, int segmentCount, bool includeProbs, IProgress<double> progress)
-		{
-			int i = 0, j = 0;
-			foreach (ParallelText text in parallelCorpus.Texts)
-			{
-				using (var writer = new StreamWriter(File.Open(outputPaths[i], FileMode.Create)))
-				{
-					foreach (ParallelTextSegment segment in text.Segments)
-					{
-						if (segment.IsEmpty)
-						{
-							writer.WriteLine();
-						}
-						else
-						{
-							string[] sourceTokens = segment.SourceSegment.Select(Preprocessors.Lowercase).ToArray();
-							string[] targetTokens = segment.TargetSegment.Select(Preprocessors.Lowercase).ToArray();
-							WordAlignmentMatrix alignment = aligner.GetBestAlignment(sourceTokens, targetTokens,
-								segment.CreateAlignmentMatrix(true));
-							writer.WriteLine(OutputAlignmentString(alignment, aligner, sourceTokens, targetTokens,
-								includeProbs));
-							j++;
-							progress.Report((double) j / segmentCount);
-						}
-					}
-				}
-				i++;
-			}
-		}
-
-		private static string OutputAlignmentString(WordAlignmentMatrix matrix, ISegmentAligner aligner,
-			IReadOnlyList<string> source, IReadOnlyList<string> target, bool includeProbs)
+		private static string OutputAlignmentString(ThotSingleWordAlignmentModel swaModel,
+			ThotSingleWordAlignmentModel invSwaModel, bool includeProbs, IReadOnlyList<string> source,
+			IReadOnlyList<string> target, WordAlignmentMatrix matrix, WordAlignmentMatrix invMatrix)
 		{
 			return string.Join(" ", Enumerable.Range(0, matrix.RowCount)
 				.SelectMany(si => Enumerable.Range(0, matrix.ColumnCount), (si, ti) => (SourceIndex: si, TargetIndex: ti))
 				.Where(t => matrix[t.SourceIndex, t.TargetIndex] == AlignmentType.Aligned)
-				.Select(t => AlignedWordsString(t.SourceIndex, t.TargetIndex, aligner, source, target, includeProbs)));
+				.Select(t => AlignedWordsString(swaModel, invSwaModel, includeProbs, source, target, matrix, invMatrix,
+					t.SourceIndex, t.TargetIndex)));
 		}
 
-		private static string AlignedWordsString(int sourceIndex, int targetIndex, ISegmentAligner aligner,
-			IReadOnlyList<string> source, IReadOnlyList<string> target, bool includeProbs)
+		private static string AlignedWordsString(ThotSingleWordAlignmentModel swaModel, ThotSingleWordAlignmentModel invSwaModel,
+			bool includeProbs, IReadOnlyList<string> source, IReadOnlyList<string> target, WordAlignmentMatrix matrix,
+			WordAlignmentMatrix invMatrix, int sourceIndex, int targetIndex)
 		{
 			if (includeProbs)
 			{
-				double prob = aligner.GetTranslationProbability(source[sourceIndex], target[targetIndex]);
-				return $"{sourceIndex}-{targetIndex}:{prob:0.########}";
+				string sourceWord = source[sourceIndex];
+				string targetWord = target[targetIndex];
+				double transProb = Math.Max(swaModel.GetTranslationProbability(sourceWord, targetWord),
+					invSwaModel.GetTranslationProbability(targetWord, sourceWord));
+				double alignProb = Math.Max(swaModel.GetAlignmentProbability(matrix, targetIndex),
+					invSwaModel.GetAlignmentProbability(invMatrix, sourceIndex));
+				return $"{sourceIndex}-{targetIndex}:{transProb:0.########}:{alignProb:0.########}";
 			}
 
 			return $"{sourceIndex}-{targetIndex}";

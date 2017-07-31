@@ -33,7 +33,7 @@ namespace SIL.Machine.Translation.Thot
 		public ThotSmtParameters Parameters { get; private set; }
 		internal IntPtr Handle { get; private set; }
 
-		public ISegmentAligner SingleWordAlignmentModel
+		public ThotSingleWordAlignmentModel SingleWordAlignmentModel
 		{
 			get
 			{
@@ -43,7 +43,7 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public ISegmentAligner InverseSingleWordAlignmentModel
+		public ThotSingleWordAlignmentModel InverseSingleWordAlignmentModel
 		{
 			get
 			{

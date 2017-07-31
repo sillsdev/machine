@@ -19,7 +19,7 @@ namespace SIL.Machine.Translation.Thot
 			_smtModel = smtModel;
 			_sessions = new HashSet<ThotInteractiveTranslationSession>();
 			LoadHandle();
-			_segmentAligner = new FuzzyEditDistanceSegmentAligner(new SymmetrizationSegmentAligner(_smtModel.SingleWordAlignmentModel, _smtModel.InverseSingleWordAlignmentModel));
+			_segmentAligner = new FuzzyEditDistanceSegmentAligner(GetTranslationProbability);
 			ErrorCorrectionModel = new ErrorCorrectionModel();
 		}
 
@@ -153,19 +153,29 @@ namespace SIL.Machine.Translation.Thot
 						if (waMatrix[l, k] == AlignmentType.Aligned)
 						{
 							string sourceWord = segment[srcStartIndex + l];
-							double prob = isUnknown ? 0 : _segmentAligner.GetTranslationProbability(sourceWord, targetWord);
+							double prob = isUnknown ? 0 : GetTranslationProbability(sourceWord, targetWord);
 							totalProb += prob;
 							alignedWordCount++;
 						}
 					}
 
-					confidences[k] = alignedWordCount == 0 ? _segmentAligner.GetTranslationProbability(null, targetWord) : totalProb / alignedWordCount;
+					confidences[k] = alignedWordCount == 0
+						? GetTranslationProbability(null, targetWord)
+						: totalProb / alignedWordCount;
 				}
 
-				arcs.Add(new WordGraphArc(predStateIndex, succStateIndex, score, words, waMatrix, confidences, srcStartIndex, srcEndIndex, isUnknown));
+				arcs.Add(new WordGraphArc(predStateIndex, succStateIndex, score, words, waMatrix, confidences, srcStartIndex,
+					srcEndIndex, isUnknown));
 			}
 
 			return new WordGraph(arcs, finalStates, initialStateScore);
+		}
+
+		private double GetTranslationProbability(string sourceWord, string targetWord)
+		{
+			double prob = _smtModel.SingleWordAlignmentModel.GetTranslationProbability(sourceWord, targetWord);
+			double invProb = _smtModel.InverseSingleWordAlignmentModel.GetTranslationProbability(targetWord, sourceWord);
+			return Math.Max(prob, invProb);
 		}
 
 		private static string[] Split(string line)
@@ -194,7 +204,8 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public void TrainSegment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment, WordAlignmentMatrix matrix = null)
+		public void TrainSegment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
+			WordAlignmentMatrix matrix = null)
 		{
 			CheckDisposed();
 
@@ -228,7 +239,7 @@ namespace SIL.Machine.Translation.Thot
 							string sourceWord = sourceSegment[i];
 							double prob = 0;
 							if (!info.TargetUnknownWords.Contains(j) && confidence < 0)
-								prob = _segmentAligner.GetTranslationProbability(sourceWord, targetWord);
+								prob = GetTranslationProbability(sourceWord, targetWord);
 							alignment[i, j] = AlignmentType.Aligned;
 							totalProb += prob;
 							alignedWordCount++;
@@ -236,7 +247,11 @@ namespace SIL.Machine.Translation.Thot
 					}
 
 					if (confidence < 0)
-						confidences[j] = alignedWordCount == 0 ? _segmentAligner.GetTranslationProbability(null, targetWord) : totalProb / alignedWordCount;
+					{
+						confidences[j] = alignedWordCount == 0
+							? GetTranslationProbability(null, targetWord)
+							: totalProb / alignedWordCount;
+					}
 
 					if (j < prefixCount)
 					{
@@ -259,7 +274,8 @@ namespace SIL.Machine.Translation.Thot
 			return new TranslationResult(sourceSegment, info.Target, confidences, sources, alignment);
 		}
 
-		private TranslationResult CreateResult(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment, IntPtr dataPtr)
+		private TranslationResult CreateResult(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
+			IntPtr dataPtr)
 		{
 			var data = new TranslationInfo();
 			foreach (string targetWord in targetSegment)
@@ -326,7 +342,8 @@ namespace SIL.Machine.Translation.Thot
 				for (int i = 0; i < phraseCount; i++)
 				{
 					IntPtr array = Marshal.ReadIntPtr(nativeSourceSegmentation, i * sizeOfPtr);
-					sourceSegmentation[i] = Tuple.Create(Marshal.ReadInt32(array, 0 * sizeOfUInt), Marshal.ReadInt32(array, 1 * sizeOfUInt));
+					sourceSegmentation[i] = Tuple.Create(Marshal.ReadInt32(array, 0 * sizeOfUInt),
+						Marshal.ReadInt32(array, 1 * sizeOfUInt));
 				}
 				return sourceSegmentation;
 			}

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace SIL.Machine.Translation
 {
@@ -30,13 +29,6 @@ namespace SIL.Machine.Translation
 			invMatrix.Transpose();
 			matrix.SymmetrizeWith(invMatrix);
 			return matrix;
-		}
-
-		public double GetTranslationProbability(string sourceWord, string targetWord)
-		{
-			double prob = _srcTrgAligner.GetTranslationProbability(sourceWord, targetWord);
-			double invProb = _trgSrcAligner.GetTranslationProbability(targetWord, sourceWord);
-			return Math.Max(prob, invProb);
 		}
 	}
 }

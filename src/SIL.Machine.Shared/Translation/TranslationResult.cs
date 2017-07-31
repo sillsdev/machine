@@ -6,22 +6,31 @@ namespace SIL.Machine.Translation
 {
 	public class TranslationResult
 	{
-		public TranslationResult(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment, IEnumerable<double> confidences,
-			IEnumerable<TranslationSources> sources, WordAlignmentMatrix alignment)
+		public TranslationResult(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment,
+			IEnumerable<double> confidences, IEnumerable<TranslationSources> sources, WordAlignmentMatrix alignment)
 		{
 			SourceSegment = sourceSegment.ToArray();
 			TargetSegment = targetSegment.ToArray();
 			TargetWordConfidences = confidences.ToArray();
 			if (TargetWordConfidences.Count != TargetSegment.Count)
-				throw new ArgumentException("The confidences must be the same length as the target segment.", nameof(confidences));
+			{
+				throw new ArgumentException("The confidences must be the same length as the target segment.",
+					nameof(confidences));
+			}
 			TargetWordSources = sources.ToArray();
 			if (TargetWordSources.Count != TargetSegment.Count)
 				throw new ArgumentException("The sources must be the same length as the target segment.", nameof(sources));
 			Alignment = alignment;
 			if (Alignment.RowCount != SourceSegment.Count)
-				throw new ArgumentException("The alignment source length must be the same length as the source segment.", nameof(alignment));
+			{
+				throw new ArgumentException("The alignment source length must be the same length as the source segment.",
+					nameof(alignment));
+			}
 			if (Alignment.ColumnCount != TargetSegment.Count)
-				throw new ArgumentException("The alignment target length must be the same length as the target segment.", nameof(alignment));
+			{
+				throw new ArgumentException("The alignment target length must be the same length as the target segment.",
+					nameof(alignment));
+			}
 		}
 
 		public IReadOnlyList<string> SourceSegment { get; }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.SequenceAlignment;
@@ -6,13 +7,11 @@ namespace SIL.Machine.Translation
 {
 	public class EditDistanceSegmentAligner : ISegmentAligner
 	{
-		private readonly ISegmentAligner _segmentAligner;
 		private readonly SegmentScorer _scorer;
 
-		public EditDistanceSegmentAligner(ISegmentAligner segmentAligner)
+		public EditDistanceSegmentAligner(Func<string, string, double> getTranslationProb)
 		{
-			_segmentAligner = segmentAligner;
-			_scorer = new SegmentScorer(_segmentAligner);
+			_scorer = new SegmentScorer(getTranslationProb);
 		}
 
 		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
@@ -44,11 +43,6 @@ namespace SIL.Machine.Translation
 			index = 0;
 			count = sequence.Count;
 			return Enumerable.Range(index, count);
-		}
-
-		public double GetTranslationProbability(string sourceWord, string targetWord)
-		{
-			return _segmentAligner.GetTranslationProbability(sourceWord, targetWord);
 		}
 	}
 }

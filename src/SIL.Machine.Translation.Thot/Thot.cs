@@ -35,8 +35,8 @@ namespace SIL.Machine.Translation.Thot
 		public static extern void smtModel_setHeuristic(IntPtr smtModelHandle, uint heuristic);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern void smtModel_setOnlineTrainingParameters(IntPtr smtModelHandle, uint algorithm, uint learningRatePolicy,
-			float learnStepSize, uint emIters, uint e, uint r);
+		public static extern void smtModel_setOnlineTrainingParameters(IntPtr smtModelHandle, uint algorithm,
+			uint learningRatePolicy, float learnStepSize, uint emIters, uint e, uint r);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void smtModel_setWeights(IntPtr smtModelHandle, float[] weights, uint capacity);
@@ -78,7 +78,8 @@ namespace SIL.Machine.Translation.Thot
 		public static extern IntPtr decoder_getBestPhraseAlignment(IntPtr decoderHandle, IntPtr sentence, IntPtr translation);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern bool decoder_trainSentencePair(IntPtr decoderHandle, IntPtr sourceSentence, IntPtr targetSentence, IntPtr matrix, uint iLen, uint jLen);
+		public static extern bool decoder_trainSentencePair(IntPtr decoderHandle, IntPtr sourceSentence, IntPtr targetSentence,
+			IntPtr matrix, uint iLen, uint jLen);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void decoder_close(IntPtr decoderHandle);
@@ -123,7 +124,8 @@ namespace SIL.Machine.Translation.Thot
 		public static extern IntPtr swAlignModel_open(string prefFileName);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern void swAlignModel_addSentencePair(IntPtr swAlignModelHandle, IntPtr sourceSentence, IntPtr targetSentence, IntPtr matrix, uint iLen, uint jLen);
+		public static extern void swAlignModel_addSentencePair(IntPtr swAlignModelHandle, IntPtr sourceSentence,
+			IntPtr targetSentence, IntPtr matrix, uint iLen, uint jLen);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void swAlignModel_train(IntPtr swAlignModelHandle, uint numIters);
@@ -132,10 +134,16 @@ namespace SIL.Machine.Translation.Thot
 		public static extern void swAlignModel_save(IntPtr swAlignModelHandle, string prefFileName);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern float swAlignModel_getTranslationProbability(IntPtr swAlignModelHandle, IntPtr sourceWord, IntPtr targetWord);
+		public static extern float swAlignModel_getTranslationProbability(IntPtr swAlignModelHandle, IntPtr sourceWord,
+			IntPtr targetWord);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern float swAlignModel_getBestAlignment(IntPtr swAlignModelHandle, IntPtr sourceSentence, IntPtr targetSentence, IntPtr matrix, ref uint iLen, ref uint jLen);
+		public static extern float swAlignModel_getAlignmentProbability(IntPtr swAlignModelHandle, uint prevI, uint sLen,
+			uint i);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern float swAlignModel_getBestAlignment(IntPtr swAlignModelHandle, IntPtr sourceSentence,
+			IntPtr targetSentence, IntPtr matrix, ref uint iLen, ref uint jLen);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void swAlignModel_close(IntPtr swAlignModelHandle);
@@ -159,8 +167,8 @@ namespace SIL.Machine.Translation.Thot
 		public static extern IntPtr llWeightUpdater_create();
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern void llWeightUpdater_updateClosedCorpus(IntPtr llWeightUpdaterHandle, IntPtr[] references, IntPtr nblists, IntPtr scoreComps, uint[] nblistLens,
-			float[] weights, uint numSents, uint numWeights);
+		public static extern void llWeightUpdater_updateClosedCorpus(IntPtr llWeightUpdaterHandle, IntPtr[] references,
+			IntPtr nblists, IntPtr scoreComps, uint[] nblistLens, float[] weights, uint numSents, uint numWeights);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void llWeightUpdater_close(IntPtr llWeightUpdaterHandle);
@@ -254,8 +262,9 @@ namespace SIL.Machine.Translation.Thot
 			return Encoding.UTF8.GetString(buffer, 0, buffer.Length);
 		}
 
-		public static T DoTranslate<T>(IntPtr decoderHandle, Func<IntPtr, IntPtr, IntPtr> translateFunc, IEnumerable<string> input, bool addTrailingSpace,
-			IReadOnlyList<string> sourceSegment, Func<IReadOnlyList<string>, IReadOnlyList<string>, IntPtr, T> createResult)
+		public static T DoTranslate<T>(IntPtr decoderHandle, Func<IntPtr, IntPtr, IntPtr> translateFunc,
+			IEnumerable<string> input, bool addTrailingSpace, IReadOnlyList<string> sourceSegment,
+			Func<IReadOnlyList<string>, IReadOnlyList<string>, IntPtr, T> createResult)
 		{
 			IntPtr inputPtr = ConvertStringToNativeUtf8(string.Join(" ", input) + (addTrailingSpace ? " " : ""));
 			IntPtr data = IntPtr.Zero;
@@ -272,8 +281,9 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public static IEnumerable<T> DoTranslateNBest<T>(IntPtr decoderHandle, Func<IntPtr, uint, IntPtr, IntPtr[], uint> translateFunc, int n, IEnumerable<string> input,
-			bool addTrailingSpace, IReadOnlyList<string> sourceSegment, Func<IReadOnlyList<string>, IReadOnlyList<string>, IntPtr, T> createResult)
+		public static IEnumerable<T> DoTranslateNBest<T>(IntPtr decoderHandle,
+			Func<IntPtr, uint, IntPtr, IntPtr[], uint> translateFunc, int n, IEnumerable<string> input, bool addTrailingSpace,
+			IReadOnlyList<string> sourceSegment, Func<IReadOnlyList<string>, IReadOnlyList<string>, IntPtr, T> createResult)
 		{
 			IntPtr inputPtr = ConvertStringToNativeUtf8(string.Join(" ", input) + (addTrailingSpace ? " " : ""));
 			var results = new IntPtr[n];
@@ -290,7 +300,8 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private static T DoCreateResult<T>(IReadOnlyList<string> sourceSegment, IntPtr data, Func<IReadOnlyList<string>, IReadOnlyList<string>, IntPtr, T> createResult)
+		private static T DoCreateResult<T>(IReadOnlyList<string> sourceSegment, IntPtr data,
+			Func<IReadOnlyList<string>, IReadOnlyList<string>, IntPtr, T> createResult)
 		{
 			IntPtr translationPtr = Marshal.AllocHGlobal(DefaultTranslationBufferLength);
 			try
@@ -311,7 +322,8 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public static void TrainSegmentPair(IntPtr decoderHandle, IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment, WordAlignmentMatrix matrix)
+		public static void TrainSegmentPair(IntPtr decoderHandle, IEnumerable<string> sourceSegment,
+			IEnumerable<string> targetSegment, WordAlignmentMatrix matrix)
 		{
 			IntPtr nativeSourceSegment = ConvertStringsToNativeUtf8(sourceSegment);
 			IntPtr nativeTargetSegment = ConvertStringsToNativeUtf8(targetSegment);
@@ -346,8 +358,9 @@ namespace SIL.Machine.Translation.Thot
 			smtModel_setA(handle, parameters.ModelA);
 			smtModel_setE(handle, parameters.ModelE);
 			smtModel_setHeuristic(handle, (uint) parameters.ModelHeuristic);
-			smtModel_setOnlineTrainingParameters(handle, (uint) parameters.LearningAlgorithm, (uint) parameters.LearningRatePolicy,
-				parameters.LearningStepSize, parameters.LearningEMIters, parameters.LearningE, parameters.LearningR);
+			smtModel_setOnlineTrainingParameters(handle, (uint) parameters.LearningAlgorithm,
+				(uint) parameters.LearningRatePolicy, parameters.LearningStepSize, parameters.LearningEMIters,
+				parameters.LearningE, parameters.LearningR);
 			if (parameters.ModelWeights != null)
 				smtModel_setWeights(handle, parameters.ModelWeights.ToArray(), (uint) parameters.ModelWeights.Count);
 			return handle;
