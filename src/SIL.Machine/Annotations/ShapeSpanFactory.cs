@@ -6,17 +6,10 @@ namespace SIL.Machine.Annotations
 {
 	public class ShapeSpanFactory : SpanFactory<ShapeNode>
 	{
-		private readonly Span<ShapeNode> _empty; 
-
 		public ShapeSpanFactory()
 			: base(true, AnonymousComparer.Create<ShapeNode>(Compare), FreezableEqualityComparer<ShapeNode>.Default)
 		{
-			_empty = new Span<ShapeNode>(this, null, null);
-		}
-
-		public override Span<ShapeNode> Empty
-		{
-			get { return _empty; }
+			Empty = new Span<ShapeNode>(this, null, null);
 		}
 
 		private static int Compare(ShapeNode x, ShapeNode y)
@@ -30,17 +23,12 @@ namespace SIL.Machine.Annotations
 			return x.CompareTo(y);
 		}
 
-		public override int CalcLength(ShapeNode start, ShapeNode end)
+		protected internal override int CalcLength(ShapeNode start, ShapeNode end)
 		{
 			if (start == null || end == null)
 				return 0;
 
 			return start.GetNodes(end).Count();
-		}
-
-		public override bool IsRange(ShapeNode start, ShapeNode end)
-		{
-			return start != null && end != null;
 		}
 
 		public override Span<ShapeNode> Create(ShapeNode offset, Direction dir)

@@ -23,7 +23,16 @@ namespace SIL.Machine.Tokenization
 
 		public IEnumerable<Span<int>> Tokenize(string data)
 		{
-			return _regex.Matches(data).Cast<Match>().Select(m => _spanFactory.Create(m.Index, m.Index + m.Length));
+			return Tokenize(data, data.Length == 0 ? _spanFactory.Empty : _spanFactory.Create(0, data.Length));
+		}
+
+		public IEnumerable<Span<int>> Tokenize(string data, Span<int> dataSpan)
+		{
+			if (dataSpan.IsEmpty)
+				return Enumerable.Empty<Span<int>>();
+
+			return _regex.Matches(data.Substring(0, dataSpan.End), dataSpan.Start).Cast<Match>()
+				.Select(m => _spanFactory.Create(m.Index, m.Index + m.Length));
 		}
 	}
 }

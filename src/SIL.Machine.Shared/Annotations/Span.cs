@@ -14,72 +14,48 @@ namespace SIL.Machine.Annotations
 			return !(x == y);
 		}
 
-		private readonly SpanFactory<TOffset> _spanFactory; 
-		private readonly TOffset _start;
-		private readonly TOffset _end;
-
 		internal Span(SpanFactory<TOffset> spanFactory, TOffset start, TOffset end)
 		{
-			_spanFactory = spanFactory;
-			_start = start;
-			_end = end;
+			SpanFactory = spanFactory;
+			Start = start;
+			End = end;
 		}
 
 		public Span(Span<TOffset> span)
-			: this(span._spanFactory, span._start, span._end)
+			: this(span.SpanFactory, span.Start, span.End)
 		{
 		}
 
-		public SpanFactory<TOffset> SpanFactory
-		{
-			get { return _spanFactory; }
-		}
+		public SpanFactory<TOffset> SpanFactory { get; }
 
-		public bool IsEmpty
-		{
-			get { return _spanFactory.Empty == this; }
-		}
+		public bool IsEmpty => SpanFactory.Empty == this;
 
-		public TOffset Start
-		{
-			get
-			{
-				return _start;
-			}
-		}
+		public TOffset Start { get; }
 
-		public TOffset End
-		{
-			get
-			{
-				return _end;
-			}
-		}
+		public TOffset End { get; }
 
-		public int Length
-		{
-			get { return _spanFactory.CalcLength(_start, _end); }
-		}
-
-		public bool IsRange
-		{
-			get { return _spanFactory.IsRange(_start, _end); }
-		}
+		public int Length => SpanFactory.CalcLength(Start, End);
 
 		public TOffset GetStart(Direction dir)
 		{
-			return dir == Direction.LeftToRight ? _start : _end;
+			return dir == Direction.LeftToRight ? Start : End;
 		}
 
 		public TOffset GetEnd(Direction dir)
 		{
-			return dir == Direction.LeftToRight ? _end : _start;
+			return dir == Direction.LeftToRight ? End : Start;
 		}
 
 		public bool Overlaps(Span<TOffset> other)
 		{
-			return (_spanFactory.IncludeEndpoint ? _spanFactory.Comparer.Compare(_start, other._end) <= 0 : _spanFactory.Comparer.Compare(_start, other._end) < 0)
-				&& (_spanFactory.IncludeEndpoint ? _spanFactory.Comparer.Compare(_end, other._start) >= 0 : _spanFactory.Comparer.Compare(_end, other._start) > 0);
+			if (SpanFactory.IncludeEndpoint)
+			{
+				return SpanFactory.Comparer.Compare(Start, other.End) <= 0
+					&& SpanFactory.Comparer.Compare(End, other.Start) >= 0;
+			}
+
+			return SpanFactory.Comparer.Compare(Start, other.End) < 0
+				&& SpanFactory.Comparer.Compare(End, other.Start) > 0;
 		}
 
 		public bool Overlaps(TOffset start, TOffset end)
@@ -89,12 +65,12 @@ namespace SIL.Machine.Annotations
 
 		public bool Overlaps(TOffset start, TOffset end, Direction dir)
 		{
-			return Overlaps(_spanFactory.Create(start, end, dir));
+			return Overlaps(SpanFactory.Create(start, end, dir));
 		}
 
 		public bool Contains(Span<TOffset> other)
 		{
-			return _spanFactory.Comparer.Compare(_start, other._start) <= 0 && _spanFactory.Comparer.Compare(_end, other._end) >= 0;
+			return SpanFactory.Comparer.Compare(Start, other.Start) <= 0 && SpanFactory.Comparer.Compare(End, other.End) >= 0;
 		}
 
 		public bool Contains(TOffset offset)
@@ -104,7 +80,7 @@ namespace SIL.Machine.Annotations
 
 		public bool Contains(TOffset offset, Direction dir)
 		{
-			return Contains(_spanFactory.Create(offset, dir));
+			return Contains(SpanFactory.Create(offset, dir));
 		}
 
 		public bool Contains(TOffset start, TOffset end)
@@ -114,14 +90,14 @@ namespace SIL.Machine.Annotations
 
 		public bool Contains(TOffset start, TOffset end, Direction dir)
 		{
-			return Contains(_spanFactory.Create(start, end, dir));
+			return Contains(SpanFactory.Create(start, end, dir));
 		}
 
 		public int CompareTo(Span<TOffset> other)
 		{
-			int res = _spanFactory.Comparer.Compare(_start, other._start);
+			int res = SpanFactory.Comparer.Compare(Start, other.Start);
 			if (res == 0)
-				res = -_spanFactory.Comparer.Compare(_end, other._end);
+				res = -SpanFactory.Comparer.Compare(End, other.End);
 			return res;
 		}
 
@@ -147,12 +123,13 @@ namespace SIL.Machine.Annotations
 
 		public bool Equals(Span<TOffset> other)
 		{
-			return _spanFactory.EqualityComparer.Equals(_start, other._start) && _spanFactory.EqualityComparer.Equals(_end, other._end);
+			return SpanFactory.EqualityComparer.Equals(Start, other.Start)
+				&& SpanFactory.EqualityComparer.Equals(End, other.End);
 		}
 
 		public override string ToString()
 		{
-			return string.Format("[{0}, {1}]", _start, _end);
+			return string.Format("[{0}, {1}]", Start, End);
 		}
 	}
 }

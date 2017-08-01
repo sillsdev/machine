@@ -6,10 +6,6 @@ namespace SIL.Machine.Annotations
 {
 	public abstract class SpanFactory<TOffset>
 	{
-		private readonly bool _includeEndpoint;
-		private readonly IComparer<TOffset> _comparer;
-		private readonly IEqualityComparer<TOffset> _equalityComparer; 
-
 		protected SpanFactory()
 			: this(false)
 		{
@@ -22,47 +18,20 @@ namespace SIL.Machine.Annotations
 
 		protected SpanFactory(bool includeEndpoint, IComparer<TOffset> comparer, IEqualityComparer<TOffset> equalityComparer)
 		{
-			_includeEndpoint = includeEndpoint;
-			_comparer = comparer;
-			_equalityComparer = equalityComparer;
+			IncludeEndpoint = includeEndpoint;
+			Comparer = comparer;
+			EqualityComparer = equalityComparer;
 		}
 
-		public abstract Span<TOffset> Empty { get; }
+		public Span<TOffset> Empty { get; protected set; }
 
-		public bool IncludeEndpoint
-		{
-			get { return _includeEndpoint; }
-		}
+		public bool IncludeEndpoint { get; }
 
-		public IComparer<TOffset> Comparer
-		{
-			get { return _comparer; }
-		}
+		public IComparer<TOffset> Comparer { get; }
 
-		public IEqualityComparer<TOffset> EqualityComparer
-		{
-			get { return _equalityComparer; }
-		}
+		public IEqualityComparer<TOffset> EqualityComparer { get; }
 
-		public abstract int CalcLength(TOffset start, TOffset end);
-
-		public int CalcLength(TOffset start, TOffset end, Direction dir)
-		{
-			TOffset actualStart;
-			TOffset actualEnd;
-			if (dir == Direction.LeftToRight)
-			{
-				actualStart = start;
-				actualEnd = end;
-			}
-			else
-			{
-				actualStart = end;
-				actualEnd = start;
-			}
-
-			return CalcLength(actualStart, actualEnd);
-		}
+		protected internal abstract int CalcLength(TOffset start, TOffset end);
 
 		public bool IsValidSpan(TOffset start, TOffset end)
 		{
@@ -71,41 +40,15 @@ namespace SIL.Machine.Annotations
 
 		public bool IsValidSpan(TOffset start, TOffset end, Direction dir)
 		{
-			TOffset actualStart;
-			TOffset actualEnd;
-			if (dir == Direction.LeftToRight)
+			if (dir == Direction.RightToLeft)
 			{
-				actualStart = start;
-				actualEnd = end;
-			}
-			else
-			{
-				actualStart = end;
-				actualEnd = start;
+				TOffset temp = start;
+				start = end;
+				end = temp;
 			}
 
-			int compare = _comparer.Compare(actualStart, actualEnd);
-			return _includeEndpoint ? compare <= 0 : compare < 0;
-		}
-
-		public abstract bool IsRange(TOffset start, TOffset end);
-
-		public bool IsRange(TOffset start, TOffset end, Direction dir)
-		{
-			TOffset actualStart;
-			TOffset actualEnd;
-			if (dir == Direction.LeftToRight)
-			{
-				actualStart = start;
-				actualEnd = end;
-			}
-			else
-			{
-				actualStart = end;
-				actualEnd = start;
-			}
-
-			return IsRange(actualStart, actualEnd);
+			int compare = Comparer.Compare(start, end);
+			return IncludeEndpoint ? compare <= 0 : compare < 0;
 		}
 
 		public Span<TOffset> Create(TOffset start, TOffset end)
@@ -113,25 +56,19 @@ namespace SIL.Machine.Annotations
 			return Create(start, end, Direction.LeftToRight);
 		}
 
-		public Span<TOffset> Create(TOffset start, TOffset end, Direction dir)
+		public virtual Span<TOffset> Create(TOffset start, TOffset end, Direction dir)
 		{
-			TOffset actualStart;
-			TOffset actualEnd;
-			if (dir == Direction.LeftToRight)
+			if (dir == Direction.RightToLeft)
 			{
-				actualStart = start;
-				actualEnd = end;
-			}
-			else
-			{
-				actualStart = end;
-				actualEnd = start;
+				TOffset temp = start;
+				start = end;
+				end = temp;
 			}
 
-			if (!IsValidSpan(actualStart, actualEnd))
-				throw new ArgumentException("The start offset is greater than the end offset.", "start");
+			if (!IsValidSpan(start, end))
+				throw new ArgumentException("The start offset is greater than the end offset.", nameof(start));
 
-			return new Span<TOffset>(this, actualStart, actualEnd);
+			return new Span<TOffset>(this, start, end);
 		}
 
 		public Span<TOffset> Create(TOffset offset)
@@ -139,6 +76,9 @@ namespace SIL.Machine.Annotations
 			return Create(offset, Direction.LeftToRight);
 		}
 
-		public abstract Span<TOffset> Create(TOffset offset, Direction dir);
+		public virtual Span<TOffset> Create(TOffset offset, Direction dir)
+		{
+			return Create(offset, offset, dir);
+		}
 	}
 }

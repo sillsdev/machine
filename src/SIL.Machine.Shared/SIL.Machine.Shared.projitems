@@ -15,6 +15,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)DataStructures\Direction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tokenization\IDetokenizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tokenization\ITokenizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\LatinSentenceTokenizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tokenization\LatinWordTokenizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tokenization\RegexTokenizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tokenization\SimpleStringDetokenizer.cs" />

@@ -7,7 +7,7 @@ namespace SIL.Machine.Tokenization
 {
 	public class LatinWordTokenizer : WhitespaceTokenizer
 	{
-		private readonly Regex _innerWordPunctRegex = new Regex("\\G[&'\\-.:=?@\xAD\xB7\u2010\u2011\u2019\u2027]|_+");
+		private static readonly Regex InnerWordPunctRegex = new Regex("\\G[&'\\-.:=?@\xAD\xB7\u2010\u2011\u2019\u2027]|_+");
 		private readonly HashSet<string> _abbreviations;
 
 		public LatinWordTokenizer()
@@ -31,9 +31,9 @@ namespace SIL.Machine.Tokenization
 			_abbreviations = new HashSet<string>(abbreviations.Select(ToLower));
 		}
 
-		public override IEnumerable<Span<int>> Tokenize(string data)
+		public override IEnumerable<Span<int>> Tokenize(string data, Span<int> dataSpan)
 		{
-			foreach (Span<int> span in base.Tokenize(data))
+			foreach (Span<int> span in base.Tokenize(data, dataSpan))
 			{
 				int wordStart = -1;
 				int innerWordPunct = -1;
@@ -53,7 +53,7 @@ namespace SIL.Machine.Tokenization
 						}
 						else
 						{
-							Match match = _innerWordPunctRegex.Match(data, i);
+							Match match = InnerWordPunctRegex.Match(data, i);
 							if (match.Success)
 							{
 								innerWordPunct = i;

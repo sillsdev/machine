@@ -258,7 +258,8 @@ namespace SIL.Machine.Annotations
 			if (startAnn.CompareTo(endAnn) > 0)
 				return Enumerable.Empty<Annotation<TOffset>>();
 
-			return this.GetNodes(dir == Direction.LeftToRight ? startAnn : endAnn, dir == Direction.LeftToRight ? endAnn : startAnn, dir).Where(ann => span.Contains(ann.Span));
+			return this.GetNodes(dir == Direction.LeftToRight ? startAnn : endAnn,
+				dir == Direction.LeftToRight ? endAnn : startAnn, dir).Where(ann => span.Contains(ann.Span));
 		}
 
 		public override void Clear()

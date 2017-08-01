@@ -17,10 +17,18 @@ namespace SIL.Machine.Tokenization
 
 		protected SpanFactory<int> SpanFactory { get; }
 
-		public virtual IEnumerable<Span<int>> Tokenize(string data)
+		public IEnumerable<Span<int>> Tokenize(string data)
 		{
+			return Tokenize(data, data.Length == 0 ? SpanFactory.Empty : SpanFactory.Create(0, data.Length));
+		}
+
+		public virtual IEnumerable<Span<int>> Tokenize(string data, Span<int> dataSpan)
+		{
+			if (dataSpan.IsEmpty)
+				yield break;
+
 			int startIndex = -1;
-			for (int i = 0; i < data.Length; i++)
+			for (int i = dataSpan.Start; i < dataSpan.End; i++)
 			{
 				if (char.IsWhiteSpace(data[i]))
 				{

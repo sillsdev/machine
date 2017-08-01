@@ -154,7 +154,7 @@ namespace SIL.Machine.Matching
 				TOffset start, end;
 				if (_fsa.GetOffsets(groupName, match.Registers, out start, out end))
 				{
-					if (_spanFactory.IsValidSpan(start, end) && _spanFactory.IsRange(start, end))
+					if (_spanFactory.IsValidSpan(start, end))
 					{
 						Span<TOffset> span = _spanFactory.Create(start, end);
 						if (matchSpan.Contains(span))
