@@ -23,7 +23,10 @@ namespace SIL.Machine.Tokenization
 
 		public IEnumerable<Span<int>> Tokenize(string data)
 		{
-			return Tokenize(data, data.Length == 0 ? _spanFactory.Empty : _spanFactory.Create(0, data.Length));
+			if (data == "")
+				return Enumerable.Empty<Span<int>>();
+
+			return Tokenize(data, _spanFactory.Create(0, data.Length));
 		}
 
 		public IEnumerable<Span<int>> Tokenize(string data, Span<int> dataSpan)

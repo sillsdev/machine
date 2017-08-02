@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using SIL.Machine.Annotations;
+using System.Linq;
 
 namespace SIL.Machine.Tokenization
 {
@@ -19,7 +20,10 @@ namespace SIL.Machine.Tokenization
 
 		public IEnumerable<Span<int>> Tokenize(string data)
 		{
-			return Tokenize(data, data.Length == 0 ? SpanFactory.Empty : SpanFactory.Create(0, data.Length));
+			if (data == "")
+				return Enumerable.Empty<Span<int>>();
+
+			return Tokenize(data, SpanFactory.Create(0, data.Length));
 		}
 
 		public virtual IEnumerable<Span<int>> Tokenize(string data, Span<int> dataSpan)

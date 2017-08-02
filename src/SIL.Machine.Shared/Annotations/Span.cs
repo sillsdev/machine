@@ -48,6 +48,11 @@ namespace SIL.Machine.Annotations
 
 		public bool Overlaps(Span<TOffset> other)
 		{
+			if (IsEmpty)
+				return other.IsEmpty;
+			if (other.IsEmpty)
+				return false;
+
 			if (SpanFactory.IncludeEndpoint)
 			{
 				return SpanFactory.Comparer.Compare(Start, other.End) <= 0
@@ -70,7 +75,13 @@ namespace SIL.Machine.Annotations
 
 		public bool Contains(Span<TOffset> other)
 		{
-			return SpanFactory.Comparer.Compare(Start, other.Start) <= 0 && SpanFactory.Comparer.Compare(End, other.End) >= 0;
+			if (IsEmpty)
+				return other.IsEmpty;
+			if (other.IsEmpty)
+				return false;
+
+			return SpanFactory.Comparer.Compare(Start, other.Start) <= 0
+				&& SpanFactory.Comparer.Compare(End, other.End) >= 0;
 		}
 
 		public bool Contains(TOffset offset)
@@ -95,6 +106,11 @@ namespace SIL.Machine.Annotations
 
 		public int CompareTo(Span<TOffset> other)
 		{
+			if (IsEmpty)
+				return other.IsEmpty ? 0 : -1;
+			if (other.IsEmpty)
+				return 1;
+
 			int res = SpanFactory.Comparer.Compare(Start, other.Start);
 			if (res == 0)
 				res = -SpanFactory.Comparer.Compare(End, other.End);
