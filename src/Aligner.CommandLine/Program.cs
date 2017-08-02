@@ -201,14 +201,14 @@ namespace SIL.Machine.Translation
 					sourceIndices[j] = prev == -1 ? -1 : matrix.RowCount + prev;
 			}
 
-			// all remaining target indices should be unaligned
+			// all remaining target indices are unaligned, so fill them in
+			prev = -1;
 			for (int i = 0; i < matrix.RowCount; i++)
 			{
 				if (targetIndices[i] == -2)
-				{
-					prev = i == 0 ? -1 : targetIndices[i - 1];
 					targetIndices[i] = prev == -1 ? -1 : matrix.ColumnCount + prev;
-				}
+				else
+					prev = targetIndices[i];
 			}
 
 			return string.Join(" ", alignedIndices.Select(t => AlignedWordsString(swaModel, invSwaModel, includeProbs, source,
