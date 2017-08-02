@@ -111,8 +111,8 @@ namespace SIL.Machine.Annotations
 		public override int GetHashCode()
 		{
 			int code = 23;
-			code = code * 31 + (_start == null ? 0 : _spanFactory.EqualityComparer.GetHashCode(_start));
-			code = code * 31 + (_end == null ? 0 : _spanFactory.EqualityComparer.GetHashCode(_end));
+			code = code * 31 + (Start == null ? 0 : SpanFactory.EqualityComparer.GetHashCode(Start));
+			code = code * 31 + (End == null ? 0 : SpanFactory.EqualityComparer.GetHashCode(End));
 			return code;
 		}
 

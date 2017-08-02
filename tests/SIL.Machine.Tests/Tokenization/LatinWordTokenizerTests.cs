@@ -46,5 +46,13 @@ namespace SIL.Machine.Tokenization
 			var tokenizer = new LatinWordTokenizer(new[] {"mr", "dr", "ms"});
 			Assert.That(tokenizer.TokenizeToStrings("Mr. Smith went to Washington."), Is.EqualTo(new[] {"Mr.", "Smith", "went", "to", "Washington", "."}));
 		}
+
+		[Test]
+		public void Tokenize_Quotes_ReturnsTokens()
+		{
+			var tokenizer = new LatinWordTokenizer();
+			Assert.That(tokenizer.TokenizeToStrings("\"This is a test.\""),
+				Is.EqualTo(new[] {"\"", "This", "is", "a", "test", ".", "\""}));
+		}
 	}
 }

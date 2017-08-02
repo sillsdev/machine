@@ -50,6 +50,7 @@ namespace SIL.Machine.Tokenization
 						{
 							yield return SpanFactory.Create(wordStart, innerWordPunct);
 							yield return SpanFactory.Create(innerWordPunct, i);
+							wordStart = i;
 						}
 						else
 						{
@@ -63,8 +64,8 @@ namespace SIL.Machine.Tokenization
 
 							yield return SpanFactory.Create(wordStart, i);
 							yield return SpanFactory.Create(i);
+							wordStart = -1;
 						}
-						wordStart = -1;
 					}
 					else if (wordStart == -1)
 					{
