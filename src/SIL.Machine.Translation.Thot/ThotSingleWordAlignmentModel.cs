@@ -87,57 +87,16 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public double GetAlignmentProbability(WordAlignmentMatrix matrix, int targetIndex)
+		/// <summary>
+		/// Gets the alignment probability from the HMM single word alignment model. Use -1 for unaligned indices that occur
+		/// before the first aligned index. Other unaligned indices are indicated by adding the source length to the previously
+		/// aligned index.
+		/// </summary>
+		public double GetAlignmentProbability(int sourceLen, int prevSourceIndex, int sourceIndex)
 		{
-			double maxProb = -1;
-			foreach (uint prevI in GetSourcePositionIndices(matrix, targetIndex - 1))
-			{
-				foreach (uint i in GetSourcePositionIndices(matrix, targetIndex))
-				{
-					
-					double prob = Thot.swAlignModel_getAlignmentProbability(Handle, prevI, (uint) matrix.RowCount, i);
-					maxProb = Math.Max(maxProb, prob);
-				}
-			}
-			return maxProb;
-		}
-
-		private static IEnumerable<uint> GetSourcePositionIndices(WordAlignmentMatrix matrix, int j)
-		{
-			if (j < 0)
-			{
-				yield return 0;
-			}
-			else
-			{
-				bool aligned = false;
-				foreach (int curI in matrix.GetColumnAlignedIndices(j))
-				{
-					// add 1 to convert the matrix index to a Thot position index, which is 1-based
-					yield return (uint) curI + 1;
-					aligned = true;
-				}
-				if (!aligned)
-				{
-					// check if there are no aligned source indices before this target index
-					do
-					{
-						j--;
-					} while (j >= 0 && matrix.IsColumnAligned(j) == AlignmentType.NotAligned);
-
-					if (j < 0)
-					{
-						yield return 0;
-					}
-					else
-					{
-						// if the target index does not align with anything, then return all null position indices
-						// [source length + 1, source length * 2]
-						for (uint i = 0; i < matrix.RowCount; i++)
-							yield return (uint) matrix.RowCount + i + 1;
-					}
-				}
-			}
+			// add 1 to convert the specified indices to Thot position indices, which are 1-based
+			return Thot.swAlignModel_getAlignmentProbability(Handle, (uint) (prevSourceIndex + 1), (uint) sourceLen,
+				(uint) (sourceIndex + 1));
 		}
 
 		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,

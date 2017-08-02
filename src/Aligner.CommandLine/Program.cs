@@ -130,10 +130,8 @@ namespace SIL.Machine.Translation
 												.ToArray();
 											WordAlignmentMatrix matrix = aligner.GetBestAlignment(sourceTokens, targetTokens,
 												segment.CreateAlignmentMatrix(true));
-											WordAlignmentMatrix invMatrix = matrix.Clone();
-											invMatrix.Transpose();
 											writer.WriteLine(OutputAlignmentString(swaModel, invSwaModel, probOption.HasValue(),
-												sourceTokens, targetTokens, matrix, invMatrix));
+												sourceTokens, targetTokens, matrix));
 											j++;
 											progress.Report((double) j / segmentCount);
 										}
@@ -175,27 +173,65 @@ namespace SIL.Machine.Translation
 
 		private static string OutputAlignmentString(ThotSingleWordAlignmentModel swaModel,
 			ThotSingleWordAlignmentModel invSwaModel, bool includeProbs, IReadOnlyList<string> source,
-			IReadOnlyList<string> target, WordAlignmentMatrix matrix, WordAlignmentMatrix invMatrix)
+			IReadOnlyList<string> target, WordAlignmentMatrix matrix)
 		{
-			return string.Join(" ", Enumerable.Range(0, matrix.RowCount)
-				.SelectMany(si => Enumerable.Range(0, matrix.ColumnCount), (si, ti) => (SourceIndex: si, TargetIndex: ti))
-				.Where(t => matrix[t.SourceIndex, t.TargetIndex] == AlignmentType.Aligned)
-				.Select(t => AlignedWordsString(swaModel, invSwaModel, includeProbs, source, target, matrix, invMatrix,
-					t.SourceIndex, t.TargetIndex)));
+			var sourceIndices = new int[matrix.ColumnCount];
+			int[] targetIndices = Enumerable.Repeat(-2, matrix.RowCount).ToArray();
+			var alignedIndices = new List<(int SourceIndex, int TargetIndex)>();
+			int prev = -1;
+			for (int j = 0; j < matrix.ColumnCount; j++)
+			{
+				bool found = false;
+				for (int i = 0; i < matrix.RowCount; i++)
+				{
+					if (matrix[i, j] == AlignmentType.Aligned)
+					{
+						if (!found)
+							sourceIndices[j] = i;
+						if (targetIndices[i] == -2)
+							targetIndices[i] = j;
+						alignedIndices.Add((i, j));
+						prev = i;
+						found = true;
+					}
+				}
+
+				// unaligned indices
+				if (!found)
+					sourceIndices[j] = prev == -1 ? -1 : matrix.RowCount + prev;
+			}
+
+			// all remaining target indices should be unaligned
+			for (int i = 0; i < matrix.RowCount; i++)
+			{
+				if (targetIndices[i] == -2)
+				{
+					prev = i == 0 ? -1 : targetIndices[i - 1];
+					targetIndices[i] = prev == -1 ? -1 : matrix.ColumnCount + prev;
+				}
+			}
+
+			return string.Join(" ", alignedIndices.Select(t => AlignedWordsString(swaModel, invSwaModel, includeProbs, source,
+				target, sourceIndices, targetIndices, t.SourceIndex, t.TargetIndex)));
 		}
 
 		private static string AlignedWordsString(ThotSingleWordAlignmentModel swaModel, ThotSingleWordAlignmentModel invSwaModel,
-			bool includeProbs, IReadOnlyList<string> source, IReadOnlyList<string> target, WordAlignmentMatrix matrix,
-			WordAlignmentMatrix invMatrix, int sourceIndex, int targetIndex)
+			bool includeProbs, IReadOnlyList<string> source, IReadOnlyList<string> target, int[] sourceIndices,
+			int[] targetIndices, int sourceIndex, int targetIndex)
 		{
 			if (includeProbs)
 			{
 				string sourceWord = source[sourceIndex];
 				string targetWord = target[targetIndex];
-				double transProb = Math.Max(swaModel.GetTranslationProbability(sourceWord, targetWord),
-					invSwaModel.GetTranslationProbability(targetWord, sourceWord));
-				double alignProb = Math.Max(swaModel.GetAlignmentProbability(matrix, targetIndex),
-					invSwaModel.GetAlignmentProbability(invMatrix, sourceIndex));
+				double transProb = swaModel.GetTranslationProbability(sourceWord, targetWord);
+				double invTransProb = invSwaModel.GetTranslationProbability(targetWord, sourceWord);
+				double maxTransProb = Math.Max(transProb, invTransProb);
+
+				double alignProb = swaModel.GetAlignmentProbability(source.Count,
+					targetIndex == 0 ? -1 : sourceIndices[targetIndex - 1], sourceIndex);
+				double invAlignProb = invSwaModel.GetAlignmentProbability(target.Count,
+					sourceIndex == 0 ? -1 : targetIndices[sourceIndex - 1], targetIndex);
+				double maxAlignProb = Math.Max(alignProb, invAlignProb);
 				return $"{sourceIndex}-{targetIndex}:{transProb:0.########}:{alignProb:0.########}";
 			}
 
