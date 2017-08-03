@@ -1,11 +1,10 @@
 ﻿using System.IO;
 using System.Linq;
-using ICSharpCode.SharpZipLib.GZip;
-using ICSharpCode.SharpZipLib.Tar;
 using Microsoft.Extensions.Options;
 using SIL.Machine.Translation;
 using SIL.Machine.Translation.Thot;
 using SIL.Machine.WebApi.Server.Options;
+using System.IO.Compression;
 
 namespace SIL.Machine.WebApi.Server.Services
 {
@@ -31,12 +30,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			string engineDir = Path.Combine(_rootDir, engineId);
 			if (!Directory.Exists(engineDir))
 				Directory.CreateDirectory(engineDir);
-			using (Stream fileStream = File.OpenRead(_options.NewModelFile))
-			using (Stream gzipStream = new GZipInputStream(fileStream))
-			using (TarArchive archive = TarArchive.CreateInputTarArchive(gzipStream))
-			{
-				archive.ExtractContents(engineDir);
-			}
+			ZipFile.ExtractToDirectory(_options.NewModelFile, engineDir);
 		}
 
 		public void CleanupModel(string engineId)
