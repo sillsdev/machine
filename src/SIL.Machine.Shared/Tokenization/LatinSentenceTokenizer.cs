@@ -12,10 +12,10 @@ namespace SIL.Machine.Tokenization
 			".", "!", "?", "\u203C", "\u203D", "\u2047", "\u2048", "\u2049", "\u3002", "\uFE52", "\uFE57", "\uFF01", "\uFF0E",
 			"\uFF1F", "\uFF61"
 		};
-		private static readonly HashSet<string> ClosingQuotes = new HashSet<string> {"\'", "\u2019", "\"", "\u201D", "»", "›"};
-		private static readonly HashSet<string> ClosingBrackets = new HashSet<string> {"]", ")"};
-		private static readonly Regex NewLineRegex = new Regex("\n|\r\n?|$");
-		
+		private static readonly HashSet<string> ClosingQuotes = new HashSet<string> { "\'", "\u2019", "\"", "\u201D", "»", "›" };
+		private static readonly HashSet<string> ClosingBrackets = new HashSet<string> { "]", ")" };
+		private static readonly Regex NewLineRegex = new Regex("\n|\r\n?");
+
 		public LatinSentenceTokenizer()
 			: this(new IntegerSpanFactory())
 		{
@@ -44,45 +44,56 @@ namespace SIL.Machine.Tokenization
 			int lineStart = 0;
 			foreach (Match match in NewLineRegex.Matches(data.Substring(0, dataSpan.End), dataSpan.Start))
 			{
-				int sentenceStart = -1, sentenceEnd = -1;
-				bool inEnd = false, hasEndQuotesBrackets = false;
-				foreach (Span<int> wordSpan in base.Tokenize(data, SpanFactory.Create(lineStart, match.Index + match.Length)))
+				foreach (Span<int> sentenceSpan in TokenizeLine(data, lineStart, match.Index + match.Length))
+					yield return sentenceSpan;
+				lineStart = match.Index + match.Length;
+			}
+
+			if (lineStart < dataSpan.End)
+			{
+				foreach (Span<int> sentenceSpan in TokenizeLine(data, lineStart, dataSpan.End))
+					yield return sentenceSpan;
+			}
+		}
+
+		private IEnumerable<Span<int>> TokenizeLine(string data, int start, int end)
+		{
+			int sentenceStart = -1, sentenceEnd = -1;
+			bool inEnd = false, hasEndQuotesBrackets = false;
+			foreach (Span<int> wordSpan in base.Tokenize(data, SpanFactory.Create(start, end)))
+			{
+				if (sentenceStart == -1)
+					sentenceStart = wordSpan.Start;
+				string word = data.Substring(wordSpan.Start, wordSpan.Length);
+				if (!inEnd)
 				{
-					if (sentenceStart == -1)
-						sentenceStart = wordSpan.Start;
-					string word = data.Substring(wordSpan.Start, wordSpan.Length);
-					if (!inEnd)
+					if (SentenceTerminals.Contains(word))
+						inEnd = true;
+				}
+				else
+				{
+					if (ClosingQuotes.Contains(word) || ClosingBrackets.Contains(word))
 					{
-						if (SentenceTerminals.Contains(word))
-							inEnd = true;
+						hasEndQuotesBrackets = true;
+					}
+					else if (hasEndQuotesBrackets && char.IsLower(word[0]))
+					{
+						inEnd = false;
+						hasEndQuotesBrackets = false;
 					}
 					else
 					{
-						if (ClosingQuotes.Contains(word) || ClosingBrackets.Contains(word))
-						{
-							hasEndQuotesBrackets = true;
-						}
-						else if (hasEndQuotesBrackets && char.IsLower(word[0]))
-						{
-							inEnd = false;
-							hasEndQuotesBrackets = false;
-						}
-						else
-						{
-							yield return SpanFactory.Create(sentenceStart, sentenceEnd);
-							sentenceStart = wordSpan.Start;
-							inEnd = false;
-							hasEndQuotesBrackets = false;
-						}
+						yield return SpanFactory.Create(sentenceStart, sentenceEnd);
+						sentenceStart = wordSpan.Start;
+						inEnd = false;
+						hasEndQuotesBrackets = false;
 					}
-					sentenceEnd = wordSpan.End;
 				}
-
-				if (sentenceStart != -1 && sentenceEnd != -1)
-					yield return SpanFactory.Create(sentenceStart, sentenceEnd);
-				
-				lineStart = match.Index + match.Length;
+				sentenceEnd = wordSpan.End;
 			}
+
+			if (sentenceStart != -1 && sentenceEnd != -1)
+				yield return SpanFactory.Create(sentenceStart, sentenceEnd);
 		}
 	}
 }

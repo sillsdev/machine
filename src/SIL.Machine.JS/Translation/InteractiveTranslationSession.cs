@@ -52,7 +52,7 @@ namespace SIL.Machine.Translation
 
 		public string[] UpdatePrefix(string prefix)
 		{
-			Span<int>[] tokenSpans = _engine.TargetTokenizer.Tokenize(prefix).ToArray();
+			Span<int>[] tokenSpans = _engine.TargetWordTokenizer.Tokenize(prefix).ToArray();
 			Prefix = tokenSpans.Select(s => prefix.Substring(s.Start, s.Length)).ToArray();
 			IsLastWordComplete = tokenSpans.Length == 0 || tokenSpans[tokenSpans.Length - 1].End != prefix.Length;
 
@@ -79,8 +79,8 @@ namespace SIL.Machine.Translation
 
 		private void UpdateSuggestion()
 		{
-			string[] suggestions = TranslationSuggester.GetSuggestedWordIndices(Prefix, IsLastWordComplete, _curResult, _confidenceThreshold)
-				.Select(j => _curResult.TargetSegment[j]).ToArray();
+			string[] suggestions = TranslationSuggester.GetSuggestedWordIndices(Prefix, IsLastWordComplete, _curResult,
+				_confidenceThreshold).Select(j => _curResult.TargetSegment[j]).ToArray();
 
 			CurrentSuggestion = suggestions;
 		}

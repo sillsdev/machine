@@ -11,7 +11,10 @@ namespace SIL.Machine.WebApi.Client
 {
 	public class TranslationRestClient
 	{
-		private readonly JsonSerializerSettings _serializerSettings;
+		public static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
+		{
+			ContractResolver = new CamelCasePropertyNamesContractResolver()
+		};
 
 		public TranslationRestClient(string baseUrl, string projectId, IHttpClient httpClient)
 		{
@@ -19,7 +22,6 @@ namespace SIL.Machine.WebApi.Client
 			HttpClient = httpClient;
 			ErrorCorrectionModel = new ErrorCorrectionModel();
 			HttpClient.BaseUrl = baseUrl;
-			_serializerSettings = new JsonSerializerSettings {ContractResolver = new CamelCasePropertyNamesContractResolver()};
 		}
 
 		public string ProjectId { get; }
@@ -30,12 +32,12 @@ namespace SIL.Machine.WebApi.Client
 		public async Task<InteractiveTranslationResult> TranslateInteractivelyAsync(IReadOnlyList<string> sourceSegment)
 		{
 			string url = string.Format("translation/engines/project:{0}/actions/interactiveTranslate", ProjectId);
-			string body = JsonConvert.SerializeObject(sourceSegment, _serializerSettings);
+			string body = JsonConvert.SerializeObject(sourceSegment, SerializerSettings);
 			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Post, url, body, "application/json");
 			if (!response.IsSuccess)
 				throw new HttpException("Error calling interactiveTranslate action.") {StatusCode = response.StatusCode};
 			var resultDto = JsonConvert.DeserializeObject<InteractiveTranslationResultDto>(response.Content,
-				_serializerSettings);
+				SerializerSettings);
 			return CreateModel(resultDto, sourceSegment);
 		}
 
@@ -47,7 +49,7 @@ namespace SIL.Machine.WebApi.Client
 				SourceSegment = sourceSegment.ToArray(),
 				TargetSegment = targetSegment.ToArray()
 			};
-			string body = JsonConvert.SerializeObject(pairDto, _serializerSettings);
+			string body = JsonConvert.SerializeObject(pairDto, SerializerSettings);
 			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Post, url, body, "application/json");
 			if (!response.IsSuccess)
 				throw new HttpException("Error calling trainSegment action.") {StatusCode = response.StatusCode};
@@ -67,7 +69,7 @@ namespace SIL.Machine.WebApi.Client
 			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url);
 			if (!response.IsSuccess)
 				throw new HttpException("Error getting build.") {StatusCode = response.StatusCode};
-			BuildDto buildDto = JsonConvert.DeserializeObject<BuildDto>(response.Content, _serializerSettings);
+			BuildDto buildDto = JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
 			await PollBuildProgressAsync(buildDto, progress);
 		}
 
@@ -77,18 +79,18 @@ namespace SIL.Machine.WebApi.Client
 			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url);
 			if (!response.IsSuccess)
 				throw new HttpException("Error getting engine identifier.") {StatusCode = response.StatusCode};
-			var engineDto = JsonConvert.DeserializeObject<EngineDto>(response.Content, _serializerSettings);
+			var engineDto = JsonConvert.DeserializeObject<EngineDto>(response.Content, SerializerSettings);
 			return engineDto.Id;
 		}
 
 		private async Task<BuildDto> CreateBuildAsync(string engineId)
 		{
-			string body = JsonConvert.SerializeObject(engineId, _serializerSettings);
+			string body = JsonConvert.SerializeObject(engineId, SerializerSettings);
 			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Post, "translation/builds", body,
 				"application/json");
 			if (!response.IsSuccess)
 				throw new HttpException("Error starting build.") {StatusCode = response.StatusCode};
-			return JsonConvert.DeserializeObject<BuildDto>(response.Content, _serializerSettings);
+			return JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
 		}
 
 		private async Task PollBuildProgressAsync(BuildDto buildDto, Action<SmtTrainProgress> progress)
@@ -100,7 +102,7 @@ namespace SIL.Machine.WebApi.Client
 				string url = string.Format("translation/builds/id:{0}?minRevision={1}", buildDto.Id, buildDto.Revision + 1);
 				HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url);
 				if (response.IsSuccess)
-					buildDto = JsonConvert.DeserializeObject<BuildDto>(response.Content, _serializerSettings);
+					buildDto = JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
 				else if (response.StatusCode == 404)
 					break;
 				else

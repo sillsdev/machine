@@ -23,28 +23,31 @@ namespace SIL.Machine.Tokenization
 		public void Tokenize_PunctuationAtEndOfWord_ReturnsTokens()
 		{
 			var tokenizer = new LatinWordTokenizer();
-			Assert.That(tokenizer.TokenizeToStrings("This is a test."), Is.EqualTo(new[] {"This", "is", "a", "test", "."}));
+			Assert.That(tokenizer.TokenizeToStrings("This is a test."), Is.EqualTo(new[] { "This", "is", "a", "test", "." }));
 		}
 
 		[Test]
 		public void Tokenize_PunctuationAtStartOfWord_ReturnsTokens()
 		{
 			var tokenizer = new LatinWordTokenizer();
-			Assert.That(tokenizer.TokenizeToStrings("Is this a \"test\"?"), Is.EqualTo(new[] {"Is", "this", "a", "\"", "test", "\"", "?"}));
+			Assert.That(tokenizer.TokenizeToStrings("Is this a \"test\"?"),
+				Is.EqualTo(new[] { "Is", "this", "a", "\"", "test", "\"", "?" }));
 		}
 
 		[Test]
 		public void Tokenize_PunctuationInsideWord_ReturnsTokens()
 		{
 			var tokenizer = new LatinWordTokenizer();
-			Assert.That(tokenizer.TokenizeToStrings("This isn't a test."), Is.EqualTo(new[] {"This", "isn't", "a", "test", "."}));
+			Assert.That(tokenizer.TokenizeToStrings("This isn't a test."),
+				Is.EqualTo(new[] { "This", "isn't", "a", "test", "." }));
 		}
 
 		[Test]
 		public void Tokenize_Abbreviation_ReturnsTokens()
 		{
-			var tokenizer = new LatinWordTokenizer(new[] {"mr", "dr", "ms"});
-			Assert.That(tokenizer.TokenizeToStrings("Mr. Smith went to Washington."), Is.EqualTo(new[] {"Mr.", "Smith", "went", "to", "Washington", "."}));
+			var tokenizer = new LatinWordTokenizer(new[] { "mr", "dr", "ms" });
+			Assert.That(tokenizer.TokenizeToStrings("Mr. Smith went to Washington."),
+				Is.EqualTo(new[] { "Mr.", "Smith", "went", "to", "Washington", "." }));
 		}
 
 		[Test]
@@ -52,7 +55,7 @@ namespace SIL.Machine.Tokenization
 		{
 			var tokenizer = new LatinWordTokenizer();
 			Assert.That(tokenizer.TokenizeToStrings("\"This is a test.\""),
-				Is.EqualTo(new[] {"\"", "This", "is", "a", "test", ".", "\""}));
+				Is.EqualTo(new[] { "\"", "This", "is", "a", "test", ".", "\"" }));
 		}
 	}
 }
