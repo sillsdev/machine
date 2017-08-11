@@ -8,12 +8,7 @@ namespace SIL.Machine.Translation
 {
 	public class TranslationEngine
 	{
-		public TranslationEngine(string baseUrl, string projectId)
-			: this(baseUrl, projectId, new AjaxHttpClient())
-		{
-		}
-
-		public TranslationEngine(string baseUrl, string projectId, IHttpClient httpClient)
+		public TranslationEngine(string baseUrl, string projectId, IHttpClient httpClient = null)
 		{
 			var wordTokenizer = new LatinWordTokenizer();
 			SourceWordTokenizer = wordTokenizer;
@@ -23,15 +18,14 @@ namespace SIL.Machine.Translation
 			TargetSegmentTokenizer = segmentTokenizer;
 			if (!baseUrl.EndsWith("/"))
 				baseUrl += "/";
-			RestClient = new TranslationRestClient(baseUrl, projectId, httpClient);
+			RestClient = new TranslationRestClient(baseUrl, projectId, httpClient ?? new AjaxHttpClient());
 			ErrorCorrectionModel = new ErrorCorrectionModel();
 		}
 
-		public ITokenizer<string, int> SourceWordTokenizer { get; set; }
-		public ITokenizer<string, int> TargetWordTokenizer { get; set; }
-		public ITokenizer<string, int> SourceSegmentTokenizer { get; set; }
-		public ITokenizer<string, int> TargetSegmentTokenizer { get; set; }
-
+		internal ITokenizer<string, int> SourceWordTokenizer { get; set; }
+		internal ITokenizer<string, int> TargetWordTokenizer { get; set; }
+		internal ITokenizer<string, int> SourceSegmentTokenizer { get; set; }
+		internal ITokenizer<string, int> TargetSegmentTokenizer { get; set; }
 		internal TranslationRestClient RestClient { get; }
 		internal ErrorCorrectionModel ErrorCorrectionModel { get; }
 

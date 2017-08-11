@@ -40,9 +40,11 @@
 
   "fileNameCasing": "Lowercase",
 
-  "fileName": "sil.machine.js",
+  "fileName": "machine.js",
 
-  "outputFormatting": "Formatted"
+  "outputFormatting": "Formatted",
+
+  "combineScripts": true
 
   // More config options available at
   // https://github.com/bridgedotnet/Bridge/wiki/global-configuration

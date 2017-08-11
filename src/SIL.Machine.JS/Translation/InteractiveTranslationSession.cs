@@ -26,8 +26,8 @@ namespace SIL.Machine.Translation
 			UpdatePrefix("");
 		}
 
-		public WordGraph SmtWordGraph { get; }
-		public TranslationResult RuleResult { get; }
+		internal WordGraph SmtWordGraph { get; }
+		internal TranslationResult RuleResult { get; }
 
 		public string[] SourceSegment { get; }
 

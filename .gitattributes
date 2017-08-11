@@ -1,2 +1,3 @@
 *.sh eol=lf
+*.ts eol=lf
 build/machine-web-api eol=lf
