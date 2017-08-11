@@ -42,7 +42,7 @@
 
   "outputFormatting": "Formatted",
 
-  "fileName": "sil.machine.tests.js"
+  "fileName": "machine.tests.js"
 
   // More config options available at
   // https://github.com/bridgedotnet/Bridge/wiki/global-configuration

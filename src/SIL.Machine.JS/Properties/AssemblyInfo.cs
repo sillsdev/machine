@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Bridge;
+using System.Runtime.CompilerServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
@@ -27,3 +28,4 @@ using Bridge;
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
 [assembly: Convention(Target = ConventionTarget.Member, Notation = Notation.LowerCamelCase)]
+[assembly: InternalsVisibleTo("SIL.Machine.JS.Tests")]
