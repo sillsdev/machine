@@ -1,15 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
-    <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8</PackageTargetFallback>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <Import Project="../AssemblyInfo.props" />
 
   <ItemGroup>
-    <PackageReference Include="System.ValueTuple" Version="4.3.1" />
-    <PackageReference Include="Thot" Version="1.0.0-build00055" />
+    <PackageReference Include="QuickGraphPCL" Version="3.6.61114.2" NoWarn="NU1701" />
+    <PackageReference Include="Thot" Version="1.0.0-build00058" />
   </ItemGroup>
 
   <ItemGroup>

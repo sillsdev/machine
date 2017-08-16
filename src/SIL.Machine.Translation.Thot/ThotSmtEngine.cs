@@ -326,8 +326,8 @@ namespace SIL.Machine.Translation.Thot
 
 		private IReadOnlyList<Tuple<int, int>> GetSourceSegmentation(IntPtr data, uint phraseCount)
 		{
-			int sizeOfPtr = Marshal.SizeOf(typeof(IntPtr));
-			int sizeOfUInt = Marshal.SizeOf(typeof(uint));
+			int sizeOfPtr = Marshal.SizeOf<IntPtr>();
+			int sizeOfUInt = Marshal.SizeOf<uint>();
 			IntPtr nativeSourceSegmentation = Marshal.AllocHGlobal((int)phraseCount * sizeOfPtr);
 			for (int i = 0; i < phraseCount; i++)
 			{
@@ -360,7 +360,7 @@ namespace SIL.Machine.Translation.Thot
 
 		private IReadOnlyList<int> GetTargetSegmentCuts(IntPtr data, uint phraseCount)
 		{
-			int sizeOfUInt = Marshal.SizeOf(typeof(uint));
+			int sizeOfUInt = Marshal.SizeOf<uint>();
 			IntPtr nativeTargetSegmentCuts = Marshal.AllocHGlobal((int)phraseCount * sizeOfUInt);
 			try
 			{
@@ -378,7 +378,7 @@ namespace SIL.Machine.Translation.Thot
 
 		private void GetTargetUnknownWords(IntPtr data, int targetWordCount, ISet<int> targetUnknownWords)
 		{
-			int sizeOfUInt = Marshal.SizeOf(typeof(uint));
+			int sizeOfUInt = Marshal.SizeOf<uint>();
 			IntPtr nativeTargetUnknownWords = Marshal.AllocHGlobal(targetWordCount * sizeOfUInt);
 			try
 			{

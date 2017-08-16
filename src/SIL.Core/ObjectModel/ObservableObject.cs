@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-#if NET45
 using System.Linq;
-#endif
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -57,7 +55,6 @@ namespace SIL.ObjectModel
 		public void VerifyPropertyName(string propertyName)
 		{
 			Type myType = GetType();
-#if NET45
 			if (!string.IsNullOrEmpty(propertyName) && myType.GetProperty(propertyName) == null)
 			{
 				var descriptor = this as ICustomTypeDescriptor;
@@ -70,10 +67,6 @@ namespace SIL.ObjectModel
 
 				throw new ArgumentException("Property not found", propertyName);
 			}
-#elif NETSTANDARD1_3
-			if (!string.IsNullOrEmpty(propertyName) && myType.GetTypeInfo().GetDeclaredProperty(propertyName) == null)
-				throw new ArgumentException("Property not found", propertyName);
-#endif
 		}
 
 		protected virtual void OnPropertyChanging(PropertyChangingEventArgs e)

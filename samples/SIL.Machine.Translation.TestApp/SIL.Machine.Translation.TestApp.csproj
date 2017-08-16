@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\packages\Thot.1.0.0-build00055\build\net45\Thot.props" Condition="Exists('..\..\packages\Thot.1.0.0-build00055\build\net45\Thot.props')" />
+  <Import Project="..\..\packages\Thot.1.0.0-build00058\build\net45\Thot.props" Condition="Exists('..\..\packages\Thot.1.0.0-build00058\build\net45\Thot.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -17,6 +17,7 @@
     <RestorePackages>true</RestorePackages>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
@@ -80,9 +81,6 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.ValueTuple, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.ValueTuple.4.3.1\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
-    </Reference>
     <Reference Include="System.XML" />
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
@@ -109,7 +107,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="packages.config" />
     <EmbeddedResource Include="TextView.xeto">
       <SubType>Designer</SubType>
@@ -138,6 +135,6 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\Thot.1.0.0-build00055\build\net45\Thot.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Thot.1.0.0-build00055\build\net45\Thot.props'))" />
+    <Error Condition="!Exists('..\..\packages\Thot.1.0.0-build00058\build\net45\Thot.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Thot.1.0.0-build00058\build\net45\Thot.props'))" />
   </Target>
 </Project>

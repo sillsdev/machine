@@ -106,8 +106,8 @@ namespace SIL.Machine.Translation.Thot
 		{
 			IntPtr[] nativeTuneTargetCorpus = tuneTargetCorpus.Select(Thot.ConvertStringsToNativeUtf8).ToArray();
 
-			int sizeOfPtr = Marshal.SizeOf(typeof(IntPtr));
-			int sizeOfDouble = Marshal.SizeOf(typeof(double));
+			int sizeOfPtr = Marshal.SizeOf<IntPtr>();
+			int sizeOfDouble = Marshal.SizeOf<double>();
 			IntPtr nativeNBestLists = Marshal.AllocHGlobal(nbestLists.Length * sizeOfPtr);
 			IntPtr nativeScoreComps = Marshal.AllocHGlobal(nbestLists.Length * sizeOfPtr);
 			var nativeNBestListLens = new uint[nbestLists.Length];

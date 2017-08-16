@@ -19,7 +19,6 @@ namespace SIL.Machine.Morphology.HermitCrab
 	/// </summary>
 	public class XmlLanguageLoader
 	{
-#if NET45
 		private class ResourceXmlResolver : XmlUrlResolver
 		{
 			public override object GetEntity(Uri absoluteUri, string role, Type ofObjectToReturn)
@@ -35,7 +34,6 @@ namespace SIL.Machine.Morphology.HermitCrab
 				set { throw new NotImplementedException(); }
 			}
 		}
-#endif
 
 		public static Language Load(string configPath)
 		{
@@ -208,13 +206,9 @@ namespace SIL.Machine.Morphology.HermitCrab
 		{
 			var settings = new XmlReaderSettings
 			{
-#if NET45
 				DtdProcessing = DtdProcessing.Parse,
 				ValidationType = Type.GetType("Mono.Runtime") == null ? ValidationType.DTD : ValidationType.None,
 				XmlResolver = new ResourceXmlResolver()
-#elif NETSTANDARD1_3
-				DtdProcessing = DtdProcessing.Ignore
-#endif
 			};
 
 			using (XmlReader reader = XmlReader.Create(_configPath, settings))

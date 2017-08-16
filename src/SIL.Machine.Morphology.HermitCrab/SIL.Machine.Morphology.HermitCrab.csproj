@@ -1,22 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
-    <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8</PackageTargetFallback>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <Import Project="../AssemblyInfo.props" />
 
-  <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
-    <PackageReference Include="System.Globalization.Extensions" Version="4.3.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="HermitCrabInput.dtd" />
-  </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="HermitCrabInput.dtd" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="QuickGraphPCL" Version="3.6.61114.2" NoWarn="NU1701" />
   </ItemGroup>
 
   <ItemGroup>
