@@ -17,7 +17,7 @@
   // Set to true to disable Reflection metadata generation.
   // Default is false.
   "reflection": {
-    "disabled": false
+    "disabled": true
   },
 
   // Generate TypeScript Definition (.d.ts) files.
@@ -26,7 +26,7 @@
 
   // Delete everything from the output folder
   // Default is false
-  "cleanOutputFolderBeforeBuild": false,
+  "cleanOutputFolderBeforeBuild": true,
 
   // Set to false to disable Report generation.
   // Default is false.

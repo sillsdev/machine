@@ -17,9 +17,7 @@
   // Set to true to disable Reflection metadata generation.
   // Default is false.
   "reflection": {
-    "disabled": false,
-    "target": "Inline",
-    "filter": "SIL.Machine.WebApi.Dtos.*"
+    "disabled": true
   },
 
   // Generate TypeScript Definition (.d.ts) files.

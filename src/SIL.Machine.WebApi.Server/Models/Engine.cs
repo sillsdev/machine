@@ -20,7 +20,7 @@ namespace SIL.Machine.WebApi.Server.Models
 		}
 
 		public string Id { get; set; }
-		public long Revision { get; set; }
+		public int Revision { get; set; }
 		public string SourceLanguageTag { get; set; }
 		public string TargetLanguageTag { get; set; }
 		public bool IsShared { get; set; }

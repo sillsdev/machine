@@ -2,6 +2,9 @@
 
 namespace SIL.Machine.WebApi.Dtos
 {
+#if BRIDGE_NET
+	[Bridge.ObjectLiteral(Bridge.ObjectInitializationMode.DefaultValue)]
+#endif
 	public class TranslationResultDto
 	{
 		public string[] Target { get; set; }

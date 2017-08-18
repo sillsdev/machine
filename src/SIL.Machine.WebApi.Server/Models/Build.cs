@@ -17,7 +17,7 @@
 		}
 
 		public string Id { get; set; }
-		public long Revision { get; set; }
+		public int Revision { get; set; }
 		public string EngineId { get; set; }
 		public int StepCount { get; set; }
 		public int CurrentStep { get; set; }

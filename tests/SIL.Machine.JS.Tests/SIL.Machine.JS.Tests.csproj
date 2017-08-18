@@ -53,8 +53,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Bridge\output\bridge.js" />
     <Content Include="Bridge\output\machine.js" />
     <Content Include="Bridge\output\machine.tests.js" />
+    <Content Include="Bridge\output\newtonsoft.json.js" />
     <Content Include="Bridge\www\test.html" />
     <Content Include="Scripts\qunit-1.18.0.css" />
     <Content Include="Scripts\qunit-1.18.0.js" />
