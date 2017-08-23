@@ -236,9 +236,7 @@ namespace SIL.Machine.Translation
 			var buildDto = new BuildDto
 			{
 				Id = "build1",
-				StepCount = 10,
-				Revision = 0,
-				CurrentStep = 0
+				StepCount = 10
 			};
 			httpClient.Requests.Add(new MockRequest
 				{
@@ -321,9 +319,7 @@ namespace SIL.Machine.Translation
 			var buildDto = new BuildDto
 			{
 				Id = "build1",
-				StepCount = 10,
-				CurrentStep = 0,
-				Revision = 0
+				StepCount = 10
 			};
 			httpClient.Requests.Add(new MockRequest
 				{

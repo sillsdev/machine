@@ -1,8 +1,5 @@
 ﻿namespace SIL.Machine.WebApi.Dtos
 {
-#if BRIDGE_NET
-	[Bridge.ObjectLiteral(Bridge.ObjectInitializationMode.DefaultValue)]
-#endif
 	public class BuildDto : LinkDto
 	{
 		public string Id { get; set; }
