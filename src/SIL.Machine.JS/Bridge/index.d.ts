@@ -12,6 +12,7 @@ export class InteractiveTranslationSession {
     readonly isLastWordComplete: boolean;
     readonly currentSuggestion: string[];
     updatePrefix(prefix: string): string[];
+    getSuggestionText(suggestionIndex?: number): string;
     updateSuggestion(): void;
     approve(onFinished: { (arg: boolean): void }): void;
 }
@@ -24,8 +25,4 @@ export class TranslationEngine {
         onFinished: { (arg: boolean): void }): void;
     listenForTrainingStatus(onStatusUpdate: { (arg: SmtTrainProgress): void },
         onFinished: { (arg: boolean): void }): void;
-    tokenizeSourceSegment(sourceSegment: string): number[];
-    tokenizeTargetSegment(targetSegment: string): number[];
-    tokenizeSourceDocument(sourceDocument: string): number[];
-    tokenizeTargetDocument(targetDocument: string): number[];
 }

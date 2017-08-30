@@ -13,8 +13,8 @@ namespace SIL.Machine.Translation
 		private TranslationResult _curResult;
 		private double _confidenceThreshold;
 
-		internal InteractiveTranslationSession(TranslationEngine engine, string[] sourceSegment, double confidenceThreshold,
-			InteractiveTranslationResult result)
+		internal InteractiveTranslationSession(TranslationEngine engine, string[] sourceSegment,
+			double confidenceThreshold, InteractiveTranslationResult result)
 		{
 			_engine = engine;
 			SourceSegment = sourceSegment;
@@ -77,6 +77,17 @@ namespace SIL.Machine.Translation
 			return CurrentSuggestion;
 		}
 
+		public string GetSuggestionText(int suggestionIndex = -1)
+		{
+			string text = suggestionIndex == -1 ? string.Join(" ", CurrentSuggestion)
+				: CurrentSuggestion[suggestionIndex];
+			if (IsLastWordComplete)
+				return text;
+
+			string lastToken = Prefix[Prefix.Length - 1];
+			return text.Substring(lastToken.Length, text.Length - lastToken.Length);
+		}
+
 		private void UpdateSuggestion()
 		{
 			string[] suggestions = TranslationSuggester.GetSuggestedWordIndices(Prefix, IsLastWordComplete, _curResult,
@@ -108,7 +119,8 @@ namespace SIL.Machine.Translation
 				{
 					for (int i = phrase.SourceStartIndex; i <= phrase.SourceEndIndex; i++)
 					{
-						if (phrase.Alignment[i - phrase.SourceStartIndex, j - trgPhraseStartIndex] == AlignmentType.Aligned)
+						AlignmentType type = phrase.Alignment[i - phrase.SourceStartIndex, j - trgPhraseStartIndex];
+						if (type == AlignmentType.Aligned)
 							alignment[i, j] = AlignmentType.Aligned;
 					}
 					sources[j] = info.TargetUnknownWords.Contains(j) ? TranslationSources.None : TranslationSources.Smt;

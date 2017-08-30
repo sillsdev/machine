@@ -47,25 +47,5 @@ namespace SIL.Machine.Translation
 		{
 			RestClient.ListenForTrainingStatus(onStatusUpdate).ContinueWith(t => onFinished(!t.IsFaulted));
 		}
-
-		public int[] TokenizeSourceSegment(string sourceSegment)
-		{
-			return SourceWordTokenizer.Tokenize(sourceSegment).Select(s => s.Start).ToArray();
-		}
-
-		public int[] TokenizeTargetSegment(string targetSegment)
-		{
-			return TargetWordTokenizer.Tokenize(targetSegment).Select(s => s.Start).ToArray();
-		}
-
-		public int[] TokenizeSourceDocument(string sourceDocument)
-		{
-			return SourceSegmentTokenizer.Tokenize(sourceDocument).Select(s => s.Start).ToArray();
-		}
-
-		public int[] TokenizeTargetDocument(string targetDocument)
-		{
-			return TargetSegmentTokenizer.Tokenize(targetDocument).Select(s => s.Start).ToArray();
-		}
 	}
 }

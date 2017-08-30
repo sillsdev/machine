@@ -497,16 +497,20 @@ namespace SIL.Machine.Translation
 		{
 			QUnit.Module(nameof(InteractiveTranslationSessionTests));
 
-			QUnit.Test(nameof(CurrentSuggestion_EmptyPrefix_ReturnsSuggestion), CurrentSuggestion_EmptyPrefix_ReturnsSuggestion);
+			QUnit.Test(nameof(CurrentSuggestion_EmptyPrefix_ReturnsSuggestion),
+				CurrentSuggestion_EmptyPrefix_ReturnsSuggestion);
 			QUnit.Test(nameof(UpdatePrefix_AddOneCompleteWord_ReturnsSuggestion),
 				UpdatePrefix_AddOneCompleteWord_ReturnsSuggestion);
 			QUnit.Test(nameof(UpdatePrefix_AddOnePartialWord_ReturnsSuggestion),
 				UpdatePrefix_AddOnePartialWord_ReturnsSuggestion);
-			QUnit.Test(nameof(UpdatePrefix_RemoveOneWord_ReturnsSuggestion), UpdatePrefix_RemoveOneWord_ReturnsSuggestion);
+			QUnit.Test(nameof(UpdatePrefix_RemoveOneWord_ReturnsSuggestion),
+				UpdatePrefix_RemoveOneWord_ReturnsSuggestion);
 			QUnit.Test(nameof(UpdatePrefix_RemoveEntirePrefix_ReturnsSuggestion),
 				UpdatePrefix_RemoveEntirePrefix_ReturnsSuggestion);
 			QUnit.Test(nameof(Approve_Success_ReturnsTrue), Approve_Success_ReturnsTrue);
 			QUnit.Test(nameof(Approve_Error_ReturnsFalse), Approve_Error_ReturnsFalse);
+			QUnit.Test(nameof(GetSuggestionText_CompleteWord_ReturnsText), GetSuggestionText_CompleteWord_ReturnsText);
+			QUnit.Test(nameof(GetSuggestionText_PartialWord_ReturnsText), GetSuggestionText_PartialWord_ReturnsText);
 		}
 
 		private static void CurrentSuggestion_EmptyPrefix_ReturnsSuggestion(Assert assert)
@@ -592,7 +596,8 @@ namespace SIL.Machine.Translation
 						var segmentPair = JsonConvert.DeserializeObject<SegmentPairDto>(body,
 							TranslationRestClient.SerializerSettings);
 						var tokenizer = new LatinWordTokenizer();
-						assert.DeepEqual(segmentPair.SourceSegment, tokenizer.TokenizeToStrings(sourceSegment).ToArray());
+						assert.DeepEqual(segmentPair.SourceSegment,
+							tokenizer.TokenizeToStrings(sourceSegment).ToArray());
 						assert.DeepEqual(segmentPair.TargetSegment, tokenizer.TokenizeToStrings(prefix).ToArray());
 					},
 					ResponseText = ""
@@ -636,6 +641,35 @@ namespace SIL.Machine.Translation
 						done();
 					});
 				});
+		}
+
+		private static void GetSuggestionText_CompleteWord_ReturnsText(Assert assert)
+		{
+			var engine = new TranslationEngine("http://localhost/", "project1", CreateWebClient());
+			Action done = assert.Async();
+			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
+			{
+				assert.NotEqual(session, null);
+
+				session.UpdatePrefix("In ");
+				assert.Equal(session.GetSuggestionText(), "the beginning the Word already");
+				done();
+			});
+		}
+
+		private static void GetSuggestionText_PartialWord_ReturnsText(Assert assert)
+		{
+			var engine = new TranslationEngine("http://localhost/", "project1", CreateWebClient());
+			Action done = assert.Async();
+			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
+			{
+				assert.NotEqual(session, null);
+				session.UpdatePrefix("In ");
+
+				session.UpdatePrefix("In t");
+				assert.Equal(session.GetSuggestionText(), "he beginning the Word already");
+				done();
+			});
 		}
 	}
 }
