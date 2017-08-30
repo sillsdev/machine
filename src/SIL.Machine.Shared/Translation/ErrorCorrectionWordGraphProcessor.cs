@@ -288,7 +288,7 @@ namespace SIL.Machine.Translation
 			{
 				AddBestUncorrectedPrefixSubState(correction, prefix.Count, candidate.ArcIndex, candidate.ArcWordIndex);
 				WordGraphArc firstArc = _wordGraph.Arcs[candidate.ArcIndex];
-				uncorrectedPrefixLen = correction.Target.Count - firstArc.Words.Count - candidate.ArcWordIndex + 1;
+				uncorrectedPrefixLen = correction.Target.Count - (firstArc.Words.Count - candidate.ArcWordIndex) + 1;
 			}
 
 			int alignmentColsToAddCount = _ecm.CorrectPrefix(correction, uncorrectedPrefixLen, prefix, isLastWordComplete);
