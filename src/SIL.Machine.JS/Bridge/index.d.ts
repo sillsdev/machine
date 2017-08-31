@@ -1,11 +1,11 @@
-﻿export class SmtTrainProgress {
+﻿export interface SmtTrainProgress {
     readonly currentStep: number;
     readonly currentStepMessage: string;
     readonly stepCount: number;
     readonly percentCompleted: number;
 }
 
-export class InteractiveTranslationSession {
+export interface InteractiveTranslationSession {
     readonly sourceSegment: string[];
     confidenceThreshold: number;
     readonly prefix: string[];
@@ -25,4 +25,15 @@ export class TranslationEngine {
         onFinished: { (arg: boolean): void }): void;
     listenForTrainingStatus(onStatusUpdate: { (arg: SmtTrainProgress): void },
         onFinished: { (arg: boolean): void }): void;
+}
+
+export interface Range {
+    index: number;
+    length: number;
+}
+
+export class SentenceTokenizer {
+    constructor(abbreviations?: string[]);
+    tokenize(text: string): Range[];
+    tokenizeToStrings(text: string): string[];
 }
