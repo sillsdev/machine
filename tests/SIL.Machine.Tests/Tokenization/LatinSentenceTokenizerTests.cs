@@ -66,5 +66,21 @@ namespace SIL.Machine.Tokenization
 			Assert.That(tokenizer.TokenizeToStrings("Mr. Smith went to Washington. This is the second sentence."),
 				Is.EqualTo(new[] { "Mr. Smith went to Washington.", "This is the second sentence." }));
 		}
+
+		[Test]
+		public void Tokenize_IncompleteSentence_ReturnsTokens()
+		{
+			var tokenizer = new LatinSentenceTokenizer();
+			Assert.That(tokenizer.TokenizeToStrings("This is an incomplete sentence "),
+				Is.EqualTo(new[] { "This is an incomplete sentence " }));
+		}
+
+		[Test]
+		public void Tokenize_CompleteSentenceWithSpaceAtEnd_ReturnsTokens()
+		{
+			var tokenizer = new LatinSentenceTokenizer();
+			Assert.That(tokenizer.TokenizeToStrings("\"This is a complete sentence.\" \n"),
+				Is.EqualTo(new[] { "\"This is a complete sentence.\"" }));
+		}
 	}
 }

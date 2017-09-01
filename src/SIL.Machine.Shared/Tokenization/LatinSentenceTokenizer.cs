@@ -93,7 +93,7 @@ namespace SIL.Machine.Tokenization
 			}
 
 			if (sentenceStart != -1 && sentenceEnd != -1)
-				yield return SpanFactory.Create(sentenceStart, sentenceEnd);
+				yield return SpanFactory.Create(sentenceStart, inEnd ? sentenceEnd : end);
 		}
 	}
 }

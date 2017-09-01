@@ -19,6 +19,9 @@ namespace SIL.Machine.Tokenization
 			QUnit.Test(nameof(Tokenize_QuotationInSentence_ReturnsTokens), Tokenize_QuotationInSentence_ReturnsTokens);
 			QUnit.Test(nameof(Tokenize_Parens_ReturnsTokens), Tokenize_Parens_ReturnsTokens);
 			QUnit.Test(nameof(Tokenize_Abbreviation_ReturnsTokens), Tokenize_Abbreviation_ReturnsTokens);
+			QUnit.Test(nameof(Tokenize_IncompleteSentence_ReturnsTokens), Tokenize_IncompleteSentence_ReturnsTokens);
+			QUnit.Test(nameof(Tokenize_CompleteSentenceWithSpaceAtEnd_ReturnsTokens),
+				Tokenize_CompleteSentenceWithSpaceAtEnd_ReturnsTokens);
 		}
 
 		private static void Tokenize_Empty_ReturnsEmpty(Assert assert)
@@ -36,28 +39,32 @@ namespace SIL.Machine.Tokenization
 		private static void Tokenize_MultipleLines_ReturnsTokens(Assert assert)
 		{
 			var tokenizer = new LatinSentenceTokenizer();
-			assert.DeepEqual(tokenizer.TokenizeToStrings("This is the first sentence.\nThis is the second sentence.").ToArray(),
+			assert.DeepEqual(tokenizer.TokenizeToStrings(
+				"This is the first sentence.\nThis is the second sentence.").ToArray(),
 				new[] { "This is the first sentence.", "This is the second sentence." });
 		}
 
 		private static void Tokenize_TwoSentences_ReturnsTokens(Assert assert)
 		{
 			var tokenizer = new LatinSentenceTokenizer();
-			assert.DeepEqual(tokenizer.TokenizeToStrings("This is the first sentence. This is the second sentence.").ToArray(),
+			assert.DeepEqual(tokenizer.TokenizeToStrings(
+				"This is the first sentence. This is the second sentence.").ToArray(),
 				new[] { "This is the first sentence.", "This is the second sentence." });
 		}
 
 		private static void Tokenize_Quotes_ReturnsTokens(Assert assert)
 		{
 			var tokenizer = new LatinSentenceTokenizer();
-			assert.DeepEqual(tokenizer.TokenizeToStrings("\"This is the first sentence.\" This is sentence two.").ToArray(),
+			assert.DeepEqual(tokenizer.TokenizeToStrings(
+				"\"This is the first sentence.\" This is sentence two.").ToArray(),
 				new[] { "\"This is the first sentence.\"", "This is sentence two." });
 		}
 
 		private static void Tokenize_QuotationInSentence_ReturnsTokens(Assert assert)
 		{
 			var tokenizer = new LatinSentenceTokenizer();
-			assert.DeepEqual(tokenizer.TokenizeToStrings("\"This is sentence one!\" he said. This is sentence two.").ToArray(),
+			assert.DeepEqual(tokenizer.TokenizeToStrings(
+				"\"This is sentence one!\" he said. This is sentence two.").ToArray(),
 				new[] { "\"This is sentence one!\" he said.", "This is sentence two." });
 		}
 
@@ -71,8 +78,23 @@ namespace SIL.Machine.Tokenization
 		private static void Tokenize_Abbreviation_ReturnsTokens(Assert assert)
 		{
 			var tokenizer = new LatinSentenceTokenizer(new[] { "mr", "dr", "ms" });
-			assert.DeepEqual(tokenizer.TokenizeToStrings("Mr. Smith went to Washington. This is sentence two.").ToArray(),
+			assert.DeepEqual(tokenizer.TokenizeToStrings(
+				"Mr. Smith went to Washington. This is sentence two.").ToArray(),
 				new[] { "Mr. Smith went to Washington.", "This is sentence two." });
+		}
+
+		private static void Tokenize_IncompleteSentence_ReturnsTokens(Assert assert)
+		{
+			var tokenizer = new LatinSentenceTokenizer();
+			assert.DeepEqual(tokenizer.TokenizeToStrings("This is an incomplete sentence ").ToArray(),
+				new[] { "This is an incomplete sentence " });
+		}
+
+		private static void Tokenize_CompleteSentenceWithSpaceAtEnd_ReturnsTokens(Assert assert)
+		{
+			var tokenizer = new LatinSentenceTokenizer();
+			assert.DeepEqual(tokenizer.TokenizeToStrings("\"This is a complete sentence.\" \n").ToArray(),
+				new[] { "\"This is a complete sentence.\"" });
 		}
 	}
 }
