@@ -509,8 +509,14 @@ namespace SIL.Machine.Translation
 				UpdatePrefix_RemoveEntirePrefix_ReturnsSuggestion);
 			QUnit.Test(nameof(Approve_Success_ReturnsTrue), Approve_Success_ReturnsTrue);
 			QUnit.Test(nameof(Approve_Error_ReturnsFalse), Approve_Error_ReturnsFalse);
-			QUnit.Test(nameof(GetSuggestionText_CompleteWord_ReturnsText), GetSuggestionText_CompleteWord_ReturnsText);
-			QUnit.Test(nameof(GetSuggestionText_PartialWord_ReturnsText), GetSuggestionText_PartialWord_ReturnsText);
+			QUnit.Test(nameof(GetSuggestionTextInsertion_CompleteWord_ReturnsText),
+				GetSuggestionTextInsertion_CompleteWord_ReturnsText);
+			QUnit.Test(nameof(GetSuggestionTextInsertion_PartialWord_ReturnsText),
+				GetSuggestionTextInsertion_PartialWord_ReturnsText);
+			QUnit.Test(nameof(GetSuggestionTextInsertion_PartialWordFirstSuggestion_ReturnsText),
+				GetSuggestionTextInsertion_PartialWordFirstSuggestion_ReturnsText);
+			QUnit.Test(nameof(GetSuggestionTextInsertion_PartialWordSecondSuggestion_ReturnsText),
+				GetSuggestionTextInsertion_PartialWordSecondSuggestion_ReturnsText);
 		}
 
 		private static void CurrentSuggestion_EmptyPrefix_ReturnsSuggestion(Assert assert)
@@ -643,7 +649,7 @@ namespace SIL.Machine.Translation
 				});
 		}
 
-		private static void GetSuggestionText_CompleteWord_ReturnsText(Assert assert)
+		private static void GetSuggestionTextInsertion_CompleteWord_ReturnsText(Assert assert)
 		{
 			var engine = new TranslationEngine("http://localhost/", "project1", CreateWebClient());
 			Action done = assert.Async();
@@ -652,12 +658,14 @@ namespace SIL.Machine.Translation
 				assert.NotEqual(session, null);
 
 				session.UpdatePrefix("In ");
-				assert.Equal(session.GetSuggestionText(), "the beginning the Word already");
+				TextInsertion change = session.GetSuggestionTextInsertion();
+				assert.Equal(change.DeleteLength, 0);
+				assert.Equal(change.InsertText, "the beginning the Word already");
 				done();
 			});
 		}
 
-		private static void GetSuggestionText_PartialWord_ReturnsText(Assert assert)
+		private static void GetSuggestionTextInsertion_PartialWord_ReturnsText(Assert assert)
 		{
 			var engine = new TranslationEngine("http://localhost/", "project1", CreateWebClient());
 			Action done = assert.Async();
@@ -667,7 +675,43 @@ namespace SIL.Machine.Translation
 				session.UpdatePrefix("In ");
 
 				session.UpdatePrefix("In t");
-				assert.Equal(session.GetSuggestionText(), "he beginning the Word already");
+				TextInsertion change = session.GetSuggestionTextInsertion();
+				assert.Equal(change.DeleteLength, 0);
+				assert.Equal(change.InsertText, "he beginning the Word already");
+				done();
+			});
+		}
+
+		private static void GetSuggestionTextInsertion_PartialWordFirstSuggestion_ReturnsText(Assert assert)
+		{
+			var engine = new TranslationEngine("http://localhost/", "project1", CreateWebClient());
+			Action done = assert.Async();
+			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
+			{
+				assert.NotEqual(session, null);
+				session.UpdatePrefix("In ");
+
+				session.UpdatePrefix("In t");
+				TextInsertion change = session.GetSuggestionTextInsertion(0);
+				assert.Equal(change.DeleteLength, 0);
+				assert.Equal(change.InsertText, "he");
+				done();
+			});
+		}
+
+		private static void GetSuggestionTextInsertion_PartialWordSecondSuggestion_ReturnsText(Assert assert)
+		{
+			var engine = new TranslationEngine("http://localhost/", "project1", CreateWebClient());
+			Action done = assert.Async();
+			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
+			{
+				assert.NotEqual(session, null);
+				session.UpdatePrefix("In ");
+
+				session.UpdatePrefix("In t");
+				TextInsertion change = session.GetSuggestionTextInsertion(1);
+				assert.Equal(change.DeleteLength, 1);
+				assert.Equal(change.InsertText, "beginning");
 				done();
 			});
 		}

@@ -40,6 +40,7 @@
     <Compile Include="Tokenization\Range.cs" />
     <Compile Include="Tokenization\SentenceTokenizer.cs" />
     <Compile Include="Translation\InteractiveTranslationSession.cs" />
+    <Compile Include="Translation\TextInsertion.cs" />
     <Compile Include="Translation\TranslationEngine.cs" />
     <Compile Include="WebApi\Client\AjaxHttpClient.cs" />
   </ItemGroup>

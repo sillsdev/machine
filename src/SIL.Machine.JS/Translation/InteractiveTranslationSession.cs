@@ -77,15 +77,19 @@ namespace SIL.Machine.Translation
 			return CurrentSuggestion;
 		}
 
-		public string GetSuggestionText(int suggestionIndex = -1)
+		public TextInsertion GetSuggestionTextInsertion(int suggestionIndex = -1)
 		{
 			string text = suggestionIndex == -1 ? string.Join(" ", CurrentSuggestion)
 				: CurrentSuggestion[suggestionIndex];
 			if (IsLastWordComplete)
-				return text;
+				return new TextInsertion { InsertText = text };
+
 
 			string lastToken = Prefix[Prefix.Length - 1];
-			return text.Substring(lastToken.Length, text.Length - lastToken.Length);
+			if (suggestionIndex > 0)
+				return new TextInsertion { DeleteLength = lastToken.Length, InsertText = text };
+
+			return new TextInsertion { InsertText = text.Substring(lastToken.Length, text.Length - lastToken.Length) };
 		}
 
 		private void UpdateSuggestion()
