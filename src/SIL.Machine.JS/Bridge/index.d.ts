@@ -12,7 +12,7 @@ export interface InteractiveTranslationSession {
     readonly isLastWordComplete: boolean;
     readonly currentSuggestion: string[];
     updatePrefix(prefix: string): string[];
-    getSuggestionText(suggestionIndex?: number): string;
+    getSuggestionTextInsertion(suggestionIndex?: number): { deleteLength: number, insertText: string };
     updateSuggestion(): void;
     approve(onFinished: { (arg: boolean): void }): void;
 }
