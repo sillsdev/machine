@@ -30,7 +30,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			get { return _segments; }
 		}
 
-		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IDictionary<string, Pattern<Word, ShapeNode>> partLookup, IDictionary<string, int> capturedParts)
+		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs,
+			IDictionary<string, Pattern<Word, ShapeNode>> partLookup, IDictionary<string, int> capturedParts)
 		{
 			foreach (ShapeNode node in _segments.Shape)
 			{
@@ -43,7 +44,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 		{
 			Shape shape = _segments.Shape;
 			var mappings = new List<Tuple<ShapeNode, ShapeNode>>();
-			Span<ShapeNode> outputSpan = shape.CopyTo(shape.SpanFactory.Create(shape.First, shape.Last), output.Shape);
+			Span<ShapeNode> outputSpan = shape.CopyTo(Span<ShapeNode>.Create(shape.First, shape.Last), output.Shape);
 			foreach (ShapeNode outputNode in output.Shape.GetNodes(outputSpan))
 				mappings.Add(Tuple.Create((ShapeNode) null, outputNode));
 			return mappings;

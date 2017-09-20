@@ -10,15 +10,16 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 		private readonly Pattern<Word, ShapeNode> _rhs; 
 		private readonly int _targetCount;
 
-		public NarrowSynthesisRewriteSubruleSpec(SpanFactory<ShapeNode> spanFactory, MatcherSettings<ShapeNode> matcherSettings, bool isIterative,
+		public NarrowSynthesisRewriteSubruleSpec(MatcherSettings<ShapeNode> matcherSettings, bool isIterative,
 			int targetCount, RewriteSubrule subrule, int index)
-			: base(spanFactory, matcherSettings, isIterative, subrule, index)
+			: base(matcherSettings, isIterative, subrule, index)
 		{
 			_rhs = subrule.Rhs;
 			_targetCount = targetCount;
 		}
 
-		public override void ApplyRhs(Match<Word, ShapeNode> targetMatch, Span<ShapeNode> span, VariableBindings varBindings)
+		public override void ApplyRhs(Match<Word, ShapeNode> targetMatch, Span<ShapeNode> span,
+			VariableBindings varBindings)
 		{
 			ShapeNode curNode = span.End;
 			foreach (PatternNode<Word, ShapeNode> node in _rhs.Children)

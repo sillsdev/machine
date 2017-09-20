@@ -8,23 +8,22 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Annotations
 {
-	public class Shape : OrderedBidirList<ShapeNode>, IAnnotatedData<ShapeNode>, ICloneable<Shape>, IFreezable, IValueEquatable<Shape>
+	public class Shape : OrderedBidirList<ShapeNode>, IAnnotatedData<ShapeNode>, ICloneable<Shape>, IFreezable,
+		IValueEquatable<Shape>
 	{
 		private readonly Func<bool, ShapeNode> _marginSelector;
-		private readonly SpanFactory<ShapeNode> _spanFactory;
 		private readonly AnnotationList<ShapeNode> _annotations;
 		private int _hashCode;
 
-		public Shape(SpanFactory<ShapeNode> spanFactory, Func<bool, ShapeNode> marginSelector)
-			: this(spanFactory, marginSelector, new AnnotationList<ShapeNode>(spanFactory))
+		public Shape(Func<bool, ShapeNode> marginSelector)
+			: this(marginSelector, new AnnotationList<ShapeNode>())
 		{
 		}
 
-		public Shape(SpanFactory<ShapeNode> spanFactory, Func<bool, ShapeNode> marginSelector, AnnotationList<ShapeNode> annotations)
+		public Shape(Func<bool, ShapeNode> marginSelector, AnnotationList<ShapeNode> annotations)
 			: base(EqualityComparer<ShapeNode>.Default, marginSelector)
 		{
 			_marginSelector = marginSelector;
-			_spanFactory = spanFactory;
 			_annotations = annotations;
 			Begin.Tag = int.MinValue;
 			End.Tag = int.MaxValue;
@@ -33,19 +32,14 @@ namespace SIL.Machine.Annotations
 		}
 
 		protected Shape(Shape shape)
-			: this(shape.SpanFactory, shape._marginSelector)
+			: this(shape._marginSelector)
 		{
 			shape.CopyTo(this);
 		}
 
-		public SpanFactory<ShapeNode> SpanFactory
-		{
-			get { return _spanFactory; }
-		}
-
 		public Span<ShapeNode> Span
 		{
-			get { return _spanFactory.Create(Begin, End); }
+			get { return Span<ShapeNode>.Create(Begin, End); }
 		}
 
 		public AnnotationList<ShapeNode> Annotations
@@ -90,7 +84,7 @@ namespace SIL.Machine.Annotations
 
 		public ShapeNode Add(FeatureStruct fs, bool optional)
 		{
-			var newNode = new ShapeNode(_spanFactory, fs);
+			var newNode = new ShapeNode(fs);
 			newNode.Annotation.Optional = optional;
 			Add(newNode);
 			return newNode;
@@ -99,13 +93,13 @@ namespace SIL.Machine.Annotations
 		public Span<ShapeNode> CopyTo(Shape dest)
 		{
 			if (Count == 0)
-				return _spanFactory.Empty;
+				return Span<ShapeNode>.Null;
 			return CopyTo(First, Last, dest);
 		}
 
 		public Span<ShapeNode> CopyTo(ShapeNode srcStart, ShapeNode srcEnd, Shape dest)
 		{
-			return CopyTo(_spanFactory.Create(srcStart, srcEnd), dest);
+			return CopyTo(Span<ShapeNode>.Create(srcStart, srcEnd), dest);
 		}
 
 		public Span<ShapeNode> CopyTo(Span<ShapeNode> srcSpan, Shape dest)
@@ -121,15 +115,17 @@ namespace SIL.Machine.Annotations
 				dest.Add(newNode);
 			}
 
-			Span<ShapeNode> destSpan = dest.SpanFactory.Create(startNode, endNode);
-			Dictionary<ShapeNode, ShapeNode> mapping = GetNodes(srcSpan).Zip(dest.GetNodes(destSpan)).ToDictionary(tuple => tuple.Item1, tuple => tuple.Item2);
+			Span<ShapeNode> destSpan = Span<ShapeNode>.Create(startNode, endNode);
+			Dictionary<ShapeNode, ShapeNode> mapping = GetNodes(srcSpan).Zip(dest.GetNodes(destSpan))
+				.ToDictionary(tuple => tuple.Item1, tuple => tuple.Item2);
 			foreach (Annotation<ShapeNode> ann in _annotations.GetNodes(srcSpan))
 				CopyAnnotations(dest._annotations, ann, mapping);
 
 			return destSpan;
 		}
 
-		private void CopyAnnotations(AnnotationList<ShapeNode> destList, Annotation<ShapeNode> ann, Dictionary<ShapeNode, ShapeNode> mapping)
+		private void CopyAnnotations(AnnotationList<ShapeNode> destList, Annotation<ShapeNode> ann,
+			Dictionary<ShapeNode, ShapeNode> mapping)
 		{
 			if (ann.Span.Start.Annotation == ann)
 			{
@@ -137,7 +133,8 @@ namespace SIL.Machine.Annotations
 			}
 			else
 			{
-				var newAnn = new Annotation<ShapeNode>(_spanFactory.Create(mapping[ann.Span.Start], mapping[ann.Span.End]), ann.FeatureStruct.Clone());
+				var newAnn = new Annotation<ShapeNode>(Span<ShapeNode>.Create(mapping[ann.Span.Start],
+					mapping[ann.Span.End]), ann.FeatureStruct.Clone());
 				destList.Add(newAnn, false);
 				if (!ann.IsLeaf)
 				{
@@ -164,7 +161,7 @@ namespace SIL.Machine.Annotations
 
 		public ShapeNode AddAfter(ShapeNode node, FeatureStruct fs, bool optional, Direction dir)
 		{
-			var newNode = new ShapeNode(_spanFactory, fs);
+			var newNode = new ShapeNode(fs);
 			newNode.Annotation.Optional = optional;
 			AddAfter(node, newNode, dir);
 			return newNode;
@@ -209,7 +206,8 @@ namespace SIL.Machine.Annotations
 				}
 				else
 				{
-					newNode.Tag = Average(curNode == null ? int.MinValue : curNode.Tag, curNode == null ? First.Tag : curNode.Next.Tag);
+					newNode.Tag = Average(curNode == null ? int.MinValue : curNode.Tag,
+						curNode == null ? First.Tag: curNode.Next.Tag);
 				}
 			}
 
@@ -247,7 +245,8 @@ namespace SIL.Machine.Annotations
 			if (startAnn.CompareTo(endAnn) > 0)
 				return;
 
-			foreach (Annotation<ShapeNode> ann in annList.GetNodes(startAnn, endAnn).Where(ann => ann.Span.Contains(node)).ToArray())
+			foreach (Annotation<ShapeNode> ann in annList.GetNodes(startAnn, endAnn)
+				.Where(ann => ann.Span.Contains(node)).ToArray())
 			{
 				if (!ann.IsLeaf)
 					UpdateAnnotations(ann.Children, node);
@@ -258,7 +257,8 @@ namespace SIL.Machine.Annotations
 				}
 				else if (ann.Span.Start == node || ann.Span.End == node)
 				{
-					Span<ShapeNode> span = ann.Span.Start == node ? _spanFactory.Create(node.Next, ann.Span.End) : _spanFactory.Create(ann.Span.Start, node.Prev);
+					Span<ShapeNode> span = ann.Span.Start == node ? Span<ShapeNode>.Create(node.Next, ann.Span.End)
+						: Span<ShapeNode>.Create(ann.Span.Start, node.Prev);
 					var newAnn = new Annotation<ShapeNode>(span, ann.FeatureStruct.Clone()) {Optional = ann.Optional};
 					if (!ann.IsLeaf)
 					{
@@ -383,7 +383,10 @@ namespace SIL.Machine.Annotations
 		public int GetFrozenHashCode()
 		{
 			if (!IsFrozen)
-				throw new InvalidOperationException("The shape does not have a valid hash code, because it is mutable.");
+			{
+				throw new InvalidOperationException(
+					"The shape does not have a valid hash code, because it is mutable.");
+			}
 
 			return _hashCode;
 		}

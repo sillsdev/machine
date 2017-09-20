@@ -18,12 +18,13 @@ namespace SIL.Machine.Morphology.HermitCrab
 		private readonly AffixTemplate _template;
 		private readonly List<IRule<Word, ShapeNode>> _rules; 
 
-		public AnalysisAffixTemplateRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, AffixTemplate template)
+		public AnalysisAffixTemplateRule(Morpher morpher, AffixTemplate template)
 		{
 			_morpher = morpher;
 			_template = template;
 			_rules = new List<IRule<Word, ShapeNode>>(template.Slots
-				.Select(slot => new RuleBatch<Word, ShapeNode>(slot.Rules.Select(mr => mr.CompileAnalysisRule(spanFactory, morpher)), false, FreezableEqualityComparer<Word>.Default)));
+				.Select(slot => new RuleBatch<Word, ShapeNode>(slot.Rules.Select(mr => mr.CompileAnalysisRule(morpher)),
+					false, FreezableEqualityComparer<Word>.Default)));
 		}
 
 		public IEnumerable<Word> Apply(Word input)

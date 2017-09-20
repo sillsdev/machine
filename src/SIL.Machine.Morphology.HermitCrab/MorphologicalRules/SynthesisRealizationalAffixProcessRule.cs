@@ -15,20 +15,21 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 		private readonly RealizationalAffixProcessRule _rule;
 		private readonly List<PatternRule<Word, ShapeNode>> _rules;
 
-		public SynthesisRealizationalAffixProcessRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, RealizationalAffixProcessRule rule)
+		public SynthesisRealizationalAffixProcessRule(Morpher morpher, RealizationalAffixProcessRule rule)
 		{
 			_morpher = morpher;
 			_rule = rule;
 			_rules = new List<PatternRule<Word, ShapeNode>>();
 			foreach (AffixProcessAllomorph allo in rule.Allomorphs)
 			{
-				_rules.Add(new PatternRule<Word, ShapeNode>(spanFactory, new SynthesisAffixProcessAllomorphRuleSpec(allo),
+				_rules.Add(new PatternRule<Word, ShapeNode>(new SynthesisAffixProcessAllomorphRuleSpec(allo),
 					new MatcherSettings<ShapeNode>
-						{
-							Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary) && !ann.IsDeleted(),
-							AnchoredToStart = true,
-							AnchoredToEnd = true
-						}));
+					{
+						Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary)
+							&& !ann.IsDeleted(),
+						AnchoredToStart = true,
+						AnchoredToEnd = true
+					}));
 			}
 		}
 
@@ -40,14 +41,20 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			if (!_rule.RealizationalFeatureStruct.Subsumes(input.RealizationalFeatureStruct))
 				return Enumerable.Empty<Word>();
 
-			if (!_rule.RealizationalFeatureStruct.IsEmpty && IsBlocked(_rule.RealizationalFeatureStruct, input.SyntacticFeatureStruct, new HashSet<Tuple<FeatureStruct, FeatureStruct>>()))
+			if (!_rule.RealizationalFeatureStruct.IsEmpty && IsBlocked(_rule.RealizationalFeatureStruct,
+				input.SyntacticFeatureStruct, new HashSet<Tuple<FeatureStruct, FeatureStruct>>()))
+			{
 				return Enumerable.Empty<Word>();
+			}
 
 			FeatureStruct syntacticFS;
 			if (!_rule.RequiredSyntacticFeatureStruct.Unify(input.SyntacticFeatureStruct, true, out syntacticFS))
 			{
 				if (_morpher.TraceManager.IsTracing)
-					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.RequiredSyntacticFeatureStruct, _rule.RequiredSyntacticFeatureStruct);
+				{
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input,
+						FailureReason.RequiredSyntacticFeatureStruct, _rule.RequiredSyntacticFeatureStruct);
+				}
 				return Enumerable.Empty<Word>();
 			}
 
@@ -56,16 +63,24 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			{
 				AffixProcessAllomorph allo = _rule.Allomorphs[i];
 				MprFeatureGroup group;
-				if (allo.RequiredMprFeatures.Count > 0 && !allo.RequiredMprFeatures.IsMatchRequired(input.MprFeatures, out group))
+				if (allo.RequiredMprFeatures.Count > 0
+					&& !allo.RequiredMprFeatures.IsMatchRequired(input.MprFeatures, out group))
 				{
 					if (_morpher.TraceManager.IsTracing)
-						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.RequiredMprFeatures, group);
+					{
+						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input,
+							FailureReason.RequiredMprFeatures, group);
+					}
 					continue;
 				}
-				if (allo.ExcludedMprFeatures.Count > 0 && !allo.ExcludedMprFeatures.IsMatchExcluded(input.MprFeatures, out group))
+				if (allo.ExcludedMprFeatures.Count > 0
+					&& !allo.ExcludedMprFeatures.IsMatchExcluded(input.MprFeatures, out group))
 				{
 					if (_morpher.TraceManager.IsTracing)
-						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.ExcludedMprFeatures, group);
+					{
+						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input,
+							FailureReason.ExcludedMprFeatures, group);
+					}
 					continue;
 				}
 
@@ -115,7 +130,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			return output;
 		}
 
-		private bool IsBlocked(FeatureStruct realizationalFS, FeatureStruct syntacticFS, HashSet<Tuple<FeatureStruct, FeatureStruct>> visited)
+		private bool IsBlocked(FeatureStruct realizationalFS, FeatureStruct syntacticFS,
+			HashSet<Tuple<FeatureStruct, FeatureStruct>> visited)
 		{
 			Tuple<FeatureStruct, FeatureStruct> pair = Tuple.Create(realizationalFS, syntacticFS);
 			if (visited.Contains(pair))

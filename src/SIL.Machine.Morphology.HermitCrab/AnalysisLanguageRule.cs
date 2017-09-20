@@ -12,11 +12,11 @@ namespace SIL.Machine.Morphology.HermitCrab
 		private readonly List<Stratum> _strata;
 		private readonly List<IRule<Word, ShapeNode>> _rules;
 
-		public AnalysisLanguageRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, Language language)
+		public AnalysisLanguageRule(Morpher morpher, Language language)
 		{
 			_morpher = morpher;
 			_strata = language.Strata.Reverse().ToList();
-			_rules = _strata.Select(stratum => stratum.CompileAnalysisRule(spanFactory, morpher)).ToList();
+			_rules = _strata.Select(stratum => stratum.CompileAnalysisRule(morpher)).ToList();
 		}
 
 		public IEnumerable<Word> Apply(Word input)

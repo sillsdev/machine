@@ -29,7 +29,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			});
 			Morphophonemic.MorphologicalRules.Add(edSuffix);
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("bazɯd"), "disj PAST");
 			Assert.That(morpher.ParseWord("batɯd"), Is.Empty);
 			Assert.That(morpher.ParseWord("badɯd"), Is.Empty);
@@ -68,7 +68,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			});
 			Morphophonemic.MorphologicalRules.Add(edSuffix);
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("tazd"), "free PAST");
 			AssertMorphsEqual(morpher.ParseWord("tast"), "free PAST");
 			AssertMorphsEqual(morpher.ParseWord("tazt"), "free PAST");
@@ -128,7 +128,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			});
 			Morphophonemic.MorphologicalRules.Add(sSuffix);
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 
 			AssertMorphsEqual(morpher.ParseWord("sanɯd"));
 			AssertMorphsEqual(morpher.ParseWord("sant"));
@@ -164,7 +164,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd")}
 			});
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 			Assert.That(morpher.ParseWord("dag"), Is.Empty);
 			AssertMorphsEqual(morpher.ParseWord("dagɯd"), "bound PAST");
 		}
@@ -176,7 +176,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
 			LexEntry headEntry = Entries["32"];
 			Pattern<Word, ShapeNode> envPattern = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value;
-			var env = new AllomorphEnvironment(SpanFactory, ConstraintType.Require, null, envPattern);
+			var env = new AllomorphEnvironment(ConstraintType.Require, null, envPattern);
 			headEntry.PrimaryAllomorph.Environments.Add(env);
 
 			var word = new Word(headEntry.PrimaryAllomorph, FeatureStruct.New().Value);
@@ -184,7 +184,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 			ShapeNode node = word.Shape.Last;
 			LexEntry nonHeadEntry = Entries["40"];
 			word.Shape.AddRange(nonHeadEntry.PrimaryAllomorph.Segments.Shape.AsEnumerable().CloneItems());
-			Annotation<ShapeNode> nonHeadMorph = word.MarkMorph(word.Shape.GetNodes(node.Next, word.Shape.Last), nonHeadEntry.PrimaryAllomorph);
+			Annotation<ShapeNode> nonHeadMorph = word.MarkMorph(word.Shape.GetNodes(node.Next, word.Shape.Last),
+				nonHeadEntry.PrimaryAllomorph);
 
 			Assert.That(env.IsWordValid(word), Is.True);
 
@@ -192,28 +193,32 @@ namespace SIL.Machine.Morphology.HermitCrab
 
 			nonHeadEntry = Entries["41"];
 			word.Shape.AddRange(nonHeadEntry.PrimaryAllomorph.Segments.Shape.AsEnumerable().CloneItems());
-			nonHeadMorph = word.MarkMorph(word.Shape.GetNodes(node.Next, word.Shape.Last), nonHeadEntry.PrimaryAllomorph);
+			nonHeadMorph = word.MarkMorph(word.Shape.GetNodes(node.Next, word.Shape.Last),
+				nonHeadEntry.PrimaryAllomorph);
 
 			Assert.That(env.IsWordValid(word), Is.False);
 
 			headEntry.PrimaryAllomorph.Environments.Clear();
 
-			env = new AllomorphEnvironment(SpanFactory, ConstraintType.Require, envPattern, null);
+			env = new AllomorphEnvironment(ConstraintType.Require, envPattern, null);
 			headEntry.PrimaryAllomorph.Environments.Add(env);
 
 			word.RemoveMorph(nonHeadMorph);
 
 			node = word.Shape.First;
 			nonHeadEntry = Entries["40"];
-			word.Shape.AddRangeAfter(word.Shape.Begin, nonHeadEntry.PrimaryAllomorph.Segments.Shape.AsEnumerable().CloneItems());
-			nonHeadMorph = word.MarkMorph(word.Shape.GetNodes(word.Shape.First, node.Prev), nonHeadEntry.PrimaryAllomorph);
+			word.Shape.AddRangeAfter(word.Shape.Begin,
+				nonHeadEntry.PrimaryAllomorph.Segments.Shape.AsEnumerable().CloneItems());
+			nonHeadMorph = word.MarkMorph(word.Shape.GetNodes(word.Shape.First, node.Prev),
+				nonHeadEntry.PrimaryAllomorph);
 
 			Assert.That(env.IsWordValid(word), Is.True);
 
 			word.RemoveMorph(nonHeadMorph);
 
 			nonHeadEntry = Entries["41"];
-			word.Shape.AddRangeAfter(word.Shape.Begin, nonHeadEntry.PrimaryAllomorph.Segments.Shape.AsEnumerable().CloneItems());
+			word.Shape.AddRangeAfter(word.Shape.Begin,
+				nonHeadEntry.PrimaryAllomorph.Segments.Shape.AsEnumerable().CloneItems());
 			word.MarkMorph(word.Shape.GetNodes(word.Shape.First, node.Prev), nonHeadEntry.PrimaryAllomorph);
 
 			Assert.That(env.IsWordValid(word), Is.False);
@@ -237,7 +242,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			});
 			Morphophonemic.MorphologicalRules.Add(nominalizer);
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("pi"), "54");
 			AssertMorphsEqual(morpher.ParseWord("piv"), "54 NOM");
 
@@ -255,11 +260,15 @@ namespace SIL.Machine.Morphology.HermitCrab
 				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "s")}
 			});
 
-			var verbTemplate = new AffixTemplate {Name = "verb", RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value};
+			var verbTemplate = new AffixTemplate
+			{
+				Name = "verb",
+				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
+			};
 			verbTemplate.Slots.Add(new AffixTemplateSlot(sSuffix) {Optional = true});
 			Morphophonemic.AffixTemplates.Add(verbTemplate);
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("pi"), "54");
 			AssertMorphsEqual(morpher.ParseWord("pis"));
 		}

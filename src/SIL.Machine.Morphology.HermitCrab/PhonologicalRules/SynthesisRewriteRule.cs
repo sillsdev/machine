@@ -14,7 +14,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 		private readonly RewriteRule _rule;
 		private readonly PhonologicalPatternRule _patternRule; 
 
-		public SynthesisRewriteRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, RewriteRule rule)
+		public SynthesisRewriteRule(Morpher morpher, RewriteRule rule)
 		{
 			_morpher = morpher;
 			_rule = rule;
@@ -22,21 +22,23 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			var settings = new MatcherSettings<ShapeNode>
 			{
 			    Direction = rule.Direction,
-			    Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor) && !ann.IsDeleted(),
+			    Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary,
+					HCFeatureSystem.Anchor) && !ann.IsDeleted(),
 			    UseDefaults = true
 			};
 
-			var ruleSpec = new SynthesisRewriteRuleSpec(spanFactory, settings, rule.ApplicationMode == RewriteApplicationMode.Iterative, _rule.Lhs, _rule.Subrules);
+			var ruleSpec = new SynthesisRewriteRuleSpec(settings,
+				rule.ApplicationMode == RewriteApplicationMode.Iterative, _rule.Lhs, _rule.Subrules);
 
 			_patternRule = null;
 			switch (rule.ApplicationMode)
 			{
 				case RewriteApplicationMode.Iterative:
-					_patternRule = new IterativePhonologicalPatternRule(spanFactory, ruleSpec, settings);
+					_patternRule = new IterativePhonologicalPatternRule(ruleSpec, settings);
 					break;
 
 				case RewriteApplicationMode.Simultaneous:
-					_patternRule = new SimultaneousPhonologicalPatternRule(spanFactory, ruleSpec, settings);
+					_patternRule = new SimultaneousPhonologicalPatternRule(ruleSpec, settings);
 					break;
 			}
 		}

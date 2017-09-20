@@ -64,7 +64,7 @@ namespace SIL.Machine.Annotations
 			get
 			{
 				if (_children == null)
-					_children = new AnnotationList<TOffset>(Span.SpanFactory, this);
+					_children = new AnnotationList<TOffset>(this);
 				return _children;
 			}
 		}

@@ -12,23 +12,16 @@ namespace SIL.Machine.Morphology.HermitCrab
 {
 	public class CharacterDefinitionTable : ICollection<CharacterDefinition>
 	{
-		private readonly SpanFactory<ShapeNode> _spanFactory;
 		private readonly Dictionary<string, CharacterDefinition> _charDefLookup;
 		private readonly HashSet<CharacterDefinition> _charDefs;
 
-		public CharacterDefinitionTable(SpanFactory<ShapeNode> spanFactory)
+		public CharacterDefinitionTable()
 		{
-			_spanFactory = spanFactory;
 			_charDefLookup = new Dictionary<string, CharacterDefinition>();
 			_charDefs = new HashSet<CharacterDefinition>();
 		}
 
 		public string Name { get; set; }
-
-		public SpanFactory<ShapeNode> SpanFactory
-		{
-			get { return _spanFactory; }
-		}
 
 		public CharacterDefinition AddSegment(string strRep, FeatureStruct fs = null)
 		{
@@ -58,11 +51,16 @@ namespace SIL.Machine.Morphology.HermitCrab
 			string[] strRepsArray = strReps.ToArray();
 			string[] normalizedStrRepsArray = strRepsArray.Select(s => s.Normalize(NormalizationForm.FormD)).ToArray();
 			if (normalizedStrRepsArray.Any(s => _charDefLookup.ContainsKey(s)))
-				throw new ArgumentException("The table already contains a character definition with one of the specified representations.", "strReps");
+			{
+				throw new ArgumentException(
+					"The table already contains a character definition with one of the specified representations.",
+					"strReps");
+			}
 
 			if (fs == null)
 			{
-				fs = FeatureStruct.New().Symbol(type).Feature(HCFeatureSystem.StrRep).EqualTo(normalizedStrRepsArray).Value;
+				fs = FeatureStruct.New().Symbol(type).Feature(HCFeatureSystem.StrRep)
+					.EqualTo(normalizedStrRepsArray).Value;
 			}
 			else
 			{
@@ -109,7 +107,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 					CharacterDefinition cd;
 					if (_charDefLookup.TryGetValue(s, out cd))
 					{
-						var node = new ShapeNode(SpanFactory, cd.FeatureStruct.Clone());
+						var node = new ShapeNode(cd.FeatureStruct.Clone());
 						node.Annotation.Optional = node.Annotation.Type() == HCFeatureSystem.Boundary;
 						nodesList.Add(node);
 						i += j;
@@ -138,7 +136,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 			int errorPos;
 			if (GetShapeNodes(str, out nodes, out errorPos))
 			{
-				var shape = new Shape(_spanFactory, begin => new ShapeNode(_spanFactory, begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor));
+				var shape = new Shape(begin => new ShapeNode(begin ? HCFeatureSystem.LeftSideAnchor
+					: HCFeatureSystem.RightSideAnchor));
 				shape.AddRange(nodes);
 				return shape;
 			}
@@ -159,7 +158,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 			int errorPos;
 			if (GetShapeNodes(str, out nodes, out errorPos))
 			{
-				shape = new Shape(_spanFactory, begin => new ShapeNode(_spanFactory, begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor));
+				shape = new Shape(begin => new ShapeNode(begin ? HCFeatureSystem.LeftSideAnchor
+					: HCFeatureSystem.RightSideAnchor));
 				shape.AddRange(nodes);
 				return errorPos;
 			}
@@ -179,7 +179,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 		public bool IsMatch(string word, Shape shape)
 		{
 			string pattern = shape.ToRegexString(this, false);
-			return Regex.IsMatch(word.Normalize(NormalizationForm.FormD), pattern.Normalize(NormalizationForm.FormD), RegexOptions.CultureInvariant);
+			return Regex.IsMatch(word.Normalize(NormalizationForm.FormD), pattern.Normalize(NormalizationForm.FormD),
+				RegexOptions.CultureInvariant);
 		}
 
 		public IEnumerator<CharacterDefinition> GetEnumerator()

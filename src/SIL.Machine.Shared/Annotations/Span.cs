@@ -5,6 +5,69 @@ namespace SIL.Machine.Annotations
 {
 	public struct Span<TOffset> : IComparable<Span<TOffset>>, IComparable, IEquatable<Span<TOffset>>
 	{
+		private static readonly SpanFactory<TOffset> Factory = CreateFactory();
+
+		private static SpanFactory<TOffset> CreateFactory()
+		{
+			Type type = typeof(TOffset);
+			if (type == typeof(int))
+				return new IntegerSpanFactory() as SpanFactory<TOffset>;
+#if !BRIDGE_NET
+			if (type == typeof(ShapeNode))
+				return new ShapeSpanFactory() as SpanFactory<TOffset>;
+#endif
+
+			throw new NotSupportedException();
+		}
+
+		public static Span<TOffset> Create(TOffset start, TOffset end, Direction dir = Direction.LeftToRight)
+		{
+			return Factory.Create(start, end, dir);
+		}
+
+		public static Span<TOffset> Create(TOffset offset, Direction dir = Direction.LeftToRight)
+		{
+			return Factory.Create(offset, dir);
+		}
+
+		public static bool IsValidSpan(TOffset start, TOffset end, Direction dir = Direction.LeftToRight)
+		{
+			if (dir == Direction.RightToLeft)
+			{
+				TOffset temp = start;
+				start = end;
+				end = temp;
+			}
+
+			return Factory.IsValidSpan(start, end);
+		}
+
+		public static bool IsEmptySpan(TOffset start, TOffset end, Direction dir = Direction.LeftToRight)
+		{
+			if (dir == Direction.RightToLeft)
+			{
+				TOffset temp = start;
+				start = end;
+				end = temp;
+			}
+
+			return Factory.IsEmptySpan(start, end);
+		}
+
+		public static int GetLength(TOffset start, TOffset end, Direction dir = Direction.LeftToRight)
+		{
+			if (dir == Direction.RightToLeft)
+			{
+				TOffset temp = start;
+				start = end;
+				end = temp;
+			}
+
+			return Factory.GetLength(start, end);
+		}
+
+		public static Span<TOffset> Null => Factory.Null;
+
 		public static bool operator ==(Span<TOffset> x, Span<TOffset> y)
 		{
 			return x.Equals(y);
@@ -14,27 +77,24 @@ namespace SIL.Machine.Annotations
 			return !(x == y);
 		}
 
-		internal Span(SpanFactory<TOffset> spanFactory, TOffset start, TOffset end)
+		internal Span(TOffset start, TOffset end)
 		{
-			SpanFactory = spanFactory;
 			Start = start;
 			End = end;
 		}
 
 		public Span(Span<TOffset> span)
-			: this(span.SpanFactory, span.Start, span.End)
+			: this(span.Start, span.End)
 		{
 		}
-
-		public SpanFactory<TOffset> SpanFactory { get; }
-
-		public bool IsEmpty => SpanFactory.Empty == this;
 
 		public TOffset Start { get; }
 
 		public TOffset End { get; }
 
-		public int Length => SpanFactory.CalcLength(Start, End);
+		public int Length => Factory.GetLength(Start, End);
+
+		public bool IsEmpty => Factory.IsEmptySpan(Start, End);
 
 		public TOffset GetStart(Direction dir)
 		{
@@ -48,19 +108,19 @@ namespace SIL.Machine.Annotations
 
 		public bool Overlaps(Span<TOffset> other)
 		{
-			if (IsEmpty)
-				return other.IsEmpty;
-			if (other.IsEmpty)
+			if (this == Null)
+				return other == Null;
+			if (other == Null)
 				return false;
 
-			if (SpanFactory.IncludeEndpoint)
+			if (Factory.IncludeEndpoint)
 			{
-				return SpanFactory.Comparer.Compare(Start, other.End) <= 0
-					&& SpanFactory.Comparer.Compare(End, other.Start) >= 0;
+				return Factory.Comparer.Compare(Start, other.End) <= 0
+					&& Factory.Comparer.Compare(End, other.Start) >= 0;
 			}
 
-			return SpanFactory.Comparer.Compare(Start, other.End) < 0
-				&& SpanFactory.Comparer.Compare(End, other.Start) > 0;
+			return Factory.Comparer.Compare(Start, other.End) < 0
+				&& Factory.Comparer.Compare(End, other.Start) > 0;
 		}
 
 		public bool Overlaps(TOffset start, TOffset end)
@@ -70,18 +130,18 @@ namespace SIL.Machine.Annotations
 
 		public bool Overlaps(TOffset start, TOffset end, Direction dir)
 		{
-			return Overlaps(SpanFactory.Create(start, end, dir));
+			return Overlaps(Factory.Create(start, end, dir));
 		}
 
 		public bool Contains(Span<TOffset> other)
 		{
-			if (IsEmpty)
-				return other.IsEmpty;
-			if (other.IsEmpty)
+			if (this == Null)
+				return other == Null;
+			if (other == Null)
 				return false;
 
-			return SpanFactory.Comparer.Compare(Start, other.Start) <= 0
-				&& SpanFactory.Comparer.Compare(End, other.End) >= 0;
+			return Factory.Comparer.Compare(Start, other.Start) <= 0
+				&& Factory.Comparer.Compare(End, other.End) >= 0;
 		}
 
 		public bool Contains(TOffset offset)
@@ -91,7 +151,7 @@ namespace SIL.Machine.Annotations
 
 		public bool Contains(TOffset offset, Direction dir)
 		{
-			return Contains(SpanFactory.Create(offset, dir));
+			return Contains(Factory.Create(offset, dir));
 		}
 
 		public bool Contains(TOffset start, TOffset end)
@@ -101,19 +161,19 @@ namespace SIL.Machine.Annotations
 
 		public bool Contains(TOffset start, TOffset end, Direction dir)
 		{
-			return Contains(SpanFactory.Create(start, end, dir));
+			return Contains(Factory.Create(start, end, dir));
 		}
 
 		public int CompareTo(Span<TOffset> other)
 		{
-			if (IsEmpty)
-				return other.IsEmpty ? 0 : -1;
-			if (other.IsEmpty)
+			if (this == Null)
+				return other == Null ? 0 : -1;
+			if (other == Null)
 				return 1;
 
-			int res = SpanFactory.Comparer.Compare(Start, other.Start);
+			int res = Factory.Comparer.Compare(Start, other.Start);
 			if (res == 0)
-				res = -SpanFactory.Comparer.Compare(End, other.End);
+				res = -Factory.Comparer.Compare(End, other.End);
 			return res;
 		}
 
@@ -127,8 +187,8 @@ namespace SIL.Machine.Annotations
 		public override int GetHashCode()
 		{
 			int code = 23;
-			code = code * 31 + (Start == null ? 0 : SpanFactory.EqualityComparer.GetHashCode(Start));
-			code = code * 31 + (End == null ? 0 : SpanFactory.EqualityComparer.GetHashCode(End));
+			code = code * 31 + (Start == null ? 0 : Factory.EqualityComparer.GetHashCode(Start));
+			code = code * 31 + (End == null ? 0 : Factory.EqualityComparer.GetHashCode(End));
 			return code;
 		}
 
@@ -139,8 +199,8 @@ namespace SIL.Machine.Annotations
 
 		public bool Equals(Span<TOffset> other)
 		{
-			return SpanFactory.EqualityComparer.Equals(Start, other.Start)
-				&& SpanFactory.EqualityComparer.Equals(End, other.End);
+			return Factory.EqualityComparer.Equals(Start, other.Start)
+				&& Factory.EqualityComparer.Equals(End, other.End);
 		}
 
 		public override string ToString()

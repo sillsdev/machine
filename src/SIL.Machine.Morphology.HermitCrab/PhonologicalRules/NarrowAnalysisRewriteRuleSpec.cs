@@ -11,25 +11,32 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 		private readonly Pattern<Word, ShapeNode> _analysisRhs;
 		private readonly int _targetCount;
 
-		public NarrowAnalysisRewriteRuleSpec(SpanFactory<ShapeNode> spanFactory, MatcherSettings<ShapeNode> matcherSettings, Pattern<Word, ShapeNode> lhs, RewriteSubrule subrule)
+		public NarrowAnalysisRewriteRuleSpec(MatcherSettings<ShapeNode> matcherSettings, Pattern<Word, ShapeNode> lhs,
+			RewriteSubrule subrule)
 			: base(subrule.Rhs.IsEmpty)
 		{
 			_analysisRhs = lhs;
 			_targetCount = subrule.Rhs.Children.Count;
 
 			if (subrule.Rhs.IsEmpty)
-				Pattern.Children.Add(new Constraint<Word, ShapeNode>(FeatureStruct.New().Symbol(HCFeatureSystem.Segment, HCFeatureSystem.Anchor).Value));
+			{
+				Pattern.Children.Add(new Constraint<Word, ShapeNode>(FeatureStruct.New()
+					.Symbol(HCFeatureSystem.Segment, HCFeatureSystem.Anchor).Value));
+			}
 			else
+			{
 				Pattern.Children.AddRange(subrule.Rhs.Children.CloneItems());
+			}
 			Pattern.Freeze();
 
-			SubruleSpecs.Add(new AnalysisRewriteSubruleSpec(spanFactory, matcherSettings, subrule, Unapply));
+			SubruleSpecs.Add(new AnalysisRewriteSubruleSpec(matcherSettings, subrule, Unapply));
 		}
 
 		private void Unapply(Match<Word, ShapeNode> targetMatch, Span<ShapeNode> span, VariableBindings varBindings)
 		{
 			ShapeNode curNode = IsTargetEmpty ? span.Start : span.End;
-			foreach (Constraint<Word, ShapeNode> constraint in _analysisRhs.Children.Cast<Constraint<Word, ShapeNode>>())
+			foreach (Constraint<Word, ShapeNode> constraint in _analysisRhs.Children
+				.Cast<Constraint<Word, ShapeNode>>())
 			{
 				FeatureStruct fs = constraint.FeatureStruct.Clone();
 				if (varBindings != null)

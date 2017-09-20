@@ -19,7 +19,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 {
 	public class Morpher : IMorphologicalAnalyzer, IMorphologicalGenerator
 	{
-		private static readonly IEqualityComparer<IEnumerable<Allomorph>> MorphsEqualityComparer = SequenceEqualityComparer.Create(ProjectionEqualityComparer<Allomorph>.Create(allo => allo.Morpheme));
+		private static readonly IEqualityComparer<IEnumerable<Allomorph>> MorphsEqualityComparer =
+			SequenceEqualityComparer.Create(ProjectionEqualityComparer<Allomorph>.Create(allo => allo.Morpheme));
 
 		private readonly Language _lang;
 		private readonly IRule<Word, ShapeNode> _analysisRule;
@@ -28,7 +29,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 		private readonly ITraceManager _traceManager;
 		private readonly ReadOnlyObservableCollection<Morpheme> _morphemes;
 
-		public Morpher(SpanFactory<ShapeNode> spanFactory, ITraceManager traceManager, Language lang)
+		public Morpher(ITraceManager traceManager, Language lang)
 		{
 			_lang = lang;
 			_traceManager = traceManager;
@@ -46,8 +47,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 				morphemes.AddRange(stratum.MorphologicalRules.OfType<AffixProcessRule>());
 				morphemes.AddRange(stratum.AffixTemplates.SelectMany(t => t.Slots).SelectMany(s => s.Rules).Distinct());
 			}
-			_analysisRule = lang.CompileAnalysisRule(spanFactory, this);
-			_synthesisRule = lang.CompileSynthesisRule(spanFactory, this);
+			_analysisRule = lang.CompileAnalysisRule(this);
+			_synthesisRule = lang.CompileSynthesisRule(this);
 			MaxStemCount = 2;
 			LexEntrySelector = entry => true;
 			RuleSelector = rule => true;
@@ -133,15 +134,18 @@ namespace SIL.Machine.Morphology.HermitCrab
 		/// <summary>
 		/// Generates surface forms from the specified word synthesis information.
 		/// </summary>
-		public IEnumerable<string> GenerateWords(LexEntry rootEntry, IEnumerable<Morpheme> otherMorphemes, FeatureStruct realizationalFS)
+		public IEnumerable<string> GenerateWords(LexEntry rootEntry, IEnumerable<Morpheme> otherMorphemes,
+			FeatureStruct realizationalFS)
 		{
 			object trace;
 			return GenerateWords(rootEntry, otherMorphemes, realizationalFS, out trace);
 		}
 
-		public IEnumerable<string> GenerateWords(LexEntry rootEntry, IEnumerable<Morpheme> otherMorphemes, FeatureStruct realizationalFS, out object trace)
+		public IEnumerable<string> GenerateWords(LexEntry rootEntry, IEnumerable<Morpheme> otherMorphemes,
+			FeatureStruct realizationalFS, out object trace)
 		{
-			Stack<Tuple<IMorphologicalRule, RootAllomorph>>[] rulePermutations = PermuteRules(otherMorphemes.ToArray()).ToArray();
+			Stack<Tuple<IMorphologicalRule, RootAllomorph>>[] rulePermutations = PermuteRules(otherMorphemes.ToArray())
+				.ToArray();
 
 			object rootTrace = _traceManager.IsTracing ? _traceManager.GenerateWords(_lang) : null;
 			trace = rootTrace;
@@ -149,7 +153,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 			var validWordsStack = new ConcurrentStack<Word>();
 
 			Exception exception = null;
-			Parallel.ForEach(rootEntry.Allomorphs.SelectMany(a => rulePermutations, (a, p) => new {Allomorph = a, RulePermutation = p}), (synthesisInfo, state) =>
+			Parallel.ForEach(rootEntry.Allomorphs.SelectMany(a => rulePermutations,
+				(a, p) => new {Allomorph = a, RulePermutation = p}), (synthesisInfo, state) =>
 			{
 				try
 				{
@@ -192,7 +197,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 			return words;
 		}
 
-		private IEnumerable<Stack<Tuple<IMorphologicalRule, RootAllomorph>>> PermuteRules(Morpheme[] morphemes, int index = 0)
+		private IEnumerable<Stack<Tuple<IMorphologicalRule, RootAllomorph>>> PermuteRules(Morpheme[] morphemes,
+			int index = 0)
 		{
 			if (index == morphemes.Length)
 			{
@@ -205,7 +211,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 				{
 					foreach (RootAllomorph allo in entry.Allomorphs)
 					{
-						foreach (Stack<Tuple<IMorphologicalRule, RootAllomorph>> permutation in PermuteRules(morphemes, index + 1))
+						foreach (Stack<Tuple<IMorphologicalRule, RootAllomorph>> permutation in PermuteRules(morphemes,
+							index + 1))
 						{
 							permutation.Push(Tuple.Create((IMorphologicalRule) null, allo));
 							yield return permutation;
@@ -214,7 +221,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 				}
 				else
 				{
-					foreach (Stack<Tuple<IMorphologicalRule, RootAllomorph>> permutation in PermuteRules(morphemes, index + 1))
+					foreach (Stack<Tuple<IMorphologicalRule, RootAllomorph>> permutation in PermuteRules(morphemes,
+						index + 1))
 					{
 						permutation.Push(Tuple.Create((IMorphologicalRule) morphemes[index], (RootAllomorph) null));
 						yield return permutation;
@@ -225,7 +233,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 
 		private IEnumerable<Word> CheckDisjunction(IEnumerable<Word> validWords)
 		{
-			foreach (IGrouping<IEnumerable<Allomorph>, Word> group in validWords.GroupBy(validWord => validWord.AllomorphsInMorphOrder, MorphsEqualityComparer))
+			foreach (IGrouping<IEnumerable<Allomorph>, Word> group in validWords
+				.GroupBy(validWord => validWord.AllomorphsInMorphOrder, MorphsEqualityComparer))
 			{
 				// enforce the disjunctive property of allomorphs by ensuring that this word synthesis
 				// has the highest order of precedence for its allomorphs
@@ -238,9 +247,12 @@ namespace SIL.Machine.Morphology.HermitCrab
 						if (i == j)
 							continue;
 
-						// if the two parses differ by one allomorph and that allomorph does not free fluctuate and has a lower precedence, than the parse fails
-						Tuple<Allomorph, Allomorph>[] differentAllomorphs = words[i].AllomorphsInMorphOrder.Zip(words[j].AllomorphsInMorphOrder).Where(t => t.Item1 != t.Item2).ToArray();
-						if (differentAllomorphs.Length == 1 && !differentAllomorphs[0].Item1.FreeFluctuatesWith(differentAllomorphs[0].Item2)
+						// if the two parses differ by one allomorph and that allomorph does not free fluctuate
+						// and has a lower precedence, than the parse fails
+						Tuple<Allomorph, Allomorph>[] differentAllomorphs = words[i].AllomorphsInMorphOrder
+							.Zip(words[j].AllomorphsInMorphOrder).Where(t => t.Item1 != t.Item2).ToArray();
+						if (differentAllomorphs.Length == 1
+							&& !differentAllomorphs[0].Item1.FreeFluctuatesWith(differentAllomorphs[0].Item2)
 							&& differentAllomorphs[0].Item1.Index >= differentAllomorphs[0].Item2.Index)
 						{
 							disjunctive = true;
@@ -305,7 +317,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 		{
 			if (_traceManager.IsTracing)
 				_traceManager.LexicalLookup(input.Stratum, input);
-			foreach (LexEntry entry in SearchRootAllomorphs(input.Stratum, input.Shape).Select(allo => allo.Morpheme).Cast<LexEntry>().Where(LexEntrySelector).Distinct())
+			foreach (LexEntry entry in SearchRootAllomorphs(input.Stratum, input.Shape).Select(allo => allo.Morpheme)
+				.Cast<LexEntry>().Where(LexEntrySelector).Distinct())
 			{
 				foreach (RootAllomorph allomorph in entry.Allomorphs)
 				{
@@ -328,7 +341,9 @@ namespace SIL.Machine.Morphology.HermitCrab
 				return false;
 			}
 
-			Feature feature = word.ObligatorySyntacticFeatures.FirstOrDefault(f => !ContainsFeature(word.SyntacticFeatureStruct, f, new HashSet<FeatureStruct>(new ReferenceEqualityComparer<FeatureStruct>())));
+			Feature feature = word.ObligatorySyntacticFeatures
+				.FirstOrDefault(f => !ContainsFeature(word.SyntacticFeatureStruct, f,
+					new HashSet<FeatureStruct>(new ReferenceEqualityComparer<FeatureStruct>())));
 			if (feature != null)
 			{
 				if (_traceManager.IsTracing)
@@ -396,12 +411,16 @@ namespace SIL.Machine.Morphology.HermitCrab
 			var rootEntry = (LexEntry) morphemes[wordAnalysis.RootMorphemeIndex];
 			var realizationalFS = new FeatureStruct();
 			var results = new HashSet<string>();
-			foreach (Stack<Morpheme> otherMorphemes in PermuteOtherMorphemes(morphemes, wordAnalysis.RootMorphemeIndex - 1, wordAnalysis.RootMorphemeIndex + 1))
+			foreach (Stack<Morpheme> otherMorphemes in PermuteOtherMorphemes(morphemes,
+				wordAnalysis.RootMorphemeIndex - 1, wordAnalysis.RootMorphemeIndex + 1))
+			{
 				results.UnionWith(GenerateWords(rootEntry, otherMorphemes, realizationalFS));
+			}
 			return results;
 		}
 
-		private IEnumerable<Stack<Morpheme>> PermuteOtherMorphemes(List<Morpheme> morphemes, int leftIndex, int rightIndex)
+		private IEnumerable<Stack<Morpheme>> PermuteOtherMorphemes(List<Morpheme> morphemes, int leftIndex,
+			int rightIndex)
 		{
 			if (leftIndex == -1 && rightIndex == morphemes.Count)
 			{

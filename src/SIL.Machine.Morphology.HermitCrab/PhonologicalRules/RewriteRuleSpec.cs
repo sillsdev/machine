@@ -34,7 +34,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			get { return _isTargetEmpty; }
 		}
 
-		public bool MatchSubrule(PhonologicalPatternRule rule, Match<Word, ShapeNode> match, out PhonologicalSubruleMatch subruleMatch)
+		public bool MatchSubrule(PhonologicalPatternRule rule, Match<Word, ShapeNode> match,
+			out PhonologicalSubruleMatch subruleMatch)
 		{
 			foreach (RewriteSubruleSpec subruleSpec in _subruleSpecs)
 			{
@@ -73,19 +74,22 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 				}
 
 				VariableBindings varBindings = match.VariableBindings;
-				Match<Word, ShapeNode> leftEnvMatch = subruleSpec.LeftEnvironmentMatcher == null ? null : subruleSpec.LeftEnvironmentMatcher.Match(match.Input, leftNode, varBindings);
+				Match<Word, ShapeNode> leftEnvMatch = subruleSpec.LeftEnvironmentMatcher == null ? null
+					: subruleSpec.LeftEnvironmentMatcher.Match(match.Input, leftNode, varBindings);
 				if (leftEnvMatch == null || leftEnvMatch.Success)
 				{
 					if (leftEnvMatch != null && leftEnvMatch.VariableBindings != null)
 						varBindings = leftEnvMatch.VariableBindings;
 
-					Match<Word, ShapeNode> rightEnvMatch = subruleSpec.RightEnvironmentMatcher == null ? null : subruleSpec.RightEnvironmentMatcher.Match(match.Input, rightNode, varBindings);
+					Match<Word, ShapeNode> rightEnvMatch = subruleSpec.RightEnvironmentMatcher == null ? null
+						: subruleSpec.RightEnvironmentMatcher.Match(match.Input, rightNode, varBindings);
 					if (rightEnvMatch == null || rightEnvMatch.Success)
 					{
 						if (rightEnvMatch != null && rightEnvMatch.VariableBindings != null)
 							varBindings = rightEnvMatch.VariableBindings;
 
-						subruleMatch = new PhonologicalSubruleMatch(subruleSpec, rule.SpanFactory.Create(startNode, endNode), varBindings);
+						subruleMatch = new PhonologicalSubruleMatch(subruleSpec,
+							Span<ShapeNode>.Create(startNode, endNode), varBindings);
 						return true;
 					}
 				}

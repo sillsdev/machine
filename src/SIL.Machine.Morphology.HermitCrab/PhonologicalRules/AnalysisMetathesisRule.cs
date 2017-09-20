@@ -14,7 +14,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 		private readonly MetathesisRule _rule;
 		private readonly PhonologicalPatternRule _patternRule; 
 
-		public AnalysisMetathesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, MetathesisRule rule)
+		public AnalysisMetathesisRule(Morpher morpher, MetathesisRule rule)
 		{
 			_morpher = morpher;
 			_rule = rule;
@@ -27,11 +27,12 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			    Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Anchor),
 				MatchingMethod = MatchingMethod.Unification,
 				UseDefaults = true,
-				// during analysis shape nodes can have features that are underspecified, so this must be non-deterministic
+				// during analysis shape nodes can have features that are underspecified,
+				// so this must be non-deterministic
 				Nondeterministic = true
 			};
 
-			_patternRule = new IterativePhonologicalPatternRule(spanFactory, ruleSpec, settings);
+			_patternRule = new IterativePhonologicalPatternRule(ruleSpec, settings);
 		}
 
 		public IEnumerable<Word> Apply(Word input)

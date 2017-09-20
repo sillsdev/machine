@@ -76,14 +76,14 @@ namespace SIL.Machine.Morphology.HermitCrab
 			}
 		}
 
-		public override IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileAnalysisRule(Morpher morpher)
 		{
-			return new AnalysisAffixTemplateRule(spanFactory, morpher, this);
+			return new AnalysisAffixTemplateRule(morpher, this);
 		}
 
-		public override IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileSynthesisRule(Morpher morpher)
 		{
-			return new SynthesisAffixTemplateRule(spanFactory, morpher, this);
+			return new SynthesisAffixTemplateRule(morpher, this);
 		}
 	}
 }

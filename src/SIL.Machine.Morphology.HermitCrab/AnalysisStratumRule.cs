@@ -15,24 +15,31 @@ namespace SIL.Machine.Morphology.HermitCrab
 		private readonly Stratum _stratum;
 		private readonly Morpher _morpher;
 
-		public AnalysisStratumRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, Stratum stratum)
+		public AnalysisStratumRule(Morpher morpher, Stratum stratum)
 		{
 			_stratum = stratum;
 			_morpher = morpher;
-			_prulesRule = new LinearRuleCascade<Word, ShapeNode>(stratum.PhonologicalRules.Select(prule => prule.CompileAnalysisRule(spanFactory, morpher)).Reverse());
-			_templatesRule = new RuleBatch<Word, ShapeNode>(stratum.AffixTemplates.Select(template => template.CompileAnalysisRule(spanFactory, morpher)), false, FreezableEqualityComparer<Word>.Default);
+			_prulesRule = new LinearRuleCascade<Word, ShapeNode>(
+				stratum.PhonologicalRules.Select(prule => prule.CompileAnalysisRule(morpher)).Reverse());
+			_templatesRule = new RuleBatch<Word, ShapeNode>(
+				stratum.AffixTemplates.Select(template => template.CompileAnalysisRule(morpher)), false,
+				FreezableEqualityComparer<Word>.Default);
 			_mrulesRule = null;
-			IEnumerable<IRule<Word, ShapeNode>> mrules = stratum.MorphologicalRules.Select(mrule => mrule.CompileAnalysisRule(spanFactory, morpher)).Reverse();
+			IEnumerable<IRule<Word, ShapeNode>> mrules = stratum.MorphologicalRules
+				.Select(mrule => mrule.CompileAnalysisRule(morpher)).Reverse();
 			switch (stratum.MorphologicalRuleOrder)
 			{
 				case MorphologicalRuleOrder.Linear:
-					_mrulesRule = new LinearRuleCascade<Word, ShapeNode>(mrules, true, FreezableEqualityComparer<Word>.Default);
+					_mrulesRule = new LinearRuleCascade<Word, ShapeNode>(mrules, true,
+						FreezableEqualityComparer<Word>.Default);
 					break;
 				case MorphologicalRuleOrder.Unordered:
 #if SINGLE_THREADED
-					_mrulesRule = new CombinationRuleCascade<Word, ShapeNode>(mrules, true, FreezableEqualityComparer<Word>.Default);
+					_mrulesRule = new CombinationRuleCascade<Word, ShapeNode>(mrules, true,
+						FreezableEqualityComparer<Word>.Default);
 #else
-					_mrulesRule = new ParallelCombinationRuleCascade<Word, ShapeNode>(mrules, true, FreezableEqualityComparer<Word>.Default);
+					_mrulesRule = new ParallelCombinationRuleCascade<Word, ShapeNode>(mrules, true,
+						FreezableEqualityComparer<Word>.Default);
 #endif
 					break;
 			}

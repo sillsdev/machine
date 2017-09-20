@@ -123,7 +123,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			verbTemplate.Slots.Add(new AffixTemplateSlot(evidential) {Optional = true});
 			Morphophonemic.AffixTemplates.Add(verbTemplate);
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 			Word[] output = morpher.ParseWord("sagd").ToArray();
 			AssertMorphsEqual(output, "32 PAST");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
@@ -150,7 +150,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 					.Feature("evidential").EqualTo("witnessed")
 					.Feature("tense").EqualTo("pres")).Value;
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			output = morpher.ParseWord("sagzv").ToArray();
 			AssertMorphsEqual(output, "32 3SG WIT");
 			AssertSyntacticFeatureStructsEqual(output, FeatureStruct.New(Language.SyntacticFeatureSystem)
@@ -201,7 +201,11 @@ namespace SIL.Machine.Morphology.HermitCrab
 				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "d")}
 			});
 
-			var verbTemplate = new AffixTemplate {Name = "verb", RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value};
+			var verbTemplate = new AffixTemplate
+			{
+				Name = "verb",
+				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
+			};
 			verbTemplate.Slots.Add(new AffixTemplateSlot(edSuffix));
 			Morphophonemic.AffixTemplates.Add(verbTemplate);
 
@@ -222,8 +226,10 @@ namespace SIL.Machine.Morphology.HermitCrab
 			var crule = new CompoundingRule
 			{
 				Name = "rule1",
-				HeadRequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
-				NonHeadRequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
+				HeadRequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
+					.Symbol("V").Value,
+				NonHeadRequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
+					.Symbol("N").Value,
 				OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value
 			};
 			crule.Subrules.Add(new CompoundingSubrule
@@ -246,11 +252,15 @@ namespace SIL.Machine.Morphology.HermitCrab
 				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "s")}
 			});
 
-			var nounTemplate = new AffixTemplate {Name = "noun", RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value};
+			var nounTemplate = new AffixTemplate
+			{
+				Name = "noun",
+				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value
+			};
 			nounTemplate.Slots.Add(new AffixTemplateSlot(sSuffix) {Optional = true});
 			Morphophonemic.AffixTemplates.Add(nounTemplate);
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("sagd"), "32 PAST");
 			AssertMorphsEqual(morpher.ParseWord("sagdv"));
 			AssertMorphsEqual(morpher.ParseWord("sagdvs"));
@@ -258,7 +268,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			AssertMorphsEqual(morpher.ParseWord("sagdmis"));
 
 			verbTemplate.IsFinal = false;
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("sagd"));
 			AssertMorphsEqual(morpher.ParseWord("sagdv"), "32 PAST NOM");
 			AssertMorphsEqual(morpher.ParseWord("sagdvs"), "32 PAST NOM PL");
@@ -298,11 +308,15 @@ namespace SIL.Machine.Morphology.HermitCrab
 				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "s")}
 			});
 
-			var nounTemplate = new AffixTemplate {Name = "noun", RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value};
+			var nounTemplate = new AffixTemplate
+			{
+				Name = "noun",
+				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value
+			};
 			nounTemplate.Slots.Add(new AffixTemplateSlot(sSuffix) {Optional = true});
 			Morphophonemic.AffixTemplates.Add(nounTemplate);
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("sagv"), "32 NOM");
 			AssertMorphsEqual(morpher.ParseWord("sagvs"), "32 NOM PL");
 		}
@@ -316,7 +330,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 			{
 				Name = "ed_suffix",
 			    Gloss = "PAST",
-				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V", "IV", "TV").Value,
+				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
+					.Symbol("V", "IV", "TV").Value,
 			};
 
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
@@ -325,11 +340,19 @@ namespace SIL.Machine.Morphology.HermitCrab
 				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "d")}
 			});
 
-			var transitiveVerbTemplate = new AffixTemplate {Name = "Transitive Verb", RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("TV").Value};
+			var transitiveVerbTemplate = new AffixTemplate
+			{
+				Name = "Transitive Verb",
+				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("TV").Value
+			};
 			transitiveVerbTemplate.Slots.Add(new AffixTemplateSlot(edSuffix));
 			Morphophonemic.AffixTemplates.Add(transitiveVerbTemplate);
 
-			var intransitiveVerbTemplate = new AffixTemplate {Name = "Intransitive Verb", RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("IV").Value};
+			var intransitiveVerbTemplate = new AffixTemplate
+			{
+				Name = "Intransitive Verb",
+				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("IV").Value
+			};
 			intransitiveVerbTemplate.Slots.Add(new AffixTemplateSlot(edSuffix));
 			Morphophonemic.AffixTemplates.Add(intransitiveVerbTemplate);
 
@@ -348,7 +371,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			});
 			Morphophonemic.MorphologicalRules.Add(nominalizer);
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("mivd"), "53 IVERB PAST");
 		}
 	}

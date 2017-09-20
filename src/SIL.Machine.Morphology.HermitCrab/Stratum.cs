@@ -125,14 +125,14 @@ namespace SIL.Machine.Morphology.HermitCrab
 		/// <value>The morphological rule order.</value>
 		public MorphologicalRuleOrder MorphologicalRuleOrder { get; set; }
 
-		public override IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileAnalysisRule(Morpher morpher)
 		{
-			return new AnalysisStratumRule(spanFactory, morpher, this);
+			return new AnalysisStratumRule(morpher, this);
 		}
 
-		public override IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileSynthesisRule(Morpher morpher)
 		{
-			return new SynthesisStratumRule(spanFactory, morpher, this);
+			return new SynthesisStratumRule(morpher, this);
 		}
 	}
 }

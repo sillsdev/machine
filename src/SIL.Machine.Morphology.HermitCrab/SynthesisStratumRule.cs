@@ -15,21 +15,25 @@ namespace SIL.Machine.Morphology.HermitCrab
 		private readonly Stratum _stratum;
 		private readonly Morpher _morpher;
 
-		public SynthesisStratumRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, Stratum stratum)
+		public SynthesisStratumRule(Morpher morpher, Stratum stratum)
 		{
-			_templatesRule = new SynthesisAffixTemplatesRule(spanFactory, morpher, stratum);
+			_templatesRule = new SynthesisAffixTemplatesRule(morpher, stratum);
 			_mrulesRule = null;
-			IEnumerable<IRule<Word, ShapeNode>> mrules = stratum.MorphologicalRules.Select(mrule => mrule.CompileSynthesisRule(spanFactory, morpher));
+			IEnumerable<IRule<Word, ShapeNode>> mrules = stratum.MorphologicalRules
+				.Select(mrule => mrule.CompileSynthesisRule(morpher));
 			switch (stratum.MorphologicalRuleOrder)
 			{
 				case MorphologicalRuleOrder.Linear:
-					_mrulesRule = new LinearRuleCascade<Word, ShapeNode>(mrules, true, FreezableEqualityComparer<Word>.Default);
+					_mrulesRule = new LinearRuleCascade<Word, ShapeNode>(mrules, true,
+						FreezableEqualityComparer<Word>.Default);
 					break;
 				case MorphologicalRuleOrder.Unordered:
-					_mrulesRule = new CombinationRuleCascade<Word, ShapeNode>(mrules, true, FreezableEqualityComparer<Word>.Default);
+					_mrulesRule = new CombinationRuleCascade<Word, ShapeNode>(mrules, true,
+						FreezableEqualityComparer<Word>.Default);
 					break;
 			}
-			_prulesRule = new LinearRuleCascade<Word, ShapeNode>(stratum.PhonologicalRules.Select(prule => prule.CompileSynthesisRule(spanFactory, morpher)));
+			_prulesRule = new LinearRuleCascade<Word, ShapeNode>(
+				stratum.PhonologicalRules.Select(prule => prule.CompileSynthesisRule(morpher)));
 			_stratum = stratum;
 			_morpher = morpher;
 		}
@@ -53,7 +57,10 @@ namespace SIL.Machine.Morphology.HermitCrab
 				else if (mruleOutWord.HasRemainingRulesFromStratum(_stratum))
 				{
 					if (_morpher.TraceManager.IsTracing)
-						_morpher.TraceManager.Failed(_morpher.Language, mruleOutWord, FailureReason.PartialParse, null, null);
+					{
+						_morpher.TraceManager.Failed(_morpher.Language, mruleOutWord, FailureReason.PartialParse, null,
+							null);
+					}
 				}
 				else
 				{

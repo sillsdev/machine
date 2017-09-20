@@ -10,15 +10,15 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 		private readonly Matcher<Word, ShapeNode> _leftEnvMatcher;
 		private readonly Matcher<Word, ShapeNode> _rightEnvMatcher;
 
-		protected RewriteSubruleSpec(SpanFactory<ShapeNode> spanFactory, MatcherSettings<ShapeNode> matcherSettings,
-			Pattern<Word, ShapeNode> leftEnv, Pattern<Word, ShapeNode> rightEnv)
+		protected RewriteSubruleSpec(MatcherSettings<ShapeNode> matcherSettings, Pattern<Word, ShapeNode> leftEnv,
+			Pattern<Word, ShapeNode> rightEnv)
 		{
 			if (leftEnv != null && !leftEnv.IsEmpty)
 			{
 				MatcherSettings<ShapeNode> leftEnvMatcherSettings = matcherSettings.Clone();
 				leftEnvMatcherSettings.Direction = Direction.RightToLeft;
 				leftEnvMatcherSettings.AnchoredToStart = true;
-				_leftEnvMatcher = new Matcher<Word, ShapeNode>(spanFactory, leftEnv, leftEnvMatcherSettings);
+				_leftEnvMatcher = new Matcher<Word, ShapeNode>(leftEnv, leftEnvMatcherSettings);
 			}
 
 			if (rightEnv != null && !rightEnv.IsEmpty)
@@ -26,7 +26,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 				MatcherSettings<ShapeNode> rightEnvMatcherSettings = matcherSettings.Clone();
 				rightEnvMatcherSettings.Direction = Direction.LeftToRight;
 				rightEnvMatcherSettings.AnchoredToStart = true;
-				_rightEnvMatcher = new Matcher<Word, ShapeNode>(spanFactory, rightEnv, rightEnvMatcherSettings);
+				_rightEnvMatcher = new Matcher<Word, ShapeNode>(rightEnv, rightEnvMatcherSettings);
 			}
 		}
 
@@ -45,6 +45,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			return true;
 		}
 
-		public abstract void ApplyRhs(Match<Word, ShapeNode> targetMatch, Span<ShapeNode> span, VariableBindings varBindings);
+		public abstract void ApplyRhs(Match<Word, ShapeNode> targetMatch, Span<ShapeNode> span,
+			VariableBindings varBindings);
 	}
 }

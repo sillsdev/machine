@@ -7,26 +7,16 @@ namespace SIL.Machine.Tokenization
 {
 	public class LatinWordTokenizer : WhitespaceTokenizer
 	{
-		private static readonly Regex InnerWordPunctRegex = new Regex("\\G[&'\\-.:=?@\xAD\xB7\u2010\u2011\u2019\u2027]|_+");
+		private static readonly Regex InnerWordPunctRegex = new Regex(
+			"\\G[&'\\-.:=?@\xAD\xB7\u2010\u2011\u2019\u2027]|_+");
 		private readonly HashSet<string> _abbreviations;
 
 		public LatinWordTokenizer()
-			: this(new IntegerSpanFactory())
+			: this(Enumerable.Empty<string>())
 		{
 		}
 
 		public LatinWordTokenizer(IEnumerable<string> abbreviations)
-			: this(new IntegerSpanFactory(), abbreviations)
-		{
-		}
-
-		public LatinWordTokenizer(SpanFactory<int> spanFactory)
-			: this(spanFactory, Enumerable.Empty<string>())
-		{
-		}
-
-		public LatinWordTokenizer(SpanFactory<int> spanFactory, IEnumerable<string> abbreviations)
-			: base(spanFactory)
 		{
 			_abbreviations = new HashSet<string>(abbreviations.Select(ToLower));
 		}
@@ -44,12 +34,12 @@ namespace SIL.Machine.Tokenization
 					{
 						if (wordStart == -1)
 						{
-							yield return SpanFactory.Create(i);
+							yield return Span<int>.Create(i);
 						}
 						else if (innerWordPunct != -1)
 						{
-							yield return SpanFactory.Create(wordStart, innerWordPunct);
-							yield return SpanFactory.Create(innerWordPunct, i);
+							yield return Span<int>.Create(wordStart, innerWordPunct);
+							yield return Span<int>.Create(innerWordPunct, i);
 							wordStart = i;
 						}
 						else
@@ -62,8 +52,8 @@ namespace SIL.Machine.Tokenization
 								continue;
 							}
 
-							yield return SpanFactory.Create(wordStart, i);
-							yield return SpanFactory.Create(i);
+							yield return Span<int>.Create(wordStart, i);
+							yield return Span<int>.Create(i);
 							wordStart = -1;
 						}
 					}
@@ -83,17 +73,17 @@ namespace SIL.Machine.Tokenization
 						if (data.Substring(innerWordPunct, span.End - innerWordPunct) == "."
 							&& _abbreviations.Contains(ToLower(data.Substring(wordStart, innerWordPunct - wordStart))))
 						{
-							yield return SpanFactory.Create(wordStart, span.End);
+							yield return Span<int>.Create(wordStart, span.End);
 						}
 						else
 						{
-							yield return SpanFactory.Create(wordStart, innerWordPunct);
-							yield return SpanFactory.Create(innerWordPunct, span.End);
+							yield return Span<int>.Create(wordStart, innerWordPunct);
+							yield return Span<int>.Create(innerWordPunct, span.End);
 						}
 					}
 					else
 					{
-						yield return SpanFactory.Create(wordStart, span.End);
+						yield return Span<int>.Create(wordStart, span.End);
 					}
 				}
 			}

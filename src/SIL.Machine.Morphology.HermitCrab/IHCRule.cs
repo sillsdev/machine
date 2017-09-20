@@ -7,7 +7,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 	{
 		string Name { get; set; }
 
-		IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher);
-		IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher);
+		IRule<Word, ShapeNode> CompileAnalysisRule(Morpher morpher);
+		IRule<Word, ShapeNode> CompileSynthesisRule(Morpher morpher);
 	}
 }

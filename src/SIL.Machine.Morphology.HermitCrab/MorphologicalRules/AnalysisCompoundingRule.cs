@@ -12,7 +12,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 		private readonly CompoundingRule _rule;
 		private readonly List<IRule<Word, ShapeNode>> _rules;
 
-		public AnalysisCompoundingRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, CompoundingRule rule)
+		public AnalysisCompoundingRule(Morpher morpher, CompoundingRule rule)
 		{
 			_morpher = morpher;
 			_rule = rule;
@@ -20,7 +20,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			_rules = new List<IRule<Word, ShapeNode>>();
 			foreach (CompoundingSubrule sr in rule.Subrules)
 			{
-				_rules.Add(new MultiplePatternRule<Word, ShapeNode>(spanFactory, new AnalysisCompoundingSubruleRuleSpec(sr),
+				_rules.Add(new MultiplePatternRule<Word, ShapeNode>(new AnalysisCompoundingSubruleRuleSpec(sr),
 					new MatcherSettings<ShapeNode>
 					{
 						Filter = ann => ann.Type() == HCFeatureSystem.Segment,

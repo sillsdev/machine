@@ -36,7 +36,7 @@ namespace SIL.Machine.Rules
 					return match.Input;
 				});
 
-			var rule = new PatternRule<AnnotatedStringData, int>(SpanFactory, ruleSpec);
+			var rule = new PatternRule<AnnotatedStringData, int>(ruleSpec);
 			AnnotatedStringData inputWord = CreateStringData("fazk");
 			Assert.IsTrue(rule.Apply(inputWord).Any());
 		}
@@ -84,7 +84,7 @@ namespace SIL.Machine.Rules
 				});
 
 			var batchSpec = new BatchPatternRuleSpec<AnnotatedStringData, int>(new[] {ruleSpec1, ruleSpec2});
-			var rule = new PatternRule<AnnotatedStringData, int>(SpanFactory, batchSpec);
+			var rule = new PatternRule<AnnotatedStringData, int>(batchSpec);
 			AnnotatedStringData inputWord = CreateStringData("fazk");
 			inputWord.Annotations.Add(inputWord.Span, FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("noun").Value);
 			Assert.IsTrue(rule.Apply(inputWord).Any());

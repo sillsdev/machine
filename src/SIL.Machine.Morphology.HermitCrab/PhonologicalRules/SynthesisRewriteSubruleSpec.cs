@@ -10,9 +10,9 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 		private readonly int _index;
 		private readonly bool _isIterative;
 
-		protected SynthesisRewriteSubruleSpec(SpanFactory<ShapeNode> spanFactory, MatcherSettings<ShapeNode> matcherSettings, bool isIterative,
+		protected SynthesisRewriteSubruleSpec(MatcherSettings<ShapeNode> matcherSettings, bool isIterative,
 			RewriteSubrule subrule, int index)
-			: base(spanFactory, matcherSettings, subrule.LeftEnvironment, subrule.RightEnvironment)
+			: base(matcherSettings, subrule.LeftEnvironment, subrule.RightEnvironment)
 		{
 			_isIterative = isIterative;
 			_subrule = subrule;
@@ -29,22 +29,33 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			if (!_subrule.RequiredSyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct))
 			{
 				if (input.CurrentRuleResults != null)
-					input.CurrentRuleResults[_index] = new Tuple<FailureReason, object>(FailureReason.RequiredSyntacticFeatureStruct, _subrule.RequiredSyntacticFeatureStruct);
+				{
+					input.CurrentRuleResults[_index] = new Tuple<FailureReason, object>(
+						FailureReason.RequiredSyntacticFeatureStruct, _subrule.RequiredSyntacticFeatureStruct);
+				}
 				return false;
 			}
 
 			MprFeatureGroup group;
-			if (_subrule.RequiredMprFeatures.Count > 0 && !_subrule.RequiredMprFeatures.IsMatchRequired(input.MprFeatures, out group))
+			if (_subrule.RequiredMprFeatures.Count > 0
+				&& !_subrule.RequiredMprFeatures.IsMatchRequired(input.MprFeatures, out group))
 			{
 				if (input.CurrentRuleResults != null)
-					input.CurrentRuleResults[_index] = new Tuple<FailureReason, object>(FailureReason.RequiredMprFeatures, group);
+				{
+					input.CurrentRuleResults[_index] = new Tuple<FailureReason, object>(
+						FailureReason.RequiredMprFeatures, group);
+				}
 				return false;
 			}
 
-			if (_subrule.ExcludedMprFeatures.Count > 0 && !_subrule.ExcludedMprFeatures.IsMatchExcluded(input.MprFeatures, out group))
+			if (_subrule.ExcludedMprFeatures.Count > 0
+				&& !_subrule.ExcludedMprFeatures.IsMatchExcluded(input.MprFeatures, out group))
 			{
 				if (input.CurrentRuleResults != null)
-					input.CurrentRuleResults[_index] = new Tuple<FailureReason, object>(FailureReason.ExcludedMprFeatures, group);
+				{
+					input.CurrentRuleResults[_index] = new Tuple<FailureReason, object>(
+						FailureReason.ExcludedMprFeatures, group);
+				}
 				return false;
 			}
 

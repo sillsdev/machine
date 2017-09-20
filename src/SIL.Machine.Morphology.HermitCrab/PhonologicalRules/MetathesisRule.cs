@@ -24,14 +24,14 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 
 		public string RightSwitchName { get; set; }
 
-		public override IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileAnalysisRule(Morpher morpher)
 		{
-			return new AnalysisMetathesisRule(spanFactory, morpher, this);
+			return new AnalysisMetathesisRule(morpher, this);
 		}
 
-		public override IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileSynthesisRule(Morpher morpher)
 		{
-			return new SynthesisMetathesisRule(spanFactory, morpher, this);
+			return new SynthesisMetathesisRule(morpher, this);
 		}
 	}
 }

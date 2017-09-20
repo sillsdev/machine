@@ -15,25 +15,26 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 		private readonly CompoundingRule _rule;
 		private readonly List<Tuple<Matcher<Word, ShapeNode>, Matcher<Word, ShapeNode>>> _subruleMatchers;
 
-		public SynthesisCompoundingRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, CompoundingRule rule)
+		public SynthesisCompoundingRule(Morpher morpher, CompoundingRule rule)
 		{
 			_morpher = morpher;
 			_rule = rule;
 			_subruleMatchers = new List<Tuple<Matcher<Word, ShapeNode>, Matcher<Word, ShapeNode>>>();
 			foreach (CompoundingSubrule sr in rule.Subrules)
-				_subruleMatchers.Add(Tuple.Create(BuildMatcher(spanFactory, sr.HeadLhs), BuildMatcher(spanFactory, sr.NonHeadLhs)));
+				_subruleMatchers.Add(Tuple.Create(BuildMatcher(sr.HeadLhs), BuildMatcher(sr.NonHeadLhs)));
 		}
 
-		private Matcher<Word, ShapeNode> BuildMatcher(SpanFactory<ShapeNode> spanFactory, IEnumerable<Pattern<Word, ShapeNode>> lhs)
+		private Matcher<Word, ShapeNode> BuildMatcher(IEnumerable<Pattern<Word, ShapeNode>> lhs)
 		{
 			var pattern = new Pattern<Word, ShapeNode>();
 			foreach (Pattern<Word, ShapeNode> part in lhs)
 				pattern.Children.Add(new Group<Word, ShapeNode>(part.Name, part.Children.CloneItems()));
 
-			return new Matcher<Word, ShapeNode>(spanFactory, pattern,
+			return new Matcher<Word, ShapeNode>(pattern,
 				new MatcherSettings<ShapeNode>
 				{
-					Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary) && !ann.IsDeleted(),
+					Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary)
+						&& !ann.IsDeleted(),
 					AnchoredToStart = true,
 					AnchoredToEnd = true
 				});
@@ -47,21 +48,32 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			if (input.GetApplicationCount(_rule) >= _rule.MaxApplicationCount)
 			{
 				if (_morpher.TraceManager.IsTracing)
-					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.MaxApplicationCount, _rule.MaxApplicationCount);
+				{
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input,
+						FailureReason.MaxApplicationCount, _rule.MaxApplicationCount);
+				}
 				return Enumerable.Empty<Word>();
 			}
 
 			if ((input.IsLastAppliedRuleFinal ?? false) && !input.IsPartial)
 			{
 				if (_morpher.TraceManager.IsTracing)
-					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.NonPartialRuleProhibitedAfterFinalTemplate, null);
+				{
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input,
+						FailureReason.NonPartialRuleProhibitedAfterFinalTemplate, null);
+				}
 				return Enumerable.Empty<Word>();
 			}
 
-			if (!_rule.NonHeadRequiredSyntacticFeatureStruct.IsUnifiable(input.CurrentNonHead.SyntacticFeatureStruct, true))
+			if (!_rule.NonHeadRequiredSyntacticFeatureStruct.IsUnifiable(input.CurrentNonHead.SyntacticFeatureStruct,
+				true))
 			{
 				if (_morpher.TraceManager.IsTracing)
-					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.NonHeadRequiredSyntacticFeatureStruct, _rule.NonHeadRequiredSyntacticFeatureStruct);
+				{
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input,
+						FailureReason.NonHeadRequiredSyntacticFeatureStruct,
+						_rule.NonHeadRequiredSyntacticFeatureStruct);
+				}
 				return Enumerable.Empty<Word>();
 			}
 
@@ -69,7 +81,10 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			if (!_rule.HeadRequiredSyntacticFeatureStruct.Unify(input.SyntacticFeatureStruct, true, out syntacticFS))
 			{
 				if (_morpher.TraceManager.IsTracing)
-					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.HeadRequiredSyntacticFeatureStruct, _rule.HeadRequiredSyntacticFeatureStruct);
+				{
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input,
+						FailureReason.HeadRequiredSyntacticFeatureStruct, _rule.HeadRequiredSyntacticFeatureStruct);
+				}
 				return Enumerable.Empty<Word>();
 			}
 
@@ -77,16 +92,24 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			for (int i = 0; i < _rule.Subrules.Count; i++)
 			{
 				MprFeatureGroup group;
-				if (_rule.Subrules[i].RequiredMprFeatures.Count > 0 && !_rule.Subrules[i].RequiredMprFeatures.IsMatchRequired(input.MprFeatures, out group))
+				if (_rule.Subrules[i].RequiredMprFeatures.Count > 0
+					&& !_rule.Subrules[i].RequiredMprFeatures.IsMatchRequired(input.MprFeatures, out group))
 				{
 					if (_morpher.TraceManager.IsTracing)
-						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.RequiredMprFeatures, group);
+					{
+						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input,
+							FailureReason.RequiredMprFeatures, group);
+					}
 					continue;
 				}
-				if (_rule.Subrules[i].ExcludedMprFeatures.Count > 0 && !_rule.Subrules[i].ExcludedMprFeatures.IsMatchExcluded(input.MprFeatures, out group))
+				if (_rule.Subrules[i].ExcludedMprFeatures.Count > 0
+					&& !_rule.Subrules[i].ExcludedMprFeatures.IsMatchExcluded(input.MprFeatures, out group))
 				{
 					if (_morpher.TraceManager.IsTracing)
-						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.ExcludedMprFeatures, group);
+					{
+						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input,
+							FailureReason.ExcludedMprFeatures, group);
+					}
 					continue;
 				}
 
@@ -130,7 +153,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 					}
 					if (_morpher.TraceManager.IsTracing)
 					{
-						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.NonHeadPattern, null);
+						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.NonHeadPattern,
+							null);
 					}
 				}
 				else if (_morpher.TraceManager.IsTracing)
@@ -142,7 +166,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			return output;
 		}
 
-		private Word ApplySubrule(CompoundingSubrule sr, Match<Word, ShapeNode> headMatch, Match<Word, ShapeNode> nonHeadMatch)
+		private Word ApplySubrule(CompoundingSubrule sr, Match<Word, ShapeNode> headMatch,
+			Match<Word, ShapeNode> nonHeadMatch)
 		{
 			// TODO: unify the variable bindings from the head and non-head matches
 			Word output = headMatch.Input.Clone();
@@ -162,7 +187,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 					{
 						if (mapping.Item1 != null && mapping.Item1.Annotation.Parent != null)
 						{
-							var allomorphID = (string) mapping.Item1.Annotation.Parent.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
+							var allomorphID = (string) mapping.Item1.Annotation.Parent.FeatureStruct
+								.GetValue(HCFeatureSystem.Allomorph);
 							existingMorphNodes.GetOrCreate(allomorphID, () => new List<ShapeNode>()).Add(mapping.Item2);
 						}
 					}

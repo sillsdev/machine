@@ -29,7 +29,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 				});
 			Morphophonemic.MorphologicalRules.Add(edSuffix);
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 
 			Assert.That(morpher.AnalyzeWord("sagd"), Is.EquivalentTo(new[]
 				{
@@ -56,7 +56,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 				});
 			Morphophonemic.MorphologicalRules.Add(edSuffix);
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 
 			Assert.That(morpher.AnalyzeWord("sagt"), Is.Empty);
 		}
@@ -94,7 +94,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 				});
 			Morphophonemic.MorphologicalRules.Add(edSuffix);
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 
 			var analysis = new WordAnalysis(new IMorpheme[] {siPrefix, Entries["33"], edSuffix}, 1, "V");
 
@@ -121,7 +121,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			});
 			Morphophonemic.MorphologicalRules.Add(edSuffix);
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 
 			var analysis = new WordAnalysis(new IMorpheme[] {Entries["32"], edSuffix}, 0, "V");
 			Assert.That(morpher.GenerateWords(analysis), Is.Empty);

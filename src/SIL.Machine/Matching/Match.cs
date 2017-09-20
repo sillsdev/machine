@@ -29,7 +29,7 @@ namespace SIL.Machine.Matching
 			: base(Matcher<TData, TOffset>.EntireMatch, span)
 		{
 			_matcher = matcher;
-			_groupCaptures = new GroupCaptureCollection<TOffset>(span.SpanFactory, groupCaptures);
+			_groupCaptures = new GroupCaptureCollection<TOffset>(groupCaptures);
 			_patternPath = patternPath;
 			_varBindings = varBindings;
 			_input = input;

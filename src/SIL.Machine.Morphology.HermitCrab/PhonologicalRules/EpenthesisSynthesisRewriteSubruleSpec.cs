@@ -9,14 +9,15 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 	{
 		private readonly Pattern<Word, ShapeNode> _rhs;
 
-		public EpenthesisSynthesisRewriteSubruleSpec(SpanFactory<ShapeNode> spanFactory, MatcherSettings<ShapeNode> matcherSettings, bool isIterative,
+		public EpenthesisSynthesisRewriteSubruleSpec(MatcherSettings<ShapeNode> matcherSettings, bool isIterative,
 			RewriteSubrule subrule, int index)
-			: base(spanFactory, matcherSettings, isIterative, subrule, index)
+			: base(matcherSettings, isIterative, subrule, index)
 		{
 			_rhs = subrule.Rhs;
 		}
 
-		public override void ApplyRhs(Match<Word, ShapeNode> targetMatch, Span<ShapeNode> span, VariableBindings varBindings)
+		public override void ApplyRhs(Match<Word, ShapeNode> targetMatch, Span<ShapeNode> span,
+			VariableBindings varBindings)
 		{
 			ShapeNode curNode = span.Start;
 			foreach (PatternNode<Word, ShapeNode> node in _rhs.Children.GetNodes(targetMatch.Matcher.Direction))

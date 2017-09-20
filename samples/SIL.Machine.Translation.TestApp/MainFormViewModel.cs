@@ -30,7 +30,6 @@ namespace SIL.Machine.Translation.TestApp
 		private ITextCorpus _sourceCorpus;
 		private ITextCorpus _targetCorpus;
 		private ITextAlignmentCorpus _alignmentCorpus;
-		private readonly ShapeSpanFactory _spanFactory;
 		private readonly TraceManager _hcTraceManager;
 		private int _confidenceThreshold;
 		private readonly BulkObservableList<TextViewModel> _texts;
@@ -44,13 +43,13 @@ namespace SIL.Machine.Translation.TestApp
 			_openProjectCommand = new RelayCommand(OpenProject);
 			_saveProjectCommand = new RelayCommand(SaveProject, CanSaveProject);
 			CloseCommand = new RelayCommand(Close, CanClose);
-			_spanFactory = new ShapeSpanFactory();
 			_hcTraceManager = new TraceManager();
 			_confidenceThreshold = 20;
 			_texts = new BulkObservableList<TextViewModel>();
 			Texts = new ReadOnlyObservableList<TextViewModel>(_texts);
 			_currentText = new TextViewModel(_tokenizer);
-			RebuildTask = new TaskViewModel<SmtTrainProgress>(RebuildAsync, () => _hybridEngine != null, p => p.PercentCompleted, p => p.CurrentStepMessage);
+			RebuildTask = new TaskViewModel<SmtTrainProgress>(RebuildAsync, () => _hybridEngine != null,
+				p => p.PercentCompleted, p => p.CurrentStepMessage);
 		}
 
 		private void TextPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -90,7 +89,9 @@ namespace SIL.Machine.Translation.TestApp
 		{
 			if (IsChanged)
 			{
-				DialogResult result = MessageBox.Show("Do you wish to save the current project before opening another project?", MessageBoxButtons.YesNoCancel, MessageBoxType.Question);
+				DialogResult result = MessageBox.Show(
+					"Do you wish to save the current project before opening another project?",
+					MessageBoxButtons.YesNoCancel, MessageBoxType.Question);
 				switch (result)
 				{
 					case DialogResult.Yes:
@@ -105,7 +106,12 @@ namespace SIL.Machine.Translation.TestApp
 				}
 			}
 
-			using (var dialog = new OpenFileDialog {Title = "Open Project", CheckFileExists = true, Filters = {new FileDialogFilter("Project files", ".catx")}})
+			using (var dialog = new OpenFileDialog
+				{
+					Title = "Open Project",
+					CheckFileExists = true,
+					Filters = { new FileDialogFilter("Project files", ".catx") }
+				})
 			{
 				if (dialog.ShowDialog(null) == DialogResult.Ok)
 				{
@@ -113,7 +119,8 @@ namespace SIL.Machine.Translation.TestApp
 					if (!LoadProject(dialog.FileName))
 					{
 						CloseProject();
-						MessageBox.Show("There was an error loading the project configuration file.", MessageBoxButtons.OK, MessageBoxType.Error);
+						MessageBox.Show("There was an error loading the project configuration file.",
+							MessageBoxButtons.OK, MessageBoxType.Error);
 					}
 				}
 			}
@@ -149,12 +156,13 @@ namespace SIL.Machine.Translation.TestApp
 			if (hcSrcConfig != null && hcTrgConfig != null)
 			{
 				Language srcLang = XmlLanguageLoader.Load(Path.Combine(configDir, hcSrcConfig));
-				var srcMorpher = new Morpher(_spanFactory, _hcTraceManager, srcLang);
+				var srcMorpher = new Morpher(_hcTraceManager, srcLang);
 
 				Language trgLang = XmlLanguageLoader.Load(Path.Combine(configDir, hcTrgConfig));
-				var trgMorpher = new Morpher(_spanFactory, _hcTraceManager, trgLang);
+				var trgMorpher = new Morpher(_hcTraceManager, trgLang);
 
-				_transferEngine = new TransferEngine(srcMorpher, new SimpleTransferer(new GlossMorphemeMapper(trgMorpher)), trgMorpher);
+				_transferEngine = new TransferEngine(srcMorpher,
+					new SimpleTransferer(new GlossMorphemeMapper(trgMorpher)), trgMorpher);
 			}
 
 			_smtModel = new ThotSmtModel(Path.Combine(configDir, smtConfig));
@@ -190,13 +198,16 @@ namespace SIL.Machine.Translation.TestApp
 					if (alignmentsFileName != null)
 						alignmentsFileName = Path.Combine(configDir, alignmentsFileName);
 
-					var text = new TextViewModel(_tokenizer, name, metadataFileName, srcTextFileName, trgTextFileName, alignmentsFileName) {Engine = _hybridEngine};
+					var text = new TextViewModel(_tokenizer, name, metadataFileName, srcTextFileName, trgTextFileName,
+						alignmentsFileName) { Engine = _hybridEngine };
 					text.PropertyChanged += TextPropertyChanged;
 					_texts.Add(text);
 
 					Func<TextSegment, bool> segmentFilter = s => text.IsApproved(s.SegmentRef);
-					sourceTexts.Add(new FilteredText(new TextFileText(name, srcTextFileName, _tokenizer), segmentFilter));
-					targetTexts.Add(new FilteredText(new TextFileText(name, trgTextFileName, _tokenizer), segmentFilter));
+					sourceTexts.Add(new FilteredText(new TextFileText(name, srcTextFileName, _tokenizer),
+						segmentFilter));
+					targetTexts.Add(new FilteredText(new TextFileText(name, trgTextFileName, _tokenizer),
+						segmentFilter));
 					if (alignmentsFileName != null)
 						alignmentCollections.Add(new TextFileTextAlignmentCollection(name, alignmentsFileName));
 				}
@@ -268,7 +279,8 @@ namespace SIL.Machine.Translation.TestApp
 			_isRebuilding = true;
 			try
 			{
-				using (ISmtBatchTrainer trainer = _smtModel.CreateBatchTrainer(Preprocessors.Lowercase, _sourceCorpus, Preprocessors.Lowercase, _targetCorpus, _alignmentCorpus))
+				using (ISmtBatchTrainer trainer = _smtModel.CreateBatchTrainer(Preprocessors.Lowercase, _sourceCorpus,
+					Preprocessors.Lowercase, _targetCorpus, _alignmentCorpus))
 				{
 					await Task.Run(() => trainer.Train(progress, token.ThrowIfCancellationRequested), token);
 					trainer.Save();
@@ -291,7 +303,8 @@ namespace SIL.Machine.Translation.TestApp
 		{
 			if (IsChanged)
 			{
-				DialogResult result = MessageBox.Show("Do you wish to save the project before exiting?", MessageBoxButtons.YesNoCancel, MessageBoxType.Question);
+				DialogResult result = MessageBox.Show("Do you wish to save the project before exiting?",
+					MessageBoxButtons.YesNoCancel, MessageBoxType.Question);
 				switch (result)
 				{
 					case DialogResult.Yes:

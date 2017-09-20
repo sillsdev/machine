@@ -1,8 +1,6 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Options;
-using SIL.Machine.Annotations;
 using SIL.Machine.Morphology.HermitCrab;
 using SIL.Machine.Translation;
 using SIL.Machine.WebApi.Server.Options;
@@ -26,14 +24,13 @@ namespace SIL.Machine.WebApi.Server.Services
 			TransferEngine transferEngine = null;
 			if (File.Exists(hcSrcConfigFileName) && File.Exists(hcTrgConfigFileName))
 			{
-				var spanFactory = new ShapeSpanFactory();
 				var hcTraceManager = new TraceManager();
 
 				Language srcLang = XmlLanguageLoader.Load(hcSrcConfigFileName);
-				var srcMorpher = new Morpher(spanFactory, hcTraceManager, srcLang);
+				var srcMorpher = new Morpher(hcTraceManager, srcLang);
 
 				Language trgLang = XmlLanguageLoader.Load(hcTrgConfigFileName);
-				var trgMorpher = new Morpher(spanFactory, hcTraceManager, trgLang);
+				var trgMorpher = new Morpher(hcTraceManager, trgLang);
 
 				transferEngine = new TransferEngine(srcMorpher, new SimpleTransferer(new GlossMorphemeMapper(trgMorpher)), trgMorpher);
 			}
@@ -59,5 +56,5 @@ namespace SIL.Machine.WebApi.Server.Services
 			if (!Directory.EnumerateFileSystemEntries(engineDir).Any())
 				Directory.Delete(engineDir);
 		}
-    }
+	}
 }

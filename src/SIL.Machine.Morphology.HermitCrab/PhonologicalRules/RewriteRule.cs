@@ -33,14 +33,14 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 
 		public RewriteApplicationMode ApplicationMode { get; set; }
 
-		public override IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileAnalysisRule(Morpher morpher)
 		{
-			return new AnalysisRewriteRule(spanFactory, morpher, this);
+			return new AnalysisRewriteRule(morpher, this);
 		}
 
-		public override IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileSynthesisRule(Morpher morpher)
 		{
-			return new SynthesisRewriteRule(spanFactory, morpher, this);
+			return new SynthesisRewriteRule(morpher, this);
 		}
 	}
 }

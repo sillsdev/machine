@@ -14,7 +14,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 		private readonly AffixProcessRule _rule;
 		private readonly List<PatternRule<Word, ShapeNode>> _rules;
 
-		public SynthesisAffixProcessRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, AffixProcessRule rule)
+		public SynthesisAffixProcessRule(Morpher morpher, AffixProcessRule rule)
 		{
 			_morpher = morpher;
 			_rule = rule;
@@ -22,13 +22,14 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			foreach (AffixProcessAllomorph allo in rule.Allomorphs)
 			{
 				var ruleSpec = new SynthesisAffixProcessAllomorphRuleSpec(allo);
-				_rules.Add(new PatternRule<Word, ShapeNode>(spanFactory, ruleSpec,
+				_rules.Add(new PatternRule<Word, ShapeNode>(ruleSpec,
 					new MatcherSettings<ShapeNode>
-						{
-							Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary) && !ann.IsDeleted(),
-							AnchoredToStart = true,
-							AnchoredToEnd = true
-						}));
+					{
+						Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary)
+							&& !ann.IsDeleted(),
+						AnchoredToStart = true,
+						AnchoredToEnd = true
+					}));
 			}
 		}
 
@@ -40,30 +41,46 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			if (input.GetApplicationCount(_rule) >= _rule.MaxApplicationCount)
 			{
 				if (_morpher.TraceManager.IsTracing)
-					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.MaxApplicationCount, _rule.MaxApplicationCount);
+				{
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input,
+						FailureReason.MaxApplicationCount, _rule.MaxApplicationCount);
+				}
 				return Enumerable.Empty<Word>();
 			}
 
-			// if a final template was last applied, do not allow a non-partial rule to apply unless the input is partial
-			if (!_rule.IsTemplateRule && (input.IsLastAppliedRuleFinal ?? false) && !input.IsPartial && !_rule.IsPartial)
+			// if a final template was last applied,
+			// do not allow a non-partial rule to apply unless the input is partial
+			if (!_rule.IsTemplateRule && (input.IsLastAppliedRuleFinal ?? false) && !input.IsPartial
+				&& !_rule.IsPartial)
 			{
 				if (_morpher.TraceManager.IsTracing)
-					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.NonPartialRuleProhibitedAfterFinalTemplate, null);
+				{
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input,
+						FailureReason.NonPartialRuleProhibitedAfterFinalTemplate, null);
+				}
 				return Enumerable.Empty<Word>();
 			}
 
-			// if a non-final template was last applied, only allow a non-partial rule to apply unless the input is partial
-			if (!_rule.IsTemplateRule && input.IsLastAppliedRuleFinal.HasValue && !input.IsLastAppliedRuleFinal.Value && !input.IsPartial && _rule.IsPartial)
+			// if a non-final template was last applied,
+			// only allow a non-partial rule to apply unless the input is partial
+			if (!_rule.IsTemplateRule && input.IsLastAppliedRuleFinal.HasValue && !input.IsLastAppliedRuleFinal.Value
+				&& !input.IsPartial && _rule.IsPartial)
 			{
 				if (_morpher.TraceManager.IsTracing)
-					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.NonPartialRuleRequiredAfterNonFinalTemplate, null);
+				{
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input,
+						FailureReason.NonPartialRuleRequiredAfterNonFinalTemplate, null);
+				}
 				return Enumerable.Empty<Word>();
 			}
 
 			if (_rule.RequiredStemName != null && _rule.RequiredStemName != input.RootAllomorph.StemName)
 			{
 				if (_morpher.TraceManager.IsTracing)
-					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.RequiredStemName, _rule.RequiredStemName);
+				{
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.RequiredStemName,
+						_rule.RequiredStemName);
+				}
 				return Enumerable.Empty<Word>();
 			}
 
@@ -71,7 +88,10 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			if (!_rule.RequiredSyntacticFeatureStruct.Unify(input.SyntacticFeatureStruct, true, out syntacticFS))
 			{
 				if (_morpher.TraceManager.IsTracing)
-					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input, FailureReason.RequiredSyntacticFeatureStruct, _rule.RequiredSyntacticFeatureStruct);
+				{
+					_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, -1, input,
+						FailureReason.RequiredSyntacticFeatureStruct, _rule.RequiredSyntacticFeatureStruct);
+				}
 				return Enumerable.Empty<Word>();
 			}
 
@@ -80,16 +100,24 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			{
 				AffixProcessAllomorph allo = _rule.Allomorphs[i];
 				MprFeatureGroup group;
-				if (allo.RequiredMprFeatures.Count > 0 && !allo.RequiredMprFeatures.IsMatchRequired(input.MprFeatures, out group))
+				if (allo.RequiredMprFeatures.Count > 0
+					&& !allo.RequiredMprFeatures.IsMatchRequired(input.MprFeatures, out group))
 				{
 					if (_morpher.TraceManager.IsTracing)
-						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.RequiredMprFeatures, group);
+					{
+						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input,
+							FailureReason.RequiredMprFeatures, group);
+					}
 					continue;
 				}
-				if (allo.ExcludedMprFeatures.Count > 0 && !allo.ExcludedMprFeatures.IsMatchExcluded(input.MprFeatures, out group))
+				if (allo.ExcludedMprFeatures.Count > 0
+					&& !allo.ExcludedMprFeatures.IsMatchExcluded(input.MprFeatures, out group))
 				{
 					if (_morpher.TraceManager.IsTracing)
-						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.ExcludedMprFeatures, group);
+					{
+						_morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input,
+							FailureReason.ExcludedMprFeatures, group);
+					}
 					continue;
 				}
 

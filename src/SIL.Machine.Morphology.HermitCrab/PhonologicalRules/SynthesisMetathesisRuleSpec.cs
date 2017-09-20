@@ -8,14 +8,13 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 {
 	public class SynthesisMetathesisRuleSpec : IPhonologicalPatternRuleSpec, IPhonologicalPatternSubruleSpec
 	{
-		private readonly SpanFactory<ShapeNode> _spanFactory;
 		private readonly Pattern<Word, ShapeNode> _pattern;
 		private readonly string _leftGroupName;
 		private readonly string _rightGroupName;
 
-		public SynthesisMetathesisRuleSpec(SpanFactory<ShapeNode> spanFactory, Pattern<Word, ShapeNode> pattern, string leftGroupName, string rightGroupName)
+		public SynthesisMetathesisRuleSpec(Pattern<Word, ShapeNode> pattern, string leftGroupName,
+			string rightGroupName)
 		{
-			_spanFactory = spanFactory;
 			_leftGroupName = leftGroupName;
 			_rightGroupName = rightGroupName;
 
@@ -26,7 +25,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 				if (group != null)
 				{
 					var newGroup = new Group<Word, ShapeNode>(group.Name);
-					foreach (Constraint<Word, ShapeNode> constraint in group.Children.Cast<Constraint<Word, ShapeNode>>())
+					foreach (Constraint<Word, ShapeNode> constraint in group.Children
+						.Cast<Constraint<Word, ShapeNode>>())
 					{
 						Constraint<Word, ShapeNode> newConstraint = constraint.Clone();
 						newConstraint.FeatureStruct.AddValue(HCFeatureSystem.Modified, HCFeatureSystem.Clean);
@@ -47,7 +47,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			get { return _pattern; }
 		}
 
-		public bool MatchSubrule(PhonologicalPatternRule rule, Match<Word, ShapeNode> match, out PhonologicalSubruleMatch subruleMatch)
+		public bool MatchSubrule(PhonologicalPatternRule rule, Match<Word, ShapeNode> match,
+			out PhonologicalSubruleMatch subruleMatch)
 		{
 			subruleMatch = new PhonologicalSubruleMatch(this, match.Span, match.VariableBindings);
 			return true;
@@ -95,7 +96,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			foreach (var morph in morphs)
 			{
 				Annotation<ShapeNode>[] children = morph.Children.OrderBy(ann => ann.Span).ToArray();
-				var newMorphAnn = new Annotation<ShapeNode>(_spanFactory.Create(children[0].Span.Start, children[children.Length - 1].Span.Start), morph.Annotation.FeatureStruct);
+				var newMorphAnn = new Annotation<ShapeNode>(Span<ShapeNode>.Create(children[0].Span.Start,
+					children[children.Length - 1].Span.Start), morph.Annotation.FeatureStruct);
 				newMorphAnn.Children.AddRange(morph.Children);
 				targetMatch.Input.Annotations.Add(newMorphAnn, false);
 			}

@@ -8,20 +8,18 @@ using SIL.ObjectModel;
 namespace SIL.Machine.Annotations
 {
 	public class ShapeNode : OrderedBidirListNode<ShapeNode>, IComparable<ShapeNode>, IComparable, ICloneable<ShapeNode>, IValueEquatable<ShapeNode>, IFreezable
-	{
-		private readonly SpanFactory<ShapeNode> _spanFactory; 
+	{ 
 		private readonly Annotation<ShapeNode> _ann;
 		private int _tag;
 
-		public ShapeNode(SpanFactory<ShapeNode> spanFactory, FeatureStruct fs)
+		public ShapeNode(FeatureStruct fs)
 		{
-			_spanFactory = spanFactory;
-			_ann = new Annotation<ShapeNode>(spanFactory.Create(this), fs);
+			_ann = new Annotation<ShapeNode>(Span<ShapeNode>.Create(this), fs);
 			_tag = int.MinValue;
 		}
 
 		protected ShapeNode(ShapeNode node)
-			: this(node._spanFactory, node.Annotation.FeatureStruct.Clone())
+			: this(node.Annotation.FeatureStruct.Clone())
 		{
 			_ann.Optional = node.Annotation.Optional;
 		}

@@ -8,46 +8,38 @@ namespace SIL.Machine.Annotations
 	[TestFixture]
 	public class AnnotationTests
 	{
-		private SpanFactory<int> _spanFactory;
-
-		[OneTimeSetUp]
-		public void FixtureSetUp()
-		{
-			_spanFactory = new IntegerSpanFactory();
-		}
-
 		[Test]
 		public void Add()
 		{
-			var annList = new AnnotationList<int>(_spanFactory);
+			var annList = new AnnotationList<int>();
 			// add without subsumption
 			// add to empty list
-			var a = new Annotation<int>(_spanFactory.Create(49, 50), FeatureStruct.New().Value);
+			var a = new Annotation<int>(Span<int>.Create(49, 50), FeatureStruct.New().Value);
 			annList.Add(a, false);
 			Assert.AreEqual(1, annList.Count);
 			Assert.AreSame(a, annList.First);
 			// add to beginning of list
-			a = new Annotation<int>(_spanFactory.Create(0, 1), FeatureStruct.New().Value);
+			a = new Annotation<int>(Span<int>.Create(0, 1), FeatureStruct.New().Value);
 			annList.Add(a, false);
 			Assert.AreEqual(2, annList.Count);
 			Assert.AreSame(a, annList.First);
 			// add to end of list
-			a = new Annotation<int>(_spanFactory.Create(99, 100), FeatureStruct.New().Value);
+			a = new Annotation<int>(Span<int>.Create(99, 100), FeatureStruct.New().Value);
 			annList.Add(a, false);
 			Assert.AreEqual(3, annList.Count);
 			Assert.AreSame(a, annList.Last);
 			// add to middle of list
-			a = new Annotation<int>(_spanFactory.Create(24, 25), FeatureStruct.New().Value);
+			a = new Annotation<int>(Span<int>.Create(24, 25), FeatureStruct.New().Value);
 			annList.Add(a, false);
 			Assert.AreEqual(4, annList.Count);
 			Assert.AreSame(a, annList.ElementAt(1));
 			// add containing annotation
-			a = new Annotation<int>(_spanFactory.Create(0, 100), FeatureStruct.New().Value);
+			a = new Annotation<int>(Span<int>.Create(0, 100), FeatureStruct.New().Value);
 			annList.Add(a, false);
 			Assert.AreEqual(5, annList.Count);
 			Assert.AreSame(a, annList.First());
 			// add contained annotation
-			a = new Annotation<int>(_spanFactory.Create(9, 10), FeatureStruct.New().Value);
+			a = new Annotation<int>(Span<int>.Create(9, 10), FeatureStruct.New().Value);
 			annList.Add(a, false);
 			Assert.AreEqual(6, annList.Count);
 			Assert.AreSame(a, annList.ElementAt(2));
@@ -56,33 +48,33 @@ namespace SIL.Machine.Annotations
 
 			// add with subsumption
 			// add to empty list
-			a = new Annotation<int>(_spanFactory.Create(49, 50), FeatureStruct.New().Value);
+			a = new Annotation<int>(Span<int>.Create(49, 50), FeatureStruct.New().Value);
 			annList.Add(a);
 			Assert.AreEqual(1, annList.Count);
 			Assert.AreSame(a, annList.First);
 			// add to beginning of list
-			a = new Annotation<int>(_spanFactory.Create(0, 1), FeatureStruct.New().Value);
+			a = new Annotation<int>(Span<int>.Create(0, 1), FeatureStruct.New().Value);
 			annList.Add(a);
 			Assert.AreEqual(2, annList.Count);
 			Assert.AreSame(a, annList.First);
 			// add to end of list
-			a = new Annotation<int>(_spanFactory.Create(99, 100), FeatureStruct.New().Value);
+			a = new Annotation<int>(Span<int>.Create(99, 100), FeatureStruct.New().Value);
 			annList.Add(a);
 			Assert.AreEqual(3, annList.Count);
 			Assert.AreSame(a, annList.Last);
 			// add to middle of list
-			a = new Annotation<int>(_spanFactory.Create(24, 25), FeatureStruct.New().Value);
+			a = new Annotation<int>(Span<int>.Create(24, 25), FeatureStruct.New().Value);
 			annList.Add(a);
 			Assert.AreEqual(4, annList.Count);
 			Assert.AreSame(a, annList.ElementAt(1));
 			// add containing annotation
-			a = new Annotation<int>(_spanFactory.Create(0, 100), FeatureStruct.New().Value);
+			a = new Annotation<int>(Span<int>.Create(0, 100), FeatureStruct.New().Value);
 			annList.Add(a);
 			Assert.AreEqual(1, annList.Count);
 			Assert.AreSame(a, annList.First());
 			Assert.AreEqual(4, a.Children.Count);
 			// add contained annotation
-			a = new Annotation<int>(_spanFactory.Create(9, 10), FeatureStruct.New().Value);
+			a = new Annotation<int>(Span<int>.Create(9, 10), FeatureStruct.New().Value);
 			annList.Add(a);
 			Assert.AreEqual(1, annList.Count);
 			Assert.AreEqual(5, annList.First.Children.Count);
@@ -97,7 +89,7 @@ namespace SIL.Machine.Annotations
 			annList.Add(4, 5, FeatureStruct.New().Value);
 			annList.Add(5, 6, FeatureStruct.New().Value);
 			Assert.AreEqual(6, annList.Count);
-			a = new Annotation<int>(_spanFactory.Create(1, 5), FeatureStruct.New().Value);
+			a = new Annotation<int>(Span<int>.Create(1, 5), FeatureStruct.New().Value);
 			a.Children.Add(1, 3, FeatureStruct.New().Value);
 			a.Children.Add(3, 5, FeatureStruct.New().Value);
 			Assert.AreEqual(2, a.Children.Count);
@@ -112,7 +104,7 @@ namespace SIL.Machine.Annotations
 		[Test]
 		public void Remove()
 		{
-			var annList = new AnnotationList<int>(_spanFactory);
+			var annList = new AnnotationList<int>();
 			annList.Add(0, 1, FeatureStruct.New().Value);
 			annList.Add(9, 10, FeatureStruct.New().Value);
 			annList.Add(24, 25, FeatureStruct.New().Value);
@@ -121,11 +113,11 @@ namespace SIL.Machine.Annotations
 
 			annList.Remove(annList.First);
 			Assert.AreEqual(4, annList.Count);
-			Assert.AreEqual(_spanFactory.Create(9, 10), annList.First.Span);
+			Assert.AreEqual(Span<int>.Create(9, 10), annList.First.Span);
 
 			annList.Remove(annList.Last);
 			Assert.AreEqual(3, annList.Count);
-			Assert.AreEqual(_spanFactory.Create(49, 50), annList.Last.Span);
+			Assert.AreEqual(Span<int>.Create(49, 50), annList.Last.Span);
 
 			annList.Remove(annList.First.Next);
 			Assert.AreEqual(2, annList.Count);
@@ -151,14 +143,14 @@ namespace SIL.Machine.Annotations
 		[Test]
 		public void Find()
 		{
-			var annList = new AnnotationList<int>(_spanFactory);
+			var annList = new AnnotationList<int>();
 			annList.Add(1, 2, FeatureStruct.New().Value);
 			annList.Add(9, 10, FeatureStruct.New().Value);
 			annList.Add(24, 25, FeatureStruct.New().Value);
 			annList.Add(49, 50, FeatureStruct.New().Value);
 			annList.Add(99, 100, FeatureStruct.New().Value);
 			annList.Add(99, 100, FeatureStruct.New().Value);
-			annList.Add(new Annotation<int>(_spanFactory.Create(20, 70), FeatureStruct.New().Value), false);
+			annList.Add(new Annotation<int>(Span<int>.Create(20, 70), FeatureStruct.New().Value), false);
 
 			Annotation<int> result;
 			Assert.IsFalse(annList.Find(0, out result));
@@ -201,13 +193,13 @@ namespace SIL.Machine.Annotations
 		[Test]
 		public void GetNodes()
 		{
-			var annList = new AnnotationList<int>(_spanFactory);
+			var annList = new AnnotationList<int>();
 			annList.Add(1, 2, FeatureStruct.New().Value);
 			annList.Add(9, 10, FeatureStruct.New().Value);
 			annList.Add(24, 25, FeatureStruct.New().Value);
 			annList.Add(49, 50, FeatureStruct.New().Value);
 			annList.Add(99, 100, FeatureStruct.New().Value);
-			annList.Add(new Annotation<int>(_spanFactory.Create(20, 70), FeatureStruct.New().Value), false);
+			annList.Add(new Annotation<int>(Span<int>.Create(20, 70), FeatureStruct.New().Value), false);
 
 			Assert.IsFalse(annList.GetNodes(0, 1).Any());
 
@@ -229,7 +221,7 @@ namespace SIL.Machine.Annotations
 		[Test]
 		public void FindDepthFirst()
 		{
-			var annList = new AnnotationList<int>(_spanFactory);
+			var annList = new AnnotationList<int>();
 			annList.Add(1, 2, FeatureStruct.New().Value);
 			annList.Add(9, 10, FeatureStruct.New().Value);
 			annList.Add(49, 50, FeatureStruct.New().Value);

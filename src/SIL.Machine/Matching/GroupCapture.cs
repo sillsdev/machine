@@ -25,7 +25,7 @@ namespace SIL.Machine.Matching
 
 		public bool Success
 		{
-			get { return !_span.IsEmpty; }
+			get { return _span != Span<TOffset>.Null; }
 		}
 	}
 }

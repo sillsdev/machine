@@ -12,7 +12,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 		private readonly AffixProcessRule _rule;
 		private readonly List<PatternRule<Word, ShapeNode>> _rules;
 
-		public AnalysisAffixProcessRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, AffixProcessRule rule)
+		public AnalysisAffixProcessRule(Morpher morpher, AffixProcessRule rule)
 		{
 			_morpher = morpher;
 			_rule = rule;
@@ -20,15 +20,15 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			_rules = new List<PatternRule<Word, ShapeNode>>();
 			foreach (AffixProcessAllomorph allo in rule.Allomorphs)
 			{
-				_rules.Add(new MultiplePatternRule<Word, ShapeNode>(spanFactory, new AnalysisAffixProcessAllomorphRuleSpec(allo),
+				_rules.Add(new MultiplePatternRule<Word, ShapeNode>(new AnalysisAffixProcessAllomorphRuleSpec(allo),
 					new MatcherSettings<ShapeNode>
-						{
-							Filter = ann => ann.Type() == HCFeatureSystem.Segment,
-							MatchingMethod = MatchingMethod.Unification,
-							AnchoredToStart = true,
-							AnchoredToEnd = true,
-							AllSubmatches = true
-						}));
+					{
+						Filter = ann => ann.Type() == HCFeatureSystem.Segment,
+						MatchingMethod = MatchingMethod.Unification,
+						AnchoredToStart = true,
+						AnchoredToEnd = true,
+						AllSubmatches = true
+					}));
 			}
 		}
 

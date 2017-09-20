@@ -8,7 +8,6 @@ namespace SIL.Machine
 	[TestFixture]
 	public abstract class PhoneticTestsBase
 	{
-		protected SpanFactory<int> SpanFactory;
 		protected FeatureSystem PhoneticFeatSys;
 		protected FeatureSystem WordFeatSys;
 		protected FeatureSystem TypeFeatSys;
@@ -24,30 +23,43 @@ namespace SIL.Machine
 		[OneTimeSetUp]
 		public virtual void FixtureSetUp()
 		{
-			SpanFactory = new IntegerSpanFactory();
-
 			PhoneticFeatSys = new FeatureSystem
 			{
-			    new SymbolicFeature("son", new FeatureSymbol("son+", "+"), new FeatureSymbol("son-", "-"), new FeatureSymbol("son?", "?")) {DefaultSymbolID = "son?"},
-				new SymbolicFeature("syl", new FeatureSymbol("syl+", "+"), new FeatureSymbol("syl-", "-"), new FeatureSymbol("syl?", "?")) {DefaultSymbolID = "syl?"},
-				new SymbolicFeature("cons", new FeatureSymbol("cons+", "+"), new FeatureSymbol("cons-", "-"), new FeatureSymbol("cons?", "?")) {DefaultSymbolID = "cons?"},
-				new SymbolicFeature("high", new FeatureSymbol("high+", "+"), new FeatureSymbol("high-", "-"), new FeatureSymbol("high?", "?")) {DefaultSymbolID = "high?"},
-				new SymbolicFeature("back", new FeatureSymbol("back+", "+"), new FeatureSymbol("back-", "-"), new FeatureSymbol("back?", "?")) {DefaultSymbolID = "back?"},
-				new SymbolicFeature("front", new FeatureSymbol("front+", "+"), new FeatureSymbol("front-", "-"), new FeatureSymbol("front?", "?")) {DefaultSymbolID = "front?"},
-				new SymbolicFeature("low", new FeatureSymbol("low+", "+"), new FeatureSymbol("low-", "-"), new FeatureSymbol("low?", "?")) {DefaultSymbolID = "low?"},
-				new SymbolicFeature("rnd", new FeatureSymbol("rnd+", "+"), new FeatureSymbol("rnd-", "-"), new FeatureSymbol("rnd?", "?")) {DefaultSymbolID = "rnd?"},
-				new SymbolicFeature("ant", new FeatureSymbol("ant+", "+"), new FeatureSymbol("ant-", "-"), new FeatureSymbol("ant?", "?")) {DefaultSymbolID = "ant?"},
-				new SymbolicFeature("cor", new FeatureSymbol("cor+", "+"), new FeatureSymbol("cor-", "-"), new FeatureSymbol("cor?", "?")) {DefaultSymbolID = "cor?"},
-				new SymbolicFeature("voice", new FeatureSymbol("voice+", "+"), new FeatureSymbol("voice-", "-"), new FeatureSymbol("voice?", "?")) {DefaultSymbolID = "voice?"},
-				new SymbolicFeature("cont", new FeatureSymbol("cont+", "+"), new FeatureSymbol("cont-", "-"), new FeatureSymbol("cont?", "?")) {DefaultSymbolID = "cont?"},
-				new SymbolicFeature("nas", new FeatureSymbol("nas+", "+"), new FeatureSymbol("nas-", "-"), new FeatureSymbol("nas?", "?")) {DefaultSymbolID = "nas?"},
-				new SymbolicFeature("str", new FeatureSymbol("str+", "+"), new FeatureSymbol("str-", "-"), new FeatureSymbol("str?", "?")) {DefaultSymbolID = "str?"},
+			    new SymbolicFeature("son", new FeatureSymbol("son+", "+"), new FeatureSymbol("son-", "-"),
+					new FeatureSymbol("son?", "?")) { DefaultSymbolID = "son?" },
+				new SymbolicFeature("syl", new FeatureSymbol("syl+", "+"), new FeatureSymbol("syl-", "-"),
+					new FeatureSymbol("syl?", "?")) { DefaultSymbolID = "syl?" },
+				new SymbolicFeature("cons", new FeatureSymbol("cons+", "+"), new FeatureSymbol("cons-", "-"),
+					new FeatureSymbol("cons?", "?")) { DefaultSymbolID = "cons?" },
+				new SymbolicFeature("high", new FeatureSymbol("high+", "+"), new FeatureSymbol("high-", "-"),
+					new FeatureSymbol("high?", "?")) { DefaultSymbolID = "high?" },
+				new SymbolicFeature("back", new FeatureSymbol("back+", "+"), new FeatureSymbol("back-", "-"),
+					new FeatureSymbol("back?", "?")) { DefaultSymbolID = "back?" },
+				new SymbolicFeature("front", new FeatureSymbol("front+", "+"), new FeatureSymbol("front-", "-"),
+					new FeatureSymbol("front?", "?")) { DefaultSymbolID = "front?" },
+				new SymbolicFeature("low", new FeatureSymbol("low+", "+"), new FeatureSymbol("low-", "-"),
+					new FeatureSymbol("low?", "?")) { DefaultSymbolID = "low?" },
+				new SymbolicFeature("rnd", new FeatureSymbol("rnd+", "+"), new FeatureSymbol("rnd-", "-"),
+					new FeatureSymbol("rnd?", "?")) { DefaultSymbolID = "rnd?" },
+				new SymbolicFeature("ant", new FeatureSymbol("ant+", "+"), new FeatureSymbol("ant-", "-"),
+					new FeatureSymbol("ant?", "?")) { DefaultSymbolID = "ant?" },
+				new SymbolicFeature("cor", new FeatureSymbol("cor+", "+"), new FeatureSymbol("cor-", "-"),
+					new FeatureSymbol("cor?", "?")) { DefaultSymbolID = "cor?" },
+				new SymbolicFeature("voice", new FeatureSymbol("voice+", "+"), new FeatureSymbol("voice-", "-"),
+					new FeatureSymbol("voice?", "?")) { DefaultSymbolID = "voice?" },
+				new SymbolicFeature("cont", new FeatureSymbol("cont+", "+"), new FeatureSymbol("cont-", "-"),
+					new FeatureSymbol("cont?", "?")) { DefaultSymbolID = "cont?" },
+				new SymbolicFeature("nas", new FeatureSymbol("nas+", "+"), new FeatureSymbol("nas-", "-"),
+					new FeatureSymbol("nas?", "?")) { DefaultSymbolID = "nas?" },
+				new SymbolicFeature("str", new FeatureSymbol("str+", "+"), new FeatureSymbol("str-", "-"),
+					new FeatureSymbol("str?", "?")) { DefaultSymbolID = "str?" },
 				new StringFeature("strRep")
 			};
 
 			WordFeatSys = new FeatureSystem
 			{
-			    new SymbolicFeature("POS", new FeatureSymbol("noun"), new FeatureSymbol("verb"), new FeatureSymbol("adj"), new FeatureSymbol("adv"), new FeatureSymbol("det"))
+			    new SymbolicFeature("POS", new FeatureSymbol("noun"), new FeatureSymbol("verb"),
+				new FeatureSymbol("adj"), new FeatureSymbol("adv"), new FeatureSymbol("det"))
 			};
 
 			Word = new FeatureSymbol("Word");
@@ -406,7 +418,7 @@ namespace SIL.Machine
 
 		protected AnnotatedStringData CreateStringData(string str)
 		{
-			var stringData = new AnnotatedStringData(SpanFactory, str);
+			var stringData = new AnnotatedStringData(str);
 			for (int i = 0; i < str.Length; i++)
 			{
 				FeatureStruct fs = Characters[str[i]];

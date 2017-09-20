@@ -49,14 +49,14 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
 		public Stratum Stratum { get; set; }
 
-		public override IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileAnalysisRule(Morpher morpher)
 		{
-			return new AnalysisCompoundingRule(spanFactory, morpher, this);
+			return new AnalysisCompoundingRule(morpher, this);
 		}
 
-		public override IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileSynthesisRule(Morpher morpher)
 		{
-			return new SynthesisCompoundingRule(spanFactory, morpher, this);
+			return new SynthesisCompoundingRule(morpher, this);
 		}
 	}
 }

@@ -15,7 +15,7 @@ namespace SIL.Machine.FiniteState
 		public override void FixtureSetUp()
 		{
 			base.FixtureSetUp();
-			_operations = new PhoneticFstOperations(SpanFactory, Characters);
+			_operations = new PhoneticFstOperations(Characters);
 		}
 
 

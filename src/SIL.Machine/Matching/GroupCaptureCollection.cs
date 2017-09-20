@@ -2,18 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Annotations;
-using SIL.ObjectModel;
 
 namespace SIL.Machine.Matching
 {
 	public class GroupCaptureCollection<TOffset> : IReadOnlyCollection<GroupCapture<TOffset>>
 	{
-		private readonly SpanFactory<TOffset> _spanFactory; 
 		private readonly Dictionary<string, GroupCapture<TOffset>> _groupCaptures;
 
-		internal GroupCaptureCollection(SpanFactory<TOffset> spanFactory, IEnumerable<GroupCapture<TOffset>> groupCaptures)
+		internal GroupCaptureCollection(IEnumerable<GroupCapture<TOffset>> groupCaptures)
 		{
-			_spanFactory = spanFactory;
 			_groupCaptures = groupCaptures.ToDictionary(capture => capture.Name);
 		}
 
@@ -39,7 +36,7 @@ namespace SIL.Machine.Matching
 				GroupCapture<TOffset> capture;
 				if (_groupCaptures.TryGetValue(groupName, out capture))
 					return capture;
-				return new GroupCapture<TOffset>(groupName, _spanFactory.Empty);
+				return new GroupCapture<TOffset>(groupName, Span<TOffset>.Null);
 			}
 		}
 

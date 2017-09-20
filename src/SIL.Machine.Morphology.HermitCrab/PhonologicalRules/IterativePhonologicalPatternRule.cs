@@ -8,8 +8,9 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 {
 	public class IterativePhonologicalPatternRule : PhonologicalPatternRule
 	{
-		public IterativePhonologicalPatternRule(SpanFactory<ShapeNode> spanFactory, IPhonologicalPatternRuleSpec ruleSpec, MatcherSettings<ShapeNode> matcherSettings)
-			: base(spanFactory, ruleSpec, matcherSettings)
+		public IterativePhonologicalPatternRule(IPhonologicalPatternRuleSpec ruleSpec,
+			MatcherSettings<ShapeNode> matcherSettings)
+			: base(ruleSpec, matcherSettings)
 		{
 		}
 

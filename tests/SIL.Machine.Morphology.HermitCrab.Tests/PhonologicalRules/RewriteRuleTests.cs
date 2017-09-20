@@ -35,7 +35,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			        RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(nonCons).Value
 			    });
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("pʰitʰ"), "1", "2");
 			AssertMorphsEqual(morpher.ParseWord("datʰ"), "8", "9");
 			AssertMorphsEqual(morpher.ParseWord("gab"), "11", "12");
@@ -70,25 +70,37 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 				.Symbol("cons-")
 				.Symbol("voc+").Value;
 
-			var rule3 = new RewriteRule {Name = "rule3", Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value};
+			var rule3 = new RewriteRule
+			{
+				Name = "rule3",
+				Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
+			};
 			Allophonic.PhonologicalRules.Add(rule3);
 			rule3.Subrules.Add(new RewriteSubrule
 			    {
 			        Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Value,
-					LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(rndVowel).Annotation(cons).Annotation(lowVowel).Annotation(cons).Value
+					LeftEnvironment = Pattern<Word, ShapeNode>.New()
+						.Annotation(rndVowel)
+						.Annotation(cons)
+						.Annotation(lowVowel)
+						.Annotation(cons).Value
 			    });
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("bubabu"), "13", "14");
 
 			rule3.Subrules.Clear();
 			rule3.Subrules.Add(new RewriteSubrule
 			    {
 					Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Value,
-					RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(cons).Annotation(lowVowel).Annotation(cons).Annotation(rndVowel).Value
+					RightEnvironment = Pattern<Word, ShapeNode>.New()
+						.Annotation(cons)
+						.Annotation(lowVowel)
+						.Annotation(cons)
+						.Annotation(rndVowel).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("bubabu"), "13", "15");
 
 			rule3.Subrules.Clear();
@@ -103,7 +115,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 						.Annotation(vowel).Optional.Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("mimuu"), "55");
 		}
 
@@ -131,17 +143,20 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			    });
 			Allophonic.PhonologicalRules.Add(rule3);
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("gap"), "10", "11", "12");
 
 			rule3.Subrules.Clear();
 			rule3.Subrules.Add(new RewriteSubrule
 			    {
 					Rhs = Pattern<Word, ShapeNode>.New().Annotation(vlUnasp).Value,
-					RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Annotation(cons).Annotation(HCFeatureSystem.RightSideAnchor).Value
+					RightEnvironment = Pattern<Word, ShapeNode>.New()
+						.Annotation(vowel)
+						.Annotation(cons)
+						.Annotation(HCFeatureSystem.RightSideAnchor).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("kab"), "11", "12");
 
 			rule3.Subrules.Clear();
@@ -151,17 +166,20 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 					LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.LeftSideAnchor).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("kab"), "11", "12");
 
 			rule3.Subrules.Clear();
 			rule3.Subrules.Add(new RewriteSubrule
 			    {
 					Rhs = Pattern<Word, ShapeNode>.New().Annotation(vlUnasp).Value,
-					LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.LeftSideAnchor).Annotation(cons).Annotation(vowel).Value
+					LeftEnvironment = Pattern<Word, ShapeNode>.New()
+						.Annotation(HCFeatureSystem.LeftSideAnchor)
+						.Annotation(cons)
+						.Annotation(vowel).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("gap"), "10", "11", "12");
 		}
 
@@ -196,28 +214,36 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 				.Symbol("back+")
 				.Symbol("round+").Value;
 
-			var rule3 = new RewriteRule { Name = "rule3", Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value };
+			var rule3 = new RewriteRule
+			{
+				Name = "rule3",
+				Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
+			};
 			Allophonic.PhonologicalRules.Add(rule3);
 			rule3.Subrules.Add(new RewriteSubrule
-			                   	{
-			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Value,
-									RightEnvironment = Pattern<Word, ShapeNode>.New()
-										.Group(g => g.Annotation(cons).Annotation(lowVowel)).LazyRange(1, 2)
-										.Annotation(cons).Annotation(rndVowel).Value
-			                   	});
+				{
+					Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Value,
+					RightEnvironment = Pattern<Word, ShapeNode>.New()
+						.Group(g => g.Annotation(cons).Annotation(lowVowel)).LazyRange(1, 2)
+						.Annotation(cons).Annotation(rndVowel).Value
+				});
 
-			var rule4 = new RewriteRule { Name = "rule4", Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value };
+			var rule4 = new RewriteRule
+			{
+				Name = "rule4",
+				Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
+			};
 			Allophonic.PhonologicalRules.Add(rule4);
 			rule4.Subrules.Add(new RewriteSubrule
-			                   	{
-			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Value,
-									LeftEnvironment = Pattern<Word, ShapeNode>.New()
-										.Annotation(rndVowel)
-										.Group(g => g.Annotation(cons).Annotation(lowVowel)).LazyRange(1, 2)
-										.Annotation(cons).Value
-			                   	});
+			    {
+			        Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Value,
+					LeftEnvironment = Pattern<Word, ShapeNode>.New()
+						.Annotation(rndVowel)
+						.Group(g => g.Annotation(cons).Annotation(lowVowel)).LazyRange(1, 2)
+						.Annotation(cons).Value
+			    });
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("bubu"), "19");
 			AssertMorphsEqual(morpher.ParseWord("bubabu"), "13", "14", "15");
 			AssertMorphsEqual(morpher.ParseWord("bubababu"), "20", "21");
@@ -225,15 +251,21 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 
 			Allophonic.PhonologicalRules.Clear();
 
-			var rule1 = new RewriteRule { Name= "rule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value };
+			var rule1 = new RewriteRule
+			{
+				Name = "rule1",
+				Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
+			};
 			Allophonic.PhonologicalRules.Add(rule1);
 			rule1.Subrules.Add(new RewriteSubrule
-			                   	{
-									Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Value,
-									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Annotation(highVowel).LazyRange(0, 2).Value
-			                   	});
+			    {
+					Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Value,
+					LeftEnvironment = Pattern<Word, ShapeNode>.New()
+						.Annotation(backRndVowel)
+						.Annotation(highVowel).LazyRange(0, 2).Value
+			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("buuubuuu"), "27");
 		}
 
@@ -264,25 +296,29 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 				.Symbol("vd-")
 				.Symbol("strident-").Value;
 
-			var rule1 = new RewriteRule { Name = "rule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Annotation(highVowel).Value };
+			var rule1 = new RewriteRule
+			{
+				Name = "rule1",
+				Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Annotation(highVowel).Value
+			};
 			Allophonic.PhonologicalRules.Add(rule1);
 			rule1.Subrules.Add(new RewriteSubrule
-			                   	{
-			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Annotation(backRnd).Value,
-									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Value
-			                   	});
+			    {
+			        Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Annotation(backRnd).Value,
+					LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Value
+			    });
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("buuubuuu"), "27");
 
 			var rule2 = new RewriteRule { Name = "rule2", Lhs = Pattern<Word, ShapeNode>.New().Annotation(t).Value };
 			Allophonic.PhonologicalRules.Add(rule2);
 			rule2.Subrules.Add(new RewriteSubrule
-			                   	{
-			                   		RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Value
-			                   	});
+			    {
+			        RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Value
+			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("buuubuuu"), "27");
 		}
 
@@ -350,25 +386,33 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("asp+").Value;
 
-			var rule1 = new RewriteRule {Name = "rule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value};
+			var rule1 = new RewriteRule
+			{
+				Name = "rule1",
+				Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
+			};
 			Morphophonemic.PhonologicalRules.Add(rule1);
 			rule1.Subrules.Add(new RewriteSubrule
 			    {
 			        Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Value,
-					LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Annotation(Char(Table3, "+")).Value
+					LeftEnvironment = Pattern<Word, ShapeNode>.New()
+						.Annotation(backRndVowel)
+						.Annotation(Char(Table3, "+")).Value
 			    });
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("buub"), "30");
 
 			rule1.Subrules.Clear();
 			rule1.Subrules.Add(new RewriteSubrule
 			    {
 			        Rhs = Pattern<Word, ShapeNode>.New().Annotation(unbackUnrnd).Value,
-					RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Char(Table3, "+")).Annotation(unbackUnrndVowel).Value
+					RightEnvironment = Pattern<Word, ShapeNode>.New()
+						.Annotation(Char(Table3, "+"))
+						.Annotation(unbackUnrndVowel).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("biib"), "30");
 
 			rule1.Subrules.Clear();
@@ -378,7 +422,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 					LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("buub"), "30", "31");
 
 			rule1.Subrules.Clear();
@@ -388,7 +432,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 					RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(unbackUnrndVowel).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("biib"), "30", "31");
 
 			rule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table3, "i")).Value;
@@ -398,7 +442,11 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			        RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Char(Table3, "b")).Value
 			    });
 
-			var rule2 = new RewriteRule {Name = "rule2", Lhs = Pattern<Word, ShapeNode>.New().Annotation(backVowel).Value};
+			var rule2 = new RewriteRule
+			{
+				Name = "rule2",
+				Lhs = Pattern<Word, ShapeNode>.New().Annotation(backVowel).Value
+			};
 			rule2.Subrules.Add(new RewriteSubrule
 			    {
 			        Rhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table3, "a")).Value,
@@ -409,7 +457,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			    });
 			Morphophonemic.PhonologicalRules.Add(rule2);
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("bab"), "30");
 
 			rule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table3, "u")).Value;
@@ -429,7 +477,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 						.Annotation(Char(Table3, "+")).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("bab"), "30");
 
 			Morphophonemic.PhonologicalRules.Remove(rule2);
@@ -448,7 +496,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 					RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("appa"), "39");
 
 			rule1.Lhs = Pattern<Word, ShapeNode>.New()
@@ -464,7 +512,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 					RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("appa"), "40");
 
 			rule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(cons).Value;
@@ -475,7 +523,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 					LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Char(Table3, "+")).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			Assert.That(morpher.ParseWord("pʰipʰ"), Is.Empty);
 
 			Morphophonemic.PhonologicalRules.Clear();
@@ -487,12 +535,16 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			        Rhs = Pattern<Word, ShapeNode>.New()
 						.Annotation(Char(Table1, "t"))
 						.Annotation(Char(Table1, "a")).Value,
-					LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.LeftSideAnchor).Value,
-					RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(cons).Annotation(vowel).Annotation(HCFeatureSystem.RightSideAnchor).Value,
-					RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value
+					LeftEnvironment = Pattern<Word, ShapeNode>.New()
+						.Annotation(HCFeatureSystem.LeftSideAnchor).Value,
+					RightEnvironment = Pattern<Word, ShapeNode>.New()
+						.Annotation(cons).Annotation(vowel)
+						.Annotation(HCFeatureSystem.RightSideAnchor).Value,
+					RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
+						.Symbol("N").Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("taba"), "pos2");
 			AssertMorphsEqual(morpher.ParseWord("ba"), "pos1");
 
@@ -500,13 +552,13 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			subrule.RequiredSyntacticFeatureStruct = FeatureStruct.New().Value;
 			subrule.RequiredMprFeatures.Add(Latinate);
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("taba"), "pos1");
 
 			subrule.RequiredMprFeatures.Clear();
 			subrule.ExcludedMprFeatures.Add(Latinate);
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("taba"), "pos2");
 		}
 
@@ -524,27 +576,31 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 				.Symbol("strident+")
 				.Symbol("cont+").Value;
 
-			var rule1 = new RewriteRule { Name= "rule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table1, "p")).Value };
+			var rule1 = new RewriteRule
+			{
+				Name = "rule1",
+				Lhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table1, "p")).Value
+			};
 			Allophonic.PhonologicalRules.Add(rule1);
 			rule1.Subrules.Add(new RewriteSubrule
-			                   	{
-			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(vdLabFric).Value,
-									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
-									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
-			                   	});
+			    {
+			        Rhs = Pattern<Word, ShapeNode>.New().Annotation(vdLabFric).Value,
+					LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
+					RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
+			    });
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("buvu"), "46");
 
 			rule1.Subrules.Clear();
 			rule1.Subrules.Add(new RewriteSubrule
-			                   	{
-			                   		Rhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table1, "v")).Value,
-									LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
-									RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
-			                   	});
+			    {
+			        Rhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table1, "v")).Value,
+					LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
+					RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
+			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("buvu"), "46");
 		}
 
@@ -597,7 +653,11 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 				.Symbol("cont-")
 				.Symbol("nasal-").Value;
 
-			var rule1 = new RewriteRule { Name = "rule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value };
+			var rule1 = new RewriteRule
+			{
+				Name = "rule1",
+				Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
+			};
 			Morphophonemic.PhonologicalRules.Add(rule1);
 			rule1.Subrules.Add(new RewriteSubrule
 			    {
@@ -613,7 +673,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 						.Annotation(cons).Value
 			    });
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("bububu"), "42", "43");
 
 			rule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(nasalCons).Value;
@@ -629,7 +689,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 							.Feature("poa").EqualToVariable("a").Value).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("mbindiŋg"), "45");
 
 			Morphophonemic.PhonologicalRules.Clear();
@@ -652,7 +712,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			        Rhs = Pattern<Word, ShapeNode>.New().Annotation(unasp).Value,
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("pipʰ"), "41");
 
 			rule1.Lhs = Pattern<Word, ShapeNode>.New().Value;
@@ -672,7 +732,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 							.Feature("round").EqualToVariable("c").Value).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("buifibuifi"), "27");
 
 			Allophonic.PhonologicalRules.Clear();
@@ -690,7 +750,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 					RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			Assert.That(morpher.ParseWord("sagk"), Is.Empty);
 		}
 
@@ -738,7 +798,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 					LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
 			    });
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("buibui"), "19");
 
 			rule4.Subrules.Clear();
@@ -748,7 +808,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 					RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("biubiu"), "19");
 
 			rule4.ApplicationMode = RewriteApplicationMode.Iterative;
@@ -760,7 +820,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 					RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(cons).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("ipʰit"), "1");
 
 			rule4.Subrules.Clear();
@@ -771,7 +831,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 					RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value
 				});
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("pʰiti"), "1");
 
 			rule4.Subrules.Clear();
@@ -782,7 +842,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 					RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highBackRndVowel).Value
 				});
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("biubiu"), "19");
 
 			rule4.ApplicationMode = RewriteApplicationMode.Simultaneous;
@@ -799,17 +859,19 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 							.Feature("round").EqualToVariable("b").Value).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("biibuu"), "18");
 
 			rule4.Subrules.Clear();
 			rule4.Subrules.Add(new RewriteSubrule
 			    {
-			        Rhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Annotation(highFrontUnrndVowel).Value,
+			        Rhs = Pattern<Word, ShapeNode>.New()
+						.Annotation(highFrontUnrndVowel)
+						.Annotation(highFrontUnrndVowel).Value,
 					LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("biiibuii"), "18");
 
 			rule4.ApplicationMode = RewriteApplicationMode.Iterative;
@@ -821,7 +883,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 					LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.LeftSideAnchor).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			Assert.That(() => morpher.ParseWord("ipʰit"), Throws.TypeOf<InfiniteLoopException>());
 
 			Allophonic.PhonologicalRules.Clear();
@@ -843,7 +905,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 					RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("butubu"), "25");
 		}
 
@@ -888,17 +950,21 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 				.Symbol(HCFeatureSystem.Segment)
 				.Symbol("vd+").Value;
 
-			var rule4 = new RewriteRule {Name = "rule4", Lhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Value};
+			var rule4 = new RewriteRule
+			{
+				Name = "rule4",
+				Lhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Value
+			};
 			Allophonic.PhonologicalRules.Add(rule4);
 			rule4.Subrules.Add(new RewriteSubrule
 			    {
 			        LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
 			    });
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("bubu"), "24", "25", "26", "19");
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language) {DeletionReapplications = 1};
+			morpher = new Morpher(TraceManager, Language) {DeletionReapplications = 1};
 			AssertMorphsEqual(morpher.ParseWord("bubu"), "24", "25", "26", "27", "19");
 
 			rule4.Subrules.Clear();
@@ -907,12 +973,14 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			        RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(cons).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("bubu"), "25", "19");
 
-			rule4.Lhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Annotation(highFrontUnrndVowel).Value;
+			rule4.Lhs = Pattern<Word, ShapeNode>.New()
+				.Annotation(highFrontUnrndVowel)
+				.Annotation(highFrontUnrndVowel).Value;
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("bubu"), "29", "19");
 
 			rule4.Subrules.Clear();
@@ -921,7 +989,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 					LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highBackRndVowel).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("bubu"), "27", "19");
 
 			Allophonic.PhonologicalRules.Clear();
@@ -950,7 +1018,11 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 					RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value
 			    });
 
-			var rule1 = new RewriteRule { Name = "rule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table3, "t")).Value };
+			var rule1 = new RewriteRule
+			{
+				Name = "rule1",
+				Lhs = Pattern<Word, ShapeNode>.New().Annotation(Char(Table3, "t")).Value
+			};
 			Morphophonemic.PhonologicalRules.Add(rule1);
 			rule1.Subrules.Add(new RewriteSubrule
 			    {
@@ -958,7 +1030,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 					LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(nonCons).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			Assert.That(morpher.ParseWord("b"), Is.Empty);
 
 			Morphophonemic.PhonologicalRules.Clear();
@@ -974,7 +1046,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 				.Annotation(Char(Table3, "i")).Value;
 			rule5.Subrules[0].RightEnvironment = Pattern<Word, ShapeNode>.New().Value;
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			Assert.That(morpher.ParseWord("b"), Is.Empty);
 
 			Allophonic.PhonologicalRules.Clear();
@@ -1007,7 +1079,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 					RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("aba"), "39", "40");
 		}
 
@@ -1099,7 +1171,11 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 				.Symbol("vd-")
 				.Symbol("cont-").Value;
 
-			var disrule1 = new RewriteRule { Name = "disrule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(stop).Value };
+			var disrule1 = new RewriteRule
+			{
+				Name = "disrule1",
+				Lhs = Pattern<Word, ShapeNode>.New().Annotation(stop).Value
+			};
 			Allophonic.PhonologicalRules.Add(disrule1);
 			disrule1.Subrules.Add(new RewriteSubrule
 			    {
@@ -1111,7 +1187,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			        Rhs = Pattern<Word, ShapeNode>.New().Annotation(unasp).Value
 			    });
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("pʰip"), "41");
 
 			disrule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value;
@@ -1149,7 +1225,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 						.Annotation(cons).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("bububu"), "42", "43");
 
 			disrule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(stop).Value;
@@ -1165,7 +1241,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 					RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("pʰip"), "41");
 
 			disrule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(p).Value;
@@ -1181,7 +1257,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 					RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("bubu"), "46", "19");
 
 			disrule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(voicelessStop).Value;
@@ -1196,7 +1272,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			        Rhs = Pattern<Word, ShapeNode>.New().Annotation(unasp).Value
 			    });
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("ktʰb"), "49");
 		}
 
@@ -1237,12 +1313,12 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 				});
 			Allophonic.PhonologicalRules.Add(rule1);
 
-			var morpher = new Morpher(SpanFactory, TraceManager, Language);
+			var morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("gigugu"), "44");
 
 			rule1.ApplicationMode = RewriteApplicationMode.Iterative;
 
-			morpher = new Morpher(SpanFactory, TraceManager, Language);
+			morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("gigugi"), "44");
 		}
 	}

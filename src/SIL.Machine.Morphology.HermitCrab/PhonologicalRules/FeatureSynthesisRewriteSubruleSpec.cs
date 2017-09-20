@@ -10,16 +10,18 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 	{
 		private readonly Pattern<Word, ShapeNode> _rhs;
 
-		public FeatureSynthesisRewriteSubruleSpec(SpanFactory<ShapeNode> spanFactory, MatcherSettings<ShapeNode> matcherSettings, bool isIterative,
+		public FeatureSynthesisRewriteSubruleSpec(MatcherSettings<ShapeNode> matcherSettings, bool isIterative,
 			RewriteSubrule subrule, int index)
-			: base(spanFactory, matcherSettings, isIterative, subrule, index)
+			: base(matcherSettings, isIterative, subrule, index)
 		{
 			_rhs = subrule.Rhs;
 		}
 
-		public override void ApplyRhs(Match<Word, ShapeNode> targetMatch, Span<ShapeNode> span, VariableBindings varBindings)
+		public override void ApplyRhs(Match<Word, ShapeNode> targetMatch, Span<ShapeNode> span,
+			VariableBindings varBindings)
 		{
-			foreach (Tuple<ShapeNode, PatternNode<Word, ShapeNode>> tuple in targetMatch.Input.Shape.GetNodes(span).Zip(_rhs.Children))
+			foreach (Tuple<ShapeNode, PatternNode<Word, ShapeNode>> tuple in targetMatch.Input.Shape.GetNodes(span)
+				.Zip(_rhs.Children))
 			{
 				var constraints = (Constraint<Word, ShapeNode>) tuple.Item2;
 				tuple.Item1.Annotation.FeatureStruct.PriorityUnion(constraints.FeatureStruct, varBindings);

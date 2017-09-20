@@ -137,14 +137,15 @@ namespace SIL.Machine.Morphology.HermitCrab
 			get { return _allomorphCoOccurRules; }
 		}
 
-		public override IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileAnalysisRule(Morpher morpher)
 		{
-			return new AnalysisLanguageRule(spanFactory, morpher, this);
+			return new AnalysisLanguageRule(morpher, this);
 		}
 
-		public override IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileSynthesisRule(Morpher morpher)
 		{
-			return new PipelineRuleCascade<Word, ShapeNode>(_strata.Select(stratum => stratum.CompileSynthesisRule(spanFactory, morpher)),
+			return new PipelineRuleCascade<Word, ShapeNode>(
+				_strata.Select(stratum => stratum.CompileSynthesisRule(morpher)),
 				FreezableEqualityComparer<Word>.Default);
 		}
 	}

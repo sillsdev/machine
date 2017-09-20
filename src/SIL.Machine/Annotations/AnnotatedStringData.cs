@@ -7,22 +7,19 @@ namespace SIL.Machine.Annotations
 {
 	public class AnnotatedStringData : IAnnotatedData<int>, ICloneable<AnnotatedStringData>
 	{
-		private readonly SpanFactory<int> _spanFactory;
 		private readonly StringBuilder _str;
 		private Span<int> _span; 
 		private readonly AnnotationList<int> _annotations; 
 
-		public AnnotatedStringData(SpanFactory<int> spanFactory, string str)
+		public AnnotatedStringData(string str)
 		{
-			_spanFactory = spanFactory;
 			_str = new StringBuilder(str);
-			_span = _spanFactory.Create(0, _str.Length);
-			_annotations = new AnnotationList<int>(spanFactory);
+			_span = Span<int>.Create(0, _str.Length);
+			_annotations = new AnnotationList<int>();
 		}
 
 		protected AnnotatedStringData(AnnotatedStringData sd)
 		{
-			_spanFactory = sd._spanFactory;
 			_str = new StringBuilder(sd._str.ToString());
 			_span = sd._span;
 			_annotations = sd._annotations.Clone();
@@ -65,17 +62,17 @@ namespace SIL.Machine.Annotations
 				foreach (Annotation<int> a in ann.GetNodesDepthFirst())
 				{
 					if (a.Span.Start >= index)
-						a.Span = _spanFactory.Create(a.Span.Start + str.Length, a.Span.End + str.Length);
+						a.Span = Span<int>.Create(a.Span.Start + str.Length, a.Span.End + str.Length);
 					else if (a.Span.End > index)
-						a.Span = _spanFactory.Create(a.Span.Start, a.Span.End + str.Length);
+						a.Span = Span<int>.Create(a.Span.Start, a.Span.End + str.Length);
 				}
 			}
-			_span = _spanFactory.Create(0, _str.Length);
+			_span = Span<int>.Create(0, _str.Length);
 		}
 
 		public void Remove(int index, int length)
 		{
-			Span<int> removedSpan = _spanFactory.Create(index, index + length);
+			Span<int> removedSpan = Span<int>.Create(index, index + length);
 			_str.Remove(index, length);
 			var toRemove = new List<Annotation<int>>();
 			foreach (Annotation<int> ann in _annotations)
@@ -85,9 +82,9 @@ namespace SIL.Machine.Annotations
 					if (removedSpan.Contains(a.Span))
 						toRemove.Add(a);
 					else if (a.Span.Start >= index)
-						a.Span = _spanFactory.Create(a.Span.Start - length, a.Span.End - length);
+						a.Span = Span<int>.Create(a.Span.Start - length, a.Span.End - length);
 					else if (a.Span.End > index)
-						a.Span = _spanFactory.Create(a.Span.Start, a.Span.End - length);
+						a.Span = Span<int>.Create(a.Span.Start, a.Span.End - length);
 				}
 			}
 
@@ -96,7 +93,7 @@ namespace SIL.Machine.Annotations
 				if (ann.List != null)
 					ann.Remove(false);
 			}
-			_span = _spanFactory.Create(0, _str.Length);
+			_span = Span<int>.Create(0, _str.Length);
 		}
 
 		public AnnotatedStringData Clone()

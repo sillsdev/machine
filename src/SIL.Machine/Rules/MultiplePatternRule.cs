@@ -6,13 +6,13 @@ namespace SIL.Machine.Rules
 {
 	public class MultiplePatternRule<TData, TOffset> : PatternRule<TData, TOffset> where TData : IAnnotatedData<TOffset>
 	{
-		public MultiplePatternRule(SpanFactory<TOffset> spanFactory, IPatternRuleSpec<TData, TOffset> ruleSpec)
-			: base(spanFactory, ruleSpec)
+		public MultiplePatternRule(IPatternRuleSpec<TData, TOffset> ruleSpec)
+			: base(ruleSpec)
 		{
 		}
 
-		public MultiplePatternRule(SpanFactory<TOffset> spanFactory, IPatternRuleSpec<TData, TOffset> ruleSpec, MatcherSettings<TOffset> matcherSettings)
-			: base(spanFactory, ruleSpec, matcherSettings)
+		public MultiplePatternRule(IPatternRuleSpec<TData, TOffset> ruleSpec, MatcherSettings<TOffset> matcherSettings)
+			: base(ruleSpec, matcherSettings)
 		{
 		}
 

@@ -13,21 +13,22 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 		private readonly MetathesisRule _rule;
 		private readonly PhonologicalPatternRule _patternRule; 
 
-		public SynthesisMetathesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, MetathesisRule rule)
+		public SynthesisMetathesisRule(Morpher morpher, MetathesisRule rule)
 		{
 			_morpher = morpher;
 			_rule = rule;
 
-			var ruleSpec = new SynthesisMetathesisRuleSpec(spanFactory, rule.Pattern, rule.LeftSwitchName, rule.RightSwitchName);
+			var ruleSpec = new SynthesisMetathesisRuleSpec(rule.Pattern, rule.LeftSwitchName, rule.RightSwitchName);
 
 			var settings = new MatcherSettings<ShapeNode>
 			{
 			    Direction = rule.Direction,
-			    Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor) && !ann.IsDeleted(),
+			    Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary,
+					HCFeatureSystem.Anchor) && !ann.IsDeleted(),
 				UseDefaults = true
 			};
 
-			_patternRule = new IterativePhonologicalPatternRule(spanFactory, ruleSpec, settings);
+			_patternRule = new IterativePhonologicalPatternRule(ruleSpec, settings);
 		}
 
 		public IEnumerable<Word> Apply(Word input)

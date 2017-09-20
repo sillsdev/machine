@@ -8,27 +8,26 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Annotations
 {
-	public class AnnotationList<TOffset> : BidirList<Annotation<TOffset>>, ICloneable<AnnotationList<TOffset>>, IFreezable, IValueEquatable<AnnotationList<TOffset>>
-	{
-		private readonly SpanFactory<TOffset> _spanFactory; 
+	public class AnnotationList<TOffset> : BidirList<Annotation<TOffset>>, ICloneable<AnnotationList<TOffset>>,
+		IFreezable, IValueEquatable<AnnotationList<TOffset>>
+	{ 
 		private int _currentID;
 		private readonly Annotation<TOffset> _parent;
 		private int _hashCode;
 
-		public AnnotationList(SpanFactory<TOffset> spanFactory)
-			: base(new AnnotationComparer(), begin => new Annotation<TOffset>(spanFactory.Empty))
+		public AnnotationList()
+			: base(new AnnotationComparer(), begin => new Annotation<TOffset>(Span<TOffset>.Null))
 		{
-			_spanFactory = spanFactory;
 		}
 
 		protected AnnotationList(AnnotationList<TOffset> annList)
-			: this(annList._spanFactory)
+			: this()
 		{
 			AddRange(annList.Select(ann => ann.Clone()));
 		}
 
-		internal AnnotationList(SpanFactory<TOffset> spanFactory, Annotation<TOffset> parent)
-			: this(spanFactory)
+		internal AnnotationList(Annotation<TOffset> parent)
+			: this()
 		{
 			_parent = parent;
 		}
@@ -67,7 +66,10 @@ namespace SIL.Machine.Annotations
 		public int GetFrozenHashCode()
 		{
 			if (!IsFrozen)
-				throw new InvalidOperationException("The annotation list does not have a valid hash code, because it is mutable.");
+			{
+				throw new InvalidOperationException(
+					"The annotation list does not have a valid hash code, because it is mutable.");
+			}
 			return _hashCode;
 		}
 
@@ -89,7 +91,7 @@ namespace SIL.Machine.Annotations
 
 		public Annotation<TOffset> Add(TOffset offset, FeatureStruct fs)
 		{
-			return Add(_spanFactory.Create(offset), fs);
+			return Add(Span<TOffset>.Create(offset), fs);
 		}
 
 		public Annotation<TOffset> Add(Span<TOffset> span, FeatureStruct fs, bool optional)
@@ -101,12 +103,12 @@ namespace SIL.Machine.Annotations
 
 		public Annotation<TOffset> Add(TOffset start, TOffset end, FeatureStruct fs, bool optional)
 		{
-			return Add(_spanFactory.Create(start, end), fs, optional);
+			return Add(Span<TOffset>.Create(start, end), fs, optional);
 		}
 
 		public Annotation<TOffset> Add(TOffset offset, FeatureStruct fs, bool optional)
 		{
-			return Add(_spanFactory.Create(offset), fs, optional);
+			return Add(Span<TOffset>.Create(offset), fs, optional);
 		}
 
 		public override void Add(Annotation<TOffset> node)
@@ -179,7 +181,8 @@ namespace SIL.Machine.Annotations
 			}
 
 			TOffset lastOffset = GetLast(dir).Span.GetEnd(dir);
-			if (!_spanFactory.IsValidSpan(offset, lastOffset, dir))
+			if (!Span<TOffset>.IsValidSpan(offset, lastOffset, dir)
+				|| Span<TOffset>.IsEmptySpan(offset, lastOffset, dir))
 			{
 				result = GetLast(dir);
 				return false;
@@ -187,12 +190,12 @@ namespace SIL.Machine.Annotations
 
 			if (dir == Direction.LeftToRight)
 			{
-				if (Find(new Annotation<TOffset>(_spanFactory.Create(offset, lastOffset)), out result))
+				if (Find(new Annotation<TOffset>(Span<TOffset>.Create(offset, lastOffset)), out result))
 					return true;
 			}
 			else
 			{
-				Span<TOffset> offsetSpan = _spanFactory.Create(offset, Direction.RightToLeft);
+				Span<TOffset> offsetSpan = Span<TOffset>.Create(offset, Direction.RightToLeft);
 				if (Find(new Annotation<TOffset>(offsetSpan), Direction.RightToLeft, out result))
 					return true;
 
@@ -223,7 +226,7 @@ namespace SIL.Machine.Annotations
 
 		public IEnumerable<Annotation<TOffset>> GetNodes(TOffset start, TOffset end)
 		{
-			return GetNodes(_spanFactory.Create(start, end));
+			return GetNodes(Span<TOffset>.Create(start, end));
 		}
 
 		public IEnumerable<Annotation<TOffset>> GetNodes(Span<TOffset> span)
@@ -233,7 +236,7 @@ namespace SIL.Machine.Annotations
 
 		public IEnumerable<Annotation<TOffset>> GetNodes(TOffset start, TOffset end, Direction dir)
 		{
-			return GetNodes(_spanFactory.Create(start, end, dir), dir);
+			return GetNodes(Span<TOffset>.Create(start, end, dir), dir);
 		}
 
 		public IEnumerable<Annotation<TOffset>> GetNodes(Span<TOffset> span, Direction dir)

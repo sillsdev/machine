@@ -9,7 +9,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 	{
 		private readonly int _targetCount;
 
-		public EpenthesisAnalysisRewriteRuleSpec(SpanFactory<ShapeNode> spanFactory, MatcherSettings<ShapeNode> matcherSettings, RewriteSubrule subrule)
+		public EpenthesisAnalysisRewriteRuleSpec(MatcherSettings<ShapeNode> matcherSettings, RewriteSubrule subrule)
 			: base(false)
 		{
 			Pattern.Acceptable = IsUnapplicationNonvacuous;
@@ -23,7 +23,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			}
 			Pattern.Freeze();
 
-			SubruleSpecs.Add(new AnalysisRewriteSubruleSpec(spanFactory, matcherSettings, subrule, Unapply));
+			SubruleSpecs.Add(new AnalysisRewriteSubruleSpec(matcherSettings, subrule, Unapply));
 		}
 
 		private static bool IsUnapplicationNonvacuous(Match<Word, ShapeNode> match)

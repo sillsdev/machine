@@ -2,14 +2,14 @@ using SIL.Machine.DataStructures;
 
 namespace SIL.Machine.Annotations
 {
-	public class IntegerSpanFactory : SpanFactory<int>
+	internal class IntegerSpanFactory : SpanFactory<int>
 	{
 		public IntegerSpanFactory()
 		{
-			Empty = new Span<int>(this, -1, -1);
+			Null = new Span<int>(-1, -1);
 		}
 
-		protected internal override int CalcLength(int start, int end)
+		public override int GetLength(int start, int end)
 		{
 			return end - start;
 		}

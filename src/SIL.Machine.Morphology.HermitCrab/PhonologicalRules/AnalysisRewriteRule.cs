@@ -23,7 +23,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 		private readonly RewriteRule _rule;
 		private readonly List<Tuple<ReapplyType, PhonologicalPatternRule>> _rules;  
 
-		public AnalysisRewriteRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, RewriteRule rule)
+		public AnalysisRewriteRule(Morpher morpher, RewriteRule rule)
 		{
 			_morpher = morpher;
 			_rule = rule;
@@ -46,14 +46,16 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 				var reapplyType = ReapplyType.Normal;
 				if (_rule.Lhs.Children.Count == sr.Rhs.Children.Count)
 				{
-					ruleSpec = new FeatureAnalysisRewriteRuleSpec(spanFactory, settings, rule.Lhs, sr);
+					ruleSpec = new FeatureAnalysisRewriteRuleSpec(settings, rule.Lhs, sr);
 					if (_rule.ApplicationMode == RewriteApplicationMode.Simultaneous)
 					{
-						foreach (Constraint<Word, ShapeNode> constraint in sr.Rhs.Children.Cast<Constraint<Word, ShapeNode>>())
+						foreach (Constraint<Word, ShapeNode> constraint in sr.Rhs.Children
+							.Cast<Constraint<Word, ShapeNode>>())
 						{
 							if (constraint.Type() == HCFeatureSystem.Segment)
 							{
-								if (!IsUnifiable(constraint, sr.LeftEnvironment) || !IsUnifiable(constraint, sr.RightEnvironment))
+								if (!IsUnifiable(constraint, sr.LeftEnvironment)
+									|| !IsUnifiable(constraint, sr.RightEnvironment))
 								{
 									reapplyType = ReapplyType.SelfOpaquing;
 									break;
@@ -64,13 +66,13 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 				}
 				else if (_rule.Lhs.Children.Count > sr.Rhs.Children.Count)
 				{
-					ruleSpec = new NarrowAnalysisRewriteRuleSpec(spanFactory, settings, _rule.Lhs, sr);
+					ruleSpec = new NarrowAnalysisRewriteRuleSpec(settings, _rule.Lhs, sr);
 					mode = RewriteApplicationMode.Simultaneous;
 					reapplyType = ReapplyType.Deletion;
 				}
 				else if (_rule.Lhs.Children.Count == 0)
 				{
-					ruleSpec = new EpenthesisAnalysisRewriteRuleSpec(spanFactory, settings, sr);
+					ruleSpec = new EpenthesisAnalysisRewriteRuleSpec(settings, sr);
 					if (_rule.ApplicationMode == RewriteApplicationMode.Simultaneous)
 						reapplyType = ReapplyType.SelfOpaquing;
 				}
@@ -80,11 +82,11 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 				switch (mode)
 				{
 					case RewriteApplicationMode.Iterative:
-						patternRule = new IterativePhonologicalPatternRule(spanFactory, ruleSpec, settings);
+						patternRule = new IterativePhonologicalPatternRule(ruleSpec, settings);
 						break;
 
 					case RewriteApplicationMode.Simultaneous:
-						patternRule = new SimultaneousPhonologicalPatternRule(spanFactory, ruleSpec, settings);
+						patternRule = new SimultaneousPhonologicalPatternRule(ruleSpec, settings);
 						break;
 				}
 
@@ -94,9 +96,11 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 
 		private static bool IsUnifiable(Constraint<Word, ShapeNode> constraint, Pattern<Word, ShapeNode> env)
 		{
-			foreach (Constraint<Word, ShapeNode> curConstraint in env.GetNodesDepthFirst().OfType<Constraint<Word, ShapeNode>>())
+			foreach (Constraint<Word, ShapeNode> curConstraint in env.GetNodesDepthFirst()
+				.OfType<Constraint<Word, ShapeNode>>())
 			{
-				if (curConstraint.Type() == HCFeatureSystem.Segment && !curConstraint.FeatureStruct.IsUnifiable(constraint.FeatureStruct))
+				if (curConstraint.Type() == HCFeatureSystem.Segment
+					&& !curConstraint.FeatureStruct.IsUnifiable(constraint.FeatureStruct))
 				{
 					return false;
 				}

@@ -25,7 +25,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 		/// <param name="type">The constraint type.</param>
 		/// <param name="leftEnv">The left environment.</param>
 		/// <param name="rightEnv">The right environment.</param>
-		public AllomorphEnvironment(SpanFactory<ShapeNode> spanFactory, ConstraintType type, Pattern<Word, ShapeNode> leftEnv, Pattern<Word, ShapeNode> rightEnv)
+		public AllomorphEnvironment(ConstraintType type, Pattern<Word, ShapeNode> leftEnv,
+			Pattern<Word, ShapeNode> rightEnv)
 		{
 			_type = type;
 			if (leftEnv != null && !leftEnv.IsLeaf)
@@ -33,25 +34,27 @@ namespace SIL.Machine.Morphology.HermitCrab
 				if (!leftEnv.IsFrozen)
 					throw new ArgumentException("The pattern is not frozen.", "leftEnv");
 				_leftEnv = leftEnv;
-				_leftEnvMatcher = new Matcher<Word, ShapeNode>(spanFactory, leftEnv,
+				_leftEnvMatcher = new Matcher<Word, ShapeNode>(leftEnv,
 					new MatcherSettings<ShapeNode>
-						{
-							AnchoredToStart = true,
-							Direction = Direction.RightToLeft,
-							Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor) && !ann.IsDeleted()
-						});
+					{
+						AnchoredToStart = true,
+						Direction = Direction.RightToLeft,
+						Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary,
+							HCFeatureSystem.Anchor) && !ann.IsDeleted()
+					});
 			}
 			if (rightEnv != null && !rightEnv.IsLeaf)
 			{
 				if (!rightEnv.IsFrozen)
 					throw new ArgumentException("The pattern is not frozen.", "rightEnv");
 				_rightEnv = rightEnv;
-				_rightEnvMatcher = new Matcher<Word, ShapeNode>(spanFactory, rightEnv,
+				_rightEnvMatcher = new Matcher<Word, ShapeNode>(rightEnv,
 					new MatcherSettings<ShapeNode>
-						{
-							AnchoredToStart = true,
-							Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor) && !ann.IsDeleted()
-						});
+					{
+						AnchoredToStart = true,
+						Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary,
+							HCFeatureSystem.Anchor) && !ann.IsDeleted()
+					});
 			}
 		}
 
@@ -83,7 +86,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 
 		private bool IsMatch(Word word)
 		{
-			foreach (Annotation<ShapeNode> morph in word.Morphs.Where(ann => (string) ann.FeatureStruct.GetValue(HCFeatureSystem.Allomorph) == Allomorph.ID))
+			foreach (Annotation<ShapeNode> morph in word.Morphs
+				.Where(ann => (string) ann.FeatureStruct.GetValue(HCFeatureSystem.Allomorph) == Allomorph.ID))
 			{
 				if (_leftEnvMatcher != null && !_leftEnvMatcher.IsMatch(word, morph.Span.Start.Prev))
 					return false;

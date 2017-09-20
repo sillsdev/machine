@@ -10,8 +10,9 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 	{
 		private readonly IPhonologicalPatternRuleSpec _ruleSpec;
 
-		public SimultaneousPhonologicalPatternRule(SpanFactory<ShapeNode> spanFactory, IPhonologicalPatternRuleSpec ruleSpec, MatcherSettings<ShapeNode> matcherSettings)
-			: base(spanFactory, ruleSpec, matcherSettings)
+		public SimultaneousPhonologicalPatternRule(IPhonologicalPatternRuleSpec ruleSpec,
+			MatcherSettings<ShapeNode> matcherSettings)
+			: base(ruleSpec, matcherSettings)
 		{
 			_ruleSpec = ruleSpec;
 		}

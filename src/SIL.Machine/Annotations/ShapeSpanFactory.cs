@@ -4,12 +4,12 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Annotations
 {
-	public class ShapeSpanFactory : SpanFactory<ShapeNode>
+	internal class ShapeSpanFactory : SpanFactory<ShapeNode>
 	{
 		public ShapeSpanFactory()
 			: base(true, AnonymousComparer.Create<ShapeNode>(Compare), FreezableEqualityComparer<ShapeNode>.Default)
 		{
-			Empty = new Span<ShapeNode>(this, null, null);
+			Null = new Span<ShapeNode>(null, null);
 		}
 
 		private static int Compare(ShapeNode x, ShapeNode y)
@@ -23,7 +23,12 @@ namespace SIL.Machine.Annotations
 			return x.CompareTo(y);
 		}
 
-		protected internal override int CalcLength(ShapeNode start, ShapeNode end)
+		public override bool IsEmptySpan(ShapeNode start, ShapeNode end)
+		{
+			return start == null || end == null;
+		}
+
+		public override int GetLength(ShapeNode start, ShapeNode end)
 		{
 			if (start == null || end == null)
 				return 0;

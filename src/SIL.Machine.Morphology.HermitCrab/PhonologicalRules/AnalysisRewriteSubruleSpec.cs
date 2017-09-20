@@ -9,9 +9,10 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 	{
 		private readonly Action<Match<Word, ShapeNode>, Span<ShapeNode>, VariableBindings> _applyAction;
 
-		public AnalysisRewriteSubruleSpec(SpanFactory<ShapeNode> spanFactory, MatcherSettings<ShapeNode> matcherSettings, RewriteSubrule subrule,
+		public AnalysisRewriteSubruleSpec(MatcherSettings<ShapeNode> matcherSettings, RewriteSubrule subrule,
 			Action<Match<Word, ShapeNode>, Span<ShapeNode>, VariableBindings> applyAction)
-			: base(spanFactory, matcherSettings, CreateEnvironmentPattern(subrule.LeftEnvironment), CreateEnvironmentPattern(subrule.RightEnvironment))
+			: base(matcherSettings, CreateEnvironmentPattern(subrule.LeftEnvironment),
+				  CreateEnvironmentPattern(subrule.RightEnvironment))
 		{
 			_applyAction = applyAction;
 		}
@@ -24,7 +25,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			return pattern;
 		}
 
-		public override void ApplyRhs(Match<Word, ShapeNode> targetMatch, Span<ShapeNode> span, VariableBindings varBindings)
+		public override void ApplyRhs(Match<Word, ShapeNode> targetMatch, Span<ShapeNode> span,
+			VariableBindings varBindings)
 		{
 			_applyAction(targetMatch, span, varBindings);
 		}

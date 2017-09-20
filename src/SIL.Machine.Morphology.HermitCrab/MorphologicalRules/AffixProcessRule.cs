@@ -49,7 +49,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 					allo.Morpheme = this;
 			}
 
-			int index = Math.Min(e.NewStartingIndex == -1 ? int.MaxValue : e.NewStartingIndex, e.OldStartingIndex == -1 ? int.MaxValue : e.OldStartingIndex);
+			int index = Math.Min(e.NewStartingIndex == -1 ? int.MaxValue : e.NewStartingIndex,
+				e.OldStartingIndex == -1 ? int.MaxValue : e.OldStartingIndex);
 			for (int i = index; i < _allomorphs.Count; i++)
 				_allomorphs[i].Index = i;
 		}
@@ -74,14 +75,14 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			get { return _allomorphs; }
 		}
 
-		public override IRule<Word, ShapeNode> CompileAnalysisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileAnalysisRule(Morpher morpher)
 		{
-			return new AnalysisAffixProcessRule(spanFactory, morpher, this);
+			return new AnalysisAffixProcessRule(morpher, this);
 		}
 
-		public override IRule<Word, ShapeNode> CompileSynthesisRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher)
+		public override IRule<Word, ShapeNode> CompileSynthesisRule(Morpher morpher)
 		{
-			return new SynthesisAffixProcessRule(spanFactory, morpher, this);
+			return new SynthesisAffixProcessRule(morpher, this);
 		}
 
 		public override string Category

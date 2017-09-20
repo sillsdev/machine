@@ -9,38 +9,28 @@ namespace SIL.Machine.Tokenization
 	{
 		private static readonly HashSet<string> SentenceTerminals = new HashSet<string>
 		{
-			".", "!", "?", "\u203C", "\u203D", "\u2047", "\u2048", "\u2049", "\u3002", "\uFE52", "\uFE57", "\uFF01", "\uFF0E",
-			"\uFF1F", "\uFF61"
+			".", "!", "?", "\u203C", "\u203D", "\u2047", "\u2048", "\u2049", "\u3002", "\uFE52", "\uFE57", "\uFF01",
+			"\uFF0E", "\uFF1F", "\uFF61"
 		};
-		private static readonly HashSet<string> ClosingQuotes = new HashSet<string> { "\'", "\u2019", "\"", "\u201D", "»", "›" };
+		private static readonly HashSet<string> ClosingQuotes = new HashSet<string>
+		{
+			"\'", "\u2019", "\"", "\u201D", "»", "›"
+		};
 		private static readonly HashSet<string> ClosingBrackets = new HashSet<string> { "]", ")" };
 		private static readonly Regex NewLineRegex = new Regex("\n|\r\n?");
 
 		public LatinSentenceTokenizer()
-			: this(new IntegerSpanFactory())
+			: this(Enumerable.Empty<string>())
 		{
 		}
 
 		public LatinSentenceTokenizer(IEnumerable<string> abbreviations)
-			: this(new IntegerSpanFactory(), abbreviations)
-		{
-		}
-
-		public LatinSentenceTokenizer(SpanFactory<int> spanFactory)
-			: this(spanFactory, Enumerable.Empty<string>())
-		{
-		}
-
-		public LatinSentenceTokenizer(SpanFactory<int> spanFactory, IEnumerable<string> abbreviations)
-			: base(spanFactory, abbreviations)
+			: base(abbreviations)
 		{
 		}
 
 		public override IEnumerable<Span<int>> Tokenize(string data, Span<int> dataSpan)
 		{
-			if (dataSpan.IsEmpty)
-				yield break;
-
 			int lineStart = 0;
 			foreach (Match match in NewLineRegex.Matches(data.Substring(0, dataSpan.End), dataSpan.Start))
 			{
@@ -60,7 +50,7 @@ namespace SIL.Machine.Tokenization
 		{
 			int sentenceStart = -1, sentenceEnd = -1;
 			bool inEnd = false, hasEndQuotesBrackets = false;
-			foreach (Span<int> wordSpan in base.Tokenize(data, SpanFactory.Create(start, end)))
+			foreach (Span<int> wordSpan in base.Tokenize(data, Span<int>.Create(start, end)))
 			{
 				if (sentenceStart == -1)
 					sentenceStart = wordSpan.Start;
@@ -83,7 +73,7 @@ namespace SIL.Machine.Tokenization
 					}
 					else
 					{
-						yield return SpanFactory.Create(sentenceStart, sentenceEnd);
+						yield return Span<int>.Create(sentenceStart, sentenceEnd);
 						sentenceStart = wordSpan.Start;
 						inEnd = false;
 						hasEndQuotesBrackets = false;
@@ -93,7 +83,7 @@ namespace SIL.Machine.Tokenization
 			}
 
 			if (sentenceStart != -1 && sentenceEnd != -1)
-				yield return SpanFactory.Create(sentenceStart, inEnd ? sentenceEnd : end);
+				yield return Span<int>.Create(sentenceStart, inEnd ? sentenceEnd : end);
 		}
 	}
 }

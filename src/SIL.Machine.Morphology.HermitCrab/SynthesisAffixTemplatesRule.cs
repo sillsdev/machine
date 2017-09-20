@@ -14,12 +14,12 @@ namespace SIL.Machine.Morphology.HermitCrab
 		private readonly List<AffixTemplate> _templates;
 		private readonly List<IRule<Word, ShapeNode>> _templateRules; 
 
-		public SynthesisAffixTemplatesRule(SpanFactory<ShapeNode> spanFactory, Morpher morpher, Stratum stratum)
+		public SynthesisAffixTemplatesRule(Morpher morpher, Stratum stratum)
 		{
 			_morpher = morpher;
 			_stratum = stratum;
 			_templates = stratum.AffixTemplates.ToList();
-			_templateRules = _templates.Select(temp => temp.CompileSynthesisRule(spanFactory, morpher)).ToList();
+			_templateRules = _templates.Select(temp => temp.CompileSynthesisRule(morpher)).ToList();
 		}
 
 		public IEnumerable<Word> Apply(Word input)
@@ -92,7 +92,10 @@ namespace SIL.Machine.Morphology.HermitCrab
 					remainder.Subtract(best.SyntacticFeatureStruct);
 					if (!remainder.IsEmpty && input.RealizationalFeatureStruct.IsUnifiable(remainder))
 					{
-						best = new Word(relative.PrimaryAllomorph, input.RealizationalFeatureStruct.Clone()) {CurrentTrace = input.CurrentTrace};
+						best = new Word(relative.PrimaryAllomorph, input.RealizationalFeatureStruct.Clone())
+						{
+							CurrentTrace = input.CurrentTrace
+						};
 						best.Freeze();
 					}
 				}

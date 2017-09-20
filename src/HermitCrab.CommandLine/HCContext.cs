@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
@@ -17,7 +16,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
 		public void Compile()
 		{
-			_morpher = new Morpher(new ShapeSpanFactory(), new TraceManager(), _language);
+			_morpher = new Morpher(new TraceManager(), _language);
 		}
 
 		public Language Language
