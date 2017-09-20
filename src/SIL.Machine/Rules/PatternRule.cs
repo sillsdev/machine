@@ -34,7 +34,7 @@ namespace SIL.Machine.Rules
 
 		public IEnumerable<TData> Apply(TData input)
 		{
-			return Apply(input, input.Span.GetStart(_matcher.Direction));
+			return Apply(input, input.Range.GetStart(_matcher.Direction));
 		}
 
 		public IEnumerable<TData> Apply(TData input, TOffset start)

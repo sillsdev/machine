@@ -28,7 +28,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 
 		private static bool IsUnapplicationNonvacuous(Match<Word, ShapeNode> match)
 		{
-			foreach (ShapeNode node in match.Input.Shape.GetNodes(match.Span))
+			foreach (ShapeNode node in match.Input.Shape.GetNodes(match.Range))
 			{
 				if (!node.Annotation.Optional)
 					return true;
@@ -37,9 +37,9 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			return false;
 		}
 
-		private void Unapply(Match<Word, ShapeNode> targetMatch, Span<ShapeNode> span, VariableBindings varBindings)
+		private void Unapply(Match<Word, ShapeNode> targetMatch, Range<ShapeNode> range, VariableBindings varBindings)
 		{
-			ShapeNode curNode = span.Start;
+			ShapeNode curNode = range.Start;
 			for (int i = 0; i < _targetCount; i++)
 			{
 				curNode.Annotation.Optional = true;

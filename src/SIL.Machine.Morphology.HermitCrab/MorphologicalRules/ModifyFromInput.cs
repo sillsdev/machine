@@ -34,13 +34,15 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			get { return _simpleCtxt; }
 		}
 
-		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IDictionary<string, Pattern<Word, ShapeNode>> partLookup, IDictionary<string, int> capturedParts)
+		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs,
+			IDictionary<string, Pattern<Word, ShapeNode>> partLookup, IDictionary<string, int> capturedParts)
 		{
 			Pattern<Word, ShapeNode> pattern = partLookup[PartName];
 			int count = capturedParts.GetOrCreate(PartName, () => 0);
 			string groupName = AnalysisMorphologicalTransform.GetGroupName(PartName, count);
 			var group = new Group<Word, ShapeNode>(groupName, pattern.Children.DeepCloneExceptBoundaries());
-			foreach (Constraint<Word, ShapeNode> constraint in group.GetNodesDepthFirst().OfType<Constraint<Word, ShapeNode>>()
+			foreach (Constraint<Word, ShapeNode> constraint in group.GetNodesDepthFirst()
+				.OfType<Constraint<Word, ShapeNode>>()
 				.Where(c => c.Type() == (FeatureSymbol) _simpleCtxt.FeatureStruct.GetValue(HCFeatureSystem.Type)))
 			{
 				constraint.FeatureStruct.PriorityUnion(_simpleCtxt.FeatureStruct);
@@ -53,11 +55,16 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 		{
 			var mappings = new List<Tuple<ShapeNode, ShapeNode>>();
 			GroupCapture<ShapeNode> inputGroup = match.GroupCaptures[PartName];
-			foreach (ShapeNode inputNode in GetSkippedOptionalNodes(match.Input.Shape, inputGroup.Span).Concat(match.Input.Shape.GetNodes(inputGroup.Span)))
+			foreach (ShapeNode inputNode in GetSkippedOptionalNodes(match.Input.Shape, inputGroup.Range)
+				.Concat(match.Input.Shape.GetNodes(inputGroup.Range)))
 			{
 				ShapeNode outputNode = inputNode.Clone();
-				if (outputNode.Annotation.Type() == (FeatureSymbol) _simpleCtxt.FeatureStruct.GetValue(HCFeatureSystem.Type))
-					outputNode.Annotation.FeatureStruct.PriorityUnion(_simpleCtxt.FeatureStruct, match.VariableBindings);
+				if (outputNode.Annotation.Type() == (FeatureSymbol) _simpleCtxt.FeatureStruct
+					.GetValue(HCFeatureSystem.Type))
+				{
+					outputNode.Annotation.FeatureStruct.PriorityUnion(_simpleCtxt.FeatureStruct, 
+						match.VariableBindings);
+				}
 				output.Shape.Add(outputNode);
 				mappings.Add(Tuple.Create(inputNode, outputNode));
 			}

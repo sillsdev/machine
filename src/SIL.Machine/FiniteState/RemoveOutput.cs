@@ -13,7 +13,7 @@ namespace SIL.Machine.FiniteState
 		public override Annotation<TOffset> UpdateOutput(TData data, Annotation<TOffset> ann, IFstOperations<TData, TOffset> operations)
 		{
 			ann.Remove(false);
-			operations.Remove(data, ann.Span);
+			operations.Remove(data, ann.Range);
 			return null;
 		}
 

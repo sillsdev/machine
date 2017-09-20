@@ -7,7 +7,7 @@ namespace SIL.Machine.Tokenization
 	{
 		public static IEnumerable<string> TokenizeToStrings(this ITokenizer<string, int> tokenizer, string str)
 		{
-			return tokenizer.Tokenize(str).Select(span => str.Substring(span.Start, span.Length));
+			return tokenizer.Tokenize(str).Select(range => str.Substring(range.Start, range.Length));
 		}
 	}
 }

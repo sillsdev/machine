@@ -14,7 +14,7 @@ namespace SIL.Machine.Annotations
 
 		public ShapeNode(FeatureStruct fs)
 		{
-			_ann = new Annotation<ShapeNode>(Span<ShapeNode>.Create(this), fs);
+			_ann = new Annotation<ShapeNode>(Range<ShapeNode>.Create(this), fs);
 			_tag = int.MinValue;
 		}
 

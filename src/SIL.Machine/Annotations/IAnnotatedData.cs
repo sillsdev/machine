@@ -2,7 +2,7 @@ namespace SIL.Machine.Annotations
 {
 	public interface IAnnotatedData<TOffset>
 	{
-		Span<TOffset> Span { get; }
+		Range<TOffset> Range { get; }
 		AnnotationList<TOffset> Annotations { get; } 
 	}
 }

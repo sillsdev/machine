@@ -18,10 +18,10 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			_targetCount = targetCount;
 		}
 
-		public override void ApplyRhs(Match<Word, ShapeNode> targetMatch, Span<ShapeNode> span,
+		public override void ApplyRhs(Match<Word, ShapeNode> targetMatch, Range<ShapeNode> range,
 			VariableBindings varBindings)
 		{
-			ShapeNode curNode = span.End;
+			ShapeNode curNode = range.End;
 			foreach (PatternNode<Word, ShapeNode> node in _rhs.Children)
 			{
 				var constraint = (Constraint<Word, ShapeNode>) node;
@@ -33,7 +33,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 					curNode.SetDirty(true);
 			}
 
-			ShapeNode[] nodes = targetMatch.Input.Shape.GetNodes(span).ToArray();
+			ShapeNode[] nodes = targetMatch.Input.Shape.GetNodes(range).ToArray();
 			for (int i = 0; i < _targetCount; i++)
 				nodes[i].SetDeleted(true);
 

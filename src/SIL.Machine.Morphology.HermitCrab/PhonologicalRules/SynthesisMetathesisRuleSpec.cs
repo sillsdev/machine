@@ -50,7 +50,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 		public bool MatchSubrule(PhonologicalPatternRule rule, Match<Word, ShapeNode> match,
 			out PhonologicalSubruleMatch subruleMatch)
 		{
-			subruleMatch = new PhonologicalSubruleMatch(this, match.Span, match.VariableBindings);
+			subruleMatch = new PhonologicalSubruleMatch(this, match.Range, match.VariableBindings);
 			return true;
 		}
 
@@ -69,19 +69,19 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			return true;
 		}
 
-		public void ApplyRhs(Match<Word, ShapeNode> targetMatch, Span<ShapeNode> span, VariableBindings varBindings)
+		public void ApplyRhs(Match<Word, ShapeNode> targetMatch, Range<ShapeNode> range, VariableBindings varBindings)
 		{
 			ShapeNode start = null, end = null;
 			foreach (GroupCapture<ShapeNode> gc in targetMatch.GroupCaptures)
 			{
-				if (start == null || gc.Span.Start.CompareTo(start) < 0)
-					start = gc.Span.Start;
-				if (end == null || gc.Span.End.CompareTo(end) > 0)
-					end = gc.Span.End;
+				if (start == null || gc.Range.Start.CompareTo(start) < 0)
+					start = gc.Range.Start;
+				if (end == null || gc.Range.End.CompareTo(end) > 0)
+					end = gc.Range.End;
 			}
 			Debug.Assert(start != null && end != null);
 
-			var morphs = targetMatch.Input.Morphs.Where(ann => ann.Span.Overlaps(start, end))
+			var morphs = targetMatch.Input.Morphs.Where(ann => ann.Range.Overlaps(start, end))
 				.Select(ann => new {Annotation = ann, Children = ann.Children.ToList()}).ToArray();
 			foreach (var morph in morphs)
 				morph.Annotation.Remove();
@@ -89,23 +89,23 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			GroupCapture<ShapeNode> leftGroup = targetMatch.GroupCaptures[_leftGroupName];
 			GroupCapture<ShapeNode> rightGroup = targetMatch.GroupCaptures[_rightGroupName];
 
-			ShapeNode beforeRightGroup = rightGroup.Span.Start.Prev;
-			MoveNodesAfter(targetMatch.Input.Shape, leftGroup.Span.End, rightGroup.Span);
-			MoveNodesAfter(targetMatch.Input.Shape, beforeRightGroup, leftGroup.Span);
+			ShapeNode beforeRightGroup = rightGroup.Range.Start.Prev;
+			MoveNodesAfter(targetMatch.Input.Shape, leftGroup.Range.End, rightGroup.Range);
+			MoveNodesAfter(targetMatch.Input.Shape, beforeRightGroup, leftGroup.Range);
 
 			foreach (var morph in morphs)
 			{
-				Annotation<ShapeNode>[] children = morph.Children.OrderBy(ann => ann.Span).ToArray();
-				var newMorphAnn = new Annotation<ShapeNode>(Span<ShapeNode>.Create(children[0].Span.Start,
-					children[children.Length - 1].Span.Start), morph.Annotation.FeatureStruct);
+				Annotation<ShapeNode>[] children = morph.Children.OrderBy(ann => ann.Range).ToArray();
+				var newMorphAnn = new Annotation<ShapeNode>(Range<ShapeNode>.Create(children[0].Range.Start,
+					children[children.Length - 1].Range.Start), morph.Annotation.FeatureStruct);
 				newMorphAnn.Children.AddRange(morph.Children);
 				targetMatch.Input.Annotations.Add(newMorphAnn, false);
 			}
 		}
 
-		private static void MoveNodesAfter(Shape shape, ShapeNode cur, Span<ShapeNode> span)
+		private static void MoveNodesAfter(Shape shape, ShapeNode cur, Range<ShapeNode> range)
 		{
-			foreach (ShapeNode node in shape.GetNodes(span).ToArray())
+			foreach (ShapeNode node in shape.GetNodes(range).ToArray())
 			{
 				if (node.Type() == HCFeatureSystem.Segment)
 				{

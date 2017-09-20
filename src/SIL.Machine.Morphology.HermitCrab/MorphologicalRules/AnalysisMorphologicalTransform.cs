@@ -13,7 +13,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 		private readonly Dictionary<string, Tuple<int, FeatureStruct>> _modifyFromInfos;
 		private readonly Dictionary<string, int> _capturedParts;
 
-		public AnalysisMorphologicalTransform(IEnumerable<Pattern<Word, ShapeNode>> lhs, IList<MorphologicalOutputAction> rhs)
+		public AnalysisMorphologicalTransform(IEnumerable<Pattern<Word, ShapeNode>> lhs,
+			IList<MorphologicalOutputAction> rhs)
 		{
 			Dictionary<string, Pattern<Word, ShapeNode>> partLookup = lhs.ToDictionary(p => p.Name);
 			_modifyFromInfos = new Dictionary<string, Tuple<int, FeatureStruct>>();
@@ -25,7 +26,11 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
 				var modifyFromInput = outputAction as ModifyFromInput;
 				if (modifyFromInput != null)
-					_modifyFromInfos[modifyFromInput.PartName] = Tuple.Create(_capturedParts[modifyFromInput.PartName] - 1, modifyFromInput.SimpleContext.FeatureStruct.AntiFeatureStruct());
+				{
+					_modifyFromInfos[modifyFromInput.PartName] = Tuple.Create(
+						_capturedParts[modifyFromInput.PartName] - 1,
+						modifyFromInput.SimpleContext.FeatureStruct.AntiFeatureStruct());
+				}
 			}
 		}
 
@@ -73,15 +78,16 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			Untruncate(part, output, false, match.VariableBindings);
 		}
 
-		private bool AddCapturedPartNodes(string partName, int index, Match<Word, ShapeNode> match, FeatureStruct modifyFromFS, Shape output)
+		private bool AddCapturedPartNodes(string partName, int index, Match<Word, ShapeNode> match,
+			FeatureStruct modifyFromFS, Shape output)
 		{
 			GroupCapture<ShapeNode> inputGroup = match.GroupCaptures[GetGroupName(partName, index)];
 			if (inputGroup.Success)
 			{
-				Span<ShapeNode> outputSpan = match.Input.Shape.CopyTo(inputGroup.Span, output);
+				Range<ShapeNode> outputRange = match.Input.Shape.CopyTo(inputGroup.Range, output);
 				if (modifyFromFS != null)
 				{
-					foreach (ShapeNode node in output.GetNodes(outputSpan))
+					foreach (ShapeNode node in output.GetNodes(outputRange))
 					{
 						if ((FeatureSymbol) modifyFromFS.GetValue(HCFeatureSystem.Type) == node.Annotation.Type())
 							node.Annotation.FeatureStruct.Add(modifyFromFS, match.VariableBindings);
@@ -92,7 +98,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			return false;
 		}
 
-		private void Untruncate(PatternNode<Word, ShapeNode> patternNode, Shape output, bool optional, VariableBindings varBindings)
+		private void Untruncate(PatternNode<Word, ShapeNode> patternNode, Shape output, bool optional,
+			VariableBindings varBindings)
 		{
 			foreach (PatternNode<Word, ShapeNode> node in patternNode.Children)
 			{

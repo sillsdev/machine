@@ -52,9 +52,9 @@ namespace SIL.Machine.Translation
 
 		public string[] UpdatePrefix(string prefix)
 		{
-			Span<int>[] tokenSpans = _engine.TargetWordTokenizer.Tokenize(prefix).ToArray();
-			Prefix = tokenSpans.Select(s => prefix.Substring(s.Start, s.Length)).ToArray();
-			IsLastWordComplete = tokenSpans.Length == 0 || tokenSpans[tokenSpans.Length - 1].End != prefix.Length;
+			Range<int>[] tokenRanges = _engine.TargetWordTokenizer.Tokenize(prefix).ToArray();
+			Prefix = tokenRanges.Select(s => prefix.Substring(s.Start, s.Length)).ToArray();
+			IsLastWordComplete = tokenRanges.Length == 0 || tokenRanges[tokenRanges.Length - 1].End != prefix.Length;
 
 			TranslationInfo correction = _wordGraphProcessor.Correct(Prefix, IsLastWordComplete, 1).FirstOrDefault();
 			TranslationResult smtResult = CreateResult(correction);

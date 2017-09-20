@@ -16,10 +16,10 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			_rhs = subrule.Rhs;
 		}
 
-		public override void ApplyRhs(Match<Word, ShapeNode> targetMatch, Span<ShapeNode> span,
+		public override void ApplyRhs(Match<Word, ShapeNode> targetMatch, Range<ShapeNode> range,
 			VariableBindings varBindings)
 		{
-			ShapeNode curNode = span.Start;
+			ShapeNode curNode = range.Start;
 			foreach (PatternNode<Word, ShapeNode> node in _rhs.Children.GetNodes(targetMatch.Matcher.Direction))
 			{
 				if (targetMatch.Input.Shape.Count == 256)

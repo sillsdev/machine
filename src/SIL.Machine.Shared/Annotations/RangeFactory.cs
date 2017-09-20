@@ -4,19 +4,19 @@ using SIL.Machine.DataStructures;
 
 namespace SIL.Machine.Annotations
 {
-	internal abstract class SpanFactory<TOffset>
+	internal abstract class RangeFactory<TOffset>
 	{
-		protected SpanFactory()
+		protected RangeFactory()
 			: this(false)
 		{
 		}
 
-		protected SpanFactory(bool includeEndpoint)
+		protected RangeFactory(bool includeEndpoint)
 			: this(includeEndpoint, Comparer<TOffset>.Default, EqualityComparer<TOffset>.Default)
 		{
 		}
 
-		protected SpanFactory(bool includeEndpoint, IComparer<TOffset> comparer,
+		protected RangeFactory(bool includeEndpoint, IComparer<TOffset> comparer,
 			IEqualityComparer<TOffset> equalityComparer)
 		{
 			IncludeEndpoint = includeEndpoint;
@@ -24,7 +24,7 @@ namespace SIL.Machine.Annotations
 			EqualityComparer = equalityComparer;
 		}
 
-		public Span<TOffset> Null { get; protected set; }
+		public Range<TOffset> Null { get; protected set; }
 
 		public bool IncludeEndpoint { get; }
 
@@ -34,18 +34,18 @@ namespace SIL.Machine.Annotations
 
 		public abstract int GetLength(TOffset start, TOffset end);
 
-		public bool IsValidSpan(TOffset start, TOffset end)
+		public bool IsValidRange(TOffset start, TOffset end)
 		{
 			int compare = Comparer.Compare(start, end);
 			return compare <= 0;
 		}
 
-		public virtual bool IsEmptySpan(TOffset start, TOffset end)
+		public virtual bool IsEmptyRange(TOffset start, TOffset end)
 		{
 			return GetLength(start, end) == 0;
 		}
 
-		public virtual Span<TOffset> Create(TOffset start, TOffset end, Direction dir)
+		public virtual Range<TOffset> Create(TOffset start, TOffset end, Direction dir)
 		{
 			if (dir == Direction.RightToLeft)
 			{
@@ -54,13 +54,13 @@ namespace SIL.Machine.Annotations
 				end = temp;
 			}
 
-			if (!IsValidSpan(start, end))
+			if (!IsValidRange(start, end))
 				throw new ArgumentException("The start offset is greater than the end offset.", nameof(start));
 
-			return new Span<TOffset>(start, end);
+			return new Range<TOffset>(start, end);
 		}
 
-		public virtual Span<TOffset> Create(TOffset offset, Direction dir)
+		public virtual Range<TOffset> Create(TOffset offset, Direction dir)
 		{
 			return Create(offset, offset, dir);
 		}

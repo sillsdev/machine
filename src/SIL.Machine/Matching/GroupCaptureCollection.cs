@@ -36,7 +36,7 @@ namespace SIL.Machine.Matching
 				GroupCapture<TOffset> capture;
 				if (_groupCaptures.TryGetValue(groupName, out capture))
 					return capture;
-				return new GroupCapture<TOffset>(groupName, Span<TOffset>.Null);
+				return new GroupCapture<TOffset>(groupName, Range<TOffset>.Null);
 			}
 		}
 

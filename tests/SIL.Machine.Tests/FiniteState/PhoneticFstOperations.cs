@@ -18,19 +18,19 @@ namespace SIL.Machine.FiniteState
 		{
 			KeyValuePair<char, FeatureStruct> character = _characters
 				.Single(kvp => kvp.Value.ValueEquals(ann.FeatureStruct));
-			data.Replace(ann.Span.Start, ann.Span.Length, character.Key.ToString());
+			data.Replace(ann.Range.Start, ann.Range.Length, character.Key.ToString());
 		}
 
-		public Span<int> Insert(AnnotatedStringData data, Annotation<int> ann, FeatureStruct fs)
+		public Range<int> Insert(AnnotatedStringData data, Annotation<int> ann, FeatureStruct fs)
 		{
 			KeyValuePair<char, FeatureStruct> character = _characters.Single(kvp => kvp.Value.ValueEquals(fs));
-			data.Insert(ann.Span.End, character.Key.ToString());
-			return Span<int>.Create(ann.Span.End, ann.Span.End + 1);
+			data.Insert(ann.Range.End, character.Key.ToString());
+			return Range<int>.Create(ann.Range.End, ann.Range.End + 1);
 		}
 
-		public void Remove(AnnotatedStringData data, Span<int> span)
+		public void Remove(AnnotatedStringData data, Range<int> range)
 		{
-			data.Remove(span.Start, span.Length);
+			data.Remove(range.Start, range.Length);
 		}
 	}
 }

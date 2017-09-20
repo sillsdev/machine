@@ -3,7 +3,6 @@ using System.Linq;
 using SIL.Extensions;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
-using SIL.ObjectModel;
 
 namespace SIL.Machine.Matching
 {
@@ -19,14 +18,16 @@ namespace SIL.Machine.Matching
 		private readonly TData _input;
 		private readonly Annotation<TOffset> _nextAnn;
 
-		internal Match(Matcher<TData, TOffset> matcher, Span<TOffset> span, TData input)
-			: this(matcher, span, input, Enumerable.Empty<GroupCapture<TOffset>>(), new string[0], new VariableBindings(), null)
+		internal Match(Matcher<TData, TOffset> matcher, Range<TOffset> range, TData input)
+			: this(matcher, range, input, Enumerable.Empty<GroupCapture<TOffset>>(), new string[0],
+				  new VariableBindings(), null)
 		{
 		}
 
-		internal Match(Matcher<TData, TOffset> matcher, Span<TOffset> span, TData input, IEnumerable<GroupCapture<TOffset>> groupCaptures,
-			IList<string> patternPath, VariableBindings varBindings, Annotation<TOffset> nextAnn)
-			: base(Matcher<TData, TOffset>.EntireMatch, span)
+		internal Match(Matcher<TData, TOffset> matcher, Range<TOffset> range, TData input,
+			IEnumerable<GroupCapture<TOffset>> groupCaptures, IList<string> patternPath, VariableBindings varBindings,
+			Annotation<TOffset> nextAnn)
+			: base(Matcher<TData, TOffset>.EntireMatch, range)
 		{
 			_matcher = matcher;
 			_groupCaptures = new GroupCaptureCollection<TOffset>(groupCaptures);

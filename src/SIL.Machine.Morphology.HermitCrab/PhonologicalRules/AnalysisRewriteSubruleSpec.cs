@@ -7,10 +7,10 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 {
 	public class AnalysisRewriteSubruleSpec : RewriteSubruleSpec
 	{
-		private readonly Action<Match<Word, ShapeNode>, Span<ShapeNode>, VariableBindings> _applyAction;
+		private readonly Action<Match<Word, ShapeNode>, Range<ShapeNode>, VariableBindings> _applyAction;
 
 		public AnalysisRewriteSubruleSpec(MatcherSettings<ShapeNode> matcherSettings, RewriteSubrule subrule,
-			Action<Match<Word, ShapeNode>, Span<ShapeNode>, VariableBindings> applyAction)
+			Action<Match<Word, ShapeNode>, Range<ShapeNode>, VariableBindings> applyAction)
 			: base(matcherSettings, CreateEnvironmentPattern(subrule.LeftEnvironment),
 				  CreateEnvironmentPattern(subrule.RightEnvironment))
 		{
@@ -25,10 +25,10 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			return pattern;
 		}
 
-		public override void ApplyRhs(Match<Word, ShapeNode> targetMatch, Span<ShapeNode> span,
+		public override void ApplyRhs(Match<Word, ShapeNode> targetMatch, Range<ShapeNode> range,
 			VariableBindings varBindings)
 		{
-			_applyAction(targetMatch, span, varBindings);
+			_applyAction(targetMatch, range, varBindings);
 		}
 	}
 }

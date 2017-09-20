@@ -44,8 +44,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 		{
 			Shape shape = _segments.Shape;
 			var mappings = new List<Tuple<ShapeNode, ShapeNode>>();
-			Span<ShapeNode> outputSpan = shape.CopyTo(Span<ShapeNode>.Create(shape.First, shape.Last), output.Shape);
-			foreach (ShapeNode outputNode in output.Shape.GetNodes(outputSpan))
+			Range<ShapeNode> outputRange = shape.CopyTo(Range<ShapeNode>.Create(shape.First, shape.Last), output.Shape);
+			foreach (ShapeNode outputNode in output.Shape.GetNodes(outputRange))
 				mappings.Add(Tuple.Create((ShapeNode) null, outputNode));
 			return mappings;
 		}

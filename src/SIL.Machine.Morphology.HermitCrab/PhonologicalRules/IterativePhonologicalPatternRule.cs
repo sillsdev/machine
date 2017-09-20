@@ -24,13 +24,13 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 				PhonologicalSubruleMatch srMatch;
 				if (RuleSpec.MatchSubrule(this, targetMatch, out srMatch))
 				{
-					srMatch.SubruleSpec.ApplyRhs(targetMatch, srMatch.Span, srMatch.VariableBindings);
+					srMatch.SubruleSpec.ApplyRhs(targetMatch, srMatch.Range, srMatch.VariableBindings);
 					applied = true;
-					start = targetMatch.Span.GetEnd(Matcher.Direction).GetNext(Matcher.Direction);
+					start = targetMatch.Range.GetEnd(Matcher.Direction).GetNext(Matcher.Direction);
 				}
 				else
 				{
-					start = targetMatch.Span.GetStart(Matcher.Direction).GetNext(Matcher.Direction);
+					start = targetMatch.Range.GetStart(Matcher.Direction).GetNext(Matcher.Direction);
 				}
 
 				if (start == null)

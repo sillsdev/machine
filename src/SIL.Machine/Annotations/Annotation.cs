@@ -14,23 +14,23 @@ namespace SIL.Machine.Annotations
 		private bool _optional;
 		private object _data;
 
-		public Annotation(Span<TOffset> span, FeatureStruct fs)
+		public Annotation(Range<TOffset> range, FeatureStruct fs)
 		{
-			Span = span;
+			Range = range;
 			FeatureStruct = fs;
 			ListID = -1;
 			Root = this;
 		}
 
-		internal Annotation(Span<TOffset> span)
+		internal Annotation(Range<TOffset> range)
 		{
-			Span = span;
+			Range = range;
 			ListID = -1;
 			Root = this;
 		}
 
 		protected Annotation(Annotation<TOffset> ann)
-			: this(ann.Span, ann.FeatureStruct.Clone())
+			: this(ann.Range, ann.FeatureStruct.Clone())
 		{
 			Optional = ann.Optional;
 			_data = ann._data;
@@ -93,7 +93,7 @@ namespace SIL.Machine.Annotations
 			}
 		}
 
-		public Span<TOffset> Span { get; internal set; }
+		public Range<TOffset> Range { get; internal set; }
 
 		public FeatureStruct FeatureStruct
 		{
@@ -153,7 +153,7 @@ namespace SIL.Machine.Annotations
 					return -1;
 			}
 
-			int res = Span.CompareTo(other.Span);
+			int res = Range.CompareTo(other.Range);
 			if (res != 0)
 				return res;
 
@@ -182,7 +182,7 @@ namespace SIL.Machine.Annotations
 			_hashCode = _hashCode * 31 + _fs.GetFrozenHashCode();
 			_hashCode = _hashCode * 31 + (_children == null ? 0 : _children.GetFrozenHashCode());
 			_hashCode = _hashCode * 31 + _optional.GetHashCode();
-			_hashCode = _hashCode * 31 + Span.GetHashCode();
+			_hashCode = _hashCode * 31 + Range.GetHashCode();
 		}
 
 		public bool ValueEquals(Annotation<TOffset> other)
@@ -196,13 +196,16 @@ namespace SIL.Machine.Annotations
 			if (!IsLeaf && !_children.ValueEquals(other._children))
 				return false;
 
-			return _fs.ValueEquals(other._fs) && _optional == other._optional && Span == other.Span;
+			return _fs.ValueEquals(other._fs) && _optional == other._optional && Range == other.Range;
 		}
 
 		public int GetFrozenHashCode()
 		{
 			if (!IsFrozen)
-				throw new InvalidOperationException("The annotation does not have a valid hash code, because it is mutable.");
+			{
+				throw new InvalidOperationException(
+					"The annotation does not have a valid hash code, because it is mutable.");
+			}
 			return _hashCode;
 		}
 
@@ -214,7 +217,7 @@ namespace SIL.Machine.Annotations
 
 		public override string ToString()
 		{
-			return string.Format("({0} {1})", Span, FeatureStruct);
+			return string.Format("({0} {1})", Range, FeatureStruct);
 		}
 	}
 }

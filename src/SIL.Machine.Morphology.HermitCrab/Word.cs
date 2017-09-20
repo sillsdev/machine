@@ -161,9 +161,9 @@ namespace SIL.Machine.Morphology.HermitCrab
 			get { return _obligatorySyntacticFeatures; }
 		}
 
-		public Span<ShapeNode> Span
+		public Range<ShapeNode> Range
 		{
-			get { return _shape.Span; }
+			get { return _shape.Range; }
 		}
 
 		public AnnotationList<ShapeNode> Annotations
@@ -241,7 +241,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			Annotation<ShapeNode> ann = null;
 			if (nodeArray.Length > 0)
 			{
-				ann = new Annotation<ShapeNode>(Span<ShapeNode>.Create(nodeArray[0], nodeArray[nodeArray.Length - 1]),
+				ann = new Annotation<ShapeNode>(Range<ShapeNode>.Create(nodeArray[0], nodeArray[nodeArray.Length - 1]),
 					FeatureStruct.New()
 						.Symbol(HCFeatureSystem.Morph)
 						.Feature(HCFeatureSystem.Allomorph).EqualTo(allomorph.ID).Value);
@@ -254,7 +254,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
 		internal Annotation<ShapeNode> MarkSubsumedMorph(Annotation<ShapeNode> morph, Allomorph allomorph)
 		{
-			Annotation<ShapeNode> ann = new Annotation<ShapeNode>(morph.Span, FeatureStruct.New()
+			Annotation<ShapeNode> ann = new Annotation<ShapeNode>(morph.Range, FeatureStruct.New()
 				.Symbol(HCFeatureSystem.Morph)
 				.Feature(HCFeatureSystem.Allomorph).EqualTo(allomorph.ID).Value);
 			morph.Children.Add(ann, false);
@@ -266,7 +266,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 		{
 			var alloID = (string) morphAnn.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
 			_allomorphs.Remove(alloID);
-			foreach (ShapeNode node in _shape.GetNodes(morphAnn.Span).ToArray())
+			foreach (ShapeNode node in _shape.GetNodes(morphAnn.Range).ToArray())
 				node.Remove();
 		}
 

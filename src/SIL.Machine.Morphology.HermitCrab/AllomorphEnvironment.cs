@@ -18,13 +18,6 @@ namespace SIL.Machine.Morphology.HermitCrab
 		private readonly Pattern<Word, ShapeNode> _rightEnv; 
 		private readonly Matcher<Word, ShapeNode> _rightEnvMatcher;
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="AllomorphEnvironment"/> class.
-		/// </summary>
-		/// <param name="spanFactory">The span factory.</param>
-		/// <param name="type">The constraint type.</param>
-		/// <param name="leftEnv">The left environment.</param>
-		/// <param name="rightEnv">The right environment.</param>
 		public AllomorphEnvironment(ConstraintType type, Pattern<Word, ShapeNode> leftEnv,
 			Pattern<Word, ShapeNode> rightEnv)
 		{
@@ -89,10 +82,10 @@ namespace SIL.Machine.Morphology.HermitCrab
 			foreach (Annotation<ShapeNode> morph in word.Morphs
 				.Where(ann => (string) ann.FeatureStruct.GetValue(HCFeatureSystem.Allomorph) == Allomorph.ID))
 			{
-				if (_leftEnvMatcher != null && !_leftEnvMatcher.IsMatch(word, morph.Span.Start.Prev))
+				if (_leftEnvMatcher != null && !_leftEnvMatcher.IsMatch(word, morph.Range.Start.Prev))
 					return false;
 
-				if (_rightEnvMatcher != null && !_rightEnvMatcher.IsMatch(word, morph.Span.End.Next))
+				if (_rightEnvMatcher != null && !_rightEnvMatcher.IsMatch(word, morph.Range.End.Next))
 					return false;
 			}
 			return true;

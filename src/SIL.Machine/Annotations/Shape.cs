@@ -37,9 +37,9 @@ namespace SIL.Machine.Annotations
 			shape.CopyTo(this);
 		}
 
-		public Span<ShapeNode> Span
+		public Range<ShapeNode> Range
 		{
-			get { return Span<ShapeNode>.Create(Begin, End); }
+			get { return Range<ShapeNode>.Create(Begin, End); }
 		}
 
 		public AnnotationList<ShapeNode> Annotations
@@ -90,23 +90,23 @@ namespace SIL.Machine.Annotations
 			return newNode;
 		}
 
-		public Span<ShapeNode> CopyTo(Shape dest)
+		public Range<ShapeNode> CopyTo(Shape dest)
 		{
 			if (Count == 0)
-				return Span<ShapeNode>.Null;
+				return Range<ShapeNode>.Null;
 			return CopyTo(First, Last, dest);
 		}
 
-		public Span<ShapeNode> CopyTo(ShapeNode srcStart, ShapeNode srcEnd, Shape dest)
+		public Range<ShapeNode> CopyTo(ShapeNode srcStart, ShapeNode srcEnd, Shape dest)
 		{
-			return CopyTo(Span<ShapeNode>.Create(srcStart, srcEnd), dest);
+			return CopyTo(Range<ShapeNode>.Create(srcStart, srcEnd), dest);
 		}
 
-		public Span<ShapeNode> CopyTo(Span<ShapeNode> srcSpan, Shape dest)
+		public Range<ShapeNode> CopyTo(Range<ShapeNode> srcRange, Shape dest)
 		{
 			ShapeNode startNode = null;
 			ShapeNode endNode = null;
-			foreach (ShapeNode node in GetNodes(srcSpan))
+			foreach (ShapeNode node in GetNodes(srcRange))
 			{
 				ShapeNode newNode = node.Clone();
 				if (startNode == null)
@@ -115,26 +115,26 @@ namespace SIL.Machine.Annotations
 				dest.Add(newNode);
 			}
 
-			Span<ShapeNode> destSpan = Span<ShapeNode>.Create(startNode, endNode);
-			Dictionary<ShapeNode, ShapeNode> mapping = GetNodes(srcSpan).Zip(dest.GetNodes(destSpan))
+			Range<ShapeNode> destRange = Range<ShapeNode>.Create(startNode, endNode);
+			Dictionary<ShapeNode, ShapeNode> mapping = GetNodes(srcRange).Zip(dest.GetNodes(destRange))
 				.ToDictionary(tuple => tuple.Item1, tuple => tuple.Item2);
-			foreach (Annotation<ShapeNode> ann in _annotations.GetNodes(srcSpan))
+			foreach (Annotation<ShapeNode> ann in _annotations.GetNodes(srcRange))
 				CopyAnnotations(dest._annotations, ann, mapping);
 
-			return destSpan;
+			return destRange;
 		}
 
 		private void CopyAnnotations(AnnotationList<ShapeNode> destList, Annotation<ShapeNode> ann,
 			Dictionary<ShapeNode, ShapeNode> mapping)
 		{
-			if (ann.Span.Start.Annotation == ann)
+			if (ann.Range.Start.Annotation == ann)
 			{
-				destList.Add(mapping[ann.Span.Start].Annotation, false);
+				destList.Add(mapping[ann.Range.Start].Annotation, false);
 			}
 			else
 			{
-				var newAnn = new Annotation<ShapeNode>(Span<ShapeNode>.Create(mapping[ann.Span.Start],
-					mapping[ann.Span.End]), ann.FeatureStruct.Clone());
+				var newAnn = new Annotation<ShapeNode>(Range<ShapeNode>.Create(mapping[ann.Range.Start],
+					mapping[ann.Range.End]), ann.FeatureStruct.Clone());
 				destList.Add(newAnn, false);
 				if (!ann.IsLeaf)
 				{
@@ -246,20 +246,23 @@ namespace SIL.Machine.Annotations
 				return;
 
 			foreach (Annotation<ShapeNode> ann in annList.GetNodes(startAnn, endAnn)
-				.Where(ann => ann.Span.Contains(node)).ToArray())
+				.Where(ann => ann.Range.Contains(node)).ToArray())
 			{
 				if (!ann.IsLeaf)
 					UpdateAnnotations(ann.Children, node);
 
-				if (ann.Span.Start == node && ann.Span.End == node)
+				if (ann.Range.Start == node && ann.Range.End == node)
 				{
 					annList.Remove(ann);
 				}
-				else if (ann.Span.Start == node || ann.Span.End == node)
+				else if (ann.Range.Start == node || ann.Range.End == node)
 				{
-					Span<ShapeNode> span = ann.Span.Start == node ? Span<ShapeNode>.Create(node.Next, ann.Span.End)
-						: Span<ShapeNode>.Create(ann.Span.Start, node.Prev);
-					var newAnn = new Annotation<ShapeNode>(span, ann.FeatureStruct.Clone()) {Optional = ann.Optional};
+					Range<ShapeNode> range = ann.Range.Start == node ? Range<ShapeNode>.Create(node.Next, ann.Range.End)
+						: Range<ShapeNode>.Create(ann.Range.Start, node.Prev);
+					var newAnn = new Annotation<ShapeNode>(range, ann.FeatureStruct.Clone())
+					{
+						Optional = ann.Optional
+					};
 					if (!ann.IsLeaf)
 					{
 						foreach (Annotation<ShapeNode> child in ann.Children.ToArray())
@@ -362,14 +365,14 @@ namespace SIL.Machine.Annotations
 			}
 		}
 
-		public IEnumerable<ShapeNode> GetNodes(Span<ShapeNode> span)
+		public IEnumerable<ShapeNode> GetNodes(Range<ShapeNode> range)
 		{
-			return GetNodes(span, Direction.LeftToRight);
+			return GetNodes(range, Direction.LeftToRight);
 		}
 
-		public IEnumerable<ShapeNode> GetNodes(Span<ShapeNode> span, Direction dir)
+		public IEnumerable<ShapeNode> GetNodes(Range<ShapeNode> range, Direction dir)
 		{
-			return this.GetNodes(span.GetStart(dir), span.GetEnd(dir), dir);
+			return this.GetNodes(range.GetStart(dir), range.GetEnd(dir), dir);
 		}
 
 		public bool ValueEquals(Shape other)

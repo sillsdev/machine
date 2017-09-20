@@ -5,15 +5,15 @@ namespace SIL.Machine.Tokenization
 {
 	public class WhitespaceTokenizer : StringTokenizer
 	{
-		public override IEnumerable<Span<int>> Tokenize(string data, Span<int> span)
+		public override IEnumerable<Range<int>> Tokenize(string data, Range<int> range)
 		{
 			int startIndex = -1;
-			for (int i = span.Start; i < span.End; i++)
+			for (int i = range.Start; i < range.End; i++)
 			{
 				if (char.IsWhiteSpace(data[i]))
 				{
 					if (startIndex != -1)
-						yield return Span<int>.Create(startIndex, i);
+						yield return Range<int>.Create(startIndex, i);
 					startIndex = -1;
 				}
 				else if (startIndex == -1)
@@ -23,7 +23,7 @@ namespace SIL.Machine.Tokenization
 			}
 
 			if (startIndex != -1)
-				yield return Span<int>.Create(startIndex, data.Length);
+				yield return Range<int>.Create(startIndex, data.Length);
 		}
 	}
 }

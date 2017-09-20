@@ -35,15 +35,15 @@ namespace SIL.Machine.Matching
 
 		private bool MatchEquals(Match<TData, TOffset> x, Match<TData, TOffset> y)
 		{
-			return EqualityComparer<TOffset>.Default.Equals(x.Span.Start, y.Span.Start) && EqualityComparer<TOffset>.Default.Equals(x.Span.End, y.Span.End)
+			return EqualityComparer<TOffset>.Default.Equals(x.Range.Start, y.Range.Start) && EqualityComparer<TOffset>.Default.Equals(x.Range.End, y.Range.End)
 				&& x.PatternPath.SequenceEqual(y.PatternPath);
 		}
 
 		private int MatchGetHashCode(Match<TData, TOffset> m)
 		{
 			int code = 23;
-			code = code * 31 + (m.Span.Start == null ? 0 : EqualityComparer<TOffset>.Default.GetHashCode(m.Span.Start));
-			code = code * 31 + (m.Span.End == null ? 0 : EqualityComparer<TOffset>.Default.GetHashCode(m.Span.End));
+			code = code * 31 + (m.Range.Start == null ? 0 : EqualityComparer<TOffset>.Default.GetHashCode(m.Range.Start));
+			code = code * 31 + (m.Range.End == null ? 0 : EqualityComparer<TOffset>.Default.GetHashCode(m.Range.End));
 			code = code * 31 + m.PatternPath.GetSequenceHashCode();
 			return code;
 		}
@@ -146,7 +146,7 @@ namespace SIL.Machine.Matching
 		{
 			TOffset matchStart, matchEnd;
 			_fsa.GetOffsets(EntireMatch, match.Registers, out matchStart, out matchEnd);
-			Span<TOffset> matchSpan = Span<TOffset>.Create(matchStart, matchEnd);
+			Range<TOffset> matchRange = Range<TOffset>.Create(matchStart, matchEnd);
 			var groupCaptures = new List<GroupCapture<TOffset>>();
 			foreach (string groupName in _fsa.GroupNames)
 			{
@@ -157,20 +157,20 @@ namespace SIL.Machine.Matching
 				TOffset start, end;
 				if (_fsa.GetOffsets(groupName, match.Registers, out start, out end))
 				{
-					if (Span<TOffset>.IsValidSpan(start, end) && !Span<TOffset>.IsEmptySpan(start, end))
+					if (Range<TOffset>.IsValidRange(start, end) && !Range<TOffset>.IsEmptyRange(start, end))
 					{
-						Span<TOffset> span = Span<TOffset>.Create(start, end);
-						if (matchSpan.Contains(span))
-							groupCapture = new GroupCapture<TOffset>(groupName, span);
+						Range<TOffset> range = Range<TOffset>.Create(start, end);
+						if (matchRange.Contains(range))
+							groupCapture = new GroupCapture<TOffset>(groupName, range);
 					}
 				}
 
 				if (groupCapture == null)
-					groupCapture = new GroupCapture<TOffset>(groupName, Span<TOffset>.Null);
+					groupCapture = new GroupCapture<TOffset>(groupName, Range<TOffset>.Null);
 				groupCaptures.Add(groupCapture);
 			}
 
-			return new Match<TData, TOffset>(this, matchSpan, input, groupCaptures,
+			return new Match<TData, TOffset>(this, matchRange, input, groupCaptures,
 				string.IsNullOrEmpty(match.ID) ? new string[0] : match.ID.Split('*'), match.VariableBindings,
 				match.NextAnnotation);
 		}
@@ -226,7 +226,7 @@ namespace SIL.Machine.Matching
 				return CreatePatternMatch(input, result);
 			}
 
-			return new Match<TData, TOffset>(this, Span<TOffset>.Null, input);
+			return new Match<TData, TOffset>(this, Range<TOffset>.Null, input);
 		}
 
 		internal IEnumerable<Match<TData, TOffset>> Matches(TData input, Annotation<TOffset> startAnn,
@@ -258,7 +258,7 @@ namespace SIL.Machine.Matching
 
 		private Annotation<TOffset> GetStartAnnotation(TData input)
 		{
-			return GetStartAnnotation(input, input.Span.GetStart(_settings.Direction));
+			return GetStartAnnotation(input, input.Range.GetStart(_settings.Direction));
 		}
 
 		private Annotation<TOffset> GetStartAnnotation(TData input, TOffset start)

@@ -45,7 +45,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			return true;
 		}
 
-		public abstract void ApplyRhs(Match<Word, ShapeNode> targetMatch, Span<ShapeNode> span,
+		public abstract void ApplyRhs(Match<Word, ShapeNode> targetMatch, Range<ShapeNode> range,
 			VariableBindings varBindings);
 	}
 }

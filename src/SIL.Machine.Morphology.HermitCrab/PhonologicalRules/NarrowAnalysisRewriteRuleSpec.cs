@@ -32,9 +32,9 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			SubruleSpecs.Add(new AnalysisRewriteSubruleSpec(matcherSettings, subrule, Unapply));
 		}
 
-		private void Unapply(Match<Word, ShapeNode> targetMatch, Span<ShapeNode> span, VariableBindings varBindings)
+		private void Unapply(Match<Word, ShapeNode> targetMatch, Range<ShapeNode> range, VariableBindings varBindings)
 		{
-			ShapeNode curNode = IsTargetEmpty ? span.Start : span.End;
+			ShapeNode curNode = IsTargetEmpty ? range.Start : range.End;
 			foreach (Constraint<Word, ShapeNode> constraint in _analysisRhs.Children
 				.Cast<Constraint<Word, ShapeNode>>())
 			{

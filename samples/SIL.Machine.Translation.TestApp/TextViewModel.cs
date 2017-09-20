@@ -40,11 +40,11 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly BulkObservableList<SuggestionViewModel> _suggestions;
 		private readonly List<string> _sourceSegmentWords;
 		private readonly BulkObservableList<AlignedWordViewModel> _alignedSourceWords;
-		private Range<int>? _currentSourceSegmentRange;
-		private Range<int>? _currentTargetSegmentRange; 
+		private Eto.Forms.Range<int>? _currentSourceSegmentRange;
+		private Eto.Forms.Range<int>? _currentTargetSegmentRange; 
 		private readonly RelayCommand<int> _selectSourceSegmentCommand;
 		private readonly RelayCommand<int> _selectTargetSegmentCommand;
-		private readonly BulkObservableList<Range<int>> _unapprovedTargetSegmentRanges;
+		private readonly BulkObservableList<Eto.Forms.Range<int>> _unapprovedTargetSegmentRanges;
 		private double _confidenceThreshold;
 		private bool _isChanged;
 		private bool _isActive;
@@ -73,8 +73,8 @@ namespace SIL.Machine.Translation.TestApp
 			_suggestions = new BulkObservableList<SuggestionViewModel>();
 			Suggestions = new ReadOnlyObservableList<SuggestionViewModel>(_suggestions);
 			_sourceSegmentWords = new List<string>();
-			_unapprovedTargetSegmentRanges = new BulkObservableList<Range<int>>();
-			UnapprovedTargetSegmentRanges = new ReadOnlyObservableList<Range<int>>(_unapprovedTargetSegmentRanges);
+			_unapprovedTargetSegmentRanges = new BulkObservableList<Eto.Forms.Range<int>>();
+			UnapprovedTargetSegmentRanges = new ReadOnlyObservableList<Eto.Forms.Range<int>>(_unapprovedTargetSegmentRanges);
 			_alignedSourceWords = new BulkObservableList<AlignedWordViewModel>();
 			AlignedSourceWords = new ReadOnlyObservableList<AlignedWordViewModel>(_alignedSourceWords);
 
@@ -329,8 +329,8 @@ namespace SIL.Machine.Translation.TestApp
 			SourceSegment = sourceSegment.Text;
 			TargetSegment = targetSegment.Text;
 
-			CurrentSourceSegmentRange = new Range<int>(sourceSegment.StartIndex, sourceSegment.StartIndex + sourceSegment.Text.Length);
-			CurrentTargetSegmentRange = new Range<int>(targetSegment.StartIndex, targetSegment.StartIndex + targetSegment.Text.Length);
+			CurrentSourceSegmentRange = new Eto.Forms.Range<int>(sourceSegment.StartIndex, sourceSegment.StartIndex + sourceSegment.Text.Length);
+			CurrentTargetSegmentRange = new Eto.Forms.Range<int>(targetSegment.StartIndex, targetSegment.StartIndex + targetSegment.Text.Length);
 			_goToNextSegmentCommand.UpdateCanExecute();
 			_goToPrevSegmentCommand.UpdateCanExecute();
 			_approveSegmentCommand.UpdateCanExecute();
@@ -469,14 +469,15 @@ namespace SIL.Machine.Translation.TestApp
 					foreach (int sourceIndex in result.Alignment.GetColumnAlignedIndices(targetWordIndex))
 					{
 						WordTranslationLevel level;
-						Span<int> span = _tokenizer.Tokenize(SourceSegment).ElementAt(sourceIndex);
+						Annotations.Range<int> range = _tokenizer.Tokenize(SourceSegment).ElementAt(sourceIndex);
 						if ((sources & TranslationSources.Transfer) != 0)
 							level = WordTranslationLevel.Transfer;
 						else if (confidence >= 0.5f)
 							level = WordTranslationLevel.HighConfidence;
 						else
 							level = WordTranslationLevel.LowConfidence;
-						alignedSourceWords.Add(new AlignedWordViewModel(new Range<int>(span.Start, span.End - 1), level));
+						alignedSourceWords.Add(
+							new AlignedWordViewModel(new Eto.Forms.Range<int>(range.Start, range.End - 1), level));
 					}
 				}
 			}
@@ -486,13 +487,13 @@ namespace SIL.Machine.Translation.TestApp
 
 		public ReadOnlyObservableList<AlignedWordViewModel> AlignedSourceWords { get; }
 
-		public Range<int>? CurrentSourceSegmentRange
+		public Eto.Forms.Range<int>? CurrentSourceSegmentRange
 		{
 			get => _currentSourceSegmentRange;
 			private set => Set(nameof(CurrentSourceSegmentRange), ref _currentSourceSegmentRange, value);
 		}
 
-		public Range<int>? CurrentTargetSegmentRange
+		public Eto.Forms.Range<int>? CurrentTargetSegmentRange
 		{
 			get => _currentTargetSegmentRange;
 			private set => Set(nameof(CurrentTargetSegmentRange), ref _currentTargetSegmentRange, value);
@@ -513,12 +514,12 @@ namespace SIL.Machine.Translation.TestApp
 				suggestion.InsertSuggestion();
 		}
 
-		public ReadOnlyObservableList<Range<int>> UnapprovedTargetSegmentRanges { get; }
+		public ReadOnlyObservableList<Eto.Forms.Range<int>> UnapprovedTargetSegmentRanges { get; }
 
 		private void UpdateUnapprovedTargetSegmentRanges()
 		{
 			_unapprovedTargetSegmentRanges.ReplaceAll(_targetSegments.Where((s, i) => !_approvedSegments.Contains(i) && !string.IsNullOrEmpty(s.Text))
-				.Select(s => new Range<int>(s.StartIndex, s.StartIndex + s.Text.Length)));
+				.Select(s => new Eto.Forms.Range<int>(s.StartIndex, s.StartIndex + s.Text.Length)));
 		}
 
 		public void AcceptChanges()

@@ -14,10 +14,10 @@ namespace SIL.Machine.Tokenization
 			_regex = new Regex(regexPattern);
 		}
 
-		public override IEnumerable<Span<int>> Tokenize(string data, Span<int> dataSpan)
+		public override IEnumerable<Range<int>> Tokenize(string data, Range<int> range)
 		{
-			return _regex.Matches(data.Substring(0, dataSpan.End), dataSpan.Start).Cast<Match>()
-				.Select(m => Span<int>.Create(m.Index, m.Index + m.Length));
+			return _regex.Matches(data.Substring(0, range.End), range.Start).Cast<Match>()
+				.Select(m => Range<int>.Create(m.Index, m.Index + m.Length));
 		}
 	}
 }

@@ -21,25 +21,25 @@ namespace SIL.Machine.Tokenization
 			_abbreviations = new HashSet<string>(abbreviations.Select(ToLower));
 		}
 
-		public override IEnumerable<Span<int>> Tokenize(string data, Span<int> dataSpan)
+		public override IEnumerable<Range<int>> Tokenize(string data, Range<int> range)
 		{
-			foreach (Span<int> span in base.Tokenize(data, dataSpan))
+			foreach (Range<int> charRange in base.Tokenize(data, range))
 			{
 				int wordStart = -1;
 				int innerWordPunct = -1;
-				int i = span.Start;
-				while (i < span.End)
+				int i = charRange.Start;
+				while (i < charRange.End)
 				{
 					if (char.IsPunctuation(data[i]) || char.IsSymbol(data[i]) || char.IsControl(data[i]))
 					{
 						if (wordStart == -1)
 						{
-							yield return Span<int>.Create(i);
+							yield return Range<int>.Create(i);
 						}
 						else if (innerWordPunct != -1)
 						{
-							yield return Span<int>.Create(wordStart, innerWordPunct);
-							yield return Span<int>.Create(innerWordPunct, i);
+							yield return Range<int>.Create(wordStart, innerWordPunct);
+							yield return Range<int>.Create(innerWordPunct, i);
 							wordStart = i;
 						}
 						else
@@ -52,8 +52,8 @@ namespace SIL.Machine.Tokenization
 								continue;
 							}
 
-							yield return Span<int>.Create(wordStart, i);
-							yield return Span<int>.Create(i);
+							yield return Range<int>.Create(wordStart, i);
+							yield return Range<int>.Create(i);
 							wordStart = -1;
 						}
 					}
@@ -70,20 +70,20 @@ namespace SIL.Machine.Tokenization
 				{
 					if (innerWordPunct != -1)
 					{
-						if (data.Substring(innerWordPunct, span.End - innerWordPunct) == "."
+						if (data.Substring(innerWordPunct, charRange.End - innerWordPunct) == "."
 							&& _abbreviations.Contains(ToLower(data.Substring(wordStart, innerWordPunct - wordStart))))
 						{
-							yield return Span<int>.Create(wordStart, span.End);
+							yield return Range<int>.Create(wordStart, charRange.End);
 						}
 						else
 						{
-							yield return Span<int>.Create(wordStart, innerWordPunct);
-							yield return Span<int>.Create(innerWordPunct, span.End);
+							yield return Range<int>.Create(wordStart, innerWordPunct);
+							yield return Range<int>.Create(innerWordPunct, charRange.End);
 						}
 					}
 					else
 					{
-						yield return Span<int>.Create(wordStart, span.End);
+						yield return Range<int>.Create(wordStart, charRange.End);
 					}
 				}
 			}

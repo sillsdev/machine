@@ -16,7 +16,7 @@ namespace SIL.Machine.Annotations
 		private int _hashCode;
 
 		public AnnotationList()
-			: base(new AnnotationComparer(), begin => new Annotation<TOffset>(Span<TOffset>.Null))
+			: base(new AnnotationComparer(), begin => new Annotation<TOffset>(Range<TOffset>.Null))
 		{
 		}
 
@@ -79,9 +79,9 @@ namespace SIL.Machine.Annotations
 				throw new InvalidOperationException("The annotation list is immutable.");
 		}
 
-		public Annotation<TOffset> Add(Span<TOffset> span, FeatureStruct fs)
+		public Annotation<TOffset> Add(Range<TOffset> range, FeatureStruct fs)
 		{
-			return Add(span, fs, false);
+			return Add(range, fs, false);
 		}
 
 		public Annotation<TOffset> Add(TOffset start, TOffset end, FeatureStruct fs)
@@ -91,24 +91,24 @@ namespace SIL.Machine.Annotations
 
 		public Annotation<TOffset> Add(TOffset offset, FeatureStruct fs)
 		{
-			return Add(Span<TOffset>.Create(offset), fs);
+			return Add(Range<TOffset>.Create(offset), fs);
 		}
 
-		public Annotation<TOffset> Add(Span<TOffset> span, FeatureStruct fs, bool optional)
+		public Annotation<TOffset> Add(Range<TOffset> range, FeatureStruct fs, bool optional)
 		{
-			var ann = new Annotation<TOffset>(span, fs) {Optional = optional};
+			var ann = new Annotation<TOffset>(range, fs) { Optional = optional };
 			Add(ann);
 			return ann;
 		}
 
 		public Annotation<TOffset> Add(TOffset start, TOffset end, FeatureStruct fs, bool optional)
 		{
-			return Add(Span<TOffset>.Create(start, end), fs, optional);
+			return Add(Range<TOffset>.Create(start, end), fs, optional);
 		}
 
 		public Annotation<TOffset> Add(TOffset offset, FeatureStruct fs, bool optional)
 		{
-			return Add(Span<TOffset>.Create(offset), fs, optional);
+			return Add(Range<TOffset>.Create(offset), fs, optional);
 		}
 
 		public override void Add(Annotation<TOffset> node)
@@ -119,19 +119,22 @@ namespace SIL.Machine.Annotations
 		public void Add(Annotation<TOffset> node, bool subsume)
 		{
 			CheckFrozen();
-			if (_parent != null && !_parent.Span.Contains(node.Span))
-				throw new ArgumentException("The new annotation must be within the span of the parent annotation.", "node");
+			if (_parent != null && !_parent.Range.Contains(node.Range))
+			{
+				throw new ArgumentException("The new annotation must be within the range of the parent annotation.",
+					nameof(node));
+			}
 
 			node.Remove(false);
 			if (subsume)
 			{
-				foreach (Annotation<TOffset> ann in GetNodes(node.Span).ToArray())
+				foreach (Annotation<TOffset> ann in GetNodes(node.Range).ToArray())
 					node.Children.Add(ann);
 				base.Add(node);
 				node.ListID = _currentID++;
 				for (Annotation<TOffset> ann = node.Prev; ann != Begin; ann = ann.Prev)
 				{
-					if (ann.Span.Contains(node.Span))
+					if (ann.Range.Contains(node.Range))
 					{
 						ann.Children.Add(node);
 						break;
@@ -180,9 +183,9 @@ namespace SIL.Machine.Annotations
 				return false;
 			}
 
-			TOffset lastOffset = GetLast(dir).Span.GetEnd(dir);
-			if (!Span<TOffset>.IsValidSpan(offset, lastOffset, dir)
-				|| Span<TOffset>.IsEmptySpan(offset, lastOffset, dir))
+			TOffset lastOffset = GetLast(dir).Range.GetEnd(dir);
+			if (!Range<TOffset>.IsValidRange(offset, lastOffset, dir)
+				|| Range<TOffset>.IsEmptyRange(offset, lastOffset, dir))
 			{
 				result = GetLast(dir);
 				return false;
@@ -190,22 +193,22 @@ namespace SIL.Machine.Annotations
 
 			if (dir == Direction.LeftToRight)
 			{
-				if (Find(new Annotation<TOffset>(Span<TOffset>.Create(offset, lastOffset)), out result))
+				if (Find(new Annotation<TOffset>(Range<TOffset>.Create(offset, lastOffset)), out result))
 					return true;
 			}
 			else
 			{
-				Span<TOffset> offsetSpan = Span<TOffset>.Create(offset, Direction.RightToLeft);
-				if (Find(new Annotation<TOffset>(offsetSpan), Direction.RightToLeft, out result))
+				Range<TOffset> offsetRange = Range<TOffset>.Create(offset, Direction.RightToLeft);
+				if (Find(new Annotation<TOffset>(offsetRange), Direction.RightToLeft, out result))
 					return true;
 
-				if (result != First && result.Prev.Span.Contains(offsetSpan))
+				if (result != First && result.Prev.Range.Contains(offsetRange))
 					result = result.Prev;
 			}
 
-			if (!offset.Equals(result.Span.GetStart(dir)) && offset.Equals(result.GetNext(dir).Span.GetStart(dir)))
+			if (!offset.Equals(result.Range.GetStart(dir)) && offset.Equals(result.GetNext(dir).Range.GetStart(dir)))
 				result = result.GetNext(dir);
-			return offset.Equals(result.Span.GetStart(dir));
+			return offset.Equals(result.Range.GetStart(dir));
 		}
 
 		public bool FindDepthFirst(TOffset offset, out Annotation<TOffset> result)
@@ -218,7 +221,7 @@ namespace SIL.Machine.Annotations
 			if (Find(offset, dir, out result))
 				return true;
 
-			if (!result.IsLeaf && result.Span.Contains(offset, dir))
+			if (!result.IsLeaf && result.Range.Contains(offset, dir))
 				return result.Children.FindDepthFirst(offset, dir, out result);
 
 			return false;
@@ -226,33 +229,33 @@ namespace SIL.Machine.Annotations
 
 		public IEnumerable<Annotation<TOffset>> GetNodes(TOffset start, TOffset end)
 		{
-			return GetNodes(Span<TOffset>.Create(start, end));
+			return GetNodes(Range<TOffset>.Create(start, end));
 		}
 
-		public IEnumerable<Annotation<TOffset>> GetNodes(Span<TOffset> span)
+		public IEnumerable<Annotation<TOffset>> GetNodes(Range<TOffset> range)
 		{
-			return GetNodes(span, Direction.LeftToRight);
+			return GetNodes(range, Direction.LeftToRight);
 		}
 
 		public IEnumerable<Annotation<TOffset>> GetNodes(TOffset start, TOffset end, Direction dir)
 		{
-			return GetNodes(Span<TOffset>.Create(start, end, dir), dir);
+			return GetNodes(Range<TOffset>.Create(start, end, dir), dir);
 		}
 
-		public IEnumerable<Annotation<TOffset>> GetNodes(Span<TOffset> span, Direction dir)
+		public IEnumerable<Annotation<TOffset>> GetNodes(Range<TOffset> range, Direction dir)
 		{
 			if (Count == 0)
 				return Enumerable.Empty<Annotation<TOffset>>();
 
 			Annotation<TOffset> startAnn;
-			if (!Find(span.Start, Direction.LeftToRight, out startAnn))
+			if (!Find(range.Start, Direction.LeftToRight, out startAnn))
 				startAnn = startAnn.Next;
 
 			if (startAnn == GetEnd(dir))
 				return Enumerable.Empty<Annotation<TOffset>>();
 
 			Annotation<TOffset> endAnn;
-			if (!Find(span.End, Direction.RightToLeft, out endAnn))
+			if (!Find(range.End, Direction.RightToLeft, out endAnn))
 				endAnn = endAnn.Prev;
 
 			if (endAnn == GetBegin(dir))
@@ -262,7 +265,7 @@ namespace SIL.Machine.Annotations
 				return Enumerable.Empty<Annotation<TOffset>>();
 
 			return this.GetNodes(dir == Direction.LeftToRight ? startAnn : endAnn,
-				dir == Direction.LeftToRight ? endAnn : startAnn, dir).Where(ann => span.Contains(ann.Span));
+				dir == Direction.LeftToRight ? endAnn : startAnn, dir).Where(ann => range.Contains(ann.Range));
 		}
 
 		public override void Clear()

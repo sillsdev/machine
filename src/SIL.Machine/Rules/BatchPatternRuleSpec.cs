@@ -9,7 +9,8 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Rules
 {
-	public class BatchPatternRuleSpec<TData, TOffset> : IPatternRuleSpec<TData, TOffset> where TData : IAnnotatedData<TOffset>
+	public class BatchPatternRuleSpec<TData, TOffset> : IPatternRuleSpec<TData, TOffset>
+		where TData : IAnnotatedData<TOffset>
 	{
 		private readonly Pattern<TData, TOffset> _pattern;
 		private readonly ObservableList<IPatternRuleSpec<TData, TOffset>> _ruleSpecs;
@@ -36,7 +37,8 @@ namespace SIL.Machine.Rules
 			if (e.OldStartingIndex > -1)
 			{
 				PatternNode<TData, TOffset> startNode = _pattern.Children.ElementAt(e.OldStartingIndex);
-				foreach (Pattern<TData, TOffset> node in startNode.GetNodes().Take(e.OldItems.Count).Cast<Pattern<TData, TOffset>>().ToArray())
+				foreach (Pattern<TData, TOffset> node in startNode.GetNodes().Take(e.OldItems.Count)
+					.Cast<Pattern<TData, TOffset>>().ToArray())
 				{
 					_ruleIds.Remove(node.Name);
 					node.Remove();
@@ -44,7 +46,8 @@ namespace SIL.Machine.Rules
 			}
 			if (e.NewStartingIndex > -1)
 			{
-				PatternNode<TData, TOffset> startNode = e.NewStartingIndex == 0 ? _pattern.Children.Begin : _pattern.Children.ElementAt(e.NewStartingIndex - 1);
+				PatternNode<TData, TOffset> startNode = e.NewStartingIndex == 0 ? _pattern.Children.Begin
+					: _pattern.Children.ElementAt(e.NewStartingIndex - 1);
 				foreach (IPatternRuleSpec<TData, TOffset> rs in e.NewItems)
 				{
 					IPatternRuleSpec<TData, TOffset> ruleSpec = rs; 
@@ -52,7 +55,8 @@ namespace SIL.Machine.Rules
 					_ruleIds[id] = ruleSpec;
 					var subpattern = new Pattern<TData, TOffset>(id, ruleSpec.Pattern.Children.CloneItems())
 						{
-							Acceptable = match => ruleSpec.IsApplicable(match.Input) && ruleSpec.Pattern.Acceptable(match)
+							Acceptable = match => ruleSpec.IsApplicable(match.Input)
+								&& ruleSpec.Pattern.Acceptable(match)
 						};
 					startNode.AddAfter(subpattern);
 					startNode = subpattern;
@@ -79,8 +83,8 @@ namespace SIL.Machine.Rules
 		public TData ApplyRhs(PatternRule<TData, TOffset> rule, Match<TData, TOffset> match)
 		{
 			IPatternRuleSpec<TData, TOffset> ruleSpec = _ruleIds[match.PatternPath.First()];
-			var newMatch = new Match<TData, TOffset>(match.Matcher, match.Span, match.Input, match.GroupCaptures, match.PatternPath.Skip(1).ToArray(),
-				match.VariableBindings, match.NextAnnotation);
+			var newMatch = new Match<TData, TOffset>(match.Matcher, match.Range, match.Input, match.GroupCaptures,
+				match.PatternPath.Skip(1).ToArray(), match.VariableBindings, match.NextAnnotation);
 			return ruleSpec.ApplyRhs(rule, newMatch);
 		}
 	}

@@ -7,8 +7,8 @@ namespace SIL.Machine.FiniteState
 	{
 		void Replace(TData data, Annotation<TOffset> ann);
 
-		Span<TOffset> Insert(TData data, Annotation<TOffset> ann, FeatureStruct fs);
+		Range<TOffset> Insert(TData data, Annotation<TOffset> ann, FeatureStruct fs);
 
-		void Remove(TData data, Span<TOffset> span);
+		void Remove(TData data, Range<TOffset> range);
 	}
 }

@@ -302,7 +302,7 @@ namespace SIL.Machine.FiniteState
 				foreach (TagMapCommand cmd in _initializers)
 				{
 					if (cmd.Dest == 0)
-						initRegisters[cmd.Dest, 0].SetOffset(traversalMethod.Annotations[annIndex].Span.GetStart(_dir), true);
+						initRegisters[cmd.Dest, 0].SetOffset(traversalMethod.Annotations[annIndex].Range.GetStart(_dir), true);
 					else
 						cmds.Add(cmd);
 				}

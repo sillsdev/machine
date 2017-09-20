@@ -11,10 +11,11 @@ namespace SIL.Machine.FiniteState
 		{
 		}
 
-		public override Annotation<TOffset> UpdateOutput(TData data, Annotation<TOffset> ann, IFstOperations<TData, TOffset> operations)
+		public override Annotation<TOffset> UpdateOutput(TData data, Annotation<TOffset> ann,
+			IFstOperations<TData, TOffset> operations)
 		{
-			Span<TOffset> span = operations.Insert(data, ann, FeatureStruct);
-			return data.Annotations.Add(span, FeatureStruct);
+			Range<TOffset> range = operations.Insert(data, ann, FeatureStruct);
+			return data.Annotations.Add(range, FeatureStruct);
 		}
 
 		public override bool UsePrevNewAnnotation

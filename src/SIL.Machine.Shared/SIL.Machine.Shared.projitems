@@ -9,9 +9,9 @@
     <Import_RootNamespace>SIL.Machine</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Annotations\IntegerSpanFactory.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Annotations\Span.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Annotations\SpanFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Annotations\IntegerRangeFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Annotations\Range.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Annotations\RangeFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataStructures\Direction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tokenization\IDetokenizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tokenization\ITokenizer.cs" />

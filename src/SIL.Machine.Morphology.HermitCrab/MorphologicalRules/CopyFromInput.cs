@@ -14,12 +14,14 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 		{
 		}
 
-		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IDictionary<string, Pattern<Word, ShapeNode>> partLookup, IDictionary<string, int> capturedParts)
+		public override void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs,
+			IDictionary<string, Pattern<Word, ShapeNode>> partLookup, IDictionary<string, int> capturedParts)
 		{
 			Pattern<Word, ShapeNode> pattern = partLookup[PartName];
 			int count = capturedParts.GetOrCreate(PartName, () => 0);
 			string groupName = AnalysisMorphologicalTransform.GetGroupName(PartName, count);
-			analysisLhs.Children.Add(new Group<Word, ShapeNode>(groupName, pattern.Children.DeepCloneExceptBoundaries()));
+			analysisLhs.Children.Add(new Group<Word, ShapeNode>(groupName,
+				pattern.Children.DeepCloneExceptBoundaries()));
 			capturedParts[PartName]++;
 		}
 
@@ -29,7 +31,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			GroupCapture<ShapeNode> inputGroup = match.GroupCaptures[PartName];
 			if (inputGroup.Success)
 			{
-				foreach (ShapeNode inputNode in GetSkippedOptionalNodes(match.Input.Shape, inputGroup.Span).Concat(match.Input.Shape.GetNodes(inputGroup.Span)))
+				foreach (ShapeNode inputNode in GetSkippedOptionalNodes(match.Input.Shape, inputGroup.Range)
+					.Concat(match.Input.Shape.GetNodes(inputGroup.Range)))
 				{
 					ShapeNode outputNode = inputNode.Clone();
 					output.Shape.Add(outputNode);

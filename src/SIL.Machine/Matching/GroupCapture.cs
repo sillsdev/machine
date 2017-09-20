@@ -4,28 +4,14 @@ namespace SIL.Machine.Matching
 {
 	public class GroupCapture<TOffset>
 	{
-		private readonly string _name;
-		private readonly Span<TOffset> _span;
-
-		internal GroupCapture(string name, Span<TOffset> span)
+		internal GroupCapture(string name, Range<TOffset> range)
 		{
-			_name = name;
-			_span = span;
+			Name = name;
+			Range = range;
 		}
 
-		public string Name
-		{
-			get { return _name; }
-		}
-
-		public Span<TOffset> Span
-		{
-			get { return _span; }
-		}
-
-		public bool Success
-		{
-			get { return _span != Span<TOffset>.Null; }
-		}
+		public string Name { get; }
+		public Range<TOffset> Range { get; }
+		public bool Success => Range != Range<TOffset>.Null;
 	}
 }

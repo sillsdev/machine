@@ -58,7 +58,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			int i = 0;
 			foreach (FeatureStruct fs in rhsAntiFSs)
 			{
-				ShapeNode node = match.GroupCaptures["target" + i].Span.GetStart(match.Matcher.Direction);
+				ShapeNode node = match.GroupCaptures["target" + i].Range.GetStart(match.Matcher.Direction);
 				foreach (SymbolicFeature sf in fs.Features.OfType<SymbolicFeature>())
 				{
 					SymbolicFeatureValue sfv = fs.GetValue(sf);
@@ -86,13 +86,13 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			return false;
 		}
 
-		private void Unapply(Match<Word, ShapeNode> targetMatch, Span<ShapeNode> span, VariableBindings varBindings)
+		private void Unapply(Match<Word, ShapeNode> targetMatch, Range<ShapeNode> range, VariableBindings varBindings)
 		{
 			int i = 0;
 			foreach (Constraint<Word, ShapeNode> constraint in _analysisRhs.Children
 				.Cast<Constraint<Word, ShapeNode>>())
 			{
-				ShapeNode node = targetMatch.GroupCaptures["target" + i].Span.GetStart(targetMatch.Matcher.Direction);
+				ShapeNode node = targetMatch.GroupCaptures["target" + i].Range.GetStart(targetMatch.Matcher.Direction);
 				FeatureStruct fs = node.Annotation.FeatureStruct.Clone();
 				fs.PriorityUnion(constraint.FeatureStruct);
 				node.Annotation.FeatureStruct.Union(fs, varBindings);

@@ -5,11 +5,11 @@ namespace SIL.Machine.Tokenization
 {
 	public abstract class StringTokenizer : ITokenizer<string, int>
 	{
-		public IEnumerable<Span<int>> Tokenize(string data)
+		public IEnumerable<Range<int>> Tokenize(string data)
 		{
-			return Tokenize(data, Span<int>.Create(0, data.Length));
+			return Tokenize(data, Range<int>.Create(0, data.Length));
 		}
 
-		public abstract IEnumerable<Span<int>> Tokenize(string data, Span<int> dataSpan);
+		public abstract IEnumerable<Range<int>> Tokenize(string data, Range<int> range);
 	}
 }

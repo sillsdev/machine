@@ -24,7 +24,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			get { return _partName; }
 		}
 
-		public abstract void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs, IDictionary<string, Pattern<Word, ShapeNode>> partLookup, IDictionary<string, int> capturedParts);
+		public abstract void GenerateAnalysisLhs(Pattern<Word, ShapeNode> analysisLhs,
+			IDictionary<string, Pattern<Word, ShapeNode>> partLookup, IDictionary<string, int> capturedParts);
 
 		/// <summary>
 		/// Applies this output record to the specified word synthesis.
@@ -33,9 +34,9 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 		/// <param name="output">The output word synthesis.</param>
 		public abstract IEnumerable<Tuple<ShapeNode, ShapeNode>> Apply(Match<Word, ShapeNode> match, Word output);
 
-		protected IEnumerable<ShapeNode> GetSkippedOptionalNodes(Shape shape, Span<ShapeNode> span)
+		protected IEnumerable<ShapeNode> GetSkippedOptionalNodes(Shape shape, Range<ShapeNode> range)
 		{
-			ShapeNode node = span.Start.Prev;
+			ShapeNode node = range.Start.Prev;
 			var skippedNodes = new List<ShapeNode>();
 			while (node.Annotation.Optional)
 			{

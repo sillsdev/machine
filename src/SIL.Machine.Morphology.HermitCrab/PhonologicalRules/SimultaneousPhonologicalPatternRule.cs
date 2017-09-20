@@ -28,7 +28,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 			}
 
 			foreach (Tuple<Match<Word, ShapeNode>, PhonologicalSubruleMatch> match in matches)
-				match.Item2.SubruleSpec.ApplyRhs(match.Item1, match.Item2.Span, match.Item2.VariableBindings);
+				match.Item2.SubruleSpec.ApplyRhs(match.Item1, match.Item2.Range, match.Item2.VariableBindings);
 
 			return input.ToEnumerable();
 		}

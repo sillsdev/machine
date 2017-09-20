@@ -56,7 +56,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 
 		private static bool CheckTarget(Match<Word, ShapeNode> match, Pattern<Word, ShapeNode> lhs)
 		{
-			foreach (Tuple<ShapeNode, PatternNode<Word, ShapeNode>> tuple in match.Input.Shape.GetNodes(match.Span)
+			foreach (Tuple<ShapeNode, PatternNode<Word, ShapeNode>> tuple in match.Input.Shape.GetNodes(match.Range)
 				.Zip(lhs.Children))
 			{
 				var constraints = (Constraint<Word, ShapeNode>) tuple.Item2;

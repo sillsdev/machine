@@ -31,7 +31,7 @@ namespace SIL.Machine.Rules
 			var ruleSpec = new DefaultPatternRuleSpec<AnnotatedStringData, int>(pattern, (r, match) =>
 				{
 					GroupCapture<int> target = match.GroupCaptures["target"];
-					foreach (Annotation<int> ann in match.Input.Annotations.GetNodes(target.Span))
+					foreach (Annotation<int> ann in match.Input.Annotations.GetNodes(target.Range))
 						ann.FeatureStruct.PriorityUnion(FeatureStruct.New(PhoneticFeatSys).Symbol("low-").Value);
 					return match.Input;
 				});
@@ -64,7 +64,7 @@ namespace SIL.Machine.Rules
 			var ruleSpec1 = new DefaultPatternRuleSpec<AnnotatedStringData, int>(pattern, (r, match) =>
 				{
 					GroupCapture<int> target = match.GroupCaptures["target"];
-					foreach (Annotation<int> ann in match.Input.Annotations.GetNodes(target.Span))
+					foreach (Annotation<int> ann in match.Input.Annotations.GetNodes(target.Range))
 						ann.FeatureStruct.PriorityUnion(FeatureStruct.New(PhoneticFeatSys)
 							.Symbol("low-")
 							.Symbol("mid-").Value);
@@ -76,7 +76,7 @@ namespace SIL.Machine.Rules
 			var ruleSpec2 = new DefaultPatternRuleSpec<AnnotatedStringData, int>(pattern, (r, match) =>
 				{
 					GroupCapture<int> target = match.GroupCaptures["target"];
-					foreach (Annotation<int> ann in match.Input.Annotations.GetNodes(target.Span))
+					foreach (Annotation<int> ann in match.Input.Annotations.GetNodes(target.Range))
 						ann.FeatureStruct.PriorityUnion(FeatureStruct.New(PhoneticFeatSys)
 							.Symbol("low-")
 							.Symbol("mid+").Value);
@@ -86,7 +86,7 @@ namespace SIL.Machine.Rules
 			var batchSpec = new BatchPatternRuleSpec<AnnotatedStringData, int>(new[] {ruleSpec1, ruleSpec2});
 			var rule = new PatternRule<AnnotatedStringData, int>(batchSpec);
 			AnnotatedStringData inputWord = CreateStringData("fazk");
-			inputWord.Annotations.Add(inputWord.Span, FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("noun").Value);
+			inputWord.Annotations.Add(inputWord.Range, FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("noun").Value);
 			Assert.IsTrue(rule.Apply(inputWord).Any());
 		}
 	}

@@ -3,34 +3,34 @@ using SIL.Machine.DataStructures;
 
 namespace SIL.Machine.Annotations
 {
-	public struct Span<TOffset> : IComparable<Span<TOffset>>, IComparable, IEquatable<Span<TOffset>>
+	public struct Range<TOffset> : IComparable<Range<TOffset>>, IComparable, IEquatable<Range<TOffset>>
 	{
-		private static readonly SpanFactory<TOffset> Factory = CreateFactory();
+		private static readonly RangeFactory<TOffset> Factory = CreateFactory();
 
-		private static SpanFactory<TOffset> CreateFactory()
+		private static RangeFactory<TOffset> CreateFactory()
 		{
 			Type type = typeof(TOffset);
 			if (type == typeof(int))
-				return new IntegerSpanFactory() as SpanFactory<TOffset>;
+				return new IntegerRangeFactory() as RangeFactory<TOffset>;
 #if !BRIDGE_NET
 			if (type == typeof(ShapeNode))
-				return new ShapeSpanFactory() as SpanFactory<TOffset>;
+				return new ShapeRangeFactory() as RangeFactory<TOffset>;
 #endif
 
 			throw new NotSupportedException();
 		}
 
-		public static Span<TOffset> Create(TOffset start, TOffset end, Direction dir = Direction.LeftToRight)
+		public static Range<TOffset> Create(TOffset start, TOffset end, Direction dir = Direction.LeftToRight)
 		{
 			return Factory.Create(start, end, dir);
 		}
 
-		public static Span<TOffset> Create(TOffset offset, Direction dir = Direction.LeftToRight)
+		public static Range<TOffset> Create(TOffset offset, Direction dir = Direction.LeftToRight)
 		{
 			return Factory.Create(offset, dir);
 		}
 
-		public static bool IsValidSpan(TOffset start, TOffset end, Direction dir = Direction.LeftToRight)
+		public static bool IsValidRange(TOffset start, TOffset end, Direction dir = Direction.LeftToRight)
 		{
 			if (dir == Direction.RightToLeft)
 			{
@@ -39,10 +39,10 @@ namespace SIL.Machine.Annotations
 				end = temp;
 			}
 
-			return Factory.IsValidSpan(start, end);
+			return Factory.IsValidRange(start, end);
 		}
 
-		public static bool IsEmptySpan(TOffset start, TOffset end, Direction dir = Direction.LeftToRight)
+		public static bool IsEmptyRange(TOffset start, TOffset end, Direction dir = Direction.LeftToRight)
 		{
 			if (dir == Direction.RightToLeft)
 			{
@@ -51,7 +51,7 @@ namespace SIL.Machine.Annotations
 				end = temp;
 			}
 
-			return Factory.IsEmptySpan(start, end);
+			return Factory.IsEmptyRange(start, end);
 		}
 
 		public static int GetLength(TOffset start, TOffset end, Direction dir = Direction.LeftToRight)
@@ -66,25 +66,25 @@ namespace SIL.Machine.Annotations
 			return Factory.GetLength(start, end);
 		}
 
-		public static Span<TOffset> Null => Factory.Null;
+		public static Range<TOffset> Null => Factory.Null;
 
-		public static bool operator ==(Span<TOffset> x, Span<TOffset> y)
+		public static bool operator ==(Range<TOffset> x, Range<TOffset> y)
 		{
 			return x.Equals(y);
 		}
-		public static bool operator !=(Span<TOffset> x, Span<TOffset> y)
+		public static bool operator !=(Range<TOffset> x, Range<TOffset> y)
 		{
 			return !(x == y);
 		}
 
-		internal Span(TOffset start, TOffset end)
+		internal Range(TOffset start, TOffset end)
 		{
 			Start = start;
 			End = end;
 		}
 
-		public Span(Span<TOffset> span)
-			: this(span.Start, span.End)
+		public Range(Range<TOffset> range)
+			: this(range.Start, range.End)
 		{
 		}
 
@@ -94,7 +94,7 @@ namespace SIL.Machine.Annotations
 
 		public int Length => Factory.GetLength(Start, End);
 
-		public bool IsEmpty => Factory.IsEmptySpan(Start, End);
+		public bool IsEmpty => Factory.IsEmptyRange(Start, End);
 
 		public TOffset GetStart(Direction dir)
 		{
@@ -106,7 +106,7 @@ namespace SIL.Machine.Annotations
 			return dir == Direction.LeftToRight ? End : Start;
 		}
 
-		public bool Overlaps(Span<TOffset> other)
+		public bool Overlaps(Range<TOffset> other)
 		{
 			if (this == Null)
 				return other == Null;
@@ -133,7 +133,7 @@ namespace SIL.Machine.Annotations
 			return Overlaps(Factory.Create(start, end, dir));
 		}
 
-		public bool Contains(Span<TOffset> other)
+		public bool Contains(Range<TOffset> other)
 		{
 			if (this == Null)
 				return other == Null;
@@ -164,7 +164,7 @@ namespace SIL.Machine.Annotations
 			return Contains(Factory.Create(start, end, dir));
 		}
 
-		public int CompareTo(Span<TOffset> other)
+		public int CompareTo(Range<TOffset> other)
 		{
 			if (this == Null)
 				return other == Null ? 0 : -1;
@@ -179,9 +179,9 @@ namespace SIL.Machine.Annotations
 
 		public int CompareTo(object other)
 		{
-			if (!(other is Span<TOffset>))
+			if (!(other is Range<TOffset>))
 				throw new ArgumentException();
-			return CompareTo((Span<TOffset>) other);
+			return CompareTo((Range<TOffset>) other);
 		}
 
 		public override int GetHashCode()
@@ -194,10 +194,10 @@ namespace SIL.Machine.Annotations
 
 		public override bool Equals(object obj)
 		{
-			return obj is Span<TOffset> && Equals((Span<TOffset>) obj);
+			return obj is Range<TOffset> && Equals((Range<TOffset>) obj);
 		}
 
-		public bool Equals(Span<TOffset> other)
+		public bool Equals(Range<TOffset> other)
 		{
 			return Factory.EqualityComparer.Equals(Start, other.Start)
 				&& Factory.EqualityComparer.Equals(End, other.End);

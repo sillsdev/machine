@@ -29,32 +29,32 @@ namespace SIL.Machine.Tokenization
 		{
 		}
 
-		public override IEnumerable<Span<int>> Tokenize(string data, Span<int> dataSpan)
+		public override IEnumerable<Range<int>> Tokenize(string data, Range<int> range)
 		{
 			int lineStart = 0;
-			foreach (Match match in NewLineRegex.Matches(data.Substring(0, dataSpan.End), dataSpan.Start))
+			foreach (Match match in NewLineRegex.Matches(data.Substring(0, range.End), range.Start))
 			{
-				foreach (Span<int> sentenceSpan in TokenizeLine(data, lineStart, match.Index + match.Length))
-					yield return sentenceSpan;
+				foreach (Range<int> sentenceRange in TokenizeLine(data, lineStart, match.Index + match.Length))
+					yield return sentenceRange;
 				lineStart = match.Index + match.Length;
 			}
 
-			if (lineStart < dataSpan.End)
+			if (lineStart < range.End)
 			{
-				foreach (Span<int> sentenceSpan in TokenizeLine(data, lineStart, dataSpan.End))
-					yield return sentenceSpan;
+				foreach (Range<int> sentenceRange in TokenizeLine(data, lineStart, range.End))
+					yield return sentenceRange;
 			}
 		}
 
-		private IEnumerable<Span<int>> TokenizeLine(string data, int start, int end)
+		private IEnumerable<Range<int>> TokenizeLine(string data, int start, int end)
 		{
 			int sentenceStart = -1, sentenceEnd = -1;
 			bool inEnd = false, hasEndQuotesBrackets = false;
-			foreach (Span<int> wordSpan in base.Tokenize(data, Span<int>.Create(start, end)))
+			foreach (Range<int> wordRange in base.Tokenize(data, Range<int>.Create(start, end)))
 			{
 				if (sentenceStart == -1)
-					sentenceStart = wordSpan.Start;
-				string word = data.Substring(wordSpan.Start, wordSpan.Length);
+					sentenceStart = wordRange.Start;
+				string word = data.Substring(wordRange.Start, wordRange.Length);
 				if (!inEnd)
 				{
 					if (SentenceTerminals.Contains(word))
@@ -73,17 +73,17 @@ namespace SIL.Machine.Tokenization
 					}
 					else
 					{
-						yield return Span<int>.Create(sentenceStart, sentenceEnd);
-						sentenceStart = wordSpan.Start;
+						yield return Range<int>.Create(sentenceStart, sentenceEnd);
+						sentenceStart = wordRange.Start;
 						inEnd = false;
 						hasEndQuotesBrackets = false;
 					}
 				}
-				sentenceEnd = wordSpan.End;
+				sentenceEnd = wordRange.End;
 			}
 
 			if (sentenceStart != -1 && sentenceEnd != -1)
-				yield return Span<int>.Create(sentenceStart, inEnd ? sentenceEnd : end);
+				yield return Range<int>.Create(sentenceStart, inEnd ? sentenceEnd : end);
 		}
 	}
 }

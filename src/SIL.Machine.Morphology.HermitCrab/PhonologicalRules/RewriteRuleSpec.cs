@@ -47,13 +47,13 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 				{
 					if (match.Matcher.Direction == Direction.LeftToRight)
 					{
-						leftNode = match.Span.Start;
-						rightNode = match.Span.End.Next;
+						leftNode = match.Range.Start;
+						rightNode = match.Range.End.Next;
 					}
 					else
 					{
-						leftNode = match.Span.Start.Prev;
-						rightNode = match.Span.End;
+						leftNode = match.Range.Start.Prev;
+						rightNode = match.Range.End;
 					}
 
 					startNode = leftNode;
@@ -61,10 +61,10 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 				}
 				else
 				{
-					leftNode = match.Span.Start.Prev;
-					rightNode = match.Span.End.Next;
-					startNode = match.Span.Start;
-					endNode = match.Span.End;
+					leftNode = match.Range.Start.Prev;
+					rightNode = match.Range.End.Next;
+					startNode = match.Range.Start;
+					endNode = match.Range.End;
 				}
 
 				if (leftNode == null || rightNode == null)
@@ -89,7 +89,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 							varBindings = rightEnvMatch.VariableBindings;
 
 						subruleMatch = new PhonologicalSubruleMatch(subruleSpec,
-							Span<ShapeNode>.Create(startNode, endNode), varBindings);
+							Range<ShapeNode>.Create(startNode, endNode), varBindings);
 						return true;
 					}
 				}
