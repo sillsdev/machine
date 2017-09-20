@@ -5,7 +5,20 @@ namespace SIL.Machine.Annotations
 {
 	public struct Range<TOffset> : IComparable<Range<TOffset>>, IComparable, IEquatable<Range<TOffset>>
 	{
-		private static readonly RangeFactory<TOffset> Factory = CreateFactory();
+		private static volatile RangeFactory<TOffset> FactoryInternal;
+		private static RangeFactory<TOffset> Factory
+		{
+			get
+			{
+				RangeFactory<TOffset> factory = FactoryInternal;
+				if (factory == null)
+				{
+					factory = CreateFactory();
+					FactoryInternal = factory;
+				}
+				return factory;
+			}
+		}
 
 		private static RangeFactory<TOffset> CreateFactory()
 		{
