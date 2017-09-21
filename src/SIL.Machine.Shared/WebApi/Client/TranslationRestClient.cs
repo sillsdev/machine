@@ -8,17 +8,26 @@ using SIL.Machine.WebApi.Dtos;
 
 namespace SIL.Machine.WebApi.Client
 {
-	public class TranslationEngineRestClient : RestClientBase
+	public class TranslationRestClient : RestClientBase
 	{
-		public TranslationEngineRestClient(string baseUrl, IHttpClient httpClient)
+		public TranslationRestClient(string baseUrl, IHttpClient httpClient)
 			: base(baseUrl, httpClient)
 		{
 		}
 
-		public async Task<InteractiveTranslationResult> TranslateInteractivelyAsync(string engineId,
+		public async Task<ProjectDto> GetProjectAsync(string projectId)
+		{
+			string url = $"translation/projects/id:{projectId}";
+			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url);
+			if (!response.IsSuccess)
+				throw new HttpException("Error getting project.") { StatusCode = response.StatusCode };
+			return JsonConvert.DeserializeObject<ProjectDto>(response.Content, SerializerSettings);
+		}
+
+		public async Task<InteractiveTranslationResult> TranslateInteractivelyAsync(string projectId,
 			IReadOnlyList<string> sourceSegment)
 		{
-			string url = $"translation/engines/id:{engineId}/actions/interactiveTranslate";
+			string url = $"translation/engines/project:{projectId}/actions/interactiveTranslate";
 			string body = JsonConvert.SerializeObject(sourceSegment, SerializerSettings);
 			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Post, url, body, "application/json");
 			if (!response.IsSuccess)
@@ -33,10 +42,10 @@ namespace SIL.Machine.WebApi.Client
 			return CreateModel(resultDto, sourceSegment);
 		}
 
-		public async Task TrainSegmentPairAsync(string engineId, IReadOnlyList<string> sourceSegment,
+		public async Task TrainSegmentPairAsync(string projectId, IReadOnlyList<string> sourceSegment,
 			IReadOnlyList<string> targetSegment)
 		{
-			string url = $"translation/engines/id:{engineId}/actions/trainSegment";
+			string url = $"translation/engines/project:{projectId}/actions/trainSegment";
 			var pairDto = new SegmentPairDto
 			{
 				SourceSegment = sourceSegment.ToArray(),
@@ -48,20 +57,31 @@ namespace SIL.Machine.WebApi.Client
 				throw new HttpException("Error calling trainSegment action.") { StatusCode = response.StatusCode };
 		}
 
-		public async Task TrainAsync(string engineId, Action<SmtTrainProgress> progress)
+		public async Task TrainAsync(string projectId, Action<SmtTrainProgress> progress)
 		{
-			BuildDto buildDto = await CreateBuildAsync(engineId);
+			EngineDto engineDto = await GetEngineAsync(projectId);
+			BuildDto buildDto = await CreateBuildAsync(engineDto.Id);
 			await PollBuildProgressAsync(buildDto, progress);
 		}
 
-		public async Task ListenForTrainingStatus(string engineId, Action<SmtTrainProgress> progress)
+		public async Task ListenForTrainingStatus(string projectId, Action<SmtTrainProgress> progress)
 		{
-			string url = $"translation/builds/engine:{engineId}?waitNew=true";
+			EngineDto engineDto = await GetEngineAsync(projectId);
+			string url = $"translation/builds/engine:{engineDto.Id}?waitNew=true";
 			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url);
 			if (!response.IsSuccess)
 				throw new HttpException("Error getting build.") { StatusCode = response.StatusCode };
 			BuildDto buildDto = JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
 			await PollBuildProgressAsync(buildDto, progress);
+		}
+
+		public async Task<EngineDto> GetEngineAsync(string projectId)
+		{
+			string url = $"translation/engines/project:{projectId}";
+			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url);
+			if (!response.IsSuccess)
+				throw new HttpException("Error getting engine identifier.") { StatusCode = response.StatusCode };
+			return JsonConvert.DeserializeObject<EngineDto>(response.Content, SerializerSettings);
 		}
 
 		private async Task<BuildDto> CreateBuildAsync(string engineId)

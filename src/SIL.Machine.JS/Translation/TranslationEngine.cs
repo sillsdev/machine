@@ -8,39 +8,39 @@ namespace SIL.Machine.Translation
 {
 	public class TranslationEngine
 	{
-		public TranslationEngine(string baseUrl, string id, IHttpClient httpClient = null)
+		public TranslationEngine(string baseUrl, string projectId, IHttpClient httpClient = null)
 		{
-			Id = id;
+			ProjectId = projectId;
 			var wordTokenizer = new LatinWordTokenizer();
 			SourceWordTokenizer = wordTokenizer;
 			TargetWordTokenizer = wordTokenizer;
-			RestClient = new TranslationEngineRestClient(baseUrl, httpClient ?? new AjaxHttpClient());
+			RestClient = new TranslationRestClient(baseUrl, httpClient ?? new AjaxHttpClient());
 			ErrorCorrectionModel = new ErrorCorrectionModel();
 		}
 
-		internal string Id { get; }
+		internal string ProjectId { get; }
 		internal StringTokenizer SourceWordTokenizer { get; }
 		internal StringTokenizer TargetWordTokenizer { get; }
-		internal TranslationEngineRestClient RestClient { get; }
+		internal TranslationRestClient RestClient { get; }
 		internal ErrorCorrectionModel ErrorCorrectionModel { get; }
 
 		public void TranslateInteractively(string sourceSegment, double confidenceThreshold,
 			Action<InteractiveTranslationSession> onFinished)
 		{
 			string[] tokens = SourceWordTokenizer.TokenizeToStrings(sourceSegment).ToArray();
-			Task<InteractiveTranslationResult> task = RestClient.TranslateInteractivelyAsync(Id, tokens);
+			Task<InteractiveTranslationResult> task = RestClient.TranslateInteractivelyAsync(ProjectId, tokens);
 			task.ContinueWith(t => onFinished(t.IsFaulted ? null
 				: new InteractiveTranslationSession(this, tokens, confidenceThreshold, t.Result)));
 		}
 
 		public void Train(Action<SmtTrainProgress> onStatusUpdate, Action<bool> onFinished)
 		{
-			RestClient.TrainAsync(Id, onStatusUpdate).ContinueWith(t => onFinished(!t.IsFaulted));
+			RestClient.TrainAsync(ProjectId, onStatusUpdate).ContinueWith(t => onFinished(!t.IsFaulted));
 		}
 
 		public void ListenForTrainingStatus(Action<SmtTrainProgress> onStatusUpdate, Action<bool> onFinished)
 		{
-			RestClient.ListenForTrainingStatus(Id, onStatusUpdate).ContinueWith(t => onFinished(!t.IsFaulted));
+			RestClient.ListenForTrainingStatus(ProjectId, onStatusUpdate).ContinueWith(t => onFinished(!t.IsFaulted));
 		}
 	}
 }

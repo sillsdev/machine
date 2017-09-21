@@ -36,7 +36,6 @@
     <LangVersion>6</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Translation\TranslationProjectManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tokenization\SegmentTokenizer.cs" />
     <Compile Include="Translation\InteractiveTranslationSession.cs" />

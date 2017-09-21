@@ -102,7 +102,7 @@ namespace SIL.Machine.Translation
 
 		public void Approve(Action<bool> onFinished)
 		{
-			_engine.RestClient.TrainSegmentPairAsync(_engine.Id, SourceSegment, Prefix)
+			_engine.RestClient.TrainSegmentPairAsync(_engine.ProjectId, SourceSegment, Prefix)
 				.ContinueWith(t => onFinished(!t.IsFaulted));
 		}
 
