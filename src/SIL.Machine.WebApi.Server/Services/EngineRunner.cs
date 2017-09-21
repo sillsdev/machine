@@ -28,7 +28,6 @@ namespace SIL.Machine.WebApi.Server.Services
 		private readonly string _engineId;
 		private readonly List<(IReadOnlyList<string> Source, IReadOnlyList<string> Target)> _trainedSegments;
 		private readonly AsyncLock _lock;
-		private readonly ITokenizer<string, int> _wordTokenizer;
 
 		private IInteractiveSmtModel _smtModel;
 		private IInteractiveSmtEngine _smtEngine;
@@ -41,9 +40,9 @@ namespace SIL.Machine.WebApi.Server.Services
 		private bool _isUpdated;
 		private DateTime _lastUsedTime;
 
-		public EngineRunner(IOptions<EngineOptions> options, IBuildRepository buildRepo, ISmtModelFactory smtModelFactory,
-			IRuleEngineFactory ruleEngineFactory, ITextCorpusFactory textCorpusFactory, ILogger<EngineRunner> logger,
-			string engineId)
+		public EngineRunner(IOptions<EngineOptions> options, IBuildRepository buildRepo,
+			ISmtModelFactory smtModelFactory, IRuleEngineFactory ruleEngineFactory,
+			ITextCorpusFactory textCorpusFactory, ILogger<EngineRunner> logger, string engineId)
 		{
 			_buildRepo = buildRepo;
 			_smtModelFactory = smtModelFactory;
@@ -54,7 +53,6 @@ namespace SIL.Machine.WebApi.Server.Services
 			_engineId = engineId;
 			_trainedSegments = new List<(IReadOnlyList<string> Source, IReadOnlyList<string> Target)>();
 			_lock = new AsyncLock();
-			_wordTokenizer = new LatinWordTokenizer();
 			_lastUsedTime = DateTime.Now;
 		}
 
@@ -168,8 +166,8 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			Load();
 
-			ITextCorpus sourceCorpus = _textCorpusFactory.Create(engine.Projects, _wordTokenizer, TextCorpusType.Source);
-			ITextCorpus targetCorpus = _textCorpusFactory.Create(engine.Projects, _wordTokenizer, TextCorpusType.Target);
+			ITextCorpus sourceCorpus = _textCorpusFactory.Create(engine.Projects, TextCorpusType.Source);
+			ITextCorpus targetCorpus = _textCorpusFactory.Create(engine.Projects, TextCorpusType.Target);
 			_batchTrainer = _smtModel.CreateBatchTrainer(Preprocessors.Lowercase, sourceCorpus, Preprocessors.Lowercase,
 				targetCorpus);
 			_cts?.Dispose();

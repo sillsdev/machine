@@ -1,11 +1,12 @@
 ﻿namespace SIL.Machine.WebApi.Dtos
 {
-	public class ProjectDto : LinkDto
+	public class ProjectDto : ResourceDto
 	{
-		public string Id { get; set; }
+		public string SourceSegmentType { get; set; }
+		public string TargetSegmentType { get; set; }
 		public bool IsShared { get; set; }
 		public string SourceLanguageTag { get; set; }
 		public string TargetLanguageTag { get; set; }
-		public LinkDto Engine { get; set; }
+		public ResourceDto Engine { get; set; }
 	}
 }

@@ -6,7 +6,7 @@ using SIL.Machine.WebApi.Server.Models;
 
 namespace SIL.Machine.WebApi.Server.DataAccess
 {
-	public class NoDbEngineRepository : NoDbRepositoryBase<Engine>, IEngineRepository
+	public class NoDbEngineRepository : NoDbRepository<Engine>, IEngineRepository
 	{
 		public NoDbEngineRepository(IBasicCommands<Engine> commands, IBasicQueries<Engine> queries)
 			: base(commands, queries)

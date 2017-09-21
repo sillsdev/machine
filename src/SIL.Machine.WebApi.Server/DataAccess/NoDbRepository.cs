@@ -7,11 +7,11 @@ using SIL.Threading;
 
 namespace SIL.Machine.WebApi.Server.DataAccess
 {
-	public class NoDbRepositoryBase<T> : IRepository<T> where T : class, IEntity<T>
+	public class NoDbRepository<T> : IRepository<T> where T : class, IEntity<T>
 	{
 		protected const string NoDbProjectId = "machine";
 
-		protected NoDbRepositoryBase(IBasicCommands<T> commands, IBasicQueries<T> queries)
+		public NoDbRepository(IBasicCommands<T> commands, IBasicQueries<T> queries)
 		{
 			Commands = commands;
 			Queries = queries;

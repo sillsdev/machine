@@ -8,44 +8,39 @@ namespace SIL.Machine.Translation
 {
 	public class TranslationEngine
 	{
-		public TranslationEngine(string baseUrl, string projectId, IHttpClient httpClient = null)
+		public TranslationEngine(string baseUrl, string id, IHttpClient httpClient = null)
 		{
+			Id = id;
 			var wordTokenizer = new LatinWordTokenizer();
 			SourceWordTokenizer = wordTokenizer;
 			TargetWordTokenizer = wordTokenizer;
-			var segmentTokenizer = new LatinSentenceTokenizer();
-			SourceSegmentTokenizer = segmentTokenizer;
-			TargetSegmentTokenizer = segmentTokenizer;
-			if (!baseUrl.EndsWith("/"))
-				baseUrl += "/";
-			RestClient = new TranslationRestClient(baseUrl, projectId, httpClient ?? new AjaxHttpClient());
+			RestClient = new TranslationEngineRestClient(baseUrl, httpClient ?? new AjaxHttpClient());
 			ErrorCorrectionModel = new ErrorCorrectionModel();
 		}
 
-		internal ITokenizer<string, int> SourceWordTokenizer { get; set; }
-		internal ITokenizer<string, int> TargetWordTokenizer { get; set; }
-		internal ITokenizer<string, int> SourceSegmentTokenizer { get; set; }
-		internal ITokenizer<string, int> TargetSegmentTokenizer { get; set; }
-		internal TranslationRestClient RestClient { get; }
+		internal string Id { get; }
+		internal StringTokenizer SourceWordTokenizer { get; }
+		internal StringTokenizer TargetWordTokenizer { get; }
+		internal TranslationEngineRestClient RestClient { get; }
 		internal ErrorCorrectionModel ErrorCorrectionModel { get; }
 
 		public void TranslateInteractively(string sourceSegment, double confidenceThreshold,
 			Action<InteractiveTranslationSession> onFinished)
 		{
 			string[] tokens = SourceWordTokenizer.TokenizeToStrings(sourceSegment).ToArray();
-			Task<InteractiveTranslationResult> task = RestClient.TranslateInteractivelyAsync(tokens);
+			Task<InteractiveTranslationResult> task = RestClient.TranslateInteractivelyAsync(Id, tokens);
 			task.ContinueWith(t => onFinished(t.IsFaulted ? null
 				: new InteractiveTranslationSession(this, tokens, confidenceThreshold, t.Result)));
 		}
 
 		public void Train(Action<SmtTrainProgress> onStatusUpdate, Action<bool> onFinished)
 		{
-			RestClient.TrainAsync(onStatusUpdate).ContinueWith(t => onFinished(!t.IsFaulted));
+			RestClient.TrainAsync(Id, onStatusUpdate).ContinueWith(t => onFinished(!t.IsFaulted));
 		}
 
 		public void ListenForTrainingStatus(Action<SmtTrainProgress> onStatusUpdate, Action<bool> onFinished)
 		{
-			RestClient.ListenForTrainingStatus(onStatusUpdate).ContinueWith(t => onFinished(!t.IsFaulted));
+			RestClient.ListenForTrainingStatus(Id, onStatusUpdate).ContinueWith(t => onFinished(!t.IsFaulted));
 		}
 	}
 }

@@ -12,6 +12,7 @@ function addClass(ns, cls)
 addClass(SIL.Machine.Translation, 'TranslationEngine');
 addClass(SIL.Machine.Translation, 'InteractiveTranslationSession');
 addClass(SIL.Machine.Translation, 'SmtTrainProgress');
-addClass(SIL.Machine.Tokenization, 'SentenceTokenizer');
+addClass(SIL.Machine.Tokenization, 'SegmentTokenizer');
+addClass(SIL.Machine.Project, 'TranslationProjectManager');
 
 module.exports = machine;

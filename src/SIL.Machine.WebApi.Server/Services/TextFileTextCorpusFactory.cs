@@ -16,8 +16,9 @@ namespace SIL.Machine.WebApi.Server.Services
 			_textFileDir = options.Value.TextFileDir;
 		}
 
-		public ITextCorpus Create(IEnumerable<string> projects, ITokenizer<string, int> wordTokenizer, TextCorpusType type)
+		public ITextCorpus Create(IEnumerable<string> projects, TextCorpusType type)
 		{
+			var wordTokenizer = new LatinWordTokenizer();
 			var texts = new List<IText>();
 			foreach (string projectId in projects)
 			{
@@ -33,7 +34,11 @@ namespace SIL.Machine.WebApi.Server.Services
 				}
 
 				foreach (string file in Directory.EnumerateFiles(Path.Combine(_textFileDir, projectId, dir), "*.txt"))
-					texts.Add(new TextFileText($"{projectId}_{Path.GetFileNameWithoutExtension(file)}", file, wordTokenizer));
+				{
+					var text = new TextFileText($"{projectId}_{Path.GetFileNameWithoutExtension(file)}", file,
+						wordTokenizer);
+					texts.Add(text);
+				}
 			}
 
 			return new DictionaryTextCorpus(texts);

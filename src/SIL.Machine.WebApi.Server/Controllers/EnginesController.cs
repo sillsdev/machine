@@ -51,7 +51,8 @@ namespace SIL.Machine.WebApi.Server.Controllers
 		}
 
 		[HttpPost("{locatorType}:{locator}/actions/translate/{n}")]
-		public async Task<IActionResult> TranslateAsync(string locatorType, string locator, int n, [FromBody] string[] segment)
+		public async Task<IActionResult> TranslateAsync(string locatorType, string locator, int n,
+			[FromBody] string[] segment)
 		{
 			IEnumerable<TranslationResult> results = await _engineService.TranslateAsync(
 				GetLocatorType(locatorType), locator, n, segment);
@@ -130,7 +131,8 @@ namespace SIL.Machine.WebApi.Server.Controllers
 				NextState = arc.NextState,
 				Score = (float) arc.Score,
 				Words = Enumerable.Range(0, arc.Words.Count)
-					.Select(j => arc.Alignment.RecaseTargetWord(sourceSegment, arc.SourceStartIndex, arc.Words, j)).ToArray(),
+					.Select(j => arc.Alignment.RecaseTargetWord(sourceSegment, arc.SourceStartIndex, arc.Words, j))
+					.ToArray(),
 				Confidences = arc.WordConfidences.Select(c => (float) c).ToArray(),
 				SourceStartIndex = arc.SourceStartIndex,
 				SourceEndIndex = arc.SourceEndIndex,
@@ -162,7 +164,8 @@ namespace SIL.Machine.WebApi.Server.Controllers
 				SourceLanguageTag = engine.SourceLanguageTag,
 				TargetLanguageTag = engine.TargetLanguageTag,
 				IsShared = engine.IsShared,
-				Projects = engine.Projects.Select(p => new LinkDto {Href = Url.GetEntityUrl(RouteNames.Projects, p)}).ToArray()
+				Projects = engine.Projects.Select(projectId =>
+					Url.CreateLinkDto(RouteNames.Projects, projectId)).ToArray()
 			};
 		}
 

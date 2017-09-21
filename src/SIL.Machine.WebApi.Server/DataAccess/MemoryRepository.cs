@@ -7,11 +7,11 @@ using SIL.Threading;
 
 namespace SIL.Machine.WebApi.Server.DataAccess
 {
-	public class MemoryRepositoryBase<T> : IRepository<T> where T : class, IEntity<T>
+	public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
 	{
 		private readonly Dictionary<string, Action<EntityChange<T>>> _changeListeners;
 
-		protected MemoryRepositoryBase(IRepository<T> persistenceRepo = null)
+		public MemoryRepository(IRepository<T> persistenceRepo = null)
 		{
 			Lock = new AsyncReaderWriterLock();
 			Entities = new Dictionary<string, T>();

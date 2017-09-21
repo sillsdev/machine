@@ -487,7 +487,7 @@ namespace SIL.Machine.Translation
 				{
 					Method = HttpRequestMethod.Post,
 					Url = "translation/engines/project:project1/actions/interactiveTranslate",
-					ResponseText = JsonConvert.SerializeObject(ResultDto, TranslationRestClient.SerializerSettings)
+					ResponseText = JsonConvert.SerializeObject(ResultDto, TranslationEngineRestClient.SerializerSettings)
 				});
 			return httpClient;
 		}
@@ -600,7 +600,7 @@ namespace SIL.Machine.Translation
 					Action = body =>
 					{
 						var segmentPair = JsonConvert.DeserializeObject<SegmentPairDto>(body,
-							TranslationRestClient.SerializerSettings);
+							TranslationEngineRestClient.SerializerSettings);
 						var tokenizer = new LatinWordTokenizer();
 						assert.DeepEqual(segmentPair.SourceSegment,
 							tokenizer.TokenizeToStrings(sourceSegment).ToArray());

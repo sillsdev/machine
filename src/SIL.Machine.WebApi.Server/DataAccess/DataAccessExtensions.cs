@@ -160,9 +160,14 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			services.AddNoDbForEntity<Engine>();
 			services.AddNoDbForEntity<Build>();
 			services.AddSingleton<IEngineRepository>(sp => new MemoryEngineRepository(
-				new NoDbEngineRepository(sp.GetService<IBasicCommands<Engine>>(), sp.GetService<IBasicQueries<Engine>>())));
+				new NoDbEngineRepository(sp.GetService<IBasicCommands<Engine>>(),
+					sp.GetService<IBasicQueries<Engine>>())));
 			services.AddSingleton<IBuildRepository>(sp => new MemoryBuildRepository(
-				new NoDbBuildRepository(sp.GetService<IBasicCommands<Build>>(), sp.GetService<IBasicQueries<Build>>())));
+				new NoDbBuildRepository(sp.GetService<IBasicCommands<Build>>(),
+					sp.GetService<IBasicQueries<Build>>())));
+			services.AddSingleton<IRepository<Project>>(sp => new MemoryRepository<Project>(
+				new NoDbRepository<Project>(sp.GetService<IBasicCommands<Project>>(),
+					sp.GetService<IBasicQueries<Project>>())));
 			return services;
 		}
 
@@ -178,6 +183,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		{
 			services.AddSingleton<IEngineRepository, MemoryEngineRepository>();
 			services.AddSingleton<IBuildRepository, MemoryBuildRepository>();
+			services.AddSingleton<IRepository<Project>, MemoryRepository<Project>>();
 			return services;
 		}
 	}

@@ -43,16 +43,19 @@
     <Compile Include="$(MSBuildThisFileDirectory)WebApi\Client\HttpException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebApi\Client\HttpResponse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebApi\Client\IHttpClient.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Client\TranslationRestClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Client\TranslationProjectRestClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Client\RestClientBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Client\TranslationEngineRestClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\AlignedWordPairDto.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\BuildDto.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\EngineDto.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\InteractiveTranslationResultDto.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\LinkDto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\ResourceDto.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\ProjectDto.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\SegmentPairDto.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\TranslationResultDto.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\WordGraphArcDto.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\WordGraphDto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\WebApiUtils.cs" />
   </ItemGroup>
 </Project>

@@ -5,7 +5,7 @@ using SIL.Machine.WebApi.Server.Models;
 
 namespace SIL.Machine.WebApi.Server.DataAccess
 {
-	public class MemoryBuildRepository : MemoryRepositoryBase<Build>, IBuildRepository
+	public class MemoryBuildRepository : MemoryRepository<Build>, IBuildRepository
 	{
 		private readonly UniqueEntityIndex<string, Build> _engineIdIndex;
 

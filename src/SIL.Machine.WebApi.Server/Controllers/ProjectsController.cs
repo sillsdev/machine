@@ -13,41 +13,42 @@ namespace SIL.Machine.WebApi.Server.Controllers
 	[Route("[area]/[controller]", Name = RouteNames.Projects)]
 	public class ProjectsController : Controller
 	{
-		private readonly IEngineRepository _engineRepo;
+		private readonly IRepository<Project> _projectRepo;
 		private readonly EngineService _engineService;
 
-		public ProjectsController(IEngineRepository engineRepo, EngineService engineService)
+		public ProjectsController(IRepository<Project> projectRepo, EngineService engineService)
 		{
-			_engineRepo = engineRepo;
+			_projectRepo = projectRepo;
 			_engineService = engineService;
 		}
 
 		[HttpGet]
 		public async Task<IEnumerable<ProjectDto>> GetAllAsync()
 		{
-			IEnumerable<Engine> engines = await _engineRepo.GetAllAsync();
-			return engines.SelectMany(e => e.Projects, CreateDto);
+			IEnumerable<Project> projects = await _projectRepo.GetAllAsync();
+			return projects.Select(CreateDto);
 		}
 
 		[HttpGet("id:{id}")]
 		public async Task<IActionResult> GetAsync(string id)
 		{
-			Engine engine = await _engineRepo.GetByProjectIdAsync(id);
-			if (engine == null)
+			Project project = await _projectRepo.GetAsync(id);
+			if (project == null)
 				return NotFound();
 
-			return Ok(CreateDto(engine, id));
+			return Ok(CreateDto(project));
 		}
 
 		[HttpPost]
 		public async Task<IActionResult> CreateAsync([FromBody] ProjectDto newProject)
 		{
-			Engine engine = await _engineService.AddProjectAsync(newProject.SourceLanguageTag,
-				newProject.TargetLanguageTag, newProject.Id, newProject.IsShared);
-			if (engine == null)
+			Project project = await _engineService.AddProjectAsync(newProject.Id, newProject.SourceLanguageTag,
+				newProject.TargetLanguageTag, newProject.SourceSegmentType, newProject.TargetSegmentType,
+				newProject.IsShared);
+			if (project == null)
 				return StatusCode(409);
 
-			ProjectDto dto = CreateDto(engine, newProject.Id);
+			ProjectDto dto = CreateDto(project);
 			return Created(dto.Href, dto);
 		}
 
@@ -56,19 +57,22 @@ namespace SIL.Machine.WebApi.Server.Controllers
 		{
 			if (!await _engineService.RemoveProjectAsync(id))
 				return NotFound();
+
 			return Ok();
 		}
 
-		private ProjectDto CreateDto(Engine engine, string projectId)
+		private ProjectDto CreateDto(Project project)
 		{
 			return new ProjectDto
 			{
-				Id = projectId,
-				Href = Url.GetEntityUrl(RouteNames.Projects, projectId),
-				IsShared = engine.IsShared,
-				SourceLanguageTag = engine.SourceLanguageTag,
-				TargetLanguageTag = engine.TargetLanguageTag,
-				Engine = new LinkDto {Href = Url.GetEntityUrl(RouteNames.Engines, engine.Id)}
+				Id = project.Id,
+				Href = Url.GetEntityUrl(RouteNames.Projects, project.Id),
+				SourceLanguageTag = project.SourceLanguageTag,
+				TargetLanguageTag = project.TargetLanguageTag,
+				SourceSegmentType = project.SourceSegmentType,
+				TargetSegmentType = project.TargetSegmentType,
+				IsShared = project.IsShared,
+				Engine = Url.CreateLinkDto(RouteNames.Engines, project.Engine)
 			};
 		}
 	}

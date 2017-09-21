@@ -198,7 +198,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			private ITextCorpusFactory CreateTextCorpusFactory()
 			{
 				var factory = Substitute.For<ITextCorpusFactory>();
-				factory.Create(Arg.Any<IEnumerable<string>>(), Arg.Any<ITokenizer<string, int>>(), Arg.Any<TextCorpusType>())
+				factory.Create(Arg.Any<IEnumerable<string>>(), Arg.Any<TextCorpusType>())
 					.Returns(new DictionaryTextCorpus(Enumerable.Empty<IText>()));
 				return factory;
 			}

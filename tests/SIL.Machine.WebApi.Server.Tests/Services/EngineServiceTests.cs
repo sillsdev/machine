@@ -103,10 +103,10 @@ namespace SIL.Machine.WebApi.Server.Services
 			using (var env = new TestEnvironment())
 			{
 				env.CreateEngineService();
-				Engine engine = await env.Service.AddProjectAsync("es", "en", "project1", true);
-				Assert.That(engine, Is.Not.Null);
+				Project project = await env.Service.AddProjectAsync("project1", "es", "en", "latin", "latin", true);
+				Assert.That(project, Is.Not.Null);
 
-				engine = await env.EngineRepository.GetAsync(engine.Id);
+				Engine engine = await env.EngineRepository.GetAsync(project.Engine);
 				Assert.That(engine.Projects, Contains.Item("project1"));
 			}
 		}
@@ -118,10 +118,10 @@ namespace SIL.Machine.WebApi.Server.Services
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
 				env.CreateEngineService();
-				Engine engine = await env.Service.AddProjectAsync("es", "en", "project2", true);
-				Assert.That(engine, Is.Not.Null);
+				Project project = await env.Service.AddProjectAsync("project2", "es", "en", "latin", "latin", true);
+				Assert.That(project, Is.Not.Null);
 
-				engine = await env.EngineRepository.GetAsync(engine.Id);
+				Engine engine = await env.EngineRepository.GetAsync(project.Engine);
 				Assert.That(engine.Id, Is.EqualTo(engineId));
 				Assert.That(engine.Projects, Contains.Item("project2"));
 			}
@@ -134,10 +134,10 @@ namespace SIL.Machine.WebApi.Server.Services
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", false)).Id;
 				env.CreateEngineService();
-				Engine engine = await env.Service.AddProjectAsync("es", "en", "project2", true);
-				Assert.That(engine, Is.Not.Null);
+				Project project = await env.Service.AddProjectAsync("project2", "es", "en", "latin", "latin", true);
+				Assert.That(project, Is.Not.Null);
 
-				engine = await env.EngineRepository.GetAsync(engine.Id);
+				Engine engine = await env.EngineRepository.GetAsync(project.Engine);
 				Assert.That(engine.Id, Is.Not.EqualTo(engineId));
 				Assert.That(engine.Projects, Contains.Item("project2"));
 			}
@@ -150,8 +150,8 @@ namespace SIL.Machine.WebApi.Server.Services
 			{
 				await env.CreateEngineAsync("es", "en", true);
 				env.CreateEngineService();
-				Engine engine = await env.Service.AddProjectAsync("es", "en", "project1", true);
-				Assert.That(engine, Is.Null);
+				Project project = await env.Service.AddProjectAsync("project1", "es", "en", "latin", "latin", true);
+				Assert.That(project, Is.Null);
 			}
 		}
 
@@ -162,8 +162,8 @@ namespace SIL.Machine.WebApi.Server.Services
 			{
 				await env.CreateEngineAsync("es", "en", false);
 				env.CreateEngineService();
-				Engine engine = await env.Service.AddProjectAsync("es", "en", "project1", false);
-				Assert.That(engine, Is.Null);
+				Project project = await env.Service.AddProjectAsync("project1", "es", "en", "latin", "latin", false);
+				Assert.That(project, Is.Null);
 			}
 		}
 
@@ -244,6 +244,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			{
 				EngineRepository = new MemoryEngineRepository();
 				BuildRepository = new MemoryBuildRepository();
+				ProjectRepository = new MemoryRepository<Project>();
 				_engineOptions = new OptionsWrapper<EngineOptions>(new EngineOptions
 					{
 						EngineCommitFrequency = TimeSpan.FromMinutes(5),
@@ -256,12 +257,13 @@ namespace SIL.Machine.WebApi.Server.Services
 
 			public IEngineRepository EngineRepository { get; }
 			public IBuildRepository BuildRepository { get; }
+			public IRepository<Project> ProjectRepository { get; }
 			public EngineService Service { get; private set; }
 
 			public void CreateEngineService()
 			{
 				Service = new EngineService(_engineOptions, EngineRepository, BuildRepository,
-					CreateEngineRunner);
+					ProjectRepository, CreateEngineRunner);
 				Service.Init();
 			}
 
@@ -357,12 +359,13 @@ namespace SIL.Machine.WebApi.Server.Services
 			private ITextCorpusFactory CreateTextCorpusFactory()
 			{
 				var factory = Substitute.For<ITextCorpusFactory>();
-				factory.Create(Arg.Any<IEnumerable<string>>(), Arg.Any<ITokenizer<string, int>>(), Arg.Any<TextCorpusType>())
+				factory.Create(Arg.Any<IEnumerable<string>>(), Arg.Any<TextCorpusType>())
 					.Returns(new DictionaryTextCorpus(Enumerable.Empty<IText>()));
 				return factory;
 			}
 
-			public async Task<Engine> CreateEngineAsync(string sourceLanguageTag, string targetLanguageTag, bool isShared)
+			public async Task<Engine> CreateEngineAsync(string sourceLanguageTag, string targetLanguageTag,
+				bool isShared)
 			{
 				var engine = new Engine
 				{
@@ -372,6 +375,18 @@ namespace SIL.Machine.WebApi.Server.Services
 					Projects = {"project1"}
 				};
 				await EngineRepository.InsertAsync(engine);
+
+				var project = new Project
+				{
+					Id = "project1",
+					SourceLanguageTag = sourceLanguageTag,
+					TargetLanguageTag = targetLanguageTag,
+					SourceSegmentType = "latin",
+					TargetSegmentType = "latin",
+					IsShared = isShared,
+					Engine = engine.Id
+				};
+				await ProjectRepository.InsertAsync(project);
 				return engine;
 			}
 

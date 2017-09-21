@@ -18,7 +18,7 @@ export interface InteractiveTranslationSession {
 }
 
 export class TranslationEngine {
-    constructor(baseUrl: string, projectId: string);
+    constructor(baseUrl: string, engineId: string);
     translateInteractively(sourceSegment: string, confidenceThreshold: number,
         onFinished: { (arg: InteractiveTranslationSession): void }): void;
     train(onStatusUpdate: { (arg: SmtTrainProgress): void },
@@ -28,12 +28,32 @@ export class TranslationEngine {
 }
 
 export interface Range {
-    index: number;
+    start: number;
+    end: number;
     length: number;
 }
 
-export class SentenceTokenizer {
-    constructor(abbreviations?: string[]);
+export class SegmentTokenizer {
+    constructor(segmentType: string);
     tokenize(text: string): Range[];
     tokenizeToStrings(text: string): string[];
+}
+
+export interface Resource {
+    id: string;
+    href: string;
+}
+
+export interface Project extends Resource {
+    sourceLanguageTag: string;
+    targetLanguageTag: string;
+    sourceSegmentType: string;
+    targetSegmentType: string;
+    isShared: boolean;
+    engine: Resource;
+}
+
+export class TranslationProjectManager {
+    constructor(baseUrl: string);
+    getProject(projectId: string, onFinished: { (arg: Project): void }): void;
 }

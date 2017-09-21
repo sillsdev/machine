@@ -20,15 +20,17 @@ namespace SIL.Machine.WebApi.Server.Services
 		private readonly AsyncReaderWriterLock _lock;
 		private readonly IEngineRepository _engineRepo;
 		private readonly IBuildRepository _buildRepo;
+		private readonly IRepository<Project> _projectRepo;
 		private readonly Func<string, Owned<EngineRunner>> _engineRunnerFactory;
 		private readonly AsyncTimer _commitTimer;
 
 		public EngineService(IOptions<EngineOptions> options, IEngineRepository engineRepo, IBuildRepository buildRepo,
-			Func<string, Owned<EngineRunner>> engineRunnerFactory)
+			IRepository<Project> projectRepo, Func<string, Owned<EngineRunner>> engineRunnerFactory)
 		{
 			_options = options.Value;
 			_engineRepo = engineRepo;
 			_buildRepo = buildRepo;
+			_projectRepo = projectRepo;
 			_engineRunnerFactory = engineRunnerFactory;
 			_runners = new Dictionary<string, Owned<EngineRunner>>();
 			_lock = new AsyncReaderWriterLock();
@@ -125,14 +127,16 @@ namespace SIL.Machine.WebApi.Server.Services
 			}
 		}
 
-		public async Task<Engine> AddProjectAsync(string sourceLanguageTag, string targetLanguageTag,
-			string projectId, bool isShared)
+		public async Task<Project> AddProjectAsync(string projectId, string sourceLanguageTag, string targetLanguageTag,
+			string sourceSegmentType, string targetSegmentType, bool isShared)
 		{
 			CheckDisposed();
 
 			using (await _lock.WriterLockAsync())
 			{
-				Engine engine = isShared ? await _engineRepo.GetByLanguageTagAsync(sourceLanguageTag, targetLanguageTag) : null;
+				Engine engine = isShared
+					? await _engineRepo.GetByLanguageTagAsync(sourceLanguageTag, targetLanguageTag)
+					: null;
 				try
 				{
 					EngineRunner runner;
@@ -141,7 +145,7 @@ namespace SIL.Machine.WebApi.Server.Services
 						// no existing shared engine or a project-specific engine
 						engine = new Engine
 						{
-							Projects = {projectId},
+							Projects = { projectId },
 							IsShared = isShared,
 							SourceLanguageTag = sourceLanguageTag,
 							TargetLanguageTag = targetLanguageTag
@@ -166,7 +170,18 @@ namespace SIL.Machine.WebApi.Server.Services
 					return null;
 				}
 
-				return engine;
+				var project = new Project
+				{
+					Id = projectId,
+					SourceLanguageTag = sourceLanguageTag,
+					TargetLanguageTag = targetLanguageTag,
+					SourceSegmentType = sourceSegmentType,
+					TargetSegmentType = targetSegmentType,
+					IsShared = isShared,
+					Engine = engine.Id
+				};
+				await _projectRepo.InsertAsync(project);
+				return project;
 			}
 		}
 
@@ -197,6 +212,7 @@ namespace SIL.Machine.WebApi.Server.Services
 					await _engineRepo.ConcurrentUpdateAsync(engine, e => e.Projects.Remove(projectId));
 					await GetOrCreateRunner(engine.Id).StartBuildAsync(engine);
 				}
+				await _projectRepo.DeleteAsync(projectId);
 				return true;
 			}
 		}

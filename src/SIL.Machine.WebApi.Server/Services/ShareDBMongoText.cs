@@ -12,13 +12,16 @@ namespace SIL.Machine.WebApi.Server.Services
 	{
 		private readonly string _projectId;
 		private readonly BsonDocument _doc;
+		private readonly ITokenizer<string, int> _segmentTokenizer;
 		private readonly ITokenizer<string, int> _wordTokenizer;
 
-		public ShareDBMongoText(string projectId, BsonDocument doc, ITokenizer<string, int> wordTokenizer)
+		public ShareDBMongoText(ITokenizer<string, int> segmentTokenizer, ITokenizer<string, int> wordTokenizer,
+			string projectId, BsonDocument doc)
 		{
+			_segmentTokenizer = segmentTokenizer;
+			_wordTokenizer = wordTokenizer;
 			_projectId = projectId;
 			_doc = doc;
-			_wordTokenizer = wordTokenizer;
 		}
 		public string Id
 		{
@@ -42,11 +45,12 @@ namespace SIL.Machine.WebApi.Server.Services
 						sb.Append(value);
 				}
 
-				string[] segments = sb.ToString().Split('\n');
-				for (int i = 0; i < segments.Length; i++)
+				int i = 1;
+				foreach (string segment in _segmentTokenizer.TokenizeToStrings(sb.ToString()))
 				{
-					yield return new TextSegment(new TextSegmentRef(1, i + 1),
-						_wordTokenizer.TokenizeToStrings(segments[i]).ToArray());
+					yield return new TextSegment(new TextSegmentRef(1, i),
+						_wordTokenizer.TokenizeToStrings(segment).ToArray());
+					i++;
 				}
 			}
 		}

@@ -5,7 +5,7 @@ using SIL.Machine.WebApi.Server.Models;
 
 namespace SIL.Machine.WebApi.Server.DataAccess
 {
-	public class MemoryEngineRepository : MemoryRepositoryBase<Engine>, IEngineRepository
+	public class MemoryEngineRepository : MemoryRepository<Engine>, IEngineRepository
 	{
 		private readonly UniqueEntityIndex<(string SourceLanguageTag, string TargetLanguageTag), Engine> _langTagIndex;
 		private readonly UniqueEntityIndex<string, Engine> _projectIndex;

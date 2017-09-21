@@ -16,13 +16,15 @@ namespace SIL.Machine.Translation
 		{
 			QUnit.Module(nameof(TranslationEngineTests));
 
-			QUnit.Test(nameof(TranslateInteractively_Success_ReturnsSession), TranslateInteractively_Success_ReturnsSession);
+			QUnit.Test(nameof(TranslateInteractively_Success_ReturnsSession),
+				TranslateInteractively_Success_ReturnsSession);
 			QUnit.Test(nameof(TranslateInteractively_Error_ReturnsNull), TranslateInteractively_Error_ReturnsNull);
 			QUnit.Test(nameof(TranslateInteractively_NoRuleResult_ReturnsSession),
 				TranslateInteractively_NoRuleResult_ReturnsSession);
 			QUnit.Test(nameof(Train_NoErrors_ReturnsTrue), Train_NoErrors_ReturnsTrue);
 			QUnit.Test(nameof(Train_ErrorCreatingBuild_ReturnsFalse), Train_ErrorCreatingBuild_ReturnsFalse);
-			QUnit.Test(nameof(ListenForTrainingStatus_NoErrors_ReturnsTrue), ListenForTrainingStatus_NoErrors_ReturnsTrue);
+			QUnit.Test(nameof(ListenForTrainingStatus_NoErrors_ReturnsTrue),
+				ListenForTrainingStatus_NoErrors_ReturnsTrue);
 		}
 
 		private static void TranslateInteractively_Success_ReturnsSession(Assert assert)
@@ -124,7 +126,7 @@ namespace SIL.Machine.Translation
 			httpClient.Requests.Add(new MockRequest
 				{
 					Method = HttpRequestMethod.Post,
-					ResponseText = JsonConvert.SerializeObject(resultDto, TranslationRestClient.SerializerSettings)
+					ResponseText = JsonConvert.SerializeObject(resultDto, RestClientBase.SerializerSettings)
 				});
 
 			var engine = new TranslationEngine("http://localhost/", "project1", httpClient);
@@ -206,7 +208,7 @@ namespace SIL.Machine.Translation
 			httpClient.Requests.Add(new MockRequest
 				{
 					Method = HttpRequestMethod.Post,
-					ResponseText = JsonConvert.SerializeObject(resultDto, TranslationRestClient.SerializerSettings)
+					ResponseText = JsonConvert.SerializeObject(resultDto, RestClientBase.SerializerSettings)
 				});
 
 			var engine = new TranslationEngine("http://localhost/", "project1", httpClient);
@@ -231,7 +233,7 @@ namespace SIL.Machine.Translation
 				{
 					Method = HttpRequestMethod.Get,
 					Url = "translation/engines/project:project1",
-					ResponseText = JsonConvert.SerializeObject(engineDto, TranslationRestClient.SerializerSettings)
+					ResponseText = JsonConvert.SerializeObject(engineDto, RestClientBase.SerializerSettings)
 				});
 			var buildDto = new BuildDto
 			{
@@ -242,7 +244,7 @@ namespace SIL.Machine.Translation
 				{
 					Method = HttpRequestMethod.Post,
 					Url = "translation/builds",
-					ResponseText = JsonConvert.SerializeObject(buildDto, TranslationRestClient.SerializerSettings)
+					ResponseText = JsonConvert.SerializeObject(buildDto, RestClientBase.SerializerSettings)
 				});
 			for (int i = 0; i < 10; i++)
 			{
@@ -253,7 +255,7 @@ namespace SIL.Machine.Translation
 						Method = HttpRequestMethod.Get,
 						Url = string.Format("translation/builds/id:build1?minRevision={0}", buildDto.Revision),
 						Action = async body => await Task.Delay(10),
-						ResponseText = JsonConvert.SerializeObject(buildDto, TranslationRestClient.SerializerSettings)
+						ResponseText = JsonConvert.SerializeObject(buildDto, RestClientBase.SerializerSettings)
 					});
 			}
 			var engine = new TranslationEngine("http://localhost/", "project1", httpClient);
@@ -284,7 +286,7 @@ namespace SIL.Machine.Translation
 				{
 					Method = HttpRequestMethod.Get,
 					Url = "translation/engines/project:project1",
-					ResponseText = JsonConvert.SerializeObject(engineDto, TranslationRestClient.SerializerSettings)
+					ResponseText = JsonConvert.SerializeObject(engineDto, RestClientBase.SerializerSettings)
 				});
 			httpClient.Requests.Add(new MockRequest
 				{
@@ -314,7 +316,7 @@ namespace SIL.Machine.Translation
 				{
 					Method = HttpRequestMethod.Get,
 					Url = "translation/engines/project:project1",
-					ResponseText = JsonConvert.SerializeObject(engineDto, TranslationRestClient.SerializerSettings)
+					ResponseText = JsonConvert.SerializeObject(engineDto, RestClientBase.SerializerSettings)
 				});
 			var buildDto = new BuildDto
 			{
@@ -326,7 +328,7 @@ namespace SIL.Machine.Translation
 					Method = HttpRequestMethod.Get,
 					Url = "translation/builds/engine:engine1?waitNew=true",
 					Action = async body => await Task.Delay(10),
-					ResponseText = JsonConvert.SerializeObject(buildDto, TranslationRestClient.SerializerSettings)
+					ResponseText = JsonConvert.SerializeObject(buildDto, RestClientBase.SerializerSettings)
 				});
 			for (int i = 0; i < 10; i++)
 			{
@@ -337,7 +339,7 @@ namespace SIL.Machine.Translation
 						Method = HttpRequestMethod.Get,
 						Url = string.Format("translation/builds/id:build1?minRevision={0}", buildDto.Revision),
 						Action = async body => await Task.Delay(10),
-						ResponseText = JsonConvert.SerializeObject(buildDto, TranslationRestClient.SerializerSettings)
+						ResponseText = JsonConvert.SerializeObject(buildDto, RestClientBase.SerializerSettings)
 					});
 			}
 			var engine = new TranslationEngine("http://localhost/", "project1", httpClient);
