@@ -57,6 +57,12 @@ namespace SIL.Machine.WebApi.Client
 				throw new HttpException("Error calling trainSegment action.") { StatusCode = response.StatusCode };
 		}
 
+		public async Task StartTrainingAsync(string projectId)
+		{
+			EngineDto engineDto = await GetEngineAsync(projectId);
+			await CreateBuildAsync(engineDto.Id);
+		}
+
 		public async Task TrainAsync(string projectId, Action<SmtTrainProgress> progress)
 		{
 			EngineDto engineDto = await GetEngineAsync(projectId);

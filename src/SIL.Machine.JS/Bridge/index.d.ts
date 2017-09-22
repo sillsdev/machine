@@ -23,6 +23,7 @@ export class TranslationEngine {
         onFinished: { (arg: InteractiveTranslationSession): void }): void;
     train(onStatusUpdate: { (arg: SmtTrainProgress): void },
         onFinished: { (arg: boolean): void }): void;
+    startTraining(onFinished: { (arg: boolean): void }): void;
     listenForTrainingStatus(onStatusUpdate: { (arg: SmtTrainProgress): void },
         onFinished: { (arg: boolean): void }): void;
 }
