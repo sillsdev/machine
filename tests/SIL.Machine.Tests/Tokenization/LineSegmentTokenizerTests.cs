@@ -38,7 +38,8 @@ namespace SIL.Machine.Tokenization
 		public void Tokenize_EndsWithNewLineAndSpace_ReturnsTokens()
 		{
 			var tokenizer = new LineSegmentTokenizer();
-			Assert.That(tokenizer.TokenizeToStrings("This is a test.\n "), Is.EqualTo(new[] { "This is a test." }));
+			Assert.That(tokenizer.TokenizeToStrings("This is a test.\n "),
+				Is.EqualTo(new[] { "This is a test.", " " }));
 		}
 
 		[Test]
@@ -55,6 +56,14 @@ namespace SIL.Machine.Tokenization
 			var tokenizer = new LineSegmentTokenizer();
 			Assert.That(tokenizer.TokenizeToStrings("This is the first sentence.\n\nThis is the third sentence."),
 				Is.EqualTo(new[] { "This is the first sentence.", "", "This is the third sentence." }));
+		}
+
+		[Test]
+		public void Tokenize_LineEndsWithSpace_ReturnsTokens()
+		{
+			var tokenizer = new LineSegmentTokenizer();
+			Assert.That(tokenizer.TokenizeToStrings("This is the first sentence. \nThis is the second sentence."),
+				Is.EqualTo(new[] { "This is the first sentence. ", "This is the second sentence." }));
 		}
 	}
 }

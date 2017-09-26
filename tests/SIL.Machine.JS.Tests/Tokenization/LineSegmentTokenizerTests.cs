@@ -20,6 +20,7 @@ namespace SIL.Machine.Tokenization
 			QUnit.Test(nameof(Tokenize_EndsWithTextAndSpace_ReturnsTokens),
 				Tokenize_EndsWithTextAndSpace_ReturnsTokens);
 			QUnit.Test(nameof(Tokenize_EmptyLine_ReturnsTokens), Tokenize_EmptyLine_ReturnsTokens);
+			QUnit.Test(nameof(Tokenize_LineEndsWithSpace_ReturnsTokens), Tokenize_LineEndsWithSpace_ReturnsTokens);
 		}
 
 		private static void Tokenize_Empty_ReturnsEmpty(Assert assert)
@@ -36,7 +37,7 @@ namespace SIL.Machine.Tokenization
 
 		private static void Tokenize_MultipleLines_ReturnsTokens(Assert assert)
 		{
-			var tokenizer = new LatinSentenceTokenizer();
+			var tokenizer = new LineSegmentTokenizer();
 			assert.DeepEqual(tokenizer.TokenizeToStrings(
 				"This is the first sentence.\nThis is the second sentence.").ToArray(),
 				new[] { "This is the first sentence.", "This is the second sentence." });
@@ -51,7 +52,8 @@ namespace SIL.Machine.Tokenization
 		private static void Tokenize_EndsWithNewLineAndSpace_ReturnsTokens(Assert assert)
 		{
 			var tokenizer = new LineSegmentTokenizer();
-			assert.DeepEqual(tokenizer.TokenizeToStrings("This is a test.\n ").ToArray(), new[] { "This is a test." });
+			assert.DeepEqual(tokenizer.TokenizeToStrings("This is a test.\n ").ToArray(),
+				new[] { "This is a test.", " " });
 		}
 
 		private static void Tokenize_EndsWithTextAndSpace_ReturnsTokens(Assert assert)
@@ -68,6 +70,14 @@ namespace SIL.Machine.Tokenization
 			assert.DeepEqual(tokenizer.TokenizeToStrings(
 				"This is the first sentence.\n\nThis is the third sentence.").ToArray(),
 				new[] { "This is the first sentence.", "", "This is the third sentence." });
+		}
+
+		private static void Tokenize_LineEndsWithSpace_ReturnsTokens(Assert assert)
+		{
+			var tokenizer = new LineSegmentTokenizer();
+			assert.DeepEqual(tokenizer.TokenizeToStrings(
+				"This is the first sentence. \nThis is the second sentence.").ToArray(),
+				new[] { "This is the first sentence. ", "This is the second sentence." });
 		}
 	}
 }
