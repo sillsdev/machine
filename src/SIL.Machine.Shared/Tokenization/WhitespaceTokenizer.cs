@@ -23,7 +23,7 @@ namespace SIL.Machine.Tokenization
 			}
 
 			if (startIndex != -1)
-				yield return Range<int>.Create(startIndex, data.Length);
+				yield return Range<int>.Create(startIndex, range.End);
 		}
 	}
 }

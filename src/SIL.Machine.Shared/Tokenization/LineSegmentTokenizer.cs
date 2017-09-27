@@ -1,20 +1,22 @@
 ﻿using System.Collections.Generic;
 using SIL.Machine.Annotations;
-using System.Text.RegularExpressions;
 
 namespace SIL.Machine.Tokenization
 {
 	public class LineSegmentTokenizer : StringTokenizer
 	{
-		private static readonly Regex NewLineRegex = new Regex("\n|\r\n?");
-
 		public override IEnumerable<Range<int>> Tokenize(string data, Range<int> range)
 		{
-			int lineStart = 0;
-			foreach (Match match in NewLineRegex.Matches(data.Substring(0, range.End), range.Start))
+			int lineStart = range.Start;
+			for (int i = range.Start; i < range.End; i++)
 			{
-				yield return Range<int>.Create(lineStart, match.Index);
-				lineStart = match.Index + match.Length;
+				if (data[i] == '\n' || data[i] == '\r')
+				{
+					yield return Range<int>.Create(lineStart, i);
+					if (data[i] == '\r' && i + 1 < range.End && data[i + 1] == '\n')
+						i++;
+					lineStart = i + 1;
+				}
 			}
 
 			if (lineStart < range.End)

@@ -36,6 +36,6 @@ export interface Range {
 
 export class SegmentTokenizer {
     constructor(segmentType: string);
-    tokenize(text: string): Range[];
-    tokenizeToStrings(text: string): string[];
+    tokenize(text: string, index?: number, length?: number): Range[];
+    tokenizeToStrings(text: string, index?: number, length?: number): string[];
 }

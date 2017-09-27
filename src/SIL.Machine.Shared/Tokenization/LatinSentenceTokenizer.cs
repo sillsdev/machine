@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Tokenization
@@ -17,7 +16,7 @@ namespace SIL.Machine.Tokenization
 			"\'", "\u2019", "\"", "\u201D", "»", "›"
 		};
 		private static readonly HashSet<string> ClosingBrackets = new HashSet<string> { "]", ")" };
-		private static readonly Regex NewLineRegex = new Regex("\n|\r\n?");
+		private static readonly LineSegmentTokenizer LineTokenizer = new LineSegmentTokenizer();
 
 		public LatinSentenceTokenizer()
 			: this(Enumerable.Empty<string>())
@@ -31,26 +30,18 @@ namespace SIL.Machine.Tokenization
 
 		public override IEnumerable<Range<int>> Tokenize(string data, Range<int> range)
 		{
-			int lineStart = 0;
-			foreach (Match match in NewLineRegex.Matches(data.Substring(0, range.End), range.Start))
+			foreach (Range<int> lineRange in LineTokenizer.Tokenize(data, range))
 			{
-				foreach (Range<int> sentenceRange in TokenizeLine(data, lineStart, match.Index + match.Length))
-					yield return sentenceRange;
-				lineStart = match.Index + match.Length;
-			}
-
-			if (lineStart < range.End)
-			{
-				foreach (Range<int> sentenceRange in TokenizeLine(data, lineStart, range.End))
+				foreach (Range<int> sentenceRange in TokenizeLine(data, lineRange))
 					yield return sentenceRange;
 			}
 		}
 
-		private IEnumerable<Range<int>> TokenizeLine(string data, int start, int end)
+		private IEnumerable<Range<int>> TokenizeLine(string data, Range<int> lineRange)
 		{
 			int sentenceStart = -1, sentenceEnd = -1;
 			bool inEnd = false, hasEndQuotesBrackets = false;
-			foreach (Range<int> wordRange in base.Tokenize(data, Range<int>.Create(start, end)))
+			foreach (Range<int> wordRange in base.Tokenize(data, lineRange))
 			{
 				if (sentenceStart == -1)
 					sentenceStart = wordRange.Start;
@@ -83,7 +74,7 @@ namespace SIL.Machine.Tokenization
 			}
 
 			if (sentenceStart != -1 && sentenceEnd != -1)
-				yield return Range<int>.Create(sentenceStart, inEnd ? sentenceEnd : end);
+				yield return Range<int>.Create(sentenceStart, inEnd ? sentenceEnd : lineRange.End);
 		}
 	}
 }

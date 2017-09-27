@@ -13,14 +13,16 @@ namespace SIL.Machine.Tokenization
 			_tokenizer = WebApiUtils.CreateSegmentTokenizer(segmentType);
 		}
 
-		public Range<int>[] Tokenize(string text)
+		public Range<int>[] Tokenize(string text, int index = 0, int length = -1)
 		{
-			return _tokenizer.Tokenize(text).ToArray();
+			return _tokenizer.Tokenize(text,
+				Range<int>.Create(index, length == -1 ? text.Length : index + length)).ToArray();
 		}
 
-		public string[] TokenizeToStrings(string text)
+		public string[] TokenizeToStrings(string text, int index = 0, int length = -1)
 		{
-			return _tokenizer.TokenizeToStrings(text).ToArray();
+			return _tokenizer.TokenizeToStrings(text,
+				Range<int>.Create(index, length == -1 ? text.Length : index + length)).ToArray();
 		}
 	}
 }
