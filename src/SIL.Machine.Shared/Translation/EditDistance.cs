@@ -26,12 +26,13 @@ namespace SIL.Machine.Translation
 			return Compute(x, y, true, false);
 		}
 
-		public virtual double Compute(TSeq x, TSeq y, out IReadOnlyList<EditOperation> ops)
+		public virtual double Compute(TSeq x, TSeq y, out EditOperation[] ops)
 		{
 			return Compute(x, y, true, false, out ops);
 		}
 
-		public virtual double ComputePrefix(TSeq x, TSeq y, bool isLastItemComplete, bool usePrefixDelOp, out IReadOnlyList<EditOperation> ops)
+		public virtual double ComputePrefix(TSeq x, TSeq y, bool isLastItemComplete, bool usePrefixDelOp,
+			out EditOperation[] ops)
 		{
 			return Compute(x, y, isLastItemComplete, usePrefixDelOp, out ops);
 		}
@@ -53,14 +54,16 @@ namespace SIL.Machine.Translation
 			return distMatrix;
 		}
 
-		private IEnumerable<EditOperation> GetOperations(TSeq x, TSeq y, double[,] distMatrix, bool isLastItemComplete, bool usePrefixDelOp, int i, int j)
+		private IEnumerable<EditOperation> GetOperations(TSeq x, TSeq y, double[,] distMatrix, bool isLastItemComplete,
+			bool usePrefixDelOp, int i, int j)
 		{
 			int yCount = GetCount(y);
 			var ops = new Stack<EditOperation>();
 			while (i > 0 || j > 0)
 			{
 				EditOperation op;
-				ProcessMatrixCell(x, y, distMatrix, usePrefixDelOp, j != yCount || isLastItemComplete, i, j, out i, out j, out op);
+				ProcessMatrixCell(x, y, distMatrix, usePrefixDelOp, j != yCount || isLastItemComplete, i, j, out i,
+					out j, out op);
 				if (op != EditOperation.PrefixDelete)
 					ops.Push(op);
 			}
@@ -73,11 +76,12 @@ namespace SIL.Machine.Translation
 			return Compute(x, y, isLastItemComplete, usePrefixDelOp, out distMatrix);
 		}
 
-		private double Compute(TSeq x, TSeq y, bool isLastItemComplete, bool usePrefixDelOp, out IReadOnlyList<EditOperation> ops)
+		private double Compute(TSeq x, TSeq y, bool isLastItemComplete, bool usePrefixDelOp, out EditOperation[] ops)
 		{
 			double[,] distMatrix;
 			double dist = Compute(x, y, isLastItemComplete, usePrefixDelOp, out distMatrix);
-			ops = GetOperations(x, y, distMatrix, isLastItemComplete, usePrefixDelOp, GetCount(x), GetCount(y)).ToArray();
+			ops = GetOperations(x, y, distMatrix, isLastItemComplete, usePrefixDelOp, GetCount(x), GetCount(y))
+				.ToArray();
 			return dist;
 		}
 
@@ -93,15 +97,16 @@ namespace SIL.Machine.Translation
 				{
 					int iPred, jPred;
 					EditOperation op;
-					distMatrix[i, j] = ProcessMatrixCell(x, y, distMatrix, usePrefixDelOp, j != yCount || isLastItemComplete, i, j, out iPred, out jPred, out op);
+					distMatrix[i, j] = ProcessMatrixCell(x, y, distMatrix, usePrefixDelOp,
+						j != yCount || isLastItemComplete, i, j, out iPred, out jPred, out op);
 				}
 			}
 
 			return distMatrix[xCount, yCount];
 		}
 
-		protected double ProcessMatrixCell(TSeq x, TSeq y, double[,] distMatrix, bool usePrefixDelOp, bool isComplete, int i, int j,
-			out int iPred, out int jPred, out EditOperation op)
+		protected double ProcessMatrixCell(TSeq x, TSeq y, double[,] distMatrix, bool usePrefixDelOp, bool isComplete,
+			int i, int j, out int iPred, out int jPred, out EditOperation op)
 		{
 			if (i != 0 && j != 0)
 			{

@@ -2,7 +2,7 @@
 
 namespace SIL.Machine.Translation
 {
-	public class SegmentEditDistance : EditDistance<IReadOnlyList<string>, string>
+	public class SegmentEditDistance : EditDistance<string[], string>
 	{
 		private readonly WordEditDistance _wordEditDistance;
 
@@ -51,25 +51,26 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public double ComputePrefix(IReadOnlyList<string> x, IReadOnlyList<string> y, bool isLastItemComplete, bool usePrefixDelOp,
-			out IReadOnlyList<EditOperation> wordOps, out IReadOnlyList<EditOperation> charOps)
+		public double ComputePrefix(string[] x, string[] y, bool isLastItemComplete, bool usePrefixDelOp,
+			out EditOperation[] wordOps, out EditOperation[] charOps)
 		{
 			double[,] distMatrix;
 			double dist = Compute(x, y, isLastItemComplete, usePrefixDelOp, out distMatrix);
 
 			charOps = null;
-			int i = x.Count;
-			int j = y.Count;
+			int i = x.Length;
+			int j = y.Length;
 			var ops = new Stack<EditOperation>();
 			while (i > 0 || j > 0)
 			{
 				EditOperation op;
-				ProcessMatrixCell(x, y, distMatrix, usePrefixDelOp, j != y.Count || isLastItemComplete, i, j, out i, out j, out op);
+				ProcessMatrixCell(x, y, distMatrix, usePrefixDelOp, j != y.Length || isLastItemComplete, i, j, out i,
+					out j, out op);
 				if (op != EditOperation.PrefixDelete)
 					ops.Push(op);
 
-				if (j + 1 == y.Count && !isLastItemComplete && op == EditOperation.Hit)
-					_wordEditDistance.ComputePrefix(x[i], y[y.Count - 1], true, true, out charOps);
+				if (j + 1 == y.Length && !isLastItemComplete && op == EditOperation.Hit)
+					_wordEditDistance.ComputePrefix(x[i], y[y.Length - 1], true, true, out charOps);
 			}
 
 			wordOps = ops.ToArray();
@@ -79,7 +80,7 @@ namespace SIL.Machine.Translation
 			return dist;
 		}
 
-		public void IncrComputePrefixFirstRow(IList<double> scores, IList<double> prevScores, IReadOnlyList<string> yIncr)
+		public void IncrComputePrefixFirstRow(List<double> scores, List<double> prevScores, string[] yIncr)
 		{
 			if (scores != prevScores)
 			{
@@ -89,7 +90,7 @@ namespace SIL.Machine.Translation
 			}
 
 			int startPos = scores.Count;
-			for (int jIncr = 0; jIncr < yIncr.Count; jIncr++)
+			for (int jIncr = 0; jIncr < yIncr.Length; jIncr++)
 			{
 				int j = startPos + jIncr;
 				if (j == 0)
@@ -99,12 +100,13 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public IEnumerable<EditOperation> IncrComputePrefix(IList<double> scores, IList<double> prevScores, string xWord, IReadOnlyList<string> yIncr, bool isLastItemComplete)
+		public IEnumerable<EditOperation> IncrComputePrefix(List<double> scores, List<double> prevScores, string xWord,
+			string[] yIncr, bool isLastItemComplete)
 		{
 			var x = new[] {xWord};
 			var y = new string[prevScores.Count - 1];
-			for (int i = 0; i < yIncr.Count; i++)
-				y[prevScores.Count - yIncr.Count - 1 + i] = yIncr[i];
+			for (int i = 0; i < yIncr.Length; i++)
+				y[prevScores.Count - yIncr.Length - 1 + i] = yIncr[i];
 
 			double[,] distMatrix = InitDistMatrix(x, y);
 
@@ -116,10 +118,10 @@ namespace SIL.Machine.Translation
 			while (scores.Count < prevScores.Count)
 				scores.Add(0);
 
-			int startPos = prevScores.Count - yIncr.Count;
+			int startPos = prevScores.Count - yIncr.Length;
 
 			var ops = new List<EditOperation>();
-			for (int jIncr = 0; jIncr < yIncr.Count; jIncr++)
+			for (int jIncr = 0; jIncr < yIncr.Length; jIncr++)
 			{
 				int j = startPos + jIncr;
 				int iPred, jPred;
@@ -134,12 +136,12 @@ namespace SIL.Machine.Translation
 			return ops;
 		}
 
-		protected override int GetCount(IReadOnlyList<string> item)
+		protected override int GetCount(string[] item)
 		{
-			return item.Count;
+			return item.Length;
 		}
 
-		protected override string GetItem(IReadOnlyList<string> seq, int index)
+		protected override string GetItem(string[] seq, int index)
 		{
 			return seq[index];
 		}
@@ -154,7 +156,7 @@ namespace SIL.Machine.Translation
 			if (x == string.Empty)
 				return (SubstitutionCost * 0.99) * y.Length;
 
-			IReadOnlyList<EditOperation> ops;
+			EditOperation[] ops;
 			if (isComplete)
 				_wordEditDistance.Compute(x, y, out ops);
 			else
@@ -163,10 +165,12 @@ namespace SIL.Machine.Translation
 			int hitCount, insCount, substCount, delCount;
 			GetOpCounts(ops, out hitCount, out insCount, out substCount, out delCount);
 
-			return (HitCost * hitCount) + (InsertionCost * insCount) + (SubstitutionCost * substCount) + (DeletionCost * delCount);
+			return (HitCost * hitCount) + (InsertionCost * insCount) + (SubstitutionCost * substCount)
+				+ (DeletionCost * delCount);
 		}
 
-		private static void GetOpCounts(IReadOnlyList<EditOperation> ops, out int hitCount, out int insCount, out int substCount, out int delCount)
+		private static void GetOpCounts(EditOperation[] ops, out int hitCount, out int insCount, out int substCount,
+			out int delCount)
 		{
 			hitCount = 0;
 			insCount = 0;

@@ -15,7 +15,8 @@ namespace SIL.Machine.Translation
 			SetErrorModelParameters(128, 0.8, 1, 1, 1);
 		}
 
-		public void SetErrorModelParameters(int vocSize, double hitProb, double insFactor, double substFactor, double delFactor)
+		public void SetErrorModelParameters(int vocSize, double hitProb, double insFactor, double substFactor,
+			double delFactor)
 		{
 			double e;
 			if (vocSize == 0)
@@ -43,26 +44,29 @@ namespace SIL.Machine.Translation
 
 		public void SetupEsi(EcmScoreInfo esi, EcmScoreInfo prevEsi, string word)
 		{
-			double score = _segmentEditDistance.Compute(new[] {word}, new string[0]);
+			double score = _segmentEditDistance.Compute(new string[] { word }, new string[0]);
 			esi.Scores.Clear();
 			esi.Scores.Add(prevEsi.Scores[0] + score);
 			esi.Operations.Clear();
 			esi.Operations.Add(EditOperation.None);
 		}
 
-		public void ExtendInitialEsi(EcmScoreInfo initialEsi, EcmScoreInfo prevInitialEsi, IReadOnlyList<string> prefixDiff)
+		public void ExtendInitialEsi(EcmScoreInfo initialEsi, EcmScoreInfo prevInitialEsi, string[] prefixDiff)
 		{
 			_segmentEditDistance.IncrComputePrefixFirstRow(initialEsi.Scores, prevInitialEsi.Scores, prefixDiff);
 		}
 
-		public void ExtendEsi(EcmScoreInfo esi, EcmScoreInfo prevEsi, string word, IReadOnlyList<string> prefixDiff, bool isLastWordComplete)
+		public void ExtendEsi(EcmScoreInfo esi, EcmScoreInfo prevEsi, string word, string[] prefixDiff,
+			bool isLastWordComplete)
 		{
-			IEnumerable<EditOperation> ops = _segmentEditDistance.IncrComputePrefix(esi.Scores, prevEsi.Scores, word, prefixDiff, isLastWordComplete);
+			IEnumerable<EditOperation> ops = _segmentEditDistance.IncrComputePrefix(esi.Scores, prevEsi.Scores, word,
+				prefixDiff, isLastWordComplete);
 			foreach (EditOperation op in ops)
 				esi.Operations.Add(op);
 		}
 
-		public int CorrectPrefix(TranslationInfo correction, int uncorrectedPrefixLen, IReadOnlyList<string> prefix, bool isLastWordComplete)
+		public int CorrectPrefix(TranslationInfo correction, int uncorrectedPrefixLen, string[] prefix,
+			bool isLastWordComplete)
 		{
 			if (uncorrectedPrefixLen == 0)
 			{
@@ -71,16 +75,17 @@ namespace SIL.Machine.Translation
 					correction.Target.Add(w);
 					correction.TargetConfidences.Add(-1);
 				}
-				return prefix.Count;
+				return prefix.Length;
 			}
 
-			IReadOnlyList<EditOperation> wordOps, charOps;
-			_segmentEditDistance.ComputePrefix(correction.Target.Take(uncorrectedPrefixLen).ToArray(), prefix, isLastWordComplete, false, out wordOps, out charOps);
+			EditOperation[] wordOps, charOps;
+			_segmentEditDistance.ComputePrefix(correction.Target.Take(uncorrectedPrefixLen).ToArray(), prefix,
+				isLastWordComplete, false, out wordOps, out charOps);
 			return CorrectPrefix(correction, wordOps, charOps, prefix, isLastWordComplete);
 		}
 
-		private int CorrectPrefix(TranslationInfo correction, IReadOnlyList<EditOperation> wordOps, IReadOnlyList<EditOperation> charOps,
-			IReadOnlyList<string> prefix, bool isLastWordComplete)
+		private int CorrectPrefix(TranslationInfo correction, EditOperation[] wordOps, EditOperation[] charOps,
+			string[] prefix, bool isLastWordComplete)
 		{
 			var alignmentColsToCopy = new List<int>();
 
@@ -107,7 +112,8 @@ namespace SIL.Machine.Translation
 							for (int l = k; l < correction.Phrases.Count; l++)
 								correction.Phrases[l].TargetCut--;
 
-							if (correction.Phrases[k].TargetCut < 0 || (k > 0 && correction.Phrases[k].TargetCut == correction.Phrases[k - 1].TargetCut))
+							if (correction.Phrases[k].TargetCut < 0
+								|| (k > 0 && correction.Phrases[k].TargetCut == correction.Phrases[k - 1].TargetCut))
 							{
 								correction.Phrases.RemoveAt(k);
 								alignmentColsToCopy.Clear();
@@ -125,7 +131,7 @@ namespace SIL.Machine.Translation
 
 					case EditOperation.Hit:
 					case EditOperation.Substitute:
-						if (wordOp == EditOperation.Substitute || j < prefix.Count - 1 || isLastWordComplete)
+						if (wordOp == EditOperation.Substitute || j < prefix.Length - 1 || isLastWordComplete)
 							correction.Target[j] = prefix[j];
 						else
 							correction.Target[j] = CorrectWord(charOps, correction.Target[j], prefix[j]);
@@ -186,7 +192,7 @@ namespace SIL.Machine.Translation
 			correction.Phrases[phraseIndex].Alignment = newAlignment;
 		}
 
-		private string CorrectWord(IReadOnlyList<EditOperation> charOps, string word, string prefix)
+		private string CorrectWord(EditOperation[] charOps, string word, string prefix)
 		{
 			var sb = new StringBuilder();
 			int i = 0, j = 0;

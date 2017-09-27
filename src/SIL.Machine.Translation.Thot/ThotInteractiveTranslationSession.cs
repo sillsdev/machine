@@ -8,7 +8,7 @@ namespace SIL.Machine.Translation.Thot
 	{
 		private readonly ThotSmtEngine _engine;
 		private readonly IReadOnlyList<string> _sourceSegment; 
-		private readonly List<string> _prefix;
+		private string[] _prefix;
 		private bool _isLastWordComplete;
 		private TranslationResult _currentResult;
 		private readonly ErrorCorrectionWordGraphProcessor _wordGraphProcessor;
@@ -17,7 +17,7 @@ namespace SIL.Machine.Translation.Thot
 		{
 			_engine = engine;
 			_sourceSegment = sourceSegment;
-			_prefix = new List<string>();
+			_prefix = new string[0];
 			_isLastWordComplete = true;
 			_wordGraphProcessor = new ErrorCorrectionWordGraphProcessor(_engine.ErrorCorrectionModel, wordGraph);
 			_currentResult = CreateInteractiveResult();
@@ -62,7 +62,7 @@ namespace SIL.Machine.Translation.Thot
 		private TranslationResult CreateInteractiveResult()
 		{
 			TranslationInfo correction = _wordGraphProcessor.Correct(_prefix, _isLastWordComplete, 1).FirstOrDefault();
-			return _engine.CreateResult(_sourceSegment, _prefix.Count, correction);
+			return _engine.CreateResult(_sourceSegment, _prefix.Length, correction);
 		}
 
 		public TranslationResult SetPrefix(IReadOnlyList<string> prefix, bool isLastWordComplete)
@@ -71,8 +71,7 @@ namespace SIL.Machine.Translation.Thot
 
 			if (!_prefix.SequenceEqual(prefix) || _isLastWordComplete != isLastWordComplete)
 			{
-				_prefix.Clear();
-				_prefix.AddRange(prefix);
+				_prefix = prefix.ToArray();
 				_isLastWordComplete = isLastWordComplete;
 				_currentResult = CreateInteractiveResult();
 			}

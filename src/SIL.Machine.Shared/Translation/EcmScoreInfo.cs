@@ -4,10 +4,10 @@ namespace SIL.Machine.Translation
 {
 	public class EcmScoreInfo
 	{
-		public IList<double> Scores { get; } = new List<double>();
-		public IList<EditOperation> Operations { get; } = new List<EditOperation>();
+		public List<double> Scores { get; } = new List<double>();
+		public List<EditOperation> Operations { get; } = new List<EditOperation>();
 
-		public void UpdatePositions(EcmScoreInfo prevEsi, IList<int> positions)
+		public void UpdatePositions(EcmScoreInfo prevEsi, List<int> positions)
 		{
 			while (Scores.Count < prevEsi.Scores.Count)
 				Scores.Add(0);
@@ -31,7 +31,7 @@ namespace SIL.Machine.Translation
 				Operations.RemoveAt(Operations.Count - 1);
 		}
 
-		public IReadOnlyList<int> GetLastInsPrefixWordFromEsi()
+		public int[] GetLastInsPrefixWordFromEsi()
 		{
 			var results = new int[Operations.Count];
 
