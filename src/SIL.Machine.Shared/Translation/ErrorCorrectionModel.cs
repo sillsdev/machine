@@ -78,14 +78,14 @@ namespace SIL.Machine.Translation
 				return prefix.Length;
 			}
 
-			EditOperation[] wordOps, charOps;
+			IEnumerable<EditOperation> wordOps, charOps;
 			_segmentEditDistance.ComputePrefix(correction.Target.Take(uncorrectedPrefixLen).ToArray(), prefix,
 				isLastWordComplete, false, out wordOps, out charOps);
 			return CorrectPrefix(correction, wordOps, charOps, prefix, isLastWordComplete);
 		}
 
-		private int CorrectPrefix(TranslationInfo correction, EditOperation[] wordOps, EditOperation[] charOps,
-			string[] prefix, bool isLastWordComplete)
+		private int CorrectPrefix(TranslationInfo correction, IEnumerable<EditOperation> wordOps,
+			IEnumerable<EditOperation> charOps, string[] prefix, bool isLastWordComplete)
 		{
 			var alignmentColsToCopy = new List<int>();
 
@@ -192,7 +192,7 @@ namespace SIL.Machine.Translation
 			correction.Phrases[phraseIndex].Alignment = newAlignment;
 		}
 
-		private string CorrectWord(EditOperation[] charOps, string word, string prefix)
+		private string CorrectWord(IEnumerable<EditOperation> charOps, string word, string prefix)
 		{
 			var sb = new StringBuilder();
 			int i = 0, j = 0;

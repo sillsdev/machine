@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace SIL.Machine.Translation
 {
@@ -52,7 +53,7 @@ namespace SIL.Machine.Translation
 		}
 
 		public double ComputePrefix(string[] x, string[] y, bool isLastItemComplete, bool usePrefixDelOp,
-			out EditOperation[] wordOps, out EditOperation[] charOps)
+			out IEnumerable<EditOperation> wordOps, out IEnumerable<EditOperation> charOps)
 		{
 			double[,] distMatrix;
 			double dist = Compute(x, y, isLastItemComplete, usePrefixDelOp, out distMatrix);
@@ -73,9 +74,9 @@ namespace SIL.Machine.Translation
 					_wordEditDistance.ComputePrefix(x[i], y[y.Length - 1], true, true, out charOps);
 			}
 
-			wordOps = ops.ToArray();
+			wordOps = ops;
 			if (charOps == null)
-				charOps = new EditOperation[0];
+				charOps = Enumerable.Empty<EditOperation>();
 
 			return dist;
 		}
@@ -156,7 +157,7 @@ namespace SIL.Machine.Translation
 			if (x == string.Empty)
 				return (SubstitutionCost * 0.99) * y.Length;
 
-			EditOperation[] ops;
+			IEnumerable<EditOperation> ops;
 			if (isComplete)
 				_wordEditDistance.Compute(x, y, out ops);
 			else
@@ -169,8 +170,8 @@ namespace SIL.Machine.Translation
 				+ (DeletionCost * delCount);
 		}
 
-		private static void GetOpCounts(EditOperation[] ops, out int hitCount, out int insCount, out int substCount,
-			out int delCount)
+		private static void GetOpCounts(IEnumerable<EditOperation> ops, out int hitCount, out int insCount,
+			out int substCount, out int delCount)
 		{
 			hitCount = 0;
 			insCount = 0;

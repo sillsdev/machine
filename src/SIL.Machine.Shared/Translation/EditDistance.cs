@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace SIL.Machine.Translation
 {
@@ -26,13 +25,13 @@ namespace SIL.Machine.Translation
 			return Compute(x, y, true, false);
 		}
 
-		public virtual double Compute(TSeq x, TSeq y, out EditOperation[] ops)
+		public virtual double Compute(TSeq x, TSeq y, out IEnumerable<EditOperation> ops)
 		{
 			return Compute(x, y, true, false, out ops);
 		}
 
 		public virtual double ComputePrefix(TSeq x, TSeq y, bool isLastItemComplete, bool usePrefixDelOp,
-			out EditOperation[] ops)
+			out IEnumerable<EditOperation> ops)
 		{
 			return Compute(x, y, isLastItemComplete, usePrefixDelOp, out ops);
 		}
@@ -76,12 +75,12 @@ namespace SIL.Machine.Translation
 			return Compute(x, y, isLastItemComplete, usePrefixDelOp, out distMatrix);
 		}
 
-		private double Compute(TSeq x, TSeq y, bool isLastItemComplete, bool usePrefixDelOp, out EditOperation[] ops)
+		private double Compute(TSeq x, TSeq y, bool isLastItemComplete, bool usePrefixDelOp,
+			out IEnumerable<EditOperation> ops)
 		{
 			double[,] distMatrix;
 			double dist = Compute(x, y, isLastItemComplete, usePrefixDelOp, out distMatrix);
-			ops = GetOperations(x, y, distMatrix, isLastItemComplete, usePrefixDelOp, GetCount(x), GetCount(y))
-				.ToArray();
+			ops = GetOperations(x, y, distMatrix, isLastItemComplete, usePrefixDelOp, GetCount(x), GetCount(y));
 			return dist;
 		}
 
