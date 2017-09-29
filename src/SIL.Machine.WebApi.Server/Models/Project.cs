@@ -10,6 +10,12 @@
 		{
 			Id = project.Id;
 			Revision = project.Revision;
+			SourceLanguageTag = project.SourceLanguageTag;
+			TargetLanguageTag = project.TargetLanguageTag;
+			SourceSegmentType = project.SourceSegmentType;
+			TargetSegmentType = project.TargetSegmentType;
+			IsShared = project.IsShared;
+			Engine = project.Engine;
 		}
 
 		public string Id { get; set; }
