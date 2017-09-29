@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SIL.Extensions;
 using SIL.Machine.WebApi.Server.Models;
 using SIL.Threading;
 
@@ -9,14 +10,14 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 {
 	public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
 	{
-		private readonly Dictionary<string, Action<EntityChange<T>>> _changeListeners;
+		private readonly Dictionary<string, ISet<Action<EntityChange<T>>>> _changeListeners;
 
 		public MemoryRepository(IRepository<T> persistenceRepo = null)
 		{
 			Lock = new AsyncReaderWriterLock();
 			Entities = new Dictionary<string, T>();
 			PersistenceRepository = persistenceRepo;
-			_changeListeners = new Dictionary<string, Action<EntityChange<T>>>();
+			_changeListeners = new Dictionary<string, ISet<Action<EntityChange<T>>>>();
 			if (PersistenceRepository != null)
 			{
 				foreach (T entity in PersistenceRepository.GetAll())
@@ -160,8 +161,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		{
 			using (await Lock.WriterLockAsync())
 			{
-				_changeListeners[id] = listener;
-				return new Subscription<string, T>(Lock, _changeListeners, id);
+				return new Subscription<string, T>(Lock, _changeListeners, id, listener);
 			}
 		}
 
@@ -215,8 +215,8 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			T oldEntity = Entities[entity.Id];
 			Entities[entity.Id] = newEntity;
 
-			if (_changeListeners.TryGetValue(entity.Id, out Action<EntityChange<T>> changeListener))
-				changeListeners.Add(changeListener);
+			if (_changeListeners.TryGetValue(entity.Id, out ISet<Action<EntityChange<T>>> listeners))
+				changeListeners.AddRange(listeners);
 
 			OnEntityChanged(EntityChangeType.Update, oldEntity, newEntity, changeListeners);
 
@@ -237,8 +237,8 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			{
 				Entities.Remove(id);
 
-				if (_changeListeners.TryGetValue(id, out Action<EntityChange<T>> changeListener))
-					changeListeners.Add(changeListener);
+				if (_changeListeners.TryGetValue(id, out ISet<Action<EntityChange<T>>> listeners))
+					changeListeners.AddRange(listeners);
 
 				OnEntityChanged(EntityChangeType.Delete, oldEntity, null, changeListeners);
 			}

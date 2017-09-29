@@ -12,7 +12,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		private readonly Dictionary<TKey, TEntity> _index;
 		private readonly Func<TEntity, IEnumerable<TKey>> _keySelector;
 		private readonly Func<TEntity, bool> _filter;
-		private readonly Dictionary<TKey, Action<EntityChange<TEntity>>> _changeListeners;
+		private readonly Dictionary<TKey, ISet<Action<EntityChange<TEntity>>>> _changeListeners;
 
 		public UniqueEntityIndex(Func<TEntity, TKey> keySelector, Func<TEntity, bool> filter = null)
 			: this(e => keySelector(e).ToEnumerable(), filter)
@@ -24,7 +24,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			_index = new Dictionary<TKey, TEntity>();
 			_keySelector = keySelector;
 			_filter = filter;
-			_changeListeners = new Dictionary<TKey, Action<EntityChange<TEntity>>>();
+			_changeListeners = new Dictionary<TKey, ISet<Action<EntityChange<TEntity>>>>();
 		}
 
 		public bool TryGetEntity(TKey key, out TEntity entity)
@@ -77,8 +77,8 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 				keysToRemove.Remove(key);
 				if (changeListeners != null)
 				{
-					if (_changeListeners.TryGetValue(key, out Action<EntityChange<TEntity>> changeListener))
-						changeListeners.Add(changeListener);
+					if (_changeListeners.TryGetValue(key, out ISet<Action<EntityChange<TEntity>>> listeners))
+						changeListeners.AddRange(listeners);
 				}
 			}
 
@@ -97,16 +97,15 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 
 				if (changeListeners != null)
 				{
-					if (_changeListeners.TryGetValue(key, out Action<EntityChange<TEntity>> changeListener))
-						changeListeners.Add(changeListener);
+					if (_changeListeners.TryGetValue(key, out ISet<Action<EntityChange<TEntity>>> listeners))
+						changeListeners.AddRange(listeners);
 				}
 			}
 		}
 
 		public IDisposable Subscribe(AsyncReaderWriterLock repoLock, TKey key, Action<EntityChange<TEntity>> listener)
 		{
-			_changeListeners[key] = listener;
-			return new Subscription<TKey, TEntity>(repoLock, _changeListeners, key);
+			return new Subscription<TKey, TEntity>(repoLock, _changeListeners, key, listener);
 		}
 	}
 }
