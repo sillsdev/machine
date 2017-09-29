@@ -15,11 +15,6 @@ namespace SIL.Machine.Translation
 
 	public abstract class EditDistance<TSeq, TItem>
 	{
-		public virtual double HitCost { get; set; }
-		public virtual double InsertionCost { get; set; }
-		public virtual double SubstitutionCost { get; set; }
-		public virtual double DeletionCost { get; set; }
-
 		public virtual double Compute(TSeq x, TSeq y)
 		{
 			return Compute(x, y, true, false);

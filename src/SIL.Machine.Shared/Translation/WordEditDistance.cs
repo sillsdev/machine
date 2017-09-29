@@ -2,6 +2,35 @@
 {
 	public class WordEditDistance : EditDistance<string, char>
 	{
+		private double _hitCost;
+		private double _insertionCost;
+		private double _deletionCost;
+		private double _substitutionCost;
+
+		public double HitCost
+		{
+			get { return _hitCost; }
+			set { _hitCost = value; }
+		}
+
+		public double InsertionCost
+		{
+			get { return _insertionCost; }
+			set { _insertionCost = value; }
+		}
+
+		public double DeletionCost
+		{
+			get { return _deletionCost; }
+			set { _deletionCost = value; }
+		}
+
+		public double SubstitutionCost
+		{
+			get { return _substitutionCost; }
+			set { _substitutionCost = value; }
+		}
+
 		protected override int GetCount(string item)
 		{
 			return item.Length;
@@ -14,22 +43,22 @@
 
 		protected override double GetHitCost(char x, char y, bool isComplete)
 		{
-			return HitCost;
+			return _hitCost;
 		}
 
 		protected override double GetSubstitutionCost(char x, char y, bool isComplete)
 		{
-			return SubstitutionCost;
+			return _substitutionCost;
 		}
 
 		protected override double GetDeletionCost(char x)
 		{
-			return DeletionCost;
+			return _deletionCost;
 		}
 
 		protected override double GetInsertionCost(char y)
 		{
-			return InsertionCost;
+			return _insertionCost;
 		}
 
 		protected override bool IsHit(char x, char y, bool isComplete)

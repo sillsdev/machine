@@ -12,44 +12,28 @@ namespace SIL.Machine.Translation
 			_wordEditDistance = new WordEditDistance();
 		}
 
-		public override double HitCost
+		public double HitCost
 		{
-			get { return base.HitCost; }
-			set
-			{
-				base.HitCost = value;
-				_wordEditDistance.HitCost = value;
-			}
+			get { return _wordEditDistance.HitCost; }
+			set { _wordEditDistance.HitCost = value; }
 		}
 
-		public override double SubstitutionCost
+		public double SubstitutionCost
 		{
-			get { return base.SubstitutionCost; }
-			set
-			{
-				base.SubstitutionCost = value;
-				_wordEditDistance.SubstitutionCost = value;
-			}
+			get { return _wordEditDistance.SubstitutionCost; }
+			set { _wordEditDistance.SubstitutionCost = value; }
 		}
 
-		public override double InsertionCost
+		public double InsertionCost
 		{
-			get { return base.InsertionCost; }
-			set
-			{
-				base.InsertionCost = value;
-				_wordEditDistance.InsertionCost = value;
-			}
+			get { return _wordEditDistance.InsertionCost; }
+			set { _wordEditDistance.InsertionCost = value; }
 		}
 
-		public override double DeletionCost
+		public double DeletionCost
 		{
-			get { return base.DeletionCost; }
-			set
-			{
-				base.DeletionCost = value;
-				_wordEditDistance.DeletionCost = value;
-			}
+			get { return _wordEditDistance.DeletionCost; }
+			set { _wordEditDistance.DeletionCost = value; }
 		}
 
 		public double ComputePrefix(string[] x, string[] y, bool isLastItemComplete, bool usePrefixDelOp,
