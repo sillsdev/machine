@@ -29,7 +29,7 @@ namespace SIL.Machine.Corpora
 				}
 
 				foreach (string fileName in Directory.EnumerateFiles(path, searchPattern))
-					yield return new TextFileText(Path.GetFileNameWithoutExtension(fileName), fileName, wordTokenizer);
+					yield return new TextFileText(wordTokenizer, Path.GetFileNameWithoutExtension(fileName), fileName);
 			}
 		}
 	}

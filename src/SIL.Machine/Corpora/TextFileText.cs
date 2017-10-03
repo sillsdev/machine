@@ -8,13 +8,13 @@ namespace SIL.Machine.Corpora
 	public class TextFileText : IText
 	{
 		private readonly string _fileName;
-		private readonly ITokenizer<string, int> _tokenizer;
+		private readonly ITokenizer<string, int> _wordTokenizer;
 
-		public TextFileText(string id, string fileName, ITokenizer<string, int> tokenizer)
+		public TextFileText(ITokenizer<string, int> wordTokenizer, string id, string fileName)
 		{
 			Id = id;
 			_fileName = fileName;
-			_tokenizer = tokenizer;
+			_wordTokenizer = wordTokenizer;
 		}
 
 		public string Id { get; }
@@ -29,7 +29,7 @@ namespace SIL.Machine.Corpora
 					string line;
 					while ((line = reader.ReadLine()) != null)
 					{
-						yield return new TextSegment(new TextSegmentRef(1, lineNum), _tokenizer.TokenizeToStrings(line).ToArray());
+						yield return new TextSegment(new TextSegmentRef(1, lineNum), _wordTokenizer.TokenizeToStrings(line).ToArray());
 						lineNum++;
 					}
 				}

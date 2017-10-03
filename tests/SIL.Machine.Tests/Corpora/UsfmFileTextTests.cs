@@ -6,15 +6,16 @@ using SIL.Machine.Tokenization;
 namespace SIL.Machine.Corpora
 {
 	[TestFixture]
-	public class UsfmTextTests
+	public class UsfmFileTextTests
 	{
 		[Test]
 		public void Segments_NonEmptyText()
 		{
 			var tokenizer = new LatinWordTokenizer();
-			var corpus = new UsfmTextCorpus(CorporaTestHelpers.UsfmStylesheetPath, Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath, tokenizer);
+			var corpus = new UsfmFileTextCorpus(CorporaTestHelpers.UsfmStylesheetPath, Encoding.UTF8,
+				CorporaTestHelpers.UsfmTestProjectPath, tokenizer);
 
-			IText text = corpus.GetText("41MAT");
+			IText text = corpus.GetText("MAT");
 			TextSegment[] segments = text.Segments.ToArray();
 			Assert.That(segments.Length, Is.EqualTo(10));
 			Assert.That(segments[0].SegmentRef, Is.EqualTo(new TextSegmentRef(1, 1)));
@@ -31,9 +32,10 @@ namespace SIL.Machine.Corpora
 		public void Segments_EmptyText()
 		{
 			var tokenizer = new LatinWordTokenizer();
-			var corpus = new UsfmTextCorpus(CorporaTestHelpers.UsfmStylesheetPath, Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath, tokenizer);
+			var corpus = new UsfmFileTextCorpus(CorporaTestHelpers.UsfmStylesheetPath, Encoding.UTF8,
+				CorporaTestHelpers.UsfmTestProjectPath, tokenizer);
 
-			IText text = corpus.GetText("42MRK");
+			IText text = corpus.GetText("MRK");
 			TextSegment[] segments = text.Segments.ToArray();
 			Assert.That(segments, Is.Empty);
 		}

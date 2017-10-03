@@ -1,39 +1,35 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
 using SIL.Machine.Tokenization;
 
 namespace SIL.Machine.Corpora
 {
-	public class UsfmText : IText
+	public abstract class UsfmTextBase : StreamTextBase
 	{
-		private readonly string _fileName;
 		private readonly UsfmParser _parser;
 		private readonly Encoding _encoding;
-		private readonly ITokenizer<string, int> _tokenizer;
 
-		public UsfmText(UsfmStylesheet stylesheet, Encoding encoding, string fileName, ITokenizer<string, int> tokenizer)
+		protected UsfmTextBase(ITokenizer<string, int> wordTokenizer, string id, UsfmStylesheet stylesheet,
+			Encoding encoding)
+			: base(wordTokenizer, id)
 		{
-			_fileName = fileName;
 			_parser = new UsfmParser(stylesheet);
 			_encoding = encoding;
-			_tokenizer = tokenizer;
-			string name = Path.GetFileNameWithoutExtension(fileName);
-			Debug.Assert(name != null);
-			Id = name.Substring(0, name.StartsWith("100") ? 6 : 5);
 		}
 
-		public string Id { get; }
-
-		public IEnumerable<TextSegment> Segments
+		public override IEnumerable<TextSegment> Segments
 		{
 			get
 			{
+				string usfm;
+				using (IStreamContainer streamContainer = CreateStreamContainer())
+				using (var reader = new StreamReader(streamContainer.OpenStream(), _encoding))
+				{
+					usfm = reader.ReadToEnd();
+				}
 				bool inVerse = false;
-				string usfm = File.ReadAllText(_fileName, _encoding);
 				var sb = new StringBuilder();
 				int chapter = 0, verse = 0;
 				foreach (UsfmToken token in _parser.Parse(usfm))
@@ -43,7 +39,7 @@ namespace SIL.Machine.Corpora
 						case UsfmTokenType.Chapter:
 							if (inVerse)
 							{
-								yield return new TextSegment(new TextSegmentRef(chapter, verse), _tokenizer.TokenizeToStrings(sb.ToString().Trim()).ToArray());
+								yield return CreateTextSegment(chapter, verse, sb.ToString());
 								sb.Clear();
 								inVerse = false;
 							}
@@ -57,7 +53,7 @@ namespace SIL.Machine.Corpora
 						case UsfmTokenType.Verse:
 							if (inVerse)
 							{
-								yield return new TextSegment(new TextSegmentRef(chapter, verse), _tokenizer.TokenizeToStrings(sb.ToString().Trim()).ToArray());
+								yield return CreateTextSegment(chapter, verse, sb.ToString());
 								sb.Clear();
 							}
 							else
@@ -79,7 +75,7 @@ namespace SIL.Machine.Corpora
 				}
 
 				if (inVerse)
-					yield return new TextSegment(new TextSegmentRef(chapter, verse), _tokenizer.TokenizeToStrings(sb.ToString().Trim()).ToArray());
+					yield return CreateTextSegment(chapter, verse, sb.ToString());
 			}
 		}
 	}
