@@ -82,9 +82,9 @@ namespace SIL.Machine.Translation
 
 					var wordTokenizer = new WhitespaceTokenizer();
 					var sourceCorpus = new DictionaryTextCorpus(corpus1Option.Values
-						.Select((p, i) => new TextFileText(i.ToString(), p, wordTokenizer)));
+						.Select((p, i) => new TextFileText(wordTokenizer, i.ToString(), p)));
 					var targetCorpus = new DictionaryTextCorpus(corpus2Option.Values
-						.Select((p, i) => new TextFileText(i.ToString(), p, wordTokenizer)));
+						.Select((p, i) => new TextFileText(wordTokenizer, i.ToString(), p)));
 					ITextAlignmentCorpus alignmentCorpus = null;
 					if (alignmentsOption.HasValue())
 					{

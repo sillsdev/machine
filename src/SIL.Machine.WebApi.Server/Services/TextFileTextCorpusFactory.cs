@@ -35,8 +35,8 @@ namespace SIL.Machine.WebApi.Server.Services
 
 				foreach (string file in Directory.EnumerateFiles(Path.Combine(_textFileDir, projectId, dir), "*.txt"))
 				{
-					var text = new TextFileText($"{projectId}_{Path.GetFileNameWithoutExtension(file)}", file,
-						wordTokenizer);
+					var text = new TextFileText(wordTokenizer, $"{projectId}_{Path.GetFileNameWithoutExtension(file)}",
+						file);
 					texts.Add(text);
 				}
 			}

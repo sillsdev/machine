@@ -204,9 +204,9 @@ namespace SIL.Machine.Translation.TestApp
 					_texts.Add(text);
 
 					Func<TextSegment, bool> segmentFilter = s => text.IsApproved(s.SegmentRef);
-					sourceTexts.Add(new FilteredText(new TextFileText(name, srcTextFileName, _tokenizer),
+					sourceTexts.Add(new FilteredText(new TextFileText(_tokenizer, name, srcTextFileName),
 						segmentFilter));
-					targetTexts.Add(new FilteredText(new TextFileText(name, trgTextFileName, _tokenizer),
+					targetTexts.Add(new FilteredText(new TextFileText(_tokenizer, name, trgTextFileName),
 						segmentFilter));
 					if (alignmentsFileName != null)
 						alignmentCollections.Add(new TextFileTextAlignmentCollection(name, alignmentsFileName));
