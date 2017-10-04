@@ -8,7 +8,15 @@ namespace SIL.CommandLine
 	/// <summary>
 	/// An ASCII progress bar
 	/// </summary>
-	public class ConsoleProgressBar : IDisposable, IProgress<double>
+	public class ConsoleProgressBar : ConsoleProgressBar<double>
+	{
+		public ConsoleProgressBar(TextWriter outWriter)
+			: base(outWriter, value => value)
+		{
+		}
+	}
+
+	public class ConsoleProgressBar<T> : IDisposable, IProgress<T>
 	{
 		private const int BlockCount = 10;
 		private static readonly TimeSpan AnimationInterval = TimeSpan.FromSeconds(1.0 / 8);
@@ -16,24 +24,27 @@ namespace SIL.CommandLine
 
 		private readonly Timer _timer;
 		private readonly TextWriter _outWriter;
+		private readonly Func<T, double> _percentCompletedSelector;
 
 		private double _currentProgress;
 		private string _currentText = string.Empty;
 		private bool _disposed;
 		private int _animationIndex;
 
-		public ConsoleProgressBar(TextWriter outWriter)
+		public ConsoleProgressBar(TextWriter outWriter, Func<T, double> percentCompletedSelector)
 		{
 			_outWriter = outWriter;
+			_percentCompletedSelector = percentCompletedSelector;
 			_timer = new Timer(TimerHandler, null, Timeout.Infinite, Timeout.Infinite);
 			ResetTimer();
 		}
 
-		public void Report(double value)
+		public void Report(T value)
 		{
+			double percentCompleted = _percentCompletedSelector(value);
 			// Make sure value is in [0..1] range
-			value = Math.Max(0, Math.Min(1, value));
-			Interlocked.Exchange(ref _currentProgress, value);
+			percentCompleted = Math.Max(0, Math.Min(1, percentCompleted));
+			Interlocked.Exchange(ref _currentProgress, percentCompleted);
 		}
 
 		private void TimerHandler(object state)
