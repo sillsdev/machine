@@ -28,7 +28,10 @@ namespace SIL.Machine.Corpora
 				}
 
 				foreach (string fileName in Directory.EnumerateFiles(path, searchPattern))
-					yield return new TextFileTextAlignmentCollection(Path.GetFileNameWithoutExtension(fileName), fileName);
+				{
+					yield return new TextFileTextAlignmentCollection(Path.GetFileNameWithoutExtension(fileName),
+						fileName);
+				}
 			}
 		}
 	}

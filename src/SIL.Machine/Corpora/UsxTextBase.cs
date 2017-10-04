@@ -1,5 +1,7 @@
 ﻿using SIL.Machine.Tokenization;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Xml.Linq;
@@ -70,7 +72,12 @@ namespace SIL.Machine.Corpora
 														inVerse = true;
 													}
 
-													int nextVerse = (int) e.Attribute("number");
+													var verseNumberStr = (string) e.Attribute("number");
+													int index = verseNumberStr.IndexOf("-", StringComparison.Ordinal);
+													if (index > -1)
+														verseNumberStr = verseNumberStr.Substring(0, index);
+													int nextVerse = int.Parse(verseNumberStr,
+														CultureInfo.InvariantCulture);  
 													if (nextVerse < verse)
 														yield break;
 													verse = nextVerse;

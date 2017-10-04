@@ -22,7 +22,7 @@ namespace SIL.Machine.Corpora
 		{
 			get
 			{
-				using (var reader = new StreamReader(File.Open(_fileName, FileMode.Open)))
+				using (var reader = new StreamReader(_fileName))
 				{
 					int lineNum = 1;
 					string line;

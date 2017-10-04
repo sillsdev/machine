@@ -16,7 +16,8 @@ namespace SIL.Machine.Corpora
 		{
 		}
 
-		private static IEnumerable<IText> GetTexts(ITokenizer<string, int> wordTokenizer, IEnumerable<string> filePatterns)
+		private static IEnumerable<IText> GetTexts(ITokenizer<string, int> wordTokenizer,
+			IEnumerable<string> filePatterns)
 		{
 			foreach (string filePattern in filePatterns)
 			{

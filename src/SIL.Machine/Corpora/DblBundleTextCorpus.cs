@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Xml.Linq;
 
 namespace SIL.Machine.Corpora
@@ -26,7 +27,8 @@ namespace SIL.Machine.Corpora
 						throw new InvalidOperationException("");
 
 					foreach (XElement contentElem in doc.Root.Elements("publications").Elements("publication")
-						.Elements("structure").Elements("content"))
+						.Where(pubElem => (bool?) pubElem.Attribute("default") ?? false).Elements("structure")
+						.Elements("content"))
 					{
 						yield return new DblBundleText(wordTokenizer, (string) contentElem.Attribute("role"), fileName,
 							(string) contentElem.Attribute("src"));
