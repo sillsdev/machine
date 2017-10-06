@@ -15,6 +15,10 @@ namespace SIL.Machine.Translation
 
 		TranslationResult SetPrefix(IReadOnlyList<string> prefix, bool isLastWordComplete);
 
+		TranslationResult AppendToPrefix(string addition, bool isLastWordComplete);
+
+		TranslationResult AppendToPrefix(IEnumerable<string> words);
+
 		void Approve();
 	}
 }

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.16
+VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Translation.TestApp", "samples\SIL.Machine.Translation.TestApp\SIL.Machine.Translation.TestApp.csproj", "{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}"
 EndProject
@@ -43,9 +43,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.WebApi.Server.T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Tests", "tests\SIL.Machine.Tests\SIL.Machine.Tests.csproj", "{FEED0E9B-807F-45D1-9D7F-D75CD719CA98}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Morphology.HermitCrab.Tests", "tests\SIL.Machine.Morphology.HermitCrab.Tests\SIL.Machine.Morphology.HermitCrab.Tests.csproj", "{FE409E52-B03C-4AF8-A9E1-8A8062925BAE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Morphology.HermitCrab.Tests", "tests\SIL.Machine.Morphology.HermitCrab.Tests\SIL.Machine.Morphology.HermitCrab.Tests.csproj", "{FE409E52-B03C-4AF8-A9E1-8A8062925BAE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Translation.Thot.Tests", "tests\SIL.Machine.Translation.Thot.Tests\SIL.Machine.Translation.Thot.Tests.csproj", "{0F72FFF6-A957-410C-8BBD-07333A6BB19C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Translation.Thot.Tests", "tests\SIL.Machine.Translation.Thot.Tests\SIL.Machine.Translation.Thot.Tests.csproj", "{0F72FFF6-A957-410C-8BBD-07333A6BB19C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Translator.CommandLine", "src\Translator.CommandLine\Translator.CommandLine.csproj", "{01EB286D-96B2-4BA0-8EEA-EA00AD6F9589}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -113,6 +115,10 @@ Global
 		{0F72FFF6-A957-410C-8BBD-07333A6BB19C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0F72FFF6-A957-410C-8BBD-07333A6BB19C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0F72FFF6-A957-410C-8BBD-07333A6BB19C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01EB286D-96B2-4BA0-8EEA-EA00AD6F9589}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01EB286D-96B2-4BA0-8EEA-EA00AD6F9589}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01EB286D-96B2-4BA0-8EEA-EA00AD6F9589}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01EB286D-96B2-4BA0-8EEA-EA00AD6F9589}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -133,5 +139,9 @@ Global
 		{FEED0E9B-807F-45D1-9D7F-D75CD719CA98} = {66246A1C-8D45-40FB-A660-C58577122CA7}
 		{FE409E52-B03C-4AF8-A9E1-8A8062925BAE} = {66246A1C-8D45-40FB-A660-C58577122CA7}
 		{0F72FFF6-A957-410C-8BBD-07333A6BB19C} = {66246A1C-8D45-40FB-A660-C58577122CA7}
+		{01EB286D-96B2-4BA0-8EEA-EA00AD6F9589} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9F18C25E-E140-43C3-B177-D562E1628370}
 	EndGlobalSection
 EndGlobal

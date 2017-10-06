@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using SIL.ObjectModel;
+using System;
 
 namespace SIL.Machine.Translation
 {
@@ -11,7 +12,8 @@ namespace SIL.Machine.Translation
 		private readonly TranslationResult _ruleResult;
 		private TranslationResult _currentResult;
 
-		internal HybridInteractiveTranslationSession(HybridTranslationEngine engine, IInteractiveTranslationSession smtSession, TranslationResult ruleResult)
+		internal HybridInteractiveTranslationSession(HybridTranslationEngine engine,
+			IInteractiveTranslationSession smtSession, TranslationResult ruleResult)
 		{
 			_engine = engine;
 			_smtSession = smtSession;
@@ -60,14 +62,44 @@ namespace SIL.Machine.Translation
 		{
 			CheckDisposed();
 
-			if (!_smtSession.Prefix.SequenceEqual(prefix) || _smtSession.IsLastWordComplete != isLastWordComplete)
+			if (!_smtSession.Prefix.SequenceEqual(prefix) || IsLastWordComplete != isLastWordComplete)
 			{
 				TranslationResult smtResult = _smtSession.SetPrefix(prefix, isLastWordComplete);
-				int prefixCount = prefix.Count;
-				if (!_smtSession.IsLastWordComplete)
-					prefixCount--;
-				_currentResult = _ruleResult == null ? smtResult : smtResult.Merge(prefixCount, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
+				UpdateCurrentResult(smtResult);
 			}
+			return _currentResult;
+		}
+
+		public TranslationResult AppendToPrefix(string addition, bool isLastWordComplete)
+		{
+			CheckDisposed();
+
+			if (string.IsNullOrEmpty(addition) && IsLastWordComplete)
+			{
+				throw new ArgumentException(
+					"An empty string cannot be added to a prefix where the last word is complete.", nameof(addition));
+			}
+
+			if (!string.IsNullOrEmpty(addition) || isLastWordComplete != IsLastWordComplete)
+			{
+				TranslationResult smtResult = _smtSession.AppendToPrefix(addition, isLastWordComplete);
+				UpdateCurrentResult(smtResult);
+			}
+			return _currentResult;
+		}
+
+		public TranslationResult AppendToPrefix(IEnumerable<string> words)
+		{
+			CheckDisposed();
+
+			int prevPrefixCount = Prefix.Count;
+			bool prevIsLastWordComplete = IsLastWordComplete;
+
+			TranslationResult smtResult = _smtSession.AppendToPrefix(words);
+
+			if (prevPrefixCount != Prefix.Count || prevIsLastWordComplete != IsLastWordComplete)
+				UpdateCurrentResult(smtResult);
+
 			return _currentResult;
 		}
 
@@ -83,6 +115,15 @@ namespace SIL.Machine.Translation
 			WordAlignmentMatrix matrix = _engine.GetHintMatrix(SourceSegment, Prefix, _ruleResult);
 			_engine.SmtEngine.TrainSegment(SourceSegment, Prefix, matrix);
 			return matrix;
+		}
+
+		private void UpdateCurrentResult(TranslationResult smtResult)
+		{
+			int prefixCount = Prefix.Count;
+			if (!IsLastWordComplete)
+				prefixCount--;
+			_currentResult = _ruleResult == null ? smtResult
+				: smtResult.Merge(prefixCount, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
 		}
 
 		protected override void DisposeManagedResources()
