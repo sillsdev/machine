@@ -17,6 +17,7 @@ namespace SIL.Machine.Translation
 
 			AddCommand(new TrainCommand());
 			AddCommand(new TestCommand());
+			AddCommand(new AlignCommand());
 		}
 
 		private void AddCommand(Command command)
