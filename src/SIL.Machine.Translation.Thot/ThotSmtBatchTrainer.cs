@@ -64,6 +64,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public string ConfigFileName { get; }
 		public ThotSmtParameters Parameters { get; private set; }
+		public SmtBatchTrainStats Stats { get; } = new SmtBatchTrainStats();
 
 		private HashSet<int> CreateTuneCorpus()
 		{
@@ -78,6 +79,7 @@ namespace SIL.Machine.Translation.Thot
 					corpusCount++;
 				index++;
 			}
+			Stats.TrainedSegmentCount = corpusCount;
 			int tuneCorpusCount = Math.Min((int)(corpusCount * 0.1), 1000);
 			var r = new Random(31415);
 			return new HashSet<int>(Enumerable.Range(0, corpusCount + emptyIndices.Count)
@@ -484,7 +486,7 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private static void TuneLanguageModel(string lmPrefix, IList<IReadOnlyList<string>> tuneTargetCorpus,
+		private void TuneLanguageModel(string lmPrefix, IList<IReadOnlyList<string>> tuneTargetCorpus,
 			int ngramSize, ThotTrainProgressReporter reporter)
 		{
 			reporter.Step("Tuning target language model");
@@ -496,6 +498,7 @@ namespace SIL.Machine.Translation.Thot
 			MinimizationResult result = simplex.FindMinimum(w =>
 				CalculatePerplexity(tuneTargetCorpus, lmPrefix, ngramSize, w), Enumerable.Repeat(0.5, ngramSize * 3));
 			WriteLanguageModelWeightsFile(lmPrefix, ngramSize, result.MinimizingPoint);
+			Stats.LanguageModelPerplexity = result.ErrorValue;
 		}
 
 		private static double CalculatePerplexity(IList<IReadOnlyList<string>> tuneTargetCorpus, string lmPrefix,
@@ -540,7 +543,7 @@ namespace SIL.Machine.Translation.Thot
 			initialParameters.Freeze();
 
 			ThotSmtParameters tunedParameters = _modelWeightTuner.Tune(initialParameters, tuneSourceCorpus,
-				tuneTargetCorpus, reporter);
+				tuneTargetCorpus, reporter, Stats);
 			Parameters = tunedParameters.Clone();
 			Parameters.TranslationModelFileNamePrefix = oldParameters.TranslationModelFileNamePrefix;
 			Parameters.LanguageModelFileNamePrefix = oldParameters.LanguageModelFileNamePrefix;

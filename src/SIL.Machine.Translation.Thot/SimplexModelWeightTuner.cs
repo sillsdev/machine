@@ -20,26 +20,36 @@ namespace SIL.Machine.Translation.Thot
 		public int MaxFunctionEvaluations { get; set; }
 		public int ProgressIncrementInterval { get; set; }
 
-		public ThotSmtParameters Tune(ThotSmtParameters parameters, IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
-			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, ThotTrainProgressReporter reporter)
+		public ThotSmtParameters Tune(ThotSmtParameters parameters,
+			IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
+			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, ThotTrainProgressReporter reporter,
+			SmtBatchTrainStats stats)
 		{
 			float sentLenWeight = parameters.ModelWeights[7];
 			int numFuncEvals = 0;
-			Func<Vector, double> evalFunc = weights =>
+			double Evaluate(Vector weights)
 			{
 				ThotSmtParameters newParameters = parameters.Clone();
 				newParameters.ModelWeights = weights.Select(w => (float) w).Concat(sentLenWeight).ToArray();
 				newParameters.Freeze();
 				double quality = CalculateBleu(newParameters, tuneSourceCorpus, tuneTargetCorpus);
 				numFuncEvals++;
-				if (numFuncEvals < MaxFunctionEvaluations && ProgressIncrementInterval > 0 && numFuncEvals % ProgressIncrementInterval == 0)
+				if (numFuncEvals < MaxFunctionEvaluations && ProgressIncrementInterval > 0
+					&& numFuncEvals % ProgressIncrementInterval == 0)
+				{
 					reporter.Step();
+				}
 				else
+				{
 					reporter.CheckCanceled();
+				}
 				return quality;
 			};
 			var simplex = new NelderMeadSimplex(ConvergenceTolerance, MaxFunctionEvaluations, 1.0);
-			MinimizationResult result = simplex.FindMinimum(evalFunc, parameters.ModelWeights.Select(w => (double) w).Take(7));
+			MinimizationResult result = simplex.FindMinimum(Evaluate,
+				parameters.ModelWeights.Select(w => (double) w).Take(7));
+
+			stats.TranslationModelBleu = 1.0 - result.ErrorValue;
 
 			ThotSmtParameters bestParameters = parameters.Clone();
 			bestParameters.ModelWeights = result.MinimizingPoint.Select(w => (float) w).Concat(sentLenWeight).ToArray();
@@ -47,8 +57,8 @@ namespace SIL.Machine.Translation.Thot
 			return bestParameters;
 		}
 
-		private static double CalculateBleu(ThotSmtParameters parameters, IReadOnlyList<IReadOnlyList<string>> sourceCorpus,
-			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus)
+		private static double CalculateBleu(ThotSmtParameters parameters,
+			IReadOnlyList<IReadOnlyList<string>> sourceCorpus, IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus)
 		{
 			IEnumerable<IReadOnlyList<string>> translations = GenerateTranslations(parameters, sourceCorpus);
 			double bleu = Evaluation.CalculateBleu(translations, tuneTargetCorpus);
@@ -64,7 +74,8 @@ namespace SIL.Machine.Translation.Thot
 			return (1.0 - bleu) + penalty;
 		}
 
-		private static IEnumerable<IReadOnlyList<string>> GenerateTranslations(ThotSmtParameters parameters, IReadOnlyList<IReadOnlyList<string>> sourceCorpus)
+		private static IEnumerable<IReadOnlyList<string>> GenerateTranslations(ThotSmtParameters parameters,
+			IReadOnlyList<IReadOnlyList<string>> sourceCorpus)
 		{
 			var results = new IReadOnlyList<string>[sourceCorpus.Count];
 			Parallel.ForEach(Partitioner.Create(0, sourceCorpus.Count), range =>
@@ -77,7 +88,8 @@ namespace SIL.Machine.Translation.Thot
 						for (int i = range.Item1; i < range.Item2; i++)
 						{
 							IReadOnlyList<string> segment = sourceCorpus[i];
-							results[i] = Thot.DoTranslate(decoderHandle, Thot.decoder_translate, segment, false, segment, (s, t, d) => t);
+							results[i] = Thot.DoTranslate(decoderHandle, Thot.decoder_translate, segment, false,
+								segment, (s, t, d) => t);
 						}
 					}
 					finally

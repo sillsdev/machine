@@ -8,7 +8,8 @@ namespace SIL.Machine.Translation
 	{
 		private const int BleuN = 4;
 
-		public static double CalculateBleu(IEnumerable<IReadOnlyList<string>> translations, IEnumerable<IReadOnlyList<string>> references)
+		public static double CalculateBleu(IEnumerable<IReadOnlyList<string>> translations,
+			IEnumerable<IReadOnlyList<string>> references)
 		{
 			var precs = new double[BleuN];
 			var total = new double[BleuN];
@@ -20,14 +21,15 @@ namespace SIL.Machine.Translation
 				refWordCount += pair.Item2.Count;
 				for (int n = 1; n <= BleuN; n++)
 				{
-					int segPrec, segTotal;
-					CalculatePrecision(pair.Item1, pair.Item2, n, out segPrec, out segTotal);
+					CalculatePrecision(pair.Item1, pair.Item2, n, out int segPrec, out int segTotal);
 					precs[n - 1] += segPrec;
 					total[n - 1] += segTotal;
 				}
 			}
 
-			double brevityPenalty = transWordCount < refWordCount ? Math.Exp(1.0 - ((double) refWordCount / transWordCount)) : 1.0;
+			double brevityPenalty = transWordCount < refWordCount
+				? Math.Exp(1.0 - ((double) refWordCount / transWordCount))
+				: 1.0;
 
 			double bleu = 0;
 			var bleus = new double[BleuN];
@@ -40,7 +42,8 @@ namespace SIL.Machine.Translation
 			return bleu;
 		}
 
-		private static void CalculatePrecision(IReadOnlyList<string> translation, IReadOnlyList<string> reference, int n, out int prec, out int total)
+		private static void CalculatePrecision(IReadOnlyList<string> translation, IReadOnlyList<string> reference,
+			int n, out int prec, out int total)
 		{
 			total = n > translation.Count ? 0 : translation.Count - n + 1;
 			int refTotal = n > reference.Count ? 0 : reference.Count - n + 1;

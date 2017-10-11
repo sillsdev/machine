@@ -65,7 +65,8 @@ namespace SIL.Machine.Optimization
 				}
 
 				// attempt a reflection of the simplex
-				double reflectionPointValue = TryToScaleSimplex(-1.0, ref errorProfile, vertices, errorValues, objectiveFunction);
+				double reflectionPointValue = TryToScaleSimplex(-1.0, ref errorProfile, vertices, errorValues,
+					objectiveFunction);
 				++evaluationCount;
 				if (reflectionPointValue <= errorValues[errorProfile.LowestIndex])
 				{
@@ -78,7 +79,8 @@ namespace SIL.Machine.Optimization
 					// it would be worse than the second best point, so attempt a contraction to look
 					// for an intermediate point
 					double currentWorst = errorValues[errorProfile.HighestIndex];
-					double contractionPointValue = TryToScaleSimplex(0.5, ref errorProfile, vertices, errorValues, objectiveFunction);
+					double contractionPointValue = TryToScaleSimplex(0.5, ref errorProfile, vertices, errorValues,
+						objectiveFunction);
 					++evaluationCount;
 					if (contractionPointValue >= currentWorst)
 					{
@@ -96,7 +98,8 @@ namespace SIL.Machine.Optimization
 					break;
 				}
 			}
-			return new MinimizationResult(exitCondition, vertices[errorProfile.LowestIndex], errorValues[errorProfile.LowestIndex], evaluationCount);
+			return new MinimizationResult(exitCondition, vertices[errorProfile.LowestIndex],
+				errorValues[errorProfile.LowestIndex], evaluationCount);
 		}
 
 		/// <summary>
@@ -159,7 +162,8 @@ namespace SIL.Machine.Optimization
 				}
 				if (errorValue > errorValues[errorProfile.HighestIndex])
 				{
-					errorProfile.NextHighestIndex = errorProfile.HighestIndex; // downgrade the current highest to next highest
+					// downgrade the current highest to next highest
+					errorProfile.NextHighestIndex = errorProfile.HighestIndex;
 					errorProfile.HighestIndex = index;
 				}
 				else if (errorValue > errorValues[errorProfile.NextHighestIndex] && index != errorProfile.HighestIndex)

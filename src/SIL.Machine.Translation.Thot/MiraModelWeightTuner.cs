@@ -19,8 +19,10 @@ namespace SIL.Machine.Translation.Thot
 		public int K { get; set; }
 		public int MaxIterations { get; set; }
 
-		public ThotSmtParameters Tune(ThotSmtParameters parameters, IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
-			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, ThotTrainProgressReporter reporter)
+		public ThotSmtParameters Tune(ThotSmtParameters parameters,
+			IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
+			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, ThotTrainProgressReporter reporter,
+			SmtBatchTrainStats stats)
 		{
 			IntPtr weightUpdaterHandle = Thot.llWeightUpdater_create();
 			try
@@ -38,7 +40,8 @@ namespace SIL.Machine.Translation.Thot
 					newParameters.ModelWeights = curWeights;
 					newParameters.Freeze();
 					IList<TranslationInfo>[] nbestLists = GetNBestLists(newParameters, tuneSourceCorpus).ToArray();
-					double quality = Evaluation.CalculateBleu(nbestLists.Select(nbl => nbl.First().Translation), tuneTargetCorpus);
+					double quality = Evaluation.CalculateBleu(nbestLists.Select(nbl => nbl.First().Translation),
+						tuneTargetCorpus);
 					iterQualities.Add(quality);
 					if (quality > bestQuality)
 					{
@@ -66,6 +69,7 @@ namespace SIL.Machine.Translation.Thot
 					reporter.Step();
 				}
 
+				stats.TranslationModelBleu = bestQuality;
 				return bestParameters;
 			}
 			finally
@@ -74,7 +78,8 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private IEnumerable<IList<TranslationInfo>> GetNBestLists(ThotSmtParameters parameters, IReadOnlyList<IReadOnlyList<string>> sourceCorpus)
+		private IEnumerable<IList<TranslationInfo>> GetNBestLists(ThotSmtParameters parameters,
+			IReadOnlyList<IReadOnlyList<string>> sourceCorpus)
 		{
 			var results = new IList<TranslationInfo>[sourceCorpus.Count];
 			Parallel.ForEach(Partitioner.Create(0, sourceCorpus.Count), range =>
@@ -87,7 +92,8 @@ namespace SIL.Machine.Translation.Thot
 						for (int i = range.Item1; i < range.Item2; i++)
 						{
 							IReadOnlyList<string> sourceSegment = sourceCorpus[i];
-							results[i] = Thot.DoTranslateNBest(decoderHandle, Thot.decoder_translateNBest, K, sourceSegment, false, sourceSegment, CreateTranslationInfo).ToArray();
+							results[i] = Thot.DoTranslateNBest(decoderHandle, Thot.decoder_translateNBest, K,
+								sourceSegment, false, sourceSegment, CreateTranslationInfo).ToArray();
 						}
 					}
 					finally
@@ -101,8 +107,9 @@ namespace SIL.Machine.Translation.Thot
 			return results;
 		}
 
-		private static void UpdateWeights(IntPtr weightUpdaterHandle, IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus,
-			HashSet<TranslationInfo>[] nbestLists, float[] curWeights)
+		private static void UpdateWeights(IntPtr weightUpdaterHandle,
+			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, HashSet<TranslationInfo>[] nbestLists,
+			float[] curWeights)
 		{
 			IntPtr[] nativeTuneTargetCorpus = tuneTargetCorpus.Select(Thot.ConvertStringsToNativeUtf8).ToArray();
 
@@ -134,7 +141,8 @@ namespace SIL.Machine.Translation.Thot
 
 			try
 			{
-				Thot.llWeightUpdater_updateClosedCorpus(weightUpdaterHandle, nativeTuneTargetCorpus, nativeNBestLists, nativeScoreComps, nativeNBestListLens,
+				Thot.llWeightUpdater_updateClosedCorpus(weightUpdaterHandle, nativeTuneTargetCorpus, nativeNBestLists,
+					nativeScoreComps, nativeNBestListLens,
 					curWeights, (uint) nbestLists.Length, (uint) curWeights.Length - 1);
 			}
 			finally
@@ -182,7 +190,8 @@ namespace SIL.Machine.Translation.Thot
 
 			public bool Equals(TranslationInfo other)
 			{
-				return other != null && ScoreComponents.SequenceEqual(other.ScoreComponents) && Translation.SequenceEqual(other.Translation);
+				return other != null && ScoreComponents.SequenceEqual(other.ScoreComponents)
+					&& Translation.SequenceEqual(other.Translation);
 			}
 
 			public override int GetHashCode()
@@ -194,7 +203,8 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private static TranslationInfo CreateTranslationInfo(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment, IntPtr data)
+		private static TranslationInfo CreateTranslationInfo(IReadOnlyList<string> sourceSegment,
+			IReadOnlyList<string> targetSegment, IntPtr data)
 		{
 			var scoreComps = new double[8];
 			Thot.tdata_getScoreComponents(data, scoreComps, (uint)scoreComps.Length);

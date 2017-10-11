@@ -30,12 +30,10 @@ namespace SIL.Machine.Translation
 			if (!Directory.Exists(EngineDirectory))
 				Directory.CreateDirectory(EngineDirectory);
 
-			Out.Write("Training... ");
 			if (_alignmentOnlyOption.HasValue())
 				TrainAlignmentModels();
 			else
 				TrainSmtModel();
-			Out.WriteLine("done.");
 
 			return 0;
 		}
@@ -49,13 +47,21 @@ namespace SIL.Machine.Translation
 				File.Copy(defaultConfigFileName, EngineConfigFileName);
 			}
 
-			using (var progress = new ConsoleProgressBar<SmtTrainProgress>(Out,
-				p => (double) p.CurrentStep / p.StepCount))
 			using (ISmtBatchTrainer trainer = new ThotSmtBatchTrainer(EngineConfigFileName, Preprocessors.Lowercase,
 				SourceCorpus, Preprocessors.Lowercase, TargetCorpus, AlignmentsCorpus))
 			{
-				trainer.Train(progress);
-				trainer.Save();
+				Out.Write("Training... ");
+				using (var progress = new ConsoleProgressBar<SmtTrainProgress>(Out,
+					p => (double) p.CurrentStep / p.StepCount))
+				{
+					trainer.Train(progress);
+					trainer.Save();
+				}
+				Out.WriteLine("done.");
+
+				Out.WriteLine($"# of Segments Trained: {trainer.Stats.TrainedSegmentCount}");
+				Out.WriteLine($"LM Perplexity: {trainer.Stats.LanguageModelPerplexity:0.00}");
+				Out.WriteLine($"TM BLEU: {trainer.Stats.TranslationModelBleu:0.00}");
 			}
 		}
 
@@ -67,11 +73,17 @@ namespace SIL.Machine.Translation
 
 			string tmPrefix = Path.Combine(tmDir, "src_trg");
 			var corpus = new ParallelTextCorpus(SourceCorpus, TargetCorpus, AlignmentsCorpus);
+			int totalSegmentCount = corpus.Texts.SelectMany(t => t.Segments).Count(s => !s.IsEmpty);
+
+			Out.Write("Training... ");
 			using (var progress = new ConsoleProgressBar(Out))
 			{
 				TrainAlignmentModel(tmPrefix + "_swm", corpus.Invert(), progress);
 				TrainAlignmentModel(tmPrefix + "_invswm", corpus, progress, 5);
 			}
+			Out.WriteLine("done.");
+
+			Out.WriteLine($"# of Segments Trained: {totalSegmentCount}");
 		}
 
 		private static void TrainAlignmentModel(string swmPrefix, ParallelTextCorpus corpus,
