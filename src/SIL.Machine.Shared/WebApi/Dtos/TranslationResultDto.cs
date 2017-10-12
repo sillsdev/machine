@@ -8,5 +8,6 @@ namespace SIL.Machine.WebApi.Dtos
 		public float[] Confidences { get; set; }
 		public TranslationSources[] Sources { get; set; }
 		public AlignedWordPairDto[] Alignment { get; set; }
+		public PhraseDto[] Phrases { get; set; }
 	}
 }

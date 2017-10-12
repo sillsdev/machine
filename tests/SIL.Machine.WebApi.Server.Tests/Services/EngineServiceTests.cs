@@ -14,6 +14,7 @@ using SIL.Machine.WebApi.Server.DataAccess;
 using SIL.Machine.WebApi.Server.Models;
 using SIL.Machine.WebApi.Server.Options;
 using SIL.ObjectModel;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.WebApi.Server.Services
 {
@@ -286,7 +287,8 @@ namespace SIL.Machine.WebApi.Server.Services
 				var smtModel = Substitute.For<IInteractiveSmtModel>();
 
 				var smtEngine = Substitute.For<IInteractiveSmtEngine>();
-				var translationResult = new TranslationResult("esto es una prueba .".Split(), "this is a test .".Split(),
+				var translationResult = new TranslationResult("esto es una prueba .".Split(),
+					"this is a test .".Split(),
 					new[] { 1.0, 1.0, 1.0, 1.0, 1.0 },
 					new[]
 					{
@@ -303,7 +305,8 @@ namespace SIL.Machine.WebApi.Server.Services
 						[2, 2] = AlignmentType.Aligned,
 						[3, 3] = AlignmentType.Aligned,
 						[4, 4] = AlignmentType.Aligned
-					});
+					},
+					new[] { new Phrase(Range<int>.Create(0, 5), Range<int>.Create(0, 5)) });
 				smtEngine.Translate(Arg.Any<IReadOnlyList<string>>()).Returns(translationResult);
 				smtEngine.GetWordGraph(Arg.Any<IReadOnlyList<string>>()).Returns(new WordGraph(new[]
 				{
@@ -333,7 +336,8 @@ namespace SIL.Machine.WebApi.Server.Services
 			{
 				var factory = Substitute.For<IRuleEngineFactory>();
 				var engine = Substitute.For<ITranslationEngine>();
-				engine.Translate(Arg.Any<IReadOnlyList<string>>()).Returns(new TranslationResult("esto es una prueba .".Split(),
+				engine.Translate(Arg.Any<IReadOnlyList<string>>()).Returns(new TranslationResult(
+					"esto es una prueba .".Split(),
 					"this is a test .".Split(),
 					new[] {1.0, 1.0, 1.0, 1.0, 1.0},
 					new[]
@@ -351,7 +355,8 @@ namespace SIL.Machine.WebApi.Server.Services
 						[2, 2] = AlignmentType.Aligned,
 						[3, 3] = AlignmentType.Aligned,
 						[4, 4] = AlignmentType.Aligned
-					}));
+					},
+					new[] { new Phrase(Range<int>.Create(0, 5), Range<int>.Create(0, 5)) }));
 				factory.Create(Arg.Any<string>()).Returns(engine);
 				return factory;
 			}

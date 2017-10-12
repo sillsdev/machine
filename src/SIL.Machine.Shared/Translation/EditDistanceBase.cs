@@ -3,17 +3,7 @@ using System.Collections.Generic;
 
 namespace SIL.Machine.Translation
 {
-	public enum EditOperation
-	{
-		None,
-		Hit,
-		Insert,
-		Delete,
-		PrefixDelete,
-		Substitute
-	}
-
-	public abstract class EditDistance<TSeq, TItem>
+	internal abstract class EditDistanceBase<TSeq, TItem>
 	{
 		public virtual double Compute(TSeq x, TSeq y)
 		{

@@ -15,8 +15,8 @@ namespace SIL.Machine.Translation
 		private readonly int _maxDistance;
 		private readonly double _alpha;
 
-		public FuzzyEditDistanceSegmentAligner(Func<string, string, double> getTranslationProb, double alpha = DefaultAlpha,
-			int maxDistance = DefaultMaxDistance)
+		public FuzzyEditDistanceSegmentAligner(Func<string, string, double> getTranslationProb,
+			double alpha = DefaultAlpha, int maxDistance = DefaultMaxDistance)
 		{
 			_getTranslationProb = getTranslationProb;
 			_alpha = alpha;
@@ -24,8 +24,8 @@ namespace SIL.Machine.Translation
 			_scorer = new SegmentScorer(_getTranslationProb);
 		}
 
-		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
-			WordAlignmentMatrix hintMatrix = null)
+		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment,
+			IReadOnlyList<string> targetSegment, WordAlignmentMatrix hintMatrix = null)
 		{
 			var paa = new PairwiseAlignmentAlgorithm<IReadOnlyList<string>, int>(_scorer, sourceSegment, targetSegment,
 				GetWordIndices)
@@ -56,7 +56,8 @@ namespace SIL.Machine.Translation
 					}
 					else
 					{
-						double prob = alignment[0, c].Average(i => _getTranslationProb(sourceSegment[i], targetSegment[j]));
+						double prob = alignment[0, c]
+							.Average(i => _getTranslationProb(sourceSegment[i], targetSegment[j]));
 						bestScore = ComputeAlignmentScore(prob, 0);
 						minIndex = alignment[0, c].First - 1;
 						maxIndex = alignment[0, c].Last + 1;

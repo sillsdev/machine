@@ -4,6 +4,7 @@ using NSubstitute;
 using NUnit.Framework;
 using SIL.Machine.Morphology;
 using SIL.ObjectModel;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Translation
 {
@@ -29,7 +30,8 @@ namespace SIL.Machine.Translation
 						new TestMorpheme("e2", "v", "pst", MorphemeType.Affix)
 					});
 				targetGenerator.Morphemes.Returns(targetMorphemes);
-				targetGenerator.AddGeneratedWords(new WordAnalysis(new[] {targetMorphemes[0], targetMorphemes[1]}, 0, "v"), "walked");
+				targetGenerator.AddGeneratedWords(
+					new WordAnalysis(new[] { targetMorphemes[0], targetMorphemes[1] }, 0, "v"), "walked");
 				var transferer = new SimpleTransferer(new GlossMorphemeMapper(targetGenerator));
 				_transferEngine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
 				var smtEngine = Substitute.For<IInteractiveSmtEngine>();
@@ -42,7 +44,8 @@ namespace SIL.Machine.Translation
 					[3, 3] = AlignmentType.Aligned,
 					[4, 4] = AlignmentType.Aligned
 				};
-				AddTranslation(smtEngine, "caminé a mi habitación .", "caminé to my room .", new[] {0, 0.5, 0.5, 0.5, 0.5}, alignment);
+				AddTranslation(smtEngine, "caminé a mi habitación .", "caminé to my room .",
+					new[] { 0, 0.5, 0.5, 0.5, 0.5 }, alignment);
 
 				alignment = new WordAlignmentMatrix(4, 4)
 				{
@@ -51,13 +54,14 @@ namespace SIL.Machine.Translation
 					[2, 2] = AlignmentType.Aligned,
 					[3, 3] = AlignmentType.Aligned
 				};
-				AddTranslation(smtEngine, "hablé con recepción .", "hablé with reception .", new[] {0, 0.5, 0.5, 0.5}, alignment);
+				AddTranslation(smtEngine, "hablé con recepción .", "hablé with reception .", new[] { 0, 0.5, 0.5, 0.5 },
+					alignment);
 
 				Engine = new HybridTranslationEngine(smtEngine, _transferEngine);
 			}
 
-			private static void AddTranslation(IInteractiveSmtEngine engine, string sourceSegment, string targetSegment, double[] confidences,
-				WordAlignmentMatrix alignment)
+			private static void AddTranslation(IInteractiveSmtEngine engine, string sourceSegment, string targetSegment,
+				double[] confidences, WordAlignmentMatrix alignment)
 			{
 				string[] sourceSegmentArray = sourceSegment.Split();
 				string[] targetSegmentArray = targetSegment.Split();
@@ -66,9 +70,13 @@ namespace SIL.Machine.Translation
 					sources[j] = confidences[j] <= 0 ? TranslationSources.None : TranslationSources.Smt;
 				var smtSession = Substitute.For<IInteractiveTranslationSession>();
 				smtSession.SourceSegment.Returns(sourceSegmentArray);
-				smtSession.CurrentResult.Returns(new TranslationResult(sourceSegmentArray, targetSegmentArray, confidences, sources, alignment));
+				smtSession.CurrentResult.Returns(new TranslationResult(sourceSegmentArray, targetSegmentArray,
+					confidences, sources, alignment,
+					new[] { new Phrase(Range<int>.Create(0, sourceSegmentArray.Length),
+						Range<int>.Create(0, targetSegmentArray.Length)) }));
 
-				engine.TranslateInteractively(Arg.Is<IReadOnlyList<string>>(ss => ss.SequenceEqual(sourceSegmentArray))).Returns(smtSession);
+				engine.TranslateInteractively(Arg.Is<IReadOnlyList<string>>(ss => ss.SequenceEqual(sourceSegmentArray)))
+					.Returns(smtSession);
 			}
 
 			public HybridTranslationEngine Engine { get; }

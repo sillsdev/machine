@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace SIL.Machine.Translation
 {
-	public class SegmentEditDistance : EditDistance<string[], string>
+	internal class SegmentEditDistance : EditDistanceBase<string[], string>
 	{
 		private readonly WordEditDistance _wordEditDistance;
 

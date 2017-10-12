@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace SIL.Machine.Translation
 {
@@ -65,166 +64,20 @@ namespace SIL.Machine.Translation
 				esi.Operations.Add(op);
 		}
 
-		public int CorrectPrefix(TranslationInfo correction, int uncorrectedPrefixLen, string[] prefix,
+		public int CorrectPrefix(TranslationResultBuilder builder, int uncorrectedPrefixLen, string[] prefix,
 			bool isLastWordComplete)
 		{
 			if (uncorrectedPrefixLen == 0)
 			{
 				foreach (string w in prefix)
-				{
-					correction.Target.Add(w);
-					correction.TargetConfidences.Add(-1);
-				}
+					builder.AppendWord(w);
 				return prefix.Length;
 			}
 
 			IEnumerable<EditOperation> wordOps, charOps;
-			_segmentEditDistance.ComputePrefix(correction.Target.Take(uncorrectedPrefixLen).ToArray(), prefix,
+			_segmentEditDistance.ComputePrefix(builder.Words.Take(uncorrectedPrefixLen).ToArray(), prefix,
 				isLastWordComplete, false, out wordOps, out charOps);
-			return CorrectPrefix(correction, wordOps, charOps, prefix, isLastWordComplete);
-		}
-
-		private int CorrectPrefix(TranslationInfo correction, IEnumerable<EditOperation> wordOps,
-			IEnumerable<EditOperation> charOps, string[] prefix, bool isLastWordComplete)
-		{
-			var alignmentColsToCopy = new List<int>();
-
-			int i = 0, j = 0, k = 0;
-			foreach (EditOperation wordOp in wordOps)
-			{
-				switch (wordOp)
-				{
-					case EditOperation.Insert:
-						correction.Target.Insert(j, prefix[j]);
-						correction.TargetConfidences.Insert(j, -1);
-						alignmentColsToCopy.Add(-1);
-						for (int l = k; l < correction.Phrases.Count; l++)
-							correction.Phrases[l].TargetCut++;
-						j++;
-						break;
-
-					case EditOperation.Delete:
-						correction.Target.RemoveAt(j);
-						correction.TargetConfidences.RemoveAt(j);
-						i++;
-						if (k < correction.Phrases.Count)
-						{
-							for (int l = k; l < correction.Phrases.Count; l++)
-								correction.Phrases[l].TargetCut--;
-
-							if (correction.Phrases[k].TargetCut < 0
-								|| (k > 0 && correction.Phrases[k].TargetCut == correction.Phrases[k - 1].TargetCut))
-							{
-								correction.Phrases.RemoveAt(k);
-								alignmentColsToCopy.Clear();
-								i = 0;
-							}
-							else if (j > correction.Phrases[k].TargetCut)
-							{
-								ResizeAlignment(correction, k, alignmentColsToCopy);
-								alignmentColsToCopy.Clear();
-								i = 0;
-								k++;
-							}
-						}
-						break;
-
-					case EditOperation.Hit:
-					case EditOperation.Substitute:
-						if (wordOp == EditOperation.Substitute || j < prefix.Length - 1 || isLastWordComplete)
-							correction.Target[j] = prefix[j];
-						else
-							correction.Target[j] = CorrectWord(charOps, correction.Target[j], prefix[j]);
-
-						if (wordOp == EditOperation.Substitute)
-							correction.TargetConfidences[j] = -1;
-						else if (wordOp == EditOperation.Hit)
-							correction.TargetUncorrectedPrefixWords.Add(j);
-
-						alignmentColsToCopy.Add(i);
-
-						i++;
-						j++;
-						if (k < correction.Phrases.Count && j > correction.Phrases[k].TargetCut)
-						{
-							ResizeAlignment(correction, k, alignmentColsToCopy);
-							alignmentColsToCopy.Clear();
-							i = 0;
-							k++;
-						}
-						break;
-				}
-			}
-
-			while (j < correction.Target.Count)
-			{
-				alignmentColsToCopy.Add(i);
-
-				i++;
-				j++;
-				if (k < correction.Phrases.Count && j > correction.Phrases[k].TargetCut)
-				{
-					ResizeAlignment(correction, k, alignmentColsToCopy);
-					alignmentColsToCopy.Clear();
-					break;
-				}
-			}
-
-			return alignmentColsToCopy.Count;
-		}
-
-		private void ResizeAlignment(TranslationInfo correction, int phraseIndex, List<int> colsToCopy)
-		{
-			WordAlignmentMatrix curAlignment = correction.Phrases[phraseIndex].Alignment;
-			if (colsToCopy.Count == curAlignment.ColumnCount)
-				return;
-
-			var newAlignment = new WordAlignmentMatrix(curAlignment.RowCount, colsToCopy.Count);
-			for (int j = 0; j < newAlignment.ColumnCount; j++)
-			{
-				if (colsToCopy[j] != -1)
-				{
-					for (int i = 0; i < newAlignment.RowCount; i++)
-						newAlignment[i, j] = curAlignment[i, colsToCopy[j]];
-				}
-			}
-
-			correction.Phrases[phraseIndex].Alignment = newAlignment;
-		}
-
-		private string CorrectWord(IEnumerable<EditOperation> charOps, string word, string prefix)
-		{
-			var sb = new StringBuilder();
-			int i = 0, j = 0;
-			foreach (EditOperation charOp in charOps)
-			{
-				switch (charOp)
-				{
-					case EditOperation.Hit:
-						sb.Append(word[i]);
-						i++;
-						j++;
-						break;
-
-					case EditOperation.Insert:
-						sb.Append(prefix[j]);
-						j++;
-						break;
-
-					case EditOperation.Delete:
-						i++;
-						break;
-
-					case EditOperation.Substitute:
-						sb.Append(prefix[j]);
-						i++;
-						j++;
-						break;
-				}
-			}
-
-			sb.Append(word.Substring(i));
-			return sb.ToString();
+			return builder.CorrectPrefix(wordOps, charOps, prefix, isLastWordComplete);
 		}
 	}
 }

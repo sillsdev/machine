@@ -2,6 +2,7 @@
 using System.Linq;
 using SIL.Machine.Morphology;
 using SIL.ObjectModel;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Translation
 {
@@ -11,7 +12,8 @@ namespace SIL.Machine.Translation
 		private readonly ITransferer _transferer;
 		private readonly IMorphologicalGenerator _targetGenerator;
 
-		public TransferEngine(IMorphologicalAnalyzer sourceAnalyzer, ITransferer transferer, IMorphologicalGenerator targetGenerator)
+		public TransferEngine(IMorphologicalAnalyzer sourceAnalyzer, ITransferer transferer,
+			IMorphologicalGenerator targetGenerator)
 		{
 			_sourceAnalyzer = sourceAnalyzer;
 			_transferer = transferer;
@@ -25,7 +27,8 @@ namespace SIL.Machine.Translation
 
 		public IEnumerable<TranslationResult> Translate(int n, IReadOnlyList<string> segment)
 		{
-			IEnumerable<IEnumerable<WordAnalysis>> sourceAnalyses = segment.Select(word => _sourceAnalyzer.AnalyzeWord(word));
+			IEnumerable<IEnumerable<WordAnalysis>> sourceAnalyses = segment
+				.Select(word => _sourceAnalyzer.AnalyzeWord(word));
 
 			foreach (TransferResult transferResult in _transferer.Transfer(sourceAnalyses).Take(n))
 			{
@@ -38,8 +41,11 @@ namespace SIL.Machine.Translation
 				var alignment = new WordAlignmentMatrix(segment.Count, targetAnalyses.Count);
 				for (int j = 0; j < targetAnalyses.Count; j++)
 				{
-					int[] sourceIndices = Enumerable.Range(0, waMatrix.RowCount).Where(i => waMatrix[i, j] == AlignmentType.Aligned).ToArray();
-					string targetWord = targetAnalyses[j].IsEmpty ? null : _targetGenerator.GenerateWords(targetAnalyses[j]).FirstOrDefault();
+					int[] sourceIndices = Enumerable.Range(0, waMatrix.RowCount)
+						.Where(i => waMatrix[i, j] == AlignmentType.Aligned).ToArray();
+					string targetWord = targetAnalyses[j].IsEmpty
+						? null
+						: _targetGenerator.GenerateWords(targetAnalyses[j]).FirstOrDefault();
 					double confidence = 1.0;
 					TranslationSources source = TranslationSources.Transfer;
 					if (targetWord == null)
@@ -67,7 +73,8 @@ namespace SIL.Machine.Translation
 					}
 				}
 
-				yield return new TranslationResult(segment, translation, confidences, sources, alignment);
+				yield return new TranslationResult(segment, translation, confidences, sources, alignment,
+					new[] { new Phrase(Range<int>.Create(0, segment.Count), Range<int>.Create(0, translation.Count)) });
 			}
 		}
 	}

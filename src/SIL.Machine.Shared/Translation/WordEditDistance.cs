@@ -1,6 +1,6 @@
 ﻿namespace SIL.Machine.Translation
 {
-	public class WordEditDistance : EditDistance<string, char>
+	internal class WordEditDistance : EditDistanceBase<string, char>
 	{
 		private double _hitCost;
 		private double _insertionCost;

@@ -22,7 +22,8 @@ namespace SIL.Machine.Translation
 			RuleResult = result.RuleResult;
 			SmtWordGraph = result.SmtWordGraph;
 
-			_wordGraphProcessor = new ErrorCorrectionWordGraphProcessor(_engine.ErrorCorrectionModel, SmtWordGraph);
+			_wordGraphProcessor = new ErrorCorrectionWordGraphProcessor(_engine.ErrorCorrectionModel, SourceSegment,
+				SmtWordGraph);
 			UpdatePrefix("");
 		}
 
@@ -56,8 +57,7 @@ namespace SIL.Machine.Translation
 			Prefix = tokenRanges.Select(s => prefix.Substring(s.Start, s.Length)).ToArray();
 			IsLastWordComplete = tokenRanges.Length == 0 || tokenRanges[tokenRanges.Length - 1].End != prefix.Length;
 
-			TranslationInfo correction = _wordGraphProcessor.Correct(Prefix, IsLastWordComplete, 1).FirstOrDefault();
-			TranslationResult smtResult = CreateResult(correction);
+			TranslationResult smtResult = _wordGraphProcessor.Correct(Prefix, IsLastWordComplete, 1).First();
 
 			if (RuleResult == null)
 			{
@@ -104,36 +104,6 @@ namespace SIL.Machine.Translation
 		{
 			_engine.RestClient.TrainSegmentPairAsync(_engine.ProjectId, SourceSegment, Prefix)
 				.ContinueWith(t => onFinished(!t.IsFaulted));
-		}
-
-		private TranslationResult CreateResult(TranslationInfo info)
-		{
-			if (info == null)
-			{
-				return new TranslationResult(SourceSegment, Enumerable.Empty<string>(), Enumerable.Empty<double>(),
-					Enumerable.Empty<TranslationSources>(), new WordAlignmentMatrix(SourceSegment.Length, 0));
-			}
-
-			double[] confidences = info.TargetConfidences.ToArray();
-			var sources = new TranslationSources[info.Target.Count];
-			var alignment = new WordAlignmentMatrix(SourceSegment.Length, info.Target.Count);
-			int trgPhraseStartIndex = 0;
-			foreach (PhraseInfo phrase in info.Phrases)
-			{
-				for (int j = trgPhraseStartIndex; j <= phrase.TargetCut; j++)
-				{
-					for (int i = phrase.SourceStartIndex; i <= phrase.SourceEndIndex; i++)
-					{
-						AlignmentType type = phrase.Alignment[i - phrase.SourceStartIndex, j - trgPhraseStartIndex];
-						if (type == AlignmentType.Aligned)
-							alignment[i, j] = AlignmentType.Aligned;
-					}
-					sources[j] = info.TargetUnknownWords.Contains(j) ? TranslationSources.None : TranslationSources.Smt;
-				}
-				trgPhraseStartIndex = phrase.TargetCut + 1;
-			}
-
-			return new TranslationResult(SourceSegment, info.Target, confidences, sources, alignment);
 		}
 	}
 }

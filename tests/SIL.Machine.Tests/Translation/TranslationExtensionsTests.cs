@@ -3,6 +3,7 @@ using System.Linq;
 using NSubstitute;
 using NUnit.Framework;
 using SIL.ObjectModel;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Translation
 {
@@ -75,7 +76,8 @@ namespace SIL.Machine.Translation
 			Assert.That(session.GetSuggestedWordIndices(0.2), Is.EqualTo(new[] {0, 1, 2, 3}));
 		}
 
-		private static TranslationResult CreateResult(int sourceLen, int prefixLen, string target, params double[] confidences)
+		private static TranslationResult CreateResult(int sourceLen, int prefixLen, string target,
+			params double[] confidences)
 		{
 			string[] targetArray = target.Split();
 			var targetConfidences = new double[targetArray.Length];
@@ -110,7 +112,9 @@ namespace SIL.Machine.Translation
 					throw new ArgumentException("A confidence was incorrectly set below 0.", nameof(confidences));
 				}
 			}
-			return new TranslationResult(Enumerable.Range(0, sourceLen).Select(index => index.ToString()), targetArray, targetConfidences, targetSources, alignment);
+			return new TranslationResult(Enumerable.Range(0, sourceLen).Select(index => index.ToString()), targetArray,
+				targetConfidences, targetSources, alignment,
+				new[] { new Phrase(Range<int>.Create(0, sourceLen), Range<int>.Create(0, targetArray.Length)) });
 		}
 	}
 }

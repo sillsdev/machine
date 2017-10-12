@@ -7,7 +7,8 @@ namespace SIL.Machine.Translation
 	public class TranslationResult
 	{
 		public TranslationResult(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment,
-			IEnumerable<double> confidences, IEnumerable<TranslationSources> sources, WordAlignmentMatrix alignment)
+			IEnumerable<double> confidences, IEnumerable<TranslationSources> sources, WordAlignmentMatrix alignment,
+			IEnumerable<Phrase> phrases)
 		{
 			SourceSegment = sourceSegment.ToArray();
 			TargetSegment = targetSegment.ToArray();
@@ -19,18 +20,23 @@ namespace SIL.Machine.Translation
 			}
 			TargetWordSources = sources.ToArray();
 			if (TargetWordSources.Count != TargetSegment.Count)
-				throw new ArgumentException("The sources must be the same length as the target segment.", nameof(sources));
+			{
+				throw new ArgumentException("The sources must be the same length as the target segment.",
+					nameof(sources));
+			}
 			Alignment = alignment;
 			if (Alignment.RowCount != SourceSegment.Count)
 			{
-				throw new ArgumentException("The alignment source length must be the same length as the source segment.",
-					nameof(alignment));
+				throw new ArgumentException(
+					"The alignment source length must be the same length as the source segment.", nameof(alignment));
 			}
 			if (Alignment.ColumnCount != TargetSegment.Count)
 			{
-				throw new ArgumentException("The alignment target length must be the same length as the target segment.",
-					nameof(alignment));
+				throw new ArgumentException(
+					"The alignment target length must be the same length as the target segment.", nameof(alignment));
 			}
+
+			Phrases = phrases.ToArray();
 		}
 
 		public IReadOnlyList<string> SourceSegment { get; }
@@ -38,6 +44,7 @@ namespace SIL.Machine.Translation
 		public IReadOnlyList<double> TargetWordConfidences { get; }
 		public IReadOnlyList<TranslationSources> TargetWordSources { get; }
 		public WordAlignmentMatrix Alignment { get; }
+		public IReadOnlyList<Phrase> Phrases { get; }
 
 		public TranslationResult Merge(int prefixCount, double threshold, TranslationResult otherResult)
 		{
@@ -66,7 +73,8 @@ namespace SIL.Machine.Translation
 						TranslationSources sources = TargetWordSources[j];
 						foreach (int i in sourceIndices)
 						{
-							// combine sources for any words that both this result and the other result translated the same
+							// combine sources for any words that both this result
+							// and the other result translated the same
 							foreach (int jOther in otherResult.Alignment.GetRowAlignedIndices(i))
 							{
 								TranslationSources otherSources = otherResult.TargetWordSources[jOther];
@@ -118,7 +126,8 @@ namespace SIL.Machine.Translation
 			var alignment = new WordAlignmentMatrix(SourceSegment.Count, mergedTargetSegment.Count);
 			foreach (Tuple<int, int> t in mergedAlignment)
 				alignment[t.Item1, t.Item2] = AlignmentType.Aligned;
-			return new TranslationResult(SourceSegment, mergedTargetSegment, mergedConfidences, mergedSources, alignment);
+			return new TranslationResult(SourceSegment, mergedTargetSegment, mergedConfidences, mergedSources,
+				alignment, Phrases);
 		}
 	}
 }

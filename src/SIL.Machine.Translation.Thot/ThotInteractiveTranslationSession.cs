@@ -21,7 +21,8 @@ namespace SIL.Machine.Translation.Thot
 			_sourceSegment = sourceSegment;
 			_prefix = new List<string>();
 			_isLastWordComplete = true;
-			_wordGraphProcessor = new ErrorCorrectionWordGraphProcessor(_engine.ErrorCorrectionModel, wordGraph);
+			_wordGraphProcessor = new ErrorCorrectionWordGraphProcessor(_engine.ErrorCorrectionModel, _sourceSegment,
+				wordGraph);
 			_currentResult = CreateInteractiveResult();
 		}
 
@@ -63,9 +64,7 @@ namespace SIL.Machine.Translation.Thot
 
 		private TranslationResult CreateInteractiveResult()
 		{
-			TranslationInfo correction = _wordGraphProcessor.Correct(_prefix.ToArray(), _isLastWordComplete, 1)
-				.FirstOrDefault();
-			return _engine.CreateResult(_sourceSegment, _prefix.Count, correction);
+			return _wordGraphProcessor.Correct(_prefix.ToArray(), _isLastWordComplete, 1).First();
 		}
 
 		public TranslationResult SetPrefix(IReadOnlyList<string> prefix, bool isLastWordComplete)

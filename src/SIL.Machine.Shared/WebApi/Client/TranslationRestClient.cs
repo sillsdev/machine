@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SIL.Machine.Translation;
 using SIL.Machine.WebApi.Dtos;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.WebApi.Client
 {
@@ -129,9 +130,11 @@ namespace SIL.Machine.WebApi.Client
 			var arcs = new List<WordGraphArc>();
 			foreach (WordGraphArcDto arcDto in dto.Arcs)
 			{
-				arcs.Add(new WordGraphArc(arcDto.PrevState, arcDto.NextState, arcDto.Score, arcDto.Words,
-					CreateModel(arcDto.Alignment, arcDto.SourceEndIndex - arcDto.SourceStartIndex + 1, arcDto.Words.Length),
-					arcDto.Confidences.Cast<double>(), arcDto.SourceStartIndex, arcDto.SourceEndIndex, arcDto.IsUnknown));
+				WordAlignmentMatrix alignment = CreateModel(arcDto.Alignment,
+					arcDto.SourceEndIndex - arcDto.SourceStartIndex + 1, arcDto.Words.Length);
+				arcs.Add(new WordGraphArc(arcDto.PrevState, arcDto.NextState, arcDto.Score, arcDto.Words, alignment,
+					arcDto.Confidences.Cast<double>(), arcDto.SourceStartIndex, arcDto.SourceEndIndex,
+					arcDto.IsUnknown));
 			}
 
 			return new WordGraph(arcs, dto.FinalStates, dto.InitialStateScore);
@@ -143,7 +146,7 @@ namespace SIL.Machine.WebApi.Client
 				return null;
 
 			return new TranslationResult(sourceSegment, dto.Target, dto.Confidences.Cast<double>(), dto.Sources,
-				CreateModel(dto.Alignment, sourceSegment.Count, dto.Target.Length));
+				CreateModel(dto.Alignment, sourceSegment.Count, dto.Target.Length), dto.Phrases.Select(CreateModel));
 		}
 
 		private static WordAlignmentMatrix CreateModel(AlignedWordPairDto[] dto, int i, int j)
@@ -152,6 +155,16 @@ namespace SIL.Machine.WebApi.Client
 			foreach (AlignedWordPairDto wordPairDto in dto)
 				alignment[wordPairDto.SourceIndex, wordPairDto.TargetIndex] = AlignmentType.Aligned;
 			return alignment;
+		}
+
+		private static Phrase CreateModel(PhraseDto dto)
+		{
+			return new Phrase(CreateModel(dto.SourceSegmentRange), CreateModel(dto.TargetSegmentRange));
+		}
+
+		private static Range<int> CreateModel(RangeDto dto)
+		{
+			return Range<int>.Create(dto.Start, dto.End);
 		}
 	}
 }

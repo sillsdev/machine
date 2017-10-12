@@ -6,6 +6,7 @@ namespace SIL.Machine.Translation
 {
 	public class ErrorCorrectionWordGraphProcessor
 	{
+		private readonly IReadOnlyList<string> _sourceSegment;
 		private readonly WordGraph _wordGraph;
 		private readonly double[] _restScores;
 		private readonly ErrorCorrectionModel _ecm;
@@ -18,10 +19,11 @@ namespace SIL.Machine.Translation
 		private string[] _prevPrefix;
 		private bool _prevIsLastWordComplete;
 
-		public ErrorCorrectionWordGraphProcessor(ErrorCorrectionModel ecm, WordGraph wordGraph, double ecmWeight = 1,
-			double wordGraphWeight = 1)
+		public ErrorCorrectionWordGraphProcessor(ErrorCorrectionModel ecm, IReadOnlyList<string> sourceSegment,
+			WordGraph wordGraph, double ecmWeight = 1, double wordGraphWeight = 1)
 		{
 			_ecm = ecm;
+			_sourceSegment = sourceSegment;
 			_wordGraph = wordGraph;
 			EcmWeight = ecmWeight;
 			WordGraphWeight = wordGraphWeight;
@@ -146,7 +148,7 @@ namespace SIL.Machine.Translation
 		public double EcmWeight { get; }
 		public double WordGraphWeight { get; }
 
-		public IEnumerable<TranslationInfo> Correct(string[] prefix, bool isLastWordComplete, int n)
+		public IEnumerable<TranslationResult> Correct(string[] prefix, bool isLastWordComplete, int n)
 		{
 			// get valid portion of the processed prefix vector
 			int validProcPrefixCount = 0;
@@ -199,17 +201,22 @@ namespace SIL.Machine.Translation
 			// process word-graph given prefix difference
 			ProcessWordGraphForPrefixDiff(prefixDiff, isLastWordComplete);
 
-			var candidates = new List<Candidate>();
-			GetNBestStateCandidates(candidates, n);
-			GetNBestSubStateCandidates(candidates, n);
-
-			TranslationInfo[] nbestCorrections = candidates.Select(c =>
-				GetCorrectionForCandidate(prefix, isLastWordComplete, c)).ToArray();
-
 			_prevPrefix = prefix.ToArray();
 			_prevIsLastWordComplete = isLastWordComplete;
 
-			return nbestCorrections;
+			var candidates = new List<Candidate>();
+			GetNBestStateCandidates(candidates, n);
+			GetNBestSubStateCandidates(candidates, n);
+			while (candidates.Count < n)
+				candidates.Add(null);
+
+			foreach (Candidate candidate in candidates)
+			{
+				var builder = new TranslationResultBuilder();
+				if (candidate != null)
+					BuildCorrectionFromCandidate(builder, prefix, isLastWordComplete, candidate);
+				yield return builder.ToResult(_sourceSegment, prefix.Length);
+			}
 		}
 
 		private void ProcessWordGraphForPrefixDiff(string[] prefixDiff, bool isLastWordComplete)
@@ -279,36 +286,33 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		private TranslationInfo GetCorrectionForCandidate(string[] prefix, bool isLastWordComplete, Candidate candidate)
+		private void BuildCorrectionFromCandidate(TranslationResultBuilder builder, string[] prefix,
+			bool isLastWordComplete, Candidate candidate)
 		{
-			var correction = new TranslationInfo {Score = candidate.Score};
-
 			int uncorrectedPrefixLen;
 			if (candidate.ArcIndex == -1)
 			{
-				AddBestUncorrectedPrefixState(correction, prefix.Length, candidate.State);
-				uncorrectedPrefixLen = correction.Target.Count;
+				AddBestUncorrectedPrefixState(builder, prefix.Length, candidate.State);
+				uncorrectedPrefixLen = builder.Words.Count;
 			}
 			else
 			{
-				AddBestUncorrectedPrefixSubState(correction, prefix.Length, candidate.ArcIndex, candidate.ArcWordIndex);
+				AddBestUncorrectedPrefixSubState(builder, prefix.Length, candidate.ArcIndex, candidate.ArcWordIndex);
 				WordGraphArc firstArc = _wordGraph.Arcs[candidate.ArcIndex];
-				uncorrectedPrefixLen = correction.Target.Count - (firstArc.Words.Count - candidate.ArcWordIndex) + 1;
+				uncorrectedPrefixLen = builder.Words.Count - (firstArc.Words.Count - candidate.ArcWordIndex) + 1;
 			}
 
-			int alignmentColsToAddCount = _ecm.CorrectPrefix(correction, uncorrectedPrefixLen, prefix,
+			int alignmentColsToAddCount = _ecm.CorrectPrefix(builder, uncorrectedPrefixLen, prefix,
 				isLastWordComplete);
 
 			foreach (WordGraphArc arc in _wordGraph.GetBestPathFromFinalStateToState(candidate.State).Reverse())
 			{
-				UpdateCorrectionFromArc(correction, arc, false, alignmentColsToAddCount);
+				UpdateCorrectionFromArc(builder, arc, false, alignmentColsToAddCount);
 				alignmentColsToAddCount = 0;
 			}
-
-			return correction;
 		}
 
-		private void AddBestUncorrectedPrefixState(TranslationInfo correction, int procPrefixPos, int state)
+		private void AddBestUncorrectedPrefixState(TranslationResultBuilder builder, int procPrefixPos, int state)
 		{
 			var arcs = new Stack<WordGraphArc>();
 
@@ -331,10 +335,11 @@ namespace SIL.Machine.Translation
 			}
 
 			foreach (WordGraphArc arc in arcs)
-				UpdateCorrectionFromArc(correction, arc, true, 0);
+				UpdateCorrectionFromArc(builder, arc, true, 0);
 		}
 
-		private void AddBestUncorrectedPrefixSubState(TranslationInfo correction, int procPrefixPos, int arcIndex, int arcWordIndex)
+		private void AddBestUncorrectedPrefixSubState(TranslationResultBuilder builder, int procPrefixPos,
+			int arcIndex, int arcWordIndex)
 		{
 			WordGraphArc arc = _wordGraph.Arcs[arcIndex];
 
@@ -345,25 +350,22 @@ namespace SIL.Machine.Translation
 				curProcPrefixPos = predPrefixWords[curProcPrefixPos];
 			}
 
-			AddBestUncorrectedPrefixState(correction, curProcPrefixPos, arc.PrevState);
+			AddBestUncorrectedPrefixState(builder, curProcPrefixPos, arc.PrevState);
 
-			UpdateCorrectionFromArc(correction, arc, true, 0);
+			UpdateCorrectionFromArc(builder, arc, true, 0);
 		}
 
-		private void UpdateCorrectionFromArc(TranslationInfo correction, WordGraphArc arc, bool isPrefix, int alignmentColsToAddCount)
+		private void UpdateCorrectionFromArc(TranslationResultBuilder builder, WordGraphArc arc, bool isPrefix,
+			int alignmentColsToAddCount)
 		{
 			for (int i = 0; i < arc.Words.Count; i++)
-			{
-				correction.Target.Add(arc.Words[i]);
-				correction.TargetConfidences.Add(arc.WordConfidences[i]);
-				if (!isPrefix && arc.IsUnknown)
-					correction.TargetUnknownWords.Add(correction.Target.Count - 1);
-			}
+				builder.AppendWord(arc.Words[i], arc.WordConfidences[i], !isPrefix && arc.IsUnknown);
 
 			WordAlignmentMatrix alignment = arc.Alignment;
 			if (alignmentColsToAddCount > 0)
 			{
-				var newAlignment = new WordAlignmentMatrix(alignment.RowCount, alignment.ColumnCount + alignmentColsToAddCount);
+				var newAlignment = new WordAlignmentMatrix(alignment.RowCount,
+					alignment.ColumnCount + alignmentColsToAddCount);
 				for (int j = 0; j < alignment.ColumnCount; j++)
 				{
 					for (int i = 0; i < alignment.RowCount; i++)
@@ -372,14 +374,7 @@ namespace SIL.Machine.Translation
 				alignment = newAlignment;
 			}
 
-			var phrase = new PhraseInfo
-			{
-				SourceStartIndex = arc.SourceStartIndex,
-				SourceEndIndex = arc.SourceEndIndex,
-				TargetCut = correction.Target.Count - 1,
-				Alignment = alignment
-			};
-			correction.Phrases.Add(phrase);
+			builder.MarkPhrase(arc.SourceStartIndex, arc.SourceEndIndex, alignment);
 		}
 
 		private static void AddToNBestList<T>(List<T> nbestList, int n, T item) where T : IComparable<T>

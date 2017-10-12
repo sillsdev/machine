@@ -44,7 +44,8 @@ namespace SIL.Machine.Translation.Thot
 		{
 			CheckDisposed();
 
-			return Thot.DoTranslateNBest(_decoderHandle, Thot.decoder_translateNBest, n, segment, false, segment, CreateResult);
+			return Thot.DoTranslateNBest(_decoderHandle, Thot.decoder_translateNBest, n, segment, false, segment,
+				CreateResult);
 		}
 
 		public IInteractiveTranslationSession TranslateInteractively(IReadOnlyList<string> segment)
@@ -164,8 +165,8 @@ namespace SIL.Machine.Translation.Thot
 						: totalProb / alignedWordCount;
 				}
 
-				arcs.Add(new WordGraphArc(predStateIndex, succStateIndex, score, words, waMatrix, confidences, srcStartIndex,
-					srcEndIndex, isUnknown));
+				arcs.Add(new WordGraphArc(predStateIndex, succStateIndex, score, words, waMatrix, confidences,
+					srcStartIndex, srcEndIndex, isUnknown));
 			}
 
 			return new WordGraph(arcs, finalStates, initialStateScore);
@@ -174,7 +175,8 @@ namespace SIL.Machine.Translation.Thot
 		private double GetTranslationProbability(string sourceWord, string targetWord)
 		{
 			double prob = _smtModel.SingleWordAlignmentModel.GetTranslationProbability(sourceWord, targetWord);
-			double invProb = _smtModel.InverseSingleWordAlignmentModel.GetTranslationProbability(targetWord, sourceWord);
+			double invProb = _smtModel.InverseSingleWordAlignmentModel.GetTranslationProbability(targetWord,
+				sourceWord);
 			return Math.Max(prob, invProb);
 		}
 
@@ -183,7 +185,8 @@ namespace SIL.Machine.Translation.Thot
 			return line.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
 		}
 
-		public TranslationResult GetBestPhraseAlignment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
+		public TranslationResult GetBestPhraseAlignment(IReadOnlyList<string> sourceSegment,
+			IReadOnlyList<string> targetSegment)
 		{
 			CheckDisposed();
 
@@ -212,95 +215,28 @@ namespace SIL.Machine.Translation.Thot
 			Thot.TrainSegmentPair(_decoderHandle, sourceSegment, targetSegment, matrix);
 		}
 
-		internal TranslationResult CreateResult(IReadOnlyList<string> sourceSegment, int prefixCount, TranslationInfo info)
-		{
-			if (info == null)
-			{
-				return new TranslationResult(sourceSegment, Enumerable.Empty<string>(), Enumerable.Empty<double>(),
-					Enumerable.Empty<TranslationSources>(), new WordAlignmentMatrix(sourceSegment.Count, 0));
-			}
-
-			double[] confidences = info.TargetConfidences.ToArray();
-			var sources = new TranslationSources[info.Target.Count];
-			var alignment = new WordAlignmentMatrix(sourceSegment.Count, info.Target.Count);
-			int trgPhraseStartIndex = 0;
-			foreach (PhraseInfo phrase in info.Phrases)
-			{
-				for (int j = trgPhraseStartIndex; j <= phrase.TargetCut; j++)
-				{
-					string targetWord = info.Target[j];
-					double confidence = info.TargetConfidences[j];
-					double totalProb = 0;
-					int alignedWordCount = 0;
-					for (int i = phrase.SourceStartIndex; i <= phrase.SourceEndIndex; i++)
-					{
-						if (phrase.Alignment[i - phrase.SourceStartIndex, j - trgPhraseStartIndex] == AlignmentType.Aligned)
-						{
-							string sourceWord = sourceSegment[i];
-							double prob = 0;
-							if (!info.TargetUnknownWords.Contains(j) && confidence < 0)
-								prob = GetTranslationProbability(sourceWord, targetWord);
-							alignment[i, j] = AlignmentType.Aligned;
-							totalProb += prob;
-							alignedWordCount++;
-						}
-					}
-
-					if (confidence < 0)
-					{
-						confidences[j] = alignedWordCount == 0
-							? GetTranslationProbability(null, targetWord)
-							: totalProb / alignedWordCount;
-					}
-
-					if (j < prefixCount)
-					{
-						sources[j] = TranslationSources.Prefix;
-						if (info.TargetUncorrectedPrefixWords.Contains(j))
-							sources[j] |= TranslationSources.Smt;
-					}
-					else if (info.TargetUnknownWords.Contains(j))
-					{
-						sources[j] = TranslationSources.None;
-					}
-					else
-					{
-						sources[j] = TranslationSources.Smt;
-					}
-				}
-				trgPhraseStartIndex = phrase.TargetCut + 1;
-			}
-
-			return new TranslationResult(sourceSegment, info.Target, confidences, sources, alignment);
-		}
-
 		private TranslationResult CreateResult(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
 			IntPtr dataPtr)
 		{
-			var data = new TranslationInfo();
-			foreach (string targetWord in targetSegment)
-			{
-				data.Target.Add(targetWord);
-				data.TargetConfidences.Add(-1);
-			}
+			var builder = new TranslationResultBuilder();
 
 			uint phraseCount = Thot.tdata_getPhraseCount(dataPtr);
 			IReadOnlyList<Tuple<int, int>> sourceSegmentation = GetSourceSegmentation(dataPtr, phraseCount);
 			IReadOnlyList<int> targetSegmentCuts = GetTargetSegmentCuts(dataPtr, phraseCount);
-			GetTargetUnknownWords(dataPtr, targetSegment.Count, data.TargetUnknownWords);
+			ISet<int> targetUnknownWords = GetTargetUnknownWords(dataPtr, targetSegment.Count);
 
 			int trgPhraseStartIndex = 0;
 			for (int k = 0; k < phraseCount; k++)
 			{
-				var phrase = new PhraseInfo
-				{
-					SourceStartIndex = sourceSegmentation[k].Item1 - 1,
-					SourceEndIndex = sourceSegmentation[k].Item2 - 1,
-					TargetCut = targetSegmentCuts[k] - 1
-				};
+				int sourceStartIndex = sourceSegmentation[k].Item1 - 1;
+				int sourceEndIndex = sourceSegmentation[k].Item2 - 1;
+				int targetCut = targetSegmentCuts[k] - 1;
 
-				int srcPhraseLen = phrase.SourceEndIndex - phrase.SourceStartIndex + 1;
-				int trgPhraseLen = phrase.TargetCut - trgPhraseStartIndex + 1;
+				for (int j = trgPhraseStartIndex; j <= targetCut; j++)
+					builder.AppendWord(targetSegment[j], -1, targetUnknownWords.Contains(j));
+
+				int srcPhraseLen = sourceEndIndex - sourceStartIndex + 1;
+				int trgPhraseLen = targetCut - trgPhraseStartIndex + 1;
 				WordAlignmentMatrix waMatrix;
 				if (srcPhraseLen == 1 && trgPhraseLen == 1)
 				{
@@ -310,18 +246,17 @@ namespace SIL.Machine.Translation.Thot
 				{
 					var srcPhrase = new string[srcPhraseLen];
 					for (int i = 0; i < srcPhraseLen; i++)
-						srcPhrase[i] = sourceSegment[phrase.SourceStartIndex + i];
+						srcPhrase[i] = sourceSegment[sourceStartIndex + i];
 					var trgPhrase = new string[trgPhraseLen];
 					for (int j = 0; j < trgPhraseLen; j++)
 						trgPhrase[j] = targetSegment[trgPhraseStartIndex + j];
 					waMatrix = _segmentAligner.GetBestAlignment(srcPhrase, trgPhrase);
 				}
-				phrase.Alignment = waMatrix;
-				data.Phrases.Add(phrase);
+				builder.MarkPhrase(sourceStartIndex, sourceEndIndex, waMatrix);
 				trgPhraseStartIndex += trgPhraseLen;
 			}
 
-			return CreateResult(sourceSegment, 0, data);
+			return builder.ToResult(sourceSegment, 0, GetTranslationProbability);
 		}
 
 		private IReadOnlyList<Tuple<int, int>> GetSourceSegmentation(IntPtr data, uint phraseCount)
@@ -376,15 +311,17 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private void GetTargetUnknownWords(IntPtr data, int targetWordCount, ISet<int> targetUnknownWords)
+		private ISet<int> GetTargetUnknownWords(IntPtr data, int targetWordCount)
 		{
 			int sizeOfUInt = Marshal.SizeOf<uint>();
 			IntPtr nativeTargetUnknownWords = Marshal.AllocHGlobal(targetWordCount * sizeOfUInt);
 			try
 			{
-				uint count = Thot.tdata_getTargetUnknownWords(data, nativeTargetUnknownWords, (uint)targetWordCount);
+				var targetUnknownWords = new HashSet<int>();
+				uint count = Thot.tdata_getTargetUnknownWords(data, nativeTargetUnknownWords, (uint) targetWordCount);
 				for (int i = 0; i < count; i++)
 					targetUnknownWords.Add(Marshal.ReadInt32(nativeTargetUnknownWords, i * sizeOfUInt));
+				return targetUnknownWords;
 			}
 			finally
 			{
