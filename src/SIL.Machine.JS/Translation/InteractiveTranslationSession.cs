@@ -10,15 +10,15 @@ namespace SIL.Machine.Translation
 
 		private readonly TranslationEngine _engine;
 		private readonly ErrorCorrectionWordGraphProcessor _wordGraphProcessor;
+		private readonly ITranslationSuggester _suggester;
 		private TranslationResult _curResult;
-		private double _confidenceThreshold;
 
 		internal InteractiveTranslationSession(TranslationEngine engine, string[] sourceSegment,
 			double confidenceThreshold, InteractiveTranslationResult result)
 		{
 			_engine = engine;
+			_suggester = new WordTranslationSuggester(confidenceThreshold);
 			SourceSegment = sourceSegment;
-			_confidenceThreshold = confidenceThreshold;
 			RuleResult = result.RuleResult;
 			SmtWordGraph = result.SmtWordGraph;
 
@@ -34,12 +34,12 @@ namespace SIL.Machine.Translation
 
 		public double ConfidenceThreshold
 		{
-			get { return _confidenceThreshold; }
+			get { return _suggester.ConfidenceThreshold; }
 			set
 			{
-				if (_confidenceThreshold != value)
+				if (_suggester.ConfidenceThreshold != value)
 				{
-					_confidenceThreshold = value;
+					_suggester.ConfidenceThreshold = value;
 					UpdateSuggestion();
 				}
 			}
@@ -94,8 +94,8 @@ namespace SIL.Machine.Translation
 
 		private void UpdateSuggestion()
 		{
-			string[] suggestions = TranslationSuggester.GetSuggestedWordIndices(Prefix, IsLastWordComplete, _curResult,
-				_confidenceThreshold).Select(j => _curResult.TargetSegment[j]).ToArray();
+			string[] suggestions = _suggester.GetSuggestedWordIndices(Prefix.Length, IsLastWordComplete, _curResult)
+				.Select(j => _curResult.TargetSegment[j]).ToArray();
 
 			CurrentSuggestion = suggestions;
 		}

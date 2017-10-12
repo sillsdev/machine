@@ -25,6 +25,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Tokenization\WhitespaceTokenizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\EditOperation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\InteractiveTranslationResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\ITranslationSuggester.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\Phrase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\Preprocessors.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\SmtTrainProgress.cs" />
@@ -37,7 +38,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationSources.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordAlignmentMatrix.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationSuggester.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\WordTranslationSuggester.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordEditDistance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordGraph.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordGraphArc.cs" />

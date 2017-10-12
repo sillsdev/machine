@@ -15,11 +15,11 @@ namespace SIL.Machine.Translation
 			return result.TargetSegment;
 		}
 
-		public static IEnumerable<int> GetSuggestedWordIndices(this IInteractiveTranslationSession session,
-			double confidenceThreshold)
+		public static IEnumerable<int> GetSuggestedWordIndices(this ITranslationSuggester suggester,
+			IInteractiveTranslationSession session)
 		{
-			return TranslationSuggester.GetSuggestedWordIndices(session.Prefix, session.IsLastWordComplete,
-				session.CurrentResult, confidenceThreshold);
+			return suggester.GetSuggestedWordIndices(session.Prefix.Count, session.IsLastWordComplete,
+				session.CurrentResult);
 		}
 
 		public static void AppendSuggestionToPrefix(this IInteractiveTranslationSession session,

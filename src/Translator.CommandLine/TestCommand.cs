@@ -57,6 +57,8 @@ namespace SIL.Machine.Translation
 					Directory.CreateDirectory(_traceOption.Value());
 			}
 
+			var suggester = new WordTranslationSuggester(confidence);
+
 			var corpus = new ParallelTextCorpus(SourceCorpus, TargetCorpus);
 			int totalSegmentCount = corpus.Texts.SelectMany(t => t.Segments).Count(s => !s.IsEmpty);
 
@@ -72,7 +74,7 @@ namespace SIL.Machine.Translation
 					{
 						foreach (ParallelTextSegment segment in text.Segments.Where(s => !s.IsEmpty))
 						{
-							TestSegment(engine, confidence, segment, traceWriter);
+							TestSegment(engine, suggester, segment, traceWriter);
 							segmentCount++;
 							progress.Report((double) segmentCount / totalSegmentCount);
 						}
@@ -102,8 +104,8 @@ namespace SIL.Machine.Translation
 			return null;
 		}
 
-		private void TestSegment(IInteractiveSmtEngine engine, double confidence, ParallelTextSegment segment,
-			StreamWriter traceWriter)
+		private void TestSegment(IInteractiveSmtEngine engine, ITranslationSuggester suggester,
+			ParallelTextSegment segment, StreamWriter traceWriter)
 		{
 			traceWriter?.WriteLine($"Segment:      {segment.SegmentRef}");
 			string[] sourceSegment = segment.SourceSegment.Select(Preprocessors.Lowercase).ToArray();
@@ -118,7 +120,7 @@ namespace SIL.Machine.Translation
 			{
 				while (session.Prefix.Count < targetSegment.Length || !session.IsLastWordComplete)
 				{
-					int[] suggestion = session.GetSuggestedWordIndices(confidence).ToArray();
+					int[] suggestion = suggester.GetSuggestedWordIndices(session).ToArray();
 
 					string[] suggestionWords = suggestion.Select(j => session.CurrentResult.TargetSegment[j]).ToArray();
 					if (prevSuggestionWords == null || !prevSuggestionWords.SequenceEqual(suggestionWords))

@@ -8,7 +8,6 @@ using System.Windows.Input;
 using Eto.Forms;
 using GalaSoft.MvvmLight;
 using SIL.Extensions;
-using SIL.Machine.Annotations;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
 using SIL.ObjectModel;
@@ -40,18 +39,19 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly BulkObservableList<SuggestionViewModel> _suggestions;
 		private readonly List<string> _sourceSegmentWords;
 		private readonly BulkObservableList<AlignedWordViewModel> _alignedSourceWords;
-		private Eto.Forms.Range<int>? _currentSourceSegmentRange;
-		private Eto.Forms.Range<int>? _currentTargetSegmentRange; 
+		private Range<int>? _currentSourceSegmentRange;
+		private Range<int>? _currentTargetSegmentRange; 
 		private readonly RelayCommand<int> _selectSourceSegmentCommand;
 		private readonly RelayCommand<int> _selectTargetSegmentCommand;
-		private readonly BulkObservableList<Eto.Forms.Range<int>> _unapprovedTargetSegmentRanges;
-		private double _confidenceThreshold;
+		private readonly BulkObservableList<Range<int>> _unapprovedTargetSegmentRanges;
+		private readonly ITranslationSuggester _suggester;
 		private bool _isChanged;
 		private bool _isActive;
 		private bool _isTranslating;
 		private HybridInteractiveTranslationSession _curSession;
 
-		public TextViewModel(ITokenizer<string, int> tokenizer, string name, string metadataFileName, string sourceFileName, string targetFileName, string alignmentFileName)
+		public TextViewModel(ITokenizer<string, int> tokenizer, string name, string metadataFileName,
+			string sourceFileName, string targetFileName, string alignmentFileName)
 		{
 			Name = name;
 			_metadataFileName = metadataFileName;
@@ -74,9 +74,11 @@ namespace SIL.Machine.Translation.TestApp
 			Suggestions = new ReadOnlyObservableList<SuggestionViewModel>(_suggestions);
 			_sourceSegmentWords = new List<string>();
 			_unapprovedTargetSegmentRanges = new BulkObservableList<Eto.Forms.Range<int>>();
-			UnapprovedTargetSegmentRanges = new ReadOnlyObservableList<Eto.Forms.Range<int>>(_unapprovedTargetSegmentRanges);
+			UnapprovedTargetSegmentRanges = new ReadOnlyObservableList<Eto.Forms.Range<int>>(
+				_unapprovedTargetSegmentRanges);
 			_alignedSourceWords = new BulkObservableList<AlignedWordViewModel>();
 			AlignedSourceWords = new ReadOnlyObservableList<AlignedWordViewModel>(_alignedSourceWords);
+			_suggester = new WordTranslationSuggester(0.2);
 
 			LoadMetadataFile();
 			LoadTextFile(sourceFileName, _sourceSegments);
@@ -98,12 +100,12 @@ namespace SIL.Machine.Translation.TestApp
 
 		internal double ConfidenceThreshold
 		{
-			get { return _confidenceThreshold; }
+			get { return _suggester.ConfidenceThreshold; }
 			set
 			{
-				if (Math.Abs(_confidenceThreshold - value) > double.Epsilon)
+				if (_suggester.ConfidenceThreshold != value)
 				{
-					_confidenceThreshold = value;
+					_suggester.ConfidenceThreshold = value;
 					UpdateSuggestions();
 					UpdateSourceSegmentSelection();
 				}
@@ -120,7 +122,8 @@ namespace SIL.Machine.Translation.TestApp
 			{
 				for (int i = 0; i < _targetSegments.Count; i++)
 				{
-					metadataWriter.WriteLine("{0}\t{1}", _paragraphs.Contains(i) || i == 0 ? "1" : "0", _approvedSegments.Contains(i) ? "1" : "0");
+					metadataWriter.WriteLine("{0}\t{1}", _paragraphs.Contains(i) || i == 0 ? "1" : "0",
+						_approvedSegments.Contains(i) ? "1" : "0");
 					textWriter.WriteLine(_targetSegments[i].Text);
 				}
 			}
@@ -132,9 +135,14 @@ namespace SIL.Machine.Translation.TestApp
 					foreach ((int SourceIndex, int TargetIndex)[] alignment in _alignments)
 					{
 						if (alignment != null)
-							alignmentsWriter.WriteLine(string.Join(" ", alignment.Select(t => $"{t.SourceIndex}-{t.TargetIndex}")));
+						{
+							alignmentsWriter.WriteLine(string.Join(" ",
+								alignment.Select(t => $"{t.SourceIndex}-{t.TargetIndex}")));
+						}
 						else
+						{
 							alignmentsWriter.WriteLine();
+						}
 					}
 				}
 			}
@@ -152,7 +160,8 @@ namespace SIL.Machine.Translation.TestApp
 					{
 						if (_sourceSegments.Count > 0)
 						{
-							int unapprovedSegment = Enumerable.Range(0, _sourceSegments.Count).FirstOrDefault(i => !_approvedSegments.Contains(i));
+							int unapprovedSegment = Enumerable.Range(0, _sourceSegments.Count)
+								.FirstOrDefault(i => !_approvedSegments.Contains(i));
 							MoveSegment(unapprovedSegment);
 						}
 					}
@@ -295,7 +304,8 @@ namespace SIL.Machine.Translation.TestApp
 
 		private (int, int)[] GetAlignedWords(WordAlignmentMatrix matrix)
 		{
-			return Enumerable.Range(0, matrix.RowCount).SelectMany(i => Enumerable.Range(0, matrix.ColumnCount), (s, t) => (SourceIndex: s, TargetIndex: t))
+			return Enumerable.Range(0, matrix.RowCount)
+				.SelectMany(i => Enumerable.Range(0, matrix.ColumnCount), (s, t) => (SourceIndex: s, TargetIndex: t))
 				.Where(t => matrix[t.SourceIndex, t.TargetIndex] == AlignmentType.Aligned).ToArray();
 		}
 
@@ -303,7 +313,8 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void SelectSourceSegment(int index)
 		{
-			int segmentIndex = _sourceSegments.IndexOf(s => s.StartIndex <= index && s.StartIndex + s.Text.Length > index);
+			int segmentIndex = _sourceSegments
+				.IndexOf(s => s.StartIndex <= index && s.StartIndex + s.Text.Length > index);
 			if (segmentIndex != -1)
 			{
 				MoveSegment(segmentIndex);
@@ -315,7 +326,8 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void SelectTargetSegment(int index)
 		{
-			int segmentIndex = _targetSegments.IndexOf(s => s.StartIndex <= index && s.StartIndex + s.Text.Length > index);
+			int segmentIndex = _targetSegments
+				.IndexOf(s => s.StartIndex <= index && s.StartIndex + s.Text.Length > index);
 			if (segmentIndex != -1)
 				MoveSegment(segmentIndex);
 		}
@@ -329,8 +341,10 @@ namespace SIL.Machine.Translation.TestApp
 			SourceSegment = sourceSegment.Text;
 			TargetSegment = targetSegment.Text;
 
-			CurrentSourceSegmentRange = new Eto.Forms.Range<int>(sourceSegment.StartIndex, sourceSegment.StartIndex + sourceSegment.Text.Length);
-			CurrentTargetSegmentRange = new Eto.Forms.Range<int>(targetSegment.StartIndex, targetSegment.StartIndex + targetSegment.Text.Length);
+			CurrentSourceSegmentRange = new Range<int>(sourceSegment.StartIndex,
+				sourceSegment.StartIndex + sourceSegment.Text.Length);
+			CurrentTargetSegmentRange = new Range<int>(targetSegment.StartIndex,
+				targetSegment.StartIndex + targetSegment.Text.Length);
 			_goToNextSegmentCommand.UpdateCanExecute();
 			_goToPrevSegmentCommand.UpdateCanExecute();
 			_approveSegmentCommand.UpdateCanExecute();
@@ -362,8 +376,9 @@ namespace SIL.Machine.Translation.TestApp
 			if (!_isTranslating)
 				return;
 
-			_curSession.SetPrefix(_tokenizer.TokenizeToStrings(_targetSegments[_currentSegment].Text).Select(Preprocessors.Lowercase).ToArray(),
-				TargetSegment.Length == 0 || TargetSegment.EndsWith(" "));
+			string[] prefix = _tokenizer.TokenizeToStrings(_targetSegments[_currentSegment].Text)
+				.Select(Preprocessors.Lowercase).ToArray();
+			_curSession.SetPrefix(prefix, TargetSegment.Length == 0 || TargetSegment.EndsWith(" "));
 			UpdateSuggestions();
 		}
 
@@ -374,8 +389,8 @@ namespace SIL.Machine.Translation.TestApp
 
 			if (!_approvedSegments.Contains(_currentSegment))
 			{
-				_suggestions.ReplaceAll(_curSession.GetSuggestedWordIndices(_confidenceThreshold)
-					.Select(j => new SuggestionViewModel(this, _curSession.CurrentResult.RecaseTargetWord(_sourceSegmentWords, j))));
+				_suggestions.ReplaceAll(_suggester.GetSuggestedWordIndices(_curSession).Select(j =>
+					new SuggestionViewModel(this, _curSession.CurrentResult.RecaseTargetWord(_sourceSegmentWords, j))));
 			}
 			else
 			{
@@ -464,7 +479,7 @@ namespace SIL.Machine.Translation.TestApp
 			{
 				double confidence = result.TargetWordConfidences[targetWordIndex];
 				TranslationSources sources = result.TargetWordSources[targetWordIndex];
-				if (confidence >= _confidenceThreshold || (sources & TranslationSources.Transfer) != 0)
+				if (confidence >= _suggester.ConfidenceThreshold || (sources & TranslationSources.Transfer) != 0)
 				{
 					foreach (int sourceIndex in result.Alignment.GetColumnAlignedIndices(targetWordIndex))
 					{
@@ -477,7 +492,7 @@ namespace SIL.Machine.Translation.TestApp
 						else
 							level = WordTranslationLevel.LowConfidence;
 						alignedSourceWords.Add(
-							new AlignedWordViewModel(new Eto.Forms.Range<int>(range.Start, range.End - 1), level));
+							new AlignedWordViewModel(new Range<int>(range.Start, range.End - 1), level));
 					}
 				}
 			}
@@ -487,13 +502,13 @@ namespace SIL.Machine.Translation.TestApp
 
 		public ReadOnlyObservableList<AlignedWordViewModel> AlignedSourceWords { get; }
 
-		public Eto.Forms.Range<int>? CurrentSourceSegmentRange
+		public Range<int>? CurrentSourceSegmentRange
 		{
 			get => _currentSourceSegmentRange;
 			private set => Set(nameof(CurrentSourceSegmentRange), ref _currentSourceSegmentRange, value);
 		}
 
-		public Eto.Forms.Range<int>? CurrentTargetSegmentRange
+		public Range<int>? CurrentTargetSegmentRange
 		{
 			get => _currentTargetSegmentRange;
 			private set => Set(nameof(CurrentTargetSegmentRange), ref _currentTargetSegmentRange, value);
@@ -514,12 +529,13 @@ namespace SIL.Machine.Translation.TestApp
 				suggestion.InsertSuggestion();
 		}
 
-		public ReadOnlyObservableList<Eto.Forms.Range<int>> UnapprovedTargetSegmentRanges { get; }
+		public ReadOnlyObservableList<Range<int>> UnapprovedTargetSegmentRanges { get; }
 
 		private void UpdateUnapprovedTargetSegmentRanges()
 		{
-			_unapprovedTargetSegmentRanges.ReplaceAll(_targetSegments.Where((s, i) => !_approvedSegments.Contains(i) && !string.IsNullOrEmpty(s.Text))
-				.Select(s => new Eto.Forms.Range<int>(s.StartIndex, s.StartIndex + s.Text.Length)));
+			_unapprovedTargetSegmentRanges.ReplaceAll(_targetSegments
+				.Where((s, i) => !_approvedSegments.Contains(i) && !string.IsNullOrEmpty(s.Text))
+				.Select(s => new Range<int>(s.StartIndex, s.StartIndex + s.Text.Length)));
 		}
 
 		public void AcceptChanges()
