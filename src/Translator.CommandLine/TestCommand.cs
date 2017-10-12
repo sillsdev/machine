@@ -95,7 +95,7 @@ namespace SIL.Machine.Translation
 		{
 			if (_traceOption.HasValue())
 			{
-				string fileName = Path.Combine(_traceOption.Value(), text.Id + ".txt");
+				string fileName = Path.Combine(_traceOption.Value(), text.Id + "-trace.txt");
 				return new StreamWriter(fileName);
 			}
 
