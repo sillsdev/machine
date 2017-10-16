@@ -107,8 +107,8 @@ namespace SIL.Machine.WebApi.Server.Controllers
 			{
 				Target = Enumerable.Range(0, result.TargetSegment.Count)
 					.Select(j => result.RecaseTargetWord(sourceSegment, j)).ToArray(),
-				Confidences = result.TargetWordConfidences.Select(c => (float) c).ToArray(),
-				Sources = result.TargetWordSources.ToArray(),
+				Confidences = result.WordConfidences.Select(c => (float) c).ToArray(),
+				Sources = result.WordSources.ToArray(),
 				Alignment = CreateDto(result.Alignment)
 			};
 		}

@@ -477,8 +477,8 @@ namespace SIL.Machine.Translation.TestApp
 			TranslationResult result = _curSession.CurrentResult;
 			if (targetWordIndex != -1)
 			{
-				double confidence = result.TargetWordConfidences[targetWordIndex];
-				TranslationSources sources = result.TargetWordSources[targetWordIndex];
+				double confidence = result.WordConfidences[targetWordIndex];
+				TranslationSources sources = result.WordSources[targetWordIndex];
 				if (confidence >= _suggester.ConfidenceThreshold || (sources & TranslationSources.Transfer) != 0)
 				{
 					foreach (int sourceIndex in result.Alignment.GetColumnAlignedIndices(targetWordIndex))

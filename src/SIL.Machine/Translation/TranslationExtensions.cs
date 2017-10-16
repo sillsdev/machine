@@ -10,7 +10,7 @@ namespace SIL.Machine.Translation
 		public static IReadOnlyList<string> TranslateWord(this ITranslationEngine engine, string sourceWord)
 		{
 			TranslationResult result = engine.Translate(new[] {sourceWord});
-			if (result.TargetWordSources.Any(s => s == TranslationSources.None))
+			if (result.WordSources.Any(s => s == TranslationSources.None))
 				return new string[0];
 			return result.TargetSegment;
 		}

@@ -12,6 +12,7 @@ namespace SIL.Machine.Translation.Thot
 		private readonly ThotSmtModel _smtModel;
 		private readonly HashSet<ThotInteractiveTranslationSession> _sessions;
 		private readonly ISegmentAligner _segmentAligner;
+		private readonly IWordConfidenceEstimatorFactory _confidenceEstimatorFactory;
 		private IntPtr _decoderHandle;
 
 		public ThotSmtEngine(ThotSmtModel smtModel)
@@ -20,6 +21,7 @@ namespace SIL.Machine.Translation.Thot
 			_sessions = new HashSet<ThotInteractiveTranslationSession>();
 			LoadHandle();
 			_segmentAligner = new FuzzyEditDistanceSegmentAligner(GetTranslationProbability);
+			_confidenceEstimatorFactory = new Ibm1WordConfidenceEstimatorFactory(GetTranslationProbability);
 			ErrorCorrectionModel = new ErrorCorrectionModel();
 		}
 
@@ -87,9 +89,11 @@ namespace SIL.Machine.Translation.Thot
 
 		private WordGraph CreateWordGraph(IReadOnlyList<string> segment, string wordGraphStr, double initialStateScore)
 		{
-			string[] lines = wordGraphStr.Split(new[] {'\n'}, StringSplitOptions.RemoveEmptyEntries);
+			string[] lines = wordGraphStr.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
 			if (lines.Length == 0)
 				return new WordGraph(Enumerable.Empty<WordGraphArc>(), Enumerable.Empty<int>(), initialStateScore);
+
+			IWordConfidenceEstimator confidenceEstimator = _confidenceEstimatorFactory.Create(segment);
 
 			int i = 0;
 			if (lines[i].StartsWith("#"))
@@ -147,22 +151,7 @@ namespace SIL.Machine.Translation.Thot
 				for (int k = 0; k < trgPhraseLen; k++)
 				{
 					string targetWord = words[k];
-					double totalProb = 0;
-					int alignedWordCount = 0;
-					for (int l = 0; l < srcPhraseLen; l++)
-					{
-						if (waMatrix[l, k] == AlignmentType.Aligned)
-						{
-							string sourceWord = segment[srcStartIndex + l];
-							double prob = isUnknown ? 0 : GetTranslationProbability(sourceWord, targetWord);
-							totalProb += prob;
-							alignedWordCount++;
-						}
-					}
-
-					confidences[k] = alignedWordCount == 0
-						? GetTranslationProbability(null, targetWord)
-						: totalProb / alignedWordCount;
+					confidences[k] = confidenceEstimator.EstimateConfidence(targetWord);
 				}
 
 				arcs.Add(new WordGraphArc(predStateIndex, succStateIndex, score, words, waMatrix, confidences,
@@ -219,6 +208,7 @@ namespace SIL.Machine.Translation.Thot
 			IntPtr dataPtr)
 		{
 			var builder = new TranslationResultBuilder();
+			IWordConfidenceEstimator confidenceEstimator = _confidenceEstimatorFactory.Create(sourceSegment);
 
 			uint phraseCount = Thot.tdata_getPhraseCount(dataPtr);
 			IReadOnlyList<Tuple<int, int>> sourceSegmentation = GetSourceSegmentation(dataPtr, phraseCount);
@@ -233,7 +223,11 @@ namespace SIL.Machine.Translation.Thot
 				int targetCut = targetSegmentCuts[k] - 1;
 
 				for (int j = trgPhraseStartIndex; j <= targetCut; j++)
-					builder.AppendWord(targetSegment[j], -1, targetUnknownWords.Contains(j));
+				{
+					string targetWord = targetSegment[j];
+					builder.AppendWord(targetWord, confidenceEstimator.EstimateConfidence(targetWord),
+						targetUnknownWords.Contains(j));
+				}
 
 				int srcPhraseLen = sourceEndIndex - sourceStartIndex + 1;
 				int trgPhraseLen = targetCut - trgPhraseStartIndex + 1;
@@ -256,7 +250,7 @@ namespace SIL.Machine.Translation.Thot
 				trgPhraseStartIndex += trgPhraseLen;
 			}
 
-			return builder.ToResult(sourceSegment, 0, GetTranslationProbability);
+			return builder.ToResult(sourceSegment);
 		}
 
 		private IReadOnlyList<Tuple<int, int>> GetSourceSegmentation(IntPtr data, uint phraseCount)

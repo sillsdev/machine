@@ -155,8 +155,8 @@ namespace SIL.Machine.Translation
 
 					TranslationResult ruleResult = session.RuleResult;
 					assert.DeepEqual(ruleResult.TargetSegment.ToArray(), new[] { "Esto", "es", "una", "test", "." });
-					assert.DeepEqual(ruleResult.TargetWordConfidences.ToArray(), new[] { 0.0, 0.0, 0.0, 1.0, 0.0 });
-					assert.DeepEqual(ruleResult.TargetWordSources.ToArray(),
+					assert.DeepEqual(ruleResult.WordConfidences.ToArray(), new[] { 0.0, 0.0, 0.0, 1.0, 0.0 });
+					assert.DeepEqual(ruleResult.WordSources.ToArray(),
 						new[]
 						{
 							TranslationSources.None,

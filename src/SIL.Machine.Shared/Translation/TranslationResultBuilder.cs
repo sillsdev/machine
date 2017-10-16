@@ -182,8 +182,7 @@ namespace SIL.Machine.Translation
 			return sb.ToString();
 		}
 
-		public TranslationResult ToResult(IReadOnlyList<string> sourceSegment, int prefixCount = 0,
-			Func<string, string, double> getTranslationProb = null)
+		public TranslationResult ToResult(IReadOnlyList<string> sourceSegment, int prefixCount = 0)
 		{
 			double[] confidences = _confidences.ToArray();
 			var sources = new TranslationSources[Words.Count];
@@ -196,31 +195,12 @@ namespace SIL.Machine.Translation
 					Range<int>.Create(trgPhraseStartIndex, phraseInfo.TargetCut + 1)));
 				for (int j = trgPhraseStartIndex; j <= phraseInfo.TargetCut; j++)
 				{
-					string targetWord = _words[j];
-					double confidence = _confidences[j];
-					double totalProb = 0;
-					int alignedWordCount = 0;
 					for (int i = phraseInfo.SourceStartIndex; i <= phraseInfo.SourceEndIndex; i++)
 					{
 						AlignmentType alignmentType = phraseInfo.Alignment[i - phraseInfo.SourceStartIndex,
 							j - trgPhraseStartIndex];
 						if (alignmentType == AlignmentType.Aligned)
-						{
-							string sourceWord = sourceSegment[i];
-							double prob = 0;
-							if (getTranslationProb != null && !_unknownWords.Contains(j) && confidence < 0)
-								prob = getTranslationProb(sourceWord, targetWord);
 							alignment[i, j] = AlignmentType.Aligned;
-							totalProb += prob;
-							alignedWordCount++;
-						}
-					}
-
-					if (getTranslationProb != null && confidence < 0)
-					{
-						confidences[j] = alignedWordCount == 0
-							? getTranslationProb(null, targetWord)
-							: totalProb / alignedWordCount;
 					}
 
 					if (j < prefixCount)

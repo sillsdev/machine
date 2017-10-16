@@ -136,81 +136,63 @@ namespace SIL.Machine.Translation
 					if (!session.IsLastWordComplete)
 						targetIndex--;
 
-					bool match;
-					if (suggestion.Length == 0)
+					var accepted = new List<int>();
+					for (int i = 0, j = targetIndex; i < suggestionWords.Length && j < targetSegment.Length; i++)
 					{
-						match = false;
-					}
-					else
-					{
-						match = true;
-						int j = targetIndex;
-						foreach (string word in suggestionWords)
+						if (suggestionWords[i] == targetSegment[j])
 						{
-							if (j >= targetSegment.Length || word != targetSegment[j])
-							{
-								match = false;
-								break;
-							}
+							accepted.Add(suggestion[i]);
+							j++;
 						}
-					}
-
-					if (match)
-					{
-						// full suggestion match
-						session.AppendSuggestionToPrefix(suggestion);
-						isLastWordSuggestion = true;
-						_actionCount++;
-						_correctSuggestionCount++;
-						suggestionResult = "ACCEPT_FULL";
-					}
-					else
-					{
-						int suggestionIndex = 0;
-						foreach (string word in suggestionWords)
+						else if (accepted.Count == 0)
 						{
-							if (word == targetSegment[targetIndex])
-							{
-								match = true;
-								break;
-							}
-							suggestionIndex++;
-						}
-
-						if (match)
-						{
-							// single word suggestion match
-							session.AppendSuggestionToPrefix(suggestion, suggestionIndex);
-							isLastWordSuggestion = true;
-							_actionCount++;
-							_correctSuggestionCount++;
-							suggestionResult = suggestionIndex == 0 ? "ACCEPT_INIT" : "ACCEPT_MID";
+							j = targetIndex;
 						}
 						else
 						{
-							if (isLastWordSuggestion)
-							{
-								_actionCount++;
-								isLastWordSuggestion = false;
-								WritePrefix(traceWriter, suggestionResult, session.Prefix);
-								suggestionResult = null;
-							}
-
-							int len = session.IsLastWordComplete ? 0 : session.Prefix[session.Prefix.Count - 1].Length;
-							string targetWord = targetSegment[targetIndex];
-							if (len == targetWord.Length)
-							{
-								session.AppendToPrefix("", true);
-							}
-							else
-							{
-								string c = targetWord.Substring(len, 1);
-								session.AppendToPrefix(c, false);
-							}
-
-							suggestionResult = suggestion.Length == 0 ? "NONE" : "REJECT";
-							_actionCount++;
+							break;
 						}
+					}
+
+					if (accepted.Count > 0)
+					{
+						session.AppendSuggestionToPrefix(accepted);
+						isLastWordSuggestion = true;
+						_actionCount++;
+						_correctSuggestionCount++;
+						if (accepted.Count == suggestion.Length)
+							suggestionResult = "ACCEPT_FULL";
+						else if (accepted[0] == suggestion[0])
+							suggestionResult = "ACCEPT_INIT";
+						else if (accepted[accepted.Count - 1] == suggestion[suggestion.Length - 1])
+							suggestionResult = "ACCEPT_FIN";
+						else
+							suggestionResult = "ACCEPT_MID";
+					}
+					else
+					{
+						if (isLastWordSuggestion)
+						{
+							_actionCount++;
+							isLastWordSuggestion = false;
+							WritePrefix(traceWriter, suggestionResult, session.Prefix);
+							suggestionResult = null;
+						}
+
+						int len = session.IsLastWordComplete ? 0 : session.Prefix[session.Prefix.Count - 1].Length;
+						string targetWord = targetSegment[targetIndex];
+						if (len == targetWord.Length)
+						{
+							session.AppendToPrefix("", true);
+						}
+						else
+						{
+							string c = targetWord.Substring(len, 1);
+							session.AppendToPrefix(c, false);
+						}
+
+						suggestionResult = suggestion.Length == 0 ? "NONE" : "REJECT";
+						_actionCount++;
 					}
 
 					prevSuggestionWords = suggestionWords;
@@ -240,27 +222,29 @@ namespace SIL.Machine.Translation
 			if (traceWriter == null)
 				return;
 
+			bool inSuggestion = false;
 			traceWriter.Write("SUGGESTION    ");
-			bool firstPhrase = true;
-			foreach (Phrase phrase in session.CurrentResult.Phrases)
+			for (int j = 0; j < session.CurrentResult.TargetSegment.Count; j++)
 			{
-				if (!firstPhrase)
+				if (suggestion.Contains(j))
 				{
-					if (phrase.TargetSegmentRange.Start >= session.Prefix.Count)
-						traceWriter.Write(" | ");
-					else traceWriter.Write(" ");
-				}
-
-				for (int j = phrase.TargetSegmentRange.Start; j < phrase.TargetSegmentRange.End; j++)
-				{
-					if (j != phrase.TargetSegmentRange.Start)
+					if (j > 0)
 						traceWriter.Write(" ");
-					if (suggestion.Contains(j))
-						traceWriter.Write("+");
-					traceWriter.Write(session.CurrentResult.TargetSegment[j]);
+					if (!inSuggestion)
+						traceWriter.Write("[");
+					inSuggestion = true;
+				}
+				else if (inSuggestion)
+				{
+					traceWriter.Write("] ");
+					inSuggestion = false;
+				}
+				else if (j > 0)
+				{
+					traceWriter.Write(" ");
 				}
 
-				firstPhrase = false;
+				traceWriter.Write(session.CurrentResult.TargetSegment[j]);
 			}
 			traceWriter.WriteLine();
 		}

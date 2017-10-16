@@ -92,7 +92,8 @@ namespace SIL.Machine.Translation
 		public void TranslateInteractively_TransferredWord_CorrectTranslation()
 		{
 			using (var env = new TestEnvironment())
-			using (IInteractiveTranslationSession session = env.Engine.TranslateInteractively("caminé a mi habitación .".Split()))
+			using (IInteractiveTranslationSession session = env.Engine.TranslateInteractively(
+				"caminé a mi habitación .".Split()))
 			{
 				TranslationResult result = session.CurrentResult;
 				Assert.That(result.TargetSegment, Is.EqualTo("walked to my room .".Split()));
@@ -103,7 +104,8 @@ namespace SIL.Machine.Translation
 		public void TranslateInteractively_UnknownWord_PartialTranslation()
 		{
 			using (var env = new TestEnvironment())
-			using (IInteractiveTranslationSession session = env.Engine.TranslateInteractively("hablé con recepción .".Split()))
+			using (IInteractiveTranslationSession session = env.Engine.TranslateInteractively(
+				"hablé con recepción .".Split()))
 			{
 				TranslationResult result = session.CurrentResult;
 				Assert.That(result.TargetSegment, Is.EqualTo("hablé with reception .".Split()));
