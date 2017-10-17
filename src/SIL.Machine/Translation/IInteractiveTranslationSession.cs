@@ -11,13 +11,13 @@ namespace SIL.Machine.Translation
 
 		bool IsLastWordComplete { get; }
 
-		TranslationResult CurrentResult { get; }
+		IReadOnlyList<TranslationResult> CurrentResults { get; }
 
-		TranslationResult SetPrefix(IReadOnlyList<string> prefix, bool isLastWordComplete);
+		IReadOnlyList<TranslationResult> SetPrefix(IReadOnlyList<string> prefix, bool isLastWordComplete);
 
-		TranslationResult AppendToPrefix(string addition, bool isLastWordComplete);
+		IReadOnlyList<TranslationResult> AppendToPrefix(string addition, bool isLastWordComplete);
 
-		TranslationResult AppendToPrefix(IEnumerable<string> words);
+		IReadOnlyList<TranslationResult> AppendToPrefix(IEnumerable<string> words);
 
 		void Approve();
 	}

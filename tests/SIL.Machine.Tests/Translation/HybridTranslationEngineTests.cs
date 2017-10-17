@@ -70,13 +70,13 @@ namespace SIL.Machine.Translation
 					sources[j] = confidences[j] <= 0 ? TranslationSources.None : TranslationSources.Smt;
 				var smtSession = Substitute.For<IInteractiveTranslationSession>();
 				smtSession.SourceSegment.Returns(sourceSegmentArray);
-				smtSession.CurrentResult.Returns(new TranslationResult(sourceSegmentArray, targetSegmentArray,
+				smtSession.CurrentResults.Returns(new[] { new TranslationResult(sourceSegmentArray, targetSegmentArray,
 					confidences, sources, alignment,
 					new[] { new Phrase(Range<int>.Create(0, sourceSegmentArray.Length),
-						Range<int>.Create(0, targetSegmentArray.Length)) }));
+						Range<int>.Create(0, targetSegmentArray.Length)) }) });
 
-				engine.TranslateInteractively(Arg.Is<IReadOnlyList<string>>(ss => ss.SequenceEqual(sourceSegmentArray)))
-					.Returns(smtSession);
+				engine.TranslateInteractively(1,
+					Arg.Is<IReadOnlyList<string>>(ss => ss.SequenceEqual(sourceSegmentArray))).Returns(smtSession);
 			}
 
 			public HybridTranslationEngine Engine { get; }
@@ -92,10 +92,10 @@ namespace SIL.Machine.Translation
 		public void TranslateInteractively_TransferredWord_CorrectTranslation()
 		{
 			using (var env = new TestEnvironment())
-			using (IInteractiveTranslationSession session = env.Engine.TranslateInteractively(
+			using (IInteractiveTranslationSession session = env.Engine.TranslateInteractively(1,
 				"caminé a mi habitación .".Split()))
 			{
-				TranslationResult result = session.CurrentResult;
+				TranslationResult result = session.CurrentResults[0];
 				Assert.That(result.TargetSegment, Is.EqualTo("walked to my room .".Split()));
 			}
 		}
@@ -104,10 +104,10 @@ namespace SIL.Machine.Translation
 		public void TranslateInteractively_UnknownWord_PartialTranslation()
 		{
 			using (var env = new TestEnvironment())
-			using (IInteractiveTranslationSession session = env.Engine.TranslateInteractively(
+			using (IInteractiveTranslationSession session = env.Engine.TranslateInteractively(1,
 				"hablé con recepción .".Split()))
 			{
-				TranslationResult result = session.CurrentResult;
+				TranslationResult result = session.CurrentResults[0];
 				Assert.That(result.TargetSegment, Is.EqualTo("hablé with reception .".Split()));
 			}
 		}

@@ -50,11 +50,11 @@ namespace SIL.Machine.Translation.Thot
 				CreateResult);
 		}
 
-		public IInteractiveTranslationSession TranslateInteractively(IReadOnlyList<string> segment)
+		public IInteractiveTranslationSession TranslateInteractively(int n, IReadOnlyList<string> segment)
 		{
 			CheckDisposed();
 
-			var session = new ThotInteractiveTranslationSession(this, segment, GetWordGraph(segment));
+			var session = new ThotInteractiveTranslationSession(this, n, segment, GetWordGraph(segment));
 			_sessions.Add(session);
 			return session;
 		}

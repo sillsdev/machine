@@ -365,7 +365,8 @@ namespace SIL.Machine.Translation.TestApp
 		private void StartSegmentTranslation()
 		{
 			_sourceSegmentWords.AddRange(_tokenizer.TokenizeToStrings(_sourceSegments[_currentSegment].Text));
-			_curSession = Engine.TranslateInteractively(_sourceSegmentWords.Select(Preprocessors.Lowercase).ToArray());
+			_curSession = Engine.TranslateInteractively(1,
+				_sourceSegmentWords.Select(Preprocessors.Lowercase).ToArray());
 			_isTranslating = true;
 			UpdatePrefix();
 			UpdateSourceSegmentSelection();
@@ -389,8 +390,9 @@ namespace SIL.Machine.Translation.TestApp
 
 			if (!_approvedSegments.Contains(_currentSegment))
 			{
-				_suggestions.ReplaceAll(_suggester.GetSuggestedWordIndices(_curSession).Select(j =>
-					new SuggestionViewModel(this, _curSession.CurrentResult.RecaseTargetWord(_sourceSegmentWords, j))));
+				_suggestions.ReplaceAll(_suggester.GetSuggestedWordIndices(_curSession)[0].Select(j =>
+					new SuggestionViewModel(this,
+						_curSession.CurrentResults[0].RecaseTargetWord(_sourceSegmentWords, j))));
 			}
 			else
 			{
@@ -474,7 +476,7 @@ namespace SIL.Machine.Translation.TestApp
 			var alignedSourceWords = new List<AlignedWordViewModel>();
 			int targetWordIndex = _tokenizer.Tokenize(TargetSegment)
 				.IndexOf(s => _currentTargetSegmentIndex >= s.Start && _currentTargetSegmentIndex <= s.End);
-			TranslationResult result = _curSession.CurrentResult;
+			TranslationResult result = _curSession.CurrentResults[0];
 			if (targetWordIndex != -1)
 			{
 				double confidence = result.WordConfidences[targetWordIndex];

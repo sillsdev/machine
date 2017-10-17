@@ -1,4 +1,4 @@
-﻿using SIL.Extensions;
+﻿using SIL.ObjectModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,18 +15,18 @@ namespace SIL.Machine.Translation
 			return result.TargetSegment;
 		}
 
-		public static IEnumerable<int> GetSuggestedWordIndices(this ITranslationSuggester suggester,
+		public static IReadOnlyList<IReadOnlyList<int>> GetSuggestedWordIndices(this ITranslationSuggester suggester,
 			IInteractiveTranslationSession session)
 		{
-			return suggester.GetSuggestedWordIndices(session.Prefix.Count, session.IsLastWordComplete,
-				session.CurrentResult);
+			return session.CurrentResults.Select(r =>
+				suggester.GetSuggestedWordIndices(session.Prefix.Count, session.IsLastWordComplete, r).ToArray())
+				.Distinct<int[]>(SequenceEqualityComparer<int>.Default).ToArray();
 		}
 
-		public static void AppendSuggestionToPrefix(this IInteractiveTranslationSession session,
-			IReadOnlyList<int> suggestion, int suggestionIndex = -1)
+		public static void AppendSuggestionToPrefix(this IInteractiveTranslationSession session, int resultIndex,
+			IReadOnlyList<int> suggestion)
 		{
-			IEnumerable<int> insert = suggestionIndex == -1 ? suggestion : suggestion[suggestionIndex].ToEnumerable();
-			session.AppendToPrefix(insert.Select(j => session.CurrentResult.TargetSegment[j]));
+			session.AppendToPrefix(suggestion.Select(j => session.CurrentResults[resultIndex].TargetSegment[j]));
 		}
 
 		public static string RecaseTargetWord(this TranslationResult result, IReadOnlyList<string> sourceSegment,

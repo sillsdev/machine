@@ -52,23 +52,25 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		IInteractiveTranslationSession IInteractiveTranslationEngine.TranslateInteractively(IReadOnlyList<string> segment)
+		IInteractiveTranslationSession IInteractiveTranslationEngine.TranslateInteractively(int n,
+			IReadOnlyList<string> segment)
 		{
-			return TranslateInteractively(segment);
+			return TranslateInteractively(n, segment);
 		}
 
-		public HybridInteractiveTranslationSession TranslateInteractively(IReadOnlyList<string> segment)
+		public HybridInteractiveTranslationSession TranslateInteractively(int n, IReadOnlyList<string> segment)
 		{
 			CheckDisposed();
 
-			IInteractiveTranslationSession smtSession = SmtEngine.TranslateInteractively(segment);
+			IInteractiveTranslationSession smtSession = SmtEngine.TranslateInteractively(n, segment);
 			TranslationResult ruleResult = RuleEngine?.Translate(segment);
 			var session = new HybridInteractiveTranslationSession(this, smtSession, ruleResult);
 			_sessions.Add(session);
 			return session;
 		}
 
-		public WordAlignmentMatrix TrainSegment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
+		public WordAlignmentMatrix TrainSegment(IReadOnlyList<string> sourceSegment,
+			IReadOnlyList<string> targetSegment)
 		{
 			CheckDisposed();
 
@@ -79,10 +81,12 @@ namespace SIL.Machine.Translation
 			return matrix;
 		}
 
-		internal WordAlignmentMatrix GetHintMatrix(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment, TranslationResult ruleResult)
+		internal WordAlignmentMatrix GetHintMatrix(IReadOnlyList<string> sourceSegment,
+			IReadOnlyList<string> targetSegment, TranslationResult ruleResult)
 		{
 			TranslationResult smtResult = SmtEngine.GetBestPhraseAlignment(sourceSegment, targetSegment);
-			TranslationResult hybridResult = ruleResult == null ? smtResult : smtResult.Merge(targetSegment.Count, RuleEngineThreshold, ruleResult);
+			TranslationResult hybridResult = ruleResult == null ? smtResult : smtResult.Merge(targetSegment.Count,
+				RuleEngineThreshold, ruleResult);
 
 			var matrix = new WordAlignmentMatrix(sourceSegment.Count, targetSegment.Count, AlignmentType.Unknown);
 			var iAligned = new HashSet<int>();

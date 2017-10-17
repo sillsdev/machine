@@ -12,6 +12,7 @@ namespace SIL.Machine.Translation
 	{
 		private readonly CommandOption _confidenceOption;
 		private readonly CommandOption _traceOption;
+		private readonly CommandOption _nOption;
 
 		private int _actionCount;
 		private int _charCount;
@@ -24,6 +25,8 @@ namespace SIL.Machine.Translation
 			Name = "test";
 
 			_confidenceOption = Option("-c|--confidence <percentage>", "The confidence threshold.",
+				CommandOptionType.SingleValue);
+			_nOption = Option("-n <number>", "The number of suggestions to generate.",
 				CommandOptionType.SingleValue);
 			_traceOption = Option("--trace <path>", "The trace output directory.",
 				CommandOptionType.SingleValue);
@@ -51,6 +54,16 @@ namespace SIL.Machine.Translation
 				}
 			}
 
+			int n = 1;
+			if (_nOption.HasValue())
+			{
+				if (!int.TryParse(_nOption.Value(), out n))
+				{
+					Out.WriteLine("The specified number of suggestions is invalid.");
+					return 1;
+				}
+			}
+
 			if (_traceOption.HasValue())
 			{
 				if (!Directory.Exists(_traceOption.Value()))
@@ -74,7 +87,7 @@ namespace SIL.Machine.Translation
 					{
 						foreach (ParallelTextSegment segment in text.Segments.Where(s => !s.IsEmpty))
 						{
-							TestSegment(engine, suggester, segment, traceWriter);
+							TestSegment(engine, suggester, n, segment, traceWriter);
 							segmentCount++;
 							progress.Report((double) segmentCount / totalSegmentCount);
 						}
@@ -104,7 +117,7 @@ namespace SIL.Machine.Translation
 			return null;
 		}
 
-		private void TestSegment(IInteractiveSmtEngine engine, ITranslationSuggester suggester,
+		private void TestSegment(IInteractiveSmtEngine engine, ITranslationSuggester suggester, int n,
 			ParallelTextSegment segment, StreamWriter traceWriter)
 		{
 			traceWriter?.WriteLine($"Segment:      {segment.SegmentRef}");
@@ -113,63 +126,70 @@ namespace SIL.Machine.Translation
 			string[] targetSegment = segment.TargetSegment.Select(Preprocessors.Lowercase).ToArray();
 			traceWriter?.WriteLine($"Target:       {string.Join(" ", targetSegment)}");
 			traceWriter?.WriteLine(new string('=', 120));
-			string[] prevSuggestionWords = null;
+			string[][] prevSuggestionWords = null;
 			bool isLastWordSuggestion = false;
 			string suggestionResult = null;
-			using (IInteractiveTranslationSession session = engine.TranslateInteractively(sourceSegment))
+			using (IInteractiveTranslationSession session = engine.TranslateInteractively(n, sourceSegment))
 			{
 				while (session.Prefix.Count < targetSegment.Length || !session.IsLastWordComplete)
 				{
-					int[] suggestion = suggester.GetSuggestedWordIndices(session).ToArray();
-
-					string[] suggestionWords = suggestion.Select(j => session.CurrentResult.TargetSegment[j]).ToArray();
-					if (prevSuggestionWords == null || !prevSuggestionWords.SequenceEqual(suggestionWords))
-					{
-						WritePrefix(traceWriter, suggestionResult, session.Prefix);
-						WriteSuggestion(traceWriter, session, suggestion);
-						suggestionResult = null;
-						if (suggestion.Length > 0)
-							_totalSuggestionCount++;
-					}
-
 					int targetIndex = session.Prefix.Count;
 					if (!session.IsLastWordComplete)
 						targetIndex--;
 
-					var accepted = new List<int>();
-					for (int i = 0, j = targetIndex; i < suggestionWords.Length && j < targetSegment.Length; i++)
+					bool match = false;
+					IReadOnlyList<IReadOnlyList<int>> suggestions = suggester.GetSuggestedWordIndices(session);
+					string[][] suggestionWords = suggestions.Select((s, k) =>
+						s.Select(j => session.CurrentResults[k].TargetSegment[j]).ToArray()).ToArray();
+					if (prevSuggestionWords == null || !SuggestionsAreEqual(prevSuggestionWords, suggestionWords))
 					{
-						if (suggestionWords[i] == targetSegment[j])
+						WritePrefix(traceWriter, suggestionResult, session.Prefix);
+						WriteSuggestions(traceWriter, session, suggestions);
+						suggestionResult = null;
+						if (suggestions.Any(s => s.Count > 0))
+							_totalSuggestionCount++;
+					}
+					for (int k = 0; k < suggestions.Count; k++)
+					{
+						var accepted = new List<int>();
+						for (int i = 0, j = targetIndex; i < suggestionWords[k].Length && j < targetSegment.Length; i++)
 						{
-							accepted.Add(suggestion[i]);
-							j++;
+							if (suggestionWords[k][i] == targetSegment[j])
+							{
+								accepted.Add(suggestions[k][i]);
+								j++;
+							}
+							else if (accepted.Count == 0)
+							{
+								j = targetIndex;
+							}
+							else
+							{
+								break;
+							}
 						}
-						else if (accepted.Count == 0)
+
+						if (accepted.Count > 0)
 						{
-							j = targetIndex;
-						}
-						else
-						{
+							session.AppendSuggestionToPrefix(k, accepted);
+							isLastWordSuggestion = true;
+							_actionCount++;
+							_correctSuggestionCount++;
+							if (accepted.Count == suggestions[k].Count)
+								suggestionResult = "ACCEPT_FULL";
+							else if (accepted[0] == suggestions[k][0])
+								suggestionResult = "ACCEPT_INIT";
+							else if (accepted[accepted.Count - 1] == suggestions[k][suggestions[k].Count - 1])
+								suggestionResult = "ACCEPT_FIN";
+							else
+								suggestionResult = "ACCEPT_MID";
+
+							match = true;
 							break;
 						}
 					}
 
-					if (accepted.Count > 0)
-					{
-						session.AppendSuggestionToPrefix(accepted);
-						isLastWordSuggestion = true;
-						_actionCount++;
-						_correctSuggestionCount++;
-						if (accepted.Count == suggestion.Length)
-							suggestionResult = "ACCEPT_FULL";
-						else if (accepted[0] == suggestion[0])
-							suggestionResult = "ACCEPT_INIT";
-						else if (accepted[accepted.Count - 1] == suggestion[suggestion.Length - 1])
-							suggestionResult = "ACCEPT_FIN";
-						else
-							suggestionResult = "ACCEPT_MID";
-					}
-					else
+					if (!match)
 					{
 						if (isLastWordSuggestion)
 						{
@@ -191,7 +211,7 @@ namespace SIL.Machine.Translation
 							session.AppendToPrefix(c, false);
 						}
 
-						suggestionResult = suggestion.Length == 0 ? "NONE" : "REJECT";
+						suggestionResult = suggestions.Any(s => s.Count > 0) ? "REJECT" : "NONE";
 						_actionCount++;
 					}
 
@@ -216,37 +236,56 @@ namespace SIL.Machine.Translation
 			traceWriter.WriteLine(string.Join(" ", prefix));
 		}
 
-		private void WriteSuggestion(StreamWriter traceWriter, IInteractiveTranslationSession session,
-			int[] suggestion)
+		private void WriteSuggestions(StreamWriter traceWriter, IInteractiveTranslationSession session,
+			IReadOnlyList<IReadOnlyList<int>> suggestions)
 		{
 			if (traceWriter == null)
 				return;
 
-			bool inSuggestion = false;
-			traceWriter.Write("SUGGESTION    ");
-			for (int j = 0; j < session.CurrentResult.TargetSegment.Count; j++)
+			for (int k = 0; k < suggestions.Count; k++)
 			{
-				if (suggestion.Contains(j))
+				bool inSuggestion = false;
+				traceWriter.Write($"SUGGESTION {k + 1}  ");
+				for (int j = 0; j < session.CurrentResults[k].TargetSegment.Count; j++)
 				{
-					if (j > 0)
+					if (suggestions[k].Contains(j))
+					{
+						if (j > 0)
+							traceWriter.Write(" ");
+						if (!inSuggestion)
+							traceWriter.Write("[");
+						inSuggestion = true;
+					}
+					else if (inSuggestion)
+					{
+						traceWriter.Write("] ");
+						inSuggestion = false;
+					}
+					else if (j > 0)
+					{
 						traceWriter.Write(" ");
-					if (!inSuggestion)
-						traceWriter.Write("[");
-					inSuggestion = true;
-				}
-				else if (inSuggestion)
-				{
-					traceWriter.Write("] ");
-					inSuggestion = false;
-				}
-				else if (j > 0)
-				{
-					traceWriter.Write(" ");
-				}
+					}
 
-				traceWriter.Write(session.CurrentResult.TargetSegment[j]);
+					traceWriter.Write(session.CurrentResults[k].TargetSegment[j]);
+				}
+				if (inSuggestion)
+					traceWriter.Write("]");
+				traceWriter.WriteLine();
 			}
-			traceWriter.WriteLine();
+		}
+
+		private bool SuggestionsAreEqual(string[][] x, string[][] y)
+		{
+			if (x.Length != y.Length)
+				return false;
+
+			for (int i = 0; i < x.Length; i++)
+			{
+				if (!x[i].SequenceEqual(y[i]))
+					return false;
+			}
+
+			return true;
 		}
 	}
 }

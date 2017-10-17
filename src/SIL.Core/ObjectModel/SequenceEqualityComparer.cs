@@ -13,8 +13,10 @@ namespace SIL.ObjectModel
 		}
 	}
 
-	public class SequenceEqualityComparer<T> : EqualityComparer<IEnumerable<T>>
+	public class SequenceEqualityComparer<T> : IEqualityComparer<IEnumerable<T>>
 	{
+		public static SequenceEqualityComparer<T> Default { get; } = new SequenceEqualityComparer<T>();
+
 		private readonly IEqualityComparer<T> _itemComparer; 
 
 		public SequenceEqualityComparer()
@@ -27,12 +29,12 @@ namespace SIL.ObjectModel
 			_itemComparer = itemComparer;
 		}
 
-		public override bool Equals(IEnumerable<T> x, IEnumerable<T> y)
+		public bool Equals(IEnumerable<T> x, IEnumerable<T> y)
 		{
 			return x.SequenceEqual(y, _itemComparer);
 		}
 
-		public override int GetHashCode(IEnumerable<T> obj)
+		public int GetHashCode(IEnumerable<T> obj)
 		{
 			if (obj == null)
 				throw new ArgumentNullException("obj");

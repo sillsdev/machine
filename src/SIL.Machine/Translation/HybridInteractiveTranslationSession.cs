@@ -10,7 +10,7 @@ namespace SIL.Machine.Translation
 		private readonly HybridTranslationEngine _engine;
 		private readonly IInteractiveTranslationSession _smtSession;
 		private readonly TranslationResult _ruleResult;
-		private TranslationResult _currentResult;
+		private IReadOnlyList<TranslationResult> _currentResults;
 
 		internal HybridInteractiveTranslationSession(HybridTranslationEngine engine,
 			IInteractiveTranslationSession smtSession, TranslationResult ruleResult)
@@ -18,8 +18,7 @@ namespace SIL.Machine.Translation
 			_engine = engine;
 			_smtSession = smtSession;
 			_ruleResult = ruleResult;
-			_currentResult = _ruleResult == null ? _smtSession.CurrentResult
-				: _smtSession.CurrentResult.Merge(0, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
+			UpdateCurrentResults();
 		}
 
 		public IReadOnlyList<string> SourceSegment
@@ -49,28 +48,28 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public TranslationResult CurrentResult
+		public IReadOnlyList<TranslationResult> CurrentResults
 		{
 			get
 			{
 				CheckDisposed();
-				return _currentResult;
+				return _currentResults;
 			}
 		}
 
-		public TranslationResult SetPrefix(IReadOnlyList<string> prefix, bool isLastWordComplete)
+		public IReadOnlyList<TranslationResult> SetPrefix(IReadOnlyList<string> prefix, bool isLastWordComplete)
 		{
 			CheckDisposed();
 
 			if (!_smtSession.Prefix.SequenceEqual(prefix) || IsLastWordComplete != isLastWordComplete)
 			{
-				TranslationResult smtResult = _smtSession.SetPrefix(prefix, isLastWordComplete);
-				UpdateCurrentResult(smtResult);
+				_smtSession.SetPrefix(prefix, isLastWordComplete);
+				UpdateCurrentResults();
 			}
-			return _currentResult;
+			return _currentResults;
 		}
 
-		public TranslationResult AppendToPrefix(string addition, bool isLastWordComplete)
+		public IReadOnlyList<TranslationResult> AppendToPrefix(string addition, bool isLastWordComplete)
 		{
 			CheckDisposed();
 
@@ -82,25 +81,25 @@ namespace SIL.Machine.Translation
 
 			if (!string.IsNullOrEmpty(addition) || isLastWordComplete != IsLastWordComplete)
 			{
-				TranslationResult smtResult = _smtSession.AppendToPrefix(addition, isLastWordComplete);
-				UpdateCurrentResult(smtResult);
+				_smtSession.AppendToPrefix(addition, isLastWordComplete);
+				UpdateCurrentResults();
 			}
-			return _currentResult;
+			return _currentResults;
 		}
 
-		public TranslationResult AppendToPrefix(IEnumerable<string> words)
+		public IReadOnlyList<TranslationResult> AppendToPrefix(IEnumerable<string> words)
 		{
 			CheckDisposed();
 
 			int prevPrefixCount = Prefix.Count;
 			bool prevIsLastWordComplete = IsLastWordComplete;
 
-			TranslationResult smtResult = _smtSession.AppendToPrefix(words);
+			_smtSession.AppendToPrefix(words);
 
 			if (prevPrefixCount != Prefix.Count || prevIsLastWordComplete != IsLastWordComplete)
-				UpdateCurrentResult(smtResult);
+				UpdateCurrentResults();
 
-			return _currentResult;
+			return _currentResults;
 		}
 
 		void IInteractiveTranslationSession.Approve()
@@ -117,13 +116,22 @@ namespace SIL.Machine.Translation
 			return matrix;
 		}
 
-		private void UpdateCurrentResult(TranslationResult smtResult)
+		private void UpdateCurrentResults()
 		{
 			int prefixCount = Prefix.Count;
 			if (!IsLastWordComplete)
 				prefixCount--;
-			_currentResult = _ruleResult == null ? smtResult
-				: smtResult.Merge(prefixCount, HybridTranslationEngine.RuleEngineThreshold, _ruleResult);
+
+			if (_ruleResult == null)
+			{
+				_currentResults = _smtSession.CurrentResults;
+			}
+			else
+			{
+				_currentResults = _smtSession.CurrentResults
+					.Select(r => r.Merge(prefixCount, HybridTranslationEngine.RuleEngineThreshold, _ruleResult))
+					.ToArray();
+			}
 		}
 
 		protected override void DisposeManagedResources()

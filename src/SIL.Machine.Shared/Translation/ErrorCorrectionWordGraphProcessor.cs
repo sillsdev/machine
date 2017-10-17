@@ -207,14 +207,11 @@ namespace SIL.Machine.Translation
 			var candidates = new List<Candidate>();
 			GetNBestStateCandidates(candidates, n);
 			GetNBestSubStateCandidates(candidates, n);
-			while (candidates.Count < n)
-				candidates.Add(null);
 
 			foreach (Candidate candidate in candidates)
 			{
 				var builder = new TranslationResultBuilder();
-				if (candidate != null)
-					BuildCorrectionFromCandidate(builder, prefix, isLastWordComplete, candidate);
+				BuildCorrectionFromCandidate(builder, prefix, isLastWordComplete, candidate);
 				yield return builder.ToResult(_sourceSegment, prefix.Length);
 			}
 		}

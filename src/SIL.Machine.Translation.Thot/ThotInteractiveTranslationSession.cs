@@ -8,22 +8,24 @@ namespace SIL.Machine.Translation.Thot
 	internal class ThotInteractiveTranslationSession : DisposableBase, IInteractiveTranslationSession
 	{
 		private readonly ThotSmtEngine _engine;
-		private readonly IReadOnlyList<string> _sourceSegment; 
+		private readonly IReadOnlyList<string> _sourceSegment;
+		private readonly int _n;
 		private List<string> _prefix;
 		private bool _isLastWordComplete;
-		private TranslationResult _currentResult;
+		private TranslationResult[] _currentResults;
 		private readonly ErrorCorrectionWordGraphProcessor _wordGraphProcessor;
 
-		public ThotInteractiveTranslationSession(ThotSmtEngine engine, IReadOnlyList<string> sourceSegment,
+		public ThotInteractiveTranslationSession(ThotSmtEngine engine, int n, IReadOnlyList<string> sourceSegment,
 			WordGraph wordGraph)
 		{
 			_engine = engine;
 			_sourceSegment = sourceSegment;
+			_n = n;
 			_prefix = new List<string>();
 			_isLastWordComplete = true;
 			_wordGraphProcessor = new ErrorCorrectionWordGraphProcessor(_engine.ErrorCorrectionModel, _sourceSegment,
 				wordGraph);
-			_currentResult = CreateInteractiveResult();
+			UpdateInteractiveResults();
 		}
 
 		public IReadOnlyList<string> SourceSegment
@@ -53,21 +55,21 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public TranslationResult CurrentResult
+		public IReadOnlyList<TranslationResult> CurrentResults
 		{
 			get
 			{
 				CheckDisposed();
-				return _currentResult;
+				return _currentResults;
 			}
 		}
 
-		private TranslationResult CreateInteractiveResult()
+		private void UpdateInteractiveResults()
 		{
-			return _wordGraphProcessor.Correct(_prefix.ToArray(), _isLastWordComplete, 1).First();
+			_currentResults = _wordGraphProcessor.Correct(_prefix.ToArray(), _isLastWordComplete, _n).ToArray();
 		}
 
-		public TranslationResult SetPrefix(IReadOnlyList<string> prefix, bool isLastWordComplete)
+		public IReadOnlyList<TranslationResult> SetPrefix(IReadOnlyList<string> prefix, bool isLastWordComplete)
 		{
 			CheckDisposed();
 
@@ -76,12 +78,12 @@ namespace SIL.Machine.Translation.Thot
 				_prefix.Clear();
 				_prefix.AddRange(prefix);
 				_isLastWordComplete = isLastWordComplete;
-				_currentResult = CreateInteractiveResult();
+				UpdateInteractiveResults();
 			}
-			return _currentResult;
+			return _currentResults;
 		}
 
-		public TranslationResult AppendToPrefix(string addition, bool isLastWordComplete)
+		public IReadOnlyList<TranslationResult> AppendToPrefix(string addition, bool isLastWordComplete)
 		{
 			CheckDisposed();
 
@@ -98,12 +100,12 @@ namespace SIL.Machine.Translation.Thot
 				else
 					_prefix[_prefix.Count - 1] = _prefix[_prefix.Count - 1] + addition;
 				_isLastWordComplete = isLastWordComplete;
-				_currentResult = CreateInteractiveResult();
+				UpdateInteractiveResults();
 			}
-			return _currentResult;
+			return _currentResults;
 		}
 
-		public TranslationResult AppendToPrefix(IEnumerable<string> words)
+		public IReadOnlyList<TranslationResult> AppendToPrefix(IEnumerable<string> words)
 		{
 			CheckDisposed();
 
@@ -118,8 +120,8 @@ namespace SIL.Machine.Translation.Thot
 				updated = true;
 			}
 			if (updated)
-				_currentResult = CreateInteractiveResult();
-			return _currentResult;
+				UpdateInteractiveResults();
+			return _currentResults;
 		}
 
 		public void Approve()
