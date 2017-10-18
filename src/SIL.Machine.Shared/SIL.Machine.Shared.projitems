@@ -13,6 +13,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Annotations\Range.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Annotations\RangeFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataStructures\Direction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataStructures\PriorityQueue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataStructures\PriorityQueueNode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataStructures\PriorityQueueNodeBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tokenization\IDetokenizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tokenization\ITokenizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tokenization\LatinSentenceTokenizer.cs" />

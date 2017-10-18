@@ -39,8 +39,9 @@ namespace SIL.Machine.Clusterers
 			priorityQueue.Enqueue(double.PositiveInfinity, dataObject);
 			while (!priorityQueue.IsEmpty)
 			{
-				double reachability;
-				T current = priorityQueue.Dequeue(out reachability);
+				PriorityQueueNode<double, T> node = priorityQueue.Dequeue();
+				double reachability = node.Priority;
+				T current = node.Item;
 				processed.Add(current);
 
 				List<Tuple<T, double>> neighbors = _getNeighbors(current).OrderBy(n => n.Item2).ToList();

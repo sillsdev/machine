@@ -10,18 +10,30 @@ namespace SIL.Machine.Translation
 		private const double SmallScore = -999999999;
 
 		private readonly HashSet<int> _finalStates;
+		private readonly Dictionary<int, List<int>> _states;
 
 		public WordGraph(IEnumerable<WordGraphArc> arcs, IEnumerable<int> finalStates, double initialStateScore = 0)
 		{
-			Arcs = arcs.ToArray();
+			_states = new Dictionary<int, List<int>>();
+			var arcList = new List<WordGraphArc>();
 			int maxState = -1;
-			foreach (WordGraphArc arc in Arcs)
+			foreach (WordGraphArc arc in arcs)
 			{
 				if (arc.NextState > maxState)
 					maxState = arc.NextState;
 				if (arc.PrevState > maxState)
 					maxState = arc.PrevState;
+
+				List<int> stateArcIndices;
+				if (!_states.TryGetValue(arc.PrevState, out stateArcIndices))
+				{
+					stateArcIndices = new List<int>();
+					_states[arc.PrevState] = stateArcIndices;
+				}
+				stateArcIndices.Add(arcList.Count);
+				arcList.Add(arc);
 			}
+			Arcs = arcList;
 			StateCount = maxState + 1;
 			_finalStates = new HashSet<int>(finalStates);
 			InitialStateScore = initialStateScore;
@@ -32,9 +44,17 @@ namespace SIL.Machine.Translation
 		public IReadOnlyList<WordGraphArc> Arcs { get; }
 		public int StateCount { get; }
 
-		public IEnumerable<int> FinalStates => _finalStates;
+		public ISet<int> FinalStates => _finalStates;
 
 		public bool IsEmpty => Arcs.Count == 0;
+
+		public IReadOnlyList<int> GetArcIndices(int state)
+		{
+			List<int> stateArcIndices;
+			if (_states.TryGetValue(state, out stateArcIndices))
+				return stateArcIndices;
+			return new int[0];
+		}
 
 		public IEnumerable<double> ComputeRestScores()
 		{
@@ -74,7 +94,7 @@ namespace SIL.Machine.Translation
 			else
 				prevScores[state] = 0;
 
-			var accessibleStates = new HashSet<int> {state};
+			var accessibleStates = new HashSet<int> { state };
 			for (int arcIndex = 0; arcIndex < Arcs.Count; arcIndex++)
 			{
 				WordGraphArc arc = Arcs[arcIndex];

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SIL.Machine.DataStructures;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -204,16 +205,60 @@ namespace SIL.Machine.Translation
 			_prevPrefix = prefix.ToArray();
 			_prevIsLastWordComplete = isLastWordComplete;
 
-			var candidates = new List<Candidate>();
-			GetNBestStateCandidates(candidates, n);
-			GetNBestSubStateCandidates(candidates, n);
+			var startingHypotheses = new List<Hypothesis>();
+			GetNBestStateHypotheses(n, startingHypotheses);
+			GetNBestSubStateHypotheses(n, startingHypotheses);
 
-			foreach (Candidate candidate in candidates)
+			foreach (Hypothesis hypothesis in NBestSearch(n, startingHypotheses))
 			{
 				var builder = new TranslationResultBuilder();
-				BuildCorrectionFromCandidate(builder, prefix, isLastWordComplete, candidate);
+				BuildCorrectionFromHypothesis(builder, prefix, isLastWordComplete, hypothesis);
 				yield return builder.ToResult(_sourceSegment, prefix.Length);
 			}
+		}
+
+		private IEnumerable<Hypothesis> NBestSearch(int n, List<Hypothesis> startingHypotheses)
+		{
+			var queue = new PriorityQueue<Hypothesis>(10000);
+			foreach (Hypothesis hypothesis in startingHypotheses)
+				queue.Enqueue(hypothesis);
+
+			var nbest = new List<Hypothesis>();
+			while (!queue.IsEmpty)
+			{
+				Hypothesis hypothesis = queue.Dequeue();
+				int lastState = hypothesis.Arcs.Count == 0
+					? hypothesis.StartState
+					: hypothesis.Arcs[hypothesis.Arcs.Count - 1].NextState;
+
+				hypothesis.Score -= WordGraphWeight * _restScores[lastState];
+
+				if (_wordGraph.FinalStates.Contains(lastState))
+				{
+					nbest.Add(hypothesis);
+					if (nbest.Count >= n)
+						break;
+				}
+				else
+				{
+					IReadOnlyList<int> arcIndices = _wordGraph.GetArcIndices(lastState);
+					for (int i = 0; i < arcIndices.Count; i++)
+					{
+						Hypothesis newHypothesis = hypothesis;
+						if (i < arcIndices.Count - 1)
+							newHypothesis = newHypothesis.Clone();
+
+						int arcIndex = arcIndices[i];
+						WordGraphArc arc = _wordGraph.Arcs[arcIndex];
+						newHypothesis.Score += arc.Score;
+						newHypothesis.Score += _restScores[arc.NextState];
+						newHypothesis.Arcs.Add(arc);
+						queue.Enqueue(newHypothesis);
+					}
+				}
+			}
+
+			return nbest;
 		}
 
 		private void ProcessWordGraphForPrefixDiff(string[] prefixDiff, bool isLastWordComplete)
@@ -250,7 +295,7 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		private void GetNBestStateCandidates(List<Candidate> candidates, int n)
+		private void GetNBestStateHypotheses(int n, List<Hypothesis> hypotheses)
 		{
 			foreach (int state in _statesInvolvedInArcs)
 			{
@@ -258,11 +303,11 @@ namespace SIL.Machine.Translation
 				List<double> bestScores = _stateBestScores[state];
 
 				double score = bestScores[bestScores.Count - 1] + (WordGraphWeight * restScore);
-				AddToNBestList(candidates, n, new Candidate(score, state));
+				AddToNBestList(hypotheses, n, new Hypothesis(score, state));
 			}
 		}
 
-		private void GetNBestSubStateCandidates(List<Candidate> candidates, int n)
+		private void GetNBestSubStateHypotheses(int n, List<Hypothesis> hypotheses)
 		{
 			for (int arcIndex = 0; arcIndex < _wordGraph.Arcs.Count; arcIndex++)
 			{
@@ -277,32 +322,32 @@ namespace SIL.Machine.Translation
 						double score = (WordGraphWeight * wordGraphScore)
 							+ (EcmWeight * -esi.Scores[esi.Scores.Count - 1])
 							+ (WordGraphWeight * _restScores[arc.PrevState]);
-						AddToNBestList(candidates, n, new Candidate(score, arc.NextState, arcIndex, i));
+						AddToNBestList(hypotheses, n, new Hypothesis(score, arc.NextState, arcIndex, i));
 					}
 				}
 			}
 		}
 
-		private void BuildCorrectionFromCandidate(TranslationResultBuilder builder, string[] prefix,
-			bool isLastWordComplete, Candidate candidate)
+		private void BuildCorrectionFromHypothesis(TranslationResultBuilder builder, string[] prefix,
+			bool isLastWordComplete, Hypothesis hypothesis)
 		{
 			int uncorrectedPrefixLen;
-			if (candidate.ArcIndex == -1)
+			if (hypothesis.StartArcIndex == -1)
 			{
-				AddBestUncorrectedPrefixState(builder, prefix.Length, candidate.State);
+				AddBestUncorrectedPrefixState(builder, prefix.Length, hypothesis.StartState);
 				uncorrectedPrefixLen = builder.Words.Count;
 			}
 			else
 			{
-				AddBestUncorrectedPrefixSubState(builder, prefix.Length, candidate.ArcIndex, candidate.ArcWordIndex);
-				WordGraphArc firstArc = _wordGraph.Arcs[candidate.ArcIndex];
-				uncorrectedPrefixLen = builder.Words.Count - (firstArc.Words.Count - candidate.ArcWordIndex) + 1;
+				AddBestUncorrectedPrefixSubState(builder, prefix.Length, hypothesis.StartArcIndex,
+					hypothesis.StartArcWordIndex);
+				WordGraphArc firstArc = _wordGraph.Arcs[hypothesis.StartArcIndex];
+				uncorrectedPrefixLen = builder.Words.Count - (firstArc.Words.Count - hypothesis.StartArcWordIndex) + 1;
 			}
 
-			int alignmentColsToAddCount = _ecm.CorrectPrefix(builder, uncorrectedPrefixLen, prefix,
-				isLastWordComplete);
+			int alignmentColsToAddCount = _ecm.CorrectPrefix(builder, uncorrectedPrefixLen, prefix, isLastWordComplete);
 
-			foreach (WordGraphArc arc in _wordGraph.GetBestPathFromFinalStateToState(candidate.State).Reverse())
+			foreach (WordGraphArc arc in hypothesis.Arcs)
 			{
 				UpdateCorrectionFromArc(builder, arc, false, alignmentColsToAddCount);
 				alignmentColsToAddCount = 0;
@@ -392,22 +437,64 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		private class Candidate : IComparable<Candidate>
+		private class Hypothesis : PriorityQueueNodeBase, IComparable<Hypothesis>
 		{
-			public Candidate(double score, int state, int arcIndex = -1, int arcWordIndex = -1)
+			private double _score;
+			private readonly int _state;
+			private readonly int _arcIndex;
+			private readonly int _arcWordIndex;
+			private readonly List<WordGraphArc> _arcs;
+
+			public Hypothesis(double score, int state, int arcIndex = -1, int arcWordIndex = -1)
 			{
-				Score = score;
-				State = state;
-				ArcIndex = arcIndex;
-				ArcWordIndex = arcWordIndex;
+				_score = score;
+				_state = state;
+				_arcIndex = arcIndex;
+				_arcWordIndex = arcWordIndex;
+				_arcs = new List<WordGraphArc>();
 			}
 
-			public double Score { get; }
-			public int State { get; }
-			public int ArcIndex { get; }
-			public int ArcWordIndex { get; }
+			public Hypothesis(Hypothesis other)
+			{
+				_score = other._score;
+				_state = other._state;
+				_arcIndex = other._arcIndex;
+				_arcWordIndex = other._arcWordIndex;
+				_arcs = other._arcs.ToList();
+			}
 
-			public int CompareTo(Candidate other)
+			public double Score
+			{
+				get { return _score; }
+				set { _score = value; }
+			}
+
+			public int StartState
+			{
+				get { return _state; }
+			}
+
+			public int StartArcIndex
+			{
+				get { return _arcIndex; }
+			}
+
+			public int StartArcWordIndex
+			{
+				get { return _arcWordIndex; }
+			}
+
+			public List<WordGraphArc> Arcs
+			{
+				get { return _arcs; }
+			}
+
+			public Hypothesis Clone()
+			{
+				return new Hypothesis(this);
+			}
+
+			public int CompareTo(Hypothesis other)
 			{
 				return -Score.CompareTo(other.Score);
 			}
