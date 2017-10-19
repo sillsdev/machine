@@ -2,34 +2,10 @@
 {
 	internal class WordEditDistance : EditDistanceBase<string, char>
 	{
-		private double _hitCost;
-		private double _insertionCost;
-		private double _deletionCost;
-		private double _substitutionCost;
-
-		public double HitCost
-		{
-			get { return _hitCost; }
-			set { _hitCost = value; }
-		}
-
-		public double InsertionCost
-		{
-			get { return _insertionCost; }
-			set { _insertionCost = value; }
-		}
-
-		public double DeletionCost
-		{
-			get { return _deletionCost; }
-			set { _deletionCost = value; }
-		}
-
-		public double SubstitutionCost
-		{
-			get { return _substitutionCost; }
-			set { _substitutionCost = value; }
-		}
+		public double HitCost { get; set; }
+		public double InsertionCost { get; set; }
+		public double DeletionCost { get; set; }
+		public double SubstitutionCost { get; set; }
 
 		protected override int GetCount(string item)
 		{
@@ -43,22 +19,22 @@
 
 		protected override double GetHitCost(char x, char y, bool isComplete)
 		{
-			return _hitCost;
+			return HitCost;
 		}
 
 		protected override double GetSubstitutionCost(char x, char y, bool isComplete)
 		{
-			return _substitutionCost;
+			return SubstitutionCost;
 		}
 
 		protected override double GetDeletionCost(char x)
 		{
-			return _deletionCost;
+			return DeletionCost;
 		}
 
 		protected override double GetInsertionCost(char y)
 		{
-			return _insertionCost;
+			return InsertionCost;
 		}
 
 		protected override bool IsHit(char x, char y, bool isComplete)

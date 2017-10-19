@@ -438,55 +438,29 @@ namespace SIL.Machine.Translation
 
 		private class Hypothesis : PriorityQueueNodeBase, IComparable<Hypothesis>
 		{
-			private double _score;
-			private readonly int _state;
-			private readonly int _arcIndex;
-			private readonly int _arcWordIndex;
-			private readonly List<WordGraphArc> _arcs;
-
-			public Hypothesis(double score, int state, int arcIndex = -1, int arcWordIndex = -1)
+			public Hypothesis(double score, int startState, int startArcIndex = -1, int startArcWordIndex = -1)
 			{
-				_score = score;
-				_state = state;
-				_arcIndex = arcIndex;
-				_arcWordIndex = arcWordIndex;
-				_arcs = new List<WordGraphArc>();
+				Score = score;
+				StartState = startState;
+				StartArcIndex = startArcIndex;
+				StartArcWordIndex = startArcWordIndex;
+				Arcs = new List<WordGraphArc>();
 			}
 
 			public Hypothesis(Hypothesis other)
 			{
-				_score = other._score;
-				_state = other._state;
-				_arcIndex = other._arcIndex;
-				_arcWordIndex = other._arcWordIndex;
-				_arcs = other._arcs.ToList();
+				Score = other.Score;
+				StartState = other.StartState;
+				StartArcIndex = other.StartArcIndex;
+				StartArcWordIndex = other.StartArcWordIndex;
+				Arcs = other.Arcs.ToList();
 			}
 
-			public double Score
-			{
-				get { return _score; }
-				set { _score = value; }
-			}
-
-			public int StartState
-			{
-				get { return _state; }
-			}
-
-			public int StartArcIndex
-			{
-				get { return _arcIndex; }
-			}
-
-			public int StartArcWordIndex
-			{
-				get { return _arcWordIndex; }
-			}
-
-			public List<WordGraphArc> Arcs
-			{
-				get { return _arcs; }
-			}
+			public double Score { get; set; }
+			public int StartState { get; }
+			public int StartArcIndex { get; }
+			public int StartArcWordIndex { get; }
+			public List<WordGraphArc> Arcs { get; }
 
 			public Hypothesis Clone()
 			{

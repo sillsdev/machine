@@ -57,7 +57,12 @@ namespace SIL.Machine.Translation
 			Prefix = tokenRanges.Select(s => prefix.Substring(s.Start, s.Length)).ToArray();
 			IsLastWordComplete = tokenRanges.Length == 0 || tokenRanges[tokenRanges.Length - 1].End != prefix.Length;
 
-			TranslationResult smtResult = _wordGraphProcessor.Correct(Prefix, IsLastWordComplete, 1).First();
+			TranslationResult smtResult = _wordGraphProcessor.Correct(Prefix, IsLastWordComplete, 1).FirstOrDefault();
+			if (smtResult == null)
+			{
+				var builder = new TranslationResultBuilder();
+				smtResult = builder.ToResult(SourceSegment, Prefix.Length);
+			}
 
 			if (RuleResult == null)
 			{

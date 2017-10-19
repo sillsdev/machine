@@ -29,3 +29,5 @@ using System.Runtime.CompilerServices;
 
 [assembly: Convention(Target = ConventionTarget.Member, Notation = Notation.LowerCamelCase)]
 [assembly: InternalsVisibleTo("SIL.Machine.JS.Tests")]
+
+[assembly: Rules(AutoProperty = AutoPropertyRule.Plain)]
