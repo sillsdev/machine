@@ -6,13 +6,23 @@ namespace SIL.Machine.DataStructures
 {
 	public class PriorityQueue<TPriority, TItem> : PriorityQueue<PriorityQueueNode<TPriority, TItem>>
 	{
-		public PriorityQueue(int maxSize = 0)
-			: this(maxSize, Comparer<TPriority>.Default)
+		public PriorityQueue()
+			: this(10, Comparer<TPriority>.Default)
 		{
 		}
 
-		public PriorityQueue(int maxSize, IComparer<TPriority> comparer)
-			: base(maxSize, new NodeComparer(comparer))
+		public PriorityQueue(int capacity)
+			: this(capacity, Comparer<TPriority>.Default)
+		{
+		}
+
+		public PriorityQueue(IComparer<TPriority> comparer)
+			: base(10, new NodeComparer(comparer))
+		{
+		}
+
+		public PriorityQueue(int capacity, IComparer<TPriority> comparer)
+			: base(capacity, new NodeComparer(comparer))
 		{
 		}
 
@@ -46,23 +56,28 @@ namespace SIL.Machine.DataStructures
 		private int _numNodes;
 		private T[] _nodes;
 		private readonly IComparer<T> _comparer;
-		private int _maxSize;
+		private int _capacity;
 
-		public PriorityQueue(int maxSize = 0)
-			: this(maxSize, Comparer<T>.Default)
+		public PriorityQueue()
+			: this(10, Comparer<T>.Default)
 		{
 		}
 
-		/// <summary>
-		/// Instantiate a new Priority Queue
-		/// </summary>
-		/// <param name="maxSize">The max nodes ever allowed to be enqueued (going over this will cause undefined
-		/// behavior)</param>
-		public PriorityQueue(int maxSize, IComparer<T> comparer)
+		public PriorityQueue(int capacity)
+			: this(capacity, Comparer<T>.Default)
 		{
-			_maxSize = maxSize;
+		}
+
+		public PriorityQueue(IComparer<T> comparer)
+			: this(10, comparer)
+		{
+		}
+
+		public PriorityQueue(int capacity, IComparer<T> comparer)
+		{
+			_capacity = capacity;
 			_numNodes = 0;
-			_nodes = new T[(maxSize > 0 ? maxSize : 10) + 1];
+			_nodes = new T[(capacity > 0 ? capacity : 10) + 1];
 			_comparer = comparer;
 		}
 
@@ -81,14 +96,28 @@ namespace SIL.Machine.DataStructures
 		}
 
 		/// <summary>
-		/// Returns the maximum number of items that can be enqueued at once in this queue. 
-		/// Once you hit this number (ie. once Count == MaxSize), attempting to enqueue another item will cause
-		/// undefined behavior.
+		/// Returns the total number of items the internal data structure can hold without resizing.
 		/// O(1)
 		/// </summary>
-		public int MaxSize
+		public int Capacity
 		{
-			get { return _maxSize; }
+			get { return _capacity; }
+			set
+			{
+#if DEBUG
+				if (value < 0)
+					throw new ArgumentOutOfRangeException(nameof(value), "The capacity cannot be less than 0.");
+
+				if (value < _numNodes)
+				{
+					throw new ArgumentOutOfRangeException(nameof(value),
+						"The capacity cannot be less than the current count.");
+				}
+#endif
+
+				Resize(value);
+				_capacity = value;
+			}
 		}
 
 		/// <summary>
@@ -128,13 +157,11 @@ namespace SIL.Machine.DataStructures
 #if DEBUG
 			if (node == null)
 				throw new ArgumentNullException(nameof(node));
-			if (_maxSize > 0 && _numNodes >= _maxSize)
-				throw new InvalidOperationException("The queue is full.");
 			if (Contains(node))
 				throw new ArgumentException("The node is already enqueued.", nameof(node));
 #endif
-			if (_maxSize <= 0 && _numNodes == _nodes.Length - 1)
-				ResizeArray((_nodes.Length - 1) * 2 + 1);
+			if (_numNodes == _capacity)
+				Resize(_capacity * 2 + 1);
 
 			_numNodes++;
 			_nodes[_numNodes] = node;
@@ -374,29 +401,22 @@ namespace SIL.Machine.DataStructures
 		}
 
 		/// <summary>
-		/// Resize the queue so it can accept more nodes.  All currently enqueued nodes are remain.
-		/// Attempting to decrease the queue size to a size too small to hold the existing nodes results in undefined
-		/// behavior.
+		/// Sets the capacity to the actual number of elements in the PriorityQueue, if that number is less than a
+		/// threshold value.
 		/// O(n)
 		/// </summary>
-		public void Resize(int maxSize)
+		public void TrimExcess()
 		{
-#if DEBUG
-			if (maxSize <= 0)
-				throw new ArgumentOutOfRangeException(nameof(maxSize), "The queue size cannot be smaller than 1.");
+			if ((double) _numNodes / _capacity > 0.9)
+				return;
 
-			if (maxSize < _numNodes)
-				throw new ArgumentOutOfRangeException(nameof(maxSize), "The queue size cannot be decreased.");
-#endif
-
-			ResizeArray(maxSize);
-			_maxSize = maxSize;
+			Capacity = _numNodes;
 		}
 
-		private void ResizeArray(int maxSize)
+		private void Resize(int capacity)
 		{
-			var newArray = new T[maxSize + 1];
-			int highestIndexToCopy = Math.Min(maxSize, _numNodes);
+			var newArray = new T[capacity + 1];
+			int highestIndexToCopy = Math.Min(capacity, _numNodes);
 			Array.Copy(_nodes, newArray, highestIndexToCopy + 1);
 			_nodes = newArray;
 		}

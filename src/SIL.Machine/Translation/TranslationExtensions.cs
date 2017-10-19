@@ -1,5 +1,4 @@
-﻿using SIL.ObjectModel;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -20,7 +19,7 @@ namespace SIL.Machine.Translation
 		{
 			return session.CurrentResults.Select(r =>
 				suggester.GetSuggestedWordIndices(session.Prefix.Count, session.IsLastWordComplete, r).ToArray())
-				.Distinct<int[]>(SequenceEqualityComparer<int>.Default).ToArray();
+				.ToArray();
 		}
 
 		public static void AppendSuggestionToPrefix(this IInteractiveTranslationSession session, int resultIndex,

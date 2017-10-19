@@ -219,7 +219,7 @@ namespace SIL.Machine.Translation
 
 		private IEnumerable<Hypothesis> NBestSearch(int n, List<Hypothesis> startingHypotheses)
 		{
-			var queue = new PriorityQueue<Hypothesis>(10000);
+			var queue = new PriorityQueue<Hypothesis>(1000);
 			foreach (Hypothesis hypothesis in startingHypotheses)
 				queue.Enqueue(hypothesis);
 
@@ -231,8 +231,6 @@ namespace SIL.Machine.Translation
 					? hypothesis.StartState
 					: hypothesis.Arcs[hypothesis.Arcs.Count - 1].NextState;
 
-				hypothesis.Score -= WordGraphWeight * _restScores[lastState];
-
 				if (_wordGraph.FinalStates.Contains(lastState))
 				{
 					nbest.Add(hypothesis);
@@ -241,6 +239,7 @@ namespace SIL.Machine.Translation
 				}
 				else
 				{
+					hypothesis.Score -= WordGraphWeight * _restScores[lastState];
 					IReadOnlyList<int> arcIndices = _wordGraph.GetArcIndices(lastState);
 					for (int i = 0; i < arcIndices.Count; i++)
 					{
