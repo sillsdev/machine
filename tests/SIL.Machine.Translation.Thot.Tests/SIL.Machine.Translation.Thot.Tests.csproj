@@ -17,7 +17,7 @@
     <PackageReference Include="NUnit3TestAdapter" Version="3.8.0" />
     <PackageReference Include="QuickGraphPCL" Version="3.6.61114.2" NoWarn="NU1701" />
     <PackageReference Include="TeamCity.VSTest.TestAdapter" Version="1.0.3" />
-    <PackageReference Include="Thot" Version="1.0.0-build00058" />
+    <PackageReference Include="Thot" Version="1.0.0-build00059" />
   </ItemGroup>
 
   <ItemGroup>
