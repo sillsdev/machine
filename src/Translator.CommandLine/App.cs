@@ -18,9 +18,10 @@ namespace SIL.Machine.Translation
 			AddCommand(new TrainCommand());
 			AddCommand(new TestCommand());
 			AddCommand(new AlignCommand());
+			AddCommand(new CorpusCommand());
 		}
 
-		private void AddCommand(Command command)
+		private void AddCommand(CommandBase command)
 		{
 			command.Parent = this;
 			Commands.Add(command);

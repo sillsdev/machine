@@ -14,8 +14,8 @@ namespace SIL.Machine.Corpora
 		private readonly Encoding _encoding;
 		private readonly ITokenizer<string, int> _wordTokenizer;
 
-		public UsfmFileTextCorpus(string stylesheetFileName, Encoding encoding, string projectPath,
-			ITokenizer<string, int> wordTokenizer)
+		public UsfmFileTextCorpus(ITokenizer<string, int> wordTokenizer, string stylesheetFileName, Encoding encoding,
+			string projectPath)
 		{
 			_projectPath = projectPath;
 			_stylesheet = new UsfmStylesheet(stylesheetFileName);

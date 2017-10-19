@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace SIL.Machine.Translation
 {
-	public class TestCommand : ParallelTextCommand
+	public class TestCommand : EngineCommandBase
 	{
 		private readonly CommandOption _confidenceOption;
 		private readonly CommandOption _traceOption;

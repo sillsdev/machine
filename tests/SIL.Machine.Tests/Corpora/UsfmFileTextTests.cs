@@ -12,8 +12,8 @@ namespace SIL.Machine.Corpora
 		public void Segments_NonEmptyText()
 		{
 			var tokenizer = new LatinWordTokenizer();
-			var corpus = new UsfmFileTextCorpus(CorporaTestHelpers.UsfmStylesheetPath, Encoding.UTF8,
-				CorporaTestHelpers.UsfmTestProjectPath, tokenizer);
+			var corpus = new UsfmFileTextCorpus(tokenizer, CorporaTestHelpers.UsfmStylesheetPath,
+                Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath);
 
 			IText text = corpus.GetText("MAT");
 			TextSegment[] segments = text.Segments.ToArray();
@@ -32,8 +32,8 @@ namespace SIL.Machine.Corpora
 		public void Segments_EmptyText()
 		{
 			var tokenizer = new LatinWordTokenizer();
-			var corpus = new UsfmFileTextCorpus(CorporaTestHelpers.UsfmStylesheetPath, Encoding.UTF8,
-				CorporaTestHelpers.UsfmTestProjectPath, tokenizer);
+			var corpus = new UsfmFileTextCorpus(tokenizer, CorporaTestHelpers.UsfmStylesheetPath,
+                Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath);
 
 			IText text = corpus.GetText("MRK");
 			TextSegment[] segments = text.Segments.ToArray();

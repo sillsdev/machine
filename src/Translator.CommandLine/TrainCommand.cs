@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace SIL.Machine.Translation
 {
-	public class TrainCommand : ParallelTextCommand
+	public class TrainCommand : EngineCommandBase
 	{
 		private readonly CommandOption _alignmentOnlyOption;
 

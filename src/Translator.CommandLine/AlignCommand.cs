@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace SIL.Machine.Translation
 {
-	public class AlignCommand : ParallelTextCommand
+	public class AlignCommand : EngineCommandBase
 	{
 		private readonly CommandOption _outputOption;
 		private readonly CommandOption _probOption;

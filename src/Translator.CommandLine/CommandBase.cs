@@ -3,9 +3,9 @@ using System;
 
 namespace SIL.Machine.Translation
 {
-	public class Command : CommandLineApplication
+	public abstract class CommandBase : CommandLineApplication
 	{
-		public Command()
+		protected CommandBase()
 			: base(false)
 		{
 			OnExecute((Func<int>) ExecuteCommand);

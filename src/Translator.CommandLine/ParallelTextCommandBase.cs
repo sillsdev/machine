@@ -4,12 +4,11 @@ using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace SIL.Machine.Translation
 {
-	public class ParallelTextCommand : Command
+	public abstract class ParallelTextCommandBase : CommandBase
 	{
 		private readonly CommandOption _sourceOption;
 		private readonly CommandOption _targetOption;
@@ -18,9 +17,8 @@ namespace SIL.Machine.Translation
 		private readonly CommandOption _targetWordTokenizerOption;
 		private readonly CommandOption _includeOption;
 		private readonly CommandOption _excludeOption;
-		private readonly CommandArgument _engineArgument;
 
-		public ParallelTextCommand(bool supportAlignmentsCorpus)
+		protected ParallelTextCommandBase(bool supportAlignmentsCorpus)
 		{
 			_sourceOption = Option("-s|--source <corpus>", "The source corpus.", CommandOptionType.SingleValue);
 			_targetOption = Option("-t|--target <corpus>", "The target corpus.", CommandOptionType.SingleValue);
@@ -35,11 +33,7 @@ namespace SIL.Machine.Translation
 				CommandOptionType.SingleValue);
 			_includeOption = Option("-i|--include <texts>", "The texts to include.", CommandOptionType.MultipleValue);
 			_excludeOption = Option("-e|--exclude <texts>", "The texts to exclude.", CommandOptionType.MultipleValue);
-			_engineArgument = Argument("engine", "The translation engine directory.");
 		}
-
-		protected string EngineDirectory => _engineArgument.Value;
-		protected string EngineConfigFileName => Path.Combine(EngineDirectory, "smt.cfg");
 
 		protected ITextCorpus SourceCorpus { get; private set; }
 		protected ITextCorpus TargetCorpus { get; private set; }
@@ -154,7 +148,7 @@ namespace SIL.Machine.Translation
 		private static bool ValidateTextCorpusOption(string value, out string type, out string path)
 		{
 			if (ValidateCorpusOption(value, out type, out path))
-				return string.IsNullOrEmpty(type) || type.IsOneOf("dbl", "text");
+				return string.IsNullOrEmpty(type) || type.IsOneOf("dbl", "usx", "text");
 			return false;
 		}
 
@@ -164,6 +158,9 @@ namespace SIL.Machine.Translation
 			{
 				case "dbl":
 					return new DblBundleTextCorpus(wordTokenizer, path);
+
+				case "usx":
+					return new UsxFileTextCorpus(wordTokenizer, path);
 
 				case "text":
 				default:
