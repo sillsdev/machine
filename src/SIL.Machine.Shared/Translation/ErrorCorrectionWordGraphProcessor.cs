@@ -42,6 +42,8 @@ namespace SIL.Machine.Translation
 			InitArcs();
 		}
 
+		public double ConfidenceThreshold { get; set; }
+
 		private void InitStates()
 		{
 			for (int i = 0; i < _wordGraph.StateCount; i++)
@@ -205,11 +207,11 @@ namespace SIL.Machine.Translation
 			_prevPrefix = prefix.ToArray();
 			_prevIsLastWordComplete = isLastWordComplete;
 
-			var startingHypotheses = new List<Hypothesis>();
-			GetNBestStateHypotheses(n, startingHypotheses);
-			GetNBestSubStateHypotheses(n, startingHypotheses);
+			var queue = new PriorityQueue<Hypothesis>(1000);
+			GetStateHypotheses(queue);
+			GetSubStateHypotheses(queue);
 
-			foreach (Hypothesis hypothesis in NBestSearch(n, startingHypotheses))
+			foreach (Hypothesis hypothesis in NBestSearch(n, queue))
 			{
 				var builder = new TranslationResultBuilder();
 				BuildCorrectionFromHypothesis(builder, prefix, isLastWordComplete, hypothesis);
@@ -217,12 +219,8 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		private IEnumerable<Hypothesis> NBestSearch(int n, List<Hypothesis> startingHypotheses)
+		private IEnumerable<Hypothesis> NBestSearch(int n, PriorityQueue<Hypothesis> queue)
 		{
-			var queue = new PriorityQueue<Hypothesis>(1000);
-			foreach (Hypothesis hypothesis in startingHypotheses)
-				queue.Enqueue(hypothesis);
-
 			var nbest = new List<Hypothesis>();
 			while (!queue.IsEmpty)
 			{
@@ -234,25 +232,38 @@ namespace SIL.Machine.Translation
 				if (_wordGraph.FinalStates.Contains(lastState))
 				{
 					nbest.Add(hypothesis);
-					if (nbest.Count >= n)
+					if (nbest.Count == n)
 						break;
 				}
 				else
 				{
-					hypothesis.Score -= WordGraphWeight * _restScores[lastState];
+					double score = hypothesis.Score - (WordGraphWeight * _restScores[lastState]);
 					IReadOnlyList<int> arcIndices = _wordGraph.GetArcIndices(lastState);
+					bool enqueuedArc = false;
 					for (int i = 0; i < arcIndices.Count; i++)
 					{
-						Hypothesis newHypothesis = hypothesis;
-						if (i < arcIndices.Count - 1)
-							newHypothesis = newHypothesis.Clone();
-
 						int arcIndex = arcIndices[i];
 						WordGraphArc arc = _wordGraph.Arcs[arcIndex];
-						newHypothesis.Score += arc.Score;
-						newHypothesis.Score += _restScores[arc.NextState];
-						newHypothesis.Arcs.Add(arc);
-						queue.Enqueue(newHypothesis);
+						if (ConfidenceThreshold <= 0 || arc.WordConfidences.All(c => c >= ConfidenceThreshold))
+						{
+							Hypothesis newHypothesis = hypothesis;
+							if (i < arcIndices.Count - 1)
+								newHypothesis = newHypothesis.Clone();
+							newHypothesis.Score = score;
+							newHypothesis.Score += arc.Score;
+							newHypothesis.Score += _restScores[arc.NextState];
+							newHypothesis.Arcs.Add(arc);
+							queue.Enqueue(newHypothesis);
+							enqueuedArc = true;
+						}
+					}
+
+					if (!enqueuedArc && (hypothesis.StartArcIndex != -1 || hypothesis.Arcs.Count > 0))
+					{
+						hypothesis.Arcs.AddRange(_wordGraph.GetBestPathFromFinalStateToState(lastState).Reverse());
+						nbest.Add(hypothesis);
+						if (nbest.Count == n)
+							break;
 					}
 				}
 			}
@@ -294,7 +305,7 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		private void GetNBestStateHypotheses(int n, List<Hypothesis> hypotheses)
+		private void GetStateHypotheses(PriorityQueue<Hypothesis> queue)
 		{
 			foreach (int state in _statesInvolvedInArcs)
 			{
@@ -302,16 +313,17 @@ namespace SIL.Machine.Translation
 				List<double> bestScores = _stateBestScores[state];
 
 				double score = bestScores[bestScores.Count - 1] + (WordGraphWeight * restScore);
-				AddToNBestList(hypotheses, n, new Hypothesis(score, state));
+				queue.Enqueue(new Hypothesis(score, state));
 			}
 		}
 
-		private void GetNBestSubStateHypotheses(int n, List<Hypothesis> hypotheses)
+		private void GetSubStateHypotheses(PriorityQueue<Hypothesis> queue)
 		{
 			for (int arcIndex = 0; arcIndex < _wordGraph.Arcs.Count; arcIndex++)
 			{
 				WordGraphArc arc = _wordGraph.Arcs[arcIndex];
-				if (arc.Words.Count > 1)
+				if (arc.Words.Count > 1
+					&& (ConfidenceThreshold <= 0 || arc.WordConfidences.All(c => c >= ConfidenceThreshold)))
 				{
 					double wordGraphScore = _stateWordGraphScores[arc.PrevState];
 
@@ -321,7 +333,7 @@ namespace SIL.Machine.Translation
 						double score = (WordGraphWeight * wordGraphScore)
 							+ (EcmWeight * -esi.Scores[esi.Scores.Count - 1])
 							+ (WordGraphWeight * _restScores[arc.PrevState]);
-						AddToNBestList(hypotheses, n, new Hypothesis(score, arc.NextState, arcIndex, i));
+						queue.Enqueue(new Hypothesis(score, arc.NextState, arcIndex, i));
 					}
 				}
 			}
@@ -416,24 +428,6 @@ namespace SIL.Machine.Translation
 			}
 
 			builder.MarkPhrase(arc.SourceStartIndex, arc.SourceEndIndex, alignment);
-		}
-
-		private static void AddToNBestList<T>(List<T> nbestList, int n, T item) where T : IComparable<T>
-		{
-			int index = nbestList.BinarySearch(item);
-			if (index < 0)
-				index = ~index;
-			else
-				index++;
-			if (nbestList.Count < n)
-			{
-				nbestList.Insert(index, item);
-			}
-			else if (index < nbestList.Count)
-			{
-				nbestList.Insert(index, item);
-				nbestList.RemoveAt(nbestList.Count - 1);
-			}
 		}
 
 		private class Hypothesis : PriorityQueueNodeBase, IComparable<Hypothesis>
