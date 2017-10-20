@@ -244,18 +244,18 @@ namespace SIL.Machine.Translation
 					{
 						int arcIndex = arcIndices[i];
 						WordGraphArc arc = _wordGraph.Arcs[arcIndex];
-						if (ConfidenceThreshold <= 0 || arc.WordConfidences.All(c => c >= ConfidenceThreshold))
-						{
-							Hypothesis newHypothesis = hypothesis;
-							if (i < arcIndices.Count - 1)
-								newHypothesis = newHypothesis.Clone();
-							newHypothesis.Score = score;
-							newHypothesis.Score += arc.Score;
-							newHypothesis.Score += _restScores[arc.NextState];
-							newHypothesis.Arcs.Add(arc);
-							queue.Enqueue(newHypothesis);
-							enqueuedArc = true;
-						}
+						if (IsArcPruned(arc))
+							continue;
+
+						Hypothesis newHypothesis = hypothesis;
+						if (i < arcIndices.Count - 1)
+							newHypothesis = newHypothesis.Clone();
+						newHypothesis.Score = score;
+						newHypothesis.Score += arc.Score;
+						newHypothesis.Score += _restScores[arc.NextState];
+						newHypothesis.Arcs.Add(arc);
+						queue.Enqueue(newHypothesis);
+						enqueuedArc = true;
 					}
 
 					if (!enqueuedArc && (hypothesis.StartArcIndex != -1 || hypothesis.Arcs.Count > 0))
@@ -322,8 +322,7 @@ namespace SIL.Machine.Translation
 			for (int arcIndex = 0; arcIndex < _wordGraph.Arcs.Count; arcIndex++)
 			{
 				WordGraphArc arc = _wordGraph.Arcs[arcIndex];
-				if (arc.Words.Count > 1
-					&& (ConfidenceThreshold <= 0 || arc.WordConfidences.All(c => c >= ConfidenceThreshold)))
+				if (arc.Words.Count > 1 && !IsArcPruned(arc))
 				{
 					double wordGraphScore = _stateWordGraphScores[arc.PrevState];
 
@@ -337,6 +336,11 @@ namespace SIL.Machine.Translation
 					}
 				}
 			}
+		}
+
+		private bool IsArcPruned(WordGraphArc arc)
+		{
+			return !arc.IsUnknown && ConfidenceThreshold > 0 && arc.WordConfidences.Any(c => c < ConfidenceThreshold);
 		}
 
 		private void BuildCorrectionFromHypothesis(TranslationResultBuilder builder, string[] prefix,
