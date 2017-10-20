@@ -161,7 +161,7 @@ namespace SIL.Machine.DataStructures
 				throw new ArgumentException("The node is already enqueued.", nameof(node));
 #endif
 			if (_numNodes == _capacity)
-				Resize(_capacity * 2 + 1);
+				Capacity = _capacity * 2 + 1;
 
 			_numNodes++;
 			_nodes[_numNodes] = node;

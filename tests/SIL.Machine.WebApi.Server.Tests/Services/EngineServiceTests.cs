@@ -306,7 +306,7 @@ namespace SIL.Machine.WebApi.Server.Services
 						[3, 3] = AlignmentType.Aligned,
 						[4, 4] = AlignmentType.Aligned
 					},
-					new[] { new Phrase(Range<int>.Create(0, 5), Range<int>.Create(0, 5)) });
+					new[] { new Phrase(Range<int>.Create(0, 5), 5, 1.0) });
 				smtEngine.Translate(Arg.Any<IReadOnlyList<string>>()).Returns(translationResult);
 				smtEngine.GetWordGraph(Arg.Any<IReadOnlyList<string>>()).Returns(new WordGraph(new[]
 				{
@@ -356,7 +356,7 @@ namespace SIL.Machine.WebApi.Server.Services
 						[3, 3] = AlignmentType.Aligned,
 						[4, 4] = AlignmentType.Aligned
 					},
-					new[] { new Phrase(Range<int>.Create(0, 5), Range<int>.Create(0, 5)) }));
+					new[] { new Phrase(Range<int>.Create(0, 5), 5, 1.0) }));
 				factory.Create(Arg.Any<string>()).Returns(engine);
 				return factory;
 			}

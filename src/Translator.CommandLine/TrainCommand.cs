@@ -3,6 +3,7 @@ using SIL.CommandLine;
 using SIL.Machine.Corpora;
 using SIL.Machine.Translation.Thot;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -50,6 +51,7 @@ namespace SIL.Machine.Translation
 			using (ISmtBatchTrainer trainer = new ThotSmtBatchTrainer(EngineConfigFileName, Preprocessors.Lowercase,
 				SourceCorpus, Preprocessors.Lowercase, TargetCorpus, AlignmentsCorpus))
 			{
+				Stopwatch watch = Stopwatch.StartNew();
 				Out.Write("Training... ");
 				using (var progress = new ConsoleProgressBar<SmtTrainProgress>(Out,
 					p => (double) p.CurrentStep / p.StepCount))
@@ -58,7 +60,9 @@ namespace SIL.Machine.Translation
 					trainer.Save();
 				}
 				Out.WriteLine("done.");
+				watch.Stop();
 
+				Out.WriteLine($"Execution time: {watch.Elapsed:c}");
 				Out.WriteLine($"# of Segments Trained: {trainer.Stats.TrainedSegmentCount}");
 				Out.WriteLine($"LM Perplexity: {trainer.Stats.LanguageModelPerplexity:0.00}");
 				Out.WriteLine($"TM BLEU: {trainer.Stats.TranslationModelBleu:0.00}");

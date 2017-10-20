@@ -64,6 +64,7 @@ namespace SIL.Machine.Translation
 			var targetSources = new TranslationSources[targetArray.Length];
 			var alignment = new WordAlignmentMatrix(sourceLen, targetArray.Length);
 			int i = 0, j = 0;
+			double phraseConfidence = double.MaxValue;
 			foreach (double confidence in confidences)
 			{
 				if (j < prefixLen)
@@ -91,10 +92,12 @@ namespace SIL.Machine.Translation
 				{
 					throw new ArgumentException("A confidence was incorrectly set below 0.", nameof(confidences));
 				}
+
+				phraseConfidence = Math.Min(phraseConfidence, confidence);
 			}
 			return new TranslationResult(Enumerable.Range(0, sourceLen).Select(index => index.ToString()), targetArray,
 				targetConfidences, targetSources, alignment,
-				new[] { new Phrase(Range<int>.Create(0, sourceLen), Range<int>.Create(0, targetArray.Length)) });
+				new[] { new Phrase(Range<int>.Create(0, sourceLen), targetArray.Length, phraseConfidence) });
 		}
 	}
 }

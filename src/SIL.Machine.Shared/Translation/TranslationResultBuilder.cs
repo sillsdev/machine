@@ -191,8 +191,7 @@ namespace SIL.Machine.Translation
 			int trgPhraseStartIndex = 0;
 			foreach (PhraseInfo phraseInfo in _phrases)
 			{
-				phrases.Add(new Phrase(Range<int>.Create(phraseInfo.SourceStartIndex, phraseInfo.SourceEndIndex + 1),
-					Range<int>.Create(trgPhraseStartIndex, phraseInfo.TargetCut + 1)));
+				double confidence = double.MaxValue;
 				for (int j = trgPhraseStartIndex; j <= phraseInfo.TargetCut; j++)
 				{
 					for (int i = phraseInfo.SourceStartIndex; i <= phraseInfo.SourceEndIndex; i++)
@@ -217,7 +216,12 @@ namespace SIL.Machine.Translation
 					{
 						sources[j] = TranslationSources.Smt;
 					}
+
+					confidence = Math.Min(confidence, Confidences[j]);
 				}
+
+				phrases.Add(new Phrase(Range<int>.Create(phraseInfo.SourceStartIndex, phraseInfo.SourceEndIndex + 1),
+					phraseInfo.TargetCut + 1, confidence));
 				trgPhraseStartIndex = phraseInfo.TargetCut + 1;
 			}
 

@@ -159,7 +159,7 @@ namespace SIL.Machine.WebApi.Client
 
 		private static Phrase CreateModel(PhraseDto dto)
 		{
-			return new Phrase(CreateModel(dto.SourceSegmentRange), CreateModel(dto.TargetSegmentRange));
+			return new Phrase(CreateModel(dto.SourceSegmentRange), dto.TargetSegmentCut, dto.Confidence);
 		}
 
 		private static Range<int> CreateModel(RangeDto dto)

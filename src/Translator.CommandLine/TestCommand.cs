@@ -3,6 +3,7 @@ using SIL.CommandLine;
 using SIL.Machine.Corpora;
 using SIL.Machine.Translation.Thot;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -70,11 +71,12 @@ namespace SIL.Machine.Translation
 					Directory.CreateDirectory(_traceOption.Value());
 			}
 
-			var suggester = new WordTranslationSuggester(confidence);
+			var suggester = new PhraseTranslationSuggester(confidence);
 
 			var corpus = new ParallelTextCorpus(SourceCorpus, TargetCorpus);
 			int totalSegmentCount = corpus.Texts.SelectMany(t => t.Segments).Count(s => !s.IsEmpty);
 
+			Stopwatch watch = Stopwatch.StartNew();
 			Out.Write("Testing... ");
 			int segmentCount = 0;
 			using (var progress = new ConsoleProgressBar(Out))
@@ -95,7 +97,9 @@ namespace SIL.Machine.Translation
 				}
 			}
 			Out.WriteLine("done.");
+			watch.Stop();
 
+			Out.WriteLine($"Execution time: {watch.Elapsed:c}");
 			Out.WriteLine($"# of Segments: {segmentCount}");
 			Out.WriteLine($"# of Suggestions: {_totalSuggestionCount}");
 			Out.WriteLine($"# of Correct Suggestions: {_correctSuggestionCount}");

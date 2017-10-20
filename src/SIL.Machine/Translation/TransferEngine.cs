@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using SIL.Machine.Annotations;
 using SIL.Machine.Morphology;
 using SIL.ObjectModel;
-using SIL.Machine.Annotations;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SIL.Machine.Translation
 {
@@ -39,6 +40,7 @@ namespace SIL.Machine.Translation
 				var confidences = new List<double>();
 				var sources = new List<TranslationSources>();
 				var alignment = new WordAlignmentMatrix(segment.Count, targetAnalyses.Count);
+				double confidence = double.MaxValue;
 				for (int j = 0; j < targetAnalyses.Count; j++)
 				{
 					int[] sourceIndices = Enumerable.Range(0, waMatrix.RowCount)
@@ -46,7 +48,7 @@ namespace SIL.Machine.Translation
 					string targetWord = targetAnalyses[j].IsEmpty
 						? null
 						: _targetGenerator.GenerateWords(targetAnalyses[j]).FirstOrDefault();
-					double confidence = 1.0;
+					double wordConfidence = 1.0;
 					TranslationSources source = TranslationSources.Transfer;
 					if (targetWord == null)
 					{
@@ -54,7 +56,7 @@ namespace SIL.Machine.Translation
 						{
 							int i = sourceIndices[0];
 							targetWord = segment[i];
-							confidence = 0;
+							wordConfidence = 0;
 							source = TranslationSources.None;
 							alignment[i, j] = AlignmentType.Aligned;
 						}
@@ -68,13 +70,14 @@ namespace SIL.Machine.Translation
 					if (targetWord != null)
 					{
 						translation.Add(targetWord);
-						confidences.Add(confidence);
+						confidences.Add(wordConfidence);
 						sources.Add(source);
+						confidence = Math.Min(confidence, wordConfidence);
 					}
 				}
 
 				yield return new TranslationResult(segment, translation, confidences, sources, alignment,
-					new[] { new Phrase(Range<int>.Create(0, segment.Count), Range<int>.Create(0, translation.Count)) });
+					new[] { new Phrase(Range<int>.Create(0, segment.Count), translation.Count, confidence) });
 			}
 		}
 	}

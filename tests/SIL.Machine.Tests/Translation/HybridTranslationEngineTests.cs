@@ -72,8 +72,8 @@ namespace SIL.Machine.Translation
 				smtSession.SourceSegment.Returns(sourceSegmentArray);
 				smtSession.CurrentResults.Returns(new[] { new TranslationResult(sourceSegmentArray, targetSegmentArray,
 					confidences, sources, alignment,
-					new[] { new Phrase(Range<int>.Create(0, sourceSegmentArray.Length),
-						Range<int>.Create(0, targetSegmentArray.Length)) }) });
+					new[] { new Phrase(Range<int>.Create(0, sourceSegmentArray.Length), targetSegmentArray.Length,
+						confidences.Min()) }) });
 
 				engine.TranslateInteractively(1,
 					Arg.Is<IReadOnlyList<string>>(ss => ss.SequenceEqual(sourceSegmentArray))).Returns(smtSession);
