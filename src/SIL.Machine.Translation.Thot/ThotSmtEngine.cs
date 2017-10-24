@@ -21,8 +21,8 @@ namespace SIL.Machine.Translation.Thot
 			_sessions = new HashSet<ThotInteractiveTranslationSession>();
 			LoadHandle();
 			_segmentAligner = new FuzzyEditDistanceSegmentAligner(GetTranslationProbability);
-			//_confidenceEstimator = new Ibm1WordConfidenceEstimator(GetTranslationProbability);
-			_confidenceEstimator = new WppWordConfidenceEstimator(this);
+			_confidenceEstimator = new Ibm1WordConfidenceEstimator(GetTranslationProbability);
+			//_confidenceEstimator = new WppWordConfidenceEstimator(this);
 			ErrorCorrectionModel = new ErrorCorrectionModel();
 		}
 
@@ -151,15 +151,7 @@ namespace SIL.Machine.Translation.Thot
 			}
 
 			var wordGraph = new WordGraph(arcs, finalStates, initialStateScore);
-			IWordConfidences confidences = _confidenceEstimator.Estimate(segment, wordGraph);
-			foreach (WordGraphArc arc in wordGraph.Arcs)
-			{
-				for (int k = 0; k < arc.Words.Count; k++)
-				{
-					string targetWord = arc.Words[k];
-					arc.WordConfidences[k] = confidences.GetConfidence(targetWord);
-				}
-			}
+			_confidenceEstimator.Estimate(segment, wordGraph);
 			return wordGraph;
 		}
 
@@ -210,12 +202,12 @@ namespace SIL.Machine.Translation.Thot
 			IntPtr dataPtr)
 		{
 			var builder = new TranslationResultBuilder();
-			IWordConfidences confidences = _confidenceEstimator.Estimate(sourceSegment);
 
 			uint phraseCount = Thot.tdata_getPhraseCount(dataPtr);
 			IReadOnlyList<Tuple<int, int>> sourceSegmentation = GetSourceSegmentation(dataPtr, phraseCount);
 			IReadOnlyList<int> targetSegmentCuts = GetTargetSegmentCuts(dataPtr, phraseCount);
 			ISet<int> targetUnknownWords = GetTargetUnknownWords(dataPtr, targetSegment.Count);
+			IReadOnlyList<double> confidences = _confidenceEstimator.Estimate(sourceSegment, targetSegment);
 
 			int trgPhraseStartIndex = 0;
 			for (int k = 0; k < phraseCount; k++)
@@ -227,8 +219,7 @@ namespace SIL.Machine.Translation.Thot
 				for (int j = trgPhraseStartIndex; j <= targetCut; j++)
 				{
 					string targetWord = targetSegment[j];
-					builder.AppendWord(targetWord, confidences.GetConfidence(targetWord),
-						targetUnknownWords.Contains(j));
+					builder.AppendWord(targetWord, confidences[j], targetUnknownWords.Contains(j));
 				}
 
 				int srcPhraseLen = sourceEndIndex - sourceStartIndex + 1;

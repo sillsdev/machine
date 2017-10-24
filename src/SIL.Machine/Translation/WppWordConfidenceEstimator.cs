@@ -13,11 +13,28 @@ namespace SIL.Machine.Translation
 			_smtEngine = smtEngine;
 		}
 
-		public IWordConfidences Estimate(IReadOnlyList<string> sourceSegment, WordGraph wordGraph = null)
+		public void Estimate(IReadOnlyList<string> sourceSegment, WordGraph wordGraph)
 		{
-			if (wordGraph == null)
-				wordGraph = _smtEngine.GetWordGraph(sourceSegment);
+			WordGraphConfidences wordGraphConfidences = ComputeWordGraphConfidences(wordGraph);
+			foreach (WordGraphArc arc in wordGraph.Arcs)
+			{
+				for (int k = 0; k < arc.Words.Count; k++)
+					arc.WordConfidences[k] = wordGraphConfidences.GetConfidence(arc.Words[k]);
+			}
+		}
 
+		public IReadOnlyList<double> Estimate(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
+		{
+			WordGraph wordGraph = _smtEngine.GetWordGraph(sourceSegment);
+			WordGraphConfidences wordGraphConfidences = ComputeWordGraphConfidences(wordGraph);
+			var confidences = new double[targetSegment.Count];
+			for (int j = 0; j < targetSegment.Count; j++)
+				confidences[j] = wordGraphConfidences.GetConfidence(targetSegment[j]);
+			return confidences;
+		}
+
+		private WordGraphConfidences ComputeWordGraphConfidences(WordGraph wordGraph)
+		{
 			double normalizationFactor = LogSpace.Zero;
 			var backwardProbs = new double[wordGraph.Arcs.Count];
 			for (int i = wordGraph.Arcs.Count - 1; i >= 0; i--)
@@ -75,22 +92,28 @@ namespace SIL.Machine.Translation
 				}
 			}
 
-			return new WordConfidences(rawWpps, normalizationFactor);
+			return new WordGraphConfidences(rawWpps, normalizationFactor);
 		}
 
-		private class WordConfidences : IWordConfidences
+		private class WordGraphConfidences
 		{
 			private readonly Dictionary<string, Dictionary<int, double>> _rawWpps;
 			private readonly double _normalizationFactor;
+			private readonly Dictionary<string, double> _cachedConfidences;
 
-			public WordConfidences(Dictionary<string, Dictionary<int, double>> rawWpps, double normalizationFactor)
+			public WordGraphConfidences(Dictionary<string, Dictionary<int, double>> rawWpProbs, double normalizationFactor)
 			{
-				_rawWpps = rawWpps;
+				_rawWpps = rawWpProbs;
 				_normalizationFactor = normalizationFactor;
+				_cachedConfidences = new Dictionary<string, double>();
 			}
 
 			public double GetConfidence(string targetWord)
 			{
+				if (_cachedConfidences.TryGetValue(targetWord, out double confidence))
+					return confidence;
+
+				confidence = 0;
 				if (_rawWpps.TryGetValue(targetWord, out Dictionary<int, double> indexWpps))
 				{
 					double maxWpp = 0;
@@ -106,9 +129,11 @@ namespace SIL.Machine.Translation
 							wpp = LogSpace.ToStandardSpace(logWpp);
 						maxWpp = Math.Max(maxWpp, wpp);
 					}
-					return maxWpp;
+					confidence = maxWpp;
 				}
-				return 0;
+
+				_cachedConfidences[targetWord] = confidence;
+				return confidence;
 			}
 		}
 	}

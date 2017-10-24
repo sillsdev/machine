@@ -4,6 +4,7 @@ namespace SIL.Machine.Translation
 {
 	public interface IWordConfidenceEstimator
 	{
-		IWordConfidences Estimate(IReadOnlyList<string> sourceSegment, WordGraph wordGraph = null);
+		void Estimate(IReadOnlyList<string> sourceSegment, WordGraph wordGraph);
+		IReadOnlyList<double> Estimate(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment);
 	}
 }

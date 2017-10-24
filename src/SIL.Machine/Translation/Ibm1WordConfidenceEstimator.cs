@@ -12,35 +12,34 @@ namespace SIL.Machine.Translation
 			_getTranslationProb = getTranslationProb;
 		}
 
-		public IWordConfidences Estimate(IReadOnlyList<string> sourceSegment, WordGraph wordGraph = null)
+		public void Estimate(IReadOnlyList<string> sourceSegment, WordGraph wordGraph)
 		{
-			return new WordConfidences(_getTranslationProb, sourceSegment);
+			foreach (WordGraphArc arc in wordGraph.Arcs)
+			{
+				for (int k = 0; k < arc.Words.Count; k++)
+					arc.WordConfidences[k] = GetConfidence(sourceSegment, arc.Words[k]);
+			}
 		}
 
-		private class WordConfidences : IWordConfidences
+		public IReadOnlyList<double> Estimate(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
 		{
-			private readonly Func<string, string, double> _getTranslationProb;
-			private readonly IReadOnlyList<string> _sourceSegment;
+			var confidences = new double[targetSegment.Count];
+			for (int j = 0; j < targetSegment.Count; j++)
+				confidences[j] = GetConfidence(sourceSegment, targetSegment[j]);
+			return confidences;
+		}
 
-			public WordConfidences(Func<string, string, double> getTranslationProb,
-				IReadOnlyList<string> sourceSegment)
+		private double GetConfidence(IReadOnlyList<string> sourceSegment, string targetWord)
+		{
+			double maxConfidence = _getTranslationProb(null, targetWord);
+			foreach (string sourceWord in sourceSegment)
 			{
-				_getTranslationProb = getTranslationProb;
-				_sourceSegment = sourceSegment;
+				double confidence = _getTranslationProb(sourceWord, targetWord);
+				if (confidence > maxConfidence)
+					maxConfidence = confidence;
 			}
 
-			public double GetConfidence(string targetWord)
-			{
-				double maxConfidence = _getTranslationProb(null, targetWord);
-				foreach (string sourceWord in _sourceSegment)
-				{
-					double confidence = _getTranslationProb(sourceWord, targetWord);
-					if (confidence > maxConfidence)
-						maxConfidence = confidence;
-				}
-
-				return maxConfidence;
-			}
+			return maxConfidence;
 		}
 	}
 }
