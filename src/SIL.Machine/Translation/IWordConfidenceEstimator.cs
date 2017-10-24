@@ -1,7 +1,9 @@
-﻿namespace SIL.Machine.Translation
+﻿using System.Collections.Generic;
+
+namespace SIL.Machine.Translation
 {
 	public interface IWordConfidenceEstimator
 	{
-		double EstimateConfidence(string targetWord);
+		IWordConfidences Estimate(IReadOnlyList<string> sourceSegment, WordGraph wordGraph = null);
 	}
 }

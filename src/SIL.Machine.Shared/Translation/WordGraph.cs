@@ -1,20 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using SIL.Machine.Statistics;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SIL.Machine.Translation
 {
 	public class WordGraph
 	{
+		private static int[] EmptyArcIndices = new int[0];
+
 		public const int InitialState = 0;
 
-		private const double SmallScore = -999999999;
-
 		private readonly HashSet<int> _finalStates;
-		private readonly Dictionary<int, List<int>> _states;
+		private readonly Dictionary<int, StateInfo> _states;
 
 		public WordGraph(IEnumerable<WordGraphArc> arcs, IEnumerable<int> finalStates, double initialStateScore = 0)
 		{
-			_states = new Dictionary<int, List<int>>();
+			_states = new Dictionary<int, StateInfo>();
 			var arcList = new List<WordGraphArc>();
 			int maxState = -1;
 			foreach (WordGraphArc arc in arcs)
@@ -24,13 +25,9 @@ namespace SIL.Machine.Translation
 				if (arc.PrevState > maxState)
 					maxState = arc.PrevState;
 
-				List<int> stateArcIndices;
-				if (!_states.TryGetValue(arc.PrevState, out stateArcIndices))
-				{
-					stateArcIndices = new List<int>();
-					_states[arc.PrevState] = stateArcIndices;
-				}
-				stateArcIndices.Add(arcList.Count);
+				int arcIndex = arcList.Count;
+				GetOrCreateStateInfo(arc.PrevState).NextArcIndices.Add(arcIndex);
+				GetOrCreateStateInfo(arc.NextState).PrevArcIndices.Add(arcIndex);
 				arcList.Add(arc);
 			}
 			Arcs = arcList;
@@ -48,17 +45,25 @@ namespace SIL.Machine.Translation
 
 		public bool IsEmpty => Arcs.Count == 0;
 
-		public IReadOnlyList<int> GetArcIndices(int state)
+		public IReadOnlyList<int> GetPrevArcIndices(int state)
 		{
-			List<int> stateArcIndices;
-			if (_states.TryGetValue(state, out stateArcIndices))
-				return stateArcIndices;
-			return new int[0];
+			StateInfo stateInfo;
+			if (_states.TryGetValue(state, out stateInfo))
+				return stateInfo.PrevArcIndices;
+			return EmptyArcIndices;
+		}
+
+		public IReadOnlyList<int> GetNextArcIndices(int state)
+		{
+			StateInfo stateInfo;
+			if (_states.TryGetValue(state, out stateInfo))
+				return stateInfo.NextArcIndices;
+			return EmptyArcIndices;
 		}
 
 		public IEnumerable<double> ComputeRestScores()
 		{
-			double[] restScores = Enumerable.Repeat(SmallScore, StateCount).ToArray();
+			double[] restScores = Enumerable.Repeat(LogSpace.Zero, StateCount).ToArray();
 
 			foreach (int state in _finalStates)
 				restScores[state] = InitialStateScore;
@@ -66,10 +71,7 @@ namespace SIL.Machine.Translation
 			for (int i = Arcs.Count - 1; i >= 0; i--)
 			{
 				WordGraphArc arc = Arcs[i];
-
-				double score = arc.Score + restScores[arc.NextState];
-				if (score < SmallScore)
-					score = SmallScore;
+				double score = LogSpace.Multiple(arc.Score, restScores[arc.NextState]);
 				if (score > restScores[arc.PrevState])
 					restScores[arc.PrevState] = score;
 			}
@@ -86,7 +88,7 @@ namespace SIL.Machine.Translation
 				return;
 			}
 
-			prevScores = Enumerable.Repeat(SmallScore, StateCount).ToArray();
+			prevScores = Enumerable.Repeat(LogSpace.Zero, StateCount).ToArray();
 			stateBestPrevArcs = new int[StateCount];
 
 			if (state == InitialState)
@@ -98,12 +100,9 @@ namespace SIL.Machine.Translation
 			for (int arcIndex = 0; arcIndex < Arcs.Count; arcIndex++)
 			{
 				WordGraphArc arc = Arcs[arcIndex];
-
 				if (accessibleStates.Contains(arc.PrevState))
 				{
-					double score = arc.Score + prevScores[arc.PrevState];
-					if (score < SmallScore)
-						score = SmallScore;
+					double score = LogSpace.Multiple(arc.Score, prevScores[arc.PrevState]);
 					if (score > prevScores[arc.NextState])
 					{
 						prevScores[arc.NextState] = score;
@@ -114,7 +113,7 @@ namespace SIL.Machine.Translation
 				else
 				{
 					if (!accessibleStates.Contains(arc.NextState))
-						prevScores[arc.NextState] = SmallScore;
+						prevScores[arc.NextState] = LogSpace.Zero;
 				}
 			}
 		}
@@ -125,7 +124,7 @@ namespace SIL.Machine.Translation
 			int[] stateBestPredArcs;
 			ComputePrevScores(state, out prevScores, out stateBestPredArcs);
 
-			double bestFinalStateScore = SmallScore;
+			double bestFinalStateScore = LogSpace.Zero;
 			int bestFinalState = 0;
 			foreach (int finalState in _finalStates)
 			{
@@ -156,6 +155,23 @@ namespace SIL.Machine.Translation
 					curState = arc.PrevState;
 				}
 			}
+		}
+
+		private StateInfo GetOrCreateStateInfo(int state)
+		{
+			StateInfo stateInfo;
+			if (!_states.TryGetValue(state, out stateInfo))
+			{
+				stateInfo = new StateInfo();
+				_states[state] = stateInfo;
+			}
+			return stateInfo;
+		}
+
+		private class StateInfo
+		{
+			public List<int> PrevArcIndices { get; } = new List<int>();
+			public List<int> NextArcIndices { get; } = new List<int>();
 		}
 	}
 }

@@ -133,8 +133,8 @@ namespace SIL.Machine.WebApi.Client
 				WordAlignmentMatrix alignment = CreateModel(arcDto.Alignment,
 					arcDto.SourceEndIndex - arcDto.SourceStartIndex + 1, arcDto.Words.Length);
 				arcs.Add(new WordGraphArc(arcDto.PrevState, arcDto.NextState, arcDto.Score, arcDto.Words, alignment,
-					arcDto.Confidences.Cast<double>(), arcDto.SourceStartIndex, arcDto.SourceEndIndex,
-					arcDto.IsUnknown));
+					arcDto.SourceStartIndex, arcDto.SourceEndIndex, arcDto.IsUnknown,
+					arcDto.Confidences.Cast<double>()));
 			}
 
 			return new WordGraph(arcs, dto.FinalStates, dto.InitialStateScore);

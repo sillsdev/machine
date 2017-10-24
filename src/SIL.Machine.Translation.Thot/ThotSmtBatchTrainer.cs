@@ -10,6 +10,7 @@ using SIL.Machine.Corpora;
 using SIL.Machine.NgramModeling;
 using SIL.Machine.Optimization;
 using SIL.ObjectModel;
+using SIL.Machine.Statistics;
 
 namespace SIL.Machine.Translation.Thot
 {
@@ -354,7 +355,7 @@ namespace SIL.Machine.Translation.Thot
 					Tuple<uint, uint, float>[] groupEntries = g.OrderByDescending(e => e.Item3).ToArray();
 
 					double lcSrc = groupEntries.Select(e => e.Item3).Skip(1)
-						.Aggregate((double) groupEntries[0].Item3, (a, n) => SumLog(a, n));
+						.Aggregate((double) groupEntries[0].Item3, (a, n) => LogSpace.Add(a, n));
 
 					double newLcSrc = -99999;
 					int count = 0;
@@ -363,7 +364,7 @@ namespace SIL.Machine.Translation.Thot
 						double prob = Math.Exp(entry.Item3 - lcSrc);
 						if (prob < threshold)
 							break;
-						newLcSrc = SumLog(newLcSrc, entry.Item3);
+						newLcSrc = LogSpace.Add(newLcSrc, entry.Item3);
 						count++;
 					}
 
@@ -381,13 +382,6 @@ namespace SIL.Machine.Translation.Thot
 					}
 				}
 			}
-		}
-
-		private static double SumLog(double logx, double logy)
-		{
-			if (logx > logy)
-				return logx + Math.Log(1 + Math.Exp(logy - logx));
-			return logy + Math.Log(1 + Math.Exp(logx - logy));
 		}
 
 		private void TrainSingleWordAlignmentModel(string swmPrefix, Func<string, string> sourcePreprocessor,

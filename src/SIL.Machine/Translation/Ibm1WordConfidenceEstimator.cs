@@ -3,33 +3,33 @@ using System.Collections.Generic;
 
 namespace SIL.Machine.Translation
 {
-	public class Ibm1WordConfidenceEstimatorFactory : IWordConfidenceEstimatorFactory
+	public class Ibm1WordConfidenceEstimator : IWordConfidenceEstimator
 	{
 		private readonly Func<string, string, double> _getTranslationProb;
 
-		public Ibm1WordConfidenceEstimatorFactory(Func<string, string, double> getTranslationProb)
+		public Ibm1WordConfidenceEstimator(Func<string, string, double> getTranslationProb)
 		{
 			_getTranslationProb = getTranslationProb;
 		}
 
-		public IWordConfidenceEstimator Create(IReadOnlyList<string> sourceSegment)
+		public IWordConfidences Estimate(IReadOnlyList<string> sourceSegment, WordGraph wordGraph = null)
 		{
-			return new WordConfidenceEstimator(_getTranslationProb, sourceSegment);
+			return new WordConfidences(_getTranslationProb, sourceSegment);
 		}
 
-		private class WordConfidenceEstimator : IWordConfidenceEstimator
+		private class WordConfidences : IWordConfidences
 		{
 			private readonly Func<string, string, double> _getTranslationProb;
 			private readonly IReadOnlyList<string> _sourceSegment;
 
-			public WordConfidenceEstimator(Func<string, string, double> getTranslationProb,
+			public WordConfidences(Func<string, string, double> getTranslationProb,
 				IReadOnlyList<string> sourceSegment)
 			{
 				_getTranslationProb = getTranslationProb;
 				_sourceSegment = sourceSegment;
 			}
 
-			public double EstimateConfidence(string targetWord)
+			public double GetConfidence(string targetWord)
 			{
 				double maxConfidence = _getTranslationProb(null, targetWord);
 				foreach (string sourceWord in _sourceSegment)

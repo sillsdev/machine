@@ -150,14 +150,23 @@ namespace SIL.Machine.WebApi.Server.Services
 				smtEngine.GetWordGraph(Arg.Any<IReadOnlyList<string>>()).Returns(new WordGraph(new[]
 					{
 						new WordGraphArc(0, 1, 1.0, "this is".Split(),
-							new WordAlignmentMatrix(2, 2) {[0, 0] = AlignmentType.Aligned, [1, 1] = AlignmentType.Aligned},
-							new[] {1.0, 1.0}, 0, 1, false),
+							new WordAlignmentMatrix(2, 2)
+							{
+								[0, 0] = AlignmentType.Aligned, [1, 1] = AlignmentType.Aligned
+							},
+							0, 1, false, new[] { 1.0, 1.0 }),
 						new WordGraphArc(1, 2, 1.0, "a test".Split(),
-							new WordAlignmentMatrix(2, 2) {[0, 0] = AlignmentType.Aligned, [1, 1] = AlignmentType.Aligned},
-							new[] {1.0, 1.0}, 2, 3, false),
+							new WordAlignmentMatrix(2, 2)
+							{
+								[0, 0] = AlignmentType.Aligned, [1, 1] = AlignmentType.Aligned
+							},
+							2, 3, false, new[] { 1.0, 1.0 }),
 						new WordGraphArc(2, 3, 1.0, new[] {"."},
-							new WordAlignmentMatrix(1, 1) {[0, 0] = AlignmentType.Aligned},
-							new[] {1.0}, 4, 4, false)
+							new WordAlignmentMatrix(1, 1)
+							{
+								[0, 0] = AlignmentType.Aligned
+							},
+							4, 4, false, new[] { 1.0 })
 					}, new[] {3}));
 				smtEngine.GetBestPhraseAlignment(Arg.Any<IReadOnlyList<string>>(), Arg.Any<IReadOnlyList<string>>())
 					.Returns(translationResult);

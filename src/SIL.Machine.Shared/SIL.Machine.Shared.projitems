@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)DataStructures\PriorityQueue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataStructures\PriorityQueueNode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataStructures\PriorityQueueNodeBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Statistics\LogSpace.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tokenization\IDetokenizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tokenization\ITokenizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tokenization\LatinSentenceTokenizer.cs" />

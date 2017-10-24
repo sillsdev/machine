@@ -238,7 +238,7 @@ namespace SIL.Machine.Translation
 				else
 				{
 					double score = hypothesis.Score - (WordGraphWeight * _restScores[lastState]);
-					IReadOnlyList<int> arcIndices = _wordGraph.GetArcIndices(lastState);
+					IReadOnlyList<int> arcIndices = _wordGraph.GetNextArcIndices(lastState);
 					bool enqueuedArc = false;
 					for (int i = 0; i < arcIndices.Count; i++)
 					{
