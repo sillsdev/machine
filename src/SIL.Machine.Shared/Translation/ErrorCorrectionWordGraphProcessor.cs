@@ -324,14 +324,14 @@ namespace SIL.Machine.Translation
 				WordGraphArc arc = _wordGraph.Arcs[arcIndex];
 				if (arc.Words.Count > 1 && !IsArcPruned(arc))
 				{
-					double wordGraphScore = _stateWordGraphScores[arc.PrevState];
+					double wordGraphScore = _stateWordGraphScores[arc.PrevState] + arc.Score;
 
 					for (int i = 0; i < arc.Words.Count - 1; i++)
 					{
 						EcmScoreInfo esi = _arcEcmScoreInfos[arcIndex][i];
 						double score = (WordGraphWeight * wordGraphScore)
 							+ (EcmWeight * -esi.Scores[esi.Scores.Count - 1])
-							+ (WordGraphWeight * _restScores[arc.PrevState]);
+							+ (WordGraphWeight * _restScores[arc.NextState]);
 						queue.Enqueue(new Hypothesis(score, arc.NextState, arcIndex, i));
 					}
 				}
