@@ -6,12 +6,14 @@ namespace SIL.Machine.Translation
 	public class CorpusCommand : ParallelTextCorpusCommandBase
 	{
 		private readonly CommandOption _maxLengthOption;
+		private readonly CommandOption _countOption;
 
 		public CorpusCommand()
 			: base(true)
 		{
 			Name = "corpus";
 
+			_countOption = Option("-c|--count", "Only output the # of parallel segments.", CommandOptionType.NoValue);
 			_maxLengthOption = Option("--max-seglen <number>", "Maximum segment length.",
 				CommandOptionType.SingleValue);
 		}
@@ -22,21 +24,27 @@ namespace SIL.Machine.Translation
 			if (code != 0)
 				return code;
 
-			int maxLength = 100;
-			if (_maxLengthOption.HasValue())
-			{
-				if (!int.TryParse(_maxLengthOption.Value(), out maxLength))
-				{
-					Out.WriteLine("The specified maximum segment length is invalid.");
-					return 1;
-				}
-			}
-
-			WriteCorpusStats("Source", SourceCorpus, maxLength);
-			WriteCorpusStats("Target", TargetCorpus, maxLength);
-
 			int parallelCorpusCount = GetParallelCorpusCount();
-			Out.WriteLine($"# of Parallel Segments: {parallelCorpusCount}");
+			if (_countOption.HasValue())
+			{
+				Out.WriteLine(parallelCorpusCount);
+			}
+			else
+			{
+				int maxLength = 100;
+				if (_maxLengthOption.HasValue())
+				{
+					if (!int.TryParse(_maxLengthOption.Value(), out maxLength))
+					{
+						Out.WriteLine("The specified maximum segment length is invalid.");
+						return 1;
+					}
+				}
+
+				WriteCorpusStats("Source", SourceCorpus, maxLength);
+				WriteCorpusStats("Target", TargetCorpus, maxLength);
+				Out.WriteLine($"# of Parallel Segments: {parallelCorpusCount}");
+			}
 
 			return 0;
 		}

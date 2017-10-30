@@ -154,7 +154,7 @@ namespace SIL.Machine.Translation
 			type = null;
 			path = null;
 
-			int index = value.IndexOf(",", StringComparison.Ordinal);
+			int index = value.IndexOf("|", StringComparison.Ordinal);
 			if (index == -1)
 			{
 				path = value;
