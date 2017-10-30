@@ -49,7 +49,7 @@ namespace SIL.Machine.Translation
 			}
 
 			using (ISmtBatchTrainer trainer = new ThotSmtBatchTrainer(EngineConfigFileName, Preprocessors.Lowercase,
-				SourceCorpus, Preprocessors.Lowercase, TargetCorpus, AlignmentsCorpus))
+				Preprocessors.Lowercase, ParallelCorpus, MaxParallelCorpusCount))
 			{
 				Stopwatch watch = Stopwatch.StartNew();
 				Out.Write("Training... ");
@@ -76,26 +76,26 @@ namespace SIL.Machine.Translation
 				Directory.CreateDirectory(tmDir);
 
 			string tmPrefix = Path.Combine(tmDir, "src_trg");
-			var corpus = new ParallelTextCorpus(SourceCorpus, TargetCorpus, AlignmentsCorpus);
-			int totalSegmentCount = corpus.Texts.SelectMany(t => t.Segments).Count(s => !s.IsEmpty);
+			int parallelCorpusCount = GetParallelCorpusCount();
 
 			Out.Write("Training... ");
 			using (var progress = new ConsoleProgressBar(Out))
 			{
-				TrainAlignmentModel(tmPrefix + "_swm", corpus.Invert(), progress);
-				TrainAlignmentModel(tmPrefix + "_invswm", corpus, progress, 5);
+				TrainAlignmentModel(tmPrefix + "_swm", ParallelCorpus.Invert(), progress);
+				TrainAlignmentModel(tmPrefix + "_invswm", ParallelCorpus, progress, 5);
 			}
 			Out.WriteLine("done.");
 
-			Out.WriteLine($"# of Segments Trained: {totalSegmentCount}");
+			Out.WriteLine($"# of Segments Trained: {parallelCorpusCount}");
 		}
 
-		private static void TrainAlignmentModel(string swmPrefix, ParallelTextCorpus corpus,
+		private void TrainAlignmentModel(string swmPrefix, ParallelTextCorpus corpus,
 			IProgress<double> progress, int startStep = 0)
 		{
 			using (var swAlignModel = new ThotSingleWordAlignmentModel(swmPrefix, true))
 			{
-				foreach (ParallelTextSegment segment in corpus.Segments.Where(s => !s.IsEmpty))
+				foreach (ParallelTextSegment segment in corpus.Segments.Where(s => !s.IsEmpty)
+					.Take(MaxParallelCorpusCount))
 				{
 					string[] sourceTokens = segment.SourceSegment.Select(Preprocessors.Lowercase).ToArray();
 					string[] targetTokens = segment.TargetSegment.Select(Preprocessors.Lowercase).ToArray();

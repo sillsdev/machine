@@ -18,10 +18,14 @@ namespace SIL.Machine.Translation.Thot
 					{
 						new MemoryText("text1", new[]
 							{
-								new TextSegment(new TextSegmentRef(1, 1), "¿ le importaría darnos las llaves de la habitación , por favor ?".Split()),
-								new TextSegment(new TextSegmentRef(1, 2), "he hecho la reserva de una habitación tranquila doble con teléfono y televisión a nombre de rosario cabedo .".Split()),
-								new TextSegment(new TextSegmentRef(1, 3), "¿ le importaría cambiarme a otra habitación más tranquila ?".Split()),
-								new TextSegment(new TextSegmentRef(1, 4), "por favor , tengo reservada una habitación .".Split()),
+								new TextSegment(new TextSegmentRef(1, 1),
+									"¿ le importaría darnos las llaves de la habitación , por favor ?".Split()),
+								new TextSegment(new TextSegmentRef(1, 2),
+									"he hecho la reserva de una habitación tranquila doble con teléfono y televisión a nombre de rosario cabedo .".Split()),
+								new TextSegment(new TextSegmentRef(1, 3),
+									"¿ le importaría cambiarme a otra habitación más tranquila ?".Split()),
+								new TextSegment(new TextSegmentRef(1, 4),
+									"por favor , tengo reservada una habitación .".Split()),
 								new TextSegment(new TextSegmentRef(1, 5), "me parece que existe un problema .".Split())
 							})
 					});
@@ -30,9 +34,12 @@ namespace SIL.Machine.Translation.Thot
 					{
 						new MemoryText("text1", new[]
 							{
-								new TextSegment(new TextSegmentRef(1, 1), "would you mind giving us the keys to the room , please ?".Split()),
-								new TextSegment(new TextSegmentRef(1, 2), "i have made a reservation for a quiet , double room with a telephone and a tv for rosario cabedo .".Split()),
-								new TextSegment(new TextSegmentRef(1, 3), "would you mind moving me to a quieter room ?".Split()),
+								new TextSegment(new TextSegmentRef(1, 1),
+									"would you mind giving us the keys to the room , please ?".Split()),
+								new TextSegment(new TextSegmentRef(1, 2),
+									"i have made a reservation for a quiet , double room with a telephone and a tv for rosario cabedo .".Split()),
+								new TextSegment(new TextSegmentRef(1, 3),
+									"would you mind moving me to a quieter room ?".Split()),
 								new TextSegment(new TextSegmentRef(1, 4), "i have booked a room .".Split()),
 								new TextSegment(new TextSegmentRef(1, 5), "i think that there is a problem .".Split())
 							})
@@ -42,13 +49,15 @@ namespace SIL.Machine.Translation.Thot
 					{
 						new MemoryTextAlignmentCollection("text1", new[]
 							{
-								new TextAlignment(new TextSegmentRef(1, 1), new[] {(8, 9)}),
-								new TextAlignment(new TextSegmentRef(1, 2), new[] {(6, 10)}),
-								new TextAlignment(new TextSegmentRef(1, 3), new[] {(6, 8)}),
-								new TextAlignment(new TextSegmentRef(1, 4), new[] {(6, 4)}),
+								new TextAlignment(new TextSegmentRef(1, 1), new[] { (8, 9) }),
+								new TextAlignment(new TextSegmentRef(1, 2), new[] { (6, 10) }),
+								new TextAlignment(new TextSegmentRef(1, 3), new[] { (6, 8) }),
+								new TextAlignment(new TextSegmentRef(1, 4), new[] { (6, 4) }),
 								new TextAlignment(new TextSegmentRef(1, 5), new (int, int)[0])     
 							})
 					});
+
+				var corpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignmentCorpus);
 
 				var parameters = new ThotSmtParameters
 				{
@@ -56,7 +65,7 @@ namespace SIL.Machine.Translation.Thot
 					LanguageModelFileNamePrefix = Path.Combine(tempDir.Path, "lm", "trg.lm")
 				};
 
-				using (var trainer = new ThotSmtBatchTrainer(parameters, s => s, sourceCorpus, s => s, targetCorpus, alignmentCorpus))
+				using (var trainer = new ThotSmtBatchTrainer(parameters, s => s, s => s, corpus))
 				{
 					trainer.Train();
 					trainer.Save();
@@ -77,7 +86,10 @@ namespace SIL.Machine.Translation.Thot
 			{
 				var sourceCorpus = new DictionaryTextCorpus(Enumerable.Empty<MemoryText>());
 				var targetCorpus = new DictionaryTextCorpus(Enumerable.Empty<MemoryText>());
-				var alignmentCorpus = new DictionaryTextAlignmentCorpus(Enumerable.Empty<MemoryTextAlignmentCollection>());
+				var alignmentCorpus = new DictionaryTextAlignmentCorpus(
+					Enumerable.Empty<MemoryTextAlignmentCollection>());
+
+				var corpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignmentCorpus);
 
 				var parameters = new ThotSmtParameters
 				{
@@ -85,7 +97,7 @@ namespace SIL.Machine.Translation.Thot
 					LanguageModelFileNamePrefix = Path.Combine(tempDir.Path, "lm", "trg.lm")
 				};
 
-				using (var trainer = new ThotSmtBatchTrainer(parameters, s => s, sourceCorpus, s => s, targetCorpus, alignmentCorpus))
+				using (var trainer = new ThotSmtBatchTrainer(parameters, s => s, s => s, corpus))
 				{
 					trainer.Train();
 					trainer.Save();

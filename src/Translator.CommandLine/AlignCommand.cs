@@ -38,8 +38,7 @@ namespace SIL.Machine.Translation
 			if (!Directory.Exists(_outputOption.Value()))
 				Directory.CreateDirectory(_outputOption.Value());
 
-			var corpus = new ParallelTextCorpus(SourceCorpus, TargetCorpus, AlignmentsCorpus);
-			int totalSegmentCount = corpus.Texts.SelectMany(t => t.Segments).Count(s => !s.IsEmpty);
+			int parallelCorpusCount = GetParallelCorpusCount();
 
 			string tmPrefix = Path.Combine(EngineDirectory, "tm", "src_trg");
 			Out.Write("Aligning... ");
@@ -48,8 +47,8 @@ namespace SIL.Machine.Translation
 			using (var invSwaModel = new ThotSingleWordAlignmentModel(tmPrefix + "_swm"))
 			{
 				var aligner = new SymmetrizationSegmentAligner(swaModel, invSwaModel);
-				int i = 0, j = 0;
-				foreach (ParallelText text in corpus.Texts)
+				int segmentCount = 0;
+				foreach (ParallelText text in ParallelCorpus.Texts)
 				{
 					string fileName = Path.Combine(_outputOption.Value(), text.Id + ".txt");
 					using (var writer = new StreamWriter(fileName))
@@ -70,12 +69,15 @@ namespace SIL.Machine.Translation
 									segment.CreateAlignmentMatrix(true));
 								writer.WriteLine(OutputAlignmentString(swaModel, invSwaModel, _probOption.HasValue(),
 									sourceTokens, targetTokens, matrix));
-								j++;
-								progress.Report((double) j / totalSegmentCount);
+								segmentCount++;
+								progress.Report((double) segmentCount / parallelCorpusCount);
+								if (segmentCount == MaxParallelCorpusCount)
+									break;
 							}
 						}
 					}
-					i++;
+					if (segmentCount == MaxParallelCorpusCount)
+						break;
 				}
 			}
 			Out.WriteLine("done.");

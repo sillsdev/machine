@@ -1,10 +1,9 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
-using System.Linq;
 
 namespace SIL.Machine.Translation
 {
-	public class CorpusCommand : ParallelTextCommandBase
+	public class CorpusCommand : ParallelTextCorpusCommandBase
 	{
 		private readonly CommandOption _maxLengthOption;
 
@@ -13,7 +12,7 @@ namespace SIL.Machine.Translation
 		{
 			Name = "corpus";
 
-			_maxLengthOption = Option("-m|-max-length <number>", "Maximum segment length.",
+			_maxLengthOption = Option("--max-seglen <number>", "Maximum segment length.",
 				CommandOptionType.SingleValue);
 		}
 
@@ -36,9 +35,8 @@ namespace SIL.Machine.Translation
 			WriteCorpusStats("Source", SourceCorpus, maxLength);
 			WriteCorpusStats("Target", TargetCorpus, maxLength);
 
-			var corpus = new ParallelTextCorpus(SourceCorpus, TargetCorpus);
-			int parallelSegmentCount = corpus.Segments.Count(s => !s.IsEmpty);
-			Out.WriteLine($"# of Parallel Segments: {parallelSegmentCount}");
+			int parallelCorpusCount = GetParallelCorpusCount();
+			Out.WriteLine($"# of Parallel Segments: {parallelCorpusCount}");
 
 			return 0;
 		}

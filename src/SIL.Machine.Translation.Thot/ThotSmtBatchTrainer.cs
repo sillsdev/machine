@@ -28,25 +28,24 @@ namespace SIL.Machine.Translation.Thot
 		private readonly string _tmFilePrefix;
 		private readonly string _trainLMDir;
 		private readonly string _trainTMDir;
+		private readonly int _maxCorpusCount;
 
 		public ThotSmtBatchTrainer(string cfgFileName, Func<string, string> sourcePreprocessor,
-			ITextCorpus sourceCorpus, Func<string, string> targetPreprocessor, ITextCorpus targetCorpus,
-			ITextAlignmentCorpus alignmentCorpus = null)
-			: this(ThotSmtParameters.Load(cfgFileName), sourcePreprocessor, sourceCorpus, targetPreprocessor,
-				  targetCorpus, alignmentCorpus)
+			Func<string, string> targetPreprocessor, ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)
+			: this(ThotSmtParameters.Load(cfgFileName), sourcePreprocessor, targetPreprocessor, corpus)
 		{
 			ConfigFileName = cfgFileName;
 		}
 
 		public ThotSmtBatchTrainer(ThotSmtParameters parameters, Func<string, string> sourcePreprocessor,
-			ITextCorpus sourceCorpus, Func<string, string> targetPreprocessor, ITextCorpus targetCorpus,
-			ITextAlignmentCorpus alignmentCorpus = null)
+			Func<string, string> targetPreprocessor, ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)
 		{
 			Parameters = parameters;
 			Parameters.Freeze();
 			_sourcePreprocessor = sourcePreprocessor;
 			_targetPreprocessor = targetPreprocessor;
-			_parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignmentCorpus);
+			_maxCorpusCount = maxCorpusCount;
+			_parallelCorpus = corpus;
 			//_modelWeightTuner = new MiraModelWeightTuner();
 			_modelWeightTuner = new SimplexModelWeightTuner {ProgressIncrementInterval = 10};
 			_tuneCorpusIndices = CreateTuneCorpus();
@@ -72,13 +71,15 @@ namespace SIL.Machine.Translation.Thot
 			int corpusCount = 0;
 			var emptyIndices = new HashSet<int>();
 			int index = 0;
-			foreach (ParallelTextSegment segment in _parallelCorpus.Texts.SelectMany(t => t.Segments))
+			foreach (ParallelTextSegment segment in _parallelCorpus.Segments)
 			{
 				if (segment.IsEmpty)
 					emptyIndices.Add(index);
 				else
 					corpusCount++;
 				index++;
+				if (corpusCount == _maxCorpusCount)
+					break;
 			}
 			Stats.TrainedSegmentCount = corpusCount;
 			int tuneCorpusCount = Math.Min((int)(corpusCount * 0.1), 1000);
@@ -112,8 +113,7 @@ namespace SIL.Machine.Translation.Thot
 
 			var tuneSourceCorpus = new List<IReadOnlyList<string>>(_tuneCorpusIndices.Count);
 			var tuneTargetCorpus = new List<IReadOnlyList<string>>(_tuneCorpusIndices.Count);
-			foreach (ParallelTextSegment segment in _parallelCorpus.Segments
-				.Where((s, i) => _tuneCorpusIndices.Contains(i)))
+			foreach (ParallelTextSegment segment in GetTuningSegments())
 			{
 				tuneSourceCorpus.Add(segment.SourceSegment.Select(w => _sourcePreprocessor(w)).ToArray());
 				tuneTargetCorpus.Add(segment.TargetSegment.Select(w => _targetPreprocessor(w)).ToArray());
@@ -205,11 +205,10 @@ namespace SIL.Machine.Translation.Thot
 			int wordCount = 0;
 			var ngrams = new Dictionary<Ngram<string>, int>();
 			var vocab = new HashSet<string>();
-			foreach (TextSegment segment in _parallelCorpus.TargetSegments
-				.Where((s, i) => !_tuneCorpusIndices.Contains(i) && !s.IsEmpty))
+			foreach (ParallelTextSegment segment in GetTrainingSegments())
 			{
 				var words = new List<string> { "<s>" };
-				foreach (string word in segment.Segment.Select(w => _targetPreprocessor(w)))
+				foreach (string word in segment.TargetSegment.Select(w => _targetPreprocessor(w)))
 				{
 					if (vocab.Contains(word))
 					{
@@ -390,8 +389,7 @@ namespace SIL.Machine.Translation.Thot
 		{
 			using (var swAlignModel = new ThotSingleWordAlignmentModel(swmPrefix, true))
 			{
-				foreach (ParallelTextSegment segment in corpus.Segments
-					.Where((s, i) => !_tuneCorpusIndices.Contains(i) && !s.IsEmpty))
+				foreach (ParallelTextSegment segment in GetTrainingSegments())
 				{
 					string[] sourceTokens = segment.SourceSegment.Select(sourcePreprocessor).ToArray();
 					string[] targetTokens = segment.TargetSegment.Select(targetPreprocessor).ToArray();
@@ -416,8 +414,7 @@ namespace SIL.Machine.Translation.Thot
 			using (var swAlignModel = new ThotSingleWordAlignmentModel(swmPrefix))
 			using (var writer = new StreamWriter(File.Open(fileName, FileMode.Create)))
 			{
-				foreach (ParallelTextSegment segment in corpus.Segments
-					.Where((s, i) => !_tuneCorpusIndices.Contains(i) && !s.IsEmpty))
+				foreach (ParallelTextSegment segment in GetTrainingSegments())
 				{
 					string[] sourceTokens = segment.SourceSegment.Select(sourcePreprocessor).ToArray();
 					string[] targetTokens = segment.TargetSegment.Select(targetPreprocessor).ToArray();
@@ -600,6 +597,34 @@ namespace SIL.Machine.Translation.Thot
 			{
 				for (int i = 0; i < tuneSourceCorpus.Count; i++)
 					engine.TrainSegment(tuneSourceCorpus[i], tuneTargetCorpus[i]);
+			}
+		}
+
+		private IEnumerable<ParallelTextSegment> GetTrainingSegments()
+		{
+			return GetSegments(i => !_tuneCorpusIndices.Contains(i));
+		}
+
+		private IEnumerable<ParallelTextSegment> GetTuningSegments()
+		{
+			return GetSegments(i => _tuneCorpusIndices.Contains(i));
+		}
+
+		private IEnumerable<ParallelTextSegment> GetSegments(Func<int, bool> filter)
+		{
+			int corpusCount = 0;
+			int index = 0;
+			foreach (ParallelTextSegment segment in _parallelCorpus.Segments)
+			{
+				if (!segment.IsEmpty)
+				{
+					if (filter(index))
+						yield return segment;
+					corpusCount++;
+				}
+				index++;
+				if (corpusCount == _maxCorpusCount)
+					break;
 			}
 		}
 

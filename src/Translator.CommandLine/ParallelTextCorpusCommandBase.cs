@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace SIL.Machine.Translation
 {
-	public abstract class ParallelTextCommandBase : CommandBase
+	public abstract class ParallelTextCorpusCommandBase : CommandBase
 	{
 		private readonly CommandOption _sourceOption;
 		private readonly CommandOption _targetOption;
@@ -17,8 +17,9 @@ namespace SIL.Machine.Translation
 		private readonly CommandOption _targetWordTokenizerOption;
 		private readonly CommandOption _includeOption;
 		private readonly CommandOption _excludeOption;
+		private readonly CommandOption _maxCorpusSizeOption;
 
-		protected ParallelTextCommandBase(bool supportAlignmentsCorpus)
+		protected ParallelTextCorpusCommandBase(bool supportAlignmentsCorpus)
 		{
 			_sourceOption = Option("-s|--source <corpus>", "The source corpus.", CommandOptionType.SingleValue);
 			_targetOption = Option("-t|--target <corpus>", "The target corpus.", CommandOptionType.SingleValue);
@@ -33,11 +34,15 @@ namespace SIL.Machine.Translation
 				CommandOptionType.SingleValue);
 			_includeOption = Option("-i|--include <texts>", "The texts to include.", CommandOptionType.MultipleValue);
 			_excludeOption = Option("-e|--exclude <texts>", "The texts to exclude.", CommandOptionType.MultipleValue);
+			_maxCorpusSizeOption = Option("-m|--max-size <size>", "The maximum parallel corpus size.",
+				CommandOptionType.SingleValue);
 		}
 
 		protected ITextCorpus SourceCorpus { get; private set; }
 		protected ITextCorpus TargetCorpus { get; private set; }
 		protected ITextAlignmentCorpus AlignmentsCorpus { get; private set; }
+		protected ParallelTextCorpus ParallelCorpus { get; private set; }
+		protected int MaxParallelCorpusCount { get; private set; } = int.MaxValue;
 
 		protected override int ExecuteCommand()
 		{
@@ -85,6 +90,16 @@ namespace SIL.Machine.Translation
 				return 1;
 			}
 
+			if (_maxCorpusSizeOption.HasValue())
+			{
+				if (!int.TryParse(_maxCorpusSizeOption.Value(), out int maxCorpusSize) || maxCorpusSize <= 0)
+				{
+					Out.WriteLine("The specified maximum corpus size is invalid.");
+					return 1;
+				}
+				MaxParallelCorpusCount = maxCorpusSize;
+			}
+
 			StringTokenizer sourceWordTokenizer = CreateWordTokenizer(_sourceWordTokenizerOption.Value());
 			StringTokenizer targetWordTokenizer = CreateWordTokenizer(_targetWordTokenizerOption.Value());
 
@@ -124,7 +139,14 @@ namespace SIL.Machine.Translation
 				}
 			}
 
+			ParallelCorpus = new ParallelTextCorpus(SourceCorpus, TargetCorpus, AlignmentsCorpus);
+
 			return 0;
+		}
+
+		protected int GetParallelCorpusCount()
+		{
+			return Math.Min(MaxParallelCorpusCount, ParallelCorpus.Segments.Count(s => !s.IsEmpty));
 		}
 
 		private static bool ValidateCorpusOption(string value, out string type, out string path)

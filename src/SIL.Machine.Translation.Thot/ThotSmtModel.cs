@@ -25,8 +25,10 @@ namespace SIL.Machine.Translation.Thot
 
 			Handle = Thot.LoadSmtModel(Parameters);
 
-			_singleWordAlignmentModel = new ThotSingleWordAlignmentModel(Thot.smtModel_getSingleWordAlignmentModel(Handle));
-			_inverseSingleWordAlignmentModel = new ThotSingleWordAlignmentModel(Thot.smtModel_getInverseSingleWordAlignmentModel(Handle));
+			_singleWordAlignmentModel = new ThotSingleWordAlignmentModel(
+				Thot.smtModel_getSingleWordAlignmentModel(Handle));
+			_inverseSingleWordAlignmentModel = new ThotSingleWordAlignmentModel(
+				Thot.smtModel_getInverseSingleWordAlignmentModel(Handle));
 		}
 
 		public string ConfigFileName { get; }
@@ -70,14 +72,17 @@ namespace SIL.Machine.Translation.Thot
 			Thot.smtModel_saveModels(Handle);
 		}
 
-		public ISmtBatchTrainer CreateBatchTrainer(Func<string, string> sourcePreprocessor, ITextCorpus sourceCorpus, Func<string, string> targetPreprocessor,
-			ITextCorpus targetCorpus, ITextAlignmentCorpus alignmentCorpus = null)
+		public ISmtBatchTrainer CreateBatchTrainer(Func<string, string> sourcePreprocessor, ITextCorpus sourceCorpus,
+			Func<string, string> targetPreprocessor, ITextCorpus targetCorpus,
+			ITextAlignmentCorpus alignmentCorpus = null)
 		{
 			CheckDisposed();
 
+			var corpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignmentCorpus);
+
 			return string.IsNullOrEmpty(ConfigFileName)
-				? new BatchTrainer(this, Parameters, sourcePreprocessor, sourceCorpus, targetPreprocessor, targetCorpus, alignmentCorpus)
-				: new BatchTrainer(this, ConfigFileName, sourcePreprocessor, sourceCorpus, targetPreprocessor, targetCorpus, alignmentCorpus);
+				? new BatchTrainer(this, Parameters, sourcePreprocessor, targetPreprocessor, corpus)
+				: new BatchTrainer(this, ConfigFileName, sourcePreprocessor, targetPreprocessor, corpus);
 		}
 
 		internal void RemoveEngine(ThotSmtEngine engine)
@@ -102,16 +107,17 @@ namespace SIL.Machine.Translation.Thot
 		{
 			private readonly ThotSmtModel _smtModel;
 
-			public BatchTrainer(ThotSmtModel smtModel, string cfgFileName, Func<string, string> sourcePreprocessor, ITextCorpus sourceCorpus,
-				Func<string, string> targetPreprocessor, ITextCorpus targetCorpus, ITextAlignmentCorpus alignmentCorpus = null)
-				: base(cfgFileName, sourcePreprocessor, sourceCorpus, targetPreprocessor, targetCorpus, alignmentCorpus)
+			public BatchTrainer(ThotSmtModel smtModel, string cfgFileName, Func<string, string> sourcePreprocessor,
+				Func<string, string> targetPreprocessor, ParallelTextCorpus corpus)
+				: base(cfgFileName, sourcePreprocessor, targetPreprocessor, corpus)
 			{
 				_smtModel = smtModel;
 			}
 
-			public BatchTrainer(ThotSmtModel smtModel, ThotSmtParameters parameters, Func<string, string> sourcePreprocessor, ITextCorpus sourceCorpus,
-				Func<string, string> targetPreprocessor, ITextCorpus targetCorpus, ITextAlignmentCorpus alignmentCorpus = null)
-				: base(parameters, sourcePreprocessor, sourceCorpus, targetPreprocessor, targetCorpus, alignmentCorpus)
+			public BatchTrainer(ThotSmtModel smtModel, ThotSmtParameters parameters,
+				Func<string, string> sourcePreprocessor, Func<string, string> targetPreprocessor,
+				ParallelTextCorpus corpus)
+				: base(parameters, sourcePreprocessor, targetPreprocessor, corpus)
 			{
 				_smtModel = smtModel;
 			}
@@ -127,7 +133,8 @@ namespace SIL.Machine.Translation.Thot
 				_smtModel.Parameters = Parameters;
 				_smtModel.Handle = Thot.LoadSmtModel(_smtModel.Parameters);
 				_smtModel._singleWordAlignmentModel.Handle = Thot.smtModel_getSingleWordAlignmentModel(_smtModel.Handle);
-				_smtModel._inverseSingleWordAlignmentModel.Handle = Thot.smtModel_getInverseSingleWordAlignmentModel(_smtModel.Handle);
+				_smtModel._inverseSingleWordAlignmentModel.Handle =
+					Thot.smtModel_getInverseSingleWordAlignmentModel(_smtModel.Handle);
 				foreach (ThotSmtEngine engine in _smtModel._engines)
 					engine.LoadHandle();
 			}

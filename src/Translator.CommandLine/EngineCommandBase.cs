@@ -3,7 +3,7 @@ using System.IO;
 
 namespace SIL.Machine.Translation
 {
-	public abstract class EngineCommandBase : ParallelTextCommandBase
+	public abstract class EngineCommandBase : ParallelTextCorpusCommandBase
 	{
 		private readonly CommandArgument _engineArgument;
 

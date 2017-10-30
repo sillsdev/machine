@@ -73,8 +73,7 @@ namespace SIL.Machine.Translation
 
 			var suggester = new PhraseTranslationSuggester(confidence);
 
-			var corpus = new ParallelTextCorpus(SourceCorpus, TargetCorpus);
-			int totalSegmentCount = corpus.Texts.SelectMany(t => t.Segments).Count(s => !s.IsEmpty);
+			int parallelCorpusCount = GetParallelCorpusCount();
 
 			Stopwatch watch = Stopwatch.StartNew();
 			Out.Write("Testing... ");
@@ -83,7 +82,7 @@ namespace SIL.Machine.Translation
 			using (IInteractiveSmtModel smtModel = new ThotSmtModel(EngineConfigFileName))
 			using (IInteractiveSmtEngine engine = smtModel.CreateInteractiveEngine())
 			{
-				foreach (ParallelText text in corpus.Texts)
+				foreach (ParallelText text in ParallelCorpus.Texts)
 				{
 					using (StreamWriter traceWriter = CreateTraceWriter(text))
 					{
@@ -91,9 +90,13 @@ namespace SIL.Machine.Translation
 						{
 							TestSegment(engine, suggester, n, segment, traceWriter);
 							segmentCount++;
-							progress.Report((double) segmentCount / totalSegmentCount);
+							progress.Report((double) segmentCount / parallelCorpusCount);
+							if (segmentCount == MaxParallelCorpusCount)
+								break;
 						}
 					}
+					if (segmentCount == MaxParallelCorpusCount)
+						break;
 				}
 			}
 			Out.WriteLine("done.");
