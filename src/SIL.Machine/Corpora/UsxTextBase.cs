@@ -27,83 +27,75 @@ namespace SIL.Machine.Corpora
 				using (IStreamContainer streamContainer = CreateStreamContainer())
 				using (Stream stream = streamContainer.OpenStream())
 				{
-					bool inVerse = false;
-					int chapter = 0, verse = 0;
-					var sb = new StringBuilder();
-
+					var ctxt = new ParseContext();
 					var doc = XDocument.Load(stream);
 					foreach (XElement elem in doc.Root.Elements())
 					{
 						switch (elem.Name.LocalName)
 						{
 							case "chapter":
-								if (inVerse)
-								{
-									yield return CreateTextSegment(chapter, verse, sb.ToString());
-									sb.Clear();
-									inVerse = false;
-								}
+								if (ctxt.IsInVerse)
+									yield return CreateTextSegment(ctxt);
 								int nextChapter = (int) elem.Attribute("number");
-								if (nextChapter < chapter)
-									yield break;
-								chapter = nextChapter;
-								verse = 0;
+								if (nextChapter < ctxt.Chapter)
+									throw new InvalidOperationException("The chapters occurred out of order.");
+								ctxt.Chapter = nextChapter;
+								ctxt.Verse = 0;
 								break;
 
 							case "para":
 								if (!IsVersePara(elem))
 									continue;
-
-								foreach (XNode node in elem.Nodes())
-								{
-									switch (node)
-									{
-										case XElement e:
-											switch (e.Name.LocalName)
-											{
-												case "verse":
-													if (inVerse)
-													{
-														yield return CreateTextSegment(chapter, verse, sb.ToString());
-														sb.Clear();
-													}
-													else
-													{
-														inVerse = true;
-													}
-
-													var verseNumberStr = (string) e.Attribute("number");
-													int index = verseNumberStr.IndexOf("-", StringComparison.Ordinal);
-													if (index > -1)
-														verseNumberStr = verseNumberStr.Substring(0, index);
-													int nextVerse = int.Parse(verseNumberStr,
-														CultureInfo.InvariantCulture);  
-													if (nextVerse < verse)
-														yield break;
-													verse = nextVerse;
-													break;
-
-												case "char":
-													if (inVerse)
-														sb.Append(e.Value);
-													break;
-											}
-											break;
-
-										case XText text:
-											if (inVerse)
-												sb.Append(text.Value);
-											break;
-									}
-								}
-								sb.Append("\n");
+								foreach (TextSegment segment in ParseElement(elem, ctxt))
+									yield return segment;
+								if (ctxt.IsInVerse)
+									ctxt.VerseBuilder.Append("\n");
 								break;
 						}
 					}
 
-					if (inVerse)
-						yield return CreateTextSegment(chapter, verse, sb.ToString());
+					if (ctxt.IsInVerse)
+						yield return CreateTextSegment(ctxt);
 
+				}
+			}
+		}
+
+		private IEnumerable<TextSegment> ParseElement(XElement elem, ParseContext ctxt)
+		{
+			foreach (XNode node in elem.Nodes())
+			{
+				switch (node)
+				{
+					case XElement e:
+						switch (e.Name.LocalName)
+						{
+							case "verse":
+								if (ctxt.IsInVerse)
+									yield return CreateTextSegment(ctxt);
+
+								var verseNumberStr = (string) e.Attribute("number");
+								int index = verseNumberStr.IndexOf("-", StringComparison.Ordinal);
+								if (index > -1)
+									verseNumberStr = verseNumberStr.Substring(0, index);
+								int nextVerse = int.Parse(verseNumberStr,
+									CultureInfo.InvariantCulture);
+								if (nextVerse < ctxt.Verse)
+									throw new InvalidOperationException("The verses occurred out of order.");
+								ctxt.Verse = nextVerse;
+								break;
+
+							case "char":
+								foreach (TextSegment segment in ParseElement(e, ctxt))
+									yield return segment;
+								break;
+						}
+						break;
+
+					case XText text:
+						if (ctxt.IsInVerse)
+							ctxt.VerseBuilder.Append(text.Value);
+						break;
 				}
 			}
 		}
@@ -126,6 +118,21 @@ namespace SIL.Machine.Corpora
 		private static bool IsNumberedStyle(string stylePrefix, string style)
 		{
 			return style.StartsWith(stylePrefix) && int.TryParse(style.Substring(stylePrefix.Length), out _);
+		}
+
+		private TextSegment CreateTextSegment(ParseContext ctxt)
+		{
+			TextSegment segment = CreateTextSegment(ctxt.Chapter, ctxt.Verse, ctxt.VerseBuilder.ToString());
+			ctxt.VerseBuilder.Clear();
+			return segment;
+		}
+
+		private class ParseContext
+		{
+			public StringBuilder VerseBuilder { get; } = new StringBuilder();
+			public int Chapter { get; set; }
+			public int Verse { get; set; }
+			public bool IsInVerse => Chapter > 0 && Verse > 0;
 		}
 	}
 }
