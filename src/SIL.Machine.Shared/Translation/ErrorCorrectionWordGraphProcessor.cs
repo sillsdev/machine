@@ -1,4 +1,5 @@
 ﻿using SIL.Machine.DataStructures;
+using SIL.Machine.Statistics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,7 +50,7 @@ namespace SIL.Machine.Translation
 			for (int i = 0; i < _wordGraph.StateCount; i++)
 			{
 				_stateEcmScoreInfos.Add(new EcmScoreInfo());
-				_stateWordGraphScores.Add(0);
+				_stateWordGraphScores.Add(LogSpace.Zero);
 				_stateBestScores.Add(new List<double>());
 				_stateBestPrevArcs.Add(new List<int>());
 			}
@@ -134,7 +135,8 @@ namespace SIL.Machine.Translation
 
 			_stateEcmScoreInfos[arc.NextState].UpdatePositions(prevEsi, positions);
 
-			_stateWordGraphScores[arc.NextState] = wordGraphScore;
+			if (wordGraphScore > _stateWordGraphScores[arc.NextState])
+				_stateWordGraphScores[arc.NextState] = wordGraphScore;
 		}
 
 		private void AddOrReplace<T>(List<T> list, int index, T item)
