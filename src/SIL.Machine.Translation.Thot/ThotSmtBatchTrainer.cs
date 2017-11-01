@@ -32,7 +32,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public ThotSmtBatchTrainer(string cfgFileName, Func<string, string> sourcePreprocessor,
 			Func<string, string> targetPreprocessor, ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)
-			: this(ThotSmtParameters.Load(cfgFileName), sourcePreprocessor, targetPreprocessor, corpus)
+			: this(ThotSmtParameters.Load(cfgFileName), sourcePreprocessor, targetPreprocessor, corpus, maxCorpusCount)
 		{
 			ConfigFileName = cfgFileName;
 		}
@@ -113,7 +113,7 @@ namespace SIL.Machine.Translation.Thot
 
 			var tuneSourceCorpus = new List<IReadOnlyList<string>>(_tuneCorpusIndices.Count);
 			var tuneTargetCorpus = new List<IReadOnlyList<string>>(_tuneCorpusIndices.Count);
-			foreach (ParallelTextSegment segment in GetTuningSegments())
+			foreach (ParallelTextSegment segment in GetTuningSegments(_parallelCorpus))
 			{
 				tuneSourceCorpus.Add(segment.SourceSegment.Select(w => _sourcePreprocessor(w)).ToArray());
 				tuneTargetCorpus.Add(segment.TargetSegment.Select(w => _targetPreprocessor(w)).ToArray());
@@ -155,7 +155,7 @@ namespace SIL.Machine.Translation.Thot
 				return;
 
 			string[] lines = File.ReadAllLines(ConfigFileName);
-			using (var writer = new StreamWriter(File.Open(ConfigFileName, FileMode.Create)))
+			using (var writer = new StreamWriter(ConfigFileName))
 			{
 				bool weightsWritten = false;
 				foreach (string line in lines)
@@ -205,7 +205,7 @@ namespace SIL.Machine.Translation.Thot
 			int wordCount = 0;
 			var ngrams = new Dictionary<Ngram<string>, int>();
 			var vocab = new HashSet<string>();
-			foreach (ParallelTextSegment segment in GetTrainingSegments())
+			foreach (ParallelTextSegment segment in GetTrainingSegments(_parallelCorpus))
 			{
 				var words = new List<string> { "<s>" };
 				foreach (string word in segment.TargetSegment.Select(w => _targetPreprocessor(w)))
@@ -234,7 +234,7 @@ namespace SIL.Machine.Translation.Thot
 				}
 			}
 
-			using (var writer = new StreamWriter(File.Open(lmPrefix, FileMode.Create)))
+			using (var writer = new StreamWriter(lmPrefix))
 			{
 				foreach (KeyValuePair<Ngram<string>, int> kvp in ngrams.OrderBy(kvp => kvp.Key.Length)
 					.ThenBy(kvp => string.Join(" ", kvp.Key)))
@@ -254,7 +254,7 @@ namespace SIL.Machine.Translation.Thot
 		private void WriteWordPredictionFile(string lmPrefix)
 		{
 			var rand = new Random(31415);
-			using (var writer = new StreamWriter(File.Open(lmPrefix + ".wp", FileMode.Create)))
+			using (var writer = new StreamWriter(lmPrefix + ".wp"))
 			{
 				foreach (TextSegment segment in _parallelCorpus.TargetSegments
 					.Where((s, i) => !_tuneCorpusIndices.Contains(i) && !s.IsEmpty)
@@ -389,7 +389,7 @@ namespace SIL.Machine.Translation.Thot
 		{
 			using (var swAlignModel = new ThotSingleWordAlignmentModel(swmPrefix, true))
 			{
-				foreach (ParallelTextSegment segment in GetTrainingSegments())
+				foreach (ParallelTextSegment segment in GetTrainingSegments(corpus))
 				{
 					string[] sourceTokens = segment.SourceSegment.Select(sourcePreprocessor).ToArray();
 					string[] targetTokens = segment.TargetSegment.Select(targetPreprocessor).ToArray();
@@ -412,9 +412,9 @@ namespace SIL.Machine.Translation.Thot
 			reporter.Step($"Generating best {name} alignments");
 
 			using (var swAlignModel = new ThotSingleWordAlignmentModel(swmPrefix))
-			using (var writer = new StreamWriter(File.Open(fileName, FileMode.Create)))
+			using (var writer = new StreamWriter(fileName))
 			{
-				foreach (ParallelTextSegment segment in GetTrainingSegments())
+				foreach (ParallelTextSegment segment in GetTrainingSegments(corpus))
 				{
 					string[] sourceTokens = segment.SourceSegment.Select(sourcePreprocessor).ToArray();
 					string[] targetTokens = segment.TargetSegment.Select(targetPreprocessor).ToArray();
@@ -432,7 +432,7 @@ namespace SIL.Machine.Translation.Thot
 		private static void FilterPhraseTableNBest(string fileName, int n)
 		{
 			var entries = new List<Tuple<string, string, float, float>>();
-			using (var reader = new StreamReader(File.Open(fileName, FileMode.Open)))
+			using (var reader = new StreamReader(fileName))
 			{
 				string line;
 				while ((line = reader.ReadLine()) != null)
@@ -447,7 +447,7 @@ namespace SIL.Machine.Translation.Thot
 			}
 
 			//TODO: do not sort phrase table in memory
-			using (var writer = new StreamWriter(File.Open(fileName, FileMode.Create)))
+			using (var writer = new StreamWriter(fileName))
 			{
 				foreach (IGrouping<string, Tuple<string, string, float, float>> g in entries.GroupBy(e => e.Item2)
 					.OrderBy(g => g.Key.Split(' ').Length).ThenBy(g => g.Key))
@@ -564,8 +564,8 @@ namespace SIL.Machine.Translation.Thot
 			}
 
 			string tempFileName = fileName + ".temp";
-			using (var reader = new StreamReader(File.Open(fileName, FileMode.Open)))
-			using (var writer = new StreamWriter(File.Open(tempFileName, FileMode.Create)))
+			using (var reader = new StreamReader(fileName))
+			using (var writer = new StreamWriter(tempFileName))
 			{
 				string line;
 				while ((line = reader.ReadLine()) != null)
@@ -600,21 +600,21 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private IEnumerable<ParallelTextSegment> GetTrainingSegments()
+		private IEnumerable<ParallelTextSegment> GetTrainingSegments(ParallelTextCorpus corpus)
 		{
-			return GetSegments(i => !_tuneCorpusIndices.Contains(i));
+			return GetSegments(corpus, i => !_tuneCorpusIndices.Contains(i));
 		}
 
-		private IEnumerable<ParallelTextSegment> GetTuningSegments()
+		private IEnumerable<ParallelTextSegment> GetTuningSegments(ParallelTextCorpus corpus)
 		{
-			return GetSegments(i => _tuneCorpusIndices.Contains(i));
+			return GetSegments(corpus, i => _tuneCorpusIndices.Contains(i));
 		}
 
-		private IEnumerable<ParallelTextSegment> GetSegments(Func<int, bool> filter)
+		private IEnumerable<ParallelTextSegment> GetSegments(ParallelTextCorpus corpus, Func<int, bool> filter)
 		{
 			int corpusCount = 0;
 			int index = 0;
-			foreach (ParallelTextSegment segment in _parallelCorpus.Segments)
+			foreach (ParallelTextSegment segment in corpus.Segments)
 			{
 				if (!segment.IsEmpty)
 				{
