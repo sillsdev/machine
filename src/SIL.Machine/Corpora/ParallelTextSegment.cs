@@ -6,14 +6,17 @@ namespace SIL.Machine.Corpora
 {
 	public class ParallelTextSegment
 	{
-		public ParallelTextSegment(TextSegmentRef segRef, IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
-			IEnumerable<(int SourceIndex, int TargetIndex)> alignedWords = null)
+		public ParallelTextSegment(ParallelText text, TextSegmentRef segRef, IReadOnlyList<string> sourceSegment,
+			IReadOnlyList<string> targetSegment, IEnumerable<(int SourceIndex, int TargetIndex)> alignedWords = null)
 		{
+			Text = text;
 			SegmentRef = segRef;
 			SourceSegment = sourceSegment;
 			TargetSegment = targetSegment;
 			AlignedWords = alignedWords?.ToArray();
 		}
+
+		public ParallelText Text { get; }
 
 		public TextSegmentRef SegmentRef { get; }
 

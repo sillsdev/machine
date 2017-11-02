@@ -421,7 +421,7 @@ namespace SIL.Machine.Translation.Thot
 					WordAlignmentMatrix waMatrix = swAlignModel.GetBestAlignment(sourceTokens, targetTokens,
 						segment.CreateAlignmentMatrix(true));
 
-					writer.Write("#\n");
+					writer.Write($"# {segment.Text.Id} {segment.SegmentRef}\n");
 					writer.Write(waMatrix.ToGizaFormat(sourceTokens, targetTokens));
 
 					reporter.CheckCanceled();
