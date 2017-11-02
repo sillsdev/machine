@@ -39,6 +39,11 @@ namespace SIL.Machine.Translation
 			_phrases.Add(new PhraseInfo(sourceSegmentRange, _words.Count, alignment));
 		}
 
+		public void SetConfidence(int index, double confidence)
+		{
+			_confidences[index] = confidence;
+		}
+
 		public int CorrectPrefix(IEnumerable<EditOperation> wordOps, IEnumerable<EditOperation> charOps,
 			string[] prefix, bool isLastWordComplete)
 		{

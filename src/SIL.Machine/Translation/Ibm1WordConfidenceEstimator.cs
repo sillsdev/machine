@@ -1,5 +1,7 @@
-﻿using System;
+﻿using SIL.Machine.Annotations;
+using System;
 using System.Collections.Generic;
+using static SIL.Machine.Translation.TranslationResultBuilder;
 
 namespace SIL.Machine.Translation
 {
@@ -12,29 +14,44 @@ namespace SIL.Machine.Translation
 			_getTranslationProb = getTranslationProb;
 		}
 
+		public bool RestrictToPhrase { get; set; }
+
 		public void Estimate(IReadOnlyList<string> sourceSegment, WordGraph wordGraph)
 		{
+			var range = Range<int>.Create(0, sourceSegment.Count);
 			foreach (WordGraphArc arc in wordGraph.Arcs)
 			{
+				if (RestrictToPhrase)
+					range = arc.SourceSegmentRange;
+
 				for (int k = 0; k < arc.Words.Count; k++)
-					arc.WordConfidences[k] = GetConfidence(sourceSegment, arc.Words[k]);
+					arc.WordConfidences[k] = GetConfidence(sourceSegment, range, arc.Words[k]);
 			}
 		}
 
-		public IReadOnlyList<double> Estimate(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
+		public void Estimate(IReadOnlyList<string> sourceSegment, TranslationResultBuilder builder)
 		{
-			var confidences = new double[targetSegment.Count];
-			for (int j = 0; j < targetSegment.Count; j++)
-				confidences[j] = GetConfidence(sourceSegment, targetSegment[j]);
-			return confidences;
+			var range = Range<int>.Create(0, sourceSegment.Count);
+			int startIndex = 0;
+			foreach (PhraseInfo phrase in builder.Phrases)
+			{
+				if (RestrictToPhrase)
+					range = phrase.SourceSegmentRange;
+
+				for (int j = startIndex; j < phrase.TargetCut; j++)
+				{
+					double confidence = GetConfidence(sourceSegment, range, builder.Words[j]);
+					builder.SetConfidence(j, confidence);
+				}
+			}
 		}
 
-		private double GetConfidence(IReadOnlyList<string> sourceSegment, string targetWord)
+		private double GetConfidence(IReadOnlyList<string> sourceSegment, Range<int> range, string targetWord)
 		{
 			double maxConfidence = _getTranslationProb(null, targetWord);
-			foreach (string sourceWord in sourceSegment)
+			for (int i = range.Start; i < range.End; i++)
 			{
-				double confidence = _getTranslationProb(sourceWord, targetWord);
+				double confidence = _getTranslationProb(sourceSegment[i], targetWord);
 				if (confidence > maxConfidence)
 					maxConfidence = confidence;
 			}

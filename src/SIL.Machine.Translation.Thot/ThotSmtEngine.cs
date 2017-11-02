@@ -208,7 +208,6 @@ namespace SIL.Machine.Translation.Thot
 			IReadOnlyList<Tuple<int, int>> sourceSegmentation = GetSourceSegmentation(dataPtr, phraseCount);
 			IReadOnlyList<int> targetSegmentCuts = GetTargetSegmentCuts(dataPtr, phraseCount);
 			ISet<int> targetUnknownWords = GetTargetUnknownWords(dataPtr, targetSegment.Count);
-			IReadOnlyList<double> confidences = _confidenceEstimator.Estimate(sourceSegment, targetSegment);
 
 			int trgPhraseStartIndex = 0;
 			for (int k = 0; k < phraseCount; k++)
@@ -220,7 +219,7 @@ namespace SIL.Machine.Translation.Thot
 				for (int j = trgPhraseStartIndex; j < targetCut; j++)
 				{
 					string targetWord = targetSegment[j];
-					builder.AppendWord(targetWord, confidences[j], targetUnknownWords.Contains(j));
+					builder.AppendWord(targetWord, isUnknown: targetUnknownWords.Contains(j));
 				}
 
 				int srcPhraseLen = sourceEndIndex - sourceStartIndex;
@@ -244,6 +243,8 @@ namespace SIL.Machine.Translation.Thot
 				trgPhraseStartIndex += trgPhraseLen;
 			}
 
+			_confidenceEstimator.Estimate(sourceSegment, builder);
+
 			return builder.ToResult(sourceSegment);
 		}
 
@@ -251,7 +252,7 @@ namespace SIL.Machine.Translation.Thot
 		{
 			int sizeOfPtr = Marshal.SizeOf<IntPtr>();
 			int sizeOfUInt = Marshal.SizeOf<uint>();
-			IntPtr nativeSourceSegmentation = Marshal.AllocHGlobal((int)phraseCount * sizeOfPtr);
+			IntPtr nativeSourceSegmentation = Marshal.AllocHGlobal((int) phraseCount * sizeOfPtr);
 			for (int i = 0; i < phraseCount; i++)
 			{
 				IntPtr array = Marshal.AllocHGlobal(2 * sizeOfUInt);
