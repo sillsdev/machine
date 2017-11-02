@@ -12,7 +12,7 @@ namespace SIL.Machine.Corpora
 			_texts = texts.ToDictionary(t => t.Id);
 		}
 
-		public IEnumerable<IText> Texts => _texts.Values;
+		public IEnumerable<IText> Texts => _texts.Values.OrderBy(t => t.Id);
 
 		public bool TryGetText(string id, out IText text)
 		{
