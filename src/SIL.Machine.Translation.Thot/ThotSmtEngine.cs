@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using SIL.ObjectModel;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Translation.Thot
 {
@@ -146,8 +147,8 @@ namespace SIL.Machine.Translation.Thot
 					waMatrix = _segmentAligner.GetBestAlignment(srcPhrase, words);
 				}
 
-				arcs.Add(new WordGraphArc(predStateIndex, succStateIndex, score, words, waMatrix, srcStartIndex,
-					srcEndIndex, isUnknown));
+				arcs.Add(new WordGraphArc(predStateIndex, succStateIndex, score, words, waMatrix,
+					Range<int>.Create(srcStartIndex, srcEndIndex + 1), isUnknown));
 			}
 
 			var wordGraph = new WordGraph(arcs, finalStates, initialStateScore);
@@ -213,17 +214,17 @@ namespace SIL.Machine.Translation.Thot
 			for (int k = 0; k < phraseCount; k++)
 			{
 				int sourceStartIndex = sourceSegmentation[k].Item1 - 1;
-				int sourceEndIndex = sourceSegmentation[k].Item2 - 1;
-				int targetCut = targetSegmentCuts[k] - 1;
+				int sourceEndIndex = sourceSegmentation[k].Item2;
+				int targetCut = targetSegmentCuts[k];
 
-				for (int j = trgPhraseStartIndex; j <= targetCut; j++)
+				for (int j = trgPhraseStartIndex; j < targetCut; j++)
 				{
 					string targetWord = targetSegment[j];
 					builder.AppendWord(targetWord, confidences[j], targetUnknownWords.Contains(j));
 				}
 
-				int srcPhraseLen = sourceEndIndex - sourceStartIndex + 1;
-				int trgPhraseLen = targetCut - trgPhraseStartIndex + 1;
+				int srcPhraseLen = sourceEndIndex - sourceStartIndex;
+				int trgPhraseLen = targetCut - trgPhraseStartIndex;
 				WordAlignmentMatrix waMatrix;
 				if (srcPhraseLen == 1 && trgPhraseLen == 1)
 				{
@@ -239,7 +240,7 @@ namespace SIL.Machine.Translation.Thot
 						trgPhrase[j] = targetSegment[trgPhraseStartIndex + j];
 					waMatrix = _segmentAligner.GetBestAlignment(srcPhrase, trgPhrase);
 				}
-				builder.MarkPhrase(sourceStartIndex, sourceEndIndex, waMatrix);
+				builder.MarkPhrase(Range<int>.Create(sourceStartIndex, sourceEndIndex), waMatrix);
 				trgPhraseStartIndex += trgPhraseLen;
 			}
 

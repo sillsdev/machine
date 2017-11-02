@@ -7,6 +7,7 @@ using SIL.Machine.WebApi.Dtos;
 using SIL.Machine.WebApi.Server.DataAccess;
 using SIL.Machine.WebApi.Server.Models;
 using SIL.Machine.WebApi.Server.Services;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.WebApi.Server.Controllers
 {
@@ -131,11 +132,11 @@ namespace SIL.Machine.WebApi.Server.Controllers
 				NextState = arc.NextState,
 				Score = (float) arc.Score,
 				Words = Enumerable.Range(0, arc.Words.Count)
-					.Select(j => arc.Alignment.RecaseTargetWord(sourceSegment, arc.SourceStartIndex, arc.Words, j))
+					.Select(j =>
+						arc.Alignment.RecaseTargetWord(sourceSegment, arc.SourceSegmentRange.Start, arc.Words, j))
 					.ToArray(),
 				Confidences = arc.WordConfidences.Select(c => (float) c).ToArray(),
-				SourceStartIndex = arc.SourceStartIndex,
-				SourceEndIndex = arc.SourceEndIndex,
+				SourceSegmentRange = CreateDto(arc.SourceSegmentRange),
 				IsUnknown = arc.IsUnknown,
 				Alignment = CreateDto(arc.Alignment)
 			};
@@ -166,6 +167,15 @@ namespace SIL.Machine.WebApi.Server.Controllers
 				IsShared = engine.IsShared,
 				Projects = engine.Projects.Select(projectId =>
 					Url.CreateLinkDto(RouteNames.Projects, projectId)).ToArray()
+			};
+		}
+
+		private static RangeDto CreateDto(Range<int> range)
+		{
+			return new RangeDto()
+			{
+				Start = range.Start,
+				End = range.End
 			};
 		}
 

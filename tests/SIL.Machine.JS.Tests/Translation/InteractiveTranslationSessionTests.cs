@@ -26,8 +26,7 @@ namespace SIL.Machine.Translation
 						Score = -22.4162f,
 						Words = new[] { "now", "It" },
 						Confidences = new[] { 0.00006755903f, 0.0116618536f },
-						SourceStartIndex = 0,
-						SourceEndIndex = 1,
+						SourceSegmentRange = new RangeDto() { Start = 0, End = 2 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -42,8 +41,7 @@ namespace SIL.Machine.Translation
 						Score = -23.5761f,
 						Words = new[] { "In", "your" },
 						Confidences = new[] { 0.355293363f, 0.0000941652761f },
-						SourceStartIndex = 0,
-						SourceEndIndex = 1,
+						SourceSegmentRange = new RangeDto() { Start = 0, End = 2 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -58,8 +56,7 @@ namespace SIL.Machine.Translation
 						Score = -11.1167f,
 						Words = new[] { "In", "the" },
 						Confidences = new[] { 0.355293363f, 0.5004668f },
-						SourceStartIndex = 0,
-						SourceEndIndex = 1,
+						SourceSegmentRange = new RangeDto() { Start = 0, End = 2 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -74,8 +71,7 @@ namespace SIL.Machine.Translation
 						Score = -13.7804f,
 						Words = new[] { "In" },
 						Confidences = new[] { 0.355293363f },
-						SourceStartIndex = 0,
-						SourceEndIndex = 0,
+						SourceSegmentRange = new RangeDto() { Start = 0, End = 1 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -89,8 +85,7 @@ namespace SIL.Machine.Translation
 						Score = -12.9695f,
 						Words = new[] { "beginning" },
 						Confidences = new[] { 0.348795831f },
-						SourceStartIndex = 2,
-						SourceEndIndex = 2,
+						SourceSegmentRange = new RangeDto() { Start = 2, End = 3 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -104,8 +99,7 @@ namespace SIL.Machine.Translation
 						Score = -7.68319f,
 						Words = new[] { "the", "beginning" },
 						Confidences = new[] { 0.5004668f, 0.348795831f },
-						SourceStartIndex = 1,
-						SourceEndIndex = 2,
+						SourceSegmentRange = new RangeDto() { Start = 1, End = 3 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -120,8 +114,7 @@ namespace SIL.Machine.Translation
 						Score = -14.4373f,
 						Words = new[] { "the" },
 						Confidences = new[] { 0.5004668f },
-						SourceStartIndex = 1,
-						SourceEndIndex = 1,
+						SourceSegmentRange = new RangeDto() { Start = 1, End = 2 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -135,8 +128,7 @@ namespace SIL.Machine.Translation
 						Score = -19.3042f,
 						Words = new[] { "his", "Word" },
 						Confidences = new[] { 0.00347203249f, 0.477621228f },
-						SourceStartIndex = 3,
-						SourceEndIndex = 4,
+						SourceSegmentRange = new RangeDto() { Start = 3, End = 5 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -151,8 +143,7 @@ namespace SIL.Machine.Translation
 						Score = -8.49148f,
 						Words = new[] { "the", "Word" },
 						Confidences = new[] { 0.346071422f, 0.477621228f },
-						SourceStartIndex = 3,
-						SourceEndIndex = 4,
+						SourceSegmentRange = new RangeDto() { Start = 3, End = 5 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -167,8 +158,7 @@ namespace SIL.Machine.Translation
 						Score = -15.2926f,
 						Words = new[] { "beginning" },
 						Confidences = new[] { 0.348795831f },
-						SourceStartIndex = 2,
-						SourceEndIndex = 2,
+						SourceSegmentRange = new RangeDto() { Start = 2, End = 3 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -182,8 +172,7 @@ namespace SIL.Machine.Translation
 						Score = -15.2926f,
 						Words = new[] { "beginning" },
 						Confidences = new[] { 0.348795831f },
-						SourceStartIndex = 2,
-						SourceEndIndex = 2,
+						SourceSegmentRange = new RangeDto() { Start = 2, End = 3 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -197,8 +186,7 @@ namespace SIL.Machine.Translation
 						Score = -14.3453f,
 						Words = new[] { "already" },
 						Confidences = new[] { 0.2259867f },
-						SourceStartIndex = 5,
-						SourceEndIndex = 5,
+						SourceSegmentRange = new RangeDto() { Start = 5, End = 6 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -212,8 +200,7 @@ namespace SIL.Machine.Translation
 						Score = -19.3042f,
 						Words = new[] { "his", "Word" },
 						Confidences = new[] { 0.00347203249f, 0.477621228f },
-						SourceStartIndex = 3,
-						SourceEndIndex = 4,
+						SourceSegmentRange = new RangeDto() { Start = 3, End = 5 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -228,8 +215,7 @@ namespace SIL.Machine.Translation
 						Score = -8.49148f,
 						Words = new[] { "the", "Word" },
 						Confidences = new[] { 0.346071422f, 0.477621228f },
-						SourceStartIndex = 3,
-						SourceEndIndex = 4,
+						SourceSegmentRange = new RangeDto() { Start = 3, End = 5 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -244,8 +230,7 @@ namespace SIL.Machine.Translation
 						Score = -19.3042f,
 						Words = new[] { "his", "Word" },
 						Confidences = new[] { 0.00347203249f, 0.477621228f },
-						SourceStartIndex = 3,
-						SourceEndIndex = 4,
+						SourceSegmentRange = new RangeDto() { Start = 3, End = 5 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -260,8 +245,7 @@ namespace SIL.Machine.Translation
 						Score = -8.49148f,
 						Words = new[] { "the", "Word" },
 						Confidences = new[] { 0.346071422f, 0.477621228f },
-						SourceStartIndex = 3,
-						SourceEndIndex = 4,
+						SourceSegmentRange = new RangeDto() { Start = 3, End = 5 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -276,8 +260,7 @@ namespace SIL.Machine.Translation
 						Score = -14.0526f,
 						Words = new[] { "already" },
 						Confidences = new[] { 0.2259867f },
-						SourceStartIndex = 5,
-						SourceEndIndex = 5,
+						SourceSegmentRange = new RangeDto() { Start = 5, End = 6 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -291,8 +274,7 @@ namespace SIL.Machine.Translation
 						Score = 51.1117f,
 						Words = new[] { "existía" },
 						Confidences = new[] { 0.0f },
-						SourceStartIndex = 6,
-						SourceEndIndex = 6,
+						SourceSegmentRange = new RangeDto() { Start = 6, End = 7 },
 						IsUnknown = true,
 						Alignment = new[]
 						{
@@ -306,8 +288,7 @@ namespace SIL.Machine.Translation
 						Score = -29.0049f,
 						Words = new[] { "you", "." },
 						Confidences = new[] { 0.005803475f, 0.317073762f },
-						SourceStartIndex = 7,
-						SourceEndIndex = 7,
+						SourceSegmentRange = new RangeDto() { Start = 7, End = 8 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -321,8 +302,7 @@ namespace SIL.Machine.Translation
 						Score = -27.7143f,
 						Words = new[] { "to" },
 						Confidences = new[] { 0.038961038f },
-						SourceStartIndex = 7,
-						SourceEndIndex = 7,
+						SourceSegmentRange = new RangeDto() { Start = 7, End = 8 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -336,8 +316,7 @@ namespace SIL.Machine.Translation
 						Score = -30.0868f,
 						Words = new[] { ".", "‘" },
 						Confidences = new[] { 0.317073762f, 0.06190489f },
-						SourceStartIndex = 7,
-						SourceEndIndex = 7,
+						SourceSegmentRange = new RangeDto() { Start = 7, End = 8 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -351,8 +330,7 @@ namespace SIL.Machine.Translation
 						Score = -30.1586f,
 						Words = new[] { ".", "he" },
 						Confidences = new[] { 0.317073762f, 0.06702433f },
-						SourceStartIndex = 7,
-						SourceEndIndex = 7,
+						SourceSegmentRange = new RangeDto() { Start = 7, End = 8 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -366,8 +344,7 @@ namespace SIL.Machine.Translation
 						Score = -28.2444f,
 						Words = new[] { ".", "the" },
 						Confidences = new[] { 0.317073762f, 0.115540564f },
-						SourceStartIndex = 7,
-						SourceEndIndex = 7,
+						SourceSegmentRange = new RangeDto() { Start = 7, End = 8 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -381,8 +358,7 @@ namespace SIL.Machine.Translation
 						Score = -23.8056f,
 						Words = new[] { "and" },
 						Confidences = new[] { 0.08047272f },
-						SourceStartIndex = 7,
-						SourceEndIndex = 7,
+						SourceSegmentRange = new RangeDto() { Start = 7, End = 8 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -396,8 +372,7 @@ namespace SIL.Machine.Translation
 						Score = -23.5842f,
 						Words = new[] { "the" },
 						Confidences = new[] { 0.09361572f },
-						SourceStartIndex = 7,
-						SourceEndIndex = 7,
+						SourceSegmentRange = new RangeDto() { Start = 7, End = 8 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -411,8 +386,7 @@ namespace SIL.Machine.Translation
 						Score = -18.8988f,
 						Words = new[] { "," },
 						Confidences = new[] { 0.1428188f },
-						SourceStartIndex = 7,
-						SourceEndIndex = 7,
+						SourceSegmentRange = new RangeDto() { Start = 7, End = 8 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -426,8 +400,7 @@ namespace SIL.Machine.Translation
 						Score = -11.9218f,
 						Words = new[] { ".", "’" },
 						Confidences = new[] { 0.317073762f, 0.018057242f },
-						SourceStartIndex = 7,
-						SourceEndIndex = 7,
+						SourceSegmentRange = new RangeDto() { Start = 7, End = 8 },
 						IsUnknown = false,
 						Alignment = new[]
 						{
@@ -441,8 +414,7 @@ namespace SIL.Machine.Translation
 						Score = -3.51852f,
 						Words = new[] { "." },
 						Confidences = new[] { 0.317073762f },
-						SourceStartIndex = 7,
-						SourceEndIndex = 7,
+						SourceSegmentRange = new RangeDto() { Start = 7, End = 8 },
 						IsUnknown = false,
 						Alignment = new[]
 						{

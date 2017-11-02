@@ -34,9 +34,9 @@ namespace SIL.Machine.Translation
 				_unknownWords.Add(_words.Count - 1);
 		}
 
-		public void MarkPhrase(int sourceStartIndex, int sourceEndIndex, WordAlignmentMatrix alignment)
+		public void MarkPhrase(Range<int> sourceSegmentRange, WordAlignmentMatrix alignment)
 		{
-			_phrases.Add(new PhraseInfo(sourceStartIndex, sourceEndIndex, _words.Count - 1, alignment));
+			_phrases.Add(new PhraseInfo(sourceSegmentRange, _words.Count, alignment));
 		}
 
 		public int CorrectPrefix(IEnumerable<EditOperation> wordOps, IEnumerable<EditOperation> charOps,
@@ -67,14 +67,14 @@ namespace SIL.Machine.Translation
 							for (int l = k; l < _phrases.Count; l++)
 								_phrases[l].TargetCut--;
 
-							if (_phrases[k].TargetCut < 0
+							if (_phrases[k].TargetCut <= 0
 								|| (k > 0 && _phrases[k].TargetCut == _phrases[k - 1].TargetCut))
 							{
 								_phrases.RemoveAt(k);
 								alignmentColsToCopy.Clear();
 								i = 0;
 							}
-							else if (j > _phrases[k].TargetCut)
+							else if (j >= _phrases[k].TargetCut)
 							{
 								ResizeAlignment(k, alignmentColsToCopy);
 								alignmentColsToCopy.Clear();
@@ -100,7 +100,7 @@ namespace SIL.Machine.Translation
 
 						i++;
 						j++;
-						if (k < _phrases.Count && j > _phrases[k].TargetCut)
+						if (k < _phrases.Count && j >= _phrases[k].TargetCut)
 						{
 							ResizeAlignment(k, alignmentColsToCopy);
 							alignmentColsToCopy.Clear();
@@ -117,7 +117,7 @@ namespace SIL.Machine.Translation
 
 				i++;
 				j++;
-				if (k < _phrases.Count && j > _phrases[k].TargetCut)
+				if (k < _phrases.Count && j >= _phrases[k].TargetCut)
 				{
 					ResizeAlignment(k, alignmentColsToCopy);
 					alignmentColsToCopy.Clear();
@@ -192,11 +192,11 @@ namespace SIL.Machine.Translation
 			foreach (PhraseInfo phraseInfo in _phrases)
 			{
 				double confidence = double.MaxValue;
-				for (int j = trgPhraseStartIndex; j <= phraseInfo.TargetCut; j++)
+				for (int j = trgPhraseStartIndex; j < phraseInfo.TargetCut; j++)
 				{
-					for (int i = phraseInfo.SourceStartIndex; i <= phraseInfo.SourceEndIndex; i++)
+					for (int i = phraseInfo.SourceSegmentRange.Start; i < phraseInfo.SourceSegmentRange.End; i++)
 					{
-						AlignmentType alignmentType = phraseInfo.Alignment[i - phraseInfo.SourceStartIndex,
+						AlignmentType alignmentType = phraseInfo.Alignment[i - phraseInfo.SourceSegmentRange.Start,
 							j - trgPhraseStartIndex];
 						if (alignmentType == AlignmentType.Aligned)
 							alignment[i, j] = AlignmentType.Aligned;
@@ -220,9 +220,8 @@ namespace SIL.Machine.Translation
 					confidence = Math.Min(confidence, Confidences[j]);
 				}
 
-				phrases.Add(new Phrase(Range<int>.Create(phraseInfo.SourceStartIndex, phraseInfo.SourceEndIndex + 1),
-					phraseInfo.TargetCut + 1, confidence));
-				trgPhraseStartIndex = phraseInfo.TargetCut + 1;
+				phrases.Add(new Phrase(phraseInfo.SourceSegmentRange, phraseInfo.TargetCut, confidence));
+				trgPhraseStartIndex = phraseInfo.TargetCut;
 			}
 
 			return new TranslationResult(sourceSegment, Words, confidences, sources, alignment, phrases);
@@ -230,16 +229,14 @@ namespace SIL.Machine.Translation
 
 		public class PhraseInfo
 		{
-			public PhraseInfo(int sourceStartIndex, int sourceEndIndex, int targetCut, WordAlignmentMatrix alignment)
+			public PhraseInfo(Range<int> sourceSegmentRange, int targetCut, WordAlignmentMatrix alignment)
 			{
-				SourceStartIndex = sourceStartIndex;
-				SourceEndIndex = sourceEndIndex;
+				SourceSegmentRange = sourceSegmentRange;
 				TargetCut = targetCut;
 				Alignment = alignment;
 			}
 
-			public int SourceStartIndex { get; }
-			public int SourceEndIndex { get; }
+			public Range<int> SourceSegmentRange { get; }
 			public int TargetCut { get; internal set; }
 			public WordAlignmentMatrix Alignment { get; internal set; }
 		}

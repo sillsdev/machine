@@ -45,8 +45,7 @@ namespace SIL.Machine.Translation
 							Score = -11.11f,
 							Words = new[] { "This", "is" },
 							Confidences = new[] { 0.4f, 0.5f },
-							SourceStartIndex = 0,
-							SourceEndIndex = 1,
+							SourceSegmentRange = new RangeDto() { Start = 0, End = 2 },
 							IsUnknown = false,
 							Alignment = new[]
 							{
@@ -61,8 +60,7 @@ namespace SIL.Machine.Translation
 							Score = -22.22f,
 							Words = new[] { "a" },
 							Confidences = new[] { 0.6f },
-							SourceStartIndex = 2,
-							SourceEndIndex = 2,
+							SourceSegmentRange = new RangeDto() { Start = 2, End = 3 },
 							IsUnknown = false,
 							Alignment = new[]
 							{
@@ -76,8 +74,7 @@ namespace SIL.Machine.Translation
 							Score = 33.33f,
 							Words = new[] { "prueba" },
 							Confidences = new[] { 0.0f },
-							SourceStartIndex = 3,
-							SourceEndIndex = 3,
+							SourceSegmentRange = new RangeDto() { Start = 3, End = 4 },
 							IsUnknown = true,
 							Alignment = new[]
 							{
@@ -91,8 +88,7 @@ namespace SIL.Machine.Translation
 							Score = -44.44f,
 							Words = new[] { "." },
 							Confidences = new[] { 0.7f },
-							SourceStartIndex = 4,
-							SourceEndIndex = 4,
+							SourceSegmentRange = new RangeDto() { Start = 4, End = 5 },
 							IsUnknown = false,
 							Alignment = new[]
 							{
@@ -145,8 +141,8 @@ namespace SIL.Machine.Translation
 					assert.Equal(arc.Score, -11.11);
 					assert.DeepEqual(arc.Words.ToArray(), new[] { "This", "is" });
 					assert.DeepEqual(arc.WordConfidences.ToArray(), new[] { 0.4, 0.5 });
-					assert.Equal(arc.SourceStartIndex, 0);
-					assert.Equal(arc.SourceEndIndex, 1);
+					assert.Equal(arc.SourceSegmentRange.Start, 0);
+					assert.Equal(arc.SourceSegmentRange.End, 2);
 					assert.Equal(arc.IsUnknown, false);
 					assert.Equal(arc.Alignment[0, 0], AlignmentType.Aligned);
 					assert.Equal(arc.Alignment[1, 1], AlignmentType.Aligned);

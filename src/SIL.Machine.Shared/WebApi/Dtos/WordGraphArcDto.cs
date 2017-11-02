@@ -7,8 +7,7 @@
 		public float Score { get; set; }
 		public string[] Words { get; set; }
 		public float[] Confidences { get; set; }
-		public int SourceStartIndex { get; set; }
-		public int SourceEndIndex { get; set; }
+		public RangeDto SourceSegmentRange { get; set; }
 		public bool IsUnknown { get; set; }
 		public AlignedWordPairDto[] Alignment { get; set; }
 	}

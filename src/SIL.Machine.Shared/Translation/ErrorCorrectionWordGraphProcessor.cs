@@ -433,7 +433,7 @@ namespace SIL.Machine.Translation
 				alignment = newAlignment;
 			}
 
-			builder.MarkPhrase(arc.SourceStartIndex, arc.SourceEndIndex, alignment);
+			builder.MarkPhrase(arc.SourceSegmentRange, alignment);
 		}
 
 		private class Hypothesis : PriorityQueueNodeBase, IComparable<Hypothesis>

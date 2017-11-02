@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Translation
 {
@@ -22,136 +23,136 @@ namespace SIL.Machine.Translation
 		[Test]
 		public void CorrectPrefix_NewEndWord_InsertsWordAtEnd()
 		{
-			TranslationResultBuilder ti = CreateResultBuilder("this is a", 1, 2);
+			TranslationResultBuilder ti = CreateResultBuilder("this is a", 2, 3);
 
 			string[] prefix = "this is a test".Split();
 			Assert.That(_ecm.CorrectPrefix(ti, ti.Words.Count, prefix, true), Is.EqualTo(1));
 			Assert.That(ti.Confidences.Count, Is.EqualTo(prefix.Length));
 			Assert.That(ti.Words, Is.EqualTo(prefix));
 			Assert.That(ti.Phrases.Count, Is.EqualTo(2));
-			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(1));
+			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(2));
 			Assert.That(ti.Phrases[0].Alignment.ColumnCount, Is.EqualTo(2));
-			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(2));
+			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(3));
 			Assert.That(ti.Phrases[1].Alignment.ColumnCount, Is.EqualTo(1));
 		}
 
 		[Test]
 		public void CorrectPrefix_SubstringUncorrectedPrefixNewEndWord_InsertsWordAtEnd()
 		{
-			TranslationResultBuilder ti = CreateResultBuilder("this is a and only a test", 1, 2, 4, 6);
+			TranslationResultBuilder ti = CreateResultBuilder("this is a and only a test", 2, 3, 5, 7);
 
 			string[] prefix = "this is a test".Split();
 			Assert.That(_ecm.CorrectPrefix(ti, 3, prefix, true), Is.EqualTo(0));
 			Assert.That(ti.Confidences.Count, Is.EqualTo(8));
 			Assert.That(ti.Words, Is.EqualTo("this is a test and only a test".Split()));
 			Assert.That(ti.Phrases.Count, Is.EqualTo(4));
-			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(1));
+			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(2));
 			Assert.That(ti.Phrases[0].Alignment.ColumnCount, Is.EqualTo(2));
-			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(2));
+			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(3));
 			Assert.That(ti.Phrases[1].Alignment.ColumnCount, Is.EqualTo(1));
-			Assert.That(ti.Phrases[2].TargetCut, Is.EqualTo(5));
+			Assert.That(ti.Phrases[2].TargetCut, Is.EqualTo(6));
 			Assert.That(ti.Phrases[2].Alignment.ColumnCount, Is.EqualTo(3));
-			Assert.That(ti.Phrases[3].TargetCut, Is.EqualTo(7));
+			Assert.That(ti.Phrases[3].TargetCut, Is.EqualTo(8));
 			Assert.That(ti.Phrases[3].Alignment.ColumnCount, Is.EqualTo(2));
 		}
 
 		[Test]
 		public void CorrectPrefix_NewMiddleWord_InsertsWord()
 		{
-			TranslationResultBuilder ti = CreateResultBuilder("this is a test", 1, 3);
+			TranslationResultBuilder ti = CreateResultBuilder("this is a test", 2, 4);
 
 			string[] prefix = "this is , a test".Split();
 			Assert.That(_ecm.CorrectPrefix(ti, ti.Words.Count, prefix, true), Is.EqualTo(0));
 			Assert.That(ti.Confidences.Count, Is.EqualTo(prefix.Length));
 			Assert.That(ti.Words, Is.EqualTo(prefix));
 			Assert.That(ti.Phrases.Count, Is.EqualTo(2));
-			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(1));
+			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(2));
 			Assert.That(ti.Phrases[0].Alignment.ColumnCount, Is.EqualTo(2));
-			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(4));
+			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(5));
 			Assert.That(ti.Phrases[1].Alignment.ColumnCount, Is.EqualTo(3));
 		}
 
 		[Test]
 		public void CorrectPrefix_NewStartWord_InsertsWordAtBeginning()
 		{
-			TranslationResultBuilder ti = CreateResultBuilder("this is a test", 1, 3);
+			TranslationResultBuilder ti = CreateResultBuilder("this is a test", 2, 4);
 
 			string[] prefix = "yes this is a test".Split();
 			Assert.That(_ecm.CorrectPrefix(ti, ti.Words.Count, prefix, true), Is.EqualTo(0));
 			Assert.That(ti.Confidences.Count, Is.EqualTo(prefix.Length));
 			Assert.That(ti.Words, Is.EqualTo(prefix));
 			Assert.That(ti.Phrases.Count, Is.EqualTo(2));
-			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(2));
+			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(3));
 			Assert.That(ti.Phrases[0].Alignment.ColumnCount, Is.EqualTo(3));
-			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(4));
+			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(5));
 			Assert.That(ti.Phrases[1].Alignment.ColumnCount, Is.EqualTo(2));
 		}
 
 		[Test]
 		public void CorrectPrefix_MissingEndWord_DeletesWordAtEnd()
 		{
-			TranslationResultBuilder ti = CreateResultBuilder("this is a test", 1, 3);
+			TranslationResultBuilder ti = CreateResultBuilder("this is a test", 2, 4);
 
 			string[] prefix = "this is a".Split();
 			Assert.That(_ecm.CorrectPrefix(ti, ti.Words.Count, prefix, true), Is.EqualTo(0));
 			Assert.That(ti.Confidences.Count, Is.EqualTo(prefix.Length));
 			Assert.That(ti.Words, Is.EqualTo(prefix));
 			Assert.That(ti.Phrases.Count, Is.EqualTo(2));
-			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(1));
+			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(2));
 			Assert.That(ti.Phrases[0].Alignment.ColumnCount, Is.EqualTo(2));
-			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(2));
+			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(3));
 			Assert.That(ti.Phrases[1].Alignment.ColumnCount, Is.EqualTo(1));
 		}
 
 		[Test]
 		public void CorrectPrefix_SubstringUncorrectedPrefixMissingEndWord_DeletesWordAtEnd()
 		{
-			TranslationResultBuilder ti = CreateResultBuilder("this is a test and only a test", 1, 3, 5, 7);
+			TranslationResultBuilder ti = CreateResultBuilder("this is a test and only a test", 2, 4, 6, 8);
 
 			string[] prefix = "this is a".Split();
 			Assert.That(_ecm.CorrectPrefix(ti, 4, prefix, true), Is.EqualTo(0));
 			Assert.That(ti.Confidences.Count, Is.EqualTo(7));
 			Assert.That(ti.Words, Is.EqualTo("this is a and only a test".Split()));
 			Assert.That(ti.Phrases.Count, Is.EqualTo(4));
-			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(1));
+			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(2));
 			Assert.That(ti.Phrases[0].Alignment.ColumnCount, Is.EqualTo(2));
-			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(2));
+			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(3));
 			Assert.That(ti.Phrases[1].Alignment.ColumnCount, Is.EqualTo(1));
-			Assert.That(ti.Phrases[2].TargetCut, Is.EqualTo(4));
+			Assert.That(ti.Phrases[2].TargetCut, Is.EqualTo(5));
 			Assert.That(ti.Phrases[2].Alignment.ColumnCount, Is.EqualTo(2));
-			Assert.That(ti.Phrases[3].TargetCut, Is.EqualTo(6));
+			Assert.That(ti.Phrases[3].TargetCut, Is.EqualTo(7));
 			Assert.That(ti.Phrases[3].Alignment.ColumnCount, Is.EqualTo(2));
 		}
 
 		[Test]
 		public void CorrectPrefix_MissingMiddleWord_DeletesWord()
 		{
-			TranslationResultBuilder ti = CreateResultBuilder("this is a test", 1, 3);
+			TranslationResultBuilder ti = CreateResultBuilder("this is a test", 2, 4);
 
 			string[] prefix = "this a test".Split();
 			Assert.That(_ecm.CorrectPrefix(ti, ti.Words.Count, prefix, true), Is.EqualTo(0));
 			Assert.That(ti.Confidences.Count, Is.EqualTo(prefix.Length));
 			Assert.That(ti.Words, Is.EqualTo(prefix));
 			Assert.That(ti.Phrases.Count, Is.EqualTo(2));
-			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(0));
+			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(1));
 			Assert.That(ti.Phrases[0].Alignment.ColumnCount, Is.EqualTo(1));
-			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(2));
+			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(3));
 			Assert.That(ti.Phrases[1].Alignment.ColumnCount, Is.EqualTo(2));
 		}
 
 		[Test]
 		public void CorrectPrefix_MissingStartWord_DeletesWordAtBeginning()
 		{
-			TranslationResultBuilder ti = CreateResultBuilder("yes this is a test", 2, 4);
+			TranslationResultBuilder ti = CreateResultBuilder("yes this is a test", 3, 5);
 
 			string[] prefix = "this is a test".Split();
 			Assert.That(_ecm.CorrectPrefix(ti, ti.Words.Count, prefix, true), Is.EqualTo(0));
 			Assert.That(ti.Confidences.Count, Is.EqualTo(prefix.Length));
 			Assert.That(ti.Words, Is.EqualTo(prefix));
 			Assert.That(ti.Phrases.Count, Is.EqualTo(2));
-			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(1));
+			Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(2));
 			Assert.That(ti.Phrases[0].Alignment.ColumnCount, Is.EqualTo(2));
-			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(3));
+			Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(4));
 			Assert.That(ti.Phrases[1].Alignment.ColumnCount, Is.EqualTo(2));
 		}
 
@@ -166,12 +167,13 @@ namespace SIL.Machine.Translation
 				for (int j = 0; j < words.Length; j++)
 				{
 					builder.AppendWord(words[j], 1);
-					if (k < cuts.Length && cuts[k] == j)
+					int cut = j + 1;
+					if (k < cuts.Length && cuts[k] == cut)
 					{
-						int len = j - i + 1;
-						builder.MarkPhrase(i, j, new WordAlignmentMatrix(len, len));
+						int len = cut - i;
+						builder.MarkPhrase(Range<int>.Create(i, cut), new WordAlignmentMatrix(len, len));
 						k++;
-						i = j + 1;
+						i = cut;
 					}
 				}
 			}

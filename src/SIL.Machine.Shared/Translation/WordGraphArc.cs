@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using SIL.Machine.Annotations;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SIL.Machine.Translation
@@ -6,7 +7,7 @@ namespace SIL.Machine.Translation
 	public class WordGraphArc
 	{
 		public WordGraphArc(int prevState, int nextState, double score, IEnumerable<string> words,
-			WordAlignmentMatrix alignment, int sourceStartIndex, int sourceEndIndex, bool isUnknown,
+			WordAlignmentMatrix alignment, Range<int> sourceSegmentRange, bool isUnknown,
 			IEnumerable<double> wordConfidences = null)
 		{
 			PrevState = prevState;
@@ -14,8 +15,7 @@ namespace SIL.Machine.Translation
 			Score = score;
 			Words = words.ToArray();
 			Alignment = alignment;
-			SourceStartIndex = sourceStartIndex;
-			SourceEndIndex = sourceEndIndex;
+			SourceSegmentRange = sourceSegmentRange;
 			IsUnknown = isUnknown;
 			if (wordConfidences == null)
 				WordConfidences = Enumerable.Repeat(-1.0, Words.Count).ToList();
@@ -29,8 +29,7 @@ namespace SIL.Machine.Translation
 		public IReadOnlyList<string> Words { get; }
 		public WordAlignmentMatrix Alignment { get; }
 		public IList<double> WordConfidences { get; }
-		public int SourceStartIndex { get; }
-		public int SourceEndIndex { get; }
+		public Range<int> SourceSegmentRange { get; }
 		public bool IsUnknown { get; }
 	}
 }

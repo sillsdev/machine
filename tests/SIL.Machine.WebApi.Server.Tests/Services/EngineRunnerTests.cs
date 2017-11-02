@@ -154,20 +154,20 @@ namespace SIL.Machine.WebApi.Server.Services
 							{
 								[0, 0] = AlignmentType.Aligned, [1, 1] = AlignmentType.Aligned
 							},
-							0, 1, false, new[] { 1.0, 1.0 }),
+							Range<int>.Create(0, 2), false, new[] { 1.0, 1.0 }),
 						new WordGraphArc(1, 2, 1.0, "a test".Split(),
 							new WordAlignmentMatrix(2, 2)
 							{
 								[0, 0] = AlignmentType.Aligned, [1, 1] = AlignmentType.Aligned
 							},
-							2, 3, false, new[] { 1.0, 1.0 }),
+							Range<int>.Create(2, 4), false, new[] { 1.0, 1.0 }),
 						new WordGraphArc(2, 3, 1.0, new[] {"."},
 							new WordAlignmentMatrix(1, 1)
 							{
 								[0, 0] = AlignmentType.Aligned
 							},
-							4, 4, false, new[] { 1.0 })
-					}, new[] {3}));
+							Range<int>.Create(4, 5), false, new[] { 1.0 })
+					}, new[] { 3 }));
 				smtEngine.GetBestPhraseAlignment(Arg.Any<IReadOnlyList<string>>(), Arg.Any<IReadOnlyList<string>>())
 					.Returns(translationResult);
 				SmtModel.CreateInteractiveEngine().Returns(smtEngine);
