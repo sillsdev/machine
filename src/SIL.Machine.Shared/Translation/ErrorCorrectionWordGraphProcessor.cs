@@ -237,6 +237,13 @@ namespace SIL.Machine.Translation
 					if (nbest.Count == n)
 						break;
 				}
+				else if (ConfidenceThreshold <= 0)
+				{
+					hypothesis.Arcs.AddRange(_wordGraph.GetBestPathFromFinalStateToState(lastState).Reverse());
+					nbest.Add(hypothesis);
+					if (nbest.Count == n)
+						break;
+				}
 				else
 				{
 					double score = hypothesis.Score - (WordGraphWeight * _restScores[lastState]);
@@ -342,7 +349,7 @@ namespace SIL.Machine.Translation
 
 		private bool IsArcPruned(WordGraphArc arc)
 		{
-			return !arc.IsUnknown && ConfidenceThreshold > 0 && arc.WordConfidences.Any(c => c < ConfidenceThreshold);
+			return !arc.IsUnknown && arc.WordConfidences.Any(c => c < ConfidenceThreshold);
 		}
 
 		private void BuildCorrectionFromHypothesis(TranslationResultBuilder builder, string[] prefix,
