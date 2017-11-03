@@ -17,8 +17,13 @@ namespace SIL.Machine.Translation
 
 		private int _actionCount;
 		private int _charCount;
-		private int _correctSuggestionCount;
+		private int _totalAcceptedSuggestionCount;
 		private int _totalSuggestionCount;
+		private int _fullSuggestionCount;
+		private int _initSuggestionCount;
+		private int _finalSuggestionCount;
+		private int _middleSuggestionCount;
+		private int[] _acceptedSuggestionCounts;
 
 		public TestCommand()
 			: base(false)
@@ -78,6 +83,7 @@ namespace SIL.Machine.Translation
 			Stopwatch watch = Stopwatch.StartNew();
 			Out.Write("Testing... ");
 			int segmentCount = 0;
+			_acceptedSuggestionCounts = new int[n];
 			using (var progress = new ConsoleProgressBar(Out))
 			using (IInteractiveSmtModel smtModel = new ThotSmtModel(EngineConfigFileName))
 			using (IInteractiveSmtEngine engine = smtModel.CreateInteractiveEngine())
@@ -105,10 +111,25 @@ namespace SIL.Machine.Translation
 			Out.WriteLine($"Execution time: {watch.Elapsed:c}");
 			Out.WriteLine($"# of Segments: {segmentCount}");
 			Out.WriteLine($"# of Suggestions: {_totalSuggestionCount}");
-			Out.WriteLine($"# of Correct Suggestions: {_correctSuggestionCount}");
+			Out.WriteLine($"# of Correct Suggestions: {_totalAcceptedSuggestionCount}");
+			Out.WriteLine("Correct Suggestion Types");
+			double fullPcnt = (double) _fullSuggestionCount / _totalAcceptedSuggestionCount;
+			Out.WriteLine($"-Full: {fullPcnt:0.00}");
+			double initPcnt = (double) _initSuggestionCount / _totalAcceptedSuggestionCount;
+			Out.WriteLine($"-Initial: {initPcnt:0.00}");
+			double finalPcnt = (double) _finalSuggestionCount / _totalAcceptedSuggestionCount;
+			Out.WriteLine($"-Final: {finalPcnt:0.00}");
+			double middlePcnt = (double) _middleSuggestionCount / _totalAcceptedSuggestionCount;
+			Out.WriteLine($"-Middle: {middlePcnt:0.00}");
+			Out.WriteLine("Correct Suggestion N");
+			for (int i = 0; i < _acceptedSuggestionCounts.Length; i++)
+			{
+				double pcnt = (double) _acceptedSuggestionCounts[i] / _totalAcceptedSuggestionCount;
+				Out.WriteLine($"-{i + 1}: {pcnt:0.00}");
+			}
 			double ksmr = (double) _actionCount / _charCount;
 			Out.WriteLine($"KSMR: {ksmr:0.00}");
-			double precision = (double) _correctSuggestionCount / _totalSuggestionCount;
+			double precision = (double) _totalAcceptedSuggestionCount / _totalSuggestionCount;
 			Out.WriteLine($"Precision: {precision:0.00}");
 			return 0;
 		}
@@ -181,16 +202,28 @@ namespace SIL.Machine.Translation
 							session.AppendSuggestionToPrefix(k, accepted);
 							isLastWordSuggestion = true;
 							_actionCount++;
-							_correctSuggestionCount++;
+							_totalAcceptedSuggestionCount++;
 							if (accepted.Count == suggestions[k].Count)
+							{
 								suggestionResult = "ACCEPT_FULL";
+								_fullSuggestionCount++;
+							}
 							else if (accepted[0] == suggestions[k][0])
+							{
 								suggestionResult = "ACCEPT_INIT";
+								_initSuggestionCount++;
+							}
 							else if (accepted[accepted.Count - 1] == suggestions[k][suggestions[k].Count - 1])
+							{
 								suggestionResult = "ACCEPT_FIN";
+								_finalSuggestionCount++;
+							}
 							else
+							{
 								suggestionResult = "ACCEPT_MID";
-
+								_middleSuggestionCount++;
+							}
+							_acceptedSuggestionCounts[k]++;
 							match = true;
 							break;
 						}
