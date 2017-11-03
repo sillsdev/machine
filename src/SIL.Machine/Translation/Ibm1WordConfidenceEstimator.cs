@@ -14,14 +14,14 @@ namespace SIL.Machine.Translation
 			_getTranslationProb = getTranslationProb;
 		}
 
-		public bool RestrictToPhrase { get; set; }
+		public bool PhraseOnly { get; set; } = true;
 
 		public void Estimate(IReadOnlyList<string> sourceSegment, WordGraph wordGraph)
 		{
 			var range = Range<int>.Create(0, sourceSegment.Count);
 			foreach (WordGraphArc arc in wordGraph.Arcs)
 			{
-				if (RestrictToPhrase)
+				if (PhraseOnly)
 					range = arc.SourceSegmentRange;
 
 				for (int k = 0; k < arc.Words.Count; k++)
@@ -35,7 +35,7 @@ namespace SIL.Machine.Translation
 			int startIndex = 0;
 			foreach (PhraseInfo phrase in builder.Phrases)
 			{
-				if (RestrictToPhrase)
+				if (PhraseOnly)
 					range = phrase.SourceSegmentRange;
 
 				for (int j = startIndex; j < phrase.TargetCut; j++)
