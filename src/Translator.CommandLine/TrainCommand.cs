@@ -64,8 +64,8 @@ namespace SIL.Machine.Translation
 
 				Out.WriteLine($"Execution time: {watch.Elapsed:c}");
 				Out.WriteLine($"# of Segments Trained: {trainer.Stats.TrainedSegmentCount}");
-				Out.WriteLine($"LM Perplexity: {trainer.Stats.LanguageModelPerplexity:0.00}");
-				Out.WriteLine($"TM BLEU: {trainer.Stats.TranslationModelBleu:0.00}");
+				Out.WriteLine($"LM Perplexity: {trainer.Stats.LanguageModelPerplexity:0.0000}");
+				Out.WriteLine($"TM BLEU: {trainer.Stats.TranslationModelBleu:0.0000}");
 			}
 		}
 

@@ -114,23 +114,23 @@ namespace SIL.Machine.Translation
 			Out.WriteLine($"# of Correct Suggestions: {_totalAcceptedSuggestionCount}");
 			Out.WriteLine("Correct Suggestion Types");
 			double fullPcnt = (double) _fullSuggestionCount / _totalAcceptedSuggestionCount;
-			Out.WriteLine($"-Full: {fullPcnt:0.00}");
+			Out.WriteLine($"-Full: {fullPcnt:0.0000}");
 			double initPcnt = (double) _initSuggestionCount / _totalAcceptedSuggestionCount;
-			Out.WriteLine($"-Initial: {initPcnt:0.00}");
+			Out.WriteLine($"-Initial: {initPcnt:0.0000}");
 			double finalPcnt = (double) _finalSuggestionCount / _totalAcceptedSuggestionCount;
-			Out.WriteLine($"-Final: {finalPcnt:0.00}");
+			Out.WriteLine($"-Final: {finalPcnt:0.0000}");
 			double middlePcnt = (double) _middleSuggestionCount / _totalAcceptedSuggestionCount;
-			Out.WriteLine($"-Middle: {middlePcnt:0.00}");
+			Out.WriteLine($"-Middle: {middlePcnt:0.0000}");
 			Out.WriteLine("Correct Suggestion N");
 			for (int i = 0; i < _acceptedSuggestionCounts.Length; i++)
 			{
 				double pcnt = (double) _acceptedSuggestionCounts[i] / _totalAcceptedSuggestionCount;
-				Out.WriteLine($"-{i + 1}: {pcnt:0.00}");
+				Out.WriteLine($"-{i + 1}: {pcnt:0.0000}");
 			}
 			double ksmr = (double) _actionCount / _charCount;
-			Out.WriteLine($"KSMR: {ksmr:0.00}");
+			Out.WriteLine($"KSMR: {ksmr:0.0000}");
 			double precision = (double) _totalAcceptedSuggestionCount / _totalSuggestionCount;
-			Out.WriteLine($"Precision: {precision:0.00}");
+			Out.WriteLine($"Precision: {precision:0.0000}");
 			return 0;
 		}
 
