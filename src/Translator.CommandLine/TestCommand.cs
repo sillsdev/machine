@@ -14,6 +14,7 @@ namespace SIL.Machine.Translation
 		private readonly CommandOption _confidenceOption;
 		private readonly CommandOption _traceOption;
 		private readonly CommandOption _nOption;
+		private readonly CommandOption _quietOption;
 
 		private int _actionCount;
 		private int _charCount;
@@ -36,6 +37,7 @@ namespace SIL.Machine.Translation
 				CommandOptionType.SingleValue);
 			_traceOption = Option("--trace <path>", "The trace output directory.",
 				CommandOptionType.SingleValue);
+			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
 		}
 
 		protected override int ExecuteCommand()
@@ -81,10 +83,11 @@ namespace SIL.Machine.Translation
 			int parallelCorpusCount = GetParallelCorpusCount();
 
 			Stopwatch watch = Stopwatch.StartNew();
-			Out.Write("Testing... ");
+			if (!_quietOption.HasValue())
+				Out.Write("Testing... ");
 			int segmentCount = 0;
 			_acceptedSuggestionCounts = new int[n];
-			using (var progress = new ConsoleProgressBar(Out))
+			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
 			using (IInteractiveSmtModel smtModel = new ThotSmtModel(EngineConfigFileName))
 			using (IInteractiveSmtEngine engine = smtModel.CreateInteractiveEngine())
 			{
@@ -96,7 +99,7 @@ namespace SIL.Machine.Translation
 						{
 							TestSegment(engine, suggester, n, segment, traceWriter);
 							segmentCount++;
-							progress.Report((double) segmentCount / parallelCorpusCount);
+							progress?.Report((double) segmentCount / parallelCorpusCount);
 							if (segmentCount == MaxParallelCorpusCount)
 								break;
 						}
@@ -105,7 +108,8 @@ namespace SIL.Machine.Translation
 						break;
 				}
 			}
-			Out.WriteLine("done.");
+			if (!_quietOption.HasValue())
+				Out.WriteLine("done.");
 			watch.Stop();
 
 			Out.WriteLine($"Execution time: {watch.Elapsed:c}");

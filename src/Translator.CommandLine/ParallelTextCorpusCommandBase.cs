@@ -154,7 +154,7 @@ namespace SIL.Machine.Translation
 			type = null;
 			path = null;
 
-			int index = value.IndexOf(";", StringComparison.Ordinal);
+			int index = value.IndexOf(",", StringComparison.Ordinal);
 			if (index == -1)
 			{
 				path = value;
@@ -235,7 +235,7 @@ namespace SIL.Machine.Translation
 		private static ISet<string> GetTexts(IEnumerable<string> values)
 		{
 			return new HashSet<string>(values.SelectMany(value =>
-				value.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries)));
+				value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries)));
 		}
 	}
 }
