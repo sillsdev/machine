@@ -12,6 +12,7 @@ namespace SIL.Machine.Translation
 	public class TrainCommand : EngineCommandBase
 	{
 		private readonly CommandOption _alignmentOnlyOption;
+		private readonly CommandOption _quietOption;
 
 		public TrainCommand()
 			: base(true)
@@ -20,6 +21,7 @@ namespace SIL.Machine.Translation
 
 			_alignmentOnlyOption = Option("--alignment-only", "Only train the alignment models.",
 				CommandOptionType.NoValue);
+			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
 		}
 
 		protected override int ExecuteCommand()
@@ -52,14 +54,16 @@ namespace SIL.Machine.Translation
 				Preprocessors.Lowercase, ParallelCorpus, MaxParallelCorpusCount))
 			{
 				Stopwatch watch = Stopwatch.StartNew();
-				Out.Write("Training... ");
-				using (var progress = new ConsoleProgressBar<SmtTrainProgress>(Out,
-					p => (double) p.CurrentStep / p.StepCount))
+				if (!_quietOption.HasValue())
+					Out.Write("Training... ");
+				using (ConsoleProgressBar<SmtTrainProgress> progress = _quietOption.HasValue() ? null
+					: new ConsoleProgressBar<SmtTrainProgress>(Out, p => (double) p.CurrentStep / p.StepCount))
 				{
 					trainer.Train(progress);
 					trainer.Save();
 				}
-				Out.WriteLine("done.");
+				if (!_quietOption.HasValue())
+					Out.WriteLine("done.");
 				watch.Stop();
 
 				Out.WriteLine($"Execution time: {watch.Elapsed:c}");
@@ -78,19 +82,21 @@ namespace SIL.Machine.Translation
 			string tmPrefix = Path.Combine(tmDir, "src_trg");
 			int parallelCorpusCount = GetParallelCorpusCount();
 
-			Out.Write("Training... ");
-			using (var progress = new ConsoleProgressBar(Out))
+			if (!_quietOption.HasValue())
+				Out.Write("Training... ");
+			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
 			{
 				TrainAlignmentModel(tmPrefix + "_swm", ParallelCorpus.Invert(), progress);
 				TrainAlignmentModel(tmPrefix + "_invswm", ParallelCorpus, progress, 5);
 			}
-			Out.WriteLine("done.");
+			if (!_quietOption.HasValue())
+				Out.WriteLine("done.");
 
 			Out.WriteLine($"# of Segments Trained: {parallelCorpusCount}");
 		}
 
 		private void TrainAlignmentModel(string swmPrefix, ParallelTextCorpus corpus,
-			IProgress<double> progress, int startStep = 0)
+			IProgress<double> progress = null, int startStep = 0)
 		{
 			using (var swAlignModel = new ThotSingleWordAlignmentModel(swmPrefix, true))
 			{
@@ -105,7 +111,7 @@ namespace SIL.Machine.Translation
 				for (int i = 0; i < 5; i++)
 				{
 					swAlignModel.Train(1);
-					progress.Report((double) (startStep + i + 1) / 10);
+					progress?.Report((double) (startStep + i + 1) / 10);
 				}
 				swAlignModel.Save();
 			}
