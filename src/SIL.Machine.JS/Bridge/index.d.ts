@@ -11,6 +11,7 @@ export interface InteractiveTranslationSession {
     readonly prefix: string[];
     readonly isLastWordComplete: boolean;
     readonly currentSuggestion: string[];
+    readonly currentSuggestionConfidence: number;
     updatePrefix(prefix: string): string[];
     getSuggestionTextInsertion(suggestionIndex?: number): { deleteLength: number, insertText: string };
     updateSuggestion(): void;

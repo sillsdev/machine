@@ -42,6 +42,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Translation\SegmentEditDistance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationSources.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationSuggestion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordAlignmentMatrix.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordTranslationSuggester.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordEditDistance.cs" />

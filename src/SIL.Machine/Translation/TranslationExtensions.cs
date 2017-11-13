@@ -8,18 +8,17 @@ namespace SIL.Machine.Translation
 	{
 		public static IReadOnlyList<string> TranslateWord(this ITranslationEngine engine, string sourceWord)
 		{
-			TranslationResult result = engine.Translate(new[] {sourceWord});
+			TranslationResult result = engine.Translate(new[] { sourceWord });
 			if (result.WordSources.Any(s => s == TranslationSources.None))
 				return new string[0];
 			return result.TargetSegment;
 		}
 
-		public static IReadOnlyList<IReadOnlyList<int>> GetSuggestedWordIndices(this ITranslationSuggester suggester,
+		public static IEnumerable<TranslationSuggestion> GetSuggestions(this ITranslationSuggester suggester,
 			IInteractiveTranslationSession session)
 		{
 			return session.CurrentResults.Select(r =>
-				suggester.GetSuggestedWordIndices(session.Prefix.Count, session.IsLastWordComplete, r).ToArray())
-				.ToArray();
+				suggester.GetSuggestion(session.Prefix.Count, session.IsLastWordComplete, r));
 		}
 
 		public static void AppendSuggestionToPrefix(this IInteractiveTranslationSession session, int resultIndex,

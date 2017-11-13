@@ -73,12 +73,12 @@ namespace SIL.Machine.Translation.TestApp
 			_suggestions = new BulkObservableList<SuggestionViewModel>();
 			Suggestions = new ReadOnlyObservableList<SuggestionViewModel>(_suggestions);
 			_sourceSegmentWords = new List<string>();
-			_unapprovedTargetSegmentRanges = new BulkObservableList<Eto.Forms.Range<int>>();
-			UnapprovedTargetSegmentRanges = new ReadOnlyObservableList<Eto.Forms.Range<int>>(
+			_unapprovedTargetSegmentRanges = new BulkObservableList<Range<int>>();
+			UnapprovedTargetSegmentRanges = new ReadOnlyObservableList<Range<int>>(
 				_unapprovedTargetSegmentRanges);
 			_alignedSourceWords = new BulkObservableList<AlignedWordViewModel>();
 			AlignedSourceWords = new ReadOnlyObservableList<AlignedWordViewModel>(_alignedSourceWords);
-			_suggester = new WordTranslationSuggester(0.2);
+			_suggester = new WordTranslationSuggester() { ConfidenceThreshold = 0.2 };
 
 			LoadMetadataFile();
 			LoadTextFile(sourceFileName, _sourceSegments);
@@ -390,7 +390,7 @@ namespace SIL.Machine.Translation.TestApp
 
 			if (!_approvedSegments.Contains(_currentSegment))
 			{
-				_suggestions.ReplaceAll(_suggester.GetSuggestedWordIndices(_curSession)[0].Select(j =>
+				_suggestions.ReplaceAll(_suggester.GetSuggestions(_curSession).First().TargetWordIndices.Select(j =>
 					new SuggestionViewModel(this,
 						_curSession.CurrentResults[0].RecaseTargetWord(_sourceSegmentWords, j))));
 			}

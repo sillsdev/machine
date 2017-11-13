@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-
-namespace SIL.Machine.Translation
+﻿namespace SIL.Machine.Translation
 {
 	public interface ITranslationSuggester
 	{
 		double ConfidenceThreshold { get; set; }
 
-		IEnumerable<int> GetSuggestedWordIndices(int prefixCount, bool isLastWordComplete, TranslationResult result);
+		TranslationSuggestion GetSuggestion(int prefixCount, bool isLastWordComplete, TranslationResult result);
 	}
 }

@@ -5,14 +5,9 @@ namespace SIL.Machine.Translation
 {
 	public class PhraseTranslationSuggester : ITranslationSuggester
 	{
-		public PhraseTranslationSuggester(double confidenceThreshold)
-		{
-			ConfidenceThreshold = confidenceThreshold;
-		}
-
 		public double ConfidenceThreshold { get; set; }
 
-		public IEnumerable<int> GetSuggestedWordIndices(int prefixCount, bool isLastWordComplete,
+		public TranslationSuggestion GetSuggestion(int prefixCount, bool isLastWordComplete,
 			TranslationResult result)
 		{
 			int startingJ = prefixCount;
@@ -24,33 +19,45 @@ namespace SIL.Machine.Translation
 				if ((result.WordSources[startingJ - 1] & TranslationSources.Smt) != 0)
 					startingJ--;
 				else
-					yield break;
+					return new TranslationSuggestion();
 			}
 
 			int k = 0;
 			while (k < result.Phrases.Count && result.Phrases[k].TargetSegmentCut <= startingJ)
 				k++;
 
+			double minConfidence = -1;
+			var indices = new List<int>();
 			for (; k < result.Phrases.Count; k++)
 			{
 				Phrase phrase = result.Phrases[k];
 				if (phrase.Confidence >= ConfidenceThreshold)
 				{
+					bool hitBreakingWord = false;
 					for (int j = startingJ; j < phrase.TargetSegmentCut; j++)
 					{
 						string word = result.TargetSegment[j];
 						TranslationSources sources = result.WordSources[j];
 						if (sources == TranslationSources.None || word.All(char.IsPunctuation))
-							yield break;
-						yield return j;
+						{
+							hitBreakingWord = true;
+							break;
+						}
+						indices.Add(j);
 					}
+					if (minConfidence < 0 || phrase.Confidence < minConfidence)
+						minConfidence = phrase.Confidence;
 					startingJ = phrase.TargetSegmentCut;
+					if (hitBreakingWord)
+						break;
 				}
 				else
 				{
-					yield break;
+					break;
 				}
 			}
+
+			return new TranslationSuggestion(indices, minConfidence < 0 ? 0 : minConfidence);
 		}
 	}
 }

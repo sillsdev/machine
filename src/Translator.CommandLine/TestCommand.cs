@@ -52,10 +52,10 @@ namespace SIL.Machine.Translation
 				return 1;
 			}
 
-			double confidence = 0.2;
+			double confidenceThreshold = 0.2;
 			if (_confidenceOption.HasValue())
 			{
-				if (!double.TryParse(_confidenceOption.Value(), out confidence))
+				if (!double.TryParse(_confidenceOption.Value(), out confidenceThreshold))
 				{
 					Out.WriteLine("The specified confidence is invalid.");
 					return 1;
@@ -78,7 +78,7 @@ namespace SIL.Machine.Translation
 					Directory.CreateDirectory(_traceOption.Value());
 			}
 
-			var suggester = new PhraseTranslationSuggester(confidence);
+			var suggester = new PhraseTranslationSuggester() { ConfidenceThreshold = confidenceThreshold };
 
 			int parallelCorpusCount = GetParallelCorpusCount();
 
@@ -170,25 +170,27 @@ namespace SIL.Machine.Translation
 						targetIndex--;
 
 					bool match = false;
-					IReadOnlyList<IReadOnlyList<int>> suggestions = suggester.GetSuggestedWordIndices(session);
+					TranslationSuggestion[] suggestions = suggester.GetSuggestions(session).ToArray();
 					string[][] suggestionWords = suggestions.Select((s, k) =>
-						s.Select(j => session.CurrentResults[k].TargetSegment[j]).ToArray()).ToArray();
+						s.TargetWordIndices.Select(j =>
+							session.CurrentResults[k].TargetSegment[j]).ToArray()).ToArray();
 					if (prevSuggestionWords == null || !SuggestionsAreEqual(prevSuggestionWords, suggestionWords))
 					{
 						WritePrefix(traceWriter, suggestionResult, session.Prefix);
 						WriteSuggestions(traceWriter, session, suggestions);
 						suggestionResult = null;
-						if (suggestions.Any(s => s.Count > 0))
+						if (suggestions.Any(s => s.TargetWordIndices.Count > 0))
 							_totalSuggestionCount++;
 					}
-					for (int k = 0; k < suggestions.Count; k++)
+					for (int k = 0; k < suggestions.Length; k++)
 					{
+						TranslationSuggestion suggestion = suggestions[k];
 						var accepted = new List<int>();
 						for (int i = 0, j = targetIndex; i < suggestionWords[k].Length && j < targetSegment.Length; i++)
 						{
 							if (suggestionWords[k][i] == targetSegment[j])
 							{
-								accepted.Add(suggestions[k][i]);
+								accepted.Add(suggestion.TargetWordIndices[i]);
 								j++;
 							}
 							else if (accepted.Count == 0)
@@ -207,17 +209,18 @@ namespace SIL.Machine.Translation
 							isLastWordSuggestion = true;
 							_actionCount++;
 							_totalAcceptedSuggestionCount++;
-							if (accepted.Count == suggestions[k].Count)
+							if (accepted.Count == suggestion.TargetWordIndices.Count)
 							{
 								suggestionResult = "ACCEPT_FULL";
 								_fullSuggestionCount++;
 							}
-							else if (accepted[0] == suggestions[k][0])
+							else if (accepted[0] == suggestion.TargetWordIndices[0])
 							{
 								suggestionResult = "ACCEPT_INIT";
 								_initSuggestionCount++;
 							}
-							else if (accepted[accepted.Count - 1] == suggestions[k][suggestions[k].Count - 1])
+							else if (accepted[accepted.Count - 1]
+								== suggestion.TargetWordIndices[suggestion.TargetWordIndices.Count - 1])
 							{
 								suggestionResult = "ACCEPT_FIN";
 								_finalSuggestionCount++;
@@ -255,7 +258,7 @@ namespace SIL.Machine.Translation
 							session.AppendToPrefix(c, false);
 						}
 
-						suggestionResult = suggestions.Any(s => s.Count > 0) ? "REJECT" : "NONE";
+						suggestionResult = suggestions.Any(s => s.TargetWordIndices.Count > 0) ? "REJECT" : "NONE";
 						_actionCount++;
 					}
 
@@ -281,18 +284,19 @@ namespace SIL.Machine.Translation
 		}
 
 		private void WriteSuggestions(StreamWriter traceWriter, IInteractiveTranslationSession session,
-			IReadOnlyList<IReadOnlyList<int>> suggestions)
+			IReadOnlyList<TranslationSuggestion> suggestions)
 		{
 			if (traceWriter == null)
 				return;
 
 			for (int k = 0; k < suggestions.Count; k++)
 			{
+				TranslationSuggestion suggestion = suggestions[k];
 				bool inSuggestion = false;
 				traceWriter.Write($"SUGGESTION {k + 1}  ");
 				for (int j = 0; j < session.CurrentResults[k].TargetSegment.Count; j++)
 				{
-					if (suggestions[k].Contains(j))
+					if (suggestion.TargetWordIndices.Contains(j))
 					{
 						if (j > 0)
 							traceWriter.Write(" ");

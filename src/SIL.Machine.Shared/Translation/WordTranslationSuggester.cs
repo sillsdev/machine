@@ -5,14 +5,9 @@ namespace SIL.Machine.Translation
 {
 	public class WordTranslationSuggester : ITranslationSuggester
 	{
-		public WordTranslationSuggester(double confidenceThreshold)
-		{
-			ConfidenceThreshold = confidenceThreshold;
-		}
-
 		public double ConfidenceThreshold { get; set; }
 
-		public IEnumerable<int> GetSuggestedWordIndices(int prefixCount, bool isLastWordComplete,
+		public TranslationSuggestion GetSuggestion(int prefixCount, bool isLastWordComplete,
 			TranslationResult result)
 		{
 			int startingJ = prefixCount;
@@ -24,12 +19,14 @@ namespace SIL.Machine.Translation
 				if ((result.WordSources[startingJ - 1] & TranslationSources.Smt) != 0)
 					startingJ--;
 				else
-					yield break;
+					return new TranslationSuggestion();
 			}
 
 			int lookaheadCount = ComputeLookahead(prefixCount, result);
 			int j = startingJ;
 			bool inPhrase = false;
+			var indices = new List<int>();
+			double minConfidence = -1;
 			while (j < result.TargetSegment.Count && (lookaheadCount > 0 || inPhrase))
 			{
 				string word = result.TargetSegment[j];
@@ -45,7 +42,9 @@ namespace SIL.Machine.Translation
 				TranslationSources sources = result.WordSources[j];
 				if (confidence >= ConfidenceThreshold || (sources & TranslationSources.Transfer) != 0)
 				{
-					yield return j;
+					indices.Add(j);
+					if (minConfidence < 0 || confidence < minConfidence)
+						minConfidence = confidence;
 					inPhrase = true;
 					lookaheadCount--;
 				}
@@ -62,6 +61,8 @@ namespace SIL.Machine.Translation
 				}
 				j++;
 			}
+
+			return new TranslationSuggestion(indices, minConfidence < 0 ? 0 : minConfidence);
 		}
 
 		private int ComputeLookahead(int prefixCount, TranslationResult result)

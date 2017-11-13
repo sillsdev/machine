@@ -17,7 +17,7 @@ namespace SIL.Machine.Translation
 			double confidenceThreshold, InteractiveTranslationResult result)
 		{
 			_engine = engine;
-			_suggester = new WordTranslationSuggester(confidenceThreshold);
+			_suggester = new PhraseTranslationSuggester() { ConfidenceThreshold = confidenceThreshold };
 			SourceSegment = sourceSegment;
 			RuleResult = result.RuleResult;
 			SmtWordGraph = result.SmtWordGraph;
@@ -50,6 +50,7 @@ namespace SIL.Machine.Translation
 		public bool IsLastWordComplete { get; private set; }
 
 		public string[] CurrentSuggestion { get; private set; }
+		public double CurrentSuggestionConfidence { get; private set; }
 
 		public string[] UpdatePrefix(string prefix)
 		{
@@ -84,6 +85,7 @@ namespace SIL.Machine.Translation
 
 		public TextInsertion GetSuggestionTextInsertion(int suggestionIndex = -1)
 		{
+			// TODO: use detokenizer to build suggestion text
 			string text = suggestionIndex == -1 ? string.Join(" ", CurrentSuggestion)
 				: CurrentSuggestion[suggestionIndex];
 			if (IsLastWordComplete)
@@ -99,10 +101,9 @@ namespace SIL.Machine.Translation
 
 		private void UpdateSuggestion()
 		{
-			string[] suggestions = _suggester.GetSuggestedWordIndices(Prefix.Length, IsLastWordComplete, _curResult)
-				.Select(j => _curResult.TargetSegment[j]).ToArray();
-
-			CurrentSuggestion = suggestions;
+			TranslationSuggestion suggestion = _suggester.GetSuggestion(Prefix.Length, IsLastWordComplete, _curResult);
+			CurrentSuggestion = suggestion.TargetWordIndices.Select(j => _curResult.TargetSegment[j]).ToArray();
+			CurrentSuggestionConfidence = suggestion.Confidence;
 		}
 
 		public void Approve(Action<bool> onFinished)

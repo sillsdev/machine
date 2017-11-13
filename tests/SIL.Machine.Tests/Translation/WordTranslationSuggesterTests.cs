@@ -9,51 +9,51 @@ namespace SIL.Machine.Translation
 	public class WordTranslationSuggesterTests
 	{
 		[Test]
-		public void GetSuggestedWordIndices_Punctuation_EndsAtPunctuation()
+		public void GetSuggestion_Punctuation_EndsAtPunctuation()
 		{
 			TranslationResult result = CreateResult(5, 0, "this is a test .", 0.5, 0.5, 0.5, 0.5, 0.5);
-			var suggester = new WordTranslationSuggester(0.2);
-			Assert.That(suggester.GetSuggestedWordIndices(0, true, result), Is.EqualTo(new[] { 0, 1, 2, 3 }));
+			var suggester = new WordTranslationSuggester() { ConfidenceThreshold = 0.2 };
+			Assert.That(suggester.GetSuggestion(0, true, result).TargetWordIndices, Is.EqualTo(new[] { 0, 1, 2, 3 }));
 		}
 
 		[Test]
-		public void GetSuggestedWordIndices_UntranslatedWord_EndsAtUntranslatedWord()
+		public void GetSuggestion_UntranslatedWord_EndsAtUntranslatedWord()
 		{
 			TranslationResult result = CreateResult(5, 0, "this is a test .", 0.5, 0.5, 0, 0.5, 0.5);
-			var suggester = new WordTranslationSuggester(0.2);
-			Assert.That(suggester.GetSuggestedWordIndices(0, true, result), Is.EqualTo(new[] { 0, 1 }));
+			var suggester = new WordTranslationSuggester() { ConfidenceThreshold = 0.2 };
+			Assert.That(suggester.GetSuggestion(0, true, result).TargetWordIndices, Is.EqualTo(new[] { 0, 1 }));
 		}
 
 		[Test]
-		public void GetSuggestedWordIndices_PrefixCompletedWord_IncludesCompletedWord()
+		public void GetSuggestion_PrefixCompletedWord_IncludesCompletedWord()
 		{
 			TranslationResult result = CreateResult(5, 1, "this is a test .", 0.5, 0.5, 0.5, 0.5, 0.5);
-			var suggester = new WordTranslationSuggester(0.2);
-			Assert.That(suggester.GetSuggestedWordIndices(1, false, result), Is.EqualTo(new[] { 0, 1, 2, 3 }));
+			var suggester = new WordTranslationSuggester() { ConfidenceThreshold = 0.2 };
+			Assert.That(suggester.GetSuggestion(1, false, result).TargetWordIndices, Is.EqualTo(new[] { 0, 1, 2, 3 }));
 		}
 
 		[Test]
-		public void GetSuggestedWordIndices_PrefixPartialWord_NoSuggestions()
+		public void GetSuggestion_PrefixPartialWord_NoSuggestions()
 		{
 			TranslationResult result = CreateResult(5, 1, "te this is a test .", -1, 0.5, 0.5, 0.5, 0.5, 0.5);
-			var suggester = new WordTranslationSuggester(0.2);
-			Assert.That(suggester.GetSuggestedWordIndices(1, false, result), Is.Empty);
+			var suggester = new WordTranslationSuggester() { ConfidenceThreshold = 0.2 };
+			Assert.That(suggester.GetSuggestion(1, false, result).TargetWordIndices, Is.Empty);
 		}
 
 		[Test]
-		public void GetSuggestedWordIndices_InsertedWord_SkipsInsertedWord()
+		public void GetSuggestion_InsertedWord_SkipsInsertedWord()
 		{
 			TranslationResult result = CreateResult(4, 0, "this is a test .", -1, 0.5, 0.5, 0.5, 0.5);
-			var suggester = new WordTranslationSuggester(0.2);
-			Assert.That(suggester.GetSuggestedWordIndices(0, true, result), Is.EqualTo(new[] { 1, 2, 3 }));
+			var suggester = new WordTranslationSuggester() { ConfidenceThreshold = 0.2 };
+			Assert.That(suggester.GetSuggestion(0, true, result).TargetWordIndices, Is.EqualTo(new[] { 1, 2, 3 }));
 		}
 
 		[Test]
-		public void GetSuggestedWordIndices_DeletedWord_IgnoresDeletedWord()
+		public void GetSuggestion_DeletedWord_IgnoresDeletedWord()
 		{
 			TranslationResult result = CreateResult(6, 0, "this is a test .", -1, 0.5, 0.5, 0.5, 0.5, 0.5);
-			var suggester = new WordTranslationSuggester(0.2);
-			Assert.That(suggester.GetSuggestedWordIndices(0, true, result), Is.EqualTo(new[] { 0, 1, 2, 3 }));
+			var suggester = new WordTranslationSuggester() { ConfidenceThreshold = 0.2 };
+			Assert.That(suggester.GetSuggestion(0, true, result).TargetWordIndices, Is.EqualTo(new[] { 0, 1, 2, 3 }));
 		}
 
 		private static TranslationResult CreateResult(int sourceLen, int prefixLen, string target,
