@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using SIL.Machine.Annotations;
+using System.Collections.Generic;
 
 namespace SIL.Machine.Translation
 {
@@ -49,8 +50,8 @@ namespace SIL.Machine.Translation
 
 		public bool IsLastWordComplete { get; private set; }
 
-		public string[] CurrentSuggestion { get; private set; }
-		public double CurrentSuggestionConfidence { get; private set; }
+		public string[] Suggestion { get; private set; }
+		public double SuggestionConfidence { get; private set; }
 
 		public string[] UpdatePrefix(string prefix)
 		{
@@ -80,30 +81,28 @@ namespace SIL.Machine.Translation
 
 			UpdateSuggestion();
 
-			return CurrentSuggestion;
+			return Suggestion;
 		}
 
-		public TextInsertion GetSuggestionTextInsertion(int suggestionIndex = -1)
+		public string GetSuggestionText(int suggestionIndex = -1)
 		{
+			IEnumerable<string> words = suggestionIndex == -1 ? (IEnumerable<string>) Suggestion
+				: Suggestion.Take(suggestionIndex + 1);
 			// TODO: use detokenizer to build suggestion text
-			string text = suggestionIndex == -1 ? string.Join(" ", CurrentSuggestion)
-				: CurrentSuggestion[suggestionIndex];
-			if (IsLastWordComplete)
-				return new TextInsertion { InsertText = text };
+			string text = string.Join(" ", words);
 
+			if (IsLastWordComplete)
+				return text;
 
 			string lastToken = Prefix[Prefix.Length - 1];
-			if (suggestionIndex > 0)
-				return new TextInsertion { DeleteLength = lastToken.Length, InsertText = text };
-
-			return new TextInsertion { InsertText = text.Substring(lastToken.Length, text.Length - lastToken.Length) };
+			return text.Substring(lastToken.Length, text.Length - lastToken.Length);
 		}
 
 		private void UpdateSuggestion()
 		{
 			TranslationSuggestion suggestion = _suggester.GetSuggestion(Prefix.Length, IsLastWordComplete, _curResult);
-			CurrentSuggestion = suggestion.TargetWordIndices.Select(j => _curResult.TargetSegment[j]).ToArray();
-			CurrentSuggestionConfidence = suggestion.Confidence;
+			Suggestion = suggestion.TargetWordIndices.Select(j => _curResult.TargetSegment[j]).ToArray();
+			SuggestionConfidence = suggestion.Confidence;
 		}
 
 		public void Approve(Action<bool> onFinished)

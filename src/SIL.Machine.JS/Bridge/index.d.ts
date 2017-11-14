@@ -10,10 +10,10 @@ export interface InteractiveTranslationSession {
     confidenceThreshold: number;
     readonly prefix: string[];
     readonly isLastWordComplete: boolean;
-    readonly currentSuggestion: string[];
-    readonly currentSuggestionConfidence: number;
+    readonly suggestion: string[];
+    readonly suggestionConfidence: number;
     updatePrefix(prefix: string): string[];
-    getSuggestionTextInsertion(suggestionIndex?: number): { deleteLength: number, insertText: string };
+    getSuggestionText(suggestionIndex?: number): string;
     updateSuggestion(): void;
     approve(onFinished: { (arg: boolean): void }): void;
 }

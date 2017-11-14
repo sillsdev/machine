@@ -481,14 +481,18 @@ namespace SIL.Machine.Translation
 				UpdatePrefix_RemoveEntirePrefix_ReturnsSuggestion);
 			QUnit.Test(nameof(Approve_Success_ReturnsTrue), Approve_Success_ReturnsTrue);
 			QUnit.Test(nameof(Approve_Error_ReturnsFalse), Approve_Error_ReturnsFalse);
-			QUnit.Test(nameof(GetSuggestionTextInsertion_CompleteWord_ReturnsText),
-				GetSuggestionTextInsertion_CompleteWord_ReturnsText);
-			QUnit.Test(nameof(GetSuggestionTextInsertion_PartialWord_ReturnsText),
-				GetSuggestionTextInsertion_PartialWord_ReturnsText);
-			QUnit.Test(nameof(GetSuggestionTextInsertion_PartialWordFirstSuggestion_ReturnsText),
-				GetSuggestionTextInsertion_PartialWordFirstSuggestion_ReturnsText);
-			QUnit.Test(nameof(GetSuggestionTextInsertion_PartialWordSecondSuggestion_ReturnsText),
-				GetSuggestionTextInsertion_PartialWordSecondSuggestion_ReturnsText);
+			QUnit.Test(nameof(GetSuggestionText_LastWordComplete_ReturnsText),
+				GetSuggestionText_LastWordComplete_ReturnsText);
+			QUnit.Test(nameof(GetSuggestionText_LastWordCompleteSuggestionIndexZero_ReturnsText),
+				GetSuggestionText_LastWordCompleteSuggestionIndexZero_ReturnsText);
+			QUnit.Test(nameof(GetSuggestionText_LastWordCompleteSuggestionIndexOne_ReturnsText),
+				GetSuggestionText_LastWordCompleteSuggestionIndexOne_ReturnsText);
+			QUnit.Test(nameof(GetSuggestionText_LastWordIncomplete_ReturnsText),
+				GetSuggestionText_LastWordIncomplete_ReturnsText);
+			QUnit.Test(nameof(GetSuggestionText_LastWordIncompleteSuggestionIndexZero_ReturnsText),
+				GetSuggestionText_LastWordIncompleteSuggestionIndexZero_ReturnsText);
+			QUnit.Test(nameof(GetSuggestionText_LastWordIncompleteSuggestionIndexOne_ReturnsText),
+				GetSuggestionText_LastWordIncompleteSuggestionIndexOne_ReturnsText);
 		}
 
 		private static void CurrentSuggestion_EmptyPrefix_ReturnsSuggestion(Assert assert)
@@ -499,7 +503,7 @@ namespace SIL.Machine.Translation
 				{
 					assert.NotEqual(session, null);
 
-					assert.DeepEqual(session.CurrentSuggestion, "In the beginning the Word already".Split(" "));
+					assert.DeepEqual(session.Suggestion, "In the beginning the Word already".Split(" "));
 					done();
 				});
 		}
@@ -621,7 +625,7 @@ namespace SIL.Machine.Translation
 				});
 		}
 
-		private static void GetSuggestionTextInsertion_CompleteWord_ReturnsText(Assert assert)
+		private static void GetSuggestionText_LastWordComplete_ReturnsText(Assert assert)
 		{
 			var engine = new TranslationEngine("http://localhost/", "project1", CreateWebClient());
 			Action done = assert.Async();
@@ -630,14 +634,38 @@ namespace SIL.Machine.Translation
 				assert.NotEqual(session, null);
 
 				session.UpdatePrefix("In ");
-				TextInsertion change = session.GetSuggestionTextInsertion();
-				assert.Equal(change.DeleteLength, 0);
-				assert.Equal(change.InsertText, "the beginning the Word already");
+				assert.Equal(session.GetSuggestionText(), "the beginning the Word already");
 				done();
 			});
 		}
 
-		private static void GetSuggestionTextInsertion_PartialWord_ReturnsText(Assert assert)
+		private static void GetSuggestionText_LastWordCompleteSuggestionIndexZero_ReturnsText(Assert assert)
+		{
+			var engine = new TranslationEngine("http://localhost/", "project1", CreateWebClient());
+			Action done = assert.Async();
+			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
+			{
+				assert.NotEqual(session, null);
+				session.UpdatePrefix("In ");
+				assert.Equal(session.GetSuggestionText(0), "the");
+				done();
+			});
+		}
+
+		private static void GetSuggestionText_LastWordCompleteSuggestionIndexOne_ReturnsText(Assert assert)
+		{
+			var engine = new TranslationEngine("http://localhost/", "project1", CreateWebClient());
+			Action done = assert.Async();
+			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
+			{
+				assert.NotEqual(session, null);
+				session.UpdatePrefix("In ");
+				assert.Equal(session.GetSuggestionText(1), "the beginning");
+				done();
+			});
+		}
+
+		private static void GetSuggestionText_LastWordIncomplete_ReturnsText(Assert assert)
 		{
 			var engine = new TranslationEngine("http://localhost/", "project1", CreateWebClient());
 			Action done = assert.Async();
@@ -647,14 +675,12 @@ namespace SIL.Machine.Translation
 				session.UpdatePrefix("In ");
 
 				session.UpdatePrefix("In t");
-				TextInsertion change = session.GetSuggestionTextInsertion();
-				assert.Equal(change.DeleteLength, 0);
-				assert.Equal(change.InsertText, "he beginning the Word already");
+				assert.Equal(session.GetSuggestionText(), "he beginning the Word already");
 				done();
 			});
 		}
 
-		private static void GetSuggestionTextInsertion_PartialWordFirstSuggestion_ReturnsText(Assert assert)
+		private static void GetSuggestionText_LastWordIncompleteSuggestionIndexZero_ReturnsText(Assert assert)
 		{
 			var engine = new TranslationEngine("http://localhost/", "project1", CreateWebClient());
 			Action done = assert.Async();
@@ -664,14 +690,12 @@ namespace SIL.Machine.Translation
 				session.UpdatePrefix("In ");
 
 				session.UpdatePrefix("In t");
-				TextInsertion change = session.GetSuggestionTextInsertion(0);
-				assert.Equal(change.DeleteLength, 0);
-				assert.Equal(change.InsertText, "he");
+				assert.Equal(session.GetSuggestionText(0), "he");
 				done();
 			});
 		}
 
-		private static void GetSuggestionTextInsertion_PartialWordSecondSuggestion_ReturnsText(Assert assert)
+		private static void GetSuggestionText_LastWordIncompleteSuggestionIndexOne_ReturnsText(Assert assert)
 		{
 			var engine = new TranslationEngine("http://localhost/", "project1", CreateWebClient());
 			Action done = assert.Async();
@@ -680,10 +704,8 @@ namespace SIL.Machine.Translation
 				assert.NotEqual(session, null);
 				session.UpdatePrefix("In ");
 
-				session.UpdatePrefix("In t");
-				TextInsertion change = session.GetSuggestionTextInsertion(1);
-				assert.Equal(change.DeleteLength, 1);
-				assert.Equal(change.InsertText, "beginning");
+				session.UpdatePrefix("In th");
+				assert.Equal(session.GetSuggestionText(1), "e beginning");
 				done();
 			});
 		}
