@@ -502,7 +502,7 @@ namespace SIL.Machine.Translation
 			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
 				{
 					assert.NotEqual(session, null);
-
+					session.Initialize();
 					assert.DeepEqual(session.Suggestion, "In the beginning the Word already".Split(" "));
 					done();
 				});
@@ -515,7 +515,7 @@ namespace SIL.Machine.Translation
 			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
 				{
 					assert.NotEqual(session, null);
-
+					session.Initialize();
 					assert.DeepEqual(session.UpdatePrefix("In "), "the beginning the Word already".Split(" "));
 					done();
 				});
@@ -528,8 +528,8 @@ namespace SIL.Machine.Translation
 			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
 				{
 					assert.NotEqual(session, null);
+					session.Initialize();
 					session.UpdatePrefix("In ");
-
 					assert.DeepEqual(session.UpdatePrefix("In t"), "the beginning the Word already".Split(" "));
 					done();
 				});
@@ -542,8 +542,8 @@ namespace SIL.Machine.Translation
 			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
 				{
 					assert.NotEqual(session, null);
+					session.Initialize();
 					session.UpdatePrefix("In the beginning ");
-
 					assert.DeepEqual(session.UpdatePrefix("In the "), "beginning the Word already".Split(" "));
 					done();
 				});
@@ -556,8 +556,8 @@ namespace SIL.Machine.Translation
 			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
 				{
 					assert.NotEqual(session, null);
+					session.Initialize();
 					session.UpdatePrefix("In the beginning ");
-
 					assert.DeepEqual(session.UpdatePrefix(""), "In the beginning the Word already".Split(" "));
 					done();
 				});
@@ -590,8 +590,8 @@ namespace SIL.Machine.Translation
 			engine.TranslateInteractively(sourceSegment, 0.2, session =>
 				{
 					assert.NotEqual(session, null);
+					session.Initialize();
 					session.UpdatePrefix(prefix);
-
 					session.Approve(success =>
 					{
 						assert.Ok(success);
@@ -615,8 +615,8 @@ namespace SIL.Machine.Translation
 			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
 				{
 					assert.NotEqual(session, null);
+					session.Initialize();
 					session.UpdatePrefix("In the beginning the Word already existed.");
-
 					session.Approve(success =>
 					{
 						assert.NotOk(success);
@@ -632,7 +632,7 @@ namespace SIL.Machine.Translation
 			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
 			{
 				assert.NotEqual(session, null);
-
+				session.Initialize();
 				session.UpdatePrefix("In ");
 				assert.Equal(session.GetSuggestionText(), "the beginning the Word already");
 				done();
@@ -646,6 +646,7 @@ namespace SIL.Machine.Translation
 			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
 			{
 				assert.NotEqual(session, null);
+				session.Initialize();
 				session.UpdatePrefix("In ");
 				assert.Equal(session.GetSuggestionText(0), "the");
 				done();
@@ -659,6 +660,7 @@ namespace SIL.Machine.Translation
 			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
 			{
 				assert.NotEqual(session, null);
+				session.Initialize();
 				session.UpdatePrefix("In ");
 				assert.Equal(session.GetSuggestionText(1), "the beginning");
 				done();
@@ -672,8 +674,8 @@ namespace SIL.Machine.Translation
 			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
 			{
 				assert.NotEqual(session, null);
+				session.Initialize();
 				session.UpdatePrefix("In ");
-
 				session.UpdatePrefix("In t");
 				assert.Equal(session.GetSuggestionText(), "he beginning the Word already");
 				done();
@@ -687,8 +689,8 @@ namespace SIL.Machine.Translation
 			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
 			{
 				assert.NotEqual(session, null);
+				session.Initialize();
 				session.UpdatePrefix("In ");
-
 				session.UpdatePrefix("In t");
 				assert.Equal(session.GetSuggestionText(0), "he");
 				done();
@@ -702,8 +704,8 @@ namespace SIL.Machine.Translation
 			engine.TranslateInteractively("En el principio la Palabra ya existía.", 0.2, session =>
 			{
 				assert.NotEqual(session, null);
+				session.Initialize();
 				session.UpdatePrefix("In ");
-
 				session.UpdatePrefix("In th");
 				assert.Equal(session.GetSuggestionText(1), "e beginning");
 				done();

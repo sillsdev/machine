@@ -10,7 +10,7 @@ namespace SIL.Machine.Translation
 		private const double RuleEngineThreshold = 0.05;
 
 		private readonly TranslationEngine _engine;
-		private readonly ErrorCorrectionWordGraphProcessor _wordGraphProcessor;
+		private ErrorCorrectionWordGraphProcessor _wordGraphProcessor;
 		private readonly ITranslationSuggester _suggester;
 		private TranslationResult _curResult;
 
@@ -22,10 +22,6 @@ namespace SIL.Machine.Translation
 			SourceSegment = sourceSegment;
 			RuleResult = result.RuleResult;
 			SmtWordGraph = result.SmtWordGraph;
-
-			_wordGraphProcessor = new ErrorCorrectionWordGraphProcessor(_engine.ErrorCorrectionModel, SourceSegment,
-				SmtWordGraph);
-			UpdatePrefix("");
 		}
 
 		internal WordGraph SmtWordGraph { get; }
@@ -53,8 +49,26 @@ namespace SIL.Machine.Translation
 		public string[] Suggestion { get; private set; }
 		public double SuggestionConfidence { get; private set; }
 
+		public bool IsInitialized
+		{
+			get { return _wordGraphProcessor != null; }
+		}
+
+		public void Initialize()
+		{
+			if (IsInitialized)
+				return;
+
+			_wordGraphProcessor = new ErrorCorrectionWordGraphProcessor(_engine.ErrorCorrectionModel, SourceSegment,
+				SmtWordGraph);
+			UpdatePrefix("");
+		}
+
 		public string[] UpdatePrefix(string prefix)
 		{
+			if (!IsInitialized)
+				throw new InvalidOperationException("The session has not been initialized.");
+
 			Range<int>[] tokenRanges = _engine.TargetWordTokenizer.Tokenize(prefix).ToArray();
 			Prefix = tokenRanges.Select(s => prefix.Substring(s.Start, s.Length)).ToArray();
 			IsLastWordComplete = tokenRanges.Length == 0 || tokenRanges[tokenRanges.Length - 1].End != prefix.Length;
@@ -86,6 +100,9 @@ namespace SIL.Machine.Translation
 
 		public string GetSuggestionText(int suggestionIndex = -1)
 		{
+			if (!IsInitialized)
+				throw new InvalidOperationException("The session has not been initialized.");
+
 			IEnumerable<string> words = suggestionIndex == -1 ? (IEnumerable<string>) Suggestion
 				: Suggestion.Take(suggestionIndex + 1);
 			// TODO: use detokenizer to build suggestion text
@@ -107,6 +124,9 @@ namespace SIL.Machine.Translation
 
 		public void Approve(Action<bool> onFinished)
 		{
+			if (!IsInitialized)
+				throw new InvalidOperationException("The session has not been initialized.");
+
 			_engine.RestClient.TrainSegmentPairAsync(_engine.ProjectId, SourceSegment, Prefix)
 				.ContinueWith(t => onFinished(!t.IsFaulted));
 		}

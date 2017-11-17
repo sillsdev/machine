@@ -12,6 +12,8 @@ export interface InteractiveTranslationSession {
     readonly isLastWordComplete: boolean;
     readonly suggestion: string[];
     readonly suggestionConfidence: number;
+    readonly isInitialized: boolean;
+    initialize(): void;
     updatePrefix(prefix: string): string[];
     getSuggestionText(suggestionIndex?: number): string;
     updateSuggestion(): void;
