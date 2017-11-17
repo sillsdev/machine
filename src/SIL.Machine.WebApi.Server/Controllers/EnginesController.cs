@@ -166,7 +166,8 @@ namespace SIL.Machine.WebApi.Server.Controllers
 				TargetLanguageTag = engine.TargetLanguageTag,
 				IsShared = engine.IsShared,
 				Projects = engine.Projects.Select(projectId =>
-					Url.CreateLinkDto(RouteNames.Projects, projectId)).ToArray()
+					Url.CreateLinkDto(RouteNames.Projects, projectId)).ToArray(),
+				Confidence = engine.Confidence
 			};
 		}
 

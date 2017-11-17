@@ -19,6 +19,7 @@ namespace SIL.Machine.WebApi.Server.Services
 {
 	public class EngineRunner : DisposableBase
 	{
+		private readonly IEngineRepository _engineRepo;
 		private readonly IBuildRepository _buildRepo;
 		private readonly ISmtModelFactory _smtModelFactory;
 		private readonly IRuleEngineFactory _ruleEngineFactory;
@@ -40,10 +41,11 @@ namespace SIL.Machine.WebApi.Server.Services
 		private bool _isUpdated;
 		private DateTime _lastUsedTime;
 
-		public EngineRunner(IOptions<EngineOptions> options, IBuildRepository buildRepo,
+		public EngineRunner(IOptions<EngineOptions> options, IEngineRepository engineRepo, IBuildRepository buildRepo,
 			ISmtModelFactory smtModelFactory, IRuleEngineFactory ruleEngineFactory,
 			ITextCorpusFactory textCorpusFactory, ILogger<EngineRunner> logger, string engineId)
 		{
+			_engineRepo = engineRepo;
 			_buildRepo = buildRepo;
 			_smtModelFactory = smtModelFactory;
 			_ruleEngineFactory = ruleEngineFactory;
@@ -153,7 +155,7 @@ namespace SIL.Machine.WebApi.Server.Services
 					await _buildTask;
 				}
 
-				var build = new Build {EngineId = _engineId};
+				var build = new Build { EngineId = _engineId };
 				await _buildRepo.InsertAsync(build);
 				_buildId = build.Id;
 				Build clone = build.Clone();
@@ -295,6 +297,14 @@ namespace SIL.Machine.WebApi.Server.Services
 					foreach ((IReadOnlyList<string> Source, IReadOnlyList<string> Target) trainedSegment in _trainedSegments)
 						_hybridEngine.TrainSegment(trainedSegment.Source, trainedSegment.Target);
 					_trainedSegments.Clear();
+
+					Engine engine = await _engineRepo.GetAsync(_engineId);
+					if (engine != null)
+					{
+						await _engineRepo.ConcurrentUpdateAsync(engine,
+							e => e.Confidence = _batchTrainer.Stats.TranslationModelBleu);
+					}
+
 					_batchTrainer.Dispose();
 					_batchTrainer = null;
 					await _buildRepo.DeleteAsync(build);

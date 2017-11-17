@@ -47,5 +47,16 @@ namespace SIL.Machine.Translation
 		{
 			RestClient.ListenForTrainingStatus(ProjectId, onStatusUpdate).ContinueWith(t => onFinished(!t.IsFaulted));
 		}
+
+		public void GetConfidence(Action<bool, double> onFinished)
+		{
+			RestClient.GetEngineAsync(ProjectId).ContinueWith(t =>
+				{
+					if (t.IsFaulted)
+						onFinished(false, 0);
+					else
+						onFinished(true, t.Result.Confidence);
+				});
+		}
 	}
 }

@@ -7,7 +7,6 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using NUnit.Framework;
 using SIL.Machine.Corpora;
-using SIL.Machine.Tokenization;
 using SIL.Machine.Translation;
 using SIL.Machine.WebApi.Server.DataAccess;
 using SIL.Machine.WebApi.Server.Models;
@@ -94,13 +93,16 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			public TestEnvironment()
 			{
+				EngineRepository = new MemoryEngineRepository();
 				BuildRepository = new MemoryBuildRepository();
 				BatchTrainer = Substitute.For<ISmtBatchTrainer>();
+				BatchTrainer.Stats.Returns(new SmtBatchTrainStats());
 				SmtModel = Substitute.For<IInteractiveSmtModel>();
 			}
 
 			public Engine Engine { get; private set; }
 			public EngineRunner EngineRunner { get; private set; }
+			public IEngineRepository EngineRepository { get; }
 			public IBuildRepository BuildRepository { get; }
 			public ISmtBatchTrainer BatchTrainer { get; }
 			public IInteractiveSmtModel SmtModel { get; }
@@ -115,9 +117,10 @@ namespace SIL.Machine.WebApi.Server.Services
 					IsShared = false,
 					Projects = {"project1"}
 				};
+				EngineRepository.Insert(Engine);
 				var options = new EngineOptions {InactiveEngineTimeout = inactiveTimeout};
-				EngineRunner = new EngineRunner(new OptionsWrapper<EngineOptions>(options), BuildRepository,
-					CreateSmtModelFactory(), CreateRuleEngineFactory(), CreateTextCorpusFactory(),
+				EngineRunner = new EngineRunner(new OptionsWrapper<EngineOptions>(options), EngineRepository,
+					BuildRepository, CreateSmtModelFactory(), CreateRuleEngineFactory(), CreateTextCorpusFactory(),
 					Substitute.For<ILogger<EngineRunner>>(), Engine.Id);
 			}
 

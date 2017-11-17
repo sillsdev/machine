@@ -17,6 +17,7 @@ namespace SIL.Machine.WebApi.Server.Models
 			TargetLanguageTag = engine.TargetLanguageTag;
 			IsShared = engine.IsShared;
 			Projects = new HashSet<string>(engine.Projects);
+			Confidence = engine.Confidence;
 		}
 
 		public string Id { get; set; }
@@ -25,6 +26,7 @@ namespace SIL.Machine.WebApi.Server.Models
 		public string TargetLanguageTag { get; set; }
 		public bool IsShared { get; set; }
 		public ISet<string> Projects { get; }
+		public double Confidence { get; set; }
 
 		public Engine Clone()
 		{

@@ -8,7 +8,6 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using NUnit.Framework;
 using SIL.Machine.Corpora;
-using SIL.Machine.Tokenization;
 using SIL.Machine.Translation;
 using SIL.Machine.WebApi.Server.DataAccess;
 using SIL.Machine.WebApi.Server.Models;
@@ -276,8 +275,8 @@ namespace SIL.Machine.WebApi.Server.Services
 
 			private Owned<EngineRunner> CreateEngineRunner(string engineId)
 			{
-				var runner = new EngineRunner(_engineOptions, BuildRepository, _smtModelFactory, _ruleEngineFactory,
-					_textCorpusFactory, Substitute.For<ILogger<EngineRunner>>(), engineId);
+				var runner = new EngineRunner(_engineOptions, EngineRepository, BuildRepository, _smtModelFactory,
+					_ruleEngineFactory, _textCorpusFactory, Substitute.For<ILogger<EngineRunner>>(), engineId);
 				return new Owned<EngineRunner>(runner, runner);
 			}
 
@@ -331,6 +330,7 @@ namespace SIL.Machine.WebApi.Server.Services
 				smtModel.CreateInteractiveEngine().Returns(smtEngine);
 
 				var batchTrainer = Substitute.For<ISmtBatchTrainer>();
+				batchTrainer.Stats.Returns(new SmtBatchTrainStats());
 				smtModel.CreateBatchTrainer(Arg.Any<Func<string, string>>(), Arg.Any<ITextCorpus>(),
 					Arg.Any<Func<string, string>>(), Arg.Any<ITextCorpus>(), Arg.Any<ITextAlignmentCorpus>())
 					.Returns(batchTrainer);
