@@ -7,7 +7,7 @@ namespace SIL.Machine.WebApi.Server.Services
 {
 	public static class ServicesExtensions
 	{
-		public static IServiceCollection AddThotSmtModel(this IServiceCollection services, IConfigurationRoot config)
+		public static IServiceCollection AddThotSmtModel(this IServiceCollection services, IConfiguration config)
 		{
 			services.Configure<ThotSmtModelOptions>(config.GetSection("ThotSmtModel"));
 			services.AddSingleton<ISmtModelFactory, ThotSmtModelFactory>();
@@ -20,14 +20,15 @@ namespace SIL.Machine.WebApi.Server.Services
 			return services;
 		}
 
-		public static IServiceCollection AddShareDBMongoTextCorpus(this IServiceCollection services, IConfigurationRoot config)
+		public static IServiceCollection AddShareDBMongoTextCorpus(this IServiceCollection services,
+			IConfiguration config)
 		{
 			services.Configure<ShareDBMongoTextCorpusOptions>(config.GetSection("ShareDBMongoTextCorpus"));
 			services.AddSingleton<ITextCorpusFactory, ShareDBMongoTextCorpusFactory>();
 			return services;
 		}
 
-		public static IServiceCollection AddTextFileTextCorpus(this IServiceCollection services, IConfigurationRoot config)
+		public static IServiceCollection AddTextFileTextCorpus(this IServiceCollection services, IConfiguration config)
 		{
 			services.Configure<TextFileTextCorpusOptions>(config.GetSection("TextFileTextCorpus"));
 			services.AddSingleton<ITextCorpusFactory, TextFileTextCorpusFactory>();

@@ -1,5 +1,5 @@
-﻿using System.IO;
-using Autofac.Extensions.DependencyInjection;
+﻿using Autofac.Extensions.DependencyInjection;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 
@@ -9,18 +9,24 @@ namespace SIL.Machine.WebApi.Server
 	{
 		public static void Main(string[] args)
 		{
-			var config = new ConfigurationBuilder().AddCommandLine(args).Build();
+			BuildWebHost(args).Run();
+		}
 
-			var host = new WebHostBuilder()
-				.UseKestrel()
+		public static IWebHost BuildWebHost(string[] args)
+		{
+			IConfigurationRoot configuration = new ConfigurationBuilder()
+				.AddCommandLine(args)
+				.Build();
+			return WebHost.CreateDefaultBuilder(args)
 				.ConfigureServices(services => services.AddAutofac())
-				.UseContentRoot(Directory.GetCurrentDirectory())
-				.UseConfiguration(config)
-				.UseIISIntegration()
+				.ConfigureAppConfiguration((context, config) =>
+				{
+					config.AddJsonFile("appsettings.user.json", true);
+					config.AddJsonFile("secrets.json", true, true);
+				})
+				.UseConfiguration(configuration)
 				.UseStartup<Startup>()
 				.Build();
-
-			host.Run();
 		}
 	}
 }

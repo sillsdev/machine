@@ -154,7 +154,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			return entity;
 		}
 
-		public static IServiceCollection AddNoDbDataAccess(this IServiceCollection services, IConfigurationRoot config)
+		public static IServiceCollection AddNoDbDataAccess(this IServiceCollection services, IConfiguration config)
 		{
 			services.Configure<NoDbDataAccessOptions>(config.GetSection("NoDbDataAccess"));
 			services.AddNoDbForEntity<Engine>();
