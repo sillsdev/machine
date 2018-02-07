@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using ManyConsole;
 using ManyConsole.Internal;
-using NDesk.Options;
+using Mono.Options;
 using SIL.Extensions;
 
 namespace SIL.Machine.Morphology.HermitCrab
