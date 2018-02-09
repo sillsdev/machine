@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
@@ -16,7 +17,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			_textFileDir = options.Value.TextFileDir;
 		}
 
-		public ITextCorpus Create(IEnumerable<string> projects, TextCorpusType type)
+		public Task<ITextCorpus> CreateAsync(IEnumerable<string> projects, TextCorpusType type)
 		{
 			var wordTokenizer = new LatinWordTokenizer();
 			var texts = new List<IText>();
@@ -41,7 +42,7 @@ namespace SIL.Machine.WebApi.Server.Services
 				}
 			}
 
-			return new DictionaryTextCorpus(texts);
+			return Task.FromResult<ITextCorpus>(new DictionaryTextCorpus(texts));
 		}
 	}
 }

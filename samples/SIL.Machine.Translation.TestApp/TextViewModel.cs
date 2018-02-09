@@ -175,7 +175,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		internal bool IsApproved(TextSegmentRef segmentRef)
 		{
-			return _approvedSegments.Contains(segmentRef.SegmentNumber - 1);
+			return _approvedSegments.Contains(segmentRef.Indices[1] - 1);
 		}
 
 		private void LoadMetadataFile()

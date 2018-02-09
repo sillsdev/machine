@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using SIL.Machine.Corpora;
 
 namespace SIL.Machine.WebApi.Server.Services
@@ -11,6 +12,6 @@ namespace SIL.Machine.WebApi.Server.Services
 
 	public interface ITextCorpusFactory
 	{
-		ITextCorpus Create(IEnumerable<string> projects, TextCorpusType type);
+		Task<ITextCorpus> CreateAsync(IEnumerable<string> projects, TextCorpusType type);
 	}
 }

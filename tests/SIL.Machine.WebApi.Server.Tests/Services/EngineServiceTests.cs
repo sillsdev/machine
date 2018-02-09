@@ -25,7 +25,7 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			using (var env = new TestEnvironment())
 			{
-				env.CreateEngineService();
+				await env.CreateEngineServiceAsync();
 				TranslationResult result = await env.Service.TranslateAsync(EngineLocatorType.Id, "engine1",
 					"Esto es una prueba .".Split());
 				Assert.That(result, Is.Null);
@@ -38,7 +38,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			using (var env = new TestEnvironment())
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
-				env.CreateEngineService();
+				await env.CreateEngineServiceAsync();
 				TranslationResult result = await env.Service.TranslateAsync(EngineLocatorType.Id, engineId,
 					"Esto es una prueba .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("this is a test .".Split()));
@@ -50,7 +50,7 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			using (var env = new TestEnvironment())
 			{
-				env.CreateEngineService();
+				await env.CreateEngineServiceAsync();
 				InteractiveTranslationResult result = await env.Service.InteractiveTranslateAsync(EngineLocatorType.Id,
 					"engine1", "Esto es una prueba .".Split());
 				Assert.That(result, Is.Null);
@@ -63,7 +63,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			using (var env = new TestEnvironment())
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
-				env.CreateEngineService();
+				await env.CreateEngineServiceAsync();
 				InteractiveTranslationResult result = await env.Service.InteractiveTranslateAsync(EngineLocatorType.Id,
 					engineId, "Esto es una prueba .".Split());
 				Assert.That(result.RuleResult.TargetSegment, Is.EqualTo("this is a test .".Split()));
@@ -76,7 +76,7 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			using (var env = new TestEnvironment())
 			{
-				env.CreateEngineService();
+				await env.CreateEngineServiceAsync();
 				bool result = await env.Service.TrainSegmentAsync(EngineLocatorType.Id, "engine1",
 					"Esto es una prueba .".Split(), "This is a test .".Split());
 				Assert.That(result, Is.False);
@@ -90,7 +90,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			using (var env = new TestEnvironment())
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
-				env.CreateEngineService();
+				await env.CreateEngineServiceAsync();
 				bool result = await env.Service.TrainSegmentAsync(EngineLocatorType.Id, engineId,
 					"Esto es una prueba .".Split(), "This is a test .".Split());
 				Assert.That(result, Is.True);
@@ -102,7 +102,7 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			using (var env = new TestEnvironment())
 			{
-				env.CreateEngineService();
+				await env.CreateEngineServiceAsync();
 				Project project = await env.Service.AddProjectAsync("project1", "es", "en", "latin", "latin", true);
 				Assert.That(project, Is.Not.Null);
 
@@ -117,7 +117,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			using (var env = new TestEnvironment())
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
-				env.CreateEngineService();
+				await env.CreateEngineServiceAsync();
 				Project project = await env.Service.AddProjectAsync("project2", "es", "en", "latin", "latin", true);
 				Assert.That(project, Is.Not.Null);
 
@@ -133,7 +133,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			using (var env = new TestEnvironment())
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", false)).Id;
-				env.CreateEngineService();
+				await env.CreateEngineServiceAsync();
 				Project project = await env.Service.AddProjectAsync("project2", "es", "en", "latin", "latin", true);
 				Assert.That(project, Is.Not.Null);
 
@@ -149,7 +149,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			using (var env = new TestEnvironment())
 			{
 				await env.CreateEngineAsync("es", "en", true);
-				env.CreateEngineService();
+				await env.CreateEngineServiceAsync();
 				Project project = await env.Service.AddProjectAsync("project1", "es", "en", "latin", "latin", true);
 				Assert.That(project, Is.Null);
 			}
@@ -161,7 +161,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			using (var env = new TestEnvironment())
 			{
 				await env.CreateEngineAsync("es", "en", false);
-				env.CreateEngineService();
+				await env.CreateEngineServiceAsync();
 				Project project = await env.Service.AddProjectAsync("project1", "es", "en", "latin", "latin", false);
 				Assert.That(project, Is.Null);
 			}
@@ -173,7 +173,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			using (var env = new TestEnvironment())
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", false)).Id;
-				env.CreateEngineService();
+				await env.CreateEngineServiceAsync();
 				bool result = await env.Service.RemoveProjectAsync("project1");
 				Assert.That(result, Is.True);
 				Engine engine = await env.EngineRepository.GetAsync(engineId);
@@ -187,7 +187,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			using (var env = new TestEnvironment())
 			{
 				await env.CreateEngineAsync("es", "en", false);
-				env.CreateEngineService();
+				await env.CreateEngineServiceAsync();
 				bool result = await env.Service.RemoveProjectAsync("project3");
 				Assert.That(result, Is.False);
 			}
@@ -199,7 +199,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			using (var env = new TestEnvironment())
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
-				env.CreateEngineService();
+				await env.CreateEngineServiceAsync();
 				Build build = await env.Service.StartBuildAsync(EngineLocatorType.Id, engineId);
 				Assert.That(build, Is.Not.Null);
 			}
@@ -211,7 +211,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			using (var env = new TestEnvironment())
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
-				env.CreateEngineService();
+				await env.CreateEngineServiceAsync();
 				bool result = await env.Service.CancelBuildAsync(BuildLocatorType.Engine, engineId);
 				Assert.That(result, Is.False);
 			}
@@ -225,7 +225,7 @@ namespace SIL.Machine.WebApi.Server.Services
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
 				var build = new Build {Id = "build1", EngineId = engineId};
 				await env.BuildRepository.InsertAsync(build);
-				env.CreateEngineService();
+				await env.CreateEngineServiceAsync();
 				// ensures that the build is completed
 				env.DisposeEngineService();
 				build = await env.BuildRepository.GetAsync("build1");
@@ -260,11 +260,11 @@ namespace SIL.Machine.WebApi.Server.Services
 			public IRepository<Project> ProjectRepository { get; }
 			public EngineService Service { get; private set; }
 
-			public void CreateEngineService()
+			public async Task CreateEngineServiceAsync()
 			{
 				Service = new EngineService(_engineOptions, EngineRepository, BuildRepository,
 					ProjectRepository, CreateEngineRunner);
-				Service.Init();
+				await Service.InitAsync();
 			}
 
 			public void DisposeEngineService()
@@ -371,8 +371,8 @@ namespace SIL.Machine.WebApi.Server.Services
 			private ITextCorpusFactory CreateTextCorpusFactory()
 			{
 				var factory = Substitute.For<ITextCorpusFactory>();
-				factory.Create(Arg.Any<IEnumerable<string>>(), Arg.Any<TextCorpusType>())
-					.Returns(new DictionaryTextCorpus(Enumerable.Empty<IText>()));
+				factory.CreateAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<TextCorpusType>())
+					.Returns(Task.FromResult<ITextCorpus>(new DictionaryTextCorpus(Enumerable.Empty<IText>())));
 				return factory;
 			}
 

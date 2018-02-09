@@ -33,7 +33,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 				{
 					await Task.Delay(10);
 					build.CurrentStep = 1;
-					buildRepo.Update(build);
+					await buildRepo.UpdateAsync(build);
 				});
 			Build newBuild = await buildRepo.GetNewerRevisionAsync(build.Id, 1, false);
 			await task;
@@ -50,7 +50,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			Task task = Task.Run(async () =>
 				{
 					await Task.Delay(10);
-					buildRepo.Delete(build);
+					await buildRepo.DeleteAsync(build);
 				});
 			Build newBuild = await buildRepo.GetNewerRevisionAsync(build.Id, 1, false);
 			await task;

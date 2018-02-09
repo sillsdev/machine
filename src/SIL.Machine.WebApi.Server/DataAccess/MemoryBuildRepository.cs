@@ -13,8 +13,13 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			: base(persistenceRepo)
 		{
 			_engineIdIndex = new UniqueEntityIndex<string, Build>(b => b.EngineId);
+		}
+
+		public override async Task InitAsync()
+		{
+			await base.InitAsync();
 			if (PersistenceRepository != null)
-				_engineIdIndex.PopulateIndex(PersistenceRepository.GetAll());
+				_engineIdIndex.PopulateIndex(await PersistenceRepository.GetAllAsync());
 		}
 
 		public async Task<Build> GetByEngineIdAsync(string engineId)

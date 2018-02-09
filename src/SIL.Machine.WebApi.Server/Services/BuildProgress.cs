@@ -1,7 +1,8 @@
-﻿using System;
-using SIL.Machine.Translation;
+﻿using SIL.Machine.Translation;
 using SIL.Machine.WebApi.Server.DataAccess;
 using SIL.Machine.WebApi.Server.Models;
+using SIL.Threading;
+using System;
 
 namespace SIL.Machine.WebApi.Server.Services
 {
@@ -21,7 +22,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			_build.StepCount = value.StepCount;
 			_build.CurrentStep = value.CurrentStep;
 			_build.CurrentStepMessage = value.CurrentStepMessage;
-			_buildRepo.Update(_build);
+			_buildRepo.UpdateAsync(_build).WaitAndUnwrapException();
 		}
 	}
 }

@@ -1,18 +1,18 @@
-﻿using System;
+﻿using SIL.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SIL.Machine.Corpora
 {
-	public struct TextSegmentRef : IEquatable<TextSegmentRef>, IComparable<TextSegmentRef>
+	public struct TextSegmentRef : IEquatable<TextSegmentRef>, IComparable<TextSegmentRef>, IComparable
 	{
-		public TextSegmentRef(int sectionNum, int segmentNum)
+		public TextSegmentRef(params int[] indices)
 		{
-			SectionNumber = sectionNum;
-			SegmentNumber = segmentNum;
+			Indices = indices;
 		}
 
-		public int SectionNumber { get; }
-
-		public int SegmentNumber { get; }
+		public IReadOnlyList<int> Indices { get; }
 
 		public override bool Equals(object obj)
 		{
@@ -21,27 +21,36 @@ namespace SIL.Machine.Corpora
 
 		public override int GetHashCode()
 		{
-			int code = 23;
-			code = code * 31 + SectionNumber.GetHashCode();
-			code = code * 31 + SegmentNumber.GetHashCode();
-			return code;
+			return Indices.GetSequenceHashCode();
 		}
 
 		public bool Equals(TextSegmentRef other)
 		{
-			return SectionNumber == other.SectionNumber && SegmentNumber == other.SegmentNumber;
+			return Indices.SequenceEqual(other.Indices);
 		}
 
 		public int CompareTo(TextSegmentRef other)
 		{
-			if (SectionNumber != other.SectionNumber)
-				return SectionNumber - other.SectionNumber;
-			return SegmentNumber - other.SegmentNumber;
+			for (int i = 0; i < Indices.Count && i < other.Indices.Count; i++)
+			{
+				int index = Indices[i];
+				int otherIndex = other.Indices[i];
+				if (index != otherIndex)
+					return index.CompareTo(otherIndex);
+			}
+			return Indices.Count.CompareTo(other.Indices.Count);
+		}
+
+		public int CompareTo(object obj)
+		{
+			if (!(obj is TextSegmentRef))
+				throw new ArgumentException("The specified object is not a TextSegmentRef.", nameof(obj));
+			return CompareTo((TextSegmentRef) obj);
 		}
 
 		public override string ToString()
 		{
-			return string.Format("{0}.{1}", SectionNumber, SegmentNumber);
+			return string.Join(".", Indices);
 		}
 	}
 }

@@ -15,12 +15,17 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		{
 			_langTagIndex = new UniqueEntityIndex<(string SourceLanguageTag, string TargetLanguageTag), Engine>(
 				e => (e.SourceLanguageTag, e.TargetLanguageTag), e => e.IsShared);
-			if (PersistenceRepository != null)
-				_langTagIndex.PopulateIndex(PersistenceRepository.GetAll());
-
 			_projectIndex = new UniqueEntityIndex<string, Engine>(e => e.Projects);
+		}
+
+		public override async Task InitAsync()
+		{
+			await base.InitAsync();
 			if (PersistenceRepository != null)
-				_projectIndex.PopulateIndex(PersistenceRepository.GetAll());
+			{
+				_langTagIndex.PopulateIndex(await PersistenceRepository.GetAllAsync());
+				_projectIndex.PopulateIndex(await PersistenceRepository.GetAllAsync());
+			}
 		}
 
 		public async Task<Engine> GetByLanguageTagAsync(string sourceLanguageTag, string targetLanguageTag)

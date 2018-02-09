@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Translation;
 
@@ -6,7 +7,7 @@ namespace SIL.Machine.Corpora
 {
 	public class ParallelTextSegment
 	{
-		public ParallelTextSegment(ParallelText text, TextSegmentRef segRef, IReadOnlyList<string> sourceSegment,
+		public ParallelTextSegment(ParallelText text, IComparable segRef, IReadOnlyList<string> sourceSegment,
 			IReadOnlyList<string> targetSegment, IEnumerable<(int SourceIndex, int TargetIndex)> alignedWords = null)
 		{
 			Text = text;
@@ -18,7 +19,7 @@ namespace SIL.Machine.Corpora
 
 		public ParallelText Text { get; }
 
-		public TextSegmentRef SegmentRef { get; }
+		public IComparable SegmentRef { get; }
 
 		public bool IsEmpty => SourceSegment.Count == 0 || TargetSegment.Count == 0;
 

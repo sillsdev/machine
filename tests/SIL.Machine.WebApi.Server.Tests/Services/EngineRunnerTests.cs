@@ -24,7 +24,7 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			using (var env = new TestEnvironment())
 			{
-				env.CreateEngine();
+				await env.CreateEngineAsync();
 				await env.EngineRunner.InitNewAsync();
 				Build build = await env.EngineRunner.StartBuildAsync(env.Engine);
 				Assert.That(build, Is.Not.Null);
@@ -41,7 +41,7 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			using (var env = new TestEnvironment())
 			{
-				env.CreateEngine();
+				await env.CreateEngineAsync();
 				await env.EngineRunner.InitNewAsync();
 				env.BatchTrainer.Train(Arg.Any<IProgress<SmtTrainProgress>>(), Arg.Do<Action>(checkCanceled =>
 					{
@@ -65,7 +65,7 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			using (var env = new TestEnvironment())
 			{
-				env.CreateEngine();
+				await env.CreateEngineAsync();
 				await env.EngineRunner.InitNewAsync();
 				await env.EngineRunner.TrainSegmentPairAsync("esto es una prueba .".Split(), "this is a test .".Split());
 				await Task.Delay(10);
@@ -80,7 +80,7 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			using (var env = new TestEnvironment())
 			{
-				env.CreateEngine(TimeSpan.FromHours(1));
+				await env.CreateEngineAsync(TimeSpan.FromHours(1));
 				await env.EngineRunner.InitNewAsync();
 				await env.EngineRunner.TrainSegmentPairAsync("esto es una prueba .".Split(), "this is a test .".Split());
 				await env.EngineRunner.CommitAsync();
@@ -107,7 +107,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			public ISmtBatchTrainer BatchTrainer { get; }
 			public IInteractiveSmtModel SmtModel { get; }
 
-			public void CreateEngine(TimeSpan inactiveTimeout = default(TimeSpan))
+			public async Task CreateEngineAsync(TimeSpan inactiveTimeout = default(TimeSpan))
 			{
 				Engine = new Engine
 				{
@@ -117,7 +117,7 @@ namespace SIL.Machine.WebApi.Server.Services
 					IsShared = false,
 					Projects = {"project1"}
 				};
-				EngineRepository.Insert(Engine);
+				await EngineRepository.InsertAsync(Engine);
 				var options = new EngineOptions {InactiveEngineTimeout = inactiveTimeout};
 				EngineRunner = new EngineRunner(new OptionsWrapper<EngineOptions>(options), EngineRepository,
 					BuildRepository, CreateSmtModelFactory(), CreateRuleEngineFactory(), CreateTextCorpusFactory(),
@@ -215,8 +215,8 @@ namespace SIL.Machine.WebApi.Server.Services
 			private ITextCorpusFactory CreateTextCorpusFactory()
 			{
 				var factory = Substitute.For<ITextCorpusFactory>();
-				factory.Create(Arg.Any<IEnumerable<string>>(), Arg.Any<TextCorpusType>())
-					.Returns(new DictionaryTextCorpus(Enumerable.Empty<IText>()));
+				factory.CreateAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<TextCorpusType>())
+					.Returns(Task.FromResult<ITextCorpus>(new DictionaryTextCorpus(Enumerable.Empty<IText>())));
 				return factory;
 			}
 

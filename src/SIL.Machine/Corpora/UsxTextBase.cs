@@ -122,7 +122,7 @@ namespace SIL.Machine.Corpora
 
 		private TextSegment CreateTextSegment(ParseContext ctxt)
 		{
-			TextSegment segment = CreateTextSegment(ctxt.Chapter, ctxt.Verse, ctxt.VerseBuilder.ToString());
+			TextSegment segment = CreateTextSegment(ctxt.VerseBuilder.ToString(), ctxt.Chapter, ctxt.Verse);
 			ctxt.VerseBuilder.Clear();
 			return segment;
 		}

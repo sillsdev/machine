@@ -131,14 +131,14 @@ namespace SIL.Machine.WebApi.Server.Services
 			}
 		}
 
-		public void RestartUnfinishedBuild(Build build, Engine engine)
+		public async Task RestartUnfinishedBuildAsync(Build build, Engine engine)
 		{
 			CheckDisposed();
 
-			using (_lock.Lock())
+			using (await _lock.LockAsync())
 			{
 				_buildId = build.Id;
-				StartBuildInternal(engine, build);
+				await StartBuildInternalAsync(engine, build);
 			}
 		}
 
@@ -159,17 +159,17 @@ namespace SIL.Machine.WebApi.Server.Services
 				await _buildRepo.InsertAsync(build);
 				_buildId = build.Id;
 				Build clone = build.Clone();
-				StartBuildInternal(engine, build);
+				await StartBuildInternalAsync(engine, build);
 				return clone;
 			}
 		}
 
-		private void StartBuildInternal(Engine engine, Build build)
+		private async Task StartBuildInternalAsync(Engine engine, Build build)
 		{
 			Load();
 
-			ITextCorpus sourceCorpus = _textCorpusFactory.Create(engine.Projects, TextCorpusType.Source);
-			ITextCorpus targetCorpus = _textCorpusFactory.Create(engine.Projects, TextCorpusType.Target);
+			ITextCorpus sourceCorpus = await _textCorpusFactory.CreateAsync(engine.Projects, TextCorpusType.Source);
+			ITextCorpus targetCorpus = await _textCorpusFactory.CreateAsync(engine.Projects, TextCorpusType.Target);
 			_batchTrainer = _smtModel.CreateBatchTrainer(Preprocessors.Lowercase, sourceCorpus, Preprocessors.Lowercase,
 				targetCorpus);
 			_cts?.Dispose();

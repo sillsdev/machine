@@ -39,7 +39,7 @@ namespace SIL.Machine.Corpora
 						case UsfmTokenType.Chapter:
 							if (inVerse)
 							{
-								yield return CreateTextSegment(chapter, verse, sb.ToString());
+								yield return CreateTextSegment(sb.ToString(), chapter, verse);
 								sb.Clear();
 								inVerse = false;
 							}
@@ -53,7 +53,7 @@ namespace SIL.Machine.Corpora
 						case UsfmTokenType.Verse:
 							if (inVerse)
 							{
-								yield return CreateTextSegment(chapter, verse, sb.ToString());
+								yield return CreateTextSegment(sb.ToString(), chapter, verse);
 								sb.Clear();
 							}
 							else
@@ -75,7 +75,7 @@ namespace SIL.Machine.Corpora
 				}
 
 				if (inVerse)
-					yield return CreateTextSegment(chapter, verse, sb.ToString());
+					yield return CreateTextSegment(sb.ToString(), chapter, verse);
 			}
 		}
 	}

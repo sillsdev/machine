@@ -1,11 +1,12 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NoDb;
 using SIL.Machine.WebApi.Server.Models;
 using SIL.Machine.WebApi.Server.Options;
 using SIL.Threading;
+using System;
+using System.Threading.Tasks;
 
 namespace SIL.Machine.WebApi.Server.DataAccess
 {
@@ -24,8 +25,8 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 
 	public static class DataAccessExtensions
 	{
-		public static async Task<Engine> GetByLocatorAsync(this IEngineRepository engineRepo, EngineLocatorType locatorType,
-			string locator)
+		public static async Task<Engine> GetByLocatorAsync(this IEngineRepository engineRepo,
+			EngineLocatorType locatorType, string locator)
 		{
 			switch (locatorType)
 			{
@@ -74,30 +75,6 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 				}
 			}
 			return entity;
-		}
-
-		public static bool TryConcurrentUpdate<T>(this IRepository<T> repo, T entity, Action<T> changeAction, out T newEntity)
-			where T : class, IEntity<T>
-		{
-			while (true)
-			{
-				try
-				{
-					changeAction(entity);
-					repo.Update(entity, true);
-					break;
-				}
-				catch (ConcurrencyConflictException)
-				{
-					if (!repo.TryGet(entity.Id, out entity))
-					{
-						newEntity = null;
-						return false;
-					}
-				}
-			}
-			newEntity = entity;
-			return true;
 		}
 
 		public static Task<T> GetNewerRevisionAsync<T>(this IRepository<T> repo, string id, long minRevision, bool waitNew)
@@ -186,6 +163,14 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			services.AddSingleton<IBuildRepository, MemoryBuildRepository>();
 			services.AddSingleton<IRepository<Project>, MemoryRepository<Project>>();
 			return services;
+		}
+
+		public static IApplicationBuilder UseDataAccess(this IApplicationBuilder app)
+		{
+			app.ApplicationServices.GetService<IEngineRepository>().InitAsync().WaitAndUnwrapException();
+			app.ApplicationServices.GetService<IBuildRepository>().InitAsync().WaitAndUnwrapException();
+			app.ApplicationServices.GetService<IRepository<Project>>().InitAsync().WaitAndUnwrapException();
+			return app;
 		}
 	}
 }

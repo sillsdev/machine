@@ -203,7 +203,7 @@ namespace SIL.Machine.Translation.TestApp
 					text.PropertyChanged += TextPropertyChanged;
 					_texts.Add(text);
 
-					Func<TextSegment, bool> segmentFilter = s => text.IsApproved(s.SegmentRef);
+					Func<TextSegment, bool> segmentFilter = s => text.IsApproved((TextSegmentRef) s.SegmentRef);
 					sourceTexts.Add(new FilteredText(new TextFileText(_tokenizer, name, srcTextFileName),
 						segmentFilter));
 					targetTexts.Add(new FilteredText(new TextFileText(_tokenizer, name, trgTextFileName),

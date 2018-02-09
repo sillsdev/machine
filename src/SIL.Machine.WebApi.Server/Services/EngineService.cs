@@ -37,20 +37,21 @@ namespace SIL.Machine.WebApi.Server.Services
 			_commitTimer = new AsyncTimer(EngineCommitAsync);
 		}
 
-		public void Init()
+		public async Task InitAsync()
 		{
 			// restart any builds that didn't finish before the last shutdown
-			foreach (Build build in _buildRepo.GetAll())
+			foreach (Build build in await _buildRepo.GetAllAsync())
 			{
-				if (_engineRepo.TryGet(build.EngineId, out Engine engine))
+				Engine engine = await _engineRepo.GetAsync(build.EngineId);
+				if (engine != null)
 				{
 					EngineRunner runner = CreateRunner(engine.Id);
-					runner.RestartUnfinishedBuild(build, engine);
+					await runner.RestartUnfinishedBuildAsync(build, engine);
 				}
 				else
 				{
 					// orphaned build, so delete it
-					_buildRepo.Delete(build);
+					await _buildRepo.DeleteAsync(build);
 				}
 			}
 			_commitTimer.Start(_options.EngineCommitFrequency);
@@ -195,22 +196,20 @@ namespace SIL.Machine.WebApi.Server.Services
 				if (engine == null)
 					return false;
 
+				EngineRunner runner = GetOrCreateRunner(engine.Id);
 				if (engine.Projects.Count == 1 && engine.Projects.Contains(projectId))
 				{
 					// the engine will have no associated projects, so remove it
 					await _engineRepo.DeleteAsync(engine);
-					if (_runners.TryGetValue(engine.Id, out Owned<EngineRunner> runner))
-					{
-						_runners.Remove(engine.Id);
-						await runner.Value.DeleteDataAsync();
-						runner.Dispose();
-					}
+					_runners.Remove(engine.Id);
+					await runner.DeleteDataAsync();
+					runner.Dispose();
 				}
 				else
 				{
 					// engine will still have associated projects, so just update it
 					await _engineRepo.ConcurrentUpdateAsync(engine, e => e.Projects.Remove(projectId));
-					await GetOrCreateRunner(engine.Id).StartBuildAsync(engine);
+					await runner.StartBuildAsync(engine);
 				}
 				await _projectRepo.DeleteAsync(projectId);
 				return true;

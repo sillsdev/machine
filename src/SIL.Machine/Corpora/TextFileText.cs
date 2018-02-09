@@ -37,7 +37,7 @@ namespace SIL.Machine.Corpora
 						}
 						else
 						{
-							yield return CreateTextSegment(sectionNum, segmentNum, line);
+							yield return CreateTextSegment(line, sectionNum, segmentNum);
 							segmentNum++;
 						}
 					}

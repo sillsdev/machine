@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using MongoDB.Bson;
 using NoDb;
 using SIL.Machine.WebApi.Server.Models;
-using SIL.Threading;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SIL.Machine.WebApi.Server.DataAccess
 {
@@ -20,35 +20,9 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		protected IBasicCommands<T> Commands { get; }
 		protected IBasicQueries<T> Queries { get; }
 
-		public IEnumerable<T> GetAll()
+		public Task InitAsync()
 		{
-			return AsyncContext.Run(GetAllAsync);
-		}
-
-		public bool TryGet(string id, out T entity)
-		{
-			entity = AsyncContext.Run(() => GetAsync(id));
-			return entity != null;
-		}
-
-		public void Insert(T entity)
-		{
-			AsyncContext.Run(() => InsertAsync(entity));
-		}
-
-		public void Update(T entity, bool checkConflict = false)
-		{
-			AsyncContext.Run(() => UpdateAsync(entity, checkConflict));
-		}
-
-		public void Delete(T entity, bool checkConflict = false)
-		{
-			AsyncContext.Run(() => DeleteAsync(entity, checkConflict));
-		}
-
-		public void Delete(string id)
-		{
-			AsyncContext.Run(() => DeleteAsync(id));
+			return Task.FromResult(0);
 		}
 
 		public async Task<IEnumerable<T>> GetAllAsync()

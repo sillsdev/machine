@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SIL.Machine.WebApi.Server.Options;
+using SIL.Threading;
 
 namespace SIL.Machine.WebApi.Server.Services
 {
@@ -20,11 +21,11 @@ namespace SIL.Machine.WebApi.Server.Services
 			return services;
 		}
 
-		public static IServiceCollection AddShareDBMongoTextCorpus(this IServiceCollection services,
+		public static IServiceCollection AddXForgeTextCorpus(this IServiceCollection services,
 			IConfiguration config)
 		{
-			services.Configure<ShareDBMongoTextCorpusOptions>(config.GetSection("ShareDBMongoTextCorpus"));
-			services.AddSingleton<ITextCorpusFactory, ShareDBMongoTextCorpusFactory>();
+			services.Configure<XForgeTextCorpusOptions>(config.GetSection("XForgeTextCorpus"));
+			services.AddSingleton<ITextCorpusFactory, XForgeTextCorpusFactory>();
 			return services;
 		}
 
@@ -35,9 +36,17 @@ namespace SIL.Machine.WebApi.Server.Services
 			return services;
 		}
 
-		public static IApplicationBuilder InitEngineService(this IApplicationBuilder app)
+		public static IServiceCollection AddEngineService(this IServiceCollection services, IConfiguration config)
 		{
-			app.ApplicationServices.GetService<EngineService>().Init();
+			services.Configure<EngineOptions>(config.GetSection("TranslationEngine"));
+			services.AddSingleton<EngineService>();
+			services.AddTransient<EngineRunner>();
+			return services;
+		}
+
+		public static IApplicationBuilder UseEngineService(this IApplicationBuilder app)
+		{
+			app.ApplicationServices.GetService<EngineService>().InitAsync().WaitAndUnwrapException();
 			return app;
 		}
 	}

@@ -38,7 +38,6 @@ namespace SIL.Machine.WebApi.Server
 					= new CamelCasePropertyNamesContractResolver());
 			services.AddRouting(options => options.LowercaseUrls = true);
 
-			services.Configure<EngineOptions>(Configuration.GetSection("TranslationEngine"));
 			services.Configure<SecurityOptions>(Configuration.GetSection("Security"));
 
 			var smtModel = Configuration.GetValue<string>("SmtModel");
@@ -60,8 +59,8 @@ namespace SIL.Machine.WebApi.Server
 			var textCorpus = Configuration.GetValue<string>("TextCorpus");
 			switch (textCorpus)
 			{
-				case "ShareDBMongo":
-					services.AddShareDBMongoTextCorpus(Configuration);
+				case "XForge":
+					services.AddXForgeTextCorpus(Configuration);
 					break;
 
 				case "TextFile":
@@ -81,8 +80,7 @@ namespace SIL.Machine.WebApi.Server
 					break;
 			}
 
-			services.AddSingleton<EngineService>();
-			services.AddTransient<EngineRunner>();
+			services.AddEngineService(Configuration);
 		}
 
 		public void ConfigureContainer(ContainerBuilder builder)
@@ -96,15 +94,17 @@ namespace SIL.Machine.WebApi.Server
 				app.UseDeveloperExceptionPage();
 
 			app.UseForwardedHeaders(new ForwardedHeadersOptions
-				{
-					ForwardedHeaders = ForwardedHeaders.XForwardedFor
-				});
+			{
+				ForwardedHeaders = ForwardedHeaders.XForwardedFor
+			});
 
 			app.UseCors("GlobalPolicy");
 
 			app.UseMvc();
 
-			app.InitEngineService();
+			app.UseDataAccess();
+
+			app.UseEngineService();
 		}
 	}
 }
