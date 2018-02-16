@@ -29,6 +29,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			var ops = (BsonArray) doc["ops"];
 			foreach (BsonDocument op in ops.Cast<BsonDocument>())
 			{
+				// skip embeds
 				if (!op.TryGetValue("insert", out BsonValue value) || value.BsonType != BsonType.String)
 					continue;
 
@@ -47,9 +48,7 @@ namespace SIL.Machine.WebApi.Server.Services
 					sb.Clear();
 				}
 
-				var text = (string) value;
-				if (text != "\u200b")
-					sb.Append(text);
+				sb.Append((string) value);
 				prevRef = curRef;
 			}
 
