@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.1.1" />
-    <PackageReference Include="QuickGraphPCL" Version="3.6.61114.2" NoWarn="NU1701" />
   </ItemGroup>
 
   <ItemGroup>

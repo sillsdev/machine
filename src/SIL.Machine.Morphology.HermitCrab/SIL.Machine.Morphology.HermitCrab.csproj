@@ -11,10 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="QuickGraphPCL" Version="3.6.61114.2" NoWarn="NU1701" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\SIL.Core\SIL.Core.csproj" />
     <ProjectReference Include="..\SIL.Machine\SIL.Machine.csproj" />
   </ItemGroup>

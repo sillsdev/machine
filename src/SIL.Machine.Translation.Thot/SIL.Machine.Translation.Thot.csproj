@@ -7,7 +7,6 @@
   <Import Project="../AssemblyInfo.props" />
 
   <ItemGroup>
-    <PackageReference Include="QuickGraphPCL" Version="3.6.61114.2" NoWarn="NU1701" />
     <PackageReference Include="Thot" Version="1.0.0-62" />
   </ItemGroup>
 
