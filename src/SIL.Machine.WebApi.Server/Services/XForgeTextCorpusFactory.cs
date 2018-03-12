@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using SIL.Machine.Corpora;
@@ -6,8 +8,6 @@ using SIL.Machine.Tokenization;
 using SIL.Machine.WebApi.Server.DataAccess;
 using SIL.Machine.WebApi.Server.Models;
 using SIL.Machine.WebApi.Server.Options;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SIL.Machine.WebApi.Server.Services
 {
@@ -19,7 +19,7 @@ namespace SIL.Machine.WebApi.Server.Services
 		public XForgeTextCorpusFactory(IOptions<XForgeTextCorpusOptions> options,
 			IRepository<Project> projectRepo)
 		{
-			_mongoClient = new MongoClient(options.Value.MongoConnectionString);
+			_mongoClient = new MongoClient(options.Value.MongoConnectionString ?? "mongodb://localhost:27017");
 			_projectRepo = projectRepo;
 		}
 

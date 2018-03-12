@@ -30,7 +30,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			string engineDir = Path.Combine(_rootDir, engineId);
 			if (!Directory.Exists(engineDir))
 				Directory.CreateDirectory(engineDir);
-			ZipFile.ExtractToDirectory(_options.NewModelFile, engineDir);
+			ZipFile.ExtractToDirectory(_options.NewModelFile ?? "thot-new-model.zip", engineDir);
 		}
 
 		public void CleanupModel(string engineId)
