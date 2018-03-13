@@ -2,8 +2,8 @@
 
 source build.sh
 
-DEPLOY_PATH=${DEPLOY_PATH:-/var/www/scriptureforge.org/machine/}
-DATA_PATH="/var/lib/machine-web-api"
+DEPLOY_PATH=${DEPLOY_PATH:-/opt/machine-web-api/}
+DATA_PATH="/var/opt/machine-web-api"
 
 pushd .. > /dev/null
 
