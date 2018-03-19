@@ -21,4 +21,4 @@ fi
 
 popd > /dev/null
 
-sudo service machine-web-api restart
+sudo systemctl restart machine-web-api
