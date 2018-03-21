@@ -13,6 +13,7 @@ sudo rm -rf $BUILD_OUTPUT
 dotnet restore || exit 1
 dotnet publish -c $CONFIGURATION --runtime $DEPLOY_RUNTIME -o ../../$BUILD_OUTPUT/package src/$PROJECT/$PROJECT.csproj || exit 1
 (cd src/$PROJECT/data/thot-new-model; zip -q -r ../../../../$THOT_NEW_MODEL_FILE . -x .gitattributes;) || exit 1
-tar -cvzf $PACKAGE_FILE -C $BUILD_OUTPUT/package . > /dev/null || exit 1
+chmod -R 755 $BUILD_OUTPUT/package || exit 1
+tar -cvpzf $PACKAGE_FILE -C $BUILD_OUTPUT/package . > /dev/null || exit 1
 
 popd > /dev/null

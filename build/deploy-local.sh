@@ -9,9 +9,8 @@ pushd .. > /dev/null
 
 sudo rm -rf $DEPLOY_PATH
 sudo mkdir -p $DEPLOY_PATH || exit 1
-sudo tar -xzf $PACKAGE_FILE -C $DEPLOY_PATH > /dev/null || exit 1
+sudo tar -xpzf $PACKAGE_FILE -C $DEPLOY_PATH > /dev/null || exit 1
 sudo chown -R root:www-data $DEPLOY_PATH || exit 1
-sudo chmod -R 755 $DEPLOY_PATH || exit 1
 
 if [ ! -d $DATA_PATH ]; then
     sudo mkdir -p $DATA_PATH || exit 1
