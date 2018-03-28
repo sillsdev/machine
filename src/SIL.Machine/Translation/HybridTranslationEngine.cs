@@ -93,7 +93,8 @@ namespace SIL.Machine.Translation
 			for (int j = 0; j < targetSegment.Count; j++)
 			{
 				bool jAligned = false;
-				if ((hybridResult.WordSources[j] & TranslationSources.Transfer) != 0)
+				if (j < hybridResult.WordSources.Count
+					&& (hybridResult.WordSources[j] & TranslationSources.Transfer) != 0)
 				{
 					foreach (int i in hybridResult.Alignment.GetColumnAlignedIndices(j))
 					{
