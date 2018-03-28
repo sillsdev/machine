@@ -36,11 +36,11 @@ namespace SIL.Machine.WebApi.Server.Services
 				if (!op.TryGetValue("attributes", out BsonValue attrsValue))
 					continue;
 
-				var attrs = (BsonDocument) attrsValue;
+				BsonDocument attrs = attrsValue.AsBsonDocument;
 				if (!attrs.TryGetValue("segment", out BsonValue segmentValue))
 					continue;
 
-				var curRef = (string) segmentValue;
+				string curRef = segmentValue.AsString;
 				if (prevRef != null && prevRef != curRef)
 				{
 					string[] segment = wordTokenizer.TokenizeToStrings(sb.ToString()).ToArray();
@@ -48,7 +48,10 @@ namespace SIL.Machine.WebApi.Server.Services
 					sb.Clear();
 				}
 
-				sb.Append((string) value);
+				string text = value.AsString;
+				// skip blanks
+				if (text != "\u2002" && text != "\u2003\u2003")
+					sb.Append(text);
 				prevRef = curRef;
 			}
 
