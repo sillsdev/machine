@@ -8,7 +8,7 @@ namespace SIL.Machine.Translation
 {
 	public class TranslationEngine
 	{
-		internal const int MaxSegmentSize = 100;
+		internal const int MaxSegmentSize = 110;
 
 		public TranslationEngine(string baseUrl, string projectId, IHttpClient httpClient = null)
 		{

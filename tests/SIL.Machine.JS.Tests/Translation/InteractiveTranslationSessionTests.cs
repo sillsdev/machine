@@ -561,7 +561,7 @@ namespace SIL.Machine.Translation
 
 		private static void Approve_Success(Assert assert)
 		{
-			string sourceSegment = "En el principio la Palabra ya existía.";
+			string source = "En el principio la Palabra ya existía.";
 			string prefix = "In the beginning the Word already existed.";
 
 			MockHttpClient httpClient = CreateWebClient();
@@ -575,7 +575,7 @@ namespace SIL.Machine.Translation
 							RestClientBase.SerializerSettings);
 						var tokenizer = new LatinWordTokenizer();
 						assert.DeepEqual(segmentPair.SourceSegment,
-							tokenizer.TokenizeToStrings(sourceSegment).ToArray());
+							tokenizer.TokenizeToStrings(source).ToArray());
 						assert.DeepEqual(segmentPair.TargetSegment, tokenizer.TokenizeToStrings(prefix).ToArray());
 					},
 					ResponseText = ""
@@ -583,7 +583,7 @@ namespace SIL.Machine.Translation
 
 			var engine = new TranslationEngine("http://localhost/", "project1", httpClient);
 			Action done = assert.Async();
-			engine.TranslateInteractively(sourceSegment, 0.2, session =>
+			engine.TranslateInteractively(source, 0.2, session =>
 				{
 					assert.NotEqual(session, null);
 					session.Initialize();
@@ -623,8 +623,8 @@ namespace SIL.Machine.Translation
 
 		private static void Approve_SegmentInvalid(Assert assert)
 		{
-			string sourceSegment = string.Join(" ", Enumerable.Repeat("palabra", 100)) + ".";
-			string prefix = string.Join(" ", Enumerable.Repeat("word", 100)) + ".";
+			string source = string.Join(" ", Enumerable.Repeat("palabra", TranslationEngine.MaxSegmentSize)) + ".";
+			string prefix = string.Join(" ", Enumerable.Repeat("word", TranslationEngine.MaxSegmentSize)) + ".";
 
 			MockHttpClient httpClient = CreateWebClient();
 			httpClient.Requests.Add(new MockRequest
@@ -637,7 +637,7 @@ namespace SIL.Machine.Translation
 						RestClientBase.SerializerSettings);
 					var tokenizer = new LatinWordTokenizer();
 					assert.DeepEqual(segmentPair.SourceSegment,
-						tokenizer.TokenizeToStrings(sourceSegment).ToArray());
+						tokenizer.TokenizeToStrings(source).ToArray());
 					assert.DeepEqual(segmentPair.TargetSegment, tokenizer.TokenizeToStrings(prefix).ToArray());
 				},
 				ResponseText = ""
@@ -645,7 +645,7 @@ namespace SIL.Machine.Translation
 
 			var engine = new TranslationEngine("http://localhost/", "project1", httpClient);
 			Action done = assert.Async();
-			engine.TranslateInteractively(sourceSegment, 0.2, session =>
+			engine.TranslateInteractively(source, 0.2, session =>
 			{
 				assert.NotEqual(session, null);
 				session.Initialize();
@@ -761,9 +761,11 @@ namespace SIL.Machine.Translation
 
 		private static void IsSourceSegmentValid_SegmentInvalid(Assert assert)
 		{
+			string source = string.Join(" ", Enumerable.Repeat("word", TranslationEngine.MaxSegmentSize)) + ".";
+
 			var engine = new TranslationEngine("http://localhost/", "project1", CreateWebClient());
 			Action done = assert.Async();
-			engine.TranslateInteractively(string.Join(" ", Enumerable.Repeat("word", 100)) + ".", 0.2, session =>
+			engine.TranslateInteractively(source, 0.2, session =>
 			{
 				assert.NotEqual(session, null);
 				session.Initialize();
