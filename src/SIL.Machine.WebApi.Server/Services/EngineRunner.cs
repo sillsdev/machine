@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SIL.Machine.Corpora;
-using SIL.Machine.Tokenization;
 using SIL.Machine.Translation;
 using SIL.Machine.WebApi.Server.DataAccess;
 using SIL.Machine.WebApi.Server.Models;

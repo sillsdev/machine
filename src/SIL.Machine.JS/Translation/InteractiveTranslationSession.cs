@@ -18,7 +18,7 @@ namespace SIL.Machine.Translation
 			double confidenceThreshold, InteractiveTranslationResult result)
 		{
 			_engine = engine;
-			_suggester = new PhraseTranslationSuggester() { ConfidenceThreshold = confidenceThreshold };
+			_suggester = new PhraseTranslationSuggester { ConfidenceThreshold = confidenceThreshold };
 			SourceSegment = sourceSegment;
 			RuleResult = result.RuleResult;
 			SmtWordGraph = result.SmtWordGraph;
@@ -49,10 +49,9 @@ namespace SIL.Machine.Translation
 		public string[] Suggestion { get; private set; }
 		public double SuggestionConfidence { get; private set; }
 
-		public bool IsInitialized
-		{
-			get { return _wordGraphProcessor != null; }
-		}
+		public bool IsInitialized => _wordGraphProcessor != null;
+
+		public bool IsSourceSegmentValid => SourceSegment.Length <= TranslationEngine.MaxSegmentSize;
 
 		public void Initialize()
 		{

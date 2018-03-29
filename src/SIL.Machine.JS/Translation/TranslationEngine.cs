@@ -8,6 +8,8 @@ namespace SIL.Machine.Translation
 {
 	public class TranslationEngine
 	{
+		internal const int MaxSegmentSize = 100;
+
 		public TranslationEngine(string baseUrl, string projectId, IHttpClient httpClient = null)
 		{
 			ProjectId = projectId;
@@ -28,6 +30,13 @@ namespace SIL.Machine.Translation
 			Action<InteractiveTranslationSession> onFinished)
 		{
 			string[] tokens = SourceWordTokenizer.TokenizeToStrings(sourceSegment).ToArray();
+			if (tokens.Length > MaxSegmentSize)
+			{
+				var results = new InteractiveTranslationResult(new WordGraph(), null);
+				onFinished(new InteractiveTranslationSession(this, tokens, confidenceThreshold, results));
+				return;
+			}
+
 			Task<InteractiveTranslationResult> task = RestClient.TranslateInteractivelyAsync(ProjectId, tokens);
 			task.ContinueWith(t => onFinished(t.IsFaulted ? null
 				: new InteractiveTranslationSession(this, tokens, confidenceThreshold, t.Result)));

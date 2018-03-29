@@ -1,17 +1,22 @@
-﻿using SIL.Machine.Statistics;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using SIL.Machine.Statistics;
 
 namespace SIL.Machine.Translation
 {
 	public class WordGraph
 	{
-		private static int[] EmptyArcIndices = new int[0];
+		private static readonly int[] EmptyArcIndices = new int[0];
 
 		public const int InitialState = 0;
 
 		private readonly HashSet<int> _finalStates;
 		private readonly Dictionary<int, StateInfo> _states;
+
+		public WordGraph()
+			: this(Enumerable.Empty<WordGraphArc>(), Enumerable.Empty<int>())
+		{
+		}
 
 		public WordGraph(IEnumerable<WordGraphArc> arcs, IEnumerable<int> finalStates, double initialStateScore = 0)
 		{

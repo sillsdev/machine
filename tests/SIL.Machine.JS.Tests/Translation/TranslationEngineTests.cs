@@ -45,7 +45,7 @@ namespace SIL.Machine.Translation
 							Score = -11.11f,
 							Words = new[] { "This", "is" },
 							Confidences = new[] { 0.4f, 0.5f },
-							SourceSegmentRange = new RangeDto() { Start = 0, End = 2 },
+							SourceSegmentRange = new RangeDto { Start = 0, End = 2 },
 							IsUnknown = false,
 							Alignment = new[]
 							{
@@ -60,7 +60,7 @@ namespace SIL.Machine.Translation
 							Score = -22.22f,
 							Words = new[] { "a" },
 							Confidences = new[] { 0.6f },
-							SourceSegmentRange = new RangeDto() { Start = 2, End = 3 },
+							SourceSegmentRange = new RangeDto { Start = 2, End = 3 },
 							IsUnknown = false,
 							Alignment = new[]
 							{
@@ -74,7 +74,7 @@ namespace SIL.Machine.Translation
 							Score = 33.33f,
 							Words = new[] { "prueba" },
 							Confidences = new[] { 0.0f },
-							SourceSegmentRange = new RangeDto() { Start = 3, End = 4 },
+							SourceSegmentRange = new RangeDto { Start = 3, End = 4 },
 							IsUnknown = true,
 							Alignment = new[]
 							{
@@ -88,7 +88,7 @@ namespace SIL.Machine.Translation
 							Score = -44.44f,
 							Words = new[] { "." },
 							Confidences = new[] { 0.7f },
-							SourceSegmentRange = new RangeDto() { Start = 4, End = 5 },
+							SourceSegmentRange = new RangeDto { Start = 4, End = 5 },
 							IsUnknown = false,
 							Alignment = new[]
 							{
