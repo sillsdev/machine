@@ -13,6 +13,7 @@ export interface InteractiveTranslationSession {
     readonly suggestion: string[];
     readonly suggestionConfidence: number;
     readonly isInitialized: boolean;
+    readonly isSourceSegmentValid: boolean;
     initialize(): void;
     updatePrefix(prefix: string): string[];
     getSuggestionText(suggestionIndex?: number): string;
