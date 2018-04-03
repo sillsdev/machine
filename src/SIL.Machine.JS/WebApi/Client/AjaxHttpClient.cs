@@ -20,9 +20,9 @@ namespace SIL.Machine.WebApi.Client
 					return;
 
 				if ((request.Status >= 200 && request.Status < 300) || request.Status == 304)
-					tcs.SetResult(new HttpResponse(true, request.Status, request.ResponseText));
+					tcs.TrySetResult(new HttpResponse(true, request.Status, request.ResponseText));
 				else
-					tcs.SetResult(new HttpResponse(false, request.Status));
+					tcs.TrySetResult(new HttpResponse(false, request.Status));
 			};
 
 			string methodStr;
@@ -54,8 +54,8 @@ namespace SIL.Machine.WebApi.Client
 
 			CancellationTokenRegistration reg = ct.Register(() =>
 			{
-				request.Abort();
-				tcs.SetCanceled();
+				if (tcs.TrySetCanceled())
+					request.Abort();
 			});
 			tcs.Task.ContinueWith(_ => reg.Dispose());
 			return tcs.Task;

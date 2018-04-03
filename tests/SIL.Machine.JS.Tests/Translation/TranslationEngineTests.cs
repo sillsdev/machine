@@ -395,14 +395,13 @@ namespace SIL.Machine.Translation
 		{
 			var tcs = new TaskCompletionSource<bool>();
 
-			int id = Global.SetTimeout(() => tcs.SetResult(true), milliseconds);
+			int id = Global.SetTimeout(() => tcs.TrySetResult(true), milliseconds);
 
 			CancellationTokenRegistration reg = ct.Register(() =>
 			{
-				Global.ClearTimeout(id);
-				tcs.SetCanceled();
+				if (tcs.TrySetCanceled())
+					Global.ClearTimeout(id);
 			});
-
 			tcs.Task.ContinueWith(_ => reg.Dispose());
 			return tcs.Task;
 		}
