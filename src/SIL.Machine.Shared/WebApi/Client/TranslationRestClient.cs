@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SIL.Machine.Translation;
@@ -19,7 +20,8 @@ namespace SIL.Machine.WebApi.Client
 		public async Task<ProjectDto> GetProjectAsync(string projectId)
 		{
 			string url = $"translation/projects/id:{projectId}";
-			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url);
+			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url, null, null,
+				CancellationToken.None);
 			if (!response.IsSuccess)
 				throw new HttpException("Error getting project.") { StatusCode = response.StatusCode };
 			return JsonConvert.DeserializeObject<ProjectDto>(response.Content, SerializerSettings);
@@ -30,7 +32,8 @@ namespace SIL.Machine.WebApi.Client
 		{
 			string url = $"translation/engines/project:{projectId}/actions/interactiveTranslate";
 			string body = JsonConvert.SerializeObject(sourceSegment, SerializerSettings);
-			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Post, url, body, "application/json");
+			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Post, url, body, "application/json",
+				CancellationToken.None);
 			if (!response.IsSuccess)
 			{
 				throw new HttpException("Error calling interactiveTranslate action.")
@@ -53,7 +56,8 @@ namespace SIL.Machine.WebApi.Client
 				TargetSegment = targetSegment.ToArray()
 			};
 			string body = JsonConvert.SerializeObject(pairDto, SerializerSettings);
-			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Post, url, body, "application/json");
+			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Post, url, body, "application/json",
+				CancellationToken.None);
 			if (!response.IsSuccess)
 				throw new HttpException("Error calling trainSegment action.") { StatusCode = response.StatusCode };
 		}
@@ -64,28 +68,30 @@ namespace SIL.Machine.WebApi.Client
 			await CreateBuildAsync(engineDto.Id);
 		}
 
-		public async Task TrainAsync(string projectId, Action<SmtTrainProgress> progress)
+		public async Task TrainAsync(string projectId, Action<SmtTrainProgress> progress, CancellationToken ct)
 		{
 			EngineDto engineDto = await GetEngineAsync(projectId);
 			BuildDto buildDto = await CreateBuildAsync(engineDto.Id);
-			await PollBuildProgressAsync(buildDto, progress);
+			await PollBuildProgressAsync(buildDto, progress, ct);
 		}
 
-		public async Task ListenForTrainingStatus(string projectId, Action<SmtTrainProgress> progress)
+		public async Task ListenForTrainingStatusAsync(string projectId, Action<SmtTrainProgress> progress,
+			CancellationToken ct)
 		{
 			EngineDto engineDto = await GetEngineAsync(projectId);
 			string url = $"translation/builds/engine:{engineDto.Id}?waitNew=true";
-			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url);
+			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url, null, null, ct);
 			if (!response.IsSuccess)
 				throw new HttpException("Error getting build.") { StatusCode = response.StatusCode };
 			BuildDto buildDto = JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
-			await PollBuildProgressAsync(buildDto, progress);
+			await PollBuildProgressAsync(buildDto, progress, ct);
 		}
 
 		public async Task<EngineDto> GetEngineAsync(string projectId)
 		{
 			string url = $"translation/engines/project:{projectId}";
-			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url);
+			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url, null, null,
+				CancellationToken.None);
 			if (!response.IsSuccess)
 				throw new HttpException("Error getting engine identifier.") { StatusCode = response.StatusCode };
 			return JsonConvert.DeserializeObject<EngineDto>(response.Content, SerializerSettings);
@@ -95,20 +101,23 @@ namespace SIL.Machine.WebApi.Client
 		{
 			string body = JsonConvert.SerializeObject(engineId, SerializerSettings);
 			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Post, "translation/builds", body,
-				"application/json");
+				"application/json", CancellationToken.None);
 			if (!response.IsSuccess)
 				throw new HttpException("Error starting build.") { StatusCode = response.StatusCode };
 			return JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
 		}
 
-		private async Task PollBuildProgressAsync(BuildDto buildDto, Action<SmtTrainProgress> progress)
+		private async Task PollBuildProgressAsync(BuildDto buildDto, Action<SmtTrainProgress> progress,
+			CancellationToken ct)
 		{
 			while (true)
 			{
+				ct.ThrowIfCancellationRequested();
+
 				progress(new SmtTrainProgress(buildDto.CurrentStep, buildDto.CurrentStepMessage, buildDto.StepCount));
 
 				string url = $"translation/builds/id:{buildDto.Id}?minRevision={buildDto.Revision + 1}";
-				HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url);
+				HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url, null, null, ct);
 				if (response.IsSuccess)
 					buildDto = JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
 				else if (response.StatusCode == 404)

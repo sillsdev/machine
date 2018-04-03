@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using SIL.Machine.Tokenization;
 using SIL.Machine.WebApi.Client;
@@ -10,6 +11,8 @@ namespace SIL.Machine.Translation
 	{
 		internal const int MaxSegmentSize = 110;
 
+		private readonly CancellationTokenSource _cts;
+
 		public TranslationEngine(string baseUrl, string projectId, IHttpClient httpClient = null)
 		{
 			ProjectId = projectId;
@@ -18,6 +21,7 @@ namespace SIL.Machine.Translation
 			TargetWordTokenizer = wordTokenizer;
 			RestClient = new TranslationRestClient(baseUrl, httpClient ?? new AjaxHttpClient());
 			ErrorCorrectionModel = new ErrorCorrectionModel();
+			_cts = new CancellationTokenSource();
 		}
 
 		internal string ProjectId { get; }
@@ -44,7 +48,8 @@ namespace SIL.Machine.Translation
 
 		public void Train(Action<SmtTrainProgress> onStatusUpdate, Action<bool> onFinished)
 		{
-			RestClient.TrainAsync(ProjectId, onStatusUpdate).ContinueWith(t => onFinished(!t.IsFaulted));
+			RestClient.TrainAsync(ProjectId, onStatusUpdate, _cts.Token)
+				.ContinueWith(t => onFinished(!t.IsFaulted && !t.IsCanceled));
 		}
 
 		public void StartTraining(Action<bool> onFinished)
@@ -54,7 +59,8 @@ namespace SIL.Machine.Translation
 
 		public void ListenForTrainingStatus(Action<SmtTrainProgress> onStatusUpdate, Action<bool> onFinished)
 		{
-			RestClient.ListenForTrainingStatus(ProjectId, onStatusUpdate).ContinueWith(t => onFinished(!t.IsFaulted));
+			RestClient.ListenForTrainingStatusAsync(ProjectId, onStatusUpdate, _cts.Token)
+				.ContinueWith(t => onFinished(!t.IsFaulted && !t.IsCanceled));
 		}
 
 		public void GetConfidence(Action<bool, double> onFinished)
@@ -66,6 +72,12 @@ namespace SIL.Machine.Translation
 					else
 						onFinished(true, t.Result.Confidence);
 				});
+		}
+
+		public void Close()
+		{
+			_cts.Cancel();
+			_cts.Dispose();
 		}
 	}
 }

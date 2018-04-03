@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Bridge.Html5;
 using Bridge.QUnit;
 using Newtonsoft.Json;
@@ -569,7 +570,7 @@ namespace SIL.Machine.Translation
 				{
 					Method = HttpRequestMethod.Post,
 					Url = "translation/engines/project:project1/actions/trainSegment",
-					Action = body =>
+					Action = (body, ct) =>
 					{
 						var segmentPair = JsonConvert.DeserializeObject<SegmentPairDto>(body,
 							RestClientBase.SerializerSettings);
@@ -577,6 +578,7 @@ namespace SIL.Machine.Translation
 						assert.DeepEqual(segmentPair.SourceSegment,
 							tokenizer.TokenizeToStrings(source).ToArray());
 						assert.DeepEqual(segmentPair.TargetSegment, tokenizer.TokenizeToStrings(prefix).ToArray());
+						return Task.FromResult(true);
 					},
 					ResponseText = ""
 				});
@@ -631,7 +633,7 @@ namespace SIL.Machine.Translation
 			{
 				Method = HttpRequestMethod.Post,
 				Url = "translation/engines/project:project1/actions/trainSegment",
-				Action = body =>
+				Action = (body, ct) =>
 				{
 					var segmentPair = JsonConvert.DeserializeObject<SegmentPairDto>(body,
 						RestClientBase.SerializerSettings);
@@ -639,6 +641,7 @@ namespace SIL.Machine.Translation
 					assert.DeepEqual(segmentPair.SourceSegment,
 						tokenizer.TokenizeToStrings(source).ToArray());
 					assert.DeepEqual(segmentPair.TargetSegment, tokenizer.TokenizeToStrings(prefix).ToArray());
+					return Task.FromResult(true);
 				},
 				ResponseText = ""
 			});

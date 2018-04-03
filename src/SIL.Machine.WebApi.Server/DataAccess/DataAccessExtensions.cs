@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NoDb;
 using SIL.Machine.WebApi.Server.Models;
 using SIL.Machine.WebApi.Server.Options;
 using SIL.Threading;
-using System;
-using System.Threading.Tasks;
 
 namespace SIL.Machine.WebApi.Server.DataAccess
 {
@@ -77,35 +78,47 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			return entity;
 		}
 
-		public static Task<T> GetNewerRevisionAsync<T>(this IRepository<T> repo, string id, long minRevision, bool waitNew)
-			where T : class, IEntity<T>
+		public static Task<T> GetNewerRevisionAsync<T>(this IRepository<T> repo, string id, long minRevision,
+			bool waitNew) where T : class, IEntity<T>
 		{
-			return GetNewerRevisionAsync(repo.SubscribeAsync, repo.GetAsync, id, minRevision, waitNew);
+			return repo.GetNewerRevisionAsync(id, minRevision, waitNew, CancellationToken.None);
 		}
 
-		public static Task<Build> GetNewerRevisionByEngineIdAsync(this IBuildRepository repo, string engineId, long minRevision,
-			bool waitNew)
+		public static Task<T> GetNewerRevisionAsync<T>(this IRepository<T> repo, string id, long minRevision,
+			bool waitNew, CancellationToken ct) where T : class, IEntity<T>
+		{
+			return GetNewerRevisionAsync(repo.SubscribeAsync, repo.GetAsync, id, minRevision, waitNew, ct);
+		}
+
+		public static Task<Build> GetNewerRevisionByEngineIdAsync(this IBuildRepository repo, string engineId,
+			long minRevision, bool waitNew)
+		{
+			return repo.GetNewerRevisionByEngineIdAsync(engineId, minRevision, waitNew, CancellationToken.None);
+		}
+
+		public static Task<Build> GetNewerRevisionByEngineIdAsync(this IBuildRepository repo, string engineId,
+			long minRevision, bool waitNew, CancellationToken ct)
 		{
 			return GetNewerRevisionAsync(repo.SubscribeByEngineIdAsync, repo.GetByEngineIdAsync, engineId, minRevision,
-				waitNew);
+				waitNew, ct);
 		}
 
-		public static Task<Build> GetNewerRevisionAsync(this IBuildRepository repo, BuildLocatorType locatorType, string locator,
-			long minRevision, bool waitNew)
+		public static Task<Build> GetNewerRevisionAsync(this IBuildRepository repo, BuildLocatorType locatorType,
+			string locator, long minRevision, bool waitNew, CancellationToken ct)
 		{
 			switch (locatorType)
 			{
 				case BuildLocatorType.Id:
-					return repo.GetNewerRevisionAsync(locator, minRevision, waitNew);
+					return repo.GetNewerRevisionAsync(locator, minRevision, waitNew, ct);
 				case BuildLocatorType.Engine:
-					return repo.GetNewerRevisionByEngineIdAsync(locator, minRevision, waitNew);
+					return repo.GetNewerRevisionByEngineIdAsync(locator, minRevision, waitNew, ct);
 			}
 			return null;
 		}
 
 		private static async Task<TEntity> GetNewerRevisionAsync<TKey, TEntity>(
 			Func<TKey, Action<EntityChange<TEntity>>, Task<IDisposable>> subscribe, Func<TKey, Task<TEntity>> getEntity,
-			TKey key, long minRevision, bool waitNew) where TEntity : class, IEntity<TEntity>
+			TKey key, long minRevision, bool waitNew, CancellationToken ct) where TEntity : class, IEntity<TEntity>
 		{
 			var changeEvent = new AsyncAutoResetEvent();
 			TEntity entity;
@@ -115,6 +128,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 				change = c;
 				changeEvent.Set();
 			}
+			ct.ThrowIfCancellationRequested();
 			using (await subscribe(key, HandleChange))
 			{
 				entity = await getEntity(key);
@@ -122,7 +136,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 					return null;
 				while (entity == null || minRevision > entity.Revision)
 				{
-					await changeEvent.WaitAsync();
+					await changeEvent.WaitAsync(ct);
 					if (change.Type == EntityChangeType.Delete)
 						return null;
 					entity = change.Entity;

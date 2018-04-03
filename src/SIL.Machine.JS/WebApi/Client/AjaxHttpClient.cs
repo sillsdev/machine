@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Bridge.Html5;
 
@@ -8,8 +9,8 @@ namespace SIL.Machine.WebApi.Client
 	{
 		public string BaseUrl { get; set; }
 
-		public Task<HttpResponse> SendAsync(HttpRequestMethod method, string url, string body = null,
-			string contentType = null)
+		public Task<HttpResponse> SendAsync(HttpRequestMethod method, string url, string body, string contentType,
+			CancellationToken ct)
 		{
 			var tcs = new TaskCompletionSource<HttpResponse>();
 			var request = new XMLHttpRequest();
@@ -44,12 +45,19 @@ namespace SIL.Machine.WebApi.Client
 			}
 
 			request.Open(methodStr, BaseUrl + url);
-			if (contentType != null)
+			if (!string.IsNullOrEmpty(contentType))
 				request.SetRequestHeader("Content-Type", contentType);
-			if (body == null)
+			if (string.IsNullOrEmpty(body))
 				request.Send();
 			else
 				request.Send(body);
+
+			CancellationTokenRegistration reg = ct.Register(() =>
+			{
+				request.Abort();
+				tcs.SetCanceled();
+			});
+			tcs.Task.ContinueWith(_ => reg.Dispose());
 			return tcs.Task;
 		}
 	}

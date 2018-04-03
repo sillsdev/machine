@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using SIL.Machine.WebApi.Dtos;
@@ -31,13 +32,13 @@ namespace SIL.Machine.WebApi.Server.Controllers
 
 		[HttpGet("{locatorType}:{locator}")]
 		public async Task<IActionResult> GetAsync(string locatorType, string locator, [FromQuery] long? minRevision,
-			[FromQuery] bool? waitNew)
+			[FromQuery] bool? waitNew, CancellationToken ct)
 		{
 			Build build;
 			if (minRevision != null || waitNew != null)
 			{
 				build = await _buildRepo.GetNewerRevisionAsync(GetLocatorType(locatorType), locator, minRevision ?? 0,
-					waitNew ?? false);
+					waitNew ?? false, ct);
 			}
 			else
 			{

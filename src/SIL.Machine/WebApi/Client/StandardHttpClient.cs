@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SIL.Machine.WebApi.Client
@@ -20,8 +21,8 @@ namespace SIL.Machine.WebApi.Client
 			set => _client.BaseAddress = new Uri(value);
 		}
 
-		public async Task<HttpResponse> SendAsync(HttpRequestMethod method, string url, string body = null,
-			string contentType = null)
+		public async Task<HttpResponse> SendAsync(HttpRequestMethod method, string url, string body, string contentType,
+			CancellationToken ct)
 		{
 			HttpMethod httpMethod;
 			switch (method)
@@ -42,13 +43,13 @@ namespace SIL.Machine.WebApi.Client
 					throw new ArgumentException("The specified method is unrecognized.", nameof(method));
 			}
 			var request = new HttpRequestMessage(httpMethod, url);
-			if (body != null)
+			if (!string.IsNullOrEmpty(body))
 			{
-				request.Content = contentType == null
+				request.Content = string.IsNullOrEmpty(contentType)
 					? new StringContent(body, Encoding.UTF8)
 					: new StringContent(body, Encoding.UTF8, contentType);
 			}
-			HttpResponseMessage response = await _client.SendAsync(request);
+			HttpResponseMessage response = await _client.SendAsync(request, ct);
 			if (!response.IsSuccessStatusCode)
 				return new HttpResponse(false, (int) response.StatusCode);
 

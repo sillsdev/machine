@@ -31,6 +31,7 @@ export class TranslationEngine {
     listenForTrainingStatus(onStatusUpdate: { (arg: SmtTrainProgress): void },
         onFinished: { (arg: boolean): void }): void;
     getConfidence(onFinished: { (success: boolean, confidence: number): void }): void;
+    close(): void;
 }
 
 export interface Range {

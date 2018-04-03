@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace SIL.Machine.WebApi.Client
 {
@@ -13,6 +14,7 @@ namespace SIL.Machine.WebApi.Client
 	public interface IHttpClient
 	{
 		string BaseUrl { get; set; }
-		Task<HttpResponse> SendAsync(HttpRequestMethod method, string url, string body = null, string contentType = null);
+		Task<HttpResponse> SendAsync(HttpRequestMethod method, string url, string body, string contentType,
+			CancellationToken ct);
 	}
 }

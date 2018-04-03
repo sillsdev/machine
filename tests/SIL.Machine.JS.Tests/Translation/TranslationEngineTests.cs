@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Bridge.Html5;
 using Bridge.QUnit;
@@ -16,18 +17,16 @@ namespace SIL.Machine.Translation
 		{
 			QUnit.Module(nameof(TranslationEngineTests));
 
-			QUnit.Test(nameof(TranslateInteractively_Success_ReturnsSession),
-				TranslateInteractively_Success_ReturnsSession);
-			QUnit.Test(nameof(TranslateInteractively_Error_ReturnsNull), TranslateInteractively_Error_ReturnsNull);
-			QUnit.Test(nameof(TranslateInteractively_NoRuleResult_ReturnsSession),
-				TranslateInteractively_NoRuleResult_ReturnsSession);
-			QUnit.Test(nameof(Train_NoErrors_ReturnsTrue), Train_NoErrors_ReturnsTrue);
-			QUnit.Test(nameof(Train_ErrorCreatingBuild_ReturnsFalse), Train_ErrorCreatingBuild_ReturnsFalse);
-			QUnit.Test(nameof(ListenForTrainingStatus_NoErrors_ReturnsTrue),
-				ListenForTrainingStatus_NoErrors_ReturnsTrue);
+			QUnit.Test(nameof(TranslateInteractively_Success), TranslateInteractively_Success);
+			QUnit.Test(nameof(TranslateInteractively_Error), TranslateInteractively_Error);
+			QUnit.Test(nameof(TranslateInteractively_NoRuleResult), TranslateInteractively_NoRuleResult);
+			QUnit.Test(nameof(Train_NoErrors), Train_NoErrors);
+			QUnit.Test(nameof(Train_ErrorCreatingBuild), Train_ErrorCreatingBuild);
+			QUnit.Test(nameof(ListenForTrainingStatus_NoErrors), ListenForTrainingStatus_NoErrors);
+			QUnit.Test(nameof(ListenForTrainingStatus_Close), ListenForTrainingStatus_Close);
 		}
 
-		private static void TranslateInteractively_Success_ReturnsSession(Assert assert)
+		private static void TranslateInteractively_Success(Assert assert)
 		{
 			var httpClient = new MockHttpClient();
 			var resultDto = new InteractiveTranslationResultDto
@@ -170,7 +169,7 @@ namespace SIL.Machine.Translation
 				});
 		}
 
-		private static void TranslateInteractively_Error_ReturnsNull(Assert assert)
+		private static void TranslateInteractively_Error(Assert assert)
 		{
 			var httpClient = new MockHttpClient();
 			httpClient.Requests.Add(new MockRequest
@@ -188,7 +187,7 @@ namespace SIL.Machine.Translation
 				});
 		}
 
-		private static void TranslateInteractively_NoRuleResult_ReturnsSession(Assert assert)
+		private static void TranslateInteractively_NoRuleResult(Assert assert)
 		{
 			var httpClient = new MockHttpClient();
 			var resultDto = new InteractiveTranslationResultDto
@@ -218,7 +217,7 @@ namespace SIL.Machine.Translation
 				});
 		}
 
-		private static void Train_NoErrors_ReturnsTrue(Assert assert)
+		private static void Train_NoErrors(Assert assert)
 		{
 			var httpClient = new MockHttpClient();
 			var engineDto = new EngineDto
@@ -250,7 +249,7 @@ namespace SIL.Machine.Translation
 					{
 						Method = HttpRequestMethod.Get,
 						Url = string.Format("translation/builds/id:build1?minRevision={0}", buildDto.Revision),
-						Action = async body => await Task.Delay(10),
+						Action = (body, ct) => Delay(10, ct),
 						ResponseText = JsonConvert.SerializeObject(buildDto, RestClientBase.SerializerSettings)
 					});
 			}
@@ -271,7 +270,7 @@ namespace SIL.Machine.Translation
 				});
 		}
 
-		private static void Train_ErrorCreatingBuild_ReturnsFalse(Assert assert)
+		private static void Train_ErrorCreatingBuild(Assert assert)
 		{
 			var httpClient = new MockHttpClient();
 			var engineDto = new EngineDto
@@ -301,7 +300,7 @@ namespace SIL.Machine.Translation
 				});
 		}
 
-		private static void ListenForTrainingStatus_NoErrors_ReturnsTrue(Assert assert)
+		private static void ListenForTrainingStatus_NoErrors(Assert assert)
 		{
 			var httpClient = new MockHttpClient();
 			var engineDto = new EngineDto
@@ -323,7 +322,7 @@ namespace SIL.Machine.Translation
 				{
 					Method = HttpRequestMethod.Get,
 					Url = "translation/builds/engine:engine1?waitNew=true",
-					Action = async body => await Task.Delay(10),
+					Action = (body, ct) => Delay(10, ct),
 					ResponseText = JsonConvert.SerializeObject(buildDto, RestClientBase.SerializerSettings)
 				});
 			for (int i = 0; i < 10; i++)
@@ -334,7 +333,7 @@ namespace SIL.Machine.Translation
 					{
 						Method = HttpRequestMethod.Get,
 						Url = string.Format("translation/builds/id:build1?minRevision={0}", buildDto.Revision),
-						Action = async body => await Task.Delay(10),
+						Action = (body, ct) => Delay(10, ct),
 						ResponseText = JsonConvert.SerializeObject(buildDto, RestClientBase.SerializerSettings)
 					});
 			}
@@ -353,6 +352,59 @@ namespace SIL.Machine.Translation
 					assert.Equal(success, true);
 					done();
 				});
+		}
+
+		private static void ListenForTrainingStatus_Close(Assert assert)
+		{
+			var httpClient = new MockHttpClient();
+			var engineDto = new EngineDto
+			{
+				Id = "engine1"
+			};
+			httpClient.Requests.Add(new MockRequest
+			{
+				Method = HttpRequestMethod.Get,
+				Url = "translation/engines/project:project1",
+				ResponseText = JsonConvert.SerializeObject(engineDto, RestClientBase.SerializerSettings)
+			});
+			var buildDto = new BuildDto
+			{
+				Id = "build1",
+				StepCount = 10
+			};
+			httpClient.Requests.Add(new MockRequest
+			{
+				Method = HttpRequestMethod.Get,
+				Url = "translation/builds/engine:engine1?waitNew=true",
+				Action = (body, ct) => Delay(1000, ct),
+				ResponseText = JsonConvert.SerializeObject(buildDto, RestClientBase.SerializerSettings)
+			});
+			var engine = new TranslationEngine("http://localhost/", "project1", httpClient);
+			Action done = assert.Async();
+			engine.ListenForTrainingStatus(
+				progress => { },
+				success =>
+				{
+					assert.Equal(success, false);
+					done();
+				});
+			engine.Close();
+		}
+
+		private static Task Delay(int milliseconds, CancellationToken ct)
+		{
+			var tcs = new TaskCompletionSource<bool>();
+
+			int id = Global.SetTimeout(() => tcs.SetResult(true), milliseconds);
+
+			CancellationTokenRegistration reg = ct.Register(() =>
+			{
+				Global.ClearTimeout(id);
+				tcs.SetCanceled();
+			});
+
+			tcs.Task.ContinueWith(_ => reg.Dispose());
+			return tcs.Task;
 		}
 	}
 }
