@@ -248,7 +248,7 @@ namespace SIL.Machine.Translation
 				httpClient.Requests.Add(new MockRequest
 					{
 						Method = HttpRequestMethod.Get,
-						Url = string.Format("translation/builds/id:build1?minRevision={0}", buildDto.Revision),
+						Url = string.Format("translation/builds/engine:engine1?minRevision={0}", buildDto.Revision),
 						Action = (body, ct) => Delay(10, ct),
 						ResponseText = JsonConvert.SerializeObject(buildDto, RestClientBase.SerializerSettings)
 					});
@@ -321,7 +321,7 @@ namespace SIL.Machine.Translation
 			httpClient.Requests.Add(new MockRequest
 				{
 					Method = HttpRequestMethod.Get,
-					Url = "translation/builds/engine:engine1?waitNew=true",
+					Url = "translation/builds/engine:engine1?minRevision=0",
 					Action = (body, ct) => Delay(10, ct),
 					ResponseText = JsonConvert.SerializeObject(buildDto, RestClientBase.SerializerSettings)
 				});
@@ -332,7 +332,7 @@ namespace SIL.Machine.Translation
 				httpClient.Requests.Add(new MockRequest
 					{
 						Method = HttpRequestMethod.Get,
-						Url = string.Format("translation/builds/id:build1?minRevision={0}", buildDto.Revision),
+						Url = string.Format("translation/builds/engine:engine1?minRevision={0}", buildDto.Revision),
 						Action = (body, ct) => Delay(10, ct),
 						ResponseText = JsonConvert.SerializeObject(buildDto, RestClientBase.SerializerSettings)
 					});
@@ -375,7 +375,7 @@ namespace SIL.Machine.Translation
 			httpClient.Requests.Add(new MockRequest
 			{
 				Method = HttpRequestMethod.Get,
-				Url = "translation/builds/engine:engine1?waitNew=true",
+				Url = "translation/builds/engine:engine1?minRevision=0",
 				Action = (body, ct) => Delay(1000, ct),
 				ResponseText = JsonConvert.SerializeObject(buildDto, RestClientBase.SerializerSettings)
 			});

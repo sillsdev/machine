@@ -17,10 +17,11 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 				var build = new Build {EngineId = "engine1", CurrentStep = 1};
 				await buildRepo.InsertAsync(build);
 			});
-			Build newBuild = await buildRepo.GetNewerRevisionByEngineIdAsync("engine1", 0, true);
+			EntityChange<Build> change = await buildRepo.GetNewerRevisionByEngineIdAsync("engine1", 0);
 			await task;
-			Assert.That(newBuild.Revision, Is.EqualTo(0));
-			Assert.That(newBuild.CurrentStep, Is.EqualTo(1));
+			Assert.That(change.Type, Is.EqualTo(EntityChangeType.Insert));
+			Assert.That(change.Entity.Revision, Is.EqualTo(0));
+			Assert.That(change.Entity.CurrentStep, Is.EqualTo(1));
 		}
 
 		[Test]
@@ -35,10 +36,11 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 					build.CurrentStep = 1;
 					await buildRepo.UpdateAsync(build);
 				});
-			Build newBuild = await buildRepo.GetNewerRevisionAsync(build.Id, 1, false);
+			EntityChange<Build> change = await buildRepo.GetNewerRevisionAsync(build.Id, 1);
 			await task;
-			Assert.That(newBuild.Revision, Is.EqualTo(1));
-			Assert.That(newBuild.CurrentStep, Is.EqualTo(1));
+			Assert.That(change.Type, Is.EqualTo(EntityChangeType.Update));
+			Assert.That(change.Entity.Revision, Is.EqualTo(1));
+			Assert.That(change.Entity.CurrentStep, Is.EqualTo(1));
 		}
 
 		[Test]
@@ -52,9 +54,9 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 					await Task.Delay(10);
 					await buildRepo.DeleteAsync(build);
 				});
-			Build newBuild = await buildRepo.GetNewerRevisionAsync(build.Id, 1, false);
+			EntityChange<Build> change = await buildRepo.GetNewerRevisionAsync(build.Id, 1);
 			await task;
-			Assert.That(newBuild, Is.Null);
+			Assert.That(change.Type, Is.EqualTo(EntityChangeType.Delete));
 		}
 	}
 }

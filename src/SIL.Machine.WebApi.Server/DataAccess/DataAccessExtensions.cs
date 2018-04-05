@@ -78,50 +78,49 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			return entity;
 		}
 
-		public static Task<T> GetNewerRevisionAsync<T>(this IRepository<T> repo, string id, long minRevision,
-			bool waitNew) where T : class, IEntity<T>
+		public static Task<EntityChange<T>> GetNewerRevisionAsync<T>(this IRepository<T> repo, string id,
+			long minRevision) where T : class, IEntity<T>
 		{
-			return repo.GetNewerRevisionAsync(id, minRevision, waitNew, CancellationToken.None);
+			return repo.GetNewerRevisionAsync(id, minRevision, CancellationToken.None);
 		}
 
-		public static Task<T> GetNewerRevisionAsync<T>(this IRepository<T> repo, string id, long minRevision,
-			bool waitNew, CancellationToken ct) where T : class, IEntity<T>
+		public static Task<EntityChange<T>> GetNewerRevisionAsync<T>(this IRepository<T> repo, string id,
+			long minRevision, CancellationToken ct) where T : class, IEntity<T>
 		{
-			return GetNewerRevisionAsync(repo.SubscribeAsync, repo.GetAsync, id, minRevision, waitNew, ct);
+			return GetNewerRevisionAsync<string, T>(repo.SubscribeAsync, id, minRevision, ct);
 		}
 
-		public static Task<Build> GetNewerRevisionByEngineIdAsync(this IBuildRepository repo, string engineId,
-			long minRevision, bool waitNew)
+		public static Task<EntityChange<Build>> GetNewerRevisionByEngineIdAsync(this IBuildRepository repo,
+			string engineId, long minRevision)
 		{
-			return repo.GetNewerRevisionByEngineIdAsync(engineId, minRevision, waitNew, CancellationToken.None);
+			return repo.GetNewerRevisionByEngineIdAsync(engineId, minRevision, CancellationToken.None);
 		}
 
-		public static Task<Build> GetNewerRevisionByEngineIdAsync(this IBuildRepository repo, string engineId,
-			long minRevision, bool waitNew, CancellationToken ct)
+		public static Task<EntityChange<Build>> GetNewerRevisionByEngineIdAsync(this IBuildRepository repo,
+			string engineId, long minRevision, CancellationToken ct)
 		{
-			return GetNewerRevisionAsync(repo.SubscribeByEngineIdAsync, repo.GetByEngineIdAsync, engineId, minRevision,
-				waitNew, ct);
+			return GetNewerRevisionAsync<string, Build>(repo.SubscribeByEngineIdAsync, engineId, minRevision,
+				ct);
 		}
 
-		public static Task<Build> GetNewerRevisionAsync(this IBuildRepository repo, BuildLocatorType locatorType,
-			string locator, long minRevision, bool waitNew, CancellationToken ct)
+		public static Task<EntityChange<Build>> GetNewerRevisionAsync(this IBuildRepository repo,
+			BuildLocatorType locatorType, string locator, long minRevision, CancellationToken ct)
 		{
 			switch (locatorType)
 			{
 				case BuildLocatorType.Id:
-					return repo.GetNewerRevisionAsync(locator, minRevision, waitNew, ct);
+					return repo.GetNewerRevisionAsync(locator, minRevision, ct);
 				case BuildLocatorType.Engine:
-					return repo.GetNewerRevisionByEngineIdAsync(locator, minRevision, waitNew, ct);
+					return repo.GetNewerRevisionByEngineIdAsync(locator, minRevision, ct);
 			}
 			return null;
 		}
 
-		private static async Task<TEntity> GetNewerRevisionAsync<TKey, TEntity>(
-			Func<TKey, Action<EntityChange<TEntity>>, Task<IDisposable>> subscribe, Func<TKey, Task<TEntity>> getEntity,
-			TKey key, long minRevision, bool waitNew, CancellationToken ct) where TEntity : class, IEntity<TEntity>
+		private static async Task<EntityChange<TEntity>> GetNewerRevisionAsync<TKey, TEntity>(
+			Func<TKey, Action<EntityChange<TEntity>>, Task<IDisposable>> subscribe, TKey key, long minRevision,
+			CancellationToken ct) where TEntity : class, IEntity<TEntity>
 		{
 			var changeEvent = new AsyncAutoResetEvent();
-			TEntity entity;
 			var change = new EntityChange<TEntity>();
 			void HandleChange(EntityChange<TEntity> c)
 			{
@@ -131,18 +130,16 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			ct.ThrowIfCancellationRequested();
 			using (await subscribe(key, HandleChange))
 			{
-				entity = await getEntity(key);
-				if (entity == null && !waitNew)
-					return null;
-				while (entity == null || minRevision > entity.Revision)
+				while (true)
 				{
 					await changeEvent.WaitAsync(ct);
-					if (change.Type == EntityChangeType.Delete)
-						return null;
-					entity = change.Entity;
+					EntityChange<TEntity> curChange = change;
+					if (curChange.Type == EntityChangeType.Delete)
+						return curChange;
+					if (minRevision <= curChange.Entity.Revision)
+						return curChange;
 				}
 			}
-			return entity;
 		}
 
 		public static IServiceCollection AddNoDbDataAccess(this IServiceCollection services, IConfiguration config)

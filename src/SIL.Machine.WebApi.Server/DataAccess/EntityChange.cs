@@ -4,6 +4,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 {
 	public enum EntityChangeType
 	{
+		None,
 		Insert,
 		Update,
 		Delete

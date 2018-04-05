@@ -72,19 +72,15 @@ namespace SIL.Machine.WebApi.Client
 		{
 			EngineDto engineDto = await GetEngineAsync(projectId);
 			BuildDto buildDto = await CreateBuildAsync(engineDto.Id);
-			await PollBuildProgressAsync(buildDto, progress, ct);
+			progress(CreateProgress(buildDto));
+			await PollBuildProgressAsync(engineDto.Id, buildDto.Revision + 1, progress, ct);
 		}
 
 		public async Task ListenForTrainingStatusAsync(string projectId, Action<SmtTrainProgress> progress,
 			CancellationToken ct)
 		{
 			EngineDto engineDto = await GetEngineAsync(projectId);
-			string url = $"translation/builds/engine:{engineDto.Id}?waitNew=true";
-			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url, null, null, ct);
-			if (!response.IsSuccess)
-				throw new HttpException("Error getting build.") { StatusCode = response.StatusCode };
-			BuildDto buildDto = JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
-			await PollBuildProgressAsync(buildDto, progress, ct);
+			await PollBuildProgressAsync(engineDto.Id, 0, progress, ct);
 		}
 
 		public async Task<EngineDto> GetEngineAsync(string projectId)
@@ -107,24 +103,39 @@ namespace SIL.Machine.WebApi.Client
 			return JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
 		}
 
-		private async Task PollBuildProgressAsync(BuildDto buildDto, Action<SmtTrainProgress> progress,
+		private async Task PollBuildProgressAsync(string engineId, int minRevision, Action<SmtTrainProgress> progress,
 			CancellationToken ct)
 		{
 			while (true)
 			{
 				ct.ThrowIfCancellationRequested();
 
-				progress(new SmtTrainProgress(buildDto.CurrentStep, buildDto.CurrentStepMessage, buildDto.StepCount));
-
-				string url = $"translation/builds/id:{buildDto.Id}?minRevision={buildDto.Revision + 1}";
+				string url = $"translation/builds/engine:{engineId}?minRevision={minRevision}";
 				HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url, null, null, ct);
-				if (response.IsSuccess)
-					buildDto = JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
+				if (response.StatusCode == 200)
+				{
+					BuildDto buildDto = JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
+					progress(CreateProgress(buildDto));
+					minRevision = buildDto.Revision + 1;
+				}
+				else if (response.StatusCode == 204)
+				{
+					continue;
+				}
 				else if (response.StatusCode == 404)
+				{
 					break;
+				}
 				else
-					throw new HttpException("Error getting build status.") {StatusCode = response.StatusCode};
+				{
+					throw new HttpException("Error getting build status.") { StatusCode = response.StatusCode };
+				}
 			}
+		}
+
+		private static SmtTrainProgress CreateProgress(BuildDto buildDto)
+		{
+			return new SmtTrainProgress(buildDto.CurrentStep, buildDto.CurrentStepMessage, buildDto.StepCount);
 		}
 
 		private static InteractiveTranslationResult CreateModel(InteractiveTranslationResultDto resultDto,

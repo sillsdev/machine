@@ -23,7 +23,7 @@ namespace SIL.Machine.WebApi.Server.Services
 		private readonly ISmtModelFactory _smtModelFactory;
 		private readonly IRuleEngineFactory _ruleEngineFactory;
 		private readonly ITextCorpusFactory _textCorpusFactory;
-		private readonly TimeSpan _inactiveTimeout;
+		private readonly IOptions<EngineOptions> _options;
 		private readonly ILogger<EngineRunner> _logger;
 		private readonly string _engineId;
 		private readonly List<(IReadOnlyList<string> Source, IReadOnlyList<string> Target)> _trainedSegments;
@@ -49,7 +49,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			_smtModelFactory = smtModelFactory;
 			_ruleEngineFactory = ruleEngineFactory;
 			_textCorpusFactory = textCorpusFactory;
-			_inactiveTimeout = options.Value.InactiveEngineTimeout;
+			_options = options;
 			_logger = logger;
 			_engineId = engineId;
 			_trainedSegments = new List<(IReadOnlyList<string> Source, IReadOnlyList<string> Target)>();
@@ -201,7 +201,7 @@ namespace SIL.Machine.WebApi.Server.Services
 				if (!IsLoaded || IsBuilding)
 					return;
 
-				if (DateTime.Now - _lastUsedTime > _inactiveTimeout)
+				if (DateTime.Now - _lastUsedTime > _options.Value.InactiveEngineTimeout)
 					Unload();
 				else
 					SaveModel();

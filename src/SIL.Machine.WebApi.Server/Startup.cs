@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;
+using SIL.Machine.WebApi.Server.Controllers;
 using SIL.Machine.WebApi.Server.DataAccess;
 using SIL.Machine.WebApi.Server.Options;
 using SIL.Machine.WebApi.Server.Services;
@@ -33,7 +34,7 @@ namespace SIL.Machine.WebApi.Server
 						.AllowCredentials());
 				});
 
-			services.AddMvc()
+			services.AddMvc(o => o.Filters.Add<OperationCancelledExceptionFilter>())
 				.AddJsonOptions(a => a.SerializerSettings.ContractResolver
 					= new CamelCasePropertyNamesContractResolver());
 			services.AddRouting(options => options.LowercaseUrls = true);

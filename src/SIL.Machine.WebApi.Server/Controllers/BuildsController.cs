@@ -3,10 +3,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using SIL.Machine.WebApi.Dtos;
 using SIL.Machine.WebApi.Server.DataAccess;
 using SIL.Machine.WebApi.Server.Models;
+using SIL.Machine.WebApi.Server.Options;
 using SIL.Machine.WebApi.Server.Services;
+using SIL.Threading;
 
 namespace SIL.Machine.WebApi.Server.Controllers
 {
@@ -16,11 +19,14 @@ namespace SIL.Machine.WebApi.Server.Controllers
 	{
 		private readonly IBuildRepository _buildRepo;
 		private readonly EngineService _engineService;
+		private readonly IOptions<EngineOptions> _options;
 
-		public BuildsController(IBuildRepository buildRepo, IEngineRepository engineRepo, EngineService engineService)
+		public BuildsController(IBuildRepository buildRepo, IEngineRepository engineRepo, EngineService engineService,
+			IOptions<EngineOptions> options)
 		{
 			_buildRepo = buildRepo;
 			_engineService = engineService;
+			_options = options;
 		}
 
 		[HttpGet]
@@ -32,22 +38,26 @@ namespace SIL.Machine.WebApi.Server.Controllers
 
 		[HttpGet("{locatorType}:{locator}")]
 		public async Task<IActionResult> GetAsync(string locatorType, string locator, [FromQuery] long? minRevision,
-			[FromQuery] bool? waitNew, CancellationToken ct)
+			CancellationToken ct)
 		{
-			Build build;
-			if (minRevision != null || waitNew != null)
+			if (minRevision != null)
 			{
-				build = await _buildRepo.GetNewerRevisionAsync(GetLocatorType(locatorType), locator, minRevision ?? 0,
-					waitNew ?? false, ct);
-			}
-			else
-			{
-				build = await _buildRepo.GetByLocatorAsync(GetLocatorType(locatorType), locator);
+				EntityChange<Build> change = await _buildRepo.GetNewerRevisionAsync(GetLocatorType(locatorType),
+					locator, minRevision.Value, ct).Timeout(_options.Value.BuildLongPollTimeout, ct);
+				switch (change.Type)
+				{
+					case EntityChangeType.None:
+						return NoContent();
+					case EntityChangeType.Delete:
+						return NotFound();
+					default:
+						return Ok(CreateDto(change.Entity));
+				}
 			}
 
+			Build build = await _buildRepo.GetByLocatorAsync(GetLocatorType(locatorType), locator);
 			if (build == null)
 				return NotFound();
-
 			return Ok(CreateDto(build));
 		}
 

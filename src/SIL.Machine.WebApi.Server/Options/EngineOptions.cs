@@ -7,5 +7,6 @@ namespace SIL.Machine.WebApi.Server.Options
 		public string RootDir { get; set; }
 		public TimeSpan EngineCommitFrequency { get; set; }
 		public TimeSpan InactiveEngineTimeout { get; set; }
+		public TimeSpan BuildLongPollTimeout { get; set; }
 	}
 }

@@ -15,7 +15,7 @@ namespace SIL.Machine.WebApi.Server.Services
 {
 	public class EngineService : DisposableBase
 	{
-		private readonly EngineOptions _options;
+		private readonly IOptions<EngineOptions> _options;
 		private readonly Dictionary<string, Owned<EngineRunner>> _runners;
 		private readonly AsyncReaderWriterLock _lock;
 		private readonly IEngineRepository _engineRepo;
@@ -27,7 +27,7 @@ namespace SIL.Machine.WebApi.Server.Services
 		public EngineService(IOptions<EngineOptions> options, IEngineRepository engineRepo, IBuildRepository buildRepo,
 			IRepository<Project> projectRepo, Func<string, Owned<EngineRunner>> engineRunnerFactory)
 		{
-			_options = options.Value;
+			_options = options;
 			_engineRepo = engineRepo;
 			_buildRepo = buildRepo;
 			_projectRepo = projectRepo;
@@ -54,7 +54,7 @@ namespace SIL.Machine.WebApi.Server.Services
 					await _buildRepo.DeleteAsync(build);
 				}
 			}
-			_commitTimer.Start(_options.EngineCommitFrequency);
+			_commitTimer.Start(_options.Value.EngineCommitFrequency);
 		}
 
 		private async Task EngineCommitAsync()
