@@ -87,7 +87,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		public static Task<EntityChange<T>> GetNewerRevisionAsync<T>(this IRepository<T> repo, string id,
 			long minRevision, CancellationToken ct) where T : class, IEntity<T>
 		{
-			return GetNewerRevisionAsync<string, T>(repo.SubscribeAsync, id, minRevision, ct);
+			return GetNewerRevisionAsync(repo.SubscribeAsync, repo.GetAsync, id, minRevision, ct);
 		}
 
 		public static Task<EntityChange<Build>> GetNewerRevisionByEngineIdAsync(this IBuildRepository repo,
@@ -99,7 +99,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		public static Task<EntityChange<Build>> GetNewerRevisionByEngineIdAsync(this IBuildRepository repo,
 			string engineId, long minRevision, CancellationToken ct)
 		{
-			return GetNewerRevisionAsync<string, Build>(repo.SubscribeByEngineIdAsync, engineId, minRevision,
+			return GetNewerRevisionAsync(repo.SubscribeByEngineIdAsync, repo.GetByEngineIdAsync, engineId, minRevision,
 				ct);
 		}
 
@@ -117,8 +117,8 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		}
 
 		private static async Task<EntityChange<TEntity>> GetNewerRevisionAsync<TKey, TEntity>(
-			Func<TKey, Action<EntityChange<TEntity>>, Task<IDisposable>> subscribe, TKey key, long minRevision,
-			CancellationToken ct) where TEntity : class, IEntity<TEntity>
+			Func<TKey, Action<EntityChange<TEntity>>, Task<IDisposable>> subscribe, Func<TKey, Task<TEntity>> getEntity,
+			TKey key, long minRevision, CancellationToken ct) where TEntity : class, IEntity<TEntity>
 		{
 			var changeEvent = new AsyncAutoResetEvent();
 			var change = new EntityChange<TEntity>();
@@ -130,6 +130,8 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			ct.ThrowIfCancellationRequested();
 			using (await subscribe(key, HandleChange))
 			{
+				if (minRevision > 0 && await getEntity(key) == null)
+					return new EntityChange<TEntity>(EntityChangeType.Delete, null);
 				while (true)
 				{
 					await changeEvent.WaitAsync(ct);

@@ -8,7 +8,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 	public class DataAccessExtensionsTests
 	{
 		[Test]
-		public async Task GetNewerRevisionByEngineIdAsync_Insert_ReturnsInsertedEntity()
+		public async Task GetNewerRevisionByEngineIdAsync_Insert()
 		{
 			var buildRepo = new MemoryBuildRepository();
 			Task task = Task.Run(async () =>
@@ -25,7 +25,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		}
 
 		[Test]
-		public async Task GetNewerRevisionAsync_Update_ReturnsUpdatedEntity()
+		public async Task GetNewerRevisionAsync_Update()
 		{
 			var buildRepo = new MemoryBuildRepository();
 			var build = new Build {EngineId = "engine1"};
@@ -44,7 +44,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		}
 
 		[Test]
-		public async Task GetNewerRevisionAsync_Delete_ReturnsNull()
+		public async Task GetNewerRevisionAsync_Delete()
 		{
 			var buildRepo = new MemoryBuildRepository();
 			var build = new Build {EngineId = "engine1"};
@@ -56,6 +56,14 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 				});
 			EntityChange<Build> change = await buildRepo.GetNewerRevisionAsync(build.Id, 1);
 			await task;
+			Assert.That(change.Type, Is.EqualTo(EntityChangeType.Delete));
+		}
+
+		[Test]
+		public async Task GetNewerRevisionAsync_DoesNotExist()
+		{
+			var buildRepo = new MemoryBuildRepository();
+			EntityChange<Build> change = await buildRepo.GetNewerRevisionAsync("build1", 1);
 			Assert.That(change.Type, Is.EqualTo(EntityChangeType.Delete));
 		}
 	}
