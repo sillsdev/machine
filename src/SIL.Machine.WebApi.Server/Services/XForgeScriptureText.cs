@@ -50,7 +50,7 @@ namespace SIL.Machine.WebApi.Server.Services
 
 				string text = value.AsString;
 				// skip blanks
-				if (text != "\u2002" && text != "\u2003\u2003")
+				if (text != "\u00a0" && text != "\u2003\u2003")
 					sb.Append(text);
 				prevRef = curRef;
 			}
