@@ -126,6 +126,12 @@ namespace SIL.Machine.Translation
 			if (!IsInitialized)
 				throw new InvalidOperationException("The session has not been initialized.");
 
+			if (!IsSourceSegmentValid)
+			{
+				onFinished(true);
+				return;
+			}
+
 			_engine.RestClient.TrainSegmentPairAsync(_engine.ProjectId, SourceSegment, Prefix)
 				.ContinueWith(t => onFinished(!t.IsFaulted));
 		}

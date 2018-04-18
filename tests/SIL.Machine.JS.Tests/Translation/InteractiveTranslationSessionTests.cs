@@ -629,22 +629,6 @@ namespace SIL.Machine.Translation
 			string prefix = string.Join(" ", Enumerable.Repeat("word", TranslationEngine.MaxSegmentSize)) + ".";
 
 			MockHttpClient httpClient = CreateWebClient();
-			httpClient.Requests.Add(new MockRequest
-			{
-				Method = HttpRequestMethod.Post,
-				Url = "translation/engines/project:project1/actions/trainSegment",
-				Action = (body, ct) =>
-				{
-					var segmentPair = JsonConvert.DeserializeObject<SegmentPairDto>(body,
-						RestClientBase.SerializerSettings);
-					var tokenizer = new LatinWordTokenizer();
-					assert.DeepEqual(segmentPair.SourceSegment,
-						tokenizer.TokenizeToStrings(source).ToArray());
-					assert.DeepEqual(segmentPair.TargetSegment, tokenizer.TokenizeToStrings(prefix).ToArray());
-					return Task.FromResult(true);
-				},
-				ResponseText = ""
-			});
 
 			var engine = new TranslationEngine("http://localhost/", "project1", httpClient);
 			Action done = assert.Async();
