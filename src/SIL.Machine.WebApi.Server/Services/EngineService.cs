@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace SIL.Machine.WebApi.Server.Services
 	public class EngineService : DisposableBase
 	{
 		private readonly IOptions<EngineOptions> _options;
-		private readonly Dictionary<string, Owned<EngineRunner>> _runners;
+		private readonly ConcurrentDictionary<string, Owned<EngineRunner>> _runners;
 		private readonly AsyncReaderWriterLock _lock;
 		private readonly IEngineRepository _engineRepo;
 		private readonly IBuildRepository _buildRepo;
@@ -32,7 +33,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			_buildRepo = buildRepo;
 			_projectRepo = projectRepo;
 			_engineRunnerFactory = engineRunnerFactory;
-			_runners = new Dictionary<string, Owned<EngineRunner>>();
+			_runners = new ConcurrentDictionary<string, Owned<EngineRunner>>();
 			_lock = new AsyncReaderWriterLock();
 			_commitTimer = new AsyncTimer(EngineCommitAsync);
 		}
@@ -71,12 +72,12 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			CheckDisposed();
 
-			using (var upgradeKey = await _lock.UpgradeableReaderLockAsync())
+			using (await _lock.ReaderLockAsync())
 			{
 				Engine engine = await _engineRepo.GetByLocatorAsync(locatorType, locator);
 				if (engine == null)
 					return null;
-				EngineRunner runner = await GetOrCreateRunnerAsync(upgradeKey, engine.Id);
+				EngineRunner runner = GetOrCreateRunner(engine.Id);
 				return await runner.TranslateAsync(segment.Select(Preprocessors.Lowercase).ToArray());
 			}
 		}
@@ -86,12 +87,12 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			CheckDisposed();
 
-			using (var upgradeKey = await _lock.UpgradeableReaderLockAsync())
+			using (await _lock.ReaderLockAsync())
 			{
 				Engine engine = await _engineRepo.GetByLocatorAsync(locatorType, locator);
 				if (engine == null)
 					return null;
-				EngineRunner runner = await GetOrCreateRunnerAsync(upgradeKey, engine.Id);
+				EngineRunner runner = GetOrCreateRunner(engine.Id);
 				return await runner.TranslateAsync(n, segment.Select(Preprocessors.Lowercase).ToArray());
 			}
 		}
@@ -101,12 +102,12 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			CheckDisposed();
 
-			using (var upgradeKey = await _lock.UpgradeableReaderLockAsync())
+			using (await _lock.ReaderLockAsync())
 			{
 				Engine engine = await _engineRepo.GetByLocatorAsync(locatorType, locator);
 				if (engine == null)
 					return null;
-				EngineRunner runner = await GetOrCreateRunnerAsync(upgradeKey, engine.Id);
+				EngineRunner runner = GetOrCreateRunner(engine.Id);
 				return await runner.InteractiveTranslateAsync(segment.Select(Preprocessors.Lowercase).ToArray());
 			}
 		}
@@ -116,12 +117,12 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			CheckDisposed();
 
-			using (var upgradeKey = await _lock.UpgradeableReaderLockAsync())
+			using (await _lock.ReaderLockAsync())
 			{
 				Engine engine = await _engineRepo.GetByLocatorAsync(locatorType, locator);
 				if (engine == null)
 					return false;
-				EngineRunner runner = await GetOrCreateRunnerAsync(upgradeKey, engine.Id);
+				EngineRunner runner = GetOrCreateRunner(engine.Id);
 				await runner.TrainSegmentPairAsync(sourceSegment.Select(Preprocessors.Lowercase).ToArray(),
 					targetSegment.Select(Preprocessors.Lowercase).ToArray());
 				return true;
@@ -201,7 +202,7 @@ namespace SIL.Machine.WebApi.Server.Services
 				{
 					// the engine will have no associated projects, so remove it
 					await _engineRepo.DeleteAsync(engine);
-					_runners.Remove(engine.Id);
+					_runners.TryRemove(engine.Id, out _);
 					await runner.DeleteDataAsync();
 					runner.Dispose();
 				}
@@ -220,12 +221,12 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			CheckDisposed();
 
-			using (var upgradeKey = await _lock.UpgradeableReaderLockAsync())
+			using (await _lock.ReaderLockAsync())
 			{
 				Engine engine = await _engineRepo.GetByLocatorAsync(locatorType, locator);
 				if (engine == null)
 					return null;
-				EngineRunner runner = await GetOrCreateRunnerAsync(upgradeKey, engine.Id);
+				EngineRunner runner = GetOrCreateRunner(engine.Id);
 				return await runner.StartBuildAsync(engine);
 			}
 		}
@@ -245,28 +246,15 @@ namespace SIL.Machine.WebApi.Server.Services
 			}
 		}
 
-		private async Task<EngineRunner> GetOrCreateRunnerAsync(AsyncReaderWriterLock.UpgradeableReaderKey upgradeKey,
-			string engineId)
-		{
-			if (_runners.TryGetValue(engineId, out Owned<EngineRunner> runner))
-				return runner.Value;
-
-			using (await upgradeKey.UpgradeAsync())
-				return CreateRunner(engineId);
-		}
-
 		private EngineRunner GetOrCreateRunner(string engineId)
 		{
-			if (_runners.TryGetValue(engineId, out Owned<EngineRunner> runner))
-				return runner.Value;
-
-			return CreateRunner(engineId);
+			return _runners.GetOrAdd(engineId, _engineRunnerFactory).Value;
 		}
 
 		private EngineRunner CreateRunner(string engineId)
 		{
 			Owned<EngineRunner> runner = _engineRunnerFactory(engineId);
-			_runners[engineId] = runner;
+			_runners.TryAdd(engineId, runner);
 			return runner.Value;
 		}
 
