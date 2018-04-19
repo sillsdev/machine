@@ -9,7 +9,7 @@ using SIL.Machine.WebApi.Server.DataAccess;
 using SIL.Machine.WebApi.Server.Models;
 using SIL.Machine.WebApi.Server.Options;
 using SIL.Machine.WebApi.Server.Services;
-using SIL.Threading;
+using SIL.Machine.WebApi.Server.Utils;
 
 namespace SIL.Machine.WebApi.Server.Controllers
 {

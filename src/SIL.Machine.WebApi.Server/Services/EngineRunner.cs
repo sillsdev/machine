@@ -11,13 +11,15 @@ using SIL.Machine.Translation;
 using SIL.Machine.WebApi.Server.DataAccess;
 using SIL.Machine.WebApi.Server.Models;
 using SIL.Machine.WebApi.Server.Options;
+using SIL.Machine.WebApi.Server.Utils;
 using SIL.ObjectModel;
-using SIL.Threading;
 
 namespace SIL.Machine.WebApi.Server.Services
 {
 	public class EngineRunner : DisposableBase
 	{
+		private const int MaxEnginePoolSize = 3;
+
 		private readonly IEngineRepository _engineRepo;
 		private readonly IBuildRepository _buildRepo;
 		private readonly ISmtModelFactory _smtModelFactory;
@@ -27,13 +29,11 @@ namespace SIL.Machine.WebApi.Server.Services
 		private readonly ILogger<EngineRunner> _logger;
 		private readonly string _engineId;
 		private readonly List<(IReadOnlyList<string> Source, IReadOnlyList<string> Target)> _trainedSegments;
-		private readonly AsyncLock _lock;
+		private readonly AsyncReaderWriterLock _lock;
 
-		private IInteractiveSmtModel _smtModel;
-		private IInteractiveSmtEngine _smtEngine;
-		private ITranslationEngine _ruleEngine;
-		private HybridTranslationEngine _hybridEngine;
-		private CancellationTokenSource _cts;
+		private Lazy<IInteractiveSmtModel> _smtModel;
+		private ObjectPool<HybridTranslationEngine> _enginePool;
+		private CancellationTokenSource _buildCts;
 		private ISmtBatchTrainer _batchTrainer;
 		private Task _buildTask;
 		private string _buildId;
@@ -53,18 +53,20 @@ namespace SIL.Machine.WebApi.Server.Services
 			_logger = logger;
 			_engineId = engineId;
 			_trainedSegments = new List<(IReadOnlyList<string> Source, IReadOnlyList<string> Target)>();
-			_lock = new AsyncLock();
+			_lock = new AsyncReaderWriterLock();
+			_smtModel = new Lazy<IInteractiveSmtModel>(CreateSmtModel);
+			_enginePool = new ObjectPool<HybridTranslationEngine>(MaxEnginePoolSize, CreateEngine);
 			_lastUsedTime = DateTime.Now;
 		}
 
-		internal bool IsLoaded { get; private set; }
+		internal bool IsLoaded => _smtModel.IsValueCreated;
 		private bool IsBuilding => _buildTask != null && !_buildTask.IsCompleted;
 
 		public async Task InitNewAsync()
 		{
 			CheckDisposed();
 
-			using (await _lock.LockAsync())
+			using (await _lock.WriterLockAsync())
 			{
 				_smtModelFactory.InitNewModel(_engineId);
 				_ruleEngineFactory.InitNewEngine(_engineId);
@@ -75,11 +77,10 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			CheckDisposed();
 
-			using (await _lock.LockAsync())
+			using (await _lock.ReaderLockAsync())
+			using (ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync())
 			{
-				Load();
-
-				TranslationResult result = _hybridEngine.Translate(segment);
+				TranslationResult result = item.Object.Translate(segment);
 				_lastUsedTime = DateTime.Now;
 				return result;
 			}
@@ -89,40 +90,37 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			CheckDisposed();
 
-			using (await _lock.LockAsync())
+			using (await _lock.ReaderLockAsync())
+			using (ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync())
 			{
-				Load();
-
-				IEnumerable<TranslationResult> results = _hybridEngine.Translate(n, segment);
+				IEnumerable<TranslationResult> results = item.Object.Translate(n, segment);
 				_lastUsedTime = DateTime.Now;
 				return results.ToArray();
 			}
 		}
 
-		public async Task<InteractiveTranslationResult> InteractiveTranslateAsync(IReadOnlyList<string> segment)
+		public async Task<HybridInteractiveTranslationResult> InteractiveTranslateAsync(IReadOnlyList<string> segment)
 		{
 			CheckDisposed();
 
-			using (await _lock.LockAsync())
+			using (await _lock.ReaderLockAsync())
+			using (ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync())
 			{
-				Load();
-
-				WordGraph smtWordGraph = _smtEngine.GetWordGraph(segment);
-				TranslationResult ruleResult = _ruleEngine?.Translate(segment);
+				HybridInteractiveTranslationResult result = item.Object.TranslateInteractively(segment);
 				_lastUsedTime = DateTime.Now;
-				return new InteractiveTranslationResult(smtWordGraph, ruleResult);
+				return result;
 			}
 		}
 
-		public async Task TrainSegmentPairAsync(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
+		public async Task TrainSegmentPairAsync(IReadOnlyList<string> sourceSegment,
+			IReadOnlyList<string> targetSegment)
 		{
 			CheckDisposed();
 
-			using (await _lock.LockAsync())
+			using (await _lock.WriterLockAsync())
+			using (ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync())
 			{
-				Load();
-
-				_hybridEngine.TrainSegment(sourceSegment, targetSegment);
+				item.Object.TrainSegment(sourceSegment, targetSegment);
 				if (IsBuilding)
 					_trainedSegments.Add((sourceSegment.ToArray(), targetSegment.ToArray()));
 				_isUpdated = true;
@@ -134,7 +132,7 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			CheckDisposed();
 
-			using (await _lock.LockAsync())
+			using (await _lock.WriterLockAsync())
 			{
 				_buildId = build.Id;
 				await StartBuildInternalAsync(engine, build);
@@ -145,11 +143,11 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			CheckDisposed();
 
-			using (await _lock.LockAsync())
+			using (await _lock.WriterLockAsync())
 			{
 				if (IsBuilding)
 				{
-					_cts.Cancel();
+					_buildCts.Cancel();
 					await _buildRepo.DeleteAsync(_buildId);
 					await _buildTask;
 				}
@@ -165,15 +163,13 @@ namespace SIL.Machine.WebApi.Server.Services
 
 		private async Task StartBuildInternalAsync(Engine engine, Build build)
 		{
-			Load();
-
 			ITextCorpus sourceCorpus = await _textCorpusFactory.CreateAsync(engine.Projects, TextCorpusType.Source);
 			ITextCorpus targetCorpus = await _textCorpusFactory.CreateAsync(engine.Projects, TextCorpusType.Target);
-			_batchTrainer = _smtModel.CreateBatchTrainer(Preprocessors.Lowercase, sourceCorpus, Preprocessors.Lowercase,
-				targetCorpus);
-			_cts?.Dispose();
-			_cts = new CancellationTokenSource();
-			CancellationToken token = _cts.Token;
+			_batchTrainer = _smtModel.Value.CreateBatchTrainer(Preprocessors.Lowercase, sourceCorpus,
+				Preprocessors.Lowercase, targetCorpus);
+			_buildCts?.Dispose();
+			_buildCts = new CancellationTokenSource();
+			CancellationToken token = _buildCts.Token;
 			_buildTask = Task.Run(() => BuildAsync(build, token), token);
 			_lastUsedTime = DateTime.Now;
 		}
@@ -182,11 +178,11 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			CheckDisposed();
 
-			using (await _lock.LockAsync())
+			using (await _lock.WriterLockAsync())
 			{
 				if (IsBuilding)
 				{
-					_cts.Cancel();
+					_buildCts.Cancel();
 					await _buildRepo.DeleteAsync(_buildId);
 				}
 			}
@@ -196,7 +192,7 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			CheckDisposed();
 
-			using (await _lock.LockAsync())
+			using (await _lock.WriterLockAsync())
 			{
 				if (!IsLoaded || IsBuilding)
 					return;
@@ -221,11 +217,11 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			CheckDisposed();
 
-			using (await _lock.LockAsync())
+			using (await _lock.WriterLockAsync())
 			{
 				if (IsBuilding)
 				{
-					_cts.Cancel();
+					_buildCts.Cancel();
 					await _buildRepo.DeleteAsync(_buildId);
 				}
 				Unload();
@@ -238,23 +234,9 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			if (_isUpdated)
 			{
-				_smtModel.Save();
+				_smtModel.Value.Save();
 				_isUpdated = false;
 			}
-		}
-
-		private void Load()
-		{
-			if (IsLoaded)
-				return;
-
-			_smtModel = _smtModelFactory.Create(_engineId);
-			_smtEngine = _smtModel.CreateInteractiveEngine();
-
-			_ruleEngine = _ruleEngineFactory.Create(_engineId);
-
-			_hybridEngine = new HybridTranslationEngine(_smtEngine, _ruleEngine);
-			IsLoaded = true;
 		}
 
 		private void Unload()
@@ -264,21 +246,23 @@ namespace SIL.Machine.WebApi.Server.Services
 
 			SaveModel();
 
-			_hybridEngine.Dispose();
-			_hybridEngine = null;
+			_enginePool.Dispose();
+			_smtModel.Value.Dispose();
 
-			if (_ruleEngine != null)
-			{
-				_ruleEngine.Dispose();
-				_ruleEngine = null;
-			}
+			_smtModel = new Lazy<IInteractiveSmtModel>(CreateSmtModel);
+			_enginePool = new ObjectPool<HybridTranslationEngine>(MaxEnginePoolSize, CreateEngine);
+		}
 
-			_smtEngine.Dispose();
-			_smtEngine = null;
+		private IInteractiveSmtModel CreateSmtModel()
+		{
+			return _smtModelFactory.Create(_engineId);
+		}
 
-			_smtModel.Dispose();
-			_smtModel = null;
-			IsLoaded = false;
+		private Task<HybridTranslationEngine> CreateEngine()
+		{
+			IInteractiveSmtEngine smtEngine = _smtModel.Value.CreateInteractiveEngine();
+			ITranslationEngine ruleEngine = _ruleEngineFactory.Create(_engineId);
+			return Task.FromResult(new HybridTranslationEngine(smtEngine, ruleEngine));
 		}
 
 		private async Task BuildAsync(Build build, CancellationToken token)
@@ -290,11 +274,12 @@ namespace SIL.Machine.WebApi.Server.Services
 				stopwatch.Start();
 				var progress = new BuildProgress(_buildRepo, build);
 				_batchTrainer.Train(progress, token.ThrowIfCancellationRequested);
-				using (await _lock.LockAsync(token))
+				using (await _lock.WriterLockAsync(token))
+				using (ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync())
 				{
 					_batchTrainer.Save();
-					foreach ((IReadOnlyList<string> Source, IReadOnlyList<string> Target) trainedSegment in _trainedSegments)
-						_hybridEngine.TrainSegment(trainedSegment.Source, trainedSegment.Target);
+					foreach ((IReadOnlyList<string> source, IReadOnlyList<string> target) in _trainedSegments)
+						item.Object.TrainSegment(source, target);
 					_trainedSegments.Clear();
 
 					Engine engine = await _engineRepo.GetAsync(_engineId);
@@ -324,8 +309,8 @@ namespace SIL.Machine.WebApi.Server.Services
 
 			_batchTrainer?.Dispose();
 			_batchTrainer = null;
-			_cts?.Dispose();
-			_cts = null;
+			_buildCts?.Dispose();
+			_buildCts = null;
 			Unload();
 			_trainedSegments.Clear();
 		}

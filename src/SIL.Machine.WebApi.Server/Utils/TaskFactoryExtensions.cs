@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace SIL.Threading
+namespace SIL.Machine.WebApi.Server.Utils
 {
 	/// <summary>
 	/// Provides extension methods for task factories.

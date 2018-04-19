@@ -66,7 +66,7 @@ namespace SIL.Machine.WebApi.Server.Controllers
 		public async Task<IActionResult> InteractiveTranslateAsync(string locatorType, string locator,
 			[FromBody] string[] segment)
 		{
-			InteractiveTranslationResult result = await _engineService.InteractiveTranslateAsync(
+			HybridInteractiveTranslationResult result = await _engineService.InteractiveTranslateAsync(
 				GetLocatorType(locatorType), locator, segment);
 			if (result == null)
 				return NotFound();
@@ -180,7 +180,7 @@ namespace SIL.Machine.WebApi.Server.Controllers
 			};
 		}
 
-		private static InteractiveTranslationResultDto CreateDto(InteractiveTranslationResult result,
+		private static InteractiveTranslationResultDto CreateDto(HybridInteractiveTranslationResult result,
 			IReadOnlyList<string> sourceSegment)
 		{
 			return new InteractiveTranslationResultDto

@@ -9,8 +9,8 @@ using SIL.Machine.Translation;
 using SIL.Machine.WebApi.Server.DataAccess;
 using SIL.Machine.WebApi.Server.Models;
 using SIL.Machine.WebApi.Server.Options;
+using SIL.Machine.WebApi.Server.Utils;
 using SIL.ObjectModel;
-using SIL.Threading;
 
 namespace SIL.Machine.WebApi.Server.Services
 {
@@ -97,7 +97,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			}
 		}
 
-		public async Task<InteractiveTranslationResult> InteractiveTranslateAsync(
+		public async Task<HybridInteractiveTranslationResult> InteractiveTranslateAsync(
 			EngineLocatorType locatorType, string locator, IReadOnlyList<string> segment)
 		{
 			CheckDisposed();

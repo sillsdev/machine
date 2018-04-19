@@ -36,12 +36,12 @@ namespace SIL.Machine.Translation
 			string[] tokens = SourceWordTokenizer.TokenizeToStrings(sourceSegment).ToArray();
 			if (tokens.Length > MaxSegmentSize)
 			{
-				var results = new InteractiveTranslationResult(new WordGraph(), null);
+				var results = new HybridInteractiveTranslationResult(new WordGraph(), null);
 				onFinished(new InteractiveTranslationSession(this, tokens, confidenceThreshold, results));
 				return;
 			}
 
-			Task<InteractiveTranslationResult> task = RestClient.TranslateInteractivelyAsync(ProjectId, tokens);
+			Task<HybridInteractiveTranslationResult> task = RestClient.TranslateInteractivelyAsync(ProjectId, tokens);
 			task.ContinueWith(t => onFinished(t.IsFaulted ? null
 				: new InteractiveTranslationSession(this, tokens, confidenceThreshold, t.Result)));
 		}

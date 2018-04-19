@@ -3,7 +3,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SIL.Threading
+namespace SIL.Machine.WebApi.Server.Utils
 {
 	/// <summary>
 	/// Provides synchronous extension methods for tasks.

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 // Original idea from Stephen Toub: http://blogs.msdn.com/b/pfxteam/archive/2012/02/12/building-async-coordination-primitives-part-7-asyncreaderwriterlock.aspx
 
-namespace SIL.Threading
+namespace SIL.Machine.WebApi.Server.Utils
 {
 	/// <summary>
 	/// A reader/writer lock that is compatible with async. Note that this lock is <b>not</b> recursive!

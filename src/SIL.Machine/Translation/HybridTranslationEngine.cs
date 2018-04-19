@@ -69,6 +69,13 @@ namespace SIL.Machine.Translation
 			return session;
 		}
 
+		public HybridInteractiveTranslationResult TranslateInteractively(IReadOnlyList<string> segment)
+		{
+			WordGraph smtWordGraph = SmtEngine.GetWordGraph(segment);
+			TranslationResult ruleResult = RuleEngine?.Translate(segment);
+			return new HybridInteractiveTranslationResult(smtWordGraph, ruleResult);
+		}
+
 		public WordAlignmentMatrix TrainSegment(IReadOnlyList<string> sourceSegment,
 			IReadOnlyList<string> targetSegment)
 		{
@@ -135,6 +142,8 @@ namespace SIL.Machine.Translation
 		{
 			foreach (HybridInteractiveTranslationSession session in _sessions.ToArray())
 				session.Dispose();
+			SmtEngine.Dispose();
+			RuleEngine?.Dispose();
 		}
 	}
 }

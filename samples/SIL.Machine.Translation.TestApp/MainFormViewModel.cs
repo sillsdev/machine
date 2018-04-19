@@ -9,7 +9,6 @@ using System.Windows.Input;
 using System.Xml.Linq;
 using Eto.Forms;
 using GalaSoft.MvvmLight;
-using SIL.Machine.Annotations;
 using SIL.Machine.Corpora;
 using SIL.Machine.Morphology.HermitCrab;
 using SIL.Machine.Tokenization;
@@ -24,9 +23,7 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly RelayCommand _openProjectCommand;
 		private readonly RelayCommand _saveProjectCommand;
 		private HybridTranslationEngine _hybridEngine;
-		private TransferEngine _transferEngine;
 		private ThotSmtModel _smtModel;
-		private IInteractiveSmtEngine _smtEngine;
 		private ITextCorpus _sourceCorpus;
 		private ITextCorpus _targetCorpus;
 		private ITextAlignmentCorpus _alignmentCorpus;
@@ -152,7 +149,7 @@ namespace SIL.Machine.Translation.TestApp
 			string configDir = Path.GetDirectoryName(fileName);
 			Debug.Assert(configDir != null);
 
-			_transferEngine = null;
+			ITranslationEngine transferEngine = null;
 			if (hcSrcConfig != null && hcTrgConfig != null)
 			{
 				Language srcLang = XmlLanguageLoader.Load(Path.Combine(configDir, hcSrcConfig));
@@ -161,14 +158,14 @@ namespace SIL.Machine.Translation.TestApp
 				Language trgLang = XmlLanguageLoader.Load(Path.Combine(configDir, hcTrgConfig));
 				var trgMorpher = new Morpher(_hcTraceManager, trgLang);
 
-				_transferEngine = new TransferEngine(srcMorpher,
+				transferEngine = new TransferEngine(srcMorpher,
 					new SimpleTransferer(new GlossMorphemeMapper(trgMorpher)), trgMorpher);
 			}
 
 			_smtModel = new ThotSmtModel(Path.Combine(configDir, smtConfig));
-			_smtEngine = _smtModel.CreateInteractiveEngine();
+			IInteractiveSmtEngine smtEngine = _smtModel.CreateInteractiveEngine();
 
-			_hybridEngine = new HybridTranslationEngine(_smtEngine, _transferEngine);
+			_hybridEngine = new HybridTranslationEngine(smtEngine, transferEngine);
 
 			var sourceTexts = new List<IText>();
 			var targetTexts = new List<IText>();
@@ -252,20 +249,10 @@ namespace SIL.Machine.Translation.TestApp
 				_hybridEngine.Dispose();
 				_hybridEngine = null;
 			}
-			if (_smtEngine != null)
-			{
-				_smtEngine.Dispose();
-				_smtEngine = null;
-			}
 			if (_smtModel != null)
 			{
 				_smtModel.Dispose();
 				_smtModel = null;
-			}
-			if (_transferEngine != null)
-			{
-				_transferEngine.Dispose();
-				_transferEngine = null;
 			}
 			_saveProjectCommand.UpdateCanExecute();
 			RebuildTask.UpdateCanExecute();

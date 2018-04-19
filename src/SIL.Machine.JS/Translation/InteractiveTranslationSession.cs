@@ -15,7 +15,7 @@ namespace SIL.Machine.Translation
 		private TranslationResult _curResult;
 
 		internal InteractiveTranslationSession(TranslationEngine engine, string[] sourceSegment,
-			double confidenceThreshold, InteractiveTranslationResult result)
+			double confidenceThreshold, HybridInteractiveTranslationResult result)
 		{
 			_engine = engine;
 			_suggester = new PhraseTranslationSuggester { ConfidenceThreshold = confidenceThreshold };

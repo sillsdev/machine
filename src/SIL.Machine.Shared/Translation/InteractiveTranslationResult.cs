@@ -1,8 +1,8 @@
 ﻿namespace SIL.Machine.Translation
 {
-	public class InteractiveTranslationResult
+	public class HybridInteractiveTranslationResult
 	{
-		public InteractiveTranslationResult(WordGraph smtWordGraph, TranslationResult ruleResult)
+		public HybridInteractiveTranslationResult(WordGraph smtWordGraph, TranslationResult ruleResult)
 		{
 			SmtWordGraph = smtWordGraph;
 			RuleResult = ruleResult;

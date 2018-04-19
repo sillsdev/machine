@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SIL.Machine.WebApi.Server.Options;
-using SIL.Threading;
+using SIL.Machine.WebApi.Server.Utils;
 
 namespace SIL.Machine.WebApi.Server.Services
 {

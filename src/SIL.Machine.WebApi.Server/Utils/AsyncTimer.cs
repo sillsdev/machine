@@ -3,7 +3,7 @@ using System.Threading;
 using SIL.ObjectModel;
 using System.Threading.Tasks;
 
-namespace SIL.Threading
+namespace SIL.Machine.WebApi.Server.Utils
 {
 	public class AsyncTimer : DisposableBase
 	{

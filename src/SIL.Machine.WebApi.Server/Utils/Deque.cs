@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace SIL.Threading
+namespace SIL.Machine.WebApi.Server.Utils
 {
 	/// <summary>
 	/// A double-ended queue (deque), which provides O(1) indexed access, O(1) removals from the front and back, amortized O(1)

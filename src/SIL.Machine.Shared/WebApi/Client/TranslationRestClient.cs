@@ -27,7 +27,7 @@ namespace SIL.Machine.WebApi.Client
 			return JsonConvert.DeserializeObject<ProjectDto>(response.Content, SerializerSettings);
 		}
 
-		public async Task<InteractiveTranslationResult> TranslateInteractivelyAsync(string projectId,
+		public async Task<HybridInteractiveTranslationResult> TranslateInteractivelyAsync(string projectId,
 			IReadOnlyList<string> sourceSegment)
 		{
 			string url = $"translation/engines/project:{projectId}/actions/interactiveTranslate";
@@ -138,10 +138,10 @@ namespace SIL.Machine.WebApi.Client
 			return new SmtTrainProgress(buildDto.CurrentStep, buildDto.CurrentStepMessage, buildDto.StepCount);
 		}
 
-		private static InteractiveTranslationResult CreateModel(InteractiveTranslationResultDto resultDto,
+		private static HybridInteractiveTranslationResult CreateModel(InteractiveTranslationResultDto resultDto,
 			IReadOnlyList<string> sourceSegment)
 		{
-			return new InteractiveTranslationResult(CreateModel(resultDto.WordGraph),
+			return new HybridInteractiveTranslationResult(CreateModel(resultDto.WordGraph),
 				CreateModel(resultDto.RuleResult, sourceSegment));
 		}
 

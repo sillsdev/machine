@@ -2,9 +2,9 @@
 using System.Linq;
 using NSubstitute;
 using NUnit.Framework;
+using SIL.Machine.Annotations;
 using SIL.Machine.Morphology;
 using SIL.ObjectModel;
-using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Translation
 {
@@ -13,8 +13,6 @@ namespace SIL.Machine.Translation
 	{
 		private class TestEnvironment : DisposableBase
 		{
-			private readonly TransferEngine _transferEngine;
-
 			public TestEnvironment()
 			{
 				var sourceAnalyzer = Substitute.For<IMorphologicalAnalyzer>();
@@ -33,7 +31,7 @@ namespace SIL.Machine.Translation
 				targetGenerator.AddGeneratedWords(
 					new WordAnalysis(new[] { targetMorphemes[0], targetMorphemes[1] }, 0, "v"), "walked");
 				var transferer = new SimpleTransferer(new GlossMorphemeMapper(targetGenerator));
-				_transferEngine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
+				ITranslationEngine transferEngine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
 				var smtEngine = Substitute.For<IInteractiveSmtEngine>();
 
 				var alignment = new WordAlignmentMatrix(5, 5)
@@ -57,7 +55,7 @@ namespace SIL.Machine.Translation
 				AddTranslation(smtEngine, "hablé con recepción .", "hablé with reception .", new[] { 0, 0.5, 0.5, 0.5 },
 					alignment);
 
-				Engine = new HybridTranslationEngine(smtEngine, _transferEngine);
+				Engine = new HybridTranslationEngine(smtEngine, transferEngine);
 			}
 
 			private static void AddTranslation(IInteractiveSmtEngine engine, string sourceSegment, string targetSegment,
@@ -84,7 +82,6 @@ namespace SIL.Machine.Translation
 			protected override void DisposeManagedResources()
 			{
 				Engine.Dispose();
-				_transferEngine.Dispose();
 			}
 		}
 

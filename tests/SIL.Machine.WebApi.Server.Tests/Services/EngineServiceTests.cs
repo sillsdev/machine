@@ -51,7 +51,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			using (var env = new TestEnvironment())
 			{
 				await env.CreateEngineServiceAsync();
-				InteractiveTranslationResult result = await env.Service.InteractiveTranslateAsync(EngineLocatorType.Id,
+				HybridInteractiveTranslationResult result = await env.Service.InteractiveTranslateAsync(EngineLocatorType.Id,
 					"engine1", "Esto es una prueba .".Split());
 				Assert.That(result, Is.Null);
 			}
@@ -64,7 +64,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
 				await env.CreateEngineServiceAsync();
-				InteractiveTranslationResult result = await env.Service.InteractiveTranslateAsync(EngineLocatorType.Id,
+				HybridInteractiveTranslationResult result = await env.Service.InteractiveTranslateAsync(EngineLocatorType.Id,
 					engineId, "Esto es una prueba .".Split());
 				Assert.That(result.RuleResult.TargetSegment, Is.EqualTo("this is a test .".Split()));
 				Assert.That(result.SmtWordGraph.Arcs.SelectMany(a => a.Words), Is.EqualTo("this is a test .".Split()));

@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NoDb;
 using SIL.Machine.WebApi.Server.Models;
 using SIL.Machine.WebApi.Server.Options;
-using SIL.Threading;
+using SIL.Machine.WebApi.Server.Utils;
 
 namespace SIL.Machine.WebApi.Server.DataAccess
 {

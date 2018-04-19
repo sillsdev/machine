@@ -61,7 +61,7 @@ namespace SIL.Machine.WebApi.Server.Services
 		}
 
 		[Test]
-		public async Task CommitAsync_LoadedInactive_Unloaded()
+		public async Task CommitAsync_LoadedInactive()
 		{
 			using (var env = new TestEnvironment())
 			{
@@ -76,7 +76,7 @@ namespace SIL.Machine.WebApi.Server.Services
 		}
 
 		[Test]
-		public async Task CommitAsync_LoadedActive_Loaded()
+		public async Task CommitAsync_LoadedActive()
 		{
 			using (var env = new TestEnvironment())
 			{
@@ -86,6 +86,18 @@ namespace SIL.Machine.WebApi.Server.Services
 				await env.EngineRunner.CommitAsync();
 				env.SmtModel.Received().Save();
 				Assert.That(env.EngineRunner.IsLoaded, Is.True);
+			}
+		}
+
+		[Test]
+		public async Task TranslateAsync()
+		{
+			using (var env = new TestEnvironment())
+			{
+				await env.CreateEngineAsync(TimeSpan.FromHours(1));
+				await env.EngineRunner.InitNewAsync();
+				TranslationResult result = await env.EngineRunner.TranslateAsync("esto es una prueba .".Split());
+				Assert.That(result.TargetSegment, Is.EqualTo("this is a test .".Split()));
 			}
 		}
 

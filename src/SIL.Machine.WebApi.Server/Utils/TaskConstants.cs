@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace SIL.Threading
+namespace SIL.Machine.WebApi.Server.Utils
 {
 	/// <summary>
 	/// Provides completed task constants.
