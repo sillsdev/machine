@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using SIL.ObjectModel;
 
-namespace SIL.IO
+namespace SIL.Machine.Translation.Thot
 {
 	public class TempDirectory : DisposableBase
 	{

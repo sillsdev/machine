@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using SIL.IO;
 using SIL.Machine.Corpora;
 
 namespace SIL.Machine.Translation.Thot

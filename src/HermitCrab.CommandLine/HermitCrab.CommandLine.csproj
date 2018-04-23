@@ -63,6 +63,12 @@
     <Reference Include="Mono.Options, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Mono.Options.5.3.0.1\lib\net4-client\Mono.Options.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="SIL.Core, Version=4.2.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.Core.4.2.0-824\lib\net461\SIL.Core.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -112,10 +118,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SIL.Core\SIL.Core.csproj">
-      <Project>{be961952-794a-4a70-8c95-4dfc0e2be105}</Project>
-      <Name>SIL.Core</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj">
       <Project>{71a076a8-92df-493d-80e7-cdd9dc7fedc9}</Project>
       <Name>SIL.Machine.Morphology.HermitCrab</Name>

@@ -14,7 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\SIL.Core\SIL.Core.csproj" />
     <ProjectReference Include="..\..\src\SIL.Machine\SIL.Machine.csproj" />
   </ItemGroup>
 
