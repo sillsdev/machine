@@ -1,0 +1,22 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "0.1.0",
+    "command": "dotnet",
+    "isShellCommand": true,
+    "args": [],
+    "tasks": [
+        {
+            "taskName": "build",
+            "args": ["${workspaceRoot}/src/SIL.Machine.WebApi.Server/SIL.Machine.WebApi.Server.csproj"],
+            "isBuildCommand": true,
+            "showOutput": "silent",
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "taskName": "test",
+            "args": ["${workspaceRoot}/tests/SIL.Machine.WebApi.Server.Tests/SIL.Machine.WebApi.Server.Tests.csproj"],
+            "isTestCommand": true
+        }
+    ]
+}

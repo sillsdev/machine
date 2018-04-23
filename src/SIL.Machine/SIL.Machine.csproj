@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <Import Project="../AssemblyInfo.props" />
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="QuickGraph.All" Version="3.6.61119.8" />
+    <PackageReference Include="SIL.Core" Version="4.2.0-824" />
+  </ItemGroup>
+
+  <Import Project="..\SIL.Machine.Shared\SIL.Machine.Shared.projitems" Label="Shared" />
+
+</Project>

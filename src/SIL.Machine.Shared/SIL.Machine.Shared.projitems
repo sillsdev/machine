@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>c91d680f-267b-45bd-82a9-45bf7d8aa496</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>SIL.Machine</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Annotations\IntegerRangeFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Annotations\Range.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Annotations\RangeFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataStructures\Direction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataStructures\PriorityQueue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataStructures\PriorityQueueNode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataStructures\PriorityQueueNodeBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Statistics\LogSpace.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\IDetokenizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\ITokenizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\LatinSentenceTokenizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\LatinWordTokenizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\LineSegmentTokenizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\RegexTokenizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\SimpleStringDetokenizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\StringTokenizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\TokenizationExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tokenization\WhitespaceTokenizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\EditOperation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\InteractiveTranslationResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\ITranslationSuggester.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\Phrase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\PhraseTranslationSuggester.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\Preprocessors.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\SmtTrainProgress.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationResultBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\EcmScoreInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\EditDistanceBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\ErrorCorrectionModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\ErrorCorrectionWordGraphProcessor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\SegmentEditDistance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationSources.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationSuggestion.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\WordAlignmentMatrix.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\WordTranslationSuggester.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\WordEditDistance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\WordGraph.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\WordGraphArc.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Client\HttpException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Client\HttpResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Client\IHttpClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Client\RestClientBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Client\TranslationRestClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\AlignedWordPairDto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\BuildDto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\EngineDto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\InteractiveTranslationResultDto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\PhraseDto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\RangeDto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\ResourceDto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\ProjectDto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\SegmentPairDto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\TranslationResultDto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\WordGraphArcDto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\WordGraphDto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\WebApiUtils.cs" />
+  </ItemGroup>
+</Project>

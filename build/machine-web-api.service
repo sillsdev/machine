@@ -1,0 +1,15 @@
+[Unit]
+Description=Machine Web API
+
+[Service]
+ExecStartPre=-/bin/rm -f ${SOCKETFILE}
+ExecStart=/opt/machine-web-api/SIL.Machine.WebApi.Server --urls http://unix:${SOCKETFILE}
+WorkingDirectory=/opt/machine-web-api
+Restart=always
+RestartSec=10
+SyslogIdentifier=machine-web-api
+User=www-data
+Environment=SOCKETFILE=/tmp/machine-web-api.sock
+
+[Install]
+WantedBy=multi-user.target

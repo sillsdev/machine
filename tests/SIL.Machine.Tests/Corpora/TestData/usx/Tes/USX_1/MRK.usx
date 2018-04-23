@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<usx version="2.6">
+  <book code="MRK" style="id">- Test</book>
+  <para style="ide">65001 - Unicode (UTF-8)</para>
+  <para style="h">MARK</para>
+  <para style="toc1">Mark</para>
+  <para style="toc2">Mark</para>
+  <para style="toc3">Mrk</para>
+  <para style="mt2">The Gospel that was written by</para>
+  <para style="mt1">Mark</para>
+</usx>

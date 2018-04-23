@@ -1,0 +1,84 @@
+<?xml version="1.0" standalone="yes"?>
+<DBLMetadata id="0bc8836afa7427fa" revision="2" version="2.0">
+  <identification>
+    <name>Test</name>
+    <nameLocal>Test</nameLocal>
+    <abbreviation>Tes</abbreviation>
+    <abbreviationLocal>Tes</abbreviationLocal>
+    <scope>Bible</scope>
+    <description>Test</description>
+    <dateCompleted>2017</dateCompleted>
+  </identification>
+  <type>
+    <medium>text</medium>
+    <isConfidential>false</isConfidential>
+    <hasCharacters>true</hasCharacters>
+    <isTranslation>true</isTranslation>
+    <isExpression>true</isExpression>
+    <translationType>Revision</translationType>
+    <audience>Common</audience>
+  </type>
+  <relationships/>
+  <agencies>
+  </agencies>
+  <language>
+    <iso>eng</iso>
+    <name>English</name>
+    <nameLocal>English</nameLocal>
+    <ldml>en</ldml>
+    <rod>00025</rod>
+    <script>Latin</script>
+    <scriptCode>Latn</scriptCode>
+    <scriptDirection>LTR</scriptDirection>
+    <numerals>Arabic</numerals>
+  </language>
+  <countries>
+    <country>
+      <iso>USA</iso>
+      <name>United States</name>
+      <nameLocal>United States</nameLocal>
+    </country>
+  </countries>
+  <format>
+    <versedParagraphs>false</versedParagraphs>
+  </format>
+  <manifest>
+  </manifest>
+  <names>
+    <name id="book_MAT">
+      <short>Matthew</short>
+      <abbr>Mat</abbr>
+      <long>Matthew</long>
+    </name>
+    <name id="book_MRK">
+      <short>Mark</short>
+      <abbr>Mrk</abbr>
+      <long>Mark</long>
+    </name>
+  </names>
+  <source/>
+  <publications>
+    <publication id="1" default="true">
+      <name>Test</name>
+      <nameLocal>Test</nameLocal>
+      <abbreviation>Tes</abbreviation>
+      <abbreviationLocal>Tes</abbreviationLocal>
+      <description>common</description>
+      <descriptionLocal>common</descriptionLocal>
+      <canonicalContent>
+        <book code="MAT"/>
+        <book code="MRK"/>
+      </canonicalContent>
+      <structure>
+        <content name="book_MAT" role="MAT" src="USX_1/MAT.usx"/>
+        <content name="book_MRK" role="MRK" src="USX_1/MRK.usx"/>
+      </structure>
+    </publication>
+  </publications>
+  <copyright>
+  </copyright>
+  <promotion>
+  </promotion>
+  <archiveStatus>
+  </archiveStatus>
+</DBLMetadata>

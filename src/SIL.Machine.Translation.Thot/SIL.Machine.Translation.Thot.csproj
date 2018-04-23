@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <Import Project="../AssemblyInfo.props" />
+
+  <ItemGroup>
+    <PackageReference Include="Thot" Version="1.0.0-62" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SIL.Machine\SIL.Machine.csproj" />
+  </ItemGroup>
+</Project>
