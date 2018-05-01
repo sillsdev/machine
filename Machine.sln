@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Translation.TestApp", "samples\SIL.Machine.Translation.TestApp\SIL.Machine.Translation.TestApp.csproj", "{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}"
+	ProjectSection(SolutionItems) = preProject
+		src\AssemblyInfo.props = src\AssemblyInfo.props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{66246A1C-8D45-40FB-A660-C58577122CA7}"
 EndProject
