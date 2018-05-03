@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using SIL.Machine.Corpora;
 using SIL.ObjectModel;
 
@@ -100,16 +101,17 @@ namespace SIL.Machine.Translation.Thot
 			CheckDisposed();
 
 			var results = new Dictionary<string, IReadOnlyDictionary<string, double>>();
+			string[] targetWords = _directAlignmentModel.TargetWords.ToArray();
 			foreach (string sourceWord in _directAlignmentModel.SourceWords)
 			{
-				var targetWords = new Dictionary<string, double>();
-				foreach (string targetWord in _directAlignmentModel.TargetWords)
+				var row = new Dictionary<string, double>();
+				foreach (string targetWord in targetWords)
 				{
 					double prob = GetTranslationProbability(sourceWord, targetWord);
 					if (prob > threshold)
-						targetWords[targetWord] = prob;
+						row[targetWord] = prob;
 				}
-				results[sourceWord] = targetWords;
+				results[sourceWord] = row;
 			}
 			return results;
 		}
