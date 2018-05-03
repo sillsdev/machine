@@ -43,7 +43,7 @@ namespace SIL.Machine.Translation
 			string tmPrefix = Path.Combine(EngineDirectory, "tm", "src_trg");
 			Out.Write("Aligning... ");
 			using (var progress = new ConsoleProgressBar(Out))
-			using (var alignmentModel = new ThotSymmetrizedAlignmentModel(tmPrefix + "_invswm", tmPrefix + "_swm"))
+			using (var alignmentModel = new ThotSymmetrizedWordAlignmentModel(tmPrefix + "_invswm", tmPrefix + "_swm"))
 			{
 				int segmentCount = 0;
 				foreach (ParallelText text in ParallelCorpus.Texts)
@@ -83,7 +83,7 @@ namespace SIL.Machine.Translation
 			return 0;
 		}
 
-		private static string OutputAlignmentString(ThotSymmetrizedAlignmentModel alignmentModel, bool includeProbs,
+		private static string OutputAlignmentString(ThotSymmetrizedWordAlignmentModel alignmentModel, bool includeProbs,
 			IReadOnlyList<string> source, IReadOnlyList<string> target, WordAlignmentMatrix matrix)
 		{
 			var sourceIndices = new int[matrix.ColumnCount];
@@ -126,7 +126,7 @@ namespace SIL.Machine.Translation
 				target, sourceIndices, targetIndices, t.SourceIndex, t.TargetIndex)));
 		}
 
-		private static string AlignedWordsString(ThotSymmetrizedAlignmentModel alignmentModel, bool includeProbs,
+		private static string AlignedWordsString(ThotSymmetrizedWordAlignmentModel alignmentModel, bool includeProbs,
 			IReadOnlyList<string> source, IReadOnlyList<string> target, int[] sourceIndices, int[] targetIndices,
 			int sourceIndex, int targetIndex)
 		{

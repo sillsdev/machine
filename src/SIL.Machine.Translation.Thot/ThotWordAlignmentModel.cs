@@ -8,14 +8,14 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.Thot
 {
-	public class ThotAlignmentModel : DisposableBase, ISegmentAligner
+	public class ThotWordAlignmentModel : DisposableBase, ISegmentAligner
 	{
 		private readonly ThotWordVocabulary _sourceWords;
 		private readonly ThotWordVocabulary _targetWords;
 		private readonly bool _closeOnDispose;
 		private readonly string _prefFileName;
 
-		public ThotAlignmentModel()
+		public ThotWordAlignmentModel()
 		{
 			Handle = Thot.swAlignModel_create();
 			_sourceWords = new ThotWordVocabulary(Handle, true);
@@ -23,7 +23,7 @@ namespace SIL.Machine.Translation.Thot
 			_closeOnDispose = true;
 		}
 
-		internal ThotAlignmentModel(IntPtr handle)
+		internal ThotWordAlignmentModel(IntPtr handle)
 		{
 			Handle = handle;
 			_sourceWords = new ThotWordVocabulary(Handle, true);
@@ -31,7 +31,7 @@ namespace SIL.Machine.Translation.Thot
 			_closeOnDispose = false;
 		}
 
-		public ThotAlignmentModel(string prefFileName, bool createNew = false)
+		public ThotWordAlignmentModel(string prefFileName, bool createNew = false)
 		{
 			if (!createNew && !File.Exists(prefFileName + ".src"))
 				throw new FileNotFoundException("The single-word alignment model configuration could not be found.");
@@ -142,6 +142,14 @@ namespace SIL.Machine.Translation.Thot
 				Marshal.FreeHGlobal(nativeTargetWord);
 				Marshal.FreeHGlobal(nativeSourceWord);
 			}
+		}
+
+		public double GetTranslationProbability(int sourceWordIndex, int targetWordIndex)
+		{
+			CheckDisposed();
+
+			return Thot.swAlignModel_getTranslationProbabilityByIndex(Handle, (uint) sourceWordIndex,
+				(uint) targetWordIndex);
 		}
 
 		/// <summary>

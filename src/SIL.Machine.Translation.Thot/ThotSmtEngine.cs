@@ -158,8 +158,8 @@ namespace SIL.Machine.Translation.Thot
 
 		private double GetTranslationProbability(string sourceWord, string targetWord)
 		{
-			double prob = _smtModel.DirectAlignmentModel.GetTranslationProbability(sourceWord, targetWord);
-			double invProb = _smtModel.InverseAlignmentModel.GetTranslationProbability(targetWord,
+			double prob = _smtModel.DirectWordAlignmentModel.GetTranslationProbability(sourceWord, targetWord);
+			double invProb = _smtModel.InverseWordAlignmentModel.GetTranslationProbability(targetWord,
 				sourceWord);
 			return Math.Max(prob, invProb);
 		}

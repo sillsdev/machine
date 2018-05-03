@@ -7,8 +7,6 @@ namespace SIL.Machine.Translation.Thot
 {
 	internal class ThotWordVocabulary : IReadOnlyList<string>
 	{
-		private const int ReservedWordCount = 3;
-
 		private readonly IntPtr _swAlignModelHandle;
 		private readonly bool _isSource;
 
@@ -42,9 +40,8 @@ namespace SIL.Machine.Translation.Thot
 		{
 			get
 			{
-				int count = _isSource ? (int) Thot.swAlignModel_getSourceWordCount(_swAlignModelHandle)
+				return _isSource ? (int) Thot.swAlignModel_getSourceWordCount(_swAlignModelHandle)
 					: (int) Thot.swAlignModel_getTargetWordCount(_swAlignModelHandle);
-				return count - ReservedWordCount;
 			}
 		}
 
@@ -74,7 +71,6 @@ namespace SIL.Machine.Translation.Thot
 
 		private string GetWord(uint index, IntPtr nativeWordStr, ref uint capacity)
 		{
-			index += ReservedWordCount;
 			uint len = GetWordNative(index, nativeWordStr, capacity);
 			if (len > capacity)
 			{

@@ -152,6 +152,10 @@ namespace SIL.Machine.Translation.Thot
 			IntPtr targetWord);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern float swAlignModel_getTranslationProbabilityByIndex(IntPtr swAlignModelHandle,
+			uint sourceWordIndex, uint targetWordIndex);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern float swAlignModel_getAlignmentProbability(IntPtr swAlignModelHandle, uint prevI, uint sLen,
 			uint i);
 

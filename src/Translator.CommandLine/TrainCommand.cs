@@ -82,7 +82,7 @@ namespace SIL.Machine.Translation
 			if (!_quietOption.HasValue())
 				Out.Write("Training... ");
 			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
-			using (var alignmentModel = new ThotSymmetrizedAlignmentModel(tmPrefix + "_invswm", tmPrefix + "_swm",
+			using (var alignmentModel = new ThotSymmetrizedWordAlignmentModel(tmPrefix + "_invswm", tmPrefix + "_swm",
 				true))
 			{
 				alignmentModel.AddSegmentPairs(ParallelCorpus, Preprocessors.Lowercase, MaxParallelCorpusCount);

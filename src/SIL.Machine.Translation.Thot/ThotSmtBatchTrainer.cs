@@ -387,7 +387,7 @@ namespace SIL.Machine.Translation.Thot
 			Func<string, string> targetPreprocessor, ParallelTextCorpus corpus, string name,
 			ThotTrainProgressReporter reporter)
 		{
-			using (var swAlignModel = new ThotAlignmentModel(swmPrefix, true))
+			using (var swAlignModel = new ThotWordAlignmentModel(swmPrefix, true))
 			{
 				foreach (ParallelTextSegment segment in GetTrainingSegments(corpus))
 				{
@@ -411,7 +411,7 @@ namespace SIL.Machine.Translation.Thot
 		{
 			reporter.Step($"Generating best {name} alignments");
 
-			using (var swAlignModel = new ThotAlignmentModel(swmPrefix))
+			using (var swAlignModel = new ThotWordAlignmentModel(swmPrefix))
 			using (var writer = new StreamWriter(fileName))
 			{
 				foreach (ParallelTextSegment segment in GetTrainingSegments(corpus))

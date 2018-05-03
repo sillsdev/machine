@@ -8,8 +8,8 @@ namespace SIL.Machine.Translation.Thot
 {
 	public class ThotSmtModel : DisposableBase, IInteractiveSmtModel
 	{
-		private readonly ThotAlignmentModel _directAlignmentModel;
-		private readonly ThotAlignmentModel _inverseAlignmentModel;
+		private readonly ThotWordAlignmentModel _directWordAlignmentModel;
+		private readonly ThotWordAlignmentModel _inverseWordAlignmentModel;
 		private readonly HashSet<ThotSmtEngine> _engines = new HashSet<ThotSmtEngine>();
 
 		public ThotSmtModel(string cfgFileName)
@@ -25,9 +25,9 @@ namespace SIL.Machine.Translation.Thot
 
 			Handle = Thot.LoadSmtModel(Parameters);
 
-			_directAlignmentModel = new ThotAlignmentModel(
+			_directWordAlignmentModel = new ThotWordAlignmentModel(
 				Thot.smtModel_getSingleWordAlignmentModel(Handle));
-			_inverseAlignmentModel = new ThotAlignmentModel(
+			_inverseWordAlignmentModel = new ThotWordAlignmentModel(
 				Thot.smtModel_getInverseSingleWordAlignmentModel(Handle));
 		}
 
@@ -35,23 +35,23 @@ namespace SIL.Machine.Translation.Thot
 		public ThotSmtParameters Parameters { get; private set; }
 		internal IntPtr Handle { get; private set; }
 
-		public ThotAlignmentModel DirectAlignmentModel
+		public ThotWordAlignmentModel DirectWordAlignmentModel
 		{
 			get
 			{
 				CheckDisposed();
 
-				return _directAlignmentModel;
+				return _directWordAlignmentModel;
 			}
 		}
 
-		public ThotAlignmentModel InverseAlignmentModel
+		public ThotWordAlignmentModel InverseWordAlignmentModel
 		{
 			get
 			{
 				CheckDisposed();
 
-				return _inverseAlignmentModel;
+				return _inverseWordAlignmentModel;
 			}
 		}
 
@@ -94,8 +94,8 @@ namespace SIL.Machine.Translation.Thot
 		{
 			foreach (ThotSmtEngine engine in _engines.ToArray())
 				engine.Dispose();
-			_directAlignmentModel.Dispose();
-			_inverseAlignmentModel.Dispose();
+			_directWordAlignmentModel.Dispose();
+			_inverseWordAlignmentModel.Dispose();
 		}
 
 		protected override void DisposeUnmanagedResources()
@@ -132,8 +132,8 @@ namespace SIL.Machine.Translation.Thot
 
 				_smtModel.Parameters = Parameters;
 				_smtModel.Handle = Thot.LoadSmtModel(_smtModel.Parameters);
-				_smtModel._directAlignmentModel.Handle = Thot.smtModel_getSingleWordAlignmentModel(_smtModel.Handle);
-				_smtModel._inverseAlignmentModel.Handle =
+				_smtModel._directWordAlignmentModel.Handle = Thot.smtModel_getSingleWordAlignmentModel(_smtModel.Handle);
+				_smtModel._inverseWordAlignmentModel.Handle =
 					Thot.smtModel_getInverseSingleWordAlignmentModel(_smtModel.Handle);
 				foreach (ThotSmtEngine engine in _smtModel._engines)
 					engine.LoadHandle();
