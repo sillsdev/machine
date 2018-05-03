@@ -97,7 +97,7 @@ namespace SIL.Machine.Translation
 		private void TrainAlignmentModel(string swmPrefix, ParallelTextCorpus corpus,
 			IProgress<double> progress = null, int startStep = 0)
 		{
-			using (var swAlignModel = new ThotSingleWordAlignmentModel(swmPrefix, true))
+			using (var swAlignModel = new ThotAlignmentModel(swmPrefix, true))
 			{
 				foreach (ParallelTextSegment segment in corpus.Segments.Where(s => !s.IsEmpty)
 					.Take(MaxParallelCorpusCount))

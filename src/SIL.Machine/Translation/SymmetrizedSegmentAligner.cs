@@ -2,12 +2,12 @@
 
 namespace SIL.Machine.Translation
 {
-	public class SymmetrizationSegmentAligner : ISegmentAligner
+	public class SymmetrizedSegmentAligner : ISegmentAligner
 	{
 		private readonly ISegmentAligner _srcTrgAligner;
 		private readonly ISegmentAligner _trgSrcAligner;
 
-		public SymmetrizationSegmentAligner(ISegmentAligner srcTrgAligner, ISegmentAligner trgSrcAligner)
+		public SymmetrizedSegmentAligner(ISegmentAligner srcTrgAligner, ISegmentAligner trgSrcAligner)
 		{
 			_srcTrgAligner = srcTrgAligner;
 			_trgSrcAligner = trgSrcAligner;

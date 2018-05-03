@@ -1,29 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
+using SIL.Machine.Corpora;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.Thot
 {
-	public class ThotSingleWordAlignmentModel : DisposableBase, ISegmentAligner
+	public class ThotAlignmentModel : DisposableBase, ISegmentAligner
 	{
+		private readonly ThotWordVocabulary _sourceWords;
+		private readonly ThotWordVocabulary _targetWords;
 		private readonly bool _closeOnDispose;
 		private readonly string _prefFileName;
 
-		public ThotSingleWordAlignmentModel()
+		public ThotAlignmentModel()
 		{
 			Handle = Thot.swAlignModel_create();
+			_sourceWords = new ThotWordVocabulary(Handle, true);
+			_targetWords = new ThotWordVocabulary(Handle, false);
 			_closeOnDispose = true;
 		}
 
-		internal ThotSingleWordAlignmentModel(IntPtr handle)
+		internal ThotAlignmentModel(IntPtr handle)
 		{
 			Handle = handle;
+			_sourceWords = new ThotWordVocabulary(Handle, true);
+			_targetWords = new ThotWordVocabulary(Handle, false);
 			_closeOnDispose = false;
 		}
 
-		public ThotSingleWordAlignmentModel(string prefFileName, bool createNew = false)
+		public ThotAlignmentModel(string prefFileName, bool createNew = false)
 		{
 			if (!createNew && !File.Exists(prefFileName + ".src"))
 				throw new FileNotFoundException("The single-word alignment model configuration could not be found.");
@@ -32,14 +40,52 @@ namespace SIL.Machine.Translation.Thot
 			Handle = createNew || !File.Exists(prefFileName + ".src")
 				? Thot.swAlignModel_create()
 				: Thot.swAlignModel_open(_prefFileName);
+			_sourceWords = new ThotWordVocabulary(Handle, true);
+			_targetWords = new ThotWordVocabulary(Handle, false);
 			_closeOnDispose = true;
 		}
 
 		internal IntPtr Handle { get; set; }
 
+		public IReadOnlyList<string> SourceWords
+		{
+			get
+			{
+				CheckDisposed();
+
+				return _sourceWords;
+			}
+		}
+
+		public IReadOnlyList<string> TargetWords
+		{
+			get
+			{
+				CheckDisposed();
+
+				return _targetWords;
+			}
+		}
+
+		public void AddSegmentPairs(ParallelTextCorpus corpus, Func<string, string> preprocessor = null)
+		{
+			CheckDisposed();
+
+			if (preprocessor == null)
+				preprocessor = Preprocessors.Null;
+			foreach (ParallelTextSegment segment in corpus.Segments.Where(s => !s.IsEmpty))
+			{
+				string[] sourceTokens = segment.SourceSegment.Select(preprocessor).ToArray();
+				string[] targetTokens = segment.TargetSegment.Select(preprocessor).ToArray();
+				AddSegmentPair(sourceTokens, targetTokens, segment.CreateAlignmentMatrix(true));
+			}
+		}
+
 		public void AddSegmentPair(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
 			WordAlignmentMatrix hintMatrix = null)
 		{
+			CheckDisposed();
+
 			IntPtr nativeSourceSegment = Thot.ConvertStringsToNativeUtf8(sourceSegment);
 			IntPtr nativeTargetSegment = Thot.ConvertStringsToNativeUtf8(targetSegment);
 			IntPtr nativeMatrix = IntPtr.Zero;
@@ -64,13 +110,17 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public void Train(int iterCount)
+		public void Train(int iterCount = 5)
 		{
+			CheckDisposed();
+
 			Thot.swAlignModel_train(Handle, (uint) iterCount);
 		}
 
 		public void Save()
 		{
+			CheckDisposed();
+
 			if (string.IsNullOrEmpty(_prefFileName))
 				throw new InvalidOperationException("This single word alignment model cannot be saved.");
 			Thot.swAlignModel_save(Handle, _prefFileName);
@@ -78,6 +128,8 @@ namespace SIL.Machine.Translation.Thot
 
 		public double GetTranslationProbability(string sourceWord, string targetWord)
 		{
+			CheckDisposed();
+
 			IntPtr nativeSourceWord = Thot.ConvertStringToNativeUtf8(sourceWord ?? "NULL");
 			IntPtr nativeTargetWord = Thot.ConvertStringToNativeUtf8(targetWord ?? "NULL");
 			try
@@ -98,6 +150,8 @@ namespace SIL.Machine.Translation.Thot
 		/// </summary>
 		public double GetAlignmentProbability(int sourceLen, int prevSourceIndex, int sourceIndex)
 		{
+			CheckDisposed();
+
 			// add 1 to convert the specified indices to Thot position indices, which are 1-based
 			return Thot.swAlignModel_getAlignmentProbability(Handle, (uint) (prevSourceIndex + 1), (uint) sourceLen,
 				(uint) (sourceIndex + 1));
@@ -106,6 +160,8 @@ namespace SIL.Machine.Translation.Thot
 		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment,
 			IReadOnlyList<string> targetSegment, WordAlignmentMatrix hintMatrix = null)
 		{
+			CheckDisposed();
+
 			IntPtr nativeSourceSegment = Thot.ConvertStringsToNativeUtf8(sourceSegment);
 			IntPtr nativeTargetSegment = Thot.ConvertStringsToNativeUtf8(targetSegment);
 			IntPtr nativeMatrix = hintMatrix == null

@@ -124,6 +124,20 @@ namespace SIL.Machine.Translation.Thot
 		public static extern IntPtr swAlignModel_open(string prefFileName);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern uint swAlignModel_getSourceWordCount(IntPtr swAlignModelHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern uint swAlignModel_getSourceWord(IntPtr swAlignModelHandle, uint index, IntPtr wordStr,
+			uint capacity);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern uint swAlignModel_getTargetWordCount(IntPtr swAlignModelHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern uint swAlignModel_getTargetWord(IntPtr swAlignModelHandle, uint index, IntPtr wordStr,
+			uint capacity);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void swAlignModel_addSentencePair(IntPtr swAlignModelHandle, IntPtr sourceSentence,
 			IntPtr targetSentence, IntPtr matrix, uint iLen, uint jLen);
 

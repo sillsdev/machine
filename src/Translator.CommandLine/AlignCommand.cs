@@ -16,6 +16,8 @@ namespace SIL.Machine.Translation
 		public AlignCommand()
 			: base(true)
 		{
+			Name = "align";
+
 			_outputOption = Option("-o|--output <path>", "The output alignment directory.",
 				CommandOptionType.SingleValue);
 			_probOption = Option("-p|--probabilities", "Include probabilities in the output.",
@@ -42,10 +44,8 @@ namespace SIL.Machine.Translation
 			string tmPrefix = Path.Combine(EngineDirectory, "tm", "src_trg");
 			Out.Write("Aligning... ");
 			using (var progress = new ConsoleProgressBar(Out))
-			using (var swaModel = new ThotSingleWordAlignmentModel(tmPrefix + "_invswm"))
-			using (var invSwaModel = new ThotSingleWordAlignmentModel(tmPrefix + "_swm"))
+			using (var alignmentModel = new ThotSymmetrizedAlignmentModel(tmPrefix + "_invswm", tmPrefix + "_swm"))
 			{
-				var aligner = new SymmetrizationSegmentAligner(swaModel, invSwaModel);
 				int segmentCount = 0;
 				foreach (ParallelText text in ParallelCorpus.Texts)
 				{
@@ -64,9 +64,9 @@ namespace SIL.Machine.Translation
 									.ToArray();
 								string[] targetTokens = segment.TargetSegment.Select(Preprocessors.Lowercase)
 									.ToArray();
-								WordAlignmentMatrix matrix = aligner.GetBestAlignment(sourceTokens, targetTokens,
+								WordAlignmentMatrix matrix = alignmentModel.GetBestAlignment(sourceTokens, targetTokens,
 									segment.CreateAlignmentMatrix(true));
-								writer.WriteLine(OutputAlignmentString(swaModel, invSwaModel, _probOption.HasValue(),
+								writer.WriteLine(OutputAlignmentString(alignmentModel, _probOption.HasValue(),
 									sourceTokens, targetTokens, matrix));
 								segmentCount++;
 								progress.Report((double) segmentCount / parallelCorpusCount);
@@ -84,9 +84,8 @@ namespace SIL.Machine.Translation
 			return 0;
 		}
 
-		private static string OutputAlignmentString(ThotSingleWordAlignmentModel swaModel,
-			ThotSingleWordAlignmentModel invSwaModel, bool includeProbs, IReadOnlyList<string> source,
-			IReadOnlyList<string> target, WordAlignmentMatrix matrix)
+		private static string OutputAlignmentString(ThotSymmetrizedAlignmentModel alignmentModel, bool includeProbs,
+			IReadOnlyList<string> source, IReadOnlyList<string> target, WordAlignmentMatrix matrix)
 		{
 			var sourceIndices = new int[matrix.ColumnCount];
 			int[] targetIndices = Enumerable.Repeat(-2, matrix.RowCount).ToArray();
@@ -124,28 +123,26 @@ namespace SIL.Machine.Translation
 					prev = targetIndices[i];
 			}
 
-			return string.Join(" ", alignedIndices.Select(t => AlignedWordsString(swaModel, invSwaModel, includeProbs, source,
+			return string.Join(" ", alignedIndices.Select(t => AlignedWordsString(alignmentModel, includeProbs, source,
 				target, sourceIndices, targetIndices, t.SourceIndex, t.TargetIndex)));
 		}
 
-		private static string AlignedWordsString(ThotSingleWordAlignmentModel swaModel, ThotSingleWordAlignmentModel invSwaModel,
-			bool includeProbs, IReadOnlyList<string> source, IReadOnlyList<string> target, int[] sourceIndices,
-			int[] targetIndices, int sourceIndex, int targetIndex)
+		private static string AlignedWordsString(ThotSymmetrizedAlignmentModel alignmentModel, bool includeProbs,
+			IReadOnlyList<string> source, IReadOnlyList<string> target, int[] sourceIndices, int[] targetIndices,
+			int sourceIndex, int targetIndex)
 		{
 			if (includeProbs)
 			{
 				string sourceWord = source[sourceIndex];
 				string targetWord = target[targetIndex];
-				double transProb = swaModel.GetTranslationProbability(sourceWord, targetWord);
-				double invTransProb = invSwaModel.GetTranslationProbability(targetWord, sourceWord);
-				double maxTransProb = Math.Max(transProb, invTransProb);
+				double transProb = alignmentModel.GetTranslationProbability(sourceWord, targetWord);
 
-				double alignProb = swaModel.GetAlignmentProbability(source.Count,
+				double alignProb = alignmentModel.DirectAlignmentModel.GetAlignmentProbability(source.Count,
 					targetIndex == 0 ? -1 : sourceIndices[targetIndex - 1], sourceIndex);
-				double invAlignProb = invSwaModel.GetAlignmentProbability(target.Count,
+				double invAlignProb = alignmentModel.InverseAlignmentModel.GetAlignmentProbability(target.Count,
 					sourceIndex == 0 ? -1 : targetIndices[sourceIndex - 1], targetIndex);
 				double maxAlignProb = Math.Max(alignProb, invAlignProb);
-				return $"{sourceIndex}-{targetIndex}:{transProb:0.########}:{alignProb:0.########}";
+				return $"{sourceIndex}-{targetIndex}:{transProb:0.########}:{maxAlignProb:0.########}";
 			}
 
 			return $"{sourceIndex}-{targetIndex}";
