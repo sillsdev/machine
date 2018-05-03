@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
@@ -135,14 +134,13 @@ namespace SIL.Machine.Translation
 			{
 				string sourceWord = source[sourceIndex];
 				string targetWord = target[targetIndex];
+
 				double transProb = alignmentModel.GetTranslationProbability(sourceWord, targetWord);
 
-				double alignProb = alignmentModel.DirectAlignmentModel.GetAlignmentProbability(source.Count,
-					targetIndex == 0 ? -1 : sourceIndices[targetIndex - 1], sourceIndex);
-				double invAlignProb = alignmentModel.InverseAlignmentModel.GetAlignmentProbability(target.Count,
+				double alignProb = alignmentModel.GetAlignmentProbability(source.Count,
+					targetIndex == 0 ? -1 : sourceIndices[targetIndex - 1], sourceIndex, target.Count,
 					sourceIndex == 0 ? -1 : targetIndices[sourceIndex - 1], targetIndex);
-				double maxAlignProb = Math.Max(alignProb, invAlignProb);
-				return $"{sourceIndex}-{targetIndex}:{transProb:0.########}:{maxAlignProb:0.########}";
+				return $"{sourceIndex}-{targetIndex}:{transProb:0.########}:{alignProb:0.########}";
 			}
 
 			return $"{sourceIndex}-{targetIndex}";

@@ -50,12 +50,13 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public void AddSegmentPairs(ParallelTextCorpus corpus, Func<string, string> preprocessor = null)
+		public void AddSegmentPairs(ParallelTextCorpus corpus, Func<string, string> preprocessor = null,
+			int maxCount = int.MaxValue)
 		{
 			CheckDisposed();
 
-			_directAlignmentModel.AddSegmentPairs(corpus, preprocessor);
-			_inverseAlignmentModel.AddSegmentPairs(corpus.Invert(), preprocessor);
+			_directAlignmentModel.AddSegmentPairs(corpus, preprocessor, maxCount);
+			_inverseAlignmentModel.AddSegmentPairs(corpus.Invert(), preprocessor, maxCount);
 		}
 
 		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment,
@@ -81,6 +82,17 @@ namespace SIL.Machine.Translation.Thot
 			double transProb = _directAlignmentModel.GetTranslationProbability(sourceWord, targetWord);
 			double invTransProb = _inverseAlignmentModel.GetTranslationProbability(targetWord, sourceWord);
 			return Math.Max(transProb, invTransProb);
+		}
+
+		public double GetAlignmentProbability(int sourceLen, int prevSourceIndex, int sourceIndex, int targetLen,
+			int prevTargetIndex, int targetIndex)
+		{
+			CheckDisposed();
+
+			double alignProb = _directAlignmentModel.GetAlignmentProbability(sourceLen, prevSourceIndex, sourceIndex);
+			double invAlignProb = _inverseAlignmentModel.GetAlignmentProbability(targetLen, prevTargetIndex,
+				targetIndex);
+			return Math.Max(alignProb, invAlignProb);
 		}
 
 		public IReadOnlyDictionary<string, IReadOnlyDictionary<string, double>> GetTranslationTable(double threshold)

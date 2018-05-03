@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
-using SIL.Machine.Corpora;
 using SIL.Machine.Translation.Thot;
 
 namespace SIL.Machine.Translation
@@ -84,36 +82,17 @@ namespace SIL.Machine.Translation
 			if (!_quietOption.HasValue())
 				Out.Write("Training... ");
 			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
+			using (var alignmentModel = new ThotSymmetrizedAlignmentModel(tmPrefix + "_invswm", tmPrefix + "_swm",
+				true))
 			{
-				TrainAlignmentModel(tmPrefix + "_swm", ParallelCorpus.Invert(), progress);
-				TrainAlignmentModel(tmPrefix + "_invswm", ParallelCorpus, progress, 5);
+				alignmentModel.AddSegmentPairs(ParallelCorpus, Preprocessors.Lowercase, MaxParallelCorpusCount);
+				alignmentModel.Train(progress);
+				alignmentModel.Save();
 			}
 			if (!_quietOption.HasValue())
 				Out.WriteLine("done.");
 
 			Out.WriteLine($"# of Segments Trained: {parallelCorpusCount}");
-		}
-
-		private void TrainAlignmentModel(string swmPrefix, ParallelTextCorpus corpus,
-			IProgress<double> progress = null, int startStep = 0)
-		{
-			using (var swAlignModel = new ThotAlignmentModel(swmPrefix, true))
-			{
-				foreach (ParallelTextSegment segment in corpus.Segments.Where(s => !s.IsEmpty)
-					.Take(MaxParallelCorpusCount))
-				{
-					string[] sourceTokens = segment.SourceSegment.Select(Preprocessors.Lowercase).ToArray();
-					string[] targetTokens = segment.TargetSegment.Select(Preprocessors.Lowercase).ToArray();
-					swAlignModel.AddSegmentPair(sourceTokens, targetTokens, segment.CreateAlignmentMatrix(true));
-				}
-
-				for (int i = 0; i < 5; i++)
-				{
-					swAlignModel.Train(1);
-					progress?.Report((double) (startStep + i + 1) / 10);
-				}
-				swAlignModel.Save();
-			}
 		}
 	}
 }
