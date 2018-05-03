@@ -95,7 +95,7 @@ namespace SIL.Machine.Translation.Thot
 			return Math.Max(alignProb, invAlignProb);
 		}
 
-		public IReadOnlyDictionary<string, IReadOnlyDictionary<string, double>> GetTranslationTable(double threshold)
+		public IReadOnlyDictionary<string, IReadOnlyDictionary<string, double>> GetTranslationTable(double threshold = 0)
 		{
 			CheckDisposed();
 
@@ -104,7 +104,11 @@ namespace SIL.Machine.Translation.Thot
 			{
 				var targetWords = new Dictionary<string, double>();
 				foreach (string targetWord in _directAlignmentModel.TargetWords)
-					targetWords[targetWord] = GetTranslationProbability(sourceWord, targetWord);
+				{
+					double prob = GetTranslationProbability(sourceWord, targetWord);
+					if (prob > threshold)
+						targetWords[targetWord] = prob;
+				}
 				results[sourceWord] = targetWords;
 			}
 			return results;
