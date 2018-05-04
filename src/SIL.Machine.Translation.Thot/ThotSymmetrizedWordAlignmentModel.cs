@@ -72,13 +72,14 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public void AddSegmentPairs(ParallelTextCorpus corpus, Func<string, string> preprocessor = null,
-			int maxCount = int.MaxValue)
+		public void AddSegmentPairs(ParallelTextCorpus corpus, Func<string, string> sourcePreprocessor = null,
+			Func<string, string> targetPreprocessor = null, int maxCount = int.MaxValue)
 		{
 			CheckDisposed();
 
-			_directWordAlignmentModel.AddSegmentPairs(corpus, preprocessor, maxCount);
-			_inverseWordAlignmentModel.AddSegmentPairs(corpus.Invert(), preprocessor, maxCount);
+			_directWordAlignmentModel.AddSegmentPairs(corpus, sourcePreprocessor, targetPreprocessor, maxCount);
+			_inverseWordAlignmentModel.AddSegmentPairs(corpus.Invert(), sourcePreprocessor, targetPreprocessor,
+				maxCount);
 		}
 
 		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment,

@@ -67,17 +67,19 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public void AddSegmentPairs(ParallelTextCorpus corpus, Func<string, string> preprocessor = null,
-			int maxCount = int.MaxValue)
+		public void AddSegmentPairs(ParallelTextCorpus corpus, Func<string, string> sourcePreprocessor = null,
+			Func<string, string> targetPreprocessor = null, int maxCount = int.MaxValue)
 		{
 			CheckDisposed();
 
-			if (preprocessor == null)
-				preprocessor = Preprocessors.Null;
+			if (sourcePreprocessor == null)
+				sourcePreprocessor = Preprocessors.Null;
+			if (targetPreprocessor == null)
+				targetPreprocessor = Preprocessors.Null;
 			foreach (ParallelTextSegment segment in corpus.Segments.Where(s => !s.IsEmpty).Take(maxCount))
 			{
-				string[] sourceTokens = segment.SourceSegment.Select(preprocessor).ToArray();
-				string[] targetTokens = segment.TargetSegment.Select(preprocessor).ToArray();
+				string[] sourceTokens = segment.SourceSegment.Select(sourcePreprocessor).ToArray();
+				string[] targetTokens = segment.TargetSegment.Select(targetPreprocessor).ToArray();
 				AddSegmentPair(sourceTokens, targetTokens, segment.CreateAlignmentMatrix(true));
 			}
 		}
