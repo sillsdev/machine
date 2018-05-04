@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using SIL.Machine.Corpora;
 using SIL.ObjectModel;
 
@@ -51,8 +52,25 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public IReadOnlyList<string> SourceWords => _directWordAlignmentModel.SourceWords;
-		public IReadOnlyList<string> TargetWords => _directWordAlignmentModel.TargetWords;
+		public IReadOnlyList<string> SourceWords
+		{
+			get
+			{
+				CheckDisposed();
+
+				return _directWordAlignmentModel.SourceWords;
+			}
+		}
+
+		public IReadOnlyList<string> TargetWords
+		{
+			get
+			{
+				CheckDisposed();
+
+				return _directWordAlignmentModel.TargetWords;
+			}
+		}
 
 		public void AddSegmentPairs(ParallelTextCorpus corpus, Func<string, string> preprocessor = null,
 			int maxCount = int.MaxValue)
@@ -126,6 +144,66 @@ namespace SIL.Machine.Translation.Thot
 				results[SourceWords[i]] = row;
 			}
 			return results;
+		}
+
+		public IReadOnlyList<AlignedWordPair> GetAlignedWordPairs(IReadOnlyList<string> sourceSegment,
+			IReadOnlyList<string> targetSegment, WordAlignmentMatrix alignment)
+		{
+			CheckDisposed();
+
+			var sourceIndices = new int[alignment.ColumnCount];
+			int[] targetIndices = Enumerable.Repeat(-2, alignment.RowCount).ToArray();
+			var alignedIndices = new List<(int SourceIndex, int TargetIndex)>();
+			int prev = -1;
+			for (int j = 0; j < alignment.ColumnCount; j++)
+			{
+				bool found = false;
+				for (int i = 0; i < alignment.RowCount; i++)
+				{
+					if (alignment[i, j] == AlignmentType.Aligned)
+					{
+						if (!found)
+							sourceIndices[j] = i;
+						if (targetIndices[i] == -2)
+							targetIndices[i] = j;
+						alignedIndices.Add((i, j));
+						prev = i;
+						found = true;
+					}
+				}
+
+				// unaligned indices
+				if (!found)
+					sourceIndices[j] = prev == -1 ? -1 : alignment.RowCount + prev;
+			}
+
+			// all remaining target indices are unaligned, so fill them in
+			prev = -1;
+			for (int i = 0; i < alignment.RowCount; i++)
+			{
+				if (targetIndices[i] == -2)
+					targetIndices[i] = prev == -1 ? -1 : alignment.ColumnCount + prev;
+				else
+					prev = targetIndices[i];
+			}
+
+			return alignedIndices.Select(t => CreateAlignedWordPair(sourceSegment,
+				targetSegment, sourceIndices, targetIndices, t.SourceIndex, t.TargetIndex)).ToArray();
+		}
+
+		private AlignedWordPair CreateAlignedWordPair(IReadOnlyList<string> source, IReadOnlyList<string> target,
+			int[] sourceIndices, int[] targetIndices, int sourceIndex, int targetIndex)
+		{
+			string sourceWord = source[sourceIndex];
+			string targetWord = target[targetIndex];
+
+			double transProb = GetTranslationProbability(sourceWord, targetWord);
+
+			double alignProb = GetAlignmentProbability(source.Count,
+				targetIndex == 0 ? -1 : sourceIndices[targetIndex - 1], sourceIndex, target.Count,
+				sourceIndex == 0 ? -1 : targetIndices[sourceIndex - 1], targetIndex);
+
+			return new AlignedWordPair(sourceIndex, targetIndex, transProb, alignProb);
 		}
 
 		public void Save()
