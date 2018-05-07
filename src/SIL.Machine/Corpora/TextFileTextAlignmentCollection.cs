@@ -35,14 +35,14 @@ namespace SIL.Machine.Corpora
 			}
 		}
 
-		private IEnumerable<(int, int)> ParseAlignments(string alignments)
+		private IEnumerable<AlignedWordPair> ParseAlignments(string alignments)
 		{
 			foreach (string token in alignments.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries))
 			{
 				int index = token.IndexOf('-');
 				int i = int.Parse(token.Substring(0, index));
 				int j = int.Parse(token.Substring(index + 1));
-				yield return _invert ? (j, i) : (i, j);
+				yield return _invert ? new AlignedWordPair(j, i) : new AlignedWordPair(i, j);
 			}
 		}
 

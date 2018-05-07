@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using SIL.Machine.Corpora;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.Thot
 {
-	public class ThotWordAlignmentModel : DisposableBase, ISegmentAligner
+	public class ThotWordAlignmentModel : DisposableBase, IHmmWordAlignmentModel
 	{
 		private readonly ThotWordVocabulary _sourceWords;
 		private readonly ThotWordVocabulary _targetWords;
@@ -34,7 +32,7 @@ namespace SIL.Machine.Translation.Thot
 		public ThotWordAlignmentModel(string prefFileName, bool createNew = false)
 		{
 			if (!createNew && !File.Exists(prefFileName + ".src"))
-				throw new FileNotFoundException("The single-word alignment model configuration could not be found.");
+				throw new FileNotFoundException("The word alignment model configuration could not be found.");
 
 			_prefFileName = prefFileName;
 			Handle = createNew || !File.Exists(prefFileName + ".src")
@@ -46,6 +44,8 @@ namespace SIL.Machine.Translation.Thot
 		}
 
 		internal IntPtr Handle { get; set; }
+
+		public int TrainingIterationCount { get; set; } = 5;
 
 		public IReadOnlyList<string> SourceWords
 		{
@@ -64,23 +64,6 @@ namespace SIL.Machine.Translation.Thot
 				CheckDisposed();
 
 				return _targetWords;
-			}
-		}
-
-		public void AddSegmentPairs(ParallelTextCorpus corpus, Func<string, string> sourcePreprocessor = null,
-			Func<string, string> targetPreprocessor = null, int maxCount = int.MaxValue)
-		{
-			CheckDisposed();
-
-			if (sourcePreprocessor == null)
-				sourcePreprocessor = Preprocessors.Null;
-			if (targetPreprocessor == null)
-				targetPreprocessor = Preprocessors.Null;
-			foreach (ParallelTextSegment segment in corpus.Segments.Where(s => !s.IsEmpty).Take(maxCount))
-			{
-				string[] sourceTokens = segment.SourceSegment.Select(sourcePreprocessor).ToArray();
-				string[] targetTokens = segment.TargetSegment.Select(targetPreprocessor).ToArray();
-				AddSegmentPair(sourceTokens, targetTokens, segment.CreateAlignmentMatrix(true));
 			}
 		}
 
@@ -113,11 +96,24 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public void Train(int iterCount = 5)
+		public void Train(IProgress<ProgressData> progress = null)
 		{
 			CheckDisposed();
 
-			Thot.swAlignModel_train(Handle, (uint) iterCount);
+			progress?.Report(new ProgressData(0, TrainingIterationCount));
+
+			for (int i = 0; i < TrainingIterationCount; i++)
+			{
+				TrainingIteration();
+				progress?.Report(new ProgressData(i + 1, TrainingIterationCount));
+			}
+		}
+
+		public void TrainingIteration()
+		{
+			CheckDisposed();
+
+			Thot.swAlignModel_train(Handle, 1);
 		}
 
 		public void Save()
@@ -125,7 +121,7 @@ namespace SIL.Machine.Translation.Thot
 			CheckDisposed();
 
 			if (string.IsNullOrEmpty(_prefFileName))
-				throw new InvalidOperationException("This single word alignment model cannot be saved.");
+				throw new InvalidOperationException("This word alignment model cannot be saved.");
 			Thot.swAlignModel_save(Handle, _prefFileName);
 		}
 

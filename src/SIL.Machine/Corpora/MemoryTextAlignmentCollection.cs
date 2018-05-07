@@ -18,7 +18,8 @@ namespace SIL.Machine.Corpora
 		public ITextAlignmentCollection Invert()
 		{
 			return new MemoryTextAlignmentCollection(Id,
-				Alignments.Select(ta => new TextAlignment(ta.SegmentRef, ta.AlignedWords.Select(a => (a.TargetIndex, a.SourceIndex)))));
+				Alignments.Select(ta => new TextAlignment(ta.SegmentRef,
+					ta.AlignedWordPairs.Select(wp => new AlignedWordPair(wp.TargetIndex, wp.SourceIndex)))));
 		}
 	}
 }

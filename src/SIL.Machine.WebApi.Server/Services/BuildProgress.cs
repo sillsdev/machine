@@ -6,7 +6,7 @@ using SIL.Machine.WebApi.Server.Utils;
 
 namespace SIL.Machine.WebApi.Server.Services
 {
-	public class BuildProgress : IProgress<SmtTrainProgress>
+	public class BuildProgress : IProgress<ProgressData>
 	{
 		private readonly IBuildRepository _buildRepo;
 		private readonly Build _build;
@@ -17,7 +17,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			_build = build;
 		}
 
-		public void Report(SmtTrainProgress value)
+		public void Report(ProgressData value)
 		{
 			_build.StepCount = value.StepCount;
 			_build.CurrentStep = value.CurrentStep;

@@ -89,7 +89,7 @@ namespace SIL.Machine.Translation.Thot
 				.OrderBy(i => r.Next()).Take(tuneCorpusCount));
 		}
 
-		public virtual void Train(IProgress<SmtTrainProgress> progress = null, Action checkCanceled = null)
+		public virtual void Train(IProgress<ProgressData> progress = null, Action checkCanceled = null)
 		{
 			var reporter = new ThotTrainProgressReporter(TrainingStepCount, progress, checkCanceled);
 
@@ -267,13 +267,13 @@ namespace SIL.Machine.Translation.Thot
 
 		private void TrainTranslationModel(string tmPrefix, ThotTrainProgressReporter reporter)
 		{
-			string swmPrefix = tmPrefix + "_swm";
-			GenerateSingleWordAlignmentModel(swmPrefix, _targetPreprocessor, _sourcePreprocessor,
-				_parallelCorpus.Invert(), "source-to-target", reporter);
-
 			string invswmPrefix = tmPrefix + "_invswm";
 			GenerateSingleWordAlignmentModel(invswmPrefix, _sourcePreprocessor, _targetPreprocessor, _parallelCorpus,
-				"target-to-source", reporter);
+				"direct", reporter);
+
+			string swmPrefix = tmPrefix + "_swm";
+			GenerateSingleWordAlignmentModel(swmPrefix, _targetPreprocessor, _sourcePreprocessor,
+				_parallelCorpus.Invert(), "inverse", reporter);
 
 			reporter.Step("Merging alignments");
 
@@ -390,16 +390,12 @@ namespace SIL.Machine.Translation.Thot
 			using (var swAlignModel = new ThotWordAlignmentModel(swmPrefix, true))
 			{
 				foreach (ParallelTextSegment segment in GetTrainingSegments(corpus))
-				{
-					string[] sourceTokens = segment.SourceSegment.Select(sourcePreprocessor).ToArray();
-					string[] targetTokens = segment.TargetSegment.Select(targetPreprocessor).ToArray();
-					swAlignModel.AddSegmentPair(sourceTokens, targetTokens, segment.CreateAlignmentMatrix(true));
-				}
+					swAlignModel.AddSegmentPair(segment, true, sourcePreprocessor, targetPreprocessor);
 				for (int i = 0; i < 5; i++)
 				{
-					reporter.Step($"Training {name} single word model");
+					reporter.Step($"Training {name} alignment model");
 
-					swAlignModel.Train(1);
+					swAlignModel.TrainingIteration();
 				}
 				swAlignModel.Save();
 			}

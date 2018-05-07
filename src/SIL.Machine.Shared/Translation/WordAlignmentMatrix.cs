@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SIL.Machine.Corpora;
 
 namespace SIL.Machine.Translation
 {
@@ -12,10 +13,7 @@ namespace SIL.Machine.Translation
 		Aligned = 1
 	}
 
-	public class WordAlignmentMatrix
-#if !BRIDGE_NET
-		: ObjectModel.IValueEquatable<WordAlignmentMatrix>, ObjectModel.ICloneable<WordAlignmentMatrix>
-#endif
+	public partial class WordAlignmentMatrix
 	{
 		private AlignmentType[,] _matrix;
 
@@ -179,6 +177,57 @@ namespace SIL.Machine.Translation
 			_matrix = newMatrix;
 		}
 
+		private IEnumerable<AlignedWordPair> GetAlignedWordPairs(out IReadOnlyList<int> sourceIndices,
+			out IReadOnlyList<int> targetIndices)
+		{
+			var source = new int[ColumnCount];
+			int[] target = Enumerable.Repeat(-2, RowCount).ToArray();
+			var wordPairs = new List<AlignedWordPair>();
+			int prev = -1;
+			for (int j = 0; j < ColumnCount; j++)
+			{
+				bool found = false;
+				for (int i = 0; i < RowCount; i++)
+				{
+					if (this[i, j] == AlignmentType.Aligned)
+					{
+						if (!found)
+							source[j] = i;
+						if (target[i] == -2)
+							target[i] = j;
+						wordPairs.Add(new AlignedWordPair(i, j));
+						prev = i;
+						found = true;
+					}
+				}
+
+				// unaligned indices
+				if (!found)
+					source[j] = prev == -1 ? -1 : RowCount + prev;
+			}
+
+			// all remaining target indices are unaligned, so fill them in
+			prev = -1;
+			for (int i = 0; i < RowCount; i++)
+			{
+				if (target[i] == -2)
+					target[i] = prev == -1 ? -1 : ColumnCount + prev;
+				else
+					prev = target[i];
+			}
+
+			sourceIndices = source;
+			targetIndices = target;
+			return wordPairs;
+		}
+
+		public IEnumerable<AlignedWordPair> GetAlignedWordPairs()
+		{
+			IReadOnlyList<int> sourceIndices;
+			IReadOnlyList<int> targetIndices;
+			return GetAlignedWordPairs(out sourceIndices, out targetIndices);
+		}
+
 		public string ToGizaFormat(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment)
 		{
 			var sb = new StringBuilder();
@@ -239,8 +288,7 @@ namespace SIL.Machine.Translation
 
 		public override string ToString()
 		{
-			return string.Join(" ", Enumerable.Range(0, RowCount).SelectMany(i => Enumerable.Range(0, ColumnCount), Tuple.Create)
-				.Where(t => _matrix[t.Item1, t.Item2] == AlignmentType.Aligned).Select(t => $"{t.Item1}-{t.Item2}"));
+			return string.Join(" ", GetAlignedWordPairs().Select(wp => wp.ToString()));
 		}
 
 		public WordAlignmentMatrix Clone()

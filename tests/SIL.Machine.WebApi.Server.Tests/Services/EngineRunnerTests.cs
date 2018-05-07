@@ -29,7 +29,7 @@ namespace SIL.Machine.WebApi.Server.Services
 				Build build = await env.EngineRunner.StartBuildAsync(env.Engine);
 				Assert.That(build, Is.Not.Null);
 				env.EngineRunner.WaitForBuildToComplete();
-				env.BatchTrainer.Received().Train(Arg.Any<IProgress<SmtTrainProgress>>(), Arg.Any<Action>());
+				env.BatchTrainer.Received().Train(Arg.Any<IProgress<ProgressData>>(), Arg.Any<Action>());
 				env.BatchTrainer.Received().Save();
 				build = await env.BuildRepository.GetAsync(build.Id);
 				Assert.That(build, Is.Null);
@@ -43,7 +43,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			{
 				await env.CreateEngineAsync();
 				await env.EngineRunner.InitNewAsync();
-				env.BatchTrainer.Train(Arg.Any<IProgress<SmtTrainProgress>>(), Arg.Do<Action>(checkCanceled =>
+				env.BatchTrainer.Train(Arg.Any<IProgress<ProgressData>>(), Arg.Do<Action>(checkCanceled =>
 					{
 						while (true)
 							checkCanceled();
@@ -53,7 +53,7 @@ namespace SIL.Machine.WebApi.Server.Services
 				await Task.Delay(10);
 				await env.EngineRunner.CancelBuildAsync();
 				env.EngineRunner.WaitForBuildToComplete();
-				env.BatchTrainer.Received().Train(Arg.Any<IProgress<SmtTrainProgress>>(), Arg.Any<Action>());
+				env.BatchTrainer.Received().Train(Arg.Any<IProgress<ProgressData>>(), Arg.Any<Action>());
 				env.BatchTrainer.DidNotReceive().Save();
 				build = await env.BuildRepository.GetAsync(build.Id);
 				Assert.That(build, Is.Null);

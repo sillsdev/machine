@@ -5,14 +5,14 @@ namespace SIL.Machine.Corpora
 {
 	public class TextAlignment
 	{
-		public TextAlignment(TextSegmentRef segRef, IEnumerable<(int SourceIndex, int TargetIndex)> alignedWords)
+		public TextAlignment(TextSegmentRef segRef, IEnumerable<AlignedWordPair> alignedWordPairs)
 		{
 			SegmentRef = segRef;
-			AlignedWords = alignedWords.ToArray();
+			AlignedWordPairs = alignedWordPairs.ToArray();
 		}
 
 		public TextSegmentRef SegmentRef { get; }
 
-		public IEnumerable<(int SourceIndex, int TargetIndex)> AlignedWords { get; }
+		public IEnumerable<AlignedWordPair> AlignedWordPairs { get; }
 	}
 }

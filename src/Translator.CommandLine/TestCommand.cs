@@ -90,6 +90,7 @@ namespace SIL.Machine.Translation
 			using (IInteractiveSmtModel smtModel = new ThotSmtModel(EngineConfigFileName))
 			using (IInteractiveSmtEngine engine = smtModel.CreateInteractiveEngine())
 			{
+				progress?.Report(new ProgressData(segmentCount, parallelCorpusCount));
 				foreach (ParallelText text in ParallelCorpus.Texts)
 				{
 					using (StreamWriter traceWriter = CreateTraceWriter(text))
@@ -98,7 +99,7 @@ namespace SIL.Machine.Translation
 						{
 							TestSegment(engine, suggester, n, segment, traceWriter);
 							segmentCount++;
-							progress?.Report((double) segmentCount / parallelCorpusCount);
+							progress?.Report(new ProgressData(segmentCount, parallelCorpusCount));
 							if (segmentCount == MaxParallelCorpusCount)
 								break;
 						}

@@ -53,8 +53,7 @@ namespace SIL.Machine.Translation
 				Stopwatch watch = Stopwatch.StartNew();
 				if (!_quietOption.HasValue())
 					Out.Write("Training... ");
-				using (ConsoleProgressBar<SmtTrainProgress> progress = _quietOption.HasValue() ? null
-					: new ConsoleProgressBar<SmtTrainProgress>(Out, p => (double) p.CurrentStep / p.StepCount))
+				using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
 				{
 					trainer.Train(progress);
 					trainer.Save();
@@ -85,7 +84,8 @@ namespace SIL.Machine.Translation
 			using (var alignmentModel = new ThotSymmetrizedWordAlignmentModel(tmPrefix + "_invswm", tmPrefix + "_swm",
 				true))
 			{
-				alignmentModel.AddSegmentPairs(ParallelCorpus, Preprocessors.Lowercase, MaxParallelCorpusCount);
+				alignmentModel.AddSegmentPairs(ParallelCorpus, true, Preprocessors.Lowercase, Preprocessors.Lowercase,
+					MaxParallelCorpusCount);
 				alignmentModel.Train(progress);
 				alignmentModel.Save();
 			}

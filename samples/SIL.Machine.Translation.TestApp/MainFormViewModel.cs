@@ -45,7 +45,7 @@ namespace SIL.Machine.Translation.TestApp
 			_texts = new BulkObservableList<TextViewModel>();
 			Texts = new ReadOnlyObservableList<TextViewModel>(_texts);
 			_currentText = new TextViewModel(_tokenizer);
-			RebuildTask = new TaskViewModel<SmtTrainProgress>(RebuildAsync, () => _hybridEngine != null,
+			RebuildTask = new TaskViewModel<ProgressData>(RebuildAsync, () => _hybridEngine != null,
 				p => p.PercentCompleted, p => p.CurrentStepMessage);
 		}
 
@@ -258,7 +258,7 @@ namespace SIL.Machine.Translation.TestApp
 			RebuildTask.UpdateCanExecute();
 		}
 
-		private async Task RebuildAsync(IProgress<SmtTrainProgress> progress, CancellationToken token)
+		private async Task RebuildAsync(IProgress<ProgressData> progress, CancellationToken token)
 		{
 			if (IsChanged)
 				SaveProject();
@@ -345,6 +345,6 @@ namespace SIL.Machine.Translation.TestApp
 			}
 		}
 
-		public TaskViewModel<SmtTrainProgress> RebuildTask { get; }
+		public TaskViewModel<ProgressData> RebuildTask { get; }
 	}
 }

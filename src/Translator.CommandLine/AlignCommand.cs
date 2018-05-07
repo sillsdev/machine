@@ -10,6 +10,7 @@ namespace SIL.Machine.Translation
 	{
 		private readonly CommandOption _outputOption;
 		private readonly CommandOption _probOption;
+		private readonly CommandOption _quietOption;
 
 		public AlignCommand()
 			: base(true)
@@ -20,6 +21,7 @@ namespace SIL.Machine.Translation
 				CommandOptionType.SingleValue);
 			_probOption = Option("-p|--probabilities", "Include probabilities in the output.",
 				CommandOptionType.NoValue);
+			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
 		}
 
 		protected override int ExecuteCommand()
@@ -41,10 +43,11 @@ namespace SIL.Machine.Translation
 
 			string tmPrefix = Path.Combine(EngineDirectory, "tm", "src_trg");
 			Out.Write("Aligning... ");
-			using (var progress = new ConsoleProgressBar(Out))
+			using (var progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
 			using (var alignmentModel = new ThotSymmetrizedWordAlignmentModel(tmPrefix + "_invswm", tmPrefix + "_swm"))
 			{
 				int segmentCount = 0;
+				progress?.Report(new ProgressData(segmentCount, parallelCorpusCount));
 				foreach (ParallelText text in ParallelCorpus.Texts)
 				{
 					string fileName = Path.Combine(_outputOption.Value(), text.Id + ".txt");
@@ -65,16 +68,11 @@ namespace SIL.Machine.Translation
 								WordAlignmentMatrix matrix = alignmentModel.GetBestAlignment(sourceTokens, targetTokens,
 									segment.CreateAlignmentMatrix(true));
 								if (_probOption.HasValue())
-								{
-									writer.WriteLine(string.Join(" ", alignmentModel.GetAlignedWordPairs(sourceTokens,
-										targetTokens, matrix).Select(wp => wp.ToString())));
-								}
+									writer.WriteLine(matrix.ToString(alignmentModel, sourceTokens, targetTokens));
 								else
-								{
 									writer.WriteLine(matrix.ToString());
-								}
 								segmentCount++;
-								progress.Report((double) segmentCount / parallelCorpusCount);
+								progress?.Report(new ProgressData(segmentCount, parallelCorpusCount));
 								if (segmentCount == MaxParallelCorpusCount)
 									break;
 							}
