@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Description>SIL.Machine.Translation.Thot provides statistical machine translation functionality using the Thot library.</Description>
   </PropertyGroup>
 
   <Import Project="../AssemblyInfo.props" />
