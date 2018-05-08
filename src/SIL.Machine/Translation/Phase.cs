@@ -10,7 +10,7 @@ namespace SIL.Machine.Translation
 
 		void IProgress<ProgressData>.Report(ProgressData value)
 		{
-			var data = new ProgressData((value.PercentCompleted * 100) * (Index + 1), Progress.Count * 100,
+			var data = new ProgressData((Index * 100) + value.PercentCompleted, Progress.Count * 100,
 				value.CurrentStepMessage ?? Message);
 			Progress.Report(data);
 		}

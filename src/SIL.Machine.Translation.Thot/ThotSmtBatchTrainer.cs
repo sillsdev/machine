@@ -115,8 +115,8 @@ namespace SIL.Machine.Translation.Thot
 			var tuneTargetCorpus = new List<IReadOnlyList<string>>(_tuneCorpusIndices.Count);
 			foreach (ParallelTextSegment segment in GetTuningSegments(_parallelCorpus))
 			{
-				tuneSourceCorpus.Add(segment.SourceSegment.Select(w => _sourcePreprocessor(w)).ToArray());
-				tuneTargetCorpus.Add(segment.TargetSegment.Select(w => _targetPreprocessor(w)).ToArray());
+				tuneSourceCorpus.Add(segment.SourceSegment.Preprocess(_sourcePreprocessor));
+				tuneTargetCorpus.Add(segment.TargetSegment.Preprocess(_targetPreprocessor));
 			}
 
 			TuneLanguageModel(trainLMPrefix, tuneTargetCorpus, 3, reporter);
@@ -390,7 +390,7 @@ namespace SIL.Machine.Translation.Thot
 			using (var swAlignModel = new ThotWordAlignmentModel(swmPrefix, true))
 			{
 				foreach (ParallelTextSegment segment in GetTrainingSegments(corpus))
-					swAlignModel.AddSegmentPair(segment, true, sourcePreprocessor, targetPreprocessor);
+					swAlignModel.AddSegmentPair(segment, sourcePreprocessor, targetPreprocessor);
 				for (int i = 0; i < 5; i++)
 				{
 					reporter.Step($"Training {name} alignment model");
@@ -412,10 +412,10 @@ namespace SIL.Machine.Translation.Thot
 			{
 				foreach (ParallelTextSegment segment in GetTrainingSegments(corpus))
 				{
-					string[] sourceTokens = segment.SourceSegment.Select(sourcePreprocessor).ToArray();
-					string[] targetTokens = segment.TargetSegment.Select(targetPreprocessor).ToArray();
+					IReadOnlyList<string> sourceTokens = segment.SourceSegment.Preprocess(sourcePreprocessor);
+					IReadOnlyList<string> targetTokens = segment.TargetSegment.Preprocess(targetPreprocessor);
 					WordAlignmentMatrix waMatrix = swAlignModel.GetBestAlignment(sourceTokens, targetTokens,
-						segment.CreateAlignmentMatrix(true));
+						segment.CreateAlignmentMatrix());
 
 					writer.Write($"# {segment.Text.Id} {segment.SegmentRef}\n");
 					writer.Write(waMatrix.ToGizaFormat(sourceTokens, targetTokens));

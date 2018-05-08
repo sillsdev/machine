@@ -153,9 +153,9 @@ namespace SIL.Machine.Translation
 			ParallelTextSegment segment, StreamWriter traceWriter)
 		{
 			traceWriter?.WriteLine($"Segment:      {segment.SegmentRef}");
-			string[] sourceSegment = segment.SourceSegment.Select(Preprocessors.Lowercase).ToArray();
+			IReadOnlyList<string> sourceSegment = segment.SourceSegment.Preprocess(Preprocessors.Lowercase);
 			traceWriter?.WriteLine($"Source:       {string.Join(" ", sourceSegment)}");
-			string[] targetSegment = segment.TargetSegment.Select(Preprocessors.Lowercase).ToArray();
+			IReadOnlyList<string> targetSegment = segment.TargetSegment.Preprocess(Preprocessors.Lowercase);
 			traceWriter?.WriteLine($"Target:       {string.Join(" ", targetSegment)}");
 			traceWriter?.WriteLine(new string('=', 120));
 			string[][] prevSuggestionWords = null;
@@ -163,7 +163,7 @@ namespace SIL.Machine.Translation
 			string suggestionResult = null;
 			using (IInteractiveTranslationSession session = engine.TranslateInteractively(n, sourceSegment))
 			{
-				while (session.Prefix.Count < targetSegment.Length || !session.IsLastWordComplete)
+				while (session.Prefix.Count < targetSegment.Count || !session.IsLastWordComplete)
 				{
 					int targetIndex = session.Prefix.Count;
 					if (!session.IsLastWordComplete)
@@ -186,7 +186,7 @@ namespace SIL.Machine.Translation
 					{
 						TranslationSuggestion suggestion = suggestions[k];
 						var accepted = new List<int>();
-						for (int i = 0, j = targetIndex; i < suggestionWords[k].Length && j < targetSegment.Length; i++)
+						for (int i = 0, j = targetIndex; i < suggestionWords[k].Length && j < targetSegment.Count; i++)
 						{
 							if (suggestionWords[k][i] == targetSegment[j])
 							{

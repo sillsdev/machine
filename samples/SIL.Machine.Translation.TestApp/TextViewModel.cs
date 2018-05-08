@@ -365,8 +365,7 @@ namespace SIL.Machine.Translation.TestApp
 		private void StartSegmentTranslation()
 		{
 			_sourceSegmentWords.AddRange(_tokenizer.TokenizeToStrings(_sourceSegments[_currentSegment].Text));
-			_curSession = Engine.TranslateInteractively(1,
-				_sourceSegmentWords.Select(Preprocessors.Lowercase).ToArray());
+			_curSession = Engine.TranslateInteractively(1, _sourceSegmentWords.Preprocess(Preprocessors.Lowercase));
 			_isTranslating = true;
 			UpdatePrefix();
 			UpdateSourceSegmentSelection();
@@ -377,8 +376,8 @@ namespace SIL.Machine.Translation.TestApp
 			if (!_isTranslating)
 				return;
 
-			string[] prefix = _tokenizer.TokenizeToStrings(_targetSegments[_currentSegment].Text)
-				.Select(Preprocessors.Lowercase).ToArray();
+			IReadOnlyList<string> prefix = _tokenizer.TokenizeToStrings(_targetSegments[_currentSegment].Text)
+				.Preprocess(Preprocessors.Lowercase);
 			_curSession.SetPrefix(prefix, TargetSegment.Length == 0 || TargetSegment.EndsWith(" "));
 			UpdateSuggestions();
 		}

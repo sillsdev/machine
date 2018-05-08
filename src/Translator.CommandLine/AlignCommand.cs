@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
@@ -61,12 +62,12 @@ namespace SIL.Machine.Translation
 							}
 							else
 							{
-								string[] sourceTokens = segment.SourceSegment.Select(Preprocessors.Lowercase)
-									.ToArray();
-								string[] targetTokens = segment.TargetSegment.Select(Preprocessors.Lowercase)
-									.ToArray();
+								IReadOnlyList<string> sourceTokens = segment.SourceSegment
+									.Preprocess(Preprocessors.Lowercase);
+								IReadOnlyList<string> targetTokens = segment.TargetSegment
+									.Preprocess(Preprocessors.Lowercase);
 								WordAlignmentMatrix matrix = alignmentModel.GetBestAlignment(sourceTokens, targetTokens,
-									segment.CreateAlignmentMatrix(true));
+									segment.CreateAlignmentMatrix());
 								if (_probOption.HasValue())
 									writer.WriteLine(matrix.ToString(alignmentModel, sourceTokens, targetTokens));
 								else

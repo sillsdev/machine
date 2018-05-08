@@ -7,6 +7,11 @@ namespace SIL.Machine.Corpora
 	{
 		private readonly Dictionary<string, ITextAlignmentCollection> _textAlignmentCollections;
 
+		public DictionaryTextAlignmentCorpus(params ITextAlignmentCollection[] textAlignmentCollections)
+			: this((IEnumerable<ITextAlignmentCollection>) textAlignmentCollections)
+		{
+		}
+
 		public DictionaryTextAlignmentCorpus(IEnumerable<ITextAlignmentCollection> textAlignmentCollections)
 		{
 			_textAlignmentCollections = textAlignmentCollections.ToDictionary(tac => tac.Id);

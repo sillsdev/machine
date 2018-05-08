@@ -104,47 +104,37 @@ namespace SIL.Machine.Translation
 		}
 
 		public static void AddSegmentPairs(this IWordAlignmentModel model, ParallelTextCorpus corpus,
-			bool isUnknown, Func<string, string> sourcePreprocessor = null,
-			Func<string, string> targetPreprocessor = null, int maxCount = int.MaxValue)
+			Func<string, string> sourcePreprocessor = null, Func<string, string> targetPreprocessor = null,
+			int maxCount = int.MaxValue, bool isUnknown = true)
 		{
 			foreach (ParallelTextSegment segment in corpus.Segments.Where(s => !s.IsEmpty).Take(maxCount))
-				model.AddSegmentPair(segment, isUnknown);
+				model.AddSegmentPair(segment, sourcePreprocessor, targetPreprocessor, isUnknown);
 		}
 
 		public static void AddSegmentPair(this IWordAlignmentModel model, ParallelTextSegment segment,
-			bool isUnknown, Func<string, string> sourcePreprocessor = null,
-			Func<string, string> targetPreprocessor = null)
+			Func<string, string> sourcePreprocessor = null, Func<string, string> targetPreprocessor = null,
+			bool isUnknown = true)
 		{
 			if (segment.IsEmpty)
 				return;
 
-			if (sourcePreprocessor == null)
-				sourcePreprocessor = Preprocessors.Null;
-			if (targetPreprocessor == null)
-				targetPreprocessor = Preprocessors.Null;
-
-			string[] sourceTokens = segment.SourceSegment.Select(sourcePreprocessor).ToArray();
-			string[] targetTokens = segment.TargetSegment.Select(targetPreprocessor).ToArray();
+			IReadOnlyList<string> sourceTokens = segment.SourceSegment.Preprocess(sourcePreprocessor);
+			IReadOnlyList<string> targetTokens = segment.TargetSegment.Preprocess(targetPreprocessor);
 
 			model.AddSegmentPair(sourceTokens, targetTokens, segment.CreateAlignmentMatrix(isUnknown));
 		}
 
 		public static WordAlignmentMatrix GetBestAlignment(this ISegmentAligner aligner, ParallelTextSegment segment,
-			bool isUnknown, Func<string, string> sourcePreprocessor = null,
-			Func<string, string> targetPreprocessor = null)
+			Func<string, string> sourcePreprocessor = null, Func<string, string> targetPreprocessor = null,
+			bool isUnknown = true)
 		{
-			if (sourcePreprocessor == null)
-				sourcePreprocessor = Preprocessors.Null;
-			if (targetPreprocessor == null)
-				targetPreprocessor = Preprocessors.Null;
-
-			string[] sourceTokens = segment.SourceSegment.Select(sourcePreprocessor).ToArray();
-			string[] targetTokens = segment.TargetSegment.Select(targetPreprocessor).ToArray();
+			IReadOnlyList<string> sourceTokens = segment.SourceSegment.Preprocess(sourcePreprocessor);
+			IReadOnlyList<string> targetTokens = segment.TargetSegment.Preprocess(targetPreprocessor);
 
 			return aligner.GetBestAlignment(sourceTokens, targetTokens, segment.CreateAlignmentMatrix(isUnknown));
 		}
 
-		public static WordAlignmentMatrix CreateAlignmentMatrix(this ParallelTextSegment segment, bool isUnknown)
+		public static WordAlignmentMatrix CreateAlignmentMatrix(this ParallelTextSegment segment, bool isUnknown = true)
 		{
 			if (segment.AlignedWordPairs == null)
 				return null;
@@ -171,6 +161,14 @@ namespace SIL.Machine.Translation
 			}
 
 			return matrix;
+		}
+
+		public static IReadOnlyList<string> Preprocess(this IEnumerable<string> segment,
+			Func<string, string> preprocessor)
+		{
+			if (preprocessor == null)
+				preprocessor = Preprocessors.Null;
+			return segment.Select(preprocessor).ToArray();
 		}
 	}
 }

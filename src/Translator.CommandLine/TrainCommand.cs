@@ -84,7 +84,7 @@ namespace SIL.Machine.Translation
 			using (var alignmentModel = new ThotSymmetrizedWordAlignmentModel(tmPrefix + "_invswm", tmPrefix + "_swm",
 				true))
 			{
-				alignmentModel.AddSegmentPairs(ParallelCorpus, true, Preprocessors.Lowercase, Preprocessors.Lowercase,
+				alignmentModel.AddSegmentPairs(ParallelCorpus, Preprocessors.Lowercase, Preprocessors.Lowercase,
 					MaxParallelCorpusCount);
 				alignmentModel.Train(progress);
 				alignmentModel.Save();

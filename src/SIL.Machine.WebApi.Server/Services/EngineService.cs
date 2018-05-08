@@ -78,7 +78,7 @@ namespace SIL.Machine.WebApi.Server.Services
 				if (engine == null)
 					return null;
 				EngineRunner runner = GetOrCreateRunner(engine.Id);
-				return await runner.TranslateAsync(segment.Select(Preprocessors.Lowercase).ToArray());
+				return await runner.TranslateAsync(segment.Preprocess(Preprocessors.Lowercase));
 			}
 		}
 
@@ -93,7 +93,7 @@ namespace SIL.Machine.WebApi.Server.Services
 				if (engine == null)
 					return null;
 				EngineRunner runner = GetOrCreateRunner(engine.Id);
-				return await runner.TranslateAsync(n, segment.Select(Preprocessors.Lowercase).ToArray());
+				return await runner.TranslateAsync(n, segment.Preprocess(Preprocessors.Lowercase));
 			}
 		}
 
@@ -108,7 +108,7 @@ namespace SIL.Machine.WebApi.Server.Services
 				if (engine == null)
 					return null;
 				EngineRunner runner = GetOrCreateRunner(engine.Id);
-				return await runner.InteractiveTranslateAsync(segment.Select(Preprocessors.Lowercase).ToArray());
+				return await runner.InteractiveTranslateAsync(segment.Preprocess(Preprocessors.Lowercase));
 			}
 		}
 
@@ -123,8 +123,8 @@ namespace SIL.Machine.WebApi.Server.Services
 				if (engine == null)
 					return false;
 				EngineRunner runner = GetOrCreateRunner(engine.Id);
-				await runner.TrainSegmentPairAsync(sourceSegment.Select(Preprocessors.Lowercase).ToArray(),
-					targetSegment.Select(Preprocessors.Lowercase).ToArray());
+				await runner.TrainSegmentPairAsync(sourceSegment.Preprocess(Preprocessors.Lowercase),
+					targetSegment.Preprocess(Preprocessors.Lowercase));
 				return true;
 			}
 		}

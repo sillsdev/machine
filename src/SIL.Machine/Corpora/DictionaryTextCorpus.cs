@@ -7,6 +7,11 @@ namespace SIL.Machine.Corpora
 	{
 		private readonly Dictionary<string, IText> _texts;
 
+		public DictionaryTextCorpus(params IText[] texts)
+			: this((IEnumerable<IText>) texts)
+		{
+		}
+
 		public DictionaryTextCorpus(IEnumerable<IText> texts)
 		{
 			_texts = texts.ToDictionary(t => t.Id);

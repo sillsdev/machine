@@ -33,7 +33,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Translation\ITranslationSuggester.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\Phrase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\PhraseTranslationSuggester.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Translation\Preprocessors.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\ProgressData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationResultBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\EcmScoreInfo.cs" />
@@ -67,8 +66,5 @@
     <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\WordGraphArcDto.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebApi\Dtos\WordGraphDto.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebApi\WebApiUtils.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Corpora\" />
   </ItemGroup>
 </Project>

@@ -1,12 +1,17 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using SIL.Machine.Tokenization;
-using System.Globalization;
 
 namespace SIL.Machine.Corpora
 {
 	public class TextFileText : TextBase
 	{
+		public static ITextCorpus CreateSingleFileCorpus(ITokenizer<string, int> wordTokenizer, string fileName)
+		{
+			return new DictionaryTextCorpus(new TextFileText(wordTokenizer, "*all*", fileName));
+		}
+
 		private readonly string _fileName;
 
 		public TextFileText(ITokenizer<string, int> wordTokenizer, string id, string fileName)
