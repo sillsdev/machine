@@ -7,8 +7,6 @@ namespace SIL.Machine.Translation
 {
 	public partial class WordAlignmentMatrix : IValueEquatable<WordAlignmentMatrix>, ICloneable<WordAlignmentMatrix>
 	{
-
-
 		public IEnumerable<AlignedWordPair> GetAlignedWordPairs(IWordAlignmentModel model,
 			IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
 		{

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 
 namespace SIL.Machine.Corpora
@@ -24,12 +25,26 @@ namespace SIL.Machine.Corpora
 			{
 				using (var reader = new StreamReader(_fileName))
 				{
-					int lineNum = 1;
+					int sectionNum = 1;
+					int segmentNum = 1;
 					string line;
 					while ((line = reader.ReadLine()) != null)
 					{
-						yield return new TextAlignment(new TextSegmentRef(1, lineNum), ParseAlignments(line));
-						lineNum++;
+						if (line.StartsWith("//"))
+						{
+							string sectionNumStr = line.Substring(2).Trim();
+							if (!string.IsNullOrEmpty(sectionNumStr))
+							{
+								sectionNum = int.Parse(sectionNumStr, CultureInfo.InvariantCulture);
+								segmentNum = 1;
+							}
+						}
+						else
+						{
+							yield return new TextAlignment(new TextSegmentRef(sectionNum, segmentNum),
+								ParseAlignments(line));
+							segmentNum++;
+						}
 					}
 				}
 			}

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 
 namespace SIL.Machine.Corpora
 {
@@ -17,22 +16,8 @@ namespace SIL.Machine.Corpora
 
 		private static IEnumerable<ITextAlignmentCollection> GetAlignmentCollections(IEnumerable<string> filePatterns)
 		{
-			foreach (string filePattern in filePatterns)
-			{
-				string path = filePattern;
-				string searchPattern = "*";
-				if (!filePattern.EndsWith(Path.PathSeparator.ToString()))
-				{
-					path = Path.GetDirectoryName(filePattern);
-					searchPattern = Path.GetFileName(filePattern);
-				}
-
-				foreach (string fileName in Directory.EnumerateFiles(path, searchPattern))
-				{
-					yield return new TextFileTextAlignmentCollection(Path.GetFileNameWithoutExtension(fileName),
-						fileName);
-				}
-			}
+			foreach ((string id, string fileName) in CorporaHelpers.GetFiles(filePatterns))
+				yield return new TextFileTextAlignmentCollection(id, fileName);
 		}
 	}
 }
