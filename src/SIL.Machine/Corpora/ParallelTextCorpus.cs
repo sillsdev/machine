@@ -5,11 +5,15 @@ namespace SIL.Machine.Corpora
 {
 	public class ParallelTextCorpus
 	{
-		public ParallelTextCorpus(ITextCorpus sourceCorpus, ITextCorpus targetCorpus, ITextAlignmentCorpus textAlignmentCorpus = null)
+		private readonly IComparer<object> _segmentRefComparer;
+
+		public ParallelTextCorpus(ITextCorpus sourceCorpus, ITextCorpus targetCorpus,
+			ITextAlignmentCorpus textAlignmentCorpus = null, IComparer<object> segmentRefComparer = null)
 		{
 			SourceCorpus = sourceCorpus;
 			TargetCorpus = targetCorpus;
 			TextAlignmentCorpus = textAlignmentCorpus;
+			_segmentRefComparer = segmentRefComparer;
 		}
 
 		public ITextCorpus SourceCorpus { get; }
@@ -33,7 +37,7 @@ namespace SIL.Machine.Corpora
 							if (!TextAlignmentCorpus.TryGetTextAlignmentCollection(text1.Id, out textAlignmentCollection))
 								textAlignmentCollection = null;
 						}
-						yield return new ParallelText(text1, text2, textAlignmentCollection);
+						yield return new ParallelText(text1, text2, textAlignmentCollection, _segmentRefComparer);
 					}
 				}
 			}

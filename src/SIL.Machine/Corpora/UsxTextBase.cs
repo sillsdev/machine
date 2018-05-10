@@ -1,10 +1,9 @@
-﻿using SIL.Machine.Tokenization;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Xml.Linq;
+using SIL.Machine.Tokenization;
+using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
@@ -15,10 +14,13 @@ namespace SIL.Machine.Corpora
 			"ms", "mr", "s", "sr", "r", "d", "sp"
 		};
 
-		protected UsxTextBase(ITokenizer<string, int> wordTokenizer, string id)
+		protected UsxTextBase(ITokenizer<string, int> wordTokenizer, string id, ScrVers versification)
 			: base(wordTokenizer, id)
 		{
+			Versification = versification ?? ScrVers.English;
 		}
+
+		public ScrVers Versification { get; }
 
 		public override IEnumerable<TextSegment> Segments
 		{
@@ -36,11 +38,8 @@ namespace SIL.Machine.Corpora
 							case "chapter":
 								if (ctxt.IsInVerse)
 									yield return CreateTextSegment(ctxt);
-								int nextChapter = (int) elem.Attribute("number");
-								if (nextChapter < ctxt.Chapter)
-									throw new InvalidOperationException("The chapters occurred out of order.");
-								ctxt.Chapter = nextChapter;
-								ctxt.Verse = 0;
+								ctxt.Chapter = (string) elem.Attribute("number");
+								ctxt.Verse = null;
 								break;
 
 							case "para":
@@ -74,15 +73,7 @@ namespace SIL.Machine.Corpora
 								if (ctxt.IsInVerse)
 									yield return CreateTextSegment(ctxt);
 
-								var verseNumberStr = (string) e.Attribute("number");
-								int index = verseNumberStr.IndexOf("-", StringComparison.Ordinal);
-								if (index > -1)
-									verseNumberStr = verseNumberStr.Substring(0, index);
-								int nextVerse = int.Parse(verseNumberStr,
-									CultureInfo.InvariantCulture);
-								if (nextVerse < ctxt.Verse)
-									throw new InvalidOperationException("The verses occurred out of order.");
-								ctxt.Verse = nextVerse;
+								ctxt.Verse = (string) e.Attribute("number");
 								break;
 
 							case "char":
@@ -122,7 +113,8 @@ namespace SIL.Machine.Corpora
 
 		private TextSegment CreateTextSegment(ParseContext ctxt)
 		{
-			TextSegment segment = CreateTextSegment(ctxt.VerseBuilder.ToString(), ctxt.Chapter, ctxt.Verse);
+			TextSegment segment = CreateTextSegment(ctxt.VerseBuilder.ToString(),
+				new VerseRef(Id, ctxt.Chapter, ctxt.Verse, Versification));
 			ctxt.VerseBuilder.Clear();
 			return segment;
 		}
@@ -130,9 +122,9 @@ namespace SIL.Machine.Corpora
 		private class ParseContext
 		{
 			public StringBuilder VerseBuilder { get; } = new StringBuilder();
-			public int Chapter { get; set; }
-			public int Verse { get; set; }
-			public bool IsInVerse => Chapter > 0 && Verse > 0;
+			public string Chapter { get; set; }
+			public string Verse { get; set; }
+			public bool IsInVerse => Chapter != null && Verse != null;
 		}
 	}
 }

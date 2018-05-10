@@ -2,6 +2,7 @@
 using System.Text;
 using NUnit.Framework;
 using SIL.Machine.Tokenization;
+using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
@@ -13,18 +14,18 @@ namespace SIL.Machine.Corpora
 		{
 			var tokenizer = new LatinWordTokenizer();
 			var corpus = new UsfmFileTextCorpus(tokenizer, CorporaTestHelpers.UsfmStylesheetPath,
-                Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath);
+				Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath);
 
 			IText text = corpus.GetText("MAT");
 			TextSegment[] segments = text.Segments.ToArray();
 			Assert.That(segments.Length, Is.EqualTo(10));
-			Assert.That(segments[0].SegmentRef, Is.EqualTo(new TextSegmentRef(1, 1)));
+			Assert.That(segments[0].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:1", corpus.Versification)));
 			Assert.That(segments[0].Segment, Is.EqualTo("Chapter one , verse one .".Split()));
-			Assert.That(segments[1].SegmentRef, Is.EqualTo(new TextSegmentRef(1, 2)));
+			Assert.That(segments[1].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:2", corpus.Versification)));
 			Assert.That(segments[1].Segment, Is.EqualTo("Chapter one , verse two .".Split()));
-			Assert.That(segments[5].SegmentRef, Is.EqualTo(new TextSegmentRef(2, 1)));
+			Assert.That(segments[5].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:1", corpus.Versification)));
 			Assert.That(segments[5].Segment, Is.EqualTo("Chapter two , verse one .".Split()));
-			Assert.That(segments[9].SegmentRef, Is.EqualTo(new TextSegmentRef(2, 5)));
+			Assert.That(segments[9].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:5", corpus.Versification)));
 			Assert.That(segments[9].Segment, Is.EqualTo("Chapter two , verse five .".Split()));
 		}
 
@@ -33,7 +34,7 @@ namespace SIL.Machine.Corpora
 		{
 			var tokenizer = new LatinWordTokenizer();
 			var corpus = new UsfmFileTextCorpus(tokenizer, CorporaTestHelpers.UsfmStylesheetPath,
-                Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath);
+				Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath);
 
 			IText text = corpus.GetText("MRK");
 			TextSegment[] segments = text.Segments.ToArray();

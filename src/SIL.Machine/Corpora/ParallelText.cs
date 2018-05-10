@@ -5,11 +5,15 @@ namespace SIL.Machine.Corpora
 {
 	public class ParallelText
 	{
-		public ParallelText(IText sourceText, IText targetText, ITextAlignmentCollection textAlignmentCollection = null)
+		private readonly IComparer<object> _segmentRefComparer;
+
+		public ParallelText(IText sourceText, IText targetText, ITextAlignmentCollection textAlignmentCollection = null,
+			IComparer<object> segmentRefComparer = null)
 		{
 			SourceText = sourceText;
 			TargetText = targetText;
 			TextAlignmentCollection = textAlignmentCollection;
+			_segmentRefComparer = segmentRefComparer ?? Comparer<object>.Default;
 		}
 
 		public string Id => SourceText.Id;
@@ -34,7 +38,8 @@ namespace SIL.Machine.Corpora
 					bool completed = !enumerator1.MoveNext() || !enumerator2.MoveNext();
 					while (!completed)
 					{
-						int compare1 = enumerator1.Current.SegmentRef.CompareTo(enumerator2.Current.SegmentRef);
+						int compare1 = _segmentRefComparer.Compare(enumerator1.Current.SegmentRef,
+							enumerator2.Current.SegmentRef);
 						if (compare1 < 0)
 						{
 							completed = !enumerator1.MoveNext();
@@ -49,7 +54,8 @@ namespace SIL.Machine.Corpora
 							do
 							{
 								compare2 = enumerator3.MoveNext()
-									? enumerator1.Current.SegmentRef.CompareTo(enumerator3.Current.SegmentRef)
+									? _segmentRefComparer.Compare(enumerator1.Current.SegmentRef,
+										enumerator3.Current.SegmentRef)
 									: 1;
 							} while (compare2 < 0);
 

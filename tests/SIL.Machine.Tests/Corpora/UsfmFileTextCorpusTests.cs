@@ -13,7 +13,7 @@ namespace SIL.Machine.Corpora
 		{
 			var tokenizer = new LatinWordTokenizer();
 			var corpus = new UsfmFileTextCorpus(tokenizer, CorporaTestHelpers.UsfmStylesheetPath,
-                Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath);
+				Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath);
 
 			Assert.That(corpus.Texts.Select(t => t.Id), Is.EquivalentTo(new[] { "MAT", "MRK" }));
 		}
@@ -23,7 +23,7 @@ namespace SIL.Machine.Corpora
 		{
 			var tokenizer = new LatinWordTokenizer();
 			var corpus = new UsfmFileTextCorpus(tokenizer, CorporaTestHelpers.UsfmStylesheetPath,
-                Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath);
+				Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath);
 
 			IText text;
 			Assert.That(corpus.TryGetText("MAT", out text), Is.True);

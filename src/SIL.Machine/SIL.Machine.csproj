@@ -10,7 +10,7 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="QuickGraph.All" Version="3.6.61119.8" />
-    <PackageReference Include="SIL.Core" Version="4.2.0-824" />
+    <PackageReference Include="SIL.Scripture" Version="4.2.0-884" />
   </ItemGroup>
 
   <Import Project="..\SIL.Machine.Shared\SIL.Machine.Shared.projitems" Label="Shared" />

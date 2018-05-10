@@ -1,20 +1,19 @@
-﻿using SIL.Machine.Tokenization;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
+using SIL.Machine.Tokenization;
+using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
 	public class UsxFileTextCorpus : DictionaryTextCorpus
 	{
-		public UsxFileTextCorpus(ITokenizer<string, int> wordTokenizer, string projectPath)
-			: base(GetTexts(wordTokenizer, projectPath))
+		public UsxFileTextCorpus(ITokenizer<string, int> wordTokenizer, string projectPath,
+			ScrVers versification = null)
 		{
+			Versification = versification ?? ScrVers.English;
+			foreach (string fileName in Directory.EnumerateFiles(projectPath, "*.usx"))
+				AddText(new UsxFileText(wordTokenizer, fileName, Versification));
 		}
 
-		private static IEnumerable<IText> GetTexts(ITokenizer<string, int> wordTokenizer, string projectPath)
-		{
-			foreach (string fileName in Directory.EnumerateFiles(projectPath, "*.usx"))
-				yield return new UsxFileText(wordTokenizer, fileName);
-		}
+		public ScrVers Versification { get; }
 	}
 }

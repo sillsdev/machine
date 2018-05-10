@@ -28,5 +28,10 @@ namespace SIL.Machine.Corpora
 		{
 			return _texts[id];
 		}
+
+		protected void AddText(IText text)
+		{
+			_texts[text.Id] = text;
+		}
 	}
 }

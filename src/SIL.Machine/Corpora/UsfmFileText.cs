@@ -1,4 +1,5 @@
 ﻿using SIL.Machine.Tokenization;
+using SIL.Scripture;
 using System.IO;
 using System.Text;
 
@@ -9,8 +10,8 @@ namespace SIL.Machine.Corpora
 		private readonly string _fileName;
 
 		public UsfmFileText(ITokenizer<string, int> wordTokenizer, UsfmStylesheet stylesheet, Encoding encoding,
-			string fileName)
-			: base(wordTokenizer, GetId(fileName), stylesheet, encoding)
+			string fileName, ScrVers versification = null)
+			: base(wordTokenizer, GetId(fileName), stylesheet, encoding, versification)
 		{
 			_fileName = fileName;
 		}

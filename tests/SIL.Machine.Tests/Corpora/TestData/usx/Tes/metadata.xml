@@ -1,5 +1,5 @@
 <?xml version="1.0" standalone="yes"?>
-<DBLMetadata id="0bc8836afa7427fa" revision="2" version="2.0">
+<DBLMetadata id="0bc8836afa7427fa" revision="2" version="2.1">
   <identification>
     <name>Test</name>
     <nameLocal>Test</nameLocal>
@@ -70,8 +70,8 @@
         <book code="MRK"/>
       </canonicalContent>
       <structure>
-        <content name="book_MAT" role="MAT" src="USX_1/MAT.usx"/>
-        <content name="book_MRK" role="MRK" src="USX_1/MRK.usx"/>
+        <content name="book_MAT" role="MAT" src="release/USX_1/MAT.usx"/>
+        <content name="book_MRK" role="MRK" src="release/USX_1/MRK.usx"/>
       </structure>
     </publication>
   </publications>

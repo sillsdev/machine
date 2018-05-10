@@ -43,3 +43,4 @@ lib/
 appsettings.user.json
 artifacts
 launchSettings.json
+!**/Tes/release/

@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace SIL.Machine.Corpora
 {
 	public class TextSegment
 	{
-		public TextSegment(IComparable segRef, IReadOnlyList<string> segment)
+		public TextSegment(object segRef, IReadOnlyList<string> segment)
 		{
 			SegmentRef = segRef;
 			Segment = segment;
 		}
 
-		public IComparable SegmentRef { get; }
+		public object SegmentRef { get; }
 
 		public bool IsEmpty => Segment.Count == 0;
 

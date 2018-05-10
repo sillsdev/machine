@@ -1,7 +1,6 @@
-﻿using SIL.Machine.Tokenization;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using SIL.Machine.Tokenization;
 
 namespace SIL.Machine.Corpora
 {
@@ -19,7 +18,7 @@ namespace SIL.Machine.Corpora
 
 		public abstract IEnumerable<TextSegment> Segments { get; }
 
-		protected TextSegment CreateTextSegment(string text, IComparable segRef)
+		protected TextSegment CreateTextSegment(string text, object segRef)
 		{
 			string[] segment = WordTokenizer.TokenizeToStrings(text.Trim()).ToArray();
 			return new TextSegment(segRef, segment);

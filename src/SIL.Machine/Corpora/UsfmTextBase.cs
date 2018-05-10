@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Text;
 using SIL.Machine.Tokenization;
+using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
@@ -12,12 +12,15 @@ namespace SIL.Machine.Corpora
 		private readonly Encoding _encoding;
 
 		protected UsfmTextBase(ITokenizer<string, int> wordTokenizer, string id, UsfmStylesheet stylesheet,
-			Encoding encoding)
+			Encoding encoding, ScrVers versification)
 			: base(wordTokenizer, id)
 		{
 			_parser = new UsfmParser(stylesheet);
 			_encoding = encoding;
+			Versification = versification ?? ScrVers.English;
 		}
+
+		public ScrVers Versification { get; }
 
 		public override IEnumerable<TextSegment> Segments
 		{
@@ -31,7 +34,7 @@ namespace SIL.Machine.Corpora
 				}
 				bool inVerse = false;
 				var sb = new StringBuilder();
-				int chapter = 0, verse = 0;
+				string chapter = null, verse = null;
 				foreach (UsfmToken token in _parser.Parse(usfm))
 				{
 					switch (token.Type)
@@ -39,32 +42,27 @@ namespace SIL.Machine.Corpora
 						case UsfmTokenType.Chapter:
 							if (inVerse)
 							{
-								yield return CreateTextSegment(sb.ToString(), chapter, verse);
+								yield return CreateTextSegment(sb.ToString(),
+									new VerseRef(Id, chapter, verse, Versification));
 								sb.Clear();
 								inVerse = false;
 							}
-							int nextChapter = int.Parse(token.Text, CultureInfo.InvariantCulture);
-							if (nextChapter < chapter)
-								yield break;
-							chapter = nextChapter;
-							verse = 0;
+							chapter = token.Text;
+							verse = null;
 							break;
 
 						case UsfmTokenType.Verse:
 							if (inVerse)
 							{
-								yield return CreateTextSegment(sb.ToString(), chapter, verse);
+								yield return CreateTextSegment(sb.ToString(),
+									new VerseRef(Id, chapter, verse, Versification));
 								sb.Clear();
 							}
 							else
 							{
 								inVerse = true;
 							}
-
-							int nextVerse = int.Parse(token.Text, CultureInfo.InvariantCulture);
-							if (nextVerse < verse)
-								yield break;
-							verse = nextVerse;
+							verse = token.Text;
 							break;
 
 						case UsfmTokenType.Text:
@@ -75,7 +73,7 @@ namespace SIL.Machine.Corpora
 				}
 
 				if (inVerse)
-					yield return CreateTextSegment(sb.ToString(), chapter, verse);
+					yield return CreateTextSegment(sb.ToString(), new VerseRef(Id, chapter, verse, Versification));
 			}
 		}
 	}
