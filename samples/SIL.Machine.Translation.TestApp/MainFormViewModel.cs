@@ -107,7 +107,7 @@ namespace SIL.Machine.Translation.TestApp
 				{
 					Title = "Open Project",
 					CheckFileExists = true,
-					Filters = { new FileDialogFilter("Project files", ".catx") }
+					Filters = { new FileFilter("Project files", ".catx") }
 				})
 			{
 				if (dialog.ShowDialog(null) == DialogResult.Ok)
