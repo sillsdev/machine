@@ -1,18 +1,18 @@
 #!/bin/bash
 
-DEPLOY_PATH="/var/www/virtual/languageforge.org/machine/"
+DEPLOY_PATH=${DEPLOY_PATH:-/opt/machine-web-api/}
 EXECUTE_USER="www-data"
 ASPNETCORE_ENVIRONMENT="Development"
 
 pushd $DEPLOY_PATH > /dev/null
 
-if [ $2 = $USER ]; then
+if [ "$2" = "$USER" ]; then
     EXECUTE_USER=""
 elif [ ! -z $2 ]; then
     EXECUTE_USER=$2
 fi
 
-if [[ -z $1 || $1 = "unix" ]]; then
+if [[ -z $1 || "$1" = "unix" ]]; then
     SOCKET_FILE="/tmp/machine-web-api.sock"
     URL="http://unix:$SOCKET_FILE"
     if [ -z $EXECUTE_USER ]; then
