@@ -47,7 +47,7 @@ namespace SIL.Machine.Translation.Thot
 			_maxCorpusCount = maxCorpusCount;
 			_parallelCorpus = corpus;
 			//_modelWeightTuner = new MiraModelWeightTuner();
-			_modelWeightTuner = new SimplexModelWeightTuner {ProgressIncrementInterval = 10};
+			_modelWeightTuner = new SimplexModelWeightTuner { ProgressIncrementInterval = 10 };
 			_tuneCorpusIndices = CreateTuneCorpus();
 
 			do
@@ -297,7 +297,7 @@ namespace SIL.Machine.Translation.Thot
 			Func<string, string> targetPreprocessor, ParallelTextCorpus corpus, string name,
 			ThotTrainProgressReporter reporter)
 		{
-			TrainSingleWordAlignmentModel(swmPrefix, sourcePreprocessor, targetPreprocessor, corpus, name, reporter);
+			TrainWordAlignmentModel(swmPrefix, sourcePreprocessor, targetPreprocessor, corpus, name, reporter);
 
 			reporter.CheckCanceled();
 
@@ -383,21 +383,21 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private void TrainSingleWordAlignmentModel(string swmPrefix, Func<string, string> sourcePreprocessor,
+		private void TrainWordAlignmentModel(string swmPrefix, Func<string, string> sourcePreprocessor,
 			Func<string, string> targetPreprocessor, ParallelTextCorpus corpus, string name,
 			ThotTrainProgressReporter reporter)
 		{
-			using (var swAlignModel = new ThotWordAlignmentModel(swmPrefix, true))
+			using (var model = new ThotWordAlignmentModel(swmPrefix, true))
 			{
 				foreach (ParallelTextSegment segment in GetTrainingSegments(corpus))
-					swAlignModel.AddSegmentPair(segment, sourcePreprocessor, targetPreprocessor);
+					model.AddSegmentPair(segment, sourcePreprocessor, targetPreprocessor);
 				for (int i = 0; i < 5; i++)
 				{
 					reporter.Step($"Training {name} alignment model");
 
-					swAlignModel.TrainingIteration();
+					model.TrainingIteration();
 				}
-				swAlignModel.Save();
+				model.Save();
 			}
 		}
 
@@ -407,18 +407,13 @@ namespace SIL.Machine.Translation.Thot
 		{
 			reporter.Step($"Generating best {name} alignments");
 
-			using (var swAlignModel = new ThotWordAlignmentModel(swmPrefix))
+			using (var model = new ThotWordAlignmentModel(swmPrefix))
 			using (var writer = new StreamWriter(fileName))
 			{
 				foreach (ParallelTextSegment segment in GetTrainingSegments(corpus))
 				{
-					IReadOnlyList<string> sourceTokens = segment.SourceSegment.Preprocess(sourcePreprocessor);
-					IReadOnlyList<string> targetTokens = segment.TargetSegment.Preprocess(targetPreprocessor);
-					WordAlignmentMatrix waMatrix = swAlignModel.GetBestAlignment(sourceTokens, targetTokens,
-						segment.CreateAlignmentMatrix());
-
 					writer.Write($"# {segment.Text.Id} {segment.SegmentRef}\n");
-					writer.Write(waMatrix.ToGizaFormat(sourceTokens, targetTokens));
+					writer.Write(model.GetGizaFormatString(segment, sourcePreprocessor, targetPreprocessor));
 
 					reporter.CheckCanceled();
 				}

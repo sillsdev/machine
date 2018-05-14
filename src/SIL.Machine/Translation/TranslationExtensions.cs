@@ -170,5 +170,31 @@ namespace SIL.Machine.Translation
 				preprocessor = Preprocessors.Null;
 			return segment.Select(preprocessor).ToArray();
 		}
+
+		public static string GetAlignmentString(this IWordAlignmentModel model, ParallelTextSegment segment,
+			bool includeProbs, Func<string, string> sourcePreprocessor = null,
+			Func<string, string> targetPreprocessor = null, bool isUnknown = true)
+		{
+			IReadOnlyList<string> sourceSegment = segment.SourceSegment.Preprocess(sourcePreprocessor);
+			IReadOnlyList<string> targetSegment = segment.TargetSegment.Preprocess(targetPreprocessor);
+			WordAlignmentMatrix alignment = model.GetBestAlignment(sourceSegment, targetSegment,
+				segment.CreateAlignmentMatrix(isUnknown));
+
+			if (includeProbs)
+				return alignment.ToString(model, sourceSegment, targetSegment);
+			return alignment.ToString();
+		}
+
+		public static string GetGizaFormatString(this ISegmentAligner aligner, ParallelTextSegment segment,
+			Func<string, string> sourcePreprocessor = null, Func<string, string> targetPreprocessor = null,
+			bool isUnknown = true)
+		{
+			IReadOnlyList<string> sourceSegment = segment.SourceSegment.Preprocess(sourcePreprocessor);
+			IReadOnlyList<string> targetSegment = segment.TargetSegment.Preprocess(targetPreprocessor);
+			WordAlignmentMatrix alignment = aligner.GetBestAlignment(sourceSegment, targetSegment,
+				segment.CreateAlignmentMatrix(isUnknown));
+
+			return alignment.ToGizaFormat(sourceSegment, targetSegment);
+		}
 	}
 }

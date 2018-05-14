@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
 using SIL.Machine.Translation.Thot;
@@ -62,16 +60,8 @@ namespace SIL.Machine.Translation
 							}
 							else
 							{
-								IReadOnlyList<string> sourceTokens = segment.SourceSegment
-									.Preprocess(Preprocessors.Lowercase);
-								IReadOnlyList<string> targetTokens = segment.TargetSegment
-									.Preprocess(Preprocessors.Lowercase);
-								WordAlignmentMatrix matrix = alignmentModel.GetBestAlignment(sourceTokens, targetTokens,
-									segment.CreateAlignmentMatrix());
-								if (_probOption.HasValue())
-									writer.WriteLine(matrix.ToString(alignmentModel, sourceTokens, targetTokens));
-								else
-									writer.WriteLine(matrix.ToString());
+								writer.WriteLine(alignmentModel.GetAlignmentString(segment, _probOption.HasValue(),
+									Preprocessors.Lowercase, Preprocessors.Lowercase));
 								segmentCount++;
 								progress?.Report(new ProgressData(segmentCount, parallelCorpusCount));
 								if (segmentCount == MaxParallelCorpusCount)
