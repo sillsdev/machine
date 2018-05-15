@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SIL.Machine.Translation
+﻿namespace SIL.Machine.Translation
 {
 	public struct ProgressData
 	{
@@ -14,7 +12,6 @@ namespace SIL.Machine.Translation
 		public int CurrentStep { get; }
 		public int StepCount { get; }
 		public string CurrentStepMessage { get; }
-		public int PercentCompleted => (int) Math.Round(((double) CurrentStep / StepCount) * 100.0, 0,
-			MidpointRounding.AwayFromZero);
+		public double PercentCompleted => (double) CurrentStep / StepCount;
 	}
 }

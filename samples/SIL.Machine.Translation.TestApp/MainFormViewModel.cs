@@ -45,8 +45,7 @@ namespace SIL.Machine.Translation.TestApp
 			_texts = new BulkObservableList<TextViewModel>();
 			Texts = new ReadOnlyObservableList<TextViewModel>(_texts);
 			_currentText = new TextViewModel(_tokenizer);
-			RebuildTask = new TaskViewModel<ProgressData>(RebuildAsync, () => _hybridEngine != null,
-				p => p.PercentCompleted, p => p.CurrentStepMessage);
+			RebuildTask = new TaskViewModel(RebuildAsync, () => _hybridEngine != null);
 		}
 
 		private void TextPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -345,6 +344,6 @@ namespace SIL.Machine.Translation.TestApp
 			}
 		}
 
-		public TaskViewModel<ProgressData> RebuildTask { get; }
+		public TaskViewModel RebuildTask { get; }
 	}
 }

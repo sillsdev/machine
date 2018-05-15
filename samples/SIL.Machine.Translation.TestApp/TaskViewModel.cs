@@ -6,11 +6,9 @@ using GalaSoft.MvvmLight;
 
 namespace SIL.Machine.Translation.TestApp
 {
-	public class TaskViewModel<TProgress> : ViewModelBase
+	public class TaskViewModel : ViewModelBase
 	{
-		private readonly Func<IProgress<TProgress>, CancellationToken, Task> _execute;
-		private readonly Func<TProgress, int> _pcntCompletedSelector;
-		private readonly Func<TProgress, string> _msgSelector;
+		private readonly Func<IProgress<ProgressData>, CancellationToken, Task> _execute;
 		private readonly AsyncRelayCommand _startTaskCommand;
 		private readonly RelayCommand _cancelCommand;
 		private CancellationTokenSource _cts;
@@ -19,12 +17,9 @@ namespace SIL.Machine.Translation.TestApp
 		private int _percentCompleted;
 		private string _message;
 
-		public TaskViewModel(Func<IProgress<TProgress>, CancellationToken, Task> execute, Func<bool> canExecute,
-			Func<TProgress, int> pcntCompletedSelector, Func<TProgress, string> msgSelector)
+		public TaskViewModel(Func<IProgress<ProgressData>, CancellationToken, Task> execute, Func<bool> canExecute)
 		{
 			_execute = execute;
-			_pcntCompletedSelector = pcntCompletedSelector;
-			_msgSelector = msgSelector;
 			_startTaskCommand = new AsyncRelayCommand(ExecuteAsync, canExecute);
 			_cancelCommand = new RelayCommand(Cancel, CanCancel);
 		}
@@ -35,10 +30,10 @@ namespace SIL.Machine.Translation.TestApp
 			{
 				IsExecuting = true;
 				_cancelCommand.UpdateCanExecute();
-				var progress = new Progress<TProgress>(p =>
+				var progress = new Progress<ProgressData>(p =>
 					{
-						PercentCompleted = _pcntCompletedSelector(p);
-						Message = _msgSelector(p);
+						PercentCompleted = (int) Math.Round(p.PercentCompleted * 100, MidpointRounding.AwayFromZero);
+						Message = p.CurrentStepMessage;
 					});
 				CancellationToken token = _cts.Token;
 				Task task = null;

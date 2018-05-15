@@ -16,7 +16,7 @@ namespace SIL.Machine.Translation.TestApp
 				Height = RebuildProgressContainer.Height
 			};
 			RebuildProgressContainer.Add(RebuildProgressBar, 0, 0);
-			RebuildProgressBar.BindDataContext(c => c.Value, (TaskViewModel<ProgressData> vm) => vm.PercentCompleted);
+			RebuildProgressBar.BindDataContext(c => c.Value, (TaskViewModel vm) => vm.PercentCompleted);
 			RebuildMessageLabel = new Label
 			{
 				Width = RebuildProgressContainer.Width - 3,
@@ -24,7 +24,7 @@ namespace SIL.Machine.Translation.TestApp
 				VerticalAlignment = VerticalAlignment.Center
 			};
 			RebuildProgressContainer.Add(RebuildMessageLabel, 3, 0);
-			RebuildMessageLabel.TextBinding.BindDataContext((TaskViewModel<ProgressData> vm) => vm.Message);
+			RebuildMessageLabel.TextBinding.BindDataContext((TaskViewModel vm) => vm.Message);
 
 			TextView.Bind(tv => tv.DataContext, (MainFormViewModel) DataContext, vm => vm.CurrentText);
 		}

@@ -11,7 +11,7 @@ namespace SIL.Machine.Translation
 	public class ConsoleProgressBar : ConsoleProgressBar<ProgressData>
 	{
 		public ConsoleProgressBar(TextWriter outWriter)
-			: base(outWriter, value => (double) value.PercentCompleted / 100)
+			: base(outWriter, value => value.PercentCompleted)
 		{
 		}
 	}
@@ -55,7 +55,7 @@ namespace SIL.Machine.Translation
 					return;
 
 				int progressBlockCount = (int) (_currentProgress * BlockCount);
-				int percent = (int) (_currentProgress * 100);
+				int percent = (int) Math.Round(_currentProgress * 100, MidpointRounding.AwayFromZero);
 				string text = string.Format("[{0}{1}] {2,3}% {3}",
 					new string('#', progressBlockCount), new string('-', BlockCount - progressBlockCount),
 					percent,
