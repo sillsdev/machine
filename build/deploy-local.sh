@@ -20,4 +20,6 @@ fi
 
 popd > /dev/null
 
-sudo systemctl restart machine-web-api
+if [[ -d "/run/systemd/system" ]] && [[ -f "/etc/systemd/system/machine-web-api.service" ]] ; then
+    sudo systemctl restart machine-web-api
+fi
