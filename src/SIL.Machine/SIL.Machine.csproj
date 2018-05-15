@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <Description>Machine is a natural language processing library for .NET that is focused on providing tools for processing resource-poor languages.</Description>
   </PropertyGroup>
 
@@ -11,6 +11,12 @@
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="QuickGraph.All" Version="3.6.61119.8" />
     <PackageReference Include="SIL.Scripture" Version="4.2.0-894" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
+    <PackageReference Include="System.IO.Compression" Version="4.3.0" />
+    <PackageReference Include="System.Net.Http" Version="4.3.3" />
+    <PackageReference Include="System.ValueTuple" Version="4.4.0" />
   </ItemGroup>
 
   <Import Project="..\SIL.Machine.Shared\SIL.Machine.Shared.projitems" Label="Shared" />
