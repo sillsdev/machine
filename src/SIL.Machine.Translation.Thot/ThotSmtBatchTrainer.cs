@@ -521,7 +521,7 @@ namespace SIL.Machine.Translation.Thot
 			ThotSmtParameters initialParameters = oldParameters.Clone();
 			initialParameters.TranslationModelFileNamePrefix = tuneTMPrefix;
 			initialParameters.LanguageModelFileNamePrefix = tuneLMPrefix;
-			initialParameters.ModelWeights = new[] {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0f};
+			initialParameters.ModelWeights = new[] { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0f };
 			initialParameters.Freeze();
 
 			ThotSmtParameters tunedParameters = _modelWeightTuner.Tune(initialParameters, tuneSourceCorpus,

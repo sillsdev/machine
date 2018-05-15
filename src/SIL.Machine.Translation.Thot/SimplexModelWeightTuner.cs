@@ -77,30 +77,37 @@ namespace SIL.Machine.Translation.Thot
 		private static IEnumerable<IReadOnlyList<string>> GenerateTranslations(ThotSmtParameters parameters,
 			IReadOnlyList<IReadOnlyList<string>> sourceCorpus)
 		{
-			var results = new IReadOnlyList<string>[sourceCorpus.Count];
-			Parallel.ForEach(Partitioner.Create(0, sourceCorpus.Count), range =>
-				{
-					IntPtr smtModelHandle = IntPtr.Zero, decoderHandle = IntPtr.Zero;
-					try
+			IntPtr smtModelHandle = IntPtr.Zero;
+			try
+			{
+				smtModelHandle = Thot.LoadSmtModel(parameters);
+				var results = new IReadOnlyList<string>[sourceCorpus.Count];
+				Parallel.ForEach(Partitioner.Create(0, sourceCorpus.Count), range =>
 					{
-						smtModelHandle = Thot.LoadSmtModel(parameters);
-						decoderHandle = Thot.LoadDecoder(smtModelHandle, parameters);
-						for (int i = range.Item1; i < range.Item2; i++)
+						IntPtr decoderHandle = IntPtr.Zero;
+						try
 						{
-							IReadOnlyList<string> segment = sourceCorpus[i];
-							results[i] = Thot.DoTranslate(decoderHandle, Thot.decoder_translate, segment, false,
-								segment, (s, t, d) => t);
+							decoderHandle = Thot.LoadDecoder(smtModelHandle, parameters);
+							for (int i = range.Item1; i < range.Item2; i++)
+							{
+								IReadOnlyList<string> segment = sourceCorpus[i];
+								results[i] = Thot.DoTranslate(decoderHandle, Thot.decoder_translate, segment, false,
+									segment, (s, t, d) => t);
+							}
 						}
-					}
-					finally
-					{
-						if (decoderHandle != IntPtr.Zero)
-							Thot.decoder_close(decoderHandle);
-						if (smtModelHandle != IntPtr.Zero)
-							Thot.smtModel_close(smtModelHandle);
-					}
-				});
-			return results;
+						finally
+						{
+							if (decoderHandle != IntPtr.Zero)
+								Thot.decoder_close(decoderHandle);
+						}
+					});
+				return results;
+			}
+			finally
+			{
+				if (smtModelHandle != IntPtr.Zero)
+					Thot.smtModel_close(smtModelHandle);
+			}
 		}
 	}
 }

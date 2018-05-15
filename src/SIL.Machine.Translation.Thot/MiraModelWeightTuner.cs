@@ -81,30 +81,37 @@ namespace SIL.Machine.Translation.Thot
 		private IEnumerable<IList<TranslationInfo>> GetNBestLists(ThotSmtParameters parameters,
 			IReadOnlyList<IReadOnlyList<string>> sourceCorpus)
 		{
-			var results = new IList<TranslationInfo>[sourceCorpus.Count];
-			Parallel.ForEach(Partitioner.Create(0, sourceCorpus.Count), range =>
-				{
-					IntPtr smtModelHandle = IntPtr.Zero, decoderHandle = IntPtr.Zero;
-					try
+			IntPtr smtModelHandle = IntPtr.Zero;
+			try
+			{
+				smtModelHandle = Thot.LoadSmtModel(parameters);
+				var results = new IList<TranslationInfo>[sourceCorpus.Count];
+				Parallel.ForEach(Partitioner.Create(0, sourceCorpus.Count), range =>
 					{
-						smtModelHandle = Thot.LoadSmtModel(parameters);
-						decoderHandle = Thot.LoadDecoder(smtModelHandle, parameters);
-						for (int i = range.Item1; i < range.Item2; i++)
+						IntPtr decoderHandle = IntPtr.Zero;
+						try
 						{
-							IReadOnlyList<string> sourceSegment = sourceCorpus[i];
-							results[i] = Thot.DoTranslateNBest(decoderHandle, Thot.decoder_translateNBest, K,
-								sourceSegment, false, sourceSegment, CreateTranslationInfo).ToArray();
+							decoderHandle = Thot.LoadDecoder(smtModelHandle, parameters);
+							for (int i = range.Item1; i < range.Item2; i++)
+							{
+								IReadOnlyList<string> sourceSegment = sourceCorpus[i];
+								results[i] = Thot.DoTranslateNBest(decoderHandle, Thot.decoder_translateNBest, K,
+									sourceSegment, false, sourceSegment, CreateTranslationInfo).ToArray();
+							}
 						}
-					}
-					finally
-					{
-						if (decoderHandle != IntPtr.Zero)
-							Thot.decoder_close(decoderHandle);
-						if (smtModelHandle != IntPtr.Zero)
-							Thot.smtModel_close(smtModelHandle);
-					}
-				});
-			return results;
+						finally
+						{
+							if (decoderHandle != IntPtr.Zero)
+								Thot.decoder_close(decoderHandle);
+						}
+					});
+				return results;
+			}
+			finally
+			{
+				if (smtModelHandle != IntPtr.Zero)
+					Thot.smtModel_close(smtModelHandle);
+			}
 		}
 
 		private static void UpdateWeights(IntPtr weightUpdaterHandle,
