@@ -10,19 +10,13 @@ namespace SIL.Machine.Translation.Thot
 {
 	public class MiraModelWeightTuner : IParameterTuner
 	{
-		public MiraModelWeightTuner()
-		{
-			MaxIterations = 10;
-			K = 100;
-		}
-
-		public int K { get; set; }
-		public int MaxIterations { get; set; }
+		public int K { get; set; } = 100;
+		public int MaxIterations { get; set; } = 10;
 
 		public ThotSmtParameters Tune(ThotSmtParameters parameters,
 			IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
-			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, ThotTrainProgressReporter reporter,
-			SmtBatchTrainStats stats)
+			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, SmtBatchTrainStats stats,
+			IProgress<ProgressStatus> progress)
 		{
 			IntPtr weightUpdaterHandle = Thot.llWeightUpdater_create();
 			try
@@ -30,12 +24,14 @@ namespace SIL.Machine.Translation.Thot
 				var iterQualities = new List<double>();
 				double bestQuality = double.MinValue;
 				ThotSmtParameters bestParameters = null;
-				int iter = 1;
+				int iter = 0;
 				HashSet<TranslationInfo>[] curNBestLists = null;
 				float[] curWeights = parameters.ModelWeights.ToArray();
 
 				while (true)
 				{
+					progress.Report(new ProgressStatus(iter, MaxIterations));
+
 					ThotSmtParameters newParameters = parameters.Clone();
 					newParameters.ModelWeights = curWeights;
 					newParameters.Freeze();
@@ -49,6 +45,7 @@ namespace SIL.Machine.Translation.Thot
 						bestParameters = newParameters;
 					}
 
+					iter++;
 					if (iter >= MaxIterations || IsTuningConverged(iterQualities))
 						break;
 
@@ -63,12 +60,10 @@ namespace SIL.Machine.Translation.Thot
 					}
 
 					UpdateWeights(weightUpdaterHandle, tuneTargetCorpus, curNBestLists, curWeights);
-
-					iter++;
-
-					reporter.Step();
 				}
 
+				if (iter < MaxIterations)
+					progress.Report(new ProgressStatus(1.0));
 				stats.TranslationModelBleu = bestQuality;
 				return bestParameters;
 			}
@@ -134,7 +129,6 @@ namespace SIL.Machine.Translation.Thot
 				{
 					IntPtr nativeSegment = Thot.ConvertStringsToNativeUtf8(ti.Translation);
 					Marshal.WriteIntPtr(nativeNBestList, j * sizeOfPtr, nativeSegment);
-
 
 					IntPtr nativeTransScoreComps = Marshal.AllocHGlobal((ti.ScoreComponents.Length - 1) * sizeOfDouble);
 					Marshal.Copy(ti.ScoreComponents, 0, nativeTransScoreComps, ti.ScoreComponents.Length - 1);

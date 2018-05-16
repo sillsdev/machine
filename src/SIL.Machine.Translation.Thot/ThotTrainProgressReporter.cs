@@ -2,18 +2,28 @@
 
 namespace SIL.Machine.Translation.Thot
 {
-	public class ThotTrainProgressReporter
+	public class ThotTrainProgressReporter : PhasedProgressReporter
 	{
-		private readonly int _stepCount;
-		private readonly IProgress<ProgressStatus> _progress;
-		private readonly Action _checkCanceled;
-		private int _currentStep = -1;
-		private string _currentStepMessage;
-
-		public ThotTrainProgressReporter(int stepCount, IProgress<ProgressStatus> progress, Action checkCanceled)
+		private readonly static Phase[] TrainPhases =
 		{
-			_stepCount = stepCount;
-			_progress = progress;
+			new Phase("Training language model", 0.01),
+			new Phase("Training direct alignment model", 0.2),
+			new Phase("Generating best direct alignments"),
+			new Phase("Training inverse alignment model", 0.2),
+			new Phase("Generating best inverse alignments"),
+			new Phase("Merging alignments"),
+			new Phase("Generating phrase table"),
+			new Phase("Filtering phrase table"),
+			new Phase("Tuning language model"),
+			new Phase("Tuning translation model", 0.4),
+			new Phase("Finalizing", 0.05)
+		};
+
+		private readonly Action _checkCanceled;
+
+		public ThotTrainProgressReporter(IProgress<ProgressStatus> progress, Action checkCanceled)
+			: base(progress, TrainPhases)
+		{
 			_checkCanceled = checkCanceled;
 		}
 
@@ -22,22 +32,18 @@ namespace SIL.Machine.Translation.Thot
 			_checkCanceled?.Invoke();
 		}
 
-		public void Step(string message = null, int step = -1)
+		public override PhaseProgress StartNextPhase()
 		{
 			CheckCanceled();
 
-			if (_progress == null)
-				return;
+			return base.StartNextPhase();
+		}
 
-			if (step < 0)
-				_currentStep++;
-			else
-				_currentStep = step;
+		protected override void Report(ProgressStatus value)
+		{
+			CheckCanceled();
 
-			if (message != null)
-				_currentStepMessage = message;
-
-			_progress.Report(new ProgressStatus(_currentStep, _stepCount, _currentStepMessage));
+			base.Report(value);
 		}
 	}
 }

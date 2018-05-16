@@ -16,8 +16,6 @@ namespace SIL.Machine.Translation.Thot
 {
 	public class ThotSmtBatchTrainer : DisposableBase, ISmtBatchTrainer
 	{
-		private const int TrainingStepCount = 27;
-
 		private readonly Func<string, string> _sourcePreprocessor;
 		private readonly Func<string, string> _targetPreprocessor;
 		private readonly ParallelTextCorpus _parallelCorpus;
@@ -47,7 +45,7 @@ namespace SIL.Machine.Translation.Thot
 			_maxCorpusCount = maxCorpusCount;
 			_parallelCorpus = corpus;
 			//_modelWeightTuner = new MiraModelWeightTuner();
-			_modelWeightTuner = new SimplexModelWeightTuner { ProgressIncrementInterval = 10 };
+			_modelWeightTuner = new SimplexModelWeightTuner();
 			_tuneCorpusIndices = CreateTuneCorpus();
 
 			do
@@ -82,7 +80,7 @@ namespace SIL.Machine.Translation.Thot
 					break;
 			}
 			Stats.TrainedSegmentCount = corpusCount;
-			int tuneCorpusCount = Math.Min((int)(corpusCount * 0.1), 1000);
+			int tuneCorpusCount = Math.Min((int) (corpusCount * 0.1), 1000);
 			var r = new Random(31415);
 			return new HashSet<int>(Enumerable.Range(0, corpusCount + emptyIndices.Count)
 				.Where(i => !emptyIndices.Contains(i))
@@ -91,16 +89,15 @@ namespace SIL.Machine.Translation.Thot
 
 		public virtual void Train(IProgress<ProgressStatus> progress = null, Action checkCanceled = null)
 		{
-			var reporter = new ThotTrainProgressReporter(TrainingStepCount, progress, checkCanceled);
+			var reporter = new ThotTrainProgressReporter(progress, checkCanceled);
 
 			Directory.CreateDirectory(_trainLMDir);
 			string trainLMPrefix = Path.Combine(_trainLMDir, _lmFilePrefix);
 			Directory.CreateDirectory(_trainTMDir);
 			string trainTMPrefix = Path.Combine(_trainTMDir, _tmFilePrefix);
 
-			TrainLanguageModel(trainLMPrefix, 3, reporter);
-
-			reporter.CheckCanceled();
+			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+				TrainLanguageModel(trainLMPrefix, 3);
 
 			TrainTranslationModel(trainTMPrefix, reporter);
 
@@ -119,17 +116,14 @@ namespace SIL.Machine.Translation.Thot
 				tuneTargetCorpus.Add(segment.TargetSegment.Preprocess(_targetPreprocessor));
 			}
 
-			TuneLanguageModel(trainLMPrefix, tuneTargetCorpus, 3, reporter);
+			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+				TuneLanguageModel(trainLMPrefix, tuneTargetCorpus, 3);
 
-			reporter.CheckCanceled();
+			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+				TuneTranslationModel(tuneTMPrefix, trainLMPrefix, tuneSourceCorpus, tuneTargetCorpus, phaseProgress);
 
-			TuneTranslationModel(tuneTMPrefix, trainLMPrefix, tuneSourceCorpus, tuneTargetCorpus, reporter);
-
-			reporter.CheckCanceled();
-
-			TrainTuneCorpus(trainTMPrefix, trainLMPrefix, tuneSourceCorpus, tuneTargetCorpus, reporter);
-
-			reporter.Step("Completed");
+			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+				TrainTuneCorpus(trainTMPrefix, trainLMPrefix, tuneSourceCorpus, tuneTargetCorpus, phaseProgress);
 		}
 
 		public virtual void Save()
@@ -192,9 +186,8 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private void TrainLanguageModel(string lmPrefix, int ngramSize, ThotTrainProgressReporter reporter)
+		private void TrainLanguageModel(string lmPrefix, int ngramSize)
 		{
-			reporter.Step("Training target language model");
 			WriteNgramCountsFile(lmPrefix, ngramSize);
 			WriteLanguageModelWeightsFile(lmPrefix, ngramSize, Enumerable.Repeat(0.5, ngramSize * 3));
 			WriteWordPredictionFile(lmPrefix);
@@ -208,7 +201,7 @@ namespace SIL.Machine.Translation.Thot
 			foreach (ParallelTextSegment segment in GetTrainingSegments(_parallelCorpus))
 			{
 				var words = new List<string> { "<s>" };
-				foreach (string word in segment.TargetSegment.Select(w => _targetPreprocessor(w)))
+				foreach (string word in segment.TargetSegment.Preprocess(_targetPreprocessor))
 				{
 					if (vocab.Contains(word))
 					{
@@ -256,11 +249,10 @@ namespace SIL.Machine.Translation.Thot
 			var rand = new Random(31415);
 			using (var writer = new StreamWriter(lmPrefix + ".wp"))
 			{
-				foreach (TextSegment segment in _parallelCorpus.TargetSegments
-					.Where((s, i) => !_tuneCorpusIndices.Contains(i) && !s.IsEmpty)
-					.Take(100000).OrderBy(i => rand.Next()))
+				foreach (ParallelTextSegment segment in GetTrainingSegments(_parallelCorpus).Take(100000)
+					.OrderBy(i => rand.Next()))
 				{
-					writer.Write("{0}\n", string.Join(" ", segment.Segment.Select(w => _targetPreprocessor(w))));
+					writer.Write("{0}\n", string.Join(" ", segment.TargetSegment.Preprocess(_targetPreprocessor)));
 				}
 			}
 		}
@@ -268,24 +260,21 @@ namespace SIL.Machine.Translation.Thot
 		private void TrainTranslationModel(string tmPrefix, ThotTrainProgressReporter reporter)
 		{
 			string invswmPrefix = tmPrefix + "_invswm";
-			GenerateSingleWordAlignmentModel(invswmPrefix, _sourcePreprocessor, _targetPreprocessor, _parallelCorpus,
-				"direct", reporter);
+			GenerateWordAlignmentModel(invswmPrefix, _sourcePreprocessor, _targetPreprocessor, _parallelCorpus,
+				reporter);
 
 			string swmPrefix = tmPrefix + "_swm";
-			GenerateSingleWordAlignmentModel(swmPrefix, _targetPreprocessor, _sourcePreprocessor,
-				_parallelCorpus.Invert(), "inverse", reporter);
+			GenerateWordAlignmentModel(swmPrefix, _targetPreprocessor, _sourcePreprocessor, _parallelCorpus.Invert(),
+				reporter);
 
-			reporter.Step("Merging alignments");
+			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+				Thot.giza_symmetr1(swmPrefix + ".bestal", invswmPrefix + ".bestal", tmPrefix + ".A3.final", true);
 
-			Thot.giza_symmetr1(swmPrefix + ".bestal", invswmPrefix + ".bestal", tmPrefix + ".A3.final", true);
+			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+				Thot.phraseModel_generate(tmPrefix + ".A3.final", 10, tmPrefix + ".ttable");
 
-			reporter.Step("Generating phrase table");
-
-			Thot.phraseModel_generate(tmPrefix + ".A3.final", 10, tmPrefix + ".ttable");
-
-			reporter.Step("Filtering phrase table");
-
-			FilterPhraseTableNBest(tmPrefix + ".ttable", 20);
+			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+				FilterPhraseTableNBest(tmPrefix + ".ttable", 20);
 
 			File.WriteAllText(tmPrefix + ".lambda", "0.7 0.7");
 			File.WriteAllText(tmPrefix + ".srcsegmlentable", "Uniform");
@@ -293,18 +282,21 @@ namespace SIL.Machine.Translation.Thot
 			File.WriteAllText(tmPrefix + ".trgsegmlentable", "Geometric");
 		}
 
-		private void GenerateSingleWordAlignmentModel(string swmPrefix, Func<string, string> sourcePreprocessor,
-			Func<string, string> targetPreprocessor, ParallelTextCorpus corpus, string name,
-			ThotTrainProgressReporter reporter)
+		private void GenerateWordAlignmentModel(string swmPrefix, Func<string, string> sourcePreprocessor,
+			Func<string, string> targetPreprocessor, ParallelTextCorpus corpus, ThotTrainProgressReporter reporter)
 		{
-			TrainWordAlignmentModel(swmPrefix, sourcePreprocessor, targetPreprocessor, corpus, name, reporter);
+			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+				TrainWordAlignmentModel(swmPrefix, sourcePreprocessor, targetPreprocessor, corpus, phaseProgress);
 
 			reporter.CheckCanceled();
 
 			PruneLexTable(swmPrefix + ".hmm_lexnd", 0.00001);
 
-			GenerateBestAlignments(swmPrefix, swmPrefix + ".bestal", sourcePreprocessor, targetPreprocessor, corpus,
-				name, reporter);
+			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+			{
+				GenerateBestAlignments(swmPrefix, swmPrefix + ".bestal", sourcePreprocessor, targetPreprocessor, corpus,
+					phaseProgress);
+			}
 		}
 
 		private static void PruneLexTable(string fileName, double threshold)
@@ -384,39 +376,33 @@ namespace SIL.Machine.Translation.Thot
 		}
 
 		private void TrainWordAlignmentModel(string swmPrefix, Func<string, string> sourcePreprocessor,
-			Func<string, string> targetPreprocessor, ParallelTextCorpus corpus, string name,
-			ThotTrainProgressReporter reporter)
+			Func<string, string> targetPreprocessor, ParallelTextCorpus corpus, IProgress<ProgressStatus> progress)
 		{
 			using (var model = new ThotWordAlignmentModel(swmPrefix, true))
 			{
 				foreach (ParallelTextSegment segment in GetTrainingSegments(corpus))
 					model.AddSegmentPair(segment, sourcePreprocessor, targetPreprocessor);
-				for (int i = 0; i < 5; i++)
-				{
-					reporter.Step($"Training {name} alignment model");
-
-					model.TrainingIteration();
-				}
+				model.Train(progress);
 				model.Save();
 			}
 		}
 
 		private void GenerateBestAlignments(string swmPrefix, string fileName, Func<string, string> sourcePreprocessor,
-			Func<string, string> targetPreprocessor, ParallelTextCorpus corpus, string name,
-			ThotTrainProgressReporter reporter)
+			Func<string, string> targetPreprocessor, ParallelTextCorpus corpus, IProgress<ProgressStatus> progress)
 		{
-			reporter.Step($"Generating best {name} alignments");
-
 			using (var model = new ThotWordAlignmentModel(swmPrefix))
 			using (var writer = new StreamWriter(fileName))
 			{
+				int i = 0;
 				foreach (ParallelTextSegment segment in GetTrainingSegments(corpus))
 				{
+					progress.Report(new ProgressStatus(i, Stats.TrainedSegmentCount));
+
 					writer.Write($"# {segment.Text.Id} {segment.SegmentRef}\n");
 					writer.Write(model.GetGizaFormatString(segment, sourcePreprocessor, targetPreprocessor));
-
-					reporter.CheckCanceled();
+					i++;
 				}
+				progress.Report(new ProgressStatus(1.0));
 			}
 		}
 
@@ -468,11 +454,8 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private void TuneLanguageModel(string lmPrefix, IList<IReadOnlyList<string>> tuneTargetCorpus,
-			int ngramSize, ThotTrainProgressReporter reporter)
+		private void TuneLanguageModel(string lmPrefix, IList<IReadOnlyList<string>> tuneTargetCorpus, int ngramSize)
 		{
-			reporter.Step("Tuning target language model");
-
 			if (tuneTargetCorpus.Count == 0)
 				return;
 
@@ -506,10 +489,8 @@ namespace SIL.Machine.Translation.Thot
 
 		private void TuneTranslationModel(string tuneTMPrefix, string tuneLMPrefix,
 			IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
-			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, ThotTrainProgressReporter reporter)
+			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, IProgress<ProgressStatus> progress)
 		{
-			reporter.Step("Tuning translation model");
-
 			if (tuneSourceCorpus.Count == 0)
 				return;
 
@@ -525,7 +506,7 @@ namespace SIL.Machine.Translation.Thot
 			initialParameters.Freeze();
 
 			ThotSmtParameters tunedParameters = _modelWeightTuner.Tune(initialParameters, tuneSourceCorpus,
-				tuneTargetCorpus, reporter, Stats);
+				tuneTargetCorpus, Stats, progress);
 			Parameters = tunedParameters.Clone();
 			Parameters.TranslationModelFileNamePrefix = oldParameters.TranslationModelFileNamePrefix;
 			Parameters.LanguageModelFileNamePrefix = oldParameters.LanguageModelFileNamePrefix;
@@ -573,10 +554,8 @@ namespace SIL.Machine.Translation.Thot
 
 		private void TrainTuneCorpus(string trainTMPrefix, string trainLMPrefix,
 			IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
-			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, ThotTrainProgressReporter reporter)
+			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, IProgress<ProgressStatus> progress)
 		{
-			reporter.Step("Finalizing", TrainingStepCount - 1);
-
 			if (tuneSourceCorpus.Count == 0)
 				return;
 
@@ -587,7 +566,11 @@ namespace SIL.Machine.Translation.Thot
 			using (ISmtEngine engine = smtModel.CreateEngine())
 			{
 				for (int i = 0; i < tuneSourceCorpus.Count; i++)
+				{
+					progress.Report(new ProgressStatus(i, tuneSourceCorpus.Count));
 					engine.TrainSegment(tuneSourceCorpus[i], tuneTargetCorpus[i]);
+				}
+				progress.Report(new ProgressStatus(1.0));
 			}
 		}
 

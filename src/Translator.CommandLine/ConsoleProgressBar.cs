@@ -8,15 +8,7 @@ namespace SIL.Machine.Translation
 	/// <summary>
 	/// An ASCII progress bar
 	/// </summary>
-	public class ConsoleProgressBar : ConsoleProgressBar<ProgressStatus>
-	{
-		public ConsoleProgressBar(TextWriter outWriter)
-			: base(outWriter, value => value.PercentCompleted)
-		{
-		}
-	}
-
-	public class ConsoleProgressBar<T> : IDisposable, IProgress<T>
+	public class ConsoleProgressBar : IDisposable, IProgress<ProgressStatus>
 	{
 		private const int BlockCount = 10;
 		private static readonly TimeSpan AnimationInterval = TimeSpan.FromSeconds(1.0 / 8);
@@ -24,27 +16,26 @@ namespace SIL.Machine.Translation
 
 		private readonly Timer _timer;
 		private readonly TextWriter _outWriter;
-		private readonly Func<T, double> _percentCompletedSelector;
 
 		private double _currentProgress;
+		private string _currentMessage = string.Empty;
 		private string _currentText = string.Empty;
 		private bool _disposed;
 		private int _animationIndex;
 
-		public ConsoleProgressBar(TextWriter outWriter, Func<T, double> percentCompletedSelector)
+		public ConsoleProgressBar(TextWriter outWriter)
 		{
 			_outWriter = outWriter;
-			_percentCompletedSelector = percentCompletedSelector;
 			_timer = new Timer(TimerHandler, null, Timeout.Infinite, Timeout.Infinite);
 			ResetTimer();
 		}
 
-		public void Report(T value)
+		public void Report(ProgressStatus value)
 		{
-			double percentCompleted = _percentCompletedSelector(value);
 			// Make sure value is in [0..1] range
-			percentCompleted = Math.Max(0, Math.Min(1, percentCompleted));
+			double percentCompleted = Math.Max(0, Math.Min(1, value.PercentCompleted));
 			Interlocked.Exchange(ref _currentProgress, percentCompleted);
+			_currentMessage = value.Message;
 		}
 
 		private void TimerHandler(object state)
@@ -56,10 +47,9 @@ namespace SIL.Machine.Translation
 
 				int progressBlockCount = (int) (_currentProgress * BlockCount);
 				int percent = (int) Math.Round(_currentProgress * 100, MidpointRounding.AwayFromZero);
-				string text = string.Format("[{0}{1}] {2,3}% {3}",
+				string text = string.Format("[{0}{1}] {2,3}% {3} {4}",
 					new string('#', progressBlockCount), new string('-', BlockCount - progressBlockCount),
-					percent,
-					Animation[_animationIndex++ % Animation.Length]);
+					percent, Animation[_animationIndex++ % Animation.Length], _currentMessage);
 				UpdateText(text);
 
 				ResetTimer();

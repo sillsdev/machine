@@ -100,13 +100,12 @@ namespace SIL.Machine.Translation.Thot
 		{
 			CheckDisposed();
 
-			progress?.Report(new ProgressStatus(0, TrainingIterationCount));
-
 			for (int i = 0; i < TrainingIterationCount; i++)
 			{
+				progress?.Report(new ProgressStatus(i, TrainingIterationCount));
 				TrainingIteration();
-				progress?.Report(new ProgressStatus(i + 1, TrainingIterationCount));
 			}
+			progress?.Report(new ProgressStatus(1.0));
 		}
 
 		public void TrainingIteration()

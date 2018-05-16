@@ -1,18 +1,14 @@
-﻿using System;
-
-namespace SIL.Machine.Translation
+﻿namespace SIL.Machine.Translation
 {
-	public class Phase : IProgress<ProgressStatus>
+	public class Phase
 	{
-		public string Message { get; set; }
-		internal int Index { get; set; }
-		internal PhasedProgress Progress { get; set; }
-
-		void IProgress<ProgressStatus>.Report(ProgressStatus value)
+		public Phase(string message = null, double percentage = 0)
 		{
-			double current = Index + value.PercentCompleted;
-			string message = value.Message ?? Message;
-			Progress.Report(new ProgressStatus(current / Progress.Count, message));
+			Message = message;
+			Percentage = percentage;
 		}
+
+		public string Message { get; }
+		public double Percentage { get; }
 	}
 }

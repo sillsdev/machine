@@ -80,13 +80,14 @@ namespace SIL.Machine.Translation
 		{
 			CheckDisposed();
 
-			var phasedProgress = new PhasedProgress(progress)
-			{
-				"Training direct alignment model",
-				"Training inverse alignment model"
-			};
-			_directWordAlignmentModel.Train(phasedProgress[0]);
-			_inverseWordAlignmentModel.Train(phasedProgress[1]);
+			var reporter = new PhasedProgressReporter(progress,
+				new Phase("Training direct alignment model"),
+				new Phase("Training inverse alignment model"));
+
+			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+				_directWordAlignmentModel.Train(phaseProgress);
+			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+				_inverseWordAlignmentModel.Train(phaseProgress);
 		}
 
 		public double GetTranslationProbability(string sourceWord, string targetWord)

@@ -10,20 +10,14 @@ namespace SIL.Machine.Translation.Thot
 {
 	public class SimplexModelWeightTuner : IParameterTuner
 	{
-		public SimplexModelWeightTuner()
-		{
-			ConvergenceTolerance = 0.001;
-			MaxFunctionEvaluations = 100;
-		}
-
-		public double ConvergenceTolerance { get; set; }
-		public int MaxFunctionEvaluations { get; set; }
-		public int ProgressIncrementInterval { get; set; }
+		public double ConvergenceTolerance { get; set; } = 0.001;
+		public int MaxFunctionEvaluations { get; set; } = 100;
+		public int MaxProgressFunctionEvaluations { get; set; } = 70;
 
 		public ThotSmtParameters Tune(ThotSmtParameters parameters,
 			IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
-			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, ThotTrainProgressReporter reporter,
-			SmtBatchTrainStats stats)
+			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, SmtBatchTrainStats stats,
+			IProgress<ProgressStatus> progress)
 		{
 			float sentLenWeight = parameters.ModelWeights[7];
 			int numFuncEvals = 0;
@@ -34,17 +28,11 @@ namespace SIL.Machine.Translation.Thot
 				newParameters.Freeze();
 				double quality = CalculateBleu(newParameters, tuneSourceCorpus, tuneTargetCorpus);
 				numFuncEvals++;
-				if (numFuncEvals < MaxFunctionEvaluations && ProgressIncrementInterval > 0
-					&& numFuncEvals % ProgressIncrementInterval == 0)
-				{
-					reporter.Step();
-				}
-				else
-				{
-					reporter.CheckCanceled();
-				}
+				int currentStep = Math.Min(numFuncEvals, MaxProgressFunctionEvaluations);
+				progress.Report(new ProgressStatus(currentStep, MaxProgressFunctionEvaluations));
 				return quality;
 			};
+			progress.Report(new ProgressStatus(0, MaxFunctionEvaluations));
 			var simplex = new NelderMeadSimplex(ConvergenceTolerance, MaxFunctionEvaluations, 1.0);
 			MinimizationResult result = simplex.FindMinimum(Evaluate,
 				parameters.ModelWeights.Select(w => (double) w).Take(7));
@@ -54,6 +42,9 @@ namespace SIL.Machine.Translation.Thot
 			ThotSmtParameters bestParameters = parameters.Clone();
 			bestParameters.ModelWeights = result.MinimizingPoint.Select(w => (float) w).Concat(sentLenWeight).ToArray();
 			bestParameters.Freeze();
+
+			if (result.FunctionEvaluationCount < MaxProgressFunctionEvaluations)
+				progress.Report(new ProgressStatus(1.0));
 			return bestParameters;
 		}
 

@@ -19,6 +19,9 @@ namespace SIL.Machine.WebApi.Server.Services
 
 		public void Report(ProgressStatus value)
 		{
+			if (_build.PercentCompleted == value.PercentCompleted && _build.Message == value.Message)
+				return;
+
 			_build.PercentCompleted = value.PercentCompleted;
 			_build.Message = value.Message;
 			_buildRepo.UpdateAsync(_build).WaitAndUnwrapException();
