@@ -89,7 +89,7 @@ namespace SIL.Machine.Translation.Thot
 				.OrderBy(i => r.Next()).Take(tuneCorpusCount));
 		}
 
-		public virtual void Train(IProgress<ProgressData> progress = null, Action checkCanceled = null)
+		public virtual void Train(IProgress<ProgressStatus> progress = null, Action checkCanceled = null)
 		{
 			var reporter = new ThotTrainProgressReporter(TrainingStepCount, progress, checkCanceled);
 

@@ -6,7 +6,7 @@ using SIL.Machine.WebApi.Server.Utils;
 
 namespace SIL.Machine.WebApi.Server.Services
 {
-	public class BuildProgress : IProgress<ProgressData>
+	public class BuildProgress : IProgress<ProgressStatus>
 	{
 		private readonly IBuildRepository _buildRepo;
 		private readonly Build _build;
@@ -17,11 +17,10 @@ namespace SIL.Machine.WebApi.Server.Services
 			_build = build;
 		}
 
-		public void Report(ProgressData value)
+		public void Report(ProgressStatus value)
 		{
-			_build.StepCount = value.StepCount;
-			_build.CurrentStep = value.CurrentStep;
-			_build.CurrentStepMessage = value.CurrentStepMessage;
+			_build.PercentCompleted = value.PercentCompleted;
+			_build.Message = value.Message;
 			_buildRepo.UpdateAsync(_build).WaitAndUnwrapException();
 		}
 	}

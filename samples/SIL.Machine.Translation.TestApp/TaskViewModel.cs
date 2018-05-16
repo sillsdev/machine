@@ -8,7 +8,7 @@ namespace SIL.Machine.Translation.TestApp
 {
 	public class TaskViewModel : ViewModelBase
 	{
-		private readonly Func<IProgress<ProgressData>, CancellationToken, Task> _execute;
+		private readonly Func<IProgress<ProgressStatus>, CancellationToken, Task> _execute;
 		private readonly AsyncRelayCommand _startTaskCommand;
 		private readonly RelayCommand _cancelCommand;
 		private CancellationTokenSource _cts;
@@ -17,7 +17,7 @@ namespace SIL.Machine.Translation.TestApp
 		private int _percentCompleted;
 		private string _message;
 
-		public TaskViewModel(Func<IProgress<ProgressData>, CancellationToken, Task> execute, Func<bool> canExecute)
+		public TaskViewModel(Func<IProgress<ProgressStatus>, CancellationToken, Task> execute, Func<bool> canExecute)
 		{
 			_execute = execute;
 			_startTaskCommand = new AsyncRelayCommand(ExecuteAsync, canExecute);
@@ -30,10 +30,10 @@ namespace SIL.Machine.Translation.TestApp
 			{
 				IsExecuting = true;
 				_cancelCommand.UpdateCanExecute();
-				var progress = new Progress<ProgressData>(p =>
+				var progress = new Progress<ProgressStatus>(p =>
 					{
 						PercentCompleted = (int) Math.Round(p.PercentCompleted * 100, MidpointRounding.AwayFromZero);
-						Message = p.CurrentStepMessage;
+						Message = p.Message;
 					});
 				CancellationToken token = _cts.Token;
 				Task task = null;

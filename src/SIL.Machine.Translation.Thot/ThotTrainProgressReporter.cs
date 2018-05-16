@@ -5,12 +5,12 @@ namespace SIL.Machine.Translation.Thot
 	public class ThotTrainProgressReporter
 	{
 		private readonly int _stepCount;
-		private readonly IProgress<ProgressData> _progress;
+		private readonly IProgress<ProgressStatus> _progress;
 		private readonly Action _checkCanceled;
 		private int _currentStep = -1;
 		private string _currentStepMessage;
 
-		public ThotTrainProgressReporter(int stepCount, IProgress<ProgressData> progress, Action checkCanceled)
+		public ThotTrainProgressReporter(int stepCount, IProgress<ProgressStatus> progress, Action checkCanceled)
 		{
 			_stepCount = stepCount;
 			_progress = progress;
@@ -37,7 +37,7 @@ namespace SIL.Machine.Translation.Thot
 			if (message != null)
 				_currentStepMessage = message;
 
-			_progress.Report(new ProgressData(_currentStep, _stepCount, _currentStepMessage));
+			_progress.Report(new ProgressStatus(_currentStep, _stepCount, _currentStepMessage));
 		}
 	}
 }

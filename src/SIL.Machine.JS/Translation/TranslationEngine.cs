@@ -46,7 +46,7 @@ namespace SIL.Machine.Translation
 				: new InteractiveTranslationSession(this, tokens, confidenceThreshold, t.Result)));
 		}
 
-		public void Train(Action<ProgressData> onStatusUpdate, Action<bool> onFinished)
+		public void Train(Action<ProgressStatus> onStatusUpdate, Action<bool> onFinished)
 		{
 			RestClient.TrainAsync(ProjectId, onStatusUpdate, _cts.Token)
 				.ContinueWith(t => onFinished(!t.IsFaulted && !t.IsCanceled));
@@ -57,7 +57,7 @@ namespace SIL.Machine.Translation
 			RestClient.StartTrainingAsync(ProjectId).ContinueWith(t => onFinished(!t.IsFaulted));
 		}
 
-		public void ListenForTrainingStatus(Action<ProgressData> onStatusUpdate, Action<bool> onFinished)
+		public void ListenForTrainingStatus(Action<ProgressStatus> onStatusUpdate, Action<bool> onFinished)
 		{
 			RestClient.ListenForTrainingStatusAsync(ProjectId, onStatusUpdate, _cts.Token)
 				.ContinueWith(t => onFinished(!t.IsFaulted && !t.IsCanceled));

@@ -68,15 +68,15 @@ namespace SIL.Machine.WebApi.Client
 			await CreateBuildAsync(engineDto.Id);
 		}
 
-		public async Task TrainAsync(string projectId, Action<ProgressData> progress, CancellationToken ct)
+		public async Task TrainAsync(string projectId, Action<ProgressStatus> progress, CancellationToken ct)
 		{
 			EngineDto engineDto = await GetEngineAsync(projectId);
 			BuildDto buildDto = await CreateBuildAsync(engineDto.Id);
-			progress(CreateProgressData(buildDto));
+			progress(CreateProgressStatus(buildDto));
 			await PollBuildProgressAsync(engineDto.Id, buildDto.Revision + 1, progress, ct);
 		}
 
-		public async Task ListenForTrainingStatusAsync(string projectId, Action<ProgressData> progress,
+		public async Task ListenForTrainingStatusAsync(string projectId, Action<ProgressStatus> progress,
 			CancellationToken ct)
 		{
 			EngineDto engineDto = await GetEngineAsync(projectId);
@@ -103,7 +103,7 @@ namespace SIL.Machine.WebApi.Client
 			return JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
 		}
 
-		private async Task PollBuildProgressAsync(string engineId, int minRevision, Action<ProgressData> progress,
+		private async Task PollBuildProgressAsync(string engineId, int minRevision, Action<ProgressStatus> progress,
 			CancellationToken ct)
 		{
 			while (true)
@@ -115,7 +115,7 @@ namespace SIL.Machine.WebApi.Client
 				if (response.StatusCode == 200)
 				{
 					BuildDto buildDto = JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
-					progress(CreateProgressData(buildDto));
+					progress(CreateProgressStatus(buildDto));
 					minRevision = buildDto.Revision + 1;
 				}
 				else if (response.StatusCode == 204)
@@ -133,9 +133,9 @@ namespace SIL.Machine.WebApi.Client
 			}
 		}
 
-		private static ProgressData CreateProgressData(BuildDto buildDto)
+		private static ProgressStatus CreateProgressStatus(BuildDto buildDto)
 		{
-			return new ProgressData(buildDto.CurrentStep, buildDto.StepCount, buildDto.CurrentStepMessage);
+			return new ProgressStatus(buildDto.PercentCompleted, buildDto.Message);
 		}
 
 		private static HybridInteractiveTranslationResult CreateModel(InteractiveTranslationResultDto resultDto,

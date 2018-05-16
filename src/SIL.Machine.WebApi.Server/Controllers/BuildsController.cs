@@ -100,9 +100,8 @@ namespace SIL.Machine.WebApi.Server.Controllers
 				Href = Url.GetEntityUrl(RouteNames.Builds, build.Id),
 				Revision = build.Revision,
 				Engine = Url.CreateLinkDto(RouteNames.Engines, build.EngineId),
-				StepCount = build.StepCount,
-				CurrentStep = build.CurrentStep,
-				CurrentStepMessage = build.CurrentStepMessage
+				PercentCompleted = build.PercentCompleted,
+				Message = build.Message
 			};
 		}
 	}

@@ -96,16 +96,16 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public void Train(IProgress<ProgressData> progress = null)
+		public void Train(IProgress<ProgressStatus> progress = null)
 		{
 			CheckDisposed();
 
-			progress?.Report(new ProgressData(0, TrainingIterationCount));
+			progress?.Report(new ProgressStatus(0, TrainingIterationCount));
 
 			for (int i = 0; i < TrainingIterationCount; i++)
 			{
 				TrainingIteration();
-				progress?.Report(new ProgressData(i + 1, TrainingIterationCount));
+				progress?.Report(new ProgressStatus(i + 1, TrainingIterationCount));
 			}
 		}
 

@@ -8,7 +8,7 @@ namespace SIL.Machine.Translation
 	/// <summary>
 	/// An ASCII progress bar
 	/// </summary>
-	public class ConsoleProgressBar : ConsoleProgressBar<ProgressData>
+	public class ConsoleProgressBar : ConsoleProgressBar<ProgressStatus>
 	{
 		public ConsoleProgressBar(TextWriter outWriter)
 			: base(outWriter, value => value.PercentCompleted)

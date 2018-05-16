@@ -46,7 +46,7 @@ namespace SIL.Machine.Translation
 			using (var alignmentModel = new ThotSymmetrizedWordAlignmentModel(tmPrefix + "_invswm", tmPrefix + "_swm"))
 			{
 				int segmentCount = 0;
-				progress?.Report(new ProgressData(segmentCount, parallelCorpusCount));
+				progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
 				foreach (ParallelText text in ParallelCorpus.Texts)
 				{
 					string fileName = Path.Combine(_outputOption.Value(), text.Id + ".txt");
@@ -63,7 +63,7 @@ namespace SIL.Machine.Translation
 								writer.WriteLine(alignmentModel.GetAlignmentString(segment, _probOption.HasValue(),
 									Preprocessors.Lowercase, Preprocessors.Lowercase));
 								segmentCount++;
-								progress?.Report(new ProgressData(segmentCount, parallelCorpusCount));
+								progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
 								if (segmentCount == MaxParallelCorpusCount)
 									break;
 							}

@@ -76,7 +76,7 @@ namespace SIL.Machine.Translation
 			_inverseWordAlignmentModel.AddSegmentPair(targetSegment, sourceSegment, invertedHintMatrix);
 		}
 
-		public void Train(IProgress<ProgressData> progress = null)
+		public void Train(IProgress<ProgressStatus> progress = null)
 		{
 			CheckDisposed();
 

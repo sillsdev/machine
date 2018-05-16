@@ -220,21 +220,14 @@ namespace SIL.Machine.Translation
 		private static void Train_NoErrors(Assert assert)
 		{
 			var httpClient = new MockHttpClient();
-			var engineDto = new EngineDto
-			{
-				Id = "engine1"
-			};
+			var engineDto = new EngineDto { Id = "engine1" };
 			httpClient.Requests.Add(new MockRequest
 				{
 					Method = HttpRequestMethod.Get,
 					Url = "translation/engines/project:project1",
 					ResponseText = JsonConvert.SerializeObject(engineDto, RestClientBase.SerializerSettings)
 				});
-			var buildDto = new BuildDto
-			{
-				Id = "build1",
-				StepCount = 10
-			};
+			var buildDto = new BuildDto { Id = "build1" };
 			httpClient.Requests.Add(new MockRequest
 				{
 					Method = HttpRequestMethod.Post,
@@ -243,7 +236,7 @@ namespace SIL.Machine.Translation
 				});
 			for (int i = 0; i < 10; i++)
 			{
-				buildDto.CurrentStep++;
+				buildDto.PercentCompleted = (double) (i + 1) / 10;
 				buildDto.Revision++;
 				httpClient.Requests.Add(new MockRequest
 					{
@@ -260,7 +253,7 @@ namespace SIL.Machine.Translation
 				progress =>
 				{
 					expectedStep++;
-					assert.Equal(progress.CurrentStep, expectedStep);
+					assert.Equal(progress.PercentCompleted, (double) expectedStep / 10);
 				},
 				success =>
 				{
@@ -303,21 +296,14 @@ namespace SIL.Machine.Translation
 		private static void ListenForTrainingStatus_NoErrors(Assert assert)
 		{
 			var httpClient = new MockHttpClient();
-			var engineDto = new EngineDto
-			{
-				Id = "engine1"
-			};
+			var engineDto = new EngineDto { Id = "engine1" };
 			httpClient.Requests.Add(new MockRequest
 				{
 					Method = HttpRequestMethod.Get,
 					Url = "translation/engines/project:project1",
 					ResponseText = JsonConvert.SerializeObject(engineDto, RestClientBase.SerializerSettings)
 				});
-			var buildDto = new BuildDto
-			{
-				Id = "build1",
-				StepCount = 10
-			};
+			var buildDto = new BuildDto { Id = "build1" };
 			httpClient.Requests.Add(new MockRequest
 				{
 					Method = HttpRequestMethod.Get,
@@ -327,7 +313,7 @@ namespace SIL.Machine.Translation
 				});
 			for (int i = 0; i < 10; i++)
 			{
-				buildDto.CurrentStep++;
+				buildDto.PercentCompleted = (double) (i + 1) / 10;
 				buildDto.Revision++;
 				httpClient.Requests.Add(new MockRequest
 					{
@@ -344,7 +330,7 @@ namespace SIL.Machine.Translation
 				progress =>
 				{
 					expectedStep++;
-					assert.Equal(progress.CurrentStep, expectedStep);
+					assert.Equal(progress.PercentCompleted, (double) expectedStep / 10);
 				},
 				success =>
 				{
@@ -357,28 +343,21 @@ namespace SIL.Machine.Translation
 		private static void ListenForTrainingStatus_Close(Assert assert)
 		{
 			var httpClient = new MockHttpClient();
-			var engineDto = new EngineDto
-			{
-				Id = "engine1"
-			};
+			var engineDto = new EngineDto { Id = "engine1" };
 			httpClient.Requests.Add(new MockRequest
-			{
-				Method = HttpRequestMethod.Get,
-				Url = "translation/engines/project:project1",
-				ResponseText = JsonConvert.SerializeObject(engineDto, RestClientBase.SerializerSettings)
-			});
-			var buildDto = new BuildDto
-			{
-				Id = "build1",
-				StepCount = 10
-			};
+				{
+					Method = HttpRequestMethod.Get,
+					Url = "translation/engines/project:project1",
+					ResponseText = JsonConvert.SerializeObject(engineDto, RestClientBase.SerializerSettings)
+				});
+			var buildDto = new BuildDto { Id = "build1" };
 			httpClient.Requests.Add(new MockRequest
-			{
-				Method = HttpRequestMethod.Get,
-				Url = "translation/builds/engine:engine1?minRevision=0",
-				Action = (body, ct) => Delay(1000, ct),
-				ResponseText = JsonConvert.SerializeObject(buildDto, RestClientBase.SerializerSettings)
-			});
+				{
+					Method = HttpRequestMethod.Get,
+					Url = "translation/builds/engine:engine1?minRevision=0",
+					Action = (body, ct) => Delay(1000, ct),
+					ResponseText = JsonConvert.SerializeObject(buildDto, RestClientBase.SerializerSettings)
+				});
 			var engine = new TranslationEngine("http://localhost/", "project1", httpClient);
 			Action done = assert.Async();
 			engine.ListenForTrainingStatus(

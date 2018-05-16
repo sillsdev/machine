@@ -10,7 +10,7 @@ namespace SIL.Machine.Translation
 
 		void AddSegmentPair(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
 					WordAlignmentMatrix hintMatrix = null);
-		void Train(IProgress<ProgressData> progress = null);
+		void Train(IProgress<ProgressStatus> progress = null);
 		void Save();
 
 		double GetTranslationProbability(string sourceWord, string targetWord);

@@ -14,14 +14,14 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			Task task = Task.Run(async () =>
 			{
 				await Task.Delay(10);
-				var build = new Build {EngineId = "engine1", CurrentStep = 1};
+				var build = new Build { EngineId = "engine1", PercentCompleted = 0.1 };
 				await buildRepo.InsertAsync(build);
 			});
 			EntityChange<Build> change = await buildRepo.GetNewerRevisionByEngineIdAsync("engine1", 0);
 			await task;
 			Assert.That(change.Type, Is.EqualTo(EntityChangeType.Insert));
 			Assert.That(change.Entity.Revision, Is.EqualTo(0));
-			Assert.That(change.Entity.CurrentStep, Is.EqualTo(1));
+			Assert.That(change.Entity.PercentCompleted, Is.EqualTo(0.1));
 		}
 
 		[Test]
@@ -33,14 +33,14 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			Task task = Task.Run(async () =>
 				{
 					await Task.Delay(10);
-					build.CurrentStep = 1;
+					build.PercentCompleted = 0.1;
 					await buildRepo.UpdateAsync(build);
 				});
 			EntityChange<Build> change = await buildRepo.GetNewerRevisionAsync(build.Id, 1);
 			await task;
 			Assert.That(change.Type, Is.EqualTo(EntityChangeType.Update));
 			Assert.That(change.Entity.Revision, Is.EqualTo(1));
-			Assert.That(change.Entity.CurrentStep, Is.EqualTo(1));
+			Assert.That(change.Entity.PercentCompleted, Is.EqualTo(0.1));
 		}
 
 		[Test]

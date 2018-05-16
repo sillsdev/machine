@@ -33,7 +33,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Translation\ITranslationSuggester.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\Phrase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\PhraseTranslationSuggester.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Translation\ProgressData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\ProgressStatus.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationResultBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\EcmScoreInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\EditDistanceBase.cs" />

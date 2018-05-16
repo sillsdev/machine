@@ -6,7 +6,7 @@ namespace SIL.Machine.Translation
 	{
 		SmtBatchTrainStats Stats { get; }
 
-		void Train(IProgress<ProgressData> progress = null, Action checkCanceled = null);
+		void Train(IProgress<ProgressStatus> progress = null, Action checkCanceled = null);
 		void Save();
 	}
 }

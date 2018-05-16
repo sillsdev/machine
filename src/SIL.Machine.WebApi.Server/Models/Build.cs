@@ -11,17 +11,15 @@
 			Id = build.Id;
 			Revision = build.Revision;
 			EngineId = build.EngineId;
-			StepCount = build.StepCount;
-			CurrentStep = build.CurrentStep;
-			CurrentStepMessage = build.CurrentStepMessage;
+			PercentCompleted = build.PercentCompleted;
+			Message = build.Message;
 		}
 
 		public string Id { get; set; }
 		public int Revision { get; set; }
 		public string EngineId { get; set; }
-		public int StepCount { get; set; }
-		public int CurrentStep { get; set; }
-		public string CurrentStepMessage { get; set; }
+		public double PercentCompleted { get; set; }
+		public string Message { get; set; }
 
 		public Build Clone()
 		{

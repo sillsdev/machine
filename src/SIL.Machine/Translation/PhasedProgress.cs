@@ -3,11 +3,11 @@ using System.Collections.ObjectModel;
 
 namespace SIL.Machine.Translation
 {
-	public class PhasedProgress : Collection<Phase>, IProgress<ProgressData>
+	public class PhasedProgress : Collection<Phase>, IProgress<ProgressStatus>
 	{
-		private readonly IProgress<ProgressData> _progress;
+		private readonly IProgress<ProgressStatus> _progress;
 
-		public PhasedProgress(IProgress<ProgressData> progress)
+		public PhasedProgress(IProgress<ProgressStatus> progress)
 		{
 			_progress = progress;
 		}
@@ -49,7 +49,7 @@ namespace SIL.Machine.Translation
 			base.ClearItems();
 		}
 
-		public void Report(ProgressData value)
+		public void Report(ProgressStatus value)
 		{
 			_progress?.Report(value);
 		}

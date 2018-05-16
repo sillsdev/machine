@@ -257,7 +257,7 @@ namespace SIL.Machine.Translation.TestApp
 			RebuildTask.UpdateCanExecute();
 		}
 
-		private async Task RebuildAsync(IProgress<ProgressData> progress, CancellationToken token)
+		private async Task RebuildAsync(IProgress<ProgressStatus> progress, CancellationToken token)
 		{
 			if (IsChanged)
 				SaveProject();

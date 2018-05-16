@@ -2,19 +2,17 @@
 
 namespace SIL.Machine.Translation
 {
-	public class Phase : IProgress<ProgressData>
+	public class Phase : IProgress<ProgressStatus>
 	{
 		public string Message { get; set; }
 		internal int Index { get; set; }
 		internal PhasedProgress Progress { get; set; }
 
-		void IProgress<ProgressData>.Report(ProgressData value)
+		void IProgress<ProgressStatus>.Report(ProgressStatus value)
 		{
-			int currentStep = (Index * 100)
-				+ (int) Math.Round(value.PercentCompleted * 100, MidpointRounding.AwayFromZero);
-			int stepCount = Progress.Count * 100;
-			string currentStepMessage = value.CurrentStepMessage ?? Message;
-			Progress.Report(new ProgressData(currentStep, stepCount, currentStepMessage));
+			double current = Index + value.PercentCompleted;
+			string message = value.Message ?? Message;
+			Progress.Report(new ProgressStatus(current / Progress.Count, message));
 		}
 	}
 }
