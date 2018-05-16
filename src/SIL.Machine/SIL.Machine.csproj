@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="QuickGraph.All" Version="3.6.61119.8" />
+    <PackageReference Include="Sandwych.QuickGraph.Core" Version="1.0.0" />
     <PackageReference Include="SIL.Scripture" Version="4.2.0-894" />
   </ItemGroup>
 
