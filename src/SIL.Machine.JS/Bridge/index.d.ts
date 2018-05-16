@@ -1,8 +1,6 @@
-﻿export interface SmtTrainProgress {
-    readonly currentStep: number;
-    readonly currentStepMessage: string;
-    readonly stepCount: number;
+﻿export interface ProgressStatus {
     readonly percentCompleted: number;
+    readonly message: string;
 }
 
 export interface InteractiveTranslationSession {
@@ -25,10 +23,10 @@ export class TranslationEngine {
     constructor(baseUrl: string, projectId: string);
     translateInteractively(sourceSegment: string, confidenceThreshold: number,
         onFinished: { (arg: InteractiveTranslationSession): void }): void;
-    train(onStatusUpdate: { (arg: SmtTrainProgress): void },
+    train(onStatusUpdate: { (arg: ProgressStatus): void },
         onFinished: { (arg: boolean): void }): void;
     startTraining(onFinished: { (arg: boolean): void }): void;
-    listenForTrainingStatus(onStatusUpdate: { (arg: SmtTrainProgress): void },
+    listenForTrainingStatus(onStatusUpdate: { (arg: ProgressStatus): void },
         onFinished: { (arg: boolean): void }): void;
     getConfidence(onFinished: { (success: boolean, confidence: number): void }): void;
     close(): void;
