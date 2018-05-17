@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SIL.ObjectModel;
 
 namespace SIL.Machine.Statistics
 {
 	public class SimpleGoodTuringProbabilityDistribution<TSample> : IProbabilityDistribution<TSample>
 	{
-		private readonly FrequencyDistribution<TSample> _freqDist;
 		private readonly double _slope;
 		private readonly double _intercept;
 		private readonly Dictionary<int, double> _probs;
@@ -19,7 +17,7 @@ namespace SIL.Machine.Statistics
 			if (binCount <= freqDist.ObservedSamples.Count)
 				throw new ArgumentOutOfRangeException("binCount");
 
-			_freqDist = freqDist;
+			FrequencyDistribution = freqDist;
 			_binCount = binCount;
 			_probs = new Dictionary<int, double>();
 
@@ -29,9 +27,9 @@ namespace SIL.Machine.Statistics
 			var r = new List<int>();
 			var nr = new List<int>();
 			int b = 0, i = 0;
-			while (b != _freqDist.ObservedSamples.Count)
+			while (b != FrequencyDistribution.ObservedSamples.Count)
 			{
-				int nri = _freqDist.ObservedSamples.Count(s => _freqDist[s] == i);
+				int nri = FrequencyDistribution.ObservedSamples.Count(s => FrequencyDistribution[s] == i);
 				if (nri > 0)
 				{
 					b += nri;
@@ -90,7 +88,7 @@ namespace SIL.Machine.Statistics
 			for (int j = 0; j < r.Count; j++)
 				samplesCountPrime += nr[j] * rstar[j];
 
-			_probZero = (double) _freqDist.ObservedSamples.Count(s => _freqDist[s] == 1) / _freqDist.SampleOutcomeCount;
+			_probZero = (double) FrequencyDistribution.ObservedSamples.Count(s => FrequencyDistribution[s] == 1) / FrequencyDistribution.SampleOutcomeCount;
 			for (int j = 0; j < r.Count; j++)
 				_probs[r[j]] = (1.0 - _probZero) * rstar[j] / samplesCountPrime;
 		}
@@ -105,20 +103,19 @@ namespace SIL.Machine.Statistics
 			return Math.Pow(r + 1, 2) * (nr1 / Math.Pow(nr, 2)) * (1.0 + (double) nr1 / nr);
 		}
 
-		public ReadOnlyCollection<TSample> Samples
-		{
-			get { return _freqDist.ObservedSamples; }
-		}
+		public FrequencyDistribution<TSample> FrequencyDistribution { get; }
+
+		public IReadOnlyCollection<TSample> Samples => FrequencyDistribution.ObservedSamples;
 
 		public double this[TSample sample]
 		{
 			get
 			{
-				int count = _freqDist[sample];
+				int count = FrequencyDistribution[sample];
 				double prob;
 				if (_probs.TryGetValue(count, out prob))
 					return prob;
-				return _probZero / (_binCount - _freqDist.ObservedSamples.Count);
+				return _probZero / (_binCount - FrequencyDistribution.ObservedSamples.Count);
 			}
 		}
 
@@ -126,15 +123,10 @@ namespace SIL.Machine.Statistics
 		{
 			get
 			{
-				if (_freqDist.ObservedSamples.Count == 0)
+				if (FrequencyDistribution.ObservedSamples.Count == 0)
 					return 0;
-				return GetSmoothedSamplesCount(1) / _freqDist.SampleOutcomeCount;
+				return GetSmoothedSamplesCount(1) / FrequencyDistribution.SampleOutcomeCount;
 			}
-		}
-
-		public FrequencyDistribution<TSample> FrequencyDistribution
-		{
-			get { return _freqDist; }
 		}
 	}
 }

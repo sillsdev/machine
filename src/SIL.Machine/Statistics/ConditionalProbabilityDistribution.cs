@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SIL.Extensions;
-using SIL.ObjectModel;
 
 namespace SIL.Machine.Statistics
 {
-	public class ConditionalProbabilityDistribution<TCondition, TSample> : IConditionalProbabilityDistribution<TCondition, TSample>
+	public class ConditionalProbabilityDistribution<TCondition, TSample>
+		: IConditionalProbabilityDistribution<TCondition, TSample>
 	{
 		private readonly Dictionary<TCondition, IProbabilityDistribution<TSample>> _probDists; 
 
@@ -16,9 +15,9 @@ namespace SIL.Machine.Statistics
 			_probDists = cfd.Conditions.ToDictionary(cond => cond, cond => getProbDist(cond, cfd[cond]));
 		}
 
-		public ReadOnlyCollection<TCondition> Conditions
+		public IReadOnlyCollection<TCondition> Conditions
 		{
-			get { return _probDists.Keys.ToReadOnlyCollection(); }
+			get { return _probDists.Keys; }
 		}
 
 		public IProbabilityDistribution<TSample> this[TCondition condition]

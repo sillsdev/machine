@@ -1,10 +1,10 @@
-using SIL.ObjectModel;
+using System.Collections.Generic;
 
 namespace SIL.Machine.Statistics
 {
 	public interface IProbabilityDistribution<TSample>
 	{
-		ReadOnlyCollection<TSample> Samples { get; }
+		IReadOnlyCollection<TSample> Samples { get; }
 		double this[TSample sample] { get; }
 	}
 }

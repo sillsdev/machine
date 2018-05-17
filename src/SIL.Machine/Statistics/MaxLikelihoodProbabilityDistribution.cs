@@ -1,34 +1,29 @@
-using SIL.ObjectModel;
+using System.Collections.Generic;
 
 namespace SIL.Machine.Statistics
 {
 	public class MaxLikelihoodProbabilityDistribution<TSample> : IProbabilityDistribution<TSample>
 	{
-		private readonly FrequencyDistribution<TSample> _freqDist; 
-
 		public MaxLikelihoodProbabilityDistribution(FrequencyDistribution<TSample> freqDist)
 		{
-			_freqDist = freqDist;
+			FrequencyDistribution = freqDist;
 		}
 
-		public ReadOnlyCollection<TSample> Samples
+		public IReadOnlyCollection<TSample> Samples
 		{
-			get { return _freqDist.ObservedSamples; }
+			get { return FrequencyDistribution.ObservedSamples; }
 		}
 
 		public double this[TSample sample]
 		{
 			get
 			{
-				if (_freqDist.ObservedSamples.Count == 0)
+				if (FrequencyDistribution.ObservedSamples.Count == 0)
 					return 0;
-				return (double) _freqDist[sample] / _freqDist.SampleOutcomeCount;
+				return (double) FrequencyDistribution[sample] / FrequencyDistribution.SampleOutcomeCount;
 			}
 		}
 
-		public FrequencyDistribution<TSample> FrequencyDistribution
-		{
-			get { return _freqDist; }
-		}
+		public FrequencyDistribution<TSample> FrequencyDistribution { get; }
 	}
 }

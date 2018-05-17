@@ -1,11 +1,10 @@
 using System;
-using SIL.ObjectModel;
+using System.Collections.Generic;
 
 namespace SIL.Machine.Statistics
 {
 	public class WittenBellProbabilityDistribution<TSample> : IProbabilityDistribution<TSample>
 	{
-		private readonly FrequencyDistribution<TSample> _freqDist;
 		private readonly double _probZero;
 
 		public WittenBellProbabilityDistribution(FrequencyDistribution<TSample> freqDist, int binCount)
@@ -13,27 +12,26 @@ namespace SIL.Machine.Statistics
 			if (binCount <= freqDist.ObservedSamples.Count)
 				throw new ArgumentOutOfRangeException("binCount");
 
-			_freqDist = freqDist;
+			FrequencyDistribution = freqDist;
 			if (freqDist.ObservedSamples.Count > 0)
 			{
-				int z = binCount - _freqDist.ObservedSamples.Count;
-				_probZero = (double) _freqDist.ObservedSamples.Count / (z * (_freqDist.SampleOutcomeCount + _freqDist.ObservedSamples.Count));
+				int z = binCount - FrequencyDistribution.ObservedSamples.Count;
+				_probZero = (double) FrequencyDistribution.ObservedSamples.Count / (z * (FrequencyDistribution.SampleOutcomeCount + FrequencyDistribution.ObservedSamples.Count));
 			}
 		}
 
-		public ReadOnlyCollection<TSample> Samples
-		{
-			get { return _freqDist.ObservedSamples; }
-		}
+		public FrequencyDistribution<TSample> FrequencyDistribution { get; }
+
+		public IReadOnlyCollection<TSample> Samples => FrequencyDistribution.ObservedSamples;
 
 		public double this[TSample sample]
 		{
 			get
 			{
-				int count = _freqDist[sample];
+				int count = FrequencyDistribution[sample];
 				if (count == 0)
 					return _probZero;
-				return (double) count / (_freqDist.SampleOutcomeCount + _freqDist.ObservedSamples.Count);
+				return (double) count / (FrequencyDistribution.SampleOutcomeCount + FrequencyDistribution.ObservedSamples.Count);
 			}
 		}
 	}

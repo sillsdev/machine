@@ -9,7 +9,7 @@ namespace SIL.Machine.Translation
 		IReadOnlyList<string> TargetWords { get; }
 
 		void AddSegmentPair(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
-					WordAlignmentMatrix hintMatrix = null);
+			WordAlignmentMatrix hintMatrix = null);
 		void Train(IProgress<ProgressStatus> progress = null);
 		void Save();
 

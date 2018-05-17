@@ -8,8 +8,7 @@ namespace SIL.Machine.Statistics
 	public class FrequencyDistribution<TSample> : ICloneable<FrequencyDistribution<TSample>>
 	{
 		private readonly Dictionary<TSample, int> _sampleCounts;
-		private int _sampleOutcomeCount;
- 
+
 		public FrequencyDistribution()
 		{
 			_sampleCounts = new Dictionary<TSample, int>();
@@ -18,12 +17,12 @@ namespace SIL.Machine.Statistics
 		public FrequencyDistribution(FrequencyDistribution<TSample> fd)
 		{
 			_sampleCounts = new Dictionary<TSample, int>(fd._sampleCounts);
-			_sampleOutcomeCount = fd._sampleOutcomeCount;
+			SampleOutcomeCount = fd.SampleOutcomeCount;
 		}
 
-		public ReadOnlyCollection<TSample> ObservedSamples
+		public IReadOnlyCollection<TSample> ObservedSamples
 		{
-			get { return _sampleCounts.Keys.ToReadOnlyCollection(); }
+			get { return _sampleCounts.Keys; }
 		}
 
 		public void Increment(TSample sample)
@@ -37,7 +36,7 @@ namespace SIL.Machine.Statistics
 				return;
 
 			_sampleCounts.UpdateValue(sample, () => 0, c => c + count);
-			_sampleOutcomeCount += count;
+			SampleOutcomeCount += count;
 		}
 
 		public void Decrement(TSample sample)
@@ -65,7 +64,7 @@ namespace SIL.Machine.Statistics
 			{
 				throw new ArgumentException("The specified sample cannot be decremented.", "sample");
 			}
-			_sampleOutcomeCount -= count;
+			SampleOutcomeCount -= count;
 		}
 
 		public int this[TSample sample]
@@ -79,15 +78,12 @@ namespace SIL.Machine.Statistics
 			}
 		}
 
-		public int SampleOutcomeCount
-		{
-			get { return _sampleOutcomeCount; }
-		}
+		public int SampleOutcomeCount { get; private set; }
 
 		public void Reset()
 		{
 			_sampleCounts.Clear();
-			_sampleOutcomeCount = 0;
+			SampleOutcomeCount = 0;
 		}
 
 		public FrequencyDistribution<TSample> Clone()
