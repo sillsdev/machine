@@ -117,19 +117,33 @@ namespace SIL.Machine.Translation
 			if (segment.IsEmpty)
 				return;
 
-			IReadOnlyList<string> sourceTokens = segment.SourceSegment.Preprocess(sourcePreprocessor);
-			IReadOnlyList<string> targetTokens = segment.TargetSegment.Preprocess(targetPreprocessor);
+			IReadOnlyList<string> sourceSegment = segment.SourceSegment.Preprocess(sourcePreprocessor);
+			IReadOnlyList<string> targetSegment = segment.TargetSegment.Preprocess(targetPreprocessor);
 
-			model.AddSegmentPair(sourceTokens, targetTokens);
+			model.AddSegmentPair(sourceSegment, targetSegment);
 		}
 
 		public static WordAlignmentMatrix GetBestAlignment(this ISegmentAligner aligner, ParallelTextSegment segment,
 			Func<string, string> sourcePreprocessor = null, Func<string, string> targetPreprocessor = null)
 		{
-			IReadOnlyList<string> sourceTokens = segment.SourceSegment.Preprocess(sourcePreprocessor);
-			IReadOnlyList<string> targetTokens = segment.TargetSegment.Preprocess(targetPreprocessor);
+			IReadOnlyList<string> sourceSegment = segment.SourceSegment.Preprocess(sourcePreprocessor);
+			IReadOnlyList<string> targetSegment = segment.TargetSegment.Preprocess(targetPreprocessor);
 
-			return aligner.GetBestAlignment(sourceTokens, targetTokens);
+			return aligner.GetBestAlignment(sourceSegment, targetSegment, segment.CreateAlignmentMatrix());
+		}
+
+		public static WordAlignmentMatrix GetBestAlignment(this ISegmentAligner aligner,
+			IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
+			WordAlignmentMatrix knownAlignment)
+		{
+			WordAlignmentMatrix estimatedAlignment = aligner.GetBestAlignment(sourceSegment, targetSegment);
+			WordAlignmentMatrix alignment = estimatedAlignment;
+			if (knownAlignment != null)
+			{
+				alignment = knownAlignment.Clone();
+				alignment.PrioritySymmetrizeWith(estimatedAlignment);
+			}
+			return alignment;
 		}
 
 		public static WordAlignmentMatrix CreateAlignmentMatrix(this ParallelTextSegment segment)
@@ -158,7 +172,8 @@ namespace SIL.Machine.Translation
 		{
 			IReadOnlyList<string> sourceSegment = segment.SourceSegment.Preprocess(sourcePreprocessor);
 			IReadOnlyList<string> targetSegment = segment.TargetSegment.Preprocess(targetPreprocessor);
-			WordAlignmentMatrix alignment = model.GetBestAlignment(sourceSegment, targetSegment);
+			WordAlignmentMatrix alignment = model.GetBestAlignment(sourceSegment, targetSegment,
+				segment.CreateAlignmentMatrix());
 
 			if (includeProbs)
 				return alignment.ToString(model, sourceSegment, targetSegment);
@@ -170,7 +185,8 @@ namespace SIL.Machine.Translation
 		{
 			IReadOnlyList<string> sourceSegment = segment.SourceSegment.Preprocess(sourcePreprocessor);
 			IReadOnlyList<string> targetSegment = segment.TargetSegment.Preprocess(targetPreprocessor);
-			WordAlignmentMatrix alignment = aligner.GetBestAlignment(sourceSegment, targetSegment);
+			WordAlignmentMatrix alignment = aligner.GetBestAlignment(sourceSegment, targetSegment,
+				segment.CreateAlignmentMatrix());
 
 			return alignment.ToGizaFormat(sourceSegment, targetSegment);
 		}

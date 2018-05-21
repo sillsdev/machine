@@ -130,9 +130,21 @@ namespace SIL.Machine.Translation
 			if (RowCount != other.RowCount || ColumnCount != other.ColumnCount)
 				throw new ArgumentException("The matrices are not the same size.", nameof(other));
 
-			WordAlignmentMatrix aux = Clone();
-
+			WordAlignmentMatrix orig = Clone();
 			IntersectWith(other);
+			Symmetrize1(orig, other);
+		}
+
+		public void PrioritySymmetrizeWith(WordAlignmentMatrix other)
+		{
+			if (RowCount != other.RowCount || ColumnCount != other.ColumnCount)
+				throw new ArgumentException("The matrices are not the same size.", nameof(other));
+
+			Symmetrize1(this, other);
+		}
+
+		public void Symmetrize1(WordAlignmentMatrix orig, WordAlignmentMatrix other)
+		{
 			WordAlignmentMatrix prev = null;
 			while (!ValueEquals(prev))
 			{
@@ -141,7 +153,7 @@ namespace SIL.Machine.Translation
 				{
 					for (int j = 0; j < ColumnCount; j++)
 					{
-						if ((other._matrix[i, j] || aux._matrix[i, j]) && !_matrix[i, j])
+						if ((other._matrix[i, j] || orig._matrix[i, j]) && !_matrix[i, j])
 						{
 							if (!IsColumnAligned(j) && !IsRowAligned(i))
 								_matrix[i, j] = true;
