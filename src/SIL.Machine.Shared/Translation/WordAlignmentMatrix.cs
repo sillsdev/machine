@@ -158,10 +158,10 @@ namespace SIL.Machine.Translation
 
 		private void Symmetrize(Func<int, int, bool> growCondition, WordAlignmentMatrix orig, WordAlignmentMatrix other)
 		{
-			WordAlignmentMatrix prev = null;
-			while (!ValueEquals(prev))
+			bool added;
+			do
 			{
-				prev = Clone();
+				added = false;
 				for (int i = 0; i < RowCount; i++)
 				{
 					for (int j = 0; j < ColumnCount; j++)
@@ -169,13 +169,20 @@ namespace SIL.Machine.Translation
 						if ((other._matrix[i, j] || orig._matrix[i, j]) && !_matrix[i, j])
 						{
 							if (!IsColumnAligned(j) && !IsRowAligned(i))
+							{
 								_matrix[i, j] = true;
+								added = true;
+							}
 							else if (growCondition(i, j))
+							{
 								_matrix[i, j] = true;
+								added = true;
+							}
 						}
 					}
 				}
 			}
+			while (added);
 		}
 
 		public void Transpose()
