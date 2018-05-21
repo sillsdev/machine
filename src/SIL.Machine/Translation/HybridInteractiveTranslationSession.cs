@@ -102,18 +102,11 @@ namespace SIL.Machine.Translation
 			return _currentResults;
 		}
 
-		void IInteractiveTranslationSession.Approve()
-		{
-			Approve();
-		}
-
-		public WordAlignmentMatrix Approve()
+		public void Approve()
 		{
 			CheckDisposed();
 
-			WordAlignmentMatrix matrix = _engine.GetHintMatrix(SourceSegment, Prefix, _ruleResult);
-			_engine.SmtEngine.TrainSegment(SourceSegment, Prefix, matrix);
-			return matrix;
+			_engine.SmtEngine.TrainSegment(SourceSegment, Prefix);
 		}
 
 		private void UpdateCurrentResults()

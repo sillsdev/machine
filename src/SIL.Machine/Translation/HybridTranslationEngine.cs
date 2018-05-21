@@ -76,61 +76,12 @@ namespace SIL.Machine.Translation
 			return new HybridInteractiveTranslationResult(smtWordGraph, ruleResult);
 		}
 
-		public WordAlignmentMatrix TrainSegment(IReadOnlyList<string> sourceSegment,
+		public void TrainSegment(IReadOnlyList<string> sourceSegment,
 			IReadOnlyList<string> targetSegment)
 		{
 			CheckDisposed();
 
-			TranslationResult ruleResult = RuleEngine?.Translate(sourceSegment);
-
-			WordAlignmentMatrix matrix = GetHintMatrix(sourceSegment, targetSegment, ruleResult);
-			SmtEngine.TrainSegment(sourceSegment, targetSegment, matrix);
-			return matrix;
-		}
-
-		internal WordAlignmentMatrix GetHintMatrix(IReadOnlyList<string> sourceSegment,
-			IReadOnlyList<string> targetSegment, TranslationResult ruleResult)
-		{
-			TranslationResult smtResult = SmtEngine.GetBestPhraseAlignment(sourceSegment, targetSegment);
-			TranslationResult hybridResult = ruleResult == null ? smtResult : smtResult.Merge(targetSegment.Count,
-				RuleEngineThreshold, ruleResult);
-
-			var matrix = new WordAlignmentMatrix(sourceSegment.Count, targetSegment.Count, AlignmentType.Unknown);
-			var iAligned = new HashSet<int>();
-			for (int j = 0; j < targetSegment.Count; j++)
-			{
-				bool jAligned = false;
-				if (j < hybridResult.WordSources.Count
-					&& (hybridResult.WordSources[j] & TranslationSources.Transfer) != 0)
-				{
-					foreach (int i in hybridResult.Alignment.GetColumnAlignedIndices(j))
-					{
-						matrix[i, j] = AlignmentType.Aligned;
-						iAligned.Add(i);
-						jAligned = true;
-					}
-				}
-
-				if (jAligned)
-				{
-					for (int i = 0; i < sourceSegment.Count; i++)
-					{
-						if (matrix[i, j] == AlignmentType.Unknown)
-							matrix[i, j] = AlignmentType.NotAligned;
-					}
-				}
-			}
-
-			foreach (int i in iAligned)
-			{
-				for (int j = 0; j < targetSegment.Count; j++)
-				{
-					if (matrix[i, j] == AlignmentType.Unknown)
-						matrix[i, j] = AlignmentType.NotAligned;
-				}
-			}
-
-			return matrix;
+			SmtEngine.TrainSegment(sourceSegment, targetSegment);
 		}
 
 		internal void RemoveSession(HybridInteractiveTranslationSession session)

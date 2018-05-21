@@ -201,10 +201,10 @@ namespace SIL.Machine.Translation
 				{
 					for (int i = phraseInfo.SourceSegmentRange.Start; i < phraseInfo.SourceSegmentRange.End; i++)
 					{
-						AlignmentType alignmentType = phraseInfo.Alignment[i - phraseInfo.SourceSegmentRange.Start,
+						bool aligned = phraseInfo.Alignment[i - phraseInfo.SourceSegmentRange.Start,
 							j - trgPhraseStartIndex];
-						if (alignmentType == AlignmentType.Aligned)
-							alignment[i, j] = AlignmentType.Aligned;
+						if (aligned)
+							alignment[i, j] = true;
 					}
 
 					if (j < prefixCount)

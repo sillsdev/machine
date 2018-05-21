@@ -9,7 +9,6 @@ namespace SIL.Machine.Translation
 
 		WordGraph GetWordGraph(IReadOnlyList<string> segment);
 
-		void TrainSegment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
-			WordAlignmentMatrix matrix = null);
+		void TrainSegment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment);
 	}
 }

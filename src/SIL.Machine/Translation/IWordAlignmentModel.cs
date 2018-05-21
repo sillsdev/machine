@@ -8,8 +8,7 @@ namespace SIL.Machine.Translation
 		IReadOnlyList<string> SourceWords { get; }
 		IReadOnlyList<string> TargetWords { get; }
 
-		void AddSegmentPair(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
-			WordAlignmentMatrix hintMatrix = null);
+		void AddSegmentPair(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment);
 		void Train(IProgress<ProgressStatus> progress = null);
 		void Save();
 

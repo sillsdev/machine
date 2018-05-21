@@ -25,7 +25,7 @@ namespace SIL.Machine.Translation
 		}
 
 		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment,
-			IReadOnlyList<string> targetSegment, WordAlignmentMatrix hintMatrix = null)
+			IReadOnlyList<string> targetSegment)
 		{
 			var paa = new PairwiseAlignmentAlgorithm<IReadOnlyList<string>, int>(_scorer, sourceSegment, targetSegment,
 				GetWordIndices)
@@ -92,13 +92,13 @@ namespace SIL.Machine.Translation
 					{
 						if (!alignment[0, c].IsNull)
 						{
-							waMatrix[minIndex + 1, j] = AlignmentType.Aligned;
-							waMatrix[maxIndex - 1, j] = AlignmentType.Aligned;
+							waMatrix[minIndex + 1, j] = true;
+							waMatrix[maxIndex - 1, j] = true;
 						}
 					}
 					else
 					{
-						waMatrix[bestIndex, j] = AlignmentType.Aligned;
+						waMatrix[bestIndex, j] = true;
 					}
 				}
 			}

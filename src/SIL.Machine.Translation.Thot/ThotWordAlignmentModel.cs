@@ -67,30 +67,18 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public void AddSegmentPair(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
-			WordAlignmentMatrix hintMatrix = null)
+		public void AddSegmentPair(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
 		{
 			CheckDisposed();
 
 			IntPtr nativeSourceSegment = Thot.ConvertStringsToNativeUtf8(sourceSegment);
 			IntPtr nativeTargetSegment = Thot.ConvertStringsToNativeUtf8(targetSegment);
-			IntPtr nativeMatrix = IntPtr.Zero;
-			uint iLen = 0, jLen = 0;
-			if (hintMatrix != null)
-			{
-				nativeMatrix = Thot.ConvertWordAlignmentMatrixToNativeMatrix(hintMatrix);
-				iLen = (uint) hintMatrix.RowCount;
-				jLen = (uint) hintMatrix.ColumnCount;
-			}
-
 			try
 			{
-				Thot.swAlignModel_addSentencePair(Handle, nativeSourceSegment, nativeTargetSegment, nativeMatrix, iLen,
-					jLen);
+				Thot.swAlignModel_addSentencePair(Handle, nativeSourceSegment, nativeTargetSegment);
 			}
 			finally
 			{
-				Thot.FreeNativeMatrix(nativeMatrix, iLen);
 				Marshal.FreeHGlobal(nativeTargetSegment);
 				Marshal.FreeHGlobal(nativeSourceSegment);
 			}
@@ -164,15 +152,13 @@ namespace SIL.Machine.Translation.Thot
 		}
 
 		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment,
-			IReadOnlyList<string> targetSegment, WordAlignmentMatrix hintMatrix = null)
+			IReadOnlyList<string> targetSegment)
 		{
 			CheckDisposed();
 
 			IntPtr nativeSourceSegment = Thot.ConvertStringsToNativeUtf8(sourceSegment);
 			IntPtr nativeTargetSegment = Thot.ConvertStringsToNativeUtf8(targetSegment);
-			IntPtr nativeMatrix = hintMatrix == null
-				? Thot.AllocNativeMatrix(sourceSegment.Count, targetSegment.Count)
-				: Thot.ConvertWordAlignmentMatrixToNativeMatrix(hintMatrix);
+			IntPtr nativeMatrix = Thot.AllocNativeMatrix(sourceSegment.Count, targetSegment.Count);
 
 			uint iLen = (uint) sourceSegment.Count;
 			uint jLen = (uint) targetSegment.Count;

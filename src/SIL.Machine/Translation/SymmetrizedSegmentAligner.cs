@@ -13,18 +13,11 @@ namespace SIL.Machine.Translation
 			_trgSrcAligner = trgSrcAligner;
 		}
 
-		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
-			WordAlignmentMatrix hintMatrix = null)
+		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment,
+			IReadOnlyList<string> targetSegment)
 		{
-			WordAlignmentMatrix matrix = _srcTrgAligner.GetBestAlignment(sourceSegment, targetSegment, hintMatrix);
-
-			WordAlignmentMatrix invHintMatrix = null;
-			if (hintMatrix != null)
-			{
-				invHintMatrix = hintMatrix.Clone();
-				invHintMatrix.Transpose();
-			}
-			WordAlignmentMatrix invMatrix = _trgSrcAligner.GetBestAlignment(targetSegment, sourceSegment, invHintMatrix);
+			WordAlignmentMatrix matrix = _srcTrgAligner.GetBestAlignment(sourceSegment, targetSegment);
+			WordAlignmentMatrix invMatrix = _trgSrcAligner.GetBestAlignment(targetSegment, sourceSegment);
 
 			invMatrix.Transpose();
 			matrix.SymmetrizeWith(invMatrix);

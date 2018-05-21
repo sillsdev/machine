@@ -72,7 +72,7 @@ namespace SIL.Machine.Translation
 
 				if (confidence >= 0)
 				{
-					alignment[i, j] = AlignmentType.Aligned;
+					alignment[i, j] = true;
 					targetConfidences[j] = confidence;
 					if (confidence > 0)
 						targetSources[j] |= TranslationSources.Smt;

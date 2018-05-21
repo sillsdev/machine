@@ -14,10 +14,11 @@ namespace SIL.Machine.Translation
 			_scorer = new SegmentScorer(getTranslationProb);
 		}
 
-		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
-			WordAlignmentMatrix hintMatrix = null)
+		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment,
+			IReadOnlyList<string> targetSegment)
 		{
-			var paa = new PairwiseAlignmentAlgorithm<IReadOnlyList<string>, int>(_scorer, sourceSegment, targetSegment, GetWordIndices)
+			var paa = new PairwiseAlignmentAlgorithm<IReadOnlyList<string>, int>(_scorer, sourceSegment, targetSegment,
+				GetWordIndices)
 			{
 				Mode = AlignmentMode.Global,
 				ExpansionCompressionEnabled = true,
@@ -31,7 +32,7 @@ namespace SIL.Machine.Translation
 				foreach (int i in alignment[0, c])
 				{
 					foreach (int j in alignment[1, c])
-						waMatrix[i, j] = AlignmentType.Aligned;
+						waMatrix[i, j] = true;
 				}
 			}
 

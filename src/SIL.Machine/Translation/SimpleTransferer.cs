@@ -44,7 +44,7 @@ namespace SIL.Machine.Translation
 
 			var waMatrix = new WordAlignmentMatrix(targetAnalyses.Count, targetAnalyses.Count);
 			for (int j = 0; j < targetAnalyses.Count; j++)
-				waMatrix[j, j] = AlignmentType.Aligned;
+				waMatrix[j, j] = true;
 
 			var result = new TransferResult(targetAnalyses, waMatrix);
 

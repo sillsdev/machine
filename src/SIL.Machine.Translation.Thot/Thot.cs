@@ -69,17 +69,19 @@ namespace SIL.Machine.Translation.Thot
 		public static extern IntPtr decoder_translate(IntPtr decoderHandle, IntPtr sentence);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern uint decoder_translateNBest(IntPtr decoderHandle, uint n, IntPtr sentence, IntPtr[] results);
+		public static extern uint decoder_translateNBest(IntPtr decoderHandle, uint n, IntPtr sentence,
+			IntPtr[] results);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern IntPtr decoder_getWordGraph(IntPtr decoderHandle, IntPtr sentence);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern IntPtr decoder_getBestPhraseAlignment(IntPtr decoderHandle, IntPtr sentence, IntPtr translation);
+		public static extern IntPtr decoder_getBestPhraseAlignment(IntPtr decoderHandle, IntPtr sentence,
+			IntPtr translation);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern bool decoder_trainSentencePair(IntPtr decoderHandle, IntPtr sourceSentence, IntPtr targetSentence,
-			IntPtr matrix, uint iLen, uint jLen);
+		public static extern bool decoder_trainSentencePair(IntPtr decoderHandle, IntPtr sourceSentence,
+			IntPtr targetSentence);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void decoder_close(IntPtr decoderHandle);
@@ -91,13 +93,16 @@ namespace SIL.Machine.Translation.Thot
 		public static extern uint tdata_getPhraseCount(IntPtr dataHandle);
 		
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern uint tdata_getSourceSegmentation(IntPtr dataHandle, IntPtr sourceSegmentation, uint capacity);
+		public static extern uint tdata_getSourceSegmentation(IntPtr dataHandle, IntPtr sourceSegmentation,
+			uint capacity);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern uint tdata_getTargetSegmentCuts(IntPtr dataHandle, IntPtr targetSegmentCuts, uint capacity);
+		public static extern uint tdata_getTargetSegmentCuts(IntPtr dataHandle, IntPtr targetSegmentCuts,
+			uint capacity);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern uint tdata_getTargetUnknownWords(IntPtr dataHandle, IntPtr targetUnknownWords, uint capacity);
+		public static extern uint tdata_getTargetUnknownWords(IntPtr dataHandle, IntPtr targetUnknownWords,
+			uint capacity);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern double tdata_getScore(IntPtr dataHandle);
@@ -139,7 +144,7 @@ namespace SIL.Machine.Translation.Thot
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void swAlignModel_addSentencePair(IntPtr swAlignModelHandle, IntPtr sourceSentence,
-			IntPtr targetSentence, IntPtr matrix, uint iLen, uint jLen);
+			IntPtr targetSentence);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void swAlignModel_train(IntPtr swAlignModelHandle, uint numIters);
@@ -156,8 +161,8 @@ namespace SIL.Machine.Translation.Thot
 			uint sourceWordIndex, uint targetWordIndex);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern float swAlignModel_getAlignmentProbability(IntPtr swAlignModelHandle, uint prevI, uint sLen,
-			uint i);
+		public static extern float swAlignModel_getAlignmentProbability(IntPtr swAlignModelHandle, uint prevI,
+			uint sLen, uint i);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern float swAlignModel_getBestAlignment(IntPtr swAlignModelHandle, IntPtr sourceSentence,
@@ -167,10 +172,12 @@ namespace SIL.Machine.Translation.Thot
 		public static extern void swAlignModel_close(IntPtr swAlignModelHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern bool giza_symmetr1(string lhsFileName, string rhsFileName, string outputFileName, bool transpose);
+		public static extern bool giza_symmetr1(string lhsFileName, string rhsFileName, string outputFileName,
+			bool transpose);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern bool phraseModel_generate(string alignmentFileName, int maxPhraseLength, string tableFileName);
+		public static extern bool phraseModel_generate(string alignmentFileName, int maxPhraseLength,
+			string tableFileName);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern IntPtr langModel_open(string prefFileName);
@@ -194,13 +201,12 @@ namespace SIL.Machine.Translation.Thot
 		public static IntPtr AllocNativeMatrix(int iLen, int jLen)
 		{
 			int sizeOfPtr = Marshal.SizeOf<IntPtr>();
-			int sizeOfInt = Marshal.SizeOf<int>();
 			IntPtr nativeMatrix = Marshal.AllocHGlobal(iLen * sizeOfPtr);
 			for (int i = 0; i < iLen; i++)
 			{
-				IntPtr array = Marshal.AllocHGlobal(jLen * sizeOfInt);
+				IntPtr array = Marshal.AllocHGlobal(jLen);
 				for (int j = 0; j < jLen; j++)
-					Marshal.WriteInt32(array, j * sizeOfInt, -1);
+					Marshal.WriteByte(array, j, Convert.ToByte(false));
 				Marshal.WriteIntPtr(nativeMatrix, i * sizeOfPtr, array);
 			}
 
@@ -210,38 +216,27 @@ namespace SIL.Machine.Translation.Thot
 		public static IntPtr ConvertWordAlignmentMatrixToNativeMatrix(WordAlignmentMatrix matrix)
 		{
 			int sizeOfPtr = Marshal.SizeOf<IntPtr>();
-			int sizeOfInt = Marshal.SizeOf<int>();
 			IntPtr nativeMatrix = Marshal.AllocHGlobal(matrix.RowCount * sizeOfPtr);
 			for (int i = 0; i < matrix.RowCount; i++)
 			{
-				IntPtr array = Marshal.AllocHGlobal(matrix.ColumnCount * sizeOfInt);
+				IntPtr array = Marshal.AllocHGlobal(matrix.ColumnCount);
 				for (int j = 0; j < matrix.ColumnCount; j++)
-					Marshal.WriteInt32(array, j * sizeOfInt, (int) matrix[i, j]);
+					Marshal.WriteByte(array, j, Convert.ToByte(matrix[i, j]));
 				Marshal.WriteIntPtr(nativeMatrix, i * sizeOfPtr, array);
 			}
 			return nativeMatrix;
 		}
 
-		public static WordAlignmentMatrix ConvertNativeMatrixToWordAlignmentMatrix(IntPtr nativeMatrix, uint iLen, uint jLen)
+		public static WordAlignmentMatrix ConvertNativeMatrixToWordAlignmentMatrix(IntPtr nativeMatrix, uint iLen,
+			uint jLen)
 		{
 			int sizeOfPtr = Marshal.SizeOf<IntPtr>();
-			int sizeOfInt = Marshal.SizeOf<int>();
 			var matrix = new WordAlignmentMatrix((int) iLen, (int) jLen);
 			for (int i = 0; i < matrix.RowCount; i++)
 			{
 				IntPtr array = Marshal.ReadIntPtr(nativeMatrix, i * sizeOfPtr);
 				for (int j = 0; j < matrix.ColumnCount; j++)
-				{
-					int intVal = Marshal.ReadInt32(array, j * sizeOfInt);
-					AlignmentType value;
-					if (intVal > 0)
-						value = AlignmentType.Aligned;
-					else if (intVal == 0)
-						value = AlignmentType.NotAligned;
-					else
-						value = AlignmentType.Unknown;
-					matrix[i, j] = value;
-				}
+					matrix[i, j] = Convert.ToBoolean(Marshal.ReadByte(array, j));
 			}
 
 			return matrix;
@@ -300,15 +295,17 @@ namespace SIL.Machine.Translation.Thot
 		}
 
 		public static IEnumerable<T> DoTranslateNBest<T>(IntPtr decoderHandle,
-			Func<IntPtr, uint, IntPtr, IntPtr[], uint> translateFunc, int n, IEnumerable<string> input, bool addTrailingSpace,
-			IReadOnlyList<string> sourceSegment, Func<IReadOnlyList<string>, IReadOnlyList<string>, IntPtr, T> createResult)
+			Func<IntPtr, uint, IntPtr, IntPtr[], uint> translateFunc, int n, IEnumerable<string> input,
+			bool addTrailingSpace, IReadOnlyList<string> sourceSegment,
+			Func<IReadOnlyList<string>, IReadOnlyList<string>, IntPtr, T> createResult)
 		{
 			IntPtr inputPtr = ConvertStringToNativeUtf8(string.Join(" ", input) + (addTrailingSpace ? " " : ""));
 			var results = new IntPtr[n];
 			try
 			{
 				uint len = translateFunc(decoderHandle, (uint) n, inputPtr, results);
-				return results.Take((int) len).Select(data => DoCreateResult(sourceSegment, data, createResult)).ToArray();
+				return results.Take((int) len).Select(data => DoCreateResult(sourceSegment, data, createResult))
+					.ToArray();
 			}
 			finally
 			{
@@ -341,26 +338,16 @@ namespace SIL.Machine.Translation.Thot
 		}
 
 		public static void TrainSegmentPair(IntPtr decoderHandle, IEnumerable<string> sourceSegment,
-			IEnumerable<string> targetSegment, WordAlignmentMatrix matrix)
+			IEnumerable<string> targetSegment)
 		{
 			IntPtr nativeSourceSegment = ConvertStringsToNativeUtf8(sourceSegment);
 			IntPtr nativeTargetSegment = ConvertStringsToNativeUtf8(targetSegment);
-			IntPtr nativeMatrix = IntPtr.Zero;
-			uint iLen = 0, jLen = 0;
-			if (matrix != null)
-			{
-				nativeMatrix = ConvertWordAlignmentMatrixToNativeMatrix(matrix);
-				iLen = (uint) matrix.RowCount;
-				jLen = (uint) matrix.ColumnCount;
-			}
-
 			try
 			{
-				decoder_trainSentencePair(decoderHandle, nativeSourceSegment, nativeTargetSegment, nativeMatrix, iLen, jLen);
+				decoder_trainSentencePair(decoderHandle, nativeSourceSegment, nativeTargetSegment);
 			}
 			finally
 			{
-				FreeNativeMatrix(nativeMatrix, iLen);
 				Marshal.FreeHGlobal(nativeTargetSegment);
 				Marshal.FreeHGlobal(nativeSourceSegment);
 			}

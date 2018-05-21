@@ -143,8 +143,8 @@ namespace SIL.Machine.Translation
 					assert.Equal(arc.SourceSegmentRange.Start, 0);
 					assert.Equal(arc.SourceSegmentRange.End, 2);
 					assert.Equal(arc.IsUnknown, false);
-					assert.Equal(arc.Alignment[0, 0], AlignmentType.Aligned);
-					assert.Equal(arc.Alignment[1, 1], AlignmentType.Aligned);
+					assert.Equal(arc.Alignment[0, 0], true);
+					assert.Equal(arc.Alignment[1, 1], true);
 					arc = wordGraph.Arcs[2];
 					assert.Equal(arc.IsUnknown, true);
 
@@ -160,11 +160,11 @@ namespace SIL.Machine.Translation
 							TranslationSources.Transfer,
 							TranslationSources.None
 						});
-					assert.Equal(ruleResult.Alignment[0, 0], AlignmentType.Aligned);
-					assert.Equal(ruleResult.Alignment[1, 1], AlignmentType.Aligned);
-					assert.Equal(ruleResult.Alignment[2, 2], AlignmentType.Aligned);
-					assert.Equal(ruleResult.Alignment[3, 3], AlignmentType.Aligned);
-					assert.Equal(ruleResult.Alignment[4, 4], AlignmentType.Aligned);
+					assert.Equal(ruleResult.Alignment[0, 0], true);
+					assert.Equal(ruleResult.Alignment[1, 1], true);
+					assert.Equal(ruleResult.Alignment[2, 2], true);
+					assert.Equal(ruleResult.Alignment[3, 3], true);
+					assert.Equal(ruleResult.Alignment[4, 4], true);
 					done();
 				});
 		}

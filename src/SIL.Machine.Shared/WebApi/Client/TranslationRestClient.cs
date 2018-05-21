@@ -172,7 +172,7 @@ namespace SIL.Machine.WebApi.Client
 		{
 			var alignment = new WordAlignmentMatrix(i, j);
 			foreach (AlignedWordPairDto wordPairDto in dto)
-				alignment[wordPairDto.SourceIndex, wordPairDto.TargetIndex] = AlignmentType.Aligned;
+				alignment[wordPairDto.SourceIndex, wordPairDto.TargetIndex] = true;
 			return alignment;
 		}
 

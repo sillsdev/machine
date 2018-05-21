@@ -125,7 +125,7 @@ namespace SIL.Machine.Translation
 
 			var alignment = new WordAlignmentMatrix(SourceSegment.Count, mergedTargetSegment.Count);
 			foreach (Tuple<int, int> t in mergedAlignment)
-				alignment[t.Item1, t.Item2] = AlignmentType.Aligned;
+				alignment[t.Item1, t.Item2] = true;
 			return new TranslationResult(SourceSegment, mergedTargetSegment, mergedConfidences, mergedSources,
 				alignment, Phrases);
 		}

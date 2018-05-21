@@ -36,21 +36,21 @@ namespace SIL.Machine.Translation
 
 				var alignment = new WordAlignmentMatrix(5, 5)
 				{
-					[0, 0] = AlignmentType.Aligned,
-					[1, 1] = AlignmentType.Aligned,
-					[2, 2] = AlignmentType.Aligned,
-					[3, 3] = AlignmentType.Aligned,
-					[4, 4] = AlignmentType.Aligned
+					[0, 0] = true,
+					[1, 1] = true,
+					[2, 2] = true,
+					[3, 3] = true,
+					[4, 4] = true
 				};
 				AddTranslation(smtEngine, "caminé a mi habitación .", "caminé to my room .",
 					new[] { 0, 0.5, 0.5, 0.5, 0.5 }, alignment);
 
 				alignment = new WordAlignmentMatrix(4, 4)
 				{
-					[0, 0] = AlignmentType.Aligned,
-					[1, 1] = AlignmentType.Aligned,
-					[2, 2] = AlignmentType.Aligned,
-					[3, 3] = AlignmentType.Aligned
+					[0, 0] = true,
+					[1, 1] = true,
+					[2, 2] = true,
+					[3, 3] = true
 				};
 				AddTranslation(smtEngine, "hablé con recepción .", "hablé with reception .", new[] { 0, 0.5, 0.5, 0.5 },
 					alignment);

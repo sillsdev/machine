@@ -59,21 +59,17 @@ namespace SIL.Machine.Translation
 		}
 
 		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment,
-			IReadOnlyList<string> targetSegment, WordAlignmentMatrix hintMatrix = null)
+			IReadOnlyList<string> targetSegment)
 		{
 			CheckDisposed();
 
-			return _aligner.GetBestAlignment(sourceSegment, targetSegment, hintMatrix);
+			return _aligner.GetBestAlignment(sourceSegment, targetSegment);
 		}
 
-		public void AddSegmentPair(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
-			WordAlignmentMatrix hintMatrix = null)
+		public void AddSegmentPair(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
 		{
-			_directWordAlignmentModel.AddSegmentPair(sourceSegment, targetSegment, hintMatrix);
-
-			WordAlignmentMatrix invertedHintMatrix = hintMatrix?.Clone();
-			invertedHintMatrix?.Transpose();
-			_inverseWordAlignmentModel.AddSegmentPair(targetSegment, sourceSegment, invertedHintMatrix);
+			_directWordAlignmentModel.AddSegmentPair(sourceSegment, targetSegment);
+			_inverseWordAlignmentModel.AddSegmentPair(targetSegment, sourceSegment);
 		}
 
 		public void Train(IProgress<ProgressStatus> progress = null)

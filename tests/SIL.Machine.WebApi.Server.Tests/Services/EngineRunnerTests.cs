@@ -154,11 +154,11 @@ namespace SIL.Machine.WebApi.Server.Services
 					},
 					new WordAlignmentMatrix(5, 5)
 					{
-						[0, 0] = AlignmentType.Aligned,
-						[1, 1] = AlignmentType.Aligned,
-						[2, 2] = AlignmentType.Aligned,
-						[3, 3] = AlignmentType.Aligned,
-						[4, 4] = AlignmentType.Aligned
+						[0, 0] = true,
+						[1, 1] = true,
+						[2, 2] = true,
+						[3, 3] = true,
+						[4, 4] = true
 					},
 					new[] { new Phrase(Range<int>.Create(0, 5), 5, 1.0) });
 				smtEngine.Translate(Arg.Any<IReadOnlyList<string>>()).Returns(translationResult);
@@ -167,19 +167,19 @@ namespace SIL.Machine.WebApi.Server.Services
 						new WordGraphArc(0, 1, 1.0, "this is".Split(),
 							new WordAlignmentMatrix(2, 2)
 							{
-								[0, 0] = AlignmentType.Aligned, [1, 1] = AlignmentType.Aligned
+								[0, 0] = true, [1, 1] = true
 							},
 							Range<int>.Create(0, 2), false, new[] { 1.0, 1.0 }),
 						new WordGraphArc(1, 2, 1.0, "a test".Split(),
 							new WordAlignmentMatrix(2, 2)
 							{
-								[0, 0] = AlignmentType.Aligned, [1, 1] = AlignmentType.Aligned
+								[0, 0] = true, [1, 1] = true
 							},
 							Range<int>.Create(2, 4), false, new[] { 1.0, 1.0 }),
 						new WordGraphArc(2, 3, 1.0, new[] {"."},
 							new WordAlignmentMatrix(1, 1)
 							{
-								[0, 0] = AlignmentType.Aligned
+								[0, 0] = true
 							},
 							Range<int>.Create(4, 5), false, new[] { 1.0 })
 					}, new[] { 3 }));
@@ -213,11 +213,11 @@ namespace SIL.Machine.WebApi.Server.Services
 					},
 					new WordAlignmentMatrix(5, 5)
 					{
-						[0, 0] = AlignmentType.Aligned,
-						[1, 1] = AlignmentType.Aligned,
-						[2, 2] = AlignmentType.Aligned,
-						[3, 3] = AlignmentType.Aligned,
-						[4, 4] = AlignmentType.Aligned
+						[0, 0] = true,
+						[1, 1] = true,
+						[2, 2] = true,
+						[3, 3] = true,
+						[4, 4] = true
 					},
 					new[] { new Phrase(Range<int>.Create(0, 5), 5, 1.0) }));
 				factory.Create(Arg.Any<string>()).Returns(engine);

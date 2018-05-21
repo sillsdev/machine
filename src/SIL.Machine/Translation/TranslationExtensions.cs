@@ -105,15 +105,14 @@ namespace SIL.Machine.Translation
 
 		public static void AddSegmentPairs(this IWordAlignmentModel model, ParallelTextCorpus corpus,
 			Func<string, string> sourcePreprocessor = null, Func<string, string> targetPreprocessor = null,
-			int maxCount = int.MaxValue, bool isUnknown = true)
+			int maxCount = int.MaxValue)
 		{
 			foreach (ParallelTextSegment segment in corpus.Segments.Where(s => !s.IsEmpty).Take(maxCount))
-				model.AddSegmentPair(segment, sourcePreprocessor, targetPreprocessor, isUnknown);
+				model.AddSegmentPair(segment, sourcePreprocessor, targetPreprocessor);
 		}
 
 		public static void AddSegmentPair(this IWordAlignmentModel model, ParallelTextSegment segment,
-			Func<string, string> sourcePreprocessor = null, Func<string, string> targetPreprocessor = null,
-			bool isUnknown = true)
+			Func<string, string> sourcePreprocessor = null, Func<string, string> targetPreprocessor = null)
 		{
 			if (segment.IsEmpty)
 				return;
@@ -121,44 +120,26 @@ namespace SIL.Machine.Translation
 			IReadOnlyList<string> sourceTokens = segment.SourceSegment.Preprocess(sourcePreprocessor);
 			IReadOnlyList<string> targetTokens = segment.TargetSegment.Preprocess(targetPreprocessor);
 
-			model.AddSegmentPair(sourceTokens, targetTokens, segment.CreateAlignmentMatrix(isUnknown));
+			model.AddSegmentPair(sourceTokens, targetTokens);
 		}
 
 		public static WordAlignmentMatrix GetBestAlignment(this ISegmentAligner aligner, ParallelTextSegment segment,
-			Func<string, string> sourcePreprocessor = null, Func<string, string> targetPreprocessor = null,
-			bool isUnknown = true)
+			Func<string, string> sourcePreprocessor = null, Func<string, string> targetPreprocessor = null)
 		{
 			IReadOnlyList<string> sourceTokens = segment.SourceSegment.Preprocess(sourcePreprocessor);
 			IReadOnlyList<string> targetTokens = segment.TargetSegment.Preprocess(targetPreprocessor);
 
-			return aligner.GetBestAlignment(sourceTokens, targetTokens, segment.CreateAlignmentMatrix(isUnknown));
+			return aligner.GetBestAlignment(sourceTokens, targetTokens);
 		}
 
-		public static WordAlignmentMatrix CreateAlignmentMatrix(this ParallelTextSegment segment, bool isUnknown = true)
+		public static WordAlignmentMatrix CreateAlignmentMatrix(this ParallelTextSegment segment)
 		{
 			if (segment.AlignedWordPairs == null)
 				return null;
 
-			var matrix = new WordAlignmentMatrix(segment.SourceSegment.Count, segment.TargetSegment.Count,
-				isUnknown ? AlignmentType.Unknown : AlignmentType.NotAligned);
+			var matrix = new WordAlignmentMatrix(segment.SourceSegment.Count, segment.TargetSegment.Count);
 			foreach (AlignedWordPair wordPair in segment.AlignedWordPairs)
-			{
-				matrix[wordPair.SourceIndex, wordPair.TargetIndex] = AlignmentType.Aligned;
-				if (isUnknown)
-				{
-					for (int i = 0; i < segment.SourceSegment.Count; i++)
-					{
-						if (matrix[i, wordPair.TargetIndex] == AlignmentType.Unknown)
-							matrix[i, wordPair.TargetIndex] = AlignmentType.NotAligned;
-					}
-
-					for (int j = 0; j < segment.TargetSegment.Count; j++)
-					{
-						if (matrix[wordPair.SourceIndex, j] == AlignmentType.Unknown)
-							matrix[wordPair.SourceIndex, j] = AlignmentType.NotAligned;
-					}
-				}
-			}
+				matrix[wordPair.SourceIndex, wordPair.TargetIndex] = true;
 
 			return matrix;
 		}
@@ -173,12 +154,11 @@ namespace SIL.Machine.Translation
 
 		public static string GetAlignmentString(this IWordAlignmentModel model, ParallelTextSegment segment,
 			bool includeProbs, Func<string, string> sourcePreprocessor = null,
-			Func<string, string> targetPreprocessor = null, bool isUnknown = true)
+			Func<string, string> targetPreprocessor = null)
 		{
 			IReadOnlyList<string> sourceSegment = segment.SourceSegment.Preprocess(sourcePreprocessor);
 			IReadOnlyList<string> targetSegment = segment.TargetSegment.Preprocess(targetPreprocessor);
-			WordAlignmentMatrix alignment = model.GetBestAlignment(sourceSegment, targetSegment,
-				segment.CreateAlignmentMatrix(isUnknown));
+			WordAlignmentMatrix alignment = model.GetBestAlignment(sourceSegment, targetSegment);
 
 			if (includeProbs)
 				return alignment.ToString(model, sourceSegment, targetSegment);
@@ -186,13 +166,11 @@ namespace SIL.Machine.Translation
 		}
 
 		public static string GetGizaFormatString(this ISegmentAligner aligner, ParallelTextSegment segment,
-			Func<string, string> sourcePreprocessor = null, Func<string, string> targetPreprocessor = null,
-			bool isUnknown = true)
+			Func<string, string> sourcePreprocessor = null, Func<string, string> targetPreprocessor = null)
 		{
 			IReadOnlyList<string> sourceSegment = segment.SourceSegment.Preprocess(sourcePreprocessor);
 			IReadOnlyList<string> targetSegment = segment.TargetSegment.Preprocess(targetPreprocessor);
-			WordAlignmentMatrix alignment = aligner.GetBestAlignment(sourceSegment, targetSegment,
-				segment.CreateAlignmentMatrix(isUnknown));
+			WordAlignmentMatrix alignment = aligner.GetBestAlignment(sourceSegment, targetSegment);
 
 			return alignment.ToGizaFormat(sourceSegment, targetSegment);
 		}

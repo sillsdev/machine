@@ -138,7 +138,7 @@ namespace SIL.Machine.Translation.Thot
 				WordAlignmentMatrix waMatrix;
 				if (srcPhraseLen == 1 && trgPhraseLen == 1)
 				{
-					waMatrix = new WordAlignmentMatrix(1, 1) { [0, 0] = AlignmentType.Aligned };
+					waMatrix = new WordAlignmentMatrix(1, 1) { [0, 0] = true };
 				}
 				else
 				{
@@ -191,12 +191,11 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public void TrainSegment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
-			WordAlignmentMatrix matrix = null)
+		public void TrainSegment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
 		{
 			CheckDisposed();
 
-			Thot.TrainSegmentPair(_decoderHandle, sourceSegment, targetSegment, matrix);
+			Thot.TrainSegmentPair(_decoderHandle, sourceSegment, targetSegment);
 		}
 
 		private TranslationResult CreateResult(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
@@ -227,7 +226,7 @@ namespace SIL.Machine.Translation.Thot
 				WordAlignmentMatrix waMatrix;
 				if (srcPhraseLen == 1 && trgPhraseLen == 1)
 				{
-					waMatrix = new WordAlignmentMatrix(1, 1) { [0, 0] = AlignmentType.Aligned };
+					waMatrix = new WordAlignmentMatrix(1, 1) { [0, 0] = true };
 				}
 				else
 				{

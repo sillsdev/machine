@@ -44,7 +44,7 @@ namespace SIL.Machine.Translation
 				for (int j = 0; j < targetAnalyses.Count; j++)
 				{
 					int[] sourceIndices = Enumerable.Range(0, waMatrix.RowCount)
-						.Where(i => waMatrix[i, j] == AlignmentType.Aligned).ToArray();
+						.Where(i => waMatrix[i, j]).ToArray();
 					string targetWord = targetAnalyses[j].IsEmpty
 						? null
 						: _targetGenerator.GenerateWords(targetAnalyses[j]).FirstOrDefault();
@@ -58,13 +58,13 @@ namespace SIL.Machine.Translation
 							targetWord = segment[i];
 							wordConfidence = 0;
 							source = TranslationSources.None;
-							alignment[i, j] = AlignmentType.Aligned;
+							alignment[i, j] = true;
 						}
 					}
 					else
 					{
 						foreach (int i in sourceIndices)
-							alignment[i, j] = AlignmentType.Aligned;
+							alignment[i, j] = true;
 					}
 
 					if (targetWord != null)

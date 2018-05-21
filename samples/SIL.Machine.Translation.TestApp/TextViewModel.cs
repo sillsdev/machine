@@ -33,7 +33,6 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly List<Segment> _sourceSegments;
 		private readonly List<Segment> _targetSegments;
 		private readonly HashSet<int> _approvedSegments;
-		private readonly List<(int, int)[]> _alignments; 
 		private int _currentSegment = -1;
 		private readonly HashSet<int> _paragraphs;
 		private readonly BulkObservableList<SuggestionViewModel> _suggestions;
@@ -62,7 +61,6 @@ namespace SIL.Machine.Translation.TestApp
 			_sourceSegments = new List<Segment>();
 			_targetSegments = new List<Segment>();
 			_approvedSegments = new HashSet<int>();
-			_alignments = new List<(int, int)[]>();
 			_paragraphs = new HashSet<int>();
 			_goToNextSegmentCommand = new RelayCommand(GoToNextSegment, CanGoToNextSegment);
 			_goToPrevSegmentCommand = new RelayCommand(GoToPrevSegment, CanGoToPrevSegment);
@@ -85,7 +83,6 @@ namespace SIL.Machine.Translation.TestApp
 			SourceText = GenerateText(_sourceSegments);
 			LoadTextFile(_targetFileName, _targetSegments);
 			TargetText = GenerateText(_targetSegments);
-			LoadAlignmentsFile();
 			UpdateUnapprovedTargetSegmentRanges();
 		}
 
@@ -125,25 +122,6 @@ namespace SIL.Machine.Translation.TestApp
 					metadataWriter.WriteLine("{0}\t{1}", _paragraphs.Contains(i) || i == 0 ? "1" : "0",
 						_approvedSegments.Contains(i) ? "1" : "0");
 					textWriter.WriteLine(_targetSegments[i].Text);
-				}
-			}
-
-			if (!string.IsNullOrEmpty(_alignmentFileName))
-			{
-				using (var alignmentsWriter = new StreamWriter(_alignmentFileName))
-				{
-					foreach ((int SourceIndex, int TargetIndex)[] alignment in _alignments)
-					{
-						if (alignment != null)
-						{
-							alignmentsWriter.WriteLine(string.Join(" ",
-								alignment.Select(t => $"{t.SourceIndex}-{t.TargetIndex}")));
-						}
-						else
-						{
-							alignmentsWriter.WriteLine();
-						}
-					}
 				}
 			}
 		}
@@ -195,7 +173,6 @@ namespace SIL.Machine.Translation.TestApp
 					_approvedSegments.Add(_sourceSegments.Count);
 				_sourceSegments.Add(new Segment());
 				_targetSegments.Add(new Segment());
-				_alignments.Add(null);
 			}
 		}
 
@@ -212,28 +189,6 @@ namespace SIL.Machine.Translation.TestApp
 
 				segments[i].Text = line;
 				i++;
-			}
-		}
-
-		private void LoadAlignmentsFile()
-		{
-			if (string.IsNullOrEmpty(_alignmentFileName))
-				return;
-
-			int i = 0;
-			foreach (string line in File.ReadAllLines(_alignmentFileName))
-			{
-				if (i >= _alignments.Count)
-					break;
-
-				string[] tokens = line.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries);
-				_alignments[i] = new (int, int)[tokens.Length];
-				for (int j = 0; j < tokens.Length; j++)
-				{
-					string token = tokens[j];
-					int index = token.IndexOf('-');
-					_alignments[i][j] = (int.Parse(token.Substring(0, index)), int.Parse(token.Substring(index + 1)));
-				}
 			}
 		}
 
@@ -292,10 +247,9 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void ApproveSegment()
 		{
-			WordAlignmentMatrix matrix = _curSession.Approve();
+			_curSession.Approve();
 			UpdateTargetText();
 			_approvedSegments.Add(_currentSegment);
-			_alignments[_currentSegment] = GetAlignedWords(matrix);
 			UpdateUnapprovedTargetSegmentRanges();
 			UpdateSuggestions();
 			_approveSegmentCommand.UpdateCanExecute();
@@ -306,7 +260,7 @@ namespace SIL.Machine.Translation.TestApp
 		{
 			return Enumerable.Range(0, matrix.RowCount)
 				.SelectMany(i => Enumerable.Range(0, matrix.ColumnCount), (s, t) => (SourceIndex: s, TargetIndex: t))
-				.Where(t => matrix[t.SourceIndex, t.TargetIndex] == AlignmentType.Aligned).ToArray();
+				.Where(t => matrix[t.SourceIndex, t.TargetIndex]).ToArray();
 		}
 
 		public ICommand SelectSourceSegmentCommand => _selectSourceSegmentCommand;

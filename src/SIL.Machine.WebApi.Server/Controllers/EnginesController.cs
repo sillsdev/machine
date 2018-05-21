@@ -149,7 +149,7 @@ namespace SIL.Machine.WebApi.Server.Controllers
 			{
 				for (int j = 0; j < matrix.ColumnCount; j++)
 				{
-					if (matrix[i, j] == AlignmentType.Aligned)
+					if (matrix[i, j])
 						wordPairs.Add(new AlignedWordPairDto { SourceIndex = i, TargetIndex = j });
 				}
 			}

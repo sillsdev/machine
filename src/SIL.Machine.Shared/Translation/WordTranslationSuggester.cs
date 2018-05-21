@@ -51,7 +51,7 @@ namespace SIL.Machine.Translation
 				else
 				{
 					// skip over inserted words
-					if (result.Alignment.IsColumnAligned(j) == AlignmentType.Aligned)
+					if (result.Alignment.IsColumnAligned(j))
 					{
 						lookaheadCount--;
 						// only suggest the first word/phrase we find
@@ -90,7 +90,7 @@ namespace SIL.Machine.Translation
 				i = 0;
 			for (; i < result.SourceSegment.Count; i++)
 			{
-				if (result.Alignment.IsRowAligned(i) == AlignmentType.NotAligned)
+				if (!result.Alignment.IsRowAligned(i))
 					lookaheadCount++;
 			}
 

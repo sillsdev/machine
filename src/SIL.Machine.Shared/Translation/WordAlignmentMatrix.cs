@@ -6,27 +6,18 @@ using SIL.Machine.Corpora;
 
 namespace SIL.Machine.Translation
 {
-	public enum AlignmentType
-	{
-		Unknown = -1,
-		NotAligned = 0,
-		Aligned = 1
-	}
-
 	public partial class WordAlignmentMatrix
 	{
-		private AlignmentType[,] _matrix;
+		private bool[,] _matrix;
 
-		public WordAlignmentMatrix(int i, int j, AlignmentType defaultValue = AlignmentType.NotAligned)
+		public WordAlignmentMatrix(int i, int j)
 		{
-			_matrix = new AlignmentType[i, j];
-			if (defaultValue != AlignmentType.NotAligned)
-				SetAll(defaultValue);
+			_matrix = new bool[i, j];
 		}
 
 		private WordAlignmentMatrix(WordAlignmentMatrix other)
 		{
-			_matrix = new AlignmentType[other.RowCount, other.ColumnCount];
+			_matrix = new bool[other.RowCount, other.ColumnCount];
 			for (int i = 0; i < RowCount; i++)
 			{
 				for (int j = 0; j < ColumnCount; j++)
@@ -38,7 +29,7 @@ namespace SIL.Machine.Translation
 
 		public int ColumnCount => _matrix.GetLength(1);
 
-		public void SetAll(AlignmentType value)
+		public void SetAll(bool value)
 		{
 			for (int i = 0; i < RowCount; i++)
 			{
@@ -47,41 +38,37 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public AlignmentType this[int i, int j]
+		public bool this[int i, int j]
 		{
 			get { return _matrix[i, j]; }
 			set { _matrix[i, j] = value; }
 		}
 
-		public AlignmentType IsRowAligned(int i)
+		public bool IsRowAligned(int i)
 		{
 			for (int j = 0; j < ColumnCount; j++)
 			{
-				if (_matrix[i, j] == AlignmentType.Aligned)
-					return AlignmentType.Aligned;
-				if (_matrix[i, j] == AlignmentType.Unknown)
-					return AlignmentType.Unknown;
+				if (_matrix[i, j])
+					return true;
 			}
-			return AlignmentType.NotAligned;
+			return false;
 		}
 
-		public AlignmentType IsColumnAligned(int j)
+		public bool IsColumnAligned(int j)
 		{
 			for (int i = 0; i < RowCount; i++)
 			{
-				if (_matrix[i, j] == AlignmentType.Aligned)
-					return AlignmentType.Aligned;
-				if (_matrix[i, j] == AlignmentType.Unknown)
-					return AlignmentType.Unknown;
+				if (_matrix[i, j])
+					return true;
 			}
-			return AlignmentType.NotAligned;
+			return false;
 		}
 
 		public IEnumerable<int> GetRowAlignedIndices(int i)
 		{
 			for (int j = 0; j < ColumnCount; j++)
 			{
-				if (_matrix[i, j] == AlignmentType.Aligned)
+				if (_matrix[i, j])
 					yield return j;
 			}
 		}
@@ -90,20 +77,20 @@ namespace SIL.Machine.Translation
 		{
 			for (int i = 0; i < RowCount; i++)
 			{
-				if (_matrix[i, j] == AlignmentType.Aligned)
+				if (_matrix[i, j])
 					yield return i;
 			}
 		}
 
 		public bool IsNeighborAligned(int i, int j)
 		{
-			if (i > 0 && _matrix[i - 1, j] == AlignmentType.Aligned)
+			if (i > 0 && _matrix[i - 1, j])
 				return true;
-			if (j > 0 && _matrix[i, j - 1] == AlignmentType.Aligned)
+			if (j > 0 && _matrix[i, j - 1])
 				return true;
-			if (i < RowCount - 1 && _matrix[i + 1, j] == AlignmentType.Aligned)
+			if (i < RowCount - 1 && _matrix[i + 1, j])
 				return true;
-			if (j < ColumnCount - 1 && _matrix[i, j + 1] == AlignmentType.Aligned)
+			if (j < ColumnCount - 1 && _matrix[i, j + 1])
 				return true;
 			return false;
 		}
@@ -117,8 +104,8 @@ namespace SIL.Machine.Translation
 			{
 				for (int j = 0; j < ColumnCount; j++)
 				{
-					if (!(_matrix[i, j] == AlignmentType.Aligned || other._matrix[i, j] == AlignmentType.Aligned))
-						_matrix[i, j] = AlignmentType.Aligned;
+					if (!(_matrix[i, j] || other._matrix[i, j]))
+						_matrix[i, j] = true;
 				}
 			}
 		}
@@ -132,8 +119,8 @@ namespace SIL.Machine.Translation
 			{
 				for (int j = 0; j < ColumnCount; j++)
 				{
-					if (!(_matrix[i, j] == AlignmentType.Aligned && other._matrix[i, j] == AlignmentType.Aligned))
-						_matrix[i, j] = AlignmentType.NotAligned;
+					if (!(_matrix[i, j] && other._matrix[i, j]))
+						_matrix[i, j] = false;
 				}
 			}
 		}
@@ -154,12 +141,12 @@ namespace SIL.Machine.Translation
 				{
 					for (int j = 0; j < ColumnCount; j++)
 					{
-						if ((other._matrix[i, j] == AlignmentType.Aligned || aux._matrix[i, j] == AlignmentType.Aligned) && _matrix[i, j] == AlignmentType.NotAligned)
+						if ((other._matrix[i, j] || aux._matrix[i, j]) && !_matrix[i, j])
 						{
-							if (IsColumnAligned(j) == AlignmentType.NotAligned && IsRowAligned(i) == AlignmentType.NotAligned)
-								_matrix[i, j] = AlignmentType.Aligned;
+							if (!IsColumnAligned(j) && !IsRowAligned(i))
+								_matrix[i, j] = true;
 							else if (IsNeighborAligned(i, j))
-								_matrix[i, j] = AlignmentType.Aligned;
+								_matrix[i, j] = true;
 						}
 					}
 				}
@@ -168,7 +155,7 @@ namespace SIL.Machine.Translation
 
 		public void Transpose()
 		{
-			var newMatrix = new AlignmentType[ColumnCount, RowCount];
+			var newMatrix = new bool[ColumnCount, RowCount];
 			for (int i = 0; i < RowCount; i++)
 			{
 				for (int j = 0; j < ColumnCount; j++)
@@ -189,7 +176,7 @@ namespace SIL.Machine.Translation
 				bool found = false;
 				for (int i = 0; i < RowCount; i++)
 				{
-					if (this[i, j] == AlignmentType.Aligned)
+					if (this[i, j])
 					{
 						if (!found)
 							source[j] = i;
@@ -247,13 +234,13 @@ namespace SIL.Machine.Translation
 				{
 					if (i == 0)
 					{
-						if (IsColumnAligned(j) == AlignmentType.NotAligned)
+						if (!IsColumnAligned(j))
 						{
 							sb.Append(j + 1);
 							sb.Append(" ");
 						}
 					}
-					else if (_matrix[i - 1, j] == AlignmentType.Aligned)
+					else if (_matrix[i - 1, j])
 					{
 						sb.Append(j + 1);
 						sb.Append(" ");
