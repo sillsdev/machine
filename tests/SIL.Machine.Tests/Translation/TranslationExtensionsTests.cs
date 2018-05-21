@@ -15,7 +15,8 @@ namespace SIL.Machine.Translation
 				[2, 1] = true,
 				[4, 2] = true,
 				[6, 3] = true,
-				[8, 4] = true,
+				[7, 4] = true,
+				[8, 5] = true,
 				[9, 6] = true
 			};
 			var aligner = Substitute.For<ISegmentAligner>();
@@ -29,7 +30,8 @@ namespace SIL.Machine.Translation
 				[2, 1] = true,
 				[5, 3] = true,
 				[6, 3] = true,
-				[7, 5] = true
+				[7, 5] = true,
+				[8, 4] = true
 			};
 
 			WordAlignmentMatrix alignment = aligner.GetBestAlignment(

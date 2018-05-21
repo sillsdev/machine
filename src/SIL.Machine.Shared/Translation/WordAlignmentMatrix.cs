@@ -84,13 +84,23 @@ namespace SIL.Machine.Translation
 
 		public bool IsNeighborAligned(int i, int j)
 		{
-			if (i > 0 && _matrix[i - 1, j])
-				return true;
+			return IsHorizontalNeighborAligned(i, j) || IsVerticalNeighborAligned(i, j);
+		}
+
+		public bool IsHorizontalNeighborAligned(int i, int j)
+		{
 			if (j > 0 && _matrix[i, j - 1])
 				return true;
-			if (i < RowCount - 1 && _matrix[i + 1, j])
-				return true;
 			if (j < ColumnCount - 1 && _matrix[i, j + 1])
+				return true;
+			return false;
+		}
+
+		public bool IsVerticalNeighborAligned(int i, int j)
+		{
+			if (i > 0 && _matrix[i - 1, j])
+				return true;
+			if (i < RowCount - 1 && _matrix[i + 1, j])
 				return true;
 			return false;
 		}
@@ -132,7 +142,8 @@ namespace SIL.Machine.Translation
 
 			WordAlignmentMatrix orig = Clone();
 			IntersectWith(other);
-			Symmetrize1(orig, other);
+			Func<int, int, bool> growCondition = (i, j) => IsNeighborAligned(i, j);
+			Symmetrize(growCondition, orig, other);
 		}
 
 		public void PrioritySymmetrizeWith(WordAlignmentMatrix other)
@@ -140,10 +151,12 @@ namespace SIL.Machine.Translation
 			if (RowCount != other.RowCount || ColumnCount != other.ColumnCount)
 				throw new ArgumentException("The matrices are not the same size.", nameof(other));
 
-			Symmetrize1(this, other);
+			Func<int, int, bool> growCondition = (i, j) => IsNeighborAligned(i, j)
+				&& !(IsHorizontalNeighborAligned(i, j) && IsVerticalNeighborAligned(i, j));
+			Symmetrize(growCondition, this, other);
 		}
 
-		public void Symmetrize1(WordAlignmentMatrix orig, WordAlignmentMatrix other)
+		private void Symmetrize(Func<int, int, bool> growCondition, WordAlignmentMatrix orig, WordAlignmentMatrix other)
 		{
 			WordAlignmentMatrix prev = null;
 			while (!ValueEquals(prev))
@@ -157,7 +170,7 @@ namespace SIL.Machine.Translation
 						{
 							if (!IsColumnAligned(j) && !IsRowAligned(i))
 								_matrix[i, j] = true;
-							else if (IsNeighborAligned(i, j))
+							else if (growCondition(i, j))
 								_matrix[i, j] = true;
 						}
 					}
