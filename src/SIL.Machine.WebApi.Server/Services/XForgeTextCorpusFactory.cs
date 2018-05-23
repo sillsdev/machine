@@ -65,7 +65,10 @@ namespace SIL.Machine.WebApi.Server.Services
 				if (projectDoc == null)
 					continue;
 				var code = "sf_" + (string) projectDoc["projectCode"];
-				var isScripture = (bool) projectDoc["config"]["isTranslationDataScripture"];
+				var config = (BsonDocument) projectDoc["config"];
+				bool isScripture = false;
+				if (config.TryGetValue("isTranslationDataScripture", out BsonValue isScriptureValue))
+					isScripture = (bool) isScriptureValue;
 
 				IMongoCollection<BsonDocument> projectColl = realtimeDatabase.GetCollection<BsonDocument>(code);
 				IMongoDatabase projectDatabase = _mongoClient.GetDatabase(code);
