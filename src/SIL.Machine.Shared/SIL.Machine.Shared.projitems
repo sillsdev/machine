@@ -48,6 +48,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordEditDistance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordGraph.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\WordGraphArc.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebApi\BuildStates.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebApi\Client\HttpException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebApi\Client\HttpResponse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebApi\Client\IHttpClient.cs" />

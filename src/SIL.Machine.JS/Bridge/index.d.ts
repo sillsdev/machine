@@ -3,6 +3,12 @@
     readonly message: string;
 }
 
+export enum TrainResultCode {
+    noError,
+    httpError,
+    trainError
+}
+
 export interface InteractiveTranslationSession {
     readonly sourceSegment: string[];
     confidenceThreshold: number;
@@ -24,10 +30,10 @@ export class TranslationEngine {
     translateInteractively(sourceSegment: string, confidenceThreshold: number,
         onFinished: { (arg: InteractiveTranslationSession): void }): void;
     train(onStatusUpdate: { (arg: ProgressStatus): void },
-        onFinished: { (arg: boolean): void }): void;
+        onFinished: { (arg: TrainResultCode): void }): void;
     startTraining(onFinished: { (arg: boolean): void }): void;
     listenForTrainingStatus(onStatusUpdate: { (arg: ProgressStatus): void },
-        onFinished: { (arg: boolean): void }): void;
+        onFinished: { (arg: TrainResultCode): void }): void;
     getConfidence(onFinished: { (success: boolean, confidence: number): void }): void;
     close(): void;
 }

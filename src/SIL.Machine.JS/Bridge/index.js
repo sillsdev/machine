@@ -9,6 +9,7 @@ function addClass(ns, cls)
     machine[cls] = ns[cls];
 }
 
+addClass(SIL.Machine.Translation, 'TrainResultCode');
 addClass(SIL.Machine.Translation, 'TranslationEngine');
 addClass(SIL.Machine.Translation, 'InteractiveTranslationSession');
 addClass(SIL.Machine.Translation, 'ProgressStatus');

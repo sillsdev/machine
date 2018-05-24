@@ -46,10 +46,10 @@ namespace SIL.Machine.Translation
 				: new InteractiveTranslationSession(this, tokens, confidenceThreshold, t.Result)));
 		}
 
-		public void Train(Action<ProgressStatus> onStatusUpdate, Action<bool> onFinished)
+		public void Train(Action<ProgressStatus> onStatusUpdate, Action<TrainResultCode> onFinished)
 		{
 			RestClient.TrainAsync(ProjectId, onStatusUpdate, _cts.Token)
-				.ContinueWith(t => onFinished(!t.IsFaulted && !t.IsCanceled));
+				.ContinueWith(t => onFinished(GetResultCode(t)));
 		}
 
 		public void StartTraining(Action<bool> onFinished)
@@ -57,10 +57,10 @@ namespace SIL.Machine.Translation
 			RestClient.StartTrainingAsync(ProjectId).ContinueWith(t => onFinished(!t.IsFaulted));
 		}
 
-		public void ListenForTrainingStatus(Action<ProgressStatus> onStatusUpdate, Action<bool> onFinished)
+		public void ListenForTrainingStatus(Action<ProgressStatus> onStatusUpdate, Action<TrainResultCode> onFinished)
 		{
 			RestClient.ListenForTrainingStatusAsync(ProjectId, onStatusUpdate, _cts.Token)
-				.ContinueWith(t => onFinished(!t.IsFaulted && !t.IsCanceled));
+				.ContinueWith(t => onFinished(GetResultCode(t)));
 		}
 
 		public void GetConfidence(Action<bool, double> onFinished)
@@ -78,6 +78,18 @@ namespace SIL.Machine.Translation
 		{
 			_cts.Cancel();
 			_cts.Dispose();
+		}
+
+		private static TrainResultCode GetResultCode(Task task)
+		{
+			if (task.IsFaulted)
+			{
+				if (task.Exception.InnerException is HttpException)
+					return TrainResultCode.HttpError;
+				else
+					return TrainResultCode.TrainError;
+			}
+			return TrainResultCode.NoError;
 		}
 	}
 }

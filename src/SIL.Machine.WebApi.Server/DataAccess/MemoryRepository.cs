@@ -135,7 +135,8 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 				if (PersistenceRepository != null)
 					await PersistenceRepository.DeleteAsync(id);
 			}
-			SendToSubscribers(changeListeners, EntityChangeType.Delete, internalEntity);
+			if (internalEntity != null)
+				SendToSubscribers(changeListeners, EntityChangeType.Delete, internalEntity);
 		}
 
 		public async Task<IDisposable> SubscribeAsync(string id, Action<EntityChange<T>> listener)
@@ -156,8 +157,9 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 					changeListeners.AddRange(listeners);
 
 				OnEntityChanged(EntityChangeType.Delete, oldEntity, null, changeListeners);
+				return oldEntity;
 			}
-			return oldEntity;
+			return null;
 		}
 
 		private void CheckForConcurrencyConflict(T entity)

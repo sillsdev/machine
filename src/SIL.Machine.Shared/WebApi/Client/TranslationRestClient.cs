@@ -73,14 +73,14 @@ namespace SIL.Machine.WebApi.Client
 			EngineDto engineDto = await GetEngineAsync(projectId);
 			BuildDto buildDto = await CreateBuildAsync(engineDto.Id);
 			progress(CreateProgressStatus(buildDto));
-			await PollBuildProgressAsync(engineDto.Id, buildDto.Revision + 1, progress, ct);
+			await PollBuildProgressAsync("id", buildDto.Id, buildDto.Revision + 1, progress, ct);
 		}
 
 		public async Task ListenForTrainingStatusAsync(string projectId, Action<ProgressStatus> progress,
 			CancellationToken ct)
 		{
 			EngineDto engineDto = await GetEngineAsync(projectId);
-			await PollBuildProgressAsync(engineDto.Id, 0, progress, ct);
+			await PollBuildProgressAsync("engine", engineDto.Id, 0, progress, ct);
 		}
 
 		public async Task<EngineDto> GetEngineAsync(string projectId)
@@ -103,19 +103,25 @@ namespace SIL.Machine.WebApi.Client
 			return JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
 		}
 
-		private async Task PollBuildProgressAsync(string engineId, int minRevision, Action<ProgressStatus> progress,
-			CancellationToken ct)
+		private async Task PollBuildProgressAsync(string locatorType, string locator, int minRevision,
+			Action<ProgressStatus> progress, CancellationToken ct)
 		{
 			while (true)
 			{
 				ct.ThrowIfCancellationRequested();
 
-				string url = $"translation/builds/engine:{engineId}?minRevision={minRevision}";
+				string url = $"translation/builds/{locatorType}:{locator}?minRevision={minRevision}";
 				HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url, null, null, ct);
 				if (response.StatusCode == 200)
 				{
 					BuildDto buildDto = JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
 					progress(CreateProgressStatus(buildDto));
+					locatorType = "id";
+					locator = buildDto.Id;
+					if (buildDto.State == BuildStates.Completed || buildDto.State == BuildStates.Canceled)
+						break;
+					else if (buildDto.State == BuildStates.Faulted)
+						throw new InvalidOperationException("Error occurred during build: " + buildDto.Message);
 					minRevision = buildDto.Revision + 1;
 				}
 				else if (response.StatusCode == 204)

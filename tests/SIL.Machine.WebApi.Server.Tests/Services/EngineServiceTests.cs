@@ -223,13 +223,13 @@ namespace SIL.Machine.WebApi.Server.Services
 			using (var env = new TestEnvironment())
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
-				var build = new Build {Id = "build1", EngineId = engineId};
+				var build = new Build { Id = "build1", EngineId = engineId };
 				await env.BuildRepository.InsertAsync(build);
 				await env.CreateEngineServiceAsync();
 				// ensures that the build is completed
 				env.DisposeEngineService();
 				build = await env.BuildRepository.GetAsync("build1");
-				Assert.That(build, Is.Null);
+				Assert.That(build.State, Is.EqualTo(BuildStates.Completed));
 			}
 		}
 

@@ -39,6 +39,7 @@ namespace SIL.Machine.WebApi.Server.Services
 		private string _buildId;
 		private bool _isUpdated;
 		private DateTime _lastUsedTime;
+		private bool _isDisposing;
 
 		public EngineRunner(IOptions<EngineOptions> options, IEngineRepository engineRepo, IBuildRepository buildRepo,
 			ISmtModelFactory smtModelFactory, IRuleEngineFactory ruleEngineFactory,
@@ -148,7 +149,6 @@ namespace SIL.Machine.WebApi.Server.Services
 				if (IsBuilding)
 				{
 					_buildCts.Cancel();
-					await _buildRepo.DeleteAsync(_buildId);
 					await _buildTask;
 				}
 
@@ -181,10 +181,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			using (await _lock.WriterLockAsync())
 			{
 				if (IsBuilding)
-				{
 					_buildCts.Cancel();
-					await _buildRepo.DeleteAsync(_buildId);
-				}
 			}
 		}
 
@@ -220,10 +217,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			using (await _lock.WriterLockAsync())
 			{
 				if (IsBuilding)
-				{
 					_buildCts.Cancel();
-					await _buildRepo.DeleteAsync(_buildId);
-				}
 				Unload();
 				_smtModelFactory.CleanupModel(_engineId);
 				_ruleEngineFactory.CleanupEngine(_engineId);
@@ -291,21 +285,41 @@ namespace SIL.Machine.WebApi.Server.Services
 
 					_batchTrainer.Dispose();
 					_batchTrainer = null;
-					await _buildRepo.DeleteAsync(build);
+					build.State = BuildStates.Completed;
+					build.DateFinished = DateTime.UtcNow;
+					await _buildRepo.UpdateAsync(build);
 				}
 				stopwatch.Stop();
 				_logger.LogInformation("Build finished in {0}ms ({1})", stopwatch.Elapsed.TotalMilliseconds, _engineId);
 			}
+			catch (OperationCanceledException)
+			{
+				_logger.LogInformation("Build canceled ({1})", _engineId);
+				if (!_isDisposing)
+				{
+					build.State = BuildStates.Canceled;
+					build.DateFinished = DateTime.UtcNow;
+					await _buildRepo.UpdateAsync(build);
+				}
+			}
 			catch (Exception e)
 			{
 				_logger.LogError(0, e, "Error occurred while building ({0})", _engineId);
-				throw;
+				build.State = BuildStates.Faulted;
+				build.Message = e.Message;
+				build.DateFinished = DateTime.UtcNow;
+				await _buildRepo.UpdateAsync(build);
 			}
 		}
 
 		protected override void DisposeManagedResources()
 		{
-			WaitForBuildToComplete();
+			_isDisposing = true;
+			if (IsBuilding)
+			{
+				_buildCts.Cancel();
+				WaitForBuildToComplete();
+			}
 
 			_batchTrainer?.Dispose();
 			_batchTrainer = null;

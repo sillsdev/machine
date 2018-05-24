@@ -12,7 +12,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		public MemoryBuildRepository(IBuildRepository persistenceRepo = null)
 			: base(persistenceRepo)
 		{
-			_engineIdIndex = new UniqueEntityIndex<string, Build>(b => b.EngineId);
+			_engineIdIndex = new UniqueEntityIndex<string, Build>(b => b.EngineId, b => b.State == BuildStates.Active);
 		}
 
 		public override async Task InitAsync()

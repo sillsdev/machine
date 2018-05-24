@@ -6,5 +6,6 @@
 		public ResourceDto Engine { get; set; }
 		public double PercentCompleted { get; set; }
 		public string Message { get; set; }
+		public string State { get; set; }
 	}
 }

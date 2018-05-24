@@ -32,7 +32,7 @@ namespace SIL.Machine.WebApi.Server.Services
 				env.BatchTrainer.Received().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
 				env.BatchTrainer.Received().Save();
 				build = await env.BuildRepository.GetAsync(build.Id);
-				Assert.That(build, Is.Null);
+				Assert.That(build.State, Is.EqualTo(BuildStates.Completed));
 			}
 		}
 
@@ -56,7 +56,7 @@ namespace SIL.Machine.WebApi.Server.Services
 				env.BatchTrainer.Received().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
 				env.BatchTrainer.DidNotReceive().Save();
 				build = await env.BuildRepository.GetAsync(build.Id);
-				Assert.That(build, Is.Null);
+				Assert.That(build.State, Is.EqualTo(BuildStates.Canceled));
 			}
 		}
 
