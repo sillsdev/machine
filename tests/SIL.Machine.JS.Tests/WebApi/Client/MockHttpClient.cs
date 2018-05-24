@@ -12,7 +12,7 @@ namespace SIL.Machine.WebApi.Client
 		public string BaseUrl { get; set; }
 
 		public async Task<HttpResponse> SendAsync(HttpRequestMethod method, string url, string body, string contentType,
-			CancellationToken ct)
+			CancellationToken ct = default(CancellationToken))
 		{
 			MockRequest request = Requests.FirstOrDefault(r => r.Method == method && (r.Url == null || r.Url == url)
 				&& (r.Body == null || r.Body == body));

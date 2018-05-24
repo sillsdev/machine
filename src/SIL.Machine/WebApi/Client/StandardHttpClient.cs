@@ -22,7 +22,7 @@ namespace SIL.Machine.WebApi.Client
 		}
 
 		public async Task<HttpResponse> SendAsync(HttpRequestMethod method, string url, string body, string contentType,
-			CancellationToken ct)
+			CancellationToken ct = default(CancellationToken))
 		{
 			HttpMethod httpMethod;
 			switch (method)

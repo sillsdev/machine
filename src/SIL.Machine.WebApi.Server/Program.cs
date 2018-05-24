@@ -1,5 +1,4 @@
-﻿using Autofac.Extensions.DependencyInjection;
-using Microsoft.AspNetCore;
+﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 
@@ -18,7 +17,6 @@ namespace SIL.Machine.WebApi.Server
 				.AddCommandLine(args)
 				.Build();
 			return WebHost.CreateDefaultBuilder(args)
-				.ConfigureServices(services => services.AddAutofac())
 				.ConfigureAppConfiguration((context, config) =>
 				{
 					config.AddJsonFile("appsettings.user.json", true);

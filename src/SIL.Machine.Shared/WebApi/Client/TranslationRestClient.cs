@@ -20,8 +20,7 @@ namespace SIL.Machine.WebApi.Client
 		public async Task<ProjectDto> GetProjectAsync(string projectId)
 		{
 			string url = $"translation/projects/id:{projectId}";
-			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url, null, null,
-				CancellationToken.None);
+			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url, null, null);
 			if (!response.IsSuccess)
 				throw new HttpException("Error getting project.") { StatusCode = response.StatusCode };
 			return JsonConvert.DeserializeObject<ProjectDto>(response.Content, SerializerSettings);
@@ -32,8 +31,7 @@ namespace SIL.Machine.WebApi.Client
 		{
 			string url = $"translation/engines/project:{projectId}/actions/interactiveTranslate";
 			string body = JsonConvert.SerializeObject(sourceSegment, SerializerSettings);
-			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Post, url, body, "application/json",
-				CancellationToken.None);
+			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Post, url, body, "application/json");
 			if (!response.IsSuccess)
 			{
 				throw new HttpException("Error calling interactiveTranslate action.")
@@ -56,8 +54,7 @@ namespace SIL.Machine.WebApi.Client
 				TargetSegment = targetSegment.ToArray()
 			};
 			string body = JsonConvert.SerializeObject(pairDto, SerializerSettings);
-			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Post, url, body, "application/json",
-				CancellationToken.None);
+			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Post, url, body, "application/json");
 			if (!response.IsSuccess)
 				throw new HttpException("Error calling trainSegment action.") { StatusCode = response.StatusCode };
 		}
@@ -68,7 +65,8 @@ namespace SIL.Machine.WebApi.Client
 			await CreateBuildAsync(engineDto.Id);
 		}
 
-		public async Task TrainAsync(string projectId, Action<ProgressStatus> progress, CancellationToken ct)
+		public async Task TrainAsync(string projectId, Action<ProgressStatus> progress,
+			CancellationToken ct = default(CancellationToken))
 		{
 			EngineDto engineDto = await GetEngineAsync(projectId);
 			BuildDto buildDto = await CreateBuildAsync(engineDto.Id);
@@ -77,7 +75,7 @@ namespace SIL.Machine.WebApi.Client
 		}
 
 		public async Task ListenForTrainingStatusAsync(string projectId, Action<ProgressStatus> progress,
-			CancellationToken ct)
+			CancellationToken ct = default(CancellationToken))
 		{
 			EngineDto engineDto = await GetEngineAsync(projectId);
 			await PollBuildProgressAsync("engine", engineDto.Id, 0, progress, ct);

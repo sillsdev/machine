@@ -10,7 +10,7 @@ namespace SIL.Machine.WebApi.Client
 		public string BaseUrl { get; set; }
 
 		public Task<HttpResponse> SendAsync(HttpRequestMethod method, string url, string body, string contentType,
-			CancellationToken ct)
+			CancellationToken ct = default(CancellationToken))
 		{
 			var tcs = new TaskCompletionSource<HttpResponse>();
 			var request = new XMLHttpRequest();

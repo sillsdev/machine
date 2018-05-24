@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Hangfire;
+using Hangfire.MemoryStorage;
+using Hangfire.Mongo;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,50 +40,59 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 	public static class DataAccessExtensions
 	{
 		public static async Task<Engine> GetByLocatorAsync(this IEngineRepository engineRepo,
-			EngineLocatorType locatorType, string locator)
+			EngineLocatorType locatorType, string locator, CancellationToken ct = default(CancellationToken))
 		{
 			switch (locatorType)
 			{
 				case EngineLocatorType.Id:
-					return await engineRepo.GetAsync(locator);
+					return await engineRepo.GetAsync(locator, ct);
 				case EngineLocatorType.LanguageTag:
 					int index = locator.IndexOf("_", StringComparison.OrdinalIgnoreCase);
 					string sourceLanguageTag = locator.Substring(0, index);
 					string targetLanguageTag = locator.Substring(index + 1);
-					return await engineRepo.GetByLanguageTagAsync(sourceLanguageTag, targetLanguageTag);
+					return await engineRepo.GetByLanguageTagAsync(sourceLanguageTag, targetLanguageTag, ct);
 				case EngineLocatorType.Project:
-					return await engineRepo.GetByProjectIdAsync(locator);
+					return await engineRepo.GetByProjectIdAsync(locator, ct);
 			}
 			return null;
 		}
 
 		public static async Task<Build> GetByLocatorAsync(this IBuildRepository buildRepo, BuildLocatorType locatorType,
-			string locator)
+			string locator, CancellationToken ct = default(CancellationToken))
 		{
 			switch (locatorType)
 			{
 				case BuildLocatorType.Id:
-					return await buildRepo.GetAsync(locator);
+					return await buildRepo.GetAsync(locator, ct);
 				case BuildLocatorType.Engine:
-					return await buildRepo.GetByEngineIdAsync(locator);
+					return await buildRepo.GetByEngineIdAsync(locator, ct);
 			}
 			return null;
 		}
 
-		public static async Task<T> ConcurrentUpdateAsync<T>(this IRepository<T> repo, T entity, Action<T> changeAction)
-			where T : class, IEntity<T>
+		public static async Task<T> ConcurrentUpdateAsync<T>(this IRepository<T> repo, string id,
+			Action<T> changeAction, CancellationToken ct = default(CancellationToken)) where T : class, IEntity<T>
+		{
+			T entity = await repo.GetAsync(id, ct);
+			if (entity == null)
+				return null;
+			return await repo.ConcurrentUpdateAsync(entity, changeAction, ct);
+		}
+
+		public static async Task<T> ConcurrentUpdateAsync<T>(this IRepository<T> repo, T entity, Action<T> changeAction,
+			CancellationToken ct = default(CancellationToken)) where T : class, IEntity<T>
 		{
 			while (true)
 			{
 				try
 				{
 					changeAction(entity);
-					await repo.UpdateAsync(entity, true);
+					await repo.UpdateAsync(entity, true, ct);
 					break;
 				}
 				catch (ConcurrencyConflictException)
 				{
-					entity = await repo.GetAsync(entity.Id);
+					entity = await repo.GetAsync(entity.Id, ct);
 					if (entity == null)
 						return null;
 				}
@@ -89,32 +101,20 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		}
 
 		public static Task<EntityChange<T>> GetNewerRevisionAsync<T>(this IRepository<T> repo, string id,
-			long minRevision) where T : class, IEntity<T>
+			long minRevision, CancellationToken ct = default(CancellationToken)) where T : class, IEntity<T>
 		{
-			return repo.GetNewerRevisionAsync(id, minRevision, CancellationToken.None);
-		}
-
-		public static Task<EntityChange<T>> GetNewerRevisionAsync<T>(this IRepository<T> repo, string id,
-			long minRevision, CancellationToken ct) where T : class, IEntity<T>
-		{
-			return GetNewerRevisionAsync(repo.SubscribeAsync, repo.GetAsync, id, minRevision, ct);
+			return GetNewerRevisionAsync(repo.SubscribeAsync, id, minRevision, ct);
 		}
 
 		public static Task<EntityChange<Build>> GetNewerRevisionByEngineIdAsync(this IBuildRepository repo,
-			string engineId, long minRevision)
+			string engineId, long minRevision, CancellationToken ct = default(CancellationToken))
 		{
-			return repo.GetNewerRevisionByEngineIdAsync(engineId, minRevision, CancellationToken.None);
-		}
-
-		public static Task<EntityChange<Build>> GetNewerRevisionByEngineIdAsync(this IBuildRepository repo,
-			string engineId, long minRevision, CancellationToken ct)
-		{
-			return GetNewerRevisionAsync(repo.SubscribeByEngineIdAsync, repo.GetByEngineIdAsync, engineId, minRevision,
-				ct);
+			return GetNewerRevisionAsync(repo.SubscribeByEngineIdAsync, engineId, minRevision, ct);
 		}
 
 		public static Task<EntityChange<Build>> GetNewerRevisionAsync(this IBuildRepository repo,
-			BuildLocatorType locatorType, string locator, long minRevision, CancellationToken ct)
+			BuildLocatorType locatorType, string locator, long minRevision,
+			CancellationToken ct = default(CancellationToken))
 		{
 			switch (locatorType)
 			{
@@ -127,25 +127,17 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		}
 
 		private static async Task<EntityChange<TEntity>> GetNewerRevisionAsync<TKey, TEntity>(
-			Func<TKey, Action<EntityChange<TEntity>>, Task<IDisposable>> subscribe, Func<TKey, Task<TEntity>> getEntity,
-			TKey key, long minRevision, CancellationToken ct) where TEntity : class, IEntity<TEntity>
+			Func<TKey, CancellationToken, Task<Subscription<TEntity>>> subscribe, TKey key, long minRevision,
+			CancellationToken ct) where TEntity : class, IEntity<TEntity>
 		{
-			var changeEvent = new AsyncAutoResetEvent();
-			var change = new EntityChange<TEntity>();
-			void HandleChange(EntityChange<TEntity> c)
+			using (Subscription<TEntity> subscription = await subscribe(key, ct))
 			{
-				change = c;
-				changeEvent.Set();
-			}
-			ct.ThrowIfCancellationRequested();
-			using (await subscribe(key, HandleChange))
-			{
-				if (minRevision > 0 && await getEntity(key) == null)
+				if (minRevision > 0 && subscription.Change.Entity == null)
 					return new EntityChange<TEntity>(EntityChangeType.Delete, null);
 				while (true)
 				{
-					await changeEvent.WaitAsync(ct);
-					EntityChange<TEntity> curChange = change;
+					await subscription.WaitForUpdateAsync(ct);
+					EntityChange<TEntity> curChange = subscription.Change;
 					if (curChange.Type == EntityChangeType.Delete)
 						return curChange;
 					if (minRevision <= curChange.Entity.Revision)
@@ -156,6 +148,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 
 		public static IServiceCollection AddNoDbDataAccess(this IServiceCollection services, IConfiguration config)
 		{
+			services.AddHangfire(gc => gc.UseMemoryStorage());
 			services.Configure<NoDbDataAccessOptions>(config.GetSection("NoDbDataAccess"));
 			services.AddNoDbForEntity<Engine>();
 			services.AddNoDbForEntity<Build>();
@@ -182,6 +175,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 
 		public static IServiceCollection AddMemoryDataAccess(this IServiceCollection services)
 		{
+			services.AddHangfire(gc => gc.UseMemoryStorage());
 			services.AddSingleton<IEngineRepository, MemoryEngineRepository>();
 			services.AddSingleton<IBuildRepository, MemoryBuildRepository>();
 			services.AddSingleton<IRepository<Project>, MemoryRepository<Project>>();
@@ -191,9 +185,18 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		public static IServiceCollection AddMongoDataAccess(this IServiceCollection services,
 			IConfiguration configuration)
 		{
-			services.Configure<MongoDataAccessOptions>(configuration.GetSection("MongoDataAccess"));
 			IConfigurationSection dataAccessConfig = configuration.GetSection("MongoDataAccess");
+			services.Configure<MongoDataAccessOptions>(dataAccessConfig);
 			string connectionString = dataAccessConfig.GetValue("ConnectionString", "mongodb://localhost:27017");
+			var mongoStorageOptions = new MongoStorageOptions
+			{
+				MigrationOptions = new MongoMigrationOptions
+				{
+					Strategy = MongoMigrationStrategy.Migrate
+				}
+			};
+			services.AddHangfire(gc => gc.UseMongoStorage(connectionString, "machine", mongoStorageOptions));
+
 			var mongoClient = new MongoClient(connectionString);
 			IMongoDatabase db = mongoClient.GetDatabase("machine");
 

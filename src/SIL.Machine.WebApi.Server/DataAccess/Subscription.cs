@@ -1,42 +1,43 @@
 using System;
-using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using SIL.Machine.WebApi.Server.Models;
+using SIL.Machine.WebApi.Server.Utils;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.WebApi.Server.DataAccess
 {
-	internal class Subscription<TKey, TEntity> : DisposableBase where TEntity : class, IEntity<TEntity>
+	public class Subscription<T> : DisposableBase where T : class, IEntity<T>
 	{
-		private readonly IDictionary<TKey, ISet<Action<EntityChange<TEntity>>>> _changeListeners;
-		private readonly TKey _key;
-		private readonly Action<EntityChange<TEntity>> _listener;
+		private readonly Action<Subscription<T>> _remove;
+		private readonly AsyncAutoResetEvent _changeEvent;
 
-		public Subscription(IDictionary<TKey, ISet<Action<EntityChange<TEntity>>>> changeListeners, TKey key,
-			Action<EntityChange<TEntity>> listener)
+		public Subscription(object key, T initialEntity, Action<Subscription<T>> remove)
 		{
-			_changeListeners = changeListeners;
-			_key = key;
-			_listener = listener;
+			Key = key;
+			_remove = remove;
+			_changeEvent = new AsyncAutoResetEvent();
+			Change = new EntityChange<T>(EntityChangeType.None, initialEntity);
+		}
 
-			if (!_changeListeners.TryGetValue(_key, out ISet<Action<EntityChange<TEntity>>> listeners))
-			{
-				listeners = new HashSet<Action<EntityChange<TEntity>>>();
-				_changeListeners[_key] = listeners;
-			}
-			listeners.Add(listener);
+		public EntityChange<T> Change { get; private set; }
+
+		internal object Key { get; }
+
+		public Task WaitForUpdateAsync(CancellationToken ct = default(CancellationToken))
+		{
+			return _changeEvent.WaitAsync(ct);
+		}
+
+		internal void HandleChange(EntityChange<T> change)
+		{
+			Change = change;
+			_changeEvent.Set();
 		}
 
 		protected override void DisposeManagedResources()
 		{
-			RemoveListener();
-		}
-
-		protected virtual void RemoveListener()
-		{
-			ISet<Action<EntityChange<TEntity>>> listeners = _changeListeners[_key];
-			listeners.Remove(_listener);
-			if (listeners.Count == 0)
-				_changeListeners.Remove(_key);
+			_remove(this);
 		}
 	}
 }

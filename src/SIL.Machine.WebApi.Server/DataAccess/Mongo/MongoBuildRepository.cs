@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Driver;
 using SIL.Extensions;
@@ -9,30 +9,31 @@ namespace SIL.Machine.WebApi.Server.DataAccess.Mongo
 {
 	public class MongoBuildRepository : MongoRepository<Build>, IBuildRepository
 	{
-		private readonly Dictionary<string, ISet<Action<EntityChange<Build>>>> _engineIdChangeListeners;
+		private readonly Dictionary<string, ISet<Subscription<Build>>> _engineIdSubscriptions;
 
 		public MongoBuildRepository(IMongoCollection<Build> collection)
 			: base(collection)
 		{
-			_engineIdChangeListeners = new Dictionary<string, ISet<Action<EntityChange<Build>>>>();
+			_engineIdSubscriptions = new Dictionary<string, ISet<Subscription<Build>>>();
 		}
 
-		public Task<Build> GetByEngineIdAsync(string engineId)
+		public Task<Build> GetByEngineIdAsync(string engineId, CancellationToken ct = default(CancellationToken))
 		{
-			return Collection.Find(b => b.EngineRef == engineId && b.State == BuildStates.Active).FirstOrDefaultAsync();
+			return Collection.Find(b => b.EngineRef == engineId
+				&& (b.State == BuildStates.Active || b.State == BuildStates.Pending)).FirstOrDefaultAsync(ct);
 		}
 
-		public async Task<IDisposable> SubscribeByEngineIdAsync(string engineId, Action<EntityChange<Build>> listener)
+		public Task<Subscription<Build>> SubscribeByEngineIdAsync(string engineId,
+			CancellationToken ct = default(CancellationToken))
 		{
-			using (await Lock.LockAsync())
-				return new MongoSubscription<string, Build>(Lock, _engineIdChangeListeners, engineId, listener);
+			return AddSubscriptionAsync(GetByEngineIdAsync, _engineIdSubscriptions, engineId, ct);
 		}
 
-		protected override void GetChangeListeners(Build build, IList<Action<EntityChange<Build>>> changeListeners)
+		protected override void GetSubscriptions(Build build, IList<Subscription<Build>> allSubscriptions)
 		{
-			base.GetChangeListeners(build, changeListeners);
-			if (_engineIdChangeListeners.TryGetValue(build.EngineRef, out ISet<Action<EntityChange<Build>>> listeners))
-				changeListeners.AddRange(listeners);
+			base.GetSubscriptions(build, allSubscriptions);
+			if (_engineIdSubscriptions.TryGetValue(build.EngineRef, out ISet<Subscription<Build>> subscriptions))
+				allSubscriptions.AddRange(subscriptions);
 		}
 	}
 }

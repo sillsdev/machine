@@ -24,7 +24,7 @@ namespace SIL.Machine.WebApi.Server.Models
 		public string EngineRef { get; set; }
 		public double PercentCompleted { get; set; }
 		public string Message { get; set; }
-		public string State { get; set; } = BuildStates.Active;
+		public string State { get; set; } = BuildStates.Pending;
 		public DateTime DateFinished { get; set; }
 
 		public Build Clone()

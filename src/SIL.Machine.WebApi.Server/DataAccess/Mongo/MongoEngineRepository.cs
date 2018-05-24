@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using MongoDB.Driver;
 using SIL.Machine.WebApi.Server.Models;
 
@@ -11,15 +12,16 @@ namespace SIL.Machine.WebApi.Server.DataAccess.Mongo
 		{
 		}
 
-		public Task<Engine> GetByLanguageTagAsync(string sourceLanguageTag, string targetLanguageTag)
+		public Task<Engine> GetByLanguageTagAsync(string sourceLanguageTag, string targetLanguageTag,
+			CancellationToken ct = default(CancellationToken))
 		{
 			return Collection.Find(e => e.SourceLanguageTag == sourceLanguageTag
-				&& e.TargetLanguageTag == targetLanguageTag && e.IsShared).FirstOrDefaultAsync();
+				&& e.TargetLanguageTag == targetLanguageTag && e.IsShared).FirstOrDefaultAsync(ct);
 		}
 
-		public Task<Engine> GetByProjectIdAsync(string projectId)
+		public Task<Engine> GetByProjectIdAsync(string projectId, CancellationToken ct = default(CancellationToken))
 		{
-			return Collection.Find(e => e.Projects.Contains(projectId)).FirstOrDefaultAsync();
+			return Collection.Find(e => e.Projects.Contains(projectId)).FirstOrDefaultAsync(ct);
 		}
 	}
 }

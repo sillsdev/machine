@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using SIL.Machine.WebApi.Server.Models;
 
@@ -14,23 +14,24 @@ namespace SIL.Machine.WebApi.Server.DataAccess.Memory
 			: base(persistenceRepo)
 		{
 			_langTagIndex = new UniqueEntityIndex<(string SourceLanguageTag, string TargetLanguageTag), Engine>(
-				e => (e.SourceLanguageTag, e.TargetLanguageTag), e => e.IsShared);
-			_projectIndex = new UniqueEntityIndex<string, Engine>(e => e.Projects);
+				Lock, e => (e.SourceLanguageTag, e.TargetLanguageTag), e => e.IsShared);
+			_projectIndex = new UniqueEntityIndex<string, Engine>(Lock, e => e.Projects);
 		}
 
-		public override async Task InitAsync()
+		public override async Task InitAsync(CancellationToken ct = default(CancellationToken))
 		{
-			await base.InitAsync();
+			await base.InitAsync(ct);
 			if (PersistenceRepository != null)
 			{
-				_langTagIndex.PopulateIndex(await PersistenceRepository.GetAllAsync());
-				_projectIndex.PopulateIndex(await PersistenceRepository.GetAllAsync());
+				_langTagIndex.PopulateIndex(await PersistenceRepository.GetAllAsync(ct));
+				_projectIndex.PopulateIndex(await PersistenceRepository.GetAllAsync(ct));
 			}
 		}
 
-		public async Task<Engine> GetByLanguageTagAsync(string sourceLanguageTag, string targetLanguageTag)
+		public async Task<Engine> GetByLanguageTagAsync(string sourceLanguageTag, string targetLanguageTag,
+			CancellationToken ct = default(CancellationToken))
 		{
-			using (await Lock.ReaderLockAsync())
+			using (await Lock.ReaderLockAsync(ct))
 			{
 				if (_langTagIndex.TryGetEntity((sourceLanguageTag, targetLanguageTag), out Engine engine))
 					return engine;
@@ -38,9 +39,10 @@ namespace SIL.Machine.WebApi.Server.DataAccess.Memory
 			}
 		}
 
-		public async Task<Engine> GetByProjectIdAsync(string projectId)
+		public async Task<Engine> GetByProjectIdAsync(string projectId,
+			CancellationToken ct = default(CancellationToken))
 		{
-			using (await Lock.ReaderLockAsync())
+			using (await Lock.ReaderLockAsync(ct))
 			{
 				if (_projectIndex.TryGetEntity(projectId, out Engine engine))
 					return engine;
@@ -55,18 +57,18 @@ namespace SIL.Machine.WebApi.Server.DataAccess.Memory
 		}
 
 		protected override void OnEntityChanged(EntityChangeType type, Engine oldEngine, Engine newEngine,
-			IList<Action<EntityChange<Engine>>> changeListeners)
+			IList<Subscription<Engine>> allSubscriptions)
 		{
 			switch (type)
 			{
 				case EntityChangeType.Insert:
 				case EntityChangeType.Update:
-					_langTagIndex.OnEntityUpdated(oldEngine, newEngine, changeListeners);
-					_projectIndex.OnEntityUpdated(oldEngine, newEngine, changeListeners);
+					_langTagIndex.OnEntityUpdated(oldEngine, newEngine, allSubscriptions);
+					_projectIndex.OnEntityUpdated(oldEngine, newEngine, allSubscriptions);
 					break;
 				case EntityChangeType.Delete:
-					_langTagIndex.OnEntityDeleted(oldEngine, changeListeners);
-					_projectIndex.OnEntityDeleted(oldEngine, changeListeners);
+					_langTagIndex.OnEntityDeleted(oldEngine, allSubscriptions);
+					_projectIndex.OnEntityDeleted(oldEngine, allSubscriptions);
 					break;
 			}
 		}

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using SIL.ObjectModel;
@@ -26,7 +27,7 @@ namespace SIL.Machine.WebApi.Server.Utils
 		public int Count { get; private set; }
 		public int AvailableCount => _bufferBlock.Count;
 
-		public async Task<ObjectPoolItem<T>> GetAsync()
+		public async Task<ObjectPoolItem<T>> GetAsync(CancellationToken cancellationToken = default(CancellationToken))
 		{
 			CheckDisposed();
 
@@ -35,7 +36,7 @@ namespace SIL.Machine.WebApi.Server.Utils
 
 			if (Count < MaxCount)
 			{
-				using (await _lock.LockAsync())
+				using (await _lock.LockAsync(cancellationToken))
 				{
 					if (Count < MaxCount)
 					{
@@ -47,7 +48,7 @@ namespace SIL.Machine.WebApi.Server.Utils
 				}
 			}
 
-			return new ObjectPoolItem<T>(this, await _bufferBlock.ReceiveAsync());
+			return new ObjectPoolItem<T>(this, await _bufferBlock.ReceiveAsync(cancellationToken));
 		}
 
 		internal void Put(T item)

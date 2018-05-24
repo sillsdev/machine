@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SIL.Machine.WebApi.Server.Options;
-using SIL.Machine.WebApi.Server.Utils;
 
 namespace SIL.Machine.WebApi.Server.Services
 {
@@ -40,13 +39,13 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			services.Configure<EngineOptions>(config.GetSection("TranslationEngine"));
 			services.AddSingleton<EngineService>();
-			services.AddTransient<EngineRunner>();
+			services.AddTransient<EngineRuntime>();
 			return services;
 		}
 
 		public static IApplicationBuilder UseEngineService(this IApplicationBuilder app)
 		{
-			app.ApplicationServices.GetService<EngineService>().InitAsync().WaitAndUnwrapException();
+			app.ApplicationServices.GetService<EngineService>().Init();
 			return app;
 		}
 	}

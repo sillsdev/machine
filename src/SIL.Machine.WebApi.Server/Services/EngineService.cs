@@ -16,44 +16,29 @@ namespace SIL.Machine.WebApi.Server.Services
 	public class EngineService : DisposableBase
 	{
 		private readonly IOptions<EngineOptions> _options;
-		private readonly ConcurrentDictionary<string, Owned<EngineRunner>> _runners;
+		private readonly ConcurrentDictionary<string, Owned<EngineRuntime>> _runtimes;
 		private readonly AsyncReaderWriterLock _lock;
 		private readonly IEngineRepository _engineRepo;
 		private readonly IBuildRepository _buildRepo;
 		private readonly IRepository<Project> _projectRepo;
-		private readonly Func<string, Owned<EngineRunner>> _engineRunnerFactory;
+		private readonly Func<string, Owned<EngineRuntime>> _engineRunnerFactory;
 		private readonly AsyncTimer _commitTimer;
 
 		public EngineService(IOptions<EngineOptions> options, IEngineRepository engineRepo, IBuildRepository buildRepo,
-			IRepository<Project> projectRepo, Func<string, Owned<EngineRunner>> engineRunnerFactory)
+			IRepository<Project> projectRepo, Func<string, Owned<EngineRuntime>> engineRuntimeFactory)
 		{
 			_options = options;
 			_engineRepo = engineRepo;
 			_buildRepo = buildRepo;
 			_projectRepo = projectRepo;
-			_engineRunnerFactory = engineRunnerFactory;
-			_runners = new ConcurrentDictionary<string, Owned<EngineRunner>>();
+			_engineRunnerFactory = engineRuntimeFactory;
+			_runtimes = new ConcurrentDictionary<string, Owned<EngineRuntime>>();
 			_lock = new AsyncReaderWriterLock();
 			_commitTimer = new AsyncTimer(EngineCommitAsync);
 		}
 
-		public async Task InitAsync()
+		public void Init()
 		{
-			// restart any builds that didn't finish before the last shutdown
-			foreach (Build build in await _buildRepo.GetAllAsync())
-			{
-				Engine engine = await _engineRepo.GetAsync(build.EngineRef);
-				if (engine != null)
-				{
-					EngineRunner runner = CreateRunner(engine.Id);
-					await runner.RestartUnfinishedBuildAsync(build, engine);
-				}
-				else
-				{
-					// orphaned build, so delete it
-					await _buildRepo.DeleteAsync(build);
-				}
-			}
 			_commitTimer.Start(_options.Value.EngineCommitFrequency);
 		}
 
@@ -61,7 +46,7 @@ namespace SIL.Machine.WebApi.Server.Services
 		{
 			using (await _lock.ReaderLockAsync())
 			{
-				foreach (Owned<EngineRunner> runner in _runners.Values)
+				foreach (Owned<EngineRuntime> runner in _runtimes.Values)
 					await runner.Value.CommitAsync();
 			}
 		}
@@ -76,13 +61,13 @@ namespace SIL.Machine.WebApi.Server.Services
 				Engine engine = await _engineRepo.GetByLocatorAsync(locatorType, locator);
 				if (engine == null)
 					return null;
-				EngineRunner runner = GetOrCreateRunner(engine.Id);
-				return await runner.TranslateAsync(segment.Preprocess(Preprocessors.Lowercase));
+				EngineRuntime runtime = GetOrCreateRuntime(engine.Id);
+				return await runtime.TranslateAsync(segment);
 			}
 		}
 
-		public async Task<IEnumerable<TranslationResult>> TranslateAsync(
-			EngineLocatorType locatorType, string locator, int n, IReadOnlyList<string> segment)
+		public async Task<IEnumerable<TranslationResult>> TranslateAsync( EngineLocatorType locatorType, string locator,
+			int n, IReadOnlyList<string> segment)
 		{
 			CheckDisposed();
 
@@ -91,13 +76,13 @@ namespace SIL.Machine.WebApi.Server.Services
 				Engine engine = await _engineRepo.GetByLocatorAsync(locatorType, locator);
 				if (engine == null)
 					return null;
-				EngineRunner runner = GetOrCreateRunner(engine.Id);
-				return await runner.TranslateAsync(n, segment.Preprocess(Preprocessors.Lowercase));
+				EngineRuntime runtime = GetOrCreateRuntime(engine.Id);
+				return await runtime.TranslateAsync(n, segment);
 			}
 		}
 
-		public async Task<HybridInteractiveTranslationResult> InteractiveTranslateAsync(
-			EngineLocatorType locatorType, string locator, IReadOnlyList<string> segment)
+		public async Task<HybridInteractiveTranslationResult> InteractiveTranslateAsync(EngineLocatorType locatorType,
+			string locator, IReadOnlyList<string> segment)
 		{
 			CheckDisposed();
 
@@ -106,8 +91,8 @@ namespace SIL.Machine.WebApi.Server.Services
 				Engine engine = await _engineRepo.GetByLocatorAsync(locatorType, locator);
 				if (engine == null)
 					return null;
-				EngineRunner runner = GetOrCreateRunner(engine.Id);
-				return await runner.InteractiveTranslateAsync(segment.Preprocess(Preprocessors.Lowercase));
+				EngineRuntime runtime = GetOrCreateRuntime(engine.Id);
+				return await runtime.InteractiveTranslateAsync(segment);
 			}
 		}
 
@@ -121,9 +106,8 @@ namespace SIL.Machine.WebApi.Server.Services
 				Engine engine = await _engineRepo.GetByLocatorAsync(locatorType, locator);
 				if (engine == null)
 					return false;
-				EngineRunner runner = GetOrCreateRunner(engine.Id);
-				await runner.TrainSegmentPairAsync(sourceSegment.Preprocess(Preprocessors.Lowercase),
-					targetSegment.Preprocess(Preprocessors.Lowercase));
+				EngineRuntime runtime = GetOrCreateRuntime(engine.Id);
+				await runtime.TrainSegmentPairAsync(sourceSegment, targetSegment);
 				return true;
 			}
 		}
@@ -140,7 +124,6 @@ namespace SIL.Machine.WebApi.Server.Services
 					: null;
 				try
 				{
-					EngineRunner runner;
 					if (engine == null)
 					{
 						// no existing shared engine or a project-specific engine
@@ -152,8 +135,8 @@ namespace SIL.Machine.WebApi.Server.Services
 							TargetLanguageTag = targetLanguageTag
 						};
 						await _engineRepo.InsertAsync(engine);
-						runner = CreateRunner(engine.Id);
-						await runner.InitNewAsync();
+						EngineRuntime runtime = CreateRuntime(engine.Id);
+						await runtime.InitNewAsync();
 					}
 					else
 					{
@@ -161,9 +144,7 @@ namespace SIL.Machine.WebApi.Server.Services
 						if (engine.Projects.Contains(projectId))
 							return null;
 						engine = await _engineRepo.ConcurrentUpdateAsync(engine, e => e.Projects.Add(projectId));
-						runner = GetOrCreateRunner(engine.Id);
 					}
-					await runner.StartBuildAsync(engine);
 				}
 				catch (KeyAlreadyExistsException)
 				{
@@ -196,20 +177,19 @@ namespace SIL.Machine.WebApi.Server.Services
 				if (engine == null)
 					return false;
 
-				EngineRunner runner = GetOrCreateRunner(engine.Id);
+				EngineRuntime runtime = GetOrCreateRuntime(engine.Id);
 				if (engine.Projects.Count == 1 && engine.Projects.Contains(projectId))
 				{
 					// the engine will have no associated projects, so remove it
 					await _engineRepo.DeleteAsync(engine);
-					_runners.TryRemove(engine.Id, out _);
-					await runner.DeleteDataAsync();
-					runner.Dispose();
+					_runtimes.TryRemove(engine.Id, out _);
+					await runtime.DeleteDataAsync();
+					runtime.Dispose();
 				}
 				else
 				{
 					// engine will still have associated projects, so just update it
 					await _engineRepo.ConcurrentUpdateAsync(engine, e => e.Projects.Remove(projectId));
-					await runner.StartBuildAsync(engine);
 				}
 				await _projectRepo.DeleteAsync(projectId);
 				return true;
@@ -225,8 +205,8 @@ namespace SIL.Machine.WebApi.Server.Services
 				Engine engine = await _engineRepo.GetByLocatorAsync(locatorType, locator);
 				if (engine == null)
 					return null;
-				EngineRunner runner = GetOrCreateRunner(engine.Id);
-				return await runner.StartBuildAsync(engine);
+				EngineRuntime runtime = GetOrCreateRuntime(engine.Id);
+				return await runtime.StartBuildAsync();
 			}
 		}
 
@@ -239,30 +219,55 @@ namespace SIL.Machine.WebApi.Server.Services
 				Build build = await _buildRepo.GetByLocatorAsync(locatorType, locator);
 				if (build == null)
 					return false;
-				if (_runners.TryGetValue(build.EngineRef, out Owned<EngineRunner> runner))
-					await runner.Value.CancelBuildAsync();
+				if (TryGetRuntime(build.EngineRef, out EngineRuntime runtime))
+					await runtime.CancelBuildAsync();
 				return true;
 			}
 		}
 
-		internal EngineRunner GetOrCreateRunner(string engineId)
+		public async Task<(Engine Engine, EngineRuntime Runtime)> GetEngineAsync(string engineId)
 		{
-			return _runners.GetOrAdd(engineId, _engineRunnerFactory).Value;
+			CheckDisposed();
+
+			using (await _lock.ReaderLockAsync())
+			{
+				Engine engine = await _engineRepo.GetAsync(engineId);
+				if (engine == null)
+					return (null, null);
+				return (engine, GetOrCreateRuntime(engineId));
+			}
 		}
 
-		private EngineRunner CreateRunner(string engineId)
+		internal EngineRuntime GetOrCreateRuntime(string engineId)
 		{
-			Owned<EngineRunner> runner = _engineRunnerFactory(engineId);
-			_runners.TryAdd(engineId, runner);
-			return runner.Value;
+			return _runtimes.GetOrAdd(engineId, _engineRunnerFactory).Value;
+		}
+
+		private EngineRuntime CreateRuntime(string engineId)
+		{
+			Owned<EngineRuntime> runtime = _engineRunnerFactory(engineId);
+			_runtimes.TryAdd(engineId, runtime);
+			return runtime.Value;
+		}
+
+		private bool TryGetRuntime(string engineId, out EngineRuntime runtime)
+		{
+			if (_runtimes.TryGetValue(engineId, out Owned<EngineRuntime> ownedRuntime))
+			{
+				runtime = ownedRuntime.Value;
+				return true;
+			}
+
+			runtime = null;
+			return false;
 		}
 
 		protected override void DisposeManagedResources()
 		{
 			_commitTimer.Dispose();
-			foreach (Owned<EngineRunner> runner in _runners.Values)
-				runner.Dispose();
-			_runners.Clear();
+			foreach (Owned<EngineRuntime> runtime in _runtimes.Values)
+				runtime.Dispose();
+			_runtimes.Clear();
 		}
 	}
 }

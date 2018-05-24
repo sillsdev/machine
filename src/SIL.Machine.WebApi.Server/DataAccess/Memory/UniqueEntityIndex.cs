@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using SIL.Extensions;
 using SIL.Machine.WebApi.Server.Models;
 using SIL.Machine.WebApi.Server.Utils;
@@ -9,22 +11,25 @@ namespace SIL.Machine.WebApi.Server.DataAccess.Memory
 {
 	internal class UniqueEntityIndex<TKey, TEntity> where TEntity : class, IEntity<TEntity>
 	{
+		private readonly AsyncReaderWriterLock _repoLock;
 		private readonly Dictionary<TKey, TEntity> _index;
 		private readonly Func<TEntity, IEnumerable<TKey>> _keySelector;
 		private readonly Func<TEntity, bool> _filter;
-		private readonly Dictionary<TKey, ISet<Action<EntityChange<TEntity>>>> _changeListeners;
+		private readonly Dictionary<TKey, ISet<Subscription<TEntity>>> _keySubscriptions;
 
-		public UniqueEntityIndex(Func<TEntity, TKey> keySelector, Func<TEntity, bool> filter = null)
-			: this(e => keySelector(e).ToEnumerable(), filter)
+		public UniqueEntityIndex(AsyncReaderWriterLock repoLock, Func<TEntity, TKey> keySelector,
+			Func<TEntity, bool> filter = null) : this(repoLock, e => keySelector(e).ToEnumerable(), filter)
 		{
 		}
 
-		public UniqueEntityIndex(Func<TEntity, IEnumerable<TKey>> keySelector, Func<TEntity, bool> filter = null)
+		public UniqueEntityIndex(AsyncReaderWriterLock repoLock, Func<TEntity, IEnumerable<TKey>> keySelector,
+			Func<TEntity, bool> filter = null)
 		{
+			_repoLock = repoLock;
 			_index = new Dictionary<TKey, TEntity>();
 			_keySelector = keySelector;
 			_filter = filter;
-			_changeListeners = new Dictionary<TKey, ISet<Action<EntityChange<TEntity>>>>();
+			_keySubscriptions = new Dictionary<TKey, ISet<Subscription<TEntity>>>();
 		}
 
 		public bool TryGetEntity(TKey key, out TEntity entity)
@@ -60,8 +65,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess.Memory
 				OnEntityUpdated(null, entity, null);
 		}
 
-		public void OnEntityUpdated(TEntity oldEntity, TEntity newEntity,
-			IList<Action<EntityChange<TEntity>>> changeListeners)
+		public void OnEntityUpdated(TEntity oldEntity, TEntity newEntity, IList<Subscription<TEntity>> allSubscriptions)
 		{
 			if (_filter != null && !_filter(newEntity))
 				return;
@@ -72,18 +76,15 @@ namespace SIL.Machine.WebApi.Server.DataAccess.Memory
 			{
 				_index[key] = newEntity;
 				keysToRemove.Remove(key);
-				if (changeListeners != null)
-				{
-					if (_changeListeners.TryGetValue(key, out ISet<Action<EntityChange<TEntity>>> listeners))
-						changeListeners.AddRange(listeners);
-				}
+				if (allSubscriptions != null)
+					GetKeySubscriptions(key, allSubscriptions);
 			}
 
 			foreach (TKey key in keysToRemove)
 				_index.Remove(key);
 		}
 
-		public void OnEntityDeleted(TEntity entity, IList<Action<EntityChange<TEntity>>> changeListeners)
+		public void OnEntityDeleted(TEntity entity, IList<Subscription<TEntity>> allSubscriptions)
 		{
 			if (_filter != null && !_filter(entity))
 				return;
@@ -92,17 +93,44 @@ namespace SIL.Machine.WebApi.Server.DataAccess.Memory
 			{
 				_index.Remove(key);
 
-				if (changeListeners != null)
-				{
-					if (_changeListeners.TryGetValue(key, out ISet<Action<EntityChange<TEntity>>> listeners))
-						changeListeners.AddRange(listeners);
-				}
+				if (allSubscriptions != null)
+					GetKeySubscriptions(key, allSubscriptions);
 			}
 		}
 
-		public IDisposable Subscribe(AsyncReaderWriterLock repoLock, TKey key, Action<EntityChange<TEntity>> listener)
+		public async Task<Subscription<TEntity>> SubscribeAsync(TKey key,
+			CancellationToken ct = default(CancellationToken))
 		{
-			return new MemorySubscription<TKey, TEntity>(repoLock, _changeListeners, key, listener);
+			using (await _repoLock.WriterLockAsync(ct))
+			{
+				TryGetEntity(key, out TEntity initialEntity);
+				var subscription = new Subscription<TEntity>(key, initialEntity, RemoveSubscription);
+				if (!_keySubscriptions.TryGetValue(key, out ISet<Subscription<TEntity>> subscriptions))
+				{
+					subscriptions = new HashSet<Subscription<TEntity>>();
+					_keySubscriptions[key] = subscriptions;
+				}
+				subscriptions.Add(subscription);
+				return subscription;
+			}
+		}
+
+		private void RemoveSubscription(Subscription<TEntity> subscription)
+		{
+			using (_repoLock.WriterLock())
+			{
+				var key = (TKey) subscription.Key;
+				ISet<Subscription<TEntity>> subscriptions = _keySubscriptions[key];
+				subscriptions.Remove(subscription);
+				if (subscriptions.Count == 0)
+					_keySubscriptions.Remove(key);
+			}
+		}
+
+		private void GetKeySubscriptions(TKey key, IList<Subscription<TEntity>> allSubscriptions)
+		{
+			if (_keySubscriptions.TryGetValue(key, out ISet<Subscription<TEntity>> subscriptions))
+				allSubscriptions.AddRange(subscriptions);
 		}
 	}
 }
