@@ -13,8 +13,5 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			: base(message, innerException)
 		{
 		}
-
-		public long ExpectedRevision { get; set; }
-		public long ActualRevision { get; set; }
 	}
 }

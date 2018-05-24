@@ -14,6 +14,7 @@ using SIL.Machine.WebApi.Server.Models;
 using SIL.Machine.WebApi.Server.Options;
 using SIL.ObjectModel;
 using SIL.Machine.Annotations;
+using SIL.Machine.WebApi.Server.DataAccess.Memory;
 
 namespace SIL.Machine.WebApi.Server.Services
 {
@@ -106,7 +107,7 @@ namespace SIL.Machine.WebApi.Server.Services
 				Project project = await env.Service.AddProjectAsync("project1", "es", "en", "latin", "latin", true);
 				Assert.That(project, Is.Not.Null);
 
-				Engine engine = await env.EngineRepository.GetAsync(project.Engine);
+				Engine engine = await env.EngineRepository.GetAsync(project.EngineRef);
 				Assert.That(engine.Projects, Contains.Item("project1"));
 			}
 		}
@@ -121,7 +122,7 @@ namespace SIL.Machine.WebApi.Server.Services
 				Project project = await env.Service.AddProjectAsync("project2", "es", "en", "latin", "latin", true);
 				Assert.That(project, Is.Not.Null);
 
-				Engine engine = await env.EngineRepository.GetAsync(project.Engine);
+				Engine engine = await env.EngineRepository.GetAsync(project.EngineRef);
 				Assert.That(engine.Id, Is.EqualTo(engineId));
 				Assert.That(engine.Projects, Contains.Item("project2"));
 			}
@@ -137,7 +138,7 @@ namespace SIL.Machine.WebApi.Server.Services
 				Project project = await env.Service.AddProjectAsync("project2", "es", "en", "latin", "latin", true);
 				Assert.That(project, Is.Not.Null);
 
-				Engine engine = await env.EngineRepository.GetAsync(project.Engine);
+				Engine engine = await env.EngineRepository.GetAsync(project.EngineRef);
 				Assert.That(engine.Id, Is.Not.EqualTo(engineId));
 				Assert.That(engine.Projects, Contains.Item("project2"));
 			}
@@ -223,11 +224,10 @@ namespace SIL.Machine.WebApi.Server.Services
 			using (var env = new TestEnvironment())
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
-				var build = new Build { Id = "build1", EngineId = engineId };
+				var build = new Build { Id = "build1", EngineRef = engineId };
 				await env.BuildRepository.InsertAsync(build);
 				await env.CreateEngineServiceAsync();
-				// ensures that the build is completed
-				env.DisposeEngineService();
+				await env.Service.GetOrCreateRunner(engineId).BuildTask;
 				build = await env.BuildRepository.GetAsync("build1");
 				Assert.That(build.State, Is.EqualTo(BuildStates.Completed));
 			}
@@ -384,7 +384,7 @@ namespace SIL.Machine.WebApi.Server.Services
 					SourceLanguageTag = sourceLanguageTag,
 					TargetLanguageTag = targetLanguageTag,
 					IsShared = isShared,
-					Projects = {"project1"}
+					Projects = { "project1" }
 				};
 				await EngineRepository.InsertAsync(engine);
 
@@ -396,7 +396,7 @@ namespace SIL.Machine.WebApi.Server.Services
 					SourceSegmentType = "latin",
 					TargetSegmentType = "latin",
 					IsShared = isShared,
-					Engine = engine.Id
+					EngineRef = engine.Id
 				};
 				await ProjectRepository.InsertAsync(project);
 				return engine;

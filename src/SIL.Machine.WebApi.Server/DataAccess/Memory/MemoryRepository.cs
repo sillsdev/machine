@@ -7,7 +7,7 @@ using SIL.Extensions;
 using SIL.Machine.WebApi.Server.Models;
 using SIL.Machine.WebApi.Server.Utils;
 
-namespace SIL.Machine.WebApi.Server.DataAccess
+namespace SIL.Machine.WebApi.Server.DataAccess.Memory
 {
 	public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
 	{
@@ -60,13 +60,8 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			{
 				if (string.IsNullOrEmpty(entity.Id))
 					entity.Id = ObjectId.GenerateNewId().ToString();
-				if (Entities.TryGetValue(entity.Id, out T otherEntity))
-				{
-					throw new KeyAlreadyExistsException("An entity with the same identifier already exists.")
-					{
-						Entity = otherEntity
-					};
-				}
+				if (Entities.ContainsKey(entity.Id))
+					throw new KeyAlreadyExistsException("An entity with the same identifier already exists.");
 				OnBeforeEntityChanged(EntityChangeType.Insert, entity);
 
 				internalEntity = entity.Clone();
@@ -143,7 +138,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		{
 			using (await Lock.WriterLockAsync())
 			{
-				return new Subscription<string, T>(Lock, _changeListeners, id, listener);
+				return new MemorySubscription<string, T>(Lock, _changeListeners, id, listener);
 			}
 		}
 
@@ -165,21 +160,10 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		private void CheckForConcurrencyConflict(T entity)
 		{
 			if (!Entities.TryGetValue(entity.Id, out T internalEntity))
-			{
-				throw new ConcurrencyConflictException("The entity has been deleted.")
-				{
-					ExpectedRevision = entity.Revision
-				};
-			}
+				throw new ConcurrencyConflictException("The entity does not exist.");
 
 			if (entity.Revision != internalEntity.Revision)
-			{
-				throw new ConcurrencyConflictException("The entity has been updated.")
-				{
-					ExpectedRevision = entity.Revision,
-					ActualRevision = internalEntity.Revision
-				};
-			}
+				throw new ConcurrencyConflictException("The entity has been updated.");
 		}
 
 		private void SendToSubscribers(IList<Action<EntityChange<T>>> changeListeners, EntityChangeType type, T entity)

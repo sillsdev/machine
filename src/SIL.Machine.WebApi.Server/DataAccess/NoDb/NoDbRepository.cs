@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace SIL.Machine.WebApi.Server.DataAccess
+namespace SIL.Machine.WebApi.Server.DataAccess.NoDb
 {
 	public class NoDbRepository<T> : IRepository<T> where T : class, IEntity<T>
 	{
@@ -22,7 +22,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 
 		public Task InitAsync()
 		{
-			return Task.FromResult(0);
+			return Task.CompletedTask;
 		}
 
 		public async Task<IEnumerable<T>> GetAllAsync()
@@ -70,21 +70,10 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		{
 			T internalEntity = await GetAsync(entity.Id);
 			if (internalEntity == null)
-			{
-				throw new ConcurrencyConflictException("The entity has been deleted.")
-				{
-					ExpectedRevision = entity.Revision
-				};
-			}
+				throw new ConcurrencyConflictException("The entity has been deleted.");
 
 			if (entity.Revision != internalEntity.Revision)
-			{
-				throw new ConcurrencyConflictException("The entity has been updated.")
-				{
-					ExpectedRevision = entity.Revision,
-					ActualRevision = internalEntity.Revision
-				};
-			}
+				throw new ConcurrencyConflictException("The entity has been updated.");
 		}
 	}
 }

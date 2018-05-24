@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 using NoDb;
 using SIL.Machine.WebApi.Server.Options;
 
-namespace SIL.Machine.WebApi.Server.DataAccess
+namespace SIL.Machine.WebApi.Server.DataAccess.NoDb
 {
 	public class MachineStoragePathResolver<T> : IStoragePathResolver<T> where T : class
 	{

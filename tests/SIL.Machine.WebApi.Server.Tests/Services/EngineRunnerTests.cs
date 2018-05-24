@@ -13,6 +13,7 @@ using SIL.Machine.WebApi.Server.Models;
 using SIL.Machine.WebApi.Server.Options;
 using SIL.ObjectModel;
 using SIL.Machine.Annotations;
+using SIL.Machine.WebApi.Server.DataAccess.Memory;
 
 namespace SIL.Machine.WebApi.Server.Services
 {
@@ -28,7 +29,7 @@ namespace SIL.Machine.WebApi.Server.Services
 				await env.EngineRunner.InitNewAsync();
 				Build build = await env.EngineRunner.StartBuildAsync(env.Engine);
 				Assert.That(build, Is.Not.Null);
-				env.EngineRunner.WaitForBuildToComplete();
+				await env.EngineRunner.BuildTask;
 				env.BatchTrainer.Received().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
 				env.BatchTrainer.Received().Save();
 				build = await env.BuildRepository.GetAsync(build.Id);
@@ -52,7 +53,7 @@ namespace SIL.Machine.WebApi.Server.Services
 				Assert.That(build, Is.Not.Null);
 				await Task.Delay(10);
 				await env.EngineRunner.CancelBuildAsync();
-				env.EngineRunner.WaitForBuildToComplete();
+				await env.EngineRunner.BuildTask;
 				env.BatchTrainer.Received().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
 				env.BatchTrainer.DidNotReceive().Save();
 				build = await env.BuildRepository.GetAsync(build.Id);

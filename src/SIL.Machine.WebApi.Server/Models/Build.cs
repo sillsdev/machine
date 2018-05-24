@@ -12,7 +12,7 @@ namespace SIL.Machine.WebApi.Server.Models
 		{
 			Id = build.Id;
 			Revision = build.Revision;
-			EngineId = build.EngineId;
+			EngineRef = build.EngineRef;
 			PercentCompleted = build.PercentCompleted;
 			Message = build.Message;
 			State = build.State;
@@ -21,7 +21,7 @@ namespace SIL.Machine.WebApi.Server.Models
 
 		public string Id { get; set; }
 		public int Revision { get; set; }
-		public string EngineId { get; set; }
+		public string EngineRef { get; set; }
 		public double PercentCompleted { get; set; }
 		public string Message { get; set; }
 		public string State { get; set; } = BuildStates.Active;

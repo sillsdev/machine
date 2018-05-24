@@ -42,7 +42,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			// restart any builds that didn't finish before the last shutdown
 			foreach (Build build in await _buildRepo.GetAllAsync())
 			{
-				Engine engine = await _engineRepo.GetAsync(build.EngineId);
+				Engine engine = await _engineRepo.GetAsync(build.EngineRef);
 				if (engine != null)
 				{
 					EngineRunner runner = CreateRunner(engine.Id);
@@ -179,7 +179,7 @@ namespace SIL.Machine.WebApi.Server.Services
 					SourceSegmentType = sourceSegmentType,
 					TargetSegmentType = targetSegmentType,
 					IsShared = isShared,
-					Engine = engine.Id
+					EngineRef = engine.Id
 				};
 				await _projectRepo.InsertAsync(project);
 				return project;
@@ -239,13 +239,13 @@ namespace SIL.Machine.WebApi.Server.Services
 				Build build = await _buildRepo.GetByLocatorAsync(locatorType, locator);
 				if (build == null)
 					return false;
-				if (_runners.TryGetValue(build.EngineId, out Owned<EngineRunner> runner))
+				if (_runners.TryGetValue(build.EngineRef, out Owned<EngineRunner> runner))
 					await runner.Value.CancelBuildAsync();
 				return true;
 			}
 		}
 
-		private EngineRunner GetOrCreateRunner(string engineId)
+		internal EngineRunner GetOrCreateRunner(string engineId)
 		{
 			return _runners.GetOrAdd(engineId, _engineRunnerFactory).Value;
 		}

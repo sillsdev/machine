@@ -8,7 +8,5 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			: base(message)
 		{
 		}
-
-		public object Entity { get; set; }
 	}
 }

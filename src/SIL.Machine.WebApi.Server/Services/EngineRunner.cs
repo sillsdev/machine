@@ -35,7 +35,6 @@ namespace SIL.Machine.WebApi.Server.Services
 		private ObjectPool<HybridTranslationEngine> _enginePool;
 		private CancellationTokenSource _buildCts;
 		private ISmtBatchTrainer _batchTrainer;
-		private Task _buildTask;
 		private string _buildId;
 		private bool _isUpdated;
 		private DateTime _lastUsedTime;
@@ -60,8 +59,9 @@ namespace SIL.Machine.WebApi.Server.Services
 			_lastUsedTime = DateTime.Now;
 		}
 
+		internal Task BuildTask { get; private set; }
 		internal bool IsLoaded => _smtModel.IsValueCreated;
-		private bool IsBuilding => _buildTask != null && !_buildTask.IsCompleted;
+		private bool IsBuilding => BuildTask != null && !BuildTask.IsCompleted;
 
 		public async Task InitNewAsync()
 		{
@@ -149,10 +149,10 @@ namespace SIL.Machine.WebApi.Server.Services
 				if (IsBuilding)
 				{
 					_buildCts.Cancel();
-					await _buildTask;
+					await BuildTask;
 				}
 
-				var build = new Build { EngineId = _engineId };
+				var build = new Build { EngineRef = _engineId };
 				await _buildRepo.InsertAsync(build);
 				_buildId = build.Id;
 				Build clone = build.Clone();
@@ -170,7 +170,7 @@ namespace SIL.Machine.WebApi.Server.Services
 			_buildCts?.Dispose();
 			_buildCts = new CancellationTokenSource();
 			CancellationToken token = _buildCts.Token;
-			_buildTask = Task.Run(() => BuildAsync(build, token), token);
+			BuildTask = Task.Run(() => BuildAsync(build, token), token);
 			_lastUsedTime = DateTime.Now;
 		}
 
@@ -199,15 +199,6 @@ namespace SIL.Machine.WebApi.Server.Services
 				else
 					SaveModel();
 			}
-		}
-
-		internal void WaitForBuildToComplete()
-		{
-			CheckDisposed();
-
-			if (_buildTask != null)
-				Task.WaitAny(_buildTask);
-			_buildTask = null;
 		}
 
 		public async Task DeleteDataAsync()
@@ -318,9 +309,9 @@ namespace SIL.Machine.WebApi.Server.Services
 			if (IsBuilding)
 			{
 				_buildCts.Cancel();
-				WaitForBuildToComplete();
+				Task.WaitAny(BuildTask);
 			}
-
+			BuildTask = null;
 			_batchTrainer?.Dispose();
 			_batchTrainer = null;
 			_buildCts?.Dispose();

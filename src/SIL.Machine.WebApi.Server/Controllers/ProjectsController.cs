@@ -72,7 +72,7 @@ namespace SIL.Machine.WebApi.Server.Controllers
 				SourceSegmentType = project.SourceSegmentType,
 				TargetSegmentType = project.TargetSegmentType,
 				IsShared = project.IsShared,
-				Engine = Url.CreateLinkDto(RouteNames.Engines, project.Engine)
+				Engine = Url.CreateLinkDto(RouteNames.Engines, project.EngineRef)
 			};
 		}
 	}

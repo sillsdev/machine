@@ -99,7 +99,7 @@ namespace SIL.Machine.WebApi.Server.Controllers
 				Id = build.Id,
 				Href = Url.GetEntityUrl(RouteNames.Builds, build.Id),
 				Revision = build.Revision,
-				Engine = Url.CreateLinkDto(RouteNames.Engines, build.EngineId),
+				Engine = Url.CreateLinkDto(RouteNames.Engines, build.EngineRef),
 				PercentCompleted = build.PercentCompleted,
 				Message = build.Message
 			};

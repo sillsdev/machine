@@ -6,7 +6,6 @@ namespace SIL.Machine.WebApi.Server.Models
 	{
 		public Engine()
 		{
-			Projects = new HashSet<string>();
 		}
 
 		public Engine(Engine engine)
@@ -25,7 +24,7 @@ namespace SIL.Machine.WebApi.Server.Models
 		public string SourceLanguageTag { get; set; }
 		public string TargetLanguageTag { get; set; }
 		public bool IsShared { get; set; }
-		public ISet<string> Projects { get; }
+		public HashSet<string> Projects { get; protected set; } = new HashSet<string>();
 		public double Confidence { get; set; }
 
 		public Engine Clone()

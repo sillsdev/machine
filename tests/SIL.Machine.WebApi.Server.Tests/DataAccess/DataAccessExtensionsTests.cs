@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using NUnit.Framework;
+using SIL.Machine.WebApi.Server.DataAccess.Memory;
 using SIL.Machine.WebApi.Server.Models;
 
 namespace SIL.Machine.WebApi.Server.DataAccess
@@ -14,7 +15,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			Task task = Task.Run(async () =>
 			{
 				await Task.Delay(10);
-				var build = new Build { EngineId = "engine1", PercentCompleted = 0.1 };
+				var build = new Build { EngineRef = "engine1", PercentCompleted = 0.1 };
 				await buildRepo.InsertAsync(build);
 			});
 			EntityChange<Build> change = await buildRepo.GetNewerRevisionByEngineIdAsync("engine1", 0);
@@ -28,7 +29,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		public async Task GetNewerRevisionAsync_Update()
 		{
 			var buildRepo = new MemoryBuildRepository();
-			var build = new Build {EngineId = "engine1"};
+			var build = new Build {EngineRef = "engine1"};
 			await buildRepo.InsertAsync(build);
 			Task task = Task.Run(async () =>
 				{
@@ -47,7 +48,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		public async Task GetNewerRevisionAsync_Delete()
 		{
 			var buildRepo = new MemoryBuildRepository();
-			var build = new Build {EngineId = "engine1"};
+			var build = new Build {EngineRef = "engine1"};
 			await buildRepo.InsertAsync(build);
 			Task task = Task.Run(async () =>
 				{

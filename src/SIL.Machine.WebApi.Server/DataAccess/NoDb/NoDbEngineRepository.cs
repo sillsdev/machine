@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using NoDb;
 using SIL.Machine.WebApi.Server.Models;
 
-namespace SIL.Machine.WebApi.Server.DataAccess
+namespace SIL.Machine.WebApi.Server.DataAccess.NoDb
 {
 	public class NoDbEngineRepository : NoDbRepository<Engine>, IEngineRepository
 	{

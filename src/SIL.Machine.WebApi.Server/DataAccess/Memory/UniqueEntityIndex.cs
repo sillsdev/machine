@@ -5,7 +5,7 @@ using SIL.Extensions;
 using SIL.Machine.WebApi.Server.Models;
 using SIL.Machine.WebApi.Server.Utils;
 
-namespace SIL.Machine.WebApi.Server.DataAccess
+namespace SIL.Machine.WebApi.Server.DataAccess.Memory
 {
 	internal class UniqueEntityIndex<TKey, TEntity> where TEntity : class, IEntity<TEntity>
 	{
@@ -49,12 +49,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 				if (_index.TryGetValue(key, out TEntity otherEntity))
 				{
 					if (entity.Id != otherEntity.Id)
-					{
-						throw new KeyAlreadyExistsException("An entity with the same key already exists.")
-						{
-							Entity = otherEntity
-						};
-					}
+						throw new KeyAlreadyExistsException("An entity with the same key already exists.");
 				}
 			}
 		}
@@ -65,12 +60,14 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 				OnEntityUpdated(null, entity, null);
 		}
 
-		public void OnEntityUpdated(TEntity oldEntity, TEntity newEntity, IList<Action<EntityChange<TEntity>>> changeListeners)
+		public void OnEntityUpdated(TEntity oldEntity, TEntity newEntity,
+			IList<Action<EntityChange<TEntity>>> changeListeners)
 		{
 			if (_filter != null && !_filter(newEntity))
 				return;
 
-			var keysToRemove = new HashSet<TKey>(oldEntity == null ? Enumerable.Empty<TKey>() : _keySelector(oldEntity));
+			var keysToRemove = new HashSet<TKey>(oldEntity == null ? Enumerable.Empty<TKey>()
+				: _keySelector(oldEntity));
 			foreach (TKey key in _keySelector(newEntity))
 			{
 				_index[key] = newEntity;
@@ -105,7 +102,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 
 		public IDisposable Subscribe(AsyncReaderWriterLock repoLock, TKey key, Action<EntityChange<TEntity>> listener)
 		{
-			return new Subscription<TKey, TEntity>(repoLock, _changeListeners, key, listener);
+			return new MemorySubscription<TKey, TEntity>(repoLock, _changeListeners, key, listener);
 		}
 	}
 }

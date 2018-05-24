@@ -79,6 +79,10 @@ namespace SIL.Machine.WebApi.Server
 				case "NoDb":
 					services.AddNoDbDataAccess(Configuration);
 					break;
+
+				case "Mongo":
+					services.AddMongoDataAccess(Configuration);
+					break;
 			}
 
 			services.AddEngineService(Configuration);

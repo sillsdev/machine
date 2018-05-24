@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using SIL.Machine.WebApi.Server.Models;
 
-namespace SIL.Machine.WebApi.Server.DataAccess
+namespace SIL.Machine.WebApi.Server.DataAccess.Memory
 {
 	public class MemoryBuildRepository : MemoryRepository<Build>, IBuildRepository
 	{
@@ -12,7 +12,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		public MemoryBuildRepository(IBuildRepository persistenceRepo = null)
 			: base(persistenceRepo)
 		{
-			_engineIdIndex = new UniqueEntityIndex<string, Build>(b => b.EngineId, b => b.State == BuildStates.Active);
+			_engineIdIndex = new UniqueEntityIndex<string, Build>(b => b.EngineRef, b => b.State == BuildStates.Active);
 		}
 
 		public override async Task InitAsync()

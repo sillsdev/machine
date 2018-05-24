@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using SIL.Machine.WebApi.Server.Models;
 
-namespace SIL.Machine.WebApi.Server.DataAccess
+namespace SIL.Machine.WebApi.Server.DataAccess.Memory
 {
 	public class MemoryEngineRepository : MemoryRepository<Engine>, IEngineRepository
 	{

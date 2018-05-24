@@ -15,7 +15,7 @@
 			SourceSegmentType = project.SourceSegmentType;
 			TargetSegmentType = project.TargetSegmentType;
 			IsShared = project.IsShared;
-			Engine = project.Engine;
+			EngineRef = project.EngineRef;
 		}
 
 		public string Id { get; set; }
@@ -25,7 +25,7 @@
 		public string SourceSegmentType { get; set; }
 		public string TargetSegmentType { get; set; }
 		public bool IsShared { get; set; }
-		public string Engine { get; set; }
+		public string EngineRef { get; set; }
 
 		public Project Clone()
 		{

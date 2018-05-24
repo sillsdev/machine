@@ -1,10 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Conventions;
+using MongoDB.Bson.Serialization.IdGenerators;
+using MongoDB.Bson.Serialization.Serializers;
+using MongoDB.Driver;
 using NoDb;
+using SIL.Machine.WebApi.Server.DataAccess.Memory;
+using SIL.Machine.WebApi.Server.DataAccess.Mongo;
+using SIL.Machine.WebApi.Server.DataAccess.NoDb;
 using SIL.Machine.WebApi.Server.Models;
 using SIL.Machine.WebApi.Server.Options;
 using SIL.Machine.WebApi.Server.Utils;
@@ -176,6 +186,59 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			services.AddSingleton<IBuildRepository, MemoryBuildRepository>();
 			services.AddSingleton<IRepository<Project>, MemoryRepository<Project>>();
 			return services;
+		}
+
+		public static IServiceCollection AddMongoDataAccess(this IServiceCollection services,
+			IConfiguration configuration)
+		{
+			services.Configure<MongoDataAccessOptions>(configuration.GetSection("MongoDataAccess"));
+			IConfigurationSection dataAccessConfig = configuration.GetSection("MongoDataAccess");
+			string connectionString = dataAccessConfig.GetValue("ConnectionString", "mongodb://localhost:27017");
+			var mongoClient = new MongoClient(connectionString);
+			IMongoDatabase db = mongoClient.GetDatabase("machine");
+
+			var globalPack = new ConventionPack
+			{
+				new CamelCaseElementNameConvention(),
+				new ObjectRefConvention()
+			};
+			ConventionRegistry.Register("Global", globalPack, t => true);
+
+			RegisterEntity<Engine>(cm =>
+				{
+					cm.MapMember(e => e.Projects)
+						.SetSerializer(new EnumerableInterfaceImplementerSerializer<HashSet<string>, string>(
+							new StringSerializer(BsonType.ObjectId)));
+				});
+			IMongoCollection<Engine> engineCollection = db.GetCollection<Engine>("engines");
+			engineCollection.Indexes.CreateOne(Builders<Engine>.IndexKeys
+				.Ascending(e => e.SourceLanguageTag)
+				.Ascending(e => e.TargetLanguageTag));
+			engineCollection.Indexes.CreateOne(Builders<Engine>.IndexKeys.Ascending(e => e.Projects));
+			services.AddSingleton<IEngineRepository>(sp => new MongoEngineRepository(engineCollection));
+
+			RegisterEntity<Build>();
+			IMongoCollection<Build> buildCollection = db.GetCollection<Build>("builds");
+			buildCollection.Indexes.CreateOne(Builders<Build>.IndexKeys.Ascending(b => b.EngineRef));
+			services.AddSingleton<IBuildRepository>(sp => new MongoBuildRepository(buildCollection));
+
+			RegisterEntity<Project>();
+			IMongoCollection<Project> projectCollection = db.GetCollection<Project>("projects");
+			services.AddSingleton<IRepository<Project>>(sp => new MongoRepository<Project>(projectCollection));
+
+			return services;
+		}
+
+		private static void RegisterEntity<T>(Action<BsonClassMap<T>> setup = null) where T : class, IEntity<T>
+		{
+			BsonClassMap.RegisterClassMap<T>(cm =>
+				{
+					cm.AutoMap();
+					cm.MapIdProperty(e => e.Id)
+						.SetIdGenerator(StringObjectIdGenerator.Instance)
+						.SetSerializer(new StringSerializer(BsonType.ObjectId));
+					setup?.Invoke(cm);
+				});
 		}
 
 		public static IApplicationBuilder UseDataAccess(this IApplicationBuilder app)

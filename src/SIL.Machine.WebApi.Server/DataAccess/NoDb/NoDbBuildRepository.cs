@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using NoDb;
 using SIL.Machine.WebApi.Server.Models;
 
-namespace SIL.Machine.WebApi.Server.DataAccess
+namespace SIL.Machine.WebApi.Server.DataAccess.NoDb
 {
 	public class NoDbBuildRepository : NoDbRepository<Build>, IBuildRepository
 	{
@@ -17,7 +17,7 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		public async Task<Build> GetByEngineIdAsync(string engineId)
 		{
 			IEnumerable<Build> builds = await Queries.GetAllAsync(NoDbProjectId);
-			return builds.SingleOrDefault(b => b.EngineId == engineId);
+			return builds.SingleOrDefault(b => b.EngineRef == engineId);
 		}
 
 		public Task<IDisposable> SubscribeByEngineIdAsync(string engineId, Action<EntityChange<Build>> listener)
