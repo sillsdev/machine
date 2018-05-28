@@ -20,9 +20,9 @@ namespace SIL.Machine.Translation
 			QUnit.Test(nameof(TranslateInteractively_Success), TranslateInteractively_Success);
 			QUnit.Test(nameof(TranslateInteractively_Error), TranslateInteractively_Error);
 			QUnit.Test(nameof(TranslateInteractively_NoRuleResult), TranslateInteractively_NoRuleResult);
-			QUnit.Test(nameof(Train_NoErrors), Train_NoErrors);
+			QUnit.Test(nameof(Train_NoError), Train_NoError);
 			QUnit.Test(nameof(Train_ErrorCreatingBuild), Train_ErrorCreatingBuild);
-			QUnit.Test(nameof(ListenForTrainingStatus_NoErrors), ListenForTrainingStatus_NoErrors);
+			QUnit.Test(nameof(ListenForTrainingStatus_NoError), ListenForTrainingStatus_NoError);
 			QUnit.Test(nameof(ListenForTrainingStatus_Close), ListenForTrainingStatus_Close);
 		}
 
@@ -217,7 +217,7 @@ namespace SIL.Machine.Translation
 				});
 		}
 
-		private static void Train_NoErrors(Assert assert)
+		private static void Train_NoError(Assert assert)
 		{
 			var httpClient = new MockHttpClient();
 			var engineDto = new EngineDto { Id = "engine1" };
@@ -241,7 +241,7 @@ namespace SIL.Machine.Translation
 				httpClient.Requests.Add(new MockRequest
 					{
 						Method = HttpRequestMethod.Get,
-						Url = string.Format("translation/builds/engine:engine1?minRevision={0}", buildDto.Revision),
+						Url = string.Format("translation/builds/id:build1?minRevision={0}", buildDto.Revision),
 						Action = (body, ct) => Delay(10, ct),
 						ResponseText = JsonConvert.SerializeObject(buildDto, RestClientBase.SerializerSettings)
 					});
@@ -255,10 +255,10 @@ namespace SIL.Machine.Translation
 					expectedStep++;
 					assert.Equal(progress.PercentCompleted, (double) expectedStep / 10);
 				},
-				success =>
+				resultCode =>
 				{
 					assert.Equal(expectedStep, 10);
-					assert.Equal(success, true);
+					assert.Equal(resultCode, TrainResultCode.NoError);
 					done();
 				});
 		}
@@ -286,14 +286,14 @@ namespace SIL.Machine.Translation
 			Action done = assert.Async();
 			engine.Train(
 				progress => {},
-				success =>
+				resultCode =>
 				{
-					assert.Equal(success, false);
+					assert.Equal(resultCode, TrainResultCode.HttpError);
 					done();
 				});
 		}
 
-		private static void ListenForTrainingStatus_NoErrors(Assert assert)
+		private static void ListenForTrainingStatus_NoError(Assert assert)
 		{
 			var httpClient = new MockHttpClient();
 			var engineDto = new EngineDto { Id = "engine1" };
@@ -318,7 +318,7 @@ namespace SIL.Machine.Translation
 				httpClient.Requests.Add(new MockRequest
 					{
 						Method = HttpRequestMethod.Get,
-						Url = string.Format("translation/builds/engine:engine1?minRevision={0}", buildDto.Revision),
+						Url = string.Format("translation/builds/id:build1?minRevision={0}", buildDto.Revision),
 						Action = (body, ct) => Delay(10, ct),
 						ResponseText = JsonConvert.SerializeObject(buildDto, RestClientBase.SerializerSettings)
 					});
@@ -332,10 +332,10 @@ namespace SIL.Machine.Translation
 					expectedStep++;
 					assert.Equal(progress.PercentCompleted, (double) expectedStep / 10);
 				},
-				success =>
+				resultCode =>
 				{
 					assert.Equal(expectedStep, 10);
-					assert.Equal(success, true);
+					assert.Equal(resultCode, TrainResultCode.NoError);
 					done();
 				});
 		}
@@ -362,9 +362,9 @@ namespace SIL.Machine.Translation
 			Action done = assert.Async();
 			engine.ListenForTrainingStatus(
 				progress => { },
-				success =>
+				resultCode =>
 				{
-					assert.Equal(success, false);
+					assert.Equal(resultCode, TrainResultCode.NoError);
 					done();
 				});
 			engine.Close();

@@ -86,6 +86,10 @@ namespace SIL.Machine.Translation
 			{
 				if (task.Exception.InnerException is HttpException)
 					return TrainResultCode.HttpError;
+				else if (task.Exception.InnerException is TaskCanceledException)
+					return TrainResultCode.NoError;
+				else if (task.Exception.InnerException is OperationCanceledException)
+					return TrainResultCode.NoError;
 				else
 					return TrainResultCode.TrainError;
 			}
