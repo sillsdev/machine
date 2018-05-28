@@ -101,7 +101,8 @@ namespace SIL.Machine.WebApi.Server.Controllers
 				Revision = build.Revision,
 				Engine = Url.CreateLinkDto(RouteNames.Engines, build.EngineRef),
 				PercentCompleted = build.PercentCompleted,
-				Message = build.Message
+				Message = build.Message,
+				State = build.State
 			};
 		}
 	}
