@@ -2,7 +2,7 @@
 
 PROJECT=SIL.Machine.WebApi.Server
 CONFIGURATION=${CONFIGURATION:-Release}
-DEPLOY_RUNTIME=${DEPLOY_RUNTIME:-linux-x64}
+DEPLOY_RUNTIME=${DEPLOY_RUNTIME:-debian-x64}
 BUILD_OUTPUT=artifacts
 THOT_NEW_MODEL_FILE="$BUILD_OUTPUT/package/thot-new-model.zip"
 PACKAGE_FILE="$BUILD_OUTPUT/machine-web-api.tgz"
