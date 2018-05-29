@@ -132,15 +132,16 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 		{
 			using (Subscription<TEntity> subscription = await subscribe(key, ct))
 			{
-				if (minRevision > 0 && subscription.Change.Entity == null)
-					return new EntityChange<TEntity>(EntityChangeType.Delete, null);
+				EntityChange<TEntity> curChange = subscription.Change;
+				if (curChange.Type == EntityChangeType.Delete && minRevision > 0)
+					return curChange;
 				while (true)
 				{
-					await subscription.WaitForUpdateAsync(ct);
-					EntityChange<TEntity> curChange = subscription.Change;
-					if (curChange.Type == EntityChangeType.Delete)
+					if (curChange.Type != EntityChangeType.Delete && minRevision <= curChange.Entity.Revision)
 						return curChange;
-					if (minRevision <= curChange.Entity.Revision)
+					await subscription.WaitForUpdateAsync(ct);
+					curChange = subscription.Change;
+					if (curChange.Type == EntityChangeType.Delete)
 						return curChange;
 				}
 			}

@@ -17,7 +17,8 @@ namespace SIL.Machine.WebApi.Server.DataAccess
 			Key = key;
 			_remove = remove;
 			_changeEvent = new AsyncAutoResetEvent();
-			Change = new EntityChange<T>(EntityChangeType.None, initialEntity);
+			Change = new EntityChange<T>(initialEntity == null ? EntityChangeType.Delete : EntityChangeType.Update,
+				initialEntity);
 		}
 
 		public EntityChange<T> Change { get; private set; }
