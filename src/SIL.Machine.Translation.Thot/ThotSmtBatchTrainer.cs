@@ -67,14 +67,14 @@ namespace SIL.Machine.Translation.Thot
 		private HashSet<int> CreateTuneCorpus()
 		{
 			int corpusCount = 0;
-			var emptyIndices = new HashSet<int>();
+			var invalidIndices = new HashSet<int>();
 			int index = 0;
 			foreach (ParallelTextSegment segment in _parallelCorpus.Segments)
 			{
-				if (segment.IsEmpty)
-					emptyIndices.Add(index);
-				else
+				if (IsSegmentValid(segment))
 					corpusCount++;
+				else
+					invalidIndices.Add(index);
 				index++;
 				if (corpusCount == _maxCorpusCount)
 					break;
@@ -82,8 +82,8 @@ namespace SIL.Machine.Translation.Thot
 			Stats.TrainedSegmentCount = corpusCount;
 			int tuneCorpusCount = Math.Min((int) (corpusCount * 0.1), 1000);
 			var r = new Random(31415);
-			return new HashSet<int>(Enumerable.Range(0, corpusCount + emptyIndices.Count)
-				.Where(i => !emptyIndices.Contains(i))
+			return new HashSet<int>(Enumerable.Range(0, corpusCount + invalidIndices.Count)
+				.Where(i => !invalidIndices.Contains(i))
 				.OrderBy(i => r.Next()).Take(tuneCorpusCount));
 		}
 
@@ -198,10 +198,11 @@ namespace SIL.Machine.Translation.Thot
 			int wordCount = 0;
 			var ngrams = new Dictionary<Ngram<string>, int>();
 			var vocab = new HashSet<string>();
-			foreach (ParallelTextSegment segment in GetTrainingSegments(_parallelCorpus))
+			foreach (TextSegment segment in _parallelCorpus.TargetSegments
+				.Where((s, i) => !_tuneCorpusIndices.Contains(i) && !s.IsEmpty))
 			{
 				var words = new List<string> { "<s>" };
-				foreach (string word in segment.TargetSegment.Preprocess(_targetPreprocessor))
+				foreach (string word in segment.Segment.Preprocess(_targetPreprocessor))
 				{
 					if (vocab.Contains(word))
 					{
@@ -249,10 +250,11 @@ namespace SIL.Machine.Translation.Thot
 			var rand = new Random(31415);
 			using (var writer = new StreamWriter(lmPrefix + ".wp"))
 			{
-				foreach (ParallelTextSegment segment in GetTrainingSegments(_parallelCorpus).Take(100000)
-					.OrderBy(i => rand.Next()))
+				foreach (TextSegment segment in _parallelCorpus.TargetSegments
+					.Where((s, i) => !_tuneCorpusIndices.Contains(i) && !s.IsEmpty)
+					.Take(100000).OrderBy(i => rand.Next()))
 				{
-					writer.Write("{0}\n", string.Join(" ", segment.TargetSegment.Preprocess(_targetPreprocessor)));
+					writer.Write("{0}\n", string.Join(" ", segment.Segment.Preprocess(_targetPreprocessor)));
 				}
 			}
 		}
@@ -590,7 +592,7 @@ namespace SIL.Machine.Translation.Thot
 			int index = 0;
 			foreach (ParallelTextSegment segment in corpus.Segments)
 			{
-				if (!segment.IsEmpty)
+				if (IsSegmentValid(segment))
 				{
 					if (filter(index))
 						yield return segment;
@@ -600,6 +602,11 @@ namespace SIL.Machine.Translation.Thot
 				if (corpusCount == _maxCorpusCount)
 					break;
 			}
+		}
+
+		private static bool IsSegmentValid(ParallelTextSegment segment)
+		{
+			return !segment.IsEmpty && segment.SourceSegment.Count <= TranslationConstants.MaxSourceSegmentSize;
 		}
 
 		protected override void DisposeManagedResources()

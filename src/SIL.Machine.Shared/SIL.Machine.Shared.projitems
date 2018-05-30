@@ -34,6 +34,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Translation\Phrase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\PhraseTranslationSuggester.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\ProgressStatus.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationConstants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\TranslationResultBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\EcmScoreInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Translation\EditDistanceBase.cs" />

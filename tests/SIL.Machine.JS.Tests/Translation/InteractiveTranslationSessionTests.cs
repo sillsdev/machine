@@ -625,8 +625,10 @@ namespace SIL.Machine.Translation
 
 		private static void Approve_SegmentInvalid(Assert assert)
 		{
-			string source = string.Join(" ", Enumerable.Repeat("palabra", TranslationEngine.MaxSegmentSize)) + ".";
-			string prefix = string.Join(" ", Enumerable.Repeat("word", TranslationEngine.MaxSegmentSize)) + ".";
+			string source = string.Join(" ", Enumerable.Repeat("palabra", TranslationConstants.MaxSourceSegmentSize))
+				+ ".";
+			string prefix = string.Join(" ", Enumerable.Repeat("word", TranslationConstants.MaxSourceSegmentSize))
+				+ ".";
 
 			MockHttpClient httpClient = CreateWebClient();
 
@@ -748,7 +750,8 @@ namespace SIL.Machine.Translation
 
 		private static void IsSourceSegmentValid_SegmentInvalid(Assert assert)
 		{
-			string source = string.Join(" ", Enumerable.Repeat("word", TranslationEngine.MaxSegmentSize)) + ".";
+			string source = string.Join(" ", Enumerable.Repeat("word", TranslationConstants.MaxSourceSegmentSize))
+				+ ".";
 
 			var engine = new TranslationEngine("http://localhost/", "project1", CreateWebClient());
 			Action done = assert.Async();

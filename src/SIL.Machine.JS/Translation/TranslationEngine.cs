@@ -9,8 +9,6 @@ namespace SIL.Machine.Translation
 {
 	public class TranslationEngine
 	{
-		internal const int MaxSegmentSize = 110;
-
 		private readonly CancellationTokenSource _cts;
 
 		public TranslationEngine(string baseUrl, string projectId, IHttpClient httpClient = null)
@@ -34,7 +32,7 @@ namespace SIL.Machine.Translation
 			Action<InteractiveTranslationSession> onFinished)
 		{
 			string[] tokens = SourceWordTokenizer.TokenizeToStrings(sourceSegment).ToArray();
-			if (tokens.Length > MaxSegmentSize)
+			if (tokens.Length > TranslationConstants.MaxSourceSegmentSize)
 			{
 				var results = new HybridInteractiveTranslationResult(new WordGraph(), null);
 				onFinished(new InteractiveTranslationSession(this, tokens, confidenceThreshold, results));

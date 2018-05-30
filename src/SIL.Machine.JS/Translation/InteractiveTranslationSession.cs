@@ -51,7 +51,7 @@ namespace SIL.Machine.Translation
 
 		public bool IsInitialized => _wordGraphProcessor != null;
 
-		public bool IsSourceSegmentValid => SourceSegment.Length <= TranslationEngine.MaxSegmentSize;
+		public bool IsSourceSegmentValid => SourceSegment.Length <= TranslationConstants.MaxSourceSegmentSize;
 
 		public void Initialize()
 		{
