@@ -263,11 +263,11 @@ namespace SIL.Machine.Translation.Thot
 		{
 			string invswmPrefix = tmPrefix + "_invswm";
 			GenerateWordAlignmentModel(invswmPrefix, _sourcePreprocessor, _targetPreprocessor, _parallelCorpus,
-				reporter);
+				reporter, false);
 
 			string swmPrefix = tmPrefix + "_swm";
 			GenerateWordAlignmentModel(swmPrefix, _targetPreprocessor, _sourcePreprocessor, _parallelCorpus.Invert(),
-				reporter);
+				reporter, true);
 
 			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
 				Thot.giza_symmetr1(swmPrefix + ".bestal", invswmPrefix + ".bestal", tmPrefix + ".A3.final", true);
@@ -285,10 +285,14 @@ namespace SIL.Machine.Translation.Thot
 		}
 
 		private void GenerateWordAlignmentModel(string swmPrefix, Func<string, string> sourcePreprocessor,
-			Func<string, string> targetPreprocessor, ParallelTextCorpus corpus, ThotTrainProgressReporter reporter)
+			Func<string, string> targetPreprocessor, ParallelTextCorpus corpus, ThotTrainProgressReporter reporter,
+			bool inverted)
 		{
 			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-				TrainWordAlignmentModel(swmPrefix, sourcePreprocessor, targetPreprocessor, corpus, phaseProgress);
+			{
+				TrainWordAlignmentModel(swmPrefix, sourcePreprocessor, targetPreprocessor, corpus, phaseProgress,
+					inverted);
+			}
 
 			reporter.CheckCanceled();
 
@@ -297,7 +301,7 @@ namespace SIL.Machine.Translation.Thot
 			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
 			{
 				GenerateBestAlignments(swmPrefix, swmPrefix + ".bestal", sourcePreprocessor, targetPreprocessor, corpus,
-					phaseProgress);
+					phaseProgress, inverted);
 			}
 		}
 
@@ -378,11 +382,12 @@ namespace SIL.Machine.Translation.Thot
 		}
 
 		private void TrainWordAlignmentModel(string swmPrefix, Func<string, string> sourcePreprocessor,
-			Func<string, string> targetPreprocessor, ParallelTextCorpus corpus, IProgress<ProgressStatus> progress)
+			Func<string, string> targetPreprocessor, ParallelTextCorpus corpus, IProgress<ProgressStatus> progress,
+			bool inverted)
 		{
 			using (var model = new ThotWordAlignmentModel(swmPrefix, true))
 			{
-				foreach (ParallelTextSegment segment in GetTrainingSegments(corpus))
+				foreach (ParallelTextSegment segment in GetTrainingSegments(corpus, inverted))
 					model.AddSegmentPair(segment, sourcePreprocessor, targetPreprocessor);
 				model.Train(progress);
 				model.Save();
@@ -390,13 +395,14 @@ namespace SIL.Machine.Translation.Thot
 		}
 
 		private void GenerateBestAlignments(string swmPrefix, string fileName, Func<string, string> sourcePreprocessor,
-			Func<string, string> targetPreprocessor, ParallelTextCorpus corpus, IProgress<ProgressStatus> progress)
+			Func<string, string> targetPreprocessor, ParallelTextCorpus corpus, IProgress<ProgressStatus> progress,
+			bool inverted)
 		{
 			using (var model = new ThotWordAlignmentModel(swmPrefix))
 			using (var writer = new StreamWriter(fileName))
 			{
 				int i = 0;
-				foreach (ParallelTextSegment segment in GetTrainingSegments(corpus))
+				foreach (ParallelTextSegment segment in GetTrainingSegments(corpus, inverted))
 				{
 					progress.Report(new ProgressStatus(i, Stats.TrainedSegmentCount));
 
@@ -576,9 +582,9 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private IEnumerable<ParallelTextSegment> GetTrainingSegments(ParallelTextCorpus corpus)
+		private IEnumerable<ParallelTextSegment> GetTrainingSegments(ParallelTextCorpus corpus, bool inverted)
 		{
-			return GetSegments(corpus, i => !_tuneCorpusIndices.Contains(i));
+			return GetSegments(corpus, i => !_tuneCorpusIndices.Contains(i), inverted);
 		}
 
 		private IEnumerable<ParallelTextSegment> GetTuningSegments(ParallelTextCorpus corpus)
@@ -586,13 +592,14 @@ namespace SIL.Machine.Translation.Thot
 			return GetSegments(corpus, i => _tuneCorpusIndices.Contains(i));
 		}
 
-		private IEnumerable<ParallelTextSegment> GetSegments(ParallelTextCorpus corpus, Func<int, bool> filter)
+		private IEnumerable<ParallelTextSegment> GetSegments(ParallelTextCorpus corpus, Func<int, bool> filter,
+			bool inverted = false)
 		{
 			int corpusCount = 0;
 			int index = 0;
 			foreach (ParallelTextSegment segment in corpus.Segments)
 			{
-				if (IsSegmentValid(segment))
+				if (IsSegmentValid(segment, inverted))
 				{
 					if (filter(index))
 						yield return segment;
@@ -604,9 +611,10 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private static bool IsSegmentValid(ParallelTextSegment segment)
+		private static bool IsSegmentValid(ParallelTextSegment segment, bool inverted = false)
 		{
-			return !segment.IsEmpty && segment.SourceSegment.Count <= TranslationConstants.MaxSourceSegmentSize;
+			IReadOnlyList<string> sourceSegment = inverted ? segment.TargetSegment : segment.SourceSegment;
+			return !segment.IsEmpty && sourceSegment.Count <= TranslationConstants.MaxSourceSegmentSize;
 		}
 
 		protected override void DisposeManagedResources()
