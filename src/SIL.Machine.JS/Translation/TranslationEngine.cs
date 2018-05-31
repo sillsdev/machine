@@ -32,7 +32,7 @@ namespace SIL.Machine.Translation
 			Action<InteractiveTranslationSession> onFinished)
 		{
 			string[] tokens = SourceWordTokenizer.TokenizeToStrings(sourceSegment).ToArray();
-			if (tokens.Length > TranslationConstants.MaxSourceSegmentSize)
+			if (tokens.Length > TranslationConstants.MaxSegmentLength)
 			{
 				var results = new HybridInteractiveTranslationResult(new WordGraph(), null);
 				onFinished(new InteractiveTranslationSession(this, tokens, confidenceThreshold, results));

@@ -51,7 +51,7 @@ namespace SIL.Machine.Translation
 
 		public bool IsInitialized => _wordGraphProcessor != null;
 
-		public bool IsSourceSegmentValid => SourceSegment.Length <= TranslationConstants.MaxSourceSegmentSize;
+		public bool IsSourceSegmentValid => SourceSegment.Length <= TranslationConstants.MaxSegmentLength;
 
 		public void Initialize()
 		{
@@ -126,7 +126,7 @@ namespace SIL.Machine.Translation
 			if (!IsInitialized)
 				throw new InvalidOperationException("The session has not been initialized.");
 
-			if (!IsSourceSegmentValid)
+			if (!IsSourceSegmentValid || Prefix.Length > TranslationConstants.MaxSegmentLength)
 			{
 				onFinished(true);
 				return;

@@ -6,6 +6,6 @@ namespace SIL.Machine.Translation
 {
     public static class TranslationConstants
     {
-        public const int MaxSourceSegmentSize = 110;
+        public const int MaxSegmentLength = 110;
     }
 }
