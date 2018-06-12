@@ -3,6 +3,7 @@ using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -43,8 +44,33 @@ namespace SIL.Machine.WebApi.Server.Services
 				string curRef = segmentValue.AsString;
 				if (prevRef != null && prevRef != curRef)
 				{
+					// zero pad chapter and verse numbers, so that segments are sorted correctly
+					var segRef = new StringBuilder();
+					foreach (string refPart in prevRef.Split('/'))
+					{
+						if (segRef.Length > 0)
+							segRef.Append("/");
+						if (refPart.StartsWith("verse"))
+						{
+							string[] parts = refPart.Split('_');
+							int chapter = int.Parse(parts[1], CultureInfo.InvariantCulture);
+							string verseStr = parts[2];
+							string[] verseParts = verseStr.Split('-');
+							int verseStart = int.Parse(verseParts[0], CultureInfo.InvariantCulture);
+							segRef.Append($"verse_{chapter:D3}_{verseStart:D3}");
+							if (verseParts.Length == 2)
+							{
+								int verseEnd = int.Parse(verseParts[1], CultureInfo.InvariantCulture);
+								segRef.Append($"-{verseEnd:D3}");
+							}
+						}
+						else
+						{
+							segRef.Append(refPart);
+						}
+					}
 					string[] segment = wordTokenizer.TokenizeToStrings(sb.ToString()).ToArray();
-					yield return new TextSegment(prevRef, segment);
+					yield return new TextSegment(segRef.ToString(), segment);
 					sb.Clear();
 				}
 
