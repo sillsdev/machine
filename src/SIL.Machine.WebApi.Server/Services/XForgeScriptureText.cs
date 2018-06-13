@@ -1,11 +1,10 @@
-﻿using MongoDB.Bson;
-using SIL.Machine.Corpora;
-using SIL.Machine.Tokenization;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text;
+using MongoDB.Bson;
+using SIL.Machine.Corpora;
+using SIL.Machine.Tokenization;
 
 namespace SIL.Machine.WebApi.Server.Services
 {
@@ -44,33 +43,7 @@ namespace SIL.Machine.WebApi.Server.Services
 				string curRef = segmentValue.AsString;
 				if (prevRef != null && prevRef != curRef)
 				{
-					// zero pad chapter and verse numbers, so that segments are sorted correctly
-					var segRef = new StringBuilder();
-					foreach (string refPart in prevRef.Split('/'))
-					{
-						if (segRef.Length > 0)
-							segRef.Append("/");
-						if (refPart.StartsWith("verse"))
-						{
-							string[] parts = refPart.Split('_');
-							int chapter = int.Parse(parts[1], CultureInfo.InvariantCulture);
-							string verseStr = parts[2];
-							string[] verseParts = verseStr.Split('-');
-							int verseStart = int.Parse(verseParts[0], CultureInfo.InvariantCulture);
-							segRef.Append($"verse_{chapter:D3}_{verseStart:D3}");
-							if (verseParts.Length == 2)
-							{
-								int verseEnd = int.Parse(verseParts[1], CultureInfo.InvariantCulture);
-								segRef.Append($"-{verseEnd:D3}");
-							}
-						}
-						else
-						{
-							segRef.Append(refPart);
-						}
-					}
-					string[] segment = wordTokenizer.TokenizeToStrings(sb.ToString()).ToArray();
-					yield return new TextSegment(segRef.ToString(), segment);
+					yield return CreateSegment(wordTokenizer, prevRef, sb.ToString());
 					sb.Clear();
 				}
 
@@ -82,10 +55,24 @@ namespace SIL.Machine.WebApi.Server.Services
 			}
 
 			if (prevRef != null)
+				yield return CreateSegment(wordTokenizer, prevRef, sb.ToString());
+		}
+
+		private static TextSegment CreateSegment(ITokenizer<string, int> wordTokenizer, string segRef,
+			string segmentStr)
+		{
+			var keys = new List<string>();
+			foreach (string refPart in segRef.Split('/'))
 			{
-				string[] segment = wordTokenizer.TokenizeToStrings(sb.ToString()).ToArray();
-				yield return new TextSegment(prevRef, segment);
+				string[] partKeys = refPart.Split('_');
+				// do not include the paragraph style for sub-segments, so that the segments sort correctly
+				if (keys.Count > 0)
+					keys.AddRange(partKeys.Skip(1));
+				else
+					keys.AddRange(partKeys);
 			}
+			string[] segment = wordTokenizer.TokenizeToStrings(segmentStr).ToArray();
+			return new TextSegment(new TextSegmentRef(keys), segment);
 		}
 	}
 }
