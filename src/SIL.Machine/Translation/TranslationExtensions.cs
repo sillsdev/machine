@@ -85,10 +85,10 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public static IDictionary<string, IDictionary<string, double>> GetTranslationTable(
-			this IWordAlignmentModel model, double threshold = 0)
+		public static Dictionary<string, Dictionary<string, double>> GetTranslationTable(this IWordAlignmentModel model,
+			double threshold = 0)
 		{
-			var results = new Dictionary<string, IDictionary<string, double>>();
+			var results = new Dictionary<string, Dictionary<string, double>>();
 			for (int i = 0; i < model.SourceWords.Count; i++)
 			{
 				var row = new Dictionary<string, double>();

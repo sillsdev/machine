@@ -7,6 +7,11 @@ namespace SIL.Machine.Corpora
 {
 	public class TextFileTextAlignmentCollection : ITextAlignmentCollection
 	{
+		public static ITextAlignmentCorpus CreateSingleFileCorpus(string fileName)
+		{
+			return new DictionaryTextAlignmentCorpus(new TextFileTextAlignmentCollection("*all*", fileName));
+		}
+
 		private readonly string _fileName;
 		private readonly bool _invert;
 
