@@ -15,7 +15,7 @@ namespace SIL.Machine.Translation.Thot
 		{
 			using (var model = new ThotSymmetrizedWordAlignmentModel(DirectModelPath, InverseModelPath))
 			{
-				IDictionary<string, IDictionary<string, double>> table = model.GetTranslationTable();
+				Dictionary<string, Dictionary<string, double>> table = model.GetTranslationTable();
 				Assert.That(table.Count, Is.EqualTo(513));
 				Assert.That(table["es"].Count, Is.EqualTo(363));
 			}
@@ -26,7 +26,7 @@ namespace SIL.Machine.Translation.Thot
 		{
 			using (var model = new ThotSymmetrizedWordAlignmentModel(DirectModelPath, InverseModelPath))
 			{
-				IDictionary<string, IDictionary<string, double>> table = model.GetTranslationTable(0.2);
+				Dictionary<string, Dictionary<string, double>> table = model.GetTranslationTable(0.2);
 				Assert.That(table.Count, Is.EqualTo(513));
 				Assert.That(table["es"].Count, Is.EqualTo(9));
 			}
