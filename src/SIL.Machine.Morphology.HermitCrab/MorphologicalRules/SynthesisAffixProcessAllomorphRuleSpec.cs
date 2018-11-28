@@ -144,6 +144,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
 			Annotation<ShapeNode> outputNewMorph = MarkMorphs(newMorphNodes, output, _allomorph);
 
+			var markedAllomorphs = new HashSet<Allomorph>();
 			foreach (Annotation<ShapeNode> inputMorph in match.Input.Morphs)
 			{
 				Allomorph allomorph = match.Input.GetAllomorph(inputMorph);
@@ -152,13 +153,15 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 					Annotation<ShapeNode> outputMorph = MarkMorphs(nodes, output, allomorph);
 					MarkSubsumedMorphs(match.Input, output, inputMorph, outputMorph);
 				}
-				else if (inputMorph.Parent == null)
+				else if (inputMorph.Parent == null && !markedAllomorphs.Contains(allomorph))
 				{
 					// an existing morph has been completely subsumed by the new morph
 					// mark the subsumed morph so we don't lose track of it
+					// this is only necessary if the allomorph hasn't already been marked elsewhere
 					Annotation<ShapeNode> outputMorph = output.MarkSubsumedMorph(outputNewMorph, allomorph);
 					MarkSubsumedMorphs(match.Input, output, inputMorph, outputMorph);
 				}
+				markedAllomorphs.Add(allomorph);
 			}
 
 			output.MprFeatures.AddOutput(_allomorph.OutMprFeatures);
