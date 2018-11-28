@@ -173,7 +173,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			Word output = headMatch.Input.Clone();
 			output.Shape.Clear();
 
-			var existingMorphNodes = new Dictionary<string, List<ShapeNode>>();
+			var existingMorphNodes = new Dictionary<Annotation<ShapeNode>, List<ShapeNode>>();
 			var newMorphNodes = new List<ShapeNode>();
 			foreach (MorphologicalOutputAction outputAction in sr.Rhs)
 			{
@@ -187,9 +187,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 					{
 						if (mapping.Item1 != null && mapping.Item1.Annotation.Parent != null)
 						{
-							var allomorphID = (string) mapping.Item1.Annotation.Parent.FeatureStruct
-								.GetValue(HCFeatureSystem.Allomorph);
-							existingMorphNodes.GetOrCreate(allomorphID, () => new List<ShapeNode>()).Add(mapping.Item2);
+							Annotation<ShapeNode> morph = mapping.Item1.Annotation.Parent;
+							existingMorphNodes.GetOrCreate(morph, () => new List<ShapeNode>()).Add(mapping.Item2);
 						}
 					}
 				}
@@ -197,11 +196,13 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
 			if (existingMorphNodes.Count > 0)
 			{
-				foreach (Allomorph allomorph in headMatch.Input.AllomorphsInMorphOrder)
+				foreach (Annotation<ShapeNode> inputMorph in headMatch.Input.Morphs)
 				{
-					List<ShapeNode> nodes;
-					if (existingMorphNodes.TryGetValue(allomorph.ID, out nodes))
+					if (existingMorphNodes.TryGetValue(inputMorph, out List<ShapeNode> nodes))
+					{
+						Allomorph allomorph = headMatch.Input.GetAllomorph(inputMorph);
 						output.MarkMorph(nodes, allomorph);
+					}
 				}
 			}
 

@@ -1554,5 +1554,76 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			var morpher = new Morpher(TraceManager, Language);
 			AssertMorphsEqual(morpher.ParseWord("puso"), "52 PL");
 		}
+
+		[Test]
+		public void NonContiguousRules()
+		{
+			var cons = FeatureStruct.New(Language.PhonologicalFeatureSystem).Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+").Value;
+			var i = FeatureStruct.New(Language.PhonologicalFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("high+")
+				.Symbol("low-")
+				.Symbol("back-")
+				.Symbol("round-").Value;
+			var voicedCons = FeatureStruct.New(Language.PhonologicalFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons+")
+				.Symbol("vd+").Value;
+			var lowVowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
+				.Symbol(HCFeatureSystem.Segment)
+				.Symbol("cons-")
+				.Symbol("voc+")
+				.Symbol("high-")
+				.Symbol("low+").Value;
+
+			var perfAct = new AffixProcessRule
+			{
+				Name = "perf_act",
+				Gloss = "PER.ACT",
+				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem)
+					.Symbol("V")
+					.Feature(Head).EqualTo(head => head
+						.Feature("aspect").EqualTo("perf")
+						.Feature("mood").EqualTo("active")).Value
+			};
+			perfAct.Allomorphs.Add(new AffixProcessAllomorph
+			{
+				Lhs =
+				{
+					Pattern<Word, ShapeNode>.New("1").Annotation(cons).Value,
+					Pattern<Word, ShapeNode>.New("2").Annotation(cons).Value,
+					Pattern<Word, ShapeNode>.New("3").Annotation(cons).Value
+				},
+				Rhs =
+				{
+					new CopyFromInput("1"),
+					new InsertSegments(Table3, "a"),
+					new CopyFromInput("2"),
+					new InsertSegments(Table3, "a"),
+					new CopyFromInput("3"),
+					new InsertSegments(Table3, "ɯd")
+				}
+			});
+			Morphophonemic.MorphologicalRules.Add(perfAct);
+
+			var rule1 = new RewriteRule
+			{
+				Name = "rule1",
+				ApplicationMode = RewriteApplicationMode.Iterative,
+				Lhs = Pattern<Word, ShapeNode>.New().Annotation(lowVowel).Value
+			};
+			rule1.Subrules.Add(new RewriteSubrule
+			{
+				Rhs = Pattern<Word, ShapeNode>.New().Annotation(i).Value,
+				RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(voicedCons).Value
+			});
+			Allophonic.PhonologicalRules.Add(rule1);
+
+			var morpher = new Morpher(TraceManager, Language);
+			AssertMorphsEqual(morpher.ParseWord("katibɯd"), "49 PER.ACT");
+		}
 	}
 }

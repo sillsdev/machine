@@ -121,7 +121,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 		{
 			Word output = match.Input.Clone();
 			output.Shape.Clear();
-			var existingMorphNodes = new Dictionary<Allomorph, List<ShapeNode>>();
+			var existingMorphNodes = new Dictionary<Annotation<ShapeNode>, List<ShapeNode>>();
 			var newMorphNodes = new List<ShapeNode>();
 			foreach (MorphologicalOutputAction outputAction in _allomorph.Rhs)
 			{
@@ -131,8 +131,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 					{
 						if (mapping.Item1.Annotation.Parent != null)
 						{
-							Allomorph allomorph = match.Input.GetAllomorph(mapping.Item1.Annotation.Parent);
-							existingMorphNodes.GetOrCreate(allomorph, () => new List<ShapeNode>()).Add(mapping.Item2);
+							Annotation<ShapeNode> morph = mapping.Item1.Annotation.Parent;
+							existingMorphNodes.GetOrCreate(morph, () => new List<ShapeNode>()).Add(mapping.Item2);
 						}
 					}
 					else
@@ -142,19 +142,20 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 				}
 			}
 
-			Annotation<ShapeNode> outputNewMorph = output.MarkMorph(newMorphNodes, _allomorph);
+			Annotation<ShapeNode> outputNewMorph = MarkMorphs(newMorphNodes, output, _allomorph);
 
 			foreach (Annotation<ShapeNode> inputMorph in match.Input.Morphs)
 			{
 				Allomorph allomorph = match.Input.GetAllomorph(inputMorph);
-				List<ShapeNode> nodes;
-				if (existingMorphNodes.TryGetValue(allomorph, out nodes))
+				if (existingMorphNodes.TryGetValue(inputMorph, out List<ShapeNode> nodes))
 				{
-					Annotation<ShapeNode> outputMorph = output.MarkMorph(nodes, allomorph);
+					Annotation<ShapeNode> outputMorph = MarkMorphs(nodes, output, allomorph);
 					MarkSubsumedMorphs(match.Input, output, inputMorph, outputMorph);
 				}
 				else if (inputMorph.Parent == null)
 				{
+					// an existing morph has been completely subsumed by the new morph
+					// mark the subsumed morph so we don't lose track of it
 					Annotation<ShapeNode> outputMorph = output.MarkSubsumedMorph(outputNewMorph, allomorph);
 					MarkSubsumedMorphs(match.Input, output, inputMorph, outputMorph);
 				}
@@ -176,6 +177,25 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 				Annotation<ShapeNode> outputChild = output.MarkSubsumedMorph(outputMorph, allomorph);
 				MarkSubsumedMorphs(input, output, inputChild, outputChild);
 			}
+		}
+
+		private Annotation<ShapeNode> MarkMorphs(List<ShapeNode> nodes, Word output, Allomorph allomorph)
+		{
+			Annotation<ShapeNode> longestMorph = null;
+			var curMorphNodes = new List<ShapeNode>();
+			for (int i = 0; i < nodes.Count; i++)
+			{
+				curMorphNodes.Add(nodes[i]);
+				// only contiguous nodes should be marked as a morph
+				if (i == nodes.Count - 1 || nodes[i].Next != nodes[i + 1])
+				{
+					Annotation<ShapeNode> morph = output.MarkMorph(curMorphNodes, allomorph);
+					if (longestMorph == null || morph.Range.Length > longestMorph.Range.Length)
+						longestMorph = morph;
+					curMorphNodes.Clear();
+				}
+			}
+			return longestMorph;
 		}
 	}
 }

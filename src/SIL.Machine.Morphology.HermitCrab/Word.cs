@@ -100,10 +100,9 @@ namespace SIL.Machine.Morphology.HermitCrab
 			}
 		}
 
-		public IEnumerable<Allomorph> AllomorphsInMorphOrder
-		{
-			get { return Morphs.Select(GetAllomorph); }
-		}
+		// there can be multiple morphs for a single allomorph, but we only want to return an allomorph on its
+		// first occurrence, so we use distinct
+		public IEnumerable<Allomorph> AllomorphsInMorphOrder => Morphs.Select(GetAllomorph).Distinct();
 
 		public ICollection<Allomorph> Allomorphs
 		{
