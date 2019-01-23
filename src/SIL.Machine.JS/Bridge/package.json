@@ -1,6 +1,6 @@
 {
   "name": "machine",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "A natural language processing library that is focused on providing tools for processing resource-poor languages.",
   "main": "index.js",
   "types": "index.d.ts",

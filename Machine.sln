@@ -37,9 +37,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Morphology.Herm
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HermitCrab.CommandLine", "src\HermitCrab.CommandLine\HermitCrab.CommandLine.csproj", "{945FED88-A315-4692-96DD-770892A814DD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.WebApi.Server", "src\SIL.Machine.WebApi.Server\SIL.Machine.WebApi.Server.csproj", "{4319AB92-3501-4841-8F41-8B24D335BD14}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.WebApi", "src\SIL.Machine.WebApi\SIL.Machine.WebApi.csproj", "{4319AB92-3501-4841-8F41-8B24D335BD14}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.WebApi.Server.Tests", "tests\SIL.Machine.WebApi.Server.Tests\SIL.Machine.WebApi.Server.Tests.csproj", "{BC2ABD6A-CC0C-4BCA-B828-FFA068BE8C31}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.WebApi.Tests", "tests\SIL.Machine.WebApi.Tests\SIL.Machine.WebApi.Tests.csproj", "{BC2ABD6A-CC0C-4BCA-B828-FFA068BE8C31}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Tests", "tests\SIL.Machine.Tests\SIL.Machine.Tests.csproj", "{FEED0E9B-807F-45D1-9D7F-D75CD719CA98}"
 EndProject
