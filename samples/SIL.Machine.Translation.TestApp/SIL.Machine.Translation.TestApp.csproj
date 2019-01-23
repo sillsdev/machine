@@ -99,7 +99,7 @@
       <Version>2.4.1</Version>
     </PackageReference>
     <PackageReference Include="MvvmLightLibs">
-      <Version>5.4.1</Version>
+      <Version>5.4.1.1</Version>
     </PackageReference>
     <PackageReference Include="Thot">
       <Version>1.0.0-78</Version>
