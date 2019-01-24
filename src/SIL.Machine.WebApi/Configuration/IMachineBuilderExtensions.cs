@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;
@@ -26,6 +27,13 @@ namespace Microsoft.Extensions.DependencyInjection
 			return builder;
 		}
 
+		public static IMachineBuilder AddEngineOptions(this IMachineBuilder builder,
+			IConfiguration config)
+		{
+			builder.Services.Configure<EngineOptions>(config);
+			return builder;
+		}
+
 		public static IMachineBuilder AddThotSmtModel(this IMachineBuilder builder)
 		{
 			builder.Services.AddSingleton<ISmtModelFactory, ThotSmtModelFactory>();
@@ -36,6 +44,13 @@ namespace Microsoft.Extensions.DependencyInjection
 			Action<ThotSmtModelOptions> configureOptions)
 		{
 			builder.Services.Configure(configureOptions);
+			return builder.AddThotSmtModel();
+		}
+
+		public static IMachineBuilder AddThotSmtModel(this IMachineBuilder builder,
+			IConfiguration config)
+		{
+			builder.Services.Configure<ThotSmtModelOptions>(config);
 			return builder.AddThotSmtModel();
 		}
 
@@ -55,6 +70,13 @@ namespace Microsoft.Extensions.DependencyInjection
 			Action<TextFileTextCorpusOptions> configureOptions)
 		{
 			builder.Services.Configure(configureOptions);
+			return builder.AddTextFileTextCorpus();
+		}
+
+		public static IMachineBuilder AddTextFileTextCorpus(this IMachineBuilder builder,
+			IConfiguration config)
+		{
+			builder.Services.Configure<TextFileTextCorpusOptions>(config);
 			return builder.AddTextFileTextCorpus();
 		}
 
@@ -85,6 +107,13 @@ namespace Microsoft.Extensions.DependencyInjection
 			Action<NoDbDataAccessOptions> configureOptions)
 		{
 			builder.Services.Configure(configureOptions);
+			return builder.AddNoDbDataAccess();
+		}
+
+		public static IMachineBuilder AddNoDbDataAccess(this IMachineBuilder builder,
+			IConfiguration config)
+		{
+			builder.Services.Configure<NoDbDataAccessOptions>(config);
 			return builder.AddNoDbDataAccess();
 		}
 
