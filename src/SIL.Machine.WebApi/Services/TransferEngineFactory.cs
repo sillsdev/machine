@@ -3,22 +3,22 @@ using System.Linq;
 using Microsoft.Extensions.Options;
 using SIL.Machine.Morphology.HermitCrab;
 using SIL.Machine.Translation;
-using SIL.Machine.WebApi.Options;
+using SIL.Machine.WebApi.Configuration;
 
 namespace SIL.Machine.WebApi.Services
 {
 	public class TransferEngineFactory : IRuleEngineFactory
 	{
-		private readonly string _enginesDir;
+		private readonly IOptions<EngineOptions> _engineOptions;
 
-		public TransferEngineFactory(IOptions<MachineOptions> machineOptions)
+		public TransferEngineFactory(IOptions<EngineOptions> engineOptions)
 		{
-			_enginesDir = machineOptions.Value.EnginesDir;
+			_engineOptions = engineOptions;
 		}
 
 		public ITranslationEngine Create(string engineId)
 		{
-			string engineDir = Path.Combine(_enginesDir, engineId);
+			string engineDir = Path.Combine(_engineOptions.Value.EnginesDir, engineId);
 			string hcSrcConfigFileName = Path.Combine(engineDir, "src-hc.xml");
 			string hcTrgConfigFileName = Path.Combine(engineDir, "trg-hc.xml");
 			TransferEngine transferEngine = null;
@@ -44,7 +44,7 @@ namespace SIL.Machine.WebApi.Services
 
 		public void CleanupEngine(string engineId)
 		{
-			string engineDir = Path.Combine(_enginesDir, engineId);
+			string engineDir = Path.Combine(_engineOptions.Value.EnginesDir, engineId);
 			if (!Directory.Exists(engineDir))
 				return;
 			string hcSrcConfigFileName = Path.Combine(engineDir, "src-hc.xml");

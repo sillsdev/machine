@@ -1,41 +1,41 @@
 ﻿using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using Microsoft.Extensions.Options;
 using SIL.Machine.Translation;
 using SIL.Machine.Translation.Thot;
-using SIL.Machine.WebApi.Options;
-using System.IO.Compression;
+using SIL.Machine.WebApi.Configuration;
 
 namespace SIL.Machine.WebApi.Services
 {
 	public class ThotSmtModelFactory : ISmtModelFactory
 	{
-		private readonly ThotSmtModelOptions _options;
-		private readonly string _rootDir;
+		private readonly IOptions<ThotSmtModelOptions> _options;
+		private readonly IOptions<EngineOptions> _engineOptions;
 
-		public ThotSmtModelFactory(IOptions<ThotSmtModelOptions> options, IOptions<MachineOptions> machineOptions)
+		public ThotSmtModelFactory(IOptions<ThotSmtModelOptions> options, IOptions<EngineOptions> engineOptions)
 		{
-			_options = options.Value;
-			_rootDir = machineOptions.Value.EnginesDir;
+			_options = options;
+			_engineOptions = engineOptions;
 		}
 
 		public IInteractiveSmtModel Create(string engineId)
 		{
-			string smtConfigFileName = Path.Combine(_rootDir, engineId, "smt.cfg");
+			string smtConfigFileName = Path.Combine(_engineOptions.Value.EnginesDir, engineId, "smt.cfg");
 			return new ThotSmtModel(smtConfigFileName);
 		}
 
 		public void InitNewModel(string engineId)
 		{
-			string engineDir = Path.Combine(_rootDir, engineId);
+			string engineDir = Path.Combine(_engineOptions.Value.EnginesDir, engineId);
 			if (!Directory.Exists(engineDir))
 				Directory.CreateDirectory(engineDir);
-			ZipFile.ExtractToDirectory(_options.NewModelFile, engineDir);
+			ZipFile.ExtractToDirectory(_options.Value.NewModelFile, engineDir);
 		}
 
 		public void CleanupModel(string engineId)
 		{
-			string engineDir = Path.Combine(_rootDir, engineId);
+			string engineDir = Path.Combine(_engineOptions.Value.EnginesDir, engineId);
 			if (!Directory.Exists(engineDir))
 				return;
 			string lmDir = Path.Combine(engineDir, "lm");

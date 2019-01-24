@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <Description>SIL.Machine.Morphology.HermitCrab provides a rule-based morphological/phonological parser.</Description>
   </PropertyGroup>
 
   <Import Project="../AssemblyInfo.props" />

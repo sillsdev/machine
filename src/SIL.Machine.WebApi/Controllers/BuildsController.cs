@@ -4,13 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using SIL.Machine.WebApi.Dtos;
+using SIL.Machine.WebApi.Configuration;
 using SIL.Machine.WebApi.DataAccess;
+using SIL.Machine.WebApi.Dtos;
 using SIL.Machine.WebApi.Models;
-using SIL.Machine.WebApi.Options;
 using SIL.Machine.WebApi.Services;
 using SIL.Machine.WebApi.Utils;
-using Microsoft.AspNetCore.Authorization;
 
 namespace SIL.Machine.WebApi.Controllers
 {
@@ -20,14 +19,14 @@ namespace SIL.Machine.WebApi.Controllers
 	{
 		private readonly IBuildRepository _buildRepo;
 		private readonly EngineService _engineService;
-		private readonly IOptions<MachineOptions> _options;
+		private readonly IOptions<EngineOptions> _engineOptions;
 
 		public BuildsController(IBuildRepository buildRepo, IEngineRepository engineRepo, EngineService engineService,
-			IOptions<MachineOptions> options)
+			IOptions<EngineOptions> engineOptions)
 		{
 			_buildRepo = buildRepo;
 			_engineService = engineService;
-			_options = options;
+			_engineOptions = engineOptions;
 		}
 
 		[HttpGet]
@@ -44,7 +43,7 @@ namespace SIL.Machine.WebApi.Controllers
 			if (minRevision != null)
 			{
 				EntityChange<Build> change = await _buildRepo.GetNewerRevisionAsync(GetLocatorType(locatorType),
-					locator, minRevision.Value, ct).Timeout(_options.Value.BuildLongPollTimeout, ct);
+					locator, minRevision.Value, ct).Timeout(_engineOptions.Value.BuildLongPollTimeout, ct);
 				switch (change.Type)
 				{
 					case EntityChangeType.None:

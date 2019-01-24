@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
-using SIL.Machine.WebApi.Options;
+using SIL.Machine.WebApi.Configuration;
 
 namespace SIL.Machine.WebApi.Services
 {

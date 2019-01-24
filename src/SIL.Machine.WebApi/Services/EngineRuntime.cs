@@ -9,9 +9,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SIL.Machine.Corpora;
 using SIL.Machine.Translation;
+using SIL.Machine.WebApi.Configuration;
 using SIL.Machine.WebApi.DataAccess;
 using SIL.Machine.WebApi.Models;
-using SIL.Machine.WebApi.Options;
 using SIL.Machine.WebApi.Utils;
 using SIL.ObjectModel;
 
@@ -26,7 +26,7 @@ namespace SIL.Machine.WebApi.Services
 		private readonly ISmtModelFactory _smtModelFactory;
 		private readonly IRuleEngineFactory _ruleEngineFactory;
 		private readonly ITextCorpusFactory _textCorpusFactory;
-		private readonly IOptions<MachineOptions> _options;
+		private readonly IOptions<EngineOptions> _engineOptions;
 		private readonly ILogger<EngineRuntime> _logger;
 		private readonly IBackgroundJobClient _jobClient;
 		private readonly string _engineId;
@@ -40,16 +40,17 @@ namespace SIL.Machine.WebApi.Services
 		private bool _isUpdated;
 		private DateTime _lastUsedTime;
 
-		public EngineRuntime(IOptions<MachineOptions> options, IEngineRepository engineRepo, IBuildRepository buildRepo,
-			ISmtModelFactory smtModelFactory, IRuleEngineFactory ruleEngineFactory, IBackgroundJobClient jobClient,
-			ITextCorpusFactory textCorpusFactory, ILogger<EngineRuntime> logger, string engineId)
+		public EngineRuntime(IOptions<EngineOptions> engineOptions, IEngineRepository engineRepo,
+			IBuildRepository buildRepo, ISmtModelFactory smtModelFactory, IRuleEngineFactory ruleEngineFactory,
+			IBackgroundJobClient jobClient, ITextCorpusFactory textCorpusFactory, ILogger<EngineRuntime> logger,
+			string engineId)
 		{
 			_engineRepo = engineRepo;
 			_buildRepo = buildRepo;
 			_smtModelFactory = smtModelFactory;
 			_ruleEngineFactory = ruleEngineFactory;
 			_textCorpusFactory = textCorpusFactory;
-			_options = options;
+			_engineOptions = engineOptions;
 			_logger = logger;
 			_jobClient = jobClient;
 			_engineId = engineId;
@@ -174,7 +175,7 @@ namespace SIL.Machine.WebApi.Services
 				if (!IsLoaded || IsBuilding)
 					return;
 
-				if (DateTime.Now - _lastUsedTime > _options.Value.InactiveEngineTimeout)
+				if (DateTime.Now - _lastUsedTime > _engineOptions.Value.InactiveEngineTimeout)
 					Unload();
 				else
 					SaveModel();

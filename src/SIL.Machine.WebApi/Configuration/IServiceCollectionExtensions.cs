@@ -1,13 +1,12 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
+using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json.Serialization;
+using SIL.Machine.WebApi.Configuration;
 using SIL.Machine.WebApi.Controllers;
-using SIL.Machine.WebApi.Options;
 using SIL.Machine.WebApi.Services;
 
-namespace SIL.Machine.WebApi
+namespace Microsoft.Extensions.DependencyInjection
 {
 	public static class IServiceCollectionExtensions
 	{
@@ -17,25 +16,24 @@ namespace SIL.Machine.WebApi
 		}
 
 		public static IMachineBuilder AddMachine(this IServiceCollection services,
-			Action<MachineOptions> configureOptions)
+			Action<MachineConfig> setupAction)
 		{
-			var options = new MachineOptions();
-			configureOptions(options);
-			services.ConfigureOptions(options);
+			var config = new MachineConfig();
+			setupAction(config);
 			services.AddSingleton<EngineService>();
 			services.AddTransient<EngineRuntime>();
 
 			services.Configure<MvcOptions>(o =>
 				{
 					o.Filters.Add<OperationCancelledExceptionFilter>();
-					o.Conventions.Add(new MachineApplicationModelConvention(options.Namespace,
-						options.AuthenticationSchemes));
+					o.Conventions.Add(new MachineApplicationModelConvention(config.Namespace,
+						config.AuthenticationSchemes));
 				});
 			services.Configure<MvcJsonOptions>(o =>
 				{
 					o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-					o.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
 				});
+			services.Configure<RouteOptions>(o => o.LowercaseUrls = true);
 
 			var builder = new MachineBuilder(services);
 			builder.AddThotSmtModel();

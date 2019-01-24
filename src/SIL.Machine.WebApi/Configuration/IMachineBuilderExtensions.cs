@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;
@@ -8,29 +7,36 @@ using MongoDB.Bson.Serialization.IdGenerators;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 using NoDb;
+using SIL.Machine.WebApi.Configuration;
 using SIL.Machine.WebApi.DataAccess;
 using SIL.Machine.WebApi.DataAccess.Memory;
 using SIL.Machine.WebApi.DataAccess.Mongo;
 using SIL.Machine.WebApi.DataAccess.NoDb;
 using SIL.Machine.WebApi.Models;
-using SIL.Machine.WebApi.Options;
 using SIL.Machine.WebApi.Services;
 
-namespace SIL.Machine.WebApi
+namespace Microsoft.Extensions.DependencyInjection
 {
 	public static class IMachineBuilderExtensions
 	{
+		public static IMachineBuilder AddEngineOptions(this IMachineBuilder builder,
+			Action<EngineOptions> configureOptions)
+		{
+			builder.Services.Configure(configureOptions);
+			return builder;
+		}
+
 		public static IMachineBuilder AddThotSmtModel(this IMachineBuilder builder)
 		{
-			return builder.AddThotSmtModel(o => { });
+			builder.Services.AddSingleton<ISmtModelFactory, ThotSmtModelFactory>();
+			return builder;
 		}
 
 		public static IMachineBuilder AddThotSmtModel(this IMachineBuilder builder,
 			Action<ThotSmtModelOptions> configureOptions)
 		{
 			builder.Services.Configure(configureOptions);
-			builder.Services.AddSingleton<ISmtModelFactory, ThotSmtModelFactory>();
-			return builder;
+			return builder.AddThotSmtModel();
 		}
 
 		public static IMachineBuilder AddTransferEngine(this IMachineBuilder builder)
@@ -41,15 +47,15 @@ namespace SIL.Machine.WebApi
 
 		public static IMachineBuilder AddTextFileTextCorpus(this IMachineBuilder builder)
 		{
-			return builder.AddTextFileTextCorpus(o => { });
+			builder.Services.AddSingleton<ITextCorpusFactory, TextFileTextCorpusFactory>();
+			return builder;
 		}
 
 		public static IMachineBuilder AddTextFileTextCorpus(this IMachineBuilder builder,
 			Action<TextFileTextCorpusOptions> configureOptions)
 		{
 			builder.Services.Configure(configureOptions);
-			builder.Services.AddSingleton<ITextCorpusFactory, TextFileTextCorpusFactory>();
-			return builder;
+			return builder.AddTextFileTextCorpus();
 		}
 
 		public static IMachineBuilder AddTextCorpus<T>(this IMachineBuilder builder) where T : class, ITextCorpusFactory
@@ -60,13 +66,6 @@ namespace SIL.Machine.WebApi
 
 		public static IMachineBuilder AddNoDbDataAccess(this IMachineBuilder builder)
 		{
-			return builder.AddNoDbDataAccess(o => { });
-		}
-
-		public static IMachineBuilder AddNoDbDataAccess(this IMachineBuilder builder,
-			Action<NoDbDataAccessOptions> configureOptions)
-		{
-			builder.Services.Configure(configureOptions);
 			builder.Services.AddNoDbForEntity<Engine>();
 			builder.Services.AddNoDbForEntity<Build>();
 			builder.Services.AddNoDbForEntity<Project>();
@@ -80,6 +79,13 @@ namespace SIL.Machine.WebApi
 				new NoDbRepository<Project>(sp.GetService<IBasicCommands<Project>>(),
 					sp.GetService<IBasicQueries<Project>>())));
 			return builder;
+		}
+
+		public static IMachineBuilder AddNoDbDataAccess(this IMachineBuilder builder,
+			Action<NoDbDataAccessOptions> configureOptions)
+		{
+			builder.Services.Configure(configureOptions);
+			return builder.AddNoDbDataAccess();
 		}
 
 		private static void AddNoDbForEntity<T>(this IServiceCollection services) where T : class
@@ -98,19 +104,10 @@ namespace SIL.Machine.WebApi
 			return builder;
 		}
 
-		public static IMachineBuilder AddMongoDataAccess(this IMachineBuilder builder)
-		{
-			return builder.AddMongoDataAccess(o => { });
-		}
-
 		public static IMachineBuilder AddMongoDataAccess(this IMachineBuilder builder,
-			Action<MongoDataAccessOptions> configureOptions)
+			string connectionString = "mongodb://localhost:27017")
 		{
-			var options = new MongoDataAccessOptions();
-			configureOptions(options);
-			builder.Services.ConfigureOptions(options);
-
-			var mongoClient = new MongoClient(options.MongoConnectionString);
+			var mongoClient = new MongoClient(connectionString);
 			IMongoDatabase db = mongoClient.GetDatabase("machine");
 
 			var globalPack = new ConventionPack

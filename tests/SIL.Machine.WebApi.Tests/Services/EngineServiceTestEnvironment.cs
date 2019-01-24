@@ -11,10 +11,10 @@ using NSubstitute;
 using SIL.Machine.Annotations;
 using SIL.Machine.Corpora;
 using SIL.Machine.Translation;
+using SIL.Machine.WebApi.Configuration;
 using SIL.Machine.WebApi.DataAccess;
 using SIL.Machine.WebApi.DataAccess.Memory;
 using SIL.Machine.WebApi.Models;
-using SIL.Machine.WebApi.Options;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.WebApi.Services
@@ -33,7 +33,7 @@ namespace SIL.Machine.WebApi.Services
 			EngineRepository = new MemoryEngineRepository();
 			BuildRepository = new MemoryBuildRepository();
 			ProjectRepository = new MemoryRepository<Project>();
-			MachineOptions = new MachineOptions();
+			EngineOptions = new EngineOptions();
 			_memoryStorage = new MemoryStorage();
 			_jobClient = new BackgroundJobClient(_memoryStorage);
 		}
@@ -44,7 +44,7 @@ namespace SIL.Machine.WebApi.Services
 		public EngineService Service { get; private set; }
 		public ISmtBatchTrainer BatchTrainer { get; private set; }
 		public IInteractiveSmtModel SmtModel { get; private set; }
-		public MachineOptions MachineOptions { get; }
+		public EngineOptions EngineOptions { get; }
 
 		public EngineRuntime GetRuntime(string engineId)
 		{
@@ -60,7 +60,7 @@ namespace SIL.Machine.WebApi.Services
 			_ruleEngineFactory = CreateRuleEngineFactory();
 			_textCorpusFactory = CreateTextCorpusFactory();
 
-			Service = new EngineService(new OptionsWrapper<MachineOptions>(MachineOptions), EngineRepository,
+			Service = new EngineService(new OptionsWrapper<EngineOptions>(EngineOptions), EngineRepository,
 				BuildRepository, ProjectRepository, CreateEngineRuntime);
 			Service.Init();
 			var jobServerOptions = new BackgroundJobServerOptions
@@ -80,7 +80,7 @@ namespace SIL.Machine.WebApi.Services
 
 		private Owned<EngineRuntime> CreateEngineRuntime(string engineId)
 		{
-			var runtime = new EngineRuntime(new OptionsWrapper<MachineOptions>(MachineOptions), EngineRepository,
+			var runtime = new EngineRuntime(new OptionsWrapper<EngineOptions>(EngineOptions), EngineRepository,
 				BuildRepository, _smtModelFactory, _ruleEngineFactory, _jobClient, _textCorpusFactory,
 				Substitute.For<ILogger<EngineRuntime>>(), engineId);
 			return new Owned<EngineRuntime>(runtime, runtime);

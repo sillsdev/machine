@@ -1,4 +1,4 @@
-﻿namespace SIL.Machine.WebApi.Options
+﻿namespace SIL.Machine.WebApi.Configuration
 {
 	public class ThotSmtModelOptions
 	{

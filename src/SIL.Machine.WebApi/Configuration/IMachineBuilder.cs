@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
-namespace SIL.Machine.WebApi
+﻿namespace Microsoft.Extensions.DependencyInjection
 {
 	public interface IMachineBuilder
 	{

@@ -87,7 +87,7 @@ namespace SIL.Machine.WebApi.Services
 		{
 			using (var env = new EngineServiceTestEnvironment())
 			{
-				env.MachineOptions.InactiveEngineTimeout = TimeSpan.Zero;
+				env.EngineOptions.InactiveEngineTimeout = TimeSpan.Zero;
 				env.CreateEngineService();
 				Engine engine = await env.CreateEngineAsync();
 				EngineRuntime runtime = env.GetRuntime(engine.Id);
@@ -105,7 +105,7 @@ namespace SIL.Machine.WebApi.Services
 		{
 			using (var env = new EngineServiceTestEnvironment())
 			{
-				env.MachineOptions.InactiveEngineTimeout = TimeSpan.FromHours(1);
+				env.EngineOptions.InactiveEngineTimeout = TimeSpan.FromHours(1);
 				env.CreateEngineService();
 				Engine engine = await env.CreateEngineAsync();
 				EngineRuntime runtime = env.GetRuntime(engine.Id);
@@ -122,7 +122,7 @@ namespace SIL.Machine.WebApi.Services
 		{
 			using (var env = new EngineServiceTestEnvironment())
 			{
-				env.MachineOptions.InactiveEngineTimeout = TimeSpan.FromHours(1);
+				env.EngineOptions.InactiveEngineTimeout = TimeSpan.FromHours(1);
 				env.CreateEngineService();
 				Engine engine = await env.CreateEngineAsync();
 				EngineRuntime runtime = env.GetRuntime(engine.Id);

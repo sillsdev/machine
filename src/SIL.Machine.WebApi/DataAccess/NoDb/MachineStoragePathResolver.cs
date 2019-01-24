@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using NoDb;
-using SIL.Machine.WebApi.Options;
+using SIL.Machine.WebApi.Configuration;
 
 namespace SIL.Machine.WebApi.DataAccess.NoDb
 {

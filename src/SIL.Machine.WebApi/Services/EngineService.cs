@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Autofac.Features.OwnedInstances;
 using Microsoft.Extensions.Options;
 using SIL.Machine.Translation;
+using SIL.Machine.WebApi.Configuration;
 using SIL.Machine.WebApi.DataAccess;
 using SIL.Machine.WebApi.Models;
-using SIL.Machine.WebApi.Options;
 using SIL.Machine.WebApi.Utils;
 using SIL.ObjectModel;
 
@@ -15,7 +15,7 @@ namespace SIL.Machine.WebApi.Services
 {
 	public class EngineService : DisposableBase
 	{
-		private readonly IOptions<MachineOptions> _options;
+		private readonly IOptions<EngineOptions> _engineOptions;
 		private readonly ConcurrentDictionary<string, Owned<EngineRuntime>> _runtimes;
 		private readonly AsyncReaderWriterLock _lock;
 		private readonly IEngineRepository _engineRepo;
@@ -24,10 +24,11 @@ namespace SIL.Machine.WebApi.Services
 		private readonly Func<string, Owned<EngineRuntime>> _engineRunnerFactory;
 		private readonly AsyncTimer _commitTimer;
 
-		public EngineService(IOptions<MachineOptions> options, IEngineRepository engineRepo, IBuildRepository buildRepo,
-			IRepository<Project> projectRepo, Func<string, Owned<EngineRuntime>> engineRuntimeFactory)
+		public EngineService(IOptions<EngineOptions> engineOptions, IEngineRepository engineRepo,
+			IBuildRepository buildRepo, IRepository<Project> projectRepo,
+			Func<string, Owned<EngineRuntime>> engineRuntimeFactory)
 		{
-			_options = options;
+			_engineOptions = engineOptions;
 			_engineRepo = engineRepo;
 			_buildRepo = buildRepo;
 			_projectRepo = projectRepo;
@@ -39,7 +40,7 @@ namespace SIL.Machine.WebApi.Services
 
 		public void Init()
 		{
-			_commitTimer.Start(_options.Value.EngineCommitFrequency);
+			_commitTimer.Start(_engineOptions.Value.EngineCommitFrequency);
 		}
 
 		private async Task EngineCommitAsync()

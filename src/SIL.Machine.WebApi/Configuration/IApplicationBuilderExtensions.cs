@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using SIL.Machine.WebApi.DataAccess;
 using SIL.Machine.WebApi.Models;
 using SIL.Machine.WebApi.Services;
 using SIL.Machine.WebApi.Utils;
 
-namespace SIL.Machine.WebApi
+namespace Microsoft.AspNetCore.Builder
 {
 	public static class IApplicationBuilderExtensions
 	{
