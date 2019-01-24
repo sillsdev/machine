@@ -5,6 +5,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="thot-new-model.zip" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="thot-new-model.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Autofac" Version="4.8.1" />
     <PackageReference Include="HangFire" Version="1.6.21" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
@@ -18,5 +28,9 @@
     <ProjectReference Include="..\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj" />
     <ProjectReference Include="..\SIL.Machine\SIL.Machine.csproj" />
   </ItemGroup>
+
+  <Target Name="ZipThotNewModel" BeforeTargets="BeforeBuild">
+    <ZipDirectory SourceDirectory="data\thot-new-model" DestinationFile="thot-new-model.zip" Overwrite="true" />
+  </Target>
 
 </Project>
