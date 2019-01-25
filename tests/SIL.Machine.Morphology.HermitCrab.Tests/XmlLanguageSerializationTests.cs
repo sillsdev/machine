@@ -19,8 +19,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 			{
 				Language lang = XmlLanguageLoader.Load(TestXmlFileName);
 				XmlLanguageWriter.Save(lang, TempXmlFileName);
-				string testXml = File.ReadAllText(TestXmlFileName);
-				string tempXml = File.ReadAllText(TempXmlFileName);
+				string testXml = File.ReadAllText(TestXmlFileName).Replace("\r\n", "\n");
+				string tempXml = File.ReadAllText(TempXmlFileName).Replace("\r\n", "\n");
 				Assert.That(tempXml, Is.EqualTo(testXml));
 			}
 			finally
