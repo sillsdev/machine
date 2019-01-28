@@ -1,6 +1,10 @@
 version: 2.1.0-{build}
 pull_requests:
   do_not_increment_build_number: true
+branches:
+  only:
+  - master
+skip_branch_with_pr: true
 image: Visual Studio 2017
 configuration: Release
 environment:
@@ -10,46 +14,32 @@ install:
 nuget:
   disable_publish_on_pr: true
 before_build:
-- cmd: nuget restore Machine.sln
+- ps: nuget restore Machine.sln
 build:
   project: Machine.sln
   verbosity: minimal
 after_build:
-- cmd: >-
-    dotnet pack src\SIL.Machine\SIL.Machine.csproj -c Release -o ..\..\artifacts --version-suffix "%APPVEYOR_BUILD_NUMBER%"
-
-    dotnet pack src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj -c Release -o ..\..\artifacts --version-suffix "%APPVEYOR_BUILD_NUMBER%"
-
-    dotnet pack src\SIL.Machine.WebApi\SIL.Machine.WebApi.csproj -c Release -o ..\..\artifacts --version-suffix "%APPVEYOR_BUILD_NUMBER%"
-
-    dotnet pack src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj -c Release -o ..\..\artifacts --version-suffix "%APPVEYOR_BUILD_NUMBER%"
-
+- ps: |
+    dotnet pack src\SIL.Machine\SIL.Machine.csproj -c Release -o ..\..\artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
+    dotnet pack src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj -c Release -o ..\..\artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
+    dotnet pack src\SIL.Machine.WebApi\SIL.Machine.WebApi.csproj -c Release -o ..\..\artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
+    dotnet pack src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj -c Release -o ..\..\artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
 
     cd src\SIL.Machine.JS\Bridge
-
-    call npm version %APPVEYOR_BUILD_VERSION%
-
-    call npm pack
-
+    npm version $env:APPVEYOR_BUILD_VERSION
+    npm pack
     cd ..\..\..
+    Move-Item src\SIL.Machine.JS\Bridge\machine-$env:APPVEYOR_BUILD_VERSION.tgz artifacts\machine.tgz
 
-    move src\SIL.Machine.JS\Bridge\machine-*.tgz artifacts\machine.tgz
+    Get-ChildItem artifacts\*.* | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
 test_script:
-- ps: >-
+- ps: |
     dotnet test --no-build -c Release --test-adapter-path:. --logger:Appveyor tests\SIL.Machine.Tests\SIL.Machine.Tests.csproj
-
     dotnet test --no-build -c Release --test-adapter-path:. --logger:Appveyor tests\SIL.Machine.Morphology.HermitCrab.Tests\SIL.Machine.Morphology.HermitCrab.Tests.csproj
-
     dotnet test --no-build -c Release --test-adapter-path:. --logger:Appveyor tests\SIL.Machine.Translation.Thot.Tests\SIL.Machine.Translation.Thot.Tests.csproj
-
     dotnet test --no-build -c Release --test-adapter-path:. --logger:Appveyor tests\SIL.Machine.WebApi.Tests\SIL.Machine.WebApi.Tests.csproj
-
 
     packages\Chutzpah.4.3.7\tools\chutzpah.console.exe tests\SIL.Machine.JS.Tests\Bridge\www\test.html /junit .\junit-results.xml
 
-
     $wc = New-Object 'System.Net.WebClient'
-
     $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\junit-results.xml))
-artifacts:
-- path: artifacts\*.*
