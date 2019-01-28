@@ -16,7 +16,7 @@
     <PackageReference Include="NUnit" Version="3.11.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.12.0" />
     <PackageReference Include="TeamCity.VSTest.TestAdapter" Version="1.0.13" />
-    <PackageReference Include="Thot" Version="1.0.0-78" />
+    <PackageReference Include="Thot" Version="1.0.0-79" />
   </ItemGroup>
 
   <ItemGroup>
