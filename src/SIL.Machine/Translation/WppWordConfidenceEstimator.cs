@@ -45,14 +45,14 @@ namespace SIL.Machine.Translation
 					foreach (int nextArcIndex in wordGraph.GetNextArcIndices(arc.NextState))
 					{
 						WordGraphArc nextArc = wordGraph.Arcs[nextArcIndex];
-						sum = LogSpace.Add(sum, LogSpace.Multiple(nextArc.Score, backwardProbs[nextArcIndex]));
+						sum = LogSpace.Add(sum, LogSpace.Multiply(nextArc.Score, backwardProbs[nextArcIndex]));
 					}
 				}
 				backwardProbs[i] = sum;
 				if (arc.PrevState == WordGraph.InitialState)
 				{
 					normalizationFactor = LogSpace.Add(normalizationFactor,
-						LogSpace.Multiple(arc.Score, backwardProbs[i]));
+						LogSpace.Multiply(arc.Score, backwardProbs[i]));
 				}
 			}
 
@@ -72,8 +72,8 @@ namespace SIL.Machine.Translation
 						startIndex = forwardProbs[prevArcIndex].Index;
 					}
 				}
-				forwardProbs[i] = (LogSpace.Multiple(arc.Score, sum), startIndex + arc.Words.Count);
-				double prob = LogSpace.Multiple(forwardProbs[i].Prob, backwardProbs[i]);
+				forwardProbs[i] = (LogSpace.Multiply(arc.Score, sum), startIndex + arc.Words.Count);
+				double prob = LogSpace.Multiply(forwardProbs[i].Prob, backwardProbs[i]);
 				for (int j = 0; j < arc.Words.Count; j++)
 				{
 					string word = arc.Words[j];

@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using SIL.Machine.WebApi.Dtos;
 using SIL.Machine.WebApi.DataAccess;
 using SIL.Machine.WebApi.Models;
 using SIL.Machine.WebApi.Services;

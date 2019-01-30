@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using SIL.Machine.WebApi.Configuration;
 using SIL.Machine.WebApi.DataAccess;
-using SIL.Machine.WebApi.Dtos;
 using SIL.Machine.WebApi.Models;
 using SIL.Machine.WebApi.Services;
 using SIL.Machine.WebApi.Utils;

@@ -1,0 +1,51 @@
+{
+  "name": "@sil/machine",
+  "version": "2.1.0",
+  "description": "A natural language processing library that is focused on providing tools for processing resource-poor languages.",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "test": "jest --config jestconfig.json",
+    "build": "tsc --project tsconfig.build.json",
+    "prepare": "npm run build",
+    "test:ci": "jest --config jestconfig.json --ci --reporters=default --reporters=jest-junit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sillsdev/machine.git"
+  },
+  "keywords": [
+    "natural",
+    "language",
+    "processing",
+    "machine",
+    "translation"
+  ],
+  "author": "Damien Daspit",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sillsdev/machine/issues"
+  },
+  "homepage": "https://github.com/sillsdev/machine#readme",
+  "devDependencies": {
+    "@types/jest": "^23.3.13",
+    "@types/xregexp": "^3.0.29",
+    "jest": "^23.6.0",
+    "jest-junit": "^6.2.1",
+    "prettier": "^1.16.1",
+    "ts-jest": "^23.10.5",
+    "ts-mockito": "^2.3.1",
+    "tslint": "^5.12.1",
+    "tslint-config-prettier": "^1.17.0",
+    "typescript": "^3.2.4"
+  },
+  "dependencies": {
+    "rxjs": "^6.3.3",
+    "rxjs-take-while-inclusive": "^2.1.0",
+    "typescript-collections": "^1.3.2",
+    "xregexp": "^4.2.4"
+  },
+  "files": [
+    "lib/**/*"
+  ]
+}

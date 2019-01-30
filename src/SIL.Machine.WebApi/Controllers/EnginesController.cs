@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using SIL.Machine.Translation;
-using SIL.Machine.WebApi.Dtos;
 using SIL.Machine.WebApi.DataAccess;
 using SIL.Machine.WebApi.Models;
 using SIL.Machine.WebApi.Services;
@@ -110,7 +109,8 @@ namespace SIL.Machine.WebApi.Controllers
 					.Select(j => result.RecaseTargetWord(sourceSegment, j)).ToArray(),
 				Confidences = result.WordConfidences.Select(c => (float) c).ToArray(),
 				Sources = result.WordSources.ToArray(),
-				Alignment = CreateDto(result.Alignment)
+				Alignment = CreateDto(result.Alignment),
+				Phrases = result.Phrases.Select(CreateDto).ToArray()
 			};
 		}
 
@@ -187,6 +187,16 @@ namespace SIL.Machine.WebApi.Controllers
 			{
 				WordGraph = CreateDto(result.SmtWordGraph, sourceSegment),
 				RuleResult = CreateDto(result.RuleResult, sourceSegment)
+			};
+		}
+
+		private static PhraseDto CreateDto(Phrase phrase)
+		{
+			return new PhraseDto
+			{
+				SourceSegmentRange = CreateDto(phrase.SourceSegmentRange),
+				TargetSegmentCut = phrase.TargetSegmentCut,
+				Confidence = phrase.Confidence
 			};
 		}
 	}

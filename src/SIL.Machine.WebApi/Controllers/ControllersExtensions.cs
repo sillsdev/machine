@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SIL.Machine.WebApi.Dtos;
 
 namespace SIL.Machine.WebApi.Controllers
 {

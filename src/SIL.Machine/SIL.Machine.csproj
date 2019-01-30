@@ -19,6 +19,4 @@
     <PackageReference Include="System.ValueTuple" Version="4.4.0" />
   </ItemGroup>
 
-  <Import Project="..\SIL.Machine.Shared\SIL.Machine.Shared.projitems" Label="Shared" />
-
 </Project>
