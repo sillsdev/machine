@@ -14,11 +14,7 @@ install:
 nuget:
   disable_publish_on_pr: true
 before_build:
-- ps: |
-    nuget restore Machine.sln
-    cd src\SIL.Machine.TS
-    npm install
-    cd ..\..\..
+- ps: nuget restore Machine.sln
 build:
   project: Machine.sln
   verbosity: minimal
@@ -30,9 +26,10 @@ after_build:
     dotnet pack src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj -c Release -o ..\..\artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
 
     cd src\SIL.Machine.TS
+    npm install
     npm version $env:APPVEYOR_BUILD_VERSION
     npm pack
-    cd ..\..\..
+    cd ..\..
     Move-Item src\SIL.Machine.TS\machine-$env:APPVEYOR_BUILD_VERSION.tgz artifacts\machine.tgz
 
     Get-ChildItem artifacts\*.* | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
@@ -45,6 +42,6 @@ test_script:
 
     cd src\SIL.Machine.TS
     npm run test:ci
-    cd ..\..\..
+    cd ..\..
     $wc = New-Object 'System.Net.WebClient'
     $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\src\SIL.Machine.TS\junit.xml))
