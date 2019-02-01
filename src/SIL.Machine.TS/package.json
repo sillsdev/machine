@@ -8,7 +8,7 @@
     "test": "jest --config jestconfig.json",
     "build": "tsc --project tsconfig.build.json",
     "prepare": "npm run build",
-    "test:ci": "jest --config jestconfig.json --ci --reporters=default --reporters=jest-junit"
+    "test:ci": "jest --config jestconfig.json --ci --reporters=jest-junit"
   },
   "repository": {
     "type": "git",

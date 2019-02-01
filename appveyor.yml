@@ -26,11 +26,11 @@ after_build:
     dotnet pack src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj -c Release -o ..\..\artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
 
     cd src\SIL.Machine.TS
-    npm install
+    npm --logevel=error install
     npm version $env:APPVEYOR_BUILD_VERSION
     npm pack
     cd ..\..
-    Move-Item src\SIL.Machine.TS\machine-$env:APPVEYOR_BUILD_VERSION.tgz artifacts\machine.tgz
+    Move-Item src\SIL.Machine.TS\sil-machine-$env:APPVEYOR_BUILD_VERSION.tgz artifacts\sil-machine.tgz
 
     Get-ChildItem artifacts\*.* | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
 test_script:
