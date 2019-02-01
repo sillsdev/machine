@@ -26,7 +26,7 @@ after_build:
     dotnet pack src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj -c Release -o ..\..\artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
 
     cd src\SIL.Machine.TS
-    npm --logevel=error install
+    npm --loglevel=error install
     npm version $env:APPVEYOR_BUILD_VERSION
     npm pack
     cd ..\..
