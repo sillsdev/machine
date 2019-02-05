@@ -13,7 +13,7 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.WebApi.Services
 {
-	public class EngineService : DisposableBase
+	internal class EngineService : DisposableBase, IEngineServiceInternal
 	{
 		private readonly IOptions<EngineOptions> _engineOptions;
 		private readonly ConcurrentDictionary<string, Owned<EngineRuntime>> _runtimes;

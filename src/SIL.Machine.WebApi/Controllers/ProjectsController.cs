@@ -13,9 +13,9 @@ namespace SIL.Machine.WebApi.Controllers
 	public class ProjectsController : Controller
 	{
 		private readonly IRepository<Project> _projectRepo;
-		private readonly EngineService _engineService;
+		private readonly IEngineService _engineService;
 
-		public ProjectsController(IRepository<Project> projectRepo, EngineService engineService)
+		public ProjectsController(IRepository<Project> projectRepo, IEngineService engineService)
 		{
 			_projectRepo = projectRepo;
 			_engineService = engineService;

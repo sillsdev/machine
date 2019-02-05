@@ -20,7 +20,8 @@ namespace Microsoft.Extensions.DependencyInjection
 		{
 			var config = new MachineConfig();
 			setupAction(config);
-			services.AddSingleton<EngineService>();
+			services.AddSingleton<IEngineServiceInternal, EngineService>();
+			services.AddSingleton<IEngineService>(sp => sp.GetService<IEngineServiceInternal>());
 			services.AddTransient<EngineRuntime>();
 
 			services.Configure<MvcOptions>(o =>

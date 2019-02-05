@@ -1,5 +1,5 @@
 {
-  "name": "@sil/machine",
+  "name": "@sillsdev/machine",
   "version": "2.1.0",
   "description": "A natural language processing library that is focused on providing tools for processing resource-poor languages.",
   "main": "lib/index.js",

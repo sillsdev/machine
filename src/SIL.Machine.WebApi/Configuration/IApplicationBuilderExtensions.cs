@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Builder
 			app.ApplicationServices.GetService<IBuildRepository>().InitAsync().WaitAndUnwrapException();
 			app.ApplicationServices.GetService<IRepository<Project>>().InitAsync().WaitAndUnwrapException();
 
-			app.ApplicationServices.GetService<EngineService>().Init();
+			app.ApplicationServices.GetService<IEngineServiceInternal>().Init();
 
 			return app;
 		}

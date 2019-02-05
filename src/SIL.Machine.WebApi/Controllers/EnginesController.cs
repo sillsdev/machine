@@ -15,9 +15,9 @@ namespace SIL.Machine.WebApi.Controllers
 	public class EnginesController : Controller
 	{
 		private readonly IEngineRepository _engineRepo;
-		private readonly EngineService _engineService;
+		private readonly IEngineService _engineService;
 
-		public EnginesController(IEngineRepository engineRepo, EngineService engineService)
+		public EnginesController(IEngineRepository engineRepo, IEngineService engineService)
 		{
 			_engineRepo = engineRepo;
 			_engineService = engineService;

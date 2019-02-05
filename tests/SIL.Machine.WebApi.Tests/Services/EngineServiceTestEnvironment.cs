@@ -19,7 +19,7 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.WebApi.Services
 {
-	public class EngineServiceTestEnvironment : DisposableBase
+	internal class EngineServiceTestEnvironment : DisposableBase
 	{
 		private readonly MemoryStorage _memoryStorage;
 		private readonly BackgroundJobClient _jobClient;

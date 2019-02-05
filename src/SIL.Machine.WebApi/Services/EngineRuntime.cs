@@ -17,7 +17,7 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.WebApi.Services
 {
-	public class EngineRuntime : DisposableBase
+	internal class EngineRuntime : DisposableBase
 	{
 		private const int MaxEnginePoolSize = 3;
 
@@ -366,9 +366,9 @@ namespace SIL.Machine.WebApi.Services
 
 		internal class BuildRunner
 		{
-			private readonly EngineService _engineService;
+			private readonly IEngineServiceInternal _engineService;
 
-			public BuildRunner(EngineService engineService)
+			public BuildRunner(IEngineServiceInternal engineService)
 			{
 				_engineService = engineService;
 			}

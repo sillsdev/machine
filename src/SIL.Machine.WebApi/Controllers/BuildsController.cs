@@ -17,10 +17,10 @@ namespace SIL.Machine.WebApi.Controllers
 	public class BuildsController : Controller
 	{
 		private readonly IBuildRepository _buildRepo;
-		private readonly EngineService _engineService;
+		private readonly IEngineService _engineService;
 		private readonly IOptions<EngineOptions> _engineOptions;
 
-		public BuildsController(IBuildRepository buildRepo, IEngineRepository engineRepo, EngineService engineService,
+		public BuildsController(IBuildRepository buildRepo, IEngineRepository engineRepo, IEngineService engineService,
 			IOptions<EngineOptions> engineOptions)
 		{
 			_buildRepo = buildRepo;
