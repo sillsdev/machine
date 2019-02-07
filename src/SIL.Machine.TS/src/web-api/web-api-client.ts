@@ -25,6 +25,21 @@ import { WordGraphDto } from './word-graph-dto';
 export class WebApiClient {
   constructor(public http: HttpClient) {}
 
+  async translate(projectId: string, sourceSegment: string[]): Promise<TranslationResult> {
+    const response = await this.http
+      .post<TranslationResultDto>(`translation/engines/project:${projectId}/actions/translate`, sourceSegment)
+      .toPromise();
+    return this.createTranslationResult(response.data as TranslationResultDto, sourceSegment);
+  }
+
+  async translateNBest(projectId: string, n: number, sourceSegment: string[]): Promise<TranslationResult[]> {
+    const response = await this.http
+      .post<TranslationResultDto[]>(`translation/engines/project:${projectId}/actions/translate/${n}`, sourceSegment)
+      .toPromise();
+    const dtos = response.data as TranslationResultDto[];
+    return dtos.map(dto => this.createTranslationResult(dto, sourceSegment));
+  }
+
   async translateInteractively(
     projectId: string,
     sourceSegment: string[]
@@ -73,7 +88,9 @@ export class WebApiClient {
   }
 
   private createBuild(engineId: string): Observable<BuildDto> {
-    return this.http.post<BuildDto>('translation/builds', engineId).pipe(map(res => res.data as BuildDto));
+    return this.http
+      .post<BuildDto>('translation/builds', JSON.stringify(engineId))
+      .pipe(map(res => res.data as BuildDto));
   }
 
   private pollBuildProgress(locatorType: string, locator: string, minRevision: number): Observable<ProgressStatus> {

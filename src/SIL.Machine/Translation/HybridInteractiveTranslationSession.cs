@@ -111,16 +111,16 @@ namespace SIL.Machine.Translation
 
 		private void UpdateCurrentResults()
 		{
-			int prefixCount = Prefix.Count;
-			if (!IsLastWordComplete)
-				prefixCount--;
-
 			if (_ruleResult == null)
 			{
 				_currentResults = _smtSession.CurrentResults;
 			}
 			else
 			{
+				int prefixCount = Prefix.Count;
+				if (!IsLastWordComplete)
+					prefixCount--;
+
 				_currentResults = _smtSession.CurrentResults
 					.Select(r => r.Merge(prefixCount, HybridTranslationEngine.RuleEngineThreshold, _ruleResult))
 					.ToArray();

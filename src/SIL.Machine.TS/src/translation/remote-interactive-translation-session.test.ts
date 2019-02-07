@@ -1,75 +1,49 @@
 import { instance, mock } from 'ts-mockito';
 
 import { createRange, Range } from '../annotations/range';
-import { LatinWordTokenizer } from '../tokenization/latin-word-tokenizer';
 import { WebApiClient } from '../web-api/web-api-client';
 import { MAX_SEGMENT_LENGTH } from './constants';
 import { ErrorCorrectionModel } from './error-correction-model';
 import { HybridInteractiveTranslationResult } from './hybrid-interactive-translation-result';
-import { InteractiveTranslationSession } from './interactive-translation-session';
+import { RemoteInteractiveTranslationSession } from './remote-interactive-translation-session';
 import { TranslationResult } from './translation-result';
 import { TranslationSources } from './translation-sources';
 import { WordAlignmentMatrix } from './word-alignment-matrix';
 import { WordGraph } from './word-graph';
 import { WordGraphArc } from './word-graph-arc';
 
-describe('InteractiveTranslationSession', () => {
+describe('RemoteInteractiveTranslationSession', () => {
   it('empty prefix', () => {
     const session = createSession();
-    expect(session.getSuggestionText()).toEqual('In the beginning the Word already');
+    const result = session.currentResults[0];
+    expect(result.targetSegment.join(' ')).toEqual('In the beginning the Word already existía .');
   });
 
   it('add one complete word to prefix', () => {
     const session = createSession();
-    session.updatePrefix('In ');
-    expect(session.getSuggestionText()).toEqual('the beginning the Word already');
+    const result = session.appendToPrefix('In', true)[0];
+    expect(result.targetSegment.join(' ')).toEqual('In the beginning the Word already existía .');
   });
 
   it('add one partial word to prefix', () => {
     const session = createSession();
-    session.updatePrefix('In ');
-    session.updatePrefix('In t');
-    expect(session.getSuggestionText()).toEqual('he beginning the Word already');
+    session.appendToPrefix('In', true);
+    const result = session.appendToPrefix('t', false)[0];
+    expect(result.targetSegment.join(' ')).toEqual('In the beginning the Word already existía .');
   });
 
   it('remove one word from prefix', () => {
     const session = createSession();
-    session.updatePrefix('In the beginning ');
-    session.updatePrefix('In the ');
-    expect(session.getSuggestionText()).toEqual('beginning the Word already');
+    session.appendWordsToPrefix(['In', 'the', 'beginning']);
+    const result = session.setPrefix(['In', 'the'], true)[0];
+    expect(result.targetSegment.join(' ')).toEqual('In the beginning the Word already existía .');
   });
 
   it('remove entire prefix', () => {
     const session = createSession();
-    session.updatePrefix('In the beginning ');
-    session.updatePrefix('');
-    expect(session.getSuggestionText()).toEqual('In the beginning the Word already');
-  });
-
-  it('get first word of suggestion when last word of prefix complete', () => {
-    const session = createSession();
-    session.updatePrefix('In ');
-    expect(session.getSuggestionText(0)).toEqual('the');
-  });
-
-  it('get first two words of suggestion when last word of prefix complete', () => {
-    const session = createSession();
-    session.updatePrefix('In ');
-    expect(session.getSuggestionText(1)).toEqual('the beginning');
-  });
-
-  it('get first word of suggestion when last word of prefix incomplete', () => {
-    const session = createSession();
-    session.updatePrefix('In ');
-    session.updatePrefix('In t');
-    expect(session.getSuggestionText(0)).toEqual('he');
-  });
-
-  it('get first two words of suggestion when last word of prefix incomplete', () => {
-    const session = createSession();
-    session.updatePrefix('In ');
-    session.updatePrefix('In th');
-    expect(session.getSuggestionText(1)).toEqual('e beginning');
+    session.appendWordsToPrefix(['In', 'the', 'beginning']);
+    const result = session.setPrefix([], true)[0];
+    expect(result.targetSegment.join(' ')).toEqual('In the beginning the Word already existía .');
   });
 
   it('source segment valid', () => {
@@ -82,20 +56,19 @@ describe('InteractiveTranslationSession', () => {
     const sourceSegment = Array<string>(MAX_SEGMENT_LENGTH + 1);
     sourceSegment.fill('word', 0, -1);
     sourceSegment[sourceSegment.length - 1] = '.';
-    const session = new InteractiveTranslationSession(
+    const session = new RemoteInteractiveTranslationSession(
       instance(mockedRestClient),
       new ErrorCorrectionModel(),
-      new LatinWordTokenizer(),
       'project01',
+      1,
       sourceSegment,
-      0.2,
       new HybridInteractiveTranslationResult(new WordGraph())
     );
     expect(session.isSourceSegmentValid).toBeFalsy();
   });
 });
 
-function createSession(): InteractiveTranslationSession {
+function createSession(): RemoteInteractiveTranslationSession {
   const mockedRestClient = mock(WebApiClient);
 
   const sourceSegment = ['En', 'el', 'principio', 'la', 'Palabra', 'ya', 'existía', '.'];
@@ -417,17 +390,14 @@ function createSession(): InteractiveTranslationSession {
 
   const result = new HybridInteractiveTranslationResult(wordGraph, ruleResult);
 
-  const session = new InteractiveTranslationSession(
+  return new RemoteInteractiveTranslationSession(
     instance(mockedRestClient),
     new ErrorCorrectionModel(),
-    new LatinWordTokenizer(),
     'project01',
+    1,
     sourceSegment,
-    0.2,
     result
   );
-  session.initialize();
-  return session;
 }
 
 interface AlignedWordPair {

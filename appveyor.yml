@@ -11,6 +11,8 @@ environment:
   nodejs_version: 8.11.4
 install:
 - ps: Install-Product node $env:nodejs_version
+- ps: '"//registry.npmjs.org/:_authToken=$env:npm_auth_token`n" | out-file "$env:userprofile\.npmrc" -Encoding ASCII'
+- npm whoami
 nuget:
   disable_publish_on_pr: true
 before_build:
@@ -18,21 +20,6 @@ before_build:
 build:
   project: Machine.sln
   verbosity: minimal
-after_build:
-- ps: |
-    dotnet pack src\SIL.Machine\SIL.Machine.csproj -c Release -o ..\..\artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
-    dotnet pack src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj -c Release -o ..\..\artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
-    dotnet pack src\SIL.Machine.WebApi\SIL.Machine.WebApi.csproj -c Release -o ..\..\artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
-    dotnet pack src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj -c Release -o ..\..\artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
-
-    cd src\SIL.Machine.TS
-    npm --loglevel=error install
-    npm version $env:APPVEYOR_BUILD_VERSION
-    npm pack
-    cd ..\..
-    Move-Item src\SIL.Machine.TS\sil-machine-$env:APPVEYOR_BUILD_VERSION.tgz artifacts\sil-machine.tgz
-
-    Get-ChildItem artifacts\*.* | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
 test_script:
 - ps: |
     dotnet test --no-build -c Release --test-adapter-path:. --logger:Appveyor tests\SIL.Machine.Tests\SIL.Machine.Tests.csproj
@@ -45,3 +32,17 @@ test_script:
     cd ..\..
     $wc = New-Object 'System.Net.WebClient'
     $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\src\SIL.Machine.TS\junit.xml))
+deploy_script:
+- ps: |
+    dotnet pack src\SIL.Machine\SIL.Machine.csproj -c Release -o ..\..\artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
+    dotnet pack src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj -c Release -o ..\..\artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
+    dotnet pack src\SIL.Machine.WebApi\SIL.Machine.WebApi.csproj -c Release -o ..\..\artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
+    dotnet pack src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj -c Release -o ..\..\artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
+
+    Get-ChildItem artifacts\*.* | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
+
+    cd src\SIL.Machine.TS
+    npm --loglevel=error install
+    npm version $env:APPVEYOR_BUILD_VERSION
+    npm publish --access public
+    cd ..\..

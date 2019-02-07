@@ -82,7 +82,7 @@ export class ErrorCorrectionWordGraphProcessor {
     // process word-graph given prefix difference
     this.processWordGraphForPrefixDiff(prefixDiff, isLastWordComplete);
 
-    this.prevPrefix = prefix;
+    this.prevPrefix = prefix.slice();
     this.prevIsLastWordComplete = isLastWordComplete;
 
     const queue = new PriorityQueue<Hypothesis>((x, y) => {

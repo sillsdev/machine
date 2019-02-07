@@ -276,7 +276,7 @@ class TestEnvironment {
   }
 
   addCreateBuild(): void {
-    when(this.mockedHttpClient.post<BuildDto>('translation/builds', 'engine01')).thenReturn(
+    when(this.mockedHttpClient.post<BuildDto>('translation/builds', JSON.stringify('engine01'))).thenReturn(
       of({
         status: 201,
         data: {

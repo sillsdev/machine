@@ -5,9 +5,9 @@ import { TranslationSources } from './translation-sources';
 import { TranslationSuggester } from './translation-suggester';
 import { TranslationSuggestion } from './translation-suggestion';
 
-export class PhraseTranslationSuggester implements TranslationSuggester {
-  private static readonly AllPunctRegExp = XRegExp('^\\p{P}*$');
+const ALL_PUNCT_REGEXP = XRegExp('^\\p{P}*$');
 
+export class PhraseTranslationSuggester implements TranslationSuggester {
   confidenceThreshold: number = 0;
 
   getSuggestion(prefixCount: number, isLastWordComplete: boolean, result: TranslationResult): TranslationSuggestion {
@@ -37,7 +37,7 @@ export class PhraseTranslationSuggester implements TranslationSuggester {
         for (let j = startingJ; j < phrase.targetSegmentCut; j++) {
           const word = result.targetSegment[j];
           const sources = result.wordSources[j];
-          if (sources === TranslationSources.None || PhraseTranslationSuggester.AllPunctRegExp.test(word)) {
+          if (sources === TranslationSources.None || ALL_PUNCT_REGEXP.test(word)) {
             hitBreakingWord = true;
             break;
           }
