@@ -45,7 +45,10 @@ deploy_script:
 
     Get-ChildItem artifacts\*.* | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
 
-    cd src\SIL.Machine.TS
-    npm version $env:APPVEYOR_BUILD_VERSION
-    npm publish --access public
-    cd ..\..
+    if ($env:publish_packages -eq "true")
+    {
+        cd src\SIL.Machine.TS
+        npm version $env:APPVEYOR_BUILD_VERSION
+        npm publish --access public
+        cd ..\..
+    }
