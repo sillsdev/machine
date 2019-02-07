@@ -17,6 +17,10 @@ nuget:
   disable_publish_on_pr: true
 before_build:
 - ps: nuget restore Machine.sln
+- ps: |
+    cd src\SIL.Machine.TS
+    npm --loglevel=error install
+    cd ..\..
 build:
   project: Machine.sln
   verbosity: minimal
@@ -42,7 +46,6 @@ deploy_script:
     Get-ChildItem artifacts\*.* | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
 
     cd src\SIL.Machine.TS
-    npm --loglevel=error install
     npm version $env:APPVEYOR_BUILD_VERSION
     npm publish --access public
     cd ..\..
