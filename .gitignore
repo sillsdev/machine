@@ -46,3 +46,4 @@ launchSettings.json
 !**/Tes/release/
 thot-new-model.zip
 node_modules/
+*.tgz

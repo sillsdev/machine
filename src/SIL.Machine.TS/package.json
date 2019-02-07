@@ -26,7 +26,7 @@
   "bugs": {
     "url": "https://github.com/sillsdev/machine/issues"
   },
-  "homepage": "https://github.com/sillsdev/machine#readme",
+  "homepage": "https://github.com/sillsdev/machine/tree/master/src/SIL.Machine.TS",
   "devDependencies": {
     "@types/jest": "^23.3.13",
     "@types/xregexp": "^3.0.29",
@@ -46,6 +46,8 @@
     "xregexp": "^4.2.4"
   },
   "files": [
+    "LICENSE",
+    "README.md",
     "lib/**/*"
   ]
 }
