@@ -81,6 +81,7 @@ export class RemoteInteractiveTranslationSession implements InteractiveTranslati
       } else {
         this.prefix[this.prefix.length - 1] = this.prefix[this.prefix.length - 1] + addition;
       }
+      this._isLastWordComplete = isLastWordComplete;
       this.updateCurrentResults();
     }
     return this._currentResults;
