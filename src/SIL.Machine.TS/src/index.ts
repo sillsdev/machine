@@ -1,4 +1,4 @@
-﻿export { Range } from './annotations/range';
+﻿export { createRange, Range } from './annotations/range';
 
 export { Tokenizer } from './tokenization/tokenizer';
 export { LatinWordTokenizer } from './tokenization/latin-word-tokenizer';
@@ -9,6 +9,7 @@ export { LatinSentenceTokenizer } from './tokenization/latin-sentence-tokenizer'
 export { MAX_SEGMENT_LENGTH } from './translation/constants';
 export { TranslationSources } from './translation/translation-sources';
 export { Phrase } from './translation/phrase';
+export { PhraseInfo } from './translation/phrase-info';
 export { WordAlignmentMatrix } from './translation/word-alignment-matrix';
 export { TranslationResult } from './translation/translation-result';
 export { TranslationResultBuilder } from './translation/translation-result-builder';
