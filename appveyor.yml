@@ -26,16 +26,24 @@ build:
   verbosity: minimal
 test_script:
 - ps: |
+    $failed = $FALSE
     dotnet test --no-build -c Release --test-adapter-path:. --logger:Appveyor tests\SIL.Machine.Tests\SIL.Machine.Tests.csproj
+    if (-not $?) { $failed = $TRUE }
     dotnet test --no-build -c Release --test-adapter-path:. --logger:Appveyor tests\SIL.Machine.Morphology.HermitCrab.Tests\SIL.Machine.Morphology.HermitCrab.Tests.csproj
+    if (-not $?) { $failed = $TRUE }
     dotnet test --no-build -c Release --test-adapter-path:. --logger:Appveyor tests\SIL.Machine.Translation.Thot.Tests\SIL.Machine.Translation.Thot.Tests.csproj
+    if (-not $?) { $failed = $TRUE }
     dotnet test --no-build -c Release --test-adapter-path:. --logger:Appveyor tests\SIL.Machine.WebApi.Tests\SIL.Machine.WebApi.Tests.csproj
+    if (-not $?) { $failed = $TRUE }
 
     cd src\SIL.Machine.TS
     npm run test:ci
+    if (-not $?) { $failed = $TRUE }
     cd ..\..
     $wc = New-Object 'System.Net.WebClient'
     $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\src\SIL.Machine.TS\junit.xml))
+    if ($failed) { throw "The unit tests failed." }
+
 deploy_script:
 - ps: |
     if ($env:publish_packages -eq "true")

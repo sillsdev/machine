@@ -31,7 +31,7 @@ export class RemoteInteractiveTranslationSession implements InteractiveTranslati
   private _currentResults: TranslationResult[] = [];
   private readonly smtWordGraph: WordGraph;
   private readonly ruleResult?: TranslationResult;
-  private _isLastWordComplete: boolean = false;
+  private _isLastWordComplete: boolean = true;
   private readonly wordGraphProcessor: ErrorCorrectionWordGraphProcessor;
 
   constructor(
