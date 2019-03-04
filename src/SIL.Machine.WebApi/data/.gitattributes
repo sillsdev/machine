@@ -1,0 +1,5 @@
+thot-new-model/lm/* eol=lf
+thot-new-model/tm/* eol=lf
+thot-new-model/tm/*.hmm_alignd binary
+thot-new-model/tm/*.hmm_lexnd binary
+thot-new-model/smt.cfg eol=lf
