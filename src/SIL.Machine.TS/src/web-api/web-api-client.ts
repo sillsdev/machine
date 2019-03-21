@@ -1,7 +1,6 @@
 import { Observable, of, throwError } from 'rxjs';
 import { takeWhileInclusive } from 'rxjs-take-while-inclusive';
 import { catchError, expand, filter, map, mergeMap, startWith } from 'rxjs/operators';
-
 import { createRange, Range } from '../annotations/range';
 import { HybridInteractiveTranslationResult } from '../translation/hybrid-interactive-translation-result';
 import { Phrase } from '../translation/phrase';

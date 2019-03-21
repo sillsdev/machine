@@ -1,5 +1,4 @@
 ﻿import { Observable } from 'rxjs';
-
 import { HttpClient } from '../web-api/http-client';
 import { WebApiClient } from '../web-api/web-api-client';
 import { MAX_SEGMENT_LENGTH } from './constants';
@@ -17,8 +16,8 @@ export class RemoteTranslationEngine implements InteractiveTranslationEngine {
   private readonly ecm: ErrorCorrectionModel = new ErrorCorrectionModel();
   private readonly webApiClient: WebApiClient;
 
-  constructor(public readonly projectId: string, baseUrl: string = '', accessToken: string = '') {
-    this.webApiClient = new WebApiClient(new HttpClient(baseUrl, accessToken));
+  constructor(public readonly projectId: string, httpClient: HttpClient) {
+    this.webApiClient = new WebApiClient(httpClient);
   }
 
   async translate(segment: string[]): Promise<TranslationResult> {

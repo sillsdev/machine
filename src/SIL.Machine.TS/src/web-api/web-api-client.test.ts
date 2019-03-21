@@ -1,12 +1,12 @@
 import { of, throwError } from 'rxjs';
 import { deepEqual, instance, mock, when } from 'ts-mockito';
-
 import { TranslationSources } from '../translation/translation-sources';
 import { BuildDto } from './build-dto';
 import { BuildStates } from './build-states';
 import { EngineDto } from './engine-dto';
 import { HttpClient } from './http-client';
 import { InteractiveTranslationResultDto } from './interactive-translation-result-dto';
+import { RxjsHttpClient } from './rxjs-http-client';
 import { WebApiClient } from './web-api-client';
 
 describe('WebApiClient', () => {
@@ -257,7 +257,7 @@ class TestEnvironment {
   readonly client: WebApiClient;
 
   constructor() {
-    this.mockedHttpClient = mock(HttpClient);
+    this.mockedHttpClient = mock(RxjsHttpClient);
     when(this.mockedHttpClient.get<EngineDto>('translation/engines/project:project01')).thenReturn(
       of({
         status: 200,
