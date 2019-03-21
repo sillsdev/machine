@@ -22,5 +22,5 @@ export { TranslationSuggestion } from './translation/translation-suggestion';
 export { TranslationSuggester } from './translation/translation-suggester';
 export { PhraseTranslationSuggester } from './translation/phrase-translation-suggester';
 
-export { HttpClient } from './web-api/http-client';
+export { HttpClient, HttpResponse } from './web-api/http-client';
 export { RxjsHttpClient } from './web-api/rxjs-http-client';
