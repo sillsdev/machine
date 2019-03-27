@@ -167,7 +167,8 @@ namespace SIL.Machine.WebApi.Controllers
 				IsShared = engine.IsShared,
 				Projects = engine.Projects.Select(projectId =>
 					Url.CreateLinkDto(RouteNames.Projects, projectId)).ToArray(),
-				Confidence = engine.Confidence
+				Confidence = engine.Confidence,
+				TrainedSegmentCount = engine.TrainedSegmentCount
 			};
 		}
 

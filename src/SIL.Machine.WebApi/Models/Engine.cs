@@ -17,6 +17,7 @@ namespace SIL.Machine.WebApi.Models
 			IsShared = engine.IsShared;
 			Projects = new HashSet<string>(engine.Projects);
 			Confidence = engine.Confidence;
+			TrainedSegmentCount = engine.TrainedSegmentCount;
 		}
 
 		public string Id { get; set; }
@@ -26,6 +27,7 @@ namespace SIL.Machine.WebApi.Models
 		public bool IsShared { get; set; }
 		public HashSet<string> Projects { get; protected set; } = new HashSet<string>();
 		public double Confidence { get; set; }
+		public int TrainedSegmentCount { get; set; }
 
 		public Engine Clone()
 		{

@@ -135,6 +135,7 @@ namespace SIL.Machine.WebApi.Services
 				item.Object.TrainSegment(preprocSourceSegment, preprocTargetSegment);
 				if (IsBuilding)
 					_trainedSegments.Add((preprocSourceSegment, preprocTargetSegment));
+				await _engineRepo.ConcurrentUpdateAsync(_engineId, e => e.TrainedSegmentCount++);
 				_isUpdated = true;
 				_lastUsedTime = DateTime.Now;
 			}
@@ -306,10 +307,13 @@ namespace SIL.Machine.WebApi.Services
 					trainer.Save();
 					foreach ((IReadOnlyList<string> source, IReadOnlyList<string> target) in _trainedSegments)
 						item.Object.TrainSegment(source, target);
-					_trainedSegments.Clear();
 
-					await _engineRepo.ConcurrentUpdateAsync(_engineId,
-						e => e.Confidence = trainer.Stats.TranslationModelBleu);
+					await _engineRepo.ConcurrentUpdateAsync(_engineId, e =>
+						{
+							e.Confidence = trainer.Stats.TranslationModelBleu;
+							e.TrainedSegmentCount = trainer.Stats.TrainedSegmentCount + _trainedSegments.Count;
+						});
+					_trainedSegments.Clear();
 				}
 
 				build.State = BuildStates.Completed;

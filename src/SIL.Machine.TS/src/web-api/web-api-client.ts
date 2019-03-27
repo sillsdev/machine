@@ -5,6 +5,7 @@ import { createRange, Range } from '../annotations/range';
 import { HybridInteractiveTranslationResult } from '../translation/hybrid-interactive-translation-result';
 import { Phrase } from '../translation/phrase';
 import { ProgressStatus } from '../translation/progress-status';
+import { TranslationEngineStats } from '../translation/translation-engine-stats';
 import { TranslationResult } from '../translation/translation-result';
 import { WordAlignmentMatrix } from '../translation/word-alignment-matrix';
 import { WordGraph } from '../translation/word-graph';
@@ -77,9 +78,9 @@ export class WebApiClient {
     return this.getEngine(projectId).pipe(mergeMap(e => this.pollBuildProgress('engine', e.id, 0)));
   }
 
-  async getEngineConfidence(projectId: string): Promise<number> {
+  async getEngineStats(projectId: string): Promise<TranslationEngineStats> {
     const engineDto = await this.getEngine(projectId).toPromise();
-    return engineDto.confidence;
+    return { confidence: engineDto.confidence, trainedSegmentCount: engineDto.trainedSegmentCount };
   }
 
   private getEngine(projectId: string): Observable<EngineDto> {

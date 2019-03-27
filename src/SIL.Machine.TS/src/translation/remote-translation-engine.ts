@@ -8,6 +8,7 @@ import { InteractiveTranslationEngine } from './interactive-translation-engine';
 import { InteractiveTranslationSession } from './interactive-translation-session';
 import { ProgressStatus } from './progress-status';
 import { RemoteInteractiveTranslationSession } from './remote-interactive-translation-session';
+import { TranslationEngineStats } from './translation-engine-stats';
 import { TranslationResult } from './translation-result';
 import { TranslationResultBuilder } from './translation-result-builder';
 import { WordGraph } from './word-graph';
@@ -57,7 +58,7 @@ export class RemoteTranslationEngine implements InteractiveTranslationEngine {
     return this.webApiClient.listenForTrainingStatus(this.projectId);
   }
 
-  getConfidence(): Promise<number> {
-    return this.webApiClient.getEngineConfidence(this.projectId);
+  getStats(): Promise<TranslationEngineStats> {
+    return this.webApiClient.getEngineStats(this.projectId);
   }
 }

@@ -14,6 +14,7 @@ export { WordAlignmentMatrix } from './translation/word-alignment-matrix';
 export { TranslationResult } from './translation/translation-result';
 export { TranslationResultBuilder } from './translation/translation-result-builder';
 export { TranslationEngine } from './translation/translation-engine';
+export { TranslationEngineStats } from './translation/translation-engine-stats';
 export { InteractiveTranslationEngine } from './translation/interactive-translation-engine';
 export { InteractiveTranslationSession } from './translation/interactive-translation-session';
 export { ProgressStatus } from './translation/progress-status';

@@ -6,4 +6,5 @@ export interface EngineDto extends ResourceDto {
   isShared: boolean;
   projects: ResourceDto[];
   confidence: number;
+  trainedSegmentCount: number;
 }
