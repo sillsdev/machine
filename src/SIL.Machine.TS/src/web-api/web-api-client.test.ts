@@ -268,7 +268,8 @@ class TestEnvironment {
           targetLanguageTag: 'es',
           isShared: false,
           projects: [{ id: 'project01', href: 'translation/projects/id:project01' }],
-          confidence: 0.2
+          confidence: 0.2,
+          trainedSegmentCount: 100
         }
       })
     );
