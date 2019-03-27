@@ -138,7 +138,8 @@ namespace Microsoft.Extensions.DependencyInjection
 			var globalPack = new ConventionPack
 			{
 				new CamelCaseElementNameConvention(),
-				new ObjectRefConvention()
+				new ObjectRefConvention(),
+				new IgnoreIfDefaultConvention(true)
 			};
 			ConventionRegistry.Register("Machine", globalPack, t => t.Namespace == "SIL.Machine.WebApi.Models");
 

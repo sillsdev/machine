@@ -19,7 +19,7 @@ namespace SIL.Machine.WebApi.DataAccess.Mongo
 		public MongoRepository(IOptions<MongoDataAccessOptions> options, string collectionName)
 		{
 			var client = new MongoClient(options.Value.ConnectionString);
-			IMongoDatabase database = client.GetDatabase(options.Value.DatabaseName);
+			IMongoDatabase database = client.GetDatabase(options.Value.MachineDatabaseName);
 			Collection = database.GetCollection<T>(collectionName);
 			Lock = new AsyncLock();
 			_idSubscriptions = new Dictionary<string, ISet<Subscription<T>>>();
