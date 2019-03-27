@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Bson.Serialization.IdGenerators;
 using MongoDB.Bson.Serialization.Serializers;
-using MongoDB.Driver;
 using NoDb;
 using SIL.Machine.WebApi.Configuration;
 using SIL.Machine.WebApi.DataAccess;
@@ -133,12 +133,8 @@ namespace Microsoft.Extensions.DependencyInjection
 			return builder;
 		}
 
-		public static IMachineBuilder AddMongoDataAccess(this IMachineBuilder builder,
-			string connectionString = "mongodb://localhost:27017")
+		public static IMachineBuilder AddMongoDataAccess(this IMachineBuilder builder)
 		{
-			var mongoClient = new MongoClient(connectionString);
-			IMongoDatabase db = mongoClient.GetDatabase("machine");
-
 			var globalPack = new ConventionPack
 			{
 				new CamelCaseElementNameConvention(),
@@ -152,46 +148,29 @@ namespace Microsoft.Extensions.DependencyInjection
 					.SetSerializer(new EnumerableInterfaceImplementerSerializer<HashSet<string>, string>(
 						new StringSerializer(BsonType.ObjectId)));
 			});
-			IMongoCollection<Engine> engineCollection = db.GetCollection<Engine>("engines");
-			CreateOrUpdateIndex(engineCollection.Indexes, new CreateIndexModel<Engine>(Builders<Engine>.IndexKeys
-				.Ascending(e => e.SourceLanguageTag)
-				.Ascending(e => e.TargetLanguageTag)));
-			CreateOrUpdateIndex(engineCollection.Indexes, new CreateIndexModel<Engine>(Builders<Engine>.IndexKeys
-				.Ascending(e => e.Projects)));
-			builder.Services.AddSingleton<IEngineRepository>(sp => new MongoEngineRepository(engineCollection));
+			builder.Services.AddSingleton<IEngineRepository, MongoEngineRepository>();
 
 			RegisterEntity<Build>();
-			IMongoCollection<Build> buildCollection = db.GetCollection<Build>("builds");
-			CreateOrUpdateIndex(buildCollection.Indexes, new CreateIndexModel<Build>(Builders<Build>.IndexKeys
-				.Ascending(b => b.EngineRef)));
-			builder.Services.AddSingleton<IBuildRepository>(sp => new MongoBuildRepository(buildCollection));
+			builder.Services.AddSingleton<IBuildRepository, MongoBuildRepository>();
 
 			RegisterEntity<Project>();
-			IMongoCollection<Project> projectCollection = db.GetCollection<Project>("projects");
-			builder.Services.AddSingleton<IRepository<Project>>(sp => new MongoRepository<Project>(projectCollection));
+			builder.Services.AddSingleton<IRepository<Project>>(
+				sp => new MongoRepository<Project>(sp.GetService<IOptions<MongoDataAccessOptions>>(), "projects"));
 
 			return builder;
 		}
 
-		private static void CreateOrUpdateIndex<T>(IMongoIndexManager<T> indexes, CreateIndexModel<T> indexModel)
+		public static IMachineBuilder AddMongoDataAccess(this IMachineBuilder builder,
+			Action<MongoDataAccessOptions> configureOptions)
 		{
-			try
-			{
-				indexes.CreateOne(indexModel);
-			}
-			catch (MongoCommandException ex)
-			{
-				if (ex.CodeName == "IndexOptionsConflict")
-				{
-					string name = ex.Command["indexes"][0]["name"].AsString;
-					indexes.DropOne(name);
-					indexes.CreateOne(indexModel);
-				}
-				else
-				{
-					throw;
-				}
-			}
+			builder.Services.Configure(configureOptions);
+			return builder.AddMongoDataAccess();
+		}
+
+		public static IMachineBuilder AddMongoDataAccess(this IMachineBuilder builder, IConfiguration config)
+		{
+			builder.Services.Configure<MongoDataAccessOptions>(config);
+			return builder.AddMongoDataAccess();
 		}
 
 		private static void RegisterEntity<T>(Action<BsonClassMap<T>> setup = null) where T : class, IEntity<T>

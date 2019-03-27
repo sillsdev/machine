@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using SIL.Extensions;
+using SIL.Machine.WebApi.Configuration;
 using SIL.Machine.WebApi.Models;
 using SIL.Machine.WebApi.Utils;
 
@@ -14,9 +16,11 @@ namespace SIL.Machine.WebApi.DataAccess.Mongo
 	{
 		private readonly Dictionary<string, ISet<Subscription<T>>> _idSubscriptions;
 
-		public MongoRepository(IMongoCollection<T> collection)
+		public MongoRepository(IOptions<MongoDataAccessOptions> options, string collectionName)
 		{
-			Collection = collection;
+			var client = new MongoClient(options.Value.ConnectionString);
+			IMongoDatabase database = client.GetDatabase(options.Value.DatabaseName);
+			Collection = database.GetCollection<T>(collectionName);
 			Lock = new AsyncLock();
 			_idSubscriptions = new Dictionary<string, ISet<Subscription<T>>>();
 		}
@@ -24,9 +28,8 @@ namespace SIL.Machine.WebApi.DataAccess.Mongo
 		protected IMongoCollection<T> Collection { get; }
 		protected AsyncLock Lock { get; }
 
-		public Task InitAsync(CancellationToken ct = default(CancellationToken))
+		public virtual void Init()
 		{
-			return Task.CompletedTask;
 		}
 
 		public async Task<IEnumerable<T>> GetAllAsync(CancellationToken ct = default(CancellationToken))
@@ -139,6 +142,27 @@ namespace SIL.Machine.WebApi.DataAccess.Mongo
 				}
 				subscriptions.Add(subscription);
 				return subscription;
+			}
+		}
+
+		protected void CreateOrUpdateIndex(CreateIndexModel<T> indexModel)
+		{
+			try
+			{
+				Collection.Indexes.CreateOne(indexModel);
+			}
+			catch (MongoCommandException ex)
+			{
+				if (ex.CodeName == "IndexOptionsConflict")
+				{
+					string name = ex.Command["indexes"][0]["name"].AsString;
+					Collection.Indexes.DropOne(name);
+					Collection.Indexes.CreateOne(indexModel);
+				}
+				else
+				{
+					throw;
+				}
 			}
 		}
 

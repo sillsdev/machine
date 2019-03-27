@@ -2,7 +2,6 @@
 using SIL.Machine.WebApi.DataAccess;
 using SIL.Machine.WebApi.Models;
 using SIL.Machine.WebApi.Services;
-using SIL.Machine.WebApi.Utils;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -10,9 +9,9 @@ namespace Microsoft.AspNetCore.Builder
 	{
 		public static IApplicationBuilder UseMachine(this IApplicationBuilder app)
 		{
-			app.ApplicationServices.GetService<IEngineRepository>().InitAsync().WaitAndUnwrapException();
-			app.ApplicationServices.GetService<IBuildRepository>().InitAsync().WaitAndUnwrapException();
-			app.ApplicationServices.GetService<IRepository<Project>>().InitAsync().WaitAndUnwrapException();
+			app.ApplicationServices.GetService<IEngineRepository>().Init();
+			app.ApplicationServices.GetService<IBuildRepository>().Init();
+			app.ApplicationServices.GetService<IRepository<Project>>().Init();
 
 			app.ApplicationServices.GetService<IEngineServiceInternal>().Init();
 

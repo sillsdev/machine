@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using SIL.Machine.WebApi.Models;
+using SIL.Machine.WebApi.Utils;
 
 namespace SIL.Machine.WebApi.DataAccess.Memory
 {
@@ -16,11 +17,11 @@ namespace SIL.Machine.WebApi.DataAccess.Memory
 				b => b.State == BuildStates.Active || b.State == BuildStates.Pending);
 		}
 
-		public override async Task InitAsync(CancellationToken ct = default(CancellationToken))
+		public override void Init()
 		{
-			await base.InitAsync(ct);
+			base.Init();
 			if (PersistenceRepository != null)
-				_engineIdIndex.PopulateIndex(await PersistenceRepository.GetAllAsync(ct));
+				_engineIdIndex.PopulateIndex(PersistenceRepository.GetAllAsync().WaitAndUnwrapException());
 		}
 
 		public async Task<Build> GetByEngineIdAsync(string engineId, CancellationToken ct = default(CancellationToken))

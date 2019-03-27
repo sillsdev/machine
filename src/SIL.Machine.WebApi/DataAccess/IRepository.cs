@@ -7,7 +7,7 @@ namespace SIL.Machine.WebApi.DataAccess
 {
 	public interface IRepository<T> where T : class, IEntity<T>
 	{
-		Task InitAsync(CancellationToken ct = default(CancellationToken));
+		void Init();
 
 		Task<IEnumerable<T>> GetAllAsync(CancellationToken ct = default(CancellationToken));	
 		Task<T> GetAsync(string id, CancellationToken ct = default(CancellationToken));

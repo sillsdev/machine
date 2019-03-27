@@ -21,9 +21,8 @@ namespace SIL.Machine.WebApi.DataAccess.NoDb
 		protected IBasicCommands<T> Commands { get; }
 		protected IBasicQueries<T> Queries { get; }
 
-		public Task InitAsync(CancellationToken ct = default(CancellationToken))
+		public void Init()
 		{
-			return Task.CompletedTask;
 		}
 
 		public async Task<IEnumerable<T>> GetAllAsync(CancellationToken ct = default(CancellationToken))

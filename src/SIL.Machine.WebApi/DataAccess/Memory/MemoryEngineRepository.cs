@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SIL.Machine.WebApi.Models;
+using SIL.Machine.WebApi.Utils;
 
 namespace SIL.Machine.WebApi.DataAccess.Memory
 {
@@ -18,13 +20,14 @@ namespace SIL.Machine.WebApi.DataAccess.Memory
 			_projectIndex = new UniqueEntityIndex<string, Engine>(Lock, e => e.Projects);
 		}
 
-		public override async Task InitAsync(CancellationToken ct = default(CancellationToken))
+		public override void Init()
 		{
-			await base.InitAsync(ct);
+			base.Init();
 			if (PersistenceRepository != null)
 			{
-				_langTagIndex.PopulateIndex(await PersistenceRepository.GetAllAsync(ct));
-				_projectIndex.PopulateIndex(await PersistenceRepository.GetAllAsync(ct));
+				Engine[] engines = PersistenceRepository.GetAllAsync().WaitAndUnwrapException().ToArray();
+				_langTagIndex.PopulateIndex(engines);
+				_projectIndex.PopulateIndex(engines);
 			}
 		}
 

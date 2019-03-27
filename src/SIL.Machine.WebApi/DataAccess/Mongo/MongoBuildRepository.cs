@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using SIL.Extensions;
+using SIL.Machine.WebApi.Configuration;
 using SIL.Machine.WebApi.Models;
 
 namespace SIL.Machine.WebApi.DataAccess.Mongo
@@ -11,10 +13,16 @@ namespace SIL.Machine.WebApi.DataAccess.Mongo
 	{
 		private readonly Dictionary<string, ISet<Subscription<Build>>> _engineIdSubscriptions;
 
-		public MongoBuildRepository(IMongoCollection<Build> collection)
-			: base(collection)
+		public MongoBuildRepository(IOptions<MongoDataAccessOptions> options)
+			: base(options, "builds")
 		{
 			_engineIdSubscriptions = new Dictionary<string, ISet<Subscription<Build>>>();
+		}
+
+		public override void Init()
+		{
+			CreateOrUpdateIndex(new CreateIndexModel<Build>(Builders<Build>.IndexKeys
+				.Ascending(b => b.EngineRef)));
 		}
 
 		public Task<Build> GetByEngineIdAsync(string engineId, CancellationToken ct = default(CancellationToken))

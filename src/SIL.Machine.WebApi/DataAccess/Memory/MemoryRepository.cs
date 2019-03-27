@@ -25,12 +25,12 @@ namespace SIL.Machine.WebApi.DataAccess.Memory
 		protected AsyncReaderWriterLock Lock { get; }
 		protected IDictionary<string, T> Entities { get; }
 
-		public virtual async Task InitAsync(CancellationToken ct = default(CancellationToken))
+		public virtual void Init()
 		{
 			if (PersistenceRepository != null)
 			{
-				await PersistenceRepository.InitAsync(ct);
-				foreach (T entity in await PersistenceRepository.GetAllAsync(ct))
+				PersistenceRepository.Init();
+				foreach (T entity in PersistenceRepository.GetAllAsync().WaitAndUnwrapException())
 					Entities[entity.Id] = entity;
 			}
 		}
