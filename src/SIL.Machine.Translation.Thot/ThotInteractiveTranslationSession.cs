@@ -124,11 +124,16 @@ namespace SIL.Machine.Translation.Thot
 			return _currentResults;
 		}
 
-		public void Approve()
+		public void Approve(bool alignedOnly)
 		{
 			CheckDisposed();
 
-			_engine.TrainSegment(_sourceSegment, _prefix);
+			IReadOnlyList<string> sourceSegment = _sourceSegment;
+			if (alignedOnly)
+				sourceSegment = _currentResults[0].GetAlignedSourceSegment(_prefix.Count);
+
+			if (sourceSegment.Count > 0)
+				_engine.TrainSegment(sourceSegment, _prefix);
 		}
 
 		protected override void DisposeManagedResources()

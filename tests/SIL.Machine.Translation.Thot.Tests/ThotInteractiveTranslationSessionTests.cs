@@ -81,7 +81,7 @@ namespace SIL.Machine.Translation.Thot
 					result = session.SetPrefix("i talked".Split(), true)[0];
 					Assert.That(result.TargetSegment, Is.EqualTo("i talked with reception .".Split()));
 					session.SetPrefix("i talked with reception .".Split(), true);
-					session.Approve();
+					session.Approve(false);
 				}
 
 				using (IInteractiveTranslationSession session = engine.TranslateInteractively(1,

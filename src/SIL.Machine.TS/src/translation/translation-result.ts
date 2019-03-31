@@ -103,4 +103,19 @@ export class TranslationResult {
       this.phrases
     );
   }
+
+  getAlignedSourceSegment(prefixCount: number): string[] {
+    let sourceLength = 0;
+    for (const phrase of this.phrases) {
+      if (phrase.targetSegmentCut > prefixCount) {
+        break;
+      }
+
+      if (phrase.sourceSegmentRange.end > sourceLength) {
+        sourceLength = phrase.sourceSegmentRange.end;
+      }
+    }
+
+    return sourceLength === this.sourceSegment.length ? this.sourceSegment : this.sourceSegment.slice(0, sourceLength);
+  }
 }

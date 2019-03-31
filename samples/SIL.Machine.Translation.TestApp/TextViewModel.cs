@@ -247,7 +247,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void ApproveSegment()
 		{
-			_curSession.Approve();
+			_curSession.Approve(false);
 			UpdateTargetText();
 			_approvedSegments.Add(_currentSegment);
 			UpdateUnapprovedTargetSegmentRanges();

@@ -14,6 +14,7 @@ namespace SIL.Machine.Translation
 		private readonly CommandOption _traceOption;
 		private readonly CommandOption _nOption;
 		private readonly CommandOption _quietOption;
+		private readonly CommandOption _approveAlignedOption;
 
 		private int _actionCount;
 		private int _charCount;
@@ -37,6 +38,8 @@ namespace SIL.Machine.Translation
 			_traceOption = Option("--trace <path>", "The trace output directory.",
 				CommandOptionType.SingleValue);
 			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
+			_approveAlignedOption = Option("--approve-aligned", "Approve aligned part of source segment.",
+				CommandOptionType.NoValue);
 		}
 
 		protected override int ExecuteCommand()
@@ -81,7 +84,7 @@ namespace SIL.Machine.Translation
 
 			int parallelCorpusCount = GetParallelCorpusCount();
 
-			Stopwatch watch = Stopwatch.StartNew();
+			var watch = Stopwatch.StartNew();
 			if (!_quietOption.HasValue())
 				Out.Write("Testing... ");
 			int segmentCount = 0;
@@ -267,7 +270,7 @@ namespace SIL.Machine.Translation
 
 				WritePrefix(traceWriter, suggestionResult, session.Prefix);
 
-				session.Approve();
+				session.Approve(_approveAlignedOption.HasValue());
 			}
 
 			_charCount += targetSegment.Sum(w => w.Length + 1);

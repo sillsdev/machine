@@ -129,5 +129,20 @@ namespace SIL.Machine.Translation
 			return new TranslationResult(SourceSegment, mergedTargetSegment, mergedConfidences, mergedSources,
 				alignment, Phrases);
 		}
+
+		public IReadOnlyList<string> GetAlignedSourceSegment(int prefixCount)
+		{
+			int sourceLength = 0;
+			foreach (Phrase phrase in Phrases)
+			{
+				if (phrase.TargetSegmentCut > prefixCount)
+					break;
+
+				if (phrase.SourceSegmentRange.End > sourceLength)
+					sourceLength = phrase.SourceSegmentRange.End;
+			}
+
+			return sourceLength == SourceSegment.Count ? SourceSegment : SourceSegment.Take(sourceLength).ToArray();
+		}
 	}
 }

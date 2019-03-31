@@ -9,5 +9,5 @@ export interface InteractiveTranslationSession {
   setPrefix(prefix: string[], isLastWordComplete: boolean): TranslationResult[];
   appendToPrefix(addition: string, isLastWordComplete: boolean): TranslationResult[];
   appendWordsToPrefix(words: string[]): TranslationResult[];
-  approve(): Promise<void>;
+  approve(alignedOnly: boolean): Promise<void>;
 }

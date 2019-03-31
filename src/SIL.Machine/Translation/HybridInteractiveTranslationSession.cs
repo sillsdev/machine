@@ -102,11 +102,16 @@ namespace SIL.Machine.Translation
 			return _currentResults;
 		}
 
-		public void Approve()
+		public void Approve(bool alignedOnly)
 		{
 			CheckDisposed();
 
-			_engine.SmtEngine.TrainSegment(SourceSegment, Prefix);
+			IReadOnlyList<string> sourceSegment = SourceSegment;
+			if (alignedOnly)
+				sourceSegment = _currentResults[0].GetAlignedSourceSegment(Prefix.Count);
+
+			if (sourceSegment.Count > 0)
+				_engine.SmtEngine.TrainSegment(sourceSegment, Prefix);
 		}
 
 		private void UpdateCurrentResults()

@@ -19,6 +19,6 @@ namespace SIL.Machine.Translation
 
 		IReadOnlyList<TranslationResult> AppendToPrefix(IEnumerable<string> words);
 
-		void Approve();
+		void Approve(bool alignedOnly);
 	}
 }

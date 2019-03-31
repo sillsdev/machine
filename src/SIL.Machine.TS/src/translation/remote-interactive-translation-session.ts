@@ -104,11 +104,19 @@ export class RemoteInteractiveTranslationSession implements InteractiveTranslati
     return this._currentResults;
   }
 
-  async approve(): Promise<void> {
+  async approve(alignedOnly: boolean): Promise<void> {
     if (!this.isSourceSegmentValid || this.prefix.length > MAX_SEGMENT_LENGTH) {
       return;
     }
-    await this.webApiClient.trainSegmentPair(this.projectId, this.sourceSegment, this.prefix);
+
+    let sourceSegment = this.sourceSegment;
+    if (alignedOnly) {
+      sourceSegment = this._currentResults[0].getAlignedSourceSegment(this.prefix.length);
+    }
+
+    if (sourceSegment.length > 0) {
+      await this.webApiClient.trainSegmentPair(this.projectId, sourceSegment, this.prefix);
+    }
   }
 
   private updateCurrentResults(): void {
