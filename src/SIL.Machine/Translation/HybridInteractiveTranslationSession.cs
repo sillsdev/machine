@@ -108,7 +108,11 @@ namespace SIL.Machine.Translation
 
 			IReadOnlyList<string> sourceSegment = SourceSegment;
 			if (alignedOnly)
+			{
+				if (_currentResults.Count == 0)
+					return;
 				sourceSegment = _currentResults[0].GetAlignedSourceSegment(Prefix.Count);
+			}
 
 			if (sourceSegment.Count > 0)
 				_engine.SmtEngine.TrainSegment(sourceSegment, Prefix);

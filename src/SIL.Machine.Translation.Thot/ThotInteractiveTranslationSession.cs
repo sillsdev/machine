@@ -130,7 +130,11 @@ namespace SIL.Machine.Translation.Thot
 
 			IReadOnlyList<string> sourceSegment = _sourceSegment;
 			if (alignedOnly)
+			{
+				if (_currentResults.Length == 0)
+					return;
 				sourceSegment = _currentResults[0].GetAlignedSourceSegment(_prefix.Count);
+			}
 
 			if (sourceSegment.Count > 0)
 				_engine.TrainSegment(sourceSegment, _prefix);

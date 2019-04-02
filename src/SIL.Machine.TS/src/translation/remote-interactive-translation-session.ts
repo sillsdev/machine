@@ -111,6 +111,9 @@ export class RemoteInteractiveTranslationSession implements InteractiveTranslati
 
     let sourceSegment = this.sourceSegment;
     if (alignedOnly) {
+      if (this._currentResults.length === 0) {
+        return;
+      }
       sourceSegment = this._currentResults[0].getAlignedSourceSegment(this.prefix.length);
     }
 
