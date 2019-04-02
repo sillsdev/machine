@@ -1,12 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SIL.Machine.Annotations;
 using SIL.Machine.Translation;
 using SIL.Machine.WebApi.DataAccess;
 using SIL.Machine.WebApi.Models;
 using SIL.Machine.WebApi.Services;
-using SIL.Machine.Annotations;
 
 namespace SIL.Machine.WebApi.Controllers
 {
@@ -14,28 +17,38 @@ namespace SIL.Machine.WebApi.Controllers
 	[Route("[area]/[controller]", Name = RouteNames.Engines)]
 	public class EnginesController : Controller
 	{
-		private readonly IEngineRepository _engineRepo;
+		private readonly IAuthorizationService _authService;
+		private readonly IEngineRepository _engines;
 		private readonly IEngineService _engineService;
 
-		public EnginesController(IEngineRepository engineRepo, IEngineService engineService)
+		public EnginesController(IAuthorizationService authService, IEngineRepository engines,
+			IEngineService engineService)
 		{
-			_engineRepo = engineRepo;
+			_authService = authService;
+			_engines = engines;
 			_engineService = engineService;
 		}
 
 		[HttpGet]
 		public async Task<IEnumerable<EngineDto>> GetAllAsync()
 		{
-			IEnumerable<Engine> engines = await _engineRepo.GetAllAsync();
-			return engines.Select(CreateDto);
+			var engines = new List<EngineDto>();
+			foreach (Engine engine in await _engines.GetAllAsync())
+			{
+				if (await AuthorizeAsync(engine, Operations.Read))
+					engines.Add(CreateDto(engine));
+			}
+			return engines;
 		}
 
 		[HttpGet("{locatorType}:{locator}")]
 		public async Task<IActionResult> GetAsync(string locatorType, string locator)
 		{
-			Engine engine = await _engineRepo.GetByLocatorAsync(GetLocatorType(locatorType), locator);
+			Engine engine = await _engines.GetByLocatorAsync(GetLocatorType(locatorType), locator);
 			if (engine == null)
 				return NotFound();
+			if (!await AuthorizeAsync(engine, Operations.Read))
+				return StatusCode(StatusCodes.Status403Forbidden);
 
 			return Ok(CreateDto(engine));
 		}
@@ -43,8 +56,13 @@ namespace SIL.Machine.WebApi.Controllers
 		[HttpPost("{locatorType}:{locator}/actions/translate")]
 		public async Task<IActionResult> TranslateAsync(string locatorType, string locator, [FromBody] string[] segment)
 		{
-			TranslationResult result = await _engineService.TranslateAsync(GetLocatorType(locatorType),
-				locator, segment);
+			Engine engine = await _engines.GetByLocatorAsync(GetLocatorType(locatorType), locator);
+			if (engine == null)
+				return NotFound();
+			if (!await AuthorizeAsync(engine, Operations.Read))
+				return StatusCode(StatusCodes.Status403Forbidden);
+
+			TranslationResult result = await _engineService.TranslateAsync(engine.Id, segment);
 			if (result == null)
 				return NotFound();
 			return Ok(CreateDto(result, segment));
@@ -54,8 +72,13 @@ namespace SIL.Machine.WebApi.Controllers
 		public async Task<IActionResult> TranslateAsync(string locatorType, string locator, int n,
 			[FromBody] string[] segment)
 		{
-			IEnumerable<TranslationResult> results = await _engineService.TranslateAsync(
-				GetLocatorType(locatorType), locator, n, segment);
+			Engine engine = await _engines.GetByLocatorAsync(GetLocatorType(locatorType), locator);
+			if (engine == null)
+				return NotFound();
+			if (!await AuthorizeAsync(engine, Operations.Read))
+				return StatusCode(StatusCodes.Status403Forbidden);
+
+			IEnumerable<TranslationResult> results = await _engineService.TranslateAsync(engine.Id, n, segment);
 			if (results == null)
 				return NotFound();
 			return Ok(results.Select(tr => CreateDto(tr, segment)));
@@ -65,8 +88,14 @@ namespace SIL.Machine.WebApi.Controllers
 		public async Task<IActionResult> InteractiveTranslateAsync(string locatorType, string locator,
 			[FromBody] string[] segment)
 		{
-			HybridInteractiveTranslationResult result = await _engineService.InteractiveTranslateAsync(
-				GetLocatorType(locatorType), locator, segment);
+			Engine engine = await _engines.GetByLocatorAsync(GetLocatorType(locatorType), locator);
+			if (engine == null)
+				return NotFound();
+			if (!await AuthorizeAsync(engine, Operations.Read))
+				return StatusCode(StatusCodes.Status403Forbidden);
+
+			HybridInteractiveTranslationResult result = await _engineService.InteractiveTranslateAsync(engine.Id,
+				segment);
 			if (result == null)
 				return NotFound();
 			return Ok(CreateDto(result, segment));
@@ -76,12 +105,24 @@ namespace SIL.Machine.WebApi.Controllers
 		public async Task<IActionResult> TrainSegmentAsync(string locatorType, string locator,
 			[FromBody] SegmentPairDto segmentPair)
 		{
-			if (!await _engineService.TrainSegmentAsync(GetLocatorType(locatorType), locator, segmentPair.SourceSegment,
+			Engine engine = await _engines.GetByLocatorAsync(GetLocatorType(locatorType), locator);
+			if (engine == null)
+				return NotFound();
+			if (!await AuthorizeAsync(engine, Operations.Update))
+				return StatusCode(StatusCodes.Status403Forbidden);
+
+			if (!await _engineService.TrainSegmentAsync(engine.Id, segmentPair.SourceSegment,
 				segmentPair.TargetSegment))
 			{
 				return NotFound();
 			}
 			return Ok();
+		}
+
+		private async Task<bool> AuthorizeAsync(Engine engine, OperationAuthorizationRequirement operation)
+		{
+			AuthorizationResult result = await _authService.AuthorizeAsync(User, engine, operation);
+			return result.Succeeded;
 		}
 
 		private static EngineLocatorType GetLocatorType(string type)

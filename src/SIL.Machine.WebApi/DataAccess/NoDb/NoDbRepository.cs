@@ -35,6 +35,11 @@ namespace SIL.Machine.WebApi.DataAccess.NoDb
 			return await Queries.FetchAsync(NoDbProjectId, id, ct);
 		}
 
+		public async Task<bool> ExistsAsync(string id, CancellationToken ct = default(CancellationToken))
+		{
+			return await Queries.GetCountAsync(id, ct) > 0;
+		}
+
 		public async Task InsertAsync(T entity, CancellationToken ct = default(CancellationToken))
 		{
 			if (string.IsNullOrEmpty(entity.Id))

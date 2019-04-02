@@ -26,5 +26,10 @@ namespace SIL.Machine.WebApi.DataAccess.NoDb
 		{
 			throw new NotSupportedException();
 		}
+
+		public Task DeleteAllByEngineIdAsync(string engineId, CancellationToken ct = default(CancellationToken))
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

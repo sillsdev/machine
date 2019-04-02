@@ -32,7 +32,7 @@ namespace SIL.Machine.WebApi.Services
 		{
 			EngineRepository = new MemoryEngineRepository();
 			BuildRepository = new MemoryBuildRepository();
-			ProjectRepository = new MemoryRepository<Project>();
+			ProjectRepository = new MemoryProjectRepository();
 			EngineOptions = new EngineOptions();
 			_memoryStorage = new MemoryStorage();
 			_jobClient = new BackgroundJobClient(_memoryStorage);
@@ -40,7 +40,7 @@ namespace SIL.Machine.WebApi.Services
 
 		public IEngineRepository EngineRepository { get; }
 		public IBuildRepository BuildRepository { get; }
-		public IRepository<Project> ProjectRepository { get; }
+		public IProjectRepository ProjectRepository { get; }
 		public EngineService Service { get; private set; }
 		public ISmtBatchTrainer BatchTrainer { get; private set; }
 		public IInteractiveSmtModel SmtModel { get; private set; }

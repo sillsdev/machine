@@ -37,6 +37,25 @@ namespace SIL.Machine.WebApi.DataAccess.Mongo
 			return AddSubscriptionAsync(GetByEngineIdAsync, _engineIdSubscriptions, engineId, ct);
 		}
 
+		public async Task DeleteAllByEngineIdAsync(string engineId, CancellationToken ct = default(CancellationToken))
+		{
+			List<Build> deletedBuilds = await Collection.Find(b => b.EngineRef == engineId).ToListAsync(ct);
+			await Collection.DeleteManyAsync(b => b.EngineRef == engineId);
+
+			var deletedBuildSubscriptions = new List<List<Subscription<Build>>>();
+			using (await Lock.LockAsync())
+			{
+				foreach (Build build in deletedBuilds)
+				{
+					var allSubscriptions = new List<Subscription<Build>>();
+					GetSubscriptions(build, allSubscriptions);
+					deletedBuildSubscriptions.Add(allSubscriptions);
+				}
+			}
+			for (int i = 0; i < deletedBuilds.Count; i++)
+				SendToSubscribers(deletedBuildSubscriptions[i], EntityChangeType.Delete, deletedBuilds[i]);
+		}
+
 		protected override void GetSubscriptions(Build build, IList<Subscription<Build>> allSubscriptions)
 		{
 			base.GetSubscriptions(build, allSubscriptions);

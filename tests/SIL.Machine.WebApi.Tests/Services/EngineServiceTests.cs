@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using NUnit.Framework;
 using SIL.Machine.Translation;
-using SIL.Machine.WebApi.DataAccess;
 using SIL.Machine.WebApi.Models;
 
 namespace SIL.Machine.WebApi.Services
@@ -16,8 +15,7 @@ namespace SIL.Machine.WebApi.Services
 			using (var env = new EngineServiceTestEnvironment())
 			{
 				env.CreateEngineService();
-				TranslationResult result = await env.Service.TranslateAsync(EngineLocatorType.Id, "engine1",
-					"Esto es una prueba .".Split());
+				TranslationResult result = await env.Service.TranslateAsync("engine1", "Esto es una prueba .".Split());
 				Assert.That(result, Is.Null);
 			}
 		}
@@ -29,8 +27,7 @@ namespace SIL.Machine.WebApi.Services
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
 				env.CreateEngineService();
-				TranslationResult result = await env.Service.TranslateAsync(EngineLocatorType.Id, engineId,
-					"Esto es una prueba .".Split());
+				TranslationResult result = await env.Service.TranslateAsync(engineId, "Esto es una prueba .".Split());
 				Assert.That(result.TargetSegment, Is.EqualTo("this is a test .".Split()));
 			}
 		}
@@ -42,7 +39,7 @@ namespace SIL.Machine.WebApi.Services
 			{
 				env.CreateEngineService();
 				HybridInteractiveTranslationResult result = await env.Service.InteractiveTranslateAsync(
-					EngineLocatorType.Id, "engine1", "Esto es una prueba .".Split());
+					"engine1", "Esto es una prueba .".Split());
 				Assert.That(result, Is.Null);
 			}
 		}
@@ -55,7 +52,7 @@ namespace SIL.Machine.WebApi.Services
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
 				env.CreateEngineService();
 				HybridInteractiveTranslationResult result = await env.Service.InteractiveTranslateAsync(
-					EngineLocatorType.Id, engineId, "Esto es una prueba .".Split());
+					engineId, "Esto es una prueba .".Split());
 				Assert.That(result.RuleResult.TargetSegment, Is.EqualTo("this is a test .".Split()));
 				Assert.That(result.SmtWordGraph.Arcs.SelectMany(a => a.Words), Is.EqualTo("this is a test .".Split()));
 			}
@@ -67,8 +64,8 @@ namespace SIL.Machine.WebApi.Services
 			using (var env = new EngineServiceTestEnvironment())
 			{
 				env.CreateEngineService();
-				bool result = await env.Service.TrainSegmentAsync(EngineLocatorType.Id, "engine1",
-					"Esto es una prueba .".Split(), "This is a test .".Split());
+				bool result = await env.Service.TrainSegmentAsync("engine1", "Esto es una prueba .".Split(),
+					"This is a test .".Split());
 				Assert.That(result, Is.False);
 			}
 
@@ -81,8 +78,8 @@ namespace SIL.Machine.WebApi.Services
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
 				env.CreateEngineService();
-				bool result = await env.Service.TrainSegmentAsync(EngineLocatorType.Id, engineId,
-					"Esto es una prueba .".Split(), "This is a test .".Split());
+				bool result = await env.Service.TrainSegmentAsync(engineId, "Esto es una prueba .".Split(),
+					"This is a test .".Split());
 				Assert.That(result, Is.True);
 			}
 		}
@@ -93,8 +90,17 @@ namespace SIL.Machine.WebApi.Services
 			using (var env = new EngineServiceTestEnvironment())
 			{
 				env.CreateEngineService();
-				Project project = await env.Service.AddProjectAsync("project1", "es", "en", "latin", "latin", true);
-				Assert.That(project, Is.Not.Null);
+				var project = new Project
+				{
+					Id = "project1",
+					SourceLanguageTag = "es",
+					TargetLanguageTag = "en",
+					SourceSegmentType = "latin",
+					TargetSegmentType = "latin",
+					IsShared = true
+				};
+				bool created = await env.Service.AddProjectAsync(project);
+				Assert.That(created, Is.True);
 
 				Engine engine = await env.EngineRepository.GetAsync(project.EngineRef);
 				Assert.That(engine.Projects, Contains.Item("project1"));
@@ -108,8 +114,17 @@ namespace SIL.Machine.WebApi.Services
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
 				env.CreateEngineService();
-				Project project = await env.Service.AddProjectAsync("project2", "es", "en", "latin", "latin", true);
-				Assert.That(project, Is.Not.Null);
+				var project = new Project
+				{
+					Id = "project2",
+					SourceLanguageTag = "es",
+					TargetLanguageTag = "en",
+					SourceSegmentType = "latin",
+					TargetSegmentType = "latin",
+					IsShared = true
+				};
+				bool created = await env.Service.AddProjectAsync(project);
+				Assert.That(created, Is.True);
 
 				Engine engine = await env.EngineRepository.GetAsync(project.EngineRef);
 				Assert.That(engine.Id, Is.EqualTo(engineId));
@@ -124,8 +139,17 @@ namespace SIL.Machine.WebApi.Services
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", false)).Id;
 				env.CreateEngineService();
-				Project project = await env.Service.AddProjectAsync("project2", "es", "en", "latin", "latin", true);
-				Assert.That(project, Is.Not.Null);
+				var project = new Project
+				{
+					Id = "project2",
+					SourceLanguageTag = "es",
+					TargetLanguageTag = "en",
+					SourceSegmentType = "latin",
+					TargetSegmentType = "latin",
+					IsShared = true
+				};
+				bool created = await env.Service.AddProjectAsync(project);
+				Assert.That(created, Is.True);
 
 				Engine engine = await env.EngineRepository.GetAsync(project.EngineRef);
 				Assert.That(engine.Id, Is.Not.EqualTo(engineId));
@@ -140,8 +164,17 @@ namespace SIL.Machine.WebApi.Services
 			{
 				await env.CreateEngineAsync("es", "en", true);
 				env.CreateEngineService();
-				Project project = await env.Service.AddProjectAsync("project1", "es", "en", "latin", "latin", true);
-				Assert.That(project, Is.Null);
+				var project = new Project
+				{
+					Id = "project1",
+					SourceLanguageTag = "es",
+					TargetLanguageTag = "en",
+					SourceSegmentType = "latin",
+					TargetSegmentType = "latin",
+					IsShared = true
+				};
+				bool created = await env.Service.AddProjectAsync(project);
+				Assert.That(created, Is.False);
 			}
 		}
 
@@ -152,8 +185,17 @@ namespace SIL.Machine.WebApi.Services
 			{
 				await env.CreateEngineAsync("es", "en", false);
 				env.CreateEngineService();
-				Project project = await env.Service.AddProjectAsync("project1", "es", "en", "latin", "latin", false);
-				Assert.That(project, Is.Null);
+				var project = new Project
+				{
+					Id = "project1",
+					SourceLanguageTag = "es",
+					TargetLanguageTag = "en",
+					SourceSegmentType = "latin",
+					TargetSegmentType = "latin",
+					IsShared = false
+				};
+				bool created = await env.Service.AddProjectAsync(project);
+				Assert.That(created, Is.False);
 			}
 		}
 
@@ -190,20 +232,19 @@ namespace SIL.Machine.WebApi.Services
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
 				env.CreateEngineService();
-				Build build = await env.Service.StartBuildAsync(EngineLocatorType.Id, engineId);
+				Build build = await env.Service.StartBuildAsync(engineId);
 				Assert.That(build, Is.Not.Null);
 			}
 		}
 
 		[Test]
-		public async Task CancelBuildAsync_ProjectExistsNotBuilding()
+		public async Task CancelBuildAsync_EngineExistsNotBuilding()
 		{
 			using (var env = new EngineServiceTestEnvironment())
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
 				env.CreateEngineService();
-				bool result = await env.Service.CancelBuildAsync(BuildLocatorType.Engine, engineId);
-				Assert.That(result, Is.False);
+				await env.Service.CancelBuildAsync(engineId);
 			}
 		}
 	}

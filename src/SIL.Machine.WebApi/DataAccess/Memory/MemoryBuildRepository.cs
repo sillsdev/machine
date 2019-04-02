@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SIL.Machine.WebApi.Models;
@@ -38,6 +39,26 @@ namespace SIL.Machine.WebApi.DataAccess.Memory
 			CancellationToken ct = default(CancellationToken))
 		{
 			return _engineIdIndex.SubscribeAsync(engineId, ct);
+		}
+
+		public async Task DeleteAllByEngineIdAsync(string engineId, CancellationToken ct = default(CancellationToken))
+		{
+			var deletedBuilds = new List<(Build, List<Subscription<Build>>)>();
+			using (await Lock.WriterLockAsync(ct))
+			{
+				foreach (string buildId in Entities.Values.Where(e => e.EngineRef == engineId).Select(e => e.Id)
+					.ToArray())
+				{
+					var allSubscriptions = new List<Subscription<Build>>();
+					Build internalBuild = DeleteEntity(buildId, allSubscriptions);
+
+					if (PersistenceRepository != null)
+						await PersistenceRepository.DeleteAsync(buildId, ct);
+					deletedBuilds.Add((internalBuild, allSubscriptions));
+				}
+			}
+			foreach ((Build internalBuild, List<Subscription<Build>> allSubscriptions) in deletedBuilds)
+				SendToSubscribers(allSubscriptions, EntityChangeType.Delete, internalBuild);
 		}
 
 		protected override void OnBeforeEntityChanged(EntityChangeType type, Build build)

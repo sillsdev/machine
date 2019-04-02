@@ -18,20 +18,20 @@ namespace SIL.Machine.WebApi.Services
 		private readonly IOptions<EngineOptions> _engineOptions;
 		private readonly ConcurrentDictionary<string, Owned<EngineRuntime>> _runtimes;
 		private readonly AsyncReaderWriterLock _lock;
-		private readonly IEngineRepository _engineRepo;
-		private readonly IBuildRepository _buildRepo;
-		private readonly IRepository<Project> _projectRepo;
+		private readonly IEngineRepository _engines;
+		private readonly IBuildRepository _builds;
+		private readonly IProjectRepository _projects;
 		private readonly Func<string, Owned<EngineRuntime>> _engineRunnerFactory;
 		private readonly AsyncTimer _commitTimer;
 
-		public EngineService(IOptions<EngineOptions> engineOptions, IEngineRepository engineRepo,
-			IBuildRepository buildRepo, IRepository<Project> projectRepo,
+		public EngineService(IOptions<EngineOptions> engineOptions, IEngineRepository engines,
+			IBuildRepository builds, IProjectRepository projects,
 			Func<string, Owned<EngineRuntime>> engineRuntimeFactory)
 		{
 			_engineOptions = engineOptions;
-			_engineRepo = engineRepo;
-			_buildRepo = buildRepo;
-			_projectRepo = projectRepo;
+			_engines = engines;
+			_builds = builds;
+			_projects = projects;
 			_engineRunnerFactory = engineRuntimeFactory;
 			_runtimes = new ConcurrentDictionary<string, Owned<EngineRuntime>>();
 			_lock = new AsyncReaderWriterLock();
@@ -52,76 +52,70 @@ namespace SIL.Machine.WebApi.Services
 			}
 		}
 
-		public async Task<TranslationResult> TranslateAsync(EngineLocatorType locatorType,
-			string locator, IReadOnlyList<string> segment)
+		public async Task<TranslationResult> TranslateAsync(string engineId, IReadOnlyList<string> segment)
 		{
 			CheckDisposed();
 
 			using (await _lock.ReaderLockAsync())
 			{
-				Engine engine = await _engineRepo.GetByLocatorAsync(locatorType, locator);
-				if (engine == null)
+				if (!await _engines.ExistsAsync(engineId))
 					return null;
-				EngineRuntime runtime = GetOrCreateRuntime(engine.Id);
+				EngineRuntime runtime = GetOrCreateRuntime(engineId);
 				return await runtime.TranslateAsync(segment);
 			}
 		}
 
-		public async Task<IEnumerable<TranslationResult>> TranslateAsync(EngineLocatorType locatorType, string locator,
-			int n, IReadOnlyList<string> segment)
+		public async Task<IEnumerable<TranslationResult>> TranslateAsync(string engineId, int n,
+			IReadOnlyList<string> segment)
 		{
 			CheckDisposed();
 
 			using (await _lock.ReaderLockAsync())
 			{
-				Engine engine = await _engineRepo.GetByLocatorAsync(locatorType, locator);
-				if (engine == null)
+				if (!await _engines.ExistsAsync(engineId))
 					return null;
-				EngineRuntime runtime = GetOrCreateRuntime(engine.Id);
+				EngineRuntime runtime = GetOrCreateRuntime(engineId);
 				return await runtime.TranslateAsync(n, segment);
 			}
 		}
 
-		public async Task<HybridInteractiveTranslationResult> InteractiveTranslateAsync(EngineLocatorType locatorType,
-			string locator, IReadOnlyList<string> segment)
+		public async Task<HybridInteractiveTranslationResult> InteractiveTranslateAsync(string engineId,
+			IReadOnlyList<string> segment)
 		{
 			CheckDisposed();
 
 			using (await _lock.ReaderLockAsync())
 			{
-				Engine engine = await _engineRepo.GetByLocatorAsync(locatorType, locator);
-				if (engine == null)
+				if (!await _engines.ExistsAsync(engineId))
 					return null;
-				EngineRuntime runtime = GetOrCreateRuntime(engine.Id);
+				EngineRuntime runtime = GetOrCreateRuntime(engineId);
 				return await runtime.InteractiveTranslateAsync(segment);
 			}
 		}
 
-		public async Task<bool> TrainSegmentAsync(EngineLocatorType locatorType, string locator,
-			IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
+		public async Task<bool> TrainSegmentAsync(string engineId, IReadOnlyList<string> sourceSegment,
+			IReadOnlyList<string> targetSegment)
 		{
 			CheckDisposed();
 
 			using (await _lock.ReaderLockAsync())
 			{
-				Engine engine = await _engineRepo.GetByLocatorAsync(locatorType, locator);
-				if (engine == null)
+				if (!await _engines.ExistsAsync(engineId))
 					return false;
-				EngineRuntime runtime = GetOrCreateRuntime(engine.Id);
+				EngineRuntime runtime = GetOrCreateRuntime(engineId);
 				await runtime.TrainSegmentPairAsync(sourceSegment, targetSegment);
 				return true;
 			}
 		}
 
-		public async Task<Project> AddProjectAsync(string projectId, string sourceLanguageTag, string targetLanguageTag,
-			string sourceSegmentType, string targetSegmentType, bool isShared)
+		public async Task<bool> AddProjectAsync(Project project)
 		{
 			CheckDisposed();
 
 			using (await _lock.WriterLockAsync())
 			{
-				Engine engine = isShared
-					? await _engineRepo.GetByLanguageTagAsync(sourceLanguageTag, targetLanguageTag)
+				Engine engine = project.IsShared
+					? await _engines.GetByLanguageTagAsync(project.SourceLanguageTag, project.TargetLanguageTag)
 					: null;
 				try
 				{
@@ -130,41 +124,32 @@ namespace SIL.Machine.WebApi.Services
 						// no existing shared engine or a project-specific engine
 						engine = new Engine
 						{
-							Projects = { projectId },
-							IsShared = isShared,
-							SourceLanguageTag = sourceLanguageTag,
-							TargetLanguageTag = targetLanguageTag
+							Projects = { project.Id },
+							IsShared = project.IsShared,
+							SourceLanguageTag = project.SourceLanguageTag,
+							TargetLanguageTag = project.TargetLanguageTag
 						};
-						await _engineRepo.InsertAsync(engine);
+						await _engines.InsertAsync(engine);
 						EngineRuntime runtime = CreateRuntime(engine.Id);
 						await runtime.InitNewAsync();
 					}
 					else
 					{
 						// found an existing shared engine
-						if (engine.Projects.Contains(projectId))
-							return null;
-						engine = await _engineRepo.ConcurrentUpdateAsync(engine, e => e.Projects.Add(projectId));
+						if (engine.Projects.Contains(project.Id))
+							return false;
+						engine = await _engines.ConcurrentUpdateAsync(engine, e => e.Projects.Add(project.Id));
 					}
 				}
 				catch (KeyAlreadyExistsException)
 				{
 					// a project with the same id already exists
-					return null;
+					return false;
 				}
 
-				var project = new Project
-				{
-					Id = projectId,
-					SourceLanguageTag = sourceLanguageTag,
-					TargetLanguageTag = targetLanguageTag,
-					SourceSegmentType = sourceSegmentType,
-					TargetSegmentType = targetSegmentType,
-					IsShared = isShared,
-					EngineRef = engine.Id
-				};
-				await _projectRepo.InsertAsync(project);
-				return project;
+				project.EngineRef = engine.Id;
+				await _projects.InsertAsync(project);
+				return true;
 			}
 		}
 
@@ -174,7 +159,7 @@ namespace SIL.Machine.WebApi.Services
 
 			using (await _lock.WriterLockAsync())
 			{
-				Engine engine = await _engineRepo.GetByProjectIdAsync(projectId);
+				Engine engine = await _engines.GetByProjectIdAsync(projectId);
 				if (engine == null)
 					return false;
 
@@ -182,47 +167,50 @@ namespace SIL.Machine.WebApi.Services
 				if (engine.Projects.Count == 1 && engine.Projects.Contains(projectId))
 				{
 					// the engine will have no associated projects, so remove it
-					await _engineRepo.DeleteAsync(engine);
 					_runtimes.TryRemove(engine.Id, out _);
 					await runtime.DeleteDataAsync();
 					runtime.Dispose();
+					await _engines.DeleteAsync(engine);
+					await _builds.DeleteAllByEngineIdAsync(engine.Id);
 				}
 				else
 				{
 					// engine will still have associated projects, so just update it
-					await _engineRepo.ConcurrentUpdateAsync(engine, e => e.Projects.Remove(projectId));
+					await _engines.ConcurrentUpdateAsync(engine, e => e.Projects.Remove(projectId));
 				}
-				await _projectRepo.DeleteAsync(projectId);
+				await _projects.DeleteAsync(projectId);
 				return true;
 			}
 		}
 
-		public async Task<Build> StartBuildAsync(EngineLocatorType locatorType, string locator)
+		public async Task<Build> StartBuildAsync(string engineId)
 		{
 			CheckDisposed();
 
 			using (await _lock.ReaderLockAsync())
 			{
-				Engine engine = await _engineRepo.GetByLocatorAsync(locatorType, locator);
-				if (engine == null)
+				if (!await _engines.ExistsAsync(engineId))
 					return null;
-				EngineRuntime runtime = GetOrCreateRuntime(engine.Id);
+				EngineRuntime runtime = GetOrCreateRuntime(engineId);
 				return await runtime.StartBuildAsync();
 			}
 		}
 
-		public async Task<bool> CancelBuildAsync(BuildLocatorType locatorType, string locator)
+		public async Task<Build> StartBuildByProjectIdAsync(string projectId)
+		{
+			CheckDisposed();
+			Engine engine = await _engines.GetByProjectIdAsync(projectId);
+			return await StartBuildAsync(engine.Id);
+		}
+
+		public async Task CancelBuildAsync(string engineId)
 		{
 			CheckDisposed();
 
 			using (await _lock.ReaderLockAsync())
 			{
-				Build build = await _buildRepo.GetByLocatorAsync(locatorType, locator);
-				if (build == null)
-					return false;
-				if (TryGetRuntime(build.EngineRef, out EngineRuntime runtime))
+				if (TryGetRuntime(engineId, out EngineRuntime runtime))
 					await runtime.CancelBuildAsync();
-				return true;
 			}
 		}
 
@@ -232,7 +220,7 @@ namespace SIL.Machine.WebApi.Services
 
 			using (await _lock.ReaderLockAsync())
 			{
-				Engine engine = await _engineRepo.GetAsync(engineId);
+				Engine engine = await _engines.GetAsync(engineId);
 				if (engine == null)
 					return (null, null);
 				return (engine, GetOrCreateRuntime(engineId));

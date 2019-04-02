@@ -42,6 +42,11 @@ namespace SIL.Machine.WebApi.DataAccess.Mongo
 			return Collection.Find(e => e.Id == id).FirstOrDefaultAsync(ct);
 		}
 
+		public async Task<bool> ExistsAsync(string id, CancellationToken ct = default(CancellationToken))
+		{
+			return await Collection.Find(e => e.Id == id).Limit(1).CountDocumentsAsync(ct) > 0;
+		}
+
 		public async Task InsertAsync(T entity, CancellationToken ct = default(CancellationToken))
 		{
 			try
@@ -166,6 +171,18 @@ namespace SIL.Machine.WebApi.DataAccess.Mongo
 			}
 		}
 
+		protected virtual void GetSubscriptions(T entity, IList<Subscription<T>> allSubscriptions)
+		{
+			if (_idSubscriptions.TryGetValue(entity.Id, out ISet<Subscription<T>> subscriptions))
+				allSubscriptions.AddRange(subscriptions);
+		}
+
+		protected void SendToSubscribers(List<Subscription<T>> allSubscriptions, EntityChangeType type, T entity)
+		{
+			foreach (Subscription<T> subscription in allSubscriptions)
+				subscription.HandleChange(new EntityChange<T>(type, entity.Clone()));
+		}
+
 		private void RemoveSubscription<TKey>(Dictionary<TKey, ISet<Subscription<T>>> keySubscriptions,
 			Subscription<T> subscription)
 		{
@@ -184,14 +201,7 @@ namespace SIL.Machine.WebApi.DataAccess.Mongo
 			var allSubscriptions = new List<Subscription<T>>();
 			using (await Lock.LockAsync())
 				GetSubscriptions(entity, allSubscriptions);
-			foreach (Subscription<T> subbscription in allSubscriptions)
-				subbscription.HandleChange(new EntityChange<T>(type, entity.Clone()));
-		}
-
-		protected virtual void GetSubscriptions(T entity, IList<Subscription<T>> allSubscriptions)
-		{
-			if (_idSubscriptions.TryGetValue(entity.Id, out ISet<Subscription<T>> subscriptions))
-				allSubscriptions.AddRange(subscriptions);
+			SendToSubscribers(allSubscriptions, type, entity);
 		}
 	}
 }

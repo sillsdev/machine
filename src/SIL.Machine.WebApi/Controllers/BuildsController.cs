@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using SIL.Machine.WebApi.Configuration;
@@ -16,14 +18,18 @@ namespace SIL.Machine.WebApi.Controllers
 	[Route("[area]/[controller]", Name = RouteNames.Builds)]
 	public class BuildsController : Controller
 	{
-		private readonly IBuildRepository _buildRepo;
+		private readonly IAuthorizationService _authService;
+		private readonly IBuildRepository _builds;
+		private readonly IEngineRepository _engines;
 		private readonly IEngineService _engineService;
 		private readonly IOptions<EngineOptions> _engineOptions;
 
-		public BuildsController(IBuildRepository buildRepo, IEngineRepository engineRepo, IEngineService engineService,
-			IOptions<EngineOptions> engineOptions)
+		public BuildsController(IAuthorizationService authService, IBuildRepository builds,
+			IEngineRepository engines, IEngineService engineService, IOptions<EngineOptions> engineOptions)
 		{
-			_buildRepo = buildRepo;
+			_authService = authService;
+			_builds = builds;
+			_engines = engines;
 			_engineService = engineService;
 			_engineOptions = engineOptions;
 		}
@@ -31,18 +37,44 @@ namespace SIL.Machine.WebApi.Controllers
 		[HttpGet]
 		public async Task<IEnumerable<BuildDto>> GetAllAsync()
 		{
-			IEnumerable<Build> builds = await _buildRepo.GetAllAsync();
-			return builds.Select(CreateDto);
+			var builds = new List<BuildDto>();
+			foreach (Build build in await _builds.GetAllAsync())
+			{
+				Engine engine = await _engines.GetAsync(build.EngineRef);
+				if (engine != null && await AuthorizeAsync(engine, Operations.Read))
+					builds.Add(CreateDto(build));
+			}
+			return builds;
 		}
 
 		[HttpGet("{locatorType}:{locator}")]
 		public async Task<IActionResult> GetAsync(string locatorType, string locator, [FromQuery] long? minRevision,
 			CancellationToken ct)
 		{
+			BuildLocatorType buildLocatorType = GetLocatorType(locatorType);
 			if (minRevision != null)
 			{
-				EntityChange<Build> change = await _buildRepo.GetNewerRevisionAsync(GetLocatorType(locatorType),
-					locator, minRevision.Value, ct).Timeout(_engineOptions.Value.BuildLongPollTimeout, ct);
+				string engineId = null;
+				switch (buildLocatorType)
+				{
+					case BuildLocatorType.Id:
+						Build build = await _builds.GetAsync(locator);
+						if (build == null)
+							return NotFound();
+						engineId = build.EngineRef;
+						break;
+					case BuildLocatorType.Engine:
+						engineId = locator;
+						break;
+				}
+				Engine engine = await _engines.GetAsync(engineId);
+				if (engine == null)
+					return NotFound();
+				if (!await AuthorizeAsync(engine, Operations.Read))
+					return StatusCode(StatusCodes.Status403Forbidden);
+
+				EntityChange<Build> change = await _builds.GetNewerRevisionAsync(buildLocatorType, locator,
+					minRevision.Value, ct).Timeout(_engineOptions.Value.BuildLongPollTimeout, ct);
 				switch (change.Type)
 				{
 					case EntityChangeType.None:
@@ -53,20 +85,33 @@ namespace SIL.Machine.WebApi.Controllers
 						return Ok(CreateDto(change.Entity));
 				}
 			}
+			else
+			{
+				Build build = await _builds.GetByLocatorAsync(buildLocatorType, locator);
+				if (build == null)
+					return NotFound();
+				Engine engine = await _engines.GetAsync(build.EngineRef);
+				if (engine == null)
+					return NotFound();
+				if (!await AuthorizeAsync(engine, Operations.Read))
+					return StatusCode(StatusCodes.Status403Forbidden);
 
-			Build build = await _buildRepo.GetByLocatorAsync(GetLocatorType(locatorType), locator);
-			if (build == null)
-				return NotFound();
-			return Ok(CreateDto(build));
+				return Ok(CreateDto(build));
+			}
 		}
 
 		[HttpPost]
 		public async Task<IActionResult> CreateAsync([FromBody] string engineId)
 		{
-			Build build = await _engineService.StartBuildAsync(EngineLocatorType.Id, engineId);
-			if (build == null)
-				return StatusCode(422);
+			Engine engine = await _engines.GetAsync(engineId);
+			if (engine == null)
+				return StatusCode(StatusCodes.Status422UnprocessableEntity);
+			if (!await AuthorizeAsync(engine, Operations.Update))
+				return StatusCode(StatusCodes.Status403Forbidden);
 
+			Build build = await _engineService.StartBuildAsync(engine.Id);
+			if (build == null)
+				return StatusCode(StatusCodes.Status422UnprocessableEntity);
 			BuildDto dto = CreateDto(build);
 			return Created(dto.Href, dto);
 		}
@@ -74,9 +119,23 @@ namespace SIL.Machine.WebApi.Controllers
 		[HttpDelete("{locatorType}:{locator}")]
 		public async Task<IActionResult> DeleteAsync(string locatorType, string locator)
 		{
-			if (!await _engineService.CancelBuildAsync(GetLocatorType(locatorType), locator))
+			Build build = await _builds.GetByLocatorAsync(GetLocatorType(locatorType), locator);
+			if (build == null)
 				return NotFound();
+			Engine engine = await _engines.GetAsync(build.EngineRef);
+			if (engine == null)
+				return NotFound();
+			if (!await AuthorizeAsync(engine, Operations.Update))
+				return StatusCode(StatusCodes.Status403Forbidden);
+
+			await _engineService.CancelBuildAsync(engine.Id);
 			return Ok();
+		}
+
+		private async Task<bool> AuthorizeAsync(Engine engine, OperationAuthorizationRequirement operation)
+		{
+			AuthorizationResult result = await _authService.AuthorizeAsync(User, engine, operation);
+			return result.Succeeded;
 		}
 
 		private static BuildLocatorType GetLocatorType(string type)

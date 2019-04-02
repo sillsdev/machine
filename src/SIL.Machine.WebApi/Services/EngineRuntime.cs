@@ -21,8 +21,8 @@ namespace SIL.Machine.WebApi.Services
 	{
 		private const int MaxEnginePoolSize = 3;
 
-		private readonly IEngineRepository _engineRepo;
-		private readonly IBuildRepository _buildRepo;
+		private readonly IEngineRepository _engines;
+		private readonly IBuildRepository _builds;
 		private readonly ISmtModelFactory _smtModelFactory;
 		private readonly IRuleEngineFactory _ruleEngineFactory;
 		private readonly ITextCorpusFactory _textCorpusFactory;
@@ -40,13 +40,13 @@ namespace SIL.Machine.WebApi.Services
 		private bool _isUpdated;
 		private DateTime _lastUsedTime;
 
-		public EngineRuntime(IOptions<EngineOptions> engineOptions, IEngineRepository engineRepo,
-			IBuildRepository buildRepo, ISmtModelFactory smtModelFactory, IRuleEngineFactory ruleEngineFactory,
+		public EngineRuntime(IOptions<EngineOptions> engineOptions, IEngineRepository engines,
+			IBuildRepository builds, ISmtModelFactory smtModelFactory, IRuleEngineFactory ruleEngineFactory,
 			IBackgroundJobClient jobClient, ITextCorpusFactory textCorpusFactory, ILogger<EngineRuntime> logger,
 			string engineId)
 		{
-			_engineRepo = engineRepo;
-			_buildRepo = buildRepo;
+			_engines = engines;
+			_builds = builds;
 			_smtModelFactory = smtModelFactory;
 			_ruleEngineFactory = ruleEngineFactory;
 			_textCorpusFactory = textCorpusFactory;
@@ -135,7 +135,7 @@ namespace SIL.Machine.WebApi.Services
 				item.Object.TrainSegment(preprocSourceSegment, preprocTargetSegment);
 				if (IsBuilding)
 					_trainedSegments.Add((preprocSourceSegment, preprocTargetSegment));
-				await _engineRepo.ConcurrentUpdateAsync(_engineId, e => e.TrainedSegmentCount++);
+				await _engines.ConcurrentUpdateAsync(_engineId, e => e.TrainedSegmentCount++);
 				_isUpdated = true;
 				_lastUsedTime = DateTime.Now;
 			}
@@ -152,7 +152,7 @@ namespace SIL.Machine.WebApi.Services
 				await _buildFinishedEvent.WaitAsync();
 
 				var build = new Build { EngineRef = _engineId };
-				await _buildRepo.InsertAsync(build);
+				await _builds.InsertAsync(build);
 				_jobClient.Enqueue<BuildRunner>(r => r.RunAsync(_engineId, JobCancellationToken.Null));
 				_lastUsedTime = DateTime.Now;
 				return build;
@@ -201,14 +201,14 @@ namespace SIL.Machine.WebApi.Services
 
 		private async Task CancelBuildInternalAsync()
 		{
-			Build build = await _buildRepo.GetByEngineIdAsync(_engineId);
+			Build build = await _builds.GetByEngineIdAsync(_engineId);
 			if (build == null)
 				return;
 			if (build.State == BuildStates.Pending)
 			{
 				// if the build is pending, then delete it
 				// the job will still run, but it will exit before performing the build 
-				await _buildRepo.DeleteAsync(build);
+				await _builds.DeleteAsync(build);
 			}
 			else if (build.State == BuildStates.Active && !IsBuilding)
 			{
@@ -217,7 +217,7 @@ namespace SIL.Machine.WebApi.Services
 				// this should not happen, but check for it just in case
 				build.State = BuildStates.Canceled;
 				build.DateFinished = DateTime.UtcNow;
-				await _buildRepo.UpdateAsync(build);
+				await _builds.UpdateAsync(build);
 			}
 			else if (IsBuilding)
 			{
@@ -271,7 +271,7 @@ namespace SIL.Machine.WebApi.Services
 				var stopwatch = new Stopwatch();
 				using (await _lock.WriterLockAsync(jobToken.ShutdownToken))
 				{
-					build = await _buildRepo.GetByEngineIdAsync(_engineId);
+					build = await _builds.GetByEngineIdAsync(_engineId);
 					// if the build is not found, then there are no pending or active builds for this engine, so exit
 					if (build == null)
 						return;
@@ -282,7 +282,7 @@ namespace SIL.Machine.WebApi.Services
 					if (build.State == BuildStates.Pending)
 					{
 						build.State = BuildStates.Active;
-						await _buildRepo.UpdateAsync(build);
+						await _builds.UpdateAsync(build);
 					}
 
 					ITextCorpus sourceCorpus = await _textCorpusFactory.CreateAsync(projects, TextCorpusType.Source);
@@ -298,7 +298,7 @@ namespace SIL.Machine.WebApi.Services
 				}
 
 				CancellationToken token = cts.Token;
-				var progress = new BuildProgress(_buildRepo, build);
+				var progress = new BuildProgress(_builds, build);
 				trainer.Train(progress, token.ThrowIfCancellationRequested);
 				using (await _lock.WriterLockAsync(token))
 				using (ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync(token))
@@ -308,7 +308,7 @@ namespace SIL.Machine.WebApi.Services
 					foreach ((IReadOnlyList<string> source, IReadOnlyList<string> target) in _trainedSegments)
 						item.Object.TrainSegment(source, target);
 
-					await _engineRepo.ConcurrentUpdateAsync(_engineId, e =>
+					await _engines.ConcurrentUpdateAsync(_engineId, e =>
 						{
 							e.Confidence = trainer.Stats.TranslationModelBleu;
 							e.TrainedSegmentCount = trainer.Stats.TrainedSegmentCount + _trainedSegments.Count;
@@ -318,7 +318,7 @@ namespace SIL.Machine.WebApi.Services
 
 				build.State = BuildStates.Completed;
 				build.DateFinished = DateTime.UtcNow;
-				await _buildRepo.UpdateAsync(build);
+				await _builds.UpdateAsync(build);
 				stopwatch.Stop();
 				_logger.LogInformation("Build completed in {0}ms ({1})", stopwatch.Elapsed.TotalMilliseconds,
 					_engineId);
@@ -332,13 +332,13 @@ namespace SIL.Machine.WebApi.Services
 					build.Message = null;
 					build.PercentCompleted = 0;
 					build.State = BuildStates.Pending;
-					await _buildRepo.UpdateAsync(build);
+					await _builds.UpdateAsync(build);
 					throw;
 				}
 
 				build.State = BuildStates.Canceled;
 				build.DateFinished = DateTime.UtcNow;
-				await _buildRepo.UpdateAsync(build);
+				await _builds.UpdateAsync(build);
 				_logger.LogInformation("Build canceled ({1})", _engineId);
 			}
 			catch (Exception e)
@@ -348,7 +348,7 @@ namespace SIL.Machine.WebApi.Services
 					build.State = BuildStates.Faulted;
 					build.Message = e.Message;
 					build.DateFinished = DateTime.UtcNow;
-					await _buildRepo.UpdateAsync(build);
+					await _builds.UpdateAsync(build);
 					_logger.LogError(0, e, "Build faulted ({0})", _engineId);
 				}
 				throw;

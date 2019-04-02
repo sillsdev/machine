@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SIL.Machine.WebApi.DataAccess;
-using SIL.Machine.WebApi.Models;
 using SIL.Machine.WebApi.Services;
 
 namespace Microsoft.AspNetCore.Builder
@@ -11,7 +10,7 @@ namespace Microsoft.AspNetCore.Builder
 		{
 			app.ApplicationServices.GetService<IEngineRepository>().Init();
 			app.ApplicationServices.GetService<IBuildRepository>().Init();
-			app.ApplicationServices.GetService<IRepository<Project>>().Init();
+			app.ApplicationServices.GetService<IProjectRepository>().Init();
 
 			app.ApplicationServices.GetService<IEngineServiceInternal>().Init();
 

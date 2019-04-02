@@ -11,6 +11,7 @@ namespace SIL.Machine.WebApi.DataAccess
 
 		Task<IEnumerable<T>> GetAllAsync(CancellationToken ct = default(CancellationToken));	
 		Task<T> GetAsync(string id, CancellationToken ct = default(CancellationToken));
+		Task<bool> ExistsAsync(string id, CancellationToken ct = default(CancellationToken));
 		Task InsertAsync(T entity, CancellationToken ct = default(CancellationToken));
 		Task UpdateAsync(T entity, bool checkConflict = false, CancellationToken ct = default(CancellationToken));
 		Task DeleteAsync(T entity, bool checkConflict = false, CancellationToken ct = default(CancellationToken));

@@ -10,5 +10,7 @@ namespace SIL.Machine.WebApi.DataAccess
 
 		Task<Subscription<Build>> SubscribeByEngineIdAsync(string engineId,
 			CancellationToken ct = default(CancellationToken));
+
+		Task DeleteAllByEngineIdAsync(string engineId, CancellationToken ct = default(CancellationToken));
 	}
 }

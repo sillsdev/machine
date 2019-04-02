@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;
@@ -97,8 +96,8 @@ namespace Microsoft.Extensions.DependencyInjection
 			builder.Services.AddSingleton<IBuildRepository>(sp => new MemoryBuildRepository(
 				new NoDbBuildRepository(sp.GetService<IBasicCommands<Build>>(),
 					sp.GetService<IBasicQueries<Build>>())));
-			builder.Services.AddSingleton<IRepository<Project>>(sp => new MemoryRepository<Project>(
-				new NoDbRepository<Project>(sp.GetService<IBasicCommands<Project>>(),
+			builder.Services.AddSingleton<IProjectRepository>(sp => new MemoryProjectRepository(
+				new NoDbProjectRepository(sp.GetService<IBasicCommands<Project>>(),
 					sp.GetService<IBasicQueries<Project>>())));
 			return builder;
 		}
@@ -129,7 +128,7 @@ namespace Microsoft.Extensions.DependencyInjection
 		{
 			builder.Services.AddSingleton<IEngineRepository, MemoryEngineRepository>();
 			builder.Services.AddSingleton<IBuildRepository, MemoryBuildRepository>();
-			builder.Services.AddSingleton<IRepository<Project>, MemoryRepository<Project>>();
+			builder.Services.AddSingleton<IProjectRepository, MemoryProjectRepository>();
 			return builder;
 		}
 
@@ -155,8 +154,7 @@ namespace Microsoft.Extensions.DependencyInjection
 			builder.Services.AddSingleton<IBuildRepository, MongoBuildRepository>();
 
 			RegisterEntity<Project>();
-			builder.Services.AddSingleton<IRepository<Project>>(
-				sp => new MongoRepository<Project>(sp.GetService<IOptions<MongoDataAccessOptions>>(), "projects"));
+			builder.Services.AddSingleton<IProjectRepository, MongoProjectRepository>();
 
 			return builder;
 		}

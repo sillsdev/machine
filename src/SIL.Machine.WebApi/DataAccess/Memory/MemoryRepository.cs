@@ -52,6 +52,14 @@ namespace SIL.Machine.WebApi.DataAccess.Memory
 			}
 		}
 
+		public async Task<bool> ExistsAsync(string id, CancellationToken ct = default(CancellationToken))
+		{
+			using (await Lock.ReaderLockAsync(ct))
+			{
+				return Entities.ContainsKey(id);
+			}
+		}
+
 		public async Task InsertAsync(T entity, CancellationToken ct = default(CancellationToken))
 		{
 			var allSubscriptions = new List<Subscription<T>>();
@@ -152,19 +160,7 @@ namespace SIL.Machine.WebApi.DataAccess.Memory
 			}
 		}
 
-		private void RemoveSubscription(Subscription<T> subscription)
-		{
-			using (Lock.WriterLock())
-			{
-				var key = (string) subscription.Key;
-				ISet<Subscription<T>> subscriptions = _idSubscriptions[key];
-				subscriptions.Remove(subscription);
-				if (subscriptions.Count == 0)
-					_idSubscriptions.Remove(key);
-			}
-		}
-
-		private T DeleteEntity(string id, IList<Subscription<T>> allSubscriptions)
+		protected T DeleteEntity(string id, IList<Subscription<T>> allSubscriptions)
 		{
 			if (Entities.TryGetValue(id, out T oldEntity))
 			{
@@ -178,6 +174,24 @@ namespace SIL.Machine.WebApi.DataAccess.Memory
 			return null;
 		}
 
+		protected void SendToSubscribers(IList<Subscription<T>> allSubscriptions, EntityChangeType type, T entity)
+		{
+			foreach (Subscription<T> subscription in allSubscriptions)
+				subscription.HandleChange(new EntityChange<T>(type, entity.Clone()));
+		}
+
+		private void RemoveSubscription(Subscription<T> subscription)
+		{
+			using (Lock.WriterLock())
+			{
+				var key = (string) subscription.Key;
+				ISet<Subscription<T>> subscriptions = _idSubscriptions[key];
+				subscriptions.Remove(subscription);
+				if (subscriptions.Count == 0)
+					_idSubscriptions.Remove(key);
+			}
+		}
+
 		private void CheckForConcurrencyConflict(T entity)
 		{
 			if (!Entities.TryGetValue(entity.Id, out T internalEntity))
@@ -185,12 +199,6 @@ namespace SIL.Machine.WebApi.DataAccess.Memory
 
 			if (entity.Revision != internalEntity.Revision)
 				throw new ConcurrencyConflictException("The entity has been updated.");
-		}
-
-		private void SendToSubscribers(IList<Subscription<T>> allSubscriptions, EntityChangeType type, T entity)
-		{
-			foreach (Subscription<T> subscription in allSubscriptions)
-				subscription.HandleChange(new EntityChange<T>(type, entity.Clone()));
 		}
 
 		private void GetIdSubscriptions(string id, IList<Subscription<T>> allSubscriptions)
