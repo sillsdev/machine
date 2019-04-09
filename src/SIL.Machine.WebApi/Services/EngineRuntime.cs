@@ -261,7 +261,7 @@ namespace SIL.Machine.WebApi.Services
 			return Task.FromResult(new HybridTranslationEngine(smtEngine, ruleEngine));
 		}
 
-		private async Task BuildAsync(IReadOnlyCollection<string> projects, IJobCancellationToken jobToken)
+		private async Task BuildAsync(Engine engine, IBuildHandler buildHandler, IJobCancellationToken jobToken)
 		{
 			Build build = null;
 			ISmtBatchTrainer trainer = null;
@@ -276,6 +276,7 @@ namespace SIL.Machine.WebApi.Services
 					if (build == null)
 						return;
 
+					await buildHandler.OnStarted(new BuildContext(engine, build));
 					_logger.LogInformation("Build started ({0})", _engineId);
 					stopwatch.Start();
 
@@ -285,8 +286,10 @@ namespace SIL.Machine.WebApi.Services
 						await _builds.UpdateAsync(build);
 					}
 
-					ITextCorpus sourceCorpus = await _textCorpusFactory.CreateAsync(projects, TextCorpusType.Source);
-					ITextCorpus targetCorpus = await _textCorpusFactory.CreateAsync(projects, TextCorpusType.Target);
+					ITextCorpus sourceCorpus = await _textCorpusFactory.CreateAsync(engine.Projects,
+						TextCorpusType.Source);
+					ITextCorpus targetCorpus = await _textCorpusFactory.CreateAsync(engine.Projects,
+						TextCorpusType.Target);
 					trainer = _smtModel.Value.CreateBatchTrainer(Preprocessors.Lowercase, sourceCorpus,
 						Preprocessors.Lowercase, targetCorpus);
 
@@ -308,7 +311,7 @@ namespace SIL.Machine.WebApi.Services
 					foreach ((IReadOnlyList<string> source, IReadOnlyList<string> target) in _trainedSegments)
 						item.Object.TrainSegment(source, target);
 
-					await _engines.ConcurrentUpdateAsync(_engineId, e =>
+					engine = await _engines.ConcurrentUpdateAsync(engine, e =>
 						{
 							e.Confidence = trainer.Stats.TranslationModelBleu;
 							e.TrainedSegmentCount = trainer.Stats.TrainedSegmentCount + _trainedSegments.Count;
@@ -322,6 +325,7 @@ namespace SIL.Machine.WebApi.Services
 				stopwatch.Stop();
 				_logger.LogInformation("Build completed in {0}ms ({1})", stopwatch.Elapsed.TotalMilliseconds,
 					_engineId);
+				await buildHandler.OnCompleted(new BuildContext(engine, build));
 			}
 			catch (OperationCanceledException)
 			{
@@ -340,6 +344,7 @@ namespace SIL.Machine.WebApi.Services
 				build.DateFinished = DateTime.UtcNow;
 				await _builds.UpdateAsync(build);
 				_logger.LogInformation("Build canceled ({1})", _engineId);
+				await buildHandler.OnCanceled(new BuildContext(engine, build));
 			}
 			catch (Exception e)
 			{
@@ -350,6 +355,7 @@ namespace SIL.Machine.WebApi.Services
 					build.DateFinished = DateTime.UtcNow;
 					await _builds.UpdateAsync(build);
 					_logger.LogError(0, e, "Build faulted ({0})", _engineId);
+					await buildHandler.OnFailed(new BuildContext(engine, build));
 				}
 				throw;
 			}
@@ -371,10 +377,12 @@ namespace SIL.Machine.WebApi.Services
 		internal class BuildRunner
 		{
 			private readonly IEngineServiceInternal _engineService;
+			private readonly IBuildHandler _buildHandler;
 
-			public BuildRunner(IEngineServiceInternal engineService)
+			public BuildRunner(IEngineServiceInternal engineService, IBuildHandler buildHandler)
 			{
 				_engineService = engineService;
+				_buildHandler = buildHandler;
 			}
 
 			[AutomaticRetry(Attempts = 0)]
@@ -385,7 +393,7 @@ namespace SIL.Machine.WebApi.Services
 				if (engine == null)
 					return;
 
-				await runtime.BuildAsync(engine.Projects, jobToken);
+				await runtime.BuildAsync(engine, _buildHandler, jobToken);
 			}
 		}
 	}

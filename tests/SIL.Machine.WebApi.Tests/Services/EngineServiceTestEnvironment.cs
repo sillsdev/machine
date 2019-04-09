@@ -45,6 +45,7 @@ namespace SIL.Machine.WebApi.Services
 		public ISmtBatchTrainer BatchTrainer { get; private set; }
 		public IInteractiveSmtModel SmtModel { get; private set; }
 		public EngineOptions EngineOptions { get; }
+		public IBuildHandler BuildHandler { get; } = new BuildHandler();
 
 		public EngineRuntime GetRuntime(string engineId)
 		{
@@ -246,7 +247,7 @@ namespace SIL.Machine.WebApi.Services
 			public override object ActivateJob(Type jobType)
 			{
 				if (jobType == typeof(EngineRuntime.BuildRunner))
-					return new EngineRuntime.BuildRunner(_env.Service);
+					return new EngineRuntime.BuildRunner(_env.Service, _env.BuildHandler);
 				return base.ActivateJob(jobType);
 			}
 		}

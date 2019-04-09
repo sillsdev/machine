@@ -23,6 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
 			services.AddSingleton<IEngineServiceInternal, EngineService>();
 			services.AddSingleton<IEngineService>(sp => sp.GetService<IEngineServiceInternal>());
 			services.AddTransient<EngineRuntime>();
+			services.AddSingleton<IBuildHandler, BuildHandler>();
 
 			services.Configure<MvcOptions>(o =>
 				{

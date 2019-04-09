@@ -10,7 +10,7 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="Sandwych.QuickGraph.Core" Version="1.0.0" />
-    <PackageReference Include="SIL.Scripture" Version="4.2.0-894" />
+    <PackageReference Include="SIL.Scripture" Version="6.0.0-212" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
