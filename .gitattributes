@@ -3,4 +3,4 @@
 *.js eol=lf
 *.json eol=lf
 build/machine-web-api.service eol=lf
-package.json eol=lf
+*.yml eol=lf

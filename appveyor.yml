@@ -5,10 +5,10 @@ branches:
   only:
   - master
 skip_branch_with_pr: true
-image: Visual Studio 2017
+image: Visual Studio 2019
 configuration: Release
 environment:
-  nodejs_version: 8.11.4
+  nodejs_version: "10"
 install:
 - ps: Install-Product node $env:nodejs_version
 - ps: '"//registry.npmjs.org/:_authToken=$env:npm_auth_token`n" | out-file "$env:userprofile\.npmrc" -Encoding ASCII'
