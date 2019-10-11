@@ -48,10 +48,10 @@ deploy_script:
 - ps: |
     if ($env:publish_packages -eq "true")
     {
-        dotnet pack src\SIL.Machine\SIL.Machine.csproj -c Release -o ..\..\artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
-        dotnet pack src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj -c Release -o ..\..\artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
-        dotnet pack src\SIL.Machine.WebApi\SIL.Machine.WebApi.csproj -c Release -o ..\..\artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
-        dotnet pack src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj -c Release -o ..\..\artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
+        dotnet pack src\SIL.Machine\SIL.Machine.csproj -c Release -o artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
+        dotnet pack src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj -c Release -o artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
+        dotnet pack src\SIL.Machine.WebApi\SIL.Machine.WebApi.csproj -c Release -o artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
+        dotnet pack src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj -c Release -o artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
 
         Get-ChildItem artifacts\*.* | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
 
