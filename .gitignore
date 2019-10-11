@@ -39,11 +39,9 @@ lib/
 *.VC.opendb
 *.lock.json
 .vs
-**/Bridge/output/
 appsettings.user.json
 artifacts
 launchSettings.json
 !**/Tes/release/
 thot-new-model.zip
-node_modules/
 *.tgz
