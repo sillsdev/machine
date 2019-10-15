@@ -8,5 +8,8 @@
 		<Authors>SIL</Authors>
 		<Product>Machine</Product>
 		<Copyright>Copyright © SIL 2019</Copyright>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/sillsdev/machine</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/sillsdev/machine</RepositoryUrl>
 	</PropertyGroup>
 </Project>

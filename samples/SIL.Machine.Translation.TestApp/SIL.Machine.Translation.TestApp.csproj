@@ -102,7 +102,7 @@
       <Version>5.4.1.1</Version>
     </PackageReference>
     <PackageReference Include="Thot">
-      <Version>1.0.0-80</Version>
+      <Version>3.2.0</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
