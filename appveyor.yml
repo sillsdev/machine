@@ -3,49 +3,36 @@ pull_requests:
   do_not_increment_build_number: true
 branches:
   only:
-  - master
+    - master
 skip_branch_with_pr: true
 image: Visual Studio 2019
 configuration: Release
 nuget:
   disable_publish_on_pr: true
 before_build:
-- ps: nuget restore Machine.sln
+  - ps: nuget restore Machine.sln
 build:
   project: Machine.sln
   verbosity: minimal
-after_build:
-- ps: |
-    if ($env:APPVEYOR_REPO_TAG -eq "true")
-    {
-        dotnet pack src\SIL.Machine\SIL.Machine.csproj -c Release -o artifacts
-        dotnet pack src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj -c Release -o artifacts
-        dotnet pack src\SIL.Machine.WebApi\SIL.Machine.WebApi.csproj -c Release -o artifacts
-        dotnet pack src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj -c Release -o artifacts
-    }
-    else
-    {
-        dotnet pack src\SIL.Machine\SIL.Machine.csproj -c Release -o artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
-        dotnet pack src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj -c Release -o artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
-        dotnet pack src\SIL.Machine.WebApi\SIL.Machine.WebApi.csproj -c Release -o artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
-        dotnet pack src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj -c Release -o artifacts --version-suffix $env:APPVEYOR_BUILD_NUMBER
-    }
-    Get-ChildItem artifacts\*.* | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
 test_script:
-- ps: |
-    $failed = $FALSE
-    dotnet test --no-build -c Release --test-adapter-path:. --logger:Appveyor tests\SIL.Machine.Tests\SIL.Machine.Tests.csproj
-    if (-not $?) { $failed = $TRUE }
-    dotnet test --no-build -c Release --test-adapter-path:. --logger:Appveyor tests\SIL.Machine.Morphology.HermitCrab.Tests\SIL.Machine.Morphology.HermitCrab.Tests.csproj
-    if (-not $?) { $failed = $TRUE }
-    dotnet test --no-build -c Release --test-adapter-path:. --logger:Appveyor tests\SIL.Machine.Translation.Thot.Tests\SIL.Machine.Translation.Thot.Tests.csproj
-    if (-not $?) { $failed = $TRUE }
-    dotnet test --no-build -c Release --test-adapter-path:. --logger:Appveyor tests\SIL.Machine.WebApi.Tests\SIL.Machine.WebApi.Tests.csproj
-    if (-not $?) { $failed = $TRUE }
-    if ($failed) { throw "The unit tests failed." }
-deploy:
-  provider: NuGet
-  api_key:
-    secure: CR5WDBdLJqm4B/wttUT8C7ykbBIMeqlOleqIoBWTHtQ5+s7rr+xm55KiH3/Mwl34
-  on:
-    APPVEYOR_REPO_TAG: true
+  - ps: |
+      $failed = $FALSE
+      dotnet test --no-build -c Release --test-adapter-path:. --logger:Appveyor tests\SIL.Machine.Tests\SIL.Machine.Tests.csproj
+      if (-not $?) { $failed = $TRUE }
+      dotnet test --no-build -c Release --test-adapter-path:. --logger:Appveyor tests\SIL.Machine.Morphology.HermitCrab.Tests\SIL.Machine.Morphology.HermitCrab.Tests.csproj
+      if (-not $?) { $failed = $TRUE }
+      dotnet test --no-build -c Release --test-adapter-path:. --logger:Appveyor tests\SIL.Machine.Translation.Thot.Tests\SIL.Machine.Translation.Thot.Tests.csproj
+      if (-not $?) { $failed = $TRUE }
+      dotnet test --no-build -c Release --test-adapter-path:. --logger:Appveyor tests\SIL.Machine.WebApi.Tests\SIL.Machine.WebApi.Tests.csproj
+      if (-not $?) { $failed = $TRUE }
+      if ($failed) { throw "The unit tests failed." }
+deploy_script:
+  - ps: |
+      if ($env:APPVEYOR_REPO_TAG -eq "true")
+      {
+          dotnet pack src\SIL.Machine\SIL.Machine.csproj -c Release -o artifacts
+          dotnet pack src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj -c Release -o artifacts
+          dotnet pack src\SIL.Machine.WebApi\SIL.Machine.WebApi.csproj -c Release -o artifacts
+          dotnet pack src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj -c Release -o artifacts
+          dotnet nuget push artifacts\*.nupkg -k $env:NUGET_API_KEY -s https://api.nuget.org/v3/index.json
+      }
