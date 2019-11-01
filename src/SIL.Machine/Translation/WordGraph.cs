@@ -1,5 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
+using SIL.Extensions;
 using SIL.Machine.Statistics;
 
 namespace SIL.Machine.Translation
@@ -128,6 +132,144 @@ namespace SIL.Machine.Translation
 			return GetBestPathFromFinalStateToState(state).Reverse();
 		}
 
+		public void ToGraphViz(TextWriter writer)
+		{
+			writer.WriteLine("digraph G {");
+
+			for (int i = 0; i < StateCount; i++)
+			{
+				writer.Write("  {0} [shape=\"{1}\", color=\"{2}\"", i, i == 0 ? "diamond" : "circle",
+					i == 0 ? "green" : FinalStates.Contains(i) ? "red" : "black");
+				if (FinalStates.Contains(i))
+					writer.Write(", peripheries=\"2\"");
+				writer.WriteLine("];");
+			}
+
+			foreach (WordGraphArc arc in Arcs)
+			{
+				writer.Write("  {0} -> {1} [label=\"{2}", arc.PrevState, arc.NextState,
+					string.Join(" ", arc.Words).Replace("\"", "\\\""));
+				writer.WriteLine("\"];");
+			}
+
+			writer.WriteLine("}");
+		}
+
+		/// <summary>
+		/// Removes redundant arcs from the word graph.
+		/// TODO: This seems to affect the results of an interactive translation session, so don't use it yet.
+		/// </summary>
+		/// <returns>The optimized word graph.</returns>
+		public WordGraph Optimize()
+		{
+			var dfaArcs = new List<WordGraphArc>();
+			var dfaStates = new DfaStateCollection();
+			var dfaFinalStates = new HashSet<int>();
+			int nextDfaStateIndex = 1;
+			var unmarkedStates = new Queue<DfaState>();
+
+			unmarkedStates.Enqueue(new DfaState(0, new[] { new NfaState(0) }));
+
+			while (unmarkedStates.Count > 0)
+			{
+				DfaState dfaState = unmarkedStates.Dequeue();
+				var candidateArcs = new Dictionary<string, DfaArc>();
+				foreach ((int arcIndex, NfaState nfaState) in GetArcIndices(dfaState))
+				{
+					WordGraphArc arc = Arcs[arcIndex];
+					int nextWordIndex = nfaState.WordIndex + 1;
+					DfaArc candidateArc = candidateArcs.GetOrCreate(arc.Words[nextWordIndex]);
+					if (nextWordIndex == arc.Words.Count - 1)
+					{
+						candidateArc.NfaStates.Add(new NfaState(arc.NextState));
+
+						Path path;
+						if (dfaState.Paths.TryGetValue(nfaState.StateIndex, out Path prevPath))
+						{
+							path = new Path(prevPath.StartState, prevPath.Arcs.Concat(arcIndex),
+								LogSpace.Multiply(prevPath.Score, arc.Score));
+						}
+						else
+						{
+							path = new Path(dfaState.Index, new[] { arcIndex }, arc.Score);
+						}
+
+						if (!candidateArc.Paths.TryGetValue(arc.NextState, out Path otherPath)
+							|| path.Score > otherPath.Score)
+						{
+							candidateArc.Paths[arc.NextState] = path;
+						}
+					}
+					else
+					{
+						candidateArc.NfaStates.Add(new NfaState(nfaState.StateIndex, arcIndex, nextWordIndex));
+						candidateArc.IsNextSubState = true;
+
+						if (dfaState.Paths.TryGetValue(nfaState.StateIndex, out Path prevPath))
+							candidateArc.Paths[nfaState.StateIndex] = prevPath;
+					}
+				}
+
+				foreach (DfaArc candidateArc in candidateArcs.Values)
+				{
+					if (!dfaStates.TryGetValue(candidateArc.NfaStates, out DfaState nextDfaState))
+					{
+						int stateIndex = candidateArc.IsNextSubState ? dfaState.Index : nextDfaStateIndex++;
+						nextDfaState = new DfaState(stateIndex, candidateArc.NfaStates);
+						if (candidateArc.IsNextSubState)
+						{
+							foreach (KeyValuePair<int, Path> kvp in candidateArc.Paths)
+								nextDfaState.Paths.Add(kvp);
+						}
+						else
+						{
+							dfaStates.Add(nextDfaState);
+						}
+						unmarkedStates.Enqueue(nextDfaState);
+					}
+
+					bool isFinal = nextDfaState.NfaStates.Where(s => !s.IsSubState)
+						.Any(s => FinalStates.Contains(s.StateIndex));
+					if ((isFinal || !candidateArc.IsNextSubState) && candidateArc.Paths.Count > 0)
+					{
+						Path bestPath = candidateArc.Paths.Values.MaxBy(p => p.Score);
+
+						int curState = bestPath.StartState;
+						for (int i = 0; i < bestPath.Arcs.Count; i++)
+						{
+							WordGraphArc nfaArc = Arcs[bestPath.Arcs[i]];
+							int nextState = !candidateArc.IsNextSubState && i == bestPath.Arcs.Count - 1
+								? nextDfaState.Index
+								: nextDfaStateIndex++;
+							dfaArcs.Add(new WordGraphArc(curState, nextState, nfaArc.Score, nfaArc.Words,
+								nfaArc.Alignment, nfaArc.SourceSegmentRange, nfaArc.IsUnknown, nfaArc.WordConfidences));
+							curState = nextState;
+						}
+						if (isFinal)
+							dfaFinalStates.Add(curState);
+					}
+				}
+			}
+
+			return new WordGraph(dfaArcs, dfaFinalStates, InitialStateScore);
+		}
+
+		private IEnumerable<(int ArcIndex, NfaState State)> GetArcIndices(DfaState dfaState)
+		{
+			foreach (NfaState nfaState in dfaState.NfaStates)
+			{
+				if (nfaState.IsSubState)
+				{
+					yield return (nfaState.ArcIndex, nfaState);
+				}
+				else
+				{
+					foreach (int arcIndex in GetNextArcIndices(nfaState.StateIndex))
+						yield return (arcIndex, nfaState);
+				}
+			}
+		}
+
 		private IEnumerable<WordGraphArc> GetBestPathFromFinalStateToState(int state)
 		{
 			double[] prevScores;
@@ -182,6 +324,116 @@ namespace SIL.Machine.Translation
 		{
 			public List<int> PrevArcIndices { get; } = new List<int>();
 			public List<int> NextArcIndices { get; } = new List<int>();
+		}
+
+		private class NfaState : IEquatable<NfaState>
+		{
+			public NfaState(int stateIndex, int arcIndex = -1, int wordIndex = -1)
+			{
+				StateIndex = stateIndex;
+				ArcIndex = arcIndex;
+				WordIndex = wordIndex;
+			}
+
+			public int StateIndex { get; }
+			public int ArcIndex { get; }
+			public int WordIndex { get; }
+			public bool IsSubState => ArcIndex != -1;
+
+			public override bool Equals(object obj)
+			{
+				return obj is NfaState state && Equals(state);
+			}
+
+			public bool Equals(NfaState other)
+			{
+				return other != null && StateIndex == other.StateIndex && ArcIndex == other.ArcIndex
+					&& WordIndex == other.WordIndex;
+			}
+
+			public override int GetHashCode()
+			{
+				var hashCode = -1525131978;
+				hashCode = hashCode * -1521134295 + StateIndex.GetHashCode();
+				hashCode = hashCode * -1521134295 + ArcIndex.GetHashCode();
+				hashCode = hashCode * -1521134295 + WordIndex.GetHashCode();
+				return hashCode;
+			}
+		}
+
+		private class DfaState
+		{
+			public DfaState(int index, IEnumerable<NfaState> nfaStates)
+			{
+				Index = index;
+				NfaStates = new HashSet<NfaState>(nfaStates);
+			}
+
+			public int Index { get; }
+			public ISet<NfaState> NfaStates { get; }
+			public IDictionary<int, Path> Paths { get; } = new Dictionary<int, Path>();
+		}
+
+		private class Path
+		{
+			public Path(int startState, IEnumerable<int> arcs, double score)
+			{
+				StartState = startState;
+				Arcs = arcs.ToArray();
+				Score = score;
+			}
+
+			public int StartState { get; }
+			public IList<int> Arcs { get; }
+			public double Score { get; }
+		}
+
+		private class DfaArc
+		{
+			public ISet<NfaState> NfaStates { get; } = new HashSet<NfaState>();
+			public IDictionary<int, Path> Paths { get; } = new Dictionary<int, Path>();
+			public bool IsNextSubState { get; set; }
+		}
+
+		private class DfaStateCollection : KeyedCollection<ISet<NfaState>, DfaState>
+		{
+			public DfaStateCollection() : base(new SetEqualityComparer<NfaState>())
+			{
+			}
+
+			public bool TryGetValue(ISet<NfaState> key, out DfaState item)
+			{
+				if (Contains(key))
+				{
+					item = this[key];
+					return true;
+				}
+				item = null;
+				return false;
+			}
+
+			protected override ISet<NfaState> GetKeyForItem(DfaState item)
+			{
+				return item.NfaStates;
+			}
+		}
+
+		private class SetEqualityComparer<T> : IEqualityComparer<ISet<T>>
+		{
+			public bool Equals(ISet<T> x, ISet<T> y)
+			{
+				if (x == null && y == null)
+					return true;
+				else if (x == null || y == null)
+					return false;
+
+				return x.SetEquals(y);
+			}
+
+			public int GetHashCode(ISet<T> obj)
+			{
+				return obj.Aggregate(0, (code, item) => code ^ item.GetHashCode());
+			}
 		}
 	}
 }
