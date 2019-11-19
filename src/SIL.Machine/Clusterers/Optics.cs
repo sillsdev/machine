@@ -8,18 +8,14 @@ namespace SIL.Machine.Clusterers
 	public class Optics<T>
 	{
 		private readonly Func<T, IEnumerable<Tuple<T, double>>> _getNeighbors;
-		private readonly int _minPoints;
 
 		public Optics(Func<T, IEnumerable<Tuple<T, double>>> getNeighbors, int minPoints)
 		{
 			_getNeighbors = getNeighbors;
-			_minPoints = minPoints;
+			MinPoints = minPoints;
 		}
 
-		public int MinPoints
-		{
-			get { return _minPoints; }
-		}
+		public int MinPoints { get; }
 
 		public IList<ClusterOrderEntry<T>> ClusterOrder(IEnumerable<T> dataObjects)
 		{
@@ -36,23 +32,39 @@ namespace SIL.Machine.Clusterers
 		private void ExpandClusterOrder(List<ClusterOrderEntry<T>> clusterOrder, HashSet<T> processed, T dataObject)
 		{
 			var priorityQueue = new PriorityQueue<double, T>();
-			priorityQueue.Enqueue(double.PositiveInfinity, dataObject);
+			var enqueuedNodes = new Dictionary<T, PriorityQueueNode<double, T>>();
+			var dataObjectNode = new PriorityQueueNode<double, T>(double.PositiveInfinity, dataObject);
+			enqueuedNodes[dataObject] = dataObjectNode;
+			priorityQueue.Enqueue(dataObjectNode);
 			while (!priorityQueue.IsEmpty)
 			{
 				PriorityQueueNode<double, T> node = priorityQueue.Dequeue();
+				enqueuedNodes.Remove(node.Item);
 				double reachability = node.Priority;
 				T current = node.Item;
 				processed.Add(current);
 
 				List<Tuple<T, double>> neighbors = _getNeighbors(current).OrderBy(n => n.Item2).ToList();
 				double coreDistance = double.PositiveInfinity;
-				if (neighbors.Count >= _minPoints)
+				if (neighbors.Count >= MinPoints)
 				{
-					coreDistance = neighbors[_minPoints - 1].Item2;
+					coreDistance = neighbors[MinPoints - 1].Item2;
 					foreach (Tuple<T, double> neighbor in neighbors)
 					{
 						if (!processed.Contains(neighbor.Item1))
-							priorityQueue.Enqueue(Math.Max(neighbor.Item2, coreDistance), neighbor.Item1);
+						{
+							double priority = Math.Max(neighbor.Item2, coreDistance);
+							if (enqueuedNodes.TryGetValue(neighbor.Item1, out PriorityQueueNode<double, T> neighborNode))
+							{
+								neighborNode.Priority = priority;
+								priorityQueue.UpdatePriority(neighborNode);
+							} else
+							{
+								neighborNode = new PriorityQueueNode<double, T>(priority, neighbor.Item1);
+								enqueuedNodes[neighbor.Item1] = neighborNode;
+								priorityQueue.Enqueue(neighborNode);
+							}
+						}
 					}
 				}
 
