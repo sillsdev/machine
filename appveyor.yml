@@ -34,5 +34,5 @@ deploy_script:
           dotnet pack src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj -c Release -o artifacts
           dotnet pack src\SIL.Machine.WebApi\SIL.Machine.WebApi.csproj -c Release -o artifacts
           dotnet pack src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj -c Release -o artifacts
-          dotnet nuget push artifacts\*.nupkg -k $env:NUGET_API_KEY -s https://api.nuget.org/v3/index.json
+          dotnet nuget push artifacts\*.nupkg -n true -k $env:NUGET_API_KEY -s https://api.nuget.org/v3/index.json
       }
