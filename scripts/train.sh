@@ -45,7 +45,7 @@ do
 	sizes+=("$maxSize")
 done
 
-command="$translatorCmd train -q -s usx,$rootDir/corpora/$sourceCorpus -t usx,$rootDir/corpora/$targetCorpus $excludeParam -st latin -tt latin $rootDir/engines/$langPair/{1}/tuned.cfg"
+command="$translatorCmd train -q -s usx,$rootDir/corpora/$sourceCorpus -t usx,$rootDir/corpora/$targetCorpus $excludeParam -st latin -tt latin -m {1} $rootDir/engines/$langPair/{1}/tuned.cfg"
 
 parallel --no-notice --bar --header : --results output -q $command ::: $langPair ${sizes[@]} ::: train 2>&1 >/dev/null
 
