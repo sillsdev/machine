@@ -42,13 +42,15 @@ namespace SIL.Machine.Corpora
 						.Where(pubElem => (bool?) pubElem.Attribute("default") ?? false).Elements("structure")
 						.Elements("content"))
 					{
-						AddText(new DblBundleText(wordTokenizer, (string) contentElem.Attribute("role"), fileName,
-							(string) contentElem.Attribute("src"), Versification));
+						AddText(new DblBundleText(wordTokenizer, (string)contentElem.Attribute("role"), fileName,
+							(string)contentElem.Attribute("src"), Versification));
 					}
 				}
 			}
 		}
 
 		public ScrVers Versification { get; } = ScrVers.English;
+
+		public override IEnumerable<IText> Texts => TextDictionary.Values.OrderBy(t => Canon.BookIdToNumber(t.Id));
 	}
 }

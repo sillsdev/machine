@@ -57,5 +57,24 @@ namespace SIL.Machine.Tokenization
 			Assert.That(tokenizer.TokenizeToStrings("\"This is a test.\""),
 				Is.EqualTo(new[] { "\"", "This", "is", "a", "test", ".", "\"" }));
 		}
+
+		[Test]
+		public void Tokenize_ApostropheNotAsSingleQuote_ReturnsTokens()
+		{
+			var tokenizer = new LatinWordTokenizer();
+			Assert.That(tokenizer.TokenizeToStrings("“Moses' cat said ‘Meow’ to the dog.”"),
+				Is.EqualTo(new[] { "“", "Moses'", "cat", "said", "‘", "Meow", "’", "to", "the", "dog", ".", "”" }));
+
+			Assert.That(tokenizer.TokenizeToStrings("i ha''on ot ano'."),
+				Is.EqualTo(new[] { "i", "ha''on", "ot", "ano'", "." }));
+		}
+
+		[Test]
+		public void Tokenize_ApostropheAsSingleQuote_ReturnsTokens()
+		{
+			var tokenizer = new LatinWordTokenizer { TreatApostropheAsSingleQuote = true };
+			Assert.That(tokenizer.TokenizeToStrings("'Moses's cat said 'Meow' to the dog.'"),
+				Is.EqualTo(new[] { "'", "Moses's", "cat", "said", "'", "Meow", "'", "to", "the", "dog", ".", "'" }));
+		}
 	}
 }

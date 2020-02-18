@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace SIL.Machine.Corpora
 {
@@ -77,9 +78,34 @@ namespace SIL.Machine.Corpora
 			return marker;
 		}
 
+		private static IEnumerable<string> GetEmbeddedStylesheet(string fileName)
+		{
+			using (var reader = new StreamReader(Assembly.GetExecutingAssembly()
+				.GetManifestResourceStream("SIL.Machine.Corpora." + fileName)))
+			{
+				string line;
+				while ((line = reader.ReadLine()) != null)
+					yield return line;
+			}
+		}
+
 		private void Parse(string stylesheetFileName)
 		{
-			List<StylesheetEntry> entries = SplitStylesheet(File.ReadAllLines(stylesheetFileName));
+			IEnumerable<string> lines;
+			if (File.Exists(stylesheetFileName))
+			{
+				lines = File.ReadAllLines(stylesheetFileName);
+			}
+			else
+			{
+				string fileName = Path.GetFileName(stylesheetFileName);
+				if (fileName == "usfm.sty" || fileName == "usfm_sb.sty")
+					lines = GetEmbeddedStylesheet(fileName);
+				else
+					throw new ArgumentException("The stylesheet does not exist.", nameof(stylesheetFileName));
+			}
+
+			List<StylesheetEntry> entries = SplitStylesheet(lines);
 
 			HashSet<string> foundStyles = new HashSet<string>();
 			for (int i = 0; i < entries.Count; ++i)

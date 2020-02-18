@@ -8,6 +8,16 @@
   <Import Project="../AssemblyInfo.props" />
 
   <ItemGroup>
+    <None Remove="Corpora\usfm.sty" />
+    <None Remove="Corpora\usfm_sb.sty" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Corpora\usfm.sty" />
+    <EmbeddedResource Include="Corpora\usfm_sb.sty" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Sandwych.QuickGraph.Core" Version="1.0.0" />
     <PackageReference Include="SIL.Scripture" Version="7.0.0" />

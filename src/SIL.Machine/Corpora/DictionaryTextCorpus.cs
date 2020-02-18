@@ -5,7 +5,6 @@ namespace SIL.Machine.Corpora
 {
 	public class DictionaryTextCorpus : ITextCorpus
 	{
-		private readonly Dictionary<string, IText> _texts;
 
 		public DictionaryTextCorpus(params IText[] texts)
 			: this((IEnumerable<IText>) texts)
@@ -14,24 +13,26 @@ namespace SIL.Machine.Corpora
 
 		public DictionaryTextCorpus(IEnumerable<IText> texts)
 		{
-			_texts = texts.ToDictionary(t => t.Id);
+			TextDictionary = texts.ToDictionary(t => t.Id);
 		}
 
-		public IEnumerable<IText> Texts => _texts.Values.OrderBy(t => t.Id);
+		public virtual IEnumerable<IText> Texts => TextDictionary.Values.OrderBy(t => t.Id);
+
+		protected Dictionary<string, IText> TextDictionary { get; }
 
 		public bool TryGetText(string id, out IText text)
 		{
-			return _texts.TryGetValue(id, out text);
+			return TextDictionary.TryGetValue(id, out text);
 		}
 
 		public IText GetText(string id)
 		{
-			return _texts[id];
+			return TextDictionary[id];
 		}
 
 		protected void AddText(IText text)
 		{
-			_texts[text.Id] = text;
+			TextDictionary[text.Id] = text;
 		}
 	}
 }

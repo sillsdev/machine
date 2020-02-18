@@ -2,6 +2,7 @@
 using SIL.Extensions;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
+using SIL.Scripture;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -170,7 +171,7 @@ namespace SIL.Machine.Translation
 		private static bool ValidateTextCorpusOption(string value, out string type, out string path)
 		{
 			if (ValidateCorpusOption(value, out type, out path))
-				return string.IsNullOrEmpty(type) || type.IsOneOf("dbl", "usx", "text");
+				return string.IsNullOrEmpty(type) || type.IsOneOf("dbl", "usx", "text", "pt");
 			return false;
 		}
 
@@ -183,6 +184,9 @@ namespace SIL.Machine.Translation
 
 				case "usx":
 					return new UsxFileTextCorpus(wordTokenizer, path);
+
+				case "pt":
+					return new ParatextTextCorpus(wordTokenizer, path);
 
 				case "text":
 				default:
@@ -216,7 +220,7 @@ namespace SIL.Machine.Translation
 
 		private static bool ValidateWordTokenizerOption(string value)
 		{
-			return string.IsNullOrEmpty(value) || value.IsOneOf("latin", "whitespace");
+			return string.IsNullOrEmpty(value) || value.IsOneOf("latin", "whitespace", "null");
 		}
 
 		private static StringTokenizer CreateWordTokenizer(string type)
@@ -226,6 +230,9 @@ namespace SIL.Machine.Translation
 				case "latin":
 					return new LatinWordTokenizer();
 
+				case "null":
+					return new NullTokenizer();
+
 				case "whitespace":
 				default:
 					return new WhitespaceTokenizer();
@@ -234,8 +241,20 @@ namespace SIL.Machine.Translation
 
 		private static ISet<string> GetTexts(IEnumerable<string> values)
 		{
-			return new HashSet<string>(values.SelectMany(value =>
-				value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries)));
+			var ids = new HashSet<string>();
+			foreach (string value in values)
+			{
+				foreach (string id in value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries))
+				{
+					if (id == "*NT*")
+						ids.UnionWith(Canon.AllBookIds.Where(i => Canon.IsBookNT(i)));
+					else if (id == "*OT*")
+						ids.UnionWith(Canon.AllBookIds.Where(i => Canon.IsBookOT(i)));
+					else
+						ids.Add(id);
+				}
+			}
+			return ids;
 		}
 	}
 }

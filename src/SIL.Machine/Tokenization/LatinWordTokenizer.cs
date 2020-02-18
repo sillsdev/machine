@@ -8,7 +8,7 @@ namespace SIL.Machine.Tokenization
 	public class LatinWordTokenizer : WhitespaceTokenizer
 	{
 		private static readonly Regex InnerWordPunctRegex = new Regex(
-			"\\G[&'\\-.:=?@\xAD\xB7\u2010\u2011\u2019\u2027]|_+");
+			"\\G[&\\-.:=?@\xAD\xB7\u2010\u2011\u2019\u2027]|['_]+");
 		private readonly HashSet<string> _abbreviations;
 
 		public LatinWordTokenizer()
@@ -20,6 +20,8 @@ namespace SIL.Machine.Tokenization
 		{
 			_abbreviations = new HashSet<string>(abbreviations.Select(ToLower));
 		}
+
+		public bool TreatApostropheAsSingleQuote = false;
 
 		public override IEnumerable<Range<int>> Tokenize(string data, Range<int> range)
 		{
@@ -38,8 +40,16 @@ namespace SIL.Machine.Tokenization
 						}
 						else if (innerWordPunct != -1)
 						{
-							yield return Range<int>.Create(wordStart, innerWordPunct);
-							yield return Range<int>.Create(innerWordPunct, i);
+							string innerPunctStr = data.Substring(innerWordPunct, i - innerWordPunct);
+							if (innerPunctStr == "'" && !TreatApostropheAsSingleQuote)
+							{
+								yield return Range<int>.Create(wordStart, i);
+							}
+							else
+							{
+								yield return Range<int>.Create(wordStart, innerWordPunct);
+								yield return Range<int>.Create(innerWordPunct, i);
+							}
 							wordStart = i;
 						}
 						else
@@ -70,8 +80,9 @@ namespace SIL.Machine.Tokenization
 				{
 					if (innerWordPunct != -1)
 					{
-						if (data.Substring(innerWordPunct, charRange.End - innerWordPunct) == "."
-							&& _abbreviations.Contains(ToLower(data.Substring(wordStart, innerWordPunct - wordStart))))
+						string innerPunctStr = data.Substring(innerWordPunct, charRange.End - innerWordPunct);
+						if ((innerPunctStr == "." && IsAbbreviation(data, wordStart, innerWordPunct))
+							|| (innerPunctStr == "'" && !TreatApostropheAsSingleQuote))
 						{
 							yield return Range<int>.Create(wordStart, charRange.End);
 						}
@@ -91,11 +102,12 @@ namespace SIL.Machine.Tokenization
 
 		private string ToLower(string str)
 		{
-#if BRIDGE_NET
-			return str.ToLower();
-#else
 			return str.ToLowerInvariant();
-#endif
+		}
+
+		private bool IsAbbreviation(string data, int start, int end)
+		{
+			return _abbreviations.Contains(ToLower(data.Substring(start, end - start)));
 		}
 	}
 }

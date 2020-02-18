@@ -2,10 +2,16 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp3.1;net461</TargetFrameworks>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>SIL.Machine.Translation</RootNamespace>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>translator</ToolCommandName>
     <AssemblyName>translator</AssemblyName>
+    <Description>SIL.Machine.Translator provides a command-line tool for training and evaluating machine translation engines.</Description>
+    <PackageId>SIL.Machine.Translator</PackageId>
   </PropertyGroup>
+
+  <Import Project="../AssemblyInfo.props" />
 
   <ItemGroup>
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.5.1" />

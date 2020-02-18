@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SIL.Machine.Corpora
@@ -24,47 +25,78 @@ namespace SIL.Machine.Corpora
 
 		public ITextAlignmentCollection TextAlignmentCollection { get; }
 
-		public IEnumerable<ParallelTextSegment> Segments
+		public IEnumerable<ParallelTextSegment> Segments => GetSegments();
+
+		public IEnumerable<ParallelTextSegment> GetSegments(bool allSourceSegments = false,
+			bool allTargetSegments = false)
 		{
-			get
+			IEnumerable<TextAlignment> alignments = TextAlignmentCollection?.Alignments
+				?? Enumerable.Empty<TextAlignment>();
+
+			using (IEnumerator<TextSegment> enumerator1 = SourceText.Segments.GetEnumerator())
+			using (IEnumerator<TextSegment> enumerator2 = TargetText.Segments.GetEnumerator())
+			using (IEnumerator<TextAlignment> enumerator3 = alignments.GetEnumerator())
 			{
-				IEnumerable<TextAlignment> alignments = TextAlignmentCollection?.Alignments
-					?? Enumerable.Empty<TextAlignment>();
-
-				using (IEnumerator<TextSegment> enumerator1 = SourceText.Segments.GetEnumerator())
-				using (IEnumerator<TextSegment> enumerator2 = TargetText.Segments.GetEnumerator())
-				using (IEnumerator<TextAlignment> enumerator3 = alignments.GetEnumerator())
+				bool sourceCompleted = !enumerator1.MoveNext();
+				bool targetCompleted = !enumerator2.MoveNext();
+				while (!sourceCompleted && !targetCompleted)
 				{
-					bool completed = !enumerator1.MoveNext() || !enumerator2.MoveNext();
-					while (!completed)
+					int compare1 = _segmentRefComparer.Compare(enumerator1.Current.SegmentRef,
+						enumerator2.Current.SegmentRef);
+					if (compare1 < 0)
 					{
-						int compare1 = _segmentRefComparer.Compare(enumerator1.Current.SegmentRef,
-							enumerator2.Current.SegmentRef);
-						if (compare1 < 0)
+						if (allSourceSegments)
 						{
-							completed = !enumerator1.MoveNext();
-						}
-						else if (compare1 > 0)
-						{
-							completed = !enumerator2.MoveNext();
-						}
-						else
-						{
-							int compare2;
-							do
-							{
-								compare2 = enumerator3.MoveNext()
-									? _segmentRefComparer.Compare(enumerator1.Current.SegmentRef,
-										enumerator3.Current.SegmentRef)
-									: 1;
-							} while (compare2 < 0);
-
 							yield return new ParallelTextSegment(this, enumerator1.Current.SegmentRef,
-								enumerator1.Current.Segment, enumerator2.Current.Segment,
-								compare2 == 0 ? enumerator3.Current.AlignedWordPairs : null);
-							completed = !enumerator1.MoveNext() || !enumerator2.MoveNext();
+								enumerator1.Current.Segment, Array.Empty<string>());
 						}
+						sourceCompleted = !enumerator1.MoveNext();
 					}
+					else if (compare1 > 0)
+					{
+						if (allTargetSegments)
+						{
+							yield return new ParallelTextSegment(this, enumerator2.Current.SegmentRef,
+								Array.Empty<string>(), enumerator2.Current.Segment);
+						}
+						targetCompleted = !enumerator2.MoveNext();
+					}
+					else
+					{
+						int compare2;
+						do
+						{
+							compare2 = enumerator3.MoveNext()
+								? _segmentRefComparer.Compare(enumerator1.Current.SegmentRef,
+									enumerator3.Current.SegmentRef)
+								: 1;
+						} while (compare2 < 0);
+
+						yield return new ParallelTextSegment(this, enumerator1.Current.SegmentRef,
+							enumerator1.Current.Segment, enumerator2.Current.Segment,
+							compare2 == 0 ? enumerator3.Current.AlignedWordPairs : null);
+						sourceCompleted = !enumerator1.MoveNext();
+						targetCompleted = !enumerator2.MoveNext();
+					}
+				}
+
+				if (allSourceSegments && !sourceCompleted)
+				{
+					do
+					{
+						yield return new ParallelTextSegment(this, enumerator1.Current.SegmentRef,
+							enumerator1.Current.Segment, Array.Empty<string>());
+					} while (enumerator1.MoveNext());
+				}
+
+				if (allTargetSegments && !targetCompleted)
+				{
+					do
+					{
+						yield return new ParallelTextSegment(this, enumerator2.Current.SegmentRef,
+							Array.Empty<string>(), enumerator2.Current.Segment);
+					}
+					while (enumerator2.MoveNext());
 				}
 			}
 		}

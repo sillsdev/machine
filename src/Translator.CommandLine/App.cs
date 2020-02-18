@@ -19,6 +19,7 @@ namespace SIL.Machine.Translation
 			AddCommand(new TestCommand());
 			AddCommand(new AlignCommand());
 			AddCommand(new CorpusCommand());
+			AddCommand(new ExtractCommand());
 		}
 
 		private void AddCommand(CommandBase command)

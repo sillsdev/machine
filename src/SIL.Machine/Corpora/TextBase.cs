@@ -20,7 +20,7 @@ namespace SIL.Machine.Corpora
 
 		protected TextSegment CreateTextSegment(string text, object segRef)
 		{
-			string[] segment = WordTokenizer.TokenizeToStrings(text.Trim()).ToArray();
+			string[] segment = WordTokenizer.TokenizeToStrings(text.Trim().Normalize()).ToArray();
 			return new TextSegment(segRef, segment);
 		}
 

@@ -28,7 +28,7 @@ namespace SIL.Machine.Corpora
 			IText text;
 			Assert.That(corpus.TryGetText("MAT", out text), Is.True);
 			Assert.That(text.Id, Is.EqualTo("MAT"));
-			Assert.That(corpus.TryGetText("LUK", out text), Is.False);
+			Assert.That(corpus.TryGetText("LUK", out _), Is.False);
 		}
 	}
 }
