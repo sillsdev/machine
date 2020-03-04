@@ -2,13 +2,13 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1;net461</TargetFrameworks>
     <RootNamespace>SIL.Machine.Translation</RootNamespace>
     <AssemblyName>translator</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.2.3" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.5.1" />
   </ItemGroup>
 
   <ItemGroup>

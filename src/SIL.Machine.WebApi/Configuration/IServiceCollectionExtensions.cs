@@ -31,7 +31,7 @@ namespace Microsoft.Extensions.DependencyInjection
 					o.Conventions.Add(new MachineApplicationModelConvention(config.Namespace,
 						config.AuthenticationSchemes));
 				});
-			services.Configure<MvcJsonOptions>(o =>
+			services.Configure<MvcNewtonsoftJsonOptions>(o =>
 				{
 					o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
 				});
