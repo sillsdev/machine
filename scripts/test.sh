@@ -28,4 +28,6 @@ done
 
 command="$translatorCmd test -q -s usx,$rootDir/corpora/$sourceCorpus -t usx,$rootDir/corpora/$targetCorpus $includeParam -c {3} -st latin -tt latin $rootDir/engines/$langPair/{1}/{2}.cfg"
 
+mkdir -p $rootDir/output/$langPair/{1}/test/{3}-{2}/
+
 parallel --no-notice --bar --results $rootDir/output/$langPair/{1}/test/{3}-{2}/ -q $command ::: ${sizes[@]} ::: tuned untuned ::: ${confidences[@]} 2>&1 >/dev/null

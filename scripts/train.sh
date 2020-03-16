@@ -51,5 +51,7 @@ parallel --no-notice --bar --header : --results output -q $command ::: $langPair
 
 for size in "${sizes[@]}"
 do
-    cp ../src/Translator.CommandLine/data/default-smt.cfg $rootDir/engines/$langPair/$size/untuned.cfg
+    filePath=$rootDir/engines/$langPair/$size
+    mkdir -p $filePath
+    cp ../src/Translator.CommandLine/data/default-smt.cfg $filePath/untuned.cfg
 done
