@@ -5,6 +5,11 @@ namespace SIL.Machine.Corpora
 {
 	public class MemoryTextAlignmentCollection : ITextAlignmentCollection
 	{
+		public MemoryTextAlignmentCollection(string id)
+			: this(id, Enumerable.Empty<TextAlignment>())
+		{
+		}
+
 		public MemoryTextAlignmentCollection(string id, IEnumerable<TextAlignment> alignments)
 		{
 			Id = id;

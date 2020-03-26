@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using SIL.Machine.Tokenization;
@@ -7,7 +6,7 @@ using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
-	public abstract class UsfmTextBase : StreamTextBase
+	public abstract class UsfmTextBase : ScriptureTextBase
 	{
 		private static readonly HashSet<string> NonVerseParaStyles = new HashSet<string>
 		{

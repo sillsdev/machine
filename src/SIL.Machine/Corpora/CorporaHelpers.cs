@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using SIL.PlatformUtilities;
+using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
@@ -50,6 +51,11 @@ namespace SIL.Machine.Corpora
 					yield return (id, fileName);
 				}
 			}
+		}
+
+		internal static string GetScriptureTextSortKey(string id)
+		{
+			return Canon.BookIdToNumber(id).ToString("000");
 		}
 	}
 }

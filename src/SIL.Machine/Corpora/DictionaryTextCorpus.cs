@@ -16,7 +16,7 @@ namespace SIL.Machine.Corpora
 			TextDictionary = texts.ToDictionary(t => t.Id);
 		}
 
-		public virtual IEnumerable<IText> Texts => TextDictionary.Values.OrderBy(t => t.Id);
+		public IEnumerable<IText> Texts => TextDictionary.Values.OrderBy(t => t.SortKey);
 
 		protected Dictionary<string, IText> TextDictionary { get; }
 
@@ -28,6 +28,11 @@ namespace SIL.Machine.Corpora
 		public IText GetText(string id)
 		{
 			return TextDictionary[id];
+		}
+
+		public virtual string GetTextSortKey(string id)
+		{
+			return id;
 		}
 
 		protected void AddText(IText text)

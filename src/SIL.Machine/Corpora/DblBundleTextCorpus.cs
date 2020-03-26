@@ -10,7 +10,7 @@ using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
-	public class DblBundleTextCorpus : DictionaryTextCorpus
+	public class DblBundleTextCorpus : ScriptureTextCorpusBase
 	{
 		private static readonly HashSet<string> SupportedVersions = new HashSet<string> { "2.0", "2.1" };
 
@@ -50,7 +50,5 @@ namespace SIL.Machine.Corpora
 		}
 
 		public ScrVers Versification { get; } = ScrVers.English;
-
-		public override IEnumerable<IText> Texts => TextDictionary.Values.OrderBy(t => Canon.BookIdToNumber(t.Id));
 	}
 }

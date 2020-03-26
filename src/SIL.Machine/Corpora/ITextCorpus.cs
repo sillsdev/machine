@@ -9,5 +9,7 @@ namespace SIL.Machine.Corpora
 		bool TryGetText(string id, out IText text);
 
 		IText GetText(string id);
+
+		string GetTextSortKey(string id);
 	}
 }

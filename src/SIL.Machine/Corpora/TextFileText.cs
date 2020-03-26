@@ -15,7 +15,7 @@ namespace SIL.Machine.Corpora
 		private readonly string _fileName;
 
 		public TextFileText(ITokenizer<string, int> wordTokenizer, string id, string fileName)
-			: base(wordTokenizer, id)
+			: base(wordTokenizer, id, id)
 		{
 			_fileName = fileName;
 		}

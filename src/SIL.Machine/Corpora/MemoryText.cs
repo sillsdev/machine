@@ -5,6 +5,11 @@ namespace SIL.Machine.Corpora
 {
 	public class MemoryText : IText
 	{
+		public MemoryText(string id)
+			: this(id, Enumerable.Empty<TextSegment>())
+		{
+		}
+
 		public MemoryText(string id, IEnumerable<TextSegment> segments)
 		{
 			Id = id;
@@ -12,6 +17,7 @@ namespace SIL.Machine.Corpora
 		}
 
 		public string Id { get; }
+		public string SortKey => Id;
 		public IEnumerable<TextSegment> Segments { get; }
 	}
 }

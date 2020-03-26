@@ -37,5 +37,10 @@ namespace SIL.Machine.Corpora
 
 			return false;
 		}
+
+		public string GetTextSortKey(string id)
+		{
+			return _corpus.GetTextSortKey(id);
+		}
 	}
 }

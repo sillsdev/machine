@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -9,7 +8,7 @@ using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
-	public class ParatextTextCorpus : DictionaryTextCorpus
+	public class ParatextTextCorpus : ScriptureTextCorpusBase
 	{
 		public ParatextTextCorpus(ITokenizer<string, int> wordTokenizer, string projectDir)
 		{
@@ -33,7 +32,5 @@ namespace SIL.Machine.Corpora
 		}
 
 		public ScrVers Versification { get; }
-
-		public override IEnumerable<IText> Texts => TextDictionary.Values.OrderBy(t => Canon.BookIdToNumber(t.Id));
 	}
 }

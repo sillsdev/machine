@@ -1,12 +1,10 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using SIL.Machine.Tokenization;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
-	public class UsxFileTextCorpus : DictionaryTextCorpus
+	public class UsxFileTextCorpus : ScriptureTextCorpusBase
 	{
 		public UsxFileTextCorpus(ITokenizer<string, int> wordTokenizer, string projectPath,
 			ScrVers versification = null)
@@ -17,7 +15,5 @@ namespace SIL.Machine.Corpora
 		}
 
 		public ScrVers Versification { get; }
-
-		public override IEnumerable<IText> Texts => TextDictionary.Values.OrderBy(t => Canon.BookIdToNumber(t.Id));
 	}
 }

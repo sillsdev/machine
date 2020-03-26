@@ -17,6 +17,8 @@ namespace SIL.Machine.Corpora
 
 		public string Id => _text.Id;
 
+		public string SortKey => _text.SortKey;
+
 		public IEnumerable<TextSegment> Segments => _text.Segments.Where(_filter);
 	}
 }

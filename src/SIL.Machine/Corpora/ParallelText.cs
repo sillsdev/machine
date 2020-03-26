@@ -19,6 +19,8 @@ namespace SIL.Machine.Corpora
 
 		public string Id => SourceText.Id;
 
+		public string SortKey => SourceText.SortKey;
+
 		public IText SourceText { get; }
 
 		public IText TargetText { get; }
