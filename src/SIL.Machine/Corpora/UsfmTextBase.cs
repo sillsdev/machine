@@ -18,14 +18,11 @@ namespace SIL.Machine.Corpora
 
 		protected UsfmTextBase(ITokenizer<string, int> wordTokenizer, string id, UsfmStylesheet stylesheet,
 			Encoding encoding, ScrVers versification)
-			: base(wordTokenizer, id)
+			: base(wordTokenizer, id, versification)
 		{
 			_parser = new UsfmParser(stylesheet);
 			_encoding = encoding;
-			Versification = versification ?? ScrVers.English;
 		}
-
-		public ScrVers Versification { get; }
 
 		public override IEnumerable<TextSegment> Segments
 		{
@@ -43,8 +40,8 @@ namespace SIL.Machine.Corpora
 						case UsfmTokenType.Chapter:
 							if (inVerse)
 							{
-								yield return CreateTextSegment(sb.ToString(),
-									new VerseRef(Id, chapter, verse, Versification));
+								foreach (TextSegment seg in CreateTextSegments(chapter, verse, sb.ToString()))
+									yield return seg;
 								sb.Clear();
 								inVerse = false;
 							}
@@ -55,8 +52,8 @@ namespace SIL.Machine.Corpora
 						case UsfmTokenType.Verse:
 							if (inVerse)
 							{
-								yield return CreateTextSegment(sb.ToString(),
-									new VerseRef(Id, chapter, verse, Versification));
+								foreach (TextSegment seg in CreateTextSegments(chapter, verse, sb.ToString()))
+									yield return seg;
 								sb.Clear();
 							}
 							else
@@ -69,8 +66,8 @@ namespace SIL.Machine.Corpora
 						case UsfmTokenType.Paragraph:
 							if (!IsVersePara(token) && inVerse)
 							{
-								yield return CreateTextSegment(sb.ToString(),
-									new VerseRef(Id, chapter, verse, Versification));
+								foreach (TextSegment seg in CreateTextSegments(chapter, verse, sb.ToString()))
+									yield return seg;
 								sb.Clear();
 								inVerse = false;
 								verse = null;
@@ -105,7 +102,10 @@ namespace SIL.Machine.Corpora
 				}
 
 				if (inVerse)
-					yield return CreateTextSegment(sb.ToString(), new VerseRef(Id, chapter, verse, Versification));
+				{
+					foreach (TextSegment seg in CreateTextSegments(chapter, verse, sb.ToString()))
+						yield return seg;
+				}
 			}
 		}
 

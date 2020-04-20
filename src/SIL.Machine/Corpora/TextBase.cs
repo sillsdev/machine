@@ -21,10 +21,15 @@ namespace SIL.Machine.Corpora
 
 		public abstract IEnumerable<TextSegment> Segments { get; }
 
-		protected TextSegment CreateTextSegment(string text, object segRef)
+		protected TextSegment CreateTextSegment(string text, object segRef, bool inRange = false)
 		{
 			string[] segment = WordTokenizer.TokenizeToStrings(text.Trim().Normalize()).ToArray();
-			return new TextSegment(segRef, segment);
+			return new TextSegment(segRef, segment, inRange);
+		}
+
+		protected TextSegment CreateTextSegment(object segRef, bool inRange = false)
+		{
+			return new TextSegment(segRef, inRange);
 		}
 
 		protected TextSegment CreateTextSegment(string text, params int[] indices)

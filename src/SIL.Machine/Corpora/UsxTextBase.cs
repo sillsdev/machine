@@ -15,12 +15,9 @@ namespace SIL.Machine.Corpora
 		};
 
 		protected UsxTextBase(ITokenizer<string, int> wordTokenizer, string id, ScrVers versification)
-			: base(wordTokenizer, id)
-		{
-			Versification = versification ?? ScrVers.English;
+			: base(wordTokenizer, id, versification)
+		{	
 		}
-
-		public ScrVers Versification { get; }
 
 		public override IEnumerable<TextSegment> Segments
 		{
@@ -37,7 +34,8 @@ namespace SIL.Machine.Corpora
 						{
 							case "chapter":
 								if (ctxt.IsInVerse)
-									yield return CreateTextSegment(ctxt);
+									foreach (TextSegment seg in CreateTextSegments(ctxt))
+										yield return seg;
 								ctxt.Chapter = (string) elem.Attribute("number");
 								ctxt.Verse = null;
 								break;
@@ -54,7 +52,8 @@ namespace SIL.Machine.Corpora
 					}
 
 					if (ctxt.IsInVerse)
-						yield return CreateTextSegment(ctxt);
+						foreach (TextSegment seg in CreateTextSegments(ctxt))
+							yield return seg;
 
 				}
 			}
@@ -71,7 +70,8 @@ namespace SIL.Machine.Corpora
 						{
 							case "verse":
 								if (ctxt.IsInVerse)
-									yield return CreateTextSegment(ctxt);
+									foreach (TextSegment seg in CreateTextSegments(ctxt))
+										yield return seg;
 
 								ctxt.Verse = (string) e.Attribute("number");
 								break;
@@ -111,12 +111,11 @@ namespace SIL.Machine.Corpora
 			return style.StartsWith(stylePrefix) && int.TryParse(style.Substring(stylePrefix.Length), out _);
 		}
 
-		private TextSegment CreateTextSegment(ParseContext ctxt)
+		private IEnumerable<TextSegment> CreateTextSegments(ParseContext ctxt)
 		{
-			TextSegment segment = CreateTextSegment(ctxt.VerseBuilder.ToString(),
-				new VerseRef(Id, ctxt.Chapter, ctxt.Verse, Versification));
+			string text = ctxt.VerseBuilder.ToString();
 			ctxt.VerseBuilder.Clear();
-			return segment;
+			return CreateTextSegments(ctxt.Chapter, ctxt.Verse, text);
 		}
 
 		private class ParseContext

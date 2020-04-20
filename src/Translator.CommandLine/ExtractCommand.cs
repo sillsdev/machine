@@ -72,13 +72,27 @@ namespace SIL.Machine.Translation
 
 					if (sourceOutputWriter != null)
 					{
-						sourceOutputWriter.WriteLine(string.Join(" ", segment.SourceSegment
-							.Preprocess(preprocessor)));
+						if (segment.IsSourceInRange && segment.SourceSegment.Count == 0)
+						{
+							sourceOutputWriter.WriteLine("<range>");
+						}
+						else
+						{
+							sourceOutputWriter.WriteLine(string.Join(" ", segment.SourceSegment
+								.Preprocess(preprocessor)));
+						}
 					}
 					if (targetOutputWriter != null)
 					{
-						targetOutputWriter.WriteLine(string.Join(" ", segment.TargetSegment
-							.Preprocess(preprocessor)));
+						if (segment.IsTargetInRange && segment.TargetSegment.Count == 0)
+						{
+							targetOutputWriter.WriteLine("<range>");
+						}
+						else
+						{
+							targetOutputWriter.WriteLine(string.Join(" ", segment.TargetSegment
+								.Preprocess(preprocessor)));
+						}
 					}
 
 					segmentCount++;

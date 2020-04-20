@@ -233,5 +233,138 @@ namespace SIL.Machine.Corpora
 			Assert.That(segments[1].TargetSegment, Is.EqualTo("target segment 1 3 .".Split()));
 			Assert.That(segments[1].AlignedWordPairs, Is.EquivalentTo(new[] { new AlignedWordPair(2, 2) }));
 		}
+
+		[Test]
+		public void Segments_Range()
+		{
+			var sourceText = new MemoryText("text1", new[]
+			{
+				new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 . source segment 1 3 .".Split(), true),
+				new TextSegment(new TextSegmentRef(1, 3), true),
+				new TextSegment(new TextSegmentRef(1, 4), "source segment 1 4 .".Split())
+			});
+			var targetText = new MemoryText("text1", new[]
+			{
+				new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 4), "target segment 1 4 .".Split())
+			});
+
+			var parallelText = new ParallelText(sourceText, targetText);
+			ParallelTextSegment[] segments = parallelText.Segments.ToArray();
+			Assert.That(segments.Length, Is.EqualTo(3));
+			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 1 2 . source segment 1 3 .".Split()));
+			Assert.That(segments[1].TargetSegment, Is.EqualTo("target segment 1 2 . target segment 1 3 .".Split()));
+		}
+
+		[Test]
+		public void Segments_OverlappingRanges()
+		{
+			var sourceText = new MemoryText("text1", new[]
+			{
+				new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 . source segment 1 3 .".Split(), true),
+				new TextSegment(new TextSegmentRef(1, 3), true)
+			});
+			var targetText = new MemoryText("text1", new[]
+			{
+				new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 . target segment 1 2 .".Split(), true),
+				new TextSegment(new TextSegmentRef(1, 2), true),
+				new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
+			});
+
+			var parallelText = new ParallelText(sourceText, targetText);
+			ParallelTextSegment[] segments = parallelText.Segments.ToArray();
+			Assert.That(segments.Length, Is.EqualTo(1));
+			Assert.That(segments[0].SourceSegment,
+				Is.EqualTo("source segment 1 1 . source segment 1 2 . source segment 1 3 .".Split()));
+			Assert.That(segments[0].TargetSegment,
+				Is.EqualTo("target segment 1 1 . target segment 1 2 . target segment 1 3 .".Split()));
+		}
+
+		[Test]
+		public void Segments_AdjacentRangesSameText()
+		{
+			var sourceText = new MemoryText("text1", new[]
+			{
+				new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 . source segment 1 2 .".Split(), true),
+				new TextSegment(new TextSegmentRef(1, 2), true),
+				new TextSegment(new TextSegmentRef(1, 3), "source segment 1 3 . source segment 1 4 .".Split(), true),
+				new TextSegment(new TextSegmentRef(1, 4), true)
+			});
+			var targetText = new MemoryText("text1", new[]
+			{
+				new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 4), "target segment 1 4 .".Split())
+			});
+
+			var parallelText = new ParallelText(sourceText, targetText);
+			ParallelTextSegment[] segments = parallelText.Segments.ToArray();
+			Assert.That(segments.Length, Is.EqualTo(2));
+			Assert.That(segments[0].SourceSegment, Is.EqualTo("source segment 1 1 . source segment 1 2 .".Split()));
+			Assert.That(segments[0].TargetSegment, Is.EqualTo("target segment 1 1 . target segment 1 2 .".Split()));
+			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 1 3 . source segment 1 4 .".Split()));
+			Assert.That(segments[1].TargetSegment, Is.EqualTo("target segment 1 3 . target segment 1 4 .".Split()));
+		}
+
+		[Test]
+		public void Segments_AdjacentRangesDifferentTexts()
+		{
+			var sourceText = new MemoryText("text1", new[]
+			{
+				new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 . source segment 1 2 .".Split(), true),
+				new TextSegment(new TextSegmentRef(1, 2), true),
+				new TextSegment(new TextSegmentRef(1, 3), "source segment 1 3 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 4), "source segment 1 4 .".Split())
+			});
+			var targetText = new MemoryText("text1", new[]
+			{
+				new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 . target segment 1 4 .".Split(), true),
+				new TextSegment(new TextSegmentRef(1, 4), true)
+			});
+
+			var parallelText = new ParallelText(sourceText, targetText);
+			ParallelTextSegment[] segments = parallelText.Segments.ToArray();
+			Assert.That(segments.Length, Is.EqualTo(2));
+			Assert.That(segments[0].SourceSegment, Is.EqualTo("source segment 1 1 . source segment 1 2 .".Split()));
+			Assert.That(segments[0].TargetSegment, Is.EqualTo("target segment 1 1 . target segment 1 2 .".Split()));
+			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 1 3 . source segment 1 4 .".Split()));
+			Assert.That(segments[1].TargetSegment, Is.EqualTo("target segment 1 3 . target segment 1 4 .".Split()));
+		}
+
+		[Test]
+		public void Segments_RangeAllSegments()
+		{
+			var sourceText = new MemoryText("text1", new[]
+			{
+				new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 . source segment 1 3 .".Split(), true),
+				new TextSegment(new TextSegmentRef(1, 3), true),
+				new TextSegment(new TextSegmentRef(1, 4), "source segment 1 4 .".Split())
+			});
+			var targetText = new MemoryText("text1", new[]
+			{
+				new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 4), "target segment 1 4 .".Split())
+			});
+
+			var parallelText = new ParallelText(sourceText, targetText);
+			ParallelTextSegment[] segments = parallelText.GetSegments(allTargetSegments: true).ToArray();
+			Assert.That(segments.Length, Is.EqualTo(4));
+			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 1 2 . source segment 1 3 .".Split()));
+			Assert.That(segments[1].IsSourceInRange, Is.True);
+			Assert.That(segments[1].TargetSegment, Is.EqualTo("target segment 1 2 .".Split()));
+			Assert.That(segments[2].SourceSegment, Is.EqualTo(Enumerable.Empty<string>()));
+			Assert.That(segments[2].IsSourceInRange, Is.True);
+			Assert.That(segments[2].TargetSegment, Is.EqualTo("target segment 1 3 .".Split()));
+		}
 	}
 }

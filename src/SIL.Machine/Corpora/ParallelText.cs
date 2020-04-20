@@ -39,6 +39,8 @@ namespace SIL.Machine.Corpora
 			using (IEnumerator<TextSegment> enumerator2 = TargetText.Segments.GetEnumerator())
 			using (IEnumerator<TextAlignment> enumerator3 = alignments.GetEnumerator())
 			{
+				var rangeInfo = new RangeInfo(this);
+
 				bool sourceCompleted = !enumerator1.MoveNext();
 				bool targetCompleted = !enumerator2.MoveNext();
 				while (!sourceCompleted && !targetCompleted)
@@ -49,8 +51,12 @@ namespace SIL.Machine.Corpora
 					{
 						if (allSourceSegments)
 						{
-							yield return new ParallelTextSegment(this, enumerator1.Current.SegmentRef,
-								enumerator1.Current.Segment, Array.Empty<string>());
+
+							foreach (ParallelTextSegment seg in CreateTextSegments(rangeInfo, enumerator1.Current,
+								null))
+							{
+								yield return seg;
+							}
 						}
 						sourceCompleted = !enumerator1.MoveNext();
 					}
@@ -58,8 +64,11 @@ namespace SIL.Machine.Corpora
 					{
 						if (allTargetSegments)
 						{
-							yield return new ParallelTextSegment(this, enumerator2.Current.SegmentRef,
-								Array.Empty<string>(), enumerator2.Current.Segment);
+							foreach (ParallelTextSegment seg in CreateTextSegments(rangeInfo, null,
+								enumerator2.Current))
+							{
+								yield return seg;
+							}
 						}
 						targetCompleted = !enumerator2.MoveNext();
 					}
@@ -74,9 +83,34 @@ namespace SIL.Machine.Corpora
 								: 1;
 						} while (compare2 < 0);
 
-						yield return new ParallelTextSegment(this, enumerator1.Current.SegmentRef,
-							enumerator1.Current.Segment, enumerator2.Current.Segment,
-							compare2 == 0 ? enumerator3.Current.AlignedWordPairs : null);
+						if ((!allTargetSegments && enumerator1.Current.IsInRange)
+							|| (!allSourceSegments && enumerator2.Current.IsInRange))
+						{
+
+							if (rangeInfo.IsInRange
+								&& ((enumerator1.Current.IsInRange && !enumerator2.Current.IsInRange
+									&& enumerator1.Current.Segment.Count > 0)
+								|| (!enumerator1.Current.IsInRange && enumerator2.Current.IsInRange
+									&& enumerator2.Current.Segment.Count > 0)
+								|| (enumerator1.Current.IsInRange && enumerator2.Current.IsInRange
+									&& enumerator1.Current.Segment.Count > 0 && enumerator2.Current.Segment.Count > 0)))
+							{
+								yield return rangeInfo.CreateTextSegment();
+							}
+
+							if (!rangeInfo.IsInRange)
+								rangeInfo.SegmentRef = enumerator1.Current.SegmentRef;
+							rangeInfo.SourceSegment.AddRange(enumerator1.Current.Segment);
+							rangeInfo.TargetSegment.AddRange(enumerator2.Current.Segment);
+						}
+						else
+						{
+							foreach (ParallelTextSegment seg in CreateTextSegments(rangeInfo, enumerator1.Current,
+								enumerator2.Current, compare2 == 0 ? enumerator3.Current.AlignedWordPairs : null))
+							{
+								yield return seg;
+							}
+						}
 						sourceCompleted = !enumerator1.MoveNext();
 						targetCompleted = !enumerator2.MoveNext();
 					}
@@ -86,8 +120,8 @@ namespace SIL.Machine.Corpora
 				{
 					do
 					{
-						yield return new ParallelTextSegment(this, enumerator1.Current.SegmentRef,
-							enumerator1.Current.Segment, Array.Empty<string>());
+						foreach (ParallelTextSegment seg in CreateTextSegments(rangeInfo, enumerator1.Current, null))
+							yield return seg;
 					} while (enumerator1.MoveNext());
 				}
 
@@ -95,11 +129,50 @@ namespace SIL.Machine.Corpora
 				{
 					do
 					{
-						yield return new ParallelTextSegment(this, enumerator2.Current.SegmentRef,
-							Array.Empty<string>(), enumerator2.Current.Segment);
+						foreach (ParallelTextSegment seg in CreateTextSegments(rangeInfo, null, enumerator2.Current))
+							yield return seg;
 					}
 					while (enumerator2.MoveNext());
 				}
+
+				if (rangeInfo.IsInRange)
+					yield return rangeInfo.CreateTextSegment();
+			}
+		}
+
+		private IEnumerable<ParallelTextSegment> CreateTextSegments(RangeInfo rangeInfo, TextSegment srcSeg,
+			TextSegment trgSeg, IEnumerable<AlignedWordPair> alignedWordPairs = null)
+		{
+			if (rangeInfo.IsInRange)
+				yield return rangeInfo.CreateTextSegment();
+			yield return new ParallelTextSegment(this, srcSeg != null ? srcSeg.Segment : trgSeg.Segment,
+				srcSeg != null ? srcSeg.Segment : Array.Empty<string>(),
+				trgSeg != null ? trgSeg.Segment : Array.Empty<string>(),
+				alignedWordPairs, srcSeg != null && srcSeg.IsInRange, trgSeg != null && trgSeg.IsInRange);
+		}
+
+		private class RangeInfo
+		{
+			private readonly ParallelText _text;
+
+			public RangeInfo(ParallelText text)
+			{
+				_text = text;
+			}
+
+			public object SegmentRef { get; set; }
+			public List<string> SourceSegment { get; } = new List<string>();
+			public List<string> TargetSegment { get; } = new List<string>();
+
+			public bool IsInRange => SegmentRef != null;
+
+			public ParallelTextSegment CreateTextSegment()
+			{
+				var seg = new ParallelTextSegment(_text, SegmentRef, SourceSegment.ToArray(), TargetSegment.ToArray());
+				SegmentRef = null;
+				SourceSegment.Clear();
+				TargetSegment.Clear();
+				return seg;
 			}
 		}
 	}
