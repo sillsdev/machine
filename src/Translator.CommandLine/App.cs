@@ -1,5 +1,5 @@
-﻿using McMaster.Extensions.CommandLineUtils;
-using System.Reflection;
+﻿using System.Reflection;
+using McMaster.Extensions.CommandLineUtils;
 
 namespace SIL.Machine.Translation
 {
@@ -9,9 +9,10 @@ namespace SIL.Machine.Translation
 			: base(false)
 		{
 			Name = "translator";
-			FullName = "Machine Translator";
+			FullName = "SIL.Machine Translator";
+			Description = "A tool for training and evaluating machine translation engines.";
 
-			HelpOption("-?|-h|--help");
+			HelpOption("-?|-h|--help", true);
 			string version = Assembly.GetEntryAssembly().GetName().Version.ToString();
 			VersionOption("-v|--version", version);
 
@@ -20,6 +21,12 @@ namespace SIL.Machine.Translation
 			AddCommand(new AlignCommand());
 			AddCommand(new CorpusCommand());
 			AddCommand(new ExtractCommand());
+
+			OnExecute(() =>
+			{
+				ShowHelp();
+				return 0;
+			});
 		}
 
 		private void AddCommand(CommandBase command)

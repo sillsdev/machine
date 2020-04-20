@@ -22,19 +22,29 @@ namespace SIL.Machine.Translation
 
 		protected ParallelTextCorpusCommandBase(bool supportAlignmentsCorpus)
 		{
-			_sourceOption = Option("-s|--source <corpus>", "The source corpus.", CommandOptionType.SingleValue);
-			_targetOption = Option("-t|--target <corpus>", "The target corpus.", CommandOptionType.SingleValue);
+			_sourceOption = Option("-s|--source <[type,]path>",
+				"The source corpus.\nTypes: \"text\" (default), \"dbl\", \"usx\", \"pt\".",
+				CommandOptionType.SingleValue);
+			_targetOption = Option("-t|--target <[type,]path>",
+				"The target corpus.\nTypes: \"text\" (default), \"dbl\", \"usx\", \"pt\".",
+				CommandOptionType.SingleValue);
 			if (supportAlignmentsCorpus)
 			{
 				_alignmentsOption = Option("-a|--alignments <corpus>", "The partial alignments corpus.",
 					CommandOptionType.SingleValue);
 			}
-			_sourceWordTokenizerOption = Option("-st|--source-tokenizer <type>", "The source word tokenizer type.",
+			_sourceWordTokenizerOption = Option("-st|--source-tokenizer <type>",
+				"The source word tokenizer type.\nTypes:  \"whitespace\" (default), \"latin\", \"null\".",
 				CommandOptionType.SingleValue);
-			_targetWordTokenizerOption = Option("-tt|--target-tokenizer <type>", "The target word tokenizer type.",
+			_targetWordTokenizerOption = Option("-tt|--target-tokenizer <type>",
+				"The target word tokenizer type.\nTypes: \"whitespace\" (default), \"latin\", \"null\".",
 				CommandOptionType.SingleValue);
-			_includeOption = Option("-i|--include <texts>", "The texts to include.", CommandOptionType.MultipleValue);
-			_excludeOption = Option("-e|--exclude <texts>", "The texts to exclude.", CommandOptionType.MultipleValue);
+			_includeOption = Option("-i|--include <texts>",
+				"The texts to include.\nFor Scripture, specify a book ID, \"*NT*\" for all NT books, or \"*OT*\" for all OT books.",
+				CommandOptionType.MultipleValue);
+			_excludeOption = Option("-e|--exclude <texts>",
+				"The texts to exclude.\nFor Scripture, specify a book ID, \"*NT*\" for all NT books, or \"*OT*\" for all OT books.",
+				CommandOptionType.MultipleValue);
 			_maxCorpusSizeOption = Option("-m|--max-size <size>", "The maximum parallel corpus size.",
 				CommandOptionType.SingleValue);
 		}

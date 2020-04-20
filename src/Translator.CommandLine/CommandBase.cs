@@ -1,5 +1,4 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
-using System;
 
 namespace SIL.Machine.Translation
 {
@@ -8,7 +7,7 @@ namespace SIL.Machine.Translation
 		protected CommandBase()
 			: base(false)
 		{
-			OnExecute((Func<int>) ExecuteCommand);
+			OnExecute(ExecuteCommand);
 		}
 
 		protected virtual int ExecuteCommand()
