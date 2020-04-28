@@ -15,7 +15,7 @@ namespace SIL.Machine.Translation
 			Name = "corpus";
 
 			_countOption = Option("-c|--count", "Only output the # of parallel segments.", CommandOptionType.NoValue);
-			_maxLengthOption = Option("--max-seglen <number>", "Maximum segment length.",
+			_maxLengthOption = Option("--max-seglen <number>", "Maximum segment length. Default: 110.",
 				CommandOptionType.SingleValue);
 		}
 
@@ -31,7 +31,7 @@ namespace SIL.Machine.Translation
 			}
 			else
 			{
-				int maxLength = 100;
+				int maxLength = 110;
 				if (_maxLengthOption.HasValue())
 				{
 					if (!int.TryParse(_maxLengthOption.Value(), out maxLength))
