@@ -1,11 +1,11 @@
-﻿using McMaster.Extensions.CommandLineUtils;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using McMaster.Extensions.CommandLineUtils;
 using SIL.Extensions;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
 using SIL.Scripture;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace SIL.Machine.Translation
 {
@@ -54,6 +54,8 @@ namespace SIL.Machine.Translation
 		protected ITextAlignmentCorpus AlignmentsCorpus { get; private set; }
 		protected ParallelTextCorpus ParallelCorpus { get; private set; }
 		protected int MaxParallelCorpusCount { get; private set; } = int.MaxValue;
+		protected virtual bool FilterSource { get; } = true;
+		protected virtual bool FilterTarget { get; } = true;
 
 		protected override int ExecuteCommand()
 		{
@@ -141,8 +143,10 @@ namespace SIL.Machine.Translation
 					return includeTexts == null;
 				}
 
-				SourceCorpus = new FilteredTextCorpus(SourceCorpus, text => Filter(text.Id));
-				TargetCorpus = new FilteredTextCorpus(TargetCorpus, text => Filter(text.Id));
+				if (FilterSource)
+					SourceCorpus = new FilteredTextCorpus(SourceCorpus, text => Filter(text.Id));
+				if (FilterTarget)
+					TargetCorpus = new FilteredTextCorpus(TargetCorpus, text => Filter(text.Id));
 				if (_alignmentsOption != null && _alignmentsOption.HasValue())
 				{
 					AlignmentsCorpus = new FilteredTextAlignmentCorpus(AlignmentsCorpus,
@@ -163,7 +167,6 @@ namespace SIL.Machine.Translation
 		private static bool ValidateCorpusOption(string value, out string type, out string path)
 		{
 			type = null;
-			path = null;
 
 			int index = value.IndexOf(",", StringComparison.Ordinal);
 			if (index == -1)

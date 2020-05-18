@@ -23,12 +23,17 @@ namespace SIL.Machine.Translation
 				CommandOptionType.SingleValue);
 			_targetOutputOption = Option("-to|--target-output <path>", "The target output file.",
 				CommandOptionType.SingleValue);
-			_allSourceSegmentsOption = Option("-as|--all-source-segments", "Include all source segments.",
+			_allSourceSegmentsOption = Option("-as|--all-source-segments",
+				"Include all source segments. This parameter overrides all other include/exclude parameters.",
 				CommandOptionType.NoValue);
-			_allTargetSegmentsOption = Option("-at|--all-target-segments", "Include all target segments.",
+			_allTargetSegmentsOption = Option("-at|--all-target-segments",
+				"Include all target segments. This parameter overrides all other include/exclude parameters.",
 				CommandOptionType.NoValue);
 			_lowercaseOption = Option("-l|--lowercase", "Convert text to lowercase.", CommandOptionType.NoValue);
 		}
+
+		protected override bool FilterSource => !_allSourceSegmentsOption.HasValue();
+		protected override bool FilterTarget => !_allTargetSegmentsOption.HasValue();
 
 		protected override int ExecuteCommand()
 		{
