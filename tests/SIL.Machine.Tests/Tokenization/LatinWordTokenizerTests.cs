@@ -65,8 +65,8 @@ namespace SIL.Machine.Tokenization
 			Assert.That(tokenizer.TokenizeToStrings("“Moses' cat said ‘Meow’ to the dog.”"),
 				Is.EqualTo(new[] { "“", "Moses'", "cat", "said", "‘", "Meow", "’", "to", "the", "dog", ".", "”" }));
 
-			Assert.That(tokenizer.TokenizeToStrings("i ha''on ot ano'."),
-				Is.EqualTo(new[] { "i", "ha''on", "ot", "ano'", "." }));
+			Assert.That(tokenizer.TokenizeToStrings("i ha''on 'ot ano'."),
+				Is.EqualTo(new[] { "i", "ha''on", "'ot", "ano'", "." }));
 		}
 
 		[Test]

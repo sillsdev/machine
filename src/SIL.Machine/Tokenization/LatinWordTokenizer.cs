@@ -36,7 +36,10 @@ namespace SIL.Machine.Tokenization
 					{
 						if (wordStart == -1)
 						{
-							yield return Range<int>.Create(i);
+							if (data[i] == '\'' && !TreatApostropheAsSingleQuote)
+								wordStart = i;
+							else
+								yield return Range<int>.Create(i);
 						}
 						else if (innerWordPunct != -1)
 						{
