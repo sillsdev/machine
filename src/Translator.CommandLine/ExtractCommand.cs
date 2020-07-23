@@ -18,6 +18,7 @@ namespace SIL.Machine.Translation
 			: base(false)
 		{
 			Name = "extract";
+			Description = "Extracts a parallel corpus from source and target monolingual corpora.";
 
 			_sourceOutputOption = Option("-so|--source-output <path>", "The source output file.",
 				CommandOptionType.SingleValue);

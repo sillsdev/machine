@@ -13,6 +13,7 @@ namespace SIL.Machine.Translation
 			: base(true)
 		{
 			Name = "corpus";
+			Description = "Computes statistics for a parallel corpus.";
 
 			_countOption = Option("-c|--count", "Only output the # of parallel segments.", CommandOptionType.NoValue);
 			_maxLengthOption = Option("--max-seglen <number>", "Maximum segment length. Default: 110.",

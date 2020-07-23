@@ -15,6 +15,7 @@ namespace SIL.Machine.Translation
 			: base(true)
 		{
 			Name = "train";
+			Description = "Trains a machine translation engine from a parallel corpus.";
 
 			_alignmentOnlyOption = Option("--alignment-only", "Only train the alignment models.",
 				CommandOptionType.NoValue);

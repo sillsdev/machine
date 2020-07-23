@@ -15,6 +15,7 @@ namespace SIL.Machine.Translation
 			: base(true)
 		{
 			Name = "align";
+			Description = "Generates word alignments for a parallel corpus.";
 
 			_outputOption = Option("-o|--output <path>", "The output alignment directory.",
 				CommandOptionType.SingleValue);

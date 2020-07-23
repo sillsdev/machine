@@ -30,6 +30,7 @@ namespace SIL.Machine.Translation
 			: base(false)
 		{
 			Name = "test";
+			Description = "Tests the interactive machine translation performance of an engine.";
 
 			_confidenceOption = Option("-c|--confidence <percentage>", "The confidence threshold.",
 				CommandOptionType.SingleValue);
