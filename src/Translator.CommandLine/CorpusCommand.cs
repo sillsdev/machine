@@ -10,7 +10,7 @@ namespace SIL.Machine.Translation
 		private readonly CommandOption _countOption;
 
 		public CorpusCommand()
-			: base(true)
+			: base(supportAlignmentsCorpus: true, supportsNullTokenizer: true)
 		{
 			Name = "corpus";
 			Description = "Computes statistics for a parallel corpus.";

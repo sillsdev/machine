@@ -42,7 +42,8 @@ namespace SIL.Machine.Translation
 			int parallelCorpusCount = GetParallelCorpusCount();
 
 			string tmPrefix = Path.Combine(EngineDirectory, "tm", "src_trg");
-			Out.Write("Aligning... ");
+			if (!_quietOption.HasValue())
+				Out.Write("Aligning... ");
 			using (var progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
 			using (var alignmentModel = new ThotSymmetrizedWordAlignmentModel(tmPrefix + "_invswm", tmPrefix + "_swm"))
 			{
@@ -74,7 +75,8 @@ namespace SIL.Machine.Translation
 						break;
 				}
 			}
-			Out.WriteLine("done.");
+			if (!_quietOption.HasValue())
+				Out.WriteLine("done.");
 
 			return 0;
 		}

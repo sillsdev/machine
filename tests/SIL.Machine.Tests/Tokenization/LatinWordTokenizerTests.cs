@@ -6,36 +6,37 @@ namespace SIL.Machine.Tokenization
 	public class LatinWordTokenizerTests
 	{
 		[Test]
-		public void Tokenize_Empty_ReturnsEmpty()
+		public void Tokenize_Empty()
 		{
 			var tokenizer = new LatinWordTokenizer();
 			Assert.That(tokenizer.TokenizeToStrings(""), Is.Empty);
 		}
 
 		[Test]
-		public void Tokenize_Whitespace_ReturnsEmpty()
+		public void Tokenize_Whitespace()
 		{
 			var tokenizer = new LatinWordTokenizer();
 			Assert.That(tokenizer.TokenizeToStrings(" "), Is.Empty);
 		}
 
 		[Test]
-		public void Tokenize_PunctuationAtEndOfWord_ReturnsTokens()
+		public void Tokenize_PunctuationAtEndOfWord()
 		{
 			var tokenizer = new LatinWordTokenizer();
-			Assert.That(tokenizer.TokenizeToStrings("This is a test."), Is.EqualTo(new[] { "This", "is", "a", "test", "." }));
+			Assert.That(tokenizer.TokenizeToStrings("This is a test, also."),
+				Is.EqualTo(new[] { "This", "is", "a", "test", ",", "also", "." }));
 		}
 
 		[Test]
-		public void Tokenize_PunctuationAtStartOfWord_ReturnsTokens()
+		public void Tokenize_PunctuationAtStartOfWord()
 		{
 			var tokenizer = new LatinWordTokenizer();
-			Assert.That(tokenizer.TokenizeToStrings("Is this a \"test\"?"),
-				Is.EqualTo(new[] { "Is", "this", "a", "\"", "test", "\"", "?" }));
+			Assert.That(tokenizer.TokenizeToStrings("Is this a test? (yes)"),
+				Is.EqualTo(new[] { "Is", "this", "a", "test", "?", "(", "yes", ")" }));
 		}
 
 		[Test]
-		public void Tokenize_PunctuationInsideWord_ReturnsTokens()
+		public void Tokenize_PunctuationInsideWord()
 		{
 			var tokenizer = new LatinWordTokenizer();
 			Assert.That(tokenizer.TokenizeToStrings("This isn't a test."),
@@ -43,7 +44,15 @@ namespace SIL.Machine.Tokenization
 		}
 
 		[Test]
-		public void Tokenize_Abbreviation_ReturnsTokens()
+		public void Tokenize_Symbol()
+		{
+			var tokenizer = new LatinWordTokenizer();
+			Assert.That(tokenizer.TokenizeToStrings("He had $50."),
+				Is.EqualTo(new[] { "He", "had", "$", "50", "." }));
+		}
+
+		[Test]
+		public void Tokenize_Abbreviation()
 		{
 			var tokenizer = new LatinWordTokenizer(new[] { "mr", "dr", "ms" });
 			Assert.That(tokenizer.TokenizeToStrings("Mr. Smith went to Washington."),
@@ -51,7 +60,7 @@ namespace SIL.Machine.Tokenization
 		}
 
 		[Test]
-		public void Tokenize_Quotes_ReturnsTokens()
+		public void Tokenize_Quotes()
 		{
 			var tokenizer = new LatinWordTokenizer();
 			Assert.That(tokenizer.TokenizeToStrings("\"This is a test.\""),
@@ -59,7 +68,7 @@ namespace SIL.Machine.Tokenization
 		}
 
 		[Test]
-		public void Tokenize_ApostropheNotAsSingleQuote_ReturnsTokens()
+		public void Tokenize_ApostropheNotAsSingleQuote()
 		{
 			var tokenizer = new LatinWordTokenizer();
 			Assert.That(tokenizer.TokenizeToStrings("“Moses' cat said ‘Meow’ to the dog.”"),
@@ -70,7 +79,7 @@ namespace SIL.Machine.Tokenization
 		}
 
 		[Test]
-		public void Tokenize_ApostropheAsSingleQuote_ReturnsTokens()
+		public void Tokenize_ApostropheAsSingleQuote()
 		{
 			var tokenizer = new LatinWordTokenizer { TreatApostropheAsSingleQuote = true };
 			Assert.That(tokenizer.TokenizeToStrings("'Moses's cat said 'Meow' to the dog.'"),

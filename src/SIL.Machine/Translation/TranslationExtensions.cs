@@ -29,6 +29,13 @@ namespace SIL.Machine.Translation
 			session.AppendToPrefix(suggestion.Select(j => session.CurrentResults[resultIndex].TargetSegment[j]));
 		}
 
+		public static IEnumerable<string> RecaseTargetWords(this TranslationResult result,
+			IReadOnlyList<string> sourceSegment)
+		{
+			for (int i = 0; i < result.TargetSegment.Count; i++)
+				yield return result.RecaseTargetWord(sourceSegment, i);
+		}
+
 		public static string RecaseTargetWord(this TranslationResult result, IReadOnlyList<string> sourceSegment,
 			int targetIndex)
 		{

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -12,24 +11,18 @@ namespace SIL.Machine.Tokenization
 		MergeRightFirstLeftSecond
 	}
 
-	public class SimpleStringDetokenizer : IDetokenizer<string, string>
+	public abstract class StringDetokenizer : IDetokenizer<string, string>
 	{
-		private readonly Func<string, DetokenizeOperation> _operationSelector;
-
-		public SimpleStringDetokenizer(Func<string, DetokenizeOperation> operationSelector)
-		{
-			_operationSelector = operationSelector;
-		}
-
 		public string Detokenize(IEnumerable<string> tokens)
 		{
+			object ctxt = CreateContext();
 			var currentRightLeftTokens = new HashSet<string>();
 			var sb = new StringBuilder();
 			bool nextMergeLeft = true;
 			foreach (string token in tokens)
 			{
 				bool mergeRight = false;
-				switch (_operationSelector(token))
+				switch (GetOperation(ctxt, token))
 				{
 					case DetokenizeOperation.MergeLeft:
 						nextMergeLeft = true;
@@ -68,5 +61,12 @@ namespace SIL.Machine.Tokenization
 			}
 			return sb.ToString();
 		}
+
+		protected virtual object CreateContext()
+		{
+			return null;
+		}
+
+		protected abstract DetokenizeOperation GetOperation(object ctxt, string token);
 	}
 }

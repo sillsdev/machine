@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
-using SIL.Extensions;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
-using SIL.Scripture;
 
 namespace SIL.Machine.Translation
 {
@@ -19,9 +17,12 @@ namespace SIL.Machine.Translation
 		private readonly CommandOption _includeOption;
 		private readonly CommandOption _excludeOption;
 		private readonly CommandOption _maxCorpusSizeOption;
+		private readonly bool _supportsNullTokenizer;
 
-		protected ParallelTextCorpusCommandBase(bool supportAlignmentsCorpus)
+		protected ParallelTextCorpusCommandBase(bool supportAlignmentsCorpus, bool supportsNullTokenizer)
 		{
+			_supportsNullTokenizer = supportsNullTokenizer;
+
 			_sourceOption = Option("-s|--source <[type,]path>",
 				"The source corpus.\nTypes: \"text\" (default), \"dbl\", \"usx\", \"pt\".",
 				CommandOptionType.SingleValue);
@@ -33,11 +34,15 @@ namespace SIL.Machine.Translation
 				_alignmentsOption = Option("-a|--alignments <corpus>", "The partial alignments corpus.",
 					CommandOptionType.SingleValue);
 			}
+
+			string typesStr = "Types: \"whitespace\" (default), \"latin\"";
+			if (_supportsNullTokenizer)
+				typesStr += ", \"null\"";
 			_sourceWordTokenizerOption = Option("-st|--source-tokenizer <type>",
-				"The source word tokenizer type.\nTypes:  \"whitespace\" (default), \"latin\", \"null\".",
+				$"The source word tokenizer type.\n{typesStr}.",
 				CommandOptionType.SingleValue);
 			_targetWordTokenizerOption = Option("-tt|--target-tokenizer <type>",
-				"The target word tokenizer type.\nTypes: \"whitespace\" (default), \"latin\", \"null\".",
+				$"The target word tokenizer type.\n{typesStr}.",
 				CommandOptionType.SingleValue);
 			_includeOption = Option("-i|--include <texts>",
 				"The texts to include.\nFor Scripture, specify a book ID, \"*NT*\" for all NT books, or \"*OT*\" for all OT books.",
@@ -71,33 +76,37 @@ namespace SIL.Machine.Translation
 				return 1;
 			}
 
-			if (!ValidateTextCorpusOption(_sourceOption.Value(), out string sourceType, out string sourcePath))
+			if (!TranslatorHelpers.ValidateTextCorpusOption(_sourceOption.Value(), out string sourceType,
+				out string sourcePath))
 			{
 				Out.WriteLine("The specified source corpus is invalid.");
 				return 1;
 			}
 
-			if (!ValidateTextCorpusOption(_targetOption.Value(), out string targetType, out string targetPath))
+			if (!TranslatorHelpers.ValidateTextCorpusOption(_targetOption.Value(), out string targetType,
+				out string targetPath))
 			{
 				Out.WriteLine("The specified target corpus is invalid.");
 				return 1;
 			}
 
 			string alignmentsType = null, alignmentsPath = null;
-			if (_alignmentsOption != null && !ValidateAlignmentsOption(_alignmentsOption.Value(), out alignmentsType,
-				out alignmentsPath))
+			if (_alignmentsOption != null && !TranslatorHelpers.ValidateAlignmentsOption(_alignmentsOption.Value(),
+				out alignmentsType, out alignmentsPath))
 			{
 				Out.WriteLine("The specified partial alignments corpus is invalid.");
 				return 1;
 			}
 
-			if (!ValidateWordTokenizerOption(_sourceWordTokenizerOption.Value()))
+			if (!TranslatorHelpers.ValidateWordTokenizerOption(_sourceWordTokenizerOption.Value(),
+				_supportsNullTokenizer))
 			{
 				Out.WriteLine("The specified source word tokenizer type is invalid.");
 				return 1;
 			}
 
-			if (!ValidateWordTokenizerOption(_targetWordTokenizerOption.Value()))
+			if (!TranslatorHelpers.ValidateWordTokenizerOption(_targetWordTokenizerOption.Value(),
+				_supportsNullTokenizer))
 			{
 				Out.WriteLine("The specified target word tokenizer type is invalid.");
 				return 1;
@@ -113,22 +122,24 @@ namespace SIL.Machine.Translation
 				MaxParallelCorpusCount = maxCorpusSize;
 			}
 
-			StringTokenizer sourceWordTokenizer = CreateWordTokenizer(_sourceWordTokenizerOption.Value());
-			StringTokenizer targetWordTokenizer = CreateWordTokenizer(_targetWordTokenizerOption.Value());
+			StringTokenizer sourceWordTokenizer = TranslatorHelpers.CreateWordTokenizer(
+				_sourceWordTokenizerOption.Value());
+			StringTokenizer targetWordTokenizer = TranslatorHelpers.CreateWordTokenizer(
+				_targetWordTokenizerOption.Value());
 
-			SourceCorpus = CreateTextCorpus(sourceWordTokenizer, sourceType, sourcePath);
-			TargetCorpus = CreateTextCorpus(targetWordTokenizer, targetType, targetPath);
+			SourceCorpus = TranslatorHelpers.CreateTextCorpus(sourceWordTokenizer, sourceType, sourcePath);
+			TargetCorpus = TranslatorHelpers.CreateTextCorpus(targetWordTokenizer, targetType, targetPath);
 			AlignmentsCorpus = null;
 			if (_alignmentsOption != null && _alignmentsOption.HasValue())
-				AlignmentsCorpus = CreateAlignmentsCorpus(alignmentsType, alignmentsPath);
+				AlignmentsCorpus = TranslatorHelpers.CreateAlignmentsCorpus(alignmentsType, alignmentsPath);
 
 			ISet<string> includeTexts = null;
 			if (_includeOption.HasValue())
-				includeTexts = GetTexts(_includeOption.Values);
+				includeTexts = TranslatorHelpers.GetTexts(_includeOption.Values);
 
 			ISet<string> excludeTexts = null;
 			if (_excludeOption.HasValue())
-				excludeTexts = GetTexts(_excludeOption.Values);
+				excludeTexts = TranslatorHelpers.GetTexts(_excludeOption.Values);
 
 			if (includeTexts != null || excludeTexts != null)
 			{
@@ -162,112 +173,6 @@ namespace SIL.Machine.Translation
 		protected int GetParallelCorpusCount()
 		{
 			return Math.Min(MaxParallelCorpusCount, ParallelCorpus.Segments.Count(s => !s.IsEmpty));
-		}
-
-		private static bool ValidateCorpusOption(string value, out string type, out string path)
-		{
-			type = null;
-
-			int index = value.IndexOf(",", StringComparison.Ordinal);
-			if (index == -1)
-			{
-				path = value;
-			}
-			else
-			{
-				type = value.Substring(0, index).ToLowerInvariant();
-				path = value.Substring(index + 1);
-			}
-			return path != "";
-		}
-
-		private static bool ValidateTextCorpusOption(string value, out string type, out string path)
-		{
-			if (ValidateCorpusOption(value, out type, out path))
-				return string.IsNullOrEmpty(type) || type.IsOneOf("dbl", "usx", "text", "pt");
-			return false;
-		}
-
-		private static ITextCorpus CreateTextCorpus(StringTokenizer wordTokenizer, string type, string path)
-		{
-			switch (type)
-			{
-				case "dbl":
-					return new DblBundleTextCorpus(wordTokenizer, path);
-
-				case "usx":
-					return new UsxFileTextCorpus(wordTokenizer, path);
-
-				case "pt":
-					return new ParatextTextCorpus(wordTokenizer, path);
-
-				case "text":
-				default:
-					return new TextFileTextCorpus(wordTokenizer, path);
-			}
-		}
-
-		private static bool ValidateAlignmentsOption(string value, out string type, out string path)
-		{
-			if (string.IsNullOrEmpty(value))
-			{
-				type = null;
-				path = null;
-				return true;
-			}
-
-			if (ValidateCorpusOption(value, out type, out path))
-				return string.IsNullOrEmpty(type) || type == "text";
-			return false;
-		}
-
-		private static ITextAlignmentCorpus CreateAlignmentsCorpus(string type, string path)
-		{
-			switch (type)
-			{
-				case "text":
-				default:
-					return new TextFileTextAlignmentCorpus(path);
-			}
-		}
-
-		private static bool ValidateWordTokenizerOption(string value)
-		{
-			return string.IsNullOrEmpty(value) || value.IsOneOf("latin", "whitespace", "null");
-		}
-
-		private static StringTokenizer CreateWordTokenizer(string type)
-		{
-			switch (type)
-			{
-				case "latin":
-					return new LatinWordTokenizer();
-
-				case "null":
-					return new NullTokenizer();
-
-				case "whitespace":
-				default:
-					return new WhitespaceTokenizer();
-			}
-		}
-
-		private static ISet<string> GetTexts(IEnumerable<string> values)
-		{
-			var ids = new HashSet<string>();
-			foreach (string value in values)
-			{
-				foreach (string id in value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries))
-				{
-					if (id == "*NT*")
-						ids.UnionWith(Canon.AllBookIds.Where(i => Canon.IsBookNT(i)));
-					else if (id == "*OT*")
-						ids.UnionWith(Canon.AllBookIds.Where(i => Canon.IsBookOT(i)));
-					else
-						ids.Add(id);
-				}
-			}
-			return ids;
 		}
 	}
 }
