@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using SIL.Machine.Tokenization;
@@ -45,8 +46,8 @@ namespace SIL.Machine.Corpora
 									continue;
 								foreach (TextSegment segment in ParseElement(elem, ctxt))
 									yield return segment;
-								if (ctxt.IsInVerse)
-									ctxt.VerseBuilder.Append("\n");
+								if (ctxt.IsInVerse && elem.Nodes().Any())
+									ctxt.VerseBuilder.Append(" ");
 								break;
 						}
 					}
@@ -113,7 +114,7 @@ namespace SIL.Machine.Corpora
 
 		private IEnumerable<TextSegment> CreateTextSegments(ParseContext ctxt)
 		{
-			string text = ctxt.VerseBuilder.ToString();
+			string text = ctxt.VerseBuilder.ToString().Trim();
 			ctxt.VerseBuilder.Clear();
 			return CreateTextSegments(ctxt.Chapter, ctxt.Verse, text);
 		}
