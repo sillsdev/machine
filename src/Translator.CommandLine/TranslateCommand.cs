@@ -12,8 +12,9 @@ namespace SIL.Machine.Translation
 	public class TranslateCommand : CommandBase
 	{
 		private readonly CommandArgument _engineArgument;
-		private readonly CommandOption _corpusOption;
-		private readonly CommandOption _wordTokenizerOption;
+		private readonly CommandOption _sourceOption;
+		private readonly CommandOption _sourceWordTokenizerOption;
+		private readonly CommandOption _targetWordTokenizerOption;
 		private readonly CommandOption _includeOption;
 		private readonly CommandOption _excludeOption;
 		private readonly CommandOption _maxCorpusSizeOption;
@@ -26,11 +27,15 @@ namespace SIL.Machine.Translation
 			Description = "Translates source segments using a trained engine.";
 
 			_engineArgument = Argument("engine", "The translation engine directory or configuration file.");
-			_corpusOption = Option("-c|--corpus <[type,]path>",
-				"The corpus to translate.\nTypes: \"text\" (default), \"dbl\", \"usx\", \"pt\".",
+			_sourceOption = Option("-s|--source <[type,]path>",
+				"The source corpus to translate.\nTypes: \"text\" (default), \"dbl\", \"usx\", \"pt\".",
 				CommandOptionType.SingleValue);
-			_wordTokenizerOption = Option("-t|--tokenizer <type>",
-				"The word tokenizer type.\nTypes:  \"whitespace\" (default), \"latin\".",
+			const string typesStr = "Types: \"whitespace\" (default), \"latin\"";
+			_sourceWordTokenizerOption = Option("-st|--source-tokenizer <type>",
+				$"The source word tokenizer type.\n{typesStr}.",
+				CommandOptionType.SingleValue);
+			_targetWordTokenizerOption = Option("-tt|--target-tokenizer <type>",
+				$"The target word tokenizer type.\n{typesStr}.",
 				CommandOptionType.SingleValue);
 			_includeOption = Option("-i|--include <texts>",
 				"The texts to include.\nFor Scripture, specify a book ID, \"*NT*\" for all NT books, or \"*OT*\" for all OT books.",
@@ -51,22 +56,30 @@ namespace SIL.Machine.Translation
 			if (result != 0)
 				return result;
 
-			if (!_corpusOption.HasValue())
+			if (!_sourceOption.HasValue())
 			{
 				Out.WriteLine("The source corpus was not specified.");
 				return 1;
 			}
 
-			if (!TranslatorHelpers.ValidateTextCorpusOption(_corpusOption.Value(), out string corpusType,
-				out string corpusPath))
+			if (!TranslatorHelpers.ValidateTextCorpusOption(_sourceOption.Value(), out string sourceCorpusType,
+				out string sourceCorpusPath))
 			{
 				Out.WriteLine("The specified source corpus is invalid.");
 				return 1;
 			}
 
-			if (!TranslatorHelpers.ValidateWordTokenizerOption(_wordTokenizerOption.Value(), false))
+			if (!TranslatorHelpers.ValidateWordTokenizerOption(_sourceWordTokenizerOption.Value(),
+				supportsNullTokenizer: false))
 			{
 				Out.WriteLine("The specified source word tokenizer type is invalid.");
+				return 1;
+			}
+
+			if (!TranslatorHelpers.ValidateWordTokenizerOption(_targetWordTokenizerOption.Value(),
+				supportsNullTokenizer: false))
+			{
+				Out.WriteLine("The specified target word tokenizer type is invalid.");
 				return 1;
 			}
 
@@ -103,10 +116,13 @@ namespace SIL.Machine.Translation
 			string engineConfigFileName = TranslatorHelpers.GetEngineConfigFileName(_engineArgument.Value);
 			string engineDirectory = Path.GetDirectoryName(engineConfigFileName);
 
-			StringTokenizer wordTokenizer = TranslatorHelpers.CreateWordTokenizer(_wordTokenizerOption.Value());
-			StringDetokenizer wordDetokenizer = TranslatorHelpers.CreateWordDetokenizer(_wordTokenizerOption.Value());
+			StringTokenizer sourceWordTokenizer = TranslatorHelpers.CreateWordTokenizer(
+				_sourceWordTokenizerOption.Value());
+			StringDetokenizer targetWordDetokenizer = TranslatorHelpers.CreateWordDetokenizer(
+				_targetWordTokenizerOption.Value());
 
-			ITextCorpus corpus = TranslatorHelpers.CreateTextCorpus(wordTokenizer, corpusType, corpusPath);
+			ITextCorpus corpus = TranslatorHelpers.CreateTextCorpus(sourceWordTokenizer, sourceCorpusType,
+				sourceCorpusPath);
 
 			ISet<string> includeTexts = null;
 			if (_includeOption.HasValue())
@@ -132,7 +148,8 @@ namespace SIL.Machine.Translation
 				corpus = new FilteredTextCorpus(corpus, text => Filter(text.Id));
 			}
 
-			int corpusCount = Math.Min(maxCorpusCount, corpus.GetSegments().Count(s => !s.IsEmpty));
+			int corpusCount = Math.Min(maxCorpusCount, corpus.GetSegments()
+				.Count(s => !s.IsEmpty && s.Segment.Count <= TranslationConstants.MaxSegmentLength));
 
 			if (!_quietOption.HasValue())
 				Out.Write("Translating... ");
@@ -149,18 +166,25 @@ namespace SIL.Machine.Translation
 						: new StreamWriter(Path.Combine(_outputOption.Value(), text.Id.Trim('*') + ".txt"));
 					try
 					{
-						foreach (TextSegment segment in text.Segments.Where(s => !s.IsEmpty))
+						foreach (TextSegment segment in text.Segments)
 						{
-							TranslationResult translateResult = engine.Translate(
-								segment.Segment.Preprocess(Preprocessors.Lowercase));
-							string translation = wordDetokenizer.Detokenize(
-								translateResult.RecaseTargetWords(segment.Segment));
-							textWriter.WriteLine(translation);
+							if (segment.IsEmpty || segment.Segment.Count > TranslationConstants.MaxSegmentLength)
+							{
+								textWriter.WriteLine();
+							}
+							else
+							{
+								TranslationResult translateResult = engine.Translate(
+									segment.Segment.Preprocess(Preprocessors.Lowercase));
+								string translation = targetWordDetokenizer.Detokenize(
+									translateResult.RecaseTargetWords(segment.Segment));
+								textWriter.WriteLine(translation);
 
-							segmentCount++;
-							progress?.Report(new ProgressStatus(segmentCount, corpusCount));
-							if (segmentCount == corpusCount)
-								break;
+								segmentCount++;
+								progress?.Report(new ProgressStatus(segmentCount, corpusCount));
+								if (segmentCount == corpusCount)
+									break;
+							}
 						}
 						if (segmentCount == corpusCount)
 							break;
