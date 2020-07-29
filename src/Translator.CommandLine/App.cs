@@ -6,11 +6,11 @@ namespace SIL.Machine.Translation
 	public class App : CommandLineApplication
 	{
 		public App()
-			: base(false)
 		{
 			Name = "translator";
 			FullName = "SIL.Machine Translator";
 			Description = "A tool for training and evaluating machine translation engines.";
+			UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.CollectAndContinue;
 
 			HelpOption("-?|-h|--help", true);
 			string version = Assembly.GetEntryAssembly().GetName().Version.ToString();

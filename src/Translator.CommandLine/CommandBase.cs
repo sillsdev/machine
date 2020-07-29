@@ -5,8 +5,8 @@ namespace SIL.Machine.Translation
 	public abstract class CommandBase : CommandLineApplication
 	{
 		protected CommandBase()
-			: base(false)
 		{
+			UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.CollectAndContinue;
 			OnExecute(ExecuteCommand);
 		}
 
