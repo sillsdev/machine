@@ -85,5 +85,21 @@ namespace SIL.Machine.Tokenization
 			Assert.That(tokenizer.TokenizeToStrings("'Moses's cat said 'Meow' to the dog.'"),
 				Is.EqualTo(new[] { "'", "Moses's", "cat", "said", "'", "Meow", "'", "to", "the", "dog", ".", "'" }));
 		}
+
+		[Test]
+		public void Tokenize_Slash()
+		{
+			var tokenizer = new LatinWordTokenizer();
+			Assert.That(tokenizer.TokenizeToStrings("This is a test/trial."),
+				Is.EqualTo(new[] { "This", "is", "a", "test", "/", "trial", "." }));
+		}
+
+		[Test]
+		public void Tokenize_AngleBracket()
+		{
+			var tokenizer = new LatinWordTokenizer();
+			Assert.That(tokenizer.TokenizeToStrings("This is a <<test>>."),
+				Is.EqualTo(new[] { "This", "is", "a", "<", "<", "test", ">", ">", "." }));
+		}
 	}
 }

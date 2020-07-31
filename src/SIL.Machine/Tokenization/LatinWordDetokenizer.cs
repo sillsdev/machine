@@ -64,7 +64,11 @@ namespace SIL.Machine.Tokenization
 						return DetokenizeOperation.MergeLeft;
 					}
 				}
-				else if (char.IsPunctuation(c))
+				else if (c == '/' || c == '\\')
+				{
+					return DetokenizeOperation.MergeBoth;
+				}
+				else if (char.IsPunctuation(c) || c == '>')
 				{
 					return DetokenizeOperation.MergeLeft;
 				}

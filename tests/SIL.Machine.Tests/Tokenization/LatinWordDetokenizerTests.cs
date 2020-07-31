@@ -57,5 +57,21 @@ namespace SIL.Machine.Tokenization
 				new[] { "\"", "Moses's", "cat", "said", "'", "Meow", "'", "to", "the", "dog", ".", "\"" }),
 				Is.EqualTo("\"Moses's cat said 'Meow' to the dog.\""));
 		}
+
+		[Test]
+		public void Detokenize_Slash()
+		{
+			var detokenizer = new LatinWordDetokenizer();
+			Assert.That(detokenizer.Detokenize(new[] { "This", "is", "a", "test", "/", "trial", "." }),
+				Is.EqualTo("This is a test/trial."));
+		}
+
+		[Test]
+		public void Detokenize_AngleBracket()
+		{
+			var detokenizer = new LatinWordDetokenizer();
+			Assert.That(detokenizer.Detokenize(new[] { "This", "is", "a", "<", "<", "test", ">", ">", "." }),
+				Is.EqualTo("This is a <<test>>."));
+		}
 	}
 }

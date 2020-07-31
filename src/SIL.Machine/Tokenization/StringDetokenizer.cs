@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace SIL.Machine.Tokenization
@@ -8,56 +9,31 @@ namespace SIL.Machine.Tokenization
 		NoOperation,
 		MergeLeft,
 		MergeRight,
-		MergeRightFirstLeftSecond
+		MergeBoth
 	}
 
 	public abstract class StringDetokenizer : IDetokenizer<string, string>
 	{
 		public string Detokenize(IEnumerable<string> tokens)
 		{
+			string[] tokenArray = tokens.ToArray();
 			object ctxt = CreateContext();
-			var currentRightLeftTokens = new HashSet<string>();
+			DetokenizeOperation[] ops = tokenArray.Select(t => GetOperation(ctxt, t)).ToArray();
 			var sb = new StringBuilder();
-			bool nextMergeLeft = true;
-			foreach (string token in tokens)
+			for (int i = 0; i < tokenArray.Length; i++)
 			{
-				bool mergeRight = false;
-				switch (GetOperation(ctxt, token))
-				{
-					case DetokenizeOperation.MergeLeft:
-						nextMergeLeft = true;
-						break;
+				sb.Append(tokenArray[i]);
 
-					case DetokenizeOperation.MergeRight:
-						mergeRight = true;
-						break;
+				bool isAppendSpace = true;
+				if (i + 1 == ops.Length)
+					isAppendSpace = false;
+				else if (ops[i + 1] == DetokenizeOperation.MergeLeft || ops[i + 1] == DetokenizeOperation.MergeBoth)
+					isAppendSpace = false;
+				else if (ops[i] == DetokenizeOperation.MergeRight || ops[i] == DetokenizeOperation.MergeBoth)
+					isAppendSpace = false;
 
-					case DetokenizeOperation.MergeRightFirstLeftSecond:
-						if (currentRightLeftTokens.Contains(token))
-						{
-							nextMergeLeft = true;
-							currentRightLeftTokens.Remove(token);
-						}
-						else
-						{
-							mergeRight = true;
-							currentRightLeftTokens.Add(token);
-						}
-						break;
-
-					case DetokenizeOperation.NoOperation:
-						break;
-				}
-
-				if (!nextMergeLeft)
+				if (isAppendSpace)
 					sb.Append(" ");
-				else
-					nextMergeLeft = false;
-
-				sb.Append(token);
-
-				if (mergeRight)
-					nextMergeLeft = true;
 			}
 			return sb.ToString();
 		}
