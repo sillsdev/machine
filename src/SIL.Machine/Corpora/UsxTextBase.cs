@@ -12,7 +12,7 @@ namespace SIL.Machine.Corpora
 	{
 		private static readonly HashSet<string> NonVerseParaStyles = new HashSet<string>
 		{
-			"ms", "mr", "s", "sr", "r", "d", "sp"
+			"ms", "mr", "s", "sr", "r", "d", "sp", "rem"
 		};
 
 		protected UsxTextBase(ITokenizer<string, int> wordTokenizer, string id, ScrVers versification)

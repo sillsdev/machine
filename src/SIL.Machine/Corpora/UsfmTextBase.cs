@@ -10,7 +10,7 @@ namespace SIL.Machine.Corpora
 	{
 		private static readonly HashSet<string> NonVerseParaStyles = new HashSet<string>
 		{
-			"ms", "mr", "s", "sr", "r", "d", "sp"
+			"ms", "mr", "s", "sr", "r", "d", "sp", "rem"
 		};
 
 		private readonly UsfmParser _parser;
