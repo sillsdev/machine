@@ -10,7 +10,7 @@ namespace SIL.Machine.Tokenization
 			int startIndex = -1;
 			for (int i = range.Start; i < range.End; i++)
 			{
-				if (char.IsWhiteSpace(data[i]))
+				if (IsWhiteSpace(data[i]))
 				{
 					if (startIndex != -1)
 						yield return Range<int>.Create(startIndex, i);
@@ -24,6 +24,11 @@ namespace SIL.Machine.Tokenization
 
 			if (startIndex != -1)
 				yield return Range<int>.Create(startIndex, range.End);
+		}
+
+		protected virtual bool IsWhiteSpace(char c)
+		{
+			return char.IsWhiteSpace(c) || c == '\u200b' || c == '\ufeff';
 		}
 	}
 }

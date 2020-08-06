@@ -43,35 +43,32 @@ namespace SIL.Machine.Tokenization
 		protected override DetokenizeOperation GetOperation(object ctxt, string token)
 		{
 			var quotes = (Stack<char>)ctxt;
-			if (token.Length == 1)
+			char c = token[0];
+			if (CharUnicodeInfo.GetUnicodeCategory(c) == UnicodeCategory.CurrencySymbol
+				|| c.IsOneOf('(', '[', '{', '¿', '¡', '<'))
 			{
-				char c = token[0];
-				if (CharUnicodeInfo.GetUnicodeCategory(c) == UnicodeCategory.CurrencySymbol
-					|| c.IsOneOf('(', '[', '{', '¿', '¡', '<'))
+				return DetokenizeOperation.MergeRight;
+			}
+			else if (QuotationMarks.ContainsKey(c))
+			{
+				if (quotes.Count == 0 || QuotationMarks[c] != QuotationMarks[quotes.Peek()])
 				{
+					quotes.Push(c);
 					return DetokenizeOperation.MergeRight;
 				}
-				else if (QuotationMarks.ContainsKey(c))
+				else
 				{
-					if (quotes.Count == 0 || QuotationMarks[c] != QuotationMarks[quotes.Peek()])
-					{
-						quotes.Push(c);
-						return DetokenizeOperation.MergeRight;
-					}
-					else
-					{
-						quotes.Pop();
-						return DetokenizeOperation.MergeLeft;
-					}
-				}
-				else if (c == '/' || c == '\\')
-				{
-					return DetokenizeOperation.MergeBoth;
-				}
-				else if (char.IsPunctuation(c) || c == '>')
-				{
+					quotes.Pop();
 					return DetokenizeOperation.MergeLeft;
 				}
+			}
+			else if (c == '/' || c == '\\')
+			{
+				return DetokenizeOperation.MergeBoth;
+			}
+			else if (char.IsPunctuation(c) || c == '>')
+			{
+				return DetokenizeOperation.MergeLeft;
 			}
 
 			return DetokenizeOperation.NoOperation;

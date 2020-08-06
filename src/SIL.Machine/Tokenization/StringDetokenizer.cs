@@ -24,16 +24,16 @@ namespace SIL.Machine.Tokenization
 			{
 				sb.Append(tokenArray[i]);
 
-				bool isAppendSpace = true;
+				bool appendSeparator = true;
 				if (i + 1 == ops.Length)
-					isAppendSpace = false;
+					appendSeparator = false;
 				else if (ops[i + 1] == DetokenizeOperation.MergeLeft || ops[i + 1] == DetokenizeOperation.MergeBoth)
-					isAppendSpace = false;
+					appendSeparator = false;
 				else if (ops[i] == DetokenizeOperation.MergeRight || ops[i] == DetokenizeOperation.MergeBoth)
-					isAppendSpace = false;
+					appendSeparator = false;
 
-				if (isAppendSpace)
-					sb.Append(" ");
+				if (appendSeparator)
+					sb.Append(GetSeparator(tokenArray, ops, i));
 			}
 			return sb.ToString();
 		}
@@ -44,5 +44,11 @@ namespace SIL.Machine.Tokenization
 		}
 
 		protected abstract DetokenizeOperation GetOperation(object ctxt, string token);
+
+		protected virtual string GetSeparator(IReadOnlyList<string> tokens, IReadOnlyList<DetokenizeOperation> ops,
+			int index)
+		{
+			return " ";
+		}
 	}
 }

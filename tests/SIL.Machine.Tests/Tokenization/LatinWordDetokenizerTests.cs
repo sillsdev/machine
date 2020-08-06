@@ -70,7 +70,7 @@ namespace SIL.Machine.Tokenization
 		public void Detokenize_AngleBracket()
 		{
 			var detokenizer = new LatinWordDetokenizer();
-			Assert.That(detokenizer.Detokenize(new[] { "This", "is", "a", "<", "<", "test", ">", ">", "." }),
+			Assert.That(detokenizer.Detokenize(new[] { "This", "is", "a", "<<", "test", ">>", "." }),
 				Is.EqualTo("This is a <<test>>."));
 		}
 	}

@@ -41,6 +41,9 @@ namespace SIL.Machine.Tokenization
 			var tokenizer = new LatinWordTokenizer();
 			Assert.That(tokenizer.TokenizeToStrings("This isn't a test."),
 				Is.EqualTo(new[] { "This", "isn't", "a", "test", "." }));
+
+			Assert.That(tokenizer.TokenizeToStrings("He had $5,000."),
+				Is.EqualTo(new[] { "He", "had", "$", "5,000", "." }));
 		}
 
 		[Test]
@@ -99,7 +102,7 @@ namespace SIL.Machine.Tokenization
 		{
 			var tokenizer = new LatinWordTokenizer();
 			Assert.That(tokenizer.TokenizeToStrings("This is a <<test>>."),
-				Is.EqualTo(new[] { "This", "is", "a", "<", "<", "test", ">", ">", "." }));
+				Is.EqualTo(new[] { "This", "is", "a", "<<", "test", ">>", "." }));
 		}
 	}
 }
