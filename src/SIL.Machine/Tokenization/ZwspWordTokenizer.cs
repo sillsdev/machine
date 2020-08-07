@@ -58,7 +58,7 @@ namespace SIL.Machine.Tokenization
 			return base.ProcessCharacter(data, range, ctxt);
 		}
 
-		protected override bool IsWhiteSpace(char c)
+		protected override bool IsWhitespace(char c)
 		{
 			return c == '\u200b' || c == '\ufeff';
 		}

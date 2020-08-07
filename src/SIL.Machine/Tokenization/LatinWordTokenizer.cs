@@ -101,7 +101,7 @@ namespace SIL.Machine.Tokenization
 					{
 						ctxt.InnerWordPunct = ctxt.Index;
 						ctxt.Index += match.Length;
-						return (Range<int>.Null, Range<int>.Null);
+						return tokenRanges;
 					}
 
 					tokenRanges = (Range<int>.Create(ctxt.WordStart, ctxt.Index),
