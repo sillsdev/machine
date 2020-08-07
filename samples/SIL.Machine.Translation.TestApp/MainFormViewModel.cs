@@ -265,8 +265,8 @@ namespace SIL.Machine.Translation.TestApp
 			_isRebuilding = true;
 			try
 			{
-				using (ISmtBatchTrainer trainer = _smtModel.CreateBatchTrainer(Preprocessors.Lowercase, _sourceCorpus,
-					Preprocessors.Lowercase, _targetCorpus, _alignmentCorpus))
+				using (ISmtBatchTrainer trainer = _smtModel.CreateBatchTrainer(StringProcessors.Lowercase, _sourceCorpus,
+					StringProcessors.Lowercase, _targetCorpus, _alignmentCorpus))
 				{
 					await Task.Run(() => trainer.Train(progress, token.ThrowIfCancellationRequested), token);
 					trainer.Save();

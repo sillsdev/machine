@@ -175,7 +175,7 @@ namespace SIL.Machine.Translation
 							else
 							{
 								TranslationResult translateResult = engine.Translate(
-									segment.Segment.Preprocess(Preprocessors.Lowercase));
+									segment.Segment.Process(StringProcessors.Lowercase));
 								string translation = targetWordDetokenizer.Detokenize(
 									translateResult.RecaseTargetWords(segment.Segment));
 								textWriter.WriteLine(translation);

@@ -157,9 +157,9 @@ namespace SIL.Machine.Translation
 			ParallelTextSegment segment, StreamWriter traceWriter)
 		{
 			traceWriter?.WriteLine($"Segment:      {segment.SegmentRef}");
-			IReadOnlyList<string> sourceSegment = segment.SourceSegment.Preprocess(Preprocessors.Lowercase);
+			IReadOnlyList<string> sourceSegment = segment.SourceSegment.Process(StringProcessors.Lowercase);
 			traceWriter?.WriteLine($"Source:       {string.Join(" ", sourceSegment)}");
-			IReadOnlyList<string> targetSegment = segment.TargetSegment.Preprocess(Preprocessors.Lowercase);
+			IReadOnlyList<string> targetSegment = segment.TargetSegment.Process(StringProcessors.Lowercase);
 			traceWriter?.WriteLine($"Target:       {string.Join(" ", targetSegment)}");
 			traceWriter?.WriteLine(new string('=', 120));
 			string[][] prevSuggestionWords = null;

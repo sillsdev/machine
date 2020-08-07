@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using SIL.Machine.Tokenization;
+using SIL.Machine.Translation;
 
 namespace SIL.Machine.Corpora
 {
@@ -23,7 +23,8 @@ namespace SIL.Machine.Corpora
 
 		protected TextSegment CreateTextSegment(string text, object segRef, bool inRange = false)
 		{
-			string[] segment = WordTokenizer.TokenizeToStrings(text.Trim().Normalize()).ToArray();
+			IReadOnlyList<string> segment = WordTokenizer.TokenizeToStrings(text.Trim().Normalize())
+				.Process(StringProcessors.UnescapeSpaces);
 			return new TextSegment(segRef, segment, inRange);
 		}
 

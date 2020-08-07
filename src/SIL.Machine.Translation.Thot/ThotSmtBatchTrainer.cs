@@ -112,8 +112,8 @@ namespace SIL.Machine.Translation.Thot
 			var tuneTargetCorpus = new List<IReadOnlyList<string>>(_tuneCorpusIndices.Count);
 			foreach (ParallelTextSegment segment in GetTuningSegments(_parallelCorpus))
 			{
-				tuneSourceCorpus.Add(segment.SourceSegment.Preprocess(_sourcePreprocessor));
-				tuneTargetCorpus.Add(segment.TargetSegment.Preprocess(_targetPreprocessor));
+				tuneSourceCorpus.Add(segment.SourceSegment.Process(_sourcePreprocessor));
+				tuneTargetCorpus.Add(segment.TargetSegment.Process(_targetPreprocessor));
 			}
 
 			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
@@ -202,7 +202,7 @@ namespace SIL.Machine.Translation.Thot
 				.Where((s, i) => !_tuneCorpusIndices.Contains(i) && !s.IsEmpty))
 			{
 				var words = new List<string> { "<s>" };
-				foreach (string word in segment.Segment.Preprocess(_targetPreprocessor))
+				foreach (string word in segment.Segment.Process(_targetPreprocessor))
 				{
 					if (vocab.Contains(word))
 					{
@@ -254,7 +254,7 @@ namespace SIL.Machine.Translation.Thot
 					.Where((s, i) => !_tuneCorpusIndices.Contains(i) && !s.IsEmpty)
 					.Take(100000).OrderBy(i => rand.Next()))
 				{
-					writer.Write("{0}\n", string.Join(" ", segment.Segment.Preprocess(_targetPreprocessor)));
+					writer.Write("{0}\n", string.Join(" ", segment.Segment.Process(_targetPreprocessor)));
 				}
 			}
 		}

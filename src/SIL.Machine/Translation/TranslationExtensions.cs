@@ -124,8 +124,8 @@ namespace SIL.Machine.Translation
 			if (segment.IsEmpty)
 				return;
 
-			IReadOnlyList<string> sourceSegment = segment.SourceSegment.Preprocess(sourcePreprocessor);
-			IReadOnlyList<string> targetSegment = segment.TargetSegment.Preprocess(targetPreprocessor);
+			IReadOnlyList<string> sourceSegment = segment.SourceSegment.Process(sourcePreprocessor);
+			IReadOnlyList<string> targetSegment = segment.TargetSegment.Process(targetPreprocessor);
 
 			model.AddSegmentPair(sourceSegment, targetSegment);
 		}
@@ -133,8 +133,8 @@ namespace SIL.Machine.Translation
 		public static WordAlignmentMatrix GetBestAlignment(this ISegmentAligner aligner, ParallelTextSegment segment,
 			Func<string, string> sourcePreprocessor = null, Func<string, string> targetPreprocessor = null)
 		{
-			IReadOnlyList<string> sourceSegment = segment.SourceSegment.Preprocess(sourcePreprocessor);
-			IReadOnlyList<string> targetSegment = segment.TargetSegment.Preprocess(targetPreprocessor);
+			IReadOnlyList<string> sourceSegment = segment.SourceSegment.Process(sourcePreprocessor);
+			IReadOnlyList<string> targetSegment = segment.TargetSegment.Process(targetPreprocessor);
 
 			return aligner.GetBestAlignment(sourceSegment, targetSegment, segment.CreateAlignmentMatrix());
 		}
@@ -165,20 +165,21 @@ namespace SIL.Machine.Translation
 			return matrix;
 		}
 
-		public static IReadOnlyList<string> Preprocess(this IEnumerable<string> segment,
-			Func<string, string> preprocessor)
+		public static IReadOnlyList<string> Process(this IEnumerable<string> segment,
+			params Func<string, string>[] processors)
 		{
-			if (preprocessor == null)
-				preprocessor = Preprocessors.Null;
-			return segment.Select(preprocessor).ToArray();
+			IEnumerable<string> processed = segment;
+			foreach (Func<string, string> processor in processors)
+				processed = processed.Select(processor ?? StringProcessors.Null);
+			return processed.ToArray();
 		}
 
 		public static string GetAlignmentString(this IWordAlignmentModel model, ParallelTextSegment segment,
 			bool includeProbs, Func<string, string> sourcePreprocessor = null,
 			Func<string, string> targetPreprocessor = null)
 		{
-			IReadOnlyList<string> sourceSegment = segment.SourceSegment.Preprocess(sourcePreprocessor);
-			IReadOnlyList<string> targetSegment = segment.TargetSegment.Preprocess(targetPreprocessor);
+			IReadOnlyList<string> sourceSegment = segment.SourceSegment.Process(sourcePreprocessor);
+			IReadOnlyList<string> targetSegment = segment.TargetSegment.Process(targetPreprocessor);
 			WordAlignmentMatrix alignment = model.GetBestAlignment(sourceSegment, targetSegment,
 				segment.CreateAlignmentMatrix());
 
@@ -190,8 +191,8 @@ namespace SIL.Machine.Translation
 		public static string GetGizaFormatString(this ISegmentAligner aligner, ParallelTextSegment segment,
 			Func<string, string> sourcePreprocessor = null, Func<string, string> targetPreprocessor = null)
 		{
-			IReadOnlyList<string> sourceSegment = segment.SourceSegment.Preprocess(sourcePreprocessor);
-			IReadOnlyList<string> targetSegment = segment.TargetSegment.Preprocess(targetPreprocessor);
+			IReadOnlyList<string> sourceSegment = segment.SourceSegment.Process(sourcePreprocessor);
+			IReadOnlyList<string> targetSegment = segment.TargetSegment.Process(targetPreprocessor);
 			WordAlignmentMatrix alignment = aligner.GetBestAlignment(sourceSegment, targetSegment,
 				segment.CreateAlignmentMatrix());
 

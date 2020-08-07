@@ -80,7 +80,7 @@ namespace SIL.Machine.WebApi.Services
 		{
 			CheckDisposed();
 
-			IReadOnlyList<string> preprocSegment = segment.Preprocess(Preprocessors.Lowercase);
+			IReadOnlyList<string> preprocSegment = segment.Process(StringProcessors.Lowercase);
 
 			using (await _lock.ReaderLockAsync())
 			using (ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync())
@@ -95,7 +95,7 @@ namespace SIL.Machine.WebApi.Services
 		{
 			CheckDisposed();
 
-			IReadOnlyList<string> preprocSegment = segment.Preprocess(Preprocessors.Lowercase);
+			IReadOnlyList<string> preprocSegment = segment.Process(StringProcessors.Lowercase);
 
 			using (await _lock.ReaderLockAsync())
 			using (ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync())
@@ -110,7 +110,7 @@ namespace SIL.Machine.WebApi.Services
 		{
 			CheckDisposed();
 
-			IReadOnlyList<string> preprocSegment = segment.Preprocess(Preprocessors.Lowercase);
+			IReadOnlyList<string> preprocSegment = segment.Process(StringProcessors.Lowercase);
 
 			using (await _lock.ReaderLockAsync())
 			using (ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync())
@@ -126,8 +126,8 @@ namespace SIL.Machine.WebApi.Services
 		{
 			CheckDisposed();
 
-			IReadOnlyList<string> preprocSourceSegment = sourceSegment.Preprocess(Preprocessors.Lowercase);
-			IReadOnlyList<string> preprocTargetSegment = targetSegment.Preprocess(Preprocessors.Lowercase);
+			IReadOnlyList<string> preprocSourceSegment = sourceSegment.Process(StringProcessors.Lowercase);
+			IReadOnlyList<string> preprocTargetSegment = targetSegment.Process(StringProcessors.Lowercase);
 
 			using (await _lock.WriterLockAsync())
 			using (ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync())
@@ -290,8 +290,8 @@ namespace SIL.Machine.WebApi.Services
 						TextCorpusType.Source);
 					ITextCorpus targetCorpus = await _textCorpusFactory.CreateAsync(engine.Projects,
 						TextCorpusType.Target);
-					trainer = _smtModel.Value.CreateBatchTrainer(Preprocessors.Lowercase, sourceCorpus,
-						Preprocessors.Lowercase, targetCorpus);
+					trainer = _smtModel.Value.CreateBatchTrainer(StringProcessors.Lowercase, sourceCorpus,
+						StringProcessors.Lowercase, targetCorpus);
 
 					_buildCts?.Dispose();
 					_buildCts = new CancellationTokenSource();
