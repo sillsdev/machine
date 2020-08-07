@@ -35,7 +35,7 @@ namespace SIL.Machine.Translation
 					CommandOptionType.SingleValue);
 			}
 
-			string typesStr = "Types: \"whitespace\" (default), \"latin\"";
+			string typesStr = "Types: \"whitespace\" (default), \"latin\", \"zwsp\"";
 			if (_supportsNullTokenizer)
 				typesStr += ", \"null\"";
 			_sourceWordTokenizerOption = Option("-st|--source-tokenizer <type>",

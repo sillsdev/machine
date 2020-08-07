@@ -30,7 +30,7 @@ namespace SIL.Machine.Translation
 			_sourceOption = Option("-s|--source <[type,]path>",
 				"The source corpus to translate.\nTypes: \"text\" (default), \"dbl\", \"usx\", \"pt\".",
 				CommandOptionType.SingleValue);
-			const string typesStr = "Types: \"whitespace\" (default), \"latin\"";
+			const string typesStr = "Types: \"whitespace\" (default), \"latin\", \"zwsp\"";
 			_sourceWordTokenizerOption = Option("-st|--source-tokenizer <type>",
 				$"The source word tokenizer type.\n{typesStr}.",
 				CommandOptionType.SingleValue);

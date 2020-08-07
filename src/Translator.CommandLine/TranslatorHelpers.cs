@@ -44,7 +44,7 @@ namespace SIL.Machine.Translation
 
 		public static bool ValidateWordTokenizerOption(string value, bool supportsNullTokenizer)
 		{
-			var types = new HashSet<string> { "latin", "whitespace" };
+			var types = new HashSet<string> { "latin", "whitespace", "zwsp" };
 			if (supportsNullTokenizer)
 				types.Add("null");
 			return string.IsNullOrEmpty(value) || types.Contains(value);
@@ -91,6 +91,9 @@ namespace SIL.Machine.Translation
 				case "null":
 					return new NullTokenizer();
 
+				case "zwsp":
+					return new ZwspWordTokenizer();
+
 				case "whitespace":
 				default:
 					return new WhitespaceTokenizer();
@@ -103,6 +106,9 @@ namespace SIL.Machine.Translation
 			{
 				case "latin":
 					return new LatinWordDetokenizer();
+
+				case "zwsp":
+					return new ZwspWordDetokenizer();
 
 				case "whitespace":
 				default:
