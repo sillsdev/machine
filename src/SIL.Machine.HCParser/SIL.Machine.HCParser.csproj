@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>SIL.Machine.Morphology.HermitCrab</RootNamespace>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>hc</ToolCommandName>
+    <AssemblyName>hc</AssemblyName>
+    <Description>SIL.Machine.HCParser provides a command-line tool for morphological parsing using HermitCrab.</Description>
+    <PackageId>SIL.Machine.HCParser</PackageId>
+  </PropertyGroup>
+
+  <Import Project="../AssemblyInfo.props" />
+
+  <ItemGroup>
+    <PackageReference Include="ManyConsole" Version="2.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -12,7 +12,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 	{
 		public static int Main(string[] args)
 		{
-			Console.OutputEncoding = Encoding.UTF8;
+			Console.InputEncoding = Encoding.Unicode;
+			Console.OutputEncoding = Encoding.Unicode;
 
 			string inputFile = null;
 			string outputFile = null;
@@ -90,7 +91,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 					{
 						if (!input.Trim().StartsWith("#") && input.Trim() != "")
 						{
-							string[] cmdArgs = CommandLineParser.Parse(input);
+							string[] cmdArgs = SplitCommandLine(input);
 							ConsoleCommandDispatcher.DispatchCommand(commands, cmdArgs, context.Out);
 						}
 						input = scriptReader.ReadLine();
@@ -109,7 +110,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 					}
 					else
 					{
-						string[] cmdArgs = CommandLineParser.Parse(input);
+						string[] cmdArgs = SplitCommandLine(input);
 						ConsoleCommandDispatcher.DispatchCommand(commands, cmdArgs, context.Out);
 					}
 					Console.Write("> ");
@@ -120,6 +121,29 @@ namespace SIL.Machine.Morphology.HermitCrab
 			output?.Close();
 
 			return 0;
+		}
+
+		private static string[] SplitCommandLine(string commandLine)
+		{
+			var parmChars = commandLine.ToCharArray();
+			var inSingleQuote = false;
+			var inDoubleQuote = false;
+			for (var index = 0; index < parmChars.Length; index++)
+			{
+				if (parmChars[index] == '"' && !inSingleQuote)
+				{
+					inDoubleQuote = !inDoubleQuote;
+					parmChars[index] = '\n';
+				}
+				if (parmChars[index] == '\'' && !inDoubleQuote)
+				{
+					inSingleQuote = !inSingleQuote;
+					parmChars[index] = '\n';
+				}
+				if (!inSingleQuote && !inDoubleQuote && parmChars[index] == ' ')
+					parmChars[index] = '\n';
+			}
+			return new string(parmChars).Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
 		}
 
 		private static void ShowHelp(OptionSet p)
