@@ -14,7 +14,7 @@ namespace SIL.Machine.Corpora
 	{
 		private static readonly HashSet<string> SupportedVersions = new HashSet<string> { "2.0", "2.1" };
 
-		public DblBundleTextCorpus(ITokenizer<string, int> wordTokenizer, string fileName)
+		public DblBundleTextCorpus(ITokenizer<string, int, string> wordTokenizer, string fileName)
 		{
 			using (ZipArchive archive = ZipFile.OpenRead(fileName))
 			{

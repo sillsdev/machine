@@ -3,9 +3,9 @@ using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Tokenization
 {
-	public interface ITokenizer<in TData, TOffset>
+	public interface ITokenizer<TData, TOffset, TToken>
 	{
-		IEnumerable<Range<TOffset>> Tokenize(TData data);
-		IEnumerable<Range<TOffset>> Tokenize(TData data, Range<TOffset> range);
+		IEnumerable<TToken> Tokenize(TData data);
+		IEnumerable<TToken> Tokenize(TData data, Range<TOffset> range);
 	}
 }

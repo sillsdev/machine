@@ -15,7 +15,7 @@ namespace SIL.Machine.Corpora
 			"ms", "mr", "s", "sr", "r", "d", "sp", "rem"
 		};
 
-		protected UsxTextBase(ITokenizer<string, int> wordTokenizer, string id, ScrVers versification)
+		protected UsxTextBase(ITokenizer<string, int, string> wordTokenizer, string id, ScrVers versification)
 			: base(wordTokenizer, id, versification)
 		{	
 		}

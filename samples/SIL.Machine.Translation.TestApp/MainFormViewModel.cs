@@ -19,7 +19,7 @@ namespace SIL.Machine.Translation.TestApp
 {
 	public class MainFormViewModel : ViewModelBase
 	{
-		private readonly ITokenizer<string, int> _tokenizer;
+		private readonly IRangeTokenizer<string, int, string> _tokenizer;
 		private readonly RelayCommand _openProjectCommand;
 		private readonly RelayCommand _saveProjectCommand;
 		private HybridTranslationEngine _hybridEngine;

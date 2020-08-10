@@ -16,7 +16,7 @@ namespace SIL.Machine.Corpora
 		private readonly UsfmParser _parser;
 		private readonly Encoding _encoding;
 
-		protected UsfmTextBase(ITokenizer<string, int> wordTokenizer, string id, UsfmStylesheet stylesheet,
+		protected UsfmTextBase(ITokenizer<string, int, string> wordTokenizer, string id, UsfmStylesheet stylesheet,
 			Encoding encoding, ScrVers versification)
 			: base(wordTokenizer, id, versification)
 		{

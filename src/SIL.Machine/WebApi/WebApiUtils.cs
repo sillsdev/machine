@@ -4,7 +4,7 @@ namespace SIL.Machine.WebApi
 {
 	public static class WebApiUtils
 	{
-		public static StringTokenizer CreateSegmentTokenizer(string type)
+		public static ITokenizer<string, int, string> CreateSegmentTokenizer(string type)
 		{
 			switch (type)
 			{

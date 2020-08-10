@@ -28,9 +28,9 @@ namespace SIL.Machine.Tokenization
 		{
 		}
 
-		public override IEnumerable<Range<int>> Tokenize(string data, Range<int> range)
+		public override IEnumerable<Range<int>> TokenizeAsRanges(string data, Range<int> range)
 		{
-			foreach (Range<int> lineRange in LineTokenizer.Tokenize(data, range))
+			foreach (Range<int> lineRange in LineTokenizer.TokenizeAsRanges(data, range))
 			{
 				foreach (Range<int> sentenceRange in TokenizeLine(data, lineRange))
 					yield return sentenceRange;
@@ -41,7 +41,7 @@ namespace SIL.Machine.Tokenization
 		{
 			int sentenceStart = -1, sentenceEnd = -1;
 			bool inEnd = false, hasEndQuotesBrackets = false;
-			foreach (Range<int> wordRange in base.Tokenize(data, lineRange))
+			foreach (Range<int> wordRange in base.TokenizeAsRanges(data, lineRange))
 			{
 				if (sentenceStart == -1)
 					sentenceStart = wordRange.Start;

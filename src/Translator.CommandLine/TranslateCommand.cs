@@ -116,9 +116,9 @@ namespace SIL.Machine.Translation
 			string engineConfigFileName = TranslatorHelpers.GetEngineConfigFileName(_engineArgument.Value);
 			string engineDirectory = Path.GetDirectoryName(engineConfigFileName);
 
-			StringTokenizer sourceWordTokenizer = TranslatorHelpers.CreateWordTokenizer(
+			ITokenizer<string, int, string> sourceWordTokenizer = TranslatorHelpers.CreateWordTokenizer(
 				_sourceWordTokenizerOption.Value());
-			StringDetokenizer targetWordDetokenizer = TranslatorHelpers.CreateWordDetokenizer(
+			IDetokenizer<string, string> targetWordDetokenizer = TranslatorHelpers.CreateWordDetokenizer(
 				_targetWordTokenizerOption.Value());
 
 			ITextCorpus corpus = TranslatorHelpers.CreateTextCorpus(sourceWordTokenizer, sourceCorpusType,

@@ -6,7 +6,7 @@ namespace SIL.Machine.Corpora
 {
 	public abstract class TextBase : IText
 	{
-		protected TextBase(ITokenizer<string, int> wordTokenizer, string id, string sortKey)
+		protected TextBase(ITokenizer<string, int, string> wordTokenizer, string id, string sortKey)
 		{
 			WordTokenizer = wordTokenizer;
 			Id = id;
@@ -17,13 +17,13 @@ namespace SIL.Machine.Corpora
 
 		public string SortKey { get; }
 
-		protected ITokenizer<string, int> WordTokenizer { get; }
+		protected ITokenizer<string, int, string> WordTokenizer { get; }
 
 		public abstract IEnumerable<TextSegment> Segments { get; }
 
 		protected TextSegment CreateTextSegment(string text, object segRef, bool inRange = false)
 		{
-			IReadOnlyList<string> segment = WordTokenizer.TokenizeToStrings(text.Trim().Normalize())
+			IReadOnlyList<string> segment = WordTokenizer.Tokenize(text.Trim().Normalize())
 				.Process(StringProcessors.UnescapeSpaces);
 			return new TextSegment(segRef, segment, inRange);
 		}

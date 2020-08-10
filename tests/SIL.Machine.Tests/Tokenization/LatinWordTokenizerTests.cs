@@ -9,21 +9,21 @@ namespace SIL.Machine.Tokenization
 		public void Tokenize_Empty()
 		{
 			var tokenizer = new LatinWordTokenizer();
-			Assert.That(tokenizer.TokenizeToStrings(""), Is.Empty);
+			Assert.That(tokenizer.Tokenize(""), Is.Empty);
 		}
 
 		[Test]
 		public void Tokenize_Whitespace()
 		{
 			var tokenizer = new LatinWordTokenizer();
-			Assert.That(tokenizer.TokenizeToStrings(" "), Is.Empty);
+			Assert.That(tokenizer.Tokenize(" "), Is.Empty);
 		}
 
 		[Test]
 		public void Tokenize_PunctuationAtEndOfWord()
 		{
 			var tokenizer = new LatinWordTokenizer();
-			Assert.That(tokenizer.TokenizeToStrings("This is a test, also."),
+			Assert.That(tokenizer.Tokenize("This is a test, also."),
 				Is.EqualTo(new[] { "This", "is", "a", "test", ",", "also", "." }));
 		}
 
@@ -31,7 +31,7 @@ namespace SIL.Machine.Tokenization
 		public void Tokenize_PunctuationAtStartOfWord()
 		{
 			var tokenizer = new LatinWordTokenizer();
-			Assert.That(tokenizer.TokenizeToStrings("Is this a test? (yes)"),
+			Assert.That(tokenizer.Tokenize("Is this a test? (yes)"),
 				Is.EqualTo(new[] { "Is", "this", "a", "test", "?", "(", "yes", ")" }));
 		}
 
@@ -39,10 +39,10 @@ namespace SIL.Machine.Tokenization
 		public void Tokenize_PunctuationInsideWord()
 		{
 			var tokenizer = new LatinWordTokenizer();
-			Assert.That(tokenizer.TokenizeToStrings("This isn't a test."),
+			Assert.That(tokenizer.Tokenize("This isn't a test."),
 				Is.EqualTo(new[] { "This", "isn't", "a", "test", "." }));
 
-			Assert.That(tokenizer.TokenizeToStrings("He had $5,000."),
+			Assert.That(tokenizer.Tokenize("He had $5,000."),
 				Is.EqualTo(new[] { "He", "had", "$", "5,000", "." }));
 		}
 
@@ -50,7 +50,7 @@ namespace SIL.Machine.Tokenization
 		public void Tokenize_Symbol()
 		{
 			var tokenizer = new LatinWordTokenizer();
-			Assert.That(tokenizer.TokenizeToStrings("He had $50."),
+			Assert.That(tokenizer.Tokenize("He had $50."),
 				Is.EqualTo(new[] { "He", "had", "$", "50", "." }));
 		}
 
@@ -58,7 +58,7 @@ namespace SIL.Machine.Tokenization
 		public void Tokenize_Abbreviation()
 		{
 			var tokenizer = new LatinWordTokenizer(new[] { "mr", "dr", "ms" });
-			Assert.That(tokenizer.TokenizeToStrings("Mr. Smith went to Washington."),
+			Assert.That(tokenizer.Tokenize("Mr. Smith went to Washington."),
 				Is.EqualTo(new[] { "Mr.", "Smith", "went", "to", "Washington", "." }));
 		}
 
@@ -66,7 +66,7 @@ namespace SIL.Machine.Tokenization
 		public void Tokenize_Quotes()
 		{
 			var tokenizer = new LatinWordTokenizer();
-			Assert.That(tokenizer.TokenizeToStrings("\"This is a test.\""),
+			Assert.That(tokenizer.Tokenize("\"This is a test.\""),
 				Is.EqualTo(new[] { "\"", "This", "is", "a", "test", ".", "\"" }));
 		}
 
@@ -74,10 +74,10 @@ namespace SIL.Machine.Tokenization
 		public void Tokenize_ApostropheNotAsSingleQuote()
 		{
 			var tokenizer = new LatinWordTokenizer();
-			Assert.That(tokenizer.TokenizeToStrings("“Moses' cat said ‘Meow’ to the dog.”"),
+			Assert.That(tokenizer.Tokenize("“Moses' cat said ‘Meow’ to the dog.”"),
 				Is.EqualTo(new[] { "“", "Moses'", "cat", "said", "‘", "Meow", "’", "to", "the", "dog", ".", "”" }));
 
-			Assert.That(tokenizer.TokenizeToStrings("i ha''on 'ot ano'."),
+			Assert.That(tokenizer.Tokenize("i ha''on 'ot ano'."),
 				Is.EqualTo(new[] { "i", "ha''on", "'ot", "ano'", "." }));
 		}
 
@@ -85,7 +85,7 @@ namespace SIL.Machine.Tokenization
 		public void Tokenize_ApostropheAsSingleQuote()
 		{
 			var tokenizer = new LatinWordTokenizer { TreatApostropheAsSingleQuote = true };
-			Assert.That(tokenizer.TokenizeToStrings("'Moses's cat said 'Meow' to the dog.'"),
+			Assert.That(tokenizer.Tokenize("'Moses's cat said 'Meow' to the dog.'"),
 				Is.EqualTo(new[] { "'", "Moses's", "cat", "said", "'", "Meow", "'", "to", "the", "dog", ".", "'" }));
 		}
 
@@ -93,7 +93,7 @@ namespace SIL.Machine.Tokenization
 		public void Tokenize_Slash()
 		{
 			var tokenizer = new LatinWordTokenizer();
-			Assert.That(tokenizer.TokenizeToStrings("This is a test/trial."),
+			Assert.That(tokenizer.Tokenize("This is a test/trial."),
 				Is.EqualTo(new[] { "This", "is", "a", "test", "/", "trial", "." }));
 		}
 
@@ -101,7 +101,7 @@ namespace SIL.Machine.Tokenization
 		public void Tokenize_AngleBracket()
 		{
 			var tokenizer = new LatinWordTokenizer();
-			Assert.That(tokenizer.TokenizeToStrings("This is a <<test>>."),
+			Assert.That(tokenizer.Tokenize("This is a <<test>>."),
 				Is.EqualTo(new[] { "This", "is", "a", "<<", "test", ">>", "." }));
 		}
 	}

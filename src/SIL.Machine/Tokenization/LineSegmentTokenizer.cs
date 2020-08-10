@@ -5,7 +5,7 @@ namespace SIL.Machine.Tokenization
 {
 	public class LineSegmentTokenizer : StringTokenizer
 	{
-		public override IEnumerable<Range<int>> Tokenize(string data, Range<int> range)
+		public override IEnumerable<Range<int>> TokenizeAsRanges(string data, Range<int> range)
 		{
 			int lineStart = range.Start;
 			for (int i = range.Start; i < range.End; i++)

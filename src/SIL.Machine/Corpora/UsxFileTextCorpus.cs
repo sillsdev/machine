@@ -6,7 +6,7 @@ namespace SIL.Machine.Corpora
 {
 	public class UsxFileTextCorpus : ScriptureTextCorpusBase
 	{
-		public UsxFileTextCorpus(ITokenizer<string, int> wordTokenizer, string projectPath,
+		public UsxFileTextCorpus(ITokenizer<string, int, string> wordTokenizer, string projectPath,
 			ScrVers versification = null)
 		{
 			Versification = versification ?? ScrVers.English;

@@ -10,7 +10,7 @@ namespace SIL.Machine.Corpora
 {
 	public class ParatextTextCorpus : ScriptureTextCorpusBase
 	{
-		public ParatextTextCorpus(ITokenizer<string, int> wordTokenizer, string projectDir)
+		public ParatextTextCorpus(ITokenizer<string, int, string> wordTokenizer, string projectDir)
 		{
 			string settingsFileName = Path.Combine(projectDir, "Settings.xml");
 			var settingsDoc = XDocument.Load(settingsFileName);

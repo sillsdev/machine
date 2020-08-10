@@ -7,8 +7,8 @@ namespace SIL.Machine.Corpora
 {
 	public class UsfmFileTextCorpus : ScriptureTextCorpusBase
 	{
-		public UsfmFileTextCorpus(ITokenizer<string, int> wordTokenizer, string stylesheetFileName, Encoding encoding,
-			string projectPath, ScrVers versification = null)
+		public UsfmFileTextCorpus(ITokenizer<string, int, string> wordTokenizer, string stylesheetFileName,
+			Encoding encoding, string projectPath, ScrVers versification = null)
 		{
 			Versification = versification ?? ScrVers.English;
 			var stylesheet = new UsfmStylesheet(stylesheetFileName);

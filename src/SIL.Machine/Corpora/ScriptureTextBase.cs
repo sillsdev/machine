@@ -6,7 +6,7 @@ namespace SIL.Machine.Corpora
 {
 	public abstract class ScriptureTextBase : StreamTextBase
 	{
-		protected ScriptureTextBase(ITokenizer<string, int> wordTokenizer, string id, ScrVers versification)
+		protected ScriptureTextBase(ITokenizer<string, int, string> wordTokenizer, string id, ScrVers versification)
 			: base(wordTokenizer, id, CorporaHelpers.GetScriptureTextSortKey(id))
 		{
 			Versification = versification ?? ScrVers.English;

@@ -5,17 +5,17 @@ namespace SIL.Machine.Corpora
 {
 	public class TextFileTextCorpus : DictionaryTextCorpus
 	{
-		public TextFileTextCorpus(ITokenizer<string, int> wordTokenizer, params string[] filePatterns)
+		public TextFileTextCorpus(ITokenizer<string, int, string> wordTokenizer, params string[] filePatterns)
 			: this(wordTokenizer, (IEnumerable<string>) filePatterns)
 		{
 		}
 
-		public TextFileTextCorpus(ITokenizer<string, int> wordTokenizer, IEnumerable<string> filePatterns)
+		public TextFileTextCorpus(ITokenizer<string, int, string> wordTokenizer, IEnumerable<string> filePatterns)
 			: base(GetTexts(wordTokenizer, filePatterns))
 		{
 		}
 
-		private static IEnumerable<IText> GetTexts(ITokenizer<string, int> wordTokenizer,
+		private static IEnumerable<IText> GetTexts(ITokenizer<string, int, string> wordTokenizer,
 			IEnumerable<string> filePatterns)
 		{
 			foreach ((string id, string fileName) in CorporaHelpers.GetFiles(filePatterns))

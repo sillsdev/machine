@@ -8,7 +8,7 @@ namespace SIL.Machine.Corpora
 	{
 		private readonly string _fileName;
 
-		public UsxFileText(ITokenizer<string, int> wordTokenizer, string fileName, ScrVers versification = null)
+		public UsxFileText(ITokenizer<string, int, string> wordTokenizer, string fileName, ScrVers versification = null)
 			: base(wordTokenizer, GetId(fileName), versification)
 		{
 			_fileName = fileName;

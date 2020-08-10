@@ -50,7 +50,8 @@ namespace SIL.Machine.Translation
 			return string.IsNullOrEmpty(value) || types.Contains(value);
 		}
 
-		public static ITextCorpus CreateTextCorpus(StringTokenizer wordTokenizer, string type, string path)
+		public static ITextCorpus CreateTextCorpus(ITokenizer<string, int, string> wordTokenizer, string type,
+			string path)
 		{
 			switch (type)
 			{
@@ -81,7 +82,7 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public static StringTokenizer CreateWordTokenizer(string type)
+		public static ITokenizer<string, int, string> CreateWordTokenizer(string type)
 		{
 			switch (type)
 			{
@@ -100,7 +101,7 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public static StringDetokenizer CreateWordDetokenizer(string type)
+		public static IDetokenizer<string, string> CreateWordDetokenizer(string type)
 		{
 			switch (type)
 			{

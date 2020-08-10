@@ -23,10 +23,10 @@ namespace SIL.Machine.Tokenization
 
 		public bool TreatApostropheAsSingleQuote = false;
 
-		public override IEnumerable<Range<int>> Tokenize(string data, Range<int> range)
+		public override IEnumerable<Range<int>> TokenizeAsRanges(string data, Range<int> range)
 		{
 			var ctxt = new TokenizeContext();
-			foreach (Range<int> charRange in base.Tokenize(data, range))
+			foreach (Range<int> charRange in base.TokenizeAsRanges(data, range))
 			{
 				ctxt.Index = charRange.Start;
 				ctxt.WordStart = -1;

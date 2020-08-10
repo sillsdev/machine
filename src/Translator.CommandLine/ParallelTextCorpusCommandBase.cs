@@ -122,9 +122,9 @@ namespace SIL.Machine.Translation
 				MaxParallelCorpusCount = maxCorpusSize;
 			}
 
-			StringTokenizer sourceWordTokenizer = TranslatorHelpers.CreateWordTokenizer(
+			ITokenizer<string, int, string> sourceWordTokenizer = TranslatorHelpers.CreateWordTokenizer(
 				_sourceWordTokenizerOption.Value());
-			StringTokenizer targetWordTokenizer = TranslatorHelpers.CreateWordTokenizer(
+			ITokenizer<string, int, string> targetWordTokenizer = TranslatorHelpers.CreateWordTokenizer(
 				_targetWordTokenizerOption.Value());
 
 			SourceCorpus = TranslatorHelpers.CreateTextCorpus(sourceWordTokenizer, sourceType, sourcePath);

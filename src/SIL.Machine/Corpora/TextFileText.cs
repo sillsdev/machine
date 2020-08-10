@@ -7,14 +7,14 @@ namespace SIL.Machine.Corpora
 {
 	public class TextFileText : TextBase
 	{
-		public static ITextCorpus CreateSingleFileCorpus(ITokenizer<string, int> wordTokenizer, string fileName)
+		public static ITextCorpus CreateSingleFileCorpus(ITokenizer<string, int, string> wordTokenizer, string fileName)
 		{
 			return new DictionaryTextCorpus(new TextFileText(wordTokenizer, "*all*", fileName));
 		}
 
 		private readonly string _fileName;
 
-		public TextFileText(ITokenizer<string, int> wordTokenizer, string id, string fileName)
+		public TextFileText(ITokenizer<string, int, string> wordTokenizer, string id, string fileName)
 			: base(wordTokenizer, id, id)
 		{
 			_fileName = fileName;
