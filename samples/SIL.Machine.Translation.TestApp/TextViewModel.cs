@@ -200,8 +200,8 @@ namespace SIL.Machine.Translation.TestApp
 			{
 				if (_paragraphs.Contains(i))
 				{
-					sb.AppendLine();
-					sb.AppendLine();
+					sb.Append("\n");
+					sb.Append("\n");
 					addSpace = false;
 				}
 

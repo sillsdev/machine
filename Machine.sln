@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29409.12
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Translation.TestApp", "samples\SIL.Machine.Translation.TestApp\SIL.Machine.Translation.TestApp.csproj", "{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}"
 	ProjectSection(SolutionItems) = preProject
 		src\AssemblyInfo.props = src\AssemblyInfo.props
@@ -43,16 +41,20 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.HCParser", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Translator", "src\SIL.Machine.Translator\SIL.Machine.Translator.csproj", "{FFA94F23-0035-43AE-963B-EB9BC93C74D5}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Translation.TestApp", "samples\SIL.Machine.Translation.TestApp\SIL.Machine.Translation.TestApp.csproj", "{BD5246A5-69BE-4901-9ABB-0FD2D0B3DD5F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Translation.TestApp.Wpf", "samples\SIL.Machine.Translation.TestApp.Wpf\SIL.Machine.Translation.TestApp.Wpf.csproj", "{FD8C05AF-078A-4CEB-9656-D1AEA096F576}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Translation.TestApp.Gtk", "samples\SIL.Machine.Translation.TestApp.Gtk\SIL.Machine.Translation.TestApp.Gtk.csproj", "{5E4D0F82-D209-4778-BC9D-DC88003AA135}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Translation.TestApp.Mac", "samples\SIL.Machine.Translation.TestApp.Mac\SIL.Machine.Translation.TestApp.Mac.csproj", "{662F6E24-F5D3-4A24-B43A-99D723505C29}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1A20AAE4-42E9-484F-A25A-607E8469ECA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1A20AAE4-42E9-484F-A25A-607E8469ECA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A20AAE4-42E9-484F-A25A-607E8469ECA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -93,12 +95,27 @@ Global
 		{FFA94F23-0035-43AE-963B-EB9BC93C74D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FFA94F23-0035-43AE-963B-EB9BC93C74D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FFA94F23-0035-43AE-963B-EB9BC93C74D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD5246A5-69BE-4901-9ABB-0FD2D0B3DD5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD5246A5-69BE-4901-9ABB-0FD2D0B3DD5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD5246A5-69BE-4901-9ABB-0FD2D0B3DD5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD5246A5-69BE-4901-9ABB-0FD2D0B3DD5F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD8C05AF-078A-4CEB-9656-D1AEA096F576}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD8C05AF-078A-4CEB-9656-D1AEA096F576}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD8C05AF-078A-4CEB-9656-D1AEA096F576}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD8C05AF-078A-4CEB-9656-D1AEA096F576}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E4D0F82-D209-4778-BC9D-DC88003AA135}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E4D0F82-D209-4778-BC9D-DC88003AA135}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E4D0F82-D209-4778-BC9D-DC88003AA135}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E4D0F82-D209-4778-BC9D-DC88003AA135}.Release|Any CPU.Build.0 = Release|Any CPU
+		{662F6E24-F5D3-4A24-B43A-99D723505C29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{662F6E24-F5D3-4A24-B43A-99D723505C29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{662F6E24-F5D3-4A24-B43A-99D723505C29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{662F6E24-F5D3-4A24-B43A-99D723505C29}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{7BB2675B-5848-4C8E-BAFA-F9B9916FEB16} = {2402D5F7-53C2-44B4-879D-3ACEDA7D97C1}
 		{1A20AAE4-42E9-484F-A25A-607E8469ECA4} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
 		{E633BC22-93A1-4F15-93B1-3AF775315C7A} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
 		{71A076A8-92DF-493D-80E7-CDD9DC7FEDC9} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
@@ -109,6 +126,10 @@ Global
 		{0F72FFF6-A957-410C-8BBD-07333A6BB19C} = {66246A1C-8D45-40FB-A660-C58577122CA7}
 		{29C4B07E-A90A-4CEB-AD27-A81A5233ACC7} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
 		{FFA94F23-0035-43AE-963B-EB9BC93C74D5} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
+		{BD5246A5-69BE-4901-9ABB-0FD2D0B3DD5F} = {2402D5F7-53C2-44B4-879D-3ACEDA7D97C1}
+		{FD8C05AF-078A-4CEB-9656-D1AEA096F576} = {2402D5F7-53C2-44B4-879D-3ACEDA7D97C1}
+		{5E4D0F82-D209-4778-BC9D-DC88003AA135} = {2402D5F7-53C2-44B4-879D-3ACEDA7D97C1}
+		{662F6E24-F5D3-4A24-B43A-99D723505C29} = {2402D5F7-53C2-44B4-879D-3ACEDA7D97C1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9F18C25E-E140-43C3-B177-D562E1628370}

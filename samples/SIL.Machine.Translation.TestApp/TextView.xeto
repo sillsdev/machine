@@ -2,7 +2,7 @@
 <Panel
 	xmlns="http://schema.picoe.ca/eto.forms" 
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:local="clr-namespace:SIL.Machine.Translation.TestApp;assembly=TranslationTestApp"
+	xmlns:local="clr-namespace:SIL.Machine.Translation.TestApp;assembly=SIL.Machine.Translation.TestApp"
 	>
 	<TableLayout Spacing="5,5">
 		<TableRow ScaleHeight="True">

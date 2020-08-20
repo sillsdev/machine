@@ -72,9 +72,11 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void UpdateTargetTextBackground(TextViewModel vm)
 		{
-			TargetTextArea.Buffer.SetBackground(new Range<int>(0, TargetTextArea.Text.Length), Colors.White);
+			int endOffset = GetRichTextAreaEndOffset(TargetTextArea);
+			if (endOffset > 0)
+				TargetTextArea.Buffer.SetBackground(new Range<int>(0, endOffset), Colors.White);
 			foreach (Range<int> range in vm.UnapprovedTargetSegmentRanges)
-				TargetTextArea.Buffer.SetBackground(FixRichTextAreaInputRange(TargetTextArea, range), Colors.LightYellow);
+				TargetTextArea.Buffer.SetBackground(range, Colors.LightYellow);
 		}
 
 		private void ViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -97,7 +99,9 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void UpdateSourceSegmentBackground(TextViewModel vm)
 		{
-			SourceSegmentTextArea.Buffer.SetBackground(new Range<int>(0, SourceSegmentTextArea.Text.Length), Colors.White);
+			int endOffset = GetRichTextAreaEndOffset(SourceSegmentTextArea);
+			if (endOffset > 0)
+				SourceSegmentTextArea.Buffer.SetBackground(new Range<int>(0, endOffset), Colors.White);
 			foreach (AlignedWordViewModel alignedWord in vm.AlignedSourceWords)
 			{
 				Color c = Colors.White;
@@ -113,54 +117,17 @@ namespace SIL.Machine.Translation.TestApp
 						c = Colors.Orange;
 						break;
 				}
-				SourceSegmentTextArea.Buffer.SetBackground(FixRichTextAreaInputRange(SourceSegmentTextArea, alignedWord.Range), c);
+				SourceSegmentTextArea.Buffer.SetBackground(alignedWord.Range, c);
 			}
 		}
 
 		private static void UpdateTextForeground(RichTextArea rta, Range<int>? currentSegmentRange)
 		{
-			rta.Buffer.SetForeground(new Range<int>(0, rta.Text.Length), Colors.Gray);
+			int endOffset = GetRichTextAreaEndOffset(rta);
+			if (endOffset > 0)
+				rta.Buffer.SetForeground(new Range<int>(0, endOffset), Colors.Gray);
 			if (currentSegmentRange != null)
-				rta.Buffer.SetForeground(FixRichTextAreaInputRange(rta, currentSegmentRange.Value), Colors.Black);
-		}
-
-		private static void GetRichTextAreaFixDelta(RichTextArea rta, Range<int> range, out int startDelta, out int endDelta)
-		{
-			int delta = 0;
-			int index = 0;
-			while ((index = rta.Text.IndexOf(Environment.NewLine, index, StringComparison.Ordinal)) != -1)
-			{
-				if (index > range.Start)
-					break;
-				delta += Environment.NewLine.Length;
-				index += Environment.NewLine.Length;
-			}
-			startDelta = delta;
-			endDelta = delta + (index == range.End ? 1 : 0);
-		}
-
-		private static Range<int> FixRichTextAreaInputRange(RichTextArea rta, Range<int> range)
-		{
-			if (rta.Platform.IsWpf)
-			{
-				int startDelta, endDelta;
-				GetRichTextAreaFixDelta(rta, range, out startDelta, out endDelta);
-				return new Range<int>(range.Start - startDelta, range.End - endDelta);
-			}
-
-			return range;
-		}
-
-		private static Range<int> FixRichTextAreaOutputRange(RichTextArea rta, Range<int> range)
-		{
-			if (rta.Platform.IsWpf)
-			{
-				int startDelta, endDelta;
-				GetRichTextAreaFixDelta(rta, range, out startDelta, out endDelta);
-				return new Range<int>(range.Start + startDelta, range.End + endDelta);
-			}
-
-			return range;
+				rta.Buffer.SetForeground(currentSegmentRange.Value, Colors.Black);
 		}
 
 		private void SuggestionsChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -187,7 +154,7 @@ namespace SIL.Machine.Translation.TestApp
 			var vm = DataContext as TextViewModel;
 			if (vm != null)
 			{
-				vm.SelectSourceSegmentCommand.Execute(FixRichTextAreaOutputRange(SourceTextArea, SourceTextArea.Selection).Start);
+				vm.SelectSourceSegmentCommand.Execute(SourceTextArea.Selection.Start);
 				TargetSegmentTextArea.Focus();
 			}
 		}
@@ -197,7 +164,7 @@ namespace SIL.Machine.Translation.TestApp
 			var vm = DataContext as TextViewModel;
 			if (vm != null)
 			{
-				vm.SelectTargetSegmentCommand.Execute(FixRichTextAreaOutputRange(TargetTextArea, TargetTextArea.Selection).Start);
+				vm.SelectTargetSegmentCommand.Execute(TargetTextArea.Selection.Start);
 				TargetSegmentTextArea.Focus();
 			}
 		}
@@ -240,6 +207,11 @@ namespace SIL.Machine.Translation.TestApp
 				TargetSegmentTextArea.Text = text.Substring(0, text.Length - 2) + text.Substring(text.Length - 1) + " ";
 				TargetSegmentTextArea.Selection = selection;
 			}
+		}
+
+		private static int GetRichTextAreaEndOffset(RichTextArea rta)
+		{
+			return rta.Text.TrimEnd('\n').Length;
 		}
 	}
 }
