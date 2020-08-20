@@ -14,28 +14,15 @@ namespace SIL.Machine.Translation.TestApp
 			Height = 1;
 		}
 
-		public Color Color
-		{
-			get { return _pen.Color; }
-			set
-			{
-				if (_pen.Color != value)
-				{
-					_pen.Color = value;
-					Invalidate();
-				}
-			}
-		}
-
 		public float Thickness
 		{
-			get { return _pen.Thickness; }
+			get => _pen.Thickness;
 			set
 			{
 				if (Math.Abs(_pen.Thickness - value) > float.Epsilon)
 				{
 					_pen.Thickness = value;
-					Height = (int) value;
+					Height = (int)value;
 					Invalidate();
 				}
 			}
