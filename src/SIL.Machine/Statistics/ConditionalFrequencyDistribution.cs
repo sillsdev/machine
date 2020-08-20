@@ -19,24 +19,21 @@ namespace SIL.Machine.Statistics
 			_freqDists = cfd._freqDists.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Clone());
 		}
 
-		public IReadOnlyCollection<TCondition> Conditions
-		{
-			get { return _freqDists.Keys.ToReadOnlyCollection(); }
-		}
+		public IReadOnlyCollection<TCondition> Conditions => _freqDists.Keys.ToReadOnlyCollection();
 
-		public FrequencyDistribution<TSample> this[TCondition condition]
-		{
-			get { return _freqDists.GetOrCreate(condition, () => new FrequencyDistribution<TSample>()); }
-		}
+		public FrequencyDistribution<TSample> this[TCondition condition] => _freqDists.GetOrCreate(condition,
+			() => new FrequencyDistribution<TSample>());
 
-		public int SampleOutcomeCount
-		{
-			get { return _freqDists.Values.Sum(fd => fd.SampleOutcomeCount); }
-		}
+		public int SampleOutcomeCount => _freqDists.Values.Sum(fd => fd.SampleOutcomeCount);
 
 		public ConditionalFrequencyDistribution<TCondition, TSample> Clone()
 		{
 			return new ConditionalFrequencyDistribution<TCondition, TSample>(this);
+		}
+
+		public void Reset()
+		{
+			_freqDists.Clear();
 		}
 	}
 }

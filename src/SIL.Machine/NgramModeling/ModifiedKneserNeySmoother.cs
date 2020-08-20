@@ -10,7 +10,6 @@ namespace SIL.Machine.NgramModeling
 		private double _discount1, _discount2, _discount3;
 		private readonly Dictionary<Ngram<TItem>, Tuple<int, int, int>> _bigNs;
 		private ConditionalFrequencyDistribution<Ngram<TItem>, TItem> _cfd;
-		private NgramModel<TSeq, TItem> _lowerOrderModel;
 		private Direction _dir;
 
 		public ModifiedKneserNeySmoother()
@@ -18,7 +17,8 @@ namespace SIL.Machine.NgramModeling
 			_bigNs = new Dictionary<Ngram<TItem>, Tuple<int, int, int>>();
 		}
 
-		public void Smooth(int ngramSize, TSeq[] sequences, Func<TSeq, IEnumerable<TItem>> itemsSelector, Direction dir, ConditionalFrequencyDistribution<Ngram<TItem>, TItem> cfd)
+		public void Smooth(int ngramSize, TSeq[] sequences, Func<TSeq, IEnumerable<TItem>> itemsSelector, Direction dir,
+			ConditionalFrequencyDistribution<Ngram<TItem>, TItem> cfd)
 		{
 			_cfd = cfd;
 			_dir = dir;
@@ -69,7 +69,7 @@ namespace SIL.Machine.NgramModeling
 				_discount3 = 3 - (4 * y * ((double) totalN4 / totalN3));
 
 			if (ngramSize > 1)
-				_lowerOrderModel = new NgramModel<TSeq, TItem>(ngramSize - 1, sequences, itemsSelector, dir, new ModifiedKneserNeySmoother<TSeq, TItem>());
+				LowerOrderModel = new NgramModel<TSeq, TItem>(ngramSize - 1, sequences, itemsSelector, dir, new ModifiedKneserNeySmoother<TSeq, TItem>());
 		}
 
 		public double GetProbability(TItem item, Ngram<TItem> context)
@@ -93,12 +93,9 @@ namespace SIL.Machine.NgramModeling
 				d = _discount3;
 
 			double prob = (count - d) / freqDist.SampleOutcomeCount;
-			return prob + (gamma * _lowerOrderModel.GetProbability(item, context.SkipFirst(_dir)));
+			return prob + (gamma * LowerOrderModel.GetProbability(item, context.SkipFirst(_dir)));
 		}
 
-		public NgramModel<TSeq, TItem> LowerOrderModel
-		{
-			get { return _lowerOrderModel; }
-		}
+		public NgramModel<TSeq, TItem> LowerOrderModel { get; private set; }
 	}
 }

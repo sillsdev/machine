@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using SIL.Machine.Corpora;
 
 namespace SIL.Machine.Translation
@@ -23,53 +21,18 @@ namespace SIL.Machine.Translation
 				suggester.GetSuggestion(session.Prefix.Count, session.IsLastWordComplete, r));
 		}
 
+		public static IEnumerable<TranslationSuggestion> GetSuggestions(this ITranslationSuggester suggester,
+			IInteractiveTranslationSession session, IReadOnlyList<string> sourceSegment, ITruecaser truecaser)
+		{
+			return session.CurrentResults.Select(r =>
+				suggester.GetSuggestion(session.Prefix.Count, session.IsLastWordComplete,
+					truecaser.Truecase(sourceSegment, r)));
+		}
+
 		public static void AppendSuggestionToPrefix(this IInteractiveTranslationSession session, int resultIndex,
 			IReadOnlyList<int> suggestion)
 		{
 			session.AppendToPrefix(suggestion.Select(j => session.CurrentResults[resultIndex].TargetSegment[j]));
-		}
-
-		public static IEnumerable<string> RecaseTargetWords(this TranslationResult result,
-			IReadOnlyList<string> sourceSegment)
-		{
-			for (int i = 0; i < result.TargetSegment.Count; i++)
-				yield return result.RecaseTargetWord(sourceSegment, i);
-		}
-
-		public static string RecaseTargetWord(this TranslationResult result, IReadOnlyList<string> sourceSegment,
-			int targetIndex)
-		{
-			return result.Alignment.RecaseTargetWord(sourceSegment, 0, result.TargetSegment, targetIndex);
-		}
-
-		public static string RecaseTargetWord(this WordAlignmentMatrix alignment, IReadOnlyList<string> sourceSegment,
-			int sourceStartIndex, IReadOnlyList<string> targetSegment, int targetIndex)
-		{
-			string targetWord = targetSegment[targetIndex];
-			if (alignment.GetColumnAlignedIndices(targetIndex)
-				.Any(i => sourceSegment[sourceStartIndex + i].IsTitleCase()))
-			{
-				return targetWord.ToTitleCase();
-			}
-			return targetWord;
-		}
-
-		public static bool IsTitleCase(this string str)
-		{
-			return str.Length > 0 && char.IsUpper(str, 0)
-				&& Enumerable.Range(1, str.Length - 1).All(i => char.IsLower(str, i));
-		}
-
-		public static string ToTitleCase(this string str)
-		{
-			if (str.Length == 0)
-				return str;
-
-			var sb = new StringBuilder();
-			sb.Append(str.Substring(0, 1).ToUpperInvariant());
-			if (str.Length > 1)
-				sb.Append(str.Substring(1, str.Length - 1).ToLowerInvariant());
-			return sb.ToString();
 		}
 
 		public static double GetAlignmentProbability(this IWordAlignmentModel model, int sourceLen, int prevSourceIndex,
@@ -111,7 +74,7 @@ namespace SIL.Machine.Translation
 		}
 
 		public static void AddSegmentPairs(this IWordAlignmentModel model, ParallelTextCorpus corpus,
-			Func<string, string> sourcePreprocessor = null, Func<string, string> targetPreprocessor = null,
+			ITokenProcessor sourcePreprocessor = null, ITokenProcessor targetPreprocessor = null,
 			int maxCount = int.MaxValue)
 		{
 			foreach (ParallelTextSegment segment in corpus.Segments.Where(s => !s.IsEmpty).Take(maxCount))
@@ -119,22 +82,22 @@ namespace SIL.Machine.Translation
 		}
 
 		public static void AddSegmentPair(this IWordAlignmentModel model, ParallelTextSegment segment,
-			Func<string, string> sourcePreprocessor = null, Func<string, string> targetPreprocessor = null)
+			ITokenProcessor sourcePreprocessor = null, ITokenProcessor targetPreprocessor = null)
 		{
 			if (segment.IsEmpty)
 				return;
 
-			IReadOnlyList<string> sourceSegment = segment.SourceSegment.Process(sourcePreprocessor);
-			IReadOnlyList<string> targetSegment = segment.TargetSegment.Process(targetPreprocessor);
+			IReadOnlyList<string> sourceSegment = sourcePreprocessor.Process(segment.SourceSegment);
+			IReadOnlyList<string> targetSegment = targetPreprocessor.Process(segment.TargetSegment);
 
 			model.AddSegmentPair(sourceSegment, targetSegment);
 		}
 
 		public static WordAlignmentMatrix GetBestAlignment(this ISegmentAligner aligner, ParallelTextSegment segment,
-			Func<string, string> sourcePreprocessor = null, Func<string, string> targetPreprocessor = null)
+			ITokenProcessor sourcePreprocessor = null, ITokenProcessor targetPreprocessor = null)
 		{
-			IReadOnlyList<string> sourceSegment = segment.SourceSegment.Process(sourcePreprocessor);
-			IReadOnlyList<string> targetSegment = segment.TargetSegment.Process(targetPreprocessor);
+			IReadOnlyList<string> sourceSegment = sourcePreprocessor.Process(segment.SourceSegment);
+			IReadOnlyList<string> targetSegment = targetPreprocessor.Process(segment.TargetSegment);
 
 			return aligner.GetBestAlignment(sourceSegment, targetSegment, segment.CreateAlignmentMatrix());
 		}
@@ -165,21 +128,11 @@ namespace SIL.Machine.Translation
 			return matrix;
 		}
 
-		public static IReadOnlyList<string> Process(this IEnumerable<string> segment,
-			params Func<string, string>[] processors)
-		{
-			IEnumerable<string> processed = segment;
-			foreach (Func<string, string> processor in processors)
-				processed = processed.Select(processor ?? StringProcessors.Null);
-			return processed.ToArray();
-		}
-
 		public static string GetAlignmentString(this IWordAlignmentModel model, ParallelTextSegment segment,
-			bool includeProbs, Func<string, string> sourcePreprocessor = null,
-			Func<string, string> targetPreprocessor = null)
+			bool includeProbs, ITokenProcessor sourcePreprocessor = null, ITokenProcessor targetPreprocessor = null)
 		{
-			IReadOnlyList<string> sourceSegment = segment.SourceSegment.Process(sourcePreprocessor);
-			IReadOnlyList<string> targetSegment = segment.TargetSegment.Process(targetPreprocessor);
+			IReadOnlyList<string> sourceSegment = sourcePreprocessor.Process(segment.SourceSegment);
+			IReadOnlyList<string> targetSegment = targetPreprocessor.Process(segment.TargetSegment);
 			WordAlignmentMatrix alignment = model.GetBestAlignment(sourceSegment, targetSegment,
 				segment.CreateAlignmentMatrix());
 
@@ -189,14 +142,26 @@ namespace SIL.Machine.Translation
 		}
 
 		public static string GetGizaFormatString(this ISegmentAligner aligner, ParallelTextSegment segment,
-			Func<string, string> sourcePreprocessor = null, Func<string, string> targetPreprocessor = null)
+			ITokenProcessor sourcePreprocessor = null, ITokenProcessor targetPreprocessor = null)
 		{
-			IReadOnlyList<string> sourceSegment = segment.SourceSegment.Process(sourcePreprocessor);
-			IReadOnlyList<string> targetSegment = segment.TargetSegment.Process(targetPreprocessor);
+			IReadOnlyList<string> sourceSegment = sourcePreprocessor.Process(segment.SourceSegment);
+			IReadOnlyList<string> targetSegment = targetPreprocessor.Process(segment.TargetSegment);
 			WordAlignmentMatrix alignment = aligner.GetBestAlignment(sourceSegment, targetSegment,
 				segment.CreateAlignmentMatrix());
 
 			return alignment.ToGizaFormat(sourceSegment, targetSegment);
+		}
+
+		public static void TrainSegment(this ITruecaser truecaser, TextSegment segment)
+		{
+			truecaser.TrainSegment(segment.Segment, segment.SentenceStart);
+		}
+
+		public static HybridInteractiveTranslationResult Truecase(this ITruecaser truecaser,
+			IReadOnlyList<string> sourceSegment, HybridInteractiveTranslationResult result)
+		{
+			return new HybridInteractiveTranslationResult(truecaser.Truecase(sourceSegment, result.SmtWordGraph),
+				result.RuleResult == null ? null : truecaser.Truecase(sourceSegment, result.RuleResult));
 		}
 	}
 }

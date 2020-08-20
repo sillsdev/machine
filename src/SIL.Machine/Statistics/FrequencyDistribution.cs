@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using SIL.Extensions;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Statistics
@@ -20,38 +19,34 @@ namespace SIL.Machine.Statistics
 			SampleOutcomeCount = fd.SampleOutcomeCount;
 		}
 
-		public IReadOnlyCollection<TSample> ObservedSamples
+		public IReadOnlyCollection<TSample> ObservedSamples => _sampleCounts.Keys;
+
+		public int Increment(TSample sample)
 		{
-			get { return _sampleCounts.Keys; }
+			return Increment(sample, 1);
 		}
 
-		public void Increment(TSample sample)
+		public int Increment(TSample sample, int count)
 		{
-			Increment(sample, 1);
-		}
-
-		public void Increment(TSample sample, int count)
-		{
-			if (count == 0)
-				return;
-
-			_sampleCounts.UpdateValue(sample, () => 0, c => c + count);
+			if (!_sampleCounts.TryGetValue(sample, out int curCount))
+				curCount = 0;
+			int newCount = curCount + count;
+			_sampleCounts[sample] = newCount;
 			SampleOutcomeCount += count;
+			return newCount;
 		}
 
-		public void Decrement(TSample sample)
+		public int Decrement(TSample sample)
 		{
-			Decrement(sample, 1);
+			return Decrement(sample, 1);
 		}
 
-		public void Decrement(TSample sample, int count)
+		public int Decrement(TSample sample, int count)
 		{
-			if (count == 0)
-				return;
-
-			int curCount;
-			if (_sampleCounts.TryGetValue(sample, out curCount))
+			if (_sampleCounts.TryGetValue(sample, out int curCount))
 			{
+				if (count == 0)
+					return curCount;
 				if (curCount < count)
 					throw new ArgumentException("The specified sample cannot be decremented.", "sample");
 				int newCount = curCount - count;
@@ -59,20 +54,24 @@ namespace SIL.Machine.Statistics
 					_sampleCounts.Remove(sample);
 				else
 					_sampleCounts[sample] = newCount;
+				SampleOutcomeCount -= count;
+				return newCount;
+			}
+			else if (count == 0)
+			{
+				return 0;
 			}
 			else
 			{
 				throw new ArgumentException("The specified sample cannot be decremented.", "sample");
 			}
-			SampleOutcomeCount -= count;
 		}
 
 		public int this[TSample sample]
 		{
 			get
 			{
-				int count;
-				if (_sampleCounts.TryGetValue(sample, out count))
+				if (_sampleCounts.TryGetValue(sample, out int count))
 					return count;
 				return 0;
 			}

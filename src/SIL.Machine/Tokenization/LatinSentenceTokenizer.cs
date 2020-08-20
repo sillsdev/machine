@@ -6,16 +6,6 @@ namespace SIL.Machine.Tokenization
 {
 	public class LatinSentenceTokenizer : LatinWordTokenizer
 	{
-		private static readonly HashSet<string> SentenceTerminals = new HashSet<string>
-		{
-			".", "!", "?", "\u203C", "\u203D", "\u2047", "\u2048", "\u2049", "\u3002", "\uFE52", "\uFE57", "\uFF01",
-			"\uFF0E", "\uFF1F", "\uFF61"
-		};
-		private static readonly HashSet<string> ClosingQuotes = new HashSet<string>
-		{
-			"\'", "\u2019", "\"", "\u201D", "»", "›"
-		};
-		private static readonly HashSet<string> ClosingBrackets = new HashSet<string> { "]", ")" };
 		private static readonly LineSegmentTokenizer LineTokenizer = new LineSegmentTokenizer();
 
 		public LatinSentenceTokenizer()
@@ -48,12 +38,12 @@ namespace SIL.Machine.Tokenization
 				string word = data.Substring(wordRange.Start, wordRange.Length);
 				if (!inEnd)
 				{
-					if (SentenceTerminals.Contains(word))
+					if (word.IsSentenceTerminal())
 						inEnd = true;
 				}
 				else
 				{
-					if (ClosingQuotes.Contains(word) || ClosingBrackets.Contains(word))
+					if (word.IsDelayedSentenceEnd())
 					{
 						hasEndQuotesBrackets = true;
 					}

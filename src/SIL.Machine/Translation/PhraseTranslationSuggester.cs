@@ -19,7 +19,7 @@ namespace SIL.Machine.Translation
 				if ((result.WordSources[startingJ - 1] & TranslationSources.Smt) != 0)
 					startingJ--;
 				else
-					return new TranslationSuggestion();
+					return new TranslationSuggestion(result);
 			}
 
 			int k = 0;
@@ -57,7 +57,7 @@ namespace SIL.Machine.Translation
 				}
 			}
 
-			return new TranslationSuggestion(indices, minConfidence < 0 ? 0 : minConfidence);
+			return new TranslationSuggestion(result, indices, minConfidence < 0 ? 0 : minConfidence);
 		}
 	}
 }

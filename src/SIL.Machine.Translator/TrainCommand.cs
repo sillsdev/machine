@@ -48,8 +48,8 @@ namespace SIL.Machine.Translation
 				File.Copy(defaultConfigFileName, EngineConfigFileName);
 			}
 
-			using (ISmtBatchTrainer trainer = new ThotSmtBatchTrainer(EngineConfigFileName, StringProcessors.Lowercase,
-				StringProcessors.Lowercase, ParallelCorpus, MaxParallelCorpusCount))
+			using (ISmtBatchTrainer trainer = new ThotSmtBatchTrainer(EngineConfigFileName, TokenProcessors.Lowercase,
+				TokenProcessors.Lowercase, ParallelCorpus, MaxParallelCorpusCount))
 			{
 				Stopwatch watch = Stopwatch.StartNew();
 				if (!_quietOption.HasValue())
@@ -85,7 +85,7 @@ namespace SIL.Machine.Translation
 			using (var alignmentModel = new ThotSymmetrizedWordAlignmentModel(tmPrefix + "_invswm", tmPrefix + "_swm",
 				true))
 			{
-				alignmentModel.AddSegmentPairs(ParallelCorpus, StringProcessors.Lowercase, StringProcessors.Lowercase,
+				alignmentModel.AddSegmentPairs(ParallelCorpus, TokenProcessors.Lowercase, TokenProcessors.Lowercase,
 					MaxParallelCorpusCount);
 				alignmentModel.Train(progress);
 				alignmentModel.Save();

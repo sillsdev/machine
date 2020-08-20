@@ -151,6 +151,7 @@ namespace SIL.Machine.Translation
 			int corpusCount = Math.Min(maxCorpusCount, corpus.GetSegments()
 				.Count(s => !s.IsEmpty && s.Segment.Count <= TranslationConstants.MaxSegmentLength));
 
+			var truecaser = new TransferTruecaser();
 			if (!_quietOption.HasValue())
 				Out.Write("Translating... ");
 			int segmentCount = 0;
@@ -175,9 +176,9 @@ namespace SIL.Machine.Translation
 							else
 							{
 								TranslationResult translateResult = engine.Translate(
-									segment.Segment.Process(StringProcessors.Lowercase));
-								string translation = targetWordDetokenizer.Detokenize(
-									translateResult.RecaseTargetWords(segment.Segment));
+									TokenProcessors.Lowercase.Process(segment.Segment));
+								translateResult = truecaser.Truecase(segment.Segment, translateResult);
+								string translation = targetWordDetokenizer.Detokenize(translateResult.TargetSegment);
 								textWriter.WriteLine(translation);
 
 								segmentCount++;

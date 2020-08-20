@@ -194,8 +194,10 @@ namespace SIL.Machine.Translation.TestApp
 					if (alignmentsFileName != null)
 						alignmentsFileName = Path.Combine(configDir, alignmentsFileName);
 
-					var text = new TextViewModel(_tokenizer, name, metadataFileName, srcTextFileName, trgTextFileName,
-						alignmentsFileName) { Engine = _hybridEngine };
+					var text = new TextViewModel(_tokenizer, name, metadataFileName, srcTextFileName, trgTextFileName)
+					{
+						Engine = _hybridEngine
+					};
 					text.PropertyChanged += TextPropertyChanged;
 					_texts.Add(text);
 
@@ -265,8 +267,8 @@ namespace SIL.Machine.Translation.TestApp
 			_isRebuilding = true;
 			try
 			{
-				using (ISmtBatchTrainer trainer = _smtModel.CreateBatchTrainer(StringProcessors.Lowercase, _sourceCorpus,
-					StringProcessors.Lowercase, _targetCorpus, _alignmentCorpus))
+				using (ISmtBatchTrainer trainer = _smtModel.CreateBatchTrainer(TokenProcessors.Lowercase, _sourceCorpus,
+					TokenProcessors.Lowercase, _targetCorpus, _alignmentCorpus))
 				{
 					await Task.Run(() => trainer.Train(progress, token.ThrowIfCancellationRequested), token);
 					trainer.Save();

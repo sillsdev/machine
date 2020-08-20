@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using SIL.Machine.Translation;
 using SIL.Machine.Translation.Thot;
@@ -8,7 +9,7 @@ using SIL.Machine.WebApi.Configuration;
 
 namespace SIL.Machine.WebApi.Services
 {
-	public class ThotSmtModelFactory : ISmtModelFactory
+	public class ThotSmtModelFactory : IComponentFactory<IInteractiveSmtModel>
 	{
 		private readonly IOptions<ThotSmtModelOptions> _options;
 		private readonly IOptions<EngineOptions> _engineOptions;
@@ -19,13 +20,13 @@ namespace SIL.Machine.WebApi.Services
 			_engineOptions = engineOptions;
 		}
 
-		public IInteractiveSmtModel Create(string engineId)
+		public Task<IInteractiveSmtModel> CreateAsync(string engineId)
 		{
 			string smtConfigFileName = Path.Combine(_engineOptions.Value.EnginesDir, engineId, "smt.cfg");
-			return new ThotSmtModel(smtConfigFileName);
+			return Task.FromResult<IInteractiveSmtModel>(new ThotSmtModel(smtConfigFileName));
 		}
 
-		public void InitNewModel(string engineId)
+		public void InitNew(string engineId)
 		{
 			string engineDir = Path.Combine(_engineOptions.Value.EnginesDir, engineId);
 			if (!Directory.Exists(engineDir))
@@ -33,7 +34,7 @@ namespace SIL.Machine.WebApi.Services
 			ZipFile.ExtractToDirectory(_options.Value.NewModelFile, engineDir);
 		}
 
-		public void CleanupModel(string engineId)
+		public void Cleanup(string engineId)
 		{
 			string engineDir = Path.Combine(_engineOptions.Value.EnginesDir, engineId);
 			if (!Directory.Exists(engineDir))

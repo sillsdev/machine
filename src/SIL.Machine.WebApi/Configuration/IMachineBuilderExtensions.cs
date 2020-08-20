@@ -7,6 +7,7 @@ using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Bson.Serialization.IdGenerators;
 using MongoDB.Bson.Serialization.Serializers;
 using NoDb;
+using SIL.Machine.Translation;
 using SIL.Machine.WebApi.Configuration;
 using SIL.Machine.WebApi.DataAccess;
 using SIL.Machine.WebApi.DataAccess.Memory;
@@ -35,7 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
 		public static IMachineBuilder AddThotSmtModel(this IMachineBuilder builder)
 		{
-			builder.Services.AddSingleton<ISmtModelFactory, ThotSmtModelFactory>();
+			builder.Services.AddSingleton<IComponentFactory<IInteractiveSmtModel>, ThotSmtModelFactory>();
 			return builder;
 		}
 
@@ -55,7 +56,19 @@ namespace Microsoft.Extensions.DependencyInjection
 
 		public static IMachineBuilder AddTransferEngine(this IMachineBuilder builder)
 		{
-			builder.Services.AddSingleton<IRuleEngineFactory, TransferEngineFactory>();
+			builder.Services.AddSingleton<IComponentFactory<ITranslationEngine>, TransferEngineFactory>();
+			return builder;
+		}
+
+		public static IMachineBuilder AddUnigramTruecaser(this IMachineBuilder builder)
+		{
+			builder.Services.AddSingleton<IComponentFactory<ITruecaser>, UnigramTruecaserFactory>();
+			return builder;
+		}
+
+		public static IMachineBuilder AddTransferTruecaser(this IMachineBuilder builder)
+		{
+			builder.Services.AddSingleton<IComponentFactory<ITruecaser>, TransferTruecaserFactory>();
 			return builder;
 		}
 

@@ -19,7 +19,7 @@ namespace SIL.Machine.Translation
 				if ((result.WordSources[startingJ - 1] & TranslationSources.Smt) != 0)
 					startingJ--;
 				else
-					return new TranslationSuggestion();
+					return new TranslationSuggestion(result);
 			}
 
 			int lookaheadCount = ComputeLookahead(prefixCount, result);
@@ -62,7 +62,7 @@ namespace SIL.Machine.Translation
 				j++;
 			}
 
-			return new TranslationSuggestion(indices, minConfidence < 0 ? 0 : minConfidence);
+			return new TranslationSuggestion(result, indices, minConfidence < 0 ? 0 : minConfidence);
 		}
 
 		private int ComputeLookahead(int prefixCount, TranslationResult result)

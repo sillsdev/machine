@@ -63,7 +63,7 @@ namespace SIL.Machine.Translation
 							else
 							{
 								writer.WriteLine(alignmentModel.GetAlignmentString(segment, _probOption.HasValue(),
-									StringProcessors.Lowercase, StringProcessors.Lowercase));
+									TokenProcessors.Lowercase, TokenProcessors.Lowercase));
 								segmentCount++;
 								progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
 								if (segmentCount == MaxParallelCorpusCount)

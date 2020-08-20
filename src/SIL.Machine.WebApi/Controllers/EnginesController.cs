@@ -65,7 +65,7 @@ namespace SIL.Machine.WebApi.Controllers
 			TranslationResult result = await _engineService.TranslateAsync(engine.Id, segment);
 			if (result == null)
 				return NotFound();
-			return Ok(CreateDto(result, segment));
+			return Ok(CreateDto(result));
 		}
 
 		[HttpPost("{locatorType}:{locator}/actions/translate/{n}")]
@@ -81,7 +81,7 @@ namespace SIL.Machine.WebApi.Controllers
 			IEnumerable<TranslationResult> results = await _engineService.TranslateAsync(engine.Id, n, segment);
 			if (results == null)
 				return NotFound();
-			return Ok(results.Select(tr => CreateDto(tr, segment)));
+			return Ok(results.Select(CreateDto));
 		}
 
 		[HttpPost("{locatorType}:{locator}/actions/interactiveTranslate")]
@@ -98,7 +98,7 @@ namespace SIL.Machine.WebApi.Controllers
 				segment);
 			if (result == null)
 				return NotFound();
-			return Ok(CreateDto(result, segment));
+			return Ok(CreateDto(result));
 		}
 
 		[HttpPost("{locatorType}:{locator}/actions/trainSegment")]
@@ -112,7 +112,7 @@ namespace SIL.Machine.WebApi.Controllers
 				return StatusCode(StatusCodes.Status403Forbidden);
 
 			if (!await _engineService.TrainSegmentAsync(engine.Id, segmentPair.SourceSegment,
-				segmentPair.TargetSegment))
+				segmentPair.TargetSegment, segmentPair.SentenceStart))
 			{
 				return NotFound();
 			}
@@ -139,15 +139,14 @@ namespace SIL.Machine.WebApi.Controllers
 			return EngineLocatorType.Id;
 		}
 
-		private static TranslationResultDto CreateDto(TranslationResult result, IReadOnlyList<string> sourceSegment)
+		private static TranslationResultDto CreateDto(TranslationResult result)
 		{
 			if (result == null)
 				return null;
 
 			return new TranslationResultDto
 			{
-				Target = Enumerable.Range(0, result.TargetSegment.Count)
-					.Select(j => result.RecaseTargetWord(sourceSegment, j)).ToArray(),
+				Target = result.TargetSegment.ToArray(),
 				Confidences = result.WordConfidences.Select(c => (float) c).ToArray(),
 				Sources = result.WordSources.ToArray(),
 				Alignment = CreateDto(result.Alignment),
@@ -155,27 +154,24 @@ namespace SIL.Machine.WebApi.Controllers
 			};
 		}
 
-		private static WordGraphDto CreateDto(WordGraph wordGraph, IReadOnlyList<string> sourceSegment)
+		private static WordGraphDto CreateDto(WordGraph wordGraph)
 		{
 			return new WordGraphDto
 			{
 				InitialStateScore = (float) wordGraph.InitialStateScore,
 				FinalStates = wordGraph.FinalStates.ToArray(),
-				Arcs = wordGraph.Arcs.Select(a => CreateDto(a, sourceSegment)).ToArray()
+				Arcs = wordGraph.Arcs.Select(CreateDto).ToArray()
 			};
 		}
 
-		private static WordGraphArcDto CreateDto(WordGraphArc arc, IReadOnlyList<string> sourceSegment)
+		private static WordGraphArcDto CreateDto(WordGraphArc arc)
 		{
 			return new WordGraphArcDto
 			{
 				PrevState = arc.PrevState,
 				NextState = arc.NextState,
 				Score = (float) arc.Score,
-				Words = Enumerable.Range(0, arc.Words.Count)
-					.Select(j =>
-						arc.Alignment.RecaseTargetWord(sourceSegment, arc.SourceSegmentRange.Start, arc.Words, j))
-					.ToArray(),
+				Words = arc.Words.ToArray(),
 				Confidences = arc.WordConfidences.Select(c => (float) c).ToArray(),
 				SourceSegmentRange = CreateDto(arc.SourceSegmentRange),
 				IsUnknown = arc.IsUnknown,
@@ -222,13 +218,12 @@ namespace SIL.Machine.WebApi.Controllers
 			};
 		}
 
-		private static InteractiveTranslationResultDto CreateDto(HybridInteractiveTranslationResult result,
-			IReadOnlyList<string> sourceSegment)
+		private static InteractiveTranslationResultDto CreateDto(HybridInteractiveTranslationResult result)
 		{
 			return new InteractiveTranslationResultDto
 			{
-				WordGraph = CreateDto(result.SmtWordGraph, sourceSegment),
-				RuleResult = CreateDto(result.RuleResult, sourceSegment)
+				WordGraph = CreateDto(result.SmtWordGraph),
+				RuleResult = CreateDto(result.RuleResult)
 			};
 		}
 

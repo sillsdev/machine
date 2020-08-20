@@ -14,7 +14,8 @@ namespace SIL.Machine.Corpora
 
 		public ScrVers Versification { get; }
 
-		protected IEnumerable<TextSegment> CreateTextSegments(string chapter, string verse, string text)
+		protected IEnumerable<TextSegment> CreateTextSegments(string chapter, string verse, string text,
+			bool sentenceStart = true)
 		{
 			var verseRef = new VerseRef(Id, chapter, verse, Versification);
 			if (verseRef.HasMultiple)
@@ -24,7 +25,7 @@ namespace SIL.Machine.Corpora
 				{
 					if (firstVerse)
 					{
-						yield return CreateTextSegment(text, vref, true);
+						yield return CreateTextSegment(text, vref, true, sentenceStart);
 						firstVerse = false;
 					}
 					else
@@ -35,7 +36,7 @@ namespace SIL.Machine.Corpora
 			}
 			else
 			{
-				yield return CreateTextSegment(text, verseRef);
+				yield return CreateTextSegment(text, verseRef, sentenceStart: sentenceStart);
 			}
 		}
 	}

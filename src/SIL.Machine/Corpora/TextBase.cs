@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using SIL.Machine.Tokenization;
 using SIL.Machine.Translation;
 
@@ -21,11 +22,13 @@ namespace SIL.Machine.Corpora
 
 		public abstract IEnumerable<TextSegment> Segments { get; }
 
-		protected TextSegment CreateTextSegment(string text, object segRef, bool inRange = false)
+		protected TextSegment CreateTextSegment(string text, object segRef, bool inRange = false,
+			bool sentenceStart = true)
 		{
-			IReadOnlyList<string> segment = WordTokenizer.Tokenize(text.Trim().Normalize())
-				.Process(StringProcessors.UnescapeSpaces);
-			return new TextSegment(segRef, segment, inRange);
+
+			IReadOnlyList<string> segment = WordTokenizer.Tokenize(text.Trim().Normalize()).ToArray();
+			segment = TokenProcessors.UnescapeSpaces.Process(segment);
+			return new TextSegment(segRef, segment, inRange, sentenceStart);
 		}
 
 		protected TextSegment CreateTextSegment(object segRef, bool inRange = false)

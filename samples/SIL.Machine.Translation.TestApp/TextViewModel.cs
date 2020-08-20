@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -19,7 +18,7 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly IRangeTokenizer<string, int, string> _tokenizer;
 		private readonly string _metadataFileName;
 		private readonly string _targetFileName;
-		private readonly string _alignmentFileName;
+		private readonly ITruecaser _truecaser;
 
 		private string _sourceText;
 		private string _targetText;
@@ -50,13 +49,13 @@ namespace SIL.Machine.Translation.TestApp
 		private HybridInteractiveTranslationSession _curSession;
 
 		public TextViewModel(IRangeTokenizer<string, int, string> tokenizer, string name, string metadataFileName,
-			string sourceFileName, string targetFileName, string alignmentFileName)
+			string sourceFileName, string targetFileName)
 		{
 			Name = name;
 			_metadataFileName = metadataFileName;
 			_targetFileName = targetFileName;
-			_alignmentFileName = alignmentFileName;
 			_tokenizer = tokenizer;
+			_truecaser = new TransferTruecaser();
 
 			_sourceSegments = new List<Segment>();
 			_targetSegments = new List<Segment>();
@@ -87,7 +86,7 @@ namespace SIL.Machine.Translation.TestApp
 		}
 
 		public TextViewModel(IRangeTokenizer<string, int, string> tokenizer)
-			: this(tokenizer, null, null, null, null, null)
+			: this(tokenizer, null, null, null, null)
 		{
 		}
 
@@ -319,7 +318,7 @@ namespace SIL.Machine.Translation.TestApp
 		private void StartSegmentTranslation()
 		{
 			_sourceSegmentWords.AddRange(_tokenizer.Tokenize(_sourceSegments[_currentSegment].Text));
-			_curSession = Engine.TranslateInteractively(1, _sourceSegmentWords.Process(StringProcessors.Lowercase));
+			_curSession = Engine.TranslateInteractively(1, TokenProcessors.Lowercase.Process(_sourceSegmentWords));
 			_isTranslating = true;
 			UpdatePrefix();
 			UpdateSourceSegmentSelection();
@@ -330,8 +329,8 @@ namespace SIL.Machine.Translation.TestApp
 			if (!_isTranslating)
 				return;
 
-			IReadOnlyList<string> prefix = _tokenizer.Tokenize(_targetSegments[_currentSegment].Text)
-				.Process(StringProcessors.Lowercase);
+			IReadOnlyList<string> prefix = _tokenizer.Tokenize(_targetSegments[_currentSegment].Text).ToArray();
+			prefix = TokenProcessors.Lowercase.Process(prefix);
 			_curSession.SetPrefix(prefix, TargetSegment.Length == 0 || TargetSegment.EndsWith(" "));
 			UpdateSuggestions();
 		}
@@ -343,9 +342,8 @@ namespace SIL.Machine.Translation.TestApp
 
 			if (!_approvedSegments.Contains(_currentSegment))
 			{
-				_suggestions.ReplaceAll(_suggester.GetSuggestions(_curSession).First().TargetWordIndices.Select(j =>
-					new SuggestionViewModel(this,
-						_curSession.CurrentResults[0].RecaseTargetWord(_sourceSegmentWords, j))));
+				_suggestions.ReplaceAll(_suggester.GetSuggestions(_curSession, _sourceSegmentWords, _truecaser).First()
+					.TargetWords.Select(w => new SuggestionViewModel(this, w)));
 			}
 			else
 			{

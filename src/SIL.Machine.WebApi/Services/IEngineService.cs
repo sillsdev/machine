@@ -15,7 +15,7 @@ namespace SIL.Machine.WebApi.Services
 			IReadOnlyList<string> segment);
 
 		Task<bool> TrainSegmentAsync(string engineId, IReadOnlyList<string> sourceSegment,
-			IReadOnlyList<string> targetSegment);
+			IReadOnlyList<string> targetSegment, bool sentenceStart);
 
 		Task<bool> AddProjectAsync(Project project);
 

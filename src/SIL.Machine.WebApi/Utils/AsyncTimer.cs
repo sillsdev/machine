@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Threading;
-using SIL.ObjectModel;
 using System.Threading.Tasks;
 
 namespace SIL.Machine.WebApi.Utils
 {
-	public class AsyncTimer : DisposableBase
+	public class AsyncTimer : AsyncDisposableBase
 	{
 		private readonly Timer _timer;
 		private readonly Func<Task> _callback;
@@ -34,15 +33,36 @@ namespace SIL.Machine.WebApi.Utils
 			}
 		}
 
+		public async Task StopAsync()
+		{
+			using (await _lock.LockAsync())
+			{
+				// FireTimer is *not* running _callback (since we got the lock)
+				StopTimer();
+			}
+			// Now FireTimer will *never* run _callback
+		}
+
 		public void Stop()
 		{
 			using (_lock.Lock())
 			{
 				// FireTimer is *not* running _callback (since we got the lock)
-				_timer.Change(Timeout.Infinite, Timeout.Infinite);
-				_running = false;
+				StopTimer();
 			}
 			// Now FireTimer will *never* run _callback
+		}
+
+		private void StopTimer()
+		{
+			_timer.Change(Timeout.Infinite, Timeout.Infinite);
+			_running = false;
+		}
+
+		protected override async ValueTask DisposeAsyncCore()
+		{
+			await StopAsync();
+			_timer.Dispose();
 		}
 
 		protected override void DisposeManagedResources()

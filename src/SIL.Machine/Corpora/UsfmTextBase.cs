@@ -33,6 +33,7 @@ namespace SIL.Machine.Corpora
 				UsfmMarker curEmbedMarker = null;
 				var sb = new StringBuilder();
 				string chapter = null, verse = null;
+				bool sentenceStart = true;
 				foreach (UsfmToken token in _parser.Parse(usfm))
 				{
 					switch (token.Type)
@@ -40,8 +41,10 @@ namespace SIL.Machine.Corpora
 						case UsfmTokenType.Chapter:
 							if (inVerse)
 							{
-								foreach (TextSegment seg in CreateTextSegments(chapter, verse, sb.ToString()))
+								string text = sb.ToString();
+								foreach (TextSegment seg in CreateTextSegments(chapter, verse, text, sentenceStart))
 									yield return seg;
+								sentenceStart = true;
 								sb.Clear();
 								inVerse = false;
 							}
@@ -52,8 +55,10 @@ namespace SIL.Machine.Corpora
 						case UsfmTokenType.Verse:
 							if (inVerse)
 							{
-								foreach (TextSegment seg in CreateTextSegments(chapter, verse, sb.ToString()))
+								string text = sb.ToString();
+								foreach (TextSegment seg in CreateTextSegments(chapter, verse, text, sentenceStart))
 									yield return seg;
+								sentenceStart = text.HasSentenceEnding();
 								sb.Clear();
 							}
 							else
@@ -66,8 +71,10 @@ namespace SIL.Machine.Corpora
 						case UsfmTokenType.Paragraph:
 							if (!IsVersePara(token) && inVerse)
 							{
-								foreach (TextSegment seg in CreateTextSegments(chapter, verse, sb.ToString()))
-									yield return seg;
+								string text = sb.ToString();
+                                foreach (TextSegment seg in CreateTextSegments(chapter, verse, text, sentenceStart))
+                                    yield return seg;
+								sentenceStart = true;
 								sb.Clear();
 								inVerse = false;
 								verse = null;
@@ -103,7 +110,7 @@ namespace SIL.Machine.Corpora
 
 				if (inVerse)
 				{
-					foreach (TextSegment seg in CreateTextSegments(chapter, verse, sb.ToString()))
+					foreach (TextSegment seg in CreateTextSegments(chapter, verse, sb.ToString(), sentenceStart))
 						yield return seg;
 				}
 			}

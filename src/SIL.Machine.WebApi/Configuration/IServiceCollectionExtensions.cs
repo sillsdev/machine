@@ -26,22 +26,23 @@ namespace Microsoft.Extensions.DependencyInjection
 			services.AddSingleton<IBuildHandler, BuildHandler>();
 
 			services.Configure<MvcOptions>(o =>
-				{
-					o.Filters.Add<OperationCancelledExceptionFilter>();
-					o.Conventions.Add(new MachineApplicationModelConvention(config.Namespace,
-						config.AuthenticationSchemes));
-				});
+			{
+				o.Filters.Add<OperationCancelledExceptionFilter>();
+				o.Conventions.Add(new MachineApplicationModelConvention(config.Namespace,
+					config.AuthenticationSchemes));
+			});
 			services.Configure<MvcNewtonsoftJsonOptions>(o =>
-				{
-					o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-				});
+			{
+				o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+			});
 			services.Configure<RouteOptions>(o => o.LowercaseUrls = true);
 
-			var builder = new MachineBuilder(services);
-			builder.AddThotSmtModel();
-			builder.AddTransferEngine();
-			builder.AddMemoryDataAccess();
-			builder.AddTextFileTextCorpus();
+			var builder = new MachineBuilder(services)
+				.AddThotSmtModel()
+				.AddTransferEngine()
+				.AddTransferTruecaser()
+				.AddMemoryDataAccess()
+				.AddTextFileTextCorpus();
 			return builder;
 		}
 	}

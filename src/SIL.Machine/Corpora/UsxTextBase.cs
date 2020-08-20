@@ -39,11 +39,15 @@ namespace SIL.Machine.Corpora
 										yield return seg;
 								ctxt.Chapter = (string) elem.Attribute("number");
 								ctxt.Verse = null;
+								ctxt.SentenceStart = true;
 								break;
 
 							case "para":
 								if (!IsVersePara(elem))
+								{
+									ctxt.SentenceStart = true;
 									continue;
+								}
 								foreach (TextSegment segment in ParseElement(elem, ctxt))
 									yield return segment;
 								if (ctxt.IsInVerse && elem.Nodes().Any())
@@ -116,7 +120,9 @@ namespace SIL.Machine.Corpora
 		{
 			string text = ctxt.VerseBuilder.ToString().Trim();
 			ctxt.VerseBuilder.Clear();
-			return CreateTextSegments(ctxt.Chapter, ctxt.Verse, text);
+			IEnumerable<TextSegment> segments = CreateTextSegments(ctxt.Chapter, ctxt.Verse, text, ctxt.SentenceStart);
+			ctxt.SentenceStart = text.HasSentenceEnding();
+			return segments;
 		}
 
 		private class ParseContext
@@ -125,6 +131,7 @@ namespace SIL.Machine.Corpora
 			public string Chapter { get; set; }
 			public string Verse { get; set; }
 			public bool IsInVerse => Chapter != null && Verse != null;
+			public bool SentenceStart { get; set; } = true;
 		}
 	}
 }

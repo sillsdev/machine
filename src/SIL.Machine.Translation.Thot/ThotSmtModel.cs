@@ -72,8 +72,8 @@ namespace SIL.Machine.Translation.Thot
 			Thot.smtModel_saveModels(Handle);
 		}
 
-		public ISmtBatchTrainer CreateBatchTrainer(Func<string, string> sourcePreprocessor, ITextCorpus sourceCorpus,
-			Func<string, string> targetPreprocessor, ITextCorpus targetCorpus,
+		public ISmtBatchTrainer CreateBatchTrainer(ITokenProcessor sourcePreprocessor, ITextCorpus sourceCorpus,
+			ITokenProcessor targetPreprocessor, ITextCorpus targetCorpus,
 			ITextAlignmentCorpus alignmentCorpus = null)
 		{
 			CheckDisposed();
@@ -107,15 +107,15 @@ namespace SIL.Machine.Translation.Thot
 		{
 			private readonly ThotSmtModel _smtModel;
 
-			public BatchTrainer(ThotSmtModel smtModel, string cfgFileName, Func<string, string> sourcePreprocessor,
-				Func<string, string> targetPreprocessor, ParallelTextCorpus corpus)
+			public BatchTrainer(ThotSmtModel smtModel, string cfgFileName, ITokenProcessor sourcePreprocessor,
+				ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus)
 				: base(cfgFileName, sourcePreprocessor, targetPreprocessor, corpus)
 			{
 				_smtModel = smtModel;
 			}
 
 			public BatchTrainer(ThotSmtModel smtModel, ThotSmtParameters parameters,
-				Func<string, string> sourcePreprocessor, Func<string, string> targetPreprocessor,
+				ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor,
 				ParallelTextCorpus corpus)
 				: base(parameters, sourcePreprocessor, targetPreprocessor, corpus)
 			{

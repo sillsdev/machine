@@ -64,7 +64,8 @@ namespace SIL.Machine.Translation.Thot
 					LanguageModelFileNamePrefix = Path.Combine(tempDir.Path, "lm", "trg.lm")
 				};
 
-				using (var trainer = new ThotSmtBatchTrainer(parameters, s => s, s => s, corpus))
+				using (var trainer = new ThotSmtBatchTrainer(parameters, TokenProcessors.Null, TokenProcessors.Null,
+					corpus))
 				{
 					trainer.Train();
 					trainer.Save();
@@ -96,7 +97,8 @@ namespace SIL.Machine.Translation.Thot
 					LanguageModelFileNamePrefix = Path.Combine(tempDir.Path, "lm", "trg.lm")
 				};
 
-				using (var trainer = new ThotSmtBatchTrainer(parameters, s => s, s => s, corpus))
+				using (var trainer = new ThotSmtBatchTrainer(parameters, TokenProcessors.Null, TokenProcessors.Null,
+					corpus))
 				{
 					trainer.Train();
 					trainer.Save();

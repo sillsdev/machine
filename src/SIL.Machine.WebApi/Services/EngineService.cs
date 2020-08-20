@@ -9,11 +9,10 @@ using SIL.Machine.WebApi.Configuration;
 using SIL.Machine.WebApi.DataAccess;
 using SIL.Machine.WebApi.Models;
 using SIL.Machine.WebApi.Utils;
-using SIL.ObjectModel;
 
 namespace SIL.Machine.WebApi.Services
 {
-	internal class EngineService : DisposableBase, IEngineServiceInternal
+	internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 	{
 		private readonly IOptions<EngineOptions> _engineOptions;
 		private readonly ConcurrentDictionary<string, Owned<EngineRuntime>> _runtimes;
@@ -94,7 +93,7 @@ namespace SIL.Machine.WebApi.Services
 		}
 
 		public async Task<bool> TrainSegmentAsync(string engineId, IReadOnlyList<string> sourceSegment,
-			IReadOnlyList<string> targetSegment)
+			IReadOnlyList<string> targetSegment, bool sentenceStart)
 		{
 			CheckDisposed();
 
@@ -103,7 +102,7 @@ namespace SIL.Machine.WebApi.Services
 				if (!await _engines.ExistsAsync(engineId))
 					return false;
 				EngineRuntime runtime = GetOrCreateRuntime(engineId);
-				await runtime.TrainSegmentPairAsync(sourceSegment, targetSegment);
+				await runtime.TrainSegmentPairAsync(sourceSegment, targetSegment, sentenceStart);
 				return true;
 			}
 		}
@@ -169,7 +168,7 @@ namespace SIL.Machine.WebApi.Services
 					// the engine will have no associated projects, so remove it
 					_runtimes.TryRemove(engine.Id, out _);
 					await runtime.DeleteDataAsync();
-					runtime.Dispose();
+					await runtime.DisposeAsync();
 					await _engines.DeleteAsync(engine);
 					await _builds.DeleteAllByEngineIdAsync(engine.Id);
 				}
@@ -251,11 +250,11 @@ namespace SIL.Machine.WebApi.Services
 			return false;
 		}
 
-		protected override void DisposeManagedResources()
+		protected override async ValueTask DisposeAsyncCore()
 		{
-			_commitTimer.Dispose();
+			await _commitTimer.DisposeAsync();
 			foreach (Owned<EngineRuntime> runtime in _runtimes.Values)
-				runtime.Dispose();
+				await runtime.DisposeAsync();
 			_runtimes.Clear();
 		}
 	}

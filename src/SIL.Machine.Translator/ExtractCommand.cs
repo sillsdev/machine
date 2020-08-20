@@ -72,9 +72,9 @@ namespace SIL.Machine.Translation
 						continue;
 					}
 
-					Func<string, string> preprocessor = StringProcessors.Null;
+					ITokenProcessor preprocessor = TokenProcessors.Null;
 					if (_lowercaseOption.HasValue())
-						preprocessor = StringProcessors.Lowercase;
+						preprocessor = TokenProcessors.Lowercase;
 
 					if (sourceOutputWriter != null)
 					{
@@ -84,8 +84,8 @@ namespace SIL.Machine.Translation
 						}
 						else
 						{
-							sourceOutputWriter.WriteLine(string.Join(" ", segment.SourceSegment
-								.Process(preprocessor, StringProcessors.EscapeSpaces)));
+							sourceOutputWriter.WriteLine(string.Join(" ", TokenProcessors.Pipeline(preprocessor,
+								TokenProcessors.EscapeSpaces).Process(segment.SourceSegment)));
 						}
 					}
 					if (targetOutputWriter != null)
@@ -96,8 +96,8 @@ namespace SIL.Machine.Translation
 						}
 						else
 						{
-							targetOutputWriter.WriteLine(string.Join(" ", segment.TargetSegment
-								.Process(preprocessor, StringProcessors.EscapeSpaces)));
+							targetOutputWriter.WriteLine(string.Join(" ", TokenProcessors.Pipeline(preprocessor,
+								TokenProcessors.EscapeSpaces).Process(segment.TargetSegment)));
 						}
 					}
 

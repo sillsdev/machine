@@ -41,8 +41,7 @@ namespace SIL.Machine.DataStructures
 
 		public bool Contains(T item)
 		{
-			SkipListNode<T> result;
-			return Find(item, out result);
+			return Find(item, out _);
 		}
 
 		public void CopyTo(T[] array, int arrayIndex)
@@ -53,15 +52,11 @@ namespace SIL.Machine.DataStructures
 
 		public bool Remove(T item)
 		{
-			SkipListNode<T> result;
-			if (Find(item, out result))
+			if (Find(item, out SkipListNode<T> result))
 				return Remove(result);
 			return false;
 		}
 
-		bool ICollection<T>.IsReadOnly
-		{
-			get { return false; }
-		}
+		bool ICollection<T>.IsReadOnly => false;
 	}
 }

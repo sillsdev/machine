@@ -28,7 +28,7 @@ namespace SIL.Machine.WebApi.Services
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
 				env.CreateEngineService();
 				TranslationResult result = await env.Service.TranslateAsync(engineId, "Esto es una prueba .".Split());
-				Assert.That(result.TargetSegment, Is.EqualTo("this is a test .".Split()));
+				Assert.That(result.TargetSegment, Is.EqualTo("this is a TEST .".Split()));
 			}
 		}
 
@@ -53,8 +53,8 @@ namespace SIL.Machine.WebApi.Services
 				env.CreateEngineService();
 				HybridInteractiveTranslationResult result = await env.Service.InteractiveTranslateAsync(
 					engineId, "Esto es una prueba .".Split());
-				Assert.That(result.RuleResult.TargetSegment, Is.EqualTo("this is a test .".Split()));
-				Assert.That(result.SmtWordGraph.Arcs.SelectMany(a => a.Words), Is.EqualTo("this is a test .".Split()));
+				Assert.That(result.RuleResult.TargetSegment, Is.EqualTo("this is a TEST .".Split()));
+				Assert.That(result.SmtWordGraph.Arcs.SelectMany(a => a.Words), Is.EqualTo("this is a TEST .".Split()));
 			}
 		}
 
@@ -65,7 +65,7 @@ namespace SIL.Machine.WebApi.Services
 			{
 				env.CreateEngineService();
 				bool result = await env.Service.TrainSegmentAsync("engine1", "Esto es una prueba .".Split(),
-					"This is a test .".Split());
+					"This is a test .".Split(), true);
 				Assert.That(result, Is.False);
 			}
 
@@ -79,7 +79,7 @@ namespace SIL.Machine.WebApi.Services
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
 				env.CreateEngineService();
 				bool result = await env.Service.TrainSegmentAsync(engineId, "Esto es una prueba .".Split(),
-					"This is a test .".Split());
+					"This is a test .".Split(), true);
 				Assert.That(result, Is.True);
 			}
 		}

@@ -7,7 +7,7 @@ namespace SIL.Machine.Translation
 	{
 		ISmtEngine CreateEngine();
 		void Save();
-		ISmtBatchTrainer CreateBatchTrainer(Func<string, string> sourcePreprocessor, ITextCorpus sourceCorpus, Func<string, string> targetPreprocessor,
-			ITextCorpus targetCorpus, ITextAlignmentCorpus alignmentCorpus = null);
+		ISmtBatchTrainer CreateBatchTrainer(ITokenProcessor sourcePreprocessor, ITextCorpus sourceCorpus,
+			ITokenProcessor targetPreprocessor, ITextCorpus targetCorpus, ITextAlignmentCorpus alignmentCorpus = null);
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using SIL.Machine.Morphology.HermitCrab;
 using SIL.Machine.Translation;
@@ -7,7 +8,7 @@ using SIL.Machine.WebApi.Configuration;
 
 namespace SIL.Machine.WebApi.Services
 {
-	public class TransferEngineFactory : IRuleEngineFactory
+	public class TransferEngineFactory : IComponentFactory<ITranslationEngine>
 	{
 		private readonly IOptions<EngineOptions> _engineOptions;
 
@@ -16,7 +17,7 @@ namespace SIL.Machine.WebApi.Services
 			_engineOptions = engineOptions;
 		}
 
-		public ITranslationEngine Create(string engineId)
+		public Task<ITranslationEngine> CreateAsync(string engineId)
 		{
 			string engineDir = Path.Combine(_engineOptions.Value.EnginesDir, engineId);
 			string hcSrcConfigFileName = Path.Combine(engineDir, "src-hc.xml");
@@ -34,15 +35,15 @@ namespace SIL.Machine.WebApi.Services
 
 				transferEngine = new TransferEngine(srcMorpher, new SimpleTransferer(new GlossMorphemeMapper(trgMorpher)), trgMorpher);
 			}
-			return transferEngine;
+			return Task.FromResult<ITranslationEngine>(transferEngine);
 		}
 
-		public void InitNewEngine(string engineId)
+		public void InitNew(string engineId)
 		{
 			// TODO: generate source and target config files
 		}
 
-		public void CleanupEngine(string engineId)
+		public void Cleanup(string engineId)
 		{
 			string engineDir = Path.Combine(_engineOptions.Value.EnginesDir, engineId);
 			if (!Directory.Exists(engineDir))
