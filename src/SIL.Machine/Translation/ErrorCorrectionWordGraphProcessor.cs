@@ -217,7 +217,7 @@ namespace SIL.Machine.Translation
 			{
 				var builder = new TranslationResultBuilder();
 				BuildCorrectionFromHypothesis(builder, prefix, isLastWordComplete, hypothesis);
-				yield return builder.ToResult(_sourceSegment, prefix.Length);
+				yield return builder.ToResult(_sourceSegment);
 			}
 		}
 
@@ -373,7 +373,7 @@ namespace SIL.Machine.Translation
 
 			foreach (WordGraphArc arc in hypothesis.Arcs)
 			{
-				UpdateCorrectionFromArc(builder, arc, false, alignmentColsToAddCount);
+				UpdateCorrectionFromArc(builder, arc, alignmentColsToAddCount);
 				alignmentColsToAddCount = 0;
 			}
 		}
@@ -401,7 +401,7 @@ namespace SIL.Machine.Translation
 			}
 
 			foreach (WordGraphArc arc in arcs)
-				UpdateCorrectionFromArc(builder, arc, true, 0);
+				UpdateCorrectionFromArc(builder, arc, 0);
 		}
 
 		private void AddBestUncorrectedPrefixSubState(TranslationResultBuilder builder, int procPrefixPos,
@@ -418,14 +418,14 @@ namespace SIL.Machine.Translation
 
 			AddBestUncorrectedPrefixState(builder, curProcPrefixPos, arc.PrevState);
 
-			UpdateCorrectionFromArc(builder, arc, true, 0);
+			UpdateCorrectionFromArc(builder, arc, 0);
 		}
 
-		private void UpdateCorrectionFromArc(TranslationResultBuilder builder, WordGraphArc arc, bool isPrefix,
+		private void UpdateCorrectionFromArc(TranslationResultBuilder builder, WordGraphArc arc,
 			int alignmentColsToAddCount)
 		{
 			for (int i = 0; i < arc.Words.Count; i++)
-				builder.AppendWord(arc.Words[i], arc.WordConfidences[i], !isPrefix && arc.IsUnknown);
+				builder.AppendWord(arc.Words[i], arc.WordSources[i], arc.WordConfidences[i]);
 
 			WordAlignmentMatrix alignment = arc.Alignment;
 			if (alignmentColsToAddCount > 0)

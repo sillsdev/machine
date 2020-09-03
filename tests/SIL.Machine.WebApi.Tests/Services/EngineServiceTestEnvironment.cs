@@ -24,7 +24,7 @@ namespace SIL.Machine.WebApi.Services
 		private readonly MemoryStorage _memoryStorage;
 		private readonly BackgroundJobClient _jobClient;
 		private BackgroundJobServer _jobServer;
-		private IComponentFactory<IInteractiveSmtModel> _smtModelFactory;
+		private IComponentFactory<IInteractiveTranslationModel> _interactiveModelFactory;
 		private IComponentFactory<ITranslationEngine> _ruleEngineFactory;
 		private IComponentFactory<ITruecaser> _truecaserFactory;
 		private ITextCorpusFactory _textCorpusFactory;
@@ -43,12 +43,12 @@ namespace SIL.Machine.WebApi.Services
 		public IBuildRepository BuildRepository { get; }
 		public IProjectRepository ProjectRepository { get; }
 		public EngineService Service { get; private set; }
-		public ISmtBatchTrainer SmtBatchTrainer { get; private set; }
-		public IInteractiveSmtModel SmtModel { get; private set; }
+		public ITranslationModelTrainer SmtBatchTrainer { get; private set; }
+		public IInteractiveTranslationModel InteractiveModel { get; private set; }
 		public EngineOptions EngineOptions { get; }
 		public IBuildHandler BuildHandler { get; } = new BuildHandler();
 		public ITruecaser Truecaser { get; private set; }
-		public ITruecaseBatchTrainer TruecaseBatchTrainer { get; private set; }
+		public ITruecaserTrainer TruecaseBatchTrainer { get; private set; }
 
 		public EngineRuntime GetRuntime(string engineId)
 		{
@@ -57,13 +57,13 @@ namespace SIL.Machine.WebApi.Services
 
 		public void CreateEngineService()
 		{
-			SmtModel = Substitute.For<IInteractiveSmtModel>();
-			SmtBatchTrainer = Substitute.For<ISmtBatchTrainer>();
+			InteractiveModel = Substitute.For<IInteractiveTranslationModel>();
+			SmtBatchTrainer = Substitute.For<ITranslationModelTrainer>();
 			SmtBatchTrainer.Stats.Returns(new SmtBatchTrainStats());
 			Truecaser = Substitute.For<ITruecaser>();
-			TruecaseBatchTrainer = Substitute.For<ITruecaseBatchTrainer>();
+			TruecaseBatchTrainer = Substitute.For<ITruecaserTrainer>();
 			TruecaseBatchTrainer.SaveAsync().Returns(Task.CompletedTask);
-			_smtModelFactory = CreateSmtModelFactory();
+			_interactiveModelFactory = CreateInteractiveModelFactory();
 			_ruleEngineFactory = CreateRuleEngineFactory();
 			_truecaserFactory = CreateTruecaserFactory();
 			_textCorpusFactory = CreateTextCorpusFactory();
@@ -89,16 +89,16 @@ namespace SIL.Machine.WebApi.Services
 		private Owned<EngineRuntime> CreateEngineRuntime(string engineId)
 		{
 			var runtime = new EngineRuntime(new OptionsWrapper<EngineOptions>(EngineOptions), EngineRepository,
-				BuildRepository, _smtModelFactory, _ruleEngineFactory, _truecaserFactory, _jobClient,
+				BuildRepository, _interactiveModelFactory, _ruleEngineFactory, _truecaserFactory, _jobClient,
 				_textCorpusFactory, Substitute.For<ILogger<EngineRuntime>>(), engineId);
 			return new Owned<EngineRuntime>(runtime, runtime);
 		}
 
-		private IComponentFactory<IInteractiveSmtModel> CreateSmtModelFactory()
+		private IComponentFactory<IInteractiveTranslationModel> CreateInteractiveModelFactory()
 		{
-			var factory = Substitute.For<IComponentFactory<IInteractiveSmtModel>>();
+			var factory = Substitute.For<IComponentFactory<IInteractiveTranslationModel>>();
 
-			var smtEngine = Substitute.For<IInteractiveSmtEngine>();
+			var engine = Substitute.For<IInteractiveTranslationEngine>();
 			var translationResult = new TranslationResult("esto es una prueba .".Split(),
 				"this is a test .".Split(),
 				new[] { 1.0, 1.0, 1.0, 1.0, 1.0 },
@@ -119,34 +119,32 @@ namespace SIL.Machine.WebApi.Services
 					[4, 4] = true
 				},
 				new[] { new Phrase(Range<int>.Create(0, 5), 5, 1.0) });
-			smtEngine.Translate(Arg.Any<IReadOnlyList<string>>()).Returns(translationResult);
-			smtEngine.GetWordGraph(Arg.Any<IReadOnlyList<string>>()).Returns(new WordGraph(new[]
+			engine.Translate(Arg.Any<IReadOnlyList<string>>()).Returns(translationResult);
+			engine.GetWordGraph(Arg.Any<IReadOnlyList<string>>()).Returns(new WordGraph(new[]
 			{
 				new WordGraphArc(0, 1, 1.0, "this is".Split(),
 					new WordAlignmentMatrix(2, 2)
 					{
 						[0, 0] = true, [1, 1] = true
 					},
-					Range<int>.Create(0, 2), false, new[] { 1.0, 1.0 }),
+					Range<int>.Create(0, 2), GetSources(2, false), new[] { 1.0, 1.0 }),
 				new WordGraphArc(1, 2, 1.0, "a test".Split(),
 					new WordAlignmentMatrix(2, 2)
 					{
 						[0, 0] = true, [1, 1] = true
 					},
-					Range<int>.Create(2, 4), false, new[] { 1.0, 1.0 }),
+					Range<int>.Create(2, 4), GetSources(2, false), new[] { 1.0, 1.0 }),
 				new WordGraphArc(2, 3, 1.0, new[] { "." },
 					new WordAlignmentMatrix(1, 1) { [0, 0] = true },
-					Range<int>.Create(4, 5), false, new[] { 1.0 })
+					Range<int>.Create(4, 5), GetSources(1, false), new[] { 1.0 })
 			}, new[] { 3 }));
-			smtEngine.GetBestPhraseAlignment(Arg.Any<IReadOnlyList<string>>(), Arg.Any<IReadOnlyList<string>>())
-				.Returns(translationResult);
-			SmtModel.CreateInteractiveEngine().Returns(smtEngine);
+			InteractiveModel.CreateInteractiveEngine().Returns(engine);
 
-			SmtModel.CreateBatchTrainer(Arg.Any<ITokenProcessor>(), Arg.Any<ITextCorpus>(),
+			InteractiveModel.CreateTrainer(Arg.Any<ITokenProcessor>(), Arg.Any<ITextCorpus>(),
 				Arg.Any<ITokenProcessor>(), Arg.Any<ITextCorpus>(), Arg.Any<ITextAlignmentCorpus>())
 				.Returns(SmtBatchTrainer);
 
-			factory.CreateAsync(Arg.Any<string>()).Returns(Task.FromResult(SmtModel));
+			factory.CreateAsync(Arg.Any<string>()).Returns(Task.FromResult(InteractiveModel));
 			return factory;
 		}
 
@@ -199,11 +197,11 @@ namespace SIL.Machine.WebApi.Services
 				{
 					IReadOnlyList<string> words = arc.Words.Select(t => t == "test" ? "TEST" : t).ToArray();
 					arcs.Add(new WordGraphArc(arc.PrevState, arc.NextState, arc.Score, words, arc.Alignment,
-						arc.SourceSegmentRange, arc.IsUnknown, arc.WordConfidences));
+						arc.SourceSegmentRange, arc.WordSources, arc.WordConfidences));
 				}
 				return new WordGraph(arcs, graph.FinalStates, graph.InitialStateScore);
 			});
-			Truecaser.CreateBatchTrainer(Arg.Any<ITextCorpus>()).Returns(TruecaseBatchTrainer);
+			Truecaser.CreateTrainer(Arg.Any<ITextCorpus>()).Returns(TruecaseBatchTrainer);
 			factory.CreateAsync(Arg.Any<string>()).Returns(Task.FromResult(Truecaser));
 			return factory;
 		}
@@ -214,6 +212,14 @@ namespace SIL.Machine.WebApi.Services
 			factory.CreateAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<TextCorpusType>())
 				.Returns(Task.FromResult<ITextCorpus>(new DictionaryTextCorpus(Enumerable.Empty<IText>())));
 			return factory;
+		}
+
+		private static IEnumerable<TranslationSources> GetSources(int count, bool isUnknown)
+		{
+			var sources = new TranslationSources[count];
+			for (int i = 0; i < count; i++)
+				sources[i] = isUnknown ? TranslationSources.None : TranslationSources.Smt;
+			return sources;
 		}
 
 		public async Task<Engine> CreateEngineAsync(string sourceLanguageTag = "es", string targetLanguageTag = "en",

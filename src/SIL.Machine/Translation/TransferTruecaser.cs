@@ -9,9 +9,9 @@ namespace SIL.Machine.Translation
 {
 	public class TransferTruecaser : ITruecaser
 	{
-		public ITruecaseBatchTrainer CreateBatchTrainer(ITextCorpus corpus)
+		public ITruecaserTrainer CreateTrainer(ITextCorpus corpus)
 		{
-			return new BatchTrainer();
+			return new Trainer();
 		}
 
 		public Task SaveAsync()
@@ -38,7 +38,7 @@ namespace SIL.Machine.Translation
 				IReadOnlyList<string> words = Truecase(sourceSegment, arc.SourceSegmentRange.Start, arc.Words,
 					arc.Alignment);
 				newArcs.Add(new WordGraphArc(arc.PrevState, arc.NextState, arc.Score, words, arc.Alignment,
-					arc.SourceSegmentRange, arc.IsUnknown, arc.WordConfidences));
+					arc.SourceSegmentRange, arc.WordSources, arc.WordConfidences));
 			}
 			return new WordGraph(newArcs, wordGraph.FinalStates, wordGraph.InitialStateScore);
 		}
@@ -56,7 +56,7 @@ namespace SIL.Machine.Translation
 			return newSegment;
 		}
 
-		private class BatchTrainer : DisposableBase, ITruecaseBatchTrainer
+		private class Trainer : DisposableBase, ITruecaserTrainer
 		{
 			public Task SaveAsync()
 			{

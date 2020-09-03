@@ -23,6 +23,7 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly RelayCommand _openProjectCommand;
 		private readonly RelayCommand _saveProjectCommand;
 		private HybridTranslationEngine _hybridEngine;
+		private InteractiveTranslator _interactiveTranslator;
 		private ThotSmtModel _smtModel;
 		private ITextCorpus _sourceCorpus;
 		private ITextCorpus _targetCorpus;
@@ -162,9 +163,10 @@ namespace SIL.Machine.Translation.TestApp
 			}
 
 			_smtModel = new ThotSmtModel(Path.Combine(configDir, smtConfig));
-			IInteractiveSmtEngine smtEngine = _smtModel.CreateInteractiveEngine();
+			IInteractiveTranslationEngine smtEngine = _smtModel.CreateInteractiveEngine();
 
 			_hybridEngine = new HybridTranslationEngine(smtEngine, transferEngine);
+			_interactiveTranslator = new InteractiveTranslator(_hybridEngine);
 
 			var sourceTexts = new List<IText>();
 			var targetTexts = new List<IText>();
@@ -196,7 +198,7 @@ namespace SIL.Machine.Translation.TestApp
 
 					var text = new TextViewModel(_tokenizer, name, metadataFileName, srcTextFileName, trgTextFileName)
 					{
-						Engine = _hybridEngine
+						InteractiveTranslator = _interactiveTranslator
 					};
 					text.PropertyChanged += TextPropertyChanged;
 					_texts.Add(text);
@@ -267,7 +269,7 @@ namespace SIL.Machine.Translation.TestApp
 			_isRebuilding = true;
 			try
 			{
-				using (ISmtBatchTrainer trainer = _smtModel.CreateBatchTrainer(TokenProcessors.Lowercase, _sourceCorpus,
+				using (ITranslationModelTrainer trainer = _smtModel.CreateTrainer(TokenProcessors.Lowercase, _sourceCorpus,
 					TokenProcessors.Lowercase, _targetCorpus, _alignmentCorpus))
 				{
 					await Task.Run(() => trainer.Train(progress, token.ThrowIfCancellationRequested), token);

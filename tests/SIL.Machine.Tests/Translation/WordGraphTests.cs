@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Collections.Generic;
+using NUnit.Framework;
 using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Translation
@@ -12,19 +13,23 @@ namespace SIL.Machine.Translation
 			var arcs = new WordGraphArc[]
 			{
 				new WordGraphArc(0, 1, -11.1167f, new[] { "In", "the" },
-					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(0, 2), false),
+					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(0, 2),
+					GetSources(2, false)),
 				new WordGraphArc(0, 2, -13.7804f, new[] { "In" },
-					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(0, 1), false),
+					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(0, 1), GetSources(1, false)),
 				new WordGraphArc(1, 3, -12.9695f, new[] { "beginning" },
-					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(2, 3), false),
+					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(2, 3), GetSources(1, false)),
 				new WordGraphArc(2, 3, -7.68319f, new[] { "the", "beginning" },
-					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(1, 3), false),
+					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(1, 3),
+					GetSources(2, false)),
 				new WordGraphArc(2, 1, -14.4373f, new[] { "the" },
-					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(1, 2), false),
+					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(1, 2), GetSources(1, false)),
 				new WordGraphArc(3, 4, -19.3042f, new[] { "his", "Word" },
-					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5), false),
+					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5),
+					GetSources(2, false)),
 				new WordGraphArc(3, 5, -8.49148f, new[] { "the", "Word" },
-					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5), false)
+					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5),
+					GetSources(2, false))
 			};
 
 			var wordGraph = new WordGraph(arcs, new[] { 4, 5 }, -191.0998f);
@@ -46,21 +51,27 @@ namespace SIL.Machine.Translation
 			var arcs = new WordGraphArc[]
 			{
 				new WordGraphArc(0, 1, -23.5761f, new[] { "In", "your" },
-					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(0, 2), false),
+					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(0, 2),
+					GetSources(2, false)),
 				new WordGraphArc(0, 2, -13.7804f, new[] { "In" },
-					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(0, 1), false),
+					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(0, 1), GetSources(1, false)),
 				new WordGraphArc(2, 3, -7.68319f, new[] { "the", "beginning" },
-					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(1, 3), false),
+					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(1, 3),
+					GetSources(2, false)),
 				new WordGraphArc(3, 4, -19.3042f, new[] { "his", "Word" },
-					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5), false),
+					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5),
+					GetSources(2, false)),
 				new WordGraphArc(3, 5, -8.49148f, new[] { "the", "Word" },
-					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5), false),
+					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5),
+					GetSources(2, false)),
 				new WordGraphArc(1, 6, -15.2926f, new[] { "beginning" },
-					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(2, 3), false),
+					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(2, 3), GetSources(1, false)),
 				new WordGraphArc(6, 4, -19.3042f, new[] { "his", "Word" },
-					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5), false),
+					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5),
+					GetSources(2, false)),
 				new WordGraphArc(6, 5, -8.49148f, new[] { "the", "Word" },
-					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5), false)
+					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5),
+					GetSources(2, false))
 			};
 
 			var wordGraph = new WordGraph(arcs, new[] { 4, 5 }, -191.0998f);
@@ -86,19 +97,23 @@ namespace SIL.Machine.Translation
 			var arcs = new WordGraphArc[]
 			{
 				new WordGraphArc(0, 1, -11.1167f, new[] { "In", "the" },
-					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(0, 2), false),
+					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(0, 2),
+					GetSources(2, false)),
 				new WordGraphArc(0, 2, -13.7804f, new[] { "In" },
-					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(0, 1), false),
+					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(0, 1), GetSources(1, false)),
 				new WordGraphArc(1, 3, -12.9695f, new[] { "beginning" },
-					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(2, 3), false),
+					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(2, 3), GetSources(1, false)),
 				new WordGraphArc(2, 3, -7.68319f, new[] { "the", "beginning" },
-					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(1, 3), false),
+					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(1, 3),
+					GetSources(2, false)),
 				new WordGraphArc(2, 1, -14.4373f, new[] { "the" },
-					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(1, 2), false),
+					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(1, 2), GetSources(1, false)),
 				new WordGraphArc(3, 4, -19.3042f, new[] { "his", "Word" },
-					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5), false),
+					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5),
+					GetSources(2, false)),
 				new WordGraphArc(3, 5, -8.49148f, new[] { "the", "Word" },
-					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5), false)
+					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5),
+					GetSources(2, false))
 			};
 
 			var wordGraph = new WordGraph(arcs, new[] { 1, 4, 5 }, -191.0998f);
@@ -121,25 +136,31 @@ namespace SIL.Machine.Translation
 			var arcs = new WordGraphArc[]
 			{
 				new WordGraphArc(0, 1, -11.1167f, new[] { "In", "the" },
-					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(0, 2), false),
+					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(0, 2),
+					GetSources(2, false)),
 				new WordGraphArc(0, 2, -13.7804f, new[] { "In" },
-					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(0, 1), false),
+					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(0, 1), GetSources(1, false)),
 				new WordGraphArc(1, 3, -12.9695f, new[] { "beginning" },
-					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(2, 3), false),
+					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(2, 3), GetSources(1, false)),
 				new WordGraphArc(2, 3, -7.68319f, new[] { "the", "beginning" },
-					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(1, 3), false),
+					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(1, 3),
+					GetSources(2, false)),
 				new WordGraphArc(2, 1, -14.4373f, new[] { "the" },
-					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(1, 2), false),
+					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(1, 2), GetSources(1, false)),
 				new WordGraphArc(3, 4, -19.3042f, new[] { "his", "Word" },
-					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5), false),
+					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5),
+					GetSources(2, false)),
 				new WordGraphArc(3, 5, -8.49148f, new[] { "the", "Word" },
-					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5), false),
+					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5),
+					GetSources(2, false)),
 				new WordGraphArc(1, 6, -25.9695f, new[] { "end" },
-					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(2, 3), false),
+					new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(2, 3), GetSources(1, false)),
 				new WordGraphArc(6, 4, -19.3042f, new[] { "his", "Word" },
-					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5), false),
+					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5),
+					GetSources(2, false)),
 				new WordGraphArc(6, 5, -8.49148f, new[] { "the", "Word" },
-					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5), false)
+					new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true }, Range<int>.Create(3, 5),
+					GetSources(2, false))
 			};
 
 			var wordGraph = new WordGraph(arcs, new[] { 4, 5 }, -191.0998f);
@@ -157,6 +178,14 @@ namespace SIL.Machine.Translation
 			Assert.That(optimizedWordGraph.Arcs[7].Words, Is.EqualTo(new[] { "the", "Word" }));
 			Assert.That(optimizedWordGraph.FinalStates, Is.EquivalentTo(new[] { 5, 6 }));
 			Assert.That(optimizedWordGraph.InitialStateScore, Is.EqualTo(-191.0998f));
+		}
+
+		private static IEnumerable<TranslationSources> GetSources(int count, bool isUnknown)
+		{
+			var sources = new TranslationSources[count];
+			for (int i = 0; i < count; i++)
+				sources[i] = isUnknown ? TranslationSources.None : TranslationSources.Smt;
+			return sources;
 		}
 	}
 }

@@ -9,29 +9,27 @@ namespace SIL.Machine.Translation
 	{
 		private readonly List<string> _words;
 		private readonly List<double> _confidences;
-		private readonly HashSet<int> _unknownWords;
-		private readonly HashSet<int> _uncorrectedPrefixWords;
+		private readonly List<TranslationSources> _sources;
 		private readonly List<PhraseInfo> _phrases;
 
 		public TranslationResultBuilder()
 		{
 			_words = new List<string>();
 			_confidences = new List<double>();
-			_unknownWords = new HashSet<int>();
-			_uncorrectedPrefixWords = new HashSet<int>();
+			_sources = new List<TranslationSources>();
 			_phrases = new List<PhraseInfo>();
 		}
 
 		public IReadOnlyList<string> Words => _words;
 		public IReadOnlyList<double> Confidences => _confidences;
+		public IReadOnlyList<TranslationSources> Sources => _sources;
 		public IReadOnlyList<PhraseInfo> Phrases => _phrases;
 
-		public void AppendWord(string word, double confidence = -1, bool isUnknown = false)
+		public void AppendWord(string word, TranslationSources source, double confidence = -1)
 		{
 			_words.Add(word);
+			_sources.Add(source);
 			_confidences.Add(confidence);
-			if (isUnknown)
-				_unknownWords.Add(_words.Count - 1);
 		}
 
 		public void MarkPhrase(Range<int> sourceSegmentRange, WordAlignmentMatrix alignment)
@@ -56,6 +54,7 @@ namespace SIL.Machine.Translation
 				{
 					case EditOperation.Insert:
 						_words.Insert(j, prefix[j]);
+						_sources.Insert(j, TranslationSources.Prefix);
 						_confidences.Insert(j, -1);
 						alignmentColsToCopy.Add(-1);
 						for (int l = k; l < _phrases.Count; l++)
@@ -65,6 +64,7 @@ namespace SIL.Machine.Translation
 
 					case EditOperation.Delete:
 						_words.RemoveAt(j);
+						_sources.RemoveAt(j);
 						_confidences.RemoveAt(j);
 						i++;
 						if (k < _phrases.Count)
@@ -97,9 +97,14 @@ namespace SIL.Machine.Translation
 							_words[j] = CorrectWord(charOps, _words[j], prefix[j]);
 
 						if (wordOp == EditOperation.Substitute)
+						{
 							_confidences[j] = -1;
+							_sources[j] = TranslationSources.Prefix;
+						}
 						else if (wordOp == EditOperation.Hit)
-							_uncorrectedPrefixWords.Add(j);
+						{
+							_sources[j] |= TranslationSources.Prefix;
+						}
 
 						alignmentColsToCopy.Add(i);
 
@@ -187,7 +192,7 @@ namespace SIL.Machine.Translation
 			return sb.ToString();
 		}
 
-		public TranslationResult ToResult(IReadOnlyList<string> sourceSegment, int prefixCount = 0)
+		public TranslationResult ToResult(IReadOnlyList<string> sourceSegment)
 		{
 			double[] confidences = _confidences.ToArray();
 			var sources = new TranslationSources[Words.Count];
@@ -207,21 +212,7 @@ namespace SIL.Machine.Translation
 							alignment[i, j] = true;
 					}
 
-					if (j < prefixCount)
-					{
-						sources[j] = TranslationSources.Prefix;
-						if (_uncorrectedPrefixWords.Contains(j))
-							sources[j] |= TranslationSources.Smt;
-					}
-					else if (_unknownWords.Contains(j))
-					{
-						sources[j] = TranslationSources.None;
-					}
-					else
-					{
-						sources[j] = TranslationSources.Smt;
-					}
-
+					sources[j] = Sources[j];
 					confidence = Math.Min(confidence, Confidences[j]);
 				}
 

@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
 		public static IMachineBuilder AddThotSmtModel(this IMachineBuilder builder)
 		{
-			builder.Services.AddSingleton<IComponentFactory<IInteractiveSmtModel>, ThotSmtModelFactory>();
+			builder.Services.AddSingleton<IComponentFactory<IInteractiveTranslationModel>, ThotSmtModelFactory>();
 			return builder;
 		}
 

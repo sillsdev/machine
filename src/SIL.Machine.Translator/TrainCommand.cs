@@ -48,8 +48,8 @@ namespace SIL.Machine.Translation
 				File.Copy(defaultConfigFileName, EngineConfigFileName);
 			}
 
-			using (ISmtBatchTrainer trainer = new ThotSmtBatchTrainer(EngineConfigFileName, TokenProcessors.Lowercase,
-				TokenProcessors.Lowercase, ParallelCorpus, MaxParallelCorpusCount))
+			using (ITranslationModelTrainer trainer = new ThotSmtModelTrainer(EngineConfigFileName,
+				TokenProcessors.Lowercase, TokenProcessors.Lowercase, ParallelCorpus, MaxParallelCorpusCount))
 			{
 				Stopwatch watch = Stopwatch.StartNew();
 				if (!_quietOption.HasValue())

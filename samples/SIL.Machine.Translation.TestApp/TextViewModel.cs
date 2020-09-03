@@ -46,7 +46,7 @@ namespace SIL.Machine.Translation.TestApp
 		private bool _isChanged;
 		private bool _isActive;
 		private bool _isTranslating;
-		private HybridInteractiveTranslationSession _curSession;
+		private InteractiveTranslationSession _curSession;
 
 		public TextViewModel(IRangeTokenizer<string, int, string> tokenizer, string name, string metadataFileName,
 			string sourceFileName, string targetFileName)
@@ -92,7 +92,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		public string Name { get; }
 
-		internal HybridTranslationEngine Engine { get; set; }
+		internal InteractiveTranslator InteractiveTranslator { get; set; }
 
 		internal double ConfidenceThreshold
 		{
@@ -318,7 +318,7 @@ namespace SIL.Machine.Translation.TestApp
 		private void StartSegmentTranslation()
 		{
 			_sourceSegmentWords.AddRange(_tokenizer.Tokenize(_sourceSegments[_currentSegment].Text));
-			_curSession = Engine.TranslateInteractively(1, TokenProcessors.Lowercase.Process(_sourceSegmentWords));
+			_curSession = InteractiveTranslator.StartSession(1, TokenProcessors.Lowercase.Process(_sourceSegmentWords));
 			_isTranslating = true;
 			UpdatePrefix();
 			UpdateSourceSegmentSelection();
@@ -355,11 +355,7 @@ namespace SIL.Machine.Translation.TestApp
 		private void EndSegmentTranslation()
 		{
 			_isTranslating = false;
-			if (_curSession != null)
-			{
-				_curSession.Dispose();
-				_curSession = null;
-			}
+			_curSession = null;
 			UpdateTargetText();
 			_sourceSegmentWords.Clear();
 			_suggestions.Clear();

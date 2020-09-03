@@ -156,8 +156,8 @@ namespace SIL.Machine.Translation
 				Out.Write("Translating... ");
 			int segmentCount = 0;
 			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
-			using (IInteractiveSmtModel smtModel = new ThotSmtModel(engineConfigFileName))
-			using (ISmtEngine engine = smtModel.CreateEngine())
+			using (IInteractiveTranslationModel smtModel = new ThotSmtModel(engineConfigFileName))
+			using (ITranslationEngine engine = smtModel.CreateEngine())
 			using (StreamWriter writer = isOutputFile ? new StreamWriter(_outputOption.Value()) : null)
 			{
 				progress?.Report(new ProgressStatus(segmentCount, corpusCount));

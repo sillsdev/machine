@@ -51,9 +51,9 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public ITruecaseBatchTrainer CreateBatchTrainer(ITextCorpus corpus)
+		public ITruecaserTrainer CreateTrainer(ITextCorpus corpus)
 		{
-			return new BatchTrainer(this, corpus);
+			return new Trainer(this, corpus);
 		}
 
 		public void TrainSegment(IReadOnlyList<string> segment, bool sentenceStart = true)
@@ -128,7 +128,7 @@ namespace SIL.Machine.Translation
 			foreach (WordGraphArc arc in wordGraph.Arcs)
 			{
 				newArcs.Add(new WordGraphArc(arc.PrevState, arc.NextState, arc.Score, Truecase(arc.Words),
-					arc.Alignment, arc.SourceSegmentRange, arc.IsUnknown, arc.WordConfidences));
+					arc.Alignment, arc.SourceSegmentRange, arc.WordSources, arc.WordConfidences));
 			}
 			return new WordGraph(newArcs, wordGraph.FinalStates, wordGraph.InitialStateScore);
 		}
@@ -153,13 +153,13 @@ namespace SIL.Machine.Translation
 			_bestTokens.Clear();
 		}
 
-		private class BatchTrainer : DisposableBase, ITruecaseBatchTrainer
+		private class Trainer : DisposableBase, ITruecaserTrainer
 		{
 			private readonly UnigramTruecaser _truecaser;
 			private readonly ITextCorpus _corpus;
 			private readonly UnigramTruecaser _newTruecaser;
 
-			public BatchTrainer(UnigramTruecaser truecaser, ITextCorpus corpus)
+			public Trainer(UnigramTruecaser truecaser, ITextCorpus corpus)
 			{
 				_truecaser = truecaser;
 				_corpus = corpus;

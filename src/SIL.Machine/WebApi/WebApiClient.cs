@@ -37,22 +37,21 @@ namespace SIL.Machine.WebApi.Client
 			return JsonConvert.DeserializeObject<ProjectDto>(response.Content, SerializerSettings);
 		}
 
-		public async Task<HybridInteractiveTranslationResult> TranslateInteractivelyAsync(string projectId,
-			IReadOnlyList<string> sourceSegment)
+		public async Task<WordGraph> GetWordGraph(string projectId, IReadOnlyList<string> sourceSegment)
 		{
-			string url = $"translation/engines/project:{projectId}/actions/interactiveTranslate";
+			string url = $"translation/engines/project:{projectId}/actions/getWordGraph";
 			string body = JsonConvert.SerializeObject(sourceSegment, SerializerSettings);
 			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Post, url, body, "application/json");
 			if (!response.IsSuccess)
 			{
-				throw new HttpException("Error calling interactiveTranslate action.")
+				throw new HttpException("Error calling getWordGraph action.")
 				{
 					StatusCode = response.StatusCode
 				};
 			}
-			var resultDto = JsonConvert.DeserializeObject<InteractiveTranslationResultDto>(response.Content,
+			var resultDto = JsonConvert.DeserializeObject<WordGraphDto>(response.Content,
 				SerializerSettings);
-			return CreateModel(resultDto, sourceSegment);
+			return CreateModel(resultDto);
 		}
 
 		public async Task TrainSegmentPairAsync(string projectId, IReadOnlyList<string> sourceSegment,
@@ -153,13 +152,6 @@ namespace SIL.Machine.WebApi.Client
 			return new ProgressStatus(buildDto.PercentCompleted, buildDto.Message);
 		}
 
-		private static HybridInteractiveTranslationResult CreateModel(InteractiveTranslationResultDto resultDto,
-			IReadOnlyList<string> sourceSegment)
-		{
-			return new HybridInteractiveTranslationResult(CreateModel(resultDto.WordGraph),
-				CreateModel(resultDto.RuleResult, sourceSegment));
-		}
-
 		private static WordGraph CreateModel(WordGraphDto dto)
 		{
 			var arcs = new List<WordGraphArc>();
@@ -168,7 +160,7 @@ namespace SIL.Machine.WebApi.Client
 				WordAlignmentMatrix alignment = CreateModel(arcDto.Alignment,
 					arcDto.SourceSegmentRange.End - arcDto.SourceSegmentRange.Start, arcDto.Words.Length);
 				arcs.Add(new WordGraphArc(arcDto.PrevState, arcDto.NextState, arcDto.Score, arcDto.Words, alignment,
-					CreateModel(arcDto.SourceSegmentRange), arcDto.IsUnknown, arcDto.Confidences.Cast<double>()));
+					CreateModel(arcDto.SourceSegmentRange), arcDto.Sources, arcDto.Confidences.Cast<double>()));
 			}
 
 			return new WordGraph(arcs, dto.FinalStates, dto.InitialStateScore);

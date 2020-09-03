@@ -8,10 +8,9 @@ using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Translation.Thot
 {
-	internal class ThotSmtEngine : DisposableBase, IInteractiveSmtEngine
+	public class ThotSmtEngine : DisposableBase, IInteractiveTranslationEngine
 	{
 		private readonly ThotSmtModel _smtModel;
-		private readonly HashSet<ThotInteractiveTranslationSession> _sessions;
 		private readonly ISegmentAligner _segmentAligner;
 		private readonly IWordConfidenceEstimator _confidenceEstimator;
 		private IntPtr _decoderHandle;
@@ -19,12 +18,10 @@ namespace SIL.Machine.Translation.Thot
 		public ThotSmtEngine(ThotSmtModel smtModel)
 		{
 			_smtModel = smtModel;
-			_sessions = new HashSet<ThotInteractiveTranslationSession>();
 			LoadHandle();
 			_segmentAligner = new FuzzyEditDistanceSegmentAligner(GetTranslationProbability);
 			_confidenceEstimator = new Ibm1WordConfidenceEstimator(GetTranslationProbability);
 			//_confidenceEstimator = new WppWordConfidenceEstimator(this);
-			ErrorCorrectionModel = new ErrorCorrectionModel();
 		}
 
 		internal void CloseHandle()
@@ -50,15 +47,6 @@ namespace SIL.Machine.Translation.Thot
 
 			return Thot.DoTranslateNBest(_decoderHandle, Thot.decoder_translateNBest, n, segment, false, segment,
 				CreateResult);
-		}
-
-		public IInteractiveTranslationSession TranslateInteractively(int n, IReadOnlyList<string> segment)
-		{
-			CheckDisposed();
-
-			var session = new ThotInteractiveTranslationSession(this, n, segment, GetWordGraph(segment));
-			_sessions.Add(session);
-			return session;
 		}
 
 		public WordGraph GetWordGraph(IReadOnlyList<string> segment)
@@ -147,8 +135,11 @@ namespace SIL.Machine.Translation.Thot
 					waMatrix = _segmentAligner.GetBestAlignment(srcPhrase, words);
 				}
 
+				var sources = new TranslationSources[words.Length];
+				for (int k = 0; k < sources.Length; k++)
+					sources[k] = isUnknown ? TranslationSources.None : TranslationSources.Smt;
 				arcs.Add(new WordGraphArc(predStateIndex, succStateIndex, score, words, waMatrix,
-					Range<int>.Create(srcStartIndex, srcEndIndex + 1), isUnknown));
+					Range<int>.Create(srcStartIndex, srcEndIndex + 1), sources));
 			}
 
 			var wordGraph = new WordGraph(arcs, finalStates, initialStateScore);
@@ -218,7 +209,8 @@ namespace SIL.Machine.Translation.Thot
 				for (int j = trgPhraseStartIndex; j < targetCut; j++)
 				{
 					string targetWord = targetSegment[j];
-					builder.AppendWord(targetWord, isUnknown: targetUnknownWords.Contains(j));
+					builder.AppendWord(targetWord, targetUnknownWords.Contains(j) ? TranslationSources.None
+						: TranslationSources.Smt);
 				}
 
 				int srcPhraseLen = sourceEndIndex - sourceStartIndex;
@@ -317,17 +309,8 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		internal void RemoveSession(ThotInteractiveTranslationSession session)
-		{
-			_sessions.Remove(session);
-		}
-
-		internal ErrorCorrectionModel ErrorCorrectionModel { get; }
-
 		protected override void DisposeManagedResources()
 		{
-			foreach (ThotInteractiveTranslationSession session in _sessions.ToArray())
-				session.Dispose();
 			_smtModel.RemoveEngine(this);
 		}
 

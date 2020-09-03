@@ -11,8 +11,7 @@ namespace SIL.Machine.WebApi.Services
 
 		Task<IEnumerable<TranslationResult>> TranslateAsync(string engineId, int n, IReadOnlyList<string> segment);
 
-		Task<HybridInteractiveTranslationResult> InteractiveTranslateAsync(string engineId,
-			IReadOnlyList<string> segment);
+		Task<WordGraph> GetWordGraphAsync(string engineId, IReadOnlyList<string> segment);
 
 		Task<bool> TrainSegmentAsync(string engineId, IReadOnlyList<string> sourceSegment,
 			IReadOnlyList<string> targetSegment, bool sentenceStart);

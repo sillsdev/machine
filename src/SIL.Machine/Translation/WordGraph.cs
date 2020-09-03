@@ -155,6 +155,11 @@ namespace SIL.Machine.Translation
 			writer.WriteLine("}");
 		}
 
+		public WordGraph Merge(double threshold, TranslationResult result)
+		{
+			return new WordGraph(Arcs.Select(a => Merge(threshold, a, result)), FinalStates, InitialStateScore);
+		}
+
 		/// <summary>
 		/// Removes redundant arcs from the word graph.
 		/// TODO: This seems to affect the results of an interactive translation session, so don't use it yet.
@@ -242,7 +247,8 @@ namespace SIL.Machine.Translation
 								? nextDfaState.Index
 								: nextDfaStateIndex++;
 							dfaArcs.Add(new WordGraphArc(curState, nextState, nfaArc.Score, nfaArc.Words,
-								nfaArc.Alignment, nfaArc.SourceSegmentRange, nfaArc.IsUnknown, nfaArc.WordConfidences));
+								nfaArc.Alignment, nfaArc.SourceSegmentRange, nfaArc.WordSources,
+								nfaArc.WordConfidences));
 							curState = nextState;
 						}
 						if (isFinal)
@@ -252,6 +258,92 @@ namespace SIL.Machine.Translation
 			}
 
 			return new WordGraph(dfaArcs, dfaFinalStates, InitialStateScore);
+		}
+
+		private WordGraphArc Merge(double threshold, WordGraphArc arc, TranslationResult result)
+		{
+			var mergedWords = new List<string>();
+			var mergedConfidences = new List<double>();
+			var mergedSources = new List<TranslationSources>();
+			var mergedAlignment = new HashSet<Tuple<int, int>>();
+			for (int j = 0; j < arc.Words.Count; j++)
+			{
+				int[] sourceIndices = arc.Alignment.GetColumnAlignedIndices(j).ToArray();
+				if (sourceIndices.Length == 0)
+				{
+					// target word doesn't align with anything
+					mergedWords.Add(arc.Words[j]);
+					mergedConfidences.Add(arc.WordConfidences[j]);
+					mergedSources.Add(arc.WordSources[j]);
+				}
+				else
+				{
+					// target word aligns with some source words
+					if (arc.WordConfidences[j] >= threshold)
+					{
+						// use target word of this result
+						mergedWords.Add(arc.Words[j]);
+						mergedConfidences.Add(arc.WordConfidences[j]);
+						TranslationSources sources = arc.WordSources[j];
+						foreach (int i in sourceIndices)
+						{
+							// combine sources for any words that both this result
+							// and the other result translated the same
+							foreach (int jOther in result.Alignment
+								.GetRowAlignedIndices(arc.SourceSegmentRange.Start + i))
+							{
+								TranslationSources otherSources = result.WordSources[jOther];
+								if (otherSources != TranslationSources.None
+									&& result.TargetSegment[jOther] == arc.Words[j])
+								{
+									sources |= otherSources;
+								}
+							}
+
+							mergedAlignment.Add(Tuple.Create(i, mergedWords.Count - 1));
+						}
+						mergedSources.Add(sources);
+					}
+					else
+					{
+						// use target words of other result
+						bool found = false;
+						foreach (int i in sourceIndices)
+						{
+							foreach (int jOther in result.Alignment
+								.GetRowAlignedIndices(arc.SourceSegmentRange.Start + i))
+							{
+								// look for any translated words from other result
+								TranslationSources otherSources = result.WordSources[jOther];
+								if (otherSources != TranslationSources.None)
+								{
+									mergedWords.Add(result.TargetSegment[jOther]);
+									mergedConfidences.Add(result.WordConfidences[jOther]);
+									mergedSources.Add(otherSources);
+									mergedAlignment.Add(Tuple.Create(i, mergedWords.Count - 1));
+									found = true;
+								}
+							}
+						}
+
+						if (!found)
+						{
+							// the other result had no translated words, so just use this result's target word
+							mergedWords.Add(arc.Words[j]);
+							mergedConfidences.Add(arc.WordConfidences[j]);
+							mergedSources.Add(arc.WordSources[j]);
+							foreach (int i in sourceIndices)
+								mergedAlignment.Add(Tuple.Create(i, mergedWords.Count - 1));
+						}
+					}
+				}
+			}
+
+			var alignment = new WordAlignmentMatrix(arc.SourceSegmentRange.Length, mergedWords.Count);
+			foreach (Tuple<int, int> t in mergedAlignment)
+				alignment[t.Item1, t.Item2] = true;
+			return new WordGraphArc(arc.PrevState, arc.NextState, arc.Score, mergedWords, alignment,
+				arc.SourceSegmentRange, mergedSources, mergedConfidences);
 		}
 
 		private IEnumerable<(int ArcIndex, NfaState State)> GetArcIndices(DfaState dfaState)

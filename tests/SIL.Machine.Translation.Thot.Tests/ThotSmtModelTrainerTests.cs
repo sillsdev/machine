@@ -6,7 +6,7 @@ using SIL.Machine.Corpora;
 namespace SIL.Machine.Translation.Thot
 {
 	[TestFixture]
-	public class ThotSmtBatchTrainerTests
+	public class ThotSmtModelTrainerTests
 	{
 		[Test]
 		public void Train_NonEmptyCorpus_GeneratesModels()
@@ -64,7 +64,7 @@ namespace SIL.Machine.Translation.Thot
 					LanguageModelFileNamePrefix = Path.Combine(tempDir.Path, "lm", "trg.lm")
 				};
 
-				using (var trainer = new ThotSmtBatchTrainer(parameters, TokenProcessors.Null, TokenProcessors.Null,
+				using (var trainer = new ThotSmtModelTrainer(parameters, TokenProcessors.Null, TokenProcessors.Null,
 					corpus))
 				{
 					trainer.Train();
@@ -97,7 +97,7 @@ namespace SIL.Machine.Translation.Thot
 					LanguageModelFileNamePrefix = Path.Combine(tempDir.Path, "lm", "trg.lm")
 				};
 
-				using (var trainer = new ThotSmtBatchTrainer(parameters, TokenProcessors.Null, TokenProcessors.Null,
+				using (var trainer = new ThotSmtModelTrainer(parameters, TokenProcessors.Null, TokenProcessors.Null,
 					corpus))
 				{
 					trainer.Train();

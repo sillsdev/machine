@@ -7,7 +7,7 @@ namespace SIL.Machine.Translation
 	public class WordGraphArc
 	{
 		public WordGraphArc(int prevState, int nextState, double score, IEnumerable<string> words,
-			WordAlignmentMatrix alignment, Range<int> sourceSegmentRange, bool isUnknown,
+			WordAlignmentMatrix alignment, Range<int> sourceSegmentRange, IEnumerable<TranslationSources> wordSources,
 			IEnumerable<double> wordConfidences = null)
 		{
 			PrevState = prevState;
@@ -16,7 +16,7 @@ namespace SIL.Machine.Translation
 			Words = words.ToArray();
 			Alignment = alignment;
 			SourceSegmentRange = sourceSegmentRange;
-			IsUnknown = isUnknown;
+			WordSources = wordSources.ToArray();
 			if (wordConfidences == null)
 				WordConfidences = Enumerable.Repeat(-1.0, Words.Count).ToList();
 			else
@@ -30,6 +30,7 @@ namespace SIL.Machine.Translation
 		public WordAlignmentMatrix Alignment { get; }
 		public IList<double> WordConfidences { get; }
 		public Range<int> SourceSegmentRange { get; }
-		public bool IsUnknown { get; }
+		public IReadOnlyList<TranslationSources> WordSources { get; }
+		public bool IsUnknown => WordSources.All(s => s == TranslationSources.None);
 	}
 }

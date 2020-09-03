@@ -4,6 +4,8 @@ namespace SIL.Machine.Translation
 {
 	public interface IInteractiveTranslationEngine : ITranslationEngine
 	{
-		IInteractiveTranslationSession TranslateInteractively(int n, IReadOnlyList<string> segment);
+		WordGraph GetWordGraph(IReadOnlyList<string> segment);
+
+		void TrainSegment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment);
 	}
 }

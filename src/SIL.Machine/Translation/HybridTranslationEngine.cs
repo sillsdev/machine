@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
@@ -8,28 +7,26 @@ namespace SIL.Machine.Translation
 	{
 		internal const double RuleEngineThreshold = 0.05;
 
-		private readonly HashSet<HybridInteractiveTranslationSession> _sessions;
-
-		public HybridTranslationEngine(IInteractiveSmtEngine smtEngine, ITranslationEngine ruleEngine = null)
+		public HybridTranslationEngine(IInteractiveTranslationEngine interactiveEngine,
+			ITranslationEngine ruleEngine = null)
 		{
-			SmtEngine = smtEngine;
+			InteractiveEngine = interactiveEngine;
 			RuleEngine = ruleEngine;
-			_sessions = new HashSet<HybridInteractiveTranslationSession>();
 		}
 
-		public IInteractiveSmtEngine SmtEngine { get; }
+		public IInteractiveTranslationEngine InteractiveEngine { get; }
 		public ITranslationEngine RuleEngine { get; }
 
 		public TranslationResult Translate(IReadOnlyList<string> segment)
 		{
 			CheckDisposed();
 
-			TranslationResult smtResult = SmtEngine.Translate(segment);
+			TranslationResult smtResult = InteractiveEngine.Translate(segment);
 			if (RuleEngine == null)
 				return smtResult;
 
 			TranslationResult ruleResult = RuleEngine.Translate(segment);
-			return smtResult.Merge(0, RuleEngineThreshold, ruleResult);
+			return smtResult.Merge(RuleEngineThreshold, ruleResult);
 		}
 
 		public IEnumerable<TranslationResult> Translate(int n, IReadOnlyList<string> segment)
@@ -37,7 +34,7 @@ namespace SIL.Machine.Translation
 			CheckDisposed();
 
 			TranslationResult ruleResult = null;
-			foreach (TranslationResult smtResult in SmtEngine.Translate(n, segment))
+			foreach (TranslationResult smtResult in InteractiveEngine.Translate(n, segment))
 			{
 				if (RuleEngine == null)
 				{
@@ -47,53 +44,33 @@ namespace SIL.Machine.Translation
 				{
 					if (ruleResult == null)
 						ruleResult = RuleEngine.Translate(segment);
-					yield return smtResult.Merge(0, RuleEngineThreshold, ruleResult);
+					yield return smtResult.Merge(RuleEngineThreshold, ruleResult);
 				}
 			}
 		}
 
-		IInteractiveTranslationSession IInteractiveTranslationEngine.TranslateInteractively(int n,
-			IReadOnlyList<string> segment)
-		{
-			return TranslateInteractively(n, segment);
-		}
-
-		public HybridInteractiveTranslationSession TranslateInteractively(int n, IReadOnlyList<string> segment)
+		public WordGraph GetWordGraph(IReadOnlyList<string> segment)
 		{
 			CheckDisposed();
 
-			IInteractiveTranslationSession smtSession = SmtEngine.TranslateInteractively(n, segment);
-			TranslationResult ruleResult = RuleEngine?.Translate(segment);
-			var session = new HybridInteractiveTranslationSession(this, smtSession, ruleResult);
-			_sessions.Add(session);
-			return session;
+			WordGraph wordGraph = InteractiveEngine.GetWordGraph(segment);
+			if (RuleEngine == null)
+				return wordGraph;
+
+			TranslationResult ruleResult = RuleEngine.Translate(segment);
+			return wordGraph.Merge(RuleEngineThreshold, ruleResult);
 		}
 
-		public HybridInteractiveTranslationResult TranslateInteractively(IReadOnlyList<string> segment)
-		{
-			WordGraph smtWordGraph = SmtEngine.GetWordGraph(segment);
-			TranslationResult ruleResult = RuleEngine?.Translate(segment);
-			return new HybridInteractiveTranslationResult(smtWordGraph, ruleResult);
-		}
-
-		public void TrainSegment(IReadOnlyList<string> sourceSegment,
-			IReadOnlyList<string> targetSegment)
+		public void TrainSegment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
 		{
 			CheckDisposed();
 
-			SmtEngine.TrainSegment(sourceSegment, targetSegment);
-		}
-
-		internal void RemoveSession(HybridInteractiveTranslationSession session)
-		{
-			_sessions.Remove(session);
+			InteractiveEngine.TrainSegment(sourceSegment, targetSegment);
 		}
 
 		protected override void DisposeManagedResources()
 		{
-			foreach (HybridInteractiveTranslationSession session in _sessions.ToArray())
-				session.Dispose();
-			SmtEngine.Dispose();
+			InteractiveEngine.Dispose();
 			RuleEngine?.Dispose();
 		}
 	}

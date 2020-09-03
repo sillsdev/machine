@@ -32,52 +32,40 @@ namespace SIL.Machine.Translation
 					new WordAnalysis(new[] { targetMorphemes[0], targetMorphemes[1] }, 0, "v"), "walked");
 				var transferer = new SimpleTransferer(new GlossMorphemeMapper(targetGenerator));
 				ITranslationEngine transferEngine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
-				var smtEngine = Substitute.For<IInteractiveSmtEngine>();
+				var smtEngine = Substitute.For<IInteractiveTranslationEngine>();
 
-				var alignment = new WordAlignmentMatrix(5, 5)
-				{
-					[0, 0] = true,
-					[1, 1] = true,
-					[2, 2] = true,
-					[3, 3] = true,
-					[4, 4] = true
-				};
 				AddTranslation(smtEngine, "caminé a mi habitación .", "caminé to my room .",
-					new[] { 0, 0.5, 0.5, 0.5, 0.5 }, alignment);
-
-				alignment = new WordAlignmentMatrix(4, 4)
-				{
-					[0, 0] = true,
-					[1, 1] = true,
-					[2, 2] = true,
-					[3, 3] = true
-				};
-				AddTranslation(smtEngine, "hablé con recepción .", "hablé with reception .", new[] { 0, 0.5, 0.5, 0.5 },
-					alignment);
+					new[] { 0, 0.5, 0.5, 0.5, 0.5 });
+				AddTranslation(smtEngine, "hablé con recepción .", "hablé with reception .",
+					new[] { 0, 0.5, 0.5, 0.5 });
 
 				Engine = new HybridTranslationEngine(smtEngine, transferEngine);
+				InteractiveTranslator = new InteractiveTranslator(Engine);
 			}
 
-			private static void AddTranslation(IInteractiveSmtEngine engine, string sourceSegment, string targetSegment,
-				double[] confidences, WordAlignmentMatrix alignment)
+			private static void AddTranslation(IInteractiveTranslationEngine engine, string sourceSegment,
+				string targetSegment, double[] confidences)
 			{
 				string[] sourceSegmentArray = sourceSegment.Split();
 				string[] targetSegmentArray = targetSegment.Split();
 				TranslationSources[] sources = new TranslationSources[confidences.Length];
 				for (int j = 0; j < sources.Length; j++)
 					sources[j] = confidences[j] <= 0 ? TranslationSources.None : TranslationSources.Smt;
-				var smtSession = Substitute.For<IInteractiveTranslationSession>();
-				smtSession.SourceSegment.Returns(sourceSegmentArray);
-				smtSession.CurrentResults.Returns(new[] { new TranslationResult(sourceSegmentArray, targetSegmentArray,
-					confidences, sources, alignment,
-					new[] { new Phrase(Range<int>.Create(0, sourceSegmentArray.Length), targetSegmentArray.Length,
-						confidences.Min()) }) });
 
-				engine.TranslateInteractively(1,
-					Arg.Is<IReadOnlyList<string>>(ss => ss.SequenceEqual(sourceSegmentArray))).Returns(smtSession);
+				var arcs = new List<WordGraphArc>();
+				for (int i = 0; i < sourceSegmentArray.Length; i++)
+				{
+					arcs.Add(new WordGraphArc(i, i + 1, 100, new string[] { targetSegmentArray[i] },
+						new WordAlignmentMatrix(1, 1) { [0, 0] = true }, Range<int>.Create(i, i + 1),
+						new TranslationSources[] { sources[i] }, new double[] { confidences[i] }));
+				}
+
+				engine.GetWordGraph(Arg.Is<IReadOnlyList<string>>(ss => ss.SequenceEqual(sourceSegmentArray)))
+					.Returns(new WordGraph(arcs, new int[] { sourceSegmentArray.Length }));
 			}
 
 			public HybridTranslationEngine Engine { get; }
+			public InteractiveTranslator InteractiveTranslator { get; }
 
 			protected override void DisposeManagedResources()
 			{
@@ -86,26 +74,28 @@ namespace SIL.Machine.Translation
 		}
 
 		[Test]
-		public void TranslateInteractively_TransferredWord_CorrectTranslation()
+		public void InteractiveTranslator_TransferredWord()
 		{
 			using (var env = new TestEnvironment())
-			using (IInteractiveTranslationSession session = env.Engine.TranslateInteractively(1,
-				"caminé a mi habitación .".Split()))
 			{
+				InteractiveTranslationSession session = env.InteractiveTranslator.StartSession(1,
+					"caminé a mi habitación .".Split());
 				TranslationResult result = session.CurrentResults[0];
 				Assert.That(result.TargetSegment, Is.EqualTo("walked to my room .".Split()));
+				Assert.That(result.WordSources[0], Is.EqualTo(TranslationSources.Transfer));
 			}
 		}
 
 		[Test]
-		public void TranslateInteractively_UnknownWord_PartialTranslation()
+		public void InteractiveTranslator_UnknownWord()
 		{
 			using (var env = new TestEnvironment())
-			using (IInteractiveTranslationSession session = env.Engine.TranslateInteractively(1,
-				"hablé con recepción .".Split()))
 			{
+				InteractiveTranslationSession session = env.InteractiveTranslator.StartSession(1,
+					"hablé con recepción .".Split());
 				TranslationResult result = session.CurrentResults[0];
 				Assert.That(result.TargetSegment, Is.EqualTo("hablé with reception .".Split()));
+				Assert.That(result.WordSources[0], Is.EqualTo(TranslationSources.None));
 			}
 		}
 	}

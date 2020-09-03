@@ -14,7 +14,7 @@ using SIL.Machine.Statistics;
 
 namespace SIL.Machine.Translation.Thot
 {
-	public class ThotSmtBatchTrainer : DisposableBase, ISmtBatchTrainer
+	public class ThotSmtModelTrainer : DisposableBase, ITranslationModelTrainer
 	{
 		private readonly ITokenProcessor _sourcePreprocessor;
 		private readonly ITokenProcessor _targetPreprocessor;
@@ -28,14 +28,14 @@ namespace SIL.Machine.Translation.Thot
 		private readonly string _trainTMDir;
 		private readonly int _maxCorpusCount;
 
-		public ThotSmtBatchTrainer(string cfgFileName, ITokenProcessor sourcePreprocessor,
+		public ThotSmtModelTrainer(string cfgFileName, ITokenProcessor sourcePreprocessor,
 			ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)
 			: this(ThotSmtParameters.Load(cfgFileName), sourcePreprocessor, targetPreprocessor, corpus, maxCorpusCount)
 		{
 			ConfigFileName = cfgFileName;
 		}
 
-		public ThotSmtBatchTrainer(ThotSmtParameters parameters, ITokenProcessor sourcePreprocessor,
+		public ThotSmtModelTrainer(ThotSmtParameters parameters, ITokenProcessor sourcePreprocessor,
 			ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)
 		{
 			Parameters = parameters;
@@ -567,7 +567,7 @@ namespace SIL.Machine.Translation.Thot
 			parameters.TranslationModelFileNamePrefix = trainTMPrefix;
 			parameters.LanguageModelFileNamePrefix = trainLMPrefix;
 			using (var smtModel = new ThotSmtModel(parameters))
-			using (ISmtEngine engine = smtModel.CreateEngine())
+			using (IInteractiveTranslationEngine engine = smtModel.CreateInteractiveEngine())
 			{
 				for (int i = 0; i < tuneSourceCorpus.Count; i++)
 				{

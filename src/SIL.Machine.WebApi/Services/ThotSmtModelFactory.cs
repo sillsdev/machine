@@ -9,7 +9,7 @@ using SIL.Machine.WebApi.Configuration;
 
 namespace SIL.Machine.WebApi.Services
 {
-	public class ThotSmtModelFactory : IComponentFactory<IInteractiveSmtModel>
+	public class ThotSmtModelFactory : IComponentFactory<IInteractiveTranslationModel>
 	{
 		private readonly IOptions<ThotSmtModelOptions> _options;
 		private readonly IOptions<EngineOptions> _engineOptions;
@@ -20,10 +20,10 @@ namespace SIL.Machine.WebApi.Services
 			_engineOptions = engineOptions;
 		}
 
-		public Task<IInteractiveSmtModel> CreateAsync(string engineId)
+		public Task<IInteractiveTranslationModel> CreateAsync(string engineId)
 		{
 			string smtConfigFileName = Path.Combine(_engineOptions.Value.EnginesDir, engineId, "smt.cfg");
-			return Task.FromResult<IInteractiveSmtModel>(new ThotSmtModel(smtConfigFileName));
+			return Task.FromResult<IInteractiveTranslationModel>(new ThotSmtModel(smtConfigFileName));
 		}
 
 		public void InitNew(string engineId)

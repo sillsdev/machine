@@ -6,11 +6,11 @@ namespace SIL.Machine.Translation
 {
 	public class WppWordConfidenceEstimator : IWordConfidenceEstimator
 	{
-		private readonly ISmtEngine _smtEngine;
+		private readonly IInteractiveTranslationEngine _engine;
 
-		public WppWordConfidenceEstimator(ISmtEngine smtEngine)
+		public WppWordConfidenceEstimator(IInteractiveTranslationEngine engine)
 		{
-			_smtEngine = smtEngine;
+			_engine = engine;
 		}
 
 		public void Estimate(IReadOnlyList<string> sourceSegment, WordGraph wordGraph)
@@ -25,7 +25,7 @@ namespace SIL.Machine.Translation
 
 		public void Estimate(IReadOnlyList<string> sourceSegment, TranslationResultBuilder builder)
 		{
-			WordGraph wordGraph = _smtEngine.GetWordGraph(sourceSegment);
+			WordGraph wordGraph = _engine.GetWordGraph(sourceSegment);
 			WordGraphConfidences wordGraphConfidences = ComputeWordGraphConfidences(wordGraph);
 			for (int j = 0; j < builder.Words.Count; j++)
 				builder.SetConfidence(j, wordGraphConfidences.GetConfidence(builder.Words[j]));

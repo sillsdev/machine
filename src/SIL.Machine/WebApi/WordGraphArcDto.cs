@@ -1,4 +1,6 @@
-﻿namespace SIL.Machine.WebApi
+﻿using SIL.Machine.Translation;
+
+namespace SIL.Machine.WebApi
 {
 	public class WordGraphArcDto
 	{
@@ -8,7 +10,7 @@
 		public string[] Words { get; set; }
 		public float[] Confidences { get; set; }
 		public RangeDto SourceSegmentRange { get; set; }
-		public bool IsUnknown { get; set; }
 		public AlignedWordPairDto[] Alignment { get; set; }
+		public TranslationSources[] Sources { get; set; }
 	}
 }

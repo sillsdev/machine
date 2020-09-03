@@ -78,8 +78,7 @@ namespace SIL.Machine.WebApi.Services
 			}
 		}
 
-		public async Task<HybridInteractiveTranslationResult> InteractiveTranslateAsync(string engineId,
-			IReadOnlyList<string> segment)
+		public async Task<WordGraph> GetWordGraphAsync(string engineId, IReadOnlyList<string> segment)
 		{
 			CheckDisposed();
 
@@ -88,7 +87,7 @@ namespace SIL.Machine.WebApi.Services
 				if (!await _engines.ExistsAsync(engineId))
 					return null;
 				EngineRuntime runtime = GetOrCreateRuntime(engineId);
-				return await runtime.InteractiveTranslateAsync(segment);
+				return await runtime.GetWordGraph(segment);
 			}
 		}
 

@@ -15,24 +15,18 @@ namespace SIL.Machine.Translation
 		}
 
 		public static IEnumerable<TranslationSuggestion> GetSuggestions(this ITranslationSuggester suggester,
-			IInteractiveTranslationSession session)
+			InteractiveTranslationSession session)
 		{
 			return session.CurrentResults.Select(r =>
 				suggester.GetSuggestion(session.Prefix.Count, session.IsLastWordComplete, r));
 		}
 
 		public static IEnumerable<TranslationSuggestion> GetSuggestions(this ITranslationSuggester suggester,
-			IInteractiveTranslationSession session, IReadOnlyList<string> sourceSegment, ITruecaser truecaser)
+			InteractiveTranslationSession session, IReadOnlyList<string> sourceSegment, ITruecaser truecaser)
 		{
 			return session.CurrentResults.Select(r =>
 				suggester.GetSuggestion(session.Prefix.Count, session.IsLastWordComplete,
 					truecaser.Truecase(sourceSegment, r)));
-		}
-
-		public static void AppendSuggestionToPrefix(this IInteractiveTranslationSession session, int resultIndex,
-			IReadOnlyList<int> suggestion)
-		{
-			session.AppendToPrefix(suggestion.Select(j => session.CurrentResults[resultIndex].TargetSegment[j]));
 		}
 
 		public static double GetAlignmentProbability(this IWordAlignmentModel model, int sourceLen, int prevSourceIndex,
@@ -155,13 +149,6 @@ namespace SIL.Machine.Translation
 		public static void TrainSegment(this ITruecaser truecaser, TextSegment segment)
 		{
 			truecaser.TrainSegment(segment.Segment, segment.SentenceStart);
-		}
-
-		public static HybridInteractiveTranslationResult Truecase(this ITruecaser truecaser,
-			IReadOnlyList<string> sourceSegment, HybridInteractiveTranslationResult result)
-		{
-			return new HybridInteractiveTranslationResult(truecaser.Truecase(sourceSegment, result.SmtWordGraph),
-				result.RuleResult == null ? null : truecaser.Truecase(sourceSegment, result.RuleResult));
 		}
 	}
 }

@@ -166,7 +166,7 @@ namespace SIL.Machine.Translation
 				string[] words = target.Split();
 				for (int j = 0; j < words.Length; j++)
 				{
-					builder.AppendWord(words[j], 1);
+					builder.AppendWord(words[j], TranslationSources.Smt, 1);
 					int cut = j + 1;
 					if (k < cuts.Length && cuts[k] == cut)
 					{

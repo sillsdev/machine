@@ -1,12 +1,11 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace SIL.Machine.Translation
 {
-	public interface ISmtBatchTrainer : IDisposable
+	public interface ITruecaserTrainer : IDisposable
 	{
-		SmtBatchTrainStats Stats { get; }
-
 		void Train(IProgress<ProgressStatus> progress = null, Action checkCanceled = null);
-		void Save();
+		Task SaveAsync();
 	}
 }

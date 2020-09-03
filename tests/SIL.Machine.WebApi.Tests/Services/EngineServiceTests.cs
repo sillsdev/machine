@@ -33,28 +33,25 @@ namespace SIL.Machine.WebApi.Services
 		}
 
 		[Test]
-		public async Task InteractiveTranslateAsync_EngineDoesNotExist()
+		public async Task GetWordGraphAsync_EngineDoesNotExist()
 		{
 			using (var env = new EngineServiceTestEnvironment())
 			{
 				env.CreateEngineService();
-				HybridInteractiveTranslationResult result = await env.Service.InteractiveTranslateAsync(
-					"engine1", "Esto es una prueba .".Split());
+				WordGraph result = await env.Service.GetWordGraphAsync("engine1", "Esto es una prueba .".Split());
 				Assert.That(result, Is.Null);
 			}
 		}
 
 		[Test]
-		public async Task InteractiveTranslateAsync_EngineExists()
+		public async Task GetWordGraphAsync_EngineExists()
 		{
 			using (var env = new EngineServiceTestEnvironment())
 			{
 				string engineId = (await env.CreateEngineAsync("es", "en", true)).Id;
 				env.CreateEngineService();
-				HybridInteractiveTranslationResult result = await env.Service.InteractiveTranslateAsync(
-					engineId, "Esto es una prueba .".Split());
-				Assert.That(result.RuleResult.TargetSegment, Is.EqualTo("this is a TEST .".Split()));
-				Assert.That(result.SmtWordGraph.Arcs.SelectMany(a => a.Words), Is.EqualTo("this is a TEST .".Split()));
+				WordGraph result = await env.Service.GetWordGraphAsync(engineId, "Esto es una prueba .".Split());
+				Assert.That(result.Arcs.SelectMany(a => a.Words), Is.EqualTo("this is a TEST .".Split()));
 			}
 		}
 

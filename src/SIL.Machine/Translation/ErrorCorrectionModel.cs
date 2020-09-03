@@ -70,7 +70,7 @@ namespace SIL.Machine.Translation
 			if (uncorrectedPrefixLen == 0)
 			{
 				foreach (string w in prefix)
-					builder.AppendWord(w);
+					builder.AppendWord(w, TranslationSources.Prefix);
 				return prefix.Length;
 			}
 

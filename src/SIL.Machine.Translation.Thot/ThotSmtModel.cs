@@ -6,7 +6,7 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.Thot
 {
-	public class ThotSmtModel : DisposableBase, IInteractiveSmtModel
+	public class ThotSmtModel : DisposableBase, IInteractiveTranslationModel
 	{
 		private readonly ThotWordAlignmentModel _directWordAlignmentModel;
 		private readonly ThotWordAlignmentModel _inverseWordAlignmentModel;
@@ -55,16 +55,26 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public ISmtEngine CreateEngine()
-		{
-			return CreateInteractiveEngine();
-		}
-
-		public IInteractiveSmtEngine CreateInteractiveEngine()
+		public ThotSmtEngine CreateEngine()
 		{
 			var engine = new ThotSmtEngine(this);
 			_engines.Add(engine);
 			return engine;
+		}
+
+		public ThotSmtEngine CreateInteractiveEngine()
+		{
+			return CreateEngine();
+		}
+
+		ITranslationEngine ITranslationModel.CreateEngine()
+		{
+			return CreateEngine();
+		}
+
+		IInteractiveTranslationEngine IInteractiveTranslationModel.CreateInteractiveEngine()
+		{
+			return CreateEngine();
 		}
 
 		public void Save()
@@ -72,7 +82,7 @@ namespace SIL.Machine.Translation.Thot
 			Thot.smtModel_saveModels(Handle);
 		}
 
-		public ISmtBatchTrainer CreateBatchTrainer(ITokenProcessor sourcePreprocessor, ITextCorpus sourceCorpus,
+		public ITranslationModelTrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITextCorpus sourceCorpus,
 			ITokenProcessor targetPreprocessor, ITextCorpus targetCorpus,
 			ITextAlignmentCorpus alignmentCorpus = null)
 		{
@@ -81,8 +91,8 @@ namespace SIL.Machine.Translation.Thot
 			var corpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignmentCorpus);
 
 			return string.IsNullOrEmpty(ConfigFileName)
-				? new BatchTrainer(this, Parameters, sourcePreprocessor, targetPreprocessor, corpus)
-				: new BatchTrainer(this, ConfigFileName, sourcePreprocessor, targetPreprocessor, corpus);
+				? new Trainer(this, Parameters, sourcePreprocessor, targetPreprocessor, corpus)
+				: new Trainer(this, ConfigFileName, sourcePreprocessor, targetPreprocessor, corpus);
 		}
 
 		internal void RemoveEngine(ThotSmtEngine engine)
@@ -103,18 +113,18 @@ namespace SIL.Machine.Translation.Thot
 			Thot.smtModel_close(Handle);
 		}
 
-		private class BatchTrainer : ThotSmtBatchTrainer
+		private class Trainer : ThotSmtModelTrainer
 		{
 			private readonly ThotSmtModel _smtModel;
 
-			public BatchTrainer(ThotSmtModel smtModel, string cfgFileName, ITokenProcessor sourcePreprocessor,
+			public Trainer(ThotSmtModel smtModel, string cfgFileName, ITokenProcessor sourcePreprocessor,
 				ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus)
 				: base(cfgFileName, sourcePreprocessor, targetPreprocessor, corpus)
 			{
 				_smtModel = smtModel;
 			}
 
-			public BatchTrainer(ThotSmtModel smtModel, ThotSmtParameters parameters,
+			public Trainer(ThotSmtModel smtModel, ThotSmtParameters parameters,
 				ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor,
 				ParallelTextCorpus corpus)
 				: base(parameters, sourcePreprocessor, targetPreprocessor, corpus)

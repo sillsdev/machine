@@ -46,7 +46,7 @@ namespace SIL.Machine.Translation
 		public WordAlignmentMatrix Alignment { get; }
 		public IReadOnlyList<Phrase> Phrases { get; }
 
-		public TranslationResult Merge(int prefixCount, double threshold, TranslationResult otherResult)
+		public TranslationResult Merge(double threshold, TranslationResult otherResult)
 		{
 			var mergedTargetSegment = new List<string>();
 			var mergedConfidences = new List<double>();
@@ -65,7 +65,7 @@ namespace SIL.Machine.Translation
 				else
 				{
 					// target word aligns with some source words
-					if (j < prefixCount || WordConfidences[j] >= threshold)
+					if (WordConfidences[j] >= threshold)
 					{
 						// use target word of this result
 						mergedTargetSegment.Add(TargetSegment[j]);

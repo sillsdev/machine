@@ -84,7 +84,7 @@ namespace SIL.Machine.WebApi.Controllers
 			return Ok(results.Select(CreateDto));
 		}
 
-		[HttpPost("{locatorType}:{locator}/actions/interactiveTranslate")]
+		[HttpPost("{locatorType}:{locator}/actions/getWordGraph")]
 		public async Task<IActionResult> InteractiveTranslateAsync(string locatorType, string locator,
 			[FromBody] string[] segment)
 		{
@@ -94,8 +94,7 @@ namespace SIL.Machine.WebApi.Controllers
 			if (!await AuthorizeAsync(engine, Operations.Read))
 				return StatusCode(StatusCodes.Status403Forbidden);
 
-			HybridInteractiveTranslationResult result = await _engineService.InteractiveTranslateAsync(engine.Id,
-				segment);
+			WordGraph result = await _engineService.GetWordGraphAsync(engine.Id, segment);
 			if (result == null)
 				return NotFound();
 			return Ok(CreateDto(result));
@@ -174,7 +173,7 @@ namespace SIL.Machine.WebApi.Controllers
 				Words = arc.Words.ToArray(),
 				Confidences = arc.WordConfidences.Select(c => (float) c).ToArray(),
 				SourceSegmentRange = CreateDto(arc.SourceSegmentRange),
-				IsUnknown = arc.IsUnknown,
+				Sources = arc.WordSources.ToArray(),
 				Alignment = CreateDto(arc.Alignment)
 			};
 		}
@@ -215,15 +214,6 @@ namespace SIL.Machine.WebApi.Controllers
 			{
 				Start = range.Start,
 				End = range.End
-			};
-		}
-
-		private static InteractiveTranslationResultDto CreateDto(HybridInteractiveTranslationResult result)
-		{
-			return new InteractiveTranslationResultDto
-			{
-				WordGraph = CreateDto(result.SmtWordGraph),
-				RuleResult = CreateDto(result.RuleResult)
 			};
 		}
 

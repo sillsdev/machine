@@ -102,7 +102,7 @@ namespace SIL.Machine.WebApi.Services
 				await runtime.TrainSegmentPairAsync("esto es una prueba .".Split(), "this is a test .".Split(), true);
 				await Task.Delay(10);
 				await runtime.CommitAsync();
-				env.SmtModel.Received().Save();
+				env.InteractiveModel.Received().Save();
 				env.Truecaser.Received().TrainSegment(
 					Arg.Is<IReadOnlyList<string>>(x => x.SequenceEqual("this is a test .".Split())), true);
 				Assert.That(runtime.IsLoaded, Is.False);
@@ -121,7 +121,7 @@ namespace SIL.Machine.WebApi.Services
 				await runtime.InitNewAsync();
 				await runtime.TrainSegmentPairAsync("esto es una prueba .".Split(), "this is a test .".Split(), true);
 				await runtime.CommitAsync();
-				env.SmtModel.Received().Save();
+				env.InteractiveModel.Received().Save();
 				env.Truecaser.Received().TrainSegment(
 					Arg.Is<IReadOnlyList<string>>(x => x.SequenceEqual("this is a test .".Split())), true);
 				Assert.That(runtime.IsLoaded, Is.True);
