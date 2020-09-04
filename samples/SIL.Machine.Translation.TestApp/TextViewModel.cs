@@ -16,6 +16,8 @@ namespace SIL.Machine.Translation.TestApp
 	public class TextViewModel : ViewModelBase, IChangeTracking
 	{
 		private readonly IRangeTokenizer<string, int, string> _tokenizer;
+		private readonly ErrorCorrectionModel _ecm;
+		private readonly HybridTranslationEngine _engine;
 		private readonly string _metadataFileName;
 		private readonly string _targetFileName;
 		private readonly ITruecaser _truecaser;
@@ -46,16 +48,19 @@ namespace SIL.Machine.Translation.TestApp
 		private bool _isChanged;
 		private bool _isActive;
 		private bool _isTranslating;
-		private InteractiveTranslationSession _curSession;
+		private InteractiveTranslator _translator;
 
-		public TextViewModel(IRangeTokenizer<string, int, string> tokenizer, string name, string metadataFileName,
-			string sourceFileName, string targetFileName)
+		public TextViewModel(IRangeTokenizer<string, int, string> tokenizer, ErrorCorrectionModel ecm,
+			HybridTranslationEngine engine, string name, string metadataFileName, string sourceFileName,
+			string targetFileName)
 		{
 			Name = name;
 			_metadataFileName = metadataFileName;
 			_targetFileName = targetFileName;
 			_tokenizer = tokenizer;
 			_truecaser = new TransferTruecaser();
+			_ecm = ecm;
+			_engine = engine;
 
 			_sourceSegments = new List<Segment>();
 			_targetSegments = new List<Segment>();
@@ -86,13 +91,11 @@ namespace SIL.Machine.Translation.TestApp
 		}
 
 		public TextViewModel(IRangeTokenizer<string, int, string> tokenizer)
-			: this(tokenizer, null, null, null, null)
+			: this(tokenizer, null, null, null, null, null, null)
 		{
 		}
 
 		public string Name { get; }
-
-		internal InteractiveTranslator InteractiveTranslator { get; set; }
 
 		internal double ConfidenceThreshold
 		{
@@ -246,7 +249,7 @@ namespace SIL.Machine.Translation.TestApp
 
 		private void ApproveSegment()
 		{
-			_curSession.Approve(false);
+			_translator.Approve(false);
 			UpdateTargetText();
 			_approvedSegments.Add(_currentSegment);
 			UpdateUnapprovedTargetSegmentRanges();
@@ -318,7 +321,8 @@ namespace SIL.Machine.Translation.TestApp
 		private void StartSegmentTranslation()
 		{
 			_sourceSegmentWords.AddRange(_tokenizer.Tokenize(_sourceSegments[_currentSegment].Text));
-			_curSession = InteractiveTranslator.StartSession(1, TokenProcessors.Lowercase.Process(_sourceSegmentWords));
+			_translator = InteractiveTranslator.Create(_ecm, _engine, 1,
+				TokenProcessors.Lowercase.Process(_sourceSegmentWords));
 			_isTranslating = true;
 			UpdatePrefix();
 			UpdateSourceSegmentSelection();
@@ -331,7 +335,7 @@ namespace SIL.Machine.Translation.TestApp
 
 			IReadOnlyList<string> prefix = _tokenizer.Tokenize(_targetSegments[_currentSegment].Text).ToArray();
 			prefix = TokenProcessors.Lowercase.Process(prefix);
-			_curSession.SetPrefix(prefix, TargetSegment.Length == 0 || TargetSegment.EndsWith(" "));
+			_translator.SetPrefix(prefix, TargetSegment.Length == 0 || TargetSegment.EndsWith(" "));
 			UpdateSuggestions();
 		}
 
@@ -342,7 +346,7 @@ namespace SIL.Machine.Translation.TestApp
 
 			if (!_approvedSegments.Contains(_currentSegment))
 			{
-				_suggestions.ReplaceAll(_suggester.GetSuggestions(_curSession, _sourceSegmentWords, _truecaser).First()
+				_suggestions.ReplaceAll(_suggester.GetSuggestions(_translator, _sourceSegmentWords, _truecaser).First()
 					.TargetWords.Select(w => new SuggestionViewModel(this, w)));
 			}
 			else
@@ -355,7 +359,7 @@ namespace SIL.Machine.Translation.TestApp
 		private void EndSegmentTranslation()
 		{
 			_isTranslating = false;
-			_curSession = null;
+			_translator = null;
 			UpdateTargetText();
 			_sourceSegmentWords.Clear();
 			_suggestions.Clear();
@@ -423,7 +427,7 @@ namespace SIL.Machine.Translation.TestApp
 			var alignedSourceWords = new List<AlignedWordViewModel>();
 			int targetWordIndex = _tokenizer.TokenizeAsRanges(TargetSegment)
 				.IndexOf(s => _currentTargetSegmentIndex >= s.Start && _currentTargetSegmentIndex <= s.End);
-			TranslationResult result = _curSession.CurrentResults[0];
+			TranslationResult result = _translator.CurrentResults[0];
 			if (targetWordIndex != -1)
 			{
 				double confidence = result.WordConfidences[targetWordIndex];

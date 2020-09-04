@@ -22,8 +22,8 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly IRangeTokenizer<string, int, string> _tokenizer;
 		private readonly RelayCommand _openProjectCommand;
 		private readonly RelayCommand _saveProjectCommand;
-		private HybridTranslationEngine _hybridEngine;
-		private InteractiveTranslator _interactiveTranslator;
+		private readonly ErrorCorrectionModel _ecm;
+		private HybridTranslationEngine _engine;
 		private ThotSmtModel _smtModel;
 		private ITextCorpus _sourceCorpus;
 		private ITextCorpus _targetCorpus;
@@ -38,6 +38,7 @@ namespace SIL.Machine.Translation.TestApp
 		public MainFormViewModel()
 		{
 			_tokenizer = new LatinWordTokenizer();
+			_ecm = new ErrorCorrectionModel();
 			_openProjectCommand = new RelayCommand(OpenProject);
 			_saveProjectCommand = new RelayCommand(SaveProject, CanSaveProject);
 			CloseCommand = new RelayCommand(Close, CanClose);
@@ -46,7 +47,7 @@ namespace SIL.Machine.Translation.TestApp
 			_texts = new BulkObservableList<TextViewModel>();
 			Texts = new ReadOnlyObservableList<TextViewModel>(_texts);
 			_currentText = new TextViewModel(_tokenizer);
-			RebuildTask = new TaskViewModel(RebuildAsync, () => _hybridEngine != null);
+			RebuildTask = new TaskViewModel(RebuildAsync, () => _engine != null);
 		}
 
 		private void TextPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -165,8 +166,7 @@ namespace SIL.Machine.Translation.TestApp
 			_smtModel = new ThotSmtModel(Path.Combine(configDir, smtConfig));
 			IInteractiveTranslationEngine smtEngine = _smtModel.CreateInteractiveEngine();
 
-			_hybridEngine = new HybridTranslationEngine(smtEngine, transferEngine);
-			_interactiveTranslator = new InteractiveTranslator(_hybridEngine);
+			_engine = new HybridTranslationEngine(smtEngine, transferEngine);
 
 			var sourceTexts = new List<IText>();
 			var targetTexts = new List<IText>();
@@ -196,10 +196,8 @@ namespace SIL.Machine.Translation.TestApp
 					if (alignmentsFileName != null)
 						alignmentsFileName = Path.Combine(configDir, alignmentsFileName);
 
-					var text = new TextViewModel(_tokenizer, name, metadataFileName, srcTextFileName, trgTextFileName)
-					{
-						InteractiveTranslator = _interactiveTranslator
-					};
+					var text = new TextViewModel(_tokenizer, _ecm, _engine, name, metadataFileName, srcTextFileName,
+						trgTextFileName);
 					text.PropertyChanged += TextPropertyChanged;
 					_texts.Add(text);
 
@@ -247,10 +245,10 @@ namespace SIL.Machine.Translation.TestApp
 			CurrentText = new TextViewModel(_tokenizer);
 			_sourceCorpus = null;
 			_targetCorpus = null;
-			if (_hybridEngine != null)
+			if (_engine != null)
 			{
-				_hybridEngine.Dispose();
-				_hybridEngine = null;
+				_engine.Dispose();
+				_engine = null;
 			}
 			if (_smtModel != null)
 			{

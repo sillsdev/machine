@@ -15,17 +15,17 @@ namespace SIL.Machine.Translation
 		}
 
 		public static IEnumerable<TranslationSuggestion> GetSuggestions(this ITranslationSuggester suggester,
-			InteractiveTranslationSession session)
+			InteractiveTranslator translator)
 		{
-			return session.CurrentResults.Select(r =>
-				suggester.GetSuggestion(session.Prefix.Count, session.IsLastWordComplete, r));
+			return translator.CurrentResults.Select(r =>
+				suggester.GetSuggestion(translator.Prefix.Count, translator.IsLastWordComplete, r));
 		}
 
 		public static IEnumerable<TranslationSuggestion> GetSuggestions(this ITranslationSuggester suggester,
-			InteractiveTranslationSession session, IReadOnlyList<string> sourceSegment, ITruecaser truecaser)
+			InteractiveTranslator translator, IReadOnlyList<string> sourceSegment, ITruecaser truecaser)
 		{
-			return session.CurrentResults.Select(r =>
-				suggester.GetSuggestion(session.Prefix.Count, session.IsLastWordComplete,
+			return translator.CurrentResults.Select(r =>
+				suggester.GetSuggestion(translator.Prefix.Count, translator.IsLastWordComplete,
 					truecaser.Truecase(sourceSegment, r)));
 		}
 

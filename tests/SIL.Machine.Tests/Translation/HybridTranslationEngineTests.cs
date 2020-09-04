@@ -17,30 +17,37 @@ namespace SIL.Machine.Translation
 			{
 				var sourceAnalyzer = Substitute.For<IMorphologicalAnalyzer>();
 				sourceAnalyzer.AddAnalyses("caminé", new WordAnalysis(new[]
-					{
-						new TestMorpheme("s1", "v", "walk", MorphemeType.Stem),
-						new TestMorpheme("s2", "v", "pst", MorphemeType.Affix)
-					}, 0, "v"));
+				{
+					new TestMorpheme("s1", "v", "walk", MorphemeType.Stem),
+					new TestMorpheme("s2", "v", "pst", MorphemeType.Affix)
+				}, 0, "v"));
+				sourceAnalyzer.AddAnalyses("mi", new WordAnalysis(new[]
+				{
+					new TestMorpheme("s3", "adj", "my", MorphemeType.Stem),
+				}, 0, "adj"));
 				var targetGenerator = Substitute.For<IMorphologicalGenerator>();
 				var targetMorphemes = new ReadOnlyObservableList<IMorpheme>(new ObservableList<IMorpheme>
-					{
-						new TestMorpheme("e1", "v", "walk", MorphemeType.Stem),
-						new TestMorpheme("e2", "v", "pst", MorphemeType.Affix)
-					});
+				{
+					new TestMorpheme("e1", "v", "walk", MorphemeType.Stem),
+					new TestMorpheme("e2", "v", "pst", MorphemeType.Affix),
+					new TestMorpheme("e3", "adj", "my", MorphemeType.Stem)
+				});
 				targetGenerator.Morphemes.Returns(targetMorphemes);
 				targetGenerator.AddGeneratedWords(
 					new WordAnalysis(new[] { targetMorphemes[0], targetMorphemes[1] }, 0, "v"), "walked");
+				targetGenerator.AddGeneratedWords(
+					new WordAnalysis(new[] { targetMorphemes[2] }, 0, "adj"), "my");
 				var transferer = new SimpleTransferer(new GlossMorphemeMapper(targetGenerator));
 				ITranslationEngine transferEngine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
 				var smtEngine = Substitute.For<IInteractiveTranslationEngine>();
 
-				AddTranslation(smtEngine, "caminé a mi habitación .", "caminé to my room .",
-					new[] { 0, 0.5, 0.5, 0.5, 0.5 });
+				AddTranslation(smtEngine, "caminé a mi habitación .", "caminé to mi room .",
+					new[] { 0, 0.5, 0, 0.5, 0.5 });
 				AddTranslation(smtEngine, "hablé con recepción .", "hablé with reception .",
 					new[] { 0, 0.5, 0.5, 0.5 });
 
+				Ecm = new ErrorCorrectionModel();
 				Engine = new HybridTranslationEngine(smtEngine, transferEngine);
-				InteractiveTranslator = new InteractiveTranslator(Engine);
 			}
 
 			private static void AddTranslation(IInteractiveTranslationEngine engine, string sourceSegment,
@@ -65,7 +72,12 @@ namespace SIL.Machine.Translation
 			}
 
 			public HybridTranslationEngine Engine { get; }
-			public InteractiveTranslator InteractiveTranslator { get; }
+			public ErrorCorrectionModel Ecm { get; }
+
+			public InteractiveTranslator CreateTranslator(string segment)
+			{
+				return InteractiveTranslator.Create(Ecm, Engine, 1, segment.Split());
+			}
 
 			protected override void DisposeManagedResources()
 			{
@@ -78,11 +90,11 @@ namespace SIL.Machine.Translation
 		{
 			using (var env = new TestEnvironment())
 			{
-				InteractiveTranslationSession session = env.InteractiveTranslator.StartSession(1,
-					"caminé a mi habitación .".Split());
-				TranslationResult result = session.CurrentResults[0];
+				InteractiveTranslator translator = env.CreateTranslator("caminé a mi habitación .");
+				TranslationResult result = translator.CurrentResults[0];
 				Assert.That(result.TargetSegment, Is.EqualTo("walked to my room .".Split()));
 				Assert.That(result.WordSources[0], Is.EqualTo(TranslationSources.Transfer));
+				Assert.That(result.WordSources[2], Is.EqualTo(TranslationSources.Transfer));
 			}
 		}
 
@@ -91,9 +103,8 @@ namespace SIL.Machine.Translation
 		{
 			using (var env = new TestEnvironment())
 			{
-				InteractiveTranslationSession session = env.InteractiveTranslator.StartSession(1,
-					"hablé con recepción .".Split());
-				TranslationResult result = session.CurrentResults[0];
+				InteractiveTranslator translator = env.CreateTranslator("hablé con recepción .");
+				TranslationResult result = translator.CurrentResults[0];
 				Assert.That(result.TargetSegment, Is.EqualTo("hablé with reception .".Split()));
 				Assert.That(result.WordSources[0], Is.EqualTo(TranslationSources.None));
 			}
