@@ -321,7 +321,7 @@ namespace SIL.Machine.Translation.TestApp
 		private void StartSegmentTranslation()
 		{
 			_sourceSegmentWords.AddRange(_tokenizer.Tokenize(_sourceSegments[_currentSegment].Text));
-			_translator = InteractiveTranslator.Create(_ecm, _engine, 1,
+			_translator = InteractiveTranslator.Create(_ecm, _engine,
 				TokenProcessors.Lowercase.Process(_sourceSegmentWords));
 			_isTranslating = true;
 			UpdatePrefix();
@@ -427,7 +427,7 @@ namespace SIL.Machine.Translation.TestApp
 			var alignedSourceWords = new List<AlignedWordViewModel>();
 			int targetWordIndex = _tokenizer.TokenizeAsRanges(TargetSegment)
 				.IndexOf(s => _currentTargetSegmentIndex >= s.Start && _currentTargetSegmentIndex <= s.End);
-			TranslationResult result = _translator.CurrentResults[0];
+			TranslationResult result = _translator.GetCurrentResults().First();
 			if (targetWordIndex != -1)
 			{
 				double confidence = result.WordConfidences[targetWordIndex];

@@ -6,27 +6,25 @@ namespace SIL.Machine.Translation
 {
 	public class InteractiveTranslator
 	{
-		public static InteractiveTranslator Create(ErrorCorrectionModel ecm,
-			IInteractiveTranslationEngine engine, int n, IReadOnlyList<string> segment)
+		public static InteractiveTranslator Create(ErrorCorrectionModel ecm, IInteractiveTranslationEngine engine,
+			IReadOnlyList<string> segment)
 		{
-			return new InteractiveTranslator(ecm, engine, n, segment, engine.GetWordGraph(segment));
+			return new InteractiveTranslator(ecm, engine, segment, engine.GetWordGraph(segment));
 		}
 
 		private readonly IInteractiveTranslationEngine _engine;
-		private readonly int _n;
 		private List<string> _prefix;
 		private readonly ErrorCorrectionWordGraphProcessor _wordGraphProcessor;
 
-		private InteractiveTranslator(ErrorCorrectionModel ecm, IInteractiveTranslationEngine engine, int n,
+		private InteractiveTranslator(ErrorCorrectionModel ecm, IInteractiveTranslationEngine engine,
 			IReadOnlyList<string> sourceSegment, WordGraph wordGraph)
 		{
 			_engine = engine;
 			SourceSegment = sourceSegment;
-			_n = n;
 			_prefix = new List<string>();
 			IsLastWordComplete = true;
 			_wordGraphProcessor = new ErrorCorrectionWordGraphProcessor(ecm, SourceSegment, wordGraph);
-			UpdateInteractiveResults();
+			Correct();
 		}
 
 		public IReadOnlyList<string> SourceSegment { get; }
@@ -35,26 +33,19 @@ namespace SIL.Machine.Translation
 
 		public bool IsLastWordComplete { get; private set; }
 
-		public IReadOnlyList<TranslationResult> CurrentResults { get; private set; }
 
-		private void UpdateInteractiveResults()
-		{
-			CurrentResults = _wordGraphProcessor.Correct(_prefix.ToArray(), IsLastWordComplete, _n).ToArray();
-		}
-
-		public IReadOnlyList<TranslationResult> SetPrefix(IReadOnlyList<string> prefix, bool isLastWordComplete)
+		public void SetPrefix(IReadOnlyList<string> prefix, bool isLastWordComplete)
 		{
 			if (!_prefix.SequenceEqual(prefix) || IsLastWordComplete != isLastWordComplete)
 			{
 				_prefix.Clear();
 				_prefix.AddRange(prefix);
 				IsLastWordComplete = isLastWordComplete;
-				UpdateInteractiveResults();
+				Correct();
 			}
-			return CurrentResults;
 		}
 
-		public IReadOnlyList<TranslationResult> AppendToPrefix(string addition, bool isLastWordComplete)
+		public void AppendToPrefix(string addition, bool isLastWordComplete)
 		{
 			if (string.IsNullOrEmpty(addition) && IsLastWordComplete)
 			{
@@ -69,12 +60,11 @@ namespace SIL.Machine.Translation
 				else
 					_prefix[_prefix.Count - 1] = _prefix[_prefix.Count - 1] + addition;
 				IsLastWordComplete = isLastWordComplete;
-				UpdateInteractiveResults();
+				Correct();
 			}
-			return CurrentResults;
 		}
 
-		public IReadOnlyList<TranslationResult> AppendToPrefix(IEnumerable<string> words)
+		public void AppendToPrefix(IEnumerable<string> words)
 		{
 			bool updated = false;
 			foreach (string word in words)
@@ -87,13 +77,7 @@ namespace SIL.Machine.Translation
 				updated = true;
 			}
 			if (updated)
-				UpdateInteractiveResults();
-			return CurrentResults;
-		}
-
-		public IReadOnlyList<TranslationResult> AppendSuggestionToPrefix(int resultIndex, IReadOnlyList<int> suggestion)
-		{
-			return AppendToPrefix(suggestion.Select(j => CurrentResults[resultIndex].TargetSegment[j]));
+				Correct();
 		}
 
 		public void Approve(bool alignedOnly)
@@ -101,13 +85,24 @@ namespace SIL.Machine.Translation
 			IReadOnlyList<string> sourceSegment = SourceSegment;
 			if (alignedOnly)
 			{
-				if (CurrentResults.Count == 0)
+				TranslationResult bestResult = GetCurrentResults().FirstOrDefault();
+				if (bestResult == null)
 					return;
-				sourceSegment = CurrentResults[0].GetAlignedSourceSegment(_prefix.Count);
+				sourceSegment = bestResult.GetAlignedSourceSegment(_prefix.Count);
 			}
 
 			if (sourceSegment.Count > 0)
 				_engine.TrainSegment(sourceSegment, _prefix);
+		}
+
+		public IEnumerable<TranslationResult> GetCurrentResults()
+		{
+			return _wordGraphProcessor.GetResults();
+		}
+
+		private void Correct()
+		{
+			_wordGraphProcessor.Correct(_prefix.ToArray(), IsLastWordComplete);
 		}
 	}
 }

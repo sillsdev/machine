@@ -153,7 +153,7 @@ namespace SIL.Machine.Translation
 		public double EcmWeight { get; }
 		public double WordGraphWeight { get; }
 
-		public IEnumerable<TranslationResult> Correct(string[] prefix, bool isLastWordComplete, int n)
+		public void Correct(string[] prefix, bool isLastWordComplete)
 		{
 			// get valid portion of the processed prefix vector
 			int validProcPrefixCount = 0;
@@ -208,22 +208,24 @@ namespace SIL.Machine.Translation
 
 			_prevPrefix = prefix.ToArray();
 			_prevIsLastWordComplete = isLastWordComplete;
+		}
 
+		public IEnumerable<TranslationResult> GetResults()
+		{
 			var queue = new PriorityQueue<Hypothesis>(1000);
 			GetStateHypotheses(queue);
 			GetSubStateHypotheses(queue);
 
-			foreach (Hypothesis hypothesis in NBestSearch(n, queue))
+			foreach (Hypothesis hypothesis in Search(queue))
 			{
 				var builder = new TranslationResultBuilder();
-				BuildCorrectionFromHypothesis(builder, prefix, isLastWordComplete, hypothesis);
+				BuildCorrectionFromHypothesis(builder, _prevPrefix, _prevIsLastWordComplete, hypothesis);
 				yield return builder.ToResult(_sourceSegment);
 			}
 		}
 
-		private IEnumerable<Hypothesis> NBestSearch(int n, PriorityQueue<Hypothesis> queue)
+		private IEnumerable<Hypothesis> Search(PriorityQueue<Hypothesis> queue)
 		{
-			var nbest = new List<Hypothesis>();
 			while (!queue.IsEmpty)
 			{
 				Hypothesis hypothesis = queue.Dequeue();
@@ -233,16 +235,12 @@ namespace SIL.Machine.Translation
 
 				if (_wordGraph.FinalStates.Contains(lastState))
 				{
-					nbest.Add(hypothesis);
-					if (nbest.Count == n)
-						break;
+					yield return hypothesis;
 				}
 				else if (ConfidenceThreshold <= 0)
 				{
 					hypothesis.Arcs.AddRange(_wordGraph.GetBestPathFromStateToFinalState(lastState));
-					nbest.Add(hypothesis);
-					if (nbest.Count == n)
-						break;
+					yield return hypothesis;
 				}
 				else
 				{
@@ -270,14 +268,10 @@ namespace SIL.Machine.Translation
 					if (!enqueuedArc && (hypothesis.StartArcIndex != -1 || hypothesis.Arcs.Count > 0))
 					{
 						hypothesis.Arcs.AddRange(_wordGraph.GetBestPathFromStateToFinalState(lastState));
-						nbest.Add(hypothesis);
-						if (nbest.Count == n)
-							break;
+						yield return hypothesis;
 					}
 				}
 			}
-
-			return nbest;
 		}
 
 		private void ProcessWordGraphForPrefixDiff(string[] prefixDiff, bool isLastWordComplete)

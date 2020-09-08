@@ -91,9 +91,9 @@ namespace SIL.Machine.Translation.Thot
 			using (ThotSmtEngine engine = smtModel.CreateEngine())
 			{
 				var ecm = new ErrorCorrectionModel();
-				var translator = InteractiveTranslator.Create(ecm, engine, 1, "me marcho hoy por la tarde .".Split());
+				var translator = InteractiveTranslator.Create(ecm, engine, "me marcho hoy por la tarde .".Split());
 
-				TranslationResult result = translator.CurrentResults[0];
+				TranslationResult result = translator.GetCurrentResults().First();
 				Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
 			}
 		}
@@ -105,13 +105,15 @@ namespace SIL.Machine.Translation.Thot
 			using (ThotSmtEngine engine = smtModel.CreateEngine())
 			{
 				var ecm = new ErrorCorrectionModel();
-				var translator = InteractiveTranslator.Create(ecm, engine, 1, "me marcho hoy por la tarde .".Split());
+				var translator = InteractiveTranslator.Create(ecm, engine, "me marcho hoy por la tarde .".Split());
 
-				TranslationResult result = translator.CurrentResults[0];
+				TranslationResult result = translator.GetCurrentResults().First();
 				Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
-				result = translator.SetPrefix("i am".Split(), true)[0];
+				translator.SetPrefix("i am".Split(), true);
+				result = translator.GetCurrentResults().First();
 				Assert.That(result.TargetSegment, Is.EqualTo("i am leave today in the afternoon .".Split()));
-				result = translator.SetPrefix("i am leaving".Split(), true)[0];
+				translator.SetPrefix("i am leaving".Split(), true);
+				result = translator.GetCurrentResults().First();
 				Assert.That(result.TargetSegment, Is.EqualTo("i am leaving today in the afternoon .".Split()));
 			}
 		}
@@ -123,11 +125,12 @@ namespace SIL.Machine.Translation.Thot
 			using (ThotSmtEngine engine = smtModel.CreateInteractiveEngine())
 			{
 				var ecm = new ErrorCorrectionModel();
-				var translator = InteractiveTranslator.Create(ecm, engine, 1, "caminé a mi habitación .".Split());
+				var translator = InteractiveTranslator.Create(ecm, engine, "caminé a mi habitación .".Split());
 
-				TranslationResult result = translator.CurrentResults[0];
+				TranslationResult result = translator.GetCurrentResults().First();
 				Assert.That(result.TargetSegment, Is.EqualTo("caminé to my room .".Split()));
-				result = translator.SetPrefix("i walked".Split(), true)[0];
+				translator.SetPrefix("i walked".Split(), true);
+				result = translator.GetCurrentResults().First();
 				Assert.That(result.TargetSegment, Is.EqualTo("i walked to my room .".Split()));
 			}
 		}
@@ -139,13 +142,15 @@ namespace SIL.Machine.Translation.Thot
 			using (ThotSmtEngine engine = smtModel.CreateEngine())
 			{
 				var ecm = new ErrorCorrectionModel();
-				var translator = InteractiveTranslator.Create(ecm, engine, 1, "me marcho hoy por la tarde .".Split());
+				var translator = InteractiveTranslator.Create(ecm, engine, "me marcho hoy por la tarde .".Split());
 
-				TranslationResult result = translator.CurrentResults[0];
+				TranslationResult result = translator.GetCurrentResults().First();
 				Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
-				result = translator.SetPrefix("i am".Split(), true)[0];
+				translator.SetPrefix("i am".Split(), true);
+				result = translator.GetCurrentResults().First();
 				Assert.That(result.TargetSegment, Is.EqualTo("i am leave today in the afternoon .".Split()));
-				result = translator.SetPrefix("i".Split(), true)[0];
+				translator.SetPrefix("i".Split(), true);
+				result = translator.GetCurrentResults().First();
 				Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
 			}
 		}
@@ -157,18 +162,19 @@ namespace SIL.Machine.Translation.Thot
 			using (ThotSmtEngine engine = smtModel.CreateEngine())
 			{
 				var ecm = new ErrorCorrectionModel();
-				var translator = InteractiveTranslator.Create(ecm, engine, 1, "hablé con recepción .".Split());
+				var translator = InteractiveTranslator.Create(ecm, engine, "hablé con recepción .".Split());
 
-				TranslationResult result = translator.CurrentResults[0];
+				TranslationResult result = translator.GetCurrentResults().First();
 				Assert.That(result.TargetSegment, Is.EqualTo("hablé with reception .".Split()));
-				result = translator.SetPrefix("i talked".Split(), true)[0];
+				translator.SetPrefix("i talked".Split(), true);
+				result = translator.GetCurrentResults().First();
 				Assert.That(result.TargetSegment, Is.EqualTo("i talked with reception .".Split()));
 				translator.SetPrefix("i talked with reception .".Split(), true);
 				translator.Approve(false);
 
-				translator = InteractiveTranslator.Create(ecm, engine, 1, "hablé hasta cinco en punto .".Split());
+				translator = InteractiveTranslator.Create(ecm, engine, "hablé hasta cinco en punto .".Split());
 
-				result = translator.CurrentResults[0];
+				result = translator.GetCurrentResults().First();
 				Assert.That(result.TargetSegment, Is.EqualTo("talked until five o ' clock .".Split()));
 			}
 		}

@@ -166,7 +166,7 @@ namespace SIL.Machine.Translation
 			string[][] prevSuggestionWords = null;
 			bool isLastWordSuggestion = false;
 			string suggestionResult = null;
-			var translator = InteractiveTranslator.Create(ecm, engine, n, sourceSegment);
+			var translator = InteractiveTranslator.Create(ecm, engine, sourceSegment);
 			while (translator.Prefix.Count < targetSegment.Count || !translator.IsLastWordComplete)
 			{
 				int targetIndex = translator.Prefix.Count;
@@ -174,10 +174,8 @@ namespace SIL.Machine.Translation
 					targetIndex--;
 
 				bool match = false;
-				TranslationSuggestion[] suggestions = suggester.GetSuggestions(translator).ToArray();
-				string[][] suggestionWords = suggestions.Select((s, k) =>
-					s.TargetWordIndices.Select(j =>
-						translator.CurrentResults[k].TargetSegment[j]).ToArray()).ToArray();
+				TranslationSuggestion[] suggestions = suggester.GetSuggestions(translator).Take(n).ToArray();
+				string[][] suggestionWords = suggestions.Select(s => s.TargetWords.ToArray()).ToArray();
 				if (prevSuggestionWords == null || !SuggestionsAreEqual(prevSuggestionWords, suggestionWords))
 				{
 					WritePrefix(traceWriter, suggestionResult, translator.Prefix);
@@ -209,7 +207,7 @@ namespace SIL.Machine.Translation
 
 					if (accepted.Count > 0)
 					{
-						translator.AppendSuggestionToPrefix(k, accepted);
+						translator.AppendToPrefix(accepted.Select(j => suggestion.Result.TargetSegment[j]));
 						isLastWordSuggestion = true;
 						_actionCount++;
 						_totalAcceptedSuggestionCount++;
@@ -297,7 +295,7 @@ namespace SIL.Machine.Translation
 				TranslationSuggestion suggestion = suggestions[k];
 				bool inSuggestion = false;
 				traceWriter.Write($"SUGGESTION {k + 1}  ");
-				for (int j = 0; j < translator.CurrentResults[k].TargetSegment.Count; j++)
+				for (int j = 0; j < suggestion.Result.TargetSegment.Count; j++)
 				{
 					if (suggestion.TargetWordIndices.Contains(j))
 					{
@@ -317,7 +315,7 @@ namespace SIL.Machine.Translation
 						traceWriter.Write(" ");
 					}
 
-					traceWriter.Write(translator.CurrentResults[k].TargetSegment[j]);
+					traceWriter.Write(suggestion.Result.TargetSegment[j]);
 				}
 				if (inSuggestion)
 					traceWriter.Write("]");

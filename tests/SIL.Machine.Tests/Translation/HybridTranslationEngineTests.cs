@@ -76,7 +76,7 @@ namespace SIL.Machine.Translation
 
 			public InteractiveTranslator CreateTranslator(string segment)
 			{
-				return InteractiveTranslator.Create(Ecm, Engine, 1, segment.Split());
+				return InteractiveTranslator.Create(Ecm, Engine, segment.Split());
 			}
 
 			protected override void DisposeManagedResources()
@@ -91,7 +91,7 @@ namespace SIL.Machine.Translation
 			using (var env = new TestEnvironment())
 			{
 				InteractiveTranslator translator = env.CreateTranslator("caminé a mi habitación .");
-				TranslationResult result = translator.CurrentResults[0];
+				TranslationResult result = translator.GetCurrentResults().First();
 				Assert.That(result.TargetSegment, Is.EqualTo("walked to my room .".Split()));
 				Assert.That(result.WordSources[0], Is.EqualTo(TranslationSources.Transfer));
 				Assert.That(result.WordSources[2], Is.EqualTo(TranslationSources.Transfer));
@@ -104,7 +104,7 @@ namespace SIL.Machine.Translation
 			using (var env = new TestEnvironment())
 			{
 				InteractiveTranslator translator = env.CreateTranslator("hablé con recepción .");
-				TranslationResult result = translator.CurrentResults[0];
+				TranslationResult result = translator.GetCurrentResults().First();
 				Assert.That(result.TargetSegment, Is.EqualTo("hablé with reception .".Split()));
 				Assert.That(result.WordSources[0], Is.EqualTo(TranslationSources.None));
 			}
