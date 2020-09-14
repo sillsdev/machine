@@ -10,7 +10,7 @@ namespace SIL.Machine.Tokenization
 		private static readonly Regex InnerWordPunctRegex = new Regex(
 			@"\G[&\-.:=,?@\xAD\xB7\u2010\u2011\u2019\u2027]|['_]+");
 		private static readonly Regex UrlRegex = new Regex(
-			@"^(?:[\w-]+://?|www[.])[^\s()<>]+(?:[\w\d]+|(?:[^[:punct:]\s]|/))", RegexOptions.IgnoreCase);
+			@"^(?:[\w-]+://?|www[.])[^\s()<>]+(?:[\w\d]+|(?:[^\p{P}\s]|/))", RegexOptions.IgnoreCase);
 		private readonly HashSet<string> _abbreviations;
 
 		public LatinWordTokenizer()
