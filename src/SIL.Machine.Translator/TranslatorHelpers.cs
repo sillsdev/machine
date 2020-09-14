@@ -66,8 +66,6 @@ namespace SIL.Machine.Translation
 
 				case "text":
 				default:
-					if (File.Exists(path))
-						return TextFileText.CreateSingleFileCorpus(wordTokenizer, path);
 					return new TextFileTextCorpus(wordTokenizer, path);
 			}
 		}
