@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using SIL.Machine.Tokenization;
@@ -31,13 +32,17 @@ namespace SIL.Machine.Corpora
 					string line;
 					while ((line = reader.ReadLine()) != null)
 					{
-						if (line.StartsWith("//"))
+						if (line.StartsWith("// section ", StringComparison.InvariantCultureIgnoreCase))
 						{
-							string sectionNumStr = line.Substring(2).Trim();
+							string sectionNumStr = line.Substring(11).Trim();
 							if (!string.IsNullOrEmpty(sectionNumStr))
 							{
-								sectionNum = int.Parse(sectionNumStr, CultureInfo.InvariantCulture);
-								segmentNum = 1;
+								if (int.TryParse(sectionNumStr, NumberStyles.Integer, CultureInfo.InvariantCulture,
+									out int num))
+								{
+									sectionNum = num;
+									segmentNum = 1;
+								}
 							}
 						}
 						else

@@ -145,7 +145,7 @@ namespace SIL.Machine.Corpora
 		{
 			if (rangeInfo.IsInRange)
 				yield return rangeInfo.CreateTextSegment();
-			yield return new ParallelTextSegment(this, srcSeg != null ? srcSeg.Segment : trgSeg.Segment,
+			yield return new ParallelTextSegment(this, srcSeg != null ? srcSeg.SegmentRef : trgSeg.SegmentRef,
 				srcSeg != null ? srcSeg.Segment : Array.Empty<string>(),
 				trgSeg != null ? trgSeg.Segment : Array.Empty<string>(),
 				alignedWordPairs, srcSeg != null && srcSeg.IsInRange, trgSeg != null && trgSeg.IsInRange);
