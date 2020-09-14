@@ -104,5 +104,39 @@ namespace SIL.Machine.Tokenization
 			Assert.That(tokenizer.Tokenize("This is a <<test>>."),
 				Is.EqualTo(new[] { "This", "is", "a", "<<", "test", ">>", "." }));
 		}
+
+		[Test]
+		public void Tokenize_EmailAddress()
+		{
+			var tokenizer = new LatinWordTokenizer();
+			Assert.That(tokenizer.Tokenize("This is an email address, name@test.com, in a sentence."),
+				Is.EqualTo(new[] { "This", "is", "an", "email", "address", ",", "name@test.com", ",", "in", "a",
+					"sentence", "." }));
+		}
+
+		[Test]
+		public void Tokenize_EmailAddressAtEndOfSentence()
+		{
+			var tokenizer = new LatinWordTokenizer();
+			Assert.That(tokenizer.Tokenize("Here is an email address: name@test.com."),
+				Is.EqualTo(new[] { "Here", "is", "an", "email", "address", ":", "name@test.com", "." }));
+		}
+
+		[Test]
+		public void Tokenize_Url()
+		{
+			var tokenizer = new LatinWordTokenizer();
+			Assert.That(tokenizer.Tokenize("This is a url, http://www.test.com/page.html, in a sentence."),
+				Is.EqualTo(new[] { "This", "is", "a", "url", ",", "http://www.test.com/page.html", ",", "in", "a",
+					"sentence", "." }));
+		}
+
+		[Test]
+		public void Tokenize_UrlAtEndOfSentence()
+		{
+			var tokenizer = new LatinWordTokenizer();
+			Assert.That(tokenizer.Tokenize("Here is a url: http://www.test.com/page.html?param=1."),
+				Is.EqualTo(new[] { "Here", "is", "a", "url", ":", "http://www.test.com/page.html?param=1", "." }));
+		}
 	}
 }

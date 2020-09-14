@@ -8,7 +8,9 @@ namespace SIL.Machine.Tokenization
 	public class LatinWordTokenizer : WhitespaceTokenizer
 	{
 		private static readonly Regex InnerWordPunctRegex = new Regex(
-			"\\G[&\\-.:=,?@\xAD\xB7\u2010\u2011\u2019\u2027]|['_]+");
+			@"\G[&\-.:=,?@\xAD\xB7\u2010\u2011\u2019\u2027]|['_]+");
+		private static readonly Regex UrlRegex = new Regex(
+			@"^(?:[\w-]+://?|www[.])[^\s()<>]+(?:[\w\d]+|(?:[^[:punct:]\s]|/))", RegexOptions.IgnoreCase);
 		private readonly HashSet<string> _abbreviations;
 
 		public LatinWordTokenizer()
@@ -28,7 +30,17 @@ namespace SIL.Machine.Tokenization
 			var ctxt = new TokenizeContext();
 			foreach (Range<int> charRange in base.TokenizeAsRanges(data, range))
 			{
-				ctxt.Index = charRange.Start;
+				Match urlMatch = UrlRegex.Match(data.Substring(charRange.Start, charRange.Length));
+				if (urlMatch.Success)
+				{
+					yield return Range<int>.Create(charRange.Start, charRange.Start + urlMatch.Length);
+					ctxt.Index = charRange.Start + urlMatch.Length;
+				}
+				else
+				{
+					ctxt.Index = charRange.Start;
+				}
+
 				ctxt.WordStart = -1;
 				ctxt.InnerWordPunct = -1;
 				while (ctxt.Index < charRange.End)
