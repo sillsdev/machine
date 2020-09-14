@@ -22,6 +22,7 @@ namespace SIL.Machine.Translation
 			AddCommand(new CorpusCommand());
 			AddCommand(new ExtractCommand());
 			AddCommand(new TranslateCommand());
+			AddCommand(new TokenizeCommand());
 
 			OnExecute(() =>
 			{

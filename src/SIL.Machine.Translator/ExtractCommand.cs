@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Text;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
@@ -41,6 +40,12 @@ namespace SIL.Machine.Translation
 			int code = base.ExecuteCommand();
 			if (code != 0)
 				return code;
+
+			if (!_sourceOutputOption.HasValue() && !_targetOutputOption.HasValue())
+			{
+				Out.WriteLine("An output file was not specified.");
+				return 1;
+			}
 
 			int segmentCount = 0;
 			var utf8Encoding = new UTF8Encoding(false);
