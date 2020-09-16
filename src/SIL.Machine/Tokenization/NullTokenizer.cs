@@ -7,7 +7,8 @@ namespace SIL.Machine.Tokenization
 	{
 		public override IEnumerable<Range<int>> TokenizeAsRanges(string data, Range<int> range)
 		{
-			yield return range;
+			if (range.Length > 0)
+				yield return range;
 		}
 	}
 }

@@ -34,7 +34,7 @@ namespace SIL.Machine
 
 		public static bool IsSentenceTerminal(this string str)
 		{
-			return str.All(c => SentenceTerminals.Contains(c));
+			return str.Length > 0 && str.All(c => SentenceTerminals.Contains(c));
 		}
 
 		public static bool IsDelayedSentenceStart(this char c)
@@ -44,7 +44,7 @@ namespace SIL.Machine
 
 		public static bool IsDelayedSentenceStart(this string str)
 		{
-			return str.All(c => DelayedSentenceStart.Contains(c));
+			return str.Length > 0 && str.All(c => DelayedSentenceStart.Contains(c));
 		}
 
 		public static bool IsDelayedSentenceEnd(this char c)
@@ -54,7 +54,7 @@ namespace SIL.Machine
 
 		public static bool IsDelayedSentenceEnd(this string str)
 		{
-			return str.All(c => DelayedSentenceEnd.Contains(c));
+			return str.Length > 0 && str.All(c => DelayedSentenceEnd.Contains(c));
 		}
 
 		public static bool HasSentenceEnding(this string str)
@@ -78,7 +78,7 @@ namespace SIL.Machine
 
 		public static bool IsLower(this string str)
 		{
-			return str.All(char.IsLower);
+			return str.Length > 0 && str.All(char.IsLower);
 		}
 
 		public static string ToTitleCase(this string str)

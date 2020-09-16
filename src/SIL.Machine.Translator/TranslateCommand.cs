@@ -117,11 +117,11 @@ namespace SIL.Machine.Translation
 			string engineDirectory = Path.GetDirectoryName(engineConfigFileName);
 
 			ITokenizer<string, int, string> sourceWordTokenizer = TranslatorHelpers.CreateWordTokenizer(
-				_sourceWordTokenizerOption.Value());
+				_sourceWordTokenizerOption.Value() ?? "whitespace");
 			IDetokenizer<string, string> targetWordDetokenizer = TranslatorHelpers.CreateWordDetokenizer(
-				_targetWordTokenizerOption.Value());
+				_targetWordTokenizerOption.Value() ?? "whitespace");
 
-			ITextCorpus corpus = TranslatorHelpers.CreateTextCorpus(sourceWordTokenizer, sourceCorpusType,
+			ITextCorpus corpus = TranslatorHelpers.CreateTextCorpus(sourceWordTokenizer, sourceCorpusType ?? "text",
 				sourceCorpusPath);
 
 			ISet<string> includeTexts = null;

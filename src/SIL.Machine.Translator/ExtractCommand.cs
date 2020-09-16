@@ -14,7 +14,7 @@ namespace SIL.Machine.Translation
 		private readonly CommandOption _lowercaseOption;
 
 		public ExtractCommand()
-			: base(supportAlignmentsCorpus: false, supportsNullTokenizer: true)
+			: base(supportAlignmentsCorpus: false, defaultNullTokenizer: true)
 		{
 			Name = "extract";
 			Description = "Extracts a parallel corpus from source and target monolingual corpora.";

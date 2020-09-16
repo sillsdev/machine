@@ -27,7 +27,7 @@ namespace SIL.Machine.Translation
 		{
 			public IReadOnlyList<string> Process(IReadOnlyList<string> tokens)
 			{
-				return tokens.Select(t => t.Any(char.IsWhiteSpace) ? "<space>" : t).ToArray();
+				return tokens.Select(t => t.Length > 0 && t.All(char.IsWhiteSpace) ? "<space>" : t).ToArray();
 			}
 		}
 

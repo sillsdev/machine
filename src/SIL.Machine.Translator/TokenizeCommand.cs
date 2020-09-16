@@ -79,9 +79,9 @@ namespace SIL.Machine.Translation
 			}
 
 			ITokenizer<string, int, string> wordTokenizer = TranslatorHelpers.CreateWordTokenizer(
-				_wordTokenizerOption.Value());
+				_wordTokenizerOption.Value() ?? "whitespace");
 
-			ITextCorpus corpus = TranslatorHelpers.CreateTextCorpus(wordTokenizer, corpusType, corpusPath);
+			ITextCorpus corpus = TranslatorHelpers.CreateTextCorpus(wordTokenizer, corpusType ?? "text", corpusPath);
 
 			ISet<string> includeTexts = null;
 			if (_includeOption.HasValue())

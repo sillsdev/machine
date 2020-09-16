@@ -8,7 +8,7 @@ namespace SIL.Machine.Translation
 		private readonly CommandArgument _engineArgument;
 
 		public EngineCommandBase(bool supportAlignmentsCorpus)
-			: base(supportAlignmentsCorpus, supportsNullTokenizer: false)
+			: base(supportAlignmentsCorpus, defaultNullTokenizer: false)
 		{
 			_engineArgument = Argument("engine", "The translation engine directory or configuration file.");
 		}

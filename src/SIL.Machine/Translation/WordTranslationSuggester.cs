@@ -31,7 +31,7 @@ namespace SIL.Machine.Translation
 			{
 				string word = result.TargetSegment[j];
 				// stop suggesting at punctuation
-				if (word.All(char.IsPunctuation))
+				if (word.Length > 0 && word.All(char.IsPunctuation))
 					break;
 
 				// criteria for suggesting a word

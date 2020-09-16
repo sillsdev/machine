@@ -65,9 +65,10 @@ namespace SIL.Machine.Translation
 					return new ParatextTextCorpus(wordTokenizer, path);
 
 				case "text":
-				default:
 					return new TextFileTextCorpus(wordTokenizer, path);
 			}
+
+			throw new ArgumentException("An invalid text corpus type was specified.", nameof(type));
 		}
 
 		public static ITextAlignmentCorpus CreateAlignmentsCorpus(string type, string path)
@@ -75,9 +76,10 @@ namespace SIL.Machine.Translation
 			switch (type)
 			{
 				case "text":
-				default:
 					return new TextFileTextAlignmentCorpus(path);
 			}
+
+			throw new ArgumentException("An invalid alignment corpus type was specified.", nameof(type));
 		}
 
 		public static ITokenizer<string, int, string> CreateWordTokenizer(string type)
@@ -94,9 +96,10 @@ namespace SIL.Machine.Translation
 					return new ZwspWordTokenizer();
 
 				case "whitespace":
-				default:
 					return new WhitespaceTokenizer();
 			}
+
+			throw new ArgumentException("An invalid tokenizer type was specified.", nameof(type));
 		}
 
 		public static IDetokenizer<string, string> CreateWordDetokenizer(string type)
@@ -110,9 +113,10 @@ namespace SIL.Machine.Translation
 					return new ZwspWordDetokenizer();
 
 				case "whitespace":
-				default:
 					return new WhitespaceDetokenizer();
 			}
+
+			throw new ArgumentException("An invalid tokenizer type was specified.", nameof(type));
 		}
 
 		public static ISet<string> GetTexts(IEnumerable<string> values)

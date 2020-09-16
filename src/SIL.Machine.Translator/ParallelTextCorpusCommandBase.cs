@@ -17,11 +17,11 @@ namespace SIL.Machine.Translation
 		private readonly CommandOption _includeOption;
 		private readonly CommandOption _excludeOption;
 		private readonly CommandOption _maxCorpusSizeOption;
-		private readonly bool _supportsNullTokenizer;
+		private readonly bool _defaultNullTokenizer;
 
-		protected ParallelTextCorpusCommandBase(bool supportAlignmentsCorpus, bool supportsNullTokenizer)
+		protected ParallelTextCorpusCommandBase(bool supportAlignmentsCorpus, bool defaultNullTokenizer)
 		{
-			_supportsNullTokenizer = supportsNullTokenizer;
+			_defaultNullTokenizer = defaultNullTokenizer;
 
 			_sourceOption = Option("-s|--source <[type,]path>",
 				"The source corpus.\nTypes: \"text\" (default), \"dbl\", \"usx\", \"pt\".",
@@ -36,8 +36,8 @@ namespace SIL.Machine.Translation
 			}
 
 			string typesStr = "Types: \"whitespace\" (default), \"latin\", \"zwsp\"";
-			if (_supportsNullTokenizer)
-				typesStr += ", \"null\"";
+			if (_defaultNullTokenizer)
+				typesStr += "Types: \"null\" (default), \"whitespace\", \"latin\", \"zwsp\"";
 			_sourceWordTokenizerOption = Option("-st|--source-tokenizer <type>",
 				$"The source word tokenizer type.\n{typesStr}.",
 				CommandOptionType.SingleValue);
@@ -99,14 +99,14 @@ namespace SIL.Machine.Translation
 			}
 
 			if (!TranslatorHelpers.ValidateWordTokenizerOption(_sourceWordTokenizerOption.Value(),
-				_supportsNullTokenizer))
+				_defaultNullTokenizer))
 			{
 				Out.WriteLine("The specified source word tokenizer type is invalid.");
 				return 1;
 			}
 
 			if (!TranslatorHelpers.ValidateWordTokenizerOption(_targetWordTokenizerOption.Value(),
-				_supportsNullTokenizer))
+				_defaultNullTokenizer))
 			{
 				Out.WriteLine("The specified target word tokenizer type is invalid.");
 				return 1;
@@ -122,16 +122,17 @@ namespace SIL.Machine.Translation
 				MaxParallelCorpusCount = maxCorpusSize;
 			}
 
+			string defaultTokenizerType = _defaultNullTokenizer ? "null" : "whitespace";
 			ITokenizer<string, int, string> sourceWordTokenizer = TranslatorHelpers.CreateWordTokenizer(
-				_sourceWordTokenizerOption.Value());
+				_sourceWordTokenizerOption.Value() ?? defaultTokenizerType);
 			ITokenizer<string, int, string> targetWordTokenizer = TranslatorHelpers.CreateWordTokenizer(
-				_targetWordTokenizerOption.Value());
+				_targetWordTokenizerOption.Value() ?? defaultTokenizerType);
 
-			SourceCorpus = TranslatorHelpers.CreateTextCorpus(sourceWordTokenizer, sourceType, sourcePath);
-			TargetCorpus = TranslatorHelpers.CreateTextCorpus(targetWordTokenizer, targetType, targetPath);
+			SourceCorpus = TranslatorHelpers.CreateTextCorpus(sourceWordTokenizer, sourceType ?? "text", sourcePath);
+			TargetCorpus = TranslatorHelpers.CreateTextCorpus(targetWordTokenizer, targetType ?? "text", targetPath);
 			AlignmentsCorpus = null;
 			if (_alignmentsOption != null && _alignmentsOption.HasValue())
-				AlignmentsCorpus = TranslatorHelpers.CreateAlignmentsCorpus(alignmentsType, alignmentsPath);
+				AlignmentsCorpus = TranslatorHelpers.CreateAlignmentsCorpus(alignmentsType ?? "text", alignmentsPath);
 
 			ISet<string> includeTexts = null;
 			if (_includeOption.HasValue())
