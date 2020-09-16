@@ -9,9 +9,10 @@ namespace SIL.Machine.Translation
 	{
 		private readonly CommandOption _sourceOutputOption;
 		private readonly CommandOption _targetOutputOption;
-		private readonly CommandOption _allSourceSegmentsOption;
-		private readonly CommandOption _allTargetSegmentsOption;
+		private readonly CommandOption _allSourceOption;
+		private readonly CommandOption _allTargetOption;
 		private readonly CommandOption _lowercaseOption;
+		private readonly CommandOption _includeEmptyOption;
 
 		public ExtractCommand()
 			: base(supportAlignmentsCorpus: false, defaultNullTokenizer: true)
@@ -23,17 +24,19 @@ namespace SIL.Machine.Translation
 				CommandOptionType.SingleValue);
 			_targetOutputOption = Option("-to|--target-output <path>", "The target output file.",
 				CommandOptionType.SingleValue);
-			_allSourceSegmentsOption = Option("-as|--all-source-segments",
+			_allSourceOption = Option("-as|--all-source",
 				"Include all source segments. This parameter overrides all other include/exclude parameters.",
 				CommandOptionType.NoValue);
-			_allTargetSegmentsOption = Option("-at|--all-target-segments",
+			_allTargetOption = Option("-at|--all-target",
 				"Include all target segments. This parameter overrides all other include/exclude parameters.",
 				CommandOptionType.NoValue);
 			_lowercaseOption = Option("-l|--lowercase", "Convert text to lowercase.", CommandOptionType.NoValue);
+			_includeEmptyOption = Option("-ie|--include-empty", "Include empty segments.",
+				CommandOptionType.NoValue);
 		}
 
-		protected override bool FilterSource => !_allSourceSegmentsOption.HasValue();
-		protected override bool FilterTarget => !_allTargetSegmentsOption.HasValue();
+		protected override bool FilterSource => !_allSourceOption.HasValue();
+		protected override bool FilterTarget => !_allTargetOption.HasValue();
 
 		protected override int ExecuteCommand()
 		{
@@ -54,27 +57,30 @@ namespace SIL.Machine.Translation
 			using (var targetOutputWriter = _targetOutputOption.HasValue()
 				? new StreamWriter(_targetOutputOption.Value(), false, utf8Encoding) : null)
 			{
-				foreach (ParallelTextSegment segment in ParallelCorpus.GetSegments(_allSourceSegmentsOption.HasValue(),
-						_allTargetSegmentsOption.HasValue()))
+				foreach (ParallelTextSegment segment in ParallelCorpus.GetSegments(_allSourceOption.HasValue(),
+						_allTargetOption.HasValue()))
 				{
-					if (_allSourceSegmentsOption.HasValue() && _allTargetSegmentsOption.HasValue())
+					if (!_includeEmptyOption.HasValue())
 					{
-						if (segment.SourceSegment.Count == 0 && segment.TargetSegment.Count == 0)
+						if (_allSourceOption.HasValue() && _allTargetOption.HasValue())
+						{
+							if (segment.SourceSegment.Count == 0 && segment.TargetSegment.Count == 0)
+								continue;
+						}
+						else if (_allSourceOption.HasValue())
+						{
+							if (segment.SourceSegment.Count == 0)
+								continue;
+						}
+						else if (_allTargetOption.HasValue())
+						{
+							if (segment.TargetSegment.Count == 0)
+								continue;
+						}
+						else if (segment.IsEmpty)
+						{
 							continue;
-					}
-					else if (_allSourceSegmentsOption.HasValue())
-					{
-						if (segment.SourceSegment.Count == 0)
-							continue;
-					}
-					else if (_allTargetSegmentsOption.HasValue())
-					{
-						if (segment.TargetSegment.Count == 0)
-							continue;
-					}
-					else if (segment.IsEmpty)
-					{
-						continue;
+						}
 					}
 
 					ITokenProcessor preprocessor = TokenProcessors.Null;
