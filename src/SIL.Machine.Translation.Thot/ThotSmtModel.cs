@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using SIL.Machine.Corpora;
 using SIL.ObjectModel;
 
@@ -82,9 +83,14 @@ namespace SIL.Machine.Translation.Thot
 			Thot.smtModel_saveModels(Handle);
 		}
 
+		public Task SaveAsync()
+		{
+			Save();
+			return Task.CompletedTask;
+		}
+
 		public ITranslationModelTrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITextCorpus sourceCorpus,
-			ITokenProcessor targetPreprocessor, ITextCorpus targetCorpus,
-			ITextAlignmentCorpus alignmentCorpus = null)
+			ITokenProcessor targetPreprocessor, ITextCorpus targetCorpus, ITextAlignmentCorpus alignmentCorpus = null)
 		{
 			CheckDisposed();
 

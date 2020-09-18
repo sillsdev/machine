@@ -48,7 +48,7 @@ namespace SIL.Machine.WebApi.Services
 		public EngineOptions EngineOptions { get; }
 		public IBuildHandler BuildHandler { get; } = new BuildHandler();
 		public ITruecaser Truecaser { get; private set; }
-		public ITruecaserTrainer TruecaseBatchTrainer { get; private set; }
+		public ITrainer TruecaserTrainer { get; private set; }
 
 		public EngineRuntime GetRuntime(string engineId)
 		{
@@ -61,8 +61,8 @@ namespace SIL.Machine.WebApi.Services
 			SmtBatchTrainer = Substitute.For<ITranslationModelTrainer>();
 			SmtBatchTrainer.Stats.Returns(new SmtBatchTrainStats());
 			Truecaser = Substitute.For<ITruecaser>();
-			TruecaseBatchTrainer = Substitute.For<ITruecaserTrainer>();
-			TruecaseBatchTrainer.SaveAsync().Returns(Task.CompletedTask);
+			TruecaserTrainer = Substitute.For<ITrainer>();
+			TruecaserTrainer.SaveAsync().Returns(Task.CompletedTask);
 			_interactiveModelFactory = CreateInteractiveModelFactory();
 			_ruleEngineFactory = CreateRuleEngineFactory();
 			_truecaserFactory = CreateTruecaserFactory();
@@ -201,7 +201,7 @@ namespace SIL.Machine.WebApi.Services
 				}
 				return new WordGraph(arcs, graph.FinalStates, graph.InitialStateScore);
 			});
-			Truecaser.CreateTrainer(Arg.Any<ITextCorpus>()).Returns(TruecaseBatchTrainer);
+			Truecaser.CreateTrainer(Arg.Any<ITextCorpus>()).Returns(TruecaserTrainer);
 			factory.CreateAsync(Arg.Any<string>()).Returns(Task.FromResult(Truecaser));
 			return factory;
 		}

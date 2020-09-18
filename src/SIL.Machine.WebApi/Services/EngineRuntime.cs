@@ -291,7 +291,7 @@ namespace SIL.Machine.WebApi.Services
 		{
 			Build build = null;
 			ITranslationModelTrainer modelTrainer = null;
-			ITruecaserTrainer truecaseTrainer = null;
+			ITrainer truecaseTrainer = null;
 			CancellationTokenSource cts = null;
 			try
 			{

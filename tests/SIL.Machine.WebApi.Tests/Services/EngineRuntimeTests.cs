@@ -26,9 +26,9 @@ namespace SIL.Machine.WebApi.Services
 				Assert.That(build, Is.Not.Null);
 				await env.WaitForBuildToFinishAsync(build.Id);
 				env.SmtBatchTrainer.Received().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
-				env.TruecaseBatchTrainer.Received().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
+				env.TruecaserTrainer.Received().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
 				env.SmtBatchTrainer.Received().Save();
-				await env.TruecaseBatchTrainer.Received().SaveAsync();
+				await env.TruecaserTrainer.Received().SaveAsync();
 				build = await env.BuildRepository.GetAsync(build.Id);
 				Assert.That(build.State, Is.EqualTo(BuildStates.Completed));
 			}
@@ -54,9 +54,9 @@ namespace SIL.Machine.WebApi.Services
 				await runtime.CancelBuildAsync();
 				await env.WaitForBuildToFinishAsync(build.Id);
 				env.SmtBatchTrainer.Received().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
-				env.TruecaseBatchTrainer.DidNotReceive().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
+				env.TruecaserTrainer.DidNotReceive().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
 				env.SmtBatchTrainer.DidNotReceive().Save();
-				await env.TruecaseBatchTrainer.DidNotReceive().SaveAsync();
+				await env.TruecaserTrainer.DidNotReceive().SaveAsync();
 				build = await env.BuildRepository.GetAsync(build.Id);
 				Assert.That(build.State, Is.EqualTo(BuildStates.Canceled));
 			}

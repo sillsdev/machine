@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using SIL.Machine.Corpora;
 
 namespace SIL.Machine.Translation
 {
@@ -8,9 +10,11 @@ namespace SIL.Machine.Translation
 		IReadOnlyList<string> SourceWords { get; }
 		IReadOnlyList<string> TargetWords { get; }
 
-		void AddSegmentPair(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment);
-		void Train(IProgress<ProgressStatus> progress = null);
+		ITrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITextCorpus sourceCorpus,
+			ITokenProcessor targetPreprocessor, ITextCorpus targetCorpus, ITextAlignmentCorpus alignmentCorpus = null);
+
 		void Save();
+		Task SaveAsync();
 
 		double GetTranslationProbability(string sourceWord, string targetWord);
 		double GetTranslationProbability(int sourceWordIndex, int targetWordIndex);

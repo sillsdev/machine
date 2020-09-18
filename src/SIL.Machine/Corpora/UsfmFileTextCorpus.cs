@@ -5,7 +5,7 @@ using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
-	public class UsfmFileTextCorpus : ScriptureTextCorpusBase
+	public class UsfmFileTextCorpus : ScriptureTextCorpus
 	{
 		public UsfmFileTextCorpus(ITokenizer<string, int, string> wordTokenizer, string stylesheetFileName,
 			Encoding encoding, string projectPath, ScrVers versification = null)
@@ -16,6 +16,6 @@ namespace SIL.Machine.Corpora
 				AddText(new UsfmFileText(wordTokenizer, stylesheet, encoding, sfmFileName, Versification));
 		}
 
-		public ScrVers Versification { get; }
+		public override ScrVers Versification { get; }
 	}
 }

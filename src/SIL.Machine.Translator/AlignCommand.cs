@@ -45,7 +45,8 @@ namespace SIL.Machine.Translation
 			if (!_quietOption.HasValue())
 				Out.Write("Aligning... ");
 			using (var progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
-			using (var alignmentModel = new ThotSymmetrizedWordAlignmentModel(tmPrefix + "_invswm", tmPrefix + "_swm"))
+			using (var alignmentModel = new SymmetrizedWordAlignmentModel(
+				new ThotWordAlignmentModel(tmPrefix + "_invswm"), new ThotWordAlignmentModel(tmPrefix + "_swm")))
 			{
 				int segmentCount = 0;
 				progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));

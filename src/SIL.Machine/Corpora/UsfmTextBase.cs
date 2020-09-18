@@ -6,7 +6,7 @@ using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
-	public abstract class UsfmTextBase : ScriptureTextBase
+	public abstract class UsfmTextBase : ScriptureText
 	{
 		private static readonly HashSet<string> NonVerseParaStyles = new HashSet<string>
 		{

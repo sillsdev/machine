@@ -1,32 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using SIL.Machine.Corpora;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.Thot
 {
 	public class ThotWordAlignmentModel : DisposableBase, IHmmWordAlignmentModel
 	{
-		private readonly ThotWordVocabulary _sourceWords;
-		private readonly ThotWordVocabulary _targetWords;
-		private readonly bool _closeOnDispose;
+		private IntPtr _handle;
+		private ThotWordVocabulary _sourceWords;
+		private ThotWordVocabulary _targetWords;
+		private readonly bool _owned;
 		private readonly string _prefFileName;
-
-		public ThotWordAlignmentModel()
-		{
-			Handle = Thot.swAlignModel_create();
-			_sourceWords = new ThotWordVocabulary(Handle, true);
-			_targetWords = new ThotWordVocabulary(Handle, false);
-			_closeOnDispose = true;
-		}
 
 		internal ThotWordAlignmentModel(IntPtr handle)
 		{
 			Handle = handle;
-			_sourceWords = new ThotWordVocabulary(Handle, true);
-			_targetWords = new ThotWordVocabulary(Handle, false);
-			_closeOnDispose = false;
+			_owned = true;
 		}
 
 		public ThotWordAlignmentModel(string prefFileName, bool createNew = false)
@@ -38,12 +32,22 @@ namespace SIL.Machine.Translation.Thot
 			Handle = createNew || !File.Exists(prefFileName + ".src")
 				? Thot.swAlignModel_create()
 				: Thot.swAlignModel_open(_prefFileName);
-			_sourceWords = new ThotWordVocabulary(Handle, true);
-			_targetWords = new ThotWordVocabulary(Handle, false);
-			_closeOnDispose = true;
+			_owned = false;
 		}
 
-		internal IntPtr Handle { get; set; }
+		internal IntPtr Handle
+		{
+			get => _handle;
+			set
+			{
+				if (_handle != value)
+				{
+					_handle = value;
+					_sourceWords = new ThotWordVocabulary(_handle, true);
+					_targetWords = new ThotWordVocabulary(_handle, false);
+				}
+			}
+		}
 
 		public int TrainingIterationCount { get; set; } = 5;
 
@@ -84,6 +88,25 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
+		public void AddSegmentPair(ParallelTextSegment segment, ITokenProcessor sourcePreprocessor = null,
+			ITokenProcessor targetPreprocessor = null)
+		{
+			if (segment.IsEmpty)
+				return;
+
+			IReadOnlyList<string> sourceSegment = sourcePreprocessor.Process(segment.SourceSegment);
+			IReadOnlyList<string> targetSegment = targetPreprocessor.Process(segment.TargetSegment);
+
+			AddSegmentPair(sourceSegment, targetSegment);
+		}
+
+		public void AddSegmentPairs(ParallelTextCorpus corpus, ITokenProcessor sourcePreprocessor = null,
+			ITokenProcessor targetPreprocessor = null, int maxCount = int.MaxValue)
+		{
+			foreach (ParallelTextSegment segment in corpus.Segments.Where(s => !s.IsEmpty).Take(maxCount))
+				AddSegmentPair(segment, sourcePreprocessor, targetPreprocessor);
+		}
+
 		public void Train(IProgress<ProgressStatus> progress = null)
 		{
 			CheckDisposed();
@@ -103,12 +126,32 @@ namespace SIL.Machine.Translation.Thot
 			Thot.swAlignModel_train(Handle, 1);
 		}
 
+		public ITrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITextCorpus sourceCorpus,
+			ITokenProcessor targetPreprocessor, ITextCorpus targetCorpus, ITextAlignmentCorpus alignmentCorpus = null)
+		{
+			CheckDisposed();
+
+			if (_owned)
+			{
+				throw new InvalidOperationException(
+					"The word alignment model should not be trained independently of its SMT model.");
+			}
+
+			var corpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignmentCorpus);
+
+			return new Trainer(this, sourcePreprocessor, targetPreprocessor, corpus);
+		}
+
+		public Task SaveAsync()
+		{
+			Save();
+			return Task.CompletedTask;
+		}
+
 		public void Save()
 		{
 			CheckDisposed();
 
-			if (string.IsNullOrEmpty(_prefFileName))
-				throw new InvalidOperationException("This word alignment model cannot be saved.");
 			Thot.swAlignModel_save(Handle, _prefFileName);
 		}
 
@@ -178,8 +221,29 @@ namespace SIL.Machine.Translation.Thot
 
 		protected override void DisposeUnmanagedResources()
 		{
-			if (_closeOnDispose)
+			if (!_owned)
 				Thot.swAlignModel_close(Handle);
+		}
+
+		private class Trainer : ThotWordAlignmentModelTrainer
+		{
+			private readonly ThotWordAlignmentModel _model;
+
+			public Trainer(ThotWordAlignmentModel model, ITokenProcessor sourcePreprocessor,
+				ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus)
+				: base(model._prefFileName, sourcePreprocessor, targetPreprocessor, corpus)
+			{
+				_model = model;
+			}
+
+			public override void Save()
+			{
+				Thot.swAlignModel_close(_model.Handle);
+
+				base.Save();
+
+				_model.Handle = Thot.swAlignModel_open(_model._prefFileName);
+			}
 		}
 	}
 }

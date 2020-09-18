@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using SIL.Machine.Corpora;
 
 namespace SIL.Machine.Translation
@@ -7,6 +8,7 @@ namespace SIL.Machine.Translation
 	{
 		ITranslationEngine CreateEngine();
 		void Save();
+		Task SaveAsync();
 		ITranslationModelTrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITextCorpus sourceCorpus,
 			ITokenProcessor targetPreprocessor, ITextCorpus targetCorpus, ITextAlignmentCorpus alignmentCorpus = null);
 	}

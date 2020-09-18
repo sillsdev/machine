@@ -67,26 +67,6 @@ namespace SIL.Machine.Translation
 			return results;
 		}
 
-		public static void AddSegmentPairs(this IWordAlignmentModel model, ParallelTextCorpus corpus,
-			ITokenProcessor sourcePreprocessor = null, ITokenProcessor targetPreprocessor = null,
-			int maxCount = int.MaxValue)
-		{
-			foreach (ParallelTextSegment segment in corpus.Segments.Where(s => !s.IsEmpty).Take(maxCount))
-				model.AddSegmentPair(segment, sourcePreprocessor, targetPreprocessor);
-		}
-
-		public static void AddSegmentPair(this IWordAlignmentModel model, ParallelTextSegment segment,
-			ITokenProcessor sourcePreprocessor = null, ITokenProcessor targetPreprocessor = null)
-		{
-			if (segment.IsEmpty)
-				return;
-
-			IReadOnlyList<string> sourceSegment = sourcePreprocessor.Process(segment.SourceSegment);
-			IReadOnlyList<string> targetSegment = targetPreprocessor.Process(segment.TargetSegment);
-
-			model.AddSegmentPair(sourceSegment, targetSegment);
-		}
-
 		public static WordAlignmentMatrix GetBestAlignment(this ISegmentAligner aligner, ParallelTextSegment segment,
 			ITokenProcessor sourcePreprocessor = null, ITokenProcessor targetPreprocessor = null)
 		{

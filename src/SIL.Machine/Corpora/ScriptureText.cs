@@ -4,9 +4,9 @@ using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
-	public abstract class ScriptureTextBase : StreamTextBase
+	public abstract class ScriptureText : StreamTextBase
 	{
-		protected ScriptureTextBase(ITokenizer<string, int, string> wordTokenizer, string id, ScrVers versification)
+		protected ScriptureText(ITokenizer<string, int, string> wordTokenizer, string id, ScrVers versification)
 			: base(wordTokenizer, id, CorporaHelpers.GetScriptureTextSortKey(id))
 		{
 			Versification = versification ?? ScrVers.English;

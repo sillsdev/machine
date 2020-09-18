@@ -6,11 +6,12 @@ namespace SIL.Machine.Translation
 {
 	public interface ITruecaser
 	{
-		ITruecaserTrainer CreateTrainer(ITextCorpus corpus);
+		ITrainer CreateTrainer(ITextCorpus corpus);
 
 		void TrainSegment(IReadOnlyList<string> segment, bool sentenceStart = true);
 
 		Task SaveAsync();
+		void Save();
 
 		TranslationResult Truecase(IReadOnlyList<string> sourceSegment, TranslationResult result);
 		WordGraph Truecase(IReadOnlyList<string> sourceSegment, WordGraph wordGraph);

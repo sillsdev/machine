@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using SIL.Machine.Corpora;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
@@ -66,26 +68,6 @@ namespace SIL.Machine.Translation
 			return _aligner.GetBestAlignment(sourceSegment, targetSegment);
 		}
 
-		public void AddSegmentPair(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
-		{
-			_directWordAlignmentModel.AddSegmentPair(sourceSegment, targetSegment);
-			_inverseWordAlignmentModel.AddSegmentPair(targetSegment, sourceSegment);
-		}
-
-		public void Train(IProgress<ProgressStatus> progress = null)
-		{
-			CheckDisposed();
-
-			var reporter = new PhasedProgressReporter(progress,
-				new Phase("Training direct alignment model"),
-				new Phase("Training inverse alignment model"));
-
-			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-				_directWordAlignmentModel.Train(phaseProgress);
-			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-				_inverseWordAlignmentModel.Train(phaseProgress);
-		}
-
 		public double GetTranslationProbability(string sourceWord, string targetWord)
 		{
 			CheckDisposed();
@@ -115,6 +97,19 @@ namespace SIL.Machine.Translation
 			return Math.Max(alignProb, invAlignProb);
 		}
 
+		public ITrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITextCorpus sourceCorpus,
+			ITokenProcessor targetPreprocessor, ITextCorpus targetCorpus, ITextAlignmentCorpus alignmentCorpus = null)
+		{
+			CheckDisposed();
+
+			ITrainer directTrainer = _directWordAlignmentModel.CreateTrainer(sourcePreprocessor, sourceCorpus,
+				targetPreprocessor, targetCorpus, alignmentCorpus);
+			ITrainer inverseTrainer = _inverseWordAlignmentModel.CreateTrainer(targetPreprocessor, targetCorpus,
+				sourcePreprocessor, sourceCorpus, alignmentCorpus?.Invert());
+
+			return new Trainer(directTrainer, inverseTrainer);
+		}
+
 		public void Save()
 		{
 			CheckDisposed();
@@ -123,10 +118,66 @@ namespace SIL.Machine.Translation
 			_inverseWordAlignmentModel.Save();
 		}
 
+		public async Task SaveAsync()
+		{
+			CheckDisposed();
+
+			await _directWordAlignmentModel.SaveAsync();
+			await _inverseWordAlignmentModel.SaveAsync();
+		}
+
 		protected override void DisposeManagedResources()
 		{
 			_directWordAlignmentModel.Dispose();
 			_inverseWordAlignmentModel.Dispose();
+		}
+
+		private class Trainer : DisposableBase, ITrainer
+		{
+			private readonly ITrainer _directTrainer;
+			private readonly ITrainer _inverseTrainer;
+
+			public Trainer(ITrainer directTrainer, ITrainer inverseTrainer)
+			{
+				_directTrainer = directTrainer;
+				_inverseTrainer = inverseTrainer;
+			}
+
+			public void Train(IProgress<ProgressStatus> progress = null, Action checkCanceled = null)
+			{
+				CheckDisposed();
+
+				var reporter = new PhasedProgressReporter(progress,
+					new Phase("Training direct alignment model"),
+					new Phase("Training inverse alignment model"));
+
+				using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+					_directTrainer.Train(phaseProgress, checkCanceled);
+				using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+					_inverseTrainer.Train(phaseProgress, checkCanceled);
+			}
+
+			public async Task SaveAsync()
+			{
+				CheckDisposed();
+
+				await _directTrainer.SaveAsync();
+				await _inverseTrainer.SaveAsync();
+			}
+
+			public void Save()
+			{
+				CheckDisposed();
+
+				_directTrainer.Save();
+				_inverseTrainer.Save();
+			}
+
+			protected override void DisposeManagedResources()
+			{
+				_directTrainer.Dispose();
+				_inverseTrainer.Dispose();
+			}
 		}
 	}
 }

@@ -9,9 +9,13 @@ namespace SIL.Machine.Translation
 {
 	public class TransferTruecaser : ITruecaser
 	{
-		public ITruecaserTrainer CreateTrainer(ITextCorpus corpus)
+		public ITrainer CreateTrainer(ITextCorpus corpus)
 		{
 			return new Trainer();
+		}
+
+		public void Save()
+		{
 		}
 
 		public Task SaveAsync()
@@ -56,8 +60,13 @@ namespace SIL.Machine.Translation
 			return newSegment;
 		}
 
-		private class Trainer : DisposableBase, ITruecaserTrainer
+		private class Trainer : DisposableBase, ITrainer
 		{
+			public void Save()
+			{
+				throw new NotImplementedException();
+			}
+
 			public Task SaveAsync()
 			{
 				return Task.CompletedTask;

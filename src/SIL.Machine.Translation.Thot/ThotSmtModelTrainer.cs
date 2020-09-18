@@ -11,6 +11,7 @@ using SIL.Machine.NgramModeling;
 using SIL.Machine.Optimization;
 using SIL.ObjectModel;
 using SIL.Machine.Statistics;
+using System.Threading.Tasks;
 
 namespace SIL.Machine.Translation.Thot
 {
@@ -50,7 +51,7 @@ namespace SIL.Machine.Translation.Thot
 
 			do
 			{
-				_tempDir = Path.Combine(Path.GetTempPath(), "thot-train-" + Guid.NewGuid());
+				_tempDir = Path.Combine(Path.GetTempPath(), "thot-smt-train-" + Guid.NewGuid());
 			} while (Directory.Exists(_tempDir));
 			Directory.CreateDirectory(_tempDir);
 
@@ -141,6 +142,12 @@ namespace SIL.Machine.Translation.Thot
 			if (!Directory.Exists(tmDir))
 				Directory.CreateDirectory(tmDir);
 			CopyFiles(_trainTMDir, tmDir, _tmFilePrefix);
+		}
+
+		public Task SaveAsync()
+		{
+			Save();
+			return Task.CompletedTask;
 		}
 
 		private void SaveParameters()

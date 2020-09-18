@@ -82,13 +82,27 @@ namespace SIL.Machine.Translation
 			if (!_quietOption.HasValue())
 				Out.Write("Training... ");
 			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
-			using (var alignmentModel = new ThotSymmetrizedWordAlignmentModel(tmPrefix + "_invswm", tmPrefix + "_swm",
-				true))
 			{
-				alignmentModel.AddSegmentPairs(ParallelCorpus, TokenProcessors.Lowercase, TokenProcessors.Lowercase,
-					MaxParallelCorpusCount);
-				alignmentModel.Train(progress);
-				alignmentModel.Save();
+				var reporter = new PhasedProgressReporter(progress,
+					new Phase("Training direct alignment model"),
+					new Phase("Training inverse alignment model"));
+
+				using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+				using (var directTrainer = new ThotWordAlignmentModelTrainer(tmPrefix + "_invswm",
+					TokenProcessors.Lowercase, TokenProcessors.Lowercase, ParallelCorpus, MaxParallelCorpusCount))
+				{
+					directTrainer.Train(phaseProgress);
+					directTrainer.Save();
+				}
+
+				using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+				using (var inverseTrainer = new ThotWordAlignmentModelTrainer(tmPrefix + "_swm",
+					TokenProcessors.Lowercase, TokenProcessors.Lowercase, ParallelCorpus.Invert(),
+					MaxParallelCorpusCount))
+				{
+					inverseTrainer.Train(phaseProgress);
+					inverseTrainer.Save();
+				}
 			}
 			if (!_quietOption.HasValue())
 				Out.WriteLine("done.");

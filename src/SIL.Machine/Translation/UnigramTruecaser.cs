@@ -51,7 +51,7 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public ITruecaserTrainer CreateTrainer(ITextCorpus corpus)
+		public ITrainer CreateTrainer(ITextCorpus corpus)
 		{
 			return new Trainer(this, corpus);
 		}
@@ -116,6 +116,19 @@ namespace SIL.Machine.Translation
 			}
 		}
 
+		public void Save()
+		{
+			using (var writer = new StreamWriter(_modelPath))
+			{
+				foreach (string lowerToken in _casing.Conditions)
+				{
+					FrequencyDistribution<string> counts = _casing[lowerToken];
+					string line = string.Join(" ", counts.ObservedSamples.Select(t => $"{t} {counts[t]}"));
+					writer.Write($"{line}\n");
+				}
+			}
+		}
+
 		public TranslationResult Truecase(IReadOnlyList<string> sourceSegment, TranslationResult result)
 		{
 			return new TranslationResult(sourceSegment, Truecase(result.TargetSegment), result.WordConfidences,
@@ -153,7 +166,7 @@ namespace SIL.Machine.Translation
 			_bestTokens.Clear();
 		}
 
-		private class Trainer : DisposableBase, ITruecaserTrainer
+		private class Trainer : DisposableBase, ITrainer
 		{
 			private readonly UnigramTruecaser _truecaser;
 			private readonly ITextCorpus _corpus;
@@ -187,6 +200,13 @@ namespace SIL.Machine.Translation
 				_truecaser._casing = _newTruecaser._casing;
 				_truecaser._bestTokens = _newTruecaser._bestTokens;
 				await _truecaser.SaveAsync();
+			}
+
+			public void Save()
+			{
+				_truecaser._casing = _newTruecaser._casing;
+				_truecaser._bestTokens = _newTruecaser._bestTokens;
+				_truecaser.Save();
 			}
 		}
 	}

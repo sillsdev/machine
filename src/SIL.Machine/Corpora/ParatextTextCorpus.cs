@@ -8,7 +8,7 @@ using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
-	public class ParatextTextCorpus : ScriptureTextCorpusBase
+	public class ParatextTextCorpus : ScriptureTextCorpus
 	{
 		public ParatextTextCorpus(ITokenizer<string, int, string> wordTokenizer, string projectDir)
 		{
@@ -40,6 +40,6 @@ namespace SIL.Machine.Corpora
 				AddText(new UsfmFileText(wordTokenizer, stylesheet, encoding, sfmFileName, Versification));
 		}
 
-		public ScrVers Versification { get; }
+		public override ScrVers Versification { get; }
 	}
 }
