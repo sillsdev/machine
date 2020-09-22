@@ -267,8 +267,9 @@ namespace SIL.Machine.Translation.TestApp
 			_isRebuilding = true;
 			try
 			{
-				using (ITranslationModelTrainer trainer = _smtModel.CreateTrainer(TokenProcessors.Lowercase, _sourceCorpus,
-					TokenProcessors.Lowercase, _targetCorpus, _alignmentCorpus))
+				var corpus = new ParallelTextCorpus(_sourceCorpus, _targetCorpus, _alignmentCorpus);
+				using (ITranslationModelTrainer trainer = _smtModel.CreateTrainer(TokenProcessors.Lowercase,
+					TokenProcessors.Lowercase, corpus))
 				{
 					await Task.Run(() => trainer.Train(progress, token.ThrowIfCancellationRequested), token);
 					trainer.Save();

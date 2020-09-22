@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -8,10 +9,14 @@ namespace SIL.Machine.Translation.Thot
 {
 	internal static class Thot
 	{
+		public const string HmmWordAlignmentClassName = "IncrHmmP0AligModel";
+		public const string Ibm1WordAlignmentClassName = "IncrIbm1AligModel";
+		public const string Ibm2WordAlignmentClassName = "IncrIbm2AligModel";
+
 		private const int DefaultTranslationBufferLength = 1024;
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern IntPtr smtModel_create();
+		public static extern IntPtr smtModel_create(string swAlignClassName);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern bool smtModel_loadTranslationModel(IntPtr smtModelHandle, string tmFileNamePrefix);
@@ -123,10 +128,10 @@ namespace SIL.Machine.Translation.Thot
 		public static extern void wg_destroy(IntPtr wgHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern IntPtr swAlignModel_create();
+		public static extern IntPtr swAlignModel_create(string className);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern IntPtr swAlignModel_open(string prefFileName);
+		public static extern IntPtr swAlignModel_open(string className, string prefFileName);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern uint swAlignModel_getSourceWordCount(IntPtr swAlignModelHandle);
@@ -161,7 +166,11 @@ namespace SIL.Machine.Translation.Thot
 			uint sourceWordIndex, uint targetWordIndex);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern float swAlignModel_getAlignmentProbability(IntPtr swAlignModelHandle, uint prevI,
+		public static extern float swAlignModel_getIbm2AlignmentProbability(IntPtr swAlignModelHandle, uint j,
+			uint sLen, uint tLen, uint i);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern float swAlignModel_getHmmAlignmentProbability(IntPtr swAlignModelHandle, uint prevI,
 			uint sLen, uint i);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
@@ -353,9 +362,9 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public static IntPtr LoadSmtModel(ThotSmtParameters parameters)
+		public static IntPtr LoadSmtModel(string swAlignClassName, ThotSmtParameters parameters)
 		{
-			IntPtr handle = smtModel_create();
+			IntPtr handle = smtModel_create(swAlignClassName);
 			smtModel_loadTranslationModel(handle, parameters.TranslationModelFileNamePrefix);
 			smtModel_loadLanguageModel(handle, parameters.LanguageModelFileNamePrefix);
 			smtModel_setNonMonotonicity(handle, parameters.ModelNonMonotonicity);
@@ -378,6 +387,21 @@ namespace SIL.Machine.Translation.Thot
 			decoder_setBreadthFirst(handle, parameters.DecoderBreadthFirst);
 			decoder_setG(handle, parameters.DecoderG);
 			return handle;
+		}
+
+		public static string GetWordAlignmentClassName<TAlignModel>()
+			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
+		{
+			string swAlignClassName = null;
+			Type alignModelType = typeof(TAlignModel);
+			if (alignModelType == typeof(HmmThotWordAlignmentModel))
+				swAlignClassName = HmmWordAlignmentClassName;
+			else if (alignModelType == typeof(Ibm1ThotWordAlignmentModel))
+				swAlignClassName = Ibm1WordAlignmentClassName;
+			else if (alignModelType == typeof(Ibm2ThotWordAlignmentModel))
+				swAlignClassName = Ibm2WordAlignmentClassName;
+			Debug.Assert(swAlignClassName != null);
+			return swAlignClassName;
 		}
 	}
 }

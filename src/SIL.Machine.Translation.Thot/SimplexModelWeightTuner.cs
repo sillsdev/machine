@@ -10,6 +10,13 @@ namespace SIL.Machine.Translation.Thot
 {
 	public class SimplexModelWeightTuner : IParameterTuner
 	{
+		private readonly string _swAlignClassName;
+
+		public SimplexModelWeightTuner(string swAlignClassName)
+		{
+			_swAlignClassName = swAlignClassName;
+		}
+
 		public double ConvergenceTolerance { get; set; } = 0.001;
 		public int MaxFunctionEvaluations { get; set; } = 100;
 		public int MaxProgressFunctionEvaluations { get; set; } = 70;
@@ -48,8 +55,8 @@ namespace SIL.Machine.Translation.Thot
 			return bestParameters;
 		}
 
-		private static double CalculateBleu(ThotSmtParameters parameters,
-			IReadOnlyList<IReadOnlyList<string>> sourceCorpus, IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus)
+		private double CalculateBleu(ThotSmtParameters parameters, IReadOnlyList<IReadOnlyList<string>> sourceCorpus,
+			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus)
 		{
 			IEnumerable<IReadOnlyList<string>> translations = GenerateTranslations(parameters, sourceCorpus);
 			double bleu = Evaluation.CalculateBleu(translations, tuneTargetCorpus);
@@ -65,13 +72,13 @@ namespace SIL.Machine.Translation.Thot
 			return (1.0 - bleu) + penalty;
 		}
 
-		private static IEnumerable<IReadOnlyList<string>> GenerateTranslations(ThotSmtParameters parameters,
+		private IEnumerable<IReadOnlyList<string>> GenerateTranslations(ThotSmtParameters parameters,
 			IReadOnlyList<IReadOnlyList<string>> sourceCorpus)
 		{
 			IntPtr smtModelHandle = IntPtr.Zero;
 			try
 			{
-				smtModelHandle = Thot.LoadSmtModel(parameters);
+				smtModelHandle = Thot.LoadSmtModel(_swAlignClassName, parameters);
 				var results = new IReadOnlyList<string>[sourceCorpus.Count];
 				Parallel.ForEach(Partitioner.Create(0, sourceCorpus.Count), range =>
 					{

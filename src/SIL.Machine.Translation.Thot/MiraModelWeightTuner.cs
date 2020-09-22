@@ -10,6 +10,13 @@ namespace SIL.Machine.Translation.Thot
 {
 	public class MiraModelWeightTuner : IParameterTuner
 	{
+		private readonly string _swAlignClassName;
+
+		public MiraModelWeightTuner(string swAlignClassName)
+		{
+			_swAlignClassName = swAlignClassName;
+		}
+
 		public int K { get; set; } = 100;
 		public int MaxIterations { get; set; } = 10;
 
@@ -79,7 +86,7 @@ namespace SIL.Machine.Translation.Thot
 			IntPtr smtModelHandle = IntPtr.Zero;
 			try
 			{
-				smtModelHandle = Thot.LoadSmtModel(parameters);
+				smtModelHandle = Thot.LoadSmtModel(_swAlignClassName, parameters);
 				var results = new IList<TranslationInfo>[sourceCorpus.Count];
 				Parallel.ForEach(Partitioner.Create(0, sourceCorpus.Count), range =>
 					{

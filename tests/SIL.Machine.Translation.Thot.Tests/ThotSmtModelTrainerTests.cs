@@ -11,7 +11,7 @@ namespace SIL.Machine.Translation.Thot
 		[Test]
 		public void Train_NonEmptyCorpus_GeneratesModels()
 		{
-			using (var tempDir = new TempDirectory("ThotSmtEngineTests"))
+			using (var tempDir = new TempDirectory("ThotSmtModelTrainerTests"))
 			{
 				var sourceCorpus = new DictionaryTextCorpus(new[]
 					{
@@ -82,7 +82,7 @@ namespace SIL.Machine.Translation.Thot
 		[Test]
 		public void TrainModels_EmptyCorpus_GeneratesModels()
 		{
-			using (var tempDir = new TempDirectory("ThotSmtEngineTests"))
+			using (var tempDir = new TempDirectory("ThotSmtModelTrainerTests"))
 			{
 				var sourceCorpus = new DictionaryTextCorpus(Enumerable.Empty<MemoryText>());
 				var targetCorpus = new DictionaryTextCorpus(Enumerable.Empty<MemoryText>());

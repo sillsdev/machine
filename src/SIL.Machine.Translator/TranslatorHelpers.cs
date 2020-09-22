@@ -11,7 +11,7 @@ namespace SIL.Machine.Translation
 {
 	internal static class TranslatorHelpers
 	{
-		public static string GetEngineConfigFileName(string path)
+		public static string GetTranslationModelConfigFileName(string path)
 		{
 			if (File.Exists(path))
 				return path;
@@ -21,9 +21,16 @@ namespace SIL.Machine.Translation
 				return path;
 		}
 
+		public static bool ValidateAlignmentModelOption(string value, out string type, out string path)
+		{
+			if (ValidateTypePathOption(value, out type, out path))
+				return string.IsNullOrEmpty(type) || type.IsOneOf("hmm", "ibm1", "ibm2", "pt");
+			return false;
+		}
+
 		public static bool ValidateTextCorpusOption(string value, out string type, out string path)
 		{
-			if (ValidateCorpusOption(value, out type, out path))
+			if (ValidateTypePathOption(value, out type, out path))
 				return string.IsNullOrEmpty(type) || type.IsOneOf("dbl", "usx", "text", "pt");
 			return false;
 		}
@@ -37,7 +44,7 @@ namespace SIL.Machine.Translation
 				return true;
 			}
 
-			if (ValidateCorpusOption(value, out type, out path))
+			if (ValidateTypePathOption(value, out type, out path))
 				return string.IsNullOrEmpty(type) || type == "text";
 			return false;
 		}
@@ -147,7 +154,7 @@ namespace SIL.Machine.Translation
 			return path.EndsWith(separator1) || path.EndsWith(separator2);
 		}
 
-		private static bool ValidateCorpusOption(string value, out string type, out string path)
+		private static bool ValidateTypePathOption(string value, out string type, out string path)
 		{
 			type = null;
 

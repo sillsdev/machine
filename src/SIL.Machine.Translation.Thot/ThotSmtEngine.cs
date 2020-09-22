@@ -10,17 +10,17 @@ namespace SIL.Machine.Translation.Thot
 {
 	public class ThotSmtEngine : DisposableBase, IInteractiveTranslationEngine
 	{
-		private readonly ThotSmtModel _smtModel;
+		private readonly IThotSmtModelInternal _smtModel;
 		private readonly ISegmentAligner _segmentAligner;
 		private readonly IWordConfidenceEstimator _confidenceEstimator;
 		private IntPtr _decoderHandle;
 
-		public ThotSmtEngine(ThotSmtModel smtModel)
+		internal ThotSmtEngine(IThotSmtModelInternal smtModel)
 		{
 			_smtModel = smtModel;
 			LoadHandle();
-			_segmentAligner = new FuzzyEditDistanceSegmentAligner(GetTranslationProbability);
-			_confidenceEstimator = new Ibm1WordConfidenceEstimator(GetTranslationProbability);
+			_segmentAligner = new FuzzyEditDistanceSegmentAligner(smtModel.GetTranslationProbability);
+			_confidenceEstimator = new Ibm1WordConfidenceEstimator(smtModel.GetTranslationProbability);
 			//_confidenceEstimator = new WppWordConfidenceEstimator(this);
 		}
 
@@ -145,14 +145,6 @@ namespace SIL.Machine.Translation.Thot
 			var wordGraph = new WordGraph(arcs, finalStates, initialStateScore);
 			_confidenceEstimator.Estimate(segment, wordGraph);
 			return wordGraph;
-		}
-
-		private double GetTranslationProbability(string sourceWord, string targetWord)
-		{
-			double prob = _smtModel.DirectWordAlignmentModel.GetTranslationProbability(sourceWord, targetWord);
-			double invProb = _smtModel.InverseWordAlignmentModel.GetTranslationProbability(targetWord,
-				sourceWord);
-			return Math.Max(prob, invProb);
 		}
 
 		private static string[] Split(string line)

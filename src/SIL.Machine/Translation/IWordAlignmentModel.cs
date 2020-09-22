@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using SIL.Machine.Corpora;
 
 namespace SIL.Machine.Translation
@@ -10,11 +9,8 @@ namespace SIL.Machine.Translation
 		IReadOnlyList<string> SourceWords { get; }
 		IReadOnlyList<string> TargetWords { get; }
 
-		ITrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITextCorpus sourceCorpus,
-			ITokenProcessor targetPreprocessor, ITextCorpus targetCorpus, ITextAlignmentCorpus alignmentCorpus = null);
-
-		void Save();
-		Task SaveAsync();
+		ITrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor,
+			ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue);
 
 		double GetTranslationProbability(string sourceWord, string targetWord);
 		double GetTranslationProbability(int sourceWordIndex, int targetWordIndex);

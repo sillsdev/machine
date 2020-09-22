@@ -1,21 +1,29 @@
 ﻿using System;
-using System.Diagnostics;
-using System.IO;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using SIL.Machine.Corpora;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.Thot
 {
-	public class ThotWordAlignmentModelTrainer : DisposableBase, ITrainer
+	public class ThotWordAlignmentModelTrainer : ThotWordAlignmentModelTrainer<HmmThotWordAlignmentModel>
+	{
+		public ThotWordAlignmentModelTrainer(string prefFileName, ITokenProcessor sourcePreprocessor,
+			ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)
+			: base(prefFileName, sourcePreprocessor, targetPreprocessor, corpus, maxCorpusCount)
+		{
+		}
+	}
+
+	public class ThotWordAlignmentModelTrainer<TAlignModel> : DisposableBase, ITrainer
+		where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
 	{
 		private readonly string _prefFileName;
 		private readonly ITokenProcessor _sourcePreprocessor;
 		private readonly ITokenProcessor _targetPreprocessor;
 		private readonly ParallelTextCorpus _parallelCorpus;
-		private readonly string _tempDir;
 		private readonly int _maxCorpusCount;
-		private readonly string _filePrefix;
 
 		public ThotWordAlignmentModelTrainer(string prefFileName, ITokenProcessor sourcePreprocessor,
 			ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)
@@ -25,33 +33,45 @@ namespace SIL.Machine.Translation.Thot
 			_targetPreprocessor = targetPreprocessor;
 			_parallelCorpus = corpus;
 			_maxCorpusCount = maxCorpusCount;
-
-			do
-			{
-				_tempDir = Path.Combine(Path.GetTempPath(), "thot-wa-train-" + Guid.NewGuid());
-			} while (Directory.Exists(_tempDir));
-			Directory.CreateDirectory(_tempDir);
-			_filePrefix = Path.GetFileName(_prefFileName);
+			string className = Thot.GetWordAlignmentClassName<TAlignModel>();
+			Handle = Thot.swAlignModel_create(className);
 		}
+
+		public int TrainingIterationCount { get; set; } = 5;
+		public Func<ParallelTextSegment, int, bool> SegmentFilter { get; set; } = (s, i) => true;
+
+		protected IntPtr Handle { get; }
+		protected bool CloseOnDispose { get; set; } = true;
 
 		public void Train(IProgress<ProgressStatus> progress = null, Action checkCanceled = null)
 		{
-			using (var model = new ThotWordAlignmentModel(Path.Combine(_tempDir, _filePrefix), createNew: true))
+			int corpusCount = 0;
+			int index = 0;
+			foreach (ParallelTextSegment segment in _parallelCorpus.Segments)
 			{
-				model.AddSegmentPairs(_parallelCorpus, _sourcePreprocessor, _targetPreprocessor, _maxCorpusCount);
-				model.Train(progress);
-				model.Save();
+				if (IsSegmentValid(segment))
+				{
+					if (SegmentFilter(segment, index))
+						AddSegmentPair(segment);
+					corpusCount++;
+				}
+				index++;
+				if (corpusCount == _maxCorpusCount)
+					break;
 			}
+
+			for (int i = 0; i < TrainingIterationCount; i++)
+			{
+				progress?.Report(new ProgressStatus(i, TrainingIterationCount));
+				Thot.swAlignModel_train(Handle, 1);
+			}
+			progress?.Report(new ProgressStatus(1.0));
 		}
 
 		public virtual void Save()
 		{
-			string dir = Path.GetDirectoryName(_prefFileName);
-			Debug.Assert(dir != null);
-
-			if (!Directory.Exists(dir))
-				Directory.CreateDirectory(dir);
-			CopyFiles(_tempDir, dir, _filePrefix);
+			if (!string.IsNullOrEmpty(_prefFileName))
+				Thot.swAlignModel_save(Handle, _prefFileName);
 		}
 
 		public Task SaveAsync()
@@ -62,16 +82,31 @@ namespace SIL.Machine.Translation.Thot
 
 		protected override void DisposeManagedResources()
 		{
-			Directory.Delete(_tempDir, true);
+			if (CloseOnDispose)
+				Thot.swAlignModel_close(Handle);
 		}
 
-		private static void CopyFiles(string srcDir, string destDir, string filePrefix)
+		private static bool IsSegmentValid(ParallelTextSegment segment)
 		{
-			foreach (string srcFile in Directory.EnumerateFiles(srcDir, filePrefix + "*"))
+			return !segment.IsEmpty && segment.SourceSegment.Count <= TranslationConstants.MaxSegmentLength
+				&& segment.TargetSegment.Count <= TranslationConstants.MaxSegmentLength;
+		}
+
+		private void AddSegmentPair(ParallelTextSegment segment)
+		{
+			IReadOnlyList<string> sourceSegment = _sourcePreprocessor.Process(segment.SourceSegment);
+			IReadOnlyList<string> targetSegment = _targetPreprocessor.Process(segment.TargetSegment);
+
+			IntPtr nativeSourceSegment = Thot.ConvertStringsToNativeUtf8(sourceSegment);
+			IntPtr nativeTargetSegment = Thot.ConvertStringsToNativeUtf8(targetSegment);
+			try
 			{
-				string fileName = Path.GetFileName(srcFile);
-				Debug.Assert(fileName != null);
-				File.Copy(srcFile, Path.Combine(destDir, fileName), true);
+				Thot.swAlignModel_addSentencePair(Handle, nativeSourceSegment, nativeTargetSegment);
+			}
+			finally
+			{
+				Marshal.FreeHGlobal(nativeTargetSegment);
+				Marshal.FreeHGlobal(nativeSourceSegment);
 			}
 		}
 	}

@@ -15,7 +15,23 @@ using System.Threading.Tasks;
 
 namespace SIL.Machine.Translation.Thot
 {
-	public class ThotSmtModelTrainer : DisposableBase, ITranslationModelTrainer
+	public class ThotSmtModelTrainer : ThotSmtModelTrainer<HmmThotWordAlignmentModel>
+	{
+		public ThotSmtModelTrainer(string cfgFileName, ITokenProcessor sourcePreprocessor,
+			ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)
+			: base(cfgFileName, sourcePreprocessor, targetPreprocessor, corpus, maxCorpusCount)
+		{
+		}
+
+		public ThotSmtModelTrainer(ThotSmtParameters parameters, ITokenProcessor sourcePreprocessor,
+			ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)
+			: base(parameters, sourcePreprocessor, targetPreprocessor, corpus, maxCorpusCount)
+		{
+		}
+	}
+
+	public class ThotSmtModelTrainer<TAlignModel> : DisposableBase, ITranslationModelTrainer
+		where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
 	{
 		private readonly ITokenProcessor _sourcePreprocessor;
 		private readonly ITokenProcessor _targetPreprocessor;
@@ -45,8 +61,9 @@ namespace SIL.Machine.Translation.Thot
 			_targetPreprocessor = targetPreprocessor;
 			_maxCorpusCount = maxCorpusCount;
 			_parallelCorpus = corpus;
-			//_modelWeightTuner = new MiraModelWeightTuner();
-			_modelWeightTuner = new SimplexModelWeightTuner();
+			string swAlignClassName = Thot.GetWordAlignmentClassName<TAlignModel>();
+			// _modelWeightTuner = new MiraModelWeightTuner(swAlignClassName);
+			_modelWeightTuner = new SimplexModelWeightTuner(swAlignClassName);
 			_tuneCorpusIndices = CreateTuneCorpus();
 
 			do
@@ -389,21 +406,22 @@ namespace SIL.Machine.Translation.Thot
 		private void TrainWordAlignmentModel(string swmPrefix, ITokenProcessor sourcePreprocessor,
 			ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, IProgress<ProgressStatus> progress)
 		{
-			using (var model = new ThotWordAlignmentModel(swmPrefix, true))
+			using (var trainer = new ThotWordAlignmentModelTrainer<TAlignModel>(swmPrefix, sourcePreprocessor,
+				targetPreprocessor, corpus, _maxCorpusCount))
 			{
-				foreach (ParallelTextSegment segment in GetTrainingSegments(corpus))
-					model.AddSegmentPair(segment, sourcePreprocessor, targetPreprocessor);
-				model.Train(progress);
-				model.Save();
+				trainer.SegmentFilter = (s, i) => !_tuneCorpusIndices.Contains(i);
+				trainer.Train(progress);
+				trainer.Save();
 			}
 		}
 
 		private void GenerateBestAlignments(string swmPrefix, string fileName, ITokenProcessor sourcePreprocessor,
 			ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, IProgress<ProgressStatus> progress)
 		{
-			using (var model = new ThotWordAlignmentModel(swmPrefix))
+			using (var model = new TAlignModel())
 			using (var writer = new StreamWriter(fileName))
 			{
+				model.Load(swmPrefix);
 				int i = 0;
 				foreach (ParallelTextSegment segment in GetTrainingSegments(corpus))
 				{
@@ -573,7 +591,7 @@ namespace SIL.Machine.Translation.Thot
 			ThotSmtParameters parameters = Parameters.Clone();
 			parameters.TranslationModelFileNamePrefix = trainTMPrefix;
 			parameters.LanguageModelFileNamePrefix = trainLMPrefix;
-			using (var smtModel = new ThotSmtModel(parameters))
+			using (var smtModel = new ThotSmtModel<TAlignModel>(parameters))
 			using (IInteractiveTranslationEngine engine = smtModel.CreateInteractiveEngine())
 			{
 				for (int i = 0; i < tuneSourceCorpus.Count; i++)

@@ -140,9 +140,9 @@ namespace SIL.Machine.WebApi.Services
 			}, new[] { 3 }));
 			InteractiveModel.CreateInteractiveEngine().Returns(engine);
 
-			InteractiveModel.CreateTrainer(Arg.Any<ITokenProcessor>(), Arg.Any<ITextCorpus>(),
-				Arg.Any<ITokenProcessor>(), Arg.Any<ITextCorpus>(), Arg.Any<ITextAlignmentCorpus>())
-				.Returns(SmtBatchTrainer);
+			InteractiveModel.CreateTrainer(Arg.Any<ITokenProcessor>(), Arg.Any<ITokenProcessor>(),
+				Arg.Any<ParallelTextCorpus>())
+					.Returns(SmtBatchTrainer);
 
 			factory.CreateAsync(Arg.Any<string>()).Returns(Task.FromResult(InteractiveModel));
 			return factory;

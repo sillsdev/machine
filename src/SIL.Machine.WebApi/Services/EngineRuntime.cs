@@ -317,10 +317,10 @@ namespace SIL.Machine.WebApi.Services
 
 					ITextCorpus sourceCorpus = await _textCorpusFactory.CreateAsync(engine.Projects,
 						TextCorpusType.Source);
-					targetCorpus = await _textCorpusFactory.CreateAsync(engine.Projects,
-						TextCorpusType.Target);
-					modelTrainer = (await _translationModel).CreateTrainer(TokenProcessors.Lowercase, sourceCorpus,
-						TokenProcessors.Lowercase, targetCorpus);
+					targetCorpus = await _textCorpusFactory.CreateAsync(engine.Projects, TextCorpusType.Target);
+					var corpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
+					modelTrainer = (await _translationModel).CreateTrainer(TokenProcessors.Lowercase,
+						TokenProcessors.Lowercase, corpus);
 					truecaseTrainer = truecaser.CreateTrainer(targetCorpus);
 
 					_buildCts?.Dispose();

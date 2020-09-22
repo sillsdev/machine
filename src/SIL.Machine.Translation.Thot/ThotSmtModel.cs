@@ -7,11 +7,27 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.Thot
 {
-	public class ThotSmtModel : DisposableBase, IInteractiveTranslationModel
+	public class ThotSmtModel : ThotSmtModel<HmmThotWordAlignmentModel>
 	{
-		private readonly ThotWordAlignmentModel _directWordAlignmentModel;
-		private readonly ThotWordAlignmentModel _inverseWordAlignmentModel;
+		public ThotSmtModel(string cfgFileName)
+			: base(cfgFileName)
+		{
+		}
+
+		public ThotSmtModel(ThotSmtParameters parameters)
+			: base(parameters)
+		{
+		}
+	}
+
+	public class ThotSmtModel<TAlignModel> : DisposableBase, IInteractiveTranslationModel, IThotSmtModelInternal
+		where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
+	{
+		private readonly TAlignModel _directWordAlignmentModel;
+		private readonly TAlignModel _inverseWordAlignmentModel;
 		private readonly HashSet<ThotSmtEngine> _engines = new HashSet<ThotSmtEngine>();
+		private readonly string _swAlignClassName;
+		private IntPtr _handle;
 
 		public ThotSmtModel(string cfgFileName)
 			: this(ThotSmtParameters.Load(cfgFileName))
@@ -24,19 +40,21 @@ namespace SIL.Machine.Translation.Thot
 			Parameters = parameters;
 			Parameters.Freeze();
 
-			Handle = Thot.LoadSmtModel(Parameters);
+			_swAlignClassName = Thot.GetWordAlignmentClassName<TAlignModel>();
+			_handle = Thot.LoadSmtModel(_swAlignClassName, Parameters);
 
-			_directWordAlignmentModel = new ThotWordAlignmentModel(
-				Thot.smtModel_getSingleWordAlignmentModel(Handle));
-			_inverseWordAlignmentModel = new ThotWordAlignmentModel(
-				Thot.smtModel_getInverseSingleWordAlignmentModel(Handle));
+			_directWordAlignmentModel = new TAlignModel();
+			_directWordAlignmentModel.SetHandle(Thot.smtModel_getSingleWordAlignmentModel(_handle), true);
+
+			_inverseWordAlignmentModel = new TAlignModel();
+			_inverseWordAlignmentModel.SetHandle(Thot.smtModel_getInverseSingleWordAlignmentModel(_handle), true);
 		}
 
 		public string ConfigFileName { get; }
 		public ThotSmtParameters Parameters { get; private set; }
-		internal IntPtr Handle { get; private set; }
+		IntPtr IThotSmtModelInternal.Handle => _handle;
 
-		public ThotWordAlignmentModel DirectWordAlignmentModel
+		public TAlignModel DirectWordAlignmentModel
 		{
 			get
 			{
@@ -46,7 +64,7 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public ThotWordAlignmentModel InverseWordAlignmentModel
+		public TAlignModel InverseWordAlignmentModel
 		{
 			get
 			{
@@ -80,7 +98,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public void Save()
 		{
-			Thot.smtModel_saveModels(Handle);
+			Thot.smtModel_saveModels(_handle);
 		}
 
 		public Task SaveAsync()
@@ -89,19 +107,25 @@ namespace SIL.Machine.Translation.Thot
 			return Task.CompletedTask;
 		}
 
-		public ITranslationModelTrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITextCorpus sourceCorpus,
-			ITokenProcessor targetPreprocessor, ITextCorpus targetCorpus, ITextAlignmentCorpus alignmentCorpus = null)
+		public ITranslationModelTrainer CreateTrainer(ITokenProcessor sourcePreprocessor,
+			ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)
 		{
 			CheckDisposed();
 
-			var corpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignmentCorpus);
-
 			return string.IsNullOrEmpty(ConfigFileName)
-				? new Trainer(this, Parameters, sourcePreprocessor, targetPreprocessor, corpus)
-				: new Trainer(this, ConfigFileName, sourcePreprocessor, targetPreprocessor, corpus);
+				? new Trainer(this, Parameters, sourcePreprocessor, targetPreprocessor, corpus, maxCorpusCount)
+				: new Trainer(this, ConfigFileName, sourcePreprocessor, targetPreprocessor, corpus, maxCorpusCount);
 		}
 
-		internal void RemoveEngine(ThotSmtEngine engine)
+		double IThotSmtModelInternal.GetTranslationProbability(string sourceWord, string targetWord)
+		{
+			double prob = _directWordAlignmentModel.GetTranslationProbability(sourceWord, targetWord);
+			double invProb = _inverseWordAlignmentModel.GetTranslationProbability(targetWord,
+				sourceWord);
+			return Math.Max(prob, invProb);
+		}
+
+		void IThotSmtModelInternal.RemoveEngine(ThotSmtEngine engine)
 		{
 			_engines.Remove(engine);
 		}
@@ -116,24 +140,24 @@ namespace SIL.Machine.Translation.Thot
 
 		protected override void DisposeUnmanagedResources()
 		{
-			Thot.smtModel_close(Handle);
+			Thot.smtModel_close(_handle);
 		}
 
-		private class Trainer : ThotSmtModelTrainer
+		private class Trainer : ThotSmtModelTrainer<TAlignModel>
 		{
-			private readonly ThotSmtModel _smtModel;
+			private readonly ThotSmtModel<TAlignModel> _smtModel;
 
-			public Trainer(ThotSmtModel smtModel, string cfgFileName, ITokenProcessor sourcePreprocessor,
-				ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus)
-				: base(cfgFileName, sourcePreprocessor, targetPreprocessor, corpus)
+			public Trainer(ThotSmtModel<TAlignModel> smtModel, string cfgFileName, ITokenProcessor sourcePreprocessor,
+				ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, int maxCorpusCount)
+				: base(cfgFileName, sourcePreprocessor, targetPreprocessor, corpus, maxCorpusCount)
 			{
 				_smtModel = smtModel;
 			}
 
-			public Trainer(ThotSmtModel smtModel, ThotSmtParameters parameters,
+			public Trainer(ThotSmtModel<TAlignModel> smtModel, ThotSmtParameters parameters,
 				ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor,
-				ParallelTextCorpus corpus)
-				: base(parameters, sourcePreprocessor, targetPreprocessor, corpus)
+				ParallelTextCorpus corpus, int maxCorpusCount)
+				: base(parameters, sourcePreprocessor, targetPreprocessor, corpus, maxCorpusCount)
 			{
 				_smtModel = smtModel;
 			}
@@ -142,15 +166,16 @@ namespace SIL.Machine.Translation.Thot
 			{
 				foreach (ThotSmtEngine engine in _smtModel._engines)
 					engine.CloseHandle();
-				Thot.smtModel_close(_smtModel.Handle);
+				Thot.smtModel_close(_smtModel._handle);
 
 				base.Save();
 
 				_smtModel.Parameters = Parameters;
-				_smtModel.Handle = Thot.LoadSmtModel(_smtModel.Parameters);
-				_smtModel._directWordAlignmentModel.Handle = Thot.smtModel_getSingleWordAlignmentModel(_smtModel.Handle);
-				_smtModel._inverseWordAlignmentModel.Handle =
-					Thot.smtModel_getInverseSingleWordAlignmentModel(_smtModel.Handle);
+				_smtModel._handle = Thot.LoadSmtModel(_smtModel._swAlignClassName, _smtModel.Parameters);
+				_smtModel._directWordAlignmentModel.SetHandle(Thot.smtModel_getSingleWordAlignmentModel(
+					_smtModel._handle), true);
+				_smtModel._inverseWordAlignmentModel.SetHandle(Thot.smtModel_getInverseSingleWordAlignmentModel(
+					_smtModel._handle), true);
 				foreach (ThotSmtEngine engine in _smtModel._engines)
 					engine.LoadHandle();
 			}

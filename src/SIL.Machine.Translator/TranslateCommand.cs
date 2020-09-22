@@ -11,7 +11,7 @@ namespace SIL.Machine.Translation
 {
 	public class TranslateCommand : CommandBase
 	{
-		private readonly CommandArgument _engineArgument;
+		private readonly CommandArgument _modelArgument;
 		private readonly CommandOption _sourceOption;
 		private readonly CommandOption _sourceWordTokenizerOption;
 		private readonly CommandOption _targetWordTokenizerOption;
@@ -26,7 +26,7 @@ namespace SIL.Machine.Translation
 			Name = "translate";
 			Description = "Translates source segments using a trained engine.";
 
-			_engineArgument = Argument("engine", "The translation engine directory or configuration file.");
+			_modelArgument = Argument("model", "The translation model directory or configuration file.");
 			_sourceOption = Option("-s|--source <[type,]path>",
 				"The source corpus to translate.\nTypes: \"text\" (default), \"dbl\", \"usx\", \"pt\".",
 				CommandOptionType.SingleValue);
@@ -113,8 +113,8 @@ namespace SIL.Machine.Translation
 			}
 
 
-			string engineConfigFileName = TranslatorHelpers.GetEngineConfigFileName(_engineArgument.Value);
-			string engineDirectory = Path.GetDirectoryName(engineConfigFileName);
+			string modelConfigFileName = TranslatorHelpers.GetTranslationModelConfigFileName(_modelArgument.Value);
+			string modelDirectory = Path.GetDirectoryName(modelConfigFileName);
 
 			ITokenizer<string, int, string> sourceWordTokenizer = TranslatorHelpers.CreateWordTokenizer(
 				_sourceWordTokenizerOption.Value() ?? "whitespace");
@@ -156,8 +156,8 @@ namespace SIL.Machine.Translation
 				Out.Write("Translating... ");
 			int segmentCount = 0;
 			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
-			using (IInteractiveTranslationModel smtModel = new ThotSmtModel(engineConfigFileName))
-			using (ITranslationEngine engine = smtModel.CreateEngine())
+			using (IInteractiveTranslationModel model = new ThotSmtModel(modelConfigFileName))
+			using (ITranslationEngine engine = model.CreateEngine())
 			using (StreamWriter writer = isOutputFile ? new StreamWriter(_outputOption.Value()) : null)
 			{
 				progress?.Report(new ProgressStatus(segmentCount, corpusCount));

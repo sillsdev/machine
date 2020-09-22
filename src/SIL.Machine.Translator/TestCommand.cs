@@ -8,7 +8,7 @@ using SIL.Machine.Translation.Thot;
 
 namespace SIL.Machine.Translation
 {
-	public class TestCommand : EngineCommandBase
+	public class TestCommand : TranslationModelCommandBase
 	{
 		private readonly CommandOption _confidenceOption;
 		private readonly CommandOption _traceOption;
@@ -30,7 +30,7 @@ namespace SIL.Machine.Translation
 			: base(false)
 		{
 			Name = "test";
-			Description = "Tests the interactive machine translation performance of an engine.";
+			Description = "Tests the interactive machine translation performance of a model.";
 
 			_confidenceOption = Option("-c|--confidence <percentage>", "The confidence threshold.",
 				CommandOptionType.SingleValue);
@@ -49,7 +49,7 @@ namespace SIL.Machine.Translation
 			if (code != 0)
 				return code;
 
-			if (!File.Exists(EngineConfigFileName))
+			if (!File.Exists(ModelConfigFileName))
 			{
 				Out.WriteLine("The specified engine directory is invalid.");
 				return 1;
@@ -91,7 +91,7 @@ namespace SIL.Machine.Translation
 			int segmentCount = 0;
 			_acceptedSuggestionCounts = new int[n];
 			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
-			using (IInteractiveTranslationModel smtModel = new ThotSmtModel(EngineConfigFileName))
+			using (IInteractiveTranslationModel smtModel = new ThotSmtModel(ModelConfigFileName))
 			using (IInteractiveTranslationEngine engine = smtModel.CreateInteractiveEngine())
 			{
 				var ecm = new ErrorCorrectionModel();

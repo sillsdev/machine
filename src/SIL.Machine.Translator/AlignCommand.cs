@@ -1,18 +1,20 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
+using SIL.Machine.Translation.Paratext;
 using SIL.Machine.Translation.Thot;
 
 namespace SIL.Machine.Translation
 {
-	public class AlignCommand : EngineCommandBase
+	public class AlignCommand : AlignmentModelCommandBase
 	{
 		private readonly CommandOption _outputOption;
 		private readonly CommandOption _probOption;
 		private readonly CommandOption _quietOption;
 
 		public AlignCommand()
-			: base(true)
+			: base(supportAlignmentsCorpus: true)
 		{
 			Name = "align";
 			Description = "Generates word alignments for a parallel corpus.";
@@ -41,12 +43,10 @@ namespace SIL.Machine.Translation
 
 			int parallelCorpusCount = GetParallelCorpusCount();
 
-			string tmPrefix = Path.Combine(EngineDirectory, "tm", "src_trg");
 			if (!_quietOption.HasValue())
 				Out.Write("Aligning... ");
 			using (var progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
-			using (var alignmentModel = new SymmetrizedWordAlignmentModel(
-				new ThotWordAlignmentModel(tmPrefix + "_invswm"), new ThotWordAlignmentModel(tmPrefix + "_swm")))
+			using (IWordAlignmentModel alignmentModel = CreateAlignmentModel())
 			{
 				int segmentCount = 0;
 				progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
@@ -80,6 +80,34 @@ namespace SIL.Machine.Translation
 				Out.WriteLine("done.");
 
 			return 0;
+		}
+
+		private IWordAlignmentModel CreateAlignmentModel()
+		{
+			switch (ModelType)
+			{
+				case "hmm":
+					return CreateThotAlignmentModel<HmmThotWordAlignmentModel>(ModelPath);
+				case "ibm1":
+					return CreateThotAlignmentModel<Ibm1ThotWordAlignmentModel>(ModelPath);
+				case "ibm2":
+					return CreateThotAlignmentModel<Ibm2ThotWordAlignmentModel>(ModelPath);
+				case "pt":
+					return new ParatextWordAlignmentModel(ModelPath);
+			}
+			throw new InvalidOperationException("An invalid alignment model type was specified.");
+		}
+
+		private static IWordAlignmentModel CreateThotAlignmentModel<TAlignModel>(string path)
+			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
+		{
+			var directModel = new TAlignModel();
+			directModel.Load(path + "_invswm");
+
+			var inverseModel = new TAlignModel();
+			inverseModel.Load(path + "_swm");
+
+			return new SymmetrizedWordAlignmentModel(directModel, inverseModel);
 		}
 	}
 }

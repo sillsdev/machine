@@ -6,7 +6,7 @@ using NUnit.Framework;
 namespace SIL.Machine.Translation.Thot
 {
 	[TestFixture]
-	public class ThotWordAlignmentModelTests
+	public class HmmThotWordAlignmentModelTests
 	{
 		private string DirectModelPath => Path.Combine(TestHelpers.ToyCorpusFolderName, "tm", "src_trg_invswm");
 		private string InverseModelPath => Path.Combine(TestHelpers.ToyCorpusFolderName, "tm", "src_trg_swm");
@@ -14,7 +14,7 @@ namespace SIL.Machine.Translation.Thot
 		[Test]
 		public void GetBestAlignment_ReturnsCorrectAlignment()
 		{
-			using (var swAlignModel = new ThotWordAlignmentModel(DirectModelPath))
+			using (var swAlignModel = new HmmThotWordAlignmentModel(DirectModelPath))
 			{
 				string[] sourceSegment = "por favor , ¿ podríamos ver otra habitación ?".Split(' ');
 				string[] targetSegment = "could we see another room , please ?".Split(' ');
@@ -27,7 +27,7 @@ namespace SIL.Machine.Translation.Thot
 		[Test]
 		public void GetTranslationProbability_ReturnsCorrectProbability()
 		{
-			using (var swAlignModel = new ThotWordAlignmentModel(DirectModelPath))
+			using (var swAlignModel = new HmmThotWordAlignmentModel(DirectModelPath))
 			{
 				Assert.That(swAlignModel.GetTranslationProbability("esto", "this"), Is.EqualTo(0.0).Within(0.01));
 				Assert.That(swAlignModel.GetTranslationProbability("es", "is"), Is.EqualTo(0.65).Within(0.01));
@@ -39,7 +39,7 @@ namespace SIL.Machine.Translation.Thot
 		[Test]
 		public void SourceWords_Enumerate()
 		{
-			using (var swAlignModel = new ThotWordAlignmentModel(DirectModelPath))
+			using (var swAlignModel = new HmmThotWordAlignmentModel(DirectModelPath))
 			{
 				Assert.That(swAlignModel.SourceWords.Count(), Is.EqualTo(513));
 			}
@@ -48,7 +48,7 @@ namespace SIL.Machine.Translation.Thot
 		[Test]
 		public void SourceWords_IndexAccessor()
 		{
-			using (var swAlignModel = new ThotWordAlignmentModel(DirectModelPath))
+			using (var swAlignModel = new HmmThotWordAlignmentModel(DirectModelPath))
 			{
 				Assert.That(swAlignModel.SourceWords[0], Is.EqualTo("NULL"));
 				Assert.That(swAlignModel.SourceWords[512], Is.EqualTo("pagar"));
@@ -58,7 +58,7 @@ namespace SIL.Machine.Translation.Thot
 		[Test]
 		public void SourceWords_Count()
 		{
-			using (var swAlignModel = new ThotWordAlignmentModel(DirectModelPath))
+			using (var swAlignModel = new HmmThotWordAlignmentModel(DirectModelPath))
 			{
 				Assert.That(swAlignModel.SourceWords.Count, Is.EqualTo(513));
 			}
@@ -67,7 +67,7 @@ namespace SIL.Machine.Translation.Thot
 		[Test]
 		public void TargetWords_Enumerate()
 		{
-			using (var swAlignModel = new ThotWordAlignmentModel(DirectModelPath))
+			using (var swAlignModel = new HmmThotWordAlignmentModel(DirectModelPath))
 			{
 				Assert.That(swAlignModel.TargetWords.Count(), Is.EqualTo(363));
 			}
@@ -76,7 +76,7 @@ namespace SIL.Machine.Translation.Thot
 		[Test]
 		public void TargetWords_IndexAccessor()
 		{
-			using (var swAlignModel = new ThotWordAlignmentModel(DirectModelPath))
+			using (var swAlignModel = new HmmThotWordAlignmentModel(DirectModelPath))
 			{
 				Assert.That(swAlignModel.TargetWords[0], Is.EqualTo("NULL"));
 				Assert.That(swAlignModel.TargetWords[362], Is.EqualTo("pay"));
@@ -86,7 +86,7 @@ namespace SIL.Machine.Translation.Thot
 		[Test]
 		public void TargetWords_Count()
 		{
-			using (var swAlignModel = new ThotWordAlignmentModel(DirectModelPath))
+			using (var swAlignModel = new HmmThotWordAlignmentModel(DirectModelPath))
 			{
 				Assert.That(swAlignModel.TargetWords.Count, Is.EqualTo(363));
 			}
@@ -95,8 +95,8 @@ namespace SIL.Machine.Translation.Thot
 		[Test]
 		public void GetTranslationTable_SymmetrizedNoThreshold()
 		{
-			using (var model = new SymmetrizedWordAlignmentModel(new ThotWordAlignmentModel(DirectModelPath),
-				new ThotWordAlignmentModel(InverseModelPath)))
+			using (var model = new SymmetrizedWordAlignmentModel(new HmmThotWordAlignmentModel(DirectModelPath),
+				new HmmThotWordAlignmentModel(InverseModelPath)))
 			{
 				Dictionary<string, Dictionary<string, double>> table = model.GetTranslationTable();
 				Assert.That(table.Count, Is.EqualTo(513));
@@ -107,8 +107,8 @@ namespace SIL.Machine.Translation.Thot
 		[Test]
 		public void GetTranslationTable_SymmetrizedThreshold()
 		{
-			using (var model = new SymmetrizedWordAlignmentModel(new ThotWordAlignmentModel(DirectModelPath),
-				new ThotWordAlignmentModel(InverseModelPath)))
+			using (var model = new SymmetrizedWordAlignmentModel(new HmmThotWordAlignmentModel(DirectModelPath),
+				new HmmThotWordAlignmentModel(InverseModelPath)))
 			{
 				Dictionary<string, Dictionary<string, double>> table = model.GetTranslationTable(0.2);
 				Assert.That(table.Count, Is.EqualTo(513));
