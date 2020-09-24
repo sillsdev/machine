@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
@@ -11,41 +10,30 @@ namespace SIL.Machine.Translation
 {
 	public class TranslateCommand : CommandBase
 	{
-		private readonly CommandArgument _modelArgument;
-		private readonly CommandOption _sourceOption;
-		private readonly CommandOption _sourceWordTokenizerOption;
-		private readonly CommandOption _targetWordTokenizerOption;
-		private readonly CommandOption _includeOption;
-		private readonly CommandOption _excludeOption;
-		private readonly CommandOption _maxCorpusSizeOption;
-		private readonly CommandOption _outputOption;
+		private readonly TranslationModelCommandSpec _modelSpec;
+		private readonly MonolingualCorpusCommandSpec _corpusSpec;
+		private readonly CommandArgument _outputArgument;
+		private CommandOption _refOption;
+		private CommandOption _refFormatOption;
+		private CommandOption _refWordTokenizerOption;
 		private readonly CommandOption _quietOption;
 
 		public TranslateCommand()
 		{
 			Name = "translate";
-			Description = "Translates source segments using a trained engine.";
+			Description = "Translates segments using a translation model.";
 
-			_modelArgument = Argument("model", "The translation model directory or configuration file.");
-			_sourceOption = Option("-s|--source <[type,]path>",
-				"The source corpus to translate.\nTypes: \"text\" (default), \"dbl\", \"usx\", \"pt\".",
+			_modelSpec = AddSpec(new TranslationModelCommandSpec());
+			_corpusSpec = AddSpec(new MonolingualCorpusCommandSpec());
+			_outputArgument = Argument("OUTPUT_PATH", "The output translation file/directory (text).").IsRequired();
+			_refOption = Option("-r|--reference <REF_PATH>",
+				"The reference corpus.\nIf specified, BLEU will be computed for the generated translations.",
 				CommandOptionType.SingleValue);
-			const string typesStr = "Types: \"whitespace\" (default), \"latin\", \"zwsp\"";
-			_sourceWordTokenizerOption = Option("-st|--source-tokenizer <type>",
-				$"The source word tokenizer type.\n{typesStr}.",
+			_refFormatOption = Option("-rf|--reference-format <CORPUS_FORMAT>",
+				"The reference corpus format.\nFormats: \"text\" (default), \"dbl\", \"usx\", \"pt\".",
 				CommandOptionType.SingleValue);
-			_targetWordTokenizerOption = Option("-tt|--target-tokenizer <type>",
-				$"The target word tokenizer type.\n{typesStr}.",
-				CommandOptionType.SingleValue);
-			_includeOption = Option("-i|--include <texts>",
-				"The texts to include.\nFor Scripture, specify a book ID, \"*NT*\" for all NT books, or \"*OT*\" for all OT books.",
-				CommandOptionType.MultipleValue);
-			_excludeOption = Option("-e|--exclude <texts>",
-				"The texts to exclude.\nFor Scripture, specify a book ID, \"*NT*\" for all NT books, or \"*OT*\" for all OT books.",
-				CommandOptionType.MultipleValue);
-			_maxCorpusSizeOption = Option("-m|--max-size <size>", "The maximum corpus size.",
-				CommandOptionType.SingleValue);
-			_outputOption = Option("-o|--output <path>", "The output translations file/directory.",
+			_refWordTokenizerOption = Option("-rt|--ref-tokenizer <TOKENIZER>",
+				$"The reference word tokenizer.\nTypes: \"whitespace\" (default), \"latin\", \"zwsp\".",
 				CommandOptionType.SingleValue);
 			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
 		}
@@ -56,115 +44,61 @@ namespace SIL.Machine.Translation
 			if (result != 0)
 				return result;
 
-			if (!_sourceOption.HasValue())
+			if (!TranslatorHelpers.ValidateCorpusFormatOption(_refFormatOption.Value()))
 			{
-				Out.WriteLine("The source corpus was not specified.");
+				Out.WriteLine("The specified reference corpus format is invalid.");
 				return 1;
 			}
 
-			if (!TranslatorHelpers.ValidateTextCorpusOption(_sourceOption.Value(), out string sourceCorpusType,
-				out string sourceCorpusPath))
+			if (!TranslatorHelpers.ValidateWordTokenizerOption(_refWordTokenizerOption.Value()))
 			{
-				Out.WriteLine("The specified source corpus is invalid.");
-				return 1;
-			}
-
-			if (!TranslatorHelpers.ValidateWordTokenizerOption(_sourceWordTokenizerOption.Value(),
-				supportsNullTokenizer: false))
-			{
-				Out.WriteLine("The specified source word tokenizer type is invalid.");
-				return 1;
-			}
-
-			if (!TranslatorHelpers.ValidateWordTokenizerOption(_targetWordTokenizerOption.Value(),
-				supportsNullTokenizer: false))
-			{
-				Out.WriteLine("The specified target word tokenizer type is invalid.");
-				return 1;
-			}
-
-			int maxCorpusCount = int.MaxValue;
-			if (_maxCorpusSizeOption.HasValue())
-			{
-				if (!int.TryParse(_maxCorpusSizeOption.Value(), out int maxCorpusSize) || maxCorpusSize <= 0)
-				{
-					Out.WriteLine("The specified maximum corpus size is invalid.");
-					return 1;
-				}
-				maxCorpusCount = maxCorpusSize;
-			}
-
-			if (!_outputOption.HasValue())
-			{
-				Out.WriteLine("The output translations file/directory was not specified");
+				Out.WriteLine("The specified reference word tokenizer is invalid.");
 				return 1;
 			}
 
 			bool isOutputFile;
-			if (TranslatorHelpers.IsDirectoryPath(_outputOption.Value()))
+			if (TranslatorHelpers.IsDirectoryPath(_outputArgument.Value))
 			{
-				Directory.CreateDirectory(_outputOption.Value());
+				Directory.CreateDirectory(_outputArgument.Value);
 				isOutputFile = false;
 			}
 			else
 			{
-				Directory.CreateDirectory(Path.GetDirectoryName(_outputOption.Value()));
+				Directory.CreateDirectory(Path.GetDirectoryName(_outputArgument.Value));
 				isOutputFile = true;
 			}
 
-
-			string modelConfigFileName = TranslatorHelpers.GetTranslationModelConfigFileName(_modelArgument.Value);
-			string modelDirectory = Path.GetDirectoryName(modelConfigFileName);
-
-			ITokenizer<string, int, string> sourceWordTokenizer = TranslatorHelpers.CreateWordTokenizer(
-				_sourceWordTokenizerOption.Value() ?? "whitespace");
-			IDetokenizer<string, string> targetWordDetokenizer = TranslatorHelpers.CreateWordDetokenizer(
-				_targetWordTokenizerOption.Value() ?? "whitespace");
-
-			ITextCorpus corpus = TranslatorHelpers.CreateTextCorpus(sourceWordTokenizer, sourceCorpusType ?? "text",
-				sourceCorpusPath);
-
-			ISet<string> includeTexts = null;
-			if (_includeOption.HasValue())
-				includeTexts = TranslatorHelpers.GetTexts(_includeOption.Values);
-
-			ISet<string> excludeTexts = null;
-			if (_excludeOption.HasValue())
-				excludeTexts = TranslatorHelpers.GetTexts(_excludeOption.Values);
-
-			if (includeTexts != null || excludeTexts != null)
+			List<IReadOnlyList<string>> translations = null;
+			ParallelTextCorpus parallelCorpus = null;
+			if (_refOption.HasValue())
 			{
-				bool Filter(string id)
-				{
-					if (excludeTexts != null && excludeTexts.Contains(id))
-						return false;
-
-					if (includeTexts != null && includeTexts.Contains(id))
-						return true;
-
-					return includeTexts == null;
-				}
-
-				corpus = new FilteredTextCorpus(corpus, text => Filter(text.Id));
+				translations = new List<IReadOnlyList<string>>();
+				ITokenizer<string, int, string> refWordTokenizer = TranslatorHelpers.CreateWordTokenizer(
+					_refWordTokenizerOption.Value() ?? "whitespace");
+				ITextCorpus refCorpus = TranslatorHelpers.CreateTextCorpus(refWordTokenizer,
+					_refFormatOption.Value() ?? "text", _refOption.Value());
+				refCorpus = _corpusSpec.FilterTextCorpus(refCorpus);
+				parallelCorpus = new ParallelTextCorpus(_corpusSpec.Corpus, refCorpus);
 			}
 
-			int corpusCount = Math.Min(maxCorpusCount, corpus.GetSegments()
-				.Count(s => !s.IsEmpty && s.Segment.Count <= TranslationConstants.MaxSegmentLength));
+			IDetokenizer<string, string> refWordDetokenizer = TranslatorHelpers.CreateWordDetokenizer(
+				_refWordTokenizerOption.Value() ?? "whitespace");
 
+			int corpusCount = _corpusSpec.GetNonemptyCorpusCount();
 			var truecaser = new TransferTruecaser();
 			if (!_quietOption.HasValue())
 				Out.Write("Translating... ");
 			int segmentCount = 0;
 			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
-			using (IInteractiveTranslationModel model = new ThotSmtModel(modelConfigFileName))
+			using (IInteractiveTranslationModel model = new ThotSmtModel(_modelSpec.ModelConfigFileName))
 			using (ITranslationEngine engine = model.CreateEngine())
-			using (StreamWriter writer = isOutputFile ? new StreamWriter(_outputOption.Value()) : null)
+			using (StreamWriter writer = isOutputFile ? new StreamWriter(_outputArgument.Value) : null)
 			{
 				progress?.Report(new ProgressStatus(segmentCount, corpusCount));
-				foreach (IText text in corpus.Texts)
+				foreach (IText text in _corpusSpec.Corpus.Texts)
 				{
 					StreamWriter textWriter = isOutputFile ? writer
-						: new StreamWriter(Path.Combine(_outputOption.Value(), text.Id.Trim('*') + ".txt"));
+						: new StreamWriter(Path.Combine(_outputArgument.Value, text.Id.Trim('*') + ".txt"));
 					try
 					{
 						foreach (TextSegment segment in text.Segments)
@@ -177,8 +111,9 @@ namespace SIL.Machine.Translation
 							{
 								TranslationResult translateResult = engine.Translate(
 									TokenProcessors.Lowercase.Process(segment.Segment));
+								translations?.Add(translateResult.TargetSegment);
 								translateResult = truecaser.Truecase(segment.Segment, translateResult);
-								string translation = targetWordDetokenizer.Detokenize(translateResult.TargetSegment);
+								string translation = refWordDetokenizer.Detokenize(translateResult.TargetSegment);
 								textWriter.WriteLine(translation);
 
 								segmentCount++;
@@ -197,8 +132,18 @@ namespace SIL.Machine.Translation
 					}
 				}
 			}
+
 			if (!_quietOption.HasValue())
 				Out.WriteLine("done.");
+
+			if (parallelCorpus != null && translations != null)
+			{
+				double bleu = Evaluation.CalculateBleu(translations, parallelCorpus.GetSegments()
+					.Where(s => s.SourceSegment.Count > 0
+						&& s.SourceSegment.Count <= TranslationConstants.MaxSegmentLength)
+					.Select(s => TokenProcessors.Lowercase.Process(s.TargetSegment)));
+				Out.WriteLine($"BLEU: {bleu * 100:0.00}");
+			}
 
 			return 0;
 		}

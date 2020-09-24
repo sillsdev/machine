@@ -12,6 +12,7 @@ namespace SIL.Machine.Translation
 		{
 			_reporter = reporter;
 			Phase = phase;
+			_reporter.Report(new ProgressStatus(0));
 		}
 
 		public Phase Phase { get; }

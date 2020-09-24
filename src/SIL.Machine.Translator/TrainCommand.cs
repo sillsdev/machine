@@ -5,9 +5,10 @@
 		public TrainCommand()
 		{
 			Name = "train";
+			Description = "Trains a model.";
 
-			AddSubcommand(new TrainTranslationModelCommand());
-			AddSubcommand(new TrainAlignmentModelCommand());
+			AddCommand(new TrainTranslationModelCommand());
+			AddCommand(new TrainAlignmentModelCommand());
 		}
 	}
 }

@@ -1,40 +1,32 @@
 ﻿using System.Reflection;
-using McMaster.Extensions.CommandLineUtils;
 
 namespace SIL.Machine.Translation
 {
-	public class App : CommandLineApplication
+	public class App : CommandBase
 	{
 		public App()
 		{
 			Name = "translator";
 			FullName = "SIL.Machine Translator";
-			Description = "A tool for training and evaluating machine translation engines.";
-			UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.CollectAndContinue;
+			Description = "A tool for training and evaluating translation models.";
 
 			HelpOption("-?|-h|--help", true);
 			string version = Assembly.GetEntryAssembly().GetName().Version.ToString();
 			VersionOption("-v|--version", version);
 
 			AddCommand(new TrainCommand());
-			AddCommand(new TestCommand());
+			AddCommand(new SuggestCommand());
 			AddCommand(new AlignCommand());
 			AddCommand(new CorpusCommand());
 			AddCommand(new ExtractCommand());
 			AddCommand(new TranslateCommand());
 			AddCommand(new TokenizeCommand());
-
-			OnExecute(() =>
-			{
-				ShowHelp();
-				return 0;
-			});
 		}
 
-		private void AddCommand(CommandBase command)
+		protected override int ExecuteCommand()
 		{
-			command.Parent = this;
-			Commands.Add(command);
+			ShowHelp();
+			return 0;
 		}
 	}
 }

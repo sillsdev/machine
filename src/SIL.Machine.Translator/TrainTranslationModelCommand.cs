@@ -6,15 +6,19 @@ using SIL.Machine.Translation.Thot;
 
 namespace SIL.Machine.Translation
 {
-	public class TrainTranslationModelCommand : TranslationModelCommandBase
+	public class TrainTranslationModelCommand : CommandBase
 	{
+		private readonly TranslationModelCommandSpec _modelSpec;
+		private readonly ParallelCorpusCommandSpec _corpusSpec;
 		private readonly CommandOption _quietOption;
 
 		public TrainTranslationModelCommand()
-			: base(supportAlignmentsCorpus: true)
 		{
-			Name = "translation";
-			Description = "Trains a machine translation model from a parallel corpus.";
+			Name = "translation-model";
+			Description = "Trains a translation model from a parallel corpus.";
+
+			_modelSpec = AddSpec(new TranslationModelCommandSpec());
+			_corpusSpec = AddSpec(new ParallelCorpusCommandSpec());
 
 			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
 		}
@@ -25,33 +29,32 @@ namespace SIL.Machine.Translation
 			if (code != 0)
 				return code;
 
-			if (!Directory.Exists(ModelDirectory))
-				Directory.CreateDirectory(ModelDirectory);
+			if (!Directory.Exists(_modelSpec.ModelDirectory))
+				Directory.CreateDirectory(_modelSpec.ModelDirectory);
 
-			TrainTranslationModel();
-
-			return 0;
-		}
-
-		private void TrainTranslationModel()
-		{
-			if (!File.Exists(ModelConfigFileName))
+			if (!File.Exists(_modelSpec.ModelConfigFileName))
 			{
 				string defaultConfigFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data",
 					"default-smt.cfg");
-				File.Copy(defaultConfigFileName, ModelConfigFileName);
+				File.Copy(defaultConfigFileName, _modelSpec.ModelConfigFileName);
 			}
 
-			using (ITranslationModelTrainer trainer = new ThotSmtModelTrainer(ModelConfigFileName,
-				TokenProcessors.Lowercase, TokenProcessors.Lowercase, ParallelCorpus, MaxParallelCorpusCount))
+			using (ITranslationModelTrainer trainer = new ThotSmtModelTrainer(_modelSpec.ModelConfigFileName,
+				TokenProcessors.Lowercase, TokenProcessors.Lowercase, _corpusSpec.ParallelCorpus,
+				_corpusSpec.MaxCorpusCount))
 			{
 				Stopwatch watch = Stopwatch.StartNew();
 				if (!_quietOption.HasValue())
 					Out.Write("Training... ");
 				using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
 				{
-					trainer.Train(progress);
-					trainer.Save();
+					var reporter = new PhasedProgressReporter(progress,
+						new Phase("Training model", 0.99),
+						new Phase("Saving model"));
+					using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+						trainer.Train(phaseProgress);
+					using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+						trainer.Save();
 				}
 				if (!_quietOption.HasValue())
 					Out.WriteLine("done.");
@@ -60,8 +63,10 @@ namespace SIL.Machine.Translation
 				Out.WriteLine($"Execution time: {watch.Elapsed:c}");
 				Out.WriteLine($"# of Segments Trained: {trainer.Stats.TrainedSegmentCount}");
 				Out.WriteLine($"LM Perplexity: {trainer.Stats.LanguageModelPerplexity:0.0000}");
-				Out.WriteLine($"TM BLEU: {trainer.Stats.TranslationModelBleu:0.0000}");
+				Out.WriteLine($"TM BLEU: {trainer.Stats.TranslationModelBleu * 100:0.00}");
 			}
+
+			return 0;
 		}
 	}
 }

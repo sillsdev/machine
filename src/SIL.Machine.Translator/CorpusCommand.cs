@@ -4,19 +4,20 @@ using System.Linq;
 
 namespace SIL.Machine.Translation
 {
-	public class CorpusCommand : ParallelTextCorpusCommandBase
+	public class CorpusCommand : CommandBase
 	{
+		private readonly ParallelCorpusCommandSpec _corpusSpec;
 		private readonly CommandOption _maxLengthOption;
 		private readonly CommandOption _countOption;
 
 		public CorpusCommand()
-			: base(supportAlignmentsCorpus: true, defaultNullTokenizer: false)
 		{
 			Name = "corpus";
 			Description = "Computes statistics for a parallel corpus.";
 
+			_corpusSpec = AddSpec(new ParallelCorpusCommandSpec());
 			_countOption = Option("-c|--count", "Only output the # of parallel segments.", CommandOptionType.NoValue);
-			_maxLengthOption = Option("--max-seglen <number>", "Maximum segment length. Default: 110.",
+			_maxLengthOption = Option("--max-seglen <MAX_SEG_LENGTH>", "Maximum segment length. Default: 110.",
 				CommandOptionType.SingleValue);
 		}
 
@@ -28,7 +29,7 @@ namespace SIL.Machine.Translation
 
 			if (_countOption.HasValue())
 			{
-				Out.WriteLine(GetParallelCorpusCount());
+				Out.WriteLine(_corpusSpec.GetNonemptyParallelCorpusCount());
 			}
 			else
 			{
@@ -46,7 +47,7 @@ namespace SIL.Machine.Translation
 				int segmentCount = 0;
 				int sourceWordCount = 0;
 				int targetWordCount = 0;
-				foreach (ParallelText text in ParallelCorpus.Texts)
+				foreach (ParallelText text in _corpusSpec.ParallelCorpus.Texts)
 				{
 					foreach (ParallelTextSegment segment in text.Segments.Where(s => !s.IsEmpty))
 					{
@@ -64,12 +65,12 @@ namespace SIL.Machine.Translation
 						sourceWordCount += segment.SourceSegment.Count;
 						targetWordCount += segment.TargetSegment.Count;
 						segmentCount++;
-						if (segmentCount == MaxParallelCorpusCount)
+						if (segmentCount == _corpusSpec.MaxCorpusCount)
 							break;
 					}
 
 					textCount++;
-					if (segmentCount == MaxParallelCorpusCount)
+					if (segmentCount == _corpusSpec.MaxCorpusCount)
 						break;
 				}
 

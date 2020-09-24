@@ -8,8 +8,10 @@ using SIL.Machine.Translation.Thot;
 
 namespace SIL.Machine.Translation
 {
-	public class TestCommand : TranslationModelCommandBase
+	public class SuggestCommand : CommandBase
 	{
+		private readonly TranslationModelCommandSpec _modelSpec;
+		private readonly ParallelCorpusCommandSpec _corpusSpec;
 		private readonly CommandOption _confidenceOption;
 		private readonly CommandOption _traceOption;
 		private readonly CommandOption _nOption;
@@ -26,17 +28,19 @@ namespace SIL.Machine.Translation
 		private int _middleSuggestionCount;
 		private int[] _acceptedSuggestionCounts;
 
-		public TestCommand()
-			: base(false)
+		public SuggestCommand()
 		{
-			Name = "test";
-			Description = "Tests the interactive machine translation performance of a model.";
+			Name = "suggest";
+			Description =
+				"Simulates the generation of translation suggestions during an interactive translation session.";
 
-			_confidenceOption = Option("-c|--confidence <percentage>", "The confidence threshold.",
+			_modelSpec = AddSpec(new TranslationModelCommandSpec());
+			_corpusSpec = AddSpec(new ParallelCorpusCommandSpec { SupportAlignmentsCorpus = false });
+			_confidenceOption = Option("-c|--confidence <PERCENTAGE>", "The confidence threshold.",
 				CommandOptionType.SingleValue);
-			_nOption = Option("-n <number>", "The number of suggestions to generate.",
+			_nOption = Option("-n <NUMBER>", "The number of suggestions to generate.",
 				CommandOptionType.SingleValue);
-			_traceOption = Option("--trace <path>", "The trace output directory.",
+			_traceOption = Option("--trace <TRACE_DIR>", "The trace output directory.",
 				CommandOptionType.SingleValue);
 			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
 			_approveAlignedOption = Option("--approve-aligned", "Approve aligned part of source segment.",
@@ -49,7 +53,7 @@ namespace SIL.Machine.Translation
 			if (code != 0)
 				return code;
 
-			if (!File.Exists(ModelConfigFileName))
+			if (!File.Exists(_modelSpec.ModelConfigFileName))
 			{
 				Out.WriteLine("The specified engine directory is invalid.");
 				return 1;
@@ -83,7 +87,7 @@ namespace SIL.Machine.Translation
 
 			var suggester = new PhraseTranslationSuggester() { ConfidenceThreshold = confidenceThreshold };
 
-			int parallelCorpusCount = GetParallelCorpusCount();
+			int parallelCorpusCount = _corpusSpec.GetNonemptyParallelCorpusCount();
 
 			var watch = Stopwatch.StartNew();
 			if (!_quietOption.HasValue())
@@ -91,12 +95,12 @@ namespace SIL.Machine.Translation
 			int segmentCount = 0;
 			_acceptedSuggestionCounts = new int[n];
 			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
-			using (IInteractiveTranslationModel smtModel = new ThotSmtModel(ModelConfigFileName))
+			using (IInteractiveTranslationModel smtModel = new ThotSmtModel(_modelSpec.ModelConfigFileName))
 			using (IInteractiveTranslationEngine engine = smtModel.CreateInteractiveEngine())
 			{
 				var ecm = new ErrorCorrectionModel();
 				progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
-				foreach (ParallelText text in ParallelCorpus.Texts)
+				foreach (ParallelText text in _corpusSpec.ParallelCorpus.Texts)
 				{
 					using (StreamWriter traceWriter = CreateTraceWriter(text))
 					{
@@ -105,11 +109,11 @@ namespace SIL.Machine.Translation
 							TestSegment(ecm, engine, suggester, n, segment, traceWriter);
 							segmentCount++;
 							progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
-							if (segmentCount == MaxParallelCorpusCount)
+							if (segmentCount == _corpusSpec.MaxCorpusCount)
 								break;
 						}
 					}
-					if (segmentCount == MaxParallelCorpusCount)
+					if (segmentCount == _corpusSpec.MaxCorpusCount)
 						break;
 				}
 			}

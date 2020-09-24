@@ -11,49 +11,16 @@ namespace SIL.Machine.Translation
 {
 	internal static class TranslatorHelpers
 	{
-		public static string GetTranslationModelConfigFileName(string path)
+		public static bool ValidateCorpusFormatOption(string value)
 		{
-			if (File.Exists(path))
-				return path;
-			else if (Directory.Exists(path) || IsDirectoryPath(path))
-				return Path.Combine(path, "smt.cfg");
-			else
-				return path;
+			return string.IsNullOrEmpty(value) || value.IsOneOf("dbl", "usx", "text", "pt");
 		}
 
-		public static bool ValidateAlignmentModelOption(string value, out string type, out string path)
-		{
-			if (ValidateTypePathOption(value, out type, out path))
-				return string.IsNullOrEmpty(type) || type.IsOneOf("hmm", "ibm1", "ibm2", "pt");
-			return false;
-		}
-
-		public static bool ValidateTextCorpusOption(string value, out string type, out string path)
-		{
-			if (ValidateTypePathOption(value, out type, out path))
-				return string.IsNullOrEmpty(type) || type.IsOneOf("dbl", "usx", "text", "pt");
-			return false;
-		}
-
-		public static bool ValidateAlignmentsOption(string value, out string type, out string path)
-		{
-			if (string.IsNullOrEmpty(value))
-			{
-				type = null;
-				path = null;
-				return true;
-			}
-
-			if (ValidateTypePathOption(value, out type, out path))
-				return string.IsNullOrEmpty(type) || type == "text";
-			return false;
-		}
-
-		public static bool ValidateWordTokenizerOption(string value, bool supportsNullTokenizer)
+		public static bool ValidateWordTokenizerOption(string value, bool supportsNullTokenizer = false)
 		{
 			var types = new HashSet<string> { "latin", "whitespace", "zwsp" };
 			if (supportsNullTokenizer)
-				types.Add("null");
+				types.Add("none");
 			return string.IsNullOrEmpty(value) || types.Contains(value);
 		}
 
@@ -96,7 +63,7 @@ namespace SIL.Machine.Translation
 				case "latin":
 					return new LatinWordTokenizer();
 
-				case "null":
+				case "none":
 					return new NullTokenizer();
 
 				case "zwsp":
@@ -152,23 +119,6 @@ namespace SIL.Machine.Translation
 			string separator2 = Path.AltDirectorySeparatorChar.ToString();
 			path = path.TrimEnd();
 			return path.EndsWith(separator1) || path.EndsWith(separator2);
-		}
-
-		private static bool ValidateTypePathOption(string value, out string type, out string path)
-		{
-			type = null;
-
-			int index = value.IndexOf(",", StringComparison.Ordinal);
-			if (index == -1)
-			{
-				path = value;
-			}
-			else
-			{
-				type = value.Substring(0, index).ToLowerInvariant();
-				path = value.Substring(index + 1);
-			}
-			return path != "";
 		}
 	}
 }

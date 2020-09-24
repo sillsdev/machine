@@ -7,20 +7,23 @@ using SIL.Machine.Translation.Thot;
 
 namespace SIL.Machine.Translation
 {
-	public class AlignCommand : AlignmentModelCommandBase
+	public class AlignCommand : CommandBase
 	{
-		private readonly CommandOption _outputOption;
+		private readonly AlignmentModelCommandSpec _modelSpec;
+		private readonly ParallelCorpusCommandSpec _corpusSpec;
+		private readonly CommandArgument _outputArgument;
 		private readonly CommandOption _probOption;
 		private readonly CommandOption _quietOption;
 
 		public AlignCommand()
-			: base(supportAlignmentsCorpus: true)
 		{
 			Name = "align";
-			Description = "Generates word alignments for a parallel corpus.";
+			Description = "Aligns parallel segments using a word alignment model.";
 
-			_outputOption = Option("-o|--output <path>", "The output alignment directory.",
-				CommandOptionType.SingleValue);
+			_modelSpec = AddSpec(new AlignmentModelCommandSpec());
+			_corpusSpec = AddSpec(new ParallelCorpusCommandSpec());
+			_outputArgument = Argument("OUTPUT_PATH", "The output alignment file/directory (Pharaoh).")
+				.IsRequired();
 			_probOption = Option("-p|--probabilities", "Include probabilities in the output.",
 				CommandOptionType.NoValue);
 			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
@@ -32,28 +35,33 @@ namespace SIL.Machine.Translation
 			if (code != 0)
 				return code;
 
-			if (!_outputOption.HasValue())
+			bool isOutputFile;
+			if (TranslatorHelpers.IsDirectoryPath(_outputArgument.Value))
 			{
-				Out.WriteLine("The output alignment directory was not specified");
-				return 1;
+				Directory.CreateDirectory(_outputArgument.Value);
+				isOutputFile = false;
+			}
+			else
+			{
+				Directory.CreateDirectory(Path.GetDirectoryName(_outputArgument.Value));
+				isOutputFile = true;
 			}
 
-			if (!Directory.Exists(_outputOption.Value()))
-				Directory.CreateDirectory(_outputOption.Value());
-
-			int parallelCorpusCount = GetParallelCorpusCount();
+			int parallelCorpusCount = _corpusSpec.GetNonemptyParallelCorpusCount();
 
 			if (!_quietOption.HasValue())
 				Out.Write("Aligning... ");
 			using (var progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
 			using (IWordAlignmentModel alignmentModel = CreateAlignmentModel())
+			using (StreamWriter writer = isOutputFile ? new StreamWriter(_outputArgument.Value) : null)
 			{
 				int segmentCount = 0;
 				progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
-				foreach (ParallelText text in ParallelCorpus.Texts)
+				foreach (ParallelText text in _corpusSpec.ParallelCorpus.Texts)
 				{
-					string fileName = Path.Combine(_outputOption.Value(), text.Id + ".txt");
-					using (var writer = new StreamWriter(fileName))
+					StreamWriter textWriter = isOutputFile ? writer
+						: new StreamWriter(Path.Combine(_outputArgument.Value, text.Id.Trim('*') + ".txt"));
+					try
 					{
 						foreach (ParallelTextSegment segment in text.Segments)
 						{
@@ -67,13 +75,18 @@ namespace SIL.Machine.Translation
 									TokenProcessors.Lowercase, TokenProcessors.Lowercase));
 								segmentCount++;
 								progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
-								if (segmentCount == MaxParallelCorpusCount)
+								if (segmentCount == _corpusSpec.MaxCorpusCount)
 									break;
 							}
 						}
+						if (segmentCount == _corpusSpec.MaxCorpusCount)
+							break;
 					}
-					if (segmentCount == MaxParallelCorpusCount)
-						break;
+					finally
+					{
+						if (!isOutputFile)
+							textWriter.Close();
+					}
 				}
 			}
 			if (!_quietOption.HasValue())
@@ -84,28 +97,28 @@ namespace SIL.Machine.Translation
 
 		private IWordAlignmentModel CreateAlignmentModel()
 		{
-			switch (ModelType)
+			switch (_modelSpec.ModelType)
 			{
 				case "hmm":
-					return CreateThotAlignmentModel<HmmThotWordAlignmentModel>(ModelPath);
+					return CreateThotAlignmentModel<HmmThotWordAlignmentModel>();
 				case "ibm1":
-					return CreateThotAlignmentModel<Ibm1ThotWordAlignmentModel>(ModelPath);
+					return CreateThotAlignmentModel<Ibm1ThotWordAlignmentModel>();
 				case "ibm2":
-					return CreateThotAlignmentModel<Ibm2ThotWordAlignmentModel>(ModelPath);
+					return CreateThotAlignmentModel<Ibm2ThotWordAlignmentModel>();
 				case "pt":
-					return new ParatextWordAlignmentModel(ModelPath);
+					return new ParatextWordAlignmentModel(_modelSpec.ModelPath);
 			}
 			throw new InvalidOperationException("An invalid alignment model type was specified.");
 		}
 
-		private static IWordAlignmentModel CreateThotAlignmentModel<TAlignModel>(string path)
+		private IWordAlignmentModel CreateThotAlignmentModel<TAlignModel>()
 			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
 		{
 			var directModel = new TAlignModel();
-			directModel.Load(path + "_invswm");
+			directModel.Load(_modelSpec.ModelPath + "_invswm");
 
 			var inverseModel = new TAlignModel();
-			inverseModel.Load(path + "_swm");
+			inverseModel.Load(_modelSpec.ModelPath + "_swm");
 
 			return new SymmetrizedWordAlignmentModel(directModel, inverseModel);
 		}

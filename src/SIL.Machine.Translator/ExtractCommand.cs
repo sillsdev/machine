@@ -5,8 +5,9 @@ using SIL.Machine.Corpora;
 
 namespace SIL.Machine.Translation
 {
-	public class ExtractCommand : ParallelTextCorpusCommandBase
+	public class ExtractCommand : CommandBase
 	{
+		private readonly ParallelCorpusCommandSpec _corpusSpec;
 		private readonly CommandOption _sourceOutputOption;
 		private readonly CommandOption _targetOutputOption;
 		private readonly CommandOption _allSourceOption;
@@ -15,31 +16,34 @@ namespace SIL.Machine.Translation
 		private readonly CommandOption _includeEmptyOption;
 
 		public ExtractCommand()
-			: base(supportAlignmentsCorpus: false, defaultNullTokenizer: true)
 		{
 			Name = "extract";
 			Description = "Extracts a parallel corpus from source and target monolingual corpora.";
 
-			_sourceOutputOption = Option("-so|--source-output <path>", "The source output file.",
+			_corpusSpec = AddSpec(new ParallelCorpusCommandSpec
+			{
+				SupportAlignmentsCorpus = false,
+				DefaultNullTokenizer = true
+			});
+			_sourceOutputOption = Option("-so|--source-output <SOURCE_OUTPUT_FILE>", "The source output text file.",
 				CommandOptionType.SingleValue);
-			_targetOutputOption = Option("-to|--target-output <path>", "The target output file.",
+			_targetOutputOption = Option("-to|--target-output <TARGET_OUTPUT_FILE>", "The target output text file.",
 				CommandOptionType.SingleValue);
 			_allSourceOption = Option("-as|--all-source",
-				"Include all source segments. This parameter overrides all other include/exclude parameters.",
+				"Include all source segments. Overrides include/exclude options.",
 				CommandOptionType.NoValue);
 			_allTargetOption = Option("-at|--all-target",
-				"Include all target segments. This parameter overrides all other include/exclude parameters.",
+				"Include all target segments. Overrides include/exclude options.",
 				CommandOptionType.NoValue);
 			_lowercaseOption = Option("-l|--lowercase", "Convert text to lowercase.", CommandOptionType.NoValue);
-			_includeEmptyOption = Option("-ie|--include-empty", "Include empty segments.",
-				CommandOptionType.NoValue);
+			_includeEmptyOption = Option("-ie|--include-empty", "Include empty segments.", CommandOptionType.NoValue);
 		}
-
-		protected override bool FilterSource => !_allSourceOption.HasValue();
-		protected override bool FilterTarget => !_allTargetOption.HasValue();
 
 		protected override int ExecuteCommand()
 		{
+			_corpusSpec.FilterSource = !_allSourceOption.HasValue();
+			_corpusSpec.FilterTarget = !_allTargetOption.HasValue();
+
 			int code = base.ExecuteCommand();
 			if (code != 0)
 				return code;
@@ -57,8 +61,8 @@ namespace SIL.Machine.Translation
 			using (var targetOutputWriter = _targetOutputOption.HasValue()
 				? new StreamWriter(_targetOutputOption.Value(), false, utf8Encoding) : null)
 			{
-				foreach (ParallelTextSegment segment in ParallelCorpus.GetSegments(_allSourceOption.HasValue(),
-						_allTargetOption.HasValue()))
+				foreach (ParallelTextSegment segment in _corpusSpec.ParallelCorpus.GetSegments(
+					_allSourceOption.HasValue(), _allTargetOption.HasValue()))
 				{
 					if (!_includeEmptyOption.HasValue())
 					{
@@ -113,7 +117,7 @@ namespace SIL.Machine.Translation
 					}
 
 					segmentCount++;
-					if (segmentCount == MaxParallelCorpusCount)
+					if (segmentCount == _corpusSpec.MaxCorpusCount)
 						break;
 				}
 			}

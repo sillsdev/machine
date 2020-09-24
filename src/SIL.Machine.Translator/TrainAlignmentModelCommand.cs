@@ -1,20 +1,24 @@
 ﻿using System;
+using System.IO;
 using McMaster.Extensions.CommandLineUtils;
-using SIL.Machine.Corpora;
 using SIL.Machine.Translation.Paratext;
 using SIL.Machine.Translation.Thot;
 
 namespace SIL.Machine.Translation
 {
-	public class TrainAlignmentModelCommand : AlignmentModelCommandBase
+	public class TrainAlignmentModelCommand : CommandBase
 	{
+		private readonly AlignmentModelCommandSpec _modelSpec;
+		private readonly ParallelCorpusCommandSpec _corpusSpec;
 		private readonly CommandOption _quietOption;
 
 		public TrainAlignmentModelCommand()
-			: base(supportAlignmentsCorpus: true)
 		{
-			Name = "alignment";
+			Name = "alignment-model";
 			Description = "Trains a word alignment model from a parallel corpus.";
+
+			_modelSpec = AddSpec(new AlignmentModelCommandSpec());
+			_corpusSpec = AddSpec(new ParallelCorpusCommandSpec());
 
 			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
 		}
@@ -25,56 +29,59 @@ namespace SIL.Machine.Translation
 			if (code != 0)
 				return code;
 
-			TrainAlignmentModel();
+			string modelDir = Path.GetDirectoryName(_modelSpec.ModelPath);
+			if (!Directory.Exists(modelDir))
+				Directory.CreateDirectory(modelDir);
 
-			return 0;
-		}
-
-		private void TrainAlignmentModel()
-		{
-			int parallelCorpusCount = GetParallelCorpusCount();
+			int parallelCorpusCount = _corpusSpec.GetNonemptyParallelCorpusCount();
 
 			if (!_quietOption.HasValue())
 				Out.Write("Training... ");
 			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
 			using (ITrainer trainer = CreateAlignmentModelTrainer())
 			{
-				trainer.Train(progress);
-				trainer.Save();
+				var reporter = new PhasedProgressReporter(progress,
+					new Phase("Training model", 0.99),
+					new Phase("Saving model"));
+				using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+					trainer.Train(phaseProgress);
+				using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+					trainer.Save();
 			}
 			if (!_quietOption.HasValue())
 				Out.WriteLine("done.");
 
 			Out.WriteLine($"# of Segments Trained: {parallelCorpusCount}");
+
+			return 0;
 		}
 
 		private ITrainer CreateAlignmentModelTrainer()
 		{
-			switch (ModelType)
+			switch (_modelSpec.ModelType)
 			{
 				case "hmm":
-					return CreateThotAlignmentModelTrainer<HmmThotWordAlignmentModel>(ModelPath, ParallelCorpus,
-						MaxParallelCorpusCount);
+					return CreateThotAlignmentModelTrainer<HmmThotWordAlignmentModel>();
 				case "ibm1":
-					return CreateThotAlignmentModelTrainer<Ibm1ThotWordAlignmentModel>(ModelPath, ParallelCorpus,
-						MaxParallelCorpusCount);
+					return CreateThotAlignmentModelTrainer<Ibm1ThotWordAlignmentModel>();
 				case "ibm2":
-					return CreateThotAlignmentModelTrainer<Ibm2ThotWordAlignmentModel>(ModelPath, ParallelCorpus,
-						MaxParallelCorpusCount);
+					return CreateThotAlignmentModelTrainer<Ibm2ThotWordAlignmentModel>();
 				case "pt":
-					return new ParatextWordAlignmentModelTrainer(ModelPath, TokenProcessors.Lowercase,
-						TokenProcessors.Lowercase, ParallelCorpus, MaxParallelCorpusCount);
+					return new ParatextWordAlignmentModelTrainer(_modelSpec.ModelPath, TokenProcessors.Lowercase,
+						TokenProcessors.Lowercase, _corpusSpec.ParallelCorpus, _corpusSpec.MaxCorpusCount);
 			}
 			throw new InvalidOperationException("An invalid alignment model type was specified.");
 		}
 
-		private static ITrainer CreateThotAlignmentModelTrainer<TAlignModel>(string path, ParallelTextCorpus corpus,
-			int maxCorpusCount) where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
+		private ITrainer CreateThotAlignmentModelTrainer<TAlignModel>()
+			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
 		{
-			var directTrainer = new ThotWordAlignmentModelTrainer<TAlignModel>(path + "_invswm",
-				TokenProcessors.Lowercase, TokenProcessors.Lowercase, corpus, maxCorpusCount);
-			var inverseTrainer = new ThotWordAlignmentModelTrainer<TAlignModel>(path + "_swm",
-				TokenProcessors.Lowercase, TokenProcessors.Lowercase, corpus, maxCorpusCount);
+			var directTrainer = new ThotWordAlignmentModelTrainer<TAlignModel>(_modelSpec.ModelPath + "_invswm",
+				TokenProcessors.Lowercase, TokenProcessors.Lowercase, _corpusSpec.ParallelCorpus,
+				_corpusSpec.MaxCorpusCount);
+			var inverseTrainer = new ThotWordAlignmentModelTrainer<TAlignModel>(_modelSpec.ModelPath + "_swm",
+				TokenProcessors.Lowercase, TokenProcessors.Lowercase, _corpusSpec.ParallelCorpus,
+				_corpusSpec.MaxCorpusCount);
 			return new SymmetrizedWordAlignmentModelTrainer(directTrainer, inverseTrainer);
 		}
 	}
