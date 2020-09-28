@@ -43,7 +43,7 @@ namespace SIL.Machine.Translation.Thot
 					newParameters.ModelWeights = curWeights;
 					newParameters.Freeze();
 					IList<TranslationInfo>[] nbestLists = GetNBestLists(newParameters, tuneSourceCorpus).ToArray();
-					double quality = Evaluation.CalculateBleu(nbestLists.Select(nbl => nbl.First().Translation),
+					double quality = Evaluation.ComputeBleu(nbestLists.Select(nbl => nbl.First().Translation),
 						tuneTargetCorpus);
 					iterQualities.Add(quality);
 					if (quality > bestQuality)

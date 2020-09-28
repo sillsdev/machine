@@ -31,6 +31,6 @@ namespace SIL.Machine.Corpora
 
 		public IReadOnlyList<string> TargetSegment { get; }
 
-		public IEnumerable<AlignedWordPair> AlignedWordPairs { get; }
+		public IReadOnlyCollection<AlignedWordPair> AlignedWordPairs { get; }
 	}
 }

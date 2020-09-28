@@ -12,6 +12,8 @@ namespace SIL.Machine.Translation.Thot
 		public const string HmmWordAlignmentClassName = "IncrHmmP0AligModel";
 		public const string Ibm1WordAlignmentClassName = "IncrIbm1AligModel";
 		public const string Ibm2WordAlignmentClassName = "IncrIbm2AligModel";
+		public const string SmoothedIbm1WordAlignmentClassName = "SmoothedIncrIbm1AligModel";
+		public const string SmoothedIbm2WordAlignmentClassName = "SmoothedIncrIbm2AligModel";
 
 		private const int DefaultTranslationBufferLength = 1024;
 
@@ -397,9 +399,9 @@ namespace SIL.Machine.Translation.Thot
 			if (alignModelType == typeof(HmmThotWordAlignmentModel))
 				swAlignClassName = HmmWordAlignmentClassName;
 			else if (alignModelType == typeof(Ibm1ThotWordAlignmentModel))
-				swAlignClassName = Ibm1WordAlignmentClassName;
+				swAlignClassName = SmoothedIbm1WordAlignmentClassName;
 			else if (alignModelType == typeof(Ibm2ThotWordAlignmentModel))
-				swAlignClassName = Ibm2WordAlignmentClassName;
+				swAlignClassName = SmoothedIbm2WordAlignmentClassName;
 			Debug.Assert(swAlignClassName != null);
 			return swAlignClassName;
 		}

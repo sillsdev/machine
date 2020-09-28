@@ -13,6 +13,7 @@ namespace SIL.Machine.Corpora
 
 		public int SourceIndex { get; }
 		public int TargetIndex { get; }
+		public bool IsSure { get; set; } = true;
 		public double TranslationProbability { get; set; } = -1;
 		public double AlignmentProbability { get; set; } = -1;
 

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using SIL.Extensions;
+using SIL.Machine.Corpora;
 
 namespace SIL.Machine.Translation
 {
@@ -8,20 +10,20 @@ namespace SIL.Machine.Translation
 	{
 		private const int BleuN = 4;
 
-		public static double CalculateBleu(IEnumerable<IReadOnlyList<string>> translations,
+		public static double ComputeBleu(IEnumerable<IReadOnlyList<string>> translations,
 			IEnumerable<IReadOnlyList<string>> references)
 		{
 			var precs = new double[BleuN];
 			var total = new double[BleuN];
 			int transWordCount = 0, refWordCount = 0;
 
-			foreach (Tuple<IReadOnlyList<string>, IReadOnlyList<string>> pair in translations.Zip(references))
+			foreach (var (translation, reference) in translations.Zip(references, (t, r) => (t, r)))
 			{
-				transWordCount += pair.Item1.Count;
-				refWordCount += pair.Item2.Count;
+				transWordCount += translation.Count;
+				refWordCount += reference.Count;
 				for (int n = 1; n <= BleuN; n++)
 				{
-					CalculatePrecision(pair.Item1, pair.Item2, n, out int segPrec, out int segTotal);
+					ComputeBleuPrecision(translation, reference, n, out int segPrec, out int segTotal);
 					precs[n - 1] += segPrec;
 					total[n - 1] += segTotal;
 				}
@@ -42,7 +44,7 @@ namespace SIL.Machine.Translation
 			return bleu;
 		}
 
-		private static void CalculatePrecision(IReadOnlyList<string> translation, IReadOnlyList<string> reference,
+		private static void ComputeBleuPrecision(IReadOnlyList<string> translation, IReadOnlyList<string> reference,
 			int n, out int prec, out int total)
 		{
 			total = n > translation.Count ? 0 : translation.Count - n + 1;
@@ -73,6 +75,53 @@ namespace SIL.Machine.Translation
 					}
 				}
 			}
+		}
+
+		public static double ComputeAer(IEnumerable<IReadOnlyCollection<AlignedWordPair>> alignments,
+			IEnumerable<IReadOnlyCollection<AlignedWordPair>> references)
+		{
+			(int aCount, int sCount, int paCount, int saCount) = GetAlignmentCounts(alignments, references);
+			return 1 - ((paCount + saCount) / (sCount + aCount));
+		}
+
+		public static double ComputeAlignmentFScore(IEnumerable<IReadOnlyCollection<AlignedWordPair>> alignments,
+			IEnumerable<IReadOnlyCollection<AlignedWordPair>> references, double alpha = 0.5)
+		{
+			(int aCount, int sCount, int paCount, int saCount) = GetAlignmentCounts(alignments, references);
+			double precision = paCount / aCount;
+			double recall = saCount / sCount;
+			return 1 / ((alpha / precision) + ((1 - alpha) / recall));
+		}
+
+		private static (int ACount, int SCount, int PACount, int SACount) GetAlignmentCounts(
+			IEnumerable<IReadOnlyCollection<AlignedWordPair>> alignments,
+			IEnumerable<IReadOnlyCollection<AlignedWordPair>> references)
+		{
+			int aCount = 0;
+			int sCount = 0;
+			int paCount = 0;
+			int saCount = 0;
+			foreach (var (alignment, reference) in alignments.Zip(references, (a, r) => (a, r)))
+			{
+				aCount += alignment.Count;
+				foreach (AlignedWordPair wp in reference)
+				{
+					if (wp.IsSure)
+					{
+						sCount++;
+						if (alignment.Contains(wp))
+						{
+							saCount++;
+							paCount++;
+						}
+					}
+					else if (alignment.Contains(wp))
+					{
+						paCount++;
+					}
+				}
+			}
+			return (aCount, sCount, paCount, saCount);
 		}
 	}
 }

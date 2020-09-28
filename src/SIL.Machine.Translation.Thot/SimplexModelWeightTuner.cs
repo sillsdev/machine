@@ -59,7 +59,7 @@ namespace SIL.Machine.Translation.Thot
 			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus)
 		{
 			IEnumerable<IReadOnlyList<string>> translations = GenerateTranslations(parameters, sourceCorpus);
-			double bleu = Evaluation.CalculateBleu(translations, tuneTargetCorpus);
+			double bleu = Evaluation.ComputeBleu(translations, tuneTargetCorpus);
 			double penalty = 0;
 			for (int i = 0; i < parameters.ModelWeights.Count; i++)
 			{

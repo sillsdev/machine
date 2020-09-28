@@ -106,11 +106,8 @@ namespace SIL.Machine.Translation
 				SourceCorpus = FilterTextCorpus(SourceCorpus);
 			if (FilterTarget)
 				TargetCorpus = FilterTextCorpus(TargetCorpus);
-			if (_alignmentsOption != null && _alignmentsOption.HasValue())
-			{
-				AlignmentsCorpus = new FilteredTextAlignmentCorpus(AlignmentsCorpus,
-					alignments => FilterCorpus(alignments.Id));
-			}
+			if (AlignmentsCorpus != null)
+				AlignmentsCorpus = FilterTextAlignmentCorpus(AlignmentsCorpus);
 
 			ParallelCorpus = new ParallelTextCorpus(SourceCorpus, TargetCorpus, AlignmentsCorpus);
 			return true;

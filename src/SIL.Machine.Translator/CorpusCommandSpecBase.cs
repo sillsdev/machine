@@ -55,6 +55,13 @@ namespace SIL.Machine.Translation
 			return corpus;
 		}
 
+		public ITextAlignmentCorpus FilterTextAlignmentCorpus(ITextAlignmentCorpus corpus)
+		{
+			if (_includeTexts != null || _excludeTexts != null)
+				return new FilteredTextAlignmentCorpus(corpus, text => FilterCorpus(text.Id));
+			return corpus;
+		}
+
 		protected bool FilterCorpus(string id)
 		{
 			if (_excludeTexts != null && _excludeTexts.Contains(id))

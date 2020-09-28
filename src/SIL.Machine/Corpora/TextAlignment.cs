@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
 namespace SIL.Machine.Corpora
 {
@@ -8,11 +7,11 @@ namespace SIL.Machine.Corpora
 		public TextAlignment(object segRef, IEnumerable<AlignedWordPair> alignedWordPairs)
 		{
 			SegmentRef = segRef;
-			AlignedWordPairs = alignedWordPairs.ToArray();
+			AlignedWordPairs = new HashSet<AlignedWordPair>(alignedWordPairs);
 		}
 
 		public object SegmentRef { get; }
 
-		public IEnumerable<AlignedWordPair> AlignedWordPairs { get; }
+		public IReadOnlyCollection<AlignedWordPair> AlignedWordPairs { get; }
 	}
 }

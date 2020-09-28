@@ -4,12 +4,12 @@
 		IIbm2WordAlignmentModel
 	{
 		public Ibm2ThotWordAlignmentModel()
-			: base(Thot.Ibm2WordAlignmentClassName)
+			: base(Thot.SmoothedIbm2WordAlignmentClassName)
 		{
 		}
 
 		public Ibm2ThotWordAlignmentModel(string prefFileName, bool createNew = false)
-			: base(Thot.Ibm2WordAlignmentClassName, prefFileName, createNew)
+			: base(Thot.SmoothedIbm2WordAlignmentClassName, prefFileName, createNew)
 		{
 		}
 

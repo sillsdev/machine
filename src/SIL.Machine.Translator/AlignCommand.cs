@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
 using SIL.Machine.Translation.Paratext;
@@ -12,6 +14,7 @@ namespace SIL.Machine.Translation
 		private readonly AlignmentModelCommandSpec _modelSpec;
 		private readonly ParallelCorpusCommandSpec _corpusSpec;
 		private readonly CommandArgument _outputArgument;
+		private readonly CommandOption _refOption;
 		private readonly CommandOption _probOption;
 		private readonly CommandOption _quietOption;
 
@@ -24,6 +27,9 @@ namespace SIL.Machine.Translation
 			_corpusSpec = AddSpec(new ParallelCorpusCommandSpec());
 			_outputArgument = Argument("OUTPUT_PATH", "The output alignment file/directory (Pharaoh).")
 				.IsRequired();
+			_refOption = Option("-r|--reference <REF_PATH>",
+				"The reference alignments corpus.\nIf specified, AER and F-Score will be computed for the generated alignments.",
+				CommandOptionType.SingleValue);
 			_probOption = Option("-p|--probabilities", "Include probabilities in the output.",
 				CommandOptionType.NoValue);
 			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
@@ -45,6 +51,17 @@ namespace SIL.Machine.Translation
 			{
 				Directory.CreateDirectory(Path.GetDirectoryName(_outputArgument.Value));
 				isOutputFile = true;
+			}
+
+			List<IReadOnlyCollection<AlignedWordPair>> alignments = null;
+			ParallelTextCorpus refParallelCorpus = null;
+			if (_refOption.HasValue())
+			{
+				alignments = new List<IReadOnlyCollection<AlignedWordPair>>();
+				ITextAlignmentCorpus refCorpus = TranslatorHelpers.CreateAlignmentsCorpus("text", _refOption.Value());
+				refCorpus = _corpusSpec.FilterTextAlignmentCorpus(refCorpus);
+				refParallelCorpus = new ParallelTextCorpus(_corpusSpec.SourceCorpus, _corpusSpec.TargetCorpus,
+					refCorpus);
 			}
 
 			int parallelCorpusCount = _corpusSpec.GetNonemptyParallelCorpusCount();
@@ -71,8 +88,16 @@ namespace SIL.Machine.Translation
 							}
 							else
 							{
-								writer.WriteLine(alignmentModel.GetAlignmentString(segment, _probOption.HasValue(),
-									TokenProcessors.Lowercase, TokenProcessors.Lowercase));
+								IReadOnlyList<string> sourceSegment = TokenProcessors.Lowercase
+									.Process(segment.SourceSegment);
+								IReadOnlyList<string> targetSegment = TokenProcessors.Lowercase
+									.Process(segment.TargetSegment);
+								WordAlignmentMatrix alignment = alignmentModel.GetBestAlignment(sourceSegment,
+									targetSegment, segment.CreateAlignmentMatrix());
+								alignments?.Add(alignment.GetAlignedWordPairs());
+								writer.WriteLine(alignment.ToString(alignmentModel, sourceSegment, targetSegment,
+									_probOption.HasValue()));
+								
 								segmentCount++;
 								progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
 								if (segmentCount == _corpusSpec.MaxCorpusCount)
@@ -91,6 +116,16 @@ namespace SIL.Machine.Translation
 			}
 			if (!_quietOption.HasValue())
 				Out.WriteLine("done.");
+
+			if (refParallelCorpus != null && alignments != null)
+			{
+				double aer = Evaluation.ComputeAer(alignments, refParallelCorpus.GetSegments()
+					.Where(s => !s.IsEmpty).Select(s => s.AlignedWordPairs));
+				double fScore = Evaluation.ComputeAlignmentFScore(alignments, refParallelCorpus.GetSegments()
+					.Where(s => !s.IsEmpty).Select(s => s.AlignedWordPairs));
+				Out.WriteLine($"AER: {aer:0.0000}");
+				Out.WriteLine($"F-Score: {fScore:0.0000}");
+			}
 
 			return 0;
 		}

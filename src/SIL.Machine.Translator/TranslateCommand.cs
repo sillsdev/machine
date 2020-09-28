@@ -13,9 +13,9 @@ namespace SIL.Machine.Translation
 		private readonly TranslationModelCommandSpec _modelSpec;
 		private readonly MonolingualCorpusCommandSpec _corpusSpec;
 		private readonly CommandArgument _outputArgument;
-		private CommandOption _refOption;
-		private CommandOption _refFormatOption;
-		private CommandOption _refWordTokenizerOption;
+		private readonly CommandOption _refOption;
+		private readonly CommandOption _refFormatOption;
+		private readonly CommandOption _refWordTokenizerOption;
 		private readonly CommandOption _quietOption;
 
 		public TranslateCommand()
@@ -69,7 +69,7 @@ namespace SIL.Machine.Translation
 			}
 
 			List<IReadOnlyList<string>> translations = null;
-			ParallelTextCorpus parallelCorpus = null;
+			ParallelTextCorpus refParallelCorpus = null;
 			if (_refOption.HasValue())
 			{
 				translations = new List<IReadOnlyList<string>>();
@@ -78,7 +78,7 @@ namespace SIL.Machine.Translation
 				ITextCorpus refCorpus = TranslatorHelpers.CreateTextCorpus(refWordTokenizer,
 					_refFormatOption.Value() ?? "text", _refOption.Value());
 				refCorpus = _corpusSpec.FilterTextCorpus(refCorpus);
-				parallelCorpus = new ParallelTextCorpus(_corpusSpec.Corpus, refCorpus);
+				refParallelCorpus = new ParallelTextCorpus(_corpusSpec.Corpus, refCorpus);
 			}
 
 			IDetokenizer<string, string> refWordDetokenizer = TranslatorHelpers.CreateWordDetokenizer(
@@ -136,9 +136,9 @@ namespace SIL.Machine.Translation
 			if (!_quietOption.HasValue())
 				Out.WriteLine("done.");
 
-			if (parallelCorpus != null && translations != null)
+			if (refParallelCorpus != null && translations != null)
 			{
-				double bleu = Evaluation.CalculateBleu(translations, parallelCorpus.GetSegments()
+				double bleu = Evaluation.ComputeBleu(translations, refParallelCorpus.GetSegments()
 					.Where(s => s.SourceSegment.Count > 0
 						&& s.SourceSegment.Count <= TranslationConstants.MaxSegmentLength)
 					.Select(s => TokenProcessors.Lowercase.Process(s.TargetSegment)));

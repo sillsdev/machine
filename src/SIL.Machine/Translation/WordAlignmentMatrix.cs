@@ -197,12 +197,12 @@ namespace SIL.Machine.Translation
 			_matrix = newMatrix;
 		}
 
-		private IEnumerable<AlignedWordPair> GetAlignedWordPairs(out IReadOnlyList<int> sourceIndices,
+		private IReadOnlyCollection<AlignedWordPair> GetAlignedWordPairs(out IReadOnlyList<int> sourceIndices,
 			out IReadOnlyList<int> targetIndices)
 		{
 			var source = new int[ColumnCount];
 			int[] target = Enumerable.Repeat(-2, RowCount).ToArray();
-			var wordPairs = new List<AlignedWordPair>();
+			var wordPairs = new HashSet<AlignedWordPair>();
 			int prev = -1;
 			for (int j = 0; j < ColumnCount; j++)
 			{
@@ -241,11 +241,9 @@ namespace SIL.Machine.Translation
 			return wordPairs;
 		}
 
-		public IEnumerable<AlignedWordPair> GetAlignedWordPairs()
+		public IReadOnlyCollection<AlignedWordPair> GetAlignedWordPairs()
 		{
-			IReadOnlyList<int> sourceIndices;
-			IReadOnlyList<int> targetIndices;
-			return GetAlignedWordPairs(out sourceIndices, out targetIndices);
+			return GetAlignedWordPairs(out _, out _);
 		}
 
 		public string ToGizaFormat(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment)
@@ -287,9 +285,10 @@ namespace SIL.Machine.Translation
 			return sb.ToString();
 		}
 		
-		public IEnumerable<AlignedWordPair> GetAlignedWordPairs(IWordAlignmentModel model,
+		public IReadOnlyCollection<AlignedWordPair> GetAlignedWordPairs(IWordAlignmentModel model,
 			IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
 		{
+			var wordPairs = new HashSet<AlignedWordPair>();
 			foreach (AlignedWordPair wordPair in GetAlignedWordPairs(out IReadOnlyList<int> sourceIndices,
 				out IReadOnlyList<int> targetIndices))
 			{
@@ -302,13 +301,16 @@ namespace SIL.Machine.Translation
 				wordPair.AlignmentProbability = model.GetAlignmentProbability(sourceSegment.Count, prevSourceIndex,
 					wordPair.SourceIndex, targetSegment.Count, prevTargetIndex, wordPair.TargetIndex);
 
-				yield return wordPair;
+				wordPairs.Add(wordPair);
 			}
+			return wordPairs;
 		}
 
 		public string ToString(IWordAlignmentModel model, IReadOnlyList<string> sourceSegment,
-			IReadOnlyList<string> targetSegment)
+			IReadOnlyList<string> targetSegment, bool includeProbs = true)
 		{
+			if (!includeProbs)
+				return ToString();
 			return string.Join(" ", GetAlignedWordPairs(model, sourceSegment, targetSegment)
 				.Select(wp => wp.ToString()));
 		}
