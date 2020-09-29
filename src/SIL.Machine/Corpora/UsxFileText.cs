@@ -17,6 +17,8 @@ namespace SIL.Machine.Corpora
 		private static string GetId(string fileName)
 		{
 			string name = Path.GetFileNameWithoutExtension(fileName);
+			if (name.Length == 3)
+				return name;
 			return name.Substring(3, 3);
 		}
 

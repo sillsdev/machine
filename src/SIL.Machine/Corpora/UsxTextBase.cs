@@ -28,8 +28,10 @@ namespace SIL.Machine.Corpora
 				using (Stream stream = streamContainer.OpenStream())
 				{
 					var ctxt = new ParseContext();
-					var doc = XDocument.Load(stream);
-					foreach (XElement elem in doc.Root.Elements())
+					var doc = XDocument.Load(stream, LoadOptions.PreserveWhitespace);
+					XElement bookElem = doc.Descendants("book").First();
+					XElement rootElem = bookElem.Parent;
+					foreach (XElement elem in rootElem.Elements())
 					{
 						switch (elem.Name.LocalName)
 						{
@@ -51,7 +53,7 @@ namespace SIL.Machine.Corpora
 								foreach (TextSegment segment in ParseElement(elem, ctxt))
 									yield return segment;
 								if (ctxt.IsInVerse && elem.Nodes().Any())
-									ctxt.VerseBuilder.Append(" ");
+									ctxt.Append(" ");
 								break;
 						}
 					}
@@ -78,19 +80,24 @@ namespace SIL.Machine.Corpora
 									foreach (TextSegment seg in CreateTextSegments(ctxt))
 										yield return seg;
 
-								ctxt.Verse = (string) e.Attribute("number");
+								ctxt.Verse = (string)e.Attribute("number") ?? (string)e.Attribute("pubnumber");
 								break;
 
 							case "char":
 								foreach (TextSegment segment in ParseElement(e, ctxt))
 									yield return segment;
 								break;
+
+							case "wg":
+								if (ctxt.IsInVerse)
+									ctxt.Append(e.Value);
+								break;
 						}
 						break;
 
 					case XText text:
 						if (ctxt.IsInVerse)
-							ctxt.VerseBuilder.Append(text.Value);
+							ctxt.Append(text.Value);
 						break;
 				}
 			}
@@ -118,8 +125,8 @@ namespace SIL.Machine.Corpora
 
 		private IEnumerable<TextSegment> CreateTextSegments(ParseContext ctxt)
 		{
-			string text = ctxt.VerseBuilder.ToString().Trim();
-			ctxt.VerseBuilder.Clear();
+			string text = ctxt.GetVerseString();
+			ctxt.Clear();
 			IEnumerable<TextSegment> segments = CreateTextSegments(ctxt.Chapter, ctxt.Verse, text, ctxt.SentenceStart);
 			ctxt.SentenceStart = text.HasSentenceEnding();
 			return segments;
@@ -127,11 +134,26 @@ namespace SIL.Machine.Corpora
 
 		private class ParseContext
 		{
-			public StringBuilder VerseBuilder { get; } = new StringBuilder();
+			private readonly StringBuilder _verseBuilder = new StringBuilder();
 			public string Chapter { get; set; }
 			public string Verse { get; set; }
 			public bool IsInVerse => Chapter != null && Verse != null;
 			public bool SentenceStart { get; set; } = true;
+
+			public void Append(string str)
+			{
+				_verseBuilder.Append(str);
+			}
+
+			public string GetVerseString()
+			{
+				return _verseBuilder.ToString().Trim();
+			}
+
+			public void Clear()
+			{
+				_verseBuilder.Clear();
+			}
 		}
 	}
 }
