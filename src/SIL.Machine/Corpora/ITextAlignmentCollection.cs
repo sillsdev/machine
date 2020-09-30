@@ -6,6 +6,8 @@ namespace SIL.Machine.Corpora
 	{
 		string Id { get; }
 
+		string SortKey { get; }
+
 		IEnumerable<TextAlignment> Alignments { get; }
 
 		ITextAlignmentCollection Invert();

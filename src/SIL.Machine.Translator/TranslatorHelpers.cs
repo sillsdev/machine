@@ -13,7 +13,7 @@ namespace SIL.Machine.Translation
 	{
 		public static bool ValidateCorpusFormatOption(string value)
 		{
-			return string.IsNullOrEmpty(value) || value.IsOneOf("dbl", "usx", "text", "pt");
+			return string.IsNullOrEmpty(value) || value.ToLowerInvariant().IsOneOf("dbl", "usx", "text", "pt");
 		}
 
 		public static bool ValidateWordTokenizerOption(string value, bool supportsNullTokenizer = false)
@@ -21,13 +21,13 @@ namespace SIL.Machine.Translation
 			var types = new HashSet<string> { "latin", "whitespace", "zwsp" };
 			if (supportsNullTokenizer)
 				types.Add("none");
-			return string.IsNullOrEmpty(value) || types.Contains(value);
+			return string.IsNullOrEmpty(value) || types.Contains(value.ToLowerInvariant());
 		}
 
 		public static ITextCorpus CreateTextCorpus(ITokenizer<string, int, string> wordTokenizer, string type,
 			string path)
 		{
-			switch (type)
+			switch (type.ToLowerInvariant())
 			{
 				case "dbl":
 					return new DblBundleTextCorpus(wordTokenizer, path);
@@ -47,7 +47,7 @@ namespace SIL.Machine.Translation
 
 		public static ITextAlignmentCorpus CreateAlignmentsCorpus(string type, string path)
 		{
-			switch (type)
+			switch (type.ToLowerInvariant())
 			{
 				case "text":
 					return new TextFileTextAlignmentCorpus(path);
@@ -56,9 +56,9 @@ namespace SIL.Machine.Translation
 			throw new ArgumentException("An invalid alignment corpus type was specified.", nameof(type));
 		}
 
-		public static ITokenizer<string, int, string> CreateWordTokenizer(string type)
+		public static IRangeTokenizer<string, int, string> CreateWordTokenizer(string type)
 		{
-			switch (type)
+			switch (type.ToLowerInvariant())
 			{
 				case "latin":
 					return new LatinWordTokenizer();
@@ -78,7 +78,7 @@ namespace SIL.Machine.Translation
 
 		public static IDetokenizer<string, string> CreateWordDetokenizer(string type)
 		{
-			switch (type)
+			switch (type.ToLowerInvariant())
 			{
 				case "latin":
 					return new LatinWordDetokenizer();

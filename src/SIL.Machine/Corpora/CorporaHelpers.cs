@@ -66,5 +66,13 @@ namespace SIL.Machine.Corpora
 		{
 			return Canon.BookIdToNumber(id).ToString("000");
 		}
+
+		internal static string GetUsxId(string fileName)
+		{
+			string name = Path.GetFileNameWithoutExtension(fileName);
+			if (name.Length == 3)
+				return name;
+			return name.Substring(3, 3);
+		}
 	}
 }

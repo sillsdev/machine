@@ -11,7 +11,7 @@ namespace SIL.Machine.Corpora
 		public DblBundleTestEnvironment()
 		{
 			_bundlePath = CorporaTestHelpers.CreateTestDblBundle();
-			Corpus = new DblBundleTextCorpus(new LatinWordTokenizer(), _bundlePath);
+			Corpus = new DblBundleTextCorpus(new NullTokenizer(), _bundlePath);
 		}
 
 		public DblBundleTextCorpus Corpus { get; }

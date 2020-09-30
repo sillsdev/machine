@@ -72,8 +72,8 @@ namespace SIL.Machine.Corpora
 							if (!IsVersePara(token) && inVerse)
 							{
 								string text = sb.ToString();
-                                foreach (TextSegment seg in CreateTextSegments(chapter, verse, text, sentenceStart))
-                                    yield return seg;
+								foreach (TextSegment seg in CreateTextSegments(chapter, verse, text, sentenceStart))
+									yield return seg;
 								sentenceStart = true;
 								sb.Clear();
 								inVerse = false;

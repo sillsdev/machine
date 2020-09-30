@@ -19,6 +19,8 @@ namespace SIL.Machine.Corpora
 
 		public string Id { get; }
 
+		public string SortKey => Id;
+
 		public IEnumerable<TextAlignment> Alignments
 		{
 			get

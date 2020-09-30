@@ -17,7 +17,8 @@ namespace SIL.Machine.Corpora
 			_textAlignmentCollections = textAlignmentCollections.ToDictionary(tac => tac.Id);
 		}
 
-		public IEnumerable<ITextAlignmentCollection> TextAlignmentCollections => _textAlignmentCollections.Values;
+		public IEnumerable<ITextAlignmentCollection> TextAlignmentCollections => _textAlignmentCollections.Values
+			.OrderBy(ac => ac.SortKey);
 
 		public bool TryGetTextAlignmentCollection(string id, out ITextAlignmentCollection textAlignmentCollection)
 		{
@@ -32,6 +33,11 @@ namespace SIL.Machine.Corpora
 		public ITextAlignmentCorpus Invert()
 		{
 			return new DictionaryTextAlignmentCorpus(_textAlignmentCollections.Values.Select(tac => tac.Invert()));
+		}
+
+		protected void AddAlignmentCollection(ITextAlignmentCollection alignments)
+		{
+			_textAlignmentCollections[alignments.Id] = alignments;
 		}
 	}
 }

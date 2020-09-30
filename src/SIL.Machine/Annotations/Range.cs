@@ -25,10 +25,8 @@ namespace SIL.Machine.Annotations
 			Type type = typeof(TOffset);
 			if (type == typeof(int))
 				return new IntegerRangeFactory() as RangeFactory<TOffset>;
-#if !BRIDGE_NET
 			if (type == typeof(ShapeNode))
 				return new ShapeRangeFactory() as RangeFactory<TOffset>;
-#endif
 
 			throw new NotSupportedException();
 		}

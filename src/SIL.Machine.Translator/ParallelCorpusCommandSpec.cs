@@ -89,9 +89,9 @@ namespace SIL.Machine.Translation
 			}
 
 			string defaultTokenizerType = DefaultNullTokenizer ? "none" : "whitespace";
-			ITokenizer<string, int, string> sourceWordTokenizer = TranslatorHelpers.CreateWordTokenizer(
+			IRangeTokenizer<string, int, string> sourceWordTokenizer = TranslatorHelpers.CreateWordTokenizer(
 				_sourceWordTokenizerOption.Value() ?? defaultTokenizerType);
-			ITokenizer<string, int, string> targetWordTokenizer = TranslatorHelpers.CreateWordTokenizer(
+			IRangeTokenizer<string, int, string> targetWordTokenizer = TranslatorHelpers.CreateWordTokenizer(
 				_targetWordTokenizerOption.Value() ?? defaultTokenizerType);
 
 			SourceCorpus = TranslatorHelpers.CreateTextCorpus(sourceWordTokenizer,
@@ -100,7 +100,15 @@ namespace SIL.Machine.Translation
 				_targetFormatOption.Value() ?? "text", _targetArgument.Value);
 			AlignmentsCorpus = null;
 			if (_alignmentsOption != null && _alignmentsOption.HasValue())
+			{
 				AlignmentsCorpus = TranslatorHelpers.CreateAlignmentsCorpus("text", _alignmentsOption.Value());
+			}
+			else if (_sourceFormatOption.Value()?.ToLowerInvariant() == "usx"
+				&& _targetFormatOption.Value()?.ToLowerInvariant() == "usx")
+			{
+				AlignmentsCorpus = new UsxFileTextAlignmentCorpus(sourceWordTokenizer, targetWordTokenizer,
+					_sourceArgument.Value, _targetArgument.Value);
+			}
 
 			if (FilterSource)
 				SourceCorpus = FilterTextCorpus(SourceCorpus);
