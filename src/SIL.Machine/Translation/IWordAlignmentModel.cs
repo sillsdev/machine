@@ -4,7 +4,7 @@ using SIL.Machine.Corpora;
 
 namespace SIL.Machine.Translation
 {
-	public interface IWordAlignmentModel : ISegmentAligner, IDisposable
+	public interface IWordAlignmentModel : IWordAligner, IDisposable
 	{
 		IReadOnlyList<string> SourceWords { get; }
 		IReadOnlyList<string> TargetWords { get; }

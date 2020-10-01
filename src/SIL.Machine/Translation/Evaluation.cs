@@ -81,16 +81,18 @@ namespace SIL.Machine.Translation
 			IEnumerable<IReadOnlyCollection<AlignedWordPair>> references)
 		{
 			(int aCount, int sCount, int paCount, int saCount) = GetAlignmentCounts(alignments, references);
-			return 1 - ((paCount + saCount) / (sCount + aCount));
+			return 1 - ((double)(paCount + saCount) / (sCount + aCount));
 		}
 
-		public static double ComputeAlignmentFScore(IEnumerable<IReadOnlyCollection<AlignedWordPair>> alignments,
+		public static (double FScore, double Precision, double Recall) ComputeAlignmentFScore(
+			IEnumerable<IReadOnlyCollection<AlignedWordPair>> alignments,
 			IEnumerable<IReadOnlyCollection<AlignedWordPair>> references, double alpha = 0.5)
 		{
 			(int aCount, int sCount, int paCount, int saCount) = GetAlignmentCounts(alignments, references);
-			double precision = paCount / aCount;
-			double recall = saCount / sCount;
-			return 1 / ((alpha / precision) + ((1 - alpha) / recall));
+			double precision = (double)paCount / aCount;
+			double recall = (double)saCount / sCount;
+			double fScore = 1 / ((alpha / precision) + ((1 - alpha) / recall));
+			return (fScore, precision, recall);
 		}
 
 		private static (int ACount, int SCount, int PACount, int SACount) GetAlignmentCounts(

@@ -69,6 +69,10 @@ namespace SIL.Machine.Translation
 				case "pt":
 					return new ParatextWordAlignmentModelTrainer(_modelSpec.ModelPath, TokenProcessors.Lowercase,
 						TokenProcessors.Lowercase, _corpusSpec.ParallelCorpus, _corpusSpec.MaxCorpusCount);
+				case "smt":
+					string modelCfgFileName = TranslatorHelpers.GetTranslationModelConfigFileName(_modelSpec.ModelPath);
+					return new ThotSmtModelTrainer(modelCfgFileName, TokenProcessors.Lowercase,
+						TokenProcessors.Lowercase, _corpusSpec.ParallelCorpus, _corpusSpec.MaxCorpusCount);
 			}
 			throw new InvalidOperationException("An invalid alignment model type was specified.");
 		}

@@ -9,14 +9,14 @@ namespace SIL.Machine.Translation
 	{
 		private readonly IWordAlignmentModel _directWordAlignmentModel;
 		private readonly IWordAlignmentModel _inverseWordAlignmentModel;
-		private readonly SymmetrizedSegmentAligner _aligner;
+		private readonly SymmetrizedWordAligner _aligner;
 
 		public SymmetrizedWordAlignmentModel(IWordAlignmentModel directWordAlignmentModel,
 			IWordAlignmentModel inverseWordAlignmentModel)
 		{
 			_directWordAlignmentModel = directWordAlignmentModel;
 			_inverseWordAlignmentModel = inverseWordAlignmentModel;
-			_aligner = new SymmetrizedSegmentAligner(DirectWordAlignmentModel, InverseWordAlignmentModel);
+			_aligner = new SymmetrizedWordAligner(DirectWordAlignmentModel, InverseWordAlignmentModel);
 		}
 
 		public IWordAlignmentModel DirectWordAlignmentModel

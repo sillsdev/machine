@@ -5,18 +5,27 @@ using SIL.Machine.SequenceAlignment;
 
 namespace SIL.Machine.Translation
 {
-	public class EditDistanceSegmentAligner : ISegmentAligner
+	public class EditDistanceWordAlignmentMethod : IWordAlignmentMethod
 	{
-		private readonly SegmentScorer _scorer;
+		private Func<IReadOnlyList<string>, int, IReadOnlyList<string>, int, double> _scoreSelector;
+		private SegmentScorer _scorer;
 
-		public EditDistanceSegmentAligner(Func<string, string, double> getTranslationProb)
+		public Func<IReadOnlyList<string>, int, IReadOnlyList<string>, int, double> ScoreSelector
 		{
-			_scorer = new SegmentScorer(getTranslationProb);
+			get => _scoreSelector;
+			set
+			{
+				_scoreSelector = value;
+				_scorer = _scoreSelector == null ? null : new SegmentScorer(_scoreSelector);
+			}
 		}
 
 		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment,
 			IReadOnlyList<string> targetSegment)
 		{
+			if (_scorer == null)
+				throw new InvalidOperationException("A score selector has not been assigned.");
+
 			var paa = new PairwiseAlignmentAlgorithm<IReadOnlyList<string>, int>(_scorer, sourceSegment, targetSegment,
 				GetWordIndices)
 			{

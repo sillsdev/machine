@@ -32,9 +32,9 @@ namespace SIL.Machine.Corpora
 					string line;
 					while ((line = reader.ReadLine()) != null)
 					{
-						if (line.StartsWith("//"))
+						if (line.StartsWith("// section "))
 						{
-							string sectionNumStr = line.Substring(2).Trim();
+							string sectionNumStr = line.Substring(11).Trim();
 							if (!string.IsNullOrEmpty(sectionNumStr))
 							{
 								sectionNum = int.Parse(sectionNumStr, CultureInfo.InvariantCulture);

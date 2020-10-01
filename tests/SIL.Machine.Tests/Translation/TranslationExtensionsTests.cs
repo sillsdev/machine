@@ -21,7 +21,7 @@ namespace SIL.Machine.Translation
 				[8, 5] = true,
 				[9, 6] = true
 			};
-			var aligner = Substitute.For<ISegmentAligner>();
+			var aligner = Substitute.For<IWordAligner>();
 			aligner.GetBestAlignment(Arg.Any<IReadOnlyList<string>>(), Arg.Any<IReadOnlyList<string>>())
 				.Returns(estimatedAlignment);
 

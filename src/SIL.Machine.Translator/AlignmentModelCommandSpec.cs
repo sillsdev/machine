@@ -16,7 +16,7 @@ namespace SIL.Machine.Translation
 		{
 			_modelArgument = command.Argument("MODEL_PATH", "The word alignment model.").IsRequired();
 			_modelTypeOption = command.Option("-mt|--model-type <MODEL_TYPE>",
-				"The word alignment model type.\nTypes: \"hmm\" (default), \"ibm1\", \"ibm2\", \"pt\".",
+				"The word alignment model type.\nTypes: \"hmm\" (default), \"ibm1\", \"ibm2\", \"pt\", \"smt\".",
 				CommandOptionType.SingleValue);
 		}
 
@@ -33,7 +33,7 @@ namespace SIL.Machine.Translation
 
 		private static bool ValidateAlignmentModelTypeOption(string value)
 		{
-			return string.IsNullOrEmpty(value) || value.IsOneOf("hmm", "ibm1", "ibm2", "pt");
+			return string.IsNullOrEmpty(value) || value.IsOneOf("hmm", "ibm1", "ibm2", "pt", "smt");
 
 		}
 	}

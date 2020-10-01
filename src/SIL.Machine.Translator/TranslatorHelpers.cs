@@ -120,5 +120,15 @@ namespace SIL.Machine.Translation
 			path = path.TrimEnd();
 			return path.EndsWith(separator1) || path.EndsWith(separator2);
 		}
+
+		public static string GetTranslationModelConfigFileName(string path)
+		{
+			if (File.Exists(path))
+				return path;
+			else if (Directory.Exists(path) || TranslatorHelpers.IsDirectoryPath(path))
+				return Path.Combine(path, "smt.cfg");
+			else
+				return path;
+		}
 	}
 }

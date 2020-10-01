@@ -100,15 +100,7 @@ namespace SIL.Machine.Translation
 				_targetFormatOption.Value() ?? "text", _targetArgument.Value);
 			AlignmentsCorpus = null;
 			if (_alignmentsOption != null && _alignmentsOption.HasValue())
-			{
 				AlignmentsCorpus = TranslatorHelpers.CreateAlignmentsCorpus("text", _alignmentsOption.Value());
-			}
-			else if (_sourceFormatOption.Value()?.ToLowerInvariant() == "usx"
-				&& _targetFormatOption.Value()?.ToLowerInvariant() == "usx")
-			{
-				AlignmentsCorpus = new UsxFileTextAlignmentCorpus(sourceWordTokenizer, targetWordTokenizer,
-					_sourceArgument.Value, _targetArgument.Value);
-			}
 
 			if (FilterSource)
 				SourceCorpus = FilterTextCorpus(SourceCorpus);

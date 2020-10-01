@@ -6,8 +6,9 @@ namespace SIL.Machine.Translation.Thot
 	{
 		IntPtr Handle { get; }
 		ThotSmtParameters Parameters { get; }
+		IWordAlignmentMethod WordAlignmentMethod { get; }
+		SymmetrizedWordAlignmentModel SymmetrizedWordAlignmentModel { get; }
 
-		double GetTranslationProbability(string sourceWord, string targetWord);
 		void RemoveEngine(ThotSmtEngine engine);
 	}
 }

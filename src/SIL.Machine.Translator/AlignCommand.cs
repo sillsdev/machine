@@ -97,7 +97,6 @@ namespace SIL.Machine.Translation
 								alignments?.Add(alignment.GetAlignedWordPairs());
 								writer.WriteLine(alignment.ToString(alignmentModel, sourceSegment, targetSegment,
 									_probOption.HasValue()));
-								
 								segmentCount++;
 								progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
 								if (segmentCount == _corpusSpec.MaxCorpusCount)
@@ -121,10 +120,12 @@ namespace SIL.Machine.Translation
 			{
 				double aer = Evaluation.ComputeAer(alignments, refParallelCorpus.GetSegments()
 					.Where(s => !s.IsEmpty).Select(s => s.AlignedWordPairs));
-				double fScore = Evaluation.ComputeAlignmentFScore(alignments, refParallelCorpus.GetSegments()
-					.Where(s => !s.IsEmpty).Select(s => s.AlignedWordPairs));
+				(double fScore, double precision, double recall) = Evaluation.ComputeAlignmentFScore(alignments,
+					refParallelCorpus.GetSegments().Where(s => !s.IsEmpty).Select(s => s.AlignedWordPairs));
 				Out.WriteLine($"AER: {aer:0.0000}");
 				Out.WriteLine($"F-Score: {fScore:0.0000}");
+				Out.WriteLine($"Precision: {precision:0.0000}");
+				Out.WriteLine($"Recall: {recall:0.0000}");
 			}
 
 			return 0;
@@ -142,6 +143,9 @@ namespace SIL.Machine.Translation
 					return CreateThotAlignmentModel<Ibm2ThotWordAlignmentModel>();
 				case "pt":
 					return new ParatextWordAlignmentModel(_modelSpec.ModelPath);
+				case "smt":
+					string modelCfgFileName = TranslatorHelpers.GetTranslationModelConfigFileName(_modelSpec.ModelPath);
+					return new ThotSmtWordAlignmentModel(modelCfgFileName);
 			}
 			throw new InvalidOperationException("An invalid alignment model type was specified.");
 		}

@@ -11,7 +11,6 @@ namespace SIL.Machine.Translation.Thot
 	public class ThotSmtEngine : DisposableBase, IInteractiveTranslationEngine
 	{
 		private readonly IThotSmtModelInternal _smtModel;
-		private readonly ISegmentAligner _segmentAligner;
 		private readonly IWordConfidenceEstimator _confidenceEstimator;
 		private IntPtr _decoderHandle;
 
@@ -19,8 +18,8 @@ namespace SIL.Machine.Translation.Thot
 		{
 			_smtModel = smtModel;
 			LoadHandle();
-			_segmentAligner = new FuzzyEditDistanceSegmentAligner(smtModel.GetTranslationProbability);
-			_confidenceEstimator = new Ibm1WordConfidenceEstimator(smtModel.GetTranslationProbability);
+			_confidenceEstimator = new Ibm1WordConfidenceEstimator(
+				_smtModel.SymmetrizedWordAlignmentModel.GetTranslationProbability);
 			//_confidenceEstimator = new WppWordConfidenceEstimator(this);
 		}
 
@@ -132,7 +131,7 @@ namespace SIL.Machine.Translation.Thot
 				{
 					var srcPhrase = new string[srcPhraseLen];
 					Array.Copy(segmentArray, srcStartIndex, srcPhrase, 0, srcPhraseLen);
-					waMatrix = _segmentAligner.GetBestAlignment(srcPhrase, words);
+					waMatrix = _smtModel.WordAlignmentMethod.GetBestAlignment(srcPhrase, words);
 				}
 
 				var sources = new TranslationSources[words.Length];
@@ -220,7 +219,7 @@ namespace SIL.Machine.Translation.Thot
 					var trgPhrase = new string[trgPhraseLen];
 					for (int j = 0; j < trgPhraseLen; j++)
 						trgPhrase[j] = targetSegment[trgPhraseStartIndex + j];
-					waMatrix = _segmentAligner.GetBestAlignment(srcPhrase, trgPhrase);
+					waMatrix = _smtModel.WordAlignmentMethod.GetBestAlignment(srcPhrase, trgPhrase);
 				}
 				builder.MarkPhrase(Range<int>.Create(sourceStartIndex, sourceEndIndex), waMatrix);
 				trgPhraseStartIndex += trgPhraseLen;

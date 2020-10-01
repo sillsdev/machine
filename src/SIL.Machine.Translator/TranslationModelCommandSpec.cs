@@ -17,20 +17,10 @@ namespace SIL.Machine.Translation
 
 		public bool Validate(TextWriter outWriter)
 		{
-			ModelConfigFileName = GetTranslationModelConfigFileName(_modelArgument.Value);
+			ModelConfigFileName = TranslatorHelpers.GetTranslationModelConfigFileName(_modelArgument.Value);
 			ModelDirectory = Path.GetDirectoryName(ModelConfigFileName);
 
 			return true;
-		}
-
-		private static string GetTranslationModelConfigFileName(string path)
-		{
-			if (File.Exists(path))
-				return path;
-			else if (Directory.Exists(path) || TranslatorHelpers.IsDirectoryPath(path))
-				return Path.Combine(path, "smt.cfg");
-			else
-				return path;
 		}
 	}
 }

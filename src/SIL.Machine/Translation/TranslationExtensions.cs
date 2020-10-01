@@ -67,7 +67,7 @@ namespace SIL.Machine.Translation
 			return results;
 		}
 
-		public static WordAlignmentMatrix GetBestAlignment(this ISegmentAligner aligner, ParallelTextSegment segment,
+		public static WordAlignmentMatrix GetBestAlignment(this IWordAligner aligner, ParallelTextSegment segment,
 			ITokenProcessor sourcePreprocessor = null, ITokenProcessor targetPreprocessor = null)
 		{
 			IReadOnlyList<string> sourceSegment = sourcePreprocessor.Process(segment.SourceSegment);
@@ -76,7 +76,7 @@ namespace SIL.Machine.Translation
 			return aligner.GetBestAlignment(sourceSegment, targetSegment, segment.CreateAlignmentMatrix());
 		}
 
-		public static WordAlignmentMatrix GetBestAlignment(this ISegmentAligner aligner,
+		public static WordAlignmentMatrix GetBestAlignment(this IWordAligner aligner,
 			IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
 			WordAlignmentMatrix knownAlignment)
 		{
@@ -115,7 +115,7 @@ namespace SIL.Machine.Translation
 			return alignment.ToString();
 		}
 
-		public static string GetGizaFormatString(this ISegmentAligner aligner, ParallelTextSegment segment,
+		public static string GetGizaFormatString(this IWordAligner aligner, ParallelTextSegment segment,
 			ITokenProcessor sourcePreprocessor = null, ITokenProcessor targetPreprocessor = null)
 		{
 			IReadOnlyList<string> sourceSegment = sourcePreprocessor.Process(segment.SourceSegment);

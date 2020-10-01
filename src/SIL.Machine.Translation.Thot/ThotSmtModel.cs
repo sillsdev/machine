@@ -25,9 +25,11 @@ namespace SIL.Machine.Translation.Thot
 	{
 		private readonly TAlignModel _directWordAlignmentModel;
 		private readonly TAlignModel _inverseWordAlignmentModel;
+		private readonly SymmetrizedWordAlignmentModel _symmetrizedWordAlignmentModel;
 		private readonly HashSet<ThotSmtEngine> _engines = new HashSet<ThotSmtEngine>();
 		private readonly string _swAlignClassName;
 		private IntPtr _handle;
+		private IWordAlignmentMethod _wordAlignmentMethod;
 
 		public ThotSmtModel(string cfgFileName)
 			: this(ThotSmtParameters.Load(cfgFileName))
@@ -48,10 +50,23 @@ namespace SIL.Machine.Translation.Thot
 
 			_inverseWordAlignmentModel = new TAlignModel();
 			_inverseWordAlignmentModel.SetHandle(Thot.smtModel_getInverseSingleWordAlignmentModel(_handle), true);
+
+			_symmetrizedWordAlignmentModel = new SymmetrizedWordAlignmentModel(_directWordAlignmentModel,
+				_inverseWordAlignmentModel);
+			WordAlignmentMethod = new FuzzyEditDistanceWordAlignmentMethod();
 		}
 
 		public string ConfigFileName { get; }
 		public ThotSmtParameters Parameters { get; private set; }
+		public IWordAlignmentMethod WordAlignmentMethod
+		{
+			get => _wordAlignmentMethod;
+			set
+			{
+				_wordAlignmentMethod = value;
+				_wordAlignmentMethod.ScoreSelector = GetWordAlignmentScore;
+			}
+		}
 		IntPtr IThotSmtModelInternal.Handle => _handle;
 
 		public TAlignModel DirectWordAlignmentModel
@@ -71,6 +86,16 @@ namespace SIL.Machine.Translation.Thot
 				CheckDisposed();
 
 				return _inverseWordAlignmentModel;
+			}
+		}
+
+		public SymmetrizedWordAlignmentModel SymmetrizedWordAlignmentModel
+		{
+			get
+			{
+				CheckDisposed();
+
+				return _symmetrizedWordAlignmentModel;
 			}
 		}
 
@@ -117,14 +142,6 @@ namespace SIL.Machine.Translation.Thot
 				: new Trainer(this, ConfigFileName, sourcePreprocessor, targetPreprocessor, corpus, maxCorpusCount);
 		}
 
-		double IThotSmtModelInternal.GetTranslationProbability(string sourceWord, string targetWord)
-		{
-			double prob = _directWordAlignmentModel.GetTranslationProbability(sourceWord, targetWord);
-			double invProb = _inverseWordAlignmentModel.GetTranslationProbability(targetWord,
-				sourceWord);
-			return Math.Max(prob, invProb);
-		}
-
 		void IThotSmtModelInternal.RemoveEngine(ThotSmtEngine engine)
 		{
 			_engines.Remove(engine);
@@ -141,6 +158,14 @@ namespace SIL.Machine.Translation.Thot
 		protected override void DisposeUnmanagedResources()
 		{
 			Thot.smtModel_close(_handle);
+		}
+
+		private double GetWordAlignmentScore(IReadOnlyList<string> sourceSegment, int sourceIndex,
+			IReadOnlyList<string> targetSegment, int targetIndex)
+		{
+			return _symmetrizedWordAlignmentModel.GetTranslationProbability(
+				sourceIndex == -1 ? null : sourceSegment[sourceIndex],
+				targetIndex == -1 ? null : targetSegment[targetIndex]);
 		}
 
 		private class Trainer : ThotSmtModelTrainer<TAlignModel>

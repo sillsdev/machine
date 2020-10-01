@@ -10,6 +10,7 @@ namespace SIL.Machine.Translation
 		private readonly ParallelCorpusCommandSpec _corpusSpec;
 		private readonly CommandOption _sourceOutputOption;
 		private readonly CommandOption _targetOutputOption;
+		private readonly CommandOption _refOutputOption;
 		private readonly CommandOption _allSourceOption;
 		private readonly CommandOption _allTargetOption;
 		private readonly CommandOption _lowercaseOption;
@@ -28,6 +29,8 @@ namespace SIL.Machine.Translation
 			_sourceOutputOption = Option("-so|--source-output <SOURCE_OUTPUT_FILE>", "The source output text file.",
 				CommandOptionType.SingleValue);
 			_targetOutputOption = Option("-to|--target-output <TARGET_OUTPUT_FILE>", "The target output text file.",
+				CommandOptionType.SingleValue);
+			_refOutputOption = Option("-ro|--ref-output <REF_OUTPUT_FILE>", "The segment reference output text file.",
 				CommandOptionType.SingleValue);
 			_allSourceOption = Option("-as|--all-source",
 				"Include all source segments. Overrides include/exclude options.",
@@ -48,7 +51,7 @@ namespace SIL.Machine.Translation
 			if (code != 0)
 				return code;
 
-			if (!_sourceOutputOption.HasValue() && !_targetOutputOption.HasValue())
+			if (!_sourceOutputOption.HasValue() && !_targetOutputOption.HasValue() && !_refOutputOption.HasValue())
 			{
 				Out.WriteLine("An output file was not specified.");
 				return 1;
@@ -60,6 +63,8 @@ namespace SIL.Machine.Translation
 				? new StreamWriter(_sourceOutputOption.Value(), false, utf8Encoding) : null)
 			using (var targetOutputWriter = _targetOutputOption.HasValue()
 				? new StreamWriter(_targetOutputOption.Value(), false, utf8Encoding) : null)
+			using (var refOutputWriter = _refOutputOption.HasValue()
+				? new StreamWriter(_refOutputOption.Value(), false, utf8Encoding) : null)
 			{
 				foreach (ParallelTextSegment segment in _corpusSpec.ParallelCorpus.GetSegments(
 					_allSourceOption.HasValue(), _allTargetOption.HasValue()))
@@ -115,6 +120,7 @@ namespace SIL.Machine.Translation
 								TokenProcessors.EscapeSpaces).Process(segment.TargetSegment)));
 						}
 					}
+					refOutputWriter?.WriteLine(segment.SegmentRef);
 
 					segmentCount++;
 					if (segmentCount == _corpusSpec.MaxCorpusCount)
