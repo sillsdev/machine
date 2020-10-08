@@ -83,10 +83,16 @@ namespace SIL.Machine
 		private ITrainer CreateThotAlignmentModelTrainer<TAlignModel>()
 			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
 		{
-			var directTrainer = new ThotWordAlignmentModelTrainer<TAlignModel>(_modelSpec.ModelPath + "_invswm",
+			string modelPath = _modelSpec.ModelPath;
+			if (ToolHelpers.IsDirectoryPath(modelPath))
+				modelPath = Path.Combine(modelPath, "src_trg");
+			string modelDir = Path.GetDirectoryName(modelPath);
+			if (!Directory.Exists(modelDir))
+				Directory.CreateDirectory(modelDir);
+			var directTrainer = new ThotWordAlignmentModelTrainer<TAlignModel>(modelPath + "_invswm",
 				TokenProcessors.Lowercase, TokenProcessors.Lowercase, _corpusSpec.ParallelCorpus,
 				_corpusSpec.MaxCorpusCount);
-			var inverseTrainer = new ThotWordAlignmentModelTrainer<TAlignModel>(_modelSpec.ModelPath + "_swm",
+			var inverseTrainer = new ThotWordAlignmentModelTrainer<TAlignModel>(modelPath + "_swm",
 				TokenProcessors.Lowercase, TokenProcessors.Lowercase, _corpusSpec.ParallelCorpus,
 				_corpusSpec.MaxCorpusCount);
 			return new SymmetrizedWordAlignmentModelTrainer(directTrainer, inverseTrainer);

@@ -154,11 +154,15 @@ namespace SIL.Machine
 		private IWordAlignmentModel CreateThotAlignmentModel<TAlignModel>()
 			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
 		{
+			string modelPath = _modelSpec.ModelPath;
+			if (ToolHelpers.IsDirectoryPath(modelPath))
+				modelPath = Path.Combine(modelPath, "src_trg");
+
 			var directModel = new TAlignModel();
-			directModel.Load(_modelSpec.ModelPath + "_invswm");
+			directModel.Load(modelPath + "_invswm");
 
 			var inverseModel = new TAlignModel();
-			inverseModel.Load(_modelSpec.ModelPath + "_swm");
+			inverseModel.Load(modelPath + "_swm");
 
 			return new SymmetrizedWordAlignmentModel(directModel, inverseModel);
 		}

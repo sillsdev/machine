@@ -125,7 +125,7 @@ namespace SIL.Machine
 		{
 			if (File.Exists(path))
 				return path;
-			else if (Directory.Exists(path) || ToolHelpers.IsDirectoryPath(path))
+			else if (Directory.Exists(path) || IsDirectoryPath(path))
 				return Path.Combine(path, "smt.cfg");
 			else
 				return path;
