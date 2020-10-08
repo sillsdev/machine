@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
-using SIL.Machine.Translation.Paratext;
 using SIL.Machine.Translation.Thot;
 
 namespace SIL.Machine.Translation
@@ -133,6 +132,9 @@ namespace SIL.Machine.Translation
 
 		private IWordAlignmentModel CreateAlignmentModel()
 		{
+			if (_modelSpec.ModelFactory != null)
+				return _modelSpec.ModelFactory.CreateModel(_modelSpec.ModelPath);
+
 			switch (_modelSpec.ModelType)
 			{
 				case "hmm":
@@ -141,8 +143,6 @@ namespace SIL.Machine.Translation
 					return CreateThotAlignmentModel<Ibm1ThotWordAlignmentModel>();
 				case "ibm2":
 					return CreateThotAlignmentModel<Ibm2ThotWordAlignmentModel>();
-				case "pt":
-					return new ParatextWordAlignmentModel(_modelSpec.ModelPath);
 				case "smt":
 					string modelCfgFileName = TranslatorHelpers.GetTranslationModelConfigFileName(_modelSpec.ModelPath);
 					return new ThotSmtWordAlignmentModel(modelCfgFileName);

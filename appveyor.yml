@@ -36,5 +36,6 @@ deploy_script:
           dotnet pack src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj -c Release -o artifacts
           dotnet pack src\SIL.Machine.Translator\SIL.Machine.Translator.csproj -c Release -o artifacts
           dotnet pack src\SIL.Machine.HCParser\SIL.Machine.HCParser.csproj -c Release -o artifacts
+          dotnet pack src\SIL.Machine.Plugin\SIL.Machine.Plugin.csproj -c Release -o artifacts
           dotnet nuget push artifacts\*.nupkg -n true -k $env:NUGET_API_KEY -s https://api.nuget.org/v3/index.json
       }

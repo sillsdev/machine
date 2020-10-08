@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using McMaster.Extensions.CommandLineUtils;
-using SIL.Machine.Translation.Paratext;
 using SIL.Machine.Translation.Thot;
 
 namespace SIL.Machine.Translation
@@ -58,6 +57,12 @@ namespace SIL.Machine.Translation
 
 		private ITrainer CreateAlignmentModelTrainer()
 		{
+			if (_modelSpec.ModelFactory != null)
+			{
+				return _modelSpec.ModelFactory.CreateTrainer(_modelSpec.ModelPath, TokenProcessors.Lowercase,
+					TokenProcessors.Lowercase, _corpusSpec.ParallelCorpus, _corpusSpec.MaxCorpusCount);
+			}
+
 			switch (_modelSpec.ModelType)
 			{
 				case "hmm":
@@ -66,9 +71,6 @@ namespace SIL.Machine.Translation
 					return CreateThotAlignmentModelTrainer<Ibm1ThotWordAlignmentModel>();
 				case "ibm2":
 					return CreateThotAlignmentModelTrainer<Ibm2ThotWordAlignmentModel>();
-				case "pt":
-					return new ParatextWordAlignmentModelTrainer(_modelSpec.ModelPath, TokenProcessors.Lowercase,
-						TokenProcessors.Lowercase, _corpusSpec.ParallelCorpus, _corpusSpec.MaxCorpusCount);
 				case "smt":
 					string modelCfgFileName = TranslatorHelpers.GetTranslationModelConfigFileName(_modelSpec.ModelPath);
 					return new ThotSmtModelTrainer(modelCfgFileName, TokenProcessors.Lowercase,

@@ -49,6 +49,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Translation.Tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Translation.TestApp.Mac", "samples\SIL.Machine.Translation.TestApp.Mac\SIL.Machine.Translation.TestApp.Mac.csproj", "{662F6E24-F5D3-4A24-B43A-99D723505C29}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Plugin", "src\SIL.Machine.Plugin\SIL.Machine.Plugin.csproj", "{EAC63F98-EE97-4F42-8227-5B694AAF7555}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -111,6 +113,10 @@ Global
 		{662F6E24-F5D3-4A24-B43A-99D723505C29}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{662F6E24-F5D3-4A24-B43A-99D723505C29}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{662F6E24-F5D3-4A24-B43A-99D723505C29}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EAC63F98-EE97-4F42-8227-5B694AAF7555}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAC63F98-EE97-4F42-8227-5B694AAF7555}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAC63F98-EE97-4F42-8227-5B694AAF7555}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAC63F98-EE97-4F42-8227-5B694AAF7555}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -130,6 +136,7 @@ Global
 		{FD8C05AF-078A-4CEB-9656-D1AEA096F576} = {2402D5F7-53C2-44B4-879D-3ACEDA7D97C1}
 		{5E4D0F82-D209-4778-BC9D-DC88003AA135} = {2402D5F7-53C2-44B4-879D-3ACEDA7D97C1}
 		{662F6E24-F5D3-4A24-B43A-99D723505C29} = {2402D5F7-53C2-44B4-879D-3ACEDA7D97C1}
+		{EAC63F98-EE97-4F42-8227-5B694AAF7555} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9F18C25E-E140-43C3-B177-D562E1628370}

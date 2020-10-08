@@ -90,7 +90,7 @@ namespace SIL.Machine.Translation
 				Out.Write("Translating... ");
 			int segmentCount = 0;
 			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
-			using (IInteractiveTranslationModel model = new ThotSmtModel(_modelSpec.ModelConfigFileName))
+			using (ITranslationModel model = new ThotSmtModel(_modelSpec.ModelConfigFileName))
 			using (ITranslationEngine engine = model.CreateEngine())
 			using (StreamWriter writer = isOutputFile ? new StreamWriter(_outputArgument.Value) : null)
 			{
