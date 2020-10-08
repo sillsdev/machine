@@ -4,9 +4,10 @@ using System.IO;
 using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
+using SIL.Machine.Translation;
 using SIL.Machine.Translation.Thot;
 
-namespace SIL.Machine.Translation
+namespace SIL.Machine
 {
 	public class AlignCommand : CommandBase
 	{
@@ -41,7 +42,7 @@ namespace SIL.Machine.Translation
 				return code;
 
 			bool isOutputFile;
-			if (TranslatorHelpers.IsDirectoryPath(_outputArgument.Value))
+			if (ToolHelpers.IsDirectoryPath(_outputArgument.Value))
 			{
 				Directory.CreateDirectory(_outputArgument.Value);
 				isOutputFile = false;
@@ -57,7 +58,7 @@ namespace SIL.Machine.Translation
 			if (_refOption.HasValue())
 			{
 				alignments = new List<IReadOnlyCollection<AlignedWordPair>>();
-				ITextAlignmentCorpus refCorpus = TranslatorHelpers.CreateAlignmentsCorpus("text", _refOption.Value());
+				ITextAlignmentCorpus refCorpus = ToolHelpers.CreateAlignmentsCorpus("text", _refOption.Value());
 				refCorpus = _corpusSpec.FilterTextAlignmentCorpus(refCorpus);
 				refParallelCorpus = new ParallelTextCorpus(_corpusSpec.SourceCorpus, _corpusSpec.TargetCorpus,
 					refCorpus);
@@ -144,7 +145,7 @@ namespace SIL.Machine.Translation
 				case "ibm2":
 					return CreateThotAlignmentModel<Ibm2ThotWordAlignmentModel>();
 				case "smt":
-					string modelCfgFileName = TranslatorHelpers.GetTranslationModelConfigFileName(_modelSpec.ModelPath);
+					string modelCfgFileName = ToolHelpers.GetTranslationModelConfigFileName(_modelSpec.ModelPath);
 					return new ThotSmtWordAlignmentModel(modelCfgFileName);
 			}
 			throw new InvalidOperationException("An invalid alignment model type was specified.");

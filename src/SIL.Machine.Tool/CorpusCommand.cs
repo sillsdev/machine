@@ -2,7 +2,7 @@
 using SIL.Machine.Corpora;
 using System.Linq;
 
-namespace SIL.Machine.Translation
+namespace SIL.Machine
 {
 	public class CorpusCommand : CommandBase
 	{

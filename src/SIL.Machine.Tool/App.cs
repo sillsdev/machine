@@ -1,17 +1,19 @@
 ﻿using System.Reflection;
 
-namespace SIL.Machine.Translation
+namespace SIL.Machine
 {
 	public class App : CommandBase
 	{
 		public App()
 		{
-			Name = "translator";
-			FullName = "SIL.Machine Translator";
-			Description = "A tool for training and evaluating translation models.";
+			Name = "machine";
+			FullName = "Machine";
+			Description = "Natural language processing tools with a focus on resource-poor languages.";
 
 			HelpOption("-?|-h|--help", true);
 			string version = Assembly.GetEntryAssembly().GetName().Version.ToString();
+			int endIndex = version.LastIndexOf('.');
+			version = version.Substring(0, endIndex);
 			VersionOption("-v|--version", version);
 
 			AddCommand(new TrainCommand());

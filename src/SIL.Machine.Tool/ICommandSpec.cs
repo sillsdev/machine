@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace SIL.Machine.Translation
+namespace SIL.Machine
 {
 	public interface ICommandSpec
 	{

@@ -3,7 +3,7 @@ using System.IO;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
 
-namespace SIL.Machine.Translation
+namespace SIL.Machine
 {
 	public class CorpusCommandSpecBase : ICommandSpec
 	{
@@ -40,10 +40,10 @@ namespace SIL.Machine.Translation
 			}
 
 			if (_includeOption.HasValue())
-				_includeTexts = TranslatorHelpers.GetTexts(_includeOption.Values);
+				_includeTexts = ToolHelpers.GetTexts(_includeOption.Values);
 
 			if (_excludeOption.HasValue())
-				_excludeTexts = TranslatorHelpers.GetTexts(_excludeOption.Values);
+				_excludeTexts = ToolHelpers.GetTexts(_excludeOption.Values);
 
 			return true;
 		}

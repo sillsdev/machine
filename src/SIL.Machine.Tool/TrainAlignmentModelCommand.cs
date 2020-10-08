@@ -1,9 +1,10 @@
 ﻿using System;
 using System.IO;
 using McMaster.Extensions.CommandLineUtils;
+using SIL.Machine.Translation;
 using SIL.Machine.Translation.Thot;
 
-namespace SIL.Machine.Translation
+namespace SIL.Machine
 {
 	public class TrainAlignmentModelCommand : CommandBase
 	{
@@ -72,7 +73,7 @@ namespace SIL.Machine.Translation
 				case "ibm2":
 					return CreateThotAlignmentModelTrainer<Ibm2ThotWordAlignmentModel>();
 				case "smt":
-					string modelCfgFileName = TranslatorHelpers.GetTranslationModelConfigFileName(_modelSpec.ModelPath);
+					string modelCfgFileName = ToolHelpers.GetTranslationModelConfigFileName(_modelSpec.ModelPath);
 					return new ThotSmtModelTrainer(modelCfgFileName, TokenProcessors.Lowercase,
 						TokenProcessors.Lowercase, _corpusSpec.ParallelCorpus, _corpusSpec.MaxCorpusCount);
 			}

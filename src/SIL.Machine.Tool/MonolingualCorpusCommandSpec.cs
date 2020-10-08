@@ -5,7 +5,7 @@ using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
 
-namespace SIL.Machine.Translation
+namespace SIL.Machine
 {
 	public class MonolingualCorpusCommandSpec : CorpusCommandSpecBase
 	{
@@ -32,22 +32,22 @@ namespace SIL.Machine.Translation
 			if (!base.Validate(outWriter))
 				return false;
 
-			if (!TranslatorHelpers.ValidateCorpusFormatOption(_corpusFormatOption.Value()))
+			if (!ToolHelpers.ValidateCorpusFormatOption(_corpusFormatOption.Value()))
 			{
 				outWriter.WriteLine("The specified corpus format is invalid.");
 				return false;
 			}
 
-			if (!TranslatorHelpers.ValidateWordTokenizerOption(_wordTokenizerOption.Value(), false))
+			if (!ToolHelpers.ValidateWordTokenizerOption(_wordTokenizerOption.Value(), false))
 			{
 				outWriter.WriteLine("The specified word tokenizer type is invalid.");
 				return false;
 			}
 
-			ITokenizer<string, int, string> wordTokenizer = TranslatorHelpers.CreateWordTokenizer(
+			ITokenizer<string, int, string> wordTokenizer = ToolHelpers.CreateWordTokenizer(
 				_wordTokenizerOption.Value() ?? "whitespace");
 
-			Corpus = TranslatorHelpers.CreateTextCorpus(wordTokenizer,
+			Corpus = ToolHelpers.CreateTextCorpus(wordTokenizer,
 				_corpusFormatOption.Value() ?? "text", _corpusArgument.Value);
 
 			Corpus = FilterTextCorpus(Corpus);

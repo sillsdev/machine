@@ -7,9 +7,9 @@ using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
 using SIL.Scripture;
 
-namespace SIL.Machine.Translation
+namespace SIL.Machine
 {
-	internal static class TranslatorHelpers
+	internal static class ToolHelpers
 	{
 		public static bool ValidateCorpusFormatOption(string value)
 		{
@@ -125,7 +125,7 @@ namespace SIL.Machine.Translation
 		{
 			if (File.Exists(path))
 				return path;
-			else if (Directory.Exists(path) || TranslatorHelpers.IsDirectoryPath(path))
+			else if (Directory.Exists(path) || ToolHelpers.IsDirectoryPath(path))
 				return Path.Combine(path, "smt.cfg");
 			else
 				return path;

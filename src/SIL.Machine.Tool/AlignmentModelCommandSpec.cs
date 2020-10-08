@@ -4,7 +4,7 @@ using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Plugin;
 
-namespace SIL.Machine.Translation
+namespace SIL.Machine
 {
 	public class AlignmentModelCommandSpec : ICommandSpec
 	{

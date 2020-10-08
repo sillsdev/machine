@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using McMaster.Extensions.CommandLineUtils;
 
-namespace SIL.Machine.Translation
+namespace SIL.Machine
 {
 	public abstract class CommandBase : CommandLineApplication
 	{

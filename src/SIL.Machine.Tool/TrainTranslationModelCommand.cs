@@ -2,9 +2,10 @@
 using System.Diagnostics;
 using System.IO;
 using McMaster.Extensions.CommandLineUtils;
+using SIL.Machine.Translation;
 using SIL.Machine.Translation.Thot;
 
-namespace SIL.Machine.Translation
+namespace SIL.Machine
 {
 	public class TrainTranslationModelCommand : CommandBase
 	{

@@ -4,9 +4,10 @@ using System.IO;
 using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
+using SIL.Machine.Translation;
 using SIL.Machine.Translation.Thot;
 
-namespace SIL.Machine.Translation
+namespace SIL.Machine
 {
 	public class SuggestCommand : CommandBase
 	{

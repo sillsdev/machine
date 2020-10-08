@@ -2,8 +2,9 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading;
+using SIL.Machine.Translation;
 
-namespace SIL.Machine.Translation
+namespace SIL.Machine
 {
 	/// <summary>
 	/// An ASCII progress bar

@@ -3,12 +3,12 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RootNamespace>SIL.Machine.Translation</RootNamespace>
+    <RootNamespace>SIL.Machine</RootNamespace>
     <PackAsTool>true</PackAsTool>
-    <ToolCommandName>translator</ToolCommandName>
-    <AssemblyName>translator</AssemblyName>
-    <Description>SIL.Machine.Translator provides a command-line tool for training and evaluating machine translation engines.</Description>
-    <PackageId>SIL.Machine.Translator</PackageId>
+    <ToolCommandName>machine</ToolCommandName>
+    <AssemblyName>machine</AssemblyName>
+    <Description>A command-line tool for natural language processing using the Machine library.</Description>
+    <PackageId>SIL.Machine.Tool</PackageId>
   </PropertyGroup>
 
   <Import Project="../AssemblyInfo.props" />

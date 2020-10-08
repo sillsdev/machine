@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Description>SIL.Machine.Plugin is the plugin framework for Machine.</Description>
+    <Description>A plugin framework for the Machine library.</Description>
   </PropertyGroup>
 
   <Import Project="../AssemblyInfo.props" />

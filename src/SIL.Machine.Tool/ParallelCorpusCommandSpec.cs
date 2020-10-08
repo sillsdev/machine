@@ -5,7 +5,7 @@ using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
 
-namespace SIL.Machine.Translation
+namespace SIL.Machine
 {
 	public class ParallelCorpusCommandSpec : CorpusCommandSpecBase
 	{
@@ -62,26 +62,26 @@ namespace SIL.Machine.Translation
 			if (!base.Validate(outWriter))
 				return false;
 
-			if (!TranslatorHelpers.ValidateCorpusFormatOption(_sourceFormatOption.Value()))
+			if (!ToolHelpers.ValidateCorpusFormatOption(_sourceFormatOption.Value()))
 			{
 				outWriter.WriteLine("The specified source corpus format is invalid.");
 				return false;
 			}
 
-			if (!TranslatorHelpers.ValidateCorpusFormatOption(_targetFormatOption.Value()))
+			if (!ToolHelpers.ValidateCorpusFormatOption(_targetFormatOption.Value()))
 			{
 				outWriter.WriteLine("The specified target corpus format is invalid.");
 				return false;
 			}
 
-			if (!TranslatorHelpers.ValidateWordTokenizerOption(_sourceWordTokenizerOption.Value(),
+			if (!ToolHelpers.ValidateWordTokenizerOption(_sourceWordTokenizerOption.Value(),
 				DefaultNullTokenizer))
 			{
 				outWriter.WriteLine("The specified source word tokenizer is invalid.");
 				return false;
 			}
 
-			if (!TranslatorHelpers.ValidateWordTokenizerOption(_targetWordTokenizerOption.Value(),
+			if (!ToolHelpers.ValidateWordTokenizerOption(_targetWordTokenizerOption.Value(),
 				DefaultNullTokenizer))
 			{
 				outWriter.WriteLine("The specified target word tokenizer is invalid.");
@@ -89,18 +89,18 @@ namespace SIL.Machine.Translation
 			}
 
 			string defaultTokenizerType = DefaultNullTokenizer ? "none" : "whitespace";
-			IRangeTokenizer<string, int, string> sourceWordTokenizer = TranslatorHelpers.CreateWordTokenizer(
+			IRangeTokenizer<string, int, string> sourceWordTokenizer = ToolHelpers.CreateWordTokenizer(
 				_sourceWordTokenizerOption.Value() ?? defaultTokenizerType);
-			IRangeTokenizer<string, int, string> targetWordTokenizer = TranslatorHelpers.CreateWordTokenizer(
+			IRangeTokenizer<string, int, string> targetWordTokenizer = ToolHelpers.CreateWordTokenizer(
 				_targetWordTokenizerOption.Value() ?? defaultTokenizerType);
 
-			SourceCorpus = TranslatorHelpers.CreateTextCorpus(sourceWordTokenizer,
+			SourceCorpus = ToolHelpers.CreateTextCorpus(sourceWordTokenizer,
 				_sourceFormatOption.Value() ?? "text", _sourceArgument.Value);
-			TargetCorpus = TranslatorHelpers.CreateTextCorpus(targetWordTokenizer,
+			TargetCorpus = ToolHelpers.CreateTextCorpus(targetWordTokenizer,
 				_targetFormatOption.Value() ?? "text", _targetArgument.Value);
 			AlignmentsCorpus = null;
 			if (_alignmentsOption != null && _alignmentsOption.HasValue())
-				AlignmentsCorpus = TranslatorHelpers.CreateAlignmentsCorpus("text", _alignmentsOption.Value());
+				AlignmentsCorpus = ToolHelpers.CreateAlignmentsCorpus("text", _alignmentsOption.Value());
 
 			if (FilterSource)
 				SourceCorpus = FilterTextCorpus(SourceCorpus);

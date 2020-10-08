@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
-    <Description>SIL.Machine.Translation.Thot provides statistical machine translation functionality using the Thot library.</Description>
+    <Description>A library that provides statistical machine translation functionality using the Thot library.</Description>
   </PropertyGroup>
 
   <Import Project="../AssemblyInfo.props" />

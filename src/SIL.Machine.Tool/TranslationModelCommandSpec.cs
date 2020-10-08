@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using McMaster.Extensions.CommandLineUtils;
 
-namespace SIL.Machine.Translation
+namespace SIL.Machine
 {
 	public class TranslationModelCommandSpec : ICommandSpec
 	{
@@ -17,7 +17,7 @@ namespace SIL.Machine.Translation
 
 		public bool Validate(TextWriter outWriter)
 		{
-			ModelConfigFileName = TranslatorHelpers.GetTranslationModelConfigFileName(_modelArgument.Value);
+			ModelConfigFileName = ToolHelpers.GetTranslationModelConfigFileName(_modelArgument.Value);
 			ModelDirectory = Path.GetDirectoryName(ModelConfigFileName);
 
 			return true;

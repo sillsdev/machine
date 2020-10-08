@@ -4,9 +4,10 @@ using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
+using SIL.Machine.Translation;
 using SIL.Machine.Translation.Thot;
 
-namespace SIL.Machine.Translation
+namespace SIL.Machine
 {
 	public class TranslateCommand : CommandBase
 	{
@@ -44,20 +45,20 @@ namespace SIL.Machine.Translation
 			if (result != 0)
 				return result;
 
-			if (!TranslatorHelpers.ValidateCorpusFormatOption(_refFormatOption.Value()))
+			if (!ToolHelpers.ValidateCorpusFormatOption(_refFormatOption.Value()))
 			{
 				Out.WriteLine("The specified reference corpus format is invalid.");
 				return 1;
 			}
 
-			if (!TranslatorHelpers.ValidateWordTokenizerOption(_refWordTokenizerOption.Value()))
+			if (!ToolHelpers.ValidateWordTokenizerOption(_refWordTokenizerOption.Value()))
 			{
 				Out.WriteLine("The specified reference word tokenizer is invalid.");
 				return 1;
 			}
 
 			bool isOutputFile;
-			if (TranslatorHelpers.IsDirectoryPath(_outputArgument.Value))
+			if (ToolHelpers.IsDirectoryPath(_outputArgument.Value))
 			{
 				Directory.CreateDirectory(_outputArgument.Value);
 				isOutputFile = false;
@@ -73,15 +74,15 @@ namespace SIL.Machine.Translation
 			if (_refOption.HasValue())
 			{
 				translations = new List<IReadOnlyList<string>>();
-				ITokenizer<string, int, string> refWordTokenizer = TranslatorHelpers.CreateWordTokenizer(
+				ITokenizer<string, int, string> refWordTokenizer = ToolHelpers.CreateWordTokenizer(
 					_refWordTokenizerOption.Value() ?? "whitespace");
-				ITextCorpus refCorpus = TranslatorHelpers.CreateTextCorpus(refWordTokenizer,
+				ITextCorpus refCorpus = ToolHelpers.CreateTextCorpus(refWordTokenizer,
 					_refFormatOption.Value() ?? "text", _refOption.Value());
 				refCorpus = _corpusSpec.FilterTextCorpus(refCorpus);
 				refParallelCorpus = new ParallelTextCorpus(_corpusSpec.Corpus, refCorpus);
 			}
 
-			IDetokenizer<string, string> refWordDetokenizer = TranslatorHelpers.CreateWordDetokenizer(
+			IDetokenizer<string, string> refWordDetokenizer = ToolHelpers.CreateWordDetokenizer(
 				_refWordTokenizerOption.Value() ?? "whitespace");
 
 			int corpusCount = _corpusSpec.GetNonemptyCorpusCount();

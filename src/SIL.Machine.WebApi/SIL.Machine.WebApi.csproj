@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Description>SIL.Machine.WebApi provides an ASP.NET Core web API middleware for Machine functionality.</Description>
+    <Description>An ASP.NET Core web API middleware for the Machine library.</Description>
   </PropertyGroup>
 
   <Import Project="../AssemblyInfo.props" />

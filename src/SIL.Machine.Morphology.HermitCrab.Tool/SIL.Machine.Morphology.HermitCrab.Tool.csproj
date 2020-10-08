@@ -7,8 +7,8 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>hc</ToolCommandName>
     <AssemblyName>hc</AssemblyName>
-    <Description>SIL.Machine.HCParser provides a command-line tool for morphological parsing using HermitCrab.</Description>
-    <PackageId>SIL.Machine.HCParser</PackageId>
+    <Description>A command-line tool for the HermitCrab parser.</Description>
+    <PackageId>SIL.Machine.Morphology.HermitCrab.Tool</PackageId>
   </PropertyGroup>
 
   <Import Project="../AssemblyInfo.props" />

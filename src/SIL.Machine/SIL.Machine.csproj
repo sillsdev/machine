@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
-    <Description>Machine is a natural language processing library for .NET that is focused on providing tools for processing resource-poor languages.</Description>
+    <Description>A natural language processing library for .NET that is focused on providing tools for resource-poor languages.</Description>
   </PropertyGroup>
 
   <Import Project="../AssemblyInfo.props" />

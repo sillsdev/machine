@@ -2,8 +2,9 @@
 using System.Text;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
+using SIL.Machine.Translation;
 
-namespace SIL.Machine.Translation
+namespace SIL.Machine
 {
 	public class ExtractCommand : CommandBase
 	{
