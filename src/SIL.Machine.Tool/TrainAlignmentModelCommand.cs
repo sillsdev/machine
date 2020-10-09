@@ -74,6 +74,15 @@ namespace SIL.Machine
 					return CreateThotAlignmentModelTrainer<Ibm2ThotWordAlignmentModel>();
 				case "smt":
 					string modelCfgFileName = ToolHelpers.GetTranslationModelConfigFileName(_modelSpec.ModelPath);
+					string modelDir = Path.GetDirectoryName(modelCfgFileName);
+					if (!Directory.Exists(modelDir))
+						Directory.CreateDirectory(modelDir);
+					if (!File.Exists(modelCfgFileName))
+					{
+						string defaultConfigFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data",
+							"default-smt.cfg");
+						File.Copy(defaultConfigFileName, modelCfgFileName);
+					}
 					return new ThotSmtModelTrainer(modelCfgFileName, TokenProcessors.Lowercase,
 						TokenProcessors.Lowercase, _corpusSpec.ParallelCorpus, _corpusSpec.MaxCorpusCount);
 			}
