@@ -25,18 +25,18 @@ namespace SIL.Machine.Corpora
 				{
 					if (firstVerse)
 					{
-						yield return CreateTextSegment(text, vref, true, sentenceStart);
+						yield return CreateTextSegment(text, vref, sentenceStart, inRange: true, rangeStart: true);
 						firstVerse = false;
 					}
 					else
 					{
-						yield return CreateTextSegment(vref, true);
+						yield return CreateTextSegment(vref, inRange: true);
 					}
 				}
 			}
 			else
 			{
-				yield return CreateTextSegment(text, verseRef, sentenceStart: sentenceStart);
+				yield return CreateTextSegment(text, verseRef, sentenceStart);
 			}
 		}
 	}

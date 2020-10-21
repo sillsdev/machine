@@ -99,7 +99,7 @@ namespace SIL.Machine
 
 					if (sourceOutputWriter != null)
 					{
-						if (segment.IsSourceInRange && segment.SourceSegment.Count == 0)
+						if (segment.IsSourceInRange && !segment.IsSourceRangeStart && segment.SourceSegment.Count == 0)
 						{
 							sourceOutputWriter.WriteLine("<range>");
 						}
@@ -111,7 +111,7 @@ namespace SIL.Machine
 					}
 					if (targetOutputWriter != null)
 					{
-						if (segment.IsTargetInRange && segment.TargetSegment.Count == 0)
+						if (segment.IsTargetInRange && !segment.IsTargetRangeStart && segment.TargetSegment.Count == 0)
 						{
 							targetOutputWriter.WriteLine("<range>");
 						}

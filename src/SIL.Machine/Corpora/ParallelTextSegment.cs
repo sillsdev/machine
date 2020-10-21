@@ -7,7 +7,8 @@ namespace SIL.Machine.Corpora
 	{
 		public ParallelTextSegment(ParallelText text, object segRef, IReadOnlyList<string> sourceSegment,
 			IReadOnlyList<string> targetSegment, IEnumerable<AlignedWordPair> alignedWordPairs = null,
-			bool sourceInRange = false, bool targetInRange = false)
+			bool sourceInRange = false, bool sourceRangeStart = false, bool targetInRange = false,
+			bool targetRangeStart = false)
 		{
 			Text = text;
 			SegmentRef = segRef;
@@ -15,7 +16,9 @@ namespace SIL.Machine.Corpora
 			TargetSegment = targetSegment;
 			AlignedWordPairs = alignedWordPairs?.ToArray();
 			IsSourceInRange = sourceInRange;
+			IsSourceRangeStart = sourceRangeStart;
 			IsTargetInRange = targetInRange;
+			IsTargetRangeStart = targetRangeStart;
 		}
 
 		public ParallelText Text { get; }
@@ -25,7 +28,9 @@ namespace SIL.Machine.Corpora
 		public bool IsEmpty => SourceSegment.Count == 0 || TargetSegment.Count == 0;
 
 		public bool IsSourceInRange { get; }
+		public bool IsSourceRangeStart { get; }
 		public bool IsTargetInRange { get; }
+		public bool IsTargetRangeStart { get; }
 
 		public IReadOnlyList<string> SourceSegment { get; }
 

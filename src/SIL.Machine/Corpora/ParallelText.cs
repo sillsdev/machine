@@ -148,7 +148,8 @@ namespace SIL.Machine.Corpora
 			yield return new ParallelTextSegment(this, srcSeg != null ? srcSeg.SegmentRef : trgSeg.SegmentRef,
 				srcSeg != null ? srcSeg.Segment : Array.Empty<string>(),
 				trgSeg != null ? trgSeg.Segment : Array.Empty<string>(),
-				alignedWordPairs, srcSeg != null && srcSeg.IsInRange, trgSeg != null && trgSeg.IsInRange);
+				alignedWordPairs, srcSeg != null && srcSeg.IsInRange, srcSeg != null && srcSeg.IsRangeStart,
+				trgSeg != null && trgSeg.IsInRange, trgSeg != null && trgSeg.IsRangeStart);
 		}
 
 		private class RangeInfo

@@ -22,13 +22,13 @@ namespace SIL.Machine.Corpora
 
 		public abstract IEnumerable<TextSegment> Segments { get; }
 
-		protected TextSegment CreateTextSegment(string text, object segRef, bool inRange = false,
-			bool sentenceStart = true)
+		protected TextSegment CreateTextSegment(string text, object segRef, bool sentenceStart = true,
+			bool inRange = false, bool rangeStart = false)
 		{
 
 			IReadOnlyList<string> segment = WordTokenizer.Tokenize(text.Trim().Normalize()).ToArray();
 			segment = TokenProcessors.UnescapeSpaces.Process(segment);
-			return new TextSegment(segRef, segment, inRange, sentenceStart);
+			return new TextSegment(segRef, segment, sentenceStart, inRange, rangeStart);
 		}
 
 		protected TextSegment CreateTextSegment(object segRef, bool inRange = false)
