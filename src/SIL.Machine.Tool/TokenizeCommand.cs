@@ -26,6 +26,10 @@ namespace SIL.Machine
 
 		protected override int ExecuteCommand()
 		{
+			int code = base.ExecuteCommand();
+			if (code != 0)
+				return code;
+
 			if (!_quietOption.HasValue())
 				Out.Write("Tokenizing... ");
 			int corpusCount = _corpusSpec.GetCorpusCount();
