@@ -82,7 +82,7 @@ namespace SIL.Machine
 					{
 						foreach (ParallelTextSegment segment in text.Segments)
 						{
-							if (segment.IsEmpty)
+							if (IsSegmentInvalid(segment))
 							{
 								writer.WriteLine();
 							}
@@ -165,6 +165,12 @@ namespace SIL.Machine
 			inverseModel.Load(modelPath + "_swm");
 
 			return new SymmetrizedWordAlignmentModel(directModel, inverseModel);
+		}
+
+		private bool IsSegmentInvalid(ParallelTextSegment segment)
+		{
+			return segment.IsEmpty || (_modelSpec.ModelType == "smt"
+				&& segment.SourceSegment.Count > TranslationConstants.MaxSegmentLength);
 		}
 	}
 }

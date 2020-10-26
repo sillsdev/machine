@@ -1,5 +1,6 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
+using SIL.Machine.Translation;
 using System.Linq;
 
 namespace SIL.Machine
@@ -17,7 +18,8 @@ namespace SIL.Machine
 
 			_corpusSpec = AddSpec(new ParallelCorpusCommandSpec());
 			_countOption = Option("-c|--count", "Only output the # of parallel segments.", CommandOptionType.NoValue);
-			_maxLengthOption = Option("--max-seglen <MAX_SEG_LENGTH>", "Maximum segment length. Default: 110.",
+			_maxLengthOption = Option("--max-seglen <MAX_SEG_LENGTH>",
+				$"Maximum segment length. Default: {TranslationConstants.MaxSegmentLength}.",
 				CommandOptionType.SingleValue);
 		}
 
@@ -33,7 +35,7 @@ namespace SIL.Machine
 			}
 			else
 			{
-				int maxLength = 110;
+				int maxLength = TranslationConstants.MaxSegmentLength;
 				if (_maxLengthOption.HasValue())
 				{
 					if (!int.TryParse(_maxLengthOption.Value(), out maxLength))
