@@ -14,6 +14,7 @@ namespace SIL.Machine.Translation.Thot
 		public const string Ibm2WordAlignmentClassName = "IncrIbm2AligModel";
 		public const string SmoothedIbm1WordAlignmentClassName = "SmoothedIncrIbm1AligModel";
 		public const string SmoothedIbm2WordAlignmentClassName = "SmoothedIncrIbm2AligModel";
+		public const string FastAlignWordAlignmentClassName = "FastAlignModel";
 
 		private const int DefaultTranslationBufferLength = 1024;
 
@@ -155,6 +156,9 @@ namespace SIL.Machine.Translation.Thot
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void swAlignModel_train(IntPtr swAlignModelHandle, uint numIters);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void swAlignModel_clearTempVars(IntPtr swAlignModelHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void swAlignModel_save(IntPtr swAlignModelHandle, string prefFileName);
@@ -396,12 +400,14 @@ namespace SIL.Machine.Translation.Thot
 		{
 			string swAlignClassName = null;
 			Type alignModelType = typeof(TAlignModel);
-			if (alignModelType == typeof(HmmThotWordAlignmentModel))
+			if (alignModelType == typeof(HmmWordAlignmentModel))
 				swAlignClassName = HmmWordAlignmentClassName;
-			else if (alignModelType == typeof(Ibm1ThotWordAlignmentModel))
+			else if (alignModelType == typeof(Ibm1WordAlignmentModel))
 				swAlignClassName = SmoothedIbm1WordAlignmentClassName;
-			else if (alignModelType == typeof(Ibm2ThotWordAlignmentModel))
+			else if (alignModelType == typeof(Ibm2WordAlignmentModel))
 				swAlignClassName = SmoothedIbm2WordAlignmentClassName;
+			else if (alignModelType == typeof(FastAlignWordAlignmentModel))
+				swAlignClassName = FastAlignWordAlignmentClassName;
 			Debug.Assert(swAlignClassName != null);
 			return swAlignClassName;
 		}

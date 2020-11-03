@@ -20,7 +20,7 @@ namespace SIL.Machine
 		{
 			_modelArgument = command.Argument("MODEL_PATH", "The word alignment model.").IsRequired();
 			_modelTypeOption = command.Option("-mt|--model-type <MODEL_TYPE>",
-				"The word alignment model type.\nTypes: \"hmm\" (default), \"ibm1\", \"ibm2\", \"pt\", \"smt\".",
+				"The word alignment model type.\nTypes: \"hmm\" (default), \"ibm1\", \"ibm2\", \"pt\", \"smt\", \"fast_align\".",
 				CommandOptionType.SingleValue);
 			_pluginOption = command.Option("-mp|--model-plugin <PLUGIN_FILE>", "The model plugin file.",
 				CommandOptionType.SingleValue);
@@ -52,7 +52,7 @@ namespace SIL.Machine
 
 		private static bool ValidateAlignmentModelTypeOption(string value, IEnumerable<string> pluginTypes)
 		{
-			var validTypes = new HashSet<string> { "hmm", "ibm1", "ibm2", "pt", "smt" };
+			var validTypes = new HashSet<string> { "hmm", "ibm1", "ibm2", "pt", "smt", "fast_align" };
 			validTypes.UnionWith(pluginTypes);
 			return string.IsNullOrEmpty(value) || validTypes.Contains(value);
 

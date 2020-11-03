@@ -14,7 +14,7 @@ namespace SIL.Machine.Translation.Thot
 			_handle = Thot.langModel_open(lmPrefix);
 		}
 
-		public double GetSegmentProbability(IEnumerable<string> segment)
+		public double GetSegmentLog10Probability(IEnumerable<string> segment)
 		{
 			IntPtr nativeSegment = Thot.ConvertStringsToNativeUtf8(segment);
 			try

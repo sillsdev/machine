@@ -1,15 +1,15 @@
 ﻿namespace SIL.Machine.Translation.Thot
 {
-	public class Ibm2ThotWordAlignmentModel : ThotWordAlignmentModelBase<Ibm2ThotWordAlignmentModel>,
+	public class FastAlignWordAlignmentModel : ThotWordAlignmentModelBase<FastAlignWordAlignmentModel>,
 		IIbm2WordAlignmentModel
 	{
-		public Ibm2ThotWordAlignmentModel()
-			: base(Thot.SmoothedIbm2WordAlignmentClassName)
+		public FastAlignWordAlignmentModel()
+			: base(Thot.FastAlignWordAlignmentClassName)
 		{
 		}
 
-		public Ibm2ThotWordAlignmentModel(string prefFileName, bool createNew = false)
-			: base(Thot.SmoothedIbm2WordAlignmentClassName, prefFileName, createNew)
+		public FastAlignWordAlignmentModel(string prefFileName, bool createNew = false)
+			: base(Thot.FastAlignWordAlignmentClassName, prefFileName, createNew)
 		{
 		}
 

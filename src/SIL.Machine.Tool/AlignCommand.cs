@@ -139,11 +139,13 @@ namespace SIL.Machine
 			switch (_modelSpec.ModelType)
 			{
 				case "hmm":
-					return CreateThotAlignmentModel<HmmThotWordAlignmentModel>();
+					return CreateThotAlignmentModel<HmmWordAlignmentModel>();
 				case "ibm1":
-					return CreateThotAlignmentModel<Ibm1ThotWordAlignmentModel>();
+					return CreateThotAlignmentModel<Ibm1WordAlignmentModel>();
 				case "ibm2":
-					return CreateThotAlignmentModel<Ibm2ThotWordAlignmentModel>();
+					return CreateThotAlignmentModel<Ibm2WordAlignmentModel>();
+				case "fast_align":
+					return CreateThotAlignmentModel<FastAlignWordAlignmentModel>();
 				case "smt":
 					string modelCfgFileName = ToolHelpers.GetTranslationModelConfigFileName(_modelSpec.ModelPath);
 					return new ThotSmtWordAlignmentModel(modelCfgFileName);

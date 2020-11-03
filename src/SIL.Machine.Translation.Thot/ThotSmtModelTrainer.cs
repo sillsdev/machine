@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace SIL.Machine.Translation.Thot
 {
-	public class ThotSmtModelTrainer : ThotSmtModelTrainer<HmmThotWordAlignmentModel>
+	public class ThotSmtModelTrainer : ThotSmtModelTrainer<HmmWordAlignmentModel>
 	{
 		public ThotSmtModelTrainer(string cfgFileName, ITokenProcessor sourcePreprocessor,
 			ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)
@@ -508,7 +508,7 @@ namespace SIL.Machine.Translation.Thot
 			{
 				foreach (IReadOnlyList<string> segment in tuneTargetCorpus)
 				{
-					lp += lm.GetSegmentProbability(segment);
+					lp += lm.GetSegmentLog10Probability(segment);
 					wordCount += segment.Count;
 				}
 			}
