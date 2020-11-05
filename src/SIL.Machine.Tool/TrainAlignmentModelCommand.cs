@@ -1,8 +1,6 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Translation;
-using SIL.Machine.Translation.Thot;
 
 namespace SIL.Machine
 {
@@ -29,16 +27,13 @@ namespace SIL.Machine
 			if (code != 0)
 				return code;
 
-			string modelDir = Path.GetDirectoryName(_modelSpec.ModelPath);
-			if (!Directory.Exists(modelDir))
-				Directory.CreateDirectory(modelDir);
-
 			int parallelCorpusCount = _corpusSpec.GetNonemptyParallelCorpusCount();
 
 			if (!_quietOption.HasValue())
 				Out.Write("Training... ");
 			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
-			using (ITrainer trainer = CreateAlignmentModelTrainer())
+			using (ITrainer trainer = _modelSpec.CreateAlignmentModelTrainer(_corpusSpec.ParallelCorpus,
+				_corpusSpec.MaxCorpusCount))
 			{
 				var reporter = new PhasedProgressReporter(progress,
 					new Phase("Training model", 0.99),
@@ -54,59 +49,6 @@ namespace SIL.Machine
 			Out.WriteLine($"# of Segments Trained: {parallelCorpusCount}");
 
 			return 0;
-		}
-
-		private ITrainer CreateAlignmentModelTrainer()
-		{
-			if (_modelSpec.ModelFactory != null)
-			{
-				return _modelSpec.ModelFactory.CreateTrainer(_modelSpec.ModelPath, TokenProcessors.Lowercase,
-					TokenProcessors.Lowercase, _corpusSpec.ParallelCorpus, _corpusSpec.MaxCorpusCount);
-			}
-
-			switch (_modelSpec.ModelType)
-			{
-				case "hmm":
-					return CreateThotAlignmentModelTrainer<HmmWordAlignmentModel>();
-				case "ibm1":
-					return CreateThotAlignmentModelTrainer<Ibm1WordAlignmentModel>();
-				case "ibm2":
-					return CreateThotAlignmentModelTrainer<Ibm2WordAlignmentModel>();
-				case "fast_align":
-					return CreateThotAlignmentModelTrainer<FastAlignWordAlignmentModel>();
-				case "smt":
-					string modelCfgFileName = ToolHelpers.GetTranslationModelConfigFileName(_modelSpec.ModelPath);
-					string modelDir = Path.GetDirectoryName(modelCfgFileName);
-					if (!Directory.Exists(modelDir))
-						Directory.CreateDirectory(modelDir);
-					if (!File.Exists(modelCfgFileName))
-					{
-						string defaultConfigFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data",
-							"default-smt.cfg");
-						File.Copy(defaultConfigFileName, modelCfgFileName);
-					}
-					return new ThotSmtModelTrainer(modelCfgFileName, TokenProcessors.Lowercase,
-						TokenProcessors.Lowercase, _corpusSpec.ParallelCorpus, _corpusSpec.MaxCorpusCount);
-			}
-			throw new InvalidOperationException("An invalid alignment model type was specified.");
-		}
-
-		private ITrainer CreateThotAlignmentModelTrainer<TAlignModel>()
-			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
-		{
-			string modelPath = _modelSpec.ModelPath;
-			if (ToolHelpers.IsDirectoryPath(modelPath))
-				modelPath = Path.Combine(modelPath, "src_trg");
-			string modelDir = Path.GetDirectoryName(modelPath);
-			if (!Directory.Exists(modelDir))
-				Directory.CreateDirectory(modelDir);
-			var directTrainer = new ThotWordAlignmentModelTrainer<TAlignModel>(modelPath + "_invswm",
-				TokenProcessors.Lowercase, TokenProcessors.Lowercase, _corpusSpec.ParallelCorpus,
-				_corpusSpec.MaxCorpusCount);
-			var inverseTrainer = new ThotWordAlignmentModelTrainer<TAlignModel>(modelPath + "_swm",
-				TokenProcessors.Lowercase, TokenProcessors.Lowercase, _corpusSpec.ParallelCorpus.Invert(),
-				_corpusSpec.MaxCorpusCount);
-			return new SymmetrizedWordAlignmentModelTrainer(directTrainer, inverseTrainer);
 		}
 	}
 }

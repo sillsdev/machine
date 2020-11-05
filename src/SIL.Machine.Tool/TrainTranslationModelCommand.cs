@@ -1,9 +1,6 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
+﻿using System.Diagnostics;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Translation;
-using SIL.Machine.Translation.Thot;
 
 namespace SIL.Machine
 {
@@ -30,18 +27,7 @@ namespace SIL.Machine
 			if (code != 0)
 				return code;
 
-			if (!Directory.Exists(_modelSpec.ModelDirectory))
-				Directory.CreateDirectory(_modelSpec.ModelDirectory);
-
-			if (!File.Exists(_modelSpec.ModelConfigFileName))
-			{
-				string defaultConfigFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data",
-					"default-smt.cfg");
-				File.Copy(defaultConfigFileName, _modelSpec.ModelConfigFileName);
-			}
-
-			using (ITranslationModelTrainer trainer = new ThotSmtModelTrainer(_modelSpec.ModelConfigFileName,
-				TokenProcessors.Lowercase, TokenProcessors.Lowercase, _corpusSpec.ParallelCorpus,
+			using (ITranslationModelTrainer trainer = _modelSpec.CreateTrainer(_corpusSpec.ParallelCorpus,
 				_corpusSpec.MaxCorpusCount))
 			{
 				Stopwatch watch = Stopwatch.StartNew();

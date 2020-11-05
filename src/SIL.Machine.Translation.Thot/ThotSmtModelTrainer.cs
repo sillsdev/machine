@@ -44,6 +44,7 @@ namespace SIL.Machine.Translation.Thot
 		private readonly string _trainLMDir;
 		private readonly string _trainTMDir;
 		private readonly int _maxCorpusCount;
+		private readonly string _swAlignClassName;
 
 		public ThotSmtModelTrainer(string cfgFileName, ITokenProcessor sourcePreprocessor,
 			ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)
@@ -61,9 +62,9 @@ namespace SIL.Machine.Translation.Thot
 			_targetPreprocessor = targetPreprocessor;
 			_maxCorpusCount = maxCorpusCount;
 			_parallelCorpus = corpus;
-			string swAlignClassName = Thot.GetWordAlignmentClassName<TAlignModel>();
+			_swAlignClassName = Thot.GetWordAlignmentClassName<TAlignModel>();
 			// _modelWeightTuner = new MiraModelWeightTuner(swAlignClassName);
-			_modelWeightTuner = new SimplexModelWeightTuner(swAlignClassName);
+			_modelWeightTuner = new SimplexModelWeightTuner(_swAlignClassName);
 			_tuneCorpusIndices = CreateTuneCorpus();
 
 			do
@@ -318,7 +319,25 @@ namespace SIL.Machine.Translation.Thot
 
 			reporter.CheckCanceled();
 
-			PruneLexTable(swmPrefix + ".hmm_lexnd", 0.00001);
+			string ext = null;
+			switch (_swAlignClassName)
+			{
+				case Thot.HmmWordAlignmentClassName:
+					ext = ".hmm_lexnd";
+					break;
+				case Thot.Ibm1WordAlignmentClassName:
+				case Thot.Ibm2WordAlignmentClassName:
+				case Thot.SmoothedIbm1WordAlignmentClassName:
+				case Thot.SmoothedIbm2WordAlignmentClassName:
+					ext = ".ibm_lexnd";
+					break;
+				case Thot.FastAlignWordAlignmentClassName:
+					ext = ".fa_lexnd";
+					break;
+			}
+			Debug.Assert(ext != null);
+
+			PruneLexTable(swmPrefix + ext, 0.00001);
 
 			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
 			{
@@ -407,7 +426,8 @@ namespace SIL.Machine.Translation.Thot
 			ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, IProgress<ProgressStatus> progress)
 		{
 			using (var trainer = new ThotWordAlignmentModelTrainer<TAlignModel>(swmPrefix, sourcePreprocessor,
-				targetPreprocessor, corpus, _maxCorpusCount))
+				targetPreprocessor, corpus, _maxCorpusCount)
+				{ TrainingIterationCount = (int)Parameters.LearningEMIters })
 			{
 				trainer.SegmentFilter = (s, i) => !_tuneCorpusIndices.Contains(i);
 				trainer.Train(progress);

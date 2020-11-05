@@ -8,8 +8,8 @@ namespace SIL.Machine.Translation.Thot
 	[TestFixture]
 	public class HmmWordAlignmentModelTests
 	{
-		private string DirectModelPath => Path.Combine(TestHelpers.ToyCorpusFolderName, "tm", "src_trg_invswm");
-		private string InverseModelPath => Path.Combine(TestHelpers.ToyCorpusFolderName, "tm", "src_trg_swm");
+		private string DirectModelPath => Path.Combine(TestHelpers.ToyCorpusHmmFolderName, "tm", "src_trg_invswm");
+		private string InverseModelPath => Path.Combine(TestHelpers.ToyCorpusHmmFolderName, "tm", "src_trg_swm");
 
 		[Test]
 		public void GetBestAlignment_ReturnsCorrectAlignment()

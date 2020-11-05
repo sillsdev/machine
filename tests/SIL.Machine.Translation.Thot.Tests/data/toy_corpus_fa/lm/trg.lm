@@ -1,0 +1,3255 @@
+' 10950 15
+- 10950 13
+! 10950 5
+, 10950 325
+. 10950 479
+? 10950 413
+</s> 10950 900
+<s> 10950 900
+<unk> 10950 349
+a 10950 585
+accept 10950 5
+after 10950 2
+afternoon 10950 13
+air 10950 23
+all 10950 12
+am 10950 10
+an 10950 10
+and 10950 50
+another 10950 4
+any 10950 11
+april 10950 4
+are 10950 33
+ask 10950 22
+at 10950 110
+available 10950 38
+bag 10950 3
+bags 10950 20
+bath 10950 11
+bathroom 10950 6
+been 10950 10
+bill 10950 88
+board 10950 5
+book 10950 32
+booked 10950 89
+breakfast 10950 2
+bus 10950 7
+cabedo 10950 2
+call 10950 19
+can 10950 66
+car 10950 6
+carry 10950 4
+cash 10950 4
+change 10950 11
+changing 10950 4
+check 10950 3
+clock 10950 15
+cold 10950 6
+colomer 10950 1
+conditioning 10950 23
+cornelles 10950 1
+cost 10950 16
+could 10950 140
+day 10950 16
+days 10950 8
+do 10950 34
+does 10950 26
+double 10950 68
+down 10950 18
+eight 10950 23
+eighteen 10950 1
+eighth 10950 3
+eleven 10950 8
+eleventh 10950 1
+emilio 10950 1
+enrique 10950 1
+error 10950 10
+evening 10950 13
+everything 10950 4
+expenses 10950 2
+expensive 10950 2
+explain 10950 7
+extras 10950 3
+fill 10950 3
+first 10950 4
+five 10950 17
+for 10950 245
+form 10950 7
+four 10950 35
+fourteenth 10950 2
+fourth 10950 1
+friday 10950 4
+full 10950 3
+gerardo 10950 1
+give 10950 64
+giving 10950 12
+good 10950 10
+gregorio 10950 1
+half 10950 25
+has 10950 10
+have 10950 145
+hot 10950 9
+how 10950 32
+i 10950 268
+in 10950 116
+included 10950 26
+including 10950 1
+inmaculada 10950 1
+is 10950 99
+it 10950 9
+jesús 10950 2
+julia 10950 1
+key 10950 54
+keys 10950 23
+leave 10950 48
+leaving 10950 26
+like 10950 43
+look 10950 1
+lot 10950 1
+luggage 10950 48
+made 10950 47
+make 10950 15
+many 10950 1
+march 10950 2
+marina 10950 1
+matter 10950 1
+may 10950 1
+me 10950 98
+mind 10950 46
+minibar 10950 2
+miralles 10950 1
+miss 10950 1
+mistake 10950 19
+monday 10950 3
+morning 10950 23
+mountain 10950 4
+move 10950 9
+moving 10950 1
+mr 10950 12
+mrs 10950 6
+much 10950 32
+my 10950 84
+name 10950 5
+next 10950 4
+night 10950 4
+nights 10950 3
+nine 10950 41
+nineteenth 10950 1
+ninth 10950 1
+noise 10950 2
+not 10950 3
+november 10950 1
+number 10950 89
+o 10950 15
+of 10950 10
+oh 10950 19
+on 10950 38
+one 10950 66
+our 10950 69
+out 10950 15
+paches 10950 1
+paloma 10950 1
+past 10950 42
+per 10950 16
+phone 10950 5
+please 10950 286
+prepare 10950 14
+price 10950 2
+problem 10950 6
+put 10950 6
+putting 10950 1
+quarter 10950 39
+quiet 10950 67
+quieter 10950 4
+ramírez 10950 1
+reception 10950 3
+registration 10950 7
+reservation 10950 54
+right 10950 3
+roberto 10950 1
+room 10950 488
+rooms 10950 46
+rosario 10950 1
+saturday 10950 3
+sea 10950 2
+second 10950 2
+see 10950 20
+send 10950 65
+sending 10950 9
+september 10950 5
+sergio 10950 2
+service 10950 2
+seven 10950 26
+seventh 10950 5
+should 10950 50
+shower 10950 7
+showing 10950 8
+sign 10950 3
+single 10950 60
+six 10950 36
+sixteenth 10950 1
+station 10950 2
+suitcase 10950 6
+suitcases 10950 8
+sunday 10950 1
+taking 10950 1
+taxes 10950 4
+taxi 10950 46
+telephone 10950 45
+ten 10950 10
+teresa 10950 1
+that 10950 27
+the 10950 375
+there 10950 63
+think 10950 27
+thirteenth 10950 1
+thirtieth 10950 1
+this 10950 5
+three 10950 42
+thursday 10950 5
+to 10950 264
+today 10950 21
+tomorrow 10950 44
+tonight 10950 5
+too 10950 7
+travel 10950 12
+tuesday 10950 1
+tv 10950 46
+twelve 10950 7
+twenty 10950 14
+two 10950 53
+until 10950 21
+up 10950 85
+us 10950 120
+very 10950 8
+view 10950 16
+vilanova 10950 1
+wake 10950 58
+waking 10950 3
+want 10950 72
+warmer 10950 1
+was 10950 8
+water 10950 4
+we 10950 139
+week 10950 11
+what 10950 4
+will 10950 1
+with 10950 77
+would 10950 101
+you 10950 310
+- <unk> 13 4
+' clock 15 15
+- eighth 13 2
+- nine 13 2
+- ninth 13 1
+- seventh 13 3
+- six 13 1
+! </s> 5 5
+, <unk> 325 1
+, a 325 21
+, air 325 2
+, double 325 18
+, please 325 260
+, single 325 23
+. </s> 479 479
+? </s> 413 413
+<s> <unk> 900 22
+<s> a 900 4
+<s> are 900 17
+<s> ask 900 2
+<s> can 900 66
+<s> carry 900 1
+<s> could 900 140
+<s> do 900 33
+<s> does 900 7
+<s> give 900 10
+<s> good 900 2
+<s> how 900 32
+<s> i 900 249
+<s> is 900 37
+<s> it 900 5
+<s> my 900 5
+<s> not 900 1
+<s> please 900 26
+<s> prepare 900 1
+<s> put 900 1
+<s> send 900 12
+<s> should 900 8
+<s> the 900 17
+<s> there 900 12
+<s> wake 900 12
+<s> we 900 116
+<s> what 900 4
+<s> will 900 1
+<s> would 900 57
+<unk> ! 349 3
+<unk> , 349 15
+<unk> . 349 75
+<unk> ? 349 21
+<unk> </s> 349 3
+<unk> <unk> 349 101
+<unk> a 349 11
+<unk> and 349 1
+<unk> april 349 1
+<unk> at 349 12
+<unk> available 349 1
+<unk> bags 349 1
+<unk> bill 349 1
+<unk> board 349 1
+<unk> breakfast 349 1
+<unk> cabedo 349 2
+<unk> cornelles 349 1
+<unk> cost 349 1
+<unk> days 349 3
+<unk> does 349 1
+<unk> for 349 11
+<unk> have 349 2
+<unk> in 349 8
+<unk> included 349 5
+<unk> is 349 3
+<unk> luggage 349 1
+<unk> march 349 1
+<unk> marina 349 1
+<unk> my 349 4
+<unk> of 349 1
+<unk> oh 349 1
+<unk> on 349 2
+<unk> our 349 2
+<unk> paches 349 1
+<unk> quiet 349 1
+<unk> ramírez 349 1
+<unk> room 349 5
+<unk> saturday 349 1
+<unk> september 349 1
+<unk> the 349 19
+<unk> to 349 9
+<unk> tomorrow 349 1
+<unk> two 349 1
+<unk> us 349 4
+<unk> view 349 1
+<unk> you 349 6
+a <unk> 585 20
+a bath 585 11
+a bathroom 585 6
+a day 585 5
+a double 585 45
+a good 585 8
+a look 585 1
+a lot 585 1
+a minibar 585 2
+a mistake 585 19
+a night 585 4
+a problem 585 6
+a quarter 585 39
+a quiet 585 58
+a quieter 585 4
+a registration 585 1
+a reservation 585 54
+a room 585 122
+a shower 585 7
+a single 585 36
+a taxi 585 35
+a telephone 585 45
+a tv 585 46
+a view 585 7
+a warmer 585 1
+a week 585 2
+accept <unk> 5 2
+accept cash 5 3
+after tomorrow 2 2
+afternoon . 13 13
+air conditioning 23 23
+all . 12 1
+all <unk> 12 2
+all expenses 12 1
+all extras 12 1
+all right 12 3
+all taxes 12 4
+am leaving 10 10
+an error 10 10
+and a 50 41
+and air 50 4
+and hot 50 2
+and mrs 50 3
+another room 4 4
+any double 11 2
+any quiet 11 5
+any rooms 11 4
+april the 4 4
+are <unk> 33 1
+are all 33 7
+are expenses 33 1
+are extras 33 2
+are leaving 33 16
+are there 33 6
+ask for 22 22
+at <unk> 110 3
+at a 110 42
+at all 110 1
+at eight 110 2
+at eleven 110 3
+at five 110 2
+at four 110 2
+at half 110 24
+at nine 110 6
+at one 110 8
+at six 110 5
+at ten 110 3
+at three 110 1
+at twelve 110 4
+at two 110 4
+available ? 38 38
+bag to 3 3
+bags ? 20 2
+bags <unk> 20 1
+bags down 20 2
+bags in 20 1
+bags on 20 1
+bags to 20 13
+bath , 11 3
+bath and 11 3
+bath available 11 1
+bath for 11 3
+bath until 11 1
+bathroom , 6 4
+bathroom and 6 2
+been <unk> 10 1
+been a 10 3
+been an 10 1
+been made 10 5
+bill , 88 4
+bill . 88 31
+bill ? 88 8
+bill for 88 38
+bill in 88 1
+bill included 88 6
+board , 5 1
+board cost 5 2
+board for 5 1
+board per 5 1
+book <unk> 32 1
+book a 32 22
+book two 32 9
+booked a 89 82
+booked two 89 7
+breakfast cost 2 1
+breakfast included 2 1
+bus ? 7 7
+cabedo . 2 2
+call a 19 15
+call my 19 2
+call our 19 2
+can i 66 1
+can you 66 65
+car . 6 1
+car ? 6 5
+carry my 4 2
+carry the 4 2
+cash ? 4 4
+change my 11 1
+change our 11 1
+change rooms 11 9
+changing my 4 3
+changing our 4 1
+check my 3 1
+check the 3 2
+clock , 15 5
+clock . 15 3
+clock in 15 7
+cold . 6 5
+cold in 6 1
+colomer . 1 1
+conditioning , 23 4
+conditioning . 23 1
+conditioning ? 23 4
+conditioning and 23 4
+conditioning available 23 1
+conditioning for 23 2
+conditioning in 23 6
+conditioning until 23 1
+cornelles . 1 1
+cost , 16 2
+cost ? 16 4
+cost for 16 2
+cost per 16 8
+could i 140 15
+could we 140 18
+could you 140 107
+day , 16 6
+day . 16 1
+day ? 16 6
+day <unk> 16 1
+day after 16 2
+days , 8 2
+days . 8 3
+days ? 8 1
+days for 8 2
+do not 34 1
+do the 34 1
+do you 34 32
+does <unk> 26 1
+does a 26 17
+does it 26 3
+does my 26 1
+does not 26 1
+does the 26 3
+double room 68 62
+double rooms 68 6
+down my 18 4
+down our 18 11
+down to 18 3
+eight , 23 5
+eight . 23 4
+eight for 23 1
+eight in 23 4
+eight o 23 1
+eight one 23 3
+eight seven 23 1
+eight six 23 1
+eight three 23 1
+eight two 23 2
+eighteen days 1 1
+eighth , 3 1
+eighth . 3 1
+eighth at 3 1
+eleven , 8 2
+eleven . 8 1
+eleven ? 8 1
+eleven in 8 2
+eleven o 8 2
+eleventh at 1 1
+emilio <unk> 1 1
+enrique <unk> 1 1
+error . 10 2
+error in 10 8
+evening . 13 13
+everything included 4 4
+expenses included 2 2
+expensive . 2 2
+explain our 7 1
+explain the 7 6
+extras included 3 3
+fill in 3 3
+first , 4 1
+first at 4 1
+first for 4 1
+first in 4 1
+five , 17 2
+five . 17 4
+five in 17 1
+five nights 17 1
+five nine 17 2
+five o 17 1
+five oh 17 1
+five one 17 3
+five two 17 2
+for <unk> 245 43
+for a 245 57
+for eighteen 245 1
+for enrique 245 1
+for five 245 1
+for jesús 245 1
+for julia 245 1
+for me 245 33
+for miss 245 1
+for mr 245 12
+for mrs 245 3
+for my 245 1
+for nine 245 2
+for our 245 3
+for paloma 245 1
+for roberto 245 1
+for room 245 30
+for rosario 245 1
+for sergio 245 1
+for seven 245 1
+for ten 245 1
+for teresa 245 1
+for this 245 2
+for today 245 9
+for tonight 245 5
+for twenty 245 4
+for us 245 28
+form , 7 2
+form ? 7 5
+four , 35 4
+four . 35 8
+four ? 35 2
+four for 35 2
+four in 35 1
+four nine 35 2
+four oh 35 3
+four one 35 7
+four seven 35 4
+four three 35 1
+four two 35 1
+fourteenth at 2 1
+fourteenth in 2 1
+fourth . 1 1
+friday . 4 1
+friday april 4 1
+friday may 4 1
+friday the 4 1
+full board 3 3
+gerardo <unk> 1 1
+give me 64 25
+give us 64 39
+giving me 12 5
+giving us 12 7
+good <unk> 10 1
+good morning 10 1
+good view 10 8
+gregorio <unk> 1 1
+half board 25 1
+half past 25 24
+has been 10 10
+have <unk> 145 2
+have a 145 36
+have air 145 5
+have any 145 8
+have booked 145 63
+have made 145 31
+hot . 9 2
+hot <unk> 9 1
+hot in 9 2
+hot water 9 4
+how <unk> 32 1
+how many 32 1
+how much 32 30
+i <unk> 268 6
+i am 268 10
+i book 268 3
+i booked 268 13
+i do 268 1
+i fill 268 2
+i have 268 74
+i leave 268 6
+i made 268 10
+i see 268 12
+i should 268 21
+i think 268 27
+i want 268 51
+i would 268 32
+in a 116 1
+in cash 116 1
+in my 116 6
+in our 116 5
+in the 116 103
+included ? 26 19
+included in 26 7
+including room 1 1
+inmaculada colomer 1 1
+is <unk> 99 6
+is a 99 25
+is all 99 4
+is an 99 6
+is breakfast 99 1
+is emilio 99 1
+is everything 99 4
+is gregorio 99 1
+is it 99 1
+is jesús 99 1
+is room 99 2
+is sergio 99 1
+is the 99 10
+is there 99 22
+is too 99 7
+is very 99 7
+it ? 9 1
+it does 9 2
+it have 9 3
+it is 9 3
+jesús <unk> 2 2
+julia vilanova 1 1
+key to 54 54
+keys to 23 23
+leave . 48 2
+leave <unk> 48 1
+leave on 48 22
+leave this 48 1
+leave today 48 9
+leave tomorrow 48 13
+leaving . 26 2
+leaving <unk> 26 1
+leaving on 26 12
+leaving this 26 2
+leaving today 26 3
+leaving tomorrow 26 6
+like a 43 10
+like to 43 14
+like you 43 19
+look at 1 1
+lot of 1 1
+luggage . 48 2
+luggage down 48 1
+luggage in 48 4
+luggage on 48 1
+luggage to 48 40
+made a 47 42
+made in 47 5
+make out 15 15
+many ? 1 1
+march the 2 2
+marina miralles 1 1
+matter . 1 1
+may the 1 1
+me , 98 33
+me <unk> 98 1
+me a 98 2
+me another 98 1
+me the 98 30
+me to 98 2
+me up 98 29
+mind <unk> 46 6
+mind changing 46 4
+mind giving 46 12
+mind me 46 1
+mind moving 46 1
+mind putting 46 1
+mind sending 46 9
+mind showing 46 8
+mind us 46 1
+mind waking 46 3
+minibar in 2 2
+miralles . 1 1
+miss <unk> 1 1
+mistake . 19 2
+mistake has 19 5
+mistake in 19 12
+monday april 3 2
+monday evening 3 1
+morning ! 23 1
+morning . 23 22
+mountain , 4 2
+mountain and 4 2
+move me 9 2
+move to 9 4
+move us 9 3
+moving us 1 1
+mr <unk> 12 8
+mr and 12 3
+mr gerardo 12 1
+mrs <unk> 6 5
+mrs inmaculada 6 1
+much ! 32 1
+much ? 32 2
+much does 32 16
+much is 32 12
+much noise 32 1
+my <unk> 84 4
+my bags 84 6
+my bill 84 6
+my luggage 84 20
+my name 84 5
+my room 84 28
+my suitcase 84 5
+my suitcases 84 3
+my taxi 84 3
+my travel 84 4
+name is 5 5
+next <unk> 4 1
+next friday 4 1
+next thursday 4 1
+next tuesday 4 1
+night , 4 1
+night . 4 1
+night ? 4 1
+night for 4 1
+nights , 3 1
+nights . 3 1
+nights for 3 1
+nine , 41 5
+nine . 41 7
+nine ? 41 3
+nine <unk> 41 1
+nine days 41 3
+nine eight 41 1
+nine for 41 3
+nine four 41 1
+nine in 41 3
+nine nights 41 1
+nine nine 41 1
+nine o 41 4
+nine oh 41 2
+nine one 41 2
+nine six 41 1
+nine two 41 3
+nineteenth in 1 1
+ninth at 1 1
+noise in 2 2
+not <unk> 3 1
+not at 3 1
+not matter 3 1
+november the 1 1
+number <unk> 89 1
+number eight 89 6
+number five 89 7
+number four 89 9
+number nine 89 9
+number oh 89 7
+number one 89 9
+number seven 89 12
+number six 89 11
+number three 89 8
+number two 89 10
+o ' 15 15
+of <unk> 10 1
+of noise 10 1
+of the 10 8
+oh , 19 6
+oh ? 19 1
+oh five 19 1
+oh nine 19 1
+oh one 19 6
+oh three 19 3
+oh two 19 1
+on <unk> 38 6
+on friday 38 3
+on march 38 1
+on monday 38 3
+on saturday 38 2
+on september 38 4
+on sunday 38 1
+on the 38 14
+on thursday 38 4
+one , 66 11
+one . 66 5
+one ? 66 5
+one eight 66 2
+one five 66 2
+one for 66 5
+one four 66 10
+one in 66 1
+one nine 66 6
+one o 66 3
+one oh 66 1
+one one 66 6
+one seven 66 1
+one six 66 2
+one three 66 4
+one two 66 2
+our <unk> 69 2
+our bags 69 2
+our bill 69 9
+our luggage 69 21
+our room 69 19
+our suitcase 69 1
+our suitcases 69 4
+our taxi 69 5
+our travel 69 6
+out my 15 1
+out our 15 1
+out the 15 13
+paches . 1 1
+paloma <unk> 1 1
+past <unk> 42 1
+past eight 42 3
+past eleven 42 4
+past four 42 4
+past nine 42 4
+past one 42 6
+past seven 42 3
+past six 42 5
+past ten 42 5
+past three 42 3
+past twelve 42 1
+past two 42 3
+per <unk> 16 1
+per day 16 8
+per week 16 7
+phone bill 5 5
+please . 286 87
+please ? 286 173
+please <unk> 286 2
+please ask 286 2
+please explain 286 1
+please give 286 3
+please make 286 3
+please prepare 286 2
+please send 286 10
+please wake 286 3
+prepare my 14 1
+prepare our 14 3
+prepare the 14 10
+price for 2 2
+problem . 6 2
+problem in 6 4
+put my 6 1
+put our 6 2
+put the 6 3
+putting my 1 1
+quarter <unk> 39 1
+quarter past 39 18
+quarter to 39 20
+quiet , 67 41
+quiet room 67 21
+quiet rooms 67 5
+quieter room 4 4
+ramírez . 1 1
+reception . 3 1
+reception ? 3 2
+registration form 7 7
+reservation . 54 23
+reservation for 54 31
+right . 3 3
+roberto <unk> 1 1
+room , 488 60
+room . 488 71
+room ? 488 59
+room <unk> 488 7
+room available 488 22
+room cost 488 11
+room for 488 50
+room have 488 4
+room including 488 1
+room is 488 16
+room number 488 89
+room per 488 7
+room service 488 2
+room until 488 16
+room with 488 73
+rooms , 46 6
+rooms . 46 9
+rooms ? 46 10
+rooms available 46 10
+rooms for 46 5
+rooms have 46 1
+rooms until 46 1
+rooms with 46 4
+rosario <unk> 1 1
+saturday . 3 2
+saturday <unk> 3 1
+sea , 2 1
+sea . 2 1
+second . 2 1
+second in 2 1
+see a 20 17
+see another 20 3
+send down 65 13
+send my 65 16
+send our 65 10
+send the 65 7
+send up 65 19
+sending down 9 2
+sending my 9 1
+sending our 9 3
+sending up 9 3
+september the 5 5
+sergio <unk> 2 2
+service cost 2 1
+service included 2 1
+seven , 26 1
+seven . 26 3
+seven ? 26 2
+seven days 26 1
+seven eight 26 1
+seven for 26 1
+seven four 26 3
+seven in 26 1
+seven oh 26 2
+seven one 26 5
+seven seven 26 1
+seven three 26 3
+seven two 26 2
+seventh . 5 2
+seventh at 5 3
+should i 50 3
+should leave 50 42
+should we 50 5
+shower , 7 2
+shower and 7 3
+shower for 7 2
+showing me 8 3
+showing us 8 5
+sign a 3 1
+sign the 3 2
+single room 60 56
+single rooms 60 4
+six , 36 7
+six . 36 5
+six ? 36 4
+six eight 36 1
+six for 36 2
+six four 36 4
+six in 36 2
+six nights 36 1
+six o 36 1
+six one 36 4
+six three 36 3
+six two 36 2
+sixteenth at 1 1
+station . 2 1
+station ? 2 1
+suitcase to 6 6
+suitcases ? 8 1
+suitcases in 8 1
+suitcases to 8 6
+sunday at 1 1
+taking a 1 1
+taxes included 4 4
+taxi , 46 4
+taxi . 46 4
+taxi ? 46 2
+taxi for 46 36
+telephone , 45 8
+telephone . 45 7
+telephone ? 45 2
+telephone and 45 15
+telephone available 45 1
+telephone for 45 8
+telephone in 45 3
+telephone until 45 1
+ten , 10 4
+ten <unk> 10 1
+ten in 10 4
+ten o 10 1
+teresa <unk> 1 1
+that a 27 4
+that there 27 23
+the <unk> 375 29
+the afternoon 375 12
+the bags 375 3
+the bill 375 67
+the bus 375 7
+the car 375 6
+the day 375 3
+the eighth 375 1
+the eleventh 375 1
+the evening 375 10
+the first 375 4
+the fourteenth 375 2
+the fourth 375 1
+the key 375 54
+the keys 375 23
+the luggage 375 6
+the morning 375 19
+the mountain 375 4
+the nineteenth 375 1
+the phone 375 5
+the price 375 2
+the registration 375 6
+the room 375 73
+the rooms 375 9
+the sea 375 2
+the second 375 2
+the seventh 375 2
+the sixteenth 375 1
+the station 375 2
+the suitcases 375 1
+the taxi 375 3
+the thirteenth 375 1
+the thirtieth 375 1
+the travel 375 2
+the twenty 375 10
+there <unk> 63 2
+there a 63 17
+there air 63 6
+there any 63 3
+there has 63 5
+there hot 63 2
+there is 63 20
+there was 63 8
+think that 27 27
+thirteenth at 1 1
+thirtieth . 1 1
+this afternoon 5 1
+this evening 5 1
+this morning 5 1
+this week 5 2
+three , 42 13
+three . 42 3
+three ? 42 1
+three eight 42 2
+three five 42 2
+three for 42 2
+three four 42 2
+three in 42 2
+three nine 42 2
+three oh 42 1
+three one 42 3
+three six 42 2
+three three 42 6
+three two 42 1
+thursday . 5 1
+thursday <unk> 5 2
+thursday morning 5 1
+thursday the 5 1
+to <unk> 264 4
+to a 264 12
+to book 264 20
+to change 264 9
+to eight 264 2
+to eleven 264 1
+to five 264 1
+to give 264 16
+to move 264 4
+to my 264 20
+to nine 264 2
+to one 264 2
+to our 264 15
+to reception 264 3
+to room 264 60
+to send 264 15
+to seven 264 1
+to six 264 3
+to ten 264 1
+to the 264 54
+to three 264 4
+to twelve 264 2
+to two 264 1
+to wake 264 12
+today , 21 1
+today . 21 9
+today ? 21 1
+today at 21 8
+today in 21 2
+tomorrow , 44 2
+tomorrow . 44 5
+tomorrow at 44 33
+tomorrow evening 44 1
+tomorrow for 44 2
+tomorrow morning 44 1
+tonight , 5 1
+tonight . 5 1
+tonight ? 5 1
+tonight for 5 2
+too cold 7 5
+too hot 7 1
+too much 7 1
+travel <unk> 12 1
+travel bag 12 3
+travel bags 12 8
+tuesday . 1 1
+tv , 46 11
+tv . 46 5
+tv ? 46 6
+tv and 46 13
+tv available 46 2
+tv for 46 5
+tv in 46 4
+twelve , 7 1
+twelve . 7 1
+twelve in 7 4
+twelve o 7 1
+twenty - 14 13
+twenty <unk> 14 1
+two , 53 4
+two . 53 3
+two ? 53 2
+two <unk> 53 1
+two double 53 3
+two eight 53 3
+two five 53 1
+two for 53 1
+two in 53 2
+two nine 53 2
+two o 53 1
+two oh 53 1
+two one 53 2
+two quiet 53 3
+two rooms 53 9
+two seven 53 2
+two single 53 1
+two six 53 5
+two three 53 5
+two two 53 2
+until <unk> 21 3
+until next 21 4
+until november 21 1
+until the 21 9
+until tomorrow 21 4
+up <unk> 85 1
+up at 85 44
+up my 85 13
+up our 85 9
+up tomorrow 85 18
+us , 120 28
+us <unk> 120 1
+us a 120 5
+us taking 120 1
+us the 120 47
+us to 120 4
+us up 120 34
+very <unk> 8 1
+very cold 8 1
+very expensive 8 2
+very hot 8 3
+very much 8 1
+view , 16 2
+view . 16 1
+view <unk> 16 1
+view and 16 3
+view for 16 1
+view of 16 8
+vilanova . 1 1
+wake me 58 27
+wake us 58 31
+waking me 3 2
+waking us 3 1
+want a 72 29
+want to 72 20
+want you 72 23
+warmer room 1 1
+was a 8 5
+was an 8 3
+water and 4 1
+water in 4 2
+water until 4 1
+we <unk> 139 2
+we are 139 16
+we book 139 9
+we booked 139 13
+we fill 139 1
+we have 139 32
+we made 139 1
+we see 139 8
+we should 139 21
+we sign 139 3
+we want 139 21
+we would 139 12
+week , 11 6
+week ? 11 5
+what <unk> 4 1
+what is 4 3
+will you 1 1
+with <unk> 77 3
+with a 77 63
+with air 77 6
+with full 77 3
+with half 77 1
+with hot 77 1
+would <unk> 101 1
+would like 101 43
+would you 101 57
+you <unk> 310 8
+you accept 310 5
+you ask 310 18
+you call 310 19
+you carry 310 3
+you change 310 2
+you check 310 3
+you explain 310 6
+you give 310 35
+you have 310 29
+you make 310 12
+you mind 310 46
+you move 310 5
+you prepare 310 11
+you put 310 5
+you send 310 28
+you to 310 43
+you very 310 1
+you wake 310 31
+- <unk> , 4 1
+- <unk> . 4 1
+- <unk> ? 4 1
+- <unk> at 4 1
+' clock , 15 5
+' clock . 15 3
+' clock in 15 7
+- eighth , 2 1
+- eighth at 2 1
+- nine days 2 2
+- ninth at 1 1
+- seventh . 3 1
+- seventh at 3 2
+- six nights 1 1
+, <unk> room 1 1
+, a bath 21 2
+, a bathroom 21 1
+, a good 21 3
+, a shower 21 2
+, a telephone 21 7
+, a tv 21 4
+, a view 21 2
+, air conditioning 2 2
+, double room 18 17
+, double rooms 18 1
+, please . 260 87
+, please ? 260 173
+, single room 23 20
+, single rooms 23 3
+<s> <unk> ! 22 2
+<s> <unk> . 22 1
+<s> <unk> ? 22 3
+<s> <unk> <unk> 22 6
+<s> <unk> have 22 1
+<s> <unk> is 22 1
+<s> <unk> my 22 1
+<s> <unk> our 22 1
+<s> <unk> the 22 1
+<s> <unk> you 22 5
+<s> a mistake 4 1
+<s> a room 4 3
+<s> are <unk> 17 1
+<s> are all 17 7
+<s> are expenses 17 1
+<s> are extras 17 2
+<s> are there 17 6
+<s> ask for 2 2
+<s> can i 66 1
+<s> can you 66 65
+<s> carry the 1 1
+<s> could i 140 15
+<s> could we 140 18
+<s> could you 140 107
+<s> do the 33 1
+<s> do you 33 32
+<s> does it 7 3
+<s> does my 7 1
+<s> does the 7 3
+<s> give me 10 6
+<s> give us 10 4
+<s> good <unk> 2 1
+<s> good morning 2 1
+<s> how <unk> 32 1
+<s> how many 32 1
+<s> how much 32 30
+<s> i <unk> 249 4
+<s> i am 249 10
+<s> i booked 249 13
+<s> i do 249 1
+<s> i have 249 74
+<s> i leave 249 6
+<s> i made 249 10
+<s> i should 249 21
+<s> i think 249 27
+<s> i want 249 51
+<s> i would 249 32
+<s> is <unk> 37 2
+<s> is breakfast 37 1
+<s> is everything 37 4
+<s> is room 37 2
+<s> is the 37 6
+<s> is there 37 22
+<s> it does 5 2
+<s> it is 5 3
+<s> my name 5 5
+<s> not at 1 1
+<s> please <unk> 26 2
+<s> please ask 26 2
+<s> please explain 26 1
+<s> please give 26 3
+<s> please make 26 3
+<s> please prepare 26 2
+<s> please send 26 10
+<s> please wake 26 3
+<s> prepare our 1 1
+<s> put our 1 1
+<s> send down 12 1
+<s> send my 12 3
+<s> send our 12 4
+<s> send up 12 4
+<s> should i 8 3
+<s> should we 8 5
+<s> the keys 17 1
+<s> the room 17 16
+<s> there <unk> 12 1
+<s> there has 12 1
+<s> there is 12 9
+<s> there was 12 1
+<s> wake me 12 7
+<s> wake us 12 5
+<s> we are 116 16
+<s> we booked 116 13
+<s> we have 116 32
+<s> we made 116 1
+<s> we should 116 21
+<s> we want 116 21
+<s> we would 116 12
+<s> what <unk> 4 1
+<s> what is 4 3
+<s> will you 1 1
+<s> would you 57 57
+<unk> ! </s> 3 3
+<unk> , <unk> 15 1
+<unk> , please 15 14
+<unk> . </s> 75 75
+<unk> ? </s> 21 21
+<unk> <unk> , 101 5
+<unk> <unk> . 101 38
+<unk> <unk> ? 101 7
+<unk> <unk> </s> 101 3
+<unk> <unk> <unk> 101 27
+<unk> <unk> a 101 4
+<unk> <unk> cost 101 1
+<unk> <unk> does 101 1
+<unk> <unk> for 101 1
+<unk> <unk> have 101 1
+<unk> <unk> in 101 2
+<unk> <unk> is 101 1
+<unk> <unk> luggage 101 1
+<unk> <unk> my 101 1
+<unk> <unk> on 101 1
+<unk> <unk> the 101 6
+<unk> <unk> to 101 1
+<unk> a <unk> 11 5
+<unk> a double 11 1
+<unk> a mistake 11 2
+<unk> a room 11 2
+<unk> a taxi 11 1
+<unk> and a 1 1
+<unk> april the 1 1
+<unk> at a 12 8
+<unk> at eight 12 1
+<unk> at half 12 2
+<unk> at nine 12 1
+<unk> available ? 1 1
+<unk> bags to 1 1
+<unk> bill included 1 1
+<unk> board for 1 1
+<unk> breakfast cost 1 1
+<unk> cabedo . 2 2
+<unk> cornelles . 1 1
+<unk> cost per 1 1
+<unk> days , 3 1
+<unk> days ? 3 1
+<unk> days for 3 1
+<unk> does a 1 1
+<unk> for <unk> 11 6
+<unk> for a 11 2
+<unk> for mr 11 1
+<unk> for rosario 11 1
+<unk> for today 11 1
+<unk> have a 2 1
+<unk> have made 2 1
+<unk> in a 8 1
+<unk> in my 8 1
+<unk> in the 8 6
+<unk> included ? 5 4
+<unk> included in 5 1
+<unk> is <unk> 3 1
+<unk> is it 3 1
+<unk> is the 3 1
+<unk> luggage to 1 1
+<unk> march the 1 1
+<unk> marina miralles 1 1
+<unk> my <unk> 4 2
+<unk> my room 4 1
+<unk> my travel 4 1
+<unk> of <unk> 1 1
+<unk> oh nine 1 1
+<unk> on <unk> 2 1
+<unk> on the 2 1
+<unk> our luggage 2 1
+<unk> our room 2 1
+<unk> paches . 1 1
+<unk> quiet , 1 1
+<unk> ramírez . 1 1
+<unk> room ? 5 3
+<unk> room <unk> 5 2
+<unk> saturday . 1 1
+<unk> september the 1 1
+<unk> the <unk> 19 9
+<unk> the bill 19 5
+<unk> the first 19 1
+<unk> the registration 19 1
+<unk> the second 19 2
+<unk> the twenty 19 1
+<unk> to <unk> 9 2
+<unk> to a 9 2
+<unk> to room 9 3
+<unk> to the 9 2
+<unk> tomorrow . 1 1
+<unk> two . 1 1
+<unk> us a 4 1
+<unk> us the 4 1
+<unk> us up 4 2
+<unk> view <unk> 1 1
+<unk> you <unk> 6 3
+<unk> you call 6 1
+<unk> you to 6 1
+<unk> you very 6 1
+a <unk> , 20 1
+a <unk> . 20 3
+a <unk> <unk> 20 2
+a <unk> at 20 1
+a <unk> available 20 1
+a <unk> for 20 4
+a <unk> in 20 2
+a <unk> of 20 1
+a <unk> room 20 3
+a <unk> to 20 1
+a <unk> view 20 1
+a bath , 11 3
+a bath and 11 3
+a bath available 11 1
+a bath for 11 3
+a bath until 11 1
+a bathroom , 6 4
+a bathroom and 6 2
+a day , 5 2
+a day . 5 1
+a day ? 5 2
+a double room 45 45
+a good view 8 8
+a look at 1 1
+a lot of 1 1
+a minibar in 2 2
+a mistake . 19 2
+a mistake has 19 5
+a mistake in 19 12
+a night , 4 1
+a night . 4 1
+a night ? 4 1
+a night for 4 1
+a problem . 6 2
+a problem in 6 4
+a quarter <unk> 39 1
+a quarter past 39 18
+a quarter to 39 20
+a quiet , 58 37
+a quiet room 58 21
+a quieter room 4 4
+a registration form 1 1
+a reservation . 54 23
+a reservation for 54 31
+a room , 122 10
+a room . 122 22
+a room ? 122 7
+a room <unk> 122 1
+a room available 122 8
+a room for 122 26
+a room until 122 8
+a room with 122 40
+a shower , 7 2
+a shower and 7 3
+a shower for 7 2
+a single room 36 36
+a taxi , 35 4
+a taxi . 35 3
+a taxi for 35 28
+a telephone , 45 8
+a telephone . 45 7
+a telephone ? 45 2
+a telephone and 45 15
+a telephone available 45 1
+a telephone for 45 8
+a telephone in 45 3
+a telephone until 45 1
+a tv , 46 11
+a tv . 46 5
+a tv ? 46 6
+a tv and 46 13
+a tv available 46 2
+a tv for 46 5
+a tv in 46 4
+a view , 7 2
+a view . 7 1
+a view of 7 4
+a warmer room 1 1
+a week , 2 2
+accept <unk> <unk> 2 2
+accept cash ? 3 3
+after tomorrow , 2 1
+after tomorrow . 2 1
+afternoon . </s> 13 13
+air conditioning , 23 4
+air conditioning . 23 1
+air conditioning ? 23 4
+air conditioning and 23 4
+air conditioning available 23 1
+air conditioning for 23 2
+air conditioning in 23 6
+air conditioning until 23 1
+all . </s> 1 1
+all <unk> . 2 1
+all <unk> included 2 1
+all expenses included 1 1
+all extras included 1 1
+all right . 3 3
+all taxes included 4 4
+am leaving . 10 2
+am leaving <unk> 10 1
+am leaving on 10 3
+am leaving today 10 1
+am leaving tomorrow 10 3
+an error . 10 2
+an error in 10 8
+and a <unk> 41 4
+and a bath 41 4
+and a bathroom 41 1
+and a good 41 2
+and a minibar 41 1
+and a shower 41 2
+and a telephone 41 11
+and a tv 41 13
+and a view 41 3
+and air conditioning 4 4
+and hot <unk> 2 1
+and hot water 2 1
+and mrs <unk> 3 3
+another room , 4 2
+another room ? 4 2
+any double rooms 2 2
+any quiet , 5 2
+any quiet rooms 5 3
+any rooms available 4 2
+any rooms with 4 2
+april the <unk> 4 2
+april the eleventh 4 1
+april the nineteenth 4 1
+are <unk> included 1 1
+are all <unk> 7 1
+are all expenses 7 1
+are all extras 7 1
+are all taxes 7 4
+are expenses included 1 1
+are extras included 2 2
+are leaving on 16 9
+are leaving this 16 2
+are leaving today 16 2
+are leaving tomorrow 16 3
+are there a 6 2
+are there air 6 1
+are there any 6 3
+ask for a 22 18
+ask for my 22 1
+ask for our 22 3
+at <unk> , 3 3
+at a <unk> 42 1
+at a double 42 1
+at a quarter 42 39
+at a room 42 1
+at all . 1 1
+at eight in 2 1
+at eight o 2 1
+at eleven , 3 1
+at eleven o 3 2
+at five . 2 1
+at five o 2 1
+at four , 2 1
+at four . 2 1
+at half past 24 24
+at nine . 6 1
+at nine in 6 1
+at nine o 6 4
+at one , 8 3
+at one . 8 1
+at one ? 8 1
+at one o 8 3
+at six . 5 3
+at six in 5 1
+at six o 5 1
+at ten , 3 2
+at ten o 3 1
+at three . 1 1
+at twelve , 4 1
+at twelve in 4 2
+at twelve o 4 1
+at two . 4 1
+at two ? 4 1
+at two <unk> 4 1
+at two o 4 1
+available ? </s> 38 38
+bag to room 3 2
+bag to the 3 1
+bags ? </s> 2 2
+bags <unk> ? 1 1
+bags down to 2 2
+bags in the 1 1
+bags on the 1 1
+bags to my 13 1
+bags to our 13 2
+bags to room 13 3
+bags to the 13 7
+bath , a 3 1
+bath , air 3 1
+bath , please 3 1
+bath and a 3 3
+bath available ? 1 1
+bath for <unk> 3 3
+bath until tomorrow 1 1
+bathroom , a 4 2
+bathroom , please 4 2
+bathroom and a 2 2
+been <unk> <unk> 1 1
+been a mistake 3 2
+been a problem 3 1
+been an error 1 1
+been made in 5 5
+bill , please 4 4
+bill . </s> 31 31
+bill ? </s> 8 8
+bill for me 38 11
+bill for room 38 21
+bill for us 38 6
+bill in cash 1 1
+bill included ? 6 6
+board , please 1 1
+board cost ? 2 1
+board cost per 2 1
+board for a 1 1
+board per day 1 1
+book <unk> <unk> 1 1
+book a double 22 2
+book a quiet 22 4
+book a room 22 14
+book a single 22 2
+book two double 9 2
+book two quiet 9 2
+book two rooms 9 4
+book two single 9 1
+booked a double 82 14
+booked a quiet 82 23
+booked a room 82 37
+booked a single 82 8
+booked two double 7 1
+booked two quiet 7 1
+booked two rooms 7 5
+breakfast cost per 1 1
+breakfast included ? 1 1
+bus ? </s> 7 7
+cabedo . </s> 2 2
+call a taxi 15 15
+call my taxi 2 2
+call our taxi 2 2
+can i <unk> 1 1
+can you <unk> 65 2
+can you ask 65 5
+can you call 65 2
+can you change 65 2
+can you explain 65 3
+can you give 65 17
+can you make 65 1
+can you move 65 5
+can you prepare 65 3
+can you put 65 2
+can you send 65 11
+can you wake 65 12
+car . </s> 1 1
+car ? </s> 5 5
+carry my bags 2 1
+carry my suitcases 2 1
+carry the bags 2 1
+carry the luggage 2 1
+cash ? </s> 4 4
+change my room 1 1
+change our room 1 1
+change rooms , 9 4
+change rooms . 9 5
+changing my room 3 3
+changing our room 1 1
+check my bill 1 1
+check the bill 2 2
+clock , please 5 5
+clock . </s> 3 3
+clock in the 7 7
+cold . </s> 5 5
+cold in the 1 1
+colomer . </s> 1 1
+conditioning , a 4 2
+conditioning , please 4 2
+conditioning . </s> 1 1
+conditioning ? </s> 4 4
+conditioning and a 4 3
+conditioning and hot 4 1
+conditioning available ? 1 1
+conditioning for this 2 1
+conditioning for today 2 1
+conditioning in my 6 1
+conditioning in the 6 5
+conditioning until the 1 1
+cornelles . </s> 1 1
+cost , please 2 2
+cost ? </s> 4 4
+cost for <unk> 2 1
+cost for a 2 1
+cost per <unk> 8 1
+cost per day 8 2
+cost per week 8 5
+could i book 15 3
+could i see 15 12
+could we <unk> 18 1
+could we book 18 9
+could we see 18 8
+could you <unk> 107 3
+could you ask 107 9
+could you call 107 13
+could you carry 107 3
+could you check 107 3
+could you explain 107 3
+could you give 107 18
+could you make 107 10
+could you prepare 107 6
+could you put 107 3
+could you send 107 17
+could you wake 107 19
+day , please 6 6
+day . </s> 1 1
+day ? </s> 6 6
+day <unk> tomorrow 1 1
+day after tomorrow 2 2
+days , please 2 2
+days . </s> 3 3
+days ? </s> 1 1
+days for <unk> 2 1
+days for mr 2 1
+do not <unk> 1 1
+do the rooms 1 1
+do you accept 32 3
+do you have 32 29
+does <unk> <unk> 1 1
+does a <unk> 17 1
+does a double 17 8
+does a single 17 8
+does it have 3 3
+does my room 1 1
+does not matter 1 1
+does the room 3 3
+double room , 62 2
+double room . 62 9
+double room ? 62 2
+double room available 62 4
+double room cost 62 4
+double room for 62 11
+double room including 62 1
+double room per 62 4
+double room until 62 1
+double room with 62 24
+double rooms , 6 1
+double rooms available 6 3
+double rooms for 6 1
+double rooms with 6 1
+down my luggage 4 3
+down my suitcases 4 1
+down our luggage 11 8
+down our suitcase 11 1
+down our suitcases 11 1
+down our travel 11 1
+down to <unk> 3 1
+down to reception 3 2
+eight , please 5 5
+eight . </s> 4 4
+eight for us 1 1
+eight in the 4 4
+eight o ' 1 1
+eight one for 3 1
+eight one four 3 1
+eight one nine 3 1
+eight seven four 1 1
+eight six . 1 1
+eight three eight 1 1
+eight two oh 2 1
+eight two six 2 1
+eighteen days for 1 1
+eighth , please 1 1
+eighth . </s> 1 1
+eighth at eight 1 1
+eleven , please 2 2
+eleven . </s> 1 1
+eleven ? </s> 1 1
+eleven in the 2 2
+eleven o ' 2 2
+eleventh at a 1 1
+emilio <unk> . 1 1
+enrique <unk> . 1 1
+error . </s> 2 2
+error in our 8 1
+error in the 8 7
+evening . </s> 13 13
+everything included ? 4 4
+expenses included in 2 2
+expensive . </s> 2 2
+explain our bill 1 1
+explain the bill 6 6
+extras included ? 3 1
+extras included in 3 2
+fill in the 3 3
+first , please 1 1
+first at three 1 1
+first for mr 1 1
+first in the 1 1
+five , please 2 2
+five . </s> 4 4
+five in the 1 1
+five nights . 1 1
+five nine , 2 2
+five o ' 1 1
+five oh one 1 1
+five one five 3 2
+five one one 3 1
+five two seven 2 1
+five two two 2 1
+for <unk> ? 43 1
+for <unk> <unk> 43 34
+for <unk> cabedo 43 2
+for <unk> days 43 3
+for <unk> marina 43 1
+for <unk> paches 43 1
+for <unk> ramírez 43 1
+for a <unk> 57 1
+for a day 57 5
+for a double 57 4
+for a night 57 4
+for a quiet 57 8
+for a room 57 12
+for a single 57 2
+for a taxi 57 19
+for a week 57 2
+for eighteen days 1 1
+for enrique <unk> 1 1
+for five nights 1 1
+for jesús <unk> 1 1
+for julia vilanova 1 1
+for me , 33 33
+for miss <unk> 1 1
+for mr <unk> 12 8
+for mr and 12 3
+for mr gerardo 12 1
+for mrs <unk> 3 2
+for mrs inmaculada 3 1
+for my taxi 1 1
+for nine days 2 1
+for nine nights 2 1
+for our taxi 3 3
+for paloma <unk> 1 1
+for roberto <unk> 1 1
+for room number 30 30
+for rosario <unk> 1 1
+for sergio <unk> 1 1
+for seven days 1 1
+for ten <unk> 1 1
+for teresa <unk> 1 1
+for this week 2 2
+for today , 9 1
+for today . 9 7
+for today ? 9 1
+for tonight , 5 1
+for tonight . 5 1
+for tonight ? 5 1
+for tonight for 5 2
+for twenty - 4 3
+for twenty <unk> 4 1
+for us , 28 28
+form , please 2 2
+form ? </s> 5 5
+four , please 4 4
+four . </s> 8 8
+four ? </s> 2 2
+four for me 2 1
+four for us 2 1
+four in the 1 1
+four nine , 2 1
+four nine oh 2 1
+four oh , 3 2
+four oh ? 3 1
+four one , 7 1
+four one . 7 1
+four one eight 7 1
+four one for 7 1
+four one four 7 1
+four one nine 7 1
+four one three 7 1
+four seven , 4 1
+four seven for 4 1
+four seven four 4 1
+four seven one 4 1
+four three , 1 1
+four two three 1 1
+fourteenth at a 1 1
+fourteenth in the 1 1
+fourth . </s> 1 1
+friday . </s> 1 1
+friday april the 1 1
+friday may the 1 1
+friday the first 1 1
+full board , 3 1
+full board cost 3 2
+gerardo <unk> . 1 1
+give me the 25 25
+give us the 39 39
+giving me the 5 5
+giving us the 7 7
+good <unk> ! 1 1
+good morning ! 1 1
+good view and 8 3
+good view for 8 1
+good view of 8 4
+gregorio <unk> . 1 1
+half board per 1 1
+half past <unk> 24 1
+half past eleven 24 3
+half past four 24 2
+half past nine 24 3
+half past one 24 2
+half past seven 24 2
+half past six 24 4
+half past ten 24 2
+half past three 24 2
+half past twelve 24 1
+half past two 24 2
+has been <unk> 10 1
+has been a 10 3
+has been an 10 1
+has been made 10 5
+have <unk> a 2 1
+have <unk> quiet 2 1
+have a double 36 2
+have a quiet 36 5
+have a reservation 36 12
+have a room 36 10
+have a single 36 3
+have a telephone 36 3
+have a tv 36 1
+have air conditioning 5 5
+have any double 8 2
+have any quiet 8 4
+have any rooms 8 2
+have booked a 63 59
+have booked two 63 4
+have made a 31 31
+hot . </s> 2 2
+hot <unk> ? 1 1
+hot in the 2 2
+hot water and 4 1
+hot water in 4 2
+hot water until 4 1
+how <unk> ? 1 1
+how many ? 1 1
+how much ? 30 2
+how much does 30 16
+how much is 30 12
+i <unk> <unk> 6 3
+i <unk> in 6 1
+i <unk> the 6 1
+i <unk> to 6 1
+i am leaving 10 10
+i book a 3 3
+i booked a 13 13
+i do not 1 1
+i fill in 2 2
+i have <unk> 74 1
+i have a 74 12
+i have booked 74 38
+i have made 74 23
+i leave on 6 4
+i leave today 6 1
+i leave tomorrow 6 1
+i made a 10 10
+i see a 12 11
+i see another 12 1
+i should leave 21 21
+i think that 27 27
+i want a 51 21
+i want to 51 13
+i want you 51 17
+i would like 32 32
+in a <unk> 1 1
+in cash ? 1 1
+in my <unk> 6 1
+in my bill 6 3
+in my room 6 2
+in our bill 5 4
+in our room 5 1
+in the <unk> 103 1
+in the afternoon 103 12
+in the bill 103 31
+in the car 103 4
+in the evening 103 10
+in the morning 103 19
+in the registration 103 3
+in the room 103 13
+in the rooms 103 8
+in the taxi 103 2
+included ? </s> 19 19
+included in the 7 7
+including room service 1 1
+inmaculada colomer . 1 1
+is <unk> <unk> 6 4
+is <unk> included 6 2
+is a <unk> 25 2
+is a double 25 4
+is a lot 25 1
+is a mistake 25 8
+is a problem 25 2
+is a single 25 8
+is all <unk> 4 1
+is all right 4 3
+is an error 6 6
+is breakfast included 1 1
+is emilio <unk> 1 1
+is everything included 4 4
+is gregorio <unk> 1 1
+is it ? 1 1
+is jesús <unk> 1 1
+is room <unk> 2 1
+is room service 2 1
+is sergio <unk> 1 1
+is the <unk> 10 3
+is the phone 10 5
+is the price 10 2
+is there a 22 15
+is there air 22 5
+is there hot 22 2
+is too cold 7 5
+is too hot 7 1
+is too much 7 1
+is very <unk> 7 1
+is very cold 7 1
+is very expensive 7 2
+is very hot 7 3
+it ? </s> 1 1
+it does <unk> 2 1
+it does not 2 1
+it have a 3 2
+it have air 3 1
+it is too 3 2
+it is very 3 1
+jesús <unk> . 2 2
+julia vilanova . 1 1
+key to my 54 8
+key to our 54 3
+key to room 54 22
+key to the 54 21
+keys to my 23 1
+keys to our 23 2
+keys to room 23 14
+keys to the 23 6
+leave . </s> 2 2
+leave <unk> <unk> 1 1
+leave on <unk> 22 3
+leave on friday 22 1
+leave on march 22 1
+leave on monday 22 2
+leave on saturday 22 1
+leave on september 22 3
+leave on the 22 8
+leave on thursday 22 3
+leave this afternoon 1 1
+leave today . 9 2
+leave today at 9 5
+leave today in 9 2
+leave tomorrow . 13 2
+leave tomorrow at 13 9
+leave tomorrow evening 13 1
+leave tomorrow morning 13 1
+leaving . </s> 2 2
+leaving <unk> at 1 1
+leaving on <unk> 12 2
+leaving on friday 12 2
+leaving on monday 12 1
+leaving on saturday 12 1
+leaving on september 12 1
+leaving on sunday 12 1
+leaving on the 12 3
+leaving on thursday 12 1
+leaving this evening 2 1
+leaving this morning 2 1
+leaving today at 3 3
+leaving tomorrow at 6 6
+like a double 10 1
+like a quiet 10 2
+like a room 10 7
+like to book 14 7
+like to change 14 4
+like to move 14 3
+like you to 19 19
+look at a 1 1
+lot of noise 1 1
+luggage . </s> 2 2
+luggage down to 1 1
+luggage in the 4 4
+luggage on the 1 1
+luggage to my 40 6
+luggage to our 40 6
+luggage to reception 40 1
+luggage to room 40 13
+luggage to the 40 14
+made a reservation 42 42
+made in our 5 3
+made in the 5 2
+make out my 15 1
+make out our 15 1
+make out the 15 13
+many ? </s> 1 1
+march the seventh 2 1
+march the twenty 2 1
+marina miralles . 1 1
+matter . </s> 1 1
+may the twenty 1 1
+me , please 33 33
+me <unk> a 1 1
+me a double 2 1
+me a room 2 1
+me another room 1 1
+me the key 30 22
+me the keys 30 8
+me to a 2 2
+me up at 29 20
+me up tomorrow 29 9
+mind <unk> <unk> 6 2
+mind <unk> my 6 2
+mind <unk> us 6 2
+mind changing my 4 3
+mind changing our 4 1
+mind giving me 12 5
+mind giving us 12 7
+mind me <unk> 1 1
+mind moving us 1 1
+mind putting my 1 1
+mind sending down 9 2
+mind sending my 9 1
+mind sending our 9 3
+mind sending up 9 3
+mind showing me 8 3
+mind showing us 8 5
+mind us taking 1 1
+mind waking me 3 2
+mind waking us 3 1
+minibar in the 2 2
+miralles . </s> 1 1
+miss <unk> . 1 1
+mistake . </s> 2 2
+mistake has been 5 5
+mistake in my 12 3
+mistake in the 12 9
+monday april the 2 2
+monday evening . 1 1
+morning ! </s> 1 1
+morning . </s> 22 22
+mountain , a 2 2
+mountain and a 2 2
+move me to 2 2
+move to a 4 4
+move us to 3 3
+moving us to 1 1
+mr <unk> . 8 5
+mr <unk> <unk> 8 2
+mr <unk> cornelles 8 1
+mr and mrs 3 3
+mr gerardo <unk> 1 1
+mrs <unk> , 5 1
+mrs <unk> . 5 4
+mrs inmaculada colomer 1 1
+much ! </s> 1 1
+much ? </s> 2 2
+much does a 16 16
+much is a 12 12
+much noise in 1 1
+my <unk> . 4 1
+my <unk> bags 4 1
+my <unk> on 4 1
+my <unk> to 4 1
+my bags ? 6 1
+my bags <unk> 6 1
+my bags to 6 4
+my bill . 6 2
+my bill for 6 4
+my luggage on 20 1
+my luggage to 20 19
+my name is 5 5
+my room , 28 8
+my room . 28 6
+my room ? 28 13
+my room have 28 1
+my suitcase to 5 5
+my suitcases ? 3 1
+my suitcases to 3 2
+my taxi for 3 3
+my travel bag 4 1
+my travel bags 4 3
+name is <unk> 5 1
+name is emilio 5 1
+name is gregorio 5 1
+name is jesús 5 1
+name is sergio 5 1
+next <unk> for 1 1
+next friday . 1 1
+next thursday . 1 1
+next tuesday . 1 1
+night , please 1 1
+night . </s> 1 1
+night ? </s> 1 1
+night for mr 1 1
+nights , please 1 1
+nights . </s> 1 1
+nights for <unk> 1 1
+nine , please 5 5
+nine . </s> 7 7
+nine ? </s> 3 3
+nine <unk> , 1 1
+nine days , 3 1
+nine days . 3 2
+nine eight one 1 1
+nine for us 3 3
+nine four one 1 1
+nine in the 3 3
+nine nights , 1 1
+nine nine two 1 1
+nine o ' 4 4
+nine oh , 2 1
+nine oh one 2 1
+nine one four 2 1
+nine one one 2 1
+nine six four 1 1
+nine two , 3 1
+nine two one 3 1
+nine two seven 3 1
+nineteenth in the 1 1
+ninth at nine 1 1
+noise in the 2 2
+not <unk> . 1 1
+not at all 1 1
+not matter . 1 1
+november the first 1 1
+number <unk> oh 1 1
+number eight one 6 2
+number eight seven 6 1
+number eight three 6 1
+number eight two 6 2
+number five nine 7 1
+number five oh 7 1
+number five one 7 3
+number five two 7 2
+number four nine 9 1
+number four one 9 4
+number four seven 9 2
+number four three 9 1
+number four two 9 1
+number nine eight 9 1
+number nine four 9 1
+number nine nine 9 1
+number nine oh 9 1
+number nine one 9 2
+number nine six 9 1
+number nine two 9 2
+number oh one 7 4
+number oh three 7 2
+number oh two 7 1
+number one four 9 3
+number one one 9 3
+number one seven 9 1
+number one two 9 2
+number seven eight 12 1
+number seven oh 12 2
+number seven one 12 4
+number seven seven 12 1
+number seven three 12 2
+number seven two 12 2
+number six , 11 1
+number six four 11 3
+number six one 11 4
+number six three 11 2
+number six two 11 1
+number three four 8 2
+number three one 8 1
+number three six 8 2
+number three three 8 3
+number two eight 10 1
+number two five 10 1
+number two nine 10 1
+number two one 10 1
+number two six 10 2
+number two three 10 3
+number two two 10 1
+o ' clock 15 15
+of <unk> in 1 1
+of noise in 1 1
+of the <unk> 8 2
+of the mountain 8 4
+of the sea 8 2
+oh , please 6 6
+oh ? </s> 1 1
+oh five . 1 1
+oh nine for 1 1
+oh one ? 6 1
+oh one for 6 1
+oh one four 6 1
+oh one nine 6 2
+oh one oh 6 1
+oh three , 3 1
+oh three five 3 1
+oh three oh 3 1
+oh two nine 1 1
+on <unk> <unk> 6 2
+on <unk> april 6 1
+on <unk> march 6 1
+on <unk> september 6 1
+on <unk> the 6 1
+on friday april 3 1
+on friday may 3 1
+on friday the 3 1
+on march the 1 1
+on monday april 3 2
+on monday evening 3 1
+on saturday . 2 1
+on saturday <unk> 2 1
+on september the 4 4
+on sunday at 1 1
+on the <unk> 14 5
+on the bus 14 2
+on the first 14 1
+on the fourteenth 14 2
+on the fourth 14 1
+on the seventh 14 1
+on the thirteenth 14 1
+on the twenty 14 1
+on thursday <unk> 4 2
+on thursday morning 4 1
+on thursday the 4 1
+one , please 11 11
+one . </s> 5 5
+one ? </s> 5 5
+one eight , 2 1
+one eight . 2 1
+one five , 2 1
+one five . 2 1
+one for me 5 2
+one for us 5 3
+one four , 10 3
+one four . 10 2
+one four for 10 2
+one four nine 10 1
+one four oh 10 1
+one four seven 10 1
+one in the 1 1
+one nine , 6 1
+one nine . 6 2
+one nine ? 6 1
+one nine for 6 2
+one o ' 3 3
+one oh , 1 1
+one one , 6 3
+one one for 6 1
+one one one 6 1
+one one three 6 1
+one seven four 1 1
+one six , 2 1
+one six for 2 1
+one three , 4 2
+one three . 4 1
+one three for 4 1
+one two . 2 1
+one two eight 2 1
+our <unk> to 2 2
+our bags to 2 2
+our bill , 9 1
+our bill . 9 4
+our bill for 9 4
+our luggage . 21 1
+our luggage down 21 1
+our luggage in 21 1
+our luggage to 21 18
+our room , 19 6
+our room . 19 6
+our room ? 19 7
+our suitcase to 1 1
+our suitcases in 4 1
+our suitcases to 4 3
+our taxi for 5 5
+our travel <unk> 6 1
+our travel bag 6 2
+our travel bags 6 3
+out my bill 1 1
+out our bill 1 1
+out the bill 13 13
+paches . </s> 1 1
+paloma <unk> . 1 1
+past <unk> , 1 1
+past eight , 3 1
+past eight in 3 2
+past eleven , 4 1
+past eleven . 4 1
+past eleven in 4 2
+past four . 4 2
+past four ? 4 1
+past four in 4 1
+past nine , 4 1
+past nine . 4 1
+past nine ? 4 1
+past nine in 4 1
+past one , 6 2
+past one . 6 2
+past one ? 6 1
+past one in 6 1
+past seven . 3 2
+past seven ? 3 1
+past six . 5 1
+past six ? 5 3
+past six in 5 1
+past ten , 5 2
+past ten in 5 3
+past three , 3 3
+past twelve in 1 1
+past two , 3 1
+past two in 3 2
+per <unk> ? 1 1
+per day , 8 4
+per day ? 8 4
+per week , 7 3
+per week ? 7 4
+phone bill included 5 5
+please . </s> 87 87
+please ? </s> 173 173
+please <unk> <unk> 2 1
+please <unk> the 2 1
+please ask for 2 2
+please explain the 1 1
+please give me 3 2
+please give us 3 1
+please make out 3 3
+please prepare the 2 2
+please send my 10 4
+please send our 10 1
+please send up 10 5
+please wake us 3 3
+prepare my bill 1 1
+prepare our bill 3 3
+prepare the bill 10 10
+price for a 2 2
+problem . </s> 2 2
+problem in the 4 4
+put my travel 1 1
+put our luggage 2 1
+put our suitcases 2 1
+put the luggage 3 3
+putting my luggage 1 1
+quarter <unk> two 1 1
+quarter past eight 18 3
+quarter past eleven 18 1
+quarter past four 18 2
+quarter past nine 18 1
+quarter past one 18 4
+quarter past seven 18 1
+quarter past six 18 1
+quarter past ten 18 3
+quarter past three 18 1
+quarter past two 18 1
+quarter to eight 20 2
+quarter to eleven 20 1
+quarter to five 20 1
+quarter to nine 20 2
+quarter to one 20 2
+quarter to seven 20 1
+quarter to six 20 3
+quarter to ten 20 1
+quarter to three 20 4
+quarter to twelve 20 2
+quarter to two 20 1
+quiet , double 41 18
+quiet , single 41 23
+quiet room , 21 3
+quiet room . 21 8
+quiet room <unk> 21 1
+quiet room available 21 4
+quiet room for 21 3
+quiet room until 21 1
+quiet room with 21 1
+quiet rooms . 5 1
+quiet rooms available 5 3
+quiet rooms for 5 1
+quieter room , 4 2
+quieter room ? 4 2
+ramírez . </s> 1 1
+reception . </s> 1 1
+reception ? </s> 2 2
+registration form , 7 2
+registration form ? 7 5
+reservation . </s> 23 23
+reservation for <unk> 31 3
+reservation for a 31 23
+reservation for mr 31 3
+reservation for roberto 31 1
+reservation for teresa 31 1
+right . </s> 3 3
+roberto <unk> . 1 1
+room , please 60 60
+room . </s> 71 71
+room ? </s> 59 59
+room <unk> ? 7 1
+room <unk> <unk> 7 2
+room <unk> a 7 1
+room <unk> breakfast 7 1
+room <unk> included 7 1
+room <unk> the 7 1
+room available ? 22 22
+room cost , 11 2
+room cost ? 11 3
+room cost for 11 2
+room cost per 11 4
+room for <unk> 50 14
+room for a 50 8
+room for eighteen 50 1
+room for enrique 50 1
+room for five 50 1
+room for jesús 50 1
+room for julia 50 1
+room for mr 50 3
+room for mrs 50 1
+room for nine 50 2
+room for paloma 50 1
+room for sergio 50 1
+room for seven 50 1
+room for ten 50 1
+room for this 50 1
+room for today 50 5
+room for tonight 50 3
+room for twenty 50 4
+room have a 4 1
+room have air 4 3
+room including room 1 1
+room is <unk> 16 2
+room is all 16 4
+room is too 16 4
+room is very 16 6
+room number <unk> 89 1
+room number eight 89 6
+room number five 89 7
+room number four 89 9
+room number nine 89 9
+room number oh 89 7
+room number one 89 9
+room number seven 89 12
+room number six 89 11
+room number three 89 8
+room number two 89 10
+room per day 7 5
+room per week 7 2
+room service cost 2 1
+room service included 2 1
+room until <unk> 16 3
+room until next 16 4
+room until november 16 1
+room until the 16 5
+room until tomorrow 16 3
+room with <unk> 73 3
+room with a 73 59
+room with air 73 6
+room with full 73 3
+room with half 73 1
+room with hot 73 1
+rooms , please 6 6
+rooms . </s> 9 9
+rooms ? </s> 10 10
+rooms available ? 10 10
+rooms for <unk> 5 2
+rooms for a 5 1
+rooms for today 5 1
+rooms for tonight 5 1
+rooms have air 1 1
+rooms until the 1 1
+rooms with a 4 4
+rosario <unk> . 1 1
+saturday . </s> 2 2
+saturday <unk> the 1 1
+sea , a 1 1
+sea . </s> 1 1
+second . </s> 1 1
+second in the 1 1
+see a double 17 3
+see a quiet 17 7
+see a room 17 6
+see a single 17 1
+see another room 3 3
+send down my 13 4
+send down our 13 9
+send my bags 16 5
+send my luggage 16 7
+send my suitcase 16 3
+send my travel 16 1
+send our bags 10 1
+send our luggage 10 6
+send our suitcases 10 1
+send our travel 10 2
+send the bags 7 2
+send the luggage 7 2
+send the suitcases 7 1
+send the travel 7 2
+send up my 19 11
+send up our 19 8
+sending down our 2 2
+sending my luggage 1 1
+sending our luggage 3 2
+sending our travel 3 1
+sending up my 3 2
+sending up our 3 1
+september the <unk> 5 2
+september the eighth 5 1
+september the thirtieth 5 1
+september the twenty 5 1
+sergio <unk> . 2 2
+service cost per 1 1
+service included ? 1 1
+seven , please 1 1
+seven . </s> 3 3
+seven ? </s> 2 2
+seven days . 1 1
+seven eight six 1 1
+seven for me 1 1
+seven four . 3 2
+seven four ? 3 1
+seven in the 1 1
+seven oh five 2 1
+seven oh three 2 1
+seven one , 5 1
+seven one nine 5 2
+seven one six 5 2
+seven seven three 1 1
+seven three ? 3 1
+seven three three 3 1
+seven three two 3 1
+seven two eight 2 1
+seven two three 2 1
+seventh . </s> 2 2
+seventh at half 3 2
+seventh at nine 3 1
+should i <unk> 3 1
+should i fill 3 2
+should leave . 42 2
+should leave <unk> 42 1
+should leave on 42 18
+should leave this 42 1
+should leave today 42 8
+should leave tomorrow 42 12
+should we <unk> 5 1
+should we fill 5 1
+should we sign 5 3
+shower , a 2 1
+shower , please 2 1
+shower and a 3 2
+shower and air 3 1
+shower for a 2 1
+shower for mr 2 1
+showing me a 3 2
+showing me another 3 1
+showing us <unk> 5 1
+showing us a 5 4
+sign a registration 1 1
+sign the registration 2 2
+single room , 56 4
+single room . 56 8
+single room ? 56 3
+single room <unk> 56 1
+single room available 56 6
+single room cost 56 7
+single room for 56 10
+single room per 56 3
+single room until 56 6
+single room with 56 8
+single rooms available 4 2
+single rooms for 4 1
+single rooms until 4 1
+six , please 7 7
+six . </s> 5 5
+six ? </s> 4 4
+six eight for 1 1
+six for me 2 1
+six for us 2 1
+six four . 4 1
+six four oh 4 1
+six four one 4 1
+six four seven 4 1
+six in the 2 2
+six nights for 1 1
+six o ' 1 1
+six one eight 4 1
+six one four 4 2
+six one three 4 1
+six three eight 3 1
+six three for 3 1
+six three one 3 1
+six two ? 2 1
+six two six 2 1
+sixteenth at half 1 1
+station . </s> 1 1
+station ? </s> 1 1
+suitcase to my 6 3
+suitcase to our 6 1
+suitcase to room 6 1
+suitcase to the 6 1
+suitcases ? </s> 1 1
+suitcases in the 1 1
+suitcases to my 6 1
+suitcases to our 6 1
+suitcases to room 6 2
+suitcases to the 6 2
+sunday at nine 1 1
+taking a look 1 1
+taxes included ? 4 2
+taxes included in 4 2
+taxi , please 4 4
+taxi . </s> 4 4
+taxi ? </s> 2 2
+taxi for me 36 17
+taxi for room 36 9
+taxi for us 36 10
+telephone , a 8 4
+telephone , please 8 4
+telephone . </s> 7 7
+telephone ? </s> 2 2
+telephone and a 15 13
+telephone and air 15 1
+telephone and hot 15 1
+telephone available ? 1 1
+telephone for <unk> 8 5
+telephone for miss 8 1
+telephone for mr 8 1
+telephone for today 8 1
+telephone in our 3 1
+telephone in the 3 2
+telephone until the 1 1
+ten , please 4 4
+ten <unk> for 1 1
+ten in the 4 4
+ten o ' 1 1
+teresa <unk> <unk> 1 1
+that a mistake 4 4
+that there <unk> 23 1
+that there has 23 4
+that there is 23 11
+that there was 23 7
+the <unk> , 29 1
+the <unk> . 29 7
+the <unk> ? 29 3
+the <unk> <unk> 29 2
+the <unk> and 29 1
+the <unk> at 29 8
+the <unk> bill 29 1
+the <unk> for 29 3
+the <unk> in 29 2
+the <unk> to 29 1
+the afternoon . 12 12
+the bags ? 3 1
+the bags to 3 2
+the bill , 67 3
+the bill . 67 25
+the bill ? 67 8
+the bill for 67 30
+the bill in 67 1
+the bus ? 7 7
+the car . 6 1
+the car ? 6 5
+the day <unk> 3 1
+the day after 3 2
+the eighth . 1 1
+the eleventh at 1 1
+the evening . 10 10
+the first , 4 1
+the first at 4 1
+the first for 4 1
+the first in 4 1
+the fourteenth at 2 1
+the fourteenth in 2 1
+the fourth . 1 1
+the key to 54 54
+the keys to 23 23
+the luggage . 6 1
+the luggage in 6 3
+the luggage to 6 2
+the morning . 19 19
+the mountain , 4 2
+the mountain and 4 2
+the nineteenth in 1 1
+the phone bill 5 5
+the price for 2 2
+the registration form 6 6
+the room , 73 23
+the room . 73 12
+the room ? 73 19
+the room have 73 3
+the room is 73 16
+the rooms , 9 1
+the rooms ? 9 7
+the rooms have 9 1
+the sea , 2 1
+the sea . 2 1
+the second . 2 1
+the second in 2 1
+the seventh . 2 1
+the seventh at 2 1
+the sixteenth at 1 1
+the station . 2 1
+the station ? 2 1
+the suitcases to 1 1
+the taxi . 3 1
+the taxi ? 3 2
+the thirteenth at 1 1
+the thirtieth . 1 1
+the travel bags 2 2
+the twenty - 10 10
+there <unk> <unk> 2 1
+there <unk> a 2 1
+there a <unk> 17 1
+there a double 17 1
+there a minibar 17 1
+there a quiet 17 3
+there a room 17 2
+there a single 17 1
+there a telephone 17 4
+there a tv 17 4
+there air conditioning 6 6
+there any quiet 3 1
+there any rooms 3 2
+there has been 5 5
+there hot water 2 2
+there is a 20 13
+there is an 20 6
+there is too 20 1
+there was a 8 5
+there was an 8 3
+think that a 27 4
+think that there 27 23
+thirteenth at a 1 1
+thirtieth . </s> 1 1
+this afternoon . 1 1
+this evening . 1 1
+this morning . 1 1
+this week , 2 1
+this week ? 2 1
+three , please 13 13
+three . </s> 3 3
+three ? </s> 1 1
+three eight . 2 2
+three five , 2 1
+three five . 2 1
+three for us 2 2
+three four oh 2 1
+three four one 2 1
+three in the 2 2
+three nine . 2 2
+three oh , 1 1
+three one . 3 1
+three one for 3 1
+three one three 3 1
+three six for 2 1
+three six two 2 1
+three three , 6 2
+three three . 6 1
+three three nine 6 1
+three three three 6 2
+three two for 1 1
+thursday . </s> 1 1
+thursday <unk> the 2 2
+thursday morning . 1 1
+thursday the sixteenth 1 1
+to <unk> , 4 1
+to <unk> ? 4 1
+to <unk> a 4 1
+to <unk> to 4 1
+to a <unk> 12 2
+to a quieter 12 4
+to a room 12 5
+to a warmer 12 1
+to book a 20 19
+to book two 20 1
+to change rooms 9 9
+to eight , 2 1
+to eight in 2 1
+to eleven ? 1 1
+to five in 1 1
+to give me 16 6
+to give us 16 10
+to move to 4 4
+to my room 20 20
+to nine ? 2 1
+to nine in 2 1
+to one ? 2 2
+to our room 15 15
+to reception . 3 1
+to reception ? 3 2
+to room <unk> 60 1
+to room number 60 59
+to send down 15 4
+to send my 15 5
+to send our 15 1
+to send up 15 5
+to seven in 1 1
+to six , 3 2
+to six ? 3 1
+to ten in 1 1
+to the <unk> 54 3
+to the bus 54 5
+to the car 54 2
+to the room 54 41
+to the station 54 2
+to the taxi 54 1
+to three , 4 2
+to three in 4 2
+to twelve . 2 1
+to twelve in 2 1
+to two , 1 1
+to wake me 12 5
+to wake us 12 7
+today , please 1 1
+today . </s> 9 9
+today ? </s> 1 1
+today at a 8 2
+today at eleven 8 1
+today at half 8 2
+today at six 8 1
+today at twelve 8 2
+today in the 2 2
+tomorrow , please 2 2
+tomorrow . </s> 5 5
+tomorrow at a 33 13
+tomorrow at five 33 2
+tomorrow at four 33 1
+tomorrow at half 33 5
+tomorrow at nine 33 1
+tomorrow at one 33 2
+tomorrow at six 33 3
+tomorrow at ten 33 2
+tomorrow at twelve 33 2
+tomorrow at two 33 2
+tomorrow evening . 1 1
+tomorrow for <unk> 2 2
+tomorrow morning . 1 1
+tonight , please 1 1
+tonight . </s> 1 1
+tonight ? </s> 1 1
+tonight for <unk> 2 2
+too cold . 5 4
+too cold in 5 1
+too hot in 1 1
+too much noise 1 1
+travel <unk> to 1 1
+travel bag to 3 3
+travel bags down 8 2
+travel bags in 8 1
+travel bags on 8 1
+travel bags to 8 4
+tuesday . </s> 1 1
+tv , a 11 6
+tv , air 11 1
+tv , please 11 4
+tv . </s> 5 5
+tv ? </s> 6 6
+tv and a 13 12
+tv and air 13 1
+tv available ? 2 2
+tv for <unk> 5 2
+tv for mrs 5 2
+tv for tonight 5 1
+tv in my 4 1
+tv in the 4 3
+twelve , please 1 1
+twelve . </s> 1 1
+twelve in the 4 4
+twelve o ' 1 1
+twenty - <unk> 13 4
+twenty - eighth 13 2
+twenty - nine 13 2
+twenty - ninth 13 1
+twenty - seventh 13 3
+twenty - six 13 1
+twenty <unk> <unk> 1 1
+two , please 4 4
+two . </s> 3 3
+two ? </s> 2 2
+two <unk> <unk> 1 1
+two double rooms 3 3
+two eight , 3 2
+two eight . 3 1
+two five nine 1 1
+two for us 1 1
+two in the 2 2
+two nine . 2 1
+two nine <unk> 2 1
+two o ' 1 1
+two oh , 1 1
+two one , 2 1
+two one four 2 1
+two quiet , 3 1
+two quiet rooms 3 2
+two rooms . 9 3
+two rooms ? 9 3
+two rooms for 9 2
+two rooms with 9 1
+two seven . 2 1
+two seven ? 2 1
+two single rooms 1 1
+two six , 5 3
+two six eight 5 1
+two six three 5 1
+two three , 5 2
+two three five 5 1
+two three nine 5 1
+two three one 5 1
+two two , 2 1
+two two six 2 1
+until <unk> saturday 3 1
+until <unk> the 3 2
+until next <unk> 4 1
+until next friday 4 1
+until next thursday 4 1
+until next tuesday 4 1
+until november the 1 1
+until the <unk> 9 1
+until the day 9 3
+until the twenty 9 5
+until tomorrow , 4 1
+until tomorrow . 4 1
+until tomorrow for 4 2
+up <unk> at 1 1
+up at <unk> 44 3
+up at a 44 15
+up at eleven 44 2
+up at four 44 1
+up at half 44 12
+up at nine 44 1
+up at one 44 6
+up at six 44 1
+up at ten 44 1
+up at two 44 2
+up my <unk> 13 1
+up my luggage 13 8
+up my suitcase 13 2
+up my suitcases 13 1
+up my travel 13 1
+up our <unk> 9 2
+up our bags 9 1
+up our luggage 9 3
+up our suitcases 9 1
+up our travel 9 2
+up tomorrow at 18 18
+us , please 28 28
+us <unk> room 1 1
+us a quiet 5 1
+us a room 5 4
+us taking a 1 1
+us the <unk> 47 1
+us the key 47 32
+us the keys 47 14
+us to a 4 4
+us up <unk> 34 1
+us up at 34 24
+us up tomorrow 34 9
+very <unk> . 1 1
+very cold . 1 1
+very expensive . 2 2
+very hot . 3 2
+very hot in 3 1
+very much ! 1 1
+view , a 2 2
+view . </s> 1 1
+view <unk> the 1 1
+view and a 3 3
+view for <unk> 1 1
+view of the 8 8
+vilanova . </s> 1 1
+wake me up 27 27
+wake us up 31 31
+waking me up 2 2
+waking us up 1 1
+want a double 29 3
+want a quiet 29 5
+want a room 29 18
+want a single 29 3
+want to <unk> 20 1
+want to book 20 13
+want to change 20 5
+want to move 20 1
+want you to 23 23
+warmer room ? 1 1
+was a mistake 5 2
+was a problem 5 3
+was an error 3 3
+water and air 1 1
+water in the 2 2
+water until the 1 1
+we <unk> a 2 1
+we <unk> the 2 1
+we are leaving 16 16
+we book <unk> 9 1
+we book two 9 8
+we booked a 13 10
+we booked two 13 3
+we fill in 1 1
+we have booked 32 25
+we have made 32 7
+we made a 1 1
+we see a 8 6
+we see another 8 2
+we should leave 21 21
+we sign a 3 1
+we sign the 3 2
+we want a 21 8
+we want to 21 7
+we want you 21 6
+we would <unk> 12 1
+we would like 12 11
+week , please 6 6
+week ? </s> 5 5
+what <unk> is 1 1
+what is the 3 3
+will you prepare 1 1
+with <unk> <unk> 3 2
+with <unk> board 3 1
+with a <unk> 63 2
+with a bath 63 5
+with a bathroom 63 4
+with a good 63 3
+with a shower 63 3
+with a telephone 63 20
+with a tv 63 24
+with a view 63 2
+with air conditioning 6 6
+with full board 3 3
+with half board 1 1
+with hot water 1 1
+would <unk> you 1 1
+would like a 43 10
+would like to 43 14
+would like you 43 19
+would you accept 57 2
+would you ask 57 4
+would you call 57 3
+would you make 57 1
+would you mind 57 46
+would you prepare 57 1
+you <unk> <unk> 8 2
+you <unk> a 8 1
+you <unk> for 8 1
+you <unk> our 8 1
+you <unk> the 8 1
+you <unk> us 8 2
+you accept <unk> 5 2
+you accept cash 5 3
+you ask for 18 18
+you call a 19 15
+you call my 19 2
+you call our 19 2
+you carry my 3 2
+you carry the 3 1
+you change my 2 1
+you change our 2 1
+you check my 3 1
+you check the 3 2
+you explain our 6 1
+you explain the 6 5
+you give me 35 11
+you give us 35 24
+you have <unk> 29 1
+you have a 29 20
+you have any 29 8
+you make out 12 12
+you mind <unk> 46 6
+you mind changing 46 4
+you mind giving 46 12
+you mind me 46 1
+you mind moving 46 1
+you mind putting 46 1
+you mind sending 46 9
+you mind showing 46 8
+you mind us 46 1
+you mind waking 46 3
+you move me 5 2
+you move us 5 3
+you prepare my 11 1
+you prepare our 11 2
+you prepare the 11 8
+you put my 5 1
+you put our 5 1
+you put the 5 3
+you send down 28 8
+you send my 28 4
+you send our 28 4
+you send the 28 7
+you send up 28 5
+you to give 43 16
+you to send 43 15
+you to wake 43 12
+you very much 1 1
+you wake me 31 15
+you wake us 31 16

@@ -5,7 +5,6 @@ using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
 using SIL.Machine.Translation;
-using SIL.Machine.Translation.Thot;
 
 namespace SIL.Machine
 {
@@ -91,7 +90,7 @@ namespace SIL.Machine
 				Out.Write("Translating... ");
 			int segmentCount = 0;
 			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
-			using (ITranslationModel model = new ThotSmtModel(_modelSpec.ModelConfigFileName))
+			using (ITranslationModel model = _modelSpec.CreateModel())
 			using (ITranslationEngine engine = model.CreateEngine())
 			using (StreamWriter writer = isOutputFile ? new StreamWriter(_outputArgument.Value) : null)
 			{

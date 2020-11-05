@@ -1,0 +1,2700 @@
+# *all* 1.1
+¿ le importaría darnos las llaves de la habitación , por favor ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) giving ({ 4 }) us ({ }) the ({ 7 }) keys ({ 5 6 }) to ({ }) the ({ 8 }) room ({ 9 }) , ({ 10 11 }) please ({ 12 }) ? ({ 13 })
+# *all* 1.2
+he hecho la reserva de una habitación tranquila doble con teléfono y televisión a nombre de rosario cabedo .
+NULL ({ }) i ({ 1 }) have ({ }) made ({ 2 3 }) a ({ }) reservation ({ 4 }) for ({ 5 }) a ({ 6 }) quiet ({ 8 }) , ({ }) double ({ 9 }) room ({ 7 }) with ({ 10 }) a ({ }) telephone ({ 11 }) and ({ 12 }) a ({ }) tv ({ 13 }) for ({ 14 15 16 }) rosario ({ 17 }) cabedo ({ 18 }) . ({ 19 })
+# *all* 1.3
+¿ le importaría cambiarme a otra habitación más tranquila ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) moving ({ 4 }) me ({ }) to ({ 5 }) a ({ }) quieter ({ 6 8 }) room ({ 7 9 }) ? ({ 10 })
+# *all* 1.4
+por favor , tengo reservada una habitación .
+NULL ({ }) i ({ 1 }) have ({ 2 3 4 }) booked ({ 5 }) a ({ 6 }) room ({ 7 }) . ({ 8 })
+# *all* 1.5
+me parece que existe un problema .
+NULL ({ }) i ({ 1 }) think ({ 2 }) that ({ 3 }) there ({ 4 }) is ({ }) a ({ }) problem ({ 5 6 }) . ({ 7 })
+# *all* 1.7
+¿ le importaría mostrarnos una habitación con televisión ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) showing ({ 4 }) us ({ }) a ({ 5 }) room ({ 6 }) with ({ 7 }) a ({ }) tv ({ 8 }) ? ({ 9 })
+# *all* 1.8
+¿ tiene teléfono ?
+NULL ({ }) does ({ 1 }) it ({ 2 }) have ({ }) a ({ }) telephone ({ 3 }) ? ({ 4 })
+# *all* 1.9
+voy a marcharme el dos a las ocho de la noche .
+NULL ({ }) i ({ }) am ({ 1 2 }) leaving ({ 3 }) on ({ 4 }) the ({ }) second ({ 5 }) at ({ 6 7 }) eight ({ 8 }) in ({ 9 }) the ({ 10 }) evening ({ 11 }) . ({ 12 })
+# *all* 1.10
+¿ cuánto cuesta una habitación individual por semana ?
+NULL ({ }) how ({ 1 }) much ({ 2 }) does ({ 3 }) a ({ 4 }) single ({ }) room ({ 5 }) cost ({ 6 }) per ({ 7 }) week ({ 8 }) ? ({ 9 })
+# *all* 1.11
+¿ acepta dinero en efectivo ?
+NULL ({ }) do ({ 1 2 }) you ({ }) accept ({ 3 }) cash ({ 4 5 }) ? ({ 6 })
+# *all* 1.12
+mi nombre es victoria piquer .
+NULL ({ }) my ({ 1 }) name ({ 2 }) is ({ 3 }) victoria ({ 4 }) piquer ({ 5 }) . ({ 6 })
+# *all* 1.13
+¿ les importaría subirme los bultos a la habitación tres diez ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) sending ({ 4 }) up ({ }) my ({ }) luggage ({ 5 6 }) to ({ 7 }) room ({ 9 }) number ({ 8 }) three ({ 10 }) one ({ }) oh ({ 11 }) ? ({ 12 })
+# *all* 1.14
+¿ aceptan dinero en efectivo ?
+NULL ({ }) do ({ 1 }) you ({ }) accept ({ 2 3 }) cash ({ 4 5 }) ? ({ 6 })
+# *all* 1.15
+hay una equivocación en mi cuenta .
+NULL ({ }) there ({ 1 }) is ({ }) a ({ 2 }) mistake ({ 3 }) in ({ 4 }) my ({ 5 }) bill ({ 6 }) . ({ 7 })
+# *all* 1.16
+por favor , me detalla la cuenta .
+NULL ({ }) could ({ 1 }) you ({ 2 }) explain ({ 3 }) the ({ 6 }) bill ({ 7 }) for ({ }) me ({ 4 5 }) , ({ }) please ({ 8 }) ? ({ })
+# *all* 1.17
+deseo reservar una habitación doble para una noche .
+NULL ({ }) i ({ }) want ({ 1 }) to ({ }) book ({ 2 }) a ({ 3 }) double ({ 5 }) room ({ 4 }) for ({ 6 }) a ({ 7 }) night ({ 8 }) . ({ 9 })
+# *all* 1.18
+¿ tiene teléfono ?
+NULL ({ }) does ({ 1 }) it ({ 2 }) have ({ }) a ({ }) telephone ({ 3 }) ? ({ 4 })
+# *all* 1.20
+me tengo que ir el martes siete de marzo por la mañana .
+NULL ({ 10 }) i ({ 1 2 }) should ({ 3 }) leave ({ }) on ({ 4 5 }) tuesday ({ 6 }) march ({ 7 }) the ({ 8 }) seventh ({ 9 }) in ({ }) the ({ 11 }) morning ({ 12 }) . ({ 13 })
+# *all* 1.21
+hemos hecho una reserva , por favor .
+NULL ({ 6 7 }) we ({ 1 }) have ({ }) made ({ 2 }) a ({ 3 5 }) reservation ({ 4 }) . ({ 8 })
+# *all* 1.22
+por favor , ¿ nos podrían despertar a las doce ?
+NULL ({ }) could ({ 1 }) you ({ 2 4 }) wake ({ 3 }) us ({ 5 6 }) up ({ 7 }) at ({ 8 9 }) twelve ({ 10 }) , ({ }) please ({ }) ? ({ 11 })
+# *all* 1.23
+¿ nos pueden llevar nuestro equipaje al taxi ?
+NULL ({ }) can ({ 1 3 }) you ({ 2 }) send ({ 4 }) our ({ 5 }) luggage ({ 6 }) to ({ }) the ({ 7 }) taxi ({ 8 }) ? ({ 9 })
+# *all* 1.24
+tengo una reserva a nombre de julia calatayud .
+NULL ({ }) i ({ 1 }) have ({ }) a ({ 2 }) reservation ({ 3 }) for ({ 4 5 6 }) julia ({ 7 }) calatayud ({ 8 }) . ({ 9 })
+# *all* 1.25
+por favor , tengo reservada una habitación .
+NULL ({ }) i ({ 1 }) have ({ 2 3 4 }) booked ({ 5 }) a ({ 6 }) room ({ 7 }) . ({ 8 })
+# *all* 1.26
+por favor , una habitación con teléfono y vistas a nombre de la señora ramírez .
+NULL ({ 1 2 }) a ({ }) room ({ 5 }) with ({ 6 }) a ({ 3 4 }) telephone ({ 7 }) and ({ 8 }) a ({ }) view ({ 9 }) for ({ 10 11 12 }) mrs ({ 13 14 }) ramírez ({ 15 }) , ({ }) please ({ }) . ({ 16 })
+# *all* 1.27
+por favor , ¿ pueden subirnos ustedes las bolsas a la habitación ?
+NULL ({ }) can ({ 1 5 }) you ({ 2 4 }) send ({ 3 }) up ({ }) our ({ 6 }) bags ({ 8 9 }) to ({ 7 10 }) the ({ 11 }) room ({ 12 }) , ({ }) please ({ }) ? ({ 13 })
+# *all* 1.28
+he reservado una habitación a nombre del señor roda .
+NULL ({ }) i ({ 1 }) have ({ 2 }) booked ({ }) a ({ 3 }) room ({ 4 }) for ({ 5 6 }) mr ({ 7 8 }) roda ({ 9 }) . ({ 10 })
+# *all* 1.29
+¿ cuánto cuesta una habitación doble por día con media pensión ?
+NULL ({ }) how ({ 1 }) much ({ 2 }) does ({ 3 }) a ({ 4 }) double ({ 6 }) room ({ 5 }) with ({ 9 }) half ({ 10 }) board ({ 11 }) cost ({ }) per ({ 7 }) day ({ 8 }) ? ({ 12 })
+# *all* 1.30
+¿ están apuntados en la cuenta todos los gastos ?
+NULL ({ }) are ({ 1 }) all ({ 2 }) expenses ({ 3 4 }) included ({ 7 8 }) in ({ }) the ({ 5 }) bill ({ 6 9 }) ? ({ 10 })
+# *all* 1.31
+pienso que existe una equivocación .
+NULL ({ }) i ({ }) think ({ 1 }) that ({ 2 }) there ({ 3 }) is ({ }) a ({ 4 }) mistake ({ 5 }) . ({ 6 })
+# *all* 1.32
+deseamos que suba nuestra maleta a la habitación , por favor .
+NULL ({ }) we ({ }) want ({ 1 2 }) you ({ }) to ({ }) send ({ 3 }) up ({ 6 }) our ({ 4 }) suitcase ({ 5 }) to ({ }) the ({ 7 }) room ({ 8 }) , ({ 9 10 }) please ({ 11 }) . ({ 12 })
+# *all* 1.34
+prepare la cuenta .
+NULL ({ }) prepare ({ 1 }) the ({ 2 }) bill ({ 3 }) . ({ 4 })
+# *all* 1.36
+por favor , haga la cuenta .
+NULL ({ }) please ({ 1 }) make ({ 2 }) out ({ 3 4 }) the ({ 5 }) bill ({ 6 }) . ({ 7 })
+# *all* 1.37
+queremos que nos lleven nuestro equipaje a nuestra habitación , por favor .
+NULL ({ }) we ({ }) want ({ 1 2 }) you ({ 3 }) to ({ }) send ({ 4 }) our ({ 5 }) luggage ({ 6 }) to ({ 7 }) our ({ 8 }) room ({ 9 }) , ({ 10 11 }) please ({ 12 }) . ({ 13 })
+# *all* 1.38
+¿ nos podrían despertar a las siete , por favor ?
+NULL ({ }) could ({ 1 }) you ({ 2 }) wake ({ 3 4 }) us ({ }) up ({ 5 }) at ({ 6 }) seven ({ 7 }) , ({ 8 9 }) please ({ 10 }) ? ({ 11 })
+# *all* 1.39
+¿ podríamos ver alguna habitación ?
+NULL ({ }) could ({ 1 }) we ({ 2 }) see ({ 3 4 }) a ({ }) room ({ 5 }) ? ({ 6 })
+# *all* 1.40
+¿ podría despertarnos mañana a las nueve menos cuarto , por favor ?
+NULL ({ }) could ({ 1 2 }) you ({ }) wake ({ }) us ({ 3 }) up ({ 5 }) tomorrow ({ 4 }) at ({ 6 }) a ({ }) quarter ({ 8 9 }) to ({ }) nine ({ 7 }) , ({ 10 11 }) please ({ 12 }) ? ({ 13 })
+# *all* 1.41
+súbame las maletas al autobús .
+NULL ({ }) put ({ 1 }) my ({ }) suitcases ({ 2 3 }) on ({ }) the ({ }) bus ({ 4 5 }) . ({ 6 })
+# *all* 1.42
+quisiera una habitación hasta el día veinte , por favor .
+NULL ({ }) i ({ 1 }) want ({ }) a ({ 2 }) room ({ 3 }) until ({ 4 5 6 }) the ({ }) twentieth ({ 7 }) , ({ 8 9 }) please ({ 10 }) . ({ 11 })
+# *all* 1.43
+¿ podríamos reservar dos habitaciones ?
+NULL ({ }) could ({ 1 }) we ({ 2 }) book ({ 3 }) two ({ 4 }) rooms ({ 5 }) ? ({ 6 })
+# *all* 1.44
+¿ hay alguna habitación tranquila libre ?
+NULL ({ }) is ({ 1 }) there ({ 2 }) a ({ 3 }) quiet ({ 5 }) room ({ 4 }) available ({ 6 }) ? ({ 7 })
+# *all* 1.47
+hice una reserva , por favor .
+NULL ({ 5 6 }) i ({ }) made ({ 1 3 }) a ({ 2 4 }) reservation ({ }) . ({ 7 })
+# *all* 1.48
+¿ está apuntado el recibo del teléfono ?
+NULL ({ }) is ({ 1 2 }) the ({ }) phone ({ 3 4 5 }) bill ({ }) included ({ 6 7 }) ? ({ 8 })
+# *all* 1.49
+¿ puede darnos usted la llave de la habitación número dos nueve cuatro , por favor ?
+NULL ({ }) can ({ 1 2 }) you ({ }) give ({ 3 }) us ({ 4 }) the ({ 5 8 }) key ({ 6 7 }) to ({ }) room ({ 9 }) number ({ 10 }) two ({ 11 }) nine ({ 12 }) four ({ 13 }) , ({ 14 15 }) please ({ 16 }) ? ({ 17 })
+# *all* 1.50
+¿ podría llamar a un taxi ?
+NULL ({ }) could ({ 1 }) you ({ 2 }) call ({ 3 }) a ({ 4 }) taxi ({ 5 6 }) , ({ }) please ({ }) ? ({ 7 })
+# *all* 1.51
+la habitación es muy fría .
+NULL ({ }) the ({ 1 }) room ({ 2 }) is ({ 3 }) very ({ 4 }) cold ({ 5 }) . ({ 6 })
+# *all* 1.52
+he hecho una reserva .
+NULL ({ }) i ({ 1 }) have ({ }) made ({ 2 }) a ({ 3 }) reservation ({ 4 }) . ({ 5 })
+# *all* 1.53
+¿ le importaría mostrarnos otra habitación ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) showing ({ 4 }) us ({ }) another ({ 5 }) room ({ 6 }) ? ({ 7 })
+# *all* 1.54
+quisiéramos que subiese nuestras maletas a nuestra habitación .
+NULL ({ }) we ({ 1 }) would ({ }) like ({ 2 }) you ({ }) to ({ 3 }) send ({ }) up ({ 6 }) our ({ 4 }) suitcases ({ 5 }) to ({ }) our ({ 7 }) room ({ 8 }) . ({ 9 })
+# *all* 1.55
+¿ podría cambiarnos de habitación ?
+NULL ({ }) can ({ 1 }) you ({ 2 }) change ({ 3 4 }) our ({ }) room ({ 5 }) ? ({ 6 })
+# *all* 1.56
+¿ me quieren llamar a un taxi ?
+NULL ({ }) will ({ }) you ({ 1 2 }) call ({ 3 4 }) a ({ }) taxi ({ 6 7 }) for ({ 5 }) me ({ }) , ({ }) please ({ }) ? ({ 8 })
+# *all* 1.57
+la habitación es demasiado calurosa .
+NULL ({ }) the ({ 1 }) room ({ 2 }) is ({ 3 }) too ({ 4 }) hot ({ 5 }) . ({ 6 })
+# *all* 1.58
+¿ le importaría subirme las bolsas de viaje a la habitación ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) sending ({ 4 }) up ({ 5 }) my ({ }) travel ({ 7 8 }) bags ({ 6 }) to ({ 9 }) the ({ 10 }) room ({ 11 }) ? ({ 12 })
+# *all* 1.59
+desearía reservar una habitación con aire acondicionado para veinte días , por favor .
+NULL ({ }) i ({ }) would ({ }) like ({ 1 }) to ({ }) book ({ 2 }) a ({ 3 }) room ({ 4 }) with ({ 5 }) air ({ 6 }) conditioning ({ 7 }) for ({ 8 }) twenty ({ }) days ({ 10 }) , ({ 11 12 }) please ({ 9 13 }) . ({ 14 })
+# *all* 1.60
+por favor , ¿ podría ver alguna habitación tranquila ?
+NULL ({ }) could ({ 1 4 }) i ({ 2 }) see ({ 5 6 7 }) a ({ 3 }) quiet ({ 9 }) room ({ 8 }) , ({ }) please ({ }) ? ({ 10 })
+# *all* 1.61
+despiérteme a las dos y cuarto .
+NULL ({ }) wake ({ 1 }) me ({ }) up ({ 2 }) at ({ 3 }) a ({ }) quarter ({ 6 }) past ({ 5 }) two ({ 4 }) . ({ 7 })
+# *all* 1.62
+¿ podríamos ver una habitación , por favor ?
+NULL ({ }) could ({ 1 }) we ({ 2 }) see ({ 3 }) a ({ 4 }) room ({ 5 }) , ({ 6 7 }) please ({ 8 }) ? ({ 9 })
+# *all* 1.65
+déme la llave de la habitación número uno cuatro nueve , por favor .
+NULL ({ }) give ({ 1 }) me ({ }) the ({ 2 5 }) key ({ 3 4 }) to ({ }) room ({ 6 }) number ({ 7 }) one ({ 8 }) four ({ 9 }) nine ({ 10 }) , ({ 11 12 }) please ({ 13 }) . ({ 14 })
+# *all* 1.66
+me voy a ir hoy mismo a las ocho de la mañana .
+NULL ({ }) i ({ 1 }) am ({ 2 }) leaving ({ 3 4 }) today ({ 5 6 }) at ({ 7 8 }) eight ({ 9 }) in ({ }) the ({ 10 11 }) morning ({ 12 }) . ({ 13 })
+# *all* 1.67
+tengo hecha la reserva de una habitación con buena vista de la montaña y cuarto de baño a nombre de pilar jiménez .
+NULL ({ }) i ({ 1 }) have ({ }) made ({ 2 3 }) a ({ }) reservation ({ 4 }) for ({ 5 }) a ({ 6 }) room ({ 7 }) with ({ 8 }) a ({ }) good ({ 9 10 }) view ({ }) of ({ 12 }) the ({ 11 16 }) mountain ({ 13 }) and ({ 14 }) a ({ }) bathroom ({ 15 17 }) for ({ 18 19 20 }) pilar ({ 21 }) jiménez ({ 22 }) . ({ 23 })
+# *all* 1.68
+por favor , repase la factura .
+NULL ({ }) please ({ 1 2 }) check ({ 3 4 }) the ({ 5 }) bill ({ 6 }) . ({ 7 })
+# *all* 1.69
+¿ tiene alguna habitación libre con televisión , aire acondicionado y servicio de bar ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ 5 }) a ({ 3 }) room ({ 4 }) with ({ 6 }) a ({ }) tv ({ 7 }) , ({ 8 }) air ({ 9 }) conditioning ({ 10 }) and ({ 11 }) a ({ }) minibar ({ 12 13 14 }) available ({ }) ? ({ 15 })
+# *all* 1.70
+¿ me podrían despertar mañana a las dos en punto ?
+NULL ({ }) could ({ 1 }) you ({ }) wake ({ 3 }) me ({ 2 }) up ({ 4 }) tomorrow ({ 5 }) at ({ 6 7 }) two ({ 8 }) o ({ }) ' ({ 9 }) clock ({ 10 }) ? ({ 11 })
+# *all* 1.71
+hemos reservado una habitación doble hasta pasado mañana .
+NULL ({ }) we ({ 1 }) have ({ }) booked ({ 2 }) a ({ 3 }) double ({ 5 }) room ({ 4 }) until ({ 6 }) the ({ }) day ({ }) after ({ 7 }) tomorrow ({ 8 }) . ({ 9 })
+# *all* 1.72
+por favor , ¿ me podría llamar a un taxi ?
+NULL ({ }) could ({ 1 }) you ({ 2 4 }) call ({ 3 7 }) a ({ }) taxi ({ 6 9 10 }) for ({ }) me ({ 5 8 }) , ({ }) please ({ }) ? ({ 11 })
+# *all* 1.74
+quiero una habitación para una noche , por favor .
+NULL ({ }) i ({ }) want ({ 1 }) a ({ 2 }) room ({ 3 }) for ({ 4 }) a ({ 5 }) night ({ 6 }) , ({ 7 8 }) please ({ 9 }) . ({ 10 })
+# *all* 1.75
+¿ podría pedirnos un taxi ?, por favor .
+NULL ({ }) could ({ 1 2 }) you ({ }) ask ({ 3 }) for ({ }) a ({ }) taxi ({ 4 5 }) for ({ }) us ({ 6 }) , ({ 7 }) please ({ 8 9 }) ? ({ })
+# *all* 1.76
+deseo reservar una habitación individual para veinticinco noches .
+NULL ({ }) i ({ }) want ({ 1 }) to ({ }) book ({ 2 }) a ({ 3 }) single ({ 5 }) room ({ 4 }) for ({ }) twenty ({ 6 }) - ({ 7 }) five ({ }) nights ({ 8 }) . ({ 9 })
+# *all* 1.77
+tengo una reserva .
+NULL ({ }) i ({ 1 }) have ({ }) a ({ 2 }) reservation ({ 3 }) . ({ 4 })
+# *all* 1.78
+¿ a qué día estamos ?
+NULL ({ 2 }) what ({ 1 3 }) is ({ }) the ({ }) date ({ 4 5 }) ? ({ 6 })
+# *all* 1.79
+por favor , haga la cuenta .
+NULL ({ }) please ({ 1 }) make ({ 2 }) out ({ 3 4 }) the ({ 5 }) bill ({ 6 }) . ({ 7 })
+# *all* 1.80
+tengo reservada una habitación individual .
+NULL ({ }) i ({ 1 }) have ({ 2 }) booked ({ }) a ({ 3 }) single ({ 5 }) room ({ 4 }) . ({ 6 })
+# *all* 1.81
+por favor , reservé una habitación a nombre del señor y la señora tena .
+NULL ({ }) i ({ 1 2 }) booked ({ 3 4 }) a ({ 5 }) room ({ 6 }) for ({ 7 8 }) mr ({ 9 10 }) and ({ 11 }) mrs ({ 12 13 }) tena ({ 14 }) . ({ 15 })
+# *all* 1.82
+hemos hecho una reserva , por favor .
+NULL ({ 6 7 }) we ({ 1 }) have ({ }) made ({ 2 }) a ({ 3 5 }) reservation ({ 4 }) . ({ 8 })
+# *all* 1.83
+¿ está todo ?
+NULL ({ }) is ({ 1 }) everything ({ 2 3 }) included ({ }) ? ({ 4 })
+# *all* 1.84
+por favor , nos llama a un taxi .
+NULL ({ }) could ({ 1 }) you ({ 2 }) call ({ 5 }) a ({ 3 }) taxi ({ 7 8 }) for ({ 6 }) us ({ 4 }) , ({ }) please ({ 9 }) ? ({ })
+# *all* 1.85
+lleve nuestro equipaje .
+NULL ({ }) carry ({ 1 }) our ({ 2 }) luggage ({ 3 }) . ({ 4 })
+# *all* 1.86
+¿ les importaría darnos la llave de la habitación ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) giving ({ 4 }) us ({ }) the ({ 5 }) key ({ 6 }) to ({ 7 }) the ({ 8 }) room ({ 9 }) ? ({ 10 })
+# *all* 1.87
+hice la reserva de una habitación doble a nombre de miguel ramírez .
+NULL ({ }) i ({ }) made ({ 1 2 }) a ({ }) reservation ({ 3 }) for ({ 4 }) a ({ 5 }) double ({ 7 }) room ({ 6 }) for ({ 8 9 10 }) miguel ({ 11 }) ramírez ({ 12 }) . ({ 13 })
+# *all* 1.88
+por favor , hemos reservado una habitación tranquila .
+NULL ({ }) we ({ 1 4 }) have ({ 2 3 }) booked ({ 5 }) a ({ 6 }) quiet ({ 8 }) room ({ 7 }) . ({ 9 })
+# *all* 1.89
+por favor , ¿ me puede dar la llave de la habitación ?
+NULL ({ }) can ({ 1 6 }) you ({ 2 4 }) give ({ 3 }) me ({ 5 }) the ({ }) key ({ 7 9 }) to ({ }) the ({ 8 10 11 }) room ({ 12 }) , ({ }) please ({ }) ? ({ 13 })
+# *all* 1.90
+¿ está apuntado el recibo del teléfono ?
+NULL ({ }) is ({ 1 2 }) the ({ }) phone ({ 3 4 5 }) bill ({ }) included ({ 6 7 }) ? ({ 8 })
+# *all* 1.91
+por favor , hice una reserva .
+NULL ({ }) i ({ 1 2 }) made ({ 3 4 }) a ({ 5 }) reservation ({ 6 }) . ({ 7 })
+# *all* 1.92
+quiero una habitación con aire acondicionado para hoy .
+NULL ({ }) i ({ }) want ({ 1 }) a ({ 2 }) room ({ 3 }) with ({ 4 }) air ({ 5 }) conditioning ({ 6 }) for ({ 7 }) today ({ 8 }) . ({ 9 })
+# *all* 1.93
+¿ le importaría cambiarme de habitación ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) changing ({ 4 5 }) my ({ }) room ({ 6 }) ? ({ 7 })
+# *all* 1.94
+tenemos reservadas dos habitaciones con teléfono , por favor .
+NULL ({ 8 9 }) we ({ 1 }) have ({ 2 }) booked ({ }) two ({ 3 }) rooms ({ 4 }) with ({ 5 }) a ({ 7 }) telephone ({ 6 }) . ({ 10 })
+# *all* 1.95
+por favor , reservé una habitación doble con teléfono para hoy .
+NULL ({ }) i ({ 1 2 }) booked ({ 4 }) a ({ 3 5 }) double ({ 7 }) room ({ 6 }) with ({ 8 }) a ({ }) telephone ({ 9 }) for ({ 10 }) today ({ 11 }) . ({ 12 })
+# *all* 1.96
+¿ hay aire acondicionado en mi habitación , por favor ?
+NULL ({ }) is ({ 1 }) there ({ 2 }) air ({ 3 }) conditioning ({ 4 }) in ({ 5 }) my ({ 6 }) room ({ 7 }) , ({ 8 9 }) please ({ 10 }) ? ({ 11 })
+# *all* 1.97
+he reservado una habitación .
+NULL ({ }) i ({ 1 }) have ({ }) booked ({ 2 }) a ({ 3 }) room ({ 4 }) . ({ 5 })
+# *all* 1.99
+he reservado una habitación doble tranquila a nombre de enrique velasco .
+NULL ({ }) i ({ 1 }) have ({ 2 }) booked ({ }) a ({ 3 4 }) quiet ({ 6 }) , ({ }) double ({ 5 }) room ({ }) for ({ 7 8 9 }) enrique ({ 10 }) velasco ({ 11 }) . ({ 12 })
+# *all* 1.100
+¿ podría bajar mis bolsas ?
+NULL ({ }) could ({ 1 }) you ({ 2 }) send ({ }) my ({ 4 }) bags ({ 5 }) down ({ 3 }) ? ({ 6 })
+# *all* 1.101
+por favor , ¿ le importaría darnos la llave de nuestra habitación ?
+NULL ({ 3 }) would ({ 1 }) you ({ 2 4 }) mind ({ 5 6 }) giving ({ 7 }) us ({ }) the ({ 8 }) key ({ 9 }) to ({ 10 }) our ({ 11 }) room ({ 12 }) , ({ }) please ({ }) ? ({ 13 })
+# *all* 1.103
+por favor , quisiera cambiarme a otra habitación con televisión .
+NULL ({ 3 }) i ({ 1 2 }) want ({ 4 }) to ({ }) move ({ 5 7 }) to ({ 6 }) a ({ }) room ({ 8 }) with ({ 9 }) a ({ }) tv ({ 10 }) , ({ }) please ({ }) . ({ 11 })
+# *all* 1.104
+¿ tienen libre alguna habitación tranquila ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ }) a ({ 4 }) quiet ({ 6 }) room ({ 5 }) available ({ 3 }) ? ({ 7 })
+# *all* 1.105
+he reservado una habitación con teléfono .
+NULL ({ }) i ({ 1 }) have ({ }) booked ({ 2 }) a ({ 3 }) room ({ 4 }) with ({ 5 }) a ({ }) telephone ({ 6 }) . ({ 7 })
+# *all* 1.106
+por favor , lléveme los bultos a mi habitación .
+NULL ({ }) please ({ 1 2 }) send ({ 3 4 }) my ({ }) luggage ({ 5 6 }) to ({ 7 }) my ({ 8 }) room ({ 9 }) . ({ 10 })
+# *all* 1.107
+¿ está apuntado el recibo del teléfono ?
+NULL ({ }) is ({ 1 2 }) the ({ }) phone ({ 3 4 5 }) bill ({ }) included ({ 6 7 }) ? ({ 8 })
+# *all* 1.108
+lleve mi equipaje a la estación .
+NULL ({ }) send ({ 1 }) my ({ 2 }) luggage ({ 3 }) to ({ 4 }) the ({ 5 }) station ({ 6 }) . ({ 7 })
+# *all* 1.109
+por favor , ¿ querrían llamarnos a nuestro taxi ?
+NULL ({ }) would ({ 1 }) you ({ 2 4 }) call ({ 3 6 }) our ({ 8 }) taxi ({ 5 9 }) for ({ 7 }) us ({ }) , ({ }) please ({ }) ? ({ 10 })
+# *all* 1.111
+la habitación es demasiado fría .
+NULL ({ }) the ({ 1 }) room ({ 2 }) is ({ 3 }) too ({ 4 }) cold ({ 5 }) . ({ 6 })
+# *all* 1.112
+¿ me podrían llevar el equipaje al autobús ?
+NULL ({ }) could ({ 1 }) you ({ 2 3 }) send ({ 4 }) the ({ }) luggage ({ 5 6 }) to ({ }) the ({ }) bus ({ 7 8 }) ? ({ 9 })
+# *all* 1.114
+¿ podrían hacer nuestra cuenta ?, por favor .
+NULL ({ }) could ({ 1 }) you ({ 2 }) make ({ 3 }) out ({ }) our ({ 4 }) bill ({ 5 6 }) , ({ 7 }) please ({ 8 9 }) ? ({ })
+# *all* 1.115
+he reservado una habitación tranquila doble a nombre de silvia quereda .
+NULL ({ }) i ({ 1 }) have ({ 2 }) booked ({ }) a ({ 3 4 }) quiet ({ 5 }) , ({ }) double ({ 6 }) room ({ }) for ({ 7 8 9 }) silvia ({ 10 }) quereda ({ 11 }) . ({ 12 })
+# *all* 1.116
+me llamo jesús rivera .
+NULL ({ }) my ({ }) name ({ 1 2 }) is ({ }) jesús ({ 3 }) rivera ({ 4 }) . ({ 5 })
+# *all* 1.117
+tengo hecha una reserva a nombre de sergio moliner .
+NULL ({ }) i ({ 1 }) have ({ }) made ({ 2 }) a ({ 3 }) reservation ({ 4 }) for ({ 5 6 7 }) sergio ({ 8 }) moliner ({ 9 }) . ({ 10 })
+# *all* 1.118
+¿ tiene una habitación libre ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ }) a ({ 3 }) room ({ 4 }) available ({ 5 }) ? ({ 6 })
+# *all* 1.119
+por favor , pídame un taxi .
+NULL ({ }) could ({ 1 }) you ({ }) ask ({ 2 }) for ({ }) a ({ 3 }) taxi ({ 4 5 6 }) for ({ }) me ({ }) , ({ }) please ({ 7 }) ? ({ })
+# *all* 1.120
+prepárenos nuestra cuenta de la habitación seiscientos nueve .
+NULL ({ }) could ({ }) you ({ }) prepare ({ 1 }) our ({ 2 }) bill ({ 3 }) for ({ 4 }) room ({ 6 }) number ({ 5 }) six ({ 7 }) oh ({ }) nine ({ 8 }) for ({ }) us ({ }) , ({ }) please ({ 9 }) ? ({ })
+# *all* 1.121
+¿ les importaría bajar nuestro equipaje a la habitación ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) sending ({ }) down ({ 4 }) our ({ 5 }) luggage ({ 6 }) to ({ 7 }) the ({ 8 }) room ({ 9 }) ? ({ 10 })
+# *all* 1.122
+¿ me podría pedir un taxi ?
+NULL ({ }) could ({ 1 3 }) you ({ 2 }) ask ({ }) for ({ }) a ({ }) taxi ({ 4 5 6 }) for ({ }) me ({ }) , ({ }) please ({ }) ? ({ 7 })
+# *all* 1.123
+me gustaría reservar una habitación hasta el veinticinco .
+NULL ({ }) i ({ 1 }) would ({ }) like ({ 2 }) to ({ }) book ({ 3 }) a ({ 4 }) room ({ 5 }) until ({ 6 }) the ({ }) twenty ({ 7 }) - ({ }) fifth ({ 8 }) . ({ 9 })
+# *all* 1.124
+por favor , quiero reservar una habitación doble con teléfono .
+NULL ({ 3 }) i ({ 1 2 }) want ({ 4 }) to ({ }) book ({ 5 }) a ({ }) double ({ 8 }) room ({ 7 }) with ({ 9 }) a ({ 6 }) telephone ({ 10 }) , ({ }) please ({ }) . ({ 11 })
+# *all* 1.125
+¿ podrían despertarme a las dos ?
+NULL ({ }) could ({ 1 }) you ({ }) wake ({ 2 }) me ({ 3 }) up ({ 4 }) at ({ 5 }) two ({ 6 }) ? ({ 7 })
+# *all* 1.126
+por favor , ¿ pueden ustedes despertarnos a las once ?
+NULL ({ }) can ({ 1 5 }) you ({ 2 4 }) wake ({ 3 }) us ({ 6 }) up ({ 7 }) at ({ 8 9 }) eleven ({ 10 }) , ({ }) please ({ }) ? ({ 11 })
+# *all* 1.127
+¿ tiene alguna habitación libre ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ }) a ({ 3 }) room ({ 4 }) available ({ 5 }) ? ({ 6 })
+# *all* 1.128
+la habitación es demasiado fría .
+NULL ({ }) the ({ 1 }) room ({ 2 }) is ({ 3 }) too ({ 4 }) cold ({ 5 }) . ({ 6 })
+# *all* 1.129
+¿ podría llamarme a un taxi ?, por favor .
+NULL ({ }) could ({ 1 2 }) you ({ }) call ({ 3 }) a ({ 4 }) taxi ({ 5 6 }) for ({ }) me ({ }) , ({ 7 8 }) please ({ 9 10 }) ? ({ })
+# *all* 1.130
+¿ cuánto vale una habitación individual para un día con pensión completa ?
+NULL ({ }) how ({ 1 }) much ({ 2 3 }) is ({ }) a ({ 4 }) single ({ 6 }) room ({ 5 }) with ({ 10 }) full ({ 12 }) board ({ 11 }) for ({ 7 8 }) a ({ }) day ({ 9 }) ? ({ 13 })
+# *all* 1.131
+por favor , ¿ podría despertarme a la una en punto ?
+NULL ({ }) could ({ 1 4 5 }) you ({ 2 }) wake ({ 3 }) me ({ 6 }) up ({ }) at ({ 7 }) one ({ 8 9 }) o ({ }) ' ({ 10 }) clock ({ 11 }) , ({ }) please ({ }) ? ({ 12 })
+# *all* 1.132
+tengo la reserva de una habitación tranquila doble con televisión y vistas .
+NULL ({ 2 }) i ({ 1 }) have ({ }) a ({ }) reservation ({ 3 }) for ({ 4 }) a ({ 5 }) quiet ({ 7 }) , ({ }) double ({ 8 }) room ({ 6 }) with ({ 9 }) a ({ }) tv ({ 10 }) and ({ 11 }) a ({ }) view ({ 12 }) . ({ 13 })
+# *all* 1.133
+¿ podrían llevarnos nuestras maletas a la número ocho diecinueve , por favor ?
+NULL ({ }) could ({ 1 2 }) you ({ }) send ({ 3 }) our ({ 4 }) suitcases ({ 5 }) to ({ 6 }) room ({ }) number ({ 7 8 }) eight ({ 9 }) one ({ }) nine ({ 10 }) , ({ 11 12 }) please ({ 13 }) ? ({ 14 })
+# *all* 1.134
+perdone .
+NULL ({ }) sorry ({ 1 }) . ({ 2 })
+# *all* 1.135
+por favor , tengo reservada una habitación doble tranquila con tele y teléfono .
+NULL ({ }) i ({ 1 }) have ({ 2 4 }) booked ({ 5 }) a ({ 6 }) quiet ({ 9 }) , ({ 3 }) double ({ 8 }) room ({ 7 }) with ({ 10 }) a ({ }) tv ({ 11 }) and ({ 12 }) a ({ }) telephone ({ 13 }) . ({ 14 })
+# *all* 1.136
+¿ podrían ustedes despertarme a las once menos cuarto ?
+NULL ({ }) could ({ 1 }) you ({ }) wake ({ 2 3 }) me ({ 4 }) up ({ }) at ({ 5 6 }) a ({ }) quarter ({ 8 9 }) to ({ }) eleven ({ 7 }) ? ({ 10 })
+# *all* 1.137
+me he de ir esta tarde .
+NULL ({ }) i ({ 1 2 }) should ({ 3 }) leave ({ 4 }) this ({ 5 }) afternoon ({ 6 }) . ({ 7 })
+# *all* 1.138
+se ha producido una equivocación en la cuenta .
+NULL ({ }) there ({ }) has ({ 1 2 }) been ({ 3 }) a ({ 4 }) mistake ({ 5 }) in ({ 6 }) the ({ 7 }) bill ({ 8 }) . ({ 9 })
+# *all* 1.139
+nos gustaría cambiarnos de habitación , por favor .
+NULL ({ }) we ({ 1 }) would ({ }) like ({ 2 }) to ({ 4 }) change ({ 3 5 }) rooms ({ }) , ({ 6 7 }) please ({ 8 }) . ({ 9 })
+# *all* 1.140
+me parece que se produjo una equivocación en la cuenta de la habitación ocho siete cuatro .
+NULL ({ }) i ({ 1 }) think ({ 2 }) that ({ 3 }) there ({ }) was ({ 4 5 }) a ({ 6 }) mistake ({ 7 }) in ({ 8 }) the ({ 9 }) bill ({ 10 }) for ({ 11 }) room ({ 13 }) number ({ 12 }) eight ({ 14 }) seven ({ 15 }) four ({ 16 }) . ({ 17 })
+# *all* 1.142
+por favor , ¿ me podría usted despertar a las tres y media ?
+NULL ({ }) could ({ 1 6 }) you ({ 2 4 }) wake ({ 3 }) me ({ 5 }) up ({ 8 }) at ({ 7 9 10 }) half ({ 13 }) past ({ 12 }) three ({ 11 }) , ({ }) please ({ }) ? ({ 14 })
+# *all* 1.143
+la habitación es muy fría .
+NULL ({ }) the ({ 1 }) room ({ 2 }) is ({ 3 }) very ({ 4 }) cold ({ 5 }) . ({ 6 })
+# *all* 1.144
+¿ le importaría darme la llave de la habitación ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) giving ({ 4 }) me ({ }) the ({ 5 }) key ({ 6 }) to ({ 7 }) the ({ 8 }) room ({ 9 }) ? ({ 10 })
+# *all* 1.145
+he reservado una habitación .
+NULL ({ }) i ({ 1 }) have ({ }) booked ({ 2 }) a ({ 3 }) room ({ 4 }) . ({ 5 })
+# *all* 1.146
+me gustaría cambiar mi habitación .
+NULL ({ }) i ({ 1 }) would ({ }) like ({ 2 }) to ({ 4 }) change ({ 3 5 }) rooms ({ }) . ({ 6 })
+# *all* 1.147
+mi nombre es sergio iborra .
+NULL ({ }) my ({ 1 }) name ({ 2 }) is ({ 3 }) sergio ({ 4 }) iborra ({ 5 }) . ({ 6 })
+# *all* 1.148
+por favor , tengo hecha una reserva a nombre del señor miralles .
+NULL ({ }) i ({ 1 }) have ({ 2 3 4 }) made ({ 5 }) a ({ 6 }) reservation ({ 7 }) for ({ 8 9 }) mr ({ 10 11 }) miralles ({ 12 }) . ({ 13 })
+# *all* 1.149
+tengo una reserva a nombre del señor ortiz .
+NULL ({ }) i ({ 1 }) have ({ }) a ({ 2 }) reservation ({ 3 }) for ({ 4 5 }) mr ({ 6 7 }) ortiz ({ 8 }) . ({ 9 })
+# *all* 1.150
+tenemos que marcharnos el sábado siete de marzo .
+NULL ({ }) we ({ 1 }) should ({ 2 }) leave ({ 3 }) on ({ 4 }) saturday ({ 5 }) march ({ 6 }) the ({ 7 }) seventh ({ 8 }) . ({ 9 })
+# *all* 1.151
+por favor , ¿ nos puede despertar a las diez y media ?
+NULL ({ }) can ({ 1 6 }) you ({ 2 4 }) wake ({ 3 }) us ({ 5 }) up ({ 7 }) at ({ 8 9 }) half ({ 12 }) past ({ 11 }) ten ({ 10 }) , ({ }) please ({ }) ? ({ 13 })
+# *all* 1.152
+querría que nos bajasen el equipaje a nuestra habitación , por favor .
+NULL ({ }) i ({ }) would ({ 1 }) like ({ 2 }) you ({ 3 }) to ({ 4 }) send ({ }) down ({ }) our ({ 8 }) luggage ({ 5 6 }) to ({ 7 }) our ({ }) room ({ 9 }) , ({ 10 11 }) please ({ 12 }) . ({ 13 })
+# *all* 1.153
+¿ cuánto vale una habitación individual para una noche ?
+NULL ({ }) how ({ 1 }) much ({ 2 3 }) is ({ }) a ({ 4 }) single ({ 6 }) room ({ 5 }) for ({ 7 }) a ({ 8 }) night ({ 9 }) ? ({ 10 })
+# *all* 1.154
+por favor , ¿ cuánto vale por día una habitación doble ?
+NULL ({ }) how ({ 1 }) much ({ 2 5 6 }) is ({ 4 }) a ({ 3 9 }) double ({ 11 }) room ({ 10 }) per ({ 7 }) day ({ 8 }) , ({ }) please ({ }) ? ({ 12 })
+# *all* 1.156
+quiero que me dé la llave de la número trescientos treinta y tres .
+NULL ({ }) i ({ }) want ({ 1 2 }) you ({ }) to ({ }) give ({ 4 }) me ({ 3 }) the ({ 5 7 8 }) key ({ 6 }) to ({ }) room ({ }) number ({ 9 }) three ({ 10 11 }) three ({ 12 }) three ({ 13 }) . ({ 14 })
+# *all* 1.157
+por favor , reservé una habitación .
+NULL ({ }) i ({ 1 2 }) booked ({ 3 4 }) a ({ 5 }) room ({ 6 }) . ({ 7 })
+# *all* 1.158
+¿ está incluido el desayuno ?
+NULL ({ }) is ({ 1 2 }) breakfast ({ 3 5 }) included ({ 4 }) ? ({ 6 })
+# *all* 1.159
+la habitación es muy cara .
+NULL ({ }) the ({ 1 }) room ({ 2 }) is ({ 3 }) very ({ 4 }) expensive ({ 5 }) . ({ 6 })
+# *all* 1.160
+nos vamos a ir el día trece de septiembre a las ocho menos cuarto de la mañana .
+NULL ({ }) we ({ 1 }) are ({ 2 }) leaving ({ 3 }) on ({ 4 5 }) september ({ 6 9 }) the ({ 8 }) thirteenth ({ 7 }) at ({ 10 11 }) a ({ }) quarter ({ 13 14 }) to ({ }) eight ({ 12 }) in ({ 15 }) the ({ 16 }) morning ({ 17 }) . ({ 18 })
+# *all* 1.161
+por favor , ¿ me puede despertar a las once y media ?
+NULL ({ }) can ({ 1 6 }) you ({ 2 4 }) wake ({ 3 }) me ({ 5 }) up ({ 7 }) at ({ 8 9 }) half ({ 12 }) past ({ 11 }) eleven ({ 10 }) , ({ }) please ({ }) ? ({ 13 })
+# *all* 1.163
+vamos a marcharnos mañana a las cuatro .
+NULL ({ }) we ({ }) are ({ 1 }) leaving ({ 2 3 }) tomorrow ({ 4 }) at ({ 5 6 }) four ({ 7 }) . ({ 8 })
+# *all* 1.164
+pienso que se ha producido un error en la cuenta .
+NULL ({ }) i ({ }) think ({ 1 }) that ({ 2 3 }) there ({ }) has ({ 4 }) been ({ 5 }) an ({ 6 }) error ({ 7 }) in ({ 8 }) the ({ 9 }) bill ({ 10 }) . ({ 11 })
+# *all* 1.166
+por favor , quiero que nos bajen los bultos a la habitación .
+NULL ({ }) i ({ 1 }) want ({ 4 5 }) you ({ 2 6 }) to ({ }) send ({ 3 }) down ({ 7 }) our ({ }) luggage ({ 8 9 }) to ({ 10 }) the ({ 11 }) room ({ 12 }) , ({ }) please ({ }) . ({ 13 })
+# *all* 1.167
+¿ me podrían dar las llaves de la habitación seiscientos trece , por favor ?
+NULL ({ }) could ({ 1 3 }) you ({ }) give ({ 4 }) me ({ 2 }) the ({ }) keys ({ 5 6 }) to ({ 7 }) room ({ 9 }) number ({ 8 }) six ({ 10 }) one ({ }) three ({ 11 }) , ({ 12 13 }) please ({ 14 }) ? ({ 15 })
+# *all* 1.169
+por favor , ¿ me pueden detallar la cuenta de la habitación cero catorce ?
+NULL ({ }) can ({ 1 6 }) you ({ 2 4 5 }) explain ({ 3 7 }) the ({ }) bill ({ 9 }) for ({ }) room ({ 12 }) number ({ 8 }) oh ({ 13 }) one ({ 11 }) four ({ 14 }) for ({ 10 }) me ({ }) , ({ }) please ({ }) ? ({ 15 })
+# *all* 1.170
+la habitación está bien .
+NULL ({ }) the ({ 1 }) room ({ 2 }) is ({ 3 }) all ({ }) right ({ 4 }) . ({ 5 })
+# *all* 1.171
+hice una reserva .
+NULL ({ }) i ({ }) made ({ 1 }) a ({ 2 }) reservation ({ 3 }) . ({ 4 })
+# *all* 1.172
+he hecho la reserva de una habitación doble tranquila con teléfono y ducha .
+NULL ({ }) i ({ 1 }) have ({ }) made ({ 2 3 }) a ({ }) reservation ({ 4 }) for ({ 5 }) a ({ 6 }) quiet ({ 9 }) , ({ }) double ({ 8 }) room ({ 7 }) with ({ 10 }) a ({ }) telephone ({ 11 }) and ({ 12 }) a ({ }) shower ({ 13 }) . ({ 14 })
+# *all* 1.173
+hemos de marcharnos mañana por la noche .
+NULL ({ 5 }) we ({ 1 }) should ({ 2 }) leave ({ 3 }) tomorrow ({ 4 }) evening ({ 6 7 }) . ({ 8 })
+# *all* 1.174
+¿ hay televisión y aire acondicionado en la habitación ?
+NULL ({ }) are ({ 1 }) there ({ 2 }) a ({ }) tv ({ 3 }) and ({ 4 }) air ({ 5 }) conditioning ({ 6 }) in ({ 7 }) the ({ 8 }) room ({ 9 }) ? ({ 10 })
+# *all* 1.175
+despiérteme mañana a las diez y media , por favor .
+NULL ({ }) wake ({ 1 }) me ({ }) up ({ 3 }) tomorrow ({ 2 }) at ({ 4 }) half ({ 7 }) past ({ 6 }) ten ({ 5 }) , ({ 8 9 }) please ({ 10 }) . ({ 11 })
+# *all* 1.177
+hemos reservado una habitación doble con baño para hoy .
+NULL ({ }) we ({ 1 }) have ({ }) booked ({ 2 }) a ({ 3 }) double ({ 5 }) room ({ 4 }) with ({ 6 }) a ({ }) bath ({ 7 }) for ({ 8 }) today ({ 9 }) . ({ 10 })
+# *all* 1.178
+¿ tiene aire acondicionado , teléfono y televisión ?
+NULL ({ }) does ({ 1 }) it ({ 2 }) have ({ }) air ({ 3 }) conditioning ({ 4 }) , ({ 5 }) a ({ }) telephone ({ 6 }) and ({ 7 }) a ({ }) tv ({ 8 }) ? ({ 9 })
+# *all* 1.179
+se han equivocado en nuestra cuenta .
+NULL ({ }) a ({ }) mistake ({ }) has ({ 1 2 }) been ({ 3 }) made ({ }) in ({ 4 }) our ({ 5 }) bill ({ 6 }) . ({ 7 })
+# *all* 1.180
+¿ podría ver alguna habitación individual con aire acondicionado ?
+NULL ({ }) could ({ 1 2 }) i ({ }) see ({ 3 4 }) a ({ }) single ({ 6 }) room ({ 5 }) with ({ 7 }) air ({ 8 }) conditioning ({ 9 }) ? ({ 10 })
+# *all* 1.182
+¿ podría ver alguna habitación doble , por favor ?
+NULL ({ }) could ({ 1 2 }) i ({ }) see ({ 3 4 }) a ({ }) double ({ 6 }) room ({ 5 }) , ({ 7 8 }) please ({ 9 }) ? ({ 10 })
+# *all* 1.183
+¿ hay alguna habitación tranquila libre ?
+NULL ({ }) is ({ 1 }) there ({ 2 }) a ({ 3 }) quiet ({ 5 }) room ({ 4 }) available ({ 6 }) ? ({ 7 })
+# *all* 1.184
+hice la reserva de una habitación con tele y teléfono a nombre de roberto arnau .
+NULL ({ }) i ({ }) made ({ 1 2 }) a ({ }) reservation ({ 3 }) for ({ 4 }) a ({ 5 }) room ({ 6 }) with ({ 7 }) a ({ }) tv ({ 8 }) and ({ 9 }) a ({ }) telephone ({ 10 }) for ({ 11 12 13 }) roberto ({ 14 }) arnau ({ 15 }) . ({ 16 })
+# *all* 1.185
+he reservado una habitación con televisión y baño a nombre de gerardo ródenas .
+NULL ({ }) i ({ 1 }) have ({ }) booked ({ 2 }) a ({ 3 }) room ({ 4 }) with ({ 5 }) a ({ }) tv ({ 6 }) and ({ 7 }) a ({ }) bath ({ 8 }) for ({ 9 10 11 }) gerardo ({ 12 }) ródenas ({ 13 }) . ({ 14 })
+# *all* 1.187
+tenemos reservada una habitación .
+NULL ({ }) we ({ 1 }) have ({ }) booked ({ 2 }) a ({ 3 }) room ({ 4 }) . ({ 5 })
+# *all* 1.188
+nos vamos a ir el jueves treinta de septiembre a las cuatro y media .
+NULL ({ }) we ({ 1 }) are ({ 2 }) leaving ({ 3 4 }) on ({ 5 }) thursday ({ 6 }) september ({ 7 }) the ({ 8 }) thirtieth ({ 9 }) at ({ 10 11 }) half ({ 14 }) past ({ 13 }) four ({ 12 }) . ({ 15 })
+# *all* 1.189
+¿ podría ver una habitación doble con televisión ?
+NULL ({ }) could ({ 1 2 }) i ({ }) see ({ 3 }) a ({ 4 }) double ({ 6 }) room ({ 5 }) with ({ 7 }) a ({ }) tv ({ 8 }) ? ({ 9 })
+# *all* 1.190
+¿ está todo ?
+NULL ({ }) is ({ 1 }) everything ({ 2 3 }) included ({ }) ? ({ 4 })
+# *all* 1.191
+¿ podrían ustedes darnos la llave de la habitación , por favor ?
+NULL ({ }) could ({ 1 2 }) you ({ }) give ({ }) us ({ 3 4 }) the ({ 5 }) key ({ 6 7 }) to ({ }) the ({ 8 }) room ({ 9 }) , ({ 10 11 }) please ({ 12 }) ? ({ 13 })
+# *all* 1.192
+¿ pueden darme la llave de la habitación número setecientos setenta y tres ?
+NULL ({ }) can ({ 1 2 }) you ({ }) give ({ }) me ({ 3 }) the ({ 4 6 7 }) key ({ 5 }) to ({ }) room ({ 8 }) number ({ 9 }) seven ({ 10 11 }) seven ({ }) three ({ 12 13 }) ? ({ 14 })
+# *all* 1.193
+¿ querrían hacernos la factura ?, por favor .
+NULL ({ }) would ({ 1 2 }) you ({ }) make ({ }) out ({ 3 }) the ({ 4 }) bill ({ 5 }) for ({ }) us ({ 6 }) , ({ 7 }) please ({ 8 9 }) ? ({ })
+# *all* 1.194
+tenemos que irnos el jueves nueve de abril por la tarde .
+NULL ({ 9 }) we ({ 1 }) should ({ 2 }) leave ({ 3 }) on ({ 4 }) thursday ({ 5 }) april ({ 6 8 }) the ({ 7 }) ninth ({ }) in ({ }) the ({ 10 }) afternoon ({ 11 }) . ({ 12 })
+# *all* 1.195
+me voy a marchar hoy a las seis de la mañana .
+NULL ({ }) i ({ 1 }) am ({ 2 }) leaving ({ 3 4 }) today ({ 5 }) at ({ 6 7 }) six ({ 8 }) in ({ 9 }) the ({ 10 }) morning ({ 11 }) . ({ 12 })
+# *all* 1.196
+reservé una habitación doble y tranquila , por favor .
+NULL ({ 9 }) i ({ }) booked ({ 1 2 }) a ({ 3 }) quiet ({ 5 6 }) , ({ 7 8 }) double ({ 4 }) room ({ }) . ({ 10 })
+# *all* 1.197
+por favor , reservé una habitación tranquila a nombre de amelia peinado .
+NULL ({ }) i ({ 1 2 }) booked ({ 3 4 }) a ({ 5 }) quiet ({ 7 }) room ({ 6 }) for ({ 8 9 10 }) amelia ({ 11 }) peinado ({ 12 }) . ({ 13 })
+# *all* 1.198
+por favor , ¿ me querría pedir un taxi para la habitación nueve ocho uno ?
+NULL ({ }) would ({ 1 6 }) you ({ 2 4 5 }) ask ({ 3 }) for ({ }) a ({ }) taxi ({ 7 8 9 }) for ({ }) room ({ 12 }) number ({ }) nine ({ 13 }) eight ({ 14 }) one ({ 11 15 }) for ({ 10 }) me ({ }) , ({ }) please ({ }) ? ({ 16 })
+# *all* 1.200
+por favor , ¿ querría pedirnos un taxi ?
+NULL ({ }) would ({ 1 }) you ({ 2 4 }) ask ({ 3 6 }) for ({ }) a ({ }) taxi ({ 5 7 8 }) for ({ }) us ({ }) , ({ }) please ({ }) ? ({ 9 })
+# *all* 1.201
+¿ podría detallar nuestra cuenta de la habitación nueve cuatro uno ?
+NULL ({ }) could ({ 1 2 }) you ({ }) explain ({ 3 }) our ({ 4 }) bill ({ 5 }) for ({ 6 }) room ({ 8 }) number ({ 7 }) nine ({ 9 }) four ({ 10 }) one ({ 11 }) , ({ }) please ({ }) ? ({ 12 })
+# *all* 1.202
+¿ está todo ?
+NULL ({ }) is ({ 1 }) everything ({ 2 3 }) included ({ }) ? ({ 4 })
+# *all* 1.203
+por favor , ¿ me pueden preparar mi cuenta ?
+NULL ({ }) can ({ 1 6 }) you ({ 2 4 }) prepare ({ 3 7 }) my ({ 8 }) bill ({ 9 }) for ({ }) me ({ 5 }) , ({ }) please ({ }) ? ({ 10 })
+# *all* 1.204
+he hecho la reserva de una habitación tranquila doble con vistas , ducha y teléfono a nombre de carmelo peris .
+NULL ({ }) i ({ 1 }) have ({ }) made ({ 2 3 }) a ({ }) reservation ({ 4 }) for ({ 5 }) a ({ 6 }) quiet ({ 8 }) , ({ }) double ({ 9 }) room ({ 7 }) with ({ 10 }) a ({ }) view ({ 11 }) , ({ 12 }) a ({ }) shower ({ 13 }) and ({ 14 }) a ({ }) telephone ({ 15 }) for ({ 16 17 18 }) carmelo ({ 19 }) peris ({ 20 }) . ({ 21 })
+# *all* 1.205
+por favor , ¿ me podría dar usted la llave de la habitación ?
+NULL ({ }) could ({ 1 6 }) you ({ 2 4 }) give ({ 3 }) me ({ 5 }) the ({ }) key ({ 7 10 }) to ({ 8 }) the ({ 9 11 12 }) room ({ 13 }) , ({ }) please ({ }) ? ({ 14 })
+# *all* 1.206
+por favor , ¿ podríamos ver otra habitación ?
+NULL ({ 3 }) could ({ 1 4 }) we ({ 2 }) see ({ 6 }) another ({ 5 7 }) room ({ 8 }) , ({ }) please ({ }) ? ({ 9 })
+# *all* 1.208
+por favor , desearía cambiarme a otra habitación con menos ruido .
+NULL ({ }) i ({ 1 }) would ({ 2 }) like ({ 3 4 }) to ({ }) move ({ 5 }) to ({ 6 }) a ({ }) quieter ({ 7 9 10 11 }) room ({ 8 }) , ({ }) please ({ }) . ({ 12 })
+# *all* 1.209
+¿ podrían despertarnos mañana a las nueve y cuarto ?
+NULL ({ }) could ({ 1 }) you ({ }) wake ({ 2 }) us ({ 3 }) up ({ }) tomorrow ({ 4 }) at ({ 5 6 }) a ({ }) quarter ({ 9 }) past ({ 8 }) nine ({ 7 }) ? ({ 10 })
+# *all* 1.211
+¿ podríamos reservar dos habitaciones dobles para quince días ?
+NULL ({ }) could ({ 1 }) we ({ 2 }) book ({ 3 }) two ({ 4 }) double ({ }) rooms ({ 5 6 }) for ({ 7 }) fifteen ({ 8 }) days ({ 9 }) ? ({ 10 })
+# *all* 1.212
+¡ no importa !
+NULL ({ }) it ({ 1 }) does ({ }) not ({ 2 }) matter ({ 3 }) ! ({ 4 })
+# *all* 1.213
+¿ podríamos reservar dos habitaciones ?
+NULL ({ }) could ({ 1 }) we ({ 2 }) book ({ 3 }) two ({ 4 }) rooms ({ 5 }) ? ({ 6 })
+# *all* 1.214
+¿ tienen alguna habitación doble libre ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ }) a ({ 3 }) double ({ 5 }) room ({ 4 }) available ({ 6 }) ? ({ 7 })
+# *all* 1.215
+por favor , prepare la factura .
+NULL ({ }) please ({ 1 2 }) prepare ({ 3 4 }) the ({ 5 }) bill ({ 6 }) . ({ 7 })
+# *all* 1.217
+¿ está incluido el servicio de habitaciones ?
+NULL ({ }) is ({ 1 2 }) room ({ }) service ({ 3 4 5 6 7 }) included ({ }) ? ({ 8 })
+# *all* 1.218
+nos iremos esta noche .
+NULL ({ }) we ({ 1 }) are ({ }) leaving ({ 2 }) this ({ 3 }) evening ({ 4 }) . ({ 5 })
+# *all* 1.219
+suban nuestro equipaje a nuestra habitación .
+NULL ({ }) send ({ 1 }) up ({ }) our ({ 2 }) luggage ({ 3 }) to ({ 4 }) our ({ 5 }) room ({ 6 }) . ({ 7 })
+# *all* 1.221
+he reservado una habitación tranquila .
+NULL ({ }) i ({ 1 }) have ({ }) booked ({ 2 }) a ({ 3 }) quiet ({ 5 }) room ({ 4 }) . ({ 6 })
+# *all* 1.223
+¿ les importaría despertarnos a la una y media ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) waking ({ 4 }) us ({ }) up ({ 5 }) at ({ }) half ({ 9 }) past ({ 8 }) one ({ 6 7 }) ? ({ 10 })
+# *all* 1.224
+¿ tiene habitaciones individuales y tranquilas libres ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ }) any ({ 3 4 }) quiet ({ }) , ({ }) single ({ 5 }) rooms ({ 6 }) available ({ 7 }) ? ({ 8 })
+# *all* 1.225
+nos tenemos que ir mañana .
+NULL ({ }) we ({ 1 2 }) should ({ 3 }) leave ({ 4 }) tomorrow ({ 5 }) . ({ 6 })
+# *all* 1.226
+tengo reservada una habitación .
+NULL ({ }) i ({ 1 }) have ({ }) booked ({ 2 }) a ({ 3 }) room ({ 4 }) . ({ 5 })
+# *all* 1.227
+por favor , hágame la cuenta .
+NULL ({ }) could ({ 1 }) you ({ }) make ({ 2 }) out ({ 3 }) the ({ 5 }) bill ({ 4 6 }) for ({ }) me ({ }) , ({ }) please ({ 7 }) ? ({ })
+# *all* 1.228
+¿ podría ver una habitación doble y tranquila , por favor ?
+NULL ({ }) could ({ 1 2 }) i ({ }) see ({ 3 }) a ({ 4 }) quiet ({ 5 7 8 }) , ({ }) double ({ 6 }) room ({ }) , ({ 9 10 }) please ({ 11 }) ? ({ 12 })
+# *all* 1.230
+por favor , he hecho la reserva de una habitación con televisión , teléfono y vistas al mar a nombre de asunción espinosa .
+NULL ({ 3 6 }) i ({ 1 4 }) have ({ 2 }) made ({ 5 }) a ({ }) reservation ({ 7 }) for ({ 8 }) a ({ }) room ({ 10 }) with ({ 11 }) a ({ 9 }) tv ({ 12 }) , ({ 13 }) a ({ }) telephone ({ 14 }) and ({ 15 }) a ({ }) view ({ 16 }) of ({ }) the ({ 17 }) sea ({ 18 }) for ({ 19 20 21 }) asunción ({ 22 }) espinosa ({ 23 }) . ({ 24 })
+# *all* 1.231
+¿ tiene aire acondicionado y agua caliente la habitación ?
+NULL ({ 8 9 }) does ({ 1 2 }) the ({ }) room ({ }) have ({ }) air ({ 3 }) conditioning ({ 4 }) and ({ 5 }) hot ({ }) water ({ 6 7 }) ? ({ 10 })
+# *all* 1.232
+quiero reservar una habitación hasta el próximo sábado .
+NULL ({ }) i ({ }) want ({ 1 }) to ({ }) book ({ 2 }) a ({ 3 }) room ({ 4 }) until ({ 5 6 }) next ({ 7 }) saturday ({ 8 }) . ({ 9 })
+# *all* 1.233
+¿ nos podrían llamar a un taxi para la habitación tres trece ?
+NULL ({ }) could ({ 1 3 }) you ({ 2 }) call ({ 4 }) a ({ }) taxi ({ 6 7 }) for ({ 5 }) room ({ 10 }) number ({ }) three ({ }) one ({ 9 }) three ({ 11 12 }) for ({ 8 }) us ({ }) , ({ }) please ({ }) ? ({ 13 })
+# *all* 1.234
+quiero una habitación .
+NULL ({ }) i ({ }) want ({ 1 }) a ({ 2 }) room ({ 3 }) . ({ 4 })
+# *all* 1.235
+¿ pueden despertarme a la una menos cuarto ?
+NULL ({ }) can ({ 1 2 }) you ({ }) wake ({ }) me ({ 3 }) up ({ 4 }) at ({ }) a ({ 6 }) quarter ({ 7 8 }) to ({ }) one ({ 5 }) ? ({ 9 })
+# *all* 1.236
+por favor , una habitación .
+NULL ({ }) a ({ 4 }) room ({ 5 }) , ({ 1 3 }) please ({ 2 }) . ({ 6 })
+# *all* 1.237
+me parece que se produjo un error en la cuenta .
+NULL ({ }) i ({ 1 }) think ({ 2 }) that ({ 3 }) there ({ }) was ({ 4 5 }) an ({ 6 }) error ({ 7 }) in ({ 8 }) the ({ 9 }) bill ({ 10 }) . ({ 11 })
+# *all* 1.238
+desearía una habitación para cinco noches .
+NULL ({ }) i ({ }) would ({ }) like ({ 1 }) a ({ 2 }) room ({ 3 }) for ({ 4 }) five ({ 5 }) nights ({ 6 }) . ({ 7 })
+# *all* 1.239
+hemos reservado una habitación individual con teléfono a nombre del señor y la señora santos , por favor .
+NULL ({ 8 16 17 18 }) we ({ 1 }) have ({ }) booked ({ 2 }) a ({ 3 }) single ({ 5 }) room ({ 4 }) with ({ 6 }) a ({ }) telephone ({ 7 }) for ({ 9 }) mr ({ 10 11 }) and ({ 12 }) mrs ({ 13 14 }) santos ({ 15 }) . ({ 19 })
+# *all* 1.240
+¿ están incluidos todos los impuestos ?
+NULL ({ }) are ({ 1 }) all ({ 2 3 }) taxes ({ 4 6 }) included ({ 5 }) ? ({ 7 })
+# *all* 1.241
+¿ está incluida la cuenta del teléfono ?
+NULL ({ }) is ({ 1 2 }) the ({ 4 }) phone ({ 3 }) bill ({ 5 }) included ({ 6 7 }) ? ({ 8 })
+# *all* 1.242
+por favor , lleven nuestra bolsa de viaje a la habitación quinientos veintisiete .
+NULL ({ }) please ({ 1 2 }) send ({ 3 4 }) our ({ 5 }) travel ({ 8 }) bag ({ 6 }) to ({ 7 9 }) room ({ 11 }) number ({ 10 }) five ({ 12 }) two ({ }) seven ({ 13 }) . ({ 14 })
+# *all* 1.243
+he reservado una habitación tranquila .
+NULL ({ }) i ({ 1 }) have ({ }) booked ({ 2 }) a ({ 3 }) quiet ({ 5 }) room ({ 4 }) . ({ 6 })
+# *all* 1.244
+pida un taxi .
+NULL ({ }) ask ({ 1 }) for ({ }) a ({ }) taxi ({ 2 3 }) . ({ 4 })
+# *all* 1.245
+¿ nos pueden dar ustedes la llave de la habitación ?
+NULL ({ }) can ({ 1 3 }) you ({ 2 }) give ({ 4 }) us ({ 5 }) the ({ 6 }) key ({ 7 }) to ({ }) the ({ 8 9 }) room ({ 10 }) ? ({ 11 })
+# *all* 1.246
+¿ nos podría llevar las bolsas al coche ?
+NULL ({ }) could ({ 1 3 }) you ({ 2 }) send ({ 4 }) the ({ }) bags ({ 5 6 }) to ({ }) the ({ }) car ({ 7 8 }) ? ({ 9 })
+# *all* 1.247
+tengo hecha una reserva a nombre de susana padilla .
+NULL ({ }) i ({ 1 }) have ({ }) made ({ 2 }) a ({ 3 }) reservation ({ 4 }) for ({ 5 6 7 }) susana ({ 8 }) padilla ({ 9 }) . ({ 10 })
+# *all* 1.248
+por favor , ¿ pueden bajarnos los bultos a la habitación ?
+NULL ({ }) can ({ 1 5 }) you ({ 2 4 }) send ({ 3 }) down ({ }) our ({ }) luggage ({ 6 7 8 }) to ({ 9 }) the ({ 10 }) room ({ 11 }) , ({ }) please ({ }) ? ({ 12 })
+# *all* 1.249
+¿ le importaría bajar nuestro equipaje a la habitación , por favor ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) sending ({ }) down ({ 4 }) our ({ 5 }) luggage ({ 6 }) to ({ 7 }) the ({ 8 }) room ({ 9 }) , ({ 10 11 }) please ({ 12 }) ? ({ 13 })
+# *all* 1.250
+por favor , ¿ cuánto cuesta una habitación doble por semana ?
+NULL ({ }) how ({ 1 }) much ({ 2 5 }) does ({ 4 6 }) a ({ 3 }) double ({ 9 }) room ({ 8 }) cost ({ 7 }) per ({ }) week ({ 11 }) , ({ 10 }) please ({ }) ? ({ 12 })
+# *all* 1.251
+despiértenme a la una y media , por favor .
+NULL ({ }) wake ({ 1 }) me ({ 3 }) up ({ 2 }) at ({ }) half ({ 6 }) past ({ 5 }) one ({ 4 }) , ({ 7 8 }) please ({ 9 }) . ({ 10 })
+# *all* 1.252
+nos hemos de marchar mañana a las seis .
+NULL ({ }) we ({ 1 2 }) should ({ 3 }) leave ({ 4 }) tomorrow ({ 5 }) at ({ 6 7 }) six ({ 8 }) . ({ 9 })
+# *all* 1.253
+por favor , tengo hecha una reserva .
+NULL ({ }) i ({ 1 }) have ({ 2 3 4 }) made ({ 5 }) a ({ 6 }) reservation ({ 7 }) . ({ 8 })
+# *all* 1.255
+deseo que nos dé las llaves de la habitación siete dieciséis , por favor .
+NULL ({ }) i ({ }) want ({ 1 2 }) you ({ }) to ({ }) give ({ 4 }) us ({ 3 }) the ({ 7 8 }) keys ({ 5 6 }) to ({ }) room ({ 9 }) number ({ }) seven ({ 10 11 }) one ({ }) six ({ }) , ({ 12 13 }) please ({ 14 }) . ({ 15 })
+# *all* 1.256
+¿ está todo apuntado ?
+NULL ({ }) is ({ 1 }) everything ({ 2 3 }) included ({ 4 }) ? ({ 5 })
+# *all* 1.257
+tengo reservada una habitación doble , por favor .
+NULL ({ 7 8 }) i ({ 1 }) have ({ 2 }) booked ({ 3 }) a ({ 4 6 }) double ({ 5 }) room ({ }) . ({ 9 })
+# *all* 1.258
+por favor , me gustaría reservar una habitación individual hasta el veintiuno .
+NULL ({ 3 }) i ({ 1 4 }) would ({ 2 }) like ({ 5 }) to ({ }) book ({ 6 }) a ({ 7 }) single ({ 9 }) room ({ 8 }) until ({ 10 }) the ({ }) twenty ({ 11 }) - ({ }) first ({ 12 }) , ({ }) please ({ }) . ({ 13 })
+# *all* 1.259
+por favor , ¿ me puede usted despertar mañana a las tres menos cuarto ?
+NULL ({ }) can ({ 1 6 }) you ({ 2 4 }) wake ({ 3 }) me ({ 5 }) up ({ 8 }) tomorrow ({ 9 }) at ({ 7 11 }) a ({ }) quarter ({ 13 14 }) to ({ 10 }) three ({ 12 }) , ({ }) please ({ }) ? ({ 15 })
+# *all* 1.260
+despiértenos a la una , por favor .
+NULL ({ }) wake ({ 1 }) us ({ }) up ({ 2 }) at ({ }) one ({ 3 4 }) , ({ 5 6 }) please ({ 7 }) . ({ 8 })
+# *all* 1.261
+me tengo que ir el lunes dos de julio por la tarde .
+NULL ({ 10 }) i ({ 1 2 }) should ({ 3 }) leave ({ }) on ({ 4 5 }) monday ({ 6 }) july ({ }) the ({ 8 }) second ({ 7 9 }) in ({ }) the ({ 11 }) afternoon ({ 12 }) . ({ 13 })
+# *all* 1.262
+por favor , ¿ tengo que rellenar alguna hoja de registro ?
+NULL ({ 3 }) should ({ }) i ({ 1 2 5 }) fill ({ 4 6 7 }) in ({ }) a ({ 8 }) registration ({ 9 }) form ({ 10 11 }) , ({ }) please ({ }) ? ({ 12 })
+# *all* 1.263
+¿ podría ver alguna habitación ?
+NULL ({ }) could ({ 1 2 }) i ({ }) see ({ 3 4 }) a ({ }) room ({ 5 }) ? ({ 6 })
+# *all* 1.264
+pienso que se produjo un error en la cuenta .
+NULL ({ }) i ({ }) think ({ 1 }) that ({ 2 3 }) there ({ }) was ({ 4 }) an ({ 5 }) error ({ 6 }) in ({ 7 }) the ({ 8 }) bill ({ 9 }) . ({ 10 })
+# *all* 1.265
+la habitación es muy cara .
+NULL ({ }) the ({ 1 }) room ({ 2 }) is ({ 3 }) very ({ 4 }) expensive ({ 5 }) . ({ 6 })
+# *all* 1.266
+por favor , desearíamos que nos diera las llaves de la habitación cuatro tres .
+NULL ({ 3 }) we ({ 1 }) would ({ }) like ({ 4 5 }) you ({ 2 }) to ({ }) give ({ 7 }) us ({ 6 }) the ({ }) keys ({ 8 9 }) to ({ 10 }) room ({ 12 }) number ({ 11 }) four ({ 13 }) three ({ 14 }) , ({ }) please ({ }) . ({ 15 })
+# *all* 1.267
+¿ nos podría explicar la cuenta ?, por favor .
+NULL ({ }) could ({ 1 3 }) you ({ 2 }) explain ({ 4 }) the ({ 5 }) bill ({ 6 }) for ({ }) us ({ 7 }) , ({ 8 }) please ({ 9 10 }) ? ({ })
+# *all* 1.268
+por favor , ¿ nos podrían dar ustedes las llaves de la doscientos veintiséis ?
+NULL ({ }) could ({ 1 4 }) you ({ 2 }) give ({ 3 7 }) us ({ 5 6 }) the ({ }) keys ({ 9 10 }) to ({ 8 }) room ({ }) number ({ 11 12 }) two ({ }) two ({ 13 }) six ({ 14 }) , ({ }) please ({ }) ? ({ 15 })
+# *all* 1.269
+¿ cuánto cuesta una habitación individual , por favor ?
+NULL ({ }) how ({ 1 }) much ({ 2 }) does ({ 3 }) a ({ 4 }) single ({ 6 }) room ({ 5 }) cost ({ }) , ({ 7 8 }) please ({ 9 }) ? ({ 10 })
+# *all* 1.270
+¿ podríamos reservar dos habitaciones para esta noche ?
+NULL ({ }) could ({ 1 }) we ({ 2 }) book ({ 3 }) two ({ 4 }) rooms ({ 5 }) for ({ 6 }) tonight ({ 7 8 }) ? ({ 9 })
+# *all* 1.271
+¿ nos podría despertar a la una , por favor ?
+NULL ({ }) could ({ 1 3 }) you ({ 2 }) wake ({ 4 }) us ({ }) up ({ 5 }) at ({ }) one ({ 6 7 }) , ({ 8 9 }) please ({ 10 }) ? ({ 11 })
+# *all* 1.276
+por favor , las llaves de la habitación número ocho veinte .
+NULL ({ 1 2 }) the ({ }) keys ({ 4 5 }) to ({ 3 }) room ({ 8 }) number ({ 6 7 9 }) eight ({ 10 }) two ({ }) oh ({ }) , ({ }) please ({ 11 }) . ({ 12 })
+# *all* 1.277
+¿ están apuntados en el recibo los gastos ?
+NULL ({ }) are ({ 1 2 }) expenses ({ 3 }) included ({ 5 6 7 }) in ({ 4 }) the ({ }) bill ({ 8 }) ? ({ 9 })
+# *all* 1.278
+me voy hoy .
+NULL ({ }) i ({ 1 }) leave ({ 2 }) today ({ 3 }) . ({ 4 })
+# *all* 1.279
+¿ les importaría darnos las llaves de la habitación ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) giving ({ 4 }) us ({ }) the ({ }) keys ({ 5 6 }) to ({ 7 }) the ({ 8 }) room ({ 9 }) ? ({ 10 })
+# *all* 1.280
+por favor , ¿ tienen aire acondicionado las habitaciones ?
+NULL ({ 1 }) do ({ 4 5 }) the ({ 8 }) rooms ({ 9 }) have ({ 2 3 }) air ({ 6 }) conditioning ({ 7 }) , ({ }) please ({ }) ? ({ 10 })
+# *all* 1.281
+¿ pueden subir el equipaje al coche ?
+NULL ({ }) can ({ 1 2 }) you ({ }) put ({ 3 }) the ({ }) luggage ({ 4 5 }) in ({ }) the ({ }) car ({ 6 7 }) ? ({ 8 })
+# *all* 1.282
+¿ les importaría darnos la llave de la habitación ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) giving ({ 4 }) us ({ }) the ({ 5 }) key ({ 6 }) to ({ 7 }) the ({ 8 }) room ({ 9 }) ? ({ 10 })
+# *all* 1.283
+¿ podría bajar mis maletas a mi habitación ?
+NULL ({ }) could ({ 1 2 }) you ({ }) send ({ }) down ({ 3 }) my ({ 4 }) suitcases ({ 5 }) to ({ 6 }) my ({ 7 }) room ({ 8 }) ? ({ 9 })
+# *all* 1.284
+deseo una habitación que tenga teléfono , vistas , televisión y baño a nombre de marina sáez .
+NULL ({ }) i ({ }) want ({ 1 4 }) a ({ 2 }) room ({ 3 }) with ({ 5 }) a ({ }) telephone ({ 6 }) , ({ 7 }) a ({ }) view ({ 8 }) , ({ 9 }) a ({ }) tv ({ 10 }) and ({ 11 }) a ({ }) bath ({ 12 }) for ({ 13 14 15 }) marina ({ 16 }) sáez ({ 17 }) . ({ 18 })
+# *all* 1.286
+por favor , ¿ tenemos que firmar la hoja de registro ?
+NULL ({ 3 }) should ({ }) we ({ 1 2 5 }) sign ({ 4 6 7 }) the ({ 8 }) registration ({ 9 }) form ({ 10 11 }) , ({ }) please ({ }) ? ({ 12 })
+# *all* 1.287
+¿ nos podrían despertar mañana a las seis y media ?
+NULL ({ }) could ({ 1 }) you ({ 2 }) wake ({ 3 }) us ({ }) up ({ 4 }) tomorrow ({ 5 }) at ({ 6 7 }) half ({ 10 }) past ({ 9 }) six ({ 8 }) ? ({ 11 })
+# *all* 1.288
+he de marcharme el viernes diecinueve de abril a las nueve de la noche .
+NULL ({ }) i ({ 1 }) should ({ 2 }) leave ({ 3 }) on ({ 4 }) friday ({ 5 }) april ({ 6 }) the ({ 7 }) nineteenth ({ 8 }) at ({ 9 10 }) nine ({ 11 }) in ({ 12 }) the ({ 13 }) evening ({ 14 }) . ({ 15 })
+# *all* 1.289
+pienso que se ha equivocado en la cuenta .
+NULL ({ }) i ({ }) think ({ 1 }) that ({ 2 }) a ({ }) mistake ({ }) has ({ 3 4 }) been ({ 5 }) made ({ }) in ({ 6 }) the ({ 7 }) bill ({ 8 }) . ({ 9 })
+# *all* 1.290
+por favor , me gustaría cambiarme de habitación .
+NULL ({ }) i ({ 1 }) would ({ 2 }) like ({ 3 4 }) to ({ }) change ({ 5 6 7 }) rooms ({ }) , ({ 8 }) please ({ }) . ({ 9 })
+# *all* 1.291
+¿ está apuntado el teléfono ?
+NULL ({ }) is ({ 1 2 }) the ({ }) phone ({ 3 4 }) bill ({ }) included ({ 5 }) ? ({ 6 })
+# *all* 1.292
+por favor , ¿ me puede usted despertar a las dos menos cuarto ?
+NULL ({ }) can ({ 1 6 }) you ({ 2 4 }) wake ({ 3 }) me ({ 5 }) up ({ 8 }) at ({ 7 10 }) a ({ }) quarter ({ 12 13 }) to ({ 9 }) two ({ 11 }) , ({ }) please ({ }) ? ({ 14 })
+# *all* 1.293
+vamos a marcharnos el día siete a las once y media de la noche .
+NULL ({ }) we ({ }) are ({ 1 }) leaving ({ 2 3 }) on ({ 4 5 }) the ({ }) seventh ({ 6 }) at ({ 7 8 }) half ({ 11 }) past ({ 10 }) eleven ({ 9 }) in ({ 12 }) the ({ 13 }) evening ({ 14 }) . ({ 15 })
+# *all* 1.294
+desearía que nos despertasen a las tres y media , por favor .
+NULL ({ }) i ({ }) would ({ }) like ({ 1 2 }) you ({ 3 }) to ({ 4 5 }) wake ({ }) us ({ }) up ({ }) at ({ 6 }) half ({ 9 }) past ({ 8 }) three ({ 7 }) , ({ 10 11 }) please ({ 12 }) . ({ 13 })
+# *all* 1.295
+hemos de irnos mañana a las nueve .
+NULL ({ }) we ({ 1 }) should ({ 2 }) leave ({ 3 }) tomorrow ({ 4 }) at ({ 5 6 }) nine ({ 7 }) . ({ 8 })
+# *all* 1.296
+¿ hay servicio de bar en la habitación ?
+NULL ({ }) is ({ 1 }) there ({ 2 }) a ({ }) minibar ({ 3 4 5 }) in ({ 6 }) the ({ 7 }) room ({ 8 }) ? ({ 9 })
+# *all* 1.297
+reservamos una habitación hasta el próximo jueves , por favor .
+NULL ({ 8 10 }) we ({ 1 }) booked ({ 2 }) a ({ }) room ({ 3 }) until ({ 4 5 }) next ({ 6 }) thursday ({ 7 9 }) . ({ 11 })
+# *all* 1.298
+por favor , ¿ le importaría mostrarme una habitación doble con televisión ?
+NULL ({ 3 }) would ({ 1 }) you ({ 2 4 }) mind ({ 5 6 }) showing ({ 7 }) me ({ }) a ({ }) double ({ 10 }) room ({ 9 }) with ({ 11 }) a ({ 8 }) tv ({ 12 }) , ({ }) please ({ }) ? ({ 13 })
+# *all* 1.299
+creo que hay un error en la factura de la habitación ocho tres ocho .
+NULL ({ }) i ({ }) think ({ 1 }) that ({ 2 }) there ({ 3 }) is ({ }) an ({ 4 }) error ({ 5 }) in ({ 6 }) the ({ 7 10 }) bill ({ 8 }) for ({ 9 }) room ({ 11 }) number ({ }) eight ({ 12 }) three ({ 13 }) eight ({ 14 }) . ({ 15 })
+# *all* 1.300
+por favor , háganos la cuenta de la habitación novecientos uno .
+NULL ({ }) could ({ 1 }) you ({ }) make ({ 2 }) out ({ 3 }) the ({ 5 }) bill ({ 4 6 }) for ({ 7 }) room ({ 9 }) number ({ }) nine ({ 10 }) oh ({ }) one ({ 8 11 }) for ({ }) us ({ }) , ({ }) please ({ 12 }) ? ({ })
+# *all* 1.301
+quisiera reservar una habitación individual y tranquila hasta el uno de noviembre , por favor .
+NULL ({ }) i ({ }) want ({ 1 }) to ({ }) book ({ 2 }) a ({ 3 }) quiet ({ 6 7 }) , ({ }) single ({ 5 }) room ({ 4 }) until ({ 8 9 }) november ({ 12 }) the ({ 11 }) first ({ 10 }) , ({ 13 14 }) please ({ 15 }) . ({ 16 })
+# *all* 1.302
+por favor , he reservado una habitación tranquila individual con vistas a la montaña y televisión a nombre de la señora gómez .
+NULL ({ 12 }) i ({ 1 4 }) have ({ 2 }) booked ({ 5 }) a ({ 6 }) quiet ({ 8 }) , ({ 3 }) single ({ 9 }) room ({ 7 }) with ({ 10 }) a ({ }) view ({ 11 }) of ({ 13 }) the ({ }) mountain ({ 14 }) and ({ 15 }) a ({ }) tv ({ 16 }) for ({ 17 18 19 }) mrs ({ 20 21 }) gómez ({ 22 }) . ({ 23 })
+# *all* 1.303
+por favor , he hecho una reserva .
+NULL ({ }) i ({ 1 }) have ({ 2 3 4 }) made ({ 5 }) a ({ 6 }) reservation ({ 7 }) . ({ 8 })
+# *all* 1.304
+¿ podría reservar una habitación ?
+NULL ({ }) could ({ 1 2 }) i ({ }) book ({ 3 }) a ({ 4 }) room ({ 5 }) ? ({ 6 })
+# *all* 1.305
+vamos a marcharnos el lunes diecinueve de abril por la mañana .
+NULL ({ 9 }) we ({ }) are ({ 1 }) leaving ({ 2 3 }) on ({ 4 }) monday ({ 5 }) april ({ 6 }) the ({ 7 }) nineteenth ({ 8 }) in ({ }) the ({ 10 }) morning ({ 11 }) . ({ 12 })
+# *all* 1.306
+tengo reservada una habitación tranquila .
+NULL ({ }) i ({ 1 }) have ({ 2 }) booked ({ }) a ({ 3 }) quiet ({ 5 }) room ({ 4 }) . ({ 6 })
+# *all* 1.307
+por favor , me hace mi cuenta .
+NULL ({ }) could ({ 1 }) you ({ }) make ({ 2 }) out ({ 3 5 }) my ({ 6 }) bill ({ 7 }) for ({ }) me ({ 4 }) , ({ }) please ({ 8 }) ? ({ })
+# *all* 1.308
+tengo que irme hoy a las once y media de la mañana .
+NULL ({ }) i ({ 1 }) should ({ 2 }) leave ({ 3 }) today ({ 4 }) at ({ 5 6 }) half ({ 9 }) past ({ 8 }) eleven ({ 7 }) in ({ 10 }) the ({ 11 }) morning ({ 12 }) . ({ 13 })
+# *all* 1.309
+¿ podrían preparar la cuenta ?, por favor .
+NULL ({ }) could ({ 1 2 }) you ({ }) prepare ({ 3 }) the ({ 4 }) bill ({ 5 6 }) , ({ 7 }) please ({ 8 9 }) ? ({ })
+# *all* 1.310
+¿ tienen libre alguna habitación ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ }) a ({ 4 }) room ({ 5 }) available ({ 3 }) ? ({ 6 })
+# *all* 1.311
+creo que se ha equivocado en nuestra cuenta de la habitación quinientos quince .
+NULL ({ }) i ({ }) think ({ 1 }) that ({ 2 }) a ({ }) mistake ({ }) has ({ 3 4 }) been ({ 5 }) made ({ }) in ({ 6 }) our ({ 7 }) bill ({ 8 }) for ({ 9 }) room ({ 11 }) number ({ 10 }) five ({ 12 }) one ({ }) five ({ 13 }) . ({ 14 })
+# *all* 1.312
+por favor , quisiera reservar una habitación .
+NULL ({ }) i ({ 1 2 }) want ({ 4 }) to ({ 3 }) book ({ 5 }) a ({ 6 }) room ({ 7 }) , ({ }) please ({ }) . ({ 8 })
+# *all* 1.313
+¿ tienen una habitación libre ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ }) a ({ 3 }) room ({ 4 }) available ({ 5 }) ? ({ 6 })
+# *all* 1.314
+¿ están anotados en el recibo los extras ?
+NULL ({ }) are ({ 1 }) extras ({ 2 3 }) included ({ 5 6 7 }) in ({ 4 }) the ({ }) bill ({ 8 }) ? ({ 9 })
+# *all* 1.315
+tengo reservada una habitación .
+NULL ({ }) i ({ 1 }) have ({ }) booked ({ 2 }) a ({ 3 }) room ({ 4 }) . ({ 5 })
+# *all* 1.317
+por favor , ¿ pueden pedirme mi taxi para la habitación setecientos dieciséis ?
+NULL ({ }) can ({ 1 5 }) you ({ 2 4 }) ask ({ 3 6 }) for ({ }) my ({ 7 }) taxi ({ 8 }) for ({ }) room ({ 11 }) number ({ }) seven ({ 12 13 }) one ({ 10 }) six ({ }) for ({ 9 }) me ({ }) , ({ }) please ({ }) ? ({ 14 })
+# *all* 1.318
+¿ puede despertarme a las cuatro y cuarto ?
+NULL ({ }) can ({ 1 2 }) you ({ }) wake ({ }) me ({ 3 }) up ({ 4 }) at ({ 5 }) a ({ }) quarter ({ 8 }) past ({ 7 }) four ({ 6 }) ? ({ 9 })
+# *all* 1.319
+¿ están incluidos en la factura todos los impuestos ?
+NULL ({ }) are ({ 1 }) all ({ 2 3 }) taxes ({ 7 9 }) included ({ 8 }) in ({ 4 }) the ({ 5 }) bill ({ 6 }) ? ({ 10 })
+# *all* 1.320
+¿ está incluido el desayuno ?
+NULL ({ }) is ({ 1 2 }) breakfast ({ 3 5 }) included ({ 4 }) ? ({ 6 })
+# *all* 1.321
+reservé una habitación a nombre del señor gerardo paches .
+NULL ({ }) i ({ }) booked ({ 1 }) a ({ 2 }) room ({ 3 }) for ({ 4 5 }) mr ({ 6 7 }) gerardo ({ 8 }) paches ({ 9 }) . ({ 10 })
+# *all* 1.323
+me iré el dieciocho a las siete menos cuarto de la mañana .
+NULL ({ }) i ({ 1 }) leave ({ 2 }) on ({ 3 }) the ({ }) eighteenth ({ 4 }) at ({ 5 6 }) a ({ }) quarter ({ 8 9 }) to ({ }) seven ({ 7 }) in ({ 10 }) the ({ 11 }) morning ({ 12 }) . ({ 13 })
+# *all* 1.324
+por favor , ¿ nos podría dar la llave de la seis cuatro siete ?
+NULL ({ }) could ({ 1 4 6 }) you ({ 2 }) give ({ 3 7 }) us ({ 5 }) the ({ }) key ({ 9 }) to ({ }) room ({ }) number ({ 8 10 11 }) six ({ 12 }) four ({ 13 }) seven ({ 14 }) , ({ }) please ({ }) ? ({ 15 })
+# *all* 1.325
+¿ podríamos ver una habitación , por favor ?
+NULL ({ }) could ({ 1 }) we ({ 2 }) see ({ 3 }) a ({ 4 }) room ({ 5 }) , ({ 6 7 }) please ({ 8 }) ? ({ 9 })
+# *all* 1.326
+¿ pueden llevarnos nuestro equipaje al autobús ?
+NULL ({ }) can ({ 1 2 }) you ({ }) send ({ 3 }) our ({ 4 }) luggage ({ 5 }) to ({ }) the ({ }) bus ({ 6 7 }) ? ({ 8 })
+# *all* 1.327
+me marcharé el viernes uno a las tres .
+NULL ({ }) i ({ 1 }) leave ({ 2 }) on ({ 3 }) friday ({ 4 }) the ({ }) first ({ 5 }) at ({ 6 7 }) three ({ 8 }) . ({ 9 })
+# *all* 1.328
+¿ pueden ustedes bajarme mis bultos a la habitación ?
+NULL ({ }) can ({ 1 2 }) you ({ }) send ({ }) down ({ 4 }) my ({ 5 }) luggage ({ 6 }) to ({ 3 7 }) the ({ 8 }) room ({ 9 }) ? ({ 10 })
+# *all* 1.329
+¿ cuánto vale una habitación doble por día , por favor ?
+NULL ({ }) how ({ 1 }) much ({ 2 3 }) is ({ }) a ({ 4 }) double ({ 6 }) room ({ 5 }) per ({ 7 }) day ({ 8 }) , ({ 9 10 }) please ({ 11 }) ? ({ 12 })
+# *all* 1.330
+en la habitación hay mucho ruido .
+NULL ({ }) there ({ 1 }) is ({ }) a ({ }) lot ({ 3 }) of ({ 2 }) noise ({ 4 5 6 }) in ({ }) the ({ }) room ({ }) . ({ 7 })
+# *all* 1.332
+la habitación está bien .
+NULL ({ }) the ({ 1 }) room ({ 2 }) is ({ 3 }) all ({ }) right ({ 4 }) . ({ 5 })
+# *all* 1.333
+por favor , ¿ hay agua caliente en las habitaciones ?
+NULL ({ 1 2 3 }) is ({ 4 }) there ({ 5 }) hot ({ }) water ({ 6 7 }) in ({ 8 }) the ({ 9 }) rooms ({ 10 }) , ({ }) please ({ }) ? ({ 11 })
+# *all* 1.334
+¿ le importaría cambiarme de habitación ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) changing ({ 4 5 }) my ({ }) room ({ 6 }) ? ({ 7 })
+# *all* 1.335
+¿ me sube mis bolsas de viaje al taxi ?
+NULL ({ }) could ({ 1 }) you ({ 2 }) put ({ 3 }) my ({ 4 }) travel ({ 6 7 }) bags ({ 5 }) in ({ }) the ({ 8 }) taxi ({ 9 }) ? ({ 10 })
+# *all* 1.336
+por favor , querríamos que nos despertaran a las ocho menos cuarto .
+NULL ({ 3 }) we ({ 1 }) would ({ }) like ({ 5 }) you ({ 2 }) to ({ 4 }) wake ({ }) us ({ 6 }) up ({ }) at ({ 8 9 }) a ({ }) quarter ({ 11 12 }) to ({ 7 }) eight ({ 10 }) , ({ }) please ({ }) . ({ 13 })
+# *all* 1.337
+en la habitación hace mucho calor .
+NULL ({ }) it ({ 1 }) is ({ }) very ({ }) hot ({ 4 }) in ({ 5 }) the ({ 2 }) room ({ 3 6 }) . ({ 7 })
+# *all* 1.338
+queremos cambiar la habitación .
+NULL ({ }) we ({ }) want ({ 1 }) to ({ 3 }) change ({ 2 4 }) rooms ({ }) . ({ 5 })
+# *all* 1.340
+¿ tiene aire acondicionado mi habitación ?
+NULL ({ }) does ({ 1 2 }) my ({ 5 }) room ({ 6 }) have ({ }) air ({ 3 }) conditioning ({ 4 }) ? ({ 7 })
+# *all* 1.341
+despiérteme a las seis .
+NULL ({ }) wake ({ 1 }) me ({ }) up ({ 2 }) at ({ 3 }) six ({ 4 }) . ({ 5 })
+# *all* 1.342
+voy a irme mañana a las tres menos cuarto de la tarde .
+NULL ({ }) i ({ }) am ({ 1 }) leaving ({ 2 }) tomorrow ({ 3 4 }) at ({ 5 6 }) a ({ }) quarter ({ 8 9 }) to ({ }) three ({ 7 }) in ({ 10 }) the ({ 11 }) afternoon ({ 12 }) . ({ 13 })
+# *all* 1.343
+¿ hay habitaciones libres ?
+NULL ({ }) are ({ 1 }) there ({ 2 }) any ({ }) rooms ({ 3 }) available ({ 4 }) ? ({ 5 })
+# *all* 1.344
+¿ podría cambiarnos a otra habitación con teléfono y televisión ?
+NULL ({ }) can ({ 1 }) you ({ 2 }) move ({ 3 5 }) us ({ }) to ({ 4 }) a ({ }) room ({ 6 }) with ({ 7 }) a ({ }) telephone ({ 8 }) and ({ 9 }) a ({ }) tv ({ 10 }) ? ({ 11 })
+# *all* 1.345
+no importa .
+NULL ({ }) it ({ }) does ({ }) not ({ 1 }) matter ({ 2 }) . ({ 3 })
+# *all* 1.346
+¿ hay teléfono y televisión en la habitación ?
+NULL ({ }) are ({ 1 }) there ({ 2 }) a ({ }) telephone ({ 3 }) and ({ 4 }) a ({ }) tv ({ 5 }) in ({ 6 }) the ({ 7 }) room ({ 8 }) ? ({ 9 })
+# *all* 1.347
+he de marcharme hoy .
+NULL ({ }) i ({ 1 }) should ({ 2 }) leave ({ 3 }) today ({ 4 }) . ({ 5 })
+# *all* 1.348
+vamos a marcharnos esta mañana .
+NULL ({ }) we ({ }) are ({ 1 }) leaving ({ 2 3 }) this ({ 4 }) morning ({ 5 }) . ({ 6 })
+# *all* 1.349
+por favor , ¿ le importaría mostrarnos una habitación con teléfono y televisión ?
+NULL ({ 3 }) would ({ 1 }) you ({ 2 4 }) mind ({ 5 6 }) showing ({ 7 }) us ({ }) a ({ }) room ({ 9 }) with ({ 10 }) a ({ 8 }) telephone ({ 11 }) and ({ 12 }) a ({ }) tv ({ 13 }) , ({ }) please ({ }) ? ({ 14 })
+# *all* 1.350
+lleve el equipaje .
+NULL ({ }) carry ({ 1 }) the ({ }) luggage ({ 2 3 }) . ({ 4 })
+# *all* 1.351
+¿ hay aire acondicionado en las habitaciones ?
+NULL ({ }) is ({ 1 }) there ({ 2 }) air ({ 3 }) conditioning ({ 4 }) in ({ 5 }) the ({ 6 }) rooms ({ 7 }) ? ({ 8 })
+# *all* 1.352
+¿ podría subir mis bultos a mi habitación ?
+NULL ({ }) could ({ 1 2 }) you ({ }) send ({ }) up ({ 3 }) my ({ 4 }) luggage ({ 5 }) to ({ 6 }) my ({ 7 }) room ({ 8 }) ? ({ 9 })
+# *all* 1.353
+no estoy de acuerdo .
+NULL ({ }) i ({ }) do ({ 2 }) not ({ 1 3 }) agree ({ 4 }) . ({ 5 })
+# *all* 1.355
+quisiera reservar una habitación para un día , por favor .
+NULL ({ }) i ({ }) want ({ 1 }) to ({ }) book ({ 2 }) a ({ 3 }) room ({ 4 }) for ({ 5 6 }) a ({ }) day ({ 7 }) , ({ 8 9 }) please ({ 10 }) . ({ 11 })
+# *all* 1.356
+¿ nos podría dar usted la llave de mi habitación ?
+NULL ({ }) could ({ 1 3 }) you ({ 2 }) give ({ 4 }) us ({ 5 }) the ({ 6 }) key ({ 7 }) to ({ 8 }) my ({ 9 }) room ({ 10 }) ? ({ 11 })
+# *all* 1.357
+¿ me puede dar la llave de la habitación , por favor ?
+NULL ({ }) can ({ 1 3 }) you ({ }) give ({ 4 }) me ({ 2 }) the ({ 5 }) key ({ 6 7 }) to ({ }) the ({ 8 }) room ({ 9 }) , ({ 10 11 }) please ({ 12 }) ? ({ 13 })
+# *all* 1.358
+por favor , he hecho una reserva .
+NULL ({ }) i ({ 1 }) have ({ 2 3 4 }) made ({ 5 }) a ({ 6 }) reservation ({ 7 }) . ({ 8 })
+# *all* 1.359
+me tengo que marchar mañana por la mañana .
+NULL ({ 6 }) i ({ 1 2 }) should ({ 3 }) leave ({ 4 }) tomorrow ({ 5 }) morning ({ 7 8 }) . ({ 9 })
+# *all* 1.360
+¿ tengo que rellenar la hoja de registro , por favor ?
+NULL ({ }) should ({ 1 }) i ({ 2 }) fill ({ 3 4 }) in ({ }) the ({ 5 }) registration ({ 6 7 }) form ({ 8 }) , ({ 9 10 }) please ({ 11 }) ? ({ 12 })
+# *all* 1.361
+¿ haría el favor de cambiarme de habitación ?
+NULL ({ }) would ({ 1 2 }) you ({ 4 }) mind ({ 3 }) changing ({ 5 6 7 }) my ({ }) room ({ 8 }) ? ({ 9 })
+# *all* 1.362
+por favor , ¿ puede darme las llaves de la cero tres cero ?
+NULL ({ 3 }) can ({ 1 5 }) you ({ 2 4 }) give ({ }) me ({ 6 }) the ({ }) keys ({ 7 8 }) to ({ }) room ({ }) number ({ 9 10 }) oh ({ }) three ({ 12 }) oh ({ 11 13 }) , ({ }) please ({ }) ? ({ 14 })
+# *all* 1.363
+¿ nos puede bajar nuestras bolsas de viaje a la habitación número cuatro veintitrés , por favor ?
+NULL ({ }) can ({ 1 3 }) you ({ 2 }) send ({ }) down ({ 4 }) our ({ 5 }) travel ({ 7 8 }) bags ({ 6 }) to ({ 9 }) room ({ 11 }) number ({ 10 12 }) four ({ 13 }) two ({ }) three ({ 14 }) , ({ 15 16 }) please ({ 17 }) ? ({ 18 })
+# *all* 1.364
+deseo reservar una habitación individual y tranquila para una semana , por favor .
+NULL ({ }) i ({ }) want ({ 1 }) to ({ }) book ({ 2 }) a ({ 3 4 }) quiet ({ 6 7 }) , ({ }) single ({ 5 }) room ({ }) for ({ 8 }) a ({ 9 }) week ({ 10 }) , ({ 11 12 }) please ({ 13 }) . ({ 14 })
+# *all* 1.365
+por favor , explique la cuenta .
+NULL ({ }) please ({ 1 2 }) explain ({ 3 4 }) the ({ 5 }) bill ({ 6 }) . ({ 7 })
+# *all* 1.367
+por favor , tengo reservada una habitación para esta noche a nombre de manuela valls .
+NULL ({ }) i ({ 1 }) have ({ 2 3 4 }) booked ({ 5 }) a ({ 6 }) room ({ 7 }) for ({ 8 }) tonight ({ 9 10 }) for ({ 11 12 13 }) manuela ({ 14 }) valls ({ 15 }) . ({ 16 })
+# *all* 1.368
+por favor , querría que nos diera la llave de la habitación uno uno .
+NULL ({ 3 }) i ({ 1 }) would ({ 4 }) like ({ 5 }) you ({ 2 }) to ({ }) give ({ 7 }) us ({ 6 }) the ({ 8 }) key ({ 9 }) to ({ 10 }) room ({ 12 }) number ({ 11 }) one ({ }) one ({ 13 14 }) , ({ }) please ({ }) . ({ 15 })
+# *all* 1.369
+por favor , ¿ pueden bajar nuestros bultos a la habitación número cuatrocientos catorce ?
+NULL ({ }) can ({ 1 5 }) you ({ 2 4 }) send ({ 3 }) down ({ 6 }) our ({ 7 }) luggage ({ 8 }) to ({ 9 }) room ({ 11 }) number ({ 10 12 }) four ({ }) one ({ }) four ({ 13 14 }) , ({ }) please ({ }) ? ({ 15 })
+# *all* 1.371
+por favor , hemos reservado una habitación individual y tranquila .
+NULL ({ }) we ({ 1 4 }) have ({ 2 3 }) booked ({ 5 }) a ({ 6 }) quiet ({ 10 }) , ({ }) single ({ 8 9 }) room ({ 7 }) . ({ 11 })
+# *all* 1.372
+por favor , suban mi bolsa de viaje a la habitación seiscientos treinta y uno .
+NULL ({ }) please ({ 1 2 }) send ({ 3 4 }) up ({ }) my ({ 5 }) travel ({ 7 8 }) bag ({ 6 }) to ({ 9 }) room ({ 11 }) number ({ 10 }) six ({ 12 }) three ({ 13 14 }) one ({ 15 }) . ({ 16 })
+# *all* 1.373
+¿ puede pedir un taxi ?
+NULL ({ }) can ({ 1 2 }) you ({ }) ask ({ 3 }) for ({ }) a ({ }) taxi ({ 4 5 }) , ({ }) please ({ }) ? ({ 6 })
+# *all* 1.374
+por favor , ¿ puede pedir un taxi ?
+NULL ({ }) can ({ 1 5 }) you ({ 2 4 }) ask ({ 3 }) for ({ }) a ({ }) taxi ({ 6 7 8 }) , ({ }) please ({ }) ? ({ 9 })
+# *all* 1.375
+por favor , ¿ podrían hacer la cuenta de la habitación seiscientos veintiséis ?
+NULL ({ }) could ({ 1 4 5 }) you ({ }) make ({ 2 }) out ({ 3 6 }) the ({ }) bill ({ 8 }) for ({ 9 }) room ({ 11 }) number ({ 7 10 }) six ({ }) two ({ }) six ({ 12 13 }) , ({ }) please ({ }) ? ({ 14 })
+# *all* 1.376
+dénos la llave de la número ocho catorce .
+NULL ({ }) give ({ 1 }) us ({ }) the ({ 2 }) key ({ 3 }) to ({ 4 }) room ({ }) number ({ 5 6 }) eight ({ 7 }) one ({ }) four ({ 8 }) . ({ 9 })
+# *all* 1.377
+quiero que me suba los bultos a la habitación , por favor .
+NULL ({ }) i ({ }) want ({ 1 2 }) you ({ 3 }) to ({ }) send ({ 4 }) up ({ 7 }) my ({ }) luggage ({ 5 6 }) to ({ }) the ({ 8 }) room ({ 9 }) , ({ 10 11 }) please ({ 12 }) . ({ 13 })
+# *all* 1.378
+déme la llave de la habitación seis dieciocho , por favor .
+NULL ({ }) give ({ 1 }) me ({ }) the ({ 2 }) key ({ 3 4 }) to ({ }) room ({ 6 }) number ({ 5 }) six ({ 7 }) one ({ }) eight ({ 8 }) , ({ 9 10 }) please ({ 11 }) . ({ 12 })
+# *all* 1.379
+¿ nos podrían dar la llave de la habitación número seis cuatro cero ?
+NULL ({ }) could ({ 1 3 }) you ({ }) give ({ 4 }) us ({ 2 }) the ({ 5 }) key ({ 6 7 }) to ({ }) room ({ 9 }) number ({ 8 10 }) six ({ 11 }) four ({ 12 }) oh ({ 13 }) ? ({ 14 })
+# *all* 1.380
+¿ podríamos ver una habitación tranquila , por favor ?
+NULL ({ }) could ({ 1 }) we ({ 2 }) see ({ 3 }) a ({ 4 }) quiet ({ 6 }) room ({ 5 }) , ({ 7 8 }) please ({ 9 }) ? ({ 10 })
+# *all* 1.381
+¡ sí !
+NULL ({ }) yes ({ 1 2 }) ! ({ 3 })
+# *all* 1.382
+llévenos nuestros bultos a la número ochocientos veintiséis , por favor .
+NULL ({ }) send ({ 1 }) our ({ 2 }) luggage ({ 3 }) to ({ 4 }) room ({ }) number ({ 5 6 }) eight ({ 7 }) two ({ }) six ({ 8 }) , ({ 9 10 }) please ({ 11 }) . ({ 12 })
+# *all* 1.383
+¿ nos podría bajar el equipaje a la habitación número tres seis dos ?
+NULL ({ }) could ({ 1 3 }) you ({ 2 }) send ({ }) down ({ 4 }) our ({ }) luggage ({ 5 6 }) to ({ 7 }) room ({ 9 }) number ({ 8 10 }) three ({ 11 }) six ({ 12 }) two ({ 13 }) ? ({ 14 })
+# *all* 1.384
+por favor , he reservado una habitación tranquila hasta mañana a nombre de gregorio cabedo .
+NULL ({ }) i ({ 1 4 }) have ({ 2 3 }) booked ({ 5 }) a ({ 6 }) quiet ({ 8 }) room ({ 7 }) until ({ 9 }) tomorrow ({ 10 }) for ({ 11 12 13 }) gregorio ({ 14 }) cabedo ({ 15 }) . ({ 16 })
+# *all* 1.385
+nos marchamos hoy a las seis y media de la tarde .
+NULL ({ }) we ({ 1 }) are ({ 2 }) leaving ({ }) today ({ 3 }) at ({ 4 5 }) half ({ 8 }) past ({ 7 }) six ({ 6 }) in ({ 9 }) the ({ 10 }) afternoon ({ 11 }) . ({ 12 })
+# *all* 1.386
+por favor , ¿ le importaría llevar nuestras bolsas de viaje a la habitación número dos tres cinco ?
+NULL ({ 3 }) would ({ 1 }) you ({ 2 4 }) mind ({ 5 6 }) sending ({ 7 }) our ({ 8 }) travel ({ 11 }) bags ({ 9 }) to ({ 10 12 }) room ({ 14 }) number ({ 13 15 }) two ({ 16 }) three ({ 17 }) five ({ 18 }) , ({ }) please ({ }) ? ({ 19 })
+# *all* 1.387
+hicimos una reserva .
+NULL ({ }) we ({ 1 }) made ({ }) a ({ 2 }) reservation ({ 3 }) . ({ 4 })
+# *all* 1.388
+por favor , ¿ me podrían detallar la cuenta ?
+NULL ({ }) could ({ 1 }) you ({ 2 4 6 }) explain ({ 3 7 }) the ({ 8 }) bill ({ 9 }) for ({ }) me ({ 5 }) , ({ }) please ({ }) ? ({ 10 })
+# *all* 1.390
+quisiéramos que nos despertara a las once y cuarto .
+NULL ({ }) we ({ 1 }) would ({ }) like ({ 2 }) you ({ 3 }) to ({ }) wake ({ 4 }) us ({ }) up ({ 5 }) at ({ 6 }) a ({ }) quarter ({ 9 }) past ({ 8 }) eleven ({ 7 }) . ({ 10 })
+# *all* 1.391
+quisiéramos que nos despertase a las nueve en punto .
+NULL ({ }) we ({ 1 }) would ({ }) like ({ 2 }) you ({ 3 }) to ({ }) wake ({ 4 }) us ({ }) up ({ 5 }) at ({ 6 }) nine ({ 7 }) o ({ 8 }) ' ({ }) clock ({ 9 }) . ({ 10 })
+# *all* 1.392
+reservé una habitación , por favor .
+NULL ({ 5 6 }) i ({ }) booked ({ 1 2 }) a ({ 4 }) room ({ 3 }) . ({ 7 })
+# *all* 1.393
+¿ podría cambiarnos a otra habitación con televisión ?
+NULL ({ }) can ({ 1 }) you ({ 2 }) move ({ 3 5 }) us ({ }) to ({ 4 }) a ({ }) room ({ 6 }) with ({ 7 }) a ({ }) tv ({ 8 }) ? ({ 9 })
+# *all* 1.394
+tengo que irme mañana a las diez en punto de la mañana .
+NULL ({ }) i ({ 1 }) should ({ 2 }) leave ({ 3 }) tomorrow ({ 4 }) at ({ 5 6 }) ten ({ 7 }) o ({ }) ' ({ 8 }) clock ({ 9 }) in ({ 10 }) the ({ 11 }) morning ({ 12 }) . ({ 13 })
+# *all* 1.395
+¿ pueden explicar la cuenta ?
+NULL ({ }) can ({ 1 2 }) you ({ }) explain ({ 3 }) the ({ 4 }) bill ({ 5 }) , ({ }) please ({ }) ? ({ 6 })
+# *all* 1.396
+por favor , suba mi equipaje a mi habitación .
+NULL ({ }) please ({ 1 2 }) send ({ 3 4 }) up ({ }) my ({ 5 }) luggage ({ 6 }) to ({ 7 }) my ({ 8 }) room ({ 9 }) . ({ 10 })
+# *all* 1.397
+¿ nos pueden llevar nuestro equipaje al autobús ?
+NULL ({ }) can ({ 1 3 }) you ({ 2 }) send ({ 4 }) our ({ 5 }) luggage ({ 6 }) to ({ }) the ({ }) bus ({ 7 8 }) ? ({ 9 })
+# *all* 1.398
+¿ tenemos que firmar la hoja de registro ?
+NULL ({ }) should ({ 1 }) we ({ 2 }) sign ({ 3 4 }) the ({ 5 }) registration ({ 6 7 }) form ({ 8 }) ? ({ 9 })
+# *all* 1.399
+desearía que me despertara mañana a las diez , por favor .
+NULL ({ }) i ({ }) would ({ }) like ({ 1 2 }) you ({ }) to ({ }) wake ({ 4 }) me ({ 3 }) up ({ 6 }) tomorrow ({ 5 }) at ({ 7 }) ten ({ 8 }) , ({ 9 10 }) please ({ 11 }) . ({ 12 })
+# *all* 1.400
+reservamos una habitación doble , por favor .
+NULL ({ 6 7 }) we ({ 1 }) booked ({ 2 }) a ({ 3 5 }) double ({ 4 }) room ({ }) . ({ 8 })
+# *all* 1.401
+vamos a marcharnos mañana a las cinco en punto de la tarde .
+NULL ({ }) we ({ }) are ({ 1 }) leaving ({ 2 3 }) tomorrow ({ 4 }) at ({ 5 6 }) five ({ 7 }) o ({ }) ' ({ 8 }) clock ({ 9 }) in ({ 10 }) the ({ 11 }) afternoon ({ 12 }) . ({ 13 })
+# *all* 1.402
+¿ hay aire acondicionado en la habitación ?
+NULL ({ }) is ({ 1 }) there ({ 2 }) air ({ 3 }) conditioning ({ 4 }) in ({ 5 }) the ({ 6 }) room ({ 7 }) ? ({ 8 })
+# *all* 1.403
+por favor , ¿ le importaría darme la llave de la habitación trescientos treinta y tres ?
+NULL ({ 3 }) would ({ 1 }) you ({ 2 4 }) mind ({ 5 6 }) giving ({ 7 }) me ({ }) the ({ 8 }) key ({ 9 }) to ({ 10 }) room ({ 12 }) number ({ 11 }) three ({ }) three ({ 13 }) three ({ 14 15 16 }) , ({ }) please ({ }) ? ({ 17 })
+# *all* 1.404
+me voy a ir mañana a las cuatro y media de la tarde .
+NULL ({ }) i ({ 1 }) am ({ 2 }) leaving ({ 3 4 }) tomorrow ({ 5 }) at ({ 6 7 }) half ({ 10 }) past ({ 9 }) four ({ 8 }) in ({ 11 }) the ({ 12 }) afternoon ({ 13 }) . ({ 14 })
+# *all* 1.405
+nos tenemos que ir el lunes cuatro de abril a las doce y media de la mañana .
+NULL ({ }) we ({ 1 2 }) should ({ 3 }) leave ({ }) on ({ 4 5 }) monday ({ 6 }) april ({ 9 }) the ({ 8 }) fourth ({ 7 }) at ({ 10 11 }) half ({ 14 }) past ({ 13 }) twelve ({ 12 }) in ({ 15 }) the ({ 16 }) morning ({ 17 }) . ({ 18 })
+# *all* 1.406
+por favor , ¿ qué precio tiene una habitación doble por día con media pensión ?
+NULL ({ 1 2 3 }) what ({ 5 }) is ({ 4 }) the ({ }) price ({ 6 7 }) for ({ }) a ({ 8 }) double ({ 10 }) room ({ 9 }) with ({ 13 }) half ({ 14 }) board ({ 15 }) per ({ 11 }) day ({ 12 }) , ({ }) please ({ }) ? ({ 16 })
+# *all* 1.407
+en la habitación hace demasiado calor .
+NULL ({ }) it ({ 1 }) is ({ }) too ({ 3 5 }) hot ({ 4 }) in ({ }) the ({ 2 }) room ({ 6 }) . ({ 7 })
+# *all* 1.408
+¿ cuánto cuesta una habitación doble ?
+NULL ({ }) how ({ 1 }) much ({ 2 }) does ({ 3 }) a ({ 4 }) double ({ 6 }) room ({ 5 }) cost ({ }) ? ({ 7 })
+# *all* 1.409
+por favor , ¿ le importaría mostrarnos una habitación con teléfono ?
+NULL ({ 3 }) would ({ 1 }) you ({ 2 4 }) mind ({ 5 6 }) showing ({ 7 }) us ({ }) a ({ }) room ({ 9 }) with ({ 10 }) a ({ 8 }) telephone ({ 11 }) , ({ }) please ({ }) ? ({ 12 })
+# *all* 1.410
+¿ cuánto cuesta una habitación individual por día ?
+NULL ({ }) how ({ 1 }) much ({ 2 }) does ({ 3 }) a ({ 4 }) single ({ }) room ({ 5 }) cost ({ 6 }) per ({ 7 }) day ({ 8 }) ? ({ 9 })
+# *all* 1.411
+he de marcharme .
+NULL ({ }) i ({ 1 }) should ({ 2 }) leave ({ 3 }) . ({ 4 })
+# *all* 1.412
+¿ me lleva mis bolsas ?
+NULL ({ }) could ({ 1 }) you ({ 2 }) carry ({ 3 }) my ({ 4 }) bags ({ 5 }) ? ({ 6 })
+# *all* 1.413
+por favor , ¿ cuánto cuesta una habitación doble para dieciocho días ?
+NULL ({ }) how ({ 1 }) much ({ 2 5 }) does ({ 4 6 }) a ({ 3 }) double ({ 9 }) room ({ 8 }) cost ({ 7 }) for ({ }) eighteen ({ 11 }) days ({ 10 12 }) , ({ }) please ({ }) ? ({ 13 })
+# *all* 1.415
+¿ están incluidos en el recibo todos los gastos ?
+NULL ({ }) are ({ 1 }) all ({ 2 3 }) expenses ({ 4 }) included ({ 5 6 7 8 }) in ({ }) the ({ }) bill ({ 9 }) ? ({ 10 })
+# *all* 1.416
+tengo hecha la reserva de una habitación doble con baño y teléfono a nombre de paloma betoret .
+NULL ({ }) i ({ 1 }) have ({ }) made ({ 2 3 }) a ({ }) reservation ({ 4 }) for ({ 5 }) a ({ 6 }) double ({ 8 }) room ({ 7 }) with ({ 9 }) a ({ }) bath ({ 10 }) and ({ 11 }) a ({ }) telephone ({ 12 }) for ({ 13 14 15 }) paloma ({ 16 }) betoret ({ 17 }) . ({ 18 })
+# *all* 1.417
+querría que me diera las llaves de la habitación dos treinta y nueve .
+NULL ({ }) i ({ }) would ({ 1 }) like ({ 2 }) you ({ }) to ({ }) give ({ 4 }) me ({ 3 }) the ({ 7 8 }) keys ({ 5 6 }) to ({ }) room ({ 9 }) number ({ }) two ({ 10 }) three ({ 11 12 }) nine ({ 13 }) . ({ 14 })
+# *all* 1.418
+¿ podrían repasarme la cuenta ?
+NULL ({ }) could ({ 1 }) you ({ }) check ({ 2 }) the ({ 4 }) bill ({ 3 5 }) for ({ }) me ({ }) , ({ }) please ({ }) ? ({ 6 })
+# *all* 1.419
+quiero que suba mi equipaje a mi habitación , por favor .
+NULL ({ }) i ({ }) want ({ 1 2 }) you ({ }) to ({ }) send ({ 3 }) up ({ 6 }) my ({ 4 7 }) luggage ({ 5 }) to ({ }) my ({ }) room ({ 8 }) , ({ 9 10 }) please ({ 11 }) . ({ 12 })
+# *all* 1.420
+¿ nos pueden dar la llave de la habitación número uno cuatro cero , por favor ?
+NULL ({ }) can ({ 1 3 }) you ({ }) give ({ 4 }) us ({ 2 }) the ({ 5 8 }) key ({ 6 7 }) to ({ }) room ({ 9 }) number ({ 10 }) one ({ 11 }) four ({ 12 }) oh ({ 13 }) , ({ 14 15 }) please ({ 16 }) ? ({ 17 })
+# *all* 1.421
+¿ les importaría darme las llaves de la habitación , por favor ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) giving ({ 4 }) me ({ }) the ({ 7 }) keys ({ 5 6 }) to ({ }) the ({ 8 }) room ({ 9 }) , ({ 10 11 }) please ({ 12 }) ? ({ 13 })
+# *all* 1.422
+¿ nos podría usted despertar a las seis menos cuarto ?
+NULL ({ }) could ({ 1 3 }) you ({ 2 }) wake ({ }) us ({ 4 }) up ({ 5 }) at ({ 6 7 }) a ({ }) quarter ({ 9 10 }) to ({ }) six ({ 8 }) ? ({ 11 })
+# *all* 1.423
+por favor , ¿ cuánto vale una habitación individual ?
+NULL ({ }) how ({ 1 }) much ({ 2 5 6 }) is ({ 4 }) a ({ 3 7 }) single ({ 9 }) room ({ 8 }) , ({ }) please ({ }) ? ({ 10 })
+# *all* 1.424
+¿ podríamos reservar dos habitaciones tranquilas para esta noche ?
+NULL ({ }) could ({ 1 }) we ({ 2 }) book ({ 3 }) two ({ 4 }) quiet ({ }) rooms ({ 5 6 }) for ({ 7 }) tonight ({ 8 9 }) ? ({ 10 })
+# *all* 1.425
+por favor , tengo reservada una habitación individual y tranquila .
+NULL ({ }) i ({ 1 }) have ({ 2 3 4 }) booked ({ 5 }) a ({ 6 }) quiet ({ 10 }) , ({ }) single ({ 8 9 }) room ({ 7 }) . ({ 11 })
+# *all* 1.426
+la habitación es muy cara .
+NULL ({ }) the ({ 1 }) room ({ 2 }) is ({ 3 }) very ({ 4 }) expensive ({ 5 }) . ({ 6 })
+# *all* 1.427
+me parece que se produjo un problema en la cuenta .
+NULL ({ }) i ({ 1 }) think ({ 2 }) that ({ 3 }) there ({ }) was ({ 4 5 }) a ({ }) problem ({ 6 7 }) in ({ 8 }) the ({ 9 }) bill ({ 10 }) . ({ 11 })
+# *all* 1.428
+quiero una habitación doble para hoy .
+NULL ({ }) i ({ }) want ({ 1 }) a ({ 2 }) double ({ 4 }) room ({ 3 }) for ({ 5 }) today ({ 6 }) . ({ 7 })
+# *all* 1.429
+quiero una habitación individual .
+NULL ({ }) i ({ }) want ({ 1 }) a ({ 2 }) single ({ 4 }) room ({ 3 }) . ({ 5 })
+# *all* 1.430
+reservé una habitación a nombre de alicia morales , por favor .
+NULL ({ 9 }) i ({ }) booked ({ 1 2 }) a ({ 4 }) room ({ 3 }) for ({ 5 6 }) alicia ({ 7 8 }) morales ({ 10 11 }) . ({ 12 })
+# *all* 1.432
+por favor , déme la llave de nuestra habitación .
+NULL ({ }) please ({ 1 2 }) give ({ 3 4 }) me ({ }) the ({ 5 }) key ({ 6 }) to ({ 7 }) our ({ 8 }) room ({ 9 }) . ({ 10 })
+# *all* 1.433
+por favor , quisiéramos una habitación .
+NULL ({ }) we ({ 1 4 }) want ({ 2 }) a ({ 3 5 }) room ({ 6 }) , ({ }) please ({ }) . ({ 7 })
+# *all* 1.434
+me gustaría reservar dos habitaciones dobles , por favor .
+NULL ({ }) i ({ 1 }) would ({ }) like ({ 2 }) to ({ }) book ({ 3 }) two ({ 4 }) double ({ }) rooms ({ 5 6 }) , ({ 7 8 }) please ({ 9 }) . ({ 10 })
+# *all* 1.435
+me voy a ir mañana a las diez menos cuarto de la noche .
+NULL ({ }) i ({ 1 }) am ({ 2 }) leaving ({ 3 4 }) tomorrow ({ 5 }) at ({ 6 7 }) a ({ }) quarter ({ 9 10 }) to ({ }) ten ({ 8 }) in ({ 11 }) the ({ 12 }) evening ({ 13 }) . ({ 14 })
+# *all* 1.436
+quisiera cambiarme de habitación .
+NULL ({ }) i ({ 1 }) want ({ }) to ({ }) change ({ 2 3 4 }) rooms ({ }) . ({ 5 })
+# *all* 1.437
+la habitación es muy calurosa .
+NULL ({ }) the ({ 1 }) room ({ 2 }) is ({ 3 }) very ({ 4 }) hot ({ 5 }) . ({ 6 })
+# *all* 1.438
+hice la reserva de una habitación tranquila individual con buena vista del mar , teléfono y televisión .
+NULL ({ }) i ({ }) made ({ 1 2 }) a ({ }) reservation ({ 3 }) for ({ 4 }) a ({ 5 }) quiet ({ 7 }) , ({ }) single ({ 8 }) room ({ 6 }) with ({ 9 }) a ({ }) good ({ 10 11 }) view ({ }) of ({ }) the ({ }) sea ({ 12 13 }) , ({ 14 }) a ({ }) telephone ({ 15 }) and ({ 16 }) a ({ }) tv ({ 17 }) . ({ 18 })
+# *all* 1.439
+¿ le importaría cambiarnos de habitación ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) changing ({ 4 5 }) our ({ }) room ({ 6 }) ? ({ 7 })
+# *all* 1.440
+tenemos reservada una habitación individual hasta el diecisiete .
+NULL ({ }) we ({ 1 }) have ({ 2 }) booked ({ }) a ({ 3 }) single ({ 5 }) room ({ 4 }) until ({ 6 7 }) the ({ }) seventeenth ({ 8 }) . ({ 9 })
+# *all* 1.442
+¿ aceptan cheques de viaje ?
+NULL ({ }) do ({ 1 }) you ({ }) accept ({ 2 3 }) traveler ({ 4 }) checks ({ 5 }) ? ({ 6 })
+# *all* 1.443
+tenemos reservada una habitación , por favor .
+NULL ({ 6 7 }) we ({ 1 }) have ({ 2 }) booked ({ 3 }) a ({ 5 }) room ({ 4 }) . ({ 8 })
+# *all* 1.444
+¿ cuánto ?
+NULL ({ }) how ({ 1 }) much ({ 2 }) ? ({ 3 })
+# *all* 1.445
+por favor , ¿ cuánto vale por día una habitación individual ?
+NULL ({ }) how ({ 1 }) much ({ 2 5 6 }) is ({ 4 }) a ({ 3 9 }) single ({ 11 }) room ({ 10 }) per ({ 7 }) day ({ 8 }) , ({ }) please ({ }) ? ({ 12 })
+# *all* 1.446
+¿ tienen libre una habitación doble y tranquila ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ 3 }) a ({ 4 }) quiet ({ 7 8 }) , ({ }) double ({ 6 }) room ({ 5 }) available ({ }) ? ({ 9 })
+# *all* 1.447
+por favor , ¿ nos quiere preparar la factura ?
+NULL ({ }) will ({ 1 }) you ({ 2 4 }) prepare ({ 3 7 }) the ({ }) bill ({ 9 }) for ({ 6 }) us ({ 5 8 }) , ({ }) please ({ }) ? ({ 10 })
+# *all* 1.448
+por favor , ¿ nos puede despertar a las cuatro ?
+NULL ({ }) can ({ 1 6 }) you ({ 2 4 }) wake ({ 3 }) us ({ 5 }) up ({ 7 }) at ({ 8 9 }) four ({ 10 }) , ({ }) please ({ }) ? ({ 11 })
+# *all* 1.449
+por favor , hemos reservado una habitación doble .
+NULL ({ }) we ({ 1 4 }) have ({ 2 3 }) booked ({ 5 }) a ({ 6 }) double ({ 8 }) room ({ 7 }) . ({ 9 })
+# *all* 1.450
+la habitación está bien .
+NULL ({ }) the ({ 1 }) room ({ 2 }) is ({ 3 }) all ({ }) right ({ 4 }) . ({ 5 })
+# *all* 1.453
+quisiera que nos diesen la llave de mi habitación .
+NULL ({ }) i ({ 1 }) would ({ }) like ({ 2 }) you ({ 3 }) to ({ 4 }) give ({ }) us ({ }) the ({ 5 }) key ({ 6 7 }) to ({ }) my ({ 8 }) room ({ 9 }) . ({ 10 })
+# *all* 1.454
+quiero que nos despierte a las nueve y media .
+NULL ({ }) i ({ }) want ({ 1 2 }) you ({ }) to ({ }) wake ({ 4 }) us ({ 3 }) up ({ 5 }) at ({ 6 }) half ({ 9 }) past ({ 8 }) nine ({ 7 }) . ({ 10 })
+# *all* 1.455
+por favor , desearía una habitación tranquila doble que tenga teléfono , buena vista de la montaña , baño y televisión a nombre de la señora berrueco .
+NULL ({ }) i ({ 1 }) would ({ 2 }) like ({ 4 9 }) a ({ 5 }) quiet ({ 7 }) , ({ 3 }) double ({ 8 }) room ({ 6 }) with ({ 10 }) a ({ }) telephone ({ 11 }) , ({ 12 }) a ({ }) good ({ 13 14 }) view ({ }) of ({ }) the ({ 15 16 }) mountain ({ 17 }) , ({ 18 }) a ({ }) bath ({ 19 }) and ({ 20 }) a ({ }) tv ({ 21 }) for ({ 22 23 24 }) mrs ({ 25 26 }) berrueco ({ 27 }) , ({ }) please ({ }) . ({ 28 })
+# *all* 1.457
+por favor , pídame un taxi .
+NULL ({ }) could ({ 1 }) you ({ }) ask ({ 2 }) for ({ }) a ({ 3 }) taxi ({ 4 5 6 }) for ({ }) me ({ }) , ({ }) please ({ 7 }) ? ({ })
+# *all* 1.458
+me parece que se ha producido un error en la cuenta .
+NULL ({ }) i ({ 1 }) think ({ 2 }) that ({ 3 }) there ({ }) has ({ 4 5 }) been ({ 6 }) an ({ 7 }) error ({ 8 }) in ({ 9 }) the ({ 10 }) bill ({ 11 }) . ({ 12 })
+# *all* 1.459
+la habitación es demasiado fría .
+NULL ({ }) the ({ 1 }) room ({ 2 }) is ({ 3 }) too ({ 4 }) cold ({ 5 }) . ({ 6 })
+# *all* 1.461
+¿ cuánto cuesta por semana una habitación individual ?
+NULL ({ }) how ({ 1 }) much ({ 2 }) does ({ 3 }) a ({ }) single ({ }) room ({ 7 }) cost ({ 6 8 }) per ({ 4 }) week ({ 5 }) ? ({ 9 })
+# *all* 1.462
+¿ le importaría que echara un vistazo a alguna habitación doble ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) me ({ }) taking ({ 4 5 }) a ({ }) look ({ 6 7 }) at ({ 8 }) a ({ 9 }) double ({ 11 }) room ({ 10 }) ? ({ 12 })
+# *all* 1.463
+la habitación está bien .
+NULL ({ }) the ({ 1 }) room ({ 2 }) is ({ 3 }) all ({ }) right ({ 4 }) . ({ 5 })
+# *all* 1.464
+llévennos el equipaje a nuestra habitación .
+NULL ({ }) send ({ 1 }) our ({ }) luggage ({ 2 3 }) to ({ 4 }) our ({ 5 }) room ({ 6 }) . ({ 7 })
+# *all* 1.465
+¿ podría llevarme mis maletas ?
+NULL ({ }) could ({ 1 }) you ({ 2 }) carry ({ 3 }) my ({ 4 }) suitcases ({ 5 }) ? ({ 6 })
+# *all* 1.466
+deseo una habitación para veintinueve días .
+NULL ({ }) i ({ }) want ({ 1 }) a ({ 2 }) room ({ 3 }) for ({ }) twenty ({ 4 }) - ({ 5 }) nine ({ }) days ({ 6 }) . ({ 7 })
+# *all* 1.467
+¿ tengo que rellenar la hoja de registro ?
+NULL ({ }) should ({ 1 }) i ({ 2 }) fill ({ 3 4 }) in ({ }) the ({ 5 }) registration ({ 6 7 }) form ({ 8 }) ? ({ 9 })
+# *all* 1.469
+quisiéramos una habitación individual hasta el próximo viernes .
+NULL ({ }) we ({ 1 }) want ({ }) a ({ 2 }) single ({ 4 }) room ({ 3 }) until ({ 5 6 }) next ({ 7 }) friday ({ 8 }) . ({ 9 })
+# *all* 1.470
+dennos la llave de la habitación número siete cero cinco .
+NULL ({ }) give ({ 1 }) us ({ }) the ({ 2 5 }) key ({ 3 4 }) to ({ }) room ({ 6 }) number ({ 7 }) seven ({ 8 }) oh ({ 9 }) five ({ 10 }) . ({ 11 })
+# *all* 1.471
+¿ podría pedir un taxi ?
+NULL ({ }) could ({ 1 2 }) you ({ }) ask ({ 3 }) for ({ }) a ({ }) taxi ({ 4 5 }) , ({ }) please ({ }) ? ({ 6 })
+# *all* 1.472
+hemos de marcharnos el sábado catorce de mayo .
+NULL ({ }) we ({ 1 }) should ({ 2 }) leave ({ 3 }) on ({ 4 }) saturday ({ 5 }) may ({ 8 }) the ({ 7 }) fourteenth ({ 6 }) . ({ 9 })
+# *all* 1.473
+prepare nuestra cuenta .
+NULL ({ }) prepare ({ 1 }) our ({ 2 }) bill ({ 3 }) . ({ 4 })
+# *all* 1.474
+me tengo que marchar mañana a las cinco menos cuarto de la tarde .
+NULL ({ }) i ({ 1 2 }) should ({ 3 }) leave ({ 4 }) tomorrow ({ 5 }) at ({ 6 7 }) a ({ }) quarter ({ 9 10 }) to ({ }) five ({ 8 }) in ({ 11 }) the ({ 12 }) afternoon ({ 13 }) . ({ 14 })
+# *all* 1.475
+quiero una habitación .
+NULL ({ }) i ({ }) want ({ 1 }) a ({ 2 }) room ({ 3 }) . ({ 4 })
+# *all* 1.477
+¿ tienen libre una habitación individual ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ }) a ({ 4 }) single ({ 6 }) room ({ 5 }) available ({ 3 }) ? ({ 7 })
+# *all* 1.478
+¿ hay una habitación libre ?
+NULL ({ }) is ({ 1 }) there ({ 2 }) a ({ 3 }) room ({ 4 }) available ({ 5 }) ? ({ 6 })
+# *all* 1.479
+tenemos reservada una habitación individual a nombre de luis llopis .
+NULL ({ }) we ({ 1 }) have ({ 2 }) booked ({ }) a ({ 3 }) single ({ 5 }) room ({ 4 }) for ({ 6 7 8 }) luis ({ 9 }) llopis ({ 10 }) . ({ 11 })
+# *all* 1.480
+deseamos una habitación doble con ducha y aire acondicionado .
+NULL ({ }) we ({ }) want ({ 1 }) a ({ 2 }) double ({ 4 }) room ({ 3 }) with ({ 5 }) a ({ }) shower ({ 6 }) and ({ 7 }) air ({ 8 }) conditioning ({ 9 }) . ({ 10 })
+# *all* 1.481
+por favor , tenenos hecha una reserva .
+NULL ({ }) we ({ 1 }) have ({ 2 3 }) made ({ 4 5 }) a ({ 6 }) reservation ({ 7 }) . ({ 8 })
+# *all* 1.482
+¿ está incluido el recibo del teléfono ?
+NULL ({ }) is ({ 1 2 }) the ({ }) phone ({ 4 5 }) bill ({ }) included ({ 3 6 7 }) ? ({ 8 })
+# *all* 1.483
+por favor , déme la llave de la habitación .
+NULL ({ }) please ({ 1 2 }) give ({ 3 4 }) me ({ }) the ({ 5 }) key ({ 6 }) to ({ }) the ({ 7 8 }) room ({ 9 }) . ({ 10 })
+# *all* 1.484
+creo que se ha equivocado en nuestra cuenta .
+NULL ({ }) i ({ }) think ({ 1 }) that ({ 2 }) a ({ }) mistake ({ }) has ({ 3 4 }) been ({ 5 }) made ({ }) in ({ 6 }) our ({ 7 }) bill ({ 8 }) . ({ 9 })
+# *all* 1.485
+tengo la reserva de una habitación tranquila doble con televisión , cuarto de baño y una buena vista del mar .
+NULL ({ 2 }) i ({ 1 }) have ({ }) a ({ }) reservation ({ 3 }) for ({ 4 }) a ({ 5 }) quiet ({ 7 }) , ({ }) double ({ 8 }) room ({ 6 }) with ({ 9 }) a ({ }) tv ({ 10 }) , ({ 11 }) a ({ }) bathroom ({ 12 13 14 }) and ({ 15 }) a ({ 16 }) good ({ 17 18 }) view ({ }) of ({ }) the ({ }) sea ({ 19 20 }) . ({ 21 })
+# *all* 1.487
+por favor , haga la cuenta .
+NULL ({ }) please ({ 1 }) make ({ 2 }) out ({ 3 4 }) the ({ 5 }) bill ({ 6 }) . ({ 7 })
+# *all* 1.488
+tengo reservada una habitación a nombre de jesús barberá .
+NULL ({ }) i ({ 1 }) have ({ 2 }) booked ({ }) a ({ 3 }) room ({ 4 }) for ({ 5 6 7 }) jesús ({ 8 }) barberá ({ 9 }) . ({ 10 })
+# *all* 1.489
+quisiera una habitación para un día , por favor .
+NULL ({ }) i ({ 1 }) want ({ }) a ({ 2 }) room ({ 3 }) for ({ 4 5 }) a ({ }) day ({ 6 }) , ({ 7 8 }) please ({ 9 }) . ({ 10 })
+# *all* 1.490
+por favor , ¿ podría llamarme a un taxi ?
+NULL ({ }) could ({ 1 }) you ({ 2 4 }) call ({ 3 6 }) a ({ }) taxi ({ 5 8 9 }) for ({ }) me ({ 7 }) , ({ }) please ({ }) ? ({ 10 })
+# *all* 1.491
+por favor , deseo que lleve mis bultos a mi habitación .
+NULL ({ }) i ({ 1 }) want ({ 4 5 }) you ({ 2 }) to ({ }) send ({ 3 6 }) my ({ }) luggage ({ 8 }) to ({ 9 }) my ({ 7 10 }) room ({ 11 }) , ({ }) please ({ }) . ({ 12 })
+# *all* 1.492
+¿ hay televisión en mi habitación ?
+NULL ({ }) is ({ 1 }) there ({ 2 }) a ({ }) tv ({ 3 }) in ({ 4 }) my ({ 5 }) room ({ 6 }) ? ({ 7 })
+# *all* 1.493
+por favor , reservé una habitación tranquila para veintiséis noches a nombre de celestino puig .
+NULL ({ }) i ({ 1 2 }) booked ({ 4 }) a ({ 3 5 }) quiet ({ 7 }) room ({ 6 }) for ({ }) twenty ({ 8 9 }) - ({ }) six ({ }) nights ({ 10 }) for ({ 11 12 13 }) celestino ({ 14 }) puig ({ 15 }) . ({ 16 })
+# *all* 1.494
+me voy el dieciséis de septiembre a las doce menos cuarto de la mañana .
+NULL ({ }) i ({ 1 }) leave ({ 2 }) on ({ 3 }) september ({ 6 }) the ({ 5 }) sixteenth ({ 4 }) at ({ 7 8 }) a ({ }) quarter ({ 10 11 }) to ({ }) twelve ({ 9 }) in ({ 12 }) the ({ 13 }) morning ({ 14 }) . ({ 15 })
+# *all* 1.495
+¿ cuánto cuesta por semana una habitación individual incluyendo desayuno ?
+NULL ({ 4 }) how ({ 1 }) much ({ 2 }) does ({ 3 }) a ({ 6 }) single ({ }) room ({ 7 }) including ({ 9 }) breakfast ({ 10 }) cost ({ 8 }) per ({ }) week ({ 5 }) ? ({ 11 })
+# *all* 1.496
+por favor , suban nuestra bolsa de viaje a la habitación número uno setenta y cuatro .
+NULL ({ }) please ({ 1 2 }) send ({ 3 4 }) up ({ }) our ({ 5 }) travel ({ 7 8 }) bag ({ 6 }) to ({ 9 }) room ({ 11 }) number ({ 10 12 }) one ({ 13 }) seven ({ 14 15 }) four ({ 16 }) . ({ 17 })
+# *all* 1.497
+por favor , prepare la cuenta .
+NULL ({ }) please ({ 1 2 }) prepare ({ 3 4 }) the ({ 5 }) bill ({ 6 }) . ({ 7 })
+# *all* 1.498
+me he de ir el tres a las diez y cuarto de la mañana .
+NULL ({ }) i ({ 1 2 }) should ({ 3 }) leave ({ }) on ({ 4 5 }) the ({ }) third ({ 6 }) at ({ 7 8 }) a ({ }) quarter ({ 11 }) past ({ 10 }) ten ({ 9 }) in ({ 12 }) the ({ 13 }) morning ({ 14 }) . ({ 15 })
+# *all* 1.499
+¿ tienen libre alguna habitación ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ }) a ({ 4 }) room ({ 5 }) available ({ 3 }) ? ({ 6 })
+# *all* 1.500
+por favor , tengo reservada una habitación tranquila con cuarto de baño , teléfono y televisión .
+NULL ({ }) i ({ 1 }) have ({ 2 4 }) booked ({ 3 5 }) a ({ 6 }) quiet ({ 8 }) room ({ 7 }) with ({ 9 }) a ({ }) bathroom ({ 10 11 12 }) , ({ 13 }) a ({ }) telephone ({ 14 }) and ({ 15 }) a ({ }) tv ({ 16 }) . ({ 17 })
+# *all* 1.501
+despiértennos a las seis y cuarto .
+NULL ({ }) wake ({ 1 }) us ({ }) up ({ 2 }) at ({ 3 }) a ({ }) quarter ({ 6 }) past ({ 5 }) six ({ 4 }) . ({ 7 })
+# *all* 1.502
+¿ podríamos ver alguna habitación doble ?
+NULL ({ }) could ({ 1 }) we ({ 2 }) see ({ 3 4 }) a ({ }) double ({ 6 }) room ({ 5 }) ? ({ 7 })
+# *all* 1.503
+¿ podrían ustedes despertarnos a las seis y media ?
+NULL ({ }) could ({ 1 }) you ({ 2 }) wake ({ }) us ({ 3 4 }) up ({ 5 }) at ({ 6 }) half ({ 9 }) past ({ 8 }) six ({ 7 }) ? ({ 10 })
+# *all* 1.504
+me parece que se han equivocado en la cuenta .
+NULL ({ }) i ({ 1 }) think ({ 2 }) that ({ 3 }) a ({ }) mistake ({ }) has ({ 4 5 }) been ({ 6 }) made ({ }) in ({ 7 }) the ({ 8 }) bill ({ 9 }) . ({ 10 })
+# *all* 1.505
+quisiera que me diese la llave de la habitación , por favor .
+NULL ({ }) i ({ 1 }) would ({ }) like ({ 2 }) you ({ }) to ({ 4 }) give ({ }) me ({ 3 }) the ({ 5 7 8 }) key ({ 6 }) to ({ }) the ({ }) room ({ 9 }) , ({ 10 11 }) please ({ 12 }) . ({ 13 })
+# *all* 1.506
+por favor , pida un taxi .
+NULL ({ }) please ({ 1 2 }) ask ({ 3 4 }) for ({ }) a ({ }) taxi ({ 5 6 }) . ({ 7 })
+# *all* 1.507
+¿ tiene habitaciones libres ?
+NULL ({ }) do ({ 1 }) you ({ }) have ({ 2 }) any ({ 3 }) rooms ({ }) available ({ 4 }) ? ({ 5 })
+# *all* 1.508
+hemos reservado una habitación para diez semanas a nombre de rosario cornelles .
+NULL ({ }) we ({ 1 }) have ({ 2 }) booked ({ }) a ({ 3 }) room ({ 4 }) for ({ 5 8 }) ten ({ 6 }) weeks ({ 7 }) for ({ 9 10 }) rosario ({ 11 }) cornelles ({ 12 }) . ({ 13 })
+# *all* 1.509
+por favor , reservamos una habitación tranquila .
+NULL ({ }) we ({ 1 }) booked ({ 2 3 4 }) a ({ 5 }) quiet ({ 7 }) room ({ 6 }) . ({ 8 })
+# *all* 1.510
+¿ están incluidos en el recibo todos los extras ?
+NULL ({ }) are ({ 1 }) all ({ 2 3 }) extras ({ }) included ({ 5 6 7 8 }) in ({ 4 }) the ({ }) bill ({ 9 }) ? ({ 10 })
+# *all* 1.511
+por favor , nos gustaría cambiarnos de habitación .
+NULL ({ }) we ({ 1 4 }) would ({ 2 }) like ({ 3 }) to ({ }) change ({ 5 6 7 }) rooms ({ }) , ({ 8 }) please ({ }) . ({ 9 })
+# *all* 1.512
+¿ podríamos ver una habitación ?
+NULL ({ }) could ({ 1 }) we ({ 2 }) see ({ 3 }) a ({ 4 }) room ({ 5 }) ? ({ 6 })
+# *all* 1.513
+¿ cuánto cuesta por semana una habitación doble incluyendo servicio de habitaciones , por favor ?
+NULL ({ 4 }) how ({ 1 }) much ({ 2 }) does ({ 3 }) a ({ 6 }) double ({ 8 }) room ({ 7 }) including ({ 9 }) room ({ }) service ({ 10 11 12 }) cost ({ }) per ({ }) week ({ 5 }) , ({ 13 14 }) please ({ 15 }) ? ({ 16 })
+# *all* 1.514
+desearía una habitación con teléfono , por favor .
+NULL ({ }) i ({ }) would ({ }) like ({ 1 }) a ({ 2 }) room ({ 3 }) with ({ 4 }) a ({ }) telephone ({ 5 }) , ({ 6 7 }) please ({ 8 }) . ({ 9 })
+# *all* 1.515
+por favor , reservamos dos habitaciones dobles con televisión .
+NULL ({ }) we ({ 1 4 }) booked ({ 2 3 }) two ({ 5 }) double ({ }) rooms ({ 6 7 }) with ({ 8 }) a ({ }) tv ({ 9 }) . ({ 10 })
+# *all* 1.516
+¿ me pueden dar la llave de la habitación cero uno nueve ?
+NULL ({ }) can ({ 1 3 }) you ({ }) give ({ 4 }) me ({ 2 }) the ({ 5 }) key ({ 6 }) to ({ 7 }) room ({ 9 }) number ({ 8 }) oh ({ 10 }) one ({ 11 }) nine ({ 12 }) ? ({ 13 })
+# *all* 1.517
+déme la llave de la habitación , por favor .
+NULL ({ }) give ({ 1 }) me ({ }) the ({ 2 }) key ({ 3 4 }) to ({ }) the ({ 5 }) room ({ 6 }) , ({ 7 8 }) please ({ 9 }) . ({ 10 })
+# *all* 1.518
+existe un problema en la factura .
+NULL ({ }) there ({ 1 }) is ({ }) a ({ }) problem ({ 2 3 }) in ({ 4 }) the ({ 5 }) bill ({ 6 }) . ({ 7 })
+# *all* 1.520
+voy a marcharme .
+NULL ({ }) i ({ }) am ({ 1 2 }) leaving ({ 3 }) . ({ 4 })
+# *all* 1.521
+¿ me podría dar la llave de la quinientos uno ?
+NULL ({ }) could ({ 1 3 }) you ({ }) give ({ 4 }) me ({ 2 }) the ({ 5 }) key ({ 6 }) to ({ 7 }) room ({ }) number ({ 8 }) five ({ 9 }) oh ({ }) one ({ 10 }) ? ({ 11 })
+# *all* 1.522
+hemos de irnos hoy por la tarde .
+NULL ({ 5 }) we ({ 1 }) should ({ 2 }) leave ({ 3 }) today ({ 4 }) in ({ }) the ({ 6 }) afternoon ({ 7 }) . ({ 8 })
+# *all* 1.523
+¿ querrían pedirme un taxi ?, por favor .
+NULL ({ }) would ({ 1 2 }) you ({ }) ask ({ 3 }) for ({ }) a ({ }) taxi ({ 4 5 }) for ({ 6 }) me ({ }) , ({ 7 }) please ({ 8 9 }) ? ({ })
+# *all* 1.524
+¿ podría bajar nuestro equipaje a recepción ?
+NULL ({ }) could ({ 1 2 }) you ({ }) send ({ }) our ({ 4 }) luggage ({ 5 }) down ({ 3 }) to ({ 6 }) reception ({ 7 }) ? ({ 8 })
+# *all* 1.525
+por favor , ¿ pueden ustedes subir mis bultos a la siete veintiocho ?
+NULL ({ }) can ({ 1 5 }) you ({ 2 4 }) send ({ 3 }) up ({ }) my ({ 8 }) luggage ({ 7 9 }) to ({ 6 10 }) room ({ }) number ({ 11 }) seven ({ 12 }) two ({ }) eight ({ 13 }) , ({ }) please ({ }) ? ({ 14 })
+# *all* 1.526
+¿ nos podría dar la llave de la habitación ?
+NULL ({ }) could ({ 1 3 }) you ({ 2 }) give ({ 4 }) us ({ }) the ({ 5 }) key ({ 6 }) to ({ 7 }) the ({ 8 }) room ({ 9 }) ? ({ 10 })
+# *all* 1.527
+hemos de irnos el día catorce por la noche .
+NULL ({ 7 }) we ({ 1 }) should ({ 2 }) leave ({ 3 }) on ({ 4 5 }) the ({ }) fourteenth ({ 6 }) in ({ }) the ({ 8 }) evening ({ 9 }) . ({ 10 })
+# *all* 1.528
+queremos una habitación para nueve noches , por favor .
+NULL ({ }) we ({ }) want ({ 1 }) a ({ 2 }) room ({ 3 }) for ({ 4 }) nine ({ 5 }) nights ({ 6 }) , ({ 7 8 }) please ({ 9 }) . ({ 10 })
+# *all* 1.529
+dénos las llaves de la habitación .
+NULL ({ }) give ({ 1 }) us ({ }) the ({ }) keys ({ 2 3 }) to ({ 4 }) the ({ 5 }) room ({ 6 }) . ({ 7 })
+# *all* 1.531
+reservé una habitación doble .
+NULL ({ }) i ({ }) booked ({ 1 }) a ({ 2 }) double ({ 4 }) room ({ 3 }) . ({ 5 })
+# *all* 1.532
+por favor , me prepara la cuenta .
+NULL ({ }) could ({ 1 }) you ({ 2 }) prepare ({ 3 5 }) the ({ 6 }) bill ({ 7 }) for ({ }) me ({ 4 }) , ({ }) please ({ 8 }) ? ({ })
+# *all* 1.534
+¿ cuánto vale una habitación individual por semana ?
+NULL ({ }) how ({ 1 }) much ({ 2 3 }) is ({ }) a ({ 4 }) single ({ 6 }) room ({ 5 }) per ({ 7 }) week ({ 8 }) ? ({ 9 })
+# *all* 1.535
+por favor , quisiera una habitación para una semana .
+NULL ({ }) i ({ 1 2 }) want ({ 4 }) a ({ 3 }) room ({ 6 }) for ({ 7 }) a ({ 5 8 }) week ({ 9 }) , ({ }) please ({ }) . ({ 10 })
+# *all* 1.537
+hice una reserva .
+NULL ({ }) i ({ }) made ({ 1 }) a ({ 2 }) reservation ({ 3 }) . ({ 4 })
+# *all* 1.538
+¿ podría hacer la factura ?
+NULL ({ }) could ({ 1 2 }) you ({ }) make ({ }) out ({ 3 }) the ({ 4 }) bill ({ 5 }) , ({ }) please ({ }) ? ({ 6 })
+# *all* 1.539
+suba mi equipaje a la habitación número cero tres cinco .
+NULL ({ }) send ({ 1 }) up ({ }) my ({ 2 }) luggage ({ 3 }) to ({ 4 5 }) room ({ 6 }) number ({ 7 }) oh ({ 8 }) three ({ 9 }) five ({ 10 }) . ({ 11 })
+# *all* 1.540
+la habitación es demasiado fría .
+NULL ({ }) the ({ 1 }) room ({ 2 }) is ({ 3 }) too ({ 4 }) cold ({ 5 }) . ({ 6 })
+# *all* 1.541
+nos prepara nuestra cuenta de la habitación tres cuatro uno , por favor .
+NULL ({ }) could ({ }) you ({ 1 }) prepare ({ 2 }) our ({ 3 }) bill ({ 4 }) for ({ 5 }) room ({ 7 }) number ({ 6 }) three ({ 8 }) four ({ 9 }) one ({ 10 }) for ({ }) us ({ }) , ({ 11 12 }) please ({ 13 14 }) ? ({ })
+# *all* 1.542
+creo que hay un problema .
+NULL ({ }) i ({ }) think ({ 1 }) that ({ 2 }) there ({ 3 }) is ({ }) a ({ }) problem ({ 4 5 }) . ({ 6 })
+# *all* 1.543
+por favor , deseo que nos dé las llaves de la habitación cero uno cero .
+NULL ({ 3 }) i ({ 1 }) want ({ 4 5 }) you ({ 2 }) to ({ }) give ({ 7 }) us ({ 6 }) the ({ }) keys ({ 8 9 }) to ({ }) room ({ 12 }) number ({ 10 11 }) oh ({ }) one ({ 14 }) oh ({ 13 15 }) , ({ }) please ({ }) . ({ 16 })
+# *all* 1.544
+he hecho la reserva de una habitación individual a nombre de dulce gumbau .
+NULL ({ }) i ({ 1 }) have ({ }) made ({ 2 3 }) a ({ }) reservation ({ 4 }) for ({ 5 }) a ({ 6 }) single ({ 8 }) room ({ 7 }) for ({ 9 10 11 }) dulce ({ 12 }) gumbau ({ 13 }) . ({ 14 })
+# *all* 1.545
+reservamos una habitación .
+NULL ({ }) we ({ 1 }) booked ({ }) a ({ 2 }) room ({ 3 }) . ({ 4 })
+# *all* 1.546
+por favor , ¿ nos podrían dar la llave de la habitación número seis ?
+NULL ({ }) could ({ 1 4 }) you ({ 2 }) give ({ 3 }) us ({ 5 6 }) the ({ 8 }) key ({ 7 9 }) to ({ }) room ({ 12 }) number ({ 10 11 13 }) six ({ 14 }) , ({ }) please ({ }) ? ({ 15 })
+# *all* 1.547
+por favor , ¿ nos podrían hacer la cuenta ?
+NULL ({ }) could ({ 1 }) you ({ 4 }) make ({ 2 }) out ({ 3 7 }) the ({ 8 }) bill ({ 9 }) for ({ }) us ({ 5 6 }) , ({ }) please ({ }) ? ({ 10 })
+# *all* 1.548
+¿ cuánto vale por día una habitación individual ?
+NULL ({ }) how ({ 1 }) much ({ 2 3 }) is ({ }) a ({ 6 }) single ({ 8 }) room ({ 7 }) per ({ 4 }) day ({ 5 }) ? ({ 9 })
+# *all* 1.549
+por favor , hice una reserva a nombre de roberto vázquez .
+NULL ({ }) i ({ 1 2 }) made ({ 3 4 }) a ({ 5 }) reservation ({ 6 }) for ({ 7 8 9 }) roberto ({ 10 }) vázquez ({ 11 }) . ({ 12 })
+# *all* 1.550
+¿ tienen libre alguna habitación con teléfono y televisión ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ 3 }) a ({ 4 }) room ({ 5 }) with ({ 6 }) a ({ }) telephone ({ 7 }) and ({ 8 }) a ({ }) tv ({ 9 }) available ({ }) ? ({ 10 })
+# *all* 1.551
+súbanos nuestros bultos a la tres cuatro cero , por favor .
+NULL ({ }) send ({ }) up ({ }) our ({ 1 2 }) luggage ({ 3 }) to ({ 4 }) room ({ }) number ({ 5 }) three ({ 6 }) four ({ 7 }) oh ({ 8 }) , ({ 9 10 }) please ({ 11 }) . ({ 12 })
+# *all* 1.552
+¿ me lleva el equipaje al coche ?
+NULL ({ }) could ({ 1 }) you ({ 2 }) send ({ }) the ({ 3 }) luggage ({ 4 5 }) to ({ }) the ({ }) car ({ 6 7 }) ? ({ 8 })
+# *all* 1.553
+por favor , ¿ qué precio tiene una habitación doble con pensión completa ?
+NULL ({ 1 2 3 }) what ({ 5 }) is ({ 4 }) the ({ }) price ({ 6 7 }) for ({ }) a ({ 8 }) double ({ 10 }) room ({ 9 }) with ({ 11 }) full ({ 13 }) board ({ 12 }) , ({ }) please ({ }) ? ({ 14 })
+# *all* 1.554
+quiero una habitación doble para hoy .
+NULL ({ }) i ({ }) want ({ 1 }) a ({ 2 }) double ({ 4 }) room ({ 3 }) for ({ 5 }) today ({ 6 }) . ({ 7 })
+# *all* 1.555
+tenemos que marcharnos hoy a las doce de la mañana .
+NULL ({ }) we ({ 1 }) should ({ 2 }) leave ({ 3 }) today ({ 4 }) at ({ 5 6 }) twelve ({ 7 }) in ({ 8 }) the ({ 9 }) morning ({ 10 }) . ({ 11 })
+# *all* 1.557
+pida un taxi .
+NULL ({ }) ask ({ 1 }) for ({ }) a ({ }) taxi ({ 2 3 }) . ({ 4 })
+# *all* 1.558
+¿ cuánto vale una habitación individual ?
+NULL ({ }) how ({ 1 }) much ({ 2 3 }) is ({ }) a ({ 4 }) single ({ 6 }) room ({ 5 }) ? ({ 7 })
+# *all* 1.559
+¿ nos puede usted dar las llaves de mi habitación ?
+NULL ({ }) can ({ 1 3 }) you ({ 2 }) give ({ 5 }) us ({ 4 }) the ({ }) keys ({ 6 7 }) to ({ 8 }) my ({ 9 }) room ({ 10 }) ? ({ 11 })
+# *all* 1.560
+por favor , deseo que me despierten mañana a las dos y media .
+NULL ({ 3 }) i ({ 1 }) want ({ 4 5 }) you ({ 2 }) to ({ }) wake ({ 7 }) me ({ 6 }) up ({ }) tomorrow ({ 8 }) at ({ 9 10 }) half ({ 13 }) past ({ 12 }) two ({ 11 }) , ({ }) please ({ }) . ({ 14 })
+# *all* 1.561
+¿ les importaría subir mi equipaje a la habitación cuatro noventa , por favor ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) sending ({ 4 }) up ({ }) my ({ 5 }) luggage ({ 6 }) to ({ 7 }) room ({ 9 }) number ({ 8 }) four ({ 10 }) nine ({ 11 }) oh ({ }) , ({ 12 13 }) please ({ 14 }) ? ({ 15 })
+# *all* 1.564
+por favor , he hecho una reserva .
+NULL ({ }) i ({ 1 }) have ({ 2 3 4 }) made ({ 5 }) a ({ 6 }) reservation ({ 7 }) . ({ 8 })
+# *all* 1.565
+quiero una habitación individual y tranquila hasta mañana .
+NULL ({ }) i ({ }) want ({ 1 }) a ({ 2 3 }) quiet ({ 6 }) , ({ }) single ({ 4 5 }) room ({ }) until ({ 7 }) tomorrow ({ 8 }) . ({ 9 })
+# *all* 1.566
+¿ podría usted llevarme mi maleta a mi habitación ?
+NULL ({ }) could ({ 1 2 }) you ({ 3 }) send ({ 4 }) my ({ 5 }) suitcase ({ 6 }) to ({ 7 }) my ({ 8 }) room ({ 9 }) ? ({ 10 })
+# *all* 1.567
+¿ les importaría despertarme a las tres y cuarto , por favor ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) waking ({ }) me ({ 4 }) up ({ 5 }) at ({ 6 }) a ({ }) quarter ({ 9 }) past ({ 8 }) three ({ 7 }) , ({ 10 11 }) please ({ 12 }) ? ({ 13 })
+# *all* 1.568
+¿ puede darnos las llaves de la habitación número nueve dos siete ?
+NULL ({ }) can ({ 1 2 }) you ({ }) give ({ 3 }) us ({ }) the ({ 6 7 }) keys ({ 4 5 }) to ({ }) room ({ 8 }) number ({ 9 }) nine ({ 10 }) two ({ 11 }) seven ({ 12 }) ? ({ 13 })
+# *all* 1.569
+he reservado una habitación individual con televisión , por favor .
+NULL ({ 9 10 }) i ({ 1 }) have ({ 2 }) booked ({ }) a ({ 3 }) single ({ 5 }) room ({ 4 }) with ({ 6 }) a ({ 8 }) tv ({ 7 }) . ({ 11 })
+# *all* 1.571
+¿ cuánto cuesta una habitación individual ?
+NULL ({ }) how ({ 1 }) much ({ 2 }) does ({ 3 }) a ({ 4 }) single ({ }) room ({ 5 }) cost ({ 6 }) ? ({ 7 })
+# *all* 1.572
+¿ hay televisión en las habitaciones ?
+NULL ({ }) is ({ 1 }) there ({ 2 }) a ({ }) tv ({ 3 }) in ({ 4 }) the ({ 5 }) rooms ({ 6 }) ? ({ 7 })
+# *all* 1.573
+por favor , quiero que lleve mi equipaje a la número siete tres tres .
+NULL ({ }) i ({ 1 }) want ({ 4 5 }) you ({ 2 }) to ({ }) send ({ 3 6 }) my ({ 7 }) luggage ({ 8 }) to ({ 9 }) room ({ }) number ({ 10 11 }) seven ({ 12 }) three ({ }) three ({ 13 14 }) , ({ }) please ({ }) . ({ 15 })
+# *all* 1.574
+tengo una reserva .
+NULL ({ }) i ({ 1 }) have ({ }) a ({ 2 }) reservation ({ 3 }) . ({ 4 })
+# *all* 1.575
+¿ podría cambiarme de habitación ?
+NULL ({ }) can ({ 1 }) you ({ 2 }) change ({ 3 4 }) my ({ }) room ({ 5 }) ? ({ 6 })
+# *all* 1.578
+por favor , he reservado dos habitaciones .
+NULL ({ }) i ({ 1 }) have ({ 2 3 4 }) booked ({ 5 }) two ({ 6 }) rooms ({ 7 }) . ({ 8 })
+# *all* 1.579
+¿ me pueden dar ustedes la llave de la habitación ?
+NULL ({ }) can ({ 1 3 }) you ({ }) give ({ 4 }) me ({ 2 }) the ({ 6 }) key ({ 7 }) to ({ 5 }) the ({ 8 9 }) room ({ 10 }) ? ({ 11 })
+# *all* 1.580
+¡ adiós !
+NULL ({ }) good ({ 1 }) bye ({ 2 }) ! ({ 3 })
+# *all* 1.581
+¿ puede darnos la llave de la habitación ?
+NULL ({ }) can ({ 1 2 }) you ({ }) give ({ 3 }) us ({ }) the ({ 4 }) key ({ 5 }) to ({ 6 }) the ({ 7 }) room ({ 8 }) ? ({ 9 })
+# *all* 1.582
+¿ pueden despertarme a la una ?
+NULL ({ }) can ({ 1 2 }) you ({ }) wake ({ }) me ({ 3 }) up ({ 4 }) at ({ }) one ({ 5 6 }) ? ({ 7 })
+# *all* 1.583
+¿ les importaría darnos la llave de la habitación , por favor ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) giving ({ 4 }) us ({ }) the ({ 5 }) key ({ 6 7 }) to ({ }) the ({ 8 }) room ({ 9 }) , ({ 10 11 }) please ({ 12 }) ? ({ 13 })
+# *all* 1.584
+tenemos reservada una habitación individual y tranquila .
+NULL ({ }) we ({ 1 }) have ({ 2 }) booked ({ }) a ({ 3 }) quiet ({ 4 7 }) , ({ }) single ({ 5 6 }) room ({ }) . ({ 8 })
+# *all* 1.585
+deseo que nos dé la llave de la habitación novecientos once , por favor .
+NULL ({ 11 }) i ({ }) want ({ 1 2 }) you ({ }) to ({ }) give ({ 4 }) us ({ 3 }) the ({ 5 8 }) key ({ 6 7 }) to ({ }) room ({ 9 }) number ({ }) nine ({ 10 }) one ({ }) one ({ }) , ({ 12 13 }) please ({ 14 }) . ({ 15 })
+# *all* 1.586
+por favor , ¿ nos pueden ustedes dar la llave de mi habitación ?
+NULL ({ }) can ({ 1 6 }) you ({ 2 4 }) give ({ 3 }) us ({ 5 }) the ({ 9 }) key ({ 8 10 }) to ({ 7 11 }) my ({ 12 }) room ({ 13 }) , ({ }) please ({ }) ? ({ 14 })
+# *all* 1.587
+voy a marcharme .
+NULL ({ }) i ({ }) am ({ 1 2 }) leaving ({ 3 }) . ({ 4 })
+# *all* 1.588
+tenemos que irnos esta tarde .
+NULL ({ }) we ({ 1 }) should ({ 2 }) leave ({ 3 }) this ({ 4 }) afternoon ({ 5 }) . ({ 6 })
+# *all* 1.589
+¿ le importaría subir mis bolsas de viaje al autobús ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) putting ({ 4 }) my ({ 5 }) travel ({ 7 8 }) bags ({ 6 }) on ({ }) the ({ }) bus ({ 9 10 }) ? ({ 11 })
+# *all* 1.590
+¿ nos podrían dar la llave de la número cuatro siete uno , por favor ?
+NULL ({ }) could ({ 1 3 }) you ({ }) give ({ 4 }) us ({ 2 }) the ({ 5 }) key ({ 6 7 }) to ({ }) room ({ }) number ({ 8 9 }) four ({ 10 }) seven ({ 11 }) one ({ 12 }) , ({ 13 14 }) please ({ 15 }) ? ({ 16 })
+# *all* 1.591
+quiero una habitación individual y tranquila hasta mañana , por favor .
+NULL ({ }) i ({ }) want ({ 1 }) a ({ 2 3 }) quiet ({ 5 6 }) , ({ }) single ({ 4 }) room ({ }) until ({ 7 }) tomorrow ({ 8 }) , ({ 9 10 }) please ({ 11 }) . ({ 12 })
+# *all* 1.592
+¿ podríamos reservar dos habitaciones ?
+NULL ({ }) could ({ 1 }) we ({ 2 }) book ({ 3 }) two ({ 4 }) rooms ({ 5 }) ? ({ 6 })
+# *all* 1.593
+tengo hecha la reserva de una habitación con teléfono y ducha a nombre del señor borillo .
+NULL ({ }) i ({ 1 }) have ({ }) made ({ 2 3 }) a ({ }) reservation ({ 4 }) for ({ 5 }) a ({ 6 }) room ({ 7 }) with ({ 8 }) a ({ }) telephone ({ 9 }) and ({ 10 }) a ({ }) shower ({ 11 }) for ({ 12 13 }) mr ({ 14 15 }) borillo ({ 16 }) . ({ 17 })
+# *all* 1.594
+por favor , nos pide nuestro taxi .
+NULL ({ }) could ({ 1 }) you ({ }) ask ({ 2 3 }) for ({ }) our ({ 6 }) taxi ({ 7 }) for ({ 5 }) us ({ 4 }) , ({ }) please ({ 8 }) ? ({ })
+# *all* 1.595
+tenenos hecha una reserva .
+NULL ({ }) we ({ }) have ({ }) made ({ 1 2 }) a ({ 3 }) reservation ({ 4 }) . ({ 5 })
+# *all* 1.596
+por favor , ¿ me pueden preparar la cuenta de la habitación uno uno uno ?
+NULL ({ }) can ({ 1 6 }) you ({ 2 4 5 }) prepare ({ 3 7 }) the ({ }) bill ({ 9 }) for ({ }) room ({ 12 }) number ({ 8 }) one ({ }) one ({ }) one ({ 11 13 14 15 }) for ({ 10 }) me ({ }) , ({ }) please ({ }) ? ({ 16 })
+# *all* 1.597
+¿ le importaría llevar nuestro equipaje a nuestra habitación , por favor ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) sending ({ 4 }) our ({ 5 }) luggage ({ 6 }) to ({ 7 }) our ({ 8 }) room ({ 9 }) , ({ 10 11 }) please ({ 12 }) ? ({ 13 })
+# *all* 1.598
+por favor , quiero que lleve mi equipaje a la habitación seis catorce .
+NULL ({ }) i ({ 1 }) want ({ 4 5 }) you ({ 2 }) to ({ }) send ({ 3 6 }) my ({ 7 }) luggage ({ 8 }) to ({ 9 }) room ({ 11 }) number ({ 10 }) six ({ 12 }) one ({ }) four ({ 13 }) , ({ }) please ({ }) . ({ 14 })
+# *all* 1.599
+¿ le importaría mostrarnos alguna habitación tranquila , por favor ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) showing ({ 4 }) us ({ }) a ({ 5 }) quiet ({ 7 }) room ({ 6 }) , ({ 8 9 }) please ({ 10 }) ? ({ 11 })
+# *all* 1.601
+pienso que hay una equivocación en la factura .
+NULL ({ }) i ({ }) think ({ 1 }) that ({ 2 }) there ({ 3 }) is ({ }) a ({ 4 }) mistake ({ 5 }) in ({ 6 }) the ({ 7 }) bill ({ 8 }) . ({ 9 })
+# *all* 1.602
+me voy a ir el jueves por la mañana .
+NULL ({ }) i ({ 1 }) am ({ 2 3 }) leaving ({ 4 }) on ({ 5 }) thursday ({ 6 7 }) morning ({ 8 9 }) . ({ 10 })
+# *all* 1.603
+reservamos una habitación individual y tranquila para treinta días a nombre de lidia llorens , por favor .
+NULL ({ 15 16 17 }) we ({ 1 }) booked ({ }) a ({ 2 3 }) quiet ({ 5 6 }) , ({ }) single ({ 4 }) room ({ 8 }) for ({ 7 10 11 12 }) thirty ({ 13 }) days ({ 9 }) for ({ }) lidia ({ 14 }) llorens ({ }) . ({ 18 })
+# *all* 1.604
+en la habitación hay mucho ruido .
+NULL ({ }) there ({ 1 }) is ({ }) a ({ }) lot ({ 3 }) of ({ 2 }) noise ({ 4 5 6 }) in ({ }) the ({ }) room ({ }) . ({ 7 })
+# *all* 1.605
+tenemos reservadas dos habitaciones tranquilas .
+NULL ({ }) we ({ 1 }) have ({ 2 }) booked ({ }) two ({ 3 }) quiet ({ }) rooms ({ 4 5 }) . ({ 6 })
+# *all* 1.606
+¿ le importaría mostrarnos una habitación ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) showing ({ 4 }) us ({ }) a ({ 5 }) room ({ 6 }) ? ({ 7 })
+# *all* 1.607
+deseo una habitación con cuarto de baño , televisión y buena vista a nombre de jorge balaguer , por favor .
+NULL ({ }) i ({ }) want ({ 1 }) a ({ 2 }) room ({ 3 }) with ({ 4 }) a ({ }) bathroom ({ 5 6 7 }) , ({ 8 }) a ({ }) tv ({ 9 }) and ({ 10 }) a ({ }) good ({ 11 12 }) view ({ }) for ({ 13 14 15 }) jorge ({ 16 }) balaguer ({ 17 }) , ({ 18 19 }) please ({ 20 }) . ({ 21 })
+# *all* 1.608
+¿ tiene televisión ?
+NULL ({ }) does ({ 1 }) it ({ 2 }) have ({ }) a ({ }) tv ({ 3 }) ? ({ 4 })
+# *all* 1.609
+¿ podríamos ver alguna habitación individual y tranquila ?
+NULL ({ }) could ({ 1 }) we ({ 2 }) see ({ 3 4 }) a ({ }) quiet ({ 5 8 }) , ({ }) single ({ 6 7 }) room ({ }) ? ({ 9 })
+# *all* 1.610
+me parece que se produjo una equivocación en la cuenta .
+NULL ({ }) i ({ 1 }) think ({ 2 }) that ({ 3 }) there ({ }) was ({ 4 5 }) a ({ 6 }) mistake ({ 7 }) in ({ 8 }) the ({ 9 }) bill ({ 10 }) . ({ 11 })
+# *all* 1.612
+tengo que irme mañana a las dos y cuarto de la tarde .
+NULL ({ }) i ({ 1 }) should ({ 2 }) leave ({ 3 }) tomorrow ({ 4 }) at ({ 5 6 }) a ({ }) quarter ({ 9 }) past ({ 8 }) two ({ 7 }) in ({ 10 }) the ({ 11 }) afternoon ({ 12 }) . ({ 13 })
+# *all* 1.613
+¿ hay aire acondicionado en las habitaciones ?
+NULL ({ }) is ({ 1 }) there ({ 2 }) air ({ 3 }) conditioning ({ 4 }) in ({ 5 }) the ({ 6 }) rooms ({ 7 }) ? ({ 8 })
+# *all* 1.614
+¿ nos pueden despertar a la una menos cuarto ?
+NULL ({ }) can ({ 1 3 }) you ({ }) wake ({ }) us ({ 2 }) up ({ 4 }) at ({ 5 }) a ({ 7 }) quarter ({ 8 9 }) to ({ }) one ({ 6 }) ? ({ 10 })
+# *all* 1.615
+reservamos una habitación doble para veintinueve días .
+NULL ({ }) we ({ 1 }) booked ({ }) a ({ 2 }) double ({ 4 }) room ({ 3 }) for ({ }) twenty ({ 5 }) - ({ 6 }) nine ({ }) days ({ 7 }) . ({ 8 })
+# *all* 1.616
+¿ podríamos reservar dos habitaciones individuales y tranquilas hasta el veintiocho ?
+NULL ({ }) could ({ 1 }) we ({ 2 }) book ({ 3 }) two ({ 4 }) quiet ({ }) , ({ }) single ({ 7 }) rooms ({ 5 6 8 }) until ({ 9 }) the ({ }) twenty ({ 10 }) - ({ }) eighth ({ 11 }) ? ({ 12 })
+# *all* 1.617
+¿ pueden llamarme a un taxi ?
+NULL ({ }) can ({ 1 2 }) you ({ }) call ({ 3 }) a ({ }) taxi ({ 5 6 }) for ({ 4 }) me ({ }) , ({ }) please ({ }) ? ({ 7 })
+# *all* 1.618
+deseo que me despierten a las siete y media .
+NULL ({ }) i ({ }) want ({ 1 2 }) you ({ }) to ({ }) wake ({ 4 }) me ({ 3 }) up ({ 5 }) at ({ 6 }) half ({ 9 }) past ({ 8 }) seven ({ 7 }) . ({ 10 })
+# *all* 1.619
+por favor , ¿ me podría repasar la cuenta ?
+NULL ({ }) could ({ 1 }) you ({ 2 4 }) check ({ 3 }) the ({ 8 }) bill ({ 9 }) for ({ }) me ({ 5 6 7 }) , ({ }) please ({ }) ? ({ 10 })
+# *all* 1.620
+¿ tienen habitaciones tranquilas libres ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ }) any ({ 3 }) quiet ({ }) rooms ({ 4 }) available ({ 5 }) ? ({ 6 })
+# *all* 1.621
+me parece que se produjo un problema en la cuenta de la habitación nueve seis cuatro .
+NULL ({ }) i ({ 1 }) think ({ 2 }) that ({ 3 }) there ({ }) was ({ 4 5 }) a ({ }) problem ({ 6 7 }) in ({ 8 }) the ({ 9 }) bill ({ 10 }) for ({ 11 }) room ({ 13 }) number ({ 12 }) nine ({ 14 }) six ({ 15 }) four ({ 16 }) . ({ 17 })
+# *all* 1.622
+denme las llaves de la habitación , por favor .
+NULL ({ }) give ({ 1 }) me ({ }) the ({ 4 }) keys ({ 2 3 }) to ({ }) the ({ 5 }) room ({ 6 }) , ({ 7 8 }) please ({ 9 }) . ({ 10 })
+# *all* 1.623
+llámenos a nuestro taxi para la habitación dos seis ocho .
+NULL ({ }) could ({ }) you ({ }) call ({ 1 2 }) our ({ 3 }) taxi ({ 4 }) for ({ 5 }) room ({ 7 }) number ({ 6 }) two ({ 8 }) six ({ 9 }) eight ({ 10 }) for ({ }) us ({ }) , ({ }) please ({ 11 }) ? ({ })
+# *all* 1.624
+¿ pueden darnos la llave de la habitación ?
+NULL ({ }) can ({ 1 2 }) you ({ }) give ({ 3 }) us ({ }) the ({ 4 }) key ({ 5 }) to ({ 6 }) the ({ 7 }) room ({ 8 }) ? ({ 9 })
+# *all* 1.625
+déme la llave de la habitación cuatro uno tres .
+NULL ({ }) give ({ 1 }) me ({ }) the ({ 2 }) key ({ 3 4 }) to ({ }) room ({ 6 }) number ({ 5 }) four ({ 7 }) one ({ 8 }) three ({ 9 }) . ({ 10 })
+# *all* 1.627
+por favor , desearíamos una habitación .
+NULL ({ }) we ({ 1 }) would ({ 2 }) like ({ 4 }) a ({ 3 5 }) room ({ 6 }) , ({ }) please ({ }) . ({ 7 })
+# *all* 1.628
+¿ cuánto vale por semana una habitación doble , por favor ?
+NULL ({ }) how ({ 1 }) much ({ 2 3 }) is ({ }) a ({ 6 }) double ({ 8 }) room ({ 7 }) per ({ 4 }) week ({ 5 }) , ({ 9 10 }) please ({ 11 }) ? ({ 12 })
+# *all* 1.629
+por favor , ¿ nos podrían despertar mañana a las nueve y media ?
+NULL ({ }) could ({ 1 4 }) you ({ 2 }) wake ({ 3 6 }) us ({ 5 }) up ({ 7 }) tomorrow ({ 8 }) at ({ 9 10 }) half ({ 13 }) past ({ 12 }) nine ({ 11 }) , ({ }) please ({ }) ? ({ 14 })
+# *all* 1.631
+por favor , pida nuestro taxi para la habitación ciento veintiocho .
+NULL ({ }) please ({ 1 2 }) ask ({ 3 4 }) for ({ }) our ({ 5 }) taxi ({ 6 }) for ({ 7 }) room ({ 9 }) number ({ 8 }) one ({ }) two ({ 10 }) eight ({ 11 }) . ({ 12 })
+# *all* 1.632
+¿ cuánto cuesta por día una habitación doble con pensión completa ?
+NULL ({ 4 }) how ({ 1 }) much ({ 2 }) does ({ 3 }) a ({ 6 }) double ({ 8 }) room ({ 7 }) with ({ 9 }) full ({ 11 }) board ({ 10 }) cost ({ }) per ({ }) day ({ 5 }) ? ({ 12 })
+# *all* 1.633
+despiértenme a la una y cuarto .
+NULL ({ }) wake ({ 1 }) me ({ 3 }) up ({ 2 }) at ({ }) a ({ 4 }) quarter ({ 6 }) past ({ 5 }) one ({ }) . ({ 7 })
+# *all* 1.634
+por favor , tengo reservada una habitación con buena vista y teléfono .
+NULL ({ }) i ({ 1 }) have ({ 2 4 }) booked ({ 3 5 }) a ({ }) room ({ 7 }) with ({ 8 }) a ({ 6 }) good ({ 9 10 }) view ({ }) and ({ 11 }) a ({ }) telephone ({ 12 }) . ({ 13 })
+# *all* 1.635
+¿ le importaría darnos las llaves de la habitación , por favor ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) giving ({ 4 }) us ({ }) the ({ 7 }) keys ({ 5 6 }) to ({ }) the ({ 8 }) room ({ 9 }) , ({ 10 11 }) please ({ 12 }) ? ({ 13 })
+# *all* 1.636
+he de irme hoy a las ocho y cuarto de la mañana .
+NULL ({ }) i ({ 1 }) should ({ 2 }) leave ({ 3 }) today ({ 4 }) at ({ 5 6 }) a ({ }) quarter ({ 9 }) past ({ 8 }) eight ({ 7 }) in ({ 10 }) the ({ 11 }) morning ({ 12 }) . ({ 13 })
+# *all* 1.637
+¿ nos puede pedir un taxi para la habitación cero diecinueve ?
+NULL ({ }) can ({ 1 3 }) you ({ 2 }) ask ({ }) for ({ }) a ({ }) taxi ({ 4 5 6 }) for ({ 7 }) room ({ 9 }) number ({ }) oh ({ 10 }) one ({ 8 }) nine ({ 11 }) for ({ }) us ({ }) , ({ }) please ({ }) ? ({ 12 })
+# *all* 1.638
+creo que existe un error .
+NULL ({ }) i ({ }) think ({ 1 }) that ({ 2 }) there ({ 3 }) is ({ }) an ({ 4 }) error ({ 5 }) . ({ 6 })
+# *all* 1.639
+queremos una habitación .
+NULL ({ }) we ({ }) want ({ 1 }) a ({ 2 }) room ({ 3 }) . ({ 4 })
+# *all* 1.640
+tengo que irme el jueves veintiocho de octubre a las ocho en punto de la mañana .
+NULL ({ }) i ({ 1 }) should ({ 2 }) leave ({ 3 }) on ({ 4 }) thursday ({ 5 }) october ({ }) the ({ 7 }) twenty ({ }) - ({ 8 }) eighth ({ 6 }) at ({ 9 10 }) eight ({ 11 }) o ({ 12 }) ' ({ }) clock ({ 13 }) in ({ 14 }) the ({ 15 }) morning ({ 16 }) . ({ 17 })
+# *all* 1.641
+¿ podría despertarme a las diez y media , por favor ?
+NULL ({ }) could ({ 1 2 }) you ({ }) wake ({ }) me ({ 3 }) up ({ 4 }) at ({ 5 }) half ({ 8 }) past ({ 7 }) ten ({ 6 }) , ({ 9 10 }) please ({ 11 }) ? ({ 12 })
+# *all* 1.642
+quisiera que me despertara a la una , por favor .
+NULL ({ }) i ({ 1 }) would ({ }) like ({ 2 }) you ({ }) to ({ 5 }) wake ({ 4 }) me ({ 3 6 }) up ({ }) at ({ }) one ({ 7 }) , ({ 8 9 }) please ({ 10 }) . ({ 11 })
+# *all* 1.643
+nos iremos el once .
+NULL ({ }) we ({ 1 }) are ({ }) leaving ({ 2 }) on ({ 3 }) the ({ }) eleventh ({ 4 }) . ({ 5 })
+# *all* 1.644
+¿ cuántas ?
+NULL ({ }) how ({ 1 }) many ({ 2 }) ? ({ 3 })
+# *all* 1.645
+tengo una reserva a nombre del señor borrás .
+NULL ({ }) i ({ 1 }) have ({ }) a ({ 2 }) reservation ({ 3 }) for ({ 4 5 }) mr ({ 6 7 }) borrás ({ 8 }) . ({ 9 })
+# *all* 1.646
+¿ pueden llevarme las maletas al autobús ?
+NULL ({ }) can ({ 1 2 }) you ({ }) send ({ 3 }) the ({ }) suitcases ({ 4 5 }) to ({ }) the ({ }) bus ({ 6 7 }) ? ({ 8 })
+# *all* 1.647
+se produjo una equivocación en mi cuenta .
+NULL ({ }) there ({ }) was ({ 1 2 }) a ({ 3 }) mistake ({ 4 }) in ({ 5 }) my ({ 6 }) bill ({ 7 }) . ({ 8 })
+# *all* 1.648
+¿ podría ver una habitación , por favor ?
+NULL ({ }) could ({ 1 2 }) i ({ }) see ({ 3 }) a ({ 4 }) room ({ 5 }) , ({ 6 7 }) please ({ 8 }) ? ({ 9 })
+# *all* 1.649
+por favor , haga la factura de la habitación nueve catorce .
+NULL ({ }) please ({ 1 }) make ({ 2 }) out ({ 3 4 }) the ({ 5 }) bill ({ 6 }) for ({ 7 }) room ({ 9 }) number ({ 8 }) nine ({ 10 }) one ({ }) four ({ 11 }) . ({ 12 })
+# *all* 1.650
+¿ podrían subir nuestros bultos a la cuatrocientos setenta y cuatro ?
+NULL ({ }) could ({ 1 2 }) you ({ }) send ({ }) up ({ 3 }) our ({ 4 }) luggage ({ 5 }) to ({ 6 }) room ({ }) number ({ 7 }) four ({ 8 }) seven ({ 9 10 }) four ({ 11 }) ? ({ 12 })
+# *all* 1.651
+¿ tienen habitaciones tranquilas libres ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ }) any ({ 3 }) quiet ({ }) rooms ({ 4 }) available ({ 5 }) ? ({ 6 })
+# *all* 1.652
+he reservado una habitación hasta el día uno de noviembre a nombre del señor víctor lobo , por favor .
+NULL ({ 17 18 19 }) i ({ 1 }) have ({ }) booked ({ 2 }) a ({ 3 }) room ({ 4 }) until ({ 5 6 7 }) november ({ 10 }) the ({ 9 }) first ({ 8 }) for ({ 11 12 }) mr ({ 13 14 }) víctor ({ 15 16 }) lobo ({ }) . ({ 20 })
+# *all* 1.653
+¿ están apuntados los extras ?
+NULL ({ }) are ({ 1 }) extras ({ 2 3 }) included ({ 4 5 }) ? ({ 6 })
+# *all* 1.654
+tenemos reservada una habitación hasta el próximo domingo a nombre del señor ángel viciano .
+NULL ({ }) we ({ 1 }) have ({ 2 }) booked ({ }) a ({ 3 }) room ({ 4 }) until ({ 5 6 }) next ({ 7 }) sunday ({ 8 }) for ({ 9 10 }) mr ({ 11 12 }) ángel ({ 13 }) viciano ({ 14 }) . ({ 15 })
+# *all* 1.655
+¿ nos podría dar la llave de mi habitación , por favor ?
+NULL ({ }) could ({ 1 3 }) you ({ }) give ({ 4 }) us ({ 2 }) the ({ 5 }) key ({ 6 7 }) to ({ }) my ({ 8 }) room ({ 9 }) , ({ 10 11 }) please ({ 12 }) ? ({ 13 })
+# *all* 1.657
+por favor , ¿ me podría bajar el equipaje a la habitación ?
+NULL ({ }) could ({ 1 6 }) you ({ 2 4 5 }) send ({ 3 }) down ({ 7 }) my ({ }) luggage ({ 8 9 }) to ({ 10 }) the ({ 11 }) room ({ 12 }) , ({ }) please ({ }) ? ({ 13 })
+# *all* 1.658
+¿ podríamos reservar dos habitaciones individuales para hoy ?
+NULL ({ }) could ({ 1 }) we ({ 2 }) book ({ 3 }) two ({ 4 }) single ({ }) rooms ({ 5 6 }) for ({ 7 }) today ({ 8 }) ? ({ 9 })
+# *all* 1.659
+¿ tiene libre alguna habitación individual y tranquila ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ 3 }) a ({ 4 }) quiet ({ 8 }) , ({ }) single ({ 6 7 }) room ({ 5 }) available ({ }) ? ({ 9 })
+# *all* 1.661
+hemos reservado una habitación para hoy .
+NULL ({ }) we ({ 1 }) have ({ }) booked ({ 2 }) a ({ 3 }) room ({ 4 }) for ({ 5 }) today ({ 6 }) . ({ 7 })
+# *all* 1.662
+en la habitación hay demasiado ruido .
+NULL ({ }) there ({ 1 }) is ({ }) too ({ 3 5 }) much ({ }) noise ({ 4 6 }) in ({ }) the ({ 2 }) room ({ }) . ({ 7 })
+# *all* 1.663
+nos hemos de ir el día uno por la mañana .
+NULL ({ 8 }) we ({ 1 2 }) should ({ 3 }) leave ({ }) on ({ 4 5 6 }) the ({ }) first ({ 7 }) in ({ }) the ({ 9 }) morning ({ 10 }) . ({ 11 })
+# *all* 1.664
+desearía una habitación individual y tranquila , por favor .
+NULL ({ }) i ({ }) would ({ }) like ({ 1 }) a ({ 2 3 }) quiet ({ 5 6 }) , ({ }) single ({ 4 }) room ({ }) , ({ 7 8 }) please ({ 9 }) . ({ 10 })
+# *all* 1.665
+quisiéramos una habitación doble y tranquila .
+NULL ({ }) we ({ 1 }) want ({ }) a ({ 2 3 }) quiet ({ 5 6 }) , ({ }) double ({ 4 }) room ({ }) . ({ 7 })
+# *all* 1.666
+quiero que me despierten mañana a las doce menos cuarto .
+NULL ({ }) i ({ }) want ({ 1 2 }) you ({ }) to ({ }) wake ({ 4 }) me ({ 3 }) up ({ 6 }) tomorrow ({ 5 }) at ({ 7 }) a ({ }) quarter ({ 9 10 }) to ({ }) twelve ({ 8 }) . ({ 11 })
+# *all* 1.667
+por favor , ¿ podría usted despertarnos a la una y cuarto ?
+NULL ({ }) could ({ 1 4 5 }) you ({ 2 }) wake ({ 3 }) us ({ 6 }) up ({ 7 }) at ({ 8 }) a ({ 10 }) quarter ({ 12 }) past ({ 11 }) one ({ 9 }) , ({ }) please ({ }) ? ({ 13 })
+# *all* 1.668
+vamos a irnos el día quince a las nueve menos cuarto de la mañana .
+NULL ({ }) we ({ }) are ({ 1 }) leaving ({ 2 }) on ({ 3 4 5 }) the ({ }) fifteenth ({ 6 }) at ({ 7 8 }) a ({ }) quarter ({ 10 11 }) to ({ }) nine ({ 9 }) in ({ 12 }) the ({ 13 }) morning ({ 14 }) . ({ 15 })
+# *all* 1.670
+por favor , me llama a un taxi .
+NULL ({ }) could ({ 1 }) you ({ 2 }) call ({ 5 }) a ({ 3 }) taxi ({ 7 8 }) for ({ 6 }) me ({ 4 }) , ({ }) please ({ 9 }) ? ({ })
+# *all* 1.671
+¿ me baja las bolsas de viaje a recepción ?
+NULL ({ }) could ({ 1 }) you ({ 2 }) send ({ 3 }) the ({ 4 }) travel ({ 6 7 }) bags ({ 5 }) down ({ }) to ({ 8 }) reception ({ 9 }) ? ({ 10 })
+# *all* 1.672
+por favor , nos hace la cuenta de la habitación siete treinta y dos .
+NULL ({ }) could ({ 1 }) you ({ 4 }) make ({ 2 }) out ({ 3 5 }) the ({ 6 }) bill ({ 7 }) for ({ 8 }) room ({ 10 }) number ({ 9 }) seven ({ 11 }) three ({ 12 }) two ({ 14 }) for ({ }) us ({ }) , ({ 13 }) please ({ 15 }) ? ({ })
+# *all* 1.673
+tengo reservada una habitación para dieciocho días a nombre del señor y la señora cabo .
+NULL ({ }) i ({ 1 }) have ({ 2 }) booked ({ }) a ({ 3 }) room ({ 4 }) for ({ 5 8 }) eighteen ({ 6 }) days ({ 7 }) for ({ 9 }) mr ({ 10 11 }) and ({ 12 }) mrs ({ 13 14 }) cabo ({ 15 }) . ({ 16 })
+# *all* 1.674
+¿ hay habitaciones libres con baño ?
+NULL ({ }) are ({ 1 }) there ({ 2 }) any ({ }) rooms ({ 3 }) with ({ 5 }) a ({ }) bath ({ 6 }) available ({ 4 }) ? ({ 7 })
+# *all* 1.675
+por favor , ¿ pueden hacernos la cuenta ?
+NULL ({ }) can ({ 1 5 }) you ({ 4 }) make ({ 2 }) out ({ 3 6 }) the ({ 7 }) bill ({ 8 }) for ({ }) us ({ }) , ({ }) please ({ }) ? ({ 9 })
+# *all* 1.676
+reservé una habitación doble y tranquila con televisión para esta noche a nombre de la señorita marina miralles , por favor .
+NULL ({ 15 19 20 21 }) i ({ }) booked ({ 1 }) a ({ 2 }) quiet ({ 5 6 }) , ({ }) double ({ 4 }) room ({ 3 }) with ({ 7 }) a ({ }) tv ({ 8 }) for ({ 9 12 13 14 }) tonight ({ 10 11 }) for ({ }) miss ({ 16 }) marina ({ 17 }) miralles ({ 18 }) . ({ 22 })
+# *all* 1.677
+creo que se produjo un problema en la cuenta de la habitación siete ocho seis .
+NULL ({ }) i ({ }) think ({ 1 }) that ({ 2 3 }) there ({ }) was ({ 4 }) a ({ }) problem ({ 5 6 }) in ({ 7 }) the ({ 8 }) bill ({ 9 }) for ({ 10 }) room ({ 12 }) number ({ 11 }) seven ({ 13 }) eight ({ 14 }) six ({ 15 }) . ({ 16 })
+# *all* 1.678
+¿ tienen habitaciones libres con teléfono ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ }) any ({ 3 }) rooms ({ }) with ({ 5 }) a ({ }) telephone ({ 6 }) available ({ 4 }) ? ({ 7 })
+# *all* 1.680
+hemos de marcharnos hoy mismo a las doce de la mañana .
+NULL ({ }) we ({ 1 }) should ({ 2 }) leave ({ 3 }) today ({ 4 5 }) at ({ 6 7 }) twelve ({ 8 }) in ({ 9 }) the ({ 10 }) morning ({ 11 }) . ({ 12 })
+# *all* 1.681
+hemos de marcharnos el lunes por la noche .
+NULL ({ 6 }) we ({ 1 }) should ({ 2 }) leave ({ 3 }) on ({ 4 }) monday ({ 5 }) evening ({ 7 8 }) . ({ 9 })
+# *all* 1.682
+deseo una habitación con tele , ducha y teléfono .
+NULL ({ }) i ({ }) want ({ 1 }) a ({ 2 }) room ({ 3 }) with ({ 4 }) a ({ }) tv ({ 5 }) , ({ 6 }) a ({ }) shower ({ 7 }) and ({ 8 }) a ({ }) telephone ({ 9 }) . ({ 10 })
+# *all* 1.685
+por favor , deseamos una habitación hasta el día veintiocho .
+NULL ({ }) we ({ 1 }) want ({ 2 4 }) a ({ 3 5 }) room ({ 6 }) until ({ 7 }) the ({ }) twenty ({ 8 }) - ({ 9 }) eighth ({ 10 }) , ({ }) please ({ }) . ({ 11 })
+# *all* 1.686
+¿ tiene libre una habitación individual y tranquila ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ 3 }) a ({ 4 }) quiet ({ 8 }) , ({ }) single ({ 6 7 }) room ({ 5 }) available ({ }) ? ({ 9 })
+# *all* 1.687
+por favor , desearíamos cambiarnos a otra habitación con televisión y cuarto de baño .
+NULL ({ 3 }) we ({ 1 }) would ({ 2 }) like ({ 4 }) to ({ }) move ({ 5 7 }) to ({ 6 }) a ({ }) room ({ 8 }) with ({ 9 }) a ({ }) tv ({ 10 }) and ({ 11 }) a ({ }) bathroom ({ 12 13 14 }) , ({ }) please ({ }) . ({ 15 })
+# *all* 1.688
+¿ tiene habitaciones individuales y tranquilas libres ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ }) any ({ 3 4 }) quiet ({ }) , ({ }) single ({ 5 }) rooms ({ 6 }) available ({ 7 }) ? ({ 8 })
+# *all* 1.689
+¿ podría cambiarnos de habitación ?
+NULL ({ }) can ({ 1 }) you ({ 2 }) change ({ 3 4 }) our ({ }) room ({ 5 }) ? ({ 6 })
+# *all* 1.690
+¿ están anotados todos los impuestos ?
+NULL ({ }) are ({ 1 }) all ({ 2 3 }) taxes ({ 4 6 }) included ({ 5 }) ? ({ 7 })
+# *all* 1.691
+pídame un taxi .
+NULL ({ }) could ({ }) you ({ }) ask ({ 1 }) for ({ }) a ({ }) taxi ({ 2 3 }) for ({ }) me ({ }) , ({ }) please ({ 4 }) ? ({ })
+# *all* 1.693
+vamos a marcharnos el domingo a las nueve en punto de la mañana .
+NULL ({ }) we ({ }) are ({ 1 }) leaving ({ 2 3 }) on ({ 4 }) sunday ({ 5 }) at ({ 6 7 }) nine ({ 8 }) o ({ }) ' ({ 9 }) clock ({ 10 }) in ({ 11 }) the ({ 12 }) morning ({ 13 }) . ({ 14 })
+# *all* 1.694
+¿ nos querrían llamar a un taxi ?
+NULL ({ }) would ({ 1 }) you ({ 2 }) call ({ 4 }) a ({ }) taxi ({ 3 6 7 }) for ({ 5 }) us ({ }) , ({ }) please ({ }) ? ({ 8 })
+# *all* 1.695
+¡ muchas gracias !
+NULL ({ }) thank ({ 1 }) you ({ }) very ({ 2 }) much ({ 3 }) ! ({ 4 })
+# *all* 1.696
+¿ podría bajar nuestra maleta a nuestra habitación ?
+NULL ({ }) could ({ 1 2 }) you ({ }) send ({ }) down ({ 3 }) our ({ 4 }) suitcase ({ 5 }) to ({ 6 }) our ({ 7 }) room ({ 8 }) ? ({ 9 })
+# *all* 1.699
+por favor , nos hace la cuenta de la habitación cuatrocientos diecinueve .
+NULL ({ }) could ({ 1 }) you ({ 4 }) make ({ 2 }) out ({ 3 5 }) the ({ }) bill ({ 7 }) for ({ }) room ({ 10 }) number ({ 6 }) four ({ 11 }) one ({ 9 }) nine ({ 12 }) for ({ 8 }) us ({ }) , ({ }) please ({ 13 }) ? ({ })
+# *all* 1.700
+existe una equivocación .
+NULL ({ }) there ({ 1 }) is ({ }) a ({ 2 }) mistake ({ 3 }) . ({ 4 })
+# *all* 1.701
+por favor , hemos hecho una reserva .
+NULL ({ }) we ({ 1 4 }) have ({ 2 3 }) made ({ 5 }) a ({ 6 }) reservation ({ 7 }) . ({ 8 })
+# *all* 1.702
+por favor , lleve mis bolsas de viaje a la habitación .
+NULL ({ }) please ({ 1 2 }) send ({ 3 4 }) my ({ 5 }) travel ({ 7 8 }) bags ({ 6 }) to ({ 9 }) the ({ 10 }) room ({ 11 }) . ({ 12 })
+# *all* 1.703
+¿ tiene libre una habitación tranquila ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ }) a ({ 4 }) quiet ({ 6 }) room ({ 5 }) available ({ 3 }) ? ({ 7 })
+# *all* 1.704
+tenemos reservadas dos habitaciones para una noche .
+NULL ({ }) we ({ 1 }) have ({ 2 }) booked ({ }) two ({ 3 }) rooms ({ 4 }) for ({ 5 }) a ({ 6 }) night ({ 7 }) . ({ 8 })
+# *all* 1.705
+¿ me podrían repasar mi factura ?
+NULL ({ }) could ({ 1 }) you ({ 2 }) check ({ 3 }) my ({ 5 }) bill ({ 6 }) for ({ }) me ({ 4 }) , ({ }) please ({ }) ? ({ 7 })
+# *all* 1.706
+por favor , tengo la reserva de una habitación tranquila .
+NULL ({ }) i ({ 1 }) have ({ 2 3 4 }) a ({ }) reservation ({ 5 6 }) for ({ 7 }) a ({ 8 }) quiet ({ 10 }) room ({ 9 }) . ({ 11 })
+# *all* 1.707
+¿ nos podría dar las llaves de la habitación número cinco quince , por favor ?
+NULL ({ }) could ({ 1 3 }) you ({ }) give ({ 4 }) us ({ 2 }) the ({ }) keys ({ 5 6 }) to ({ 7 }) room ({ 9 }) number ({ 8 10 }) five ({ 11 }) one ({ }) five ({ 12 }) , ({ 13 14 }) please ({ 15 }) ? ({ 16 })
+# *all* 1.708
+por favor , queremos reservar una habitación con aire acondicionado .
+NULL ({ }) we ({ 1 }) want ({ 2 4 }) to ({ 3 }) book ({ 5 }) a ({ 6 }) room ({ 7 }) with ({ 8 }) air ({ 9 }) conditioning ({ 10 }) , ({ }) please ({ }) . ({ 11 })
+# *all* 1.709
+tengo hecha la reserva de una habitación a nombre de teresa martínez .
+NULL ({ }) i ({ 1 }) have ({ }) made ({ 2 3 }) a ({ }) reservation ({ 4 }) for ({ 5 8 }) a ({ 6 }) room ({ 7 }) for ({ 9 10 }) teresa ({ 11 }) martínez ({ 12 }) . ({ 13 })
+# *all* 1.710
+por favor , ¿ me podría llamar a mi taxi ?
+NULL ({ }) could ({ 1 }) you ({ 2 4 }) call ({ 3 7 }) my ({ 9 }) taxi ({ 6 10 }) for ({ }) me ({ 5 8 }) , ({ }) please ({ }) ? ({ 11 })
+# *all* 1.711
+he reservado una habitación con ducha , tele y teléfono a nombre de emilio paches .
+NULL ({ }) i ({ 1 }) have ({ }) booked ({ 2 }) a ({ 3 }) room ({ 4 }) with ({ 5 }) a ({ }) shower ({ 6 }) , ({ 7 }) a ({ }) tv ({ 8 }) and ({ 9 }) a ({ }) telephone ({ 10 }) for ({ 11 12 13 }) emilio ({ 14 }) paches ({ 15 }) . ({ 16 })
+# *all* 1.712
+por favor , ¿ nos podría dar la llave de la habitación cinco nueve ?
+NULL ({ }) could ({ 1 4 6 }) you ({ 2 }) give ({ 3 7 }) us ({ 5 }) the ({ }) key ({ 9 }) to ({ }) room ({ 12 }) number ({ 8 10 11 }) five ({ 13 }) nine ({ 14 }) , ({ }) please ({ }) ? ({ 15 })
+# *all* 1.713
+¿ está todo incluido ?
+NULL ({ }) is ({ 1 }) everything ({ 2 3 }) included ({ 4 }) ? ({ 5 })
+# *all* 1.714
+he hecho la reserva de una habitación a nombre del señor ramos .
+NULL ({ }) i ({ 1 }) have ({ }) made ({ 2 3 }) a ({ }) reservation ({ 4 }) for ({ 5 8 }) a ({ 6 }) room ({ 7 }) for ({ 9 }) mr ({ 10 11 }) ramos ({ 12 }) . ({ 13 })
+# *all* 1.715
+me parece que existe una equivocación en mi cuenta de la habitación tres treinta y nueve .
+NULL ({ }) i ({ 1 }) think ({ 2 }) that ({ 3 }) there ({ 4 }) is ({ }) a ({ 5 }) mistake ({ 6 }) in ({ 7 }) my ({ 8 }) bill ({ 9 }) for ({ 10 }) room ({ 12 }) number ({ 11 }) three ({ 13 14 }) three ({ 15 }) nine ({ 16 }) . ({ 17 })
+# *all* 1.716
+¿ hay aire acondicionado en la habitación ?
+NULL ({ }) is ({ 1 }) there ({ 2 }) air ({ 3 }) conditioning ({ 4 }) in ({ 5 }) the ({ 6 }) room ({ 7 }) ? ({ 8 })
+# *all* 1.717
+nos hemos de marchar el catorce a la una y cuarto de la tarde .
+NULL ({ }) we ({ 1 2 }) should ({ 3 }) leave ({ 4 }) on ({ 5 }) the ({ 8 }) fourteenth ({ 6 }) at ({ 7 }) a ({ 9 }) quarter ({ 11 }) past ({ 10 }) one ({ }) in ({ 12 }) the ({ 13 }) afternoon ({ 14 }) . ({ 15 })
+# *all* 1.718
+pienso que existe una equivocación en la cuenta de la habitación setecientos diecinueve .
+NULL ({ }) i ({ }) think ({ 1 }) that ({ 2 }) there ({ 3 }) is ({ }) a ({ 4 }) mistake ({ 5 }) in ({ 6 }) the ({ 7 }) bill ({ 8 }) for ({ 9 }) room ({ 11 }) number ({ 10 }) seven ({ 12 }) one ({ }) nine ({ 13 }) . ({ 14 })
+# *all* 1.720
+pienso que existe una equivocación en la cuenta .
+NULL ({ }) i ({ }) think ({ 1 }) that ({ 2 }) there ({ 3 }) is ({ }) a ({ 4 }) mistake ({ 5 }) in ({ 6 }) the ({ 7 }) bill ({ 8 }) . ({ 9 })
+# *all* 1.721
+¿ podría subirnos el equipaje al taxi ?
+NULL ({ }) could ({ 1 2 }) you ({ }) put ({ 3 }) the ({ }) luggage ({ 4 5 }) in ({ }) the ({ 6 }) taxi ({ 7 }) ? ({ 8 })
+# *all* 1.722
+deseamos reservar una habitación doble para esta noche .
+NULL ({ }) we ({ }) want ({ 1 }) to ({ }) book ({ 2 }) a ({ 3 }) double ({ 5 }) room ({ 4 }) for ({ 6 }) tonight ({ 7 8 }) . ({ 9 })
+# *all* 1.723
+¿ aceptan dinero en efectivo ?
+NULL ({ }) do ({ 1 }) you ({ }) accept ({ 2 3 }) cash ({ 4 5 }) ? ({ 6 })
+# *all* 1.724
+¿ me podrían subir el equipaje al coche ?
+NULL ({ }) could ({ 1 }) you ({ 2 3 }) put ({ 4 }) the ({ }) luggage ({ 5 6 }) in ({ }) the ({ }) car ({ 7 8 }) ? ({ 9 })
+# *all* 1.725
+tengo reservada una habitación a nombre de sergio orenga .
+NULL ({ }) i ({ 1 }) have ({ 2 }) booked ({ }) a ({ 3 }) room ({ 4 }) for ({ 5 6 7 }) sergio ({ 8 }) orenga ({ 9 }) . ({ 10 })
+# *all* 1.727
+por favor , querríamos que nos diera la llave de la habitación .
+NULL ({ 3 }) we ({ 1 }) would ({ }) like ({ 5 }) you ({ 2 }) to ({ 4 }) give ({ 7 }) us ({ 6 }) the ({ 8 }) key ({ 9 }) to ({ }) the ({ 10 11 }) room ({ 12 }) , ({ }) please ({ }) . ({ 13 })
+# *all* 1.728
+¿ hay teléfono en nuestra habitación ?
+NULL ({ }) is ({ 1 }) there ({ 2 }) a ({ }) telephone ({ 3 }) in ({ 4 }) our ({ 5 }) room ({ 6 }) ? ({ 7 })
+# *all* 1.729
+¿ puede detallarnos la cuenta ?
+NULL ({ }) can ({ 2 }) you ({ 1 }) explain ({ }) the ({ 4 }) bill ({ 3 5 }) for ({ }) us ({ }) , ({ }) please ({ }) ? ({ 6 })
+# *all* 1.730
+por favor , ¿ nos pueden ustedes dar la llave de mi habitación ?
+NULL ({ }) can ({ 1 6 }) you ({ 2 4 }) give ({ 3 }) us ({ 5 }) the ({ 9 }) key ({ 8 10 }) to ({ 7 11 }) my ({ 12 }) room ({ 13 }) , ({ }) please ({ }) ? ({ 14 })
+# *all* 1.731
+¿ hay una habitación individual libre ?
+NULL ({ }) is ({ 1 }) there ({ 2 }) a ({ 3 }) single ({ 5 }) room ({ 4 }) available ({ 6 }) ? ({ 7 })
+# *all* 1.732
+tenemos que irnos .
+NULL ({ }) we ({ 1 }) should ({ 2 }) leave ({ 3 }) . ({ 4 })
+# *all* 1.733
+por favor , ¿ me pueden dar la llave de la número doscientos catorce ?
+NULL ({ }) can ({ 1 6 }) you ({ 2 4 }) give ({ 3 7 }) me ({ 5 }) the ({ }) key ({ 9 }) to ({ }) room ({ }) number ({ 8 10 12 }) two ({ 13 }) one ({ 11 }) four ({ 14 }) , ({ }) please ({ }) ? ({ 15 })
+# *all* 1.734
+¿ haría el favor de cambiarme de habitación ?
+NULL ({ }) would ({ 1 2 }) you ({ 4 }) mind ({ 3 }) changing ({ 5 6 7 }) my ({ }) room ({ 8 }) ? ({ 9 })
+# *all* 1.735
+¿ puede subirnos nuestro equipaje al coche ?
+NULL ({ }) can ({ 1 2 }) you ({ }) put ({ 3 }) our ({ 4 }) luggage ({ 5 }) in ({ }) the ({ }) car ({ 6 7 }) ? ({ 8 })
+# *all* 1.736
+deseo una habitación tranquila .
+NULL ({ }) i ({ }) want ({ 1 }) a ({ 2 }) quiet ({ 4 }) room ({ 3 }) . ({ 5 })
+# *all* 1.737
+despiértenos mañana a las seis menos cuarto , por favor .
+NULL ({ }) wake ({ 1 }) us ({ }) up ({ 3 }) tomorrow ({ 2 }) at ({ 4 }) a ({ }) quarter ({ 6 7 }) to ({ }) six ({ 5 }) , ({ 8 9 }) please ({ 10 }) . ({ 11 })
+# *all* 1.738
+quiero una habitación con televisión , teléfono y agua caliente hasta el día veintisiete .
+NULL ({ }) i ({ }) want ({ 1 }) a ({ 2 }) room ({ 3 }) with ({ 4 }) a ({ }) tv ({ 5 }) , ({ 6 }) a ({ }) telephone ({ 7 }) and ({ 8 }) hot ({ }) water ({ 9 10 }) until ({ 11 }) the ({ }) twenty ({ 12 }) - ({ 13 }) seventh ({ 14 }) . ({ 15 })
+# *all* 1.739
+por favor , despiértenos a la una en punto .
+NULL ({ }) please ({ 1 2 }) wake ({ 4 }) us ({ 3 }) up ({ }) at ({ 5 }) one ({ 6 7 }) o ({ }) ' ({ 8 }) clock ({ 9 }) . ({ 10 })
+# *all* 1.740
+por favor , he reservado una habitación tranquila a nombre de tomás fernández .
+NULL ({ }) i ({ 1 4 }) have ({ 2 3 }) booked ({ 5 }) a ({ 6 }) quiet ({ 8 }) room ({ 7 }) for ({ 9 10 11 }) tomás ({ 12 }) fernández ({ 13 }) . ({ 14 })
+# *all* 1.741
+¿ puede darnos la llave de la habitación número dos cinco nueve , por favor ?
+NULL ({ }) can ({ 1 2 }) you ({ }) give ({ 3 }) us ({ }) the ({ 4 6 7 }) key ({ 5 }) to ({ }) room ({ 8 }) number ({ 9 }) two ({ 10 }) five ({ 11 }) nine ({ 12 }) , ({ 13 14 }) please ({ 15 }) ? ({ 16 })
+# *all* 1.742
+por favor , despiértennos a la una y cuarto .
+NULL ({ }) please ({ 1 2 }) wake ({ 4 }) us ({ 3 }) up ({ }) at ({ 5 }) a ({ 7 }) quarter ({ 9 }) past ({ 8 }) one ({ 6 }) . ({ 10 })
+# *all* 1.743
+por favor , he reservado una habitación .
+NULL ({ }) i ({ 1 }) have ({ 2 3 4 }) booked ({ 5 }) a ({ 6 }) room ({ 7 }) . ({ 8 })
+# *all* 1.744
+por favor , dennos las llaves de la habitación número seis cuatro uno .
+NULL ({ 3 }) please ({ 1 2 }) give ({ 4 }) us ({ }) the ({ }) keys ({ 5 6 }) to ({ 7 }) room ({ 9 }) number ({ 8 10 }) six ({ 11 }) four ({ 12 }) one ({ 13 }) . ({ 14 })
+# *all* 1.745
+por favor , tengo hecha la reserva de una habitación con televisión y teléfono a nombre de la señorita calleja .
+NULL ({ 18 }) i ({ 1 }) have ({ 2 3 4 }) made ({ 5 }) a ({ }) reservation ({ 6 7 }) for ({ 8 }) a ({ 9 }) room ({ 10 }) with ({ 11 }) a ({ }) tv ({ 12 }) and ({ 13 }) a ({ }) telephone ({ 14 }) for ({ 15 16 17 }) miss ({ 19 }) calleja ({ 20 }) . ({ 21 })
+# *all* 1.746
+por favor , reservé una habitación con tele , una buena vista y teléfono .
+NULL ({ }) i ({ 1 2 }) booked ({ 4 }) a ({ 3 }) room ({ 6 }) with ({ 7 }) a ({ 5 }) tv ({ 8 }) , ({ 9 }) a ({ 10 }) good ({ 11 12 }) view ({ }) and ({ 13 }) a ({ }) telephone ({ 14 }) . ({ 15 })
+# *all* 1.747
+querría que nos despertaran mañana a las seis menos cuarto , por favor .
+NULL ({ }) i ({ }) would ({ 1 }) like ({ 2 }) you ({ }) to ({ 4 }) wake ({ }) us ({ 3 }) up ({ 6 }) tomorrow ({ 5 }) at ({ 7 }) a ({ }) quarter ({ 9 10 }) to ({ }) six ({ 8 }) , ({ 11 12 }) please ({ 13 }) . ({ 14 })
+# *all* 1.748
+quisiera cambiarme de habitación .
+NULL ({ }) i ({ 1 }) want ({ }) to ({ }) change ({ 2 3 4 }) rooms ({ }) . ({ 5 })
+# *all* 1.749
+por favor , queremos cambiar la habitación .
+NULL ({ 6 }) we ({ 1 }) want ({ 2 4 }) to ({ 3 }) change ({ 5 }) rooms ({ }) , ({ 7 }) please ({ }) . ({ 8 })
+# *all* 1.750
+¿ tienen habitaciones dobles libres ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ }) any ({ 3 }) double ({ }) rooms ({ 4 }) available ({ 5 }) ? ({ 6 })
+# *all* 1.751
+desearía una habitación .
+NULL ({ }) i ({ }) would ({ 1 }) like ({ }) a ({ 2 }) room ({ 3 }) . ({ 4 })
+# *all* 1.752
+quisiéramos una habitación .
+NULL ({ }) we ({ 1 }) want ({ }) a ({ 2 }) room ({ 3 }) . ({ 4 })
+# *all* 1.753
+por favor , desearía que me dieran la llave de nuestra habitación .
+NULL ({ 3 }) i ({ 1 }) would ({ }) like ({ 4 5 }) you ({ 2 }) to ({ }) give ({ }) me ({ 6 }) the ({ 8 }) key ({ 9 }) to ({ 7 10 }) our ({ 11 }) room ({ 12 }) , ({ }) please ({ }) . ({ 13 })
+# *all* 1.754
+tengo que marcharme el día treinta de septiembre .
+NULL ({ }) i ({ 1 }) should ({ 2 }) leave ({ 3 }) on ({ 4 }) september ({ 5 6 }) the ({ 7 }) thirtieth ({ 8 }) . ({ 9 })
+# *all* 1.755
+¿ hay una habitación libre ?
+NULL ({ }) is ({ 1 }) there ({ 2 }) a ({ 3 }) room ({ 4 }) available ({ 5 }) ? ({ 6 })
+# *all* 1.756
+por favor , ¿ me querrían preparar la factura ?
+NULL ({ }) would ({ 1 }) you ({ 2 4 }) prepare ({ 3 7 }) the ({ 8 }) bill ({ 9 }) for ({ 6 }) me ({ 5 }) , ({ }) please ({ }) ? ({ 10 })
+# *all* 1.757
+querría una habitación con televisión y teléfono , por favor .
+NULL ({ }) i ({ }) would ({ 1 }) like ({ }) a ({ 2 }) room ({ 3 }) with ({ 4 }) a ({ }) tv ({ 5 }) and ({ 6 }) a ({ }) telephone ({ 7 }) , ({ 8 9 }) please ({ 10 }) . ({ 11 })
+# *all* 1.758
+por favor , he reservado una habitación con teléfono .
+NULL ({ }) i ({ 1 }) have ({ 2 4 }) booked ({ 3 5 }) a ({ 6 }) room ({ 7 }) with ({ 8 }) a ({ }) telephone ({ 9 }) . ({ 10 })
+# *all* 1.759
+despiértenos mañana a las seis en punto , por favor .
+NULL ({ }) wake ({ 1 }) us ({ }) up ({ 3 }) tomorrow ({ 2 }) at ({ 4 }) six ({ 5 }) o ({ 6 }) ' ({ }) clock ({ 7 }) , ({ 8 9 }) please ({ 10 }) . ({ 11 })
+# *all* 1.760
+hemos reservado una habitación tranquila , por favor .
+NULL ({ 7 8 }) we ({ 1 }) have ({ 2 }) booked ({ 3 }) a ({ 4 6 }) quiet ({ 5 }) room ({ }) . ({ 9 })
+# *all* 1.762
+¿ podría ver alguna habitación individual y tranquila , por favor ?
+NULL ({ }) could ({ 1 2 }) i ({ }) see ({ 3 4 }) a ({ }) quiet ({ 5 8 }) , ({ }) single ({ 6 7 }) room ({ }) , ({ 9 10 }) please ({ 11 }) ? ({ 12 })
+# *all* 1.763
+por favor , ¿ cuánto vale una habitación individual ?
+NULL ({ }) how ({ 1 }) much ({ 2 5 6 }) is ({ 4 }) a ({ 3 7 }) single ({ 9 }) room ({ 8 }) , ({ }) please ({ }) ? ({ 10 })
+# *all* 1.764
+lléveme las bolsas al taxi .
+NULL ({ }) send ({ 1 }) my ({ }) bags ({ 2 3 }) to ({ }) the ({ 4 }) taxi ({ 5 }) . ({ 6 })
+# *all* 1.765
+deseamos cambiar nuestra habitación .
+NULL ({ }) we ({ }) want ({ 1 }) to ({ 3 }) change ({ 2 4 }) rooms ({ }) . ({ 5 })
+# *all* 1.766
+¿ nos puede llevar las bolsas a la estación ?
+NULL ({ }) can ({ 1 3 }) you ({ 2 }) send ({ 4 }) the ({ }) bags ({ 5 6 }) to ({ 7 }) the ({ 8 }) station ({ 9 }) ? ({ 10 })
+# *all* 1.767
+¿ le importaría mostrarme otra habitación ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) showing ({ 4 }) me ({ }) another ({ 5 }) room ({ 6 }) ? ({ 7 })
+# *all* 1.770
+¿ qué precio tiene una habitación individual para nueve días , por favor ?
+NULL ({ }) what ({ 2 }) is ({ 1 }) the ({ }) price ({ 3 4 }) for ({ }) a ({ 5 }) single ({ 7 }) room ({ 6 }) for ({ 8 }) nine ({ 9 }) days ({ 10 }) , ({ 11 12 }) please ({ 13 }) ? ({ 14 })
+# *all* 1.771
+tenemos que irnos mañana a la una .
+NULL ({ }) we ({ 1 }) should ({ 2 }) leave ({ 3 }) tomorrow ({ 4 }) at ({ 5 }) one ({ 6 7 }) . ({ 8 })
+# *all* 1.772
+por favor , lleven mis bolsas a la habitación cero veintinueve .
+NULL ({ }) please ({ 1 2 }) send ({ 3 4 }) my ({ 5 }) bags ({ 6 }) to ({ 7 }) room ({ 9 }) number ({ 8 }) oh ({ 10 }) two ({ }) nine ({ 11 }) . ({ 12 })
+# *all* 1.773
+¿ me podrían llevar mis bolsas al autobús ?
+NULL ({ }) could ({ 1 }) you ({ 2 3 }) send ({ 4 }) my ({ 5 }) bags ({ 6 }) to ({ }) the ({ }) bus ({ 7 8 }) ? ({ 9 })
+# *all* 1.774
+tenemos reservada una habitación para una noche a nombre del señor federico cornelles .
+NULL ({ }) we ({ 1 }) have ({ 2 }) booked ({ }) a ({ 3 }) room ({ 4 }) for ({ 5 8 }) a ({ 6 }) night ({ 7 }) for ({ 9 }) mr ({ 10 11 }) federico ({ 12 }) cornelles ({ 13 }) . ({ 14 })
+# *all* 1.775
+hice una reserva .
+NULL ({ }) i ({ }) made ({ 1 }) a ({ 2 }) reservation ({ 3 }) . ({ 4 })
+# *all* 1.776
+me parece que se ha producido un problema .
+NULL ({ }) i ({ 1 }) think ({ 2 }) that ({ 3 }) there ({ }) has ({ 4 5 }) been ({ 6 }) a ({ }) problem ({ 7 8 }) . ({ 9 })
+# *all* 1.777
+¿ puede preparar la factura de la habitación cinco uno uno ?, por favor .
+NULL ({ }) can ({ 1 2 }) you ({ }) prepare ({ 3 }) the ({ 4 }) bill ({ 5 }) for ({ 6 }) room ({ 8 }) number ({ 7 }) five ({ 9 }) one ({ 10 11 }) one ({ }) , ({ 12 13 }) please ({ 14 15 }) ? ({ })
+# *all* 1.778
+la habitación es muy calurosa .
+NULL ({ }) the ({ 1 }) room ({ 2 }) is ({ 3 }) very ({ 4 }) hot ({ 5 }) . ({ 6 })
+# *all* 1.779
+¿ podría ver alguna habitación individual y tranquila ?
+NULL ({ }) could ({ 1 2 }) i ({ }) see ({ 3 4 }) a ({ }) quiet ({ 5 8 }) , ({ }) single ({ 6 7 }) room ({ }) ? ({ 9 })
+# *all* 1.780
+me llama a un taxi .
+NULL ({ }) could ({ }) you ({ 1 }) call ({ 2 }) a ({ }) taxi ({ 4 5 }) for ({ 3 }) me ({ }) , ({ }) please ({ 6 }) ? ({ })
+# *all* 1.781
+despiértenme mañana a las cinco .
+NULL ({ }) wake ({ 1 }) me ({ }) up ({ 3 }) tomorrow ({ 2 }) at ({ 4 }) five ({ 5 }) . ({ 6 })
+# *all* 1.782
+¿ está incluido el servicio de habitaciones ?
+NULL ({ }) is ({ 1 2 }) room ({ }) service ({ 3 4 5 6 7 }) included ({ }) ? ({ 8 })
+# *all* 1.783
+por favor , ¿ nos podría dar las llaves de la habitación ?
+NULL ({ }) could ({ 1 6 }) you ({ 2 4 }) give ({ 3 7 }) us ({ 5 }) the ({ }) keys ({ 8 9 }) to ({ }) the ({ 10 11 }) room ({ 12 }) , ({ }) please ({ }) ? ({ 13 })
+# *all* 1.784
+me voy a marchar el viernes veintinueve de mayo a las nueve en punto de la noche .
+NULL ({ }) i ({ 1 }) am ({ 2 }) leaving ({ 3 }) on ({ 4 5 }) friday ({ 6 }) may ({ 9 }) the ({ 8 }) twenty ({ }) - ({ 7 }) ninth ({ }) at ({ 10 11 }) nine ({ 12 }) o ({ }) ' ({ 13 }) clock ({ 14 }) in ({ 15 }) the ({ 16 }) evening ({ 17 }) . ({ 18 })
+# *all* 1.785
+quiero reservar una habitación individual y tranquila para esta semana , por favor .
+NULL ({ }) i ({ }) want ({ 1 }) to ({ }) book ({ 2 }) a ({ 3 4 }) quiet ({ 6 7 }) , ({ }) single ({ 5 }) room ({ }) for ({ 8 }) this ({ 9 }) week ({ 10 }) , ({ 11 12 }) please ({ 13 }) . ({ 14 })
+# *all* 1.786
+¿ cuánto cuesta una habitación doble con pensión completa ?
+NULL ({ }) how ({ 1 }) much ({ 2 }) does ({ 3 }) a ({ 4 }) double ({ 6 }) room ({ 5 }) with ({ 7 }) full ({ 9 }) board ({ 8 }) cost ({ }) ? ({ 10 })
+# *all* 1.787
+¿ nos podría despertar a las siete y media ?
+NULL ({ }) could ({ 1 3 }) you ({ 2 }) wake ({ }) us ({ }) up ({ 4 5 }) at ({ 6 }) half ({ 9 }) past ({ 8 }) seven ({ 7 }) ? ({ 10 })
+# *all* 1.788
+reservamos una habitación individual .
+NULL ({ }) we ({ 1 }) booked ({ }) a ({ 2 }) single ({ 4 }) room ({ 3 }) . ({ 5 })
+# *all* 1.789
+baje nuestras bolsas de viaje a recepción .
+NULL ({ }) send ({ 1 }) our ({ 2 }) travel ({ 4 5 }) bags ({ 3 }) down ({ }) to ({ 6 }) reception ({ 7 }) . ({ 8 })
+# *all* 1.790
+hemos reservado una habitación hasta el dos de febrero .
+NULL ({ }) we ({ 1 }) have ({ 2 }) booked ({ }) a ({ 3 }) room ({ 4 }) until ({ 5 6 }) february ({ 7 }) the ({ 8 }) second ({ 9 }) . ({ 10 })
+# *all* 1.791
+me gustaría reservar una habitación para esta noche , por favor .
+NULL ({ }) i ({ 1 }) would ({ }) like ({ 2 }) to ({ }) book ({ 3 }) a ({ 4 }) room ({ 5 }) for ({ 6 }) tonight ({ 7 8 }) , ({ 9 10 }) please ({ 11 }) . ({ 12 })
+# *all* 1.792
+¿ les importaría darme la llave de mi habitación ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) giving ({ 4 }) me ({ }) the ({ 5 }) key ({ 6 }) to ({ 7 }) my ({ 8 }) room ({ 9 }) ? ({ 10 })
+# *all* 1.793
+por favor , ¿ le importaría despertarme a las ocho y cuarto ?
+NULL ({ 3 }) would ({ 1 }) you ({ 2 4 }) mind ({ 5 6 }) waking ({ }) me ({ 7 }) up ({ }) at ({ 8 9 }) a ({ }) quarter ({ 12 }) past ({ 11 }) eight ({ 10 }) , ({ }) please ({ }) ? ({ 13 })
+# *all* 1.794
+¿ nos podrían despertar a las seis y media ?
+NULL ({ }) could ({ 1 }) you ({ 2 }) wake ({ 3 }) us ({ }) up ({ 4 5 }) at ({ 6 }) half ({ 9 }) past ({ 8 }) six ({ 7 }) ? ({ 10 })
+# *all* 1.795
+queremos que nos den la llave de la habitación .
+NULL ({ }) we ({ }) want ({ 1 2 }) you ({ }) to ({ }) give ({ 4 }) us ({ 3 }) the ({ 5 }) key ({ 6 7 }) to ({ }) the ({ 8 }) room ({ 9 }) . ({ 10 })
+# *all* 1.796
+por favor , tengo la reserva de una habitación tranquila individual a nombre de enrique díaz .
+NULL ({ }) i ({ 1 }) have ({ 2 3 4 }) a ({ }) reservation ({ 5 6 }) for ({ 7 }) a ({ 8 }) quiet ({ 10 }) , ({ }) single ({ 11 }) room ({ 9 }) for ({ 12 13 14 }) enrique ({ 15 }) díaz ({ 16 }) . ({ 17 })
+# *all* 1.797
+¿ tienen una habitación libre con agua caliente y aire acondicionado ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ }) a ({ 3 }) room ({ 4 }) with ({ 6 }) hot ({ }) water ({ 7 8 }) and ({ 9 }) air ({ 10 }) conditioning ({ 11 }) available ({ 5 }) ? ({ 12 })
+# *all* 1.798
+¿ tiene teléfono y aire acondicionado la habitación ?
+NULL ({ 7 }) does ({ 1 2 }) the ({ }) room ({ }) have ({ }) a ({ }) telephone ({ 3 }) and ({ 4 }) air ({ 5 }) conditioning ({ 6 8 }) ? ({ 9 })
+# *all* 1.799
+nos tenemos que ir el día veintisiete a las nueve en punto .
+NULL ({ }) we ({ 1 2 }) should ({ 3 }) leave ({ }) on ({ 4 5 }) the ({ }) twenty ({ }) - ({ 6 }) seventh ({ 7 }) at ({ 8 9 }) nine ({ 10 }) o ({ }) ' ({ 11 }) clock ({ 12 }) . ({ 13 })
+# *all* 1.801
+¿ les importaría despertarnos mañana a las nueve menos cuarto ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) waking ({ 4 }) us ({ }) up ({ }) tomorrow ({ 5 }) at ({ 6 7 }) a ({ }) quarter ({ 9 10 }) to ({ }) nine ({ 8 }) ? ({ 11 })
+# *all* 1.802
+reservamos una habitación con aire acondicionado hasta pasado mañana , por favor .
+NULL ({ 10 11 12 }) we ({ 1 }) booked ({ }) a ({ 2 }) room ({ 3 }) with ({ 4 }) air ({ 5 }) conditioning ({ 6 }) until ({ 7 }) the ({ }) day ({ }) after ({ 8 }) tomorrow ({ 9 }) . ({ 13 })
+# *all* 1.803
+¿ nos puede pedir un taxi ?, por favor .
+NULL ({ }) can ({ 1 3 }) you ({ 2 }) ask ({ 4 }) for ({ }) a ({ }) taxi ({ 5 6 }) for ({ }) us ({ 7 }) , ({ 8 }) please ({ 9 10 }) ? ({ })
+# *all* 1.804
+tenemos reservada una habitación doble .
+NULL ({ }) we ({ 1 }) have ({ 2 }) booked ({ }) a ({ 3 }) double ({ 5 }) room ({ 4 }) . ({ 6 })
+# *all* 1.805
+desearía que llevase mis bolsas a mi habitación , por favor .
+NULL ({ }) i ({ }) would ({ }) like ({ 1 2 3 }) you ({ }) to ({ 6 }) send ({ }) my ({ 4 7 }) bags ({ 5 }) to ({ }) my ({ }) room ({ 8 }) , ({ 9 10 }) please ({ 11 }) . ({ 12 })
+# *all* 1.807
+me marcho mañana a las doce en punto de la mañana .
+NULL ({ }) i ({ 1 }) leave ({ 2 }) tomorrow ({ 3 }) at ({ 4 5 }) twelve ({ 6 }) o ({ }) ' ({ 7 }) clock ({ 8 }) in ({ 9 }) the ({ 10 }) morning ({ 11 }) . ({ 12 })
+# *all* 1.808
+¿ hay aire acondicionado y servicio de bar en las habitaciones ?
+NULL ({ }) are ({ 1 }) there ({ 2 }) air ({ 3 }) conditioning ({ 4 }) and ({ 5 }) a ({ }) minibar ({ 6 8 }) in ({ 7 9 }) the ({ 10 }) rooms ({ 11 }) ? ({ 12 })
+# *all* 1.809
+por favor , reservamos dos habitaciones .
+NULL ({ }) we ({ 1 2 }) booked ({ 3 4 }) two ({ 5 }) rooms ({ 6 }) . ({ 7 })
+# *all* 1.810
+¿ hay caja fuerte en las habitaciones ?
+NULL ({ }) is ({ 1 }) there ({ 2 }) a ({ }) safe ({ 3 4 }) in ({ 5 }) the ({ 6 }) rooms ({ 7 }) ? ({ 8 })
+# *all* 1.811
+¿ tienen habitaciones tranquilas libres ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ }) any ({ 3 }) quiet ({ }) rooms ({ 4 }) available ({ 5 }) ? ({ 6 })
+# *all* 1.812
+por favor , ¿ me puede dar usted las llaves de la habitación uno uno tres ?
+NULL ({ 3 }) can ({ 1 6 }) you ({ 2 4 }) give ({ 7 8 }) me ({ 5 }) the ({ }) keys ({ 9 10 }) to ({ }) room ({ 13 }) number ({ 11 }) one ({ }) one ({ 12 14 15 }) three ({ 16 }) , ({ }) please ({ }) ? ({ 17 })
+# *all* 1.813
+por favor , suba mi maleta a mi habitación .
+NULL ({ }) please ({ 1 2 }) send ({ 3 4 }) up ({ }) my ({ 5 }) suitcase ({ 6 }) to ({ 7 }) my ({ 8 }) room ({ 9 }) . ({ 10 })
+# *all* 1.814
+por favor , tengo reservada una habitación doble con aire acondicionado , teléfono y televisión .
+NULL ({ }) i ({ 1 }) have ({ 2 4 }) booked ({ 3 5 }) a ({ 6 }) double ({ 8 }) room ({ 7 }) with ({ 9 }) air ({ 10 }) conditioning ({ 11 }) , ({ 12 }) a ({ }) telephone ({ 13 }) and ({ 14 }) a ({ }) tv ({ 15 }) . ({ 16 })
+# *all* 1.815
+quisiera reservar una habitación .
+NULL ({ }) i ({ }) want ({ 1 }) to ({ }) book ({ 2 }) a ({ 3 }) room ({ 4 }) . ({ 5 })
+# *all* 1.816
+¿ podría ver otra habitación ?
+NULL ({ }) could ({ 1 2 }) i ({ }) see ({ 3 }) another ({ 4 }) room ({ 5 }) ? ({ 6 })
+# *all* 1.817
+¿ tiene habitaciones dobles libres ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ }) any ({ 3 }) double ({ }) rooms ({ 4 }) available ({ 5 }) ? ({ 6 })
+# *all* 1.818
+¿ están incluidos todos los impuestos ?
+NULL ({ }) are ({ 1 }) all ({ 2 3 }) taxes ({ 4 6 }) included ({ 5 }) ? ({ 7 })
+# *all* 1.819
+por favor , despiértenos mañana a las dos .
+NULL ({ }) please ({ 1 2 }) wake ({ 3 4 }) us ({ }) up ({ }) tomorrow ({ 5 }) at ({ 6 7 }) two ({ 8 }) . ({ 9 })
+# *all* 1.820
+¿ nos podría dar la llave de la habitación , por favor ?
+NULL ({ }) could ({ 1 3 }) you ({ }) give ({ 4 }) us ({ 2 }) the ({ 5 }) key ({ 6 7 }) to ({ }) the ({ 8 }) room ({ 9 }) , ({ 10 11 }) please ({ 12 }) ? ({ 13 })
+# *all* 1.821
+súbanos las maletas al coche .
+NULL ({ }) put ({ 1 }) our ({ }) suitcases ({ 2 3 }) in ({ }) the ({ }) car ({ 4 5 }) . ({ 6 })
+# *all* 1.822
+¿ cuánto cuesta una habitación individual ?
+NULL ({ }) how ({ 1 }) much ({ 2 }) does ({ 3 }) a ({ 4 }) single ({ }) room ({ 5 }) cost ({ 6 }) ? ({ 7 })
+# *all* 1.823
+me voy a ir el viernes once de abril a las ocho y cuarto de la noche .
+NULL ({ }) i ({ 1 }) am ({ 2 }) leaving ({ 3 }) on ({ 4 5 }) friday ({ 6 }) april ({ 9 }) the ({ 8 }) eleventh ({ 7 }) at ({ 10 11 }) a ({ }) quarter ({ 14 }) past ({ 13 }) eight ({ 12 }) in ({ 15 }) the ({ 16 }) evening ({ 17 }) . ({ 18 })
+# *all* 1.824
+por favor , quiero que nos dé la llave de mi habitación .
+NULL ({ 3 }) i ({ 1 }) want ({ 4 5 }) you ({ 2 }) to ({ }) give ({ 7 }) us ({ 6 }) the ({ 8 }) key ({ 9 }) to ({ 10 }) my ({ 11 }) room ({ 12 }) , ({ }) please ({ }) . ({ 13 })
+# *all* 1.825
+¿ cuánto cuesta una habitación doble por semana ?
+NULL ({ }) how ({ 1 }) much ({ 2 }) does ({ 3 }) a ({ 4 }) double ({ 6 }) room ({ 5 }) cost ({ }) per ({ 7 }) week ({ 8 }) ? ({ 9 })
+# *all* 1.826
+por favor , hice la reserva de una habitación doble tranquila con cuarto de baño y vistas a la ciudad a nombre de arturo mira .
+NULL ({ 18 }) i ({ 1 2 }) made ({ 4 }) a ({ 3 }) reservation ({ 5 6 }) for ({ 7 }) a ({ 8 }) quiet ({ 11 }) , ({ }) double ({ 10 }) room ({ 9 }) with ({ 12 }) a ({ }) bathroom ({ 13 14 15 }) and ({ 16 }) a ({ }) view ({ 17 }) of ({ 19 }) the ({ }) town ({ 20 }) for ({ 21 22 23 }) arturo ({ 24 }) mira ({ 25 }) . ({ 26 })
+# *all* 1.827
+por favor , he reservado una habitación .
+NULL ({ }) i ({ 1 }) have ({ 2 3 4 }) booked ({ 5 }) a ({ 6 }) room ({ 7 }) . ({ 8 })
+# *all* 1.830
+¿ cuánto cuesta una habitación individual , por favor ?
+NULL ({ }) how ({ 1 }) much ({ 2 }) does ({ 3 }) a ({ 4 }) single ({ 6 }) room ({ 5 }) cost ({ }) , ({ 7 8 }) please ({ 9 }) ? ({ 10 })
+# *all* 1.831
+me hace la cuenta de la habitación uno cuatro siete .
+NULL ({ }) could ({ }) you ({ 1 }) make ({ }) out ({ 2 }) the ({ 3 }) bill ({ 4 }) for ({ 5 }) room ({ 7 }) number ({ 6 }) one ({ 8 }) four ({ 9 }) seven ({ 10 }) for ({ }) me ({ }) , ({ }) please ({ 11 }) ? ({ })
+# *all* 1.832
+por favor , ¿ hay agua caliente en la habitación ?
+NULL ({ 1 2 3 }) is ({ 4 }) there ({ 5 }) hot ({ }) water ({ 6 7 }) in ({ 8 }) the ({ 9 }) room ({ 10 }) , ({ }) please ({ }) ? ({ 11 })
+# *all* 1.834
+¿ cuánto cuesta una habitación individual para un día ?
+NULL ({ }) how ({ 1 }) much ({ 2 }) does ({ 3 }) a ({ 4 }) single ({ }) room ({ 5 }) cost ({ 6 }) for ({ 7 8 }) a ({ }) day ({ 9 }) ? ({ 10 })
+# *all* 1.835
+¿ nos puede llamar a un taxi para la habitación tres seis ?
+NULL ({ }) can ({ 1 3 }) you ({ 2 }) call ({ 4 }) a ({ }) taxi ({ 6 7 }) for ({ 5 }) room ({ 10 }) number ({ 9 }) three ({ 11 }) six ({ 12 }) for ({ 8 }) us ({ }) , ({ }) please ({ }) ? ({ 13 })
+# *all* 1.836
+¿ cuánto vale por día una habitación doble ?
+NULL ({ }) how ({ 1 }) much ({ 2 3 }) is ({ }) a ({ 6 }) double ({ 8 }) room ({ 7 }) per ({ 4 }) day ({ 5 }) ? ({ 9 })
+# *all* 1.837
+por favor , tenenos hecha una reserva .
+NULL ({ }) we ({ 1 }) have ({ 2 3 }) made ({ 4 5 }) a ({ 6 }) reservation ({ 7 }) . ({ 8 })
+# *all* 1.838
+he reservado una habitación tranquila doble a nombre de paloma montero .
+NULL ({ }) i ({ 1 }) have ({ 2 }) booked ({ }) a ({ 3 4 }) quiet ({ 5 }) , ({ }) double ({ 6 }) room ({ }) for ({ 7 8 9 }) paloma ({ 10 }) montero ({ 11 }) . ({ 12 })
+# *all* 1.839
+deseamos cambiarnos a otra habitación con cuarto de baño , por favor .
+NULL ({ }) we ({ }) want ({ 1 }) to ({ 3 }) move ({ 2 4 }) to ({ }) a ({ }) room ({ 5 }) with ({ 6 }) a ({ }) bathroom ({ 7 8 9 }) , ({ 10 11 }) please ({ 12 }) . ({ 13 })
+# *all* 1.840
+¿ me podría despertar a las once en punto , por favor ?
+NULL ({ }) could ({ 1 3 }) you ({ }) wake ({ }) me ({ 2 }) up ({ 4 5 }) at ({ 6 }) eleven ({ 7 }) o ({ 8 }) ' ({ }) clock ({ 9 }) , ({ 10 11 }) please ({ 12 }) ? ({ 13 })
+# *all* 1.842
+vamos a marcharnos el día veintiséis de septiembre a las siete y cuarto .
+NULL ({ }) we ({ }) are ({ 1 }) leaving ({ 2 3 }) on ({ 4 }) september ({ 5 8 }) the ({ 7 }) twenty ({ 6 }) - ({ }) sixth ({ }) at ({ 9 10 }) a ({ }) quarter ({ 13 }) past ({ 12 }) seven ({ 11 }) . ({ 14 })
+# *all* 1.843
+por favor , deseo que me den la llave de la habitación .
+NULL ({ 3 }) i ({ 1 }) want ({ 4 5 }) you ({ 2 }) to ({ }) give ({ 7 }) me ({ 6 }) the ({ }) key ({ 9 }) to ({ }) the ({ 8 10 11 }) room ({ 12 }) , ({ }) please ({ }) . ({ 13 })
+# *all* 1.844
+por favor , ¿ me podría pedir un taxi ?
+NULL ({ }) could ({ 1 }) you ({ 2 4 }) ask ({ 3 }) for ({ }) a ({ }) taxi ({ 7 8 9 }) for ({ }) me ({ 5 6 }) , ({ }) please ({ }) ? ({ 10 })
+# *all* 1.845
+¿ aceptaría dinero en efectivo ?
+NULL ({ }) would ({ 1 }) you ({ }) accept ({ 2 3 }) cash ({ 4 5 }) ? ({ 6 })
+# *all* 1.846
+tengo la reserva de una habitación a nombre de francisco botella .
+NULL ({ 2 }) i ({ 1 }) have ({ }) a ({ }) reservation ({ 3 }) for ({ 4 7 }) a ({ 5 }) room ({ 6 }) for ({ 8 9 }) francisco ({ 10 }) botella ({ 11 }) . ({ 12 })
+# *all* 1.847
+prepáreme la factura .
+NULL ({ }) could ({ }) you ({ }) prepare ({ 1 }) the ({ 2 }) bill ({ 3 }) for ({ }) me ({ }) , ({ }) please ({ 4 }) ? ({ })
+# *all* 1.848
+me gustaría reservar una habitación individual y tranquila con teléfono hasta pasado mañana , por favor .
+NULL ({ }) i ({ 1 }) would ({ }) like ({ 2 }) to ({ }) book ({ 3 }) a ({ 4 }) quiet ({ 8 }) , ({ }) single ({ 6 7 }) room ({ 5 }) with ({ 9 }) a ({ }) telephone ({ 10 }) until ({ 11 }) the ({ }) day ({ }) after ({ 12 }) tomorrow ({ 13 }) , ({ 14 15 }) please ({ 16 }) . ({ 17 })
+# *all* 1.849
+¿ podría pedirnos un taxi ?
+NULL ({ }) could ({ 1 2 }) you ({ }) ask ({ 3 }) for ({ }) a ({ }) taxi ({ 4 5 }) for ({ }) us ({ }) , ({ }) please ({ }) ? ({ 6 })
+# *all* 1.850
+¿ hay televisión en las habitaciones ?
+NULL ({ }) is ({ 1 }) there ({ 2 }) a ({ }) tv ({ 3 }) in ({ 4 }) the ({ 5 }) rooms ({ 6 }) ? ({ 7 })
+# *all* 1.851
+¿ cuánta ?
+NULL ({ }) how ({ 1 }) much ({ 2 }) ? ({ 3 })
+# *all* 1.852
+¡ conforme !
+NULL ({ }) okay ({ 1 2 }) ! ({ 3 })
+# *all* 1.853
+por favor , ¿ podría prepararnos la cuenta de la habitación dos seis tres ?
+NULL ({ }) could ({ 1 4 5 }) you ({ 2 }) prepare ({ 3 }) the ({ }) bill ({ 8 }) for ({ 6 }) room ({ 11 }) number ({ 7 10 }) two ({ 12 }) six ({ 13 }) three ({ 14 }) for ({ 9 }) us ({ }) , ({ }) please ({ }) ? ({ 15 })
+# *all* 1.854
+¿ hay teléfono en las habitaciones ?
+NULL ({ }) is ({ 1 }) there ({ 2 }) a ({ }) telephone ({ 3 }) in ({ 4 }) the ({ 5 }) rooms ({ 6 }) ? ({ 7 })
+# *all* 1.855
+¿ qué hora es ?
+NULL ({ }) what ({ 1 }) time ({ 2 3 }) is ({ 4 }) it ({ }) ? ({ 5 })
+# *all* 1.856
+mi nombre es jesús gonzález .
+NULL ({ }) my ({ 1 }) name ({ 2 }) is ({ 3 }) jesús ({ 4 }) gonzález ({ 5 }) . ({ 6 })
+# *all* 1.857
+por favor , tengo hecha una reserva a nombre de teresa ibáñez .
+NULL ({ }) i ({ 1 }) have ({ 2 3 4 }) made ({ 5 }) a ({ 6 }) reservation ({ 7 }) for ({ 8 9 10 }) teresa ({ }) ibá ({ }) ~ ({ 11 }) nez ({ 12 }) . ({ 13 })
+# *all* 1.858
+he de marcharme hoy mismo a las once en punto de la mañana .
+NULL ({ }) i ({ 1 }) should ({ 2 }) leave ({ 3 }) today ({ 4 5 }) at ({ 6 7 }) eleven ({ 8 }) o ({ }) ' ({ 9 }) clock ({ 10 }) in ({ 11 }) the ({ 12 }) morning ({ 13 }) . ({ 14 })
+# *all* 1.859
+desearía que me bajase los bultos a la habitación doce .
+NULL ({ 10 }) i ({ }) would ({ }) like ({ 1 2 }) you ({ 3 }) to ({ 4 }) send ({ }) down ({ }) my ({ }) luggage ({ 5 6 }) to ({ 7 }) room ({ 9 }) number ({ 8 }) one ({ }) two ({ }) . ({ 11 })
+# *all* 1.861
+por favor , ¿ nos podría pedir un taxi para la habitación seis catorce ?
+NULL ({ }) could ({ 1 4 6 }) you ({ 2 5 }) ask ({ 3 }) for ({ }) a ({ }) taxi ({ 7 8 9 }) for ({ }) room ({ 12 }) number ({ }) six ({ 13 }) one ({ 11 }) four ({ 14 }) for ({ 10 }) us ({ }) , ({ }) please ({ }) ? ({ 15 })
+# *all* 1.863
+por favor , nos gustaría cambiarnos a otra habitación menos ruidosa .
+NULL ({ }) we ({ 1 4 }) would ({ 2 }) like ({ 3 5 }) to ({ }) move ({ 6 }) to ({ 7 }) a ({ }) quieter ({ 8 10 }) room ({ 9 }) , ({ }) please ({ 11 }) . ({ 12 })
+# *all* 1.866
+una habitación a nombre de virginia álvarez , por favor .
+NULL ({ }) a ({ 1 }) room ({ 2 }) for ({ 3 4 5 }) virginia ({ 6 }) álvarez ({ 7 }) , ({ 8 9 }) please ({ 10 }) . ({ 11 })
+# *all* 1.867
+tenemos que marcharnos hoy mismo por la noche .
+NULL ({ 6 }) we ({ 1 }) should ({ 2 }) leave ({ 3 }) today ({ 4 5 }) in ({ }) the ({ 7 }) evening ({ 8 }) . ({ 9 })
+# *all* 1.870
+¿ podría ver alguna habitación , por favor ?
+NULL ({ }) could ({ 1 2 }) i ({ }) see ({ 3 4 }) a ({ }) room ({ 5 }) , ({ 6 7 }) please ({ 8 }) ? ({ 9 })
+# *all* 1.871
+hemos reservado una habitación doble .
+NULL ({ }) we ({ 1 }) have ({ }) booked ({ 2 }) a ({ 3 }) double ({ 5 }) room ({ 4 }) . ({ 6 })
+# *all* 1.872
+¿ aceptarían tarjetas de crédito ?
+NULL ({ }) would ({ 1 }) you ({ }) accept ({ 2 3 }) credit ({ 4 }) cards ({ 5 }) ? ({ 6 })
+# *all* 1.873
+me he de marchar el jueves dieciséis a las nueve y media de la noche .
+NULL ({ }) i ({ 1 2 }) should ({ 3 }) leave ({ 4 }) on ({ 5 }) thursday ({ 6 }) the ({ }) sixteenth ({ 7 }) at ({ 8 9 }) half ({ 12 }) past ({ 11 }) nine ({ 10 }) in ({ 13 }) the ({ 14 }) evening ({ 15 }) . ({ 16 })
+# *all* 1.874
+por favor , suba mi maleta a mi habitación .
+NULL ({ }) please ({ 1 2 }) send ({ 3 4 }) up ({ }) my ({ 5 }) suitcase ({ 6 }) to ({ 7 }) my ({ 8 }) room ({ 9 }) . ({ 10 })
+# *all* 1.875
+deseo una habitación individual .
+NULL ({ }) i ({ }) want ({ 1 }) a ({ 2 }) single ({ 4 }) room ({ 3 }) . ({ 5 })
+# *all* 1.876
+¿ hay habitaciones dobles y tranquilas libres ?
+NULL ({ }) are ({ 1 }) there ({ 2 }) any ({ 3 }) quiet ({ 5 }) , ({ }) double ({ }) rooms ({ 4 6 }) available ({ 7 }) ? ({ 8 })
+# *all* 1.877
+deseamos que baje nuestras maletas a la habitación .
+NULL ({ }) we ({ }) want ({ 1 2 }) you ({ }) to ({ }) send ({ 3 }) down ({ }) our ({ 4 }) suitcases ({ 5 }) to ({ 6 }) the ({ 7 }) room ({ 8 }) . ({ 9 })
+# *all* 1.878
+¿ tienen libre una habitación ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ }) a ({ 4 }) room ({ 5 }) available ({ 3 }) ? ({ 6 })
+# *all* 1.879
+nos vamos a marchar el sábado .
+NULL ({ }) we ({ 1 }) are ({ 2 }) leaving ({ 3 4 }) on ({ 5 }) saturday ({ 6 }) . ({ 7 })
+# *all* 1.880
+por favor , tengo hecha la reserva de una habitación con televisión y teléfono a nombre de inmaculada colomer .
+NULL ({ }) i ({ 1 }) have ({ 2 3 4 }) made ({ 5 }) a ({ }) reservation ({ 6 7 }) for ({ 8 }) a ({ 9 }) room ({ 10 }) with ({ 11 }) a ({ }) tv ({ 12 }) and ({ 13 }) a ({ }) telephone ({ 14 }) for ({ 15 16 17 }) inmaculada ({ 18 }) colomer ({ 19 }) . ({ 20 })
+# *all* 1.881
+súbanme mis maletas a la habitación número dos ocho , por favor .
+NULL ({ }) send ({ 1 }) up ({ 4 }) my ({ 2 }) suitcases ({ 3 }) to ({ 5 }) room ({ 6 }) number ({ 7 }) two ({ 8 }) eight ({ 9 }) , ({ 10 11 }) please ({ 12 }) . ({ 13 })
+# *all* 1.883
+hay un error en la cuenta de la habitación setecientos diecinueve .
+NULL ({ }) there ({ 1 }) is ({ }) an ({ 2 }) error ({ 3 }) in ({ 4 }) the ({ 5 }) bill ({ 6 }) for ({ 7 }) room ({ 9 }) number ({ 8 }) seven ({ 10 }) one ({ }) nine ({ 11 }) . ({ 12 })
+# *all* 1.884
+¿ querría pedirnos nuestro taxi para la habitación dos tres uno ?
+NULL ({ }) would ({ 1 2 }) you ({ }) ask ({ 3 }) for ({ }) our ({ 4 }) taxi ({ 5 }) for ({ 6 }) room ({ 8 }) number ({ 7 }) two ({ 9 }) three ({ 10 }) one ({ 11 }) for ({ }) us ({ }) , ({ }) please ({ }) ? ({ 12 })
+# *all* 1.885
+por favor , ¿ podrían subirnos nuestra bolsa de viaje a la habitación ?
+NULL ({ }) could ({ 1 4 5 }) you ({ 2 }) send ({ 3 }) up ({ }) our ({ 6 7 }) travel ({ 10 }) bag ({ 8 }) to ({ 11 }) the ({ 9 12 }) room ({ 13 }) , ({ }) please ({ }) ? ({ 14 })
+# *all* 1.886
+¿ les importaría llevar nuestros bultos a nuestra habitación ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) sending ({ 4 }) our ({ 5 }) luggage ({ 6 }) to ({ 7 }) our ({ 8 }) room ({ 9 }) ? ({ 10 })
+# *all* 1.887
+¿ podría cambiarme a otra habitación menos fría ?
+NULL ({ }) can ({ 1 }) you ({ 2 }) move ({ 3 5 }) me ({ }) to ({ 4 }) a ({ }) warmer ({ 7 8 }) room ({ 6 }) ? ({ 9 })
+# *all* 1.888
+hemos reservado una habitación .
+NULL ({ }) we ({ 1 }) have ({ }) booked ({ 2 }) a ({ 3 }) room ({ 4 }) . ({ 5 })
+# *all* 1.889
+¿ le importaría que echáramos un vistazo a alguna habitación ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) us ({ }) taking ({ 4 5 }) a ({ }) look ({ 6 7 }) at ({ 8 }) a ({ 9 }) room ({ 10 }) ? ({ 11 })
+# *all* 1.890
+¿ cuántas ?
+NULL ({ }) how ({ 1 }) many ({ 2 }) ? ({ 3 })
+# *all* 1.891
+déme las llaves de nuestra habitación .
+NULL ({ }) give ({ 1 }) me ({ }) the ({ }) keys ({ 2 3 }) to ({ 4 }) our ({ 5 }) room ({ 6 }) . ({ 7 })
+# *all* 1.892
+¿ podría llamarme a un taxi ?
+NULL ({ }) could ({ 1 2 }) you ({ }) call ({ 3 }) a ({ }) taxi ({ 5 6 }) for ({ 4 }) me ({ }) , ({ }) please ({ }) ? ({ 7 })
+# *all* 1.893
+desearía que me llevara mi maleta a la habitación número setecientos tres , por favor .
+NULL ({ }) i ({ 3 }) would ({ }) like ({ 1 2 }) you ({ }) to ({ 4 }) send ({ }) my ({ 5 }) suitcase ({ 6 }) to ({ 7 }) room ({ 9 }) number ({ 8 10 }) seven ({ 11 }) oh ({ }) three ({ 12 }) , ({ 13 14 }) please ({ 15 }) . ({ 16 })
+# *all* 1.894
+por favor , tenenos hecha una reserva .
+NULL ({ }) we ({ 1 }) have ({ 2 3 }) made ({ 4 5 }) a ({ 6 }) reservation ({ 7 }) . ({ 8 })
+# *all* 1.895
+¿ podría cambiarme a otra habitación más cálida ?
+NULL ({ }) can ({ 1 }) you ({ 2 }) move ({ 3 5 }) me ({ }) to ({ 4 }) a ({ }) warmer ({ 7 8 }) room ({ 6 }) ? ({ 9 })
+# *all* 1.897
+por favor , lléveme mi maleta a la habitación .
+NULL ({ }) please ({ 1 2 }) send ({ 3 4 }) my ({ 5 }) suitcase ({ 6 }) to ({ 7 }) the ({ 8 }) room ({ 9 }) . ({ 10 })
+# *all* 1.898
+por favor , ¿ podrían llevarme ustedes mis bultos a la habitación setecientos veintitrés ?
+NULL ({ }) could ({ 1 4 5 }) you ({ 2 }) send ({ 3 6 }) my ({ 8 }) luggage ({ 9 }) to ({ 7 10 }) room ({ 12 }) number ({ 11 }) seven ({ 13 }) two ({ }) three ({ 14 }) , ({ }) please ({ }) ? ({ 15 })
+# *all* 1.899
+¿ hay alguna habitación doble libre ?
+NULL ({ }) is ({ 1 }) there ({ 2 }) a ({ 3 }) double ({ 5 }) room ({ 4 }) available ({ 6 }) ? ({ 7 })
+# *all* 1.901
+pienso que se ha producido una equivocación en la cuenta .
+NULL ({ }) i ({ }) think ({ 1 }) that ({ 2 3 }) there ({ }) has ({ 4 }) been ({ 5 }) a ({ 6 }) mistake ({ 7 }) in ({ 8 }) the ({ 9 }) bill ({ 10 }) . ({ 11 })
+# *all* 1.902
+despiértenos mañana a la una en punto , por favor .
+NULL ({ }) wake ({ 1 }) us ({ }) up ({ 3 }) tomorrow ({ 2 }) at ({ }) one ({ 4 5 }) o ({ 6 }) ' ({ }) clock ({ 7 }) , ({ 8 9 }) please ({ 10 }) . ({ 11 })
+# *all* 1.903
+¿ cuándo ?
+NULL ({ }) when ({ 1 2 }) ? ({ 3 })
+# *all* 1.904
+me llamo emilio navarro .
+NULL ({ }) my ({ }) name ({ 1 2 }) is ({ }) emilio ({ 3 }) navarro ({ 4 }) . ({ 5 })
+# *all* 1.905
+¿ le importaría subir nuestras bolsas a nuestra habitación , por favor ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) sending ({ 4 }) up ({ 7 }) our ({ 5 }) bags ({ 6 }) to ({ }) our ({ 8 }) room ({ 9 }) , ({ 10 11 }) please ({ 12 }) ? ({ 13 })
+# *all* 1.906
+existe un error en nuestra cuenta .
+NULL ({ }) there ({ 1 }) is ({ }) an ({ 2 }) error ({ 3 }) in ({ 4 }) our ({ 5 }) bill ({ 6 }) . ({ 7 })
+# *all* 1.907
+¿ hay teléfono en la habitación ?
+NULL ({ }) is ({ 1 }) there ({ 2 }) a ({ }) telephone ({ 3 }) in ({ 4 }) the ({ 5 }) room ({ 6 }) ? ({ 7 })
+# *all* 1.908
+por favor , tengo la reserva de una habitación con teléfono , televisión y baño a nombre de isabel cabedo .
+NULL ({ 5 }) i ({ 1 4 }) have ({ 2 }) a ({ 3 }) reservation ({ 6 }) for ({ 7 }) a ({ }) room ({ 9 }) with ({ 10 }) a ({ 8 }) telephone ({ 11 }) , ({ 12 }) a ({ }) tv ({ 13 }) and ({ 14 }) a ({ }) bath ({ 15 }) for ({ 16 17 18 }) isabel ({ 19 }) cabedo ({ 20 }) . ({ 21 })
+# *all* 1.909
+¿ me podría despertar mañana a las doce , por favor ?
+NULL ({ }) could ({ 1 3 }) you ({ }) wake ({ 4 }) me ({ 2 }) up ({ 6 }) tomorrow ({ 5 }) at ({ 7 }) twelve ({ 8 }) , ({ 9 10 }) please ({ 11 }) ? ({ 12 })
+# *all* 1.910
+por favor , ¿ podríamos ver otra habitación ?
+NULL ({ 3 }) could ({ 1 4 }) we ({ 2 }) see ({ 6 }) another ({ 5 7 }) room ({ 8 }) , ({ }) please ({ }) ? ({ 9 })
+# *all* 1.912
+¿ podría reservar una habitación ?
+NULL ({ }) could ({ 1 2 }) i ({ }) book ({ 3 }) a ({ 4 }) room ({ 5 }) ? ({ 6 })
+# *all* 1.913
+he de marcharme mañana a las seis .
+NULL ({ }) i ({ 1 }) should ({ 2 }) leave ({ 3 }) tomorrow ({ 4 }) at ({ 5 6 }) six ({ 7 }) . ({ 8 })
+# *all* 1.914
+queremos que nos dé la llave de la habitación número novecientos veintiuno , por favor .
+NULL ({ }) we ({ }) want ({ 1 2 }) you ({ }) to ({ }) give ({ 4 }) us ({ 3 }) the ({ 5 7 8 }) key ({ 6 }) to ({ }) room ({ 9 }) number ({ 10 }) nine ({ 11 }) two ({ }) one ({ }) , ({ 12 13 14 }) please ({ 15 }) . ({ 16 })
+# *all* 1.915
+lleve nuestras bolsas a nuestra habitación .
+NULL ({ }) send ({ 1 }) our ({ 2 }) bags ({ 3 }) to ({ 4 }) our ({ 5 }) room ({ 6 }) . ({ 7 })
+# *all* 1.916
+¿ podría cambiarnos a otra habitación con menos ruido ?
+NULL ({ }) can ({ 1 }) you ({ 2 }) move ({ 3 5 }) us ({ }) to ({ 4 }) a ({ }) quieter ({ 7 8 9 }) room ({ 6 }) ? ({ 10 })
+# *all* 1.917
+pienso que existe una equivocación en mi cuenta .
+NULL ({ }) i ({ }) think ({ 1 }) that ({ 2 }) there ({ 3 }) is ({ }) a ({ 4 }) mistake ({ 5 }) in ({ 6 }) my ({ 7 }) bill ({ 8 }) . ({ 9 })
+# *all* 1.918
+he de marcharme el día ocho de septiembre .
+NULL ({ }) i ({ 1 }) should ({ 2 }) leave ({ 3 }) on ({ 4 }) september ({ 5 6 8 }) the ({ 7 }) eighth ({ }) . ({ 9 })
+# *all* 1.919
+he reservado una habitación doble a nombre de la señora inmaculada colomer .
+NULL ({ }) i ({ 1 }) have ({ 2 }) booked ({ }) a ({ 3 }) double ({ 5 }) room ({ 4 }) for ({ 6 7 8 }) mrs ({ 9 10 }) inmaculada ({ 11 }) colomer ({ 12 }) . ({ 13 })
+# *all* 1.920
+¿ podríamos reservar dos habitaciones ?
+NULL ({ }) could ({ 1 }) we ({ 2 }) book ({ 3 }) two ({ 4 }) rooms ({ 5 }) ? ({ 6 })
+# *all* 1.921
+bajen nuestros bultos a la habitación número cuatrocientos dieciocho .
+NULL ({ }) send ({ }) down ({ 1 }) our ({ 2 }) luggage ({ 3 }) to ({ 4 }) room ({ 6 }) number ({ 5 7 }) four ({ 8 }) one ({ }) eight ({ 9 }) . ({ 10 })
+# *all* 1.922
+me tengo que marchar el trece a las cuatro y cuarto .
+NULL ({ }) i ({ 1 2 }) should ({ 3 }) leave ({ 4 }) on ({ 5 }) the ({ }) thirteenth ({ 6 }) at ({ 7 8 }) a ({ }) quarter ({ 11 }) past ({ 10 }) four ({ 9 }) . ({ 12 })
+# *all* 1.923
+¿ tiene libre una habitación individual ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ }) a ({ 4 }) single ({ 6 }) room ({ 5 }) available ({ 3 }) ? ({ 7 })
+# *all* 1.924
+reservamos dos habitaciones , por favor .
+NULL ({ 5 6 }) we ({ 1 }) booked ({ 4 }) two ({ 2 }) rooms ({ 3 }) . ({ 7 })
+# *all* 1.925
+pienso que existe un error .
+NULL ({ }) i ({ }) think ({ 1 }) that ({ 2 }) there ({ 3 }) is ({ }) an ({ 4 }) error ({ 5 }) . ({ 6 })
+# *all* 1.926
+¿ haría el favor de cambiarnos a otra habitación con menos ruido ?
+NULL ({ }) would ({ 1 2 }) you ({ 4 }) mind ({ 3 }) moving ({ 6 }) us ({ }) to ({ 5 7 }) a ({ }) quieter ({ 8 10 11 12 }) room ({ 9 }) ? ({ 13 })
+# *all* 1.927
+dennos las llaves de la habitación nueve nueve dos , por favor .
+NULL ({ }) give ({ 1 }) us ({ }) the ({ 4 5 }) keys ({ 2 3 }) to ({ }) room ({ 6 }) number ({ }) nine ({ 7 8 }) nine ({ }) two ({ 9 }) , ({ 10 11 }) please ({ 12 }) . ({ 13 })
+# *all* 1.928
+por favor , deseo una habitación .
+NULL ({ }) i ({ 1 }) want ({ 2 4 }) a ({ 3 5 }) room ({ 6 }) , ({ }) please ({ }) . ({ 7 })
+# *all* 1.929
+he hecho la reserva de una habitación con teléfono , vistas a la montaña , baño y tele a nombre de ricardo vilanova .
+NULL ({ 12 }) i ({ 1 }) have ({ }) made ({ 2 3 }) a ({ }) reservation ({ 4 }) for ({ 5 }) a ({ 6 }) room ({ 7 }) with ({ 8 }) a ({ }) telephone ({ 9 }) , ({ 10 }) a ({ }) view ({ 11 }) of ({ }) the ({ 13 }) mountain ({ 14 }) , ({ 15 }) a ({ }) bath ({ 16 }) and ({ 17 }) a ({ }) tv ({ 18 }) for ({ 19 20 21 }) ricardo ({ 22 }) vilanova ({ 23 }) . ({ 24 })
+# *all* 1.930
+deseo que me suban los bultos a mi habitación .
+NULL ({ }) i ({ }) want ({ 1 2 }) you ({ 3 }) to ({ }) send ({ 4 }) up ({ }) my ({ }) luggage ({ 5 6 }) to ({ 7 }) my ({ 8 }) room ({ 9 }) . ({ 10 })
+# *all* 1.931
+tengo hecha una reserva , por favor .
+NULL ({ 6 7 }) i ({ 1 }) have ({ }) made ({ 2 }) a ({ 3 5 }) reservation ({ 4 }) . ({ 8 })
+# *all* 1.933
+me parece que se produjo un error en la cuenta .
+NULL ({ }) i ({ 1 }) think ({ 2 }) that ({ 3 }) there ({ }) was ({ 4 5 }) an ({ 6 }) error ({ 7 }) in ({ 8 }) the ({ 9 }) bill ({ 10 }) . ({ 11 })
+# *all* 1.934
+he de irme mañana .
+NULL ({ }) i ({ 1 }) should ({ 2 }) leave ({ 3 }) tomorrow ({ 4 }) . ({ 5 })
+# *all* 1.935
+¿ le importaría darnos la llave de la habitación ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) giving ({ 4 }) us ({ }) the ({ 5 }) key ({ 6 }) to ({ 7 }) the ({ 8 }) room ({ 9 }) ? ({ 10 })
+# *all* 1.936
+desearía una habitación hasta el próximo martes .
+NULL ({ }) i ({ }) would ({ }) like ({ 1 }) a ({ 2 }) room ({ 3 }) until ({ 4 5 }) next ({ 6 }) tuesday ({ 7 }) . ({ 8 })
+# *all* 1.937
+¿ dónde ?
+NULL ({ }) where ({ 1 2 }) ? ({ 3 })
+# *all* 1.938
+por favor , ¿ les importaría darme la llave de la habitación quinientos veintidós ?
+NULL ({ 3 }) would ({ 1 }) you ({ 2 4 }) mind ({ 6 }) giving ({ 5 7 }) me ({ }) the ({ }) key ({ 9 }) to ({ }) room ({ 12 }) number ({ 8 10 11 }) five ({ 13 }) two ({ }) two ({ 14 }) , ({ }) please ({ }) ? ({ 15 })
+# *all* 1.939
+quiero reservar una habitación .
+NULL ({ }) i ({ }) want ({ 1 }) to ({ }) book ({ 2 }) a ({ 3 }) room ({ 4 }) . ({ 5 })
+# *all* 1.940
+lléveme mi equipaje a la estación .
+NULL ({ }) send ({ 1 }) my ({ 2 }) luggage ({ 3 }) to ({ 4 }) the ({ 5 }) station ({ 6 }) . ({ 7 })
+# *all* 1.941
+¿ me lleva las bolsas ?
+NULL ({ }) could ({ 1 }) you ({ 2 }) carry ({ 3 }) the ({ 4 }) bags ({ 5 }) ? ({ 6 })
+# *all* 1.942
+¿ podrían darnos la llave de mi habitación ?
+NULL ({ }) could ({ 1 }) you ({ 2 }) give ({ 3 }) us ({ }) the ({ 4 }) key ({ 5 }) to ({ 6 }) my ({ 7 }) room ({ 8 }) ? ({ 9 })
+# *all* 1.943
+desearíamos una habitación doble con ducha para un día .
+NULL ({ }) we ({ }) would ({ }) like ({ 1 }) a ({ 2 }) double ({ 4 }) room ({ 3 }) with ({ 5 }) a ({ }) shower ({ 6 }) for ({ 7 8 }) a ({ }) day ({ 9 }) . ({ 10 })
+# *all* 1.944
+¿ tiene una habitación doble libre ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ }) a ({ 3 }) double ({ 5 }) room ({ 4 }) available ({ 6 }) ? ({ 7 })
+# *all* 1.945
+se ha producido una equivocación en la cuenta .
+NULL ({ }) there ({ }) has ({ 1 2 }) been ({ 3 }) a ({ 4 }) mistake ({ 5 }) in ({ 6 }) the ({ 7 }) bill ({ 8 }) . ({ 9 })
+# *all* 1.946
+desearía reservar una habitación para siete días .
+NULL ({ }) i ({ }) would ({ }) like ({ 1 }) to ({ }) book ({ 2 }) a ({ 3 }) room ({ 4 }) for ({ 5 }) seven ({ 6 }) days ({ 7 }) . ({ 8 })
+# *all* 1.947
+tenemos reservada una habitación individual con televisión , teléfono y aseo hasta mañana a nombre de josé herrero , por favor .
+NULL ({ 19 20 21 }) we ({ 1 }) have ({ 2 }) booked ({ }) a ({ 3 }) single ({ 5 }) room ({ 4 }) with ({ 6 }) a ({ }) tv ({ 7 }) , ({ 8 }) a ({ }) telephone ({ 9 }) and ({ 10 14 }) a ({ }) bath ({ 11 }) until ({ 12 17 }) tomorrow ({ 13 }) for ({ 15 16 }) josé ({ 18 }) herrero ({ }) . ({ 22 })
+# *all* 1.948
+¿ están anotados en la cuenta los extras ?
+NULL ({ }) are ({ 1 }) extras ({ 2 3 }) included ({ 7 }) in ({ 4 }) the ({ 5 }) bill ({ 6 8 }) ? ({ 9 })
+# *all* 1.949
+hemos reservado una habitación doble .
+NULL ({ }) we ({ 1 }) have ({ }) booked ({ 2 }) a ({ 3 }) double ({ 5 }) room ({ 4 }) . ({ 6 })
+# *all* 1.951
+tengo reservada una habitación doble para hoy .
+NULL ({ }) i ({ 1 }) have ({ 2 }) booked ({ }) a ({ 3 }) double ({ 5 }) room ({ 4 }) for ({ 6 }) today ({ 7 }) . ({ 8 })
+# *all* 1.952
+¡ buenos días !
+NULL ({ }) good ({ 1 2 }) morning ({ 3 }) ! ({ 4 })
+# *all* 1.953
+¿ pueden llevarme las bolsas de viaje al coche ?
+NULL ({ }) can ({ 1 2 }) you ({ }) send ({ 3 }) the ({ 4 }) travel ({ 6 7 }) bags ({ 5 }) to ({ }) the ({ }) car ({ 8 9 }) ? ({ 10 })
+# *all* 1.954
+¿ podría ver alguna habitación doble y tranquila con televisión , por favor ?
+NULL ({ }) could ({ 1 2 }) i ({ }) see ({ 3 4 }) a ({ }) quiet ({ 7 8 }) , ({ }) double ({ 6 }) room ({ 5 }) with ({ 9 }) a ({ }) tv ({ 10 }) , ({ 11 12 }) please ({ 13 }) ? ({ 14 })
+# *all* 1.955
+¿ están incluidos en la cuenta todos los impuestos ?
+NULL ({ }) are ({ 1 }) all ({ 2 3 }) taxes ({ 7 9 }) included ({ 8 }) in ({ 4 }) the ({ 5 }) bill ({ 6 }) ? ({ 10 })
+# *all* 1.956
+hay una equivocación en la cuenta .
+NULL ({ }) there ({ 1 }) is ({ }) a ({ 2 }) mistake ({ 3 }) in ({ 4 }) the ({ 5 }) bill ({ 6 }) . ({ 7 })
+# *all* 1.957
+¿ le importaría subirme mi equipaje al autobús ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) putting ({ 4 }) my ({ 5 }) luggage ({ 6 }) on ({ }) the ({ }) bus ({ 7 8 }) ? ({ 9 })
+# *all* 1.958
+me marcharé el veintisiete de marzo a las dos y media de la tarde .
+NULL ({ }) i ({ 1 }) leave ({ 2 }) on ({ 3 }) march ({ }) the ({ 5 }) twenty ({ }) - ({ }) seventh ({ 4 6 }) at ({ 7 8 }) half ({ 11 }) past ({ 10 }) two ({ 9 }) in ({ 12 }) the ({ 13 }) afternoon ({ 14 }) . ({ 15 })
+# *all* 1.959
+por favor , reservé una habitación tranquila doble con baño , una buena vista y televisión a nombre de andrés sanz .
+NULL ({ }) i ({ 1 2 }) booked ({ 4 }) a ({ 5 }) quiet ({ 7 }) , ({ 3 }) double ({ 8 }) room ({ 6 }) with ({ 9 }) a ({ }) bath ({ 10 }) , ({ 11 }) a ({ 12 }) good ({ 13 14 }) view ({ }) and ({ 15 }) a ({ }) tv ({ 16 }) for ({ 17 18 19 }) andrés ({ 20 }) sanz ({ 21 }) . ({ 22 })
+# *all* 1.960
+por favor , llámenos a un taxi .
+NULL ({ }) could ({ 1 }) you ({ 2 }) call ({ 4 }) a ({ 3 }) taxi ({ 6 7 }) for ({ 5 }) us ({ }) , ({ }) please ({ 8 }) ? ({ })
+# *all* 1.961
+¿ tenemos que firmar alguna hoja de registro ?
+NULL ({ }) should ({ 1 }) we ({ 2 }) sign ({ 3 4 }) a ({ 5 }) registration ({ 6 7 }) form ({ 8 }) ? ({ 9 })
+# *all* 1.962
+he hecho la reserva de una habitación a nombre de julia vilanova .
+NULL ({ }) i ({ 1 }) have ({ }) made ({ 2 3 }) a ({ }) reservation ({ 4 }) for ({ 5 8 }) a ({ 6 }) room ({ 7 }) for ({ 9 10 }) julia ({ 11 }) vilanova ({ 12 }) . ({ 13 })
+# *all* 1.963
+¿ hay alguna habitación tranquila libre ?
+NULL ({ }) is ({ 1 }) there ({ 2 }) a ({ 3 }) quiet ({ 5 }) room ({ 4 }) available ({ 6 }) ? ({ 7 })
+# *all* 1.964
+me llamo gregorio pitarch .
+NULL ({ }) my ({ }) name ({ 1 2 }) is ({ }) gregorio ({ 3 }) pitarch ({ 4 }) . ({ 5 })
+# *all* 1.965
+¿ cómo ?
+NULL ({ }) pardon ({ 1 2 }) ? ({ 3 })
+# *all* 1.966
+llámeme a mi taxi .
+NULL ({ }) could ({ }) you ({ }) call ({ 1 2 }) my ({ 3 }) taxi ({ 4 }) for ({ }) me ({ }) , ({ }) please ({ 5 }) ? ({ })
+# *all* 1.967
+creo que hay un error en la cuenta .
+NULL ({ }) i ({ }) think ({ 1 }) that ({ 2 }) there ({ 3 }) is ({ }) an ({ 4 }) error ({ 5 }) in ({ 6 }) the ({ 7 }) bill ({ 8 }) . ({ 9 })
+# *all* 1.968
+¿ tiene libre una habitación con aseo , aire acondicionado y televisión ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ 3 }) a ({ 4 }) room ({ 5 }) with ({ 6 }) a ({ }) bath ({ 7 }) , ({ 8 }) air ({ 9 }) conditioning ({ 10 }) and ({ 11 }) a ({ }) tv ({ 12 }) available ({ }) ? ({ 13 })
+# *all* 1.969
+¿ querría llamarnos a un taxi ?, por favor .
+NULL ({ }) would ({ 1 2 }) you ({ }) call ({ 3 }) a ({ 4 }) taxi ({ 5 6 }) for ({ }) us ({ 7 }) , ({ 8 }) please ({ 9 10 }) ? ({ })
+# *all* 1.970
+de nada .
+NULL ({ }) not ({ 1 }) at ({ }) all ({ 2 }) . ({ 3 })
+# *all* 1.971
+reservamos una habitación a nombre de juan rubio .
+NULL ({ }) we ({ 1 }) booked ({ 2 }) a ({ }) room ({ 3 }) for ({ 4 5 6 }) juan ({ 7 }) rubio ({ 8 }) . ({ 9 })
+# *all* 1.972
+¿ podría reservar una habitación con aire acondicionado para esta semana ?
+NULL ({ }) could ({ 1 2 }) i ({ }) book ({ 3 }) a ({ 4 }) room ({ 5 }) with ({ 6 }) air ({ 7 }) conditioning ({ 8 }) for ({ 9 }) this ({ 10 }) week ({ 11 }) ? ({ 12 })
+# *all* 1.973
+nos marchamos hoy mismo a las diez y cuarto de la noche .
+NULL ({ }) we ({ 1 }) are ({ 2 }) leaving ({ }) today ({ 3 4 }) at ({ 5 6 }) a ({ }) quarter ({ 9 }) past ({ 8 }) ten ({ 7 }) in ({ 10 }) the ({ 11 }) evening ({ 12 }) . ({ 13 })
+# *all* 1.974
+en la habitación hace demasiado frío .
+NULL ({ }) it ({ 1 }) is ({ }) too ({ 3 5 }) cold ({ }) in ({ 4 }) the ({ 2 }) room ({ 6 }) . ({ 7 })
+# *all* 1.975
+por favor , tengo una reserva .
+NULL ({ }) i ({ 1 }) have ({ 2 3 4 }) a ({ 5 }) reservation ({ 6 }) . ({ 7 })
+# *all* 1.976
+nos iremos mañana a las tres menos cuarto de la tarde .
+NULL ({ }) we ({ 1 }) are ({ }) leaving ({ 2 }) tomorrow ({ 3 }) at ({ 4 5 }) a ({ }) quarter ({ 7 8 }) to ({ }) three ({ 6 }) in ({ 9 }) the ({ 10 }) afternoon ({ 11 }) . ({ 12 })
+# *all* 1.977
+deseamos que nos despierten a las once , por favor .
+NULL ({ }) we ({ }) want ({ 1 2 }) you ({ 3 }) to ({ }) wake ({ 4 }) us ({ }) up ({ 5 }) at ({ 6 }) eleven ({ 7 }) , ({ 8 9 }) please ({ 10 }) . ({ 11 })
+# *all* 1.978
+quisiera que me diesen las llaves de la habitación número seis tres ocho .
+NULL ({ }) i ({ 1 }) would ({ }) like ({ 2 }) you ({ }) to ({ 4 }) give ({ }) me ({ 3 }) the ({ 7 8 }) keys ({ 5 6 }) to ({ }) room ({ 9 }) number ({ 10 }) six ({ 11 }) three ({ 12 }) eight ({ 13 }) . ({ 14 })
+# *all* 1.980
+reservamos una habitación individual , por favor .
+NULL ({ 6 7 }) we ({ 1 }) booked ({ 2 }) a ({ 3 5 }) single ({ 4 }) room ({ }) . ({ 8 })
+# *all* 1.981
+queremos reservar una habitación , por favor .
+NULL ({ }) we ({ }) want ({ 1 }) to ({ }) book ({ 2 }) a ({ 3 }) room ({ 4 }) , ({ 5 6 }) please ({ 7 }) . ({ 8 })
+# *all* 1.982
+¿ le importaría llevar mi equipaje a recepción ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) sending ({ 4 }) my ({ 5 }) luggage ({ 6 }) to ({ 7 }) reception ({ 8 }) ? ({ 9 })
+# *all* 1.983
+¿ me podría llamar a un taxi ?
+NULL ({ }) could ({ 1 3 }) you ({ 2 }) call ({ 4 }) a ({ }) taxi ({ 6 7 }) for ({ 5 }) me ({ }) , ({ }) please ({ }) ? ({ 8 })
+# *all* 1.984
+¿ tiene aire acondicionado la habitación ?
+NULL ({ }) does ({ 1 2 }) the ({ 5 }) room ({ 6 }) have ({ }) air ({ 3 }) conditioning ({ 4 }) ? ({ 7 })
+# *all* 1.985
+me he de ir mañana a las diez y cuarto de la noche .
+NULL ({ }) i ({ 1 2 }) should ({ 3 }) leave ({ 4 }) tomorrow ({ 5 }) at ({ 6 7 }) a ({ }) quarter ({ 10 }) past ({ 9 }) ten ({ 8 }) in ({ 11 }) the ({ 12 }) evening ({ 13 }) . ({ 14 })
+# *all* 1.987
+¿ tiene alguna habitación individual libre ?
+NULL ({ }) do ({ 1 2 }) you ({ }) have ({ }) a ({ 3 }) single ({ 5 }) room ({ 4 }) available ({ 6 }) ? ({ 7 })
+# *all* 1.988
+nos tenemos que ir el día cuatro .
+NULL ({ }) we ({ 1 2 }) should ({ 3 }) leave ({ }) on ({ 4 5 6 }) the ({ }) fourth ({ 7 }) . ({ 8 })
+# *all* 1.989
+¿ puedo pagar la cuenta en efectivo ?
+NULL ({ }) can ({ 1 }) i ({ }) pay ({ 2 3 }) the ({ 4 }) bill ({ 5 }) in ({ 6 }) cash ({ 7 }) ? ({ 8 })
+# *all* 1.990
+¿ nos podría usted dar las llaves de nuestra habitación ?
+NULL ({ }) could ({ 1 3 }) you ({ 2 }) give ({ 5 }) us ({ 4 }) the ({ }) keys ({ 6 7 }) to ({ 8 }) our ({ 9 }) room ({ 10 }) ? ({ 11 })
+# *all* 1.991
+quiero una habitación individual y tranquila para hoy , por favor .
+NULL ({ }) i ({ }) want ({ 1 }) a ({ 2 3 }) quiet ({ 5 6 }) , ({ }) single ({ 4 }) room ({ }) for ({ 7 }) today ({ 8 }) , ({ 9 10 }) please ({ 11 }) . ({ 12 })
+# *all* 1.992
+¿ tenemos que firmar la hoja de registro ?
+NULL ({ }) should ({ 1 }) we ({ 2 }) sign ({ 3 4 }) the ({ 5 }) registration ({ 6 7 }) form ({ 8 }) ? ({ 9 })
+# *all* 1.993
+por favor , tenenos hecha una reserva .
+NULL ({ }) we ({ 1 }) have ({ 2 3 }) made ({ 4 5 }) a ({ 6 }) reservation ({ 7 }) . ({ 8 })
+# *all* 1.994
+¿ le importaría mostrarme alguna habitación con baño , por favor ?
+NULL ({ }) would ({ 1 }) you ({ }) mind ({ 2 3 }) showing ({ 4 }) me ({ }) a ({ 5 }) room ({ 6 }) with ({ 7 }) a ({ }) bath ({ 8 }) , ({ 9 10 }) please ({ 11 }) ? ({ 12 })
+# *all* 1.995
+despiérteme mañana a las tres menos cuarto , por favor .
+NULL ({ }) wake ({ 1 }) me ({ }) up ({ 3 }) tomorrow ({ 2 }) at ({ 4 }) a ({ }) quarter ({ 6 7 }) to ({ }) three ({ 5 }) , ({ 8 9 }) please ({ 10 }) . ({ 11 })
+# *all* 1.996
+querría una habitación que tenga buena vista de la montaña y ducha , por favor .
+NULL ({ }) i ({ }) would ({ 1 }) like ({ 4 }) a ({ 2 }) room ({ 3 }) with ({ 5 }) a ({ }) good ({ 6 7 }) view ({ }) of ({ 8 9 }) the ({ }) mountain ({ 10 }) and ({ 11 }) a ({ }) shower ({ 12 }) , ({ 13 14 }) please ({ 15 }) . ({ 16 })
+# *all* 1.997
+he reservado una habitación .
+NULL ({ }) i ({ 1 }) have ({ }) booked ({ 2 }) a ({ 3 }) room ({ 4 }) . ({ 5 })
+# *all* 1.998
+¿ tenemos que rellenar la hoja de registro ?
+NULL ({ }) should ({ 1 }) we ({ 2 }) fill ({ 3 4 }) in ({ }) the ({ 5 }) registration ({ 6 7 }) form ({ 8 }) ? ({ 9 })
+# *all* 1.999
+¿ me pueden despertar a las dos en punto , por favor ?
+NULL ({ }) can ({ 1 3 }) you ({ }) wake ({ }) me ({ 2 }) up ({ 4 5 }) at ({ 6 }) two ({ 7 }) o ({ 8 }) ' ({ }) clock ({ 9 }) , ({ 10 11 }) please ({ 12 }) ? ({ 13 })
+# *all* 1.1000
+¿ nos puede despertar a las diez , por favor ?
+NULL ({ }) can ({ 1 3 }) you ({ 2 }) wake ({ 4 }) us ({ }) up ({ 5 }) at ({ 6 }) ten ({ 7 }) , ({ 8 9 }) please ({ 10 }) ? ({ 11 })

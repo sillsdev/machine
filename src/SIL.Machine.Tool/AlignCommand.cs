@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
 using SIL.Machine.Translation;
-using SIL.Machine.Translation.Thot;
 
 namespace SIL.Machine
 {
@@ -69,7 +67,7 @@ namespace SIL.Machine
 			if (!_quietOption.HasValue())
 				Out.Write("Aligning... ");
 			using (var progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
-			using (IWordAlignmentModel alignmentModel = CreateAlignmentModel())
+			using (IWordAlignmentModel alignmentModel = _modelSpec.CreateAlignmentModel())
 			using (StreamWriter writer = isOutputFile ? new StreamWriter(_outputArgument.Value) : null)
 			{
 				int segmentCount = 0;
@@ -82,7 +80,7 @@ namespace SIL.Machine
 					{
 						foreach (ParallelTextSegment segment in text.Segments)
 						{
-							if (IsSegmentInvalid(segment))
+							if (_modelSpec.IsSegmentInvalid(segment))
 							{
 								writer.WriteLine();
 							}
@@ -129,50 +127,6 @@ namespace SIL.Machine
 			}
 
 			return 0;
-		}
-
-		private IWordAlignmentModel CreateAlignmentModel()
-		{
-			if (_modelSpec.ModelFactory != null)
-				return _modelSpec.ModelFactory.CreateModel(_modelSpec.ModelPath);
-
-			switch (_modelSpec.ModelType)
-			{
-				case "hmm":
-					return CreateThotAlignmentModel<HmmWordAlignmentModel>();
-				case "ibm1":
-					return CreateThotAlignmentModel<Ibm1WordAlignmentModel>();
-				case "ibm2":
-					return CreateThotAlignmentModel<Ibm2WordAlignmentModel>();
-				case "fast_align":
-					return CreateThotAlignmentModel<FastAlignWordAlignmentModel>();
-				case "smt":
-					string modelCfgFileName = ToolHelpers.GetTranslationModelConfigFileName(_modelSpec.ModelPath);
-					return new ThotSmtWordAlignmentModel(modelCfgFileName);
-			}
-			throw new InvalidOperationException("An invalid alignment model type was specified.");
-		}
-
-		private IWordAlignmentModel CreateThotAlignmentModel<TAlignModel>()
-			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
-		{
-			string modelPath = _modelSpec.ModelPath;
-			if (ToolHelpers.IsDirectoryPath(modelPath))
-				modelPath = Path.Combine(modelPath, "src_trg");
-
-			var directModel = new TAlignModel();
-			directModel.Load(modelPath + "_invswm");
-
-			var inverseModel = new TAlignModel();
-			inverseModel.Load(modelPath + "_swm");
-
-			return new SymmetrizedWordAlignmentModel(directModel, inverseModel);
-		}
-
-		private bool IsSegmentInvalid(ParallelTextSegment segment)
-		{
-			return segment.IsEmpty || (_modelSpec.ModelType == "smt"
-				&& segment.SourceSegment.Count > TranslationConstants.MaxSegmentLength);
 		}
 	}
 }

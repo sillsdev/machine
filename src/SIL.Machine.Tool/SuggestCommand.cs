@@ -5,7 +5,6 @@ using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
 using SIL.Machine.Translation;
-using SIL.Machine.Translation.Thot;
 
 namespace SIL.Machine
 {
@@ -54,12 +53,6 @@ namespace SIL.Machine
 			if (code != 0)
 				return code;
 
-			if (!File.Exists(_modelSpec.ModelConfigFileName))
-			{
-				Out.WriteLine("The specified engine directory is invalid.");
-				return 1;
-			}
-
 			double confidenceThreshold = 0.2;
 			if (_confidenceOption.HasValue())
 			{
@@ -96,7 +89,7 @@ namespace SIL.Machine
 			int segmentCount = 0;
 			_acceptedSuggestionCounts = new int[n];
 			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
-			using (IInteractiveTranslationModel smtModel = new ThotSmtModel(_modelSpec.ModelConfigFileName))
+			using (IInteractiveTranslationModel smtModel = _modelSpec.CreateModel())
 			using (IInteractiveTranslationEngine engine = smtModel.CreateInteractiveEngine())
 			{
 				var ecm = new ErrorCorrectionModel();
