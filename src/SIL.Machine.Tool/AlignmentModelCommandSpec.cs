@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
@@ -12,26 +11,21 @@ namespace SIL.Machine
 {
 	public class AlignmentModelCommandSpec : ICommandSpec
 	{
-		private const string Hmm = "hmm";
-		private const string Ibm1 = "ibm1";
-		private const string Ibm2 = "ibm2";
-		private const string FastAlign = "fast_align";
-		private const string Smt = "smt";
-
 		private CommandArgument _modelArgument;
 		private CommandOption _modelTypeOption;
+		private CommandOption _smtModelTypeOption;
 		private CommandOption _pluginOption;
 
 		private IWordAlignmentModelFactory _modelFactory;
-
-		private string ModelType => _modelTypeOption.Value();
-		private string ModelPath => _modelArgument.Value;
 
 		public void AddParameters(CommandBase command)
 		{
 			_modelArgument = command.Argument("MODEL_PATH", "The word alignment model.").IsRequired();
 			_modelTypeOption = command.Option("-mt|--model-type <MODEL_TYPE>",
-				$"The word alignment model type.\nTypes: \"{Hmm}\" (default), \"{Ibm1}\", \"{Ibm2}\", \"{Smt}\", \"{FastAlign}\".",
+				$"The word alignment model type.\nTypes: \"{ToolHelpers.Hmm}\" (default), \"{ToolHelpers.Ibm1}\", \"{ToolHelpers.Ibm2}\", \"{ToolHelpers.FastAlign}\", \"{ToolHelpers.Smt}\".",
+				CommandOptionType.SingleValue);
+			_smtModelTypeOption = command.Option("-smt|--smt-model-type <SMT_MODEL_TYPE>",
+				$"The SMT model type.\nTypes: \"{ToolHelpers.Hmm}\" (default), \"{ToolHelpers.Ibm1}\", \"{ToolHelpers.Ibm2}\", \"{ToolHelpers.FastAlign}\".",
 				CommandOptionType.SingleValue);
 			_pluginOption = command.Option("-mp|--model-plugin <PLUGIN_FILE>", "The model plugin file.",
 				CommandOptionType.SingleValue);
@@ -54,7 +48,13 @@ namespace SIL.Machine
 				return false;
 			}
 
-			if (factories.TryGetValue(ModelType, out IWordAlignmentModelFactory factory))
+			if (!ToolHelpers.ValidateTranslationModelTypeOption(_smtModelTypeOption.Value()))
+			{
+				outWriter.WriteLine("The specified SMT model type is invalid.");
+				return false;
+			}
+
+			if (factories.TryGetValue(_modelTypeOption.Value(), out IWordAlignmentModelFactory factory))
 				_modelFactory = factory;
 
 			return true;
@@ -63,28 +63,39 @@ namespace SIL.Machine
 		public IWordAlignmentModel CreateAlignmentModel()
 		{
 			if (_modelFactory != null)
-				return _modelFactory.CreateModel(ModelPath);
+				return _modelFactory.CreateModel(_modelArgument.Value);
 
-			switch (ModelType)
+			switch (_modelTypeOption.Value())
 			{
 				default:
-				case Hmm:
+				case ToolHelpers.Hmm:
 					return CreateThotAlignmentModel<HmmWordAlignmentModel>();
-				case Ibm1:
+				case ToolHelpers.Ibm1:
 					return CreateThotAlignmentModel<Ibm1WordAlignmentModel>();
-				case Ibm2:
+				case ToolHelpers.Ibm2:
 					return CreateThotAlignmentModel<Ibm2WordAlignmentModel>();
-				case FastAlign:
+				case ToolHelpers.FastAlign:
 					return CreateThotAlignmentModel<FastAlignWordAlignmentModel>();
-				case Smt:
-					string modelCfgFileName = ToolHelpers.GetTranslationModelConfigFileName(ModelPath);
-					return new ThotSmtWordAlignmentModel(modelCfgFileName);
+				case ToolHelpers.Smt:
+					string modelCfgFileName = ToolHelpers.GetTranslationModelConfigFileName(_modelArgument.Value);
+					switch (_smtModelTypeOption.Value())
+					{
+						default:
+						case ToolHelpers.Hmm:
+							return CreateThotSmtAlignmentModel<HmmWordAlignmentModel>(modelCfgFileName);
+						case ToolHelpers.Ibm1:
+							return CreateThotSmtAlignmentModel<Ibm1WordAlignmentModel>(modelCfgFileName);
+						case ToolHelpers.Ibm2:
+							return CreateThotSmtAlignmentModel<Ibm2WordAlignmentModel>(modelCfgFileName);
+						case ToolHelpers.FastAlign:
+							return CreateThotSmtAlignmentModel<FastAlignWordAlignmentModel>(modelCfgFileName);
+					}
 			}
 		}
 
 		public bool IsSegmentInvalid(ParallelTextSegment segment)
 		{
-			return segment.IsEmpty || (ModelType == Smt
+			return segment.IsEmpty || (_modelTypeOption.Value() == ToolHelpers.Smt
 				&& segment.SourceSegment.Count > TranslationConstants.MaxSegmentLength);
 		}
 
@@ -92,41 +103,32 @@ namespace SIL.Machine
 		{
 			if (_modelFactory != null)
 			{
-				return _modelFactory.CreateTrainer(ModelPath, TokenProcessors.Lowercase, TokenProcessors.Lowercase,
-					corpus, maxSize);
+				return _modelFactory.CreateTrainer(_modelArgument.Value, TokenProcessors.Lowercase,
+					TokenProcessors.Lowercase, corpus, maxSize);
 			}
 
-			switch (ModelType)
+			switch (_modelTypeOption.Value())
 			{
 				default:
-				case Hmm:
+				case ToolHelpers.Hmm:
 					return CreateThotAlignmentModelTrainer<HmmWordAlignmentModel>(corpus, maxSize);
-				case Ibm1:
+				case ToolHelpers.Ibm1:
 					return CreateThotAlignmentModelTrainer<Ibm1WordAlignmentModel>(corpus, maxSize);
-				case Ibm2:
+				case ToolHelpers.Ibm2:
 					return CreateThotAlignmentModelTrainer<Ibm2WordAlignmentModel>(corpus, maxSize);
-				case FastAlign:
+				case ToolHelpers.FastAlign:
 					return CreateThotAlignmentModelTrainer<FastAlignWordAlignmentModel>(corpus, maxSize);
-				case Smt:
-					string modelCfgFileName = ToolHelpers.GetTranslationModelConfigFileName(ModelPath);
-					string modelDir = Path.GetDirectoryName(modelCfgFileName);
-					if (!Directory.Exists(modelDir))
-						Directory.CreateDirectory(modelDir);
-					if (!File.Exists(modelCfgFileName))
-					{
-						string defaultConfigFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data",
-							"default-smt.cfg");
-						File.Copy(defaultConfigFileName, modelCfgFileName);
-					}
-					return new ThotSmtModelTrainer(modelCfgFileName, TokenProcessors.Lowercase,
-						TokenProcessors.Lowercase, corpus, maxSize);
+				case ToolHelpers.Smt:
+					string modelCfgFileName = ToolHelpers.GetTranslationModelConfigFileName(_modelArgument.Value);
+					return ToolHelpers.CreateTranslationModelTrainer(_smtModelTypeOption.Value(), modelCfgFileName,
+						corpus, maxSize);
 			}
 		}
 
 		private ITrainer CreateThotAlignmentModelTrainer<TAlignModel>(ParallelTextCorpus corpus, int maxSize)
 			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
 		{
-			string modelPath = ModelPath;
+			string modelPath = _modelArgument.Value;
 			if (ToolHelpers.IsDirectoryPath(modelPath))
 				modelPath = Path.Combine(modelPath, "src_trg");
 			string modelDir = Path.GetDirectoryName(modelPath);
@@ -142,7 +144,7 @@ namespace SIL.Machine
 		private IWordAlignmentModel CreateThotAlignmentModel<TAlignModel>()
 			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
 		{
-			string modelPath = ModelPath;
+			string modelPath = _modelArgument.Value;
 			if (ToolHelpers.IsDirectoryPath(modelPath))
 				modelPath = Path.Combine(modelPath, "src_trg");
 
@@ -155,13 +157,24 @@ namespace SIL.Machine
 			return new SymmetrizedWordAlignmentModel(directModel, inverseModel);
 		}
 
+		private IWordAlignmentModel CreateThotSmtAlignmentModel<TAlignModel>(string modelCfgFileName)
+			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
+		{
+			return new ThotSmtWordAlignmentModel<TAlignModel>(modelCfgFileName);
+		}
 
 		private static bool ValidateAlignmentModelTypeOption(string value, IEnumerable<string> pluginTypes)
 		{
-			var validTypes = new HashSet<string> { Hmm, Ibm1, Ibm2, Smt, FastAlign };
+			var validTypes = new HashSet<string>
+			{
+				ToolHelpers.Hmm,
+				ToolHelpers.Ibm1,
+				ToolHelpers.Ibm2,
+				ToolHelpers.FastAlign,
+				ToolHelpers.Smt
+			};
 			validTypes.UnionWith(pluginTypes);
 			return string.IsNullOrEmpty(value) || validTypes.Contains(value);
-
 		}
 	}
 }

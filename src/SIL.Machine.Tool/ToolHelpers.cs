@@ -5,12 +5,20 @@ using System.Linq;
 using SIL.Extensions;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
+using SIL.Machine.Translation;
+using SIL.Machine.Translation.Thot;
 using SIL.Scripture;
 
 namespace SIL.Machine
 {
 	internal static class ToolHelpers
 	{
+		public const string Hmm = "hmm";
+		public const string Ibm1 = "ibm1";
+		public const string Ibm2 = "ibm2";
+		public const string FastAlign = "fast_align";
+		public const string Smt = "smt";
+
 		public static bool ValidateCorpusFormatOption(string value)
 		{
 			return string.IsNullOrEmpty(value) || value.ToLowerInvariant().IsOneOf("dbl", "usx", "text", "pt");
@@ -129,6 +137,60 @@ namespace SIL.Machine
 				return Path.Combine(path, "smt.cfg");
 			else
 				return path;
+		}
+
+		public static bool ValidateTranslationModelTypeOption(string value)
+		{
+			var validTypes = new HashSet<string> { Hmm, Ibm1, Ibm2, FastAlign };
+			return string.IsNullOrEmpty(value) || validTypes.Contains(value);
+		}
+
+		public static ITranslationModelTrainer CreateTranslationModelTrainer(string modelType,
+			string modelConfigFileName, ParallelTextCorpus corpus, int maxSize)
+		{
+			switch (modelType)
+			{
+				default:
+				case Hmm:
+					return CreateThotSmtModelTrainer<HmmWordAlignmentModel>(modelType, modelConfigFileName, corpus,
+						maxSize);
+				case Ibm1:
+					return CreateThotSmtModelTrainer<Ibm1WordAlignmentModel>(modelType, modelConfigFileName, corpus,
+						maxSize);
+				case Ibm2:
+					return CreateThotSmtModelTrainer<Ibm2WordAlignmentModel>(modelType, modelConfigFileName, corpus,
+						maxSize);
+				case FastAlign:
+					return CreateThotSmtModelTrainer<FastAlignWordAlignmentModel>(modelType, modelConfigFileName,
+						corpus, maxSize);
+			}
+		}
+
+		private static void CreateConfigFile(string modelType, string modelConfigFileName)
+		{
+			string defaultConfigFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data",
+				"default-smt.cfg");
+			string text = File.ReadAllText(defaultConfigFileName);
+			int emIters = 5;
+			if (modelType == FastAlign)
+				emIters = 4;
+			text = text.Replace("{em_iters}", $"{emIters}");
+			File.WriteAllText(modelConfigFileName, text);
+		}
+
+		private static ITranslationModelTrainer CreateThotSmtModelTrainer<TAlignModel>(string modelType,
+			string modelConfigFileName, ParallelTextCorpus corpus, int maxSize)
+			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
+		{
+			string modelDir = Path.GetDirectoryName(modelConfigFileName);
+			if (!Directory.Exists(modelDir))
+				Directory.CreateDirectory(modelDir);
+
+			if (!File.Exists(modelConfigFileName))
+				CreateConfigFile(modelType, modelConfigFileName);
+
+			return new ThotSmtModelTrainer<TAlignModel>(modelConfigFileName, TokenProcessors.Lowercase,
+				TokenProcessors.Lowercase, corpus, maxSize);
 		}
 	}
 }
