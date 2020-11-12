@@ -6,7 +6,7 @@ namespace SIL.Machine.Translation.Thot
 	{
 		IntPtr Handle { get; }
 		ThotSmtParameters Parameters { get; }
-		IWordAlignmentMethod WordAlignmentMethod { get; }
+		IWordAligner WordAligner { get; }
 		SymmetrizedWordAlignmentModel SymmetrizedWordAlignmentModel { get; }
 
 		void RemoveEngine(ThotSmtEngine engine);

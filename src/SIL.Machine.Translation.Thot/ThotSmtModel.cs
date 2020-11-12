@@ -29,7 +29,7 @@ namespace SIL.Machine.Translation.Thot
 		private readonly HashSet<ThotSmtEngine> _engines = new HashSet<ThotSmtEngine>();
 		private readonly string _swAlignClassName;
 		private IntPtr _handle;
-		private IWordAlignmentMethod _wordAlignmentMethod;
+		private IWordAligner _wordAligner;
 
 		public ThotSmtModel(string cfgFileName)
 			: this(ThotSmtParameters.Load(cfgFileName))
@@ -53,18 +53,19 @@ namespace SIL.Machine.Translation.Thot
 
 			_symmetrizedWordAlignmentModel = new SymmetrizedWordAlignmentModel(_directWordAlignmentModel,
 				_inverseWordAlignmentModel);
-			WordAlignmentMethod = new FuzzyEditDistanceWordAlignmentMethod();
+			WordAligner = new FuzzyEditDistanceWordAlignmentMethod();
 		}
 
 		public string ConfigFileName { get; }
 		public ThotSmtParameters Parameters { get; private set; }
-		public IWordAlignmentMethod WordAlignmentMethod
+		public IWordAligner WordAligner
 		{
-			get => _wordAlignmentMethod;
+			get => _wordAligner;
 			set
 			{
-				_wordAlignmentMethod = value;
-				_wordAlignmentMethod.ScoreSelector = GetWordAlignmentScore;
+				_wordAligner = value;
+				if (_wordAligner is IWordAlignmentMethod method)
+					method.ScoreSelector = GetWordAlignmentScore;
 			}
 		}
 		IntPtr IThotSmtModelInternal.Handle => _handle;

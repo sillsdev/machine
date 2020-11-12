@@ -131,7 +131,7 @@ namespace SIL.Machine.Translation.Thot
 				{
 					var srcPhrase = new string[srcPhraseLen];
 					Array.Copy(segmentArray, srcStartIndex, srcPhrase, 0, srcPhraseLen);
-					waMatrix = _smtModel.WordAlignmentMethod.GetBestAlignment(srcPhrase, words);
+					waMatrix = _smtModel.WordAligner.GetBestAlignment(srcPhrase, words);
 				}
 
 				var sources = new TranslationSources[words.Length];
@@ -219,7 +219,7 @@ namespace SIL.Machine.Translation.Thot
 					var trgPhrase = new string[trgPhraseLen];
 					for (int j = 0; j < trgPhraseLen; j++)
 						trgPhrase[j] = targetSegment[trgPhraseStartIndex + j];
-					waMatrix = _smtModel.WordAlignmentMethod.GetBestAlignment(srcPhrase, trgPhrase);
+					waMatrix = _smtModel.WordAligner.GetBestAlignment(srcPhrase, trgPhrase);
 				}
 				builder.MarkPhrase(Range<int>.Create(sourceStartIndex, sourceEndIndex), waMatrix);
 				trgPhraseStartIndex += trgPhraseLen;
