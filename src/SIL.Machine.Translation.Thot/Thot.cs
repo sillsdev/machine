@@ -268,9 +268,14 @@ namespace SIL.Machine.Translation.Thot
 			Marshal.FreeHGlobal(nativeMatrix);
 		}
 
-		public static IntPtr ConvertStringsToNativeUtf8(IEnumerable<string> managedStrings)
+		public static IntPtr ConvertSegmentToNativeUtf8(IReadOnlyList<string> segment)
 		{
-			return ConvertStringToNativeUtf8(string.Join(" ", managedStrings));
+			return ConvertStringToNativeUtf8(string.Join(" ", segment.Select(EscapeToken)));
+		}
+
+		public static IntPtr ConvertTokenToNativeUtf8(string token)
+		{
+			return ConvertStringToNativeUtf8(EscapeToken(token));
 		}
 
 		public static IntPtr ConvertStringToNativeUtf8(string managedString)
@@ -283,6 +288,20 @@ namespace SIL.Machine.Translation.Thot
 			return nativeUtf8;
 		}
 
+		public static IReadOnlyList<string> ConvertNativeUtf8ToSegment(IntPtr nativeUtf8, uint len)
+		{
+			string segmentStr = ConvertNativeUtf8ToString(nativeUtf8, len);
+			string[] segment = segmentStr.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+			for (int i = 0; i < segment.Length; i++)
+				segment[i] = UnescapeToken(segment[i]);
+			return segment;
+		}
+
+		public static string ConvertNativeUtf8ToToken(IntPtr nativeUtf8, uint len)
+		{
+			return UnescapeToken(ConvertNativeUtf8ToString(nativeUtf8, len));
+		}
+
 		public static string ConvertNativeUtf8ToString(IntPtr nativeUtf8, uint len)
 		{
 			var buffer = new byte[len];
@@ -291,10 +310,10 @@ namespace SIL.Machine.Translation.Thot
 		}
 
 		public static T DoTranslate<T>(IntPtr decoderHandle, Func<IntPtr, IntPtr, IntPtr> translateFunc,
-			IEnumerable<string> input, bool addTrailingSpace, IReadOnlyList<string> sourceSegment,
+			IReadOnlyList<string> sourceSegment,
 			Func<IReadOnlyList<string>, IReadOnlyList<string>, IntPtr, T> createResult)
 		{
-			IntPtr inputPtr = ConvertStringToNativeUtf8(string.Join(" ", input) + (addTrailingSpace ? " " : ""));
+			IntPtr inputPtr = ConvertSegmentToNativeUtf8(sourceSegment);
 			IntPtr data = IntPtr.Zero;
 			try
 			{
@@ -310,11 +329,10 @@ namespace SIL.Machine.Translation.Thot
 		}
 
 		public static IEnumerable<T> DoTranslateNBest<T>(IntPtr decoderHandle,
-			Func<IntPtr, uint, IntPtr, IntPtr[], uint> translateFunc, int n, IEnumerable<string> input,
-			bool addTrailingSpace, IReadOnlyList<string> sourceSegment,
+			Func<IntPtr, uint, IntPtr, IntPtr[], uint> translateFunc, int n, IReadOnlyList<string> sourceSegment,
 			Func<IReadOnlyList<string>, IReadOnlyList<string>, IntPtr, T> createResult)
 		{
-			IntPtr inputPtr = ConvertStringToNativeUtf8(string.Join(" ", input) + (addTrailingSpace ? " " : ""));
+			IntPtr inputPtr = ConvertSegmentToNativeUtf8(sourceSegment);
 			var results = new IntPtr[n];
 			try
 			{
@@ -342,8 +360,7 @@ namespace SIL.Machine.Translation.Thot
 					translationPtr = Marshal.ReAllocHGlobal(translationPtr, (IntPtr)len);
 					len = tdata_getTarget(data, translationPtr, len);
 				}
-				string translation = ConvertNativeUtf8ToString(translationPtr, len);
-				string[] targetSegment = translation.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+				IReadOnlyList<string> targetSegment = ConvertNativeUtf8ToSegment(translationPtr, len);
 				return createResult(sourceSegment, targetSegment, data);
 			}
 			finally
@@ -352,11 +369,11 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public static void TrainSegmentPair(IntPtr decoderHandle, IEnumerable<string> sourceSegment,
-			IEnumerable<string> targetSegment)
+		public static void TrainSegmentPair(IntPtr decoderHandle, IReadOnlyList<string> sourceSegment,
+			IReadOnlyList<string> targetSegment)
 		{
-			IntPtr nativeSourceSegment = ConvertStringsToNativeUtf8(sourceSegment);
-			IntPtr nativeTargetSegment = ConvertStringsToNativeUtf8(targetSegment);
+			IntPtr nativeSourceSegment = ConvertSegmentToNativeUtf8(sourceSegment);
+			IntPtr nativeTargetSegment = ConvertSegmentToNativeUtf8(targetSegment);
 			try
 			{
 				decoder_trainSentencePair(decoderHandle, nativeSourceSegment, nativeTargetSegment);
@@ -410,6 +427,20 @@ namespace SIL.Machine.Translation.Thot
 				swAlignClassName = FastAlignWordAlignmentClassName;
 			Debug.Assert(swAlignClassName != null);
 			return swAlignClassName;
+		}
+
+		public static string EscapeToken(string token)
+		{
+			if (token == "|||")
+				return "<3bars>";
+			return token;
+		}
+
+		public static string UnescapeToken(string token)
+		{
+			if (token == "<3bars>")
+				return "|||";
+			return token;
 		}
 	}
 }

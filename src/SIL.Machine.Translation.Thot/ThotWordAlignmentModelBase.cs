@@ -124,8 +124,8 @@ namespace SIL.Machine.Translation.Thot
 		{
 			CheckDisposed();
 
-			IntPtr nativeSourceWord = Thot.ConvertStringToNativeUtf8(sourceWord ?? "NULL");
-			IntPtr nativeTargetWord = Thot.ConvertStringToNativeUtf8(targetWord ?? "NULL");
+			IntPtr nativeSourceWord = Thot.ConvertTokenToNativeUtf8(sourceWord ?? "NULL");
+			IntPtr nativeTargetWord = Thot.ConvertTokenToNativeUtf8(targetWord ?? "NULL");
 			try
 			{
 				return Thot.swAlignModel_getTranslationProbability(Handle, nativeSourceWord, nativeTargetWord);
@@ -150,8 +150,8 @@ namespace SIL.Machine.Translation.Thot
 		{
 			CheckDisposed();
 
-			IntPtr nativeSourceSegment = Thot.ConvertStringsToNativeUtf8(sourceSegment);
-			IntPtr nativeTargetSegment = Thot.ConvertStringsToNativeUtf8(targetSegment);
+			IntPtr nativeSourceSegment = Thot.ConvertSegmentToNativeUtf8(sourceSegment);
+			IntPtr nativeTargetSegment = Thot.ConvertSegmentToNativeUtf8(targetSegment);
 			IntPtr nativeMatrix = Thot.AllocNativeMatrix(sourceSegment.Count, targetSegment.Count);
 
 			uint iLen = (uint) sourceSegment.Count;

@@ -89,8 +89,8 @@ namespace SIL.Machine.Translation.Thot
 							for (int i = range.Item1; i < range.Item2; i++)
 							{
 								IReadOnlyList<string> segment = sourceCorpus[i];
-								results[i] = Thot.DoTranslate(decoderHandle, Thot.decoder_translate, segment, false,
-									segment, (s, t, d) => t);
+								results[i] = Thot.DoTranslate(decoderHandle, Thot.decoder_translate, segment,
+									(s, t, d) => t);
 							}
 						}
 						finally

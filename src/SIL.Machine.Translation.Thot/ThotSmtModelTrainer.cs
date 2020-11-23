@@ -227,7 +227,7 @@ namespace SIL.Machine.Translation.Thot
 				.Where((s, i) => !_tuneCorpusIndices.Contains(i) && !s.IsEmpty))
 			{
 				var words = new List<string> { "<s>" };
-				foreach (string word in _targetPreprocessor.Process(segment.Segment))
+				foreach (string word in _targetPreprocessor.Process(segment.Segment).Select(Thot.EscapeToken))
 				{
 					if (vocab.Contains(word))
 					{
@@ -279,7 +279,9 @@ namespace SIL.Machine.Translation.Thot
 					.Where((s, i) => !_tuneCorpusIndices.Contains(i) && !s.IsEmpty)
 					.Take(100000).OrderBy(i => rand.Next()))
 				{
-					writer.Write("{0}\n", string.Join(" ", _targetPreprocessor.Process(segment.Segment)));
+					string segmentStr = string.Join(" ", _targetPreprocessor.Process(segment.Segment)
+						.Select(Thot.EscapeToken));
+					writer.Write("{0}\n", segmentStr);
 				}
 			}
 		}
@@ -438,6 +440,9 @@ namespace SIL.Machine.Translation.Thot
 		private void GenerateBestAlignments(string swmPrefix, string fileName, ITokenProcessor sourcePreprocessor,
 			ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, IProgress<ProgressStatus> progress)
 		{
+			var escapeTokenProcessor = new EscapeTokenProcessor();
+			sourcePreprocessor = TokenProcessors.Pipeline(sourcePreprocessor, escapeTokenProcessor);
+			targetPreprocessor = TokenProcessors.Pipeline(targetPreprocessor, escapeTokenProcessor);
 			using (var model = new TAlignModel())
 			using (var writer = new StreamWriter(fileName))
 			{
@@ -660,6 +665,14 @@ namespace SIL.Machine.Translation.Thot
 		protected override void DisposeManagedResources()
 		{
 			Directory.Delete(_tempDir, true);
+		}
+
+		private class EscapeTokenProcessor : ITokenProcessor
+		{
+			public IReadOnlyList<string> Process(IReadOnlyList<string> tokens)
+			{
+				return tokens.Select(Thot.EscapeToken).ToArray();
+			}
 		}
 	}
 }

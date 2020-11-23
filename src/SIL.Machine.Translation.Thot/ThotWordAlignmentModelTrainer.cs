@@ -99,8 +99,8 @@ namespace SIL.Machine.Translation.Thot
 			IReadOnlyList<string> sourceSegment = _sourcePreprocessor.Process(segment.SourceSegment);
 			IReadOnlyList<string> targetSegment = _targetPreprocessor.Process(segment.TargetSegment);
 
-			IntPtr nativeSourceSegment = Thot.ConvertStringsToNativeUtf8(sourceSegment);
-			IntPtr nativeTargetSegment = Thot.ConvertStringsToNativeUtf8(targetSegment);
+			IntPtr nativeSourceSegment = Thot.ConvertSegmentToNativeUtf8(sourceSegment);
+			IntPtr nativeTargetSegment = Thot.ConvertSegmentToNativeUtf8(targetSegment);
 			try
 			{
 				Thot.swAlignModel_addSentencePair(Handle, nativeSourceSegment, nativeTargetSegment);

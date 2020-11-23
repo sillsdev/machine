@@ -98,7 +98,7 @@ namespace SIL.Machine.Translation.Thot
 							{
 								IReadOnlyList<string> sourceSegment = sourceCorpus[i];
 								results[i] = Thot.DoTranslateNBest(decoderHandle, Thot.decoder_translateNBest, K,
-									sourceSegment, false, sourceSegment, CreateTranslationInfo).ToArray();
+									sourceSegment, CreateTranslationInfo).ToArray();
 							}
 						}
 						finally
@@ -120,7 +120,7 @@ namespace SIL.Machine.Translation.Thot
 			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, HashSet<TranslationInfo>[] nbestLists,
 			float[] curWeights)
 		{
-			IntPtr[] nativeTuneTargetCorpus = tuneTargetCorpus.Select(Thot.ConvertStringsToNativeUtf8).ToArray();
+			IntPtr[] nativeTuneTargetCorpus = tuneTargetCorpus.Select(Thot.ConvertSegmentToNativeUtf8).ToArray();
 
 			int sizeOfPtr = Marshal.SizeOf<IntPtr>();
 			int sizeOfDouble = Marshal.SizeOf<double>();
@@ -134,7 +134,7 @@ namespace SIL.Machine.Translation.Thot
 				int j = 0;
 				foreach (TranslationInfo ti in nbestLists[i])
 				{
-					IntPtr nativeSegment = Thot.ConvertStringsToNativeUtf8(ti.Translation);
+					IntPtr nativeSegment = Thot.ConvertSegmentToNativeUtf8(ti.Translation);
 					Marshal.WriteIntPtr(nativeNBestList, j * sizeOfPtr, nativeSegment);
 
 					IntPtr nativeTransScoreComps = Marshal.AllocHGlobal((ti.ScoreComponents.Length - 1) * sizeOfDouble);

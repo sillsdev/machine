@@ -78,7 +78,7 @@ namespace SIL.Machine.Translation.Thot
 				nativeWordStr = Marshal.ReAllocHGlobal(nativeWordStr, (IntPtr) capacity);
 				len = GetWordNative(index, nativeWordStr, capacity);
 			}
-			return Thot.ConvertNativeUtf8ToString(nativeWordStr, len);
+			return Thot.ConvertNativeUtf8ToToken(nativeWordStr, len);
 		}
 
 		private uint GetWordNative(uint index, IntPtr nativeWordStr, uint capacity)

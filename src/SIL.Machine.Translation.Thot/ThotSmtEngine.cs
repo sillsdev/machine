@@ -37,22 +37,21 @@ namespace SIL.Machine.Translation.Thot
 		{
 			CheckDisposed();
 
-			return Thot.DoTranslate(_decoderHandle, Thot.decoder_translate, segment, false, segment, CreateResult);
+			return Thot.DoTranslate(_decoderHandle, Thot.decoder_translate, segment, CreateResult);
 		}
 
 		public IEnumerable<TranslationResult> Translate(int n, IReadOnlyList<string> segment)
 		{
 			CheckDisposed();
 
-			return Thot.DoTranslateNBest(_decoderHandle, Thot.decoder_translateNBest, n, segment, false, segment,
-				CreateResult);
+			return Thot.DoTranslateNBest(_decoderHandle, Thot.decoder_translateNBest, n, segment, CreateResult);
 		}
 
 		public WordGraph GetWordGraph(IReadOnlyList<string> segment)
 		{
 			CheckDisposed();
 
-			IntPtr nativeSentence = Thot.ConvertStringsToNativeUtf8(segment);
+			IntPtr nativeSentence = Thot.ConvertSegmentToNativeUtf8(segment);
 			IntPtr wordGraph = IntPtr.Zero;
 			IntPtr nativeWordGraphStr = IntPtr.Zero;
 			try
@@ -119,7 +118,8 @@ namespace SIL.Machine.Translation.Thot
 
 				int trgPhraseLen = arcParts.Length - j;
 				var words = new string[trgPhraseLen];
-				Array.Copy(arcParts, j, words, 0, trgPhraseLen);
+				for (int k = 0; k < trgPhraseLen; k++)
+					words[k] = Thot.UnescapeToken(arcParts[j + k]);
 
 				int srcPhraseLen = srcEndIndex - srcStartIndex + 1;
 				WordAlignmentMatrix waMatrix;
@@ -156,8 +156,8 @@ namespace SIL.Machine.Translation.Thot
 		{
 			CheckDisposed();
 
-			IntPtr nativeSourceSegment = Thot.ConvertStringsToNativeUtf8(sourceSegment);
-			IntPtr nativeTargetSegment = Thot.ConvertStringsToNativeUtf8(targetSegment);
+			IntPtr nativeSourceSegment = Thot.ConvertSegmentToNativeUtf8(sourceSegment);
+			IntPtr nativeTargetSegment = Thot.ConvertSegmentToNativeUtf8(targetSegment);
 			IntPtr data = IntPtr.Zero;
 			try
 			{
