@@ -65,54 +65,61 @@ namespace SIL.Machine
 			int parallelCorpusCount = _corpusSpec.GetNonemptyParallelCorpusCount();
 
 			if (!_quietOption.HasValue())
-				Out.Write("Aligning... ");
-			using (var progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
+				Out.Write("Loading... ");
 			using (IWordAlignmentModel alignmentModel = _modelSpec.CreateAlignmentModel())
-			using (StreamWriter writer = isOutputFile ? new StreamWriter(_outputArgument.Value) : null)
 			{
-				int segmentCount = 0;
-				progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
-				foreach (ParallelText text in _corpusSpec.ParallelCorpus.Texts)
+				if (!_quietOption.HasValue())
 				{
-					StreamWriter textWriter = isOutputFile ? writer
-						: new StreamWriter(Path.Combine(_outputArgument.Value, text.Id.Trim('*') + ".txt"));
-					try
+					Out.WriteLine("done.");
+					Out.Write("Aligning... ");
+				}
+				using (var progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
+				using (StreamWriter writer = isOutputFile ? new StreamWriter(_outputArgument.Value) : null)
+				{
+					int segmentCount = 0;
+					progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
+					foreach (ParallelText text in _corpusSpec.ParallelCorpus.Texts)
 					{
-						foreach (ParallelTextSegment segment in text.Segments)
+						StreamWriter textWriter = isOutputFile ? writer
+							: new StreamWriter(Path.Combine(_outputArgument.Value, text.Id.Trim('*') + ".txt"));
+						try
 						{
-							if (_modelSpec.IsSegmentInvalid(segment))
+							foreach (ParallelTextSegment segment in text.Segments)
 							{
-								writer.WriteLine();
+								if (_modelSpec.IsSegmentInvalid(segment))
+								{
+									writer.WriteLine();
+								}
+								else
+								{
+									IReadOnlyList<string> sourceSegment = TokenProcessors.Lowercase
+										.Process(segment.SourceSegment);
+									IReadOnlyList<string> targetSegment = TokenProcessors.Lowercase
+										.Process(segment.TargetSegment);
+									WordAlignmentMatrix alignment = alignmentModel.GetBestAlignment(sourceSegment,
+										targetSegment, segment.CreateAlignmentMatrix());
+									alignments?.Add(alignment.GetAlignedWordPairs());
+									writer.WriteLine(alignment.ToString(alignmentModel, sourceSegment, targetSegment,
+										_probOption.HasValue()));
+									segmentCount++;
+									progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
+									if (segmentCount == _corpusSpec.MaxCorpusCount)
+										break;
+								}
 							}
-							else
-							{
-								IReadOnlyList<string> sourceSegment = TokenProcessors.Lowercase
-									.Process(segment.SourceSegment);
-								IReadOnlyList<string> targetSegment = TokenProcessors.Lowercase
-									.Process(segment.TargetSegment);
-								WordAlignmentMatrix alignment = alignmentModel.GetBestAlignment(sourceSegment,
-									targetSegment, segment.CreateAlignmentMatrix());
-								alignments?.Add(alignment.GetAlignedWordPairs());
-								writer.WriteLine(alignment.ToString(alignmentModel, sourceSegment, targetSegment,
-									_probOption.HasValue()));
-								segmentCount++;
-								progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
-								if (segmentCount == _corpusSpec.MaxCorpusCount)
-									break;
-							}
+							if (segmentCount == _corpusSpec.MaxCorpusCount)
+								break;
 						}
-						if (segmentCount == _corpusSpec.MaxCorpusCount)
-							break;
-					}
-					finally
-					{
-						if (!isOutputFile)
-							textWriter.Close();
+						finally
+						{
+							if (!isOutputFile)
+								textWriter.Close();
+						}
 					}
 				}
+				if (!_quietOption.HasValue())
+					Out.WriteLine("done.");
 			}
-			if (!_quietOption.HasValue())
-				Out.WriteLine("done.");
 
 			if (refParallelCorpus != null && alignments != null)
 			{

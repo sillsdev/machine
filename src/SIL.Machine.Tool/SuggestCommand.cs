@@ -83,37 +83,45 @@ namespace SIL.Machine
 
 			int parallelCorpusCount = _corpusSpec.GetNonemptyParallelCorpusCount();
 
-			var watch = Stopwatch.StartNew();
 			if (!_quietOption.HasValue())
-				Out.Write("Testing... ");
+				Out.Write("Loading... ");
+			var watch = new Stopwatch();
 			int segmentCount = 0;
 			_acceptedSuggestionCounts = new int[n];
-			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
 			using (IInteractiveTranslationModel smtModel = _modelSpec.CreateModel())
 			using (IInteractiveTranslationEngine engine = smtModel.CreateInteractiveEngine())
 			{
-				var ecm = new ErrorCorrectionModel();
-				progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
-				foreach (ParallelText text in _corpusSpec.ParallelCorpus.Texts)
+				if (!_quietOption.HasValue())
 				{
-					using (StreamWriter traceWriter = CreateTraceWriter(text))
-					{
-						foreach (ParallelTextSegment segment in text.Segments.Where(s => !s.IsEmpty))
-						{
-							TestSegment(ecm, engine, suggester, n, segment, traceWriter);
-							segmentCount++;
-							progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
-							if (segmentCount == _corpusSpec.MaxCorpusCount)
-								break;
-						}
-					}
-					if (segmentCount == _corpusSpec.MaxCorpusCount)
-						break;
+					Out.WriteLine("done.");
+					Out.Write("Suggesting... ");
 				}
+				watch.Start();
+				using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
+				{
+					var ecm = new ErrorCorrectionModel();
+					progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
+					foreach (ParallelText text in _corpusSpec.ParallelCorpus.Texts)
+					{
+						using (StreamWriter traceWriter = CreateTraceWriter(text))
+						{
+							foreach (ParallelTextSegment segment in text.Segments.Where(s => !s.IsEmpty))
+							{
+								TestSegment(ecm, engine, suggester, n, segment, traceWriter);
+								segmentCount++;
+								progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
+								if (segmentCount == _corpusSpec.MaxCorpusCount)
+									break;
+							}
+						}
+						if (segmentCount == _corpusSpec.MaxCorpusCount)
+							break;
+					}
+				}
+				watch.Stop();
+				if (!_quietOption.HasValue())
+					Out.WriteLine("done.");
 			}
-			if (!_quietOption.HasValue())
-				Out.WriteLine("done.");
-			watch.Stop();
 
 			Out.WriteLine($"Execution time: {watch.Elapsed:c}");
 			Out.WriteLine($"# of Segments: {segmentCount}");

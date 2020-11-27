@@ -84,57 +84,64 @@ namespace SIL.Machine
 			IDetokenizer<string, string> refWordDetokenizer = ToolHelpers.CreateWordDetokenizer(
 				_refWordTokenizerOption.Value() ?? "whitespace");
 
+			if (!_quietOption.HasValue())
+				Out.Write("Loading... ");
 			int corpusCount = _corpusSpec.GetNonemptyCorpusCount();
 			var truecaser = new TransferTruecaser();
-			if (!_quietOption.HasValue())
-				Out.Write("Translating... ");
 			int segmentCount = 0;
-			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
 			using (ITranslationModel model = _modelSpec.CreateModel())
 			using (ITranslationEngine engine = model.CreateEngine())
-			using (StreamWriter writer = isOutputFile ? new StreamWriter(_outputArgument.Value) : null)
 			{
-				progress?.Report(new ProgressStatus(segmentCount, corpusCount));
-				foreach (IText text in _corpusSpec.Corpus.Texts)
+				if (!_quietOption.HasValue())
 				{
-					StreamWriter textWriter = isOutputFile ? writer
-						: new StreamWriter(Path.Combine(_outputArgument.Value, text.Id.Trim('*') + ".txt"));
-					try
+					Out.WriteLine("done.");
+					Out.Write("Translating... ");
+				}
+				using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
+				using (StreamWriter writer = isOutputFile ? new StreamWriter(_outputArgument.Value) : null)
+				{
+					progress?.Report(new ProgressStatus(segmentCount, corpusCount));
+					foreach (IText text in _corpusSpec.Corpus.Texts)
 					{
-						foreach (TextSegment segment in text.Segments)
+						StreamWriter textWriter = isOutputFile ? writer
+							: new StreamWriter(Path.Combine(_outputArgument.Value, text.Id.Trim('*') + ".txt"));
+						try
 						{
-							if (segment.IsEmpty || segment.Segment.Count > TranslationConstants.MaxSegmentLength)
+							foreach (TextSegment segment in text.Segments)
 							{
-								textWriter.WriteLine();
-							}
-							else
-							{
-								TranslationResult translateResult = engine.Translate(
-									TokenProcessors.Lowercase.Process(segment.Segment));
-								translations?.Add(translateResult.TargetSegment);
-								translateResult = truecaser.Truecase(segment.Segment, translateResult);
-								string translation = refWordDetokenizer.Detokenize(translateResult.TargetSegment);
-								textWriter.WriteLine(translation);
+								if (segment.IsEmpty || segment.Segment.Count > TranslationConstants.MaxSegmentLength)
+								{
+									textWriter.WriteLine();
+								}
+								else
+								{
+									TranslationResult translateResult = engine.Translate(
+										TokenProcessors.Lowercase.Process(segment.Segment));
+									translations?.Add(translateResult.TargetSegment);
+									translateResult = truecaser.Truecase(segment.Segment, translateResult);
+									string translation = refWordDetokenizer.Detokenize(translateResult.TargetSegment);
+									textWriter.WriteLine(translation);
 
-								segmentCount++;
-								progress?.Report(new ProgressStatus(segmentCount, corpusCount));
-								if (segmentCount == corpusCount)
-									break;
+									segmentCount++;
+									progress?.Report(new ProgressStatus(segmentCount, corpusCount));
+									if (segmentCount == corpusCount)
+										break;
+								}
 							}
+							if (segmentCount == corpusCount)
+								break;
 						}
-						if (segmentCount == corpusCount)
-							break;
-					}
-					finally
-					{
-						if (!isOutputFile)
-							textWriter.Close();
+						finally
+						{
+							if (!isOutputFile)
+								textWriter.Close();
+						}
 					}
 				}
+				if (!_quietOption.HasValue())
+					Out.WriteLine("done.");
 			}
 
-			if (!_quietOption.HasValue())
-				Out.WriteLine("done.");
 
 			if (refParallelCorpus != null && translations != null)
 			{

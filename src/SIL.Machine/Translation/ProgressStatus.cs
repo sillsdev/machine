@@ -3,7 +3,7 @@
 	public struct ProgressStatus
 	{
 		public ProgressStatus(int currentStep, int stepCount, string message = null)
-			: this((double) currentStep / stepCount, message)
+			: this(stepCount == 0 ? 1.0 : (double) currentStep / stepCount, message)
 		{
 		}
 
