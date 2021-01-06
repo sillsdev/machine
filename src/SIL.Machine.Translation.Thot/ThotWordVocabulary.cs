@@ -23,11 +23,11 @@ namespace SIL.Machine.Translation.Thot
 				if (index >= Count)
 					throw new ArgumentOutOfRangeException(nameof(index));
 
-				uint capacity = 100;
-				IntPtr nativeWordStr = Marshal.AllocHGlobal((int) capacity);
+				uint capacity = 112;
+				IntPtr nativeWordStr = Marshal.AllocHGlobal((int)capacity);
 				try
 				{
-					return GetWord((uint) index, nativeWordStr, ref capacity);
+					return GetWord((uint)index, ref nativeWordStr, ref capacity);
 				}
 				finally
 				{
@@ -40,8 +40,8 @@ namespace SIL.Machine.Translation.Thot
 		{
 			get
 			{
-				return _isSource ? (int) Thot.swAlignModel_getSourceWordCount(_swAlignModelHandle)
-					: (int) Thot.swAlignModel_getTargetWordCount(_swAlignModelHandle);
+				return _isSource ? (int)Thot.swAlignModel_getSourceWordCount(_swAlignModelHandle)
+					: (int)Thot.swAlignModel_getTargetWordCount(_swAlignModelHandle);
 			}
 		}
 
@@ -51,12 +51,12 @@ namespace SIL.Machine.Translation.Thot
 			if (count == 0)
 				yield break;
 
-			uint capacity = 100;
-			IntPtr nativeWordStr = Marshal.AllocHGlobal((int) capacity);
+			uint capacity = 112;
+			IntPtr nativeWordStr = Marshal.AllocHGlobal((int)capacity);
 			try
 			{
 				for (uint i = 0; i < count; i++)
-					yield return GetWord(i, nativeWordStr, ref capacity);
+					yield return GetWord(i, ref nativeWordStr, ref capacity);
 			}
 			finally
 			{
@@ -69,13 +69,13 @@ namespace SIL.Machine.Translation.Thot
 			return GetEnumerator();
 		}
 
-		private string GetWord(uint index, IntPtr nativeWordStr, ref uint capacity)
+		private string GetWord(uint index, ref IntPtr nativeWordStr, ref uint capacity)
 		{
 			uint len = GetWordNative(index, nativeWordStr, capacity);
 			if (len > capacity)
 			{
 				capacity = len;
-				nativeWordStr = Marshal.ReAllocHGlobal(nativeWordStr, (IntPtr) capacity);
+				nativeWordStr = Marshal.ReAllocHGlobal(nativeWordStr, (IntPtr)capacity);
 				len = GetWordNative(index, nativeWordStr, capacity);
 			}
 			return Thot.ConvertNativeUtf8ToToken(nativeWordStr, len);
