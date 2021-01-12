@@ -19,6 +19,12 @@ namespace SIL.Machine.Translation
 			_aligner = new SymmetrizedWordAligner(DirectWordAlignmentModel, InverseWordAlignmentModel);
 		}
 
+		public SymmetrizationHeuristic Heuristic
+		{
+			get => _aligner.Heuristic;
+			set => _aligner.Heuristic = value;
+		}
+
 		public IWordAlignmentModel DirectWordAlignmentModel
 		{
 			get

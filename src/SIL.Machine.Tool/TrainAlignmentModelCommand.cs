@@ -15,7 +15,7 @@ namespace SIL.Machine
 			Name = "alignment-model";
 			Description = "Trains a word alignment model from a parallel corpus.";
 
-			_modelSpec = AddSpec(new AlignmentModelCommandSpec());
+			_modelSpec = AddSpec(new AlignmentModelCommandSpec { IncludeSymHeuristicOption = false });
 			_corpusSpec = AddSpec(new ParallelCorpusCommandSpec());
 
 			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);

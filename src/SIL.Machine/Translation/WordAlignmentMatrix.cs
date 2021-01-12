@@ -83,26 +83,40 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public bool IsNeighborAligned(int i, int j)
+		public bool IsDiagNeighborAligned(int i, int j)
 		{
-			return IsHorizontalNeighborAligned(i, j) || IsVerticalNeighborAligned(i, j);
+			foreach ((int di, int dj) in new[] { (1, 1), (-1, 1), (1, -1), (-1, -1) })
+			{
+				if (GetSafe(i + di, j + dj))
+					return true;
+			}
+			return false;
 		}
 
 		public bool IsHorizontalNeighborAligned(int i, int j)
 		{
-			if (j > 0 && _matrix[i, j - 1])
-				return true;
-			if (j < ColumnCount - 1 && _matrix[i, j + 1])
-				return true;
+			foreach ((int di, int dj) in new[] { (0, 1), (0, -1) })
+			{
+				if (GetSafe(i + di, j + dj))
+					return true;
+			}
 			return false;
 		}
 
 		public bool IsVerticalNeighborAligned(int i, int j)
 		{
-			if (i > 0 && _matrix[i - 1, j])
-				return true;
-			if (i < RowCount - 1 && _matrix[i + 1, j])
-				return true;
+			foreach ((int di, int dj) in new[] { (1, 0), (-1, 0) })
+			{
+				if (GetSafe(i + di, j + dj))
+					return true;
+			}
+			return false;
+		}
+
+		private bool GetSafe(int i, int j)
+		{
+			if (i >= 0 && j >= 0 && i < RowCount && j < ColumnCount)
+				return _matrix[i, j];
 			return false;
 		}
 
@@ -115,7 +129,7 @@ namespace SIL.Machine.Translation
 			{
 				for (int j = 0; j < ColumnCount; j++)
 				{
-					if (!(_matrix[i, j] || other._matrix[i, j]))
+					if (_matrix[i, j] || other._matrix[i, j])
 						_matrix[i, j] = true;
 				}
 			}
@@ -136,6 +150,10 @@ namespace SIL.Machine.Translation
 			}
 		}
 
+		/// <summary>
+		/// Implements the symmetrization method defined in "Improved Alignment Models for Statistical Machine
+		/// Translation" (Och et al., 1999).
+		/// </summary>
 		public void SymmetrizeWith(WordAlignmentMatrix other)
 		{
 			if (RowCount != other.RowCount || ColumnCount != other.ColumnCount)
@@ -143,8 +161,9 @@ namespace SIL.Machine.Translation
 
 			WordAlignmentMatrix orig = Clone();
 			IntersectWith(other);
-			Func<int, int, bool> growCondition = (i, j) => IsNeighborAligned(i, j);
-			Symmetrize(growCondition, orig, other);
+			bool IsBlockNeighorAligned(int i, int j) => IsHorizontalNeighborAligned(i, j)
+				|| IsVerticalNeighborAligned(i, j);
+			OchGrow(IsBlockNeighorAligned, orig, other);
 		}
 
 		public void PrioritySymmetrizeWith(WordAlignmentMatrix other)
@@ -152,12 +171,12 @@ namespace SIL.Machine.Translation
 			if (RowCount != other.RowCount || ColumnCount != other.ColumnCount)
 				throw new ArgumentException("The matrices are not the same size.", nameof(other));
 
-			Func<int, int, bool> growCondition = (i, j) => IsNeighborAligned(i, j)
-				&& !(IsHorizontalNeighborAligned(i, j) && IsVerticalNeighborAligned(i, j));
-			Symmetrize(growCondition, this, other);
+			bool IsPriorityBlockNeighborAligned(int i, int j) => IsHorizontalNeighborAligned(i, j)
+				^ IsVerticalNeighborAligned(i, j);
+			OchGrow(IsPriorityBlockNeighborAligned, this, other);
 		}
 
-		private void Symmetrize(Func<int, int, bool> growCondition, WordAlignmentMatrix orig, WordAlignmentMatrix other)
+		private void OchGrow(Func<int, int, bool> growCondition, WordAlignmentMatrix orig, WordAlignmentMatrix other)
 		{
 			bool added;
 			do
@@ -169,7 +188,7 @@ namespace SIL.Machine.Translation
 					{
 						if ((other._matrix[i, j] || orig._matrix[i, j]) && !_matrix[i, j])
 						{
-							if (!IsColumnAligned(j) && !IsRowAligned(i))
+							if (!IsRowAligned(i) && !IsColumnAligned(j))
 							{
 								_matrix[i, j] = true;
 								added = true;
@@ -184,6 +203,123 @@ namespace SIL.Machine.Translation
 				}
 			}
 			while (added);
+		}
+
+		/// <summary>
+		/// Implements the "base" method defined in "Statistical Phrase-Based Translation" (Koehn et al., 2003) without
+		/// final step.
+		/// </summary>
+		public void GrowSymmetrizeWith(WordAlignmentMatrix other)
+		{
+			if (RowCount != other.RowCount || ColumnCount != other.ColumnCount)
+				throw new ArgumentException("The matrices are not the same size.", nameof(other));
+
+			WordAlignmentMatrix orig = Clone();
+			IntersectWith(other);
+
+			bool IsBlockOrDiagNeighborAligned(int i, int j) => IsHorizontalNeighborAligned(i, j)
+				|| IsVerticalNeighborAligned(i, j);
+			KoehnGrow(IsBlockOrDiagNeighborAligned, orig, other);
+		}
+
+		/// <summary>
+		/// Implements the "diag" method defined in "Statistical Phrase-Based Translation" (Koehn et al., 2003) without
+		/// final step.
+		/// </summary>
+		public void GrowDiagSymmetrizeWith(WordAlignmentMatrix other)
+		{
+			if (RowCount != other.RowCount || ColumnCount != other.ColumnCount)
+				throw new ArgumentException("The matrices are not the same size.", nameof(other));
+
+			WordAlignmentMatrix orig = Clone();
+			IntersectWith(other);
+
+			bool IsBlockOrDiagNeighborAligned(int i, int j) => IsHorizontalNeighborAligned(i, j)
+				|| IsVerticalNeighborAligned(i, j) || IsDiagNeighborAligned(i, j);
+			KoehnGrow(IsBlockOrDiagNeighborAligned, orig, other);
+		}
+
+		/// <summary>
+		/// Implements the "diag" method defined in "Statistical Phrase-Based Translation" (Koehn et al., 2003).
+		/// </summary>
+		public void GrowDiagFinalSymmetrizeWith(WordAlignmentMatrix other)
+		{
+			if (RowCount != other.RowCount || ColumnCount != other.ColumnCount)
+				throw new ArgumentException("The matrices are not the same size.", nameof(other));
+
+			WordAlignmentMatrix orig = Clone();
+			IntersectWith(other);
+
+			bool IsBlockOrDiagNeighborAligned(int i, int j) => IsHorizontalNeighborAligned(i, j)
+				|| IsVerticalNeighborAligned(i, j) || IsDiagNeighborAligned(i, j);
+			KoehnGrow(IsBlockOrDiagNeighborAligned, orig, other);
+
+			bool IsOneOrBothUnaligned(int i, int j) => !IsRowAligned(i) || !IsColumnAligned(j);
+			Final(IsOneOrBothUnaligned, orig);
+			Final(IsOneOrBothUnaligned, other);
+		}
+
+		/// <summary>
+		/// Implements the "diag-and" method defined in "Statistical Phrase-Based Translation" (Koehn et al., 2003).
+		/// </summary>
+		public void GrowDiagFinalAndSymmetrizeWith(WordAlignmentMatrix other)
+		{
+			if (RowCount != other.RowCount || ColumnCount != other.ColumnCount)
+				throw new ArgumentException("The matrices are not the same size.", nameof(other));
+
+			WordAlignmentMatrix orig = Clone();
+			IntersectWith(other);
+
+			bool IsBlockOrDiagNeighborAligned(int i, int j) => IsHorizontalNeighborAligned(i, j)
+				|| IsVerticalNeighborAligned(i, j) || IsDiagNeighborAligned(i, j);
+			KoehnGrow(IsBlockOrDiagNeighborAligned, orig, other);
+
+			bool IsBothUnaligned(int i, int j) => !IsRowAligned(i) && !IsColumnAligned(j);
+			Final(IsBothUnaligned, orig);
+			Final(IsBothUnaligned, other);
+		}
+
+		private void KoehnGrow(Func<int, int, bool> growCondition, WordAlignmentMatrix orig,
+			WordAlignmentMatrix other)
+		{
+			var p = new HashSet<(int, int)>();
+			for (int i = 0; i < RowCount; i++)
+			{
+				for (int j = 0; j < ColumnCount; j++)
+				{
+					if ((orig[i, j] || other[i, j]) && !_matrix[i, j])
+						p.Add((i, j));
+				}
+			}
+
+			bool keepGoing = p.Count > 0;
+			while (keepGoing)
+			{
+				keepGoing = false;
+				var added = new HashSet<(int, int)>();
+				foreach ((int i, int j) in p)
+				{
+					if ((!IsRowAligned(i) || !IsColumnAligned(j)) && growCondition(i, j))
+					{
+						_matrix[i, j] = true;
+						added.Add((i, j));
+						keepGoing = true;
+					}
+				}
+				p.ExceptWith(added);
+			}
+		}
+
+		private void Final(Func<int, int, bool> pred, WordAlignmentMatrix adds)
+		{
+			for (int i = 0; i < RowCount; i++)
+			{
+				for (int j = 0; j < ColumnCount; j++)
+				{
+					if (adds[i, j] && !this[i, j] && pred(i, j))
+						_matrix[i, j] = true;
+				}
+			}
 		}
 
 		public void Transpose()
