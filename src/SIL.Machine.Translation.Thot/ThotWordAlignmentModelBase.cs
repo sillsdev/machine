@@ -52,6 +52,8 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
+		public int TrainingIterationCount { get; set; } = 5;
+
 		protected IntPtr Handle { get; set; }
 
 		internal void SetHandle(IntPtr handle, bool owned = false)
@@ -101,7 +103,10 @@ namespace SIL.Machine.Translation.Thot
 					"The word alignment model cannot be trained independently of its SMT model.");
 			}
 
-			return new Trainer(this, sourcePreprocessor, targetPreprocessor, corpus, maxCorpusCount);
+			return new Trainer(this, sourcePreprocessor, targetPreprocessor, corpus, maxCorpusCount)
+			{
+				TrainingIterationCount = TrainingIterationCount
+			};
 		}
 
 		public Task SaveAsync()

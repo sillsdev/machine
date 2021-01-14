@@ -6,11 +6,13 @@
 		public FastAlignWordAlignmentModel()
 			: base(Thot.FastAlignWordAlignmentClassName)
 		{
+			TrainingIterationCount = 4;
 		}
 
 		public FastAlignWordAlignmentModel(string prefFileName, bool createNew = false)
 			: base(Thot.FastAlignWordAlignmentClassName, prefFileName, createNew)
 		{
+			TrainingIterationCount = 4;
 		}
 
 		public double GetAlignmentProbability(int sourceLen, int sourceIndex, int targetLen, int targetIndex)
