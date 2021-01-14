@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
@@ -32,6 +33,14 @@ namespace SIL.Machine
 
 			if (!_quietOption.HasValue())
 				Out.Write("Tokenizing... ");
+			var processorPipeline = new List<ITokenProcessor>
+			{
+				TokenProcessors.Normalize,
+				TokenProcessors.EscapeSpaces
+			};
+			if (_lowercaseOption.HasValue())
+				processorPipeline.Add(TokenProcessors.Lowercase);
+			ITokenProcessor processor = TokenProcessors.Pipeline(processorPipeline);
 			int corpusCount = _corpusSpec.GetCorpusCount();
 			int segmentCount = 0;
 			var utf8Encoding = new UTF8Encoding(false);
@@ -40,12 +49,7 @@ namespace SIL.Machine
 			{
 				foreach (TextSegment segment in _corpusSpec.Corpus.GetSegments())
 				{
-					ITokenProcessor preprocessor = TokenProcessors.Null;
-					if (_lowercaseOption.HasValue())
-						preprocessor = TokenProcessors.Lowercase;
-
-					outputWriter.WriteLine(string.Join(" ", TokenProcessors.Pipeline(preprocessor,
-						TokenProcessors.EscapeSpaces).Process(segment.Segment)));
+					outputWriter.WriteLine(string.Join(" ", processor.Process(segment.Segment)));
 
 					segmentCount++;
 					progress?.Report(new ProgressStatus(segmentCount, corpusCount));

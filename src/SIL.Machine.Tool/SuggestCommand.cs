@@ -163,10 +163,11 @@ namespace SIL.Machine
 		private void TestSegment(ErrorCorrectionModel ecm, IInteractiveTranslationEngine engine,
 			ITranslationSuggester suggester, int n, ParallelTextSegment segment, StreamWriter traceWriter)
 		{
+			ITokenProcessor processor = TokenProcessors.Pipeline(TokenProcessors.Normalize, TokenProcessors.Lowercase);
 			traceWriter?.WriteLine($"Segment:      {segment.SegmentRef}");
-			IReadOnlyList<string> sourceSegment = TokenProcessors.Lowercase.Process(segment.SourceSegment);
+			IReadOnlyList<string> sourceSegment = processor.Process(segment.SourceSegment);
 			traceWriter?.WriteLine($"Source:       {string.Join(" ", sourceSegment)}");
-			IReadOnlyList<string> targetSegment = TokenProcessors.Lowercase.Process(segment.TargetSegment);
+			IReadOnlyList<string> targetSegment = processor.Process(segment.TargetSegment);
 			traceWriter?.WriteLine($"Target:       {string.Join(" ", targetSegment)}");
 			traceWriter?.WriteLine(new string('=', 120));
 			string[][] prevSuggestionWords = null;

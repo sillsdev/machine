@@ -88,6 +88,7 @@ namespace SIL.Machine
 				Out.Write("Loading... ");
 			int corpusCount = _corpusSpec.GetNonemptyCorpusCount();
 			var truecaser = new TransferTruecaser();
+			ITokenProcessor processor = TokenProcessors.Pipeline(TokenProcessors.Normalize, TokenProcessors.Lowercase);
 			int segmentCount = 0;
 			using (ITranslationModel model = _modelSpec.CreateModel())
 			using (ITranslationEngine engine = model.CreateEngine())
@@ -116,7 +117,7 @@ namespace SIL.Machine
 								else
 								{
 									TranslationResult translateResult = engine.Translate(
-										TokenProcessors.Lowercase.Process(segment.Segment));
+										processor.Process(segment.Segment));
 									translations?.Add(translateResult.TargetSegment);
 									translateResult = truecaser.Truecase(segment.Segment, translateResult);
 									string translation = refWordDetokenizer.Detokenize(translateResult.TargetSegment);
@@ -148,7 +149,7 @@ namespace SIL.Machine
 				double bleu = Evaluation.ComputeBleu(translations, refParallelCorpus.GetSegments()
 					.Where(s => s.SourceSegment.Count > 0
 						&& s.SourceSegment.Count <= TranslationConstants.MaxSegmentLength)
-					.Select(s => TokenProcessors.Lowercase.Process(s.TargetSegment)));
+					.Select(s => processor.Process(s.TargetSegment)));
 				Out.WriteLine($"BLEU: {bleu * 100:0.00}");
 			}
 

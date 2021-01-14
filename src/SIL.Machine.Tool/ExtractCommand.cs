@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
@@ -93,9 +94,14 @@ namespace SIL.Machine
 						}
 					}
 
-					ITokenProcessor preprocessor = TokenProcessors.Null;
+					var processorPipeline = new List<ITokenProcessor>
+					{
+						TokenProcessors.Normalize,
+						TokenProcessors.EscapeSpaces
+					};
 					if (_lowercaseOption.HasValue())
-						preprocessor = TokenProcessors.Lowercase;
+						processorPipeline.Add(TokenProcessors.Lowercase);
+					ITokenProcessor processor = TokenProcessors.Pipeline(processorPipeline);
 
 					if (sourceOutputWriter != null)
 					{
@@ -105,8 +111,7 @@ namespace SIL.Machine
 						}
 						else
 						{
-							sourceOutputWriter.WriteLine(string.Join(" ", TokenProcessors.Pipeline(preprocessor,
-								TokenProcessors.EscapeSpaces).Process(segment.SourceSegment)));
+							sourceOutputWriter.WriteLine(string.Join(" ", processor.Process(segment.SourceSegment)));
 						}
 					}
 					if (targetOutputWriter != null)
@@ -117,8 +122,7 @@ namespace SIL.Machine
 						}
 						else
 						{
-							targetOutputWriter.WriteLine(string.Join(" ", TokenProcessors.Pipeline(preprocessor,
-								TokenProcessors.EscapeSpaces).Process(segment.TargetSegment)));
+							targetOutputWriter.WriteLine(string.Join(" ", processor.Process(segment.TargetSegment)));
 						}
 					}
 					refOutputWriter?.WriteLine(segment.SegmentRef);

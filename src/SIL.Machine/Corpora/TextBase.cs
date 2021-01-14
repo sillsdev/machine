@@ -25,8 +25,7 @@ namespace SIL.Machine.Corpora
 		protected TextSegment CreateTextSegment(string text, object segRef, bool sentenceStart = true,
 			bool inRange = false, bool rangeStart = false)
 		{
-
-			IReadOnlyList<string> segment = WordTokenizer.Tokenize(text.Trim().Normalize()).ToArray();
+			IReadOnlyList<string> segment = WordTokenizer.Tokenize(text.Trim()).ToArray();
 			segment = TokenProcessors.UnescapeSpaces.Process(segment);
 			return new TextSegment(segRef, segment, sentenceStart, inRange, rangeStart);
 		}

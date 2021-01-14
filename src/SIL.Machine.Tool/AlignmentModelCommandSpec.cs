@@ -126,8 +126,9 @@ namespace SIL.Machine
 		{
 			if (_modelFactory != null)
 			{
-				return _modelFactory.CreateTrainer(_modelArgument.Value, TokenProcessors.Lowercase,
-					TokenProcessors.Lowercase, corpus, maxSize);
+				ITokenProcessor processor = TokenProcessors.Pipeline(TokenProcessors.Normalize,
+					TokenProcessors.Lowercase);
+				return _modelFactory.CreateTrainer(_modelArgument.Value, processor, processor, corpus, maxSize);
 			}
 
 			switch (_modelTypeOption.Value())
@@ -157,10 +158,11 @@ namespace SIL.Machine
 			string modelDir = Path.GetDirectoryName(modelPath);
 			if (!Directory.Exists(modelDir))
 				Directory.CreateDirectory(modelDir);
-			var directTrainer = new ThotWordAlignmentModelTrainer<TAlignModel>(modelPath + "_invswm",
-				TokenProcessors.Lowercase, TokenProcessors.Lowercase, corpus, maxSize);
-			var inverseTrainer = new ThotWordAlignmentModelTrainer<TAlignModel>(modelPath + "_swm",
-				TokenProcessors.Lowercase, TokenProcessors.Lowercase, corpus.Invert(), maxSize);
+			ITokenProcessor processor = TokenProcessors.Pipeline(TokenProcessors.Normalize, TokenProcessors.Lowercase);
+			var directTrainer = new ThotWordAlignmentModelTrainer<TAlignModel>(modelPath + "_invswm", processor,
+				processor, corpus, maxSize);
+			var inverseTrainer = new ThotWordAlignmentModelTrainer<TAlignModel>(modelPath + "_swm", processor,
+				processor, corpus.Invert(), maxSize);
 			return new SymmetrizedWordAlignmentModelTrainer(directTrainer, inverseTrainer);
 		}
 

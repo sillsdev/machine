@@ -62,6 +62,8 @@ namespace SIL.Machine
 					refCorpus);
 			}
 
+			ITokenProcessor processor = TokenProcessors.Pipeline(TokenProcessors.Normalize, TokenProcessors.Lowercase);
+
 			int parallelCorpusCount = _corpusSpec.GetNonemptyParallelCorpusCount();
 
 			if (!_quietOption.HasValue())
@@ -92,10 +94,8 @@ namespace SIL.Machine
 								}
 								else
 								{
-									IReadOnlyList<string> sourceSegment = TokenProcessors.Lowercase
-										.Process(segment.SourceSegment);
-									IReadOnlyList<string> targetSegment = TokenProcessors.Lowercase
-										.Process(segment.TargetSegment);
+									IReadOnlyList<string> sourceSegment = processor.Process(segment.SourceSegment);
+									IReadOnlyList<string> targetSegment = processor.Process(segment.TargetSegment);
 									WordAlignmentMatrix alignment = alignmentModel.GetBestAlignment(sourceSegment,
 										targetSegment, segment.CreateAlignmentMatrix());
 									alignments?.Add(alignment.GetAlignedWordPairs());

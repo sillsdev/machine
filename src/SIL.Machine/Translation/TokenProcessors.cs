@@ -9,8 +9,14 @@ namespace SIL.Machine.Translation
 		public static readonly ITokenProcessor EscapeSpaces = new EscapeSpacesTokenProcessor();
 		public static readonly ITokenProcessor UnescapeSpaces = new UnescapeSpacesTokenProcessor();
 		public static readonly ITokenProcessor Null = new NullTokenProcessor();
+		public static readonly ITokenProcessor Normalize = new NormalizeTokenProcessor();
 
 		public static ITokenProcessor Pipeline(params ITokenProcessor[] processors)
+		{
+			return new PipelineTokenProcessor(processors);
+		}
+
+		public static ITokenProcessor Pipeline(IEnumerable<ITokenProcessor> processors)
 		{
 			return new PipelineTokenProcessor(processors);
 		}
@@ -44,6 +50,14 @@ namespace SIL.Machine.Translation
 			public IReadOnlyList<string> Process(IReadOnlyList<string> tokens)
 			{
 				return tokens;
+			}
+		}
+
+		private class NormalizeTokenProcessor : ITokenProcessor
+		{
+			public IReadOnlyList<string> Process(IReadOnlyList<string> tokens)
+			{
+				return tokens.Select(t => t.Normalize()).ToArray();
 			}
 		}
 

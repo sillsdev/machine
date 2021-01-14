@@ -189,8 +189,8 @@ namespace SIL.Machine
 			if (!File.Exists(modelConfigFileName))
 				CreateConfigFile(modelType, modelConfigFileName);
 
-			return new ThotSmtModelTrainer<TAlignModel>(modelConfigFileName, TokenProcessors.Lowercase,
-				TokenProcessors.Lowercase, corpus, maxSize);
+			ITokenProcessor processor = TokenProcessors.Pipeline(TokenProcessors.Normalize, TokenProcessors.Lowercase);
+			return new ThotSmtModelTrainer<TAlignModel>(modelConfigFileName, processor, processor, corpus, maxSize);
 		}
 	}
 }
