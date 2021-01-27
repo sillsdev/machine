@@ -212,9 +212,7 @@ namespace SIL.Machine.Translation
 
 		public IEnumerable<TranslationResult> GetResults()
 		{
-			var queue = new PriorityQueue<Hypothesis>(1000);
-			GetStateHypotheses(queue);
-			GetSubStateHypotheses(queue);
+			PriorityQueue<Hypothesis> queue = GetHypotheses();
 
 			foreach (Hypothesis hypothesis in Search(queue))
 			{
@@ -308,30 +306,22 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		private void GetStateHypotheses(PriorityQueue<Hypothesis> queue)
+		private PriorityQueue<Hypothesis> GetHypotheses()
 		{
-			foreach (int state in _statesInvolvedInArcs)
-			{
-				double restScore = _restScores[state];
-				List<double> bestScores = _stateBestScores[state];
+			var queue = new PriorityQueue<Hypothesis>(1000);
 
-				double score = bestScores[bestScores.Count - 1] + (WordGraphWeight * restScore);
-				queue.Enqueue(new Hypothesis(score, state));
-			}
-		}
-
-		private void GetSubStateHypotheses(PriorityQueue<Hypothesis> queue)
-		{
+			// add hypotheses starting before each word in each arc
 			for (int arcIndex = 0; arcIndex < _wordGraph.Arcs.Count; arcIndex++)
 			{
 				WordGraphArc arc = _wordGraph.Arcs[arcIndex];
-				if (arc.Words.Count > 1 && !IsArcPruned(arc))
+				if (!IsArcPruned(arc))
 				{
 					double wordGraphScore = _stateWordGraphScores[arc.PrevState] + arc.Score;
 
-					for (int i = 0; i < arc.Words.Count - 1; i++)
+					for (int i = -1; i < arc.Words.Count - 1; i++)
 					{
-						EcmScoreInfo esi = _arcEcmScoreInfos[arcIndex][i];
+						EcmScoreInfo esi = i == -1 ? _stateEcmScoreInfos[arc.PrevState]
+							: _arcEcmScoreInfos[arcIndex][i];
 						double score = (WordGraphWeight * wordGraphScore)
 							+ (EcmWeight * -esi.Scores[esi.Scores.Count - 1])
 							+ (WordGraphWeight * _restScores[arc.NextState]);
@@ -339,6 +329,18 @@ namespace SIL.Machine.Translation
 					}
 				}
 			}
+
+			// add hypotheses starting before each final state
+			foreach (int state in _wordGraph.FinalStates)
+			{
+				double restScore = _restScores[state];
+				List<double> bestScores = _stateBestScores[state];
+
+				double score = bestScores[bestScores.Count - 1] + (WordGraphWeight * restScore);
+				queue.Enqueue(new Hypothesis(score, state));
+			}
+
+			return queue;
 		}
 
 		private bool IsArcPruned(WordGraphArc arc)

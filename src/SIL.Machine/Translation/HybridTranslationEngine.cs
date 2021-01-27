@@ -61,11 +61,12 @@ namespace SIL.Machine.Translation
 			return wordGraph.Merge(RuleEngineThreshold, ruleResult);
 		}
 
-		public void TrainSegment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
+		public void TrainSegment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
+			bool sentenceStart = true)
 		{
 			CheckDisposed();
 
-			InteractiveEngine.TrainSegment(sourceSegment, targetSegment);
+			InteractiveEngine.TrainSegment(sourceSegment, targetSegment, sentenceStart);
 		}
 
 		protected override void DisposeManagedResources()

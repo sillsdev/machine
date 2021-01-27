@@ -33,6 +33,7 @@ namespace SIL.Machine.Translation
 
 		public bool IsLastWordComplete { get; private set; }
 
+		public bool IsSourceSegmentValid => SourceSegment.Count <= TranslationConstants.MaxSegmentLength;
 
 		public void SetPrefix(IReadOnlyList<string> prefix, bool isLastWordComplete)
 		{
@@ -64,6 +65,11 @@ namespace SIL.Machine.Translation
 			}
 		}
 
+		public void AppendToPrefix(params string[] words)
+		{
+			AppendToPrefix((IEnumerable<string>)words);
+		}
+
 		public void AppendToPrefix(IEnumerable<string> words)
 		{
 			bool updated = false;
@@ -82,6 +88,9 @@ namespace SIL.Machine.Translation
 
 		public void Approve(bool alignedOnly)
 		{
+			if (!IsSourceSegmentValid || _prefix.Count > TranslationConstants.MaxSegmentLength)
+				return;
+
 			IReadOnlyList<string> sourceSegment = SourceSegment;
 			if (alignedOnly)
 			{

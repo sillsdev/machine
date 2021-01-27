@@ -6,6 +6,7 @@ namespace SIL.Machine.Translation
 	{
 		WordGraph GetWordGraph(IReadOnlyList<string> segment);
 
-		void TrainSegment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment);
+		void TrainSegment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
+			bool sentenceStart = true);
 	}
 }

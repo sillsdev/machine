@@ -173,7 +173,8 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public void TrainSegment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
+		public void TrainSegment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
+			bool sentenceStart = true)
 		{
 			CheckDisposed();
 
