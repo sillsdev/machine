@@ -8,7 +8,7 @@
   <Import Project="../AssemblyInfo.props" />
 
   <ItemGroup>
-    <PackageReference Include="Thot" Version="3.2.7" />
+    <PackageReference Include="Thot" Version="3.2.8" />
   </ItemGroup>
 
   <ItemGroup>
