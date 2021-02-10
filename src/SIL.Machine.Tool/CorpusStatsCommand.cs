@@ -5,15 +5,15 @@ using System.Linq;
 
 namespace SIL.Machine
 {
-	public class CorpusCommand : CommandBase
+	public class CorpusStatsCommand : CommandBase
 	{
 		private readonly ParallelCorpusCommandSpec _corpusSpec;
 		private readonly CommandOption _maxLengthOption;
 		private readonly CommandOption _countOption;
 
-		public CorpusCommand()
+		public CorpusStatsCommand()
 		{
-			Name = "corpus";
+			Name = "corpus-stats";
 			Description = "Computes statistics for a parallel corpus.";
 
 			_corpusSpec = AddSpec(new ParallelCorpusCommandSpec());

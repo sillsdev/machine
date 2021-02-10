@@ -8,6 +8,8 @@ namespace SIL.Machine.Translation
 	{
 		IReadOnlyList<string> SourceWords { get; }
 		IReadOnlyList<string> TargetWords { get; }
+		string NullWord { get; }
+		int NullIndex { get; }
 
 		ITrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor,
 			ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue);

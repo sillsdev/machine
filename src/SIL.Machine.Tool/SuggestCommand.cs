@@ -36,7 +36,7 @@ namespace SIL.Machine
 
 			_modelSpec = AddSpec(new TranslationModelCommandSpec());
 			_corpusSpec = AddSpec(new ParallelCorpusCommandSpec { SupportAlignmentsCorpus = false });
-			_confidenceOption = Option("-c|--confidence <PERCENTAGE>", "The confidence threshold.",
+			_confidenceOption = Option("-c|--confidence <PERCENTAGE>", "The confidence threshold. Default: 0.2.",
 				CommandOptionType.SingleValue);
 			_nOption = Option("-n <NUMBER>", "The number of suggestions to generate.",
 				CommandOptionType.SingleValue);

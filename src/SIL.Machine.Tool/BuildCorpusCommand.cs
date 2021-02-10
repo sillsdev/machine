@@ -7,7 +7,7 @@ using SIL.Machine.Translation;
 
 namespace SIL.Machine
 {
-	public class ExtractCommand : CommandBase
+	public class BuildCorpusCommand : CommandBase
 	{
 		private readonly ParallelCorpusCommandSpec _corpusSpec;
 		private readonly CommandOption _sourceOutputOption;
@@ -18,10 +18,10 @@ namespace SIL.Machine
 		private readonly CommandOption _lowercaseOption;
 		private readonly CommandOption _includeEmptyOption;
 
-		public ExtractCommand()
+		public BuildCorpusCommand()
 		{
-			Name = "extract";
-			Description = "Extracts a parallel corpus from source and target monolingual corpora.";
+			Name = "build-corpus";
+			Description = "Builds a parallel corpus from source and target monolingual corpora.";
 
 			_corpusSpec = AddSpec(new ParallelCorpusCommandSpec
 			{

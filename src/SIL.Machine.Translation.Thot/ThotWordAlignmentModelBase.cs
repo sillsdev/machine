@@ -52,6 +52,9 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
+		public string NullWord => "NULL";
+		public int NullIndex => 0;
+
 		public int TrainingIterationCount { get; set; } = 5;
 
 		protected IntPtr Handle { get; set; }

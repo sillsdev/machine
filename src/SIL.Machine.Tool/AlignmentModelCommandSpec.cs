@@ -18,6 +18,7 @@ namespace SIL.Machine
 		private const string GrowDiag = "grow-diag";
 		private const string GrowDiagFinal = "grow-diag-final";
 		private const string GrowDiagFinalAnd = "grow-diag-final-and";
+		private const string None = "none";
 
 		private CommandArgument _modelArgument;
 		private CommandOption _modelTypeOption;
@@ -43,7 +44,7 @@ namespace SIL.Machine
 			if (IncludeSymHeuristicOption)
 			{
 				_symHeuristicOption = command.Option("-sh|--sym-heuristic <SYM_HEURISTIC>",
-					$"The symmetrization heuristic.\nHeuristics: \"{Och}\" (default), \"{Union}\", \"{Intersection}\", \"{Grow}\", \"{GrowDiag}\", \"{GrowDiagFinal}\", \"{GrowDiagFinalAnd}\".",
+					$"The symmetrization heuristic.\nHeuristics: \"{Och}\" (default), \"{Union}\", \"{Intersection}\", \"{Grow}\", \"{GrowDiag}\", \"{GrowDiagFinal}\", \"{GrowDiagFinalAnd}\", \"{None}\".",
 					CommandOptionType.SingleValue);
 			}
 		}
@@ -176,36 +177,21 @@ namespace SIL.Machine
 			var directModel = new TAlignModel();
 			directModel.Load(modelPath + "_invswm");
 
+			if (_symHeuristicOption?.Value() == None)
+				return directModel;
+
 			var inverseModel = new TAlignModel();
 			inverseModel.Load(modelPath + "_swm");
-
-			SymmetrizationHeuristic heuristic;
-			switch (_symHeuristicOption?.Value())
+			SymmetrizationHeuristic heuristic = (_symHeuristicOption?.Value()) switch
 			{
-				default:
-				case Och:
-					heuristic = SymmetrizationHeuristic.Och;
-					break;
-				case Union:
-					heuristic = SymmetrizationHeuristic.Union;
-					break;
-				case Intersection:
-					heuristic = SymmetrizationHeuristic.Intersection;
-					break;
-				case Grow:
-					heuristic = SymmetrizationHeuristic.Grow;
-					break;
-				case GrowDiag:
-					heuristic = SymmetrizationHeuristic.GrowDiag;
-					break;
-				case GrowDiagFinal:
-					heuristic = SymmetrizationHeuristic.GrowDiagFinal;
-					break;
-				case GrowDiagFinalAnd:
-					heuristic = SymmetrizationHeuristic.GrowDiagFinalAnd;
-					break;
-			}
-
+				Union => SymmetrizationHeuristic.Union,
+				Intersection => SymmetrizationHeuristic.Intersection,
+				Grow => SymmetrizationHeuristic.Grow,
+				GrowDiag => SymmetrizationHeuristic.GrowDiag,
+				GrowDiagFinal => SymmetrizationHeuristic.GrowDiagFinal,
+				GrowDiagFinalAnd => SymmetrizationHeuristic.GrowDiagFinalAnd,
+				_ => SymmetrizationHeuristic.Och,
+			};
 			return new SymmetrizedWordAlignmentModel(directModel, inverseModel) { Heuristic = heuristic };
 		}
 
@@ -239,7 +225,8 @@ namespace SIL.Machine
 				Grow,
 				GrowDiag,
 				GrowDiagFinal,
-				GrowDiagFinalAnd
+				GrowDiagFinalAnd,
+				None
 			};
 			return string.IsNullOrEmpty(value) || validHeuristics.Contains(value);
 		}

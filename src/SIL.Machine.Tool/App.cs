@@ -19,10 +19,11 @@ namespace SIL.Machine
 			AddCommand(new TrainCommand());
 			AddCommand(new SuggestCommand());
 			AddCommand(new AlignCommand());
-			AddCommand(new CorpusCommand());
-			AddCommand(new ExtractCommand());
+			AddCommand(new CorpusStatsCommand());
+			AddCommand(new BuildCorpusCommand());
 			AddCommand(new TranslateCommand());
 			AddCommand(new TokenizeCommand());
+			AddCommand(new LexiconCommand());
 		}
 
 		protected override int ExecuteCommand()
