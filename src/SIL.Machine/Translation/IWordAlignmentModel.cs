@@ -10,6 +10,7 @@ namespace SIL.Machine.Translation
 		IReadOnlyList<string> TargetWords { get; }
 		string NullWord { get; }
 		int NullIndex { get; }
+		bool IsProbabilityDistributionNormalized { get; }
 
 		ITrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor,
 			ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue);

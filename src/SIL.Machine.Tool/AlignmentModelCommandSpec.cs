@@ -84,22 +84,23 @@ namespace SIL.Machine
 			return true;
 		}
 
-		public IWordAlignmentModel CreateAlignmentModel()
+		public IWordAlignmentModel CreateAlignmentModel(
+			WordAlignmentDirection direction = WordAlignmentDirection.Symmetric)
 		{
 			if (_modelFactory != null)
-				return _modelFactory.CreateModel(_modelArgument.Value);
+				return _modelFactory.CreateModel(_modelArgument.Value, direction);
 
 			switch (_modelTypeOption.Value())
 			{
 				default:
 				case ToolHelpers.Hmm:
-					return CreateThotAlignmentModel<HmmWordAlignmentModel>();
+					return CreateThotAlignmentModel<HmmWordAlignmentModel>(direction);
 				case ToolHelpers.Ibm1:
-					return CreateThotAlignmentModel<Ibm1WordAlignmentModel>();
+					return CreateThotAlignmentModel<Ibm1WordAlignmentModel>(direction);
 				case ToolHelpers.Ibm2:
-					return CreateThotAlignmentModel<Ibm2WordAlignmentModel>();
+					return CreateThotAlignmentModel<Ibm2WordAlignmentModel>(direction);
 				case ToolHelpers.FastAlign:
-					return CreateThotAlignmentModel<FastAlignWordAlignmentModel>();
+					return CreateThotAlignmentModel<FastAlignWordAlignmentModel>(direction);
 				case ToolHelpers.Smt:
 					string modelCfgFileName = ToolHelpers.GetTranslationModelConfigFileName(_modelArgument.Value);
 					switch (_smtModelTypeOption.Value())
@@ -167,32 +168,47 @@ namespace SIL.Machine
 			return new SymmetrizedWordAlignmentModelTrainer(directTrainer, inverseTrainer);
 		}
 
-		private IWordAlignmentModel CreateThotAlignmentModel<TAlignModel>()
+		private IWordAlignmentModel CreateThotAlignmentModel<TAlignModel>(WordAlignmentDirection direction)
 			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
 		{
 			string modelPath = _modelArgument.Value;
 			if (ToolHelpers.IsDirectoryPath(modelPath))
 				modelPath = Path.Combine(modelPath, "src_trg");
 
-			var directModel = new TAlignModel();
-			directModel.Load(modelPath + "_invswm");
-
-			if (_symHeuristicOption?.Value() == None)
-				return directModel;
-
-			var inverseModel = new TAlignModel();
-			inverseModel.Load(modelPath + "_swm");
-			SymmetrizationHeuristic heuristic = (_symHeuristicOption?.Value()) switch
+			if (direction == WordAlignmentDirection.Direct)
 			{
-				Union => SymmetrizationHeuristic.Union,
-				Intersection => SymmetrizationHeuristic.Intersection,
-				Grow => SymmetrizationHeuristic.Grow,
-				GrowDiag => SymmetrizationHeuristic.GrowDiag,
-				GrowDiagFinal => SymmetrizationHeuristic.GrowDiagFinal,
-				GrowDiagFinalAnd => SymmetrizationHeuristic.GrowDiagFinalAnd,
-				_ => SymmetrizationHeuristic.Och,
-			};
-			return new SymmetrizedWordAlignmentModel(directModel, inverseModel) { Heuristic = heuristic };
+				var directModel = new TAlignModel();
+				directModel.Load(modelPath + "_invswm");
+				return directModel;
+			}
+			else if (direction == WordAlignmentDirection.Inverse)
+			{
+				var inverseModel = new TAlignModel();
+				inverseModel.Load(modelPath + "_swm");
+				return inverseModel;
+			}
+			else
+			{
+				var directModel = new TAlignModel();
+				directModel.Load(modelPath + "_invswm");
+
+				if (_symHeuristicOption?.Value() == None)
+					return directModel;
+
+				var inverseModel = new TAlignModel();
+				inverseModel.Load(modelPath + "_swm");
+				SymmetrizationHeuristic heuristic = (_symHeuristicOption?.Value()) switch
+				{
+					Union => SymmetrizationHeuristic.Union,
+					Intersection => SymmetrizationHeuristic.Intersection,
+					Grow => SymmetrizationHeuristic.Grow,
+					GrowDiag => SymmetrizationHeuristic.GrowDiag,
+					GrowDiagFinal => SymmetrizationHeuristic.GrowDiagFinal,
+					GrowDiagFinalAnd => SymmetrizationHeuristic.GrowDiagFinalAnd,
+					_ => SymmetrizationHeuristic.Och,
+				};
+				return new SymmetrizedWordAlignmentModel(directModel, inverseModel) { Heuristic = heuristic };
+			}
 		}
 
 		private IWordAlignmentModel CreateThotSmtAlignmentModel<TAlignModel>(string modelCfgFileName)

@@ -55,6 +55,8 @@ namespace SIL.Machine.Translation.Thot
 		public string NullWord => _smtModel.DirectWordAlignmentModel.NullWord;
 		public int NullIndex => _smtModel.DirectWordAlignmentModel.NullIndex;
 
+		public bool IsProbabilityDistributionNormalized => false;
+
 		public ITrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor,
 			ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)
 		{
