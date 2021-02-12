@@ -22,30 +22,7 @@ namespace SIL.Machine.Translation
 			WordAlignmentMatrix invMatrix = _trgSrcAligner.GetBestAlignment(targetSegment, sourceSegment);
 
 			invMatrix.Transpose();
-			switch (Heuristic)
-			{
-				case SymmetrizationHeuristic.Union:
-					matrix.UnionWith(invMatrix);
-					break;
-				case SymmetrizationHeuristic.Intersection:
-					matrix.IntersectWith(invMatrix);
-					break;
-				case SymmetrizationHeuristic.Och:
-					matrix.SymmetrizeWith(invMatrix);
-					break;
-				case SymmetrizationHeuristic.Grow:
-					matrix.GrowSymmetrizeWith(invMatrix);
-					break;
-				case SymmetrizationHeuristic.GrowDiag:
-					matrix.GrowDiagSymmetrizeWith(invMatrix);
-					break;
-				case SymmetrizationHeuristic.GrowDiagFinal:
-					matrix.GrowDiagFinalSymmetrizeWith(invMatrix);
-					break;
-				case SymmetrizationHeuristic.GrowDiagFinalAnd:
-					matrix.GrowDiagFinalAndSymmetrizeWith(invMatrix);
-					break;
-			}
+			matrix.SymmetrizeWith(invMatrix, Heuristic);
 			return matrix;
 		}
 	}

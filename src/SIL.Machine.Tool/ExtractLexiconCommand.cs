@@ -8,7 +8,7 @@ using SIL.Machine.Translation;
 
 namespace SIL.Machine
 {
-	public class LexiconCommand : CommandBase
+	public class ExtractLexiconCommand : CommandBase
 	{
 		private const string Symmetric = "symmetric";
 		private const string Direct = "direct";
@@ -23,9 +23,9 @@ namespace SIL.Machine
 		private readonly CommandOption _beamThresholdOption;
 		private readonly CommandOption _quietOption;
 
-		public LexiconCommand()
+		public ExtractLexiconCommand()
 		{
-			Name = "lexicon";
+			Name = "extract-lexicon";
 			Description = "Extracts a lexicon from a word alignment model.";
 
 			_modelSpec = AddSpec(new AlignmentModelCommandSpec { IncludeSymHeuristicOption = false });
@@ -177,7 +177,7 @@ namespace SIL.Machine
 				Direct,
 				Inverse
 			};
-			return string.IsNullOrEmpty(value) || validDirections.Contains(value);
+			return string.IsNullOrEmpty(value) || validDirections.Contains(value.ToLowerInvariant());
 		}
 	}
 }

@@ -23,7 +23,8 @@ namespace SIL.Machine
 			AddCommand(new BuildCorpusCommand());
 			AddCommand(new TranslateCommand());
 			AddCommand(new TokenizeCommand());
-			AddCommand(new LexiconCommand());
+			AddCommand(new ExtractLexiconCommand());
+			AddCommand(new SymmetrizeCommand());
 		}
 
 		protected override int ExecuteCommand()

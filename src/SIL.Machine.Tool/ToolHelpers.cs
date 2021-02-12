@@ -19,6 +19,15 @@ namespace SIL.Machine
 		public const string FastAlign = "fast_align";
 		public const string Smt = "smt";
 
+		public const string Och = "och";
+		public const string Union = "union";
+		public const string Intersection = "intersection";
+		public const string Grow = "grow";
+		public const string GrowDiag = "grow-diag";
+		public const string GrowDiagFinal = "grow-diag-final";
+		public const string GrowDiagFinalAnd = "grow-diag-final-and";
+		public const string None = "none";
+
 		public static bool ValidateCorpusFormatOption(string value)
 		{
 			return string.IsNullOrEmpty(value) || value.ToLowerInvariant().IsOneOf("dbl", "usx", "text", "pt");
@@ -164,6 +173,36 @@ namespace SIL.Machine
 					return CreateThotSmtModelTrainer<FastAlignWordAlignmentModel>(modelType, modelConfigFileName,
 						corpus, maxSize);
 			}
+		}
+
+		public static bool ValidateSymmetrizationHeuristicOption(string value)
+		{
+			var validHeuristics = new HashSet<string>
+			{
+				Och,
+				Union,
+				Intersection,
+				Grow,
+				GrowDiag,
+				GrowDiagFinal,
+				GrowDiagFinalAnd,
+				None
+			};
+			return string.IsNullOrEmpty(value) || validHeuristics.Contains(value.ToLowerInvariant());
+		}
+
+		public static SymmetrizationHeuristic GetSymmetrizationHeuristic(string value)
+		{
+			return value switch
+			{
+				Union => SymmetrizationHeuristic.Union,
+				Intersection => SymmetrizationHeuristic.Intersection,
+				Grow => SymmetrizationHeuristic.Grow,
+				GrowDiag => SymmetrizationHeuristic.GrowDiag,
+				GrowDiagFinal => SymmetrizationHeuristic.GrowDiagFinal,
+				GrowDiagFinalAnd => SymmetrizationHeuristic.GrowDiagFinalAnd,
+				_ => SymmetrizationHeuristic.Och,
+			};
 		}
 
 		private static void CreateConfigFile(string modelType, string modelConfigFileName)

@@ -150,11 +150,40 @@ namespace SIL.Machine.Translation
 			}
 		}
 
+		public void SymmetrizeWith(WordAlignmentMatrix other,
+			SymmetrizationHeuristic heuristic = SymmetrizationHeuristic.Och)
+		{
+			switch (heuristic)
+			{
+				case SymmetrizationHeuristic.Union:
+					UnionWith(other);
+					break;
+				case SymmetrizationHeuristic.Intersection:
+					IntersectWith(other);
+					break;
+				case SymmetrizationHeuristic.Och:
+					OchSymmetrizeWith(other);
+					break;
+				case SymmetrizationHeuristic.Grow:
+					GrowSymmetrizeWith(other);
+					break;
+				case SymmetrizationHeuristic.GrowDiag:
+					GrowDiagSymmetrizeWith(other);
+					break;
+				case SymmetrizationHeuristic.GrowDiagFinal:
+					GrowDiagFinalSymmetrizeWith(other);
+					break;
+				case SymmetrizationHeuristic.GrowDiagFinalAnd:
+					GrowDiagFinalAndSymmetrizeWith(other);
+					break;
+			}
+		}
+
 		/// <summary>
 		/// Implements the symmetrization method defined in "Improved Alignment Models for Statistical Machine
 		/// Translation" (Och et al., 1999).
 		/// </summary>
-		public void SymmetrizeWith(WordAlignmentMatrix other)
+		public void OchSymmetrizeWith(WordAlignmentMatrix other)
 		{
 			if (RowCount != other.RowCount || ColumnCount != other.ColumnCount)
 				throw new ArgumentException("The matrices are not the same size.", nameof(other));
