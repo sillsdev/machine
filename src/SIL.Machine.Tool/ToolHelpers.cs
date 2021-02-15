@@ -175,7 +175,7 @@ namespace SIL.Machine
 			}
 		}
 
-		public static bool ValidateSymmetrizationHeuristicOption(string value)
+		public static bool ValidateSymmetrizationHeuristicOption(string value, bool noneAllowed = true)
 		{
 			var validHeuristics = new HashSet<string>
 			{
@@ -185,9 +185,10 @@ namespace SIL.Machine
 				Grow,
 				GrowDiag,
 				GrowDiagFinal,
-				GrowDiagFinalAnd,
-				None
+				GrowDiagFinalAnd
 			};
+			if (noneAllowed)
+				validHeuristics.Add(None);
 			return string.IsNullOrEmpty(value) || validHeuristics.Contains(value.ToLowerInvariant());
 		}
 

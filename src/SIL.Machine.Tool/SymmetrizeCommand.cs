@@ -30,7 +30,7 @@ namespace SIL.Machine
 				"The output alignment format.\nFormats: \"pharaoh\" (default), \"giza\".",
 				CommandOptionType.SingleValue);
 			_symHeuristicOption = Option("-sh|--sym-heuristic <SYM_HEURISTIC>",
-				$"The symmetrization heuristic.\nHeuristics: \"{ToolHelpers.Och}\" (default), \"{ToolHelpers.Union}\", \"{ToolHelpers.Intersection}\", \"{ToolHelpers.Grow}\", \"{ToolHelpers.GrowDiag}\", \"{ToolHelpers.GrowDiagFinal}\", \"{ToolHelpers.GrowDiagFinalAnd}\", \"{ToolHelpers.None}\".",
+				$"The symmetrization heuristic.\nHeuristics: \"{ToolHelpers.Och}\" (default), \"{ToolHelpers.Union}\", \"{ToolHelpers.Intersection}\", \"{ToolHelpers.Grow}\", \"{ToolHelpers.GrowDiag}\", \"{ToolHelpers.GrowDiagFinal}\", \"{ToolHelpers.GrowDiagFinalAnd}\".",
 				CommandOptionType.SingleValue);
 		}
 
@@ -55,6 +55,12 @@ namespace SIL.Machine
 			if (!ValidateAlignmentFormatOption(_outputFormatOption.Value()))
 			{
 				Out.WriteLine("The specified output format is invalid.");
+				return 1;
+			}
+
+			if (!ToolHelpers.ValidateSymmetrizationHeuristicOption(_symHeuristicOption.Value(), noneAllowed: false))
+			{
+				Out.WriteLine("The specified symmetrization heuristic is invalid.");
 				return 1;
 			}
 
