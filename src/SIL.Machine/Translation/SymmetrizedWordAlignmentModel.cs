@@ -68,8 +68,6 @@ namespace SIL.Machine.Translation
 		public string NullWord => _directWordAlignmentModel.NullWord;
 		public int NullIndex => _directWordAlignmentModel.NullIndex;
 
-		public bool IsProbabilityDistributionNormalized => false;
-
 		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment,
 			IReadOnlyList<string> targetSegment)
 		{
@@ -78,33 +76,34 @@ namespace SIL.Machine.Translation
 			return _aligner.GetBestAlignment(sourceSegment, targetSegment);
 		}
 
-		public double GetTranslationProbability(string sourceWord, string targetWord)
+		public double GetTranslationScore(string sourceWord, string targetWord)
 		{
 			CheckDisposed();
 
-			double transProb = _directWordAlignmentModel.GetTranslationProbability(sourceWord, targetWord);
-			double invTransProb = _inverseWordAlignmentModel.GetTranslationProbability(targetWord, sourceWord);
-			return Math.Max(transProb, invTransProb);
+			double score = _directWordAlignmentModel.GetTranslationScore(sourceWord, targetWord);
+			double invScore = _inverseWordAlignmentModel.GetTranslationScore(targetWord, sourceWord);
+			return Math.Max(score, invScore);
 		}
 
-		public double GetTranslationProbability(int sourceWordIndex, int targetWordIndex)
+		public double GetTranslationScore(int sourceWordIndex, int targetWordIndex)
 		{
 			CheckDisposed();
 
-			double transProb = _directWordAlignmentModel.GetTranslationProbability(sourceWordIndex, targetWordIndex);
-			double invTransProb = _inverseWordAlignmentModel.GetTranslationProbability(targetWordIndex,
-				sourceWordIndex);
-			return Math.Max(transProb, invTransProb);
+			double score = _directWordAlignmentModel.GetTranslationScore(sourceWordIndex, targetWordIndex);
+			double invScore = _inverseWordAlignmentModel.GetTranslationScore(targetWordIndex, sourceWordIndex);
+			return Math.Max(score, invScore);
 		}
 
-		public double GetAlignmentProbability(int sourceLen, int prevSourceIndex, int sourceIndex, int targetLen,
+		public double GetAlignmentScore(int sourceLen, int prevSourceIndex, int sourceIndex, int targetLen,
 			int prevTargetIndex, int targetIndex)
 		{
-			double alignProb = _directWordAlignmentModel.GetAlignmentProbability(sourceLen, prevSourceIndex,
-				sourceIndex, targetLen, prevTargetIndex, targetIndex);
-			double invAlignProb = _inverseWordAlignmentModel.GetAlignmentProbability(targetLen, prevTargetIndex,
-				targetIndex, sourceLen, prevSourceIndex, sourceIndex);
-			return Math.Max(alignProb, invAlignProb);
+			CheckDisposed();
+
+			double score = _directWordAlignmentModel.GetAlignmentScore(sourceLen, prevSourceIndex, sourceIndex,
+				targetLen, prevTargetIndex, targetIndex);
+			double invScore = _inverseWordAlignmentModel.GetAlignmentScore(targetLen, prevTargetIndex, targetIndex,
+				sourceLen, prevSourceIndex, sourceIndex);
+			return Math.Max(score, invScore);
 		}
 
 		public ITrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor,

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Corpora;
 
@@ -29,26 +30,6 @@ namespace SIL.Machine.Translation
 					truecaser.Truecase(sourceSegment, r)));
 		}
 
-		public static double GetAlignmentProbability(this IWordAlignmentModel model, int sourceLen, int prevSourceIndex,
-			int sourceIndex, int targetLen, int prevTargetIndex, int targetIndex)
-		{
-			switch (model)
-			{
-				case IHmmWordAlignmentModel hmmModel:
-					return hmmModel.GetAlignmentProbability(sourceLen, prevSourceIndex, sourceIndex);
-
-				case IIbm2WordAlignmentModel ibm2Model:
-					return ibm2Model.GetAlignmentProbability(sourceLen, sourceIndex, targetLen, targetIndex);
-
-				case SymmetrizedWordAlignmentModel symmModel:
-					return symmModel.GetAlignmentProbability(sourceLen, prevSourceIndex, sourceIndex, targetLen,
-						prevTargetIndex, targetIndex);
-
-				default:
-					return -1;
-			}
-		}
-
 		public static Dictionary<string, Dictionary<string, double>> GetTranslationTable(this IWordAlignmentModel model,
 			double threshold = 0)
 		{
@@ -58,9 +39,9 @@ namespace SIL.Machine.Translation
 				var row = new Dictionary<string, double>();
 				for (int j = 0; j < model.TargetWords.Count; j++)
 				{
-					double prob = model.GetTranslationProbability(i, j);
-					if (prob > threshold)
-						row[model.TargetWords[j]] = prob;
+					double score = model.GetTranslationScore(i, j);
+					if (score > threshold)
+						row[model.TargetWords[j]] = score;
 				}
 				results[model.SourceWords[i]] = row;
 			}

@@ -14,8 +14,8 @@ namespace SIL.Machine.Corpora
 		public int SourceIndex { get; }
 		public int TargetIndex { get; }
 		public bool IsSure { get; set; } = true;
-		public double TranslationProbability { get; set; } = -1;
-		public double AlignmentProbability { get; set; } = -1;
+		public double TranslationScore { get; set; } = -1;
+		public double AlignmentScore { get; set; } = -1;
 
 		public bool Equals(AlignedWordPair other)
 		{
@@ -40,11 +40,11 @@ namespace SIL.Machine.Corpora
 		{
 			var sb = new StringBuilder();
 			sb.Append($"{SourceIndex}-{TargetIndex}");
-			if (TranslationProbability >= 0)
+			if (TranslationScore >= 0)
 			{
-				sb.Append($":{TranslationProbability:0.########}");
-				if (AlignmentProbability >= 0)
-					sb.Append($":{AlignmentProbability:0.########}");
+				sb.Append($":{TranslationScore:0.########}");
+				if (AlignmentScore >= 0)
+					sb.Append($":{AlignmentScore:0.########}");
 			}
 			return sb.ToString();
 		}

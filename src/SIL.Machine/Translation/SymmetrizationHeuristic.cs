@@ -2,6 +2,8 @@
 {
 	public enum SymmetrizationHeuristic
 	{
+		None,
+
 		/// <summary>
 		/// matrix union
 		/// </summary>

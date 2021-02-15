@@ -10,12 +10,14 @@ namespace SIL.Machine.Translation
 		IReadOnlyList<string> TargetWords { get; }
 		string NullWord { get; }
 		int NullIndex { get; }
-		bool IsProbabilityDistributionNormalized { get; }
 
 		ITrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor,
 			ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue);
 
-		double GetTranslationProbability(string sourceWord, string targetWord);
-		double GetTranslationProbability(int sourceWordIndex, int targetWordIndex);
+		double GetTranslationScore(string sourceWord, string targetWord);
+		double GetTranslationScore(int sourceWordIndex, int targetWordIndex);
+
+		double GetAlignmentScore(int sourceLen, int prevSourceIndex, int sourceIndex, int targetLen,
+			int prevTargetIndex, int targetIndex);
 	}
 }

@@ -15,6 +15,14 @@
 			TrainingIterationCount = 4;
 		}
 
+		public override double GetAlignmentScore(int sourceLen, int prevSourceIndex, int sourceIndex, int targetLen,
+			int prevTargetIndex, int targetIndex)
+		{
+			CheckDisposed();
+
+			return GetAlignmentProbability(sourceLen, sourceIndex, targetLen, targetIndex);
+		}
+
 		public double GetAlignmentProbability(int sourceLen, int sourceIndex, int targetLen, int targetIndex)
 		{
 			CheckDisposed();

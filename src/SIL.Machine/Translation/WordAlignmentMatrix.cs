@@ -459,11 +459,11 @@ namespace SIL.Machine.Translation
 			{
 				string sourceWord = sourceSegment[wordPair.SourceIndex];
 				string targetWord = targetSegment[wordPair.TargetIndex];
-				wordPair.TranslationProbability = model.GetTranslationProbability(sourceWord, targetWord);
+				wordPair.TranslationScore = model.GetTranslationScore(sourceWord, targetWord);
 
 				int prevSourceIndex = wordPair.TargetIndex == 0 ? -1 : sourceIndices[wordPair.TargetIndex - 1];
 				int prevTargetIndex = wordPair.SourceIndex == 0 ? -1 : targetIndices[wordPair.SourceIndex - 1];
-				wordPair.AlignmentProbability = model.GetAlignmentProbability(sourceSegment.Count, prevSourceIndex,
+				wordPair.AlignmentScore = model.GetAlignmentScore(sourceSegment.Count, prevSourceIndex,
 					wordPair.SourceIndex, targetSegment.Count, prevTargetIndex, wordPair.TargetIndex);
 
 				wordPairs.Add(wordPair);
@@ -472,9 +472,9 @@ namespace SIL.Machine.Translation
 		}
 
 		public string ToString(IWordAlignmentModel model, IReadOnlyList<string> sourceSegment,
-			IReadOnlyList<string> targetSegment, bool includeProbs = true)
+			IReadOnlyList<string> targetSegment, bool includeScores = true)
 		{
-			if (!includeProbs)
+			if (!includeScores)
 				return ToString();
 			return string.Join(" ", GetAlignedWordPairs(model, sourceSegment, targetSegment)
 				.Select(wp => wp.ToString()));

@@ -164,7 +164,7 @@ namespace SIL.Machine.Translation.Thot
 		private double GetWordAlignmentScore(IReadOnlyList<string> sourceSegment, int sourceIndex,
 			IReadOnlyList<string> targetSegment, int targetIndex)
 		{
-			return _symmetrizedWordAlignmentModel.GetTranslationProbability(
+			return _symmetrizedWordAlignmentModel.GetTranslationScore(
 				sourceIndex == -1 ? null : sourceSegment[sourceIndex],
 				targetIndex == -1 ? null : targetSegment[targetIndex]);
 		}

@@ -122,27 +122,29 @@ namespace SIL.Machine
 			if (!IsWordIncluded(alignmentModel, i))
 				return;
 
+			bool areScoresNormalized = alignmentModel is IIbm1WordAlignmentModel;
 			string sourceWord = GetWord(alignmentModel, sourceWords, i);
-			var targetWordProbs = new List<(string Word, double Prob)>();
-			double maxProb = 0.0;
-			double probSum = 0.0;
+			var targetWordScores = new List<(string Word, double Score)>();
+			double maxScore = 0.0;
+			double scoreSum = 0.0;
 			for (int j = 0; j < targetWords.Length; j++)
 			{
-				double prob = alignmentModel.GetTranslationProbability(i, j);
-				probSum += prob;
-				maxProb = Math.Max(prob, maxProb);
-				if (IsWordIncluded(alignmentModel, j) && Math.Round(prob, 15, MidpointRounding.AwayFromZero) > 0)
+				double score = alignmentModel is IIbm1WordAlignmentModel ibm1 ? ibm1.GetTranslationProbability(i, j)
+					: alignmentModel.GetTranslationScore(i, j);
+				scoreSum += score;
+				maxScore = Math.Max(score, maxScore);
+				if (IsWordIncluded(alignmentModel, j) && Math.Round(score, 15, MidpointRounding.AwayFromZero) > 0)
 				{
 					string targetWord = GetWord(alignmentModel, targetWords, j);
-					targetWordProbs.Add((targetWord, prob));
+					targetWordScores.Add((targetWord, score));
 				}
 			}
 
-			if (!alignmentModel.IsProbabilityDistributionNormalized)
-				maxProb /= probSum;
-			double logSourceWordThreshold = -LogSpace.ToLogSpace(maxProb) * logBeamThreshold;
-			IEnumerable<(string Word, double Prob)> query = alignmentModel.IsProbabilityDistributionNormalized
-				? targetWordProbs : targetWordProbs.Select(wp => (wp.Word, Prob: wp.Prob / probSum));
+			if (!areScoresNormalized)
+				maxScore /= scoreSum;
+			double logSourceWordThreshold = -LogSpace.ToLogSpace(maxScore) * logBeamThreshold;
+			IEnumerable<(string Word, double Prob)> query = areScoresNormalized ? targetWordScores
+				: targetWordScores.Select(wp => (wp.Word, Prob: wp.Score / scoreSum));
 			query = query.Where(wp => Math.Round(wp.Prob, 8, MidpointRounding.AwayFromZero) > threshold
 					&& LogSpace.ToLogSpace(wp.Prob) >= logSourceWordThreshold)
 				.OrderByDescending(wp => wp.Prob);

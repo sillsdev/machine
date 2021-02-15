@@ -11,5 +11,13 @@
 			: base(Thot.SmoothedIbm1WordAlignmentClassName, prefFileName, createNew)
 		{
 		}
+
+		public override double GetAlignmentScore(int sourceLen, int prevSourceIndex, int sourceIndex, int targetLen,
+			int prevTargetIndex, int targetIndex)
+		{
+			CheckDisposed();
+
+			return -1;
+		}
 	}
 }

@@ -55,35 +55,51 @@ namespace SIL.Machine.Translation.Thot
 		public string NullWord => _smtModel.DirectWordAlignmentModel.NullWord;
 		public int NullIndex => _smtModel.DirectWordAlignmentModel.NullIndex;
 
-		public bool IsProbabilityDistributionNormalized => false;
-
 		public ITrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor,
 			ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)
 		{
+			CheckDisposed();
+
 			return _smtModel.CreateTrainer(sourcePreprocessor, targetPreprocessor, corpus, maxCorpusCount);
 		}
 
 		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment,
 			IReadOnlyList<string> targetSegment)
 		{
+			CheckDisposed();
+
 			TranslationResult result = _smtEngine.GetBestPhraseAlignment(sourceSegment, targetSegment);
 			return result.Alignment;
 		}
 
-		public double GetTranslationProbability(string sourceWord, string targetWord)
+		public double GetTranslationScore(string sourceWord, string targetWord)
 		{
-			double prob = _smtModel.DirectWordAlignmentModel.GetTranslationProbability(sourceWord, targetWord);
-			double invProb = _smtModel.InverseWordAlignmentModel.GetTranslationProbability(targetWord, sourceWord);
-			return Math.Max(prob, invProb);
+			CheckDisposed();
+
+			double score = _smtModel.DirectWordAlignmentModel.GetTranslationScore(sourceWord, targetWord);
+			double invScore = _smtModel.InverseWordAlignmentModel.GetTranslationScore(targetWord, sourceWord);
+			return Math.Max(score, invScore);
 		}
 
-		public double GetTranslationProbability(int sourceWordIndex, int targetWordIndex)
+		public double GetTranslationScore(int sourceWordIndex, int targetWordIndex)
 		{
-			double prob = _smtModel.DirectWordAlignmentModel.GetTranslationProbability(sourceWordIndex,
-				targetWordIndex);
-			double invProb = _smtModel.InverseWordAlignmentModel.GetTranslationProbability(targetWordIndex,
-				sourceWordIndex);
-			return Math.Max(prob, invProb);
+			CheckDisposed();
+
+			double score = _smtModel.DirectWordAlignmentModel.GetTranslationScore(sourceWordIndex, targetWordIndex);
+			double invScore = _smtModel.InverseWordAlignmentModel.GetTranslationScore(targetWordIndex, sourceWordIndex);
+			return Math.Max(score, invScore);
+		}
+
+		public double GetAlignmentScore(int sourceLen, int prevSourceIndex, int sourceIndex, int targetLen,
+			int prevTargetIndex, int targetIndex)
+		{
+			CheckDisposed();
+
+			double score = _smtModel.DirectWordAlignmentModel.GetAlignmentScore(sourceLen, prevSourceIndex,
+				sourceIndex, targetLen, prevTargetIndex, targetIndex);
+			double invScore = _smtModel.InverseWordAlignmentModel.GetAlignmentScore(targetLen, prevTargetIndex,
+				targetIndex, sourceLen, prevSourceIndex, sourceIndex);
+			return Math.Max(score, invScore);
 		}
 
 		protected override void DisposeManagedResources()

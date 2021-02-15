@@ -18,6 +18,7 @@ namespace SIL.Machine
 		private CommandOption _symHeuristicOption;
 
 		private IWordAlignmentModelFactory _modelFactory;
+		private SymmetrizationHeuristic _symHeuristic;
 
 		public bool IncludeSymHeuristicOption { get; set; } = true;
 
@@ -69,6 +70,8 @@ namespace SIL.Machine
 				return false;
 			}
 
+			_symHeuristic = ToolHelpers.GetSymmetrizationHeuristic(_symHeuristicOption?.Value());
+
 			if (factories.TryGetValue(_modelTypeOption.Value(), out IWordAlignmentModelFactory factory))
 				_modelFactory = factory;
 
@@ -79,7 +82,7 @@ namespace SIL.Machine
 			WordAlignmentDirection direction = WordAlignmentDirection.Symmetric)
 		{
 			if (_modelFactory != null)
-				return _modelFactory.CreateModel(_modelArgument.Value, direction);
+				return _modelFactory.CreateModel(_modelArgument.Value, direction, _symHeuristic);
 
 			switch (_modelTypeOption.Value())
 			{
@@ -182,14 +185,10 @@ namespace SIL.Machine
 				var directModel = new TAlignModel();
 				directModel.Load(modelPath + "_invswm");
 
-				if (_symHeuristicOption?.Value() == ToolHelpers.None)
-					return directModel;
-
 				var inverseModel = new TAlignModel();
 				inverseModel.Load(modelPath + "_swm");
-				SymmetrizationHeuristic heuristic = ToolHelpers.GetSymmetrizationHeuristic(
-					_symHeuristicOption?.Value());
-				return new SymmetrizedWordAlignmentModel(directModel, inverseModel) { Heuristic = heuristic };
+
+				return new SymmetrizedWordAlignmentModel(directModel, inverseModel) { Heuristic = _symHeuristic };
 			}
 		}
 

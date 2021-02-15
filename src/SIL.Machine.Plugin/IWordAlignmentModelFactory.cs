@@ -7,7 +7,8 @@ namespace SIL.Machine.Plugin
 	{
 		string ModelType { get; }
 
-		IWordAlignmentModel CreateModel(string modelPath, WordAlignmentDirection direction);
+		IWordAlignmentModel CreateModel(string modelPath, WordAlignmentDirection direction,
+			SymmetrizationHeuristic symHeuristic);
 		ITrainer CreateTrainer(string modelPath, ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor,
 			ParallelTextCorpus parallelCorpus, int maxCorpusCount);
 	}

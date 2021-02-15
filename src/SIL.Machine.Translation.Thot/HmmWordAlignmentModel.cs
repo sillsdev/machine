@@ -13,6 +13,14 @@
 		{
 		}
 
+		public override double GetAlignmentScore(int sourceLen, int prevSourceIndex, int sourceIndex, int targetLen,
+			int prevTargetIndex, int targetIndex)
+		{
+			CheckDisposed();
+
+			return GetAlignmentProbability(sourceLen, prevSourceIndex, sourceIndex);
+		}
+
 		/// <summary>
 		/// Gets the alignment probability from the HMM single word alignment model. Use -1 for unaligned indices that
 		/// occur before the first aligned index. Other unaligned indices are indicated by adding the source length to
@@ -26,6 +34,5 @@
 			return Thot.swAlignModel_getHmmAlignmentProbability(Handle, (uint)(prevSourceIndex + 1), (uint)sourceLen,
 				(uint)(sourceIndex + 1));
 		}
-
 	}
 }

@@ -196,6 +196,7 @@ namespace SIL.Machine
 		{
 			return value switch
 			{
+				None => SymmetrizationHeuristic.None,
 				Union => SymmetrizationHeuristic.Union,
 				Intersection => SymmetrizationHeuristic.Intersection,
 				Grow => SymmetrizationHeuristic.Grow,

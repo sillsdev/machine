@@ -19,7 +19,7 @@ namespace SIL.Machine.Translation.Thot
 			_smtModel = smtModel;
 			LoadHandle();
 			_confidenceEstimator = new Ibm1WordConfidenceEstimator(
-				_smtModel.SymmetrizedWordAlignmentModel.GetTranslationProbability);
+				_smtModel.SymmetrizedWordAlignmentModel.GetTranslationScore);
 			//_confidenceEstimator = new WppWordConfidenceEstimator(this);
 		}
 

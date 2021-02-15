@@ -13,7 +13,7 @@ namespace SIL.Machine
 		private readonly ParallelCorpusCommandSpec _corpusSpec;
 		private readonly CommandArgument _outputArgument;
 		private readonly CommandOption _refOption;
-		private readonly CommandOption _probOption;
+		private readonly CommandOption _scoresOption;
 		private readonly CommandOption _quietOption;
 
 		public AlignCommand()
@@ -28,8 +28,7 @@ namespace SIL.Machine
 			_refOption = Option("-r|--reference <REF_PATH>",
 				"The reference alignments corpus.\nIf specified, AER and F-Score will be computed for the generated alignments.",
 				CommandOptionType.SingleValue);
-			_probOption = Option("-p|--probabilities", "Include probabilities in the output.",
-				CommandOptionType.NoValue);
+			_scoresOption = Option("-s|--scores", "Include scores in the output.", CommandOptionType.NoValue);
 			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
 		}
 
@@ -100,7 +99,7 @@ namespace SIL.Machine
 										targetSegment, segment.CreateAlignmentMatrix());
 									alignments?.Add(alignment.GetAlignedWordPairs());
 									writer.WriteLine(alignment.ToString(alignmentModel, sourceSegment, targetSegment,
-										_probOption.HasValue()));
+										includeScores: _scoresOption.HasValue()));
 									segmentCount++;
 									progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
 									if (segmentCount == _corpusSpec.MaxCorpusCount)

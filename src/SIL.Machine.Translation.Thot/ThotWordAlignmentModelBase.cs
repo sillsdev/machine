@@ -8,7 +8,7 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.Thot
 {
-	public class ThotWordAlignmentModelBase<TAlignModel> : DisposableBase, IWordAlignmentModel
+	public abstract class ThotWordAlignmentModelBase<TAlignModel> : DisposableBase, IIbm1WordAlignmentModel
 		where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
 	{
 		private bool _owned;
@@ -54,8 +54,6 @@ namespace SIL.Machine.Translation.Thot
 
 		public string NullWord => "NULL";
 		public int NullIndex => 0;
-
-		public bool IsProbabilityDistributionNormalized => true;
 
 		public int TrainingIterationCount { get; set; } = 5;
 
@@ -129,6 +127,19 @@ namespace SIL.Machine.Translation.Thot
 			if (!string.IsNullOrEmpty(_prefFileName))
 				Thot.swAlignModel_save(Handle, _prefFileName);
 		}
+
+		public double GetTranslationScore(string sourceWord, string targetWord)
+		{
+			return GetTranslationProbability(sourceWord, targetWord);
+		}
+
+		public double GetTranslationScore(int sourceWordIndex, int targetWordIndex)
+		{
+			return GetTranslationProbability(sourceWordIndex, targetWordIndex);
+		}
+
+		public abstract double GetAlignmentScore(int sourceLen, int prevSourceIndex, int sourceIndex, int targetLen,
+			int prevTargetIndex, int targetIndex);
 
 		public double GetTranslationProbability(string sourceWord, string targetWord)
 		{
