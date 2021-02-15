@@ -93,18 +93,17 @@ namespace SIL.Machine
 				case ToolHelpers.FastAlign:
 					return CreateThotAlignmentModel<FastAlignWordAlignmentModel>(direction);
 				case ToolHelpers.Smt:
-					string modelCfgFileName = ToolHelpers.GetTranslationModelConfigFileName(_modelArgument.Value);
 					switch (_smtModelTypeOption.Value())
 					{
 						default:
 						case ToolHelpers.Hmm:
-							return CreateThotSmtAlignmentModel<HmmWordAlignmentModel>(modelCfgFileName);
+							return CreateThotSmtAlignmentModel<HmmWordAlignmentModel>(direction);
 						case ToolHelpers.Ibm1:
-							return CreateThotSmtAlignmentModel<Ibm1WordAlignmentModel>(modelCfgFileName);
+							return CreateThotSmtAlignmentModel<Ibm1WordAlignmentModel>(direction);
 						case ToolHelpers.Ibm2:
-							return CreateThotSmtAlignmentModel<Ibm2WordAlignmentModel>(modelCfgFileName);
+							return CreateThotSmtAlignmentModel<Ibm2WordAlignmentModel>(direction);
 						case ToolHelpers.FastAlign:
-							return CreateThotSmtAlignmentModel<FastAlignWordAlignmentModel>(modelCfgFileName);
+							return CreateThotSmtAlignmentModel<FastAlignWordAlignmentModel>(direction);
 					}
 			}
 		}
@@ -194,10 +193,29 @@ namespace SIL.Machine
 			}
 		}
 
-		private IWordAlignmentModel CreateThotSmtAlignmentModel<TAlignModel>(string modelCfgFileName)
+		private IWordAlignmentModel CreateThotSmtAlignmentModel<TAlignModel>(WordAlignmentDirection direction)
 			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
 		{
-			return new ThotSmtWordAlignmentModel<TAlignModel>(modelCfgFileName);
+			string modelCfgFileName = ToolHelpers.GetTranslationModelConfigFileName(_modelArgument.Value);
+			string modelDir = Path.GetDirectoryName(modelCfgFileName);
+			string alignModelPath = Path.Combine(modelDir, "src_trg");
+
+			if (direction == WordAlignmentDirection.Direct)
+			{
+				var directModel = new TAlignModel();
+				directModel.Load(alignModelPath + "_invswm");
+				return directModel;
+			}
+			else if (direction == WordAlignmentDirection.Inverse)
+			{
+				var inverseModel = new TAlignModel();
+				inverseModel.Load(alignModelPath + "_swm");
+				return inverseModel;
+			}
+			else
+			{
+				return new ThotSmtWordAlignmentModel<TAlignModel>(modelCfgFileName);
+			}
 		}
 
 		private static bool ValidateAlignmentModelTypeOption(string value, IEnumerable<string> pluginTypes)

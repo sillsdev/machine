@@ -1,5 +1,4 @@
-﻿using System.IO;
-using McMaster.Extensions.CommandLineUtils;
+﻿using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Translation;
 
 namespace SIL.Machine

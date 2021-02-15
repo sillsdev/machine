@@ -73,14 +73,17 @@ namespace SIL.Machine.Translation.Thot
 		public double GetTranslationProbability(string sourceWord, string targetWord)
 		{
 			double prob = _smtModel.DirectWordAlignmentModel.GetTranslationProbability(sourceWord, targetWord);
-			double invProb = _smtModel.InverseWordAlignmentModel.GetTranslationProbability(targetWord,
-				sourceWord);
+			double invProb = _smtModel.InverseWordAlignmentModel.GetTranslationProbability(targetWord, sourceWord);
 			return Math.Max(prob, invProb);
 		}
 
 		public double GetTranslationProbability(int sourceWordIndex, int targetWordIndex)
 		{
-			return GetTranslationProbability(SourceWords[sourceWordIndex], TargetWords[targetWordIndex]);
+			double prob = _smtModel.DirectWordAlignmentModel.GetTranslationProbability(sourceWordIndex,
+				targetWordIndex);
+			double invProb = _smtModel.InverseWordAlignmentModel.GetTranslationProbability(targetWordIndex,
+				sourceWordIndex);
+			return Math.Max(prob, invProb);
 		}
 
 		protected override void DisposeManagedResources()
