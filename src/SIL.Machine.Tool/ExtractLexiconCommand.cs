@@ -57,7 +57,8 @@ namespace SIL.Machine
 				return 1;
 			}
 
-			WordAlignmentDirection direction = (_directionOption.Value()) switch
+			string directionStr = (_directionOption.Value() ?? Symmetric).ToLowerInvariant();
+			WordAlignmentDirection direction = (directionStr) switch
 			{
 				Direct => WordAlignmentDirection.Direct,
 				Inverse => WordAlignmentDirection.Inverse,
@@ -86,13 +87,13 @@ namespace SIL.Machine
 			double logBeamThreshold = beamThreshold == 0 ? LogSpace.Zero : LogSpace.ToLogSpace(beamThreshold);
 
 			if (!_quietOption.HasValue())
-				Out.Write("Loading... ");
+				Out.Write("Loading model... ");
 
 			using IWordAlignmentModel alignmentModel = _modelSpec.CreateAlignmentModel(direction);
 			if (!_quietOption.HasValue())
 			{
 				Out.WriteLine("done.");
-				Out.Write("Extracting lexicon... ");
+				Out.Write($"Extracting {directionStr} lexicon... ");
 			}
 
 			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))

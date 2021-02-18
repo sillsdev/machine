@@ -85,7 +85,7 @@ namespace SIL.Machine
 				_refWordTokenizerOption.Value() ?? "whitespace");
 
 			if (!_quietOption.HasValue())
-				Out.Write("Loading... ");
+				Out.Write("Loading model... ");
 			int corpusCount = _corpusSpec.GetNonemptyCorpusCount();
 			var truecaser = new TransferTruecaser();
 			ITokenProcessor processor = TokenProcessors.Pipeline(TokenProcessors.Normalize, TokenProcessors.Lowercase);

@@ -66,7 +66,7 @@ namespace SIL.Machine
 			int parallelCorpusCount = _corpusSpec.GetNonemptyParallelCorpusCount();
 
 			if (!_quietOption.HasValue())
-				Out.Write("Loading... ");
+				Out.Write("Loading model... ");
 			using (IWordAlignmentModel alignmentModel = _modelSpec.CreateAlignmentModel())
 			{
 				if (!_quietOption.HasValue())

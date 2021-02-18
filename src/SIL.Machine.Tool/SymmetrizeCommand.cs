@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
@@ -16,6 +17,7 @@ namespace SIL.Machine
 		private CommandArgument _outputArgument;
 		private CommandOption _outputFormatOption;
 		private CommandOption _symHeuristicOption;
+		private CommandOption _quietOption;
 
 		public SymmetrizeCommand()
 		{
@@ -32,6 +34,7 @@ namespace SIL.Machine
 			_symHeuristicOption = Option("-sh|--sym-heuristic <SYM_HEURISTIC>",
 				$"The symmetrization heuristic.\nHeuristics: \"{ToolHelpers.Och}\" (default), \"{ToolHelpers.Union}\", \"{ToolHelpers.Intersection}\", \"{ToolHelpers.Grow}\", \"{ToolHelpers.GrowDiag}\", \"{ToolHelpers.GrowDiagFinal}\", \"{ToolHelpers.GrowDiagFinalAnd}\".",
 				CommandOptionType.SingleValue);
+			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
 		}
 
 		protected override int ExecuteCommand()
@@ -71,6 +74,8 @@ namespace SIL.Machine
 			using var inverseReader = new StreamReader(_inverseArgument.Value);
 			using var outputWriter = new StreamWriter(_outputArgument.Value);
 
+			if (!_quietOption.HasValue())
+				Out.Write("Symmetrizing... ");
 			int index = 1;
 			foreach ((WordAlignmentMatrix matrix, WordAlignmentMatrix invMatrix, IReadOnlyList<string> source, IReadOnlyList<string> target) in ParseGizaAlignments(
 				directReader, inverseReader))
@@ -91,6 +96,8 @@ namespace SIL.Machine
 				}
 				index++;
 			}
+			if (!_quietOption.HasValue())
+				Out.WriteLine("done.");
 
 			return 0;
 		}
@@ -130,16 +137,19 @@ namespace SIL.Machine
 					{
 						if (srcIndex > -1)
 						{
-							string trgIndicesStr = line.Substring(start + 3, end - start - 4).Trim();
-							string[] trgIndices = trgIndicesStr.Split();
+							string trgIndicesStr = line.Substring(start + 2, end - start - 3).Trim();
+							string[] trgIndices = trgIndicesStr.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 							foreach (string trgIndex in trgIndices)
 								pairs.Add((srcIndex, int.Parse(trgIndex) - 1));
 						}
 						start = line.IndexOf("({", start + 2);
-						string srcWord = line.Substring(end + 3, start - end - 4);
-						source.Add(srcWord);
-						end = line.IndexOf("})", end + 2);
-						srcIndex++;
+						if (start >= 0)
+						{
+							string srcWord = line.Substring(end + 3, start - end - 4);
+							source.Add(srcWord);
+							end = line.IndexOf("})", end + 2);
+							srcIndex++;
+						}
 					}
 
 					var alignment = new WordAlignmentMatrix(srcIndex + 1, target.Length);
@@ -147,6 +157,7 @@ namespace SIL.Machine
 						alignment[i, j] = true;
 					yield return (alignment, source, target);
 				}
+				lineIndex++;
 			}
 		}
 

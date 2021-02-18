@@ -84,7 +84,7 @@ namespace SIL.Machine
 			int parallelCorpusCount = _corpusSpec.GetNonemptyParallelCorpusCount();
 
 			if (!_quietOption.HasValue())
-				Out.Write("Loading... ");
+				Out.Write("Loading model... ");
 			var watch = new Stopwatch();
 			int segmentCount = 0;
 			_acceptedSuggestionCounts = new int[n];
