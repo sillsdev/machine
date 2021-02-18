@@ -17,6 +17,7 @@ namespace SIL.Machine
 		private readonly CommandOption _nOption;
 		private readonly CommandOption _quietOption;
 		private readonly CommandOption _approveAlignedOption;
+		private readonly CommandOption _lowercaseOption;
 
 		private int _actionCount;
 		private int _charCount;
@@ -42,6 +43,7 @@ namespace SIL.Machine
 				CommandOptionType.SingleValue);
 			_traceOption = Option("--trace <TRACE_DIR>", "The trace output directory.",
 				CommandOptionType.SingleValue);
+			_lowercaseOption = Option("-l|--lowercase", "Convert text to lowercase.", CommandOptionType.NoValue);
 			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
 			_approveAlignedOption = Option("--approve-aligned", "Approve aligned part of source segment.",
 				CommandOptionType.NoValue);
@@ -83,12 +85,17 @@ namespace SIL.Machine
 
 			int parallelCorpusCount = _corpusSpec.GetNonemptyParallelCorpusCount();
 
+			var processors = new List<ITokenProcessor> { TokenProcessors.Normalize };
+			if (_lowercaseOption.HasValue())
+				processors.Add(TokenProcessors.Lowercase);
+			ITokenProcessor processor = TokenProcessors.Pipeline(processors);
+
 			if (!_quietOption.HasValue())
 				Out.Write("Loading model... ");
 			var watch = new Stopwatch();
 			int segmentCount = 0;
 			_acceptedSuggestionCounts = new int[n];
-			using (IInteractiveTranslationModel smtModel = _modelSpec.CreateModel())
+			using (var smtModel = (IInteractiveTranslationModel)_modelSpec.CreateModel())
 			using (IInteractiveTranslationEngine engine = smtModel.CreateInteractiveEngine())
 			{
 				if (!_quietOption.HasValue())
@@ -107,7 +114,7 @@ namespace SIL.Machine
 						{
 							foreach (ParallelTextSegment segment in text.Segments.Where(s => !s.IsEmpty))
 							{
-								TestSegment(ecm, engine, suggester, n, segment, traceWriter);
+								TestSegment(ecm, engine, suggester, n, processor, segment, traceWriter);
 								segmentCount++;
 								progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
 								if (segmentCount == _corpusSpec.MaxCorpusCount)
@@ -161,9 +168,9 @@ namespace SIL.Machine
 		}
 
 		private void TestSegment(ErrorCorrectionModel ecm, IInteractiveTranslationEngine engine,
-			ITranslationSuggester suggester, int n, ParallelTextSegment segment, StreamWriter traceWriter)
+			ITranslationSuggester suggester, int n, ITokenProcessor processor, ParallelTextSegment segment,
+			StreamWriter traceWriter)
 		{
-			ITokenProcessor processor = TokenProcessors.Pipeline(TokenProcessors.Normalize, TokenProcessors.Lowercase);
 			traceWriter?.WriteLine($"Segment:      {segment.SegmentRef}");
 			IReadOnlyList<string> sourceSegment = processor.Process(segment.SourceSegment);
 			traceWriter?.WriteLine($"Source:       {string.Join(" ", sourceSegment)}");

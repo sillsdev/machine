@@ -117,34 +117,36 @@ namespace SIL.Machine
 				&& segment.SourceSegment.Count > TranslationConstants.MaxSegmentLength);
 		}
 
-		public ITrainer CreateAlignmentModelTrainer(ParallelTextCorpus corpus, int maxSize)
+		public ITrainer CreateAlignmentModelTrainer(ParallelTextCorpus corpus, int maxSize, bool lowercase)
 		{
+			var processors = new List<ITokenProcessor> { TokenProcessors.Normalize };
+			if (lowercase)
+				processors.Add(TokenProcessors.Lowercase);
+			ITokenProcessor processor = TokenProcessors.Pipeline(processors);
+
 			if (_modelFactory != null)
-			{
-				ITokenProcessor processor = TokenProcessors.Pipeline(TokenProcessors.Normalize,
-					TokenProcessors.Lowercase);
 				return _modelFactory.CreateTrainer(_modelArgument.Value, processor, processor, corpus, maxSize);
-			}
 
 			switch (_modelTypeOption.Value())
 			{
 				default:
 				case ToolHelpers.Hmm:
-					return CreateThotAlignmentModelTrainer<HmmWordAlignmentModel>(corpus, maxSize);
+					return CreateThotAlignmentModelTrainer<HmmWordAlignmentModel>(corpus, maxSize, processor);
 				case ToolHelpers.Ibm1:
-					return CreateThotAlignmentModelTrainer<Ibm1WordAlignmentModel>(corpus, maxSize);
+					return CreateThotAlignmentModelTrainer<Ibm1WordAlignmentModel>(corpus, maxSize, processor);
 				case ToolHelpers.Ibm2:
-					return CreateThotAlignmentModelTrainer<Ibm2WordAlignmentModel>(corpus, maxSize);
+					return CreateThotAlignmentModelTrainer<Ibm2WordAlignmentModel>(corpus, maxSize, processor);
 				case ToolHelpers.FastAlign:
-					return CreateThotAlignmentModelTrainer<FastAlignWordAlignmentModel>(corpus, maxSize);
+					return CreateThotAlignmentModelTrainer<FastAlignWordAlignmentModel>(corpus, maxSize, processor);
 				case ToolHelpers.Smt:
 					string modelCfgFileName = ToolHelpers.GetTranslationModelConfigFileName(_modelArgument.Value);
 					return ToolHelpers.CreateTranslationModelTrainer(_smtModelTypeOption.Value(), modelCfgFileName,
-						corpus, maxSize);
+						corpus, maxSize, processor);
 			}
 		}
 
-		private ITrainer CreateThotAlignmentModelTrainer<TAlignModel>(ParallelTextCorpus corpus, int maxSize)
+		private ITrainer CreateThotAlignmentModelTrainer<TAlignModel>(ParallelTextCorpus corpus, int maxSize,
+			ITokenProcessor processor)
 			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
 		{
 			string modelPath = _modelArgument.Value;
@@ -153,7 +155,6 @@ namespace SIL.Machine
 			string modelDir = Path.GetDirectoryName(modelPath);
 			if (!Directory.Exists(modelDir))
 				Directory.CreateDirectory(modelDir);
-			ITokenProcessor processor = TokenProcessors.Pipeline(TokenProcessors.Normalize, TokenProcessors.Lowercase);
 			var directTrainer = new ThotWordAlignmentModelTrainer<TAlignModel>(modelPath + "_invswm", processor,
 				processor, corpus, maxSize);
 			var inverseTrainer = new ThotWordAlignmentModelTrainer<TAlignModel>(modelPath + "_swm", processor,

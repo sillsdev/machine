@@ -14,6 +14,7 @@ namespace SIL.Machine
 		private readonly CommandArgument _outputArgument;
 		private readonly CommandOption _refOption;
 		private readonly CommandOption _scoresOption;
+		private readonly CommandOption _lowercaseOption;
 		private readonly CommandOption _quietOption;
 
 		public AlignCommand()
@@ -29,6 +30,7 @@ namespace SIL.Machine
 				"The reference alignments corpus.\nIf specified, AER and F-Score will be computed for the generated alignments.",
 				CommandOptionType.SingleValue);
 			_scoresOption = Option("-s|--scores", "Include scores in the output.", CommandOptionType.NoValue);
+			_lowercaseOption = Option("-l|--lowercase", "Convert text to lowercase.", CommandOptionType.NoValue);
 			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
 		}
 
@@ -61,7 +63,10 @@ namespace SIL.Machine
 					refCorpus);
 			}
 
-			ITokenProcessor processor = TokenProcessors.Pipeline(TokenProcessors.Normalize, TokenProcessors.Lowercase);
+			var processors = new List<ITokenProcessor> { TokenProcessors.Normalize };
+			if (_lowercaseOption.HasValue())
+				processors.Add(TokenProcessors.Lowercase);
+			ITokenProcessor processor = TokenProcessors.Pipeline(processors);
 
 			int parallelCorpusCount = _corpusSpec.GetNonemptyParallelCorpusCount();
 

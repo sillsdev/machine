@@ -7,6 +7,7 @@ namespace SIL.Machine
 	{
 		private readonly AlignmentModelCommandSpec _modelSpec;
 		private readonly ParallelCorpusCommandSpec _corpusSpec;
+		private readonly CommandOption _lowercaseOption;
 		private readonly CommandOption _quietOption;
 
 		public TrainAlignmentModelCommand()
@@ -16,7 +17,7 @@ namespace SIL.Machine
 
 			_modelSpec = AddSpec(new AlignmentModelCommandSpec { IncludeSymHeuristicOption = false });
 			_corpusSpec = AddSpec(new ParallelCorpusCommandSpec());
-
+			_lowercaseOption = Option("-l|--lowercase", "Convert text to lowercase.", CommandOptionType.NoValue);
 			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
 		}
 
@@ -32,7 +33,7 @@ namespace SIL.Machine
 				Out.Write("Training... ");
 			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
 			using (ITrainer trainer = _modelSpec.CreateAlignmentModelTrainer(_corpusSpec.ParallelCorpus,
-				_corpusSpec.MaxCorpusCount))
+				_corpusSpec.MaxCorpusCount, _lowercaseOption.HasValue()))
 			{
 				var reporter = new PhasedProgressReporter(progress,
 					new Phase("Training model", 0.99),

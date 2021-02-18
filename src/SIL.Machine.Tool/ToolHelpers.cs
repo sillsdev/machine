@@ -155,23 +155,23 @@ namespace SIL.Machine
 		}
 
 		public static ITranslationModelTrainer CreateTranslationModelTrainer(string modelType,
-			string modelConfigFileName, ParallelTextCorpus corpus, int maxSize)
+			string modelConfigFileName, ParallelTextCorpus corpus, int maxSize, ITokenProcessor processor)
 		{
 			switch (modelType)
 			{
 				default:
 				case Hmm:
 					return CreateThotSmtModelTrainer<HmmWordAlignmentModel>(modelType, modelConfigFileName, corpus,
-						maxSize);
+						maxSize, processor);
 				case Ibm1:
 					return CreateThotSmtModelTrainer<Ibm1WordAlignmentModel>(modelType, modelConfigFileName, corpus,
-						maxSize);
+						maxSize, processor);
 				case Ibm2:
 					return CreateThotSmtModelTrainer<Ibm2WordAlignmentModel>(modelType, modelConfigFileName, corpus,
-						maxSize);
+						maxSize, processor);
 				case FastAlign:
 					return CreateThotSmtModelTrainer<FastAlignWordAlignmentModel>(modelType, modelConfigFileName,
-						corpus, maxSize);
+						corpus, maxSize, processor);
 			}
 		}
 
@@ -220,7 +220,7 @@ namespace SIL.Machine
 		}
 
 		private static ITranslationModelTrainer CreateThotSmtModelTrainer<TAlignModel>(string modelType,
-			string modelConfigFileName, ParallelTextCorpus corpus, int maxSize)
+			string modelConfigFileName, ParallelTextCorpus corpus, int maxSize, ITokenProcessor processor)
 			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
 		{
 			string modelDir = Path.GetDirectoryName(modelConfigFileName);
@@ -230,7 +230,6 @@ namespace SIL.Machine
 			if (!File.Exists(modelConfigFileName))
 				CreateConfigFile(modelType, modelConfigFileName);
 
-			ITokenProcessor processor = TokenProcessors.Pipeline(TokenProcessors.Normalize, TokenProcessors.Lowercase);
 			return new ThotSmtModelTrainer<TAlignModel>(modelConfigFileName, processor, processor, corpus, maxSize);
 		}
 	}
