@@ -28,7 +28,7 @@ namespace SIL.Machine
 			Name = "extract-lexicon";
 			Description = "Extracts a lexicon from a word alignment model.";
 
-			_modelSpec = AddSpec(new AlignmentModelCommandSpec { IncludeSymHeuristicOption = false });
+			_modelSpec = AddSpec(new AlignmentModelCommandSpec());
 			_outputArgument = Argument("OUTPUT_PATH", "The output lexicon file.")
 				.IsRequired();
 			_directionOption = Option("-d|--direction <DIRECTION>",

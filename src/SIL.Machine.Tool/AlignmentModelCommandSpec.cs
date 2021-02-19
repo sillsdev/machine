@@ -15,12 +15,8 @@ namespace SIL.Machine
 		private CommandOption _modelTypeOption;
 		private CommandOption _smtModelTypeOption;
 		private CommandOption _pluginOption;
-		private CommandOption _symHeuristicOption;
 
 		private IWordAlignmentModelFactory _modelFactory;
-		private SymmetrizationHeuristic _symHeuristic;
-
-		public bool IncludeSymHeuristicOption { get; set; } = true;
 
 		public void AddParameters(CommandBase command)
 		{
@@ -33,12 +29,6 @@ namespace SIL.Machine
 				CommandOptionType.SingleValue);
 			_pluginOption = command.Option("-mp|--model-plugin <PLUGIN_FILE>", "The model plugin file.",
 				CommandOptionType.SingleValue);
-			if (IncludeSymHeuristicOption)
-			{
-				_symHeuristicOption = command.Option("-sh|--sym-heuristic <SYM_HEURISTIC>",
-					$"The symmetrization heuristic.\nHeuristics: \"{ToolHelpers.Och}\" (default), \"{ToolHelpers.Union}\", \"{ToolHelpers.Intersection}\", \"{ToolHelpers.Grow}\", \"{ToolHelpers.GrowDiag}\", \"{ToolHelpers.GrowDiagFinal}\", \"{ToolHelpers.GrowDiagFinalAnd}\", \"{ToolHelpers.None}\".",
-					CommandOptionType.SingleValue);
-			}
 		}
 
 		public bool Validate(TextWriter outWriter)
@@ -64,14 +54,6 @@ namespace SIL.Machine
 				return false;
 			}
 
-			if (!ToolHelpers.ValidateSymmetrizationHeuristicOption(_symHeuristicOption?.Value()))
-			{
-				outWriter.WriteLine("The specified symmetrization heuristic is invalid.");
-				return false;
-			}
-
-			_symHeuristic = ToolHelpers.GetSymmetrizationHeuristic(_symHeuristicOption?.Value());
-
 			if (factories.TryGetValue(_modelTypeOption.Value(), out IWordAlignmentModelFactory factory))
 				_modelFactory = factory;
 
@@ -79,22 +61,23 @@ namespace SIL.Machine
 		}
 
 		public IWordAlignmentModel CreateAlignmentModel(
-			WordAlignmentDirection direction = WordAlignmentDirection.Symmetric)
+			WordAlignmentDirection direction = WordAlignmentDirection.Symmetric,
+			SymmetrizationHeuristic symHeuristic = SymmetrizationHeuristic.Och)
 		{
 			if (_modelFactory != null)
-				return _modelFactory.CreateModel(_modelArgument.Value, direction, _symHeuristic);
+				return _modelFactory.CreateModel(_modelArgument.Value, direction, symHeuristic);
 
 			switch (_modelTypeOption.Value())
 			{
 				default:
 				case ToolHelpers.Hmm:
-					return CreateThotAlignmentModel<HmmWordAlignmentModel>(direction);
+					return CreateThotAlignmentModel<HmmWordAlignmentModel>(direction, symHeuristic);
 				case ToolHelpers.Ibm1:
-					return CreateThotAlignmentModel<Ibm1WordAlignmentModel>(direction);
+					return CreateThotAlignmentModel<Ibm1WordAlignmentModel>(direction, symHeuristic);
 				case ToolHelpers.Ibm2:
-					return CreateThotAlignmentModel<Ibm2WordAlignmentModel>(direction);
+					return CreateThotAlignmentModel<Ibm2WordAlignmentModel>(direction, symHeuristic);
 				case ToolHelpers.FastAlign:
-					return CreateThotAlignmentModel<FastAlignWordAlignmentModel>(direction);
+					return CreateThotAlignmentModel<FastAlignWordAlignmentModel>(direction, symHeuristic);
 				case ToolHelpers.Smt:
 					switch (_smtModelTypeOption.Value())
 					{
@@ -162,8 +145,8 @@ namespace SIL.Machine
 			return new SymmetrizedWordAlignmentModelTrainer(directTrainer, inverseTrainer);
 		}
 
-		private IWordAlignmentModel CreateThotAlignmentModel<TAlignModel>(WordAlignmentDirection direction)
-			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
+		private IWordAlignmentModel CreateThotAlignmentModel<TAlignModel>(WordAlignmentDirection direction,
+			SymmetrizationHeuristic symHeuristic) where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
 		{
 			string modelPath = _modelArgument.Value;
 			if (ToolHelpers.IsDirectoryPath(modelPath))
@@ -189,7 +172,7 @@ namespace SIL.Machine
 				var inverseModel = new TAlignModel();
 				inverseModel.Load(modelPath + "_swm");
 
-				return new SymmetrizedWordAlignmentModel(directModel, inverseModel) { Heuristic = _symHeuristic };
+				return new SymmetrizedWordAlignmentModel(directModel, inverseModel) { Heuristic = symHeuristic };
 			}
 		}
 
