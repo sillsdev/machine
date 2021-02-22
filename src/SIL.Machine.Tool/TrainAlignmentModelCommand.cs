@@ -19,7 +19,7 @@ namespace SIL.Machine
 
 			_modelSpec = AddSpec(new AlignmentModelCommandSpec());
 			_corpusSpec = AddSpec(new ParallelCorpusCommandSpec());
-			_trainParamsOption = Option("-tp|--training-params", "Model training parameters.",
+			_trainParamsOption = Option("-tp|--training-params", "Model training parameters.\nParameter format: \"<key>=<value>\".",
 				CommandOptionType.MultipleValue);
 			_lowercaseOption = Option("-l|--lowercase", "Convert text to lowercase.", CommandOptionType.NoValue);
 			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
