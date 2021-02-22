@@ -1,4 +1,5 @@
-﻿using SIL.Machine.Corpora;
+﻿using System.Collections.Generic;
+using SIL.Machine.Corpora;
 using SIL.Machine.Translation;
 
 namespace SIL.Machine.Plugin
@@ -10,6 +11,6 @@ namespace SIL.Machine.Plugin
 		IWordAlignmentModel CreateModel(string modelPath, WordAlignmentDirection direction,
 			SymmetrizationHeuristic symHeuristic);
 		ITrainer CreateTrainer(string modelPath, ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor,
-			ParallelTextCorpus parallelCorpus, int maxCorpusCount);
+			ParallelTextCorpus parallelCorpus, int maxCorpusCount, Dictionary<string, string> parameters);
 	}
 }
