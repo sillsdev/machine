@@ -105,8 +105,17 @@ namespace SIL.Machine
 		private IEnumerable<(WordAlignmentMatrix, WordAlignmentMatrix, IReadOnlyList<string>, IReadOnlyList<string>)> ParseGizaAlignments(
 			StreamReader directReader, StreamReader inverseReader)
 		{
-			return ParseGizaAlignments(directReader)
-				.Zip(ParseGizaAlignments(inverseReader), (da, ia) => (da.Item1, ia.Item1, da.Item2, da.Item3));
+			return ParseGizaAlignments(directReader).Zip(ParseGizaAlignments(inverseReader), (da, ia) =>
+			{
+				IReadOnlyList<string> srcSegment = da.Item2.Count > ia.Item3.Count ? da.Item2 : ia.Item3;
+				IReadOnlyList<string> trgSegment = da.Item3.Count > ia.Item2.Count ? da.Item3 : ia.Item2;
+
+				WordAlignmentMatrix directAlignment = da.Item1;
+				WordAlignmentMatrix inverseAlignment = ia.Item1;
+				directAlignment.Resize(srcSegment.Count, trgSegment.Count);
+				inverseAlignment.Resize(trgSegment.Count, srcSegment.Count);
+				return (directAlignment, inverseAlignment, srcSegment, trgSegment);
+			});
 		}
 
 		private IEnumerable<(WordAlignmentMatrix, IReadOnlyList<string>, IReadOnlyList<string>)> ParseGizaAlignments(

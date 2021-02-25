@@ -11,9 +11,9 @@ namespace SIL.Machine.Translation
 	{
 		private bool[,] _matrix;
 
-		public WordAlignmentMatrix(int i, int j)
+		public WordAlignmentMatrix(int rowCount, int columnCount)
 		{
-			_matrix = new bool[i, j];
+			_matrix = new bool[rowCount, columnCount];
 		}
 
 		private WordAlignmentMatrix(WordAlignmentMatrix other)
@@ -41,8 +41,8 @@ namespace SIL.Machine.Translation
 
 		public bool this[int i, int j]
 		{
-			get { return _matrix[i, j]; }
-			set { _matrix[i, j] = value; }
+			get => _matrix[i, j];
+			set => _matrix[i, j] = value;
 		}
 
 		public bool IsRowAligned(int i)
@@ -507,6 +507,21 @@ namespace SIL.Machine.Translation
 		public WordAlignmentMatrix Clone()
 		{
 			return new WordAlignmentMatrix(this);
+		}
+
+		public void Resize(int rowCount, int columnCount)
+		{
+			if (rowCount == RowCount && columnCount == ColumnCount)
+				return;
+
+			var newMatrix = new bool[rowCount, columnCount];
+			int minI = Math.Min(RowCount, rowCount);
+			int minJ = Math.Min(ColumnCount, columnCount);
+
+			for (int i = 0; i < minJ; ++i)
+				Array.Copy(_matrix, i * RowCount, newMatrix, i * rowCount, minI);
+
+			_matrix = newMatrix;
 		}
 	}
 }
