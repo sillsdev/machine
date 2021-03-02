@@ -36,7 +36,7 @@ namespace SIL.Machine
 				CommandOptionType.SingleValue);
 			_probOption = Option("-p|--probabilities", "Include probabilities in the output.",
 				CommandOptionType.NoValue);
-			_specialSymbolsOption = Option("-s|--special-symbols", "Include special symbols in the lexicon.",
+			_specialSymbolsOption = Option("-ss|--special-symbols", "Include special symbols in the lexicon.",
 				CommandOptionType.NoValue);
 			_thresholdOption = Option("-t|--threshold <PERCENTAGE>", "The probability threshold.\nThis threshold will override the beam threshold if both are specified.",
 				CommandOptionType.SingleValue);
