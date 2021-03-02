@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using SIL.Machine.Corpora;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
 {
@@ -8,8 +9,7 @@ namespace SIL.Machine.Translation
 	{
 		IReadOnlyList<string> SourceWords { get; }
 		IReadOnlyList<string> TargetWords { get; }
-		string NullWord { get; }
-		int NullIndex { get; }
+		IReadOnlySet<int> SpecialSymbolIndices { get; }
 
 		ITrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor,
 			ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue);

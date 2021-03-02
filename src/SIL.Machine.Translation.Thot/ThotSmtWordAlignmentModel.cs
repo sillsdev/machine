@@ -52,8 +52,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public IReadOnlyList<string> TargetWords => _smtModel.DirectWordAlignmentModel.TargetWords;
 
-		public string NullWord => _smtModel.DirectWordAlignmentModel.NullWord;
-		public int NullIndex => _smtModel.DirectWordAlignmentModel.NullIndex;
+		public IReadOnlySet<int> SpecialSymbolIndices => _smtModel.DirectWordAlignmentModel.SpecialSymbolIndices;
 
 		public ITrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor,
 			ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)

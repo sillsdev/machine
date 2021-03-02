@@ -18,7 +18,7 @@ namespace SIL.Machine
 		private readonly CommandArgument _outputArgument;
 		private readonly CommandOption _directionOption;
 		private readonly CommandOption _probOption;
-		private readonly CommandOption _nullOption;
+		private readonly CommandOption _specialSymbolsOption;
 		private readonly CommandOption _thresholdOption;
 		private readonly CommandOption _beamThresholdOption;
 		private readonly CommandOption _quietOption;
@@ -36,7 +36,7 @@ namespace SIL.Machine
 				CommandOptionType.SingleValue);
 			_probOption = Option("-p|--probabilities", "Include probabilities in the output.",
 				CommandOptionType.NoValue);
-			_nullOption = Option("-n|--null", "Include NULL in the output.",
+			_specialSymbolsOption = Option("-s|--special-symbols", "Include special symbols in the lexicon.",
 				CommandOptionType.NoValue);
 			_thresholdOption = Option("-t|--threshold <PERCENTAGE>", "The probability threshold.\nThis threshold will override the beam threshold if both are specified.",
 				CommandOptionType.SingleValue);
@@ -102,8 +102,8 @@ namespace SIL.Machine
 				string[] sourceWords = alignmentModel.SourceWords.ToArray();
 				string[] targetWords = alignmentModel.TargetWords.ToArray();
 				int stepCount = sourceWords.Length;
-				if (!_nullOption.HasValue() && alignmentModel.NullIndex >= 0)
-					stepCount--;
+				if (!_specialSymbolsOption.HasValue())
+					stepCount -= alignmentModel.SpecialSymbolIndices.Count;
 				for (int i = 0; i < sourceWords.Length; i++)
 				{
 					ProcessSourceWord(alignmentModel, sourceWords, targetWords, i, threshold, logBeamThreshold, writer);
@@ -124,7 +124,7 @@ namespace SIL.Machine
 				return;
 
 			bool areScoresNormalized = alignmentModel is IIbm1WordAlignmentModel;
-			string sourceWord = GetWord(alignmentModel, sourceWords, i);
+			string sourceWord = sourceWords[i];
 			var targetWordScores = new List<(string Word, double Score)>();
 			double maxScore = 0.0;
 			double scoreSum = 0.0;
@@ -136,7 +136,7 @@ namespace SIL.Machine
 				maxScore = Math.Max(score, maxScore);
 				if (IsWordIncluded(alignmentModel, j) && Math.Round(score, 15, MidpointRounding.AwayFromZero) > 0)
 				{
-					string targetWord = GetWord(alignmentModel, targetWords, j);
+					string targetWord = targetWords[j];
 					targetWordScores.Add((targetWord, score));
 				}
 			}
@@ -164,12 +164,7 @@ namespace SIL.Machine
 
 		private bool IsWordIncluded(IWordAlignmentModel alignmentModel, int index)
 		{
-			return _nullOption.HasValue() || index != alignmentModel.NullIndex;
-		}
-
-		private static string GetWord(IWordAlignmentModel alignmentModel, string[] words, int index)
-		{
-			return index == alignmentModel.NullIndex ? "NULL" : words[index];
+			return _specialSymbolsOption.HasValue() || !alignmentModel.SpecialSymbolIndices.Contains(index);
 		}
 
 		private static bool ValidateDirectionOption(string value)

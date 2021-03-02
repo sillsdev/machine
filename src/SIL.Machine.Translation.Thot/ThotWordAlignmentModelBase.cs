@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using SIL.Extensions;
 using SIL.Machine.Corpora;
 using SIL.ObjectModel;
 
@@ -52,8 +53,7 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public string NullWord => "NULL";
-		public int NullIndex => 0;
+		public IReadOnlySet<int> SpecialSymbolIndices { get; } = new HashSet<int> { 0, 1, 2 }.ToReadOnlySet();
 
 		public int TrainingIterationCount { get; set; } = 5;
 
