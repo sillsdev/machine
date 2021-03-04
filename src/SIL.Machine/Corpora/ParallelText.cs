@@ -40,6 +40,8 @@ namespace SIL.Machine.Corpora
 			using (IEnumerator<TextAlignment> enumerator3 = alignments.GetEnumerator())
 			{
 				var rangeInfo = new RangeInfo(this);
+				var sourceSameRefSegments = new List<TextSegment>();
+				var targetSameRefSegments = new List<TextSegment>();
 
 				bool sourceCompleted = !enumerator1.MoveNext();
 				bool targetCompleted = !enumerator2.MoveNext();
@@ -49,27 +51,24 @@ namespace SIL.Machine.Corpora
 						enumerator2.Current.SegmentRef);
 					if (compare1 < 0)
 					{
-						if (allSourceSegments)
+						foreach (ParallelTextSegment seg in CreateSourceTextSegments(rangeInfo,
+							enumerator1.Current, targetSameRefSegments, allSourceSegments))
 						{
-
-							foreach (ParallelTextSegment seg in CreateTextSegments(rangeInfo, enumerator1.Current,
-								null))
-							{
-								yield return seg;
-							}
+							yield return seg;
 						}
+
+						sourceSameRefSegments.Add(enumerator1.Current);
 						sourceCompleted = !enumerator1.MoveNext();
 					}
 					else if (compare1 > 0)
 					{
-						if (allTargetSegments)
+						foreach (ParallelTextSegment seg in CreateTargetTextSegments(rangeInfo,
+							enumerator2.Current, sourceSameRefSegments, allTargetSegments))
 						{
-							foreach (ParallelTextSegment seg in CreateTextSegments(rangeInfo, null,
-								enumerator2.Current))
-							{
-								yield return seg;
-							}
+							yield return seg;
 						}
+
+						targetSameRefSegments.Add(enumerator2.Current);
 						targetCompleted = !enumerator2.MoveNext();
 					}
 					else
@@ -105,34 +104,63 @@ namespace SIL.Machine.Corpora
 						}
 						else
 						{
+							if (CheckSameRefSegments(sourceSameRefSegments, enumerator2.Current))
+							{
+								foreach (TextSegment prevSourceSegment in sourceSameRefSegments)
+								{
+									foreach (ParallelTextSegment seg in CreateTextSegments(rangeInfo, prevSourceSegment,
+										enumerator2.Current))
+									{
+										yield return seg;
+									}
+								}
+							}
+
+							if (CheckSameRefSegments(targetSameRefSegments, enumerator1.Current))
+							{
+								foreach (TextSegment prevTargetSegment in targetSameRefSegments)
+								{
+									foreach (ParallelTextSegment seg in CreateTextSegments(rangeInfo,
+										enumerator1.Current, prevTargetSegment))
+									{
+										yield return seg;
+									}
+								}
+							}
+
 							foreach (ParallelTextSegment seg in CreateTextSegments(rangeInfo, enumerator1.Current,
 								enumerator2.Current, compare2 == 0 ? enumerator3.Current.AlignedWordPairs : null))
 							{
 								yield return seg;
 							}
 						}
+
+						sourceSameRefSegments.Add(enumerator1.Current);
 						sourceCompleted = !enumerator1.MoveNext();
+
+						targetSameRefSegments.Add(enumerator2.Current);
 						targetCompleted = !enumerator2.MoveNext();
 					}
 				}
 
-				if (allSourceSegments && !sourceCompleted)
+				while (!sourceCompleted)
 				{
-					do
+					foreach (ParallelTextSegment seg in CreateSourceTextSegments(rangeInfo, enumerator1.Current,
+						targetSameRefSegments, allSourceSegments))
 					{
-						foreach (ParallelTextSegment seg in CreateTextSegments(rangeInfo, enumerator1.Current, null))
-							yield return seg;
-					} while (enumerator1.MoveNext());
+						yield return seg;
+					}
+					sourceCompleted = !enumerator1.MoveNext();
 				}
 
-				if (allTargetSegments && !targetCompleted)
+				while (!targetCompleted)
 				{
-					do
+					foreach (ParallelTextSegment seg in CreateTargetTextSegments(rangeInfo, enumerator2.Current,
+						sourceSameRefSegments, allTargetSegments))
 					{
-						foreach (ParallelTextSegment seg in CreateTextSegments(rangeInfo, null, enumerator2.Current))
-							yield return seg;
+						yield return seg;
 					}
-					while (enumerator2.MoveNext());
+					targetCompleted = !enumerator2.MoveNext();
 				}
 
 				if (rangeInfo.IsInRange)
@@ -150,6 +178,59 @@ namespace SIL.Machine.Corpora
 				trgSeg != null ? trgSeg.Segment : Array.Empty<string>(),
 				alignedWordPairs, srcSeg != null && srcSeg.IsInRange, srcSeg != null && srcSeg.IsRangeStart,
 				trgSeg != null && trgSeg.IsInRange, trgSeg != null && trgSeg.IsRangeStart);
+		}
+
+		private bool CheckSameRefSegments(List<TextSegment> sameRefSegments, TextSegment otherSegment)
+		{
+			if (sameRefSegments.Count > 0
+				&& _segmentRefComparer.Compare(sameRefSegments[0].SegmentRef, otherSegment.SegmentRef) != 0)
+			{
+				sameRefSegments.Clear();
+			}
+
+			return sameRefSegments.Count > 0;
+		}
+
+		private IEnumerable<ParallelTextSegment> CreateSourceTextSegments(RangeInfo rangeInfo,
+			TextSegment sourceSegment, List<TextSegment> targetSameRefSegments, bool allSourceSegments)
+		{
+			if (CheckSameRefSegments(targetSameRefSegments, sourceSegment))
+			{
+				foreach (TextSegment targetSameRefSegment in targetSameRefSegments)
+				{
+					foreach (ParallelTextSegment seg in CreateTextSegments(rangeInfo, sourceSegment,
+						targetSameRefSegment))
+					{
+						yield return seg;
+					}
+				}
+			}
+			else if (allSourceSegments)
+			{
+				foreach (ParallelTextSegment seg in CreateTextSegments(rangeInfo, sourceSegment, null))
+					yield return seg;
+			}
+		}
+
+		private IEnumerable<ParallelTextSegment> CreateTargetTextSegments(RangeInfo rangeInfo,
+			TextSegment targetSegment, List<TextSegment> sourceSameRefSegments, bool allTargetSegments)
+		{
+			if (CheckSameRefSegments(sourceSameRefSegments, targetSegment))
+			{
+				foreach (TextSegment sourceSameRefSegment in sourceSameRefSegments)
+				{
+					foreach (ParallelTextSegment seg in CreateTextSegments(rangeInfo, sourceSameRefSegment,
+						targetSegment))
+					{
+						yield return seg;
+					}
+				}
+			}
+			else if (allTargetSegments)
+			{
+				foreach (ParallelTextSegment seg in CreateTextSegments(rangeInfo, null, targetSegment))
+					yield return seg;
+			}
 		}
 
 		private class RangeInfo

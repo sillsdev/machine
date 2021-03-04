@@ -7,7 +7,7 @@ namespace SIL.Machine.Corpora
 	public class ParallelTextTests
 	{
 		[Test]
-		public void Segments_NoSegments_ReturnsEmpty()
+		public void Segments_NoSegments()
 		{
 			var sourceText = new MemoryText("text1", Enumerable.Empty<TextSegment>());
 			var targetText = new MemoryText("text1", Enumerable.Empty<TextSegment>());
@@ -16,26 +16,26 @@ namespace SIL.Machine.Corpora
 		}
 
 		[Test]
-		public void Segments_NoMissingSegments_ReturnsSegments()
+		public void Segments_NoMissingSegments()
 		{
 			var sourceText = new MemoryText("text1", new[]
-				{
-					new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
-					new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 .".Split()),
-					new TextSegment(new TextSegmentRef(1, 3), "source segment 1 3 .".Split())   
-				});
+			{
+				new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 3), "source segment 1 3 .".Split())
+			});
 			var targetText = new MemoryText("text1", new[]
-				{
-					new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
-					new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
-					new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
-				});
+			{
+				new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
+			});
 			var alignments = new MemoryTextAlignmentCollection("text1", new[]
-				{
-					new TextAlignment(new TextSegmentRef(1, 1), new[] { new AlignedWordPair(0, 0) }),
-					new TextAlignment(new TextSegmentRef(1, 2), new[] { new AlignedWordPair(1, 1) }),
-					new TextAlignment(new TextSegmentRef(1, 3), new[] { new AlignedWordPair(2, 2) })
-				});
+			{
+				new TextAlignment(new TextSegmentRef(1, 1), new[] { new AlignedWordPair(0, 0) }),
+				new TextAlignment(new TextSegmentRef(1, 2), new[] { new AlignedWordPair(1, 1) }),
+				new TextAlignment(new TextSegmentRef(1, 3), new[] { new AlignedWordPair(2, 2) })
+			});
 
 			var parallelText = new ParallelText(sourceText, targetText, alignments);
 			ParallelTextSegment[] segments = parallelText.Segments.ToArray();
@@ -49,24 +49,24 @@ namespace SIL.Machine.Corpora
 		}
 
 		[Test]
-		public void Segments_MissingMiddleTargetSegment_ReturnsSegments()
+		public void Segments_MissingMiddleTargetSegment()
 		{
 			var sourceText = new MemoryText("text1", new[]
-				{
-					new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
-					new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 .".Split()),
-					new TextSegment(new TextSegmentRef(1, 3), "source segment 1 3 .".Split())
-				});
+			{
+				new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 3), "source segment 1 3 .".Split())
+			});
 			var targetText = new MemoryText("text1", new[]
-				{
-					new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
-					new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
-				});
+			{
+				new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
+			});
 			var alignments = new MemoryTextAlignmentCollection("text1", new[]
-				{
-					new TextAlignment(new TextSegmentRef(1, 1), new[] { new AlignedWordPair(0, 0) }),
-					new TextAlignment(new TextSegmentRef(1, 3), new[] { new AlignedWordPair(2, 2) })
-				});
+			{
+				new TextAlignment(new TextSegmentRef(1, 1), new[] { new AlignedWordPair(0, 0) }),
+				new TextAlignment(new TextSegmentRef(1, 3), new[] { new AlignedWordPair(2, 2) })
+			});
 
 			var parallelText = new ParallelText(sourceText, targetText, alignments);
 			ParallelTextSegment[] segments = parallelText.Segments.ToArray();
@@ -80,24 +80,24 @@ namespace SIL.Machine.Corpora
 		}
 
 		[Test]
-		public void Segments_MissingMiddleSourceSegment_ReturnsSegments()
+		public void Segments_MissingMiddleSourceSegment()
 		{
 			var sourceText = new MemoryText("text1", new[]
-				{
-					new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
-					new TextSegment(new TextSegmentRef(1, 3), "source segment 1 3 .".Split())
-				});
+			{
+				new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 3), "source segment 1 3 .".Split())
+			});
 			var targetText = new MemoryText("text1", new[]
-				{
-					new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
-					new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
-					new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
-				});
+			{
+				new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
+			});
 			var alignments = new MemoryTextAlignmentCollection("text1", new[]
-				{
-					new TextAlignment(new TextSegmentRef(1, 1), new[] { new AlignedWordPair(0, 0) }),
-					new TextAlignment(new TextSegmentRef(1, 3), new[] { new AlignedWordPair(2, 2) })
-				});
+			{
+				new TextAlignment(new TextSegmentRef(1, 1), new[] { new AlignedWordPair(0, 0) }),
+				new TextAlignment(new TextSegmentRef(1, 3), new[] { new AlignedWordPair(2, 2) })
+			});
 
 			var parallelText = new ParallelText(sourceText, targetText, alignments);
 			ParallelTextSegment[] segments = parallelText.Segments.ToArray();
@@ -111,24 +111,24 @@ namespace SIL.Machine.Corpora
 		}
 
 		[Test]
-		public void Segments_MissingLastTargetSegment_ReturnsSegments()
+		public void Segments_MissingLastTargetSegment()
 		{
 			var sourceText = new MemoryText("text1", new[]
-				{
-					new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
-					new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 .".Split()),
-					new TextSegment(new TextSegmentRef(1, 3), "source segment 1 3 .".Split())
-				});
+			{
+				new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 3), "source segment 1 3 .".Split())
+			});
 			var targetText = new MemoryText("text1", new[]
-				{
-					new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
-					new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split())
-				});
+			{
+				new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split())
+			});
 			var alignments = new MemoryTextAlignmentCollection("text1", new[]
-				{
-					new TextAlignment(new TextSegmentRef(1, 1), new[] { new AlignedWordPair(0, 0) }),
-					new TextAlignment(new TextSegmentRef(1, 2), new[] { new AlignedWordPair(1, 1) })
-				});
+			{
+				new TextAlignment(new TextSegmentRef(1, 1), new[] { new AlignedWordPair(0, 0) }),
+				new TextAlignment(new TextSegmentRef(1, 2), new[] { new AlignedWordPair(1, 1) })
+			});
 
 			var parallelText = new ParallelText(sourceText, targetText, alignments);
 			ParallelTextSegment[] segments = parallelText.Segments.ToArray();
@@ -142,24 +142,24 @@ namespace SIL.Machine.Corpora
 		}
 
 		[Test]
-		public void Segments_MissingLastSourceSegment_ReturnsSegments()
+		public void Segments_MissingLastSourceSegment()
 		{
 			var sourceText = new MemoryText("text1", new[]
-				{
-					new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
-					new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 .".Split())
-				});
+			{
+				new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 .".Split())
+			});
 			var targetText = new MemoryText("text1", new[]
-				{
-					new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
-					new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
-					new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
-				});
+			{
+				new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
+			});
 			var alignments = new MemoryTextAlignmentCollection("text1", new[]
-				{
-					new TextAlignment(new TextSegmentRef(1, 1), new[] { new AlignedWordPair(0, 0) }),
-					new TextAlignment(new TextSegmentRef(1, 2), new[] { new AlignedWordPair(1, 1) })
-				});
+			{
+				new TextAlignment(new TextSegmentRef(1, 1), new[] { new AlignedWordPair(0, 0) }),
+				new TextAlignment(new TextSegmentRef(1, 2), new[] { new AlignedWordPair(1, 1) })
+			});
 
 			var parallelText = new ParallelText(sourceText, targetText, alignments);
 			ParallelTextSegment[] segments = parallelText.Segments.ToArray();
@@ -173,24 +173,24 @@ namespace SIL.Machine.Corpora
 		}
 
 		[Test]
-		public void Segments_MissingFirstTargetSegment_ReturnsSegments()
+		public void Segments_MissingFirstTargetSegment()
 		{
 			var sourceText = new MemoryText("text1", new[]
-				{
-					new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
-					new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 .".Split()),
-					new TextSegment(new TextSegmentRef(1, 3), "source segment 1 3 .".Split())
-				});
+			{
+				new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 3), "source segment 1 3 .".Split())
+			});
 			var targetText = new MemoryText("text1", new[]
-				{
-					new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
-					new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
-				});
+			{
+				new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
+			});
 			var alignments = new MemoryTextAlignmentCollection("text1", new[]
-				{
-					new TextAlignment(new TextSegmentRef(1, 2), new[] { new AlignedWordPair(1, 1) }),
-					new TextAlignment(new TextSegmentRef(1, 3), new[] { new AlignedWordPair(2, 2) })
-				});
+			{
+				new TextAlignment(new TextSegmentRef(1, 2), new[] { new AlignedWordPair(1, 1) }),
+				new TextAlignment(new TextSegmentRef(1, 3), new[] { new AlignedWordPair(2, 2) })
+			});
 
 			var parallelText = new ParallelText(sourceText, targetText, alignments);
 			ParallelTextSegment[] segments = parallelText.Segments.ToArray();
@@ -204,24 +204,24 @@ namespace SIL.Machine.Corpora
 		}
 
 		[Test]
-		public void Segments_MissingFirstSourceSegment_ReturnsSegments()
+		public void Segments_MissingFirstSourceSegment()
 		{
 			var sourceText = new MemoryText("text1", new[]
-				{
-					new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 .".Split()),
-					new TextSegment(new TextSegmentRef(1, 3), "source segment 1 3 .".Split())
-				});
+			{
+				new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 3), "source segment 1 3 .".Split())
+			});
 			var targetText = new MemoryText("text1", new[]
-				{
-					new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
-					new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
-					new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
-				});
+			{
+				new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
+				new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
+			});
 			var alignments = new MemoryTextAlignmentCollection("text1", new[]
-				{
-					new TextAlignment(new TextSegmentRef(1, 2), new[] { new AlignedWordPair(1, 1) }),
-					new TextAlignment(new TextSegmentRef(1, 3), new[] { new AlignedWordPair(2, 2) })
-				});
+			{
+				new TextAlignment(new TextSegmentRef(1, 2), new[] { new AlignedWordPair(1, 1) }),
+				new TextAlignment(new TextSegmentRef(1, 3), new[] { new AlignedWordPair(2, 2) })
+			});
 
 			var parallelText = new ParallelText(sourceText, targetText, alignments);
 			ParallelTextSegment[] segments = parallelText.Segments.ToArray();
@@ -346,7 +346,7 @@ namespace SIL.Machine.Corpora
 		}
 
 		[Test]
-		public void Segments_RangeAllSegments()
+		public void GetSegments_RangeAllTargetSegments()
 		{
 			var sourceText = new MemoryText("text1", new[]
 			{
@@ -375,6 +375,139 @@ namespace SIL.Machine.Corpora
 			Assert.That(segments[2].IsSourceInRange, Is.True);
 			Assert.That(segments[2].IsSourceRangeStart, Is.False);
 			Assert.That(segments[2].TargetSegment, Is.EqualTo("target segment 1 3 .".Split()));
+		}
+
+		[Test]
+		public void Segments_SameRefMiddleManyToMany()
+		{
+			var sourceText = new MemoryText("text1", new[]
+			{
+				new TextSegment(new TextSegmentRef(1), "source segment 1 .".Split()),
+				new TextSegment(new TextSegmentRef(2), "source segment 2-1 .".Split()),
+				new TextSegment(new TextSegmentRef(2), "source segment 2-2 .".Split()),
+				new TextSegment(new TextSegmentRef(3), "source segment 3 .".Split())
+			});
+			var targetText = new MemoryText("text1", new[]
+			{
+				new TextSegment(new TextSegmentRef(1), "target segment 1 .".Split()),
+				new TextSegment(new TextSegmentRef(2), "target segment 2-1 .".Split()),
+				new TextSegment(new TextSegmentRef(2), "target segment 2-2 .".Split()),
+				new TextSegment(new TextSegmentRef(3), "target segment 3 .".Split())
+			});
+
+			var parallelText = new ParallelText(sourceText, targetText);
+			ParallelTextSegment[] segments = parallelText.Segments.ToArray();
+			Assert.That(segments.Length, Is.EqualTo(6));
+			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 2-1 .".Split()));
+			Assert.That(segments[1].TargetSegment, Is.EqualTo("target segment 2-1 .".Split()));
+			Assert.That(segments[2].SourceSegment, Is.EqualTo("source segment 2-1 .".Split()));
+			Assert.That(segments[2].TargetSegment, Is.EqualTo("target segment 2-2 .".Split()));
+			Assert.That(segments[3].SourceSegment, Is.EqualTo("source segment 2-2 .".Split()));
+			Assert.That(segments[3].TargetSegment, Is.EqualTo("target segment 2-1 .".Split()));
+			Assert.That(segments[4].SourceSegment, Is.EqualTo("source segment 2-2 .".Split()));
+			Assert.That(segments[4].TargetSegment, Is.EqualTo("target segment 2-2 .".Split()));
+		}
+
+		[Test]
+		public void GetSegments_SameRefMiddleOneToMany()
+		{
+			var sourceText = new MemoryText("text1", new[]
+			{
+				new TextSegment(new TextSegmentRef(1), "source segment 1 .".Split()),
+				new TextSegment(new TextSegmentRef(2), "source segment 2 .".Split()),
+				new TextSegment(new TextSegmentRef(3), "source segment 3 .".Split())
+			});
+			var targetText = new MemoryText("text1", new[]
+			{
+				new TextSegment(new TextSegmentRef(1), "target segment 1 .".Split()),
+				new TextSegment(new TextSegmentRef(2), "target segment 2-1 .".Split()),
+				new TextSegment(new TextSegmentRef(2), "target segment 2-2 .".Split()),
+				new TextSegment(new TextSegmentRef(3), "target segment 3 .".Split())
+			});
+
+			var parallelText = new ParallelText(sourceText, targetText);
+			ParallelTextSegment[] segments = parallelText.GetSegments(allTargetSegments: true).ToArray();
+			Assert.That(segments.Length, Is.EqualTo(4));
+			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 2 .".Split()));
+			Assert.That(segments[1].TargetSegment, Is.EqualTo("target segment 2-1 .".Split()));
+			Assert.That(segments[2].SourceSegment, Is.EqualTo("source segment 2 .".Split()));
+			Assert.That(segments[2].TargetSegment, Is.EqualTo("target segment 2-2 .".Split()));
+		}
+
+		[Test]
+		public void GetSegments_SameRefMiddleManyToOne()
+		{
+			var sourceText = new MemoryText("text1", new[]
+			{
+				new TextSegment(new TextSegmentRef(1), "source segment 1 .".Split()),
+				new TextSegment(new TextSegmentRef(2), "source segment 2-1 .".Split()),
+				new TextSegment(new TextSegmentRef(2), "source segment 2-2 .".Split()),
+				new TextSegment(new TextSegmentRef(3), "source segment 3 .".Split())
+			});
+			var targetText = new MemoryText("text1", new[]
+			{
+				new TextSegment(new TextSegmentRef(1), "target segment 1 .".Split()),
+				new TextSegment(new TextSegmentRef(2), "target segment 2 .".Split()),
+				new TextSegment(new TextSegmentRef(3), "target segment 3 .".Split())
+			});
+
+			var parallelText = new ParallelText(sourceText, targetText);
+			ParallelTextSegment[] segments = parallelText.GetSegments(allSourceSegments: true).ToArray();
+			Assert.That(segments.Length, Is.EqualTo(4));
+			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 2-1 .".Split()));
+			Assert.That(segments[1].TargetSegment, Is.EqualTo("target segment 2 .".Split()));
+			Assert.That(segments[2].SourceSegment, Is.EqualTo("source segment 2-2 .".Split()));
+			Assert.That(segments[2].TargetSegment, Is.EqualTo("target segment 2 .".Split()));
+		}
+
+		[Test]
+		public void GetSegments_SameRefLastOneToMany()
+		{
+			var sourceText = new MemoryText("text1", new[]
+			{
+				new TextSegment(new TextSegmentRef(1), "source segment 1 .".Split()),
+				new TextSegment(new TextSegmentRef(2), "source segment 2 .".Split()),
+			});
+			var targetText = new MemoryText("text1", new[]
+			{
+				new TextSegment(new TextSegmentRef(1), "target segment 1 .".Split()),
+				new TextSegment(new TextSegmentRef(2), "target segment 2-1 .".Split()),
+				new TextSegment(new TextSegmentRef(2), "target segment 2-2 .".Split()),
+				new TextSegment(new TextSegmentRef(3), "target segment 3 .".Split())
+			});
+
+			var parallelText = new ParallelText(sourceText, targetText);
+			ParallelTextSegment[] segments = parallelText.GetSegments(allTargetSegments: true).ToArray();
+			Assert.That(segments.Length, Is.EqualTo(4));
+			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 2 .".Split()));
+			Assert.That(segments[1].TargetSegment, Is.EqualTo("target segment 2-1 .".Split()));
+			Assert.That(segments[2].SourceSegment, Is.EqualTo("source segment 2 .".Split()));
+			Assert.That(segments[2].TargetSegment, Is.EqualTo("target segment 2-2 .".Split()));
+		}
+
+		[Test]
+		public void GetSegments_SameRefLastManyToOne()
+		{
+			var sourceText = new MemoryText("text1", new[]
+			{
+				new TextSegment(new TextSegmentRef(1), "source segment 1 .".Split()),
+				new TextSegment(new TextSegmentRef(2), "source segment 2-1 .".Split()),
+				new TextSegment(new TextSegmentRef(2), "source segment 2-2 .".Split()),
+				new TextSegment(new TextSegmentRef(3), "source segment 3 .".Split())
+			});
+			var targetText = new MemoryText("text1", new[]
+			{
+				new TextSegment(new TextSegmentRef(1), "target segment 1 .".Split()),
+				new TextSegment(new TextSegmentRef(2), "target segment 2 .".Split()),
+			});
+
+			var parallelText = new ParallelText(sourceText, targetText);
+			ParallelTextSegment[] segments = parallelText.GetSegments(allSourceSegments: true).ToArray();
+			Assert.That(segments.Length, Is.EqualTo(4));
+			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 2-1 .".Split()));
+			Assert.That(segments[1].TargetSegment, Is.EqualTo("target segment 2 .".Split()));
+			Assert.That(segments[2].SourceSegment, Is.EqualTo("source segment 2-2 .".Split()));
+			Assert.That(segments[2].TargetSegment, Is.EqualTo("target segment 2 .".Split()));
 		}
 	}
 }
