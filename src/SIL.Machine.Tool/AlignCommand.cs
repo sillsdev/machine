@@ -91,7 +91,8 @@ namespace SIL.Machine
 					Out.Write("Aligning... ");
 				}
 				using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
-				using (StreamWriter writer = isOutputFile ? new StreamWriter(_outputArgument.Value) : null)
+				using (StreamWriter writer = isOutputFile
+					? ToolHelpers.CreateStreamWriter(_outputArgument.Value) : null)
 				{
 					int segmentCount = 0;
 					progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));

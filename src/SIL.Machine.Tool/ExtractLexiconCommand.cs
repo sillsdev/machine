@@ -97,7 +97,7 @@ namespace SIL.Machine
 			}
 
 			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
-			using (var writer = new StreamWriter(_outputArgument.Value))
+			using (StreamWriter writer = ToolHelpers.CreateStreamWriter(_outputArgument.Value))
 			{
 				string[] sourceWords = alignmentModel.SourceWords.ToArray();
 				string[] targetWords = alignmentModel.TargetWords.ToArray();

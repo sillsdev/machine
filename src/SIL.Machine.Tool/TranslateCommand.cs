@@ -99,7 +99,8 @@ namespace SIL.Machine
 					Out.Write("Translating... ");
 				}
 				using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
-				using (StreamWriter writer = isOutputFile ? new StreamWriter(_outputArgument.Value) : null)
+				using (StreamWriter writer = isOutputFile
+					? ToolHelpers.CreateStreamWriter(_outputArgument.Value) : null)
 				{
 					progress?.Report(new ProgressStatus(segmentCount, corpusCount));
 					foreach (IText text in _corpusSpec.Corpus.Texts)

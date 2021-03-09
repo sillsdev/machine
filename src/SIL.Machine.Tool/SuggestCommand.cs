@@ -161,7 +161,7 @@ namespace SIL.Machine
 			if (_traceOption.HasValue())
 			{
 				string fileName = Path.Combine(_traceOption.Value(), text.Id + "-trace.txt");
-				return new StreamWriter(fileName);
+				return ToolHelpers.CreateStreamWriter(fileName);
 			}
 
 			return null;

@@ -72,7 +72,7 @@ namespace SIL.Machine
 
 			using var directReader = new StreamReader(_directArgument.Value);
 			using var inverseReader = new StreamReader(_inverseArgument.Value);
-			using var outputWriter = new StreamWriter(_outputArgument.Value);
+			using StreamWriter outputWriter = ToolHelpers.CreateStreamWriter(_outputArgument.Value);
 
 			if (!_quietOption.HasValue())
 				Out.Write("Symmetrizing... ");

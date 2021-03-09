@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
 using SIL.Machine.Translation;
@@ -60,13 +59,12 @@ namespace SIL.Machine
 			}
 
 			int segmentCount = 0;
-			var utf8Encoding = new UTF8Encoding(false);
-			using (var sourceOutputWriter = _sourceOutputOption.HasValue()
-				? new StreamWriter(_sourceOutputOption.Value(), false, utf8Encoding) : null)
-			using (var targetOutputWriter = _targetOutputOption.HasValue()
-				? new StreamWriter(_targetOutputOption.Value(), false, utf8Encoding) : null)
-			using (var refOutputWriter = _refOutputOption.HasValue()
-				? new StreamWriter(_refOutputOption.Value(), false, utf8Encoding) : null)
+			using (StreamWriter sourceOutputWriter = _sourceOutputOption.HasValue()
+				? ToolHelpers.CreateStreamWriter(_sourceOutputOption.Value()) : null)
+			using (StreamWriter targetOutputWriter = _targetOutputOption.HasValue()
+				? ToolHelpers.CreateStreamWriter(_targetOutputOption.Value()) : null)
+			using (StreamWriter refOutputWriter = _refOutputOption.HasValue()
+				? ToolHelpers.CreateStreamWriter(_refOutputOption.Value()) : null)
 			{
 				foreach (ParallelTextSegment segment in _corpusSpec.ParallelCorpus.GetSegments(
 					_allSourceOption.HasValue(), _allTargetOption.HasValue()))

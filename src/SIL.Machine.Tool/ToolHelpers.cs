@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using SIL.Extensions;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
@@ -205,6 +206,12 @@ namespace SIL.Machine
 				GrowDiagFinalAnd => SymmetrizationHeuristic.GrowDiagFinalAnd,
 				_ => SymmetrizationHeuristic.Och,
 			};
+		}
+
+		public static StreamWriter CreateStreamWriter(string fileName)
+		{
+			var utf8Encoding = new UTF8Encoding(false);
+			return new StreamWriter(fileName, false, utf8Encoding) { NewLine = "\n" };
 		}
 
 		private static void CreateConfigFile(string modelType, string modelConfigFileName)

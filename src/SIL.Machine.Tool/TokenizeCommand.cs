@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
 using SIL.Machine.Translation;
@@ -43,9 +42,8 @@ namespace SIL.Machine
 			ITokenProcessor processor = TokenProcessors.Pipeline(processorPipeline);
 			int corpusCount = _corpusSpec.GetCorpusCount();
 			int segmentCount = 0;
-			var utf8Encoding = new UTF8Encoding(false);
 			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
-			using (var outputWriter = new StreamWriter(_outputArgument.Value, false, utf8Encoding))
+			using (StreamWriter outputWriter = ToolHelpers.CreateStreamWriter(_outputArgument.Value))
 			{
 				foreach (TextSegment segment in _corpusSpec.Corpus.GetSegments())
 				{
