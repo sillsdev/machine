@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace SIL.Machine.Translation
 {
@@ -9,7 +10,6 @@ namespace SIL.Machine.Translation
 		public static readonly ITokenProcessor EscapeSpaces = new EscapeSpacesTokenProcessor();
 		public static readonly ITokenProcessor UnescapeSpaces = new UnescapeSpacesTokenProcessor();
 		public static readonly ITokenProcessor Null = new NullTokenProcessor();
-		public static readonly ITokenProcessor Normalize = new NormalizeTokenProcessor();
 
 		public static ITokenProcessor Pipeline(params ITokenProcessor[] processors)
 		{
@@ -19,6 +19,11 @@ namespace SIL.Machine.Translation
 		public static ITokenProcessor Pipeline(IEnumerable<ITokenProcessor> processors)
 		{
 			return new PipelineTokenProcessor(processors);
+		}
+
+		public static ITokenProcessor Normalize(NormalizationForm normalizationForm = NormalizationForm.FormC)
+		{
+			return new NormalizeTokenProcessor(normalizationForm);
 		}
 
 		private class LowercaseTokenProcessor : ITokenProcessor
@@ -55,9 +60,16 @@ namespace SIL.Machine.Translation
 
 		private class NormalizeTokenProcessor : ITokenProcessor
 		{
+			private readonly NormalizationForm _normalizationForm;
+
+			public NormalizeTokenProcessor(NormalizationForm normalizationForm)
+			{
+				_normalizationForm = normalizationForm;
+			}
+
 			public IReadOnlyList<string> Process(IReadOnlyList<string> tokens)
 			{
-				return tokens.Select(t => t.Normalize()).ToArray();
+				return tokens.Select(t => t.Normalize(_normalizationForm)).ToArray();
 			}
 		}
 

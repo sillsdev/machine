@@ -1,5 +1,11 @@
 $feed = $args[0].TrimEnd('\', '/')
-Remove-Item $feed\SIL.Machine.*.nupkg
+
+$packagesExist = Test-Path $feed\SIL.Machine.*.nupkg
+if ( $packagesExist )
+{
+	Remove-Item $feed\SIL.Machine.*.nupkg
+	dotnet nuget locals global-packages --clear	
+}
 
 Push-Location ..
 dotnet pack src\SIL.Machine\SIL.Machine.csproj -o $feed
@@ -9,5 +15,3 @@ dotnet pack src\SIL.Machine.WebApi\SIL.Machine.WebApi.csproj -o $feed
 dotnet pack src\SIL.Machine.Tool\SIL.Machine.Tool.csproj -o $feed
 dotnet pack src\SIL.Machine.Plugin\SIL.Machine.Plugin.csproj -o $feed
 Pop-Location
-
-dotnet nuget locals global-packages --clear

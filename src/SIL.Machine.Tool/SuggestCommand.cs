@@ -15,9 +15,9 @@ namespace SIL.Machine
 		private readonly CommandOption _confidenceOption;
 		private readonly CommandOption _traceOption;
 		private readonly CommandOption _nOption;
-		private readonly CommandOption _quietOption;
 		private readonly CommandOption _approveAlignedOption;
-		private readonly CommandOption _lowercaseOption;
+		private readonly PreprocessCommandSpec _preprocessSpec;
+		private readonly CommandOption _quietOption;
 
 		private int _actionCount;
 		private int _charCount;
@@ -39,14 +39,14 @@ namespace SIL.Machine
 			_corpusSpec = AddSpec(new ParallelCorpusCommandSpec { SupportAlignmentsCorpus = false });
 			_confidenceOption = Option("-c|--confidence <PERCENTAGE>", "The confidence threshold. Default: 0.2.",
 				CommandOptionType.SingleValue);
-			_nOption = Option("-n <NUMBER>", "The number of suggestions to generate.",
+			_nOption = Option("-n <NUMBER>", "The number of suggestions to generate. Default: 1.",
 				CommandOptionType.SingleValue);
-			_traceOption = Option("--trace <TRACE_DIR>", "The trace output directory.",
+			_traceOption = Option("-t|--trace <TRACE_DIR>", "The trace output directory.",
 				CommandOptionType.SingleValue);
-			_lowercaseOption = Option("-l|--lowercase", "Convert text to lowercase.", CommandOptionType.NoValue);
-			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
-			_approveAlignedOption = Option("--approve-aligned", "Approve aligned part of source segment.",
+			_approveAlignedOption = Option("-aa|--approve-aligned", "Approve aligned part of source segment.",
 				CommandOptionType.NoValue);
+			_preprocessSpec = AddSpec(new PreprocessCommandSpec());
+			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
 		}
 
 		protected override int ExecuteCommand()
@@ -85,10 +85,7 @@ namespace SIL.Machine
 
 			int parallelCorpusCount = _corpusSpec.GetNonemptyParallelCorpusCount();
 
-			var processors = new List<ITokenProcessor> { TokenProcessors.Normalize };
-			if (_lowercaseOption.HasValue())
-				processors.Add(TokenProcessors.Lowercase);
-			ITokenProcessor processor = TokenProcessors.Pipeline(processors);
+			ITokenProcessor processor = _preprocessSpec.GetProcessor();
 
 			if (!_quietOption.HasValue())
 				Out.Write("Loading model... ");

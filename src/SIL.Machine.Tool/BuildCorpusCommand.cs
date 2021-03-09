@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using McMaster.Extensions.CommandLineUtils;
+using SIL.Extensions;
 using SIL.Machine.Corpora;
 using SIL.Machine.Translation;
 
@@ -14,8 +14,8 @@ namespace SIL.Machine
 		private readonly CommandOption _refOutputOption;
 		private readonly CommandOption _allSourceOption;
 		private readonly CommandOption _allTargetOption;
-		private readonly CommandOption _lowercaseOption;
 		private readonly CommandOption _includeEmptyOption;
+		private readonly PreprocessCommandSpec _preprocessSpec;
 
 		public BuildCorpusCommand()
 		{
@@ -39,8 +39,8 @@ namespace SIL.Machine
 			_allTargetOption = Option("-at|--all-target",
 				"Include all target segments. Overrides include/exclude options.",
 				CommandOptionType.NoValue);
-			_lowercaseOption = Option("-l|--lowercase", "Convert text to lowercase.", CommandOptionType.NoValue);
 			_includeEmptyOption = Option("-ie|--include-empty", "Include empty segments.", CommandOptionType.NoValue);
+			_preprocessSpec = AddSpec(new PreprocessCommandSpec { EscapeSpaces = true });
 		}
 
 		protected override int ExecuteCommand()
@@ -92,14 +92,7 @@ namespace SIL.Machine
 						}
 					}
 
-					var processorPipeline = new List<ITokenProcessor>
-					{
-						TokenProcessors.Normalize,
-						TokenProcessors.EscapeSpaces
-					};
-					if (_lowercaseOption.HasValue())
-						processorPipeline.Add(TokenProcessors.Lowercase);
-					ITokenProcessor processor = TokenProcessors.Pipeline(processorPipeline);
+					ITokenProcessor processor = _preprocessSpec.GetProcessor();
 
 					if (sourceOutputWriter != null)
 					{

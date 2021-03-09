@@ -8,7 +8,7 @@ namespace SIL.Machine
 	{
 		private readonly TranslationModelCommandSpec _modelSpec;
 		private readonly ParallelCorpusCommandSpec _corpusSpec;
-		private readonly CommandOption _lowercaseOption;
+		private readonly PreprocessCommandSpec _preprocessSpec;
 		private readonly CommandOption _quietOption;
 
 		public TrainTranslationModelCommand()
@@ -18,7 +18,7 @@ namespace SIL.Machine
 
 			_modelSpec = AddSpec(new TranslationModelCommandSpec());
 			_corpusSpec = AddSpec(new ParallelCorpusCommandSpec());
-			_lowercaseOption = Option("-l|--lowercase", "Convert text to lowercase.", CommandOptionType.NoValue);
+			_preprocessSpec = AddSpec(new PreprocessCommandSpec());
 			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
 		}
 
@@ -29,7 +29,7 @@ namespace SIL.Machine
 				return code;
 
 			using (ITranslationModelTrainer trainer = _modelSpec.CreateTrainer(_corpusSpec.ParallelCorpus,
-				_corpusSpec.MaxCorpusCount, _lowercaseOption.HasValue()))
+				_corpusSpec.MaxCorpusCount, _preprocessSpec.GetProcessor()))
 			{
 				Stopwatch watch = Stopwatch.StartNew();
 				if (!_quietOption.HasValue())

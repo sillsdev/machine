@@ -16,6 +16,7 @@ namespace SIL.Machine
 		private readonly CommandOption _refOption;
 		private readonly CommandOption _refFormatOption;
 		private readonly CommandOption _refWordTokenizerOption;
+		private readonly PreprocessCommandSpec _preprocessSpec;
 		private readonly CommandOption _quietOption;
 
 		public TranslateCommand()
@@ -35,6 +36,7 @@ namespace SIL.Machine
 			_refWordTokenizerOption = Option("-rt|--ref-tokenizer <TOKENIZER>",
 				$"The reference word tokenizer.\nTypes: \"whitespace\" (default), \"latin\", \"zwsp\".",
 				CommandOptionType.SingleValue);
+			_preprocessSpec = AddSpec(new PreprocessCommandSpec());
 			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
 		}
 
@@ -88,7 +90,7 @@ namespace SIL.Machine
 				Out.Write("Loading model... ");
 			int corpusCount = _corpusSpec.GetNonemptyCorpusCount();
 			var truecaser = new TransferTruecaser();
-			ITokenProcessor processor = TokenProcessors.Pipeline(TokenProcessors.Normalize, TokenProcessors.Lowercase);
+			ITokenProcessor processor = _preprocessSpec.GetProcessor();
 			int segmentCount = 0;
 			using (ITranslationModel model = _modelSpec.CreateModel())
 			using (ITranslationEngine engine = model.CreateEngine())

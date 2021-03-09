@@ -100,14 +100,9 @@ namespace SIL.Machine
 				&& segment.SourceSegment.Count > TranslationConstants.MaxSegmentLength);
 		}
 
-		public ITrainer CreateAlignmentModelTrainer(ParallelTextCorpus corpus, int maxSize, bool lowercase,
+		public ITrainer CreateAlignmentModelTrainer(ParallelTextCorpus corpus, int maxSize, ITokenProcessor processor,
 			Dictionary<string, string> parameters)
 		{
-			var processors = new List<ITokenProcessor> { TokenProcessors.Normalize };
-			if (lowercase)
-				processors.Add(TokenProcessors.Lowercase);
-			ITokenProcessor processor = TokenProcessors.Pipeline(processors);
-
 			if (_modelFactory != null)
 			{
 				return _modelFactory.CreateTrainer(_modelArgument.Value, processor, processor, corpus, maxSize,

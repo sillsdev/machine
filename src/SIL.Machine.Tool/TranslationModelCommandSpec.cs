@@ -72,13 +72,8 @@ namespace SIL.Machine
 			}
 		}
 
-		public ITranslationModelTrainer CreateTrainer(ParallelTextCorpus corpus, int maxSize, bool lowercase)
+		public ITranslationModelTrainer CreateTrainer(ParallelTextCorpus corpus, int maxSize, ITokenProcessor processor)
 		{
-			var processors = new List<ITokenProcessor> { TokenProcessors.Normalize };
-			if (lowercase)
-				processors.Add(TokenProcessors.Lowercase);
-			ITokenProcessor processor = TokenProcessors.Pipeline(processors);
-
 			if (_modelFactory != null)
 				return _modelFactory.CreateTrainer(_modelArgument.Value, processor, processor, corpus, maxSize);
 

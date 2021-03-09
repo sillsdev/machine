@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
 using SIL.Machine.Translation;
@@ -10,7 +9,7 @@ namespace SIL.Machine
 	{
 		private readonly MonolingualCorpusCommandSpec _corpusSpec;
 		private readonly CommandArgument _outputArgument;
-		private readonly CommandOption _lowercaseOption;
+		private readonly PreprocessCommandSpec _preprocessSpec;
 		private readonly CommandOption _quietOption;
 
 		public TokenizeCommand()
@@ -20,7 +19,7 @@ namespace SIL.Machine
 
 			_corpusSpec = AddSpec(new MonolingualCorpusCommandSpec());
 			_outputArgument = Argument("OUTPUT_FILE", "The output text file.").IsRequired();
-			_lowercaseOption = Option("-l|--lowercase", "Convert text to lowercase.", CommandOptionType.NoValue);
+			_preprocessSpec = AddSpec(new PreprocessCommandSpec { EscapeSpaces = true });
 			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
 		}
 
@@ -32,14 +31,8 @@ namespace SIL.Machine
 
 			if (!_quietOption.HasValue())
 				Out.Write("Tokenizing... ");
-			var processorPipeline = new List<ITokenProcessor>
-			{
-				TokenProcessors.Normalize,
-				TokenProcessors.EscapeSpaces
-			};
-			if (_lowercaseOption.HasValue())
-				processorPipeline.Add(TokenProcessors.Lowercase);
-			ITokenProcessor processor = TokenProcessors.Pipeline(processorPipeline);
+
+			ITokenProcessor processor = _preprocessSpec.GetProcessor();
 			int corpusCount = _corpusSpec.GetCorpusCount();
 			int segmentCount = 0;
 			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))

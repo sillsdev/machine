@@ -15,7 +15,7 @@ namespace SIL.Machine
 		private readonly CommandOption _refOption;
 		private readonly CommandOption _symHeuristicOption;
 		private readonly CommandOption _scoresOption;
-		private readonly CommandOption _lowercaseOption;
+		private readonly PreprocessCommandSpec _preprocessSpec;
 		private readonly CommandOption _quietOption;
 
 		public AlignCommand()
@@ -34,7 +34,7 @@ namespace SIL.Machine
 				$"The symmetrization heuristic.\nHeuristics: \"{ToolHelpers.Och}\" (default), \"{ToolHelpers.Union}\", \"{ToolHelpers.Intersection}\", \"{ToolHelpers.Grow}\", \"{ToolHelpers.GrowDiag}\", \"{ToolHelpers.GrowDiagFinal}\", \"{ToolHelpers.GrowDiagFinalAnd}\", \"{ToolHelpers.None}\".",
 				CommandOptionType.SingleValue);
 			_scoresOption = Option("-s|--scores", "Include scores in the output.", CommandOptionType.NoValue);
-			_lowercaseOption = Option("-l|--lowercase", "Convert text to lowercase.", CommandOptionType.NoValue);
+			_preprocessSpec = AddSpec(new PreprocessCommandSpec());
 			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
 		}
 
@@ -73,10 +73,7 @@ namespace SIL.Machine
 					refCorpus);
 			}
 
-			var processors = new List<ITokenProcessor> { TokenProcessors.Normalize };
-			if (_lowercaseOption.HasValue())
-				processors.Add(TokenProcessors.Lowercase);
-			ITokenProcessor processor = TokenProcessors.Pipeline(processors);
+			ITokenProcessor processor = _preprocessSpec.GetProcessor();
 
 			int parallelCorpusCount = _corpusSpec.GetNonemptyParallelCorpusCount();
 			SymmetrizationHeuristic symHeuristic = ToolHelpers.GetSymmetrizationHeuristic(_symHeuristicOption?.Value());
