@@ -22,18 +22,19 @@ namespace SIL.Machine.Corpora
 				using (IStreamContainer streamContainer = CreateStreamContainer())
 				using (Stream stream = streamContainer.OpenStream())
 				{
+					var prevVerseRef = new VerseRef();
 					foreach (UsxVerse verse in _parser.Parse(stream))
 					{
-						foreach (TextSegment segment in CreateTextSegments(verse))
+						foreach (TextSegment segment in CreateTextSegments(ref prevVerseRef, verse))
 							yield return segment;
 					}
 				}
 			}
 		}
 
-		private IEnumerable<TextSegment> CreateTextSegments(UsxVerse verse)
+		private IEnumerable<TextSegment> CreateTextSegments(ref VerseRef prevVerseRef, UsxVerse verse)
 		{
-			return CreateTextSegments(verse.Chapter, verse.Verse, verse.Text, verse.SentenceStart);
+			return CreateTextSegments(ref prevVerseRef, verse.Chapter, verse.Verse, verse.Text, verse.SentenceStart);
 		}
 	}
 }

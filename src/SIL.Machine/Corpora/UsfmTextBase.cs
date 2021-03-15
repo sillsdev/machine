@@ -34,6 +34,7 @@ namespace SIL.Machine.Corpora
 				var sb = new StringBuilder();
 				string chapter = null, verse = null;
 				bool sentenceStart = true;
+				var prevVerseRef = new VerseRef();
 				foreach (UsfmToken token in _parser.Parse(usfm))
 				{
 					switch (token.Type)
@@ -42,8 +43,11 @@ namespace SIL.Machine.Corpora
 							if (inVerse)
 							{
 								string text = sb.ToString();
-								foreach (TextSegment seg in CreateTextSegments(chapter, verse, text, sentenceStart))
+								foreach (TextSegment seg in CreateTextSegments(ref prevVerseRef, chapter, verse, text,
+									sentenceStart))
+								{
 									yield return seg;
+								}
 								sentenceStart = true;
 								sb.Clear();
 								inVerse = false;
@@ -56,8 +60,11 @@ namespace SIL.Machine.Corpora
 							if (inVerse)
 							{
 								string text = sb.ToString();
-								foreach (TextSegment seg in CreateTextSegments(chapter, verse, text, sentenceStart))
+								foreach (TextSegment seg in CreateTextSegments(ref prevVerseRef, chapter, verse, text,
+									sentenceStart))
+								{
 									yield return seg;
+								}
 								sentenceStart = text.HasSentenceEnding();
 								sb.Clear();
 							}
@@ -72,8 +79,11 @@ namespace SIL.Machine.Corpora
 							if (!IsVersePara(token) && inVerse)
 							{
 								string text = sb.ToString();
-								foreach (TextSegment seg in CreateTextSegments(chapter, verse, text, sentenceStart))
+								foreach (TextSegment seg in CreateTextSegments(ref prevVerseRef, chapter, verse, text,
+									sentenceStart))
+								{
 									yield return seg;
+								}
 								sentenceStart = true;
 								sb.Clear();
 								inVerse = false;
@@ -110,8 +120,11 @@ namespace SIL.Machine.Corpora
 
 				if (inVerse)
 				{
-					foreach (TextSegment seg in CreateTextSegments(chapter, verse, sb.ToString(), sentenceStart))
+					foreach (TextSegment seg in CreateTextSegments(ref prevVerseRef, chapter, verse, sb.ToString(),
+						sentenceStart))
+					{
 						yield return seg;
+					}
 				}
 			}
 		}

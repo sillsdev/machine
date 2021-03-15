@@ -35,6 +35,14 @@ namespace SIL.Machine.Corpora
 				Assert.That(segments[39].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:15", env.Corpus.Versification)));
 				Assert.That(segments[39].Segment[0],
 					Is.EqualTo("They stayed there until King Herod died, and then they left Egypt. By doing that, it was {they} fulfilled what the prophet Hosea wrote, which had been said by the Lord {which the Lord had said}, I have told my son to come out of Egypt."));
+
+				Assert.That(segments[45].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:21", env.Corpus.Versification)));
+				Assert.That(segments[45].Segment[0],
+					Is.EqualTo("So Joseph took the child and his mother, and they went back to Israel."));
+
+				Assert.That(segments[46].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:22", env.Corpus.Versification)));
+				Assert.That(segments[46].Segment[0],
+					Is.EqualTo("When Joseph heard that Archaelaus now ruled in Judea district instead of his father, King Herod the Great, he was afraid to go there. Because he was warned {God warned Joseph} in a dream that it was still dangerous for them to live in Judea, he and Mary and Jesus went to Galilee District"));
 			}
 		}
 

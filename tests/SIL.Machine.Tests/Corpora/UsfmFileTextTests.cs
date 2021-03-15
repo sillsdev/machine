@@ -29,6 +29,15 @@ namespace SIL.Machine.Corpora
 			Assert.That(segments[5].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:1", corpus.Versification)));
 			Assert.That(segments[5].Segment, Is.EqualTo("Chapter two , verse one .".Split()));
 
+			Assert.That(segments[6].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:2", corpus.Versification)));
+			Assert.That(segments[6].Segment, Is.EqualTo("Chapter two , verse two .".Split()));
+
+			Assert.That(segments[7].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:3", corpus.Versification)));
+			Assert.That(segments[7].Segment, Is.EqualTo("Chapter two , verse three .".Split()));
+
+			Assert.That(segments[8].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:4", corpus.Versification)));
+			Assert.That(segments[8].Segment, Is.EqualTo("Chapter two , verse four .".Split()));
+
 			Assert.That(segments[9].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:5", corpus.Versification)));
 			Assert.That(segments[9].Segment, Is.EqualTo("Chapter two , verse five .".Split()));
 		}

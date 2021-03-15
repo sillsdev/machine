@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using SIL.Machine.Tokenization;
 using SIL.Scripture;
 
@@ -14,10 +15,19 @@ namespace SIL.Machine.Corpora
 
 		public ScrVers Versification { get; }
 
-		protected IEnumerable<TextSegment> CreateTextSegments(string chapter, string verse, string text,
-			bool sentenceStart = true)
+		protected IEnumerable<TextSegment> CreateTextSegments(ref VerseRef prevVerseRef, string chapter, string verse,
+			string text, bool sentenceStart = true)
 		{
 			var verseRef = new VerseRef(Id, chapter, verse, Versification);
+			if (verseRef.CompareTo(prevVerseRef) <= 0)
+				return Enumerable.Empty<TextSegment>();
+
+			prevVerseRef = verseRef;
+			return CreateTextSegments(verseRef, text, sentenceStart);
+		}
+
+		private IEnumerable<TextSegment> CreateTextSegments(VerseRef verseRef, string text, bool sentenceStart)
+		{
 			if (verseRef.HasMultiple)
 			{
 				bool firstVerse = true;

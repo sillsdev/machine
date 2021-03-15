@@ -19,8 +19,10 @@
 \p
 \v 1 Chapter two, verse one.
 \v 2 Chapter two, verse two.
+\v 2 Bad verse.
 \v 3 Chapter two, verse three.
 \p
 \v 4 Chapter two, verse four.
+\v 3 Bad verse.
 \v 5 Chapter two, verse five.
 \restore restore information
