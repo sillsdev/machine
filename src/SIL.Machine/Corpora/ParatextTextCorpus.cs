@@ -27,16 +27,20 @@ namespace SIL.Machine.Corpora
 			string stylesheetFileName = Path.Combine(projectDir, stylesheetName);
 			var stylesheet = new UsfmStylesheet(stylesheetFileName);
 
+			string prefix = "";
 			string suffix = ".SFM";
 			XElement namingElem = settingsDoc.Root.Element("Naming");
 			if (namingElem != null)
 			{
+				var prePart = (string)namingElem.Attribute("PrePart");
+				if (!string.IsNullOrEmpty(prePart))
+					prefix = prePart;
 				var postPart = (string)namingElem.Attribute("PostPart");
 				if (!string.IsNullOrEmpty(postPart))
 					suffix = postPart;
 			}
 
-			foreach (string sfmFileName in Directory.EnumerateFiles(projectDir, $"*{suffix}"))
+			foreach (string sfmFileName in Directory.EnumerateFiles(projectDir, $"{prefix}*{suffix}"))
 				AddText(new UsfmFileText(wordTokenizer, stylesheet, encoding, sfmFileName, Versification));
 		}
 
