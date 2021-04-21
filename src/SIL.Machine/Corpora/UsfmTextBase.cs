@@ -59,20 +59,44 @@ namespace SIL.Machine.Corpora
 						case UsfmTokenType.Verse:
 							if (inVerse)
 							{
-								string text = sb.ToString();
-								foreach (TextSegment seg in CreateTextSegments(ref prevVerseRef, chapter, verse, text,
-									sentenceStart))
+								if (token.Text == verse)
 								{
-									yield return seg;
+									string text = sb.ToString();
+									foreach (TextSegment seg in CreateTextSegments(ref prevVerseRef, chapter, verse,
+										text, sentenceStart))
+									{
+										yield return seg;
+									}
+									sentenceStart = text.HasSentenceEnding();
+									sb.Clear();
+
+									// ignore duplicate verse
+									inVerse = false;
+									verse = null;
 								}
-								sentenceStart = text.HasSentenceEnding();
-								sb.Clear();
+								else if (VerseRef.AreOverlappingVersesRanges(token.Text, verse))
+								{
+									// merge overlapping verse ranges in to one range
+									verse = CorporaHelpers.MergeVerseRanges(token.Text, verse);
+								}
+								else
+								{
+									string text = sb.ToString();
+									foreach (TextSegment seg in CreateTextSegments(ref prevVerseRef, chapter, verse,
+										text, sentenceStart))
+									{
+										yield return seg;
+									}
+									sentenceStart = text.HasSentenceEnding();
+									sb.Clear();
+									verse = token.Text;
+								}
 							}
 							else
 							{
 								inVerse = true;
+								verse = token.Text;
 							}
-							verse = token.Text;
 							break;
 
 						case UsfmTokenType.Paragraph:

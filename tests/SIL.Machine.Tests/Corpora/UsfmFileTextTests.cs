@@ -18,7 +18,7 @@ namespace SIL.Machine.Corpora
 
 			IText text = corpus.GetText("MAT");
 			TextSegment[] segments = text.Segments.ToArray();
-			Assert.That(segments.Length, Is.EqualTo(10));
+			Assert.That(segments.Length, Is.EqualTo(11));
 
 			Assert.That(segments[0].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:1", corpus.Versification)));
 			Assert.That(segments[0].Segment, Is.EqualTo("Chapter one , verse one .".Split()));
@@ -30,16 +30,23 @@ namespace SIL.Machine.Corpora
 			Assert.That(segments[5].Segment, Is.EqualTo("Chapter two , verse one .".Split()));
 
 			Assert.That(segments[6].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:2", corpus.Versification)));
-			Assert.That(segments[6].Segment, Is.EqualTo("Chapter two , verse two .".Split()));
+			Assert.That(segments[6].Segment,
+				Is.EqualTo("Chapter two , verse two . Chapter two , verse three . Chapter two , verse four .".Split()));
+			Assert.That(segments[6].IsInRange, Is.True);
 
 			Assert.That(segments[7].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:3", corpus.Versification)));
-			Assert.That(segments[7].Segment, Is.EqualTo("Chapter two , verse three .".Split()));
+			Assert.That(segments[7].Segment, Is.Empty);
+			Assert.That(segments[7].IsInRange, Is.True);
 
 			Assert.That(segments[8].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:4", corpus.Versification)));
-			Assert.That(segments[8].Segment, Is.EqualTo("Chapter two , verse four .".Split()));
+			Assert.That(segments[8].Segment, Is.Empty);
+			Assert.That(segments[8].IsInRange, Is.True);
 
 			Assert.That(segments[9].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:5", corpus.Versification)));
 			Assert.That(segments[9].Segment, Is.EqualTo("Chapter two , verse five .".Split()));
+
+			Assert.That(segments[10].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:6", corpus.Versification)));
+			Assert.That(segments[10].Segment, Is.EqualTo("Chapter two , verse six .".Split()));
 		}
 
 		[Test]
@@ -51,7 +58,7 @@ namespace SIL.Machine.Corpora
 
 			IText text = corpus.GetText("MAT");
 			TextSegment[] segments = text.Segments.ToArray();
-			Assert.That(segments.Length, Is.EqualTo(10));
+			Assert.That(segments.Length, Is.EqualTo(11));
 
 			Assert.That(segments[3].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:4", corpus.Versification)));
 			Assert.That(segments[3].Segment, Is.EqualTo("Chapter one , verse four ,".Split()));

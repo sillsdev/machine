@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
@@ -56,9 +57,31 @@ namespace SIL.Machine.Corpora
 						switch (e.Name.LocalName)
 						{
 							case "verse":
+								string verse = (string)e.Attribute("number") ?? (string)e.Attribute("pubnumber");
 								if (ctxt.IsInVerse)
-									yield return CreateVerse(ctxt);
-								ctxt.Verse = (string)e.Attribute("number") ?? (string)e.Attribute("pubnumber");
+								{
+									if (verse == ctxt.Verse)
+									{
+										yield return CreateVerse(ctxt);
+
+										// ignore duplicate verse
+										ctxt.Verse = null;
+									}
+									else if (VerseRef.AreOverlappingVersesRanges(verse, ctxt.Verse))
+									{
+										// merge overlapping verse ranges in to one range
+										ctxt.Verse = CorporaHelpers.MergeVerseRanges(verse, ctxt.Verse);
+									}
+									else
+									{
+										yield return CreateVerse(ctxt);
+										ctxt.Verse = verse;
+									}
+								}
+								else
+								{
+									ctxt.Verse = verse;
+								}
 								break;
 
 							case "char":

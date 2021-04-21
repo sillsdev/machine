@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -73,6 +75,60 @@ namespace SIL.Machine.Corpora
 			if (name.Length == 3)
 				return name;
 			return name.Substring(3, 3);
+		}
+
+		internal static string MergeVerseRanges(string verse1, string verse2)
+		{
+			var sb = new StringBuilder();
+			int startVerseNum = -1;
+			int prevVerseNum = -1;
+			foreach (int verseNum in GetVerseNums(verse1).Union(GetVerseNums(verse2)).OrderBy(vn => vn))
+			{
+				if (prevVerseNum == -1)
+				{
+					startVerseNum = verseNum;
+				}
+				else if (prevVerseNum != verseNum - 1)
+				{
+					AppendVerseRange(sb, startVerseNum, prevVerseNum);
+					startVerseNum = verseNum;
+				}
+				prevVerseNum = verseNum;
+			}
+			AppendVerseRange(sb, startVerseNum, prevVerseNum);
+
+			return sb.ToString();
+		}
+
+		private static void AppendVerseRange(StringBuilder sb, int startVerseNum, int endVerseNum)
+		{
+			if (sb.Length > 0)
+				sb.Append(VerseRef.verseSequenceIndicator);
+			sb.Append(startVerseNum);
+			if (endVerseNum != startVerseNum)
+			{
+				sb.Append(VerseRef.verseRangeSeparator);
+				sb.Append(endVerseNum);
+			}
+		}
+
+		private static IEnumerable<int> GetVerseNums(string verse)
+		{
+			string[] source = verse.Split(VerseRef.verseSequenceIndicators, StringSplitOptions.None);
+			foreach (string[] pieces in source.Select(part => part.Split(VerseRef.verseRangeSeparators,
+				StringSplitOptions.None)))
+			{
+				int startVerseNum = int.Parse(pieces[0], CultureInfo.InvariantCulture);
+				yield return startVerseNum;
+				if (pieces.Length <= 1)
+					continue;
+
+				int endVerseNum = int.Parse(pieces[1], CultureInfo.InvariantCulture);
+				for (int verseNum = startVerseNum + 1; verseNum < endVerseNum; verseNum++)
+					yield return verseNum;
+
+				yield return endVerseNum;
+			}
 		}
 	}
 }
