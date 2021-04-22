@@ -192,7 +192,7 @@ namespace SIL.Machine.Translation.Thot
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern bool phraseModel_generate(string alignmentFileName, int maxPhraseLength,
-			string tableFileName);
+			string tableFileName, int n);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern IntPtr langModel_open(string prefFileName);

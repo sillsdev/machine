@@ -300,10 +300,7 @@ namespace SIL.Machine.Translation.Thot
 				Thot.giza_symmetr1(swmPrefix + ".bestal", invswmPrefix + ".bestal", tmPrefix + ".A3.final", true);
 
 			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-				Thot.phraseModel_generate(tmPrefix + ".A3.final", 10, tmPrefix + ".ttable");
-
-			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-				FilterPhraseTableNBest(tmPrefix + ".ttable", 20);
+				Thot.phraseModel_generate(tmPrefix + ".A3.final", 10, tmPrefix + ".ttable", 20);
 
 			File.WriteAllText(tmPrefix + ".lambda", "0.7 0.7");
 			File.WriteAllText(tmPrefix + ".srcsegmlentable", "Uniform");
@@ -460,54 +457,6 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private static void FilterPhraseTableNBest(string fileName, int n)
-		{
-			var entries = new List<Tuple<string, string, float, float>>();
-			using (var reader = new StreamReader(fileName))
-			{
-				string line;
-				while ((line = reader.ReadLine()) != null)
-				{
-					string[] fields = line.Split(new[] { "|||" }, StringSplitOptions.RemoveEmptyEntries);
-					string counts = fields[2].Trim();
-					int index = counts.IndexOf(" ", StringComparison.Ordinal);
-					entries.Add(Tuple.Create(fields[0].Trim(), fields[1].Trim(), float.Parse(counts.Substring(0, index),
-						CultureInfo.InvariantCulture), float.Parse(counts.Substring(index + 1),
-						CultureInfo.InvariantCulture)));
-				}
-			}
-
-			//TODO: do not sort phrase table in memory
-			using (var writer = new StreamWriter(fileName))
-			{
-				foreach (IGrouping<string, Tuple<string, string, float, float>> g in entries.GroupBy(e => e.Item2)
-					.OrderBy(g => g.Key.Split(' ').Length).ThenBy(g => g.Key))
-				{
-					int count = 0;
-					float remainder = 0;
-					foreach (Tuple<string, string, float, float> entry in g.OrderByDescending(e => e.Item4)
-						.ThenBy(e => e.Item1.Split(' ').Length))
-					{
-						count++;
-						if (count <= n)
-						{
-							writer.Write("{0} ||| {1} ||| {2:0.########} {3:0.########}\n", entry.Item1, entry.Item2,
-								entry.Item3, entry.Item4);
-						}
-						else
-						{
-							remainder += entry.Item4;
-						}
-					}
-
-					if (remainder > 0)
-					{
-						writer.Write("<UNUSED_WORD> ||| {0} ||| 0 {1:0.########}\n", g.Key, remainder);
-					}
-				}
-			}
-		}
-
 		private void TuneLanguageModel(string lmPrefix, IList<IReadOnlyList<string>> tuneTargetCorpus, int ngramSize)
 		{
 			if (tuneTargetCorpus.Count == 0)
@@ -550,7 +499,6 @@ namespace SIL.Machine.Translation.Thot
 
 			string phraseTableFileName = tuneTMPrefix + ".ttable";
 			FilterPhraseTableUsingCorpus(phraseTableFileName, tuneSourceCorpus);
-			FilterPhraseTableNBest(phraseTableFileName, 20);
 
 			ThotSmtParameters oldParameters = Parameters;
 			ThotSmtParameters initialParameters = oldParameters.Clone();

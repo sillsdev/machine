@@ -13,7 +13,6 @@ namespace SIL.Machine.Translation.Thot
 			new Phase("Generating best inverse alignments"),
 			new Phase("Merging alignments"),
 			new Phase("Generating phrase table"),
-			new Phase("Filtering phrase table"),
 			new Phase("Tuning language model"),
 			new Phase("Tuning translation model", 0.4),
 			new Phase("Finalizing", 0.05)
