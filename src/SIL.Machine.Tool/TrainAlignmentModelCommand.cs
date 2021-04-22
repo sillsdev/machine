@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Diagnostics;
+using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Translation;
 
@@ -42,6 +43,7 @@ namespace SIL.Machine
 
 			int parallelCorpusCount = _corpusSpec.GetNonemptyParallelCorpusCount();
 
+			Stopwatch watch = Stopwatch.StartNew();
 			if (!_quietOption.HasValue())
 				Out.Write("Training... ");
 			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
@@ -49,7 +51,7 @@ namespace SIL.Machine
 				_corpusSpec.MaxCorpusCount, _preprocessSpec.GetProcessor(), parameters))
 			{
 				var reporter = new PhasedProgressReporter(progress,
-					new Phase("Training model", 0.99),
+					new Phase("Training model", 0.95),
 					new Phase("Saving model"));
 				using (PhaseProgress phaseProgress = reporter.StartNextPhase())
 					trainer.Train(phaseProgress);
@@ -58,7 +60,9 @@ namespace SIL.Machine
 			}
 			if (!_quietOption.HasValue())
 				Out.WriteLine("done.");
+			watch.Stop();
 
+			Out.WriteLine($"Execution time: {watch.Elapsed:c}");
 			Out.WriteLine($"# of Segments Trained: {parallelCorpusCount}");
 
 			return 0;

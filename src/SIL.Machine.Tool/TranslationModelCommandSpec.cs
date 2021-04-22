@@ -47,8 +47,11 @@ namespace SIL.Machine
 
 			_modelConfigFileName = ToolHelpers.GetTranslationModelConfigFileName(_modelArgument.Value);
 
-			if (factories.TryGetValue(_modelTypeOption.Value(), out ITranslationModelFactory factory))
+			if (_modelTypeOption.HasValue() && factories.TryGetValue(_modelTypeOption.Value(),
+				out ITranslationModelFactory factory))
+			{
 				_modelFactory = factory;
+			}
 
 			return true;
 		}
