@@ -19,13 +19,12 @@ namespace SIL.Machine.Translation.Thot
 	public class ThotWordAlignmentModelTrainer<TAlignModel> : DisposableBase, ITrainer
 		where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
 	{
-		private const int MaxSegmentLength = 1024;
-
 		private readonly string _prefFileName;
 		private readonly ITokenProcessor _sourcePreprocessor;
 		private readonly ITokenProcessor _targetPreprocessor;
 		private readonly ParallelTextCorpus _parallelCorpus;
 		private readonly int _maxCorpusCount;
+		private readonly int _maxSegmentLength = int.MaxValue;
 
 		public ThotWordAlignmentModelTrainer(string prefFileName, ITokenProcessor sourcePreprocessor,
 			ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)
@@ -37,8 +36,21 @@ namespace SIL.Machine.Translation.Thot
 			_maxCorpusCount = maxCorpusCount;
 			string className = Thot.GetWordAlignmentClassName<TAlignModel>();
 			Handle = Thot.swAlignModel_create(className);
-			if (className == Thot.FastAlignWordAlignmentClassName)
-				TrainingIterationCount = 4;
+			switch (className)
+			{
+				case Thot.FastAlignWordAlignmentClassName:
+					TrainingIterationCount = 4;
+					break;
+
+				case Thot.HmmWordAlignmentClassName:
+					_maxSegmentLength = 200;
+					break;
+
+				case Thot.Ibm1WordAlignmentClassName:
+				case Thot.Ibm2WordAlignmentClassName:
+					_maxSegmentLength = 1024;
+					break;
+			}
 		}
 
 		public int TrainingIterationCount { get; set; } = 5;
@@ -108,10 +120,10 @@ namespace SIL.Machine.Translation.Thot
 				Thot.swAlignModel_close(Handle);
 		}
 
-		private static bool IsSegmentValid(ParallelTextSegment segment)
+		private bool IsSegmentValid(ParallelTextSegment segment)
 		{
-			return !segment.IsEmpty && segment.SourceSegment.Count <= MaxSegmentLength
-				&& segment.TargetSegment.Count <= MaxSegmentLength;
+			return !segment.IsEmpty && segment.SourceSegment.Count <= _maxSegmentLength
+				&& segment.TargetSegment.Count <= _maxSegmentLength;
 		}
 
 		private void AddSegmentPair(ParallelTextSegment segment)
