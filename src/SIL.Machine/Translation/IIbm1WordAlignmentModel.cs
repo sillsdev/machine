@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SIL.Machine.Translation
+﻿namespace SIL.Machine.Translation
 {
 	public interface IIbm1WordAlignmentModel : IWordAlignmentModel
 	{

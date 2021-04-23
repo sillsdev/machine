@@ -184,7 +184,25 @@ namespace SIL.Machine.Translation.Thot
 			IntPtr targetSentence, IntPtr matrix, ref uint iLen, ref uint jLen);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern IntPtr swAlignModel_getTranslations(IntPtr swAlignModelHandle, IntPtr sourceWord,
+			float threshold);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern IntPtr swAlignModel_getTranslationsByIndex(IntPtr swAlignModelHandle, uint sourceWordIndex,
+			float threshold);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void swAlignModel_close(IntPtr swAlignModelHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern uint swAlignTrans_getCount(IntPtr swAlignTransHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern uint swAlignTrans_getTranslations(IntPtr swAlignTransHandle, uint[] wordIndices,
+			float[] probs, uint capacity);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void swAlignTrans_destroy(IntPtr swAlignTransHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern bool giza_symmetr1(string lhsFileName, string rhsFileName, string outputFileName,

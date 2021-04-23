@@ -75,22 +75,50 @@ namespace SIL.Machine.Translation
 			return _aligner.GetBestAlignment(sourceSegment, targetSegment);
 		}
 
+		public IEnumerable<(string TargetWord, double Score)> GetTranslations(string sourceWord, double threshold = 0)
+		{
+			CheckDisposed();
+
+			foreach ((string targetWord, double dirScore) in _directWordAlignmentModel.GetTranslations(sourceWord))
+			{
+				double invScore = _inverseWordAlignmentModel.GetTranslationScore(targetWord, sourceWord);
+				double score = Math.Max(dirScore, invScore);
+				if (score > threshold)
+					yield return (targetWord, score);
+			}
+		}
+
+		public IEnumerable<(int TargetWordIndex, double Score)> GetTranslations(int sourceWordIndex,
+			double threshold = 0)
+		{
+			CheckDisposed();
+
+			foreach ((int targetWordIndex, double dirScore) in _directWordAlignmentModel.GetTranslations(
+				sourceWordIndex))
+			{
+				double invScore = _inverseWordAlignmentModel.GetTranslationScore(targetWordIndex, sourceWordIndex);
+				double score = Math.Max(dirScore, invScore);
+				if (score > threshold)
+					yield return (targetWordIndex, score);
+			}
+		}
+
 		public double GetTranslationScore(string sourceWord, string targetWord)
 		{
 			CheckDisposed();
 
-			double score = _directWordAlignmentModel.GetTranslationScore(sourceWord, targetWord);
+			double dirScore = _directWordAlignmentModel.GetTranslationScore(sourceWord, targetWord);
 			double invScore = _inverseWordAlignmentModel.GetTranslationScore(targetWord, sourceWord);
-			return Math.Max(score, invScore);
+			return Math.Max(dirScore, invScore);
 		}
 
 		public double GetTranslationScore(int sourceWordIndex, int targetWordIndex)
 		{
 			CheckDisposed();
 
-			double score = _directWordAlignmentModel.GetTranslationScore(sourceWordIndex, targetWordIndex);
+			double dirScore = _directWordAlignmentModel.GetTranslationScore(sourceWordIndex, targetWordIndex);
 			double invScore = _inverseWordAlignmentModel.GetTranslationScore(targetWordIndex, sourceWordIndex);
-			return Math.Max(score, invScore);
+			return Math.Max(dirScore, invScore);
 		}
 
 		public double GetAlignmentScore(int sourceLen, int prevSourceIndex, int sourceIndex, int targetLen,
@@ -98,11 +126,11 @@ namespace SIL.Machine.Translation
 		{
 			CheckDisposed();
 
-			double score = _directWordAlignmentModel.GetAlignmentScore(sourceLen, prevSourceIndex, sourceIndex,
+			double dirScore = _directWordAlignmentModel.GetAlignmentScore(sourceLen, prevSourceIndex, sourceIndex,
 				targetLen, prevTargetIndex, targetIndex);
 			double invScore = _inverseWordAlignmentModel.GetAlignmentScore(targetLen, prevTargetIndex, targetIndex,
 				sourceLen, prevSourceIndex, sourceIndex);
-			return Math.Max(score, invScore);
+			return Math.Max(dirScore, invScore);
 		}
 
 		public ITrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor,

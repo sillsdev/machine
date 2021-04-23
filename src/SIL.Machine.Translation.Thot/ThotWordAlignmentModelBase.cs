@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using SIL.Extensions;
@@ -188,6 +189,52 @@ namespace SIL.Machine.Translation.Thot
 				Thot.FreeNativeMatrix(nativeMatrix, iLen);
 				Marshal.FreeHGlobal(nativeTargetSegment);
 				Marshal.FreeHGlobal(nativeSourceSegment);
+			}
+		}
+
+		public IEnumerable<(string TargetWord, double Score)> GetTranslations(string sourceWord, double threshold = 0)
+		{
+			CheckDisposed();
+
+			IntPtr nativeSourceWord = Thot.ConvertTokenToNativeUtf8(sourceWord ?? "NULL");
+			IntPtr transHandle = Thot.swAlignModel_getTranslations(Handle, nativeSourceWord, (float)threshold);
+			try
+			{
+				uint transCount = Thot.swAlignTrans_getCount(transHandle);
+
+				var wordIndices = new uint[transCount];
+				var probs = new float[transCount];
+				Thot.swAlignTrans_getTranslations(transHandle, wordIndices, probs, transCount);
+
+				return wordIndices.Zip(probs, (w, p) => (TargetWords[(int)w], (double)p));
+			}
+			finally
+			{
+				Marshal.FreeHGlobal(nativeSourceWord);
+				Thot.swAlignTrans_destroy(transHandle);
+			}
+		}
+
+		public IEnumerable<(int TargetWordIndex, double Score)> GetTranslations(int sourceWordIndex,
+			double threshold = 0)
+		{
+			CheckDisposed();
+
+			IntPtr transHandle = Thot.swAlignModel_getTranslationsByIndex(Handle, (uint)sourceWordIndex,
+				(float)threshold);
+			try
+			{
+				uint transCount = Thot.swAlignTrans_getCount(transHandle);
+
+				var wordIndices = new uint[transCount];
+				var probs = new float[transCount];
+				Thot.swAlignTrans_getTranslations(transHandle, wordIndices, probs, transCount);
+
+				return wordIndices.Zip(probs, (w, p) => ((int)w, (double)p));
+			}
+			finally
+			{
+				Thot.swAlignTrans_destroy(transHandle);
 			}
 		}
 

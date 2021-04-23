@@ -34,16 +34,14 @@ namespace SIL.Machine.Translation
 			double threshold = 0)
 		{
 			var results = new Dictionary<string, Dictionary<string, double>>();
-			for (int i = 0; i < model.SourceWords.Count; i++)
+			string[] sourceWords = model.SourceWords.ToArray();
+			string[] targetWords = model.TargetWords.ToArray();
+			for (int i = 0; i < sourceWords.Length; i++)
 			{
 				var row = new Dictionary<string, double>();
-				for (int j = 0; j < model.TargetWords.Count; j++)
-				{
-					double score = model.GetTranslationScore(i, j);
-					if (score > threshold)
-						row[model.TargetWords[j]] = score;
-				}
-				results[model.SourceWords[i]] = row;
+				foreach ((int j, double score) in model.GetTranslations(i, threshold))
+					row[targetWords[j]] = score;
+				results[sourceWords[i]] = row;
 			}
 			return results;
 		}

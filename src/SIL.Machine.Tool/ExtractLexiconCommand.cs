@@ -128,10 +128,8 @@ namespace SIL.Machine
 			var targetWordScores = new List<(string Word, double Score)>();
 			double maxScore = 0.0;
 			double scoreSum = 0.0;
-			for (int j = 0; j < targetWords.Length; j++)
+			foreach ((int j, double score) in alignmentModel.GetTranslations(i))
 			{
-				double score = alignmentModel is IIbm1WordAlignmentModel ibm1 ? ibm1.GetTranslationProbability(i, j)
-					: alignmentModel.GetTranslationScore(i, j);
 				scoreSum += score;
 				maxScore = Math.Max(score, maxScore);
 				if (IsWordIncluded(alignmentModel, j) && Math.Round(score, 15, MidpointRounding.AwayFromZero) > 0)
