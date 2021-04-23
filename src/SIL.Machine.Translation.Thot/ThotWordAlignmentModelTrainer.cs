@@ -19,6 +19,8 @@ namespace SIL.Machine.Translation.Thot
 	public class ThotWordAlignmentModelTrainer<TAlignModel> : DisposableBase, ITrainer
 		where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
 	{
+		private const int MaxSegmentLength = 1024;
+
 		private readonly string _prefFileName;
 		private readonly ITokenProcessor _sourcePreprocessor;
 		private readonly ITokenProcessor _targetPreprocessor;
@@ -108,8 +110,8 @@ namespace SIL.Machine.Translation.Thot
 
 		private static bool IsSegmentValid(ParallelTextSegment segment)
 		{
-			return !segment.IsEmpty && segment.SourceSegment.Count <= TranslationConstants.MaxSegmentLength
-				&& segment.TargetSegment.Count <= TranslationConstants.MaxSegmentLength;
+			return !segment.IsEmpty && segment.SourceSegment.Count <= MaxSegmentLength
+				&& segment.TargetSegment.Count <= MaxSegmentLength;
 		}
 
 		private void AddSegmentPair(ParallelTextSegment segment)
