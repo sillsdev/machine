@@ -13,7 +13,6 @@ namespace SIL.Machine
 	{
 		private CommandArgument _modelArgument;
 		private CommandOption _modelTypeOption;
-		private CommandOption _smtModelTypeOption;
 		private CommandOption _pluginOption;
 
 		private IWordAlignmentModelFactory _modelFactory;
@@ -22,10 +21,7 @@ namespace SIL.Machine
 		{
 			_modelArgument = command.Argument("MODEL_PATH", "The word alignment model.").IsRequired();
 			_modelTypeOption = command.Option("-mt|--model-type <MODEL_TYPE>",
-				$"The word alignment model type.\nTypes: \"{ToolHelpers.Hmm}\" (default), \"{ToolHelpers.Ibm1}\", \"{ToolHelpers.Ibm2}\", \"{ToolHelpers.FastAlign}\", \"{ToolHelpers.Smt}\".",
-				CommandOptionType.SingleValue);
-			_smtModelTypeOption = command.Option("-smt|--smt-model-type <SMT_MODEL_TYPE>",
-				$"The SMT model type.\nTypes: \"{ToolHelpers.Hmm}\" (default), \"{ToolHelpers.Ibm1}\", \"{ToolHelpers.Ibm2}\", \"{ToolHelpers.FastAlign}\".",
+				$"The word alignment model type.\nTypes: \"{ToolHelpers.Hmm}\" (default), \"{ToolHelpers.Ibm1}\", \"{ToolHelpers.Ibm2}\", \"{ToolHelpers.FastAlign}\".",
 				CommandOptionType.SingleValue);
 			_pluginOption = command.Option("-mp|--model-plugin <PLUGIN_FILE>", "The model plugin file.",
 				CommandOptionType.SingleValue);
@@ -45,12 +41,6 @@ namespace SIL.Machine
 			if (!ValidateAlignmentModelTypeOption(_modelTypeOption.Value(), factories.Keys))
 			{
 				outWriter.WriteLine("The specified word alignment model type is invalid.");
-				return false;
-			}
-
-			if (!ToolHelpers.ValidateTranslationModelTypeOption(_smtModelTypeOption.Value()))
-			{
-				outWriter.WriteLine("The specified SMT model type is invalid.");
 				return false;
 			}
 
@@ -78,26 +68,12 @@ namespace SIL.Machine
 					return CreateThotAlignmentModel<Ibm2WordAlignmentModel>(direction, symHeuristic);
 				case ToolHelpers.FastAlign:
 					return CreateThotAlignmentModel<FastAlignWordAlignmentModel>(direction, symHeuristic);
-				case ToolHelpers.Smt:
-					switch (_smtModelTypeOption.Value())
-					{
-						default:
-						case ToolHelpers.Hmm:
-							return CreateThotSmtAlignmentModel<HmmWordAlignmentModel>(direction);
-						case ToolHelpers.Ibm1:
-							return CreateThotSmtAlignmentModel<Ibm1WordAlignmentModel>(direction);
-						case ToolHelpers.Ibm2:
-							return CreateThotSmtAlignmentModel<Ibm2WordAlignmentModel>(direction);
-						case ToolHelpers.FastAlign:
-							return CreateThotSmtAlignmentModel<FastAlignWordAlignmentModel>(direction);
-					}
 			}
 		}
 
 		public bool IsSegmentInvalid(ParallelTextSegment segment)
 		{
-			return segment.IsEmpty || (_modelTypeOption.Value() == ToolHelpers.Smt
-				&& segment.SourceSegment.Count > TranslationConstants.MaxSegmentLength);
+			return segment.IsEmpty;
 		}
 
 		public ITrainer CreateAlignmentModelTrainer(ParallelTextCorpus corpus, int maxSize, ITokenProcessor processor,
@@ -124,10 +100,6 @@ namespace SIL.Machine
 				case ToolHelpers.FastAlign:
 					return CreateThotAlignmentModelTrainer<FastAlignWordAlignmentModel>(corpus, maxSize, processor,
 						parameters);
-				case ToolHelpers.Smt:
-					string modelCfgFileName = ToolHelpers.GetTranslationModelConfigFileName(_modelArgument.Value);
-					return ToolHelpers.CreateTranslationModelTrainer(_smtModelTypeOption.Value(), modelCfgFileName,
-						corpus, maxSize, processor);
 			}
 		}
 
@@ -146,14 +118,22 @@ namespace SIL.Machine
 			if (parameters.TryGetValue("iters", out string itersStr))
 				iters = int.Parse(itersStr);
 
+			bool? varBayes = null;
+			if (parameters.TryGetValue("var-bayes", out string varBayesStr))
+				varBayes = bool.Parse(varBayesStr);
+
 			var directTrainer = new ThotWordAlignmentModelTrainer<TAlignModel>(modelPath + "_invswm", processor,
 				processor, corpus, maxSize);
 			if (iters != -1)
 				directTrainer.TrainingIterationCount = iters;
+			if (varBayes != null)
+				directTrainer.VariationalBayes = (bool)varBayes;
 			var inverseTrainer = new ThotWordAlignmentModelTrainer<TAlignModel>(modelPath + "_swm", processor,
 				processor, corpus.Invert(), maxSize);
 			if (iters != -1)
 				inverseTrainer.TrainingIterationCount = iters;
+			if (varBayes != null)
+				inverseTrainer.VariationalBayes = (bool)varBayes;
 			return new SymmetrizedWordAlignmentModelTrainer(directTrainer, inverseTrainer);
 		}
 
@@ -220,8 +200,7 @@ namespace SIL.Machine
 				ToolHelpers.Hmm,
 				ToolHelpers.Ibm1,
 				ToolHelpers.Ibm2,
-				ToolHelpers.FastAlign,
-				ToolHelpers.Smt
+				ToolHelpers.FastAlign
 			};
 			validTypes.UnionWith(pluginTypes);
 			return string.IsNullOrEmpty(value) || validTypes.Contains(value);

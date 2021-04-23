@@ -40,6 +40,24 @@ namespace SIL.Machine.Translation.Thot
 		}
 
 		public int TrainingIterationCount { get; set; } = 5;
+
+		public bool VariationalBayes
+		{
+			get
+			{
+				CheckDisposed();
+
+				return Thot.swAlignModel_getVariationalBayes(Handle);
+			}
+
+			set
+			{
+				CheckDisposed();
+
+				Thot.swAlignModel_setVariationalBayes(Handle, value);
+			}
+		}
+
 		public Func<ParallelTextSegment, int, bool> SegmentFilter { get; set; } = (s, i) => true;
 
 		protected IntPtr Handle { get; }

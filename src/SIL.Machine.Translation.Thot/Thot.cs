@@ -137,6 +137,12 @@ namespace SIL.Machine.Translation.Thot
 		public static extern IntPtr swAlignModel_open(string className, string prefFileName);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void swAlignModel_setVariationalBayes(IntPtr swAlignModelHandle, bool variationalBayes);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern bool swAlignModel_getVariationalBayes(IntPtr swAlignModelHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern uint swAlignModel_getSourceWordCount(IntPtr swAlignModelHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]

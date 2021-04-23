@@ -18,7 +18,6 @@ namespace SIL.Machine
 		public const string Ibm1 = "ibm1";
 		public const string Ibm2 = "ibm2";
 		public const string FastAlign = "fast_align";
-		public const string Smt = "smt";
 
 		public const string Och = "och";
 		public const string Union = "union";

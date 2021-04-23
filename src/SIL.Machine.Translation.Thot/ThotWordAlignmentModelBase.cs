@@ -58,6 +58,23 @@ namespace SIL.Machine.Translation.Thot
 
 		public int TrainingIterationCount { get; set; } = 5;
 
+		public bool VariationalBayes
+		{
+			get
+			{
+				CheckDisposed();
+
+				return Thot.swAlignModel_getVariationalBayes(Handle);
+			}
+
+			set
+			{
+				CheckDisposed();
+
+				Thot.swAlignModel_setVariationalBayes(Handle, value);
+			}
+		}
+
 		protected IntPtr Handle { get; set; }
 
 		internal void SetHandle(IntPtr handle, bool owned = false)
@@ -109,7 +126,8 @@ namespace SIL.Machine.Translation.Thot
 
 			return new Trainer(this, sourcePreprocessor, targetPreprocessor, corpus, maxCorpusCount)
 			{
-				TrainingIterationCount = TrainingIterationCount
+				TrainingIterationCount = TrainingIterationCount,
+				VariationalBayes = VariationalBayes
 			};
 		}
 
