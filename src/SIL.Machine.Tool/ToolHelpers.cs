@@ -30,7 +30,7 @@ namespace SIL.Machine
 
 		public static bool ValidateCorpusFormatOption(string value)
 		{
-			return string.IsNullOrEmpty(value) || value.ToLowerInvariant().IsOneOf("dbl", "usx", "text", "pt");
+			return string.IsNullOrEmpty(value) || value.ToLowerInvariant().IsOneOf("dbl", "usx", "text", "pt", "pt-m");
 		}
 
 		public static bool ValidateWordTokenizerOption(string value, bool supportsNullTokenizer = false)
@@ -57,6 +57,9 @@ namespace SIL.Machine
 
 				case "text":
 					return new TextFileTextCorpus(wordTokenizer, path);
+
+				case "pt-m":
+					return new ParatextTextCorpus(wordTokenizer, path, includeMarkers: true);
 			}
 
 			throw new ArgumentException("An invalid text corpus type was specified.", nameof(type));

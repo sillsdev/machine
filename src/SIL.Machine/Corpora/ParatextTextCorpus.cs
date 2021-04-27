@@ -10,7 +10,8 @@ namespace SIL.Machine.Corpora
 {
 	public class ParatextTextCorpus : ScriptureTextCorpus
 	{
-		public ParatextTextCorpus(ITokenizer<string, int, string> wordTokenizer, string projectDir)
+		public ParatextTextCorpus(ITokenizer<string, int, string> wordTokenizer, string projectDir,
+			bool includeMarkers = false)
 		{
 			string settingsFileName = Path.Combine(projectDir, "Settings.xml");
 			var settingsDoc = XDocument.Load(settingsFileName);
@@ -41,7 +42,10 @@ namespace SIL.Machine.Corpora
 			}
 
 			foreach (string sfmFileName in Directory.EnumerateFiles(projectDir, $"{prefix}*{suffix}"))
-				AddText(new UsfmFileText(wordTokenizer, stylesheet, encoding, sfmFileName, Versification));
+			{
+				AddText(new UsfmFileText(wordTokenizer, stylesheet, encoding, sfmFileName, Versification,
+					includeMarkers));
+			}
 		}
 
 		public override ScrVers Versification { get; }

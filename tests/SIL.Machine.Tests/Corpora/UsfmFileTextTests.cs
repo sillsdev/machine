@@ -12,7 +12,7 @@ namespace SIL.Machine.Corpora
 		[Test]
 		public void Segments_NonEmptyText()
 		{
-			var tokenizer = new LatinWordTokenizer();
+			var tokenizer = new NullTokenizer();
 			var corpus = new UsfmFileTextCorpus(tokenizer, CorporaTestHelpers.UsfmStylesheetPath,
 				Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath);
 
@@ -21,17 +21,20 @@ namespace SIL.Machine.Corpora
 			Assert.That(segments.Length, Is.EqualTo(11));
 
 			Assert.That(segments[0].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:1", corpus.Versification)));
-			Assert.That(segments[0].Segment, Is.EqualTo("Chapter one , verse one .".Split()));
+			Assert.That(segments[0].Segment[0], Is.EqualTo("Chapter one, verse one."));
 
 			Assert.That(segments[1].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:2", corpus.Versification)));
-			Assert.That(segments[1].Segment, Is.EqualTo("Chapter one , verse two .".Split()));
+			Assert.That(segments[1].Segment[0], Is.EqualTo("Chapter one, verse two."));
+
+			Assert.That(segments[4].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:5", corpus.Versification)));
+			Assert.That(segments[4].Segment[0], Is.EqualTo("Chapter one, verse five."));
 
 			Assert.That(segments[5].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:1", corpus.Versification)));
-			Assert.That(segments[5].Segment, Is.EqualTo("Chapter two , verse one .".Split()));
+			Assert.That(segments[5].Segment[0], Is.EqualTo("Chapter two, verse one."));
 
 			Assert.That(segments[6].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:2", corpus.Versification)));
-			Assert.That(segments[6].Segment,
-				Is.EqualTo("Chapter two , verse two . Chapter two , verse three . Chapter two , verse four .".Split()));
+			Assert.That(segments[6].Segment[0],
+				Is.EqualTo("Chapter two, verse two. Chapter two, verse three. Chapter two, verse four."));
 			Assert.That(segments[6].IsInRange, Is.True);
 
 			Assert.That(segments[7].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:3", corpus.Versification)));
@@ -43,16 +46,16 @@ namespace SIL.Machine.Corpora
 			Assert.That(segments[8].IsInRange, Is.True);
 
 			Assert.That(segments[9].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:5", corpus.Versification)));
-			Assert.That(segments[9].Segment, Is.EqualTo("Chapter two , verse five .".Split()));
+			Assert.That(segments[9].Segment[0], Is.EqualTo("Chapter two, verse five."));
 
 			Assert.That(segments[10].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:6", corpus.Versification)));
-			Assert.That(segments[10].Segment, Is.EqualTo("Chapter two , verse six .".Split()));
+			Assert.That(segments[10].Segment[0], Is.EqualTo("Chapter two, verse six."));
 		}
 
 		[Test]
 		public void Segments_SentenceStart()
 		{
-			var tokenizer = new LatinWordTokenizer();
+			var tokenizer = new NullTokenizer();
 			var corpus = new UsfmFileTextCorpus(tokenizer, CorporaTestHelpers.UsfmStylesheetPath,
 				Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath);
 
@@ -61,11 +64,11 @@ namespace SIL.Machine.Corpora
 			Assert.That(segments.Length, Is.EqualTo(11));
 
 			Assert.That(segments[3].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:4", corpus.Versification)));
-			Assert.That(segments[3].Segment, Is.EqualTo("Chapter one , verse four ,".Split()));
+			Assert.That(segments[3].Segment[0], Is.EqualTo("Chapter one, verse four,"));
 			Assert.That(segments[3].SentenceStart, Is.True);
 
 			Assert.That(segments[4].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:5", corpus.Versification)));
-			Assert.That(segments[4].Segment, Is.EqualTo("chapter one , verse five .".Split()));
+			Assert.That(segments[4].Segment[0], Is.EqualTo("Chapter one, verse five."));
 			Assert.That(segments[4].SentenceStart, Is.False);
 		}
 
@@ -79,6 +82,50 @@ namespace SIL.Machine.Corpora
 			IText text = corpus.GetText("MRK");
 			TextSegment[] segments = text.Segments.ToArray();
 			Assert.That(segments, Is.Empty);
+		}
+
+		[Test]
+		public void Segments_IncludeMarkers()
+		{
+			var tokenizer = new NullTokenizer();
+			var corpus = new UsfmFileTextCorpus(tokenizer, CorporaTestHelpers.UsfmStylesheetPath,
+				Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath, includeMarkers: true);
+
+			IText text = corpus.GetText("MAT");
+			TextSegment[] segments = text.Segments.ToArray();
+			Assert.That(segments.Length, Is.EqualTo(11));
+
+			Assert.That(segments[0].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:1", corpus.Versification)));
+			Assert.That(segments[0].Segment[0], Is.EqualTo("Chapter one, verse one.\\f \\fr 1:1: \\ft This is a footnote.\\f*"));
+
+			Assert.That(segments[1].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:2", corpus.Versification)));
+			Assert.That(segments[1].Segment[0], Is.EqualTo("Chapter one, \\li2 verse two."));
+
+			Assert.That(segments[4].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:5", corpus.Versification)));
+			Assert.That(segments[4].Segment[0],
+				Is.EqualTo("Chapter one, \\li2 verse \\fig Figure 1|src=\"image1.png\" size=\"col\" ref=\"1:5\"\\fig* five."));
+
+			Assert.That(segments[5].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:1", corpus.Versification)));
+			Assert.That(segments[5].Segment[0], Is.EqualTo("Chapter \\add two\\add*, verse one."));
+
+			Assert.That(segments[6].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:2", corpus.Versification)));
+			Assert.That(segments[6].Segment[0],
+				Is.EqualTo("Chapter two, verse two. Chapter two, verse three. Chapter two, verse four."));
+			Assert.That(segments[6].IsInRange, Is.True);
+
+			Assert.That(segments[7].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:3", corpus.Versification)));
+			Assert.That(segments[7].Segment, Is.Empty);
+			Assert.That(segments[7].IsInRange, Is.True);
+
+			Assert.That(segments[8].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:4", corpus.Versification)));
+			Assert.That(segments[8].Segment, Is.Empty);
+			Assert.That(segments[8].IsInRange, Is.True);
+
+			Assert.That(segments[9].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:5", corpus.Versification)));
+			Assert.That(segments[9].Segment[0], Is.EqualTo("Chapter two, verse five."));
+
+			Assert.That(segments[10].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:6", corpus.Versification)));
+			Assert.That(segments[10].Segment[0], Is.EqualTo("Chapter two, verse six."));
 		}
 	}
 }

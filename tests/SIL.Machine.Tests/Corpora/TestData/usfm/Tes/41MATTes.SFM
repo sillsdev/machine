@@ -4,7 +4,7 @@
 \ip An introduction to Matthew
 \c 1
 \s Chapter One
-\v 1 Chapter one, verse one.
+\v 1 Chapter one, verse one.\f + \fr 1:1: \ft This is a footnote.\f*
 \li1
 \v 2 Chapter one,
 \li2 verse two.
@@ -12,12 +12,12 @@
 \li2 verse three.
 \v 4 Chapter one,
 \li2 verse four,
-\v 5 chapter one,
-\li2 verse five.
+\v 5 Chapter one,
+\li2 verse \fig Figure 1|src="image1.png" size="col" ref="1:5"\fig* five.
 \c 2 
 \s Chapter Two
 \p
-\v 1 Chapter two, verse one.
+\v 1 Chapter \add two\add*, verse one.
 \v 2-3 Chapter two, verse two.
 \v 3-4 Chapter two, verse three.
 \v 4 Chapter two, verse four.

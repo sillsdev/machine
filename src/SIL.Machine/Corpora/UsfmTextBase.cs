@@ -15,13 +15,15 @@ namespace SIL.Machine.Corpora
 
 		private readonly UsfmParser _parser;
 		private readonly Encoding _encoding;
+		private readonly bool _includeMarkers;
 
 		protected UsfmTextBase(ITokenizer<string, int, string> wordTokenizer, string id, UsfmStylesheet stylesheet,
-			Encoding encoding, ScrVers versification)
+			Encoding encoding, ScrVers versification, bool includeMarkers)
 			: base(wordTokenizer, id, versification)
 		{
 			_parser = new UsfmParser(stylesheet);
 			_encoding = encoding;
+			_includeMarkers = includeMarkers;
 		}
 
 		public override IEnumerable<TextSegment> Segments
@@ -34,6 +36,7 @@ namespace SIL.Machine.Corpora
 				var sb = new StringBuilder();
 				string chapter = null, verse = null;
 				bool sentenceStart = true;
+				UsfmToken prevToken = null;
 				var prevVerseRef = new VerseRef();
 				foreach (UsfmToken token in _parser.Parse(usfm))
 				{
@@ -100,7 +103,7 @@ namespace SIL.Machine.Corpora
 							break;
 
 						case UsfmTokenType.Paragraph:
-							if (!IsVersePara(token) && inVerse)
+							if (inVerse && !IsVersePara(token))
 							{
 								string text = sb.ToString();
 								foreach (TextSegment seg in CreateTextSegments(ref prevVerseRef, chapter, verse, text,
@@ -117,11 +120,23 @@ namespace SIL.Machine.Corpora
 
 						case UsfmTokenType.Note:
 							curEmbedMarker = token.Marker;
+							if (inVerse && _includeMarkers)
+							{
+								if (prevToken?.Type == UsfmTokenType.Paragraph && IsVersePara(prevToken))
+								{
+									sb.Append(prevToken.Marker.ToString());
+									sb.Append(" ");
+								}
+								sb.Append(token.Marker.ToString());
+								sb.Append(" ");
+							}
 							break;
 
 						case UsfmTokenType.End:
 							if (curEmbedMarker != null && token.Marker.Marker == curEmbedMarker.EndMarker)
 								curEmbedMarker = null;
+							if (inVerse && _includeMarkers)
+								sb.Append(token.Marker.ToString());
 							break;
 
 						case UsfmTokenType.Character:
@@ -133,13 +148,41 @@ namespace SIL.Machine.Corpora
 									curEmbedMarker = token.Marker;
 									break;
 							}
+							if (inVerse && _includeMarkers)
+							{
+								if (prevToken?.Type == UsfmTokenType.Paragraph && IsVersePara(prevToken))
+								{
+									sb.Append(prevToken.Marker.ToString());
+									sb.Append(" ");
+								}
+								sb.Append(token.Marker.ToString());
+								sb.Append(" ");
+							}
 							break;
 
 						case UsfmTokenType.Text:
-							if (inVerse && curEmbedMarker == null && !string.IsNullOrEmpty(token.Text))
-								sb.Append(token.Text);
+							if (inVerse && !string.IsNullOrEmpty(token.Text))
+							{
+								if (_includeMarkers)
+								{
+									if (prevToken?.Type == UsfmTokenType.Paragraph && IsVersePara(prevToken))
+									{
+										sb.Append(prevToken.Marker.ToString());
+										sb.Append(" ");
+									}
+									sb.Append(token.Text);
+								}
+								else if (curEmbedMarker == null)
+								{
+									string text = token.Text;
+									if (prevToken?.Type == UsfmTokenType.End)
+										text = text.TrimStart();
+									sb.Append(text);
+								}
+							}
 							break;
 					}
+					prevToken = token;
 				}
 
 				if (inVerse)
