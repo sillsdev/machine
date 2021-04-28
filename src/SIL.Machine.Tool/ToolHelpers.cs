@@ -30,7 +30,8 @@ namespace SIL.Machine
 
 		public static bool ValidateCorpusFormatOption(string value)
 		{
-			return string.IsNullOrEmpty(value) || value.ToLowerInvariant().IsOneOf("dbl", "usx", "text", "pt", "pt-m");
+			return string.IsNullOrEmpty(value)
+				|| value.ToLowerInvariant().IsOneOf("dbl", "usx", "text", "pt", "pt_m");
 		}
 
 		public static bool ValidateWordTokenizerOption(string value, bool supportsNullTokenizer = false)
@@ -58,7 +59,7 @@ namespace SIL.Machine
 				case "text":
 					return new TextFileTextCorpus(wordTokenizer, path);
 
-				case "pt-m":
+				case "pt_m":
 					return new ParatextTextCorpus(wordTokenizer, path, includeMarkers: true);
 			}
 

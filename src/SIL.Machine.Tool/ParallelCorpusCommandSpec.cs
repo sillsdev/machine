@@ -33,10 +33,10 @@ namespace SIL.Machine
 			_targetArgument = command.Argument("TARGET_PATH", "The target corpus.").IsRequired();
 
 			_sourceFormatOption = command.Option("-sf|--source-format <CORPUS_FORMAT>",
-				"The source corpus format.\nFormats: \"text\" (default), \"dbl\", \"usx\", \"pt\", \"pt-m\".",
+				"The source corpus format.\nFormats: \"text\" (default), \"dbl\", \"usx\", \"pt\", \"pt_m\".",
 				CommandOptionType.SingleValue);
 			_targetFormatOption = command.Option("-tf|--target-format <CORPUS_FORMAT>",
-				"The target corpus format.\nFormats: \"text\" (default), \"dbl\", \"usx\", \"pt\", \"pt-m\".",
+				"The target corpus format.\nFormats: \"text\" (default), \"dbl\", \"usx\", \"pt\", \"pt_m\".",
 				CommandOptionType.SingleValue);
 			if (SupportAlignmentsCorpus)
 			{
