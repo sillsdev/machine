@@ -172,6 +172,8 @@ namespace SIL.Machine.Translation
 			private readonly ITextCorpus _corpus;
 			private readonly UnigramTruecaser _newTruecaser;
 
+			public TrainStats Stats { get; } = new TrainStats();
+
 			public Trainer(UnigramTruecaser truecaser, ITextCorpus corpus)
 			{
 				_truecaser = truecaser;
@@ -193,6 +195,7 @@ namespace SIL.Machine.Translation
 					if (progress != null)
 						progress.Report(new ProgressStatus(currentStep, stepCount));
 				}
+				Stats.TrainedSegmentCount = currentStep;
 			}
 
 			public async Task SaveAsync()

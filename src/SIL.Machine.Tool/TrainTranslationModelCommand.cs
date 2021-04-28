@@ -28,8 +28,8 @@ namespace SIL.Machine
 			if (code != 0)
 				return code;
 
-			using (ITranslationModelTrainer trainer = _modelSpec.CreateTrainer(_corpusSpec.ParallelCorpus,
-				_corpusSpec.MaxCorpusCount, _preprocessSpec.GetProcessor()))
+			using (ITrainer trainer = _modelSpec.CreateTrainer(_corpusSpec.ParallelCorpus, _corpusSpec.MaxCorpusCount,
+				_preprocessSpec.GetProcessor()))
 			{
 				Stopwatch watch = Stopwatch.StartNew();
 				if (!_quietOption.HasValue())
@@ -50,8 +50,8 @@ namespace SIL.Machine
 
 				Out.WriteLine($"Execution time: {watch.Elapsed:c}");
 				Out.WriteLine($"# of Segments Trained: {trainer.Stats.TrainedSegmentCount}");
-				Out.WriteLine($"LM Perplexity: {trainer.Stats.LanguageModelPerplexity:0.0000}");
-				Out.WriteLine($"TM BLEU: {trainer.Stats.TranslationModelBleu * 100:0.00}");
+				Out.WriteLine($"LM Perplexity: {trainer.Stats.Metrics["perplexity"]:0.0000}");
+				Out.WriteLine($"TM BLEU: {trainer.Stats.Metrics["bleu"] * 100:0.00}");
 			}
 
 			return 0;

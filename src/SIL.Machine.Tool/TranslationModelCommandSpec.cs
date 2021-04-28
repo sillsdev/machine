@@ -75,7 +75,7 @@ namespace SIL.Machine
 			}
 		}
 
-		public ITranslationModelTrainer CreateTrainer(ParallelTextCorpus corpus, int maxSize, ITokenProcessor processor)
+		public ITrainer CreateTrainer(ParallelTextCorpus corpus, int maxSize, ITokenProcessor processor)
 		{
 			if (_modelFactory != null)
 				return _modelFactory.CreateTrainer(_modelArgument.Value, processor, processor, corpus, maxSize);

@@ -43,7 +43,7 @@ namespace SIL.Machine.WebApi.Services
 		public IBuildRepository BuildRepository { get; }
 		public IProjectRepository ProjectRepository { get; }
 		public EngineService Service { get; private set; }
-		public ITranslationModelTrainer SmtBatchTrainer { get; private set; }
+		public ITrainer SmtBatchTrainer { get; private set; }
 		public IInteractiveTranslationModel InteractiveModel { get; private set; }
 		public EngineOptions EngineOptions { get; }
 		public IBuildHandler BuildHandler { get; } = new BuildHandler();
@@ -58,8 +58,8 @@ namespace SIL.Machine.WebApi.Services
 		public void CreateEngineService()
 		{
 			InteractiveModel = Substitute.For<IInteractiveTranslationModel>();
-			SmtBatchTrainer = Substitute.For<ITranslationModelTrainer>();
-			SmtBatchTrainer.Stats.Returns(new SmtBatchTrainStats());
+			SmtBatchTrainer = Substitute.For<ITrainer>();
+			SmtBatchTrainer.Stats.Returns(new TrainStats { Metrics = { { "bleu", 0.0 }, { "perplexity", 0.0 } } });
 			Truecaser = Substitute.For<ITruecaser>();
 			TruecaserTrainer = Substitute.For<ITrainer>();
 			TruecaserTrainer.SaveAsync().Returns(Task.CompletedTask);

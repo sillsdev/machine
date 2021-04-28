@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Translation;
@@ -38,32 +39,32 @@ namespace SIL.Machine
 				return 1;
 			}
 
-			var parameters = _trainParamsOption.Values.Select(kvp => kvp.Split("="))
+			Dictionary<string, string> parameters = _trainParamsOption.Values.Select(kvp => kvp.Split("="))
 				.ToDictionary(kvp => kvp[0].ToLowerInvariant(), kvp => kvp[1]);
 
-			int parallelCorpusCount = _corpusSpec.GetNonemptyParallelCorpusCount();
-
-			Stopwatch watch = Stopwatch.StartNew();
-			if (!_quietOption.HasValue())
-				Out.Write("Training... ");
-			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
 			using (ITrainer trainer = _modelSpec.CreateAlignmentModelTrainer(_corpusSpec.ParallelCorpus,
 				_corpusSpec.MaxCorpusCount, _preprocessSpec.GetProcessor(), parameters))
 			{
-				var reporter = new PhasedProgressReporter(progress,
-					new Phase("Training model", 0.95),
-					new Phase("Saving model"));
-				using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-					trainer.Train(phaseProgress);
-				using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-					trainer.Save();
-			}
-			if (!_quietOption.HasValue())
-				Out.WriteLine("done.");
-			watch.Stop();
+				Stopwatch watch = Stopwatch.StartNew();
+				if (!_quietOption.HasValue())
+					Out.Write("Training... ");
+				using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
+				{
+					var reporter = new PhasedProgressReporter(progress,
+						new Phase("Training model", 0.95),
+						new Phase("Saving model"));
+					using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+						trainer.Train(phaseProgress);
+					using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+						trainer.Save();
+				}
+				if (!_quietOption.HasValue())
+					Out.WriteLine("done.");
+				watch.Stop();
 
-			Out.WriteLine($"Execution time: {watch.Elapsed:c}");
-			Out.WriteLine($"# of Segments Trained: {parallelCorpusCount}");
+				Out.WriteLine($"Execution time: {watch.Elapsed:c}");
+				Out.WriteLine($"# of Segments Trained: {trainer.Stats.TrainedSegmentCount}");
+			}
 
 			return 0;
 		}

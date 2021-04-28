@@ -290,7 +290,7 @@ namespace SIL.Machine.WebApi.Services
 		private async Task BuildAsync(Engine engine, IBuildHandler buildHandler, IJobCancellationToken jobToken)
 		{
 			Build build = null;
-			ITranslationModelTrainer modelTrainer = null;
+			ITrainer modelTrainer = null;
 			ITrainer truecaseTrainer = null;
 			CancellationTokenSource cts = null;
 			try
@@ -350,7 +350,7 @@ namespace SIL.Machine.WebApi.Services
 
 					engine = await _engines.ConcurrentUpdateAsync(engine, e =>
 					{
-						e.Confidence = modelTrainer.Stats.TranslationModelBleu;
+						e.Confidence = modelTrainer.Stats.Metrics["bleu"];
 						e.TrainedSegmentCount = modelTrainer.Stats.TrainedSegmentCount + _trainedSegments.Count;
 					});
 					_trainedSegments.Clear();

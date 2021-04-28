@@ -6,7 +6,7 @@ namespace SIL.Machine.Translation
 	public interface ITranslationModel : IDisposable
 	{
 		ITranslationEngine CreateEngine();
-		ITranslationModelTrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor,
+		ITrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor,
 			ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue);
 	}
 }

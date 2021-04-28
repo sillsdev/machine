@@ -77,16 +77,22 @@ namespace SIL.Machine.Translation.Thot
 		protected IntPtr Handle { get; }
 		protected bool CloseOnDispose { get; set; } = true;
 
+		public TrainStats Stats { get; } = new TrainStats();
+
 		public void Train(IProgress<ProgressStatus> progress = null, Action checkCanceled = null)
 		{
 			int corpusCount = 0;
 			int index = 0;
+			int trainedSegmentCount = 0;
 			foreach (ParallelTextSegment segment in _parallelCorpus.Segments)
 			{
 				if (IsSegmentValid(segment))
 				{
 					if (SegmentFilter(segment, index))
+					{
 						AddSegmentPair(segment);
+						trainedSegmentCount++;
+					}
 					corpusCount++;
 				}
 				index++;
@@ -100,6 +106,7 @@ namespace SIL.Machine.Translation.Thot
 				Thot.swAlignModel_train(Handle, 1);
 			}
 			progress?.Report(new ProgressStatus(1.0));
+			Stats.TrainedSegmentCount = trainedSegmentCount;
 		}
 
 		public virtual void Save()

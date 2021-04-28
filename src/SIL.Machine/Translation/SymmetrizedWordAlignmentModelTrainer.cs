@@ -9,6 +9,8 @@ namespace SIL.Machine.Translation
 		private readonly ITrainer _directTrainer;
 		private readonly ITrainer _inverseTrainer;
 
+		public TrainStats Stats => _directTrainer.Stats;
+
 		public SymmetrizedWordAlignmentModelTrainer(ITrainer directTrainer, ITrainer inverseTrainer)
 		{
 			_directTrainer = directTrainer;

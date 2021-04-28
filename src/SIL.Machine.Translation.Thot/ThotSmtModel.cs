@@ -133,7 +133,7 @@ namespace SIL.Machine.Translation.Thot
 			return Task.CompletedTask;
 		}
 
-		public ITranslationModelTrainer CreateTrainer(ITokenProcessor sourcePreprocessor,
+		public ITrainer CreateTrainer(ITokenProcessor sourcePreprocessor,
 			ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)
 		{
 			CheckDisposed();

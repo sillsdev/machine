@@ -23,7 +23,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public ThotSmtParameters Tune(ThotSmtParameters parameters,
 			IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
-			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, SmtBatchTrainStats stats,
+			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, TrainStats stats,
 			IProgress<ProgressStatus> progress)
 		{
 			float sentLenWeight = parameters.ModelWeights[7];
@@ -44,7 +44,7 @@ namespace SIL.Machine.Translation.Thot
 			MinimizationResult result = simplex.FindMinimum(Evaluate,
 				parameters.ModelWeights.Select(w => (double) w).Take(7));
 
-			stats.TranslationModelBleu = 1.0 - result.ErrorValue;
+			stats.Metrics["bleu"] = 1.0 - result.ErrorValue;
 
 			ThotSmtParameters bestParameters = parameters.Clone();
 			bestParameters.ModelWeights = result.MinimizingPoint.Select(w => (float) w).Concat(sentLenWeight).ToArray();

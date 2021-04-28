@@ -30,7 +30,7 @@ namespace SIL.Machine.Translation.Thot
 		}
 	}
 
-	public class ThotSmtModelTrainer<TAlignModel> : DisposableBase, ITranslationModelTrainer
+	public class ThotSmtModelTrainer<TAlignModel> : DisposableBase, ITrainer
 		where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
 	{
 		private readonly ITokenProcessor _sourcePreprocessor;
@@ -81,7 +81,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public string ConfigFileName { get; }
 		public ThotSmtParameters Parameters { get; private set; }
-		public SmtBatchTrainStats Stats { get; } = new SmtBatchTrainStats();
+		public TrainStats Stats { get; } = new TrainStats();
 
 		private HashSet<int> CreateTuneCorpus()
 		{
@@ -466,7 +466,7 @@ namespace SIL.Machine.Translation.Thot
 			MinimizationResult result = simplex.FindMinimum(w =>
 				CalculatePerplexity(tuneTargetCorpus, lmPrefix, ngramSize, w), Enumerable.Repeat(0.5, ngramSize * 3));
 			WriteLanguageModelWeightsFile(lmPrefix, ngramSize, result.MinimizingPoint);
-			Stats.LanguageModelPerplexity = result.ErrorValue;
+			Stats.Metrics["perplexity"] = result.ErrorValue;
 		}
 
 		private static double CalculatePerplexity(IList<IReadOnlyList<string>> tuneTargetCorpus, string lmPrefix,

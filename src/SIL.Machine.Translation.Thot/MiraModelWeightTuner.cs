@@ -22,7 +22,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public ThotSmtParameters Tune(ThotSmtParameters parameters,
 			IReadOnlyList<IReadOnlyList<string>> tuneSourceCorpus,
-			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, SmtBatchTrainStats stats,
+			IReadOnlyList<IReadOnlyList<string>> tuneTargetCorpus, TrainStats stats,
 			IProgress<ProgressStatus> progress)
 		{
 			IntPtr weightUpdaterHandle = Thot.llWeightUpdater_create();
@@ -71,7 +71,7 @@ namespace SIL.Machine.Translation.Thot
 
 				if (iter < MaxIterations)
 					progress.Report(new ProgressStatus(1.0));
-				stats.TranslationModelBleu = bestQuality;
+				stats.Metrics["bleu"] = bestQuality;
 				return bestParameters;
 			}
 			finally

@@ -44,8 +44,11 @@ namespace SIL.Machine
 				return false;
 			}
 
-			if (factories.TryGetValue(_modelTypeOption.Value(), out IWordAlignmentModelFactory factory))
+			if (_modelTypeOption.HasValue() && factories.TryGetValue(_modelTypeOption.Value(),
+				out IWordAlignmentModelFactory factory))
+			{
 				_modelFactory = factory;
+			}
 
 			return true;
 		}

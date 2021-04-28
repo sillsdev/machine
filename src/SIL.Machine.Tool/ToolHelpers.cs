@@ -157,7 +157,7 @@ namespace SIL.Machine
 			return string.IsNullOrEmpty(value) || validTypes.Contains(value);
 		}
 
-		public static ITranslationModelTrainer CreateTranslationModelTrainer(string modelType,
+		public static ITrainer CreateTranslationModelTrainer(string modelType,
 			string modelConfigFileName, ParallelTextCorpus corpus, int maxSize, ITokenProcessor processor)
 		{
 			switch (modelType)
@@ -228,7 +228,7 @@ namespace SIL.Machine
 			File.WriteAllText(modelConfigFileName, text);
 		}
 
-		private static ITranslationModelTrainer CreateThotSmtModelTrainer<TAlignModel>(string modelType,
+		private static ITrainer CreateThotSmtModelTrainer<TAlignModel>(string modelType,
 			string modelConfigFileName, ParallelTextCorpus corpus, int maxSize, ITokenProcessor processor)
 			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
 		{

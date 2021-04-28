@@ -62,6 +62,8 @@ namespace SIL.Machine.Translation
 
 		private class Trainer : DisposableBase, ITrainer
 		{
+			public TrainStats Stats { get; } = new TrainStats();
+
 			public void Save()
 			{
 				throw new NotImplementedException();
