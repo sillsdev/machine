@@ -96,7 +96,7 @@ namespace SIL.Machine.Corpora
 			Assert.That(segments.Length, Is.EqualTo(11));
 
 			Assert.That(segments[0].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:1", corpus.Versification)));
-			Assert.That(segments[0].Segment[0], Is.EqualTo("Chapter one, verse one.\\f \\fr 1:1: \\ft This is a footnote.\\f*"));
+			Assert.That(segments[0].Segment[0], Is.EqualTo("Chapter one, verse one.\\f + \\fr 1:1: \\ft This is a footnote.\\f*"));
 
 			Assert.That(segments[1].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:2", corpus.Versification)));
 			Assert.That(segments[1].Segment[0], Is.EqualTo("Chapter one, \\li2 verse two."));

@@ -124,10 +124,10 @@ namespace SIL.Machine.Corpora
 							{
 								if (prevToken?.Type == UsfmTokenType.Paragraph && IsVersePara(prevToken))
 								{
-									sb.Append(prevToken.Marker.ToString());
+									sb.Append(prevToken);
 									sb.Append(" ");
 								}
-								sb.Append(token.Marker.ToString());
+								sb.Append(token);
 								sb.Append(" ");
 							}
 							break;
@@ -136,7 +136,7 @@ namespace SIL.Machine.Corpora
 							if (curEmbedMarker != null && token.Marker.Marker == curEmbedMarker.EndMarker)
 								curEmbedMarker = null;
 							if (inVerse && _includeMarkers)
-								sb.Append(token.Marker.ToString());
+								sb.Append(token);
 							break;
 
 						case UsfmTokenType.Character:
@@ -152,10 +152,10 @@ namespace SIL.Machine.Corpora
 							{
 								if (prevToken?.Type == UsfmTokenType.Paragraph && IsVersePara(prevToken))
 								{
-									sb.Append(prevToken.Marker.ToString());
+									sb.Append(prevToken);
 									sb.Append(" ");
 								}
-								sb.Append(token.Marker.ToString());
+								sb.Append(token);
 								sb.Append(" ");
 							}
 							break;
@@ -167,10 +167,10 @@ namespace SIL.Machine.Corpora
 								{
 									if (prevToken?.Type == UsfmTokenType.Paragraph && IsVersePara(prevToken))
 									{
-										sb.Append(prevToken.Marker.ToString());
+										sb.Append(prevToken);
 										sb.Append(" ");
 									}
-									sb.Append(token.Text);
+									sb.Append(token);
 								}
 								else if (curEmbedMarker == null)
 								{
