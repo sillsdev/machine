@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
 // Original idea from Stephen Toub: http://blogs.msdn.com/b/pfxteam/archive/2012/02/12/building-async-coordination-primitives-part-7-asyncreaderwriterlock.aspx
 
-namespace SIL.Machine.WebApi.Utils
+namespace SIL.Machine.Threading
 {
 	/// <summary>
 	/// A reader/writer lock that is compatible with async. Note that this lock is <b>not</b> recursive!
 	/// </summary>
-	[DebuggerDisplay("State = {GetStateForDebugger}, ReaderCount = {GetReaderCountForDebugger}, UpgradeInProgress = {GetUpgradeInProgressForDebugger}")]
-	[DebuggerTypeProxy(typeof(DebugView))]
 	public sealed class AsyncReaderWriterLock
 	{
 		/// <summary>
@@ -55,24 +52,6 @@ namespace SIL.Machine.WebApi.Utils
 		/// </summary>
 		private readonly Task<IDisposable> _cachedWriterKeyTask;
 
-		[DebuggerNonUserCode]
-		internal State GetStateForDebugger
-		{
-			get
-			{
-				if (_locksHeld == 0)
-					return State.Unlocked;
-				if (_locksHeld == -1)
-					if (_upgradeableReaderKey != null)
-						return State.WriteLockedWithUpgradeableReader;
-					else
-						return State.WriteLocked;
-				if (_upgradeableReaderKey != null)
-					return State.ReadLockedWithUpgradeableReader;
-				return State.ReadLocked;
-			}
-		}
-
 		internal enum State
 		{
 			Unlocked,
@@ -81,12 +60,6 @@ namespace SIL.Machine.WebApi.Utils
 			WriteLocked,
 			WriteLockedWithUpgradeableReader,
 		}
-
-		[DebuggerNonUserCode]
-		internal int GetReaderCountForDebugger => _locksHeld > 0 ? _locksHeld : 0;
-
-		[DebuggerNonUserCode]
-		internal bool GetUpgradeInProgressForDebugger => !_upgradeReaderQueue.IsEmpty;
 
 		/// <summary>
 		/// Creates a new async-compatible reader/writer lock.
@@ -548,7 +521,6 @@ namespace SIL.Machine.WebApi.Utils
 		/// <summary>
 		/// The disposable which manages the upgradeable reader lock.
 		/// </summary>
-		[DebuggerDisplay("State = {" + nameof(GetStateForDebugger) + "}")]
 		public sealed class UpgradeableReaderKey : IDisposable
 		{
 			/// <summary>
@@ -565,19 +537,6 @@ namespace SIL.Machine.WebApi.Utils
 			/// A task that is completed with the upgrade key object for this key.
 			/// </summary>
 			internal readonly Task<IDisposable> CachedUpgradeKeyTask;
-
-			[DebuggerNonUserCode]
-			internal UpgradeState GetStateForDebugger
-			{
-				get
-				{
-					if (_upgrade == null)
-						return UpgradeState.Reader;
-					if (_upgrade.Status == TaskStatus.RanToCompletion)
-						return UpgradeState.Writer;
-					return UpgradeState.UpgradingToWriter;
-				}
-			}
 
 			internal enum UpgradeState
 			{
@@ -726,32 +685,5 @@ namespace SIL.Machine.WebApi.Utils
 				}
 			}
 		}
-
-		// ReSharper disable UnusedMember.Local
-		[DebuggerNonUserCode]
-		private sealed class DebugView
-		{
-			private readonly AsyncReaderWriterLock _rwl;
-
-			public DebugView(AsyncReaderWriterLock rwl)
-			{
-				_rwl = rwl;
-			}
-
-			public State State => _rwl.GetStateForDebugger;
-
-			public int ReaderCount => _rwl.GetReaderCountForDebugger;
-
-			public bool UpgradeInProgress => _rwl.GetUpgradeInProgressForDebugger;
-
-			public IAsyncWaitQueue<IDisposable> ReaderWaitQueue => _rwl._readerQueue;
-
-			public IAsyncWaitQueue<IDisposable> WriterWaitQueue => _rwl._writerQueue;
-
-			public IAsyncWaitQueue<UpgradeableReaderKey> UpgradeableReaderWaitQueue => _rwl._upgradeableReaderQueue;
-
-			public IAsyncWaitQueue<IDisposable> UpgradeReaderWaitQueue => _rwl._upgradeReaderQueue;
-		}
-		// ReSharper restore UnusedMember.Local
 	}
 }

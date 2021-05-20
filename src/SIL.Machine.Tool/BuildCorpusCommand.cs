@@ -1,6 +1,7 @@
 ﻿using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
-using SIL.Extensions;
 using SIL.Machine.Corpora;
 using SIL.Machine.Translation;
 
@@ -43,12 +44,12 @@ namespace SIL.Machine
 			_preprocessSpec = AddSpec(new PreprocessCommandSpec { EscapeSpaces = true });
 		}
 
-		protected override int ExecuteCommand()
+		protected override async Task<int> ExecuteCommandAsync(CancellationToken ct)
 		{
 			_corpusSpec.FilterSource = !_allSourceOption.HasValue();
 			_corpusSpec.FilterTarget = !_allTargetOption.HasValue();
 
-			int code = base.ExecuteCommand();
+			int code = await base.ExecuteCommandAsync(ct);
 			if (code != 0)
 				return code;
 

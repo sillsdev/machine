@@ -4,8 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SIL.Extensions;
+using SIL.Machine.Threading;
 using SIL.Machine.WebApi.Models;
-using SIL.Machine.WebApi.Utils;
 
 namespace SIL.Machine.WebApi.DataAccess.Memory
 {

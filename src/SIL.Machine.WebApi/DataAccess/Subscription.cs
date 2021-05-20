@@ -1,8 +1,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using SIL.Machine.Threading;
 using SIL.Machine.WebApi.Models;
-using SIL.Machine.WebApi.Utils;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.WebApi.DataAccess

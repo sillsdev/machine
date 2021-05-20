@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
 
-namespace SIL.Machine.WebApi.Utils
+namespace SIL.Machine.Threading
 {
     /// <summary>
     /// An awaitable wrapper around a task whose result is disposable. The wrapper is not disposable, so this prevents usage errors like "using (MyAsync())" when the appropriate usage should be "using (await MyAsync())".

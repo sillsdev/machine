@@ -1,8 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
+using SIL.Machine.DataStructures;
+using SIL.Machine.Threading;
 using SIL.Machine.Translation;
 
 namespace SIL.Machine
@@ -38,9 +44,9 @@ namespace SIL.Machine
 			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
 		}
 
-		protected override int ExecuteCommand()
+		protected override async Task<int> ExecuteCommandAsync(CancellationToken ct)
 		{
-			int code = base.ExecuteCommand();
+			int code = await base.ExecuteCommandAsync(ct);
 			if (code != 0)
 				return code;
 
@@ -87,6 +93,7 @@ namespace SIL.Machine
 					Out.WriteLine("done.");
 					Out.Write("Aligning... ");
 				}
+				var watch = Stopwatch.StartNew();
 				using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
 				using (StreamWriter writer = isOutputFile
 					? ToolHelpers.CreateStreamWriter(_outputArgument.Value) : null)
@@ -99,10 +106,53 @@ namespace SIL.Machine
 							: new StreamWriter(Path.Combine(_outputArgument.Value, text.Id.Trim('*') + ".txt"));
 						try
 						{
-							foreach (ParallelTextSegment segment in text.Segments)
+							var queue = new AsyncCollection<(long, string)>(100000);
+							var writeTask = Task.Run(async () =>
 							{
+								int curIndex = 0;
+								var completed = new PriorityQueue<long, string>();
+								while (segmentCount < _corpusSpec.MaxCorpusCount)
+								{
+									IReadOnlyCollection<(long, string)> results = await queue.TakeAllAsync();
+									if (results.Count > 0)
+									{
+										foreach ((long i, string alignmentStr) in results)
+											completed.Enqueue(i, alignmentStr);
+									}
+									else
+									{
+										break;
+									}
+
+									while (!completed.IsEmpty && completed.Peek().Priority == curIndex)
+									{
+										string alignmentStr = completed.Dequeue().Item;
+										writer.WriteLine(alignmentStr);
+										if (alignmentStr != "")
+										{
+											alignments?.Add(AlignedWordPair.Parse(alignmentStr));
+											segmentCount++;
+											progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
+											if (segmentCount == _corpusSpec.MaxCorpusCount)
+												break;
+										}
+										curIndex++;
+									}
+								}
+								queue.CompleteAdding();
+							});
+
+							Parallel.ForEach(Partitioner.Create(text.Segments), async (segment, state, i) =>
+							{
+								if (writeTask.IsCompleted)
+								{
+									state.Stop();
+									return;
+								}
+
 								if (_modelSpec.IsSegmentInvalid(segment))
 								{
+									await queue.AddAsync((i, ""));
 									writer.WriteLine();
 								}
 								else
@@ -111,15 +161,15 @@ namespace SIL.Machine
 									IReadOnlyList<string> targetSegment = processor.Process(segment.TargetSegment);
 									WordAlignmentMatrix alignment = alignmentModel.GetBestAlignment(sourceSegment,
 										targetSegment, segment.CreateAlignmentMatrix());
-									alignments?.Add(alignment.GetAlignedWordPairs());
-									writer.WriteLine(alignment.ToString(alignmentModel, sourceSegment, targetSegment,
-										includeScores: _scoresOption.HasValue()));
-									segmentCount++;
-									progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
-									if (segmentCount == _corpusSpec.MaxCorpusCount)
-										break;
+									string alignmentStr = alignment.ToString(alignmentModel, sourceSegment,
+										targetSegment, includeScores: _scoresOption.HasValue());
+									if (!await queue.TryAddAsync((i, alignmentStr)))
+										state.Stop();
 								}
-							}
+							});
+							queue.CompleteAdding();
+							await writeTask;
+
 							if (segmentCount == _corpusSpec.MaxCorpusCount)
 								break;
 						}
@@ -132,6 +182,9 @@ namespace SIL.Machine
 				}
 				if (!_quietOption.HasValue())
 					Out.WriteLine("done.");
+				watch.Stop();
+
+				Out.WriteLine($"Execution time: {watch.Elapsed:c}");
 			}
 
 			if (refParallelCorpus != null && alignments != null)

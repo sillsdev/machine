@@ -1,4 +1,6 @@
 ﻿using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
 using SIL.Machine.Translation;
@@ -23,9 +25,9 @@ namespace SIL.Machine
 			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
 		}
 
-		protected override int ExecuteCommand()
+		protected override async Task<int> ExecuteCommandAsync(CancellationToken ct)
 		{
-			int code = base.ExecuteCommand();
+			int code = await base.ExecuteCommandAsync(ct);
 			if (code != 0)
 				return code;
 

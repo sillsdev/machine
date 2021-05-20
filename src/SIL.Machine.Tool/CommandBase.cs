@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 
 namespace SIL.Machine
@@ -11,18 +13,18 @@ namespace SIL.Machine
 		{
 			_specs = new HashSet<ICommandSpec>();
 			UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.CollectAndContinue;
-			OnExecute(ExecuteCommand);
+			OnExecuteAsync(ExecuteCommandAsync);
 		}
 
-		protected virtual int ExecuteCommand()
+		protected virtual Task<int> ExecuteCommandAsync(CancellationToken ct)
 		{
 			foreach (ICommandSpec spec in _specs)
 			{
 				if (!spec.Validate(Out))
-					return 1;
+					return Task.FromResult(1);
 			}
 
-			return 0;
+			return Task.FromResult(0);
 		}
 
 		protected void AddCommand(CommandBase command)

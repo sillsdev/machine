@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SIL.Machine.WebApi.Utils
+namespace SIL.Machine.Threading
 {
 	public static class TaskExtensions
 	{

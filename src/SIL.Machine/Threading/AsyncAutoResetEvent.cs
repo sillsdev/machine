@@ -1,17 +1,14 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
 // Original idea by Stephen Toub: http://blogs.msdn.com/b/pfxteam/archive/2012/02/11/10266923.aspx
 
-namespace SIL.Machine.WebApi.Utils
+namespace SIL.Machine.Threading
 {
 	/// <summary>
 	/// An async-compatible auto-reset event.
 	/// </summary>
-	[DebuggerDisplay("IsSet = {_set}")]
-	[DebuggerTypeProxy(typeof(DebugView))]
 	public sealed class AsyncAutoResetEvent
 	{
 		/// <summary>
@@ -146,22 +143,5 @@ namespace SIL.Machine.WebApi.Utils
 			if (finish != null)
 				finish.Dispose();
 		}
-
-		// ReSharper disable UnusedMember.Local
-		[DebuggerNonUserCode]
-		private sealed class DebugView
-		{
-			private readonly AsyncAutoResetEvent _are;
-
-			public DebugView(AsyncAutoResetEvent are)
-			{
-				_are = are;
-			}
-
-			public bool IsSet { get { return _are._set; } }
-
-			public IAsyncWaitQueue<object> WaitQueue { get { return _are._queue; } }
-		}
-		// ReSharper restore UnusedMember.Local
 	}
 }

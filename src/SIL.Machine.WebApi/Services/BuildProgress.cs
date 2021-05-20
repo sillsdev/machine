@@ -1,8 +1,8 @@
 ﻿using System;
+using SIL.Machine.Threading;
 using SIL.Machine.Translation;
 using SIL.Machine.WebApi.DataAccess;
 using SIL.Machine.WebApi.Models;
-using SIL.Machine.WebApi.Utils;
 
 namespace SIL.Machine.WebApi.Services
 {

@@ -7,6 +7,7 @@ using Hangfire;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SIL.Machine.Corpora;
+using SIL.Machine.Threading;
 using SIL.Machine.Translation;
 using SIL.Machine.WebApi.Configuration;
 using SIL.Machine.WebApi.DataAccess;

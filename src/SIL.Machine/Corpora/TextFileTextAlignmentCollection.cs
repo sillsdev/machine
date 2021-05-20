@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 
@@ -44,22 +43,11 @@ namespace SIL.Machine.Corpora
 						else
 						{
 							yield return new TextAlignment(new TextSegmentRef(sectionNum, segmentNum),
-								ParseAlignments(line));
+								AlignedWordPair.Parse(line, _invert));
 							segmentNum++;
 						}
 					}
 				}
-			}
-		}
-
-		private IEnumerable<AlignedWordPair> ParseAlignments(string alignments)
-		{
-			foreach (string token in alignments.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries))
-			{
-				int index = token.IndexOf('-');
-				int i = int.Parse(token.Substring(0, index));
-				int j = int.Parse(token.Substring(index + 1));
-				yield return _invert ? new AlignedWordPair(j, i) : new AlignedWordPair(i, j);
 			}
 		}
 

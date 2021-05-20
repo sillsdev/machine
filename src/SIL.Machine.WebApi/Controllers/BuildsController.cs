@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using SIL.Machine.Threading;
 using SIL.Machine.WebApi.Configuration;
 using SIL.Machine.WebApi.DataAccess;
 using SIL.Machine.WebApi.Models;
 using SIL.Machine.WebApi.Services;
-using SIL.Machine.WebApi.Utils;
 
 namespace SIL.Machine.WebApi.Controllers
 {

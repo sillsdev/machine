@@ -6,9 +6,9 @@ using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using SIL.Extensions;
+using SIL.Machine.Threading;
 using SIL.Machine.WebApi.Configuration;
 using SIL.Machine.WebApi.Models;
-using SIL.Machine.WebApi.Utils;
 
 namespace SIL.Machine.WebApi.DataAccess.Mongo
 {

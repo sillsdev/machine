@@ -1,17 +1,14 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
 // Original idea from Stephen Toub: http://blogs.msdn.com/b/pfxteam/archive/2012/02/12/10266988.aspx
 
-namespace SIL.Machine.WebApi.Utils
+namespace SIL.Machine.Threading
 {
 	/// <summary>
 	/// A mutual exclusion lock that is compatible with async. Note that this lock is <b>not</b> recursive!
 	/// </summary>
-	[DebuggerDisplay("Taken = {" + nameof(_taken) + "}")]
-	[DebuggerTypeProxy(typeof(DebugView))]
 	public sealed class AsyncLock
 	{
 		/// <summary>
@@ -163,22 +160,5 @@ namespace SIL.Machine.WebApi.Utils
 				_asyncLock.ReleaseLock();
 			}
 		}
-
-		// ReSharper disable UnusedMember.Local
-		[DebuggerNonUserCode]
-		private sealed class DebugView
-		{
-			private readonly AsyncLock _mutex;
-
-			public DebugView(AsyncLock mutex)
-			{
-				_mutex = mutex;
-			}
-
-			public bool Taken => _mutex._taken;
-
-			public IAsyncWaitQueue<IDisposable> WaitQueue => _mutex._queue;
-		}
-		// ReSharper restore UnusedMember.Local
 	}
 }

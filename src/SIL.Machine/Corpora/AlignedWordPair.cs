@@ -1,10 +1,28 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace SIL.Machine.Corpora
 {
 	public class AlignedWordPair : IEquatable<AlignedWordPair>
 	{
+		public static IReadOnlyCollection<AlignedWordPair> Parse(string alignments, bool invert = false)
+		{
+			var result = new List<AlignedWordPair>();
+			foreach (string token in alignments.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
+			{
+				int dashIndex = token.IndexOf('-');
+				int i = int.Parse(token.Substring(0, dashIndex));
+
+				int colonIndex = token.IndexOf(':', dashIndex + 1);
+				int length = (colonIndex == -1 ? token.Length : colonIndex) - (dashIndex + 1);
+				int j = int.Parse(token.Substring(dashIndex + 1, length));
+
+				result.Add(invert ? new AlignedWordPair(j, i) : new AlignedWordPair(i, j));
+			}
+			return result;
+		}
+
 		public AlignedWordPair(int sourceIndex, int targetIndex)
 		{
 			SourceIndex = sourceIndex;

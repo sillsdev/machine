@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace SIL.Machine.WebApi.Utils
+namespace SIL.Machine.Threading
 {
     /// <summary>
     /// Provides extension methods for <see cref="TaskCompletionSource{TResult}"/>.

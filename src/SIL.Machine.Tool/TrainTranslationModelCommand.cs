@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Translation;
 
@@ -22,18 +24,18 @@ namespace SIL.Machine
 			_quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
 		}
 
-		protected override int ExecuteCommand()
+		protected override async Task<int> ExecuteCommandAsync(CancellationToken ct)
 		{
-			int code = base.ExecuteCommand();
+			int code = await base.ExecuteCommandAsync(ct);
 			if (code != 0)
 				return code;
 
 			using (ITrainer trainer = _modelSpec.CreateTrainer(_corpusSpec.ParallelCorpus, _corpusSpec.MaxCorpusCount,
 				_preprocessSpec.GetProcessor()))
 			{
-				Stopwatch watch = Stopwatch.StartNew();
 				if (!_quietOption.HasValue())
 					Out.Write("Training... ");
+				var watch = Stopwatch.StartNew();
 				using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
 				{
 					var reporter = new PhasedProgressReporter(progress,

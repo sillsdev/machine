@@ -1,11 +1,13 @@
-﻿namespace SIL.Machine
+﻿using System.Threading.Tasks;
+
+namespace SIL.Machine
 {
 	public class Program
 	{
-		public static void Main(string[] args)
+		public static Task<int> Main(string[] args)
 		{
 			var app = new App();
-			app.Execute(args);
+			return app.ExecuteAsync(args);
 		}
 	}
 }

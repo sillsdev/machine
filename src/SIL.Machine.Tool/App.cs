@@ -1,4 +1,6 @@
 ﻿using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SIL.Machine
 {
@@ -27,10 +29,10 @@ namespace SIL.Machine
 			AddCommand(new SymmetrizeCommand());
 		}
 
-		protected override int ExecuteCommand()
+		protected override Task<int> ExecuteCommandAsync(CancellationToken ct)
 		{
 			ShowHelp();
-			return 0;
+			return Task.FromResult(0);
 		}
 	}
 }

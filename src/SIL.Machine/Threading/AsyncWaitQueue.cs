@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SIL.Machine.WebApi.Utils
+namespace SIL.Machine.Threading
 {
 	/// <summary>
 	/// A collection of cancelable <see cref="TaskCompletionSource{T}"/> instances. Implementations must be threadsafe <b>and</b> must work correctly if the caller is holding a lock.
@@ -85,8 +84,6 @@ namespace SIL.Machine.WebApi.Utils
 	/// The default wait queue implementation, which uses a double-ended queue.
 	/// </summary>
 	/// <typeparam name="T">The type of the results. If this isn't needed, use <see cref="Object"/>.</typeparam>
-	[DebuggerDisplay("Count = {" + nameof(Count) + "}")]
-	[DebuggerTypeProxy(typeof(DefaultAsyncWaitQueue<>.DebugView))]
 	public sealed class DefaultAsyncWaitQueue<T> : IAsyncWaitQueue<T>
 	{
 		private readonly Deque<TaskCompletionSource<T>> _queue = new Deque<TaskCompletionSource<T>>();
@@ -187,23 +184,6 @@ namespace SIL.Machine.WebApi.Utils
 			{
 				foreach (var cts in _taskCompletionSources)
 					cts.TrySetResultWithBackgroundContinuations(_result);
-			}
-		}
-
-		[DebuggerNonUserCode]
-		internal sealed class DebugView
-		{
-			private readonly DefaultAsyncWaitQueue<T> _queue;
-
-			public DebugView(DefaultAsyncWaitQueue<T> queue)
-			{
-				_queue = queue;
-			}
-
-			[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-			public Task<T>[] Tasks
-			{
-				get { return _queue._queue.Select(x => x.Task).ToArray(); }
 			}
 		}
 	}

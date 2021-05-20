@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
-namespace SIL.Machine.WebApi.Utils
+namespace SIL.Machine.Threading
 {
 	/// <summary>
 	/// A double-ended queue (deque), which provides O(1) indexed access, O(1) removals from the front and back, amortized O(1)
@@ -11,8 +10,6 @@ namespace SIL.Machine.WebApi.Utils
 	/// the index approaches the middle).
 	/// </summary>
 	/// <typeparam name="T">The type of elements contained in the deque.</typeparam>
-	[DebuggerDisplay("Count = {Count}, Capacity = {Capacity}")]
-	[DebuggerTypeProxy(typeof(Deque<>.DebugView))]
 	internal sealed class Deque<T> : IList<T>, System.Collections.IList
 	{
 		/// <summary>
@@ -773,28 +770,6 @@ namespace SIL.Machine.WebApi.Utils
 		{
 			_offset = 0;
 			Count = 0;
-		}
-
-		[DebuggerNonUserCode]
-		private sealed class DebugView
-		{
-			private readonly Deque<T> _deque;
-
-			public DebugView(Deque<T> deque)
-			{
-				_deque = deque;
-			}
-
-			[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-			public T[] Items
-			{
-				get
-				{
-					var array = new T[_deque.Count];
-					((ICollection<T>)_deque).CopyTo(array, 0);
-					return array;
-				}
-			}
 		}
 	}
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Autofac.Features.OwnedInstances;
 using Microsoft.Extensions.Options;
+using SIL.Machine.Threading;
 using SIL.Machine.Translation;
 using SIL.Machine.WebApi.Configuration;
 using SIL.Machine.WebApi.DataAccess;

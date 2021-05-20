@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using NUnit.Framework;
+using SIL.Machine.Threading;
 
 namespace SIL.Machine.WebApi.Utils
 {

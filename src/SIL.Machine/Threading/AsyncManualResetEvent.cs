@@ -1,16 +1,13 @@
-﻿using System.Diagnostics;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 // Original idea by Stephen Toub: http://blogs.msdn.com/b/pfxteam/archive/2012/02/11/10266920.aspx
 
-namespace SIL.Machine.WebApi.Utils
+namespace SIL.Machine.Threading
 {
 	/// <summary>
 	/// An async-compatible manual-reset event.
 	/// </summary>
-	[DebuggerDisplay("Id = {Id}, IsSet = {GetStateForDebugger}")]
-	[DebuggerTypeProxy(typeof(DebugView))]
 	public sealed class AsyncManualResetEvent
 	{
 		/// <summary>
@@ -22,15 +19,6 @@ namespace SIL.Machine.WebApi.Utils
 		/// The current state of the event.
 		/// </summary>
 		private TaskCompletionSource _tcs;
-
-		[DebuggerNonUserCode]
-		private bool GetStateForDebugger
-		{
-			get
-			{
-				return _tcs.Task.IsCompleted;
-			}
-		}
 
 		/// <summary>
 		/// Creates an async-compatible manual-reset event.
@@ -124,22 +112,5 @@ namespace SIL.Machine.WebApi.Utils
 				//Enlightenment.Trace.AsyncManualResetEvent_Reset(this, _tcs.Task);
 			}
 		}
-
-		// ReSharper disable UnusedMember.Local
-		[DebuggerNonUserCode]
-		private sealed class DebugView
-		{
-			private readonly AsyncManualResetEvent _mre;
-
-			public DebugView(AsyncManualResetEvent mre)
-			{
-				_mre = mre;
-			}
-
-			public bool IsSet { get { return _mre.GetStateForDebugger; } }
-
-			public Task CurrentTask { get { return _mre._tcs.Task; } }
-		}
-		// ReSharper restore UnusedMember.Local
 	}
 }

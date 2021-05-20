@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace SIL.Machine.WebApi.Utils
+namespace SIL.Machine.Threading
 {
     /// <summary>
     /// Flags controlling the behavior of <see cref="AsyncLazy{T}"/>.
@@ -31,8 +30,6 @@ namespace SIL.Machine.WebApi.Utils
     /// Provides support for asynchronous lazy initialization. This type is fully threadsafe.
     /// </summary>
     /// <typeparam name="T">The type of object that is being asynchronously initialized.</typeparam>
-    [DebuggerDisplay("State = {GetStateForDebugger}")]
-    [DebuggerTypeProxy(typeof(AsyncLazy<>.DebugView))]
     public sealed class AsyncLazy<T>
     {
         /// <summary>
@@ -49,19 +46,6 @@ namespace SIL.Machine.WebApi.Utils
         /// The underlying lazy task.
         /// </summary>
         private Lazy<Task<T>> _instance;
-
-        [DebuggerNonUserCode]
-        internal LazyState GetStateForDebugger
-        {
-            get
-            {
-                if (!_instance.IsValueCreated)
-                    return LazyState.NotStarted;
-                if (!_instance.Value.IsCompleted)
-                    return LazyState.Executing;
-                return LazyState.Completed;
-            }
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AsyncLazy&lt;T&gt;"/> class.
@@ -162,39 +146,6 @@ namespace SIL.Machine.WebApi.Utils
             NotStarted,
             Executing,
             Completed
-        }
-
-        [DebuggerNonUserCode]
-        internal sealed class DebugView
-        {
-            private readonly AsyncLazy<T> _lazy;
-
-            public DebugView(AsyncLazy<T> lazy)
-            {
-                _lazy = lazy;
-            }
-
-            public LazyState State { get { return _lazy.GetStateForDebugger; } }
-
-            public Task Task
-            {
-                get
-                {
-                    if (!_lazy._instance.IsValueCreated)
-                        throw new InvalidOperationException("Not yet created.");
-                    return _lazy._instance.Value;
-                }
-            }
-
-            public T Value
-            {
-                get
-                {
-                    if (!_lazy._instance.IsValueCreated || !_lazy._instance.Value.IsCompleted)
-                        throw new InvalidOperationException("Not yet created.");
-                    return _lazy._instance.Value.Result;
-                }
-            }
         }
     }
 }
