@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
@@ -16,6 +17,7 @@ namespace SIL.Machine
 		private readonly CommandOption _allSourceOption;
 		private readonly CommandOption _allTargetOption;
 		private readonly CommandOption _includeEmptyOption;
+		private readonly CommandOption _mergeDuplicatesOption;
 		private readonly PreprocessCommandSpec _preprocessSpec;
 
 		public BuildCorpusCommand()
@@ -41,6 +43,8 @@ namespace SIL.Machine
 				"Include all target segments. Overrides include/exclude options.",
 				CommandOptionType.NoValue);
 			_includeEmptyOption = Option("-ie|--include-empty", "Include empty segments.", CommandOptionType.NoValue);
+			_mergeDuplicatesOption = Option("-md|--merge-duplicates", "Merge segments with the same reference.",
+				CommandOptionType.NoValue);
 			_preprocessSpec = AddSpec(new PreprocessCommandSpec { EscapeSpaces = true });
 		}
 
@@ -67,6 +71,11 @@ namespace SIL.Machine
 			using (StreamWriter refOutputWriter = _refOutputOption.HasValue()
 				? ToolHelpers.CreateStreamWriter(_refOutputOption.Value()) : null)
 			{
+				object curRef = null;
+				var curSourceLine = new StringBuilder();
+				var curSourceLineRange = true;
+				var curTargetLine = new StringBuilder();
+				var curTargetLineRange = true;
 				foreach (ParallelTextSegment segment in _corpusSpec.ParallelCorpus.GetSegments(
 					_allSourceOption.HasValue(), _allTargetOption.HasValue()))
 				{
@@ -93,35 +102,47 @@ namespace SIL.Machine
 						}
 					}
 
+					if (curRef != null && (!_mergeDuplicatesOption.HasValue() || !segment.SegmentRef.Equals(curRef)))
+					{
+						sourceOutputWriter?.WriteLine(curSourceLineRange ? "<range>" : curSourceLine.ToString());
+						targetOutputWriter?.WriteLine(curTargetLineRange ? "<range>" : curTargetLine.ToString());
+						refOutputWriter?.WriteLine(curRef);
+						curSourceLine.Clear();
+						curSourceLineRange = true;
+						curTargetLine.Clear();
+						curTargetLineRange = true;
+						segmentCount++;
+						if (segmentCount == _corpusSpec.MaxCorpusCount)
+							break;
+					}
+
+					curRef = segment.SegmentRef;
+
 					ITokenProcessor processor = _preprocessSpec.GetProcessor();
-
-					if (sourceOutputWriter != null)
+					if (sourceOutputWriter != null
+						&& (!segment.IsSourceInRange || segment.IsSourceRangeStart || segment.SourceSegment.Count > 0))
 					{
-						if (segment.IsSourceInRange && !segment.IsSourceRangeStart && segment.SourceSegment.Count == 0)
-						{
-							sourceOutputWriter.WriteLine("<range>");
-						}
-						else
-						{
-							sourceOutputWriter.WriteLine(string.Join(" ", processor.Process(segment.SourceSegment)));
-						}
+						if (curSourceLine.Length > 0)
+							curSourceLine.Append(" ");
+						curSourceLine.Append(string.Join(" ", processor.Process(segment.SourceSegment)));
+						curSourceLineRange = false;
 					}
-					if (targetOutputWriter != null)
+					if (targetOutputWriter != null
+						&& (!segment.IsTargetInRange || segment.IsTargetRangeStart || segment.TargetSegment.Count > 0))
 					{
-						if (segment.IsTargetInRange && !segment.IsTargetRangeStart && segment.TargetSegment.Count == 0)
-						{
-							targetOutputWriter.WriteLine("<range>");
-						}
-						else
-						{
-							targetOutputWriter.WriteLine(string.Join(" ", processor.Process(segment.TargetSegment)));
-						}
+						if (curTargetLine.Length > 0)
+							curTargetLine.Append(" ");
+						curTargetLine.Append(string.Join(" ", processor.Process(segment.TargetSegment)));
+						curTargetLineRange = false;
 					}
-					refOutputWriter?.WriteLine(segment.SegmentRef);
+				}
 
+				if (segmentCount < _corpusSpec.MaxCorpusCount)
+				{
+					sourceOutputWriter?.WriteLine(curSourceLineRange ? "<range>" : curSourceLine.ToString());
+					targetOutputWriter?.WriteLine(curTargetLineRange ? "<range>" : curTargetLine.ToString());
+					refOutputWriter?.WriteLine(curRef);
 					segmentCount++;
-					if (segmentCount == _corpusSpec.MaxCorpusCount)
-						break;
 				}
 			}
 

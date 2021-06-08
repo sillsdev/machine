@@ -20,7 +20,7 @@ namespace SIL.Machine
 
 			_corpusSpec = AddSpec(new ParallelCorpusCommandSpec());
 			_countOption = Option("-c|--count", "Only output the # of parallel segments.", CommandOptionType.NoValue);
-			_maxLengthOption = Option("--max-seglen <MAX_SEG_LENGTH>",
+			_maxLengthOption = Option("-ms|--max-seglen <MAX_SEG_LENGTH>",
 				$"Maximum segment length. Default: {TranslationConstants.MaxSegmentLength}.",
 				CommandOptionType.SingleValue);
 		}

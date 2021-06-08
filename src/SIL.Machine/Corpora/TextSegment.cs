@@ -34,7 +34,12 @@ namespace SIL.Machine.Corpora
 
 		public override string ToString()
 		{
-			return string.Format("{0} - {1}", SegmentRef, string.Join(" ", Segment));
+			string segment;
+			if (IsEmpty)
+				segment = IsInRange ? "<range>" : "EMPTY";
+			else
+				segment = string.Join(" ", Segment);
+			return $"{SegmentRef} - {segment}";
 		}
 	}
 }
