@@ -23,6 +23,17 @@ namespace SIL.Machine.Corpora
 
 			var scrVersType = (int?)settingsDoc.Root.Element("Versification") ?? (int)ScrVersType.English;
 			Versification = new ScrVers((ScrVersType)scrVersType);
+			string customVersPath = Path.Combine(projectDir, "custom.vrs");
+			if (File.Exists(customVersPath))
+			{
+				var guid = (string)settingsDoc.Root.Element("Guid");
+				string versName = ((ScrVersType)scrVersType).ToString() + "-" + guid;
+				using (var reader = new StreamReader(customVersPath))
+				{
+					Versification = Scripture.Versification.Table.Implementation.Load(reader, customVersPath,
+						Versification, versName);
+				}
+			}
 
 			var stylesheetName = (string)settingsDoc.Root.Element("StyleSheet") ?? "usfm.sty";
 			string stylesheetFileName = Path.Combine(projectDir, stylesheetName);
