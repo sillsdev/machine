@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Text;
 using System.Xml.Linq;
 using SIL.Machine.Tokenization;
@@ -13,13 +11,11 @@ namespace SIL.Machine.Corpora
 		public ParatextTextCorpus(ITokenizer<string, int, string> wordTokenizer, string projectDir,
 			bool includeMarkers = false)
 		{
+			Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 			string settingsFileName = Path.Combine(projectDir, "Settings.xml");
 			var settingsDoc = XDocument.Load(settingsFileName);
 			var codePage = (int?)settingsDoc.Root.Element("Encoding") ?? 65001;
-			EncodingInfo encodingInfo = Encoding.GetEncodings().FirstOrDefault(ei => ei.CodePage == codePage);
-			if (encodingInfo == null)
-				throw new InvalidOperationException("The Paratext project contains an unknown encoding.");
-			Encoding encoding = encodingInfo.GetEncoding();
+			var encoding = Encoding.GetEncoding(codePage);
 
 			var scrVersType = (int?)settingsDoc.Root.Element("Versification") ?? (int)ScrVersType.English;
 			Versification = new ScrVers((ScrVersType)scrVersType);
