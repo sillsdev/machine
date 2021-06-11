@@ -15,26 +15,24 @@ namespace SIL.Machine.Corpora
 			_parser = new UsxVerseParser();
 		}
 
-		public override IEnumerable<TextSegment> Segments
+		public override IEnumerable<TextSegment> GetSegments(bool includeText = true)
 		{
-			get
+			using (IStreamContainer streamContainer = CreateStreamContainer())
+			using (Stream stream = streamContainer.OpenStream())
 			{
-				using (IStreamContainer streamContainer = CreateStreamContainer())
-				using (Stream stream = streamContainer.OpenStream())
+				var prevVerseRef = new VerseRef();
+				foreach (UsxVerse verse in _parser.Parse(stream))
 				{
-					var prevVerseRef = new VerseRef();
-					foreach (UsxVerse verse in _parser.Parse(stream))
-					{
-						foreach (TextSegment segment in CreateTextSegments(ref prevVerseRef, verse))
-							yield return segment;
-					}
+					foreach (TextSegment segment in CreateTextSegments(includeText, ref prevVerseRef, verse))
+						yield return segment;
 				}
 			}
 		}
 
-		private IEnumerable<TextSegment> CreateTextSegments(ref VerseRef prevVerseRef, UsxVerse verse)
+		private IEnumerable<TextSegment> CreateTextSegments(bool includeText, ref VerseRef prevVerseRef, UsxVerse verse)
 		{
-			return CreateTextSegments(ref prevVerseRef, verse.Chapter, verse.Verse, verse.Text, verse.SentenceStart);
+			return CreateTextSegments(includeText, ref prevVerseRef, verse.Chapter, verse.Verse, verse.Text,
+				verse.SentenceStart);
 		}
 	}
 }

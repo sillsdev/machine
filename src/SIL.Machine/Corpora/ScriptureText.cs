@@ -15,18 +15,19 @@ namespace SIL.Machine.Corpora
 
 		public ScrVers Versification { get; }
 
-		protected IEnumerable<TextSegment> CreateTextSegments(ref VerseRef prevVerseRef, string chapter, string verse,
-			string text, bool sentenceStart = true)
+		protected IEnumerable<TextSegment> CreateTextSegments(bool includeText, ref VerseRef prevVerseRef,
+			string chapter, string verse, string text, bool sentenceStart = true)
 		{
 			var verseRef = new VerseRef(Id, chapter, verse, Versification);
 			if (verseRef.CompareTo(prevVerseRef) <= 0)
 				return Enumerable.Empty<TextSegment>();
 
 			prevVerseRef = verseRef;
-			return CreateTextSegments(verseRef, text, sentenceStart);
+			return CreateTextSegments(includeText, verseRef, text, sentenceStart);
 		}
 
-		private IEnumerable<TextSegment> CreateTextSegments(VerseRef verseRef, string text, bool sentenceStart)
+		private IEnumerable<TextSegment> CreateTextSegments(bool includeText, VerseRef verseRef, string text,
+			bool sentenceStart)
 		{
 			if (verseRef.HasMultiple)
 			{
@@ -35,7 +36,8 @@ namespace SIL.Machine.Corpora
 				{
 					if (firstVerse)
 					{
-						yield return CreateTextSegment(text, vref, sentenceStart, inRange: true, rangeStart: true);
+						yield return CreateTextSegment(includeText, text, vref, sentenceStart, inRange: true,
+							rangeStart: true);
 						firstVerse = false;
 					}
 					else
@@ -46,7 +48,7 @@ namespace SIL.Machine.Corpora
 			}
 			else
 			{
-				yield return CreateTextSegment(text, verseRef, sentenceStart);
+				yield return CreateTextSegment(includeText, text, verseRef, sentenceStart);
 			}
 		}
 	}

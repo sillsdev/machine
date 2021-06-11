@@ -17,6 +17,17 @@ namespace SIL.Machine
 
 		private IWordAlignmentModelFactory _modelFactory;
 
+		public bool IsSymmetric
+		{
+			get
+			{
+				if (_modelFactory != null)
+					return _modelFactory.IsSymmetric;
+
+				return false;
+			}
+		}
+
 		public void AddParameters(CommandBase command)
 		{
 			_modelArgument = command.Argument("MODEL_PATH", "The word alignment model.").IsRequired();
@@ -80,12 +91,12 @@ namespace SIL.Machine
 		}
 
 		public ITrainer CreateAlignmentModelTrainer(ParallelTextCorpus corpus, int maxSize, ITokenProcessor processor,
-			Dictionary<string, string> parameters)
+			Dictionary<string, string> parameters, bool direct = true)
 		{
 			if (_modelFactory != null)
 			{
 				return _modelFactory.CreateTrainer(_modelArgument.Value, processor, processor, corpus, maxSize,
-					parameters);
+					parameters, direct);
 			}
 
 			switch (_modelTypeOption.Value())
@@ -93,21 +104,21 @@ namespace SIL.Machine
 				default:
 				case ToolHelpers.Hmm:
 					return CreateThotAlignmentModelTrainer<HmmWordAlignmentModel>(corpus, maxSize, processor,
-						parameters);
+						parameters, direct);
 				case ToolHelpers.Ibm1:
 					return CreateThotAlignmentModelTrainer<Ibm1WordAlignmentModel>(corpus, maxSize, processor,
-						parameters);
+						parameters, direct);
 				case ToolHelpers.Ibm2:
 					return CreateThotAlignmentModelTrainer<Ibm2WordAlignmentModel>(corpus, maxSize, processor,
-						parameters);
+						parameters, direct);
 				case ToolHelpers.FastAlign:
 					return CreateThotAlignmentModelTrainer<FastAlignWordAlignmentModel>(corpus, maxSize, processor,
-						parameters);
+						parameters, direct);
 			}
 		}
 
 		private ITrainer CreateThotAlignmentModelTrainer<TAlignModel>(ParallelTextCorpus corpus, int maxSize,
-			ITokenProcessor processor, Dictionary<string, string> parameters)
+			ITokenProcessor processor, Dictionary<string, string> parameters, bool direct)
 			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
 		{
 			string modelPath = _modelArgument.Value;
@@ -125,19 +136,26 @@ namespace SIL.Machine
 			if (parameters.TryGetValue("var-bayes", out string varBayesStr))
 				varBayes = bool.Parse(varBayesStr);
 
-			var directTrainer = new ThotWordAlignmentModelTrainer<TAlignModel>(modelPath + "_invswm", processor,
-				processor, corpus, maxSize);
+			string modelStr;
+			ParallelTextCorpus trainCorpus;
+			if (direct)
+			{
+				modelStr = "invswm";
+				trainCorpus = corpus;
+			}
+			else
+			{
+				modelStr = "swm";
+				trainCorpus = corpus.Invert();
+			}
+
+			var trainer = new ThotWordAlignmentModelTrainer<TAlignModel>($"{modelPath}_{modelStr}", processor,
+				processor, trainCorpus, maxSize);
 			if (iters != -1)
-				directTrainer.TrainingIterationCount = iters;
+				trainer.TrainingIterationCount = iters;
 			if (varBayes != null)
-				directTrainer.VariationalBayes = (bool)varBayes;
-			var inverseTrainer = new ThotWordAlignmentModelTrainer<TAlignModel>(modelPath + "_swm", processor,
-				processor, corpus.Invert(), maxSize);
-			if (iters != -1)
-				inverseTrainer.TrainingIterationCount = iters;
-			if (varBayes != null)
-				inverseTrainer.VariationalBayes = (bool)varBayes;
-			return new SymmetrizedWordAlignmentModelTrainer(directTrainer, inverseTrainer);
+				trainer.VariationalBayes = (bool)varBayes;
+			return trainer;
 		}
 
 		private IWordAlignmentModel CreateThotAlignmentModel<TAlignModel>(WordAlignmentDirection direction,

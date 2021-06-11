@@ -113,7 +113,7 @@ namespace SIL.Machine
 							: new StreamWriter(Path.Combine(_outputArgument.Value, text.Id.Trim('*') + ".txt"));
 						try
 						{
-							foreach (TextSegment segment in text.Segments)
+							foreach (TextSegment segment in text.GetSegments())
 							{
 								if (segment.IsEmpty || segment.Segment.Count > TranslationConstants.MaxSegmentLength)
 								{

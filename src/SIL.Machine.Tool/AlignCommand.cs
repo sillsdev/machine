@@ -1,14 +1,13 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
-using SIL.Machine.DataStructures;
-using SIL.Machine.Threading;
 using SIL.Machine.Translation;
 
 namespace SIL.Machine
@@ -79,13 +78,16 @@ namespace SIL.Machine
 					refCorpus);
 			}
 
+			int processorCount = Environment.ProcessorCount;
+
 			ITokenProcessor processor = _preprocessSpec.GetProcessor();
 
-			int parallelCorpusCount = _corpusSpec.GetNonemptyParallelCorpusCount();
 			SymmetrizationHeuristic symHeuristic = ToolHelpers.GetSymmetrizationHeuristic(_symHeuristicOption?.Value());
 
 			if (!_quietOption.HasValue())
 				Out.Write("Loading model... ");
+			int stepCount = _quietOption.HasValue() ? 0 : _corpusSpec.GetNonemptyParallelCorpusCount();
+			int curStep = 0;
 			using (IWordAlignmentModel alignmentModel = _modelSpec.CreateAlignmentModel(symHeuristic: symHeuristic))
 			{
 				if (!_quietOption.HasValue())
@@ -99,61 +101,18 @@ namespace SIL.Machine
 					? ToolHelpers.CreateStreamWriter(_outputArgument.Value) : null)
 				{
 					int segmentCount = 0;
-					progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
+					progress?.Report(new ProgressStatus(curStep, stepCount));
 					foreach (ParallelText text in _corpusSpec.ParallelCorpus.Texts)
 					{
 						StreamWriter textWriter = isOutputFile ? writer
 							: new StreamWriter(Path.Combine(_outputArgument.Value, text.Id.Trim('*') + ".txt"));
 						try
 						{
-							var queue = new AsyncCollection<(long, string)>(100000);
-							var writeTask = Task.Run(async () =>
+							var alignBlock = new TransformBlock<ParallelTextSegment, string>(segment =>
 							{
-								int curIndex = 0;
-								var completed = new PriorityQueue<long, string>();
-								while (segmentCount < _corpusSpec.MaxCorpusCount)
-								{
-									IReadOnlyCollection<(long, string)> results = await queue.TakeAllAsync();
-									if (results.Count > 0)
-									{
-										foreach ((long i, string alignmentStr) in results)
-											completed.Enqueue(i, alignmentStr);
-									}
-									else
-									{
-										break;
-									}
-
-									while (!completed.IsEmpty && completed.Peek().Priority == curIndex)
-									{
-										string alignmentStr = completed.Dequeue().Item;
-										writer.WriteLine(alignmentStr);
-										if (alignmentStr != "")
-										{
-											alignments?.Add(AlignedWordPair.Parse(alignmentStr));
-											segmentCount++;
-											progress?.Report(new ProgressStatus(segmentCount, parallelCorpusCount));
-											if (segmentCount == _corpusSpec.MaxCorpusCount)
-												break;
-										}
-										curIndex++;
-									}
-								}
-								queue.CompleteAdding();
-							});
-
-							Parallel.ForEach(Partitioner.Create(text.Segments), async (segment, state, i) =>
-							{
-								if (writeTask.IsCompleted)
-								{
-									state.Stop();
-									return;
-								}
-
 								if (_modelSpec.IsSegmentInvalid(segment))
 								{
-									await queue.AddAsync((i, ""));
-									writer.WriteLine();
+									return "";
 								}
 								else
 								{
@@ -163,12 +122,49 @@ namespace SIL.Machine
 										targetSegment, segment.CreateAlignmentMatrix());
 									string alignmentStr = alignment.ToString(alignmentModel, sourceSegment,
 										targetSegment, includeScores: _scoresOption.HasValue());
-									if (!await queue.TryAddAsync((i, alignmentStr)))
-										state.Stop();
+									return alignmentStr;
 								}
+							}, new ExecutionDataflowBlockOptions
+							{
+								MaxDegreeOfParallelism = processorCount - 1,
+								BoundedCapacity = 100000
 							});
-							queue.CompleteAdding();
-							await writeTask;
+
+							var batchWritesBlock = new BatchBlock<string>(10,
+								new GroupingDataflowBlockOptions { BoundedCapacity = 100000 });
+
+							var writeBlock = new ActionBlock<string[]>(async results =>
+							{
+								foreach (string alignmentStr in results)
+								{
+									await writer.WriteLineAsync(alignmentStr);
+									if (alignmentStr != "")
+									{
+										alignments?.Add(AlignedWordPair.Parse(alignmentStr));
+										curStep++;
+										progress?.Report(new ProgressStatus(curStep, stepCount));
+									}
+								}
+							}, new ExecutionDataflowBlockOptions { BoundedCapacity = 10000 });
+
+
+							var linkOptions = new DataflowLinkOptions { PropagateCompletion = true };
+							alignBlock.LinkTo(batchWritesBlock, linkOptions);
+							batchWritesBlock.LinkTo(writeBlock, linkOptions);
+
+							foreach (ParallelTextSegment segment in text.Segments)
+							{
+								await alignBlock.SendAsync(segment);
+								if (!_modelSpec.IsSegmentInvalid(segment))
+								{
+									segmentCount++;
+									if (segmentCount == _corpusSpec.MaxCorpusCount)
+										break;
+								}
+							}
+							alignBlock.Complete();
+
+							await writeBlock.Completion;
 
 							if (segmentCount == _corpusSpec.MaxCorpusCount)
 								break;

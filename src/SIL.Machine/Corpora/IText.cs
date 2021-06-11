@@ -8,6 +8,6 @@ namespace SIL.Machine.Corpora
 
 		string SortKey { get; }
 
-		IEnumerable<TextSegment> Segments { get; }
+		IEnumerable<TextSegment> GetSegments(bool includeText = true);
 	}
 }

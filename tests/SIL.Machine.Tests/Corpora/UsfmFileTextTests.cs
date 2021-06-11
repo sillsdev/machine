@@ -17,7 +17,7 @@ namespace SIL.Machine.Corpora
 				Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath);
 
 			IText text = corpus.GetText("MAT");
-			TextSegment[] segments = text.Segments.ToArray();
+			TextSegment[] segments = text.GetSegments().ToArray();
 			Assert.That(segments.Length, Is.EqualTo(12));
 
 			Assert.That(segments[0].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:1", corpus.Versification)));
@@ -63,7 +63,7 @@ namespace SIL.Machine.Corpora
 				Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath);
 
 			IText text = corpus.GetText("MAT");
-			TextSegment[] segments = text.Segments.ToArray();
+			TextSegment[] segments = text.GetSegments().ToArray();
 			Assert.That(segments.Length, Is.EqualTo(12));
 
 			Assert.That(segments[3].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:4", corpus.Versification)));
@@ -83,7 +83,7 @@ namespace SIL.Machine.Corpora
 				Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath);
 
 			IText text = corpus.GetText("MRK");
-			TextSegment[] segments = text.Segments.ToArray();
+			TextSegment[] segments = text.GetSegments().ToArray();
 			Assert.That(segments, Is.Empty);
 		}
 
@@ -95,7 +95,7 @@ namespace SIL.Machine.Corpora
 				Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath, includeMarkers: true);
 
 			IText text = corpus.GetText("MAT");
-			TextSegment[] segments = text.Segments.ToArray();
+			TextSegment[] segments = text.GetSegments().ToArray();
 			Assert.That(segments.Length, Is.EqualTo(12));
 
 			Assert.That(segments[0].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:1", corpus.Versification)));

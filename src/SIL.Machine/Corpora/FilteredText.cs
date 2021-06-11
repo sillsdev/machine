@@ -19,6 +19,9 @@ namespace SIL.Machine.Corpora
 
 		public string SortKey => _text.SortKey;
 
-		public IEnumerable<TextSegment> Segments => _text.Segments.Where(_filter);
+		public IEnumerable<TextSegment> GetSegments(bool includeText = true)
+		{
+			return _text.GetSegments(includeText).Where(_filter);
+		}
 	}
 }

@@ -115,12 +115,12 @@ namespace SIL.Machine
 
 		public int GetNonemptyParallelCorpusCount()
 		{
-			return Math.Min(MaxCorpusCount, ParallelCorpus.Segments.Count(s => !s.IsEmpty));
+			return Math.Min(MaxCorpusCount, ParallelCorpus.GetCount(nonemptyOnly: true));
 		}
 
 		public int GetParallelCorpusCount()
 		{
-			return Math.Min(MaxCorpusCount, ParallelCorpus.Segments.Count());
+			return Math.Min(MaxCorpusCount, ParallelCorpus.GetCount());
 		}
 	}
 }

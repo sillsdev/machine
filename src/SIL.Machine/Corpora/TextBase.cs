@@ -20,24 +20,27 @@ namespace SIL.Machine.Corpora
 
 		protected ITokenizer<string, int, string> WordTokenizer { get; }
 
-		public abstract IEnumerable<TextSegment> Segments { get; }
+		public abstract IEnumerable<TextSegment> GetSegments(bool includeText = true);
 
-		protected TextSegment CreateTextSegment(string text, object segRef, bool sentenceStart = true,
+		protected TextSegment CreateTextSegment(bool includeText, string text, object segRef, bool sentenceStart = true,
 			bool inRange = false, bool rangeStart = false)
 		{
-			IReadOnlyList<string> segment = WordTokenizer.Tokenize(text.Trim()).ToArray();
+			text = text.Trim();
+			if (!includeText)
+				return new TextSegment(segRef, sentenceStart, inRange, rangeStart, isEmpty: text.Length == 0);
+			IReadOnlyList<string> segment = WordTokenizer.Tokenize(text).ToArray();
 			segment = TokenProcessors.UnescapeSpaces.Process(segment);
 			return new TextSegment(segRef, segment, sentenceStart, inRange, rangeStart);
 		}
 
 		protected TextSegment CreateTextSegment(object segRef, bool inRange = false)
 		{
-			return new TextSegment(segRef, inRange);
+			return new TextSegment(segRef, inRange: inRange);
 		}
 
-		protected TextSegment CreateTextSegment(string text, params int[] indices)
+		protected TextSegment CreateTextSegment(bool includeText, string text, params int[] indices)
 		{
-			return CreateTextSegment(text, new TextSegmentRef(indices));
+			return CreateTextSegment(includeText, text, new TextSegmentRef(indices));
 		}
 	}
 }

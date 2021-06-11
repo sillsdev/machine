@@ -30,13 +30,13 @@ namespace SIL.Machine.Corpora
 		public IEnumerable<ParallelTextSegment> Segments => GetSegments();
 
 		public IEnumerable<ParallelTextSegment> GetSegments(bool allSourceSegments = false,
-			bool allTargetSegments = false)
+			bool allTargetSegments = false, bool includeText = true)
 		{
 			IEnumerable<TextAlignment> alignments = TextAlignmentCollection?.Alignments
 				?? Enumerable.Empty<TextAlignment>();
 
-			using (IEnumerator<TextSegment> enumerator1 = SourceText.Segments.GetEnumerator())
-			using (IEnumerator<TextSegment> enumerator2 = TargetText.Segments.GetEnumerator())
+			using (IEnumerator<TextSegment> enumerator1 = SourceText.GetSegments(includeText).GetEnumerator())
+			using (IEnumerator<TextSegment> enumerator2 = TargetText.GetSegments(includeText).GetEnumerator())
 			using (IEnumerator<TextAlignment> enumerator3 = alignments.GetEnumerator())
 			{
 				var rangeInfo = new RangeInfo(this);
@@ -101,6 +101,10 @@ namespace SIL.Machine.Corpora
 								rangeInfo.SegmentRef = enumerator1.Current.SegmentRef;
 							rangeInfo.SourceSegment.AddRange(enumerator1.Current.Segment);
 							rangeInfo.TargetSegment.AddRange(enumerator2.Current.Segment);
+							if (rangeInfo.IsSourceEmpty)
+								rangeInfo.IsSourceEmpty = enumerator1.Current.IsEmpty;
+							if (rangeInfo.IsTargetEmpty)
+								rangeInfo.IsTargetEmpty = enumerator2.Current.IsEmpty;
 						}
 						else
 						{
@@ -168,16 +172,18 @@ namespace SIL.Machine.Corpora
 			}
 		}
 
+		public int GetCount(bool allSourceSegments = false, bool allTargetSegments = false, bool nonemptyOnly = false)
+		{
+			return GetSegments(allSourceSegments, allTargetSegments, includeText: false)
+				.Count(s => !nonemptyOnly || !s.IsEmpty);
+		}
+
 		private IEnumerable<ParallelTextSegment> CreateTextSegments(RangeInfo rangeInfo, TextSegment srcSeg,
 			TextSegment trgSeg, IEnumerable<AlignedWordPair> alignedWordPairs = null)
 		{
 			if (rangeInfo.IsInRange)
 				yield return rangeInfo.CreateTextSegment();
-			yield return new ParallelTextSegment(this, srcSeg != null ? srcSeg.SegmentRef : trgSeg.SegmentRef,
-				srcSeg != null ? srcSeg.Segment : Array.Empty<string>(),
-				trgSeg != null ? trgSeg.Segment : Array.Empty<string>(),
-				alignedWordPairs, srcSeg != null && srcSeg.IsInRange, srcSeg != null && srcSeg.IsRangeStart,
-				trgSeg != null && trgSeg.IsInRange, trgSeg != null && trgSeg.IsRangeStart);
+			yield return new ParallelTextSegment(this, srcSeg, trgSeg, alignedWordPairs);
 		}
 
 		private bool CheckSameRefSegments(List<TextSegment> sameRefSegments, TextSegment otherSegment)
@@ -245,12 +251,14 @@ namespace SIL.Machine.Corpora
 			public object SegmentRef { get; set; }
 			public List<string> SourceSegment { get; } = new List<string>();
 			public List<string> TargetSegment { get; } = new List<string>();
-
 			public bool IsInRange => SegmentRef != null;
+			public bool IsSourceEmpty { get; set; } = true;
+			public bool IsTargetEmpty { get; set; } = true;
 
 			public ParallelTextSegment CreateTextSegment()
 			{
-				var seg = new ParallelTextSegment(_text, SegmentRef, SourceSegment.ToArray(), TargetSegment.ToArray());
+				var seg = new ParallelTextSegment(_text, SegmentRef, SourceSegment.ToArray(), TargetSegment.ToArray(),
+					IsSourceEmpty || IsTargetEmpty);
 				SegmentRef = null;
 				SourceSegment.Clear();
 				TargetSegment.Clear();

@@ -16,35 +16,32 @@ namespace SIL.Machine.Corpora
 			_fileName = fileName;
 		}
 
-		public override IEnumerable<TextSegment> Segments
+		public override IEnumerable<TextSegment> GetSegments(bool includeText = true)
 		{
-			get
+			using (var reader = new StreamReader(_fileName))
 			{
-				using (var reader = new StreamReader(_fileName))
+				int sectionNum = 1;
+				int segmentNum = 1;
+				string line;
+				while ((line = reader.ReadLine()) != null)
 				{
-					int sectionNum = 1;
-					int segmentNum = 1;
-					string line;
-					while ((line = reader.ReadLine()) != null)
+					if (line.StartsWith("// section ", StringComparison.InvariantCultureIgnoreCase))
 					{
-						if (line.StartsWith("// section ", StringComparison.InvariantCultureIgnoreCase))
+						string sectionNumStr = line.Substring(11).Trim();
+						if (!string.IsNullOrEmpty(sectionNumStr))
 						{
-							string sectionNumStr = line.Substring(11).Trim();
-							if (!string.IsNullOrEmpty(sectionNumStr))
+							if (int.TryParse(sectionNumStr, NumberStyles.Integer, CultureInfo.InvariantCulture,
+								out int num))
 							{
-								if (int.TryParse(sectionNumStr, NumberStyles.Integer, CultureInfo.InvariantCulture,
-									out int num))
-								{
-									sectionNum = num;
-									segmentNum = 1;
-								}
+								sectionNum = num;
+								segmentNum = 1;
 							}
 						}
-						else
-						{
-							yield return CreateTextSegment(line, sectionNum, segmentNum);
-							segmentNum++;
-						}
+					}
+					else
+					{
+						yield return CreateTextSegment(includeText, line, sectionNum, segmentNum);
+						segmentNum++;
 					}
 				}
 			}

@@ -13,16 +13,19 @@ namespace SIL.Machine.Corpora
 			SentenceStart = sentenceStart;
 			IsInRange = inRange;
 			IsRangeStart = rangeStart;
+			IsEmpty = segment.Count == 0;
 		}
 
-		public TextSegment(object segRef, bool inRange = false)
-			: this(segRef, Array.Empty<string>(), inRange: inRange)
+		public TextSegment(object segRef, bool sentenceStart = true,
+			bool inRange = false, bool rangeStart = false, bool isEmpty = true)
+			: this(segRef, Array.Empty<string>(), sentenceStart, inRange, rangeStart)
 		{
+			IsEmpty = isEmpty;
 		}
 
 		public object SegmentRef { get; }
 
-		public bool IsEmpty => Segment.Count == 0;
+		public bool IsEmpty { get; }
 
 		public bool SentenceStart { get; }
 
@@ -37,8 +40,10 @@ namespace SIL.Machine.Corpora
 			string segment;
 			if (IsEmpty)
 				segment = IsInRange ? "<range>" : "EMPTY";
-			else
+			else if (Segment.Count > 0)
 				segment = string.Join(" ", Segment);
+			else
+				segment = "NONEMPTY";
 			return $"{SegmentRef} - {segment}";
 		}
 	}

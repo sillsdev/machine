@@ -26,9 +26,9 @@ namespace SIL.Machine.Corpora
 
 		public IEnumerable<ParallelTextSegment> Segments => GetSegments();
 
-		public IEnumerable<TextSegment> SourceSegments => Texts.SelectMany(t => t.SourceText.Segments);
+		public IEnumerable<TextSegment> SourceSegments => Texts.SelectMany(t => t.SourceText.GetSegments());
 
-		public IEnumerable<TextSegment> TargetSegments => Texts.SelectMany(t => t.TargetText.Segments);
+		public IEnumerable<TextSegment> TargetSegments => Texts.SelectMany(t => t.TargetText.GetSegments());
 
 		public ParallelTextCorpus Invert()
 		{
@@ -54,10 +54,16 @@ namespace SIL.Machine.Corpora
 		}
 
 		public IEnumerable<ParallelTextSegment> GetSegments(bool allSourceSegments = false,
-			bool allTargetSegments = false)
+			bool allTargetSegments = false, bool includeText = true)
 		{
 			return GetTexts(allSourceSegments, allTargetSegments)
-				.SelectMany(t => t.GetSegments(allSourceSegments, allTargetSegments));
+				.SelectMany(t => t.GetSegments(allSourceSegments, allTargetSegments, includeText));
+		}
+
+		public int GetCount(bool allSourceSegments = false, bool allTargetSegments = false, bool nonemptyOnly = false)
+		{
+			return GetTexts(allSourceSegments, allTargetSegments)
+				.Sum(t => t.GetCount(allSourceSegments, allTargetSegments, nonemptyOnly));
 		}
 
 		private ParallelText CreateParallelText(string id)

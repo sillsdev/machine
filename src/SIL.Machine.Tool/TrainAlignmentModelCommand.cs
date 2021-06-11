@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -42,31 +43,65 @@ namespace SIL.Machine
 			}
 
 			Dictionary<string, string> parameters = _trainParamsOption.Values.Select(kvp => kvp.Split("="))
-				.ToDictionary(kvp => kvp[0].ToLowerInvariant(), kvp => kvp[1]);
+			.ToDictionary(kvp => kvp[0].ToLowerInvariant(), kvp => kvp[1]);
 
-			using (ITrainer trainer = _modelSpec.CreateAlignmentModelTrainer(_corpusSpec.ParallelCorpus,
-				_corpusSpec.MaxCorpusCount, _preprocessSpec.GetProcessor(), parameters))
+			int trainedSegmentCount = 0;
+			if (!_quietOption.HasValue())
+				Out.Write("Training... ");
+			var watch = Stopwatch.StartNew();
+			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
 			{
-				if (!_quietOption.HasValue())
-					Out.Write("Training... ");
-				var watch = Stopwatch.StartNew();
-				using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
+				Phase[] phases;
+				if (_modelSpec.IsSymmetric)
 				{
-					var reporter = new PhasedProgressReporter(progress,
-						new Phase("Training model", 0.95),
-						new Phase("Saving model"));
+					phases = new Phase[]
+					{
+						new Phase("Training model", 0.96),
+						new Phase("Saving model", 0.04)
+					};
+				}
+				else
+				{
+					phases = new Phase[]
+					{
+						new Phase("Training direct model", 0.48),
+						new Phase("Saving direct model", 0.02),
+						new Phase("Training inverse model", 0.48),
+						new Phase("Saving inverse model", 0.02)
+					};
+				}
+				var reporter = new PhasedProgressReporter(progress, phases);
+
+				using (ITrainer trainer = _modelSpec.CreateAlignmentModelTrainer(_corpusSpec.ParallelCorpus,
+					_corpusSpec.MaxCorpusCount, _preprocessSpec.GetProcessor(), parameters, direct: true))
+				{
 					using (PhaseProgress phaseProgress = reporter.StartNextPhase())
 						trainer.Train(phaseProgress);
 					using (PhaseProgress phaseProgress = reporter.StartNextPhase())
 						trainer.Save();
+					trainedSegmentCount = trainer.Stats.TrainedSegmentCount;
 				}
-				if (!_quietOption.HasValue())
-					Out.WriteLine("done.");
-				watch.Stop();
 
-				Out.WriteLine($"Execution time: {watch.Elapsed:c}");
-				Out.WriteLine($"# of Segments Trained: {trainer.Stats.TrainedSegmentCount}");
+				if (!_modelSpec.IsSymmetric)
+				{
+					using (ITrainer trainer = _modelSpec.CreateAlignmentModelTrainer(_corpusSpec.ParallelCorpus,
+						_corpusSpec.MaxCorpusCount, _preprocessSpec.GetProcessor(), parameters, direct: false))
+					{
+						using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+							trainer.Train(phaseProgress);
+						using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+							trainer.Save();
+
+						trainedSegmentCount = Math.Max(trainedSegmentCount, trainer.Stats.TrainedSegmentCount);
+					}
+				}
 			}
+			if (!_quietOption.HasValue())
+				Out.WriteLine("done.");
+			watch.Stop();
+
+			Out.WriteLine($"Execution time: {watch.Elapsed:c}");
+			Out.WriteLine($"# of Segments Trained: {trainedSegmentCount}");
 
 			return 0;
 		}
