@@ -35,6 +35,16 @@ namespace SIL.Machine.Corpora
 		public double TranslationScore { get; set; } = -1;
 		public double AlignmentScore { get; set; } = -1;
 
+		public AlignedWordPair Invert()
+		{
+			return new AlignedWordPair(TargetIndex, SourceIndex)
+			{
+				IsSure = IsSure,
+				TranslationScore = TranslationScore,
+				AlignmentScore = AlignmentScore
+			};
+		}
+
 		public bool Equals(AlignedWordPair other)
 		{
 			return other != null && SourceIndex == other.SourceIndex && TargetIndex == other.TargetIndex;

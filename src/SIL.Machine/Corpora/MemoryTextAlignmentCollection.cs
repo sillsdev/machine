@@ -24,9 +24,7 @@ namespace SIL.Machine.Corpora
 
 		public ITextAlignmentCollection Invert()
 		{
-			return new MemoryTextAlignmentCollection(Id,
-				Alignments.Select(ta => new TextAlignment(ta.SegmentRef,
-					ta.AlignedWordPairs.Select(wp => new AlignedWordPair(wp.TargetIndex, wp.SourceIndex)))));
+			return new MemoryTextAlignmentCollection(Id, Alignments.Select(ta => ta.Invert()));
 		}
 	}
 }
