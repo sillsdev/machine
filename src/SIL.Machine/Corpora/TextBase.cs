@@ -27,15 +27,18 @@ namespace SIL.Machine.Corpora
 		{
 			text = text.Trim();
 			if (!includeText)
-				return new TextSegment(segRef, sentenceStart, inRange, rangeStart, isEmpty: text.Length == 0);
+			{
+				return TextSegment.CreateNoText(Id, segRef, sentenceStart, inRange, rangeStart,
+					isEmpty: text.Length == 0);
+			}
 			IReadOnlyList<string> segment = WordTokenizer.Tokenize(text).ToArray();
 			segment = TokenProcessors.UnescapeSpaces.Process(segment);
-			return new TextSegment(segRef, segment, sentenceStart, inRange, rangeStart);
+			return TextSegment.Create(Id, segRef, segment, sentenceStart, inRange, rangeStart);
 		}
 
 		protected TextSegment CreateTextSegment(object segRef, bool inRange = false)
 		{
-			return new TextSegment(segRef, inRange: inRange);
+			return TextSegment.CreateNoText(Id, segRef, inRange: inRange);
 		}
 
 		protected TextSegment CreateTextSegment(bool includeText, string text, params int[] indices)

@@ -20,21 +20,21 @@ namespace SIL.Machine.Corpora
 		{
 			var sourceText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 3), "source segment 1 3 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 2), "source segment 1 2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 3), "source segment 1 3 .".Split())
 			});
 			var targetText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
 			});
 			var alignments = new MemoryTextAlignmentCollection("text1", new[]
 			{
-				new TextAlignment(new TextSegmentRef(1, 1), new[] { new AlignedWordPair(0, 0) }),
-				new TextAlignment(new TextSegmentRef(1, 2), new[] { new AlignedWordPair(1, 1) }),
-				new TextAlignment(new TextSegmentRef(1, 3), new[] { new AlignedWordPair(2, 2) })
+				new TextAlignment("text1", new TextSegmentRef(1, 1), new[] { new AlignedWordPair(0, 0) }),
+				new TextAlignment("text1", new TextSegmentRef(1, 2), new[] { new AlignedWordPair(1, 1) }),
+				new TextAlignment("text1", new TextSegmentRef(1, 3), new[] { new AlignedWordPair(2, 2) })
 			});
 
 			var parallelText = new ParallelText(sourceText, targetText, alignments);
@@ -53,19 +53,19 @@ namespace SIL.Machine.Corpora
 		{
 			var sourceText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 3), "source segment 1 3 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 2), "source segment 1 2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 3), "source segment 1 3 .".Split())
 			});
 			var targetText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
 			});
 			var alignments = new MemoryTextAlignmentCollection("text1", new[]
 			{
-				new TextAlignment(new TextSegmentRef(1, 1), new[] { new AlignedWordPair(0, 0) }),
-				new TextAlignment(new TextSegmentRef(1, 3), new[] { new AlignedWordPair(2, 2) })
+				new TextAlignment("text1", new TextSegmentRef(1, 1), new[] { new AlignedWordPair(0, 0) }),
+				new TextAlignment("text1", new TextSegmentRef(1, 3), new[] { new AlignedWordPair(2, 2) })
 			});
 
 			var parallelText = new ParallelText(sourceText, targetText, alignments);
@@ -84,19 +84,19 @@ namespace SIL.Machine.Corpora
 		{
 			var sourceText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 3), "source segment 1 3 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 3), "source segment 1 3 .".Split())
 			});
 			var targetText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
 			});
 			var alignments = new MemoryTextAlignmentCollection("text1", new[]
 			{
-				new TextAlignment(new TextSegmentRef(1, 1), new[] { new AlignedWordPair(0, 0) }),
-				new TextAlignment(new TextSegmentRef(1, 3), new[] { new AlignedWordPair(2, 2) })
+				new TextAlignment("text1", new TextSegmentRef(1, 1), new[] { new AlignedWordPair(0, 0) }),
+				new TextAlignment("text1", new TextSegmentRef(1, 3), new[] { new AlignedWordPair(2, 2) })
 			});
 
 			var parallelText = new ParallelText(sourceText, targetText, alignments);
@@ -115,19 +115,19 @@ namespace SIL.Machine.Corpora
 		{
 			var sourceText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 3), "source segment 1 3 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 2), "source segment 1 2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 3), "source segment 1 3 .".Split())
 			});
 			var targetText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 2), "target segment 1 2 .".Split())
 			});
 			var alignments = new MemoryTextAlignmentCollection("text1", new[]
 			{
-				new TextAlignment(new TextSegmentRef(1, 1), new[] { new AlignedWordPair(0, 0) }),
-				new TextAlignment(new TextSegmentRef(1, 2), new[] { new AlignedWordPair(1, 1) })
+				new TextAlignment("text1", new TextSegmentRef(1, 1), new[] { new AlignedWordPair(0, 0) }),
+				new TextAlignment("text1", new TextSegmentRef(1, 2), new[] { new AlignedWordPair(1, 1) })
 			});
 
 			var parallelText = new ParallelText(sourceText, targetText, alignments);
@@ -146,19 +146,19 @@ namespace SIL.Machine.Corpora
 		{
 			var sourceText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 2), "source segment 1 2 .".Split())
 			});
 			var targetText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
 			});
 			var alignments = new MemoryTextAlignmentCollection("text1", new[]
 			{
-				new TextAlignment(new TextSegmentRef(1, 1), new[] { new AlignedWordPair(0, 0) }),
-				new TextAlignment(new TextSegmentRef(1, 2), new[] { new AlignedWordPair(1, 1) })
+				new TextAlignment("text1", new TextSegmentRef(1, 1), new[] { new AlignedWordPair(0, 0) }),
+				new TextAlignment("text1", new TextSegmentRef(1, 2), new[] { new AlignedWordPair(1, 1) })
 			});
 
 			var parallelText = new ParallelText(sourceText, targetText, alignments);
@@ -177,19 +177,19 @@ namespace SIL.Machine.Corpora
 		{
 			var sourceText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 3), "source segment 1 3 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 2), "source segment 1 2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 3), "source segment 1 3 .".Split())
 			});
 			var targetText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
 			});
 			var alignments = new MemoryTextAlignmentCollection("text1", new[]
 			{
-				new TextAlignment(new TextSegmentRef(1, 2), new[] { new AlignedWordPair(1, 1) }),
-				new TextAlignment(new TextSegmentRef(1, 3), new[] { new AlignedWordPair(2, 2) })
+				new TextAlignment("text1", new TextSegmentRef(1, 2), new[] { new AlignedWordPair(1, 1) }),
+				new TextAlignment("text1", new TextSegmentRef(1, 3), new[] { new AlignedWordPair(2, 2) })
 			});
 
 			var parallelText = new ParallelText(sourceText, targetText, alignments);
@@ -208,19 +208,19 @@ namespace SIL.Machine.Corpora
 		{
 			var sourceText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 3), "source segment 1 3 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1, 2), "source segment 1 2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 3), "source segment 1 3 .".Split())
 			});
 			var targetText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
 			});
 			var alignments = new MemoryTextAlignmentCollection("text1", new[]
 			{
-				new TextAlignment(new TextSegmentRef(1, 2), new[] { new AlignedWordPair(1, 1) }),
-				new TextAlignment(new TextSegmentRef(1, 3), new[] { new AlignedWordPair(2, 2) })
+				new TextAlignment("text1", new TextSegmentRef(1, 2), new[] { new AlignedWordPair(1, 1) }),
+				new TextAlignment("text1", new TextSegmentRef(1, 3), new[] { new AlignedWordPair(2, 2) })
 			});
 
 			var parallelText = new ParallelText(sourceText, targetText, alignments);
@@ -239,18 +239,18 @@ namespace SIL.Machine.Corpora
 		{
 			var sourceText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 . source segment 1 3 .".Split(),
-					inRange: true, rangeStart: true),
-				new TextSegment(new TextSegmentRef(1, 3), inRange: true),
-				new TextSegment(new TextSegmentRef(1, 4), "source segment 1 4 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 2),
+					"source segment 1 2 . source segment 1 3 .".Split(), inRange: true, rangeStart: true),
+				TextSegment.CreateNoText("text1", new TextSegmentRef(1, 3), inRange: true),
+				TextSegment.Create("text1", new TextSegmentRef(1, 4), "source segment 1 4 .".Split())
 			});
 			var targetText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 4), "target segment 1 4 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 3), "target segment 1 3 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 4), "target segment 1 4 .".Split())
 			});
 
 			var parallelText = new ParallelText(sourceText, targetText);
@@ -265,17 +265,17 @@ namespace SIL.Machine.Corpora
 		{
 			var sourceText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 . source segment 1 3 .".Split(),
-					inRange: true, rangeStart: true),
-				new TextSegment(new TextSegmentRef(1, 3), inRange: true)
+				TextSegment.Create("text1", new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 2),
+					"source segment 1 2 . source segment 1 3 .".Split(), inRange: true, rangeStart: true),
+				TextSegment.CreateNoText("text1", new TextSegmentRef(1, 3), inRange: true)
 			});
 			var targetText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 . target segment 1 2 .".Split(),
-					inRange: true, rangeStart: true),
-				new TextSegment(new TextSegmentRef(1, 2), inRange: true),
-				new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1, 1),
+					"target segment 1 1 . target segment 1 2 .".Split(), inRange: true, rangeStart: true),
+				TextSegment.CreateNoText("text1", new TextSegmentRef(1, 2), inRange: true),
+				TextSegment.Create("text1", new TextSegmentRef(1, 3), "target segment 1 3 .".Split())
 			});
 
 			var parallelText = new ParallelText(sourceText, targetText);
@@ -292,19 +292,19 @@ namespace SIL.Machine.Corpora
 		{
 			var sourceText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 . source segment 1 2 .".Split(),
-					inRange: true, rangeStart: true),
-				new TextSegment(new TextSegmentRef(1, 2), inRange: true),
-				new TextSegment(new TextSegmentRef(1, 3), "source segment 1 3 . source segment 1 4 .".Split(),
-					inRange: true, rangeStart: true),
-				new TextSegment(new TextSegmentRef(1, 4), inRange: true)
+				TextSegment.Create("text1", new TextSegmentRef(1, 1),
+					"source segment 1 1 . source segment 1 2 .".Split(), inRange: true, rangeStart: true),
+				TextSegment.CreateNoText("text1", new TextSegmentRef(1, 2), inRange: true),
+				TextSegment.Create("text1", new TextSegmentRef(1, 3),
+					"source segment 1 3 . source segment 1 4 .".Split(), inRange: true, rangeStart: true),
+				TextSegment.CreateNoText("text1", new TextSegmentRef(1, 4), inRange: true)
 			});
 			var targetText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 4), "target segment 1 4 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 3), "target segment 1 3 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 4), "target segment 1 4 .".Split())
 			});
 
 			var parallelText = new ParallelText(sourceText, targetText);
@@ -321,19 +321,19 @@ namespace SIL.Machine.Corpora
 		{
 			var sourceText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 . source segment 1 2 .".Split(),
-					inRange: true, rangeStart: true),
-				new TextSegment(new TextSegmentRef(1, 2), inRange: true),
-				new TextSegment(new TextSegmentRef(1, 3), "source segment 1 3 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 4), "source segment 1 4 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1, 1),
+					"source segment 1 1 . source segment 1 2 .".Split(), inRange: true, rangeStart: true),
+				TextSegment.CreateNoText("text1", new TextSegmentRef(1, 2), inRange: true),
+				TextSegment.Create("text1", new TextSegmentRef(1, 3), "source segment 1 3 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 4), "source segment 1 4 .".Split())
 			});
 			var targetText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 . target segment 1 4 .".Split(),
-					inRange: true, rangeStart: true),
-				new TextSegment(new TextSegmentRef(1, 4), inRange: true)
+				TextSegment.Create("text1", new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 3),
+					"target segment 1 3 . target segment 1 4 .".Split(), inRange: true, rangeStart: true),
+				TextSegment.CreateNoText("text1", new TextSegmentRef(1, 4), inRange: true)
 			});
 
 			var parallelText = new ParallelText(sourceText, targetText);
@@ -350,18 +350,18 @@ namespace SIL.Machine.Corpora
 		{
 			var sourceText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 2), "source segment 1 2 . source segment 1 3 .".Split(),
-					inRange: true, rangeStart: true),
-				new TextSegment(new TextSegmentRef(1, 3), inRange: true),
-				new TextSegment(new TextSegmentRef(1, 4), "source segment 1 4 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1, 1), "source segment 1 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 2),
+					"source segment 1 2 . source segment 1 3 .".Split(), inRange: true, rangeStart: true),
+				TextSegment.CreateNoText("text1", new TextSegmentRef(1, 3), inRange: true),
+				TextSegment.Create("text1", new TextSegmentRef(1, 4), "source segment 1 4 .".Split())
 			});
 			var targetText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 3), "target segment 1 3 .".Split()),
-				new TextSegment(new TextSegmentRef(1, 4), "target segment 1 4 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1, 1), "target segment 1 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 2), "target segment 1 2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 3), "target segment 1 3 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1, 4), "target segment 1 4 .".Split())
 			});
 
 			var parallelText = new ParallelText(sourceText, targetText);
@@ -382,17 +382,17 @@ namespace SIL.Machine.Corpora
 		{
 			var sourceText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1), "source segment 1 .".Split()),
-				new TextSegment(new TextSegmentRef(2), "source segment 2-1 .".Split()),
-				new TextSegment(new TextSegmentRef(2), "source segment 2-2 .".Split()),
-				new TextSegment(new TextSegmentRef(3), "source segment 3 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1), "source segment 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(2), "source segment 2-1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(2), "source segment 2-2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(3), "source segment 3 .".Split())
 			});
 			var targetText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1), "target segment 1 .".Split()),
-				new TextSegment(new TextSegmentRef(2), "target segment 2-1 .".Split()),
-				new TextSegment(new TextSegmentRef(2), "target segment 2-2 .".Split()),
-				new TextSegment(new TextSegmentRef(3), "target segment 3 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1), "target segment 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(2), "target segment 2-1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(2), "target segment 2-2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(3), "target segment 3 .".Split())
 			});
 
 			var parallelText = new ParallelText(sourceText, targetText);
@@ -413,16 +413,16 @@ namespace SIL.Machine.Corpora
 		{
 			var sourceText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1), "source segment 1 .".Split()),
-				new TextSegment(new TextSegmentRef(2), "source segment 2 .".Split()),
-				new TextSegment(new TextSegmentRef(3), "source segment 3 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1), "source segment 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(2), "source segment 2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(3), "source segment 3 .".Split())
 			});
 			var targetText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1), "target segment 1 .".Split()),
-				new TextSegment(new TextSegmentRef(2), "target segment 2-1 .".Split()),
-				new TextSegment(new TextSegmentRef(2), "target segment 2-2 .".Split()),
-				new TextSegment(new TextSegmentRef(3), "target segment 3 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1), "target segment 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(2), "target segment 2-1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(2), "target segment 2-2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(3), "target segment 3 .".Split())
 			});
 
 			var parallelText = new ParallelText(sourceText, targetText);
@@ -439,16 +439,16 @@ namespace SIL.Machine.Corpora
 		{
 			var sourceText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1), "source segment 1 .".Split()),
-				new TextSegment(new TextSegmentRef(2), "source segment 2-1 .".Split()),
-				new TextSegment(new TextSegmentRef(2), "source segment 2-2 .".Split()),
-				new TextSegment(new TextSegmentRef(3), "source segment 3 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1), "source segment 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(2), "source segment 2-1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(2), "source segment 2-2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(3), "source segment 3 .".Split())
 			});
 			var targetText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1), "target segment 1 .".Split()),
-				new TextSegment(new TextSegmentRef(2), "target segment 2 .".Split()),
-				new TextSegment(new TextSegmentRef(3), "target segment 3 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1), "target segment 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(2), "target segment 2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(3), "target segment 3 .".Split())
 			});
 
 			var parallelText = new ParallelText(sourceText, targetText);
@@ -465,15 +465,15 @@ namespace SIL.Machine.Corpora
 		{
 			var sourceText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1), "source segment 1 .".Split()),
-				new TextSegment(new TextSegmentRef(2), "source segment 2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1), "source segment 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(2), "source segment 2 .".Split()),
 			});
 			var targetText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1), "target segment 1 .".Split()),
-				new TextSegment(new TextSegmentRef(2), "target segment 2-1 .".Split()),
-				new TextSegment(new TextSegmentRef(2), "target segment 2-2 .".Split()),
-				new TextSegment(new TextSegmentRef(3), "target segment 3 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1), "target segment 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(2), "target segment 2-1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(2), "target segment 2-2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(3), "target segment 3 .".Split())
 			});
 
 			var parallelText = new ParallelText(sourceText, targetText);
@@ -490,15 +490,15 @@ namespace SIL.Machine.Corpora
 		{
 			var sourceText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1), "source segment 1 .".Split()),
-				new TextSegment(new TextSegmentRef(2), "source segment 2-1 .".Split()),
-				new TextSegment(new TextSegmentRef(2), "source segment 2-2 .".Split()),
-				new TextSegment(new TextSegmentRef(3), "source segment 3 .".Split())
+				TextSegment.Create("text1", new TextSegmentRef(1), "source segment 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(2), "source segment 2-1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(2), "source segment 2-2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(3), "source segment 3 .".Split())
 			});
 			var targetText = new MemoryText("text1", new[]
 			{
-				new TextSegment(new TextSegmentRef(1), "target segment 1 .".Split()),
-				new TextSegment(new TextSegmentRef(2), "target segment 2 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(1), "target segment 1 .".Split()),
+				TextSegment.Create("text1", new TextSegmentRef(2), "target segment 2 .".Split()),
 			});
 
 			var parallelText = new ParallelText(sourceText, targetText);

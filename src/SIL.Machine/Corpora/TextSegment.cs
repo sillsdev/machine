@@ -5,23 +5,31 @@ namespace SIL.Machine.Corpora
 {
 	public class TextSegment
 	{
-		public TextSegment(object segRef, IReadOnlyList<string> segment, bool sentenceStart = true,
-			bool inRange = false, bool rangeStart = false)
+		public static TextSegment Create(string textId, object segRef, IReadOnlyList<string> segment,
+			bool sentenceStart = true, bool inRange = false, bool rangeStart = false)
 		{
+			return new TextSegment(textId, segRef, segment, sentenceStart, inRange, rangeStart, segment.Count == 0);
+		}
+
+		public static TextSegment CreateNoText(string textId, object segRef, bool sentenceStart = true,
+			bool inRange = false, bool rangeStart = false, bool isEmpty = true)
+		{
+			return new TextSegment(textId, segRef, Array.Empty<string>(), sentenceStart, inRange, rangeStart, isEmpty);
+		}
+
+		private TextSegment(string textId, object segRef, IReadOnlyList<string> segment, bool sentenceStart,
+			bool inRange, bool rangeStart, bool isEmpty)
+		{
+			TextId = textId;
 			SegmentRef = segRef;
 			Segment = segment;
 			SentenceStart = sentenceStart;
 			IsInRange = inRange;
 			IsRangeStart = rangeStart;
-			IsEmpty = segment.Count == 0;
-		}
-
-		public TextSegment(object segRef, bool sentenceStart = true,
-			bool inRange = false, bool rangeStart = false, bool isEmpty = true)
-			: this(segRef, Array.Empty<string>(), sentenceStart, inRange, rangeStart)
-		{
 			IsEmpty = isEmpty;
 		}
+
+		public string TextId { get; }
 
 		public object SegmentRef { get; }
 

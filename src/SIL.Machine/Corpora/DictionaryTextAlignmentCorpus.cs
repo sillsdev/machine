@@ -8,7 +8,7 @@ namespace SIL.Machine.Corpora
 		private readonly Dictionary<string, ITextAlignmentCollection> _textAlignmentCollections;
 
 		public DictionaryTextAlignmentCorpus(params ITextAlignmentCollection[] textAlignmentCollections)
-			: this((IEnumerable<ITextAlignmentCollection>) textAlignmentCollections)
+			: this((IEnumerable<ITextAlignmentCollection>)textAlignmentCollections)
 		{
 		}
 
@@ -35,7 +35,7 @@ namespace SIL.Machine.Corpora
 			return new DictionaryTextAlignmentCorpus(_textAlignmentCollections.Values.Select(tac => tac.Invert()));
 		}
 
-		protected void AddAlignmentCollection(ITextAlignmentCollection alignments)
+		protected void AddTextAlignmentCollection(ITextAlignmentCollection alignments)
 		{
 			_textAlignmentCollections[alignments.Id] = alignments;
 		}

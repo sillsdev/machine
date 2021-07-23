@@ -134,7 +134,7 @@ namespace SIL.Machine.Corpora
 			Dictionary<string, HashSet<int>> srcLinks = GetLinks(_srcWordTokenizer, srcNodes);
 			Dictionary<string, HashSet<int>> trgLinks = GetLinks(_trgWordTokenizer, trgNodes);
 
-			var wordPairs = new List<AlignedWordPair>();
+			var wordPairs = new HashSet<AlignedWordPair>();
 			foreach (KeyValuePair<string, HashSet<int>> srcLink in srcLinks)
 			{
 				if (trgLinks.TryGetValue(srcLink.Key, out HashSet<int> trgIndices))
@@ -146,7 +146,7 @@ namespace SIL.Machine.Corpora
 					}
 				}
 			}
-			return new TextAlignment(verseRef, wordPairs.OrderBy(wp => wp.TargetIndex).ThenBy(wp => wp.SourceIndex));
+			return new TextAlignment(Id, verseRef, wordPairs);
 		}
 
 		private Dictionary<string, HashSet<int>> GetLinks(

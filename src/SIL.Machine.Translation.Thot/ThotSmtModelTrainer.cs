@@ -99,7 +99,7 @@ namespace SIL.Machine.Translation.Thot
 					break;
 			}
 			Stats.TrainedSegmentCount = corpusCount;
-			int tuneCorpusCount = Math.Min((int) (corpusCount * 0.1), 1000);
+			int tuneCorpusCount = Math.Min((int)(corpusCount * 0.1), 1000);
 			var r = new Random(31415);
 			return new HashSet<int>(Enumerable.Range(0, corpusCount + invalidIndices.Count)
 				.Where(i => !invalidIndices.Contains(i))
@@ -364,7 +364,7 @@ namespace SIL.Machine.Translation.Thot
 			using (var reader = new BinaryReader(File.Open(fileName, FileMode.Open)))
 			{
 				int pos = 0;
-				var length = (int) reader.BaseStream.Length;
+				var length = (int)reader.BaseStream.Length;
 				while (pos < length)
 				{
 					uint srcIndex = reader.ReadUInt32();
@@ -392,7 +392,7 @@ namespace SIL.Machine.Translation.Thot
 					Tuple<uint, uint, float>[] groupEntries = g.OrderByDescending(e => e.Item3).ToArray();
 
 					double lcSrc = groupEntries.Select(e => e.Item3).Skip(1)
-						.Aggregate((double) groupEntries[0].Item3, (a, n) => LogSpace.Add(a, n));
+						.Aggregate((double)groupEntries[0].Item3, (a, n) => LogSpace.Add(a, n));
 
 					double newLcSrc = -99999;
 					int count = 0;
@@ -414,7 +414,7 @@ namespace SIL.Machine.Translation.Thot
 						writer.Write(groupEntries[i].Item1);
 						writer.Write(groupEntries[i].Item2);
 						writer.Write(groupEntries[i].Item3);
-						writer.Write((float) newLcSrc);
+						writer.Write((float)newLcSrc);
 #endif
 					}
 				}
@@ -426,7 +426,7 @@ namespace SIL.Machine.Translation.Thot
 		{
 			using (var trainer = new ThotWordAlignmentModelTrainer<TAlignModel>(swmPrefix, sourcePreprocessor,
 				targetPreprocessor, corpus, _maxCorpusCount)
-				{ TrainingIterationCount = (int)Parameters.LearningEMIters })
+			{ TrainingIterationCount = (int)Parameters.LearningEMIters })
 			{
 				trainer.SegmentFilter = (s, i) => !_tuneCorpusIndices.Contains(i);
 				trainer.Train(progress);
@@ -449,7 +449,7 @@ namespace SIL.Machine.Translation.Thot
 				{
 					progress.Report(new ProgressStatus(i, Stats.TrainedSegmentCount));
 
-					writer.Write($"# {segment.Text.Id} {segment.SegmentRef}\n");
+					writer.Write($"# {segment.TextId} {segment.SegmentRef}\n");
 					writer.Write(model.GetGizaFormatString(segment, sourcePreprocessor, targetPreprocessor));
 					i++;
 				}

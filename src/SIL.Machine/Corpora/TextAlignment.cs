@@ -5,11 +5,14 @@ namespace SIL.Machine.Corpora
 {
 	public class TextAlignment
 	{
-		public TextAlignment(object segRef, IEnumerable<AlignedWordPair> alignedWordPairs)
+		public TextAlignment(string textId, object segRef, IReadOnlyCollection<AlignedWordPair> alignedWordPairs)
 		{
+			TextId = textId;
 			SegmentRef = segRef;
-			AlignedWordPairs = new HashSet<AlignedWordPair>(alignedWordPairs);
+			AlignedWordPairs = alignedWordPairs;
 		}
+
+		public string TextId { get; }
 
 		public object SegmentRef { get; }
 
@@ -17,7 +20,8 @@ namespace SIL.Machine.Corpora
 
 		public TextAlignment Invert()
 		{
-			return new TextAlignment(SegmentRef, AlignedWordPairs.Select(wp => wp.Invert()));
+			return new TextAlignment(TextId, SegmentRef,
+				new HashSet<AlignedWordPair>(AlignedWordPairs.Select(wp => wp.Invert())));
 		}
 	}
 }

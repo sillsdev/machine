@@ -17,15 +17,16 @@ namespace SIL.Machine.Translation.Thot
 					{
 						new MemoryText("text1", new[]
 							{
-								new TextSegment(new TextSegmentRef(1, 1),
+								TextSegment.Create("text1", new TextSegmentRef(1, 1),
 									"¿ le importaría darnos las llaves de la habitación , por favor ?".Split()),
-								new TextSegment(new TextSegmentRef(1, 2),
+								TextSegment.Create("text1", new TextSegmentRef(1, 2),
 									"he hecho la reserva de una habitación tranquila doble con ||| teléfono ||| y televisión a nombre de rosario cabedo .".Split()),
-								new TextSegment(new TextSegmentRef(1, 3),
+								TextSegment.Create("text1", new TextSegmentRef(1, 3),
 									"¿ le importaría cambiarme a otra habitación más tranquila ?".Split()),
-								new TextSegment(new TextSegmentRef(1, 4),
+								TextSegment.Create("text1", new TextSegmentRef(1, 4),
 									"por favor , tengo reservada una habitación .".Split()),
-								new TextSegment(new TextSegmentRef(1, 5), "me parece que existe un problema .".Split())
+								TextSegment.Create("text1", new TextSegmentRef(1, 5),
+									"me parece que existe un problema .".Split())
 							})
 					});
 
@@ -33,14 +34,15 @@ namespace SIL.Machine.Translation.Thot
 					{
 						new MemoryText("text1", new[]
 							{
-								new TextSegment(new TextSegmentRef(1, 1),
+								TextSegment.Create("text1", new TextSegmentRef(1, 1),
 									"would you mind giving us the keys to the room , please ?".Split()),
-								new TextSegment(new TextSegmentRef(1, 2),
+								TextSegment.Create("text1", new TextSegmentRef(1, 2),
 									"i have made a reservation for a quiet , double room with a ||| telephone ||| and a tv for rosario cabedo .".Split()),
-								new TextSegment(new TextSegmentRef(1, 3),
+								TextSegment.Create("text1", new TextSegmentRef(1, 3),
 									"would you mind moving me to a quieter room ?".Split()),
-								new TextSegment(new TextSegmentRef(1, 4), "i have booked a room .".Split()),
-								new TextSegment(new TextSegmentRef(1, 5), "i think that there is a problem .".Split())
+								TextSegment.Create("text1", new TextSegmentRef(1, 4), "i have booked a room .".Split()),
+								TextSegment.Create("text1", new TextSegmentRef(1, 5),
+									"i think that there is a problem .".Split())
 							})
 					});
 
@@ -48,11 +50,15 @@ namespace SIL.Machine.Translation.Thot
 					{
 						new MemoryTextAlignmentCollection("text1", new[]
 							{
-								new TextAlignment(new TextSegmentRef(1, 1), new[] { new AlignedWordPair(8, 9) }),
-								new TextAlignment(new TextSegmentRef(1, 2), new[] { new AlignedWordPair(6, 10) }),
-								new TextAlignment(new TextSegmentRef(1, 3), new[] { new AlignedWordPair(6, 8) }),
-								new TextAlignment(new TextSegmentRef(1, 4), new[] { new AlignedWordPair(6, 4) }),
-								new TextAlignment(new TextSegmentRef(1, 5), new AlignedWordPair[0])     
+								new TextAlignment("text1", new TextSegmentRef(1, 1),
+									new[] { new AlignedWordPair(8, 9) }),
+								new TextAlignment("text1", new TextSegmentRef(1, 2),
+									new[] { new AlignedWordPair(6, 10) }),
+								new TextAlignment("text1", new TextSegmentRef(1, 3),
+									new[] { new AlignedWordPair(6, 8) }),
+								new TextAlignment("text1", new TextSegmentRef(1, 4),
+									new[] { new AlignedWordPair(6, 4) }),
+								new TextAlignment("text1", new TextSegmentRef(1, 5), new AlignedWordPair[0])
 							})
 					});
 

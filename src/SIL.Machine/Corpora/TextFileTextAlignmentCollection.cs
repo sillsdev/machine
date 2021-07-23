@@ -42,7 +42,7 @@ namespace SIL.Machine.Corpora
 						}
 						else
 						{
-							yield return new TextAlignment(new TextSegmentRef(sectionNum, segmentNum),
+							yield return new TextAlignment(Id, new TextSegmentRef(sectionNum, segmentNum),
 								AlignedWordPair.Parse(line, _invert));
 							segmentNum++;
 						}

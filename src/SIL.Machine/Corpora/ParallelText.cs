@@ -179,11 +179,11 @@ namespace SIL.Machine.Corpora
 		}
 
 		private IEnumerable<ParallelTextSegment> CreateTextSegments(RangeInfo rangeInfo, TextSegment srcSeg,
-			TextSegment trgSeg, IEnumerable<AlignedWordPair> alignedWordPairs = null)
+			TextSegment trgSeg, IReadOnlyCollection<AlignedWordPair> alignedWordPairs = null)
 		{
 			if (rangeInfo.IsInRange)
 				yield return rangeInfo.CreateTextSegment();
-			yield return new ParallelTextSegment(this, srcSeg, trgSeg, alignedWordPairs);
+			yield return ParallelTextSegment.Create(Id, srcSeg, trgSeg, alignedWordPairs);
 		}
 
 		private bool CheckSameRefSegments(List<TextSegment> sameRefSegments, TextSegment otherSegment)
@@ -257,8 +257,8 @@ namespace SIL.Machine.Corpora
 
 			public ParallelTextSegment CreateTextSegment()
 			{
-				var seg = new ParallelTextSegment(_text, SegmentRef, SourceSegment.ToArray(), TargetSegment.ToArray(),
-					IsSourceEmpty || IsTargetEmpty);
+				var seg = ParallelTextSegment.CreateRange(_text.Id, SegmentRef, SourceSegment.ToArray(),
+					TargetSegment.ToArray(), IsSourceEmpty || IsTargetEmpty);
 				SegmentRef = null;
 				SourceSegment.Clear();
 				TargetSegment.Clear();

@@ -22,7 +22,7 @@ namespace SIL.Machine.Corpora
 			{
 				string srcFileName = srcFileNames[id];
 				string trgFileName = trgFileNames[id];
-				AddAlignmentCollection(new UsxFileTextAlignmentCollection(srcWordTokenizer, trgWordTokenizer,
+				AddTextAlignmentCollection(new UsxFileTextAlignmentCollection(srcWordTokenizer, trgWordTokenizer,
 					srcFileName, trgFileName, srcVersification, trgVersification));
 			}
 		}
