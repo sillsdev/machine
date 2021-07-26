@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Tokenization;
 using SIL.Machine.Translation;
@@ -22,23 +23,24 @@ namespace SIL.Machine.Corpora
 
 		public abstract IEnumerable<TextSegment> GetSegments(bool includeText = true);
 
-		protected TextSegment CreateTextSegment(bool includeText, string text, object segRef, bool sentenceStart = true,
-			bool inRange = false, bool rangeStart = false)
+		protected TextSegment CreateTextSegment(bool includeText, string text, object segRef,
+			bool isSentenceStart = true, bool isInRange = false, bool isRangeStart = false)
 		{
 			text = text.Trim();
 			if (!includeText)
 			{
-				return TextSegment.CreateNoText(Id, segRef, sentenceStart, inRange, rangeStart,
+				return new TextSegment(Id, segRef, Array.Empty<string>(), isSentenceStart, isInRange, isRangeStart,
 					isEmpty: text.Length == 0);
 			}
 			IReadOnlyList<string> segment = WordTokenizer.Tokenize(text).ToArray();
 			segment = TokenProcessors.UnescapeSpaces.Process(segment);
-			return TextSegment.Create(Id, segRef, segment, sentenceStart, inRange, rangeStart);
+			return new TextSegment(Id, segRef, segment, isSentenceStart, isInRange, isRangeStart, segment.Count == 0);
 		}
 
-		protected TextSegment CreateTextSegment(object segRef, bool inRange = false)
+		protected TextSegment CreateTextSegment(object segRef, bool isInRange = false)
 		{
-			return TextSegment.CreateNoText(Id, segRef, inRange: inRange);
+			return new TextSegment(Id, segRef, Array.Empty<string>(), isSentenceStart: true, isInRange,
+				isRangeStart: false, isEmpty: true);
 		}
 
 		protected TextSegment CreateTextSegment(bool includeText, string text, params int[] indices)

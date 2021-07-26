@@ -14,53 +14,42 @@ namespace SIL.Machine.Translation.Thot
 			using (var tempDir = new TempDirectory("ThotSmtModelTrainerTests"))
 			{
 				var sourceCorpus = new DictionaryTextCorpus(new[]
+				{
+					new MemoryText("text1", new[]
 					{
-						new MemoryText("text1", new[]
-							{
-								TextSegment.Create("text1", new TextSegmentRef(1, 1),
-									"¿ le importaría darnos las llaves de la habitación , por favor ?".Split()),
-								TextSegment.Create("text1", new TextSegmentRef(1, 2),
-									"he hecho la reserva de una habitación tranquila doble con ||| teléfono ||| y televisión a nombre de rosario cabedo .".Split()),
-								TextSegment.Create("text1", new TextSegmentRef(1, 3),
-									"¿ le importaría cambiarme a otra habitación más tranquila ?".Split()),
-								TextSegment.Create("text1", new TextSegmentRef(1, 4),
-									"por favor , tengo reservada una habitación .".Split()),
-								TextSegment.Create("text1", new TextSegmentRef(1, 5),
-									"me parece que existe un problema .".Split())
-							})
-					});
+						Segment(1, "¿ le importaría darnos las llaves de la habitación , por favor ?"),
+						Segment(2,
+							"he hecho la reserva de una habitación tranquila doble con ||| teléfono ||| y televisión a nombre de rosario cabedo ."),
+						Segment(3, "¿ le importaría cambiarme a otra habitación más tranquila ?"),
+						Segment(4, "por favor , tengo reservada una habitación ."),
+						Segment(5, "me parece que existe un problema .")
+					})
+				});
 
 				var targetCorpus = new DictionaryTextCorpus(new[]
+				{
+					new MemoryText("text1", new[]
 					{
-						new MemoryText("text1", new[]
-							{
-								TextSegment.Create("text1", new TextSegmentRef(1, 1),
-									"would you mind giving us the keys to the room , please ?".Split()),
-								TextSegment.Create("text1", new TextSegmentRef(1, 2),
-									"i have made a reservation for a quiet , double room with a ||| telephone ||| and a tv for rosario cabedo .".Split()),
-								TextSegment.Create("text1", new TextSegmentRef(1, 3),
-									"would you mind moving me to a quieter room ?".Split()),
-								TextSegment.Create("text1", new TextSegmentRef(1, 4), "i have booked a room .".Split()),
-								TextSegment.Create("text1", new TextSegmentRef(1, 5),
-									"i think that there is a problem .".Split())
-							})
-					});
+						Segment(1, "would you mind giving us the keys to the room , please ?"),
+						Segment(2,
+							"i have made a reservation for a quiet , double room with a ||| telephone ||| and a tv for rosario cabedo ."),
+						Segment(3, "would you mind moving me to a quieter room ?"),
+						Segment(4, "i have booked a room ."),
+						Segment(5, "i think that there is a problem .")
+					})
+				});
 
 				var alignmentCorpus = new DictionaryTextAlignmentCorpus(new[]
+				{
+					new MemoryTextAlignmentCollection("text1", new[]
 					{
-						new MemoryTextAlignmentCollection("text1", new[]
-							{
-								new TextAlignment("text1", new TextSegmentRef(1, 1),
-									new[] { new AlignedWordPair(8, 9) }),
-								new TextAlignment("text1", new TextSegmentRef(1, 2),
-									new[] { new AlignedWordPair(6, 10) }),
-								new TextAlignment("text1", new TextSegmentRef(1, 3),
-									new[] { new AlignedWordPair(6, 8) }),
-								new TextAlignment("text1", new TextSegmentRef(1, 4),
-									new[] { new AlignedWordPair(6, 4) }),
-								new TextAlignment("text1", new TextSegmentRef(1, 5), new AlignedWordPair[0])
-							})
-					});
+						Alignment(1, new AlignedWordPair(8, 9)),
+						Alignment(2, new AlignedWordPair(6, 10)),
+						Alignment(3, new AlignedWordPair(6, 8)),
+						Alignment(4, new AlignedWordPair(6, 4)),
+						Alignment(5)
+					})
+				});
 
 				var corpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignmentCorpus);
 
@@ -116,6 +105,17 @@ namespace SIL.Machine.Translation.Thot
 				Assert.That(File.Exists(Path.Combine(tempDir.Path, "tm", "src_trg.ttable")), Is.True);
 				// TODO: test for more than just existence of files
 			}
+		}
+
+		private static TextSegment Segment(int key, string text)
+		{
+			return new TextSegment("text1", new TextSegmentRef(key), text.Split(), isSentenceStart: true,
+				isInRange: false, isRangeStart: false, isEmpty: text.Length == 0);
+		}
+
+		private static TextAlignment Alignment(int key, params AlignedWordPair[] pairs)
+		{
+			return new TextAlignment("text1", new TextSegmentRef(key), pairs);
 		}
 	}
 }

@@ -36,13 +36,13 @@ namespace SIL.Machine.Corpora
 				{
 					if (firstVerse)
 					{
-						yield return CreateTextSegment(includeText, text, vref, sentenceStart, inRange: true,
-							rangeStart: true);
+						yield return CreateTextSegment(includeText, text, vref, sentenceStart, isInRange: true,
+							isRangeStart: true);
 						firstVerse = false;
 					}
 					else
 					{
-						yield return CreateTextSegment(vref, inRange: true);
+						yield return CreateTextSegment(vref, isInRange: true);
 					}
 				}
 			}

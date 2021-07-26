@@ -71,7 +71,7 @@ namespace SIL.Machine.Corpora
 				new MemoryTextAlignmentCollection("text3"));
 
 			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignmentCorpus);
-			ParallelText[] texts = parallelCorpus.GetTexts(true, false).ToArray();
+			ParallelText[] texts = parallelCorpus.GetTexts(allSourceSegments: true).ToArray();
 			Assert.That(texts.Select(t => t.Id), Is.EqualTo(new[] { "text1", "text2", "text3" }));
 		}
 
@@ -90,7 +90,7 @@ namespace SIL.Machine.Corpora
 				new MemoryTextAlignmentCollection("text3"));
 
 			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignmentCorpus);
-			ParallelText[] texts = parallelCorpus.GetTexts(false, true).ToArray();
+			ParallelText[] texts = parallelCorpus.GetTexts(allTargetSegments: true).ToArray();
 			Assert.That(texts.Select(t => t.Id), Is.EqualTo(new[] { "text1", "text2", "text3" }));
 		}
 
@@ -107,7 +107,7 @@ namespace SIL.Machine.Corpora
 				new MemoryTextAlignmentCollection("text1"));
 
 			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignmentCorpus);
-			ParallelText[] texts = parallelCorpus.GetTexts(true, true).ToArray();
+			ParallelText[] texts = parallelCorpus.GetTexts(allSourceSegments: true, allTargetSegments: true).ToArray();
 			Assert.That(texts.Select(t => t.Id), Is.EqualTo(new[] { "text1", "text2", "text3" }));
 		}
 	}

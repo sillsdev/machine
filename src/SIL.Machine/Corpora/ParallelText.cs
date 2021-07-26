@@ -183,7 +183,15 @@ namespace SIL.Machine.Corpora
 		{
 			if (rangeInfo.IsInRange)
 				yield return rangeInfo.CreateTextSegment();
-			yield return ParallelTextSegment.Create(Id, srcSeg, trgSeg, alignedWordPairs);
+			yield return new ParallelTextSegment(Id,
+				srcSeg != null ? srcSeg.SegmentRef : trgSeg.SegmentRef,
+				srcSeg != null ? srcSeg.Segment : Array.Empty<string>(),
+				trgSeg != null ? trgSeg.Segment : Array.Empty<string>(),
+				alignedWordPairs,
+				srcSeg != null && srcSeg.IsInRange,
+				srcSeg != null && srcSeg.IsRangeStart, trgSeg != null && trgSeg.IsInRange,
+				trgSeg != null && trgSeg.IsRangeStart,
+				srcSeg == null || srcSeg.IsEmpty || trgSeg == null || trgSeg.IsEmpty);
 		}
 
 		private bool CheckSameRefSegments(List<TextSegment> sameRefSegments, TextSegment otherSegment)
@@ -257,8 +265,9 @@ namespace SIL.Machine.Corpora
 
 			public ParallelTextSegment CreateTextSegment()
 			{
-				var seg = ParallelTextSegment.CreateRange(_text.Id, SegmentRef, SourceSegment.ToArray(),
-					TargetSegment.ToArray(), IsSourceEmpty || IsTargetEmpty);
+				var seg = new ParallelTextSegment(_text.Id, SegmentRef, SourceSegment.ToArray(),
+					TargetSegment.ToArray(), alignedWordPairs: null, isSourceInRange: false, isSourceRangeStart: false,
+					isTargetInRange: false, isTargetRangeStart: false, isEmpty: IsSourceEmpty || IsTargetEmpty);
 				SegmentRef = null;
 				SourceSegment.Clear();
 				TargetSegment.Clear();
