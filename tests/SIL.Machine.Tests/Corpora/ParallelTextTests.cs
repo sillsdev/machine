@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 
@@ -512,7 +513,7 @@ namespace SIL.Machine.Corpora
 
 		private static TextAlignment Alignment(int key, params AlignedWordPair[] pairs)
 		{
-			return new TextAlignment("text1", new TextSegmentRef(key), pairs);
+			return new TextAlignment("text1", new TextSegmentRef(key), new HashSet<AlignedWordPair>(pairs));
 		}
 	}
 }
