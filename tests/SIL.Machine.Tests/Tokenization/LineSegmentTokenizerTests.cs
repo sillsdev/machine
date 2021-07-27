@@ -6,21 +6,21 @@ namespace SIL.Machine.Tokenization
 	public class LineSegmentTokenizerTests
 	{
 		[Test]
-		public void Tokenize_Empty_ReturnsEmpty()
+		public void Tokenize_Empty()
 		{
 			var tokenizer = new LineSegmentTokenizer();
 			Assert.That(tokenizer.Tokenize(""), Is.Empty);
 		}
 
 		[Test]
-		public void Tokenize_SingleLine_ReturnsTokens()
+		public void Tokenize_SingleLine()
 		{
 			var tokenizer = new LineSegmentTokenizer();
 			Assert.That(tokenizer.Tokenize("This is a test."), Is.EqualTo(new[] { "This is a test." }));
 		}
 
 		[Test]
-		public void Tokenize_MultipleLines_ReturnsTokens()
+		public void Tokenize_MultipleLines()
 		{
 			var tokenizer = new LineSegmentTokenizer();
 			Assert.That(tokenizer.Tokenize("This is the first sentence.\nThis is the second sentence."),
@@ -28,14 +28,14 @@ namespace SIL.Machine.Tokenization
 		}
 
 		[Test]
-		public void Tokenize_EndsWithNewLine_ReturnsTokens()
+		public void Tokenize_EndsWithNewLine()
 		{
 			var tokenizer = new LineSegmentTokenizer();
 			Assert.That(tokenizer.Tokenize("This is a test.\n"), Is.EqualTo(new[] { "This is a test." }));
 		}
 
 		[Test]
-		public void Tokenize_EndsWithNewLineAndSpace_ReturnsTokens()
+		public void Tokenize_EndsWithNewLineAndSpace()
 		{
 			var tokenizer = new LineSegmentTokenizer();
 			Assert.That(tokenizer.Tokenize("This is a test.\n "),
@@ -43,7 +43,7 @@ namespace SIL.Machine.Tokenization
 		}
 
 		[Test]
-		public void Tokenize_EndsWithTextAndSpace_ReturnsTokens()
+		public void Tokenize_EndsWithTextAndSpace()
 		{
 			var tokenizer = new LineSegmentTokenizer();
 			Assert.That(tokenizer.Tokenize("This is the first sentence.\nThis is a partial sentence "),
@@ -51,7 +51,7 @@ namespace SIL.Machine.Tokenization
 		}
 
 		[Test]
-		public void Tokenize_EmptyLine_ReturnsTokens()
+		public void Tokenize_EmptyLine()
 		{
 			var tokenizer = new LineSegmentTokenizer();
 			Assert.That(tokenizer.Tokenize("This is the first sentence.\n\nThis is the third sentence."),
@@ -59,7 +59,7 @@ namespace SIL.Machine.Tokenization
 		}
 
 		[Test]
-		public void Tokenize_LineEndsWithSpace_ReturnsTokens()
+		public void Tokenize_LineEndsWithSpace()
 		{
 			var tokenizer = new LineSegmentTokenizer();
 			Assert.That(tokenizer.Tokenize("This is the first sentence. \nThis is the second sentence."),
