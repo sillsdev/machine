@@ -42,7 +42,7 @@ namespace SIL.Machine.Corpora
 					}
 					else
 					{
-						yield return CreateTextSegment(vref, isInRange: true);
+						yield return CreateEmptyTextSegment(vref, isInRange: true);
 					}
 				}
 			}

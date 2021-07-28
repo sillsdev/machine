@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Tokenization;
-using SIL.Machine.Translation;
 
 namespace SIL.Machine.Corpora
 {
@@ -37,15 +36,10 @@ namespace SIL.Machine.Corpora
 			return new TextSegment(Id, segRef, segment, isSentenceStart, isInRange, isRangeStart, segment.Count == 0);
 		}
 
-		protected TextSegment CreateTextSegment(object segRef, bool isInRange = false)
+		protected TextSegment CreateEmptyTextSegment(object segRef, bool isInRange = false)
 		{
 			return new TextSegment(Id, segRef, Array.Empty<string>(), isSentenceStart: true, isInRange,
 				isRangeStart: false, isEmpty: true);
-		}
-
-		protected TextSegment CreateTextSegment(bool includeText, string text, params int[] indices)
-		{
-			return CreateTextSegment(includeText, text, new TextSegmentRef(indices));
 		}
 	}
 }

@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text;
 
-namespace SIL.Machine.Translation
+namespace SIL.Machine.Corpora
 {
 	public static class TokenProcessors
 	{

@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 using McMaster.Extensions.CommandLineUtils;
-using SIL.Machine.Translation;
+using SIL.Machine.Corpora;
 
 namespace SIL.Machine
 {

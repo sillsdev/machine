@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SIL.Machine.Translation
+namespace SIL.Machine.Corpora
 {
 	public interface ITokenProcessor
 	{

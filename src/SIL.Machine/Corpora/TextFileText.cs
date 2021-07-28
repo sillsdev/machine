@@ -40,7 +40,7 @@ namespace SIL.Machine.Corpora
 					}
 					else
 					{
-						yield return CreateTextSegment(includeText, line, sectionNum, segmentNum);
+						yield return CreateTextSegment(includeText, line, new TextSegmentRef(sectionNum, segmentNum));
 						segmentNum++;
 					}
 				}
