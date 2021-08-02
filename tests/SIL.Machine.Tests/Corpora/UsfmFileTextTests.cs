@@ -132,7 +132,7 @@ namespace SIL.Machine.Corpora
 			Assert.That(segments[10].Segment[0], Is.EqualTo("Chapter two, verse five."));
 
 			Assert.That(segments[11].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:6", corpus.Versification)));
-			Assert.That(segments[11].Segment[0], Is.EqualTo("Chapter two, verse six."));
+			Assert.That(segments[11].Segment[0], Is.EqualTo("Chapter two, verse \\w six|strong=\"12345\" \\w*."));
 		}
 	}
 }

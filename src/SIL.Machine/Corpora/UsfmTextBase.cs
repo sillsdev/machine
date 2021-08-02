@@ -31,6 +31,7 @@ namespace SIL.Machine.Corpora
 			string usfm = ReadUsfm();
 			bool inVerse = false;
 			UsfmMarker curEmbedMarker = null;
+			bool inWordlistMarker = false;
 			var sb = new StringBuilder();
 			string chapter = null, verse = null;
 			bool sentenceStart = true;
@@ -133,6 +134,8 @@ namespace SIL.Machine.Corpora
 					case UsfmTokenType.End:
 						if (curEmbedMarker != null && token.Marker.Marker == curEmbedMarker.EndMarker)
 							curEmbedMarker = null;
+						if (inWordlistMarker && token.Marker.Marker == "w*")
+							inWordlistMarker = false;
 						if (inVerse && _includeMarkers)
 							sb.Append(token);
 						break;
@@ -144,6 +147,9 @@ namespace SIL.Machine.Corpora
 							case "va":
 							case "vp":
 								curEmbedMarker = token.Marker;
+								break;
+							case "w":
+								inWordlistMarker = true;
 								break;
 						}
 						if (inVerse && _includeMarkers)
@@ -173,6 +179,13 @@ namespace SIL.Machine.Corpora
 							else if (curEmbedMarker == null)
 							{
 								string text = token.Text;
+								if (inWordlistMarker)
+								{
+									int index = text.IndexOf("|");
+									if (index >= 0)
+										text = text.Substring(0, index);
+								}
+
 								if (prevToken?.Type == UsfmTokenType.End
 									&& (sb.Length == 0 || char.IsWhiteSpace(sb[sb.Length - 1])))
 								{

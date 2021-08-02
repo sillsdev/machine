@@ -24,6 +24,6 @@
 \p
 \v 5 Chapter two, verse five.
 \v 4 Bad verse.
-\v 6 Chapter two, verse six.
+\v 6 Chapter two, verse \w six|strong="12345" \w*.
 \v 6 Bad verse.
 \restore restore information
