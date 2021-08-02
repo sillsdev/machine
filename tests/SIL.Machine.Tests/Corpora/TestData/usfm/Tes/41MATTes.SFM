@@ -17,7 +17,7 @@
 \c 2 
 \s Chapter Two
 \p
-\v 1 Chapter \add two\add*, verse one.
+\v 1 Chapter \add two\add*, verse\f + \fr 2:1: \ft This is a footnote.\f* one.
 \v 2-3 Chapter two, verse two.
 \v 3-4a Chapter two, verse three.
 \v 4b Chapter two, verse four.

@@ -173,8 +173,11 @@ namespace SIL.Machine.Corpora
 							else if (curEmbedMarker == null)
 							{
 								string text = token.Text;
-								if (prevToken?.Type == UsfmTokenType.End)
+								if (prevToken?.Type == UsfmTokenType.End
+									&& (sb.Length == 0 || char.IsWhiteSpace(sb[sb.Length - 1])))
+								{
 									text = text.TrimStart();
+								}
 								sb.Append(text);
 							}
 						}

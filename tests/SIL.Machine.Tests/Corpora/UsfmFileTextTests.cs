@@ -109,7 +109,8 @@ namespace SIL.Machine.Corpora
 				Is.EqualTo("Chapter one, \\li2 verse \\fig Figure 1|src=\"image1.png\" size=\"col\" ref=\"1:5\"\\fig* five."));
 
 			Assert.That(segments[5].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:1", corpus.Versification)));
-			Assert.That(segments[5].Segment[0], Is.EqualTo("Chapter \\add two\\add*, verse one."));
+			Assert.That(segments[5].Segment[0], Is.EqualTo(
+				"Chapter \\add two\\add*, verse\\f + \\fr 2:1: \\ft This is a footnote.\\f* one."));
 
 			Assert.That(segments[6].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:2", corpus.Versification)));
 			Assert.That(segments[6].Segment[0],
