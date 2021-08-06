@@ -7,34 +7,30 @@ namespace SIL.Machine.Corpora
 {
 	public class UsxVerse
 	{
-		public UsxVerse(string chapter, string verse, bool sentenceStart, IEnumerable<XNode> nodes)
+		public UsxVerse(string chapter, string verse, bool isSentenceStart, IEnumerable<UsxToken> tokens)
 		{
 			Chapter = chapter;
 			Verse = verse;
-			SentenceStart = sentenceStart;
-			Nodes = nodes.ToArray();
+			IsSentenceStart = isSentenceStart;
+			Tokens = tokens.ToArray();
 
-			XElement prevParent = null;
+			XElement prevParaElem = null;
 			var sb = new StringBuilder();
-			foreach (XNode node in Nodes)
+			foreach (UsxToken token in Tokens)
 			{
-				XElement parent = node.Parent;
-				while (parent != null && parent.Name != "para")
-					parent = parent.Parent;
-
-				if (parent != prevParent && sb.Length > 0)
+				if (token.ParaElement != prevParaElem && sb.Length > 0)
 					sb.Append(" ");
 
-				sb.Append(node);
-				prevParent = parent;
+				sb.Append(token);
+				prevParaElem = token.ParaElement;
 			}
 			Text = sb.ToString().Trim();
 		}
 
 		public string Chapter { get; }
 		public string Verse { get; }
-		public bool SentenceStart { get; }
-		public IReadOnlyList<XNode> Nodes { get; }
+		public bool IsSentenceStart { get; }
+		public IReadOnlyList<UsxToken> Tokens { get; }
 		public string Text { get; }
 	}
 }

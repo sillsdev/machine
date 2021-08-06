@@ -25,18 +25,19 @@ namespace SIL.Machine.Corpora
 				{
 					case "chapter":
 						if (ctxt.IsInVerse)
-							yield return CreateVerse(ctxt);
+							yield return ctxt.CreateVerse();
 						ctxt.Chapter = (string)elem.Attribute("number");
 						ctxt.Verse = null;
-						ctxt.SentenceStart = true;
+						ctxt.IsSentenceStart = true;
 						break;
 
 					case "para":
 						if (!IsVersePara(elem))
 						{
-							ctxt.SentenceStart = true;
+							ctxt.IsSentenceStart = true;
 							continue;
 						}
+						ctxt.ParaElement = elem;
 						foreach (UsxVerse evt in ParseElement(elem, ctxt))
 							yield return evt;
 						break;
@@ -44,7 +45,7 @@ namespace SIL.Machine.Corpora
 			}
 
 			if (ctxt.IsInVerse)
-				yield return CreateVerse(ctxt);
+				yield return ctxt.CreateVerse();
 		}
 
 		private IEnumerable<UsxVerse> ParseElement(XElement elem, ParseContext ctxt)
@@ -62,7 +63,7 @@ namespace SIL.Machine.Corpora
 								{
 									if (verse == ctxt.Verse)
 									{
-										yield return CreateVerse(ctxt);
+										yield return ctxt.CreateVerse();
 
 										// ignore duplicate verse
 										ctxt.Verse = null;
@@ -74,7 +75,7 @@ namespace SIL.Machine.Corpora
 									}
 									else
 									{
-										yield return CreateVerse(ctxt);
+										yield return ctxt.CreateVerse();
 										ctxt.Verse = verse;
 									}
 								}
@@ -91,25 +92,17 @@ namespace SIL.Machine.Corpora
 
 							case "wg":
 								if (ctxt.IsInVerse)
-									ctxt.VerseNodes.Add(e);
+									ctxt.AddToken(e.Value, e);
 								break;
 						}
 						break;
 
 					case XText text:
 						if (ctxt.IsInVerse)
-							ctxt.VerseNodes.Add(text);
+							ctxt.AddToken(text.Value);
 						break;
 				}
 			}
-		}
-
-		private static UsxVerse CreateVerse(ParseContext ctxt)
-		{
-			var verse = new UsxVerse(ctxt.Chapter, ctxt.Verse, ctxt.SentenceStart, ctxt.VerseNodes);
-			ctxt.SentenceStart = verse.Text.HasSentenceEnding();
-			ctxt.VerseNodes.Clear();
-			return verse;
 		}
 
 		private static bool IsVersePara(XElement paraElem)
@@ -134,11 +127,26 @@ namespace SIL.Machine.Corpora
 
 		private class ParseContext
 		{
-			public IList<XNode> VerseNodes { get; } = new List<XNode>();
+			private List<UsxToken> _tokens = new List<UsxToken>();
+
 			public string Chapter { get; set; }
 			public string Verse { get; set; }
 			public bool IsInVerse => Chapter != null && Verse != null;
-			public bool SentenceStart { get; set; } = true;
+			public bool IsSentenceStart { get; set; } = true;
+			public XElement ParaElement { get; set; }
+
+			public void AddToken(string text, XElement elem = null)
+			{
+				_tokens.Add(new UsxToken(ParaElement, text, elem));
+			}
+
+			public UsxVerse CreateVerse()
+			{
+				var verse = new UsxVerse(Chapter, Verse, IsSentenceStart, _tokens);
+				IsSentenceStart = verse.Text.HasSentenceEnding();
+				_tokens.Clear();
+				return verse;
+			}
 		}
 	}
 }

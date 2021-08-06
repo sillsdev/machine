@@ -88,28 +88,28 @@ namespace SIL.Machine.Corpora
 											&& srcVerse.Text.Length > 0 && trgVerse.Text.Length > 0)))
 									{
 										TextAlignment rangeAlignment = CreateTextAlignment((VerseRef)rangeInfo.VerseRef,
-											rangeInfo.SourceNodes, rangeInfo.TargetNodes);
+											rangeInfo.SourceTokens, rangeInfo.TargetTokens);
 										if (rangeAlignment.AlignedWordPairs.Count > 0)
 											yield return rangeAlignment;
 									}
 
 									if (!rangeInfo.IsInRange)
 										rangeInfo.VerseRef = srcVerseRef;
-									rangeInfo.SourceNodes.AddRange(srcVerse.Nodes);
-									rangeInfo.TargetNodes.AddRange(trgVerse.Nodes);
+									rangeInfo.SourceTokens.AddRange(srcVerse.Tokens);
+									rangeInfo.TargetTokens.AddRange(trgVerse.Tokens);
 								}
 								else
 								{
 									if (rangeInfo.IsInRange)
 									{
 										TextAlignment rangeAlignment = CreateTextAlignment((VerseRef)rangeInfo.VerseRef,
-											rangeInfo.SourceNodes, rangeInfo.TargetNodes);
+											rangeInfo.SourceTokens, rangeInfo.TargetTokens);
 										if (rangeAlignment.AlignedWordPairs.Count > 0)
 											yield return rangeAlignment;
 									}
 
-									TextAlignment alignment = CreateTextAlignment(srcVerseRef, srcVerse.Nodes,
-										trgVerse.Nodes);
+									TextAlignment alignment = CreateTextAlignment(srcVerseRef, srcVerse.Tokens,
+										trgVerse.Tokens);
 									if (alignment.AlignedWordPairs.Count > 0)
 										yield return alignment;
 								}
@@ -128,11 +128,11 @@ namespace SIL.Machine.Corpora
 				_trgVersification, _srcVersification);
 		}
 
-		private TextAlignment CreateTextAlignment(VerseRef verseRef, IReadOnlyList<XNode> srcNodes,
-			IReadOnlyList<XNode> trgNodes)
+		private TextAlignment CreateTextAlignment(VerseRef verseRef, IReadOnlyList<UsxToken> srcTokens,
+			IReadOnlyList<UsxToken> trgTokens)
 		{
-			Dictionary<string, HashSet<int>> srcLinks = GetLinks(_srcWordTokenizer, srcNodes);
-			Dictionary<string, HashSet<int>> trgLinks = GetLinks(_trgWordTokenizer, trgNodes);
+			Dictionary<string, HashSet<int>> srcLinks = GetLinks(_srcWordTokenizer, srcTokens);
+			Dictionary<string, HashSet<int>> trgLinks = GetLinks(_trgWordTokenizer, trgTokens);
 
 			var wordPairs = new HashSet<AlignedWordPair>();
 			foreach (KeyValuePair<string, HashSet<int>> srcLink in srcLinks)
@@ -150,25 +150,21 @@ namespace SIL.Machine.Corpora
 		}
 
 		private Dictionary<string, HashSet<int>> GetLinks(
-			IRangeTokenizer<string, int, string> wordTokenizer, IReadOnlyList<XNode> nodes)
+			IRangeTokenizer<string, int, string> wordTokenizer, IReadOnlyList<UsxToken> tokens)
 		{
-			XElement prevParent = null;
+			XElement prevParaElem = null;
 			var sb = new StringBuilder();
 			var linkStrs = new List<(Range<int>, string)>();
-			foreach (XNode node in nodes)
+			foreach (UsxToken token in tokens)
 			{
-				XElement parent = node.Parent;
-				while (parent != null && parent.Name != "para")
-					parent = parent.Parent;
-
-				if (parent != prevParent && sb.Length > 0)
+				if (token.ParaElement != prevParaElem && sb.Length > 0)
 					sb.Append(" ");
 
 				int start = sb.Length;
-				sb.Append(node);
-				if (node is XElement e && e.Name == "wg")
+				sb.Append(token);
+				if (token.Element is XElement e && e.Name == "wg")
 					linkStrs.Add((Range<int>.Create(start, sb.Length), (string)e.Attribute("target_links")));
-				prevParent = parent;
+				prevParaElem = token.ParaElement;
 			}
 			string text = sb.ToString().Trim();
 
@@ -228,8 +224,8 @@ namespace SIL.Machine.Corpora
 		private class RangeInfo
 		{
 			public VerseRef? VerseRef { get; set; }
-			public List<XNode> SourceNodes { get; } = new List<XNode>();
-			public List<XNode> TargetNodes { get; } = new List<XNode>();
+			public List<UsxToken> SourceTokens { get; } = new List<UsxToken>();
+			public List<UsxToken> TargetTokens { get; } = new List<UsxToken>();
 			public bool IsInRange => VerseRef != null;
 		}
 	}

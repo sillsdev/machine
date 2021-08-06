@@ -10,7 +10,7 @@ namespace SIL.Machine.Corpora
 			TextId = textId;
 			SegmentRef = segRef;
 			Segment = segment;
-			SentenceStart = isSentenceStart;
+			IsSentenceStart = isSentenceStart;
 			IsInRange = isInRange;
 			IsRangeStart = isRangeStart;
 			IsEmpty = isEmpty;
@@ -22,7 +22,7 @@ namespace SIL.Machine.Corpora
 
 		public bool IsEmpty { get; }
 
-		public bool SentenceStart { get; }
+		public bool IsSentenceStart { get; }
 
 		public bool IsInRange { get; }
 		public bool IsRangeStart { get; }

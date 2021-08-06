@@ -10,7 +10,7 @@ namespace SIL.Machine.Corpora
 	public class UsfmFileTextTests
 	{
 		[Test]
-		public void Segments_NonEmptyText()
+		public void GetSegments_NonEmptyText()
 		{
 			var tokenizer = new NullTokenizer();
 			var corpus = new UsfmFileTextCorpus(tokenizer, CorporaTestHelpers.UsfmStylesheetPath,
@@ -56,7 +56,7 @@ namespace SIL.Machine.Corpora
 		}
 
 		[Test]
-		public void Segments_SentenceStart()
+		public void GetSegments_SentenceStart()
 		{
 			var tokenizer = new NullTokenizer();
 			var corpus = new UsfmFileTextCorpus(tokenizer, CorporaTestHelpers.UsfmStylesheetPath,
@@ -68,15 +68,15 @@ namespace SIL.Machine.Corpora
 
 			Assert.That(segments[3].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:4", corpus.Versification)));
 			Assert.That(segments[3].Segment[0], Is.EqualTo("Chapter one, verse four,"));
-			Assert.That(segments[3].SentenceStart, Is.True);
+			Assert.That(segments[3].IsSentenceStart, Is.True);
 
 			Assert.That(segments[4].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:5", corpus.Versification)));
 			Assert.That(segments[4].Segment[0], Is.EqualTo("Chapter one, verse five."));
-			Assert.That(segments[4].SentenceStart, Is.False);
+			Assert.That(segments[4].IsSentenceStart, Is.False);
 		}
 
 		[Test]
-		public void Segments_EmptyText()
+		public void GetSegments_EmptyText()
 		{
 			var tokenizer = new LatinWordTokenizer();
 			var corpus = new UsfmFileTextCorpus(tokenizer, CorporaTestHelpers.UsfmStylesheetPath,
@@ -88,7 +88,7 @@ namespace SIL.Machine.Corpora
 		}
 
 		[Test]
-		public void Segments_IncludeMarkers()
+		public void GetSegments_IncludeMarkers()
 		{
 			var tokenizer = new NullTokenizer();
 			var corpus = new UsfmFileTextCorpus(tokenizer, CorporaTestHelpers.UsfmStylesheetPath,

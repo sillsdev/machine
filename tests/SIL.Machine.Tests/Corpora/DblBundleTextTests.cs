@@ -8,7 +8,7 @@ namespace SIL.Machine.Corpora
 	public class DblBundleTextTests
 	{
 		[Test]
-		public void Segments_NonEmptyText()
+		public void GetSegments_NonEmptyText()
 		{
 			using (var env = new DblBundleTestEnvironment())
 			{
@@ -47,7 +47,7 @@ namespace SIL.Machine.Corpora
 		}
 
 		[Test]
-		public void Segments_SentenceStart()
+		public void GetSegments_SentenceStart()
 		{
 			using (var env = new DblBundleTestEnvironment())
 			{
@@ -58,22 +58,22 @@ namespace SIL.Machine.Corpora
 				Assert.That(segments[38].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:14", env.Corpus.Versification)));
 				Assert.That(segments[38].Segment[0],
 					Is.EqualTo("So Joseph got up, he took the child and his mother that night, and they fled to Egypt."));
-				Assert.That(segments[38].SentenceStart, Is.True);
+				Assert.That(segments[38].IsSentenceStart, Is.True);
 
 				Assert.That(segments[46].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:22", env.Corpus.Versification)));
 				Assert.That(segments[46].Segment[0],
 					Is.EqualTo("When Joseph heard that Archaelaus now ruled in Judea district instead of his father, King Herod the Great, he was afraid to go there. Because he was warned {God warned Joseph} in a dream that it was still dangerous for them to live in Judea, he and Mary and Jesus went to Galilee District"));
-				Assert.That(segments[46].SentenceStart, Is.True);
+				Assert.That(segments[46].IsSentenceStart, Is.True);
 
 				Assert.That(segments[47].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:23", env.Corpus.Versification)));
 				Assert.That(segments[47].Segment[0],
 					Is.EqualTo("to the town called Nazareth to live there. The result was that what had been said by the ancient prophets {what the ancient prophets had said} about the Messiah, that he would be called {people would call him} a Nazareth-man, was fulfilled {came true}."));
-				Assert.That(segments[47].SentenceStart, Is.False);
+				Assert.That(segments[47].IsSentenceStart, Is.False);
 			}
 		}
 
 		[Test]
-		public void Segments_EmptyText()
+		public void GetSegments_EmptyText()
 		{
 			using (var env = new DblBundleTestEnvironment())
 			{
