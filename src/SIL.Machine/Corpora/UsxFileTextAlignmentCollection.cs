@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using SIL.Extensions;
@@ -51,29 +50,29 @@ namespace SIL.Machine.Corpora
 					IEnumerable<UsxVerse> srcVerses = _parser.Parse(srcStream);
 					IEnumerable<UsxVerse> trgVerses = _parser.Parse(trgStream);
 
-					using (IEnumerator<UsxVerse> enumerator1 = srcVerses.GetEnumerator())
-					using (IEnumerator<UsxVerse> enumerator2 = trgVerses.GetEnumerator())
+					using (IEnumerator<UsxVerse> srcEnumerator = srcVerses.GetEnumerator())
+					using (IEnumerator<UsxVerse> trgEnumerator = trgVerses.GetEnumerator())
 					{
 						var rangeInfo = new RangeInfo();
 
-						bool sourceCompleted = !enumerator1.MoveNext();
-						bool targetCompleted = !enumerator2.MoveNext();
-						while (!sourceCompleted && !targetCompleted)
+						bool srcCompleted = !srcEnumerator.MoveNext();
+						bool trgCompleted = !trgEnumerator.MoveNext();
+						while (!srcCompleted && !trgCompleted)
 						{
-							UsxVerse srcVerse = enumerator1.Current;
-							UsxVerse trgVerse = enumerator2.Current;
+							UsxVerse srcVerse = srcEnumerator.Current;
+							UsxVerse trgVerse = trgEnumerator.Current;
 
 							var srcVerseRef = new VerseRef(Id, srcVerse.Chapter, srcVerse.Verse, _srcVersification);
 							var trgVerseRef = new VerseRef(Id, trgVerse.Chapter, trgVerse.Verse, _trgVersification);
 
-							int compare = srcVerseRef.CompareTo(trgVerseRef);
+							int compare = VerseRefComparer.Instance.Compare(srcVerseRef, trgVerseRef);
 							if (compare < 0)
 							{
-								sourceCompleted = !enumerator1.MoveNext();
+								srcCompleted = !srcEnumerator.MoveNext();
 							}
 							else if (compare > 0)
 							{
-								targetCompleted = !enumerator2.MoveNext();
+								trgCompleted = !trgEnumerator.MoveNext();
 							}
 							else
 							{
@@ -113,8 +112,8 @@ namespace SIL.Machine.Corpora
 									if (alignment.AlignedWordPairs.Count > 0)
 										yield return alignment;
 								}
-								sourceCompleted = !enumerator1.MoveNext();
-								targetCompleted = !enumerator2.MoveNext();
+								srcCompleted = !srcEnumerator.MoveNext();
+								trgCompleted = !trgEnumerator.MoveNext();
 							}
 						}
 					}
@@ -149,7 +148,7 @@ namespace SIL.Machine.Corpora
 			return new TextAlignment(Id, verseRef, wordPairs);
 		}
 
-		private Dictionary<string, HashSet<int>> GetLinks(
+		private static Dictionary<string, HashSet<int>> GetLinks(
 			IRangeTokenizer<string, int, string> wordTokenizer, IReadOnlyList<UsxToken> tokens)
 		{
 			XElement prevParaElem = null;

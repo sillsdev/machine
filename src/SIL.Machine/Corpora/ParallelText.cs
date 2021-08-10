@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SIL.Extensions;
+using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
@@ -14,7 +16,7 @@ namespace SIL.Machine.Corpora
 			SourceText = sourceText;
 			TargetText = targetText;
 			TextAlignmentCollection = textAlignmentCollection;
-			_segmentRefComparer = segmentRefComparer ?? Comparer<object>.Default;
+			_segmentRefComparer = segmentRefComparer;
 		}
 
 		public string Id => SourceText.Id;
@@ -35,136 +37,135 @@ namespace SIL.Machine.Corpora
 			IEnumerable<TextAlignment> alignments = TextAlignmentCollection?.Alignments
 				?? Enumerable.Empty<TextAlignment>();
 
-			using (IEnumerator<TextSegment> enumerator1 = SourceText.GetSegments(includeText).GetEnumerator())
-			using (IEnumerator<TextSegment> enumerator2 = TargetText.GetSegments(includeText).GetEnumerator())
-			using (IEnumerator<TextAlignment> enumerator3 = alignments.GetEnumerator())
+			using (IEnumerator<TextSegment> srcEnumerator = SourceText.GetSegments(includeText).GetEnumerator())
+			using (IEnumerator<TextSegment> trgEnumerator = TargetText.GetSegments(includeText).GetEnumerator())
+			using (IEnumerator<TextAlignment> alignmentEnumerator = alignments.GetEnumerator())
 			{
 				var rangeInfo = new RangeInfo(this);
 				var sourceSameRefSegments = new List<TextSegment>();
 				var targetSameRefSegments = new List<TextSegment>();
 
-				bool sourceCompleted = !enumerator1.MoveNext();
-				bool targetCompleted = !enumerator2.MoveNext();
-				while (!sourceCompleted && !targetCompleted)
+				bool srcCompleted = !srcEnumerator.MoveNext();
+				bool trgCompleted = !trgEnumerator.MoveNext();
+				while (!srcCompleted && !trgCompleted)
 				{
-					int compare1 = _segmentRefComparer.Compare(enumerator1.Current.SegmentRef,
-						enumerator2.Current.SegmentRef);
+					int compare1 = CompareSegRefs(srcEnumerator.Current.SegmentRef, trgEnumerator.Current.SegmentRef);
 					if (compare1 < 0)
 					{
 						foreach (ParallelTextSegment seg in CreateSourceTextSegments(rangeInfo,
-							enumerator1.Current, targetSameRefSegments, allSourceSegments))
+							srcEnumerator.Current, targetSameRefSegments, allSourceSegments))
 						{
 							yield return seg;
 						}
 
-						sourceSameRefSegments.Add(enumerator1.Current);
-						sourceCompleted = !enumerator1.MoveNext();
+						sourceSameRefSegments.Add(srcEnumerator.Current);
+						srcCompleted = !srcEnumerator.MoveNext();
 					}
 					else if (compare1 > 0)
 					{
 						foreach (ParallelTextSegment seg in CreateTargetTextSegments(rangeInfo,
-							enumerator2.Current, sourceSameRefSegments, allTargetSegments))
+							trgEnumerator.Current, sourceSameRefSegments, allTargetSegments))
 						{
 							yield return seg;
 						}
 
-						targetSameRefSegments.Add(enumerator2.Current);
-						targetCompleted = !enumerator2.MoveNext();
+						targetSameRefSegments.Add(trgEnumerator.Current);
+						trgCompleted = !trgEnumerator.MoveNext();
 					}
 					else
 					{
 						int compare2;
 						do
 						{
-							compare2 = enumerator3.MoveNext()
-								? _segmentRefComparer.Compare(enumerator1.Current.SegmentRef,
-									enumerator3.Current.SegmentRef)
+							compare2 = alignmentEnumerator.MoveNext()
+								? CompareSegRefs(srcEnumerator.Current.SegmentRef,
+									alignmentEnumerator.Current.SegmentRef)
 								: 1;
 						} while (compare2 < 0);
 
-						if ((!allTargetSegments && enumerator1.Current.IsInRange)
-							|| (!allSourceSegments && enumerator2.Current.IsInRange))
+						if ((!allTargetSegments && srcEnumerator.Current.IsInRange)
+							|| (!allSourceSegments && trgEnumerator.Current.IsInRange))
 						{
 
 							if (rangeInfo.IsInRange
-								&& ((enumerator1.Current.IsInRange && !enumerator2.Current.IsInRange
-									&& enumerator1.Current.Segment.Count > 0)
-								|| (!enumerator1.Current.IsInRange && enumerator2.Current.IsInRange
-									&& enumerator2.Current.Segment.Count > 0)
-								|| (enumerator1.Current.IsInRange && enumerator2.Current.IsInRange
-									&& enumerator1.Current.Segment.Count > 0 && enumerator2.Current.Segment.Count > 0)))
+								&& ((srcEnumerator.Current.IsInRange && !trgEnumerator.Current.IsInRange
+									&& srcEnumerator.Current.Segment.Count > 0)
+								|| (!srcEnumerator.Current.IsInRange && trgEnumerator.Current.IsInRange
+									&& trgEnumerator.Current.Segment.Count > 0)
+								|| (srcEnumerator.Current.IsInRange && trgEnumerator.Current.IsInRange
+									&& srcEnumerator.Current.Segment.Count > 0 && trgEnumerator.Current.Segment.Count > 0)))
 							{
 								yield return rangeInfo.CreateTextSegment();
 							}
 
 							if (!rangeInfo.IsInRange)
-								rangeInfo.SegmentRef = enumerator1.Current.SegmentRef;
-							rangeInfo.SourceSegment.AddRange(enumerator1.Current.Segment);
-							rangeInfo.TargetSegment.AddRange(enumerator2.Current.Segment);
+								rangeInfo.SegmentRef = srcEnumerator.Current.SegmentRef;
+							rangeInfo.SourceSegment.AddRange(srcEnumerator.Current.Segment);
+							rangeInfo.TargetSegment.AddRange(trgEnumerator.Current.Segment);
 							if (rangeInfo.IsSourceEmpty)
-								rangeInfo.IsSourceEmpty = enumerator1.Current.IsEmpty;
+								rangeInfo.IsSourceEmpty = srcEnumerator.Current.IsEmpty;
 							if (rangeInfo.IsTargetEmpty)
-								rangeInfo.IsTargetEmpty = enumerator2.Current.IsEmpty;
+								rangeInfo.IsTargetEmpty = trgEnumerator.Current.IsEmpty;
 						}
 						else
 						{
-							if (CheckSameRefSegments(sourceSameRefSegments, enumerator2.Current))
+							if (CheckSameRefSegments(sourceSameRefSegments, trgEnumerator.Current))
 							{
 								foreach (TextSegment prevSourceSegment in sourceSameRefSegments)
 								{
 									foreach (ParallelTextSegment seg in CreateTextSegments(rangeInfo, prevSourceSegment,
-										enumerator2.Current))
+										trgEnumerator.Current))
 									{
 										yield return seg;
 									}
 								}
 							}
 
-							if (CheckSameRefSegments(targetSameRefSegments, enumerator1.Current))
+							if (CheckSameRefSegments(targetSameRefSegments, srcEnumerator.Current))
 							{
 								foreach (TextSegment prevTargetSegment in targetSameRefSegments)
 								{
 									foreach (ParallelTextSegment seg in CreateTextSegments(rangeInfo,
-										enumerator1.Current, prevTargetSegment))
+										srcEnumerator.Current, prevTargetSegment))
 									{
 										yield return seg;
 									}
 								}
 							}
 
-							foreach (ParallelTextSegment seg in CreateTextSegments(rangeInfo, enumerator1.Current,
-								enumerator2.Current, compare2 == 0 ? enumerator3.Current.AlignedWordPairs : null))
+							foreach (ParallelTextSegment seg in CreateTextSegments(rangeInfo, srcEnumerator.Current,
+								trgEnumerator.Current, compare2 == 0 ? alignmentEnumerator.Current.AlignedWordPairs : null))
 							{
 								yield return seg;
 							}
 						}
 
-						sourceSameRefSegments.Add(enumerator1.Current);
-						sourceCompleted = !enumerator1.MoveNext();
+						sourceSameRefSegments.Add(srcEnumerator.Current);
+						srcCompleted = !srcEnumerator.MoveNext();
 
-						targetSameRefSegments.Add(enumerator2.Current);
-						targetCompleted = !enumerator2.MoveNext();
+						targetSameRefSegments.Add(trgEnumerator.Current);
+						trgCompleted = !trgEnumerator.MoveNext();
 					}
 				}
 
-				while (!sourceCompleted)
+				while (!srcCompleted)
 				{
-					foreach (ParallelTextSegment seg in CreateSourceTextSegments(rangeInfo, enumerator1.Current,
+					foreach (ParallelTextSegment seg in CreateSourceTextSegments(rangeInfo, srcEnumerator.Current,
 						targetSameRefSegments, allSourceSegments))
 					{
 						yield return seg;
 					}
-					sourceCompleted = !enumerator1.MoveNext();
+					srcCompleted = !srcEnumerator.MoveNext();
 				}
 
-				while (!targetCompleted)
+				while (!trgCompleted)
 				{
-					foreach (ParallelTextSegment seg in CreateTargetTextSegments(rangeInfo, enumerator2.Current,
+					foreach (ParallelTextSegment seg in CreateTargetTextSegments(rangeInfo, trgEnumerator.Current,
 						sourceSameRefSegments, allTargetSegments))
 					{
 						yield return seg;
 					}
-					targetCompleted = !enumerator2.MoveNext();
+					trgCompleted = !trgEnumerator.MoveNext();
 				}
 
 				if (rangeInfo.IsInRange)
@@ -197,7 +198,7 @@ namespace SIL.Machine.Corpora
 		private bool CheckSameRefSegments(List<TextSegment> sameRefSegments, TextSegment otherSegment)
 		{
 			if (sameRefSegments.Count > 0
-				&& _segmentRefComparer.Compare(sameRefSegments[0].SegmentRef, otherSegment.SegmentRef) != 0)
+				&& CompareSegRefs(sameRefSegments[0].SegmentRef, otherSegment.SegmentRef) != 0)
 			{
 				sameRefSegments.Clear();
 			}
@@ -245,6 +246,18 @@ namespace SIL.Machine.Corpora
 				foreach (ParallelTextSegment seg in CreateTextSegments(rangeInfo, null, targetSegment))
 					yield return seg;
 			}
+		}
+
+		private int CompareSegRefs(object x, object y)
+		{
+			if (_segmentRefComparer != null)
+				return _segmentRefComparer.Compare(x, y);
+
+			// Do not use the default comparer for VerseRef, since we want to compare all verses in a range or sequence
+			if (x is VerseRef vx && y is VerseRef vy)
+				return VerseRefComparer.Instance.Compare(vx, vy);
+
+			return Comparer<object>.Default.Compare(x, y);
 		}
 
 		private class RangeInfo
