@@ -9,7 +9,7 @@ namespace SIL.Machine.Corpora
 		public static readonly ITokenProcessor Lowercase = new LowercaseTokenProcessor();
 		public static readonly ITokenProcessor EscapeSpaces = new EscapeSpacesTokenProcessor();
 		public static readonly ITokenProcessor UnescapeSpaces = new UnescapeSpacesTokenProcessor();
-		public static readonly ITokenProcessor Null = new NullTokenProcessor();
+		public static readonly ITokenProcessor NoOp = new NoOpTokenProcessor();
 
 		public static ITokenProcessor Pipeline(params ITokenProcessor[] processors)
 		{
@@ -50,7 +50,7 @@ namespace SIL.Machine.Corpora
 			}
 		}
 
-		private class NullTokenProcessor : ITokenProcessor
+		private class NoOpTokenProcessor : ITokenProcessor
 		{
 			public IReadOnlyList<string> Process(IReadOnlyList<string> tokens)
 			{
@@ -85,7 +85,7 @@ namespace SIL.Machine.Corpora
 			public IReadOnlyList<string> Process(IReadOnlyList<string> tokens)
 			{
 				foreach (ITokenProcessor processor in _processors)
-					tokens = (processor ?? Null).Process(tokens);
+					tokens = (processor ?? NoOp).Process(tokens);
 				return tokens;
 			}
 		}

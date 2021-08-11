@@ -64,7 +64,7 @@ namespace SIL.Machine
 				processors.Add(TokenProcessors.Lowercase);
 
 			if (processors.Count == 0)
-				return TokenProcessors.Null;
+				return TokenProcessors.NoOp;
 			return TokenProcessors.Pipeline(processors);
 		}
 
