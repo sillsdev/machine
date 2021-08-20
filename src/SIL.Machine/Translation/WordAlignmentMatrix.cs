@@ -362,7 +362,7 @@ namespace SIL.Machine.Translation
 			_matrix = newMatrix;
 		}
 
-		private IReadOnlyCollection<AlignedWordPair> GetAlignedWordPairs(out IReadOnlyList<int> sourceIndices,
+		public IReadOnlyCollection<AlignedWordPair> GetAsymmetricAlignments(out IReadOnlyList<int> sourceIndices,
 			out IReadOnlyList<int> targetIndices)
 		{
 			var source = new int[ColumnCount];
@@ -408,7 +408,7 @@ namespace SIL.Machine.Translation
 
 		public IReadOnlyCollection<AlignedWordPair> GetAlignedWordPairs()
 		{
-			return GetAlignedWordPairs(out _, out _);
+			return GetAsymmetricAlignments(out _, out _);
 		}
 
 		public string ToGizaFormat(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment)
@@ -454,7 +454,7 @@ namespace SIL.Machine.Translation
 			IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
 		{
 			var wordPairs = new HashSet<AlignedWordPair>();
-			foreach (AlignedWordPair wordPair in GetAlignedWordPairs(out IReadOnlyList<int> sourceIndices,
+			foreach (AlignedWordPair wordPair in GetAsymmetricAlignments(out IReadOnlyList<int> sourceIndices,
 				out IReadOnlyList<int> targetIndices))
 			{
 				string sourceWord = sourceSegment[wordPair.SourceIndex];

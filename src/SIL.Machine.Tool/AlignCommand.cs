@@ -116,13 +116,7 @@ namespace SIL.Machine
 								}
 								else
 								{
-									IReadOnlyList<string> sourceSegment = processor.Process(segment.SourceSegment);
-									IReadOnlyList<string> targetSegment = processor.Process(segment.TargetSegment);
-									WordAlignmentMatrix alignment = alignmentModel.GetBestAlignment(sourceSegment,
-										targetSegment, segment.CreateAlignmentMatrix());
-									string alignmentStr = alignment.ToString(alignmentModel, sourceSegment,
-										targetSegment, includeScores: _scoresOption.HasValue());
-									return alignmentStr;
+									return alignmentModel.GetAlignmentString(segment, _scoresOption.HasValue(), processor, processor);
 								}
 							}, new ExecutionDataflowBlockOptions
 							{
