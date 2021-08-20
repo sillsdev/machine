@@ -1,14 +1,14 @@
 ﻿namespace SIL.Machine.Translation.Thot
 {
-	public class HmmWordAlignmentModel : ThotWordAlignmentModelBase<HmmWordAlignmentModel>,
+	public class ThotHmmWordAlignmentModel : ThotWordAlignmentModelBase<ThotHmmWordAlignmentModel>,
 		IHmmWordAlignmentModel
 	{
-		public HmmWordAlignmentModel()
+		public ThotHmmWordAlignmentModel()
 			: base(Thot.HmmWordAlignmentClassName)
 		{
 		}
 
-		public HmmWordAlignmentModel(string prefFileName, bool createNew = false)
+		public ThotHmmWordAlignmentModel(string prefFileName, bool createNew = false)
 			: base(Thot.HmmWordAlignmentClassName, prefFileName, createNew)
 		{
 		}

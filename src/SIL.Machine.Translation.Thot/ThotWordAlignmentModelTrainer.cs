@@ -7,7 +7,7 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.Thot
 {
-	public class ThotWordAlignmentModelTrainer : ThotWordAlignmentModelTrainer<HmmWordAlignmentModel>
+	public class ThotWordAlignmentModelTrainer : ThotWordAlignmentModelTrainer<ThotHmmWordAlignmentModel>
 	{
 		public ThotWordAlignmentModelTrainer(string prefFileName, ITokenProcessor sourcePreprocessor,
 			ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)

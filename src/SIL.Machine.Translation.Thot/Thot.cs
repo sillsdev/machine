@@ -99,7 +99,7 @@ namespace SIL.Machine.Translation.Thot
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern uint tdata_getPhraseCount(IntPtr dataHandle);
-		
+
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern uint tdata_getSourceSegmentation(IntPtr dataHandle, IntPtr sourceSegmentation,
 			uint capacity);
@@ -270,7 +270,7 @@ namespace SIL.Machine.Translation.Thot
 			uint jLen)
 		{
 			int sizeOfPtr = Marshal.SizeOf<IntPtr>();
-			var matrix = new WordAlignmentMatrix((int) iLen, (int) jLen);
+			var matrix = new WordAlignmentMatrix((int)iLen, (int)jLen);
 			for (int i = 0; i < matrix.RowCount; i++)
 			{
 				IntPtr array = Marshal.ReadIntPtr(nativeMatrix, i * sizeOfPtr);
@@ -360,8 +360,8 @@ namespace SIL.Machine.Translation.Thot
 			var results = new IntPtr[n];
 			try
 			{
-				uint len = translateFunc(decoderHandle, (uint) n, inputPtr, results);
-				return results.Take((int) len).Select(data => DoCreateResult(sourceSegment, data, createResult))
+				uint len = translateFunc(decoderHandle, (uint)n, inputPtr, results);
+				return results.Take((int)len).Select(data => DoCreateResult(sourceSegment, data, createResult))
 					.ToArray();
 			}
 			finally
@@ -418,12 +418,12 @@ namespace SIL.Machine.Translation.Thot
 			smtModel_setW(handle, parameters.ModelW);
 			smtModel_setA(handle, parameters.ModelA);
 			smtModel_setE(handle, parameters.ModelE);
-			smtModel_setHeuristic(handle, (uint) parameters.ModelHeuristic);
-			smtModel_setOnlineTrainingParameters(handle, (uint) parameters.LearningAlgorithm,
-				(uint) parameters.LearningRatePolicy, parameters.LearningStepSize, parameters.LearningEMIters,
+			smtModel_setHeuristic(handle, (uint)parameters.ModelHeuristic);
+			smtModel_setOnlineTrainingParameters(handle, (uint)parameters.LearningAlgorithm,
+				(uint)parameters.LearningRatePolicy, parameters.LearningStepSize, parameters.LearningEMIters,
 				parameters.LearningE, parameters.LearningR);
 			if (parameters.ModelWeights != null)
-				smtModel_setWeights(handle, parameters.ModelWeights.ToArray(), (uint) parameters.ModelWeights.Count);
+				smtModel_setWeights(handle, parameters.ModelWeights.ToArray(), (uint)parameters.ModelWeights.Count);
 			return handle;
 		}
 
@@ -441,13 +441,13 @@ namespace SIL.Machine.Translation.Thot
 		{
 			string swAlignClassName = null;
 			Type alignModelType = typeof(TAlignModel);
-			if (alignModelType == typeof(HmmWordAlignmentModel))
+			if (alignModelType == typeof(ThotHmmWordAlignmentModel))
 				swAlignClassName = HmmWordAlignmentClassName;
-			else if (alignModelType == typeof(Ibm1WordAlignmentModel))
+			else if (alignModelType == typeof(ThotIbm1WordAlignmentModel))
 				swAlignClassName = SmoothedIbm1WordAlignmentClassName;
-			else if (alignModelType == typeof(Ibm2WordAlignmentModel))
+			else if (alignModelType == typeof(ThotIbm2WordAlignmentModel))
 				swAlignClassName = SmoothedIbm2WordAlignmentClassName;
-			else if (alignModelType == typeof(FastAlignWordAlignmentModel))
+			else if (alignModelType == typeof(ThotFastAlignWordAlignmentModel))
 				swAlignClassName = FastAlignWordAlignmentClassName;
 			Debug.Assert(swAlignClassName != null);
 			return swAlignClassName;

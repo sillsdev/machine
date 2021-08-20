@@ -5,7 +5,7 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.Thot
 {
-	public class ThotSmtWordAlignmentModel : ThotSmtWordAlignmentModel<HmmWordAlignmentModel>
+	public class ThotSmtWordAlignmentModel : ThotSmtWordAlignmentModel<ThotHmmWordAlignmentModel>
 	{
 		public ThotSmtWordAlignmentModel(string cfgFileName)
 			: base(new ThotSmtModel(cfgFileName))

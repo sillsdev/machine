@@ -165,16 +165,16 @@ namespace SIL.Machine
 			{
 				default:
 				case Hmm:
-					return CreateThotSmtModelTrainer<HmmWordAlignmentModel>(modelType, modelConfigFileName, corpus,
+					return CreateThotSmtModelTrainer<ThotHmmWordAlignmentModel>(modelType, modelConfigFileName, corpus,
 						maxSize, processor);
 				case Ibm1:
-					return CreateThotSmtModelTrainer<Ibm1WordAlignmentModel>(modelType, modelConfigFileName, corpus,
+					return CreateThotSmtModelTrainer<ThotIbm1WordAlignmentModel>(modelType, modelConfigFileName, corpus,
 						maxSize, processor);
 				case Ibm2:
-					return CreateThotSmtModelTrainer<Ibm2WordAlignmentModel>(modelType, modelConfigFileName, corpus,
+					return CreateThotSmtModelTrainer<ThotIbm2WordAlignmentModel>(modelType, modelConfigFileName, corpus,
 						maxSize, processor);
 				case FastAlign:
-					return CreateThotSmtModelTrainer<FastAlignWordAlignmentModel>(modelType, modelConfigFileName,
+					return CreateThotSmtModelTrainer<ThotFastAlignWordAlignmentModel>(modelType, modelConfigFileName,
 						corpus, maxSize, processor);
 			}
 		}

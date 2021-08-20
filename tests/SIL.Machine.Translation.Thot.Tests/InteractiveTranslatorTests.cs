@@ -12,7 +12,7 @@ namespace SIL.Machine.Translation.Thot
 		[Test]
 		public void TargetSegment_Hmm()
 		{
-			using (ThotSmtModel<HmmWordAlignmentModel> smtModel = CreateHmmModel())
+			using (ThotSmtModel<ThotHmmWordAlignmentModel> smtModel = CreateHmmModel())
 			using (ThotSmtEngine engine = smtModel.CreateEngine())
 			{
 				var ecm = new ErrorCorrectionModel();
@@ -26,7 +26,7 @@ namespace SIL.Machine.Translation.Thot
 		[Test]
 		public void SetPrefix_AddWord_Hmm()
 		{
-			using (ThotSmtModel<HmmWordAlignmentModel> smtModel = CreateHmmModel())
+			using (ThotSmtModel<ThotHmmWordAlignmentModel> smtModel = CreateHmmModel())
 			using (ThotSmtEngine engine = smtModel.CreateEngine())
 			{
 				var ecm = new ErrorCorrectionModel();
@@ -46,7 +46,7 @@ namespace SIL.Machine.Translation.Thot
 		[Test]
 		public void SetPrefix_MissingWord_Hmm()
 		{
-			using (ThotSmtModel<HmmWordAlignmentModel> smtModel = CreateHmmModel())
+			using (ThotSmtModel<ThotHmmWordAlignmentModel> smtModel = CreateHmmModel())
 			using (ThotSmtEngine engine = smtModel.CreateInteractiveEngine())
 			{
 				var ecm = new ErrorCorrectionModel();
@@ -63,7 +63,7 @@ namespace SIL.Machine.Translation.Thot
 		[Test]
 		public void SetPrefix_RemoveWord_Hmm()
 		{
-			using (ThotSmtModel<HmmWordAlignmentModel> smtModel = CreateHmmModel())
+			using (ThotSmtModel<ThotHmmWordAlignmentModel> smtModel = CreateHmmModel())
 			using (ThotSmtEngine engine = smtModel.CreateEngine())
 			{
 				var ecm = new ErrorCorrectionModel();
@@ -83,7 +83,7 @@ namespace SIL.Machine.Translation.Thot
 		[Test]
 		public void Approve_TwoSegmentsUnknownWord_Hmm()
 		{
-			using (ThotSmtModel<HmmWordAlignmentModel> smtModel = CreateHmmModel())
+			using (ThotSmtModel<ThotHmmWordAlignmentModel> smtModel = CreateHmmModel())
 			using (ThotSmtEngine engine = smtModel.CreateEngine())
 			{
 				var ecm = new ErrorCorrectionModel();
@@ -107,7 +107,7 @@ namespace SIL.Machine.Translation.Thot
 		[Test]
 		public void TargetSegment_FastAlign()
 		{
-			using (ThotSmtModel<FastAlignWordAlignmentModel> smtModel = CreateFastAlignModel())
+			using (ThotSmtModel<ThotFastAlignWordAlignmentModel> smtModel = CreateFastAlignModel())
 			using (ThotSmtEngine engine = smtModel.CreateEngine())
 			{
 				var ecm = new ErrorCorrectionModel();
@@ -121,7 +121,7 @@ namespace SIL.Machine.Translation.Thot
 		[Test]
 		public void SetPrefix_AddWord_FastAlign()
 		{
-			using (ThotSmtModel<FastAlignWordAlignmentModel> smtModel = CreateFastAlignModel())
+			using (ThotSmtModel<ThotFastAlignWordAlignmentModel> smtModel = CreateFastAlignModel())
 			using (ThotSmtEngine engine = smtModel.CreateEngine())
 			{
 				var ecm = new ErrorCorrectionModel();
@@ -141,7 +141,7 @@ namespace SIL.Machine.Translation.Thot
 		[Test]
 		public void SetPrefix_MissingWord_FastAlign()
 		{
-			using (ThotSmtModel<FastAlignWordAlignmentModel> smtModel = CreateFastAlignModel())
+			using (ThotSmtModel<ThotFastAlignWordAlignmentModel> smtModel = CreateFastAlignModel())
 			using (ThotSmtEngine engine = smtModel.CreateInteractiveEngine())
 			{
 				var ecm = new ErrorCorrectionModel();
@@ -158,7 +158,7 @@ namespace SIL.Machine.Translation.Thot
 		[Test]
 		public void SetPrefix_RemoveWord_FastAlign()
 		{
-			using (ThotSmtModel<FastAlignWordAlignmentModel> smtModel = CreateFastAlignModel())
+			using (ThotSmtModel<ThotFastAlignWordAlignmentModel> smtModel = CreateFastAlignModel())
 			using (ThotSmtEngine engine = smtModel.CreateEngine())
 			{
 				var ecm = new ErrorCorrectionModel();
@@ -178,7 +178,7 @@ namespace SIL.Machine.Translation.Thot
 		[Test]
 		public void Approve_TwoSegmentsUnknownWord_FastAlign()
 		{
-			using (ThotSmtModel<FastAlignWordAlignmentModel> smtModel = CreateFastAlignModel())
+			using (ThotSmtModel<ThotFastAlignWordAlignmentModel> smtModel = CreateFastAlignModel())
 			using (ThotSmtEngine engine = smtModel.CreateEngine())
 			{
 				var ecm = new ErrorCorrectionModel();
@@ -199,14 +199,14 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private static ThotSmtModel<HmmWordAlignmentModel> CreateHmmModel()
+		private static ThotSmtModel<ThotHmmWordAlignmentModel> CreateHmmModel()
 		{
-			return new ThotSmtModel<HmmWordAlignmentModel>(TestHelpers.ToyCorpusHmmConfigFileName);
+			return new ThotSmtModel<ThotHmmWordAlignmentModel>(TestHelpers.ToyCorpusHmmConfigFileName);
 		}
 
-		private static ThotSmtModel<FastAlignWordAlignmentModel> CreateFastAlignModel()
+		private static ThotSmtModel<ThotFastAlignWordAlignmentModel> CreateFastAlignModel()
 		{
-			return new ThotSmtModel<FastAlignWordAlignmentModel>(TestHelpers.ToyCorpusFastAlignConfigFileName);
+			return new ThotSmtModel<ThotFastAlignWordAlignmentModel>(TestHelpers.ToyCorpusFastAlignConfigFileName);
 		}
 	}
 }

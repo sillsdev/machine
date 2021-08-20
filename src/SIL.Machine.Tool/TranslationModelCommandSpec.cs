@@ -65,13 +65,13 @@ namespace SIL.Machine
 			{
 				default:
 				case ToolHelpers.Hmm:
-					return CreateThotSmtModel<HmmWordAlignmentModel>();
+					return CreateThotSmtModel<ThotHmmWordAlignmentModel>();
 				case ToolHelpers.Ibm1:
-					return CreateThotSmtModel<Ibm1WordAlignmentModel>();
+					return CreateThotSmtModel<ThotIbm1WordAlignmentModel>();
 				case ToolHelpers.Ibm2:
-					return CreateThotSmtModel<Ibm2WordAlignmentModel>();
+					return CreateThotSmtModel<ThotIbm2WordAlignmentModel>();
 				case ToolHelpers.FastAlign:
-					return CreateThotSmtModel<FastAlignWordAlignmentModel>();
+					return CreateThotSmtModel<ThotFastAlignWordAlignmentModel>();
 			}
 		}
 

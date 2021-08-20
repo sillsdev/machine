@@ -83,7 +83,7 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public bool IsDiagNeighborAligned(int i, int j)
+		public bool IsDiagonalNeighborAligned(int i, int j)
 		{
 			foreach ((int di, int dj) in new[] { (1, 1), (-1, 1), (1, -1), (-1, -1) })
 			{
@@ -215,7 +215,7 @@ namespace SIL.Machine.Translation
 				{
 					for (int j = 0; j < ColumnCount; j++)
 					{
-						if ((other._matrix[i, j] || orig._matrix[i, j]) && !_matrix[i, j])
+						if ((other[i, j] || orig[i, j]) && !_matrix[i, j])
 						{
 							if (!IsRowAligned(i) && !IsColumnAligned(j))
 							{
@@ -246,9 +246,9 @@ namespace SIL.Machine.Translation
 			WordAlignmentMatrix orig = Clone();
 			IntersectWith(other);
 
-			bool IsBlockOrDiagNeighborAligned(int i, int j) => IsHorizontalNeighborAligned(i, j)
+			bool IsBlockNeighborAligned(int i, int j) => IsHorizontalNeighborAligned(i, j)
 				|| IsVerticalNeighborAligned(i, j);
-			KoehnGrow(IsBlockOrDiagNeighborAligned, orig, other);
+			KoehnGrow(IsBlockNeighborAligned, orig, other);
 		}
 
 		/// <summary>
@@ -264,7 +264,7 @@ namespace SIL.Machine.Translation
 			IntersectWith(other);
 
 			bool IsBlockOrDiagNeighborAligned(int i, int j) => IsHorizontalNeighborAligned(i, j)
-				|| IsVerticalNeighborAligned(i, j) || IsDiagNeighborAligned(i, j);
+				|| IsVerticalNeighborAligned(i, j) || IsDiagonalNeighborAligned(i, j);
 			KoehnGrow(IsBlockOrDiagNeighborAligned, orig, other);
 		}
 
@@ -280,7 +280,7 @@ namespace SIL.Machine.Translation
 			IntersectWith(other);
 
 			bool IsBlockOrDiagNeighborAligned(int i, int j) => IsHorizontalNeighborAligned(i, j)
-				|| IsVerticalNeighborAligned(i, j) || IsDiagNeighborAligned(i, j);
+				|| IsVerticalNeighborAligned(i, j) || IsDiagonalNeighborAligned(i, j);
 			KoehnGrow(IsBlockOrDiagNeighborAligned, orig, other);
 
 			bool IsOneOrBothUnaligned(int i, int j) => !IsRowAligned(i) || !IsColumnAligned(j);
@@ -300,7 +300,7 @@ namespace SIL.Machine.Translation
 			IntersectWith(other);
 
 			bool IsBlockOrDiagNeighborAligned(int i, int j) => IsHorizontalNeighborAligned(i, j)
-				|| IsVerticalNeighborAligned(i, j) || IsDiagNeighborAligned(i, j);
+				|| IsVerticalNeighborAligned(i, j) || IsDiagonalNeighborAligned(i, j);
 			KoehnGrow(IsBlockOrDiagNeighborAligned, orig, other);
 
 			bool IsBothUnaligned(int i, int j) => !IsRowAligned(i) && !IsColumnAligned(j);
@@ -416,7 +416,7 @@ namespace SIL.Machine.Translation
 			var sb = new StringBuilder();
 			sb.AppendFormat("{0}\n", string.Join(" ", targetSegment));
 
-			var sourceWords = new List<string> {"NULL"};
+			var sourceWords = new List<string> { "NULL" };
 			sourceWords.AddRange(sourceSegment);
 
 			int i = 0;
@@ -449,7 +449,7 @@ namespace SIL.Machine.Translation
 			sb.Append("\n");
 			return sb.ToString();
 		}
-		
+
 		public IReadOnlyCollection<AlignedWordPair> GetAlignedWordPairs(IWordAlignmentModel model,
 			IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
 		{

@@ -75,13 +75,13 @@ namespace SIL.Machine
 			{
 				default:
 				case ToolHelpers.Hmm:
-					return CreateThotAlignmentModel<HmmWordAlignmentModel>(direction, symHeuristic);
+					return CreateThotAlignmentModel<ThotHmmWordAlignmentModel>(direction, symHeuristic);
 				case ToolHelpers.Ibm1:
-					return CreateThotAlignmentModel<Ibm1WordAlignmentModel>(direction, symHeuristic);
+					return CreateThotAlignmentModel<ThotIbm1WordAlignmentModel>(direction, symHeuristic);
 				case ToolHelpers.Ibm2:
-					return CreateThotAlignmentModel<Ibm2WordAlignmentModel>(direction, symHeuristic);
+					return CreateThotAlignmentModel<ThotIbm2WordAlignmentModel>(direction, symHeuristic);
 				case ToolHelpers.FastAlign:
-					return CreateThotAlignmentModel<FastAlignWordAlignmentModel>(direction, symHeuristic);
+					return CreateThotAlignmentModel<ThotFastAlignWordAlignmentModel>(direction, symHeuristic);
 			}
 		}
 
@@ -103,16 +103,16 @@ namespace SIL.Machine
 			{
 				default:
 				case ToolHelpers.Hmm:
-					return CreateThotAlignmentModelTrainer<HmmWordAlignmentModel>(corpus, maxSize, processor,
+					return CreateThotAlignmentModelTrainer<ThotHmmWordAlignmentModel>(corpus, maxSize, processor,
 						parameters, direct);
 				case ToolHelpers.Ibm1:
-					return CreateThotAlignmentModelTrainer<Ibm1WordAlignmentModel>(corpus, maxSize, processor,
+					return CreateThotAlignmentModelTrainer<ThotIbm1WordAlignmentModel>(corpus, maxSize, processor,
 						parameters, direct);
 				case ToolHelpers.Ibm2:
-					return CreateThotAlignmentModelTrainer<Ibm2WordAlignmentModel>(corpus, maxSize, processor,
+					return CreateThotAlignmentModelTrainer<ThotIbm2WordAlignmentModel>(corpus, maxSize, processor,
 						parameters, direct);
 				case ToolHelpers.FastAlign:
-					return CreateThotAlignmentModelTrainer<FastAlignWordAlignmentModel>(corpus, maxSize, processor,
+					return CreateThotAlignmentModelTrainer<ThotFastAlignWordAlignmentModel>(corpus, maxSize, processor,
 						parameters, direct);
 			}
 		}
