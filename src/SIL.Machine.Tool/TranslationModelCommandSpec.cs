@@ -85,7 +85,7 @@ namespace SIL.Machine
 		}
 
 		private IInteractiveTranslationModel CreateThotSmtModel<TAlignModel>()
-			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
+			where TAlignModel : ThotWordAlignmentModel, new()
 		{
 			return new ThotSmtModel<TAlignModel>(_modelConfigFileName);
 		}

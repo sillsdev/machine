@@ -152,6 +152,64 @@ namespace SIL.Machine.Translation
 			Assert.That(x.ValueEquals(expected), Is.True);
 		}
 
+		[Test]
+		public void Resize_Grow()
+		{
+			var matrix = new WordAlignmentMatrix(3, 3)
+			{
+				[0, 0] = true,
+				[1, 1] = true,
+				[2, 2] = true
+			};
+
+			matrix.Resize(4, 4);
+			var expected = new WordAlignmentMatrix(4, 4)
+			{
+				[0, 0] = true,
+				[1, 1] = true,
+				[2, 2] = true
+			};
+			Assert.That(matrix.ValueEquals(expected), Is.True);
+		}
+
+		[Test]
+		public void Resize_Shrink()
+		{
+			var matrix = new WordAlignmentMatrix(3, 3)
+			{
+				[0, 0] = true,
+				[1, 1] = true,
+				[2, 2] = true
+			};
+
+			matrix.Resize(2, 2);
+			var expected = new WordAlignmentMatrix(2, 2)
+			{
+				[0, 0] = true,
+				[1, 1] = true
+			};
+			Assert.That(matrix.ValueEquals(expected), Is.True);
+		}
+
+		[Test]
+		public void Resize_Grow_Shrink()
+		{
+			var matrix = new WordAlignmentMatrix(3, 3)
+			{
+				[0, 0] = true,
+				[1, 1] = true,
+				[2, 2] = true
+			};
+
+			matrix.Resize(2, 4);
+			var expected = new WordAlignmentMatrix(2, 4)
+			{
+				[0, 0] = true,
+				[1, 1] = true
+			};
+			Assert.That(matrix.ValueEquals(expected), Is.True);
+		}
+
 		private static (WordAlignmentMatrix, WordAlignmentMatrix) CreateMatrices()
 		{
 			var x = new WordAlignmentMatrix(7, 9)

@@ -1,6 +1,6 @@
 ﻿namespace SIL.Machine.Translation.Thot
 {
-	public class ThotIbm1WordAlignmentModel : ThotWordAlignmentModelBase<ThotIbm1WordAlignmentModel>
+	public class ThotIbm1WordAlignmentModel : ThotWordAlignmentModel
 	{
 		public ThotIbm1WordAlignmentModel()
 			: base(Thot.SmoothedIbm1WordAlignmentClassName)

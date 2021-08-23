@@ -119,7 +119,7 @@ namespace SIL.Machine
 
 		private ITrainer CreateThotAlignmentModelTrainer<TAlignModel>(ParallelTextCorpus corpus, int maxSize,
 			ITokenProcessor processor, Dictionary<string, string> parameters, bool direct)
-			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
+			where TAlignModel : ThotWordAlignmentModel, new()
 		{
 			string modelPath = _modelArgument.Value;
 			if (ToolHelpers.IsDirectoryPath(modelPath))
@@ -159,7 +159,7 @@ namespace SIL.Machine
 		}
 
 		private IWordAlignmentModel CreateThotAlignmentModel<TAlignModel>(WordAlignmentDirection direction,
-			SymmetrizationHeuristic symHeuristic) where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
+			SymmetrizationHeuristic symHeuristic) where TAlignModel : ThotWordAlignmentModel, new()
 		{
 			string modelPath = _modelArgument.Value;
 			if (ToolHelpers.IsDirectoryPath(modelPath))
@@ -190,7 +190,7 @@ namespace SIL.Machine
 		}
 
 		private IWordAlignmentModel CreateThotSmtAlignmentModel<TAlignModel>(WordAlignmentDirection direction)
-			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
+			where TAlignModel : ThotWordAlignmentModel, new()
 		{
 			string modelCfgFileName = ToolHelpers.GetTranslationModelConfigFileName(_modelArgument.Value);
 			string modelDir = Path.GetDirectoryName(modelCfgFileName);

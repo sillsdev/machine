@@ -231,7 +231,7 @@ namespace SIL.Machine
 
 		private static ITrainer CreateThotSmtModelTrainer<TAlignModel>(string modelType,
 			string modelConfigFileName, ParallelTextCorpus corpus, int maxSize, ITokenProcessor processor)
-			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
+			where TAlignModel : ThotWordAlignmentModel, new()
 		{
 			string modelDir = Path.GetDirectoryName(modelConfigFileName);
 			if (!Directory.Exists(modelDir))

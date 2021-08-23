@@ -17,7 +17,7 @@ namespace SIL.Machine.Translation.Thot
 	}
 
 	public class ThotWordAlignmentModelTrainer<TAlignModel> : DisposableBase, ITrainer
-		where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
+		where TAlignModel : ThotWordAlignmentModel, new()
 	{
 		private readonly string _prefFileName;
 		private readonly ITokenProcessor _sourcePreprocessor;

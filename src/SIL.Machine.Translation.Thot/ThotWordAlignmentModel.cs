@@ -10,8 +10,7 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.Thot
 {
-	public abstract class ThotWordAlignmentModelBase<TAlignModel> : DisposableBase, IIbm1WordAlignmentModel
-		where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
+	public abstract class ThotWordAlignmentModel : DisposableBase, IIbm1WordAlignmentModel
 	{
 		private bool _owned;
 		private ThotWordVocabulary _sourceWords;
@@ -19,13 +18,13 @@ namespace SIL.Machine.Translation.Thot
 		private string _prefFileName;
 		private readonly string _className;
 
-		protected ThotWordAlignmentModelBase(string className)
+		protected ThotWordAlignmentModel(string className)
 		{
 			_className = className;
 			SetHandle(Thot.swAlignModel_create(_className));
 		}
 
-		protected ThotWordAlignmentModelBase(string className, string prefFileName, bool createNew = false)
+		protected ThotWordAlignmentModel(string className, string prefFileName, bool createNew = false)
 		{
 			_className = className;
 			if (createNew || !File.Exists(prefFileName + ".src"))
@@ -181,8 +180,8 @@ namespace SIL.Machine.Translation.Thot
 		{
 			CheckDisposed();
 
-			return Thot.swAlignModel_getTranslationProbabilityByIndex(Handle, (uint) sourceWordIndex,
-				(uint) targetWordIndex);
+			return Thot.swAlignModel_getTranslationProbabilityByIndex(Handle, (uint)sourceWordIndex,
+				(uint)targetWordIndex);
 		}
 
 		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment,
@@ -194,8 +193,8 @@ namespace SIL.Machine.Translation.Thot
 			IntPtr nativeTargetSegment = Thot.ConvertSegmentToNativeUtf8(targetSegment);
 			IntPtr nativeMatrix = Thot.AllocNativeMatrix(sourceSegment.Count, targetSegment.Count);
 
-			uint iLen = (uint) sourceSegment.Count;
-			uint jLen = (uint) targetSegment.Count;
+			uint iLen = (uint)sourceSegment.Count;
+			uint jLen = (uint)targetSegment.Count;
 			try
 			{
 				Thot.swAlignModel_getBestAlignment(Handle, nativeSourceSegment, nativeTargetSegment, nativeMatrix,
@@ -262,11 +261,11 @@ namespace SIL.Machine.Translation.Thot
 				Thot.swAlignModel_close(Handle);
 		}
 
-		private class Trainer : ThotWordAlignmentModelTrainer<TAlignModel>
+		private class Trainer : ThotWordAlignmentModelTrainer
 		{
-			private readonly ThotWordAlignmentModelBase<TAlignModel> _model;
+			private readonly ThotWordAlignmentModel _model;
 
-			public Trainer(ThotWordAlignmentModelBase<TAlignModel> model, ITokenProcessor sourcePreprocessor,
+			public Trainer(ThotWordAlignmentModel model, ITokenProcessor sourcePreprocessor,
 				ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, int maxCorpusCount)
 				: base(model._prefFileName, sourcePreprocessor, targetPreprocessor, corpus, maxCorpusCount)
 			{

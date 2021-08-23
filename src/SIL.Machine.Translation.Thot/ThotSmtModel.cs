@@ -21,7 +21,7 @@ namespace SIL.Machine.Translation.Thot
 	}
 
 	public class ThotSmtModel<TAlignModel> : DisposableBase, IInteractiveTranslationModel, IThotSmtModelInternal
-		where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
+		where TAlignModel : ThotWordAlignmentModel, new()
 	{
 		private readonly TAlignModel _directWordAlignmentModel;
 		private readonly TAlignModel _inverseWordAlignmentModel;

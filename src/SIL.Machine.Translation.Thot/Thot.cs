@@ -437,7 +437,7 @@ namespace SIL.Machine.Translation.Thot
 		}
 
 		public static string GetWordAlignmentClassName<TAlignModel>()
-			where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
+			where TAlignModel : ThotWordAlignmentModel, new()
 		{
 			string swAlignClassName = null;
 			Type alignModelType = typeof(TAlignModel);

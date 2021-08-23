@@ -49,6 +49,10 @@ namespace SIL.Machine.Translation
 		public static WordAlignmentMatrix GetBestAlignment(this IWordAligner aligner, ParallelTextSegment segment,
 			ITokenProcessor sourcePreprocessor = null, ITokenProcessor targetPreprocessor = null)
 		{
+			if (sourcePreprocessor == null)
+				sourcePreprocessor = TokenProcessors.NoOp;
+			if (targetPreprocessor == null)
+				targetPreprocessor = TokenProcessors.NoOp;
 			IReadOnlyList<string> sourceSegment = sourcePreprocessor.Process(segment.SourceSegment);
 			IReadOnlyList<string> targetSegment = targetPreprocessor.Process(segment.TargetSegment);
 
@@ -99,6 +103,10 @@ namespace SIL.Machine.Translation
 		public static string GetGizaFormatString(this IWordAligner aligner, ParallelTextSegment segment,
 			ITokenProcessor sourcePreprocessor = null, ITokenProcessor targetPreprocessor = null)
 		{
+			if (sourcePreprocessor == null)
+				sourcePreprocessor = TokenProcessors.NoOp;
+			if (targetPreprocessor == null)
+				targetPreprocessor = TokenProcessors.NoOp;
 			IReadOnlyList<string> sourceSegment = sourcePreprocessor.Process(segment.SourceSegment);
 			IReadOnlyList<string> targetSegment = targetPreprocessor.Process(segment.TargetSegment);
 			WordAlignmentMatrix alignment = aligner.GetBestAlignment(sourceSegment, targetSegment,

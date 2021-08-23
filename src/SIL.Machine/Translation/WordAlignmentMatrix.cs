@@ -518,8 +518,8 @@ namespace SIL.Machine.Translation
 			int minI = Math.Min(RowCount, rowCount);
 			int minJ = Math.Min(ColumnCount, columnCount);
 
-			for (int i = 0; i < minJ; ++i)
-				Array.Copy(_matrix, i * RowCount, newMatrix, i * rowCount, minI);
+			for (int i = 0; i < minI; ++i)
+				Array.Copy(_matrix, i * ColumnCount, newMatrix, i * columnCount, minJ);
 
 			_matrix = newMatrix;
 		}

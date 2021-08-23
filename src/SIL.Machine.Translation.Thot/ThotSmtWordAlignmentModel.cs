@@ -25,7 +25,7 @@ namespace SIL.Machine.Translation.Thot
 
 
 	public class ThotSmtWordAlignmentModel<TAlignModel> : DisposableBase, IWordAlignmentModel
-		where TAlignModel : ThotWordAlignmentModelBase<TAlignModel>, new()
+		where TAlignModel : ThotWordAlignmentModel, new()
 	{
 		private readonly ThotSmtModel<TAlignModel> _smtModel;
 		private readonly ThotSmtEngine _smtEngine;
