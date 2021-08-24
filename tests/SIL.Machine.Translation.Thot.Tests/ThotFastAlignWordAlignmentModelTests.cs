@@ -21,8 +21,17 @@ namespace SIL.Machine.Translation.Thot
 				string[] sourceSegment = "por favor , ¿ podríamos ver otra habitación ?".Split(' ');
 				string[] targetSegment = "could we see another room , please ?".Split(' ');
 				WordAlignmentMatrix waMatrix = swAlignModel.GetBestAlignment(sourceSegment, targetSegment);
-				Assert.That(waMatrix.ToGizaFormat(sourceSegment, targetSegment), Is.EqualTo("could we see another room , please ?\n"
-					+ "NULL ({ 6 }) por ({ 1 }) favor ({ }) , ({ }) ¿ ({ }) podríamos ({ 2 }) ver ({ 3 }) otra ({ 4 }) habitación ({ 5 }) ? ({ 7 8 })\n"));
+				var expected = new WordAlignmentMatrix(9, 8)
+				{
+					[0, 0] = true,
+					[4, 1] = true,
+					[5, 2] = true,
+					[6, 3] = true,
+					[7, 4] = true,
+					[8, 6] = true,
+					[8, 7] = true
+				};
+				Assert.That(waMatrix.ValueEquals(expected), Is.True);
 			}
 		}
 
