@@ -99,10 +99,11 @@ namespace SIL.Machine.Translation.Thot
 				if (corpusCount == _maxCorpusCount)
 					break;
 			}
-
+			checkCanceled?.Invoke();
 			for (int i = 0; i < TrainingIterationCount; i++)
 			{
 				progress?.Report(new ProgressStatus(i, TrainingIterationCount));
+				checkCanceled?.Invoke();
 				Thot.swAlignModel_train(Handle, 1);
 			}
 			progress?.Report(new ProgressStatus(1.0));

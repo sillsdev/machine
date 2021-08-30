@@ -367,7 +367,7 @@ namespace SIL.Machine.Translation
 		{
 			var source = new int[ColumnCount];
 			int[] target = Enumerable.Repeat(-2, RowCount).ToArray();
-			var wordPairs = new HashSet<AlignedWordPair>();
+			var wordPairs = new List<AlignedWordPair>();
 			int prev = -1;
 			for (int j = 0; j < ColumnCount; j++)
 			{

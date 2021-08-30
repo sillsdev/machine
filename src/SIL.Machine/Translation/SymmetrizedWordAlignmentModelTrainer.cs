@@ -27,6 +27,7 @@ namespace SIL.Machine.Translation
 
 			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
 				_directTrainer.Train(phaseProgress, checkCanceled);
+			checkCanceled?.Invoke();
 			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
 				_inverseTrainer.Train(phaseProgress, checkCanceled);
 		}
