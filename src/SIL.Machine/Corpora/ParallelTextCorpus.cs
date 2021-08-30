@@ -12,7 +12,7 @@ namespace SIL.Machine.Corpora
 		{
 			SourceCorpus = sourceCorpus;
 			TargetCorpus = targetCorpus;
-			TextAlignmentCorpus = textAlignmentCorpus;
+			TextAlignmentCorpus = textAlignmentCorpus ?? new DictionaryTextAlignmentCorpus();
 			_segmentRefComparer = segmentRefComparer;
 		}
 
@@ -70,13 +70,7 @@ namespace SIL.Machine.Corpora
 		{
 			IText sourceText = GetText(SourceCorpus, id);
 			IText targetText = GetText(TargetCorpus, id);
-			ITextAlignmentCollection textAlignmentCollection = null;
-			if (TextAlignmentCorpus != null)
-			{
-				if (!TextAlignmentCorpus.TryGetTextAlignmentCollection(id, out textAlignmentCollection))
-					textAlignmentCollection = null;
-			}
-
+			ITextAlignmentCollection textAlignmentCollection = GetTextAlignmentCollection(TextAlignmentCorpus, id);
 			return new ParallelText(sourceText, targetText, textAlignmentCollection, _segmentRefComparer);
 		}
 
@@ -85,6 +79,16 @@ namespace SIL.Machine.Corpora
 			if (!corpus.TryGetText(id, out IText text))
 				text = new NullText(id, corpus.GetTextSortKey(id));
 			return text;
+		}
+
+		private static ITextAlignmentCollection GetTextAlignmentCollection(ITextAlignmentCorpus corpus, string id)
+		{
+			if (!corpus.TryGetTextAlignmentCollection(id, out ITextAlignmentCollection textAlignmentCollection))
+			{
+				textAlignmentCollection = new NullTextAlignmentCollection(id,
+					corpus.GetTextAlignmentCollectionSortKey(id));
+			}
+			return textAlignmentCollection;
 		}
 	}
 }

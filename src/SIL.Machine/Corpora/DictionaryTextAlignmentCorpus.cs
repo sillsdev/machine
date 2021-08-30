@@ -35,6 +35,11 @@ namespace SIL.Machine.Corpora
 			return new DictionaryTextAlignmentCorpus(_textAlignmentCollections.Values.Select(tac => tac.Invert()));
 		}
 
+		public string GetTextAlignmentCollectionSortKey(string id)
+		{
+			return id;
+		}
+
 		protected void AddTextAlignmentCollection(ITextAlignmentCollection alignments)
 		{
 			_textAlignmentCollections[alignments.Id] = alignments;

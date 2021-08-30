@@ -32,6 +32,11 @@ namespace SIL.Machine.Corpora
 			return new FilteredTextAlignmentCorpus(_corpus.Invert(), _filter);
 		}
 
+		public string GetTextAlignmentCollectionSortKey(string id)
+		{
+			return _corpus.GetTextAlignmentCollectionSortKey(id);
+		}
+
 		public bool TryGetTextAlignmentCollection(string id, out ITextAlignmentCollection alignments)
 		{
 			if (_corpus.TryGetTextAlignmentCollection(id, out alignments))

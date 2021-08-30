@@ -11,5 +11,7 @@ namespace SIL.Machine.Corpora
 		ITextAlignmentCollection GetTextAlignmentCollection(string id);
 
 		ITextAlignmentCorpus Invert();
+
+		string GetTextAlignmentCollectionSortKey(string id);
 	}
 }

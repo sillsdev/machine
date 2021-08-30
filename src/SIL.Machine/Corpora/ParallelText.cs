@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SIL.Extensions;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
@@ -15,7 +14,8 @@ namespace SIL.Machine.Corpora
 		{
 			SourceText = sourceText;
 			TargetText = targetText;
-			TextAlignmentCollection = textAlignmentCollection;
+			TextAlignmentCollection = textAlignmentCollection
+				?? new NullTextAlignmentCollection(sourceText.Id, sourceText.SortKey);
 			_segmentRefComparer = segmentRefComparer;
 		}
 
@@ -34,12 +34,9 @@ namespace SIL.Machine.Corpora
 		public IEnumerable<ParallelTextSegment> GetSegments(bool allSourceSegments = false,
 			bool allTargetSegments = false, bool includeText = true)
 		{
-			IEnumerable<TextAlignment> alignments = TextAlignmentCollection?.Alignments
-				?? Enumerable.Empty<TextAlignment>();
-
 			using (IEnumerator<TextSegment> srcEnumerator = SourceText.GetSegments(includeText).GetEnumerator())
 			using (IEnumerator<TextSegment> trgEnumerator = TargetText.GetSegments(includeText).GetEnumerator())
-			using (IEnumerator<TextAlignment> alignmentEnumerator = alignments.GetEnumerator())
+			using (IEnumerator<TextAlignment> alignmentEnumerator = TextAlignmentCollection.Alignments.GetEnumerator())
 			{
 				var rangeInfo = new RangeInfo(this);
 				var sourceSameRefSegments = new List<TextSegment>();
