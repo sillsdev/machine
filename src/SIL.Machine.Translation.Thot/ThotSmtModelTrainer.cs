@@ -325,8 +325,6 @@ namespace SIL.Machine.Translation.Thot
 					break;
 				case Thot.Ibm1WordAlignmentClassName:
 				case Thot.Ibm2WordAlignmentClassName:
-				case Thot.SmoothedIbm1WordAlignmentClassName:
-				case Thot.SmoothedIbm2WordAlignmentClassName:
 					ext = ".ibm_lexnd";
 					break;
 				case Thot.FastAlignWordAlignmentClassName:

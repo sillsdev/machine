@@ -3,12 +3,12 @@
 	public class ThotIbm2WordAlignmentModel : ThotWordAlignmentModel, IIbm2WordAlignmentModel
 	{
 		public ThotIbm2WordAlignmentModel()
-			: base(Thot.SmoothedIbm2WordAlignmentClassName)
+			: base(Thot.Ibm2WordAlignmentClassName)
 		{
 		}
 
 		public ThotIbm2WordAlignmentModel(string prefFileName, bool createNew = false)
-			: base(Thot.SmoothedIbm2WordAlignmentClassName, prefFileName, createNew)
+			: base(Thot.Ibm2WordAlignmentClassName, prefFileName, createNew)
 		{
 		}
 

@@ -9,11 +9,9 @@ namespace SIL.Machine.Translation.Thot
 {
 	internal static class Thot
 	{
-		public const string HmmWordAlignmentClassName = "IncrHmmP0AligModel";
-		public const string Ibm1WordAlignmentClassName = "IncrIbm1AligModel";
-		public const string Ibm2WordAlignmentClassName = "IncrIbm2AligModel";
-		public const string SmoothedIbm1WordAlignmentClassName = "SmoothedIncrIbm1AligModel";
-		public const string SmoothedIbm2WordAlignmentClassName = "SmoothedIncrIbm2AligModel";
+		public const string HmmWordAlignmentClassName = "IncrHmmAlignmentModel";
+		public const string Ibm1WordAlignmentClassName = "IncrIbm1AlignmentModel";
+		public const string Ibm2WordAlignmentClassName = "IncrIbm2AlignmentModel";
 		public const string FastAlignWordAlignmentClassName = "FastAlignModel";
 
 		private const int DefaultTranslationBufferLength = 1024;
@@ -444,9 +442,9 @@ namespace SIL.Machine.Translation.Thot
 			if (alignModelType == typeof(ThotHmmWordAlignmentModel))
 				swAlignClassName = HmmWordAlignmentClassName;
 			else if (alignModelType == typeof(ThotIbm1WordAlignmentModel))
-				swAlignClassName = SmoothedIbm1WordAlignmentClassName;
+				swAlignClassName = Ibm1WordAlignmentClassName;
 			else if (alignModelType == typeof(ThotIbm2WordAlignmentModel))
-				swAlignClassName = SmoothedIbm2WordAlignmentClassName;
+				swAlignClassName = Ibm2WordAlignmentClassName;
 			else if (alignModelType == typeof(ThotFastAlignWordAlignmentModel))
 				swAlignClassName = FastAlignWordAlignmentClassName;
 			Debug.Assert(swAlignClassName != null);

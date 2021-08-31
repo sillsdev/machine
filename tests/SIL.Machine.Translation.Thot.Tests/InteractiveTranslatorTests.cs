@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using NUnit.Framework;
 
 namespace SIL.Machine.Translation.Thot
@@ -100,7 +97,7 @@ namespace SIL.Machine.Translation.Thot
 				translator = InteractiveTranslator.Create(ecm, engine, "hablé hasta cinco en punto .".Split());
 
 				result = translator.GetCurrentResults().First();
-				Assert.That(result.TargetSegment, Is.EqualTo("talked until five o ' clock .".Split()));
+				Assert.That(result.TargetSegment, Is.EqualTo("i talked until five o ' clock .".Split()));
 			}
 		}
 
