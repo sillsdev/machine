@@ -159,7 +159,13 @@ namespace SIL.Machine.Translation.Thot
 			IntPtr targetSentence);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void swAlignModel_startTraining(IntPtr swAlignModelHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void swAlignModel_train(IntPtr swAlignModelHandle, uint numIters);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void swAlignModel_endTraining(IntPtr swAlignModelHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void swAlignModel_clearTempVars(IntPtr swAlignModelHandle);

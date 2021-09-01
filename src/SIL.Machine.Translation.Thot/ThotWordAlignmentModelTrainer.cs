@@ -81,6 +81,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public void Train(IProgress<ProgressStatus> progress = null, Action checkCanceled = null)
 		{
+			progress?.Report(new ProgressStatus(0, TrainingIterationCount + 1));
 			int corpusCount = 0;
 			int index = 0;
 			int trainedSegmentCount = 0;
@@ -100,12 +101,14 @@ namespace SIL.Machine.Translation.Thot
 					break;
 			}
 			checkCanceled?.Invoke();
+			Thot.swAlignModel_startTraining(Handle);
 			for (int i = 0; i < TrainingIterationCount; i++)
 			{
-				progress?.Report(new ProgressStatus(i, TrainingIterationCount));
+				progress?.Report(new ProgressStatus(i + 1, TrainingIterationCount + 1));
 				checkCanceled?.Invoke();
 				Thot.swAlignModel_train(Handle, 1);
 			}
+			Thot.swAlignModel_endTraining(Handle);
 			progress?.Report(new ProgressStatus(1.0));
 			Stats.TrainedSegmentCount = trainedSegmentCount;
 		}
