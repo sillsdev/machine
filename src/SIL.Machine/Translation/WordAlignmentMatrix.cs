@@ -311,7 +311,7 @@ namespace SIL.Machine.Translation
 		private void KoehnGrow(Func<int, int, bool> growCondition, WordAlignmentMatrix orig,
 			WordAlignmentMatrix other)
 		{
-			var p = new HashSet<(int, int)>();
+			var p = new SortedSet<(int, int)>();
 			for (int i = 0; i < RowCount; i++)
 			{
 				for (int j = 0; j < ColumnCount; j++)
@@ -325,7 +325,7 @@ namespace SIL.Machine.Translation
 			while (keepGoing)
 			{
 				keepGoing = false;
-				var added = new HashSet<(int, int)>();
+				var added = new SortedSet<(int, int)>();
 				foreach ((int i, int j) in p)
 				{
 					if ((!IsRowAligned(i) || !IsColumnAligned(j)) && growCondition(i, j))
