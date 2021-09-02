@@ -1,4 +1,5 @@
 ﻿using System;
+using SIL.Machine.Utils;
 
 namespace SIL.Machine.Translation.Thot
 {

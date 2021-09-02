@@ -13,6 +13,7 @@ using SIL.Machine.Corpora;
 using SIL.Machine.Morphology.HermitCrab;
 using SIL.Machine.Tokenization;
 using SIL.Machine.Translation.Thot;
+using SIL.Machine.Utils;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.TestApp

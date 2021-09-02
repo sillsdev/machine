@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using SIL.Machine.Corpora;
 using SIL.Machine.Statistics;
+using SIL.Machine.Utils;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation

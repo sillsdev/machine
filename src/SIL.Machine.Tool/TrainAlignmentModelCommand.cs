@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Translation;
+using SIL.Machine.Utils;
 
 namespace SIL.Machine
 {

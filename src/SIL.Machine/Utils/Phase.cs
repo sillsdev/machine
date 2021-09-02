@@ -1,4 +1,4 @@
-﻿namespace SIL.Machine.Translation
+﻿namespace SIL.Machine.Utils
 {
 	public class Phase
 	{

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using SIL.Machine.Tokenization;
+using SIL.Machine.Utils;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora

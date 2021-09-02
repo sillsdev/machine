@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SIL.Machine.Translation
+namespace SIL.Machine.Utils
 {
 	public class PhasedProgressReporter
 	{
@@ -63,7 +63,7 @@ namespace SIL.Machine.Translation
 			if (_progress == null)
 				return;
 
-			double percentCompleted = _percentCompleted + (CurrentPhasePercentage * value.PercentCompleted);
+			double percentCompleted = _percentCompleted + CurrentPhasePercentage * value.PercentCompleted;
 			string message = value.Message ?? Phases[_currentPhaseIndex].Message;
 			_progress.Report(new ProgressStatus(percentCompleted, message));
 		}

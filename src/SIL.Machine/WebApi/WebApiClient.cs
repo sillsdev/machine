@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using SIL.Machine.Annotations;
 using SIL.Machine.Translation;
+using SIL.Machine.Utils;
 
 namespace SIL.Machine.WebApi.Client
 {

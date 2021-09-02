@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using SIL.Extensions;
+using SIL.Machine.Utils;
 
 namespace SIL.Machine.Translation.Thot
 {

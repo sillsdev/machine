@@ -7,6 +7,7 @@ using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
 using SIL.Machine.Translation;
+using SIL.Machine.Utils;
 
 namespace SIL.Machine
 {

@@ -9,6 +9,7 @@ using System.Threading.Tasks.Dataflow;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
 using SIL.Machine.Translation;
+using SIL.Machine.Utils;
 
 namespace SIL.Machine
 {

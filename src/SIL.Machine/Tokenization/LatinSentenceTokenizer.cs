@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Annotations;
+using SIL.Machine.Utils;
 
 namespace SIL.Machine.Tokenization
 {

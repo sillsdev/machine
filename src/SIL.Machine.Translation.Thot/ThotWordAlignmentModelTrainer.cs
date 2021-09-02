@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using SIL.Machine.Corpora;
+using SIL.Machine.Utils;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.Thot

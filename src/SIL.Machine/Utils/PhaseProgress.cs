@@ -1,7 +1,7 @@
 ﻿using System;
 using SIL.ObjectModel;
 
-namespace SIL.Machine.Translation
+namespace SIL.Machine.Utils
 {
 	public class PhaseProgress : DisposableBase, IProgress<ProgressStatus>
 	{

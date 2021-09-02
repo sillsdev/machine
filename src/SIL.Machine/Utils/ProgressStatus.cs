@@ -1,9 +1,9 @@
-﻿namespace SIL.Machine.Translation
+﻿namespace SIL.Machine.Utils
 {
 	public struct ProgressStatus
 	{
 		public ProgressStatus(int currentStep, int stepCount, string message = null)
-			: this(stepCount == 0 ? 1.0 : (double) currentStep / stepCount, message)
+			: this(stepCount == 0 ? 1.0 : (double)currentStep / stepCount, message)
 		{
 		}
 

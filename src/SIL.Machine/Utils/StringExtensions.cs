@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text;
 
-namespace SIL.Machine
+namespace SIL.Machine.Utils
 {
 	public static class StringExtensions
 	{

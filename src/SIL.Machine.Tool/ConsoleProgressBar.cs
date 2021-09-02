@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading;
-using SIL.Machine.Translation;
+using SIL.Machine.Utils;
 
 namespace SIL.Machine
 {

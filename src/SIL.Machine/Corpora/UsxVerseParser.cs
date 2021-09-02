@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using SIL.Machine.Utils;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora

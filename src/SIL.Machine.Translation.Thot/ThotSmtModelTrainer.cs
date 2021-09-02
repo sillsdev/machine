@@ -11,6 +11,7 @@ using SIL.Machine.Optimization;
 using SIL.ObjectModel;
 using SIL.Machine.Statistics;
 using System.Threading.Tasks;
+using SIL.Machine.Utils;
 
 namespace SIL.Machine.Translation.Thot
 {
