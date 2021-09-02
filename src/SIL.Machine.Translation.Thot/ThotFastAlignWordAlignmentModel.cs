@@ -3,16 +3,17 @@
 	public class ThotFastAlignWordAlignmentModel : ThotWordAlignmentModel, IIbm2WordAlignmentModel
 	{
 		public ThotFastAlignWordAlignmentModel()
-			: base(Thot.FastAlignWordAlignmentClassName)
 		{
 			TrainingIterationCount = 4;
 		}
 
 		public ThotFastAlignWordAlignmentModel(string prefFileName, bool createNew = false)
-			: base(Thot.FastAlignWordAlignmentClassName, prefFileName, createNew)
+			: base(prefFileName, createNew)
 		{
 			TrainingIterationCount = 4;
 		}
+
+		public override ThotWordAlignmentModelType Type => ThotWordAlignmentModelType.FastAlign;
 
 		public override double GetAlignmentScore(int sourceLen, int prevSourceIndex, int sourceIndex, int targetLen,
 			int prevTargetIndex, int targetIndex)

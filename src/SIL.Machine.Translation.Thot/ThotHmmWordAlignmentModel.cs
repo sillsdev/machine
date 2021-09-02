@@ -3,14 +3,15 @@
 	public class ThotHmmWordAlignmentModel : ThotWordAlignmentModel, IHmmWordAlignmentModel
 	{
 		public ThotHmmWordAlignmentModel()
-			: base(Thot.HmmWordAlignmentClassName)
 		{
 		}
 
 		public ThotHmmWordAlignmentModel(string prefFileName, bool createNew = false)
-			: base(Thot.HmmWordAlignmentClassName, prefFileName, createNew)
+			: base(prefFileName, createNew)
 		{
 		}
+
+		public override ThotWordAlignmentModelType Type => ThotWordAlignmentModelType.Hmm;
 
 		public override double GetAlignmentScore(int sourceLen, int prevSourceIndex, int sourceIndex, int targetLen,
 			int prevTargetIndex, int targetIndex)

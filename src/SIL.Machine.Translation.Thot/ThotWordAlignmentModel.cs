@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -12,21 +13,37 @@ namespace SIL.Machine.Translation.Thot
 {
 	public abstract class ThotWordAlignmentModel : DisposableBase, IIbm1WordAlignmentModel
 	{
+		public static ThotWordAlignmentModel Create(ThotWordAlignmentModelType type)
+		{
+			switch (type)
+			{
+				case ThotWordAlignmentModelType.Ibm1:
+					return new ThotIbm1WordAlignmentModel();
+				case ThotWordAlignmentModelType.Ibm2:
+					return new ThotIbm2WordAlignmentModel();
+				case ThotWordAlignmentModelType.Hmm:
+					return new ThotHmmWordAlignmentModel();
+				case ThotWordAlignmentModelType.FastAlign:
+					return new ThotFastAlignWordAlignmentModel();
+			}
+			throw new InvalidEnumArgumentException(nameof(type), (int)type, typeof(ThotWordAlignmentModelType));
+		}
+
 		private bool _owned;
 		private ThotWordVocabulary _sourceWords;
 		private ThotWordVocabulary _targetWords;
 		private string _prefFileName;
 		private readonly string _className;
 
-		protected ThotWordAlignmentModel(string className)
+		protected ThotWordAlignmentModel()
 		{
-			_className = className;
+			_className = Thot.GetWordAlignmentClassName(Type);
 			SetHandle(Thot.swAlignModel_create(_className));
 		}
 
-		protected ThotWordAlignmentModel(string className, string prefFileName, bool createNew = false)
+		protected ThotWordAlignmentModel(string prefFileName, bool createNew = false)
 		{
-			_className = className;
+			_className = Thot.GetWordAlignmentClassName(Type);
 			if (createNew || !File.Exists(prefFileName + ".src"))
 				CreateNew(prefFileName);
 			else
@@ -73,6 +90,8 @@ namespace SIL.Machine.Translation.Thot
 				Thot.swAlignModel_setVariationalBayes(Handle, value);
 			}
 		}
+
+		public abstract ThotWordAlignmentModelType Type { get; }
 
 		protected IntPtr Handle { get; set; }
 
@@ -267,7 +286,7 @@ namespace SIL.Machine.Translation.Thot
 
 			public Trainer(ThotWordAlignmentModel model, ITokenProcessor sourcePreprocessor,
 				ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, int maxCorpusCount)
-				: base(model._prefFileName, sourcePreprocessor, targetPreprocessor, corpus, maxCorpusCount)
+				: base(model.Type, model._prefFileName, sourcePreprocessor, targetPreprocessor, corpus, maxCorpusCount)
 			{
 				_model = model;
 				CloseOnDispose = false;

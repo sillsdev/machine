@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -135,6 +136,9 @@ namespace SIL.Machine.Translation.Thot
 		public static extern IntPtr swAlignModel_open(string className, string prefFileName);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern uint swAlignModel_getMaxSentenceLength(IntPtr swAlignModelHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void swAlignModel_setVariationalBayes(IntPtr swAlignModelHandle, bool variationalBayes);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
@@ -159,7 +163,11 @@ namespace SIL.Machine.Translation.Thot
 			IntPtr targetSentence);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern void swAlignModel_startTraining(IntPtr swAlignModelHandle);
+		public static extern void swAlignModel_readSentencePairs(IntPtr swAlignModelHandle, string srcFileName,
+			string trgFileName, string countsFileName);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern uint swAlignModel_startTraining(IntPtr swAlignModelHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void swAlignModel_train(IntPtr swAlignModelHandle, uint numIters);
@@ -440,21 +448,20 @@ namespace SIL.Machine.Translation.Thot
 			return handle;
 		}
 
-		public static string GetWordAlignmentClassName<TAlignModel>()
-			where TAlignModel : ThotWordAlignmentModel, new()
+		public static string GetWordAlignmentClassName(ThotWordAlignmentModelType type)
 		{
-			string swAlignClassName = null;
-			Type alignModelType = typeof(TAlignModel);
-			if (alignModelType == typeof(ThotHmmWordAlignmentModel))
-				swAlignClassName = HmmWordAlignmentClassName;
-			else if (alignModelType == typeof(ThotIbm1WordAlignmentModel))
-				swAlignClassName = Ibm1WordAlignmentClassName;
-			else if (alignModelType == typeof(ThotIbm2WordAlignmentModel))
-				swAlignClassName = Ibm2WordAlignmentClassName;
-			else if (alignModelType == typeof(ThotFastAlignWordAlignmentModel))
-				swAlignClassName = FastAlignWordAlignmentClassName;
-			Debug.Assert(swAlignClassName != null);
-			return swAlignClassName;
+			switch (type)
+			{
+				case ThotWordAlignmentModelType.Ibm1:
+					return Ibm1WordAlignmentClassName;
+				case ThotWordAlignmentModelType.Ibm2:
+					return Ibm2WordAlignmentClassName;
+				case ThotWordAlignmentModelType.Hmm:
+					return HmmWordAlignmentClassName;
+				case ThotWordAlignmentModelType.FastAlign:
+					return FastAlignWordAlignmentClassName;
+			}
+			throw new InvalidEnumArgumentException(nameof(type), (int)type, typeof(ThotWordAlignmentModelType));
 		}
 
 		public static string EscapeToken(string token)

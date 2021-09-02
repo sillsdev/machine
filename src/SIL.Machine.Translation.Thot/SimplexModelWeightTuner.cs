@@ -13,9 +13,9 @@ namespace SIL.Machine.Translation.Thot
 	{
 		private readonly string _swAlignClassName;
 
-		public SimplexModelWeightTuner(string swAlignClassName)
+		public SimplexModelWeightTuner(ThotWordAlignmentModelType wordAlignmentModelType)
 		{
-			_swAlignClassName = swAlignClassName;
+			_swAlignClassName = Thot.GetWordAlignmentClassName(wordAlignmentModelType);
 		}
 
 		public double ConvergenceTolerance { get; set; } = 0.001;
@@ -32,7 +32,7 @@ namespace SIL.Machine.Translation.Thot
 			double Evaluate(Vector weights)
 			{
 				ThotSmtParameters newParameters = parameters.Clone();
-				newParameters.ModelWeights = weights.Select(w => (float) w).Concat(sentLenWeight).ToArray();
+				newParameters.ModelWeights = weights.Select(w => (float)w).Concat(sentLenWeight).ToArray();
 				newParameters.Freeze();
 				double quality = CalculateBleu(newParameters, tuneSourceCorpus, tuneTargetCorpus);
 				numFuncEvals++;
@@ -43,12 +43,12 @@ namespace SIL.Machine.Translation.Thot
 			progress.Report(new ProgressStatus(0, MaxFunctionEvaluations));
 			var simplex = new NelderMeadSimplex(ConvergenceTolerance, MaxFunctionEvaluations, 1.0);
 			MinimizationResult result = simplex.FindMinimum(Evaluate,
-				parameters.ModelWeights.Select(w => (double) w).Take(7));
+				parameters.ModelWeights.Select(w => (double)w).Take(7));
 
 			stats.Metrics["bleu"] = 1.0 - result.ErrorValue;
 
 			ThotSmtParameters bestParameters = parameters.Clone();
-			bestParameters.ModelWeights = result.MinimizingPoint.Select(w => (float) w).Concat(sentLenWeight).ToArray();
+			bestParameters.ModelWeights = result.MinimizingPoint.Select(w => (float)w).Concat(sentLenWeight).ToArray();
 			bestParameters.Freeze();
 
 			if (result.FunctionEvaluationCount < MaxProgressFunctionEvaluations)

@@ -56,7 +56,7 @@ namespace SIL.Machine.Translation.TestApp
 			switch (e.PropertyName)
 			{
 				case nameof(TextViewModel.IsChanged):
-					if (((TextViewModel) sender).IsChanged)
+					if (((TextViewModel)sender).IsChanged)
 						IsChanged = true;
 					break;
 			}
@@ -106,11 +106,11 @@ namespace SIL.Machine.Translation.TestApp
 			}
 
 			using (var dialog = new OpenFileDialog
-				{
-					Title = "Open Project",
-					CheckFileExists = true,
-					Filters = { new FileFilter("Project files", ".catx") }
-				})
+			{
+				Title = "Open Project",
+				CheckFileExists = true,
+				Filters = { new FileFilter("Project files", ".catx") }
+			})
 			{
 				if (dialog.ShowDialog(null) == DialogResult.Ok)
 				{
@@ -141,12 +141,12 @@ namespace SIL.Machine.Translation.TestApp
 			if (engineElem == null)
 				return false;
 
-			var smtConfig = (string) engineElem.Element("SmtConfig");
+			var smtConfig = (string)engineElem.Element("SmtConfig");
 			if (smtConfig == null)
 				return false;
 
-			var hcSrcConfig = (string) engineElem.Element("SourceAnalyzerConfig");
-			var hcTrgConfig = (string) engineElem.Element("TargetGeneratorConfig");
+			var hcSrcConfig = (string)engineElem.Element("SourceAnalyzerConfig");
+			var hcTrgConfig = (string)engineElem.Element("TargetGeneratorConfig");
 
 			string configDir = Path.GetDirectoryName(fileName);
 			Debug.Assert(configDir != null);
@@ -164,7 +164,7 @@ namespace SIL.Machine.Translation.TestApp
 					new SimpleTransferer(new GlossMorphemeMapper(trgMorpher)), trgMorpher);
 			}
 
-			_smtModel = new ThotSmtModel(Path.Combine(configDir, smtConfig));
+			_smtModel = new ThotSmtModel(ThotWordAlignmentModelType.Hmm, Path.Combine(configDir, smtConfig));
 			IInteractiveTranslationEngine smtEngine = _smtModel.CreateInteractiveEngine();
 
 			_engine = new HybridTranslationEngine(smtEngine, transferEngine);
@@ -176,24 +176,24 @@ namespace SIL.Machine.Translation.TestApp
 			{
 				foreach (XElement textElem in projectElem.Elements("Texts").Elements("Text"))
 				{
-					var name = (string) textElem.Attribute("name");
+					var name = (string)textElem.Attribute("name");
 
-					var metadataFileName = (string) textElem.Element("MetadataFile");
+					var metadataFileName = (string)textElem.Element("MetadataFile");
 					if (metadataFileName == null)
 						return false;
 					metadataFileName = Path.Combine(configDir, metadataFileName);
 
-					var srcTextFileName = (string) textElem.Element("SourceFile");
+					var srcTextFileName = (string)textElem.Element("SourceFile");
 					if (srcTextFileName == null)
 						return false;
 					srcTextFileName = Path.Combine(configDir, srcTextFileName);
 
-					var trgTextFileName = (string) textElem.Element("TargetFile");
+					var trgTextFileName = (string)textElem.Element("TargetFile");
 					if (trgTextFileName == null)
 						return false;
 					trgTextFileName = Path.Combine(configDir, trgTextFileName);
 
-					var alignmentsFileName = (string) textElem.Element("AlignmentsFile");
+					var alignmentsFileName = (string)textElem.Element("AlignmentsFile");
 					if (alignmentsFileName != null)
 						alignmentsFileName = Path.Combine(configDir, alignmentsFileName);
 
@@ -202,7 +202,7 @@ namespace SIL.Machine.Translation.TestApp
 					text.PropertyChanged += TextPropertyChanged;
 					_texts.Add(text);
 
-					Func<TextSegment, bool> segmentFilter = s => text.IsApproved((TextSegmentRef) s.SegmentRef);
+					Func<TextSegment, bool> segmentFilter = s => text.IsApproved((TextSegmentRef)s.SegmentRef);
 					sourceTexts.Add(new FilteredText(new TextFileText(_tokenizer, name, srcTextFileName),
 						segmentFilter));
 					targetTexts.Add(new FilteredText(new TextFileText(_tokenizer, name, trgTextFileName),

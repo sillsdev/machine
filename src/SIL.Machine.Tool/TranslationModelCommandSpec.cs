@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
@@ -61,18 +60,10 @@ namespace SIL.Machine
 			if (_modelFactory != null)
 				return _modelFactory.CreateModel(_modelArgument.Value);
 
-			switch (_modelTypeOption.Value())
-			{
-				default:
-				case ToolHelpers.Hmm:
-					return CreateThotSmtModel<ThotHmmWordAlignmentModel>();
-				case ToolHelpers.Ibm1:
-					return CreateThotSmtModel<ThotIbm1WordAlignmentModel>();
-				case ToolHelpers.Ibm2:
-					return CreateThotSmtModel<ThotIbm2WordAlignmentModel>();
-				case ToolHelpers.FastAlign:
-					return CreateThotSmtModel<ThotFastAlignWordAlignmentModel>();
-			}
+			ThotWordAlignmentModelType wordAlignmentModelType = ToolHelpers.GetThotWordAlignmentModelType(
+				_modelTypeOption.Value());
+
+			return new ThotSmtModel(wordAlignmentModelType, _modelConfigFileName);
 		}
 
 		public ITrainer CreateTrainer(ParallelTextCorpus corpus, int maxSize, ITokenProcessor processor)
@@ -82,12 +73,6 @@ namespace SIL.Machine
 
 			return ToolHelpers.CreateTranslationModelTrainer(_modelTypeOption.Value(), _modelConfigFileName, corpus,
 				maxSize, processor);
-		}
-
-		private IInteractiveTranslationModel CreateThotSmtModel<TAlignModel>()
-			where TAlignModel : ThotWordAlignmentModel, new()
-		{
-			return new ThotSmtModel<TAlignModel>(_modelConfigFileName);
 		}
 	}
 }

@@ -5,43 +5,24 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.Thot
 {
-	public class ThotSmtWordAlignmentModel : ThotSmtWordAlignmentModel<ThotHmmWordAlignmentModel>
+	public class ThotSmtWordAlignmentModel : DisposableBase, IWordAlignmentModel
 	{
-		public ThotSmtWordAlignmentModel(string cfgFileName)
-			: base(new ThotSmtModel(cfgFileName))
-		{
-		}
-
-		public ThotSmtWordAlignmentModel(ThotSmtParameters parameters)
-			: base(new ThotSmtModel(parameters))
-		{
-		}
-
-		public ThotSmtWordAlignmentModel(ThotSmtModel smtModel)
-			: base(smtModel)
-		{
-		}
-	}
-
-
-	public class ThotSmtWordAlignmentModel<TAlignModel> : DisposableBase, IWordAlignmentModel
-		where TAlignModel : ThotWordAlignmentModel, new()
-	{
-		private readonly ThotSmtModel<TAlignModel> _smtModel;
+		private readonly ThotSmtModel _smtModel;
 		private readonly ThotSmtEngine _smtEngine;
 		private readonly bool _ownsSmtModel;
 
-		public ThotSmtWordAlignmentModel(string cfgFileName)
-			: this(new ThotSmtModel<TAlignModel>(cfgFileName), true)
+		public ThotSmtWordAlignmentModel(ThotWordAlignmentModelType wordAlignmentModelType, string cfgFileName)
+			: this(new ThotSmtModel(wordAlignmentModelType, cfgFileName), true)
 		{
 		}
 
-		public ThotSmtWordAlignmentModel(ThotSmtParameters parameters)
-			: this(new ThotSmtModel<TAlignModel>(parameters), true)
+		public ThotSmtWordAlignmentModel(ThotWordAlignmentModelType wordAlignmentModelType,
+			ThotSmtParameters parameters)
+			: this(new ThotSmtModel(wordAlignmentModelType, parameters), true)
 		{
 		}
 
-		public ThotSmtWordAlignmentModel(ThotSmtModel<TAlignModel> smtModel, bool ownsSmtModel = false)
+		public ThotSmtWordAlignmentModel(ThotSmtModel smtModel, bool ownsSmtModel = false)
 		{
 			_smtModel = smtModel;
 			_smtEngine = _smtModel.CreateEngine();

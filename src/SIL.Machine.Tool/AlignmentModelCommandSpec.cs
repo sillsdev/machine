@@ -71,17 +71,33 @@ namespace SIL.Machine
 			if (_modelFactory != null)
 				return _modelFactory.CreateModel(_modelArgument.Value, direction, symHeuristic);
 
-			switch (_modelTypeOption.Value())
+			ThotWordAlignmentModelType modelType = ToolHelpers.GetThotWordAlignmentModelType(_modelTypeOption.Value());
+
+			string modelPath = _modelArgument.Value;
+			if (ToolHelpers.IsDirectoryPath(modelPath))
+				modelPath = Path.Combine(modelPath, "src_trg");
+
+			if (direction == WordAlignmentDirection.Direct)
 			{
-				default:
-				case ToolHelpers.Hmm:
-					return CreateThotAlignmentModel<ThotHmmWordAlignmentModel>(direction, symHeuristic);
-				case ToolHelpers.Ibm1:
-					return CreateThotAlignmentModel<ThotIbm1WordAlignmentModel>(direction, symHeuristic);
-				case ToolHelpers.Ibm2:
-					return CreateThotAlignmentModel<ThotIbm2WordAlignmentModel>(direction, symHeuristic);
-				case ToolHelpers.FastAlign:
-					return CreateThotAlignmentModel<ThotFastAlignWordAlignmentModel>(direction, symHeuristic);
+				var directModel = ThotWordAlignmentModel.Create(modelType);
+				directModel.Load(modelPath + "_invswm");
+				return directModel;
+			}
+			else if (direction == WordAlignmentDirection.Inverse)
+			{
+				var inverseModel = ThotWordAlignmentModel.Create(modelType);
+				inverseModel.Load(modelPath + "_swm");
+				return inverseModel;
+			}
+			else
+			{
+				var directModel = ThotWordAlignmentModel.Create(modelType);
+				directModel.Load(modelPath + "_invswm");
+
+				var inverseModel = ThotWordAlignmentModel.Create(modelType);
+				inverseModel.Load(modelPath + "_swm");
+
+				return new SymmetrizedWordAlignmentModel(directModel, inverseModel) { Heuristic = symHeuristic };
 			}
 		}
 
@@ -99,28 +115,8 @@ namespace SIL.Machine
 					parameters, direct);
 			}
 
-			switch (_modelTypeOption.Value())
-			{
-				default:
-				case ToolHelpers.Hmm:
-					return CreateThotAlignmentModelTrainer<ThotHmmWordAlignmentModel>(corpus, maxSize, processor,
-						parameters, direct);
-				case ToolHelpers.Ibm1:
-					return CreateThotAlignmentModelTrainer<ThotIbm1WordAlignmentModel>(corpus, maxSize, processor,
-						parameters, direct);
-				case ToolHelpers.Ibm2:
-					return CreateThotAlignmentModelTrainer<ThotIbm2WordAlignmentModel>(corpus, maxSize, processor,
-						parameters, direct);
-				case ToolHelpers.FastAlign:
-					return CreateThotAlignmentModelTrainer<ThotFastAlignWordAlignmentModel>(corpus, maxSize, processor,
-						parameters, direct);
-			}
-		}
+			ThotWordAlignmentModelType modelType = ToolHelpers.GetThotWordAlignmentModelType(_modelTypeOption.Value());
 
-		private ITrainer CreateThotAlignmentModelTrainer<TAlignModel>(ParallelTextCorpus corpus, int maxSize,
-			ITokenProcessor processor, Dictionary<string, string> parameters, bool direct)
-			where TAlignModel : ThotWordAlignmentModel, new()
-		{
 			string modelPath = _modelArgument.Value;
 			if (ToolHelpers.IsDirectoryPath(modelPath))
 				modelPath = Path.Combine(modelPath, "src_trg");
@@ -149,44 +145,13 @@ namespace SIL.Machine
 				trainCorpus = corpus.Invert();
 			}
 
-			var trainer = new ThotWordAlignmentModelTrainer<TAlignModel>($"{modelPath}_{modelStr}", processor,
-				processor, trainCorpus, maxSize);
+			var trainer = new ThotWordAlignmentModelTrainer(modelType, $"{modelPath}_{modelStr}", processor, processor,
+				trainCorpus, maxSize);
 			if (iters != -1)
 				trainer.TrainingIterationCount = iters;
 			if (varBayes != null)
 				trainer.VariationalBayes = (bool)varBayes;
 			return trainer;
-		}
-
-		private IWordAlignmentModel CreateThotAlignmentModel<TAlignModel>(WordAlignmentDirection direction,
-			SymmetrizationHeuristic symHeuristic) where TAlignModel : ThotWordAlignmentModel, new()
-		{
-			string modelPath = _modelArgument.Value;
-			if (ToolHelpers.IsDirectoryPath(modelPath))
-				modelPath = Path.Combine(modelPath, "src_trg");
-
-			if (direction == WordAlignmentDirection.Direct)
-			{
-				var directModel = new TAlignModel();
-				directModel.Load(modelPath + "_invswm");
-				return directModel;
-			}
-			else if (direction == WordAlignmentDirection.Inverse)
-			{
-				var inverseModel = new TAlignModel();
-				inverseModel.Load(modelPath + "_swm");
-				return inverseModel;
-			}
-			else
-			{
-				var directModel = new TAlignModel();
-				directModel.Load(modelPath + "_invswm");
-
-				var inverseModel = new TAlignModel();
-				inverseModel.Load(modelPath + "_swm");
-
-				return new SymmetrizedWordAlignmentModel(directModel, inverseModel) { Heuristic = symHeuristic };
-			}
 		}
 
 		private static bool ValidateAlignmentModelTypeOption(string value, IEnumerable<string> pluginTypes)

@@ -8,50 +8,41 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.Thot
 {
-	public class ThotWordAlignmentModelTrainer : ThotWordAlignmentModelTrainer<ThotHmmWordAlignmentModel>
-	{
-		public ThotWordAlignmentModelTrainer(string prefFileName, ITokenProcessor sourcePreprocessor,
-			ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)
-			: base(prefFileName, sourcePreprocessor, targetPreprocessor, corpus, maxCorpusCount)
-		{
-		}
-	}
-
-	public class ThotWordAlignmentModelTrainer<TAlignModel> : DisposableBase, ITrainer
-		where TAlignModel : ThotWordAlignmentModel, new()
+	public class ThotWordAlignmentModelTrainer : DisposableBase, ITrainer
 	{
 		private readonly string _prefFileName;
 		private readonly ITokenProcessor _sourcePreprocessor;
 		private readonly ITokenProcessor _targetPreprocessor;
 		private readonly ParallelTextCorpus _parallelCorpus;
+		private readonly string _sourceFileName;
+		private readonly string _targetFileName;
 		private readonly int _maxCorpusCount;
 		private readonly int _maxSegmentLength = int.MaxValue;
+		private Func<ParallelTextSegment, int, bool> _segmentFilter;
 
-		public ThotWordAlignmentModelTrainer(string prefFileName, ITokenProcessor sourcePreprocessor,
-			ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)
+		public ThotWordAlignmentModelTrainer(ThotWordAlignmentModelType type, string prefFileName,
+			ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor, string sourceFileName,
+			string targetFileName) : this(type, prefFileName, sourcePreprocessor, targetPreprocessor, null)
+		{
+			_sourceFileName = sourceFileName;
+			_targetFileName = targetFileName;
+		}
+
+		public ThotWordAlignmentModelTrainer(ThotWordAlignmentModelType type, string prefFileName,
+			ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus,
+			int maxCorpusCount = int.MaxValue)
 		{
 			_prefFileName = prefFileName;
 			_sourcePreprocessor = sourcePreprocessor;
 			_targetPreprocessor = targetPreprocessor;
 			_parallelCorpus = corpus;
 			_maxCorpusCount = maxCorpusCount;
-			string className = Thot.GetWordAlignmentClassName<TAlignModel>();
+			string className = Thot.GetWordAlignmentClassName(type);
 			Handle = Thot.swAlignModel_create(className);
-			switch (className)
-			{
-				case Thot.FastAlignWordAlignmentClassName:
-					TrainingIterationCount = 4;
-					break;
-
-				case Thot.HmmWordAlignmentClassName:
-					_maxSegmentLength = 200;
-					break;
-
-				case Thot.Ibm1WordAlignmentClassName:
-				case Thot.Ibm2WordAlignmentClassName:
-					_maxSegmentLength = 1024;
-					break;
-			}
+			_maxSegmentLength = (int)Thot.swAlignModel_getMaxSentenceLength(Handle);
+			if (type == ThotWordAlignmentModelType.FastAlign)
+				TrainingIterationCount = 4;
+			_segmentFilter = (s, i) => true;
 		}
 
 		public int TrainingIterationCount { get; set; } = 5;
@@ -73,7 +64,25 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public Func<ParallelTextSegment, int, bool> SegmentFilter { get; set; } = (s, i) => true;
+		public Func<ParallelTextSegment, int, bool> SegmentFilter
+		{
+			get
+			{
+				CheckDisposed();
+				return _segmentFilter;
+			}
+
+			set
+			{
+				CheckDisposed();
+				if (!string.IsNullOrEmpty(_sourceFileName) && !string.IsNullOrEmpty(_targetFileName))
+				{
+					throw new InvalidOperationException(
+						"A segment filter cannot be set when corpus filenames are provided.");
+				}
+				_segmentFilter = value;
+			}
+		}
 
 		protected IntPtr Handle { get; }
 		protected bool CloseOnDispose { get; set; } = true;
@@ -83,26 +92,30 @@ namespace SIL.Machine.Translation.Thot
 		public void Train(IProgress<ProgressStatus> progress = null, Action checkCanceled = null)
 		{
 			progress?.Report(new ProgressStatus(0, TrainingIterationCount + 1));
-			int corpusCount = 0;
-			int index = 0;
-			int trainedSegmentCount = 0;
-			foreach (ParallelTextSegment segment in _parallelCorpus.Segments)
+			if (!string.IsNullOrEmpty(_sourceFileName) && !string.IsNullOrEmpty(_targetFileName))
 			{
-				if (IsSegmentValid(segment))
+				Thot.swAlignModel_readSentencePairs(Handle, _sourceFileName, _targetFileName, "");
+			}
+			else
+			{
+				int corpusCount = 0;
+				int index = 0;
+				foreach (ParallelTextSegment segment in _parallelCorpus.Segments)
 				{
 					if (SegmentFilter(segment, index))
 					{
 						AddSegmentPair(segment);
-						trainedSegmentCount++;
+
+						if (IsSegmentValid(segment))
+							corpusCount++;
 					}
-					corpusCount++;
+					index++;
+					if (corpusCount == _maxCorpusCount)
+						break;
 				}
-				index++;
-				if (corpusCount == _maxCorpusCount)
-					break;
 			}
 			checkCanceled?.Invoke();
-			Thot.swAlignModel_startTraining(Handle);
+			var trainedSegmentCount = (int)Thot.swAlignModel_startTraining(Handle);
 			for (int i = 0; i < TrainingIterationCount; i++)
 			{
 				progress?.Report(new ProgressStatus(i + 1, TrainingIterationCount + 1));

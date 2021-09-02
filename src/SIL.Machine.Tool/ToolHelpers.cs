@@ -158,25 +158,36 @@ namespace SIL.Machine
 			return string.IsNullOrEmpty(value) || validTypes.Contains(value);
 		}
 
-		public static ITrainer CreateTranslationModelTrainer(string modelType,
-			string modelConfigFileName, ParallelTextCorpus corpus, int maxSize, ITokenProcessor processor)
+		public static ThotWordAlignmentModelType GetThotWordAlignmentModelType(string modelType)
 		{
 			switch (modelType)
 			{
 				default:
 				case Hmm:
-					return CreateThotSmtModelTrainer<ThotHmmWordAlignmentModel>(modelType, modelConfigFileName, corpus,
-						maxSize, processor);
+					return ThotWordAlignmentModelType.Hmm;
 				case Ibm1:
-					return CreateThotSmtModelTrainer<ThotIbm1WordAlignmentModel>(modelType, modelConfigFileName, corpus,
-						maxSize, processor);
+					return ThotWordAlignmentModelType.Ibm1;
 				case Ibm2:
-					return CreateThotSmtModelTrainer<ThotIbm2WordAlignmentModel>(modelType, modelConfigFileName, corpus,
-						maxSize, processor);
+					return ThotWordAlignmentModelType.Ibm2;
 				case FastAlign:
-					return CreateThotSmtModelTrainer<ThotFastAlignWordAlignmentModel>(modelType, modelConfigFileName,
-						corpus, maxSize, processor);
+					return ThotWordAlignmentModelType.FastAlign;
 			}
+		}
+
+		public static ITrainer CreateTranslationModelTrainer(string modelType,
+			string modelConfigFileName, ParallelTextCorpus corpus, int maxSize, ITokenProcessor processor)
+		{
+			ThotWordAlignmentModelType wordAlignmentModelType = GetThotWordAlignmentModelType(modelType);
+
+			string modelDir = Path.GetDirectoryName(modelConfigFileName);
+			if (!Directory.Exists(modelDir))
+				Directory.CreateDirectory(modelDir);
+
+			if (!File.Exists(modelConfigFileName))
+				CreateConfigFile(wordAlignmentModelType, modelConfigFileName);
+
+			return new ThotSmtModelTrainer(wordAlignmentModelType, modelConfigFileName, processor, processor, corpus,
+				maxSize);
 		}
 
 		public static bool ValidateSymmetrizationHeuristicOption(string value, bool noneAllowed = true)
@@ -217,30 +228,17 @@ namespace SIL.Machine
 			return new StreamWriter(fileName, false, utf8Encoding) { NewLine = "\n" };
 		}
 
-		private static void CreateConfigFile(string modelType, string modelConfigFileName)
+		private static void CreateConfigFile(ThotWordAlignmentModelType wordAlignmentModelType,
+			string modelConfigFileName)
 		{
 			string defaultConfigFileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data",
 				"default-smt.cfg");
 			string text = File.ReadAllText(defaultConfigFileName);
 			int emIters = 5;
-			if (modelType == FastAlign)
+			if (wordAlignmentModelType == ThotWordAlignmentModelType.FastAlign)
 				emIters = 4;
 			text = text.Replace("{em_iters}", $"{emIters}");
 			File.WriteAllText(modelConfigFileName, text);
-		}
-
-		private static ITrainer CreateThotSmtModelTrainer<TAlignModel>(string modelType,
-			string modelConfigFileName, ParallelTextCorpus corpus, int maxSize, ITokenProcessor processor)
-			where TAlignModel : ThotWordAlignmentModel, new()
-		{
-			string modelDir = Path.GetDirectoryName(modelConfigFileName);
-			if (!Directory.Exists(modelDir))
-				Directory.CreateDirectory(modelDir);
-
-			if (!File.Exists(modelConfigFileName))
-				CreateConfigFile(modelType, modelConfigFileName);
-
-			return new ThotSmtModelTrainer<TAlignModel>(modelConfigFileName, processor, processor, corpus, maxSize);
 		}
 	}
 }

@@ -3,14 +3,15 @@
 	public class ThotIbm2WordAlignmentModel : ThotWordAlignmentModel, IIbm2WordAlignmentModel
 	{
 		public ThotIbm2WordAlignmentModel()
-			: base(Thot.Ibm2WordAlignmentClassName)
 		{
 		}
 
 		public ThotIbm2WordAlignmentModel(string prefFileName, bool createNew = false)
-			: base(Thot.Ibm2WordAlignmentClassName, prefFileName, createNew)
+			: base(prefFileName, createNew)
 		{
 		}
+
+		public override ThotWordAlignmentModelType Type => ThotWordAlignmentModelType.Ibm2;
 
 		public override double GetAlignmentScore(int sourceLen, int prevSourceIndex, int sourceIndex, int targetLen,
 			int prevTargetIndex, int targetIndex)
