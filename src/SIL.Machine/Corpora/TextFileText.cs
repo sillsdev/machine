@@ -8,17 +8,17 @@ namespace SIL.Machine.Corpora
 {
 	public class TextFileText : TextBase
 	{
-		private readonly string _fileName;
-
 		public TextFileText(ITokenizer<string, int, string> wordTokenizer, string id, string fileName)
 			: base(wordTokenizer, id, id)
 		{
-			_fileName = fileName;
+			FileName = fileName;
 		}
+
+		public string FileName { get; }
 
 		public override IEnumerable<TextSegment> GetSegments(bool includeText = true)
 		{
-			using (var reader = new StreamReader(_fileName))
+			using (var reader = new StreamReader(FileName))
 			{
 				int sectionNum = 1;
 				int segmentNum = 1;

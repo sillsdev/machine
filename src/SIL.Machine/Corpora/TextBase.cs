@@ -18,7 +18,7 @@ namespace SIL.Machine.Corpora
 
 		public string SortKey { get; }
 
-		protected ITokenizer<string, int, string> WordTokenizer { get; }
+		public ITokenizer<string, int, string> WordTokenizer { get; }
 
 		public abstract IEnumerable<TextSegment> GetSegments(bool includeText = true);
 

@@ -93,6 +93,11 @@ namespace SIL.Machine.Utils
 			return sb.ToString();
 		}
 
+		public static bool IsWhiteSpace(this string str)
+		{
+			return str.Length > 0 && str.All(char.IsWhiteSpace);
+		}
+
 		public static IReadOnlyList<string> ToSentenceCase(this IReadOnlyList<string> segment,
 			bool sentenceStart = true)
 		{

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
+using SIL.Machine.Utils;
 
 namespace SIL.Machine.Corpora
 {
@@ -16,12 +17,17 @@ namespace SIL.Machine.Corpora
 
 			XElement prevParaElem = null;
 			var sb = new StringBuilder();
+			bool endsWithSpace = false;
 			foreach (UsxToken token in Tokens)
 			{
-				if (token.ParaElement != prevParaElem && sb.Length > 0)
+				if (token.Text.Length == 0 || token.Text.IsWhiteSpace())
+					continue;
+
+				if (token.ParaElement != prevParaElem && sb.Length > 0 && !endsWithSpace)
 					sb.Append(" ");
 
 				sb.Append(token);
+				endsWithSpace = token.Text.EndsWith(" ");
 				prevParaElem = token.ParaElement;
 			}
 			Text = sb.ToString().Trim();
