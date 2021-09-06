@@ -14,10 +14,12 @@ namespace SIL.Machine
 {
 	internal static class ToolHelpers
 	{
-		public const string Hmm = "hmm";
+		public const string FastAlign = "fast_align";
 		public const string Ibm1 = "ibm1";
 		public const string Ibm2 = "ibm2";
-		public const string FastAlign = "fast_align";
+		public const string Hmm = "hmm";
+		public const string Ibm3 = "ibm3";
+		public const string Ibm4 = "ibm4";
 
 		public const string Och = "och";
 		public const string Union = "union";
@@ -162,15 +164,19 @@ namespace SIL.Machine
 		{
 			switch (modelType)
 			{
-				default:
-				case Hmm:
-					return ThotWordAlignmentModelType.Hmm;
+				case FastAlign:
+					return ThotWordAlignmentModelType.FastAlign;
 				case Ibm1:
 					return ThotWordAlignmentModelType.Ibm1;
 				case Ibm2:
 					return ThotWordAlignmentModelType.Ibm2;
-				case FastAlign:
-					return ThotWordAlignmentModelType.FastAlign;
+				default:
+				case Hmm:
+					return ThotWordAlignmentModelType.Hmm;
+				case Ibm3:
+					return ThotWordAlignmentModelType.Ibm3;
+				case Ibm4:
+					return ThotWordAlignmentModelType.Ibm4;
 			}
 		}
 
@@ -186,7 +192,7 @@ namespace SIL.Machine
 			if (!File.Exists(modelConfigFileName))
 				CreateConfigFile(wordAlignmentModelType, modelConfigFileName);
 
-			return new ThotSmtModelTrainer(wordAlignmentModelType, modelConfigFileName, processor, processor, corpus,
+			return new ThotSmtModelTrainer(wordAlignmentModelType, corpus, modelConfigFileName, processor, processor,
 				maxSize);
 		}
 

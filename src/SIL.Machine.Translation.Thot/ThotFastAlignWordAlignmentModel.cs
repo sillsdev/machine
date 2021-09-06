@@ -4,13 +4,11 @@
 	{
 		public ThotFastAlignWordAlignmentModel()
 		{
-			TrainingIterationCount = 4;
 		}
 
 		public ThotFastAlignWordAlignmentModel(string prefFileName, bool createNew = false)
 			: base(prefFileName, createNew)
 		{
-			TrainingIterationCount = 4;
 		}
 
 		public override ThotWordAlignmentModelType Type => ThotWordAlignmentModelType.FastAlign;

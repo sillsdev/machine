@@ -11,9 +11,14 @@ namespace SIL.Machine.Translation
 	{
 		private bool[,] _matrix;
 
-		public WordAlignmentMatrix(int rowCount, int columnCount)
+		public WordAlignmentMatrix(int rowCount, int columnCount, IReadOnlyCollection<(int, int)> setValues = null)
 		{
 			_matrix = new bool[rowCount, columnCount];
+			if (setValues != null)
+			{
+				foreach ((int i, int j) in setValues)
+					_matrix[i, j] = true;
+			}
 		}
 
 		private WordAlignmentMatrix(WordAlignmentMatrix other)

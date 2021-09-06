@@ -29,18 +29,18 @@ namespace SIL.Machine.Translation.Thot
 			_ownsSmtModel = ownsSmtModel;
 		}
 
-		public IReadOnlyList<string> SourceWords => _smtModel.DirectWordAlignmentModel.SourceWords;
+		public IWordVocabulary SourceWords => _smtModel.DirectWordAlignmentModel.SourceWords;
 
-		public IReadOnlyList<string> TargetWords => _smtModel.DirectWordAlignmentModel.TargetWords;
+		public IWordVocabulary TargetWords => _smtModel.DirectWordAlignmentModel.TargetWords;
 
 		public IReadOnlySet<int> SpecialSymbolIndices => _smtModel.DirectWordAlignmentModel.SpecialSymbolIndices;
 
-		public ITrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor,
-			ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)
+		public ITrainer CreateTrainer(ParallelTextCorpus corpus, ITokenProcessor sourcePreprocessor = null,
+			ITokenProcessor targetPreprocessor = null, int maxCorpusCount = int.MaxValue)
 		{
 			CheckDisposed();
 
-			return _smtModel.CreateTrainer(sourcePreprocessor, targetPreprocessor, corpus, maxCorpusCount);
+			return _smtModel.CreateTrainer(corpus, sourcePreprocessor, targetPreprocessor, maxCorpusCount);
 		}
 
 		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment,

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace SIL.Machine.Translation.Thot
 {
-	internal class ThotWordVocabulary : IReadOnlyList<string>
+	internal class ThotWordVocabulary : IWordVocabulary
 	{
 		private readonly IntPtr _swAlignModelHandle;
 		private readonly bool _isSource;
@@ -61,6 +61,25 @@ namespace SIL.Machine.Translation.Thot
 			finally
 			{
 				Marshal.FreeHGlobal(nativeWordStr);
+			}
+		}
+
+		public int IndexOf(string word)
+		{
+			if (word == null)
+				return 0;
+
+			IntPtr nativeWord = Thot.ConvertTokenToNativeUtf8(word);
+			try
+			{
+				if (_isSource)
+					return (int)Thot.swAlignModel_getSourceWordIndex(_swAlignModelHandle, nativeWord);
+				else
+					return (int)Thot.swAlignModel_getTargetWordIndex(_swAlignModelHandle, nativeWord);
+			}
+			finally
+			{
+				Marshal.FreeHGlobal(nativeWord);
 			}
 		}
 

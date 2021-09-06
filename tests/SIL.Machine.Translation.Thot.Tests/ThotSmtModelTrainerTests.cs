@@ -59,8 +59,7 @@ namespace SIL.Machine.Translation.Thot
 					LanguageModelFileNamePrefix = Path.Combine(tempDir.Path, "lm", "trg.lm")
 				};
 
-				using (var trainer = new ThotSmtModelTrainer(ThotWordAlignmentModelType.Hmm, parameters,
-					TokenProcessors.NoOp, TokenProcessors.NoOp, corpus))
+				using (var trainer = new ThotSmtModelTrainer(ThotWordAlignmentModelType.Hmm, corpus, parameters))
 				{
 					trainer.Train();
 					trainer.Save();
@@ -92,8 +91,7 @@ namespace SIL.Machine.Translation.Thot
 					LanguageModelFileNamePrefix = Path.Combine(tempDir.Path, "lm", "trg.lm")
 				};
 
-				using (var trainer = new ThotSmtModelTrainer(ThotWordAlignmentModelType.Hmm, parameters,
-					TokenProcessors.NoOp, TokenProcessors.NoOp, corpus))
+				using (var trainer = new ThotSmtModelTrainer(ThotWordAlignmentModelType.Hmm, corpus, parameters))
 				{
 					trainer.Train();
 					trainer.Save();

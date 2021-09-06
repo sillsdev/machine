@@ -1,11 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
 using SIL.Machine.Plugin;
 using SIL.Machine.Translation;
 using SIL.Machine.Translation.Thot;
+using YamlDotNet.RepresentationModel;
 
 namespace SIL.Machine
 {
@@ -32,7 +36,7 @@ namespace SIL.Machine
 		{
 			_modelArgument = command.Argument("MODEL_PATH", "The word alignment model.").IsRequired();
 			_modelTypeOption = command.Option("-mt|--model-type <MODEL_TYPE>",
-				$"The word alignment model type.\nTypes: \"{ToolHelpers.Hmm}\" (default), \"{ToolHelpers.Ibm1}\", \"{ToolHelpers.Ibm2}\", \"{ToolHelpers.FastAlign}\".",
+				$"The word alignment model type.\nTypes: \"{ToolHelpers.Hmm}\" (default), \"{ToolHelpers.Ibm1}\", \"{ToolHelpers.Ibm2}\", \"{ToolHelpers.Ibm3}\", \"{ToolHelpers.Ibm4}\", \"{ToolHelpers.FastAlign}\".",
 				CommandOptionType.SingleValue);
 			_pluginOption = command.Option("-mp|--model-plugin <PLUGIN_FILE>", "The model plugin file.",
 				CommandOptionType.SingleValue);
@@ -71,11 +75,30 @@ namespace SIL.Machine
 			if (_modelFactory != null)
 				return _modelFactory.CreateModel(_modelArgument.Value, direction, symHeuristic);
 
-			ThotWordAlignmentModelType modelType = ToolHelpers.GetThotWordAlignmentModelType(_modelTypeOption.Value());
-
 			string modelPath = _modelArgument.Value;
 			if (ToolHelpers.IsDirectoryPath(modelPath))
 				modelPath = Path.Combine(modelPath, "src_trg");
+
+			ThotWordAlignmentModelType modelType = ThotWordAlignmentModelType.Hmm;
+			if (_modelTypeOption.HasValue())
+			{
+				modelType = ToolHelpers.GetThotWordAlignmentModelType(_modelTypeOption.Value());
+			}
+			else
+			{
+				string configPath = modelPath + "_invswm.yml";
+				if (File.Exists(configPath))
+				{
+					using (var reader = new StreamReader(configPath))
+					{
+						var yaml = new YamlStream();
+						yaml.Load(reader);
+						var root = (YamlMappingNode)yaml.Documents.First().RootNode;
+						var modelTypeStr = (string)root[new YamlScalarNode("model")];
+						modelType = ToolHelpers.GetThotWordAlignmentModelType(modelTypeStr);
+					}
+				}
+			}
 
 			if (direction == WordAlignmentDirection.Direct)
 			{
@@ -124,14 +147,6 @@ namespace SIL.Machine
 			if (!Directory.Exists(modelDir))
 				Directory.CreateDirectory(modelDir);
 
-			int iters = -1;
-			if (parameters.TryGetValue("iters", out string itersStr))
-				iters = int.Parse(itersStr);
-
-			bool? varBayes = null;
-			if (parameters.TryGetValue("var-bayes", out string varBayesStr))
-				varBayes = bool.Parse(varBayesStr);
-
 			string modelStr;
 			ParallelTextCorpus trainCorpus;
 			if (direct)
@@ -145,13 +160,52 @@ namespace SIL.Machine
 				trainCorpus = corpus.Invert();
 			}
 
-			var trainer = new ThotWordAlignmentModelTrainer(modelType, $"{modelPath}_{modelStr}", processor, processor,
-				trainCorpus, maxSize);
-			if (iters != -1)
-				trainer.TrainingIterationCount = iters;
-			if (varBayes != null)
-				trainer.VariationalBayes = (bool)varBayes;
-			return trainer;
+			var thotParameters = new ThotWordAlignmentModelParameters();
+			SetThotParameter(parameters, thotParameters, "fa-iters", p => p.FastAlignIterationCount);
+			SetThotParameter(parameters, thotParameters, "ibm1-iters", p => p.Ibm1IterationCount);
+			SetThotParameter(parameters, thotParameters, "ibm2-iters", p => p.Ibm2IterationCount);
+			SetThotParameter(parameters, thotParameters, "ibm3-iters", p => p.Ibm3IterationCount);
+			SetThotParameter(parameters, thotParameters, "ibm4-iters", p => p.Ibm4IterationCount);
+			SetThotParameter(parameters, thotParameters, "var-bayes", p => p.VariationalBayes);
+			SetThotParameter(parameters, thotParameters, "fa-p0", p => p.FastAlignP0);
+			SetThotParameter(parameters, thotParameters, "hmm-p0", p => p.HmmP0);
+			SetThotParameter(parameters, thotParameters, "hmm-lex-smooth", p => p.HmmLexicalSmoothingFactor);
+			SetThotParameter(parameters, thotParameters, "hmm-align-smooth", p => p.HmmAlignmentSmoothingFactor);
+			SetThotParameter(parameters, thotParameters, "ibm3-fert-smooth", p => p.Ibm3FertilitySmoothingFactor);
+			SetThotParameter(parameters, thotParameters, "ibm3-count-threshold", p => p.Ibm3CountThreshold);
+			SetThotParameter(parameters, thotParameters, "ibm4-dist-smooth", p => p.Ibm4DistortionSmoothingFactor);
+
+			if (parameters.TryGetValue("src-classes", out string srcClassesFileName))
+			{
+				IReadOnlyDictionary<string, string> wordClasses = LoadWordClasses(srcClassesFileName);
+				if (direct)
+					thotParameters.SourceWordClasses = wordClasses;
+				else
+					thotParameters.TargetWordClasses = wordClasses;
+			}
+			if (parameters.TryGetValue("trg-classes", out string trgClassesFileName))
+			{
+				IReadOnlyDictionary<string, string> wordClasses = LoadWordClasses(trgClassesFileName);
+				if (direct)
+					thotParameters.TargetWordClasses = wordClasses;
+				else
+					thotParameters.SourceWordClasses = wordClasses;
+			}
+
+			return new ThotWordAlignmentModelTrainer(modelType, trainCorpus, $"{modelPath}_{modelStr}", thotParameters,
+				processor, processor, maxSize);
+		}
+
+		private static void SetThotParameter<T>(Dictionary<string, string> input,
+			ThotWordAlignmentModelParameters parameters, string name,
+			Expression<Func<ThotWordAlignmentModelParameters, T>> propExpr)
+		{
+			if (input.TryGetValue(name, out string valueStr))
+			{
+				var expr = (MemberExpression)propExpr.Body;
+				var prop = (PropertyInfo)expr.Member;
+				prop.SetValue(parameters, (T)Convert.ChangeType(valueStr, typeof(T)));
+			}
 		}
 
 		private static bool ValidateAlignmentModelTypeOption(string value, IEnumerable<string> pluginTypes)
@@ -161,10 +215,26 @@ namespace SIL.Machine
 				ToolHelpers.Hmm,
 				ToolHelpers.Ibm1,
 				ToolHelpers.Ibm2,
-				ToolHelpers.FastAlign
+				ToolHelpers.FastAlign,
+				ToolHelpers.Ibm3,
+				ToolHelpers.Ibm4
 			};
 			validTypes.UnionWith(pluginTypes);
 			return string.IsNullOrEmpty(value) || validTypes.Contains(value);
+		}
+
+		private static IReadOnlyDictionary<string, string> LoadWordClasses(string fileName)
+		{
+			var wordClasses = new Dictionary<string, string>();
+			using var reader = new StreamReader(fileName);
+			string line;
+			while ((line = reader.ReadLine()) != null)
+			{
+				line = line.Trim();
+				string[] parts = line.Split("\t", 2);
+				wordClasses[parts[0]] = parts[1];
+			}
+			return wordClasses;
 		}
 	}
 }

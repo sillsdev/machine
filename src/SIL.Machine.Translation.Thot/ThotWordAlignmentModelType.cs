@@ -2,9 +2,11 @@
 {
 	public enum ThotWordAlignmentModelType
 	{
+		FastAlign,
 		Ibm1,
 		Ibm2,
 		Hmm,
-		FastAlign
+		Ibm3,
+		Ibm4
 	}
 }

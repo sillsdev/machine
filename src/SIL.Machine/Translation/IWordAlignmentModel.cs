@@ -7,12 +7,12 @@ namespace SIL.Machine.Translation
 {
 	public interface IWordAlignmentModel : IWordAligner, IDisposable
 	{
-		IReadOnlyList<string> SourceWords { get; }
-		IReadOnlyList<string> TargetWords { get; }
+		IWordVocabulary SourceWords { get; }
+		IWordVocabulary TargetWords { get; }
 		IReadOnlySet<int> SpecialSymbolIndices { get; }
 
-		ITrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor,
-			ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue);
+		ITrainer CreateTrainer(ParallelTextCorpus corpus, ITokenProcessor sourcePreprocessor = null,
+			ITokenProcessor targetPreprocessor = null, int maxCorpusCount = int.MaxValue);
 
 		IEnumerable<(string TargetWord, double Score)> GetTranslations(string sourceWord, double threshold = 0);
 		IEnumerable<(int TargetWordIndex, double Score)> GetTranslations(int sourceWordIndex, double threshold = 0);

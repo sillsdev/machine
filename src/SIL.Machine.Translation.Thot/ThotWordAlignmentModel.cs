@@ -17,14 +17,18 @@ namespace SIL.Machine.Translation.Thot
 		{
 			switch (type)
 			{
+				case ThotWordAlignmentModelType.FastAlign:
+					return new ThotFastAlignWordAlignmentModel();
 				case ThotWordAlignmentModelType.Ibm1:
 					return new ThotIbm1WordAlignmentModel();
 				case ThotWordAlignmentModelType.Ibm2:
 					return new ThotIbm2WordAlignmentModel();
 				case ThotWordAlignmentModelType.Hmm:
 					return new ThotHmmWordAlignmentModel();
-				case ThotWordAlignmentModelType.FastAlign:
-					return new ThotFastAlignWordAlignmentModel();
+				case ThotWordAlignmentModelType.Ibm3:
+					return new ThotIbm3WordAlignmentModel();
+				case ThotWordAlignmentModelType.Ibm4:
+					return new ThotIbm4WordAlignmentModel();
 			}
 			throw new InvalidEnumArgumentException(nameof(type), (int)type, typeof(ThotWordAlignmentModelType));
 		}
@@ -33,24 +37,21 @@ namespace SIL.Machine.Translation.Thot
 		private ThotWordVocabulary _sourceWords;
 		private ThotWordVocabulary _targetWords;
 		private string _prefFileName;
-		private readonly string _className;
 
 		protected ThotWordAlignmentModel()
 		{
-			_className = Thot.GetWordAlignmentClassName(Type);
-			SetHandle(Thot.swAlignModel_create(_className));
+			SetHandle(Thot.CreateAlignmentModel(Type));
 		}
 
 		protected ThotWordAlignmentModel(string prefFileName, bool createNew = false)
 		{
-			_className = Thot.GetWordAlignmentClassName(Type);
 			if (createNew || !File.Exists(prefFileName + ".src"))
 				CreateNew(prefFileName);
 			else
 				Load(prefFileName);
 		}
 
-		public IReadOnlyList<string> SourceWords
+		public IWordVocabulary SourceWords
 		{
 			get
 			{
@@ -60,7 +61,7 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public IReadOnlyList<string> TargetWords
+		public IWordVocabulary TargetWords
 		{
 			get
 			{
@@ -72,24 +73,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public IReadOnlySet<int> SpecialSymbolIndices { get; } = new HashSet<int> { 0, 1, 2 }.ToReadOnlySet();
 
-		public int TrainingIterationCount { get; set; } = 5;
-
-		public bool VariationalBayes
-		{
-			get
-			{
-				CheckDisposed();
-
-				return Thot.swAlignModel_getVariationalBayes(Handle);
-			}
-
-			set
-			{
-				CheckDisposed();
-
-				Thot.swAlignModel_setVariationalBayes(Handle, value);
-			}
-		}
+		public ThotWordAlignmentModelParameters Parameters { get; set; } = new ThotWordAlignmentModelParameters();
 
 		public abstract ThotWordAlignmentModelType Type { get; }
 
@@ -113,7 +97,7 @@ namespace SIL.Machine.Translation.Thot
 				throw new FileNotFoundException("The word alignment model configuration could not be found.");
 
 			_prefFileName = prefFileName;
-			SetHandle(Thot.swAlignModel_open(_className, _prefFileName));
+			SetHandle(Thot.OpenAlignmentModel(Type, _prefFileName));
 		}
 
 		public Task LoadAsync(string prefFileName)
@@ -128,11 +112,11 @@ namespace SIL.Machine.Translation.Thot
 				throw new InvalidOperationException("The word alignment model is owned by an SMT model.");
 
 			_prefFileName = prefFileName;
-			SetHandle(Thot.swAlignModel_create(_className));
+			SetHandle(Thot.CreateAlignmentModel(Type));
 		}
 
-		public ITrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor,
-			ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)
+		public ITrainer CreateTrainer(ParallelTextCorpus corpus, ITokenProcessor sourcePreprocessor = null,
+			ITokenProcessor targetPreprocessor = null, int maxCorpusCount = int.MaxValue)
 		{
 			CheckDisposed();
 
@@ -142,11 +126,7 @@ namespace SIL.Machine.Translation.Thot
 					"The word alignment model cannot be trained independently of its SMT model.");
 			}
 
-			return new Trainer(this, sourcePreprocessor, targetPreprocessor, corpus, maxCorpusCount)
-			{
-				TrainingIterationCount = TrainingIterationCount,
-				VariationalBayes = VariationalBayes
-			};
+			return new Trainer(this, corpus, sourcePreprocessor, targetPreprocessor, maxCorpusCount);
 		}
 
 		public Task SaveAsync()
@@ -233,16 +213,16 @@ namespace SIL.Machine.Translation.Thot
 			CheckDisposed();
 
 			IntPtr nativeSourceWord = Thot.ConvertTokenToNativeUtf8(sourceWord ?? "NULL");
-			IntPtr transHandle = Thot.swAlignModel_getTranslations(Handle, nativeSourceWord, (float)threshold);
+			IntPtr transHandle = Thot.swAlignModel_getTranslations(Handle, nativeSourceWord, threshold);
 			try
 			{
 				uint transCount = Thot.swAlignTrans_getCount(transHandle);
 
 				var wordIndices = new uint[transCount];
-				var probs = new float[transCount];
+				var probs = new double[transCount];
 				Thot.swAlignTrans_getTranslations(transHandle, wordIndices, probs, transCount);
 
-				return wordIndices.Zip(probs, (w, p) => (TargetWords[(int)w], (double)p));
+				return wordIndices.Zip(probs, (w, p) => (TargetWords[(int)w], p));
 			}
 			finally
 			{
@@ -256,17 +236,16 @@ namespace SIL.Machine.Translation.Thot
 		{
 			CheckDisposed();
 
-			IntPtr transHandle = Thot.swAlignModel_getTranslationsByIndex(Handle, (uint)sourceWordIndex,
-				(float)threshold);
+			IntPtr transHandle = Thot.swAlignModel_getTranslationsByIndex(Handle, (uint)sourceWordIndex, threshold);
 			try
 			{
 				uint transCount = Thot.swAlignTrans_getCount(transHandle);
 
 				var wordIndices = new uint[transCount];
-				var probs = new float[transCount];
+				var probs = new double[transCount];
 				Thot.swAlignTrans_getTranslations(transHandle, wordIndices, probs, transCount);
 
-				return wordIndices.Zip(probs, (w, p) => ((int)w, (double)p));
+				return wordIndices.Zip(probs, (w, p) => ((int)w, p));
 			}
 			finally
 			{
@@ -284,9 +263,10 @@ namespace SIL.Machine.Translation.Thot
 		{
 			private readonly ThotWordAlignmentModel _model;
 
-			public Trainer(ThotWordAlignmentModel model, ITokenProcessor sourcePreprocessor,
-				ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, int maxCorpusCount)
-				: base(model.Type, model._prefFileName, sourcePreprocessor, targetPreprocessor, corpus, maxCorpusCount)
+			public Trainer(ThotWordAlignmentModel model, ParallelTextCorpus corpus, ITokenProcessor sourcePreprocessor,
+				ITokenProcessor targetPreprocessor, int maxCorpusCount)
+				: base(model.Type, corpus, model._prefFileName, model.Parameters, sourcePreprocessor,
+					  targetPreprocessor, maxCorpusCount)
 			{
 				_model = model;
 				CloseOnDispose = false;

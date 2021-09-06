@@ -11,11 +11,11 @@ namespace SIL.Machine.Translation.Thot
 {
 	public class MiraModelWeightTuner : IParameterTuner
 	{
-		private readonly string _swAlignClassName;
+		private readonly ThotWordAlignmentModelType _wordAlignmentModelType;
 
-		public MiraModelWeightTuner(string swAlignClassName)
+		public MiraModelWeightTuner(ThotWordAlignmentModelType wordAlignmentModelType)
 		{
-			_swAlignClassName = swAlignClassName;
+			_wordAlignmentModelType = wordAlignmentModelType;
 		}
 
 		public int K { get; set; } = 100;
@@ -87,7 +87,7 @@ namespace SIL.Machine.Translation.Thot
 			IntPtr smtModelHandle = IntPtr.Zero;
 			try
 			{
-				smtModelHandle = Thot.LoadSmtModel(_swAlignClassName, parameters);
+				smtModelHandle = Thot.LoadSmtModel(_wordAlignmentModelType, parameters);
 				var results = new IList<TranslationInfo>[sourceCorpus.Count];
 				Parallel.ForEach(Partitioner.Create(0, sourceCorpus.Count), range =>
 					{
@@ -152,7 +152,7 @@ namespace SIL.Machine.Translation.Thot
 			{
 				Thot.llWeightUpdater_updateClosedCorpus(weightUpdaterHandle, nativeTuneTargetCorpus, nativeNBestLists,
 					nativeScoreComps, nativeNBestListLens,
-					curWeights, (uint) nbestLists.Length, (uint) curWeights.Length - 1);
+					curWeights, (uint)nbestLists.Length, (uint)curWeights.Length - 1);
 			}
 			finally
 			{

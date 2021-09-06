@@ -4,14 +4,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using SIL.Extensions;
 using SIL.Machine.Corpora;
 using SIL.Machine.NgramModeling;
 using SIL.Machine.Optimization;
-using SIL.ObjectModel;
 using SIL.Machine.Statistics;
-using System.Threading.Tasks;
 using SIL.Machine.Utils;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.Thot
 {
@@ -30,23 +30,23 @@ namespace SIL.Machine.Translation.Thot
 		private readonly int _maxCorpusCount;
 		private readonly ThotWordAlignmentModelType _wordAlignmentModelType;
 
-		public ThotSmtModelTrainer(ThotWordAlignmentModelType wordAlignmentModelType, string cfgFileName,
-			ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus,
+		public ThotSmtModelTrainer(ThotWordAlignmentModelType wordAlignmentModelType, ParallelTextCorpus corpus,
+			string cfgFileName, ITokenProcessor sourcePreprocessor = null, ITokenProcessor targetPreprocessor = null,
 			int maxCorpusCount = int.MaxValue)
-			: this(wordAlignmentModelType, ThotSmtParameters.Load(cfgFileName), sourcePreprocessor, targetPreprocessor,
-				  corpus, maxCorpusCount)
+			: this(wordAlignmentModelType, corpus, ThotSmtParameters.Load(cfgFileName), sourcePreprocessor,
+				  targetPreprocessor, maxCorpusCount)
 		{
 			ConfigFileName = cfgFileName;
 		}
 
-		public ThotSmtModelTrainer(ThotWordAlignmentModelType wordAlignmentModelType, ThotSmtParameters parameters,
-			ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus,
-			int maxCorpusCount = int.MaxValue)
+		public ThotSmtModelTrainer(ThotWordAlignmentModelType wordAlignmentModelType, ParallelTextCorpus corpus,
+			ThotSmtParameters parameters = null, ITokenProcessor sourcePreprocessor = null,
+			ITokenProcessor targetPreprocessor = null, int maxCorpusCount = int.MaxValue)
 		{
-			Parameters = parameters;
+			Parameters = parameters ?? new ThotSmtParameters();
 			Parameters.Freeze();
-			_sourcePreprocessor = sourcePreprocessor;
-			_targetPreprocessor = targetPreprocessor;
+			_sourcePreprocessor = sourcePreprocessor ?? TokenProcessors.NoOp;
+			_targetPreprocessor = targetPreprocessor ?? TokenProcessors.NoOp;
 			_maxCorpusCount = maxCorpusCount;
 			_parallelCorpus = corpus;
 			_wordAlignmentModelType = wordAlignmentModelType;
@@ -409,9 +409,23 @@ namespace SIL.Machine.Translation.Thot
 		private void TrainWordAlignmentModel(string swmPrefix, ITokenProcessor sourcePreprocessor,
 			ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, IProgress<ProgressStatus> progress)
 		{
-			using (var trainer = new ThotWordAlignmentModelTrainer(_wordAlignmentModelType, swmPrefix,
-				sourcePreprocessor, targetPreprocessor, corpus, _maxCorpusCount)
-			{ TrainingIterationCount = (int)Parameters.LearningEMIters })
+			var parameters = new ThotWordAlignmentModelParameters();
+			if (_wordAlignmentModelType == ThotWordAlignmentModelType.FastAlign)
+			{
+				parameters.FastAlignIterationCount = (int)Parameters.LearningEMIters;
+			}
+			else
+			{
+				parameters.Ibm1IterationCount = (int)Parameters.LearningEMIters;
+				parameters.Ibm2IterationCount = _wordAlignmentModelType == ThotWordAlignmentModelType.Ibm2
+					? (int)Parameters.LearningEMIters : 0;
+				parameters.HmmIterationCount = (int)Parameters.LearningEMIters;
+				parameters.Ibm3IterationCount = (int)Parameters.LearningEMIters;
+				parameters.Ibm4IterationCount = (int)Parameters.LearningEMIters;
+			}
+
+			using (var trainer = new ThotWordAlignmentModelTrainer(_wordAlignmentModelType, corpus, swmPrefix,
+				parameters, sourcePreprocessor, targetPreprocessor, _maxCorpusCount))
 			{
 				trainer.SegmentFilter = (s, i) => !_tuneCorpusIndices.Contains(i);
 				trainer.Train(progress);

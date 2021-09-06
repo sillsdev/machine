@@ -44,7 +44,7 @@ namespace SIL.Machine
 			}
 
 			Dictionary<string, string> parameters = _trainParamsOption.Values.Select(kvp => kvp.Split("="))
-			.ToDictionary(kvp => kvp[0].ToLowerInvariant(), kvp => kvp[1]);
+				.ToDictionary(kvp => kvp[0].ToLowerInvariant(), kvp => kvp[1]);
 
 			int trainedSegmentCount = 0;
 			if (!_quietOption.HasValue())

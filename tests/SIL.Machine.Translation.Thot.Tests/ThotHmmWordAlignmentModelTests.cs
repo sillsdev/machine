@@ -19,17 +19,8 @@ namespace SIL.Machine.Translation.Thot
 				string[] sourceSegment = "por favor , ¿ podríamos ver otra habitación ?".Split(' ');
 				string[] targetSegment = "could we see another room , please ?".Split(' ');
 				WordAlignmentMatrix waMatrix = swAlignModel.GetBestAlignment(sourceSegment, targetSegment);
-				var expected = new WordAlignmentMatrix(9, 8)
-				{
-					[0, 5] = true,
-					[1, 6] = true,
-					[3, 7] = true,
-					[4, 0] = true,
-					[4, 1] = true,
-					[5, 2] = true,
-					[6, 3] = true,
-					[7, 4] = true
-				};
+				var expected = new WordAlignmentMatrix(9, 8,
+					new HashSet<(int, int)> { (0, 5), (1, 6), (3, 7), (4, 0), (4, 1), (5, 2), (6, 3), (7, 4) });
 				Assert.That(waMatrix.ValueEquals(expected), Is.True);
 			}
 		}
@@ -123,6 +114,44 @@ namespace SIL.Machine.Translation.Thot
 				Dictionary<string, Dictionary<string, double>> table = model.GetTranslationTable(0.2);
 				Assert.That(table.Count, Is.EqualTo(513));
 				Assert.That(table["es"].Count, Is.EqualTo(9));
+			}
+		}
+
+		[Test]
+		public void CreateTrainer()
+		{
+			using (var model = new ThotHmmWordAlignmentModel
+			{
+				Parameters = new ThotWordAlignmentModelParameters
+				{
+					Ibm1IterationCount = 2,
+					HmmIterationCount = 2,
+					HmmP0 = 0.1
+				}
+			})
+			{
+
+				ITrainer trainer = model.CreateTrainer(TestHelpers.CreateTestParallelCorpus());
+				trainer.Train();
+				trainer.Save();
+
+				WordAlignmentMatrix matrix = model.GetBestAlignment("isthay isyay ayay esttay-N .".Split(),
+					"this is a test N .".Split());
+				var expected = new WordAlignmentMatrix(5, 6,
+					new HashSet<(int, int)> { (0, 0), (1, 1), (2, 2), (3, 3), (3, 4), (4, 5) });
+				Assert.That(matrix.ValueEquals(expected), Is.True);
+
+				matrix = model.GetBestAlignment("isthay isyay otnay ayay esttay-N .".Split(),
+					"this is not a test N .".Split());
+				expected = new WordAlignmentMatrix(6, 7,
+					new HashSet<(int, int)> { (0, 0), (1, 1), (2, 2), (3, 3), (4, 4), (4, 5), (5, 6) });
+				Assert.That(matrix.ValueEquals(expected), Is.True);
+
+				matrix = model.GetBestAlignment("isthay isyay ayay esttay-N ardhay .".Split(),
+					"this is a hard test N .".Split());
+				expected = new WordAlignmentMatrix(6, 7,
+					new HashSet<(int, int)> { (0, 0), (1, 1), (2, 2), (4, 3), (3, 4), (3, 5), (3, 6) });
+				Assert.That(matrix.ValueEquals(expected), Is.True);
 			}
 		}
 	}

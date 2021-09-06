@@ -1,24 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
 namespace SIL.Machine.Translation.Thot
 {
+
 	internal static class Thot
 	{
-		public const string HmmWordAlignmentClassName = "IncrHmmAlignmentModel";
-		public const string Ibm1WordAlignmentClassName = "IncrIbm1AlignmentModel";
-		public const string Ibm2WordAlignmentClassName = "IncrIbm2AlignmentModel";
-		public const string FastAlignWordAlignmentClassName = "FastAlignModel";
-
 		private const int DefaultTranslationBufferLength = 1024;
 
+		public enum AlignmentModelType
+		{
+			Ibm1 = 0,
+			Ibm2 = 1,
+			Hmm = 2,
+			Ibm3 = 3,
+			Ibm4 = 4,
+			FastAlign = 5,
+			IncrIbm1 = 6,
+			IncrIbm2 = 7,
+			IncrHmm = 8
+		}
+
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern IntPtr smtModel_create(string swAlignClassName);
+		public static extern IntPtr smtModel_create(AlignmentModelType alignmentModelType);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern bool smtModel_loadTranslationModel(IntPtr smtModelHandle, string tmFileNamePrefix);
@@ -130,10 +138,10 @@ namespace SIL.Machine.Translation.Thot
 		public static extern void wg_destroy(IntPtr wgHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern IntPtr swAlignModel_create(string className);
+		public static extern IntPtr swAlignModel_create(AlignmentModelType type, IntPtr swAlignModelHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern IntPtr swAlignModel_open(string className, string prefFileName);
+		public static extern IntPtr swAlignModel_open(AlignmentModelType type, string prefFileName);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern uint swAlignModel_getMaxSentenceLength(IntPtr swAlignModelHandle);
@@ -145,11 +153,67 @@ namespace SIL.Machine.Translation.Thot
 		public static extern bool swAlignModel_getVariationalBayes(IntPtr swAlignModelHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void swAlignModel_setFastAlignP0(IntPtr swAlignModelHandle, double p0);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern double swAlignModel_getFastAlignP0(IntPtr swAlignModelHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void swAlignModel_setHmmP0(IntPtr swAlignModelHandle, double p0);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern double swAlignModel_getHmmP0(IntPtr swAlignModelHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void swAlignModel_setHmmLexicalSmoothingFactor(IntPtr swAlignModelHandle,
+			double lexicalSmoothingFactor);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern double swAlignModel_getHmmLexicalSmoothingFactor(IntPtr swAlignModelHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void swAlignModel_setHmmAlignmentSmoothingFactor(IntPtr swAlignModelHandle,
+			double alignmentSmoothingFactor);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern double swAlignModel_getHmmAlignmentSmoothingFactor(IntPtr swAlignModelHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void swAlignModel_setIbm2CompactAlignmentTable(IntPtr swAlignModelHandle,
+			bool compactAlignmentTable);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern bool swAlignModel_getIbm2CompactAlignmentTable(IntPtr swAlignModelHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void swAlignModel_setIbm3FertilitySmoothingFactor(IntPtr swAlignModelHandle,
+			double fertilitySmoothingFactor);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern double swAlignModel_getIbm3FertilitySmoothingFactor(IntPtr swAlignModelHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void swAlignModel_setIbm3CountThreshold(IntPtr swAlignModelHandle, double countThreshold);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern double swAlignModel_getIbm3CountThreshold(IntPtr swAlignModelHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void swAlignModel_setIbm4DistortionSmoothingFactor(IntPtr swAlignModelHandle,
+			double distortionSmoothingFactor);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern double swAlignModel_getIbm4DistortionSmoothingFactor(IntPtr swAlignModelHandle);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern uint swAlignModel_getSourceWordCount(IntPtr swAlignModelHandle);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern uint swAlignModel_getSourceWord(IntPtr swAlignModelHandle, uint index, IntPtr wordStr,
 			uint capacity);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern uint swAlignModel_getSourceWordIndex(IntPtr swAlignModelHandle, IntPtr word);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern uint swAlignModel_getTargetWordCount(IntPtr swAlignModelHandle);
@@ -159,12 +223,23 @@ namespace SIL.Machine.Translation.Thot
 			uint capacity);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern uint swAlignModel_getTargetWordIndex(IntPtr swAlignModelHandle, IntPtr word);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void swAlignModel_addSentencePair(IntPtr swAlignModelHandle, IntPtr sourceSentence,
 			IntPtr targetSentence);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void swAlignModel_readSentencePairs(IntPtr swAlignModelHandle, string srcFileName,
 			string trgFileName, string countsFileName);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void swAlignModel_mapSourceWordToWordClass(IntPtr swAlignModelHandle, IntPtr word,
+			IntPtr wordClass);
+
+		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void swAlignModel_mapTargetWordToWordClass(IntPtr swAlignModelHandle, IntPtr word,
+			IntPtr wordClass);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern uint swAlignModel_startTraining(IntPtr swAlignModelHandle);
@@ -182,32 +257,32 @@ namespace SIL.Machine.Translation.Thot
 		public static extern void swAlignModel_save(IntPtr swAlignModelHandle, string prefFileName);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern float swAlignModel_getTranslationProbability(IntPtr swAlignModelHandle, IntPtr sourceWord,
+		public static extern double swAlignModel_getTranslationProbability(IntPtr swAlignModelHandle, IntPtr sourceWord,
 			IntPtr targetWord);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern float swAlignModel_getTranslationProbabilityByIndex(IntPtr swAlignModelHandle,
+		public static extern double swAlignModel_getTranslationProbabilityByIndex(IntPtr swAlignModelHandle,
 			uint sourceWordIndex, uint targetWordIndex);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern float swAlignModel_getIbm2AlignmentProbability(IntPtr swAlignModelHandle, uint j,
+		public static extern double swAlignModel_getIbm2AlignmentProbability(IntPtr swAlignModelHandle, uint j,
 			uint sLen, uint tLen, uint i);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern float swAlignModel_getHmmAlignmentProbability(IntPtr swAlignModelHandle, uint prevI,
+		public static extern double swAlignModel_getHmmAlignmentProbability(IntPtr swAlignModelHandle, uint prevI,
 			uint sLen, uint i);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern float swAlignModel_getBestAlignment(IntPtr swAlignModelHandle, IntPtr sourceSentence,
+		public static extern double swAlignModel_getBestAlignment(IntPtr swAlignModelHandle, IntPtr sourceSentence,
 			IntPtr targetSentence, IntPtr matrix, ref uint iLen, ref uint jLen);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern IntPtr swAlignModel_getTranslations(IntPtr swAlignModelHandle, IntPtr sourceWord,
-			float threshold);
+			double threshold);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern IntPtr swAlignModel_getTranslationsByIndex(IntPtr swAlignModelHandle, uint sourceWordIndex,
-			float threshold);
+			double threshold);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void swAlignModel_close(IntPtr swAlignModelHandle);
@@ -217,7 +292,7 @@ namespace SIL.Machine.Translation.Thot
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern uint swAlignTrans_getTranslations(IntPtr swAlignTransHandle, uint[] wordIndices,
-			float[] probs, uint capacity);
+			double[] probs, uint capacity);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void swAlignTrans_destroy(IntPtr swAlignTransHandle);
@@ -234,7 +309,7 @@ namespace SIL.Machine.Translation.Thot
 		public static extern IntPtr langModel_open(string prefFileName);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-		public static extern float langModel_getSentenceProbability(IntPtr lmHandle, IntPtr sentence);
+		public static extern double langModel_getSentenceProbability(IntPtr lmHandle, IntPtr sentence);
 
 		[DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
 		public static extern void langModel_close(IntPtr lmHandle);
@@ -421,9 +496,9 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public static IntPtr LoadSmtModel(string swAlignClassName, ThotSmtParameters parameters)
+		public static IntPtr LoadSmtModel(ThotWordAlignmentModelType alignmentModelType, ThotSmtParameters parameters)
 		{
-			IntPtr handle = smtModel_create(swAlignClassName);
+			IntPtr handle = smtModel_create(GetAlignmentModelType(alignmentModelType, incremental: true));
 			smtModel_loadTranslationModel(handle, parameters.TranslationModelFileNamePrefix);
 			smtModel_loadLanguageModel(handle, parameters.LanguageModelFileNamePrefix);
 			smtModel_setNonMonotonicity(handle, parameters.ModelNonMonotonicity);
@@ -448,18 +523,32 @@ namespace SIL.Machine.Translation.Thot
 			return handle;
 		}
 
-		public static string GetWordAlignmentClassName(ThotWordAlignmentModelType type)
+		public static IntPtr CreateAlignmentModel(ThotWordAlignmentModelType type, IntPtr modelHandle = default)
+		{
+			return swAlignModel_create(GetAlignmentModelType(type, incremental: false), modelHandle);
+		}
+
+		public static IntPtr OpenAlignmentModel(ThotWordAlignmentModelType type, string prefFileName)
+		{
+			return swAlignModel_open(GetAlignmentModelType(type, incremental: false), prefFileName);
+		}
+
+		public static AlignmentModelType GetAlignmentModelType(ThotWordAlignmentModelType type, bool incremental)
 		{
 			switch (type)
 			{
 				case ThotWordAlignmentModelType.Ibm1:
-					return Ibm1WordAlignmentClassName;
+					return incremental ? AlignmentModelType.IncrIbm1 : AlignmentModelType.Ibm1;
 				case ThotWordAlignmentModelType.Ibm2:
-					return Ibm2WordAlignmentClassName;
+					return incremental ? AlignmentModelType.IncrIbm2 : AlignmentModelType.Ibm2;
 				case ThotWordAlignmentModelType.Hmm:
-					return HmmWordAlignmentClassName;
+					return incremental ? AlignmentModelType.IncrHmm : AlignmentModelType.Hmm;
 				case ThotWordAlignmentModelType.FastAlign:
-					return FastAlignWordAlignmentClassName;
+					return AlignmentModelType.FastAlign;
+				case ThotWordAlignmentModelType.Ibm3:
+					return AlignmentModelType.Ibm3;
+				case ThotWordAlignmentModelType.Ibm4:
+					return AlignmentModelType.Ibm4;
 			}
 			throw new InvalidEnumArgumentException(nameof(type), (int)type, typeof(ThotWordAlignmentModelType));
 		}

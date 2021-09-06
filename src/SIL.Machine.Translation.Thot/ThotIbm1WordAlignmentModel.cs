@@ -18,7 +18,7 @@
 		{
 			CheckDisposed();
 
-			return -1;
+			return 1.0 / (sourceLen + 1);
 		}
 	}
 }

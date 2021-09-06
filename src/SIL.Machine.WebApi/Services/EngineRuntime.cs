@@ -320,8 +320,8 @@ namespace SIL.Machine.WebApi.Services
 						TextCorpusType.Source);
 					targetCorpus = await _textCorpusFactory.CreateAsync(engine.Projects, TextCorpusType.Target);
 					var corpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
-					modelTrainer = (await _translationModel).CreateTrainer(TokenProcessors.Lowercase,
-						TokenProcessors.Lowercase, corpus);
+					modelTrainer = (await _translationModel).CreateTrainer(corpus, TokenProcessors.Lowercase,
+						TokenProcessors.Lowercase);
 					truecaseTrainer = truecaser.CreateTrainer(targetCorpus);
 
 					_buildCts?.Dispose();

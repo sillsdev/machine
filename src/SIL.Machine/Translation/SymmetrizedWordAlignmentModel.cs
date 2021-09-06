@@ -45,7 +45,7 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public IReadOnlyList<string> SourceWords
+		public IWordVocabulary SourceWords
 		{
 			get
 			{
@@ -55,7 +55,7 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public IReadOnlyList<string> TargetWords
+		public IWordVocabulary TargetWords
 		{
 			get
 			{
@@ -133,15 +133,15 @@ namespace SIL.Machine.Translation
 			return Math.Max(dirScore, invScore);
 		}
 
-		public ITrainer CreateTrainer(ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor,
-			ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)
+		public ITrainer CreateTrainer(ParallelTextCorpus corpus, ITokenProcessor sourcePreprocessor = null,
+			ITokenProcessor targetPreprocessor = null, int maxCorpusCount = int.MaxValue)
 		{
 			CheckDisposed();
 
-			ITrainer directTrainer = _directWordAlignmentModel.CreateTrainer(sourcePreprocessor, targetPreprocessor,
-				corpus, maxCorpusCount);
-			ITrainer inverseTrainer = _inverseWordAlignmentModel.CreateTrainer(targetPreprocessor, sourcePreprocessor,
-				corpus.Invert(), maxCorpusCount);
+			ITrainer directTrainer = _directWordAlignmentModel.CreateTrainer(corpus, sourcePreprocessor,
+				targetPreprocessor, maxCorpusCount);
+			ITrainer inverseTrainer = _inverseWordAlignmentModel.CreateTrainer(corpus.Invert(), targetPreprocessor,
+				sourcePreprocessor, maxCorpusCount);
 
 			return new SymmetrizedWordAlignmentModelTrainer(directTrainer, inverseTrainer);
 		}

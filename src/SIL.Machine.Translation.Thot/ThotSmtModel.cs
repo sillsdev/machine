@@ -13,7 +13,6 @@ namespace SIL.Machine.Translation.Thot
 		private readonly ThotWordAlignmentModel _inverseWordAlignmentModel;
 		private readonly SymmetrizedWordAlignmentModel _symmetrizedWordAlignmentModel;
 		private readonly HashSet<ThotSmtEngine> _engines = new HashSet<ThotSmtEngine>();
-		private readonly string _swAlignClassName;
 		private IntPtr _handle;
 		private IWordAligner _wordAligner;
 
@@ -29,8 +28,7 @@ namespace SIL.Machine.Translation.Thot
 			Parameters.Freeze();
 
 			WordAlignmentModelType = wordAlignmentModelType;
-			_swAlignClassName = Thot.GetWordAlignmentClassName(wordAlignmentModelType);
-			_handle = Thot.LoadSmtModel(_swAlignClassName, Parameters);
+			_handle = Thot.LoadSmtModel(wordAlignmentModelType, Parameters);
 
 			_directWordAlignmentModel = ThotWordAlignmentModel.Create(wordAlignmentModelType);
 			_directWordAlignmentModel.SetHandle(Thot.smtModel_getSingleWordAlignmentModel(_handle), true);
@@ -122,14 +120,14 @@ namespace SIL.Machine.Translation.Thot
 			return Task.CompletedTask;
 		}
 
-		public ITrainer CreateTrainer(ITokenProcessor sourcePreprocessor,
-			ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, int maxCorpusCount = int.MaxValue)
+		public ITrainer CreateTrainer(ParallelTextCorpus corpus, ITokenProcessor sourcePreprocessor = null,
+			ITokenProcessor targetPreprocessor = null, int maxCorpusCount = int.MaxValue)
 		{
 			CheckDisposed();
 
 			return string.IsNullOrEmpty(ConfigFileName)
-				? new Trainer(this, Parameters, sourcePreprocessor, targetPreprocessor, corpus, maxCorpusCount)
-				: new Trainer(this, ConfigFileName, sourcePreprocessor, targetPreprocessor, corpus, maxCorpusCount);
+				? new Trainer(this, corpus, Parameters, sourcePreprocessor, targetPreprocessor, maxCorpusCount)
+				: new Trainer(this, corpus, ConfigFileName, sourcePreprocessor, targetPreprocessor, maxCorpusCount);
 		}
 
 		void IThotSmtModelInternal.RemoveEngine(ThotSmtEngine engine)
@@ -162,18 +160,17 @@ namespace SIL.Machine.Translation.Thot
 		{
 			private readonly ThotSmtModel _smtModel;
 
-			public Trainer(ThotSmtModel smtModel, string cfgFileName, ITokenProcessor sourcePreprocessor,
-				ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, int maxCorpusCount)
-				: base(smtModel.WordAlignmentModelType, cfgFileName, sourcePreprocessor, targetPreprocessor, corpus,
+			public Trainer(ThotSmtModel smtModel, ParallelTextCorpus corpus, string cfgFileName,
+				ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor, int maxCorpusCount)
+				: base(smtModel.WordAlignmentModelType, corpus, cfgFileName, sourcePreprocessor, targetPreprocessor,
 					  maxCorpusCount)
 			{
 				_smtModel = smtModel;
 			}
 
-			public Trainer(ThotSmtModel smtModel, ThotSmtParameters parameters,
-				ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor,
-				ParallelTextCorpus corpus, int maxCorpusCount)
-				: base(smtModel.WordAlignmentModelType, parameters, sourcePreprocessor, targetPreprocessor, corpus,
+			public Trainer(ThotSmtModel smtModel, ParallelTextCorpus corpus, ThotSmtParameters parameters,
+				ITokenProcessor sourcePreprocessor, ITokenProcessor targetPreprocessor, int maxCorpusCount)
+				: base(smtModel.WordAlignmentModelType, corpus, parameters, sourcePreprocessor, targetPreprocessor,
 					  maxCorpusCount)
 			{
 				_smtModel = smtModel;
@@ -188,7 +185,7 @@ namespace SIL.Machine.Translation.Thot
 				base.Save();
 
 				_smtModel.Parameters = Parameters;
-				_smtModel._handle = Thot.LoadSmtModel(_smtModel._swAlignClassName, _smtModel.Parameters);
+				_smtModel._handle = Thot.LoadSmtModel(_smtModel.WordAlignmentModelType, _smtModel.Parameters);
 				_smtModel._directWordAlignmentModel.SetHandle(Thot.smtModel_getSingleWordAlignmentModel(
 					_smtModel._handle), true);
 				_smtModel._inverseWordAlignmentModel.SetHandle(Thot.smtModel_getInverseSingleWordAlignmentModel(

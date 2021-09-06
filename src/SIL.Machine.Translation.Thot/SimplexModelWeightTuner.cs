@@ -11,11 +11,11 @@ namespace SIL.Machine.Translation.Thot
 {
 	public class SimplexModelWeightTuner : IParameterTuner
 	{
-		private readonly string _swAlignClassName;
+		private readonly ThotWordAlignmentModelType _wordAlignmentModelType;
 
 		public SimplexModelWeightTuner(ThotWordAlignmentModelType wordAlignmentModelType)
 		{
-			_swAlignClassName = Thot.GetWordAlignmentClassName(wordAlignmentModelType);
+			_wordAlignmentModelType = wordAlignmentModelType;
 		}
 
 		public double ConvergenceTolerance { get; set; } = 0.001;
@@ -79,7 +79,7 @@ namespace SIL.Machine.Translation.Thot
 			IntPtr smtModelHandle = IntPtr.Zero;
 			try
 			{
-				smtModelHandle = Thot.LoadSmtModel(_swAlignClassName, parameters);
+				smtModelHandle = Thot.LoadSmtModel(_wordAlignmentModelType, parameters);
 				var results = new IReadOnlyList<string>[sourceCorpus.Count];
 				Parallel.ForEach(Partitioner.Create(0, sourceCorpus.Count), range =>
 					{
