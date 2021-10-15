@@ -409,7 +409,7 @@ namespace SIL.Machine.Translation.Thot
 		private void TrainWordAlignmentModel(string swmPrefix, ITokenProcessor sourcePreprocessor,
 			ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, IProgress<ProgressStatus> progress)
 		{
-			var parameters = new ThotWordAlignmentModelParameters();
+			var parameters = new ThotWordAlignmentParameters();
 			if (_wordAlignmentModelType == ThotWordAlignmentModelType.FastAlign)
 			{
 				parameters.FastAlignIterationCount = (int)Parameters.LearningEMIters;

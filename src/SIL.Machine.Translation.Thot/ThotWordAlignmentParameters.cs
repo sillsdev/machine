@@ -2,7 +2,7 @@
 
 namespace SIL.Machine.Translation.Thot
 {
-	public class ThotWordAlignmentModelParameters
+	public class ThotWordAlignmentParameters
 	{
 		public int? Ibm1IterationCount { get; set; }
 		public int? Ibm2IterationCount { get; set; }
@@ -23,52 +23,37 @@ namespace SIL.Machine.Translation.Thot
 
 		public int GetIbm1IterationCount(ThotWordAlignmentModelType modelType)
 		{
-			if (modelType < ThotWordAlignmentModelType.Ibm1)
-				return 0;
-
-			return Ibm1IterationCount ?? 5;
+			return GetIbmIterationCount(modelType, ThotWordAlignmentModelType.Ibm1, Ibm1IterationCount);
 		}
 
 		public int GetIbm2IterationCount(ThotWordAlignmentModelType modelType)
 		{
-			if (modelType < ThotWordAlignmentModelType.Ibm2)
-				return 0;
-
-			if (modelType == ThotWordAlignmentModelType.Ibm2)
-				return Ibm2IterationCount ?? 5;
-
-			return Ibm2IterationCount ?? 0;
+			return GetIbmIterationCount(modelType, ThotWordAlignmentModelType.Ibm2, Ibm2IterationCount,
+				defaultInitIterationCount: 0);
 		}
 
 		public int GetHmmIterationCount(ThotWordAlignmentModelType modelType)
 		{
-			if (modelType < ThotWordAlignmentModelType.Hmm || Ibm2IterationCount > 0)
+			if (modelType != ThotWordAlignmentModelType.Hmm && Ibm2IterationCount > 0)
 				return 0;
 
-			return HmmIterationCount ?? 5;
+			return GetIbmIterationCount(modelType, ThotWordAlignmentModelType.Hmm, HmmIterationCount);
 		}
 
 		public int GetIbm3IterationCount(ThotWordAlignmentModelType modelType)
 		{
-			if (modelType < ThotWordAlignmentModelType.Ibm3)
-				return 0;
-
-			return Ibm3IterationCount ?? 5;
+			return GetIbmIterationCount(modelType, ThotWordAlignmentModelType.Ibm3, Ibm3IterationCount);
 		}
 
 		public int GetIbm4IterationCount(ThotWordAlignmentModelType modelType)
 		{
-			if (modelType < ThotWordAlignmentModelType.Ibm4)
-				return 0;
-
-			return Ibm4IterationCount ?? 5;
+			return GetIbmIterationCount(modelType, ThotWordAlignmentModelType.Ibm4, Ibm4IterationCount);
 		}
 
 		public int GetFastAlignIterationCount(ThotWordAlignmentModelType modelType)
 		{
 			if (modelType == ThotWordAlignmentModelType.FastAlign)
 				return FastAlignIterationCount ?? 4;
-
 			return 0;
 		}
 
@@ -77,6 +62,14 @@ namespace SIL.Machine.Translation.Thot
 			if (VariationalBayes == null)
 				return modelType == ThotWordAlignmentModelType.FastAlign;
 			return (bool)VariationalBayes;
+		}
+
+		private static int GetIbmIterationCount(ThotWordAlignmentModelType modelType,
+			ThotWordAlignmentModelType iterationCountModelType, int? iterationCount, int defaultInitIterationCount = 5)
+		{
+			if (modelType < iterationCountModelType)
+				return 0;
+			return iterationCount ?? (modelType == iterationCountModelType ? 4 : defaultInitIterationCount);
 		}
 	}
 }

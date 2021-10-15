@@ -122,7 +122,7 @@ namespace SIL.Machine.Translation.Thot
 		{
 			using (var model = new ThotHmmWordAlignmentModel
 			{
-				Parameters = new ThotWordAlignmentModelParameters
+				Parameters = new ThotWordAlignmentParameters
 				{
 					Ibm1IterationCount = 2,
 					HmmIterationCount = 2,

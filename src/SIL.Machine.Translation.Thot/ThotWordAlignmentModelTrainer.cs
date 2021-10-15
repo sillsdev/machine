@@ -24,7 +24,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public ThotWordAlignmentModelTrainer(ThotWordAlignmentModelType modelType,
 			string sourceFileName, string targetFileName, string prefFileName,
-			ThotWordAlignmentModelParameters parameters = null, ITokenProcessor sourcePreprocessor = null,
+			ThotWordAlignmentParameters parameters = null, ITokenProcessor sourcePreprocessor = null,
 			ITokenProcessor targetPreprocessor = null)
 			: this(modelType, null, prefFileName, parameters, sourcePreprocessor, targetPreprocessor)
 		{
@@ -33,7 +33,7 @@ namespace SIL.Machine.Translation.Thot
 		}
 
 		public ThotWordAlignmentModelTrainer(ThotWordAlignmentModelType modelType, ParallelTextCorpus corpus,
-			string prefFileName, ThotWordAlignmentModelParameters parameters = null,
+			string prefFileName, ThotWordAlignmentParameters parameters = null,
 			ITokenProcessor sourcePreprocessor = null, ITokenProcessor targetPreprocessor = null,
 			int maxCorpusCount = int.MaxValue)
 		{
@@ -45,7 +45,7 @@ namespace SIL.Machine.Translation.Thot
 			_segmentFilter = (s, i) => true;
 
 			if (parameters == null)
-				parameters = new ThotWordAlignmentModelParameters();
+				parameters = new ThotWordAlignmentParameters();
 
 			_models = new List<(IntPtr, int)>();
 			if (modelType == ThotWordAlignmentModelType.FastAlign)

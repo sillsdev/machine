@@ -160,7 +160,7 @@ namespace SIL.Machine
 				trainCorpus = corpus.Invert();
 			}
 
-			var thotParameters = new ThotWordAlignmentModelParameters();
+			var thotParameters = new ThotWordAlignmentParameters();
 			SetThotParameter(parameters, thotParameters, "fa-iters", p => p.FastAlignIterationCount);
 			SetThotParameter(parameters, thotParameters, "ibm1-iters", p => p.Ibm1IterationCount);
 			SetThotParameter(parameters, thotParameters, "ibm2-iters", p => p.Ibm2IterationCount);
@@ -196,9 +196,8 @@ namespace SIL.Machine
 				processor, processor, maxSize);
 		}
 
-		private static void SetThotParameter<T>(Dictionary<string, string> input,
-			ThotWordAlignmentModelParameters parameters, string name,
-			Expression<Func<ThotWordAlignmentModelParameters, T>> propExpr)
+		private static void SetThotParameter<T>(Dictionary<string, string> input, ThotWordAlignmentParameters parameters,
+			string name, Expression<Func<ThotWordAlignmentParameters, T>> propExpr)
 		{
 			if (input.TryGetValue(name, out string valueStr))
 			{
