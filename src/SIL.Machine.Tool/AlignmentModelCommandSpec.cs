@@ -164,6 +164,7 @@ namespace SIL.Machine
 			SetThotParameter(parameters, thotParameters, "fa-iters", p => p.FastAlignIterationCount);
 			SetThotParameter(parameters, thotParameters, "ibm1-iters", p => p.Ibm1IterationCount);
 			SetThotParameter(parameters, thotParameters, "ibm2-iters", p => p.Ibm2IterationCount);
+			SetThotParameter(parameters, thotParameters, "hmm-iters", p => p.HmmIterationCount);
 			SetThotParameter(parameters, thotParameters, "ibm3-iters", p => p.Ibm3IterationCount);
 			SetThotParameter(parameters, thotParameters, "ibm4-iters", p => p.Ibm4IterationCount);
 			SetThotParameter(parameters, thotParameters, "var-bayes", p => p.VariationalBayes);
@@ -196,14 +197,18 @@ namespace SIL.Machine
 				processor, processor, maxSize);
 		}
 
-		private static void SetThotParameter<T>(Dictionary<string, string> input, ThotWordAlignmentParameters parameters,
-			string name, Expression<Func<ThotWordAlignmentParameters, T>> propExpr)
+		private static void SetThotParameter<T>(Dictionary<string, string> input,
+			ThotWordAlignmentParameters parameters, string name,
+			Expression<Func<ThotWordAlignmentParameters, T>> propExpr)
 		{
 			if (input.TryGetValue(name, out string valueStr))
 			{
 				var expr = (MemberExpression)propExpr.Body;
 				var prop = (PropertyInfo)expr.Member;
-				prop.SetValue(parameters, (T)Convert.ChangeType(valueStr, typeof(T)));
+				Type type = typeof(T);
+				if (Nullable.GetUnderlyingType(type) != null)
+					type = Nullable.GetUnderlyingType(type);
+				prop.SetValue(parameters, (T)Convert.ChangeType(valueStr, type));
 			}
 		}
 
