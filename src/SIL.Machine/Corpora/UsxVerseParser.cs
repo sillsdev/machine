@@ -11,8 +11,15 @@ namespace SIL.Machine.Corpora
 	{
 		private static readonly HashSet<string> NonVerseParaStyles = new HashSet<string>
 		{
-			"ms", "mr", "s", "sr", "r", "d", "sp", "rem"
+			"ms", "mr", "s", "sr", "r", "d", "sp", "rem", "restore"
 		};
+
+		private readonly bool _mergeSegments;
+
+		public UsxVerseParser(bool mergeSegments = false)
+		{
+			_mergeSegments = mergeSegments;
+		}
 
 		public IEnumerable<UsxVerse> Parse(Stream stream)
 		{
@@ -20,30 +27,8 @@ namespace SIL.Machine.Corpora
 			var doc = XDocument.Load(stream, LoadOptions.PreserveWhitespace);
 			XElement bookElem = doc.Descendants("book").First();
 			XElement rootElem = bookElem.Parent;
-			foreach (XElement elem in rootElem.Elements())
-			{
-				switch (elem.Name.LocalName)
-				{
-					case "chapter":
-						if (ctxt.IsInVerse)
-							yield return ctxt.CreateVerse();
-						ctxt.Chapter = (string)elem.Attribute("number");
-						ctxt.Verse = null;
-						ctxt.IsSentenceStart = true;
-						break;
-
-					case "para":
-						if (!IsVersePara(elem))
-						{
-							ctxt.IsSentenceStart = true;
-							continue;
-						}
-						ctxt.ParaElement = elem;
-						foreach (UsxVerse evt in ParseElement(elem, ctxt))
-							yield return evt;
-						break;
-				}
-			}
+			foreach (UsxVerse verse in ParseElement(rootElem, ctxt))
+				yield return verse;
 
 			if (ctxt.IsInVerse)
 				yield return ctxt.CreateVerse();
@@ -58,6 +43,25 @@ namespace SIL.Machine.Corpora
 					case XElement e:
 						switch (e.Name.LocalName)
 						{
+							case "chapter":
+								if (ctxt.IsInVerse)
+									yield return ctxt.CreateVerse();
+								ctxt.Chapter = (string)e.Attribute("number");
+								ctxt.Verse = null;
+								ctxt.IsSentenceStart = true;
+								break;
+
+							case "para":
+								if (!IsVersePara(e))
+								{
+									ctxt.IsSentenceStart = true;
+									continue;
+								}
+								ctxt.ParaElement = e;
+								foreach (UsxVerse evt in ParseElement(e, ctxt))
+									yield return evt;
+								break;
+
 							case "verse":
 								string verse = (string)e.Attribute("number") ?? (string)e.Attribute("pubnumber");
 								if (ctxt.IsInVerse)
@@ -71,6 +75,8 @@ namespace SIL.Machine.Corpora
 									}
 									else if (VerseRef.AreOverlappingVersesRanges(verse, ctxt.Verse))
 									{
+										if (_mergeSegments)
+											verse = CorporaHelpers.StripSegments(verse);
 										// merge overlapping verse ranges in to one range
 										ctxt.Verse = CorporaHelpers.MergeVerseRanges(verse, ctxt.Verse);
 									}
@@ -78,11 +84,15 @@ namespace SIL.Machine.Corpora
 									{
 										yield return ctxt.CreateVerse();
 										ctxt.Verse = verse;
+										if (_mergeSegments)
+											ctxt.Verse = CorporaHelpers.StripSegments(ctxt.Verse);
 									}
 								}
 								else
 								{
 									ctxt.Verse = verse;
+									if (_mergeSegments)
+										ctxt.Verse = CorporaHelpers.StripSegments(ctxt.Verse);
 								}
 								break;
 
@@ -94,6 +104,11 @@ namespace SIL.Machine.Corpora
 							case "wg":
 								if (ctxt.IsInVerse)
 									ctxt.AddToken(e.Value, e);
+								break;
+
+							case "figure":
+								if (ctxt.IsInVerse)
+									ctxt.AddToken("", e);
 								break;
 						}
 						break;

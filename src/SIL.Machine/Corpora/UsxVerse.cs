@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Xml.Linq;
 using SIL.Machine.Utils;
 
 namespace SIL.Machine.Corpora
@@ -15,20 +14,23 @@ namespace SIL.Machine.Corpora
 			IsSentenceStart = isSentenceStart;
 			Tokens = tokens.ToArray();
 
-			XElement prevParaElem = null;
+			UsxToken prevToken = null;
 			var sb = new StringBuilder();
 			bool endsWithSpace = false;
 			foreach (UsxToken token in Tokens)
 			{
+				if (token.Element != null && token.Element.Name == "figure" && !endsWithSpace)
+					sb.Append(" ");
+
 				if (token.Text.Length == 0 || token.Text.IsWhiteSpace())
 					continue;
 
-				if (token.ParaElement != prevParaElem && sb.Length > 0 && !endsWithSpace)
+				if (prevToken != null && token.ParaElement != prevToken.ParaElement && sb.Length > 0 && !endsWithSpace)
 					sb.Append(" ");
 
 				sb.Append(token);
 				endsWithSpace = token.Text.EndsWith(" ");
-				prevParaElem = token.ParaElement;
+				prevToken = token;
 			}
 			Text = sb.ToString().Trim();
 		}

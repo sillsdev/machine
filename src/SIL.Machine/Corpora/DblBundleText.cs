@@ -9,8 +9,8 @@ namespace SIL.Machine.Corpora
 		private readonly string _path;
 
 		public DblBundleText(ITokenizer<string, int, string> wordTokenizer, string id, string bundleFileName,
-			string path, ScrVers versification = null)
-			: base(wordTokenizer, id, versification)
+			string path, ScrVers versification = null, bool mergeSegments = false)
+			: base(wordTokenizer, id, versification, mergeSegments)
 		{
 			_bundleFileName = bundleFileName;
 			_path = path;

@@ -9,10 +9,11 @@ namespace SIL.Machine.Corpora
 	{
 		private readonly UsxVerseParser _parser;
 
-		protected UsxTextBase(ITokenizer<string, int, string> wordTokenizer, string id, ScrVers versification)
+		protected UsxTextBase(ITokenizer<string, int, string> wordTokenizer, string id, ScrVers versification,
+			bool mergeSegments)
 			: base(wordTokenizer, id, versification)
 		{
-			_parser = new UsxVerseParser();
+			_parser = new UsxVerseParser(mergeSegments);
 		}
 
 		public override IEnumerable<TextSegment> GetSegments(bool includeText = true)

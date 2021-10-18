@@ -17,20 +17,21 @@ namespace SIL.Machine.Corpora
 		private readonly UsfmParser _parser;
 		private readonly Encoding _encoding;
 		private readonly bool _includeMarkers;
+		private readonly bool _mergeSegments;
 
 		protected UsfmTextBase(ITokenizer<string, int, string> wordTokenizer, string id, UsfmStylesheet stylesheet,
-			Encoding encoding, ScrVers versification, bool includeMarkers)
+			Encoding encoding, ScrVers versification, bool includeMarkers, bool mergeSegments)
 			: base(wordTokenizer, id, versification)
 		{
 			_parser = new UsfmParser(stylesheet);
 			_encoding = encoding;
 			_includeMarkers = includeMarkers;
+			_mergeSegments = mergeSegments;
 		}
 
 		public override IEnumerable<TextSegment> GetSegments(bool includeText = true)
 		{
 			string usfm = ReadUsfm();
-			bool inVerse = false;
 			UsfmMarker curEmbedMarker = null;
 			bool inWordlistMarker = false;
 			var sb = new StringBuilder();
@@ -38,12 +39,13 @@ namespace SIL.Machine.Corpora
 			bool sentenceStart = true;
 			UsfmToken prevToken = null;
 			var prevVerseRef = new VerseRef();
+			bool isVersePara = false;
 			foreach (UsfmToken token in _parser.Parse(usfm))
 			{
 				switch (token.Type)
 				{
 					case UsfmTokenType.Chapter:
-						if (inVerse)
+						if (chapter != null && verse != null)
 						{
 							string text = sb.ToString();
 							foreach (TextSegment seg in CreateTextSegments(includeText, ref prevVerseRef, chapter,
@@ -53,14 +55,13 @@ namespace SIL.Machine.Corpora
 							}
 							sentenceStart = true;
 							sb.Clear();
-							inVerse = false;
 						}
 						chapter = token.Text;
 						verse = null;
 						break;
 
 					case UsfmTokenType.Verse:
-						if (inVerse)
+						if (chapter != null && verse != null)
 						{
 							if (token.Text == verse)
 							{
@@ -74,13 +75,15 @@ namespace SIL.Machine.Corpora
 								sb.Clear();
 
 								// ignore duplicate verse
-								inVerse = false;
 								verse = null;
 							}
 							else if (VerseRef.AreOverlappingVersesRanges(token.Text, verse))
 							{
+								string thisVerse = token.Text;
+								if (_mergeSegments)
+									thisVerse = CorporaHelpers.StripSegments(thisVerse);
 								// merge overlapping verse ranges in to one range
-								verse = CorporaHelpers.MergeVerseRanges(token.Text, verse);
+								verse = CorporaHelpers.MergeVerseRanges(thisVerse, verse);
 							}
 							else
 							{
@@ -93,34 +96,26 @@ namespace SIL.Machine.Corpora
 								sentenceStart = text.HasSentenceEnding();
 								sb.Clear();
 								verse = token.Text;
+								if (_mergeSegments)
+									verse = CorporaHelpers.StripSegments(verse);
 							}
 						}
 						else
 						{
-							inVerse = true;
 							verse = token.Text;
+							if (_mergeSegments)
+								verse = CorporaHelpers.StripSegments(verse);
 						}
+						isVersePara = true;
 						break;
 
 					case UsfmTokenType.Paragraph:
-						if (inVerse && !IsVersePara(token))
-						{
-							string text = sb.ToString();
-							foreach (TextSegment seg in CreateTextSegments(includeText, ref prevVerseRef, chapter,
-								verse, text, sentenceStart))
-							{
-								yield return seg;
-							}
-							sentenceStart = true;
-							sb.Clear();
-							inVerse = false;
-							verse = null;
-						}
+						isVersePara = IsVersePara(token);
 						break;
 
 					case UsfmTokenType.Note:
 						curEmbedMarker = token.Marker;
-						if (inVerse && _includeMarkers)
+						if (chapter != null && verse != null && _includeMarkers)
 						{
 							if (prevToken?.Type == UsfmTokenType.Paragraph && IsVersePara(prevToken))
 							{
@@ -137,7 +132,7 @@ namespace SIL.Machine.Corpora
 							curEmbedMarker = null;
 						if (inWordlistMarker && token.Marker.Marker == "w*")
 							inWordlistMarker = false;
-						if (inVerse && _includeMarkers)
+						if (isVersePara && chapter != null && verse != null && _includeMarkers)
 							sb.Append(token);
 						break;
 
@@ -153,7 +148,7 @@ namespace SIL.Machine.Corpora
 								inWordlistMarker = true;
 								break;
 						}
-						if (inVerse && _includeMarkers)
+						if (isVersePara && chapter != null && verse != null && _includeMarkers)
 						{
 							if (prevToken?.Type == UsfmTokenType.Paragraph && IsVersePara(prevToken))
 							{
@@ -166,7 +161,7 @@ namespace SIL.Machine.Corpora
 						break;
 
 					case UsfmTokenType.Text:
-						if (inVerse && !string.IsNullOrEmpty(token.Text))
+						if (isVersePara && chapter != null && verse != null && !string.IsNullOrEmpty(token.Text))
 						{
 							if (_includeMarkers)
 							{
@@ -200,7 +195,7 @@ namespace SIL.Machine.Corpora
 				prevToken = token;
 			}
 
-			if (inVerse)
+			if (chapter != null && verse != null)
 			{
 				foreach (TextSegment seg in CreateTextSegments(includeText, ref prevVerseRef, chapter, verse,
 					sb.ToString(), sentenceStart))

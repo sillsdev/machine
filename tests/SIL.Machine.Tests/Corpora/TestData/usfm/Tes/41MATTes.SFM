@@ -15,7 +15,7 @@
 \v 5 Chapter one,
 \li2 verse \fig Figure 1|src="image1.png" size="col" ref="1:5"\fig* five.
 \c 2 
-\s Chapter Two
+\s1 Chapter Two
 \p
 \v 1 Chapter \add two\add*, verse\f + \fr 2:1: \ft This is a footnote.\f* one.
 \v 2-3 Chapter two, verse two.
@@ -26,4 +26,8 @@
 \v 4 Bad verse.
 \v 6 Chapter two, verse \w six|strong="12345" \w*.
 \v 6 Bad verse.
+\v 7a Chapter two, verse seven A, 
+\s Section header
+\p
+\v 7b verse seven B.
 \restore restore information

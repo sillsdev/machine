@@ -14,35 +14,40 @@ namespace SIL.Machine.Corpora
 			{
 				IText text = env.Corpus.GetText("MAT");
 				TextSegment[] segments = text.GetSegments().ToArray();
-				Assert.That(segments.Length, Is.EqualTo(48));
+				Assert.That(segments.Length, Is.EqualTo(14));
 
 				Assert.That(segments[0].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:1", env.Corpus.Versification)));
-				Assert.That(segments[0].Segment[0],
-					Is.EqualTo("This is the record of the ancestors of Jesus the Messiah, the descendant of King David and of Abraham, from whom all we Jews have descended."));
+				Assert.That(segments[0].Segment[0], Is.EqualTo("Chapter one, verse one."));
 
 				Assert.That(segments[1].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:2", env.Corpus.Versification)));
-				Assert.That(segments[1].Segment[0],
-					Is.EqualTo("Abraham was the father of Isaac. Isaac was the father of Jacob. Jacob was the father of Judah and Judah's older and younger brothers."));
+				Assert.That(segments[1].Segment[0], Is.EqualTo("Chapter one, verse two."));
 
-				Assert.That(segments[25].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:1", env.Corpus.Versification)));
-				Assert.That(segments[25].Segment[0],
-					Is.EqualTo("Jesus was born in Bethlehem town in Judea province during the time [MTY] that King Herod the Great ruled there. Some time after Jesus was born, some men who studied the stars and who lived in a country east of Judea came to Jerusalem city."));
+				Assert.That(segments[4].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:5", env.Corpus.Versification)));
+				Assert.That(segments[4].Segment[0], Is.EqualTo("Chapter one, verse five."));
 
-				Assert.That(segments[36].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:12", env.Corpus.Versification)));
-				Assert.That(segments[36].Segment[0],
-					Is.EqualTo("Because God knew that King Herod planned to kill Jesus, in a dream the men who studied the stars were warned {he warned the men who studied the stars} that they should not return to King Herod. So they returned to their country, but instead of traveling back on the same road, they went on a different road."));
+				Assert.That(segments[5].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:1", env.Corpus.Versification)));
+				Assert.That(segments[5].Segment[0], Is.EqualTo("Chapter two, verse one."));
 
-				Assert.That(segments[39].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:15", env.Corpus.Versification)));
-				Assert.That(segments[39].Segment[0],
-					Is.EqualTo("They stayed there until King Herod died, and then they left Egypt. By doing that, it was {they} fulfilled what the prophet Hosea wrote, which had been said by the Lord {which the Lord had said}, I have told my son to come out of Egypt."));
+				Assert.That(segments[6].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:2", env.Corpus.Versification)));
+				Assert.That(segments[6].Segment[0], Is.EqualTo("Chapter two, verse two. Chapter two, verse three."));
+				Assert.That(segments[6].IsInRange, Is.True);
 
-				Assert.That(segments[45].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:21", env.Corpus.Versification)));
-				Assert.That(segments[45].Segment[0],
-					Is.EqualTo("So Joseph took the child and his mother, and they went back to Israel."));
+				Assert.That(segments[7].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:3", env.Corpus.Versification)));
+				Assert.That(segments[7].Segment, Is.Empty);
+				Assert.That(segments[7].IsInRange, Is.True);
 
-				Assert.That(segments[46].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:22", env.Corpus.Versification)));
-				Assert.That(segments[46].Segment[0],
-					Is.EqualTo("When Joseph heard that Archaelaus now ruled in Judea district instead of his father, King Herod the Great, he was afraid to go there. Because he was warned {God warned Joseph} in a dream that it was still dangerous for them to live in Judea, he and Mary and Jesus went to Galilee District"));
+				Assert.That(segments[8].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:4a", env.Corpus.Versification)));
+				Assert.That(segments[8].Segment, Is.Empty);
+				Assert.That(segments[8].IsInRange, Is.True);
+
+				Assert.That(segments[9].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:4b", env.Corpus.Versification)));
+				Assert.That(segments[9].Segment[0], Is.EqualTo("Chapter two, verse four."));
+
+				Assert.That(segments[10].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:5", env.Corpus.Versification)));
+				Assert.That(segments[10].Segment[0], Is.EqualTo("Chapter two, verse five."));
+
+				Assert.That(segments[11].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:6", env.Corpus.Versification)));
+				Assert.That(segments[11].Segment[0], Is.EqualTo("Chapter two, verse six."));
 			}
 		}
 
@@ -53,22 +58,15 @@ namespace SIL.Machine.Corpora
 			{
 				IText text = env.Corpus.GetText("MAT");
 				TextSegment[] segments = text.GetSegments().ToArray();
-				Assert.That(segments.Length, Is.EqualTo(48));
+				Assert.That(segments.Length, Is.EqualTo(14));
 
-				Assert.That(segments[38].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:14", env.Corpus.Versification)));
-				Assert.That(segments[38].Segment[0],
-					Is.EqualTo("So Joseph got up, he took the child and his mother that night, and they fled to Egypt."));
-				Assert.That(segments[38].IsSentenceStart, Is.True);
+				Assert.That(segments[3].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:4", env.Corpus.Versification)));
+				Assert.That(segments[3].Segment[0], Is.EqualTo("Chapter one, verse four,"));
+				Assert.That(segments[3].IsSentenceStart, Is.True);
 
-				Assert.That(segments[46].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:22", env.Corpus.Versification)));
-				Assert.That(segments[46].Segment[0],
-					Is.EqualTo("When Joseph heard that Archaelaus now ruled in Judea district instead of his father, King Herod the Great, he was afraid to go there. Because he was warned {God warned Joseph} in a dream that it was still dangerous for them to live in Judea, he and Mary and Jesus went to Galilee District"));
-				Assert.That(segments[46].IsSentenceStart, Is.True);
-
-				Assert.That(segments[47].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:23", env.Corpus.Versification)));
-				Assert.That(segments[47].Segment[0],
-					Is.EqualTo("to the town called Nazareth to live there. The result was that what had been said by the ancient prophets {what the ancient prophets had said} about the Messiah, that he would be called {people would call him} a Nazareth-man, was fulfilled {came true}."));
-				Assert.That(segments[47].IsSentenceStart, Is.False);
+				Assert.That(segments[4].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:5", env.Corpus.Versification)));
+				Assert.That(segments[4].Segment[0], Is.EqualTo("Chapter one, verse five."));
+				Assert.That(segments[4].IsSentenceStart, Is.False);
 			}
 		}
 
@@ -80,6 +78,51 @@ namespace SIL.Machine.Corpora
 				IText text = env.Corpus.GetText("MRK");
 				TextSegment[] segments = text.GetSegments().ToArray();
 				Assert.That(segments, Is.Empty);
+			}
+		}
+
+		[Test]
+		public void GetSegments_MergeSegments()
+		{
+			using (var env = new DblBundleTestEnvironment(mergeSegments: true))
+			{
+				IText text = env.Corpus.GetText("MAT");
+				TextSegment[] segments = text.GetSegments().ToArray();
+				Assert.That(segments.Length, Is.EqualTo(12));
+
+				Assert.That(segments[0].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:1", env.Corpus.Versification)));
+				Assert.That(segments[0].Segment[0], Is.EqualTo("Chapter one, verse one."));
+
+				Assert.That(segments[1].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:2", env.Corpus.Versification)));
+				Assert.That(segments[1].Segment[0], Is.EqualTo("Chapter one, verse two."));
+
+				Assert.That(segments[4].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:5", env.Corpus.Versification)));
+				Assert.That(segments[4].Segment[0], Is.EqualTo("Chapter one, verse five."));
+
+				Assert.That(segments[5].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:1", env.Corpus.Versification)));
+				Assert.That(segments[5].Segment[0], Is.EqualTo("Chapter two, verse one."));
+
+				Assert.That(segments[6].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:2", env.Corpus.Versification)));
+				Assert.That(segments[6].Segment[0],
+					Is.EqualTo("Chapter two, verse two. Chapter two, verse three. Chapter two, verse four."));
+				Assert.That(segments[6].IsInRange, Is.True);
+
+				Assert.That(segments[7].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:3", env.Corpus.Versification)));
+				Assert.That(segments[7].Segment, Is.Empty);
+				Assert.That(segments[7].IsInRange, Is.True);
+
+				Assert.That(segments[8].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:4", env.Corpus.Versification)));
+				Assert.That(segments[8].Segment, Is.Empty);
+				Assert.That(segments[8].IsInRange, Is.True);
+
+				Assert.That(segments[9].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:5", env.Corpus.Versification)));
+				Assert.That(segments[9].Segment[0], Is.EqualTo("Chapter two, verse five."));
+
+				Assert.That(segments[10].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:6", env.Corpus.Versification)));
+				Assert.That(segments[10].Segment[0], Is.EqualTo("Chapter two, verse six."));
+
+				Assert.That(segments[11].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:7", env.Corpus.Versification)));
+				Assert.That(segments[11].Segment[0], Is.EqualTo("Chapter two, verse seven A, verse seven B."));
 			}
 		}
 	}

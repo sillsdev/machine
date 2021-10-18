@@ -7,8 +7,9 @@ namespace SIL.Machine.Corpora
 	{
 		private readonly string _fileName;
 
-		public UsxFileText(ITokenizer<string, int, string> wordTokenizer, string fileName, ScrVers versification = null)
-			: base(wordTokenizer, CorporaHelpers.GetUsxId(fileName), versification)
+		public UsxFileText(ITokenizer<string, int, string> wordTokenizer, string fileName, ScrVers versification = null,
+			bool mergeSegments = false)
+			: base(wordTokenizer, CorporaHelpers.GetUsxId(fileName), versification, mergeSegments)
 		{
 			_fileName = fileName;
 		}

@@ -11,8 +11,10 @@ namespace SIL.Machine.Corpora
 		private readonly string _fileName;
 
 		public UsfmFileText(ITokenizer<string, int, string> wordTokenizer, UsfmStylesheet stylesheet,
-			Encoding encoding, string fileName, ScrVers versification = null, bool includeMarkers = false)
-			: base(wordTokenizer, GetId(fileName, encoding), stylesheet, encoding, versification, includeMarkers)
+			Encoding encoding, string fileName, ScrVers versification = null, bool includeMarkers = false,
+			bool mergeSegments = false)
+			: base(wordTokenizer, GetId(fileName, encoding), stylesheet, encoding, versification, includeMarkers,
+				  mergeSegments)
 		{
 			_fileName = fileName;
 		}

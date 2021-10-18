@@ -99,6 +99,17 @@ namespace SIL.Machine.Corpora
 			return sb.ToString();
 		}
 
+		internal static string StripSegments(string verse)
+		{
+			var sb = new StringBuilder();
+			foreach (char c in verse)
+			{
+				if (!char.IsLetter(c))
+					sb.Append(c);
+			}
+			return sb.ToString();
+		}
+
 		private static void AppendVerseRange(StringBuilder sb, string startVerseNum, string endVerseNum)
 		{
 			if (sb.Length > 0)
