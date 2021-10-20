@@ -16,7 +16,7 @@ namespace SIL.Machine.Corpora
 			TargetText = targetText;
 			TextAlignmentCollection = textAlignmentCollection
 				?? new NullTextAlignmentCollection(sourceText.Id, sourceText.SortKey);
-			_segmentRefComparer = segmentRefComparer;
+			_segmentRefComparer = segmentRefComparer ?? new DefaultSegmentRefComparer();
 		}
 
 		public string Id => SourceText.Id;
@@ -46,7 +46,8 @@ namespace SIL.Machine.Corpora
 				bool trgCompleted = !trgEnumerator.MoveNext();
 				while (!srcCompleted && !trgCompleted)
 				{
-					int compare1 = CompareSegRefs(srcEnumerator.Current.SegmentRef, trgEnumerator.Current.SegmentRef);
+					int compare1 = _segmentRefComparer.Compare(srcEnumerator.Current.SegmentRef,
+						trgEnumerator.Current.SegmentRef);
 					if (compare1 < 0)
 					{
 						foreach (ParallelTextSegment seg in CreateSourceTextSegments(rangeInfo,
@@ -75,7 +76,7 @@ namespace SIL.Machine.Corpora
 						do
 						{
 							compare2 = alignmentEnumerator.MoveNext()
-								? CompareSegRefs(srcEnumerator.Current.SegmentRef,
+								? _segmentRefComparer.Compare(srcEnumerator.Current.SegmentRef,
 									alignmentEnumerator.Current.SegmentRef)
 								: 1;
 						} while (compare2 < 0);
@@ -195,7 +196,7 @@ namespace SIL.Machine.Corpora
 		private bool CheckSameRefSegments(List<TextSegment> sameRefSegments, TextSegment otherSegment)
 		{
 			if (sameRefSegments.Count > 0
-				&& CompareSegRefs(sameRefSegments[0].SegmentRef, otherSegment.SegmentRef) != 0)
+				&& _segmentRefComparer.Compare(sameRefSegments[0].SegmentRef, otherSegment.SegmentRef) != 0)
 			{
 				sameRefSegments.Clear();
 			}
@@ -245,18 +246,6 @@ namespace SIL.Machine.Corpora
 			}
 		}
 
-		private int CompareSegRefs(object x, object y)
-		{
-			if (_segmentRefComparer != null)
-				return _segmentRefComparer.Compare(x, y);
-
-			// Do not use the default comparer for VerseRef, since we want to compare all verses in a range or sequence
-			if (x is VerseRef vx && y is VerseRef vy)
-				return VerseRefComparer.Instance.Compare(vx, vy);
-
-			return Comparer<object>.Default.Compare(x, y);
-		}
-
 		private class RangeInfo
 		{
 			private readonly ParallelText _text;
@@ -282,6 +271,21 @@ namespace SIL.Machine.Corpora
 				SourceSegment.Clear();
 				TargetSegment.Clear();
 				return seg;
+			}
+		}
+
+		private class DefaultSegmentRefComparer : IComparer<object>
+		{
+			private static readonly VerseRefComparer VerseRefComparer = new VerseRefComparer(compareSegments: false);
+
+			public int Compare(object x, object y)
+			{
+				// Do not use the default comparer for VerseRef, since we want to compare all verses in a range or
+				// sequence
+				if (x is VerseRef vx && y is VerseRef vy)
+					return VerseRefComparer.Compare(vx, vy);
+
+				return Comparer<object>.Default.Compare(x, y);
 			}
 		}
 	}

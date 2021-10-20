@@ -8,12 +8,17 @@ namespace SIL.Machine.Corpora
 {
 	public class VerseRefComparer : IComparer<VerseRef>
 	{
-		public static VerseRefComparer Instance => new VerseRefComparer();
+		private readonly bool _compareSegments;
+
+		public VerseRefComparer(bool compareSegments = true)
+		{
+			_compareSegments = compareSegments;
+		}
 
 		public int Compare(VerseRef x, VerseRef y)
 		{
 			if (!x.HasMultiple && !y.HasMultiple)
-				return x.CompareTo(y);
+				return x.CompareTo(y, null, compareAllVerses: false, _compareSegments);
 
 			// Correctly implement comparing all verses in a range or sequence. The implementation of
 			// VerseRef.CompareTo() that compares all verses does not handle segments correctly.
@@ -23,7 +28,7 @@ namespace SIL.Machine.Corpora
 			VerseRef[] yArray = y.AllVerses().ToArray();
 			foreach ((VerseRef sx, VerseRef sy) in xArray.Zip(yArray))
 			{
-				int compare = sx.CompareTo(sy);
+				int compare = sx.CompareTo(sy, null, compareAllVerses: false, _compareSegments);
 				if (compare != 0)
 					return compare;
 			}

@@ -11,6 +11,8 @@ namespace SIL.Machine.Corpora
 {
 	public class UsxFileTextAlignmentCollection : ITextAlignmentCollection
 	{
+		private static readonly VerseRefComparer VerseRefComparer = new VerseRefComparer();
+
 		private readonly IRangeTokenizer<string, int, string> _srcWordTokenizer;
 		private readonly IRangeTokenizer<string, int, string> _trgWordTokenizer;
 		private readonly string _srcFileName;
@@ -65,7 +67,7 @@ namespace SIL.Machine.Corpora
 							var srcVerseRef = new VerseRef(Id, srcVerse.Chapter, srcVerse.Verse, _srcVersification);
 							var trgVerseRef = new VerseRef(Id, trgVerse.Chapter, trgVerse.Verse, _trgVersification);
 
-							int compare = VerseRefComparer.Instance.Compare(srcVerseRef, trgVerseRef);
+							int compare = VerseRefComparer.Compare(srcVerseRef, trgVerseRef);
 							if (compare < 0)
 							{
 								srcCompleted = !srcEnumerator.MoveNext();

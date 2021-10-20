@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using SIL.Machine.Tokenization;
@@ -13,6 +15,13 @@ namespace SIL.Machine.Corpora
 		{
 			Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 			string settingsFileName = Path.Combine(projectDir, "Settings.xml");
+			if (!File.Exists(settingsFileName))
+				settingsFileName = Directory.EnumerateFiles(projectDir, "*.ssf").FirstOrDefault();
+			if (string.IsNullOrEmpty(settingsFileName))
+			{
+				throw new ArgumentException("The project directory does not contain a settings file.",
+					nameof(projectDir));
+			}
 			var settingsDoc = XDocument.Load(settingsFileName);
 			var codePage = (int?)settingsDoc.Root.Element("Encoding") ?? 65001;
 			var encoding = Encoding.GetEncoding(codePage);
