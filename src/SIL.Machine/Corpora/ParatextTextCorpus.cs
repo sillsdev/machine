@@ -23,7 +23,12 @@ namespace SIL.Machine.Corpora
 					nameof(projectDir));
 			}
 			var settingsDoc = XDocument.Load(settingsFileName);
-			var codePage = (int?)settingsDoc.Root.Element("Encoding") ?? 65001;
+			var encodingStr = (string)settingsDoc.Root.Element("Encoding") ?? "65001";
+			if (!int.TryParse(encodingStr, out int codePage))
+			{
+				throw new NotImplementedException(
+					$"The project uses a legacy encoding that requires TECKit, map file: {encodingStr}.");
+			}
 			var encoding = Encoding.GetEncoding(codePage);
 
 			var scrVersType = (int?)settingsDoc.Root.Element("Versification") ?? (int)ScrVersType.English;
@@ -42,6 +47,8 @@ namespace SIL.Machine.Corpora
 
 			var stylesheetName = (string)settingsDoc.Root.Element("StyleSheet") ?? "usfm.sty";
 			string stylesheetFileName = Path.Combine(projectDir, stylesheetName);
+			if (!File.Exists(stylesheetFileName) && stylesheetName != "usfm_sb.sty")
+				stylesheetFileName = Path.Combine(projectDir, "usfm.sty");
 			var stylesheet = new UsfmStylesheet(stylesheetFileName);
 
 			string prefix = "";
