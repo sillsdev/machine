@@ -14,13 +14,6 @@ namespace SIL.Machine.Corpora
 			"ms", "mr", "s", "sr", "r", "d", "sp", "rem", "restore", "cl"
 		};
 
-		private readonly bool _mergeSegments;
-
-		public UsxVerseParser(bool mergeSegments = false)
-		{
-			_mergeSegments = mergeSegments;
-		}
-
 		public IEnumerable<UsxVerse> Parse(Stream stream)
 		{
 			var ctxt = new ParseContext();
@@ -75,8 +68,6 @@ namespace SIL.Machine.Corpora
 									}
 									else if (VerseRef.AreOverlappingVersesRanges(verse, ctxt.Verse))
 									{
-										if (_mergeSegments)
-											verse = CorporaHelpers.StripSegments(verse);
 										// merge overlapping verse ranges in to one range
 										ctxt.Verse = CorporaHelpers.MergeVerseRanges(verse, ctxt.Verse);
 									}
@@ -84,15 +75,11 @@ namespace SIL.Machine.Corpora
 									{
 										yield return ctxt.CreateVerse();
 										ctxt.Verse = verse;
-										if (_mergeSegments)
-											ctxt.Verse = CorporaHelpers.StripSegments(ctxt.Verse);
 									}
 								}
 								else
 								{
 									ctxt.Verse = verse;
-									if (_mergeSegments)
-										ctxt.Verse = CorporaHelpers.StripSegments(ctxt.Verse);
 								}
 								break;
 

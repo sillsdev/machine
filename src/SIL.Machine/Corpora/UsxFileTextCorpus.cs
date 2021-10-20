@@ -7,7 +7,7 @@ namespace SIL.Machine.Corpora
 	public class UsxFileTextCorpus : ScriptureTextCorpus
 	{
 		public UsxFileTextCorpus(ITokenizer<string, int, string> wordTokenizer, string projectPath,
-			ScrVers versification = null, bool mergeSegments = false)
+			ScrVers versification = null)
 		{
 			string versificationFileName = Path.Combine(projectPath, "versification.vrs");
 			if (versification == null && File.Exists(versificationFileName))
@@ -17,7 +17,7 @@ namespace SIL.Machine.Corpora
 			}
 			Versification = versification ?? ScrVers.English;
 			foreach (string fileName in Directory.EnumerateFiles(projectPath, "*.usx"))
-				AddText(new UsxFileText(wordTokenizer, fileName, Versification, mergeSegments));
+				AddText(new UsxFileText(wordTokenizer, fileName, Versification));
 		}
 
 		public override ScrVers Versification { get; }

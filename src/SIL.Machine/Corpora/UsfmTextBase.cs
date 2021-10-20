@@ -17,16 +17,14 @@ namespace SIL.Machine.Corpora
 		private readonly UsfmParser _parser;
 		private readonly Encoding _encoding;
 		private readonly bool _includeMarkers;
-		private readonly bool _mergeSegments;
 
 		protected UsfmTextBase(ITokenizer<string, int, string> wordTokenizer, string id, UsfmStylesheet stylesheet,
-			Encoding encoding, ScrVers versification, bool includeMarkers, bool mergeSegments)
+			Encoding encoding, ScrVers versification, bool includeMarkers)
 			: base(wordTokenizer, id, versification)
 		{
 			_parser = new UsfmParser(stylesheet);
 			_encoding = encoding;
 			_includeMarkers = includeMarkers;
-			_mergeSegments = mergeSegments;
 		}
 
 		public override IEnumerable<TextSegment> GetSegments(bool includeText = true)
@@ -79,11 +77,8 @@ namespace SIL.Machine.Corpora
 							}
 							else if (VerseRef.AreOverlappingVersesRanges(token.Text, verse))
 							{
-								string thisVerse = token.Text;
-								if (_mergeSegments)
-									thisVerse = CorporaHelpers.StripSegments(thisVerse);
 								// merge overlapping verse ranges in to one range
-								verse = CorporaHelpers.MergeVerseRanges(thisVerse, verse);
+								verse = CorporaHelpers.MergeVerseRanges(token.Text, verse);
 							}
 							else
 							{
@@ -96,15 +91,11 @@ namespace SIL.Machine.Corpora
 								sentenceStart = text.HasSentenceEnding();
 								sb.Clear();
 								verse = token.Text;
-								if (_mergeSegments)
-									verse = CorporaHelpers.StripSegments(verse);
 							}
 						}
 						else
 						{
 							verse = token.Text;
-							if (_mergeSegments)
-								verse = CorporaHelpers.StripSegments(verse);
 						}
 						isVersePara = true;
 						break;

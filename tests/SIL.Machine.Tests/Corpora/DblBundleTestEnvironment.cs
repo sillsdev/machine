@@ -8,10 +8,10 @@ namespace SIL.Machine.Corpora
 	{
 		private readonly string _bundlePath;
 
-		public DblBundleTestEnvironment(bool mergeSegments = false)
+		public DblBundleTestEnvironment()
 		{
 			_bundlePath = CorporaTestHelpers.CreateTestDblBundle();
-			Corpus = new DblBundleTextCorpus(new NullTokenizer(), _bundlePath, mergeSegments);
+			Corpus = new DblBundleTextCorpus(new NullTokenizer(), _bundlePath);
 		}
 
 		public DblBundleTextCorpus Corpus { get; }
