@@ -7,7 +7,7 @@ namespace SIL.Machine.Corpora
 	{
 
 		public DictionaryTextCorpus(params IText[] texts)
-			: this((IEnumerable<IText>) texts)
+			: this((IEnumerable<IText>)texts)
 		{
 		}
 
@@ -20,19 +20,19 @@ namespace SIL.Machine.Corpora
 
 		protected Dictionary<string, IText> TextDictionary { get; }
 
-		public bool TryGetText(string id, out IText text)
+		public IText this[string id]
 		{
-			return TextDictionary.TryGetValue(id, out text);
+			get
+			{
+				if (TextDictionary.TryGetValue(id, out IText text))
+					return text;
+				return CreateNullText(id);
+			}
 		}
 
-		public IText GetText(string id)
+		public virtual IText CreateNullText(string id)
 		{
-			return TextDictionary[id];
-		}
-
-		public virtual string GetTextSortKey(string id)
-		{
-			return id;
+			return new NullText(id, id);
 		}
 
 		protected void AddText(IText text)

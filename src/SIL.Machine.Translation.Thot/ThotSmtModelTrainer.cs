@@ -69,6 +69,7 @@ namespace SIL.Machine.Translation.Thot
 		public string ConfigFileName { get; }
 		public ThotSmtParameters Parameters { get; private set; }
 		public TrainStats Stats { get; } = new TrainStats();
+		public Func<ParallelTextSegment, int, bool> SegmentFilter { get; set; } = (s, i) => true;
 
 		private HashSet<int> CreateTuneCorpus()
 		{
@@ -77,7 +78,7 @@ namespace SIL.Machine.Translation.Thot
 			int index = 0;
 			foreach (ParallelTextSegment segment in _parallelCorpus.Segments)
 			{
-				if (IsSegmentValid(segment))
+				if (IsSegmentValid(segment) && SegmentFilter(segment, index))
 					corpusCount++;
 				else
 					invalidIndices.Add(index);
@@ -166,8 +167,7 @@ namespace SIL.Machine.Translation.Thot
 				bool weightsWritten = false;
 				foreach (string line in lines)
 				{
-					string name, value;
-					if (ThotSmtParameters.GetConfigParameter(line, out name, out value) && name == "tmw")
+					if (ThotSmtParameters.GetConfigParameter(line, out string name, out string value) && name == "tmw")
 					{
 						WriteModelWeights(writer);
 						weightsWritten = true;
@@ -210,11 +210,11 @@ namespace SIL.Machine.Translation.Thot
 			int wordCount = 0;
 			var ngrams = new Dictionary<Ngram<string>, int>();
 			var vocab = new HashSet<string>();
-			foreach (TextSegment segment in _parallelCorpus.TargetSegments
-				.Where((s, i) => !_tuneCorpusIndices.Contains(i) && !s.IsEmpty))
+			foreach (ParallelTextSegment segment in _parallelCorpus.Segments
+				.Where((s, i) => !_tuneCorpusIndices.Contains(i) && SegmentFilter(s, i) && s.TargetSegment.Count > 0))
 			{
 				var words = new List<string> { "<s>" };
-				foreach (string word in _targetPreprocessor.Process(segment.Segment).Select(Thot.EscapeToken))
+				foreach (string word in _targetPreprocessor.Process(segment.TargetSegment).Select(Thot.EscapeToken))
 				{
 					if (vocab.Contains(word))
 					{
@@ -262,11 +262,12 @@ namespace SIL.Machine.Translation.Thot
 			var rand = new Random(31415);
 			using (var writer = new StreamWriter(lmPrefix + ".wp"))
 			{
-				foreach (TextSegment segment in _parallelCorpus.TargetSegments
-					.Where((s, i) => !_tuneCorpusIndices.Contains(i) && !s.IsEmpty)
+				foreach (ParallelTextSegment segment in _parallelCorpus.Segments
+					.Where((s, i) => !_tuneCorpusIndices.Contains(i) && SegmentFilter(s, i)
+						&& s.TargetSegment.Count > 0)
 					.Take(100000).OrderBy(i => rand.Next()))
 				{
-					string segmentStr = string.Join(" ", _targetPreprocessor.Process(segment.Segment)
+					string segmentStr = string.Join(" ", _targetPreprocessor.Process(segment.TargetSegment)
 						.Select(Thot.EscapeToken));
 					writer.Write("{0}\n", segmentStr);
 				}
@@ -427,7 +428,7 @@ namespace SIL.Machine.Translation.Thot
 			using (var trainer = new ThotWordAlignmentModelTrainer(_wordAlignmentModelType, corpus, swmPrefix,
 				parameters, sourcePreprocessor, targetPreprocessor, _maxCorpusCount))
 			{
-				trainer.SegmentFilter = (s, i) => !_tuneCorpusIndices.Contains(i);
+				trainer.SegmentFilter = (s, i) => !_tuneCorpusIndices.Contains(i) && SegmentFilter(s, i);
 				trainer.Train(progress);
 				trainer.Save();
 			}
@@ -591,7 +592,7 @@ namespace SIL.Machine.Translation.Thot
 			int index = 0;
 			foreach (ParallelTextSegment segment in corpus.Segments)
 			{
-				if (IsSegmentValid(segment))
+				if (IsSegmentValid(segment) && SegmentFilter(segment, index))
 				{
 					if (filter(index))
 						yield return segment;

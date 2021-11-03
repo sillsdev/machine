@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -202,11 +203,8 @@ namespace SIL.Machine.Translation.TestApp
 					text.PropertyChanged += TextPropertyChanged;
 					_texts.Add(text);
 
-					Func<TextSegment, bool> segmentFilter = s => text.IsApproved((TextSegmentRef)s.SegmentRef);
-					sourceTexts.Add(new FilteredText(new TextFileText(_tokenizer, name, srcTextFileName),
-						segmentFilter));
-					targetTexts.Add(new FilteredText(new TextFileText(_tokenizer, name, trgTextFileName),
-						segmentFilter));
+					sourceTexts.Add(new TextFileText(_tokenizer, name, srcTextFileName));
+					targetTexts.Add(new TextFileText(_tokenizer, name, trgTextFileName));
 					if (alignmentsFileName != null)
 						alignmentCollections.Add(new TextFileTextAlignmentCollection(name, alignmentsFileName));
 				}
@@ -268,10 +266,12 @@ namespace SIL.Machine.Translation.TestApp
 			_isRebuilding = true;
 			try
 			{
+				Dictionary<string, TextViewModel> textLookup = _texts.ToDictionary(t => t.Name);
 				var corpus = new ParallelTextCorpus(_sourceCorpus, _targetCorpus, _alignmentCorpus);
-				using (ITrainer trainer = _smtModel.CreateTrainer(corpus, TokenProcessors.Lowercase,
+				using (ThotSmtModelTrainer trainer = _smtModel.CreateTrainer(corpus, TokenProcessors.Lowercase,
 					TokenProcessors.Lowercase))
 				{
+					trainer.SegmentFilter = (s, i) => textLookup[s.TextId].IsApproved((TextSegmentRef)s.SegmentRef);
 					await Task.Run(() => trainer.Train(progress, token.ThrowIfCancellationRequested), token);
 					trainer.Save();
 				}

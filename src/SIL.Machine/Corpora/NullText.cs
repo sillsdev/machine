@@ -19,5 +19,10 @@ namespace SIL.Machine.Corpora
 		{
 			return Enumerable.Empty<TextSegment>();
 		}
+
+		public IEnumerable<TextSegment> GetSegmentsBasedOn(IText text, bool includeText = true)
+		{
+			return GetSegments(includeText);
+		}
 	}
 }

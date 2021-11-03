@@ -17,30 +17,20 @@ namespace SIL.Machine.Corpora
 
 		public IEnumerable<IText> Texts => _corpus.Texts.Where(_filter);
 
-		public IText GetText(string id)
+		public IText this[string id]
 		{
-			IText text = _corpus.GetText(id);
-			if (_filter(text))
-				return text;
-			throw new KeyNotFoundException();
-		}
-
-		public bool TryGetText(string id, out IText text)
-		{
-			if (_corpus.TryGetText(id, out text))
+			get
 			{
+				IText text = _corpus[id];
 				if (_filter(text))
-					return true;
-
-				text = null;
+					return text;
+				return CreateNullText(id);
 			}
-
-			return false;
 		}
 
-		public string GetTextSortKey(string id)
+		public IText CreateNullText(string id)
 		{
-			return _corpus.GetTextSortKey(id);
+			return _corpus.CreateNullText(id);
 		}
 	}
 }

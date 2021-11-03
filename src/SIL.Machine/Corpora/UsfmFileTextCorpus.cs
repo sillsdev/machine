@@ -9,6 +9,7 @@ namespace SIL.Machine.Corpora
 	{
 		public UsfmFileTextCorpus(ITokenizer<string, int, string> wordTokenizer, string stylesheetFileName,
 			Encoding encoding, string projectPath, ScrVers versification = null, bool includeMarkers = false)
+			: base(wordTokenizer)
 		{
 			Versification = versification ?? ScrVers.English;
 			var stylesheet = new UsfmStylesheet(stylesheetFileName);

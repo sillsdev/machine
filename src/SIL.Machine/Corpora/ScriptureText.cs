@@ -5,7 +5,7 @@ using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
-	public abstract class ScriptureText : StreamTextBase
+	public abstract class ScriptureText : TextBase
 	{
 		protected ScriptureText(ITokenizer<string, int, string> wordTokenizer, string id, ScrVers versification)
 			: base(wordTokenizer, id, CorporaHelpers.GetScriptureTextSortKey(id))
@@ -14,6 +14,14 @@ namespace SIL.Machine.Corpora
 		}
 
 		public ScrVers Versification { get; }
+
+		public override IEnumerable<TextSegment> GetSegmentsBasedOn(IText text, bool includeText = true)
+		{
+			if (!(text is ScriptureText scriptureText) || Versification == scriptureText.Versification)
+				return base.GetSegmentsBasedOn(text, includeText);
+
+			return GetSegmentsBasedOn(scriptureText, includeText).OrderBy(s => s.SegmentRef);
+		}
 
 		protected IEnumerable<TextSegment> CreateTextSegments(bool includeText, ref VerseRef prevVerseRef,
 			string chapter, string verse, string text, bool sentenceStart = true)
@@ -24,6 +32,17 @@ namespace SIL.Machine.Corpora
 
 			prevVerseRef = verseRef;
 			return CreateTextSegments(includeText, verseRef, text, sentenceStart);
+		}
+
+		private IEnumerable<TextSegment> GetSegmentsBasedOn(ScriptureText text, bool includeText)
+		{
+			foreach (TextSegment seg in GetSegments(includeText))
+			{
+				var vref = (VerseRef)seg.SegmentRef;
+				vref.ChangeVersification(text.Versification);
+				yield return new TextSegment(seg.TextId, vref, seg.Segment, seg.IsSentenceStart, seg.IsInRange,
+					seg.IsRangeStart, seg.IsEmpty);
+			}
 		}
 
 		private IEnumerable<TextSegment> CreateTextSegments(bool includeText, VerseRef verseRef, string text,

@@ -20,14 +20,14 @@ namespace SIL.Machine.Corpora
 		public IEnumerable<ITextAlignmentCollection> TextAlignmentCollections => _textAlignmentCollections.Values
 			.OrderBy(ac => ac.SortKey);
 
-		public bool TryGetTextAlignmentCollection(string id, out ITextAlignmentCollection textAlignmentCollection)
+		public ITextAlignmentCollection this[string id]
 		{
-			return _textAlignmentCollections.TryGetValue(id, out textAlignmentCollection);
-		}
-
-		public ITextAlignmentCollection GetTextAlignmentCollection(string id)
-		{
-			return _textAlignmentCollections[id];
+			get
+			{
+				if (_textAlignmentCollections.TryGetValue(id, out ITextAlignmentCollection collection))
+					return collection;
+				return CreateNullTextAlignmentCollection(id);
+			}
 		}
 
 		public ITextAlignmentCorpus Invert()
@@ -35,9 +35,9 @@ namespace SIL.Machine.Corpora
 			return new DictionaryTextAlignmentCorpus(_textAlignmentCollections.Values.Select(tac => tac.Invert()));
 		}
 
-		public string GetTextAlignmentCollectionSortKey(string id)
+		public virtual ITextAlignmentCollection CreateNullTextAlignmentCollection(string id)
 		{
-			return id;
+			return new NullTextAlignmentCollection(id, id);
 		}
 
 		protected void AddTextAlignmentCollection(ITextAlignmentCollection alignments)

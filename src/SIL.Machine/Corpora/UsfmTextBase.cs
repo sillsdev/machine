@@ -196,6 +196,8 @@ namespace SIL.Machine.Corpora
 			}
 		}
 
+		protected abstract IStreamContainer CreateStreamContainer();
+
 		private string ReadUsfm()
 		{
 			using (IStreamContainer streamContainer = CreateStreamContainer())

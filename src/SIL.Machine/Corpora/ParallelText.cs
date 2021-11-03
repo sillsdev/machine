@@ -9,13 +9,12 @@ namespace SIL.Machine.Corpora
 	{
 		private readonly IComparer<object> _segmentRefComparer;
 
-		public ParallelText(IText sourceText, IText targetText, ITextAlignmentCollection textAlignmentCollection = null,
+		public ParallelText(IText sourceText, IText targetText, ITextAlignmentCollection textAlignmentCollection,
 			IComparer<object> segmentRefComparer = null)
 		{
 			SourceText = sourceText;
 			TargetText = targetText;
-			TextAlignmentCollection = textAlignmentCollection
-				?? new NullTextAlignmentCollection(sourceText.Id, sourceText.SortKey);
+			TextAlignmentCollection = textAlignmentCollection;
 			_segmentRefComparer = segmentRefComparer ?? new DefaultSegmentRefComparer();
 		}
 
@@ -35,7 +34,8 @@ namespace SIL.Machine.Corpora
 			bool allTargetSegments = false, bool includeText = true)
 		{
 			using (IEnumerator<TextSegment> srcEnumerator = SourceText.GetSegments(includeText).GetEnumerator())
-			using (IEnumerator<TextSegment> trgEnumerator = TargetText.GetSegments(includeText).GetEnumerator())
+			using (IEnumerator<TextSegment> trgEnumerator = TargetText.GetSegmentsBasedOn(SourceText, includeText)
+				.GetEnumerator())
 			using (IEnumerator<TextAlignment> alignmentEnumerator = TextAlignmentCollection.Alignments.GetEnumerator())
 			{
 				var rangeInfo = new RangeInfo(this);

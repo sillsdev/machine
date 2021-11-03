@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.IO;
+using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using SIL.Machine.Tokenization;
@@ -132,6 +133,64 @@ namespace SIL.Machine.Corpora
 
 			Assert.That(segments[11].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:6", corpus.Versification)));
 			Assert.That(segments[11].Segment[0], Is.EqualTo("Chapter two, verse \\w six|strong=\"12345\" \\w*."));
+		}
+
+		[Test]
+		public void GetSegmentsBasedOn()
+		{
+			var tokenizer = new NullTokenizer();
+
+			string src = "MAT 1:2 = MAT 1:3\nMAT 1:3 = MAT 1:2\n";
+			ScrVers versification;
+			using (var reader = new StringReader(src))
+			{
+				versification = Versification.Table.Implementation.Load(reader, "vers.txt", ScrVers.English, "custom");
+			}
+
+			var corpus = new UsfmFileTextCorpus(tokenizer, CorporaTestHelpers.UsfmStylesheetPath,
+				Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath, versification);
+
+			var basedOnText = new NullScriptureText(tokenizer, "MAT", ScrVers.Original);
+
+			IText text = corpus.GetText("MAT");
+			TextSegment[] segments = text.GetSegmentsBasedOn(basedOnText).ToArray();
+			Assert.That(segments.Length, Is.EqualTo(14));
+
+			Assert.That(segments[0].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:1", ScrVers.Original)));
+			Assert.That(segments[0].Segment[0], Is.EqualTo("Chapter one, verse one."));
+
+			Assert.That(segments[1].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:2", ScrVers.Original)));
+			Assert.That(segments[1].Segment[0], Is.EqualTo("Chapter one, verse three."));
+
+			Assert.That(segments[2].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:3", ScrVers.Original)));
+			Assert.That(segments[2].Segment[0], Is.EqualTo("Chapter one, verse two."));
+
+			Assert.That(segments[4].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:5", ScrVers.Original)));
+			Assert.That(segments[4].Segment[0], Is.EqualTo("Chapter one, verse five."));
+
+			Assert.That(segments[5].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:1", ScrVers.Original)));
+			Assert.That(segments[5].Segment[0], Is.EqualTo("Chapter two, verse one."));
+
+			Assert.That(segments[6].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:2", ScrVers.Original)));
+			Assert.That(segments[6].Segment[0], Is.EqualTo("Chapter two, verse two. Chapter two, verse three."));
+			Assert.That(segments[6].IsInRange, Is.True);
+
+			Assert.That(segments[7].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:3", ScrVers.Original)));
+			Assert.That(segments[7].Segment, Is.Empty);
+			Assert.That(segments[7].IsInRange, Is.True);
+
+			Assert.That(segments[8].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:4a", ScrVers.Original)));
+			Assert.That(segments[8].Segment, Is.Empty);
+			Assert.That(segments[8].IsInRange, Is.True);
+
+			Assert.That(segments[9].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:4b", ScrVers.Original)));
+			Assert.That(segments[9].Segment[0], Is.EqualTo("Chapter two, verse four."));
+
+			Assert.That(segments[10].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:5", ScrVers.Original)));
+			Assert.That(segments[10].Segment[0], Is.EqualTo("Chapter two, verse five."));
+
+			Assert.That(segments[11].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:6", ScrVers.Original)));
+			Assert.That(segments[11].Segment[0], Is.EqualTo("Chapter two, verse six."));
 		}
 	}
 }

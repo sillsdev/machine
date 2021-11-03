@@ -13,7 +13,7 @@ namespace SIL.Machine.Corpora
 		{
 			var sourceText = new MemoryText("text1", Enumerable.Empty<TextSegment>());
 			var targetText = new MemoryText("text1", Enumerable.Empty<TextSegment>());
-			var parallelText = new ParallelText(sourceText, targetText);
+			var parallelText = new ParallelText(sourceText, targetText, new MemoryTextAlignmentCollection("text1"));
 			Assert.That(parallelText.Segments, Is.Empty);
 		}
 
@@ -254,7 +254,7 @@ namespace SIL.Machine.Corpora
 				Segment(4, "target segment 4 .")
 			});
 
-			var parallelText = new ParallelText(sourceText, targetText);
+			var parallelText = new ParallelText(sourceText, targetText, new MemoryTextAlignmentCollection("text1"));
 			ParallelTextSegment[] segments = parallelText.Segments.ToArray();
 			Assert.That(segments.Length, Is.EqualTo(3));
 			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 2 . source segment 3 .".Split()));
@@ -277,7 +277,7 @@ namespace SIL.Machine.Corpora
 				Segment(3, "target segment 3 .")
 			});
 
-			var parallelText = new ParallelText(sourceText, targetText);
+			var parallelText = new ParallelText(sourceText, targetText, new MemoryTextAlignmentCollection("text1"));
 			ParallelTextSegment[] segments = parallelText.Segments.ToArray();
 			Assert.That(segments.Length, Is.EqualTo(1));
 			Assert.That(segments[0].SourceSegment,
@@ -304,7 +304,7 @@ namespace SIL.Machine.Corpora
 				Segment(4, "target segment 4 .")
 			});
 
-			var parallelText = new ParallelText(sourceText, targetText);
+			var parallelText = new ParallelText(sourceText, targetText, new MemoryTextAlignmentCollection("text1"));
 			ParallelTextSegment[] segments = parallelText.Segments.ToArray();
 			Assert.That(segments.Length, Is.EqualTo(2));
 			Assert.That(segments[0].SourceSegment, Is.EqualTo("source segment 1 . source segment 2 .".Split()));
@@ -331,7 +331,7 @@ namespace SIL.Machine.Corpora
 				Segment(4, isInRange: true)
 			});
 
-			var parallelText = new ParallelText(sourceText, targetText);
+			var parallelText = new ParallelText(sourceText, targetText, new MemoryTextAlignmentCollection("text1"));
 			ParallelTextSegment[] segments = parallelText.Segments.ToArray();
 			Assert.That(segments.Length, Is.EqualTo(2));
 			Assert.That(segments[0].SourceSegment, Is.EqualTo("source segment 1 . source segment 2 .".Split()));
@@ -358,7 +358,7 @@ namespace SIL.Machine.Corpora
 				Segment(4, "target segment 4 .")
 			});
 
-			var parallelText = new ParallelText(sourceText, targetText);
+			var parallelText = new ParallelText(sourceText, targetText, new MemoryTextAlignmentCollection("text1"));
 			ParallelTextSegment[] segments = parallelText.GetSegments(allTargetSegments: true).ToArray();
 			Assert.That(segments.Length, Is.EqualTo(4));
 			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 2 . source segment 3 .".Split()));
@@ -389,7 +389,7 @@ namespace SIL.Machine.Corpora
 				Segment(3, "target segment 3 .")
 			});
 
-			var parallelText = new ParallelText(sourceText, targetText);
+			var parallelText = new ParallelText(sourceText, targetText, new MemoryTextAlignmentCollection("text1"));
 			ParallelTextSegment[] segments = parallelText.Segments.ToArray();
 			Assert.That(segments.Length, Is.EqualTo(6));
 			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 2-1 .".Split()));
@@ -419,7 +419,7 @@ namespace SIL.Machine.Corpora
 				Segment(3, "target segment 3 .")
 			});
 
-			var parallelText = new ParallelText(sourceText, targetText);
+			var parallelText = new ParallelText(sourceText, targetText, new MemoryTextAlignmentCollection("text1"));
 			ParallelTextSegment[] segments = parallelText.GetSegments(allTargetSegments: true).ToArray();
 			Assert.That(segments.Length, Is.EqualTo(4));
 			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 2 .".Split()));
@@ -445,7 +445,7 @@ namespace SIL.Machine.Corpora
 				Segment(3, "target segment 3 .")
 			});
 
-			var parallelText = new ParallelText(sourceText, targetText);
+			var parallelText = new ParallelText(sourceText, targetText, new MemoryTextAlignmentCollection("text1"));
 			ParallelTextSegment[] segments = parallelText.GetSegments(allSourceSegments: true).ToArray();
 			Assert.That(segments.Length, Is.EqualTo(4));
 			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 2-1 .".Split()));
@@ -470,7 +470,7 @@ namespace SIL.Machine.Corpora
 				Segment(3, "target segment 3 .")
 			});
 
-			var parallelText = new ParallelText(sourceText, targetText);
+			var parallelText = new ParallelText(sourceText, targetText, new MemoryTextAlignmentCollection("text1"));
 			ParallelTextSegment[] segments = parallelText.GetSegments(allTargetSegments: true).ToArray();
 			Assert.That(segments.Length, Is.EqualTo(4));
 			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 2 .".Split()));
@@ -495,7 +495,7 @@ namespace SIL.Machine.Corpora
 				Segment(2, "target segment 2 ."),
 			});
 
-			var parallelText = new ParallelText(sourceText, targetText);
+			var parallelText = new ParallelText(sourceText, targetText, new MemoryTextAlignmentCollection("text1"));
 			ParallelTextSegment[] segments = parallelText.GetSegments(allSourceSegments: true).ToArray();
 			Assert.That(segments.Length, Is.EqualTo(4));
 			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 2-1 .".Split()));

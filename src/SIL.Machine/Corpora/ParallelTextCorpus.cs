@@ -32,7 +32,7 @@ namespace SIL.Machine.Corpora
 
 		public ParallelTextCorpus Invert()
 		{
-			return new ParallelTextCorpus(TargetCorpus, SourceCorpus, TextAlignmentCorpus?.Invert());
+			return new ParallelTextCorpus(TargetCorpus, SourceCorpus, TextAlignmentCorpus.Invert());
 		}
 
 		public IEnumerable<ParallelText> GetTexts(bool allSourceSegments = false, bool allTargetSegments = false)
@@ -68,27 +68,10 @@ namespace SIL.Machine.Corpora
 
 		private ParallelText CreateParallelText(string id)
 		{
-			IText sourceText = GetText(SourceCorpus, id);
-			IText targetText = GetText(TargetCorpus, id);
-			ITextAlignmentCollection textAlignmentCollection = GetTextAlignmentCollection(TextAlignmentCorpus, id);
+			IText sourceText = SourceCorpus[id];
+			IText targetText = TargetCorpus[id];
+			ITextAlignmentCollection textAlignmentCollection = TextAlignmentCorpus[id];
 			return new ParallelText(sourceText, targetText, textAlignmentCollection, _segmentRefComparer);
-		}
-
-		private static IText GetText(ITextCorpus corpus, string id)
-		{
-			if (!corpus.TryGetText(id, out IText text))
-				text = new NullText(id, corpus.GetTextSortKey(id));
-			return text;
-		}
-
-		private static ITextAlignmentCollection GetTextAlignmentCollection(ITextAlignmentCorpus corpus, string id)
-		{
-			if (!corpus.TryGetTextAlignmentCollection(id, out ITextAlignmentCollection textAlignmentCollection))
-			{
-				textAlignmentCollection = new NullTextAlignmentCollection(id,
-					corpus.GetTextAlignmentCollectionSortKey(id));
-			}
-			return textAlignmentCollection;
 		}
 	}
 }

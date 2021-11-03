@@ -6,10 +6,8 @@ namespace SIL.Machine.Corpora
 	{
 		IEnumerable<IText> Texts { get; }
 
-		bool TryGetText(string id, out IText text);
+		IText this[string id] { get; }
 
-		IText GetText(string id);
-
-		string GetTextSortKey(string id);
+		IText CreateNullText(string id);
 	}
 }

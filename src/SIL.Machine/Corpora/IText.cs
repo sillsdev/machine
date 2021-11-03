@@ -9,5 +9,7 @@ namespace SIL.Machine.Corpora
 		string SortKey { get; }
 
 		IEnumerable<TextSegment> GetSegments(bool includeText = true);
+
+		IEnumerable<TextSegment> GetSegmentsBasedOn(IText text, bool includeText = true);
 	}
 }

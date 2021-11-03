@@ -22,6 +22,11 @@ namespace SIL.Machine.Corpora
 
 		public abstract IEnumerable<TextSegment> GetSegments(bool includeText = true);
 
+		public virtual IEnumerable<TextSegment> GetSegmentsBasedOn(IText text, bool includeText = true)
+		{
+			return GetSegments(includeText);
+		}
+
 		protected TextSegment CreateTextSegment(bool includeText, string text, object segRef,
 			bool isSentenceStart = true, bool isInRange = false, bool isRangeStart = false)
 		{

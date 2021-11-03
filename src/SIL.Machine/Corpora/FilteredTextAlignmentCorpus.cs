@@ -18,13 +18,15 @@ namespace SIL.Machine.Corpora
 		public IEnumerable<ITextAlignmentCollection> TextAlignmentCollections => _corpus.TextAlignmentCollections
 			.Where(_filter);
 
-		public ITextAlignmentCollection GetTextAlignmentCollection(string id)
+		public ITextAlignmentCollection this[string id]
 		{
-			ITextAlignmentCollection alignments = _corpus.GetTextAlignmentCollection(id);
-			if (_filter(alignments))
-				return alignments;
-
-			throw new KeyNotFoundException();
+			get
+			{
+				ITextAlignmentCollection collection = _corpus[id];
+				if (_filter(collection))
+					return collection;
+				return CreateNullTextAlignmentCollection(id);
+			}
 		}
 
 		public ITextAlignmentCorpus Invert()
@@ -32,22 +34,9 @@ namespace SIL.Machine.Corpora
 			return new FilteredTextAlignmentCorpus(_corpus.Invert(), _filter);
 		}
 
-		public string GetTextAlignmentCollectionSortKey(string id)
+		public ITextAlignmentCollection CreateNullTextAlignmentCollection(string id)
 		{
-			return _corpus.GetTextAlignmentCollectionSortKey(id);
-		}
-
-		public bool TryGetTextAlignmentCollection(string id, out ITextAlignmentCollection alignments)
-		{
-			if (_corpus.TryGetTextAlignmentCollection(id, out alignments))
-			{
-				if (_filter(alignments))
-					return true;
-
-				alignments = null;
-			}
-
-			return false;
+			return _corpus.CreateNullTextAlignmentCollection(id);
 		}
 	}
 }

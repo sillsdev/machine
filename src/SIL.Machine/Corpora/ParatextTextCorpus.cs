@@ -11,7 +11,7 @@ namespace SIL.Machine.Corpora
 	public class ParatextTextCorpus : ScriptureTextCorpus
 	{
 		public ParatextTextCorpus(ITokenizer<string, int, string> wordTokenizer, string projectDir,
-			bool includeMarkers = false)
+			bool includeMarkers = false) : base(wordTokenizer)
 		{
 			Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 			string settingsFileName = Path.Combine(projectDir, "Settings.xml");

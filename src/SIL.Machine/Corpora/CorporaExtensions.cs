@@ -14,5 +14,15 @@ namespace SIL.Machine.Corpora
 		{
 			return corpus.Texts.Sum(t => t.GetSegments(includeText: false).Count(s => !nonemptyOnly || !s.IsEmpty));
 		}
+
+		public static IText GetText(this ITextCorpus corpus, string id)
+		{
+			return corpus[id];
+		}
+
+		public static ITextAlignmentCollection GetTextAlignmentCollection(this ITextAlignmentCorpus corpus, string id)
+		{
+			return corpus[id];
+		}
 	}
 }

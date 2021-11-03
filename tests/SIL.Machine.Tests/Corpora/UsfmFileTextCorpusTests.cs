@@ -19,16 +19,14 @@ namespace SIL.Machine.Corpora
 		}
 
 		[Test]
-		public void TryGetText()
+		public void GetText()
 		{
 			var tokenizer = new LatinWordTokenizer();
 			var corpus = new UsfmFileTextCorpus(tokenizer, CorporaTestHelpers.UsfmStylesheetPath,
 				Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath);
 
-			IText text;
-			Assert.That(corpus.TryGetText("MAT", out text), Is.True);
-			Assert.That(text.Id, Is.EqualTo("MAT"));
-			Assert.That(corpus.TryGetText("LUK", out _), Is.False);
+			Assert.That(corpus.GetText("MAT").GetSegments(), Is.Not.Empty);
+			Assert.That(corpus.GetText("LUK").GetSegments(), Is.Empty);
 		}
 	}
 }

@@ -29,6 +29,8 @@ namespace SIL.Machine.Corpora
 			}
 		}
 
+		protected abstract IStreamContainer CreateStreamContainer();
+
 		private IEnumerable<TextSegment> CreateTextSegments(bool includeText, ref VerseRef prevVerseRef, UsxVerse verse)
 		{
 			return CreateTextSegments(includeText, ref prevVerseRef, verse.Chapter, verse.Verse, verse.Text,

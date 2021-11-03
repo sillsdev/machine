@@ -120,7 +120,7 @@ namespace SIL.Machine.Translation.Thot
 			return Task.CompletedTask;
 		}
 
-		public ITrainer CreateTrainer(ParallelTextCorpus corpus, ITokenProcessor sourcePreprocessor = null,
+		public ThotSmtModelTrainer CreateTrainer(ParallelTextCorpus corpus, ITokenProcessor sourcePreprocessor = null,
 			ITokenProcessor targetPreprocessor = null, int maxCorpusCount = int.MaxValue)
 		{
 			CheckDisposed();
@@ -128,6 +128,12 @@ namespace SIL.Machine.Translation.Thot
 			return string.IsNullOrEmpty(ConfigFileName)
 				? new Trainer(this, corpus, Parameters, sourcePreprocessor, targetPreprocessor, maxCorpusCount)
 				: new Trainer(this, corpus, ConfigFileName, sourcePreprocessor, targetPreprocessor, maxCorpusCount);
+		}
+
+		ITrainer ITranslationModel.CreateTrainer(ParallelTextCorpus corpus, ITokenProcessor sourcePreprocessor,
+			ITokenProcessor targetPreprocessor, int maxCorpusCount)
+		{
+			return CreateTrainer(corpus, sourcePreprocessor, targetPreprocessor, maxCorpusCount);
 		}
 
 		void IThotSmtModelInternal.RemoveEngine(ThotSmtEngine engine)

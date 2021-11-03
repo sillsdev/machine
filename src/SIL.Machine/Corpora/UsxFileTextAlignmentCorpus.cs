@@ -27,6 +27,11 @@ namespace SIL.Machine.Corpora
 			}
 		}
 
+		public override ITextAlignmentCollection CreateNullTextAlignmentCollection(string id)
+		{
+			return new NullTextAlignmentCollection(id, CorporaHelpers.GetScriptureTextSortKey(id));
+		}
+
 		private static Dictionary<string, string> GetFileNames(string projectPath)
 		{
 			return Directory.EnumerateFiles(projectPath, "*.usx").ToDictionary(f => CorporaHelpers.GetUsxId(f));

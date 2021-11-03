@@ -6,12 +6,10 @@ namespace SIL.Machine.Corpora
 	{
 		IEnumerable<ITextAlignmentCollection> TextAlignmentCollections { get; }
 
-		bool TryGetTextAlignmentCollection(string id, out ITextAlignmentCollection alignments);
-
-		ITextAlignmentCollection GetTextAlignmentCollection(string id);
+		ITextAlignmentCollection this[string id] { get; }
 
 		ITextAlignmentCorpus Invert();
 
-		string GetTextAlignmentCollectionSortKey(string id);
+		ITextAlignmentCollection CreateNullTextAlignmentCollection(string id);
 	}
 }
