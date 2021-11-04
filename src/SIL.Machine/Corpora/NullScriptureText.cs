@@ -11,7 +11,7 @@ namespace SIL.Machine.Corpora
 		{
 		}
 
-		public override IEnumerable<TextSegment> GetSegments(bool includeText = true)
+		protected override IEnumerable<TextSegment> GetSegmentsInDocOrder(bool includeText = true)
 		{
 			yield break;
 		}

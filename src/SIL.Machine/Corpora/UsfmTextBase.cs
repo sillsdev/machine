@@ -27,7 +27,7 @@ namespace SIL.Machine.Corpora
 			_includeMarkers = includeMarkers;
 		}
 
-		public override IEnumerable<TextSegment> GetSegments(bool includeText = true)
+		protected override IEnumerable<TextSegment> GetSegmentsInDocOrder(bool includeText = true)
 		{
 			string usfm = ReadUsfm();
 			UsfmMarker curEmbedMarker = null;
@@ -36,7 +36,6 @@ namespace SIL.Machine.Corpora
 			string chapter = null, verse = null;
 			bool sentenceStart = true;
 			UsfmToken prevToken = null;
-			var prevVerseRef = new VerseRef();
 			bool isVersePara = false;
 			foreach (UsfmToken token in _parser.Parse(usfm))
 			{
@@ -46,8 +45,8 @@ namespace SIL.Machine.Corpora
 						if (chapter != null && verse != null)
 						{
 							string text = sb.ToString();
-							foreach (TextSegment seg in CreateTextSegments(includeText, ref prevVerseRef, chapter,
-								verse, text, sentenceStart))
+							foreach (TextSegment seg in CreateTextSegments(includeText, chapter, verse, text,
+								sentenceStart))
 							{
 								yield return seg;
 							}
@@ -64,8 +63,8 @@ namespace SIL.Machine.Corpora
 							if (token.Text == verse)
 							{
 								string text = sb.ToString();
-								foreach (TextSegment seg in CreateTextSegments(includeText, ref prevVerseRef, chapter,
-									verse, text, sentenceStart))
+								foreach (TextSegment seg in CreateTextSegments(includeText, chapter, verse, text,
+									sentenceStart))
 								{
 									yield return seg;
 								}
@@ -83,8 +82,8 @@ namespace SIL.Machine.Corpora
 							else
 							{
 								string text = sb.ToString();
-								foreach (TextSegment seg in CreateTextSegments(includeText, ref prevVerseRef, chapter,
-									verse, text, sentenceStart))
+								foreach (TextSegment seg in CreateTextSegments(includeText, chapter, verse, text,
+									sentenceStart))
 								{
 									yield return seg;
 								}
@@ -188,8 +187,8 @@ namespace SIL.Machine.Corpora
 
 			if (chapter != null && verse != null)
 			{
-				foreach (TextSegment seg in CreateTextSegments(includeText, ref prevVerseRef, chapter, verse,
-					sb.ToString(), sentenceStart))
+				foreach (TextSegment seg in CreateTextSegments(includeText, chapter, verse, sb.ToString(),
+					sentenceStart))
 				{
 					yield return seg;
 				}

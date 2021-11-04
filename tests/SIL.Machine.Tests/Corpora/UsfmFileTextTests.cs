@@ -153,7 +153,7 @@ namespace SIL.Machine.Corpora
 			var basedOnText = new NullScriptureText(tokenizer, "MAT", ScrVers.Original);
 
 			IText text = corpus.GetText("MAT");
-			TextSegment[] segments = text.GetSegmentsBasedOn(basedOnText).ToArray();
+			TextSegment[] segments = text.GetSegments(basedOn: basedOnText).ToArray();
 			Assert.That(segments.Length, Is.EqualTo(14));
 
 			Assert.That(segments[0].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:1", ScrVers.Original)));

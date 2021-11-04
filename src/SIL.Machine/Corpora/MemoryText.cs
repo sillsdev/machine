@@ -21,14 +21,9 @@ namespace SIL.Machine.Corpora
 		public string Id { get; }
 		public string SortKey => Id;
 
-		public IEnumerable<TextSegment> GetSegments(bool includeText = true)
+		public IEnumerable<TextSegment> GetSegments(bool includeText = true, IText basedOn = null)
 		{
 			return _segments;
-		}
-
-		public IEnumerable<TextSegment> GetSegmentsBasedOn(IText text, bool includeText = true)
-		{
-			return GetSegments(includeText);
 		}
 	}
 }

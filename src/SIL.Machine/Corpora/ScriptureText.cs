@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using SIL.Machine.Tokenization;
 using SIL.Scripture;
 
@@ -15,39 +14,42 @@ namespace SIL.Machine.Corpora
 
 		public ScrVers Versification { get; }
 
-		public override IEnumerable<TextSegment> GetSegmentsBasedOn(IText text, bool includeText = true)
+		public override IEnumerable<TextSegment> GetSegments(bool includeText = true, IText basedOn = null)
 		{
-			if (!(text is ScriptureText scriptureText) || Versification == scriptureText.Versification)
-				return base.GetSegmentsBasedOn(text, includeText);
+			ScrVers basedOnVers = null;
+			if (basedOn is ScriptureText scriptureText && Versification != scriptureText.Versification)
+				basedOnVers = scriptureText.Versification;
+			var segList = new List<TextSegment>();
+			bool outOfOrder = false;
+			var prevVerseRef = new VerseRef();
+			foreach (TextSegment seg in GetSegmentsInDocOrder(includeText))
+			{
+				var verseRef = (VerseRef)seg.SegmentRef;
+				TextSegment newSeg = seg;
+				if (basedOnVers != null)
+				{
+					verseRef.ChangeVersification(basedOnVers);
+					newSeg = new TextSegment(seg.TextId, verseRef, seg.Segment, seg.IsSentenceStart, seg.IsInRange,
+						seg.IsRangeStart, seg.IsEmpty);
+				}
+				segList.Add(newSeg);
+				if (verseRef.CompareTo(prevVerseRef) < 0)
+					outOfOrder = true;
+				prevVerseRef = verseRef;
+			}
 
-			return GetSegmentsBasedOn(scriptureText, includeText).OrderBy(s => s.SegmentRef);
+			if (outOfOrder)
+				segList.Sort((x, y) => ((VerseRef)x.SegmentRef).CompareTo(y.SegmentRef));
+
+			return segList;
 		}
 
-		protected IEnumerable<TextSegment> CreateTextSegments(bool includeText, ref VerseRef prevVerseRef,
-			string chapter, string verse, string text, bool sentenceStart = true)
+		protected abstract IEnumerable<TextSegment> GetSegmentsInDocOrder(bool includeText);
+
+		protected IEnumerable<TextSegment> CreateTextSegments(bool includeText, string chapter, string verse,
+			string text, bool sentenceStart = true)
 		{
 			var verseRef = new VerseRef(Id, chapter, verse, Versification);
-			if (verseRef.CompareTo(prevVerseRef) <= 0)
-				return Enumerable.Empty<TextSegment>();
-
-			prevVerseRef = verseRef;
-			return CreateTextSegments(includeText, verseRef, text, sentenceStart);
-		}
-
-		private IEnumerable<TextSegment> GetSegmentsBasedOn(ScriptureText text, bool includeText)
-		{
-			foreach (TextSegment seg in GetSegments(includeText))
-			{
-				var vref = (VerseRef)seg.SegmentRef;
-				vref.ChangeVersification(text.Versification);
-				yield return new TextSegment(seg.TextId, vref, seg.Segment, seg.IsSentenceStart, seg.IsInRange,
-					seg.IsRangeStart, seg.IsEmpty);
-			}
-		}
-
-		private IEnumerable<TextSegment> CreateTextSegments(bool includeText, VerseRef verseRef, string text,
-			bool sentenceStart)
-		{
 			if (verseRef.HasMultiple)
 			{
 				bool firstVerse = true;

@@ -34,7 +34,7 @@ namespace SIL.Machine.Corpora
 			bool allTargetSegments = false, bool includeText = true)
 		{
 			using (IEnumerator<TextSegment> srcEnumerator = SourceText.GetSegments(includeText).GetEnumerator())
-			using (IEnumerator<TextSegment> trgEnumerator = TargetText.GetSegmentsBasedOn(SourceText, includeText)
+			using (IEnumerator<TextSegment> trgEnumerator = TargetText.GetSegments(includeText, basedOn: SourceText)
 				.GetEnumerator())
 			using (IEnumerator<TextAlignment> alignmentEnumerator = TextAlignmentCollection.Alignments.GetEnumerator())
 			{
