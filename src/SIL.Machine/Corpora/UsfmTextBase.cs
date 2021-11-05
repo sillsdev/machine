@@ -31,7 +31,7 @@ namespace SIL.Machine.Corpora
 		{
 			string usfm = ReadUsfm();
 			UsfmMarker curEmbedMarker = null;
-			bool inWordlistMarker = false;
+			UsfmMarker curSpanMarker = null;
 			var sb = new StringBuilder();
 			string chapter = null, verse = null;
 			bool sentenceStart = true;
@@ -120,23 +120,22 @@ namespace SIL.Machine.Corpora
 					case UsfmTokenType.End:
 						if (curEmbedMarker != null && token.Marker.Marker == curEmbedMarker.EndMarker)
 							curEmbedMarker = null;
-						if (inWordlistMarker && token.Marker.Marker == "w*")
-							inWordlistMarker = false;
+						if (curSpanMarker != null && token.Marker.Marker == curSpanMarker.EndMarker)
+							curSpanMarker = null;
 						if (isVersePara && chapter != null && verse != null && _includeMarkers)
 							sb.Append(token);
 						break;
 
 					case UsfmTokenType.Character:
-						switch (token.Marker.Marker)
+						if (token.Marker.Marker == "w" || token.Marker.Marker == "jmp")
 						{
-							case "fig":
-							case "va":
-							case "vp":
-								curEmbedMarker = token.Marker;
-								break;
-							case "w":
-								inWordlistMarker = true;
-								break;
+							curSpanMarker = token.Marker;
+						}
+						else if (token.Marker.Marker != "qac" && token.Marker.TextType == UsfmTextType.Other)
+						{
+							curEmbedMarker = token.Marker;
+							if (!_includeMarkers)
+								sb.TrimEnd();
 						}
 						if (isVersePara && chapter != null && verse != null && _includeMarkers)
 						{
@@ -165,17 +164,11 @@ namespace SIL.Machine.Corpora
 							else if (curEmbedMarker == null)
 							{
 								string text = token.Text;
-								if (inWordlistMarker)
+								if (curSpanMarker != null)
 								{
 									int index = text.IndexOf("|");
 									if (index >= 0)
 										text = text.Substring(0, index);
-								}
-
-								if (prevToken?.Type == UsfmTokenType.End
-									&& (sb.Length == 0 || char.IsWhiteSpace(sb[sb.Length - 1])))
-								{
-									text = text.TrimStart();
 								}
 								sb.Append(text);
 							}

@@ -84,8 +84,16 @@ namespace SIL.Machine.Corpora
 								break;
 
 							case "char":
-								foreach (UsxVerse evt in ParseElement(e, ctxt))
-									yield return evt;
+								if ((string)e.Attribute("style") == "rq")
+								{
+									if (ctxt.IsInVerse)
+										ctxt.AddToken("", e);
+								}
+								else
+								{
+									foreach (UsxVerse evt in ParseElement(e, ctxt))
+										yield return evt;
+								}
 								break;
 
 							case "wg":

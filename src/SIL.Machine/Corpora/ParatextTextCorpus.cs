@@ -49,7 +49,9 @@ namespace SIL.Machine.Corpora
 			string stylesheetFileName = Path.Combine(projectDir, stylesheetName);
 			if (!File.Exists(stylesheetFileName) && stylesheetName != "usfm_sb.sty")
 				stylesheetFileName = Path.Combine(projectDir, "usfm.sty");
-			var stylesheet = new UsfmStylesheet(stylesheetFileName);
+			string customStylesheetPath = Path.Combine(projectDir, "custom.sty");
+			var stylesheet = new UsfmStylesheet(stylesheetFileName,
+				File.Exists(customStylesheetPath) ? customStylesheetPath : null);
 
 			string prefix = "";
 			string suffix = ".SFM";

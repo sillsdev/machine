@@ -1,4 +1,4 @@
-# Version=3.0.1
+# Version=3.0.5
 # ********************************************************************
 # * usfm.sty is the default stylesheet for Paratext projects         *
 # *   using USFM markup.                                             *
@@ -172,7 +172,7 @@
 #!\ColorName highcon blue
 
 \Marker sts
-\Name rem - File - Status
+\Name sts - File - Status
 \Description Status of this file
 \OccursUnder id ide c
 \TextType Other
@@ -807,7 +807,7 @@
 \Marker pmo
 \Name pmo - Paragraph - Embedded Text Opening
 \Description Embedded text opening
-\OccursUnder m mi nb p pc ph phi pi pi1 pi2 pi3 pr po q q1 q2 q3 q4 qc qr s1 s2 s3 s4
+\OccursUnder m mi nb p pc ph phi pi pi1 pi2 pi3 pr po q q1 q2 q3 q4 qc qr b s1 s2 s3 s4
 \TextType VerseText
 \TextProperties paragraph publishable vernacular
 \StyleType Paragraph
@@ -852,7 +852,7 @@
 
 \Marker pi
 \Name pi - Paragraph - Indented - Level 1 - First Line Indent
-\Description Paragraph text, level 1 indent (if sinlge level), with first line indent; often used for discourse (basic)
+\Description Paragraph text, level 1 indent (if single level), with first line indent; often used for discourse (basic)
 \OccursUnder c
 \Rank 4
 \TextType VerseText
@@ -946,8 +946,8 @@
 \TextProperties paragraph publishable vernacular poetic level_1
 \StyleType Paragraph
 \FontSize 12
-\LeftMargin 1.25
-\FirstLineIndent -1  # 1/4 inch indent, 1 inch wrap
+\LeftMargin 0.75
+\FirstLineIndent -0.5  # 1/8 inch indent, 3/4 inch wrap
 
 \Marker q1
 \Name q1 - Poetry - Indent Level 1
@@ -958,8 +958,8 @@
 \TextProperties paragraph publishable vernacular poetic level_1
 \StyleType Paragraph
 \FontSize 12
-\LeftMargin 1.25
-\FirstLineIndent -1  # 1/4 inch indent, 1 inch wrap
+\LeftMargin 0.75
+\FirstLineIndent -0.5  # 1/8 inch indent, 3/4 inch wrap
 
 \Marker q2
 \Name q2 - Poetry - Indent Level 2
@@ -970,8 +970,8 @@
 \TextProperties paragraph publishable vernacular poetic level_2
 \StyleType Paragraph
 \FontSize 12
-\LeftMargin 1.25
-\FirstLineIndent -.75  # 1/2 inch indent, 1 inch wrap
+\LeftMargin 0.75
+\FirstLineIndent -0.375  # 1/4 inch indent, 3/4 inch wrap
 
 \Marker q3
 \Name q3 - Poetry - Indent Level 3
@@ -982,8 +982,8 @@
 \TextProperties paragraph publishable vernacular poetic level_3
 \StyleType Paragraph
 \FontSize 12
-\LeftMargin 1.25
-\FirstLineIndent -.5 # 3/4 inch indent, 1 inch wrap
+\LeftMargin 0.75
+\FirstLineIndent -0.25 # 3/8 inch indent, 3/4 inch wrap
 
 \Marker q4
 \Name q4 - Poetry - Indent Level 4
@@ -991,11 +991,11 @@
 \OccursUnder c
 \Rank 4
 \TextType VerseText
-\TextProperties paragraph publishable vernacular poetic level_3
+\TextProperties paragraph publishable vernacular poetic level_4
 \StyleType Paragraph
 \FontSize 12
-\LeftMargin 1.25
-\FirstLineIndent -.25 # 3/4 inch indent, 1 inch wrap
+\LeftMargin 0.75
+\FirstLineIndent -0.125 # 1/2 inch indent, 3/4 inch wrap
 
 \Marker qc
 \Name qc - Poetry - Centered
@@ -1179,7 +1179,7 @@
 
 \Marker mt4
 \Name mt4 - Title - Major Title level 4
-\Description A small secondary title sometimes occuring within parentheses
+\Description A small secondary title sometimes occurring within parentheses
 \OccursUnder id
 \Rank 3
 \TextProperties paragraph publishable vernacular level_4
@@ -1979,7 +1979,7 @@
 \Marker liv1
 \Endmarker liv1*
 \Name liv1...liv1* - Structured List Entry - Value 1
-\Description Structured list entrt value 1 content (if multiple values)
+\Description Structured list entry value 1 content (if multiple values)
 \OccursUnder li li1 li2 li3 li4 lim lim1 lim2 lim3 lim4 NEST
 \TextType VerseText
 \TextProperties publishable vernacular
@@ -2204,7 +2204,7 @@
 \Endmarker xt*
 \Name xt - Cross Reference - Target References
 \Description The cross reference target reference(s), protocanon only (basic)
-\OccursUnder ip im ipi imi ipq imq ipr iq iq1 iq2 iq3 io io1 io2 io3 io4 ms ms1 ms2 s s1 s2 s3 s4 cd sp d lh li li1 li2 li3 li4 lf lim lim1 lim2 lim3 lim4 m mi nb p pc ph phi pi pi1 pi2 pi3 pr pmo pm pmc pmr po q q1 q2 q3 q4 qc qr qd qm qm1 qm2 qm3 tr th1 th2 th3 th4 thr1 thr2 thr3 thr4 tc1 tc2 tc3 tc4 tcr1 tcr2 tcr3 tcr4 f fe x ef ex
+\OccursUnder ip im ipi imi ipq imq ipr iq iq1 iq2 iq3 io io1 io2 io3 io4 ms ms1 ms2 s s1 s2 s3 s4 cd sp d lh li li1 li2 li3 li4 lf lim lim1 lim2 lim3 lim4 m mi nb p pc ph phi pi pi1 pi2 pi3 pr pmo pm pmc pmr po q q1 q2 q3 q4 qc qr qd qm qm1 qm2 qm3 tr th1 th2 th3 th4 thr1 thr2 thr3 thr4 tc1 tc2 tc3 tc4 tcr1 tcr2 tcr3 tcr4 f fe x ef ex NEST
 \TextProperties publishable vernacular note
 \TextType NoteText
 \StyleType Character
@@ -2566,7 +2566,7 @@
 \Color 16711680
 #!\ColorName highcon blue
 \Underline
-#!\Attributes link-href
+#!\Attributes ?link-href ?link-id ?link-title
 
 \Marker pro
 \Endmarker pro*
@@ -2646,7 +2646,7 @@
 
 \Marker periph
 \Name periph - Peripherals - Content Division Marker
-\Description Periheral content division marker which should be followed by an additional division argument/title.
+\Description Peripheral content division marker which should be followed by an additional division argument/title.
 \TextType Section
 \TextProperties paragraph publishable vernacular
 \StyleType Paragraph
@@ -2781,7 +2781,7 @@
 #!\Marker ts-s
 #!\Endmarker ts-e
 #!\Name Translator's section start/end milestone
-#!\Description Translators's section start/end milestone
+#!\Description Translator's section start/end milestone
 #!\OccursUnder id
 #!\StyleType Milestone
 #!\Attributes ?sid ?eid

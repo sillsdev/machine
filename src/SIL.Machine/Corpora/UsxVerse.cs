@@ -19,8 +19,13 @@ namespace SIL.Machine.Corpora
 			bool endsWithSpace = false;
 			foreach (UsxToken token in Tokens)
 			{
-				if (token.Element != null && token.Element.Name == "figure" && !endsWithSpace)
-					sb.Append(" ");
+				if (token.Element != null)
+				{
+					if (token.Element.Name == "figure" && !endsWithSpace)
+						sb.Append(" ");
+					if ((string)token.Element.Attribute("style") == "rq")
+						sb.TrimEnd();
+				}
 
 				if (token.Text.Length == 0 || token.Text.IsWhiteSpace())
 					continue;

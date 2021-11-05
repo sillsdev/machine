@@ -12,8 +12,8 @@ namespace SIL.Machine.Corpora
 		public void Texts()
 		{
 			var tokenizer = new LatinWordTokenizer();
-			var corpus = new UsfmFileTextCorpus(tokenizer, CorporaTestHelpers.UsfmStylesheetPath,
-				Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath);
+			var corpus = new UsfmFileTextCorpus(tokenizer, "usfm.sty", Encoding.UTF8,
+				CorporaTestHelpers.UsfmTestProjectPath);
 
 			Assert.That(corpus.Texts.Select(t => t.Id), Is.EquivalentTo(new[] { "MAT", "MRK" }));
 		}
@@ -22,8 +22,8 @@ namespace SIL.Machine.Corpora
 		public void GetText()
 		{
 			var tokenizer = new LatinWordTokenizer();
-			var corpus = new UsfmFileTextCorpus(tokenizer, CorporaTestHelpers.UsfmStylesheetPath,
-				Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath);
+			var corpus = new UsfmFileTextCorpus(tokenizer, "usfm.sty", Encoding.UTF8,
+				CorporaTestHelpers.UsfmTestProjectPath);
 
 			Assert.That(corpus.GetText("MAT").GetSegments(), Is.Not.Empty);
 			Assert.That(corpus.GetText("LUK").GetSegments(), Is.Empty);

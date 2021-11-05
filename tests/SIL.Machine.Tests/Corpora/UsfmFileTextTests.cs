@@ -14,8 +14,8 @@ namespace SIL.Machine.Corpora
 		public void GetSegments_NonEmptyText()
 		{
 			var tokenizer = new NullTokenizer();
-			var corpus = new UsfmFileTextCorpus(tokenizer, CorporaTestHelpers.UsfmStylesheetPath,
-				Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath);
+			var corpus = new UsfmFileTextCorpus(tokenizer, "usfm.sty", Encoding.UTF8,
+				CorporaTestHelpers.UsfmTestProjectPath);
 
 			IText text = corpus.GetText("MAT");
 			TextSegment[] segments = text.GetSegments().ToArray();
@@ -59,8 +59,8 @@ namespace SIL.Machine.Corpora
 		public void GetSegments_SentenceStart()
 		{
 			var tokenizer = new NullTokenizer();
-			var corpus = new UsfmFileTextCorpus(tokenizer, CorporaTestHelpers.UsfmStylesheetPath,
-				Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath);
+			var corpus = new UsfmFileTextCorpus(tokenizer, "usfm.sty", Encoding.UTF8,
+				CorporaTestHelpers.UsfmTestProjectPath);
 
 			IText text = corpus.GetText("MAT");
 			TextSegment[] segments = text.GetSegments().ToArray();
@@ -79,8 +79,8 @@ namespace SIL.Machine.Corpora
 		public void GetSegments_EmptyText()
 		{
 			var tokenizer = new LatinWordTokenizer();
-			var corpus = new UsfmFileTextCorpus(tokenizer, CorporaTestHelpers.UsfmStylesheetPath,
-				Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath);
+			var corpus = new UsfmFileTextCorpus(tokenizer, "usfm.sty", Encoding.UTF8,
+				CorporaTestHelpers.UsfmTestProjectPath);
 
 			IText text = corpus.GetText("MRK");
 			TextSegment[] segments = text.GetSegments().ToArray();
@@ -91,8 +91,8 @@ namespace SIL.Machine.Corpora
 		public void GetSegments_IncludeMarkers()
 		{
 			var tokenizer = new NullTokenizer();
-			var corpus = new UsfmFileTextCorpus(tokenizer, CorporaTestHelpers.UsfmStylesheetPath,
-				Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath, includeMarkers: true);
+			var corpus = new UsfmFileTextCorpus(tokenizer, "usfm.sty", Encoding.UTF8,
+				CorporaTestHelpers.UsfmTestProjectPath, includeMarkers: true);
 
 			IText text = corpus.GetText("MAT");
 			TextSegment[] segments = text.GetSegments().ToArray();
@@ -129,7 +129,7 @@ namespace SIL.Machine.Corpora
 			Assert.That(segments[9].Segment[0], Is.EqualTo("Chapter two, verse four."));
 
 			Assert.That(segments[10].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:5", corpus.Versification)));
-			Assert.That(segments[10].Segment[0], Is.EqualTo("Chapter two, verse five."));
+			Assert.That(segments[10].Segment[0], Is.EqualTo("Chapter two, verse five \\rq (MAT 3:1)\\rq*."));
 
 			Assert.That(segments[11].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:6", corpus.Versification)));
 			Assert.That(segments[11].Segment[0], Is.EqualTo("Chapter two, verse \\w six|strong=\"12345\" \\w*."));
@@ -147,8 +147,8 @@ namespace SIL.Machine.Corpora
 				versification = Versification.Table.Implementation.Load(reader, "vers.txt", ScrVers.English, "custom");
 			}
 
-			var corpus = new UsfmFileTextCorpus(tokenizer, CorporaTestHelpers.UsfmStylesheetPath,
-				Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath, versification);
+			var corpus = new UsfmFileTextCorpus(tokenizer, "usfm.sty", Encoding.UTF8,
+				CorporaTestHelpers.UsfmTestProjectPath, versification);
 
 			var basedOnText = new NullScriptureText(tokenizer, "MAT", ScrVers.Original);
 
