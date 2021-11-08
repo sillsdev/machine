@@ -10,14 +10,14 @@
   <verse number="1" style="v" />Chapter one, verse one.<note caller="+" style="f"><char style="fr">1:1: </char><char style="ft">This is a footnote.</char></note>
   <para style="li1">
     <verse number="2" style="v" />Chapter one,</para>
-  <para style="li2">verse two.<verse number="3" style="v" />Chapter one,</para>
+  <para style="li2">verse<note caller="+" style="f"><char style="fr">1:2: </char><char style="ft">This is a footnote.</char></note> two.<verse number="3" style="v" />Chapter one,</para>
   <para style="li2">verse three.<verse number="4" style="v" />Chapter one,</para>
   <para style="li2">verse four,<verse number="5" style="v" />Chapter one,</para>
   <para style="li2">verse<figure style="fig" file="image1.png" size="col" ref="1:5">Figure 1</figure>five.</para>
   <chapter number="2" style="c" />
   <para style="s1">Chapter Two</para>
   <para style="p">
-    <verse number="1" style="v" />Chapter <char style="add">two</char>, verse<note caller="+" style="f"><char style="fr">2:1: </char><char style="ft">This is a footnote.</char></note> one. <verse number="2-3" style="v" />Chapter two, verse two. <verse number="3-4a" style="v" />Chapter two, verse three. <verse number="4b" style="v" />Chapter two, verse four.</para>
+    <verse number="1" style="v" />Chapter <char style="add">two</char>, verse <note caller="+" style="f"><char style="fr">2:1: </char><char style="ft">This is a footnote.</char></note>one. <verse number="2-3" style="v" />Chapter two, verse two. <verse number="3-4a" style="v" />Chapter two, verse three. <verse number="4b" style="v" />Chapter two, verse four.</para>
   <para style="p">
     <verse number="6" style="v" />Chapter two, verse <char style="w" strong="12345">six</char>. <verse number="6" style="v" />Bad verse. <verse number="5" style="v" />Chapter two, verse five <char style="rq">(MAT 3:1)</char>. <verse number="7a" style="v" />Chapter two, verse seven A,</para>
   <para style="s">Section header</para>

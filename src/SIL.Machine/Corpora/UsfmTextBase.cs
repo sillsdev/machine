@@ -134,7 +134,7 @@ namespace SIL.Machine.Corpora
 						else if (token.Marker.Marker != "qac" && token.Marker.TextType == UsfmTextType.Other)
 						{
 							curEmbedMarker = token.Marker;
-							if (!_includeMarkers)
+							if (!_includeMarkers && token.Marker.Marker == "rq")
 								sb.TrimEnd();
 						}
 						if (isVersePara && chapter != null && verse != null && _includeMarkers)
@@ -169,6 +169,11 @@ namespace SIL.Machine.Corpora
 									int index = text.IndexOf("|");
 									if (index >= 0)
 										text = text.Substring(0, index);
+								}
+								if (prevToken?.Type == UsfmTokenType.End
+									&& (sb.Length == 0 || char.IsWhiteSpace(sb[sb.Length - 1])))
+								{
+									text = text.TrimStart();
 								}
 								sb.Append(text);
 							}

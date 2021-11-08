@@ -102,7 +102,7 @@ namespace SIL.Machine.Corpora
 			Assert.That(segments[0].Segment[0], Is.EqualTo("Chapter one, verse one.\\f + \\fr 1:1: \\ft This is a footnote.\\f*"));
 
 			Assert.That(segments[1].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:2", corpus.Versification)));
-			Assert.That(segments[1].Segment[0], Is.EqualTo("Chapter one, \\li2 verse two."));
+			Assert.That(segments[1].Segment[0], Is.EqualTo("Chapter one, \\li2 verse\\f + \\fr 1:2: \\ft This is a footnote.\\f* two."));
 
 			Assert.That(segments[4].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:5", corpus.Versification)));
 			Assert.That(segments[4].Segment[0],
@@ -110,11 +110,11 @@ namespace SIL.Machine.Corpora
 
 			Assert.That(segments[5].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:1", corpus.Versification)));
 			Assert.That(segments[5].Segment[0], Is.EqualTo(
-				"Chapter \\add two\\add*, verse\\f + \\fr 2:1: \\ft This is a footnote.\\f* one."));
+				"Chapter \\add two\\add*, verse \\f + \\fr 2:1: \\ft This is a footnote.\\f*one."));
 
 			Assert.That(segments[6].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:2", corpus.Versification)));
 			Assert.That(segments[6].Segment[0],
-				Is.EqualTo("Chapter two, verse two. Chapter two, verse three."));
+				Is.EqualTo("Chapter two, verse \\fm ∆\\fm*two. Chapter two, verse three."));
 			Assert.That(segments[6].IsInRange, Is.True);
 
 			Assert.That(segments[7].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:3", corpus.Versification)));

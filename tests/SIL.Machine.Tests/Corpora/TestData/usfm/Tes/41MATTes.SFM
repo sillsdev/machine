@@ -7,7 +7,7 @@
 \v 1 Chapter one, verse one.\f + \fr 1:1: \ft This is a footnote.\f*
 \li1
 \v 2 Chapter one,
-\li2 verse two.
+\li2 verse\f + \fr 1:2: \ft This is a footnote.\f* two.
 \v 3 Chapter one,
 \li2 verse three.
 \v 4 Chapter one,
@@ -17,8 +17,8 @@
 \c 2 
 \s1 Chapter Two
 \p
-\v 1 Chapter \add two\add*, verse\f + \fr 2:1: \ft This is a footnote.\f* one.
-\v 2-3 Chapter two, verse two.
+\v 1 Chapter \add two\add*, verse \f + \fr 2:1: \ft This is a footnote.\f*one.
+\v 2-3 Chapter two, verse \fm ∆\fm*two.
 \v 3-4a Chapter two, verse three.
 \v 4b Chapter two, verse four.
 \p
