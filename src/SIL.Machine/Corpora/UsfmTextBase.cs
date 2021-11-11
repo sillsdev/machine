@@ -14,6 +14,16 @@ namespace SIL.Machine.Corpora
 			"ms", "mr", "s", "sr", "r", "d", "sp", "rem", "restore", "cl", "cp"
 		};
 
+		private static readonly HashSet<string> SpanMarkers = new HashSet<string>
+		{
+			"w", "jmp"
+		};
+
+		private static readonly HashSet<string> EmbedMarkers = new HashSet<string>
+		{
+			"fig", "va", "vp", "pro", "rq", "fm"
+		};
+
 		private readonly UsfmParser _parser;
 		private readonly Encoding _encoding;
 		private readonly bool _includeMarkers;
@@ -127,13 +137,13 @@ namespace SIL.Machine.Corpora
 						break;
 
 					case UsfmTokenType.Character:
-						if (token.Marker.Marker == "w" || token.Marker.Marker == "jmp")
+						if (SpanMarkers.Contains(token.Marker.Marker))
 						{
 							curSpanMarker = token.Marker;
 						}
 						else if (token.Marker.Marker != "qac"
-							&& (token.Marker.TextType == UsfmTextType.Other || token.Marker.Marker == "fig"
-								|| token.Marker.Marker == "va" || token.Marker.Marker == "vp"))
+							&& (token.Marker.TextType == UsfmTextType.Other
+								|| EmbedMarkers.Contains(token.Marker.Marker)))
 						{
 							curEmbedMarker = token.Marker;
 							if (!_includeMarkers && token.Marker.Marker == "rq")

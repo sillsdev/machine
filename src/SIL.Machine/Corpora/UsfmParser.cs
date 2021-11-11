@@ -76,11 +76,12 @@ namespace SIL.Machine.Corpora
 						index++;
 				}
 
+				bool isNested = markerStr.StartsWith("+", StringComparison.Ordinal);
 				// Lookup marker
 				UsfmMarker marker = _stylesheet.GetMarker(markerStr.TrimStart('+'));
 
 				// If starts with a plus and is not a character style, it is an unknown marker
-				if (markerStr.StartsWith("+", StringComparison.Ordinal) && marker.StyleType != UsfmStyleType.Character)
+				if (isNested && marker.StyleType != UsfmStyleType.Character && marker.StyleType != UsfmStyleType.End)
 					marker = _stylesheet.GetMarker(markerStr);
 
 				switch (marker.StyleType)
@@ -90,7 +91,7 @@ namespace SIL.Machine.Corpora
 						if ((marker.TextProperties & UsfmTextProperties.Verse) > 0)
 							tokens.Add(new UsfmToken(UsfmTokenType.Verse, marker, GetNextWord(usfm, ref index, preserveWhitespace)));
 						else
-							tokens.Add(new UsfmToken(UsfmTokenType.Character, marker, null));
+							tokens.Add(new UsfmToken(UsfmTokenType.Character, marker, null, isNested));
 						break;
 					case UsfmStyleType.Paragraph:
 						// Handle chapter special case
@@ -105,13 +106,13 @@ namespace SIL.Machine.Corpora
 						tokens.Add(new UsfmToken(UsfmTokenType.Note, marker, GetNextWord(usfm, ref index, preserveWhitespace)));
 						break;
 					case UsfmStyleType.End:
-						tokens.Add(new UsfmToken(UsfmTokenType.End, marker, null));
+						tokens.Add(new UsfmToken(UsfmTokenType.End, marker, null, isNested));
 						break;
 					case UsfmStyleType.Unknown:
 						// End tokens are always end tokens, even if unknown
 						if (markerStr.EndsWith("*", StringComparison.Ordinal))
 						{
-							tokens.Add(new UsfmToken(UsfmTokenType.End, marker, null));
+							tokens.Add(new UsfmToken(UsfmTokenType.End, marker, null, isNested));
 						}
 						else
 						{

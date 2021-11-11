@@ -4,7 +4,7 @@
 \ip An introduction to Matthew
 \c 1
 \s Chapter One
-\v 1 Chapter one, verse one.\f + \fr 1:1: \ft This is a footnote.\f*
+\v 1 Chapter \pn one\+pro WON\+pro*\pn*, verse one.\f + \fr 1:1: \ft This is a footnote.\f*
 \li1
 \v 2 Chapter one,
 \li2 verse\f + \fr 1:2: \ft This is a footnote.\f* two.

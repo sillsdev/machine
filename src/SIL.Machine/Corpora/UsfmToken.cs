@@ -23,11 +23,12 @@ namespace SIL.Machine.Corpora
 			Text = text;
 		}
 
-		public UsfmToken(UsfmTokenType type, UsfmMarker marker, string text)
+		public UsfmToken(UsfmTokenType type, UsfmMarker marker, string text, bool isNested = false)
 		{
 			Type = type;
 			Marker = marker;
 			Text = text;
+			IsNested = isNested;
 		}
 
 		public UsfmTokenType Type { get; }
@@ -36,11 +37,13 @@ namespace SIL.Machine.Corpora
 
 		public string Text { get; }
 
+		public bool IsNested { get; }
+
 		public override string ToString()
 		{
 			var sb = new StringBuilder();
 			if (Marker != null)
-				sb.Append(Marker);
+				sb.Append(IsNested ? $"\\+{Marker.Marker}" : Marker.ToString());
 			if (!string.IsNullOrEmpty(Text))
 			{
 				if (sb.Length > 0)
