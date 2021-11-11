@@ -131,7 +131,9 @@ namespace SIL.Machine.Corpora
 						{
 							curSpanMarker = token.Marker;
 						}
-						else if (token.Marker.Marker != "qac" && token.Marker.TextType == UsfmTextType.Other)
+						else if (token.Marker.Marker != "qac"
+							&& (token.Marker.TextType == UsfmTextType.Other || token.Marker.Marker == "fig"
+								|| token.Marker.Marker == "va" || token.Marker.Marker == "vp"))
 						{
 							curEmbedMarker = token.Marker;
 							if (!_includeMarkers && token.Marker.Marker == "rq")
