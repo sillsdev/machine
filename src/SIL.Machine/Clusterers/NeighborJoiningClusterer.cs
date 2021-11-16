@@ -21,7 +21,7 @@ namespace SIL.Machine.Clusterers
 			var clusters = new List<Cluster<T>>();
 			foreach (T dataObject in dataObjects)
 			{
-				var cluster = new Cluster<T>(dataObject) {Description = dataObject.ToString()};
+				var cluster = new Cluster<T>(dataObject) { Description = dataObject.ToString() };
 				clusters.Add(cluster);
 				tree.AddVertex(cluster);
 			}
@@ -62,7 +62,7 @@ namespace SIL.Machine.Clusterers
 				Cluster<T> jCluster = clusters[minJ];
 				distances.Remove(UnorderedTuple.Create(iCluster, jCluster));
 
-				var uCluster = new Cluster<T>();
+				var uCluster = new Cluster<T> { Description = "BRANCH" };
 				tree.AddVertex(uCluster);
 
 				double iLen = (minDist / 2) + ((r[iCluster] - r[jCluster]) / 2);

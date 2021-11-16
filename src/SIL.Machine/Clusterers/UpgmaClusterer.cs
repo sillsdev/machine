@@ -21,7 +21,7 @@ namespace SIL.Machine.Clusterers
 			var clusters = new List<Cluster<T>>();
 			foreach (T dataObject in dataObjects)
 			{
-				var cluster = new Cluster<T>(dataObject) {Description = dataObject.ToString()};
+				var cluster = new Cluster<T>(dataObject) { Description = dataObject.ToString() };
 				clusters.Add(cluster);
 				tree.AddVertex(cluster);
 			}
@@ -61,12 +61,12 @@ namespace SIL.Machine.Clusterers
 				Cluster<T> jCluster = clusters[minJ];
 				distances.Remove(UnorderedTuple.Create(iCluster, jCluster));
 
-				var uCluster = new Cluster<T>();
+				var uCluster = new Cluster<T> { Description = "BRANCH" };
 				tree.AddVertex(uCluster);
 
 				double height = minDist / 2;
 				heights[uCluster] = height;
-				
+
 				int iCount = tree.GetAllDataObjects(iCluster).Count();
 				double iLen = height - heights[iCluster];
 				if (iLen <= 0 && !tree.IsOutEdgesEmpty(iCluster))
@@ -95,8 +95,8 @@ namespace SIL.Machine.Clusterers
 					tree.AddEdge(new ClusterEdge<T>(uCluster, jCluster, Math.Max(jLen, 0)));
 				}
 
-				double iWeight = (double) iCount / (iCount + jCount);
-				double jWeight = (double) jCount / (iCount + jCount);
+				double iWeight = (double)iCount / (iCount + jCount);
+				double jWeight = (double)jCount / (iCount + jCount);
 				foreach (Cluster<T> kCluster in clusters.Where(c => c != iCluster && c != jCluster))
 				{
 					UnorderedTuple<Cluster<T>, Cluster<T>> kiKey = UnorderedTuple.Create(kCluster, iCluster);
