@@ -6,15 +6,18 @@ namespace SIL.Machine.Corpora
 	{
 		public ParallelTextSegment(string textId, object segRef, IReadOnlyList<string> sourceSegment,
 			IReadOnlyList<string> targetSegment, IReadOnlyCollection<AlignedWordPair> alignedWordPairs,
-			bool isSourceInRange, bool isSourceRangeStart, bool isTargetInRange, bool isTargetRangeStart, bool isEmpty)
+			bool isSourceSentenceStart, bool isSourceInRange, bool isSourceRangeStart, bool isTargetSentenceStart,
+			bool isTargetInRange, bool isTargetRangeStart, bool isEmpty)
 		{
 			TextId = textId;
 			SegmentRef = segRef;
 			SourceSegment = sourceSegment;
 			TargetSegment = targetSegment;
 			AlignedWordPairs = alignedWordPairs;
+			IsSourceSentenceStart = isSourceSentenceStart;
 			IsSourceInRange = isSourceInRange;
 			IsSourceRangeStart = isSourceRangeStart;
+			IsTargetSentenceStart = isTargetSentenceStart;
 			IsTargetInRange = isTargetInRange;
 			IsTargetRangeStart = isTargetRangeStart;
 			IsEmpty = isEmpty;
@@ -30,8 +33,10 @@ namespace SIL.Machine.Corpora
 
 		public IReadOnlyCollection<AlignedWordPair> AlignedWordPairs { get; }
 
+		public bool IsSourceSentenceStart { get; }
 		public bool IsSourceInRange { get; }
 		public bool IsSourceRangeStart { get; }
+		public bool IsTargetSentenceStart { get; }
 		public bool IsTargetInRange { get; }
 		public bool IsTargetRangeStart { get; }
 

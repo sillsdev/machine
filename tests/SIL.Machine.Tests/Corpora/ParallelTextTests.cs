@@ -22,7 +22,7 @@ namespace SIL.Machine.Corpora
 		{
 			var sourceText = new MemoryText("text1", new[]
 			{
-				Segment(1, "source segment 1 ."),
+				Segment(1, "source segment 1 .", isSentenceStart: false),
 				Segment(2, "source segment 2 ."),
 				Segment(3, "source segment 3 .")
 			});
@@ -30,7 +30,7 @@ namespace SIL.Machine.Corpora
 			{
 				Segment(1, "target segment 1 ."),
 				Segment(2, "target segment 2 ."),
-				Segment(3, "target segment 3 .")
+				Segment(3, "target segment 3 .", isSentenceStart: false)
 			});
 			var alignments = new MemoryTextAlignmentCollection("text1", new[]
 			{
@@ -44,9 +44,13 @@ namespace SIL.Machine.Corpora
 			Assert.That(segments.Length, Is.EqualTo(3));
 			Assert.That(segments[0].SourceSegment, Is.EqualTo("source segment 1 .".Split()));
 			Assert.That(segments[0].TargetSegment, Is.EqualTo("target segment 1 .".Split()));
+			Assert.That(segments[0].IsSourceSentenceStart, Is.False);
+			Assert.That(segments[0].IsTargetSentenceStart, Is.True);
 			Assert.That(segments[0].AlignedWordPairs, Is.EquivalentTo(new[] { new AlignedWordPair(0, 0) }));
 			Assert.That(segments[2].SourceSegment, Is.EqualTo("source segment 3 .".Split()));
 			Assert.That(segments[2].TargetSegment, Is.EqualTo("target segment 3 .".Split()));
+			Assert.That(segments[2].IsSourceSentenceStart, Is.True);
+			Assert.That(segments[2].IsTargetSentenceStart, Is.False);
 			Assert.That(segments[2].AlignedWordPairs, Is.EquivalentTo(new[] { new AlignedWordPair(2, 2) }));
 		}
 
@@ -242,7 +246,8 @@ namespace SIL.Machine.Corpora
 			var sourceText = new MemoryText("text1", new[]
 			{
 				Segment(1, "source segment 1 ."),
-				Segment(2, "source segment 2 . source segment 3 .", isInRange: true, isRangeStart: true),
+				Segment(2, "source segment 2 . source segment 3 .", isSentenceStart: false, isInRange: true,
+					isRangeStart: true),
 				Segment(3, isInRange: true),
 				Segment(4, "source segment 4 .")
 			});
@@ -259,6 +264,8 @@ namespace SIL.Machine.Corpora
 			Assert.That(segments.Length, Is.EqualTo(3));
 			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 2 . source segment 3 .".Split()));
 			Assert.That(segments[1].TargetSegment, Is.EqualTo("target segment 2 . target segment 3 .".Split()));
+			Assert.That(segments[1].IsSourceSentenceStart, Is.False);
+			Assert.That(segments[1].IsTargetSentenceStart, Is.True);
 		}
 
 		[Test]
@@ -284,6 +291,8 @@ namespace SIL.Machine.Corpora
 				Is.EqualTo("source segment 1 . source segment 2 . source segment 3 .".Split()));
 			Assert.That(segments[0].TargetSegment,
 				Is.EqualTo("target segment 1 . target segment 2 . target segment 3 .".Split()));
+			Assert.That(segments[0].IsSourceSentenceStart, Is.True);
+			Assert.That(segments[0].IsTargetSentenceStart, Is.True);
 		}
 
 		[Test]
@@ -291,14 +300,15 @@ namespace SIL.Machine.Corpora
 		{
 			var sourceText = new MemoryText("text1", new[]
 			{
-				Segment(1, "source segment 1 . source segment 2 .", isInRange: true, isRangeStart: true),
+				Segment(1, "source segment 1 . source segment 2 .", isSentenceStart: false, isInRange: true,
+					isRangeStart: true),
 				Segment(2, isInRange: true),
 				Segment(3, "source segment 3 . source segment 4 .", isInRange: true, isRangeStart: true),
 				Segment(4, isInRange: true)
 			});
 			var targetText = new MemoryText("text1", new[]
 			{
-				Segment(1, "target segment 1 ."),
+				Segment(1, "target segment 1 .", isSentenceStart: false),
 				Segment(2, "target segment 2 ."),
 				Segment(3, "target segment 3 ."),
 				Segment(4, "target segment 4 .")
@@ -309,8 +319,12 @@ namespace SIL.Machine.Corpora
 			Assert.That(segments.Length, Is.EqualTo(2));
 			Assert.That(segments[0].SourceSegment, Is.EqualTo("source segment 1 . source segment 2 .".Split()));
 			Assert.That(segments[0].TargetSegment, Is.EqualTo("target segment 1 . target segment 2 .".Split()));
+			Assert.That(segments[0].IsSourceSentenceStart, Is.False);
+			Assert.That(segments[0].IsTargetSentenceStart, Is.False);
 			Assert.That(segments[1].SourceSegment, Is.EqualTo("source segment 3 . source segment 4 .".Split()));
 			Assert.That(segments[1].TargetSegment, Is.EqualTo("target segment 3 . target segment 4 .".Split()));
+			Assert.That(segments[1].IsSourceSentenceStart, Is.True);
+			Assert.That(segments[1].IsTargetSentenceStart, Is.True);
 		}
 
 		[Test]
@@ -504,10 +518,11 @@ namespace SIL.Machine.Corpora
 			Assert.That(segments[2].TargetSegment, Is.EqualTo("target segment 2 .".Split()));
 		}
 
-		private static TextSegment Segment(int key, string text = "", bool isInRange = false, bool isRangeStart = false)
+		private static TextSegment Segment(int key, string text = "", bool isSentenceStart = true,
+			bool isInRange = false, bool isRangeStart = false)
 		{
 			return new TextSegment("text1", new TextSegmentRef(key),
-				text.Length == 0 ? Array.Empty<string>() : text.Split(), isSentenceStart: true, isInRange, isRangeStart,
+				text.Length == 0 ? Array.Empty<string>() : text.Split(), isSentenceStart, isInRange, isRangeStart,
 				isEmpty: text.Length == 0);
 		}
 

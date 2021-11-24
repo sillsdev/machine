@@ -101,9 +101,15 @@ namespace SIL.Machine.Corpora
 							rangeInfo.SourceSegment.AddRange(srcEnumerator.Current.Segment);
 							rangeInfo.TargetSegment.AddRange(trgEnumerator.Current.Segment);
 							if (rangeInfo.IsSourceEmpty)
+							{
 								rangeInfo.IsSourceEmpty = srcEnumerator.Current.IsEmpty;
+								rangeInfo.IsSourceSentenceStart = srcEnumerator.Current.IsSentenceStart;
+							}
 							if (rangeInfo.IsTargetEmpty)
+							{
 								rangeInfo.IsTargetEmpty = trgEnumerator.Current.IsEmpty;
+								rangeInfo.IsTargetSentenceStart = trgEnumerator.Current.IsSentenceStart;
+							}
 						}
 						else
 						{
@@ -187,8 +193,11 @@ namespace SIL.Machine.Corpora
 				srcSeg != null ? srcSeg.Segment : Array.Empty<string>(),
 				trgSeg != null ? trgSeg.Segment : Array.Empty<string>(),
 				alignedWordPairs,
+				srcSeg != null && srcSeg.IsSentenceStart,
 				srcSeg != null && srcSeg.IsInRange,
-				srcSeg != null && srcSeg.IsRangeStart, trgSeg != null && trgSeg.IsInRange,
+				srcSeg != null && srcSeg.IsRangeStart,
+				trgSeg != null && trgSeg.IsSentenceStart,
+				trgSeg != null && trgSeg.IsInRange,
 				trgSeg != null && trgSeg.IsRangeStart,
 				srcSeg == null || srcSeg.IsEmpty || trgSeg == null || trgSeg.IsEmpty);
 		}
@@ -258,6 +267,8 @@ namespace SIL.Machine.Corpora
 			public object SegmentRef { get; set; }
 			public List<string> SourceSegment { get; } = new List<string>();
 			public List<string> TargetSegment { get; } = new List<string>();
+			public bool IsSourceSentenceStart { get; set; } = false;
+			public bool IsTargetSentenceStart { get; set; } = false;
 			public bool IsInRange => SegmentRef != null;
 			public bool IsSourceEmpty { get; set; } = true;
 			public bool IsTargetEmpty { get; set; } = true;
@@ -265,11 +276,16 @@ namespace SIL.Machine.Corpora
 			public ParallelTextSegment CreateTextSegment()
 			{
 				var seg = new ParallelTextSegment(_text.Id, SegmentRef, SourceSegment.ToArray(),
-					TargetSegment.ToArray(), alignedWordPairs: null, isSourceInRange: false, isSourceRangeStart: false,
+					TargetSegment.ToArray(), alignedWordPairs: null, isSourceSentenceStart: IsSourceSentenceStart,
+					isSourceInRange: false, isSourceRangeStart: false, isTargetSentenceStart: IsTargetSentenceStart,
 					isTargetInRange: false, isTargetRangeStart: false, isEmpty: IsSourceEmpty || IsTargetEmpty);
 				SegmentRef = null;
 				SourceSegment.Clear();
 				TargetSegment.Clear();
+				IsSourceSentenceStart = false;
+				IsTargetSentenceStart = false;
+				IsSourceEmpty = true;
+				IsTargetEmpty = true;
 				return seg;
 			}
 		}
