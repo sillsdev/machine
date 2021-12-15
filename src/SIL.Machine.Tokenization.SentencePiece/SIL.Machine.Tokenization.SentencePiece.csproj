@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <SentencePiece4cDir>$(MSBuildProjectDirectory)\..\sentencepiece4c</SentencePiece4cDir>
+    <SentencePiece4cDll Condition="'$(OS)' == 'Windows_NT'">sentencepiece4c.dll</SentencePiece4cDll>
+    <SentencePiece4cDll Condition="'$(OS)' == 'Unix'">libsentencepiece4c.so</SentencePiece4cDll>
+  </PropertyGroup>
+
+  <Import Project="../AssemblyInfo.props" />
+
+  <ItemGroup>
+    <Content Include="$(SentencePiece4cDir)\bin\sentencepiece4c.dll" Link="sentencepiece4c.dll">
+      <Pack>true</Pack>
+      <PackagePath>runtimes\win-x64\native</PackagePath>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="$(SentencePiece4cDir)\bin\libsentencepiece4c.so" Link="libsentencepiece4c.so">
+      <Pack>true</Pack>
+      <PackagePath>runtimes\linux-x64\native</PackagePath>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(SentencePiece4cDir)\bin\$(SentencePiece4cDll)" Link="$(SentencePiece4cDll)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SIL.Machine\SIL.Machine.csproj" />
+  </ItemGroup>
+
+  <Target Name="BuildSentencePiece4c" BeforeTargets="PrepareForBuild" Condition="!Exists('$(SentencePiece4cDir)\bin\$(SentencePiece4cDll)')">
+    <MakeDir Directories="$(SentencePiece4cDir)\build" />
+    <Exec Command="cmake -S $(SentencePiece4cDir) -B $(SentencePiece4cDir)\build" />
+    <Exec Command="cmake --build $(SentencePiece4cDir)\build --target sentencepiece4c --config Release" />
+  </Target>
+
+</Project>

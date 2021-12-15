@@ -1,0 +1,100 @@
+name: CI Build
+
+on: [push]
+
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-18.04, windows-latest]
+        include:
+          - os: ubuntu-18.04
+            sentencepiece4c-dll: libsentencepiece4c.so
+            sentencepiece4c-artifact: sp4c-linux-x64
+            cmake-args: '-G Ninja -DCMAKE_BUILD_TYPE=Release'
+          - os: windows-latest
+            sentencepiece4c-dll: sentencepiece4c.dll
+            sentencepiece4c-artifact: sp4c-win-x64
+            cmake-args: '-A x64'
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: lukka/get-cmake@latest
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.x
+    - name: Install libgoogle-perftools-dev
+      run: sudo apt-get install -y libgoogle-perftools-dev
+      if: matrix.os == 'ubuntu-18.04'
+
+    - name: sentencepiece4c build
+      uses: lukka/run-cmake@v3.4
+      with:
+        cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+        cmakeListsTxtPath: '${{ github.workspace }}/src/sentencepiece4c/CMakeLists.txt'
+        buildDirectory: '${{ github.workspace }}/src/sentencepiece4c/build'
+        cmakeAppendedArgs: ${{ matrix.cmake-args }}
+        buildWithCMakeArgs: '--config Release --target sentencepiece4c'
+
+    - name: Upload sentence4c artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ matrix.sentencepiece4c-artifact }}
+        path: ${{ github.workspace }}/src/sentencepiece4c/bin/${{ matrix.sentencepiece4c-dll }}
+
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore -c Release
+    - name: Test
+      run: dotnet test --no-build --verbosity normal -c Release
+
+  create_package:
+    name: Create NuGet package
+    needs: build
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.x
+
+    - uses: actions/download-artifact@v2
+      with:
+        name: sp4c-linux-x64
+        path: ${{ github.workspace }}/src/sentencepiece4c/bin
+
+    - uses: actions/download-artifact@v2
+      with:
+        name: sp4c-win-x64
+        path: ${{ github.workspace }}/src/sentencepiece4c/bin
+
+    - name: Pack
+      run: |
+        dotnet pack src\SIL.Machine\SIL.Machine.csproj -c Release -o artifacts
+        dotnet pack src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj -c Release -o artifacts
+        dotnet pack src\SIL.Machine.WebApi\SIL.Machine.WebApi.csproj -c Release -o artifacts
+        dotnet pack src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj -c Release -o artifacts
+        dotnet pack src\SIL.Machine.Tool\SIL.Machine.Tool.csproj -c Release -o artifacts
+        dotnet pack src\SIL.Machine.Morphology.HermitCrab.Tool\SIL.Machine.Morphology.HermitCrab.Tool.csproj -c Release -o artifacts
+        dotnet pack src\SIL.Machine.Plugin\SIL.Machine.Plugin.csproj -c Release -o artifacts
+        dotnet pack src\SIL.Machine.Tokenization.SentencePiece\SIL.Machine.Tokenization.SentencePiece.csproj -c Release -o artifacts
+        dotnet pack src\SIL.Machine.Translation.TensorFlow\SIL.Machine.Translation.TensorFlow.csproj -c Release -o artifacts
+
+    - name: Upload package
+      uses: actions/upload-artifact@v2
+      with:
+        name: nuget-package
+        path: artifacts/*.nupkg
+
+    - name: Push
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: dotnet nuget push artifacts\*.nupkg -n true -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json

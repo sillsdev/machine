@@ -1,21 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>netcoreapp3.1</TargetFramework>
+	</PropertyGroup>
 
-  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
-    <StartAction>Project</StartAction>
-    <ExternalConsole>false</ExternalConsole>
-  </PropertyGroup>
+	<PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
+		<StartAction>Project</StartAction>
+		<ExternalConsole>false</ExternalConsole>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SIL.Machine.Translation.TestApp\SIL.Machine.Translation.TestApp.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\SIL.Machine.Translation.TestApp\SIL.Machine.Translation.TestApp.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Eto.Platform.Gtk" Version="2.5.4" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Eto.Platform.Gtk" Version="2.5.4" />
+	</ItemGroup>
 	
 </Project>
