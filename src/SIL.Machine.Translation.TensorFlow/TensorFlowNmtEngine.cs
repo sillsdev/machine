@@ -67,8 +67,8 @@ namespace SIL.Machine.Translation.TensorFlow
 		{
 			NDArray inputTokens = new NDArray(segment.ToArray(), new Shape(1, segment.Count));
 			NDArray inputLength = np.array(new[] { segment.Count });
-			NDArray refs = new NDArray(new[] { "" }, new Shape(1));
-			NDArray refsLength = new NDArray(1);
+			NDArray refs = new NDArray(new[] { "" }, new Shape(1, 1));
+			NDArray refsLength = np.array(new[] { 1 });
 
 			_session.graph.as_default();
 			NDArray[] results = _session.run(_outputs,
