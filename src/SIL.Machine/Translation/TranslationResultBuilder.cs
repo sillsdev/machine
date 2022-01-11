@@ -194,7 +194,6 @@ namespace SIL.Machine.Translation
 
 		public TranslationResult ToResult(IReadOnlyList<string> sourceSegment)
 		{
-			double[] confidences = _confidences.ToArray();
 			var sources = new TranslationSources[Words.Count];
 			var alignment = new WordAlignmentMatrix(sourceSegment.Count, Words.Count);
 			var phrases = new List<Phrase>();
@@ -212,15 +211,15 @@ namespace SIL.Machine.Translation
 							alignment[i, j] = true;
 					}
 
-					sources[j] = Sources[j];
-					confidence = Math.Min(confidence, Confidences[j]);
+					sources[j] = _sources[j];
+					confidence = Math.Min(confidence, _confidences[j]);
 				}
 
 				phrases.Add(new Phrase(phraseInfo.SourceSegmentRange, phraseInfo.TargetCut, confidence));
 				trgPhraseStartIndex = phraseInfo.TargetCut;
 			}
 
-			return new TranslationResult(sourceSegment, Words, confidences, sources, alignment, phrases);
+			return new TranslationResult(sourceSegment, _words, _confidences, sources, alignment, phrases);
 		}
 
 		public class PhraseInfo

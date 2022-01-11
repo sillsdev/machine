@@ -9,7 +9,7 @@ using Range = SIL.Machine.Annotations.Range<int>;
 
 namespace SIL.Machine.Translation.TensorFlow
 {
-	public class TensorFlowTranslateSignature
+	public class SavedModelTranslateSignature
 	{
 		public string SignatureKey { get; set; } = "serving_default";
 		public string InputTokensKey { get; set; } = "tokens";
@@ -21,17 +21,17 @@ namespace SIL.Machine.Translation.TensorFlow
 		public string OutputAlignmentKey { get; set; } = "alignment";
 	}
 
-	public class TensorFlowNmtEngine : DisposableBase, ITranslationEngine
+	public class SavedModelNmtEngine : DisposableBase, ITranslationEngine
 	{
 		private readonly Session _session;
 		private readonly object[] _outputs;
 		private readonly Dictionary<string, int> _outputIndices;
 		private readonly Dictionary<string, object> _inputs;
-		private readonly TensorFlowTranslateSignature _signature;
+		private readonly SavedModelTranslateSignature _signature;
 
-		public TensorFlowNmtEngine(string modelFilename, TensorFlowTranslateSignature signature = null)
+		public SavedModelNmtEngine(string modelFilename, SavedModelTranslateSignature signature = null)
 		{
-			_signature = signature ?? new TensorFlowTranslateSignature();
+			_signature = signature ?? new SavedModelTranslateSignature();
 			_session = Session.LoadFromSavedModel(modelFilename);
 			byte[] bytes = File.ReadAllBytes(Path.Combine(modelFilename, "saved_model.pb"));
 			var metadata = SavedModel.Parser.ParseFrom(bytes);
