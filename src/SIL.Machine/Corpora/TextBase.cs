@@ -20,7 +20,7 @@ namespace SIL.Machine.Corpora
 
 		public ITokenizer<string, int, string> WordTokenizer { get; }
 
-		public abstract IEnumerable<TextSegment> GetSegments(bool includeText = true, IText basedOn = null);
+		public abstract IEnumerable<TextSegment> GetSegments(bool includeText = true, IText sortBasedOn = null);
 
 		protected TextSegment CreateTextSegment(bool includeText, string text, object segRef,
 			bool isSentenceStart = true, bool isInRange = false, bool isRangeStart = false)

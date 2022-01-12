@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using SIL.Machine.Tokenization;
 using SIL.Scripture;
 
@@ -14,34 +15,29 @@ namespace SIL.Machine.Corpora
 
 		public ScrVers Versification { get; }
 
-		public override IEnumerable<TextSegment> GetSegments(bool includeText = true, IText basedOn = null)
+		public override IEnumerable<TextSegment> GetSegments(bool includeText = true, IText sortBasedOn = null)
 		{
-			ScrVers basedOnVers = null;
-			if (basedOn is ScriptureText scriptureText && Versification != scriptureText.Versification)
-				basedOnVers = scriptureText.Versification;
-			var segList = new List<TextSegment>();
+			ScrVers sortBasedOnVers = null;
+			if (sortBasedOn is ScriptureText scriptureText && Versification != scriptureText.Versification)
+				sortBasedOnVers = scriptureText.Versification;
+			var segList = new List<(VerseRef Ref, TextSegment Segment)>();
 			bool outOfOrder = false;
 			var prevVerseRef = new VerseRef();
 			foreach (TextSegment seg in GetSegmentsInDocOrder(includeText))
 			{
 				var verseRef = (VerseRef)seg.SegmentRef;
-				TextSegment newSeg = seg;
-				if (basedOnVers != null)
-				{
-					verseRef.ChangeVersification(basedOnVers);
-					newSeg = new TextSegment(seg.TextId, verseRef, seg.Segment, seg.IsSentenceStart, seg.IsInRange,
-						seg.IsRangeStart, seg.IsEmpty);
-				}
-				segList.Add(newSeg);
+				if (sortBasedOnVers != null)
+					verseRef.ChangeVersification(sortBasedOnVers);
+				segList.Add((verseRef, seg));
 				if (verseRef.CompareTo(prevVerseRef) < 0)
 					outOfOrder = true;
 				prevVerseRef = verseRef;
 			}
 
 			if (outOfOrder)
-				segList.Sort((x, y) => ((VerseRef)x.SegmentRef).CompareTo(y.SegmentRef));
+				segList.Sort((x, y) => x.Ref.CompareTo(y.Ref));
 
-			return segList;
+			return segList.Select(t => t.Segment);
 		}
 
 		protected abstract IEnumerable<TextSegment> GetSegmentsInDocOrder(bool includeText);

@@ -34,7 +34,7 @@ namespace SIL.Machine.Corpora
 			bool allTargetSegments = false, bool includeText = true)
 		{
 			using (IEnumerator<TextSegment> srcEnumerator = SourceText.GetSegments(includeText).GetEnumerator())
-			using (IEnumerator<TextSegment> trgEnumerator = TargetText.GetSegments(includeText, basedOn: SourceText)
+			using (IEnumerator<TextSegment> trgEnumerator = TargetText.GetSegments(includeText, sortBasedOn: SourceText)
 				.GetEnumerator())
 			using (IEnumerator<TextAlignment> alignmentEnumerator = TextAlignmentCollection.Alignments.GetEnumerator())
 			{
@@ -97,7 +97,10 @@ namespace SIL.Machine.Corpora
 							}
 
 							if (!rangeInfo.IsInRange)
-								rangeInfo.SegmentRef = srcEnumerator.Current.SegmentRef;
+							{
+								rangeInfo.SourceSegmentRef = srcEnumerator.Current.SegmentRef;
+								rangeInfo.TargetSegmentRef = trgEnumerator.Current.SegmentRef;
+							}
 							rangeInfo.SourceSegment.AddRange(srcEnumerator.Current.Segment);
 							rangeInfo.TargetSegment.AddRange(trgEnumerator.Current.Segment);
 							if (rangeInfo.IsSourceEmpty)
@@ -189,7 +192,8 @@ namespace SIL.Machine.Corpora
 			if (rangeInfo.IsInRange)
 				yield return rangeInfo.CreateTextSegment();
 			yield return new ParallelTextSegment(Id,
-				srcSeg != null ? srcSeg.SegmentRef : trgSeg.SegmentRef,
+				srcSeg?.SegmentRef,
+				trgSeg?.SegmentRef,
 				srcSeg != null ? srcSeg.Segment : Array.Empty<string>(),
 				trgSeg != null ? trgSeg.Segment : Array.Empty<string>(),
 				alignedWordPairs,
@@ -264,22 +268,24 @@ namespace SIL.Machine.Corpora
 				_text = text;
 			}
 
-			public object SegmentRef { get; set; }
+			public object SourceSegmentRef { get; set; }
+			public object TargetSegmentRef { get; set; }
 			public List<string> SourceSegment { get; } = new List<string>();
 			public List<string> TargetSegment { get; } = new List<string>();
 			public bool IsSourceSentenceStart { get; set; } = false;
 			public bool IsTargetSentenceStart { get; set; } = false;
-			public bool IsInRange => SegmentRef != null;
+			public bool IsInRange => SourceSegmentRef != null && TargetSegmentRef != null;
 			public bool IsSourceEmpty { get; set; } = true;
 			public bool IsTargetEmpty { get; set; } = true;
 
 			public ParallelTextSegment CreateTextSegment()
 			{
-				var seg = new ParallelTextSegment(_text.Id, SegmentRef, SourceSegment.ToArray(),
+				var seg = new ParallelTextSegment(_text.Id, SourceSegmentRef, TargetSegmentRef, SourceSegment.ToArray(),
 					TargetSegment.ToArray(), alignedWordPairs: null, isSourceSentenceStart: IsSourceSentenceStart,
 					isSourceInRange: false, isSourceRangeStart: false, isTargetSentenceStart: IsTargetSentenceStart,
 					isTargetInRange: false, isTargetRangeStart: false, isEmpty: IsSourceEmpty || IsTargetEmpty);
-				SegmentRef = null;
+				SourceSegmentRef = null;
+				TargetSegmentRef = null;
 				SourceSegment.Clear();
 				TargetSegment.Clear();
 				IsSourceSentenceStart = false;
