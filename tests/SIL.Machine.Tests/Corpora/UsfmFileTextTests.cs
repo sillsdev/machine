@@ -137,7 +137,7 @@ namespace SIL.Machine.Corpora
 		}
 
 		[Test]
-		public void GetSegmentsBasedOn()
+		public void GetSegmentsSortBasedOn()
 		{
 			var tokenizer = new NullTokenizer();
 

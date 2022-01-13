@@ -29,7 +29,7 @@ namespace SIL.Machine.Corpora
 				if (sortBasedOnVers != null)
 					verseRef.ChangeVersification(sortBasedOnVers);
 				segList.Add((verseRef, seg));
-				if (verseRef.CompareTo(prevVerseRef) < 0)
+				if (!outOfOrder && verseRef.CompareTo(prevVerseRef) < 0)
 					outOfOrder = true;
 				prevVerseRef = verseRef;
 			}
