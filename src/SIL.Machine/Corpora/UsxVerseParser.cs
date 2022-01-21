@@ -56,30 +56,38 @@ namespace SIL.Machine.Corpora
 								break;
 
 							case "verse":
-								string verse = (string)e.Attribute("number") ?? (string)e.Attribute("pubnumber");
-								if (ctxt.IsInVerse)
+								if (e.Attribute("eid") != null)
 								{
-									if (verse == ctxt.Verse)
-									{
-										yield return ctxt.CreateVerse();
-
-										// ignore duplicate verse
-										ctxt.Verse = null;
-									}
-									else if (VerseRef.AreOverlappingVersesRanges(verse, ctxt.Verse))
-									{
-										// merge overlapping verse ranges in to one range
-										ctxt.Verse = CorporaHelpers.MergeVerseRanges(verse, ctxt.Verse);
-									}
-									else
-									{
-										yield return ctxt.CreateVerse();
-										ctxt.Verse = verse;
-									}
+									yield return ctxt.CreateVerse();
+									ctxt.Verse = null;
 								}
 								else
 								{
-									ctxt.Verse = verse;
+									string verse = (string)e.Attribute("number") ?? (string)e.Attribute("pubnumber");
+									if (ctxt.IsInVerse)
+									{
+										if (verse == ctxt.Verse)
+										{
+											yield return ctxt.CreateVerse();
+
+											// ignore duplicate verse
+											ctxt.Verse = null;
+										}
+										else if (VerseRef.AreOverlappingVersesRanges(verse, ctxt.Verse))
+										{
+											// merge overlapping verse ranges in to one range
+											ctxt.Verse = CorporaHelpers.MergeVerseRanges(verse, ctxt.Verse);
+										}
+										else
+										{
+											yield return ctxt.CreateVerse();
+											ctxt.Verse = verse;
+										}
+									}
+									else
+									{
+										ctxt.Verse = verse;
+									}
 								}
 								break;
 

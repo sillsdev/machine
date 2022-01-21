@@ -17,7 +17,7 @@
   <chapter number="2" style="c" />
   <para style="s1">Chapter Two</para>
   <para style="p">
-    <verse number="1" style="v" />Chapter <char style="add">two</char>, verse <note caller="+" style="f"><char style="fr">2:1: </char><char style="ft">This is a footnote.</char></note>one. <verse number="2-3" style="v" />Chapter two, verse two. <verse number="3-4a" style="v" />Chapter two, verse three. <verse number="4b" style="v" />Chapter two, verse four.</para>
+    <verse number="1" style="v" sid="MAT 2:1" />Chapter <char style="add">two</char>, verse <note caller="+" style="f"><char style="fr">2:1: </char><char style="ft">This is a footnote.</char></note>one. <verse eid="MAT 2:1" /><verse number="2-3" style="v" />Chapter two, verse two. <verse number="3-4a" style="v" />Chapter two, verse three. <verse number="4b" style="v" />Chapter two, <char style="add">verse</char> <char style="add">four</char>.</para>
   <para style="p">
     <verse number="6" style="v" />Chapter two, verse <char style="w" strong="12345">six</char>. <verse number="6" style="v" />Bad verse. <verse number="5" style="v" />Chapter two, verse five <char style="rq">(MAT 3:1)</char>. <verse number="7a" style="v" />Chapter two, verse seven A,</para>
   <para style="s">Section header</para>

@@ -27,7 +27,7 @@ namespace SIL.Machine.Corpora
 						sb.TrimEnd();
 				}
 
-				if (token.Text.Length == 0 || token.Text.IsWhiteSpace())
+				if (token.Text.Length == 0 || token.Text.StartsWith("\n"))
 					continue;
 
 				if (prevToken != null && token.ParaElement != prevToken.ParaElement && sb.Length > 0 && !endsWithSpace)
