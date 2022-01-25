@@ -1,0 +1,71 @@
+﻿<ScriptureText>
+  <StyleSheet>usfm.sty</StyleSheet>
+  <BooksPresent>000000000000000000000000000000000000000111111111111111111111111111000000000000000000000000000000000100000000000000000000000</BooksPresent>
+  <Versification>4</Versification>
+  <LanguageIsoCode>es:Latn::</LanguageIsoCode>
+  <Language>Spanish</Language>
+  <MinParatextVersion>8.0.63.1</MinParatextVersion>
+  <FullName>Versión Biblia Libre [spa] Spanish Free Bible Version</FullName>
+  <Encoding>65001</Encoding>
+  <Editable>T</Editable>
+  <Copyright>&lt;p&gt;copyright © 2018 &lt;a href="http://www.freebibleversion.org/"&gt;Jonathan Gallagher y Shelly Barrios de Avila&lt;/a&gt;. 	Esta obra se encuentra bajo una licencia de Creative Commons Attribution-NoDerivs Unported License.	La traducción Free Bible Version está siendo distribuida para uso libre, con las únicas condiciones siguientes: a) debe ser identificada como Free BibleVersion, y b) el texto no debe ser cambiado.&lt;/p&gt;</Copyright>
+  <Name>spavbl</Name>
+  <Guid>482ddd53705278cce28a22c6292957b4d0c095c1</Guid>
+  <DefaultFont>Gentium</DefaultFont>
+  <DefaultFontSize>14</DefaultFontSize>
+  <FontFeatures />
+  <HtmlLanguage />
+  <ParatextRegistryId>fbx9s8quxQ4Ec38m4</ParatextRegistryId>
+  <Visibility>Public</Visibility>
+  <FileNamePrePart />
+  <FileNamePostPart>spavbl.SFM</FileNamePostPart>
+  <FileNameBookNameForm>41MAT</FileNameBookNameForm>
+  <AssociatedLexicalProject />
+  <NormalizationForm>NFC</NormalizationForm>
+  <BiblicalTermsListSetting>Major::BiblicalTerms.xml</BiblicalTermsListSetting>
+  <MatchBasedOnStems>F</MatchBasedOnStems>
+  <AllowReadAccess>F</AllowReadAccess>
+  <AllowSharingWithSLDR>F</AllowSharingWithSLDR>
+  <TranslationInfo>Standard::</TranslationInfo>
+  <EncodingConverter />
+  <InitialImportBooksDirectory>/home/kahunapule/sync/BibleConv/output/spavbl/usfm</InitialImportBooksDirectory>
+  <ChapterVerseSeparator>.</ChapterVerseSeparator>
+  <ReferenceFinalPunctuation>.</ReferenceFinalPunctuation>
+  <BookSourceForMarkerXt>ShortName</BookSourceForMarkerXt>
+  <BookSourceForMarkerR>ShortName</BookSourceForMarkerR>
+  <OriginRangeOption>NoteInAnyVerse</OriginRangeOption>
+  <CrossReferenceSettingsHaveBeenReviewed>T</CrossReferenceSettingsHaveBeenReviewed>
+  <RefsMustMatchVerseSegments>False</RefsMustMatchVerseSegments>
+  <SegmentsMustHaveFinalPunctuation>False</SegmentsMustHaveFinalPunctuation>
+  <NoSpaceBetweenBookAndChapter>False</NoSpaceBetweenBookAndChapter>
+  <RangeIndicator>-</RangeIndicator>
+  <SequenceIndicator>,</SequenceIndicator>
+  <ChapterRangeSeparator>—</ChapterRangeSeparator>
+  <BookSequenceSeparator>; </BookSequenceSeparator>
+  <ChapterNumberSeparator>; </ChapterNumberSeparator>
+  <ReferenceExtraMaterial />
+  <CharacterAdvancedView>True</CharacterAdvancedView>
+  <ValidCharacters>  
+ 
+ ‌ ‍ õ [ ] @ Á Ú / k w – … ü - Z — ( ) V 9 G R 8 B 7 0 O F I É 6 ; U 5 4 Q ’ ‘ 3 H 2 x ¡ ! T M N Y ¿ ? 1 L C A ñ : S ú J z P D ” E “ é j f á ó í v h g y q b . , p m c t u d l i r n s o a e</ValidCharacters>
+  <InvalidCharacters>¨</InvalidCharacters>
+  <AdvancedView>False</AdvancedView>
+  <Quotes>“ ”</Quotes>
+  <InnerQuotes>‘ ’</InnerQuotes>
+  <InnerInnerQuotes>“ ”</InnerInnerQuotes>
+  <Continuer>“</Continuer>
+  <ContinueQuotes>Yes</ContinueQuotes>
+  <InnerContinuer>‘</InnerContinuer>
+  <ContinueInnerQuotes>Yes</ContinueInnerQuotes>
+  <InnerInnerContinuer>“</InnerInnerContinuer>
+  <VerboseQuotes>No</VerboseQuotes>
+  <QuoteClosesAllQuoteLevels>No</QuoteClosesAllQuoteLevels>
+  <ContinueAt>p p/q1 b/q1</ContinueAt>
+  <ValidPunctuation>‌ ‍ _,_ @ _[ ]_ _—_ _- _-_ … _…_ “ ..._ / - _— ” _–_ . —_ …_ — _( )_ ;_ ’_ _‘ !_ _¡ _¿ ?_ :_ ”_ _“ ._ ,_</ValidPunctuation>
+  <InvalidPunctuation>_; .._ , ¡ _(_ ! _”</InvalidPunctuation>
+  <DBLIncludeFonts>False</DBLIncludeFonts>
+  <DateArchived>2018-03-06T19:44:35.342721</DateArchived>
+  <GBCId>5a9eef95f8b34b5e5a30fc1f</GBCId>
+  <GBCSummary>Spanish(spa), El Nuevo Testamento, Versión Biblia Libre, Spain, New Testament, 2018-03-01, spavbl, dbl: matches</GBCSummary>
+  <Naming PrePart="" PostPart="spavbl.SFM" BookNameForm="41MAT" />
+</ScriptureText>

@@ -10,6 +10,10 @@ namespace SIL.Machine.Corpora
 		public static readonly ITokenProcessor EscapeSpaces = new EscapeSpacesTokenProcessor();
 		public static readonly ITokenProcessor UnescapeSpaces = new UnescapeSpacesTokenProcessor();
 		public static readonly ITokenProcessor NoOp = new NoOpTokenProcessor();
+		public static readonly ITokenProcessor NfcNormalize = Normalize();
+		public static readonly ITokenProcessor NfdNormalize = Normalize(NormalizationForm.FormD);
+		public static readonly ITokenProcessor NfkcNormalize = Normalize(NormalizationForm.FormKC);
+		public static readonly ITokenProcessor NfkdNormalize = Normalize(NormalizationForm.FormKD);
 
 		public static ITokenProcessor Pipeline(params ITokenProcessor[] processors)
 		{

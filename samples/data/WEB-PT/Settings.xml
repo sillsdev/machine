@@ -1,0 +1,86 @@
+﻿<ScriptureText>
+  <Versification>4</Versification>
+  <Name>engWEB14</Name>
+  <Encoding>65001</Encoding>
+  <Language>English</Language>
+  <DefaultFont>Gentium Basic</DefaultFont>
+  <DefaultFontSize>14</DefaultFontSize>
+  <FileNamePostPart>engWEB14.SFM</FileNamePostPart>
+  <FileNameBookNameForm>41MAT</FileNameBookNameForm>
+  <StyleSheet>usfm.sty</StyleSheet>
+  <MinParatextVersion>8.0.63.1</MinParatextVersion>
+  <FullName>World English Bible (American Edition)</FullName>
+  <Copyright>&lt;p&gt;PUBLIC DOMAIN&lt;/p&gt;</Copyright>
+  <BiblicalTermsListSetting>Major::BiblicalTerms.xml</BiblicalTermsListSetting>
+  <Editable>T</Editable>
+  <NeedsEnglishLanguageFix>No</NeedsEnglishLanguageFix>
+  <NeedsPortugueseLanguageFix>No</NeedsPortugueseLanguageFix>
+  <InitialImportBooksDirectory>/home/kahunapule/Paratext8Projects/engweb18</InitialImportBooksDirectory>
+  <Guid>9879dbb7cfe39e4d5d6f7f9dbd0c6414691a036e</Guid>
+  <TextEntryFontSizeAdjustment>0</TextEntryFontSizeAdjustment>
+  <Quotes>“ ”</Quotes>
+  <InnerQuotes>‘ ’</InnerQuotes>
+  <InnerInnerQuotes>“ ”</InnerInnerQuotes>
+  <ContinueQuotes>Yes</ContinueQuotes>
+  <VerboseQuotes>No</VerboseQuotes>
+  <ContinueAt>p p/q p/q1</ContinueAt>
+  <CrossReferenceSettingsHaveBeenReviewed>T</CrossReferenceSettingsHaveBeenReviewed>
+  <RangeIndicator>-</RangeIndicator>
+  <SequenceIndicator>,</SequenceIndicator>
+  <ChapterVerseSeparator>:</ChapterVerseSeparator>
+  <ChapterRangeSeparator>–</ChapterRangeSeparator>
+  <BookSequenceSeparator>; </BookSequenceSeparator>
+  <ChapterNumberSeparator>; </ChapterNumberSeparator>
+  <BookSourceForMarkerXt>Abbreviation</BookSourceForMarkerXt>
+  <BookSourceForMarkerR>ShortName</BookSourceForMarkerR>
+  <AdvancedView>False</AdvancedView>
+  <ValidCharacters>  a A b B c C d D e E f F g G h H i I j J k K l L m M n N o O p P q Q r R s S t T u U v V w W x X y Y z Z - * ‌ ‍ υ – + κ ρ π τ ν ι ς σ η λ μ % α = δ ἰ ὺ " ο &amp; / ה נֵּ הִ ם אֱ לֹ הִ֑ י [ ] — 7 9 8 ! ’ “ ; 6 , : ) ( 2 . ” 3 5 0 ? 1 ⌃ ‘ 4 ' _ ִ֑י ֵּה ִנ ֹה א ֱל ῆ ῥ 
+ \ ½ × χ ῦ θ ἄ β צִ έ ת צִ֛ ᾳ ἐ Μ ά ί ω ε ° έ ά נֵּ 
+ γ</ValidCharacters>
+  <InvalidCharacters>&gt; &lt;</InvalidCharacters>
+  <ValidPunctuation>_— ]_ _[ '_ – _=_ %_ ‘ -_ ) _&amp;_ _—_ / ⌃_ ” ? _+_ —_ !_ . — _&amp; - ?_ ..._ , ... _( )_ ._ ,_ _“ ”_ ;_ ’_ _‘ :_ ’ * ‌ ‍ ___ × °_ “</ValidPunctuation>
+  <InvalidPunctuation>“_ _?_ _’_ .._ _(_ _] _;_ ; _-_ _:_ _“_ _" "_ _._ _,_</InvalidPunctuation>
+  <Pairs>(/) [/] {/}</Pairs>
+  <ClosedByParagraph>No</ClosedByParagraph>
+  <PoeticStyles>ib iq iq1 iq2 iq3 q q1 q2 q3 q4 qc qr qs qa qac qm qm1 qm2 qm3 b</PoeticStyles>
+  <IntroductionOutlineStyles>io io1 io2 io3 io4</IntroductionOutlineStyles>
+  <TranslationInfo>Standard::</TranslationInfo>
+  <CharacterAdvancedView>True</CharacterAdvancedView>
+  <ContinueInnerQuotes>Yes</ContinueInnerQuotes>
+  <SegmentOrder>a b c d e f g h i j k l m n o p q r s t u v w x y z aa bb cc dd ee ff gg hh ii jj kk ll mm nn oo pp qq rr ss tt uu vv ww xx yy zz</SegmentOrder>
+  <IndividualBooks>No</IndividualBooks>
+  <ShowScope>Yes</ShowScope>
+  <PunctuationToCompare>“/“ ‘ ’ ”</PunctuationToCompare>
+  <IgnoreIntroductions>Yes</IgnoreIntroductions>
+  <IgnoreNotes>Yes</IgnoreNotes>
+  <StandardText>NIV84</StandardText>
+  <Err_None>(none)</Err_None>
+  <Err_Compare>Compare</Err_Compare>
+  <Err_InvalidPair>Invalid pair:</Err_InvalidPair>
+  <Err_CouldNotFind>Could not find:</Err_CouldNotFind>
+  <LanguageIsoCode>en:::</LanguageIsoCode>
+  <DateArchived>2014-09-24T04:59:02.500278</DateArchived>
+  <RefsMustMatchVerseSegments>False</RefsMustMatchVerseSegments>
+  <SegmentsMustHaveFinalPunctuation>False</SegmentsMustHaveFinalPunctuation>
+  <NoSpaceBetweenBookAndChapter>False</NoSpaceBetweenBookAndChapter>
+  <OriginRangeOption>MatchVerseExactly</OriginRangeOption>
+  <FileNamePrePart />
+  <BibleModuleAssociations />
+  <ReferenceFinalPunctuation />
+  <ReferenceExtraMaterial>See | LXX</ReferenceExtraMaterial>
+  <BooksPresent>111111111111111111111111111111111111111111111111111111111111111111111111000011111111000000000000000100000000100100000000000</BooksPresent>
+  <FontFeatures />
+  <HtmlLanguage />
+  <ParatextRegistryId>dtyynkiqGHSk8qEp7</ParatextRegistryId>
+  <Visibility>Public</Visibility>
+  <GBCId>546a4d9f5117ad7230055b04</GBCId>
+  <GBCSummary>English(eng), World English Bible, United States, Bible with Deuterocanon, Published, eBible.org, engWEB14, dbl: matches, tms</GBCSummary>
+  <MarkerAdvancedView>False</MarkerAdvancedView>
+  <AssociatedLexicalProject />
+  <MatchBasedOnStems>F</MatchBasedOnStems>
+  <AllowReadAccess>F</AllowReadAccess>
+  <AllowSharingWithSLDR>F</AllowSharingWithSLDR>
+  <EncodingConverter />
+  <UsfmVersion />
+  <Naming PrePart="" PostPart="engWEB14.SFM" BookNameForm="41MAT" />
+</ScriptureText>

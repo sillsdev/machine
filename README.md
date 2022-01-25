@@ -50,3 +50,24 @@ The implementation of multiple sequence alignment is based on the [CLUSTAL W alg
 
 ### Stemming
 Machine provides an unsupervised stemming algorithm specifically designed for resource-poor languages. The stemmer is trained using a list of words either derived from a corpus or a lexicon. The algorithm can also be used to identify possible affixes. It is based on the unsupervised stemming algorithm proposed in Harald Hammarström's [doctoral dissertation](http://aflat.org/files/phd.pdf).
+
+## Installation
+
+Machine is available as a set of NuGet packages:
+
+- [SIL.Machine](https://www.nuget.org/packages/SIL.Machine/): core library
+- [SIL.Machine.Translation.Thot](https://www.nuget.org/packages/SIL.Machine.Translation.Thot/): statistical machine translation and word alignment
+- [SIL.Machine.Morphology.HermitCrab](https://www.nuget.org/packages/SIL.Machine.Morphology.HermitCrab/): rule-based morphological parsing
+- [SIL.Machine.WebApi](https://www.nuget.org/packages/SIL.Machine.WebApi/): ASP.NET Core web API middleware
+
+Machine is also available as a command-line tool that can be installed as a .NET tool.
+
+```
+dotnet tool install -g SIL.Machine.Tool
+```
+
+## Tutorials
+
+If you would like to find out more about how to use Machine, check out the tutorial Jupyter notebooks:
+
+- [Text Corpora](samples/corpora.ipynb)

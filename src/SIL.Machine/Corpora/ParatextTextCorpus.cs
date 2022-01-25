@@ -38,10 +38,17 @@ namespace SIL.Machine.Corpora
 			{
 				var guid = (string)settingsDoc.Root.Element("Guid");
 				string versName = ((ScrVersType)scrVersType).ToString() + "-" + guid;
-				using (var reader = new StreamReader(customVersPath))
+				if (Scripture.Versification.Table.Implementation.Exists(versName))
 				{
-					Versification = Scripture.Versification.Table.Implementation.Load(reader, customVersPath,
-						Versification, versName);
+					Versification = new ScrVers(versName);
+				}
+				else
+				{
+					using (var reader = new StreamReader(customVersPath))
+					{
+						Versification = Scripture.Versification.Table.Implementation.Load(reader, customVersPath,
+							Versification, versName);
+					}
 				}
 			}
 
