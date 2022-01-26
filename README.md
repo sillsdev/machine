@@ -1,10 +1,17 @@
 # Machine for .NET
 Machine is a natural language processing library. It is specifically focused on providing tools and techniques that are useful for processing languages that are very resource-poor. The library is also useful as a foundation for building more advanced language processing techniques. The library currently only provides a basic set of algorithms, but the goal is to include many more in the future.
 
+- [Features](#features)
+- [Installation](#installation)
+- [Tutorials](#tutorials)
+
 ## Features
 
 ### Translation
 Machine provides a set of translation engines. It currently includes a SMT engine based on a fork of [Thot](https://github.com/sillsdev/thot) and a rule-based engine based on the HermitCrab morhphological parser.
+
+### Word Alignment
+Machine provides implementations of many common statistical word alignment models, such as IBM models 1-4, HMM, and FastAlign. These models are implemented in the [Thot](https://github.com/sillsdev/thot) library.
 
 ### Morphology
 Machine contains a rule-based morphological/phonological parser called HermitCrab.
