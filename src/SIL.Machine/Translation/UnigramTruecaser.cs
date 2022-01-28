@@ -16,10 +16,12 @@ namespace SIL.Machine.Translation
 		private Dictionary<string, (string Token, int Count)> _bestTokens;
 		private string _modelPath;
 
-		public UnigramTruecaser()
+		public UnigramTruecaser(string modelPath = null)
 		{
 			_casing = new ConditionalFrequencyDistribution<string, string>();
 			_bestTokens = new Dictionary<string, (string Token, int Count)>();
+			if (!string.IsNullOrEmpty(modelPath))
+				Load(modelPath);
 		}
 
 		public async Task LoadAsync(string path)
@@ -33,22 +35,22 @@ namespace SIL.Machine.Translation
 			{
 				string line;
 				while ((line = await reader.ReadLineAsync()) != null)
-				{
-					string[] parts = line.Split(' ');
-					for (int i = 0; i < parts.Length; i += 2)
-					{
-						string token = parts[i];
-						string lowerToken = token.ToLowerInvariant();
-						int count = int.Parse(parts[i + 1]);
-						_casing[lowerToken].Increment(token, count);
-						int bestCount = 0;
-						if (_bestTokens.TryGetValue(lowerToken, out (string Token, int Count) bestCase))
-							bestCount = bestCase.Count;
-						if (count > bestCount)
-							_bestTokens[lowerToken] = (token, count);
-					}
+					ParseLine(line);
+			}
+		}
 
-				}
+		public void Load(string path)
+		{
+			Reset();
+			_modelPath = path;
+			if (!File.Exists(path))
+				return;
+
+			using (var reader = new StreamReader(path))
+			{
+				string line;
+				while ((line = reader.ReadLine()) != null)
+					ParseLine(line);
 			}
 		}
 
@@ -165,6 +167,23 @@ namespace SIL.Machine.Translation
 		{
 			_casing.Reset();
 			_bestTokens.Clear();
+		}
+
+		private void ParseLine(string line)
+		{
+			string[] parts = line.Split(' ');
+			for (int i = 0; i < parts.Length; i += 2)
+			{
+				string token = parts[i];
+				string lowerToken = token.ToLowerInvariant();
+				int count = int.Parse(parts[i + 1]);
+				_casing[lowerToken].Increment(token, count);
+				int bestCount = 0;
+				if (_bestTokens.TryGetValue(lowerToken, out (string Token, int Count) bestCase))
+					bestCount = bestCase.Count;
+				if (count > bestCount)
+					_bestTokens[lowerToken] = (token, count);
+			}
 		}
 
 		private class Trainer : DisposableBase, ITrainer

@@ -125,5 +125,12 @@ namespace SIL.Machine.Translation
 		{
 			truecaser.TrainSegment(segment.Segment, segment.IsSentenceStart);
 		}
+
+		public static string Capitalize(this string sentence)
+		{
+			if (string.IsNullOrEmpty(sentence))
+				return sentence;
+			return char.ToUpperInvariant(sentence[0]) + sentence.Substring(1);
+		}
 	}
 }

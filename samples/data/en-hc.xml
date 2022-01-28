@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+	<Language>
+		<Name>English</Name>
+		<PartsOfSpeech>
+			<PartOfSpeech id="n">
+				<Name>Noun</Name>
+			</PartOfSpeech>
+			<PartOfSpeech id="v">
+				<Name>Verb</Name>
+			</PartOfSpeech>
+			<PartOfSpeech id="a">
+				<Name>Article</Name>
+			</PartOfSpeech>
+		</PartsOfSpeech>
+		<CharacterDefinitionTable id="table1">
+			<Name>English Orthography</Name>
+			<SegmentDefinitions>
+				<SegmentDefinition id="seg1">
+          <Representations>
+            <Representation>a</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg2">
+          <Representations>
+            <Representation>e</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg3">
+          <Representations>
+            <Representation>i</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg4">
+          <Representations>
+            <Representation>o</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg5">
+          <Representations>
+            <Representation>u</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg6">
+          <Representations>
+            <Representation>y</Representation>
+          </Representations>
+				</SegmentDefinition>
+				
+				<SegmentDefinition id="seg7">
+          <Representations>
+            <Representation>b</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg8">
+          <Representations>
+            <Representation>c</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg9">
+          <Representations>
+            <Representation>d</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg10">
+          <Representations>
+            <Representation>f</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg11">
+          <Representations>
+            <Representation>g</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg12">
+          <Representations>
+            <Representation>h</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg13">
+          <Representations>
+            <Representation>j</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg14">
+          <Representations>
+            <Representation>k</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg15">
+          <Representations>
+            <Representation>l</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg16">
+          <Representations>
+            <Representation>m</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg17">
+          <Representations>
+            <Representation>n</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg18">
+          <Representations>
+            <Representation>p</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg19">
+          <Representations>
+            <Representation>q</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg20">
+          <Representations>
+            <Representation>r</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg21">
+          <Representations>
+            <Representation>s</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg22">
+          <Representations>
+            <Representation>t</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg23">
+          <Representations>
+            <Representation>v</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg24">
+          <Representations>
+            <Representation>w</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg25">
+          <Representations>
+            <Representation>x</Representation>
+          </Representations>
+				</SegmentDefinition>
+				<SegmentDefinition id="seg26">
+          <Representations>
+            <Representation>z</Representation>
+          </Representations>
+				</SegmentDefinition>
+			</SegmentDefinitions>
+			<BoundaryDefinitions>
+        <BoundaryDefinition id="bdry1">
+          <Representations>
+            <Representation>+</Representation>
+          </Representations>
+        </BoundaryDefinition>
+			</BoundaryDefinitions>
+		</CharacterDefinitionTable>
+		<NaturalClasses>
+			<FeatureNaturalClass id="any">
+				<Name>Any</Name>
+			</FeatureNaturalClass>
+		</NaturalClasses>
+		<Strata>
+			<Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="rule1">
+				<Name>morphophonemic</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="rule1" requiredPartsOfSpeech="v">
+            <Name>Past tense</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="rule1-1">
+                <MorphologicalInput>
+                  <PhoneticSequence id="rule1-1-1">
+                    <OptionalSegmentSequence min="1" max="-1">
+                      <SimpleContext naturalClass="any" />
+                    </OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="rule1-1-1" />
+                  <InsertSegments>
+                    <PhoneticShape>+ed</PhoneticShape>
+                  </InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>rule1</MorphemeId>
+            <Gloss>PAST</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="le1" partOfSpeech="n">
+            <Allomorphs>
+              <Allomorph id="le1-1">
+                <PhoneticShape>god</PhoneticShape>
+              </Allomorph>
+            </Allomorphs>
+            <MorphemeId>le1</MorphemeId>
+            <Gloss>god</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="le2" partOfSpeech="v">
+            <Allomorphs>
+              <Allomorph id="le2-1" isBound="true">
+                <PhoneticShape>creat</PhoneticShape>
+              </Allomorph>
+            </Allomorphs>
+            <Gloss>create</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="le3" partOfSpeech="n">
+            <Allomorphs>
+              <Allomorph id="le3-1">
+                <PhoneticShape>world</PhoneticShape>
+              </Allomorph>
+            </Allomorphs>
+            <Gloss>world</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="le4" partOfSpeech="a">
+            <Allomorphs>
+              <Allomorph id="le4-1">
+                <PhoneticShape>the</PhoneticShape>
+              </Allomorph>
+            </Allomorphs>
+            <MorphemeId>le2</MorphemeId>
+            <Gloss>the</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+			</Stratum>
+      <Stratum characterDefinitionTable="table1">
+        <Name>surface</Name>
+      </Stratum>
+		</Strata>
+	</Language>
+</HermitCrabInput>
