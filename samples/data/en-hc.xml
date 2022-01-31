@@ -47,7 +47,7 @@
             <Representation>y</Representation>
           </Representations>
 				</SegmentDefinition>
-				
+
 				<SegmentDefinition id="seg7">
           <Representations>
             <Representation>b</Representation>
@@ -163,7 +163,7 @@
 			</FeatureNaturalClass>
 		</NaturalClasses>
 		<Strata>
-			<Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="rule1">
+			<Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="rule1 rule2">
 				<Name>morphophonemic</Name>
         <MorphologicalRuleDefinitions>
           <MorphologicalRule id="rule1" requiredPartsOfSpeech="v">
@@ -187,6 +187,28 @@
             </MorphologicalSubrules>
             <MorphemeId>rule1</MorphemeId>
             <Gloss>PAST</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="rule2" requiredPartsOfSpeech="n">
+            <Name>Plural</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="rule2-1">
+                <MorphologicalInput>
+                  <PhoneticSequence id="rule2-1-1">
+                    <OptionalSegmentSequence min="1" max="-1">
+                      <SimpleContext naturalClass="any" />
+                    </OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="rule2-1-1" />
+                  <InsertSegments>
+                    <PhoneticShape>+s</PhoneticShape>
+                  </InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>rule2</MorphemeId>
+            <Gloss>PLURAL</Gloss>
           </MorphologicalRule>
         </MorphologicalRuleDefinitions>
         <LexicalEntries>
@@ -223,6 +245,15 @@
             </Allomorphs>
             <MorphemeId>le2</MorphemeId>
             <Gloss>the</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="le5" partOfSpeech="n">
+            <Allomorphs>
+              <Allomorph id="le5-1" isBound="true">
+                <PhoneticShape>bill</PhoneticShape>
+              </Allomorph>
+            </Allomorphs>
+            <MorphemeId>le5</MorphemeId>
+            <Gloss>bill</Gloss>
           </LexicalEntry>
         </LexicalEntries>
 			</Stratum>
