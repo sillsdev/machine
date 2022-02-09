@@ -34,7 +34,7 @@ namespace SIL.Machine.Corpora
 			bool allTargetSegments = false, bool includeText = true)
 		{
 			using (IEnumerator<TextSegment> srcEnumerator = SourceText.GetSegments(includeText).GetEnumerator())
-			using (IEnumerator<TextSegment> trgEnumerator = TargetText.GetSegments(includeText, sortBasedOn: SourceText)
+			using (IEnumerator<TextSegment> trgEnumerator = TargetText.GetSegments(includeText, basedOn: SourceText)
 				.GetEnumerator())
 			using (IEnumerator<TextAlignment> alignmentEnumerator = TextAlignmentCollection.Alignments.GetEnumerator())
 			{
@@ -50,10 +50,29 @@ namespace SIL.Machine.Corpora
 						trgEnumerator.Current.SegmentRef);
 					if (compare1 < 0)
 					{
-						foreach (ParallelTextSegment seg in CreateSourceTextSegments(rangeInfo,
-							srcEnumerator.Current, targetSameRefSegments, allSourceSegments))
+						if (!allTargetSegments && srcEnumerator.Current.IsInRange)
 						{
-							yield return seg;
+							if (rangeInfo.IsInRange && trgEnumerator.Current.IsInRange
+								&& trgEnumerator.Current.Segment.Count > 0)
+							{
+								yield return rangeInfo.CreateTextSegment();
+							}
+							rangeInfo.SourceSegmentRefs.Add(srcEnumerator.Current.SegmentRef);
+							targetSameRefSegments.Clear();
+							rangeInfo.SourceSegment.AddRange(srcEnumerator.Current.Segment);
+							if (rangeInfo.IsSourceEmpty)
+							{
+								rangeInfo.IsSourceEmpty = srcEnumerator.Current.IsEmpty;
+								rangeInfo.IsSourceSentenceStart = srcEnumerator.Current.IsSentenceStart;
+							}
+						}
+						else
+						{
+							foreach (ParallelTextSegment seg in CreateSourceTextSegments(rangeInfo,
+								srcEnumerator.Current, targetSameRefSegments, allSourceSegments))
+							{
+								yield return seg;
+							}
 						}
 
 						sourceSameRefSegments.Add(srcEnumerator.Current);
@@ -61,10 +80,29 @@ namespace SIL.Machine.Corpora
 					}
 					else if (compare1 > 0)
 					{
-						foreach (ParallelTextSegment seg in CreateTargetTextSegments(rangeInfo,
-							trgEnumerator.Current, sourceSameRefSegments, allTargetSegments))
+						if (!allSourceSegments && trgEnumerator.Current.IsInRange)
 						{
-							yield return seg;
+							if (rangeInfo.IsInRange && srcEnumerator.Current.IsInRange
+								&& srcEnumerator.Current.Segment.Count > 0)
+							{
+								yield return rangeInfo.CreateTextSegment();
+							}
+							rangeInfo.TargetSegmentRefs.Add(trgEnumerator.Current.SegmentRef);
+							sourceSameRefSegments.Clear();
+							rangeInfo.TargetSegment.AddRange(trgEnumerator.Current.Segment);
+							if (rangeInfo.IsTargetEmpty)
+							{
+								rangeInfo.IsTargetEmpty = trgEnumerator.Current.IsEmpty;
+								rangeInfo.IsTargetSentenceStart = trgEnumerator.Current.IsSentenceStart;
+							}
+						}
+						else
+						{
+							foreach (ParallelTextSegment seg in CreateTargetTextSegments(rangeInfo,
+								trgEnumerator.Current, sourceSameRefSegments, allTargetSegments))
+							{
+								yield return seg;
+							}
 						}
 
 						targetSameRefSegments.Add(trgEnumerator.Current);
@@ -96,11 +134,10 @@ namespace SIL.Machine.Corpora
 								yield return rangeInfo.CreateTextSegment();
 							}
 
-							if (!rangeInfo.IsInRange)
-							{
-								rangeInfo.SourceSegmentRef = srcEnumerator.Current.SegmentRef;
-								rangeInfo.TargetSegmentRef = trgEnumerator.Current.SegmentRef;
-							}
+							rangeInfo.SourceSegmentRefs.Add(srcEnumerator.Current.SegmentRef);
+							rangeInfo.TargetSegmentRefs.Add(trgEnumerator.Current.SegmentRef);
+							sourceSameRefSegments.Clear();
+							targetSameRefSegments.Clear();
 							rangeInfo.SourceSegment.AddRange(srcEnumerator.Current.Segment);
 							rangeInfo.TargetSegment.AddRange(trgEnumerator.Current.Segment);
 							if (rangeInfo.IsSourceEmpty)
@@ -192,8 +229,8 @@ namespace SIL.Machine.Corpora
 			if (rangeInfo.IsInRange)
 				yield return rangeInfo.CreateTextSegment();
 			yield return new ParallelTextSegment(Id,
-				srcSeg?.SegmentRef,
-				trgSeg?.SegmentRef,
+				srcSeg != null ? new object[] { srcSeg.SegmentRef } : Array.Empty<object>(),
+				trgSeg != null ? new object[] { trgSeg.SegmentRef } : Array.Empty<object>(),
 				srcSeg != null ? srcSeg.Segment : Array.Empty<string>(),
 				trgSeg != null ? trgSeg.Segment : Array.Empty<string>(),
 				alignedWordPairs,
@@ -268,24 +305,25 @@ namespace SIL.Machine.Corpora
 				_text = text;
 			}
 
-			public object SourceSegmentRef { get; set; }
-			public object TargetSegmentRef { get; set; }
+			public List<object> SourceSegmentRefs { get; } = new List<object>();
+			public List<object> TargetSegmentRefs { get; } = new List<object>();
 			public List<string> SourceSegment { get; } = new List<string>();
 			public List<string> TargetSegment { get; } = new List<string>();
 			public bool IsSourceSentenceStart { get; set; } = false;
 			public bool IsTargetSentenceStart { get; set; } = false;
-			public bool IsInRange => SourceSegmentRef != null && TargetSegmentRef != null;
+			public bool IsInRange => SourceSegmentRefs.Count > 0 && TargetSegmentRefs.Count > 0;
 			public bool IsSourceEmpty { get; set; } = true;
 			public bool IsTargetEmpty { get; set; } = true;
 
 			public ParallelTextSegment CreateTextSegment()
 			{
-				var seg = new ParallelTextSegment(_text.Id, SourceSegmentRef, TargetSegmentRef, SourceSegment.ToArray(),
-					TargetSegment.ToArray(), alignedWordPairs: null, isSourceSentenceStart: IsSourceSentenceStart,
-					isSourceInRange: false, isSourceRangeStart: false, isTargetSentenceStart: IsTargetSentenceStart,
-					isTargetInRange: false, isTargetRangeStart: false, isEmpty: IsSourceEmpty || IsTargetEmpty);
-				SourceSegmentRef = null;
-				TargetSegmentRef = null;
+				var seg = new ParallelTextSegment(_text.Id, SourceSegmentRefs.ToArray(), TargetSegmentRefs.ToArray(),
+					SourceSegment.ToArray(), TargetSegment.ToArray(), alignedWordPairs: null,
+					isSourceSentenceStart: IsSourceSentenceStart, isSourceInRange: false, isSourceRangeStart: false,
+					isTargetSentenceStart: IsTargetSentenceStart, isTargetInRange: false, isTargetRangeStart: false,
+					isEmpty: IsSourceEmpty || IsTargetEmpty);
+				SourceSegmentRefs.Clear();
+				TargetSegmentRefs.Clear();
 				SourceSegment.Clear();
 				TargetSegment.Clear();
 				IsSourceSentenceStart = false;

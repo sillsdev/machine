@@ -5,18 +5,18 @@ namespace SIL.Machine.Corpora
 {
 	public class ParallelTextSegment
 	{
-		public ParallelTextSegment(string textId, object sourceSegmentRef, object targetSegmentRef,
-			IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
-			IReadOnlyCollection<AlignedWordPair> alignedWordPairs, bool isSourceSentenceStart, bool isSourceInRange,
-			bool isSourceRangeStart, bool isTargetSentenceStart, bool isTargetInRange, bool isTargetRangeStart,
-			bool isEmpty)
+		public ParallelTextSegment(string textId, IReadOnlyList<object> sourceSegmentRefs,
+			IReadOnlyList<object> targetSegmentRefs, IReadOnlyList<string> sourceSegment,
+			IReadOnlyList<string> targetSegment, IReadOnlyCollection<AlignedWordPair> alignedWordPairs,
+			bool isSourceSentenceStart, bool isSourceInRange, bool isSourceRangeStart, bool isTargetSentenceStart,
+			bool isTargetInRange, bool isTargetRangeStart, bool isEmpty)
 		{
-			if (sourceSegmentRef == null && targetSegmentRef == null)
+			if (sourceSegmentRefs.Count == 0 && targetSegmentRefs.Count == 0)
 				throw new ArgumentNullException("Either a source or target segment ref must be provided.");
 
 			TextId = textId;
-			SourceSegmentRef = sourceSegmentRef;
-			TargetSegmentRef = targetSegmentRef;
+			SourceSegmentRefs = sourceSegmentRefs;
+			TargetSegmentRefs = targetSegmentRefs;
 			SourceSegment = sourceSegment;
 			TargetSegment = targetSegment;
 			AlignedWordPairs = alignedWordPairs;
@@ -31,10 +31,10 @@ namespace SIL.Machine.Corpora
 
 		public string TextId { get; }
 
-		public object SegmentRef => SourceSegmentRef ?? TargetSegmentRef;
+		public object SegmentRef => SourceSegmentRefs.Count > 0 ? SourceSegmentRefs[0] : TargetSegmentRefs[0];
 
-		public object SourceSegmentRef { get; }
-		public object TargetSegmentRef { get; }
+		public IReadOnlyList<object> SourceSegmentRefs { get; }
+		public IReadOnlyList<object> TargetSegmentRefs { get; }
 
 		public IReadOnlyList<string> SourceSegment { get; }
 

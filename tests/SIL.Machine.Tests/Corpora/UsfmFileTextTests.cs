@@ -36,14 +36,17 @@ namespace SIL.Machine.Corpora
 			Assert.That(segments[6].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:2", corpus.Versification)));
 			Assert.That(segments[6].Segment[0], Is.EqualTo("Chapter two, verse two. Chapter two, verse three."));
 			Assert.That(segments[6].IsInRange, Is.True);
+			Assert.That(segments[6].IsRangeStart, Is.True);
 
 			Assert.That(segments[7].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:3", corpus.Versification)));
 			Assert.That(segments[7].Segment, Is.Empty);
 			Assert.That(segments[7].IsInRange, Is.True);
+			Assert.That(segments[7].IsRangeStart, Is.False);
 
 			Assert.That(segments[8].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:4a", corpus.Versification)));
 			Assert.That(segments[8].Segment, Is.Empty);
 			Assert.That(segments[8].IsInRange, Is.True);
+			Assert.That(segments[7].IsRangeStart, Is.False);
 
 			Assert.That(segments[9].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:4b", corpus.Versification)));
 			Assert.That(segments[9].Segment[0], Is.EqualTo("Chapter two, verse four."));
@@ -117,14 +120,17 @@ namespace SIL.Machine.Corpora
 			Assert.That(segments[6].Segment[0],
 				Is.EqualTo("Chapter two, verse \\fm ∆\\fm*two. Chapter two, verse three."));
 			Assert.That(segments[6].IsInRange, Is.True);
+			Assert.That(segments[6].IsRangeStart, Is.True);
 
 			Assert.That(segments[7].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:3", corpus.Versification)));
 			Assert.That(segments[7].Segment, Is.Empty);
 			Assert.That(segments[7].IsInRange, Is.True);
+			Assert.That(segments[7].IsRangeStart, Is.False);
 
 			Assert.That(segments[8].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:4a", corpus.Versification)));
 			Assert.That(segments[8].Segment, Is.Empty);
 			Assert.That(segments[8].IsInRange, Is.True);
+			Assert.That(segments[8].IsRangeStart, Is.False);
 
 			Assert.That(segments[9].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:4b", corpus.Versification)));
 			Assert.That(segments[9].Segment[0], Is.EqualTo("Chapter two, verse four."));
@@ -137,11 +143,11 @@ namespace SIL.Machine.Corpora
 		}
 
 		[Test]
-		public void GetSegmentsSortBasedOn()
+		public void GetSegmentsBasedOn()
 		{
 			var tokenizer = new NullTokenizer();
 
-			string src = "MAT 1:2 = MAT 1:3\nMAT 1:3 = MAT 1:2\n";
+			string src = "&MAT 1:4-5 = MAT 1:4\nMAT 1:2 = MAT 1:3\nMAT 1:3 = MAT 1:2\n";
 			ScrVers versification;
 			using (var reader = new StringReader(src))
 			{
@@ -154,7 +160,7 @@ namespace SIL.Machine.Corpora
 			var origVersText = new NullScriptureText(tokenizer, "MAT", ScrVers.Original);
 
 			IText text = corpus.GetText("MAT");
-			TextSegment[] segments = text.GetSegments(sortBasedOn: origVersText).ToArray();
+			TextSegment[] segments = text.GetSegments(basedOn: origVersText).ToArray();
 			Assert.That(segments.Length, Is.EqualTo(14));
 
 			Assert.That(segments[0].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:1", versification)));
@@ -166,8 +172,16 @@ namespace SIL.Machine.Corpora
 			Assert.That(segments[2].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:2", versification)));
 			Assert.That(segments[2].Segment[0], Is.EqualTo("Chapter one, verse two."));
 
+			Assert.That(segments[3].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:4", versification)));
+			Assert.That(segments[3].Segment, Is.EqualTo(
+				new[] { "Chapter one, verse four,", "Chapter one, verse five." }));
+			Assert.That(segments[3].IsInRange, Is.True);
+			Assert.That(segments[3].IsRangeStart, Is.True);
+
 			Assert.That(segments[4].SegmentRef, Is.EqualTo(new VerseRef("MAT 1:5", versification)));
-			Assert.That(segments[4].Segment[0], Is.EqualTo("Chapter one, verse five."));
+			Assert.That(segments[4].Segment, Is.Empty);
+			Assert.That(segments[4].IsInRange, Is.True);
+			Assert.That(segments[4].IsRangeStart, Is.False);
 
 			Assert.That(segments[5].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:1", versification)));
 			Assert.That(segments[5].Segment[0], Is.EqualTo("Chapter two, verse one."));
@@ -175,14 +189,17 @@ namespace SIL.Machine.Corpora
 			Assert.That(segments[6].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:2", versification)));
 			Assert.That(segments[6].Segment[0], Is.EqualTo("Chapter two, verse two. Chapter two, verse three."));
 			Assert.That(segments[6].IsInRange, Is.True);
+			Assert.That(segments[6].IsRangeStart, Is.True);
 
 			Assert.That(segments[7].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:3", versification)));
 			Assert.That(segments[7].Segment, Is.Empty);
 			Assert.That(segments[7].IsInRange, Is.True);
+			Assert.That(segments[7].IsRangeStart, Is.False);
 
 			Assert.That(segments[8].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:4a", versification)));
 			Assert.That(segments[8].Segment, Is.Empty);
 			Assert.That(segments[8].IsInRange, Is.True);
+			Assert.That(segments[8].IsRangeStart, Is.False);
 
 			Assert.That(segments[9].SegmentRef, Is.EqualTo(new VerseRef("MAT 2:4b", versification)));
 			Assert.That(segments[9].Segment[0], Is.EqualTo("Chapter two, verse four."));

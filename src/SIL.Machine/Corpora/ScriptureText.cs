@@ -15,19 +15,42 @@ namespace SIL.Machine.Corpora
 
 		public ScrVers Versification { get; }
 
-		public override IEnumerable<TextSegment> GetSegments(bool includeText = true, IText sortBasedOn = null)
+		public override IEnumerable<TextSegment> GetSegments(bool includeText = true, IText basedOn = null)
 		{
-			ScrVers sortBasedOnVers = null;
-			if (sortBasedOn is ScriptureText scriptureText && Versification != scriptureText.Versification)
-				sortBasedOnVers = scriptureText.Versification;
+			ScrVers basedOnVers = null;
+			if (basedOn is ScriptureText scriptureText && Versification != scriptureText.Versification)
+				basedOnVers = scriptureText.Versification;
 			var segList = new List<(VerseRef Ref, TextSegment Segment)>();
 			bool outOfOrder = false;
 			var prevVerseRef = new VerseRef();
-			foreach (TextSegment seg in GetSegmentsInDocOrder(includeText))
+			int rangeStartOffset = -1;
+			foreach (TextSegment s in GetSegmentsInDocOrder(includeText))
 			{
+				TextSegment seg = s;
 				var verseRef = (VerseRef)seg.SegmentRef;
-				if (sortBasedOnVers != null)
-					verseRef.ChangeVersification(sortBasedOnVers);
+				if (basedOnVers != null)
+				{
+					verseRef.ChangeVersification(basedOnVers);
+					// convert on-to-many versification mapping to a verse range
+					if (verseRef.Equals(prevVerseRef))
+					{
+						var (rangeStartVerseRef, rangeStartSeg) = segList[segList.Count + rangeStartOffset];
+						bool isRangeStart = false;
+						if (rangeStartOffset == -1)
+							isRangeStart = rangeStartSeg.IsInRange ? rangeStartSeg.IsRangeStart : true;
+						segList[segList.Count + rangeStartOffset] = (rangeStartVerseRef,
+							new TextSegment(rangeStartSeg.TextId, rangeStartSeg.SegmentRef,
+								rangeStartSeg.Segment.Concat(seg.Segment).ToArray(), rangeStartSeg.IsSentenceStart,
+								isInRange: true, isRangeStart: isRangeStart,
+								isEmpty: rangeStartSeg.IsEmpty && seg.IsEmpty));
+						seg = CreateEmptyTextSegment(seg.SegmentRef, isInRange: true);
+						rangeStartOffset--;
+					}
+					else
+					{
+						rangeStartOffset = -1;
+					}
+				}
 				segList.Add((verseRef, seg));
 				if (!outOfOrder && verseRef.CompareTo(prevVerseRef) < 0)
 					outOfOrder = true;

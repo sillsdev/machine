@@ -16,7 +16,7 @@ namespace SIL.Machine.Corpora
 
 		public string FileName { get; }
 
-		public override IEnumerable<TextSegment> GetSegments(bool includeText = true, IText sortBasedOn = null)
+		public override IEnumerable<TextSegment> GetSegments(bool includeText = true, IText basedOn = null)
 		{
 			using (var reader = new StreamReader(FileName))
 			{
