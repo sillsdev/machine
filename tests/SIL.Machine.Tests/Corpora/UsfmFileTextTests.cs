@@ -145,6 +145,7 @@ namespace SIL.Machine.Corpora
 		[Test]
 		public void GetSegmentsBasedOn()
 		{
+			Versification.Table.Implementation.RemoveAllUnknownVersifications();
 			var tokenizer = new NullTokenizer();
 
 			string src = "&MAT 1:4-5 = MAT 1:4\nMAT 1:2 = MAT 1:3\nMAT 1:3 = MAT 1:2\n";

@@ -617,6 +617,7 @@ namespace SIL.Machine.Corpora
 		[Test]
 		public void GetSegments_SameVerseRefOneToMany()
 		{
+			Versification.Table.Implementation.RemoveAllUnknownVersifications();
 			string src = "&MAT 1:2-3 = MAT 1:2\nMAT 1:4 = MAT 1:3\n";
 			ScrVers versification;
 			using (var reader = new StringReader(src))
