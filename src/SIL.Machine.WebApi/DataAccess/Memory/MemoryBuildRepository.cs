@@ -11,7 +11,12 @@ namespace SIL.Machine.WebApi.DataAccess.Memory
 	{
 		private readonly UniqueEntityIndex<string, Build> _engineIdIndex;
 
-		public MemoryBuildRepository(IBuildRepository persistenceRepo = null)
+		public MemoryBuildRepository()
+			: this(null)
+		{
+		}
+
+		internal MemoryBuildRepository(IBuildRepository persistenceRepo)
 			: base(persistenceRepo)
 		{
 			_engineIdIndex = new UniqueEntityIndex<string, Build>(Lock, b => b.EngineRef,
@@ -79,7 +84,7 @@ namespace SIL.Machine.WebApi.DataAccess.Memory
 					_engineIdIndex.OnEntityDeleted(oldBuild, allSubscriptions);
 					break;
 			}
-			
+
 		}
 	}
 }

@@ -1,33 +1,35 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <Description>A natural language processing library for .NET that is focused on providing tools for resource-poor languages.</Description>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<Description>A natural language processing library for .NET that is focused on providing tools for resource-poor languages.</Description>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>1591</NoWarn>
+	</PropertyGroup>
 
-  <Import Project="../AssemblyInfo.props" />
+	<Import Project="../AssemblyInfo.props" />
 
-  <ItemGroup>
-    <None Remove="Corpora\usfm.sty" />
-    <None Remove="Corpora\usfm_sb.sty" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="Corpora\usfm.sty" />
+		<None Remove="Corpora\usfm_sb.sty" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Corpora\usfm.sty" />
-    <EmbeddedResource Include="Corpora\usfm_sb.sty" />
-  </ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="Corpora\usfm.sty" />
+		<EmbeddedResource Include="Corpora\usfm_sb.sty" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="Sandwych.QuickGraph.Core" Version="1.0.0" />
-    <PackageReference Include="SIL.Scripture" Version="7.0.0" />
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="5.0.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+		<PackageReference Include="Sandwych.QuickGraph.Core" Version="1.0.0" />
+		<PackageReference Include="SIL.Scripture" Version="7.0.0" />
+		<PackageReference Include="System.Text.Encoding.CodePages" Version="5.0.0" />
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.Net.Http" />
-    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
-  </ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net461'">
+		<Reference Include="System.IO.Compression" />
+		<Reference Include="System.Net.Http" />
+		<PackageReference Include="System.ValueTuple" Version="4.5.0" />
+	</ItemGroup>
 
 </Project>

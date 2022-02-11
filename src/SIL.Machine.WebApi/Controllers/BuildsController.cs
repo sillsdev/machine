@@ -14,8 +14,12 @@ using SIL.Machine.WebApi.Services;
 
 namespace SIL.Machine.WebApi.Controllers
 {
+	/// <summary>
+	/// Machine translation engine build jobs
+	/// </summary>
 	[Area("Translation")]
 	[Route("[area]/[controller]", Name = RouteNames.Builds)]
+	[Produces("application/json")]
 	public class BuildsController : Controller
 	{
 		private readonly IAuthorizationService _authService;
@@ -34,6 +38,10 @@ namespace SIL.Machine.WebApi.Controllers
 			_engineOptions = engineOptions;
 		}
 
+		/// <summary>
+		/// Gets all build jobs.
+		/// </summary>
+		/// <response code="200">The build jobs.</response>
 		[HttpGet]
 		public async Task<IEnumerable<BuildDto>> GetAllAsync()
 		{
@@ -47,9 +55,21 @@ namespace SIL.Machine.WebApi.Controllers
 			return builds;
 		}
 
+		/// <summary>
+		/// Gets the specified build job.
+		/// </summary>
+		/// <param name="locatorType">
+		/// The locator type:
+		/// - id: build id
+		/// - engine: engine id
+		/// </param>
+		/// <param name="locator">The locator.</param>
+		/// <param name="minRevision">The minimum revision.</param>
+		/// <param name="ct">The cancellation token.</param>
+		/// <response code="200">The build job.</response>
 		[HttpGet("{locatorType}:{locator}")]
-		public async Task<IActionResult> GetAsync(string locatorType, string locator, [FromQuery] long? minRevision,
-			CancellationToken ct)
+		public async Task<ActionResult<BuildDto>> GetAsync(string locatorType, string locator,
+			[FromQuery] long? minRevision, CancellationToken ct)
 		{
 			BuildLocatorType buildLocatorType = GetLocatorType(locatorType);
 			if (minRevision != null)
@@ -71,7 +91,7 @@ namespace SIL.Machine.WebApi.Controllers
 				if (engine == null)
 					return NotFound();
 				if (!await AuthorizeAsync(engine, Operations.Read))
-					return StatusCode(StatusCodes.Status403Forbidden);
+					return Forbid();
 
 				EntityChange<Build> change = await _builds.GetNewerRevisionAsync(buildLocatorType, locator,
 					minRevision.Value, ct).Timeout(_engineOptions.Value.BuildLongPollTimeout, ct);
@@ -94,30 +114,47 @@ namespace SIL.Machine.WebApi.Controllers
 				if (engine == null)
 					return NotFound();
 				if (!await AuthorizeAsync(engine, Operations.Read))
-					return StatusCode(StatusCodes.Status403Forbidden);
+					return Forbid();
 
 				return Ok(CreateDto(build));
 			}
 		}
 
+		/// <summary>
+		/// Starts a build job for the specified engine.
+		/// </summary>
+		/// <param name="engineId">The engine id.</param>
+		/// <response code="201">The build job was started successfully.</response>
 		[HttpPost]
-		public async Task<IActionResult> CreateAsync([FromBody] string engineId)
+		[ProducesResponseType(StatusCodes.Status201Created)]
+		public async Task<ActionResult<BuildDto>> CreateAsync([FromBody] string engineId)
 		{
 			Engine engine = await _engines.GetAsync(engineId);
 			if (engine == null)
-				return StatusCode(StatusCodes.Status422UnprocessableEntity);
+				return UnprocessableEntity();
 			if (!await AuthorizeAsync(engine, Operations.Update))
-				return StatusCode(StatusCodes.Status403Forbidden);
+				return Forbid();
 
 			Build build = await _engineService.StartBuildAsync(engine.Id);
 			if (build == null)
-				return StatusCode(StatusCodes.Status422UnprocessableEntity);
+				return UnprocessableEntity();
 			BuildDto dto = CreateDto(build);
 			return Created(dto.Href, dto);
 		}
 
+		/// <summary>
+		/// Cancels a build job.
+		/// </summary>
+		/// <param name="locatorType">
+		/// The locator type:
+		/// - id: build id
+		/// - engine: engine id
+		/// </param>
+		/// <param name="locator">The locator.</param>
+		/// <response code="200">The build job was cancelled successfully.</response>
 		[HttpDelete("{locatorType}:{locator}")]
-		public async Task<IActionResult> DeleteAsync(string locatorType, string locator)
+		[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+		public async Task<ActionResult> DeleteAsync(string locatorType, string locator)
 		{
 			Build build = await _builds.GetByLocatorAsync(GetLocatorType(locatorType), locator);
 			if (build == null)
@@ -126,7 +163,7 @@ namespace SIL.Machine.WebApi.Controllers
 			if (engine == null)
 				return NotFound();
 			if (!await AuthorizeAsync(engine, Operations.Update))
-				return StatusCode(StatusCodes.Status403Forbidden);
+				return Forbid();
 
 			await _engineService.CancelBuildAsync(engine.Id);
 			return Ok();

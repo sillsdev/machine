@@ -10,8 +10,12 @@ using SIL.Machine.WebApi.Services;
 
 namespace SIL.Machine.WebApi.Controllers
 {
+	/// <summary>
+	/// Machine translation projects
+	/// </summary>
 	[Area("Translation")]
 	[Route("[area]/[controller]", Name = RouteNames.Projects)]
+	[Produces("application/json")]
 	public class ProjectsController : Controller
 	{
 		private readonly IAuthorizationService _authService;
@@ -39,19 +43,20 @@ namespace SIL.Machine.WebApi.Controllers
 		}
 
 		[HttpGet("id:{id}")]
-		public async Task<IActionResult> GetAsync(string id)
+		public async Task<ActionResult<ProjectDto>> GetAsync(string id)
 		{
 			Project project = await _projects.GetAsync(id);
 			if (project == null)
 				return NotFound();
 			if (!await AuthorizeAsync(project, Operations.Read))
-				return StatusCode(StatusCodes.Status403Forbidden);
+				return Forbid();
 
 			return Ok(CreateDto(project));
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> CreateAsync([FromBody] ProjectDto newProject)
+		[ProducesResponseType(StatusCodes.Status201Created)]
+		public async Task<ActionResult<ProjectDto>> CreateAsync([FromBody] ProjectDto newProject)
 		{
 			var project = new Project
 			{
@@ -63,23 +68,24 @@ namespace SIL.Machine.WebApi.Controllers
 				IsShared = newProject.IsShared
 			};
 			if (!await AuthorizeAsync(project, Operations.Create))
-				return StatusCode(StatusCodes.Status403Forbidden);
+				return Forbid();
 			bool created = await _engineService.AddProjectAsync(project);
 			if (!created)
-				return StatusCode(409);
+				return Conflict();
 
 			ProjectDto dto = CreateDto(project);
 			return Created(dto.Href, dto);
 		}
 
 		[HttpDelete("id:{id}")]
-		public async Task<IActionResult> DeleteAsync(string id)
+		[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+		public async Task<ActionResult> DeleteAsync(string id)
 		{
 			Project project = await _projects.GetAsync(id);
 			if (project == null)
 				return NotFound();
 			if (!await AuthorizeAsync(project, Operations.Read))
-				return StatusCode(StatusCodes.Status403Forbidden);
+				return Forbid();
 
 			if (!await _engineService.RemoveProjectAsync(project.Id))
 				return NotFound();

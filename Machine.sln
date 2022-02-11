@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29409.12
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32126.317
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}"
 	ProjectSection(SolutionItems) = preProject
@@ -57,6 +57,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Tokenization.SentencePiece", "src\SIL.Machine.Tokenization.SentencePiece\SIL.Machine.Tokenization.SentencePiece.csproj", "{09135223-6285-4268-BFA3-147BDB5B663B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Tokenization.SentencePiece.Tests", "tests\SIL.Machine.Tokenization.SentencePiece.Tests\SIL.Machine.Tokenization.SentencePiece.Tests.csproj", "{AB5F75C1-64B7-4E0F-A4B5-B14EB16E6DDC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.Server", "src\SIL.Machine.Server\SIL.Machine.Server.csproj", "{92C1381A-1977-4B8C-A49D-CC30E5383B84}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -132,6 +134,10 @@ Global
 		{AB5F75C1-64B7-4E0F-A4B5-B14EB16E6DDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AB5F75C1-64B7-4E0F-A4B5-B14EB16E6DDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AB5F75C1-64B7-4E0F-A4B5-B14EB16E6DDC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92C1381A-1977-4B8C-A49D-CC30E5383B84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92C1381A-1977-4B8C-A49D-CC30E5383B84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92C1381A-1977-4B8C-A49D-CC30E5383B84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92C1381A-1977-4B8C-A49D-CC30E5383B84}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -155,6 +161,7 @@ Global
 		{0BBEED18-3CC1-4BA6-8E11-603A5D2DEDC9} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
 		{09135223-6285-4268-BFA3-147BDB5B663B} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
 		{AB5F75C1-64B7-4E0F-A4B5-B14EB16E6DDC} = {66246A1C-8D45-40FB-A660-C58577122CA7}
+		{92C1381A-1977-4B8C-A49D-CC30E5383B84} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9F18C25E-E140-43C3-B177-D562E1628370}

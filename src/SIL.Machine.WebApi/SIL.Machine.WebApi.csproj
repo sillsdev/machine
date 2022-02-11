@@ -1,44 +1,46 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Description>An ASP.NET Core web API middleware for the Machine library.</Description>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<Description>An ASP.NET Core web API middleware for the Machine library.</Description>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>1591</NoWarn>
+	</PropertyGroup>
 
-  <Import Project="../AssemblyInfo.props" />
+	<Import Project="../AssemblyInfo.props" />
 
-  <ItemGroup>
-    <None Remove="thot-new-model.zip" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="thot-new-model.zip" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Content Include="thot-new-model.zip">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="thot-new-model.zip">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Autofac" Version="5.2.0" />
-    <PackageReference Include="HangFire" Version="1.7.12" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.2" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.2" />
-    <PackageReference Include="NoDb" Version="1.2.2" />
-    <PackageReference Include="MongoDB.Driver" Version="2.9.3" />
-    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.11.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Autofac" Version="6.3.0" />
+		<PackageReference Include="HangFire" Version="1.7.12" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.2" />
+		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
+		<PackageReference Include="NoDb" Version="1.2.2" />
+		<PackageReference Include="MongoDB.Driver" Version="2.9.3" />
+		<PackageReference Include="System.Threading.Tasks.Dataflow" Version="6.0.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj" />
-    <ProjectReference Include="..\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj" />
-    <ProjectReference Include="..\SIL.Machine\SIL.Machine.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj" />
+		<ProjectReference Include="..\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj" />
+		<ProjectReference Include="..\SIL.Machine\SIL.Machine.csproj" />
+	</ItemGroup>
 
-  <Target Name="ZipThotNewModel" BeforeTargets="BeforeBuild">
-    <ZipDirectory SourceDirectory="data\thot-new-model" DestinationFile="thot-new-model.zip" Overwrite="true" />
-  </Target>
+	<Target Name="ZipThotNewModel" BeforeTargets="BeforeBuild">
+		<ZipDirectory SourceDirectory="data\thot-new-model" DestinationFile="thot-new-model.zip" Overwrite="true" />
+	</Target>
 
 </Project>

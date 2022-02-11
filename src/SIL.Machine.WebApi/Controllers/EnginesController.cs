@@ -13,8 +13,12 @@ using SIL.Machine.WebApi.Services;
 
 namespace SIL.Machine.WebApi.Controllers
 {
+	/// <summary>
+	/// Machine translation engines
+	/// </summary>
 	[Area("Translation")]
 	[Route("[area]/[controller]", Name = RouteNames.Engines)]
+	[Produces("application/json")]
 	public class EnginesController : Controller
 	{
 		private readonly IAuthorizationService _authService;
@@ -42,25 +46,26 @@ namespace SIL.Machine.WebApi.Controllers
 		}
 
 		[HttpGet("{locatorType}:{locator}")]
-		public async Task<IActionResult> GetAsync(string locatorType, string locator)
+		public async Task<ActionResult<EngineDto>> GetAsync(string locatorType, string locator)
 		{
 			Engine engine = await _engines.GetByLocatorAsync(GetLocatorType(locatorType), locator);
 			if (engine == null)
 				return NotFound();
 			if (!await AuthorizeAsync(engine, Operations.Read))
-				return StatusCode(StatusCodes.Status403Forbidden);
+				return Forbid();
 
 			return Ok(CreateDto(engine));
 		}
 
 		[HttpPost("{locatorType}:{locator}/actions/translate")]
-		public async Task<IActionResult> TranslateAsync(string locatorType, string locator, [FromBody] string[] segment)
+		public async Task<ActionResult<TranslationResultDto>> TranslateAsync(string locatorType, string locator,
+			[FromBody] string[] segment)
 		{
 			Engine engine = await _engines.GetByLocatorAsync(GetLocatorType(locatorType), locator);
 			if (engine == null)
 				return NotFound();
 			if (!await AuthorizeAsync(engine, Operations.Read))
-				return StatusCode(StatusCodes.Status403Forbidden);
+				return Forbid();
 
 			TranslationResult result = await _engineService.TranslateAsync(engine.Id, segment);
 			if (result == null)
@@ -69,14 +74,14 @@ namespace SIL.Machine.WebApi.Controllers
 		}
 
 		[HttpPost("{locatorType}:{locator}/actions/translate/{n}")]
-		public async Task<IActionResult> TranslateAsync(string locatorType, string locator, int n,
-			[FromBody] string[] segment)
+		public async Task<ActionResult<IEnumerable<TranslationResultDto>>> TranslateAsync(string locatorType,
+			string locator, int n, [FromBody] string[] segment)
 		{
 			Engine engine = await _engines.GetByLocatorAsync(GetLocatorType(locatorType), locator);
 			if (engine == null)
 				return NotFound();
 			if (!await AuthorizeAsync(engine, Operations.Read))
-				return StatusCode(StatusCodes.Status403Forbidden);
+				return Forbid();
 
 			IEnumerable<TranslationResult> results = await _engineService.TranslateAsync(engine.Id, n, segment);
 			if (results == null)
@@ -85,14 +90,14 @@ namespace SIL.Machine.WebApi.Controllers
 		}
 
 		[HttpPost("{locatorType}:{locator}/actions/getWordGraph")]
-		public async Task<IActionResult> InteractiveTranslateAsync(string locatorType, string locator,
+		public async Task<ActionResult<WordGraphDto>> InteractiveTranslateAsync(string locatorType, string locator,
 			[FromBody] string[] segment)
 		{
 			Engine engine = await _engines.GetByLocatorAsync(GetLocatorType(locatorType), locator);
 			if (engine == null)
 				return NotFound();
 			if (!await AuthorizeAsync(engine, Operations.Read))
-				return StatusCode(StatusCodes.Status403Forbidden);
+				return Forbid();
 
 			WordGraph result = await _engineService.GetWordGraphAsync(engine.Id, segment);
 			if (result == null)
@@ -101,14 +106,15 @@ namespace SIL.Machine.WebApi.Controllers
 		}
 
 		[HttpPost("{locatorType}:{locator}/actions/trainSegment")]
-		public async Task<IActionResult> TrainSegmentAsync(string locatorType, string locator,
+		[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+		public async Task<ActionResult> TrainSegmentAsync(string locatorType, string locator,
 			[FromBody] SegmentPairDto segmentPair)
 		{
 			Engine engine = await _engines.GetByLocatorAsync(GetLocatorType(locatorType), locator);
 			if (engine == null)
 				return NotFound();
 			if (!await AuthorizeAsync(engine, Operations.Update))
-				return StatusCode(StatusCodes.Status403Forbidden);
+				return Forbid();
 
 			if (!await _engineService.TrainSegmentAsync(engine.Id, segmentPair.SourceSegment,
 				segmentPair.TargetSegment, segmentPair.SentenceStart))
@@ -146,7 +152,7 @@ namespace SIL.Machine.WebApi.Controllers
 			return new TranslationResultDto
 			{
 				Target = result.TargetSegment.ToArray(),
-				Confidences = result.WordConfidences.Select(c => (float) c).ToArray(),
+				Confidences = result.WordConfidences.Select(c => (float)c).ToArray(),
 				Sources = result.WordSources.ToArray(),
 				Alignment = CreateDto(result.Alignment),
 				Phrases = result.Phrases.Select(CreateDto).ToArray()
@@ -157,7 +163,7 @@ namespace SIL.Machine.WebApi.Controllers
 		{
 			return new WordGraphDto
 			{
-				InitialStateScore = (float) wordGraph.InitialStateScore,
+				InitialStateScore = (float)wordGraph.InitialStateScore,
 				FinalStates = wordGraph.FinalStates.ToArray(),
 				Arcs = wordGraph.Arcs.Select(CreateDto).ToArray()
 			};
@@ -169,9 +175,9 @@ namespace SIL.Machine.WebApi.Controllers
 			{
 				PrevState = arc.PrevState,
 				NextState = arc.NextState,
-				Score = (float) arc.Score,
+				Score = (float)arc.Score,
 				Words = arc.Words.ToArray(),
-				Confidences = arc.WordConfidences.Select(c => (float) c).ToArray(),
+				Confidences = arc.WordConfidences.Select(c => (float)c).ToArray(),
 				SourceSegmentRange = CreateDto(arc.SourceSegmentRange),
 				Sources = arc.WordSources.ToArray(),
 				Alignment = CreateDto(arc.Alignment)

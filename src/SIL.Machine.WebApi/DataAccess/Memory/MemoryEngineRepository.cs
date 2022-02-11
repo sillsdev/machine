@@ -12,7 +12,12 @@ namespace SIL.Machine.WebApi.DataAccess.Memory
 		private readonly UniqueEntityIndex<(string SourceLanguageTag, string TargetLanguageTag), Engine> _langTagIndex;
 		private readonly UniqueEntityIndex<string, Engine> _projectIndex;
 
-		public MemoryEngineRepository(IEngineRepository persistenceRepo = null)
+		public MemoryEngineRepository()
+			: this(null)
+		{
+		}
+
+		internal MemoryEngineRepository(IEngineRepository persistenceRepo)
 			: base(persistenceRepo)
 		{
 			_langTagIndex = new UniqueEntityIndex<(string SourceLanguageTag, string TargetLanguageTag), Engine>(

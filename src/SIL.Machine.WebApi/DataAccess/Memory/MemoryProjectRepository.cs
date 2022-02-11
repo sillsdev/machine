@@ -4,7 +4,12 @@ namespace SIL.Machine.WebApi.DataAccess.Memory
 {
 	public class MemoryProjectRepository : MemoryRepository<Project>, IProjectRepository
 	{
-		public MemoryProjectRepository(IProjectRepository persistenceRepo = null)
+		public MemoryProjectRepository()
+			: this(null)
+		{
+		}
+
+		internal MemoryProjectRepository(IProjectRepository persistenceRepo)
 			: base(persistenceRepo)
 		{
 		}
