@@ -45,10 +45,10 @@ namespace SIL.Machine.WebApi.Controllers
 			return engines;
 		}
 
-		[HttpGet("{locatorType}:{locator}")]
-		public async Task<ActionResult<EngineDto>> GetAsync(string locatorType, string locator)
+		[HttpGet("{id}")]
+		public async Task<ActionResult<EngineDto>> GetAsync(string id)
 		{
-			Engine engine = await _engines.GetByLocatorAsync(GetLocatorType(locatorType), locator);
+			Engine engine = await _engines.GetAsync(id);
 			if (engine == null)
 				return NotFound();
 			if (!await AuthorizeAsync(engine, Operations.Read))
@@ -57,11 +57,10 @@ namespace SIL.Machine.WebApi.Controllers
 			return Ok(CreateDto(engine));
 		}
 
-		[HttpPost("{locatorType}:{locator}/actions/translate")]
-		public async Task<ActionResult<TranslationResultDto>> TranslateAsync(string locatorType, string locator,
-			[FromBody] string[] segment)
+		[HttpPost("{id}/actions/translate")]
+		public async Task<ActionResult<TranslationResultDto>> TranslateAsync(string id, [FromBody] string[] segment)
 		{
-			Engine engine = await _engines.GetByLocatorAsync(GetLocatorType(locatorType), locator);
+			Engine engine = await _engines.GetAsync(id);
 			if (engine == null)
 				return NotFound();
 			if (!await AuthorizeAsync(engine, Operations.Read))
@@ -73,11 +72,11 @@ namespace SIL.Machine.WebApi.Controllers
 			return Ok(CreateDto(result));
 		}
 
-		[HttpPost("{locatorType}:{locator}/actions/translate/{n}")]
-		public async Task<ActionResult<IEnumerable<TranslationResultDto>>> TranslateAsync(string locatorType,
-			string locator, int n, [FromBody] string[] segment)
+		[HttpPost("{id}/actions/translate/{n}")]
+		public async Task<ActionResult<IEnumerable<TranslationResultDto>>> TranslateAsync(string id, int n,
+			[FromBody] string[] segment)
 		{
-			Engine engine = await _engines.GetByLocatorAsync(GetLocatorType(locatorType), locator);
+			Engine engine = await _engines.GetAsync(id);
 			if (engine == null)
 				return NotFound();
 			if (!await AuthorizeAsync(engine, Operations.Read))
@@ -89,11 +88,10 @@ namespace SIL.Machine.WebApi.Controllers
 			return Ok(results.Select(CreateDto));
 		}
 
-		[HttpPost("{locatorType}:{locator}/actions/getWordGraph")]
-		public async Task<ActionResult<WordGraphDto>> InteractiveTranslateAsync(string locatorType, string locator,
-			[FromBody] string[] segment)
+		[HttpPost("{id}/actions/getWordGraph")]
+		public async Task<ActionResult<WordGraphDto>> InteractiveTranslateAsync(string id, [FromBody] string[] segment)
 		{
-			Engine engine = await _engines.GetByLocatorAsync(GetLocatorType(locatorType), locator);
+			Engine engine = await _engines.GetAsync(id);
 			if (engine == null)
 				return NotFound();
 			if (!await AuthorizeAsync(engine, Operations.Read))
@@ -105,12 +103,11 @@ namespace SIL.Machine.WebApi.Controllers
 			return Ok(CreateDto(result));
 		}
 
-		[HttpPost("{locatorType}:{locator}/actions/trainSegment")]
+		[HttpPost("{id}/actions/trainSegment")]
 		[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
-		public async Task<ActionResult> TrainSegmentAsync(string locatorType, string locator,
-			[FromBody] SegmentPairDto segmentPair)
+		public async Task<ActionResult> TrainSegmentAsync(string id, [FromBody] SegmentPairDto segmentPair)
 		{
-			Engine engine = await _engines.GetByLocatorAsync(GetLocatorType(locatorType), locator);
+			Engine engine = await _engines.GetAsync(id);
 			if (engine == null)
 				return NotFound();
 			if (!await AuthorizeAsync(engine, Operations.Update))
@@ -128,20 +125,6 @@ namespace SIL.Machine.WebApi.Controllers
 		{
 			AuthorizationResult result = await _authService.AuthorizeAsync(User, engine, operation);
 			return result.Succeeded;
-		}
-
-		private static EngineLocatorType GetLocatorType(string type)
-		{
-			switch (type)
-			{
-				case "id":
-					return EngineLocatorType.Id;
-				case "langTag":
-					return EngineLocatorType.LanguageTag;
-				case "project":
-					return EngineLocatorType.Project;
-			}
-			return EngineLocatorType.Id;
 		}
 
 		private static TranslationResultDto CreateDto(TranslationResult result)
@@ -206,9 +189,6 @@ namespace SIL.Machine.WebApi.Controllers
 				Href = Url.GetEntityUrl(RouteNames.Engines, engine.Id),
 				SourceLanguageTag = engine.SourceLanguageTag,
 				TargetLanguageTag = engine.TargetLanguageTag,
-				IsShared = engine.IsShared,
-				Projects = engine.Projects.Select(projectId =>
-					Url.CreateLinkDto(RouteNames.Projects, projectId)).ToArray(),
 				Confidence = engine.Confidence,
 				TrainedSegmentCount = engine.TrainedSegmentCount
 			};

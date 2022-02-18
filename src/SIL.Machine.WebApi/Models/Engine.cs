@@ -14,8 +14,6 @@ namespace SIL.Machine.WebApi.Models
 			Revision = engine.Revision;
 			SourceLanguageTag = engine.SourceLanguageTag;
 			TargetLanguageTag = engine.TargetLanguageTag;
-			IsShared = engine.IsShared;
-			Projects = new HashSet<string>(engine.Projects);
 			Confidence = engine.Confidence;
 			TrainedSegmentCount = engine.TrainedSegmentCount;
 		}
@@ -24,8 +22,6 @@ namespace SIL.Machine.WebApi.Models
 		public int Revision { get; set; }
 		public string SourceLanguageTag { get; set; }
 		public string TargetLanguageTag { get; set; }
-		public bool IsShared { get; set; }
-		public HashSet<string> Projects { get; protected set; } = new HashSet<string>();
 		public double Confidence { get; set; }
 		public int TrainedSegmentCount { get; set; }
 

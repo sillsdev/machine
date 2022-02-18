@@ -17,29 +17,26 @@ namespace SIL.Machine.WebApi.Services
 			_textFileDir = options.Value.TextFileDir;
 		}
 
-		public Task<ITextCorpus> CreateAsync(IEnumerable<string> projects, TextCorpusType type)
+		public Task<ITextCorpus> CreateAsync(string engineId, TextCorpusType type)
 		{
 			var wordTokenizer = new LatinWordTokenizer();
 			var texts = new List<IText>();
-			foreach (string projectId in projects)
+			string dir = null;
+			switch (type)
 			{
-				string dir = null;
-				switch (type)
-				{
-					case TextCorpusType.Source:
-						dir = "source";
-						break;
-					case TextCorpusType.Target:
-						dir = "target";
-						break;
-				}
+				case TextCorpusType.Source:
+					dir = "source";
+					break;
+				case TextCorpusType.Target:
+					dir = "target";
+					break;
+			}
 
-				foreach (string file in Directory.EnumerateFiles(Path.Combine(_textFileDir, projectId, dir), "*.txt"))
-				{
-					var text = new TextFileText(wordTokenizer, $"{projectId}_{Path.GetFileNameWithoutExtension(file)}",
-						file);
-					texts.Add(text);
-				}
+			foreach (string file in Directory.EnumerateFiles(Path.Combine(_textFileDir, engineId, dir), "*.txt"))
+			{
+				var text = new TextFileText(wordTokenizer, $"{engineId}_{Path.GetFileNameWithoutExtension(file)}",
+					file);
+				texts.Add(text);
 			}
 
 			return Task.FromResult<ITextCorpus>(new DictionaryTextCorpus(texts));

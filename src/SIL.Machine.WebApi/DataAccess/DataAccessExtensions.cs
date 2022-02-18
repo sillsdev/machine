@@ -5,13 +5,6 @@ using SIL.Machine.WebApi.Models;
 
 namespace SIL.Machine.WebApi.DataAccess
 {
-	public enum EngineLocatorType
-	{
-		Id,
-		LanguageTag,
-		Project
-	}
-
 	public enum BuildLocatorType
 	{
 		Id,
@@ -20,24 +13,6 @@ namespace SIL.Machine.WebApi.DataAccess
 
 	public static class DataAccessExtensions
 	{
-		public static async Task<Engine> GetByLocatorAsync(this IEngineRepository engineRepo,
-			EngineLocatorType locatorType, string locator, CancellationToken ct = default(CancellationToken))
-		{
-			switch (locatorType)
-			{
-				case EngineLocatorType.Id:
-					return await engineRepo.GetAsync(locator, ct);
-				case EngineLocatorType.LanguageTag:
-					int index = locator.IndexOf("_", StringComparison.OrdinalIgnoreCase);
-					string sourceLanguageTag = locator.Substring(0, index);
-					string targetLanguageTag = locator.Substring(index + 1);
-					return await engineRepo.GetByLanguageTagAsync(sourceLanguageTag, targetLanguageTag, ct);
-				case EngineLocatorType.Project:
-					return await engineRepo.GetByProjectIdAsync(locator, ct);
-			}
-			return null;
-		}
-
 		public static async Task<Build> GetByLocatorAsync(this IBuildRepository buildRepo, BuildLocatorType locatorType,
 			string locator, CancellationToken ct = default(CancellationToken))
 		{

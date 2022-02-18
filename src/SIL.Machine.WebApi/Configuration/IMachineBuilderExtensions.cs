@@ -102,16 +102,12 @@ namespace Microsoft.Extensions.DependencyInjection
 		{
 			builder.Services.AddNoDbForEntity<Engine>();
 			builder.Services.AddNoDbForEntity<Build>();
-			builder.Services.AddNoDbForEntity<Project>();
 			builder.Services.AddSingleton<IEngineRepository>(sp => new MemoryEngineRepository(
 				new NoDbEngineRepository(sp.GetService<IBasicCommands<Engine>>(),
 					sp.GetService<IBasicQueries<Engine>>())));
 			builder.Services.AddSingleton<IBuildRepository>(sp => new MemoryBuildRepository(
 				new NoDbBuildRepository(sp.GetService<IBasicCommands<Build>>(),
 					sp.GetService<IBasicQueries<Build>>())));
-			builder.Services.AddSingleton<IProjectRepository>(sp => new MemoryProjectRepository(
-				new NoDbProjectRepository(sp.GetService<IBasicCommands<Project>>(),
-					sp.GetService<IBasicQueries<Project>>())));
 			return builder;
 		}
 
@@ -141,7 +137,6 @@ namespace Microsoft.Extensions.DependencyInjection
 		{
 			builder.Services.AddSingleton<IEngineRepository, MemoryEngineRepository>();
 			builder.Services.AddSingleton<IBuildRepository, MemoryBuildRepository>();
-			builder.Services.AddSingleton<IProjectRepository, MemoryProjectRepository>();
 			return builder;
 		}
 
@@ -155,19 +150,11 @@ namespace Microsoft.Extensions.DependencyInjection
 			};
 			ConventionRegistry.Register("Machine", globalPack, t => t.Namespace == "SIL.Machine.WebApi.Models");
 
-			RegisterEntity<Engine>(cm =>
-			{
-				cm.MapMember(e => e.Projects)
-					.SetSerializer(new EnumerableInterfaceImplementerSerializer<HashSet<string>, string>(
-						new StringSerializer(BsonType.ObjectId)));
-			});
+			RegisterEntity<Engine>();
 			builder.Services.AddSingleton<IEngineRepository, MongoEngineRepository>();
 
 			RegisterEntity<Build>();
 			builder.Services.AddSingleton<IBuildRepository, MongoBuildRepository>();
-
-			RegisterEntity<Project>();
-			builder.Services.AddSingleton<IProjectRepository, MongoProjectRepository>();
 
 			return builder;
 		}

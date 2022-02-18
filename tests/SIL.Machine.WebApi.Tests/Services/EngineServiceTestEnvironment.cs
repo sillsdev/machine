@@ -33,7 +33,6 @@ namespace SIL.Machine.WebApi.Services
 		{
 			EngineRepository = new MemoryEngineRepository();
 			BuildRepository = new MemoryBuildRepository();
-			ProjectRepository = new MemoryProjectRepository();
 			EngineOptions = new EngineOptions();
 			_memoryStorage = new MemoryStorage();
 			_jobClient = new BackgroundJobClient(_memoryStorage);
@@ -41,7 +40,6 @@ namespace SIL.Machine.WebApi.Services
 
 		public IEngineRepository EngineRepository { get; }
 		public IBuildRepository BuildRepository { get; }
-		public IProjectRepository ProjectRepository { get; }
 		public EngineService Service { get; private set; }
 		public ITrainer SmtBatchTrainer { get; private set; }
 		public IInteractiveTranslationModel InteractiveModel { get; private set; }
@@ -69,7 +67,7 @@ namespace SIL.Machine.WebApi.Services
 			_textCorpusFactory = CreateTextCorpusFactory();
 
 			Service = new EngineService(new OptionsWrapper<EngineOptions>(EngineOptions), EngineRepository,
-				BuildRepository, ProjectRepository, CreateEngineRuntime);
+				BuildRepository, CreateEngineRuntime);
 			Service.Init();
 			var jobServerOptions = new BackgroundJobServerOptions
 			{
@@ -208,7 +206,7 @@ namespace SIL.Machine.WebApi.Services
 		private ITextCorpusFactory CreateTextCorpusFactory()
 		{
 			var factory = Substitute.For<ITextCorpusFactory>();
-			factory.CreateAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<TextCorpusType>())
+			factory.CreateAsync(Arg.Any<string>(), Arg.Any<TextCorpusType>())
 				.Returns(Task.FromResult<ITextCorpus>(new DictionaryTextCorpus(Enumerable.Empty<IText>())));
 			return factory;
 		}
@@ -221,29 +219,16 @@ namespace SIL.Machine.WebApi.Services
 			return sources;
 		}
 
-		public async Task<Engine> CreateEngineAsync(string sourceLanguageTag = "es", string targetLanguageTag = "en",
-			bool isShared = false)
+		public async Task<Engine> CreateEngineAsync(string id = "engine1", string sourceLanguageTag = "es",
+			string targetLanguageTag = "en")
 		{
 			var engine = new Engine
 			{
+				Id = id,
 				SourceLanguageTag = sourceLanguageTag,
 				TargetLanguageTag = targetLanguageTag,
-				IsShared = isShared,
-				Projects = { "project1" }
 			};
 			await EngineRepository.InsertAsync(engine);
-
-			var project = new Project
-			{
-				Id = "project1",
-				SourceLanguageTag = sourceLanguageTag,
-				TargetLanguageTag = targetLanguageTag,
-				SourceSegmentType = "latin",
-				TargetSegmentType = "latin",
-				IsShared = isShared,
-				EngineRef = engine.Id
-			};
-			await ProjectRepository.InsertAsync(project);
 			return engine;
 		}
 

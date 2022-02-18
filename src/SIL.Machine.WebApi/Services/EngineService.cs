@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Autofac.Features.OwnedInstances;
 using Microsoft.Extensions.Options;
-using SIL.Machine.Threading;
 using SIL.Machine.Translation;
 using SIL.Machine.WebApi.Configuration;
 using SIL.Machine.WebApi.DataAccess;
@@ -17,24 +16,19 @@ namespace SIL.Machine.WebApi.Services
 	{
 		private readonly IOptions<EngineOptions> _engineOptions;
 		private readonly ConcurrentDictionary<string, Owned<EngineRuntime>> _runtimes;
-		private readonly AsyncReaderWriterLock _lock;
 		private readonly IEngineRepository _engines;
 		private readonly IBuildRepository _builds;
-		private readonly IProjectRepository _projects;
 		private readonly Func<string, Owned<EngineRuntime>> _engineRunnerFactory;
 		private readonly AsyncTimer _commitTimer;
 
 		public EngineService(IOptions<EngineOptions> engineOptions, IEngineRepository engines,
-			IBuildRepository builds, IProjectRepository projects,
-			Func<string, Owned<EngineRuntime>> engineRuntimeFactory)
+			IBuildRepository builds, Func<string, Owned<EngineRuntime>> engineRuntimeFactory)
 		{
 			_engineOptions = engineOptions;
 			_engines = engines;
 			_builds = builds;
-			_projects = projects;
 			_engineRunnerFactory = engineRuntimeFactory;
 			_runtimes = new ConcurrentDictionary<string, Owned<EngineRuntime>>();
-			_lock = new AsyncReaderWriterLock();
 			_commitTimer = new AsyncTimer(EngineCommitAsync);
 		}
 
@@ -45,24 +39,18 @@ namespace SIL.Machine.WebApi.Services
 
 		private async Task EngineCommitAsync()
 		{
-			using (await _lock.ReaderLockAsync())
-			{
-				foreach (Owned<EngineRuntime> runner in _runtimes.Values)
-					await runner.Value.CommitAsync();
-			}
+			foreach (Owned<EngineRuntime> runner in _runtimes.Values)
+				await runner.Value.CommitAsync();
 		}
 
 		public async Task<TranslationResult> TranslateAsync(string engineId, IReadOnlyList<string> segment)
 		{
 			CheckDisposed();
 
-			using (await _lock.ReaderLockAsync())
-			{
-				if (!await _engines.ExistsAsync(engineId))
-					return null;
-				EngineRuntime runtime = GetOrCreateRuntime(engineId);
-				return await runtime.TranslateAsync(segment);
-			}
+			if (!await _engines.ExistsAsync(engineId))
+				return null;
+			EngineRuntime runtime = GetOrCreateRuntime(engineId);
+			return await runtime.TranslateAsync(segment);
 		}
 
 		public async Task<IEnumerable<TranslationResult>> TranslateAsync(string engineId, int n,
@@ -70,26 +58,20 @@ namespace SIL.Machine.WebApi.Services
 		{
 			CheckDisposed();
 
-			using (await _lock.ReaderLockAsync())
-			{
-				if (!await _engines.ExistsAsync(engineId))
-					return null;
-				EngineRuntime runtime = GetOrCreateRuntime(engineId);
-				return await runtime.TranslateAsync(n, segment);
-			}
+			if (!await _engines.ExistsAsync(engineId))
+				return null;
+			EngineRuntime runtime = GetOrCreateRuntime(engineId);
+			return await runtime.TranslateAsync(n, segment);
 		}
 
 		public async Task<WordGraph> GetWordGraphAsync(string engineId, IReadOnlyList<string> segment)
 		{
 			CheckDisposed();
 
-			using (await _lock.ReaderLockAsync())
-			{
-				if (!await _engines.ExistsAsync(engineId))
-					return null;
-				EngineRuntime runtime = GetOrCreateRuntime(engineId);
-				return await runtime.GetWordGraph(segment);
-			}
+			if (!await _engines.ExistsAsync(engineId))
+				return null;
+			EngineRuntime runtime = GetOrCreateRuntime(engineId);
+			return await runtime.GetWordGraph(segment);
 		}
 
 		public async Task<bool> TrainSegmentAsync(string engineId, IReadOnlyList<string> sourceSegment,
@@ -97,133 +79,75 @@ namespace SIL.Machine.WebApi.Services
 		{
 			CheckDisposed();
 
-			using (await _lock.ReaderLockAsync())
-			{
-				if (!await _engines.ExistsAsync(engineId))
-					return false;
-				EngineRuntime runtime = GetOrCreateRuntime(engineId);
-				await runtime.TrainSegmentPairAsync(sourceSegment, targetSegment, sentenceStart);
-				return true;
-			}
+			if (!await _engines.ExistsAsync(engineId))
+				return false;
+			EngineRuntime runtime = GetOrCreateRuntime(engineId);
+			await runtime.TrainSegmentPairAsync(sourceSegment, targetSegment, sentenceStart);
+			return true;
 		}
 
-		public async Task<bool> AddProjectAsync(Project project)
+		public async Task<bool> AddAsync(Engine engine)
 		{
 			CheckDisposed();
 
-			using (await _lock.WriterLockAsync())
+			try
 			{
-				Engine engine = project.IsShared
-					? await _engines.GetByLanguageTagAsync(project.SourceLanguageTag, project.TargetLanguageTag)
-					: null;
-				try
-				{
-					if (engine == null)
-					{
-						// no existing shared engine or a project-specific engine
-						engine = new Engine
-						{
-							Projects = { project.Id },
-							IsShared = project.IsShared,
-							SourceLanguageTag = project.SourceLanguageTag,
-							TargetLanguageTag = project.TargetLanguageTag
-						};
-						await _engines.InsertAsync(engine);
-						EngineRuntime runtime = CreateRuntime(engine.Id);
-						await runtime.InitNewAsync();
-					}
-					else
-					{
-						// found an existing shared engine
-						if (engine.Projects.Contains(project.Id))
-							return false;
-						engine = await _engines.ConcurrentUpdateAsync(engine, e => e.Projects.Add(project.Id));
-					}
-				}
-				catch (KeyAlreadyExistsException)
-				{
-					// a project with the same id already exists
-					return false;
-				}
-
-				project.EngineRef = engine.Id;
-				await _projects.InsertAsync(project);
-				return true;
+				await _engines.InsertAsync(engine);
+				EngineRuntime runtime = CreateRuntime(engine.Id);
+				await runtime.InitNewAsync();
 			}
+			catch (KeyAlreadyExistsException)
+			{
+				// a project with the same id already exists
+				return false;
+			}
+			return true;
 		}
 
-		public async Task<bool> RemoveProjectAsync(string projectId)
+		public async Task<bool> RemoveAsync(string engineId)
 		{
 			CheckDisposed();
 
-			using (await _lock.WriterLockAsync())
-			{
-				Engine engine = await _engines.GetByProjectIdAsync(projectId);
-				if (engine == null)
-					return false;
+			if (!await _engines.ExistsAsync(engineId))
+				return false;
 
-				EngineRuntime runtime = GetOrCreateRuntime(engine.Id);
-				if (engine.Projects.Count == 1 && engine.Projects.Contains(projectId))
-				{
-					// the engine will have no associated projects, so remove it
-					_runtimes.TryRemove(engine.Id, out _);
-					await runtime.DeleteDataAsync();
-					await runtime.DisposeAsync();
-					await _engines.DeleteAsync(engine);
-					await _builds.DeleteAllByEngineIdAsync(engine.Id);
-				}
-				else
-				{
-					// engine will still have associated projects, so just update it
-					await _engines.ConcurrentUpdateAsync(engine, e => e.Projects.Remove(projectId));
-				}
-				await _projects.DeleteAsync(projectId);
-				return true;
-			}
+			await _engines.DeleteAsync(engineId);
+			await _builds.DeleteAllByEngineIdAsync(engineId);
+
+			EngineRuntime runtime = GetOrCreateRuntime(engineId);
+			// the engine will have no associated projects, so remove it
+			_runtimes.TryRemove(engineId, out _);
+			await runtime.DeleteDataAsync();
+			await runtime.DisposeAsync();
+			return true;
 		}
 
 		public async Task<Build> StartBuildAsync(string engineId)
 		{
 			CheckDisposed();
 
-			using (await _lock.ReaderLockAsync())
-			{
-				if (!await _engines.ExistsAsync(engineId))
-					return null;
-				EngineRuntime runtime = GetOrCreateRuntime(engineId);
-				return await runtime.StartBuildAsync();
-			}
-		}
-
-		public async Task<Build> StartBuildByProjectIdAsync(string projectId)
-		{
-			CheckDisposed();
-			Engine engine = await _engines.GetByProjectIdAsync(projectId);
-			return await StartBuildAsync(engine.Id);
+			if (!await _engines.ExistsAsync(engineId))
+				return null;
+			EngineRuntime runtime = GetOrCreateRuntime(engineId);
+			return await runtime.StartBuildAsync();
 		}
 
 		public async Task CancelBuildAsync(string engineId)
 		{
 			CheckDisposed();
 
-			using (await _lock.ReaderLockAsync())
-			{
-				if (TryGetRuntime(engineId, out EngineRuntime runtime))
-					await runtime.CancelBuildAsync();
-			}
+			if (TryGetRuntime(engineId, out EngineRuntime runtime))
+				await runtime.CancelBuildAsync();
 		}
 
 		public async Task<(Engine Engine, EngineRuntime Runtime)> GetEngineAsync(string engineId)
 		{
 			CheckDisposed();
 
-			using (await _lock.ReaderLockAsync())
-			{
-				Engine engine = await _engines.GetAsync(engineId);
-				if (engine == null)
-					return (null, null);
-				return (engine, GetOrCreateRuntime(engineId));
-			}
+			Engine engine = await _engines.GetAsync(engineId);
+			if (engine == null)
+				return (null, null);
+			return (engine, GetOrCreateRuntime(engineId));
 		}
 
 		internal EngineRuntime GetOrCreateRuntime(string engineId)

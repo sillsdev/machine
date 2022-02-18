@@ -29,18 +29,18 @@ namespace SIL.Machine.WebApi.Client
 		public string BaseUrl => HttpClient.BaseUrl;
 		public IHttpClient HttpClient { get; }
 
-		public async Task<ProjectDto> GetProjectAsync(string projectId)
+		public async Task<EngineDto> GetEngineAsync(string engineId)
 		{
-			string url = $"translation/projects/id:{projectId}";
+			string url = $"translation/engines/{engineId}";
 			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url, null, null);
 			if (!response.IsSuccess)
 				throw new HttpException("Error getting project.") { StatusCode = response.StatusCode };
-			return JsonConvert.DeserializeObject<ProjectDto>(response.Content, SerializerSettings);
+			return JsonConvert.DeserializeObject<EngineDto>(response.Content, SerializerSettings);
 		}
 
-		public async Task<WordGraph> GetWordGraph(string projectId, IReadOnlyList<string> sourceSegment)
+		public async Task<WordGraph> GetWordGraph(string engineId, IReadOnlyList<string> sourceSegment)
 		{
-			string url = $"translation/engines/project:{projectId}/actions/getWordGraph";
+			string url = $"translation/engines/{engineId}/actions/getWordGraph";
 			string body = JsonConvert.SerializeObject(sourceSegment, SerializerSettings);
 			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Post, url, body, "application/json");
 			if (!response.IsSuccess)
@@ -55,10 +55,10 @@ namespace SIL.Machine.WebApi.Client
 			return CreateModel(resultDto);
 		}
 
-		public async Task TrainSegmentPairAsync(string projectId, IReadOnlyList<string> sourceSegment,
+		public async Task TrainSegmentPairAsync(string engineId, IReadOnlyList<string> sourceSegment,
 			IReadOnlyList<string> targetSegment)
 		{
-			string url = $"translation/engines/project:{projectId}/actions/trainSegment";
+			string url = $"translation/engines/{engineId}/actions/trainSegment";
 			var pairDto = new SegmentPairDto
 			{
 				SourceSegment = sourceSegment.ToArray(),
@@ -70,36 +70,22 @@ namespace SIL.Machine.WebApi.Client
 				throw new HttpException("Error calling trainSegment action.") { StatusCode = response.StatusCode };
 		}
 
-		public async Task StartTrainingAsync(string projectId)
+		public async Task StartTrainingAsync(string engineId)
 		{
-			EngineDto engineDto = await GetEngineAsync(projectId);
-			await CreateBuildAsync(engineDto.Id);
+			await CreateBuildAsync(engineId);
 		}
 
-		public async Task TrainAsync(string projectId, Action<ProgressStatus> progress,
-			CancellationToken ct = default(CancellationToken))
+		public async Task TrainAsync(string engineId, Action<ProgressStatus> progress, CancellationToken ct = default)
 		{
-			EngineDto engineDto = await GetEngineAsync(projectId);
-			BuildDto buildDto = await CreateBuildAsync(engineDto.Id);
+			BuildDto buildDto = await CreateBuildAsync(engineId);
 			progress(CreateProgressStatus(buildDto));
 			await PollBuildProgressAsync("id", buildDto.Id, buildDto.Revision + 1, progress, ct);
 		}
 
-		public async Task ListenForTrainingStatusAsync(string projectId, Action<ProgressStatus> progress,
+		public async Task ListenForTrainingStatusAsync(string engineId, Action<ProgressStatus> progress,
 			CancellationToken ct = default(CancellationToken))
 		{
-			EngineDto engineDto = await GetEngineAsync(projectId);
-			await PollBuildProgressAsync("engine", engineDto.Id, 0, progress, ct);
-		}
-
-		public async Task<EngineDto> GetEngineAsync(string projectId)
-		{
-			string url = $"translation/engines/project:{projectId}";
-			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url, null, null,
-				CancellationToken.None);
-			if (!response.IsSuccess)
-				throw new HttpException("Error getting engine identifier.") { StatusCode = response.StatusCode };
-			return JsonConvert.DeserializeObject<EngineDto>(response.Content, SerializerSettings);
+			await PollBuildProgressAsync("engine", engineId, 0, progress, ct);
 		}
 
 		private async Task<BuildDto> CreateBuildAsync(string engineId)

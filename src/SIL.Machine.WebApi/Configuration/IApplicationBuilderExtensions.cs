@@ -10,7 +10,6 @@ namespace Microsoft.AspNetCore.Builder
 		{
 			app.ApplicationServices.GetService<IEngineRepository>().Init();
 			app.ApplicationServices.GetService<IBuildRepository>().Init();
-			app.ApplicationServices.GetService<IProjectRepository>().Init();
 
 			app.ApplicationServices.GetService<IEngineServiceInternal>().Init();
 

@@ -226,7 +226,7 @@ namespace SIL.Machine.WebApi.Services
 			if (build.State == BuildStates.Pending)
 			{
 				// if the build is pending, then delete it
-				// the job will still run, but it will exit before performing the build 
+				// the job will still run, but it will exit before performing the build
 				await _builds.DeleteAsync(build);
 			}
 			else if (build.State == BuildStates.Active && !IsBuilding)
@@ -297,7 +297,6 @@ namespace SIL.Machine.WebApi.Services
 			try
 			{
 				var stopwatch = new Stopwatch();
-				ITextCorpus targetCorpus;
 				ITruecaser truecaser = await _truecaser;
 				using (await _lock.WriterLockAsync(jobToken.ShutdownToken))
 				{
@@ -316,9 +315,8 @@ namespace SIL.Machine.WebApi.Services
 						await _builds.UpdateAsync(build);
 					}
 
-					ITextCorpus sourceCorpus = await _textCorpusFactory.CreateAsync(engine.Projects,
-						TextCorpusType.Source);
-					targetCorpus = await _textCorpusFactory.CreateAsync(engine.Projects, TextCorpusType.Target);
+					ITextCorpus sourceCorpus = await _textCorpusFactory.CreateAsync(engine.Id, TextCorpusType.Source);
+					ITextCorpus targetCorpus = await _textCorpusFactory.CreateAsync(engine.Id, TextCorpusType.Target);
 					var corpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
 					modelTrainer = (await _translationModel).CreateTrainer(corpus, TokenProcessors.Lowercase,
 						TokenProcessors.Lowercase);

@@ -16,12 +16,11 @@ namespace SIL.Machine.WebApi.Services
 		Task<bool> TrainSegmentAsync(string engineId, IReadOnlyList<string> sourceSegment,
 			IReadOnlyList<string> targetSegment, bool sentenceStart);
 
-		Task<bool> AddProjectAsync(Project project);
+		Task<bool> AddAsync(Engine engine);
 
-		Task<bool> RemoveProjectAsync(string projectId);
+		Task<bool> RemoveAsync(string engineId);
 
 		Task<Build> StartBuildAsync(string engineId);
-		Task<Build> StartBuildByProjectIdAsync(string projectId);
 
 		Task CancelBuildAsync(string engineId);
 	}
