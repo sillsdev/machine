@@ -31,7 +31,9 @@ jobs:
           3.1.x
           6.0.x
     - name: Install libgoogle-perftools-dev
-      run: sudo apt-get install -y libgoogle-perftools-dev
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgoogle-perftools-dev
       if: matrix.os == 'ubuntu-18.04'
 
     - name: sentencepiece4c build
