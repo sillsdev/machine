@@ -1,16 +1,12 @@
-﻿using System.IO;
-using System.Reflection;
+﻿namespace SIL.Machine.WebApi.Configuration;
 
-namespace SIL.Machine.WebApi.Configuration
+public class ThotSmtModelOptions
 {
-	public class ThotSmtModelOptions
+	public ThotSmtModelOptions()
 	{
-		public ThotSmtModelOptions()
-		{
-			string installDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-			NewModelFile = Path.Combine(installDir, "thot-new-model.zip");
-		}
-
-		public string NewModelFile { get; set; }
+		string installDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+		NewModelFile = Path.Combine(installDir, "thot-new-model.zip");
 	}
+
+	public string NewModelFile { get; set; }
 }

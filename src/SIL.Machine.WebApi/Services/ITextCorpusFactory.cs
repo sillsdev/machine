@@ -1,16 +1,12 @@
-﻿using System.Threading.Tasks;
-using SIL.Machine.Corpora;
+﻿namespace SIL.Machine.WebApi.Services;
 
-namespace SIL.Machine.WebApi.Services
+public enum TextCorpusType
 {
-	public enum TextCorpusType
-	{
-		Source,
-		Target
-	}
+	Source,
+	Target
+}
 
-	public interface ITextCorpusFactory
-	{
-		Task<ITextCorpus> CreateAsync(string engineId, TextCorpusType type);
-	}
+public interface ITextCorpusFactory
+{
+	Task<ITextCorpus> CreateAsync(string engineId, TextCorpusType type);
 }

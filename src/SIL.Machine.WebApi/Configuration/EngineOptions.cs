@@ -1,12 +1,9 @@
-﻿using System;
+﻿namespace SIL.Machine.WebApi.Configuration;
 
-namespace SIL.Machine.WebApi.Configuration
+public class EngineOptions
 {
-	public class EngineOptions
-	{
-		public string EnginesDir { get; set; } = "engines";
-		public TimeSpan EngineCommitFrequency { get; set; } = TimeSpan.FromMinutes(5);
-		public TimeSpan InactiveEngineTimeout { get; set; } = TimeSpan.FromMinutes(10);
-		public TimeSpan BuildLongPollTimeout { get; set; } = TimeSpan.FromSeconds(40);
-	}
+	public string EnginesDir { get; set; } = "engines";
+	public TimeSpan EngineCommitFrequency { get; set; } = TimeSpan.FromMinutes(5);
+	public TimeSpan InactiveEngineTimeout { get; set; } = TimeSpan.FromMinutes(10);
+	public TimeSpan BuildLongPollTimeout { get; set; } = TimeSpan.FromSeconds(40);
 }

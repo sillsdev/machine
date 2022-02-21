@@ -5,6 +5,7 @@
 		<Description>An ASP.NET Core web API middleware for the Machine library.</Description>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NoWarn>1591</NoWarn>
+		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 
 	<Import Project="../AssemblyInfo.props" />
@@ -28,7 +29,6 @@
 		<PackageReference Include="HangFire" Version="1.7.12" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.2" />
 		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
-		<PackageReference Include="NoDb" Version="1.2.2" />
 		<PackageReference Include="MongoDB.Driver" Version="2.9.3" />
 		<PackageReference Include="System.Threading.Tasks.Dataflow" Version="6.0.0" />
 	</ItemGroup>

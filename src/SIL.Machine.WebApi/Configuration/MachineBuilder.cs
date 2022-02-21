@@ -1,12 +1,11 @@
-﻿namespace Microsoft.Extensions.DependencyInjection
-{
-	internal class MachineBuilder : IMachineBuilder
-	{
-		public MachineBuilder(IServiceCollection services)
-		{
-			Services = services;
-		}
+﻿namespace Microsoft.Extensions.DependencyInjection;
 
-		public IServiceCollection Services { get; }
+internal class MachineBuilder : IMachineBuilder
+{
+	public MachineBuilder(IServiceCollection services)
+	{
+		Services = services;
 	}
+
+	public IServiceCollection Services { get; }
 }

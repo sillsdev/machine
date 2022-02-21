@@ -1,22 +1,19 @@
-﻿using SIL.ObjectModel;
+﻿namespace SIL.Machine.WebApi.Utils;
 
-namespace SIL.Machine.WebApi.Utils
+public class ObjectPoolItem<T> : DisposableBase
 {
-	public class ObjectPoolItem<T> : DisposableBase
+	private readonly ObjectPool<T> _pool;
+
+	internal ObjectPoolItem(ObjectPool<T> pool, T item)
 	{
-		private readonly ObjectPool<T> _pool;
+		_pool = pool;
+		Object = item;
+	}
 
-		internal ObjectPoolItem(ObjectPool<T> pool, T item)
-		{
-			_pool = pool;
-			Object = item;
-		}
+	public T Object { get; }
 
-		public T Object { get; }
-
-		protected override void DisposeManagedResources()
-		{
-			_pool.Put(Object);
-		}
+	protected override void DisposeManagedResources()
+	{
+		_pool.Put(Object);
 	}
 }

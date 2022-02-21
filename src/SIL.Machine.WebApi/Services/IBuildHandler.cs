@@ -1,13 +1,11 @@
-﻿using System.Threading.Tasks;
-using SIL.Machine.WebApi.Models;
+﻿namespace SIL.Machine.WebApi.Services;
 
-namespace SIL.Machine.WebApi.Services
+public record BuildContext(Engine Engine, Build Build);
+
+public interface IBuildHandler
 {
-	public interface IBuildHandler
-	{
-		Task OnStarted(BuildContext content);
-		Task OnCompleted(BuildContext context);
-		Task OnCanceled(BuildContext context);
-		Task OnFailed(BuildContext context);
-	}
+	Task OnStarted(BuildContext content);
+	Task OnCompleted(BuildContext context);
+	Task OnCanceled(BuildContext context);
+	Task OnFailed(BuildContext context);
 }

@@ -1,17 +1,14 @@
-﻿using System;
+﻿namespace SIL.Machine.WebApi.DataAccess;
 
-namespace SIL.Machine.WebApi.DataAccess
+public class ConcurrencyConflictException : Exception
 {
-	public class ConcurrencyConflictException : Exception
+	public ConcurrencyConflictException(string message)
+		: base(message)
 	{
-		public ConcurrencyConflictException(string message)
-			: base(message)
-		{
-		}
+	}
 
-		public ConcurrencyConflictException(string message, Exception innerException)
-			: base(message, innerException)
-		{
-		}
+	public ConcurrencyConflictException(string message, Exception innerException)
+		: base(message, innerException)
+	{
 	}
 }

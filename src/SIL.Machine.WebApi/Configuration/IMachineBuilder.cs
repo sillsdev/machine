@@ -1,7 +1,6 @@
-﻿namespace Microsoft.Extensions.DependencyInjection
+﻿namespace Microsoft.Extensions.DependencyInjection;
+
+public interface IMachineBuilder
 {
-	public interface IMachineBuilder
-	{
-		IServiceCollection Services { get; }
-	}
+	IServiceCollection Services { get; }
 }

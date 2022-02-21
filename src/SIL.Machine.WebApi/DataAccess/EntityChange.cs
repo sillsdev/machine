@@ -1,24 +1,11 @@
-﻿using SIL.Machine.WebApi.Models;
+﻿namespace SIL.Machine.WebApi.DataAccess;
 
-namespace SIL.Machine.WebApi.DataAccess
+public enum EntityChangeType
 {
-	public enum EntityChangeType
-	{
-		None,
-		Insert,
-		Update,
-		Delete
-	}
-
-	public struct EntityChange<T> where T : class, IEntity<T>
-	{
-		public EntityChange(EntityChangeType type, T entity)
-		{
-			Type = type;
-			Entity = entity;
-		}
-
-		public EntityChangeType Type { get; }
-		public T Entity { get; }
-	}
+	None,
+	Insert,
+	Update,
+	Delete
 }
+
+public readonly record struct EntityChange<T>(EntityChangeType Type, T Entity) where T : class, IEntity<T>;

@@ -1,10 +1,7 @@
-﻿using System.Collections.Generic;
+﻿namespace SIL.Machine.WebApi.Configuration;
 
-namespace SIL.Machine.WebApi.Configuration
+public class MachineConfig
 {
-	public class MachineConfig
-	{
-		public string Namespace { get; set; } = "machine-api";
-		public IReadOnlyList<string> AuthenticationSchemes { get; set; } = new string[0];
-	}
+	public string Namespace { get; set; } = "machine-api";
+	public IReadOnlyList<string> AuthenticationSchemes { get; set; } = new string[0];
 }
