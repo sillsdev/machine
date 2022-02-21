@@ -15,19 +15,18 @@ public class MongoBuildRepository : MongoRepository<Build>, IBuildRepository
 		CreateOrUpdateIndex(new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.EngineRef)));
 	}
 
-	public Task<Build> GetByEngineIdAsync(string engineId, CancellationToken ct = default(CancellationToken))
+	public Task<Build> GetByEngineIdAsync(string engineId, CancellationToken ct = default)
 	{
 		return Collection.Find(b => b.EngineRef == engineId
 			&& (b.State == BuildStates.Active || b.State == BuildStates.Pending)).FirstOrDefaultAsync(ct);
 	}
 
-	public Task<Subscription<Build>> SubscribeByEngineIdAsync(string engineId,
-		CancellationToken ct = default(CancellationToken))
+	public Task<Subscription<Build>> SubscribeByEngineIdAsync(string engineId, CancellationToken ct = default)
 	{
 		return AddSubscriptionAsync(GetByEngineIdAsync, _engineIdSubscriptions, engineId, ct);
 	}
 
-	public async Task DeleteAllByEngineIdAsync(string engineId, CancellationToken ct = default(CancellationToken))
+	public async Task DeleteAllByEngineIdAsync(string engineId, CancellationToken ct = default)
 	{
 		List<Build> deletedBuilds = await Collection.Find(b => b.EngineRef == engineId).ToListAsync(ct);
 		await Collection.DeleteManyAsync(b => b.EngineRef == engineId);

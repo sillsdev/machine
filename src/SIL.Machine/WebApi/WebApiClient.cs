@@ -40,12 +40,12 @@ namespace SIL.Machine.WebApi.Client
 
 		public async Task<WordGraph> GetWordGraph(string engineId, IReadOnlyList<string> sourceSegment)
 		{
-			string url = $"translation/engines/{engineId}/actions/getWordGraph";
+			string url = $"translation/engines/{engineId}/get-word-graph";
 			string body = JsonConvert.SerializeObject(sourceSegment, SerializerSettings);
 			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Post, url, body, "application/json");
 			if (!response.IsSuccess)
 			{
-				throw new HttpException("Error calling getWordGraph action.")
+				throw new HttpException("Error calling get-word-graph action.")
 				{
 					StatusCode = response.StatusCode
 				};
@@ -58,7 +58,7 @@ namespace SIL.Machine.WebApi.Client
 		public async Task TrainSegmentPairAsync(string engineId, IReadOnlyList<string> sourceSegment,
 			IReadOnlyList<string> targetSegment)
 		{
-			string url = $"translation/engines/{engineId}/actions/trainSegment";
+			string url = $"translation/engines/{engineId}/train-segment";
 			var pairDto = new SegmentPairDto
 			{
 				SourceSegment = sourceSegment.ToArray(),
@@ -67,7 +67,7 @@ namespace SIL.Machine.WebApi.Client
 			string body = JsonConvert.SerializeObject(pairDto, SerializerSettings);
 			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Post, url, body, "application/json");
 			if (!response.IsSuccess)
-				throw new HttpException("Error calling trainSegment action.") { StatusCode = response.StatusCode };
+				throw new HttpException("Error calling train-segment action.") { StatusCode = response.StatusCode };
 		}
 
 		public async Task StartTrainingAsync(string engineId)
@@ -79,51 +79,49 @@ namespace SIL.Machine.WebApi.Client
 		{
 			BuildDto buildDto = await CreateBuildAsync(engineId);
 			progress(CreateProgressStatus(buildDto));
-			await PollBuildProgressAsync("id", buildDto.Id, buildDto.Revision + 1, progress, ct);
+			await PollBuildProgressAsync(engineId, $"builds/{buildDto.Id}", buildDto.Revision + 1, progress, ct);
 		}
 
 		public async Task ListenForTrainingStatusAsync(string engineId, Action<ProgressStatus> progress,
-			CancellationToken ct = default(CancellationToken))
+			CancellationToken ct = default)
 		{
-			await PollBuildProgressAsync("engine", engineId, 0, progress, ct);
+			await PollBuildProgressAsync(engineId, "current-build", 0, progress, ct);
 		}
 
 		private async Task<BuildDto> CreateBuildAsync(string engineId)
 		{
-			string body = JsonConvert.SerializeObject(engineId, SerializerSettings);
-			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Post, "translation/builds", body,
-				"application/json", CancellationToken.None);
+			HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Post,
+				$"translation/engines/{engineId}/builds", null, null, CancellationToken.None);
 			if (!response.IsSuccess)
 				throw new HttpException("Error starting build.") { StatusCode = response.StatusCode };
 			return JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
 		}
 
-		private async Task PollBuildProgressAsync(string locatorType, string locator, int minRevision,
+		private async Task PollBuildProgressAsync(string engineId, string buildRelativeUrl, int minRevision,
 			Action<ProgressStatus> progress, CancellationToken ct)
 		{
 			while (true)
 			{
 				ct.ThrowIfCancellationRequested();
 
-				string url = $"translation/builds/{locatorType}:{locator}?minRevision={minRevision}";
+				string url = $"translation/engines/{engineId}/{buildRelativeUrl}?minRevision={minRevision}";
 				HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url, null, null, ct);
 				if (response.StatusCode == 200)
 				{
 					BuildDto buildDto = JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
 					progress(CreateProgressStatus(buildDto));
-					locatorType = "id";
-					locator = buildDto.Id;
+					buildRelativeUrl = $"builds/{buildDto.Id}";
 					if (buildDto.State == BuildStates.Completed || buildDto.State == BuildStates.Canceled)
 						break;
 					else if (buildDto.State == BuildStates.Faulted)
 						throw new InvalidOperationException("Error occurred during build: " + buildDto.Message);
 					minRevision = buildDto.Revision + 1;
 				}
-				else if (response.StatusCode == 204)
+				else if (response.StatusCode == 408)
 				{
 					continue;
 				}
-				else if (response.StatusCode == 404)
+				else if (response.StatusCode == 404 || response.StatusCode == 204)
 				{
 					break;
 				}
