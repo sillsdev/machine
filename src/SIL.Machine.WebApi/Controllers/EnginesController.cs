@@ -9,12 +9,12 @@
 public class EnginesController : Controller
 {
 	private readonly IAuthorizationService _authService;
-	private readonly IEngineRepository _engines;
+	private readonly IRepository<Engine> _engines;
 	private readonly IBuildRepository _builds;
 	private readonly IEngineService _engineService;
 	private readonly IOptions<EngineOptions> _engineOptions;
 
-	public EnginesController(IAuthorizationService authService, IEngineRepository engines, IBuildRepository builds,
+	public EnginesController(IAuthorizationService authService, IRepository<Engine> engines, IBuildRepository builds,
 		IEngineService engineService, IOptions<EngineOptions> engineOptions)
 	{
 		_authService = authService;

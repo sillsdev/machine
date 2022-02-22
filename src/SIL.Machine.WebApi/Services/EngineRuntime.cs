@@ -4,7 +4,7 @@ internal class EngineRuntime : AsyncDisposableBase
 {
 	private const int MaxEnginePoolSize = 3;
 
-	private readonly IEngineRepository _engines;
+	private readonly IRepository<Engine> _engines;
 	private readonly IBuildRepository _builds;
 	private readonly IComponentFactory<IInteractiveTranslationModel> _translationModelFactory;
 	private readonly IComponentFactory<ITranslationEngine> _ruleEngineFactory;
@@ -25,7 +25,7 @@ internal class EngineRuntime : AsyncDisposableBase
 	private bool _isUpdated;
 	private DateTime _lastUsedTime;
 
-	public EngineRuntime(IOptions<EngineOptions> engineOptions, IEngineRepository engines,
+	public EngineRuntime(IOptions<EngineOptions> engineOptions, IRepository<Engine> engines,
 		IBuildRepository builds, IComponentFactory<IInteractiveTranslationModel> translationModelFactory,
 		IComponentFactory<ITranslationEngine> ruleEngineFactory, IComponentFactory<ITruecaser> truecaserFactory,
 		IBackgroundJobClient jobClient, ITextCorpusFactory textCorpusFactory, ILogger<EngineRuntime> logger,

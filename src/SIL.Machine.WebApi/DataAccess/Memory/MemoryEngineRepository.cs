@@ -1,13 +1,13 @@
 ﻿namespace SIL.Machine.WebApi.DataAccess.Memory;
 
-public class MemoryEngineRepository : MemoryRepository<Engine>, IEngineRepository
+public class MemoryEngineRepository : MemoryRepository<Engine>
 {
 	public MemoryEngineRepository()
 		: this(null)
 	{
 	}
 
-	internal MemoryEngineRepository(IEngineRepository persistenceRepo)
+	internal MemoryEngineRepository(IRepository<Engine> persistenceRepo)
 		: base(persistenceRepo)
 	{
 	}

@@ -4,12 +4,12 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 {
 	private readonly IOptions<EngineOptions> _engineOptions;
 	private readonly ConcurrentDictionary<string, Owned<EngineRuntime>> _runtimes;
-	private readonly IEngineRepository _engines;
+	private readonly IRepository<Engine> _engines;
 	private readonly IBuildRepository _builds;
 	private readonly Func<string, Owned<EngineRuntime>> _engineRunnerFactory;
 	private readonly AsyncTimer _commitTimer;
 
-	public EngineService(IOptions<EngineOptions> engineOptions, IEngineRepository engines,
+	public EngineService(IOptions<EngineOptions> engineOptions, IRepository<Engine> engines,
 		IBuildRepository builds, Func<string, Owned<EngineRuntime>> engineRuntimeFactory)
 	{
 		_engineOptions = engineOptions;

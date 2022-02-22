@@ -4,7 +4,7 @@ public static class IApplicationBuilderExtensions
 {
 	public static IApplicationBuilder UseMachine(this IApplicationBuilder app)
 	{
-		app.ApplicationServices.GetService<IEngineRepository>().Init();
+		app.ApplicationServices.GetService<IRepository<Engine>>().Init();
 		app.ApplicationServices.GetService<IBuildRepository>().Init();
 
 		app.ApplicationServices.GetService<IEngineServiceInternal>().Init();

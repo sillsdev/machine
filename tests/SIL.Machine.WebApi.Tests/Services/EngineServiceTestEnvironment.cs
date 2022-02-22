@@ -38,7 +38,7 @@ namespace SIL.Machine.WebApi.Services
 			_jobClient = new BackgroundJobClient(_memoryStorage);
 		}
 
-		public IEngineRepository EngineRepository { get; }
+		public IRepository<Engine> EngineRepository { get; }
 		public IBuildRepository BuildRepository { get; }
 		public EngineService Service { get; private set; }
 		public ITrainer SmtBatchTrainer { get; private set; }

@@ -82,7 +82,7 @@ public static class IMachineBuilderExtensions
 
 	public static IMachineBuilder AddMemoryDataAccess(this IMachineBuilder builder)
 	{
-		builder.Services.AddSingleton<IEngineRepository, MemoryEngineRepository>();
+		builder.Services.AddSingleton<IRepository<Engine>, MemoryEngineRepository>();
 		builder.Services.AddSingleton<IBuildRepository, MemoryBuildRepository>();
 		return builder;
 	}
@@ -98,7 +98,7 @@ public static class IMachineBuilderExtensions
 		ConventionRegistry.Register("Machine", globalPack, t => t.Namespace == "SIL.Machine.WebApi.Models");
 
 		RegisterEntity<Engine>();
-		builder.Services.AddSingleton<IEngineRepository, MongoEngineRepository>();
+		builder.Services.AddSingleton<IRepository<Engine>, MongoEngineRepository>();
 
 		RegisterEntity<Build>();
 		builder.Services.AddSingleton<IBuildRepository, MongoBuildRepository>();
