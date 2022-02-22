@@ -2,65 +2,113 @@
 
 public static class DataAccessExtensions
 {
-	public static async Task<T> ConcurrentUpdateAsync<T>(this IRepository<T> repo, string id,
-		Action<T> changeAction, CancellationToken ct = default(CancellationToken)) where T : class, IEntity<T>
+	public static async Task<T> GetAsync<T>(this IRepository<T> repo, string id,
+		CancellationToken cancellationToken = default) where T : IEntity<T>
 	{
-		T entity = await repo.GetAsync(id, ct);
-		if (entity == null)
-			return null;
-		return await repo.ConcurrentUpdateAsync(entity, changeAction, ct);
+		Attempt<T> attempt = await repo.TryGetAsync(id, cancellationToken);
+		if (attempt.Success)
+			return attempt.Result;
+		return default;
 	}
 
-	public static async Task<T> ConcurrentUpdateAsync<T>(this IRepository<T> repo, T entity, Action<T> changeAction,
-		CancellationToken ct = default(CancellationToken)) where T : class, IEntity<T>
+	public static async Task<IReadOnlyList<T>> GetAllAsync<T>(this IRepository<T> repo,
+		CancellationToken cancellationToken = default) where T : IEntity<T>
 	{
+		return await repo.GetAllAsync(e => true, cancellationToken);
+	}
+
+	public static async Task<Attempt<T>> TryGetAsync<T>(this IRepository<T> repo, string id,
+		CancellationToken cancellationToken = default) where T : IEntity<T>
+	{
+		T entity = await repo.GetAsync(e => e.Id == id, cancellationToken);
+		return new Attempt<T>(entity != null, entity);
+	}
+
+	public static async Task<bool> ExistsAsync<T>(this IRepository<T> repo, string id,
+		CancellationToken cancellationToken = default) where T : IEntity<T>
+	{
+		return await repo.ExistsAsync(e => e.Id == id, cancellationToken);
+	}
+
+	public static Task<T> UpdateAsync<T>(this IRepository<T> repo, string id, Action<IUpdateBuilder<T>> update,
+		bool upsert = false, CancellationToken cancellationToken = default) where T : IEntity<T>
+	{
+		return repo.UpdateAsync(e => e.Id == id, update, upsert, cancellationToken);
+	}
+
+	public static Task<T> UpdateAsync<T>(this IRepository<T> repo, T entity, Action<IUpdateBuilder<T>> update,
+		bool upsert = false, CancellationToken cancellationToken = default) where T : IEntity<T>
+	{
+		return repo.UpdateAsync(entity.Id, update, upsert, cancellationToken);
+	}
+
+	public static Task<T> DeleteAsync<T>(this IRepository<T> repo, string id,
+		CancellationToken cancellationToken = default) where T : IEntity<T>
+	{
+		return repo.DeleteAsync(e => e.Id == id, cancellationToken);
+	}
+
+	public static async Task<bool> DeleteAsync<T>(this IRepository<T> repo, T entity,
+		CancellationToken cancellationToken = default) where T : IEntity<T>
+	{
+		return (await repo.DeleteAsync(e => e.Id == entity.Id, cancellationToken)) != null;
+	}
+
+	public static Task<Build> GetByEngineIdAsync(this IRepository<Build> builds, string engineId,
+		CancellationToken cancellationToken = default)
+	{
+		return builds.GetAsync(b => b.EngineRef == engineId
+			&& (b.State == BuildStates.Active || b.State == BuildStates.Pending), cancellationToken);
+	}
+
+	public static Task<EntityChange<Build>> GetNewerRevisionAsync(this IRepository<Build> builds,
+		string id, long minRevision, CancellationToken cancellationToken = default)
+	{
+		return builds.GetNewerRevisionAsync(b => b.Id == id, minRevision, cancellationToken);
+	}
+
+	public static Task<EntityChange<Build>> GetNewerRevisionByEngineIdAsync(this IRepository<Build> builds,
+		string engineId, long minRevision, CancellationToken cancellationToken = default)
+	{
+		return builds.GetNewerRevisionAsync(b => b.EngineRef == engineId
+			&& (b.State == BuildStates.Active || b.State == BuildStates.Pending), minRevision, cancellationToken);
+	}
+
+	public static async Task<EntityChange<Build>> GetNewerRevisionAsync(this IRepository<Build> builds,
+		Expression<Func<Build, bool>> filter, long minRevision, CancellationToken cancellationToken = default)
+	{
+		using Subscription<Build> subscription = await builds.SubscribeAsync(filter, cancellationToken);
+		EntityChange<Build> curChange = subscription.Change;
+		if (curChange.Type == EntityChangeType.Delete && minRevision > 0)
+			return curChange;
 		while (true)
 		{
-			try
-			{
-				changeAction(entity);
-				await repo.UpdateAsync(entity, true, ct);
-				break;
-			}
-			catch (ConcurrencyConflictException)
-			{
-				entity = await repo.GetAsync(entity.Id, ct);
-				if (entity == null)
-					return null;
-			}
-		}
-		return entity;
-	}
-
-	public static Task<EntityChange<T>> GetNewerRevisionAsync<T>(this IRepository<T> repo, string id,
-		long minRevision, CancellationToken ct = default(CancellationToken)) where T : class, IEntity<T>
-	{
-		return GetNewerRevisionAsync(repo.SubscribeAsync, id, minRevision, ct);
-	}
-
-	public static Task<EntityChange<Build>> GetNewerRevisionByEngineIdAsync(this IBuildRepository repo,
-		string engineId, long minRevision, CancellationToken ct = default(CancellationToken))
-	{
-		return GetNewerRevisionAsync(repo.SubscribeByEngineIdAsync, engineId, minRevision, ct);
-	}
-
-	private static async Task<EntityChange<TEntity>> GetNewerRevisionAsync<TKey, TEntity>(
-		Func<TKey, CancellationToken, Task<Subscription<TEntity>>> subscribe, TKey key, long minRevision,
-		CancellationToken ct) where TEntity : class, IEntity<TEntity>
-	{
-		using (Subscription<TEntity> subscription = await subscribe(key, ct))
-		{
-			EntityChange<TEntity> curChange = subscription.Change;
-			if (curChange.Type == EntityChangeType.Delete && minRevision > 0)
+			if (curChange.Type != EntityChangeType.Delete && minRevision <= curChange.Entity.Revision)
 				return curChange;
-			while (true)
+			await subscription.WaitForUpdateAsync(cancellationToken);
+			curChange = subscription.Change;
+			if (curChange.Type == EntityChangeType.Delete)
+				return curChange;
+		}
+	}
+
+	public static void CreateOrUpdate<T>(this IMongoIndexManager<T> indexes, CreateIndexModel<T> indexModel)
+	{
+		try
+		{
+			indexes.CreateOne(indexModel);
+		}
+		catch (MongoCommandException ex)
+		{
+			if (ex.CodeName == "IndexOptionsConflict")
 			{
-				if (curChange.Type != EntityChangeType.Delete && minRevision <= curChange.Entity.Revision)
-					return curChange;
-				await subscription.WaitForUpdateAsync(ct);
-				curChange = subscription.Change;
-				if (curChange.Type == EntityChangeType.Delete)
-					return curChange;
+				string name = ex.Command["indexes"][0]["name"].AsString;
+				indexes.DropOne(name);
+				indexes.CreateOne(indexModel);
+			}
+			else
+			{
+				throw;
 			}
 		}
 	}

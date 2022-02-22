@@ -7,6 +7,7 @@ using NSubstitute.ReceivedExtensions;
 using NUnit.Framework;
 using SIL.Machine.Translation;
 using SIL.Machine.Utils;
+using SIL.Machine.WebApi.DataAccess;
 using SIL.Machine.WebApi.Models;
 
 namespace SIL.Machine.WebApi.Services

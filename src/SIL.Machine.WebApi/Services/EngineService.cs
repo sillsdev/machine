@@ -5,12 +5,12 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 	private readonly IOptions<EngineOptions> _engineOptions;
 	private readonly ConcurrentDictionary<string, Owned<EngineRuntime>> _runtimes;
 	private readonly IRepository<Engine> _engines;
-	private readonly IBuildRepository _builds;
+	private readonly IRepository<Build> _builds;
 	private readonly Func<string, Owned<EngineRuntime>> _engineRunnerFactory;
 	private readonly AsyncTimer _commitTimer;
 
 	public EngineService(IOptions<EngineOptions> engineOptions, IRepository<Engine> engines,
-		IBuildRepository builds, Func<string, Owned<EngineRuntime>> engineRuntimeFactory)
+		IRepository<Build> builds, Func<string, Owned<EngineRuntime>> engineRuntimeFactory)
 	{
 		_engineOptions = engineOptions;
 		_engines = engines;
@@ -84,7 +84,7 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 			EngineRuntime runtime = CreateRuntime(engine.Id);
 			await runtime.InitNewAsync();
 		}
-		catch (KeyAlreadyExistsException)
+		catch (DuplicateKeyException)
 		{
 			// a project with the same id already exists
 			return false;
@@ -100,7 +100,7 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 			return false;
 
 		await _engines.DeleteAsync(engineId);
-		await _builds.DeleteAllByEngineIdAsync(engineId);
+		await _builds.DeleteAllAsync(b => b.EngineRef == engineId);
 
 		EngineRuntime runtime = GetOrCreateRuntime(engineId);
 		// the engine will have no associated projects, so remove it

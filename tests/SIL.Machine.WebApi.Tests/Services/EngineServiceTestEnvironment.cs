@@ -13,7 +13,6 @@ using SIL.Machine.Corpora;
 using SIL.Machine.Translation;
 using SIL.Machine.WebApi.Configuration;
 using SIL.Machine.WebApi.DataAccess;
-using SIL.Machine.WebApi.DataAccess.Memory;
 using SIL.Machine.WebApi.Models;
 using SIL.ObjectModel;
 
@@ -31,15 +30,15 @@ namespace SIL.Machine.WebApi.Services
 
 		public EngineServiceTestEnvironment()
 		{
-			EngineRepository = new MemoryEngineRepository();
-			BuildRepository = new MemoryBuildRepository();
+			EngineRepository = new MemoryRepository<Engine>();
+			BuildRepository = new MemoryRepository<Build>();
 			EngineOptions = new EngineOptions();
 			_memoryStorage = new MemoryStorage();
 			_jobClient = new BackgroundJobClient(_memoryStorage);
 		}
 
 		public IRepository<Engine> EngineRepository { get; }
-		public IBuildRepository BuildRepository { get; }
+		public IRepository<Build> BuildRepository { get; }
 		public EngineService Service { get; private set; }
 		public ITrainer SmtBatchTrainer { get; private set; }
 		public IInteractiveTranslationModel InteractiveModel { get; private set; }
@@ -244,7 +243,7 @@ namespace SIL.Machine.WebApi.Services
 
 		private async Task WaitForBuildState(string buildId, Func<string, bool> predicate)
 		{
-			using (Subscription<Build> subscription = await BuildRepository.SubscribeAsync(buildId))
+			using (Subscription<Build> subscription = await BuildRepository.SubscribeAsync(b => b.Id == buildId))
 			{
 				while (true)
 				{

@@ -10,11 +10,11 @@ public class EnginesController : Controller
 {
 	private readonly IAuthorizationService _authService;
 	private readonly IRepository<Engine> _engines;
-	private readonly IBuildRepository _builds;
+	private readonly IRepository<Build> _builds;
 	private readonly IEngineService _engineService;
 	private readonly IOptions<EngineOptions> _engineOptions;
 
-	public EnginesController(IAuthorizationService authService, IRepository<Engine> engines, IBuildRepository builds,
+	public EnginesController(IAuthorizationService authService, IRepository<Engine> engines, IRepository<Build> builds,
 		IEngineService engineService, IOptions<EngineOptions> engineOptions)
 	{
 		_authService = authService;
@@ -131,8 +131,8 @@ public class EnginesController : Controller
 
 		if (minRevision != null)
 		{
-			EntityChange<Build> change = await _builds.GetNewerRevisionByEngineIdAsync(id,
-				minRevision.Value, ct).Timeout(_engineOptions.Value.BuildLongPollTimeout, ct);
+			EntityChange<Build> change = await _builds.GetNewerRevisionByEngineIdAsync(id, minRevision.Value, ct)
+				.Timeout(_engineOptions.Value.BuildLongPollTimeout, ct);
 			return change.Type switch
 			{
 				EntityChangeType.None => StatusCode(StatusCodes.Status408RequestTimeout),
@@ -186,8 +186,8 @@ public class EnginesController : Controller
 
 		if (minRevision != null)
 		{
-			EntityChange<Build> change = await _builds.GetNewerRevisionAsync(buildId,
-				minRevision.Value, ct).Timeout(_engineOptions.Value.BuildLongPollTimeout, ct);
+			EntityChange<Build> change = await _builds.GetNewerRevisionAsync(buildId, minRevision.Value, ct)
+				.Timeout(_engineOptions.Value.BuildLongPollTimeout, ct);
 			return change.Type switch
 			{
 				EntityChangeType.None => StatusCode(StatusCodes.Status408RequestTimeout),

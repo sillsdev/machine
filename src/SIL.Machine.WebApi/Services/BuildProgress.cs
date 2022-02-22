@@ -2,10 +2,10 @@
 
 public class BuildProgress : IProgress<ProgressStatus>
 {
-	private readonly IBuildRepository _buildRepo;
-	private readonly Build _build;
+	private readonly IRepository<Build> _buildRepo;
+	private Build _build;
 
-	public BuildProgress(IBuildRepository buildRepo, Build build)
+	public BuildProgress(IRepository<Build> buildRepo, Build build)
 	{
 		_buildRepo = buildRepo;
 		_build = build;
@@ -19,8 +19,9 @@ public class BuildProgress : IProgress<ProgressStatus>
 			return;
 		}
 
-		_build.PercentCompleted = value.PercentCompleted;
-		_build.Message = value.Message;
-		_buildRepo.UpdateAsync(_build).WaitAndUnwrapException();
+		_build = _buildRepo.UpdateAsync(_build, u => u
+			.Inc(b => b.Revision)
+			.Set(b => b.PercentCompleted, value.PercentCompleted)
+			.Set(b => b.Message, value.Message)).WaitAndUnwrapException();
 	}
 }

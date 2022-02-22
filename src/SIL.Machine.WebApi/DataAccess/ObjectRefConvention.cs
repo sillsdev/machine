@@ -1,4 +1,4 @@
-﻿namespace SIL.Machine.WebApi.DataAccess.Mongo;
+﻿namespace SIL.Machine.WebApi.DataAccess;
 
 public class ObjectRefConvention : ConventionBase, IMemberMapConvention
 {

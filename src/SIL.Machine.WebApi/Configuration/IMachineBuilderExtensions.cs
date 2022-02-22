@@ -82,26 +82,22 @@ public static class IMachineBuilderExtensions
 
 	public static IMachineBuilder AddMemoryDataAccess(this IMachineBuilder builder)
 	{
-		builder.Services.AddSingleton<IRepository<Engine>, MemoryEngineRepository>();
-		builder.Services.AddSingleton<IBuildRepository, MemoryBuildRepository>();
+		builder.Services.AddSingleton<IRepository<Engine>, MemoryRepository<Engine>>();
+		builder.Services.AddSingleton<IRepository<Build>, MemoryRepository<Build>>();
 		return builder;
 	}
 
 	public static IMachineBuilder AddMongoDataAccess(this IMachineBuilder builder)
 	{
-		var globalPack = new ConventionPack
-			{
-				new CamelCaseElementNameConvention(),
-				new ObjectRefConvention(),
-				new IgnoreIfNullConvention(true)
-			};
-		ConventionRegistry.Register("Machine", globalPack, t => t.Namespace == "SIL.Machine.WebApi.Models");
+		DataAccessClassMap.RegisterConventions("SIL.Machine.WebApi.Models",
+			new CamelCaseElementNameConvention(),
+			new EnumRepresentationConvention(BsonType.String),
+			new IgnoreIfNullConvention(true),
+			new ObjectRefConvention());
 
-		RegisterEntity<Engine>();
-		builder.Services.AddSingleton<IRepository<Engine>, MongoEngineRepository>();
-
-		RegisterEntity<Build>();
-		builder.Services.AddSingleton<IBuildRepository, MongoBuildRepository>();
+		builder.Services.AddMongoRepository<Engine>("engines");
+		builder.Services.AddMongoRepository<Build>("builds", indexSetup: indexes =>
+			indexes.CreateOrUpdate(new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.EngineRef))));
 
 		return builder;
 	}
@@ -119,15 +115,23 @@ public static class IMachineBuilderExtensions
 		return builder.AddMongoDataAccess();
 	}
 
-	private static void RegisterEntity<T>(Action<BsonClassMap<T>> setup = null) where T : class, IEntity<T>
+
+	public static void AddMongoRepository<T>(this IServiceCollection services, string collection,
+		Action<BsonClassMap<T>> mapSetup = null, Action<IMongoIndexManager<T>> indexSetup = null)
+		where T : class, IEntity<T>
 	{
-		BsonClassMap.RegisterClassMap<T>(cm =>
+		DataAccessClassMap.RegisterClass<T>(cm =>
 		{
-			cm.AutoMap();
-			cm.MapIdProperty(e => e.Id)
-				.SetIdGenerator(StringObjectIdGenerator.Instance)
-				.SetSerializer(new StringSerializer(BsonType.ObjectId));
-			setup?.Invoke(cm);
+			cm.MapIdProperty(e => e.Id);
+			mapSetup?.Invoke(cm);
 		});
+		services.AddSingleton<IRepository<T>>(sp => CreateMongoRepository(sp, collection, indexSetup));
+	}
+
+	private static MongoRepository<T> CreateMongoRepository<T>(IServiceProvider sp, string collection,
+		Action<IMongoIndexManager<T>> indexSetup) where T : class, IEntity<T>
+	{
+		return new MongoRepository<T>(sp.GetService<IMongoDatabase>().GetCollection<T>(collection),
+			c => indexSetup?.Invoke(c.Indexes));
 	}
 }

@@ -5,7 +5,7 @@ internal class EngineRuntime : AsyncDisposableBase
 	private const int MaxEnginePoolSize = 3;
 
 	private readonly IRepository<Engine> _engines;
-	private readonly IBuildRepository _builds;
+	private readonly IRepository<Build> _builds;
 	private readonly IComponentFactory<IInteractiveTranslationModel> _translationModelFactory;
 	private readonly IComponentFactory<ITranslationEngine> _ruleEngineFactory;
 	private readonly IComponentFactory<ITruecaser> _truecaserFactory;
@@ -26,7 +26,7 @@ internal class EngineRuntime : AsyncDisposableBase
 	private DateTime _lastUsedTime;
 
 	public EngineRuntime(IOptions<EngineOptions> engineOptions, IRepository<Engine> engines,
-		IBuildRepository builds, IComponentFactory<IInteractiveTranslationModel> translationModelFactory,
+		IRepository<Build> builds, IComponentFactory<IInteractiveTranslationModel> translationModelFactory,
 		IComponentFactory<ITranslationEngine> ruleEngineFactory, IComponentFactory<ITruecaser> truecaserFactory,
 		IBackgroundJobClient jobClient, ITextCorpusFactory textCorpusFactory, ILogger<EngineRuntime> logger,
 		string engineId)
@@ -136,7 +136,7 @@ internal class EngineRuntime : AsyncDisposableBase
 					SentenceStart = sentenceStart
 				});
 			}
-			await _engines.ConcurrentUpdateAsync(_engineId, e => e.TrainedSegmentCount++);
+			await _engines.UpdateAsync(_engineId, u => u.Inc(e => e.TrainedSegmentCount, 1));
 			(await _truecaser).TrainSegment(targetSegment, sentenceStart);
 			_isUpdated = true;
 			_lastUsedTime = DateTime.Now;
@@ -218,9 +218,10 @@ internal class EngineRuntime : AsyncDisposableBase
 			// if the build is active but not actually running yet, then change the state to canceled
 			// the job will still run, but it will exit before performing the build
 			// this should not happen, but check for it just in case
-			build.State = BuildStates.Canceled;
-			build.DateFinished = DateTime.UtcNow;
-			await _builds.UpdateAsync(build);
+			await _builds.UpdateAsync(build, u => u
+				.Inc(b => b.Revision)
+				.Set(b => b.State, BuildStates.Canceled)
+				.Set(b => b.DateFinished, DateTime.UtcNow));
 		}
 		else if (IsBuilding)
 		{
@@ -295,8 +296,9 @@ internal class EngineRuntime : AsyncDisposableBase
 
 				if (build.State == BuildStates.Pending)
 				{
-					build.State = BuildStates.Active;
-					await _builds.UpdateAsync(build);
+					build = await _builds.UpdateAsync(build, u => u
+						.Inc(b => b.Revision)
+						.Set(b => b.State, BuildStates.Active));
 				}
 
 				ITextCorpus sourceCorpus = await _textCorpusFactory.CreateAsync(engine.Id, TextCorpusType.Source);
@@ -331,20 +333,18 @@ internal class EngineRuntime : AsyncDisposableBase
 					truecaser.TrainSegment(pair.Target, pair.SentenceStart);
 				}
 
-				engine = await _engines.ConcurrentUpdateAsync(engine, e =>
-				{
-					e.Confidence = modelTrainer.Stats.Metrics["bleu"];
-					e.TrainedSegmentCount = modelTrainer.Stats.TrainedSegmentCount + _trainedSegments.Count;
-				});
+				engine = await _engines.UpdateAsync(engine, u => u
+					.Set(e => e.Confidence, modelTrainer.Stats.Metrics["bleu"])
+					.Set(e => e.TrainedSegmentCount, modelTrainer.Stats.TrainedSegmentCount + _trainedSegments.Count));
 				_trainedSegments.Clear();
 			}
 
-			build.State = BuildStates.Completed;
-			build.DateFinished = DateTime.UtcNow;
-			await _builds.UpdateAsync(build);
+			build = await _builds.UpdateAsync(build, u => u
+				.Inc(b => b.Revision)
+				.Set(b => b.State, BuildStates.Completed)
+				.Set(b => b.DateFinished, DateTime.UtcNow));
 			stopwatch.Stop();
-			_logger.LogInformation("Build completed in {0}ms ({1})", stopwatch.Elapsed.TotalMilliseconds,
-				_engineId);
+			_logger.LogInformation("Build completed in {0}ms ({1})", stopwatch.Elapsed.TotalMilliseconds, _engineId);
 			await buildHandler.OnCompleted(new BuildContext(engine, build));
 		}
 		catch (OperationCanceledException)
@@ -353,27 +353,30 @@ internal class EngineRuntime : AsyncDisposableBase
 			if (jobToken.ShutdownToken.IsCancellationRequested)
 			{
 				// switch state back to pending
-				build.Message = null;
-				build.PercentCompleted = 0;
-				build.State = BuildStates.Pending;
-				await _builds.UpdateAsync(build);
+				await _builds.UpdateAsync(build, u => u
+					.Inc(b => b.Revision)
+					.Set(b => b.Message, null)
+					.Set(b => b.PercentCompleted, 0)
+					.Set(b => b.State, BuildStates.Pending));
 				throw;
 			}
 
-			build.State = BuildStates.Canceled;
-			build.DateFinished = DateTime.UtcNow;
-			await _builds.UpdateAsync(build);
-			_logger.LogInformation("Build canceled ({1})", _engineId);
+			build = await _builds.UpdateAsync(build, u => u
+				.Inc(b => b.Revision)
+				.Set(b => b.State, BuildStates.Canceled)
+				.Set(b => b.DateFinished, DateTime.UtcNow));
+			_logger.LogInformation("Build canceled ({0})", _engineId);
 			await buildHandler.OnCanceled(new BuildContext(engine, build));
 		}
 		catch (Exception e)
 		{
 			if (build != null)
 			{
-				build.State = BuildStates.Faulted;
-				build.Message = e.Message;
-				build.DateFinished = DateTime.UtcNow;
-				await _builds.UpdateAsync(build);
+				build = await _builds.UpdateAsync(build, u => u
+					.Inc(b => b.Revision)
+					.Set(b => b.State, BuildStates.Faulted)
+					.Set(b => b.Message, e.Message)
+					.Set(b => b.DateFinished, DateTime.UtcNow));
 				_logger.LogError(0, e, "Build faulted ({0})", _engineId);
 				await buildHandler.OnFailed(new BuildContext(engine, build));
 			}

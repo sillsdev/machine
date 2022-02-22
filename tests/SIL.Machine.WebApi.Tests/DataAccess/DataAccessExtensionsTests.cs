@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using NUnit.Framework;
-using SIL.Machine.WebApi.DataAccess.Memory;
 using SIL.Machine.WebApi.Models;
 
 namespace SIL.Machine.WebApi.DataAccess
@@ -11,7 +10,7 @@ namespace SIL.Machine.WebApi.DataAccess
 		[Test]
 		public async Task GetNewerRevisionByEngineIdAsync_Insert()
 		{
-			var buildRepo = new MemoryBuildRepository();
+			var buildRepo = new MemoryRepository<Build>();
 			Task task = Task.Run(async () =>
 			{
 				await Task.Delay(10);
@@ -28,14 +27,15 @@ namespace SIL.Machine.WebApi.DataAccess
 		[Test]
 		public async Task GetNewerRevisionAsync_Update()
 		{
-			var buildRepo = new MemoryBuildRepository();
-			var build = new Build {EngineRef = "engine1"};
+			var buildRepo = new MemoryRepository<Build>();
+			var build = new Build { EngineRef = "engine1" };
 			await buildRepo.InsertAsync(build);
 			Task task = Task.Run(async () =>
 				{
 					await Task.Delay(10);
-					build.PercentCompleted = 0.1;
-					await buildRepo.UpdateAsync(build);
+					await buildRepo.UpdateAsync(build, u => u
+						.Inc(b => b.Revision)
+						.Set(b => b.PercentCompleted, 0.1));
 				});
 			EntityChange<Build> change = await buildRepo.GetNewerRevisionAsync(build.Id, 1);
 			await task;
@@ -47,8 +47,8 @@ namespace SIL.Machine.WebApi.DataAccess
 		[Test]
 		public async Task GetNewerRevisionAsync_Delete()
 		{
-			var buildRepo = new MemoryBuildRepository();
-			var build = new Build {EngineRef = "engine1"};
+			var buildRepo = new MemoryRepository<Build>();
+			var build = new Build { EngineRef = "engine1" };
 			await buildRepo.InsertAsync(build);
 			Task task = Task.Run(async () =>
 				{
@@ -63,7 +63,7 @@ namespace SIL.Machine.WebApi.DataAccess
 		[Test]
 		public async Task GetNewerRevisionAsync_DoesNotExist()
 		{
-			var buildRepo = new MemoryBuildRepository();
+			var buildRepo = new MemoryRepository<Build>();
 			EntityChange<Build> change = await buildRepo.GetNewerRevisionAsync("build1", 1);
 			Assert.That(change.Type, Is.EqualTo(EntityChangeType.Delete));
 		}

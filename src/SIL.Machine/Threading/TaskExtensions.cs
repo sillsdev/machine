@@ -16,7 +16,7 @@ namespace SIL.Machine.Threading
 		private static async Task<TResult> Delay<TResult>(TimeSpan timeout, CancellationToken ct)
 		{
 			await Task.Delay(timeout, ct);
-			return default(TResult);
+			return default;
 		}
 	}
 }

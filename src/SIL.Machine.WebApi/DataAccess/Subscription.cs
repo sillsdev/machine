@@ -1,13 +1,12 @@
 namespace SIL.Machine.WebApi.DataAccess;
 
-public class Subscription<T> : DisposableBase where T : class, IEntity<T>
+public class Subscription<T> : DisposableBase where T : IEntity<T>
 {
 	private readonly Action<Subscription<T>> _remove;
 	private readonly AsyncAutoResetEvent _changeEvent;
 
-	public Subscription(object key, T initialEntity, Action<Subscription<T>> remove)
+	public Subscription(T initialEntity, Action<Subscription<T>> remove)
 	{
-		Key = key;
 		_remove = remove;
 		_changeEvent = new AsyncAutoResetEvent();
 		Change = new EntityChange<T>(initialEntity == null ? EntityChangeType.Delete : EntityChangeType.Update,
@@ -16,9 +15,7 @@ public class Subscription<T> : DisposableBase where T : class, IEntity<T>
 
 	public EntityChange<T> Change { get; private set; }
 
-	internal object Key { get; }
-
-	public Task WaitForUpdateAsync(CancellationToken ct = default(CancellationToken))
+	public Task WaitForUpdateAsync(CancellationToken ct = default)
 	{
 		return _changeEvent.WaitAsync(ct);
 	}
