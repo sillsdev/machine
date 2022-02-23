@@ -11,16 +11,21 @@ public class EnginesController : Controller
 	private readonly IAuthorizationService _authService;
 	private readonly IRepository<Engine> _engines;
 	private readonly IRepository<Build> _builds;
+	private readonly IRepository<DataFile> _dataFiles;
 	private readonly IEngineService _engineService;
+	private readonly IDataFileService _dataFileService;
 	private readonly IOptions<EngineOptions> _engineOptions;
 
 	public EnginesController(IAuthorizationService authService, IRepository<Engine> engines, IRepository<Build> builds,
-		IEngineService engineService, IOptions<EngineOptions> engineOptions)
+		IRepository<DataFile> dataFiles, IEngineService engineService, IDataFileService dataFileService,
+		IOptions<EngineOptions> engineOptions)
 	{
 		_authService = authService;
 		_engines = engines;
 		_builds = builds;
+		_dataFiles = dataFiles;
 		_engineService = engineService;
+		_dataFileService = dataFileService;
 		_engineOptions = engineOptions;
 	}
 
@@ -46,6 +51,37 @@ public class EnginesController : Controller
 			return Forbid();
 
 		return Ok(CreateDto(engine));
+	}
+
+	[HttpPost]
+	public async Task<ActionResult<EngineDto>> CreateAsync([FromBody] NewEngineDto engine)
+	{
+		var newEngine = new Engine
+		{
+			Id = engine.Id,
+			SourceLanguageTag = engine.SourceLanguageTag,
+			TargetLanguageTag = engine.TargetLanguageTag
+		};
+		if (!await AuthorizeAsync(newEngine, Operations.Create))
+			return Forbid();
+
+		if (!await _engineService.CreateAsync(newEngine))
+			return Conflict();
+		return Ok(newEngine);
+	}
+
+	[HttpDelete("{id}")]
+	public async Task<ActionResult> DeleteAsync(string id)
+	{
+		Engine engine = await _engines.GetAsync(id);
+		if (engine == null)
+			return NotFound();
+		if (!await AuthorizeAsync(engine, Operations.Delete))
+			return Forbid();
+
+		if (!await _engineService.DeleteAsync(id))
+			return NotFound();
+		return Ok();
 	}
 
 	[HttpPost("{id}/translate")]
@@ -113,6 +149,83 @@ public class EnginesController : Controller
 	}
 
 	/// <summary>
+	/// Gets all build jobs.
+	/// </summary>
+	/// <response code="200">The build jobs.</response>
+	[HttpGet("{id}/builds")]
+	public async Task<ActionResult<IEnumerable<BuildDto>>> GetAllBuildsAsync(string id)
+	{
+		Engine engine = await _engines.GetAsync(id);
+		if (engine == null)
+			return NotFound();
+		if (!await AuthorizeAsync(engine, Operations.Read))
+			return Forbid();
+
+		return Ok((await _builds.GetAllAsync()).Select(CreateDto));
+	}
+
+	/// <summary>
+	/// Gets the specified build job.
+	/// </summary>
+	/// <param name="id">The engine id.</param>
+	/// <param name="buildId">The build job id.</param>
+	/// <param name="minRevision">The minimum revision.</param>
+	/// <param name="cancellationToken">The cancellation token.</param>
+	/// <response code="200">The build job.</response>
+	[HttpGet("{id}/builds/{buildId}")]
+	public async Task<ActionResult<BuildDto>> GetBuildAsync(string id, string buildId, [FromQuery] long? minRevision,
+		CancellationToken cancellationToken)
+	{
+		Engine engine = await _engines.GetAsync(id, cancellationToken);
+		if (engine == null)
+			return NotFound();
+		if (!await AuthorizeAsync(engine, Operations.Read))
+			return Forbid();
+
+		if (minRevision != null)
+		{
+			EntityChange<Build> change = await _builds.GetNewerRevisionAsync(buildId, minRevision.Value,
+				cancellationToken).Timeout(_engineOptions.Value.BuildLongPollTimeout, cancellationToken);
+			return change.Type switch
+			{
+				EntityChangeType.None => StatusCode(StatusCodes.Status408RequestTimeout),
+				EntityChangeType.Delete => NotFound(),
+				_ => Ok(CreateDto(change.Entity)),
+			};
+		}
+		else
+		{
+			Build build = await _builds.GetAsync(buildId, cancellationToken);
+			if (build == null)
+				return NotFound();
+
+			return Ok(CreateDto(build));
+		}
+	}
+
+	/// <summary>
+	/// Starts a build job for the specified engine.
+	/// </summary>
+	/// <param name="id">The engine id.</param>
+	/// <response code="201">The build job was started successfully.</response>
+	[HttpPost("{id}/builds")]
+	[ProducesResponseType(StatusCodes.Status201Created)]
+	public async Task<ActionResult<BuildDto>> CreateBuildAsync(string id)
+	{
+		Engine engine = await _engines.GetAsync(id);
+		if (engine == null)
+			return NotFound();
+		if (!await AuthorizeAsync(engine, Operations.Update))
+			return Forbid();
+
+		Build build = await _engineService.StartBuildAsync(id);
+		if (build == null)
+			return UnprocessableEntity();
+		BuildDto dto = CreateDto(build);
+		return Created(dto.Href, dto);
+	}
+
+	/// <summary>
 	/// Gets the currently running build job.
 	/// </summary>
 	/// <param name="id">The engine id.</param>
@@ -151,68 +264,13 @@ public class EnginesController : Controller
 	}
 
 	/// <summary>
-	/// Gets all build jobs.
-	/// </summary>
-	/// <response code="200">The build jobs.</response>
-	[HttpGet("{id}/builds")]
-	public async Task<ActionResult<IEnumerable<BuildDto>>> GetAllBuildsAsync(string id)
-	{
-		Engine engine = await _engines.GetAsync(id);
-		if (engine == null)
-			return NotFound();
-		if (!await AuthorizeAsync(engine, Operations.Read))
-			return Forbid();
-
-		return Ok((await _builds.GetAllAsync()).Select(CreateDto));
-	}
-
-	/// <summary>
-	/// Gets the specified build job.
+	/// Cancels the current build job.
 	/// </summary>
 	/// <param name="id">The engine id.</param>
-	/// <param name="buildId">The build job id.</param>
-	/// <param name="minRevision">The minimum revision.</param>
-	/// <param name="ct">The cancellation token.</param>
-	/// <response code="200">The build job.</response>
-	[HttpGet("{id}/builds/{buildId}")]
-	public async Task<ActionResult<BuildDto>> GetBuildAsync(string id, string buildId, [FromQuery] long? minRevision,
-		CancellationToken ct)
-	{
-		Engine engine = await _engines.GetAsync(id, ct);
-		if (engine == null)
-			return NotFound();
-		if (!await AuthorizeAsync(engine, Operations.Read))
-			return Forbid();
-
-		if (minRevision != null)
-		{
-			EntityChange<Build> change = await _builds.GetNewerRevisionAsync(buildId, minRevision.Value, ct)
-				.Timeout(_engineOptions.Value.BuildLongPollTimeout, ct);
-			return change.Type switch
-			{
-				EntityChangeType.None => StatusCode(StatusCodes.Status408RequestTimeout),
-				EntityChangeType.Delete => NotFound(),
-				_ => Ok(CreateDto(change.Entity)),
-			};
-		}
-		else
-		{
-			Build build = await _builds.GetAsync(buildId, ct);
-			if (build == null)
-				return NotFound();
-
-			return Ok(CreateDto(build));
-		}
-	}
-
-	/// <summary>
-	/// Starts a build job for the specified engine.
-	/// </summary>
-	/// <param name="id">The engine id.</param>
-	/// <response code="201">The build job was started successfully.</response>
-	[HttpPost("{id}/builds")]
-	[ProducesResponseType(StatusCodes.Status201Created)]
-	public async Task<ActionResult<BuildDto>> CreateBuildAsync(string id)
+	/// <response code="200">The build job was cancelled successfully.</response>
+	[HttpPost("{id}/current-build/cancel")]
+	[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+	public async Task<ActionResult> CancelBuildAsync(string id)
 	{
 		Engine engine = await _engines.GetAsync(id);
 		if (engine == null)
@@ -220,22 +278,63 @@ public class EnginesController : Controller
 		if (!await AuthorizeAsync(engine, Operations.Update))
 			return Forbid();
 
-		Build build = await _engineService.StartBuildAsync(id);
-		if (build == null)
-			return UnprocessableEntity();
-		BuildDto dto = CreateDto(build);
+		await _engineService.CancelBuildAsync(id);
+		return Ok();
+	}
+
+	[HttpPost("{id}/files")]
+	[RequestSizeLimit(100_000_000)]
+	[ProducesResponseType(StatusCodes.Status201Created)]
+	public async Task<ActionResult<DataFileDto>> UploadDataFileAsync(string id, [FromForm] string name,
+		[FromForm] string format, [FromForm] string dataType, IFormFile file)
+	{
+		Engine engine = await _engines.GetAsync(id);
+		if (engine == null)
+			return NotFound();
+		if (!await AuthorizeAsync(engine, Operations.Update))
+			return Forbid();
+
+		DataFile dataFile;
+		using (Stream stream = file.OpenReadStream())
+		{
+			dataFile = await _dataFileService.CreateAsync(id, name, format, dataType, stream);
+		}
+		DataFileDto dto = CreateDto(dataFile);
 		return Created(dto.Href, dto);
 	}
 
-	/// <summary>
-	/// Cancels a build job.
-	/// </summary>
-	/// <param name="id">The engine id.</param>
-	/// <param name="buildId">The build job id.</param>
-	/// <response code="200">The build job was cancelled successfully.</response>
-	[HttpPost("{id}/builds/{buildId}/cancel")]
+	[HttpGet("{id}/files")]
+	public async Task<ActionResult<IEnumerable<DataFileDto>>> GetAllDataFilesAsync(string id)
+	{
+		Engine engine = await _engines.GetAsync(id);
+		if (engine == null)
+			return NotFound();
+		if (!await AuthorizeAsync(engine, Operations.Read))
+			return Forbid();
+
+		return Ok((await _dataFiles.GetAllAsync()).Select(CreateDto));
+	}
+
+
+	[HttpGet("{id}/files/{fileId}")]
+	public async Task<ActionResult<DataFileDto>> GetDataFileAsync(string id, string fileId)
+	{
+		Engine engine = await _engines.GetAsync(id);
+		if (engine == null)
+			return NotFound();
+		if (!await AuthorizeAsync(engine, Operations.Read))
+			return Forbid();
+
+		DataFile dataFile = await _dataFiles.GetAsync(fileId);
+		if (dataFile == null)
+			return NotFound();
+
+		return Ok(CreateDto(dataFile));
+	}
+
+	[HttpDelete("{id}/files/{fileId}")]
 	[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
-	public async Task<ActionResult> CancelBuildAsync(string id, string buildId)
+	public async Task<ActionResult> DeleteDataFileAsync(string id, string fileId)
 	{
 		Engine engine = await _engines.GetAsync(id);
 		if (engine == null)
@@ -243,11 +342,23 @@ public class EnginesController : Controller
 		if (!await AuthorizeAsync(engine, Operations.Update))
 			return Forbid();
 
-		Build build = await _builds.GetAsync(buildId);
-		if (build == null)
+		if (!await _dataFileService.DeleteAsync(fileId))
 			return NotFound();
 
-		await _engineService.CancelBuildAsync(id);
+		return Ok();
+	}
+
+	[HttpDelete("{id}/files")]
+	[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+	public async Task<ActionResult> DeleteAllDataFilesAsync(string id)
+	{
+		Engine engine = await _engines.GetAsync(id);
+		if (engine == null)
+			return NotFound();
+		if (!await AuthorizeAsync(engine, Operations.Update))
+			return Forbid();
+
+		await _dataFileService.DeleteAllByEngineIdAsync(id);
 		return Ok();
 	}
 
@@ -343,11 +454,6 @@ public class EnginesController : Controller
 		};
 	}
 
-	private string GetEntityUrl(string routeName, string relativeUrl)
-	{
-		return Url.RouteUrl(routeName) + $"/{relativeUrl}";
-	}
-
 	private BuildDto CreateDto(Build build)
 	{
 		return new BuildDto
@@ -363,6 +469,23 @@ public class EnginesController : Controller
 			PercentCompleted = build.PercentCompleted,
 			Message = build.Message,
 			State = build.State
+		};
+	}
+
+	private DataFileDto CreateDto(DataFile dataFile)
+	{
+		return new DataFileDto
+		{
+			Id = dataFile.Id,
+			Href = Url.RouteUrl(RouteNames.Engines) + $"/files/{dataFile.Id}",
+			Engine = new ResourceDto
+			{
+				Id = dataFile.EngineRef,
+				Href = Url.RouteUrl(RouteNames.Engines) + $"/{dataFile.EngineRef}"
+			},
+			Name = dataFile.Name,
+			Format = dataFile.Format,
+			DataType = dataFile.DataType
 		};
 	}
 }

@@ -74,7 +74,7 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 		return true;
 	}
 
-	public async Task<bool> AddAsync(Engine engine)
+	public async Task<bool> CreateAsync(Engine engine)
 	{
 		CheckDisposed();
 
@@ -92,14 +92,12 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 		return true;
 	}
 
-	public async Task<bool> RemoveAsync(string engineId)
+	public async Task<bool> DeleteAsync(string engineId)
 	{
 		CheckDisposed();
 
-		if (!await _engines.ExistsAsync(engineId))
+		if ((await _engines.DeleteAsync(engineId)) == null)
 			return false;
-
-		await _engines.DeleteAsync(engineId);
 		await _builds.DeleteAllAsync(b => b.EngineRef == engineId);
 
 		EngineRuntime runtime = GetOrCreateRuntime(engineId);

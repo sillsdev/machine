@@ -83,7 +83,7 @@ namespace SIL.Machine.WebApi.Services
 		}
 
 		[Test]
-		public async Task AddAsync_EngineDoesNotExist()
+		public async Task CreateAsync_EngineDoesNotExist()
 		{
 			using (var env = new EngineServiceTestEnvironment())
 			{
@@ -94,7 +94,7 @@ namespace SIL.Machine.WebApi.Services
 					SourceLanguageTag = "es",
 					TargetLanguageTag = "en"
 				};
-				bool created = await env.Service.AddAsync(engine);
+				bool created = await env.Service.CreateAsync(engine);
 				Assert.That(created, Is.True);
 
 				engine = await env.EngineRepository.GetAsync("engine1");
@@ -104,7 +104,7 @@ namespace SIL.Machine.WebApi.Services
 		}
 
 		[Test]
-		public async Task AddProjectAsync_EngineExists()
+		public async Task CreateAsync_EngineExists()
 		{
 			using (var env = new EngineServiceTestEnvironment())
 			{
@@ -116,19 +116,19 @@ namespace SIL.Machine.WebApi.Services
 					SourceLanguageTag = "es",
 					TargetLanguageTag = "en"
 				};
-				bool created = await env.Service.AddAsync(engine);
+				bool created = await env.Service.CreateAsync(engine);
 				Assert.That(created, Is.False);
 			}
 		}
 
 		[Test]
-		public async Task RemoveProjectAsync_EngineExists()
+		public async Task DeleteAsync_EngineExists()
 		{
 			using (var env = new EngineServiceTestEnvironment())
 			{
 				string engineId = (await env.CreateEngineAsync()).Id;
 				env.CreateEngineService();
-				bool result = await env.Service.RemoveAsync("engine1");
+				bool result = await env.Service.DeleteAsync("engine1");
 				Assert.That(result, Is.True);
 				Engine engine = await env.EngineRepository.GetAsync(engineId);
 				Assert.That(engine, Is.Null);
@@ -136,13 +136,13 @@ namespace SIL.Machine.WebApi.Services
 		}
 
 		[Test]
-		public async Task RemoveProjectAsync_ProjectDoesNotExist()
+		public async Task DeleteAsync_ProjectDoesNotExist()
 		{
 			using (var env = new EngineServiceTestEnvironment())
 			{
 				await env.CreateEngineAsync();
 				env.CreateEngineService();
-				bool result = await env.Service.RemoveAsync("engine3");
+				bool result = await env.Service.DeleteAsync("engine3");
 				Assert.That(result, Is.False);
 			}
 		}

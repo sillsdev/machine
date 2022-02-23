@@ -16,6 +16,7 @@ public static class IServiceCollectionExtensions
 		services.AddSingleton<IEngineService>(sp => sp.GetService<IEngineServiceInternal>());
 		services.AddTransient<EngineRuntime>();
 		services.AddSingleton<IBuildHandler, BuildHandler>();
+		services.AddSingleton<IDataFileService, DataFileService>();
 
 		services.Configure<MvcOptions>(o =>
 		{

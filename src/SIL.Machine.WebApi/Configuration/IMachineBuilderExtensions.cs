@@ -16,6 +16,20 @@ public static class IMachineBuilderExtensions
 		return builder;
 	}
 
+	public static IMachineBuilder AddDataFileOptions(this IMachineBuilder builder,
+		Action<DataFileOptions> configureOptions)
+	{
+		builder.Services.Configure(configureOptions);
+		return builder;
+	}
+
+	public static IMachineBuilder AddDataFileOptions(this IMachineBuilder builder,
+		IConfiguration config)
+	{
+		builder.Services.Configure<DataFileOptions>(config);
+		return builder;
+	}
+
 	public static IMachineBuilder AddThotSmtModel(this IMachineBuilder builder)
 	{
 		builder.Services.AddSingleton<IComponentFactory<IInteractiveTranslationModel>, ThotSmtModelFactory>();
@@ -84,6 +98,7 @@ public static class IMachineBuilderExtensions
 	{
 		builder.Services.AddSingleton<IRepository<Engine>, MemoryRepository<Engine>>();
 		builder.Services.AddSingleton<IRepository<Build>, MemoryRepository<Build>>();
+		builder.Services.AddSingleton<IRepository<DataFile>, MemoryRepository<DataFile>>();
 		return builder;
 	}
 
@@ -97,7 +112,11 @@ public static class IMachineBuilderExtensions
 
 		builder.Services.AddMongoRepository<Engine>("engines");
 		builder.Services.AddMongoRepository<Build>("builds", indexSetup: indexes =>
-			indexes.CreateOrUpdate(new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.EngineRef))));
+			indexes.CreateOrUpdate(new CreateIndexModel<Build>(
+				Builders<Build>.IndexKeys.Ascending(b => b.EngineRef))));
+		builder.Services.AddMongoRepository<DataFile>("data_files", indexSetup: indexes =>
+			indexes.CreateOrUpdate(new CreateIndexModel<DataFile>(
+				Builders<DataFile>.IndexKeys.Ascending(b => b.EngineRef))));
 
 		return builder;
 	}
