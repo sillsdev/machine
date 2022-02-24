@@ -15,8 +15,8 @@ public class MemoryUpdateBuilder<T> : IUpdateBuilder<T> where T : IEntity<T>
 
 	public IUpdateBuilder<T> Set<TField>(Expression<Func<T, TField>> field, TField value)
 	{
-		(IEnumerable<object> owners, PropertyInfo propInfo, object index) = GetFieldOwners(field);
-		object[] indices = index == null ? null : new[] { index };
+		(IEnumerable<object> owners, PropertyInfo? propInfo, object? index) = GetFieldOwners(field);
+		object[]? indices = index == null ? null : new[] { index };
 		foreach (object owner in owners)
 			propInfo.SetValue(owner, value, indices);
 		return this;
@@ -31,20 +31,20 @@ public class MemoryUpdateBuilder<T> : IUpdateBuilder<T> where T : IEntity<T>
 
 	public IUpdateBuilder<T> Unset<TField>(Expression<Func<T, TField>> field)
 	{
-		(IEnumerable<object> owners, PropertyInfo prop, object index) = GetFieldOwners(field);
+		(IEnumerable<object> owners, PropertyInfo prop, object? index) = GetFieldOwners(field);
 		if (index != null)
 		{
 			// remove value from a dictionary
-			Type dictionaryType = prop.DeclaringType;
+			Type dictionaryType = prop.DeclaringType!;
 			Type keyType = dictionaryType.GetGenericArguments()[0];
-			MethodInfo removeMethod = dictionaryType.GetMethod("Remove", new[] { keyType });
+			MethodInfo removeMethod = dictionaryType.GetMethod("Remove", new[] { keyType })!;
 			foreach (object owner in owners)
 				removeMethod.Invoke(owner, new[] { index });
 		}
 		else
 		{
 			// set property to default value
-			object value = null;
+			object? value = null;
 			if (prop.PropertyType.IsValueType)
 				value = Activator.CreateInstance(prop.PropertyType);
 			foreach (object owner in owners)
@@ -55,11 +55,11 @@ public class MemoryUpdateBuilder<T> : IUpdateBuilder<T> where T : IEntity<T>
 
 	public IUpdateBuilder<T> Inc(Expression<Func<T, int>> field, int value = 1)
 	{
-		(IEnumerable<object> owners, PropertyInfo prop, object index) = GetFieldOwners(field);
-		object[] indices = index == null ? null : new[] { index };
+		(IEnumerable<object> owners, PropertyInfo prop, object? index) = GetFieldOwners(field);
+		object[]? indices = index == null ? null : new[] { index };
 		foreach (object owner in owners)
 		{
-			var curValue = (int)prop.GetValue(owner, indices);
+			var curValue = (int)prop.GetValue(owner, indices)!;
 			curValue += value;
 			prop.SetValue(owner, curValue, indices);
 		}
@@ -72,9 +72,9 @@ public class MemoryUpdateBuilder<T> : IUpdateBuilder<T> where T : IEntity<T>
 		Func<T, IEnumerable<TItem>> getCollection = field.Compile();
 		IEnumerable<TItem> collection = getCollection(_entity);
 		TItem[] toRemove = collection.Where(predicate.Compile()).ToArray();
-		MethodInfo removeMethod = collection.GetType().GetMethod("Remove");
+		MethodInfo? removeMethod = collection.GetType().GetMethod("Remove")!;
 		foreach (TItem item in toRemove)
-			removeMethod.Invoke(collection, new object[] { item });
+			removeMethod.Invoke(collection, new object?[] { item });
 		return this;
 	}
 
@@ -82,8 +82,8 @@ public class MemoryUpdateBuilder<T> : IUpdateBuilder<T> where T : IEntity<T>
 	{
 		Func<T, IEnumerable<TItem>> getCollection = field.Compile();
 		IEnumerable<TItem> collection = getCollection(_entity);
-		MethodInfo addMethod = collection.GetType().GetMethod("Remove");
-		addMethod.Invoke(collection, new object[] { value });
+		MethodInfo addMethod = collection.GetType().GetMethod("Remove")!;
+		addMethod.Invoke(collection, new object?[] { value });
 		return this;
 	}
 
@@ -91,8 +91,8 @@ public class MemoryUpdateBuilder<T> : IUpdateBuilder<T> where T : IEntity<T>
 	{
 		Func<T, IEnumerable<TItem>> getCollection = field.Compile();
 		IEnumerable<TItem> collection = getCollection(_entity);
-		MethodInfo addMethod = collection.GetType().GetMethod("Add");
-		addMethod.Invoke(collection, new object[] { value });
+		MethodInfo addMethod = collection.GetType().GetMethod("Add")!;
+		addMethod.Invoke(collection, new object?[] { value });
 		return this;
 	}
 
@@ -107,12 +107,12 @@ public class MemoryUpdateBuilder<T> : IUpdateBuilder<T> where T : IEntity<T>
 			.Single(m => m.GetParameters().Length == 2).MakeGenericMethod(type);
 	}
 
-	private (IEnumerable<object> Owners, PropertyInfo Property, object Index) GetFieldOwners<TField>(
+	private (IEnumerable<object> Owners, PropertyInfo Property, object? Index) GetFieldOwners<TField>(
 		Expression<Func<T, TField>> field)
 	{
-		List<object> owners = null;
-		MemberInfo member = null;
-		object index = null;
+		List<object>? owners = null;
+		MemberInfo? member = null;
+		object? index = null;
 		foreach (Expression node in ExpressionHelper.Flatten(field))
 		{
 			var newOwners = new List<object>();
@@ -125,7 +125,7 @@ public class MemoryUpdateBuilder<T> : IUpdateBuilder<T> where T : IEntity<T>
 			{
 				foreach (object owner in owners)
 				{
-					object newOwner;
+					object? newOwner;
 					switch (member)
 					{
 						case MethodInfo method:
@@ -148,6 +148,8 @@ public class MemoryUpdateBuilder<T> : IUpdateBuilder<T> where T : IEntity<T>
 									newOwners.AddRange(((IEnumerable)owner).Cast<object>());
 									break;
 								default:
+									if (index == null)
+										break;
 									var dict = owner as IDictionary;
 									if (dict != null)
 									{
@@ -201,9 +203,9 @@ public class MemoryUpdateBuilder<T> : IUpdateBuilder<T> where T : IEntity<T>
 			}
 		}
 
-		PropertyInfo property = member as PropertyInfo;
+		PropertyInfo? property = member as PropertyInfo;
 		if (property == null && member != null && index != null)
-			property = member.DeclaringType.GetProperty("Item");
-		return (owners, property, index);
+			property = member.DeclaringType!.GetProperty("Item");
+		return (owners!, property!, index);
 	}
 }

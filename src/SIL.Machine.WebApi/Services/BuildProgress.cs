@@ -22,6 +22,6 @@ public class BuildProgress : IProgress<ProgressStatus>
 		_build = _buildRepo.UpdateAsync(_build, u => u
 			.Inc(b => b.Revision)
 			.Set(b => b.PercentCompleted, value.PercentCompleted)
-			.Set(b => b.Message, value.Message)).WaitAndUnwrapException();
+			.Set(b => b.Message, value.Message)).WaitAndUnwrapException()!;
 	}
 }

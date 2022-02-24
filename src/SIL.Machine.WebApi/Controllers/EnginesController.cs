@@ -44,7 +44,7 @@ public class EnginesController : Controller
 	[HttpGet("{id}")]
 	public async Task<ActionResult<EngineDto>> GetAsync(string id)
 	{
-		Engine engine = await _engines.GetAsync(id);
+		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
 		if (!await AuthorizeAsync(engine, Operations.Read))
@@ -73,7 +73,7 @@ public class EnginesController : Controller
 	[HttpDelete("{id}")]
 	public async Task<ActionResult> DeleteAsync(string id)
 	{
-		Engine engine = await _engines.GetAsync(id);
+		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
 		if (!await AuthorizeAsync(engine, Operations.Delete))
@@ -87,13 +87,13 @@ public class EnginesController : Controller
 	[HttpPost("{id}/translate")]
 	public async Task<ActionResult<TranslationResultDto>> TranslateAsync(string id, [FromBody] string[] segment)
 	{
-		Engine engine = await _engines.GetAsync(id);
+		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
 		if (!await AuthorizeAsync(engine, Operations.Read))
 			return Forbid();
 
-		TranslationResult result = await _engineService.TranslateAsync(engine.Id, segment);
+		TranslationResult? result = await _engineService.TranslateAsync(engine.Id, segment);
 		if (result == null)
 			return NotFound();
 		return Ok(CreateDto(result));
@@ -103,13 +103,13 @@ public class EnginesController : Controller
 	public async Task<ActionResult<IEnumerable<TranslationResultDto>>> TranslateAsync(string id, int n,
 		[FromBody] string[] segment)
 	{
-		Engine engine = await _engines.GetAsync(id);
+		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
 		if (!await AuthorizeAsync(engine, Operations.Read))
 			return Forbid();
 
-		IEnumerable<TranslationResult> results = await _engineService.TranslateAsync(engine.Id, n, segment);
+		IEnumerable<TranslationResult>? results = await _engineService.TranslateAsync(engine.Id, n, segment);
 		if (results == null)
 			return NotFound();
 		return Ok(results.Select(CreateDto));
@@ -118,13 +118,13 @@ public class EnginesController : Controller
 	[HttpPost("{id}/get-word-graph")]
 	public async Task<ActionResult<WordGraphDto>> InteractiveTranslateAsync(string id, [FromBody] string[] segment)
 	{
-		Engine engine = await _engines.GetAsync(id);
+		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
 		if (!await AuthorizeAsync(engine, Operations.Read))
 			return Forbid();
 
-		WordGraph result = await _engineService.GetWordGraphAsync(engine.Id, segment);
+		WordGraph? result = await _engineService.GetWordGraphAsync(engine.Id, segment);
 		if (result == null)
 			return NotFound();
 		return Ok(CreateDto(result));
@@ -134,7 +134,7 @@ public class EnginesController : Controller
 	[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
 	public async Task<ActionResult> TrainSegmentAsync(string id, [FromBody] SegmentPairDto segmentPair)
 	{
-		Engine engine = await _engines.GetAsync(id);
+		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
 		if (!await AuthorizeAsync(engine, Operations.Update))
@@ -155,7 +155,7 @@ public class EnginesController : Controller
 	[HttpGet("{id}/builds")]
 	public async Task<ActionResult<IEnumerable<BuildDto>>> GetAllBuildsAsync(string id)
 	{
-		Engine engine = await _engines.GetAsync(id);
+		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
 		if (!await AuthorizeAsync(engine, Operations.Read))
@@ -176,7 +176,7 @@ public class EnginesController : Controller
 	public async Task<ActionResult<BuildDto>> GetBuildAsync(string id, string buildId, [FromQuery] long? minRevision,
 		CancellationToken cancellationToken)
 	{
-		Engine engine = await _engines.GetAsync(id, cancellationToken);
+		Engine? engine = await _engines.GetAsync(id, cancellationToken);
 		if (engine == null)
 			return NotFound();
 		if (!await AuthorizeAsync(engine, Operations.Read))
@@ -190,12 +190,12 @@ public class EnginesController : Controller
 			{
 				EntityChangeType.None => StatusCode(StatusCodes.Status408RequestTimeout),
 				EntityChangeType.Delete => NotFound(),
-				_ => Ok(CreateDto(change.Entity)),
+				_ => Ok(CreateDto(change.Entity!)),
 			};
 		}
 		else
 		{
-			Build build = await _builds.GetAsync(buildId, cancellationToken);
+			Build? build = await _builds.GetAsync(buildId, cancellationToken);
 			if (build == null)
 				return NotFound();
 
@@ -212,13 +212,13 @@ public class EnginesController : Controller
 	[ProducesResponseType(StatusCodes.Status201Created)]
 	public async Task<ActionResult<BuildDto>> CreateBuildAsync(string id)
 	{
-		Engine engine = await _engines.GetAsync(id);
+		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
 		if (!await AuthorizeAsync(engine, Operations.Update))
 			return Forbid();
 
-		Build build = await _engineService.StartBuildAsync(id);
+		Build? build = await _engineService.StartBuildAsync(id);
 		if (build == null)
 			return UnprocessableEntity();
 		BuildDto dto = CreateDto(build);
@@ -236,7 +236,7 @@ public class EnginesController : Controller
 	public async Task<ActionResult<BuildDto>> GetCurrentBuildAsync(string id, [FromQuery] long? minRevision,
 		CancellationToken ct)
 	{
-		Engine engine = await _engines.GetAsync(id, ct);
+		Engine? engine = await _engines.GetAsync(id, ct);
 		if (engine == null)
 			return NotFound();
 		if (!await AuthorizeAsync(engine, Operations.Read))
@@ -250,12 +250,12 @@ public class EnginesController : Controller
 			{
 				EntityChangeType.None => StatusCode(StatusCodes.Status408RequestTimeout),
 				EntityChangeType.Delete => NoContent(),
-				_ => Ok(CreateDto(change.Entity)),
+				_ => Ok(CreateDto(change.Entity!)),
 			};
 		}
 		else
 		{
-			Build build = await _builds.GetByEngineIdAsync(id, ct);
+			Build? build = await _builds.GetByEngineIdAsync(id, ct);
 			if (build == null)
 				return NoContent();
 
@@ -272,7 +272,7 @@ public class EnginesController : Controller
 	[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
 	public async Task<ActionResult> CancelBuildAsync(string id)
 	{
-		Engine engine = await _engines.GetAsync(id);
+		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
 		if (!await AuthorizeAsync(engine, Operations.Update))
@@ -288,7 +288,7 @@ public class EnginesController : Controller
 	public async Task<ActionResult<DataFileDto>> UploadDataFileAsync(string id, [FromForm] string name,
 		[FromForm] string format, [FromForm] string dataType, IFormFile file)
 	{
-		Engine engine = await _engines.GetAsync(id);
+		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
 		if (!await AuthorizeAsync(engine, Operations.Update))
@@ -306,7 +306,7 @@ public class EnginesController : Controller
 	[HttpGet("{id}/files")]
 	public async Task<ActionResult<IEnumerable<DataFileDto>>> GetAllDataFilesAsync(string id)
 	{
-		Engine engine = await _engines.GetAsync(id);
+		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
 		if (!await AuthorizeAsync(engine, Operations.Read))
@@ -319,13 +319,13 @@ public class EnginesController : Controller
 	[HttpGet("{id}/files/{fileId}")]
 	public async Task<ActionResult<DataFileDto>> GetDataFileAsync(string id, string fileId)
 	{
-		Engine engine = await _engines.GetAsync(id);
+		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
 		if (!await AuthorizeAsync(engine, Operations.Read))
 			return Forbid();
 
-		DataFile dataFile = await _dataFiles.GetAsync(fileId);
+		DataFile? dataFile = await _dataFiles.GetAsync(fileId);
 		if (dataFile == null)
 			return NotFound();
 
@@ -336,7 +336,7 @@ public class EnginesController : Controller
 	[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
 	public async Task<ActionResult> DeleteDataFileAsync(string id, string fileId)
 	{
-		Engine engine = await _engines.GetAsync(id);
+		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
 		if (!await AuthorizeAsync(engine, Operations.Update))
@@ -352,7 +352,7 @@ public class EnginesController : Controller
 	[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
 	public async Task<ActionResult> DeleteAllDataFilesAsync(string id)
 	{
-		Engine engine = await _engines.GetAsync(id);
+		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
 		if (!await AuthorizeAsync(engine, Operations.Update))
@@ -368,7 +368,7 @@ public class EnginesController : Controller
 		return result.Succeeded;
 	}
 
-	private static TranslationResultDto CreateDto(TranslationResult result)
+	private static TranslationResultDto? CreateDto(TranslationResult result)
 	{
 		if (result == null)
 			return null;

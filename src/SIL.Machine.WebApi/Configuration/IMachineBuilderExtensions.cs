@@ -136,7 +136,7 @@ public static class IMachineBuilderExtensions
 
 
 	public static void AddMongoRepository<T>(this IServiceCollection services, string collection,
-		Action<BsonClassMap<T>> mapSetup = null, Action<IMongoIndexManager<T>> indexSetup = null)
+		Action<BsonClassMap<T>>? mapSetup = null, Action<IMongoIndexManager<T>>? indexSetup = null)
 		where T : class, IEntity<T>
 	{
 		DataAccessClassMap.RegisterClass<T>(cm =>
@@ -148,9 +148,9 @@ public static class IMachineBuilderExtensions
 	}
 
 	private static MongoRepository<T> CreateMongoRepository<T>(IServiceProvider sp, string collection,
-		Action<IMongoIndexManager<T>> indexSetup) where T : class, IEntity<T>
+		Action<IMongoIndexManager<T>>? indexSetup) where T : class, IEntity<T>
 	{
-		return new MongoRepository<T>(sp.GetService<IMongoDatabase>().GetCollection<T>(collection),
+		return new MongoRepository<T>(sp.GetService<IMongoDatabase>()!.GetCollection<T>(collection),
 			c => indexSetup?.Invoke(c.Indexes));
 	}
 }

@@ -20,7 +20,7 @@ public class AsyncTimer : AsyncDisposableBase
 		_timer.Change(period, period);
 	}
 
-	private async void FireTimerAsync(object state)
+	private async void FireTimerAsync(object? state)
 	{
 		using (await _lock.LockAsync())
 		{

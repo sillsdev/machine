@@ -13,7 +13,7 @@ public static class IServiceCollectionExtensions
 		var config = new MachineConfig();
 		setupAction(config);
 		services.AddSingleton<IEngineServiceInternal, EngineService>();
-		services.AddSingleton<IEngineService>(sp => sp.GetService<IEngineServiceInternal>());
+		services.AddSingleton<IEngineService>(sp => sp.GetService<IEngineServiceInternal>()!);
 		services.AddTransient<EngineRuntime>();
 		services.AddSingleton<IBuildHandler, BuildHandler>();
 		services.AddSingleton<IDataFileService, DataFileService>();

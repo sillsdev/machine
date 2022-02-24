@@ -9,12 +9,12 @@ public class TransferEngineFactory : IComponentFactory<ITranslationEngine>
 		_engineOptions = engineOptions;
 	}
 
-	public Task<ITranslationEngine> CreateAsync(string engineId)
+	public Task<ITranslationEngine?> CreateAsync(string engineId)
 	{
 		string engineDir = Path.Combine(_engineOptions.Value.EnginesDir, engineId);
 		string hcSrcConfigFileName = Path.Combine(engineDir, "src-hc.xml");
 		string hcTrgConfigFileName = Path.Combine(engineDir, "trg-hc.xml");
-		TransferEngine transferEngine = null;
+		TransferEngine? transferEngine = null;
 		if (File.Exists(hcSrcConfigFileName) && File.Exists(hcTrgConfigFileName))
 		{
 			var hcTraceManager = new TraceManager();
@@ -27,7 +27,7 @@ public class TransferEngineFactory : IComponentFactory<ITranslationEngine>
 
 			transferEngine = new TransferEngine(srcMorpher, new SimpleTransferer(new GlossMorphemeMapper(trgMorpher)), trgMorpher);
 		}
-		return Task.FromResult<ITranslationEngine>(transferEngine);
+		return Task.FromResult<ITranslationEngine?>(transferEngine);
 	}
 
 	public void InitNew(string engineId)

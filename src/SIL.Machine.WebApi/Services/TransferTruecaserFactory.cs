@@ -2,9 +2,9 @@
 
 public class TransferTruecaserFactory : IComponentFactory<ITruecaser>
 {
-	public Task<ITruecaser> CreateAsync(string engineId)
+	public Task<ITruecaser?> CreateAsync(string engineId)
 	{
-		return Task.FromResult<ITruecaser>(new TransferTruecaser());
+		return Task.FromResult<ITruecaser?>(new TransferTruecaser());
 	}
 
 	public void InitNew(string engineId)

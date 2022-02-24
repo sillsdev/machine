@@ -9,7 +9,7 @@ public class UnigramTruecaserFactory : IComponentFactory<ITruecaser>
 		_engineOptions = engineOptions;
 	}
 
-	public async Task<ITruecaser> CreateAsync(string engineId)
+	public async Task<ITruecaser?> CreateAsync(string engineId)
 	{
 		var truecaser = new UnigramTruecaser();
 		string path = GetModelPath(engineId);

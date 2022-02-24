@@ -20,9 +20,9 @@ public class MongoRepository<T> : IRepository<T> where T : class, IEntity<T>
 		_init(_collection);
 	}
 
-	public Task<T> GetAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
+	public async Task<T?> GetAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
 	{
-		return _collection.AsQueryable().FirstOrDefaultAsync(filter, cancellationToken);
+		return await _collection.AsQueryable().FirstOrDefaultAsync(filter, cancellationToken);
 	}
 
 	public async Task<IReadOnlyList<T>> GetAllAsync(Expression<Func<T, bool>> filter,
@@ -73,7 +73,7 @@ public class MongoRepository<T> : IRepository<T> where T : class, IEntity<T>
 		}
 	}
 
-	public async Task<T> UpdateAsync(Expression<Func<T, bool>> filter, Action<IUpdateBuilder<T>> update,
+	public async Task<T?> UpdateAsync(Expression<Func<T, bool>> filter, Action<IUpdateBuilder<T>> update,
 		bool upsert = false, CancellationToken cancellationToken = default)
 	{
 		try
@@ -98,7 +98,7 @@ public class MongoRepository<T> : IRepository<T> where T : class, IEntity<T>
 		}
 	}
 
-	public async Task<T> DeleteAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
+	public async Task<T?> DeleteAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
 	{
 		T entity = await _collection.FindOneAndDeleteAsync(filter, cancellationToken: cancellationToken);
 		await SendToSubscribersAsync(EntityChangeType.Delete, entity);

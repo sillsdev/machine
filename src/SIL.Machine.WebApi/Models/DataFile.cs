@@ -16,12 +16,12 @@ public class DataFile : IEntity<DataFile>
 		Filename = dataFile.Filename;
 	}
 
-	public string Id { get; set; }
-	public string EngineRef { get; set; }
-	public string Name { get; set; }
-	public string Format { get; set; }
-	public string DataType { get; set; }
-	public string Filename { get; set; }
+	public string Id { get; set; } = default!;
+	public string EngineRef { get; set; } = default!;
+	public string Name { get; set; } = default!;
+	public string Format { get; set; } = default!;
+	public string DataType { get; set; } = default!;
+	public string Filename { get; set; } = default!;
 
 	public DataFile Clone()
 	{

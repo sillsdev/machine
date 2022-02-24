@@ -48,6 +48,7 @@ internal class EngineRuntime : AsyncDisposableBase
 		_truecaser = new AsyncLazy<ITruecaser>(CreateTruecaserAsync);
 		_buildFinishedEvent = new AsyncManualResetEvent(true);
 		_lastUsedTime = DateTime.Now;
+		_buildCts = new CancellationTokenSource();
 	}
 
 	internal bool IsLoaded => _translationModel.IsStarted;
@@ -204,7 +205,7 @@ internal class EngineRuntime : AsyncDisposableBase
 
 	private async Task CancelBuildInternalAsync()
 	{
-		Build build = await _builds.GetByEngineIdAsync(_engineId);
+		Build? build = await _builds.GetByEngineIdAsync(_engineId);
 		if (build == null)
 			return;
 		if (build.State == BuildStates.Pending)
@@ -258,27 +259,27 @@ internal class EngineRuntime : AsyncDisposableBase
 
 	private Task<IInteractiveTranslationModel> CreateTranslationModelAsync()
 	{
-		return _translationModelFactory.CreateAsync(_engineId);
+		return _translationModelFactory.CreateAsync(_engineId)!;
 	}
 
 	private async Task<HybridTranslationEngine> CreateEngineAsync()
 	{
 		IInteractiveTranslationEngine interactiveEngine = (await _translationModel).CreateInteractiveEngine();
-		ITranslationEngine ruleEngine = await _ruleEngineFactory.CreateAsync(_engineId);
+		ITranslationEngine? ruleEngine = await _ruleEngineFactory.CreateAsync(_engineId);
 		return new HybridTranslationEngine(interactiveEngine, ruleEngine);
 	}
 
 	private Task<ITruecaser> CreateTruecaserAsync()
 	{
-		return _truecaserFactory.CreateAsync(_engineId);
+		return _truecaserFactory.CreateAsync(_engineId)!;
 	}
 
 	private async Task BuildAsync(Engine engine, IBuildHandler buildHandler, IJobCancellationToken jobToken)
 	{
-		Build build = null;
-		ITrainer modelTrainer = null;
-		ITrainer truecaseTrainer = null;
-		CancellationTokenSource cts = null;
+		Build? build = null;
+		ITrainer? modelTrainer = null;
+		ITrainer? truecaseTrainer = null;
+		CancellationTokenSource? cts = null;
 		try
 		{
 			var stopwatch = new Stopwatch();
@@ -296,9 +297,9 @@ internal class EngineRuntime : AsyncDisposableBase
 
 				if (build.State == BuildStates.Pending)
 				{
-					build = await _builds.UpdateAsync(build, u => u
+					build = (await _builds.UpdateAsync(build, u => u
 						.Inc(b => b.Revision)
-						.Set(b => b.State, BuildStates.Active));
+						.Set(b => b.State, BuildStates.Active)))!;
 				}
 
 				ITextCorpus sourceCorpus = await _textCorpusFactory.CreateAsync(engine.Id, TextCorpusType.Source);
@@ -308,7 +309,7 @@ internal class EngineRuntime : AsyncDisposableBase
 					TokenProcessors.Lowercase);
 				truecaseTrainer = truecaser.CreateTrainer(targetCorpus);
 
-				_buildCts?.Dispose();
+				_buildCts.Dispose();
 				_buildCts = new CancellationTokenSource();
 				_buildFinishedEvent.Reset();
 
@@ -333,50 +334,53 @@ internal class EngineRuntime : AsyncDisposableBase
 					truecaser.TrainSegment(pair.Target, pair.SentenceStart);
 				}
 
-				engine = await _engines.UpdateAsync(engine, u => u
+				engine = (await _engines.UpdateAsync(engine, u => u
 					.Set(e => e.Confidence, modelTrainer.Stats.Metrics["bleu"])
-					.Set(e => e.TrainedSegmentCount, modelTrainer.Stats.TrainedSegmentCount + _trainedSegments.Count));
+					.Set(e => e.TrainedSegmentCount, modelTrainer.Stats.TrainedSegmentCount + _trainedSegments.Count)))!;
 				_trainedSegments.Clear();
 			}
 
-			build = await _builds.UpdateAsync(build, u => u
+			build = (await _builds.UpdateAsync(build, u => u
 				.Inc(b => b.Revision)
 				.Set(b => b.State, BuildStates.Completed)
-				.Set(b => b.DateFinished, DateTime.UtcNow));
+				.Set(b => b.DateFinished, DateTime.UtcNow)))!;
 			stopwatch.Stop();
 			_logger.LogInformation("Build completed in {0}ms ({1})", stopwatch.Elapsed.TotalMilliseconds, _engineId);
 			await buildHandler.OnCompleted(new BuildContext(engine, build));
 		}
 		catch (OperationCanceledException)
 		{
-			// this job is canceled because of a shutdown, pass on the exception, so it will stay in the queue
-			if (jobToken.ShutdownToken.IsCancellationRequested)
+			if (build != null)
 			{
-				// switch state back to pending
-				await _builds.UpdateAsync(build, u => u
-					.Inc(b => b.Revision)
-					.Set(b => b.Message, null)
-					.Set(b => b.PercentCompleted, 0)
-					.Set(b => b.State, BuildStates.Pending));
-				throw;
-			}
+				// this job is canceled because of a shutdown, pass on the exception, so it will stay in the queue
+				if (jobToken.ShutdownToken.IsCancellationRequested)
+				{
+					// switch state back to pending
+					await _builds.UpdateAsync(build, u => u
+						.Inc(b => b.Revision)
+						.Set(b => b.Message, null)
+						.Set(b => b.PercentCompleted, 0)
+						.Set(b => b.State, BuildStates.Pending));
+					throw;
+				}
 
-			build = await _builds.UpdateAsync(build, u => u
-				.Inc(b => b.Revision)
-				.Set(b => b.State, BuildStates.Canceled)
-				.Set(b => b.DateFinished, DateTime.UtcNow));
-			_logger.LogInformation("Build canceled ({0})", _engineId);
-			await buildHandler.OnCanceled(new BuildContext(engine, build));
+				build = (await _builds.UpdateAsync(build, u => u
+					.Inc(b => b.Revision)
+					.Set(b => b.State, BuildStates.Canceled)
+					.Set(b => b.DateFinished, DateTime.UtcNow)))!;
+				_logger.LogInformation("Build canceled ({0})", _engineId);
+				await buildHandler.OnCanceled(new BuildContext(engine, build));
+			}
 		}
 		catch (Exception e)
 		{
 			if (build != null)
 			{
-				build = await _builds.UpdateAsync(build, u => u
+				build = (await _builds.UpdateAsync(build, u => u
 					.Inc(b => b.Revision)
 					.Set(b => b.State, BuildStates.Faulted)
 					.Set(b => b.Message, e.Message)
-					.Set(b => b.DateFinished, DateTime.UtcNow));
+					.Set(b => b.DateFinished, DateTime.UtcNow)))!;
 				_logger.LogError(0, e, "Build faulted ({0})", _engineId);
 				await buildHandler.OnFailed(new BuildContext(engine, build));
 			}
@@ -393,7 +397,7 @@ internal class EngineRuntime : AsyncDisposableBase
 
 	protected override async ValueTask DisposeAsyncCore()
 	{
-		_buildCts?.Dispose();
+		_buildCts.Dispose();
 		await UnloadAsync();
 		_trainedSegments.Clear();
 	}
@@ -412,9 +416,9 @@ internal class EngineRuntime : AsyncDisposableBase
 		[AutomaticRetry(Attempts = 0)]
 		public async Task RunAsync(string engineId, IJobCancellationToken jobToken)
 		{
-			(Engine engine, EngineRuntime runtime) = await _engineService.GetEngineAsync(engineId);
+			(Engine? engine, EngineRuntime? runtime) = await _engineService.GetEngineAsync(engineId);
 			// the engine was removed after we enqueued the job, so exit
-			if (engine == null)
+			if (engine == null || runtime == null)
 				return;
 
 			await runtime.BuildAsync(engine, _buildHandler, jobToken);

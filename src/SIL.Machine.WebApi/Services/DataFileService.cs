@@ -33,7 +33,7 @@ public class DataFileService : IDataFileService
 
 	public async Task<bool> DeleteAsync(string id)
 	{
-		DataFile dataFile = await _dataFiles.DeleteAsync(id);
+		DataFile? dataFile = await _dataFiles.DeleteAsync(id);
 		if (dataFile == null)
 			return false;
 

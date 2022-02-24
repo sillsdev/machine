@@ -24,7 +24,7 @@ public class ObjectPool<T> : DisposableBase
 	{
 		CheckDisposed();
 
-		if (_bufferBlock.TryReceive(out T obj))
+		if (_bufferBlock.TryReceive(out T? obj))
 			return new ObjectPoolItem<T>(this, obj);
 
 		if (Count < MaxCount)

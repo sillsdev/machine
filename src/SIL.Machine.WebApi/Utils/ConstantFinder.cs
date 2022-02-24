@@ -4,7 +4,7 @@ internal class ConstantFinder : System.Linq.Expressions.ExpressionVisitor
 {
 	private readonly Stack<MemberExpression> _nodes = new();
 
-	public object Value { get; private set; }
+	public object? Value { get; private set; }
 
 	protected override Expression VisitMember(MemberExpression node)
 	{
@@ -14,7 +14,7 @@ internal class ConstantFinder : System.Linq.Expressions.ExpressionVisitor
 
 	protected override Expression VisitConstant(ConstantExpression node)
 	{
-		object val = node.Value;
+		object? val = node.Value;
 		while (_nodes.Count > 0)
 		{
 			MemberExpression prevNode = _nodes.Peek();

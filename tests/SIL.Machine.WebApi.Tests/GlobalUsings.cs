@@ -1,0 +1,17 @@
+﻿global using Autofac.Features.OwnedInstances;
+global using Hangfire;
+global using Hangfire.MemoryStorage;
+global using Microsoft.Extensions.Logging;
+global using Microsoft.Extensions.Options;
+global using NSubstitute;
+global using NSubstitute.ReceivedExtensions;
+global using NUnit.Framework;
+global using SIL.Machine.Annotations;
+global using SIL.Machine.Corpora;
+global using SIL.Machine.Threading;
+global using SIL.Machine.Translation;
+global using SIL.Machine.Utils;
+global using SIL.Machine.WebApi.Configuration;
+global using SIL.Machine.WebApi.DataAccess;
+global using SIL.Machine.WebApi.Models;
+global using SIL.ObjectModel;

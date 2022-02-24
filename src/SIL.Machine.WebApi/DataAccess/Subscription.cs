@@ -5,7 +5,7 @@ public class Subscription<T> : DisposableBase where T : IEntity<T>
 	private readonly Action<Subscription<T>> _remove;
 	private readonly AsyncAutoResetEvent _changeEvent;
 
-	public Subscription(T initialEntity, Action<Subscription<T>> remove)
+	public Subscription(T? initialEntity, Action<Subscription<T>> remove)
 	{
 		_remove = remove;
 		_changeEvent = new AsyncAutoResetEvent();

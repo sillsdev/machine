@@ -2,7 +2,7 @@
 
 public interface IComponentFactory<T>
 {
-	Task<T> CreateAsync(string engineId);
+	Task<T?> CreateAsync(string engineId);
 	void InitNew(string engineId);
 	void Cleanup(string engineId);
 }

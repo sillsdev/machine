@@ -22,7 +22,7 @@ public static class ExpressionHelper
 		return flattener.Nodes;
 	}
 
-	public static object FindConstantValue(Expression expression)
+	public static object? FindConstantValue(Expression expression)
 	{
 		var finder = new ConstantFinder();
 		finder.Visit(expression);

@@ -13,7 +13,7 @@ public class TextFileTextCorpusFactory : ITextCorpusFactory
 	{
 		var wordTokenizer = new LatinWordTokenizer();
 		var texts = new List<IText>();
-		string dir = null;
+		string dir = "";
 		switch (type)
 		{
 			case TextCorpusType.Source:

@@ -6,6 +6,7 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NoWarn>1591</NoWarn>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
 	<Import Project="../AssemblyInfo.props" />

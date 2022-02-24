@@ -31,7 +31,7 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 			await runner.Value.CommitAsync();
 	}
 
-	public async Task<TranslationResult> TranslateAsync(string engineId, IReadOnlyList<string> segment)
+	public async Task<TranslationResult?> TranslateAsync(string engineId, IReadOnlyList<string> segment)
 	{
 		CheckDisposed();
 
@@ -41,7 +41,7 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 		return await runtime.TranslateAsync(segment);
 	}
 
-	public async Task<IEnumerable<TranslationResult>> TranslateAsync(string engineId, int n,
+	public async Task<IEnumerable<TranslationResult>?> TranslateAsync(string engineId, int n,
 		IReadOnlyList<string> segment)
 	{
 		CheckDisposed();
@@ -52,7 +52,7 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 		return await runtime.TranslateAsync(n, segment);
 	}
 
-	public async Task<WordGraph> GetWordGraphAsync(string engineId, IReadOnlyList<string> segment)
+	public async Task<WordGraph?> GetWordGraphAsync(string engineId, IReadOnlyList<string> segment)
 	{
 		CheckDisposed();
 
@@ -108,7 +108,7 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 		return true;
 	}
 
-	public async Task<Build> StartBuildAsync(string engineId)
+	public async Task<Build?> StartBuildAsync(string engineId)
 	{
 		CheckDisposed();
 
@@ -122,15 +122,15 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 	{
 		CheckDisposed();
 
-		if (TryGetRuntime(engineId, out EngineRuntime runtime))
+		if (TryGetRuntime(engineId, out EngineRuntime? runtime))
 			await runtime.CancelBuildAsync();
 	}
 
-	public async Task<(Engine Engine, EngineRuntime Runtime)> GetEngineAsync(string engineId)
+	public async Task<(Engine? Engine, EngineRuntime? Runtime)> GetEngineAsync(string engineId)
 	{
 		CheckDisposed();
 
-		Engine engine = await _engines.GetAsync(engineId);
+		Engine? engine = await _engines.GetAsync(engineId);
 		if (engine == null)
 			return (null, null);
 		return (engine, GetOrCreateRuntime(engineId));
@@ -148,9 +148,9 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 		return runtime.Value;
 	}
 
-	private bool TryGetRuntime(string engineId, out EngineRuntime runtime)
+	private bool TryGetRuntime(string engineId, [MaybeNullWhen(false)] out EngineRuntime runtime)
 	{
-		if (_runtimes.TryGetValue(engineId, out Owned<EngineRuntime> ownedRuntime))
+		if (_runtimes.TryGetValue(engineId, out Owned<EngineRuntime>? ownedRuntime))
 		{
 			runtime = ownedRuntime.Value;
 			return true;

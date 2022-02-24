@@ -22,16 +22,16 @@ public struct Attempt<T>
 	{
 	}
 
-	public Attempt(bool success, T result = default(T))
+	public Attempt(bool success, T? result = default)
 	{
 		Success = success;
 		Result = result;
 	}
 
-	public T Result { get; }
+	public T? Result { get; }
 	public bool Success { get; }
 
-	public bool TryResult(out T result)
+	public bool TryResult([NotNullWhen(true)] out T? result)
 	{
 		result = Result;
 		return Success;

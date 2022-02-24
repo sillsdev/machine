@@ -15,11 +15,11 @@ public class Engine : IEntity<Engine>
 		TrainedSegmentCount = engine.TrainedSegmentCount;
 	}
 
-	public string Id { get; set; }
-	public string SourceLanguageTag { get; set; }
-	public string TargetLanguageTag { get; set; }
-	public double Confidence { get; set; }
-	public int TrainedSegmentCount { get; set; }
+	public string Id { get; set; } = default!;
+	public string SourceLanguageTag { get; set; } = default!;
+	public string TargetLanguageTag { get; set; } = default!;
+	public double Confidence { get; set; } = default;
+	public int TrainedSegmentCount { get; set; } = default;
 
 	public Engine Clone()
 	{
