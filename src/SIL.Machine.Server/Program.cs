@@ -1,9 +1,6 @@
-using Autofac.Extensions.DependencyInjection;
 using SIL.Machine.Server;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 
 // Add services to the container.
 

@@ -32,7 +32,7 @@ public static class IMachineBuilderExtensions
 
 	public static IMachineBuilder AddThotSmtModel(this IMachineBuilder builder)
 	{
-		builder.Services.AddSingleton<IComponentFactory<IInteractiveTranslationModel>, ThotSmtModelFactory>();
+		builder.Services.AddSingleton<ISmtModelFactory, ThotSmtModelFactory>();
 		return builder;
 	}
 
@@ -52,19 +52,19 @@ public static class IMachineBuilderExtensions
 
 	public static IMachineBuilder AddTransferEngine(this IMachineBuilder builder)
 	{
-		builder.Services.AddSingleton<IComponentFactory<ITranslationEngine>, TransferEngineFactory>();
+		builder.Services.AddSingleton<ITransferEngineFactory, TransferEngineFactory>();
 		return builder;
 	}
 
 	public static IMachineBuilder AddUnigramTruecaser(this IMachineBuilder builder)
 	{
-		builder.Services.AddSingleton<IComponentFactory<ITruecaser>, UnigramTruecaserFactory>();
+		builder.Services.AddSingleton<ITruecaserFactory, UnigramTruecaserFactory>();
 		return builder;
 	}
 
 	public static IMachineBuilder AddTransferTruecaser(this IMachineBuilder builder)
 	{
-		builder.Services.AddSingleton<IComponentFactory<ITruecaser>, TransferTruecaserFactory>();
+		builder.Services.AddSingleton<ITruecaserFactory, TransferTruecaserFactory>();
 		return builder;
 	}
 

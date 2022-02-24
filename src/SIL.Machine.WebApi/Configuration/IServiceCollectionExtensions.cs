@@ -14,7 +14,7 @@ public static class IServiceCollectionExtensions
 		setupAction(config);
 		services.AddSingleton<IEngineServiceInternal, EngineService>();
 		services.AddSingleton<IEngineService>(sp => sp.GetService<IEngineServiceInternal>()!);
-		services.AddTransient<EngineRuntime>();
+		services.AddSingleton<IEngineRuntimeFactory, SmtTransferEngineRuntime.Factory>();
 		services.AddSingleton<IBuildHandler, BuildHandler>();
 		services.AddSingleton<IDataFileService, DataFileService>();
 

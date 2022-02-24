@@ -1,40 +1,47 @@
 ﻿namespace SIL.Machine.WebApi.Services;
 
-internal class EngineRuntime : AsyncDisposableBase
+internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 {
+	public class Factory : EngineRuntimeFactory<SmtTransferEngineRuntime>
+	{
+		public Factory(IServiceProvider serviceProvider)
+			: base(serviceProvider, "smt_transfer")
+		{
+		}
+	}
+
 	private const int MaxEnginePoolSize = 3;
 
 	private readonly IRepository<Engine> _engines;
 	private readonly IRepository<Build> _builds;
-	private readonly IComponentFactory<IInteractiveTranslationModel> _translationModelFactory;
-	private readonly IComponentFactory<ITranslationEngine> _ruleEngineFactory;
-	private readonly IComponentFactory<ITruecaser> _truecaserFactory;
+	private readonly ISmtModelFactory _smtModelFactory;
+	private readonly ITransferEngineFactory _transferEngineFactory;
+	private readonly ITruecaserFactory _truecaserFactory;
 	private readonly ITextCorpusFactory _textCorpusFactory;
 	private readonly IOptions<EngineOptions> _engineOptions;
-	private readonly ILogger<EngineRuntime> _logger;
+	private readonly ILogger<SmtTransferEngineRuntime> _logger;
 	private readonly IBackgroundJobClient _jobClient;
 	private readonly string _engineId;
 	private readonly List<SegmentPair> _trainedSegments;
 	private readonly AsyncReaderWriterLock _lock;
 	private readonly AsyncManualResetEvent _buildFinishedEvent;
 
-	private AsyncLazy<IInteractiveTranslationModel> _translationModel;
+	private Lazy<IInteractiveTranslationModel> _smtModel;
 	private ObjectPool<HybridTranslationEngine> _enginePool;
 	private AsyncLazy<ITruecaser> _truecaser;
 	private CancellationTokenSource _buildCts;
 	private bool _isUpdated;
 	private DateTime _lastUsedTime;
 
-	public EngineRuntime(IOptions<EngineOptions> engineOptions, IRepository<Engine> engines,
-		IRepository<Build> builds, IComponentFactory<IInteractiveTranslationModel> translationModelFactory,
-		IComponentFactory<ITranslationEngine> ruleEngineFactory, IComponentFactory<ITruecaser> truecaserFactory,
-		IBackgroundJobClient jobClient, ITextCorpusFactory textCorpusFactory, ILogger<EngineRuntime> logger,
-		string engineId)
+	public SmtTransferEngineRuntime(IOptions<EngineOptions> engineOptions, IRepository<Engine> engines,
+		IRepository<Build> builds, ISmtModelFactory smtModelFactory, ITransferEngineFactory transferEngineFactory,
+		ITruecaserFactory truecaserFactory, IBackgroundJobClient jobClient, ITextCorpusFactory textCorpusFactory,
+		ILogger<SmtTransferEngineRuntime> logger, string engineId)
 	{
 		_engines = engines;
 		_builds = builds;
-		_translationModelFactory = translationModelFactory;
-		_ruleEngineFactory = ruleEngineFactory;
+		_smtModelFactory = smtModelFactory;
+		_transferEngineFactory = transferEngineFactory;
 		_truecaserFactory = truecaserFactory;
 		_textCorpusFactory = textCorpusFactory;
 		_engineOptions = engineOptions;
@@ -43,15 +50,15 @@ internal class EngineRuntime : AsyncDisposableBase
 		_engineId = engineId;
 		_trainedSegments = new List<SegmentPair>();
 		_lock = new AsyncReaderWriterLock();
-		_translationModel = new AsyncLazy<IInteractiveTranslationModel>(CreateTranslationModelAsync);
-		_enginePool = new ObjectPool<HybridTranslationEngine>(MaxEnginePoolSize, CreateEngineAsync);
+		_smtModel = new Lazy<IInteractiveTranslationModel>(CreateSmtModel);
+		_enginePool = new ObjectPool<HybridTranslationEngine>(MaxEnginePoolSize, CreateEngine);
 		_truecaser = new AsyncLazy<ITruecaser>(CreateTruecaserAsync);
 		_buildFinishedEvent = new AsyncManualResetEvent(true);
 		_lastUsedTime = DateTime.Now;
 		_buildCts = new CancellationTokenSource();
 	}
 
-	internal bool IsLoaded => _translationModel.IsStarted;
+	internal bool IsLoaded => _smtModel.IsValueCreated;
 	private bool IsBuilding => !_buildFinishedEvent.IsSet;
 
 	public async Task InitNewAsync()
@@ -60,9 +67,8 @@ internal class EngineRuntime : AsyncDisposableBase
 
 		using (await _lock.WriterLockAsync())
 		{
-			_translationModelFactory.InitNew(_engineId);
-			_ruleEngineFactory.InitNew(_engineId);
-			_truecaserFactory.InitNew(_engineId);
+			_smtModelFactory.InitNew(_engineId);
+			_transferEngineFactory.InitNew(_engineId);
 		}
 	}
 
@@ -100,7 +106,7 @@ internal class EngineRuntime : AsyncDisposableBase
 		}
 	}
 
-	public async Task<WordGraph> GetWordGraph(IReadOnlyList<string> segment)
+	public async Task<WordGraph> GetWordGraphAsync(IReadOnlyList<string> segment)
 	{
 		CheckDisposed();
 
@@ -197,8 +203,8 @@ internal class EngineRuntime : AsyncDisposableBase
 			await _buildFinishedEvent.WaitAsync();
 
 			await UnloadAsync();
-			_translationModelFactory.Cleanup(_engineId);
-			_ruleEngineFactory.Cleanup(_engineId);
+			_smtModelFactory.Cleanup(_engineId);
+			_transferEngineFactory.Cleanup(_engineId);
 			_truecaserFactory.Cleanup(_engineId);
 		}
 	}
@@ -235,7 +241,7 @@ internal class EngineRuntime : AsyncDisposableBase
 	{
 		if (_isUpdated)
 		{
-			(await _translationModel).Save();
+			_smtModel.Value.Save();
 			ITruecaser truecaser = await _truecaser;
 			await truecaser.SaveAsync();
 			_isUpdated = false;
@@ -250,22 +256,22 @@ internal class EngineRuntime : AsyncDisposableBase
 		await SaveModelAsync();
 
 		_enginePool.Dispose();
-		(await _translationModel).Dispose();
+		_smtModel.Value.Dispose();
 
-		_translationModel = new AsyncLazy<IInteractiveTranslationModel>(CreateTranslationModelAsync);
-		_enginePool = new ObjectPool<HybridTranslationEngine>(MaxEnginePoolSize, CreateEngineAsync);
+		_smtModel = new Lazy<IInteractiveTranslationModel>(CreateSmtModel);
+		_enginePool = new ObjectPool<HybridTranslationEngine>(MaxEnginePoolSize, CreateEngine);
 		_truecaser = new AsyncLazy<ITruecaser>(CreateTruecaserAsync);
 	}
 
-	private Task<IInteractiveTranslationModel> CreateTranslationModelAsync()
+	private IInteractiveTranslationModel CreateSmtModel()
 	{
-		return _translationModelFactory.CreateAsync(_engineId)!;
+		return _smtModelFactory.Create(_engineId);
 	}
 
-	private async Task<HybridTranslationEngine> CreateEngineAsync()
+	private HybridTranslationEngine CreateEngine()
 	{
-		IInteractiveTranslationEngine interactiveEngine = (await _translationModel).CreateInteractiveEngine();
-		ITranslationEngine? ruleEngine = await _ruleEngineFactory.CreateAsync(_engineId);
+		IInteractiveTranslationEngine interactiveEngine = _smtModel.Value.CreateInteractiveEngine();
+		ITranslationEngine? ruleEngine = _transferEngineFactory.Create(_engineId);
 		return new HybridTranslationEngine(interactiveEngine, ruleEngine);
 	}
 
@@ -305,7 +311,7 @@ internal class EngineRuntime : AsyncDisposableBase
 				ITextCorpus sourceCorpus = await _textCorpusFactory.CreateAsync(engine.Id, TextCorpusType.Source);
 				ITextCorpus targetCorpus = await _textCorpusFactory.CreateAsync(engine.Id, TextCorpusType.Target);
 				var corpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
-				modelTrainer = (await _translationModel).CreateTrainer(corpus, TokenProcessors.Lowercase,
+				modelTrainer = _smtModel.Value.CreateTrainer(corpus, TokenProcessors.Lowercase,
 					TokenProcessors.Lowercase);
 				truecaseTrainer = truecaser.CreateTrainer(targetCorpus);
 
@@ -416,12 +422,12 @@ internal class EngineRuntime : AsyncDisposableBase
 		[AutomaticRetry(Attempts = 0)]
 		public async Task RunAsync(string engineId, IJobCancellationToken jobToken)
 		{
-			(Engine? engine, EngineRuntime? runtime) = await _engineService.GetEngineAsync(engineId);
+			(Engine? engine, IEngineRuntime? runtime) = await _engineService.GetEngineAsync(engineId);
 			// the engine was removed after we enqueued the job, so exit
 			if (engine == null || runtime == null)
 				return;
 
-			await runtime.BuildAsync(engine, _buildHandler, jobToken);
+			await ((SmtTransferEngineRuntime)runtime).BuildAsync(engine, _buildHandler, jobToken);
 		}
 	}
 

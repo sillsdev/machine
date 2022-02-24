@@ -7,6 +7,12 @@ public class ObjectPool<T> : DisposableBase
 	private readonly AsyncLock _lock;
 	private readonly List<T> _objs;
 
+	public ObjectPool(int maxCount, Func<T> factory)
+		: this(maxCount, () => Task.FromResult(factory()))
+	{
+
+	}
+
 	public ObjectPool(int maxCount, Func<Task<T>> factory)
 	{
 		_lock = new AsyncLock();
@@ -20,7 +26,7 @@ public class ObjectPool<T> : DisposableBase
 	public int Count { get; private set; }
 	public int AvailableCount => _bufferBlock.Count;
 
-	public async Task<ObjectPoolItem<T>> GetAsync(CancellationToken cancellationToken = default(CancellationToken))
+	public async Task<ObjectPoolItem<T>> GetAsync(CancellationToken cancellationToken = default)
 	{
 		CheckDisposed();
 
@@ -56,8 +62,7 @@ public class ObjectPool<T> : DisposableBase
 		_bufferBlock.TryReceiveAll(out _);
 		foreach (T obj in _objs)
 		{
-			var disposable = obj as IDisposable;
-			if (disposable != null)
+			if (obj is IDisposable disposable)
 				disposable.Dispose();
 		}
 		_objs.Clear();

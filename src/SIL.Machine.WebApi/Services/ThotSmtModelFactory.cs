@@ -1,6 +1,6 @@
 ﻿namespace SIL.Machine.WebApi.Services;
 
-public class ThotSmtModelFactory : IComponentFactory<IInteractiveTranslationModel>
+public class ThotSmtModelFactory : ISmtModelFactory
 {
 	private readonly IOptions<ThotSmtModelOptions> _options;
 	private readonly IOptions<EngineOptions> _engineOptions;
@@ -11,11 +11,11 @@ public class ThotSmtModelFactory : IComponentFactory<IInteractiveTranslationMode
 		_engineOptions = engineOptions;
 	}
 
-	public Task<IInteractiveTranslationModel?> CreateAsync(string engineId)
+	public IInteractiveTranslationModel Create(string engineId)
 	{
 		string smtConfigFileName = Path.Combine(_engineOptions.Value.EnginesDir, engineId, "smt.cfg");
 		var model = new ThotSmtModel(ThotWordAlignmentModelType.Hmm, smtConfigFileName);
-		return Task.FromResult<IInteractiveTranslationModel?>(model);
+		return model;
 	}
 
 	public void InitNew(string engineId)

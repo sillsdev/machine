@@ -3,5 +3,5 @@
 internal interface IEngineServiceInternal : IEngineService
 {
 	void Init();
-	Task<(Engine? Engine, EngineRuntime? Runtime)> GetEngineAsync(string engineId);
+	Task<(Engine? Engine, IEngineRuntime? Runtime)> GetEngineAsync(string engineId);
 }

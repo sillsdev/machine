@@ -3,20 +3,20 @@
 internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 {
 	private readonly IOptions<EngineOptions> _engineOptions;
-	private readonly ConcurrentDictionary<string, Owned<EngineRuntime>> _runtimes;
+	private readonly ConcurrentDictionary<string, IEngineRuntime> _runtimes;
 	private readonly IRepository<Engine> _engines;
 	private readonly IRepository<Build> _builds;
-	private readonly Func<string, Owned<EngineRuntime>> _engineRunnerFactory;
+	private readonly Dictionary<string, IEngineRuntimeFactory> _engineRuntimeFactories;
 	private readonly AsyncTimer _commitTimer;
 
 	public EngineService(IOptions<EngineOptions> engineOptions, IRepository<Engine> engines,
-		IRepository<Build> builds, Func<string, Owned<EngineRuntime>> engineRuntimeFactory)
+		IRepository<Build> builds, IEnumerable<IEngineRuntimeFactory> engineRuntimeFactories)
 	{
 		_engineOptions = engineOptions;
 		_engines = engines;
 		_builds = builds;
-		_engineRunnerFactory = engineRuntimeFactory;
-		_runtimes = new ConcurrentDictionary<string, Owned<EngineRuntime>>();
+		_engineRuntimeFactories = engineRuntimeFactories.ToDictionary(f => f.Key);
+		_runtimes = new ConcurrentDictionary<string, IEngineRuntime>();
 		_commitTimer = new AsyncTimer(EngineCommitAsync);
 	}
 
@@ -27,7 +27,7 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 
 	private async Task EngineCommitAsync()
 	{
-		foreach (Owned<EngineRuntime> runner in _runtimes.Values)
+		foreach (Owned<IEngineRuntime> runner in _runtimes.Values)
 			await runner.Value.CommitAsync();
 	}
 
@@ -35,9 +35,10 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 	{
 		CheckDisposed();
 
-		if (!await _engines.ExistsAsync(engineId))
+		Engine? engine = await _engines.GetAsync(engineId);
+		if (engine == null)
 			return null;
-		EngineRuntime runtime = GetOrCreateRuntime(engineId);
+		IEngineRuntime runtime = GetOrCreateRuntime(engine);
 		return await runtime.TranslateAsync(segment);
 	}
 
@@ -46,9 +47,10 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 	{
 		CheckDisposed();
 
-		if (!await _engines.ExistsAsync(engineId))
+		Engine? engine = await _engines.GetAsync(engineId);
+		if (engine == null)
 			return null;
-		EngineRuntime runtime = GetOrCreateRuntime(engineId);
+		IEngineRuntime runtime = GetOrCreateRuntime(engine);
 		return await runtime.TranslateAsync(n, segment);
 	}
 
@@ -56,10 +58,11 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 	{
 		CheckDisposed();
 
-		if (!await _engines.ExistsAsync(engineId))
+		Engine? engine = await _engines.GetAsync(engineId);
+		if (engine == null)
 			return null;
-		EngineRuntime runtime = GetOrCreateRuntime(engineId);
-		return await runtime.GetWordGraph(segment);
+		IEngineRuntime runtime = GetOrCreateRuntime(engine);
+		return await runtime.GetWordGraphAsync(segment);
 	}
 
 	public async Task<bool> TrainSegmentAsync(string engineId, IReadOnlyList<string> sourceSegment,
@@ -67,9 +70,10 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 	{
 		CheckDisposed();
 
-		if (!await _engines.ExistsAsync(engineId))
+		Engine? engine = await _engines.GetAsync(engineId);
+		if (engine == null)
 			return false;
-		EngineRuntime runtime = GetOrCreateRuntime(engineId);
+		IEngineRuntime runtime = GetOrCreateRuntime(engine);
 		await runtime.TrainSegmentPairAsync(sourceSegment, targetSegment, sentenceStart);
 		return true;
 	}
@@ -81,7 +85,7 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 		try
 		{
 			await _engines.InsertAsync(engine);
-			EngineRuntime runtime = CreateRuntime(engine.Id);
+			IEngineRuntime runtime = CreateRuntime(engine);
 			await runtime.InitNewAsync();
 		}
 		catch (DuplicateKeyException)
@@ -96,11 +100,12 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 	{
 		CheckDisposed();
 
-		if ((await _engines.DeleteAsync(engineId)) == null)
+		Engine? engine = await _engines.DeleteAsync(engineId);
+		if (engine == null)
 			return false;
 		await _builds.DeleteAllAsync(b => b.EngineRef == engineId);
 
-		EngineRuntime runtime = GetOrCreateRuntime(engineId);
+		IEngineRuntime runtime = GetOrCreateRuntime(engine);
 		// the engine will have no associated projects, so remove it
 		_runtimes.TryRemove(engineId, out _);
 		await runtime.DeleteDataAsync();
@@ -112,9 +117,10 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 	{
 		CheckDisposed();
 
-		if (!await _engines.ExistsAsync(engineId))
+		Engine? engine = await _engines.GetAsync(engineId);
+		if (engine == null)
 			return null;
-		EngineRuntime runtime = GetOrCreateRuntime(engineId);
+		IEngineRuntime runtime = GetOrCreateRuntime(engine);
 		return await runtime.StartBuildAsync();
 	}
 
@@ -122,48 +128,36 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 	{
 		CheckDisposed();
 
-		if (TryGetRuntime(engineId, out EngineRuntime? runtime))
+		if (_runtimes.TryGetValue(engineId, out IEngineRuntime? runtime))
 			await runtime.CancelBuildAsync();
 	}
 
-	public async Task<(Engine? Engine, EngineRuntime? Runtime)> GetEngineAsync(string engineId)
+	public async Task<(Engine? Engine, IEngineRuntime? Runtime)> GetEngineAsync(string engineId)
 	{
 		CheckDisposed();
 
 		Engine? engine = await _engines.GetAsync(engineId);
 		if (engine == null)
 			return (null, null);
-		return (engine, GetOrCreateRuntime(engineId));
+		return (engine, GetOrCreateRuntime(engine));
 	}
 
-	internal EngineRuntime GetOrCreateRuntime(string engineId)
+	internal IEngineRuntime GetOrCreateRuntime(Engine engine)
 	{
-		return _runtimes.GetOrAdd(engineId, _engineRunnerFactory).Value;
+		return _runtimes.GetOrAdd(engine.Id, _engineRuntimeFactories[engine.Type].CreateEngineRuntime);
 	}
 
-	private EngineRuntime CreateRuntime(string engineId)
+	private IEngineRuntime CreateRuntime(Engine engine)
 	{
-		Owned<EngineRuntime> runtime = _engineRunnerFactory(engineId);
-		_runtimes.TryAdd(engineId, runtime);
-		return runtime.Value;
-	}
-
-	private bool TryGetRuntime(string engineId, [MaybeNullWhen(false)] out EngineRuntime runtime)
-	{
-		if (_runtimes.TryGetValue(engineId, out Owned<EngineRuntime>? ownedRuntime))
-		{
-			runtime = ownedRuntime.Value;
-			return true;
-		}
-
-		runtime = null;
-		return false;
+		IEngineRuntime runtime = _engineRuntimeFactories[engine.Type].CreateEngineRuntime(engine.Id);
+		_runtimes.TryAdd(engine.Id, runtime);
+		return runtime;
 	}
 
 	protected override async ValueTask DisposeAsyncCore()
 	{
 		await _commitTimer.DisposeAsync();
-		foreach (Owned<EngineRuntime> runtime in _runtimes.Values)
+		foreach (Owned<IEngineRuntime> runtime in _runtimes.Values)
 			await runtime.DisposeAsync();
 		_runtimes.Clear();
 	}

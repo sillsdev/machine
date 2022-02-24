@@ -1,8 +1,8 @@
 ﻿namespace SIL.Machine.WebApi.Services;
 
-public interface IComponentFactory<T>
+public interface ITransferEngineFactory
 {
-	Task<T?> CreateAsync(string engineId);
+	ITranslationEngine? Create(string engineId);
 	void InitNew(string engineId);
 	void Cleanup(string engineId);
 }

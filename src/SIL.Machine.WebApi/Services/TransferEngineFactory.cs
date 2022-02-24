@@ -1,6 +1,6 @@
 ﻿namespace SIL.Machine.WebApi.Services;
 
-public class TransferEngineFactory : IComponentFactory<ITranslationEngine>
+public class TransferEngineFactory : ITransferEngineFactory
 {
 	private readonly IOptions<EngineOptions> _engineOptions;
 
@@ -9,7 +9,7 @@ public class TransferEngineFactory : IComponentFactory<ITranslationEngine>
 		_engineOptions = engineOptions;
 	}
 
-	public Task<ITranslationEngine?> CreateAsync(string engineId)
+	public ITranslationEngine? Create(string engineId)
 	{
 		string engineDir = Path.Combine(_engineOptions.Value.EnginesDir, engineId);
 		string hcSrcConfigFileName = Path.Combine(engineDir, "src-hc.xml");
@@ -27,7 +27,7 @@ public class TransferEngineFactory : IComponentFactory<ITranslationEngine>
 
 			transferEngine = new TransferEngine(srcMorpher, new SimpleTransferer(new GlossMorphemeMapper(trgMorpher)), trgMorpher);
 		}
-		return Task.FromResult<ITranslationEngine?>(transferEngine);
+		return transferEngine;
 	}
 
 	public void InitNew(string engineId)

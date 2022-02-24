@@ -18,6 +18,7 @@ public class Engine : IEntity<Engine>
 	public string Id { get; set; } = default!;
 	public string SourceLanguageTag { get; set; } = default!;
 	public string TargetLanguageTag { get; set; } = default!;
+	public string Type { get; set; } = default!;
 	public double Confidence { get; set; } = default;
 	public int TrainedSegmentCount { get; set; } = default;
 

@@ -31,7 +31,7 @@ public struct Attempt<T>
 	public T? Result { get; }
 	public bool Success { get; }
 
-	public bool TryResult([NotNullWhen(true)] out T? result)
+	public bool TryResult([MaybeNullWhen(false)] out T result)
 	{
 		result = Result;
 		return Success;

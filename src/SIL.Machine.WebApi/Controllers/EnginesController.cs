@@ -60,7 +60,8 @@ public class EnginesController : Controller
 		{
 			Id = engine.Id,
 			SourceLanguageTag = engine.SourceLanguageTag,
-			TargetLanguageTag = engine.TargetLanguageTag
+			TargetLanguageTag = engine.TargetLanguageTag,
+			Type = engine.Type
 		};
 		if (!await AuthorizeAsync(newEngine, Operations.Create))
 			return Forbid();
