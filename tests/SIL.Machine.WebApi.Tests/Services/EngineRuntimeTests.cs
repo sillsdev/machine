@@ -16,7 +16,7 @@ public class EngineRuntimeTests
 		env.SmtBatchTrainer.Received().Save();
 		await env.TruecaserTrainer.Received().SaveAsync();
 		build = (await env.Builds.GetAsync(build.Id))!;
-		Assert.That(build.State, Is.EqualTo(BuildStates.Completed));
+		Assert.That(build.State, Is.EqualTo(BuildState.Completed));
 	}
 
 	[Test]
@@ -39,7 +39,7 @@ public class EngineRuntimeTests
 		env.SmtBatchTrainer.DidNotReceive().Save();
 		await env.TruecaserTrainer.DidNotReceive().SaveAsync();
 		build = (await env.Builds.GetAsync(build.Id))!;
-		Assert.That(build.State, Is.EqualTo(BuildStates.Canceled));
+		Assert.That(build.State, Is.EqualTo(BuildState.Canceled));
 	}
 
 	[Test]
@@ -57,12 +57,12 @@ public class EngineRuntimeTests
 		await env.WaitForBuildToStartAsync(build.Id);
 		env.StopServer();
 		build = (await env.Builds.GetAsync(build.Id))!;
-		Assert.That(build.State, Is.EqualTo(BuildStates.Pending));
+		Assert.That(build.State, Is.EqualTo(BuildState.Pending));
 		env.SmtBatchTrainer.ClearSubstitute(ClearOptions.CallActions);
 		env.StartServer();
 		await env.WaitForBuildToFinishAsync(build.Id);
 		build = (await env.Builds.GetAsync(build.Id))!;
-		Assert.That(build.State, Is.EqualTo(BuildStates.Completed));
+		Assert.That(build.State, Is.EqualTo(BuildState.Completed));
 	}
 
 	[Test]
@@ -114,7 +114,7 @@ public class EngineRuntimeTests
 		private readonly ISmtModelFactory _interactiveModelFactory;
 		private readonly ITransferEngineFactory _ruleEngineFactory;
 		private readonly ITruecaserFactory _truecaserFactory;
-		private readonly ITextCorpusFactory _textCorpusFactory;
+		private readonly IDataFileService _dataFileService;
 
 		public TestEnvironment()
 		{
@@ -141,7 +141,7 @@ public class EngineRuntimeTests
 			_interactiveModelFactory = CreateInteractiveModelFactory();
 			_ruleEngineFactory = CreateRuleEngineFactory();
 			_truecaserFactory = CreateTruecaserFactory();
-			_textCorpusFactory = CreateTextCorpusFactory();
+			_dataFileService = CreateDataFileService();
 			_jobServer = CreateJobServer();
 			Runtime = CreateRuntime();
 			_engineService.GetEngineAsync(Arg.Any<string>())!
@@ -184,7 +184,7 @@ public class EngineRuntimeTests
 		{
 			return new SmtTransferEngineRuntime(new OptionsWrapper<EngineOptions>(EngineOptions), Engines,
 				Builds, _interactiveModelFactory, _ruleEngineFactory, _truecaserFactory, _jobClient,
-				_textCorpusFactory, Substitute.For<ILogger<SmtTransferEngineRuntime>>(), "engine1");
+				_dataFileService, Substitute.For<ILogger<SmtTransferEngineRuntime>>(), "engine1");
 		}
 
 		private ISmtModelFactory CreateInteractiveModelFactory()
@@ -294,16 +294,17 @@ public class EngineRuntimeTests
 				return new WordGraph(arcs, graph.FinalStates, graph.InitialStateScore);
 			});
 			Truecaser.CreateTrainer(Arg.Any<ITextCorpus>()).Returns(TruecaserTrainer);
-			factory.CreateAsync(Arg.Any<string>()).Returns(Task.FromResult<ITruecaser>(Truecaser));
+			factory.CreateAsync(Arg.Any<string>()).Returns(Task.FromResult(Truecaser));
 			return factory;
 		}
 
-		private static ITextCorpusFactory CreateTextCorpusFactory()
+		private static IDataFileService CreateDataFileService()
 		{
-			var factory = Substitute.For<ITextCorpusFactory>();
-			factory.CreateAsync(Arg.Any<string>(), Arg.Any<TextCorpusType>())
-				.Returns(Task.FromResult<ITextCorpus>(new DictionaryTextCorpus(Enumerable.Empty<IText>())));
-			return factory;
+			var dataFileService = Substitute.For<IDataFileService>();
+			dataFileService.CreateTextCorpusAsync(Arg.Any<string>(), Arg.Any<CorpusType>(),
+				Arg.Any<ITokenizer<string, int, string>>()).Returns(
+					Task.FromResult<ITextCorpus>(new DictionaryTextCorpus(Enumerable.Empty<IText>())));
+			return dataFileService;
 		}
 
 		private static IEnumerable<TranslationSources> GetSources(int count, bool isUnknown)
@@ -316,15 +317,16 @@ public class EngineRuntimeTests
 
 		public Task WaitForBuildToFinishAsync(string buildId)
 		{
-			return WaitForBuildState(buildId, BuildStates.IsFinished);
+			return WaitForBuildState(buildId, s => s == BuildState.Completed || s == BuildState.Faulted
+				|| s == BuildState.Canceled);
 		}
 
 		public Task WaitForBuildToStartAsync(string buildId)
 		{
-			return WaitForBuildState(buildId, s => s != BuildStates.Pending);
+			return WaitForBuildState(buildId, s => s != BuildState.Pending);
 		}
 
-		private async Task WaitForBuildState(string buildId, Func<string, bool> predicate)
+		private async Task WaitForBuildState(string buildId, Func<BuildState, bool> predicate)
 		{
 			using (Subscription<Build> subscription = await Builds.SubscribeAsync(b => b.Id == buildId))
 			{

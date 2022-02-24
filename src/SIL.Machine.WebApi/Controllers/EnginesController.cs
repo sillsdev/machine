@@ -286,8 +286,10 @@ public class EnginesController : Controller
 	[HttpPost("{id}/files")]
 	[RequestSizeLimit(100_000_000)]
 	[ProducesResponseType(StatusCodes.Status201Created)]
-	public async Task<ActionResult<DataFileDto>> UploadDataFileAsync(string id, [FromForm] string name,
-		[FromForm] string format, [FromForm] string dataType, IFormFile file)
+	public async Task<ActionResult<DataFileDto>> UploadDataFileAsync(string id,
+		[BindRequired][FromForm] DataType dataType, [BindRequired][FromForm] string name,
+		[BindRequired][FromForm] FileFormat format, [FromForm] CorpusType? corpusType, [FromForm] string? corpusKey,
+		[BindRequired] IFormFile file)
 	{
 		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
@@ -295,10 +297,18 @@ public class EnginesController : Controller
 		if (!await AuthorizeAsync(engine, Operations.Update))
 			return Forbid();
 
-		DataFile dataFile;
+		var dataFile = new DataFile
+		{
+			EngineRef = id,
+			DataType = dataType,
+			Name = name,
+			Format = format,
+			CorpusType = corpusType,
+			CorpusKey = corpusKey
+		};
 		using (Stream stream = file.OpenReadStream())
 		{
-			dataFile = await _dataFileService.CreateAsync(id, name, format, dataType, stream);
+			await _dataFileService.CreateAsync(dataFile, stream);
 		}
 		DataFileDto dto = CreateDto(dataFile);
 		return Created(dto.Href, dto);
@@ -484,9 +494,11 @@ public class EnginesController : Controller
 				Id = dataFile.EngineRef,
 				Href = Url.RouteUrl(RouteNames.Engines) + $"/{dataFile.EngineRef}"
 			},
+			DataType = dataFile.DataType,
 			Name = dataFile.Name,
 			Format = dataFile.Format,
-			DataType = dataFile.DataType
+			CorpusType = dataFile.CorpusType,
+			CorpusKey = dataFile.CorpusKey
 		};
 	}
 }

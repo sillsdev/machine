@@ -22,7 +22,7 @@ public class Build : IEntity<Build>
 	public string EngineRef { get; set; } = default!;
 	public double PercentCompleted { get; set; } = default;
 	public string? Message { get; set; }
-	public string State { get; set; } = BuildStates.Pending;
+	public BuildState State { get; set; } = BuildState.Pending;
 	public DateTime? DateFinished { get; set; }
 
 	public Build Clone()

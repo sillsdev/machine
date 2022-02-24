@@ -13,6 +13,6 @@ namespace SIL.Machine.WebApi
 		/// The current build job state.
 		/// </summary>
 		[JsonProperty(Required = Required.DisallowNull)]
-		public string State { get; set; }
+		public BuildState State { get; set; }
 	}
 }

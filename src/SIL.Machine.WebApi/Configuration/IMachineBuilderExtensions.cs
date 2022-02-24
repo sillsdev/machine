@@ -68,32 +68,6 @@ public static class IMachineBuilderExtensions
 		return builder;
 	}
 
-	public static IMachineBuilder AddTextFileTextCorpus(this IMachineBuilder builder)
-	{
-		builder.Services.AddSingleton<ITextCorpusFactory, TextFileTextCorpusFactory>();
-		return builder;
-	}
-
-	public static IMachineBuilder AddTextFileTextCorpus(this IMachineBuilder builder,
-		Action<TextFileTextCorpusOptions> configureOptions)
-	{
-		builder.Services.Configure(configureOptions);
-		return builder.AddTextFileTextCorpus();
-	}
-
-	public static IMachineBuilder AddTextFileTextCorpus(this IMachineBuilder builder,
-		IConfiguration config)
-	{
-		builder.Services.Configure<TextFileTextCorpusOptions>(config);
-		return builder.AddTextFileTextCorpus();
-	}
-
-	public static IMachineBuilder AddTextCorpus<T>(this IMachineBuilder builder) where T : class, ITextCorpusFactory
-	{
-		builder.Services.AddSingleton<ITextCorpusFactory, T>();
-		return builder;
-	}
-
 	public static IMachineBuilder AddMemoryDataAccess(this IMachineBuilder builder)
 	{
 		builder.Services.AddSingleton<IRepository<Engine>, MemoryRepository<Engine>>();

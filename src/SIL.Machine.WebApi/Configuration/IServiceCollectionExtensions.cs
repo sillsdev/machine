@@ -21,12 +21,8 @@ public static class IServiceCollectionExtensions
 		services.Configure<MvcOptions>(o =>
 		{
 			o.Filters.Add<OperationCancelledExceptionFilter>();
-			o.Conventions.Add(new MachineApplicationModelConvention(config.Namespace,
-				config.AuthenticationSchemes));
-		});
-		services.Configure<MvcNewtonsoftJsonOptions>(o =>
-		{
-			o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+			//o.Conventions.Add(new MachineApplicationModelConvention(config.Namespace,
+			//	config.AuthenticationSchemes));
 		});
 		services.Configure<RouteOptions>(o => o.LowercaseUrls = true);
 
@@ -34,8 +30,7 @@ public static class IServiceCollectionExtensions
 			.AddThotSmtModel()
 			.AddTransferEngine()
 			.AddTransferTruecaser()
-			.AddMemoryDataAccess()
-			.AddTextFileTextCorpus();
+			.AddMemoryDataAccess();
 		return builder;
 	}
 }

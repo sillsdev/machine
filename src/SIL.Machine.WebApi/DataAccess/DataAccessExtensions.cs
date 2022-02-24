@@ -58,7 +58,7 @@ public static class DataAccessExtensions
 		CancellationToken cancellationToken = default)
 	{
 		return builds.GetAsync(b => b.EngineRef == engineId
-			&& (b.State == BuildStates.Active || b.State == BuildStates.Pending), cancellationToken);
+			&& (b.State == BuildState.Active || b.State == BuildState.Pending), cancellationToken);
 	}
 
 	public static Task<EntityChange<Build>> GetNewerRevisionAsync(this IRepository<Build> builds,
@@ -71,7 +71,7 @@ public static class DataAccessExtensions
 		string engineId, long minRevision, CancellationToken cancellationToken = default)
 	{
 		return builds.GetNewerRevisionAsync(b => b.EngineRef == engineId
-			&& (b.State == BuildStates.Active || b.State == BuildStates.Pending), minRevision, cancellationToken);
+			&& (b.State == BuildState.Active || b.State == BuildState.Pending), minRevision, cancellationToken);
 	}
 
 	public static async Task<EntityChange<Build>> GetNewerRevisionAsync(this IRepository<Build> builds,

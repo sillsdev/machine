@@ -13,7 +13,7 @@ public class BuildProgress : IProgress<ProgressStatus>
 
 	public void Report(ProgressStatus value)
 	{
-		if (_build.State != BuildStates.Active
+		if (_build.State != BuildState.Active
 			|| (_build.PercentCompleted == value.PercentCompleted && _build.Message == value.Message))
 		{
 			return;

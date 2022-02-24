@@ -1,12 +1,19 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using SIL.Machine.Server;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+	.AddJsonOptions(o =>
+	{
+		o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+		o.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+	});
 builder.Services.AddMachine();
-builder.Services.AddOpenApiDocument(doc =>
+builder.Services.AddSwaggerDocument(doc =>
 {
 	doc.Title = "Machine API";
 	doc.SchemaNameGenerator = new MachineSchemaNameGenerator();

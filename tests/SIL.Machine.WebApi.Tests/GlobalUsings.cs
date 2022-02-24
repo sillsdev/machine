@@ -15,3 +15,4 @@ global using SIL.Machine.WebApi.Configuration;
 global using SIL.Machine.WebApi.DataAccess;
 global using SIL.Machine.WebApi.Models;
 global using SIL.ObjectModel;
+global using SIL.Machine.Tokenization;

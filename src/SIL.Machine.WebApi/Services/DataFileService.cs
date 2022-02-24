@@ -11,24 +11,16 @@ public class DataFileService : IDataFileService
 		_dataFiles = dataFiles;
 	}
 
-	public async Task<DataFile> CreateAsync(string engineId, string name, string format, string dataType, Stream stream)
+	public async Task CreateAsync(DataFile dataFile, Stream stream)
 	{
-		var dataFile = new DataFile
-		{
-			EngineRef = engineId,
-			Name = name,
-			Format = format,
-			DataType = dataType,
-			Filename = Path.GetRandomFileName()
-		};
-		string path = Path.Combine(_dataFileOptions.Value.DataFilesDir, dataFile.Filename);
+		dataFile.Filename = Path.GetRandomFileName();
+		string path = GetDataFilePath(dataFile);
 		using (FileStream fileStream = File.Create(path))
 		{
 			await stream.CopyToAsync(fileStream);
 		}
 
 		await _dataFiles.InsertAsync(dataFile);
-		return dataFile;
 	}
 
 	public async Task<bool> DeleteAsync(string id)
@@ -37,7 +29,7 @@ public class DataFileService : IDataFileService
 		if (dataFile == null)
 			return false;
 
-		string path = Path.Combine(_dataFileOptions.Value.DataFilesDir, dataFile.Filename);
+		string path = GetDataFilePath(dataFile);
 		File.Delete(path);
 		return true;
 	}
@@ -52,5 +44,46 @@ public class DataFileService : IDataFileService
 			string path = Path.Combine(_dataFileOptions.Value.DataFilesDir, dataFile.Filename);
 			File.Delete(path);
 		}
+	}
+
+	public async Task<ITextCorpus> CreateTextCorpusAsync(string engineId, CorpusType corpusType,
+		ITokenizer<string, int, string> tokenizer)
+	{
+		IReadOnlyList<DataFile> dataFiles = await _dataFiles.GetAllAsync(
+			f => f.EngineRef == engineId && f.DataType == DataType.TextCorpus && f.CorpusType == corpusType);
+
+		var corpora = new Dictionary<string, ITextCorpus>();
+		foreach (IGrouping<string?, DataFile> corpusGrouping in dataFiles.GroupBy(f => f.CorpusKey))
+		{
+			if (corpusGrouping.Key is null)
+				continue;
+
+			List<DataFile> corpusDataFiles = corpusGrouping.ToList();
+			if (corpusDataFiles.Count == 0)
+				continue;
+			FileFormat format = corpusDataFiles[0].Format;
+			ITextCorpus? corpus = null;
+			switch (format)
+			{
+				case FileFormat.Text:
+					corpus = new DictionaryTextCorpus(corpusDataFiles
+						.Select(f => new TextFileText(tokenizer, f.Name, GetDataFilePath(f))));
+					break;
+
+				case FileFormat.Paratext:
+					corpus = new ParatextBackupTextCorpus(tokenizer, GetDataFilePath(corpusDataFiles[0]));
+					break;
+			}
+
+			if (corpus is not null)
+				corpora[corpusGrouping.Key] = corpus;
+		}
+
+		return new MultipleTextCorpus(corpora);
+	}
+
+	private string GetDataFilePath(DataFile dataFile)
+	{
+		return Path.Combine(_dataFileOptions.Value.DataFilesDir, dataFile.Filename);
 	}
 }

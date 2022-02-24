@@ -19,5 +19,14 @@ namespace SIL.Machine.Corpora
 			ZipFile.CreateFromDirectory(UsxTestProjectPath, path);
 			return path;
 		}
+
+		public static string CreateTestParatextBackup()
+		{
+			string path = Path.Combine(Path.GetTempPath(), "Tes.zip");
+			if (File.Exists(path))
+				File.Delete(path);
+			ZipFile.CreateFromDirectory(UsfmTestProjectPath, path);
+			return path;
+		}
 	}
 }

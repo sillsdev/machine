@@ -44,7 +44,7 @@ namespace SIL.Machine.Corpora
 						.Where(pubElem => (bool?)pubElem.Attribute("default") ?? false).Elements("structure")
 						.Elements("content"))
 					{
-						AddText(new DblBundleText(wordTokenizer, (string)contentElem.Attribute("role"), fileName,
+						AddText(new UsxZipText(wordTokenizer, (string)contentElem.Attribute("role"), fileName,
 							(string)contentElem.Attribute("src"), Versification));
 					}
 				}

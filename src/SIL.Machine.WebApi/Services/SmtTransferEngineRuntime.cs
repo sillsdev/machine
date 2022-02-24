@@ -5,7 +5,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 	public class Factory : EngineRuntimeFactory<SmtTransferEngineRuntime>
 	{
 		public Factory(IServiceProvider serviceProvider)
-			: base(serviceProvider, "smt_transfer")
+			: base(serviceProvider, "smtTransfer")
 		{
 		}
 	}
@@ -17,7 +17,6 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 	private readonly ISmtModelFactory _smtModelFactory;
 	private readonly ITransferEngineFactory _transferEngineFactory;
 	private readonly ITruecaserFactory _truecaserFactory;
-	private readonly ITextCorpusFactory _textCorpusFactory;
 	private readonly IOptions<EngineOptions> _engineOptions;
 	private readonly ILogger<SmtTransferEngineRuntime> _logger;
 	private readonly IBackgroundJobClient _jobClient;
@@ -25,6 +24,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 	private readonly List<SegmentPair> _trainedSegments;
 	private readonly AsyncReaderWriterLock _lock;
 	private readonly AsyncManualResetEvent _buildFinishedEvent;
+	private readonly IDataFileService _dataFileService;
 
 	private Lazy<IInteractiveTranslationModel> _smtModel;
 	private ObjectPool<HybridTranslationEngine> _enginePool;
@@ -35,7 +35,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 
 	public SmtTransferEngineRuntime(IOptions<EngineOptions> engineOptions, IRepository<Engine> engines,
 		IRepository<Build> builds, ISmtModelFactory smtModelFactory, ITransferEngineFactory transferEngineFactory,
-		ITruecaserFactory truecaserFactory, IBackgroundJobClient jobClient, ITextCorpusFactory textCorpusFactory,
+		ITruecaserFactory truecaserFactory, IBackgroundJobClient jobClient, IDataFileService dataFileService,
 		ILogger<SmtTransferEngineRuntime> logger, string engineId)
 	{
 		_engines = engines;
@@ -43,10 +43,10 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 		_smtModelFactory = smtModelFactory;
 		_transferEngineFactory = transferEngineFactory;
 		_truecaserFactory = truecaserFactory;
-		_textCorpusFactory = textCorpusFactory;
 		_engineOptions = engineOptions;
 		_logger = logger;
 		_jobClient = jobClient;
+		_dataFileService = dataFileService;
 		_engineId = engineId;
 		_trainedSegments = new List<SegmentPair>();
 		_lock = new AsyncReaderWriterLock();
@@ -214,20 +214,20 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 		Build? build = await _builds.GetByEngineIdAsync(_engineId);
 		if (build == null)
 			return;
-		if (build.State == BuildStates.Pending)
+		if (build.State == BuildState.Pending)
 		{
 			// if the build is pending, then delete it
 			// the job will still run, but it will exit before performing the build
 			await _builds.DeleteAsync(build);
 		}
-		else if (build.State == BuildStates.Active && !IsBuilding)
+		else if (build.State == BuildState.Active && !IsBuilding)
 		{
 			// if the build is active but not actually running yet, then change the state to canceled
 			// the job will still run, but it will exit before performing the build
 			// this should not happen, but check for it just in case
 			await _builds.UpdateAsync(build, u => u
 				.Inc(b => b.Revision)
-				.Set(b => b.State, BuildStates.Canceled)
+				.Set(b => b.State, BuildState.Canceled)
 				.Set(b => b.DateFinished, DateTime.UtcNow));
 		}
 		else if (IsBuilding)
@@ -301,15 +301,18 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 				_logger.LogInformation("Build started ({0})", _engineId);
 				stopwatch.Start();
 
-				if (build.State == BuildStates.Pending)
+				if (build.State == BuildState.Pending)
 				{
 					build = (await _builds.UpdateAsync(build, u => u
 						.Inc(b => b.Revision)
-						.Set(b => b.State, BuildStates.Active)))!;
+						.Set(b => b.State, BuildState.Active)))!;
 				}
 
-				ITextCorpus sourceCorpus = await _textCorpusFactory.CreateAsync(engine.Id, TextCorpusType.Source);
-				ITextCorpus targetCorpus = await _textCorpusFactory.CreateAsync(engine.Id, TextCorpusType.Target);
+				var tokenizer = new LatinWordTokenizer();
+				ITextCorpus sourceCorpus = await _dataFileService.CreateTextCorpusAsync(engine.Id, CorpusType.Source,
+					tokenizer);
+				ITextCorpus targetCorpus = await _dataFileService.CreateTextCorpusAsync(engine.Id, CorpusType.Target,
+					tokenizer);
 				var corpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
 				modelTrainer = _smtModel.Value.CreateTrainer(corpus, TokenProcessors.Lowercase,
 					TokenProcessors.Lowercase);
@@ -348,7 +351,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 
 			build = (await _builds.UpdateAsync(build, u => u
 				.Inc(b => b.Revision)
-				.Set(b => b.State, BuildStates.Completed)
+				.Set(b => b.State, BuildState.Completed)
 				.Set(b => b.DateFinished, DateTime.UtcNow)))!;
 			stopwatch.Stop();
 			_logger.LogInformation("Build completed in {0}ms ({1})", stopwatch.Elapsed.TotalMilliseconds, _engineId);
@@ -366,13 +369,13 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 						.Inc(b => b.Revision)
 						.Set(b => b.Message, null)
 						.Set(b => b.PercentCompleted, 0)
-						.Set(b => b.State, BuildStates.Pending));
+						.Set(b => b.State, BuildState.Pending));
 					throw;
 				}
 
 				build = (await _builds.UpdateAsync(build, u => u
 					.Inc(b => b.Revision)
-					.Set(b => b.State, BuildStates.Canceled)
+					.Set(b => b.State, BuildState.Canceled)
 					.Set(b => b.DateFinished, DateTime.UtcNow)))!;
 				_logger.LogInformation("Build canceled ({0})", _engineId);
 				await buildHandler.OnCanceled(new BuildContext(engine, build));
@@ -384,7 +387,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 			{
 				build = (await _builds.UpdateAsync(build, u => u
 					.Inc(b => b.Revision)
-					.Set(b => b.State, BuildStates.Faulted)
+					.Set(b => b.State, BuildState.Faulted)
 					.Set(b => b.Message, e.Message)
 					.Set(b => b.DateFinished, DateTime.UtcNow)))!;
 				_logger.LogError(0, e, "Build faulted ({0})", _engineId);

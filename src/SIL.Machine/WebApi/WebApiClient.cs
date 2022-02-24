@@ -111,9 +111,9 @@ namespace SIL.Machine.WebApi.Client
 					BuildDto buildDto = JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
 					progress(CreateProgressStatus(buildDto));
 					buildRelativeUrl = $"builds/{buildDto.Id}";
-					if (buildDto.State == BuildStates.Completed || buildDto.State == BuildStates.Canceled)
+					if (buildDto.State == BuildState.Completed || buildDto.State == BuildState.Canceled)
 						break;
-					else if (buildDto.State == BuildStates.Faulted)
+					else if (buildDto.State == BuildState.Faulted)
 						throw new InvalidOperationException("Error occurred during build: " + buildDto.Message);
 					minRevision = buildDto.Revision + 1;
 				}

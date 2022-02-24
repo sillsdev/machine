@@ -5,7 +5,7 @@ using System.Linq;
 namespace SIL.Machine.Corpora
 {
 	[TestFixture]
-	public class DblBundleTextTests
+	public class UsxZipTextTests
 	{
 		[Test]
 		public void GetSegments_NonEmptyText()
