@@ -29,6 +29,10 @@ public class EnginesController : Controller
 		_engineOptions = engineOptions;
 	}
 
+	/// <summary>
+	/// Gets all engines.
+	/// </summary>
+	/// <response code="200">The engines.</response>
 	[HttpGet]
 	public async Task<IEnumerable<EngineDto>> GetAllAsync()
 	{
@@ -41,6 +45,11 @@ public class EnginesController : Controller
 		return engines;
 	}
 
+	/// <summary>
+	/// Gets the specified engine.
+	/// </summary>
+	/// <param name="id">The engine id.</param>
+	/// <response code="200">The engine.</response>
 	[HttpGet("{id}")]
 	public async Task<ActionResult<EngineDto>> GetAsync(string id)
 	{
@@ -53,7 +62,13 @@ public class EnginesController : Controller
 		return Ok(CreateDto(engine));
 	}
 
+	/// <summary>
+	/// Creates a new engine.
+	/// </summary>
+	/// <param name="engine">The new engine properties.</param>
+	/// <response code="201">The engine was created successfully.</response>
 	[HttpPost]
+	[ProducesResponseType(StatusCodes.Status201Created)]
 	public async Task<ActionResult<EngineDto>> CreateAsync([FromBody] NewEngineDto engine)
 	{
 		if (User.Identity?.Name is null)
@@ -74,6 +89,11 @@ public class EnginesController : Controller
 		return Ok(CreateDto(newEngine));
 	}
 
+	/// <summary>
+	/// Deletes the specified engine.
+	/// </summary>
+	/// <param name="id">The engine id.</param>
+	/// <response code="200">The engine was successfully deleted.</response>
 	[HttpDelete("{id}")]
 	public async Task<ActionResult> DeleteAsync(string id)
 	{
@@ -88,6 +108,12 @@ public class EnginesController : Controller
 		return Ok();
 	}
 
+	/// <summary>
+	/// Translates a tokenized segment of text.
+	/// </summary>
+	/// <param name="id">The engine id.</param>
+	/// <param name="segment">The tokenized source segment.</param>
+	/// <response code="200">The translation result.</response>
 	[HttpPost("{id}/translate")]
 	public async Task<ActionResult<TranslationResultDto>> TranslateAsync(string id, [FromBody] string[] segment)
 	{
@@ -103,6 +129,13 @@ public class EnginesController : Controller
 		return Ok(CreateDto(result));
 	}
 
+	/// <summary>
+	/// Translates a tokenized segment of text into the top N results.
+	/// </summary>
+	/// <param name="id">The engine id.</param>
+	/// <param name="n">The number of translations.</param>
+	/// <param name="segment">The tokenized source segment.</param>
+	/// <response code="200">The translation results.</response>
 	[HttpPost("{id}/translate/{n}")]
 	public async Task<ActionResult<IEnumerable<TranslationResultDto>>> TranslateAsync(string id, int n,
 		[FromBody] string[] segment)
@@ -119,6 +152,12 @@ public class EnginesController : Controller
 		return Ok(results.Select(CreateDto));
 	}
 
+	/// <summary>
+	/// Gets the word graph that represents all possible translations of a tokenized segment of text.
+	/// </summary>
+	/// <param name="id">The engine id.</param>
+	/// <param name="segment">The tokenized source segment.</param>
+	/// <response code="200">The word graph.</response>
 	[HttpPost("{id}/get-word-graph")]
 	public async Task<ActionResult<WordGraphDto>> InteractiveTranslateAsync(string id, [FromBody] string[] segment)
 	{
@@ -134,6 +173,12 @@ public class EnginesController : Controller
 		return Ok(CreateDto(result));
 	}
 
+	/// <summary>
+	/// Incrementally trains the specified engine with a tokenized segment pair.
+	/// </summary>
+	/// <param name="id">The engine id.</param>
+	/// <param name="segmentPair">The tokenized segment pair.</param>
+	/// <response code="200">The engine was trained successfully.</response>
 	[HttpPost("{id}/train-segment")]
 	[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
 	public async Task<ActionResult> TrainSegmentAsync(string id, [FromBody] SegmentPairDto segmentPair)
@@ -153,8 +198,9 @@ public class EnginesController : Controller
 	}
 
 	/// <summary>
-	/// Gets all build jobs.
+	/// Gets all build jobs for the specified engine.
 	/// </summary>
+	/// <param name="id">The engine id.</param>
 	/// <response code="200">The build jobs.</response>
 	[HttpGet("{id}/builds")]
 	public async Task<ActionResult<IEnumerable<BuildDto>>> GetAllBuildsAsync(string id)
@@ -286,6 +332,17 @@ public class EnginesController : Controller
 		return Ok();
 	}
 
+	/// <summary>
+	/// Upload a data file for use by the specified engine.
+	/// </summary>
+	/// <param name="id">The engine id.</param>
+	/// <param name="dataType">The type of data.</param>
+	/// <param name="name">The label for the file.</param>
+	/// <param name="format">The file format.</param>
+	/// <param name="corpusType">The parallel corpus type of the data file.</param>
+	/// <param name="corpusKey">The parallel corpus key that is used to associate the source and target data files.</param>
+	/// <param name="file">The data file.</param>
+	/// <response code="200">The data file was uploaded successfully.</response>
 	[HttpPost("{id}/files")]
 	[RequestSizeLimit(100_000_000)]
 	[ProducesResponseType(StatusCodes.Status201Created)]
@@ -317,6 +374,11 @@ public class EnginesController : Controller
 		return Created(dto.Href, dto);
 	}
 
+	/// <summary>
+	/// Gets all data files for the specified engine.
+	/// </summary>
+	/// <param name="id">The engine id.</param>
+	/// <response code="200">The data files.</response>
 	[HttpGet("{id}/files")]
 	public async Task<ActionResult<IEnumerable<DataFileDto>>> GetAllDataFilesAsync(string id)
 	{
@@ -329,7 +391,12 @@ public class EnginesController : Controller
 		return Ok((await _dataFiles.GetAllAsync()).Select(CreateDto));
 	}
 
-
+	/// <summary>
+	/// Gets the specified data file.
+	/// </summary>
+	/// <param name="id">The engine id.</param>
+	/// <param name="fileId">The data file id.</param>
+	/// <response code="200">The data file.</response>
 	[HttpGet("{id}/files/{fileId}")]
 	public async Task<ActionResult<DataFileDto>> GetDataFileAsync(string id, string fileId)
 	{
@@ -346,6 +413,12 @@ public class EnginesController : Controller
 		return Ok(CreateDto(dataFile));
 	}
 
+	/// <summary>
+	/// Deletes the specified data file.
+	/// </summary>
+	/// <param name="id">The engine id.</param>
+	/// <param name="fileId">The data file id.</param>
+	/// <response code="200">The data file was deleted successfully.</response>
 	[HttpDelete("{id}/files/{fileId}")]
 	[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
 	public async Task<ActionResult> DeleteDataFileAsync(string id, string fileId)
@@ -362,6 +435,11 @@ public class EnginesController : Controller
 		return Ok();
 	}
 
+	/// <summary>
+	/// Deletes all data files for the specified engine.
+	/// </summary>
+	/// <param name="id">The engine id.</param>
+	/// <response code="200">All data files were deleted successfully.</response>
 	[HttpDelete("{id}/files")]
 	[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
 	public async Task<ActionResult> DeleteAllDataFilesAsync(string id)
