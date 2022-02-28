@@ -124,7 +124,7 @@ public class EngineRuntimeTests
 				Id = "engine1",
 				SourceLanguageTag = "es",
 				TargetLanguageTag = "en",
-				Type = "smt_transfer"
+				Type = EngineType.SmtTransfer
 			});
 			Builds = new MemoryRepository<Build>();
 			EngineOptions = new EngineOptions();

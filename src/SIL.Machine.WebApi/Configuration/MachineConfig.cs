@@ -3,5 +3,5 @@
 public class MachineConfig
 {
 	public string Namespace { get; set; } = "";
-	public IReadOnlyList<string> AuthenticationSchemes { get; set; } = new string[0];
+	public ICollection<string> AuthenticationSchemes { get; set; } = new List<string>();
 }

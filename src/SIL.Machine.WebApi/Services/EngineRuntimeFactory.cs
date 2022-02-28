@@ -4,13 +4,13 @@ public class EngineRuntimeFactory<T> : IEngineRuntimeFactory where T : IEngineRu
 {
 	private readonly IServiceProvider _serviceProvider;
 
-	public EngineRuntimeFactory(IServiceProvider serviceProvider, string key)
+	public EngineRuntimeFactory(IServiceProvider serviceProvider, EngineType type)
 	{
 		_serviceProvider = serviceProvider;
-		Key = key;
+		Type = type;
 	}
 
-	public string Key { get; }
+	public EngineType Type { get; }
 
 	public IEngineRuntime CreateEngineRuntime(string engineId)
 	{

@@ -21,8 +21,8 @@ public static class IServiceCollectionExtensions
 		services.Configure<MvcOptions>(o =>
 		{
 			o.Filters.Add<OperationCancelledExceptionFilter>();
-			//o.Conventions.Add(new MachineApplicationModelConvention(config.Namespace,
-			//	config.AuthenticationSchemes));
+			o.Conventions.Add(new MachineApplicationModelConvention(config.Namespace,
+				config.AuthenticationSchemes));
 		});
 		services.Configure<RouteOptions>(o => o.LowercaseUrls = true);
 

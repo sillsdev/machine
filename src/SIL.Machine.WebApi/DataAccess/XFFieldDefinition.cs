@@ -10,9 +10,10 @@ public class XFFieldDefinition<TDocument, TField> : FieldDefinition<TDocument, T
 	}
 
 	public override RenderedFieldDefinition<TField> Render(IBsonSerializer<TDocument> documentSerializer,
-		IBsonSerializerRegistry serializerRegistry)
+		IBsonSerializerRegistry serializerRegistry, LinqProvider linqProvider)
 	{
-		RenderedFieldDefinition<TField> rendered = _internalDef.Render(documentSerializer, serializerRegistry);
+		RenderedFieldDefinition<TField> rendered = _internalDef.Render(documentSerializer, serializerRegistry,
+			linqProvider);
 		string fieldName = rendered.FieldName.Replace(ArrayPosition.All.ToString(), "$[]");
 		if (fieldName != rendered.FieldName)
 		{

@@ -8,3 +8,5 @@ trim_trailing_whitespace = true
 indent_style = tab
 indent_size = 4
 
+[*.{json,js,ts}]
+end_of_line = lf

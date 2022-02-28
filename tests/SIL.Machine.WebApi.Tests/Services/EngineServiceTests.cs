@@ -68,7 +68,7 @@ public class EngineServiceTests
 			Id = "engine1",
 			SourceLanguageTag = "es",
 			TargetLanguageTag = "en",
-			Type = "test"
+			Type = EngineType.SmtTransfer
 		};
 		bool created = await env.Service.CreateAsync(engine);
 		Assert.That(created, Is.True);
@@ -88,7 +88,7 @@ public class EngineServiceTests
 			Id = "engine1",
 			SourceLanguageTag = "es",
 			TargetLanguageTag = "en",
-			Type = "test"
+			Type = EngineType.SmtTransfer
 		};
 		bool created = await env.Service.CreateAsync(engine);
 		Assert.That(created, Is.False);
@@ -179,7 +179,7 @@ public class EngineServiceTests
 			engineRuntime.GetWordGraphAsync(Arg.Any<IReadOnlyList<string>>()).Returns(Task.FromResult(wordGraph));
 			engineRuntime.StartBuildAsync().Returns(Task.FromResult(new Build { Id = "build1", EngineRef = "engine1" }));
 			var engineRuntimeFactory = Substitute.For<IEngineRuntimeFactory>();
-			engineRuntimeFactory.Key.Returns("test");
+			engineRuntimeFactory.Type.Returns(EngineType.SmtTransfer);
 			engineRuntimeFactory.CreateEngineRuntime(Arg.Any<string>()).Returns(engineRuntime);
 			Service = new EngineService(new OptionsWrapper<EngineOptions>(new EngineOptions()), Engines,
 				new MemoryRepository<Build>(), new[] { engineRuntimeFactory });
@@ -195,7 +195,7 @@ public class EngineServiceTests
 				Id = "engine1",
 				SourceLanguageTag = "es",
 				TargetLanguageTag = "en",
-				Type = "test"
+				Type = EngineType.SmtTransfer
 			};
 			await Engines.InsertAsync(engine);
 			return engine;

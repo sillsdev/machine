@@ -10,6 +10,6 @@ namespace SIL.Machine.WebApi
 		[JsonProperty(Required = Required.Always)]
 		public string TargetLanguageTag { get; set; }
 		[JsonProperty(Required = Required.Always)]
-		public string Type { get; set; }
+		public EngineType Type { get; set; }
 	}
 }

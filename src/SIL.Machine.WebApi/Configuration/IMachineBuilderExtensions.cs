@@ -76,13 +76,17 @@ public static class IMachineBuilderExtensions
 		return builder;
 	}
 
-	public static IMachineBuilder AddMongoDataAccess(this IMachineBuilder builder)
+	public static IMachineBuilder AddMongoDataAccess(this IMachineBuilder builder, string connectionString)
 	{
 		DataAccessClassMap.RegisterConventions("SIL.Machine.WebApi.Models",
 			new CamelCaseElementNameConvention(),
 			new EnumRepresentationConvention(BsonType.String),
 			new IgnoreIfNullConvention(true),
 			new ObjectRefConvention());
+
+		var mongoUrl = new MongoUrl(connectionString);
+		builder.Services.AddSingleton<IMongoClient>(sp => new MongoClient(mongoUrl));
+		builder.Services.AddSingleton(sp => sp.GetService<IMongoClient>()!.GetDatabase(mongoUrl.DatabaseName));
 
 		builder.Services.AddMongoRepository<Engine>("engines");
 		builder.Services.AddMongoRepository<Build>("builds", indexSetup: indexes =>
@@ -95,19 +99,6 @@ public static class IMachineBuilderExtensions
 		return builder;
 	}
 
-	public static IMachineBuilder AddMongoDataAccess(this IMachineBuilder builder,
-		Action<MongoDataAccessOptions> configureOptions)
-	{
-		builder.Services.Configure(configureOptions);
-		return builder.AddMongoDataAccess();
-	}
-
-	public static IMachineBuilder AddMongoDataAccess(this IMachineBuilder builder, IConfiguration config)
-	{
-		builder.Services.Configure<MongoDataAccessOptions>(config);
-		return builder.AddMongoDataAccess();
-	}
-
 
 	public static void AddMongoRepository<T>(this IServiceCollection services, string collection,
 		Action<BsonClassMap<T>>? mapSetup = null, Action<IMongoIndexManager<T>>? indexSetup = null)
@@ -115,7 +106,9 @@ public static class IMachineBuilderExtensions
 	{
 		DataAccessClassMap.RegisterClass<T>(cm =>
 		{
-			cm.MapIdProperty(e => e.Id);
+			cm.MapIdProperty(e => e.Id)
+				.SetIdGenerator(StringObjectIdGenerator.Instance)
+				.SetSerializer(new StringSerializer(BsonType.ObjectId));
 			mapSetup?.Invoke(cm);
 		});
 		services.AddSingleton<IRepository<T>>(sp => CreateMongoRepository(sp, collection, indexSetup));

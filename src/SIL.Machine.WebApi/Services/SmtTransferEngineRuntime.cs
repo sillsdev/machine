@@ -5,7 +5,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 	public class Factory : EngineRuntimeFactory<SmtTransferEngineRuntime>
 	{
 		public Factory(IServiceProvider serviceProvider)
-			: base(serviceProvider, "smtTransfer")
+			: base(serviceProvider, EngineType.SmtTransfer)
 		{
 		}
 	}

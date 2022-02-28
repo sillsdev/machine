@@ -56,19 +56,22 @@ public class EnginesController : Controller
 	[HttpPost]
 	public async Task<ActionResult<EngineDto>> CreateAsync([FromBody] NewEngineDto engine)
 	{
+		if (User.Identity?.Name is null)
+			return Unauthorized();
 		var newEngine = new Engine
 		{
 			Id = engine.Id,
 			SourceLanguageTag = engine.SourceLanguageTag,
 			TargetLanguageTag = engine.TargetLanguageTag,
-			Type = engine.Type
+			Type = engine.Type,
+			Owner = User.Identity.Name
 		};
 		if (!await AuthorizeAsync(newEngine, Operations.Create))
 			return Forbid();
 
 		if (!await _engineService.CreateAsync(newEngine))
 			return Conflict();
-		return Ok(newEngine);
+		return Ok(CreateDto(newEngine));
 	}
 
 	[HttpDelete("{id}")]
@@ -441,6 +444,7 @@ public class EnginesController : Controller
 			Href = Url.RouteUrl(RouteNames.Engines) + $"/{engine.Id}",
 			SourceLanguageTag = engine.SourceLanguageTag,
 			TargetLanguageTag = engine.TargetLanguageTag,
+			Type = engine.Type,
 			Confidence = engine.Confidence,
 			TrainedSegmentCount = engine.TrainedSegmentCount
 		};

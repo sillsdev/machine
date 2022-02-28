@@ -2,6 +2,6 @@
 
 public interface IEngineRuntimeFactory
 {
-	string Key { get; }
+	EngineType Type { get; }
 	IEngineRuntime CreateEngineRuntime(string engineId);
 }

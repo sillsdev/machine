@@ -57,7 +57,7 @@ public class MongoRepository<T> : IRepository<T> where T : class, IEntity<T>
 		try
 		{
 			ReplaceOneResult result = await _collection.ReplaceOneAsync(e => e.Id == entity.Id, entity,
-				new UpdateOptions { IsUpsert = upsert }, cancellationToken);
+				new ReplaceOptions { IsUpsert = upsert }, cancellationToken);
 			if (result.IsAcknowledged && (upsert || result.MatchedCount > 0))
 			{
 				await SendToSubscribersAsync(EntityChangeType.Update, entity);

@@ -6,7 +6,7 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 	private readonly ConcurrentDictionary<string, IEngineRuntime> _runtimes;
 	private readonly IRepository<Engine> _engines;
 	private readonly IRepository<Build> _builds;
-	private readonly Dictionary<string, IEngineRuntimeFactory> _engineRuntimeFactories;
+	private readonly Dictionary<EngineType, IEngineRuntimeFactory> _engineRuntimeFactories;
 	private readonly AsyncTimer _commitTimer;
 
 	public EngineService(IOptions<EngineOptions> engineOptions, IRepository<Engine> engines,
@@ -15,7 +15,7 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 		_engineOptions = engineOptions;
 		_engines = engines;
 		_builds = builds;
-		_engineRuntimeFactories = engineRuntimeFactories.ToDictionary(f => f.Key);
+		_engineRuntimeFactories = engineRuntimeFactories.ToDictionary(f => f.Type);
 		_runtimes = new ConcurrentDictionary<string, IEngineRuntime>();
 		_commitTimer = new AsyncTimer(EngineCommitAsync);
 	}
@@ -27,8 +27,8 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 
 	private async Task EngineCommitAsync()
 	{
-		foreach (Owned<IEngineRuntime> runner in _runtimes.Values)
-			await runner.Value.CommitAsync();
+		foreach (IEngineRuntime runtime in _runtimes.Values)
+			await runtime.CommitAsync();
 	}
 
 	public async Task<TranslationResult?> TranslateAsync(string engineId, IReadOnlyList<string> segment)
@@ -157,7 +157,7 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 	protected override async ValueTask DisposeAsyncCore()
 	{
 		await _commitTimer.DisposeAsync();
-		foreach (Owned<IEngineRuntime> runtime in _runtimes.Values)
+		foreach (IEngineRuntime runtime in _runtimes.Values)
 			await runtime.DisposeAsync();
 		_runtimes.Clear();
 	}

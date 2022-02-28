@@ -9,7 +9,7 @@ namespace SIL.Machine.WebApi
 		[JsonProperty(Required = Required.DisallowNull)]
 		public string TargetLanguageTag { get; set; }
 		[JsonProperty(Required = Required.DisallowNull)]
-		public string Type { get; set; }
+		public EngineType Type { get; set; }
 		public double Confidence { get; set; }
 		public int TrainedSegmentCount { get; set; }
 	}
