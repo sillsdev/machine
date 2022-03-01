@@ -115,6 +115,7 @@ public class EngineRuntimeTests
 		private readonly ITransferEngineFactory _ruleEngineFactory;
 		private readonly ITruecaserFactory _truecaserFactory;
 		private readonly IDataFileService _dataFileService;
+		private readonly IDistributedReaderWriterLockFactory _lockFactory;
 
 		public TestEnvironment()
 		{
@@ -142,6 +143,7 @@ public class EngineRuntimeTests
 			_ruleEngineFactory = CreateRuleEngineFactory();
 			_truecaserFactory = CreateTruecaserFactory();
 			_dataFileService = CreateDataFileService();
+			_lockFactory = new MemoryDistributedReaderWriterLockFactory();
 			_jobServer = CreateJobServer();
 			Runtime = CreateRuntime();
 			_engineService.GetEngineAsync(Arg.Any<string>())!
@@ -184,7 +186,7 @@ public class EngineRuntimeTests
 		{
 			return new SmtTransferEngineRuntime(new OptionsWrapper<EngineOptions>(EngineOptions), Engines,
 				Builds, _interactiveModelFactory, _ruleEngineFactory, _truecaserFactory, _jobClient,
-				_dataFileService, Substitute.For<ILogger<SmtTransferEngineRuntime>>(), "engine1");
+				_dataFileService, _lockFactory, Substitute.For<ILogger<SmtTransferEngineRuntime>>(), "engine1");
 		}
 
 		private ISmtModelFactory CreateInteractiveModelFactory()

@@ -22,9 +22,10 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 	private readonly IBackgroundJobClient _jobClient;
 	private readonly string _engineId;
 	private readonly List<SegmentPair> _trainedSegments;
-	private readonly AsyncReaderWriterLock _lock;
+	private readonly IDistributedReaderWriterLock _lock;
 	private readonly AsyncManualResetEvent _buildFinishedEvent;
 	private readonly IDataFileService _dataFileService;
+	private readonly IDistributedReaderWriterLockFactory _lockFactory;
 
 	private Lazy<IInteractiveTranslationModel> _smtModel;
 	private ObjectPool<HybridTranslationEngine> _enginePool;
@@ -36,7 +37,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 	public SmtTransferEngineRuntime(IOptions<EngineOptions> engineOptions, IRepository<Engine> engines,
 		IRepository<Build> builds, ISmtModelFactory smtModelFactory, ITransferEngineFactory transferEngineFactory,
 		ITruecaserFactory truecaserFactory, IBackgroundJobClient jobClient, IDataFileService dataFileService,
-		ILogger<SmtTransferEngineRuntime> logger, string engineId)
+		IDistributedReaderWriterLockFactory lockFactory, ILogger<SmtTransferEngineRuntime> logger, string engineId)
 	{
 		_engines = engines;
 		_builds = builds;
@@ -47,9 +48,10 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 		_logger = logger;
 		_jobClient = jobClient;
 		_dataFileService = dataFileService;
+		_lockFactory = lockFactory;
 		_engineId = engineId;
 		_trainedSegments = new List<SegmentPair>();
-		_lock = new AsyncReaderWriterLock();
+		_lock = _lockFactory.Create($"engine_{_engineId}");
 		_smtModel = new Lazy<IInteractiveTranslationModel>(CreateSmtModel);
 		_enginePool = new ObjectPool<HybridTranslationEngine>(MaxEnginePoolSize, CreateEngine);
 		_truecaser = new AsyncLazy<ITruecaser>(CreateTruecaserAsync);
@@ -65,7 +67,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 	{
 		CheckDisposed();
 
-		using (await _lock.WriterLockAsync())
+		await using (await _lock.WriterLockAsync())
 		{
 			_smtModelFactory.InitNew(_engineId);
 			_transferEngineFactory.InitNew(_engineId);
@@ -78,7 +80,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 
 		IReadOnlyList<string> preprocSegment = TokenProcessors.Lowercase.Process(segment);
 
-		using (await _lock.ReaderLockAsync())
+		await using (await _lock.ReaderLockAsync())
 		using (ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync())
 		{
 			TranslationResult result = item.Object.Translate(preprocSegment);
@@ -94,7 +96,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 
 		IReadOnlyList<string> preprocSegment = TokenProcessors.Lowercase.Process(segment);
 
-		using (await _lock.ReaderLockAsync())
+		await using (await _lock.ReaderLockAsync())
 		using (ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync())
 		{
 			ITruecaser truecaser = await _truecaser;
@@ -112,7 +114,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 
 		IReadOnlyList<string> preprocSegment = TokenProcessors.Lowercase.Process(segment);
 
-		using (await _lock.ReaderLockAsync())
+		await using (await _lock.ReaderLockAsync())
 		using (ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync())
 		{
 			WordGraph result = item.Object.GetWordGraph(preprocSegment);
@@ -130,7 +132,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 		IReadOnlyList<string> preprocSourceSegment = TokenProcessors.Lowercase.Process(sourceSegment);
 		IReadOnlyList<string> preprocTargetSegment = TokenProcessors.Lowercase.Process(targetSegment);
 
-		using (await _lock.WriterLockAsync())
+		await using (await _lock.WriterLockAsync())
 		using (ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync())
 		{
 			item.Object.TrainSegment(preprocSourceSegment, preprocTargetSegment);
@@ -154,7 +156,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 	{
 		CheckDisposed();
 
-		using (await _lock.WriterLockAsync())
+		await using (await _lock.WriterLockAsync())
 		{
 			// cancel the existing build before starting a new build
 			await CancelBuildInternalAsync();
@@ -172,7 +174,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 	{
 		CheckDisposed();
 
-		using (await _lock.WriterLockAsync())
+		await using (await _lock.WriterLockAsync())
 			await CancelBuildInternalAsync();
 	}
 
@@ -180,7 +182,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 	{
 		CheckDisposed();
 
-		using (await _lock.WriterLockAsync())
+		await using (await _lock.WriterLockAsync())
 		{
 			if (!IsLoaded || IsBuilding)
 				return;
@@ -196,7 +198,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 	{
 		CheckDisposed();
 
-		using (await _lock.WriterLockAsync())
+		await using (await _lock.WriterLockAsync())
 		{
 			// ensure that there is no build running before unloading
 			await CancelBuildInternalAsync();
@@ -207,6 +209,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 			_transferEngineFactory.Cleanup(_engineId);
 			_truecaserFactory.Cleanup(_engineId);
 		}
+		await _lockFactory.DeleteAsync($"engine_{_engineId}");
 	}
 
 	private async Task CancelBuildInternalAsync()
@@ -290,7 +293,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 		{
 			var stopwatch = new Stopwatch();
 			ITruecaser truecaser = await _truecaser;
-			using (await _lock.WriterLockAsync(jobToken.ShutdownToken))
+			await using (await _lock.WriterLockAsync(cancellationToken: jobToken.ShutdownToken))
 			{
 				build = await _builds.GetByEngineIdAsync(_engineId);
 				// if the build is not found, then there are no pending or active builds for this engine, so exit
@@ -330,7 +333,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 			modelTrainer.Train(progress, token.ThrowIfCancellationRequested);
 			truecaseTrainer.Train(checkCanceled: token.ThrowIfCancellationRequested);
 
-			using (await _lock.WriterLockAsync(token))
+			await using (await _lock.WriterLockAsync(cancellationToken: token))
 			using (ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync(token))
 			{
 				token.ThrowIfCancellationRequested();

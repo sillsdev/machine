@@ -73,6 +73,8 @@ public static class IMachineBuilderExtensions
 		builder.Services.AddSingleton<IRepository<Engine>, MemoryRepository<Engine>>();
 		builder.Services.AddSingleton<IRepository<Build>, MemoryRepository<Build>>();
 		builder.Services.AddSingleton<IRepository<DataFile>, MemoryRepository<DataFile>>();
+
+		builder.Services.AddSingleton<IDistributedReaderWriterLockFactory, MemoryDistributedReaderWriterLockFactory>();
 		return builder;
 	}
 
@@ -88,13 +90,16 @@ public static class IMachineBuilderExtensions
 		builder.Services.AddSingleton<IMongoClient>(sp => new MongoClient(mongoUrl));
 		builder.Services.AddSingleton(sp => sp.GetService<IMongoClient>()!.GetDatabase(mongoUrl.DatabaseName));
 
+
 		builder.Services.AddMongoRepository<Engine>("engines");
 		builder.Services.AddMongoRepository<Build>("builds", indexSetup: indexes =>
 			indexes.CreateOrUpdate(new CreateIndexModel<Build>(
 				Builders<Build>.IndexKeys.Ascending(b => b.EngineRef))));
-		builder.Services.AddMongoRepository<DataFile>("data_files", indexSetup: indexes =>
+		builder.Services.AddMongoRepository<DataFile>("files", indexSetup: indexes =>
 			indexes.CreateOrUpdate(new CreateIndexModel<DataFile>(
 				Builders<DataFile>.IndexKeys.Ascending(b => b.EngineRef))));
+
+		builder.Services.AddSingleton<IDistributedReaderWriterLockFactory, MongoDistributedReaderWriterLockFactory>();
 
 		return builder;
 	}

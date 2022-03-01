@@ -15,7 +15,8 @@ namespace SIL.Machine.Threading
 
 		private static async Task<TResult> Delay<TResult>(TimeSpan timeout, CancellationToken ct)
 		{
-			await Task.Delay(timeout, ct);
+			if (timeout != System.Threading.Timeout.InfiniteTimeSpan)
+				await Task.Delay(timeout, ct);
 			return default;
 		}
 	}
