@@ -33,13 +33,14 @@ public class EnginesController : Controller
 	/// Gets all engines.
 	/// </summary>
 	/// <response code="200">The engines.</response>
+	[Authorize(Scopes.ReadEngines)]
 	[HttpGet]
 	public async Task<IEnumerable<EngineDto>> GetAllAsync()
 	{
 		var engines = new List<EngineDto>();
 		foreach (Engine engine in await _engines.GetAllAsync())
 		{
-			if (await AuthorizeAsync(engine, Operations.Read))
+			if (await AuthorizeIsOwnerAsync(engine))
 				engines.Add(CreateDto(engine));
 		}
 		return engines;
@@ -50,13 +51,14 @@ public class EnginesController : Controller
 	/// </summary>
 	/// <param name="id">The engine id.</param>
 	/// <response code="200">The engine.</response>
+	[Authorize(Scopes.ReadEngines)]
 	[HttpGet("{id}")]
 	public async Task<ActionResult<EngineDto>> GetAsync(string id)
 	{
 		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
-		if (!await AuthorizeAsync(engine, Operations.Read))
+		if (!await AuthorizeIsOwnerAsync(engine))
 			return Forbid();
 
 		return Ok(CreateDto(engine));
@@ -67,22 +69,19 @@ public class EnginesController : Controller
 	/// </summary>
 	/// <param name="engine">The new engine properties.</param>
 	/// <response code="201">The engine was created successfully.</response>
+	[Authorize(Scopes.CreateEngines)]
 	[HttpPost]
 	[ProducesResponseType(StatusCodes.Status201Created)]
 	public async Task<ActionResult<EngineDto>> CreateAsync([FromBody] NewEngineDto engine)
 	{
-		if (User.Identity?.Name is null)
-			return Unauthorized();
 		var newEngine = new Engine
 		{
 			Id = engine.Id,
 			SourceLanguageTag = engine.SourceLanguageTag,
 			TargetLanguageTag = engine.TargetLanguageTag,
 			Type = engine.Type,
-			Owner = User.Identity.Name
+			Owner = User.Identity!.Name!
 		};
-		if (!await AuthorizeAsync(newEngine, Operations.Create))
-			return Forbid();
 
 		if (!await _engineService.CreateAsync(newEngine))
 			return Conflict();
@@ -94,13 +93,14 @@ public class EnginesController : Controller
 	/// </summary>
 	/// <param name="id">The engine id.</param>
 	/// <response code="200">The engine was successfully deleted.</response>
+	[Authorize(Scopes.DeleteEngines)]
 	[HttpDelete("{id}")]
 	public async Task<ActionResult> DeleteAsync(string id)
 	{
 		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
-		if (!await AuthorizeAsync(engine, Operations.Delete))
+		if (!await AuthorizeIsOwnerAsync(engine))
 			return Forbid();
 
 		if (!await _engineService.DeleteAsync(id))
@@ -114,13 +114,14 @@ public class EnginesController : Controller
 	/// <param name="id">The engine id.</param>
 	/// <param name="segment">The tokenized source segment.</param>
 	/// <response code="200">The translation result.</response>
+	[Authorize(Scopes.ReadEngines)]
 	[HttpPost("{id}/translate")]
 	public async Task<ActionResult<TranslationResultDto>> TranslateAsync(string id, [FromBody] string[] segment)
 	{
 		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
-		if (!await AuthorizeAsync(engine, Operations.Read))
+		if (!await AuthorizeIsOwnerAsync(engine))
 			return Forbid();
 
 		TranslationResult? result = await _engineService.TranslateAsync(engine.Id, segment);
@@ -136,6 +137,7 @@ public class EnginesController : Controller
 	/// <param name="n">The number of translations.</param>
 	/// <param name="segment">The tokenized source segment.</param>
 	/// <response code="200">The translation results.</response>
+	[Authorize(Scopes.ReadEngines)]
 	[HttpPost("{id}/translate/{n}")]
 	public async Task<ActionResult<IEnumerable<TranslationResultDto>>> TranslateAsync(string id, int n,
 		[FromBody] string[] segment)
@@ -143,7 +145,7 @@ public class EnginesController : Controller
 		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
-		if (!await AuthorizeAsync(engine, Operations.Read))
+		if (!await AuthorizeIsOwnerAsync(engine))
 			return Forbid();
 
 		IEnumerable<TranslationResult>? results = await _engineService.TranslateAsync(engine.Id, n, segment);
@@ -158,13 +160,14 @@ public class EnginesController : Controller
 	/// <param name="id">The engine id.</param>
 	/// <param name="segment">The tokenized source segment.</param>
 	/// <response code="200">The word graph.</response>
+	[Authorize(Scopes.ReadEngines)]
 	[HttpPost("{id}/get-word-graph")]
 	public async Task<ActionResult<WordGraphDto>> InteractiveTranslateAsync(string id, [FromBody] string[] segment)
 	{
 		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
-		if (!await AuthorizeAsync(engine, Operations.Read))
+		if (!await AuthorizeIsOwnerAsync(engine))
 			return Forbid();
 
 		WordGraph? result = await _engineService.GetWordGraphAsync(engine.Id, segment);
@@ -179,6 +182,7 @@ public class EnginesController : Controller
 	/// <param name="id">The engine id.</param>
 	/// <param name="segmentPair">The tokenized segment pair.</param>
 	/// <response code="200">The engine was trained successfully.</response>
+	[Authorize(Scopes.UpdateEngines)]
 	[HttpPost("{id}/train-segment")]
 	[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
 	public async Task<ActionResult> TrainSegmentAsync(string id, [FromBody] SegmentPairDto segmentPair)
@@ -186,7 +190,7 @@ public class EnginesController : Controller
 		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
-		if (!await AuthorizeAsync(engine, Operations.Update))
+		if (!await AuthorizeIsOwnerAsync(engine))
 			return Forbid();
 
 		if (!await _engineService.TrainSegmentAsync(engine.Id, segmentPair.SourceSegment,
@@ -202,13 +206,14 @@ public class EnginesController : Controller
 	/// </summary>
 	/// <param name="id">The engine id.</param>
 	/// <response code="200">The build jobs.</response>
+	[Authorize(Scopes.ReadEngines)]
 	[HttpGet("{id}/builds")]
 	public async Task<ActionResult<IEnumerable<BuildDto>>> GetAllBuildsAsync(string id)
 	{
 		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
-		if (!await AuthorizeAsync(engine, Operations.Read))
+		if (!await AuthorizeIsOwnerAsync(engine))
 			return Forbid();
 
 		return Ok((await _builds.GetAllAsync()).Select(CreateDto));
@@ -222,6 +227,7 @@ public class EnginesController : Controller
 	/// <param name="minRevision">The minimum revision.</param>
 	/// <param name="cancellationToken">The cancellation token.</param>
 	/// <response code="200">The build job.</response>
+	[Authorize(Scopes.ReadEngines)]
 	[HttpGet("{id}/builds/{buildId}")]
 	public async Task<ActionResult<BuildDto>> GetBuildAsync(string id, string buildId, [FromQuery] long? minRevision,
 		CancellationToken cancellationToken)
@@ -229,7 +235,7 @@ public class EnginesController : Controller
 		Engine? engine = await _engines.GetAsync(id, cancellationToken);
 		if (engine == null)
 			return NotFound();
-		if (!await AuthorizeAsync(engine, Operations.Read))
+		if (!await AuthorizeIsOwnerAsync(engine))
 			return Forbid();
 
 		if (minRevision != null)
@@ -258,6 +264,7 @@ public class EnginesController : Controller
 	/// </summary>
 	/// <param name="id">The engine id.</param>
 	/// <response code="201">The build job was started successfully.</response>
+	[Authorize(Scopes.UpdateEngines)]
 	[HttpPost("{id}/builds")]
 	[ProducesResponseType(StatusCodes.Status201Created)]
 	public async Task<ActionResult<BuildDto>> CreateBuildAsync(string id)
@@ -265,7 +272,7 @@ public class EnginesController : Controller
 		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
-		if (!await AuthorizeAsync(engine, Operations.Update))
+		if (!await AuthorizeIsOwnerAsync(engine))
 			return Forbid();
 
 		Build? build = await _engineService.StartBuildAsync(id);
@@ -282,6 +289,7 @@ public class EnginesController : Controller
 	/// <param name="minRevision">The minimum revision.</param>
 	/// <param name="ct">The cancellation token.</param>
 	/// <response code="200">The build job.</response>
+	[Authorize(Scopes.ReadEngines)]
 	[HttpGet("{id}/current-build")]
 	public async Task<ActionResult<BuildDto>> GetCurrentBuildAsync(string id, [FromQuery] long? minRevision,
 		CancellationToken ct)
@@ -289,7 +297,7 @@ public class EnginesController : Controller
 		Engine? engine = await _engines.GetAsync(id, ct);
 		if (engine == null)
 			return NotFound();
-		if (!await AuthorizeAsync(engine, Operations.Read))
+		if (!await AuthorizeIsOwnerAsync(engine))
 			return Forbid();
 
 		if (minRevision != null)
@@ -318,6 +326,7 @@ public class EnginesController : Controller
 	/// </summary>
 	/// <param name="id">The engine id.</param>
 	/// <response code="200">The build job was cancelled successfully.</response>
+	[Authorize(Scopes.UpdateEngines)]
 	[HttpPost("{id}/current-build/cancel")]
 	[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
 	public async Task<ActionResult> CancelBuildAsync(string id)
@@ -325,7 +334,7 @@ public class EnginesController : Controller
 		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
-		if (!await AuthorizeAsync(engine, Operations.Update))
+		if (!await AuthorizeIsOwnerAsync(engine))
 			return Forbid();
 
 		await _engineService.CancelBuildAsync(id);
@@ -343,6 +352,7 @@ public class EnginesController : Controller
 	/// <param name="corpusKey">The parallel corpus key that is used to associate the source and target data files.</param>
 	/// <param name="file">The data file.</param>
 	/// <response code="200">The data file was uploaded successfully.</response>
+	[Authorize(Scopes.UpdateEngines)]
 	[HttpPost("{id}/files")]
 	[RequestSizeLimit(100_000_000)]
 	[ProducesResponseType(StatusCodes.Status201Created)]
@@ -354,7 +364,7 @@ public class EnginesController : Controller
 		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
-		if (!await AuthorizeAsync(engine, Operations.Update))
+		if (!await AuthorizeIsOwnerAsync(engine))
 			return Forbid();
 
 		var dataFile = new DataFile
@@ -379,13 +389,14 @@ public class EnginesController : Controller
 	/// </summary>
 	/// <param name="id">The engine id.</param>
 	/// <response code="200">The data files.</response>
+	[Authorize(Scopes.ReadEngines)]
 	[HttpGet("{id}/files")]
 	public async Task<ActionResult<IEnumerable<DataFileDto>>> GetAllDataFilesAsync(string id)
 	{
 		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
-		if (!await AuthorizeAsync(engine, Operations.Read))
+		if (!await AuthorizeIsOwnerAsync(engine))
 			return Forbid();
 
 		return Ok((await _dataFiles.GetAllAsync()).Select(CreateDto));
@@ -397,13 +408,14 @@ public class EnginesController : Controller
 	/// <param name="id">The engine id.</param>
 	/// <param name="fileId">The data file id.</param>
 	/// <response code="200">The data file.</response>
+	[Authorize(Scopes.ReadEngines)]
 	[HttpGet("{id}/files/{fileId}")]
 	public async Task<ActionResult<DataFileDto>> GetDataFileAsync(string id, string fileId)
 	{
 		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
-		if (!await AuthorizeAsync(engine, Operations.Read))
+		if (!await AuthorizeIsOwnerAsync(engine))
 			return Forbid();
 
 		DataFile? dataFile = await _dataFiles.GetAsync(fileId);
@@ -419,6 +431,7 @@ public class EnginesController : Controller
 	/// <param name="id">The engine id.</param>
 	/// <param name="fileId">The data file id.</param>
 	/// <response code="200">The data file was deleted successfully.</response>
+	[Authorize(Scopes.UpdateEngines)]
 	[HttpDelete("{id}/files/{fileId}")]
 	[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
 	public async Task<ActionResult> DeleteDataFileAsync(string id, string fileId)
@@ -426,7 +439,7 @@ public class EnginesController : Controller
 		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
-		if (!await AuthorizeAsync(engine, Operations.Update))
+		if (!await AuthorizeIsOwnerAsync(engine))
 			return Forbid();
 
 		if (!await _dataFileService.DeleteAsync(fileId))
@@ -440,6 +453,7 @@ public class EnginesController : Controller
 	/// </summary>
 	/// <param name="id">The engine id.</param>
 	/// <response code="200">All data files were deleted successfully.</response>
+	[Authorize(Scopes.UpdateEngines)]
 	[HttpDelete("{id}/files")]
 	[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
 	public async Task<ActionResult> DeleteAllDataFilesAsync(string id)
@@ -447,16 +461,16 @@ public class EnginesController : Controller
 		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
 			return NotFound();
-		if (!await AuthorizeAsync(engine, Operations.Update))
+		if (!await AuthorizeIsOwnerAsync(engine))
 			return Forbid();
 
 		await _dataFileService.DeleteAllByEngineIdAsync(id);
 		return Ok();
 	}
 
-	private async Task<bool> AuthorizeAsync(Engine engine, OperationAuthorizationRequirement operation)
+	private async Task<bool> AuthorizeIsOwnerAsync(Engine engine)
 	{
-		AuthorizationResult result = await _authService.AuthorizeAsync(User, engine, operation);
+		AuthorizationResult result = await _authService.AuthorizeAsync(User, engine, "IsOwner");
 		return result.Succeeded;
 	}
 

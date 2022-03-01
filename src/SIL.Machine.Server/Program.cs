@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using Hangfire;
 using Hangfire.Mongo;
@@ -12,6 +11,7 @@ using NSwag;
 using NSwag.AspNetCore;
 using NSwag.Generation.Processors.Security;
 using SIL.Machine.Server;
+using SIL.Machine.WebApi.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,13 +39,15 @@ builder.Services.AddControllers()
 		o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 		o.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 	});
+
+string authority = $"https://{builder.Configuration["Auth:Domain"]}/";
 builder.Services.AddAuthentication(o =>
 {
 	o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
 	o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(o =>
 {
-	o.Authority = $"https://{builder.Configuration["Auth:Domain"]}/";
+	o.Authority = authority;
 	o.Audience = builder.Configuration["Auth:Audience"];
 	o.TokenValidationParameters = new TokenValidationParameters
 	{
@@ -53,11 +55,18 @@ builder.Services.AddAuthentication(o =>
 	};
 });
 
-builder.Services.AddMachine(o => o
-	.AuthenticationSchemes = new[] { JwtBearerDefaults.AuthenticationScheme })
+builder.Services.AddAuthorization(o =>
+{
+	foreach (string scope in Scopes.All)
+		o.AddPolicy(scope, policy => policy.Requirements.Add(new HasScopeRequirement(scope, authority)));
+	o.AddPolicy("IsOwner", policy => policy.Requirements.Add(new IsOwnerRequirement()));
+});
+builder.Services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, IsEngineOwnerHandler>();
+
+builder.Services.AddMachine()
 	.AddMongoDataAccess(builder.Configuration.GetConnectionString("Mongo"))
 	.AddEngineOptions(builder.Configuration.GetSection("Engine"));
-builder.Services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
 
 builder.Services.AddSwaggerDocument(doc =>
 {
@@ -73,15 +82,8 @@ builder.Services.AddSwaggerDocument(doc =>
 		{
 			ClientCredentials = new OpenApiOAuthFlow
 			{
-				Scopes = new Dictionary<string, string>
-				{
-					{ "read:engines", "Read engine metadata and generate translations" },
-					{ "update:engines", "Train engines and add/delete data files" },
-					{ "create:engines", "Create engines" },
-					{ "delete:engines", "Delete engines" }
-				},
-				AuthorizationUrl = $"https://{builder.Configuration["Auth:Domain"]}/authorize",
-				TokenUrl = $"https://{builder.Configuration["Auth:Domain"]}/oauth/token"
+				AuthorizationUrl = $"{authority}authorize",
+				TokenUrl = $"{authority}oauth/token"
 			}
 		},
 
@@ -98,7 +100,6 @@ app.UseSwaggerUi3(settings =>
 	settings.OAuth2Client = new OAuth2ClientSettings
 	{
 		AppName = "Auth0 M2M App",
-		Scopes = { "read:engines", "update:engines", "create:engines", "delete:engines" },
 		AdditionalQueryStringParameters =
 		{
 			{ "audience", builder.Configuration["Auth:Audience"] }
