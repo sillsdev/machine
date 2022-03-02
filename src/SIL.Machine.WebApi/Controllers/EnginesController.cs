@@ -76,7 +76,6 @@ public class EnginesController : Controller
 	{
 		var newEngine = new Engine
 		{
-			Id = engine.Id,
 			SourceLanguageTag = engine.SourceLanguageTag,
 			TargetLanguageTag = engine.TargetLanguageTag,
 			Type = engine.Type,
@@ -240,8 +239,9 @@ public class EnginesController : Controller
 
 		if (minRevision != null)
 		{
-			EntityChange<Build> change = await _builds.GetNewerRevisionAsync(buildId, minRevision.Value,
-				cancellationToken).Timeout(_engineOptions.Value.BuildLongPollTimeout, cancellationToken);
+			var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+			cts.CancelAfter(_engineOptions.Value.BuildLongPollTimeout);
+			EntityChange<Build> change = await _builds.GetNewerRevisionAsync(buildId, minRevision.Value, cts.Token);
 			return change.Type switch
 			{
 				EntityChangeType.None => StatusCode(StatusCodes.Status408RequestTimeout),
@@ -287,14 +287,14 @@ public class EnginesController : Controller
 	/// </summary>
 	/// <param name="id">The engine id.</param>
 	/// <param name="minRevision">The minimum revision.</param>
-	/// <param name="ct">The cancellation token.</param>
+	/// <param name="cancellationToken">The cancellation token.</param>
 	/// <response code="200">The build job.</response>
 	[Authorize(Scopes.ReadEngines)]
 	[HttpGet("{id}/current-build")]
 	public async Task<ActionResult<BuildDto>> GetCurrentBuildAsync(string id, [FromQuery] long? minRevision,
-		CancellationToken ct)
+		CancellationToken cancellationToken)
 	{
-		Engine? engine = await _engines.GetAsync(id, ct);
+		Engine? engine = await _engines.GetAsync(id, cancellationToken);
 		if (engine == null)
 			return NotFound();
 		if (!await AuthorizeIsOwnerAsync(engine))
@@ -302,8 +302,10 @@ public class EnginesController : Controller
 
 		if (minRevision != null)
 		{
-			EntityChange<Build> change = await _builds.GetNewerRevisionByEngineIdAsync(id, minRevision.Value, ct)
-				.Timeout(_engineOptions.Value.BuildLongPollTimeout, ct);
+			var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+			cts.CancelAfter(_engineOptions.Value.BuildLongPollTimeout);
+			EntityChange<Build> change = await _builds.GetNewerRevisionByEngineIdAsync(id, minRevision.Value,
+				cts.Token);
 			return change.Type switch
 			{
 				EntityChangeType.None => StatusCode(StatusCodes.Status408RequestTimeout),
@@ -313,7 +315,7 @@ public class EnginesController : Controller
 		}
 		else
 		{
-			Build? build = await _builds.GetByEngineIdAsync(id, ct);
+			Build? build = await _builds.GetByEngineIdAsync(id, cancellationToken);
 			if (build == null)
 				return NoContent();
 

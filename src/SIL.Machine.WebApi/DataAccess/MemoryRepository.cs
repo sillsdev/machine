@@ -12,7 +12,7 @@ public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
 	private readonly Func<T, object>[] _uniqueKeySelectors;
 	private readonly HashSet<object>[] _uniqueKeys;
 	private readonly AsyncLock _lock;
-	private readonly Dictionary<Subscription<T>, Func<T, bool>> _subscriptions;
+	private readonly Dictionary<MemorySubscription<T>, Func<T, bool>> _subscriptions;
 
 	public MemoryRepository(IEnumerable<T> entities)
 		: this(null, entities)
@@ -30,7 +30,7 @@ public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
 		_entities = new Dictionary<string, string>();
 		if (entities != null)
 			Add(entities);
-		_subscriptions = new Dictionary<Subscription<T>, Func<T, bool>>();
+		_subscriptions = new Dictionary<MemorySubscription<T>, Func<T, bool>>();
 	}
 
 	public void Init() { }
@@ -113,7 +113,8 @@ public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
 
 	public async Task InsertAsync(T entity, CancellationToken cancellationToken = default)
 	{
-		var allSubscriptions = new List<Subscription<T>>();
+		entity.Revision = 1;
+		var allSubscriptions = new List<MemorySubscription<T>>();
 		using (await _lock.LockAsync(cancellationToken))
 		{
 			if (string.IsNullOrEmpty(entity.Id))
@@ -128,32 +129,10 @@ public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
 		SendToSubscribers(allSubscriptions, EntityChangeType.Insert, entity);
 	}
 
-	public async Task<bool> ReplaceAsync(T entity, bool upsert = false, CancellationToken cancellationToken = default)
-	{
-		var allSubscriptions = new List<Subscription<T>>();
-		using (await _lock.LockAsync(cancellationToken))
-		{
-			if (string.IsNullOrEmpty(entity.Id))
-				entity.Id = ObjectId.GenerateNewId().ToString();
-
-			if (_entities.ContainsKey(entity.Id) || upsert)
-			{
-				Replace(entity);
-				GetSubscriptions(entity, allSubscriptions);
-			}
-			else
-			{
-				return false;
-			}
-		}
-		SendToSubscribers(allSubscriptions, EntityChangeType.Update, entity);
-		return true;
-	}
-
 	public async Task<T?> UpdateAsync(Expression<Func<T, bool>> filter, Action<IUpdateBuilder<T>> update,
 		bool upsert = false, CancellationToken cancellationToken = default)
 	{
-		var allSubscriptions = new List<Subscription<T>>();
+		var allSubscriptions = new List<MemorySubscription<T>>();
 		T? entity;
 		Func<T, bool> filterFunc = filter.Compile();
 		using (await _lock.LockAsync(cancellationToken))
@@ -176,14 +155,11 @@ public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
 				if (isInsert)
 				{
 					entity = (T)Activator.CreateInstance(typeof(T))!;
-					string id = ObjectId.GenerateNewId().ToString();
-					if (filter.Body is BinaryExpression binaryExpr)
-					{
-						object? value = ExpressionHelper.FindConstantValue(binaryExpr.Right);
-						if (value is string str)
-							id = str;
-					}
-					entity.Id = id;
+					string? id = ExpressionHelper.FindEqualsConstantValue<T, string>(e => e.Id, filter.Body);
+					if (id is not null && Contains(id))
+						throw new DuplicateKeyException();
+					entity.Id = id ?? ObjectId.GenerateNewId().ToString();
+					entity.Revision = 0;
 				}
 				else
 				{
@@ -192,6 +168,7 @@ public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
 				Debug.Assert(entity != null);
 				var builder = new MemoryUpdateBuilder<T>(filter, entity, isInsert);
 				update(builder);
+				entity.Revision++;
 
 				if (CheckDuplicateKeys(entity, original))
 					throw new DuplicateKeyException();
@@ -206,7 +183,7 @@ public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
 
 	public async Task<T?> DeleteAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
 	{
-		var allSubscriptions = new List<Subscription<T>>();
+		var allSubscriptions = new List<MemorySubscription<T>>();
 		T? entity;
 		using (await _lock.LockAsync(cancellationToken))
 		{
@@ -233,19 +210,19 @@ public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
 		}
 	}
 
-	public async Task<Subscription<T>> SubscribeAsync(Expression<Func<T, bool>> filter,
+	public async Task<ISubscription<T>> SubscribeAsync(Expression<Func<T, bool>> filter,
 		CancellationToken cancellationToken = default)
 	{
 		using (await _lock.LockAsync(cancellationToken))
 		{
 			T? initialEntity = Entities.AsQueryable().FirstOrDefault(filter);
-			var subscription = new Subscription<T>(initialEntity, RemoveSubscription);
+			var subscription = new MemorySubscription<T>(initialEntity, RemoveSubscription);
 			_subscriptions[subscription] = filter.Compile();
 			return subscription;
 		}
 	}
 
-	private void RemoveSubscription(Subscription<T> subscription)
+	private void RemoveSubscription(MemorySubscription<T> subscription)
 	{
 		using (_lock.Lock())
 		{
@@ -253,18 +230,18 @@ public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
 		}
 	}
 
-	private void GetSubscriptions(T entity, IList<Subscription<T>> allSubscriptions)
+	private void GetSubscriptions(T entity, IList<MemorySubscription<T>> allSubscriptions)
 	{
-		foreach (KeyValuePair<Subscription<T>, Func<T, bool>> kvp in _subscriptions)
+		foreach (KeyValuePair<MemorySubscription<T>, Func<T, bool>> kvp in _subscriptions)
 		{
 			if (kvp.Value(entity))
 				allSubscriptions.Add(kvp.Key);
 		}
 	}
 
-	private static void SendToSubscribers(IList<Subscription<T>> allSubscriptions, EntityChangeType type, T? entity)
+	private static void SendToSubscribers(IList<MemorySubscription<T>> allSubscriptions, EntityChangeType type, T? entity)
 	{
-		foreach (Subscription<T> subscription in allSubscriptions)
+		foreach (MemorySubscription<T> subscription in allSubscriptions)
 			subscription.HandleChange(new EntityChange<T>(type, entity?.Clone()));
 	}
 

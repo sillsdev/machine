@@ -51,7 +51,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 		_lockFactory = lockFactory;
 		_engineId = engineId;
 		_trainedSegments = new List<SegmentPair>();
-		_lock = _lockFactory.Create($"engine_{_engineId}");
+		_lock = _lockFactory.Create(_engineId);
 		_smtModel = new Lazy<IInteractiveTranslationModel>(CreateSmtModel);
 		_enginePool = new ObjectPool<HybridTranslationEngine>(MaxEnginePoolSize, CreateEngine);
 		_truecaser = new AsyncLazy<ITruecaser>(CreateTruecaserAsync);
@@ -209,7 +209,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 			_transferEngineFactory.Cleanup(_engineId);
 			_truecaserFactory.Cleanup(_engineId);
 		}
-		await _lockFactory.DeleteAsync($"engine_{_engineId}");
+		await _lockFactory.DeleteAsync(_engineId);
 	}
 
 	private async Task CancelBuildInternalAsync()
@@ -229,7 +229,6 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 			// the job will still run, but it will exit before performing the build
 			// this should not happen, but check for it just in case
 			await _builds.UpdateAsync(build, u => u
-				.Inc(b => b.Revision)
 				.Set(b => b.State, BuildState.Canceled)
 				.Set(b => b.DateFinished, DateTime.UtcNow));
 		}
@@ -307,7 +306,6 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 				if (build.State == BuildState.Pending)
 				{
 					build = (await _builds.UpdateAsync(build, u => u
-						.Inc(b => b.Revision)
 						.Set(b => b.State, BuildState.Active)))!;
 				}
 
@@ -353,7 +351,6 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 			}
 
 			build = (await _builds.UpdateAsync(build, u => u
-				.Inc(b => b.Revision)
 				.Set(b => b.State, BuildState.Completed)
 				.Set(b => b.DateFinished, DateTime.UtcNow)))!;
 			stopwatch.Stop();
@@ -369,7 +366,6 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 				{
 					// switch state back to pending
 					await _builds.UpdateAsync(build, u => u
-						.Inc(b => b.Revision)
 						.Set(b => b.Message, null)
 						.Set(b => b.PercentCompleted, 0)
 						.Set(b => b.State, BuildState.Pending));
@@ -377,7 +373,6 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 				}
 
 				build = (await _builds.UpdateAsync(build, u => u
-					.Inc(b => b.Revision)
 					.Set(b => b.State, BuildState.Canceled)
 					.Set(b => b.DateFinished, DateTime.UtcNow)))!;
 				_logger.LogInformation("Build canceled ({0})", _engineId);
@@ -389,7 +384,6 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 			if (build != null)
 			{
 				build = (await _builds.UpdateAsync(build, u => u
-					.Inc(b => b.Revision)
 					.Set(b => b.State, BuildState.Faulted)
 					.Set(b => b.Message, e.Message)
 					.Set(b => b.DateFinished, DateTime.UtcNow)))!;

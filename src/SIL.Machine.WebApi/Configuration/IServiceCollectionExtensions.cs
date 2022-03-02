@@ -9,6 +9,7 @@ public static class IServiceCollectionExtensions
 		services.AddSingleton<IEngineRuntimeFactory, SmtTransferEngineRuntime.Factory>();
 		services.AddSingleton<IBuildHandler, BuildHandler>();
 		services.AddSingleton<IDataFileService, DataFileService>();
+		services.AddSingleton<IDistributedReaderWriterLockFactory, DistributedReaderWriterLockFactory>();
 
 		services.Configure<MvcOptions>(o =>
 		{

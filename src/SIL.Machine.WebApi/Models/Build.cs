@@ -18,7 +18,7 @@ public class Build : IEntity<Build>
 	}
 
 	public string Id { get; set; } = default!;
-	public int Revision { get; set; } = 0;
+	public int Revision { get; set; } = 1;
 	public string EngineRef { get; set; } = default!;
 	public double PercentCompleted { get; set; } = default;
 	public string? Message { get; set; }

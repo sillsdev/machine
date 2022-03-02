@@ -13,10 +13,10 @@ public class DataAccessExtensionsTests
 			var build = new Build { EngineRef = "engine1", PercentCompleted = 0.1 };
 			await buildRepo.InsertAsync(build);
 		});
-		EntityChange<Build> change = await buildRepo.GetNewerRevisionByEngineIdAsync("engine1", 0);
+		EntityChange<Build> change = await buildRepo.GetNewerRevisionByEngineIdAsync("engine1", 1);
 		await task;
 		Assert.That(change.Type, Is.EqualTo(EntityChangeType.Insert));
-		Assert.That(change.Entity!.Revision, Is.EqualTo(0));
+		Assert.That(change.Entity!.Revision, Is.EqualTo(1));
 		Assert.That(change.Entity.PercentCompleted, Is.EqualTo(0.1));
 	}
 
@@ -30,13 +30,12 @@ public class DataAccessExtensionsTests
 		{
 			await Task.Delay(10);
 			await buildRepo.UpdateAsync(build, u => u
-				.Inc(b => b.Revision)
 				.Set(b => b.PercentCompleted, 0.1));
 		});
-		EntityChange<Build> change = await buildRepo.GetNewerRevisionAsync(build.Id, 1);
+		EntityChange<Build> change = await buildRepo.GetNewerRevisionAsync(build.Id, 2);
 		await task;
 		Assert.That(change.Type, Is.EqualTo(EntityChangeType.Update));
-		Assert.That(change.Entity!.Revision, Is.EqualTo(1));
+		Assert.That(change.Entity!.Revision, Is.EqualTo(2));
 		Assert.That(change.Entity.PercentCompleted, Is.EqualTo(0.1));
 	}
 
@@ -51,7 +50,7 @@ public class DataAccessExtensionsTests
 			await Task.Delay(10);
 			await buildRepo.DeleteAsync(build);
 		});
-		EntityChange<Build> change = await buildRepo.GetNewerRevisionAsync(build.Id, 1);
+		EntityChange<Build> change = await buildRepo.GetNewerRevisionAsync(build.Id, 2);
 		await task;
 		Assert.That(change.Type, Is.EqualTo(EntityChangeType.Delete));
 	}
@@ -60,7 +59,7 @@ public class DataAccessExtensionsTests
 	public async Task GetNewerRevisionAsync_DoesNotExist()
 	{
 		var buildRepo = new MemoryRepository<Build>();
-		EntityChange<Build> change = await buildRepo.GetNewerRevisionAsync("build1", 1);
+		EntityChange<Build> change = await buildRepo.GetNewerRevisionAsync("build1", 2);
 		Assert.That(change.Type, Is.EqualTo(EntityChangeType.Delete));
 	}
 }

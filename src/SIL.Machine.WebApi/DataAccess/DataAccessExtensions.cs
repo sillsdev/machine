@@ -77,15 +77,15 @@ public static class DataAccessExtensions
 	public static async Task<EntityChange<Build>> GetNewerRevisionAsync(this IRepository<Build> builds,
 		Expression<Func<Build, bool>> filter, long minRevision, CancellationToken cancellationToken = default)
 	{
-		using Subscription<Build> subscription = await builds.SubscribeAsync(filter, cancellationToken);
+		using ISubscription<Build> subscription = await builds.SubscribeAsync(filter, cancellationToken);
 		EntityChange<Build> curChange = subscription.Change;
-		if (curChange.Type == EntityChangeType.Delete && minRevision > 0)
+		if (curChange.Type == EntityChangeType.Delete && minRevision > 1)
 			return curChange;
 		while (true)
 		{
 			if (curChange.Type != EntityChangeType.Delete && minRevision <= curChange.Entity!.Revision)
 				return curChange;
-			await subscription.WaitForUpdateAsync(cancellationToken);
+			await subscription.WaitForUpdateAsync(cancellationToken: cancellationToken);
 			curChange = subscription.Change;
 			if (curChange.Type == EntityChangeType.Delete)
 				return curChange;

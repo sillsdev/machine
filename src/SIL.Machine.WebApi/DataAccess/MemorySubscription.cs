@@ -1,11 +1,11 @@
 namespace SIL.Machine.WebApi.DataAccess;
 
-public class Subscription<T> : DisposableBase where T : IEntity<T>
+public class MemorySubscription<T> : DisposableBase, ISubscription<T> where T : IEntity<T>
 {
-	private readonly Action<Subscription<T>> _remove;
+	private readonly Action<MemorySubscription<T>> _remove;
 	private readonly AsyncAutoResetEvent _changeEvent;
 
-	public Subscription(T? initialEntity, Action<Subscription<T>> remove)
+	public MemorySubscription(T? initialEntity, Action<MemorySubscription<T>> remove)
 	{
 		_remove = remove;
 		_changeEvent = new AsyncAutoResetEvent();
@@ -15,9 +15,11 @@ public class Subscription<T> : DisposableBase where T : IEntity<T>
 
 	public EntityChange<T> Change { get; private set; }
 
-	public Task WaitForUpdateAsync(CancellationToken ct = default)
+	public Task WaitForUpdateAsync(TimeSpan? timeout = default, CancellationToken cancellationToken = default)
 	{
-		return _changeEvent.WaitAsync(ct);
+		if (timeout is null)
+			timeout = Timeout.InfiniteTimeSpan;
+		return _changeEvent.WaitAsync(cancellationToken).Timeout(timeout.Value, cancellationToken);
 	}
 
 	internal void HandleChange(EntityChange<T> change)

@@ -8,11 +8,10 @@ public interface IRepository<T> where T : class, IEntity<T>
 	Task<bool> ExistsAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default);
 
 	Task InsertAsync(T entity, CancellationToken cancellationToken = default);
-	Task<bool> ReplaceAsync(T entity, bool upsert = false, CancellationToken cancellationToken = default);
 	Task<T?> UpdateAsync(Expression<Func<T, bool>> filter, Action<IUpdateBuilder<T>> update, bool upsert = false,
 		CancellationToken cancellationToken = default);
 	Task<T?> DeleteAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default);
 	Task<int> DeleteAllAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default);
-	Task<Subscription<T>> SubscribeAsync(Expression<Func<T, bool>> filter,
+	Task<ISubscription<T>> SubscribeAsync(Expression<Func<T, bool>> filter,
 		CancellationToken cancellationToken = default);
 }

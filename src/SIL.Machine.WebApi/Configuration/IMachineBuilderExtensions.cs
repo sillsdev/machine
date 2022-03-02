@@ -73,14 +73,15 @@ public static class IMachineBuilderExtensions
 		builder.Services.AddSingleton<IRepository<Engine>, MemoryRepository<Engine>>();
 		builder.Services.AddSingleton<IRepository<Build>, MemoryRepository<Build>>();
 		builder.Services.AddSingleton<IRepository<DataFile>, MemoryRepository<DataFile>>();
+		builder.Services.AddSingleton<IRepository<RWLock>, MemoryRepository<RWLock>>();
 
-		builder.Services.AddSingleton<IDistributedReaderWriterLockFactory, MemoryDistributedReaderWriterLockFactory>();
 		return builder;
 	}
 
 	public static IMachineBuilder AddMongoDataAccess(this IMachineBuilder builder, string connectionString)
 	{
 		DataAccessClassMap.RegisterConventions("SIL.Machine.WebApi.Models",
+			new StringIdStoredAsObjectIdConvention(),
 			new CamelCaseElementNameConvention(),
 			new EnumRepresentationConvention(BsonType.String),
 			new IgnoreIfNullConvention(true),
@@ -94,35 +95,34 @@ public static class IMachineBuilderExtensions
 		builder.Services.AddMongoRepository<Engine>("engines");
 		builder.Services.AddMongoRepository<Build>("builds", indexSetup: indexes =>
 			indexes.CreateOrUpdate(new CreateIndexModel<Build>(
-				Builders<Build>.IndexKeys.Ascending(b => b.EngineRef))));
+				Builders<Build>.IndexKeys.Ascending(b => b.EngineRef))), isSubscribable: true);
 		builder.Services.AddMongoRepository<DataFile>("files", indexSetup: indexes =>
 			indexes.CreateOrUpdate(new CreateIndexModel<DataFile>(
-				Builders<DataFile>.IndexKeys.Ascending(b => b.EngineRef))));
-
-		builder.Services.AddSingleton<IDistributedReaderWriterLockFactory, MongoDistributedReaderWriterLockFactory>();
+				Builders<DataFile>.IndexKeys.Ascending(f => f.EngineRef))));
+		builder.Services.AddMongoRepository<RWLock>("locks", indexSetup: indexes =>
+		{
+			indexes.CreateOrUpdate(new CreateIndexModel<RWLock>(
+				Builders<RWLock>.IndexKeys.Ascending(rwl => rwl.WriterLock.Id)));
+			indexes.CreateOrUpdate(new CreateIndexModel<RWLock>(
+				Builders<RWLock>.IndexKeys.Ascending("readerLocks._id")));
+		}, isSubscribable: true);
 
 		return builder;
 	}
 
 
 	public static void AddMongoRepository<T>(this IServiceCollection services, string collection,
-		Action<BsonClassMap<T>>? mapSetup = null, Action<IMongoIndexManager<T>>? indexSetup = null)
-		where T : class, IEntity<T>
+		Action<BsonClassMap<T>>? mapSetup = null, Action<IMongoIndexManager<T>>? indexSetup = null,
+		bool isSubscribable = false) where T : class, IEntity<T>
 	{
-		DataAccessClassMap.RegisterClass<T>(cm =>
-		{
-			cm.MapIdProperty(e => e.Id)
-				.SetIdGenerator(StringObjectIdGenerator.Instance)
-				.SetSerializer(new StringSerializer(BsonType.ObjectId));
-			mapSetup?.Invoke(cm);
-		});
-		services.AddSingleton<IRepository<T>>(sp => CreateMongoRepository(sp, collection, indexSetup));
+		DataAccessClassMap.RegisterClass<T>(cm => mapSetup?.Invoke(cm));
+		services.AddSingleton<IRepository<T>>(sp => CreateMongoRepository(sp, collection, indexSetup, isSubscribable));
 	}
 
 	private static MongoRepository<T> CreateMongoRepository<T>(IServiceProvider sp, string collection,
-		Action<IMongoIndexManager<T>>? indexSetup) where T : class, IEntity<T>
+		Action<IMongoIndexManager<T>>? indexSetup, bool isSubscribable) where T : class, IEntity<T>
 	{
 		return new MongoRepository<T>(sp.GetService<IMongoDatabase>()!.GetCollection<T>(collection),
-			c => indexSetup?.Invoke(c.Indexes));
+			c => indexSetup?.Invoke(c.Indexes), isSubscribable);
 	}
 }

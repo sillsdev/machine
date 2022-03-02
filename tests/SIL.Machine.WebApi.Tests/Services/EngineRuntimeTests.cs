@@ -143,7 +143,7 @@ public class EngineRuntimeTests
 			_ruleEngineFactory = CreateRuleEngineFactory();
 			_truecaserFactory = CreateTruecaserFactory();
 			_dataFileService = CreateDataFileService();
-			_lockFactory = new MemoryDistributedReaderWriterLockFactory();
+			_lockFactory = new DistributedReaderWriterLockFactory(new MemoryRepository<RWLock>());
 			_jobServer = CreateJobServer();
 			Runtime = CreateRuntime();
 			_engineService.GetEngineAsync(Arg.Any<string>())!
@@ -330,15 +330,13 @@ public class EngineRuntimeTests
 
 		private async Task WaitForBuildState(string buildId, Func<BuildState, bool> predicate)
 		{
-			using (Subscription<Build> subscription = await Builds.SubscribeAsync(b => b.Id == buildId))
+			using ISubscription<Build> subscription = await Builds.SubscribeAsync(b => b.Id == buildId);
+			while (true)
 			{
-				while (true)
-				{
-					Build? build = subscription.Change.Entity;
-					if (build == null || predicate(build.State))
-						break;
-					await subscription.WaitForUpdateAsync();
-				}
+				Build? build = subscription.Change.Entity;
+				if (build == null || predicate(build.State))
+					break;
+				await subscription.WaitForUpdateAsync();
 			}
 		}
 

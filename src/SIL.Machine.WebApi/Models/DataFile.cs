@@ -9,6 +9,7 @@ public class DataFile : IEntity<DataFile>
 	public DataFile(DataFile dataFile)
 	{
 		Id = dataFile.Id;
+		Revision = dataFile.Revision;
 		EngineRef = dataFile.EngineRef;
 		DataType = dataFile.DataType;
 		Name = dataFile.Name;
@@ -19,6 +20,7 @@ public class DataFile : IEntity<DataFile>
 	}
 
 	public string Id { get; set; } = default!;
+	public int Revision { get; set; } = 1;
 	public string EngineRef { get; set; } = default!;
 	public DataType DataType { get; set; } = default!;
 	public string Name { get; set; } = default!;

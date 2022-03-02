@@ -6,6 +6,8 @@ public static class IApplicationBuilderExtensions
 	{
 		app.ApplicationServices.GetService<IRepository<Engine>>()!.Init();
 		app.ApplicationServices.GetService<IRepository<Build>>()!.Init();
+		app.ApplicationServices.GetService<IRepository<DataFile>>()!.Init();
+		app.ApplicationServices.GetService<IRepository<RWLock>>()!.Init();
 
 		app.ApplicationServices.GetService<IEngineServiceInternal>()!.Init();
 
