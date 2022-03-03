@@ -1,6 +1,6 @@
 ﻿using NJsonSchema.Generation;
 
-namespace SIL.Machine.Server;
+namespace SIL.Machine.WebApi.Server;
 
 public class MachineSchemaNameGenerator : DefaultSchemaNameGenerator
 {

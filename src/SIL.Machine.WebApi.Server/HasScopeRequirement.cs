@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 
-namespace SIL.Machine.Server;
+namespace SIL.Machine.WebApi.Server;
 
 public class HasScopeRequirement : IAuthorizationRequirement
 {
