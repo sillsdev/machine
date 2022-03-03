@@ -15,11 +15,11 @@ public class MemorySubscription<T> : DisposableBase, ISubscription<T> where T : 
 
 	public EntityChange<T> Change { get; private set; }
 
-	public Task WaitForUpdateAsync(TimeSpan? timeout = default, CancellationToken cancellationToken = default)
+	public async Task WaitForUpdateAsync(TimeSpan? timeout = default, CancellationToken cancellationToken = default)
 	{
 		if (timeout is null)
 			timeout = Timeout.InfiniteTimeSpan;
-		return _changeEvent.WaitAsync(cancellationToken).Timeout(timeout.Value, cancellationToken);
+		await Task.Run(() => _changeEvent.WaitAsync(cancellationToken).Timeout(timeout.Value, cancellationToken));
 	}
 
 	internal void HandleChange(EntityChange<T> change)

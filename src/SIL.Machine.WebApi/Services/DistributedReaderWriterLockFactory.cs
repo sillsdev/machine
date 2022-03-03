@@ -14,7 +14,7 @@ public class DistributedReaderWriterLockFactory : IDistributedReaderWriterLockFa
 		return new DistributedReaderWriterLock(_locks, id);
 	}
 
-	public async ValueTask<bool> DeleteAsync(string id, CancellationToken cancellationToken = default)
+	public async Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default)
 	{
 		RWLock? rwLock = await _locks.DeleteAsync(id, cancellationToken);
 		return rwLock is not null;

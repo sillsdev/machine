@@ -11,7 +11,7 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
 		_id = id;
 	}
 
-	public async ValueTask<IAsyncDisposable> ReaderLockAsync(TimeSpan? lifetime = default,
+	public async Task<IAsyncDisposable> ReaderLockAsync(TimeSpan? lifetime = default,
 		CancellationToken cancellationToken = default)
 	{
 		string lockId = ObjectId.GenerateNewId().ToString();
@@ -38,7 +38,7 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
 		return new ReaderLockReleaser(this, lockId);
 	}
 
-	public async ValueTask<IAsyncDisposable> WriterLockAsync(TimeSpan? lifetime = default,
+	public async Task<IAsyncDisposable> WriterLockAsync(TimeSpan? lifetime = default,
 		CancellationToken cancellationToken = default)
 	{
 		string lockId = ObjectId.GenerateNewId().ToString();

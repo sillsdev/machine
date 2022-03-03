@@ -56,15 +56,9 @@ public class DistributedReaderWriterLockTests
 
 		Assert.That(locks.Contains("test"), Is.False);
 
-		await using (await rwLock.WriterLockAsync())
-		{
-			var task = rwLock.ReaderLockAsync().AsTask();
-			await AssertNeverCompletesAsync(task);
-		}
-
-		RWLock entity = locks.Get("test");
-		Assert.That(entity.IsAvailableForReading, Is.True);
-		Assert.That(entity.IsAvailableForWriting, Is.True);
+		await rwLock.WriterLockAsync();
+		var task = rwLock.ReaderLockAsync();
+		await AssertNeverCompletesAsync(task);
 	}
 
 	[Test]
@@ -78,7 +72,7 @@ public class DistributedReaderWriterLockTests
 		Task<IAsyncDisposable> task;
 		await using (await rwLock.WriterLockAsync())
 		{
-			task = rwLock.ReaderLockAsync().AsTask();
+			task = rwLock.ReaderLockAsync();
 			Assert.That(task.IsCompleted, Is.False);
 		}
 
@@ -106,7 +100,7 @@ public class DistributedReaderWriterLockTests
 		RWLock entity;
 		await using (await rwLock.WriterLockAsync(TimeSpan.FromMilliseconds(400)))
 		{
-			var task = rwLock.ReaderLockAsync().AsTask();
+			var task = rwLock.ReaderLockAsync();
 			await Task.Delay(500);
 			await using (await task)
 			{
@@ -133,7 +127,7 @@ public class DistributedReaderWriterLockTests
 		await using (await rwLock.WriterLockAsync())
 		{
 			var cts = new CancellationTokenSource();
-			task = rwLock.ReaderLockAsync(cancellationToken: cts.Token).AsTask();
+			task = rwLock.ReaderLockAsync(cancellationToken: cts.Token);
 			cts.Cancel();
 			Assert.CatchAsync<OperationCanceledException>(async () => await task);
 		}
@@ -180,15 +174,9 @@ public class DistributedReaderWriterLockTests
 
 		Assert.That(locks.Contains("test"), Is.False);
 
-		await using (await rwLock.ReaderLockAsync())
-		{
-			var task = rwLock.WriterLockAsync().AsTask();
-			await AssertNeverCompletesAsync(task);
-		}
-
-		RWLock entity = locks.Get("test");
-		Assert.That(entity.IsAvailableForReading, Is.True);
-		Assert.That(entity.IsAvailableForWriting, Is.True);
+		await rwLock.ReaderLockAsync();
+		var task = rwLock.WriterLockAsync();
+		await AssertNeverCompletesAsync(task);
 	}
 
 	[Test]
@@ -202,7 +190,7 @@ public class DistributedReaderWriterLockTests
 		Task<IAsyncDisposable> task;
 		await using (await rwLock.ReaderLockAsync())
 		{
-			task = rwLock.WriterLockAsync().AsTask();
+			task = rwLock.WriterLockAsync();
 			Assert.That(task.IsCompleted, Is.False);
 		}
 
@@ -227,16 +215,9 @@ public class DistributedReaderWriterLockTests
 
 		Assert.That(locks.Contains("test"), Is.False);
 
-		RWLock entity;
-		await using (await rwLock.WriterLockAsync())
-		{
-			var task = rwLock.WriterLockAsync().AsTask();
-			await AssertNeverCompletesAsync(task);
-		}
-
-		entity = locks.Get("test");
-		Assert.That(entity.IsAvailableForReading, Is.True);
-		Assert.That(entity.IsAvailableForWriting, Is.True);
+		await rwLock.WriterLockAsync();
+		var task = rwLock.WriterLockAsync();
+		await AssertNeverCompletesAsync(task);
 	}
 
 	[Test]
@@ -250,7 +231,7 @@ public class DistributedReaderWriterLockTests
 		Task<IAsyncDisposable> task;
 		await using (await rwLock.WriterLockAsync())
 		{
-			task = rwLock.WriterLockAsync().AsTask();
+			task = rwLock.WriterLockAsync();
 			Assert.That(task.IsCompleted, Is.False);
 		}
 
@@ -278,7 +259,7 @@ public class DistributedReaderWriterLockTests
 		RWLock entity;
 		await using (await rwLock.WriterLockAsync(TimeSpan.FromMilliseconds(400)))
 		{
-			var task = rwLock.WriterLockAsync().AsTask();
+			var task = rwLock.WriterLockAsync();
 			await Task.Delay(500);
 			await using (await task)
 			{
@@ -305,7 +286,7 @@ public class DistributedReaderWriterLockTests
 		await using (await rwLock.WriterLockAsync())
 		{
 			var cts = new CancellationTokenSource();
-			task = rwLock.WriterLockAsync(cancellationToken: cts.Token).AsTask();
+			task = rwLock.WriterLockAsync(cancellationToken: cts.Token);
 			cts.Cancel();
 			Assert.CatchAsync<OperationCanceledException>(async () => await task);
 		}
@@ -330,5 +311,6 @@ public class DistributedReaderWriterLockTests
 		Task completedTask = await Task.WhenAny(task, Task.Delay(timeout)).ConfigureAwait(false);
 		if (completedTask == task)
 			Assert.Fail("Task completed unexpectedly.");
+		var _ = task.ContinueWith(_ => Assert.Fail("Task completed unexpectedly."), TaskScheduler.Default);
 	}
 }
