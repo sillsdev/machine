@@ -330,6 +330,5 @@ public class DistributedReaderWriterLockTests
 		Task completedTask = await Task.WhenAny(task, Task.Delay(timeout)).ConfigureAwait(false);
 		if (completedTask == task)
 			Assert.Fail("Task completed unexpectedly.");
-		Task _ = task.ContinueWith(_ => Assert.Fail("Task completed unexpectedly."), TaskScheduler.Default);
 	}
 }
