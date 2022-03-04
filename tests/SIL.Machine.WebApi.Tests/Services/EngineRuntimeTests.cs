@@ -4,10 +4,14 @@
 public class EngineRuntimeTests
 {
 	[Test]
-	public async Task StartBuildAsync_BatchTrainerCalled()
+	public async Task StartBuildAsync()
 	{
 		using var env = new TestEnvironment();
+		Engine engine = (await env.Engines.GetAsync("engine1"))!;
+		Assert.That(engine.BuildRevision, Is.EqualTo(0));
 		await env.Runtime.InitNewAsync();
+		// ensure that the SMT model was loaded before training
+		await env.Runtime.TranslateAsync("esto es una prueba .".Split());
 		Build build = await env.Runtime.StartBuildAsync();
 		Assert.That(build, Is.Not.Null);
 		await env.WaitForBuildToFinishAsync(build.Id);
@@ -17,10 +21,18 @@ public class EngineRuntimeTests
 		await env.TruecaserTrainer.Received().SaveAsync();
 		build = (await env.Builds.GetAsync(build.Id))!;
 		Assert.That(build.State, Is.EqualTo(BuildState.Completed));
+		engine = (await env.Engines.GetAsync("engine1"))!;
+		Assert.That(engine.BuildRevision, Is.EqualTo(1));
+		// check if SMT model was reloaded upon first use after training
+		env.SmtModel.ClearReceivedCalls();
+		await env.Runtime.TranslateAsync("esto es una prueba .".Split());
+		env.SmtModel.Received().Dispose();
+		env.SmtModel.DidNotReceive().Save();
+		await env.Truecaser.DidNotReceive().SaveAsync();
 	}
 
 	[Test]
-	public async Task CancelBuildAsync_BatchTrainerCalled()
+	public async Task CancelBuildAsync()
 	{
 		using var env = new TestEnvironment();
 		await env.Runtime.InitNewAsync();
@@ -43,7 +55,7 @@ public class EngineRuntimeTests
 	}
 
 	[Test]
-	public async Task RestartUnfinishedBuild()
+	public async Task StartBuildAsync_RestartUnfinishedBuild()
 	{
 		using var env = new TestEnvironment();
 		await env.Runtime.InitNewAsync();

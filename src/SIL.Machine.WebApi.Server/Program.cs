@@ -51,8 +51,7 @@ builder.Services.AddMachine()
 	.AddEngineOptions(builder.Configuration.GetSection("Engine"))
 	.AddEngineService()
 	.AddServiceOptions(builder.Configuration.GetSection("Service"))
-	.AddMongoBackgroundJobClient(builder.Configuration.GetConnectionString("Hangfire"))
-	.AddBackgroundJobServer();
+	.AddMongoBackgroundJobClient(builder.Configuration.GetConnectionString("Hangfire"));
 
 builder.Services.AddSwaggerDocument(doc =>
 {

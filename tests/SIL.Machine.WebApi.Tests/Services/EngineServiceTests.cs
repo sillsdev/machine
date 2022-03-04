@@ -60,7 +60,7 @@ public class EngineServiceTests
 	}
 
 	[Test]
-	public async Task CreateAsync_EngineDoesNotExist()
+	public async Task CreateAsync()
 	{
 		using var env = new TestEnvironment();
 		var engine = new Engine
@@ -70,28 +70,11 @@ public class EngineServiceTests
 			TargetLanguageTag = "en",
 			Type = EngineType.SmtTransfer
 		};
-		bool created = await env.Service.CreateAsync(engine);
-		Assert.That(created, Is.True);
+		await env.Service.CreateAsync(engine);
 
 		engine = (await env.Engines.GetAsync("engine1"))!;
 		Assert.That(engine.SourceLanguageTag, Is.EqualTo("es"));
 		Assert.That(engine.TargetLanguageTag, Is.EqualTo("en"));
-	}
-
-	[Test]
-	public async Task CreateAsync_EngineExists()
-	{
-		using var env = new TestEnvironment();
-		await env.CreateEngineAsync();
-		var engine = new Engine
-		{
-			Id = "engine1",
-			SourceLanguageTag = "es",
-			TargetLanguageTag = "en",
-			Type = EngineType.SmtTransfer
-		};
-		bool created = await env.Service.CreateAsync(engine);
-		Assert.That(created, Is.False);
 	}
 
 	[Test]

@@ -29,6 +29,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 	private AsyncLazy<ITruecaser> _truecaser;
 	private bool _isUpdated;
 	private DateTime _lastUsedTime;
+	private int _currentBuildRevision = -1;
 
 	public SmtTransferEngineRuntime(IOptions<EngineOptions> engineOptions, IRepository<Engine> engines,
 		IRepository<Build> builds, IRepository<TrainSegmentPair> trainSegmentPairs, ISmtModelFactory smtModelFactory,
@@ -72,8 +73,9 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 		IReadOnlyList<string> preprocSegment = TokenProcessors.Lowercase.Process(segment);
 
 		await using (await _lock.ReaderLockAsync())
-		using (ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync())
 		{
+			await CheckReloadAsync();
+			using ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync();
 			TranslationResult result = item.Object.Translate(preprocSegment);
 			result = (await _truecaser).Truecase(segment, result);
 			_lastUsedTime = DateTime.Now;
@@ -88,8 +90,9 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 		IReadOnlyList<string> preprocSegment = TokenProcessors.Lowercase.Process(segment);
 
 		await using (await _lock.ReaderLockAsync())
-		using (ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync())
 		{
+			await CheckReloadAsync();
+			using ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync();
 			ITruecaser truecaser = await _truecaser;
 			var results = new List<TranslationResult>();
 			foreach (TranslationResult result in item.Object.Translate(n, preprocSegment))
@@ -106,8 +109,9 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 		IReadOnlyList<string> preprocSegment = TokenProcessors.Lowercase.Process(segment);
 
 		await using (await _lock.ReaderLockAsync())
-		using (ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync())
 		{
+			await CheckReloadAsync();
+			using ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync();
 			WordGraph result = item.Object.GetWordGraph(preprocSegment);
 			result = (await _truecaser).Truecase(segment, result);
 			_lastUsedTime = DateTime.Now;
@@ -124,8 +128,9 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 		IReadOnlyList<string> preprocTargetSegment = TokenProcessors.Lowercase.Process(targetSegment);
 
 		await using (await _lock.WriterLockAsync())
-		using (ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync())
 		{
+			await CheckReloadAsync();
+			using ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync();
 			item.Object.TrainSegment(preprocSourceSegment, preprocTargetSegment);
 			(await _truecaser).TrainSegment(targetSegment, sentenceStart);
 			Engine? engine = await _engines.UpdateAsync(_engineId, u => u.Inc(e => e.TrainedSegmentCount, 1));
@@ -182,13 +187,24 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 				return;
 
 			Engine? engine = await _engines.GetAsync(_engineId);
-			if (engine != null && engine.IsBuilding)
+			if (engine == null || engine.IsBuilding)
 				return;
 
-			if (DateTime.Now - _lastUsedTime > _engineOptions.Value.InactiveEngineTimeout)
+			if (_currentBuildRevision == -1)
+				_currentBuildRevision = engine.BuildRevision;
+			if (engine.BuildRevision != _currentBuildRevision)
+			{
 				await UnloadAsync();
+				_currentBuildRevision = engine.BuildRevision;
+			}
+			else if (DateTime.Now - _lastUsedTime > _engineOptions.Value.InactiveEngineTimeout)
+			{
+				await UnloadAsync();
+			}
 			else
+			{
 				await SaveModelAsync();
+			}
 		}
 	}
 
@@ -243,6 +259,22 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 			ITruecaser truecaser = await _truecaser;
 			await truecaser.SaveAsync();
 			_isUpdated = false;
+		}
+	}
+
+	private async Task CheckReloadAsync()
+	{
+		Engine? engine = await _engines.GetAsync(_engineId);
+		if (engine == null)
+			return;
+
+		if (_currentBuildRevision == -1)
+			_currentBuildRevision = engine.BuildRevision;
+		if (engine.BuildRevision != _currentBuildRevision)
+		{
+			_isUpdated = false;
+			await UnloadAsync();
+			_currentBuildRevision = engine.BuildRevision;
 		}
 	}
 

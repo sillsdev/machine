@@ -83,9 +83,9 @@ public class EnginesController : Controller
 			Owner = User.Identity!.Name!
 		};
 
-		if (!await _engineService.CreateAsync(newEngine))
-			return Conflict();
-		return Ok(CreateDto(newEngine));
+		await _engineService.CreateAsync(newEngine);
+		EngineDto dto = CreateDto(newEngine);
+		return Created(dto.Href, dto);
 	}
 
 	/// <summary>
@@ -539,6 +539,8 @@ public class EnginesController : Controller
 			SourceLanguageTag = engine.SourceLanguageTag,
 			TargetLanguageTag = engine.TargetLanguageTag,
 			Type = engine.Type,
+			IsBuilding = engine.IsBuilding,
+			BuildRevision = engine.BuildRevision,
 			Confidence = engine.Confidence,
 			TrainedSegmentCount = engine.TrainedSegmentCount
 		};

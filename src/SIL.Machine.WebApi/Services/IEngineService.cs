@@ -13,7 +13,7 @@ public interface IEngineService
 	Task<bool> TrainSegmentAsync(string engineId, IReadOnlyList<string> sourceSegment,
 		IReadOnlyList<string> targetSegment, bool sentenceStart);
 
-	Task<bool> CreateAsync(Engine engine);
+	Task CreateAsync(Engine engine);
 
 	Task<bool> DeleteAsync(string engineId);
 

@@ -78,22 +78,13 @@ internal class EngineService : AsyncDisposableBase, IEngineService
 		return true;
 	}
 
-	public async Task<bool> CreateAsync(Engine engine)
+	public async Task CreateAsync(Engine engine)
 	{
 		CheckDisposed();
 
-		try
-		{
-			await _engines.InsertAsync(engine);
-			IEngineRuntime runtime = CreateRuntime(engine);
-			await runtime.InitNewAsync();
-		}
-		catch (DuplicateKeyException)
-		{
-			// a project with the same id already exists
-			return false;
-		}
-		return true;
+		await _engines.InsertAsync(engine);
+		IEngineRuntime runtime = CreateRuntime(engine);
+		await runtime.InitNewAsync();
 	}
 
 	public async Task<bool> DeleteAsync(string engineId)
