@@ -85,7 +85,7 @@ public static class DataAccessExtensions
 		{
 			if (curChange.Type != EntityChangeType.Delete && minRevision <= curChange.Entity!.Revision)
 				return curChange;
-			await subscription.WaitForUpdateAsync(cancellationToken: cancellationToken);
+			await subscription.WaitForChangeAsync(cancellationToken: cancellationToken);
 			curChange = subscription.Change;
 			if (curChange.Type == EntityChangeType.Delete)
 				return curChange;

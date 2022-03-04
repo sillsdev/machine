@@ -18,6 +18,14 @@ public class ThotSmtModelFactory : ISmtModelFactory
 		return model;
 	}
 
+	public ITrainer CreateTrainer(string engineId, ParallelTextCorpus corpus, ITokenProcessor sourcePreprocessor,
+		ITokenProcessor targetPreprocessor)
+	{
+		string smtConfigFileName = Path.Combine(_engineOptions.Value.EnginesDir, engineId, "smt.cfg");
+		return new ThotSmtModelTrainer(ThotWordAlignmentModelType.Hmm, corpus, smtConfigFileName, sourcePreprocessor,
+			targetPreprocessor);
+	}
+
 	public void InitNew(string engineId)
 	{
 		string engineDir = Path.Combine(_engineOptions.Value.EnginesDir, engineId);

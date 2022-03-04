@@ -1,9 +1,5 @@
 using System.Security.Claims;
 using System.Text.Json.Serialization;
-using Hangfire;
-using Hangfire.Mongo;
-using Hangfire.Mongo.Migration.Strategies;
-using Hangfire.Mongo.Migration.Strategies.Backup;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
@@ -17,21 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddHangfire(c => c
-	.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
-	.UseSimpleAssemblyNameTypeSerializer()
-	.UseRecommendedSerializerSettings()
-	.UseMongoStorage(builder.Configuration.GetConnectionString("Hangfire"), new MongoStorageOptions
-	{
-		MigrationOptions = new MongoMigrationOptions
-		{
-			MigrationStrategy = new MigrateMongoMigrationStrategy(),
-			BackupStrategy = new CollectionMongoBackupStrategy()
-		},
-		CheckConnection = true,
-		CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection
-	}));
-builder.Services.AddHangfireServer();
+builder.Services.AddRouting(o => o.LowercaseUrls = true);
 
 builder.Services.AddControllers()
 	.AddJsonOptions(o =>
@@ -67,7 +49,10 @@ builder.Services.AddSingleton<IAuthorizationHandler, IsEngineOwnerHandler>();
 builder.Services.AddMachine()
 	.AddMongoDataAccess(builder.Configuration.GetConnectionString("Mongo"))
 	.AddEngineOptions(builder.Configuration.GetSection("Engine"))
-	.AddServiceOptions(builder.Configuration.GetSection("Service"));
+	.AddEngineService()
+	.AddServiceOptions(builder.Configuration.GetSection("Service"))
+	.AddMongoBackgroundJobClient(builder.Configuration.GetConnectionString("Hangfire"))
+	.AddBackgroundJobServer();
 
 builder.Services.AddSwaggerDocument(doc =>
 {

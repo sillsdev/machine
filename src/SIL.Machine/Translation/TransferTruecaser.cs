@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SIL.Machine.Corpora;
 using SIL.Machine.Utils;
-using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
 {
@@ -12,7 +10,7 @@ namespace SIL.Machine.Translation
 	{
 		public ITrainer CreateTrainer(ITextCorpus corpus)
 		{
-			return new Trainer();
+			return new NullTrainer();
 		}
 
 		public void Save()
@@ -59,25 +57,6 @@ namespace SIL.Machine.Translation
 					newSegment[j] = newSegment[j].ToTitleCase();
 			}
 			return newSegment;
-		}
-
-		private class Trainer : DisposableBase, ITrainer
-		{
-			public TrainStats Stats { get; } = new TrainStats();
-
-			public void Save()
-			{
-				throw new NotImplementedException();
-			}
-
-			public Task SaveAsync()
-			{
-				return Task.CompletedTask;
-			}
-
-			public void Train(IProgress<ProgressStatus> progress = null, Action checkCanceled = null)
-			{
-			}
 		}
 	}
 }

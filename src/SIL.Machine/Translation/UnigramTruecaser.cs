@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using SIL.Machine.Corpora;
 using SIL.Machine.Statistics;
 using SIL.Machine.Utils;
-using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
 {
@@ -119,6 +117,12 @@ namespace SIL.Machine.Translation
 			}
 		}
 
+		public void Save(string modelPath)
+		{
+			_modelPath = modelPath;
+			Save();
+		}
+
 		public void Save()
 		{
 			using (var writer = new StreamWriter(_modelPath))
@@ -186,49 +190,27 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		private class Trainer : DisposableBase, ITrainer
+		private class Trainer : UnigramTruecaserTrainer
 		{
 			private readonly UnigramTruecaser _truecaser;
-			private readonly ITextCorpus _corpus;
-			private readonly UnigramTruecaser _newTruecaser;
-
-			public TrainStats Stats { get; } = new TrainStats();
 
 			public Trainer(UnigramTruecaser truecaser, ITextCorpus corpus)
+				: base(corpus)
 			{
 				_truecaser = truecaser;
-				_corpus = corpus;
-				_newTruecaser = new UnigramTruecaser();
 			}
 
-			public void Train(IProgress<ProgressStatus> progress = null, Action checkCanceled = null)
+			public override async Task SaveAsync()
 			{
-				int stepCount = 0;
-				if (progress != null)
-					stepCount = _corpus.GetSegments().Count();
-				int currentStep = 0;
-				foreach (TextSegment segment in _corpus.GetSegments())
-				{
-					checkCanceled?.Invoke();
-					_newTruecaser.TrainSegment(segment);
-					currentStep++;
-					if (progress != null)
-						progress.Report(new ProgressStatus(currentStep, stepCount));
-				}
-				Stats.TrainedSegmentCount = currentStep;
-			}
-
-			public async Task SaveAsync()
-			{
-				_truecaser._casing = _newTruecaser._casing;
-				_truecaser._bestTokens = _newTruecaser._bestTokens;
+				_truecaser._casing = NewTruecaser._casing;
+				_truecaser._bestTokens = NewTruecaser._bestTokens;
 				await _truecaser.SaveAsync();
 			}
 
-			public void Save()
+			public override void Save()
 			{
-				_truecaser._casing = _newTruecaser._casing;
-				_truecaser._bestTokens = _newTruecaser._bestTokens;
+				_truecaser._casing = NewTruecaser._casing;
+				_truecaser._bestTokens = NewTruecaser._bestTokens;
 				_truecaser.Save();
 			}
 		}

@@ -14,6 +14,8 @@ public class Engine : IEntity<Engine>
 		TargetLanguageTag = engine.TargetLanguageTag;
 		Type = engine.Type;
 		Owner = engine.Owner;
+		IsBuilding = engine.IsBuilding;
+		BuildRevision = engine.BuildRevision;
 		Confidence = engine.Confidence;
 		TrainedSegmentCount = engine.TrainedSegmentCount;
 	}
@@ -24,6 +26,8 @@ public class Engine : IEntity<Engine>
 	public string TargetLanguageTag { get; set; } = default!;
 	public EngineType Type { get; set; }
 	public string Owner { get; set; } = default!;
+	public bool IsBuilding { get; set; }
+	public int BuildRevision { get; set; }
 	public double Confidence { get; set; }
 	public int TrainedSegmentCount { get; set; }
 

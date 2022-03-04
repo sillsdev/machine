@@ -1,6 +1,6 @@
 ﻿namespace SIL.Machine.WebApi.Services;
 
-internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
+internal class EngineService : AsyncDisposableBase, IEngineService
 {
 	private readonly IOptions<EngineOptions> _engineOptions;
 	private readonly ConcurrentDictionary<string, IEngineRuntime> _runtimes;
@@ -142,7 +142,7 @@ internal class EngineService : AsyncDisposableBase, IEngineServiceInternal
 		return (engine, GetOrCreateRuntime(engine));
 	}
 
-	internal IEngineRuntime GetOrCreateRuntime(Engine engine)
+	private IEngineRuntime GetOrCreateRuntime(Engine engine)
 	{
 		return _runtimes.GetOrAdd(engine.Id, _engineRuntimeFactories[engine.Type].CreateEngineRuntime);
 	}

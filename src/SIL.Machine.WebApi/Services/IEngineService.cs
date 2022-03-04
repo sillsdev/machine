@@ -2,6 +2,8 @@
 
 public interface IEngineService
 {
+	void Init();
+
 	Task<TranslationResult?> TranslateAsync(string engineId, IReadOnlyList<string> segment);
 
 	Task<IEnumerable<TranslationResult>?> TranslateAsync(string engineId, int n, IReadOnlyList<string> segment);

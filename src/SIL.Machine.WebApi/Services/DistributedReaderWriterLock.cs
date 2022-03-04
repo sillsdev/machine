@@ -33,7 +33,7 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
 							timeout = TimeSpan.Zero;
 					}
 					if (timeout != TimeSpan.Zero)
-						await sub.WaitForUpdateAsync(timeout, cancellationToken);
+						await sub.WaitForChangeAsync(timeout, cancellationToken);
 				}
 			} while (!await TryAcquireReaderLock(lockId, lifetime, cancellationToken));
 		}
@@ -64,7 +64,7 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
 							timeout = TimeSpan.Zero;
 					}
 					if (timeout != TimeSpan.Zero)
-						await sub.WaitForUpdateAsync(timeout, cancellationToken);
+						await sub.WaitForChangeAsync(timeout, cancellationToken);
 				}
 			} while (!await TryAcquireWriterLock(lockId, lifetime, cancellationToken));
 		}

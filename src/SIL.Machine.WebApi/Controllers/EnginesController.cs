@@ -6,6 +6,7 @@
 [Area("Translation")]
 [Route("[area]/[controller]", Name = RouteNames.Engines)]
 [Produces("application/json")]
+[TypeFilter(typeof(OperationCancelledExceptionFilter))]
 public class EnginesController : Controller
 {
 	private readonly IAuthorizationService _authService;

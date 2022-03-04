@@ -30,6 +30,13 @@ public static class IMachineBuilderExtensions
 		return builder;
 	}
 
+	public static IMachineBuilder AddEngineService(this IMachineBuilder builder)
+	{
+		builder.Services.AddSingleton<IEngineService, EngineService>();
+		builder.Services.AddSingleton<IEngineRuntimeFactory, SmtTransferEngineRuntime.Factory>();
+		return builder;
+	}
+
 	public static IMachineBuilder AddDataFileOptions(this IMachineBuilder builder,
 		Action<DataFileOptions> configureOptions)
 	{
@@ -82,12 +89,49 @@ public static class IMachineBuilderExtensions
 		return builder;
 	}
 
+	public static IMachineBuilder AddMongoBackgroundJobClient(this IMachineBuilder builder, string connectionString)
+	{
+		builder.Services.AddHangfire(c => c
+			.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+			.UseSimpleAssemblyNameTypeSerializer()
+			.UseRecommendedSerializerSettings()
+			.UseMongoStorage(connectionString, new MongoStorageOptions
+			{
+				MigrationOptions = new MongoMigrationOptions
+				{
+					MigrationStrategy = new MigrateMongoMigrationStrategy(),
+					BackupStrategy = new CollectionMongoBackupStrategy()
+				},
+				CheckConnection = true,
+				CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection
+			}));
+		return builder;
+	}
+
+	public static IMachineBuilder AddMemoryBackgroundJobClient(this IMachineBuilder builder)
+	{
+		builder.Services.AddHangfire(c => c
+			.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+			.UseSimpleAssemblyNameTypeSerializer()
+			.UseRecommendedSerializerSettings()
+			.UseMemoryStorage());
+		return builder;
+	}
+
+	public static IMachineBuilder AddBackgroundJobServer(this IMachineBuilder builder)
+	{
+		builder.Services.AddSingleton<IBuildHandler, BuildHandler>();
+		builder.Services.AddHangfireServer();
+		return builder;
+	}
+
 	public static IMachineBuilder AddMemoryDataAccess(this IMachineBuilder builder)
 	{
 		builder.Services.AddSingleton<IRepository<Engine>, MemoryRepository<Engine>>();
 		builder.Services.AddSingleton<IRepository<Build>, MemoryRepository<Build>>();
 		builder.Services.AddSingleton<IRepository<DataFile>, MemoryRepository<DataFile>>();
 		builder.Services.AddSingleton<IRepository<RWLock>, MemoryRepository<RWLock>>();
+		builder.Services.AddSingleton<IRepository<TrainSegmentPair>, MemoryRepository<TrainSegmentPair>>();
 
 		return builder;
 	}
@@ -116,16 +160,18 @@ public static class IMachineBuilderExtensions
 		builder.Services.AddMongoRepository<RWLock>("locks", indexSetup: indexes =>
 		{
 			indexes.CreateOrUpdate(new CreateIndexModel<RWLock>(
-				Builders<RWLock>.IndexKeys.Ascending(rwl => rwl.WriterLock.Id)));
+				Builders<RWLock>.IndexKeys.Ascending(rwl => rwl.WriterLock!.Id)));
 			indexes.CreateOrUpdate(new CreateIndexModel<RWLock>(
 				Builders<RWLock>.IndexKeys.Ascending("readerLocks._id")));
 		}, isSubscribable: true);
+		builder.Services.AddMongoRepository<TrainSegmentPair>("train_segment_pairs", indexSetup: indexes =>
+			indexes.CreateOrUpdate(new CreateIndexModel<TrainSegmentPair>(
+				Builders<TrainSegmentPair>.IndexKeys.Ascending(p => p.EngineRef))));
 
 		return builder;
 	}
 
-
-	public static void AddMongoRepository<T>(this IServiceCollection services, string collection,
+	private static void AddMongoRepository<T>(this IServiceCollection services, string collection,
 		Action<BsonClassMap<T>>? mapSetup = null, Action<IMongoIndexManager<T>>? indexSetup = null,
 		bool isSubscribable = false) where T : class, IEntity<T>
 	{

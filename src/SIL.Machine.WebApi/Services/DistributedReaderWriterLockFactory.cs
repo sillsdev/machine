@@ -13,7 +13,7 @@ public class DistributedReaderWriterLockFactory : IDistributedReaderWriterLockFa
 
 	public IDistributedReaderWriterLock Create(string id)
 	{
-		return new DistributedReaderWriterLock(_serviceOptions.Value.HostId, _locks, id);
+		return new DistributedReaderWriterLock(_serviceOptions.Value.ServiceId, _locks, id);
 	}
 
 	public async Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default)

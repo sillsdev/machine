@@ -11,6 +11,7 @@ public class Build : IEntity<Build>
 		Id = build.Id;
 		Revision = build.Revision;
 		EngineRef = build.EngineRef;
+		JobId = build.JobId;
 		PercentCompleted = build.PercentCompleted;
 		Message = build.Message;
 		State = build.State;
@@ -20,6 +21,7 @@ public class Build : IEntity<Build>
 	public string Id { get; set; } = default!;
 	public int Revision { get; set; } = 1;
 	public string EngineRef { get; set; } = default!;
+	public string? JobId { get; set; }
 	public double PercentCompleted { get; set; } = default;
 	public string? Message { get; set; }
 	public BuildState State { get; set; } = BuildState.Pending;

@@ -109,10 +109,9 @@ public class EngineRuntimeTests
 		private readonly MemoryStorage _memoryStorage;
 		private readonly BackgroundJobClient _jobClient;
 		private BackgroundJobServer _jobServer;
-		private readonly IEngineServiceInternal _engineService;
 		private readonly IBuildHandler _buildHandler;
-		private readonly ISmtModelFactory _interactiveModelFactory;
-		private readonly ITransferEngineFactory _ruleEngineFactory;
+		private readonly ISmtModelFactory _smtModelFactory;
+		private readonly ITransferEngineFactory _transferEngineFactory;
 		private readonly ITruecaserFactory _truecaserFactory;
 		private readonly IDataFileService _dataFileService;
 		private readonly IDistributedReaderWriterLockFactory _lockFactory;
@@ -128,10 +127,10 @@ public class EngineRuntimeTests
 				Type = EngineType.SmtTransfer
 			});
 			Builds = new MemoryRepository<Build>();
+			TrainSegmentPairs = new MemoryRepository<TrainSegmentPair>();
 			EngineOptions = new EngineOptions();
 			_memoryStorage = new MemoryStorage();
 			_jobClient = new BackgroundJobClient(_memoryStorage);
-			_engineService = Substitute.For<IEngineServiceInternal>();
 			_buildHandler = new BuildHandler();
 			SmtModel = Substitute.For<IInteractiveTranslationModel>();
 			SmtBatchTrainer = Substitute.For<ITrainer>();
@@ -139,22 +138,21 @@ public class EngineRuntimeTests
 			Truecaser = Substitute.For<ITruecaser>();
 			TruecaserTrainer = Substitute.For<ITrainer>();
 			TruecaserTrainer.SaveAsync().Returns(Task.CompletedTask);
-			_interactiveModelFactory = CreateInteractiveModelFactory();
-			_ruleEngineFactory = CreateRuleEngineFactory();
+			_smtModelFactory = CreateSmtModelFactory();
+			_transferEngineFactory = CreateTransferEngineFactory();
 			_truecaserFactory = CreateTruecaserFactory();
 			_dataFileService = CreateDataFileService();
 			_lockFactory = new DistributedReaderWriterLockFactory(
-				new OptionsWrapper<ServiceOptions>(new ServiceOptions { HostId = "host" }),
+				new OptionsWrapper<ServiceOptions>(new ServiceOptions { ServiceId = "host" }),
 				new MemoryRepository<RWLock>());
 			_jobServer = CreateJobServer();
 			Runtime = CreateRuntime();
-			_engineService.GetEngineAsync(Arg.Any<string>())!
-				.Returns(Task.FromResult((Engines.Get("engine1"), (IEngineRuntime?)Runtime)));
 		}
 
 		public SmtTransferEngineRuntime Runtime { get; private set; }
 		public MemoryRepository<Engine> Engines { get; }
 		public MemoryRepository<Build> Builds { get; }
+		public MemoryRepository<TrainSegmentPair> TrainSegmentPairs { get; }
 		public ITrainer SmtBatchTrainer { get; }
 		public IInteractiveTranslationModel SmtModel { get; }
 		public EngineOptions EngineOptions { get; }
@@ -171,8 +169,6 @@ public class EngineRuntimeTests
 		{
 			_jobServer = CreateJobServer();
 			Runtime = CreateRuntime();
-			_engineService.GetEngineAsync(Arg.Any<string>())!
-				.Returns(Task.FromResult((Engines.Get("engine1"), (IEngineRuntime?)Runtime)));
 		}
 
 		private BackgroundJobServer CreateJobServer()
@@ -187,11 +183,11 @@ public class EngineRuntimeTests
 		private SmtTransferEngineRuntime CreateRuntime()
 		{
 			return new SmtTransferEngineRuntime(new OptionsWrapper<EngineOptions>(EngineOptions), Engines,
-				Builds, _interactiveModelFactory, _ruleEngineFactory, _truecaserFactory, _jobClient,
-				_dataFileService, _lockFactory, Substitute.For<ILogger<SmtTransferEngineRuntime>>(), "engine1");
+				Builds, TrainSegmentPairs, _smtModelFactory, _transferEngineFactory, _truecaserFactory, _jobClient,
+				_lockFactory, "engine1");
 		}
 
-		private ISmtModelFactory CreateInteractiveModelFactory()
+		private ISmtModelFactory CreateSmtModelFactory()
 		{
 			var factory = Substitute.For<ISmtModelFactory>();
 
@@ -237,14 +233,13 @@ public class EngineRuntimeTests
 		}, new[] { 3 }));
 			SmtModel.CreateInteractiveEngine().Returns(engine);
 
-			SmtModel.CreateTrainer(Arg.Any<ParallelTextCorpus>(), Arg.Any<ITokenProcessor>(),
-				Arg.Any<ITokenProcessor>()).Returns(SmtBatchTrainer);
-
 			factory.Create(Arg.Any<string>()).Returns(SmtModel);
+			factory.CreateTrainer(Arg.Any<string>(), Arg.Any<ParallelTextCorpus>(), Arg.Any<ITokenProcessor>(),
+				Arg.Any<ITokenProcessor>()).Returns(SmtBatchTrainer);
 			return factory;
 		}
 
-		private static ITransferEngineFactory CreateRuleEngineFactory()
+		private static ITransferEngineFactory CreateTransferEngineFactory()
 		{
 			var factory = Substitute.For<ITransferEngineFactory>();
 			var engine = Substitute.For<ITranslationEngine>();
@@ -297,8 +292,8 @@ public class EngineRuntimeTests
 				}
 				return new WordGraph(arcs, graph.FinalStates, graph.InitialStateScore);
 			});
-			Truecaser.CreateTrainer(Arg.Any<ITextCorpus>()).Returns(TruecaserTrainer);
 			factory.CreateAsync(Arg.Any<string>()).Returns(Task.FromResult(Truecaser));
+			factory.CreateTrainer(Arg.Any<string>(), Arg.Any<ITextCorpus>()).Returns(TruecaserTrainer);
 			return factory;
 		}
 
@@ -338,7 +333,7 @@ public class EngineRuntimeTests
 				Build? build = subscription.Change.Entity;
 				if (build == null || predicate(build.State))
 					break;
-				await subscription.WaitForUpdateAsync();
+				await subscription.WaitForChangeAsync();
 			}
 		}
 
@@ -359,8 +354,12 @@ public class EngineRuntimeTests
 
 			public override object ActivateJob(Type jobType)
 			{
-				if (jobType == typeof(SmtTransferEngineRuntime.BuildRunner))
-					return new SmtTransferEngineRuntime.BuildRunner(_env._engineService, _env._buildHandler);
+				if (jobType == typeof(SmtTransferEngineBuildJob))
+				{
+					return new SmtTransferEngineBuildJob(_env.Engines, _env.Builds, _env.TrainSegmentPairs,
+						_env._lockFactory, _env._dataFileService, _env._truecaserFactory, _env._smtModelFactory,
+						Substitute.For<ILogger<SmtTransferEngineBuildJob>>(), _env._buildHandler);
+				}
 				return base.ActivateJob(jobType);
 			}
 		}
