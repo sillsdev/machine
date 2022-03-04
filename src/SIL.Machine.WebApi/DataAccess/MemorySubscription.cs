@@ -19,7 +19,7 @@ public class MemorySubscription<T> : DisposableBase, ISubscription<T> where T : 
 	{
 		if (timeout is null)
 			timeout = Timeout.InfiniteTimeSpan;
-		await Task.Run(() => _changeEvent.WaitAsync(cancellationToken).Timeout(timeout.Value, cancellationToken));
+		await TaskEx.Timeout(ct => _changeEvent.WaitAsync(ct), timeout.Value, cancellationToken);
 	}
 
 	internal void HandleChange(EntityChange<T> change)

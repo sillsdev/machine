@@ -80,7 +80,6 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
 				&& (rwl.ReaderCount == 0 || !rwl.ReaderLocks.Any(l => l.ExpiresAt == null || l.ExpiresAt > now));
 			void Update(IUpdateBuilder<RWLock> u)
 			{
-				u.SetOnInsert(rwl => rwl.Id, _id);
 				u.Set(rwl => rwl.WriterLock.IsAcquired, true);
 				u.Set(rwl => rwl.WriterLock.Id, lockId);
 				if (lifetime.HasValue)
@@ -108,7 +107,6 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
 					|| (rwl.WriterLock.ExpiresAt != null && rwl.WriterLock.ExpiresAt <= now));
 			void Update(IUpdateBuilder<RWLock> u)
 			{
-				u.SetOnInsert(rwl => rwl.Id, _id);
 				u.Inc(rwl => rwl.ReaderCount);
 				u.Add(rwl => rwl.ReaderLocks, new Lock
 				{

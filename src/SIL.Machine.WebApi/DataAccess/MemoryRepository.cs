@@ -156,8 +156,6 @@ public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
 				{
 					entity = (T)Activator.CreateInstance(typeof(T))!;
 					string? id = ExpressionHelper.FindEqualsConstantValue<T, string>(e => e.Id, filter.Body);
-					if (id is not null && Contains(id))
-						throw new DuplicateKeyException();
 					entity.Id = id ?? ObjectId.GenerateNewId().ToString();
 					entity.Revision = 0;
 				}
@@ -169,6 +167,9 @@ public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
 				var builder = new MemoryUpdateBuilder<T>(filter, entity, isInsert);
 				update(builder);
 				entity.Revision++;
+
+				if (isInsert && Contains(entity.Id))
+					throw new DuplicateKeyException();
 
 				if (CheckDuplicateKeys(entity, original))
 					throw new DuplicateKeyException();

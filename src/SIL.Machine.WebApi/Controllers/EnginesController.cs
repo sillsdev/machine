@@ -239,9 +239,9 @@ public class EnginesController : Controller
 
 		if (minRevision != null)
 		{
-			var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-			cts.CancelAfter(_engineOptions.Value.BuildLongPollTimeout);
-			EntityChange<Build> change = await _builds.GetNewerRevisionAsync(buildId, minRevision.Value, cts.Token);
+			EntityChange<Build> change = await TaskEx.Timeout(
+				ct => _builds.GetNewerRevisionAsync(buildId, minRevision.Value, ct),
+				_engineOptions.Value.BuildLongPollTimeout, cancellationToken);
 			return change.Type switch
 			{
 				EntityChangeType.None => StatusCode(StatusCodes.Status408RequestTimeout),
@@ -302,10 +302,9 @@ public class EnginesController : Controller
 
 		if (minRevision != null)
 		{
-			var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-			cts.CancelAfter(_engineOptions.Value.BuildLongPollTimeout);
-			EntityChange<Build> change = await _builds.GetNewerRevisionByEngineIdAsync(id, minRevision.Value,
-				cts.Token);
+			EntityChange<Build> change = await TaskEx.Timeout(
+				ct => _builds.GetNewerRevisionByEngineIdAsync(id, minRevision.Value, ct),
+				_engineOptions.Value.BuildLongPollTimeout, cancellationToken);
 			return change.Type switch
 			{
 				EntityChangeType.None => StatusCode(StatusCodes.Status408RequestTimeout),
