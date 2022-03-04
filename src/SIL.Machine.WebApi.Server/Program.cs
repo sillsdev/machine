@@ -66,7 +66,8 @@ builder.Services.AddSingleton<IAuthorizationHandler, IsEngineOwnerHandler>();
 
 builder.Services.AddMachine()
 	.AddMongoDataAccess(builder.Configuration.GetConnectionString("Mongo"))
-	.AddEngineOptions(builder.Configuration.GetSection("Engine"));
+	.AddEngineOptions(builder.Configuration.GetSection("Engine"))
+	.AddServiceOptions(builder.Configuration.GetSection("Service"));
 
 builder.Services.AddSwaggerDocument(doc =>
 {

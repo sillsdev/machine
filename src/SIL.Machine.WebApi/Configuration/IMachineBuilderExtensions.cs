@@ -2,6 +2,20 @@
 
 public static class IMachineBuilderExtensions
 {
+	public static IMachineBuilder AddServiceOptions(this IMachineBuilder builder,
+		Action<ServiceOptions> configureOptions)
+	{
+		builder.Services.Configure(configureOptions);
+		return builder;
+	}
+
+	public static IMachineBuilder AddServiceOptions(this IMachineBuilder builder,
+		IConfiguration config)
+	{
+		builder.Services.Configure<ServiceOptions>(config);
+		return builder;
+	}
+
 	public static IMachineBuilder AddEngineOptions(this IMachineBuilder builder,
 		Action<EngineOptions> configureOptions)
 	{

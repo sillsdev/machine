@@ -10,14 +10,14 @@ public class RWLock : IEntity<RWLock>
 	{
 		Id = rwLock.Id;
 		Revision = rwLock.Revision;
-		WriterLock = rwLock.WriterLock.Clone();
+		WriterLock = rwLock.WriterLock?.Clone();
 		ReaderLocks = rwLock.ReaderLocks.Select(l => l.Clone()).ToList();
 		ReaderCount = rwLock.ReaderCount;
 	}
 
 	public string Id { get; set; } = default!;
 	public int Revision { get; set; }
-	public Lock WriterLock { get; set; } = new Lock();
+	public Lock? WriterLock { get; set; }
 	public List<Lock> ReaderLocks { get; set; } = new List<Lock>();
 	public int ReaderCount { get; set; }
 
@@ -26,7 +26,7 @@ public class RWLock : IEntity<RWLock>
 		get
 		{
 			var now = DateTime.UtcNow;
-			return !WriterLock.IsAcquired || (WriterLock.ExpiresAt != null && WriterLock.ExpiresAt <= now);
+			return WriterLock == null || (WriterLock.ExpiresAt != null && WriterLock.ExpiresAt <= now);
 		}
 	}
 
@@ -35,7 +35,7 @@ public class RWLock : IEntity<RWLock>
 		get
 		{
 			var now = DateTime.UtcNow;
-			return (!WriterLock.IsAcquired || WriterLock.ExpiresAt <= now)
+			return (WriterLock == null || (WriterLock.ExpiresAt != null && WriterLock.ExpiresAt <= now))
 				&& (ReaderCount == 0 || !ReaderLocks.Any(l => l.ExpiresAt == null || l.ExpiresAt > now));
 		}
 	}

@@ -143,7 +143,9 @@ public class EngineRuntimeTests
 			_ruleEngineFactory = CreateRuleEngineFactory();
 			_truecaserFactory = CreateTruecaserFactory();
 			_dataFileService = CreateDataFileService();
-			_lockFactory = new DistributedReaderWriterLockFactory(new MemoryRepository<RWLock>());
+			_lockFactory = new DistributedReaderWriterLockFactory(
+				new OptionsWrapper<ServiceOptions>(new ServiceOptions { HostId = "host" }),
+				new MemoryRepository<RWLock>());
 			_jobServer = CreateJobServer();
 			Runtime = CreateRuntime();
 			_engineService.GetEngineAsync(Arg.Any<string>())!

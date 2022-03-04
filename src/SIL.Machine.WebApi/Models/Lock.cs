@@ -6,16 +6,16 @@ public class Lock : ICloneable<Lock>
 	{
 	}
 
-	public Lock(Lock @lock)
+	public Lock(Lock lck)
 	{
-		Id = @lock.Id;
-		ExpiresAt = @lock.ExpiresAt;
-		IsAcquired = @lock.IsAcquired;
+		Id = lck.Id;
+		ExpiresAt = lck.ExpiresAt;
+		HostId = lck.HostId;
 	}
 
 	public string Id { get; set; } = default!;
 	public DateTime? ExpiresAt { get; set; }
-	public bool IsAcquired { get; set; }
+	public string HostId { get; set; } = default!;
 
 	public Lock Clone()
 	{
