@@ -1,6 +1,6 @@
 namespace SIL.Machine.WebApi.DataAccess;
 
-public interface IUpdateBuilder<T> where T : IEntity<T>
+public interface IUpdateBuilder<T> where T : IEntity
 {
 	IUpdateBuilder<T> Set<TField>(Expression<Func<T, TField>> field, TField value);
 

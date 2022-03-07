@@ -1,20 +1,7 @@
 ﻿namespace SIL.Machine.WebApi.Models;
 
-public class RWLock : IEntity<RWLock>
+public class RWLock : IEntity
 {
-	public RWLock()
-	{
-	}
-
-	public RWLock(RWLock rwLock)
-	{
-		Id = rwLock.Id;
-		Revision = rwLock.Revision;
-		WriterLock = rwLock.WriterLock?.Clone();
-		ReaderLocks = rwLock.ReaderLocks.Select(l => l.Clone()).ToList();
-		ReaderCount = rwLock.ReaderCount;
-	}
-
 	public string Id { get; set; } = default!;
 	public int Revision { get; set; }
 	public Lock? WriterLock { get; set; }
@@ -38,10 +25,5 @@ public class RWLock : IEntity<RWLock>
 			return (WriterLock == null || (WriterLock.ExpiresAt != null && WriterLock.ExpiresAt <= now))
 				&& (ReaderCount == 0 || !ReaderLocks.Any(l => l.ExpiresAt == null || l.ExpiresAt > now));
 		}
-	}
-
-	public RWLock Clone()
-	{
-		return new RWLock(this);
 	}
 }

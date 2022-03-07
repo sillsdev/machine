@@ -14,11 +14,16 @@ public class EngineRuntimeTests
 		await env.Runtime.TranslateAsync("esto es una prueba .".Split());
 		Build build = await env.Runtime.StartBuildAsync();
 		Assert.That(build, Is.Not.Null);
+		await env.WaitForBuildToStartAsync(build.Id);
+		await env.WebhookService.Received().TriggerEventAsync(WebhookEvent.BuildStarted, "client",
+			Arg.Is<Build>(b => b.State == BuildState.Active));
 		await env.WaitForBuildToFinishAsync(build.Id);
 		env.SmtBatchTrainer.Received().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
 		env.TruecaserTrainer.Received().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
 		env.SmtBatchTrainer.Received().Save();
 		await env.TruecaserTrainer.Received().SaveAsync();
+		await env.WebhookService.Received().TriggerEventAsync(WebhookEvent.BuildFinished, "client",
+			Arg.Is<Build>(b => b.State == BuildState.Completed));
 		build = (await env.Builds.GetAsync(build.Id))!;
 		Assert.That(build.State, Is.EqualTo(BuildState.Completed));
 		engine = (await env.Engines.GetAsync("engine1"))!;
@@ -44,12 +49,16 @@ public class EngineRuntimeTests
 		Build build = await env.Runtime.StartBuildAsync();
 		Assert.That(build, Is.Not.Null);
 		await env.WaitForBuildToStartAsync(build.Id);
+		await env.WebhookService.Received().TriggerEventAsync(WebhookEvent.BuildStarted, "client",
+			Arg.Is<Build>(b => b.State == BuildState.Active));
 		await env.Runtime.CancelBuildAsync();
 		await env.WaitForBuildToFinishAsync(build.Id);
 		env.SmtBatchTrainer.Received().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
 		env.TruecaserTrainer.DidNotReceive().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
 		env.SmtBatchTrainer.DidNotReceive().Save();
 		await env.TruecaserTrainer.DidNotReceive().SaveAsync();
+		await env.WebhookService.Received().TriggerEventAsync(WebhookEvent.BuildFinished, "client",
+			Arg.Is<Build>(b => b.State == BuildState.Canceled));
 		build = (await env.Builds.GetAsync(build.Id))!;
 		Assert.That(build.State, Is.EqualTo(BuildState.Canceled));
 	}
@@ -67,12 +76,16 @@ public class EngineRuntimeTests
 		Build build = await env.Runtime.StartBuildAsync();
 		Assert.That(build, Is.Not.Null);
 		await env.WaitForBuildToStartAsync(build.Id);
+		await env.WebhookService.Received().TriggerEventAsync(WebhookEvent.BuildStarted, "client",
+			Arg.Is<Build>(b => b.State == BuildState.Active));
 		env.StopServer();
 		build = (await env.Builds.GetAsync(build.Id))!;
 		Assert.That(build.State, Is.EqualTo(BuildState.Pending));
 		env.SmtBatchTrainer.ClearSubstitute(ClearOptions.CallActions);
 		env.StartServer();
 		await env.WaitForBuildToFinishAsync(build.Id);
+		await env.WebhookService.Received().TriggerEventAsync(WebhookEvent.BuildFinished, "client",
+			Arg.Is<Build>(b => b.State == BuildState.Completed));
 		build = (await env.Builds.GetAsync(build.Id))!;
 		Assert.That(build.State, Is.EqualTo(BuildState.Completed));
 	}
@@ -121,7 +134,6 @@ public class EngineRuntimeTests
 		private readonly MemoryStorage _memoryStorage;
 		private readonly BackgroundJobClient _jobClient;
 		private BackgroundJobServer _jobServer;
-		private readonly IBuildHandler _buildHandler;
 		private readonly ISmtModelFactory _smtModelFactory;
 		private readonly ITransferEngineFactory _transferEngineFactory;
 		private readonly ITruecaserFactory _truecaserFactory;
@@ -134,6 +146,7 @@ public class EngineRuntimeTests
 			Engines.Add(new Engine
 			{
 				Id = "engine1",
+				Owner = "client",
 				SourceLanguageTag = "es",
 				TargetLanguageTag = "en",
 				Type = EngineType.SmtTransfer
@@ -143,7 +156,7 @@ public class EngineRuntimeTests
 			EngineOptions = new EngineOptions();
 			_memoryStorage = new MemoryStorage();
 			_jobClient = new BackgroundJobClient(_memoryStorage);
-			_buildHandler = new BuildHandler();
+			WebhookService = Substitute.For<IWebhookService>();
 			SmtModel = Substitute.For<IInteractiveTranslationModel>();
 			SmtBatchTrainer = Substitute.For<ITrainer>();
 			SmtBatchTrainer.Stats.Returns(new TrainStats { Metrics = { { "bleu", 0.0 }, { "perplexity", 0.0 } } });
@@ -170,6 +183,7 @@ public class EngineRuntimeTests
 		public EngineOptions EngineOptions { get; }
 		public ITruecaser Truecaser { get; }
 		public ITrainer TruecaserTrainer { get; }
+		public IWebhookService WebhookService { get; }
 
 		public void StopServer()
 		{
@@ -328,22 +342,21 @@ public class EngineRuntimeTests
 
 		public Task WaitForBuildToFinishAsync(string buildId)
 		{
-			return WaitForBuildState(buildId, s => s == BuildState.Completed || s == BuildState.Faulted
-				|| s == BuildState.Canceled);
+			return WaitForBuildState(buildId, b => b.DateFinished != default);
 		}
 
 		public Task WaitForBuildToStartAsync(string buildId)
 		{
-			return WaitForBuildState(buildId, s => s != BuildState.Pending);
+			return WaitForBuildState(buildId, b => b.State != BuildState.Pending);
 		}
 
-		private async Task WaitForBuildState(string buildId, Func<BuildState, bool> predicate)
+		private async Task WaitForBuildState(string buildId, Func<Build, bool> predicate)
 		{
 			using ISubscription<Build> subscription = await Builds.SubscribeAsync(b => b.Id == buildId);
 			while (true)
 			{
 				Build? build = subscription.Change.Entity;
-				if (build == null || predicate(build.State))
+				if (build == null || predicate(build))
 					break;
 				await subscription.WaitForChangeAsync();
 			}
@@ -370,7 +383,7 @@ public class EngineRuntimeTests
 				{
 					return new SmtTransferEngineBuildJob(_env.Engines, _env.Builds, _env.TrainSegmentPairs,
 						_env._lockFactory, _env._dataFileService, _env._truecaserFactory, _env._smtModelFactory,
-						Substitute.For<ILogger<SmtTransferEngineBuildJob>>(), _env._buildHandler);
+						Substitute.For<ILogger<SmtTransferEngineBuildJob>>(), _env.WebhookService);
 				}
 				return base.ActivateJob(jobType);
 			}

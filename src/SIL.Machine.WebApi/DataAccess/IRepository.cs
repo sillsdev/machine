@@ -1,6 +1,6 @@
 namespace SIL.Machine.WebApi.DataAccess;
 
-public interface IRepository<T> where T : class, IEntity<T>
+public interface IRepository<T> where T : IEntity
 {
 	void Init();
 	Task<T?> GetAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default);

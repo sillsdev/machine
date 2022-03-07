@@ -8,4 +8,4 @@ public enum EntityChangeType
 	Delete
 }
 
-public readonly record struct EntityChange<T>(EntityChangeType Type, T? Entity) where T : IEntity<T>;
+public readonly record struct EntityChange<T>(EntityChangeType Type, T? Entity) where T : IEntity;

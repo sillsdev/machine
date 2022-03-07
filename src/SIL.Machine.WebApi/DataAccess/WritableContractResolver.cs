@@ -1,11 +1,14 @@
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace SIL.Machine.WebApi.DataAccess;
 
 public class WritableContractResolver : DefaultContractResolver
 {
-	protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
+	protected override IList<Newtonsoft.Json.Serialization.JsonProperty> CreateProperties(Type type,
+		MemberSerialization memberSerialization)
 	{
-		IList<JsonProperty> props = base.CreateProperties(type, memberSerialization);
+		IList<Newtonsoft.Json.Serialization.JsonProperty> props = base.CreateProperties(type, memberSerialization);
 		return props.Where(p => p.Writable).ToList();
 	}
 }

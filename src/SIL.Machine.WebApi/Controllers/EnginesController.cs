@@ -4,7 +4,7 @@
 /// Machine translation engines
 /// </summary>
 [Area("Translation")]
-[Route("[area]/[controller]", Name = RouteNames.Engines)]
+[Route("[area]/[controller]")]
 [Produces("application/json")]
 [TypeFilter(typeof(OperationCancelledExceptionFilter))]
 public class EnginesController : Controller
@@ -16,10 +16,11 @@ public class EnginesController : Controller
 	private readonly IEngineService _engineService;
 	private readonly IDataFileService _dataFileService;
 	private readonly IOptions<EngineOptions> _engineOptions;
+	private readonly IMapper _mapper;
 
 	public EnginesController(IAuthorizationService authService, IRepository<Engine> engines, IRepository<Build> builds,
 		IRepository<DataFile> dataFiles, IEngineService engineService, IDataFileService dataFileService,
-		IOptions<EngineOptions> engineOptions)
+		IOptions<EngineOptions> engineOptions, IMapper mapper)
 	{
 		_authService = authService;
 		_engines = engines;
@@ -28,6 +29,7 @@ public class EnginesController : Controller
 		_engineService = engineService;
 		_dataFileService = dataFileService;
 		_engineOptions = engineOptions;
+		_mapper = mapper;
 	}
 
 	/// <summary>
@@ -38,13 +40,7 @@ public class EnginesController : Controller
 	[HttpGet]
 	public async Task<IEnumerable<EngineDto>> GetAllAsync()
 	{
-		var engines = new List<EngineDto>();
-		foreach (Engine engine in await _engines.GetAllAsync())
-		{
-			if (await AuthorizeIsOwnerAsync(engine))
-				engines.Add(CreateDto(engine));
-		}
-		return engines;
+		return (await _engines.GetAllAsync(e => e.Owner == User.Identity!.Name)).Select(_mapper.Map<EngineDto>);
 	}
 
 	/// <summary>
@@ -62,7 +58,7 @@ public class EnginesController : Controller
 		if (!await AuthorizeIsOwnerAsync(engine))
 			return Forbid();
 
-		return Ok(CreateDto(engine));
+		return Ok(_mapper.Map<EngineDto>(engine));
 	}
 
 	/// <summary>
@@ -84,7 +80,7 @@ public class EnginesController : Controller
 		};
 
 		await _engineService.CreateAsync(newEngine);
-		EngineDto dto = CreateDto(newEngine);
+		EngineDto dto = _mapper.Map<EngineDto>(newEngine);
 		return Created(dto.Href, dto);
 	}
 
@@ -127,7 +123,7 @@ public class EnginesController : Controller
 		TranslationResult? result = await _engineService.TranslateAsync(engine.Id, segment);
 		if (result == null)
 			return NotFound();
-		return Ok(CreateDto(result));
+		return Ok(_mapper.Map<TranslationResultDto>(result));
 	}
 
 	/// <summary>
@@ -151,7 +147,7 @@ public class EnginesController : Controller
 		IEnumerable<TranslationResult>? results = await _engineService.TranslateAsync(engine.Id, n, segment);
 		if (results == null)
 			return NotFound();
-		return Ok(results.Select(CreateDto));
+		return Ok(results.Select(_mapper.Map<TranslationResultDto>));
 	}
 
 	/// <summary>
@@ -173,7 +169,7 @@ public class EnginesController : Controller
 		WordGraph? result = await _engineService.GetWordGraphAsync(engine.Id, segment);
 		if (result == null)
 			return NotFound();
-		return Ok(CreateDto(result));
+		return Ok(_mapper.Map<WordGraphDto>(result));
 	}
 
 	/// <summary>
@@ -216,7 +212,7 @@ public class EnginesController : Controller
 		if (!await AuthorizeIsOwnerAsync(engine))
 			return Forbid();
 
-		return Ok((await _builds.GetAllAsync()).Select(CreateDto));
+		return Ok((await _builds.GetAllAsync()).Select(_mapper.Map<BuildDto>));
 	}
 
 	/// <summary>
@@ -247,7 +243,7 @@ public class EnginesController : Controller
 			{
 				EntityChangeType.None => StatusCode(StatusCodes.Status408RequestTimeout),
 				EntityChangeType.Delete => NotFound(),
-				_ => Ok(CreateDto(change.Entity!)),
+				_ => Ok(_mapper.Map<BuildDto>(change.Entity!)),
 			};
 		}
 		else
@@ -256,7 +252,7 @@ public class EnginesController : Controller
 			if (build == null)
 				return NotFound();
 
-			return Ok(CreateDto(build));
+			return Ok(_mapper.Map<BuildDto>(build));
 		}
 	}
 
@@ -279,7 +275,7 @@ public class EnginesController : Controller
 		Build? build = await _engineService.StartBuildAsync(id);
 		if (build == null)
 			return UnprocessableEntity();
-		BuildDto dto = CreateDto(build);
+		var dto = _mapper.Map<BuildDto>(build);
 		return Created(dto.Href, dto);
 	}
 
@@ -310,7 +306,7 @@ public class EnginesController : Controller
 			{
 				EntityChangeType.None => StatusCode(StatusCodes.Status408RequestTimeout),
 				EntityChangeType.Delete => NoContent(),
-				_ => Ok(CreateDto(change.Entity!)),
+				_ => Ok(_mapper.Map<BuildDto>(change.Entity!)),
 			};
 		}
 		else
@@ -319,7 +315,7 @@ public class EnginesController : Controller
 			if (build == null)
 				return NoContent();
 
-			return Ok(CreateDto(build));
+			return Ok(_mapper.Map<BuildDto>(build));
 		}
 	}
 
@@ -382,7 +378,7 @@ public class EnginesController : Controller
 		{
 			await _dataFileService.CreateAsync(dataFile, stream);
 		}
-		DataFileDto dto = CreateDto(dataFile);
+		var dto = _mapper.Map<DataFileDto>(dataFile);
 		return Created(dto.Href, dto);
 	}
 
@@ -401,7 +397,7 @@ public class EnginesController : Controller
 		if (!await AuthorizeIsOwnerAsync(engine))
 			return Forbid();
 
-		return Ok((await _dataFiles.GetAllAsync()).Select(CreateDto));
+		return Ok((await _dataFiles.GetAllAsync()).Select(_mapper.Map<DataFileDto>));
 	}
 
 	/// <summary>
@@ -424,7 +420,7 @@ public class EnginesController : Controller
 		if (dataFile == null)
 			return NotFound();
 
-		return Ok(CreateDto(dataFile));
+		return Ok(_mapper.Map<DataFileDto>(dataFile));
 	}
 
 	/// <summary>
@@ -474,131 +470,5 @@ public class EnginesController : Controller
 	{
 		AuthorizationResult result = await _authService.AuthorizeAsync(User, engine, "IsOwner");
 		return result.Succeeded;
-	}
-
-	private static TranslationResultDto? CreateDto(TranslationResult result)
-	{
-		if (result == null)
-			return null;
-
-		return new TranslationResultDto
-		{
-			Target = result.TargetSegment.ToArray(),
-			Confidences = result.WordConfidences.Select(c => (float)c).ToArray(),
-			Sources = result.WordSources.ToArray(),
-			Alignment = CreateDto(result.Alignment),
-			Phrases = result.Phrases.Select(CreateDto).ToArray()
-		};
-	}
-
-	private static WordGraphDto CreateDto(WordGraph wordGraph)
-	{
-		return new WordGraphDto
-		{
-			InitialStateScore = (float)wordGraph.InitialStateScore,
-			FinalStates = wordGraph.FinalStates.ToArray(),
-			Arcs = wordGraph.Arcs.Select(CreateDto).ToArray()
-		};
-	}
-
-	private static WordGraphArcDto CreateDto(WordGraphArc arc)
-	{
-		return new WordGraphArcDto
-		{
-			PrevState = arc.PrevState,
-			NextState = arc.NextState,
-			Score = (float)arc.Score,
-			Words = arc.Words.ToArray(),
-			Confidences = arc.WordConfidences.Select(c => (float)c).ToArray(),
-			SourceSegmentRange = CreateDto(arc.SourceSegmentRange),
-			Sources = arc.WordSources.ToArray(),
-			Alignment = CreateDto(arc.Alignment)
-		};
-	}
-
-	private static AlignedWordPairDto[] CreateDto(WordAlignmentMatrix matrix)
-	{
-		var wordPairs = new List<AlignedWordPairDto>();
-		for (int i = 0; i < matrix.RowCount; i++)
-		{
-			for (int j = 0; j < matrix.ColumnCount; j++)
-			{
-				if (matrix[i, j])
-					wordPairs.Add(new AlignedWordPairDto { SourceIndex = i, TargetIndex = j });
-			}
-		}
-		return wordPairs.ToArray();
-	}
-
-	private EngineDto CreateDto(Engine engine)
-	{
-		return new EngineDto
-		{
-			Id = engine.Id,
-			Href = Url.RouteUrl(RouteNames.Engines) + $"/{engine.Id}",
-			SourceLanguageTag = engine.SourceLanguageTag,
-			TargetLanguageTag = engine.TargetLanguageTag,
-			Type = engine.Type,
-			IsBuilding = engine.IsBuilding,
-			BuildRevision = engine.BuildRevision,
-			Confidence = engine.Confidence,
-			TrainedSegmentCount = engine.TrainedSegmentCount
-		};
-	}
-
-	private static RangeDto CreateDto(Range<int> range)
-	{
-		return new RangeDto()
-		{
-			Start = range.Start,
-			End = range.End
-		};
-	}
-
-	private static PhraseDto CreateDto(Phrase phrase)
-	{
-		return new PhraseDto
-		{
-			SourceSegmentRange = CreateDto(phrase.SourceSegmentRange),
-			TargetSegmentCut = phrase.TargetSegmentCut,
-			Confidence = phrase.Confidence
-		};
-	}
-
-	private BuildDto CreateDto(Build build)
-	{
-		return new BuildDto
-		{
-			Id = build.Id,
-			Href = Url.RouteUrl(RouteNames.Engines) + $"/builds/{build.Id}",
-			Revision = build.Revision,
-			Engine = new ResourceDto
-			{
-				Id = build.EngineRef,
-				Href = Url.RouteUrl(RouteNames.Engines) + $"/{build.EngineRef}"
-			},
-			PercentCompleted = build.PercentCompleted,
-			Message = build.Message,
-			State = build.State
-		};
-	}
-
-	private DataFileDto CreateDto(DataFile dataFile)
-	{
-		return new DataFileDto
-		{
-			Id = dataFile.Id,
-			Href = Url.RouteUrl(RouteNames.Engines) + $"/files/{dataFile.Id}",
-			Engine = new ResourceDto
-			{
-				Id = dataFile.EngineRef,
-				Href = Url.RouteUrl(RouteNames.Engines) + $"/{dataFile.EngineRef}"
-			},
-			DataType = dataFile.DataType,
-			Name = dataFile.Name,
-			Format = dataFile.Format,
-			CorpusType = dataFile.CorpusType,
-			CorpusKey = dataFile.CorpusKey
-		};
 	}
 }

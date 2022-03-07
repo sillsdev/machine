@@ -44,7 +44,7 @@ builder.Services.AddAuthorization(o =>
 	o.AddPolicy("IsOwner", policy => policy.Requirements.Add(new IsOwnerRequirement()));
 });
 builder.Services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
-builder.Services.AddSingleton<IAuthorizationHandler, IsEngineOwnerHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, IsEntityOwnerHandler>();
 
 builder.Services.AddMachine()
 	.AddMongoDataAccess(builder.Configuration.GetConnectionString("Mongo"))

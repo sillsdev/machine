@@ -6,6 +6,11 @@ public static class IServiceCollectionExtensions
 	{
 		services.AddSingleton<IDataFileService, DataFileService>();
 		services.AddSingleton<IDistributedReaderWriterLockFactory, DistributedReaderWriterLockFactory>();
+		services.AddHttpClient<IWebhookService, WebhookService>()
+			.AddTransientHttpErrorPolicy(b =>
+				b.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))));
+
+		services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
 		var builder = new MachineBuilder(services)
 			.AddThotSmtModel()

@@ -1,6 +1,6 @@
 namespace SIL.Machine.WebApi.DataAccess;
 
-public class MemorySubscription<T> : DisposableBase, ISubscription<T> where T : IEntity<T>
+public class MemorySubscription<T> : DisposableBase, ISubscription<T> where T : IEntity
 {
 	private readonly Action<MemorySubscription<T>> _remove;
 	private readonly AsyncAutoResetEvent _changeEvent;

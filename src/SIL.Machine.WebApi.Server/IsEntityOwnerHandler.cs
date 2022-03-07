@@ -3,10 +3,10 @@ using SIL.Machine.WebApi.Models;
 
 namespace SIL.Machine.WebApi.Server;
 
-public class IsEngineOwnerHandler : AuthorizationHandler<IsOwnerRequirement, Engine>
+public class IsEntityOwnerHandler : AuthorizationHandler<IsOwnerRequirement, IOwnedEntity>
 {
 	protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, IsOwnerRequirement requirement,
-		Engine resource)
+		IOwnedEntity resource)
 	{
 		if (context.User.Identity?.Name == resource.Owner)
 			context.Succeed(requirement);

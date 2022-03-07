@@ -37,20 +37,6 @@ public static class IMachineBuilderExtensions
 		return builder;
 	}
 
-	public static IMachineBuilder AddDataFileOptions(this IMachineBuilder builder,
-		Action<DataFileOptions> configureOptions)
-	{
-		builder.Services.Configure(configureOptions);
-		return builder;
-	}
-
-	public static IMachineBuilder AddDataFileOptions(this IMachineBuilder builder,
-		IConfiguration config)
-	{
-		builder.Services.Configure<DataFileOptions>(config);
-		return builder;
-	}
-
 	public static IMachineBuilder AddThotSmtModel(this IMachineBuilder builder)
 	{
 		builder.Services.AddSingleton<ISmtModelFactory, ThotSmtModelFactory>();
@@ -120,7 +106,6 @@ public static class IMachineBuilderExtensions
 
 	public static IMachineBuilder AddBackgroundJobServer(this IMachineBuilder builder)
 	{
-		builder.Services.AddSingleton<IBuildHandler, BuildHandler>();
 		builder.Services.AddHangfireServer();
 		return builder;
 	}
@@ -132,6 +117,7 @@ public static class IMachineBuilderExtensions
 		builder.Services.AddSingleton<IRepository<DataFile>, MemoryRepository<DataFile>>();
 		builder.Services.AddSingleton<IRepository<RWLock>, MemoryRepository<RWLock>>();
 		builder.Services.AddSingleton<IRepository<TrainSegmentPair>, MemoryRepository<TrainSegmentPair>>();
+		builder.Services.AddSingleton<IRepository<Webhook>, MemoryRepository<Webhook>>();
 
 		return builder;
 	}
@@ -167,20 +153,27 @@ public static class IMachineBuilderExtensions
 		builder.Services.AddMongoRepository<TrainSegmentPair>("train_segment_pairs", indexSetup: indexes =>
 			indexes.CreateOrUpdate(new CreateIndexModel<TrainSegmentPair>(
 				Builders<TrainSegmentPair>.IndexKeys.Ascending(p => p.EngineRef))));
+		builder.Services.AddMongoRepository<Webhook>("hooks", indexSetup: indexes =>
+		{
+			indexes.CreateOrUpdate(new CreateIndexModel<Webhook>(
+				Builders<Webhook>.IndexKeys.Ascending(h => h.Owner)));
+			indexes.CreateOrUpdate(new CreateIndexModel<Webhook>(
+				Builders<Webhook>.IndexKeys.Ascending(h => h.Events)));
+		});
 
 		return builder;
 	}
 
 	private static void AddMongoRepository<T>(this IServiceCollection services, string collection,
 		Action<BsonClassMap<T>>? mapSetup = null, Action<IMongoIndexManager<T>>? indexSetup = null,
-		bool isSubscribable = false) where T : class, IEntity<T>
+		bool isSubscribable = false) where T : IEntity
 	{
 		DataAccessClassMap.RegisterClass<T>(cm => mapSetup?.Invoke(cm));
 		services.AddSingleton<IRepository<T>>(sp => CreateMongoRepository(sp, collection, indexSetup, isSubscribable));
 	}
 
 	private static MongoRepository<T> CreateMongoRepository<T>(IServiceProvider sp, string collection,
-		Action<IMongoIndexManager<T>>? indexSetup, bool isSubscribable) where T : class, IEntity<T>
+		Action<IMongoIndexManager<T>>? indexSetup, bool isSubscribable) where T : IEntity
 	{
 		return new MongoRepository<T>(sp.GetService<IMongoDatabase>()!.GetCollection<T>(collection),
 			c => indexSetup?.Invoke(c.Indexes), isSubscribable);

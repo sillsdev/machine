@@ -1,6 +1,6 @@
 namespace SIL.Machine.WebApi.DataAccess;
 
-public class MemoryUpdateBuilder<T> : IUpdateBuilder<T> where T : IEntity<T>
+public class MemoryUpdateBuilder<T> : IUpdateBuilder<T> where T : IEntity
 {
 	private readonly Expression<Func<T, bool>> _filter;
 	private readonly T _entity;

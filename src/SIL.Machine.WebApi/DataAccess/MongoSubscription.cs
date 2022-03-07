@@ -1,6 +1,6 @@
 ﻿namespace SIL.Machine.WebApi.DataAccess;
 
-public class MongoSubscription<T> : DisposableBase, ISubscription<T> where T : IEntity<T>
+public class MongoSubscription<T> : DisposableBase, ISubscription<T> where T : IEntity
 {
 	private readonly IMongoCollection<T> _entities;
 	private readonly IMongoCollection<ChangeEvent> _changeEvents;

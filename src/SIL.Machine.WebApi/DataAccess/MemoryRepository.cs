@@ -1,6 +1,8 @@
+using Newtonsoft.Json;
+
 namespace SIL.Machine.WebApi.DataAccess;
 
-public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
+public class MemoryRepository<T> : IRepository<T> where T : IEntity
 {
 	private static readonly JsonSerializerSettings Settings = new()
 	{
@@ -35,7 +37,7 @@ public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
 
 	public void Init() { }
 
-	public void Add(T entity)
+	public string Add(T entity)
 	{
 		for (int i = 0; i < _uniqueKeySelectors.Length; i++)
 		{
@@ -43,7 +45,9 @@ public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
 			if (key != null)
 				_uniqueKeys[i].Add(key);
 		}
-		_entities[entity.Id] = JsonConvert.SerializeObject(entity, Settings);
+		string serializedEntity = JsonConvert.SerializeObject(entity, Settings);
+		_entities[entity.Id] = serializedEntity;
+		return serializedEntity;
 	}
 
 	public void Add(IEnumerable<T> entities)
@@ -64,14 +68,14 @@ public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
 		_entities.Remove(entity.Id);
 	}
 
-	public void Replace(T entity)
+	public string Replace(T entity)
 	{
 		if (_entities.TryGetValue(entity.Id, out string? existingStr))
 		{
 			T existing = DeserializeEntity(entity.Id, existingStr);
 			Remove(existing);
 		}
-		Add(entity);
+		return Add(entity);
 	}
 
 	public bool Contains(string id)
@@ -115,6 +119,7 @@ public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
 	{
 		entity.Revision = 1;
 		var allSubscriptions = new List<MemorySubscription<T>>();
+		string serializedEntity;
 		using (await _lock.LockAsync(cancellationToken))
 		{
 			if (string.IsNullOrEmpty(entity.Id))
@@ -123,10 +128,10 @@ public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
 			if (_entities.ContainsKey(entity.Id) || CheckDuplicateKeys(entity))
 				throw new DuplicateKeyException();
 
-			Add(entity);
+			serializedEntity = Add(entity);
 			GetSubscriptions(entity, allSubscriptions);
 		}
-		SendToSubscribers(allSubscriptions, EntityChangeType.Insert, entity);
+		SendToSubscribers(allSubscriptions, EntityChangeType.Insert, entity.Id, serializedEntity);
 	}
 
 	public async Task<T?> UpdateAsync(Expression<Func<T, bool>> filter, Action<IUpdateBuilder<T>> update,
@@ -134,6 +139,7 @@ public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
 	{
 		var allSubscriptions = new List<MemorySubscription<T>>();
 		T? entity;
+		string? serializedEntity = null;
 		Func<T, bool> filterFunc = filter.Compile();
 		using (await _lock.LockAsync(cancellationToken))
 		{
@@ -174,11 +180,12 @@ public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
 				if (CheckDuplicateKeys(entity, original))
 					throw new DuplicateKeyException();
 
-				Replace(entity);
+				serializedEntity = Replace(entity);
 				GetSubscriptions(entity, allSubscriptions);
 			}
 		}
-		SendToSubscribers(allSubscriptions, EntityChangeType.Update, entity);
+		if (entity != null && serializedEntity != null)
+			SendToSubscribers(allSubscriptions, EntityChangeType.Update, entity.Id, serializedEntity);
 		return entity;
 	}
 
@@ -186,16 +193,19 @@ public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
 	{
 		var allSubscriptions = new List<MemorySubscription<T>>();
 		T? entity;
+		string? serializedEntity = null;
 		using (await _lock.LockAsync(cancellationToken))
 		{
 			entity = Entities.AsQueryable().FirstOrDefault(filter);
 			if (entity != null)
 			{
+				serializedEntity = _entities[entity.Id];
 				Remove(entity);
 				GetSubscriptions(entity, allSubscriptions);
 			}
 		}
-		SendToSubscribers(allSubscriptions, EntityChangeType.Delete, entity);
+		if (entity != null && serializedEntity != null)
+			SendToSubscribers(allSubscriptions, EntityChangeType.Delete, entity.Id, serializedEntity);
 		return entity;
 	}
 
@@ -240,10 +250,16 @@ public class MemoryRepository<T> : IRepository<T> where T : class, IEntity<T>
 		}
 	}
 
-	private static void SendToSubscribers(IList<MemorySubscription<T>> allSubscriptions, EntityChangeType type, T? entity)
+	private static void SendToSubscribers(IList<MemorySubscription<T>> allSubscriptions, EntityChangeType type,
+		string? id, string? serializedEntity)
 	{
 		foreach (MemorySubscription<T> subscription in allSubscriptions)
-			subscription.HandleChange(new EntityChange<T>(type, entity?.Clone()));
+		{
+			T? entity = default;
+			if (id != null && serializedEntity != null)
+				entity = DeserializeEntity(id, serializedEntity);
+			subscription.HandleChange(new EntityChange<T>(type, entity));
+		}
 	}
 
 	/// <param name="entity">the new or updated entity to be upserted</param>

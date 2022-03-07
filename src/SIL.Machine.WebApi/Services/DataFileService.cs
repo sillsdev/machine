@@ -2,12 +2,12 @@
 
 public class DataFileService : IDataFileService
 {
-	private readonly IOptions<DataFileOptions> _dataFileOptions;
+	private readonly IOptions<EngineOptions> _engineOptions;
 	private readonly IRepository<DataFile> _dataFiles;
 
-	public DataFileService(IOptions<DataFileOptions> dataFileOptions, IRepository<DataFile> dataFiles)
+	public DataFileService(IOptions<EngineOptions> engineOptions, IRepository<DataFile> dataFiles)
 	{
-		_dataFileOptions = dataFileOptions;
+		_engineOptions = engineOptions;
 		_dataFiles = dataFiles;
 	}
 
@@ -41,7 +41,7 @@ public class DataFileService : IDataFileService
 		await _dataFiles.DeleteAllAsync(f => idsToDelete.Contains(f.Id));
 		foreach (DataFile dataFile in dataFiles)
 		{
-			string path = Path.Combine(_dataFileOptions.Value.DataFilesDir, dataFile.Filename);
+			string path = Path.Combine(_engineOptions.Value.DataFilesDir, dataFile.Filename);
 			File.Delete(path);
 		}
 	}
@@ -84,6 +84,6 @@ public class DataFileService : IDataFileService
 
 	private string GetDataFilePath(DataFile dataFile)
 	{
-		return Path.Combine(_dataFileOptions.Value.DataFilesDir, dataFile.Filename);
+		return Path.Combine(_engineOptions.Value.DataFilesDir, dataFile.Filename);
 	}
 }

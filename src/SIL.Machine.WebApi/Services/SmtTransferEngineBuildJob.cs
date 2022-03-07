@@ -11,12 +11,12 @@ public class SmtTransferEngineBuildJob
 	private readonly ISmtModelFactory _smtModelFactory;
 
 	private readonly ILogger<SmtTransferEngineBuildJob> _logger;
-	private readonly IBuildHandler _buildHandler;
+	private readonly IWebhookService _webhookService;
 
 	public SmtTransferEngineBuildJob(IRepository<Engine> engines, IRepository<Build> builds,
 		IRepository<TrainSegmentPair> trainSegmentPairs, IDistributedReaderWriterLockFactory lockFactory,
 		IDataFileService dataFileService, ITruecaserFactory truecaserFactory, ISmtModelFactory smtModelFactory,
-		ILogger<SmtTransferEngineBuildJob> logger, IBuildHandler buildHandler)
+		ILogger<SmtTransferEngineBuildJob> logger, IWebhookService webhookService)
 	{
 		_engines = engines;
 		_builds = builds;
@@ -26,7 +26,7 @@ public class SmtTransferEngineBuildJob
 		_truecaserFactory = truecaserFactory;
 		_smtModelFactory = smtModelFactory;
 		_logger = logger;
-		_buildHandler = buildHandler;
+		_webhookService = webhookService;
 	}
 
 	[AutomaticRetry(Attempts = 0)]
@@ -58,7 +58,8 @@ public class SmtTransferEngineBuildJob
 
 				await _trainSegmentPairs.DeleteAllAsync(p => p.EngineRef == engineId, cancellationToken);
 
-				await _buildHandler.OnStarted(new BuildContext(engine, build));
+				build.State = BuildState.Active;
+				await _webhookService.TriggerEventAsync(WebhookEvent.BuildStarted, engine.Owner, build);
 				_logger.LogInformation("Build started ({0})", engineId);
 				stopwatch.Start();
 
@@ -115,7 +116,7 @@ public class SmtTransferEngineBuildJob
 				.Set(b => b.DateFinished, DateTime.UtcNow), cancellationToken: CancellationToken.None))!;
 			stopwatch.Stop();
 			_logger.LogInformation("Build completed in {0}ms ({1})", stopwatch.Elapsed.TotalMilliseconds, engineId);
-			await _buildHandler.OnCompleted(new BuildContext(engine, build));
+			await _webhookService.TriggerEventAsync(WebhookEvent.BuildFinished, engine.Owner, build);
 		}
 		catch (OperationCanceledException)
 		{
@@ -134,7 +135,7 @@ public class SmtTransferEngineBuildJob
 				build = (await _builds.UpdateAsync(build, u => u
 					.Set(b => b.DateFinished, DateTime.UtcNow), cancellationToken: CancellationToken.None))!;
 				_logger.LogInformation("Build canceled ({0})", engineId);
-				await _buildHandler.OnCanceled(new BuildContext(engine, build));
+				await _webhookService.TriggerEventAsync(WebhookEvent.BuildFinished, engine.Owner, build);
 			}
 			else
 			{
@@ -162,7 +163,7 @@ public class SmtTransferEngineBuildJob
 				.Set(b => b.Message, e.Message)
 				.Set(b => b.DateFinished, DateTime.UtcNow), cancellationToken: CancellationToken.None))!;
 			_logger.LogError(0, e, "Build faulted ({0})", engineId);
-			await _buildHandler.OnFailed(new BuildContext(engine, build));
+			await _webhookService.TriggerEventAsync(WebhookEvent.BuildFinished, engine.Owner, build);
 			throw;
 		}
 		finally

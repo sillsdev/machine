@@ -1,6 +1,6 @@
 namespace SIL.Machine.WebApi.DataAccess;
 
-public class MongoUpdateBuilder<T> : IUpdateBuilder<T> where T : IEntity<T>
+public class MongoUpdateBuilder<T> : IUpdateBuilder<T> where T : IEntity
 {
 	private readonly UpdateDefinitionBuilder<T> _builder;
 	private readonly List<UpdateDefinition<T>> _defs;

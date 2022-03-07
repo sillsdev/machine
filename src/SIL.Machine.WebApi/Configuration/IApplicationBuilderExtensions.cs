@@ -9,6 +9,7 @@ public static class IApplicationBuilderExtensions
 		app.ApplicationServices.GetService<IRepository<DataFile>>()?.Init();
 		app.ApplicationServices.GetService<IRepository<RWLock>>()?.Init();
 		app.ApplicationServices.GetService<IRepository<TrainSegmentPair>>()?.Init();
+		app.ApplicationServices.GetService<IRepository<Webhook>>()?.Init();
 
 		app.ApplicationServices.GetService<IEngineService>()?.Init();
 

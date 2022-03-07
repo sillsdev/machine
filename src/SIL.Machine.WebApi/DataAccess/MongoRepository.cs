@@ -1,6 +1,6 @@
 namespace SIL.Machine.WebApi.DataAccess;
 
-public class MongoRepository<T> : IRepository<T> where T : class, IEntity<T>
+public class MongoRepository<T> : IRepository<T> where T : IEntity
 {
 	private readonly IMongoCollection<T> _collection;
 	private readonly Action<IMongoCollection<T>> _init;
