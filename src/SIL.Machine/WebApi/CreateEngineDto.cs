@@ -2,7 +2,7 @@
 
 namespace SIL.Machine.WebApi
 {
-	public class NewEngineDto
+	public class CreateEngineDto
 	{
 		[JsonProperty(Required = Required.Always)]
 		public string SourceLanguageTag { get; set; }

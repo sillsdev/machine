@@ -69,7 +69,7 @@ public class EnginesController : Controller
 	[Authorize(Scopes.CreateEngines)]
 	[HttpPost]
 	[ProducesResponseType(StatusCodes.Status201Created)]
-	public async Task<ActionResult<EngineDto>> CreateAsync([FromBody] NewEngineDto engine)
+	public async Task<ActionResult<EngineDto>> CreateAsync([FromBody] CreateEngineDto engine)
 	{
 		var newEngine = new Engine
 		{

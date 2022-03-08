@@ -57,7 +57,7 @@ public class WebhooksController : Controller
 	[Authorize(Scopes.CreateHooks)]
 	[HttpPost]
 	[ProducesResponseType(StatusCodes.Status201Created)]
-	public async Task<ActionResult<WebhookDto>> CreateAsync([FromBody] NewWebhookDto hook)
+	public async Task<ActionResult<WebhookDto>> CreateAsync([FromBody] CreateWebhookDto hook)
 	{
 		var newHook = new Webhook
 		{

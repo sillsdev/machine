@@ -2,7 +2,7 @@
 
 namespace SIL.Machine.WebApi
 {
-	public class NewWebhookDto
+	public class CreateWebhookDto
 	{
 		[JsonProperty(Required = Required.Always)]
 		public string Url { get; set; }
