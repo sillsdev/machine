@@ -29,7 +29,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 	private AsyncLazy<ITruecaser> _truecaser;
 	private bool _isUpdated;
 	private DateTime _lastUsedTime;
-	private int _currentBuildRevision = -1;
+	private int _currentModelRevision = -1;
 
 	public SmtTransferEngineRuntime(IOptions<EngineOptions> engineOptions, IRepository<Engine> engines,
 		IRepository<Build> builds, IRepository<TrainSegmentPair> trainSegmentPairs, ISmtModelFactory smtModelFactory,
@@ -190,12 +190,12 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 			if (engine == null || engine.IsBuilding)
 				return;
 
-			if (_currentBuildRevision == -1)
-				_currentBuildRevision = engine.BuildRevision;
-			if (engine.BuildRevision != _currentBuildRevision)
+			if (_currentModelRevision == -1)
+				_currentModelRevision = engine.ModelRevision;
+			if (engine.ModelRevision != _currentModelRevision)
 			{
 				await UnloadAsync();
-				_currentBuildRevision = engine.BuildRevision;
+				_currentModelRevision = engine.ModelRevision;
 			}
 			else if (DateTime.Now - _lastUsedTime > _engineOptions.Value.InactiveEngineTimeout)
 			{
@@ -264,17 +264,20 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 
 	private async Task CheckReloadAsync()
 	{
+		if (!IsLoaded && _currentModelRevision != -1)
+			return;
+
 		Engine? engine = await _engines.GetAsync(_engineId);
 		if (engine == null)
 			return;
 
-		if (_currentBuildRevision == -1)
-			_currentBuildRevision = engine.BuildRevision;
-		if (engine.BuildRevision != _currentBuildRevision)
+		if (_currentModelRevision == -1)
+			_currentModelRevision = engine.ModelRevision;
+		if (engine.ModelRevision != _currentModelRevision)
 		{
 			_isUpdated = false;
 			await UnloadAsync();
-			_currentBuildRevision = engine.BuildRevision;
+			_currentModelRevision = engine.ModelRevision;
 		}
 	}
 
@@ -291,6 +294,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 		_smtModel = new Lazy<IInteractiveTranslationModel>(CreateSmtModel);
 		_enginePool = new ObjectPool<HybridTranslationEngine>(MaxEnginePoolSize, CreateEngine);
 		_truecaser = new AsyncLazy<ITruecaser>(CreateTruecaserAsync);
+		_currentModelRevision = -1;
 	}
 
 	private IInteractiveTranslationModel CreateSmtModel()

@@ -107,7 +107,7 @@ public class SmtTransferEngineBuildJob
 					.Set(e => e.Confidence, smtModelTrainer.Stats.Metrics["bleu"])
 					.Set(e => e.TrainedSegmentCount, smtModelTrainer.Stats.TrainedSegmentCount + segmentPairs.Count)
 					.Set(e => e.IsBuilding, false)
-					.Inc(e => e.BuildRevision),
+					.Inc(e => e.ModelRevision),
 					cancellationToken: CancellationToken.None))!;
 			}
 

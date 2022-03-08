@@ -8,7 +8,7 @@ public class EngineRuntimeTests
 	{
 		using var env = new TestEnvironment();
 		Engine engine = (await env.Engines.GetAsync("engine1"))!;
-		Assert.That(engine.BuildRevision, Is.EqualTo(0));
+		Assert.That(engine.ModelRevision, Is.EqualTo(0));
 		await env.Runtime.InitNewAsync();
 		// ensure that the SMT model was loaded before training
 		await env.Runtime.TranslateAsync("esto es una prueba .".Split());
@@ -27,7 +27,7 @@ public class EngineRuntimeTests
 		build = (await env.Builds.GetAsync(build.Id))!;
 		Assert.That(build.State, Is.EqualTo(BuildState.Completed));
 		engine = (await env.Engines.GetAsync("engine1"))!;
-		Assert.That(engine.BuildRevision, Is.EqualTo(1));
+		Assert.That(engine.ModelRevision, Is.EqualTo(1));
 		// check if SMT model was reloaded upon first use after training
 		env.SmtModel.ClearReceivedCalls();
 		await env.Runtime.TranslateAsync("esto es una prueba .".Split());
