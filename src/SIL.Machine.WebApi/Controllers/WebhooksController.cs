@@ -4,16 +4,16 @@
 /// Webhooks
 /// </summary>
 [Area("Admin")]
-[Route("[area]/[controller]")]
+[Route("[area]/hooks")]
 [Produces("application/json")]
 [TypeFilter(typeof(OperationCancelledExceptionFilter))]
-public class HooksController : Controller
+public class WebhooksController : Controller
 {
 	private readonly IAuthorizationService _authService;
 	private readonly IRepository<Webhook> _hooks;
 	private readonly IMapper _mapper;
 
-	public HooksController(IAuthorizationService authService, IRepository<Webhook> hooks, IMapper mapper)
+	public WebhooksController(IAuthorizationService authService, IRepository<Webhook> hooks, IMapper mapper)
 	{
 		_authService = authService;
 		_hooks = hooks;
