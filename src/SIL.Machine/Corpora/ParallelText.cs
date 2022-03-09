@@ -30,7 +30,7 @@ namespace SIL.Machine.Corpora
 
 		public IEnumerable<ParallelTextSegment> Segments => GetSegments();
 
-		public IEnumerable<ParallelTextSegment> GetSegments(bool allSourceSegments = false,
+		public virtual IEnumerable<ParallelTextSegment> GetSegments(bool allSourceSegments = false,
 			bool allTargetSegments = false, bool includeText = true)
 		{
 			using (IEnumerator<TextSegment> srcEnumerator = SourceText.GetSegments(includeText).GetEnumerator())

@@ -30,7 +30,7 @@ namespace SIL.Machine.Corpora
 
 		public IEnumerable<TextSegment> TargetSegments => Texts.SelectMany(t => t.TargetText.GetSegments());
 
-		public ParallelTextCorpus Invert()
+		public virtual ParallelTextCorpus Invert()
 		{
 			return new ParallelTextCorpus(TargetCorpus, SourceCorpus, TextAlignmentCorpus.Invert());
 		}
@@ -66,7 +66,7 @@ namespace SIL.Machine.Corpora
 				.Sum(t => t.GetCount(allSourceSegments, allTargetSegments, nonemptyOnly));
 		}
 
-		private ParallelText CreateParallelText(string id)
+		protected virtual ParallelText CreateParallelText(string id)
 		{
 			IText sourceText = SourceCorpus[id];
 			IText targetText = TargetCorpus[id];

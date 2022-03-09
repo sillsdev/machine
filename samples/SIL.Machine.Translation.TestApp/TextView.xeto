@@ -14,7 +14,7 @@
 								<Label>Target</Label>
 							</TableRow>
 							<TableRow>
-								<local:Line Height="1" Color="Gray" />
+								<local:Line Height="1"/>
 							</TableRow>
 							<TableRow>
 								<Panel Padding="0,4,0,0">
@@ -29,7 +29,7 @@
 								<Label>Source</Label>
 							</TableRow>
 							<TableRow>
-								<local:Line Height="1" Color="Gray" />
+								<local:Line Height="1" />
 							</TableRow>
 							<TableRow>
 								<Panel Padding="0,4,0,0">
