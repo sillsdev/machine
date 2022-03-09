@@ -146,9 +146,11 @@ public static class IMachineBuilderExtensions
 		builder.Services.AddMongoRepository<RWLock>("locks", init: async c =>
 		{
 			await c.Indexes.CreateOrUpdateAsync(new CreateIndexModel<RWLock>(
-				Builders<RWLock>.IndexKeys.Ascending(rwl => rwl.WriterLock!.Id)));
+				Builders<RWLock>.IndexKeys.Ascending("writerLock._id")));
 			await c.Indexes.CreateOrUpdateAsync(new CreateIndexModel<RWLock>(
 				Builders<RWLock>.IndexKeys.Ascending("readerLocks._id")));
+			await c.Indexes.CreateOrUpdateAsync(new CreateIndexModel<RWLock>(
+				Builders<RWLock>.IndexKeys.Ascending("writerQueue._id")));
 		}, isSubscribable: true);
 		builder.Services.AddMongoRepository<TrainSegmentPair>("train_segment_pairs", init: async c =>
 			await c.Indexes.CreateOrUpdateAsync(new CreateIndexModel<TrainSegmentPair>(

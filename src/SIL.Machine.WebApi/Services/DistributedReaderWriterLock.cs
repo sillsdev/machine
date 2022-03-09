@@ -23,7 +23,7 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
 			do
 			{
 				RWLock? rwLock = sub.Change.Entity;
-				if (rwLock is not null && !rwLock.IsAvailableForReading)
+				if (rwLock is not null && !rwLock.IsAvailableForReading())
 				{
 					TimeSpan? timeout = default;
 					if (rwLock.WriterLock?.ExpiresAt is not null)
@@ -46,27 +46,39 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
 		string lockId = ObjectId.GenerateNewId().ToString();
 		if (!await TryAcquireWriterLock(lockId, lifetime, cancellationToken))
 		{
-			using ISubscription<RWLock> sub = await _locks.SubscribeAsync(rwl => rwl.Id == _id, cancellationToken);
-			do
+			await _locks.UpdateAsync(_id, u => u
+				.Add(rwl => rwl.WriterQueue, new Lock { Id = lockId, HostId = _hostId }),
+				cancellationToken: cancellationToken);
+			try
 			{
-				RWLock? rwLock = sub.Change.Entity;
-				if (rwLock is not null && !rwLock.IsAvailableForWriting)
+				using ISubscription<RWLock> sub = await _locks.SubscribeAsync(rwl => rwl.Id == _id, cancellationToken);
+				do
 				{
-					List<DateTime> dateTimes = rwLock.ReaderLocks.Where(l => l.ExpiresAt.HasValue)
-						.Select(l => l.ExpiresAt.GetValueOrDefault()).ToList();
-					if (rwLock.WriterLock?.ExpiresAt is not null)
-						dateTimes.Add(rwLock.WriterLock.ExpiresAt.Value);
-					TimeSpan? timeout = default;
-					if (dateTimes.Count > 0)
+					RWLock? rwLock = sub.Change.Entity;
+					if (rwLock is not null && !rwLock.IsAvailableForWriting(lockId))
 					{
-						timeout = dateTimes.Max() - DateTime.UtcNow;
-						if (timeout < TimeSpan.Zero)
-							timeout = TimeSpan.Zero;
+						List<DateTime> dateTimes = rwLock.ReaderLocks.Where(l => l.ExpiresAt.HasValue)
+							.Select(l => l.ExpiresAt.GetValueOrDefault()).ToList();
+						if (rwLock.WriterLock?.ExpiresAt is not null)
+							dateTimes.Add(rwLock.WriterLock.ExpiresAt.Value);
+						TimeSpan? timeout = default;
+						if (dateTimes.Count > 0)
+						{
+							timeout = dateTimes.Max() - DateTime.UtcNow;
+							if (timeout < TimeSpan.Zero)
+								timeout = TimeSpan.Zero;
+						}
+						if (timeout != TimeSpan.Zero)
+							await sub.WaitForChangeAsync(timeout, cancellationToken);
 					}
-					if (timeout != TimeSpan.Zero)
-						await sub.WaitForChangeAsync(timeout, cancellationToken);
-				}
-			} while (!await TryAcquireWriterLock(lockId, lifetime, cancellationToken));
+				} while (!await TryAcquireWriterLock(lockId, lifetime, cancellationToken));
+			}
+			catch
+			{
+				await _locks.UpdateAsync(_id, u => u.RemoveAll(rwl => rwl.WriterQueue, l => l.Id == lockId),
+					cancellationToken: cancellationToken);
+				throw;
+			}
 		}
 		return new WriterLockReleaser(this, lockId);
 	}
@@ -79,7 +91,8 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
 			var now = DateTime.UtcNow;
 			Expression<Func<RWLock, bool>> filter = rwl => rwl.Id == _id
 				&& (rwl.WriterLock == null || (rwl.WriterLock.ExpiresAt != null && rwl.WriterLock.ExpiresAt <= now))
-				&& !rwl.ReaderLocks.Any(l => l.ExpiresAt == null || l.ExpiresAt > now);
+				&& !rwl.ReaderLocks.Any(l => l.ExpiresAt == null || l.ExpiresAt > now)
+				&& (!rwl.WriterQueue.Any() || rwl.WriterQueue[0].Id == lockId);
 			void Update(IUpdateBuilder<RWLock> u)
 			{
 				u.Set(rwl => rwl.WriterLock, new Lock
@@ -88,6 +101,7 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
 					ExpiresAt = lifetime is null ? null : now + lifetime,
 					HostId = _hostId
 				});
+				u.RemoveAll(rwl => rwl.WriterQueue, l => l.Id == lockId);
 			}
 			RWLock? rwLock = await _locks.UpdateAsync(filter, Update, upsert: true, cancellationToken);
 			return rwLock is not null;
@@ -105,7 +119,8 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
 		{
 			var now = DateTime.UtcNow;
 			Expression<Func<RWLock, bool>> filter = rwl => rwl.Id == _id
-				&& (rwl.WriterLock == null || (rwl.WriterLock.ExpiresAt != null && rwl.WriterLock.ExpiresAt <= now));
+				&& (rwl.WriterLock == null || (rwl.WriterLock.ExpiresAt != null && rwl.WriterLock.ExpiresAt <= now))
+				&& !rwl.WriterQueue.Any();
 			void Update(IUpdateBuilder<RWLock> u)
 			{
 				u.Add(rwl => rwl.ReaderLocks, new Lock

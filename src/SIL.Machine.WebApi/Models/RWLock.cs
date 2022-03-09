@@ -6,23 +6,20 @@ public class RWLock : IEntity
 	public int Revision { get; set; }
 	public Lock? WriterLock { get; set; }
 	public List<Lock> ReaderLocks { get; set; } = new List<Lock>();
+	public List<Lock> WriterQueue { get; set; } = new List<Lock>();
 
-	public bool IsAvailableForReading
+	public bool IsAvailableForReading()
 	{
-		get
-		{
-			var now = DateTime.UtcNow;
-			return WriterLock == null || (WriterLock.ExpiresAt != null && WriterLock.ExpiresAt <= now);
-		}
+		var now = DateTime.UtcNow;
+		return (WriterLock is null || (WriterLock.ExpiresAt is not null && WriterLock.ExpiresAt <= now))
+			&& WriterQueue.Count == 0;
 	}
 
-	public bool IsAvailableForWriting
+	public bool IsAvailableForWriting(string? lockId = null)
 	{
-		get
-		{
-			var now = DateTime.UtcNow;
-			return (WriterLock == null || (WriterLock.ExpiresAt != null && WriterLock.ExpiresAt <= now))
-				&& !ReaderLocks.Any(l => l.ExpiresAt == null || l.ExpiresAt > now);
-		}
+		var now = DateTime.UtcNow;
+		return (WriterLock is null || (WriterLock.ExpiresAt is not null && WriterLock.ExpiresAt <= now))
+			&& !ReaderLocks.Any(l => l.ExpiresAt is null || l.ExpiresAt > now)
+			&& (lockId is null || WriterQueue.FirstOrDefault()?.Id == lockId);
 	}
 }
