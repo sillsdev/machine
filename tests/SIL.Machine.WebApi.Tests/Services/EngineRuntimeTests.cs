@@ -7,7 +7,7 @@ public class EngineRuntimeTests
 	public async Task StartBuildAsync()
 	{
 		using var env = new TestEnvironment();
-		Engine engine = (await env.Engines.GetAsync("engine1"))!;
+		Engine engine = env.Engines.Get("engine1");
 		Assert.That(engine.ModelRevision, Is.EqualTo(0));
 		await env.Runtime.InitNewAsync();
 		// ensure that the SMT model was loaded before training
@@ -15,18 +15,16 @@ public class EngineRuntimeTests
 		Build build = await env.Runtime.StartBuildAsync();
 		Assert.That(build, Is.Not.Null);
 		await env.WaitForBuildToStartAsync(build.Id);
-		await env.WebhookService.Received().TriggerEventAsync(WebhookEvent.BuildStarted, "client",
-			Arg.Is<Build>(b => b.State == BuildState.Active));
+		build = env.Builds.Get(build.Id);
+		Assert.That(build.State, Is.EqualTo(BuildState.Active));
 		await env.WaitForBuildToFinishAsync(build.Id);
 		env.SmtBatchTrainer.Received().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
 		env.TruecaserTrainer.Received().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
 		env.SmtBatchTrainer.Received().Save();
 		await env.TruecaserTrainer.Received().SaveAsync();
-		await env.WebhookService.Received().TriggerEventAsync(WebhookEvent.BuildFinished, "client",
-			Arg.Is<Build>(b => b.State == BuildState.Completed));
-		build = (await env.Builds.GetAsync(build.Id))!;
+		build = env.Builds.Get(build.Id);
 		Assert.That(build.State, Is.EqualTo(BuildState.Completed));
-		engine = (await env.Engines.GetAsync("engine1"))!;
+		engine = env.Engines.Get("engine1");
 		Assert.That(engine.ModelRevision, Is.EqualTo(1));
 		// check if SMT model was reloaded upon first use after training
 		env.SmtModel.ClearReceivedCalls();
@@ -49,17 +47,15 @@ public class EngineRuntimeTests
 		Build build = await env.Runtime.StartBuildAsync();
 		Assert.That(build, Is.Not.Null);
 		await env.WaitForBuildToStartAsync(build.Id);
-		await env.WebhookService.Received().TriggerEventAsync(WebhookEvent.BuildStarted, "client",
-			Arg.Is<Build>(b => b.State == BuildState.Active));
+		build = env.Builds.Get(build.Id);
+		Assert.That(build.State, Is.EqualTo(BuildState.Active));
 		await env.Runtime.CancelBuildAsync();
 		await env.WaitForBuildToFinishAsync(build.Id);
 		env.SmtBatchTrainer.Received().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
 		env.TruecaserTrainer.DidNotReceive().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
 		env.SmtBatchTrainer.DidNotReceive().Save();
 		await env.TruecaserTrainer.DidNotReceive().SaveAsync();
-		await env.WebhookService.Received().TriggerEventAsync(WebhookEvent.BuildFinished, "client",
-			Arg.Is<Build>(b => b.State == BuildState.Canceled));
-		build = (await env.Builds.GetAsync(build.Id))!;
+		build = env.Builds.Get(build.Id);
 		Assert.That(build.State, Is.EqualTo(BuildState.Canceled));
 	}
 
@@ -76,17 +72,15 @@ public class EngineRuntimeTests
 		Build build = await env.Runtime.StartBuildAsync();
 		Assert.That(build, Is.Not.Null);
 		await env.WaitForBuildToStartAsync(build.Id);
-		await env.WebhookService.Received().TriggerEventAsync(WebhookEvent.BuildStarted, "client",
-			Arg.Is<Build>(b => b.State == BuildState.Active));
+		build = env.Builds.Get(build.Id);
+		Assert.That(build.State, Is.EqualTo(BuildState.Active));
 		env.StopServer();
 		build = (await env.Builds.GetAsync(build.Id))!;
 		Assert.That(build.State, Is.EqualTo(BuildState.Pending));
 		env.SmtBatchTrainer.ClearSubstitute(ClearOptions.CallActions);
 		env.StartServer();
 		await env.WaitForBuildToFinishAsync(build.Id);
-		await env.WebhookService.Received().TriggerEventAsync(WebhookEvent.BuildFinished, "client",
-			Arg.Is<Build>(b => b.State == BuildState.Completed));
-		build = (await env.Builds.GetAsync(build.Id))!;
+		build = env.Builds.Get(build.Id);
 		Assert.That(build.State, Is.EqualTo(BuildState.Completed));
 	}
 
@@ -342,7 +336,7 @@ public class EngineRuntimeTests
 
 		public Task WaitForBuildToFinishAsync(string buildId)
 		{
-			return WaitForBuildState(buildId, b => b.DateFinished != default);
+			return WaitForBuildState(buildId, b => b.DateFinished is not null);
 		}
 
 		public Task WaitForBuildToStartAsync(string buildId)
@@ -356,7 +350,7 @@ public class EngineRuntimeTests
 			while (true)
 			{
 				Build? build = subscription.Change.Entity;
-				if (build == null || predicate(build))
+				if (build != null && predicate(build))
 					break;
 				await subscription.WaitForChangeAsync();
 			}

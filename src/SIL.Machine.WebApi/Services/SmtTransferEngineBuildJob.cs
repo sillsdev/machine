@@ -58,8 +58,6 @@ public class SmtTransferEngineBuildJob
 
 				await _trainSegmentPairs.DeleteAllAsync(p => p.EngineRef == engineId, cancellationToken);
 
-				build.State = BuildState.Active;
-				await _webhookService.TriggerEventAsync(WebhookEvent.BuildStarted, engine.Owner, build);
 				_logger.LogInformation("Build started ({0})", engineId);
 				stopwatch.Start();
 
@@ -68,6 +66,8 @@ public class SmtTransferEngineBuildJob
 					.Set(b => b.JobId, performContext.BackgroundJob.Id), cancellationToken: CancellationToken.None))!;
 				engine = (await _engines.UpdateAsync(engine, u => u.Set(e => e.IsBuilding, true),
 					cancellationToken: CancellationToken.None))!;
+
+				await _webhookService.TriggerEventAsync(WebhookEvent.BuildStarted, engine.Owner, build);
 
 				var tokenizer = new LatinWordTokenizer();
 				ITextCorpus sourceCorpus = await _dataFileService.CreateTextCorpusAsync(engine.Id, CorpusType.Source,
