@@ -6,7 +6,6 @@ public class RWLock : IEntity
 	public int Revision { get; set; }
 	public Lock? WriterLock { get; set; }
 	public List<Lock> ReaderLocks { get; set; } = new List<Lock>();
-	public int ReaderCount { get; set; }
 
 	public bool IsAvailableForReading
 	{
@@ -23,7 +22,7 @@ public class RWLock : IEntity
 		{
 			var now = DateTime.UtcNow;
 			return (WriterLock == null || (WriterLock.ExpiresAt != null && WriterLock.ExpiresAt <= now))
-				&& (ReaderCount == 0 || !ReaderLocks.Any(l => l.ExpiresAt == null || l.ExpiresAt > now));
+				&& !ReaderLocks.Any(l => l.ExpiresAt == null || l.ExpiresAt > now);
 		}
 	}
 }

@@ -107,6 +107,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.UseMachine();
+await app.UseMachineAsync();
 
 app.Run();

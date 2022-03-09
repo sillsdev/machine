@@ -137,27 +137,27 @@ public static class IMachineBuilderExtensions
 
 
 		builder.Services.AddMongoRepository<Engine>("engines");
-		builder.Services.AddMongoRepository<Build>("builds", indexSetup: indexes =>
-			indexes.CreateOrUpdate(new CreateIndexModel<Build>(
+		builder.Services.AddMongoRepository<Build>("builds", init: async c =>
+			await c.Indexes.CreateOrUpdateAsync(new CreateIndexModel<Build>(
 				Builders<Build>.IndexKeys.Ascending(b => b.EngineRef))), isSubscribable: true);
-		builder.Services.AddMongoRepository<DataFile>("files", indexSetup: indexes =>
-			indexes.CreateOrUpdate(new CreateIndexModel<DataFile>(
+		builder.Services.AddMongoRepository<DataFile>("files", init: async c =>
+			await c.Indexes.CreateOrUpdateAsync(new CreateIndexModel<DataFile>(
 				Builders<DataFile>.IndexKeys.Ascending(f => f.EngineRef))));
-		builder.Services.AddMongoRepository<RWLock>("locks", indexSetup: indexes =>
+		builder.Services.AddMongoRepository<RWLock>("locks", init: async c =>
 		{
-			indexes.CreateOrUpdate(new CreateIndexModel<RWLock>(
+			await c.Indexes.CreateOrUpdateAsync(new CreateIndexModel<RWLock>(
 				Builders<RWLock>.IndexKeys.Ascending(rwl => rwl.WriterLock!.Id)));
-			indexes.CreateOrUpdate(new CreateIndexModel<RWLock>(
+			await c.Indexes.CreateOrUpdateAsync(new CreateIndexModel<RWLock>(
 				Builders<RWLock>.IndexKeys.Ascending("readerLocks._id")));
 		}, isSubscribable: true);
-		builder.Services.AddMongoRepository<TrainSegmentPair>("train_segment_pairs", indexSetup: indexes =>
-			indexes.CreateOrUpdate(new CreateIndexModel<TrainSegmentPair>(
+		builder.Services.AddMongoRepository<TrainSegmentPair>("train_segment_pairs", init: async c =>
+			await c.Indexes.CreateOrUpdateAsync(new CreateIndexModel<TrainSegmentPair>(
 				Builders<TrainSegmentPair>.IndexKeys.Ascending(p => p.EngineRef))));
-		builder.Services.AddMongoRepository<Webhook>("hooks", indexSetup: indexes =>
+		builder.Services.AddMongoRepository<Webhook>("hooks", init: async c =>
 		{
-			indexes.CreateOrUpdate(new CreateIndexModel<Webhook>(
+			await c.Indexes.CreateOrUpdateAsync(new CreateIndexModel<Webhook>(
 				Builders<Webhook>.IndexKeys.Ascending(h => h.Owner)));
-			indexes.CreateOrUpdate(new CreateIndexModel<Webhook>(
+			await c.Indexes.CreateOrUpdateAsync(new CreateIndexModel<Webhook>(
 				Builders<Webhook>.IndexKeys.Ascending(h => h.Events)));
 		});
 
@@ -165,17 +165,17 @@ public static class IMachineBuilderExtensions
 	}
 
 	private static void AddMongoRepository<T>(this IServiceCollection services, string collection,
-		Action<BsonClassMap<T>>? mapSetup = null, Action<IMongoIndexManager<T>>? indexSetup = null,
+		Action<BsonClassMap<T>>? mapSetup = null, Func<IMongoCollection<T>, Task>? init = null,
 		bool isSubscribable = false) where T : IEntity
 	{
 		DataAccessClassMap.RegisterClass<T>(cm => mapSetup?.Invoke(cm));
-		services.AddSingleton<IRepository<T>>(sp => CreateMongoRepository(sp, collection, indexSetup, isSubscribable));
+		services.AddSingleton<IRepository<T>>(sp => CreateMongoRepository(sp, collection, init, isSubscribable));
 	}
 
 	private static MongoRepository<T> CreateMongoRepository<T>(IServiceProvider sp, string collection,
-		Action<IMongoIndexManager<T>>? indexSetup, bool isSubscribable) where T : IEntity
+		Func<IMongoCollection<T>, Task>? init, bool isSubscribable) where T : IEntity
 	{
-		return new MongoRepository<T>(sp.GetService<IMongoDatabase>()!.GetCollection<T>(collection),
-			c => indexSetup?.Invoke(c.Indexes), isSubscribable);
+		return new MongoRepository<T>(sp.GetService<IMongoDatabase>()!.GetCollection<T>(collection), init,
+			isSubscribable);
 	}
 }

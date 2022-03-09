@@ -11,6 +11,8 @@ builder.Services.AddMachine()
 
 var app = builder.Build();
 
+await app.UseMachineAsync();
+
 app.UseHangfireDashboard();
 
 app.Run();

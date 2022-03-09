@@ -2,17 +2,20 @@
 
 public static class IApplicationBuilderExtensions
 {
-	public static IApplicationBuilder UseMachine(this IApplicationBuilder app)
+	public static async Task<IApplicationBuilder> UseMachineAsync(this IApplicationBuilder app)
 	{
-		app.ApplicationServices.GetService<IRepository<Engine>>()?.Init();
-		app.ApplicationServices.GetService<IRepository<Build>>()?.Init();
-		app.ApplicationServices.GetService<IRepository<DataFile>>()?.Init();
-		app.ApplicationServices.GetService<IRepository<RWLock>>()?.Init();
-		app.ApplicationServices.GetService<IRepository<TrainSegmentPair>>()?.Init();
-		app.ApplicationServices.GetService<IRepository<Webhook>>()?.Init();
+		await app.ApplicationServices.GetService<IRepository<Engine>>()!.InitAsync();
+		await app.ApplicationServices.GetService<IRepository<Build>>()!.InitAsync();
+		await app.ApplicationServices.GetService<IRepository<DataFile>>()!.InitAsync();
+		await app.ApplicationServices.GetService<IRepository<RWLock>>()!.InitAsync();
+		await app.ApplicationServices.GetService<IRepository<TrainSegmentPair>>()!.InitAsync();
+		await app.ApplicationServices.GetService<IRepository<Webhook>>()!.InitAsync();
 
+		await app.ApplicationServices.GetService<IDistributedReaderWriterLockFactory>()!.InitAsync();
 		app.ApplicationServices.GetService<IEngineService>()?.Init();
 
 		return app;
 	}
+
+
 }

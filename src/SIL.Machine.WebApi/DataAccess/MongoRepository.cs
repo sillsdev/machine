@@ -3,10 +3,11 @@ namespace SIL.Machine.WebApi.DataAccess;
 public class MongoRepository<T> : IRepository<T> where T : IEntity
 {
 	private readonly IMongoCollection<T> _collection;
-	private readonly Action<IMongoCollection<T>> _init;
+	private readonly Func<IMongoCollection<T>, Task>? _init;
 	private readonly IMongoCollection<ChangeEvent>? _changeEvents;
 
-	public MongoRepository(IMongoCollection<T> collection, Action<IMongoCollection<T>> init, bool isSubscribable)
+	public MongoRepository(IMongoCollection<T> collection, Func<IMongoCollection<T>, Task>? init = null,
+		bool isSubscribable = false)
 	{
 		_collection = collection;
 		_init = init;
@@ -17,21 +18,23 @@ public class MongoRepository<T> : IRepository<T> where T : IEntity
 		}
 	}
 
-	public void Init()
+	public async Task InitAsync()
 	{
-		_init(_collection);
 		if (_changeEvents is not null)
 		{
 			string changeEventsName = _changeEvents.CollectionNamespace.CollectionName;
 			var filter = new BsonDocument("name", changeEventsName);
-			if (!_changeEvents.Database.ListCollectionNames(new ListCollectionNamesOptions { Filter = filter }).Any())
+			if (!await _changeEvents.Database.ListCollectionNames(new ListCollectionNamesOptions { Filter = filter })
+				.AnyAsync())
 			{
-				_changeEvents.Database.CreateCollection(changeEventsName,
+				await _changeEvents.Database.CreateCollectionAsync(changeEventsName,
 					new CreateCollectionOptions { Capped = true, MaxSize = 100 * 1024 });
 			}
-			_changeEvents.Indexes.CreateOrUpdate(new CreateIndexModel<ChangeEvent>(
+			await _changeEvents.Indexes.CreateOrUpdateAsync(new CreateIndexModel<ChangeEvent>(
 				Builders<ChangeEvent>.IndexKeys.Ascending(ce => ce.EntityRef)));
 		}
+		if (_init is not null)
+			await _init(_collection);
 	}
 
 	public async Task<T?> GetAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)

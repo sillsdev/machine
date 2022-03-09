@@ -79,7 +79,7 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
 			var now = DateTime.UtcNow;
 			Expression<Func<RWLock, bool>> filter = rwl => rwl.Id == _id
 				&& (rwl.WriterLock == null || (rwl.WriterLock.ExpiresAt != null && rwl.WriterLock.ExpiresAt <= now))
-				&& (rwl.ReaderCount == 0 || !rwl.ReaderLocks.Any(l => l.ExpiresAt == null || l.ExpiresAt > now));
+				&& !rwl.ReaderLocks.Any(l => l.ExpiresAt == null || l.ExpiresAt > now);
 			void Update(IUpdateBuilder<RWLock> u)
 			{
 				u.Set(rwl => rwl.WriterLock, new Lock
@@ -108,7 +108,6 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
 				&& (rwl.WriterLock == null || (rwl.WriterLock.ExpiresAt != null && rwl.WriterLock.ExpiresAt <= now));
 			void Update(IUpdateBuilder<RWLock> u)
 			{
-				u.Inc(rwl => rwl.ReaderCount);
 				u.Add(rwl => rwl.ReaderLocks, new Lock
 				{
 					Id = lockId,
@@ -162,7 +161,6 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
 			Expression<Func<RWLock, bool>> filter = rwl => rwl.Id == _distributedLock._id
 			   && rwl.ReaderLocks.Any(l => l.Id == _lockId);
 			await _distributedLock._locks.UpdateAsync(filter, u => u
-				.Inc(rwl => rwl.ReaderCount, -1)
 				.RemoveAll(rwl => rwl.ReaderLocks, l => l.Id == _lockId));
 		}
 	}

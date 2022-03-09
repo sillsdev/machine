@@ -2,7 +2,7 @@ namespace SIL.Machine.WebApi.DataAccess;
 
 public interface IRepository<T> where T : IEntity
 {
-	void Init();
+	Task InitAsync();
 	Task<T?> GetAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default);
 	Task<IReadOnlyList<T>> GetAllAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default);
 	Task<bool> ExistsAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default);

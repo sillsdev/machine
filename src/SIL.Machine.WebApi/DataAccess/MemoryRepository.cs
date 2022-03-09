@@ -35,7 +35,10 @@ public class MemoryRepository<T> : IRepository<T> where T : IEntity
 		_subscriptions = new Dictionary<MemorySubscription<T>, Func<T, bool>>();
 	}
 
-	public void Init() { }
+	public Task InitAsync()
+	{
+		return Task.CompletedTask;
+	}
 
 	public string Add(T entity)
 	{

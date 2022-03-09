@@ -92,19 +92,19 @@ public static class DataAccessExtensions
 		}
 	}
 
-	public static void CreateOrUpdate<T>(this IMongoIndexManager<T> indexes, CreateIndexModel<T> indexModel)
+	public static async Task CreateOrUpdateAsync<T>(this IMongoIndexManager<T> indexes, CreateIndexModel<T> indexModel)
 	{
 		try
 		{
-			indexes.CreateOne(indexModel);
+			await indexes.CreateOneAsync(indexModel);
 		}
 		catch (MongoCommandException ex)
 		{
 			if (ex.CodeName == "IndexOptionsConflict")
 			{
 				string name = ex.Command["indexes"][0]["name"].AsString;
-				indexes.DropOne(name);
-				indexes.CreateOne(indexModel);
+				await indexes.DropOneAsync(name);
+				await indexes.CreateOneAsync(indexModel);
 			}
 			else
 			{
