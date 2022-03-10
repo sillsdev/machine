@@ -11,7 +11,7 @@ namespace SIL.Machine.WebApi
 		[JsonProperty(Required = Required.DisallowNull)]
 		public EngineType Type { get; set; }
 		public bool IsBuilding { get; set; }
-		public int BuildRevision { get; set; }
+		public int ModelRevision { get; set; }
 		public double Confidence { get; set; }
 		public int TrainedSegmentCount { get; set; }
 	}

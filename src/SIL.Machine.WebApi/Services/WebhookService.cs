@@ -16,7 +16,7 @@ public class WebhookService : IWebhookService
 		_httpClient = httpClient;
 	}
 
-	public async Task TriggerEventAsync<T>(WebhookEvent webhookEvent, string owner, T resource)
+	public async Task SendEventAsync<T>(WebhookEvent webhookEvent, string owner, T resource)
 	{
 		IReadOnlyList<Webhook> matchingHooks = await GetWebhooks(webhookEvent, owner);
 		if (matchingHooks.Count == 0)

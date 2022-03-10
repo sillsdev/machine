@@ -4,7 +4,7 @@
 public class WebhookServiceTests
 {
 	[Test]
-	public async Task TriggerEventAsync_NoHooks()
+	public async Task SendEventAsync_NoHooks()
 	{
 		var env = new TestEnvironment();
 		MockedRequest req = env.MockHttp.When("*")
@@ -15,13 +15,13 @@ public class WebhookServiceTests
 			Id = "build1",
 			EngineRef = "engine1"
 		};
-		await env.Service.TriggerEventAsync(WebhookEvent.BuildStarted, "client", build);
+		await env.Service.SendEventAsync(WebhookEvent.BuildStarted, "client", build);
 
 		Assert.That(env.MockHttp.GetMatchCount(req), Is.EqualTo(0));
 	}
 
 	[Test]
-	public async Task TriggerEventAsync_MatchingHook()
+	public async Task SendEventAsync_MatchingHook()
 	{
 		var env = new TestEnvironment();
 		env.Hooks.Add(new Webhook
@@ -42,13 +42,13 @@ public class WebhookServiceTests
 			Id = "build1",
 			EngineRef = "engine1"
 		};
-		await env.Service.TriggerEventAsync(WebhookEvent.BuildStarted, "client", build);
+		await env.Service.SendEventAsync(WebhookEvent.BuildStarted, "client", build);
 
 		env.MockHttp.VerifyNoOutstandingExpectation();
 	}
 
 	[Test]
-	public async Task TriggerEventAsync_NoMatchingHook()
+	public async Task SendEventAsync_NoMatchingHook()
 	{
 		var env = new TestEnvironment();
 		env.Hooks.Add(new Webhook
@@ -67,13 +67,13 @@ public class WebhookServiceTests
 			Id = "build1",
 			EngineRef = "engine1"
 		};
-		await env.Service.TriggerEventAsync(WebhookEvent.BuildFinished, "client", build);
+		await env.Service.SendEventAsync(WebhookEvent.BuildFinished, "client", build);
 
 		Assert.That(env.MockHttp.GetMatchCount(req), Is.EqualTo(0));
 	}
 
 	[Test]
-	public async Task TriggerEventAsync_RequestTimeout()
+	public async Task SendEventAsync_RequestTimeout()
 	{
 		var env = new TestEnvironment();
 		env.Hooks.Add(new Webhook
@@ -94,13 +94,13 @@ public class WebhookServiceTests
 			Id = "build1",
 			EngineRef = "engine1"
 		};
-		await env.Service.TriggerEventAsync(WebhookEvent.BuildStarted, "client", build);
+		await env.Service.SendEventAsync(WebhookEvent.BuildStarted, "client", build);
 
 		env.MockHttp.VerifyNoOutstandingExpectation();
 	}
 
 	[Test]
-	public async Task TriggerEventAsync_Exception()
+	public async Task SendEventAsync_Exception()
 	{
 		var env = new TestEnvironment();
 		env.Hooks.Add(new Webhook
@@ -121,7 +121,7 @@ public class WebhookServiceTests
 			Id = "build1",
 			EngineRef = "engine1"
 		};
-		await env.Service.TriggerEventAsync(WebhookEvent.BuildStarted, "client", build);
+		await env.Service.SendEventAsync(WebhookEvent.BuildStarted, "client", build);
 
 		env.MockHttp.VerifyNoOutstandingExpectation();
 	}
