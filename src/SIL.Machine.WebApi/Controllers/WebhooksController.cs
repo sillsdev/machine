@@ -4,7 +4,7 @@
 /// Webhooks
 /// </summary>
 [Area("Admin")]
-[Route("[area]/hooks")]
+[Route("hooks")]
 [Produces("application/json")]
 [TypeFilter(typeof(OperationCancelledExceptionFilter))]
 public class WebhooksController : Controller
