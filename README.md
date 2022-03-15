@@ -81,3 +81,12 @@ If you would like to find out more about how to use Machine, check out the tutor
 - [Text Corpora](samples/corpora.ipynb)
 - [Word Alignment](samples/word_alignment.ipynb)
 - [Machine Translation](samples/machine_translation.ipynb)
+
+## Development in Docker Compose
+
+Following [this guide](https://stackoverflow.com/questions/55485511/how-to-run-dotnet-dev-certs-https-trust):
+- install git and add to path (this will also add openssh)
+- create "C:\usr\local\ca-certificates"
+- copy docker/development/machine_api.conf into the above folder
+- `openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout machine_api.key -out machine_api.crt -config machine_api.conf`
+- `openssl pkcs12 -export -out machine_api.pfx -inkey machine_api.key -in machine_api.crt`
