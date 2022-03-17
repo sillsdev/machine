@@ -3,28 +3,20 @@ services:
     hostname: machine_api
     image: mcr.microsoft.com/dotnet/sdk:6.0-focal
     environment:
-      - ASPNETCORE_URLS=https://0.0.0.0;http://0.0.0.0
-      - ASPNETCORE_HTTPS_PORT=44374
       - ASPNETCORE_Kestrel__Certificates__Default__Password=password
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/usr/local/share/ca-certificates/aspnetapp.pfx
       - ASPNETCORE_ENVIRONMENT=Development
     expose:
-      - 44374
+      - 7274
     ports:
-      - 44374:44374
+      - 7274:7274
     depends_on:
       - mongo
     volumes:
       - "C:\\Users\\johnm\\Documents\\repos\\machine:/app"
       - "C:\\usr\\local\\DataProtection-Keys:/root/.aspnet/DataProtection-Keys"
       - "C:\\usr\\local\\ca-certificates:/usr/local/share/ca-certificates"
-    entrypoint:
-      [
-        'dotnet',
-        'run',
-        '--project',
-        '/app/src/SIL.Machine.WebApi.Server'
-      ]
+    entrypoint: [ '/app/docker/development/start.sh' ]
   mongo:
     hostname: mongo
     container_name: mongo

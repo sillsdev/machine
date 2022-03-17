@@ -1,10 +1,9 @@
-﻿var f = window.fetch;
+﻿// adapted from https://community.auth0.com/t/auth0-swagger/19954
+var f = window.fetch;
 window.fetch = function (url, opts) {
     if (opts && opts.body && opts.body.indexOf('client_credentials') !== -1) {
-        // Copy from Query string to body
-        const urlParams = new URLSearchParams(opts.url.split('?')[1]);
-        const audience = urlParams.get('audience');
-        opts.body += '&audience=' + audience;
+        // We know the audience - just add it.
+        opts.body += '&audience=https://machine.sil.org';
     }
     return f(url, opts);
 };
