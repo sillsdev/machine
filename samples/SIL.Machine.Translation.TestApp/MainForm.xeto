@@ -46,7 +46,7 @@
 							<Label>Texts</Label>
 						</TableRow>
 						<TableRow>
-							<l:Line Height="1" />
+							<l:Line Height="1" Color="Gray" />
 						</TableRow>
 						<TableRow ScaleHeight="True">
 							<Panel Padding="0,4,0,0">
