@@ -28,7 +28,7 @@ namespace SIL.Machine.Corpora
 		public bool IsRangeStart { get; }
 
 
-		public IReadOnlyList<string> Segment { get; }
+		public virtual IReadOnlyList<string> Segment { get; }
 
 		public override string ToString()
 		{

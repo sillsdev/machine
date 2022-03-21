@@ -22,7 +22,7 @@ namespace SIL.Machine.Corpora
 
 		public abstract IEnumerable<TextSegment> GetSegments(bool includeText = true, IText basedOn = null);
 
-		protected TextSegment CreateTextSegment(bool includeText, string text, object segRef,
+		protected virtual TextSegment CreateTextSegment(bool includeText, string text, object segRef,
 			bool isSentenceStart = true, bool isInRange = false, bool isRangeStart = false)
 		{
 			text = text.Trim();
