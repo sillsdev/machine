@@ -105,15 +105,15 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private static TextSegment Segment(int key, string text)
+		private static TextCorpusRow Segment(int key, string text)
 		{
-			return new TextSegment("text1", new TextSegmentRef(key), text.Split(), isSentenceStart: true,
+			return new TextCorpusRow("text1", new RowRef(key), text.Split(), isSentenceStart: true,
 				isInRange: false, isRangeStart: false, isEmpty: text.Length == 0);
 		}
 
-		private static TextAlignment Alignment(int key, params AlignedWordPair[] pairs)
+		private static TextAlignmentCorpusRow Alignment(int key, params AlignedWordPair[] pairs)
 		{
-			return new TextAlignment("text1", new TextSegmentRef(key), pairs);
+			return new TextAlignmentCorpusRow("text1", new RowRef(key), pairs);
 		}
 	}
 }

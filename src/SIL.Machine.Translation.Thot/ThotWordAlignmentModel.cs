@@ -115,8 +115,7 @@ namespace SIL.Machine.Translation.Thot
 			SetHandle(Thot.CreateAlignmentModel(Type));
 		}
 
-		public ITrainer CreateTrainer(ParallelTextCorpus corpus, ITokenProcessor sourcePreprocessor = null,
-			ITokenProcessor targetPreprocessor = null, int maxCorpusCount = int.MaxValue)
+		public ITrainer CreateTrainer(IParallelTextCorpusView corpus)
 		{
 			CheckDisposed();
 
@@ -126,7 +125,7 @@ namespace SIL.Machine.Translation.Thot
 					"The word alignment model cannot be trained independently of its SMT model.");
 			}
 
-			return new Trainer(this, corpus, sourcePreprocessor, targetPreprocessor, maxCorpusCount);
+			return new Trainer(this, corpus);
 		}
 
 		public Task SaveAsync()
@@ -263,10 +262,8 @@ namespace SIL.Machine.Translation.Thot
 		{
 			private readonly ThotWordAlignmentModel _model;
 
-			public Trainer(ThotWordAlignmentModel model, ParallelTextCorpus corpus, ITokenProcessor sourcePreprocessor,
-				ITokenProcessor targetPreprocessor, int maxCorpusCount)
-				: base(model.Type, corpus, model._prefFileName, model.Parameters, sourcePreprocessor,
-					  targetPreprocessor, maxCorpusCount)
+			public Trainer(ThotWordAlignmentModel model, IParallelTextCorpusView corpus)
+				: base(model.Type, corpus, model._prefFileName, model.Parameters)
 			{
 				_model = model;
 				CloseOnDispose = false;

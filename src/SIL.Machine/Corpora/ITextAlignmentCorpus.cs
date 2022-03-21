@@ -2,14 +2,12 @@
 
 namespace SIL.Machine.Corpora
 {
-	public interface ITextAlignmentCorpus
+	public interface ITextAlignmentCorpus : ITextAlignmentCorpusView
 	{
 		IEnumerable<ITextAlignmentCollection> TextAlignmentCollections { get; }
 
 		ITextAlignmentCollection this[string id] { get; }
 
-		ITextAlignmentCorpus Invert();
-
-		ITextAlignmentCollection CreateNullTextAlignmentCollection(string id);
+		bool TryGetTextAlignmentCollection(string id, out ITextAlignmentCollection textAlignmentCollection);
 	}
 }

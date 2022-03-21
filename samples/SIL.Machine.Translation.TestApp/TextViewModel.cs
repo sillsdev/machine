@@ -153,7 +153,7 @@ namespace SIL.Machine.Translation.TestApp
 			}
 		}
 
-		internal bool IsApproved(TextSegmentRef segmentRef)
+		internal bool IsApproved(RowRef segmentRef)
 		{
 			return _approvedSegments.Contains(int.Parse(segmentRef.Keys[1]) - 1);
 		}

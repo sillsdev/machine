@@ -32,9 +32,9 @@ namespace SIL.Machine.Translation
 		{
 			int stepCount = 0;
 			if (progress != null)
-				stepCount = _corpus.GetSegments().Count();
+				stepCount = _corpus.Count();
 			int currentStep = 0;
-			foreach (TextSegment segment in _corpus.GetSegments())
+			foreach (TextCorpusRow segment in _corpus.GetRows())
 			{
 				checkCanceled?.Invoke();
 				NewTruecaser.TrainSegment(segment);

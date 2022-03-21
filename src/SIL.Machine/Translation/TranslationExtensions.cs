@@ -46,15 +46,15 @@ namespace SIL.Machine.Translation
 			return results;
 		}
 
-		public static WordAlignmentMatrix GetBestAlignment(this IWordAligner aligner, ParallelTextSegment segment,
-			ITokenProcessor sourcePreprocessor = null, ITokenProcessor targetPreprocessor = null)
+		public static WordAlignmentMatrix GetBestAlignment(this IWordAligner aligner, ParallelTextCorpusRow segment,
+			TokenProcessor sourcePreprocessor = null, TokenProcessor targetPreprocessor = null)
 		{
 			if (sourcePreprocessor == null)
 				sourcePreprocessor = TokenProcessors.NoOp;
 			if (targetPreprocessor == null)
 				targetPreprocessor = TokenProcessors.NoOp;
-			IReadOnlyList<string> sourceSegment = sourcePreprocessor.Process(segment.SourceSegment);
-			IReadOnlyList<string> targetSegment = targetPreprocessor.Process(segment.TargetSegment);
+			IReadOnlyList<string> sourceSegment = sourcePreprocessor(segment.SourceSegment);
+			IReadOnlyList<string> targetSegment = targetPreprocessor(segment.TargetSegment);
 
 			return aligner.GetBestAlignment(sourceSegment, targetSegment, segment.CreateAlignmentMatrix());
 		}
@@ -73,7 +73,7 @@ namespace SIL.Machine.Translation
 			return alignment;
 		}
 
-		public static WordAlignmentMatrix CreateAlignmentMatrix(this ParallelTextSegment segment)
+		public static WordAlignmentMatrix CreateAlignmentMatrix(this ParallelTextCorpusRow segment)
 		{
 			if (segment.AlignedWordPairs == null)
 				return null;
@@ -85,30 +85,30 @@ namespace SIL.Machine.Translation
 			return matrix;
 		}
 
-		public static string GetAlignmentString(this IWordAlignmentModel model, ParallelTextSegment segment,
-			bool includeScores = true, ITokenProcessor sourcePreprocessor = null, ITokenProcessor targetPreprocessor = null)
+		public static string GetAlignmentString(this IWordAlignmentModel model, ParallelTextCorpusRow segment,
+			bool includeScores = true, TokenProcessor sourcePreprocessor = null, TokenProcessor targetPreprocessor = null)
 		{
 			if (sourcePreprocessor == null)
 				sourcePreprocessor = TokenProcessors.NoOp;
 			if (targetPreprocessor == null)
 				targetPreprocessor = TokenProcessors.NoOp;
-			IReadOnlyList<string> sourceSegment = sourcePreprocessor.Process(segment.SourceSegment);
-			IReadOnlyList<string> targetSegment = targetPreprocessor.Process(segment.TargetSegment);
+			IReadOnlyList<string> sourceSegment = sourcePreprocessor(segment.SourceSegment);
+			IReadOnlyList<string> targetSegment = targetPreprocessor(segment.TargetSegment);
 			WordAlignmentMatrix alignment = model.GetBestAlignment(sourceSegment, targetSegment,
 				segment.CreateAlignmentMatrix());
 
 			return alignment.ToString(model, sourceSegment, targetSegment, includeScores);
 		}
 
-		public static string GetGizaFormatString(this IWordAligner aligner, ParallelTextSegment segment,
-			ITokenProcessor sourcePreprocessor = null, ITokenProcessor targetPreprocessor = null)
+		public static string GetGizaFormatString(this IWordAligner aligner, ParallelTextCorpusRow segment,
+			TokenProcessor sourcePreprocessor = null, TokenProcessor targetPreprocessor = null)
 		{
 			if (sourcePreprocessor == null)
 				sourcePreprocessor = TokenProcessors.NoOp;
 			if (targetPreprocessor == null)
 				targetPreprocessor = TokenProcessors.NoOp;
-			IReadOnlyList<string> sourceSegment = sourcePreprocessor.Process(segment.SourceSegment);
-			IReadOnlyList<string> targetSegment = targetPreprocessor.Process(segment.TargetSegment);
+			IReadOnlyList<string> sourceSegment = sourcePreprocessor(segment.SourceSegment);
+			IReadOnlyList<string> targetSegment = targetPreprocessor(segment.TargetSegment);
 			WordAlignmentMatrix alignment = aligner.GetBestAlignment(sourceSegment, targetSegment,
 				segment.CreateAlignmentMatrix());
 
@@ -121,7 +121,7 @@ namespace SIL.Machine.Translation
 			return waMatrix.GetAlignedWordPairs(model, sourceSegment, targetSegment);
 		}
 
-		public static void TrainSegment(this ITruecaser truecaser, TextSegment segment)
+		public static void TrainSegment(this ITruecaser truecaser, TextCorpusRow segment)
 		{
 			truecaser.TrainSegment(segment.Segment, segment.IsSentenceStart);
 		}

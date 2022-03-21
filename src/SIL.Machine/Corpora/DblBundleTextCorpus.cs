@@ -5,7 +5,6 @@ using System.IO.Compression;
 using System.Linq;
 using System.Xml.Linq;
 using SIL.IO;
-using SIL.Machine.Tokenization;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
@@ -14,7 +13,7 @@ namespace SIL.Machine.Corpora
 	{
 		private static readonly HashSet<string> SupportedVersions = new HashSet<string> { "2.0", "2.1", "2.2" };
 
-		public DblBundleTextCorpus(ITokenizer<string, int, string> wordTokenizer, string fileName) : base(wordTokenizer)
+		public DblBundleTextCorpus(string fileName)
 		{
 			using (ZipArchive archive = ZipFile.OpenRead(fileName))
 			{
@@ -44,7 +43,7 @@ namespace SIL.Machine.Corpora
 						.Where(pubElem => (bool?)pubElem.Attribute("default") ?? false).Elements("structure")
 						.Elements("content"))
 					{
-						AddText(new UsxZipText(wordTokenizer, (string)contentElem.Attribute("role"), fileName,
+						AddText(new UsxZipText((string)contentElem.Attribute("role"), fileName,
 							(string)contentElem.Attribute("src"), Versification));
 					}
 				}

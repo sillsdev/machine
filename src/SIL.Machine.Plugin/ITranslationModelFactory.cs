@@ -8,7 +8,6 @@ namespace SIL.Machine.Plugin
 		string ModelType { get; }
 
 		ITranslationModel CreateModel(string modelPath);
-		ITrainer CreateTrainer(string modelPath, ITokenProcessor sourcePreprocessor,
-			ITokenProcessor targetPreprocessor, ParallelTextCorpus parallelCorpus, int maxCorpusCount);
+		ITrainer CreateTrainer(string modelPath, IParallelTextCorpusView parallelCorpus, int maxCorpusCount);
 	}
 }

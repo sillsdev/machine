@@ -1,49 +1,54 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using SIL.Machine.Tokenization;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
 	public abstract class ScriptureText : TextBase
 	{
-		protected ScriptureText(ITokenizer<string, int, string> wordTokenizer, string id, ScrVers versification)
-			: base(wordTokenizer, id, CorporaHelpers.GetScriptureTextSortKey(id))
+		protected ScriptureText(string id, ScrVers versification)
+			: base(id, CorporaHelpers.GetScriptureTextSortKey(id))
 		{
 			Versification = versification ?? ScrVers.English;
 		}
 
 		public ScrVers Versification { get; }
 
-		public override IEnumerable<TextSegment> GetSegments(bool includeText = true, IText basedOn = null)
+		public override IEnumerable<TextCorpusRow> GetRows()
 		{
-			ScrVers basedOnVers = null;
-			if (basedOn is ScriptureText scriptureText && Versification != scriptureText.Versification)
-				basedOnVers = scriptureText.Versification;
-			var segList = new List<(VerseRef Ref, TextSegment Segment)>();
+			return GetRows();
+		}
+
+		public IEnumerable<TextCorpusRow> GetRows(ScrVers versification = null)
+		{
+			var rowList = new List<(VerseRef Ref, TextCorpusRow Row)>();
 			bool outOfOrder = false;
 			var prevVerseRef = new VerseRef();
 			int rangeStartOffset = -1;
-			foreach (TextSegment s in GetSegmentsInDocOrder(includeText))
+			foreach (TextCorpusRow r in GetVersesInDocOrder())
 			{
-				TextSegment seg = s;
-				var verseRef = (VerseRef)seg.SegmentRef;
-				if (basedOnVers != null)
+				TextCorpusRow row = r;
+				var verseRef = (VerseRef)row.Ref;
+				if (versification != null && versification != Versification)
 				{
-					verseRef.ChangeVersification(basedOnVers);
+					verseRef.ChangeVersification(versification);
 					// convert on-to-many versification mapping to a verse range
 					if (verseRef.Equals(prevVerseRef))
 					{
-						var (rangeStartVerseRef, rangeStartSeg) = segList[segList.Count + rangeStartOffset];
+						var (rangeStartVerseRef, rangeStartSeg) = rowList[rowList.Count + rangeStartOffset];
 						bool isRangeStart = false;
 						if (rangeStartOffset == -1)
-							isRangeStart = rangeStartSeg.IsInRange ? rangeStartSeg.IsRangeStart : true;
-						segList[segList.Count + rangeStartOffset] = (rangeStartVerseRef,
-							new TextSegment(rangeStartSeg.TextId, rangeStartSeg.SegmentRef,
-								rangeStartSeg.Segment.Concat(seg.Segment).ToArray(), rangeStartSeg.IsSentenceStart,
-								isInRange: true, isRangeStart: isRangeStart,
-								isEmpty: rangeStartSeg.IsEmpty && seg.IsEmpty));
-						seg = CreateEmptyTextSegment(seg.SegmentRef, isInRange: true);
+							isRangeStart = !rangeStartSeg.IsInRange || rangeStartSeg.IsRangeStart;
+						rowList[rowList.Count + rangeStartOffset] = (rangeStartVerseRef,
+							new TextCorpusRow(Id, rangeStartSeg.Ref)
+							{
+								Segment = rangeStartSeg.Segment.Concat(row.Segment).ToArray(),
+								IsSentenceStart = rangeStartSeg.IsSentenceStart,
+								IsInRange = true,
+								IsRangeStart = isRangeStart,
+								IsEmpty = rangeStartSeg.IsEmpty && row.IsEmpty
+							});
+						row = CreateEmptyRow(row.Ref, isInRange: true);
 						rangeStartOffset--;
 					}
 					else
@@ -51,21 +56,21 @@ namespace SIL.Machine.Corpora
 						rangeStartOffset = -1;
 					}
 				}
-				segList.Add((verseRef, seg));
+				rowList.Add((verseRef, row));
 				if (!outOfOrder && verseRef.CompareTo(prevVerseRef) < 0)
 					outOfOrder = true;
 				prevVerseRef = verseRef;
 			}
 
 			if (outOfOrder)
-				segList.Sort((x, y) => x.Ref.CompareTo(y.Ref));
+				rowList.Sort((x, y) => x.Ref.CompareTo(y.Ref));
 
-			return segList.Select(t => t.Segment);
+			return rowList.Select(t => t.Row);
 		}
 
-		protected abstract IEnumerable<TextSegment> GetSegmentsInDocOrder(bool includeText);
+		protected abstract IEnumerable<TextCorpusRow> GetVersesInDocOrder();
 
-		protected IEnumerable<TextSegment> CreateTextSegments(bool includeText, string chapter, string verse,
+		protected IEnumerable<TextCorpusRow> CreateRows(string chapter, string verse,
 			string text, bool sentenceStart = true)
 		{
 			var verseRef = new VerseRef(Id, chapter, verse, Versification);
@@ -76,19 +81,19 @@ namespace SIL.Machine.Corpora
 				{
 					if (firstVerse)
 					{
-						yield return CreateTextSegment(includeText, text, vref, sentenceStart, isInRange: true,
+						yield return CreateRow(text, vref, sentenceStart, isInRange: true,
 							isRangeStart: true);
 						firstVerse = false;
 					}
 					else
 					{
-						yield return CreateEmptyTextSegment(vref, isInRange: true);
+						yield return CreateEmptyRow(vref, isInRange: true);
 					}
 				}
 			}
 			else
 			{
-				yield return CreateTextSegment(includeText, text, verseRef, sentenceStart);
+				yield return CreateRow(text, verseRef, sentenceStart);
 			}
 		}
 	}

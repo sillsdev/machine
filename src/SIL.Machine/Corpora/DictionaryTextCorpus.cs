@@ -18,21 +18,21 @@ namespace SIL.Machine.Corpora
 
 		public IEnumerable<IText> Texts => TextDictionary.Values.OrderBy(t => t.SortKey);
 
+		public ITextCorpusView Source => this;
+
 		protected Dictionary<string, IText> TextDictionary { get; }
 
-		public IText this[string id]
+
+		public IText this[string id] => TextDictionary[id];
+
+		public bool TryGetText(string id, out IText text)
 		{
-			get
-			{
-				if (TextDictionary.TryGetValue(id, out IText text))
-					return text;
-				return CreateNullText(id);
-			}
+			return TextDictionary.TryGetValue(id, out text);
 		}
 
-		public virtual IText CreateNullText(string id)
+		public virtual IEnumerable<TextCorpusRow> GetRows(ITextCorpusView basedOn = null)
 		{
-			return new NullText(id, id);
+			return Texts.SelectMany(t => t.GetRows());
 		}
 
 		protected void AddText(IText text)

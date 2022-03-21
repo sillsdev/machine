@@ -1,23 +1,19 @@
 ﻿using System.Collections.Generic;
-using SIL.Machine.Tokenization;
+using System.Linq;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
 	public abstract class ScriptureTextCorpus : DictionaryTextCorpus
 	{
-		protected ScriptureTextCorpus(ITokenizer<string, int, string> wordTokenizer)
-		{
-			WordTokenizer = wordTokenizer;
-		}
-
-		public ITokenizer<string, int, string> WordTokenizer { get; }
-
 		public abstract ScrVers Versification { get; }
 
-		public override IText CreateNullText(string id)
+		public override IEnumerable<TextCorpusRow> GetRows(ITextCorpusView basedOn = null)
 		{
-			return new NullScriptureText(WordTokenizer, id, Versification);
+			ScrVers basedOnVersification = null;
+			if (basedOn != null && basedOn.Source is ScriptureTextCorpus scriptureTextCorpus)
+				basedOnVersification = scriptureTextCorpus.Versification;
+			return Texts.Cast<ScriptureText>().SelectMany(t => t.GetRows(basedOnVersification));
 		}
 	}
 }

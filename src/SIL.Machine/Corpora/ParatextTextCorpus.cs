@@ -3,15 +3,13 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
-using SIL.Machine.Tokenization;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
 	public class ParatextTextCorpus : ScriptureTextCorpus
 	{
-		public ParatextTextCorpus(ITokenizer<string, int, string> wordTokenizer, string projectDir,
-			bool includeMarkers = false) : base(wordTokenizer)
+		public ParatextTextCorpus(string projectDir, bool includeMarkers = false)
 		{
 			Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 			string settingsFileName = Path.Combine(projectDir, "Settings.xml");
@@ -74,10 +72,7 @@ namespace SIL.Machine.Corpora
 			}
 
 			foreach (string sfmFileName in Directory.EnumerateFiles(projectDir, $"{prefix}*{suffix}"))
-			{
-				AddText(new UsfmFileText(wordTokenizer, stylesheet, encoding, sfmFileName, Versification,
-					includeMarkers));
-			}
+				AddText(new UsfmFileText(stylesheet, encoding, sfmFileName, Versification, includeMarkers));
 		}
 
 		public override ScrVers Versification { get; }

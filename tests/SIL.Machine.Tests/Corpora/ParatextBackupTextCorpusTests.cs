@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using SIL.Machine.Tokenization;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Corpora
@@ -17,11 +16,12 @@ namespace SIL.Machine.Corpora
 		}
 
 		[Test]
-		public void GetText()
+		public void TryGetText()
 		{
 			using var env = new TestEnvironment();
-			Assert.That(env.Corpus.GetText("MAT").GetSegments(), Is.Not.Empty);
-			Assert.That(env.Corpus.GetText("LUK").GetSegments(), Is.Empty);
+			Assert.That(env.Corpus.TryGetText("MAT", out IText mat), Is.True);
+			Assert.That(mat.GetRows(), Is.Not.Empty);
+			Assert.That(env.Corpus.TryGetText("LUK", out _), Is.False);
 		}
 
 		private class TestEnvironment : DisposableBase
@@ -31,7 +31,7 @@ namespace SIL.Machine.Corpora
 			public TestEnvironment()
 			{
 				_backupPath = CorporaTestHelpers.CreateTestParatextBackup();
-				Corpus = new ParatextBackupTextCorpus(new LatinWordTokenizer(), _backupPath);
+				Corpus = new ParatextBackupTextCorpus(_backupPath);
 			}
 
 			public ParatextBackupTextCorpus Corpus { get; }

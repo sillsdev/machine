@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using SIL.Machine.Tokenization;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
@@ -10,9 +9,9 @@ namespace SIL.Machine.Corpora
 	{
 		private readonly string _fileName;
 
-		public UsfmFileText(ITokenizer<string, int, string> wordTokenizer, UsfmStylesheet stylesheet,
-			Encoding encoding, string fileName, ScrVers versification = null, bool includeMarkers = false)
-			: base(wordTokenizer, GetId(fileName, encoding), stylesheet, encoding, versification, includeMarkers)
+		public UsfmFileText(UsfmStylesheet stylesheet, Encoding encoding, string fileName, ScrVers versification = null,
+			bool includeMarkers = false)
+			: base(GetId(fileName, encoding), stylesheet, encoding, versification, includeMarkers)
 		{
 			_fileName = fileName;
 		}

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
 
@@ -38,34 +37,60 @@ namespace SIL.Machine
 			return true;
 		}
 
-		public ITokenProcessor GetProcessor()
+		public IParallelTextCorpusView Preprocess(IParallelTextCorpusView corpus)
 		{
-			var processors = new List<ITokenProcessor>();
+
 			switch (_normalizeOption.Value())
 			{
 				case Nfc:
-					processors.Add(TokenProcessors.Normalize(NormalizationForm.FormC));
+					corpus = corpus.NfcNormalize();
 					break;
 				case Nfd:
-					processors.Add(TokenProcessors.Normalize(NormalizationForm.FormD));
+					corpus = corpus.NfdNormalize();
 					break;
 				case Nfkc:
-					processors.Add(TokenProcessors.Normalize(NormalizationForm.FormKC));
+					corpus = corpus.NfkcNormalize();
 					break;
 				case Nfkd:
-					processors.Add(TokenProcessors.Normalize(NormalizationForm.FormKD));
+					corpus = corpus.NfkdNormalize();
 					break;
 			}
 
 			if (EscapeSpaces)
-				processors.Add(TokenProcessors.EscapeSpaces);
+				corpus = corpus.EscapeSpaces();
 
 			if (_lowercaseOption.HasValue())
-				processors.Add(TokenProcessors.Lowercase);
+				corpus = corpus.Lowercase();
 
-			if (processors.Count == 0)
-				return TokenProcessors.NoOp;
-			return TokenProcessors.Pipeline(processors);
+			return corpus;
+		}
+
+		public ITextCorpusView Preprocess(ITextCorpusView corpus)
+		{
+
+			switch (_normalizeOption.Value())
+			{
+				case Nfc:
+					corpus = corpus.NfcNormalize();
+					break;
+				case Nfd:
+					corpus = corpus.NfdNormalize();
+					break;
+				case Nfkc:
+					corpus = corpus.NfkcNormalize();
+					break;
+				case Nfkd:
+					corpus = corpus.NfkdNormalize();
+					break;
+			}
+
+			if (EscapeSpaces)
+				corpus = corpus.EscapeSpaces();
+
+			if (_lowercaseOption.HasValue())
+				corpus = corpus.Lowercase();
+
+			return corpus;
 		}
 
 		private static bool ValidateNormalizeOption(string value)

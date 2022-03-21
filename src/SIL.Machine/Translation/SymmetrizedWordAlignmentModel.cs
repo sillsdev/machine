@@ -133,15 +133,12 @@ namespace SIL.Machine.Translation
 			return Math.Max(dirScore, invScore);
 		}
 
-		public ITrainer CreateTrainer(ParallelTextCorpus corpus, ITokenProcessor sourcePreprocessor = null,
-			ITokenProcessor targetPreprocessor = null, int maxCorpusCount = int.MaxValue)
+		public ITrainer CreateTrainer(IParallelTextCorpusView corpus)
 		{
 			CheckDisposed();
 
-			ITrainer directTrainer = _directWordAlignmentModel.CreateTrainer(corpus, sourcePreprocessor,
-				targetPreprocessor, maxCorpusCount);
-			ITrainer inverseTrainer = _inverseWordAlignmentModel.CreateTrainer(corpus.Invert(), targetPreprocessor,
-				sourcePreprocessor, maxCorpusCount);
+			ITrainer directTrainer = _directWordAlignmentModel.CreateTrainer(corpus);
+			ITrainer inverseTrainer = _inverseWordAlignmentModel.CreateTrainer(corpus.Invert());
 
 			return new SymmetrizedWordAlignmentModelTrainer(directTrainer, inverseTrainer);
 		}

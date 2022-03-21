@@ -66,13 +66,13 @@ namespace SIL.Machine
 			return new ThotSmtModel(wordAlignmentModelType, _modelConfigFileName);
 		}
 
-		public ITrainer CreateTrainer(ParallelTextCorpus corpus, int maxSize, ITokenProcessor processor)
+		public ITrainer CreateTrainer(IParallelTextCorpusView corpus, int maxSize)
 		{
 			if (_modelFactory != null)
-				return _modelFactory.CreateTrainer(_modelArgument.Value, processor, processor, corpus, maxSize);
+				return _modelFactory.CreateTrainer(_modelArgument.Value, corpus, maxSize);
 
 			return ToolHelpers.CreateTranslationModelTrainer(_modelTypeOption.Value(), _modelConfigFileName, corpus,
-				maxSize, processor);
+				maxSize);
 		}
 	}
 }

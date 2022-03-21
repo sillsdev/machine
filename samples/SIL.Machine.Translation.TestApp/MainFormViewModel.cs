@@ -271,7 +271,7 @@ namespace SIL.Machine.Translation.TestApp
 				using (ThotSmtModelTrainer trainer = _smtModel.CreateTrainer(corpus, TokenProcessors.Lowercase,
 					TokenProcessors.Lowercase))
 				{
-					trainer.SegmentFilter = (s, i) => textLookup[s.TextId].IsApproved((TextSegmentRef)s.SegmentRef);
+					trainer.SegmentFilter = (s, i) => textLookup[s.TextId].IsApproved((RowRef)s.Ref);
 					await Task.Run(() => trainer.Train(progress, token.ThrowIfCancellationRequested), token);
 					trainer.Save();
 				}

@@ -17,9 +17,9 @@ namespace SIL.Machine.Corpora
 
 		public string SortKey => $"{_corpusKey}_{_text.SortKey}";
 
-		public IEnumerable<TextSegment> GetSegments(bool includeText = true, IText basedOn = null)
+		public IEnumerable<TextCorpusRow> GetRows()
 		{
-			return _text.GetSegments(includeText, basedOn);
+			return _text.GetRows();
 		}
 	}
 }

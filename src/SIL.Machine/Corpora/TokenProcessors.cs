@@ -4,94 +4,54 @@ using System.Text;
 
 namespace SIL.Machine.Corpora
 {
+	public delegate IReadOnlyList<string> TokenProcessor(IReadOnlyList<string> tokens);
+
 	public static class TokenProcessors
 	{
-		public static readonly ITokenProcessor Lowercase = new LowercaseTokenProcessor();
-		public static readonly ITokenProcessor EscapeSpaces = new EscapeSpacesTokenProcessor();
-		public static readonly ITokenProcessor UnescapeSpaces = new UnescapeSpacesTokenProcessor();
-		public static readonly ITokenProcessor NoOp = new NoOpTokenProcessor();
-		public static readonly ITokenProcessor NfcNormalize = Normalize();
-		public static readonly ITokenProcessor NfdNormalize = Normalize(NormalizationForm.FormD);
-		public static readonly ITokenProcessor NfkcNormalize = Normalize(NormalizationForm.FormKC);
-		public static readonly ITokenProcessor NfkdNormalize = Normalize(NormalizationForm.FormKD);
-
-		public static ITokenProcessor Pipeline(params ITokenProcessor[] processors)
+		public static IReadOnlyList<string> NoOp(this IReadOnlyList<string> tokens)
 		{
-			return new PipelineTokenProcessor(processors);
+			return tokens;
 		}
 
-		public static ITokenProcessor Pipeline(IEnumerable<ITokenProcessor> processors)
+		public static IReadOnlyList<string> EscapeSpaces(this IReadOnlyList<string> tokens)
 		{
-			return new PipelineTokenProcessor(processors);
+			return tokens.Select(t => t.Length > 0 && t.All(char.IsWhiteSpace) ? "<space>" : t).ToArray();
 		}
 
-		public static ITokenProcessor Normalize(NormalizationForm normalizationForm = NormalizationForm.FormC)
+		public static IReadOnlyList<string> UnescapeSpaces(this IReadOnlyList<string> tokens)
 		{
-			return new NormalizeTokenProcessor(normalizationForm);
+			return tokens.Select(t => t == "<space>" ? " " : t).ToArray();
 		}
 
-		private class LowercaseTokenProcessor : ITokenProcessor
+		public static IReadOnlyList<string> Lowercase(this IReadOnlyList<string> tokens)
 		{
-			public IReadOnlyList<string> Process(IReadOnlyList<string> tokens)
-			{
-				return tokens.Select(t => t.ToLowerInvariant()).ToArray();
-			}
+			return tokens.Select(t => t.ToLowerInvariant()).ToArray();
 		}
 
-		private class EscapeSpacesTokenProcessor : ITokenProcessor
+		public static IReadOnlyList<string> Normalize(this IReadOnlyList<string> tokens,
+			NormalizationForm normalizationForm = NormalizationForm.FormC)
 		{
-			public IReadOnlyList<string> Process(IReadOnlyList<string> tokens)
-			{
-				return tokens.Select(t => t.Length > 0 && t.All(char.IsWhiteSpace) ? "<space>" : t).ToArray();
-			}
+			return tokens.Select(t => t.Normalize(normalizationForm)).ToArray();
 		}
 
-		private class UnescapeSpacesTokenProcessor : ITokenProcessor
+		public static IReadOnlyList<string> NfcNormalize(this IReadOnlyList<string> tokens)
 		{
-			public IReadOnlyList<string> Process(IReadOnlyList<string> tokens)
-			{
-				return tokens.Select(t => t == "<space>" ? " " : t).ToArray();
-			}
+			return tokens.Normalize();
 		}
 
-		private class NoOpTokenProcessor : ITokenProcessor
+		public static IReadOnlyList<string> NfdNormalize(this IReadOnlyList<string> tokens)
 		{
-			public IReadOnlyList<string> Process(IReadOnlyList<string> tokens)
-			{
-				return tokens;
-			}
+			return tokens.Normalize(NormalizationForm.FormD);
 		}
 
-		private class NormalizeTokenProcessor : ITokenProcessor
+		public static IReadOnlyList<string> NfkcNormalize(this IReadOnlyList<string> tokens)
 		{
-			private readonly NormalizationForm _normalizationForm;
-
-			public NormalizeTokenProcessor(NormalizationForm normalizationForm)
-			{
-				_normalizationForm = normalizationForm;
-			}
-
-			public IReadOnlyList<string> Process(IReadOnlyList<string> tokens)
-			{
-				return tokens.Select(t => t.Normalize(_normalizationForm)).ToArray();
-			}
+			return tokens.Normalize(NormalizationForm.FormKC);
 		}
 
-		private class PipelineTokenProcessor : ITokenProcessor
+		public static IReadOnlyList<string> NfkdNormalize(this IReadOnlyList<string> tokens)
 		{
-			private readonly ITokenProcessor[] _processors;
-
-			public PipelineTokenProcessor(IEnumerable<ITokenProcessor> processors)
-			{
-				_processors = processors.ToArray();
-			}
-
-			public IReadOnlyList<string> Process(IReadOnlyList<string> tokens)
-			{
-				foreach (ITokenProcessor processor in _processors)
-					tokens = (processor ?? NoOp).Process(tokens);
-				return tokens;
-			}
+			return tokens.Normalize(NormalizationForm.FormKD);
 		}
 	}
 }

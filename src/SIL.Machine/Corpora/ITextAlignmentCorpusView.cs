@@ -2,12 +2,9 @@
 
 namespace SIL.Machine.Corpora
 {
-	public interface ITextAlignmentCollection
+	public interface ITextAlignmentCorpusView
 	{
-		string Id { get; }
-
-		string SortKey { get; }
-
+		ITextAlignmentCorpus Source { get; }
 		IEnumerable<TextAlignmentCorpusRow> GetRows();
 	}
 }

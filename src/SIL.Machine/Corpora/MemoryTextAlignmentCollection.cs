@@ -5,26 +5,26 @@ namespace SIL.Machine.Corpora
 {
 	public class MemoryTextAlignmentCollection : ITextAlignmentCollection
 	{
+		private readonly TextAlignmentCorpusRow[] _rows;
+
 		public MemoryTextAlignmentCollection(string id)
-			: this(id, Enumerable.Empty<TextAlignment>())
+			: this(id, Enumerable.Empty<TextAlignmentCorpusRow>())
 		{
 		}
 
-		public MemoryTextAlignmentCollection(string id, IEnumerable<TextAlignment> alignments)
+		public MemoryTextAlignmentCollection(string id, IEnumerable<TextAlignmentCorpusRow> rows)
 		{
 			Id = id;
-			Alignments = alignments.ToArray();
+			_rows = rows.ToArray();
 		}
 
 		public string Id { get; }
 
 		public string SortKey => Id;
 
-		public IEnumerable<TextAlignment> Alignments { get; }
-
-		public ITextAlignmentCollection Invert()
+		public IEnumerable<TextAlignmentCorpusRow> GetRows()
 		{
-			return new MemoryTextAlignmentCollection(Id, Alignments.Select(ta => ta.Invert()));
+			return _rows;
 		}
 	}
 }

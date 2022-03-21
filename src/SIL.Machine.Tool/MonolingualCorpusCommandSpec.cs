@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
@@ -13,7 +11,7 @@ namespace SIL.Machine
 		private CommandOption _corpusFormatOption;
 		private CommandOption _wordTokenizerOption;
 
-		public ITextCorpus Corpus { get; set; }
+		public ITextCorpusView Corpus { get; set; }
 
 		public override void AddParameters(CommandBase command)
 		{
@@ -44,24 +42,14 @@ namespace SIL.Machine
 				return false;
 			}
 
-			ITokenizer<string, int, string> wordTokenizer = ToolHelpers.CreateWordTokenizer(
-				_wordTokenizerOption.Value() ?? "whitespace");
-
-			Corpus = ToolHelpers.CreateTextCorpus(wordTokenizer,
-				_corpusFormatOption.Value() ?? "text", _corpusArgument.Value);
+			Corpus = ToolHelpers.CreateTextCorpus(_corpusFormatOption.Value() ?? "text", _corpusArgument.Value);
 
 			Corpus = FilterTextCorpus(Corpus);
+
+			ITokenizer<string, int, string> wordTokenizer = ToolHelpers.CreateWordTokenizer(
+				_wordTokenizerOption.Value() ?? "whitespace");
+			Corpus = Corpus.Tokenize(wordTokenizer);
 			return true;
-		}
-
-		public int GetNonemptyCorpusCount()
-		{
-			return Math.Min(MaxCorpusCount, Corpus.GetSegments().Count(s => !s.IsEmpty));
-		}
-
-		public int GetCorpusCount()
-		{
-			return Math.Min(MaxCorpusCount, Corpus.GetSegments().Count());
 		}
 	}
 }

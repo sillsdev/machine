@@ -5,25 +5,25 @@ namespace SIL.Machine.Corpora
 {
 	public class MemoryText : IText
 	{
-		private readonly TextSegment[] _segments;
+		private readonly TextCorpusRow[] _rows;
 
 		public MemoryText(string id)
-			: this(id, Enumerable.Empty<TextSegment>())
+			: this(id, Enumerable.Empty<TextCorpusRow>())
 		{
 		}
 
-		public MemoryText(string id, IEnumerable<TextSegment> segments)
+		public MemoryText(string id, IEnumerable<TextCorpusRow> rows)
 		{
 			Id = id;
-			_segments = segments.ToArray();
+			_rows = rows.ToArray();
 		}
 
 		public string Id { get; }
 		public string SortKey => Id;
 
-		public IEnumerable<TextSegment> GetSegments(bool includeText = true, IText basedOn = null)
+		public IEnumerable<TextCorpusRow> GetRows()
 		{
-			return _segments;
+			return _rows;
 		}
 	}
 }

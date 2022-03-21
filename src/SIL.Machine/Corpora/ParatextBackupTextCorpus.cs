@@ -6,15 +6,13 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using SIL.IO;
-using SIL.Machine.Tokenization;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
 	public class ParatextBackupTextCorpus : ScriptureTextCorpus
 	{
-		public ParatextBackupTextCorpus(ITokenizer<string, int, string> wordTokenizer, string fileName,
-			bool includeMarkers = false) : base(wordTokenizer)
+		public ParatextBackupTextCorpus(string fileName, bool includeMarkers = false)
 		{
 			Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 			using (ZipArchive archive = ZipFile.OpenRead(fileName))
@@ -103,7 +101,7 @@ namespace SIL.Machine.Corpora
 
 				foreach (ZipArchiveEntry sfmEntry in archive.Entries.Where(e => regex.IsMatch(e.FullName)))
 				{
-					AddText(new UsfmZipText(wordTokenizer, stylesheet, encoding, fileName, sfmEntry.FullName,
+					AddText(new UsfmZipText(stylesheet, encoding, fileName, sfmEntry.FullName,
 						Versification, includeMarkers));
 				}
 			}

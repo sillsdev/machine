@@ -2,12 +2,12 @@
 
 namespace SIL.Machine.Corpora
 {
-	public interface ITextCorpus
+	public interface ITextCorpus : ITextCorpusView
 	{
 		IEnumerable<IText> Texts { get; }
 
 		IText this[string id] { get; }
 
-		IText CreateNullText(string id);
+		bool TryGetText(string id, out IText text);
 	}
 }

@@ -7,53 +7,47 @@ namespace SIL.Machine.Corpora
 	public class TextFileTextAlignmentCollection : ITextAlignmentCollection
 	{
 		private readonly string _fileName;
-		private readonly bool _invert;
 
-		public TextFileTextAlignmentCollection(string id, string fileName, bool invert = false)
+		public TextFileTextAlignmentCollection(string id, string fileName)
 		{
 			Id = id;
 			_fileName = fileName;
-			_invert = invert;
 		}
 
 		public string Id { get; }
 
 		public string SortKey => Id;
 
-		public IEnumerable<TextAlignment> Alignments
+		public IEnumerable<TextAlignmentCorpusRow> GetRows()
 		{
-			get
+			using (var reader = new StreamReader(_fileName))
 			{
-				using (var reader = new StreamReader(_fileName))
+				int sectionNum = 1;
+				int segmentNum = 1;
+				string line;
+				while ((line = reader.ReadLine()) != null)
 				{
-					int sectionNum = 1;
-					int segmentNum = 1;
-					string line;
-					while ((line = reader.ReadLine()) != null)
+					if (line.StartsWith("// section "))
 					{
-						if (line.StartsWith("// section "))
+						string sectionNumStr = line.Substring(11).Trim();
+						if (!string.IsNullOrEmpty(sectionNumStr))
 						{
-							string sectionNumStr = line.Substring(11).Trim();
-							if (!string.IsNullOrEmpty(sectionNumStr))
-							{
-								sectionNum = int.Parse(sectionNumStr, CultureInfo.InvariantCulture);
-								segmentNum = 1;
-							}
+							sectionNum = int.Parse(sectionNumStr, CultureInfo.InvariantCulture);
+							segmentNum = 1;
 						}
-						else
+					}
+					else
+					{
+						var rowRef = new RowRef(Id, sectionNum.ToString(), segmentNum.ToString());
+						yield return new TextAlignmentCorpusRow(Id, rowRef)
 						{
-							yield return new TextAlignment(Id, new TextSegmentRef(sectionNum, segmentNum),
-								AlignedWordPair.Parse(line, _invert));
-							segmentNum++;
-						}
+							AlignedWordPairs = AlignedWordPair.Parse(line)
+						};
+						segmentNum++;
 					}
 				}
 			}
-		}
 
-		public ITextAlignmentCollection Invert()
-		{
-			return new TextFileTextAlignmentCollection(Id, _fileName, !_invert);
 		}
 	}
 }

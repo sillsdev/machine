@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using SIL.Machine.Tokenization;
 using SIL.Machine.Utils;
 using SIL.Scripture;
 
@@ -28,16 +27,16 @@ namespace SIL.Machine.Corpora
 		private readonly Encoding _encoding;
 		private readonly bool _includeMarkers;
 
-		protected UsfmTextBase(ITokenizer<string, int, string> wordTokenizer, string id, UsfmStylesheet stylesheet,
-			Encoding encoding, ScrVers versification, bool includeMarkers)
-			: base(wordTokenizer, id, versification)
+		protected UsfmTextBase(string id, UsfmStylesheet stylesheet, Encoding encoding, ScrVers versification,
+			bool includeMarkers)
+			: base(id, versification)
 		{
 			_parser = new UsfmParser(stylesheet);
 			_encoding = encoding;
 			_includeMarkers = includeMarkers;
 		}
 
-		protected override IEnumerable<TextSegment> GetSegmentsInDocOrder(bool includeText = true)
+		protected override IEnumerable<TextCorpusRow> GetVersesInDocOrder()
 		{
 			string usfm = ReadUsfm();
 			UsfmMarker curEmbedMarker = null;
@@ -55,11 +54,8 @@ namespace SIL.Machine.Corpora
 						if (chapter != null && verse != null)
 						{
 							string text = sb.ToString();
-							foreach (TextSegment seg in CreateTextSegments(includeText, chapter, verse, text,
-								sentenceStart))
-							{
+							foreach (TextCorpusRow seg in CreateRows(chapter, verse, text, sentenceStart))
 								yield return seg;
-							}
 							sentenceStart = true;
 							sb.Clear();
 						}
@@ -73,11 +69,8 @@ namespace SIL.Machine.Corpora
 							if (token.Text == verse)
 							{
 								string text = sb.ToString();
-								foreach (TextSegment seg in CreateTextSegments(includeText, chapter, verse, text,
-									sentenceStart))
-								{
+								foreach (TextCorpusRow seg in CreateRows(chapter, verse, text, sentenceStart))
 									yield return seg;
-								}
 								sentenceStart = text.HasSentenceEnding();
 								sb.Clear();
 
@@ -92,11 +85,8 @@ namespace SIL.Machine.Corpora
 							else
 							{
 								string text = sb.ToString();
-								foreach (TextSegment seg in CreateTextSegments(includeText, chapter, verse, text,
-									sentenceStart))
-								{
+								foreach (TextCorpusRow seg in CreateRows(chapter, verse, text, sentenceStart))
 									yield return seg;
-								}
 								sentenceStart = text.HasSentenceEnding();
 								sb.Clear();
 								verse = token.Text;
@@ -197,11 +187,8 @@ namespace SIL.Machine.Corpora
 
 			if (chapter != null && verse != null)
 			{
-				foreach (TextSegment seg in CreateTextSegments(includeText, chapter, verse, sb.ToString(),
-					sentenceStart))
-				{
+				foreach (TextCorpusRow seg in CreateRows(chapter, verse, sb.ToString(), sentenceStart))
 					yield return seg;
-				}
 			}
 		}
 

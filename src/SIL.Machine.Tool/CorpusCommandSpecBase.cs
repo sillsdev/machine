@@ -48,17 +48,17 @@ namespace SIL.Machine
 			return true;
 		}
 
-		public ITextCorpus FilterTextCorpus(ITextCorpus corpus)
+		public ITextCorpusView FilterTextCorpus(ITextCorpusView corpus)
 		{
 			if (_includeTexts != null || _excludeTexts != null)
-				return new FilteredTextCorpus(corpus, text => FilterCorpus(text.Id));
+				return corpus.Filter(row => FilterCorpus(row.TextId));
 			return corpus;
 		}
 
-		public ITextAlignmentCorpus FilterTextAlignmentCorpus(ITextAlignmentCorpus corpus)
+		public ITextAlignmentCorpusView FilterTextAlignmentCorpus(ITextAlignmentCorpusView corpus)
 		{
 			if (_includeTexts != null || _excludeTexts != null)
-				return new FilteredTextAlignmentCorpus(corpus, text => FilterCorpus(text.Id));
+				return corpus.Filter(row => FilterCorpus(row.TextId));
 			return corpus;
 		}
 

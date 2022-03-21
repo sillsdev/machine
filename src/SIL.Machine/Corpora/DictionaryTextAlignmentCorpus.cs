@@ -20,29 +20,23 @@ namespace SIL.Machine.Corpora
 		public IEnumerable<ITextAlignmentCollection> TextAlignmentCollections => _textAlignmentCollections.Values
 			.OrderBy(ac => ac.SortKey);
 
-		public ITextAlignmentCollection this[string id]
-		{
-			get
-			{
-				if (_textAlignmentCollections.TryGetValue(id, out ITextAlignmentCollection collection))
-					return collection;
-				return CreateNullTextAlignmentCollection(id);
-			}
-		}
+		public ITextAlignmentCorpusView Source => this;
 
-		public ITextAlignmentCorpus Invert()
-		{
-			return new DictionaryTextAlignmentCorpus(_textAlignmentCollections.Values.Select(tac => tac.Invert()));
-		}
-
-		public virtual ITextAlignmentCollection CreateNullTextAlignmentCollection(string id)
-		{
-			return new NullTextAlignmentCollection(id, id);
-		}
+		public ITextAlignmentCollection this[string id] => _textAlignmentCollections[id];
 
 		protected void AddTextAlignmentCollection(ITextAlignmentCollection alignments)
 		{
 			_textAlignmentCollections[alignments.Id] = alignments;
+		}
+
+		public bool TryGetTextAlignmentCollection(string id, out ITextAlignmentCollection textAlignmentCollection)
+		{
+			return _textAlignmentCollections.TryGetValue(id, out textAlignmentCollection);
+		}
+
+		public virtual IEnumerable<TextAlignmentCorpusRow> GetRows()
+		{
+			return TextAlignmentCollections.SelectMany(c => c.GetRows());
 		}
 	}
 }

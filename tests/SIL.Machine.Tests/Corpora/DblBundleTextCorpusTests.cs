@@ -14,12 +14,13 @@ namespace SIL.Machine.Corpora
 		}
 
 		[Test]
-		public void GetText()
+		public void TryGetText()
 		{
 			using (var env = new DblBundleTestEnvironment())
 			{
-				Assert.That(env.Corpus.GetText("MAT").GetSegments(), Is.Not.Empty);
-				Assert.That(env.Corpus.GetText("LUK").GetSegments(), Is.Empty);
+				Assert.That(env.Corpus.TryGetText("MAT", out IText mat), Is.True);
+				Assert.That(mat.GetRows(), Is.Not.Empty);
+				Assert.That(env.Corpus.TryGetText("LUK", out _), Is.False);
 			}
 		}
 	}

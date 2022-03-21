@@ -49,9 +49,9 @@ namespace SIL.Machine.Translation.Thot
 			return new ParallelTextCorpus(srcCorpus, trgCorpus);
 		}
 
-		private static TextSegment Segment(int segRef, string segment)
+		private static TextCorpusRow Segment(int segRef, string segment)
 		{
-			return new TextSegment("text1", new TextSegmentRef(segRef), segment.Split(), isSentenceStart: true,
+			return new TextCorpusRow("text1", new RowRef(segRef), segment.Split(), isSentenceStart: true,
 				isInRange: false, isRangeStart: false, isEmpty: false);
 		}
 	}
