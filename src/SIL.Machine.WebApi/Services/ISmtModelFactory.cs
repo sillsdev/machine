@@ -3,7 +3,7 @@
 public interface ISmtModelFactory
 {
 	IInteractiveTranslationModel Create(string engineId);
-	ITrainer CreateTrainer(string engineId, IParallelTextCorpusView corpus);
+	ITrainer CreateTrainer(string engineId, IEnumerable<ParallelTextRow> corpus);
 	void InitNew(string engineId);
 	void Cleanup(string engineId);
 }

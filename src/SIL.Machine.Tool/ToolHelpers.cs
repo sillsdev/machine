@@ -67,12 +67,12 @@ namespace SIL.Machine
 			throw new ArgumentException("An invalid text corpus type was specified.", nameof(type));
 		}
 
-		public static ITextAlignmentCorpus CreateAlignmentsCorpus(string type, string path)
+		public static IAlignmentCorpus CreateAlignmentsCorpus(string type, string path)
 		{
 			switch (type.ToLowerInvariant())
 			{
 				case "text":
-					return new TextFileTextAlignmentCorpus(path);
+					return new TextFileAlignmentCorpus(path);
 			}
 
 			throw new ArgumentException("An invalid alignment corpus type was specified.", nameof(type));
@@ -180,7 +180,7 @@ namespace SIL.Machine
 		}
 
 		public static ITrainer CreateTranslationModelTrainer(string modelType,
-			string modelConfigFileName, IParallelTextCorpusView corpus, int maxSize)
+			string modelConfigFileName, IEnumerable<ParallelTextRow> corpus, int maxSize)
 		{
 			ThotWordAlignmentModelType wordAlignmentModelType = GetThotWordAlignmentModelType(modelType);
 

@@ -7,7 +7,7 @@ public class TransferTruecaserFactory : ITruecaserFactory
 		return Task.FromResult<ITruecaser>(new TransferTruecaser());
 	}
 
-	public ITrainer CreateTrainer(string engineId, ITextCorpus textCorpus)
+	public ITrainer CreateTrainer(string engineId, IEnumerable<TextRow> corpus)
 	{
 		return new NullTrainer();
 	}

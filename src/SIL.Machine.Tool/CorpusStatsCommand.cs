@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -51,10 +52,10 @@ namespace SIL.Machine
 				int segmentCount = 0;
 				int sourceWordCount = 0;
 				int targetWordCount = 0;
-				IParallelTextCorpusView corpus = _corpusSpec.ParallelCorpus
-					.FilterEmpty()
-					.CapSize(_corpusSpec.MaxCorpusCount);
-				foreach (ParallelTextCorpusRow row in corpus.GetRows())
+				IEnumerable<ParallelTextRow> corpus = _corpusSpec.ParallelCorpus
+					.Where(r => !r.IsEmpty)
+					.Take(_corpusSpec.MaxCorpusCount);
+				foreach (ParallelTextRow row in corpus)
 				{
 					if (row.SourceSegment.Count > maxLength)
 					{

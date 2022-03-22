@@ -17,10 +17,10 @@ public class UnigramTruecaserFactory : ITruecaserFactory
 		return truecaser;
 	}
 
-	public ITrainer CreateTrainer(string engineId, ITextCorpus textCorpus)
+	public ITrainer CreateTrainer(string engineId, IEnumerable<TextRow> corpus)
 	{
 		string path = GetModelPath(engineId);
-		return new UnigramTruecaserTrainer(path, textCorpus);
+		return new UnigramTruecaserTrainer(path, corpus);
 	}
 
 	public void Cleanup(string engineId)

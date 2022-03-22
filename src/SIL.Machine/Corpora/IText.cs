@@ -8,6 +8,6 @@ namespace SIL.Machine.Corpora
 
 		string SortKey { get; }
 
-		IEnumerable<TextCorpusRow> GetRows();
+		IEnumerable<TextRow> GetRows();
 	}
 }

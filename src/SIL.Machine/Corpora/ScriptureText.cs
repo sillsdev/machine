@@ -14,63 +14,29 @@ namespace SIL.Machine.Corpora
 
 		public ScrVers Versification { get; }
 
-		public override IEnumerable<TextCorpusRow> GetRows()
+		public override IEnumerable<TextRow> GetRows()
 		{
-			return GetRows();
-		}
-
-		public IEnumerable<TextCorpusRow> GetRows(ScrVers versification = null)
-		{
-			var rowList = new List<(VerseRef Ref, TextCorpusRow Row)>();
+			var rowList = new List<TextRow>();
 			bool outOfOrder = false;
 			var prevVerseRef = new VerseRef();
-			int rangeStartOffset = -1;
-			foreach (TextCorpusRow r in GetVersesInDocOrder())
+			foreach (TextRow r in GetVersesInDocOrder())
 			{
-				TextCorpusRow row = r;
+				TextRow row = r;
 				var verseRef = (VerseRef)row.Ref;
-				if (versification != null && versification != Versification)
-				{
-					verseRef.ChangeVersification(versification);
-					// convert on-to-many versification mapping to a verse range
-					if (verseRef.Equals(prevVerseRef))
-					{
-						var (rangeStartVerseRef, rangeStartSeg) = rowList[rowList.Count + rangeStartOffset];
-						bool isRangeStart = false;
-						if (rangeStartOffset == -1)
-							isRangeStart = !rangeStartSeg.IsInRange || rangeStartSeg.IsRangeStart;
-						rowList[rowList.Count + rangeStartOffset] = (rangeStartVerseRef,
-							new TextCorpusRow(Id, rangeStartSeg.Ref)
-							{
-								Segment = rangeStartSeg.Segment.Concat(row.Segment).ToArray(),
-								IsSentenceStart = rangeStartSeg.IsSentenceStart,
-								IsInRange = true,
-								IsRangeStart = isRangeStart,
-								IsEmpty = rangeStartSeg.IsEmpty && row.IsEmpty
-							});
-						row = CreateEmptyRow(row.Ref, isInRange: true);
-						rangeStartOffset--;
-					}
-					else
-					{
-						rangeStartOffset = -1;
-					}
-				}
-				rowList.Add((verseRef, row));
+				rowList.Add(row);
 				if (!outOfOrder && verseRef.CompareTo(prevVerseRef) < 0)
 					outOfOrder = true;
 				prevVerseRef = verseRef;
 			}
 
 			if (outOfOrder)
-				rowList.Sort((x, y) => x.Ref.CompareTo(y.Ref));
-
-			return rowList.Select(t => t.Row);
+				rowList.Sort((x, y) => ((VerseRef)x.Ref).CompareTo(y.Ref));
+			return rowList;
 		}
 
-		protected abstract IEnumerable<TextCorpusRow> GetVersesInDocOrder();
+		protected abstract IEnumerable<TextRow> GetVersesInDocOrder();
 
-		protected IEnumerable<TextCorpusRow> CreateRows(string chapter, string verse,
+		protected IEnumerable<TextRow> CreateRows(string chapter, string verse,
 			string text, bool sentenceStart = true)
 		{
 			var verseRef = new VerseRef(Id, chapter, verse, Versification);

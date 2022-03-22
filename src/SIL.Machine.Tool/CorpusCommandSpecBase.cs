@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
 
@@ -48,17 +49,17 @@ namespace SIL.Machine
 			return true;
 		}
 
-		public ITextCorpusView FilterTextCorpus(ITextCorpusView corpus)
+		public IEnumerable<TextRow> FilterTextCorpus(IEnumerable<TextRow> corpus)
 		{
 			if (_includeTexts != null || _excludeTexts != null)
-				return corpus.Filter(row => FilterCorpus(row.TextId));
+				return corpus.Where(row => FilterCorpus(row.TextId));
 			return corpus;
 		}
 
-		public ITextAlignmentCorpusView FilterTextAlignmentCorpus(ITextAlignmentCorpusView corpus)
+		public IEnumerable<AlignmentRow> FilterTextAlignmentCorpus(IEnumerable<AlignmentRow> corpus)
 		{
 			if (_includeTexts != null || _excludeTexts != null)
-				return corpus.Filter(row => FilterCorpus(row.TextId));
+				return corpus.Where(row => FilterCorpus(row.TextId));
 			return corpus;
 		}
 

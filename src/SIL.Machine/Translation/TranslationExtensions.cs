@@ -46,7 +46,7 @@ namespace SIL.Machine.Translation
 			return results;
 		}
 
-		public static WordAlignmentMatrix GetBestAlignment(this IWordAligner aligner, ParallelTextCorpusRow segment,
+		public static WordAlignmentMatrix GetBestAlignment(this IWordAligner aligner, ParallelTextRow segment,
 			TokenProcessor sourcePreprocessor = null, TokenProcessor targetPreprocessor = null)
 		{
 			if (sourcePreprocessor == null)
@@ -73,7 +73,7 @@ namespace SIL.Machine.Translation
 			return alignment;
 		}
 
-		public static WordAlignmentMatrix CreateAlignmentMatrix(this ParallelTextCorpusRow segment)
+		public static WordAlignmentMatrix CreateAlignmentMatrix(this ParallelTextRow segment)
 		{
 			if (segment.AlignedWordPairs == null)
 				return null;
@@ -85,7 +85,7 @@ namespace SIL.Machine.Translation
 			return matrix;
 		}
 
-		public static string GetAlignmentString(this IWordAlignmentModel model, ParallelTextCorpusRow segment,
+		public static string GetAlignmentString(this IWordAlignmentModel model, ParallelTextRow segment,
 			bool includeScores = true, TokenProcessor sourcePreprocessor = null, TokenProcessor targetPreprocessor = null)
 		{
 			if (sourcePreprocessor == null)
@@ -100,7 +100,7 @@ namespace SIL.Machine.Translation
 			return alignment.ToString(model, sourceSegment, targetSegment, includeScores);
 		}
 
-		public static string GetGizaFormatString(this IWordAligner aligner, ParallelTextCorpusRow segment,
+		public static string GetGizaFormatString(this IWordAligner aligner, ParallelTextRow segment,
 			TokenProcessor sourcePreprocessor = null, TokenProcessor targetPreprocessor = null)
 		{
 			if (sourcePreprocessor == null)
@@ -121,7 +121,7 @@ namespace SIL.Machine.Translation
 			return waMatrix.GetAlignedWordPairs(model, sourceSegment, targetSegment);
 		}
 
-		public static void TrainSegment(this ITruecaser truecaser, TextCorpusRow segment)
+		public static void TrainSegment(this ITruecaser truecaser, TextRow segment)
 		{
 			truecaser.TrainSegment(segment.Segment, segment.IsSentenceStart);
 		}

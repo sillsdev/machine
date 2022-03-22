@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace SIL.Machine.Corpora
 {
-	public class TextAlignmentCorpusRow
+	public class AlignmentRow
 	{
-		public TextAlignmentCorpusRow(string textId, object segRef)
+		public AlignmentRow(string textId, object segRef)
 		{
 			TextId = textId;
 			Ref = segRef;
@@ -18,9 +18,9 @@ namespace SIL.Machine.Corpora
 
 		public IReadOnlyCollection<AlignedWordPair> AlignedWordPairs { get; set; } = Array.Empty<AlignedWordPair>();
 
-		public TextAlignmentCorpusRow Invert()
+		public AlignmentRow Invert()
 		{
-			return new TextAlignmentCorpusRow(TextId, Ref)
+			return new AlignmentRow(TextId, Ref)
 			{
 				AlignedWordPairs = new HashSet<AlignedWordPair>(AlignedWordPairs.Select(wp => wp.Invert()))
 			};

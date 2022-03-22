@@ -115,7 +115,7 @@ namespace SIL.Machine.Translation.Thot
 			SetHandle(Thot.CreateAlignmentModel(Type));
 		}
 
-		public ITrainer CreateTrainer(IParallelTextCorpusView corpus)
+		public ITrainer CreateTrainer(IEnumerable<ParallelTextRow> corpus)
 		{
 			CheckDisposed();
 
@@ -262,7 +262,7 @@ namespace SIL.Machine.Translation.Thot
 		{
 			private readonly ThotWordAlignmentModel _model;
 
-			public Trainer(ThotWordAlignmentModel model, IParallelTextCorpusView corpus)
+			public Trainer(ThotWordAlignmentModel model, IEnumerable<ParallelTextRow> corpus)
 				: base(model.Type, corpus, model._prefFileName, model.Parameters)
 			{
 				_model = model;

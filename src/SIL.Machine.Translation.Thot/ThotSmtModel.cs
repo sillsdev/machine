@@ -120,7 +120,7 @@ namespace SIL.Machine.Translation.Thot
 			return Task.CompletedTask;
 		}
 
-		public ThotSmtModelTrainer CreateTrainer(IParallelTextCorpusView corpus)
+		public ThotSmtModelTrainer CreateTrainer(IEnumerable<ParallelTextRow> corpus)
 		{
 			CheckDisposed();
 
@@ -129,7 +129,7 @@ namespace SIL.Machine.Translation.Thot
 				: new Trainer(this, corpus, ConfigFileName);
 		}
 
-		ITrainer ITranslationModel.CreateTrainer(IParallelTextCorpusView corpus)
+		ITrainer ITranslationModel.CreateTrainer(IEnumerable<ParallelTextRow> corpus)
 		{
 			return CreateTrainer(corpus);
 		}
@@ -164,13 +164,13 @@ namespace SIL.Machine.Translation.Thot
 		{
 			private readonly ThotSmtModel _smtModel;
 
-			public Trainer(ThotSmtModel smtModel, IParallelTextCorpusView corpus, string cfgFileName)
+			public Trainer(ThotSmtModel smtModel, IEnumerable<ParallelTextRow> corpus, string cfgFileName)
 				: base(smtModel.WordAlignmentModelType, corpus, cfgFileName)
 			{
 				_smtModel = smtModel;
 			}
 
-			public Trainer(ThotSmtModel smtModel, IParallelTextCorpusView corpus, ThotSmtParameters parameters)
+			public Trainer(ThotSmtModel smtModel, IEnumerable<ParallelTextRow> corpus, ThotSmtParameters parameters)
 				: base(smtModel.WordAlignmentModelType, corpus, parameters)
 			{
 				_smtModel = smtModel;

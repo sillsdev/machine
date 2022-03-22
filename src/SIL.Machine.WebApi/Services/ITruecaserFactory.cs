@@ -3,6 +3,6 @@
 public interface ITruecaserFactory
 {
 	Task<ITruecaser> CreateAsync(string engineId);
-	ITrainer CreateTrainer(string engineId, ITextCorpus textCorpus);
+	ITrainer CreateTrainer(string engineId, IEnumerable<TextRow> corpus);
 	void Cleanup(string engineId);
 }

@@ -9,7 +9,7 @@ using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
-	public class UsxFileTextAlignmentCollection : ITextAlignmentCollection
+	public class UsxFileAlignmentCollection : IAlignmentCollection
 	{
 		private static readonly VerseRefComparer VerseRefComparer = new VerseRefComparer();
 
@@ -21,7 +21,7 @@ namespace SIL.Machine.Corpora
 		private readonly ScrVers _trgVersification;
 		private readonly UsxVerseParser _parser;
 
-		public UsxFileTextAlignmentCollection(IRangeTokenizer<string, int, string> srcWordTokenizer,
+		public UsxFileAlignmentCollection(IRangeTokenizer<string, int, string> srcWordTokenizer,
 			IRangeTokenizer<string, int, string> trgWordTokenizer, string srcFileName, string trgFileName,
 			ScrVers srcVersification = null, ScrVers trgVersification = null)
 		{
@@ -42,7 +42,7 @@ namespace SIL.Machine.Corpora
 
 		public string SortKey { get; }
 
-		public IEnumerable<TextAlignmentCorpusRow> GetRows()
+		public IEnumerable<AlignmentRow> GetRows()
 		{
 			using (var srcStream = new FileStream(_srcFileName, FileMode.Open, FileAccess.Read))
 			using (var trgStream = new FileStream(_trgFileName, FileMode.Open, FileAccess.Read))
@@ -86,7 +86,7 @@ namespace SIL.Machine.Corpora
 									|| (srcVerseRef.HasMultiple && trgVerseRef.HasMultiple
 										&& srcVerse.Text.Length > 0 && trgVerse.Text.Length > 0)))
 								{
-									TextAlignmentCorpusRow rangeAlignment = CreateTextAlignment((VerseRef)rangeInfo.VerseRef,
+									AlignmentRow rangeAlignment = CreateTextAlignment((VerseRef)rangeInfo.VerseRef,
 										rangeInfo.SourceTokens, rangeInfo.TargetTokens);
 									if (rangeAlignment.AlignedWordPairs.Count > 0)
 										yield return rangeAlignment;
@@ -101,13 +101,13 @@ namespace SIL.Machine.Corpora
 							{
 								if (rangeInfo.IsInRange)
 								{
-									TextAlignmentCorpusRow rangeAlignment = CreateTextAlignment((VerseRef)rangeInfo.VerseRef,
+									AlignmentRow rangeAlignment = CreateTextAlignment((VerseRef)rangeInfo.VerseRef,
 										rangeInfo.SourceTokens, rangeInfo.TargetTokens);
 									if (rangeAlignment.AlignedWordPairs.Count > 0)
 										yield return rangeAlignment;
 								}
 
-								TextAlignmentCorpusRow alignment = CreateTextAlignment(srcVerseRef, srcVerse.Tokens,
+								AlignmentRow alignment = CreateTextAlignment(srcVerseRef, srcVerse.Tokens,
 									trgVerse.Tokens);
 								if (alignment.AlignedWordPairs.Count > 0)
 									yield return alignment;
@@ -120,7 +120,7 @@ namespace SIL.Machine.Corpora
 			}
 		}
 
-		private TextAlignmentCorpusRow CreateTextAlignment(VerseRef verseRef, IReadOnlyList<UsxToken> srcTokens,
+		private AlignmentRow CreateTextAlignment(VerseRef verseRef, IReadOnlyList<UsxToken> srcTokens,
 			IReadOnlyList<UsxToken> trgTokens)
 		{
 			Dictionary<string, HashSet<int>> srcLinks = GetLinks(_srcWordTokenizer, srcTokens);
@@ -138,7 +138,7 @@ namespace SIL.Machine.Corpora
 					}
 				}
 			}
-			return new TextAlignmentCorpusRow(Id, verseRef)
+			return new AlignmentRow(Id, verseRef)
 			{
 				AlignedWordPairs = wordPairs
 			};

@@ -59,14 +59,16 @@ namespace SIL.Machine
 			Directory.CreateDirectory(Path.GetDirectoryName(_outputArgument.Value));
 
 			List<IReadOnlyCollection<AlignedWordPair>> alignments = null;
-			IParallelTextCorpusView refParallelCorpus = null;
+			IEnumerable<ParallelTextRow> refParallelCorpus = null;
 			if (_refOption.HasValue())
 			{
 				alignments = new List<IReadOnlyCollection<AlignedWordPair>>();
-				ITextAlignmentCorpusView refCorpus = ToolHelpers.CreateAlignmentsCorpus("text", _refOption.Value());
+				IEnumerable<AlignmentRow> refCorpus = ToolHelpers.CreateAlignmentsCorpus("text",
+					_refOption.Value());
 				refCorpus = _corpusSpec.FilterTextAlignmentCorpus(refCorpus);
-				refParallelCorpus = new ParallelTextCorpus(_corpusSpec.SourceCorpus, _corpusSpec.TargetCorpus,
-					refCorpus).FilterEmpty();
+				refParallelCorpus = _corpusSpec.ProcessedSourceCorpus
+					.AlignRows(_corpusSpec.ProcessedTargetCorpus, refCorpus)
+					.Where(r => !r.IsEmpty);
 			}
 
 			int processorCount = Environment.ProcessorCount;
@@ -76,7 +78,7 @@ namespace SIL.Machine
 			if (!_quietOption.HasValue())
 				Out.Write("Loading model... ");
 			int stepCount = _quietOption.HasValue() ? 0
-				: Math.Min(_corpusSpec.MaxCorpusCount, _corpusSpec.ParallelCorpus.NonemptyCount());
+				: Math.Min(_corpusSpec.MaxCorpusCount, _corpusSpec.ParallelCorpus.Count(r => !r.IsEmpty));
 			int curStep = 0;
 			using (IWordAlignmentModel alignmentModel = _modelSpec.CreateAlignmentModel(symHeuristic: symHeuristic))
 			{
@@ -91,7 +93,7 @@ namespace SIL.Machine
 				{
 					int segmentCount = 0;
 					progress?.Report(new ProgressStatus(curStep, stepCount));
-					var alignBlock = new TransformBlock<ParallelTextCorpusRow, string>(row =>
+					var alignBlock = new TransformBlock<ParallelTextRow, string>(row =>
 					{
 						if (row.IsEmpty)
 							return "";
@@ -124,8 +126,8 @@ namespace SIL.Machine
 					alignBlock.LinkTo(batchWritesBlock, linkOptions);
 					batchWritesBlock.LinkTo(writeBlock, linkOptions);
 
-					IParallelTextCorpusView corpus = _preprocessSpec.Preprocess(_corpusSpec.ParallelCorpus);
-					foreach (ParallelTextCorpusRow row in corpus.GetRows())
+					IEnumerable<ParallelTextRow> corpus = _preprocessSpec.Preprocess(_corpusSpec.ParallelCorpus);
+					foreach (ParallelTextRow row in corpus)
 					{
 						await alignBlock.SendAsync(row);
 						if (!row.IsEmpty)
@@ -148,10 +150,9 @@ namespace SIL.Machine
 
 			if (refParallelCorpus != null && alignments != null)
 			{
-				double aer = Evaluation.ComputeAer(alignments, refParallelCorpus.GetRows()
-					.Select(s => s.AlignedWordPairs));
+				double aer = Evaluation.ComputeAer(alignments, refParallelCorpus.Select(s => s.AlignedWordPairs));
 				(double fScore, double precision, double recall) = Evaluation.ComputeAlignmentFScore(alignments,
-					refParallelCorpus.GetRows().Select(s => s.AlignedWordPairs));
+					refParallelCorpus.Select(s => s.AlignedWordPairs));
 				Out.WriteLine($"AER: {aer:0.0000}");
 				Out.WriteLine($"F-Score: {fScore:0.0000}");
 				Out.WriteLine($"Precision: {precision:0.0000}");

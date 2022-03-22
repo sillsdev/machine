@@ -13,7 +13,7 @@ namespace SIL.Machine.Corpora
 			using (var env = new DblBundleTestEnvironment())
 			{
 				IText text = env.Corpus["MAT"];
-				TextCorpusRow[] segments = text.GetRows().ToArray();
+				TextRow[] segments = text.GetRows().ToArray();
 				Assert.That(segments.Length, Is.EqualTo(14));
 
 				Assert.That(segments[0].Ref, Is.EqualTo(new VerseRef("MAT 1:1", env.Corpus.Versification)));
@@ -57,7 +57,7 @@ namespace SIL.Machine.Corpora
 			using (var env = new DblBundleTestEnvironment())
 			{
 				IText text = env.Corpus["MAT"];
-				TextCorpusRow[] segments = text.GetRows().ToArray();
+				TextRow[] segments = text.GetRows().ToArray();
 				Assert.That(segments.Length, Is.EqualTo(14));
 
 				Assert.That(segments[3].Ref, Is.EqualTo(new VerseRef("MAT 1:4", env.Corpus.Versification)));
@@ -76,7 +76,7 @@ namespace SIL.Machine.Corpora
 			using (var env = new DblBundleTestEnvironment())
 			{
 				IText text = env.Corpus["MRK"];
-				TextCorpusRow[] segments = text.GetRows().ToArray();
+				TextRow[] segments = text.GetRows().ToArray();
 				Assert.That(segments, Is.Empty);
 			}
 		}

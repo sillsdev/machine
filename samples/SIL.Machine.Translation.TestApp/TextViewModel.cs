@@ -29,8 +29,8 @@ namespace SIL.Machine.Translation.TestApp
 		private int _currentTargetSegmentIndex;
 		private readonly RelayCommand _goToNextSegmentCommand;
 		private readonly RelayCommand _goToPrevSegmentCommand;
-		private readonly RelayCommand _approveSegmentCommand; 
-		private readonly RelayCommand _applyAllSuggestionsCommand; 
+		private readonly RelayCommand _approveSegmentCommand;
+		private readonly RelayCommand _applyAllSuggestionsCommand;
 		private readonly List<Segment> _sourceSegments;
 		private readonly List<Segment> _targetSegments;
 		private readonly HashSet<int> _approvedSegments;
@@ -40,7 +40,7 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly List<string> _sourceSegmentWords;
 		private readonly BulkObservableList<AlignedWordViewModel> _alignedSourceWords;
 		private Range<int>? _currentSourceSegmentRange;
-		private Range<int>? _currentTargetSegmentRange; 
+		private Range<int>? _currentTargetSegmentRange;
 		private readonly RelayCommand<int> _selectSourceSegmentCommand;
 		private readonly RelayCommand<int> _selectTargetSegmentCommand;
 		private readonly BulkObservableList<Range<int>> _unapprovedTargetSegmentRanges;
@@ -321,8 +321,7 @@ namespace SIL.Machine.Translation.TestApp
 		private void StartSegmentTranslation()
 		{
 			_sourceSegmentWords.AddRange(_tokenizer.Tokenize(_sourceSegments[_currentSegment].Text));
-			_translator = InteractiveTranslator.Create(_ecm, _engine,
-				TokenProcessors.Lowercase.Process(_sourceSegmentWords));
+			_translator = InteractiveTranslator.Create(_ecm, _engine, _sourceSegmentWords.Lowercase());
 			_isTranslating = true;
 			UpdatePrefix();
 			UpdateSourceSegmentSelection();
@@ -334,7 +333,7 @@ namespace SIL.Machine.Translation.TestApp
 				return;
 
 			IReadOnlyList<string> prefix = _tokenizer.Tokenize(_targetSegments[_currentSegment].Text).ToArray();
-			prefix = TokenProcessors.Lowercase.Process(prefix);
+			prefix = prefix.Lowercase();
 			_translator.SetPrefix(prefix, TargetSegment.Length == 0 || TargetSegment.EndsWith(" "));
 			UpdateSuggestions();
 		}

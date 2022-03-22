@@ -5,14 +5,14 @@ namespace SIL.Machine.Corpora
 {
 	public class MemoryText : IText
 	{
-		private readonly TextCorpusRow[] _rows;
+		private readonly TextRow[] _rows;
 
 		public MemoryText(string id)
-			: this(id, Enumerable.Empty<TextCorpusRow>())
+			: this(id, Enumerable.Empty<TextRow>())
 		{
 		}
 
-		public MemoryText(string id, IEnumerable<TextCorpusRow> rows)
+		public MemoryText(string id, IEnumerable<TextRow> rows)
 		{
 			Id = id;
 			_rows = rows.ToArray();
@@ -21,7 +21,7 @@ namespace SIL.Machine.Corpora
 		public string Id { get; }
 		public string SortKey => Id;
 
-		public IEnumerable<TextCorpusRow> GetRows()
+		public IEnumerable<TextRow> GetRows()
 		{
 			return _rows;
 		}

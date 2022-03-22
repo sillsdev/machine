@@ -104,12 +104,12 @@ namespace SIL.Machine
 				using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
 				using (StreamWriter traceWriter = CreateTraceWriter())
 				{
-					IParallelTextCorpusView corpus = _corpusSpec.ParallelCorpus.FilterEmpty();
+					IEnumerable<ParallelTextRow> corpus = _corpusSpec.ParallelCorpus.Where(r => !r.IsEmpty);
 					int corpusCount = Math.Min(_corpusSpec.MaxCorpusCount, corpus.Count());
 					corpus = _preprocessSpec.Preprocess(corpus);
 					var ecm = new ErrorCorrectionModel();
 					progress?.Report(new ProgressStatus(segmentCount, corpusCount));
-					foreach (ParallelTextCorpusRow row in corpus.GetRows())
+					foreach (ParallelTextRow row in corpus)
 					{
 						TestSegment(ecm, engine, suggester, n, row, traceWriter);
 						segmentCount++;
@@ -158,7 +158,7 @@ namespace SIL.Machine
 		}
 
 		private void TestSegment(ErrorCorrectionModel ecm, IInteractiveTranslationEngine engine,
-			ITranslationSuggester suggester, int n, ParallelTextCorpusRow row, StreamWriter traceWriter)
+			ITranslationSuggester suggester, int n, ParallelTextRow row, StreamWriter traceWriter)
 		{
 			traceWriter?.WriteLine($"Segment:      {row.Ref}");
 			traceWriter?.WriteLine($"Source:       {row.SourceText}");

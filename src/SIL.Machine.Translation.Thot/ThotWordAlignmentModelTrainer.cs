@@ -12,7 +12,7 @@ namespace SIL.Machine.Translation.Thot
 	public class ThotWordAlignmentModelTrainer : DisposableBase, ITrainer
 	{
 		private readonly string _prefFileName;
-		private readonly IParallelTextCorpusView _parallelCorpus;
+		private readonly IEnumerable<ParallelTextRow> _parallelCorpus;
 		private readonly string _sourceFileName;
 		private readonly string _targetFileName;
 		private readonly int _maxSegmentLength = int.MaxValue;
@@ -26,7 +26,7 @@ namespace SIL.Machine.Translation.Thot
 			_targetFileName = targetFileName;
 		}
 
-		public ThotWordAlignmentModelTrainer(ThotWordAlignmentModelType modelType, IParallelTextCorpusView corpus,
+		public ThotWordAlignmentModelTrainer(ThotWordAlignmentModelType modelType, IEnumerable<ParallelTextRow> corpus,
 			string prefFileName, ThotWordAlignmentParameters parameters = null)
 		{
 			_prefFileName = prefFileName;
@@ -139,11 +139,11 @@ namespace SIL.Machine.Translation.Thot
 			{
 				int corpusCount = 0;
 				int index = 0;
-				foreach (ParallelTextCorpusRow segment in _parallelCorpus.GetRows())
+				foreach (ParallelTextRow row in _parallelCorpus)
 				{
-					AddSegmentPair(segment);
+					AddSegmentPair(row);
 
-					if (IsSegmentValid(segment))
+					if (IsSegmentValid(row))
 						corpusCount++;
 
 					index++;
@@ -199,13 +199,13 @@ namespace SIL.Machine.Translation.Thot
 				Thot.swAlignModel_close(Handle);
 		}
 
-		private bool IsSegmentValid(ParallelTextCorpusRow row)
+		private bool IsSegmentValid(ParallelTextRow row)
 		{
 			return !row.IsEmpty && row.SourceSegment.Count <= _maxSegmentLength
 				&& row.TargetSegment.Count <= _maxSegmentLength;
 		}
 
-		private void AddSegmentPair(ParallelTextCorpusRow row)
+		private void AddSegmentPair(ParallelTextRow row)
 		{
 			IntPtr nativeSourceSegment = Thot.ConvertSegmentToNativeUtf8(row.SourceSegment);
 			IntPtr nativeTargetSegment = Thot.ConvertSegmentToNativeUtf8(row.TargetSegment);

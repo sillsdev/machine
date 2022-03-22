@@ -133,7 +133,7 @@ namespace SIL.Machine.Translation
 			return Math.Max(dirScore, invScore);
 		}
 
-		public ITrainer CreateTrainer(IParallelTextCorpusView corpus)
+		public ITrainer CreateTrainer(IEnumerable<ParallelTextRow> corpus)
 		{
 			CheckDisposed();
 

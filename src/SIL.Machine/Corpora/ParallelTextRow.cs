@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace SIL.Machine.Corpora
 {
-	public class ParallelTextCorpusRow
+	public class ParallelTextRow
 	{
-		public ParallelTextCorpusRow(string textId, IReadOnlyList<object> sourceRefs, IReadOnlyList<object> targetRefs)
+		public ParallelTextRow(string textId, IReadOnlyList<object> sourceRefs, IReadOnlyList<object> targetRefs)
 		{
 			if (sourceRefs.Count == 0 && targetRefs.Count == 0)
 				throw new ArgumentNullException("Either a source or target ref must be provided.");
@@ -41,9 +41,9 @@ namespace SIL.Machine.Corpora
 		public string SourceText => string.Join(" ", SourceSegment);
 		public string TargetText => string.Join(" ", TargetSegment);
 
-		public ParallelTextCorpusRow Invert()
+		public ParallelTextRow Invert()
 		{
-			return new ParallelTextCorpusRow(TextId, TargetRefs, SourceRefs)
+			return new ParallelTextRow(TextId, TargetRefs, SourceRefs)
 			{
 				SourceSegment = TargetSegment,
 				TargetSegment = SourceSegment,

@@ -16,7 +16,7 @@ namespace SIL.Machine.Corpora
 			var sourceCorpus = new DictionaryTextCorpus();
 			var targetCorpus = new DictionaryTextCorpus();
 			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
-			Assert.That(parallelCorpus.GetRows(), Is.Empty);
+			Assert.That(parallelCorpus, Is.Empty);
 		}
 
 		[Test]
@@ -36,8 +36,8 @@ namespace SIL.Machine.Corpora
 					TextRow(2, "target segment 2 ."),
 					TextRow(3, "target segment 3 .", isSentenceStart: false)
 				}));
-			var alignments = new DictionaryTextAlignmentCorpus(
-				new MemoryTextAlignmentCollection("text1", new[]
+			var alignments = new DictionaryAlignmentCorpus(
+				new MemoryAlignmentCollection("text1", new[]
 				{
 					AlignmentRow(1, new AlignedWordPair(0, 0)),
 					AlignmentRow(2, new AlignedWordPair(1, 1)),
@@ -45,7 +45,7 @@ namespace SIL.Machine.Corpora
 				}));
 
 			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignments);
-			ParallelTextCorpusRow[] rows = parallelCorpus.GetRows().ToArray();
+			ParallelTextRow[] rows = parallelCorpus.ToArray();
 			Assert.That(rows.Length, Is.EqualTo(3));
 			Assert.That(rows[0].SourceRefs, Is.EqualTo(Refs(1)));
 			Assert.That(rows[0].TargetRefs, Is.EqualTo(Refs(1)));
@@ -79,15 +79,15 @@ namespace SIL.Machine.Corpora
 					TextRow(1, "target segment 1 ."),
 					TextRow(3, "target segment 3 .")
 				}));
-			var alignments = new DictionaryTextAlignmentCorpus(
-				new MemoryTextAlignmentCollection("text1", new[]
+			var alignments = new DictionaryAlignmentCorpus(
+				new MemoryAlignmentCollection("text1", new[]
 				{
 					AlignmentRow(1, new AlignedWordPair(0, 0)),
 					AlignmentRow(3, new AlignedWordPair(2, 2))
 				}));
 
 			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignments);
-			ParallelTextCorpusRow[] rows = parallelCorpus.GetRows().ToArray();
+			ParallelTextRow[] rows = parallelCorpus.ToArray();
 			Assert.That(rows.Length, Is.EqualTo(2));
 			Assert.That(rows[0].SourceRefs, Is.EqualTo(Refs(1)));
 			Assert.That(rows[0].TargetRefs, Is.EqualTo(Refs(1)));
@@ -117,15 +117,15 @@ namespace SIL.Machine.Corpora
 					TextRow(2, "target segment 2 ."),
 					TextRow(3, "target segment 3 .")
 				}));
-			var alignments = new DictionaryTextAlignmentCorpus(
-				new MemoryTextAlignmentCollection("text1", new[]
+			var alignments = new DictionaryAlignmentCorpus(
+				new MemoryAlignmentCollection("text1", new[]
 				{
 					AlignmentRow(1, new AlignedWordPair(0, 0)),
 					AlignmentRow(3, new AlignedWordPair(2, 2))
 				}));
 
 			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignments);
-			ParallelTextCorpusRow[] rows = parallelCorpus.GetRows().ToArray();
+			ParallelTextRow[] rows = parallelCorpus.ToArray();
 			Assert.That(rows.Length, Is.EqualTo(2));
 			Assert.That(rows[0].SourceRefs, Is.EqualTo(Refs(1)));
 			Assert.That(rows[0].TargetRefs, Is.EqualTo(Refs(1)));
@@ -155,15 +155,15 @@ namespace SIL.Machine.Corpora
 					TextRow(1, "target segment 1 ."),
 					TextRow(2, "target segment 2 .")
 				}));
-			var alignments = new DictionaryTextAlignmentCorpus(
-				new MemoryTextAlignmentCollection("text1", new[]
+			var alignments = new DictionaryAlignmentCorpus(
+				new MemoryAlignmentCollection("text1", new[]
 				{
 					AlignmentRow(1, new AlignedWordPair(0, 0)),
 					AlignmentRow(2, new AlignedWordPair(1, 1))
 				}));
 
 			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignments);
-			ParallelTextCorpusRow[] rows = parallelCorpus.GetRows().ToArray();
+			ParallelTextRow[] rows = parallelCorpus.ToArray();
 			Assert.That(rows.Length, Is.EqualTo(2));
 			Assert.That(rows[0].SourceRefs, Is.EqualTo(Refs(1)));
 			Assert.That(rows[0].TargetRefs, Is.EqualTo(Refs(1)));
@@ -193,15 +193,15 @@ namespace SIL.Machine.Corpora
 					TextRow(2, "target segment 2 ."),
 					TextRow(3, "target segment 3 .")
 				}));
-			var alignments = new DictionaryTextAlignmentCorpus(
-				new MemoryTextAlignmentCollection("text1", new[]
+			var alignments = new DictionaryAlignmentCorpus(
+				new MemoryAlignmentCollection("text1", new[]
 				{
 					AlignmentRow(1, new AlignedWordPair(0, 0)),
 					AlignmentRow(2, new AlignedWordPair(1, 1))
 				}));
 
 			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignments);
-			ParallelTextCorpusRow[] rows = parallelCorpus.GetRows().ToArray();
+			ParallelTextRow[] rows = parallelCorpus.ToArray();
 			Assert.That(rows.Length, Is.EqualTo(2));
 			Assert.That(rows[0].SourceRefs, Is.EqualTo(Refs(1)));
 			Assert.That(rows[0].TargetRefs, Is.EqualTo(Refs(1)));
@@ -231,15 +231,15 @@ namespace SIL.Machine.Corpora
 					TextRow(2, "target segment 2 ."),
 					TextRow(3, "target segment 3 .")
 				}));
-			var alignments = new DictionaryTextAlignmentCorpus(
-				new MemoryTextAlignmentCollection("text1", new[]
+			var alignments = new DictionaryAlignmentCorpus(
+				new MemoryAlignmentCollection("text1", new[]
 				{
 					AlignmentRow(2, new AlignedWordPair(1, 1)),
 					AlignmentRow(3, new AlignedWordPair(2, 2))
 				}));
 
 			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignments);
-			ParallelTextCorpusRow[] rows = parallelCorpus.GetRows().ToArray();
+			ParallelTextRow[] rows = parallelCorpus.ToArray();
 			Assert.That(rows.Length, Is.EqualTo(2));
 			Assert.That(rows[0].SourceRefs, Is.EqualTo(Refs(2)));
 			Assert.That(rows[0].TargetRefs, Is.EqualTo(Refs(2)));
@@ -269,15 +269,15 @@ namespace SIL.Machine.Corpora
 					TextRow(2, "target segment 2 ."),
 					TextRow(3, "target segment 3 .")
 				}));
-			var alignments = new DictionaryTextAlignmentCorpus(
-				new MemoryTextAlignmentCollection("text1", new[]
+			var alignments = new DictionaryAlignmentCorpus(
+				new MemoryAlignmentCollection("text1", new[]
 				{
 					AlignmentRow(2, new AlignedWordPair(1, 1)),
 					AlignmentRow(3, new AlignedWordPair(2, 2))
 				}));
 
 			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignments);
-			ParallelTextCorpusRow[] rows = parallelCorpus.GetRows().ToArray();
+			ParallelTextRow[] rows = parallelCorpus.ToArray();
 			Assert.That(rows.Length, Is.EqualTo(2));
 			Assert.That(rows[0].SourceRefs, Is.EqualTo(Refs(2)));
 			Assert.That(rows[0].TargetRefs, Is.EqualTo(Refs(2)));
@@ -313,7 +313,7 @@ namespace SIL.Machine.Corpora
 				}));
 
 			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
-			ParallelTextCorpusRow[] rows = parallelCorpus.GetRows().ToArray();
+			ParallelTextRow[] rows = parallelCorpus.ToArray();
 			Assert.That(rows.Length, Is.EqualTo(3));
 			Assert.That(rows[1].TargetRefs, Is.EqualTo(Refs(2, 3)));
 			Assert.That(rows[1].SourceRefs, Is.EqualTo(Refs(2, 3)));
@@ -342,7 +342,7 @@ namespace SIL.Machine.Corpora
 				}));
 
 			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
-			ParallelTextCorpusRow[] rows = parallelCorpus.GetRows().ToArray();
+			ParallelTextRow[] rows = parallelCorpus.ToArray();
 			Assert.That(rows.Length, Is.EqualTo(1));
 			Assert.That(rows[0].SourceRefs, Is.EqualTo(Refs(1, 2, 3)));
 			Assert.That(rows[0].TargetRefs, Is.EqualTo(Refs(1, 2, 3)));
@@ -376,7 +376,7 @@ namespace SIL.Machine.Corpora
 				}));
 
 			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
-			ParallelTextCorpusRow[] rows = parallelCorpus.GetRows().ToArray();
+			ParallelTextRow[] rows = parallelCorpus.ToArray();
 			Assert.That(rows.Length, Is.EqualTo(2));
 			Assert.That(rows[0].SourceRefs, Is.EqualTo(Refs(1, 2)));
 			Assert.That(rows[0].TargetRefs, Is.EqualTo(Refs(1, 2)));
@@ -413,7 +413,7 @@ namespace SIL.Machine.Corpora
 				}));
 
 			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
-			ParallelTextCorpusRow[] rows = parallelCorpus.GetRows().ToArray();
+			ParallelTextRow[] rows = parallelCorpus.ToArray();
 			Assert.That(rows.Length, Is.EqualTo(2));
 			Assert.That(rows[0].SourceRefs, Is.EqualTo(Refs(1, 2)));
 			Assert.That(rows[0].TargetRefs, Is.EqualTo(Refs(1, 2)));
@@ -426,7 +426,7 @@ namespace SIL.Machine.Corpora
 		}
 
 		[Test]
-		public void GetGetRows_AllSourceRows()
+		public void GetRows_AllSourceRows()
 		{
 			var sourceCorpus = new DictionaryTextCorpus(
 				new MemoryText("text1", new[]
@@ -458,8 +458,8 @@ namespace SIL.Machine.Corpora
 					TextRow(7, "target segment 7 ."),
 				}));
 
-			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
-			ParallelTextCorpusRow[] rows = parallelCorpus.GetRows(allSourceRows: true).ToArray();
+			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus) { AllSourceRows = true };
+			ParallelTextRow[] rows = parallelCorpus.ToArray();
 			Assert.That(rows.Length, Is.EqualTo(7));
 			Assert.That(rows[1].SourceRefs, Is.EqualTo(Refs(2)));
 			Assert.That(rows[1].TargetRefs, Is.Empty);
@@ -473,7 +473,7 @@ namespace SIL.Machine.Corpora
 		}
 
 		[Test]
-		public void GetGetRows_RangeAllTargetRows()
+		public void GetRows_RangeAllTargetRows()
 		{
 			var sourceCorpus = new DictionaryTextCorpus(
 				new MemoryText("text1", new[]
@@ -492,8 +492,8 @@ namespace SIL.Machine.Corpora
 					TextRow(4, "target segment 4 .")
 				}));
 
-			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
-			ParallelTextCorpusRow[] rows = parallelCorpus.GetRows(allTargetRows: true).ToArray();
+			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus) { AllTargetRows = true };
+			ParallelTextRow[] rows = parallelCorpus.ToArray();
 			Assert.That(rows.Length, Is.EqualTo(4));
 			Assert.That(rows[1].SourceRefs, Is.EqualTo(Refs(2)));
 			Assert.That(rows[1].TargetRefs, Is.EqualTo(Refs(2)));
@@ -530,7 +530,7 @@ namespace SIL.Machine.Corpora
 				}));
 
 			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
-			ParallelTextCorpusRow[] rows = parallelCorpus.GetRows().ToArray();
+			ParallelTextRow[] rows = parallelCorpus.ToArray();
 			Assert.That(rows.Length, Is.EqualTo(6));
 			Assert.That(rows[1].SourceRefs, Is.EqualTo(Refs(2)));
 			Assert.That(rows[1].TargetRefs, Is.EqualTo(Refs(2)));
@@ -569,8 +569,8 @@ namespace SIL.Machine.Corpora
 					TextRow(3, "target segment 3 .")
 				}));
 
-			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
-			ParallelTextCorpusRow[] rows = parallelCorpus.GetRows(allTargetRows: true).ToArray();
+			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus) { AllTargetRows = true };
+			ParallelTextRow[] rows = parallelCorpus.ToArray();
 			Assert.That(rows.Length, Is.EqualTo(4));
 			Assert.That(rows[1].SourceRefs, Is.EqualTo(Refs(2)));
 			Assert.That(rows[1].TargetRefs, Is.EqualTo(Refs(2)));
@@ -601,8 +601,8 @@ namespace SIL.Machine.Corpora
 					TextRow(3, "target segment 3 .")
 				}));
 
-			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
-			ParallelTextCorpusRow[] rows = parallelCorpus.GetRows(allSourceRows: true).ToArray();
+			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus) { AllSourceRows = true };
+			ParallelTextRow[] rows = parallelCorpus.ToArray();
 			Assert.That(rows.Length, Is.EqualTo(4));
 			Assert.That(rows[1].SourceRefs, Is.EqualTo(Refs(2)));
 			Assert.That(rows[1].TargetRefs, Is.EqualTo(Refs(2)));
@@ -632,8 +632,8 @@ namespace SIL.Machine.Corpora
 					TextRow(3, "target segment 3 .")
 				}));
 
-			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
-			ParallelTextCorpusRow[] rows = parallelCorpus.GetRows(allTargetRows: true).ToArray();
+			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus) { AllTargetRows = true };
+			ParallelTextRow[] rows = parallelCorpus.ToArray();
 			Assert.That(rows.Length, Is.EqualTo(4));
 			Assert.That(rows[1].SourceRefs, Is.EqualTo(Refs(2)));
 			Assert.That(rows[1].TargetRefs, Is.EqualTo(Refs(2)));
@@ -663,8 +663,8 @@ namespace SIL.Machine.Corpora
 					TextRow(2, "target segment 2 ."),
 				}));
 
-			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
-			ParallelTextCorpusRow[] rows = parallelCorpus.GetRows(allSourceRows: true).ToArray();
+			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus) { AllSourceRows = true };
+			ParallelTextRow[] rows = parallelCorpus.ToArray();
 			Assert.That(rows.Length, Is.EqualTo(4));
 			Assert.That(rows[1].SourceRefs, Is.EqualTo(Refs(2)));
 			Assert.That(rows[1].TargetRefs, Is.EqualTo(Refs(2)));
@@ -706,7 +706,7 @@ namespace SIL.Machine.Corpora
 				}));
 
 			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
-			ParallelTextCorpusRow[] rows = parallelCorpus.GetRows().ToArray();
+			ParallelTextRow[] rows = parallelCorpus.ToArray();
 			Assert.That(rows.Length, Is.EqualTo(3));
 			Assert.That(rows[1].SourceRefs, Is.EqualTo(
 				Refs(new VerseRef("MAT 1:2", ScrVers.Original))));
@@ -717,10 +717,61 @@ namespace SIL.Machine.Corpora
 				Is.EqualTo("target chapter one, verse two . target chapter one, verse three .".Split()));
 		}
 
-		private static TextCorpusRow TextRow(int key, string text = "", bool isSentenceStart = true,
+		[Test]
+		public void GetGetRows_VerseRefOutOfOrder()
+		{
+			Versification.Table.Implementation.RemoveAllUnknownVersifications();
+			string src = "&MAT 1:4-5 = MAT 1:4\nMAT 1:2 = MAT 1:3\nMAT 1:3 = MAT 1:2\n";
+			ScrVers versification;
+			using (var reader = new StringReader(src))
+			{
+				versification = Versification.Table.Implementation.Load(reader, "vers.txt", ScrVers.English, "custom");
+			}
+
+			var sourceCorpus = new DictionaryTextCorpus(
+				new MemoryText("MAT", new[]
+				{
+					TextRow(new VerseRef("MAT 1:1", ScrVers.Original), "source chapter one, verse one ."),
+					TextRow(new VerseRef("MAT 1:2", ScrVers.Original), "source chapter one, verse two ."),
+					TextRow(new VerseRef("MAT 1:3", ScrVers.Original), "source chapter one, verse three ."),
+					TextRow(new VerseRef("MAT 1:4", ScrVers.Original), "source chapter one, verse four .")
+				}));
+			var targetCorpus = new DictionaryTextCorpus(
+				new MemoryText("MAT", new[]
+				{
+					TextRow(new VerseRef("MAT 1:1", versification), "target chapter one, verse one ."),
+					TextRow(new VerseRef("MAT 1:2", versification), "target chapter one, verse two ."),
+					TextRow(new VerseRef("MAT 1:3", versification), "target chapter one, verse three ."),
+					TextRow(new VerseRef("MAT 1:4", versification), "target chapter one, verse four ."),
+					TextRow(new VerseRef("MAT 1:5", versification), "target chapter one, verse five .")
+				}));
+
+			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
+			ParallelTextRow[] rows = parallelCorpus.ToArray();
+			Assert.That(rows.Length, Is.EqualTo(4));
+
+			Assert.That(rows[1].SourceRefs, Is.EqualTo(Refs(new VerseRef("MAT 1:2", ScrVers.Original))));
+			Assert.That(rows[1].TargetRefs, Is.EqualTo(Refs(new VerseRef("MAT 1:3", versification))));
+			Assert.That(rows[1].SourceSegment, Is.EqualTo("source chapter one, verse two .".Split()));
+			Assert.That(rows[1].TargetSegment, Is.EqualTo("target chapter one, verse three .".Split()));
+
+			Assert.That(rows[2].SourceRefs, Is.EqualTo(Refs(new VerseRef("MAT 1:3", ScrVers.Original))));
+			Assert.That(rows[2].TargetRefs, Is.EqualTo(Refs(new VerseRef("MAT 1:2", versification))));
+			Assert.That(rows[2].SourceSegment, Is.EqualTo("source chapter one, verse three .".Split()));
+			Assert.That(rows[2].TargetSegment, Is.EqualTo("target chapter one, verse two .".Split()));
+
+			Assert.That(rows[3].SourceRefs, Is.EqualTo(Refs(new VerseRef("MAT 1:4", ScrVers.Original))));
+			Assert.That(rows[3].TargetRefs, Is.EqualTo(Refs(new VerseRef("MAT 1:4", versification),
+				new VerseRef("MAT 1:5", versification))));
+			Assert.That(rows[3].SourceSegment, Is.EqualTo("source chapter one, verse four .".Split()));
+			Assert.That(rows[3].TargetSegment,
+				Is.EqualTo("target chapter one, verse four . target chapter one, verse five .".Split()));
+		}
+
+		private static TextRow TextRow(int key, string text = "", bool isSentenceStart = true,
 			bool isInRange = false, bool isRangeStart = false)
 		{
-			return new TextCorpusRow(new RowRef(key))
+			return new TextRow("text1", new RowRef(key))
 			{
 				Segment = text.Length == 0 ? Array.Empty<string>() : text.Split(),
 				IsSentenceStart = isSentenceStart,
@@ -730,10 +781,10 @@ namespace SIL.Machine.Corpora
 			};
 		}
 
-		private static TextCorpusRow TextRow(VerseRef vref, string text = "", bool isSentenceStart = true,
+		private static TextRow TextRow(VerseRef vref, string text = "", bool isSentenceStart = true,
 			bool isInRange = false, bool isRangeStart = false)
 		{
-			return new TextCorpusRow(vref)
+			return new TextRow(vref.Book, vref)
 			{
 				Segment = text.Length == 0 ? Array.Empty<string>() : text.Split(),
 				IsSentenceStart = isSentenceStart,
@@ -753,9 +804,12 @@ namespace SIL.Machine.Corpora
 			return verseRefs;
 		}
 
-		private static TextAlignmentCorpusRow AlignmentRow(int key, params AlignedWordPair[] pairs)
+		private static AlignmentRow AlignmentRow(int key, params AlignedWordPair[] pairs)
 		{
-			return new TextAlignmentCorpusRow(new RowRef(key), new HashSet<AlignedWordPair>(pairs));
+			return new AlignmentRow("text1", new RowRef(key))
+			{
+				AlignedWordPairs = new HashSet<AlignedWordPair>(pairs)
+			};
 		}
 	}
 }

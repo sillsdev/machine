@@ -8,7 +8,7 @@ namespace SIL.Machine.Translation
 {
 	public class TransferTruecaser : ITruecaser
 	{
-		public ITrainer CreateTrainer(ITextCorpus corpus)
+		public ITrainer CreateTrainer(IEnumerable<TextRow> corpus)
 		{
 			return new NullTrainer();
 		}

@@ -2,7 +2,7 @@
 
 namespace SIL.Machine.Corpora
 {
-	public interface ITextCorpus : ITextCorpusView
+	public interface ITextCorpus : IEnumerable<TextRow>
 	{
 		IEnumerable<IText> Texts { get; }
 

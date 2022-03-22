@@ -6,7 +6,7 @@ namespace SIL.Machine.Translation
 {
 	public interface ITruecaser
 	{
-		ITrainer CreateTrainer(ITextCorpus corpus);
+		ITrainer CreateTrainer(IEnumerable<TextRow> corpus);
 
 		void TrainSegment(IReadOnlyList<string> segment, bool sentenceStart = true);
 

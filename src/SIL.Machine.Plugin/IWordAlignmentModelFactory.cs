@@ -11,7 +11,7 @@ namespace SIL.Machine.Plugin
 
 		IWordAlignmentModel CreateModel(string modelPath, WordAlignmentDirection direction,
 			SymmetrizationHeuristic symHeuristic);
-		ITrainer CreateTrainer(string modelPath, IParallelTextCorpusView parallelCorpus, int maxCorpusCount,
+		ITrainer CreateTrainer(string modelPath, IEnumerable<ParallelTextRow> parallelCorpus, int maxCorpusCount,
 			Dictionary<string, string> parameters, bool direct = true);
 	}
 }

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
@@ -11,7 +12,8 @@ namespace SIL.Machine
 		private CommandOption _corpusFormatOption;
 		private CommandOption _wordTokenizerOption;
 
-		public ITextCorpusView Corpus { get; set; }
+		public ITextCorpus Corpus { get; set; }
+		public IEnumerable<TextRow> ProcessedCorpus { get; set; }
 
 		public override void AddParameters(CommandBase command)
 		{
@@ -44,11 +46,11 @@ namespace SIL.Machine
 
 			Corpus = ToolHelpers.CreateTextCorpus(_corpusFormatOption.Value() ?? "text", _corpusArgument.Value);
 
-			Corpus = FilterTextCorpus(Corpus);
+			ProcessedCorpus = FilterTextCorpus(Corpus);
 
 			ITokenizer<string, int, string> wordTokenizer = ToolHelpers.CreateWordTokenizer(
 				_wordTokenizerOption.Value() ?? "whitespace");
-			Corpus = Corpus.Tokenize(wordTokenizer);
+			ProcessedCorpus = ProcessedCorpus.Tokenize(wordTokenizer);
 			return true;
 		}
 	}

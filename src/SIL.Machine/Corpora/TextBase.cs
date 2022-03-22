@@ -15,13 +15,13 @@ namespace SIL.Machine.Corpora
 
 		public string SortKey { get; }
 
-		public abstract IEnumerable<TextCorpusRow> GetRows();
+		public abstract IEnumerable<TextRow> GetRows();
 
-		protected TextCorpusRow CreateRow(string text, object segRef,
+		protected TextRow CreateRow(string text, object segRef,
 			bool isSentenceStart = true, bool isInRange = false, bool isRangeStart = false)
 		{
 			text = text.Trim();
-			return new TextCorpusRow(Id, segRef)
+			return new TextRow(Id, segRef)
 			{
 				Segment = new[] { text },
 				IsSentenceStart = isSentenceStart,
@@ -31,9 +31,9 @@ namespace SIL.Machine.Corpora
 			};
 		}
 
-		protected TextCorpusRow CreateEmptyRow(object segRef, bool isInRange = false)
+		protected TextRow CreateEmptyRow(object segRef, bool isInRange = false)
 		{
-			return new TextCorpusRow(Id, segRef) { IsInRange = isInRange };
+			return new TextRow(Id, segRef) { IsInRange = isInRange };
 		}
 	}
 }

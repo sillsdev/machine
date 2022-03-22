@@ -14,14 +14,14 @@ namespace SIL.Machine.Corpora
 			_parser = new UsxVerseParser();
 		}
 
-		protected override IEnumerable<TextCorpusRow> GetVersesInDocOrder()
+		protected override IEnumerable<TextRow> GetVersesInDocOrder()
 		{
 			using (IStreamContainer streamContainer = CreateStreamContainer())
 			using (Stream stream = streamContainer.OpenStream())
 			{
 				foreach (UsxVerse verse in _parser.Parse(stream))
 				{
-					foreach (TextCorpusRow segment in CreateRows(verse.Chapter, verse.Verse, verse.Text,
+					foreach (TextRow segment in CreateRows(verse.Chapter, verse.Verse, verse.Text,
 						verse.IsSentenceStart))
 					{
 						yield return segment;

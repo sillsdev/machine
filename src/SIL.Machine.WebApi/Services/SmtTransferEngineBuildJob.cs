@@ -63,13 +63,19 @@ public class SmtTransferEngineBuildJob
 				await _trainSegmentPairs.DeleteAllAsync(p => p.EngineRef == engineId, cancellationToken);
 
 				var tokenizer = new LatinWordTokenizer();
-				ITextCorpus sourceCorpus = await _dataFileService.CreateTextCorpusAsync(engine.Id, CorpusType.Source,
-					tokenizer);
-				ITextCorpus targetCorpus = await _dataFileService.CreateTextCorpusAsync(engine.Id, CorpusType.Target,
-					tokenizer);
-				var corpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
-				smtModelTrainer = _smtModelFactory.CreateTrainer(engineId, corpus, TokenProcessors.Lowercase,
-					TokenProcessors.Lowercase);
+				IReadOnlyDictionary<string, ITextCorpus> sourceCorpora = await _dataFileService.CreateTextCorporaAsync(
+					engine.Id, CorpusType.Source);
+				IReadOnlyDictionary<string, ITextCorpus> targetCorpora = await _dataFileService.CreateTextCorporaAsync(
+					engine.Id, CorpusType.Target);
+
+				IEnumerable<ParallelTextRow> parallelCorpus = CreateParallelCorpus(sourceCorpora, targetCorpora)
+					.Tokenize(tokenizer)
+					.Lowercase();
+
+				IEnumerable<TextRow> targetCorpus = targetCorpora.Values.SelectMany(c => c)
+					.Tokenize(tokenizer);
+
+				smtModelTrainer = _smtModelFactory.CreateTrainer(engineId, parallelCorpus);
 				truecaseTrainer = _truecaserFactory.CreateTrainer(engineId, targetCorpus);
 			}
 
@@ -90,8 +96,7 @@ public class SmtTransferEngineBuildJob
 				{
 					foreach (TrainSegmentPair segmentPair in segmentPairs)
 					{
-						smtEngine.TrainSegment(TokenProcessors.Lowercase.Process(segmentPair.Source),
-							TokenProcessors.Lowercase.Process(segmentPair.Target));
+						smtEngine.TrainSegment(segmentPair.Source.Lowercase(), segmentPair.Target.Lowercase());
 						truecaser.TrainSegment(segmentPair.Target, segmentPair.SentenceStart);
 					}
 				}
@@ -174,5 +179,21 @@ public class SmtTransferEngineBuildJob
 			smtModelTrainer?.Dispose();
 			truecaseTrainer?.Dispose();
 		}
+	}
+
+	private static IEnumerable<ParallelTextRow> CreateParallelCorpus(
+		IReadOnlyDictionary<string, ITextCorpus> sourceCorpora, IReadOnlyDictionary<string, ITextCorpus> targetCorpora)
+	{
+		var parallelCorpus = Enumerable.Empty<ParallelTextRow>();
+		foreach (KeyValuePair<string, ITextCorpus> kvp in sourceCorpora)
+		{
+			if (targetCorpora.TryGetValue(kvp.Key, out ITextCorpus? targetCorpus))
+			{
+				ITextCorpus sourceCorpus = kvp.Value;
+				parallelCorpus = parallelCorpus.Concat(sourceCorpus.AlignRows(targetCorpus));
+			}
+		}
+
+		return parallelCorpus;
 	}
 }

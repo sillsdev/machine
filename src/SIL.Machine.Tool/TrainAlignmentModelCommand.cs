@@ -74,7 +74,7 @@ namespace SIL.Machine
 				}
 				var reporter = new PhasedProgressReporter(progress, phases);
 
-				IParallelTextCorpusView corpus = _preprocessSpec.Preprocess(_corpusSpec.ParallelCorpus);
+				IEnumerable<ParallelTextRow> corpus = _preprocessSpec.Preprocess(_corpusSpec.ParallelCorpus);
 				using (ITrainer trainer = _modelSpec.CreateAlignmentModelTrainer(corpus, _corpusSpec.MaxCorpusCount,
 					parameters, direct: true))
 				{

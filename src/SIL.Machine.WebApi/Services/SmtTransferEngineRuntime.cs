@@ -70,7 +70,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 	{
 		CheckDisposed();
 
-		IReadOnlyList<string> preprocSegment = TokenProcessors.Lowercase.Process(segment);
+		IReadOnlyList<string> preprocSegment = segment.Lowercase();
 
 		await using (await _lock.ReaderLockAsync())
 		{
@@ -87,7 +87,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 	{
 		CheckDisposed();
 
-		IReadOnlyList<string> preprocSegment = TokenProcessors.Lowercase.Process(segment);
+		IReadOnlyList<string> preprocSegment = segment.Lowercase();
 
 		await using (await _lock.ReaderLockAsync())
 		{
@@ -106,7 +106,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 	{
 		CheckDisposed();
 
-		IReadOnlyList<string> preprocSegment = TokenProcessors.Lowercase.Process(segment);
+		IReadOnlyList<string> preprocSegment = segment.Lowercase();
 
 		await using (await _lock.ReaderLockAsync())
 		{
@@ -124,8 +124,8 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 	{
 		CheckDisposed();
 
-		IReadOnlyList<string> preprocSourceSegment = TokenProcessors.Lowercase.Process(sourceSegment);
-		IReadOnlyList<string> preprocTargetSegment = TokenProcessors.Lowercase.Process(targetSegment);
+		IReadOnlyList<string> preprocSourceSegment = sourceSegment.Lowercase();
+		IReadOnlyList<string> preprocTargetSegment = targetSegment.Lowercase();
 
 		await using (await _lock.WriterLockAsync())
 		{

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
@@ -41,9 +43,9 @@ namespace SIL.Machine
 			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
 			using (StreamWriter outputWriter = ToolHelpers.CreateStreamWriter(_outputArgument.Value))
 			{
-				ITextCorpusView corpus = _preprocessSpec.Preprocess(_corpusSpec.Corpus)
-					.CapSize(_corpusSpec.MaxCorpusCount);
-				foreach (TextCorpusRow row in corpus.GetRows())
+				IEnumerable<TextRow> corpus = _preprocessSpec.Preprocess(_corpusSpec.Corpus)
+					.Take(_corpusSpec.MaxCorpusCount);
+				foreach (TextRow row in corpus)
 				{
 					outputWriter.WriteLine(row.Text);
 

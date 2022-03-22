@@ -4,11 +4,11 @@ using System.IO;
 
 namespace SIL.Machine.Corpora
 {
-	public class TextFileTextAlignmentCollection : ITextAlignmentCollection
+	public class TextFileAlignmentCollection : IAlignmentCollection
 	{
 		private readonly string _fileName;
 
-		public TextFileTextAlignmentCollection(string id, string fileName)
+		public TextFileAlignmentCollection(string id, string fileName)
 		{
 			Id = id;
 			_fileName = fileName;
@@ -18,7 +18,7 @@ namespace SIL.Machine.Corpora
 
 		public string SortKey => Id;
 
-		public IEnumerable<TextAlignmentCorpusRow> GetRows()
+		public IEnumerable<AlignmentRow> GetRows()
 		{
 			using (var reader = new StreamReader(_fileName))
 			{
@@ -38,8 +38,13 @@ namespace SIL.Machine.Corpora
 					}
 					else
 					{
-						var rowRef = new RowRef(Id, sectionNum.ToString(), segmentNum.ToString());
-						yield return new TextAlignmentCorpusRow(Id, rowRef)
+						var keys = new List<string>();
+						if (Id != "*all*")
+							keys.Add(Id);
+						keys.Add(sectionNum.ToString(CultureInfo.InvariantCulture));
+						keys.Add(segmentNum.ToString(CultureInfo.InvariantCulture));
+						var rowRef = new RowRef(keys);
+						yield return new AlignmentRow(Id, rowRef)
 						{
 							AlignedWordPairs = AlignedWordPair.Parse(line)
 						};

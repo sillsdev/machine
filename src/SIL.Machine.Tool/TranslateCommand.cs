@@ -64,18 +64,19 @@ namespace SIL.Machine
 			Directory.CreateDirectory(Path.GetDirectoryName(_outputArgument.Value));
 
 			List<IReadOnlyList<string>> translations = null;
-			IParallelTextCorpusView refParallelCorpus = null;
+			IEnumerable<ParallelTextRow> refParallelCorpus = null;
 			if (_refOption.HasValue())
 			{
 				translations = new List<IReadOnlyList<string>>();
-				ITextCorpusView refCorpus = ToolHelpers.CreateTextCorpus(
-					_refFormatOption.Value() ?? "text", _refOption.Value());
+				IEnumerable<TextRow> refCorpus = ToolHelpers.CreateTextCorpus(_refFormatOption.Value() ?? "text",
+					_refOption.Value());
 				refCorpus = _corpusSpec.FilterTextCorpus(refCorpus);
 				ITokenizer<string, int, string> refWordTokenizer = ToolHelpers.CreateWordTokenizer(
 					_refWordTokenizerOption.Value() ?? "whitespace");
 				refCorpus = refCorpus.Tokenize(refWordTokenizer);
-				refParallelCorpus = new ParallelTextCorpus(_corpusSpec.Corpus, refCorpus)
-					.Filter(row => row.SourceSegment.Count > 0
+				refParallelCorpus = _corpusSpec.Corpus
+					.AlignRows(refCorpus)
+					.Where(row => row.SourceSegment.Count > 0
 						&& row.SourceSegment.Count <= TranslationConstants.MaxSegmentLength);
 				refParallelCorpus = _preprocessSpec.Preprocess(refParallelCorpus);
 			}
@@ -85,7 +86,7 @@ namespace SIL.Machine
 
 			if (!_quietOption.HasValue())
 				Out.Write("Loading model... ");
-			int corpusCount = _corpusSpec.Corpus.Filter(IsValid).Count();
+			int corpusCount = _corpusSpec.Corpus.Where(IsValid).Count();
 			int segmentCount = 0;
 			using (ITranslationModel model = _modelSpec.CreateModel())
 			using (ITranslationEngine engine = model.CreateEngine())
@@ -98,9 +99,9 @@ namespace SIL.Machine
 				using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
 				using (StreamWriter writer = ToolHelpers.CreateStreamWriter(_outputArgument.Value))
 				{
-					ITextCorpusView corpus = _preprocessSpec.Preprocess(_corpusSpec.Corpus);
+					IEnumerable<TextRow> corpus = _preprocessSpec.Preprocess(_corpusSpec.Corpus);
 					progress?.Report(new ProgressStatus(segmentCount, corpusCount));
-					foreach (TextCorpusRow row in corpus.GetRows())
+					foreach (TextRow row in corpus)
 					{
 						if (IsValid(row))
 						{
@@ -127,15 +128,14 @@ namespace SIL.Machine
 
 			if (refParallelCorpus != null && translations != null)
 			{
-				double bleu = Evaluation.ComputeBleu(translations,
-					refParallelCorpus.GetRows().Select(r => r.TargetSegment));
+				double bleu = Evaluation.ComputeBleu(translations, refParallelCorpus.Select(r => r.TargetSegment));
 				Out.WriteLine($"BLEU: {bleu * 100:0.00}");
 			}
 
 			return 0;
 		}
 
-		private static bool IsValid(TextCorpusRow row)
+		private static bool IsValid(TextRow row)
 		{
 			return !row.IsEmpty && row.Segment.Count <= TranslationConstants.MaxSegmentLength;
 		}

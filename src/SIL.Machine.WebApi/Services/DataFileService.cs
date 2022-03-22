@@ -46,7 +46,8 @@ public class DataFileService : IDataFileService
 		}
 	}
 
-	public async Task<ITextCorpus> CreateTextCorpusAsync(string engineId, CorpusType corpusType)
+	public async Task<IReadOnlyDictionary<string, ITextCorpus>> CreateTextCorporaAsync(string engineId,
+		CorpusType corpusType)
 	{
 		IReadOnlyList<DataFile> dataFiles = await _dataFiles.GetAllAsync(
 			f => f.EngineRef == engineId && f.DataType == DataType.TextCorpus && f.CorpusType == corpusType);
@@ -78,7 +79,7 @@ public class DataFileService : IDataFileService
 				corpora[corpusGrouping.Key] = corpus;
 		}
 
-		return new MultipleTextCorpus(corpora);
+		return corpora;
 	}
 
 	private string GetDataFilePath(DataFile dataFile)

@@ -254,8 +254,7 @@ public class EngineRuntimeTests
 			SmtModel.CreateInteractiveEngine().Returns(engine);
 
 			factory.Create(Arg.Any<string>()).Returns(SmtModel);
-			factory.CreateTrainer(Arg.Any<string>(), Arg.Any<ParallelTextCorpus>(), Arg.Any<ITokenProcessor>(),
-				Arg.Any<ITokenProcessor>()).Returns(SmtBatchTrainer);
+			factory.CreateTrainer(Arg.Any<string>(), Arg.Any<IEnumerable<ParallelTextRow>>()).Returns(SmtBatchTrainer);
 			return factory;
 		}
 
@@ -313,16 +312,16 @@ public class EngineRuntimeTests
 				return new WordGraph(arcs, graph.FinalStates, graph.InitialStateScore);
 			});
 			factory.CreateAsync(Arg.Any<string>()).Returns(Task.FromResult(Truecaser));
-			factory.CreateTrainer(Arg.Any<string>(), Arg.Any<ITextCorpus>()).Returns(TruecaserTrainer);
+			factory.CreateTrainer(Arg.Any<string>(), Arg.Any<IEnumerable<TextRow>>()).Returns(TruecaserTrainer);
 			return factory;
 		}
 
 		private static IDataFileService CreateDataFileService()
 		{
 			var dataFileService = Substitute.For<IDataFileService>();
-			dataFileService.CreateTextCorpusAsync(Arg.Any<string>(), Arg.Any<CorpusType>(),
-				Arg.Any<ITokenizer<string, int, string>>()).Returns(
-					Task.FromResult<ITextCorpus>(new DictionaryTextCorpus(Enumerable.Empty<IText>())));
+			dataFileService.CreateTextCorporaAsync(Arg.Any<string>(), Arg.Any<CorpusType>())
+				.Returns(Task.FromResult<IReadOnlyDictionary<string, ITextCorpus>>(
+					new Dictionary<string, ITextCorpus>()));
 			return dataFileService;
 		}
 

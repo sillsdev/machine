@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace SIL.Machine.Corpora
 {
-	public class TextCorpusRow
+	public class TextRow
 	{
-		public TextCorpusRow(string textId, object rowRef)
+		public TextRow(string textId, object rowRef)
 		{
 			TextId = textId;
 			Ref = rowRef;

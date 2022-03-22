@@ -15,7 +15,7 @@ namespace SIL.Machine.Corpora
 
 		public string FileName { get; }
 
-		public override IEnumerable<TextCorpusRow> GetRows()
+		public override IEnumerable<TextRow> GetRows()
 		{
 			using (var reader = new StreamReader(FileName))
 			{
@@ -39,7 +39,12 @@ namespace SIL.Machine.Corpora
 					}
 					else
 					{
-						yield return CreateRow(line, new RowRef(Id, sectionNum.ToString(), segmentNum.ToString()));
+						var keys = new List<string>();
+						if (Id != "*all*")
+							keys.Add(Id);
+						keys.Add(sectionNum.ToString(CultureInfo.InvariantCulture));
+						keys.Add(segmentNum.ToString(CultureInfo.InvariantCulture));
+						yield return CreateRow(line, new RowRef(keys));
 						segmentNum++;
 					}
 				}

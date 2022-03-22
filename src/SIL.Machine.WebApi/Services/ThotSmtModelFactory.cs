@@ -18,7 +18,7 @@ public class ThotSmtModelFactory : ISmtModelFactory
 		return model;
 	}
 
-	public ITrainer CreateTrainer(string engineId, IParallelTextCorpusView corpus)
+	public ITrainer CreateTrainer(string engineId, IEnumerable<ParallelTextRow> corpus)
 	{
 		string smtConfigFileName = Path.Combine(_engineOptions.Value.EnginesDir, engineId, "smt.cfg");
 		return new ThotSmtModelTrainer(ThotWordAlignmentModelType.Hmm, corpus, smtConfigFileName);

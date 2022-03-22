@@ -52,7 +52,7 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public ITrainer CreateTrainer(ITextCorpus corpus)
+		public ITrainer CreateTrainer(IEnumerable<TextRow> corpus)
 		{
 			return new Trainer(this, corpus);
 		}
@@ -194,7 +194,7 @@ namespace SIL.Machine.Translation
 		{
 			private readonly UnigramTruecaser _truecaser;
 
-			public Trainer(UnigramTruecaser truecaser, ITextCorpus corpus)
+			public Trainer(UnigramTruecaser truecaser, IEnumerable<TextRow> corpus)
 				: base(corpus)
 			{
 				_truecaser = truecaser;

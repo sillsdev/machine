@@ -36,7 +36,7 @@ namespace SIL.Machine.Corpora
 			_includeMarkers = includeMarkers;
 		}
 
-		protected override IEnumerable<TextCorpusRow> GetVersesInDocOrder()
+		protected override IEnumerable<TextRow> GetVersesInDocOrder()
 		{
 			string usfm = ReadUsfm();
 			UsfmMarker curEmbedMarker = null;
@@ -54,7 +54,7 @@ namespace SIL.Machine.Corpora
 						if (chapter != null && verse != null)
 						{
 							string text = sb.ToString();
-							foreach (TextCorpusRow seg in CreateRows(chapter, verse, text, sentenceStart))
+							foreach (TextRow seg in CreateRows(chapter, verse, text, sentenceStart))
 								yield return seg;
 							sentenceStart = true;
 							sb.Clear();
@@ -69,7 +69,7 @@ namespace SIL.Machine.Corpora
 							if (token.Text == verse)
 							{
 								string text = sb.ToString();
-								foreach (TextCorpusRow seg in CreateRows(chapter, verse, text, sentenceStart))
+								foreach (TextRow seg in CreateRows(chapter, verse, text, sentenceStart))
 									yield return seg;
 								sentenceStart = text.HasSentenceEnding();
 								sb.Clear();
@@ -85,7 +85,7 @@ namespace SIL.Machine.Corpora
 							else
 							{
 								string text = sb.ToString();
-								foreach (TextCorpusRow seg in CreateRows(chapter, verse, text, sentenceStart))
+								foreach (TextRow seg in CreateRows(chapter, verse, text, sentenceStart))
 									yield return seg;
 								sentenceStart = text.HasSentenceEnding();
 								sb.Clear();
@@ -187,7 +187,7 @@ namespace SIL.Machine.Corpora
 
 			if (chapter != null && verse != null)
 			{
-				foreach (TextCorpusRow seg in CreateRows(chapter, verse, sb.ToString(), sentenceStart))
+				foreach (TextRow seg in CreateRows(chapter, verse, sb.ToString(), sentenceStart))
 					yield return seg;
 			}
 		}

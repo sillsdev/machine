@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,8 +51,8 @@ namespace SIL.Machine
 
 		protected override async Task<int> ExecuteCommandAsync(CancellationToken ct)
 		{
-			_corpusSpec.FilterSource = !_allSourceOption.HasValue();
-			_corpusSpec.FilterTarget = !_allTargetOption.HasValue();
+			_corpusSpec.AllSourceRows = _allSourceOption.HasValue();
+			_corpusSpec.AllTargetRows = _allTargetOption.HasValue();
 
 			int code = await base.ExecuteCommandAsync(ct);
 			if (code != 0)
@@ -70,7 +72,7 @@ namespace SIL.Machine
 			using (StreamWriter refOutputWriter = _refOutputOption.HasValue()
 				? ToolHelpers.CreateStreamWriter(_refOutputOption.Value()) : null)
 			{
-				IParallelTextCorpusView corpus = _corpusSpec.ParallelCorpus.Filter(row =>
+				IEnumerable<ParallelTextRow> corpus = _corpusSpec.ParallelCorpus.Where(row =>
 				{
 					if (!_includeEmptyOption.HasValue())
 					{
@@ -103,8 +105,7 @@ namespace SIL.Machine
 				var curSourceLineRange = true;
 				var curTargetLine = new StringBuilder();
 				var curTargetLineRange = true;
-				foreach (ParallelTextCorpusRow row in corpus.GetRows(_allSourceOption.HasValue(),
-					_allTargetOption.HasValue()))
+				foreach (ParallelTextRow row in corpus)
 				{
 					if (curRef != null && (!_mergeDuplicatesOption.HasValue() || !row.Ref.Equals(curRef)))
 					{

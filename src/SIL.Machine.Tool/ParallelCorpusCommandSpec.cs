@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;
@@ -17,13 +18,16 @@ namespace SIL.Machine
 
 		public bool SupportAlignmentsCorpus { get; set; } = true;
 		public bool DefaultNullTokenizer { get; set; }
-		public bool FilterSource { get; set; } = true;
-		public bool FilterTarget { get; set; } = true;
+		public bool AllSourceRows { get; set; } = false;
+		public bool AllTargetRows { get; set; } = false;
 
-		public ITextCorpusView SourceCorpus { get; private set; }
-		public ITextCorpusView TargetCorpus { get; private set; }
-		public ITextAlignmentCorpusView AlignmentsCorpus { get; private set; }
-		public ParallelTextCorpus ParallelCorpus { get; private set; }
+		public ITextCorpus SourceCorpus { get; private set; }
+		public IEnumerable<TextRow> ProcessedSourceCorpus { get; private set; }
+		public ITextCorpus TargetCorpus { get; private set; }
+		public IEnumerable<TextRow> ProcessedTargetCorpus { get; private set; }
+		public IAlignmentCorpus AlignmentCorpus { get; private set; }
+		public IEnumerable<AlignmentRow> ProcessedAlignmentCorpus { get; private set; }
+		public IEnumerable<ParallelTextRow> ParallelCorpus { get; private set; }
 
 		public override void AddParameters(CommandBase command)
 		{
@@ -88,27 +92,31 @@ namespace SIL.Machine
 
 			SourceCorpus = ToolHelpers.CreateTextCorpus(_sourceFormatOption.Value() ?? "text", _sourceArgument.Value);
 			TargetCorpus = ToolHelpers.CreateTextCorpus(_targetFormatOption.Value() ?? "text", _targetArgument.Value);
-			AlignmentsCorpus = null;
+			AlignmentCorpus = null;
 			if (_alignmentsOption != null && _alignmentsOption.HasValue())
-				AlignmentsCorpus = ToolHelpers.CreateAlignmentsCorpus("text", _alignmentsOption.Value());
+				AlignmentCorpus = ToolHelpers.CreateAlignmentsCorpus("text", _alignmentsOption.Value());
 
-			if (FilterSource)
-				SourceCorpus = FilterTextCorpus(SourceCorpus);
-			if (FilterTarget)
-				TargetCorpus = FilterTextCorpus(TargetCorpus);
-			if (AlignmentsCorpus != null)
-				AlignmentsCorpus = FilterTextAlignmentCorpus(AlignmentsCorpus);
+			ProcessedSourceCorpus = SourceCorpus;
+			ProcessedTargetCorpus = TargetCorpus;
+			ProcessedAlignmentCorpus = AlignmentCorpus;
+			if (!AllSourceRows)
+				ProcessedSourceCorpus = FilterTextCorpus(ProcessedSourceCorpus);
+			if (!AllTargetRows)
+				ProcessedTargetCorpus = FilterTextCorpus(ProcessedTargetCorpus);
+			if (ProcessedAlignmentCorpus != null)
+				ProcessedAlignmentCorpus = FilterTextAlignmentCorpus(ProcessedAlignmentCorpus);
 
 			string defaultTokenizerType = DefaultNullTokenizer ? "none" : "whitespace";
 			IRangeTokenizer<string, int, string> sourceWordTokenizer = ToolHelpers.CreateWordTokenizer(
 				_sourceWordTokenizerOption.Value() ?? defaultTokenizerType);
-			SourceCorpus = SourceCorpus.Tokenize(sourceWordTokenizer);
+			ProcessedSourceCorpus = ProcessedSourceCorpus.Tokenize(sourceWordTokenizer);
 
 			IRangeTokenizer<string, int, string> targetWordTokenizer = ToolHelpers.CreateWordTokenizer(
 				_targetWordTokenizerOption.Value() ?? defaultTokenizerType);
-			TargetCorpus = TargetCorpus.Tokenize(targetWordTokenizer);
+			ProcessedTargetCorpus = ProcessedTargetCorpus.Tokenize(targetWordTokenizer);
 
-			ParallelCorpus = new ParallelTextCorpus(SourceCorpus, TargetCorpus, AlignmentsCorpus);
+			ParallelCorpus = ProcessedSourceCorpus.AlignRows(ProcessedTargetCorpus, ProcessedAlignmentCorpus, AllSourceRows,
+				AllTargetRows);
 			return true;
 		}
 	}

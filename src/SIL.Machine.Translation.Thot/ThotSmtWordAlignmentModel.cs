@@ -35,7 +35,7 @@ namespace SIL.Machine.Translation.Thot
 
 		public IReadOnlySet<int> SpecialSymbolIndices => _smtModel.DirectWordAlignmentModel.SpecialSymbolIndices;
 
-		public ITrainer CreateTrainer(IParallelTextCorpusView corpus)
+		public ITrainer CreateTrainer(IEnumerable<ParallelTextRow> corpus)
 		{
 			CheckDisposed();
 
