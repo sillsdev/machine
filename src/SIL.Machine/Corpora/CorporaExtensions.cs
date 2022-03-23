@@ -24,6 +24,23 @@ namespace SIL.Machine.Corpora
 			return corpus.Tokenize(tokenizer);
 		}
 
+		public static IEnumerable<TextRow> Detokenize(this IEnumerable<TextRow> corpus,
+			IDetokenizer<string, string> detokenizer)
+		{
+			return corpus.Select(row =>
+			{
+				row.Segment = new[] { detokenizer.Detokenize(row.Segment) };
+				return row;
+			});
+		}
+
+		public static IEnumerable<TextRow> Detokenize<T>(this IEnumerable<TextRow> corpus)
+			where T : IDetokenizer<string, string>, new()
+		{
+			var detokenizer = new T();
+			return corpus.Detokenize(detokenizer);
+		}
+
 		public static IEnumerable<TextRow> Normalize(this IEnumerable<TextRow> corpus,
 			NormalizationForm normalizationForm = NormalizationForm.FormC)
 		{
@@ -116,6 +133,41 @@ namespace SIL.Machine.Corpora
 			var targetTokenizer = new TTarget();
 			return corpus.Tokenize(sourceTokenizer, targetTokenizer);
 		}
+
+		public static IEnumerable<ParallelTextRow> Detokenize(this IEnumerable<ParallelTextRow> corpus,
+			IDetokenizer<string, string> detokenizer)
+		{
+			return corpus.Detokenize(detokenizer, detokenizer);
+		}
+
+		public static IEnumerable<ParallelTextRow> Detokenize<T>(this IEnumerable<ParallelTextRow> corpus)
+			where T : IDetokenizer<string, string>, new()
+		{
+			var detokenizer = new T();
+			return corpus.Detokenize(detokenizer);
+		}
+
+		public static IEnumerable<ParallelTextRow> Detokenize(this IEnumerable<ParallelTextRow> corpus,
+			IDetokenizer<string, string> sourceDetokenizer, IDetokenizer<string, string> targetDetokenizer)
+		{
+			return corpus.Select(row =>
+			{
+				row.SourceSegment = new[] { sourceDetokenizer.Detokenize(row.SourceSegment) };
+				row.TargetSegment = new[] { targetDetokenizer.Detokenize(row.TargetSegment) };
+				return row;
+			});
+		}
+
+		public static IEnumerable<ParallelTextRow> Detokenize<TSource, TTarget>(
+			this IEnumerable<ParallelTextRow> corpus)
+			where TSource : IDetokenizer<string, string>, new()
+			where TTarget : IDetokenizer<string, string>, new()
+		{
+			var sourceDetokenizer = new TSource();
+			var targetDetokenizer = new TTarget();
+			return corpus.Detokenize(sourceDetokenizer, targetDetokenizer);
+		}
+
 
 		public static IEnumerable<ParallelTextRow> Invert(this IEnumerable<ParallelTextRow> corpus)
 		{
