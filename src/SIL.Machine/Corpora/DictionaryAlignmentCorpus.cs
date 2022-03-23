@@ -8,14 +8,14 @@ namespace SIL.Machine.Corpora
 	{
 		private readonly Dictionary<string, IAlignmentCollection> _alignmentCollections;
 
-		public DictionaryAlignmentCorpus(params IAlignmentCollection[] textAlignmentCollections)
-			: this((IEnumerable<IAlignmentCollection>)textAlignmentCollections)
+		public DictionaryAlignmentCorpus(params IAlignmentCollection[] alignmentCollections)
+			: this((IEnumerable<IAlignmentCollection>)alignmentCollections)
 		{
 		}
 
-		public DictionaryAlignmentCorpus(IEnumerable<IAlignmentCollection> textAlignmentCollections)
+		public DictionaryAlignmentCorpus(IEnumerable<IAlignmentCollection> alignmentCollections)
 		{
-			_alignmentCollections = textAlignmentCollections.ToDictionary(tac => tac.Id);
+			_alignmentCollections = alignmentCollections.ToDictionary(ac => ac.Id);
 		}
 
 		public IEnumerable<IAlignmentCollection> AlignmentCollections => _alignmentCollections.Values
@@ -29,9 +29,9 @@ namespace SIL.Machine.Corpora
 			_alignmentCollections[alignments.Id] = alignments;
 		}
 
-		public bool TryGetAlignmentCollection(string id, out IAlignmentCollection textAlignmentCollection)
+		public bool TryGetAlignmentCollection(string id, out IAlignmentCollection alignmentCollection)
 		{
-			return _alignmentCollections.TryGetValue(id, out textAlignmentCollection);
+			return _alignmentCollections.TryGetValue(id, out alignmentCollection);
 		}
 
 		public IEnumerator<AlignmentRow> GetEnumerator()

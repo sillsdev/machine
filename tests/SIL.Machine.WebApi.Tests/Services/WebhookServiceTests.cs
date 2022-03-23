@@ -135,7 +135,7 @@ public class WebhookServiceTests
 		{
 			_urlHelper = Substitute.For<IUrlHelper>();
 			_urlHelper.RouteUrl(Arg.Any<UrlRouteContext>()).Returns("/translation/engines");
-			var mapperConfig = new MapperConfiguration(c => c.AddProfile<MachineMapperProfile>());
+			var mapperConfig = new MapperConfiguration(c => c.AddProfile<MapperProfile>());
 			_mapper = new Mapper(mapperConfig);
 			var jsonOptions = new JsonOptions();
 			jsonOptions.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;

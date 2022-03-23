@@ -21,12 +21,9 @@ namespace SIL.Machine
 		public bool AllSourceRows { get; set; } = false;
 		public bool AllTargetRows { get; set; } = false;
 
-		public ITextCorpus SourceCorpus { get; private set; }
-		public IEnumerable<TextRow> ProcessedSourceCorpus { get; private set; }
-		public ITextCorpus TargetCorpus { get; private set; }
-		public IEnumerable<TextRow> ProcessedTargetCorpus { get; private set; }
-		public IAlignmentCorpus AlignmentCorpus { get; private set; }
-		public IEnumerable<AlignmentRow> ProcessedAlignmentCorpus { get; private set; }
+		public IEnumerable<TextRow> SourceCorpus { get; private set; }
+		public IEnumerable<TextRow> TargetCorpus { get; private set; }
+		public IEnumerable<AlignmentRow> AlignmentCorpus { get; private set; }
 		public IEnumerable<ParallelTextRow> ParallelCorpus { get; private set; }
 
 		public override void AddParameters(CommandBase command)
@@ -96,27 +93,23 @@ namespace SIL.Machine
 			if (_alignmentsOption != null && _alignmentsOption.HasValue())
 				AlignmentCorpus = ToolHelpers.CreateAlignmentsCorpus("text", _alignmentsOption.Value());
 
-			ProcessedSourceCorpus = SourceCorpus;
-			ProcessedTargetCorpus = TargetCorpus;
-			ProcessedAlignmentCorpus = AlignmentCorpus;
 			if (!AllSourceRows)
-				ProcessedSourceCorpus = FilterTextCorpus(ProcessedSourceCorpus);
+				SourceCorpus = FilterTextCorpus(SourceCorpus);
 			if (!AllTargetRows)
-				ProcessedTargetCorpus = FilterTextCorpus(ProcessedTargetCorpus);
-			if (ProcessedAlignmentCorpus != null)
-				ProcessedAlignmentCorpus = FilterTextAlignmentCorpus(ProcessedAlignmentCorpus);
+				TargetCorpus = FilterTextCorpus(TargetCorpus);
+			if (AlignmentCorpus != null)
+				AlignmentCorpus = FilterTextAlignmentCorpus(AlignmentCorpus);
 
 			string defaultTokenizerType = DefaultNullTokenizer ? "none" : "whitespace";
 			IRangeTokenizer<string, int, string> sourceWordTokenizer = ToolHelpers.CreateWordTokenizer(
 				_sourceWordTokenizerOption.Value() ?? defaultTokenizerType);
-			ProcessedSourceCorpus = ProcessedSourceCorpus.Tokenize(sourceWordTokenizer);
+			SourceCorpus = SourceCorpus.Tokenize(sourceWordTokenizer).UnescapeSpaces();
 
 			IRangeTokenizer<string, int, string> targetWordTokenizer = ToolHelpers.CreateWordTokenizer(
 				_targetWordTokenizerOption.Value() ?? defaultTokenizerType);
-			ProcessedTargetCorpus = ProcessedTargetCorpus.Tokenize(targetWordTokenizer);
+			TargetCorpus = TargetCorpus.Tokenize(targetWordTokenizer).UnescapeSpaces();
 
-			ParallelCorpus = ProcessedSourceCorpus.AlignRows(ProcessedTargetCorpus, ProcessedAlignmentCorpus, AllSourceRows,
-				AllTargetRows);
+			ParallelCorpus = SourceCorpus.AlignRows(TargetCorpus, AlignmentCorpus, AllSourceRows, AllTargetRows);
 			return true;
 		}
 	}

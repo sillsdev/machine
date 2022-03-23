@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using SIL.Machine.Tokenization;
+using SIL.Machine.Translation;
 
 namespace SIL.Machine.Corpora
 {
 	public static class CorporaExtensions
 	{
-		public static IEnumerable<TextRow> Tokenize(this IEnumerable<TextRow> corpus, ITokenizer<string, int, string> tokenizer)
+		public static IEnumerable<TextRow> Tokenize(this IEnumerable<TextRow> corpus,
+			ITokenizer<string, int, string> tokenizer)
 		{
 			return corpus.Select(row =>
 			{
@@ -80,11 +82,29 @@ namespace SIL.Machine.Corpora
 			});
 		}
 
+		public static IEnumerable<TextRow> UnescapeSpaces(this IEnumerable<TextRow> corpus)
+		{
+			return corpus.Select(row =>
+			{
+				row.Segment = row.Segment.UnescapeSpaces();
+				return row;
+			});
+		}
+
 		public static IEnumerable<TextRow> Lowercase(this IEnumerable<TextRow> corpus)
 		{
 			return corpus.Select(row =>
 			{
 				row.Segment = row.Segment.Lowercase();
+				return row;
+			});
+		}
+
+		public static IEnumerable<TextRow> Truecase(this IEnumerable<TextRow> corpus, ITruecaser truecaser)
+		{
+			return corpus.Select(row =>
+			{
+				row.Segment = truecaser.Truecase(row.Segment);
 				return row;
 			});
 		}
@@ -134,48 +154,13 @@ namespace SIL.Machine.Corpora
 			return corpus.Tokenize(sourceTokenizer, targetTokenizer);
 		}
 
-		public static IEnumerable<ParallelTextRow> Detokenize(this IEnumerable<ParallelTextRow> corpus,
-			IDetokenizer<string, string> detokenizer)
-		{
-			return corpus.Detokenize(detokenizer, detokenizer);
-		}
-
-		public static IEnumerable<ParallelTextRow> Detokenize<T>(this IEnumerable<ParallelTextRow> corpus)
-			where T : IDetokenizer<string, string>, new()
-		{
-			var detokenizer = new T();
-			return corpus.Detokenize(detokenizer);
-		}
-
-		public static IEnumerable<ParallelTextRow> Detokenize(this IEnumerable<ParallelTextRow> corpus,
-			IDetokenizer<string, string> sourceDetokenizer, IDetokenizer<string, string> targetDetokenizer)
-		{
-			return corpus.Select(row =>
-			{
-				row.SourceSegment = new[] { sourceDetokenizer.Detokenize(row.SourceSegment) };
-				row.TargetSegment = new[] { targetDetokenizer.Detokenize(row.TargetSegment) };
-				return row;
-			});
-		}
-
-		public static IEnumerable<ParallelTextRow> Detokenize<TSource, TTarget>(
-			this IEnumerable<ParallelTextRow> corpus)
-			where TSource : IDetokenizer<string, string>, new()
-			where TTarget : IDetokenizer<string, string>, new()
-		{
-			var sourceDetokenizer = new TSource();
-			var targetDetokenizer = new TTarget();
-			return corpus.Detokenize(sourceDetokenizer, targetDetokenizer);
-		}
-
-
 		public static IEnumerable<ParallelTextRow> Invert(this IEnumerable<ParallelTextRow> corpus)
 		{
 			return corpus.Select(row => row.Invert());
 		}
 
-		public static (IEnumerable<ParallelTextRow>, IEnumerable<ParallelTextRow>, int, int) Split(
-			this IEnumerable<ParallelTextRow> corpus, double? percent = null, int? size = null, int? seed = null)
+		public static (IEnumerable<T>, IEnumerable<T>, int, int) Split<T>(this IEnumerable<T> corpus,
+			double? percent = null, int? size = null, int? seed = null)
 		{
 			if (percent == null && size == null)
 				percent = 0.1;
@@ -238,6 +223,16 @@ namespace SIL.Machine.Corpora
 			{
 				row.SourceSegment = row.SourceSegment.EscapeSpaces();
 				row.TargetSegment = row.TargetSegment.EscapeSpaces();
+				return row;
+			});
+		}
+
+		public static IEnumerable<ParallelTextRow> UnescapeSpaces(this IEnumerable<ParallelTextRow> corpus)
+		{
+			return corpus.Select(row =>
+			{
+				row.SourceSegment = row.SourceSegment.UnescapeSpaces();
+				row.TargetSegment = row.TargetSegment.UnescapeSpaces();
 				return row;
 			});
 		}

@@ -218,7 +218,7 @@ namespace SIL.Machine.Translation
 			{
 				var builder = new TranslationResultBuilder();
 				BuildCorrectionFromHypothesis(builder, _prevPrefix, _prevIsLastWordComplete, hypothesis);
-				yield return builder.ToResult(_sourceSegment);
+				yield return builder.ToResult(_sourceSegment.Count);
 			}
 		}
 

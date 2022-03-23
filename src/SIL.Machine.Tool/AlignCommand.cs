@@ -66,8 +66,8 @@ namespace SIL.Machine
 				IEnumerable<AlignmentRow> refCorpus = ToolHelpers.CreateAlignmentsCorpus("text",
 					_refOption.Value());
 				refCorpus = _corpusSpec.FilterTextAlignmentCorpus(refCorpus);
-				refParallelCorpus = _corpusSpec.ProcessedSourceCorpus
-					.AlignRows(_corpusSpec.ProcessedTargetCorpus, refCorpus)
+				refParallelCorpus = _corpusSpec.SourceCorpus
+					.AlignRows(_corpusSpec.TargetCorpus, refCorpus)
 					.Where(r => !r.IsEmpty);
 			}
 

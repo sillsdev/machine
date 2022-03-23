@@ -77,7 +77,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 			await CheckReloadAsync();
 			using ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync();
 			TranslationResult result = item.Object.Translate(preprocSegment);
-			result = (await _truecaser).Truecase(segment, result);
+			result = (await _truecaser).Truecase(result);
 			_lastUsedTime = DateTime.Now;
 			return result;
 		}
@@ -96,7 +96,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 			ITruecaser truecaser = await _truecaser;
 			var results = new List<TranslationResult>();
 			foreach (TranslationResult result in item.Object.Translate(n, preprocSegment))
-				results.Add(truecaser.Truecase(segment, result));
+				results.Add(truecaser.Truecase(result));
 			_lastUsedTime = DateTime.Now;
 			return results;
 		}
@@ -113,7 +113,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 			await CheckReloadAsync();
 			using ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync();
 			WordGraph result = item.Object.GetWordGraph(preprocSegment);
-			result = (await _truecaser).Truecase(segment, result);
+			result = (await _truecaser).Truecase(result);
 			_lastUsedTime = DateTime.Now;
 			return result;
 		}

@@ -13,7 +13,6 @@ namespace SIL.Machine.Translation
 		Task SaveAsync();
 		void Save();
 
-		TranslationResult Truecase(IReadOnlyList<string> sourceSegment, TranslationResult result);
-		WordGraph Truecase(IReadOnlyList<string> sourceSegment, WordGraph wordGraph);
+		IReadOnlyList<string> Truecase(IReadOnlyList<string> segment);
 	}
 }

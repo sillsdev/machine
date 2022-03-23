@@ -151,13 +151,13 @@ namespace SIL.Machine.WebApi.Client
 			return new WordGraph(arcs, dto.FinalStates, dto.InitialStateScore);
 		}
 
-		private static TranslationResult CreateModel(TranslationResultDto dto, IReadOnlyList<string> sourceSegment)
+		private static TranslationResult CreateModel(TranslationResultDto dto, int sourceSegmentLength)
 		{
 			if (dto == null)
 				return null;
 
-			return new TranslationResult(sourceSegment, dto.Target, dto.Confidences.Cast<double>(), dto.Sources,
-				CreateModel(dto.Alignment, sourceSegment.Count, dto.Target.Length), dto.Phrases.Select(CreateModel));
+			return new TranslationResult(sourceSegmentLength, dto.Target, dto.Confidences.Cast<double>(), dto.Sources,
+				CreateModel(dto.Alignment, sourceSegmentLength, dto.Target.Length), dto.Phrases.Select(CreateModel));
 		}
 
 		private static WordAlignmentMatrix CreateModel(AlignedWordPairDto[] dto, int i, int j)

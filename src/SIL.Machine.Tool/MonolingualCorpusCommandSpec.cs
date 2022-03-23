@@ -12,8 +12,7 @@ namespace SIL.Machine
 		private CommandOption _corpusFormatOption;
 		private CommandOption _wordTokenizerOption;
 
-		public ITextCorpus Corpus { get; set; }
-		public IEnumerable<TextRow> ProcessedCorpus { get; set; }
+		public IEnumerable<TextRow> Corpus { get; private set; }
 
 		public override void AddParameters(CommandBase command)
 		{
@@ -46,11 +45,11 @@ namespace SIL.Machine
 
 			Corpus = ToolHelpers.CreateTextCorpus(_corpusFormatOption.Value() ?? "text", _corpusArgument.Value);
 
-			ProcessedCorpus = FilterTextCorpus(Corpus);
+			Corpus = FilterTextCorpus(Corpus);
 
 			ITokenizer<string, int, string> wordTokenizer = ToolHelpers.CreateWordTokenizer(
 				_wordTokenizerOption.Value() ?? "whitespace");
-			ProcessedCorpus = ProcessedCorpus.Tokenize(wordTokenizer);
+			Corpus = Corpus.Tokenize(wordTokenizer).UnescapeSpaces();
 			return true;
 		}
 	}

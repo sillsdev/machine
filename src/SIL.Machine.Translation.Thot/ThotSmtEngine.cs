@@ -59,7 +59,7 @@ namespace SIL.Machine.Translation.Thot
 				wordGraph = Thot.decoder_getWordGraph(_decoderHandle, nativeSentence);
 
 				uint len = Thot.wg_getString(wordGraph, IntPtr.Zero, 0);
-				nativeWordGraphStr = Marshal.AllocHGlobal((int) len);
+				nativeWordGraphStr = Marshal.AllocHGlobal((int)len);
 				Thot.wg_getString(wordGraph, nativeWordGraphStr, len);
 				string wordGraphStr = Thot.ConvertNativeUtf8ToString(nativeWordGraphStr, len);
 				double initialStateScore = Thot.wg_getInitialStateScore(wordGraph);
@@ -148,7 +148,7 @@ namespace SIL.Machine.Translation.Thot
 
 		private static string[] Split(string line)
 		{
-			return line.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
+			return line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 		}
 
 		public TranslationResult GetBestPhraseAlignment(IReadOnlyList<string> sourceSegment,
@@ -228,14 +228,14 @@ namespace SIL.Machine.Translation.Thot
 
 			_confidenceEstimator.Estimate(sourceSegment, builder);
 
-			return builder.ToResult(sourceSegment);
+			return builder.ToResult(sourceSegment.Count);
 		}
 
 		private IReadOnlyList<Tuple<int, int>> GetSourceSegmentation(IntPtr data, uint phraseCount)
 		{
 			int sizeOfPtr = Marshal.SizeOf<IntPtr>();
 			int sizeOfUInt = Marshal.SizeOf<uint>();
-			IntPtr nativeSourceSegmentation = Marshal.AllocHGlobal((int) phraseCount * sizeOfPtr);
+			IntPtr nativeSourceSegmentation = Marshal.AllocHGlobal((int)phraseCount * sizeOfPtr);
 			for (int i = 0; i < phraseCount; i++)
 			{
 				IntPtr array = Marshal.AllocHGlobal(2 * sizeOfUInt);
@@ -290,7 +290,7 @@ namespace SIL.Machine.Translation.Thot
 			try
 			{
 				var targetUnknownWords = new HashSet<int>();
-				uint count = Thot.tdata_getTargetUnknownWords(data, nativeTargetUnknownWords, (uint) targetWordCount);
+				uint count = Thot.tdata_getTargetUnknownWords(data, nativeTargetUnknownWords, (uint)targetWordCount);
 				for (int i = 0; i < count; i++)
 					targetUnknownWords.Add(Marshal.ReadInt32(nativeTargetUnknownWords, i * sizeOfUInt));
 				return targetUnknownWords;

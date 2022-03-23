@@ -20,7 +20,6 @@ namespace SIL.Machine.Translation.TestApp
 		private readonly HybridTranslationEngine _engine;
 		private readonly string _metadataFileName;
 		private readonly string _targetFileName;
-		private readonly ITruecaser _truecaser;
 
 		private string _sourceText;
 		private string _targetText;
@@ -58,7 +57,6 @@ namespace SIL.Machine.Translation.TestApp
 			_metadataFileName = metadataFileName;
 			_targetFileName = targetFileName;
 			_tokenizer = tokenizer;
-			_truecaser = new TransferTruecaser();
 			_ecm = ecm;
 			_engine = engine;
 
@@ -345,7 +343,7 @@ namespace SIL.Machine.Translation.TestApp
 
 			if (!_approvedSegments.Contains(_currentSegment))
 			{
-				_suggestions.ReplaceAll(_suggester.GetSuggestions(_translator, _sourceSegmentWords, _truecaser).First()
+				_suggestions.ReplaceAll(_suggester.GetSuggestions(_translator).First()
 					.TargetWords.Select(w => new SuggestionViewModel(this, w)));
 			}
 			else

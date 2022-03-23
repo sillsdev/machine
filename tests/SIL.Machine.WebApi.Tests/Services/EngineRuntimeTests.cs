@@ -212,7 +212,7 @@ public class EngineRuntimeTests
 			var factory = Substitute.For<ISmtModelFactory>();
 
 			var engine = Substitute.For<IInteractiveTranslationEngine>();
-			var translationResult = new TranslationResult("esto es una prueba .".Split(),
+			var translationResult = new TranslationResult(5,
 				"this is a test .".Split(),
 				new[] { 1.0, 1.0, 1.0, 1.0, 1.0 },
 				new[]
@@ -262,8 +262,7 @@ public class EngineRuntimeTests
 		{
 			var factory = Substitute.For<ITransferEngineFactory>();
 			var engine = Substitute.For<ITranslationEngine>();
-			engine.Translate(Arg.Any<IReadOnlyList<string>>()).Returns(new TranslationResult(
-				"esto es una prueba .".Split(),
+			engine.Translate(Arg.Any<IReadOnlyList<string>>()).Returns(new TranslationResult(5,
 				"this is a test .".Split(),
 				new[] { 1.0, 1.0, 1.0, 1.0, 1.0 },
 				new[]
@@ -290,26 +289,10 @@ public class EngineRuntimeTests
 		private ITruecaserFactory CreateTruecaserFactory()
 		{
 			var factory = Substitute.For<ITruecaserFactory>();
-			Truecaser.Truecase(Arg.Any<IReadOnlyList<string>>(), Arg.Any<TranslationResult>()).Returns(x =>
+			Truecaser.Truecase(Arg.Any<IReadOnlyList<string>>()).Returns(x =>
 			{
-				var sourceSegment = x.Arg<IReadOnlyList<string>>();
-				var result = x.Arg<TranslationResult>();
-				IReadOnlyList<string> targetSegment = result.TargetSegment.Select(t => t == "test" ? "TEST" : t)
-					.ToArray();
-				return new TranslationResult(sourceSegment, targetSegment, result.WordConfidences, result.WordSources,
-					result.Alignment, result.Phrases);
-			});
-			Truecaser.Truecase(Arg.Any<IReadOnlyList<string>>(), Arg.Any<WordGraph>()).Returns(x =>
-			{
-				var graph = x.Arg<WordGraph>();
-				var arcs = new List<WordGraphArc>();
-				foreach (WordGraphArc arc in graph.Arcs)
-				{
-					IReadOnlyList<string> words = arc.Words.Select(t => t == "test" ? "TEST" : t).ToArray();
-					arcs.Add(new WordGraphArc(arc.PrevState, arc.NextState, arc.Score, words, arc.Alignment,
-						arc.SourceSegmentRange, arc.WordSources, arc.WordConfidences));
-				}
-				return new WordGraph(arcs, graph.FinalStates, graph.InitialStateScore);
+				var segment = x.Arg<IReadOnlyList<string>>();
+				return segment.Select(t => t == "test" ? "TEST" : t).ToArray();
 			});
 			factory.CreateAsync(Arg.Any<string>()).Returns(Task.FromResult(Truecaser));
 			factory.CreateTrainer(Arg.Any<string>(), Arg.Any<IEnumerable<TextRow>>()).Returns(TruecaserTrainer);
