@@ -1,7 +1,8 @@
-﻿using System.Linq;
+﻿using System.IO;
+using System.Linq;
 using System.Text;
 using NUnit.Framework;
-using SIL.Machine.Tokenization;
+using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
@@ -11,22 +12,19 @@ namespace SIL.Machine.Corpora
 		[Test]
 		public void Texts()
 		{
-			var tokenizer = new LatinWordTokenizer();
-			var corpus = new UsfmFileTextCorpus(tokenizer, "usfm.sty", Encoding.UTF8,
-				CorporaTestHelpers.UsfmTestProjectPath);
+			var corpus = new UsfmFileTextCorpus("usfm.sty", Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath);
 
 			Assert.That(corpus.Texts.Select(t => t.Id), Is.EquivalentTo(new[] { "MAT", "MRK" }));
 		}
 
 		[Test]
-		public void GetText()
+		public void TryGetText()
 		{
-			var tokenizer = new LatinWordTokenizer();
-			var corpus = new UsfmFileTextCorpus(tokenizer, "usfm.sty", Encoding.UTF8,
-				CorporaTestHelpers.UsfmTestProjectPath);
+			var corpus = new UsfmFileTextCorpus("usfm.sty", Encoding.UTF8, CorporaTestHelpers.UsfmTestProjectPath);
 
-			Assert.That(corpus.GetText("MAT").GetSegments(), Is.Not.Empty);
-			Assert.That(corpus.GetText("LUK").GetSegments(), Is.Empty);
+			Assert.That(corpus.TryGetText("MAT", out IText mat), Is.True);
+			Assert.That(mat.GetRows(), Is.Not.Empty);
+			Assert.That(corpus.TryGetText("LUK", out _), Is.False);
 		}
 	}
 }

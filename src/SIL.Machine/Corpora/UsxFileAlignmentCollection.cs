@@ -9,7 +9,7 @@ using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
-	public class UsxFileTextAlignmentCollection : ITextAlignmentCollection
+	public class UsxFileAlignmentCollection : IAlignmentCollection
 	{
 		private static readonly VerseRefComparer VerseRefComparer = new VerseRefComparer();
 
@@ -21,7 +21,7 @@ namespace SIL.Machine.Corpora
 		private readonly ScrVers _trgVersification;
 		private readonly UsxVerseParser _parser;
 
-		public UsxFileTextAlignmentCollection(IRangeTokenizer<string, int, string> srcWordTokenizer,
+		public UsxFileAlignmentCollection(IRangeTokenizer<string, int, string> srcWordTokenizer,
 			IRangeTokenizer<string, int, string> trgWordTokenizer, string srcFileName, string trgFileName,
 			ScrVers srcVersification = null, ScrVers trgVersification = null)
 		{
@@ -42,94 +42,85 @@ namespace SIL.Machine.Corpora
 
 		public string SortKey { get; }
 
-		public IEnumerable<TextAlignment> Alignments
+		public IEnumerable<AlignmentRow> GetRows()
 		{
-			get
+			using (var srcStream = new FileStream(_srcFileName, FileMode.Open, FileAccess.Read))
+			using (var trgStream = new FileStream(_trgFileName, FileMode.Open, FileAccess.Read))
 			{
-				using (var srcStream = new FileStream(_srcFileName, FileMode.Open, FileAccess.Read))
-				using (var trgStream = new FileStream(_trgFileName, FileMode.Open, FileAccess.Read))
+				IEnumerable<UsxVerse> srcVerses = _parser.Parse(srcStream);
+				IEnumerable<UsxVerse> trgVerses = _parser.Parse(trgStream);
+
+				using (IEnumerator<UsxVerse> srcEnumerator = srcVerses.GetEnumerator())
+				using (IEnumerator<UsxVerse> trgEnumerator = trgVerses.GetEnumerator())
 				{
-					IEnumerable<UsxVerse> srcVerses = _parser.Parse(srcStream);
-					IEnumerable<UsxVerse> trgVerses = _parser.Parse(trgStream);
+					var rangeInfo = new RangeInfo();
 
-					using (IEnumerator<UsxVerse> srcEnumerator = srcVerses.GetEnumerator())
-					using (IEnumerator<UsxVerse> trgEnumerator = trgVerses.GetEnumerator())
+					bool srcCompleted = !srcEnumerator.MoveNext();
+					bool trgCompleted = !trgEnumerator.MoveNext();
+					while (!srcCompleted && !trgCompleted)
 					{
-						var rangeInfo = new RangeInfo();
+						UsxVerse srcVerse = srcEnumerator.Current;
+						UsxVerse trgVerse = trgEnumerator.Current;
 
-						bool srcCompleted = !srcEnumerator.MoveNext();
-						bool trgCompleted = !trgEnumerator.MoveNext();
-						while (!srcCompleted && !trgCompleted)
+						var srcVerseRef = new VerseRef(Id, srcVerse.Chapter, srcVerse.Verse, _srcVersification);
+						var trgVerseRef = new VerseRef(Id, trgVerse.Chapter, trgVerse.Verse, _trgVersification);
+
+						int compare = VerseRefComparer.Compare(srcVerseRef, trgVerseRef);
+						if (compare < 0)
 						{
-							UsxVerse srcVerse = srcEnumerator.Current;
-							UsxVerse trgVerse = trgEnumerator.Current;
-
-							var srcVerseRef = new VerseRef(Id, srcVerse.Chapter, srcVerse.Verse, _srcVersification);
-							var trgVerseRef = new VerseRef(Id, trgVerse.Chapter, trgVerse.Verse, _trgVersification);
-
-							int compare = VerseRefComparer.Compare(srcVerseRef, trgVerseRef);
-							if (compare < 0)
+							srcCompleted = !srcEnumerator.MoveNext();
+						}
+						else if (compare > 0)
+						{
+							trgCompleted = !trgEnumerator.MoveNext();
+						}
+						else
+						{
+							if (srcVerseRef.HasMultiple || trgVerseRef.HasMultiple)
 							{
-								srcCompleted = !srcEnumerator.MoveNext();
-							}
-							else if (compare > 0)
-							{
-								trgCompleted = !trgEnumerator.MoveNext();
+								if (rangeInfo.IsInRange
+									&& ((srcVerseRef.HasMultiple && !trgVerseRef.HasMultiple
+										&& srcVerse.Text.Length > 0)
+									|| (!srcVerseRef.HasMultiple && trgVerseRef.HasMultiple
+										&& trgVerse.Text.Length > 0)
+									|| (srcVerseRef.HasMultiple && trgVerseRef.HasMultiple
+										&& srcVerse.Text.Length > 0 && trgVerse.Text.Length > 0)))
+								{
+									AlignmentRow rangeAlignment = CreateTextAlignment((VerseRef)rangeInfo.VerseRef,
+										rangeInfo.SourceTokens, rangeInfo.TargetTokens);
+									if (rangeAlignment.AlignedWordPairs.Count > 0)
+										yield return rangeAlignment;
+								}
+
+								if (!rangeInfo.IsInRange)
+									rangeInfo.VerseRef = srcVerseRef;
+								rangeInfo.SourceTokens.AddRange(srcVerse.Tokens);
+								rangeInfo.TargetTokens.AddRange(trgVerse.Tokens);
 							}
 							else
 							{
-								if (srcVerseRef.HasMultiple || trgVerseRef.HasMultiple)
+								if (rangeInfo.IsInRange)
 								{
-									if (rangeInfo.IsInRange
-										&& ((srcVerseRef.HasMultiple && !trgVerseRef.HasMultiple
-											&& srcVerse.Text.Length > 0)
-										|| (!srcVerseRef.HasMultiple && trgVerseRef.HasMultiple
-											&& trgVerse.Text.Length > 0)
-										|| (srcVerseRef.HasMultiple && trgVerseRef.HasMultiple
-											&& srcVerse.Text.Length > 0 && trgVerse.Text.Length > 0)))
-									{
-										TextAlignment rangeAlignment = CreateTextAlignment((VerseRef)rangeInfo.VerseRef,
-											rangeInfo.SourceTokens, rangeInfo.TargetTokens);
-										if (rangeAlignment.AlignedWordPairs.Count > 0)
-											yield return rangeAlignment;
-									}
-
-									if (!rangeInfo.IsInRange)
-										rangeInfo.VerseRef = srcVerseRef;
-									rangeInfo.SourceTokens.AddRange(srcVerse.Tokens);
-									rangeInfo.TargetTokens.AddRange(trgVerse.Tokens);
+									AlignmentRow rangeAlignment = CreateTextAlignment((VerseRef)rangeInfo.VerseRef,
+										rangeInfo.SourceTokens, rangeInfo.TargetTokens);
+									if (rangeAlignment.AlignedWordPairs.Count > 0)
+										yield return rangeAlignment;
 								}
-								else
-								{
-									if (rangeInfo.IsInRange)
-									{
-										TextAlignment rangeAlignment = CreateTextAlignment((VerseRef)rangeInfo.VerseRef,
-											rangeInfo.SourceTokens, rangeInfo.TargetTokens);
-										if (rangeAlignment.AlignedWordPairs.Count > 0)
-											yield return rangeAlignment;
-									}
 
-									TextAlignment alignment = CreateTextAlignment(srcVerseRef, srcVerse.Tokens,
-										trgVerse.Tokens);
-									if (alignment.AlignedWordPairs.Count > 0)
-										yield return alignment;
-								}
-								srcCompleted = !srcEnumerator.MoveNext();
-								trgCompleted = !trgEnumerator.MoveNext();
+								AlignmentRow alignment = CreateTextAlignment(srcVerseRef, srcVerse.Tokens,
+									trgVerse.Tokens);
+								if (alignment.AlignedWordPairs.Count > 0)
+									yield return alignment;
 							}
+							srcCompleted = !srcEnumerator.MoveNext();
+							trgCompleted = !trgEnumerator.MoveNext();
 						}
 					}
 				}
 			}
 		}
 
-		public ITextAlignmentCollection Invert()
-		{
-			return new UsxFileTextAlignmentCollection(_trgWordTokenizer, _srcWordTokenizer, _trgFileName, _srcFileName,
-				_trgVersification, _srcVersification);
-		}
-
-		private TextAlignment CreateTextAlignment(VerseRef verseRef, IReadOnlyList<UsxToken> srcTokens,
+		private AlignmentRow CreateTextAlignment(VerseRef verseRef, IReadOnlyList<UsxToken> srcTokens,
 			IReadOnlyList<UsxToken> trgTokens)
 		{
 			Dictionary<string, HashSet<int>> srcLinks = GetLinks(_srcWordTokenizer, srcTokens);
@@ -147,7 +138,10 @@ namespace SIL.Machine.Corpora
 					}
 				}
 			}
-			return new TextAlignment(Id, verseRef, wordPairs);
+			return new AlignmentRow(Id, verseRef)
+			{
+				AlignedWordPairs = wordPairs
+			};
 		}
 
 		private static Dictionary<string, HashSet<int>> GetLinks(

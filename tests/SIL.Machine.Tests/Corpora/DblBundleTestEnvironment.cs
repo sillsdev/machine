@@ -1,6 +1,5 @@
-﻿using SIL.Machine.Tokenization;
+﻿using System.IO;
 using SIL.ObjectModel;
-using System.IO;
 
 namespace SIL.Machine.Corpora
 {
@@ -11,7 +10,7 @@ namespace SIL.Machine.Corpora
 		public DblBundleTestEnvironment()
 		{
 			_bundlePath = CorporaTestHelpers.CreateTestDblBundle();
-			Corpus = new DblBundleTextCorpus(new NullTokenizer(), _bundlePath);
+			Corpus = new DblBundleTextCorpus(_bundlePath);
 		}
 
 		public DblBundleTextCorpus Corpus { get; }

@@ -7,7 +7,7 @@ public class EngineRuntimeTests
 	public async Task StartBuildAsync()
 	{
 		using var env = new TestEnvironment();
-		Engine engine = (await env.Engines.GetAsync("engine1"))!;
+		Engine engine = env.Engines.Get("engine1");
 		Assert.That(engine.ModelRevision, Is.EqualTo(0));
 		await env.Runtime.InitNewAsync();
 		// ensure that the SMT model was loaded before training
@@ -15,18 +15,16 @@ public class EngineRuntimeTests
 		Build build = await env.Runtime.StartBuildAsync();
 		Assert.That(build, Is.Not.Null);
 		await env.WaitForBuildToStartAsync(build.Id);
-		await env.WebhookService.Received().TriggerEventAsync(WebhookEvent.BuildStarted, "client",
-			Arg.Is<Build>(b => b.State == BuildState.Active));
+		build = env.Builds.Get(build.Id);
+		Assert.That(build.State, Is.EqualTo(BuildState.Active));
 		await env.WaitForBuildToFinishAsync(build.Id);
 		env.SmtBatchTrainer.Received().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
 		env.TruecaserTrainer.Received().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
 		env.SmtBatchTrainer.Received().Save();
 		await env.TruecaserTrainer.Received().SaveAsync();
-		await env.WebhookService.Received().TriggerEventAsync(WebhookEvent.BuildFinished, "client",
-			Arg.Is<Build>(b => b.State == BuildState.Completed));
-		build = (await env.Builds.GetAsync(build.Id))!;
+		build = env.Builds.Get(build.Id);
 		Assert.That(build.State, Is.EqualTo(BuildState.Completed));
-		engine = (await env.Engines.GetAsync("engine1"))!;
+		engine = env.Engines.Get("engine1");
 		Assert.That(engine.ModelRevision, Is.EqualTo(1));
 		// check if SMT model was reloaded upon first use after training
 		env.SmtModel.ClearReceivedCalls();
@@ -49,17 +47,15 @@ public class EngineRuntimeTests
 		Build build = await env.Runtime.StartBuildAsync();
 		Assert.That(build, Is.Not.Null);
 		await env.WaitForBuildToStartAsync(build.Id);
-		await env.WebhookService.Received().TriggerEventAsync(WebhookEvent.BuildStarted, "client",
-			Arg.Is<Build>(b => b.State == BuildState.Active));
+		build = env.Builds.Get(build.Id);
+		Assert.That(build.State, Is.EqualTo(BuildState.Active));
 		await env.Runtime.CancelBuildAsync();
 		await env.WaitForBuildToFinishAsync(build.Id);
 		env.SmtBatchTrainer.Received().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
 		env.TruecaserTrainer.DidNotReceive().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
 		env.SmtBatchTrainer.DidNotReceive().Save();
 		await env.TruecaserTrainer.DidNotReceive().SaveAsync();
-		await env.WebhookService.Received().TriggerEventAsync(WebhookEvent.BuildFinished, "client",
-			Arg.Is<Build>(b => b.State == BuildState.Canceled));
-		build = (await env.Builds.GetAsync(build.Id))!;
+		build = env.Builds.Get(build.Id);
 		Assert.That(build.State, Is.EqualTo(BuildState.Canceled));
 	}
 
@@ -76,17 +72,15 @@ public class EngineRuntimeTests
 		Build build = await env.Runtime.StartBuildAsync();
 		Assert.That(build, Is.Not.Null);
 		await env.WaitForBuildToStartAsync(build.Id);
-		await env.WebhookService.Received().TriggerEventAsync(WebhookEvent.BuildStarted, "client",
-			Arg.Is<Build>(b => b.State == BuildState.Active));
+		build = env.Builds.Get(build.Id);
+		Assert.That(build.State, Is.EqualTo(BuildState.Active));
 		env.StopServer();
 		build = (await env.Builds.GetAsync(build.Id))!;
 		Assert.That(build.State, Is.EqualTo(BuildState.Pending));
 		env.SmtBatchTrainer.ClearSubstitute(ClearOptions.CallActions);
 		env.StartServer();
 		await env.WaitForBuildToFinishAsync(build.Id);
-		await env.WebhookService.Received().TriggerEventAsync(WebhookEvent.BuildFinished, "client",
-			Arg.Is<Build>(b => b.State == BuildState.Completed));
-		build = (await env.Builds.GetAsync(build.Id))!;
+		build = env.Builds.Get(build.Id);
 		Assert.That(build.State, Is.EqualTo(BuildState.Completed));
 	}
 
@@ -218,7 +212,7 @@ public class EngineRuntimeTests
 			var factory = Substitute.For<ISmtModelFactory>();
 
 			var engine = Substitute.For<IInteractiveTranslationEngine>();
-			var translationResult = new TranslationResult("esto es una prueba .".Split(),
+			var translationResult = new TranslationResult(5,
 				"this is a test .".Split(),
 				new[] { 1.0, 1.0, 1.0, 1.0, 1.0 },
 				new[]
@@ -260,8 +254,7 @@ public class EngineRuntimeTests
 			SmtModel.CreateInteractiveEngine().Returns(engine);
 
 			factory.Create(Arg.Any<string>()).Returns(SmtModel);
-			factory.CreateTrainer(Arg.Any<string>(), Arg.Any<ParallelTextCorpus>(), Arg.Any<ITokenProcessor>(),
-				Arg.Any<ITokenProcessor>()).Returns(SmtBatchTrainer);
+			factory.CreateTrainer(Arg.Any<string>(), Arg.Any<IEnumerable<ParallelTextRow>>()).Returns(SmtBatchTrainer);
 			return factory;
 		}
 
@@ -269,8 +262,7 @@ public class EngineRuntimeTests
 		{
 			var factory = Substitute.For<ITransferEngineFactory>();
 			var engine = Substitute.For<ITranslationEngine>();
-			engine.Translate(Arg.Any<IReadOnlyList<string>>()).Returns(new TranslationResult(
-				"esto es una prueba .".Split(),
+			engine.Translate(Arg.Any<IReadOnlyList<string>>()).Returns(new TranslationResult(5,
 				"this is a test .".Split(),
 				new[] { 1.0, 1.0, 1.0, 1.0, 1.0 },
 				new[]
@@ -297,38 +289,22 @@ public class EngineRuntimeTests
 		private ITruecaserFactory CreateTruecaserFactory()
 		{
 			var factory = Substitute.For<ITruecaserFactory>();
-			Truecaser.Truecase(Arg.Any<IReadOnlyList<string>>(), Arg.Any<TranslationResult>()).Returns(x =>
+			Truecaser.Truecase(Arg.Any<IReadOnlyList<string>>()).Returns(x =>
 			{
-				var sourceSegment = x.Arg<IReadOnlyList<string>>();
-				var result = x.Arg<TranslationResult>();
-				IReadOnlyList<string> targetSegment = result.TargetSegment.Select(t => t == "test" ? "TEST" : t)
-					.ToArray();
-				return new TranslationResult(sourceSegment, targetSegment, result.WordConfidences, result.WordSources,
-					result.Alignment, result.Phrases);
-			});
-			Truecaser.Truecase(Arg.Any<IReadOnlyList<string>>(), Arg.Any<WordGraph>()).Returns(x =>
-			{
-				var graph = x.Arg<WordGraph>();
-				var arcs = new List<WordGraphArc>();
-				foreach (WordGraphArc arc in graph.Arcs)
-				{
-					IReadOnlyList<string> words = arc.Words.Select(t => t == "test" ? "TEST" : t).ToArray();
-					arcs.Add(new WordGraphArc(arc.PrevState, arc.NextState, arc.Score, words, arc.Alignment,
-						arc.SourceSegmentRange, arc.WordSources, arc.WordConfidences));
-				}
-				return new WordGraph(arcs, graph.FinalStates, graph.InitialStateScore);
+				var segment = x.Arg<IReadOnlyList<string>>();
+				return segment.Select(t => t == "test" ? "TEST" : t).ToArray();
 			});
 			factory.CreateAsync(Arg.Any<string>()).Returns(Task.FromResult(Truecaser));
-			factory.CreateTrainer(Arg.Any<string>(), Arg.Any<ITextCorpus>()).Returns(TruecaserTrainer);
+			factory.CreateTrainer(Arg.Any<string>(), Arg.Any<IEnumerable<TextRow>>()).Returns(TruecaserTrainer);
 			return factory;
 		}
 
 		private static IDataFileService CreateDataFileService()
 		{
 			var dataFileService = Substitute.For<IDataFileService>();
-			dataFileService.CreateTextCorpusAsync(Arg.Any<string>(), Arg.Any<CorpusType>(),
-				Arg.Any<ITokenizer<string, int, string>>()).Returns(
-					Task.FromResult<ITextCorpus>(new DictionaryTextCorpus(Enumerable.Empty<IText>())));
+			dataFileService.CreateTextCorporaAsync(Arg.Any<string>(), Arg.Any<CorpusType>())
+				.Returns(Task.FromResult<IReadOnlyDictionary<string, ITextCorpus>>(
+					new Dictionary<string, ITextCorpus>()));
 			return dataFileService;
 		}
 
@@ -342,7 +318,7 @@ public class EngineRuntimeTests
 
 		public Task WaitForBuildToFinishAsync(string buildId)
 		{
-			return WaitForBuildState(buildId, b => b.DateFinished != default);
+			return WaitForBuildState(buildId, b => b.DateFinished is not null);
 		}
 
 		public Task WaitForBuildToStartAsync(string buildId)
@@ -356,7 +332,7 @@ public class EngineRuntimeTests
 			while (true)
 			{
 				Build? build = subscription.Change.Entity;
-				if (build == null || predicate(build))
+				if (build != null && predicate(build))
 					break;
 				await subscription.WaitForChangeAsync();
 			}

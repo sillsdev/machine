@@ -88,7 +88,7 @@ namespace SIL.Machine.Translation
 			}
 			if (i == -1)
 				i = 0;
-			for (; i < result.SourceSegment.Count; i++)
+			for (; i < result.SourceSegmentLength; i++)
 			{
 				if (!result.Alignment.IsRowAligned(i))
 					lookaheadCount++;

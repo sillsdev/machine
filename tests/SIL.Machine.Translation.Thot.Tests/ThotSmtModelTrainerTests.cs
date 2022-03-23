@@ -39,9 +39,9 @@ namespace SIL.Machine.Translation.Thot
 					})
 				});
 
-				var alignmentCorpus = new DictionaryTextAlignmentCorpus(new[]
+				var alignmentCorpus = new DictionaryAlignmentCorpus(new[]
 				{
-					new MemoryTextAlignmentCollection("text1", new[]
+					new MemoryAlignmentCollection("text1", new[]
 					{
 						Alignment(1, new AlignedWordPair(8, 9)),
 						Alignment(2, new AlignedWordPair(6, 10)),
@@ -80,8 +80,8 @@ namespace SIL.Machine.Translation.Thot
 			{
 				var sourceCorpus = new DictionaryTextCorpus(Enumerable.Empty<MemoryText>());
 				var targetCorpus = new DictionaryTextCorpus(Enumerable.Empty<MemoryText>());
-				var alignmentCorpus = new DictionaryTextAlignmentCorpus(
-					Enumerable.Empty<MemoryTextAlignmentCollection>());
+				var alignmentCorpus = new DictionaryAlignmentCorpus(
+					Enumerable.Empty<MemoryAlignmentCollection>());
 
 				var corpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignmentCorpus);
 
@@ -105,15 +105,21 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		private static TextSegment Segment(int key, string text)
+		private static TextRow Segment(int key, string text)
 		{
-			return new TextSegment("text1", new TextSegmentRef(key), text.Split(), isSentenceStart: true,
-				isInRange: false, isRangeStart: false, isEmpty: text.Length == 0);
+			return new TextRow("text1", new RowRef(key))
+			{
+				Segment = text.Split(),
+				IsEmpty = text.Length == 0
+			};
 		}
 
-		private static TextAlignment Alignment(int key, params AlignedWordPair[] pairs)
+		private static AlignmentRow Alignment(int key, params AlignedWordPair[] pairs)
 		{
-			return new TextAlignment("text1", new TextSegmentRef(key), pairs);
+			return new AlignmentRow("text1", new RowRef(key))
+			{
+				AlignedWordPairs = pairs
+			};
 		}
 	}
 }

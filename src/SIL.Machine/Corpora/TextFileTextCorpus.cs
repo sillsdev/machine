@@ -1,25 +1,23 @@
 ﻿using System.Collections.Generic;
-using SIL.Machine.Tokenization;
 
 namespace SIL.Machine.Corpora
 {
 	public class TextFileTextCorpus : DictionaryTextCorpus
 	{
-		public TextFileTextCorpus(ITokenizer<string, int, string> wordTokenizer, params string[] filePatterns)
-			: this(wordTokenizer, (IEnumerable<string>) filePatterns)
+		public TextFileTextCorpus(params string[] filePatterns)
+			: this((IEnumerable<string>)filePatterns)
 		{
 		}
 
-		public TextFileTextCorpus(ITokenizer<string, int, string> wordTokenizer, IEnumerable<string> filePatterns)
-			: base(GetTexts(wordTokenizer, filePatterns))
+		public TextFileTextCorpus(IEnumerable<string> filePatterns)
+			: base(GetTexts(filePatterns))
 		{
 		}
 
-		private static IEnumerable<IText> GetTexts(ITokenizer<string, int, string> wordTokenizer,
-			IEnumerable<string> filePatterns)
+		private static IEnumerable<IText> GetTexts(IEnumerable<string> filePatterns)
 		{
 			foreach ((string id, string fileName) in CorporaHelpers.GetFiles(filePatterns))
-				yield return new TextFileText(wordTokenizer, id, fileName);
+				yield return new TextFileText(id, fileName);
 		}
 	}
 }

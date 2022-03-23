@@ -15,7 +15,8 @@ internal class EqualsConstantFinder<T, V> : System.Linq.Expressions.ExpressionVi
 	protected override Expression VisitBinary(BinaryExpression node)
 	{
 		if (node.Method?.Name == "op_Equality" && node.Left is MemberExpression memberExpr
-			&& memberExpr.Member.Name == _member.Name)
+			&& memberExpr.Member.Name == _member.Name
+			&& (_member.DeclaringType?.IsAssignableFrom(memberExpr.Member.DeclaringType) ?? true))
 		{
 			Value = (V?)ExpressionHelper.FindConstantValue(node.Right);
 		}

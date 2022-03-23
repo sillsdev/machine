@@ -76,7 +76,7 @@ namespace SIL.Machine.Translation
 					}
 				}
 
-				yield return new TranslationResult(segment, translation, confidences, sources, alignment,
+				yield return new TranslationResult(segment.Count, translation, confidences, sources, alignment,
 					new[] { new Phrase(Range<int>.Create(0, segment.Count), translation.Count, confidence) });
 			}
 		}

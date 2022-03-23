@@ -15,13 +15,13 @@ public class DistributedReaderWriterLockTests
 		await using (await rwLock.ReaderLockAsync())
 		{
 			entity = locks.Get("test");
-			Assert.That(entity.IsAvailableForReading, Is.True);
-			Assert.That(entity.IsAvailableForWriting, Is.False);
+			Assert.That(entity.IsAvailableForReading(), Is.True);
+			Assert.That(entity.IsAvailableForWriting(), Is.False);
 		}
 
 		entity = locks.Get("test");
-		Assert.That(entity.IsAvailableForReading, Is.True);
-		Assert.That(entity.IsAvailableForWriting, Is.True);
+		Assert.That(entity.IsAvailableForReading(), Is.True);
+		Assert.That(entity.IsAvailableForWriting(), Is.True);
 	}
 
 	[Test]
@@ -38,14 +38,14 @@ public class DistributedReaderWriterLockTests
 			await using (await rwLock.ReaderLockAsync())
 			{
 				entity = locks.Get("test");
-				Assert.That(entity.IsAvailableForReading, Is.True);
-				Assert.That(entity.IsAvailableForWriting, Is.False);
+				Assert.That(entity.IsAvailableForReading(), Is.True);
+				Assert.That(entity.IsAvailableForWriting(), Is.False);
 			}
 		}
 
 		entity = locks.Get("test");
-		Assert.That(entity.IsAvailableForReading, Is.True);
-		Assert.That(entity.IsAvailableForWriting, Is.True);
+		Assert.That(entity.IsAvailableForReading(), Is.True);
+		Assert.That(entity.IsAvailableForWriting(), Is.True);
 	}
 
 	[Test]
@@ -80,13 +80,13 @@ public class DistributedReaderWriterLockTests
 		await using (await task)
 		{
 			entity = locks.Get("test");
-			Assert.That(entity.IsAvailableForReading, Is.True);
-			Assert.That(entity.IsAvailableForWriting, Is.False);
+			Assert.That(entity.IsAvailableForReading(), Is.True);
+			Assert.That(entity.IsAvailableForWriting(), Is.False);
 		}
 
 		entity = locks.Get("test");
-		Assert.That(entity.IsAvailableForReading, Is.True);
-		Assert.That(entity.IsAvailableForWriting, Is.True);
+		Assert.That(entity.IsAvailableForReading(), Is.True);
+		Assert.That(entity.IsAvailableForWriting(), Is.True);
 	}
 
 	[Test]
@@ -105,14 +105,14 @@ public class DistributedReaderWriterLockTests
 			await using (await task)
 			{
 				entity = locks.Get("test");
-				Assert.That(entity.IsAvailableForReading, Is.True);
-				Assert.That(entity.IsAvailableForWriting, Is.False);
+				Assert.That(entity.IsAvailableForReading(), Is.True);
+				Assert.That(entity.IsAvailableForWriting(), Is.False);
 			}
 		}
 
 		entity = locks.Get("test");
-		Assert.That(entity.IsAvailableForReading, Is.True);
-		Assert.That(entity.IsAvailableForWriting, Is.True);
+		Assert.That(entity.IsAvailableForReading(), Is.True);
+		Assert.That(entity.IsAvailableForWriting(), Is.True);
 	}
 
 	[Test]
@@ -136,13 +136,13 @@ public class DistributedReaderWriterLockTests
 		await using (await rwLock.ReaderLockAsync())
 		{
 			entity = locks.Get("test");
-			Assert.That(entity.IsAvailableForReading, Is.True);
-			Assert.That(entity.IsAvailableForWriting, Is.False);
+			Assert.That(entity.IsAvailableForReading(), Is.True);
+			Assert.That(entity.IsAvailableForWriting(), Is.False);
 		}
 
 		entity = locks.Get("test");
-		Assert.That(entity.IsAvailableForReading, Is.True);
-		Assert.That(entity.IsAvailableForWriting, Is.True);
+		Assert.That(entity.IsAvailableForReading(), Is.True);
+		Assert.That(entity.IsAvailableForWriting(), Is.True);
 	}
 
 	[Test]
@@ -157,13 +157,13 @@ public class DistributedReaderWriterLockTests
 		await using (await rwLock.WriterLockAsync())
 		{
 			entity = locks.Get("test");
-			Assert.That(entity.IsAvailableForReading, Is.False);
-			Assert.That(entity.IsAvailableForWriting, Is.False);
+			Assert.That(entity.IsAvailableForReading(), Is.False);
+			Assert.That(entity.IsAvailableForWriting(), Is.False);
 		}
 
 		entity = locks.Get("test");
-		Assert.That(entity.IsAvailableForReading, Is.True);
-		Assert.That(entity.IsAvailableForWriting, Is.True);
+		Assert.That(entity.IsAvailableForReading(), Is.True);
+		Assert.That(entity.IsAvailableForWriting(), Is.True);
 	}
 
 	[Test]
@@ -198,13 +198,13 @@ public class DistributedReaderWriterLockTests
 		await using (await task)
 		{
 			entity = locks.Get("test");
-			Assert.That(entity.IsAvailableForReading, Is.False);
-			Assert.That(entity.IsAvailableForWriting, Is.False);
+			Assert.That(entity.IsAvailableForReading(), Is.False);
+			Assert.That(entity.IsAvailableForWriting(), Is.False);
 		}
 
 		entity = locks.Get("test");
-		Assert.That(entity.IsAvailableForReading, Is.True);
-		Assert.That(entity.IsAvailableForWriting, Is.True);
+		Assert.That(entity.IsAvailableForReading(), Is.True);
+		Assert.That(entity.IsAvailableForWriting(), Is.True);
 	}
 
 	[Test]
@@ -239,13 +239,55 @@ public class DistributedReaderWriterLockTests
 		await using (await task)
 		{
 			entity = locks.Get("test");
-			Assert.That(entity.IsAvailableForReading, Is.False);
-			Assert.That(entity.IsAvailableForWriting, Is.False);
+			Assert.That(entity.IsAvailableForReading(), Is.False);
+			Assert.That(entity.IsAvailableForWriting(), Is.False);
 		}
 
 		entity = locks.Get("test");
-		Assert.That(entity.IsAvailableForReading, Is.True);
-		Assert.That(entity.IsAvailableForWriting, Is.True);
+		Assert.That(entity.IsAvailableForReading(), Is.True);
+		Assert.That(entity.IsAvailableForWriting(), Is.True);
+	}
+
+	[Test]
+	public async Task WriterLockAsync_WriterLockTakesPriorityOverReaderLock()
+	{
+		var locks = new MemoryRepository<RWLock>();
+		var rwLock = new DistributedReaderWriterLock("host", locks, "test");
+
+		Assert.That(locks.Contains("test"), Is.False);
+
+		Task<IAsyncDisposable> writeTask, readTask;
+		await using (await rwLock.WriterLockAsync())
+		{
+			readTask = rwLock.ReaderLockAsync();
+			Assert.That(readTask.IsCompleted, Is.False);
+			writeTask = rwLock.WriterLockAsync();
+			Assert.That(writeTask.IsCompleted, Is.False);
+		}
+
+		await writeTask;
+		await AssertNeverCompletesAsync(readTask);
+	}
+
+	[Test]
+	public async Task WriterLockAsync_FirstWriterLockHasPriority()
+	{
+		var locks = new MemoryRepository<RWLock>();
+		var rwLock = new DistributedReaderWriterLock("host", locks, "test");
+
+		Assert.That(locks.Contains("test"), Is.False);
+
+		Task<IAsyncDisposable> task1, task2;
+		await using (await rwLock.WriterLockAsync())
+		{
+			task1 = rwLock.WriterLockAsync();
+			Assert.That(task1.IsCompleted, Is.False);
+			task2 = rwLock.WriterLockAsync();
+			Assert.That(task2.IsCompleted, Is.False);
+		}
+
+		await task1;
+		await AssertNeverCompletesAsync(task2);
 	}
 
 	[Test]
@@ -264,14 +306,14 @@ public class DistributedReaderWriterLockTests
 			await using (await task)
 			{
 				entity = locks.Get("test");
-				Assert.That(entity.IsAvailableForReading, Is.False);
-				Assert.That(entity.IsAvailableForWriting, Is.False);
+				Assert.That(entity.IsAvailableForReading(), Is.False);
+				Assert.That(entity.IsAvailableForWriting(), Is.False);
 			}
 		}
 
 		entity = locks.Get("test");
-		Assert.That(entity.IsAvailableForReading, Is.True);
-		Assert.That(entity.IsAvailableForWriting, Is.True);
+		Assert.That(entity.IsAvailableForReading(), Is.True);
+		Assert.That(entity.IsAvailableForWriting(), Is.True);
 	}
 
 	[Test]
@@ -295,16 +337,16 @@ public class DistributedReaderWriterLockTests
 		await using (await rwLock.WriterLockAsync())
 		{
 			entity = locks.Get("test");
-			Assert.That(entity.IsAvailableForReading, Is.False);
-			Assert.That(entity.IsAvailableForWriting, Is.False);
+			Assert.That(entity.IsAvailableForReading(), Is.False);
+			Assert.That(entity.IsAvailableForWriting(), Is.False);
 		}
 
 		entity = locks.Get("test");
-		Assert.That(entity.IsAvailableForReading, Is.True);
-		Assert.That(entity.IsAvailableForWriting, Is.True);
+		Assert.That(entity.IsAvailableForReading(), Is.True);
+		Assert.That(entity.IsAvailableForWriting(), Is.True);
 	}
 
-	public static async Task AssertNeverCompletesAsync(Task task, int timeout = 500)
+	public static async Task AssertNeverCompletesAsync(Task task, int timeout = 100)
 	{
 		if (task.IsCompleted)
 			Assert.Fail("Task completed unexpectedly.");

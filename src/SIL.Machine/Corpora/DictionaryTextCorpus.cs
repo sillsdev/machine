@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SIL.Machine.Corpora
 {
 	public class DictionaryTextCorpus : ITextCorpus
 	{
-
 		public DictionaryTextCorpus(params IText[] texts)
 			: this((IEnumerable<IText>)texts)
 		{
@@ -20,24 +20,32 @@ namespace SIL.Machine.Corpora
 
 		protected Dictionary<string, IText> TextDictionary { get; }
 
-		public IText this[string id]
-		{
-			get
-			{
-				if (TextDictionary.TryGetValue(id, out IText text))
-					return text;
-				return CreateNullText(id);
-			}
-		}
 
-		public virtual IText CreateNullText(string id)
+		public IText this[string id] => TextDictionary[id];
+
+		public bool TryGetText(string id, out IText text)
 		{
-			return new NullText(id, id);
+			return TextDictionary.TryGetValue(id, out text);
 		}
 
 		protected void AddText(IText text)
 		{
 			TextDictionary[text.Id] = text;
+		}
+
+		public IEnumerator<TextRow> GetEnumerator()
+		{
+			return GetRows().GetEnumerator();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		protected virtual IEnumerable<TextRow> GetRows()
+		{
+			return Texts.SelectMany(t => t.GetRows());
 		}
 	}
 }

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
@@ -66,13 +67,13 @@ namespace SIL.Machine
 			return new ThotSmtModel(wordAlignmentModelType, _modelConfigFileName);
 		}
 
-		public ITrainer CreateTrainer(ParallelTextCorpus corpus, int maxSize, ITokenProcessor processor)
+		public ITrainer CreateTrainer(IEnumerable<ParallelTextRow> corpus, int maxSize)
 		{
 			if (_modelFactory != null)
-				return _modelFactory.CreateTrainer(_modelArgument.Value, processor, processor, corpus, maxSize);
+				return _modelFactory.CreateTrainer(_modelArgument.Value, corpus, maxSize);
 
 			return ToolHelpers.CreateTranslationModelTrainer(_modelTypeOption.Value(), _modelConfigFileName, corpus,
-				maxSize, processor);
+				maxSize);
 		}
 	}
 }

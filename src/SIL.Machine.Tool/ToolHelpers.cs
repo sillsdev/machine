@@ -44,36 +44,35 @@ namespace SIL.Machine
 			return string.IsNullOrEmpty(value) || types.Contains(value.ToLowerInvariant());
 		}
 
-		public static ITextCorpus CreateTextCorpus(ITokenizer<string, int, string> wordTokenizer, string type,
-			string path)
+		public static ITextCorpus CreateTextCorpus(string type, string path)
 		{
 			switch (type.ToLowerInvariant())
 			{
 				case "dbl":
-					return new DblBundleTextCorpus(wordTokenizer, path);
+					return new DblBundleTextCorpus(path);
 
 				case "usx":
-					return new UsxFileTextCorpus(wordTokenizer, path);
+					return new UsxFileTextCorpus(path);
 
 				case "pt":
-					return new ParatextTextCorpus(wordTokenizer, path);
+					return new ParatextTextCorpus(path);
 
 				case "text":
-					return new TextFileTextCorpus(wordTokenizer, path);
+					return new TextFileTextCorpus(path);
 
 				case "pt_m":
-					return new ParatextTextCorpus(wordTokenizer, path, includeMarkers: true);
+					return new ParatextTextCorpus(path, includeMarkers: true);
 			}
 
 			throw new ArgumentException("An invalid text corpus type was specified.", nameof(type));
 		}
 
-		public static ITextAlignmentCorpus CreateAlignmentsCorpus(string type, string path)
+		public static IAlignmentCorpus CreateAlignmentsCorpus(string type, string path)
 		{
 			switch (type.ToLowerInvariant())
 			{
 				case "text":
-					return new TextFileTextAlignmentCorpus(path);
+					return new TextFileAlignmentCorpus(path);
 			}
 
 			throw new ArgumentException("An invalid alignment corpus type was specified.", nameof(type));
@@ -181,7 +180,7 @@ namespace SIL.Machine
 		}
 
 		public static ITrainer CreateTranslationModelTrainer(string modelType,
-			string modelConfigFileName, ParallelTextCorpus corpus, int maxSize, ITokenProcessor processor)
+			string modelConfigFileName, IEnumerable<ParallelTextRow> corpus, int maxSize)
 		{
 			ThotWordAlignmentModelType wordAlignmentModelType = GetThotWordAlignmentModelType(modelType);
 
@@ -192,8 +191,10 @@ namespace SIL.Machine
 			if (!File.Exists(modelConfigFileName))
 				CreateConfigFile(wordAlignmentModelType, modelConfigFileName);
 
-			return new ThotSmtModelTrainer(wordAlignmentModelType, corpus, modelConfigFileName, processor, processor,
-				maxSize);
+			return new ThotSmtModelTrainer(wordAlignmentModelType, corpus, modelConfigFileName)
+			{
+				MaxCorpusCount = maxSize
+			};
 		}
 
 		public static bool ValidateSymmetrizationHeuristicOption(string value, bool noneAllowed = true)

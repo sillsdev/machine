@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
@@ -33,7 +35,7 @@ namespace SIL.Machine
 
 			if (_countOption.HasValue())
 			{
-				Out.WriteLine(_corpusSpec.GetNonemptyParallelCorpusCount());
+				Out.WriteLine(Math.Min(_corpusSpec.MaxCorpusCount, _corpusSpec.ParallelCorpus.Count()));
 			}
 			else
 			{
@@ -47,43 +49,37 @@ namespace SIL.Machine
 					}
 				}
 
-				int textCount = 0;
 				int segmentCount = 0;
 				int sourceWordCount = 0;
 				int targetWordCount = 0;
-				foreach (ParallelText text in _corpusSpec.ParallelCorpus.Texts)
+				IEnumerable<ParallelTextRow> corpus = _corpusSpec.ParallelCorpus
+					.Where(r => !r.IsEmpty)
+					.Take(_corpusSpec.MaxCorpusCount);
+				foreach (ParallelTextRow row in corpus)
 				{
-					foreach (ParallelTextSegment segment in text.Segments.Where(s => !s.IsEmpty))
+					if (row.SourceSegment.Count > maxLength)
 					{
-						if (segment.SourceSegment.Count > maxLength)
-						{
-							Out.WriteLine($"Source segment \"{text.Id} {segment.SegmentRef}\" is too long, "
-								+ $"length: {segment.SourceSegment.Count}");
-						}
-						if (segment.TargetSegment.Count > maxLength)
-						{
-							Out.WriteLine($"Target segment \"{text.Id} {segment.SegmentRef}\" is too long, "
-								+ $"length: {segment.TargetSegment.Count}");
-						}
-
-						sourceWordCount += segment.SourceSegment.Count;
-						targetWordCount += segment.TargetSegment.Count;
-						segmentCount++;
-						if (segmentCount == _corpusSpec.MaxCorpusCount)
-							break;
+						Out.WriteLine($"Source segment \"{row.Ref}\" is too long, "
+							+ $"length: {row.SourceSegment.Count}");
+					}
+					if (row.TargetSegment.Count > maxLength)
+					{
+						Out.WriteLine($"Target segment \"{row.Ref}\" is too long, "
+							+ $"length: {row.TargetSegment.Count}");
 					}
 
-					textCount++;
+					sourceWordCount += row.SourceSegment.Count;
+					targetWordCount += row.TargetSegment.Count;
+					segmentCount++;
 					if (segmentCount == _corpusSpec.MaxCorpusCount)
 						break;
 				}
 
-				Out.WriteLine($"# of Texts: {textCount}");
 				Out.WriteLine($"# of Source Words: {sourceWordCount}");
 				Out.WriteLine($"# of Target Words: {targetWordCount}");
-				double avgSourceSegmentLength = (double) sourceWordCount / segmentCount;
+				double avgSourceSegmentLength = (double)sourceWordCount / segmentCount;
 				Out.WriteLine($"Avg. Source Segment Length: {avgSourceSegmentLength:#.##}");
-				double avgTargetSegmentLength = (double) targetWordCount / segmentCount;
+				double avgTargetSegmentLength = (double)targetWordCount / segmentCount;
 				Out.WriteLine($"Avg. Target Segment Length: {avgTargetSegmentLength:#.##}");
 				Out.WriteLine($"# of Segments: {segmentCount}");
 			}

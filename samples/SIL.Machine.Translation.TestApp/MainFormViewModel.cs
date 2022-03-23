@@ -29,7 +29,7 @@ namespace SIL.Machine.Translation.TestApp
 		private ThotSmtModel _smtModel;
 		private ITextCorpus _sourceCorpus;
 		private ITextCorpus _targetCorpus;
-		private ITextAlignmentCorpus _alignmentCorpus;
+		private IAlignmentCorpus _alignmentCorpus;
 		private readonly TraceManager _hcTraceManager;
 		private int _confidenceThreshold;
 		private readonly BulkObservableList<TextViewModel> _texts;
@@ -172,7 +172,7 @@ namespace SIL.Machine.Translation.TestApp
 
 			var sourceTexts = new List<IText>();
 			var targetTexts = new List<IText>();
-			var alignmentCollections = new List<ITextAlignmentCollection>();
+			var alignmentCollections = new List<IAlignmentCollection>();
 			using (_texts.BulkUpdate())
 			{
 				foreach (XElement textElem in projectElem.Elements("Texts").Elements("Text"))
@@ -203,10 +203,10 @@ namespace SIL.Machine.Translation.TestApp
 					text.PropertyChanged += TextPropertyChanged;
 					_texts.Add(text);
 
-					sourceTexts.Add(new TextFileText(_tokenizer, name, srcTextFileName));
-					targetTexts.Add(new TextFileText(_tokenizer, name, trgTextFileName));
+					sourceTexts.Add(new TextFileText(name, srcTextFileName));
+					targetTexts.Add(new TextFileText(name, trgTextFileName));
 					if (alignmentsFileName != null)
-						alignmentCollections.Add(new TextFileTextAlignmentCollection(name, alignmentsFileName));
+						alignmentCollections.Add(new TextFileAlignmentCollection(name, alignmentsFileName));
 				}
 			}
 			if (_texts.Count == 0)
@@ -214,7 +214,7 @@ namespace SIL.Machine.Translation.TestApp
 
 			_sourceCorpus = new DictionaryTextCorpus(sourceTexts);
 			_targetCorpus = new DictionaryTextCorpus(targetTexts);
-			_alignmentCorpus = new DictionaryTextAlignmentCorpus(alignmentCollections);
+			_alignmentCorpus = new DictionaryAlignmentCorpus(alignmentCollections);
 
 			CurrentText = _texts[0];
 			AcceptChanges();
@@ -267,11 +267,12 @@ namespace SIL.Machine.Translation.TestApp
 			try
 			{
 				Dictionary<string, TextViewModel> textLookup = _texts.ToDictionary(t => t.Name);
-				var corpus = new ParallelTextCorpus(_sourceCorpus, _targetCorpus, _alignmentCorpus);
-				using (ThotSmtModelTrainer trainer = _smtModel.CreateTrainer(corpus, TokenProcessors.Lowercase,
-					TokenProcessors.Lowercase))
+				IEnumerable<ParallelTextRow> corpus = _sourceCorpus.AlignRows(_targetCorpus, _alignmentCorpus)
+					.Where(r => textLookup[r.TextId].IsApproved((RowRef)r.Ref))
+					.Tokenize<LatinWordTokenizer>()
+					.Lowercase();
+				using (ThotSmtModelTrainer trainer = _smtModel.CreateTrainer(corpus))
 				{
-					trainer.SegmentFilter = (s, i) => textLookup[s.TextId].IsApproved((TextSegmentRef)s.SegmentRef);
 					await Task.Run(() => trainer.Train(progress, token.ThrowIfCancellationRequested), token);
 					trainer.Save();
 				}

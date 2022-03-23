@@ -2,7 +2,6 @@
 using System.IO;
 using System.IO.Compression;
 using System.Text;
-using SIL.Machine.Tokenization;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
@@ -12,11 +11,9 @@ namespace SIL.Machine.Corpora
 		private readonly string _archiveFileName;
 		private readonly string _path;
 
-		public UsfmZipText(ITokenizer<string, int, string> wordTokenizer, UsfmStylesheet stylesheet,
-			Encoding encoding, string archiveFileName, string path, ScrVers versification = null,
-			bool includeMarkers = false)
-			: base(wordTokenizer, GetId(archiveFileName, path, encoding), stylesheet, encoding, versification,
-				  includeMarkers)
+		public UsfmZipText(UsfmStylesheet stylesheet, Encoding encoding, string archiveFileName, string path,
+			ScrVers versification = null, bool includeMarkers = false)
+			: base(GetId(archiveFileName, path, encoding), stylesheet, encoding, versification, includeMarkers)
 		{
 			_archiveFileName = archiveFileName;
 			_path = path;

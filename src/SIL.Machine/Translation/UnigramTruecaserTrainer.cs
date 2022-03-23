@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SIL.Machine.Corpora;
@@ -10,16 +11,16 @@ namespace SIL.Machine.Translation
 	public class UnigramTruecaserTrainer : DisposableBase, ITrainer
 	{
 		private readonly string _modelPath;
-		private readonly ITextCorpus _corpus;
+		private readonly IEnumerable<TextRow> _corpus;
 
-		public UnigramTruecaserTrainer(string modelPath, ITextCorpus corpus)
+		public UnigramTruecaserTrainer(string modelPath, IEnumerable<TextRow> corpus)
 		{
 			_modelPath = modelPath;
 			_corpus = corpus;
 			NewTruecaser = new UnigramTruecaser();
 		}
 
-		public UnigramTruecaserTrainer(ITextCorpus corpus)
+		public UnigramTruecaserTrainer(IEnumerable<TextRow> corpus)
 			: this(null, corpus)
 		{
 		}
@@ -32,12 +33,12 @@ namespace SIL.Machine.Translation
 		{
 			int stepCount = 0;
 			if (progress != null)
-				stepCount = _corpus.GetSegments().Count();
+				stepCount = _corpus.Count();
 			int currentStep = 0;
-			foreach (TextSegment segment in _corpus.GetSegments())
+			foreach (TextRow row in _corpus)
 			{
 				checkCanceled?.Invoke();
-				NewTruecaser.TrainSegment(segment);
+				NewTruecaser.TrainSegment(row);
 				currentStep++;
 				if (progress != null)
 					progress.Report(new ProgressStatus(currentStep, stepCount));

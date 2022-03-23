@@ -1,5 +1,4 @@
-﻿using SIL.Machine.Tokenization;
-using SIL.Scripture;
+﻿using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
@@ -7,8 +6,8 @@ namespace SIL.Machine.Corpora
 	{
 		private readonly string _fileName;
 
-		public UsxFileText(ITokenizer<string, int, string> wordTokenizer, string fileName, ScrVers versification = null)
-			: base(wordTokenizer, CorporaHelpers.GetUsxId(fileName), versification)
+		public UsxFileText(string fileName, ScrVers versification = null)
+			: base(CorporaHelpers.GetUsxId(fileName), versification)
 		{
 			_fileName = fileName;
 		}

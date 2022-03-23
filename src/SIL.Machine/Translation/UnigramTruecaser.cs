@@ -52,7 +52,7 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public ITrainer CreateTrainer(ITextCorpus corpus)
+		public ITrainer CreateTrainer(IEnumerable<TextRow> corpus)
 		{
 			return new Trainer(this, corpus);
 		}
@@ -136,23 +136,6 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public TranslationResult Truecase(IReadOnlyList<string> sourceSegment, TranslationResult result)
-		{
-			return new TranslationResult(sourceSegment, Truecase(result.TargetSegment), result.WordConfidences,
-				result.WordSources, result.Alignment, result.Phrases);
-		}
-
-		public WordGraph Truecase(IReadOnlyList<string> sourceSegment, WordGraph wordGraph)
-		{
-			var newArcs = new List<WordGraphArc>();
-			foreach (WordGraphArc arc in wordGraph.Arcs)
-			{
-				newArcs.Add(new WordGraphArc(arc.PrevState, arc.NextState, arc.Score, Truecase(arc.Words),
-					arc.Alignment, arc.SourceSegmentRange, arc.WordSources, arc.WordConfidences));
-			}
-			return new WordGraph(newArcs, wordGraph.FinalStates, wordGraph.InitialStateScore);
-		}
-
 		public IReadOnlyList<string> Truecase(IReadOnlyList<string> segment)
 		{
 			var result = new string[segment.Count];
@@ -194,7 +177,7 @@ namespace SIL.Machine.Translation
 		{
 			private readonly UnigramTruecaser _truecaser;
 
-			public Trainer(UnigramTruecaser truecaser, ITextCorpus corpus)
+			public Trainer(UnigramTruecaser truecaser, IEnumerable<TextRow> corpus)
 				: base(corpus)
 			{
 				_truecaser = truecaser;

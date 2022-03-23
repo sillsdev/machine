@@ -97,7 +97,7 @@ namespace SIL.Machine.Translation
 				TranslationResult bestResult = GetCurrentResults().FirstOrDefault();
 				if (bestResult == null)
 					return;
-				sourceSegment = bestResult.GetAlignedSourceSegment(_prefix.Count);
+				sourceSegment = GetAlignedSourceSegment(bestResult);
 			}
 
 			if (sourceSegment.Count > 0)
@@ -112,6 +112,21 @@ namespace SIL.Machine.Translation
 		private void Correct()
 		{
 			_wordGraphProcessor.Correct(_prefix.ToArray(), IsLastWordComplete);
+		}
+
+		private IReadOnlyList<string> GetAlignedSourceSegment(TranslationResult result)
+		{
+			int sourceLength = 0;
+			foreach (Phrase phrase in result.Phrases)
+			{
+				if (phrase.TargetSegmentCut > _prefix.Count)
+					break;
+
+				if (phrase.SourceSegmentRange.End > sourceLength)
+					sourceLength = phrase.SourceSegmentRange.End;
+			}
+
+			return sourceLength == SourceSegment.Count ? SourceSegment : SourceSegment.Take(sourceLength).ToArray();
 		}
 	}
 }

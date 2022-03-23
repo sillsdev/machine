@@ -1,5 +1,4 @@
-﻿using SIL.Machine.Tokenization;
-using SIL.Scripture;
+﻿using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
@@ -8,9 +7,8 @@ namespace SIL.Machine.Corpora
 		private readonly string _archiveFileName;
 		private readonly string _path;
 
-		public UsxZipText(ITokenizer<string, int, string> wordTokenizer, string id, string archiveFileName,
-			string path, ScrVers versification = null)
-			: base(wordTokenizer, id, versification)
+		public UsxZipText(string id, string archiveFileName, string path, ScrVers versification = null)
+			: base(id, versification)
 		{
 			_archiveFileName = archiveFileName;
 			_path = path;

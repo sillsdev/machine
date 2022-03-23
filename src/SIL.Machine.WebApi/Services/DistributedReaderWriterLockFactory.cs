@@ -13,6 +13,7 @@ public class DistributedReaderWriterLockFactory : IDistributedReaderWriterLockFa
 
 	public async Task InitAsync()
 	{
+		await RemoveAllWaitersAsync();
 		await ReleaseAllWriterLocksAsync();
 		await ReleaseAllReaderLocksAsync();
 	}
@@ -30,8 +31,9 @@ public class DistributedReaderWriterLockFactory : IDistributedReaderWriterLockFa
 
 	private async Task ReleaseAllWriterLocksAsync()
 	{
+		string hostId = _serviceOptions.Value.ServiceId;
 		IReadOnlyList<RWLock> rwLocks = await _locks.GetAllAsync(rwl =>
-			rwl.WriterLock != null && rwl.WriterLock.HostId == _serviceOptions.Value.ServiceId);
+			rwl.WriterLock != null && rwl.WriterLock.HostId == hostId);
 		var tasks = new List<Task>();
 		foreach (RWLock rwLock in rwLocks)
 			tasks.Add(_locks.UpdateAsync(rwLock, u => u.Unset(rwl => rwl.WriterLock)));
@@ -40,13 +42,26 @@ public class DistributedReaderWriterLockFactory : IDistributedReaderWriterLockFa
 
 	private async Task ReleaseAllReaderLocksAsync()
 	{
-		IReadOnlyList<RWLock> rwLocks = await _locks.GetAllAsync(rwl =>
-			rwl.ReaderLocks.Any(l => l.HostId == _serviceOptions.Value.ServiceId));
+		string hostId = _serviceOptions.Value.ServiceId;
+		IReadOnlyList<RWLock> rwLocks = await _locks.GetAllAsync(rwl => rwl.ReaderLocks.Any(l => l.HostId == hostId));
 		var tasks = new List<Task>();
 		foreach (RWLock rwLock in rwLocks)
 		{
 			tasks.Add(_locks.UpdateAsync(rwLock, u => u
-				.RemoveAll(rwl => rwl.ReaderLocks, l => l.HostId == _serviceOptions.Value.ServiceId)));
+				.RemoveAll(rwl => rwl.ReaderLocks, l => l.HostId == hostId)));
+		}
+		await Task.WhenAll(tasks);
+	}
+
+	private async Task RemoveAllWaitersAsync()
+	{
+		string hostId = _serviceOptions.Value.ServiceId;
+		IReadOnlyList<RWLock> rwLocks = await _locks.GetAllAsync(rwl => rwl.WriterQueue.Any(l => l.HostId == hostId));
+		var tasks = new List<Task>();
+		foreach (RWLock rwLock in rwLocks)
+		{
+			tasks.Add(_locks.UpdateAsync(rwLock, u => u
+				.RemoveAll(rwl => rwl.WriterQueue, l => l.HostId == hostId)));
 		}
 		await Task.WhenAll(tasks);
 	}

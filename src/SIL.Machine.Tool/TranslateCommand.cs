@@ -29,7 +29,7 @@ namespace SIL.Machine
 
 			_modelSpec = AddSpec(new TranslationModelCommandSpec());
 			_corpusSpec = AddSpec(new MonolingualCorpusCommandSpec());
-			_outputArgument = Argument("OUTPUT_PATH", "The output translation file/directory (text).").IsRequired();
+			_outputArgument = Argument("OUTPUT_FILE", "The output translation file (text).").IsRequired();
 			_refOption = Option("-r|--reference <REF_PATH>",
 				"The reference corpus.\nIf specified, BLEU will be computed for the generated translations.",
 				CommandOptionType.SingleValue);
@@ -61,29 +61,24 @@ namespace SIL.Machine
 				return 1;
 			}
 
-			bool isOutputFile;
-			if (ToolHelpers.IsDirectoryPath(_outputArgument.Value))
-			{
-				Directory.CreateDirectory(_outputArgument.Value);
-				isOutputFile = false;
-			}
-			else
-			{
-				Directory.CreateDirectory(Path.GetDirectoryName(_outputArgument.Value));
-				isOutputFile = true;
-			}
+			Directory.CreateDirectory(Path.GetDirectoryName(_outputArgument.Value));
 
 			List<IReadOnlyList<string>> translations = null;
-			ParallelTextCorpus refParallelCorpus = null;
+			IEnumerable<ParallelTextRow> refParallelCorpus = null;
 			if (_refOption.HasValue())
 			{
 				translations = new List<IReadOnlyList<string>>();
+				IEnumerable<TextRow> refCorpus = ToolHelpers.CreateTextCorpus(_refFormatOption.Value() ?? "text",
+					_refOption.Value());
+				refCorpus = _corpusSpec.FilterTextCorpus(refCorpus);
 				ITokenizer<string, int, string> refWordTokenizer = ToolHelpers.CreateWordTokenizer(
 					_refWordTokenizerOption.Value() ?? "whitespace");
-				ITextCorpus refCorpus = ToolHelpers.CreateTextCorpus(refWordTokenizer,
-					_refFormatOption.Value() ?? "text", _refOption.Value());
-				refCorpus = _corpusSpec.FilterTextCorpus(refCorpus);
-				refParallelCorpus = new ParallelTextCorpus(_corpusSpec.Corpus, refCorpus);
+				refCorpus = refCorpus.Tokenize(refWordTokenizer);
+				refParallelCorpus = _corpusSpec.Corpus
+					.AlignRows(refCorpus)
+					.Where(row => row.SourceSegment.Count > 0
+						&& row.SourceSegment.Count <= TranslationConstants.MaxSegmentLength);
+				refParallelCorpus = _preprocessSpec.Preprocess(refParallelCorpus);
 			}
 
 			IDetokenizer<string, string> refWordDetokenizer = ToolHelpers.CreateWordDetokenizer(
@@ -91,9 +86,7 @@ namespace SIL.Machine
 
 			if (!_quietOption.HasValue())
 				Out.Write("Loading model... ");
-			int corpusCount = _corpusSpec.GetNonemptyCorpusCount();
-			var truecaser = new TransferTruecaser();
-			ITokenProcessor processor = _preprocessSpec.GetProcessor();
+			int corpusCount = _corpusSpec.Corpus.Where(IsValid).Count();
 			int segmentCount = 0;
 			using (ITranslationModel model = _modelSpec.CreateModel())
 			using (ITranslationEngine engine = model.CreateEngine())
@@ -104,44 +97,27 @@ namespace SIL.Machine
 					Out.Write("Translating... ");
 				}
 				using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
-				using (StreamWriter writer = isOutputFile
-					? ToolHelpers.CreateStreamWriter(_outputArgument.Value) : null)
+				using (StreamWriter writer = ToolHelpers.CreateStreamWriter(_outputArgument.Value))
 				{
+					IEnumerable<TextRow> corpus = _preprocessSpec.Preprocess(_corpusSpec.Corpus);
 					progress?.Report(new ProgressStatus(segmentCount, corpusCount));
-					foreach (IText text in _corpusSpec.Corpus.Texts)
+					foreach (TextRow row in corpus)
 					{
-						StreamWriter textWriter = isOutputFile ? writer
-							: new StreamWriter(Path.Combine(_outputArgument.Value, text.Id.Trim('*') + ".txt"));
-						try
+						if (IsValid(row))
 						{
-							foreach (TextSegment segment in text.GetSegments())
-							{
-								if (segment.IsEmpty || segment.Segment.Count > TranslationConstants.MaxSegmentLength)
-								{
-									textWriter.WriteLine();
-								}
-								else
-								{
-									TranslationResult translateResult = engine.Translate(
-										processor.Process(segment.Segment));
-									translations?.Add(translateResult.TargetSegment);
-									translateResult = truecaser.Truecase(segment.Segment, translateResult);
-									string translation = refWordDetokenizer.Detokenize(translateResult.TargetSegment);
-									textWriter.WriteLine(translation);
+							TranslationResult translateResult = engine.Translate(row.Segment);
+							translations?.Add(translateResult.TargetSegment);
+							string translation = refWordDetokenizer.Detokenize(translateResult.TargetSegment);
+							writer.WriteLine(translation);
 
-									segmentCount++;
-									progress?.Report(new ProgressStatus(segmentCount, corpusCount));
-									if (segmentCount == corpusCount)
-										break;
-								}
-							}
+							segmentCount++;
+							progress?.Report(new ProgressStatus(segmentCount, corpusCount));
 							if (segmentCount == corpusCount)
 								break;
 						}
-						finally
+						else
 						{
-							if (!isOutputFile)
-								textWriter.Close();
+							writer.WriteLine();
 						}
 					}
 				}
@@ -152,14 +128,16 @@ namespace SIL.Machine
 
 			if (refParallelCorpus != null && translations != null)
 			{
-				double bleu = Evaluation.ComputeBleu(translations, refParallelCorpus.GetSegments()
-					.Where(s => s.SourceSegment.Count > 0
-						&& s.SourceSegment.Count <= TranslationConstants.MaxSegmentLength)
-					.Select(s => processor.Process(s.TargetSegment)));
+				double bleu = Evaluation.ComputeBleu(translations, refParallelCorpus.Select(r => r.TargetSegment));
 				Out.WriteLine($"BLEU: {bleu * 100:0.00}");
 			}
 
 			return 0;
+		}
+
+		private static bool IsValid(TextRow row)
+		{
+			return !row.IsEmpty && row.Segment.Count <= TranslationConstants.MaxSegmentLength;
 		}
 	}
 }

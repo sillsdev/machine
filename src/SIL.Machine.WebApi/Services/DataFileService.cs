@@ -46,8 +46,8 @@ public class DataFileService : IDataFileService
 		}
 	}
 
-	public async Task<ITextCorpus> CreateTextCorpusAsync(string engineId, CorpusType corpusType,
-		ITokenizer<string, int, string> tokenizer)
+	public async Task<IReadOnlyDictionary<string, ITextCorpus>> CreateTextCorporaAsync(string engineId,
+		CorpusType corpusType)
 	{
 		IReadOnlyList<DataFile> dataFiles = await _dataFiles.GetAllAsync(
 			f => f.EngineRef == engineId && f.DataType == DataType.TextCorpus && f.CorpusType == corpusType);
@@ -67,11 +67,11 @@ public class DataFileService : IDataFileService
 			{
 				case FileFormat.Text:
 					corpus = new DictionaryTextCorpus(corpusDataFiles
-						.Select(f => new TextFileText(tokenizer, f.Name, GetDataFilePath(f))));
+						.Select(f => new TextFileText(f.Name, GetDataFilePath(f))));
 					break;
 
 				case FileFormat.Paratext:
-					corpus = new ParatextBackupTextCorpus(tokenizer, GetDataFilePath(corpusDataFiles[0]));
+					corpus = new ParatextBackupTextCorpus(GetDataFilePath(corpusDataFiles[0]));
 					break;
 			}
 
@@ -79,7 +79,7 @@ public class DataFileService : IDataFileService
 				corpora[corpusGrouping.Key] = corpus;
 		}
 
-		return new MultipleTextCorpus(corpora);
+		return corpora;
 	}
 
 	private string GetDataFilePath(DataFile dataFile)

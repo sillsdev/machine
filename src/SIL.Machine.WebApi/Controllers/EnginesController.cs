@@ -355,9 +355,8 @@ public class EnginesController : Controller
 	[RequestSizeLimit(100_000_000)]
 	[ProducesResponseType(StatusCodes.Status201Created)]
 	public async Task<ActionResult<DataFileDto>> UploadDataFileAsync(string id,
-		[BindRequired][FromForm] DataType dataType, [BindRequired][FromForm] string name,
-		[BindRequired][FromForm] FileFormat format, [FromForm] CorpusType? corpusType, [FromForm] string? corpusKey,
-		[BindRequired] IFormFile file)
+		[BindRequired][FromForm] DataType dataType, [BindRequired][FromForm] FileFormat format, [FromForm] string? name,
+		[FromForm] CorpusType? corpusType, [FromForm] string? corpusKey, [BindRequired] IFormFile file)
 	{
 		Engine? engine = await _engines.GetAsync(id);
 		if (engine == null)
@@ -369,7 +368,7 @@ public class EnginesController : Controller
 		{
 			EngineRef = id,
 			DataType = dataType,
-			Name = name,
+			Name = name ?? file.FileName,
 			Format = format,
 			CorpusType = corpusType,
 			CorpusKey = corpusKey

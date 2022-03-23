@@ -35,12 +35,11 @@ namespace SIL.Machine.Translation.Thot
 
 		public IReadOnlySet<int> SpecialSymbolIndices => _smtModel.DirectWordAlignmentModel.SpecialSymbolIndices;
 
-		public ITrainer CreateTrainer(ParallelTextCorpus corpus, ITokenProcessor sourcePreprocessor = null,
-			ITokenProcessor targetPreprocessor = null, int maxCorpusCount = int.MaxValue)
+		public ITrainer CreateTrainer(IEnumerable<ParallelTextRow> corpus)
 		{
 			CheckDisposed();
 
-			return _smtModel.CreateTrainer(corpus, sourcePreprocessor, targetPreprocessor, maxCorpusCount);
+			return _smtModel.CreateTrainer(corpus);
 		}
 
 		public WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment,

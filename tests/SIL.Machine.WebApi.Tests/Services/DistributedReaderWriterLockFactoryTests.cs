@@ -4,39 +4,86 @@
 public class DistributedReaderWriterLockFactoryTests
 {
 	[Test]
-	public async Task InitAsync()
+	public async Task InitAsync_ReleaseWriterLocks()
 	{
-		var locks = new MemoryRepository<RWLock>();
-		locks.Add(new RWLock
+		var env = new TestEnvironment();
+		env.Locks.Add(new RWLock
 		{
 			Id = "resource1",
 			WriterLock = new Lock
 			{
 				Id = "lock1",
-				HostId = "test_service"
+				HostId = "this_service"
 			}
 		});
-		locks.Add(new RWLock
+
+		await env.Factory.InitAsync();
+
+		RWLock resource1 = env.Locks.Get("resource1");
+		Assert.That(resource1.WriterLock, Is.Null);
+	}
+
+	[Test]
+	public async Task InitAsync_ReleaseReaderLocks()
+	{
+		var env = new TestEnvironment();
+		env.Locks.Add(new RWLock
 		{
-			Id = "resource2",
+			Id = "resource1",
 			ReaderLocks =
 			{
 				new Lock
 				{
-					Id = "lock2",
-					HostId = "test_service"
+					Id = "lock1",
+					HostId = "this_service"
 				}
 			}
 		});
 
-		var serviceOptions = new ServiceOptions { ServiceId = "test_service" };
-		var factory = new DistributedReaderWriterLockFactory(new OptionsWrapper<ServiceOptions>(serviceOptions), locks);
+		await env.Factory.InitAsync();
 
-		await factory.InitAsync();
+		RWLock resource1 = env.Locks.Get("resource1");
+		Assert.That(resource1.ReaderLocks, Is.Empty);
+	}
 
-		RWLock resource1 = locks.Get("resource1");
-		Assert.That(resource1.WriterLock, Is.Null);
-		RWLock resource2 = locks.Get("resource2");
-		Assert.That(resource2.ReaderLocks, Is.Empty);
+	[Test]
+	public async Task InitAsync_RemoveWaiters()
+	{
+		var env = new TestEnvironment();
+		env.Locks.Add(new RWLock
+		{
+			Id = "resource1",
+			WriterLock = new Lock
+			{
+				Id = "lock1",
+				HostId = "other_service"
+			},
+			WriterQueue =
+			{
+				new Lock
+				{
+					Id = "lock2",
+					HostId = "this_service"
+				}
+			}
+		});
+
+		await env.Factory.InitAsync();
+
+		RWLock resource1 = env.Locks.Get("resource1");
+		Assert.That(resource1.WriterQueue, Is.Empty);
+	}
+
+	private class TestEnvironment
+	{
+		public TestEnvironment()
+		{
+			Locks = new MemoryRepository<RWLock>();
+			var serviceOptions = new ServiceOptions { ServiceId = "this_service" };
+			Factory = new DistributedReaderWriterLockFactory(new OptionsWrapper<ServiceOptions>(serviceOptions), Locks);
+		}
+
+		public MemoryRepository<RWLock> Locks { get; }
+		public DistributedReaderWriterLockFactory Factory { get; }
 	}
 }

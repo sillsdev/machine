@@ -124,18 +124,12 @@ namespace SIL.Machine
 			}
 		}
 
-		public bool IsSegmentInvalid(ParallelTextSegment segment)
-		{
-			return segment.IsEmpty;
-		}
-
-		public ITrainer CreateAlignmentModelTrainer(ParallelTextCorpus corpus, int maxSize, ITokenProcessor processor,
+		public ITrainer CreateAlignmentModelTrainer(IEnumerable<ParallelTextRow> corpus, int maxSize,
 			Dictionary<string, string> parameters, bool direct = true)
 		{
 			if (_modelFactory != null)
 			{
-				return _modelFactory.CreateTrainer(_modelArgument.Value, processor, processor, corpus, maxSize,
-					parameters, direct);
+				return _modelFactory.CreateTrainer(_modelArgument.Value, corpus, maxSize, parameters, direct);
 			}
 
 			ThotWordAlignmentModelType modelType = ToolHelpers.GetThotWordAlignmentModelType(_modelTypeOption.Value());
@@ -148,7 +142,7 @@ namespace SIL.Machine
 				Directory.CreateDirectory(modelDir);
 
 			string modelStr;
-			ParallelTextCorpus trainCorpus;
+			IEnumerable<ParallelTextRow> trainCorpus;
 			if (direct)
 			{
 				modelStr = "invswm";
@@ -193,8 +187,10 @@ namespace SIL.Machine
 					thotParameters.SourceWordClasses = wordClasses;
 			}
 
-			return new ThotWordAlignmentModelTrainer(modelType, trainCorpus, $"{modelPath}_{modelStr}", thotParameters,
-				processor, processor, maxSize);
+			return new ThotWordAlignmentModelTrainer(modelType, trainCorpus, $"{modelPath}_{modelStr}", thotParameters)
+			{
+				MaxCorpusCount = maxSize
+			};
 		}
 
 		private static void SetThotParameter<T>(Dictionary<string, string> input,

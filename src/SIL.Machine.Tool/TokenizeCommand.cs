@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
@@ -35,20 +38,19 @@ namespace SIL.Machine
 			if (!_quietOption.HasValue())
 				Out.Write("Tokenizing... ");
 
-			ITokenProcessor processor = _preprocessSpec.GetProcessor();
-			int corpusCount = _corpusSpec.GetCorpusCount();
+			int corpusCount = Math.Min(_corpusSpec.MaxCorpusCount, _corpusSpec.Corpus.Count());
 			int segmentCount = 0;
 			using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
 			using (StreamWriter outputWriter = ToolHelpers.CreateStreamWriter(_outputArgument.Value))
 			{
-				foreach (TextSegment segment in _corpusSpec.Corpus.GetSegments())
+				IEnumerable<TextRow> corpus = _preprocessSpec.Preprocess(_corpusSpec.Corpus)
+					.Take(_corpusSpec.MaxCorpusCount);
+				foreach (TextRow row in corpus)
 				{
-					outputWriter.WriteLine(string.Join(" ", processor.Process(segment.Segment)));
+					outputWriter.WriteLine(row.Text);
 
 					segmentCount++;
 					progress?.Report(new ProgressStatus(segmentCount, corpusCount));
-					if (segmentCount == _corpusSpec.MaxCorpusCount)
-						break;
 				}
 			}
 

@@ -2,21 +2,20 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using SIL.Machine.Tokenization;
 
 namespace SIL.Machine.Corpora
 {
 	public class TextFileText : TextBase
 	{
-		public TextFileText(ITokenizer<string, int, string> wordTokenizer, string id, string fileName)
-			: base(wordTokenizer, id, id)
+		public TextFileText(string id, string fileName)
+			: base(id, id)
 		{
 			FileName = fileName;
 		}
 
 		public string FileName { get; }
 
-		public override IEnumerable<TextSegment> GetSegments(bool includeText = true, IText basedOn = null)
+		public override IEnumerable<TextRow> GetRows()
 		{
 			using (var reader = new StreamReader(FileName))
 			{
@@ -40,7 +39,12 @@ namespace SIL.Machine.Corpora
 					}
 					else
 					{
-						yield return CreateTextSegment(includeText, line, new TextSegmentRef(sectionNum, segmentNum));
+						var keys = new List<string>();
+						if (Id != "*all*")
+							keys.Add(Id);
+						keys.Add(sectionNum.ToString(CultureInfo.InvariantCulture));
+						keys.Add(segmentNum.ToString(CultureInfo.InvariantCulture));
+						yield return CreateRow(line, new RowRef(keys));
 						segmentNum++;
 					}
 				}

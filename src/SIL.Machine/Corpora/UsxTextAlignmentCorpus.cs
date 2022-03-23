@@ -6,9 +6,9 @@ using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
-	public class UsxFileTextAlignmentCorpus : DictionaryTextAlignmentCorpus
+	public class UsxTextAlignmentCorpus : DictionaryAlignmentCorpus
 	{
-		public UsxFileTextAlignmentCorpus(IRangeTokenizer<string, int, string> srcWordTokenizer,
+		public UsxTextAlignmentCorpus(IRangeTokenizer<string, int, string> srcWordTokenizer,
 			IRangeTokenizer<string, int, string> trgWordTokenizer, string srcProjectPath, string trgProjectPath,
 			ScrVers srcVersification = null, ScrVers trgVersification = null)
 		{
@@ -22,14 +22,9 @@ namespace SIL.Machine.Corpora
 			{
 				string srcFileName = srcFileNames[id];
 				string trgFileName = trgFileNames[id];
-				AddTextAlignmentCollection(new UsxFileTextAlignmentCollection(srcWordTokenizer, trgWordTokenizer,
+				AddAlignmentCollection(new UsxFileAlignmentCollection(srcWordTokenizer, trgWordTokenizer,
 					srcFileName, trgFileName, srcVersification, trgVersification));
 			}
-		}
-
-		public override ITextAlignmentCollection CreateNullTextAlignmentCollection(string id)
-		{
-			return new NullTextAlignmentCollection(id, CorporaHelpers.GetScriptureTextSortKey(id));
 		}
 
 		private static Dictionary<string, string> GetFileNames(string projectPath)

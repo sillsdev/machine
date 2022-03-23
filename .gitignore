@@ -47,3 +47,4 @@ thot-new-model.zip
 *.tgz
 out/
 build/
+!samples/**/release

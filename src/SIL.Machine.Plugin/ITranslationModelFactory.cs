@@ -1,4 +1,5 @@
-﻿using SIL.Machine.Corpora;
+﻿using System.Collections.Generic;
+using SIL.Machine.Corpora;
 using SIL.Machine.Translation;
 
 namespace SIL.Machine.Plugin
@@ -8,7 +9,6 @@ namespace SIL.Machine.Plugin
 		string ModelType { get; }
 
 		ITranslationModel CreateModel(string modelPath);
-		ITrainer CreateTrainer(string modelPath, ITokenProcessor sourcePreprocessor,
-			ITokenProcessor targetPreprocessor, ParallelTextCorpus parallelCorpus, int maxCorpusCount);
+		ITrainer CreateTrainer(string modelPath, IEnumerable<ParallelTextRow> parallelCorpus, int maxCorpusCount);
 	}
 }

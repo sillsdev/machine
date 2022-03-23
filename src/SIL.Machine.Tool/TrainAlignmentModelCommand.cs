@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
+using SIL.Machine.Corpora;
 using SIL.Machine.Translation;
 using SIL.Machine.Utils;
 
@@ -73,8 +74,9 @@ namespace SIL.Machine
 				}
 				var reporter = new PhasedProgressReporter(progress, phases);
 
-				using (ITrainer trainer = _modelSpec.CreateAlignmentModelTrainer(_corpusSpec.ParallelCorpus,
-					_corpusSpec.MaxCorpusCount, _preprocessSpec.GetProcessor(), parameters, direct: true))
+				IEnumerable<ParallelTextRow> corpus = _preprocessSpec.Preprocess(_corpusSpec.ParallelCorpus);
+				using (ITrainer trainer = _modelSpec.CreateAlignmentModelTrainer(corpus, _corpusSpec.MaxCorpusCount,
+					parameters, direct: true))
 				{
 					using (PhaseProgress phaseProgress = reporter.StartNextPhase())
 						trainer.Train(phaseProgress);
@@ -85,16 +87,14 @@ namespace SIL.Machine
 
 				if (!_modelSpec.IsSymmetric)
 				{
-					using (ITrainer trainer = _modelSpec.CreateAlignmentModelTrainer(_corpusSpec.ParallelCorpus,
-						_corpusSpec.MaxCorpusCount, _preprocessSpec.GetProcessor(), parameters, direct: false))
-					{
-						using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-							trainer.Train(phaseProgress);
-						using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-							trainer.Save();
+					using ITrainer trainer = _modelSpec.CreateAlignmentModelTrainer(corpus, _corpusSpec.MaxCorpusCount,
+						parameters, direct: false);
+					using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+						trainer.Train(phaseProgress);
+					using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+						trainer.Save();
 
-						trainedSegmentCount = Math.Max(trainedSegmentCount, trainer.Stats.TrainedSegmentCount);
-					}
+					trainedSegmentCount = Math.Max(trainedSegmentCount, trainer.Stats.TrainedSegmentCount);
 				}
 			}
 			if (!_quietOption.HasValue())

@@ -5,24 +5,24 @@ using SIL.Extensions;
 
 namespace SIL.Machine.Corpora
 {
-	public struct TextSegmentRef : IEquatable<TextSegmentRef>, IComparable<TextSegmentRef>, IComparable
+	public struct RowRef : IEquatable<RowRef>, IComparable<RowRef>, IComparable
 	{
-		public TextSegmentRef(params string[] keys)
-			: this((IEnumerable<string>) keys)
+		public RowRef(params string[] keys)
+			: this((IEnumerable<string>)keys)
 		{
 		}
 
-		public TextSegmentRef(IEnumerable<string> keys)
+		public RowRef(IEnumerable<string> keys)
 		{
 			Keys = keys.ToArray();
 		}
 
-		public TextSegmentRef(params int[] keys)
-			: this((IEnumerable<int>) keys)
+		public RowRef(params int[] keys)
+			: this((IEnumerable<int>)keys)
 		{
 		}
 
-		public TextSegmentRef(IEnumerable<int> keys)
+		public RowRef(IEnumerable<int> keys)
 		{
 			Keys = keys.Select(i => i.ToString()).ToArray();
 		}
@@ -31,7 +31,7 @@ namespace SIL.Machine.Corpora
 
 		public override bool Equals(object obj)
 		{
-			return Equals((TextSegmentRef) obj);
+			return Equals((RowRef)obj);
 		}
 
 		public override int GetHashCode()
@@ -39,12 +39,12 @@ namespace SIL.Machine.Corpora
 			return Keys.GetSequenceHashCode();
 		}
 
-		public bool Equals(TextSegmentRef other)
+		public bool Equals(RowRef other)
 		{
 			return Keys.SequenceEqual(other.Keys);
 		}
 
-		public int CompareTo(TextSegmentRef other)
+		public int CompareTo(RowRef other)
 		{
 			for (int i = 0; i < Keys.Count && i < other.Keys.Count; i++)
 			{
@@ -63,9 +63,9 @@ namespace SIL.Machine.Corpora
 
 		public int CompareTo(object obj)
 		{
-			if (!(obj is TextSegmentRef))
+			if (!(obj is RowRef))
 				throw new ArgumentException("The specified object is not a TextSegmentRef.", nameof(obj));
-			return CompareTo((TextSegmentRef) obj);
+			return CompareTo((RowRef)obj);
 		}
 
 		public override string ToString()

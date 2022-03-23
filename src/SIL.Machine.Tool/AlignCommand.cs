@@ -31,7 +31,7 @@ namespace SIL.Machine
 
 			_modelSpec = AddSpec(new AlignmentModelCommandSpec());
 			_corpusSpec = AddSpec(new ParallelCorpusCommandSpec());
-			_outputArgument = Argument("OUTPUT_PATH", "The output alignment file/directory (Pharaoh).")
+			_outputArgument = Argument("OUTPUT_FILE", "The output alignment file (Pharaoh).")
 				.IsRequired();
 			_refOption = Option("-r|--reference <REF_PATH>",
 				"The reference alignments corpus.\nIf specified, AER and F-Score will be computed for the generated alignments.",
@@ -56,38 +56,29 @@ namespace SIL.Machine
 				return 1;
 			}
 
-			bool isOutputFile;
-			if (ToolHelpers.IsDirectoryPath(_outputArgument.Value))
-			{
-				Directory.CreateDirectory(_outputArgument.Value);
-				isOutputFile = false;
-			}
-			else
-			{
-				Directory.CreateDirectory(Path.GetDirectoryName(_outputArgument.Value));
-				isOutputFile = true;
-			}
+			Directory.CreateDirectory(Path.GetDirectoryName(_outputArgument.Value));
 
 			List<IReadOnlyCollection<AlignedWordPair>> alignments = null;
-			ParallelTextCorpus refParallelCorpus = null;
+			IEnumerable<ParallelTextRow> refParallelCorpus = null;
 			if (_refOption.HasValue())
 			{
 				alignments = new List<IReadOnlyCollection<AlignedWordPair>>();
-				ITextAlignmentCorpus refCorpus = ToolHelpers.CreateAlignmentsCorpus("text", _refOption.Value());
+				IEnumerable<AlignmentRow> refCorpus = ToolHelpers.CreateAlignmentsCorpus("text",
+					_refOption.Value());
 				refCorpus = _corpusSpec.FilterTextAlignmentCorpus(refCorpus);
-				refParallelCorpus = new ParallelTextCorpus(_corpusSpec.SourceCorpus, _corpusSpec.TargetCorpus,
-					refCorpus);
+				refParallelCorpus = _corpusSpec.ProcessedSourceCorpus
+					.AlignRows(_corpusSpec.ProcessedTargetCorpus, refCorpus)
+					.Where(r => !r.IsEmpty);
 			}
 
 			int processorCount = Environment.ProcessorCount;
-
-			ITokenProcessor processor = _preprocessSpec.GetProcessor();
 
 			SymmetrizationHeuristic symHeuristic = ToolHelpers.GetSymmetrizationHeuristic(_symHeuristicOption?.Value());
 
 			if (!_quietOption.HasValue())
 				Out.Write("Loading model... ");
-			int stepCount = _quietOption.HasValue() ? 0 : _corpusSpec.GetNonemptyParallelCorpusCount();
+			int stepCount = _quietOption.HasValue() ? 0
+				: Math.Min(_corpusSpec.MaxCorpusCount, _corpusSpec.ParallelCorpus.Count(r => !r.IsEmpty));
 			int curStep = 0;
 			using (IWordAlignmentModel alignmentModel = _modelSpec.CreateAlignmentModel(symHeuristic: symHeuristic))
 			{
@@ -98,78 +89,57 @@ namespace SIL.Machine
 				}
 				var watch = Stopwatch.StartNew();
 				using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
-				using (StreamWriter writer = isOutputFile
-					? ToolHelpers.CreateStreamWriter(_outputArgument.Value) : null)
+				using (StreamWriter writer = ToolHelpers.CreateStreamWriter(_outputArgument.Value))
 				{
 					int segmentCount = 0;
 					progress?.Report(new ProgressStatus(curStep, stepCount));
-					foreach (ParallelText text in _corpusSpec.ParallelCorpus.Texts)
+					var alignBlock = new TransformBlock<ParallelTextRow, string>(row =>
 					{
-						StreamWriter textWriter = isOutputFile ? writer
-							: new StreamWriter(Path.Combine(_outputArgument.Value, text.Id.Trim('*') + ".txt"));
-						try
+						if (row.IsEmpty)
+							return "";
+						return alignmentModel.GetAlignmentString(row, _scoresOption.HasValue());
+					}, new ExecutionDataflowBlockOptions
+					{
+						MaxDegreeOfParallelism = processorCount - 1,
+						BoundedCapacity = 100000
+					});
+
+					var batchWritesBlock = new BatchBlock<string>(10,
+						new GroupingDataflowBlockOptions { BoundedCapacity = 100000 });
+
+					var writeBlock = new ActionBlock<string[]>(async results =>
+					{
+						foreach (string alignmentStr in results)
 						{
-							var alignBlock = new TransformBlock<ParallelTextSegment, string>(segment =>
+							await writer.WriteLineAsync(alignmentStr);
+							if (alignmentStr != "")
 							{
-								if (_modelSpec.IsSegmentInvalid(segment))
-								{
-									return "";
-								}
-								else
-								{
-									return alignmentModel.GetAlignmentString(segment, _scoresOption.HasValue(), processor, processor);
-								}
-							}, new ExecutionDataflowBlockOptions
-							{
-								MaxDegreeOfParallelism = processorCount - 1,
-								BoundedCapacity = 100000
-							});
-
-							var batchWritesBlock = new BatchBlock<string>(10,
-								new GroupingDataflowBlockOptions { BoundedCapacity = 100000 });
-
-							var writeBlock = new ActionBlock<string[]>(async results =>
-							{
-								foreach (string alignmentStr in results)
-								{
-									await writer.WriteLineAsync(alignmentStr);
-									if (alignmentStr != "")
-									{
-										alignments?.Add(AlignedWordPair.Parse(alignmentStr));
-										curStep++;
-										progress?.Report(new ProgressStatus(curStep, stepCount));
-									}
-								}
-							}, new ExecutionDataflowBlockOptions { BoundedCapacity = 10000 });
-
-
-							var linkOptions = new DataflowLinkOptions { PropagateCompletion = true };
-							alignBlock.LinkTo(batchWritesBlock, linkOptions);
-							batchWritesBlock.LinkTo(writeBlock, linkOptions);
-
-							foreach (ParallelTextSegment segment in text.Segments)
-							{
-								await alignBlock.SendAsync(segment);
-								if (!_modelSpec.IsSegmentInvalid(segment))
-								{
-									segmentCount++;
-									if (segmentCount == _corpusSpec.MaxCorpusCount)
-										break;
-								}
+								alignments?.Add(AlignedWordPair.Parse(alignmentStr));
+								curStep++;
+								progress?.Report(new ProgressStatus(curStep, stepCount));
 							}
-							alignBlock.Complete();
+						}
+					}, new ExecutionDataflowBlockOptions { BoundedCapacity = 10000 });
 
-							await writeBlock.Completion;
 
+					var linkOptions = new DataflowLinkOptions { PropagateCompletion = true };
+					alignBlock.LinkTo(batchWritesBlock, linkOptions);
+					batchWritesBlock.LinkTo(writeBlock, linkOptions);
+
+					IEnumerable<ParallelTextRow> corpus = _preprocessSpec.Preprocess(_corpusSpec.ParallelCorpus);
+					foreach (ParallelTextRow row in corpus)
+					{
+						await alignBlock.SendAsync(row);
+						if (!row.IsEmpty)
+						{
+							segmentCount++;
 							if (segmentCount == _corpusSpec.MaxCorpusCount)
 								break;
 						}
-						finally
-						{
-							if (!isOutputFile)
-								textWriter.Close();
-						}
 					}
+					alignBlock.Complete();
+
+					await writeBlock.Completion;
 				}
 				if (!_quietOption.HasValue())
 					Out.WriteLine("done.");
@@ -180,10 +150,9 @@ namespace SIL.Machine
 
 			if (refParallelCorpus != null && alignments != null)
 			{
-				double aer = Evaluation.ComputeAer(alignments, refParallelCorpus.GetSegments()
-					.Where(s => !s.IsEmpty).Select(s => s.AlignedWordPairs));
+				double aer = Evaluation.ComputeAer(alignments, refParallelCorpus.Select(s => s.AlignedWordPairs));
 				(double fScore, double precision, double recall) = Evaluation.ComputeAlignmentFScore(alignments,
-					refParallelCorpus.GetSegments().Where(s => !s.IsEmpty).Select(s => s.AlignedWordPairs));
+					refParallelCorpus.Select(s => s.AlignedWordPairs));
 				Out.WriteLine($"AER: {aer:0.0000}");
 				Out.WriteLine($"F-Score: {fScore:0.0000}");
 				Out.WriteLine($"Precision: {precision:0.0000}");
