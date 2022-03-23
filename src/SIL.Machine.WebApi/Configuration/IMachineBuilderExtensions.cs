@@ -69,12 +69,6 @@ public static class IMachineBuilderExtensions
 		return builder;
 	}
 
-	public static IMachineBuilder AddTransferTruecaser(this IMachineBuilder builder)
-	{
-		builder.Services.AddSingleton<ITruecaserFactory, TransferTruecaserFactory>();
-		return builder;
-	}
-
 	public static IMachineBuilder AddMongoBackgroundJobClient(this IMachineBuilder builder, string connectionString)
 	{
 		builder.Services.AddHangfire(c => c

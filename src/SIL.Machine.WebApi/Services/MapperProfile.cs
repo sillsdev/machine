@@ -1,11 +1,11 @@
 ﻿namespace SIL.Machine.WebApi.Services;
 
-public class MachineMapperProfile : Profile
+public class MapperProfile : Profile
 {
 	private const string EnginesUrl = "/translation/engines";
 	private const string WebhooksUrl = "/admin/hooks";
 
-	public MachineMapperProfile()
+	public MapperProfile()
 	{
 		CreateMap<Engine, EngineDto>()
 			.ForMember(dto => dto.Href, o => o.MapFrom((e, _) => $"{EnginesUrl}/{e.Id}"));
@@ -17,12 +17,17 @@ public class MachineMapperProfile : Profile
 			.ForMember(dto => dto.Href, o => o.MapFrom((f, _) => $"{EnginesUrl}/{f.EngineRef}/files/{f.Id}"))
 			.ForMember(dto => dto.Engine, o => o.MapFrom((f, _) =>
 				new ResourceDto { Id = f.EngineRef, Href = $"{EnginesUrl}/{f.EngineRef}" }));
-		CreateMap<TranslationResult, TranslationResultDto>();
+		CreateMap<TranslationResult, TranslationResultDto>()
+			.ForMember(dto => dto.Target, o => o.MapFrom(r => r.TargetSegment))
+			.ForMember(dto => dto.Confidences, o => o.MapFrom(r => r.WordConfidences))
+			.ForMember(dto => dto.Sources, o => o.MapFrom(r => r.WordSources));
 		CreateMap<WordAlignmentMatrix, AlignedWordPairDto[]>().ConvertUsing<WordAlignmentConverter>();
 		CreateMap<Range<int>, RangeDto>();
 		CreateMap<Phrase, PhraseDto>();
 		CreateMap<WordGraph, WordGraphDto>();
-		CreateMap<WordGraphArc, WordGraphArcDto>();
+		CreateMap<WordGraphArc, WordGraphArcDto>()
+			.ForMember(dto => dto.Confidences, o => o.MapFrom(a => a.WordConfidences))
+			.ForMember(dto => dto.Sources, o => o.MapFrom(a => a.WordSources));
 		CreateMap<Webhook, WebhookDto>()
 			.ForMember(dto => dto.Href, o => o.MapFrom((h, _) => $"{WebhooksUrl}/{h.Id}"));
 	}

@@ -192,10 +192,10 @@ namespace SIL.Machine.Translation
 			return sb.ToString();
 		}
 
-		public TranslationResult ToResult(IReadOnlyList<string> sourceSegment)
+		public TranslationResult ToResult(int sourceSegmentLength)
 		{
 			var sources = new TranslationSources[Words.Count];
-			var alignment = new WordAlignmentMatrix(sourceSegment.Count, Words.Count);
+			var alignment = new WordAlignmentMatrix(sourceSegmentLength, Words.Count);
 			var phrases = new List<Phrase>();
 			int trgPhraseStartIndex = 0;
 			foreach (PhraseInfo phraseInfo in _phrases)
@@ -219,7 +219,7 @@ namespace SIL.Machine.Translation
 				trgPhraseStartIndex = phraseInfo.TargetCut;
 			}
 
-			return new TranslationResult(sourceSegment, _words, _confidences, sources, alignment, phrases);
+			return new TranslationResult(sourceSegmentLength, _words, _confidences, sources, alignment, phrases);
 		}
 
 		public class PhraseInfo

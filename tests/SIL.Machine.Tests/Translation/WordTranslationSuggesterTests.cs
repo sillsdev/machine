@@ -95,8 +95,7 @@ namespace SIL.Machine.Translation
 
 				phraseConfidence = Math.Min(phraseConfidence, confidence);
 			}
-			return new TranslationResult(Enumerable.Range(0, sourceLen).Select(index => index.ToString()), targetArray,
-				targetConfidences, targetSources, alignment,
+			return new TranslationResult(sourceLen, targetArray, targetConfidences, targetSources, alignment,
 				new[] { new Phrase(Range<int>.Create(0, sourceLen), targetArray.Length, phraseConfidence) });
 		}
 	}

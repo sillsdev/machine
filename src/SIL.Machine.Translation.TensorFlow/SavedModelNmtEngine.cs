@@ -96,7 +96,7 @@ namespace SIL.Machine.Translation.TensorFlow
 					srcIndices.Zip(Enumerable.Range(0, outputLength), (s, t) => ((int)s, t)));
 				builder.MarkPhrase(Range.Create(0, segment.Count), waMatrix);
 
-				yield return builder.ToResult(segment);
+				yield return builder.ToResult(segment.Count);
 			}
 		}
 

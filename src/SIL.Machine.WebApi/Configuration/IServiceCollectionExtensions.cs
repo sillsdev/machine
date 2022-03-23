@@ -15,7 +15,7 @@ public static class IServiceCollectionExtensions
 		var builder = new MachineBuilder(services)
 			.AddThotSmtModel()
 			.AddTransferEngine()
-			.AddTransferTruecaser()
+			.AddUnigramTruecaser()
 			.AddMemoryDataAccess();
 		return builder;
 	}

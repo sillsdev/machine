@@ -120,7 +120,7 @@ public class EngineServiceTests
 		{
 			Engines = new MemoryRepository<Engine>();
 			var engineRuntime = Substitute.For<IEngineRuntime>();
-			var translationResult = new TranslationResult("esto es una prueba .".Split(),
+			var translationResult = new TranslationResult(5,
 				"this is a test .".Split(),
 				new[] { 1.0, 1.0, 1.0, 1.0, 1.0 },
 				new[]

@@ -23,11 +23,10 @@ namespace SIL.Machine.Translation
 		}
 
 		public static IEnumerable<TranslationSuggestion> GetSuggestions(this ITranslationSuggester suggester,
-			InteractiveTranslator translator, IReadOnlyList<string> sourceSegment, ITruecaser truecaser)
+			InteractiveTranslator translator, ITruecaser truecaser)
 		{
 			return translator.GetCurrentResults().Select(r =>
-				suggester.GetSuggestion(translator.Prefix.Count, translator.IsLastWordComplete,
-					truecaser.Truecase(sourceSegment, r)));
+				suggester.GetSuggestion(translator.Prefix.Count, translator.IsLastWordComplete, truecaser.Truecase(r)));
 		}
 
 		public static Dictionary<string, Dictionary<string, double>> GetTranslationTable(this IWordAlignmentModel model,
@@ -131,6 +130,23 @@ namespace SIL.Machine.Translation
 			if (string.IsNullOrEmpty(sentence))
 				return sentence;
 			return char.ToUpperInvariant(sentence[0]) + sentence.Substring(1);
+		}
+
+		public static TranslationResult Truecase(this ITruecaser truecaser, TranslationResult result)
+		{
+			return new TranslationResult(result.SourceSegmentLength, truecaser.Truecase(result.TargetSegment),
+				result.WordConfidences, result.WordSources, result.Alignment, result.Phrases);
+		}
+
+		public static WordGraph Truecase(this ITruecaser truecaser, WordGraph wordGraph)
+		{
+			var newArcs = new List<WordGraphArc>();
+			foreach (WordGraphArc arc in wordGraph.Arcs)
+			{
+				newArcs.Add(new WordGraphArc(arc.PrevState, arc.NextState, arc.Score, truecaser.Truecase(arc.Words),
+					arc.Alignment, arc.SourceSegmentRange, arc.WordSources, arc.WordConfidences));
+			}
+			return new WordGraph(newArcs, wordGraph.FinalStates, wordGraph.InitialStateScore);
 		}
 	}
 }

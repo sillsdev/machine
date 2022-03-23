@@ -6,11 +6,11 @@ namespace SIL.Machine.Translation
 {
 	public class TranslationResult
 	{
-		public TranslationResult(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment,
+		public TranslationResult(int sourceSegmentLength, IEnumerable<string> targetSegment,
 			IEnumerable<double> confidences, IEnumerable<TranslationSources> sources, WordAlignmentMatrix alignment,
 			IEnumerable<Phrase> phrases)
 		{
-			SourceSegment = sourceSegment.ToArray();
+			SourceSegmentLength = sourceSegmentLength;
 			TargetSegment = targetSegment.ToArray();
 			WordConfidences = confidences.ToArray();
 			if (WordConfidences.Count != TargetSegment.Count)
@@ -25,7 +25,7 @@ namespace SIL.Machine.Translation
 					nameof(sources));
 			}
 			Alignment = alignment;
-			if (Alignment.RowCount != SourceSegment.Count)
+			if (Alignment.RowCount != sourceSegmentLength)
 			{
 				throw new ArgumentException(
 					"The alignment source length must be the same length as the source segment.", nameof(alignment));
@@ -39,7 +39,7 @@ namespace SIL.Machine.Translation
 			Phrases = phrases.ToArray();
 		}
 
-		public IReadOnlyList<string> SourceSegment { get; }
+		public int SourceSegmentLength { get; }
 		public IReadOnlyList<string> TargetSegment { get; }
 		public IReadOnlyList<double> WordConfidences { get; }
 		public IReadOnlyList<TranslationSources> WordSources { get; }
@@ -123,26 +123,11 @@ namespace SIL.Machine.Translation
 				}
 			}
 
-			var alignment = new WordAlignmentMatrix(SourceSegment.Count, mergedTargetSegment.Count);
+			var alignment = new WordAlignmentMatrix(SourceSegmentLength, mergedTargetSegment.Count);
 			foreach (Tuple<int, int> t in mergedAlignment)
 				alignment[t.Item1, t.Item2] = true;
-			return new TranslationResult(SourceSegment, mergedTargetSegment, mergedConfidences, mergedSources,
+			return new TranslationResult(SourceSegmentLength, mergedTargetSegment, mergedConfidences, mergedSources,
 				alignment, Phrases);
-		}
-
-		public IReadOnlyList<string> GetAlignedSourceSegment(int prefixCount)
-		{
-			int sourceLength = 0;
-			foreach (Phrase phrase in Phrases)
-			{
-				if (phrase.TargetSegmentCut > prefixCount)
-					break;
-
-				if (phrase.SourceSegmentRange.End > sourceLength)
-					sourceLength = phrase.SourceSegmentRange.End;
-			}
-
-			return sourceLength == SourceSegment.Count ? SourceSegment : SourceSegment.Take(sourceLength).ToArray();
 		}
 	}
 }
