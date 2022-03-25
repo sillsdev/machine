@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,8 @@ namespace SIL.Machine.Corpora
 {
 	public static class CorporaExtensions
 	{
+		#region IEnumerable<Text> extensions
+
 		public static IEnumerable<TextRow> Tokenize(this IEnumerable<TextRow> corpus,
 			ITokenizer<string, int, string> tokenizer)
 		{
@@ -109,9 +112,120 @@ namespace SIL.Machine.Corpora
 			});
 		}
 
-		public static IEnumerable<ParallelTextRow> AlignRows(this IEnumerable<TextRow> sourceCorpus,
-			IEnumerable<TextRow> targetCorpus, IEnumerable<AlignmentRow> alignmentCorpus = null,
-			bool allSourceRows = false, bool allTargetRows = false)
+		#endregion
+
+		#region ITextCorpus extensions
+
+		public static ITextCorpus Tokenize(this ITextCorpus corpus, ITokenizer<string, int, string> tokenizer)
+		{
+			return corpus.Transform(row =>
+			{
+				row.Segment = tokenizer.Tokenize(row.Text).ToArray();
+				return row;
+			});
+		}
+
+		public static ITextCorpus Tokenize<T>(this ITextCorpus corpus)
+			where T : ITokenizer<string, int, string>, new()
+		{
+			var tokenizer = new T();
+			return corpus.Tokenize(tokenizer);
+		}
+
+		public static ITextCorpus Detokenize(this ITextCorpus corpus, IDetokenizer<string, string> detokenizer)
+		{
+			return corpus.Transform(row =>
+			{
+				row.Segment = new[] { detokenizer.Detokenize(row.Segment) };
+				return row;
+			});
+		}
+
+		public static ITextCorpus Detokenize<T>(this ITextCorpus corpus)
+			where T : IDetokenizer<string, string>, new()
+		{
+			var detokenizer = new T();
+			return corpus.Detokenize(detokenizer);
+		}
+
+		public static ITextCorpus Normalize(this ITextCorpus corpus,
+			NormalizationForm normalizationForm = NormalizationForm.FormC)
+		{
+			return corpus.Transform(row =>
+			{
+				row.Segment = row.Segment.Normalize(normalizationForm);
+				return row;
+			});
+		}
+
+		public static ITextCorpus NfcNormalize(this ITextCorpus corpus)
+		{
+			return corpus.Normalize();
+		}
+
+		public static ITextCorpus NfdNormalize(this ITextCorpus corpus)
+		{
+			return corpus.Normalize(NormalizationForm.FormD);
+		}
+
+		public static ITextCorpus NfkcNormalize(this ITextCorpus corpus)
+		{
+			return corpus.Normalize(NormalizationForm.FormKC);
+		}
+
+		public static ITextCorpus NfkdNormalize(this ITextCorpus corpus)
+		{
+			return corpus.Normalize(NormalizationForm.FormKD);
+		}
+
+		public static ITextCorpus EscapeSpaces(this ITextCorpus corpus)
+		{
+			return corpus.Transform(row =>
+			{
+				row.Segment = row.Segment.EscapeSpaces();
+				return row;
+			});
+		}
+
+		public static ITextCorpus UnescapeSpaces(this ITextCorpus corpus)
+		{
+			return corpus.Transform(row =>
+			{
+				row.Segment = row.Segment.UnescapeSpaces();
+				return row;
+			});
+		}
+
+		public static ITextCorpus Lowercase(this ITextCorpus corpus)
+		{
+			return corpus.Transform(row =>
+			{
+				row.Segment = row.Segment.Lowercase();
+				return row;
+			});
+		}
+
+		public static ITextCorpus Truecase(this ITextCorpus corpus, ITruecaser truecaser)
+		{
+			return corpus.Transform(row =>
+			{
+				row.Segment = truecaser.Truecase(row.Segment);
+				return row;
+			});
+		}
+
+		public static ITextCorpus Transform(this ITextCorpus corpus, Func<TextRow, TextRow> transform)
+		{
+			return new TransformTextCorpus(corpus, transform);
+		}
+
+		public static ITextCorpus FilterTexts(this ITextCorpus corpus, Func<IText, bool> predicate)
+		{
+			return new TextFilterTextCorpus(corpus, predicate);
+		}
+
+		public static IEnumerable<ParallelTextRow> AlignRows(this ITextCorpus sourceCorpus, ITextCorpus targetCorpus,
+			IAlignmentCorpus alignmentCorpus = null, bool allSourceRows = false, bool allTargetRows = false)
 		{
 			return new ParallelTextCorpus(sourceCorpus, targetCorpus, alignmentCorpus)
 			{
@@ -119,6 +233,26 @@ namespace SIL.Machine.Corpora
 				AllTargetRows = allTargetRows
 			};
 		}
+
+		#endregion
+
+		#region IAlignmentCorpus extensions
+
+		public static IAlignmentCorpus Transform(this IAlignmentCorpus corpus,
+			Func<AlignmentRow, AlignmentRow> transform)
+		{
+			return new TransformAlignmentCorpus(corpus, transform);
+		}
+
+		public static IAlignmentCorpus FilterAlignmentCollections(this IAlignmentCorpus corpus,
+			Func<IAlignmentCollection, bool> predicate)
+		{
+			return new AlignmentCollectionFilterAlignmentCorpus(corpus, predicate);
+		}
+
+		#endregion
+
+		#region IEnumerable<ParallelTextRow> extensions
 
 		public static IEnumerable<ParallelTextRow> Tokenize(this IEnumerable<ParallelTextRow> corpus,
 			ITokenizer<string, int, string> tokenizer)
@@ -247,6 +381,8 @@ namespace SIL.Machine.Corpora
 			});
 		}
 
+		#endregion
+
 		public static StringBuilder TrimEnd(this StringBuilder sb)
 		{
 			if (sb.Length == 0)
@@ -263,6 +399,125 @@ namespace SIL.Machine.Corpora
 				sb.Length = i + 1;
 
 			return sb;
+		}
+
+		private class TransformTextCorpus : ITextCorpus
+		{
+			private readonly ITextCorpus _corpus;
+			private readonly Func<TextRow, TextRow> _transform;
+
+			public TransformTextCorpus(ITextCorpus corpus, Func<TextRow, TextRow> transform)
+			{
+				_corpus = corpus;
+				_transform = transform;
+			}
+
+			public IEnumerable<IText> Texts => _corpus.Texts;
+
+			public IEnumerator<TextRow> GetEnumerator()
+			{
+				return GetRows().GetEnumerator();
+			}
+
+			public IEnumerable<TextRow> GetRows(IEnumerable<string> textIds = null)
+			{
+				return _corpus.GetRows(textIds).Select(_transform);
+			}
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return GetEnumerator();
+			}
+		}
+
+		private class TextFilterTextCorpus : ITextCorpus
+		{
+			private readonly ITextCorpus _corpus;
+			private readonly Func<IText, bool> _predicate;
+
+			public TextFilterTextCorpus(ITextCorpus corpus, Func<IText, bool> predicate)
+			{
+				_corpus = corpus;
+				_predicate = predicate;
+			}
+
+			public IEnumerable<IText> Texts => _corpus.Texts.Where(_predicate);
+
+			public IEnumerator<TextRow> GetEnumerator()
+			{
+				return GetRows().GetEnumerator();
+			}
+
+			public IEnumerable<TextRow> GetRows(IEnumerable<string> textIds = null)
+			{
+				return _corpus.GetRows(textIds ?? Texts.Select(t => t.Id));
+			}
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return GetEnumerator();
+			}
+		}
+
+		private class TransformAlignmentCorpus : IAlignmentCorpus
+		{
+			private readonly IAlignmentCorpus _corpus;
+			private readonly Func<AlignmentRow, AlignmentRow> _transform;
+
+			public TransformAlignmentCorpus(IAlignmentCorpus corpus, Func<AlignmentRow, AlignmentRow> transform)
+			{
+				_corpus = corpus;
+				_transform = transform;
+			}
+
+			public IEnumerable<IAlignmentCollection> AlignmentCollections => _corpus.AlignmentCollections;
+
+			public IEnumerator<AlignmentRow> GetEnumerator()
+			{
+				return GetRows().GetEnumerator();
+			}
+
+			public IEnumerable<AlignmentRow> GetRows(IEnumerable<string> textIds = null)
+			{
+				return _corpus.GetRows(textIds).Select(_transform);
+			}
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return GetEnumerator();
+			}
+		}
+
+
+		private class AlignmentCollectionFilterAlignmentCorpus : IAlignmentCorpus
+		{
+			private readonly IAlignmentCorpus _corpus;
+			private readonly Func<IAlignmentCollection, bool> _predicate;
+
+			public AlignmentCollectionFilterAlignmentCorpus(IAlignmentCorpus corpus,
+				Func<IAlignmentCollection, bool> predicate)
+			{
+				_corpus = corpus;
+				_predicate = predicate;
+			}
+
+			public IEnumerable<IAlignmentCollection> AlignmentCollections => _corpus.AlignmentCollections
+				.Where(_predicate);
+
+			public IEnumerator<AlignmentRow> GetEnumerator()
+			{
+				return GetRows().GetEnumerator();
+			}
+
+			public IEnumerable<AlignmentRow> GetRows(IEnumerable<string> textIds = null)
+			{
+				return _corpus.GetRows(textIds ?? AlignmentCollections.Select(t => t.Id));
+			}
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return GetEnumerator();
+			}
 		}
 	}
 }

@@ -68,7 +68,7 @@ namespace SIL.Machine
 			if (_refOption.HasValue())
 			{
 				translations = new List<IReadOnlyList<string>>();
-				IEnumerable<TextRow> refCorpus = ToolHelpers.CreateTextCorpus(_refFormatOption.Value() ?? "text",
+				ITextCorpus refCorpus = ToolHelpers.CreateTextCorpus(_refFormatOption.Value() ?? "text",
 					_refOption.Value());
 				refCorpus = _corpusSpec.FilterTextCorpus(refCorpus);
 				ITokenizer<string, int, string> refWordTokenizer = ToolHelpers.CreateWordTokenizer(
@@ -86,7 +86,7 @@ namespace SIL.Machine
 
 			if (!_quietOption.HasValue())
 				Out.Write("Loading model... ");
-			int corpusCount = _corpusSpec.Corpus.Where(IsValid).Count();
+			int corpusCount = _corpusSpec.Corpus.Count(IsValid);
 			int segmentCount = 0;
 			using (ITranslationModel model = _modelSpec.CreateModel())
 			using (ITranslationEngine engine = model.CreateEngine())
@@ -99,7 +99,7 @@ namespace SIL.Machine
 				using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
 				using (StreamWriter writer = ToolHelpers.CreateStreamWriter(_outputArgument.Value))
 				{
-					IEnumerable<TextRow> corpus = _preprocessSpec.Preprocess(_corpusSpec.Corpus);
+					ITextCorpus corpus = _preprocessSpec.Preprocess(_corpusSpec.Corpus);
 					progress?.Report(new ProgressStatus(segmentCount, corpusCount));
 					foreach (TextRow row in corpus)
 					{

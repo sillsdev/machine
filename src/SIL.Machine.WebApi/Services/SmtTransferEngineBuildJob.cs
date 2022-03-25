@@ -72,8 +72,7 @@ public class SmtTransferEngineBuildJob
 					.Tokenize(tokenizer)
 					.Lowercase();
 
-				IEnumerable<TextRow> targetCorpus = targetCorpora.Values.SelectMany(c => c)
-					.Tokenize(tokenizer);
+				IEnumerable<TextRow> targetCorpus = targetCorpora.Values.SelectMany(c => c.Tokenize(tokenizer));
 
 				smtModelTrainer = _smtModelFactory.CreateTrainer(engineId, parallelCorpus);
 				truecaseTrainer = _truecaserFactory.CreateTrainer(engineId, targetCorpus);

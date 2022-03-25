@@ -12,7 +12,7 @@ namespace SIL.Machine
 		private CommandOption _corpusFormatOption;
 		private CommandOption _wordTokenizerOption;
 
-		public IEnumerable<TextRow> Corpus { get; private set; }
+		public ITextCorpus Corpus { get; private set; }
 
 		public override void AddParameters(CommandBase command)
 		{

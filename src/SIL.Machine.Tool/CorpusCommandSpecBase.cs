@@ -49,17 +49,17 @@ namespace SIL.Machine
 			return true;
 		}
 
-		public IEnumerable<TextRow> FilterTextCorpus(IEnumerable<TextRow> corpus)
+		public ITextCorpus FilterTextCorpus(ITextCorpus corpus)
 		{
 			if (_includeTexts != null || _excludeTexts != null)
-				return corpus.Where(row => FilterCorpus(row.TextId));
+				return corpus.FilterTexts(text => FilterCorpus(text.Id));
 			return corpus;
 		}
 
-		public IEnumerable<AlignmentRow> FilterTextAlignmentCorpus(IEnumerable<AlignmentRow> corpus)
+		public IAlignmentCorpus FilterAlignmentCorpus(IAlignmentCorpus corpus)
 		{
 			if (_includeTexts != null || _excludeTexts != null)
-				return corpus.Where(row => FilterCorpus(row.TextId));
+				return corpus.FilterAlignmentCollections(ac => FilterCorpus(ac.Id));
 			return corpus;
 		}
 

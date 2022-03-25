@@ -63,9 +63,9 @@ namespace SIL.Machine
 			if (_refOption.HasValue())
 			{
 				alignments = new List<IReadOnlyCollection<AlignedWordPair>>();
-				IEnumerable<AlignmentRow> refCorpus = ToolHelpers.CreateAlignmentsCorpus("text",
+				IAlignmentCorpus refCorpus = ToolHelpers.CreateAlignmentsCorpus("text",
 					_refOption.Value());
-				refCorpus = _corpusSpec.FilterTextAlignmentCorpus(refCorpus);
+				refCorpus = _corpusSpec.FilterAlignmentCorpus(refCorpus);
 				refParallelCorpus = _corpusSpec.SourceCorpus
 					.AlignRows(_corpusSpec.TargetCorpus, refCorpus)
 					.Where(r => !r.IsEmpty);

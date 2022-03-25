@@ -4,3 +4,4 @@
 *.json eol=lf
 *.yml eol=lf
 *.cfg eol=lf
+*.ipynb eol=lf

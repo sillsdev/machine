@@ -65,7 +65,7 @@ namespace SIL.Machine
 			return corpus;
 		}
 
-		public IEnumerable<TextRow> Preprocess(IEnumerable<TextRow> corpus)
+		public ITextCorpus Preprocess(ITextCorpus corpus)
 		{
 
 			switch (_normalizeOption.Value())

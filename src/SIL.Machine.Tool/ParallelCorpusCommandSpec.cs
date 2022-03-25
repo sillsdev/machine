@@ -21,9 +21,9 @@ namespace SIL.Machine
 		public bool AllSourceRows { get; set; } = false;
 		public bool AllTargetRows { get; set; } = false;
 
-		public IEnumerable<TextRow> SourceCorpus { get; private set; }
-		public IEnumerable<TextRow> TargetCorpus { get; private set; }
-		public IEnumerable<AlignmentRow> AlignmentCorpus { get; private set; }
+		public ITextCorpus SourceCorpus { get; private set; }
+		public ITextCorpus TargetCorpus { get; private set; }
+		public IAlignmentCorpus AlignmentCorpus { get; private set; }
 		public IEnumerable<ParallelTextRow> ParallelCorpus { get; private set; }
 
 		public override void AddParameters(CommandBase command)
@@ -98,7 +98,7 @@ namespace SIL.Machine
 			if (!AllTargetRows)
 				TargetCorpus = FilterTextCorpus(TargetCorpus);
 			if (AlignmentCorpus != null)
-				AlignmentCorpus = FilterTextAlignmentCorpus(AlignmentCorpus);
+				AlignmentCorpus = FilterAlignmentCorpus(AlignmentCorpus);
 
 			string defaultTokenizerType = DefaultNullTokenizer ? "none" : "whitespace";
 			IRangeTokenizer<string, int, string> sourceWordTokenizer = ToolHelpers.CreateWordTokenizer(

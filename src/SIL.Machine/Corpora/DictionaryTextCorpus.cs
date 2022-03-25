@@ -20,7 +20,6 @@ namespace SIL.Machine.Corpora
 
 		protected Dictionary<string, IText> TextDictionary { get; }
 
-
 		public IText this[string id] => TextDictionary[id];
 
 		public bool TryGetText(string id, out IText text)
@@ -43,9 +42,11 @@ namespace SIL.Machine.Corpora
 			return GetEnumerator();
 		}
 
-		protected virtual IEnumerable<TextRow> GetRows()
+
+		public IEnumerable<TextRow> GetRows(IEnumerable<string> textIds = null)
 		{
-			return Texts.SelectMany(t => t.GetRows());
+			var textIdSet = new HashSet<string>(textIds ?? TextDictionary.Keys);
+			return Texts.Where(t => textIdSet.Contains(t.Id)).SelectMany(t => t.GetRows());
 		}
 	}
 }

@@ -6,8 +6,6 @@ namespace SIL.Machine.Corpora
 	{
 		IEnumerable<IAlignmentCollection> AlignmentCollections { get; }
 
-		IAlignmentCollection this[string id] { get; }
-
-		bool TryGetAlignmentCollection(string id, out IAlignmentCollection alignmentCollection);
+		IEnumerable<AlignmentRow> GetRows(IEnumerable<string> textIds = null);
 	}
 }

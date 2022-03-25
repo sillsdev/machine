@@ -9,13 +9,13 @@ namespace SIL.Machine.Corpora
 {
 	public class ParallelTextCorpus : IEnumerable<ParallelTextRow>
 	{
-		private readonly IEnumerable<TextRow> _sourceCorpus;
-		private readonly IEnumerable<TextRow> _targetCorpus;
-		private readonly IEnumerable<AlignmentRow> _alignmentCorpus;
+		private readonly ITextCorpus _sourceCorpus;
+		private readonly ITextCorpus _targetCorpus;
+		private readonly IAlignmentCorpus _alignmentCorpus;
 		private readonly IComparer<object> _rowRefComparer;
 
-		public ParallelTextCorpus(IEnumerable<TextRow> sourceCorpus, IEnumerable<TextRow> targetCorpus,
-			IEnumerable<AlignmentRow> alignmentCorpus = null, IComparer<object> rowRefComparer = null)
+		public ParallelTextCorpus(ITextCorpus sourceCorpus, ITextCorpus targetCorpus,
+			IAlignmentCorpus alignmentCorpus = null, IComparer<object> rowRefComparer = null)
 		{
 			_sourceCorpus = sourceCorpus;
 			_targetCorpus = targetCorpus;
@@ -36,11 +36,24 @@ namespace SIL.Machine.Corpora
 			return GetEnumerator();
 		}
 
-		private IEnumerable<ParallelTextRow> GetRows()
+		public IEnumerable<ParallelTextRow> GetRows()
 		{
-			using (IEnumerator<TextRow> srcEnumerator = _sourceCorpus.GetEnumerator())
-			using (var trgEnumerator = new TargetCorpusEnumerator(_targetCorpus.GetEnumerator()))
-			using (IEnumerator<AlignmentRow> alignmentEnumerator = _alignmentCorpus.GetEnumerator())
+			IEnumerable<string> sourceTextIds = _sourceCorpus.Texts.Select(t => t.Id);
+			IEnumerable<string> targetTextIds = _targetCorpus.Texts.Select(t => t.Id);
+
+			IEnumerable<string> textIds;
+			if (AllSourceRows && AllTargetRows)
+				textIds = sourceTextIds.Union(targetTextIds);
+			else if (!AllSourceRows && !AllTargetRows)
+				textIds = sourceTextIds.Intersect(targetTextIds);
+			else if (AllSourceRows)
+				textIds = sourceTextIds;
+			else
+				textIds = targetTextIds;
+
+			using (IEnumerator<TextRow> srcEnumerator = _sourceCorpus.GetRows(textIds).GetEnumerator())
+			using (var trgEnumerator = new TargetCorpusEnumerator(_targetCorpus.GetRows(textIds).GetEnumerator()))
+			using (IEnumerator<AlignmentRow> alignmentEnumerator = _alignmentCorpus.GetRows(textIds).GetEnumerator())
 			{
 				var rangeInfo = new RangeInfo();
 				var sourceSameRefRows = new List<TextRow>();

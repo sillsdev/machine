@@ -6,8 +6,6 @@ namespace SIL.Machine.Corpora
 	{
 		IEnumerable<IText> Texts { get; }
 
-		IText this[string id] { get; }
-
-		bool TryGetText(string id, out IText text);
+		IEnumerable<TextRow> GetRows(IEnumerable<string> textIds = null);
 	}
 }
