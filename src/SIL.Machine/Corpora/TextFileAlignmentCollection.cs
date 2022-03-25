@@ -44,7 +44,7 @@ namespace SIL.Machine.Corpora
 						keys.Add(sectionNum.ToString(CultureInfo.InvariantCulture));
 						keys.Add(segmentNum.ToString(CultureInfo.InvariantCulture));
 						var rowRef = new RowRef(keys);
-						yield return new AlignmentRow(Id, rowRef)
+						yield return new AlignmentRow(rowRef)
 						{
 							AlignedWordPairs = AlignedWordPair.Parse(line)
 						};

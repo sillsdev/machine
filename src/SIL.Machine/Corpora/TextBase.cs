@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace SIL.Machine.Corpora
 {
@@ -21,7 +20,7 @@ namespace SIL.Machine.Corpora
 			bool isSentenceStart = true, bool isInRange = false, bool isRangeStart = false)
 		{
 			text = text.Trim();
-			return new TextRow(Id, segRef)
+			return new TextRow(segRef)
 			{
 				Segment = new[] { text },
 				IsSentenceStart = isSentenceStart,
@@ -33,7 +32,7 @@ namespace SIL.Machine.Corpora
 
 		protected TextRow CreateEmptyRow(object segRef, bool isInRange = false)
 		{
-			return new TextRow(Id, segRef) { IsInRange = isInRange };
+			return new TextRow(segRef) { IsInRange = isInRange };
 		}
 	}
 }

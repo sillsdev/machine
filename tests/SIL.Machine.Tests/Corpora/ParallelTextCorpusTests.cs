@@ -473,6 +473,46 @@ namespace SIL.Machine.Corpora
 		}
 
 		[Test]
+		public void GetRows_MissingText()
+		{
+			var sourceCorpus = new DictionaryTextCorpus(
+				new MemoryText("text1", new[]
+				{
+					TextRow(1, "source segment 1 .")
+				}),
+				new MemoryText("text2", new[]
+				{
+					TextRow(2, "source segment 2 .")
+				}),
+				new MemoryText("text3", new[]
+				{
+					TextRow(3, "source segment 3 .")
+				}));
+			var targetCorpus = new DictionaryTextCorpus(
+				new MemoryText("text1", new[]
+				{
+					TextRow(1, "target segment 1 .")
+				}),
+				new MemoryText("text3", new[]
+				{
+					TextRow(3, "target segment 3 .")
+				}));
+
+			var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
+			ParallelTextRow[] rows = parallelCorpus.ToArray();
+			Assert.That(rows.Length, Is.EqualTo(2));
+			Assert.That(rows[0].SourceRefs, Is.EqualTo(Refs(1)));
+			Assert.That(rows[0].TargetRefs, Is.EqualTo(Refs(1)));
+			Assert.That(rows[0].SourceSegment, Is.EqualTo("source segment 1 .".Split()));
+			Assert.That(rows[0].TargetSegment, Is.EqualTo("target segment 1 .".Split()));
+
+			Assert.That(rows[1].SourceRefs, Is.EqualTo(Refs(3)));
+			Assert.That(rows[1].TargetRefs, Is.EqualTo(Refs(3)));
+			Assert.That(rows[1].SourceSegment, Is.EqualTo("source segment 3 .".Split()));
+			Assert.That(rows[1].TargetSegment, Is.EqualTo("target segment 3 .".Split()));
+		}
+
+		[Test]
 		public void GetRows_RangeAllTargetRows()
 		{
 			var sourceCorpus = new DictionaryTextCorpus(
@@ -771,7 +811,7 @@ namespace SIL.Machine.Corpora
 		private static TextRow TextRow(int key, string text = "", bool isSentenceStart = true,
 			bool isInRange = false, bool isRangeStart = false)
 		{
-			return new TextRow("text1", new RowRef(key))
+			return new TextRow(new RowRef(key))
 			{
 				Segment = text.Length == 0 ? Array.Empty<string>() : text.Split(),
 				IsSentenceStart = isSentenceStart,
@@ -784,7 +824,7 @@ namespace SIL.Machine.Corpora
 		private static TextRow TextRow(VerseRef vref, string text = "", bool isSentenceStart = true,
 			bool isInRange = false, bool isRangeStart = false)
 		{
-			return new TextRow(vref.Book, vref)
+			return new TextRow(vref)
 			{
 				Segment = text.Length == 0 ? Array.Empty<string>() : text.Split(),
 				IsSentenceStart = isSentenceStart,
@@ -806,7 +846,7 @@ namespace SIL.Machine.Corpora
 
 		private static AlignmentRow AlignmentRow(int key, params AlignedWordPair[] pairs)
 		{
-			return new AlignmentRow("text1", new RowRef(key))
+			return new AlignmentRow(new RowRef(key))
 			{
 				AlignedWordPairs = new HashSet<AlignedWordPair>(pairs)
 			};

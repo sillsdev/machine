@@ -53,7 +53,7 @@ namespace SIL.Machine.Translation.Thot
 
 		private static TextRow Segment(int segRef, string segment)
 		{
-			return new TextRow("text1", new RowRef(segRef))
+			return new TextRow(new RowRef(segRef))
 			{
 				Segment = segment.Split(),
 				IsEmpty = false

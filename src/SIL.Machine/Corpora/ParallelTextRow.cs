@@ -6,17 +6,14 @@ namespace SIL.Machine.Corpora
 {
 	public class ParallelTextRow
 	{
-		public ParallelTextRow(string textId, IReadOnlyList<object> sourceRefs, IReadOnlyList<object> targetRefs)
+		public ParallelTextRow(IReadOnlyList<object> sourceRefs, IReadOnlyList<object> targetRefs)
 		{
 			if (sourceRefs.Count == 0 && targetRefs.Count == 0)
 				throw new ArgumentNullException("Either a source or target ref must be provided.");
 
-			TextId = textId;
 			SourceRefs = sourceRefs;
 			TargetRefs = targetRefs;
 		}
-
-		public string TextId { get; }
 
 		public object Ref => SourceRefs.Count > 0 ? SourceRefs[0] : TargetRefs[0];
 
@@ -43,7 +40,7 @@ namespace SIL.Machine.Corpora
 
 		public ParallelTextRow Invert()
 		{
-			return new ParallelTextRow(TextId, TargetRefs, SourceRefs)
+			return new ParallelTextRow(TargetRefs, SourceRefs)
 			{
 				SourceSegment = TargetSegment,
 				TargetSegment = SourceSegment,

@@ -107,7 +107,7 @@ namespace SIL.Machine.Translation.Thot
 
 		private static TextRow Segment(int key, string text)
 		{
-			return new TextRow("text1", new RowRef(key))
+			return new TextRow(new RowRef(key))
 			{
 				Segment = text.Split(),
 				IsEmpty = text.Length == 0
@@ -116,7 +116,7 @@ namespace SIL.Machine.Translation.Thot
 
 		private static AlignmentRow Alignment(int key, params AlignedWordPair[] pairs)
 		{
-			return new AlignmentRow("text1", new RowRef(key))
+			return new AlignmentRow(new RowRef(key))
 			{
 				AlignedWordPairs = pairs
 			};

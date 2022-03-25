@@ -5,13 +5,10 @@ namespace SIL.Machine.Corpora
 {
 	public class TextRow
 	{
-		public TextRow(string textId, object rowRef)
+		public TextRow(object rowRef)
 		{
-			TextId = textId;
 			Ref = rowRef;
 		}
-
-		public string TextId { get; }
 
 		public object Ref { get; }
 

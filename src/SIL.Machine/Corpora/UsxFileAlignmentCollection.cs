@@ -138,7 +138,7 @@ namespace SIL.Machine.Corpora
 					}
 				}
 			}
-			return new AlignmentRow(Id, verseRef)
+			return new AlignmentRow(verseRef)
 			{
 				AlignedWordPairs = wordPairs
 			};
