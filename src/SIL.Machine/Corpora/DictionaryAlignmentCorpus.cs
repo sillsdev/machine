@@ -44,10 +44,11 @@ namespace SIL.Machine.Corpora
 			return GetEnumerator();
 		}
 
-		public IEnumerable<AlignmentRow> GetRows(IEnumerable<string> textIds = null)
+		public IEnumerable<AlignmentRow> GetRows(IEnumerable<string> alignmentCollectionIds = null)
 		{
-			var textIdSet = new HashSet<string>(textIds ?? _alignmentCollections.Keys);
-			return AlignmentCollections.Where(ac => textIdSet.Contains(ac.Id)).SelectMany(c => c.GetRows());
+			var alignmentCollectionIdSet = new HashSet<string>(alignmentCollectionIds ?? _alignmentCollections.Keys);
+			return AlignmentCollections.Where(ac => alignmentCollectionIdSet.Contains(ac.Id))
+				.SelectMany(c => c.GetRows());
 		}
 	}
 }
