@@ -7,7 +7,7 @@ namespace SIL.Machine.Corpora
 		private readonly string _fileName;
 
 		public UsxFileText(string fileName, ScrVers versification = null)
-			: base(CorporaHelpers.GetUsxId(fileName), versification)
+			: base(CorporaUtils.GetUsxId(fileName), versification)
 		{
 			_fileName = fileName;
 		}

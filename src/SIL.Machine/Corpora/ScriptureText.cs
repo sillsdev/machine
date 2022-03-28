@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
@@ -7,7 +6,7 @@ namespace SIL.Machine.Corpora
 	public abstract class ScriptureText : TextBase
 	{
 		protected ScriptureText(string id, ScrVers versification)
-			: base(id, CorporaHelpers.GetScriptureTextSortKey(id))
+			: base(id, CorporaUtils.GetScriptureTextSortKey(id))
 		{
 			Versification = versification ?? ScrVers.English;
 		}

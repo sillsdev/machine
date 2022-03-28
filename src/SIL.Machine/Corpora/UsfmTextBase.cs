@@ -80,7 +80,7 @@ namespace SIL.Machine.Corpora
 							else if (VerseRef.AreOverlappingVersesRanges(token.Text, verse))
 							{
 								// merge overlapping verse ranges in to one range
-								verse = CorporaHelpers.MergeVerseRanges(token.Text, verse);
+								verse = CorporaUtils.MergeVerseRanges(token.Text, verse);
 							}
 							else
 							{

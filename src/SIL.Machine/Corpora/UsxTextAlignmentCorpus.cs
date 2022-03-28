@@ -29,7 +29,7 @@ namespace SIL.Machine.Corpora
 
 		private static Dictionary<string, string> GetFileNames(string projectPath)
 		{
-			return Directory.EnumerateFiles(projectPath, "*.usx").ToDictionary(f => CorporaHelpers.GetUsxId(f));
+			return Directory.EnumerateFiles(projectPath, "*.usx").ToDictionary(f => CorporaUtils.GetUsxId(f));
 		}
 
 		private static ScrVers GetVersification(string projectPath, ScrVers versification)

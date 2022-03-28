@@ -76,7 +76,7 @@ namespace SIL.Machine.Corpora
 										else if (VerseRef.AreOverlappingVersesRanges(verse, ctxt.Verse))
 										{
 											// merge overlapping verse ranges in to one range
-											ctxt.Verse = CorporaHelpers.MergeVerseRanges(verse, ctxt.Verse);
+											ctxt.Verse = CorporaUtils.MergeVerseRanges(verse, ctxt.Verse);
 										}
 										else
 										{

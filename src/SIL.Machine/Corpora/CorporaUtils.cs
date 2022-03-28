@@ -9,8 +9,53 @@ using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
-	internal static class CorporaHelpers
+	public static class CorporaUtils
 	{
+		public static ISet<int> GetSplitIndices(int corpusSize, double? percent = null, int? size = null,
+			int? seed = null)
+		{
+			if (percent == null && size == null)
+				percent = 0.1;
+
+			int splitSize;
+			if (percent != null)
+			{
+				splitSize = (int)(percent * corpusSize);
+				if (size != null)
+					splitSize = Math.Min(splitSize, size.Value);
+			}
+			else
+			{
+				splitSize = size.Value;
+			}
+
+			var r = seed != null ? new Random(seed.Value) : new Random();
+			return new HashSet<int>(Enumerable.Range(0, corpusSize).OrderBy(i => r.Next()).Take(splitSize));
+		}
+
+		public static string MergeVerseRanges(string verse1, string verse2)
+		{
+			var sb = new StringBuilder();
+			(int, string) startVerseNum = (-1, null);
+			(int, string) prevVerseNum = (-1, null);
+			foreach ((int, string) verseNum in GetVerseNums(verse1).Union(GetVerseNums(verse2)).OrderBy(vn => vn.Item1))
+			{
+				if (prevVerseNum.Item1 == -1)
+				{
+					startVerseNum = verseNum;
+				}
+				else if (prevVerseNum.Item1 != verseNum.Item1 - 1)
+				{
+					AppendVerseRange(sb, startVerseNum.Item2, prevVerseNum.Item2);
+					startVerseNum = verseNum;
+				}
+				prevVerseNum = verseNum;
+			}
+			AppendVerseRange(sb, startVerseNum.Item2, prevVerseNum.Item2);
+
+			return sb.ToString();
+		}
+
 		internal static IEnumerable<(string Id, string FileName)> GetFiles(IEnumerable<string> filePatterns)
 		{
 			string[] filePatternArray = filePatterns.ToArray();
@@ -74,29 +119,6 @@ namespace SIL.Machine.Corpora
 			if (name.Length == 3)
 				return name;
 			return name.Substring(3, 3);
-		}
-
-		internal static string MergeVerseRanges(string verse1, string verse2)
-		{
-			var sb = new StringBuilder();
-			(int, string) startVerseNum = (-1, null);
-			(int, string) prevVerseNum = (-1, null);
-			foreach ((int, string) verseNum in GetVerseNums(verse1).Union(GetVerseNums(verse2)).OrderBy(vn => vn.Item1))
-			{
-				if (prevVerseNum.Item1 == -1)
-				{
-					startVerseNum = verseNum;
-				}
-				else if (prevVerseNum.Item1 != verseNum.Item1 - 1)
-				{
-					AppendVerseRange(sb, startVerseNum.Item2, prevVerseNum.Item2);
-					startVerseNum = verseNum;
-				}
-				prevVerseNum = verseNum;
-			}
-			AppendVerseRange(sb, startVerseNum.Item2, prevVerseNum.Item2);
-
-			return sb.ToString();
 		}
 
 		private static void AppendVerseRange(StringBuilder sb, string startVerseNum, string endVerseNum)

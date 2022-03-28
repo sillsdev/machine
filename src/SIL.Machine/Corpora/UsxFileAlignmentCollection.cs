@@ -32,8 +32,8 @@ namespace SIL.Machine.Corpora
 			_srcVersification = srcVersification;
 			_trgVersification = trgVersification;
 
-			Id = CorporaHelpers.GetUsxId(_srcFileName);
-			SortKey = CorporaHelpers.GetScriptureTextSortKey(Id);
+			Id = CorporaUtils.GetUsxId(_srcFileName);
+			SortKey = CorporaUtils.GetScriptureTextSortKey(Id);
 
 			_parser = new UsxVerseParser();
 		}

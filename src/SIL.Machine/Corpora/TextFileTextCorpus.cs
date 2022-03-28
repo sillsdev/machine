@@ -16,7 +16,7 @@ namespace SIL.Machine.Corpora
 
 		private static IEnumerable<IText> GetTexts(IEnumerable<string> filePatterns)
 		{
-			foreach ((string id, string fileName) in CorporaHelpers.GetFiles(filePatterns))
+			foreach ((string id, string fileName) in CorporaUtils.GetFiles(filePatterns))
 				yield return new TextFileText(id, fileName);
 		}
 	}

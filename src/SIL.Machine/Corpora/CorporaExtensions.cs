@@ -384,24 +384,8 @@ namespace SIL.Machine.Corpora
 		public static (IEnumerable<T>, IEnumerable<T>, int, int) Split<T>(this IEnumerable<T> corpus,
 			double? percent = null, int? size = null, int? seed = null) where T : IRow
 		{
-			if (percent == null && size == null)
-				percent = 0.1;
-
 			int corpusSize = corpus.Count();
-			int splitSize;
-			if (percent != null)
-			{
-				splitSize = (int)(percent * corpusSize);
-				if (size != null)
-					splitSize = Math.Min(splitSize, size.Value);
-			}
-			else
-			{
-				splitSize = size.Value;
-			}
-
-			var r = seed != null ? new Random(seed.Value) : new Random();
-			var splitIndices = new HashSet<int>(Enumerable.Range(0, corpusSize).OrderBy(i => r.Next()).Take(splitSize));
+			ISet<int> splitIndices = CorporaUtils.GetSplitIndices(corpusSize, percent, size, seed);
 
 			var mainCorpus = corpus.Where((row, i) => !splitIndices.Contains(i));
 			var splitCorpus = corpus.Where((row, i) => splitIndices.Contains(i));
