@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace SIL.Machine.Corpora
 {
-	public class ParallelTextRow
+	public class ParallelTextRow : IRow
 	{
 		public ParallelTextRow(IReadOnlyList<object> sourceRefs, IReadOnlyList<object> targetRefs)
 		{

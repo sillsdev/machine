@@ -9,22 +9,22 @@ namespace SIL.Machine.Corpora
 {
 	public class ParallelTextCorpus : IEnumerable<ParallelTextRow>
 	{
-		private readonly ITextCorpus _sourceCorpus;
-		private readonly ITextCorpus _targetCorpus;
-		private readonly IAlignmentCorpus _alignmentCorpus;
-		private readonly IComparer<object> _rowRefComparer;
-
 		public ParallelTextCorpus(ITextCorpus sourceCorpus, ITextCorpus targetCorpus,
 			IAlignmentCorpus alignmentCorpus = null, IComparer<object> rowRefComparer = null)
 		{
-			_sourceCorpus = sourceCorpus;
-			_targetCorpus = targetCorpus;
-			_alignmentCorpus = alignmentCorpus ?? new DictionaryAlignmentCorpus();
-			_rowRefComparer = rowRefComparer ?? new DefaultRowRefComparer();
+			SourceCorpus = sourceCorpus;
+			TargetCorpus = targetCorpus;
+			AlignmentCorpus = alignmentCorpus ?? new DictionaryAlignmentCorpus();
+			RowRefComparer = rowRefComparer ?? new DefaultRowRefComparer();
 		}
 
 		public bool AllSourceRows { get; set; }
 		public bool AllTargetRows { get; set; }
+
+		public ITextCorpus SourceCorpus { get; }
+		public ITextCorpus TargetCorpus { get; }
+		public IAlignmentCorpus AlignmentCorpus { get; }
+		public IComparer<object> RowRefComparer { get; }
 
 		public IEnumerator<ParallelTextRow> GetEnumerator()
 		{
@@ -38,8 +38,8 @@ namespace SIL.Machine.Corpora
 
 		public IEnumerable<ParallelTextRow> GetRows()
 		{
-			IEnumerable<string> sourceTextIds = _sourceCorpus.Texts.Select(t => t.Id);
-			IEnumerable<string> targetTextIds = _targetCorpus.Texts.Select(t => t.Id);
+			IEnumerable<string> sourceTextIds = SourceCorpus.Texts.Select(t => t.Id);
+			IEnumerable<string> targetTextIds = TargetCorpus.Texts.Select(t => t.Id);
 
 			IEnumerable<string> textIds;
 			if (AllSourceRows && AllTargetRows)
@@ -51,9 +51,9 @@ namespace SIL.Machine.Corpora
 			else
 				textIds = targetTextIds;
 
-			using (IEnumerator<TextRow> srcEnumerator = _sourceCorpus.GetRows(textIds).GetEnumerator())
-			using (var trgEnumerator = new TargetCorpusEnumerator(_targetCorpus.GetRows(textIds).GetEnumerator()))
-			using (IEnumerator<AlignmentRow> alignmentEnumerator = _alignmentCorpus.GetRows(textIds).GetEnumerator())
+			using (IEnumerator<TextRow> srcEnumerator = SourceCorpus.GetRows(textIds).GetEnumerator())
+			using (var trgEnumerator = new TargetCorpusEnumerator(TargetCorpus.GetRows(textIds).GetEnumerator()))
+			using (IEnumerator<AlignmentRow> alignmentEnumerator = AlignmentCorpus.GetRows(textIds).GetEnumerator())
 			{
 				var rangeInfo = new RangeInfo();
 				var sourceSameRefRows = new List<TextRow>();
@@ -65,7 +65,7 @@ namespace SIL.Machine.Corpora
 				bool trgCompleted = !trgEnumerator.MoveNext();
 				while (!srcCompleted && !trgCompleted)
 				{
-					int compare1 = _rowRefComparer.Compare(srcEnumerator.Current.Ref,
+					int compare1 = RowRefComparer.Compare(srcEnumerator.Current.Ref,
 						trgEnumerator.Current.Ref);
 					if (compare1 < 0)
 					{
@@ -133,7 +133,7 @@ namespace SIL.Machine.Corpora
 						do
 						{
 							compare2 = alignmentEnumerator.MoveNext()
-								? _rowRefComparer.Compare(srcEnumerator.Current.Ref,
+								? RowRefComparer.Compare(srcEnumerator.Current.Ref,
 									alignmentEnumerator.Current.Ref)
 								: 1;
 						} while (compare2 < 0);
@@ -290,11 +290,8 @@ namespace SIL.Machine.Corpora
 
 		private bool CheckSameRefRows(List<TextRow> sameRefRows, TextRow otherRow)
 		{
-			if (sameRefRows.Count > 0
-				&& _rowRefComparer.Compare(sameRefRows[0].Ref, otherRow.Ref) != 0)
-			{
+			if (sameRefRows.Count > 0 && RowRefComparer.Compare(sameRefRows[0].Ref, otherRow.Ref) != 0)
 				sameRefRows.Clear();
-			}
 
 			return sameRefRows.Count > 0;
 		}

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SIL.Machine.Corpora
 {
-	public class TextRow
+	public class TextRow : IRow
 	{
 		public TextRow(object rowRef)
 		{

@@ -28,6 +28,11 @@ namespace SIL.Machine.Corpora
 			return tokens.Select(t => t.ToLowerInvariant()).ToArray();
 		}
 
+		public static IReadOnlyList<string> Uppercase(this IReadOnlyList<string> tokens)
+		{
+			return tokens.Select(t => t.ToUpperInvariant()).ToArray();
+		}
+
 		public static IReadOnlyList<string> Normalize(this IReadOnlyList<string> tokens,
 			NormalizationForm normalizationForm = NormalizationForm.FormC)
 		{

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace SIL.Machine.Corpora
 {
-	public class AlignmentRow
+	public class AlignmentRow : IRow
 	{
 		public AlignmentRow(object segRef)
 		{

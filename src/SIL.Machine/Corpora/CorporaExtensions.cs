@@ -205,6 +205,15 @@ namespace SIL.Machine.Corpora
 			});
 		}
 
+		public static ITextCorpus Uppercase(this ITextCorpus corpus)
+		{
+			return corpus.Transform(row =>
+			{
+				row.Segment = row.Segment.Uppercase();
+				return row;
+			});
+		}
+
 		public static ITextCorpus Truecase(this ITextCorpus corpus, ITruecaser truecaser)
 		{
 			return corpus.Transform(row =>
@@ -212,6 +221,11 @@ namespace SIL.Machine.Corpora
 				row.Segment = truecaser.Truecase(row.Segment);
 				return row;
 			});
+		}
+
+		public static ITextCorpus Transform(this ITextCorpus corpus, IRowProcessor<TextRow> processor)
+		{
+			return corpus.Transform(processor.Process);
 		}
 
 		public static ITextCorpus Transform(this ITextCorpus corpus, Func<TextRow, TextRow> transform)
@@ -225,9 +239,10 @@ namespace SIL.Machine.Corpora
 		}
 
 		public static IEnumerable<ParallelTextRow> AlignRows(this ITextCorpus sourceCorpus, ITextCorpus targetCorpus,
-			IAlignmentCorpus alignmentCorpus = null, bool allSourceRows = false, bool allTargetRows = false)
+			IAlignmentCorpus alignmentCorpus = null, bool allSourceRows = false, bool allTargetRows = false,
+			IComparer<object> rowRefComparer = null)
 		{
-			return new ParallelTextCorpus(sourceCorpus, targetCorpus, alignmentCorpus)
+			return new ParallelTextCorpus(sourceCorpus, targetCorpus, alignmentCorpus, rowRefComparer)
 			{
 				AllSourceRows = allSourceRows,
 				AllTargetRows = allTargetRows
@@ -293,33 +308,6 @@ namespace SIL.Machine.Corpora
 			return corpus.Select(row => row.Invert());
 		}
 
-		public static (IEnumerable<T>, IEnumerable<T>, int, int) Split<T>(this IEnumerable<T> corpus,
-			double? percent = null, int? size = null, int? seed = null)
-		{
-			if (percent == null && size == null)
-				percent = 0.1;
-
-			int corpusSize = corpus.Count();
-			int splitSize;
-			if (percent != null)
-			{
-				splitSize = (int)(percent * corpusSize);
-				if (size != null)
-					splitSize = Math.Min(splitSize, size.Value);
-			}
-			else
-			{
-				splitSize = size.Value;
-			}
-
-			var r = seed != null ? new Random(seed.Value) : new Random();
-			var splitIndices = new HashSet<int>(Enumerable.Range(0, corpusSize).OrderBy(i => r.Next()).Take(splitSize));
-
-			var mainCorpus = corpus.Where((row, i) => !splitIndices.Contains(i));
-			var splitCorpus = corpus.Where((row, i) => splitIndices.Contains(i));
-			return (mainCorpus, splitCorpus, corpusSize - splitIndices.Count, splitIndices.Count);
-		}
-
 		public static IEnumerable<ParallelTextRow> Normalize(this IEnumerable<ParallelTextRow> corpus,
 			NormalizationForm normalizationForm = NormalizationForm.FormC)
 		{
@@ -381,7 +369,56 @@ namespace SIL.Machine.Corpora
 			});
 		}
 
+		public static IEnumerable<ParallelTextRow> Uppercase(this IEnumerable<ParallelTextRow> corpus)
+		{
+			return corpus.Select(row =>
+			{
+				row.SourceSegment = row.SourceSegment.Uppercase();
+				row.TargetSegment = row.TargetSegment.Uppercase();
+				return row;
+			});
+		}
+
 		#endregion
+
+		public static (IEnumerable<T>, IEnumerable<T>, int, int) Split<T>(this IEnumerable<T> corpus,
+			double? percent = null, int? size = null, int? seed = null) where T : IRow
+		{
+			if (percent == null && size == null)
+				percent = 0.1;
+
+			int corpusSize = corpus.Count();
+			int splitSize;
+			if (percent != null)
+			{
+				splitSize = (int)(percent * corpusSize);
+				if (size != null)
+					splitSize = Math.Min(splitSize, size.Value);
+			}
+			else
+			{
+				splitSize = size.Value;
+			}
+
+			var r = seed != null ? new Random(seed.Value) : new Random();
+			var splitIndices = new HashSet<int>(Enumerable.Range(0, corpusSize).OrderBy(i => r.Next()).Take(splitSize));
+
+			var mainCorpus = corpus.Where((row, i) => !splitIndices.Contains(i));
+			var splitCorpus = corpus.Where((row, i) => splitIndices.Contains(i));
+			return (mainCorpus, splitCorpus, corpusSize - splitIndices.Count, splitIndices.Count);
+		}
+
+		public static IEnumerable<T> Transform<T>(this IEnumerable<T> corpus, Func<T, T> transform)
+			where T : IRow
+		{
+			return corpus.Select(transform);
+		}
+
+		public static IEnumerable<T> Transform<T>(this IEnumerable<T> corpus, IRowProcessor<T> processor)
+			where T : IRow
+		{
+			return corpus.Transform(processor.Process);
+		}
 
 		public static StringBuilder TrimEnd(this StringBuilder sb)
 		{
