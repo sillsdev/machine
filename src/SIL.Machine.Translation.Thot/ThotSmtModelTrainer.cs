@@ -267,9 +267,7 @@ namespace SIL.Machine.Translation.Thot
 			ThotTrainProgressReporter reporter)
 		{
 			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-			{
 				TrainWordAlignmentModel(swmPrefix, trainCorpus, phaseProgress);
-			}
 
 			reporter.CheckCanceled();
 
@@ -292,9 +290,7 @@ namespace SIL.Machine.Translation.Thot
 			PruneLexTable(swmPrefix + ext, 0.00001);
 
 			using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-			{
 				GenerateBestAlignments(swmPrefix, swmPrefix + ".bestal", trainCorpus, phaseProgress);
-			}
 		}
 
 		private static void PruneLexTable(string fileName, double threshold)
@@ -409,13 +405,11 @@ namespace SIL.Machine.Translation.Thot
 				int i = 0;
 				foreach (ParallelTextRow row in trainCorpus)
 				{
-					progress.Report(new ProgressStatus(i, _trainCount));
-
 					writer.Write("# 1\n");
 					writer.Write(model.GetGizaFormatString(row, EscapeTokens, EscapeTokens));
 					i++;
+					progress.Report(new ProgressStatus(i, _trainCount));
 				}
-				progress.Report(new ProgressStatus(1.0));
 			}
 		}
 
@@ -531,10 +525,11 @@ namespace SIL.Machine.Translation.Thot
 			{
 				for (int i = 0; i < tuneSourceCorpus.Count; i++)
 				{
-					progress.Report(new ProgressStatus(i, tuneSourceCorpus.Count));
+					if (i > 0)
+						progress.Report(new ProgressStatus(i, tuneSourceCorpus.Count));
 					engine.TrainSegment(tuneSourceCorpus[i], tuneTargetCorpus[i]);
 				}
-				progress.Report(new ProgressStatus(1.0));
+				progress.Report(new ProgressStatus(tuneSourceCorpus.Count, tuneSourceCorpus.Count));
 			}
 		}
 

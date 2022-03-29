@@ -146,6 +146,7 @@ public class SmtTransferEngineBuildJob
 				// switch state back to pending
 				await _builds.UpdateAsync(buildId, u => u
 					.Set(b => b.Message, "Canceled")
+					.Set(b => b.Step, 0)
 					.Set(b => b.PercentCompleted, 0)
 					.Set(b => b.State, BuildState.Pending), cancellationToken: CancellationToken.None);
 			}

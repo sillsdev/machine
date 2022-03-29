@@ -34,7 +34,7 @@ public class WebhookServiceTests
 		});
 		env.MockHttp.Expect("https://test.client.com/hook")
 			.WithHeaders("X-Hub-Signature-256",
-				"sha256=91D511CB690762688C2C3AF1AE9874D6BF49EE2119B62FFB7654B2642A30BD49")
+				"sha256=EF62D1A771694912EAD89D9B1185491E7EB7892B069202C090C5396B3CE000C5")
 			.Respond(HttpStatusCode.OK);
 
 		var build = new Build
@@ -86,7 +86,7 @@ public class WebhookServiceTests
 		});
 		env.MockHttp.Expect("https://test.client.com/hook")
 			.WithHeaders("X-Hub-Signature-256",
-				"sha256=91D511CB690762688C2C3AF1AE9874D6BF49EE2119B62FFB7654B2642A30BD49")
+				"sha256=EF62D1A771694912EAD89D9B1185491E7EB7892B069202C090C5396B3CE000C5")
 			.Respond(HttpStatusCode.RequestTimeout);
 
 		var build = new Build
@@ -113,7 +113,7 @@ public class WebhookServiceTests
 		});
 		env.MockHttp.Expect("https://test.client.com/hook")
 			.WithHeaders("X-Hub-Signature-256",
-				"sha256=91D511CB690762688C2C3AF1AE9874D6BF49EE2119B62FFB7654B2642A30BD49")
+				"sha256=EF62D1A771694912EAD89D9B1185491E7EB7892B069202C090C5396B3CE000C5")
 			.Throw(new HttpRequestException());
 
 		var build = new Build

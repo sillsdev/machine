@@ -4,7 +4,7 @@ public class BuildProgress : IProgress<ProgressStatus>
 {
 	private readonly IRepository<Build> _buildRepo;
 	private readonly string _buildId;
-	private Build? _build;
+	private ProgressStatus _prevStatus;
 
 	public BuildProgress(IRepository<Build> buildRepo, string buildId)
 	{
@@ -14,15 +14,19 @@ public class BuildProgress : IProgress<ProgressStatus>
 
 	public void Report(ProgressStatus value)
 	{
-		if (_build is not null
-			&& (_build.State != BuildState.Active
-				|| (_build.PercentCompleted == value.PercentCompleted && _build.Message == value.Message)))
-		{
+		if (_prevStatus.Equals(value))
 			return;
-		}
 
-		_build = _buildRepo.UpdateAsync(_buildId, u => u
-			.Set(b => b.PercentCompleted, Math.Round(value.PercentCompleted, 4, MidpointRounding.AwayFromZero))
-			.Set(b => b.Message, value.Message)).WaitAndUnwrapException();
+		_buildRepo.UpdateAsync(b => b.Id == _buildId && b.State == BuildState.Active, u =>
+		{
+			u.Set(b => b.Step, value.Step);
+			if (value.PercentCompleted is not null)
+			{
+				u.Set(b => b.PercentCompleted,
+					Math.Round(value.PercentCompleted.Value, 4, MidpointRounding.AwayFromZero));
+			}
+			u.Set(b => b.Message, value.Message);
+		});
+		_prevStatus = value;
 	}
 }

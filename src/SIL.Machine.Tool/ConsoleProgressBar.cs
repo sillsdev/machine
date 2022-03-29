@@ -34,7 +34,7 @@ namespace SIL.Machine
 		public void Report(ProgressStatus value)
 		{
 			// Make sure value is in [0..1] range
-			double percentCompleted = Math.Max(0, Math.Min(1, value.PercentCompleted));
+			double percentCompleted = Math.Max(0, Math.Min(1, value.PercentCompleted ?? 0));
 			Interlocked.Exchange(ref _currentProgress, percentCompleted);
 			_currentMessage = value.Message;
 		}
@@ -46,8 +46,8 @@ namespace SIL.Machine
 				if (_disposed)
 					return;
 
-				int progressBlockCount = (int) (_currentProgress * BlockCount);
-				int percent = (int) Math.Round(_currentProgress * 100, MidpointRounding.AwayFromZero);
+				int progressBlockCount = (int)(_currentProgress * BlockCount);
+				int percent = (int)Math.Round(_currentProgress * 100, MidpointRounding.AwayFromZero);
 				string text = string.Format("[{0}{1}] {2,3}% {3} {4}",
 					new string('#', progressBlockCount), new string('-', BlockCount - progressBlockCount),
 					percent, Animation[_animationIndex++ % Animation.Length], _currentMessage);

@@ -71,7 +71,7 @@ namespace SIL.Machine.Translation.Thot
 				}
 
 				if (iter < MaxIterations)
-					progress.Report(new ProgressStatus(1.0));
+					progress.Report(new ProgressStatus(iter, 1.0));
 				stats.Metrics["bleu"] = bestQuality;
 				return bestParameters;
 			}

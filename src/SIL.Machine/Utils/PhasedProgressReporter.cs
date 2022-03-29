@@ -7,9 +7,11 @@ namespace SIL.Machine.Utils
 	public class PhasedProgressReporter
 	{
 		private readonly IProgress<ProgressStatus> _progress;
+		private readonly double _defaultPercentage;
 		private int _currentPhaseIndex = -1;
-		private double _defaultPercentage;
 		private double _percentCompleted;
+		private int _step;
+		private int _prevPhaseLastStep;
 
 		public PhasedProgressReporter(IProgress<ProgressStatus> progress, params Phase[] phases)
 		{
@@ -52,6 +54,7 @@ namespace SIL.Machine.Utils
 
 		public virtual PhaseProgress StartNextPhase()
 		{
+			_prevPhaseLastStep = _step;
 			_percentCompleted += CurrentPhasePercentage;
 			_currentPhaseIndex++;
 
@@ -60,12 +63,14 @@ namespace SIL.Machine.Utils
 
 		protected internal virtual void Report(ProgressStatus value)
 		{
+			_step = Math.Max(_prevPhaseLastStep + value.Step, _step);
+
 			if (_progress == null)
 				return;
 
-			double percentCompleted = _percentCompleted + CurrentPhasePercentage * value.PercentCompleted;
+			double percentCompleted = _percentCompleted + CurrentPhasePercentage * (value.PercentCompleted ?? 0);
 			string message = value.Message ?? Phases[_currentPhaseIndex].Message;
-			_progress.Report(new ProgressStatus(percentCompleted, message));
+			_progress.Report(new ProgressStatus(_step, percentCompleted, message));
 		}
 	}
 }

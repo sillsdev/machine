@@ -52,7 +52,7 @@ namespace SIL.Machine.Translation.Thot
 			bestParameters.Freeze();
 
 			if (result.FunctionEvaluationCount < MaxProgressFunctionEvaluations)
-				progress.Report(new ProgressStatus(1.0));
+				progress.Report(new ProgressStatus(result.FunctionEvaluationCount, 1.0));
 			return bestParameters;
 		}
 

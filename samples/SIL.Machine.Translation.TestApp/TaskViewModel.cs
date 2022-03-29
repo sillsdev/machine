@@ -33,7 +33,8 @@ namespace SIL.Machine.Translation.TestApp
 				_cancelCommand.UpdateCanExecute();
 				var progress = new Progress<ProgressStatus>(p =>
 					{
-						PercentCompleted = (int) Math.Round(p.PercentCompleted * 100, MidpointRounding.AwayFromZero);
+						PercentCompleted = (int)Math.Round((p.PercentCompleted ?? 0) * 100,
+							MidpointRounding.AwayFromZero);
 						Message = p.Message;
 					});
 				CancellationToken token = _cts.Token;

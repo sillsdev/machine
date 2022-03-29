@@ -134,7 +134,7 @@ namespace SIL.Machine.WebApi.Client
 
 		private static ProgressStatus CreateProgressStatus(BuildDto buildDto)
 		{
-			return new ProgressStatus(buildDto.PercentCompleted, buildDto.Message);
+			return new ProgressStatus(buildDto.Step, buildDto.PercentCompleted, buildDto.Message);
 		}
 
 		private static WordGraph CreateModel(WordGraphDto dto)
