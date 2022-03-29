@@ -1,0 +1,33 @@
+services:
+  machine_api:
+    hostname: machine_api
+    image: mcr.microsoft.com/dotnet/sdk:6.0-focal
+    environment:
+      - ASPNETCORE_Kestrel__Endpoints__Https__Url=https://*:7274
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/usr/local/share/ca-certificates/aspnetapp.pfx
+      - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/machine_jobs
+      - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/machine
+      - ASPNETCORE_Logging__LogLevel__Default=Information
+      - ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore=Warning
+      - ASPNETCORE_Auth__Domain=sil-appbuilder.auth0.com
+      - ASPNETCORE_Auth__Audience=https://machine.sil.org
+    expose:
+      - 7274
+    ports:
+      - 7274:7274
+    depends_on:
+      - mongo
+    volumes:
+      - "..\\..:/app"
+      - "C:\\usr\\local\\DataProtection-Keys:/root/.aspnet/DataProtection-Keys"
+      - "C:\\usr\\local\\ca-certificates:/usr/local/share/ca-certificates"
+    entrypoint: [ '/app/docker/development/start.sh' ]
+  mongo:
+    hostname: mongo
+    container_name: mongo
+    image: mongo:4.2-bionic
+    restart: always
+    volumes:
+      - "/usr/local/mongo-volume:/data/db"
+    entrypoint: [ '/usr/bin/mongod', '--bind_ip', '0.0.0.0' ]
