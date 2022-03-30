@@ -7,6 +7,10 @@ namespace SIL.Machine.Translation
 	{
 		TranslationResult Translate(IReadOnlyList<string> segment);
 
-		IEnumerable<TranslationResult> Translate(int n, IReadOnlyList<string> segment);
+		IReadOnlyList<TranslationResult> Translate(int n, IReadOnlyList<string> segment);
+
+		IEnumerable<TranslationResult> Translate(IEnumerable<IReadOnlyList<string>> segments);
+
+		IEnumerable<IReadOnlyList<TranslationResult>> Translate(int n, IEnumerable<IReadOnlyList<string>> segments);
 	}
 }

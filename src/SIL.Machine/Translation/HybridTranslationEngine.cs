@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
@@ -21,32 +22,50 @@ namespace SIL.Machine.Translation
 		{
 			CheckDisposed();
 
-			TranslationResult smtResult = InteractiveEngine.Translate(segment);
+			TranslationResult result = InteractiveEngine.Translate(segment);
 			if (RuleEngine == null)
-				return smtResult;
+				return result;
 
 			TranslationResult ruleResult = RuleEngine.Translate(segment);
-			return smtResult.Merge(RuleEngineThreshold, ruleResult);
+			return result.Merge(RuleEngineThreshold, ruleResult);
 		}
 
-		public IEnumerable<TranslationResult> Translate(int n, IReadOnlyList<string> segment)
+		public IReadOnlyList<TranslationResult> Translate(int n, IReadOnlyList<string> segment)
 		{
 			CheckDisposed();
 
-			TranslationResult ruleResult = null;
-			foreach (TranslationResult smtResult in InteractiveEngine.Translate(n, segment))
-			{
-				if (RuleEngine == null)
-				{
-					yield return smtResult;
-				}
-				else
-				{
-					if (ruleResult == null)
-						ruleResult = RuleEngine.Translate(segment);
-					yield return smtResult.Merge(RuleEngineThreshold, ruleResult);
-				}
-			}
+			IReadOnlyList<TranslationResult> hypotheses = InteractiveEngine.Translate(n, segment);
+			if (RuleEngine == null || hypotheses.Count == 0)
+				return hypotheses;
+
+			TranslationResult ruleResult = RuleEngine.Translate(segment);
+			return hypotheses.Select(hypothesis => hypothesis.Merge(RuleEngineThreshold, ruleResult)).ToArray();
+		}
+
+		public IEnumerable<TranslationResult> Translate(IEnumerable<IReadOnlyList<string>> segments)
+		{
+			CheckDisposed();
+
+			IEnumerable<TranslationResult> results = InteractiveEngine.Translate(segments);
+			if (RuleEngine == null)
+				return results;
+
+			IEnumerable<TranslationResult> ruleResults = RuleEngine.Translate(segments);
+			return results.Zip(ruleResults, (result, ruleResult) => result.Merge(RuleEngineThreshold, ruleResult));
+		}
+
+		public IEnumerable<IReadOnlyList<TranslationResult>> Translate(int n,
+			IEnumerable<IReadOnlyList<string>> segments)
+		{
+			CheckDisposed();
+
+			IEnumerable<IReadOnlyList<TranslationResult>> results = InteractiveEngine.Translate(n, segments);
+			if (RuleEngine == null)
+				return results;
+
+			IEnumerable<TranslationResult> ruleResults = RuleEngine.Translate(segments);
+			return results.Zip(ruleResults, (hypotheses, ruleResult) =>
+				hypotheses.Select(hypothesis => hypothesis.Merge(RuleEngineThreshold, ruleResult)).ToArray());
 		}
 
 		public WordGraph GetWordGraph(IReadOnlyList<string> segment)

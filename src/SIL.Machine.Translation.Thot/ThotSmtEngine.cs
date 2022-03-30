@@ -40,11 +40,26 @@ namespace SIL.Machine.Translation.Thot
 			return Thot.DoTranslate(_decoderHandle, Thot.decoder_translate, segment, CreateResult);
 		}
 
-		public IEnumerable<TranslationResult> Translate(int n, IReadOnlyList<string> segment)
+		public IReadOnlyList<TranslationResult> Translate(int n, IReadOnlyList<string> segment)
 		{
 			CheckDisposed();
 
 			return Thot.DoTranslateNBest(_decoderHandle, Thot.decoder_translateNBest, n, segment, CreateResult);
+		}
+
+		public IEnumerable<TranslationResult> Translate(IEnumerable<IReadOnlyList<string>> segments)
+		{
+			CheckDisposed();
+
+			return segments.Select(segment => Translate(segment));
+		}
+
+		public IEnumerable<IReadOnlyList<TranslationResult>> Translate(int n,
+			IEnumerable<IReadOnlyList<string>> segments)
+		{
+			CheckDisposed();
+
+			return segments.Select(segment => Translate(n, segment));
 		}
 
 		public WordGraph GetWordGraph(IReadOnlyList<string> segment)
