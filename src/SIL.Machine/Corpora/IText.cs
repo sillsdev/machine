@@ -8,6 +8,10 @@ namespace SIL.Machine.Corpora
 
 		string SortKey { get; }
 
+		bool MissingRowsAllowed { get; }
+
+		int Count(bool includeEmpty = true);
+
 		IEnumerable<TextRow> GetRows();
 	}
 }

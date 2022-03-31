@@ -18,6 +18,23 @@ namespace SIL.Machine.Corpora
 
 		public string SortKey => Id;
 
+		public bool MissingRowsAllowed => false;
+
+		public int Count(bool includeEmpty = true)
+		{
+			using (var reader = new StreamReader(_fileName))
+			{
+				int count = 0;
+				string line;
+				while ((line = reader.ReadLine()) != null)
+				{
+					if (includeEmpty || line.Trim().Length > 0)
+						count++;
+				}
+				return count;
+			}
+		}
+
 		public IEnumerable<AlignmentRow> GetRows()
 		{
 			using (var reader = new StreamReader(_fileName))

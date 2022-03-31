@@ -6,6 +6,10 @@ namespace SIL.Machine.Corpora
 	{
 		IEnumerable<IText> Texts { get; }
 
+		bool MissingRowsAllowed { get; }
+
+		int Count(bool includeEmpty = true);
+
 		IEnumerable<TextRow> GetRows(IEnumerable<string> textIds = null);
 	}
 }

@@ -2,16 +2,12 @@
 
 namespace SIL.Machine.Corpora
 {
-	public interface IAlignmentCollection
+	public interface IParallelTextCorpus : IEnumerable<ParallelTextRow>
 	{
-		string Id { get; }
-
-		string SortKey { get; }
-
 		bool MissingRowsAllowed { get; }
 
 		int Count(bool includeEmpty = true);
 
-		IEnumerable<AlignmentRow> GetRows();
+		IEnumerable<ParallelTextRow> GetRows();
 	}
 }

@@ -22,6 +22,13 @@ namespace SIL.Machine.Corpora
 
 		public IText this[string id] => TextDictionary[id];
 
+		public bool MissingRowsAllowed => Texts.Any(t => t.MissingRowsAllowed);
+
+		public int Count(bool includeEmpty = true)
+		{
+			return Texts.Sum(t => t.Count(includeEmpty));
+		}
+
 		public bool TryGetText(string id, out IText text)
 		{
 			return TextDictionary.TryGetValue(id, out text);

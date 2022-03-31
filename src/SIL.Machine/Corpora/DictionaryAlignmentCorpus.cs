@@ -21,6 +21,12 @@ namespace SIL.Machine.Corpora
 		public IEnumerable<IAlignmentCollection> AlignmentCollections => _alignmentCollections.Values
 			.OrderBy(ac => ac.SortKey);
 
+		public bool MissingRowsAllowed => AlignmentCollections.Any(t => t.MissingRowsAllowed);
+
+		public int Count(bool includeEmpty = true)
+		{
+			return AlignmentCollections.Sum(t => t.Count(includeEmpty));
+		}
 
 		public IAlignmentCollection this[string id] => _alignmentCollections[id];
 

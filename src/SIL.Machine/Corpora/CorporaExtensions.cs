@@ -10,7 +10,14 @@ namespace SIL.Machine.Corpora
 {
 	public static class CorporaExtensions
 	{
-		#region IEnumerable<Text> extensions
+		#region IEnumerable<TextRow> extensions
+
+		public static int Count(this IEnumerable<TextRow> corpus, bool includeEmpty = true)
+		{
+			if (corpus is ITextCorpus textCorpus)
+				return textCorpus.Count(includeEmpty);
+			return includeEmpty ? corpus.Count() : corpus.Count(r => !r.IsEmpty);
+		}
 
 		public static IEnumerable<TextRow> Tokenize(this IEnumerable<TextRow> corpus,
 			ITokenizer<string, int, string> tokenizer)
@@ -269,6 +276,13 @@ namespace SIL.Machine.Corpora
 
 		#region IEnumerable<ParallelTextRow> extensions
 
+		public static int Count(this IEnumerable<ParallelTextRow> corpus, bool includeEmpty = true)
+		{
+			if (corpus is IParallelTextCorpus parallelTextCorpus)
+				return parallelTextCorpus.Count(includeEmpty);
+			return includeEmpty ? corpus.Count() : corpus.Count(r => !r.IsEmpty);
+		}
+
 		public static IEnumerable<ParallelTextRow> Tokenize(this IEnumerable<ParallelTextRow> corpus,
 			ITokenizer<string, int, string> tokenizer)
 		{
@@ -381,6 +395,131 @@ namespace SIL.Machine.Corpora
 
 		#endregion
 
+		#region IParallelTextCorpus extensions
+
+		public static IParallelTextCorpus Tokenize(this IParallelTextCorpus corpus,
+			ITokenizer<string, int, string> tokenizer)
+		{
+			return corpus.Tokenize(tokenizer, tokenizer);
+		}
+
+		public static IParallelTextCorpus Tokenize<T>(this IParallelTextCorpus corpus)
+			where T : ITokenizer<string, int, string>, new()
+		{
+			var tokenizer = new T();
+			return corpus.Tokenize(tokenizer);
+		}
+
+		public static IParallelTextCorpus Tokenize(this IParallelTextCorpus corpus,
+			ITokenizer<string, int, string> sourceTokenizer, ITokenizer<string, int, string> targetTokenizer)
+		{
+			return corpus.Transform(row =>
+			{
+				row.SourceSegment = sourceTokenizer.Tokenize(row.SourceText).ToArray();
+				row.TargetSegment = targetTokenizer.Tokenize(row.TargetText).ToArray();
+				return row;
+			});
+		}
+
+		public static IParallelTextCorpus Tokenize<TSource, TTarget>(this IParallelTextCorpus corpus)
+			where TSource : ITokenizer<string, int, string>, new()
+			where TTarget : ITokenizer<string, int, string>, new()
+		{
+			var sourceTokenizer = new TSource();
+			var targetTokenizer = new TTarget();
+			return corpus.Tokenize(sourceTokenizer, targetTokenizer);
+		}
+
+		public static IParallelTextCorpus Invert(this IParallelTextCorpus corpus)
+		{
+			return corpus.Transform(row => row.Invert());
+		}
+
+		public static IParallelTextCorpus Normalize(this IParallelTextCorpus corpus,
+			NormalizationForm normalizationForm = NormalizationForm.FormC)
+		{
+			return corpus.Transform(row =>
+			{
+				row.SourceSegment = row.SourceSegment.Normalize(normalizationForm);
+				row.TargetSegment = row.TargetSegment.Normalize(normalizationForm);
+				return row;
+			});
+		}
+
+		public static IParallelTextCorpus NfcNormalize(this IParallelTextCorpus corpus)
+		{
+			return corpus.Normalize();
+		}
+
+		public static IParallelTextCorpus NfdNormalize(this IParallelTextCorpus corpus)
+		{
+			return corpus.Normalize(NormalizationForm.FormD);
+		}
+
+		public static IParallelTextCorpus NfkcNormalize(this IParallelTextCorpus corpus)
+		{
+			return corpus.Normalize(NormalizationForm.FormKC);
+		}
+
+		public static IParallelTextCorpus NfkdNormalize(this IParallelTextCorpus corpus)
+		{
+			return corpus.Normalize(NormalizationForm.FormKD);
+		}
+
+		public static IParallelTextCorpus EscapeSpaces(this IParallelTextCorpus corpus)
+		{
+			return corpus.Transform(row =>
+			{
+				row.SourceSegment = row.SourceSegment.EscapeSpaces();
+				row.TargetSegment = row.TargetSegment.EscapeSpaces();
+				return row;
+			});
+		}
+
+		public static IParallelTextCorpus UnescapeSpaces(this IParallelTextCorpus corpus)
+		{
+			return corpus.Transform(row =>
+			{
+				row.SourceSegment = row.SourceSegment.UnescapeSpaces();
+				row.TargetSegment = row.TargetSegment.UnescapeSpaces();
+				return row;
+			});
+		}
+
+		public static IParallelTextCorpus Lowercase(this IParallelTextCorpus corpus)
+		{
+			return corpus.Transform(row =>
+			{
+				row.SourceSegment = row.SourceSegment.Lowercase();
+				row.TargetSegment = row.TargetSegment.Lowercase();
+				return row;
+			});
+		}
+
+		public static IParallelTextCorpus Uppercase(this IParallelTextCorpus corpus)
+		{
+			return corpus.Transform(row =>
+			{
+				row.SourceSegment = row.SourceSegment.Uppercase();
+				row.TargetSegment = row.TargetSegment.Uppercase();
+				return row;
+			});
+		}
+
+		public static IParallelTextCorpus Transform(this IParallelTextCorpus corpus,
+			IRowProcessor<ParallelTextRow> processor)
+		{
+			return corpus.Transform(processor.Process);
+		}
+
+		public static IParallelTextCorpus Transform(this IParallelTextCorpus corpus,
+			Func<ParallelTextRow, ParallelTextRow> transform)
+		{
+			return new TransformParallelTextCorpus(corpus, transform);
+		}
+
+		#endregion
+
 		public static (IEnumerable<T>, IEnumerable<T>, int, int) Split<T>(this IEnumerable<T> corpus,
 			double? percent = null, int? size = null, int? seed = null) where T : IRow
 		{
@@ -435,6 +574,13 @@ namespace SIL.Machine.Corpora
 
 			public IEnumerable<IText> Texts => _corpus.Texts;
 
+			public bool MissingRowsAllowed => _corpus.MissingRowsAllowed;
+
+			public int Count(bool includeEmpty = true)
+			{
+				return _corpus.Count(includeEmpty);
+			}
+
 			public IEnumerator<TextRow> GetEnumerator()
 			{
 				return GetRows().GetEnumerator();
@@ -443,6 +589,41 @@ namespace SIL.Machine.Corpora
 			public IEnumerable<TextRow> GetRows(IEnumerable<string> textIds = null)
 			{
 				return _corpus.GetRows(textIds).Select(_transform);
+			}
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return GetEnumerator();
+			}
+		}
+
+		private class TransformParallelTextCorpus : IParallelTextCorpus
+		{
+			private readonly IParallelTextCorpus _corpus;
+			private readonly Func<ParallelTextRow, ParallelTextRow> _transform;
+
+			public TransformParallelTextCorpus(IParallelTextCorpus corpus,
+				Func<ParallelTextRow, ParallelTextRow> transform)
+			{
+				_corpus = corpus;
+				_transform = transform;
+			}
+
+			public bool MissingRowsAllowed => _corpus.MissingRowsAllowed;
+
+			public int Count(bool includeEmpty = true)
+			{
+				return _corpus.Count(includeEmpty);
+			}
+
+			public IEnumerator<ParallelTextRow> GetEnumerator()
+			{
+				return GetRows().GetEnumerator();
+			}
+
+			public IEnumerable<ParallelTextRow> GetRows()
+			{
+				return _corpus.GetRows().Select(_transform);
 			}
 
 			IEnumerator IEnumerable.GetEnumerator()
@@ -463,6 +644,13 @@ namespace SIL.Machine.Corpora
 			}
 
 			public IEnumerable<IText> Texts => _corpus.Texts.Where(_predicate);
+
+			public bool MissingRowsAllowed => true;
+
+			public int Count(bool includeEmpty = true)
+			{
+				return includeEmpty ? GetRows().Count() : GetRows().Count(r => !r.IsEmpty);
+			}
 
 			public IEnumerator<TextRow> GetEnumerator()
 			{
@@ -492,6 +680,13 @@ namespace SIL.Machine.Corpora
 			}
 
 			public IEnumerable<IAlignmentCollection> AlignmentCollections => _corpus.AlignmentCollections;
+
+			public bool MissingRowsAllowed => _corpus.MissingRowsAllowed;
+
+			public int Count(bool includeEmpty = true)
+			{
+				return _corpus.Count(includeEmpty);
+			}
 
 			public IEnumerator<AlignmentRow> GetEnumerator()
 			{
@@ -524,6 +719,13 @@ namespace SIL.Machine.Corpora
 
 			public IEnumerable<IAlignmentCollection> AlignmentCollections => _corpus.AlignmentCollections
 				.Where(_predicate);
+
+			public bool MissingRowsAllowed => _corpus.MissingRowsAllowed;
+
+			public int Count(bool includeEmpty = true)
+			{
+				return _corpus.Count(includeEmpty);
+			}
 
 			public IEnumerator<AlignmentRow> GetEnumerator()
 			{
