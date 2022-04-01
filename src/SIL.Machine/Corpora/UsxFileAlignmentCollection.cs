@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -222,6 +223,16 @@ namespace SIL.Machine.Corpora
 				}
 			}
 			return segmentLinks;
+		}
+
+		public IEnumerator<AlignmentRow> GetEnumerator()
+		{
+			return GetRows().GetEnumerator();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
 		}
 
 		private class RangeInfo

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
@@ -33,7 +32,7 @@ namespace SIL.Machine
 			if (code != 0)
 				return code;
 
-			IEnumerable<ParallelTextRow> corpus = _preprocessSpec.Preprocess(_corpusSpec.ParallelCorpus);
+			IParallelTextCorpus corpus = _preprocessSpec.Preprocess(_corpusSpec.ParallelCorpus);
 			using (ITrainer trainer = _modelSpec.CreateTrainer(corpus, _corpusSpec.MaxCorpusCount))
 			{
 				if (!_quietOption.HasValue())

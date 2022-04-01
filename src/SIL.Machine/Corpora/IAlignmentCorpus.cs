@@ -2,14 +2,10 @@
 
 namespace SIL.Machine.Corpora
 {
-	public interface IAlignmentCorpus : IEnumerable<AlignmentRow>
+	public interface IAlignmentCorpus : ICorpus<AlignmentRow>
 	{
 		IEnumerable<IAlignmentCollection> AlignmentCollections { get; }
 
-		bool MissingRowsAllowed { get; }
-
-		int Count(bool includeEmpty = true);
-
-		IEnumerable<AlignmentRow> GetRows(IEnumerable<string> alignmentCollectionIds = null);
+		IEnumerable<AlignmentRow> GetRows(IEnumerable<string> alignmentCollectionIds);
 	}
 }

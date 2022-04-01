@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SIL.Machine.Corpora
@@ -41,6 +42,16 @@ namespace SIL.Machine.Corpora
 		protected TextRow CreateEmptyRow(object segRef, bool isInRange = false)
 		{
 			return new TextRow(segRef) { IsInRange = isInRange };
+		}
+
+		public IEnumerator<TextRow> GetEnumerator()
+		{
+			return GetRows().GetEnumerator();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
 		}
 	}
 }

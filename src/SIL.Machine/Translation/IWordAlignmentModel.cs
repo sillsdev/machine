@@ -11,7 +11,7 @@ namespace SIL.Machine.Translation
 		IWordVocabulary TargetWords { get; }
 		IReadOnlySet<int> SpecialSymbolIndices { get; }
 
-		ITrainer CreateTrainer(IEnumerable<ParallelTextRow> corpus);
+		ITrainer CreateTrainer(IParallelTextCorpus corpus);
 
 		IEnumerable<(string TargetWord, double Score)> GetTranslations(string sourceWord, double threshold = 0);
 		IEnumerable<(int TargetWordIndex, double Score)> GetTranslations(int sourceWordIndex, double threshold = 0);

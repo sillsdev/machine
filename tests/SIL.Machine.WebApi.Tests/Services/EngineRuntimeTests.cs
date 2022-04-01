@@ -254,7 +254,7 @@ public class EngineRuntimeTests
 			SmtModel.CreateInteractiveEngine().Returns(engine);
 
 			factory.Create(Arg.Any<string>()).Returns(SmtModel);
-			factory.CreateTrainer(Arg.Any<string>(), Arg.Any<IEnumerable<ParallelTextRow>>()).Returns(SmtBatchTrainer);
+			factory.CreateTrainer(Arg.Any<string>(), Arg.Any<IParallelTextCorpus>()).Returns(SmtBatchTrainer);
 			return factory;
 		}
 
@@ -295,7 +295,7 @@ public class EngineRuntimeTests
 				return segment.Select(t => t == "test" ? "TEST" : t).ToArray();
 			});
 			factory.CreateAsync(Arg.Any<string>()).Returns(Task.FromResult(Truecaser));
-			factory.CreateTrainer(Arg.Any<string>(), Arg.Any<IEnumerable<TextRow>>()).Returns(TruecaserTrainer);
+			factory.CreateTrainer(Arg.Any<string>(), Arg.Any<ITextCorpus>()).Returns(TruecaserTrainer);
 			return factory;
 		}
 

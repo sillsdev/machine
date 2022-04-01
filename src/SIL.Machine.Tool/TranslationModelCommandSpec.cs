@@ -67,7 +67,7 @@ namespace SIL.Machine
 			return new ThotSmtModel(wordAlignmentModelType, _modelConfigFileName);
 		}
 
-		public ITrainer CreateTrainer(IEnumerable<ParallelTextRow> corpus, int maxSize)
+		public ITrainer CreateTrainer(IParallelTextCorpus corpus, int maxSize)
 		{
 			if (_modelFactory != null)
 				return _modelFactory.CreateTrainer(_modelArgument.Value, corpus, maxSize);

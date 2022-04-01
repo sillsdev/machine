@@ -24,7 +24,7 @@ namespace SIL.Machine
 		public ITextCorpus SourceCorpus { get; private set; }
 		public ITextCorpus TargetCorpus { get; private set; }
 		public IAlignmentCorpus AlignmentCorpus { get; private set; }
-		public IEnumerable<ParallelTextRow> ParallelCorpus { get; private set; }
+		public IParallelTextCorpus ParallelCorpus { get; private set; }
 
 		public override void AddParameters(CommandBase command)
 		{

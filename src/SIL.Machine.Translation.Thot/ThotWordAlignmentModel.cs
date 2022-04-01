@@ -115,7 +115,7 @@ namespace SIL.Machine.Translation.Thot
 			SetHandle(Thot.CreateAlignmentModel(Type));
 		}
 
-		public ITrainer CreateTrainer(IEnumerable<ParallelTextRow> corpus)
+		public ITrainer CreateTrainer(IParallelTextCorpus corpus)
 		{
 			CheckDisposed();
 

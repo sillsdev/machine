@@ -64,7 +64,7 @@ namespace SIL.Machine
 			Directory.CreateDirectory(Path.GetDirectoryName(_outputArgument.Value));
 
 			List<IReadOnlyList<string>> translations = null;
-			IEnumerable<ParallelTextRow> refParallelCorpus = null;
+			IParallelTextCorpus refParallelCorpus = null;
 			if (_refOption.HasValue())
 			{
 				translations = new List<IReadOnlyList<string>>();

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace SIL.Machine.Corpora
 {
-	public class DictionaryAlignmentCorpus : IAlignmentCorpus
+	public class DictionaryAlignmentCorpus : AlignmentCorpusBase
 	{
 		private readonly Dictionary<string, IAlignmentCollection> _alignmentCollections;
 
@@ -18,12 +18,12 @@ namespace SIL.Machine.Corpora
 			_alignmentCollections = alignmentCollections.ToDictionary(ac => ac.Id);
 		}
 
-		public IEnumerable<IAlignmentCollection> AlignmentCollections => _alignmentCollections.Values
+		public override IEnumerable<IAlignmentCollection> AlignmentCollections => _alignmentCollections.Values
 			.OrderBy(ac => ac.SortKey);
 
-		public bool MissingRowsAllowed => AlignmentCollections.Any(t => t.MissingRowsAllowed);
+		public override bool MissingRowsAllowed => AlignmentCollections.Any(t => t.MissingRowsAllowed);
 
-		public int Count(bool includeEmpty = true)
+		public override int Count(bool includeEmpty = true)
 		{
 			return AlignmentCollections.Sum(t => t.Count(includeEmpty));
 		}
@@ -40,17 +40,7 @@ namespace SIL.Machine.Corpora
 			return _alignmentCollections.TryGetValue(id, out alignmentCollection);
 		}
 
-		public IEnumerator<AlignmentRow> GetEnumerator()
-		{
-			return GetRows().GetEnumerator();
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public IEnumerable<AlignmentRow> GetRows(IEnumerable<string> alignmentCollectionIds = null)
+		public override IEnumerable<AlignmentRow> GetRows(IEnumerable<string> alignmentCollectionIds)
 		{
 			var alignmentCollectionIdSet = new HashSet<string>(alignmentCollectionIds ?? _alignmentCollections.Keys);
 			return AlignmentCollections.Where(ac => alignmentCollectionIdSet.Contains(ac.Id))

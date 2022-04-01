@@ -35,7 +35,8 @@ namespace SIL.Machine
 
 			if (_countOption.HasValue())
 			{
-				Out.WriteLine(Math.Min(_corpusSpec.MaxCorpusCount, _corpusSpec.ParallelCorpus.Count()));
+				Out.WriteLine(Math.Min(_corpusSpec.MaxCorpusCount,
+					_corpusSpec.ParallelCorpus.Count(includeEmpty: false)));
 			}
 			else
 			{
@@ -52,8 +53,7 @@ namespace SIL.Machine
 				int segmentCount = 0;
 				int sourceWordCount = 0;
 				int targetWordCount = 0;
-				IEnumerable<ParallelTextRow> corpus = _corpusSpec.ParallelCorpus
-					.Where(r => !r.IsEmpty)
+				IParallelTextCorpus corpus = _corpusSpec.ParallelCorpus.WhereNonempty()
 					.Take(_corpusSpec.MaxCorpusCount);
 				foreach (ParallelTextRow row in corpus)
 				{
@@ -71,8 +71,6 @@ namespace SIL.Machine
 					sourceWordCount += row.SourceSegment.Count;
 					targetWordCount += row.TargetSegment.Count;
 					segmentCount++;
-					if (segmentCount == _corpusSpec.MaxCorpusCount)
-						break;
 				}
 
 				Out.WriteLine($"# of Source Words: {sourceWordCount}");
