@@ -94,7 +94,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			trace = input.CurrentTrace;
 
 			// Unapply rules
-			IEnumerable<Word> analyses = _analysisRule.Apply(input);
+			var analyses = new ConcurrentQueue<Word>(_analysisRule.Apply(input));
 
 #if OUTPUT_ANALYSES
 			var lines = new List<string>();
@@ -154,35 +154,35 @@ namespace SIL.Machine.Morphology.HermitCrab
 
 			Exception exception = null;
 			Parallel.ForEach(rootEntry.Allomorphs.SelectMany(a => rulePermutations,
-				(a, p) => new {Allomorph = a, RulePermutation = p}), (synthesisInfo, state) =>
-			{
-				try
-				{
-					var synthesisWord = new Word(synthesisInfo.Allomorph, realizationalFS);
-					foreach (Tuple<IMorphologicalRule, RootAllomorph> rule in synthesisInfo.RulePermutation)
-					{
-						synthesisWord.MorphologicalRuleUnapplied(rule.Item1);
-						if (rule.Item2 != null)
-							synthesisWord.NonHeadUnapplied(new Word(rule.Item2, new FeatureStruct()));
-					}
+				(a, p) => new { Allomorph = a, RulePermutation = p }), (synthesisInfo, state) =>
+			  {
+				  try
+				  {
+					  var synthesisWord = new Word(synthesisInfo.Allomorph, realizationalFS);
+					  foreach (Tuple<IMorphologicalRule, RootAllomorph> rule in synthesisInfo.RulePermutation)
+					  {
+						  synthesisWord.MorphologicalRuleUnapplied(rule.Item1);
+						  if (rule.Item2 != null)
+							  synthesisWord.NonHeadUnapplied(new Word(rule.Item2, new FeatureStruct()));
+					  }
 
-					synthesisWord.CurrentTrace = rootTrace;
+					  synthesisWord.CurrentTrace = rootTrace;
 
-					if (_traceManager.IsTracing)
-						_traceManager.SynthesizeWord(_lang, synthesisWord);
+					  if (_traceManager.IsTracing)
+						  _traceManager.SynthesizeWord(_lang, synthesisWord);
 
-					synthesisWord.Freeze();
+					  synthesisWord.Freeze();
 
-					Word[] valid = _synthesisRule.Apply(synthesisWord).Where(IsWordValid).ToArray();
-					if (valid.Length > 0)
-						validWordsStack.PushRange(valid);
-				}
-				catch (Exception e)
-				{
-					state.Stop();
-					exception = e;
-				}
-			});
+					  Word[] valid = _synthesisRule.Apply(synthesisWord).Where(IsWordValid).ToArray();
+					  if (valid.Length > 0)
+						  validWordsStack.PushRange(valid);
+				  }
+				  catch (Exception e)
+				  {
+					  state.Stop();
+					  exception = e;
+				  }
+			  });
 
 			if (exception != null)
 				throw exception;
@@ -214,7 +214,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 						foreach (Stack<Tuple<IMorphologicalRule, RootAllomorph>> permutation in PermuteRules(morphemes,
 							index + 1))
 						{
-							permutation.Push(Tuple.Create((IMorphologicalRule) null, allo));
+							permutation.Push(Tuple.Create((IMorphologicalRule)null, allo));
 							yield return permutation;
 						}
 					}
@@ -224,7 +224,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 					foreach (Stack<Tuple<IMorphologicalRule, RootAllomorph>> permutation in PermuteRules(morphemes,
 						index + 1))
 					{
-						permutation.Push(Tuple.Create((IMorphologicalRule) morphemes[index], (RootAllomorph) null));
+						permutation.Push(Tuple.Create((IMorphologicalRule)morphemes[index], (RootAllomorph)null));
 						yield return permutation;
 					}
 				}
@@ -280,19 +280,19 @@ namespace SIL.Machine.Morphology.HermitCrab
 			return validWords;
 		}
 #else
-		private IEnumerable<Word> ParallelSynthesize(IEnumerable<Word> analyses)
+		private IEnumerable<Word> ParallelSynthesize(ConcurrentQueue<Word> analyses)
 		{
-			var validWordsStack = new ConcurrentStack<Word>();
+			var validWords = new ConcurrentDictionary<Word, byte>(FreezableEqualityComparer<Word>.Default);
 			Exception exception = null;
-			Parallel.ForEach(analyses, (analysisWord, state) =>
+			Parallel.For(0, analyses.Count, (_, state) =>
 			{
+				analyses.TryDequeue(out Word analysisWord);
 				try
 				{
 					foreach (Word synthesisWord in LexicalLookup(analysisWord))
 					{
-						Word[] valid = _synthesisRule.Apply(synthesisWord).Where(IsWordValid).ToArray();
-						if (valid.Length > 0)
-							validWordsStack.PushRange(valid);
+						foreach (Word validWord in _synthesisRule.Apply(synthesisWord).Where(IsWordValid))
+							validWords.TryAdd(validWord, 0);
 					}
 				}
 				catch (Exception e)
@@ -303,7 +303,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			});
 			if (exception != null)
 				throw exception;
-			return validWordsStack.Distinct(FreezableEqualityComparer<Word>.Default);
+			return validWords.Keys;
 		}
 #endif
 
@@ -408,7 +408,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 				return Enumerable.Empty<string>();
 
 			List<Morpheme> morphemes = wordAnalysis.Morphemes.Cast<Morpheme>().ToList();
-			var rootEntry = (LexEntry) morphemes[wordAnalysis.RootMorphemeIndex];
+			var rootEntry = (LexEntry)morphemes[wordAnalysis.RootMorphemeIndex];
 			var realizationalFS = new FeatureStruct();
 			var results = new HashSet<string>();
 			foreach (Stack<Morpheme> otherMorphemes in PermuteOtherMorphemes(morphemes,
