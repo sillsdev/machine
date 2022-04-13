@@ -185,7 +185,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			LexEntry nonHeadEntry = Entries["40"];
 			word.Shape.AddRange(nonHeadEntry.PrimaryAllomorph.Segments.Shape.AsEnumerable().CloneItems());
 			Annotation<ShapeNode> nonHeadMorph = word.MarkMorph(word.Shape.GetNodes(node.Next, word.Shape.Last),
-				nonHeadEntry.PrimaryAllomorph, "ROOT");
+				nonHeadEntry.PrimaryAllomorph, Word.RootMorphID);
 
 			Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.True);
 
@@ -194,7 +194,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			nonHeadEntry = Entries["41"];
 			word.Shape.AddRange(nonHeadEntry.PrimaryAllomorph.Segments.Shape.AsEnumerable().CloneItems());
 			nonHeadMorph = word.MarkMorph(word.Shape.GetNodes(node.Next, word.Shape.Last),
-				nonHeadEntry.PrimaryAllomorph, "ROOT");
+				nonHeadEntry.PrimaryAllomorph, Word.RootMorphID);
 
 			Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.False);
 
@@ -210,7 +210,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			word.Shape.AddRangeAfter(word.Shape.Begin,
 				nonHeadEntry.PrimaryAllomorph.Segments.Shape.AsEnumerable().CloneItems());
 			nonHeadMorph = word.MarkMorph(word.Shape.GetNodes(word.Shape.First, node.Prev),
-				nonHeadEntry.PrimaryAllomorph, "ROOT");
+				nonHeadEntry.PrimaryAllomorph, Word.RootMorphID);
 
 			Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.True);
 
@@ -219,7 +219,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			nonHeadEntry = Entries["41"];
 			word.Shape.AddRangeAfter(word.Shape.Begin,
 				nonHeadEntry.PrimaryAllomorph.Segments.Shape.AsEnumerable().CloneItems());
-			word.MarkMorph(word.Shape.GetNodes(word.Shape.First, node.Prev), nonHeadEntry.PrimaryAllomorph, "ROOT");
+			word.MarkMorph(word.Shape.GetNodes(word.Shape.First, node.Prev), nonHeadEntry.PrimaryAllomorph, Word.RootMorphID);
 
 			Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.False);
 		}

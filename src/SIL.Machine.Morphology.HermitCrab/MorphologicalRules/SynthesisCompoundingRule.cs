@@ -207,7 +207,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 				}
 			}
 
-			output.MarkMorph(newMorphNodes, headMatch.Input.CurrentNonHead.RootAllomorph, "ROOT");
+			output.MarkMorph(newMorphNodes, headMatch.Input.CurrentNonHead.RootAllomorph, Word.RootMorphID);
 
 			return output;
 		}

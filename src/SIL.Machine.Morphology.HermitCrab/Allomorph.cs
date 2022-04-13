@@ -104,11 +104,13 @@ namespace SIL.Machine.Morphology.HermitCrab
 
 			foreach (Annotation<ShapeNode> morph in word.GetMorphs(this))
 			{
-				AllomorphEnvironment[] envs = Environments.Where(e => !e.IsWordValid(word, morph)).ToArray();
-				if (envs.Length > 0)
+				if (Environments.Count > 0 && !Environments.Any(e => e.IsWordValid(word, morph)))
 				{
 					if (morpher.TraceManager.IsTracing)
-						morpher.TraceManager.Failed(morpher.Language, word, FailureReason.Environments, this, envs[0]);
+					{
+						morpher.TraceManager.Failed(morpher.Language, word, FailureReason.Environments, this,
+							Environments);
+					}
 					return false;
 				}
 
@@ -136,26 +138,24 @@ namespace SIL.Machine.Morphology.HermitCrab
 
 		protected virtual bool CheckAllomorphConstraints(Morpher morpher, Allomorph allomorph, Word word)
 		{
-			AllomorphCoOccurrenceRule[] alloRules = AllomorphCoOccurrenceRules
-				.Where(r => !r.IsWordValid(allomorph, word)).ToArray();
-			if (alloRules.Length > 0)
+			if (AllomorphCoOccurrenceRules.Count > 0
+				&& !AllomorphCoOccurrenceRules.Any(r => r.IsWordValid(allomorph, word)))
 			{
 				if (morpher != null && morpher.TraceManager.IsTracing)
 				{
 					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.AllomorphCoOccurrenceRules, this,
-						alloRules[0]);
+						AllomorphCoOccurrenceRules);
 				}
 				return false;
 			}
 
-			MorphemeCoOccurrenceRule[] morphemeRules = Morpheme.MorphemeCoOccurrenceRules
-				.Where(r => !r.IsWordValid(Morpheme, word)).ToArray();
-			if (morphemeRules.Length > 0)
+			if (Morpheme.MorphemeCoOccurrenceRules.Count > 0
+				&& !Morpheme.MorphemeCoOccurrenceRules.Any(r => r.IsWordValid(Morpheme, word)))
 			{
 				if (morpher != null && morpher.TraceManager.IsTracing)
 				{
 					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.MorphemeCoOccurrenceRules, this,
-						morphemeRules[0]);
+						Morpheme.MorphemeCoOccurrenceRules);
 				}
 				return false;
 			}

@@ -78,8 +78,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 		/// </summary>
 		public IEnumerable<Word> ParseWord(string word)
 		{
-			object trace;
-			return ParseWord(word, out trace);
+			return ParseWord(word, out _);
 		}
 
 		public IEnumerable<Word> ParseWord(string word, out object trace)

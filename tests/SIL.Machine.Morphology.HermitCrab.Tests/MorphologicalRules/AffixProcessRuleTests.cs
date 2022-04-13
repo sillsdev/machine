@@ -998,9 +998,6 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 		public void RequiredEnvironments()
 		{
 			var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
-			var vowel = FeatureStruct.New(Language.PhonologicalFeatureSystem)
-				.Symbol(HCFeatureSystem.Segment)
-				.Symbol("voc+").Value;
 
 			var sSuffix = new AffixProcessRule
 			{
@@ -1018,7 +1015,9 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 				Environments =
 				{
 					new AllomorphEnvironment(ConstraintType.Require, null,
-						Pattern<Word, ShapeNode>.New().Annotation(vowel).Value)
+						Pattern<Word, ShapeNode>.New().Annotation(Char(Table3, "a")).Value),
+					new AllomorphEnvironment(ConstraintType.Require, null,
+						Pattern<Word, ShapeNode>.New().Annotation(Char(Table3, "ɯ")).Value)
 				}
 			});
 			sSuffix.Allomorphs.Add(new AffixProcessAllomorph

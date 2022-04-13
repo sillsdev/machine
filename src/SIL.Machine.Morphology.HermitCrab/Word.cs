@@ -12,6 +12,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 {
 	public class Word : Freezable<Word>, IAnnotatedData<ShapeNode>, ICloneable<Word>
 	{
+		public const string RootMorphID = "ROOT";
+
 		private readonly Dictionary<string, Allomorph> _allomorphs;
 		private RootAllomorph _rootAllomorph;
 		private Shape _shape;
@@ -133,7 +135,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			_rootAllomorph = rootAllomorph;
 			var entry = (LexEntry)_rootAllomorph.Morpheme;
 			Stratum = entry.Stratum;
-			MarkMorph(_shape, _rootAllomorph, "ROOT");
+			MarkMorph(_shape, _rootAllomorph, RootMorphID);
 			SyntacticFeatureStruct = entry.SyntacticFeatureStruct.Clone();
 			_mprFeatures.Clear();
 			_mprFeatures.UnionWith(entry.MprFeatures);
