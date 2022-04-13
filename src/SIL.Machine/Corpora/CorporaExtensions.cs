@@ -196,8 +196,6 @@ namespace SIL.Machine.Corpora
 		public static ITextCorpus Flatten(this IEnumerable<ITextCorpus> corpora)
 		{
 			ITextCorpus[] corpusArray = corpora.ToArray();
-			if (corpusArray.Length == 0)
-				throw new ArgumentException("No corpora specified.");
 			if (corpusArray.Length == 1)
 				return corpusArray[0];
 			return new FlattenTextCorpus(corpusArray);
@@ -352,8 +350,6 @@ namespace SIL.Machine.Corpora
 		public static IAlignmentCorpus Flatten(this IEnumerable<IAlignmentCorpus> corpora)
 		{
 			IAlignmentCorpus[] corpusArray = corpora.ToArray();
-			if (corpusArray.Length == 0)
-				throw new ArgumentException("No corpora specified.");
 			if (corpusArray.Length == 1)
 				return corpusArray[0];
 			return new FlattenAlignmentCorpus(corpusArray);
@@ -629,8 +625,6 @@ namespace SIL.Machine.Corpora
 		public static IParallelTextCorpus Flatten(this IEnumerable<IParallelTextCorpus> corpora)
 		{
 			IParallelTextCorpus[] corpusArray = corpora.ToArray();
-			if (corpusArray.Length == 0)
-				throw new ArgumentException("No corpora specified.");
 			if (corpusArray.Length == 1)
 				return corpusArray[0];
 			return new FlattenParallelTextCorpus(corpusArray);
