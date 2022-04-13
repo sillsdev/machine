@@ -38,7 +38,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			return base.ConstraintsEqual(other) && IsBound == otherAllo.IsBound;
 		}
 
-		protected override bool IsWordValid(Morpher morpher, Allomorph allomorph, Word word)
+		protected override bool CheckAllomorphConstraints(Morpher morpher, Allomorph allomorph, Word word)
 		{
 			if (IsBound && word.Allomorphs.Count == 1)
 			{
@@ -64,7 +64,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 				}
 			}
 
-			return base.IsWordValid(morpher, allomorph, word);
+			return base.CheckAllomorphConstraints(morpher, allomorph, word);
 		}
 	}
 }

@@ -142,15 +142,17 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 				}
 			}
 
-			Annotation<ShapeNode> outputNewMorph = MarkMorphs(newMorphNodes, output, _allomorph);
+			Annotation<ShapeNode> outputNewMorph = MarkMorphs(newMorphNodes, output, _allomorph,
+				output.MorphologicalRuleApplicationCount.ToString());
 
 			var markedAllomorphs = new HashSet<Allomorph>();
 			foreach (Annotation<ShapeNode> inputMorph in match.Input.Morphs)
 			{
 				Allomorph allomorph = match.Input.GetAllomorph(inputMorph);
+				string morphID = (string)inputMorph.FeatureStruct.GetValue(HCFeatureSystem.MorphID);
 				if (existingMorphNodes.TryGetValue(inputMorph, out List<ShapeNode> nodes))
 				{
-					Annotation<ShapeNode> outputMorph = MarkMorphs(nodes, output, allomorph);
+					Annotation<ShapeNode> outputMorph = MarkMorphs(nodes, output, allomorph, morphID);
 					MarkSubsumedMorphs(match.Input, output, inputMorph, outputMorph);
 				}
 				else if (inputMorph.Parent == null && !markedAllomorphs.Contains(allomorph))
@@ -158,7 +160,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 					// an existing morph has been completely subsumed by the new morph
 					// mark the subsumed morph so we don't lose track of it
 					// this is only necessary if the allomorph hasn't already been marked elsewhere
-					Annotation<ShapeNode> outputMorph = output.MarkSubsumedMorph(outputNewMorph, allomorph);
+					Annotation<ShapeNode> outputMorph = output.MarkSubsumedMorph(outputNewMorph, allomorph, morphID);
 					MarkSubsumedMorphs(match.Input, output, inputMorph, outputMorph);
 				}
 				markedAllomorphs.Add(allomorph);
@@ -177,12 +179,13 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			foreach (Annotation<ShapeNode> inputChild in inputMorph.Children.Where(ann => ann.Type() == HCFeatureSystem.Morph))
 			{
 				Allomorph allomorph = input.GetAllomorph(inputChild);
-				Annotation<ShapeNode> outputChild = output.MarkSubsumedMorph(outputMorph, allomorph);
+				string morphID = (string)inputChild.FeatureStruct.GetValue(HCFeatureSystem.MorphID);
+				Annotation<ShapeNode> outputChild = output.MarkSubsumedMorph(outputMorph, allomorph, morphID);
 				MarkSubsumedMorphs(input, output, inputChild, outputChild);
 			}
 		}
 
-		private Annotation<ShapeNode> MarkMorphs(List<ShapeNode> nodes, Word output, Allomorph allomorph)
+		private Annotation<ShapeNode> MarkMorphs(List<ShapeNode> nodes, Word output, Allomorph allomorph, string morphID)
 		{
 			Annotation<ShapeNode> longestMorph = null;
 			var curMorphNodes = new List<ShapeNode>();
@@ -192,7 +195,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 				// only contiguous nodes should be marked as a morph
 				if (i == nodes.Count - 1 || nodes[i].Next != nodes[i + 1])
 				{
-					Annotation<ShapeNode> morph = output.MarkMorph(curMorphNodes, allomorph);
+					Annotation<ShapeNode> morph = output.MarkMorph(curMorphNodes, allomorph, morphID);
 					if (longestMorph == null || morph.Range.Length > longestMorph.Range.Length)
 						longestMorph = morph;
 					curMorphNodes.Clear();

@@ -76,20 +76,24 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 				return false;
 
 			return base.ConstraintsEqual(other) && _requiredMprFeatures.SetEquals(otherAllo._requiredMprFeatures)
-				&& _excludedMprFeatures.SetEquals(otherAllo._excludedMprFeatures) && _lhs.SequenceEqual(otherAllo._lhs, FreezableEqualityComparer<Pattern<Word, ShapeNode>>.Default)
+				&& _excludedMprFeatures.SetEquals(otherAllo._excludedMprFeatures)
+				&& _lhs.SequenceEqual(otherAllo._lhs, FreezableEqualityComparer<Pattern<Word, ShapeNode>>.Default)
 				&& RequiredSyntacticFeatureStruct.ValueEquals(otherAllo.RequiredSyntacticFeatureStruct);
 		}
 
-		protected override bool IsWordValid(Morpher morpher, Allomorph allomorph, Word word)
+		protected override bool CheckAllomorphConstraints(Morpher morpher, Allomorph allomorph, Word word)
 		{
 			if (!RequiredSyntacticFeatureStruct.IsUnifiable(word.SyntacticFeatureStruct))
 			{
 				if (morpher != null && morpher.TraceManager.IsTracing)
-					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.RequiredSyntacticFeatureStruct, this, RequiredSyntacticFeatureStruct);
+				{
+					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.RequiredSyntacticFeatureStruct,
+						this, RequiredSyntacticFeatureStruct);
+				}
 				return false;
 			}
 
-			return base.IsWordValid(morpher, allomorph, word);
+			return base.CheckAllomorphConstraints(morpher, allomorph, word);
 		}
 	}
 }

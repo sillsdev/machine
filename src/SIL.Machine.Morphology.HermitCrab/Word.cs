@@ -27,7 +27,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 		private Stratum _stratum;
 		private bool? _isLastAppliedRuleFinal;
 		private bool _isPartial;
-		private readonly Dictionary<string, HashSet<int>> _disjunctiveAllomorphsApps;
+		private readonly Dictionary<string, HashSet<int>> _disjunctiveAllomorphIndices;
+		private int _mruleAppCount = 0;
 
 		public Word(RootAllomorph rootAllomorph, FeatureStruct realizationalFS)
 		{
@@ -43,7 +44,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			_nonHeadApps = new List<Word>();
 			_obligatorySyntacticFeatures = new IDBearerSet<Feature>();
 			_isLastAppliedRuleFinal = null;
-			_disjunctiveAllomorphsApps = new Dictionary<string, HashSet<int>>();
+			_disjunctiveAllomorphIndices = new Dictionary<string, HashSet<int>>();
 		}
 
 		public Word(Stratum stratum, Shape shape)
@@ -62,7 +63,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			_obligatorySyntacticFeatures = new IDBearerSet<Feature>();
 			_isLastAppliedRuleFinal = null;
 			_isPartial = false;
-			_disjunctiveAllomorphsApps = new Dictionary<string, HashSet<int>>();
+			_disjunctiveAllomorphIndices = new Dictionary<string, HashSet<int>>();
 		}
 
 		protected Word(Word word)
@@ -84,8 +85,9 @@ namespace SIL.Machine.Morphology.HermitCrab
 			_isLastAppliedRuleFinal = word._isLastAppliedRuleFinal;
 			_isPartial = word._isPartial;
 			CurrentTrace = word.CurrentTrace;
-			_disjunctiveAllomorphsApps = word._disjunctiveAllomorphsApps.ToDictionary(kvp => kvp.Key,
+			_disjunctiveAllomorphIndices = word._disjunctiveAllomorphIndices.ToDictionary(kvp => kvp.Key,
 				kvp => new HashSet<int>(kvp.Value));
+			_mruleAppCount = word._mruleAppCount;
 		}
 
 		public IEnumerable<Annotation<ShapeNode>> Morphs
@@ -131,7 +133,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			_rootAllomorph = rootAllomorph;
 			var entry = (LexEntry)_rootAllomorph.Morpheme;
 			Stratum = entry.Stratum;
-			MarkMorph(_shape, _rootAllomorph);
+			MarkMorph(_shape, _rootAllomorph, "ROOT");
 			SyntacticFeatureStruct = entry.SyntacticFeatureStruct.Clone();
 			_mprFeatures.Clear();
 			_mprFeatures.UnionWith(entry.MprFeatures);
@@ -214,6 +216,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 			}
 		}
 
+		internal int MorphologicalRuleApplicationCount => _mruleAppCount;
+
 		internal bool IsAllMorphologicalRulesApplied
 		{
 			get { return _mruleAppIndex == -1; }
@@ -239,7 +243,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			return curRule.Stratum == stratum;
 		}
 
-		internal Annotation<ShapeNode> MarkMorph(IEnumerable<ShapeNode> nodes, Allomorph allomorph)
+		internal Annotation<ShapeNode> MarkMorph(IEnumerable<ShapeNode> nodes, Allomorph allomorph, string morphID)
 		{
 			ShapeNode[] nodeArray = nodes.ToArray();
 			Annotation<ShapeNode> ann = null;
@@ -248,7 +252,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 				ann = new Annotation<ShapeNode>(Range<ShapeNode>.Create(nodeArray[0], nodeArray[nodeArray.Length - 1]),
 					FeatureStruct.New()
 						.Symbol(HCFeatureSystem.Morph)
-						.Feature(HCFeatureSystem.Allomorph).EqualTo(allomorph.ID).Value);
+						.Feature(HCFeatureSystem.Allomorph).EqualTo(allomorph.ID)
+						.Feature(HCFeatureSystem.MorphID).EqualTo(morphID).Value);
 				ann.Children.AddRange(nodeArray.Select(n => n.Annotation));
 				_shape.Annotations.Add(ann, false);
 			}
@@ -256,11 +261,13 @@ namespace SIL.Machine.Morphology.HermitCrab
 			return ann;
 		}
 
-		internal Annotation<ShapeNode> MarkSubsumedMorph(Annotation<ShapeNode> morph, Allomorph allomorph)
+		internal Annotation<ShapeNode> MarkSubsumedMorph(Annotation<ShapeNode> morph, Allomorph allomorph,
+			string morphID)
 		{
 			Annotation<ShapeNode> ann = new Annotation<ShapeNode>(morph.Range, FeatureStruct.New()
 				.Symbol(HCFeatureSystem.Morph)
-				.Feature(HCFeatureSystem.Allomorph).EqualTo(allomorph.ID).Value);
+				.Feature(HCFeatureSystem.Allomorph).EqualTo(allomorph.ID)
+				.Feature(HCFeatureSystem.MorphID).EqualTo(morphID).Value);
 			morph.Children.Add(ann, false);
 			_allomorphs[allomorph.ID] = allomorph;
 			return ann;
@@ -272,7 +279,6 @@ namespace SIL.Machine.Morphology.HermitCrab
 			_allomorphs.Remove(alloID);
 			foreach (ShapeNode node in _shape.GetNodes(morphAnn.Range).ToArray())
 				node.Remove();
-			_disjunctiveAllomorphsApps.Remove(alloID);
 		}
 
 		/// <summary>
@@ -308,7 +314,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 		/// <summary>
 		/// Notifies this word synthesis that the specified morphological rule has applied.
 		/// </summary>
-		internal void MorphologicalRuleApplied(IMorphologicalRule mrule)
+		internal void MorphologicalRuleApplied(IMorphologicalRule mrule, IEnumerable<int> allomorphIndices = null)
 		{
 			CheckFrozen();
 			if (IsMorphologicalRuleApplicable(mrule))
@@ -317,6 +323,9 @@ namespace SIL.Machine.Morphology.HermitCrab
 			if (mrule is CompoundingRule)
 				_nonHeadAppIndex--;
 			_mrulesApplied.UpdateValue(mrule, () => 0, count => count + 1);
+			if (allomorphIndices != null)
+				_disjunctiveAllomorphIndices.GetOrCreate(_mruleAppCount.ToString()).UnionWith(allomorphIndices);
+			_mruleAppCount++;
 		}
 
 		internal bool? IsLastAppliedRuleFinal
@@ -369,15 +378,15 @@ namespace SIL.Machine.Morphology.HermitCrab
 			return _allomorphs[alloID];
 		}
 
-		internal void AddDisjunctiveAllomorphApplications(Allomorph allomorph, IEnumerable<int> allomorphIndices)
+		internal IEnumerable<Annotation<ShapeNode>> GetMorphs(Allomorph allomorph)
 		{
-			if (_allomorphs.ContainsKey(allomorph.ID))
-				_disjunctiveAllomorphsApps.GetOrCreate(allomorph.ID).UnionWith(allomorphIndices);
+			return Morphs.Where(m => (string)m.FeatureStruct.GetValue(HCFeatureSystem.Allomorph) == allomorph.ID);
 		}
 
-		internal IEnumerable<int> GetDisjunctiveAllomorphApplications(Allomorph allomorph)
+		internal IEnumerable<int> GetDisjunctiveAllomorphApplications(Annotation<ShapeNode> morph)
 		{
-			if (_disjunctiveAllomorphsApps.TryGetValue(allomorph.ID, out HashSet<int> indices))
+			var morphID = (string)morph.FeatureStruct.GetValue(HCFeatureSystem.MorphID);
+			if (_disjunctiveAllomorphIndices.TryGetValue(morphID, out HashSet<int> indices))
 				return indices;
 			return null;
 		}

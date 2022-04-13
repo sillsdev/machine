@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
@@ -98,47 +99,65 @@ namespace SIL.Machine.Morphology.HermitCrab
 
 		internal bool IsWordValid(Morpher morpher, Word word)
 		{
-			return IsWordValid(morpher, this, word);
-		}
-
-		protected virtual bool IsWordValid(Morpher morpher, Allomorph allomorph, Word word)
-		{
-			AllomorphEnvironment env = Environments.FirstOrDefault(e => !e.IsWordValid(allomorph, word));
-			if (env != null)
-			{
-				if (morpher != null && morpher.TraceManager.IsTracing)
-					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.Environments, this, env);
+			if (!CheckAllomorphConstraints(morpher, this, word))
 				return false;
-			}
 
-			AllomorphCoOccurrenceRule alloRule = AllomorphCoOccurrenceRules.FirstOrDefault(r => !r.IsWordValid(allomorph, word));
-			if (alloRule != null)
+			foreach (Annotation<ShapeNode> morph in word.GetMorphs(this))
 			{
-				if (morpher != null && morpher.TraceManager.IsTracing)
-					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.AllomorphCoOccurrenceRules, this, alloRule);
-				return false;
-			}
-
-			MorphemeCoOccurrenceRule morphemeRule = Morpheme.MorphemeCoOccurrenceRules.FirstOrDefault(r => !r.IsWordValid(Morpheme, word));
-			if (morphemeRule != null)
-			{
-				if (morpher != null && morpher.TraceManager.IsTracing)
-					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.MorphemeCoOccurrenceRules, this, morphemeRule);
-				return false;
-			}
-
-			if (allomorph == this)
-			{
-				foreach (int i in word.GetDisjunctiveAllomorphApplications(allomorph) ?? Enumerable.Range(0, Index))
+				AllomorphEnvironment[] envs = Environments.Where(e => !e.IsWordValid(word, morph)).ToArray();
+				if (envs.Length > 0)
 				{
-					Allomorph prevAllomorph = Morpheme.GetAllomorph(i);
-					if (!FreeFluctuatesWith(prevAllomorph) && prevAllomorph.IsWordValid(null, allomorph, word))
+					if (morpher.TraceManager.IsTracing)
+						morpher.TraceManager.Failed(morpher.Language, word, FailureReason.Environments, this, envs[0]);
+					return false;
+				}
+
+				foreach (int i in word.GetDisjunctiveAllomorphApplications(morph) ?? Enumerable.Range(0, Index))
+				{
+					Allomorph disjunctiveAllomorph = Morpheme.GetAllomorph(i);
+
+					if (!FreeFluctuatesWith(disjunctiveAllomorph)
+						&& (disjunctiveAllomorph.Environments.Count == 0
+							|| disjunctiveAllomorph.Environments.Any(e => e.IsWordValid(word, morph)))
+						&& disjunctiveAllomorph.CheckAllomorphConstraints(null, this, word))
 					{
 						if (morpher.TraceManager.IsTracing)
-							morpher.TraceManager.Failed(morpher.Language, word, FailureReason.DisjunctiveAllomorph, this, prevAllomorph);
+						{
+							morpher.TraceManager.Failed(morpher.Language, word, FailureReason.DisjunctiveAllomorph,
+								this, disjunctiveAllomorph);
+						}
 						return false;
 					}
 				}
+			}
+
+			return true;
+		}
+
+		protected virtual bool CheckAllomorphConstraints(Morpher morpher, Allomorph allomorph, Word word)
+		{
+			AllomorphCoOccurrenceRule[] alloRules = AllomorphCoOccurrenceRules
+				.Where(r => !r.IsWordValid(allomorph, word)).ToArray();
+			if (alloRules.Length > 0)
+			{
+				if (morpher != null && morpher.TraceManager.IsTracing)
+				{
+					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.AllomorphCoOccurrenceRules, this,
+						alloRules[0]);
+				}
+				return false;
+			}
+
+			MorphemeCoOccurrenceRule[] morphemeRules = Morpheme.MorphemeCoOccurrenceRules
+				.Where(r => !r.IsWordValid(Morpheme, word)).ToArray();
+			if (morphemeRules.Length > 0)
+			{
+				if (morpher != null && morpher.TraceManager.IsTracing)
+				{
+					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.MorphemeCoOccurrenceRules, this,
+						morphemeRules[0]);
+				}
+				return false;
 			}
 
 			return true;

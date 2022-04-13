@@ -90,9 +90,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 				{
 					outWord.SyntacticFeatureStruct = syntacticFS;
 					outWord.SyntacticFeatureStruct.PriorityUnion(_rule.RealizationalFeatureStruct);
-					outWord.MorphologicalRuleApplied(_rule);
 
-					outWord.AddDisjunctiveAllomorphApplications(allo, appliedAllomorphIndices);
+					outWord.MorphologicalRuleApplied(_rule, appliedAllomorphIndices);
 					appliedAllomorphIndices.Add(i);
 
 					if (_rule.Blockable && outWord.CheckBlocking(out Word newWord))

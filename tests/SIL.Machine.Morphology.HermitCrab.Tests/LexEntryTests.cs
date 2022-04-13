@@ -185,18 +185,18 @@ namespace SIL.Machine.Morphology.HermitCrab
 			LexEntry nonHeadEntry = Entries["40"];
 			word.Shape.AddRange(nonHeadEntry.PrimaryAllomorph.Segments.Shape.AsEnumerable().CloneItems());
 			Annotation<ShapeNode> nonHeadMorph = word.MarkMorph(word.Shape.GetNodes(node.Next, word.Shape.Last),
-				nonHeadEntry.PrimaryAllomorph);
+				nonHeadEntry.PrimaryAllomorph, "ROOT");
 
-			Assert.That(env.IsWordValid(headEntry.PrimaryAllomorph, word), Is.True);
+			Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.True);
 
 			word.RemoveMorph(nonHeadMorph);
 
 			nonHeadEntry = Entries["41"];
 			word.Shape.AddRange(nonHeadEntry.PrimaryAllomorph.Segments.Shape.AsEnumerable().CloneItems());
 			nonHeadMorph = word.MarkMorph(word.Shape.GetNodes(node.Next, word.Shape.Last),
-				nonHeadEntry.PrimaryAllomorph);
+				nonHeadEntry.PrimaryAllomorph, "ROOT");
 
-			Assert.That(env.IsWordValid(headEntry.PrimaryAllomorph, word), Is.False);
+			Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.False);
 
 			headEntry.PrimaryAllomorph.Environments.Clear();
 
@@ -210,18 +210,18 @@ namespace SIL.Machine.Morphology.HermitCrab
 			word.Shape.AddRangeAfter(word.Shape.Begin,
 				nonHeadEntry.PrimaryAllomorph.Segments.Shape.AsEnumerable().CloneItems());
 			nonHeadMorph = word.MarkMorph(word.Shape.GetNodes(word.Shape.First, node.Prev),
-				nonHeadEntry.PrimaryAllomorph);
+				nonHeadEntry.PrimaryAllomorph, "ROOT");
 
-			Assert.That(env.IsWordValid(headEntry.PrimaryAllomorph, word), Is.True);
+			Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.True);
 
 			word.RemoveMorph(nonHeadMorph);
 
 			nonHeadEntry = Entries["41"];
 			word.Shape.AddRangeAfter(word.Shape.Begin,
 				nonHeadEntry.PrimaryAllomorph.Segments.Shape.AsEnumerable().CloneItems());
-			word.MarkMorph(word.Shape.GetNodes(word.Shape.First, node.Prev), nonHeadEntry.PrimaryAllomorph);
+			word.MarkMorph(word.Shape.GetNodes(word.Shape.First, node.Prev), nonHeadEntry.PrimaryAllomorph, "ROOT");
 
-			Assert.That(env.IsWordValid(headEntry.PrimaryAllomorph, word), Is.False);
+			Assert.That(env.IsWordValid(word, word.GetMorphs(headEntry.PrimaryAllomorph).First()), Is.False);
 		}
 
 		[Test]
