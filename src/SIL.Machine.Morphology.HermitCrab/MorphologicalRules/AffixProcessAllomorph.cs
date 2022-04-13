@@ -72,8 +72,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
 		protected override bool ConstraintsEqual(Allomorph other)
 		{
-			var otherAllo = other as AffixProcessAllomorph;
-			if (otherAllo == null)
+			if (!(other is AffixProcessAllomorph otherAllo))
 				return false;
 
 			return base.ConstraintsEqual(other) && _requiredMprFeatures.SetEquals(otherAllo._requiredMprFeatures)
@@ -81,19 +80,16 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 				&& RequiredSyntacticFeatureStruct.ValueEquals(otherAllo.RequiredSyntacticFeatureStruct);
 		}
 
-		internal override bool IsWordValid(Morpher morpher, Word word)
+		protected override bool IsWordValid(Morpher morpher, Allomorph allomorph, Word word)
 		{
-			if (!base.IsWordValid(morpher, word))
-				return false;
-
 			if (!RequiredSyntacticFeatureStruct.IsUnifiable(word.SyntacticFeatureStruct))
 			{
-				if (morpher.TraceManager.IsTracing)
+				if (morpher != null && morpher.TraceManager.IsTracing)
 					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.RequiredSyntacticFeatureStruct, this, RequiredSyntacticFeatureStruct);
 				return false;
 			}
 
-			return true;
+			return base.IsWordValid(morpher, allomorph, word);
 		}
 	}
 }

@@ -13,9 +13,9 @@ namespace SIL.Machine.Morphology.HermitCrab
 	public class AllomorphEnvironment : IEquatable<AllomorphEnvironment>
 	{
 		private readonly ConstraintType _type;
-		private readonly Pattern<Word, ShapeNode> _leftEnv; 
+		private readonly Pattern<Word, ShapeNode> _leftEnv;
 		private readonly Matcher<Word, ShapeNode> _leftEnvMatcher;
-		private readonly Pattern<Word, ShapeNode> _rightEnv; 
+		private readonly Pattern<Word, ShapeNode> _rightEnv;
 		private readonly Matcher<Word, ShapeNode> _rightEnvMatcher;
 
 		public AllomorphEnvironment(ConstraintType type, Pattern<Word, ShapeNode> leftEnv,
@@ -68,19 +68,17 @@ namespace SIL.Machine.Morphology.HermitCrab
 			get { return _rightEnv; }
 		}
 
-		internal Allomorph Allomorph { get; set; }
-
-		public bool IsWordValid(Word word)
+		public bool IsWordValid(Allomorph allomorph, Word word)
 		{
 			if (_type == ConstraintType.Exclude)
-				return !IsMatch(word);
-			return IsMatch(word);
+				return !IsMatch(allomorph.ID, word);
+			return IsMatch(allomorph.ID, word);
 		}
 
-		private bool IsMatch(Word word)
+		private bool IsMatch(string allomorphID, Word word)
 		{
 			foreach (Annotation<ShapeNode> morph in word.Morphs
-				.Where(ann => (string) ann.FeatureStruct.GetValue(HCFeatureSystem.Allomorph) == Allomorph.ID))
+				.Where(ann => (string)ann.FeatureStruct.GetValue(HCFeatureSystem.Allomorph) == allomorphID))
 			{
 				if (_leftEnvMatcher != null && !_leftEnvMatcher.IsMatch(word, morph.Range.Start.Prev))
 					return false;

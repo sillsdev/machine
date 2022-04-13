@@ -12,7 +12,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 {
 	public class Word : Freezable<Word>, IAnnotatedData<ShapeNode>, ICloneable<Word>
 	{
-		private readonly Dictionary<string, Allomorph> _allomorphs; 
+		private readonly Dictionary<string, Allomorph> _allomorphs;
 		private RootAllomorph _rootAllomorph;
 		private Shape _shape;
 		private readonly List<IMorphologicalRule> _mruleApps;
@@ -27,6 +27,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 		private Stratum _stratum;
 		private bool? _isLastAppliedRuleFinal;
 		private bool _isPartial;
+		private readonly Dictionary<string, HashSet<int>> _disjunctiveAllomorphsApps;
 
 		public Word(RootAllomorph rootAllomorph, FeatureStruct realizationalFS)
 		{
@@ -42,6 +43,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			_nonHeadApps = new List<Word>();
 			_obligatorySyntacticFeatures = new IDBearerSet<Feature>();
 			_isLastAppliedRuleFinal = null;
+			_disjunctiveAllomorphsApps = new Dictionary<string, HashSet<int>>();
 		}
 
 		public Word(Stratum stratum, Shape shape)
@@ -60,6 +62,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			_obligatorySyntacticFeatures = new IDBearerSet<Feature>();
 			_isLastAppliedRuleFinal = null;
 			_isPartial = false;
+			_disjunctiveAllomorphsApps = new Dictionary<string, HashSet<int>>();
 		}
 
 		protected Word(Word word)
@@ -81,6 +84,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 			_isLastAppliedRuleFinal = word._isLastAppliedRuleFinal;
 			_isPartial = word._isPartial;
 			CurrentTrace = word.CurrentTrace;
+			_disjunctiveAllomorphsApps = word._disjunctiveAllomorphsApps.ToDictionary(kvp => kvp.Key,
+				kvp => new HashSet<int>(kvp.Value));
 		}
 
 		public IEnumerable<Annotation<ShapeNode>> Morphs
@@ -124,7 +129,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 		private void SetRootAllomorph(RootAllomorph rootAllomorph)
 		{
 			_rootAllomorph = rootAllomorph;
-			var entry = (LexEntry) _rootAllomorph.Morpheme;
+			var entry = (LexEntry)_rootAllomorph.Morpheme;
 			Stratum = entry.Stratum;
 			MarkMorph(_shape, _rootAllomorph);
 			SyntacticFeatureStruct = entry.SyntacticFeatureStruct.Clone();
@@ -192,7 +197,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 					if (rule == null || rule is CompoundingRule)
 						yield return _nonHeadApps[j--].RootAllomorph.Morpheme;
 					else
-						yield return (MorphemicMorphologicalRule) rule;
+						yield return (MorphemicMorphologicalRule)rule;
 				}
 			}
 		}
@@ -263,10 +268,11 @@ namespace SIL.Machine.Morphology.HermitCrab
 
 		internal void RemoveMorph(Annotation<ShapeNode> morphAnn)
 		{
-			var alloID = (string) morphAnn.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
+			var alloID = (string)morphAnn.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
 			_allomorphs.Remove(alloID);
 			foreach (ShapeNode node in _shape.GetNodes(morphAnn.Range).ToArray())
 				node.Remove();
+			_disjunctiveAllomorphsApps.Remove(alloID);
 		}
 
 		/// <summary>
@@ -294,8 +300,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 		/// <returns>The number of unapplications.</returns>
 		internal int GetUnapplicationCount(IMorphologicalRule mrule)
 		{
-			int numUnapplies;
-			if (!_mrulesUnapplied.TryGetValue(mrule, out numUnapplies))
+			if (!_mrulesUnapplied.TryGetValue(mrule, out int numUnapplies))
 				numUnapplies = 0;
 			return numUnapplies;
 		}
@@ -331,8 +336,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 		/// <returns>The number of applications.</returns>
 		internal int GetApplicationCount(IMorphologicalRule mrule)
 		{
-			int numApplies;
-			if (!_mrulesApplied.TryGetValue(mrule, out numApplies))
+			if (!_mrulesApplied.TryGetValue(mrule, out int numApplies))
 				numApplies = 0;
 			return numApplies;
 		}
@@ -361,14 +365,27 @@ namespace SIL.Machine.Morphology.HermitCrab
 
 		public Allomorph GetAllomorph(Annotation<ShapeNode> morph)
 		{
-			var alloID = (string) morph.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
+			var alloID = (string)morph.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
 			return _allomorphs[alloID];
+		}
+
+		internal void AddDisjunctiveAllomorphApplications(Allomorph allomorph, IEnumerable<int> allomorphIndices)
+		{
+			if (_allomorphs.ContainsKey(allomorph.ID))
+				_disjunctiveAllomorphsApps.GetOrCreate(allomorph.ID).UnionWith(allomorphIndices);
+		}
+
+		internal IEnumerable<int> GetDisjunctiveAllomorphApplications(Allomorph allomorph)
+		{
+			if (_disjunctiveAllomorphsApps.TryGetValue(allomorph.ID, out HashSet<int> indices))
+				return indices;
+			return null;
 		}
 
 		internal bool CheckBlocking(out Word word)
 		{
 			word = null;
-			LexFamily family = ((LexEntry) RootAllomorph.Morpheme).Family;
+			LexFamily family = ((LexEntry)RootAllomorph.Morpheme).Family;
 			if (family == null)
 				return false;
 

@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
@@ -9,7 +7,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 	/// </summary>
 	public abstract class Morpheme : IMorpheme
 	{
-		private readonly ObservableCollection<MorphemeCoOccurrenceRule> _morphemeCoOccurrenceRules;
+		private readonly HashSet<MorphemeCoOccurrenceRule> _morphemeCoOccurrenceRules;
 		private readonly Properties _properties;
 
 		/// <summary>
@@ -17,23 +15,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 		/// </summary>
 		protected Morpheme()
 		{
-			_morphemeCoOccurrenceRules = new ObservableCollection<MorphemeCoOccurrenceRule>();
-			_morphemeCoOccurrenceRules.CollectionChanged += MorphemeCoOccurrenceRuleRulesChanged;
+			_morphemeCoOccurrenceRules = new HashSet<MorphemeCoOccurrenceRule>();
 			_properties = new Properties();
-		}
-
-		private void MorphemeCoOccurrenceRuleRulesChanged(object sender, NotifyCollectionChangedEventArgs e)
-		{
-			if (e.OldItems != null)
-			{
-				foreach (MorphemeCoOccurrenceRule cooccur in e.OldItems)
-					cooccur.Key = null;
-			}
-			if (e.NewItems != null)
-			{
-				foreach (MorphemeCoOccurrenceRule cooccur in e.NewItems)
-					cooccur.Key = this;
-			}
 		}
 
 		/// <summary>
@@ -53,6 +36,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 		public string Gloss { get; set; }
 
 		public abstract MorphemeType MorphemeType { get; }
+
+		public abstract int AllomorphCount { get; }
 
 		/// <summary>
 		/// Gets or sets a value indicating whether this morpheme is partially analyzed.

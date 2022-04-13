@@ -24,8 +24,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 			};
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 			{
-				Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd")}
+				Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+				Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd") }
 			});
 			Morphophonemic.MorphologicalRules.Add(edSuffix);
 
@@ -58,13 +58,13 @@ namespace SIL.Machine.Morphology.HermitCrab
 			};
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 			{
-				Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+t")}
+				Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+				Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+t") }
 			});
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 			{
-				Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+"), new InsertSimpleContext(d)}
+				Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+				Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+"), new InsertSimpleContext(d) }
 			});
 			Morphophonemic.MorphologicalRules.Add(edSuffix);
 
@@ -91,8 +91,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 			};
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 			{
-				Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd")}
+				Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+				Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd") }
 			});
 			Morphophonemic.MorphologicalRules.Add(edSuffix);
 
@@ -107,8 +107,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 			};
 			tSuffix.Allomorphs.Add(new AffixProcessAllomorph
 			{
-				Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+t")}
+				Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+				Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+t") }
 			});
 			Morphophonemic.MorphologicalRules.Add(tSuffix);
 
@@ -123,8 +123,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 			};
 			sSuffix.Allomorphs.Add(new AffixProcessAllomorph
 			{
-				Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+s")}
+				Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+				Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+s") }
 			});
 			Morphophonemic.MorphologicalRules.Add(sSuffix);
 
@@ -160,8 +160,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 			Morphophonemic.MorphologicalRules.Add(edSuffix);
 			edSuffix.Allomorphs.Add(new AffixProcessAllomorph
 			{
-				Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd")}
+				Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+				Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd") }
 			});
 
 			var morpher = new Morpher(TraceManager, Language);
@@ -187,7 +187,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			Annotation<ShapeNode> nonHeadMorph = word.MarkMorph(word.Shape.GetNodes(node.Next, word.Shape.Last),
 				nonHeadEntry.PrimaryAllomorph);
 
-			Assert.That(env.IsWordValid(word), Is.True);
+			Assert.That(env.IsWordValid(headEntry.PrimaryAllomorph, word), Is.True);
 
 			word.RemoveMorph(nonHeadMorph);
 
@@ -196,7 +196,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			nonHeadMorph = word.MarkMorph(word.Shape.GetNodes(node.Next, word.Shape.Last),
 				nonHeadEntry.PrimaryAllomorph);
 
-			Assert.That(env.IsWordValid(word), Is.False);
+			Assert.That(env.IsWordValid(headEntry.PrimaryAllomorph, word), Is.False);
 
 			headEntry.PrimaryAllomorph.Environments.Clear();
 
@@ -212,7 +212,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			nonHeadMorph = word.MarkMorph(word.Shape.GetNodes(word.Shape.First, node.Prev),
 				nonHeadEntry.PrimaryAllomorph);
 
-			Assert.That(env.IsWordValid(word), Is.True);
+			Assert.That(env.IsWordValid(headEntry.PrimaryAllomorph, word), Is.True);
 
 			word.RemoveMorph(nonHeadMorph);
 
@@ -221,7 +221,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 				nonHeadEntry.PrimaryAllomorph.Segments.Shape.AsEnumerable().CloneItems());
 			word.MarkMorph(word.Shape.GetNodes(word.Shape.First, node.Prev), nonHeadEntry.PrimaryAllomorph);
 
-			Assert.That(env.IsWordValid(word), Is.False);
+			Assert.That(env.IsWordValid(headEntry.PrimaryAllomorph, word), Is.False);
 		}
 
 		[Test]
@@ -237,8 +237,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 			};
 			nominalizer.Allomorphs.Add(new AffixProcessAllomorph
 			{
-				Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "v")}
+				Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+				Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "v") }
 			});
 			Morphophonemic.MorphologicalRules.Add(nominalizer);
 
@@ -251,13 +251,13 @@ namespace SIL.Machine.Morphology.HermitCrab
 			var sSuffix = new AffixProcessRule
 			{
 				Name = "s_suffix",
-			    Gloss = "PAST",
+				Gloss = "PAST",
 				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
 			};
 			sSuffix.Allomorphs.Add(new AffixProcessAllomorph
 			{
-				Lhs = {Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value},
-				Rhs = {new CopyFromInput("1"), new InsertSegments(Table3, "s")}
+				Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+				Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "s") }
 			});
 
 			var verbTemplate = new AffixTemplate
@@ -265,7 +265,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 				Name = "verb",
 				RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
 			};
-			verbTemplate.Slots.Add(new AffixTemplateSlot(sSuffix) {Optional = true});
+			verbTemplate.Slots.Add(new AffixTemplateSlot(sSuffix) { Optional = true });
 			Morphophonemic.AffixTemplates.Add(verbTemplate);
 
 			morpher = new Morpher(TraceManager, Language);
