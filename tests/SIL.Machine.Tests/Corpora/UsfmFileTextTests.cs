@@ -115,7 +115,7 @@ namespace SIL.Machine.Corpora
 
 			Assert.That(rows[6].Ref, Is.EqualTo(new VerseRef("MAT 2:2", corpus.Versification)));
 			Assert.That(rows[6].Text,
-				Is.EqualTo("Chapter two, verse \\fm ∆\\fm*two. Chapter two, verse three."));
+				Is.EqualTo("Chapter two, verse \\fm ∆\\fm*two. Chapter two, verse \\w three|lemma\\w*."));
 			Assert.That(rows[6].IsInRange, Is.True);
 			Assert.That(rows[6].IsRangeStart, Is.True);
 

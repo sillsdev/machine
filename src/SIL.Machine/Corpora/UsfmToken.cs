@@ -30,6 +30,7 @@ namespace SIL.Machine.Corpora
 
 		private string _defaultAttributeName;
 		private NamedAttribute[] _attributes;
+		private bool _isDefaultAttribute;
 
 		public UsfmToken(string text)
 		{
@@ -108,6 +109,7 @@ namespace SIL.Machine.Corpora
 				{
 					_attributes = new[] { new NamedAttribute(defaultAttributeName, defaultValue.Value) };
 					_defaultAttributeName = defaultAttributeName;
+					_isDefaultAttribute = true;
 					return true;
 				}
 				return false;
@@ -163,7 +165,10 @@ namespace SIL.Machine.Corpora
 				if (_attributes != null && _attributes.Length > 0)
 				{
 					sb.Append("|");
-					sb.Append(string.Join(" ", _attributes.Select(a => a.ToString())));
+					if (_isDefaultAttribute && _attributes.Length == 1)
+						sb.Append(_attributes[0].Value);
+					else
+						sb.Append(string.Join(" ", _attributes.Select(a => a.ToString())));
 				}
 			}
 			else if (!string.IsNullOrEmpty(Data))

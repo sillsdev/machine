@@ -19,7 +19,7 @@
 \p
 \v 1 Chapter \add two\add*, verse \f + \fr 2:1: \ft This is a footnote.\f*one.
 \v 2-3 Chapter two, verse \fm ∆\fm*two.
-\v 3-4a Chapter two, verse three.
+\v 3-4a Chapter two, verse \w three|lemma\w*.
 \v 4b Chapter two, verse four.
 \p
 \v 6 Chapter two, verse \w six|strong="12345"\w*.
