@@ -59,14 +59,14 @@ namespace SIL.Machine.Corpora
 							sentenceStart = true;
 							sb.Clear();
 						}
-						chapter = token.Text;
+						chapter = token.Data;
 						verse = null;
 						break;
 
 					case UsfmTokenType.Verse:
 						if (chapter != null && verse != null)
 						{
-							if (token.Text == verse)
+							if (token.Data == verse)
 							{
 								string text = sb.ToString();
 								foreach (TextRow seg in CreateRows(chapter, verse, text, sentenceStart))
@@ -77,10 +77,10 @@ namespace SIL.Machine.Corpora
 								// ignore duplicate verse
 								verse = null;
 							}
-							else if (VerseRef.AreOverlappingVersesRanges(token.Text, verse))
+							else if (VerseRef.AreOverlappingVersesRanges(token.Data, verse))
 							{
 								// merge overlapping verse ranges in to one range
-								verse = CorporaUtils.MergeVerseRanges(token.Text, verse);
+								verse = CorporaUtils.MergeVerseRanges(token.Data, verse);
 							}
 							else
 							{
@@ -89,12 +89,12 @@ namespace SIL.Machine.Corpora
 									yield return seg;
 								sentenceStart = text.HasSentenceEnding();
 								sb.Clear();
-								verse = token.Text;
+								verse = token.Data;
 							}
 						}
 						else
 						{
-							verse = token.Text;
+							verse = token.Data;
 						}
 						isVersePara = true;
 						break;
@@ -118,25 +118,25 @@ namespace SIL.Machine.Corpora
 						break;
 
 					case UsfmTokenType.End:
-						if (curEmbedMarker != null && token.Marker.Marker == curEmbedMarker.EndMarker)
+						if (curEmbedMarker != null && token.Marker.Tag == curEmbedMarker.EndTag)
 							curEmbedMarker = null;
-						if (curSpanMarker != null && token.Marker.Marker == curSpanMarker.EndMarker)
+						if (curSpanMarker != null && token.Marker.Tag == curSpanMarker.EndTag)
 							curSpanMarker = null;
 						if (isVersePara && chapter != null && verse != null && _includeMarkers)
 							sb.Append(token);
 						break;
 
 					case UsfmTokenType.Character:
-						if (SpanMarkers.Contains(token.Marker.Marker))
+						if (SpanMarkers.Contains(token.Marker.Tag))
 						{
 							curSpanMarker = token.Marker;
 						}
-						else if (token.Marker.Marker != "qac"
+						else if (token.Marker.Tag != "qac"
 							&& (token.Marker.TextType == UsfmTextType.Other
-								|| EmbedMarkers.Contains(token.Marker.Marker)))
+								|| EmbedMarkers.Contains(token.Marker.Tag)))
 						{
 							curEmbedMarker = token.Marker;
-							if (!_includeMarkers && token.Marker.Marker == "rq")
+							if (!_includeMarkers && token.Marker.Tag == "rq")
 								sb.TrimEnd();
 						}
 						if (isVersePara && chapter != null && verse != null && _includeMarkers)
@@ -148,6 +148,18 @@ namespace SIL.Machine.Corpora
 							}
 							sb.Append(token);
 							sb.Append(" ");
+						}
+						else if (IsTableCellStyle(token))
+						{
+							if (!char.IsWhiteSpace(sb[sb.Length - 1]))
+								sb.Append(" ");
+						}
+						break;
+
+					case UsfmTokenType.Attribute:
+						if (isVersePara && chapter != null && verse != null && _includeMarkers)
+						{
+							sb.Append(token);
 						}
 						break;
 
@@ -205,7 +217,7 @@ namespace SIL.Machine.Corpora
 
 		private static bool IsVersePara(UsfmToken paraToken)
 		{
-			string style = paraToken.Marker.Marker;
+			string style = paraToken.Marker.Tag;
 			if (NonVerseParaStyles.Contains(style))
 				return false;
 
@@ -216,6 +228,13 @@ namespace SIL.Machine.Corpora
 				return false;
 
 			return true;
+		}
+
+		private static bool IsTableCellStyle(UsfmToken charToken)
+		{
+			string style = charToken.Marker.Tag;
+			return IsNumberedStyle("th", style) || IsNumberedStyle("thc", style) || IsNumberedStyle("thr", style)
+				|| IsNumberedStyle("tc", style) || IsNumberedStyle("tcc", style) || IsNumberedStyle("tcr", style);
 		}
 
 		private static bool IsNumberedStyle(string stylePrefix, string style)

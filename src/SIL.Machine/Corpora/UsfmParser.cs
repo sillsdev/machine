@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace SIL.Machine.Corpora
@@ -34,7 +35,14 @@ namespace SIL.Machine.Corpora
 					if (!preserveWhitespace)
 						text = RegularizeSpaces(text);
 
-					tokens.Add(new UsfmToken(UsfmTokenType.Text, null, text));
+					UsfmToken attributeToken = HandleAttributes(usfm, preserveWhitespace, tokens, nextMarkerIndex,
+						ref text);
+
+					if (text.Length > 0)
+						tokens.Add(new UsfmToken(UsfmTokenType.Text, null, text, null));
+
+					if (attributeToken != null)
+						tokens.Add(attributeToken);
 
 					index = nextMarkerIndex;
 					continue;
@@ -49,6 +57,10 @@ namespace SIL.Machine.Corpora
 
 					// Backslash starts a new marker
 					if (ch == '\\')
+						break;
+
+					// don't require a space before the | that starts attributes - mainly for milestones to allow \qt-s|speaker\*
+					if (ch == '|')
 						break;
 
 					// End star is part of marker
@@ -67,58 +79,86 @@ namespace SIL.Machine.Corpora
 					}
 					index++;
 				}
-				string markerStr = usfm.Substring(markerStart, index - markerStart).TrimEnd();
+				string tag = usfm.Substring(markerStart, index - markerStart).TrimEnd();
+				// Milestone stop/end markers are ended with \*, so marker will just be * and can be skipped
+				if (tag == "*")
+				{
+					// make sure that previous token was a milestone - have to skip space only tokens that may have been added when
+					// preserveSpace is true.
+					UsfmToken prevToken = tokens.Count > 0 ? tokens.Last(t => t.Type != UsfmTokenType.Text || t.Text.Trim() != "") : null;
+					if (prevToken != null && (prevToken.Type == UsfmTokenType.Milestone ||
+						prevToken.Type == UsfmTokenType.MilestoneEnd))
+					{
+						// if the last item is an empty text token, remove it so we don't get extra space.
+						if (tokens.Last().Type == UsfmTokenType.Text)
+							tokens.RemoveAt(tokens.Count - 1);
+						continue;
+					}
+				}
 
 				// Multiple whitespace after non-end marker is ok
-				if (!markerStr.EndsWith("*", StringComparison.Ordinal) && !preserveWhitespace)
+				if (!tag.EndsWith("*", StringComparison.Ordinal) && !preserveWhitespace)
 				{
 					while ((index < usfm.Length) && IsNonSemanticWhiteSpace(usfm[index]))
 						index++;
 				}
 
-				bool isNested = markerStr.StartsWith("+", StringComparison.Ordinal);
+				bool isNested = tag.StartsWith("+", StringComparison.Ordinal);
+				if (!UsfmStylesheet.IsCellRange(tag, out _, out int colSpan))
+					colSpan = 0;
 				// Lookup marker
-				UsfmMarker marker = _stylesheet.GetMarker(markerStr.TrimStart('+'));
+				UsfmMarker marker = _stylesheet.GetMarker(tag.TrimStart('+'));
 
-				// If starts with a plus and is not a character style, it is an unknown marker
+				// If starts with a plus and is not a character style or an end style, it is an unknown tag
 				if (isNested && marker.StyleType != UsfmStyleType.Character && marker.StyleType != UsfmStyleType.End)
-					marker = _stylesheet.GetMarker(markerStr);
+					marker = _stylesheet.GetMarker(tag);
 
 				switch (marker.StyleType)
 				{
 					case UsfmStyleType.Character:
 						// Handle verse special case
+						UsfmToken newToken;
 						if ((marker.TextProperties & UsfmTextProperties.Verse) > 0)
-							tokens.Add(new UsfmToken(UsfmTokenType.Verse, marker, GetNextWord(usfm, ref index, preserveWhitespace)));
+						{
+							newToken = new UsfmToken(UsfmTokenType.Verse, marker, null,
+								GetNextWord(usfm, ref index, preserveWhitespace));
+						}
 						else
-							tokens.Add(new UsfmToken(UsfmTokenType.Character, marker, null, isNested));
+						{
+							newToken = new UsfmToken(UsfmTokenType.Character, marker, null, isNested: isNested,
+								colSpan: colSpan);
+						}
+						tokens.Add(newToken);
 						break;
 					case UsfmStyleType.Paragraph:
 						// Handle chapter special case
 						if ((marker.TextProperties & UsfmTextProperties.Chapter) > 0)
-							tokens.Add(new UsfmToken(UsfmTokenType.Chapter, marker, GetNextWord(usfm, ref index, preserveWhitespace)));
+							tokens.Add(new UsfmToken(UsfmTokenType.Chapter, marker, null,
+								GetNextWord(usfm, ref index, preserveWhitespace)));
 						else if ((marker.TextProperties & UsfmTextProperties.Book) > 0)
-							tokens.Add(new UsfmToken(UsfmTokenType.Book, marker, GetNextWord(usfm, ref index, preserveWhitespace)));
+							tokens.Add(new UsfmToken(UsfmTokenType.Book, marker, null,
+								GetNextWord(usfm, ref index, preserveWhitespace)));
 						else
 							tokens.Add(new UsfmToken(UsfmTokenType.Paragraph, marker, null));
 						break;
 					case UsfmStyleType.Note:
-						tokens.Add(new UsfmToken(UsfmTokenType.Note, marker, GetNextWord(usfm, ref index, preserveWhitespace)));
+						tokens.Add(new UsfmToken(UsfmTokenType.Note, marker, null,
+							GetNextWord(usfm, ref index, preserveWhitespace)));
 						break;
 					case UsfmStyleType.End:
-						tokens.Add(new UsfmToken(UsfmTokenType.End, marker, null, isNested));
+						tokens.Add(new UsfmToken(UsfmTokenType.End, marker, null, isNested: isNested));
 						break;
 					case UsfmStyleType.Unknown:
 						// End tokens are always end tokens, even if unknown
-						if (markerStr.EndsWith("*", StringComparison.Ordinal))
+						if (tag.EndsWith("*", StringComparison.Ordinal))
 						{
-							tokens.Add(new UsfmToken(UsfmTokenType.End, marker, null, isNested));
+							tokens.Add(new UsfmToken(UsfmTokenType.End, marker, null, isNested: isNested));
 						}
 						else
 						{
 							// Handle special case of esb and esbe which might not be in basic stylesheet
 							// but are always sidebars and so should be tokenized as paragraphs
-							if (markerStr == "esb" || markerStr == "esbe")
+							if (tag == "esb" || tag == "esbe")
 							{
 								tokens.Add(new UsfmToken(UsfmTokenType.Paragraph, marker, null));
 								break;
@@ -127,12 +167,34 @@ namespace SIL.Machine.Corpora
 							tokens.Add(new UsfmToken(UsfmTokenType.Unknown, marker, null));
 						}
 						break;
+					case UsfmStyleType.Milestone:
+					case UsfmStyleType.MilestoneEnd:
+						// if a milestone is not followed by a ending \* treat don't create a milestone token for the begining. Instead create at
+						// text token for all the text up to the beginning of the next marker. This will make typing of milestones easiest since
+						// the partially typed milestone more be reformatted to have a normal ending even if it hasn't been typed yet.
+						if (!MilestoneEnded(usfm, index))
+						{
+							int endOfText = (index < usfm.Length - 1) ? usfm.IndexOf('\\', index + 1) : -1;
+							if (endOfText == -1)
+								endOfText = usfm.Length;
+							string milestoneText = usfm.Substring(index, endOfText - index);
+							// add back space that was removed after marker
+							if (milestoneText.Length > 0 && milestoneText[0] != ' ' && milestoneText[0] != '|')
+								milestoneText = " " + milestoneText;
+							tokens.Add(new UsfmToken(UsfmTokenType.Text, null, @"\" + tag + milestoneText, null));
+							index = endOfText;
+						}
+						else if (marker.StyleType == UsfmStyleType.Milestone)
+							tokens.Add(new UsfmToken(UsfmTokenType.Milestone, marker, null));
+						else
+							tokens.Add(new UsfmToken(UsfmTokenType.MilestoneEnd, marker, null));
+						break;
 				}
 			}
 
 			// Forces a space to be present in tokenization if immediately
-			// before a token requiring a preceeding CR/LF. This is to ensure 
-			// that when written to disk and re-read, that tokenization 
+			// before a token requiring a preceding CR/LF. This is to ensure
+			// that when written to disk and re-read, that tokenization
 			// will match. For example, "\p test\p here" requires a space
 			// after "test". Also, "\p \em test\em*\p here" requires a space
 			// token inserted after \em*
@@ -152,7 +214,7 @@ namespace SIL.Machine.Corpora
 						if (tokens[i - 1].Type == UsfmTokenType.Text)
 						{
 							if (!tokens[i - 1].Text.EndsWith(" ", StringComparison.Ordinal))
-								tokens[i - 1] = new UsfmToken(tokens[i - 1].Text + " ");
+								tokens[i - 1].Text = tokens[i - 1].Text + " ";
 						}
 						else if (tokens[i - 1].Type == UsfmTokenType.End)
 						{
@@ -233,6 +295,92 @@ namespace SIL.Machine.Corpora
 			}
 
 			return sb.ToString();
+		}
+
+		private UsfmToken HandleAttributes(string usfm, bool preserveWhitespace, List<UsfmToken> tokens,
+			int nextMarkerIndex, ref string text)
+		{
+			int attributeIndex = text.IndexOf('|');
+			if (attributeIndex < 0)
+				return null;
+
+			UsfmToken attributeToken = null;
+			UsfmToken matchingToken = FindMatchingStartMarker(usfm, tokens, nextMarkerIndex);
+			if (matchingToken == null)
+				return null;
+
+			UsfmMarker matchingMarker = _stylesheet.GetMarker(matchingToken.Marker.Tag);
+			if (matchingMarker.StyleType != UsfmStyleType.Character &&
+				matchingMarker.StyleType != UsfmStyleType.Milestone &&
+				matchingMarker.StyleType != UsfmStyleType.MilestoneEnd)
+			{
+				return null; // leave attributes of other styles as regular text
+			}
+
+			string adjustedText = text.Substring(0, attributeIndex);
+			if (matchingToken.SetAttributes(text.Substring(attributeIndex + 1), matchingMarker.DefaultAttributeName,
+				ref adjustedText, preserveWhitespace))
+			{
+				text = adjustedText;
+
+				if (matchingMarker.StyleType == UsfmStyleType.Character) // Don't do this for milestones
+				{
+					attributeToken = new UsfmToken(UsfmTokenType.Attribute, null, null, matchingMarker.Tag);
+					attributeToken.CopyAttributes(matchingToken);
+				}
+			}
+
+			return attributeToken;
+		}
+
+		private static UsfmToken FindMatchingStartMarker(string usfm, List<UsfmToken> tokens, int nextMarkerIndex)
+		{
+			string expectedStartMarker;
+			if (!BeforeEndMarker(usfm, nextMarkerIndex, out expectedStartMarker))
+				return null;
+
+			if (expectedStartMarker == "" && (tokens.Last().Type == UsfmTokenType.Milestone ||
+				tokens.Last().Type == UsfmTokenType.MilestoneEnd))
+				return tokens.Last();
+
+			int nestingLevel = 0;
+			for (int i = tokens.Count - 1; i >= 0; i--)
+			{
+				UsfmToken token = tokens[i];
+				if (token.Type == UsfmTokenType.End)
+					nestingLevel++;
+				else if (token.Marker != null)
+				{
+					if (nestingLevel > 0)
+						nestingLevel--;
+					else if (nestingLevel == 0)
+						return token;
+				}
+			}
+
+			return null;
+		}
+
+		private static bool BeforeEndMarker(string usfm, int nextMarkerIndex, out string startMarker)
+		{
+			startMarker = null;
+			int index = nextMarkerIndex + 1;
+			while (index < usfm.Length && usfm[index] != '*' && !char.IsWhiteSpace(usfm[index]))
+				index++;
+
+			if (index >= usfm.Length || usfm[index] != '*')
+				return false;
+			startMarker = usfm.Substring(nextMarkerIndex + 1, index - nextMarkerIndex - 1);
+			return true;
+		}
+
+		private static bool MilestoneEnded(string usfm, int index)
+		{
+			int nextMarkerIndex = (index < usfm.Length) ? usfm.IndexOf('\\', index) : -1;
+			if (nextMarkerIndex == -1 || nextMarkerIndex > usfm.Length - 2)
+				return false;
+
+			return usfm.Substring(nextMarkerIndex, 2) == @"\*";
 		}
 
 		/// <summary>

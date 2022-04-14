@@ -28,7 +28,9 @@ namespace SIL.Machine.Corpora
 		Character,
 		Note,
 		Paragraph,
-		End
+		End,
+		Milestone,
+		MilestoneEnd
 	}
 
 	[Flags]
@@ -55,14 +57,28 @@ namespace SIL.Machine.Corpora
 		Note = 0x20000
 	}
 
+	public sealed class UsfmStyleAttribute
+	{
+		public UsfmStyleAttribute(string name, bool isRequired)
+		{
+			Name = name;
+			IsRequired = isRequired;
+		}
+
+		public string Name { get; }
+		public bool IsRequired { get; }
+	}
+
 	public class UsfmMarker
 	{
 		private readonly HashSet<string> _occursUnder;
+		private readonly List<UsfmStyleAttribute> _attributes;
 
 		public UsfmMarker(string marker)
 		{
-			Marker = marker;
+			Tag = marker;
 			_occursUnder = new HashSet<string>();
+			_attributes = new List<UsfmStyleAttribute>();
 		}
 
 		public bool Bold { get; set; }
@@ -71,7 +87,7 @@ namespace SIL.Machine.Corpora
 
 		public string Encoding { get; set; }
 
-		public string EndMarker { get; set; }
+		public string EndTag { get; set; }
 
 		public int FirstLineIndent { get; set; }
 
@@ -87,7 +103,7 @@ namespace SIL.Machine.Corpora
 
 		public int LineSpacing { get; set; }
 
-		public string Marker { get; }
+		public string Tag { get; }
 
 		public string Name { get; set; }
 
@@ -123,9 +139,13 @@ namespace SIL.Machine.Corpora
 
 		public int Color { get; set; }
 
+		public IList<UsfmStyleAttribute> Attributes => _attributes;
+
+		public string DefaultAttributeName { get; set; }
+
 		public override string ToString()
 		{
-			return string.Format("\\{0}", Marker);
+			return string.Format("\\{0}", Tag);
 		}
 	}
 }

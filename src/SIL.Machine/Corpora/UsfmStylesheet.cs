@@ -4,11 +4,14 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace SIL.Machine.Corpora
 {
 	public class UsfmStylesheet
 	{
+		private static readonly Regex CellRangeRegex = new Regex(@"^(t[ch][cr]?[1-5])-([2-5])$", RegexOptions.Compiled);
+
 		private static readonly Dictionary<string, UsfmJustification> JustificationMappings = new Dictionary<string, UsfmJustification>(StringComparer.OrdinalIgnoreCase)
 		{
 			{"left", UsfmJustification.Left},
@@ -67,15 +70,33 @@ namespace SIL.Machine.Corpora
 				Parse(alternateStylesheetFileName);
 		}
 
-		public UsfmMarker GetMarker(string markerStr)
+		public UsfmMarker GetMarker(string tag)
 		{
-			UsfmMarker marker;
-			if (!_markers.TryGetValue(markerStr, out marker))
-			{
-				marker = CreateMarker(markerStr);
-				marker.StyleType = UsfmStyleType.Unknown;
-			}
+			if (_markers.TryGetValue(tag, out UsfmMarker marker))
+				return marker;
+
+			if (IsCellRange(tag, out string baseTag, out _) && _markers.TryGetValue(baseTag, out marker))
+				return marker;
+
+			marker = CreateMarker(tag);
+			marker.StyleType = UsfmStyleType.Unknown;
 			return marker;
+		}
+
+		public static bool IsCellRange(string marker, out string baseMarker, out int colSpan)
+		{
+			var match = CellRangeRegex.Match(marker);
+			if (match.Success)
+			{
+				baseMarker = match.Groups[1].Value;
+				colSpan = match.Groups[2].Value[0] - baseMarker[baseMarker.Length - 1] + 1;
+				if (colSpan >= 2)
+					return true;
+			}
+
+			baseMarker = marker;
+			colSpan = 0;
+			return false;
 		}
 
 		private static IEnumerable<string> GetEmbeddedStylesheet(string fileName)
@@ -127,8 +148,8 @@ namespace SIL.Machine.Corpora
 				UsfmMarker marker = CreateMarker(entry.Text);
 				UsfmMarker endMarker = ParseMarkerEntry(marker, entries, i + 1);
 
-				if (endMarker != null && !_markers.ContainsKey(endMarker.Marker))
-					_markers[endMarker.Marker] = endMarker;
+				if (endMarker != null && !_markers.ContainsKey(endMarker.Tag))
+					_markers[endMarker.Tag] = endMarker;
 
 				foundStyles.Add(entry.Text);
 			}
@@ -155,7 +176,7 @@ namespace SIL.Machine.Corpora
 			// Paratext release 5.0 stylesheets.  Release 6.0 and later
 			// follows the guidelines set in InitPropertyMaps.
 			// Make sure \id gets book property
-			if (marker.Marker == "id")
+			if (marker.Tag == "id")
 				marker.TextProperties |= UsfmTextProperties.Book;
 
 			UsfmMarker endMarker = null;
@@ -188,8 +209,7 @@ namespace SIL.Machine.Corpora
 						}
 						else
 						{
-							int fontSize;
-							if (ParseInteger(entry, out fontSize))
+							if (ParseInteger(entry, out int fontSize))
 								marker.FontSize = fontSize;
 						}
 						break;
@@ -245,8 +265,7 @@ namespace SIL.Machine.Corpora
 						}
 						else
 						{
-							int rank;
-							if (ParseInteger(entry, out rank))
+							if (ParseInteger(entry, out int rank))
 								marker.Rank = rank;
 						}
 						break;
@@ -302,8 +321,7 @@ namespace SIL.Machine.Corpora
 						}
 						else
 						{
-							int color;
-							if (ParseInteger(entry, out color))
+							if (ParseInteger(entry, out int color))
 								marker.Color = color;
 						}
 						break;
@@ -321,12 +339,16 @@ namespace SIL.Machine.Corpora
 						break;
 
 					case "occursunder":
-						marker.OccursUnder.UnionWith(entry.Text.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries));
+						marker.OccursUnder.UnionWith(entry.Text.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries));
 						break;
 
 					case "endmarker":
 						endMarker = MakeEndMarker(entry.Text);
-						marker.EndMarker = entry.Text;
+						marker.EndTag = entry.Text;
+						break;
+
+					case "attributes":
+						ParseAttributes(marker, entry);
 						break;
 				}
 			}
@@ -334,9 +356,9 @@ namespace SIL.Machine.Corpora
 			// If we have not seen an end marker but this is a character style
 			if (marker.StyleType == UsfmStyleType.Character && endMarker == null)
 			{
-				string endMarkerStr = marker.Marker + "*";
+				string endMarkerStr = marker.Tag + "*";
 				endMarker = MakeEndMarker(endMarkerStr);
-				marker.EndMarker = endMarkerStr;
+				marker.EndTag = endMarkerStr;
 			}
 
 			// Special cases
@@ -354,7 +376,7 @@ namespace SIL.Machine.Corpora
 
 		private static UsfmMarker MakeEndMarker(string marker)
 		{
-			return new UsfmMarker(marker) {StyleType = UsfmStyleType.End};
+			return new UsfmMarker(marker) { StyleType = UsfmStyleType.End };
 		}
 
 		private static bool ParseInteger(StylesheetEntry entry, out int result)
@@ -367,7 +389,7 @@ namespace SIL.Machine.Corpora
 			float floatResult;
 			if (float.TryParse(entry.Text, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out floatResult))
 			{
-				result = (int) (floatResult * 1000);
+				result = (int)(floatResult * 1000);
 				return true;
 			}
 
@@ -404,6 +426,27 @@ namespace SIL.Machine.Corpora
 
 			if ((qTag.TextProperties & UsfmTextProperties.Nonpublishable) > 0)
 				qTag.TextProperties &= ~UsfmTextProperties.Publishable;
+		}
+
+		private static void ParseAttributes(UsfmMarker marker, StylesheetEntry entry)
+		{
+			string[] attributeNames = entry.Text.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+			if (attributeNames.Length == 0)
+				throw new ArgumentException("Attributes cannot be empty.");
+			bool foundOptional = false;
+			foreach (string attribute in attributeNames)
+			{
+				bool isOptional = attribute.StartsWith("?");
+				if (!isOptional && foundOptional)
+					throw new ArgumentException("Required attributes must precede optional attributes.");
+
+				marker.Attributes.Add(new UsfmStyleAttribute(isOptional ? attribute.Substring(1) : attribute,
+					!isOptional));
+				foundOptional |= isOptional;
+			}
+
+			marker.DefaultAttributeName = marker.Attributes.Count(a => a.IsRequired) <= 1
+				? marker.Attributes[0].Name : null;
 		}
 
 		private List<StylesheetEntry> SplitStylesheet(IEnumerable<string> fileLines)
