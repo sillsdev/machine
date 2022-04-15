@@ -452,7 +452,11 @@ namespace SIL.Machine.Corpora
 		private List<StylesheetEntry> SplitStylesheet(IEnumerable<string> fileLines)
 		{
 			List<StylesheetEntry> entries = new List<StylesheetEntry>();
-			foreach (string line in fileLines.Select(l => l.Split('#')[0].Trim()))
+			// Lines that are not compatible with USFM 2 are started with #!, so these two characters are stripped from
+			// the beginning of lines.
+			foreach (string line in fileLines
+				.Select(l => l.StartsWith("#!", StringComparison.Ordinal) ? l.Substring(2) : l)
+				.Select(l => l.Split('#')[0].Trim()))
 			{
 				if (line == "")
 					continue;

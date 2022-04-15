@@ -132,6 +132,7 @@ namespace SIL.Machine.Corpora
 		{
 			_attributes = sourceToken._attributes;
 			_defaultAttributeName = sourceToken._defaultAttributeName;
+			_isDefaultAttribute = sourceToken._isDefaultAttribute;
 		}
 
 		private static void AppendAttribute(List<NamedAttribute> attributes, string name, string value)

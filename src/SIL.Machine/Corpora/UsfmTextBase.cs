@@ -46,15 +46,15 @@ namespace SIL.Machine.Corpora
 			bool sentenceStart = true;
 			UsfmToken prevToken = null;
 			bool isVersePara = false;
-			foreach (UsfmToken token in _parser.Parse(usfm))
+			foreach (UsfmToken token in _parser.Parse(usfm, _includeMarkers))
 			{
 				switch (token.Type)
 				{
 					case UsfmTokenType.Chapter:
 						if (chapter != null && verse != null)
 						{
-							string text = sb.ToString();
-							foreach (TextRow seg in CreateRows(chapter, verse, text, sentenceStart))
+							string verseText = sb.ToString();
+							foreach (TextRow seg in CreateRows(chapter, verse, verseText, sentenceStart))
 								yield return seg;
 							sentenceStart = true;
 							sb.Clear();
@@ -68,10 +68,10 @@ namespace SIL.Machine.Corpora
 						{
 							if (token.Data == verse)
 							{
-								string text = sb.ToString();
-								foreach (TextRow seg in CreateRows(chapter, verse, text, sentenceStart))
+								string verseText = sb.ToString();
+								foreach (TextRow seg in CreateRows(chapter, verse, verseText, sentenceStart))
 									yield return seg;
-								sentenceStart = text.HasSentenceEnding();
+								sentenceStart = verseText.HasSentenceEnding();
 								sb.Clear();
 
 								// ignore duplicate verse
@@ -84,10 +84,10 @@ namespace SIL.Machine.Corpora
 							}
 							else
 							{
-								string text = sb.ToString();
-								foreach (TextRow seg in CreateRows(chapter, verse, text, sentenceStart))
+								string verseText = sb.ToString();
+								foreach (TextRow seg in CreateRows(chapter, verse, verseText, sentenceStart))
 									yield return seg;
-								sentenceStart = text.HasSentenceEnding();
+								sentenceStart = verseText.HasSentenceEnding();
 								sb.Clear();
 								verse = token.Data;
 							}
@@ -113,7 +113,6 @@ namespace SIL.Machine.Corpora
 								sb.Append(" ");
 							}
 							sb.Append(token);
-							sb.Append(" ");
 						}
 						break;
 
@@ -147,7 +146,6 @@ namespace SIL.Machine.Corpora
 								sb.Append(" ");
 							}
 							sb.Append(token);
-							sb.Append(" ");
 						}
 						else if (IsTableCellStyle(token))
 						{
@@ -158,32 +156,26 @@ namespace SIL.Machine.Corpora
 
 					case UsfmTokenType.Attribute:
 						if (isVersePara && chapter != null && verse != null && _includeMarkers)
-						{
 							sb.Append(token);
-						}
 						break;
 
 					case UsfmTokenType.Text:
-						if (isVersePara && chapter != null && verse != null && !string.IsNullOrEmpty(token.Text))
+						string text = token.ToString().Replace("\r", "").Replace("\n", " ");
+						if (isVersePara && chapter != null && verse != null && !string.IsNullOrEmpty(text))
 						{
 							if (_includeMarkers)
 							{
-								if (prevToken?.Type == UsfmTokenType.Paragraph && IsVersePara(prevToken))
+								if (token.Text != "\r\n" && token.Text != "\n"
+									&& prevToken?.Type == UsfmTokenType.Paragraph && IsVersePara(prevToken))
 								{
 									sb.Append(prevToken);
-									sb.Append(" ");
 								}
-								sb.Append(token);
+								if (prevToken?.Type == UsfmTokenType.Verse)
+									text = text.TrimStart();
+								sb.Append(text);
 							}
 							else if (curEmbedMarker == null)
 							{
-								string text = token.Text;
-								if (curSpanMarker != null)
-								{
-									int index = text.IndexOf("|");
-									if (index >= 0)
-										text = text.Substring(0, index);
-								}
 								if (prevToken?.Type == UsfmTokenType.End
 									&& (sb.Length == 0 || char.IsWhiteSpace(sb[sb.Length - 1])))
 								{
