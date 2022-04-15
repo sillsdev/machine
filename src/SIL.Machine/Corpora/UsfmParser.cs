@@ -104,8 +104,6 @@ namespace SIL.Machine.Corpora
 				}
 
 				bool isNested = tag.StartsWith("+", StringComparison.Ordinal);
-				if (!UsfmStylesheet.IsCellRange(tag, out _, out int colSpan))
-					colSpan = 0;
 				// Lookup marker
 				UsfmMarker marker = _stylesheet.GetMarker(tag.TrimStart('+'));
 
@@ -124,6 +122,7 @@ namespace SIL.Machine.Corpora
 						}
 						else
 						{
+							UsfmStylesheet.IsCellRange(tag, out _, out int colSpan);
 							tokens.Add(new UsfmToken(UsfmTokenType.Character, marker, null, isNested: isNested,
 								colSpan: colSpan));
 						}
@@ -162,7 +161,7 @@ namespace SIL.Machine.Corpora
 								break;
 							}
 							// Create unknown token with a corresponding end note
-							tokens.Add(new UsfmToken(UsfmTokenType.Unknown, marker, null));
+							tokens.Add(new UsfmToken(UsfmTokenType.Unknown, marker, null, isNested: isNested));
 						}
 						break;
 					case UsfmStyleType.Milestone:
