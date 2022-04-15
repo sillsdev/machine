@@ -117,18 +117,16 @@ namespace SIL.Machine.Corpora
 				{
 					case UsfmStyleType.Character:
 						// Handle verse special case
-						UsfmToken newToken;
 						if ((marker.TextProperties & UsfmTextProperties.Verse) > 0)
 						{
-							newToken = new UsfmToken(UsfmTokenType.Verse, marker, null,
-								GetNextWord(usfm, ref index, preserveWhitespace));
+							tokens.Add(new UsfmToken(UsfmTokenType.Verse, marker, null,
+								GetNextWord(usfm, ref index, preserveWhitespace)));
 						}
 						else
 						{
-							newToken = new UsfmToken(UsfmTokenType.Character, marker, null, isNested: isNested,
-								colSpan: colSpan);
+							tokens.Add(new UsfmToken(UsfmTokenType.Character, marker, null, isNested: isNested,
+								colSpan: colSpan));
 						}
-						tokens.Add(newToken);
 						break;
 					case UsfmStyleType.Paragraph:
 						// Handle chapter special case
@@ -318,14 +316,15 @@ namespace SIL.Machine.Corpora
 			}
 
 			string adjustedText = text.Substring(0, attributeIndex);
-			if (matchingToken.SetAttributes(text.Substring(attributeIndex + 1), matchingMarker.DefaultAttributeName,
-				ref adjustedText, preserveWhitespace))
+			string attributesValue = text.Substring(attributeIndex + 1);
+			if (matchingToken.SetAttributes(attributesValue, matchingMarker.DefaultAttributeName, ref adjustedText,
+				preserveWhitespace))
 			{
 				text = adjustedText;
 
 				if (matchingMarker.StyleType == UsfmStyleType.Character) // Don't do this for milestones
 				{
-					attributeToken = new UsfmToken(UsfmTokenType.Attribute, null, null, matchingMarker.Tag);
+					attributeToken = new UsfmToken(UsfmTokenType.Attribute, matchingMarker, null, attributesValue);
 					attributeToken.CopyAttributes(matchingToken);
 				}
 			}
@@ -335,8 +334,7 @@ namespace SIL.Machine.Corpora
 
 		private static UsfmToken FindMatchingStartMarker(string usfm, List<UsfmToken> tokens, int nextMarkerIndex)
 		{
-			string expectedStartMarker;
-			if (!BeforeEndMarker(usfm, nextMarkerIndex, out expectedStartMarker))
+			if (!BeforeEndMarker(usfm, nextMarkerIndex, out string expectedStartMarker))
 				return null;
 
 			if (expectedStartMarker == "" && (tokens.Last().Type == UsfmTokenType.Milestone ||
@@ -349,7 +347,7 @@ namespace SIL.Machine.Corpora
 				UsfmToken token = tokens[i];
 				if (token.Type == UsfmTokenType.End)
 					nestingLevel++;
-				else if (token.Marker != null)
+				else if (token.Type != UsfmTokenType.Text && token.Type != UsfmTokenType.Attribute)
 				{
 					if (nestingLevel > 0)
 						nestingLevel--;

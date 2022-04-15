@@ -136,7 +136,7 @@ namespace SIL.Machine.Corpora
 			Assert.That(rows[10].Text, Is.EqualTo("Chapter two, verse five \\rq (MAT 3:1)\\rq*."));
 
 			Assert.That(rows[11].Ref, Is.EqualTo(new VerseRef("MAT 2:6", corpus.Versification)));
-			Assert.That(rows[11].Text, Is.EqualTo("Chapter two, verse \\w six|strong=\"12345\"\\w*."));
+			Assert.That(rows[11].Text, Is.EqualTo("Chapter two, verse \\w six|strong=\"12345\" \\w*."));
 
 			Assert.That(rows[15].Ref, Is.EqualTo(new VerseRef("MAT 2:9", corpus.Versification)));
 			Assert.That(rows[15].Text, Is.EqualTo("Chapter\\tcr2 2\\tc3 verse\\tcr4 9 \\tr \\tc1-2"));

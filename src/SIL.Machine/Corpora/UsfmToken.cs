@@ -30,7 +30,6 @@ namespace SIL.Machine.Corpora
 
 		private string _defaultAttributeName;
 		private NamedAttribute[] _attributes;
-		private bool _isDefaultAttribute;
 
 		public UsfmToken(string text)
 		{
@@ -109,7 +108,6 @@ namespace SIL.Machine.Corpora
 				{
 					_attributes = new[] { new NamedAttribute(defaultAttributeName, defaultValue.Value) };
 					_defaultAttributeName = defaultAttributeName;
-					_isDefaultAttribute = true;
 					return true;
 				}
 				return false;
@@ -132,7 +130,6 @@ namespace SIL.Machine.Corpora
 		{
 			_attributes = sourceToken._attributes;
 			_defaultAttributeName = sourceToken._defaultAttributeName;
-			_isDefaultAttribute = sourceToken._isDefaultAttribute;
 		}
 
 		private static void AppendAttribute(List<NamedAttribute> attributes, string name, string value)
@@ -145,38 +142,35 @@ namespace SIL.Machine.Corpora
 		public override string ToString()
 		{
 			var sb = new StringBuilder();
-			if (Marker != null)
-			{
-				sb.Append(IsNested ? $"\\+{Marker.Tag}" : Marker.ToString());
-				if (ColSpan >= 2)
-				{
-					int col = int.Parse(Marker.Tag[Marker.Tag.Length - 1].ToString(), CultureInfo.InvariantCulture);
-					sb.Append($"-{col + ColSpan - 1}");
-				}
-			}
-			if (!string.IsNullOrEmpty(Text))
-			{
-				if (sb.Length > 0)
-					sb.Append(" ");
-				sb.Append(Text);
-			}
-
 			if (Type == UsfmTokenType.Attribute)
 			{
-				if (_attributes != null && _attributes.Length > 0)
-				{
-					sb.Append("|");
-					if (_isDefaultAttribute && _attributes.Length == 1)
-						sb.Append(_attributes[0].Value);
-					else
-						sb.Append(string.Join(" ", _attributes.Select(a => a.ToString())));
-				}
-			}
-			else if (!string.IsNullOrEmpty(Data))
-			{
-				if (sb.Length > 0)
-					sb.Append(" ");
+				sb.Append("|");
 				sb.Append(Data);
+			}
+			else
+			{
+				if (Marker != null)
+				{
+					sb.Append(IsNested ? $"\\+{Marker.Tag}" : Marker.ToString());
+					if (ColSpan >= 2)
+					{
+						int col = int.Parse(Marker.Tag[Marker.Tag.Length - 1].ToString(), CultureInfo.InvariantCulture);
+						sb.Append($"-{col + ColSpan - 1}");
+					}
+				}
+				if (!string.IsNullOrEmpty(Text))
+				{
+					if (sb.Length > 0)
+						sb.Append(" ");
+					sb.Append(Text);
+				}
+
+				if (!string.IsNullOrEmpty(Data))
+				{
+					if (sb.Length > 0)
+						sb.Append(" ");
+					sb.Append(Data);
+				}
 			}
 
 			return sb.ToString();

@@ -83,18 +83,18 @@ namespace SIL.Machine.Corpora
 			return marker;
 		}
 
-		public static bool IsCellRange(string marker, out string baseMarker, out int colSpan)
+		public static bool IsCellRange(string tag, out string baseTag, out int colSpan)
 		{
-			var match = CellRangeRegex.Match(marker);
+			var match = CellRangeRegex.Match(tag);
 			if (match.Success)
 			{
-				baseMarker = match.Groups[1].Value;
-				colSpan = match.Groups[2].Value[0] - baseMarker[baseMarker.Length - 1] + 1;
+				baseTag = match.Groups[1].Value;
+				colSpan = match.Groups[2].Value[0] - baseTag[baseTag.Length - 1] + 1;
 				if (colSpan >= 2)
 					return true;
 			}
 
-			baseMarker = marker;
+			baseTag = tag;
 			colSpan = 0;
 			return false;
 		}
