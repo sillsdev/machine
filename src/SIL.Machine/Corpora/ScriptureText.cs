@@ -38,7 +38,12 @@ namespace SIL.Machine.Corpora
 		protected IEnumerable<TextRow> CreateRows(string chapter, string verse,
 			string text, bool sentenceStart = true)
 		{
-			var verseRef = new VerseRef(Id, chapter, verse, Versification);
+			foreach (TextRow row in CreateRows(new VerseRef(Id, chapter, verse, Versification), text, sentenceStart))
+				yield return row;
+		}
+
+		protected IEnumerable<TextRow> CreateRows(VerseRef verseRef, string text, bool sentenceStart = true)
+		{
 			if (verseRef.HasMultiple)
 			{
 				bool firstVerse = true;

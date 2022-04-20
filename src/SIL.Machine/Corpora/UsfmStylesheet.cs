@@ -60,41 +60,41 @@ namespace SIL.Machine.Corpora
 			{"note", UsfmTextProperties.Note}
 		};
 
-		private readonly Dictionary<string, UsfmMarker> _markers;
+		private readonly Dictionary<string, UsfmTag> _markers;
 
 		public UsfmStylesheet(string stylesheetFileName, string alternateStylesheetFileName = null)
 		{
-			_markers = new Dictionary<string, UsfmMarker>();
+			_markers = new Dictionary<string, UsfmTag>();
 			Parse(stylesheetFileName);
 			if (!string.IsNullOrEmpty(alternateStylesheetFileName))
 				Parse(alternateStylesheetFileName);
 		}
 
-		public UsfmMarker GetMarker(string tag)
+		public UsfmTag GetTag(string marker)
 		{
-			if (_markers.TryGetValue(tag, out UsfmMarker marker))
-				return marker;
+			if (_markers.TryGetValue(marker, out UsfmTag tag))
+				return tag;
 
-			if (IsCellRange(tag, out string baseTag, out _) && _markers.TryGetValue(baseTag, out marker))
-				return marker;
+			if (IsCellRange(marker, out string baseMarker, out _) && _markers.TryGetValue(baseMarker, out tag))
+				return tag;
 
-			marker = CreateMarker(tag);
-			marker.StyleType = UsfmStyleType.Unknown;
-			return marker;
+			tag = CreateTag(marker);
+			tag.StyleType = UsfmStyleType.Unknown;
+			return tag;
 		}
 
-		public static bool IsCellRange(string tag, out string baseTag, out int colSpan)
+		public static bool IsCellRange(string tag, out string baseMarker, out int colSpan)
 		{
 			var match = CellRangeRegex.Match(tag);
 			if (match.Success)
 			{
-				baseTag = match.Groups[1].Value;
-				colSpan = match.Groups[2].Value[0] - baseTag[baseTag.Length - 1] + 1;
+				baseMarker = match.Groups[1].Value;
+				colSpan = match.Groups[2].Value[0] - baseMarker[baseMarker.Length - 1] + 1;
 				if (colSpan >= 2)
 					return true;
 			}
 
-			baseTag = tag;
+			baseMarker = tag;
 			colSpan = 0;
 			return false;
 		}
@@ -145,41 +145,40 @@ namespace SIL.Machine.Corpora
 					continue;
 				}
 
-				UsfmMarker marker = CreateMarker(entry.Text);
-				UsfmMarker endMarker = ParseMarkerEntry(marker, entries, i + 1);
+				UsfmTag marker = CreateTag(entry.Text);
+				UsfmTag endMarker = ParseTagEntry(marker, entries, i + 1);
 
-				if (endMarker != null && !_markers.ContainsKey(endMarker.Tag))
-					_markers[endMarker.Tag] = endMarker;
+				if (endMarker != null && !_markers.ContainsKey(endMarker.Marker))
+					_markers[endMarker.Marker] = endMarker;
 
 				foundStyles.Add(entry.Text);
 			}
 		}
 
-		private UsfmMarker CreateMarker(string markerStr)
+		private UsfmTag CreateTag(string marker)
 		{
 			// If tag already exists update with addtl info (normally from custom.sty)
-			UsfmMarker marker;
-			if (!_markers.TryGetValue(markerStr, out marker))
+			if (!_markers.TryGetValue(marker, out UsfmTag tag))
 			{
-				marker = new UsfmMarker(markerStr);
-				if (markerStr != "c" && markerStr != "v")
-					marker.TextProperties = UsfmTextProperties.Publishable;
-				_markers[markerStr] = marker;
+				tag = new UsfmTag(marker);
+				if (marker != "c" && marker != "v")
+					tag.TextProperties = UsfmTextProperties.Publishable;
+				_markers[marker] = tag;
 			}
 
-			return marker;
+			return tag;
 		}
 
-		private static UsfmMarker ParseMarkerEntry(UsfmMarker marker, List<StylesheetEntry> stylesheetEntries, int entryIndex)
+		private static UsfmTag ParseTagEntry(UsfmTag tag, List<StylesheetEntry> stylesheetEntries, int entryIndex)
 		{
 			// The following items are present for conformance with
 			// Paratext release 5.0 stylesheets.  Release 6.0 and later
 			// follows the guidelines set in InitPropertyMaps.
 			// Make sure \id gets book property
-			if (marker.Tag == "id")
-				marker.TextProperties |= UsfmTextProperties.Book;
+			if (tag.Marker == "id")
+				tag.TextProperties |= UsfmTextProperties.Book;
 
-			UsfmMarker endMarker = null;
+			UsfmTag endTag = null;
 			while (entryIndex < stylesheetEntries.Count)
 			{
 				StylesheetEntry entry = stylesheetEntries[entryIndex];
@@ -191,192 +190,192 @@ namespace SIL.Machine.Corpora
 				switch (entry.Marker)
 				{
 					case "name":
-						marker.Name = entry.Text;
+						tag.Name = entry.Text;
 						break;
 
 					case "description":
-						marker.Description = entry.Text;
+						tag.Description = entry.Text;
 						break;
 
 					case "fontname":
-						marker.FontName = entry.Text;
+						tag.FontName = entry.Text;
 						break;
 
 					case "fontsize":
 						if (entry.Text == "-")
 						{
-							marker.FontSize = 0;
+							tag.FontSize = 0;
 						}
 						else
 						{
 							if (ParseInteger(entry, out int fontSize))
-								marker.FontSize = fontSize;
+								tag.FontSize = fontSize;
 						}
 						break;
 
 					case "xmltag":
-						marker.XmlTag = entry.Text;
+						tag.XmlTag = entry.Text;
 						break;
 
 					case "encoding":
-						marker.Encoding = entry.Text;
+						tag.Encoding = entry.Text;
 						break;
 
 					case "linespacing":
 						int lineSpacing;
 						if (ParseInteger(entry, out lineSpacing))
-							marker.LineSpacing = lineSpacing;
+							tag.LineSpacing = lineSpacing;
 						break;
 
 					case "spacebefore":
 						int spaceBefore;
 						if (ParseInteger(entry, out spaceBefore))
-							marker.SpaceBefore = spaceBefore;
+							tag.SpaceBefore = spaceBefore;
 						break;
 
 					case "spaceafter":
 						int spaceAfter;
 						if (ParseInteger(entry, out spaceAfter))
-							marker.SpaceAfter = spaceAfter;
+							tag.SpaceAfter = spaceAfter;
 						break;
 
 					case "leftmargin":
 						int leftMargin;
 						if (ParseInteger(entry, out leftMargin))
-							marker.LeftMargin = leftMargin;
+							tag.LeftMargin = leftMargin;
 						break;
 
 					case "rightmargin":
 						int rightMargin;
 						if (ParseInteger(entry, out rightMargin))
-							marker.RightMargin = rightMargin;
+							tag.RightMargin = rightMargin;
 						break;
 
 					case "firstlineindent":
 						int firstLineIndent;
 						if (ParseFloat(entry, out firstLineIndent))
-							marker.FirstLineIndent = firstLineIndent;
+							tag.FirstLineIndent = firstLineIndent;
 						break;
 
 					case "rank":
 						if (entry.Text == "-")
 						{
-							marker.Rank = 0;
+							tag.Rank = 0;
 						}
 						else
 						{
 							if (ParseInteger(entry, out int rank))
-								marker.Rank = rank;
+								tag.Rank = rank;
 						}
 						break;
 
 					case "bold":
-						marker.Bold = entry.Text != "-";
+						tag.Bold = entry.Text != "-";
 						break;
 
 					case "smallcaps":
-						marker.SmallCaps = entry.Text != "-";
+						tag.SmallCaps = entry.Text != "-";
 						break;
 
 					case "subscript":
-						marker.Subscript = entry.Text != "-";
+						tag.Subscript = entry.Text != "-";
 						break;
 
 					case "italic":
-						marker.Italic = entry.Text != "-";
+						tag.Italic = entry.Text != "-";
 						break;
 
 					case "regular":
-						marker.Italic = marker.Bold = marker.Superscript = false;
-						marker.Regular = true;
+						tag.Italic = tag.Bold = tag.Superscript = false;
+						tag.Regular = true;
 						break;
 
 					case "underline":
-						marker.Underline = entry.Text != "-";
+						tag.Underline = entry.Text != "-";
 						break;
 
 					case "superscript":
-						marker.Superscript = entry.Text != "-";
+						tag.Superscript = entry.Text != "-";
 						break;
 
 					case "testylename":
 						break; // Ignore this tag, later we will use it to tie to FW styles
 
 					case "notrepeatable":
-						marker.NotRepeatable = entry.Text != "-";
+						tag.NotRepeatable = entry.Text != "-";
 						break;
 
 					case "textproperties":
-						ParseTextProperties(marker, entry);
+						ParseTextProperties(tag, entry);
 						break;
 
 					case "texttype":
-						ParseTextType(marker, entry);
+						ParseTextType(tag, entry);
 						break;
 
 					case "color":
 						if (entry.Text == "-")
 						{
-							marker.Color = 0;
+							tag.Color = 0;
 						}
 						else
 						{
 							if (ParseInteger(entry, out int color))
-								marker.Color = color;
+								tag.Color = color;
 						}
 						break;
 
 					case "justification":
 						UsfmJustification justification;
 						if (JustificationMappings.TryGetValue(entry.Text, out justification))
-							marker.Justification = justification;
+							tag.Justification = justification;
 						break;
 
 					case "styletype":
 						UsfmStyleType styleType;
 						if (StyleMappings.TryGetValue(entry.Text, out styleType))
-							marker.StyleType = styleType;
+							tag.StyleType = styleType;
 						break;
 
 					case "occursunder":
-						marker.OccursUnder.UnionWith(entry.Text.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries));
+						tag.OccursUnder.UnionWith(entry.Text.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries));
 						break;
 
 					case "endmarker":
-						endMarker = MakeEndMarker(entry.Text);
-						marker.EndTag = entry.Text;
+						endTag = MakeEndTag(entry.Text);
+						tag.EndMarker = entry.Text;
 						break;
 
 					case "attributes":
-						ParseAttributes(marker, entry);
+						ParseAttributes(tag, entry);
 						break;
 				}
 			}
 
 			// If we have not seen an end marker but this is a character style
-			if (marker.StyleType == UsfmStyleType.Character && endMarker == null)
+			if (tag.StyleType == UsfmStyleType.Character && endTag == null)
 			{
-				string endMarkerStr = marker.Tag + "*";
-				endMarker = MakeEndMarker(endMarkerStr);
-				marker.EndTag = endMarkerStr;
+				string endMarkerStr = tag.Marker + "*";
+				endTag = MakeEndTag(endMarkerStr);
+				tag.EndMarker = endMarkerStr;
 			}
 
 			// Special cases
-			if (marker.TextType == UsfmTextType.Other
-				&& (marker.TextProperties & UsfmTextProperties.Nonpublishable) == 0
-				&& (marker.TextProperties & UsfmTextProperties.Chapter) == 0
-				&& (marker.TextProperties & UsfmTextProperties.Verse) == 0
-				&& (marker.StyleType == UsfmStyleType.Character || marker.StyleType == UsfmStyleType.Paragraph))
+			if (tag.TextType == UsfmTextType.Other
+				&& (tag.TextProperties & UsfmTextProperties.Nonpublishable) == 0
+				&& (tag.TextProperties & UsfmTextProperties.Chapter) == 0
+				&& (tag.TextProperties & UsfmTextProperties.Verse) == 0
+				&& (tag.StyleType == UsfmStyleType.Character || tag.StyleType == UsfmStyleType.Paragraph))
 			{
-				marker.TextProperties |= UsfmTextProperties.Publishable;
+				tag.TextProperties |= UsfmTextProperties.Publishable;
 			}
 
-			return endMarker;
+			return endTag;
 		}
 
-		private static UsfmMarker MakeEndMarker(string marker)
+		private static UsfmTag MakeEndTag(string marker)
 		{
-			return new UsfmMarker(marker) { StyleType = UsfmStyleType.End };
+			return new UsfmTag(marker) { StyleType = UsfmStyleType.End };
 		}
 
 		private static bool ParseInteger(StylesheetEntry entry, out int result)
@@ -397,19 +396,19 @@ namespace SIL.Machine.Corpora
 			return false;
 		}
 
-		private static void ParseTextType(UsfmMarker qTag, StylesheetEntry entry)
+		private static void ParseTextType(UsfmTag tag, StylesheetEntry entry)
 		{
 			if (entry.Text.Equals("chapternumber", StringComparison.OrdinalIgnoreCase))
-				qTag.TextProperties |= UsfmTextProperties.Chapter;
+				tag.TextProperties |= UsfmTextProperties.Chapter;
 			if (entry.Text.Equals("versenumber", StringComparison.CurrentCultureIgnoreCase))
-				qTag.TextProperties |= UsfmTextProperties.Verse;
+				tag.TextProperties |= UsfmTextProperties.Verse;
 
 			UsfmTextType textType;
 			if (TextTypeMappings.TryGetValue(entry.Text, out textType))
-				qTag.TextType = textType;
+				tag.TextType = textType;
 		}
 
-		private static void ParseTextProperties(UsfmMarker qTag, StylesheetEntry entry)
+		private static void ParseTextProperties(UsfmTag tag, StylesheetEntry entry)
 		{
 			string text = entry.Text.ToLowerInvariant();
 			string[] parts = text.Split();
@@ -421,14 +420,14 @@ namespace SIL.Machine.Corpora
 
 				UsfmTextProperties textProperty;
 				if (TextPropertyMappings.TryGetValue(part, out textProperty))
-					qTag.TextProperties |= textProperty;
+					tag.TextProperties |= textProperty;
 			}
 
-			if ((qTag.TextProperties & UsfmTextProperties.Nonpublishable) > 0)
-				qTag.TextProperties &= ~UsfmTextProperties.Publishable;
+			if ((tag.TextProperties & UsfmTextProperties.Nonpublishable) > 0)
+				tag.TextProperties &= ~UsfmTextProperties.Publishable;
 		}
 
-		private static void ParseAttributes(UsfmMarker marker, StylesheetEntry entry)
+		private static void ParseAttributes(UsfmTag tag, StylesheetEntry entry)
 		{
 			string[] attributeNames = entry.Text.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 			if (attributeNames.Length == 0)
@@ -440,13 +439,13 @@ namespace SIL.Machine.Corpora
 				if (!isOptional && foundOptional)
 					throw new ArgumentException("Required attributes must precede optional attributes.");
 
-				marker.Attributes.Add(new UsfmStyleAttribute(isOptional ? attribute.Substring(1) : attribute,
+				tag.Attributes.Add(new UsfmStyleAttribute(isOptional ? attribute.Substring(1) : attribute,
 					!isOptional));
 				foundOptional |= isOptional;
 			}
 
-			marker.DefaultAttributeName = marker.Attributes.Count(a => a.IsRequired) <= 1
-				? marker.Attributes[0].Name : null;
+			tag.DefaultAttributeName = tag.Attributes.Count(a => a.IsRequired) <= 1
+				? tag.Attributes[0].Name : null;
 		}
 
 		private List<StylesheetEntry> SplitStylesheet(IEnumerable<string> fileLines)

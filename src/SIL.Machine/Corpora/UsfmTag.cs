@@ -69,14 +69,14 @@ namespace SIL.Machine.Corpora
 		public bool IsRequired { get; }
 	}
 
-	public class UsfmMarker
+	public class UsfmTag
 	{
 		private readonly HashSet<string> _occursUnder;
 		private readonly List<UsfmStyleAttribute> _attributes;
 
-		public UsfmMarker(string marker)
+		public UsfmTag(string marker)
 		{
-			Tag = marker;
+			Marker = marker;
 			_occursUnder = new HashSet<string>();
 			_attributes = new List<UsfmStyleAttribute>();
 		}
@@ -87,7 +87,7 @@ namespace SIL.Machine.Corpora
 
 		public string Encoding { get; set; }
 
-		public string EndTag { get; set; }
+		public string EndMarker { get; set; }
 
 		public int FirstLineIndent { get; set; }
 
@@ -103,7 +103,7 @@ namespace SIL.Machine.Corpora
 
 		public int LineSpacing { get; set; }
 
-		public string Tag { get; }
+		public string Marker { get; }
 
 		public string Name { get; set; }
 
@@ -145,7 +145,7 @@ namespace SIL.Machine.Corpora
 
 		public override string ToString()
 		{
-			return string.Format("\\{0}", Tag);
+			return string.Format("\\{0}", Marker);
 		}
 	}
 }

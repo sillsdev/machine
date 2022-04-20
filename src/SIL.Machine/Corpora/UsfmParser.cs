@@ -1,396 +1,659 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Text.RegularExpressions;
+using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
+	/// <summary>
+	/// Parser for USFM. Sends parse information to an optional sink.
+	/// The parser parses one token at a time, looking ahead as necessary
+	/// for such elements as figures, links and alternate verses and chapters.
+	/// 
+	/// The parser first updates the UsfmParserState and then calls the 
+	/// parser handler as necessary.
+	/// </summary>
 	public class UsfmParser
 	{
-		private const char ZeroWidthSpace = '\u200B';
+		public static void Parse(UsfmStylesheet stylesheet, ScrVers versification, string usfm,
+			UsfmParserHandlerBase handler, bool preserveWhitespace = false)
+		{
+			var parser = new UsfmParser(stylesheet, versification, usfm, handler, preserveWhitespace);
+			parser.ProcessTokens();
+		}
+
+		private static readonly Regex OptBreakSplitter = new Regex("(//)", RegexOptions.Compiled);
+		private readonly bool _tokensPreserveWhitespace;
 
 		private readonly UsfmStylesheet _stylesheet;
+		private readonly IUsfmParserHandler _handler;
+		private UsfmParser _tokenClosedParser;
 
-		public UsfmParser(UsfmStylesheet stylesheet)
+		/// <summary>
+		/// Number of tokens to skip over because have been processed in advance
+		/// (i.e. for figures which are three tokens, or links, or chapter/verse alternates)
+		/// </summary>
+		private int _skip = 0;
+
+		public UsfmParser(UsfmStylesheet stylesheet, ScrVers versification, IReadOnlyList<UsfmToken> tokens,
+			IUsfmParserHandler handler = null, bool tokensPreserveWhitespace = false)
 		{
 			_stylesheet = stylesheet;
+			State = new UsfmParserState(stylesheet, versification, tokens);
+			_handler = handler;
+			_tokensPreserveWhitespace = tokensPreserveWhitespace;
 		}
 
-		public IEnumerable<UsfmToken> Parse(string usfm, bool preserveWhitespace = false)
+		public UsfmParser(UsfmStylesheet stylesheet, ScrVers versification, string usfm,
+			IUsfmParserHandler handler = null, bool preserveWhitespace = false)
+			: this(stylesheet, versification, GetTokens(stylesheet, usfm, preserveWhitespace), handler,
+				  preserveWhitespace)
 		{
-			List<UsfmToken> tokens = new List<UsfmToken>();
+		}
 
-			int index = 0;      // Current position
-			while (index < usfm.Length)
-			{
-				int nextMarkerIndex = (index < usfm.Length - 1) ? usfm.IndexOf('\\', index + 1) : -1;
-				if (nextMarkerIndex == -1)
-					nextMarkerIndex = usfm.Length;
-
-				// If text, create text token until end or next \
-				var ch = usfm[index];
-				if (ch != '\\')
-				{
-					string text = usfm.Substring(index, nextMarkerIndex - index);
-					if (!preserveWhitespace)
-						text = RegularizeSpaces(text);
-
-					UsfmToken attributeToken = HandleAttributes(usfm, preserveWhitespace, tokens, nextMarkerIndex,
-						ref text);
-
-					if (text.Length > 0)
-						tokens.Add(new UsfmToken(UsfmTokenType.Text, null, text, null));
-
-					if (attributeToken != null)
-						tokens.Add(attributeToken);
-
-					index = nextMarkerIndex;
-					continue;
-				}
-
-				// Get marker (and move past whitespace or star ending)
-				index++;
-				int markerStart = index;
-				while (index < usfm.Length)
-				{
-					ch = usfm[index];
-
-					// Backslash starts a new marker
-					if (ch == '\\')
-						break;
-
-					// don't require a space before the | that starts attributes - mainly for milestones to allow \qt-s|speaker\*
-					if (ch == '|')
-						break;
-
-					// End star is part of marker
-					if (ch == '*')
-					{
-						index++;
-						break;
-					}
-
-					if (IsNonSemanticWhiteSpace(ch))
-					{
-						// Preserve whitespace if needed, otherwise skip
-						if (!preserveWhitespace)
-							index++;
-						break;
-					}
-					index++;
-				}
-				string tag = usfm.Substring(markerStart, index - markerStart).TrimEnd();
-				// Milestone stop/end markers are ended with \*, so marker will just be * and can be skipped
-				if (tag == "*")
-				{
-					// make sure that previous token was a milestone - have to skip space only tokens that may have been added when
-					// preserveSpace is true.
-					UsfmToken prevToken = tokens.Count > 0 ? tokens.Last(t => t.Type != UsfmTokenType.Text || t.Text.Trim() != "") : null;
-					if (prevToken != null && (prevToken.Type == UsfmTokenType.Milestone ||
-						prevToken.Type == UsfmTokenType.MilestoneEnd))
-					{
-						// if the last item is an empty text token, remove it so we don't get extra space.
-						if (tokens.Last().Type == UsfmTokenType.Text)
-							tokens.RemoveAt(tokens.Count - 1);
-						continue;
-					}
-				}
-
-				// Multiple whitespace after non-end marker is ok
-				if (!tag.EndsWith("*", StringComparison.Ordinal) && !preserveWhitespace)
-				{
-					while ((index < usfm.Length) && IsNonSemanticWhiteSpace(usfm[index]))
-						index++;
-				}
-
-				bool isNested = tag.StartsWith("+", StringComparison.Ordinal);
-				// Lookup marker
-				UsfmMarker marker = _stylesheet.GetMarker(tag.TrimStart('+'));
-
-				// If starts with a plus and is not a character style or an end style, it is an unknown tag
-				if (isNested && marker.StyleType != UsfmStyleType.Character && marker.StyleType != UsfmStyleType.End)
-					marker = _stylesheet.GetMarker(tag);
-
-				switch (marker.StyleType)
-				{
-					case UsfmStyleType.Character:
-						// Handle verse special case
-						if ((marker.TextProperties & UsfmTextProperties.Verse) > 0)
-						{
-							tokens.Add(new UsfmToken(UsfmTokenType.Verse, marker, null,
-								GetNextWord(usfm, ref index, preserveWhitespace)));
-						}
-						else
-						{
-							UsfmStylesheet.IsCellRange(tag, out _, out int colSpan);
-							tokens.Add(new UsfmToken(UsfmTokenType.Character, marker, null, isNested: isNested,
-								colSpan: colSpan));
-						}
-						break;
-					case UsfmStyleType.Paragraph:
-						// Handle chapter special case
-						if ((marker.TextProperties & UsfmTextProperties.Chapter) > 0)
-							tokens.Add(new UsfmToken(UsfmTokenType.Chapter, marker, null,
-								GetNextWord(usfm, ref index, preserveWhitespace)));
-						else if ((marker.TextProperties & UsfmTextProperties.Book) > 0)
-							tokens.Add(new UsfmToken(UsfmTokenType.Book, marker, null,
-								GetNextWord(usfm, ref index, preserveWhitespace)));
-						else
-							tokens.Add(new UsfmToken(UsfmTokenType.Paragraph, marker, null));
-						break;
-					case UsfmStyleType.Note:
-						tokens.Add(new UsfmToken(UsfmTokenType.Note, marker, null,
-							GetNextWord(usfm, ref index, preserveWhitespace)));
-						break;
-					case UsfmStyleType.End:
-						tokens.Add(new UsfmToken(UsfmTokenType.End, marker, null, isNested: isNested));
-						break;
-					case UsfmStyleType.Unknown:
-						// End tokens are always end tokens, even if unknown
-						if (tag.EndsWith("*", StringComparison.Ordinal))
-						{
-							tokens.Add(new UsfmToken(UsfmTokenType.End, marker, null, isNested: isNested));
-						}
-						else
-						{
-							// Handle special case of esb and esbe which might not be in basic stylesheet
-							// but are always sidebars and so should be tokenized as paragraphs
-							if (tag == "esb" || tag == "esbe")
-							{
-								tokens.Add(new UsfmToken(UsfmTokenType.Paragraph, marker, null));
-								break;
-							}
-							// Create unknown token with a corresponding end note
-							tokens.Add(new UsfmToken(UsfmTokenType.Unknown, marker, null, isNested: isNested));
-						}
-						break;
-					case UsfmStyleType.Milestone:
-					case UsfmStyleType.MilestoneEnd:
-						// if a milestone is not followed by a ending \* treat don't create a milestone token for the begining. Instead create at
-						// text token for all the text up to the beginning of the next marker. This will make typing of milestones easiest since
-						// the partially typed milestone more be reformatted to have a normal ending even if it hasn't been typed yet.
-						if (!MilestoneEnded(usfm, index))
-						{
-							int endOfText = (index < usfm.Length - 1) ? usfm.IndexOf('\\', index + 1) : -1;
-							if (endOfText == -1)
-								endOfText = usfm.Length;
-							string milestoneText = usfm.Substring(index, endOfText - index);
-							// add back space that was removed after marker
-							if (milestoneText.Length > 0 && milestoneText[0] != ' ' && milestoneText[0] != '|')
-								milestoneText = " " + milestoneText;
-							tokens.Add(new UsfmToken(UsfmTokenType.Text, null, @"\" + tag + milestoneText, null));
-							index = endOfText;
-						}
-						else if (marker.StyleType == UsfmStyleType.Milestone)
-							tokens.Add(new UsfmToken(UsfmTokenType.Milestone, marker, null));
-						else
-							tokens.Add(new UsfmToken(UsfmTokenType.MilestoneEnd, marker, null));
-						break;
-				}
-			}
-
-			// Forces a space to be present in tokenization if immediately
-			// before a token requiring a preceding CR/LF. This is to ensure
-			// that when written to disk and re-read, that tokenization
-			// will match. For example, "\p test\p here" requires a space
-			// after "test". Also, "\p \em test\em*\p here" requires a space
-			// token inserted after \em*
-			if (!preserveWhitespace)
-			{
-				for (int i = 1; i < tokens.Count; i++)
-				{
-					// If requires newline (verses do, except when after '(' or '[')
-					if (tokens[i].Type == UsfmTokenType.Book ||
-						tokens[i].Type == UsfmTokenType.Chapter ||
-						tokens[i].Type == UsfmTokenType.Paragraph ||
-						(tokens[i].Type == UsfmTokenType.Verse &&
-							!(tokens[i - 1].Type == UsfmTokenType.Text &&
-							(tokens[i - 1].Text.EndsWith("(", StringComparison.Ordinal) || tokens[i - 1].Text.EndsWith("[", StringComparison.Ordinal)))))
-					{
-						// Add space to text token
-						if (tokens[i - 1].Type == UsfmTokenType.Text)
-						{
-							if (!tokens[i - 1].Text.EndsWith(" ", StringComparison.Ordinal))
-								tokens[i - 1].Text = tokens[i - 1].Text + " ";
-						}
-						else if (tokens[i - 1].Type == UsfmTokenType.End)
-						{
-							// Insert space token after * of end marker
-							tokens.Insert(i, new UsfmToken(UsfmTokenType.Text, null, " "));
-							i++;
-						}
-					}
-				}
-			}
-
-			return tokens;
+		private static IReadOnlyList<UsfmToken> GetTokens(UsfmStylesheet stylesheet, string usfm,
+			bool preserveWhitespace)
+		{
+			var tokenizer = new UsfmTokenizer(stylesheet);
+			return tokenizer.Tokenize(usfm, preserveWhitespace);
 		}
 
 		/// <summary>
-		/// Gets the next word in the usfm and advances the index past it 
+		/// Gets the current parser state. Note: Will change with each token parsed
 		/// </summary>
-		/// <param name="usfm"></param>
-		/// <param name="index"></param>
-		/// <param name="preserveWhitespace">true to preserve all whitespace in tokens</param>
-		/// <returns></returns>
-		private static string GetNextWord(string usfm, ref int index, bool preserveWhitespace)
+		public UsfmParserState State { get; private set; }
+
+		/// <summary>
+		/// Constructor for making a duplicate for looking ahead to find closing
+		/// tokens of notes and character styles.
+		/// </summary>
+		private UsfmParser(UsfmParser usfmParser)
 		{
-			// Skip over leading spaces
-			while ((index < usfm.Length) && IsNonSemanticWhiteSpace(usfm[index]))
-				index++;
-
-			int dataStart = index;
-			while ((index < usfm.Length) && !IsNonSemanticWhiteSpace(usfm[index]) && (usfm[index] != '\\'))
-				index++;
-
-			string data = usfm.Substring(dataStart, index - dataStart);
-
-			// Skip over trailing spaces
-			if (!preserveWhitespace)
-			{
-				while ((index < usfm.Length) && IsNonSemanticWhiteSpace(usfm[index]))
-					index++;
-			}
-
-			return data;
+			_stylesheet = usfmParser._stylesheet;
 		}
 
 		/// <summary>
-		/// Converts all control characters, carriage returns and tabs into
-		/// spaces, and then strips duplicate spaces. 
+		/// Processes all tokens
 		/// </summary>
-		private static string RegularizeSpaces(string str)
+		public void ProcessTokens()
 		{
-			StringBuilder sb = new StringBuilder(str.Length);
-			bool wasSpace = false;
-			for (int i = 0; i < str.Length; i++)
+			while (ProcessToken())
 			{
-				var ch = str[i];
-				// Control characters and CR/LF and TAB become spaces
-				if (ch < 32)
-				{
-					if (!wasSpace)
-						sb.Append(' ');
-					wasSpace = true;
-				}
-				else if (!wasSpace && ch == ZeroWidthSpace && i + 1 < str.Length && IsNonSemanticWhiteSpace(str[i + 1]))
-				{
-					// ZWSP is redundant if followed by a space
-				}
-				else if (IsNonSemanticWhiteSpace(ch))
-				{
-					// Keep other kinds of spaces
-					if (!wasSpace)
-						sb.Append(ch);
-					wasSpace = true;
-				}
-				else
-				{
-					sb.Append(ch);
-					wasSpace = false;
-				}
 			}
-
-			return sb.ToString();
 		}
 
-		private UsfmToken HandleAttributes(string usfm, bool preserveWhitespace, List<UsfmToken> tokens,
-			int nextMarkerIndex, ref string text)
+		/// <summary>
+		/// Processes a single token
+		/// </summary>
+		/// <returns>false if there were no more tokens process</returns>
+		public bool ProcessToken()
 		{
-			int attributeIndex = text.IndexOf('|');
-			if (attributeIndex < 0)
-				return null;
-
-			UsfmToken attributeToken = null;
-			UsfmToken matchingToken = FindMatchingStartMarker(usfm, tokens, nextMarkerIndex);
-			if (matchingToken == null)
-				return null;
-
-			UsfmMarker matchingMarker = _stylesheet.GetMarker(matchingToken.Marker.Tag);
-			if (matchingMarker.StyleType != UsfmStyleType.Character &&
-				matchingMarker.StyleType != UsfmStyleType.Milestone &&
-				matchingMarker.StyleType != UsfmStyleType.MilestoneEnd)
+			// If past end
+			if (State.Index >= State.Tokens.Count - 1)
 			{
-				return null; // leave attributes of other styles as regular text
-			}
-
-			string adjustedText = text.Substring(0, attributeIndex);
-			string attributesValue = text.Substring(attributeIndex + 1);
-			if (matchingToken.SetAttributes(attributesValue, matchingMarker.DefaultAttributeName, ref adjustedText,
-				preserveWhitespace))
-			{
-				text = adjustedText;
-
-				if (matchingMarker.StyleType == UsfmStyleType.Character) // Don't do this for milestones
-				{
-					attributeToken = new UsfmToken(UsfmTokenType.Attribute, matchingMarker, null, attributesValue);
-					attributeToken.CopyAttributes(matchingToken);
-				}
-			}
-
-			return attributeToken;
-		}
-
-		private static UsfmToken FindMatchingStartMarker(string usfm, List<UsfmToken> tokens, int nextMarkerIndex)
-		{
-			if (!BeforeEndMarker(usfm, nextMarkerIndex, out string expectedStartMarker))
-				return null;
-
-			if (expectedStartMarker == "" && (tokens.Last().Type == UsfmTokenType.Milestone ||
-				tokens.Last().Type == UsfmTokenType.MilestoneEnd))
-				return tokens.Last();
-
-			int nestingLevel = 0;
-			for (int i = tokens.Count - 1; i >= 0; i--)
-			{
-				UsfmToken token = tokens[i];
-				if (token.Type == UsfmTokenType.End)
-					nestingLevel++;
-				else if (token.Type != UsfmTokenType.Text && token.Type != UsfmTokenType.Attribute)
-				{
-					if (nestingLevel > 0)
-						nestingLevel--;
-					else if (nestingLevel == 0)
-						return token;
-				}
-			}
-
-			return null;
-		}
-
-		private static bool BeforeEndMarker(string usfm, int nextMarkerIndex, out string startMarker)
-		{
-			startMarker = null;
-			int index = nextMarkerIndex + 1;
-			while (index < usfm.Length && usfm[index] != '*' && !char.IsWhiteSpace(usfm[index]))
-				index++;
-
-			if (index >= usfm.Length || usfm[index] != '*')
+				_handler?.EndUsfm(State);
 				return false;
-			startMarker = usfm.Substring(nextMarkerIndex + 1, index - nextMarkerIndex - 1);
+			}
+			else if (State.Index < 0)
+			{
+				_handler?.StartUsfm(State);
+			}
+
+			// Move to next token
+			State.Index++;
+
+			// Update verse offset with previous token (since verse offset is from start of current token)
+			if (State.PrevToken != null)
+				State.VerseOffset += State.PrevToken.GetLength(false, !_tokensPreserveWhitespace);
+
+			// Skip over tokens that are to be skipped, ensuring that 
+			// SpecialToken state is true.
+			if (_skip > 0)
+			{
+				_skip--;
+				State.SpecialToken = true;
+				return true;
+			}
+
+			// Reset special token and figure status
+			State.SpecialToken = false;
+
+			UsfmToken token = State.Token;
+
+			// Switch unknown types to either character or paragraph
+			UsfmTokenType tokenType = token.Type;
+			if (tokenType == UsfmTokenType.Unknown)
+				tokenType = DetermineUnknownTokenType();
+
+			if (_handler != null && !string.IsNullOrEmpty(token.Marker))
+				_handler.GotMarker(State, token.Marker);
+
+			// Close open elements
+			switch (tokenType)
+			{
+				case UsfmTokenType.Book:
+				case UsfmTokenType.Chapter:
+					CloseAll();
+					break;
+				case UsfmTokenType.Paragraph:
+					// Handle special case of table rows
+					if (token.Marker == "tr")
+					{
+						// Close all but table and sidebar
+						while (State.Stack.Count > 0
+							   && State.Peek().Type != UsfmElementTypes.Table
+							   && State.Peek().Type != UsfmElementTypes.Sidebar)
+							CloseElement();
+						break;
+					}
+
+					// Handle special case of sidebars
+					if (token.Marker == "esb")
+					{
+						// Close all
+						CloseAll();
+						break;
+					}
+
+					// Close all but sidebar
+					while (State.Stack.Count > 0 && State.Peek().Type != UsfmElementTypes.Sidebar)
+						CloseElement();
+					break;
+				case UsfmTokenType.Character:
+					// Handle special case of table cell
+					if (IsCell(token))
+					{
+						// Close until row
+						while (State.Peek().Type != UsfmElementTypes.Row)
+							CloseElement();
+						break;
+					}
+
+					// Handle refs
+					if (IsRef(token))
+					{
+						// Refs don't close anything
+						break;
+					}
+
+					// If non-nested character style, close all character styles
+					if (!token.Marker.StartsWith("+"))
+						CloseCharStyles();
+					break;
+				case UsfmTokenType.Verse:
+					UsfmTag paraTag = State.ParaTag;
+					if (paraTag != null && State.ParaTag.TextType != UsfmTextType.VerseText && paraTag.TextType != 0)
+						CloseAll();
+					else
+						CloseNote();
+					break;
+				case UsfmTokenType.Note:
+					CloseNote();
+					break;
+				case UsfmTokenType.End:
+					// If end marker for an active note
+					if (State.Stack.Any(e => e.Type == UsfmElementTypes.Note && (e.Marker + "*" == token.Marker)))
+					{
+						CloseNote();
+						break;
+					}
+
+					// If end marker for a character style on stack, close it
+					// If no matching end marker, close all character styles on top of stack
+					UsfmParserElement elem;
+					bool unmatched = true;
+					while (State.Stack.Count > 0)
+					{
+						elem = State.Peek();
+						if (elem.Type != UsfmElementTypes.Char)
+							break;
+						CloseElement();
+
+						// Determine if a + prefix is needed to close it (was nested char style)
+						bool plusPrefix = (State.Stack.Count > 0 && State.Peek().Type == UsfmElementTypes.Char);
+
+						// If is a match
+						if ((plusPrefix ? "+" : "") + elem.Marker + "*" == token.Marker)
+						{
+							unmatched = false;
+							break;
+						}
+					}
+
+					// Unmatched end marker
+					if (unmatched)
+						if (_handler != null) _handler.Unmatched(State, token.Marker);
+					break;
+			}
+
+			VerseRef vref;
+			// Handle tokens
+			switch (tokenType)
+			{
+				case UsfmTokenType.Book:
+					State.Push(new UsfmParserElement(UsfmElementTypes.Book, token.Marker));
+
+					// Code is always upper case
+					string code = token.Data.ToUpperInvariant();
+
+					vref = State.VerseRef;
+					// Update verse ref. Leave book alone if not empty to prevent parsing errors
+					// on books with bad id lines.
+					if (vref.Book == "" && Canon.BookIdToNumber(code) != 0)
+						vref.Book = code;
+					vref.ChapterNum = 1;
+					vref.VerseNum = 0;
+					State.VerseRef = vref;
+					State.VerseOffset = 0;
+
+					// Book start. 
+					if (_handler != null) _handler.StartBook(State, token.Marker, code);
+					break;
+				case UsfmTokenType.Chapter:
+					// Get alternate chapter number
+					string altChapter = null;
+					string pubChapter = null;
+					if (State.Index < State.Tokens.Count - 3
+						&& State.Tokens[State.Index + 1].Marker == "ca"
+						&& State.Tokens[State.Index + 2].Text != null
+						&& State.Tokens[State.Index + 3].Marker == "ca*")
+					{
+						altChapter = State.Tokens[State.Index + 2].Text.Trim();
+						_skip += 3;
+
+						// Skip blank space after if present
+						if (State.Index + _skip < State.Tokens.Count - 1
+							&& State.Tokens[State.Index + _skip + 1].Text != null
+							&& State.Tokens[State.Index + _skip + 1].Text.Trim().Length == 0)
+							_skip++;
+					}
+
+					// Get publishable chapter number
+					if (State.Index + _skip < State.Tokens.Count - 2
+						&& State.Tokens[State.Index + _skip + 1].Marker == "cp"
+						&& State.Tokens[State.Index + _skip + 2].Text != null)
+					{
+						pubChapter = State.Tokens[State.Index + _skip + 2].Text.Trim();
+						_skip += 2;
+					}
+
+					// Chapter
+					vref = State.VerseRef;
+					vref.Chapter = token.Data;
+					vref.VerseNum = 0;
+					State.VerseRef = vref;
+					// Verse offset is not zeroed for chapter 1, as it is part of intro
+					if (State.VerseRef.ChapterNum != 1)
+						State.VerseOffset = 0;
+
+					if (_handler != null) _handler.Chapter(State, token.Data, token.Marker, altChapter, pubChapter);
+					break;
+				case UsfmTokenType.Verse:
+					string pubVerse = null;
+					string altVerse = null;
+					if (State.Index < State.Tokens.Count - 3
+						&& State.Tokens[State.Index + 1].Marker == "va"
+						&& State.Tokens[State.Index + 2].Text != null
+						&& State.Tokens[State.Index + 3].Marker == "va*")
+					{
+						// Get alternate verse number
+						altVerse = State.Tokens[State.Index + 2].Text.Trim();
+						_skip += 3;
+					}
+					if (State.Index + _skip < State.Tokens.Count - 3
+						&& State.Tokens[State.Index + _skip + 1].Marker == "vp"
+						&& State.Tokens[State.Index + _skip + 2].Text != null
+						&& State.Tokens[State.Index + _skip + 3].Marker == "vp*")
+					{
+						// Get publishable verse number
+						pubVerse = State.Tokens[State.Index + _skip + 2].Text.Trim();
+						_skip += 3;
+					}
+
+					// Verse
+					vref = State.VerseRef;
+					vref.Verse = token.Data;
+					State.VerseRef = vref;
+					State.VerseOffset = 0;
+
+					if (_handler != null) _handler.Verse(State, token.Data, token.Marker, altVerse, pubVerse);
+					break;
+				case UsfmTokenType.Paragraph:
+					// Handle special case of table rows
+					if (token.Marker == "tr")
+					{
+						// Start table if not open
+						if (State.Stack.All(e => e.Type != UsfmElementTypes.Table))
+						{
+							State.Push(new UsfmParserElement(UsfmElementTypes.Table, null));
+							if (_handler != null) _handler.StartTable(State);
+						}
+
+						State.Push(new UsfmParserElement(UsfmElementTypes.Row, token.Marker));
+
+						// Row start
+						if (_handler != null) _handler.StartRow(State, token.Marker);
+						break;
+					}
+
+					// Handle special case of sidebars
+					if (token.Marker == "esb")
+					{
+						bool isClosed = IsStudyBibleItemClosed("esb", "esbe");
+						State.Push(new UsfmParserElement(UsfmElementTypes.Sidebar, token.Marker));
+
+						// Look for category
+						string sidebarCategory = null;
+						if (State.Index < State.Tokens.Count - 3
+							&& State.Tokens[State.Index + 1].Marker == "cat"
+							&& State.Tokens[State.Index + 2].Text != null
+							&& State.Tokens[State.Index + 3].Marker == "cat*")
+						{
+							// Get category
+							sidebarCategory = State.Tokens[State.Index + 2].Text.Trim();
+							_skip += 3;
+						}
+
+						if (_handler != null) _handler.StartSidebar(State, token.Marker, sidebarCategory, isClosed);
+						break;
+					}
+
+					// Close sidebar if in sidebar
+					if (token.Marker == "esbe")
+					{
+						if (State.Stack.Any(e => e.Type == UsfmElementTypes.Sidebar))
+							CloseAll();
+						else if (_handler != null)
+							_handler.Unmatched(State, token.Marker);
+						break;
+					}
+
+					State.Push(new UsfmParserElement(UsfmElementTypes.Para, token.Marker));
+
+					// Paragraph opening
+					if (_handler != null) _handler.StartPara(State, token.Marker, token.Type == UsfmTokenType.Unknown, token.Attributes);
+					break;
+				case UsfmTokenType.Character:
+					// Handle special case of table cells (treated as special character style)
+					if (IsCell(token))
+					{
+						string align = "start";
+						if (token.Marker.Length > 2 && token.Marker[2] == 'c')
+							align = "center";
+						else if (token.Marker.Length > 2 && token.Marker[2] == 'r')
+							align = "end";
+
+						UsfmStylesheet.IsCellRange(token.Marker, out string baseMarker, out int colspan);
+						State.Push(new UsfmParserElement(UsfmElementTypes.Cell, baseMarker));
+
+						if (_handler != null) _handler.StartCell(State, baseMarker, align, colspan);
+						break;
+					}
+
+					if (IsRef(token))
+					{
+						// xrefs are special tokens (they do not stand alone)
+						State.SpecialToken = true;
+
+						ParseDisplayAndTarget(out string display, out string target);
+
+						_skip += 2;
+
+						if (_handler != null) _handler.Ref(State, token.Marker, display, target);
+						break;
+					}
+
+					string actualMarker;
+					bool invalidMarker = false;
+					if (token.Marker.StartsWith("+"))
+					{
+						// Only strip + if properly nested
+						actualMarker = State.CharTag != null ? token.Marker.TrimStart('+') : token.Marker;
+						invalidMarker = State.CharTag == null;
+					}
+					else
+						actualMarker = token.Marker;
+
+					State.Push(new UsfmParserElement(UsfmElementTypes.Char, actualMarker, State.Token.Attributes));
+					if (_handler != null)
+					{
+						bool charIsClosed = IsTokenClosed();
+						State.Stack.Last().IsClosed = charIsClosed; // save for attribute check in Text method
+						_handler.StartChar(State, actualMarker, charIsClosed,
+							token.Type == UsfmTokenType.Unknown || invalidMarker, State.Token.Attributes);
+					}
+					break;
+				case UsfmTokenType.Note:
+					// Look for category
+					string noteCategory = null;
+					if (State.Index < State.Tokens.Count - 3
+						&& State.Tokens[State.Index + 1].Marker == "cat"
+						&& State.Tokens[State.Index + 2].Text != null
+						&& State.Tokens[State.Index + 3].Marker == "cat*")
+					{
+						// Get category
+						noteCategory = State.Tokens[State.Index + 2].Text.Trim();
+						_skip += 3;
+					}
+
+					State.Push(new UsfmParserElement(UsfmElementTypes.Note, token.Marker));
+
+					if (_handler != null) _handler.StartNote(State, token.Marker, token.Data, noteCategory, IsTokenClosed());
+					break;
+				case UsfmTokenType.Text:
+					string text = token.Text;
+
+					// If last token before a paragraph, book or chapter, esb, esbe (both are paragraph types),
+					// or at very end, strip final space
+					// This is because USFM requires these to be on a new line, therefore adding whitespace
+					if ((State.Index == State.Tokens.Count - 1
+						 || State.Tokens[State.Index + 1].Type == UsfmTokenType.Paragraph
+						 || State.Tokens[State.Index + 1].Type == UsfmTokenType.Book
+						 || State.Tokens[State.Index + 1].Type == UsfmTokenType.Chapter)
+						&& text.Length > 0 && text[text.Length - 1] == ' ')
+					{
+						text = text.Substring(0, text.Length - 1);
+					}
+
+					if (_handler != null)
+					{
+						// Replace ~ with nbsp
+						text = text.Replace('~', '\u00A0');
+
+						// Replace // with <optbreak/>
+						foreach (string str in OptBreakSplitter.Split(text))
+						{
+							if (str == "//")
+								_handler.OptBreak(State);
+							else
+								_handler.Text(State, str);
+						}
+					}
+					break;
+
+				case UsfmTokenType.Milestone:
+				case UsfmTokenType.MilestoneEnd:
+					// currently, parse state doesn't need to be update, so just inform the sink about the milestone.
+					_handler?.Milestone(State, token.Marker, token.Type == UsfmTokenType.Milestone, token.Attributes);
+					break;
+			}
+
 			return true;
 		}
 
-		private static bool MilestoneEnded(string usfm, int index)
+		private void ParseDisplayAndTarget(out string display, out string target)
 		{
-			int nextMarkerIndex = (index < usfm.Length) ? usfm.IndexOf('\\', index) : -1;
-			if (nextMarkerIndex == -1 || nextMarkerIndex > usfm.Length - 2)
-				return false;
-
-			return usfm.Substring(nextMarkerIndex, 2) == @"\*";
+			display = State.Tokens[State.Index + 1].Text.Substring(
+				0, State.Tokens[State.Index + 1].Text.IndexOf('|'));
+			target = State.Tokens[State.Index + 1].Text.Substring(
+				State.Tokens[State.Index + 1].Text.IndexOf('|') + 1);
 		}
 
 		/// <summary>
-		/// Checks if is whitespace, but not U+3000 (IDEOGRAPHIC SPACE).
-		/// Note: ~ is not included as it is considered punctuation, not whitespace for simplicity.
+		/// Closes all open elements on stack
 		/// </summary>
-		/// <param name="c">character</param>
-		/// <returns>true if non-meaningful whitespace</returns>
-		private static bool IsNonSemanticWhiteSpace(char c)
+		public void CloseAll()
 		{
-			// Consider \u200B (ZERO-WIDTH SPACE), 
-			// FB 18842 -- ZWJ and ZWNJ are not whitespace
-			return (c != '\u3000' && char.IsWhiteSpace(c)) || (c == ZeroWidthSpace);
+			while (State.Stack.Count > 0)
+				CloseElement();
+		}
+
+		/// <summary>
+		/// Updates the state of this parser to be the same as the state of the specified parser.
+		/// </summary>
+		private void UpdateParser(UsfmParser usfmParser)
+		{
+			State = usfmParser.State.Clone();
+			_skip = 0;
+		}
+
+		/// <summary>
+		/// Determine if Study Bible item closed (ending marker before book or chapter)
+		/// </summary>
+		private bool IsStudyBibleItemClosed(string startMarker, string endingMarker)
+		{
+			for (int i = State.Index + 1; i < State.Tokens.Count; i++)
+			{
+				if (State.Tokens[i].Marker == endingMarker)
+					return true;
+
+				if (State.Tokens[i].Marker == startMarker
+					|| State.Tokens[i].Type == UsfmTokenType.Book
+					|| State.Tokens[i].Type == UsfmTokenType.Chapter)
+					return false;
+			}
+			return false;
+		}
+
+		/// <summary>
+		/// Determine type that an unknown token should be treated as
+		/// </summary>
+		/// <returns>character or paragraph type</returns>
+		private UsfmTokenType DetermineUnknownTokenType()
+		{
+			// Unknown inside notes are character
+			if (State.Stack.Any(e => e.Type == UsfmElementTypes.Note))
+				return UsfmTokenType.Character;
+
+			return UsfmTokenType.Paragraph;
+		}
+
+
+		private bool IsTokenClosed()
+		{
+			// Clone current parser
+			if (_tokenClosedParser == null)
+				_tokenClosedParser = new UsfmParser(this);
+			_tokenClosedParser.UpdateParser(this);
+
+			string marker = State.Token.Marker;
+			LookaheadParser(State, _tokenClosedParser, marker, out bool isTokenClosed);
+			return isTokenClosed;
+		}
+
+		private static void LookaheadParser(UsfmParserState state, UsfmParser lookaheadParser, string marker,
+			out bool isTokenClosed)
+		{
+			// BEWARE: This method is fairly performance-critical
+			// Determine current marker
+			string endMarker = marker + "*";
+
+			// Process tokens until either the start of the stack doesn't match (it was closed
+			// improperly) or a matching close marker is found
+			while (lookaheadParser.ProcessToken())
+			{
+				UsfmToken currentToken = lookaheadParser.State.Token;
+
+				// Check if same marker was reopened without a close
+				bool reopened = currentToken.Marker == marker &&
+					lookaheadParser.State.Stack.SequenceEqual(state.Stack);
+				if (reopened)
+				{
+					isTokenClosed = false;
+					return;
+				}
+
+				// Check if beginning of stack is unchanged. If token is unclosed, it will be unchanged
+				bool markerStillOpen = lookaheadParser.State.Stack.Take(state.Stack.Count).SequenceEqual(state.Stack);
+				if (!markerStillOpen)
+				{
+					// Record whether marker is an end for this marker 
+					isTokenClosed = currentToken.Marker == endMarker && currentToken.Type == UsfmTokenType.End;
+					return;
+				}
+			}
+			isTokenClosed = false;
+		}
+
+		private void CloseNote()
+		{
+			if (State.Stack.Any(elem => elem.Type == UsfmElementTypes.Note))
+			{
+				UsfmParserElement elem;
+				do
+				{
+					if (State.Stack.Count == 0)
+						break;
+
+					elem = State.Peek();
+					CloseElement();
+				} while (elem.Type != UsfmElementTypes.Note);
+			}
+		}
+
+		private void CloseCharStyles()
+		{
+			while (State.Stack.Count > 0 && State.Peek().Type == UsfmElementTypes.Char)
+				CloseElement();
+		}
+
+		private void CloseElement()
+		{
+			UsfmParserElement element = State.Pop();
+			switch (element.Type)
+			{
+				case UsfmElementTypes.Book:
+					if (_handler != null) _handler.EndBook(State, element.Marker);
+					break;
+				case UsfmElementTypes.Para:
+					if (_handler != null) _handler.EndPara(State, element.Marker);
+					break;
+				case UsfmElementTypes.Char:
+					if (_handler != null) _handler.EndChar(State, element.Marker, element.Attributes);
+					break;
+				case UsfmElementTypes.Note:
+					if (_handler != null) _handler.EndNote(State, element.Marker);
+					break;
+				case UsfmElementTypes.Table:
+					if (_handler != null) _handler.EndTable(State);
+					break;
+				case UsfmElementTypes.Row:
+					if (_handler != null) _handler.EndRow(State, element.Marker);
+					break;
+				case UsfmElementTypes.Cell:
+					if (_handler != null) _handler.EndCell(State, element.Marker);
+					break;
+				case UsfmElementTypes.Sidebar:
+					if (_handler != null) _handler.EndSidebar(State, element.Marker);
+					break;
+			}
+		}
+
+		private bool IsCell(UsfmToken token)
+		{
+			return token.Type == UsfmTokenType.Character
+					&& (token.Marker.StartsWith("th") || token.Marker.StartsWith("tc"))
+					&& State.Stack.Any(elem => elem.Type == UsfmElementTypes.Row);
+		}
+
+		private bool IsRef(UsfmToken token)
+		{
+			return (State.Index < State.Tokens.Count - 2)
+				   && (State.Tokens[State.Index + 1].Text != null)
+				   && (State.Tokens[State.Index + 1].Text.Contains("|"))
+				   && (State.Tokens[State.Index + 2].Type == UsfmTokenType.End)
+				   && (State.Tokens[State.Index + 2].Marker == token.EndMarker)
+				   && (token.Marker == "ref");
 		}
 	}
 }

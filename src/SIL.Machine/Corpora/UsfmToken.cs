@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -29,7 +28,6 @@ namespace SIL.Machine.Corpora
 			@")*|(?<default>[^\\=|]*))", RegexOptions.Compiled);
 
 		private string _defaultAttributeName;
-		private NamedAttribute[] _attributes;
 
 		public UsfmToken(string text)
 		{
@@ -37,35 +35,37 @@ namespace SIL.Machine.Corpora
 			Text = text;
 		}
 
-		public UsfmToken(UsfmTokenType type, UsfmMarker marker, string text, string data = null, bool isNested = false,
-			int colSpan = 0)
+		public UsfmToken(UsfmTokenType type, string marker, string text, string endMarker, string data = null)
 		{
 			Type = type;
 			Marker = marker;
 			Text = text;
 			Data = data;
-			IsNested = isNested;
-			ColSpan = colSpan;
+			EndMarker = endMarker;
 		}
 
 		public UsfmTokenType Type { get; }
 
-		public UsfmMarker Marker { get; }
+		public string Marker { get; }
+		public string EndMarker { get; }
 
 		public string Text { get; set; }
 
 		public string Data { get; }
 
-		public bool IsNested { get; }
+		public IReadOnlyList<UsfmAttribute> Attributes { get; private set; }
 
-		public int ColSpan { get; }
+		public string NestlessMarker
+		{
+			get { return Marker != null && Marker[0] == '+' ? Marker.Substring(1) : Marker; }
+		}
 
 		public string GetAttribute(string name)
 		{
-			if (_attributes == null || _attributes.Length == 0)
+			if (Attributes == null || Attributes.Count == 0)
 				return "";
 
-			NamedAttribute attribute = _attributes.FirstOrDefault(a => a.Name == name);
+			UsfmAttribute attribute = Attributes.FirstOrDefault(a => a.Name == name);
 			return attribute?.Value ?? "";
 		}
 
@@ -78,9 +78,9 @@ namespace SIL.Machine.Corpora
 
 			// for figures, convert 2.0 format to 3.0 format. Will need to write this as the 2.0 format
 			// if the project is not upgrated.
-			if (Marker.Tag == "fig" && attributesValue.Count(c => c == '|') == 5)
+			if (NestlessMarker == "fig" && attributesValue.Count(c => c == '|') == 5)
 			{
-				List<NamedAttribute> attributeList = new List<NamedAttribute>(6);
+				List<UsfmAttribute> attributeList = new List<UsfmAttribute>(6);
 				string[] parts = attributesValue.Split('|');
 				AppendAttribute(attributeList, "alt", adjustedText);
 				AppendAttribute(attributeList, "src", parts[0]);
@@ -92,7 +92,7 @@ namespace SIL.Machine.Corpora
 					whitespace = adjustedText.Substring(0, adjustedText.Length - adjustedText.TrimStart().Length);
 				adjustedText = whitespace + parts[4];
 				AppendAttribute(attributeList, "ref", parts[5]);
-				_attributes = attributeList.ToArray();
+				Attributes = attributeList;
 				return true;
 			}
 
@@ -106,7 +106,7 @@ namespace SIL.Machine.Corpora
 				// only accept default value it there is a defined default attribute
 				if (defaultAttributeName != null)
 				{
-					_attributes = new[] { new NamedAttribute(defaultAttributeName, defaultValue.Value) };
+					Attributes = new[] { new UsfmAttribute(defaultAttributeName, defaultValue.Value) };
 					_defaultAttributeName = defaultAttributeName;
 					return true;
 				}
@@ -119,81 +119,138 @@ namespace SIL.Machine.Corpora
 				return false;
 
 			_defaultAttributeName = defaultAttributeName;
-			NamedAttribute[] attributes = new NamedAttribute[attributeNames.Count];
+			UsfmAttribute[] attributes = new UsfmAttribute[attributeNames.Count];
 			for (int i = 0; i < attributeNames.Count; i++)
-				attributes[i] = new NamedAttribute(attributeNames[i].Value, attributeValues[i].Value, attributeValues[i].Index);
-			_attributes = attributes;
+				attributes[i] = new UsfmAttribute(attributeNames[i].Value, attributeValues[i].Value, attributeValues[i].Index);
+			Attributes = attributes;
 			return true;
 		}
 
 		public void CopyAttributes(UsfmToken sourceToken)
 		{
-			_attributes = sourceToken._attributes;
+			Attributes = sourceToken.Attributes;
 			_defaultAttributeName = sourceToken._defaultAttributeName;
 		}
 
-		private static void AppendAttribute(List<NamedAttribute> attributes, string name, string value)
+		private static void AppendAttribute(List<UsfmAttribute> attributes, string name, string value)
 		{
 			value = value?.Trim();  // don't want to have attribute that is just spaces
 			if (!string.IsNullOrEmpty(value))
-				attributes.Add(new NamedAttribute(name, value));
+				attributes.Add(new UsfmAttribute(name, value));
+		}
+
+		public int GetLength(bool includeNewlines = false, bool addSpaces = true)
+		{
+			// WARNING: This logic in this method needs to match the logic in ToUsfm()
+
+			int totalLength = (Text != null) ? Text.Length : 0;
+			if (Type == UsfmTokenType.Attribute)
+			{
+				totalLength += ToAttributeString().Length;
+			}
+			else if (Marker != null)
+			{
+				if (includeNewlines && (Type == UsfmTokenType.Paragraph || Type == UsfmTokenType.Chapter ||
+					Type == UsfmTokenType.Verse))
+				{
+					totalLength += 2;
+				}
+				totalLength += Marker.Length + 1; // marker and backslash
+				if (addSpaces && (Marker.Length == 0 || Marker[Marker.Length - 1] != '*'))
+					totalLength++; // space
+
+				if (!string.IsNullOrEmpty(Data))
+				{
+					if (Marker.Length > 0)
+						totalLength++;
+					totalLength += Data.Length;
+					if (addSpaces)
+						totalLength++;
+				}
+
+				if (Type == UsfmTokenType.Milestone || Type == UsfmTokenType.MilestoneEnd)
+				{
+					string attributes = ToAttributeString();
+					if (attributes != "")
+						totalLength += attributes.Length;
+					else
+					{
+						// remove space that was put after marker - not needed when there are no attributes.
+						totalLength--;
+					}
+
+					totalLength += 2; // End of the milestone
+				}
+			}
+			return totalLength;
+		}
+
+		public string ToUsfm(bool includeNewlines = false, bool addSpaces = false)
+		{
+			// WARNING: The logic in this method needs to match the logic in GetLength()
+
+			string toReturn = Text ?? "";
+			if (Type == UsfmTokenType.Attribute)
+			{
+				toReturn += ToAttributeString();
+			}
+			else if (Marker != null)
+			{
+				StringBuilder sb = new StringBuilder();
+				if (includeNewlines && (Type == UsfmTokenType.Paragraph || Type == UsfmTokenType.Chapter ||
+					Type == UsfmTokenType.Verse))
+				{
+					sb.Append("\r\n");
+				}
+				sb.Append('\\');
+				if (Marker.Length > 0)
+					sb.Append(Marker);
+				if (addSpaces && (Marker.Length == 0 || Marker[Marker.Length - 1] != '*'))
+					sb.Append(' ');
+
+				if (!string.IsNullOrEmpty(Data))
+				{
+					if (Marker.Length > 0)
+						sb.Append(' ');
+					sb.Append(Data);
+					if (addSpaces)
+						sb.Append(' ');
+				}
+
+				if (Type == UsfmTokenType.Milestone || Type == UsfmTokenType.MilestoneEnd)
+				{
+					string attributes = ToAttributeString();
+					if (attributes != "")
+						sb.Append(attributes);
+					else
+					{
+						// remove space that was put after marker - not needed when there are no attributes.
+						sb.Length -= 1;
+					}
+					sb.Append(@"\*");
+				}
+				toReturn += sb.ToString();
+			}
+			return toReturn;
+		}
+
+		public string ToAttributeString()
+		{
+			if (Attributes == null || Attributes.Count == 0)
+				return "";
+
+			if (!string.IsNullOrEmpty(Data))
+				return "|" + Data;
+
+			if (Attributes.Count == 1 && Attributes[0].Name == _defaultAttributeName)
+				return "|" + Attributes[0].Value;
+
+			return "|" + string.Join(" ", Attributes.Select(a => a.ToString()));
 		}
 
 		public override string ToString()
 		{
-			var sb = new StringBuilder();
-			if (Type == UsfmTokenType.Attribute)
-			{
-				sb.Append("|");
-				sb.Append(Data);
-			}
-			else
-			{
-				if (Marker != null)
-				{
-					sb.Append(IsNested ? $"\\+{Marker.Tag}" : Marker.ToString());
-					if (ColSpan >= 2)
-					{
-						int col = int.Parse(Marker.Tag[Marker.Tag.Length - 1].ToString(), CultureInfo.InvariantCulture);
-						sb.Append($"-{col + ColSpan - 1}");
-					}
-				}
-				if (!string.IsNullOrEmpty(Text))
-				{
-					if (sb.Length > 0)
-						sb.Append(" ");
-					sb.Append(Text);
-				}
-
-				if (!string.IsNullOrEmpty(Data))
-				{
-					if (sb.Length > 0)
-						sb.Append(" ");
-					sb.Append(Data);
-				}
-			}
-
-			return sb.ToString();
-		}
-
-		private sealed class NamedAttribute
-		{
-			public NamedAttribute(string name, string value, int offset = 0)
-			{
-				Name = name;
-				Value = value;
-				Offset = offset;
-			}
-
-			public string Name { get; }
-			public string Value { get; }
-
-			public int Offset { get; }
-
-			public override string ToString()
-			{
-				return Name + $"=\"{Value}\"";
-			}
+			return ToUsfm();
 		}
 	}
 }

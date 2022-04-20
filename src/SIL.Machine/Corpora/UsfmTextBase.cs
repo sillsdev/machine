@@ -8,22 +8,7 @@ namespace SIL.Machine.Corpora
 {
 	public abstract class UsfmTextBase : ScriptureText
 	{
-		private static readonly HashSet<string> NonVerseParaStyles = new HashSet<string>
-		{
-			"ms", "mr", "s", "sr", "r", "d", "sp", "rem", "restore", "cl", "cp"
-		};
-
-		private static readonly HashSet<string> SpanMarkers = new HashSet<string>
-		{
-			"w", "jmp"
-		};
-
-		private static readonly HashSet<string> EmbedMarkers = new HashSet<string>
-		{
-			"fig", "va", "vp", "pro", "rq", "fm"
-		};
-
-		private readonly UsfmParser _parser;
+		private readonly UsfmStylesheet _stylesheet;
 		private readonly Encoding _encoding;
 		private readonly bool _includeMarkers;
 
@@ -31,7 +16,7 @@ namespace SIL.Machine.Corpora
 			bool includeMarkers)
 			: base(id, versification)
 		{
-			_parser = new UsfmParser(stylesheet);
+			_stylesheet = stylesheet;
 			_encoding = encoding;
 			_includeMarkers = includeMarkers;
 		}
@@ -39,161 +24,9 @@ namespace SIL.Machine.Corpora
 		protected override IEnumerable<TextRow> GetVersesInDocOrder()
 		{
 			string usfm = ReadUsfm();
-			UsfmMarker curEmbedMarker = null;
-			UsfmMarker curSpanMarker = null;
-			var sb = new StringBuilder();
-			string chapter = null, verse = null;
-			bool sentenceStart = true;
-			UsfmToken prevToken = null;
-			bool isVersePara = false;
-			foreach (UsfmToken token in _parser.Parse(usfm, _includeMarkers))
-			{
-				switch (token.Type)
-				{
-					case UsfmTokenType.Chapter:
-						if (chapter != null && verse != null)
-						{
-							string verseText = sb.ToString();
-							foreach (TextRow seg in CreateRows(chapter, verse, verseText, sentenceStart))
-								yield return seg;
-							sentenceStart = true;
-							sb.Clear();
-						}
-						chapter = token.Data;
-						verse = null;
-						break;
-
-					case UsfmTokenType.Verse:
-						if (chapter != null && verse != null)
-						{
-							if (token.Data == verse)
-							{
-								string verseText = sb.ToString();
-								foreach (TextRow seg in CreateRows(chapter, verse, verseText, sentenceStart))
-									yield return seg;
-								sentenceStart = verseText.HasSentenceEnding();
-								sb.Clear();
-
-								// ignore duplicate verse
-								verse = null;
-							}
-							else if (VerseRef.AreOverlappingVersesRanges(token.Data, verse))
-							{
-								// merge overlapping verse ranges in to one range
-								verse = CorporaUtils.MergeVerseRanges(token.Data, verse);
-							}
-							else
-							{
-								string verseText = sb.ToString();
-								foreach (TextRow seg in CreateRows(chapter, verse, verseText, sentenceStart))
-									yield return seg;
-								sentenceStart = verseText.HasSentenceEnding();
-								sb.Clear();
-								verse = token.Data;
-							}
-						}
-						else
-						{
-							verse = token.Data;
-						}
-						isVersePara = true;
-						break;
-
-					case UsfmTokenType.Paragraph:
-						isVersePara = IsVersePara(token);
-						break;
-
-					case UsfmTokenType.Note:
-						curEmbedMarker = token.Marker;
-						if (chapter != null && verse != null && _includeMarkers)
-						{
-							if (prevToken?.Type == UsfmTokenType.Paragraph && IsVersePara(prevToken))
-							{
-								sb.Append(prevToken);
-								sb.Append(" ");
-							}
-							sb.Append(token);
-						}
-						break;
-
-					case UsfmTokenType.End:
-						if (curEmbedMarker != null && token.Marker.Tag == curEmbedMarker.EndTag)
-							curEmbedMarker = null;
-						if (curSpanMarker != null && token.Marker.Tag == curSpanMarker.EndTag)
-							curSpanMarker = null;
-						if (isVersePara && chapter != null && verse != null && _includeMarkers)
-							sb.Append(token);
-						break;
-
-					case UsfmTokenType.Character:
-						if (SpanMarkers.Contains(token.Marker.Tag))
-						{
-							curSpanMarker = token.Marker;
-						}
-						else if (token.Marker.Tag != "qac"
-							&& (token.Marker.TextType == UsfmTextType.Other
-								|| EmbedMarkers.Contains(token.Marker.Tag)))
-						{
-							curEmbedMarker = token.Marker;
-							if (!_includeMarkers && token.Marker.Tag == "rq")
-								sb.TrimEnd();
-						}
-						if (isVersePara && chapter != null && verse != null && _includeMarkers)
-						{
-							if (prevToken?.Type == UsfmTokenType.Paragraph && IsVersePara(prevToken))
-							{
-								sb.Append(prevToken);
-								sb.Append(" ");
-							}
-							sb.Append(token);
-						}
-						else if (IsTableCellStyle(token))
-						{
-							if (!char.IsWhiteSpace(sb[sb.Length - 1]))
-								sb.Append(" ");
-						}
-						break;
-
-					case UsfmTokenType.Attribute:
-						if (isVersePara && chapter != null && verse != null && _includeMarkers)
-							sb.Append(token);
-						break;
-
-					case UsfmTokenType.Text:
-						string text = token.ToString().Replace("\r", "").Replace("\n", " ");
-						if (isVersePara && chapter != null && verse != null && !string.IsNullOrEmpty(text))
-						{
-							if (_includeMarkers)
-							{
-								if (token.Text != "\r\n" && token.Text != "\n"
-									&& prevToken?.Type == UsfmTokenType.Paragraph && IsVersePara(prevToken))
-								{
-									sb.Append(prevToken);
-								}
-								if (prevToken?.Type == UsfmTokenType.Verse)
-									text = text.TrimStart();
-								sb.Append(text);
-							}
-							else if (curEmbedMarker == null)
-							{
-								if (prevToken?.Type == UsfmTokenType.End
-									&& (sb.Length == 0 || char.IsWhiteSpace(sb[sb.Length - 1])))
-								{
-									text = text.TrimStart();
-								}
-								sb.Append(text);
-							}
-						}
-						break;
-				}
-				prevToken = token;
-			}
-
-			if (chapter != null && verse != null)
-			{
-				foreach (TextRow seg in CreateRows(chapter, verse, sb.ToString(), sentenceStart))
-					yield return seg;
-			}
+			var rowCollector = new TextRowCollector(this);
+			UsfmParser.Parse(_stylesheet, Versification, usfm, rowCollector, preserveWhitespace: _includeMarkers);
+			return rowCollector.Rows;
 		}
 
 		protected abstract IStreamContainer CreateStreamContainer();
@@ -207,31 +40,214 @@ namespace SIL.Machine.Corpora
 			}
 		}
 
-		private static bool IsVersePara(UsfmToken paraToken)
+		private class TextRowCollector : UsfmParserHandlerBase
 		{
-			string style = paraToken.Marker.Tag;
-			if (NonVerseParaStyles.Contains(style))
-				return false;
+			private readonly UsfmTextBase _text;
+			private readonly List<TextRow> _rows;
+			private VerseRef _verseRef;
+			private readonly StringBuilder _verseText;
+			private bool _sentenceStart;
+			private readonly List<UsfmToken> _nextParaTokens;
+			private bool _nextParaTextStarted = false;
 
-			if (IsNumberedStyle("ms", style))
-				return false;
+			public TextRowCollector(UsfmTextBase text)
+			{
+				_text = text;
+				_rows = new List<TextRow>();
+				_verseText = new StringBuilder();
+				_nextParaTokens = new List<UsfmToken>();
+			}
 
-			if (IsNumberedStyle("s", style))
-				return false;
+			public IEnumerable<TextRow> Rows => _rows;
 
-			return true;
-		}
+			public override void Chapter(UsfmParserState state, string number, string marker, string altNumber,
+				string pubNumber)
+			{
+				VerseCompleted(nextSentenceStart: true);
+				_verseRef = default;
+			}
 
-		private static bool IsTableCellStyle(UsfmToken charToken)
-		{
-			string style = charToken.Marker.Tag;
-			return IsNumberedStyle("th", style) || IsNumberedStyle("thc", style) || IsNumberedStyle("thr", style)
-				|| IsNumberedStyle("tc", style) || IsNumberedStyle("tcc", style) || IsNumberedStyle("tcr", style);
-		}
+			public override void Verse(UsfmParserState state, string number, string marker, string altNumber,
+				string pubNumber)
+			{
+				if (_verseRef.IsDefault)
+				{
+					_verseRef = state.VerseRef;
+				}
+				else
+				{
+					if (state.VerseRef.Equals(_verseRef))
+					{
+						VerseCompleted();
 
-		private static bool IsNumberedStyle(string stylePrefix, string style)
-		{
-			return style.StartsWith(stylePrefix) && int.TryParse(style.Substring(stylePrefix.Length), out _);
+						// ignore duplicate verse
+						_verseRef = default;
+					}
+					else if (VerseRef.AreOverlappingVersesRanges(number, _verseRef.Verse))
+					{
+						// merge overlapping verse ranges in to one range
+						_verseRef.Verse = CorporaUtils.MergeVerseRanges(number, _verseRef.Verse);
+					}
+					else
+					{
+						VerseCompleted();
+						_verseRef = state.VerseRef;
+					}
+				}
+				_nextParaTextStarted = true;
+				_nextParaTokens.Clear();
+			}
+
+			public override void StartPara(UsfmParserState state, string marker, bool unknown,
+				IReadOnlyList<UsfmAttribute> attributes)
+			{
+				if (_verseRef.IsDefault)
+					return;
+
+				if (state.IsVersePara)
+				{
+					if (_verseText.Length > 0)
+						_verseText.Append(" ");
+					_nextParaTokens.Add(state.Token);
+					_nextParaTextStarted = false;
+				}
+			}
+
+			public override void StartRow(UsfmParserState state, string marker)
+			{
+				if (_verseRef.IsDefault)
+					return;
+
+				if (_verseText.Length > 0)
+					_verseText.Append(" ");
+				_nextParaTokens.Add(state.Token);
+				_nextParaTextStarted = false;
+			}
+
+			public override void StartCell(UsfmParserState state, string marker, string align, int colspan)
+			{
+				if (_verseRef.IsDefault)
+					return;
+
+				if (_text._includeMarkers)
+				{
+					OutputMarker(state);
+				}
+				else
+				{
+					if (!char.IsWhiteSpace(_verseText[_verseText.Length - 1]))
+						_verseText.Append(" ");
+				}
+			}
+
+			public override void EndCell(UsfmParserState state, string marker)
+			{
+				OutputEndMarker(state, marker);
+			}
+
+			public override void Ref(UsfmParserState state, string marker, string display, string target)
+			{
+				OutputMarker(state);
+			}
+
+			public override void StartChar(UsfmParserState state, string markerWithoutPlus, bool closed, bool unknown,
+				IReadOnlyList<UsfmAttribute> attributes)
+			{
+				OutputMarker(state);
+			}
+
+			public override void EndChar(UsfmParserState state, string marker, IReadOnlyList<UsfmAttribute> attributes)
+			{
+				if (_text._includeMarkers && attributes != null && state.PrevToken?.Type == UsfmTokenType.Attribute)
+					_verseText.Append(state.PrevToken);
+
+				OutputEndMarker(state, marker);
+				if (!_text._includeMarkers && marker == "rq")
+					_verseText.TrimEnd();
+			}
+
+			public override void StartNote(UsfmParserState state, string marker, string caller, string category,
+				bool closed)
+			{
+				OutputMarker(state);
+			}
+
+			public override void EndNote(UsfmParserState state, string marker)
+			{
+				OutputEndMarker(state, marker);
+			}
+
+			public override void Text(UsfmParserState state, string text)
+			{
+				if (_verseRef.IsDefault || !state.IsVersePara)
+					return;
+
+				if (_text._includeMarkers)
+				{
+					text = text.TrimEnd('\r', '\n');
+					if (text.Length > 0)
+					{
+						if (!text.IsWhiteSpace())
+						{
+							foreach (UsfmToken token in _nextParaTokens)
+								_verseText.Append(token);
+							_nextParaTokens.Clear();
+							_nextParaTextStarted = true;
+						}
+						_verseText.Append(text);
+					}
+				}
+				else if (state.IsVerseText && text.Length > 0)
+				{
+					if (state.PrevToken?.Type == UsfmTokenType.End
+						&& (_verseText.Length == 0 || char.IsWhiteSpace(_verseText[_verseText.Length - 1])))
+					{
+						text = text.TrimStart();
+					}
+					_verseText.Append(text);
+				}
+			}
+
+			public override void EndUsfm(UsfmParserState state)
+			{
+				VerseCompleted();
+			}
+
+			private void OutputMarker(UsfmParserState state)
+			{
+				if (_verseRef.IsDefault || !_text._includeMarkers)
+					return;
+
+				if (_nextParaTextStarted)
+					_verseText.Append(state.Token);
+				else
+					_nextParaTokens.Add(state.Token);
+			}
+
+			private void OutputEndMarker(UsfmParserState state, string marker)
+			{
+				if (_verseRef.IsDefault || !_text._includeMarkers)
+					return;
+
+				if (state.Token.Type == UsfmTokenType.End && state.Token.NestlessMarker == marker + "*")
+				{
+					if (_nextParaTextStarted)
+						_verseText.Append(state.Token);
+					else
+						_nextParaTokens.Add(state.Token);
+				}
+			}
+
+			private void VerseCompleted(bool? nextSentenceStart = null)
+			{
+				if (_verseRef.IsDefault)
+					return;
+
+				string text = _verseText.ToString();
+				_rows.AddRange(_text.CreateRows(_verseRef, text, _sentenceStart));
+				_sentenceStart = nextSentenceStart ?? text.HasSentenceEnding();
+				_verseText.Clear();
+			}
 		}
 	}
 }
