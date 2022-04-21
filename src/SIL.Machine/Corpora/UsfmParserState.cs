@@ -17,19 +17,9 @@ namespace SIL.Machine.Corpora
 		{
 			Stylesheet = stylesheet;
 			_stack = new List<UsfmParserElement>();
-			VerseRef = new VerseRef(versification ?? ScrVers.English);
+			VerseRef = new VerseRef(versification);
 			VerseOffset = 0;
 			Tokens = tokens;
-		}
-
-		private UsfmParserState(UsfmParserState state)
-		{
-			Stylesheet = state.Stylesheet;
-			Index = state.Index;
-			_stack = new List<UsfmParserElement>(state._stack);
-			VerseRef = state.VerseRef;
-			VerseOffset = state.VerseOffset;
-			Tokens = state.Tokens;
 		}
 
 		public UsfmStylesheet Stylesheet { get; }
@@ -89,10 +79,10 @@ namespace SIL.Machine.Corpora
 			get
 			{
 				UsfmParserElement elem = _stack.LastOrDefault(e =>
-					e.Type == UsfmElementTypes.Para ||
-					e.Type == UsfmElementTypes.Book ||
-					e.Type == UsfmElementTypes.Row ||
-					e.Type == UsfmElementTypes.Sidebar);
+					e.Type == UsfmElementType.Para ||
+					e.Type == UsfmElementType.Book ||
+					e.Type == UsfmElementType.Row ||
+					e.Type == UsfmElementType.Sidebar);
 				if (elem != null)
 					return Stylesheet.GetTag(elem.Marker);
 				return null;
@@ -114,8 +104,8 @@ namespace SIL.Machine.Corpora
 		{
 			get
 			{
-				UsfmParserElement elem = Stack.LastOrDefault(e => e.Type == UsfmElementTypes.Note);
-				return (elem != null) ? Stylesheet.GetTag(elem.Marker) : null;
+				UsfmParserElement elem = Stack.LastOrDefault(e => e.Type == UsfmElementType.Note);
+				return elem != null ? Stylesheet.GetTag(elem.Marker) : null;
 			}
 		}
 
@@ -128,7 +118,7 @@ namespace SIL.Machine.Corpora
 			{
 				for (int i = Stack.Count - 1; i >= 0; i--)
 				{
-					if (Stack[i].Type == UsfmElementTypes.Char)
+					if (Stack[i].Type == UsfmElementType.Char)
 						yield return Stylesheet.GetTag(Stack[i].Marker);
 					else
 						break;
@@ -156,7 +146,7 @@ namespace SIL.Machine.Corpora
 			get
 			{
 				// Sidebars and notes are not verse text 
-				if (_stack.Any(e => e.Type == UsfmElementTypes.Sidebar || e.Type == UsfmElementTypes.Note))
+				if (_stack.Any(e => e.Type == UsfmElementType.Sidebar || e.Type == UsfmElementType.Note))
 					return false;
 
 
@@ -175,64 +165,11 @@ namespace SIL.Machine.Corpora
 			}
 		}
 
-		/// <summary>
-		/// Determines if text tokens in the current state are publishable
-		/// </summary>
-		public bool IsPublishable
-		{
-			get
-			{
-				// Special tokens not publishable
-				if (SpecialToken)
-					return false;
-
-				// Non-paragraphs or unknown paragraphs are publishable
-				if (ParaTag != null)
-				{
-					if ((ParaTag.TextProperties & UsfmTextProperties.Nonpublishable) > 0)
-						return false;
-				}
-
-				if (CharTags.Any(charTag => (charTag.TextProperties & UsfmTextProperties.Nonpublishable) > 0))
-					return false;
-				return !IsSpecialText;
-			}
-		}
 
 		/// <summary>
-		/// Determines if text tokens in the current state are publishable vernacular
+		/// Determines if text is special text like links and figures that are not in the vernacular.
 		/// </summary>
-		public bool IsPublishableVernacular
-		{
-			get
-			{
-				// Non-paragraphs or unknown paragraphs are publishable
-				if (ParaTag != null)
-				{
-					if ((ParaTag.TextProperties & UsfmTextProperties.Nonpublishable) > 0)
-						return false;
-					if ((ParaTag.TextProperties & UsfmTextProperties.Nonvernacular) > 0)
-						return false;
-				}
-				if (CharTag != null)
-				{
-					if ((CharTag.TextProperties & UsfmTextProperties.Nonpublishable) > 0)
-						return false;
-					if ((CharTag.TextProperties & UsfmTextProperties.Nonvernacular) > 0)
-						return false;
-				}
-				return !IsSpecialText;
-			}
-		}
-
-		/// <summary>
-		/// Determines if text is special text like links and figures that are not in the 
-		/// vernacular.
-		/// </summary>
-		public bool IsSpecialText
-		{
-			get { return SpecialToken; }
-		}
+		public bool IsSpecialText => SpecialToken;
 
 		internal UsfmParserElement Peek()
 		{
@@ -250,17 +187,12 @@ namespace SIL.Machine.Corpora
 			_stack.RemoveAt(_stack.Count - 1);
 			return element;
 		}
-
-		internal UsfmParserState Clone()
-		{
-			return new UsfmParserState(this);
-		}
 	}
 
 	/// <summary>
 	/// Element types on the stack
 	/// </summary>
-	public enum UsfmElementTypes
+	public enum UsfmElementType
 	{
 		Book,
 		Para,
@@ -277,26 +209,15 @@ namespace SIL.Machine.Corpora
 	/// </summary>
 	public sealed class UsfmParserElement
 	{
-		public readonly UsfmElementTypes Type;
-		public readonly string Marker;
-		public IReadOnlyList<UsfmAttribute> Attributes;
-		public bool IsClosed;
-
-		public UsfmParserElement(UsfmElementTypes type, string marker, IReadOnlyList<UsfmAttribute> attributes = null)
+		public UsfmParserElement(UsfmElementType type, string marker, IReadOnlyList<UsfmAttribute> attributes = null)
 		{
 			Type = type;
 			Marker = marker;
 			Attributes = attributes;
 		}
 
-		public override bool Equals(object obj)
-		{
-			return obj is UsfmParserElement elm && elm.Type == Type && elm.Marker == Marker;
-		}
-
-		public override int GetHashCode()
-		{
-			return Marker.GetHashCode();
-		}
+		public UsfmElementType Type { get; }
+		public string Marker { get; }
+		public IReadOnlyList<UsfmAttribute> Attributes { get; set; }
 	}
 }

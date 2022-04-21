@@ -56,23 +56,23 @@ namespace SIL.Machine.Corpora
 		/// <summary>
 		/// Start of a character style
 		/// </summary>
-		void StartChar(UsfmParserState state, string markerWithoutPlus, bool closed, bool unknown,
+		void StartChar(UsfmParserState state, string markerWithoutPlus, bool unknown,
 			IReadOnlyList<UsfmAttribute> attributes);
 
 		/// <summary>
 		/// End of a character style
 		/// </summary>
-		void EndChar(UsfmParserState state, string marker, IReadOnlyList<UsfmAttribute> attributes);
+		void EndChar(UsfmParserState state, string marker, IReadOnlyList<UsfmAttribute> attributes, bool closed);
 
 		/// <summary>
 		/// Start of a note
 		/// </summary>
-		void StartNote(UsfmParserState state, string marker, string caller, string category, bool closed);
+		void StartNote(UsfmParserState state, string marker, string caller, string category);
 
 		/// <summary>
 		/// End of a note
 		/// </summary>
-		void EndNote(UsfmParserState state, string marker);
+		void EndNote(UsfmParserState state, string marker, bool closed);
 
 		/// <summary>
 		/// Start of a table
@@ -122,12 +122,12 @@ namespace SIL.Machine.Corpora
 		/// <summary>
 		/// Start of a study Bible sidebar
 		/// </summary>
-		void StartSidebar(UsfmParserState state, string marker, string category, bool closed);
+		void StartSidebar(UsfmParserState state, string marker, string category);
 
 		/// <summary>
 		/// End of a study Bible sidebar
 		/// </summary>
-		void EndSidebar(UsfmParserState state, string marker);
+		void EndSidebar(UsfmParserState state, string marker, bool closed);
 
 		/// <summary>
 		/// Optional break (// in usfm)

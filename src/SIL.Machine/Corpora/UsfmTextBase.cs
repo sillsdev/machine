@@ -25,7 +25,7 @@ namespace SIL.Machine.Corpora
 		{
 			string usfm = ReadUsfm();
 			var rowCollector = new TextRowCollector(this);
-			UsfmParser.Parse(_stylesheet, Versification, usfm, rowCollector, preserveWhitespace: _includeMarkers);
+			UsfmParser.Parse(_stylesheet, usfm, rowCollector, Versification, preserveWhitespace: _includeMarkers);
 			return rowCollector.Rows;
 		}
 
@@ -74,25 +74,22 @@ namespace SIL.Machine.Corpora
 				{
 					_verseRef = state.VerseRef;
 				}
+				else if (state.VerseRef.Equals(_verseRef))
+				{
+					VerseCompleted();
+
+					// ignore duplicate verse
+					_verseRef = default;
+				}
+				else if (VerseRef.AreOverlappingVersesRanges(number, _verseRef.Verse))
+				{
+					// merge overlapping verse ranges in to one range
+					_verseRef.Verse = CorporaUtils.MergeVerseRanges(number, _verseRef.Verse);
+				}
 				else
 				{
-					if (state.VerseRef.Equals(_verseRef))
-					{
-						VerseCompleted();
-
-						// ignore duplicate verse
-						_verseRef = default;
-					}
-					else if (VerseRef.AreOverlappingVersesRanges(number, _verseRef.Verse))
-					{
-						// merge overlapping verse ranges in to one range
-						_verseRef.Verse = CorporaUtils.MergeVerseRanges(number, _verseRef.Verse);
-					}
-					else
-					{
-						VerseCompleted();
-						_verseRef = state.VerseRef;
-					}
+					VerseCompleted();
+					_verseRef = state.VerseRef;
 				}
 				_nextParaTextStarted = true;
 				_nextParaTokens.Clear();
@@ -101,27 +98,12 @@ namespace SIL.Machine.Corpora
 			public override void StartPara(UsfmParserState state, string marker, bool unknown,
 				IReadOnlyList<UsfmAttribute> attributes)
 			{
-				if (_verseRef.IsDefault)
-					return;
-
-				if (state.IsVersePara)
-				{
-					if (_verseText.Length > 0)
-						_verseText.Append(" ");
-					_nextParaTokens.Add(state.Token);
-					_nextParaTextStarted = false;
-				}
+				HandlePara(state);
 			}
 
 			public override void StartRow(UsfmParserState state, string marker)
 			{
-				if (_verseRef.IsDefault)
-					return;
-
-				if (_verseText.Length > 0)
-					_verseText.Append(" ");
-				_nextParaTokens.Add(state.Token);
-				_nextParaTextStarted = false;
+				HandlePara(state);
 			}
 
 			public override void StartCell(UsfmParserState state, string marker, string align, int colspan)
@@ -140,41 +122,38 @@ namespace SIL.Machine.Corpora
 				}
 			}
 
-			public override void EndCell(UsfmParserState state, string marker)
-			{
-				OutputEndMarker(state, marker);
-			}
-
 			public override void Ref(UsfmParserState state, string marker, string display, string target)
 			{
 				OutputMarker(state);
 			}
 
-			public override void StartChar(UsfmParserState state, string markerWithoutPlus, bool closed, bool unknown,
+			public override void StartChar(UsfmParserState state, string markerWithoutPlus, bool unknown,
 				IReadOnlyList<UsfmAttribute> attributes)
 			{
 				OutputMarker(state);
 			}
 
-			public override void EndChar(UsfmParserState state, string marker, IReadOnlyList<UsfmAttribute> attributes)
+			public override void EndChar(UsfmParserState state, string marker, IReadOnlyList<UsfmAttribute> attributes,
+				bool closed)
 			{
 				if (_text._includeMarkers && attributes != null && state.PrevToken?.Type == UsfmTokenType.Attribute)
 					_verseText.Append(state.PrevToken);
 
-				OutputEndMarker(state, marker);
+				if (closed)
+					OutputMarker(state);
 				if (!_text._includeMarkers && marker == "rq")
 					_verseText.TrimEnd();
 			}
 
-			public override void StartNote(UsfmParserState state, string marker, string caller, string category,
-				bool closed)
+			public override void StartNote(UsfmParserState state, string marker, string caller, string category)
 			{
 				OutputMarker(state);
 			}
 
-			public override void EndNote(UsfmParserState state, string marker)
+			public override void EndNote(UsfmParserState state, string marker, bool closed)
 			{
-				OutputEndMarker(state, marker);
+				if (closed)
+					OutputMarker(state);
 			}
 
 			public override void Text(UsfmParserState state, string text)
@@ -224,20 +203,6 @@ namespace SIL.Machine.Corpora
 					_nextParaTokens.Add(state.Token);
 			}
 
-			private void OutputEndMarker(UsfmParserState state, string marker)
-			{
-				if (_verseRef.IsDefault || !_text._includeMarkers)
-					return;
-
-				if (state.Token.Type == UsfmTokenType.End && state.Token.NestlessMarker == marker + "*")
-				{
-					if (_nextParaTextStarted)
-						_verseText.Append(state.Token);
-					else
-						_nextParaTokens.Add(state.Token);
-				}
-			}
-
 			private void VerseCompleted(bool? nextSentenceStart = null)
 			{
 				if (_verseRef.IsDefault)
@@ -247,6 +212,20 @@ namespace SIL.Machine.Corpora
 				_rows.AddRange(_text.CreateRows(_verseRef, text, _sentenceStart));
 				_sentenceStart = nextSentenceStart ?? text.HasSentenceEnding();
 				_verseText.Clear();
+			}
+
+			private void HandlePara(UsfmParserState state)
+			{
+				if (_verseRef.IsDefault)
+					return;
+
+				if (state.IsVersePara)
+				{
+					if (_verseText.Length > 0)
+						_verseText.Append(" ");
+					_nextParaTokens.Add(state.Token);
+					_nextParaTextStarted = false;
+				}
 			}
 		}
 	}

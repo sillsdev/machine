@@ -113,8 +113,6 @@ namespace SIL.Machine.Corpora
 					tag = _stylesheet.GetTag(marker);
 				}
 
-				// Note: Unless this is a milestone, tag.Marker and tag.EndMarker are ignored if maras the plus prefix must be kept
-				// and the end marker is always marker + "*"
 				string endMarker = tag.StyleType != UsfmStyleType.Milestone ? marker + "*" : tag.EndMarker;
 
 				switch (tag.StyleType)
@@ -128,7 +126,6 @@ namespace SIL.Machine.Corpora
 						}
 						else
 						{
-							UsfmStylesheet.IsCellRange(marker, out _, out int colSpan);
 							tokens.Add(new UsfmToken(UsfmTokenType.Character, marker, null, endMarker));
 						}
 						break;

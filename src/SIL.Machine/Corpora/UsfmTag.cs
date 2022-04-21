@@ -3,15 +3,17 @@ using System.Collections.Generic;
 
 namespace SIL.Machine.Corpora
 {
+	[Flags]
 	public enum UsfmTextType
 	{
-		Title,
-		Section,
-		VerseText,
-		NoteText,
-		Other,
-		BackTranslation,
-		TranslationNote
+		NotSpecified = 0x0,
+		Title = 0x1,
+		Section = 0x2,
+		VerseText = 0x4,
+		NoteText = 0x8,
+		Other = 0x10,
+		BackTranslation = 0x20,
+		TranslationNote = 0x40
 	}
 
 	public enum UsfmJustification

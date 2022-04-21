@@ -172,7 +172,9 @@ namespace SIL.Machine.Corpora
 				{
 					string attributes = ToAttributeString();
 					if (attributes != "")
+					{
 						totalLength += attributes.Length;
+					}
 					else
 					{
 						// remove space that was put after marker - not needed when there are no attributes.
@@ -185,7 +187,7 @@ namespace SIL.Machine.Corpora
 			return totalLength;
 		}
 
-		public string ToUsfm(bool includeNewlines = false, bool addSpaces = false)
+		public string ToUsfm(bool includeNewlines = false, bool addSpaces = true)
 		{
 			// WARNING: The logic in this method needs to match the logic in GetLength()
 
@@ -250,7 +252,7 @@ namespace SIL.Machine.Corpora
 
 		public override string ToString()
 		{
-			return ToUsfm();
+			return ToUsfm(addSpaces: false);
 		}
 	}
 }

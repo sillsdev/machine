@@ -15,19 +15,17 @@ namespace SIL.Machine.Corpora
 	/// </summary>
 	public class UsfmParser
 	{
-		public static void Parse(UsfmStylesheet stylesheet, ScrVers versification, string usfm,
-			UsfmParserHandlerBase handler, bool preserveWhitespace = false)
+		public static void Parse(UsfmStylesheet stylesheet, string usfm, IUsfmParserHandler handler,
+			ScrVers versification = null, bool preserveWhitespace = false)
 		{
-			var parser = new UsfmParser(stylesheet, versification, usfm, handler, preserveWhitespace);
+			var parser = new UsfmParser(stylesheet, usfm, handler, versification, preserveWhitespace);
 			parser.ProcessTokens();
 		}
 
 		private static readonly Regex OptBreakSplitter = new Regex("(//)", RegexOptions.Compiled);
 		private readonly bool _tokensPreserveWhitespace;
 
-		private readonly UsfmStylesheet _stylesheet;
 		private readonly IUsfmParserHandler _handler;
-		private UsfmParser _tokenClosedParser;
 
 		/// <summary>
 		/// Number of tokens to skip over because have been processed in advance
@@ -35,18 +33,17 @@ namespace SIL.Machine.Corpora
 		/// </summary>
 		private int _skip = 0;
 
-		public UsfmParser(UsfmStylesheet stylesheet, ScrVers versification, IReadOnlyList<UsfmToken> tokens,
-			IUsfmParserHandler handler = null, bool tokensPreserveWhitespace = false)
+		public UsfmParser(UsfmStylesheet stylesheet, IReadOnlyList<UsfmToken> tokens,
+			IUsfmParserHandler handler = null, ScrVers versification = null, bool tokensPreserveWhitespace = false)
 		{
-			_stylesheet = stylesheet;
-			State = new UsfmParserState(stylesheet, versification, tokens);
+			State = new UsfmParserState(stylesheet, versification ?? ScrVers.English, tokens);
 			_handler = handler;
 			_tokensPreserveWhitespace = tokensPreserveWhitespace;
 		}
 
-		public UsfmParser(UsfmStylesheet stylesheet, ScrVers versification, string usfm,
-			IUsfmParserHandler handler = null, bool preserveWhitespace = false)
-			: this(stylesheet, versification, GetTokens(stylesheet, usfm, preserveWhitespace), handler,
+		public UsfmParser(UsfmStylesheet stylesheet, string usfm, IUsfmParserHandler handler = null,
+			ScrVers versification = null, bool preserveWhitespace = false)
+			: this(stylesheet, GetTokens(stylesheet, usfm, preserveWhitespace), handler, versification,
 				  preserveWhitespace)
 		{
 		}
@@ -62,15 +59,6 @@ namespace SIL.Machine.Corpora
 		/// Gets the current parser state. Note: Will change with each token parsed
 		/// </summary>
 		public UsfmParserState State { get; private set; }
-
-		/// <summary>
-		/// Constructor for making a duplicate for looking ahead to find closing
-		/// tokens of notes and character styles.
-		/// </summary>
-		private UsfmParser(UsfmParser usfmParser)
-		{
-			_stylesheet = usfmParser._stylesheet;
-		}
 
 		/// <summary>
 		/// Processes all tokens
@@ -104,7 +92,7 @@ namespace SIL.Machine.Corpora
 
 			// Update verse offset with previous token (since verse offset is from start of current token)
 			if (State.PrevToken != null)
-				State.VerseOffset += State.PrevToken.GetLength(false, !_tokensPreserveWhitespace);
+				State.VerseOffset += State.PrevToken.GetLength(addSpaces: !_tokensPreserveWhitespace);
 
 			// Skip over tokens that are to be skipped, ensuring that 
 			// SpecialToken state is true.
@@ -141,8 +129,8 @@ namespace SIL.Machine.Corpora
 					{
 						// Close all but table and sidebar
 						while (State.Stack.Count > 0
-							   && State.Peek().Type != UsfmElementTypes.Table
-							   && State.Peek().Type != UsfmElementTypes.Sidebar)
+							   && State.Peek().Type != UsfmElementType.Table
+							   && State.Peek().Type != UsfmElementType.Sidebar)
 							CloseElement();
 						break;
 					}
@@ -156,7 +144,7 @@ namespace SIL.Machine.Corpora
 					}
 
 					// Close all but sidebar
-					while (State.Stack.Count > 0 && State.Peek().Type != UsfmElementTypes.Sidebar)
+					while (State.Stack.Count > 0 && State.Peek().Type != UsfmElementType.Sidebar)
 						CloseElement();
 					break;
 				case UsfmTokenType.Character:
@@ -164,7 +152,7 @@ namespace SIL.Machine.Corpora
 					if (IsCell(token))
 					{
 						// Close until row
-						while (State.Peek().Type != UsfmElementTypes.Row)
+						while (State.Peek().Type != UsfmElementType.Row)
 							CloseElement();
 						break;
 					}
@@ -182,7 +170,7 @@ namespace SIL.Machine.Corpora
 					break;
 				case UsfmTokenType.Verse:
 					UsfmTag paraTag = State.ParaTag;
-					if (paraTag != null && State.ParaTag.TextType != UsfmTextType.VerseText && paraTag.TextType != 0)
+					if (paraTag != null && paraTag.TextType != UsfmTextType.VerseText && paraTag.TextType != 0)
 						CloseAll();
 					else
 						CloseNote();
@@ -192,9 +180,9 @@ namespace SIL.Machine.Corpora
 					break;
 				case UsfmTokenType.End:
 					// If end marker for an active note
-					if (State.Stack.Any(e => e.Type == UsfmElementTypes.Note && (e.Marker + "*" == token.Marker)))
+					if (State.Stack.Any(e => e.Type == UsfmElementType.Note && (e.Marker + "*" == token.Marker)))
 					{
-						CloseNote();
+						CloseNote(closed: true);
 						break;
 					}
 
@@ -205,18 +193,24 @@ namespace SIL.Machine.Corpora
 					while (State.Stack.Count > 0)
 					{
 						elem = State.Peek();
-						if (elem.Type != UsfmElementTypes.Char)
+						if (elem.Type != UsfmElementType.Char)
 							break;
-						CloseElement();
 
 						// Determine if a + prefix is needed to close it (was nested char style)
-						bool plusPrefix = (State.Stack.Count > 0 && State.Peek().Type == UsfmElementTypes.Char);
+						bool plusPrefix = State.Stack.Count > 1
+							&& State.Stack[State.Stack.Count - 2].Type == UsfmElementType.Char;
 
 						// If is a match
 						if ((plusPrefix ? "+" : "") + elem.Marker + "*" == token.Marker)
 						{
+							CloseElement(closed: true);
+
 							unmatched = false;
 							break;
+						}
+						else
+						{
+							CloseElement();
 						}
 					}
 
@@ -231,7 +225,7 @@ namespace SIL.Machine.Corpora
 			switch (tokenType)
 			{
 				case UsfmTokenType.Book:
-					State.Push(new UsfmParserElement(UsfmElementTypes.Book, token.Marker));
+					State.Push(new UsfmParserElement(UsfmElementType.Book, token.Marker));
 
 					// Code is always upper case
 					string code = token.Data.ToUpperInvariant();
@@ -323,13 +317,13 @@ namespace SIL.Machine.Corpora
 					if (token.Marker == "tr")
 					{
 						// Start table if not open
-						if (State.Stack.All(e => e.Type != UsfmElementTypes.Table))
+						if (State.Stack.All(e => e.Type != UsfmElementType.Table))
 						{
-							State.Push(new UsfmParserElement(UsfmElementTypes.Table, null));
+							State.Push(new UsfmParserElement(UsfmElementType.Table, null));
 							if (_handler != null) _handler.StartTable(State);
 						}
 
-						State.Push(new UsfmParserElement(UsfmElementTypes.Row, token.Marker));
+						State.Push(new UsfmParserElement(UsfmElementType.Row, token.Marker));
 
 						// Row start
 						if (_handler != null) _handler.StartRow(State, token.Marker);
@@ -339,8 +333,7 @@ namespace SIL.Machine.Corpora
 					// Handle special case of sidebars
 					if (token.Marker == "esb")
 					{
-						bool isClosed = IsStudyBibleItemClosed("esb", "esbe");
-						State.Push(new UsfmParserElement(UsfmElementTypes.Sidebar, token.Marker));
+						State.Push(new UsfmParserElement(UsfmElementType.Sidebar, token.Marker));
 
 						// Look for category
 						string sidebarCategory = null;
@@ -354,21 +347,26 @@ namespace SIL.Machine.Corpora
 							_skip += 3;
 						}
 
-						if (_handler != null) _handler.StartSidebar(State, token.Marker, sidebarCategory, isClosed);
+						if (_handler != null) _handler.StartSidebar(State, token.Marker, sidebarCategory);
 						break;
 					}
 
 					// Close sidebar if in sidebar
 					if (token.Marker == "esbe")
 					{
-						if (State.Stack.Any(e => e.Type == UsfmElementTypes.Sidebar))
-							CloseAll();
+						if (State.Stack.Any(e => e.Type == UsfmElementType.Sidebar))
+						{
+							while (State.Stack.Count > 0)
+								CloseElement(State.Peek().Type == UsfmElementType.Sidebar);
+						}
 						else if (_handler != null)
+						{
 							_handler.Unmatched(State, token.Marker);
+						}
 						break;
 					}
 
-					State.Push(new UsfmParserElement(UsfmElementTypes.Para, token.Marker));
+					State.Push(new UsfmParserElement(UsfmElementType.Para, token.Marker));
 
 					// Paragraph opening
 					if (_handler != null) _handler.StartPara(State, token.Marker, token.Type == UsfmTokenType.Unknown, token.Attributes);
@@ -384,7 +382,7 @@ namespace SIL.Machine.Corpora
 							align = "end";
 
 						UsfmStylesheet.IsCellRange(token.Marker, out string baseMarker, out int colspan);
-						State.Push(new UsfmParserElement(UsfmElementTypes.Cell, baseMarker));
+						State.Push(new UsfmParserElement(UsfmElementType.Cell, baseMarker));
 
 						if (_handler != null) _handler.StartCell(State, baseMarker, align, colspan);
 						break;
@@ -408,19 +406,18 @@ namespace SIL.Machine.Corpora
 					if (token.Marker.StartsWith("+"))
 					{
 						// Only strip + if properly nested
-						actualMarker = State.CharTag != null ? token.Marker.TrimStart('+') : token.Marker;
-						invalidMarker = State.CharTag == null;
+						UsfmTag charTag = State.CharTag;
+						actualMarker = charTag != null ? token.Marker.TrimStart('+') : token.Marker;
+						invalidMarker = charTag == null;
 					}
 					else
 						actualMarker = token.Marker;
 
-					State.Push(new UsfmParserElement(UsfmElementTypes.Char, actualMarker, State.Token.Attributes));
+					State.Push(new UsfmParserElement(UsfmElementType.Char, actualMarker, token.Attributes));
 					if (_handler != null)
 					{
-						bool charIsClosed = IsTokenClosed();
-						State.Stack.Last().IsClosed = charIsClosed; // save for attribute check in Text method
-						_handler.StartChar(State, actualMarker, charIsClosed,
-							token.Type == UsfmTokenType.Unknown || invalidMarker, State.Token.Attributes);
+						_handler.StartChar(State, actualMarker, token.Type == UsfmTokenType.Unknown || invalidMarker,
+							token.Attributes);
 					}
 					break;
 				case UsfmTokenType.Note:
@@ -436,9 +433,9 @@ namespace SIL.Machine.Corpora
 						_skip += 3;
 					}
 
-					State.Push(new UsfmParserElement(UsfmElementTypes.Note, token.Marker));
+					State.Push(new UsfmParserElement(UsfmElementType.Note, token.Marker));
 
-					if (_handler != null) _handler.StartNote(State, token.Marker, token.Data, noteCategory, IsTokenClosed());
+					if (_handler != null) _handler.StartNote(State, token.Marker, token.Data, noteCategory);
 					break;
 				case UsfmTokenType.Text:
 					string text = token.Text;
@@ -473,7 +470,7 @@ namespace SIL.Machine.Corpora
 
 				case UsfmTokenType.Milestone:
 				case UsfmTokenType.MilestoneEnd:
-					// currently, parse state doesn't need to be update, so just inform the sink about the milestone.
+					// currently, parse state doesn't need to be update, so just inform the handler about the milestone.
 					_handler?.Milestone(State, token.Marker, token.Type == UsfmTokenType.Milestone, token.Attributes);
 					break;
 			}
@@ -499,95 +496,21 @@ namespace SIL.Machine.Corpora
 		}
 
 		/// <summary>
-		/// Updates the state of this parser to be the same as the state of the specified parser.
-		/// </summary>
-		private void UpdateParser(UsfmParser usfmParser)
-		{
-			State = usfmParser.State.Clone();
-			_skip = 0;
-		}
-
-		/// <summary>
-		/// Determine if Study Bible item closed (ending marker before book or chapter)
-		/// </summary>
-		private bool IsStudyBibleItemClosed(string startMarker, string endingMarker)
-		{
-			for (int i = State.Index + 1; i < State.Tokens.Count; i++)
-			{
-				if (State.Tokens[i].Marker == endingMarker)
-					return true;
-
-				if (State.Tokens[i].Marker == startMarker
-					|| State.Tokens[i].Type == UsfmTokenType.Book
-					|| State.Tokens[i].Type == UsfmTokenType.Chapter)
-					return false;
-			}
-			return false;
-		}
-
-		/// <summary>
 		/// Determine type that an unknown token should be treated as
 		/// </summary>
 		/// <returns>character or paragraph type</returns>
 		private UsfmTokenType DetermineUnknownTokenType()
 		{
 			// Unknown inside notes are character
-			if (State.Stack.Any(e => e.Type == UsfmElementTypes.Note))
+			if (State.Stack.Any(e => e.Type == UsfmElementType.Note))
 				return UsfmTokenType.Character;
 
 			return UsfmTokenType.Paragraph;
 		}
 
-
-		private bool IsTokenClosed()
+		private void CloseNote(bool closed = false)
 		{
-			// Clone current parser
-			if (_tokenClosedParser == null)
-				_tokenClosedParser = new UsfmParser(this);
-			_tokenClosedParser.UpdateParser(this);
-
-			string marker = State.Token.Marker;
-			LookaheadParser(State, _tokenClosedParser, marker, out bool isTokenClosed);
-			return isTokenClosed;
-		}
-
-		private static void LookaheadParser(UsfmParserState state, UsfmParser lookaheadParser, string marker,
-			out bool isTokenClosed)
-		{
-			// BEWARE: This method is fairly performance-critical
-			// Determine current marker
-			string endMarker = marker + "*";
-
-			// Process tokens until either the start of the stack doesn't match (it was closed
-			// improperly) or a matching close marker is found
-			while (lookaheadParser.ProcessToken())
-			{
-				UsfmToken currentToken = lookaheadParser.State.Token;
-
-				// Check if same marker was reopened without a close
-				bool reopened = currentToken.Marker == marker &&
-					lookaheadParser.State.Stack.SequenceEqual(state.Stack);
-				if (reopened)
-				{
-					isTokenClosed = false;
-					return;
-				}
-
-				// Check if beginning of stack is unchanged. If token is unclosed, it will be unchanged
-				bool markerStillOpen = lookaheadParser.State.Stack.Take(state.Stack.Count).SequenceEqual(state.Stack);
-				if (!markerStillOpen)
-				{
-					// Record whether marker is an end for this marker 
-					isTokenClosed = currentToken.Marker == endMarker && currentToken.Type == UsfmTokenType.End;
-					return;
-				}
-			}
-			isTokenClosed = false;
-		}
-
-		private void CloseNote()
-		{
-			if (State.Stack.Any(elem => elem.Type == UsfmElementTypes.Note))
+			if (State.Stack.Any(elem => elem.Type == UsfmElementType.Note))
 			{
 				UsfmParserElement elem;
 				do
@@ -596,45 +519,45 @@ namespace SIL.Machine.Corpora
 						break;
 
 					elem = State.Peek();
-					CloseElement();
-				} while (elem.Type != UsfmElementTypes.Note);
+					CloseElement(closed && elem.Type == UsfmElementType.Note);
+				} while (elem.Type != UsfmElementType.Note);
 			}
 		}
 
 		private void CloseCharStyles()
 		{
-			while (State.Stack.Count > 0 && State.Peek().Type == UsfmElementTypes.Char)
+			while (State.Stack.Count > 0 && State.Peek().Type == UsfmElementType.Char)
 				CloseElement();
 		}
 
-		private void CloseElement()
+		private void CloseElement(bool closed = false)
 		{
 			UsfmParserElement element = State.Pop();
 			switch (element.Type)
 			{
-				case UsfmElementTypes.Book:
+				case UsfmElementType.Book:
 					if (_handler != null) _handler.EndBook(State, element.Marker);
 					break;
-				case UsfmElementTypes.Para:
+				case UsfmElementType.Para:
 					if (_handler != null) _handler.EndPara(State, element.Marker);
 					break;
-				case UsfmElementTypes.Char:
-					if (_handler != null) _handler.EndChar(State, element.Marker, element.Attributes);
+				case UsfmElementType.Char:
+					if (_handler != null) _handler.EndChar(State, element.Marker, element.Attributes, closed);
 					break;
-				case UsfmElementTypes.Note:
-					if (_handler != null) _handler.EndNote(State, element.Marker);
+				case UsfmElementType.Note:
+					if (_handler != null) _handler.EndNote(State, element.Marker, closed);
 					break;
-				case UsfmElementTypes.Table:
+				case UsfmElementType.Table:
 					if (_handler != null) _handler.EndTable(State);
 					break;
-				case UsfmElementTypes.Row:
+				case UsfmElementType.Row:
 					if (_handler != null) _handler.EndRow(State, element.Marker);
 					break;
-				case UsfmElementTypes.Cell:
+				case UsfmElementType.Cell:
 					if (_handler != null) _handler.EndCell(State, element.Marker);
 					break;
-				case UsfmElementTypes.Sidebar:
-					if (_handler != null) _handler.EndSidebar(State, element.Marker);
+				case UsfmElementType.Sidebar:
+					if (_handler != null) _handler.EndSidebar(State, element.Marker, closed);
 					break;
 			}
 		}
@@ -643,7 +566,7 @@ namespace SIL.Machine.Corpora
 		{
 			return token.Type == UsfmTokenType.Character
 					&& (token.Marker.StartsWith("th") || token.Marker.StartsWith("tc"))
-					&& State.Stack.Any(elem => elem.Type == UsfmElementTypes.Row);
+					&& State.Stack.Any(elem => elem.Type == UsfmElementType.Row);
 		}
 
 		private bool IsRef(UsfmToken token)

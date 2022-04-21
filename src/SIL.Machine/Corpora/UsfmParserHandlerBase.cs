@@ -43,21 +43,21 @@ namespace SIL.Machine.Corpora
 		{
 		}
 
-		public virtual void StartChar(UsfmParserState state, string markerWithoutPlus, bool closed, bool unknown,
+		public virtual void StartChar(UsfmParserState state, string markerWithoutPlus, bool unknown,
 			IReadOnlyList<UsfmAttribute> attributes)
 		{
 		}
 
-		public virtual void EndChar(UsfmParserState state, string marker, IReadOnlyList<UsfmAttribute> attributes)
-		{
-		}
-
-		public virtual void StartNote(UsfmParserState state, string marker, string caller, string category,
+		public virtual void EndChar(UsfmParserState state, string marker, IReadOnlyList<UsfmAttribute> attributes,
 			bool closed)
 		{
 		}
 
-		public virtual void EndNote(UsfmParserState state, string marker)
+		public virtual void StartNote(UsfmParserState state, string marker, string caller, string category)
+		{
+		}
+
+		public virtual void EndNote(UsfmParserState state, string marker, bool closed)
 		{
 		}
 
@@ -97,11 +97,11 @@ namespace SIL.Machine.Corpora
 		{
 		}
 
-		public virtual void StartSidebar(UsfmParserState state, string marker, string category, bool closed)
+		public virtual void StartSidebar(UsfmParserState state, string marker, string category)
 		{
 		}
 
-		public virtual void EndSidebar(UsfmParserState state, string marker)
+		public virtual void EndSidebar(UsfmParserState state, string marker, bool closed)
 		{
 		}
 
