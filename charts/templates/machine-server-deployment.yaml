@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: C:\Users\johnm\Documents\repos\machine\docker\development\kompose.exe convert -c --volumes hostPath
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: machine-server
+  name: machine-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: machine-server
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: C:\Users\johnm\Documents\repos\machine\docker\development\kompose.exe convert -c --volumes hostPath
+        kompose.version: 1.26.0 (40646f47)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: machine-server
+    spec:
+      containers:
+        - command:
+            - dotnet
+            - /app/SIL.Machine.WebApi.Server.dll
+          env:
+            - name: ASPNETCORE_Auth__Audience
+              value: https://machine.sil.org
+            - name: ASPNETCORE_Auth__Domain
+              value: sil-appbuilder.auth0.com
+            - name: ASPNETCORE_ConnectionStrings__Hangfire
+              value: mongodb://mongo:27017/machine_jobs
+            - name: ASPNETCORE_ConnectionStrings__Mongo
+              value: mongodb://mongo:27017/machine
+            - name: ASPNETCORE_Kestrel__Endpoints__Https__Url
+              value: http://*:8087
+            - name: ASPNETCORE_Logging__LogLevel__Default
+              value: Information
+            - name: ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore
+              value: Warning
+          image: ghcr.io/sillsdev/machine:latest
+          name: machine-server
+          ports:
+            - containerPort: 8087
+          resources: {}
+          volumeMounts:
+            - mountPath: /var/lib/machine/engines
+              name: machine-server-hostpath0
+            - mountPath: /var/lib/machine/data
+              name: machine-server-hostpath1
+            - mountPath: /root/.aspnet/DataProtection-Keys
+              name: machine-server-hostpath2
+      hostname: machine-server
+      restartPolicy: Always
+      volumes:
+        - hostPath:
+            path: /host/engines #/host should be mounted from C:\usr\local
+          name: machine-server-hostpath0
+        - hostPath:
+            path: /host/data
+          name: machine-server-hostpath1
+        - hostPath:
+            path: /host/DataProtection-Keys
+          name: machine-server-hostpath2
+status: {}

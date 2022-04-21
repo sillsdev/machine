@@ -90,3 +90,24 @@ Following [this guide](https://stackoverflow.com/questions/55485511/how-to-run-d
 - copy docker/development/machine_api.conf into the above folder
 - `openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout machine_api.key -out machine_api.crt -config machine_api.conf`
 - `openssl pkcs12 -export -out machine_api.pfx -inkey machine_api.key -in machine_api.crt`
+
+## Minikube
+
+- Install docker, minikube and helm
+- Create folder `C:/usr/local`
+- Run `minikube start`
+- In a new window, run `minikube mount C:\usr\local:/host`
+- In a new window, run `minikube dashboard` (this will keep running - do it in a separate cmd window)
+- Run `cd .\docker\development\`
+- Run `helm install machine-server charts`
+
+To update, run:
+- Run `helm upgrade machine-server charts`
+
+To expose a port and see it in your browser:
+- Run: `minikube service machine-server --url`
+- Put the url in the browser + "/swagger" (e.i., `http://127.0.0.1:54727/swagger`)
+
+To get logs on a pod:
+- Run: `kubectl get pods` to get the currently running pods
+- RUn: `

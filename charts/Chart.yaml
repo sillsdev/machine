@@ -1,0 +1,8 @@
+name: machine-api
+description: The machine library hosted as an api
+version: 0.0.1
+apiVersion: v1
+keywords:
+  - machine-api
+sources:
+home:
