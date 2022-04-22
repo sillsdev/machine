@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: machine-ingress
+spec:
+  ingressClassName: nginx
+  #  tls:
+  #  - hosts:
+  #      - https-example.foo.com
+  #    secretName: testsecret-tls
+  rules:
+    - host: machine-api.vcap.me
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: machine-server
+                port:
+                  number: 80

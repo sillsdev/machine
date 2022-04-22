@@ -93,21 +93,24 @@ Following [this guide](https://stackoverflow.com/questions/55485511/how-to-run-d
 
 ## Minikube
 
+### Installation
 - Install docker, minikube and helm
+- Run: `minikube addons enable ingress` to install ingress
 - Create folder `C:/usr/local`
+
+### Startup
 - Run `minikube start`
 - In a new window, run `minikube mount C:\usr\local:/host`
 - In a new window, run `minikube dashboard` (this will keep running - do it in a separate cmd window)
-- Run `cd .\docker\development\`
 - Run `helm install machine-server charts`
 
-To update, run:
+### Update with new yaml's:
 - Run `helm upgrade machine-server charts`
 
-To expose a port and see it in your browser:
-- Run: `minikube service machine-server --url`
-- Put the url in the browser + "/swagger" (e.i., `http://127.0.0.1:54727/swagger`)
+### To expose a port and see it in your browser:
+- Run: `kubectl port-forward --namespace=ingress-nginx service/machine-ingress 80:80`
+- Put the following in a browser: `http://machine-api.vcap.me/swagger`
 
-To get logs on a pod:
+### Pod logs:
 - Run: `kubectl get pods` to get the currently running pods
-- RUn: `
+- Run: `kubectl logs <pod name>`

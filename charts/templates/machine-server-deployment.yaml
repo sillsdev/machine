@@ -38,7 +38,7 @@ spec:
             - name: ASPNETCORE_ConnectionStrings__Mongo
               value: mongodb://mongo:27017/machine
             - name: ASPNETCORE_Kestrel__Endpoints__Https__Url
-              value: http://*:8087
+              value: http://*:80
             - name: ASPNETCORE_Logging__LogLevel__Default
               value: Information
             - name: ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore
@@ -46,7 +46,7 @@ spec:
           image: ghcr.io/sillsdev/machine:latest
           name: machine-server
           ports:
-            - containerPort: 8087
+            - containerPort: 80
           resources: {}
           volumeMounts:
             - mountPath: /var/lib/machine/engines

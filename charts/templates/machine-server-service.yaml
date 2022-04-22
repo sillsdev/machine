@@ -10,9 +10,9 @@ metadata:
   name: machine-server
 spec:
   ports:
-    - name: "8087"
-      port: 8087
-      targetPort: 8087
+    - name: "80"
+      port: 80
+      targetPort: 80
   selector:
     io.kompose.service: machine-server
 status:
