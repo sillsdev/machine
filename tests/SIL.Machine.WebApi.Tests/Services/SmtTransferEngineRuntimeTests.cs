@@ -1,7 +1,7 @@
 ﻿namespace SIL.Machine.WebApi.Services;
 
 [TestFixture]
-public class EngineRuntimeTests
+public class SmtTransferEngineRuntimeTests
 {
 	[Test]
 	public async Task StartBuildAsync()
