@@ -1,32 +1,24 @@
 ﻿namespace SIL.Machine.WebApi.Services;
 
-public class SmtTransferEngineBuildJob
+public class NmtEngineBuildJob
 {
 	private readonly IRepository<Engine> _engines;
 	private readonly IRepository<Build> _builds;
-	private readonly IRepository<TrainSegmentPair> _trainSegmentPairs;
 	private readonly IDistributedReaderWriterLockFactory _lockFactory;
-	private readonly IDataFileService _dataFileService;
-	private readonly ITruecaserFactory _truecaserFactory;
-	private readonly ISmtModelFactory _smtModelFactory;
-
-	private readonly ILogger<SmtTransferEngineBuildJob> _logger;
+	private readonly ILogger<NmtEngineBuildJob> _logger;
 	private readonly IWebhookService _webhookService;
+	private readonly INmtBuildJobRunner _jobRunner;
 
-	public SmtTransferEngineBuildJob(IRepository<Engine> engines, IRepository<Build> builds,
-		IRepository<TrainSegmentPair> trainSegmentPairs, IDistributedReaderWriterLockFactory lockFactory,
-		IDataFileService dataFileService, ITruecaserFactory truecaserFactory, ISmtModelFactory smtModelFactory,
-		ILogger<SmtTransferEngineBuildJob> logger, IWebhookService webhookService)
+	public NmtEngineBuildJob(IRepository<Engine> engines, IRepository<Build> builds,
+		IDistributedReaderWriterLockFactory lockFactory, ILogger<NmtEngineBuildJob> logger,
+		IWebhookService webhookService, INmtBuildJobRunner jobRunner)
 	{
 		_engines = engines;
 		_builds = builds;
-		_trainSegmentPairs = trainSegmentPairs;
 		_lockFactory = lockFactory;
-		_dataFileService = dataFileService;
-		_truecaserFactory = truecaserFactory;
-		_smtModelFactory = smtModelFactory;
 		_logger = logger;
 		_webhookService = webhookService;
+		_jobRunner = jobRunner;
 	}
 
 	[AutomaticRetry(Attempts = 0)]
@@ -34,9 +26,6 @@ public class SmtTransferEngineBuildJob
 		CancellationToken cancellationToken)
 	{
 		IDistributedReaderWriterLock rwLock = _lockFactory.Create(engineId);
-
-		ITrainer? smtModelTrainer = null;
-		ITrainer? truecaseTrainer = null;
 		try
 		{
 			Build? build;
@@ -59,51 +48,13 @@ public class SmtTransferEngineBuildJob
 
 				_logger.LogInformation("Build started ({0})", buildId);
 				stopwatch.Start();
-
-				await _trainSegmentPairs.DeleteAllAsync(p => p.EngineRef == engineId, cancellationToken);
-
-				var tokenizer = new LatinWordTokenizer();
-				IReadOnlyDictionary<string, ITextCorpus> sourceCorpora = await _dataFileService.CreateTextCorporaAsync(
-					engine.Id, CorpusType.Source);
-				IReadOnlyDictionary<string, ITextCorpus> targetCorpora = await _dataFileService.CreateTextCorporaAsync(
-					engine.Id, CorpusType.Target);
-
-				IParallelTextCorpus parallelCorpus = CreateParallelCorpus(sourceCorpora, targetCorpora)
-					.Tokenize(tokenizer)
-					.Lowercase();
-
-				ITextCorpus targetCorpus = targetCorpora.Values.Flatten().Tokenize(tokenizer);
-
-				smtModelTrainer = _smtModelFactory.CreateTrainer(engineId, parallelCorpus);
-				truecaseTrainer = _truecaserFactory.CreateTrainer(engineId, targetCorpus);
 			}
 
-			var progress = new BuildProgress(_builds, buildId);
-			smtModelTrainer.Train(progress, cancellationToken.ThrowIfCancellationRequested);
-			truecaseTrainer.Train(checkCanceled: cancellationToken.ThrowIfCancellationRequested);
+			await _jobRunner.RunAsync(engineId, buildId, cancellationToken);
 
 			await using (await rwLock.WriterLockAsync(cancellationToken: cancellationToken))
 			{
-				cancellationToken.ThrowIfCancellationRequested();
-				smtModelTrainer.Save();
-				await truecaseTrainer.SaveAsync();
-				ITruecaser truecaser = await _truecaserFactory.CreateAsync(engineId);
-				IReadOnlyList<TrainSegmentPair> segmentPairs = await _trainSegmentPairs
-					.GetAllAsync(p => p.EngineRef == engineId, CancellationToken.None);
-				using (IInteractiveTranslationModel smtModel = _smtModelFactory.Create(engineId))
-				using (IInteractiveTranslationEngine smtEngine = smtModel.CreateInteractiveEngine())
-				{
-					foreach (TrainSegmentPair segmentPair in segmentPairs)
-					{
-						smtEngine.TrainSegment(segmentPair.Source.Lowercase(), segmentPair.Target.Lowercase());
-						truecaser.TrainSegment(segmentPair.Target, segmentPair.SentenceStart);
-					}
-				}
-
 				engine = await _engines.UpdateAsync(engineId, u => u
-					.Set(e => e.Confidence,
-						Math.Round(smtModelTrainer.Stats.Metrics["bleu"] * 100.0, 2, MidpointRounding.AwayFromZero))
-					.Set(e => e.TrainedSegmentCount, smtModelTrainer.Stats.TrainedSegmentCount + segmentPairs.Count)
 					.Set(e => e.IsBuilding, false)
 					.Inc(e => e.ModelRevision),
 					cancellationToken: CancellationToken.None);
@@ -174,25 +125,5 @@ public class SmtTransferEngineBuildJob
 			await _webhookService.SendEventAsync(WebhookEvent.BuildFinished, engine.Owner, build);
 			throw;
 		}
-		finally
-		{
-			smtModelTrainer?.Dispose();
-			truecaseTrainer?.Dispose();
-		}
-	}
-
-	private static IParallelTextCorpus CreateParallelCorpus(IReadOnlyDictionary<string, ITextCorpus> sourceCorpora,
-		IReadOnlyDictionary<string, ITextCorpus> targetCorpora)
-	{
-		var parallelCorpora = new List<IParallelTextCorpus>();
-		foreach (KeyValuePair<string, ITextCorpus> kvp in sourceCorpora)
-		{
-			if (targetCorpora.TryGetValue(kvp.Key, out ITextCorpus? targetCorpus))
-			{
-				ITextCorpus sourceCorpus = kvp.Value;
-				parallelCorpora.Add(sourceCorpus.AlignRows(targetCorpus));
-			}
-		}
-		return parallelCorpora.Flatten();
 	}
 }

@@ -1,4 +1,6 @@
+using System.Runtime.InteropServices;
 using Hangfire;
+using Python.Deployment;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,12 @@ builder.Services.AddMachine()
 var app = builder.Build();
 
 await app.UseMachineAsync();
+
+if (builder.Environment.IsDevelopment() && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+{
+	await Installer.SetupPython();
+	Installer.PipInstallModule("sil-machine");
+}
 
 app.UseHangfireDashboard();
 

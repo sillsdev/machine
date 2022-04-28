@@ -34,6 +34,7 @@ public static class IMachineBuilderExtensions
 	{
 		builder.Services.AddSingleton<IEngineService, EngineService>();
 		builder.Services.AddSingleton<IEngineRuntimeFactory, SmtTransferEngineRuntime.Factory>();
+		builder.Services.AddSingleton<IEngineRuntimeFactory, NmtEngineRuntime.Factory>();
 		return builder;
 	}
 
@@ -100,6 +101,7 @@ public static class IMachineBuilderExtensions
 
 	public static IMachineBuilder AddBackgroundJobServer(this IMachineBuilder builder)
 	{
+		builder.Services.AddSingleton<INmtBuildJobRunner, NmtBuildJobRunner>();
 		builder.Services.AddHangfireServer();
 		return builder;
 	}
