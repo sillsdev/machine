@@ -102,14 +102,17 @@ Following [this guide](https://stackoverflow.com/questions/55485511/how-to-run-d
 - Run `minikube start`
 - In a new window, run `minikube mount C:\usr\local:/host`
 - In a new window, run `minikube dashboard` (this will keep running - do it in a separate cmd window)
-- Run `helm install machine-server charts`
+- Run `kubectl config use-context minikube` 
+- Run `cd deploy`
+- Run `helm install machine-api . -f dev-values.yaml`
 
 ### Update with new yaml's:
-- Run `helm upgrade machine-server charts`
+- Run `helm upgrade machine-api . -f dev-values.yaml`
 
 ### To expose a port and see it in your browser:
-- Run: `kubectl port-forward --namespace=ingress-nginx service/machine-ingress 80:80`
-- Put the following in a browser: `http://machine-api.vcap.me/swagger`
+- Run: `minikube service machine-api --url`
+- In `C:\Windows\System32\drivers\etc\hosts`, enter in a line for `127.0.0.1 machine-api.vcap.me`
+- Put the following in a browser: `http://machine-api.vcap.me:<port visible>/swagger`
 
 ### Pod logs:
 - Run: `kubectl get pods` to get the currently running pods

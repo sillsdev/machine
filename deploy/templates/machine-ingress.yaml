@@ -4,12 +4,14 @@ metadata:
   name: machine-ingress
 spec:
   ingressClassName: nginx
-  #  tls:
-  #  - hosts:
-  #      - https-example.foo.com
+  {{- if .Values.enableTls }}
+  tls:
+    - hosts:
+        - {{.Values.externalHost}}
   #    secretName: testsecret-tls
+  {{- end }}
   rules:
-    - host: machine-api.vcap.me
+    - host: {{.Values.externalHost}}
       http:
         paths:
           - path: /

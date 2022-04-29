@@ -38,7 +38,7 @@ spec:
             - name: ASPNETCORE_ConnectionStrings__Mongo
               value: mongodb://mongo:27017/machine
             - name: ASPNETCORE_Kestrel__Endpoints__Https__Url
-              value: http://*:80
+              value: http://*
             - name: ASPNETCORE_Logging__LogLevel__Default
               value: Information
             - name: ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore
@@ -47,24 +47,40 @@ spec:
           name: machine-server
           ports:
             - containerPort: 80
-          resources: {}
+          resources:
+            limits:
+              memory: "350Mi"
+              cpu: "500m"
           volumeMounts:
             - mountPath: /var/lib/machine/engines
-              name: machine-server-hostpath0
+              name: machine-server-engines
             - mountPath: /var/lib/machine/data
-              name: machine-server-hostpath1
+              name: machine-server-data
             - mountPath: /root/.aspnet/DataProtection-Keys
-              name: machine-server-hostpath2
+              name: machine-server-keys
       hostname: machine-server
       restartPolicy: Always
+      {{- if .Values.localVolume }}
       volumes:
         - hostPath:
             path: /host/engines #/host should be mounted from C:\usr\local
-          name: machine-server-hostpath0
+          name: machine-server-engines
         - hostPath:
             path: /host/data
-          name: machine-server-hostpath1
+          name: machine-server-data
         - hostPath:
             path: /host/DataProtection-Keys
-          name: machine-server-hostpath2
+          name: machine-server-keys
+      {{- else}}
+      volumes:
+        - name: machine-server-engines
+          persistentVolumeClaim:
+            claimName: machine-engines-claim
+        - name: machine-server-data
+          persistentVolumeClaim:
+            claimName: machine-data-claim
+        - name: machine-server-keys
+          persistentVolumeClaim:
+            claimName: machine-keys-claim
+      {{- end}}
 status: {}

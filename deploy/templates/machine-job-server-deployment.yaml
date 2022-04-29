@@ -39,19 +39,32 @@ spec:
               value: Warning
           image: ghcr.io/sillsdev/machine:latest
           name: machine-job-server
-          resources: {}
+          resources:
+            limits:
+              memory: "350Mi"
+              cpu: "500m"
           volumeMounts:
             - mountPath: /var/lib/machine/engines
-              name: machine-job-server-hostpath0
+              name: machine-job-server-engines
             - mountPath: /var/lib/machine/data
-              name: machine-job-server-hostpath1
+              name: machine-job-server-data
       hostname: machine-job-server
       restartPolicy: Always
+      {{- if .Values.localVolume }}
       volumes:
         - hostPath:
             path: /host/engines #/host should be mounted from C:\usr\local
-          name: machine-job-server-hostpath0
+          name: machine-job-server-engines
         - hostPath:
             path: /host/data
-          name: machine-job-server-hostpath1
+          name: machine-job-server-data
+      {{- else}}
+      volumes:
+        - name: machine-job-server-engines
+          persistentVolumeClaim:
+            claimName: machine-engines-claim
+        - name: machine-job-server-data
+          persistentVolumeClaim:
+            claimName: machine-data-claim
+      {{- end}}
 status: {}
