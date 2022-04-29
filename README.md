@@ -117,3 +117,17 @@ Following [this guide](https://stackoverflow.com/questions/55485511/how-to-run-d
 ### Pod logs:
 - Run: `kubectl get pods` to get the currently running pods
 - Run: `kubectl logs <pod name>`
+
+## Dallas Rancher
+This is the QA staging environment.  To access it,
+
+### To access machine API
+* Use the VPN
+- In `C:\Windows\System32\drivers\etc\hosts`, enter in a line for `10.3.0.119 machine-api.org`
+* go to `https://machine-api.org/swagger` and accept the secuirty warning
+
+### To update the cluster
+- Add the dallas-rke KubeConfig to your kubectl configs
+- Run `kubectl config use-context dallas-rke` 
+- Run `cd deploy`
+- Run `helm upgrade machine-api . -f qa-values.yaml`
