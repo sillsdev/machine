@@ -37,6 +37,9 @@ spec:
             limits:
               memory: "350Mi"
               cpu: "500m"
+            requests:
+              memory: "100Mi"
+              cpu: "100m"
           volumeMounts:
             - mountPath: /data/db
               name: mongo-data
