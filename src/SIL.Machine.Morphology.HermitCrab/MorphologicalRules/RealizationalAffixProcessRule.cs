@@ -75,6 +75,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			}
 		}
 
+		public override int AllomorphCount => _allomorphs.Count;
+
 		public override Allomorph GetAllomorph(int index)
 		{
 			return _allomorphs[index];

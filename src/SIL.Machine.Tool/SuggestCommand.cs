@@ -104,9 +104,9 @@ namespace SIL.Machine
 				using (ConsoleProgressBar progress = _quietOption.HasValue() ? null : new ConsoleProgressBar(Out))
 				using (StreamWriter traceWriter = CreateTraceWriter())
 				{
-					IEnumerable<ParallelTextRow> corpus = _corpusSpec.ParallelCorpus.Where(r => !r.IsEmpty);
-					int corpusCount = Math.Min(_corpusSpec.MaxCorpusCount, corpus.Count());
-					corpus = _preprocessSpec.Preprocess(corpus);
+					int corpusCount = Math.Min(_corpusSpec.MaxCorpusCount,
+						_corpusSpec.ParallelCorpus.Count(includeEmpty: false));
+					IParallelTextCorpus corpus = _preprocessSpec.Preprocess(_corpusSpec.ParallelCorpus.WhereNonempty());
 					var ecm = new ErrorCorrectionModel();
 					progress?.Report(new ProgressStatus(segmentCount, corpusCount));
 					foreach (ParallelTextRow row in corpus)

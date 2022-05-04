@@ -58,45 +58,76 @@ namespace SIL.Machine.Translation.TensorFlow
 				throw new ArgumentException("The specified signature is not defined.", nameof(signature));
 		}
 
+		public int BatchSize { get; set; } = 32;
+		public string PaddingToken { get; set; } = "<blank>";
+
 		public TranslationResult Translate(IReadOnlyList<string> segment)
 		{
-			return Translate(1, segment).First();
+			CheckDisposed();
+
+			return Translate(1, segment)[0];
 		}
 
-		public IEnumerable<TranslationResult> Translate(int n, IReadOnlyList<string> segment)
+		public IReadOnlyList<TranslationResult> Translate(int n, IReadOnlyList<string> segment)
 		{
-			NDArray inputTokens = new NDArray(segment.ToArray(), new Shape(1, segment.Count));
-			NDArray inputLength = np.array(new[] { segment.Count });
-			NDArray refs = new NDArray(new[] { "" }, new Shape(1, 1));
-			NDArray refsLength = np.array(new[] { 1 });
+			CheckDisposed();
 
-			_session.graph.as_default();
-			NDArray[] results = _session.run(_outputs,
-				(_inputs[_signature.InputTokensKey], inputTokens),
-				(_inputs[_signature.InputLengthKey], inputLength),
-				(_inputs[_signature.InputRefKey], refs),
-				(_inputs[_signature.InputRefLengthKey], refsLength));
+			return Translate(n, new[] { segment }).First();
+		}
 
-			NDArray outputTokens = results[_outputIndices[_signature.OutputTokensKey]];
-			NDArray outputLengths = results[_outputIndices[_signature.OutputLengthKey]];
-			NDArray alignments = results[_outputIndices[_signature.OutputAlignmentKey]];
-			string[] outputTokenStrs = outputTokens.StringData();
-			for (int i = 0; i < n || i < outputLengths.dims[0]; i++)
+		public IEnumerable<TranslationResult> Translate(IEnumerable<IReadOnlyList<string>> segments)
+		{
+			CheckDisposed();
+
+			return Translate(1, segments).Select(hypotheses => hypotheses[0]);
+		}
+
+		public IEnumerable<IReadOnlyList<TranslationResult>> Translate(int n,
+			IEnumerable<IReadOnlyList<string>> segments)
+		{
+			CheckDisposed();
+
+			foreach (var (inputTokens, inputLengths) in Batch(segments))
 			{
-				int outputLength = outputLengths[0][i];
-				long start = outputTokens.dims[2] * i;
-				long end = start + outputLength;
-				var builder = new TranslationResultBuilder();
-				for (long j = start; j < end; j++)
-					builder.AppendWord(outputTokenStrs[j], TranslationSources.Nmt);
+				var batchSize = (int)inputTokens.dims[0];
+				NDArray refs = new NDArray(Enumerable.Repeat("", batchSize).ToArray(), new Shape(batchSize, 1));
+				NDArray refsLengths = np.array(Enumerable.Repeat(1, batchSize).ToArray());
 
-				NDArray alignment = alignments[0][i];
-				NDArray srcIndices = np.argmax(alignment[new Slice(stop: outputLength)], axis: -1);
-				var waMatrix = new WordAlignmentMatrix(segment.Count, outputLength,
-					srcIndices.Zip(Enumerable.Range(0, outputLength), (s, t) => ((int)s, t)));
-				builder.MarkPhrase(Range.Create(0, segment.Count), waMatrix);
+				_session.graph.as_default();
+				NDArray[] results = _session.run(_outputs,
+					(_inputs[_signature.InputTokensKey], inputTokens),
+					(_inputs[_signature.InputLengthKey], inputLengths),
+					(_inputs[_signature.InputRefKey], refs),
+					(_inputs[_signature.InputRefLengthKey], refsLengths));
 
-				yield return builder.ToResult(segment.Count);
+				NDArray outputTokens = results[_outputIndices[_signature.OutputTokensKey]];
+				NDArray outputLengths = results[_outputIndices[_signature.OutputLengthKey]];
+				NDArray alignments = results[_outputIndices[_signature.OutputAlignmentKey]];
+				string[] outputTokenStrs = outputTokens.StringData();
+
+				for (int i = 0; i < outputLengths.dims[0]; i++)
+				{
+					var hypotheses = new List<TranslationResult>();
+					for (int j = 0; j < n && j < outputLengths.dims[1]; j++)
+					{
+						int outputLength = outputLengths[i][j];
+						long start = (i * outputTokens.dims[1] * outputTokens.dims[2]) + (j * outputTokens.dims[2]);
+						long end = start + outputLength;
+						var builder = new TranslationResultBuilder();
+						for (long k = start; k < end; k++)
+							builder.AppendWord(outputTokenStrs[k], TranslationSources.Nmt);
+
+						NDArray alignment = alignments[i][j];
+						NDArray srcIndices = np.argmax(alignment[new Slice(stop: outputLength)], axis: -1);
+						int inputLength = inputLengths[i];
+						var waMatrix = new WordAlignmentMatrix(inputLength, outputLength,
+							srcIndices.Zip(Enumerable.Range(0, outputLength), (s, t) => ((int)s, t)));
+						builder.MarkPhrase(Range.Create(0, inputLength), waMatrix);
+
+						hypotheses.Add(builder.ToResult(inputLength));
+					}
+					yield return hypotheses;
+				}
 			}
 		}
 
@@ -110,6 +141,36 @@ namespace SIL.Machine.Translation.TensorFlow
 			string[] parts = ti.Name.Split(new[] { ':' }, count: 2);
 			Operation op = _session.graph.as_default().OperationByName(parts[0]);
 			return op.outputs[int.Parse(parts[1])];
+		}
+
+		private IEnumerable<(NDArray, NDArray)> Batch(IEnumerable<IReadOnlyList<string>> segments)
+		{
+			var batch = new List<IReadOnlyList<string>>();
+			int maxLength = 0;
+			foreach (IReadOnlyList<string> segment in segments)
+			{
+				maxLength = Math.Max(maxLength, segment.Count);
+				batch.Add(segment);
+				if (batch.Count == BatchSize)
+				{
+					yield return (CreateArray(batch, maxLength), np.array(batch.Select(s => s.Count).ToArray()));
+					batch.Clear();
+					maxLength = 0;
+				}
+			}
+			if (batch.Count > 0)
+				yield return (CreateArray(batch, maxLength), np.array(batch.Select(s => s.Count).ToArray()));
+		}
+
+		private NDArray CreateArray(List<IReadOnlyList<string>> batch, int maxLength)
+		{
+			var tokens = new List<string>();
+			foreach (IReadOnlyList<string> segment in batch)
+			{
+				tokens.AddRange(segment);
+				tokens.AddRange(Enumerable.Repeat(PaddingToken, maxLength - segment.Count));
+			}
+			return new NDArray(tokens.ToArray(), new Shape(batch.Count, maxLength));
 		}
 	}
 }

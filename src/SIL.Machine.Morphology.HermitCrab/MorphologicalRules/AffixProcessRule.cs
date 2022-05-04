@@ -16,9 +16,9 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 	/// and truncation.
 	/// </summary>
 	public class AffixProcessRule : MorphemicMorphologicalRule
-	{ 
+	{
 		private readonly ObservableCollection<AffixProcessAllomorph> _allomorphs;
-		private readonly IDBearerSet<Feature> _obligatorySyntacticFeatures; 
+		private readonly IDBearerSet<Feature> _obligatorySyntacticFeatures;
 
 		public AffixProcessRule()
 		{
@@ -93,6 +93,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 				return pos?.ID;
 			}
 		}
+
+		public override int AllomorphCount => _allomorphs.Count;
 
 		public override Allomorph GetAllomorph(int index)
 		{

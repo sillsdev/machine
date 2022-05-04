@@ -60,8 +60,6 @@ namespace SIL.Machine.Morphology.HermitCrab
 			get { return _type; }
 		}
 
-		public T Key { get; internal set; }
-
 		public IEnumerable<T> Others
 		{
 			get { return _others; }
@@ -72,19 +70,17 @@ namespace SIL.Machine.Morphology.HermitCrab
 			get { return _adjacency; }
 		}
 
-		public bool IsWordValid(Word word)
+		public bool IsWordValid(T key, Word word)
 		{
 			if (_type == ConstraintType.Exclude)
-				return !CoOccurs(word);
-			return CoOccurs(word);
+				return !CoOccurs(key, word);
+			return CoOccurs(key, word);
 		}
 
 		/// <summary>
 		/// Determines if all of the specified morphemes co-occur with the key morpheme.
 		/// </summary>
-		/// <param name="word">The word.</param>
-		/// <returns></returns>
-		private bool CoOccurs(Word word)
+		private bool CoOccurs(T key, Word word)
 		{
 			List<Allomorph> morphList = word.AllomorphsInMorphOrder.ToList();
 			List<T> others = _others.ToList();
@@ -101,7 +97,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 					for (int i = 0; i < morphList.Count; i++)
 					{
 						T curMorphObj = GetMorphObject(morphList[i]);
-						if (Key == curMorphObj)
+						if (key == curMorphObj)
 						{
 							break;
 						}
@@ -118,7 +114,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 									if (others[1] != nextMorphObj)
 										return false;
 								}
-								else if (Key != nextMorphObj)
+								else if (key != nextMorphObj)
 								{
 									return false;
 								}
@@ -133,7 +129,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 					for (int i = morphList.Count - 1; i >= 0; i--)
 					{
 						T curMorphObj = GetMorphObject(morphList[i]);
-						if (Key == curMorphObj)
+						if (key == curMorphObj)
 						{
 							break;
 						}
@@ -150,7 +146,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 									if (others[others.Count - 2] != prevMorphObj)
 										return false;
 								}
-								else if (Key != prevMorphObj)
+								else if (key != prevMorphObj)
 								{
 									return false;
 								}

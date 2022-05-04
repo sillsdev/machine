@@ -37,7 +37,7 @@ namespace SIL.Machine
 			return true;
 		}
 
-		public IEnumerable<ParallelTextRow> Preprocess(IEnumerable<ParallelTextRow> corpus)
+		public IParallelTextCorpus Preprocess(IParallelTextCorpus corpus)
 		{
 
 			switch (_normalizeOption.Value())

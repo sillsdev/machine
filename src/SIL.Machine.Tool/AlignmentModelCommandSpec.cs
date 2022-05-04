@@ -124,7 +124,7 @@ namespace SIL.Machine
 			}
 		}
 
-		public ITrainer CreateAlignmentModelTrainer(IEnumerable<ParallelTextRow> corpus, int maxSize,
+		public ITrainer CreateAlignmentModelTrainer(IParallelTextCorpus corpus, int maxSize,
 			Dictionary<string, string> parameters, bool direct = true)
 		{
 			if (_modelFactory != null)
@@ -142,7 +142,7 @@ namespace SIL.Machine
 				Directory.CreateDirectory(modelDir);
 
 			string modelStr;
-			IEnumerable<ParallelTextRow> trainCorpus;
+			IParallelTextCorpus trainCorpus;
 			if (direct)
 			{
 				modelStr = "invswm";

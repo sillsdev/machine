@@ -68,11 +68,11 @@ public class SmtTransferEngineBuildJob
 				IReadOnlyDictionary<string, ITextCorpus> targetCorpora = await _dataFileService.CreateTextCorporaAsync(
 					engine.Id, CorpusType.Target);
 
-				IEnumerable<ParallelTextRow> parallelCorpus = CreateParallelCorpus(sourceCorpora, targetCorpora)
+				IParallelTextCorpus parallelCorpus = CreateParallelCorpus(sourceCorpora, targetCorpora)
 					.Tokenize(tokenizer)
 					.Lowercase();
 
-				IEnumerable<TextRow> targetCorpus = targetCorpora.Values.SelectMany(c => c.Tokenize(tokenizer));
+				ITextCorpus targetCorpus = targetCorpora.Values.Flatten().Tokenize(tokenizer);
 
 				smtModelTrainer = _smtModelFactory.CreateTrainer(engineId, parallelCorpus);
 				truecaseTrainer = _truecaserFactory.CreateTrainer(engineId, targetCorpus);
@@ -181,19 +181,18 @@ public class SmtTransferEngineBuildJob
 		}
 	}
 
-	private static IEnumerable<ParallelTextRow> CreateParallelCorpus(
-		IReadOnlyDictionary<string, ITextCorpus> sourceCorpora, IReadOnlyDictionary<string, ITextCorpus> targetCorpora)
+	private static IParallelTextCorpus CreateParallelCorpus(IReadOnlyDictionary<string, ITextCorpus> sourceCorpora,
+		IReadOnlyDictionary<string, ITextCorpus> targetCorpora)
 	{
-		var parallelCorpus = Enumerable.Empty<ParallelTextRow>();
+		var parallelCorpora = new List<IParallelTextCorpus>();
 		foreach (KeyValuePair<string, ITextCorpus> kvp in sourceCorpora)
 		{
 			if (targetCorpora.TryGetValue(kvp.Key, out ITextCorpus? targetCorpus))
 			{
 				ITextCorpus sourceCorpus = kvp.Value;
-				parallelCorpus = parallelCorpus.Concat(sourceCorpus.AlignRows(targetCorpus));
+				parallelCorpora.Add(sourceCorpus.AlignRows(targetCorpus));
 			}
 		}
-
-		return parallelCorpus;
+		return parallelCorpora.Flatten();
 	}
 }

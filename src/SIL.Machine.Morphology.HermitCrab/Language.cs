@@ -23,8 +23,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 		private readonly List<CharacterDefinitionTable> _tables;
 		private readonly List<LexFamily> _families;
 		private readonly List<IPhonologicalRule> _prules;
-		private readonly List<MorphemeCoOccurrenceRule> _morphemeCoOccurRules;
-		private readonly List<AllomorphCoOccurrenceRule> _allomorphCoOccurRules;
+		private readonly List<(Morpheme, MorphemeCoOccurrenceRule)> _morphemeCoOccurRules;
+		private readonly List<(Allomorph, AllomorphCoOccurrenceRule)> _allomorphCoOccurRules;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Language"/> class.
@@ -42,8 +42,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 			_tables = new List<CharacterDefinitionTable>();
 			_families = new List<LexFamily>();
 			_prules = new List<IPhonologicalRule>();
-			_morphemeCoOccurRules = new List<MorphemeCoOccurrenceRule>();
-			_allomorphCoOccurRules = new List<AllomorphCoOccurrenceRule>();
+			_morphemeCoOccurRules = new List<(Morpheme, MorphemeCoOccurrenceRule)>();
+			_allomorphCoOccurRules = new List<(Allomorph, AllomorphCoOccurrenceRule)>();
 		}
 
 		private void StrataChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -127,12 +127,12 @@ namespace SIL.Machine.Morphology.HermitCrab
 			get { return _prules; }
 		}
 
-		public ICollection<MorphemeCoOccurrenceRule> MorphemeCoOccurrenceRules
+		public ICollection<(Morpheme Key, MorphemeCoOccurrenceRule Rule)> MorphemeCoOccurrenceRules
 		{
 			get { return _morphemeCoOccurRules; }
 		}
 
-		public ICollection<AllomorphCoOccurrenceRule> AllomorphCoOccurrenceRules
+		public ICollection<(Allomorph Key, AllomorphCoOccurrenceRule Rule)> AllomorphCoOccurrenceRules
 		{
 			get { return _allomorphCoOccurRules; }
 		}

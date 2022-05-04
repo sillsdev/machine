@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SIL.Machine.Corpora
@@ -21,9 +22,26 @@ namespace SIL.Machine.Corpora
 		public string Id { get; }
 		public string SortKey => Id;
 
+		public bool MissingRowsAllowed => true;
+
+		public int Count(bool includeEmpty = true)
+		{
+			return includeEmpty ? _rows.Length : GetRows().Count(r => !r.IsEmpty);
+		}
+
+		public IEnumerator<TextRow> GetEnumerator()
+		{
+			return GetRows().GetEnumerator();
+		}
+
 		public IEnumerable<TextRow> GetRows()
 		{
 			return _rows;
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
 		}
 	}
 }

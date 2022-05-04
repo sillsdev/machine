@@ -1,13 +1,9 @@
-﻿using System.Collections.Generic;
-
-namespace SIL.Machine.Corpora
+﻿namespace SIL.Machine.Corpora
 {
-	public interface IAlignmentCollection
+	public interface IAlignmentCollection : ICorpus<AlignmentRow>
 	{
 		string Id { get; }
 
 		string SortKey { get; }
-
-		IEnumerable<AlignmentRow> GetRows();
 	}
 }

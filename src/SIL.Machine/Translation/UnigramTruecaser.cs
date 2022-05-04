@@ -52,7 +52,7 @@ namespace SIL.Machine.Translation
 			}
 		}
 
-		public ITrainer CreateTrainer(IEnumerable<TextRow> corpus)
+		public ITrainer CreateTrainer(ITextCorpus corpus)
 		{
 			return new Trainer(this, corpus);
 		}

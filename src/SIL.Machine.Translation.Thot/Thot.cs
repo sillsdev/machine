@@ -439,7 +439,7 @@ namespace SIL.Machine.Translation.Thot
 			}
 		}
 
-		public static IEnumerable<T> DoTranslateNBest<T>(IntPtr decoderHandle,
+		public static T[] DoTranslateNBest<T>(IntPtr decoderHandle,
 			Func<IntPtr, uint, IntPtr, IntPtr[], uint> translateFunc, int n, IReadOnlyList<string> sourceSegment,
 			Func<IReadOnlyList<string>, IReadOnlyList<string>, IntPtr, T> createResult)
 		{

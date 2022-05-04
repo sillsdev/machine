@@ -95,6 +95,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 				return Enumerable.Empty<Word>();
 			}
 
+			var appliedAllomorphIndices = new HashSet<int>();
 			var output = new List<Word>();
 			for (int i = 0; i < _rules.Count; i++)
 			{
@@ -138,10 +139,10 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 							outWord.IsLastAppliedRuleFinal = null;
 					}
 
-					outWord.MorphologicalRuleApplied(_rule);
+					outWord.MorphologicalRuleApplied(_rule, appliedAllomorphIndices);
+					appliedAllomorphIndices.Add(i);
 
-					Word newWord;
-					if (_rule.Blockable && outWord.CheckBlocking(out newWord))
+					if (_rule.Blockable && outWord.CheckBlocking(out Word newWord))
 					{
 						if (_morpher.TraceManager.IsTracing)
 							_morpher.TraceManager.Blocked(_rule, newWord);

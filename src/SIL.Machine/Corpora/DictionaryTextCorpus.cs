@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace SIL.Machine.Corpora
 {
-	public class DictionaryTextCorpus : ITextCorpus
+	public class DictionaryTextCorpus : TextCorpusBase
 	{
 		public DictionaryTextCorpus(params IText[] texts)
 			: this((IEnumerable<IText>)texts)
@@ -16,11 +16,18 @@ namespace SIL.Machine.Corpora
 			TextDictionary = texts.ToDictionary(t => t.Id);
 		}
 
-		public IEnumerable<IText> Texts => TextDictionary.Values.OrderBy(t => t.SortKey);
+		public override IEnumerable<IText> Texts => TextDictionary.Values.OrderBy(t => t.SortKey);
 
 		protected Dictionary<string, IText> TextDictionary { get; }
 
 		public IText this[string id] => TextDictionary[id];
+
+		public override bool MissingRowsAllowed => Texts.Any(t => t.MissingRowsAllowed);
+
+		public override int Count(bool includeEmpty = true)
+		{
+			return Texts.Sum(t => t.Count(includeEmpty));
+		}
 
 		public bool TryGetText(string id, out IText text)
 		{
@@ -32,18 +39,7 @@ namespace SIL.Machine.Corpora
 			TextDictionary[text.Id] = text;
 		}
 
-		public IEnumerator<TextRow> GetEnumerator()
-		{
-			return GetRows().GetEnumerator();
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-
-		public IEnumerable<TextRow> GetRows(IEnumerable<string> textIds = null)
+		public override IEnumerable<TextRow> GetRows(IEnumerable<string> textIds)
 		{
 			var textIdSet = new HashSet<string>(textIds ?? TextDictionary.Keys);
 			return Texts.Where(t => textIdSet.Contains(t.Id)).SelectMany(t => t.GetRows());

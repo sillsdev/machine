@@ -17,9 +17,9 @@ namespace SIL.Machine.Translation.Thot
 {
 	public class ThotSmtModelTrainer : DisposableBase, ITrainer
 	{
-		private readonly IEnumerable<ParallelTextRow> _trainCorpus;
+		private readonly IParallelTextCorpus _trainCorpus;
 		private readonly int _trainCount;
-		private readonly IEnumerable<ParallelTextRow> _testCorpus;
+		private readonly IParallelTextCorpus _testCorpus;
 		private readonly int _testCount;
 		private readonly IParameterTuner _modelWeightTuner;
 		private readonly string _tempDir;
@@ -30,14 +30,14 @@ namespace SIL.Machine.Translation.Thot
 		private readonly ThotWordAlignmentModelType _wordAlignmentModelType;
 
 		public ThotSmtModelTrainer(ThotWordAlignmentModelType wordAlignmentModelType,
-			IEnumerable<ParallelTextRow> corpus, string cfgFileName)
+			IParallelTextCorpus corpus, string cfgFileName)
 			: this(wordAlignmentModelType, corpus, ThotSmtParameters.Load(cfgFileName))
 		{
 			ConfigFileName = cfgFileName;
 		}
 
 		public ThotSmtModelTrainer(ThotWordAlignmentModelType wordAlignmentModelType,
-			IEnumerable<ParallelTextRow> corpus, ThotSmtParameters parameters = null)
+			IParallelTextCorpus corpus, ThotSmtParameters parameters = null)
 		{
 			Parameters = parameters ?? new ThotSmtParameters();
 			Parameters.Freeze();

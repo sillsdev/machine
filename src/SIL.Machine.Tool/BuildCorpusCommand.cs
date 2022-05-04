@@ -72,7 +72,7 @@ namespace SIL.Machine
 			using (StreamWriter refOutputWriter = _refOutputOption.HasValue()
 				? ToolHelpers.CreateStreamWriter(_refOutputOption.Value()) : null)
 			{
-				IEnumerable<ParallelTextRow> corpus = _corpusSpec.ParallelCorpus.Where(row =>
+				IParallelTextCorpus corpus = _corpusSpec.ParallelCorpus.Where(row =>
 				{
 					if (!_includeEmptyOption.HasValue())
 					{

@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
-using SIL.ObjectModel;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
@@ -12,8 +11,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 	/// </summary>
 	public abstract class Allomorph : IComparable<Allomorph>
 	{
-		private readonly ObservableHashSet<AllomorphEnvironment> _environments;
-		private readonly ObservableHashSet<AllomorphCoOccurrenceRule> _allomorphCoOccurrenceRules;
+		private readonly HashSet<AllomorphEnvironment> _environments;
+		private readonly HashSet<AllomorphCoOccurrenceRule> _allomorphCoOccurrenceRules;
 		private readonly Properties _properties;
 		private readonly string _id;
 
@@ -23,40 +22,10 @@ namespace SIL.Machine.Morphology.HermitCrab
 		protected Allomorph()
 		{
 			Index = -1;
-			_environments = new ObservableHashSet<AllomorphEnvironment>();
-			_environments.CollectionChanged += EnvironmentsChanged;
-			_allomorphCoOccurrenceRules = new ObservableHashSet<AllomorphCoOccurrenceRule>();
-			_allomorphCoOccurrenceRules.CollectionChanged += AllomorphCoOccurrenceRuleRulesChanged;
+			_environments = new HashSet<AllomorphEnvironment>();
+			_allomorphCoOccurrenceRules = new HashSet<AllomorphCoOccurrenceRule>();
 			_properties = new Properties();
 			_id = Guid.NewGuid().ToString();
-		}
-
-		private void AllomorphCoOccurrenceRuleRulesChanged(object sender, NotifyCollectionChangedEventArgs e)
-		{
-			if (e.OldItems != null)
-			{
-				foreach (AllomorphCoOccurrenceRule cooccur in e.OldItems)
-					cooccur.Key = null;
-			}
-			if (e.NewItems != null)
-			{
-				foreach (AllomorphCoOccurrenceRule cooccur in e.NewItems)
-					cooccur.Key = this;
-			}
-		}
-
-		private void EnvironmentsChanged(object sender, NotifyCollectionChangedEventArgs e)
-		{
-			if (e.OldItems != null)
-			{
-				foreach (AllomorphEnvironment env in e.OldItems)
-					env.Allomorph = null;
-			}
-			if (e.NewItems != null)
-			{
-				foreach (AllomorphEnvironment env in e.NewItems)
-					env.Allomorph = this;
-			}
 		}
 
 		internal string ID
@@ -128,29 +97,66 @@ namespace SIL.Machine.Morphology.HermitCrab
 			return _environments.SetEquals(other._environments);
 		}
 
-		internal virtual bool IsWordValid(Morpher morpher, Word word)
+		internal bool IsWordValid(Morpher morpher, Word word)
 		{
-			AllomorphEnvironment env = Environments.FirstOrDefault(e => !e.IsWordValid(word));
-			if (env != null)
+			if (!CheckAllomorphConstraints(morpher, this, word))
+				return false;
+
+			foreach (Annotation<ShapeNode> morph in word.GetMorphs(this))
 			{
-				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.Environments, this, env);
+				if (Environments.Count > 0 && !Environments.Any(e => e.IsWordValid(word, morph)))
+				{
+					if (morpher.TraceManager.IsTracing)
+					{
+						morpher.TraceManager.Failed(morpher.Language, word, FailureReason.Environments, this,
+							Environments);
+					}
+					return false;
+				}
+
+				foreach (int i in word.GetDisjunctiveAllomorphApplications(morph) ?? Enumerable.Range(0, Index))
+				{
+					Allomorph disjunctiveAllomorph = Morpheme.GetAllomorph(i);
+
+					if (!FreeFluctuatesWith(disjunctiveAllomorph)
+						&& (disjunctiveAllomorph.Environments.Count == 0
+							|| disjunctiveAllomorph.Environments.Any(e => e.IsWordValid(word, morph)))
+						&& disjunctiveAllomorph.CheckAllomorphConstraints(null, this, word))
+					{
+						if (morpher.TraceManager.IsTracing)
+						{
+							morpher.TraceManager.Failed(morpher.Language, word, FailureReason.DisjunctiveAllomorph,
+								this, disjunctiveAllomorph);
+						}
+						return false;
+					}
+				}
+			}
+
+			return true;
+		}
+
+		protected virtual bool CheckAllomorphConstraints(Morpher morpher, Allomorph allomorph, Word word)
+		{
+			if (AllomorphCoOccurrenceRules.Count > 0
+				&& !AllomorphCoOccurrenceRules.Any(r => r.IsWordValid(allomorph, word)))
+			{
+				if (morpher != null && morpher.TraceManager.IsTracing)
+				{
+					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.AllomorphCoOccurrenceRules, this,
+						AllomorphCoOccurrenceRules);
+				}
 				return false;
 			}
 
-			AllomorphCoOccurrenceRule alloRule = AllomorphCoOccurrenceRules.FirstOrDefault(r => !r.IsWordValid(word));
-			if (alloRule != null)
+			if (Morpheme.MorphemeCoOccurrenceRules.Count > 0
+				&& !Morpheme.MorphemeCoOccurrenceRules.Any(r => r.IsWordValid(Morpheme, word)))
 			{
-				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.AllomorphCoOccurrenceRules, this, alloRule);
-				return false;
-			}
-
-			MorphemeCoOccurrenceRule morphemeRule = Morpheme.MorphemeCoOccurrenceRules.FirstOrDefault(r => !r.IsWordValid(word));
-			if (morphemeRule != null)
-			{
-				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.MorphemeCoOccurrenceRules, this, morphemeRule);
+				if (morpher != null && morpher.TraceManager.IsTracing)
+				{
+					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.MorphemeCoOccurrenceRules, this,
+						Morpheme.MorphemeCoOccurrenceRules);
+				}
 				return false;
 			}
 

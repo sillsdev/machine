@@ -3,15 +3,17 @@ using System.Collections.Generic;
 
 namespace SIL.Machine.Corpora
 {
+	[Flags]
 	public enum UsfmTextType
 	{
-		Title,
-		Section,
-		VerseText,
-		NoteText,
-		Other,
-		BackTranslation,
-		TranslationNote
+		NotSpecified = 0x0,
+		Title = 0x1,
+		Section = 0x2,
+		VerseText = 0x4,
+		NoteText = 0x8,
+		Other = 0x10,
+		BackTranslation = 0x20,
+		TranslationNote = 0x40
 	}
 
 	public enum UsfmJustification
@@ -28,7 +30,9 @@ namespace SIL.Machine.Corpora
 		Character,
 		Note,
 		Paragraph,
-		End
+		End,
+		Milestone,
+		MilestoneEnd
 	}
 
 	[Flags]
@@ -55,14 +59,28 @@ namespace SIL.Machine.Corpora
 		Note = 0x20000
 	}
 
-	public class UsfmMarker
+	public sealed class UsfmStyleAttribute
+	{
+		public UsfmStyleAttribute(string name, bool isRequired)
+		{
+			Name = name;
+			IsRequired = isRequired;
+		}
+
+		public string Name { get; }
+		public bool IsRequired { get; }
+	}
+
+	public class UsfmTag
 	{
 		private readonly HashSet<string> _occursUnder;
+		private readonly List<UsfmStyleAttribute> _attributes;
 
-		public UsfmMarker(string marker)
+		public UsfmTag(string marker)
 		{
 			Marker = marker;
 			_occursUnder = new HashSet<string>();
+			_attributes = new List<UsfmStyleAttribute>();
 		}
 
 		public bool Bold { get; set; }
@@ -122,6 +140,10 @@ namespace SIL.Machine.Corpora
 		public bool Regular { get; set; }
 
 		public int Color { get; set; }
+
+		public IList<UsfmStyleAttribute> Attributes => _attributes;
+
+		public string DefaultAttributeName { get; set; }
 
 		public override string ToString()
 		{

@@ -180,7 +180,7 @@ namespace SIL.Machine
 		}
 
 		public static ITrainer CreateTranslationModelTrainer(string modelType,
-			string modelConfigFileName, IEnumerable<ParallelTextRow> corpus, int maxSize)
+			string modelConfigFileName, IParallelTextCorpus corpus, int maxSize)
 		{
 			ThotWordAlignmentModelType wordAlignmentModelType = GetThotWordAlignmentModelType(modelType);
 

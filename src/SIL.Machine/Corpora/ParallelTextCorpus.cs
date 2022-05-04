@@ -7,7 +7,7 @@ using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
-	public class ParallelTextCorpus : IEnumerable<ParallelTextRow>
+	public class ParallelTextCorpus : IParallelTextCorpus
 	{
 		public ParallelTextCorpus(ITextCorpus sourceCorpus, ITextCorpus targetCorpus,
 			IAlignmentCorpus alignmentCorpus = null, IComparer<object> rowRefComparer = null)
@@ -25,6 +25,28 @@ namespace SIL.Machine.Corpora
 		public ITextCorpus TargetCorpus { get; }
 		public IAlignmentCorpus AlignmentCorpus { get; }
 		public IComparer<object> RowRefComparer { get; }
+
+		public bool MissingRowsAllowed
+		{
+			get
+			{
+				if (SourceCorpus.MissingRowsAllowed || TargetCorpus.MissingRowsAllowed)
+					return true;
+
+				var sourceTextIds = new HashSet<string>(SourceCorpus.Texts.Select(t => t.Id));
+				var targetTextIds = new HashSet<string>(TargetCorpus.Texts.Select(t => t.Id));
+				return !sourceTextIds.SetEquals(targetTextIds);
+			}
+		}
+
+		public int Count(bool includeEmpty = true)
+		{
+			if (MissingRowsAllowed)
+				return includeEmpty ? GetRows().Count() : GetRows().Count(r => !r.IsEmpty);
+			if (includeEmpty)
+				return SourceCorpus.Count(includeEmpty);
+			return Math.Min(SourceCorpus.Count(includeEmpty), TargetCorpus.Count(includeEmpty));
+		}
 
 		public IEnumerator<ParallelTextRow> GetEnumerator()
 		{

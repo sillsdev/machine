@@ -1,13 +1,9 @@
-﻿using System.Collections.Generic;
-
-namespace SIL.Machine.Corpora
+﻿namespace SIL.Machine.Corpora
 {
-	public interface IText
+	public interface IText : ICorpus<TextRow>
 	{
 		string Id { get; }
 
 		string SortKey { get; }
-
-		IEnumerable<TextRow> GetRows();
 	}
 }
