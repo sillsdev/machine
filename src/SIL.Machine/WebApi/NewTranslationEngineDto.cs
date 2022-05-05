@@ -2,13 +2,13 @@
 
 namespace SIL.Machine.WebApi
 {
-	public class CreateWebhookDto
+	public class NewTranslationEngineDto
 	{
 		[JsonProperty(Required = Required.Always)]
-		public string Url { get; set; }
+		public string SourceLanguageTag { get; set; }
 		[JsonProperty(Required = Required.Always)]
-		public string Secret { get; set; }
+		public string TargetLanguageTag { get; set; }
 		[JsonProperty(Required = Required.Always)]
-		public WebhookEvent[] Events { get; set; }
+		public TranslationEngineType Type { get; set; }
 	}
 }

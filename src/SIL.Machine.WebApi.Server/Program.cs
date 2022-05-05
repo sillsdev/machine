@@ -48,10 +48,11 @@ builder.Services.AddSingleton<IAuthorizationHandler, IsEntityOwnerHandler>();
 
 builder.Services.AddMachine()
 	.AddMongoDataAccess(builder.Configuration.GetConnectionString("Mongo"))
-	.AddEngineOptions(builder.Configuration.GetSection("Engine"))
-	.AddEngineService()
+	.AddTranslationEngineOptions(builder.Configuration.GetSection("TranslationEngine"))
+	.AddCorpusOptions(builder.Configuration.GetSection("Corpus"))
 	.AddServiceOptions(builder.Configuration.GetSection("Service"))
-	.AddMongoBackgroundJobClient(builder.Configuration.GetConnectionString("Hangfire"));
+	.AddMongoBackgroundJobClient(builder.Configuration.GetConnectionString("Hangfire"))
+	.AddTranslationEngineService();
 
 builder.Services.AddSwaggerDocument(doc =>
 {

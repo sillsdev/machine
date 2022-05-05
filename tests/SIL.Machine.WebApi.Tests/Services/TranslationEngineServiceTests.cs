@@ -1,7 +1,7 @@
 ﻿namespace SIL.Machine.WebApi.Services;
 
 [TestFixture]
-public class EngineServiceTests
+public class TranslationEngineServiceTests
 {
 	[Test]
 	public async Task TranslateAsync_EngineDoesNotExist()
@@ -63,12 +63,12 @@ public class EngineServiceTests
 	public async Task CreateAsync()
 	{
 		using var env = new TestEnvironment();
-		var engine = new Engine
+		var engine = new TranslationEngine
 		{
 			Id = "engine1",
 			SourceLanguageTag = "es",
 			TargetLanguageTag = "en",
-			Type = EngineType.SmtTransfer
+			Type = TranslationEngineType.SmtTransfer
 		};
 		await env.Service.CreateAsync(engine);
 
@@ -84,7 +84,7 @@ public class EngineServiceTests
 		string engineId = (await env.CreateEngineAsync()).Id;
 		bool result = await env.Service.DeleteAsync("engine1");
 		Assert.That(result, Is.True);
-		Engine? engine = await env.Engines.GetAsync(engineId);
+		TranslationEngine? engine = await env.Engines.GetAsync(engineId);
 		Assert.That(engine, Is.Null);
 	}
 
@@ -118,8 +118,8 @@ public class EngineServiceTests
 	{
 		public TestEnvironment()
 		{
-			Engines = new MemoryRepository<Engine>();
-			var engineRuntime = Substitute.For<IEngineRuntime>();
+			Engines = new MemoryRepository<TranslationEngine>();
+			var engineRuntime = Substitute.For<ITranslationEngineRuntime>();
 			var translationResult = new TranslationResult(5,
 				"this is a test .".Split(),
 				new[] { 1.0, 1.0, 1.0, 1.0, 1.0 },
@@ -160,25 +160,25 @@ public class EngineServiceTests
 					Range<int>.Create(4, 5), GetSources(1, false), new[] { 1.0 })
 			}, new[] { 3 });
 			engineRuntime.GetWordGraphAsync(Arg.Any<IReadOnlyList<string>>()).Returns(Task.FromResult(wordGraph));
-			engineRuntime.StartBuildAsync().Returns(Task.FromResult(new Build { Id = "build1", EngineRef = "engine1" }));
-			var engineRuntimeFactory = Substitute.For<IEngineRuntimeFactory>();
-			engineRuntimeFactory.Type.Returns(EngineType.SmtTransfer);
-			engineRuntimeFactory.CreateEngineRuntime(Arg.Any<string>()).Returns(engineRuntime);
-			Service = new EngineService(new OptionsWrapper<EngineOptions>(new EngineOptions()), Engines,
+			engineRuntime.StartBuildAsync().Returns(Task.FromResult(new Build { Id = "build1", ParentRef = "engine1" }));
+			var engineRuntimeFactory = Substitute.For<ITranslationEngineRuntimeFactory>();
+			engineRuntimeFactory.Type.Returns(TranslationEngineType.SmtTransfer);
+			engineRuntimeFactory.CreateTranslationEngineRuntime(Arg.Any<string>()).Returns(engineRuntime);
+			Service = new TranslationEngineService(new OptionsWrapper<TranslationEngineOptions>(new TranslationEngineOptions()), Engines,
 				new MemoryRepository<Build>(), new[] { engineRuntimeFactory });
 		}
 
-		public EngineService Service { get; }
-		public IRepository<Engine> Engines { get; }
+		public TranslationEngineService Service { get; }
+		public IRepository<TranslationEngine> Engines { get; }
 
-		public async Task<Engine> CreateEngineAsync()
+		public async Task<TranslationEngine> CreateEngineAsync()
 		{
-			var engine = new Engine
+			var engine = new TranslationEngine
 			{
 				Id = "engine1",
 				SourceLanguageTag = "es",
 				TargetLanguageTag = "en",
-				Type = EngineType.SmtTransfer
+				Type = TranslationEngineType.SmtTransfer
 			};
 			await Engines.InsertAsync(engine);
 			return engine;

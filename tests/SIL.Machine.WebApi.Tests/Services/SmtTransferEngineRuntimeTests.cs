@@ -7,7 +7,7 @@ public class SmtTransferEngineRuntimeTests
 	public async Task StartBuildAsync()
 	{
 		using var env = new TestEnvironment();
-		Engine engine = env.Engines.Get("engine1");
+		TranslationEngine engine = env.Engines.Get("engine1");
 		Assert.That(engine.ModelRevision, Is.EqualTo(0));
 		await env.Runtime.InitNewAsync();
 		// ensure that the SMT model was loaded before training
@@ -131,23 +131,23 @@ public class SmtTransferEngineRuntimeTests
 		private readonly ISmtModelFactory _smtModelFactory;
 		private readonly ITransferEngineFactory _transferEngineFactory;
 		private readonly ITruecaserFactory _truecaserFactory;
-		private readonly IDataFileService _dataFileService;
+		private readonly ICorpusService _dataFileService;
 		private readonly IDistributedReaderWriterLockFactory _lockFactory;
 
 		public TestEnvironment()
 		{
-			Engines = new MemoryRepository<Engine>();
-			Engines.Add(new Engine
+			Engines = new MemoryRepository<TranslationEngine>();
+			Engines.Add(new TranslationEngine
 			{
 				Id = "engine1",
 				Owner = "client",
 				SourceLanguageTag = "es",
 				TargetLanguageTag = "en",
-				Type = EngineType.SmtTransfer
+				Type = TranslationEngineType.SmtTransfer
 			});
 			Builds = new MemoryRepository<Build>();
 			TrainSegmentPairs = new MemoryRepository<TrainSegmentPair>();
-			EngineOptions = new EngineOptions();
+			EngineOptions = new TranslationEngineOptions();
 			_memoryStorage = new MemoryStorage();
 			_jobClient = new BackgroundJobClient(_memoryStorage);
 			WebhookService = Substitute.For<IWebhookService>();
@@ -169,12 +169,12 @@ public class SmtTransferEngineRuntimeTests
 		}
 
 		public SmtTransferEngineRuntime Runtime { get; private set; }
-		public MemoryRepository<Engine> Engines { get; }
+		public MemoryRepository<TranslationEngine> Engines { get; }
 		public MemoryRepository<Build> Builds { get; }
 		public MemoryRepository<TrainSegmentPair> TrainSegmentPairs { get; }
 		public ITrainer SmtBatchTrainer { get; }
 		public IInteractiveTranslationModel SmtModel { get; }
-		public EngineOptions EngineOptions { get; }
+		public TranslationEngineOptions EngineOptions { get; }
 		public ITruecaser Truecaser { get; }
 		public ITrainer TruecaserTrainer { get; }
 		public IWebhookService WebhookService { get; }
@@ -202,7 +202,7 @@ public class SmtTransferEngineRuntimeTests
 
 		private SmtTransferEngineRuntime CreateRuntime()
 		{
-			return new SmtTransferEngineRuntime(new OptionsWrapper<EngineOptions>(EngineOptions), Engines,
+			return new SmtTransferEngineRuntime(new OptionsWrapper<TranslationEngineOptions>(EngineOptions), Engines,
 				Builds, TrainSegmentPairs, _smtModelFactory, _transferEngineFactory, _truecaserFactory, _jobClient,
 				_lockFactory, "engine1");
 		}
@@ -299,12 +299,11 @@ public class SmtTransferEngineRuntimeTests
 			return factory;
 		}
 
-		private static IDataFileService CreateDataFileService()
+		private static ICorpusService CreateDataFileService()
 		{
-			var dataFileService = Substitute.For<IDataFileService>();
-			dataFileService.CreateTextCorporaAsync(Arg.Any<string>(), Arg.Any<CorpusType>())
-				.Returns(Task.FromResult<IReadOnlyDictionary<string, ITextCorpus>>(
-					new Dictionary<string, ITextCorpus>()));
+			var dataFileService = Substitute.For<ICorpusService>();
+			dataFileService.CreateTextCorpusAsync(Arg.Any<string>(), Arg.Any<string>())
+				.Returns(Task.FromResult<ITextCorpus?>(null));
 			return dataFileService;
 		}
 

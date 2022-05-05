@@ -2,13 +2,13 @@
 
 namespace SIL.Machine.WebApi
 {
-	public class CreateEngineDto
+	public class NewCorpusDto
 	{
 		[JsonProperty(Required = Required.Always)]
-		public string SourceLanguageTag { get; set; }
+		public string Name { get; set; }
 		[JsonProperty(Required = Required.Always)]
-		public string TargetLanguageTag { get; set; }
+		public CorpusType Type { get; set; }
 		[JsonProperty(Required = Required.Always)]
-		public EngineType Type { get; set; }
+		public FileFormat Format { get; set; }
 	}
 }

@@ -1,6 +1,6 @@
 ﻿namespace SIL.Machine.WebApi.Services;
 
-public interface IEngineRuntime : IAsyncDisposable
+public interface ITranslationEngineRuntime : IAsyncDisposable
 {
 	Task InitNewAsync();
 	Task<TranslationResult> TranslateAsync(IReadOnlyList<string> segment);

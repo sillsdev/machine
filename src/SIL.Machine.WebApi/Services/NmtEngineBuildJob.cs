@@ -2,14 +2,14 @@
 
 public class NmtEngineBuildJob
 {
-	private readonly IRepository<Engine> _engines;
+	private readonly IRepository<TranslationEngine> _engines;
 	private readonly IRepository<Build> _builds;
 	private readonly IDistributedReaderWriterLockFactory _lockFactory;
 	private readonly ILogger<NmtEngineBuildJob> _logger;
 	private readonly IWebhookService _webhookService;
 	private readonly INmtBuildJobRunner _jobRunner;
 
-	public NmtEngineBuildJob(IRepository<Engine> engines, IRepository<Build> builds,
+	public NmtEngineBuildJob(IRepository<TranslationEngine> engines, IRepository<Build> builds,
 		IDistributedReaderWriterLockFactory lockFactory, ILogger<NmtEngineBuildJob> logger,
 		IWebhookService webhookService, INmtBuildJobRunner jobRunner)
 	{
@@ -29,7 +29,7 @@ public class NmtEngineBuildJob
 		try
 		{
 			Build? build;
-			Engine? engine;
+			TranslationEngine? engine;
 			var stopwatch = new Stopwatch();
 			await using (await rwLock.WriterLockAsync(cancellationToken: cancellationToken))
 			{
@@ -75,7 +75,7 @@ public class NmtEngineBuildJob
 		}
 		catch (OperationCanceledException)
 		{
-			Engine? engine;
+			TranslationEngine? engine;
 			await using (await rwLock.WriterLockAsync(cancellationToken: CancellationToken.None))
 			{
 				engine = await _engines.UpdateAsync(engineId, u => u.Set(e => e.IsBuilding, false),
@@ -106,7 +106,7 @@ public class NmtEngineBuildJob
 		}
 		catch (Exception e)
 		{
-			Engine? engine;
+			TranslationEngine? engine;
 			await using (await rwLock.WriterLockAsync(cancellationToken: CancellationToken.None))
 			{
 				engine = await _engines.UpdateAsync(engineId, u => u.Set(e => e.IsBuilding, false),

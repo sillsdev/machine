@@ -3,13 +3,16 @@
 public class NmtBuildJobRunner : INmtBuildJobRunner
 {
 	private readonly MongoUrl _mongoConnectionString;
-	private readonly IOptions<EngineOptions> _engineOptions;
+	private readonly IOptions<TranslationEngineOptions> _translationEngineOptions;
+	private readonly IOptions<CorpusOptions> _corpusOptions;
 
-	public NmtBuildJobRunner(IConfiguration configuration, IOptions<EngineOptions> engineOptions)
+	public NmtBuildJobRunner(IConfiguration configuration, IOptions<TranslationEngineOptions> translationEngineOptions,
+		IOptions<CorpusOptions> corpusOptions)
 	{
 		string connectionString = configuration.GetConnectionString("Mongo");
 		_mongoConnectionString = new MongoUrl(connectionString);
-		_engineOptions = engineOptions;
+		_translationEngineOptions = translationEngineOptions;
+		_corpusOptions = corpusOptions;
 	}
 
 	public async Task RunAsync(string engineId, string buildId, CancellationToken cancellationToken = default)
@@ -22,7 +25,8 @@ public class NmtBuildJobRunner : INmtBuildJobRunner
 			$"--build={buildId}",
 			$"--mongo={_mongoConnectionString.Server}",
 			$"--database={_mongoConnectionString.DatabaseName}",
-			$"--data-files-dir={_engineOptions.Value.DataFilesDir}",
+			$"--engines-dir={_translationEngineOptions.Value.EnginesDir}",
+			$"--data-files-dir={_corpusOptions.Value.DataFilesDir}",
 			$"--cancellation-token-file={cancellationTokenFile}",
 			$"--mixed-precision"
 		};
