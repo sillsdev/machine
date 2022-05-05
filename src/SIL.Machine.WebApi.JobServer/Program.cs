@@ -6,8 +6,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddMachine()
 	.AddMongoDataAccess(builder.Configuration.GetConnectionString("Mongo"))
-	.AddEngineOptions(builder.Configuration.GetSection("Engine"))
+	.AddTranslationEngineOptions(builder.Configuration.GetSection("TranslationEngine"))
 	.AddServiceOptions(builder.Configuration.GetSection("Service"))
+	.AddCorpusOptions(builder.Configuration.GetSection("Corpus"))
 	.AddMongoBackgroundJobClient(builder.Configuration.GetConnectionString("Hangfire"))
 	.AddBackgroundJobServer();
 

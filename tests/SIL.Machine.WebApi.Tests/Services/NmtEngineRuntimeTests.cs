@@ -33,17 +33,17 @@ public class NmtEngineRuntimeTests
 
 		public TestEnvironment()
 		{
-			Engines = new MemoryRepository<Engine>();
-			Engines.Add(new Engine
+			Engines = new MemoryRepository<TranslationEngine>();
+			Engines.Add(new TranslationEngine
 			{
 				Id = "engine1",
 				Owner = "client",
 				SourceLanguageTag = "es",
 				TargetLanguageTag = "en",
-				Type = EngineType.Nmt
+				Type = TranslationEngineType.Nmt
 			});
 			Builds = new MemoryRepository<Build>();
-			EngineOptions = new EngineOptions();
+			EngineOptions = new TranslationEngineOptions();
 			_memoryStorage = new MemoryStorage();
 			_jobClient = new BackgroundJobClient(_memoryStorage);
 			WebhookService = Substitute.For<IWebhookService>();
@@ -56,9 +56,9 @@ public class NmtEngineRuntimeTests
 		}
 
 		public NmtEngineRuntime Runtime { get; private set; }
-		public MemoryRepository<Engine> Engines { get; }
+		public MemoryRepository<TranslationEngine> Engines { get; }
 		public MemoryRepository<Build> Builds { get; }
-		public EngineOptions EngineOptions { get; }
+		public TranslationEngineOptions EngineOptions { get; }
 		public IWebhookService WebhookService { get; }
 		public INmtBuildJobRunner JobRunner { get; }
 

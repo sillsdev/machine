@@ -1,3 +1,5 @@
+using SIL.ObjectModel;
+
 namespace SIL.Machine.WebApi.DataAccess;
 
 public class MemorySubscription<T> : DisposableBase, ISubscription<T> where T : IEntity

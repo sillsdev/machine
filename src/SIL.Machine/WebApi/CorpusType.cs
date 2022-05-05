@@ -2,8 +2,6 @@
 {
 	public enum CorpusType
 	{
-		Source,
-		Target,
-		Both
+		Text
 	}
 }
