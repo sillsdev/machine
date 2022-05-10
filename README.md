@@ -131,3 +131,6 @@ This is the QA staging environment.  To access it,
 - Run `kubectl config use-context dallas-rke` 
 - Run `cd deploy`
 - Run `helm upgrade machine-api . -f qa-values.yaml`
+
+## API BDD Testing
+- Prepare VSC env: follow this guide: https://docs.specflow.org/projects/specflow/en/latest/vscode/vscode-specflow.html
