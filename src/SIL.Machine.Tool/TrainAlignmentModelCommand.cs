@@ -82,7 +82,7 @@ namespace SIL.Machine
 						trainer.Train(phaseProgress);
 					using (PhaseProgress phaseProgress = reporter.StartNextPhase())
 						trainer.Save();
-					trainedSegmentCount = trainer.Stats.TrainedSegmentCount;
+					trainedSegmentCount = trainer.Stats.TrainSize;
 				}
 
 				if (!_modelSpec.IsSymmetric)
@@ -94,7 +94,7 @@ namespace SIL.Machine
 					using (PhaseProgress phaseProgress = reporter.StartNextPhase())
 						trainer.Save();
 
-					trainedSegmentCount = Math.Max(trainedSegmentCount, trainer.Stats.TrainedSegmentCount);
+					trainedSegmentCount = Math.Max(trainedSegmentCount, trainer.Stats.TrainSize);
 				}
 			}
 			if (!_quietOption.HasValue())

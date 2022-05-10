@@ -27,6 +27,7 @@ public class NmtBuildJobRunner : INmtBuildJobRunner
 			$"--database={_mongoConnectionString.DatabaseName}",
 			$"--engines-dir={_translationEngineOptions.Value.EnginesDir}",
 			$"--data-files-dir={_corpusOptions.Value.DataFilesDir}",
+			$"--parent-models-dir={_translationEngineOptions.Value.ParentModelsDir}",
 			$"--cancellation-token-file={cancellationTokenFile}",
 			$"--mixed-precision"
 		};
