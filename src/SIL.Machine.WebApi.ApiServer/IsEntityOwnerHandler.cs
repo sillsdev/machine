@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using SIL.Machine.WebApi.Models;
 
-namespace SIL.Machine.WebApi.Server;
+namespace SIL.Machine.WebApi.ApiServer;
 
 public class IsEntityOwnerHandler : AuthorizationHandler<IsOwnerRequirement, IOwnedEntity>
 {

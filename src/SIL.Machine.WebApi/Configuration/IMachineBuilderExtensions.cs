@@ -127,10 +127,14 @@ public static class IMachineBuilderExtensions
 		return builder;
 	}
 
-	public static IMachineBuilder AddBackgroundJobServer(this IMachineBuilder builder)
+	public static IMachineBuilder AddBackgroundJobServer(this IMachineBuilder builder, string[]? queues = null)
 	{
 		builder.Services.AddSingleton<INmtBuildJobRunner, NmtBuildJobRunner>();
-		builder.Services.AddHangfireServer();
+		builder.Services.AddHangfireServer(o =>
+		{
+			if (queues is not null)
+				o.Queues = queues;
+		});
 		return builder;
 	}
 

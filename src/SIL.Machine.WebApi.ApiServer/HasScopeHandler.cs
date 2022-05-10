@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 
-namespace SIL.Machine.WebApi.Server;
+namespace SIL.Machine.WebApi.ApiServer;
 
 public class HasScopeHandler : AuthorizationHandler<HasScopeRequirement>
 {

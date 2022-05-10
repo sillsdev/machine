@@ -10,7 +10,7 @@ builder.Services.AddMachine()
 	.AddServiceOptions(builder.Configuration.GetSection("Service"))
 	.AddCorpusOptions(builder.Configuration.GetSection("Corpus"))
 	.AddMongoBackgroundJobClient(builder.Configuration.GetConnectionString("Hangfire"))
-	.AddBackgroundJobServer();
+	.AddBackgroundJobServer(builder.Configuration.GetSection("Job:Queues").Get<string[]?>());
 
 var app = builder.Build();
 

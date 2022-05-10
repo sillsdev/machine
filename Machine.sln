@@ -58,9 +58,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Tokenization.Se
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Tokenization.SentencePiece.Tests", "tests\SIL.Machine.Tokenization.SentencePiece.Tests\SIL.Machine.Tokenization.SentencePiece.Tests.csproj", "{AB5F75C1-64B7-4E0F-A4B5-B14EB16E6DDC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.WebApi.Server", "src\SIL.Machine.WebApi.Server\SIL.Machine.WebApi.Server.csproj", "{92C1381A-1977-4B8C-A49D-CC30E5383B84}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.WebApi.ApiServer", "src\SIL.Machine.WebApi.ApiServer\SIL.Machine.WebApi.ApiServer.csproj", "{92C1381A-1977-4B8C-A49D-CC30E5383B84}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIL.Machine.WebApi.JobServer", "src\SIL.Machine.WebApi.JobServer\SIL.Machine.WebApi.JobServer.csproj", "{8234BBDF-7D9B-46C4-B827-9370613652BA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.WebApi.JobServer", "src\SIL.Machine.WebApi.JobServer\SIL.Machine.WebApi.JobServer.csproj", "{8234BBDF-7D9B-46C4-B827-9370613652BA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
