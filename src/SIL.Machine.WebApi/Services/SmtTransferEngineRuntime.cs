@@ -134,7 +134,7 @@ public class SmtTransferEngineRuntime : AsyncDisposableBase, ITranslationEngineR
 			using ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync();
 			item.Object.TrainSegment(preprocSourceSegment, preprocTargetSegment);
 			(await _truecaser).TrainSegment(targetSegment, sentenceStart);
-			TranslationEngine? engine = await _engines.UpdateAsync(_engineId, u => u.Inc(e => e.TrainedSegmentCount, 1));
+			TranslationEngine? engine = await _engines.UpdateAsync(_engineId, u => u.Inc(e => e.TrainSize, 1));
 			if (engine != null && engine.IsBuilding)
 			{
 				await _trainSegmentPairs.InsertAsync(new TrainSegmentPair

@@ -29,9 +29,12 @@ public class WebhooksController : ControllerBase
 	/// </summary>
 	/// <param name="id">The webhook id.</param>
 	/// <response code="200">The webhook.</response>
+	/// <response code="403">The authenticated client does not own the webhook.</response>
 	[Authorize(Scopes.ReadHooks)]
 	[HttpGet("{id}")]
-	public async Task<ActionResult<WebhookDto>> GetAsync(string id)
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	public async Task<ActionResult<WebhookDto>> GetAsync([NotNull] string id)
 	{
 		Webhook? hook = await _hookService.GetAsync(id);
 		if (hook == null)
@@ -50,7 +53,7 @@ public class WebhooksController : ControllerBase
 	[Authorize(Scopes.CreateHooks)]
 	[HttpPost]
 	[ProducesResponseType(StatusCodes.Status201Created)]
-	public async Task<ActionResult<WebhookDto>> CreateAsync([FromBody] NewWebhookDto hookConfig)
+	public async Task<ActionResult<WebhookDto>> CreateAsync([FromBody] WebhookConfigDto hookConfig)
 	{
 		var newHook = new Webhook
 		{
@@ -70,9 +73,12 @@ public class WebhooksController : ControllerBase
 	/// </summary>
 	/// <param name="id">The webhook id.</param>
 	/// <response code="200">The webhook was successfully deleted.</response>
+	/// <response code="403">The authenticated client does not own the webhook.</response>
 	[Authorize(Scopes.DeleteHooks)]
 	[HttpDelete("{id}")]
-	public async Task<ActionResult> DeleteAsync(string id)
+	[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	public async Task<ActionResult> DeleteAsync([NotNull] string id)
 	{
 		Webhook? hook = await _hookService.GetAsync(id);
 		if (hook == null)

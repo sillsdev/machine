@@ -41,9 +41,12 @@ public class TranslationEnginesController : ControllerBase
 	/// </summary>
 	/// <param name="id">The translation engine id.</param>
 	/// <response code="200">The translation engine.</response>
+	/// <response code="403">The authenticated client does not own the translation engine.</response>
 	[Authorize(Scopes.ReadTranslationEngines)]
 	[HttpGet("{id}")]
-	public async Task<ActionResult<TranslationEngineDto>> GetAsync(string id)
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	public async Task<ActionResult<TranslationEngineDto>> GetAsync([NotNull] string id)
 	{
 		TranslationEngine? engine = await _translationEngineService.GetAsync(id);
 		if (engine == null)
@@ -63,10 +66,11 @@ public class TranslationEnginesController : ControllerBase
 	[HttpPost]
 	[ProducesResponseType(StatusCodes.Status201Created)]
 	public async Task<ActionResult<TranslationEngineDto>> CreateAsync(
-		[FromBody] NewTranslationEngineDto engineConfig)
+		[FromBody] TranslationEngineConfigDto engineConfig)
 	{
 		var newEngine = new TranslationEngine
 		{
+			Name = engineConfig.Name,
 			SourceLanguageTag = engineConfig.SourceLanguageTag,
 			TargetLanguageTag = engineConfig.TargetLanguageTag,
 			Type = engineConfig.Type,
@@ -83,9 +87,12 @@ public class TranslationEnginesController : ControllerBase
 	/// </summary>
 	/// <param name="id">The translation engine id.</param>
 	/// <response code="200">The engine was successfully deleted.</response>
+	/// <response code="403">The authenticated client does not own the translation engine.</response>
 	[Authorize(Scopes.DeleteTranslationEngines)]
 	[HttpDelete("{id}")]
-	public async Task<ActionResult> DeleteAsync(string id)
+	[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	public async Task<ActionResult> DeleteAsync([NotNull] string id)
 	{
 		TranslationEngine? engine = await _translationEngineService.GetAsync(id);
 		if (engine == null)
@@ -104,9 +111,15 @@ public class TranslationEnginesController : ControllerBase
 	/// <param name="id">The translation engine id.</param>
 	/// <param name="segment">The tokenized source segment.</param>
 	/// <response code="200">The translation result.</response>
+	/// <response code="403">The authenticated client does not own the translation engine.</response>
+	/// <response code="405">The method is not supported.</response>
 	[Authorize(Scopes.ReadTranslationEngines)]
 	[HttpPost("{id}/translate")]
-	public async Task<ActionResult<TranslationResultDto>> TranslateAsync(string id, [FromBody] string[] segment)
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	[ProducesResponseType(typeof(void), StatusCodes.Status405MethodNotAllowed)]
+	public async Task<ActionResult<TranslationResultDto>> TranslateAsync([NotNull] string id,
+		[FromBody] string[] segment)
 	{
 		TranslationEngine? engine = await _translationEngineService.GetAsync(id);
 		if (engine == null)
@@ -127,10 +140,15 @@ public class TranslationEnginesController : ControllerBase
 	/// <param name="n">The number of translations.</param>
 	/// <param name="segment">The tokenized source segment.</param>
 	/// <response code="200">The translation results.</response>
+	/// <response code="403">The authenticated client does not own the translation engine.</response>
+	/// <response code="405">The method is not supported.</response>
 	[Authorize(Scopes.ReadTranslationEngines)]
 	[HttpPost("{id}/translate/{n}")]
-	public async Task<ActionResult<IEnumerable<TranslationResultDto>>> TranslateAsync(string id, int n,
-		[FromBody] string[] segment)
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	[ProducesResponseType(typeof(void), StatusCodes.Status405MethodNotAllowed)]
+	public async Task<ActionResult<IEnumerable<TranslationResultDto>>> TranslateAsync([NotNull] string id,
+		[NotNull] int n, [FromBody] string[] segment)
 	{
 		TranslationEngine? engine = await _translationEngineService.GetAsync(id);
 		if (engine == null)
@@ -150,9 +168,15 @@ public class TranslationEnginesController : ControllerBase
 	/// <param name="id">The translation engine id.</param>
 	/// <param name="segment">The tokenized source segment.</param>
 	/// <response code="200">The word graph.</response>
+	/// <response code="403">The authenticated client does not own the translation engine.</response>
+	/// <response code="405">The method is not supported.</response>
 	[Authorize(Scopes.ReadTranslationEngines)]
 	[HttpPost("{id}/get-word-graph")]
-	public async Task<ActionResult<WordGraphDto>> InteractiveTranslateAsync(string id, [FromBody] string[] segment)
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	[ProducesResponseType(typeof(void), StatusCodes.Status405MethodNotAllowed)]
+	public async Task<ActionResult<WordGraphDto>> InteractiveTranslateAsync([NotNull] string id,
+		[FromBody] string[] segment)
 	{
 		TranslationEngine? engine = await _translationEngineService.GetAsync(id);
 		if (engine == null)
@@ -172,10 +196,14 @@ public class TranslationEnginesController : ControllerBase
 	/// <param name="id">The translation engine id.</param>
 	/// <param name="segmentPair">The tokenized segment pair.</param>
 	/// <response code="200">The engine was trained successfully.</response>
+	/// <response code="403">The authenticated client does not own the translation engine.</response>
+	/// <response code="405">The method is not supported.</response>
 	[Authorize(Scopes.UpdateTranslationEngines)]
 	[HttpPost("{id}/train-segment")]
-	[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
-	public async Task<ActionResult> TrainSegmentAsync(string id, [FromBody] SegmentPairDto segmentPair)
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	[ProducesResponseType(typeof(void), StatusCodes.Status405MethodNotAllowed)]
+	public async Task<ActionResult> TrainSegmentAsync([NotNull] string id, [FromBody] SegmentPairDto segmentPair)
 	{
 		TranslationEngine? engine = await _translationEngineService.GetAsync(id);
 		if (engine == null)
@@ -197,11 +225,13 @@ public class TranslationEnginesController : ControllerBase
 	/// <param name="id">The translation engine id.</param>
 	/// <param name="corpusInfo">The corpus configuration.</param>
 	/// <response code="200">The corpus was added successfully.</response>
+	/// <response code="403">The authenticated client does not own the translation engine.</response>
 	[Authorize(Scopes.UpdateTranslationEngines)]
 	[HttpPost("{id}/corpora")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
-	public async Task<ActionResult<TranslationEngineCorpusDto>> AddCorporaAsync(string id,
-		[FromBody] NewTranslationEngineCorpusDto corpusInfo)
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	public async Task<ActionResult<TranslationEngineCorpusDto>> AddCorporaAsync([NotNull] string id,
+		[FromBody] TranslationEngineCorpusConfigDto corpusInfo)
 	{
 		TranslationEngine? engine = await _translationEngineService.GetAsync(id);
 		if (engine == null)
@@ -229,9 +259,12 @@ public class TranslationEnginesController : ControllerBase
 	/// </summary>
 	/// <param name="id">The translation engine id.</param>
 	/// <response code="200">The files.</response>
+	/// <response code="403">The authenticated client does not own the translation engine.</response>
 	[Authorize(Scopes.ReadTranslationEngines)]
 	[HttpGet("{id}/corpora")]
-	public async Task<ActionResult<IEnumerable<TranslationEngineCorpusDto>>> GetAllCorporaAsync(string id)
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	public async Task<ActionResult<IEnumerable<TranslationEngineCorpusDto>>> GetAllCorporaAsync([NotNull] string id)
 	{
 		TranslationEngine? engine = await _translationEngineService.GetAsync(id);
 		if (engine == null)
@@ -248,9 +281,13 @@ public class TranslationEnginesController : ControllerBase
 	/// <param name="id">The translation engine id.</param>
 	/// <param name="corpusId">The corpus id.</param>
 	/// <response code="200">The corpus configuration.</response>
+	/// <response code="403">The authenticated client does not own the translation engine.</response>
 	[Authorize(Scopes.ReadTranslationEngines)]
 	[HttpGet("{id}/corpora/{corpusId}")]
-	public async Task<ActionResult<TranslationEngineCorpusDto>> GetCorpusAsync(string id, string corpusId)
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	public async Task<ActionResult<TranslationEngineCorpusDto>> GetCorpusAsync([NotNull] string id,
+		[NotNull] string corpusId)
 	{
 		TranslationEngine? engine = await _translationEngineService.GetAsync(id);
 		if (engine == null)
@@ -266,15 +303,17 @@ public class TranslationEnginesController : ControllerBase
 	}
 
 	/// <summary>
-	/// Deletes a corpus from a translation engine.
+	/// Removes a corpus from a translation engine.
 	/// </summary>
 	/// <param name="id">The translation engine id.</param>
 	/// <param name="corpusId">The corpus id.</param>
 	/// <response code="200">The data file was deleted successfully.</response>
+	/// <response code="403">The authenticated client does not own the translation engine.</response>
 	[Authorize(Scopes.UpdateTranslationEngines)]
 	[HttpDelete("{id}/corpora/{corpusId}")]
 	[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
-	public async Task<ActionResult> DeleteCorpusAsync(string id, string corpusId)
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	public async Task<ActionResult> DeleteCorpusAsync([NotNull] string id, [NotNull] string corpusId)
 	{
 		TranslationEngine? engine = await _translationEngineService.GetAsync(id);
 		if (engine == null)
@@ -294,10 +333,13 @@ public class TranslationEnginesController : ControllerBase
 	/// <param name="id">The translation engine id.</param>
 	/// <param name="corpusId">The corpus id.</param>
 	/// <response code="200">The pretranslations.</response>
+	/// <response code="403">The authenticated client does not own the translation engine.</response>
 	[Authorize(Scopes.ReadTranslationEngines)]
 	[HttpGet("{id}/corpora/{corpusId}/pretranslations")]
-	public async Task<ActionResult<IEnumerable<PretranslationDto>>> GetAllPretranslationsAsync(string id,
-		string corpusId)
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	public async Task<ActionResult<IEnumerable<PretranslationDto>>> GetAllPretranslationsAsync([NotNull] string id,
+		[NotNull] string corpusId)
 	{
 		TranslationEngine? engine = await _translationEngineService.GetAsync(id);
 		if (engine == null)
@@ -315,10 +357,13 @@ public class TranslationEnginesController : ControllerBase
 	/// <param name="corpusId">The corpus id.</param>
 	/// <param name="textId">The text id.</param>
 	/// <response code="200">The pretranslations.</response>
+	/// <response code="403">The authenticated client does not own the translation engine.</response>
 	[Authorize(Scopes.ReadTranslationEngines)]
 	[HttpGet("{id}/corpora/{corpusId}/pretranslations/{textId}")]
-	public async Task<ActionResult<IEnumerable<PretranslationDto>>> GetAllPretranslationsAsync(string id,
-		string corpusId, string textId)
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	public async Task<ActionResult<IEnumerable<PretranslationDto>>> GetAllPretranslationsAsync([NotNull] string id,
+		[NotNull] string corpusId, [NotNull] string textId)
 	{
 		TranslationEngine? engine = await _translationEngineService.GetAsync(id);
 		if (engine == null)
@@ -335,9 +380,12 @@ public class TranslationEnginesController : ControllerBase
 	/// </summary>
 	/// <param name="id">The translation engine id.</param>
 	/// <response code="200">The build jobs.</response>
+	/// <response code="403">The authenticated client does not own the translation engine.</response>
 	[Authorize(Scopes.ReadTranslationEngines)]
 	[HttpGet("{id}/builds")]
-	public async Task<ActionResult<IEnumerable<BuildDto>>> GetAllBuildsAsync(string id)
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	public async Task<ActionResult<IEnumerable<BuildDto>>> GetAllBuildsAsync([NotNull] string id)
 	{
 		TranslationEngine? engine = await _translationEngineService.GetAsync(id);
 		if (engine == null)
@@ -356,10 +404,15 @@ public class TranslationEnginesController : ControllerBase
 	/// <param name="minRevision">The minimum revision.</param>
 	/// <param name="cancellationToken">The cancellation token.</param>
 	/// <response code="200">The build job.</response>
+	/// <response code="403">The authenticated client does not own the translation engine.</response>
+	/// <response code="499">The long polling request timed out.</response>
 	[Authorize(Scopes.ReadTranslationEngines)]
 	[HttpGet("{id}/builds/{buildId}")]
-	public async Task<ActionResult<BuildDto>> GetBuildAsync(string id, string buildId, [FromQuery] long? minRevision,
-		CancellationToken cancellationToken)
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	[ProducesResponseType(typeof(void), 499)]
+	public async Task<ActionResult<BuildDto>> GetBuildAsync([NotNull] string id, [NotNull] string buildId,
+		[FromQuery] long? minRevision, CancellationToken cancellationToken)
 	{
 		TranslationEngine? engine = await _translationEngineService.GetAsync(id, cancellationToken);
 		if (engine == null)
@@ -394,10 +447,12 @@ public class TranslationEnginesController : ControllerBase
 	/// </summary>
 	/// <param name="id">The translation engine id.</param>
 	/// <response code="201">The build job was started successfully.</response>
+	/// <response code="403">The authenticated client does not own the translation engine.</response>
 	[Authorize(Scopes.UpdateTranslationEngines)]
 	[HttpPost("{id}/builds")]
 	[ProducesResponseType(StatusCodes.Status201Created)]
-	public async Task<ActionResult<BuildDto>> CreateBuildAsync(string id)
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	public async Task<ActionResult<BuildDto>> CreateBuildAsync([NotNull] string id)
 	{
 		TranslationEngine? engine = await _translationEngineService.GetAsync(id);
 		if (engine == null)
@@ -407,7 +462,7 @@ public class TranslationEnginesController : ControllerBase
 
 		Build? build = await _translationEngineService.StartBuildAsync(id);
 		if (build == null)
-			return UnprocessableEntity();
+			return NotFound();
 		var dto = _mapper.Map<BuildDto>(build);
 		return Created(dto.Href, dto);
 	}
@@ -419,9 +474,14 @@ public class TranslationEnginesController : ControllerBase
 	/// <param name="minRevision">The minimum revision.</param>
 	/// <param name="cancellationToken">The cancellation token.</param>
 	/// <response code="200">The build job.</response>
+	/// <response code="403">The authenticated client does not own the translation engine.</response>
+	/// <response code="499">The long polling request timed out.</response>
 	[Authorize(Scopes.ReadTranslationEngines)]
 	[HttpGet("{id}/current-build")]
-	public async Task<ActionResult<BuildDto>> GetCurrentBuildAsync(string id, [FromQuery] long? minRevision,
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	[ProducesResponseType(typeof(void), 499)]
+	public async Task<ActionResult<BuildDto>> GetCurrentBuildAsync([NotNull] string id, [FromQuery] long? minRevision,
 		CancellationToken cancellationToken)
 	{
 		TranslationEngine? engine = await _translationEngineService.GetAsync(id, cancellationToken);
@@ -457,10 +517,12 @@ public class TranslationEnginesController : ControllerBase
 	/// </summary>
 	/// <param name="id">The translation engine id.</param>
 	/// <response code="200">The build job was cancelled successfully.</response>
+	/// <response code="403">The authenticated client does not own the translation engine.</response>
 	[Authorize(Scopes.UpdateTranslationEngines)]
 	[HttpPost("{id}/current-build/cancel")]
 	[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
-	public async Task<ActionResult> CancelBuildAsync(string id)
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	public async Task<ActionResult> CancelBuildAsync([NotNull] string id)
 	{
 		TranslationEngine? engine = await _translationEngineService.GetAsync(id);
 		if (engine == null)

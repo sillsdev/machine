@@ -29,9 +29,12 @@ public class CorporaController : ControllerBase
 	/// </summary>
 	/// <param name="id">The corpus id.</param>
 	/// <response code="200">The corpus.</response>
+	/// <response code="403">The authenticated client does not own the corpus.</response>
 	[Authorize(Scopes.ReadCorpora)]
 	[HttpGet("{id}")]
-	public async Task<ActionResult<CorpusDto>> GetAsync(string id)
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	public async Task<ActionResult<CorpusDto>> GetAsync([NotNull] string id)
 	{
 		Corpus? corpus = await _corpusService.GetAsync(id);
 		if (corpus == null)
@@ -50,7 +53,7 @@ public class CorporaController : ControllerBase
 	[Authorize(Scopes.CreateCorpora)]
 	[HttpPost]
 	[ProducesResponseType(StatusCodes.Status201Created)]
-	public async Task<ActionResult<CorpusDto>> CreateAsync([FromBody] NewCorpusDto corpusConfig)
+	public async Task<ActionResult<CorpusDto>> CreateAsync([FromBody] CorpusConfigDto corpusConfig)
 	{
 		var newCorpus = new Corpus
 		{
@@ -69,9 +72,12 @@ public class CorporaController : ControllerBase
 	/// </summary>
 	/// <param name="id">The corpus id.</param>
 	/// <response code="200">The corpus was successfully deleted.</response>
+	/// <response code="403">The authenticated client does not own the corpus.</response>
 	[Authorize(Scopes.DeleteCorpora)]
 	[HttpDelete("{id}")]
-	public async Task<ActionResult> DeleteAsync(string id)
+	[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	public async Task<ActionResult> DeleteAsync([NotNull] string id)
 	{
 		Corpus? corpus = await _corpusService.GetAsync(id);
 		if (corpus == null)
@@ -96,7 +102,7 @@ public class CorporaController : ControllerBase
 	[HttpPost("{id}/files")]
 	[RequestSizeLimit(100_000_000)]
 	[ProducesResponseType(StatusCodes.Status201Created)]
-	public async Task<ActionResult<DataFileDto>> UploadDataFileAsync(string id,
+	public async Task<ActionResult<DataFileDto>> UploadDataFileAsync([NotNull] string id,
 		[BindRequired][FromForm] string languageTag, [FromForm] string? textId, [BindRequired] IFormFile file)
 	{
 		Corpus? corpus = await _corpusService.GetAsync(id);
@@ -125,9 +131,12 @@ public class CorporaController : ControllerBase
 	/// </summary>
 	/// <param name="id">The corpus id.</param>
 	/// <response code="200">The files.</response>
+	/// <response code="403">The authenticated client does not own the corpus.</response>
 	[Authorize(Scopes.ReadCorpora)]
 	[HttpGet("{id}/files")]
-	public async Task<ActionResult<IEnumerable<DataFileDto>>> GetAllDataFilesAsync(string id)
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	public async Task<ActionResult<IEnumerable<DataFileDto>>> GetAllDataFilesAsync([NotNull] string id)
 	{
 		Corpus? corpus = await _corpusService.GetAsync(id);
 		if (corpus == null)
@@ -144,9 +153,12 @@ public class CorporaController : ControllerBase
 	/// <param name="id">The corpus id.</param>
 	/// <param name="fileId">The data file id.</param>
 	/// <response code="200">The data file.</response>
+	/// <response code="403">The authenticated client does not own the corpus.</response>
 	[Authorize(Scopes.ReadCorpora)]
 	[HttpGet("{id}/files/{fileId}")]
-	public async Task<ActionResult<DataFileDto>> GetDataFileAsync(string id, string fileId)
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	public async Task<ActionResult<DataFileDto>> GetDataFileAsync([NotNull] string id, [NotNull] string fileId)
 	{
 		Corpus? corpus = await _corpusService.GetAsync(id);
 		if (corpus == null)
@@ -167,10 +179,12 @@ public class CorporaController : ControllerBase
 	/// <param name="id">The corpus id.</param>
 	/// <param name="fileId">The data file id.</param>
 	/// <response code="200">The data file was deleted successfully.</response>
+	/// <response code="403">The authenticated client does not own the corpus.</response>
 	[Authorize(Scopes.UpdateTranslationEngines)]
 	[HttpDelete("{id}/files/{fileId}")]
 	[ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
-	public async Task<ActionResult> DeleteDataFileAsync(string id, string fileId)
+	[ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+	public async Task<ActionResult> DeleteDataFileAsync([NotNull] string id, [NotNull] string fileId)
 	{
 		Corpus? corpus = await _corpusService.GetAsync(id);
 		if (corpus == null)
