@@ -21,6 +21,7 @@ public class NmtEngineBuildJob
 		_jobRunner = jobRunner;
 	}
 
+	[Queue("Nmt")]
 	[AutomaticRetry(Attempts = 0)]
 	public async Task RunAsync(string engineId, string buildId, PerformContext performContext,
 		CancellationToken cancellationToken)

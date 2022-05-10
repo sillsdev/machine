@@ -29,6 +29,7 @@ public class SmtTransferEngineBuildJob
 		_webhookService = webhookService;
 	}
 
+	[Queue("SmtTransfer")]
 	[AutomaticRetry(Attempts = 0)]
 	public async Task RunAsync(string engineId, string buildId, PerformContext performContext,
 		CancellationToken cancellationToken)

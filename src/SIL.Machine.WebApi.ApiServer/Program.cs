@@ -6,8 +6,8 @@ using Microsoft.IdentityModel.Tokens;
 using NSwag;
 using NSwag.AspNetCore;
 using NSwag.Generation.Processors.Security;
+using SIL.Machine.WebApi.ApiServer;
 using SIL.Machine.WebApi.Controllers;
-using SIL.Machine.WebApi.Server;
 
 var builder = WebApplication.CreateBuilder(args);
 
