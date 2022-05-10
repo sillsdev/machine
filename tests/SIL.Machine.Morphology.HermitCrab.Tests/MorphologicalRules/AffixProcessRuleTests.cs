@@ -1095,9 +1095,9 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			Morphophonemic.MorphologicalRules.Add(edSuffix);
 
 			var morpher = new Morpher(TraceManager, Language);
-			//AssertMorphsEqual(morpher.ParseWord("bagz"), "synfs 3SG");
-			//Assert.That(morpher.ParseWord("bags"), Is.Empty);
-			//AssertMorphsEqual(morpher.ParseWord("bagsɯd"), "synfs 3SG PAST");
+			AssertMorphsEqual(morpher.ParseWord("bagz"), "synfs 3SG");
+			Assert.That(morpher.ParseWord("bags"), Is.Empty);
+			AssertMorphsEqual(morpher.ParseWord("bagsɯd"), "synfs 3SG PAST");
 			Assert.That(morpher.ParseWord("bagzɯd"), Is.Empty);
 		}
 

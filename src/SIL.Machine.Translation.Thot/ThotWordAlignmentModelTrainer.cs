@@ -175,7 +175,7 @@ namespace SIL.Machine.Translation.Thot
 				}
 				Thot.swAlignModel_endTraining(handle);
 			}
-			Stats.TrainedSegmentCount = trainedSegmentCount;
+			Stats.TrainSize = trainedSegmentCount;
 		}
 
 		public virtual void Save()

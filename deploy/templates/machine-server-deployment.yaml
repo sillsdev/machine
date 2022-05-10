@@ -24,10 +24,11 @@ spec:
       labels:
         io.kompose.service: machine-server
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
         - command:
             - dotnet
-            - /app/SIL.Machine.WebApi.Server.dll
+            - /app/SIL.Machine.WebApi.ApiServer.dll
           env:
             - name: ASPNETCORE_Auth__Audience
               value: https://machine.sil.org
@@ -44,6 +45,7 @@ spec:
             - name: ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore
               value: Warning
           image: ghcr.io/sillsdev/machine:latest
+          imagePullPolicy: "Always"
           name: machine-server
           ports:
             - containerPort: 80

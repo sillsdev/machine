@@ -1,24 +1,24 @@
 ﻿namespace SIL.Machine.WebApi.Services;
 
-internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
+public class SmtTransferEngineRuntime : AsyncDisposableBase, ITranslationEngineRuntime
 {
-	public class Factory : EngineRuntimeFactory<SmtTransferEngineRuntime>
+	public class Factory : TranslationEngineRuntimeFactory<SmtTransferEngineRuntime>
 	{
 		public Factory(IServiceProvider serviceProvider)
-			: base(serviceProvider, EngineType.SmtTransfer)
+			: base(serviceProvider, TranslationEngineType.SmtTransfer)
 		{
 		}
 	}
 
 	private const int MaxEnginePoolSize = 3;
 
-	private readonly IRepository<Engine> _engines;
+	private readonly IRepository<TranslationEngine> _engines;
 	private readonly IRepository<Build> _builds;
 	private readonly IRepository<TrainSegmentPair> _trainSegmentPairs;
 	private readonly ISmtModelFactory _smtModelFactory;
 	private readonly ITransferEngineFactory _transferEngineFactory;
 	private readonly ITruecaserFactory _truecaserFactory;
-	private readonly IOptions<EngineOptions> _engineOptions;
+	private readonly IOptions<TranslationEngineOptions> _engineOptions;
 	private readonly IBackgroundJobClient _jobClient;
 	private readonly string _engineId;
 	private readonly IDistributedReaderWriterLock _lock;
@@ -31,8 +31,9 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 	private DateTime _lastUsedTime;
 	private int _currentModelRevision = -1;
 
-	public SmtTransferEngineRuntime(IOptions<EngineOptions> engineOptions, IRepository<Engine> engines,
-		IRepository<Build> builds, IRepository<TrainSegmentPair> trainSegmentPairs, ISmtModelFactory smtModelFactory,
+	public SmtTransferEngineRuntime(IOptions<TranslationEngineOptions> engineOptions,
+		IRepository<TranslationEngine> engines, IRepository<Build> builds,
+		IRepository<TrainSegmentPair> trainSegmentPairs, ISmtModelFactory smtModelFactory,
 		ITransferEngineFactory transferEngineFactory, ITruecaserFactory truecaserFactory,
 		IBackgroundJobClient jobClient, IDistributedReaderWriterLockFactory lockFactory, string engineId)
 	{
@@ -133,12 +134,12 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 			using ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync();
 			item.Object.TrainSegment(preprocSourceSegment, preprocTargetSegment);
 			(await _truecaser).TrainSegment(targetSegment, sentenceStart);
-			Engine? engine = await _engines.UpdateAsync(_engineId, u => u.Inc(e => e.TrainedSegmentCount, 1));
+			TranslationEngine? engine = await _engines.UpdateAsync(_engineId, u => u.Inc(e => e.TrainSize, 1));
 			if (engine != null && engine.IsBuilding)
 			{
 				await _trainSegmentPairs.InsertAsync(new TrainSegmentPair
 				{
-					EngineRef = _engineId,
+					TranslationEngineRef = _engineId,
 					Source = sourceSegment.ToList(),
 					Target = targetSegment.ToList(),
 					SentenceStart = sentenceStart
@@ -160,7 +161,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 			if (buildId != null)
 				await WaitForBuildToFinishAsync(buildId);
 
-			var build = new Build { EngineRef = _engineId };
+			var build = new Build { ParentRef = _engineId };
 			await _builds.InsertAsync(build);
 			_jobClient.Enqueue<SmtTransferEngineBuildJob>(r =>
 				r.RunAsync(_engineId, build.Id, default!, CancellationToken.None));
@@ -186,7 +187,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 			if (!IsLoaded)
 				return;
 
-			Engine? engine = await _engines.GetAsync(_engineId);
+			TranslationEngine? engine = await _engines.GetAsync(_engineId);
 			if (engine == null || engine.IsBuilding)
 				return;
 
@@ -229,7 +230,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 
 	private async Task<string?> CancelBuildInternalAsync()
 	{
-		Build? build = await _builds.UpdateAsync(b => b.EngineRef == _engineId
+		Build? build = await _builds.UpdateAsync(b => b.ParentRef == _engineId
 				&& (b.State == BuildState.Active || b.State == BuildState.Pending), u => u
 			.Set(b => b.State, BuildState.Canceled));
 		if (build?.JobId != null)
@@ -267,7 +268,7 @@ internal class SmtTransferEngineRuntime : AsyncDisposableBase, IEngineRuntime
 		if (!IsLoaded && _currentModelRevision != -1)
 			return;
 
-		Engine? engine = await _engines.GetAsync(_engineId);
+		TranslationEngine? engine = await _engines.GetAsync(_engineId);
 		if (engine == null)
 			return;
 
