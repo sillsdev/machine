@@ -1,0 +1,4 @@
+externalHost: machine-api.org
+enableTls: true
+namespace: nlp
+localVolume: false
