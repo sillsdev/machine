@@ -84,6 +84,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			Add(AnchorType);
 			Add(StrRep);
 			Add(Allomorph);
+			Add(MorphID);
 			Freeze();
 		}
 	}
