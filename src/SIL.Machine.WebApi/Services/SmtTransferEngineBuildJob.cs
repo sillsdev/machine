@@ -110,7 +110,7 @@ public class SmtTransferEngineBuildJob
 				engine = await _engines.UpdateAsync(engineId, u => u
 					.Set(e => e.Confidence,
 						Math.Round(smtModelTrainer.Stats.Metrics["bleu"] * 100.0, 2, MidpointRounding.AwayFromZero))
-					.Set(e => e.TrainedSegmentCount, smtModelTrainer.Stats.TrainedSegmentCount + segmentPairs.Count)
+					.Set(e => e.TrainSize, smtModelTrainer.Stats.TrainedSegmentCount + segmentPairs.Count)
 					.Set(e => e.IsBuilding, false)
 					.Inc(e => e.ModelRevision),
 					cancellationToken: CancellationToken.None);
