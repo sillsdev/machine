@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 
@@ -17,6 +18,28 @@ namespace SIL.Machine.Corpora
 		public string Id { get; }
 
 		public string SortKey => Id;
+
+		public bool MissingRowsAllowed => false;
+
+		public int Count(bool includeEmpty = true)
+		{
+			using (var reader = new StreamReader(_fileName))
+			{
+				int count = 0;
+				string line;
+				while ((line = reader.ReadLine()) != null)
+				{
+					if (includeEmpty || line.Trim().Length > 0)
+						count++;
+				}
+				return count;
+			}
+		}
+
+		public IEnumerator<AlignmentRow> GetEnumerator()
+		{
+			return GetRows().GetEnumerator();
+		}
 
 		public IEnumerable<AlignmentRow> GetRows()
 		{
@@ -53,6 +76,11 @@ namespace SIL.Machine.Corpora
 				}
 			}
 
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
 		}
 	}
 }

@@ -9,7 +9,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 {
 	internal class AnalysisStratumRule : IRule<Word, ShapeNode>
 	{
-		private readonly IRule<Word, ShapeNode> _mrulesRule; 
+		private readonly IRule<Word, ShapeNode> _mrulesRule;
 		private readonly IRule<Word, ShapeNode> _prulesRule;
 		private readonly IRule<Word, ShapeNode> _templatesRule;
 		private readonly Stratum _stratum;
@@ -69,7 +69,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			}
 			Debug.Assert(mruleOutWords != null);
 
-			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default) {input};
+			var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default) { input };
 			if (_morpher.TraceManager.IsTracing)
 				_morpher.TraceManager.EndUnapplyStratum(_stratum, input);
 			foreach (Word mruleOutWord in mruleOutWords)
@@ -83,7 +83,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
 		private IEnumerable<Word> ApplyMorphologicalRules(Word input)
 		{
-			foreach (Word mruleOutWord in _mrulesRule.Apply(input))
+			foreach (Word mruleOutWord in _mrulesRule.Apply(input).Distinct(FreezableEqualityComparer<Word>.Default))
 			{
 				switch (_stratum.MorphologicalRuleOrder)
 				{
@@ -102,7 +102,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
 		private IEnumerable<Word> ApplyTemplates(Word input)
 		{
-			foreach (Word tempOutWord in _templatesRule.Apply(input))
+			foreach (Word tempOutWord in _templatesRule.Apply(input).Distinct(FreezableEqualityComparer<Word>.Default))
 			{
 				switch (_stratum.MorphologicalRuleOrder)
 				{

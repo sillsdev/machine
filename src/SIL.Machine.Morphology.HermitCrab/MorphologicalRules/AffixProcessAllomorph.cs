@@ -72,28 +72,28 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
 		protected override bool ConstraintsEqual(Allomorph other)
 		{
-			var otherAllo = other as AffixProcessAllomorph;
-			if (otherAllo == null)
+			if (!(other is AffixProcessAllomorph otherAllo))
 				return false;
 
 			return base.ConstraintsEqual(other) && _requiredMprFeatures.SetEquals(otherAllo._requiredMprFeatures)
-				&& _excludedMprFeatures.SetEquals(otherAllo._excludedMprFeatures) && _lhs.SequenceEqual(otherAllo._lhs, FreezableEqualityComparer<Pattern<Word, ShapeNode>>.Default)
+				&& _excludedMprFeatures.SetEquals(otherAllo._excludedMprFeatures)
+				&& _lhs.SequenceEqual(otherAllo._lhs, FreezableEqualityComparer<Pattern<Word, ShapeNode>>.Default)
 				&& RequiredSyntacticFeatureStruct.ValueEquals(otherAllo.RequiredSyntacticFeatureStruct);
 		}
 
-		internal override bool IsWordValid(Morpher morpher, Word word)
+		protected override bool CheckAllomorphConstraints(Morpher morpher, Allomorph allomorph, Word word)
 		{
-			if (!base.IsWordValid(morpher, word))
-				return false;
-
 			if (!RequiredSyntacticFeatureStruct.IsUnifiable(word.SyntacticFeatureStruct))
 			{
-				if (morpher.TraceManager.IsTracing)
-					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.RequiredSyntacticFeatureStruct, this, RequiredSyntacticFeatureStruct);
+				if (morpher != null && morpher.TraceManager.IsTracing)
+				{
+					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.RequiredSyntacticFeatureStruct,
+						this, RequiredSyntacticFeatureStruct);
+				}
 				return false;
 			}
 
-			return true;
+			return base.CheckAllomorphConstraints(morpher, allomorph, word);
 		}
 	}
 }

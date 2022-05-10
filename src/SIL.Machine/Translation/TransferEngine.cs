@@ -23,15 +23,19 @@ namespace SIL.Machine.Translation
 
 		public TranslationResult Translate(IReadOnlyList<string> segment)
 		{
-			return Translate(1, segment).First();
+			CheckDisposed();
+
+			return Translate(1, segment)[0];
 		}
 
-		public IEnumerable<TranslationResult> Translate(int n, IReadOnlyList<string> segment)
+		public IReadOnlyList<TranslationResult> Translate(int n, IReadOnlyList<string> segment)
 		{
+			CheckDisposed();
+
 			IEnumerable<IEnumerable<WordAnalysis>> sourceAnalyses = segment
 				.Select(word => _sourceAnalyzer.AnalyzeWord(word));
 
-			foreach (TransferResult transferResult in _transferer.Transfer(sourceAnalyses).Take(n))
+			return _transferer.Transfer(sourceAnalyses).Take(n).Select(transferResult =>
 			{
 				IReadOnlyList<WordAnalysis> targetAnalyses = transferResult.TargetAnalyses;
 				WordAlignmentMatrix waMatrix = transferResult.WordAlignmentMatrix;
@@ -76,9 +80,24 @@ namespace SIL.Machine.Translation
 					}
 				}
 
-				yield return new TranslationResult(segment.Count, translation, confidences, sources, alignment,
+				return new TranslationResult(segment.Count, translation, confidences, sources, alignment,
 					new[] { new Phrase(Range<int>.Create(0, segment.Count), translation.Count, confidence) });
-			}
+			}).ToArray();
+		}
+
+		public IEnumerable<TranslationResult> Translate(IEnumerable<IReadOnlyList<string>> segments)
+		{
+			CheckDisposed();
+
+			return segments.Select(segment => Translate(segment));
+		}
+
+		public IEnumerable<IReadOnlyList<TranslationResult>> Translate(int n,
+			IEnumerable<IReadOnlyList<string>> segments)
+		{
+			CheckDisposed();
+
+			return segments.Select(segment => Translate(n, segment));
 		}
 	}
 }

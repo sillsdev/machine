@@ -166,10 +166,16 @@ namespace SIL.Machine.Morphology.HermitCrab
 			langElem.Add(new XElement("Strata", _language.Strata.Select(WriteStratum)));
 
 			if (_language.MorphemeCoOccurrenceRules.Count > 0)
-				langElem.Add(new XElement("MorphemeCoOccurrenceRules", _language.MorphemeCoOccurrenceRules.Select(WriteMorphemeCoOccurrenceRule)));
+			{
+				langElem.Add(new XElement("MorphemeCoOccurrenceRules",
+					_language.MorphemeCoOccurrenceRules.Select(t => WriteMorphemeCoOccurrenceRule(t.Key, t.Rule))));
+			}
 
 			if (_language.AllomorphCoOccurrenceRules.Count > 0)
-				langElem.Add(new XElement("AllomorphCoOccurrenceRules", _language.AllomorphCoOccurrenceRules.Select(WriteAllomorphCoOccurrenceRule)));
+			{
+				langElem.Add(new XElement("AllomorphCoOccurrenceRules",
+					_language.AllomorphCoOccurrenceRules.Select(t => WriteAllomorphCoOccurrenceRule(t.Key, t.Rule))));
+			}
 
 			return langElem;
 		}
@@ -188,7 +194,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			{
 				var symFeatElem = new XElement("SymbolicFeature", new XAttribute("id", Normalize(symbolicFeature.ID)));
 				if (symbolicFeature.DefaultValue != null)
-					symFeatElem.Add(new XAttribute("defaultSymbol", Normalize(((SymbolicFeatureValue) symbolicFeature.DefaultValue).Values.First().ID)));
+					symFeatElem.Add(new XAttribute("defaultSymbol", Normalize(((SymbolicFeatureValue)symbolicFeature.DefaultValue).Values.First().ID)));
 				symFeatElem.Add(new XElement("Name", Normalize(symbolicFeature.Description)));
 				symFeatElem.Add(new XElement("Symbols", symbolicFeature.PossibleSymbols.Select(symbol => new XElement("Symbol",
 					new XAttribute("id", Normalize(symbol.ID)),
@@ -335,7 +341,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			if (rewriteRule != null)
 				return WritePhonologicalRule(rewriteRule);
 
-			return WriteMetathesisRule((MetathesisRule) prule);
+			return WriteMetathesisRule((MetathesisRule)prule);
 		}
 
 		private XElement WritePhonologicalRule(RewriteRule rewriteRule)
@@ -435,7 +441,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 				}
 				else
 				{
-					var complexFeature = (ComplexFeature) feature;
+					var complexFeature = (ComplexFeature)feature;
 					FeatureStruct childFS = fs.GetValue(complexFeature);
 					fvElem.Add(WriteFeatureStruct(childFS));
 				}
@@ -484,7 +490,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			if (realRule != null)
 				return WriteRealizationalRule(realRule, mrules);
 
-			return WriteCompoundingRule((CompoundingRule) mrule, mrules);
+			return WriteCompoundingRule((CompoundingRule)mrule, mrules);
 		}
 
 		private XElement WriteMorphologicalRule(AffixProcessRule affixProcessRule, Dictionary<IMorphologicalRule, string> mrules)
@@ -720,7 +726,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 					WriteSimpleContext(modify.SimpleContext, variables));
 			}
 
-			var insertSegments = (InsertSegments) action;
+			var insertSegments = (InsertSegments)action;
 			var insertSegmentsElem = new XElement("InsertSegments");
 			if (insertSegments.Segments.CharacterDefinitionTable != defaultTable)
 				insertSegmentsElem.Add(new XAttribute("characterDefinitionTable", _tables[insertSegments.Segments.CharacterDefinitionTable]));
@@ -757,7 +763,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			_morphemes[entry] = id;
 			var entryElem = new XElement("LexicalEntry",
 				new XAttribute("id", id));
-			
+
 			if (entry.Family != null)
 				entryElem.Add(new XAttribute("family", _families[entry.Family]));
 
@@ -809,12 +815,12 @@ namespace SIL.Machine.Morphology.HermitCrab
 				morphemeElem.Add(WriteProperties(morpheme.Properties));
 		}
 
-		private XElement WriteMorphemeCoOccurrenceRule(MorphemeCoOccurrenceRule coOccurRule)
+		private XElement WriteMorphemeCoOccurrenceRule(Morpheme key, MorphemeCoOccurrenceRule coOccurRule)
 		{
 			var coOccurElem = new XElement("MorphemeCoOccurrenceRule");
 			if (coOccurRule.Type == ConstraintType.Require)
 				coOccurElem.Add(new XAttribute("type", GetConstraintTypeStr(coOccurRule.Type)));
-			coOccurElem.Add(new XAttribute("primaryMorpheme", _morphemes[coOccurRule.Key]));
+			coOccurElem.Add(new XAttribute("primaryMorpheme", _morphemes[key]));
 			coOccurElem.Add(new XAttribute("otherMorphemes", string.Join(" ", coOccurRule.Others.Select(m => _morphemes[m]))));
 			if (coOccurRule.Adjacency != MorphCoOccurrenceAdjacency.Anywhere)
 				coOccurElem.Add(new XAttribute("adjacency", GetMorphCoOccurrenceAdjacencyStr(coOccurRule.Adjacency)));
@@ -843,12 +849,12 @@ namespace SIL.Machine.Morphology.HermitCrab
 			return envElem;
 		}
 
-		private XElement WriteAllomorphCoOccurrenceRule(AllomorphCoOccurrenceRule coOccurRule)
+		private XElement WriteAllomorphCoOccurrenceRule(Allomorph key, AllomorphCoOccurrenceRule coOccurRule)
 		{
 			var coOccurElem = new XElement("AllomorphCoOccurrenceRule");
 			if (coOccurRule.Type == ConstraintType.Require)
 				coOccurElem.Add(new XAttribute("type", GetConstraintTypeStr(coOccurRule.Type)));
-			coOccurElem.Add(new XAttribute("primaryAllomorph", _allomorphs[coOccurRule.Key]));
+			coOccurElem.Add(new XAttribute("primaryAllomorph", _allomorphs[key]));
 			coOccurElem.Add(new XAttribute("otherAllomorphs", string.Join(" ", coOccurRule.Others.Select(a => _allomorphs[a]))));
 			if (coOccurRule.Adjacency != MorphCoOccurrenceAdjacency.Anywhere)
 				coOccurElem.Add(new XAttribute("adjacency", GetMorphCoOccurrenceAdjacencyStr(coOccurRule.Adjacency)));
@@ -879,7 +885,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 		{
 			var constraint = node as Constraint<Word, ShapeNode>;
 			if (constraint != null)
-				return constraint.Type() == HCFeatureSystem.Anchor && (FeatureSymbol) constraint.FeatureStruct.GetValue(HCFeatureSystem.AnchorType) == type;
+				return constraint.Type() == HCFeatureSystem.Anchor && (FeatureSymbol)constraint.FeatureStruct.GetValue(HCFeatureSystem.AnchorType) == type;
 			return false;
 		}
 
@@ -907,7 +913,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 				if (charDef != null)
 					yield return charDef.Type == HCFeatureSystem.Segment ? WriteSegment(charDef, id) : WriteBoundaryMarker(charDef, id);
 				else
-					yield return WriteSimpleContext((SimpleContext) constraint.Tag, variables, id);
+					yield return WriteSimpleContext((SimpleContext)constraint.Tag, variables, id);
 				yield break;
 			}
 
@@ -930,7 +936,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 				else if (group.Tag != null)
 				{
 					// Segments group
-					yield return WriteSegments((Segments) group.Tag, id, defaultTable);
+					yield return WriteSegments((Segments)group.Tag, id, defaultTable);
 				}
 				else
 				{

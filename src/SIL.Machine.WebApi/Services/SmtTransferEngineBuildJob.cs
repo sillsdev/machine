@@ -2,33 +2,34 @@
 
 public class SmtTransferEngineBuildJob
 {
-	private readonly IRepository<Engine> _engines;
+	private readonly IRepository<TranslationEngine> _engines;
 	private readonly IRepository<Build> _builds;
 	private readonly IRepository<TrainSegmentPair> _trainSegmentPairs;
 	private readonly IDistributedReaderWriterLockFactory _lockFactory;
-	private readonly IDataFileService _dataFileService;
+	private readonly ICorpusService _corpusService;
 	private readonly ITruecaserFactory _truecaserFactory;
 	private readonly ISmtModelFactory _smtModelFactory;
 
 	private readonly ILogger<SmtTransferEngineBuildJob> _logger;
 	private readonly IWebhookService _webhookService;
 
-	public SmtTransferEngineBuildJob(IRepository<Engine> engines, IRepository<Build> builds,
+	public SmtTransferEngineBuildJob(IRepository<TranslationEngine> engines, IRepository<Build> builds,
 		IRepository<TrainSegmentPair> trainSegmentPairs, IDistributedReaderWriterLockFactory lockFactory,
-		IDataFileService dataFileService, ITruecaserFactory truecaserFactory, ISmtModelFactory smtModelFactory,
+		ICorpusService corpusService, ITruecaserFactory truecaserFactory, ISmtModelFactory smtModelFactory,
 		ILogger<SmtTransferEngineBuildJob> logger, IWebhookService webhookService)
 	{
 		_engines = engines;
 		_builds = builds;
 		_trainSegmentPairs = trainSegmentPairs;
 		_lockFactory = lockFactory;
-		_dataFileService = dataFileService;
+		_corpusService = corpusService;
 		_truecaserFactory = truecaserFactory;
 		_smtModelFactory = smtModelFactory;
 		_logger = logger;
 		_webhookService = webhookService;
 	}
 
+	[Queue("SmtTransfer")]
 	[AutomaticRetry(Attempts = 0)]
 	public async Task RunAsync(string engineId, string buildId, PerformContext performContext,
 		CancellationToken cancellationToken)
@@ -40,7 +41,7 @@ public class SmtTransferEngineBuildJob
 		try
 		{
 			Build? build;
-			Engine? engine;
+			TranslationEngine? engine;
 			var stopwatch = new Stopwatch();
 			await using (await rwLock.WriterLockAsync(cancellationToken: cancellationToken))
 			{
@@ -60,19 +61,26 @@ public class SmtTransferEngineBuildJob
 				_logger.LogInformation("Build started ({0})", buildId);
 				stopwatch.Start();
 
-				await _trainSegmentPairs.DeleteAllAsync(p => p.EngineRef == engineId, cancellationToken);
+				await _trainSegmentPairs.DeleteAllAsync(p => p.TranslationEngineRef == engineId, cancellationToken);
+
+				var targetCorpora = new List<ITextCorpus>();
+				var parallelCorpora = new List<IParallelTextCorpus>();
+				foreach (TranslationEngineCorpus corpus in engine.Corpora)
+				{
+					ITextCorpus? sc = await _corpusService.CreateTextCorpusAsync(corpus.CorpusRef,
+						engine.SourceLanguageTag);
+					ITextCorpus? tc = await _corpusService.CreateTextCorpusAsync(corpus.CorpusRef,
+						engine.TargetLanguageTag);
+					if (tc is not null)
+						targetCorpora.Add(tc);
+
+					if (sc is not null && tc is not null)
+						parallelCorpora.Add(sc.AlignRows(tc));
+				}
 
 				var tokenizer = new LatinWordTokenizer();
-				IReadOnlyDictionary<string, ITextCorpus> sourceCorpora = await _dataFileService.CreateTextCorporaAsync(
-					engine.Id, CorpusType.Source);
-				IReadOnlyDictionary<string, ITextCorpus> targetCorpora = await _dataFileService.CreateTextCorporaAsync(
-					engine.Id, CorpusType.Target);
-
-				IEnumerable<ParallelTextRow> parallelCorpus = CreateParallelCorpus(sourceCorpora, targetCorpora)
-					.Tokenize(tokenizer)
-					.Lowercase();
-
-				IEnumerable<TextRow> targetCorpus = targetCorpora.Values.SelectMany(c => c.Tokenize(tokenizer));
+				IParallelTextCorpus parallelCorpus = parallelCorpora.Flatten().Tokenize(tokenizer).Lowercase();
+				ITextCorpus targetCorpus = targetCorpora.Flatten().Tokenize(tokenizer);
 
 				smtModelTrainer = _smtModelFactory.CreateTrainer(engineId, parallelCorpus);
 				truecaseTrainer = _truecaserFactory.CreateTrainer(engineId, targetCorpus);
@@ -89,7 +97,7 @@ public class SmtTransferEngineBuildJob
 				await truecaseTrainer.SaveAsync();
 				ITruecaser truecaser = await _truecaserFactory.CreateAsync(engineId);
 				IReadOnlyList<TrainSegmentPair> segmentPairs = await _trainSegmentPairs
-					.GetAllAsync(p => p.EngineRef == engineId, CancellationToken.None);
+					.GetAllAsync(p => p.TranslationEngineRef == engineId, CancellationToken.None);
 				using (IInteractiveTranslationModel smtModel = _smtModelFactory.Create(engineId))
 				using (IInteractiveTranslationEngine smtEngine = smtModel.CreateInteractiveEngine())
 				{
@@ -102,8 +110,8 @@ public class SmtTransferEngineBuildJob
 
 				engine = await _engines.UpdateAsync(engineId, u => u
 					.Set(e => e.Confidence,
-						Math.Round(smtModelTrainer.Stats.Metrics["bleu"], 4, MidpointRounding.AwayFromZero))
-					.Set(e => e.TrainedSegmentCount, smtModelTrainer.Stats.TrainedSegmentCount + segmentPairs.Count)
+						Math.Round(smtModelTrainer.Stats.Metrics["bleu"] * 100.0, 2, MidpointRounding.AwayFromZero))
+					.Set(e => e.TrainSize, smtModelTrainer.Stats.TrainSize + segmentPairs.Count)
 					.Set(e => e.IsBuilding, false)
 					.Inc(e => e.ModelRevision),
 					cancellationToken: CancellationToken.None);
@@ -124,7 +132,7 @@ public class SmtTransferEngineBuildJob
 		}
 		catch (OperationCanceledException)
 		{
-			Engine? engine;
+			TranslationEngine? engine;
 			await using (await rwLock.WriterLockAsync(cancellationToken: CancellationToken.None))
 			{
 				engine = await _engines.UpdateAsync(engineId, u => u.Set(e => e.IsBuilding, false),
@@ -155,7 +163,7 @@ public class SmtTransferEngineBuildJob
 		}
 		catch (Exception e)
 		{
-			Engine? engine;
+			TranslationEngine? engine;
 			await using (await rwLock.WriterLockAsync(cancellationToken: CancellationToken.None))
 			{
 				engine = await _engines.UpdateAsync(engineId, u => u.Set(e => e.IsBuilding, false),
@@ -181,19 +189,18 @@ public class SmtTransferEngineBuildJob
 		}
 	}
 
-	private static IEnumerable<ParallelTextRow> CreateParallelCorpus(
-		IReadOnlyDictionary<string, ITextCorpus> sourceCorpora, IReadOnlyDictionary<string, ITextCorpus> targetCorpora)
+	private static IParallelTextCorpus CreateParallelCorpus(IReadOnlyDictionary<string, ITextCorpus> sourceCorpora,
+		IReadOnlyDictionary<string, ITextCorpus> targetCorpora)
 	{
-		var parallelCorpus = Enumerable.Empty<ParallelTextRow>();
+		var parallelCorpora = new List<IParallelTextCorpus>();
 		foreach (KeyValuePair<string, ITextCorpus> kvp in sourceCorpora)
 		{
 			if (targetCorpora.TryGetValue(kvp.Key, out ITextCorpus? targetCorpus))
 			{
 				ITextCorpus sourceCorpus = kvp.Value;
-				parallelCorpus = parallelCorpus.Concat(sourceCorpus.AlignRows(targetCorpus));
+				parallelCorpora.Add(sourceCorpus.AlignRows(targetCorpus));
 			}
 		}
-
-		return parallelCorpus;
+		return parallelCorpora.Flatten();
 	}
 }

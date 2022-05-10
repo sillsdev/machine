@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using SIL.Extensions;
@@ -41,6 +43,13 @@ namespace SIL.Machine.Corpora
 		public string Id { get; }
 
 		public string SortKey { get; }
+
+		public bool MissingRowsAllowed => true;
+
+		public int Count(bool includeEmpty = true)
+		{
+			return includeEmpty ? GetRows().Count() : GetRows().Count(r => !r.IsEmpty);
+		}
 
 		public IEnumerable<AlignmentRow> GetRows()
 		{
@@ -214,6 +223,16 @@ namespace SIL.Machine.Corpora
 				}
 			}
 			return segmentLinks;
+		}
+
+		public IEnumerator<AlignmentRow> GetEnumerator()
+		{
+			return GetRows().GetEnumerator();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
 		}
 
 		private class RangeInfo

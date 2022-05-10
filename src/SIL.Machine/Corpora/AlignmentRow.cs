@@ -15,6 +15,8 @@ namespace SIL.Machine.Corpora
 
 		public IReadOnlyCollection<AlignedWordPair> AlignedWordPairs { get; set; } = Array.Empty<AlignedWordPair>();
 
+		public bool IsEmpty => AlignedWordPairs.Count == 0;
+
 		public AlignmentRow Invert()
 		{
 			return new AlignmentRow(Ref)

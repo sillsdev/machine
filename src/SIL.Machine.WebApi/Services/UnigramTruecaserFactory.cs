@@ -2,9 +2,9 @@
 
 public class UnigramTruecaserFactory : ITruecaserFactory
 {
-	private readonly IOptions<EngineOptions> _engineOptions;
+	private readonly IOptions<TranslationEngineOptions> _engineOptions;
 
-	public UnigramTruecaserFactory(IOptions<EngineOptions> engineOptions)
+	public UnigramTruecaserFactory(IOptions<TranslationEngineOptions> engineOptions)
 	{
 		_engineOptions = engineOptions;
 	}
@@ -17,7 +17,7 @@ public class UnigramTruecaserFactory : ITruecaserFactory
 		return truecaser;
 	}
 
-	public ITrainer CreateTrainer(string engineId, IEnumerable<TextRow> corpus)
+	public ITrainer CreateTrainer(string engineId, ITextCorpus corpus)
 	{
 		string path = GetModelPath(engineId);
 		return new UnigramTruecaserTrainer(path, corpus);

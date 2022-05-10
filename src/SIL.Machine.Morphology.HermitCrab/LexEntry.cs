@@ -102,6 +102,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 			get { return MorphemeType.Stem; }
 		}
 
+		public override int AllomorphCount => _allomorphs.Count;
+
 		public override Allomorph GetAllomorph(int index)
 		{
 			return _allomorphs[index];

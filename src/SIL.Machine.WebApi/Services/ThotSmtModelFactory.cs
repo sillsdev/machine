@@ -3,9 +3,9 @@
 public class ThotSmtModelFactory : ISmtModelFactory
 {
 	private readonly IOptions<ThotSmtModelOptions> _options;
-	private readonly IOptions<EngineOptions> _engineOptions;
+	private readonly IOptions<TranslationEngineOptions> _engineOptions;
 
-	public ThotSmtModelFactory(IOptions<ThotSmtModelOptions> options, IOptions<EngineOptions> engineOptions)
+	public ThotSmtModelFactory(IOptions<ThotSmtModelOptions> options, IOptions<TranslationEngineOptions> engineOptions)
 	{
 		_options = options;
 		_engineOptions = engineOptions;
@@ -18,7 +18,7 @@ public class ThotSmtModelFactory : ISmtModelFactory
 		return model;
 	}
 
-	public ITrainer CreateTrainer(string engineId, IEnumerable<ParallelTextRow> corpus)
+	public ITrainer CreateTrainer(string engineId, IParallelTextCorpus corpus)
 	{
 		string smtConfigFileName = Path.Combine(_engineOptions.Value.EnginesDir, engineId, "smt.cfg");
 		return new ThotSmtModelTrainer(ThotWordAlignmentModelType.Hmm, corpus, smtConfigFileName);

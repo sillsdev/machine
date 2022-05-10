@@ -3,5 +3,7 @@
 	public interface IRow
 	{
 		object Ref { get; }
+
+		bool IsEmpty { get; }
 	}
 }

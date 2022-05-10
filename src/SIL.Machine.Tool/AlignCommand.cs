@@ -78,7 +78,7 @@ namespace SIL.Machine
 			if (!_quietOption.HasValue())
 				Out.Write("Loading model... ");
 			int stepCount = _quietOption.HasValue() ? 0
-				: Math.Min(_corpusSpec.MaxCorpusCount, _corpusSpec.ParallelCorpus.Count(r => !r.IsEmpty));
+				: Math.Min(_corpusSpec.MaxCorpusCount, _corpusSpec.ParallelCorpus.Count(includeEmpty: false));
 			int curStep = 0;
 			using (IWordAlignmentModel alignmentModel = _modelSpec.CreateAlignmentModel(symHeuristic: symHeuristic))
 			{
@@ -126,7 +126,7 @@ namespace SIL.Machine
 					alignBlock.LinkTo(batchWritesBlock, linkOptions);
 					batchWritesBlock.LinkTo(writeBlock, linkOptions);
 
-					IEnumerable<ParallelTextRow> corpus = _preprocessSpec.Preprocess(_corpusSpec.ParallelCorpus);
+					IParallelTextCorpus corpus = _preprocessSpec.Preprocess(_corpusSpec.ParallelCorpus);
 					foreach (ParallelTextRow row in corpus)
 					{
 						await alignBlock.SendAsync(row);

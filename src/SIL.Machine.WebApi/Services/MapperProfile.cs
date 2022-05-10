@@ -2,21 +2,27 @@
 
 public class MapperProfile : Profile
 {
-	private const string EnginesUrl = "/translation/engines";
-	private const string WebhooksUrl = "/admin/hooks";
+	private const string TranslationEnginesUrl = "/translation-engines";
+	private const string WebhooksUrl = "/hooks";
+	private const string CorporaUrl = "/corpora";
 
 	public MapperProfile()
 	{
-		CreateMap<Engine, EngineDto>()
-			.ForMember(dto => dto.Href, o => o.MapFrom((e, _) => $"{EnginesUrl}/{e.Id}"));
+		CreateMap<TranslationEngine, TranslationEngineDto>()
+			.ForMember(dto => dto.Href, o => o.MapFrom((e, _) => $"{TranslationEnginesUrl}/{e.Id}"));
+		CreateMap<TranslationEngineCorpus, TranslationEngineCorpusDto>()
+			.ForMember(dto => dto.Corpus, o => o.MapFrom((tec, _) =>
+				new ResourceDto { Id = tec.CorpusRef, Href = $"{CorporaUrl}/{tec.CorpusRef}" }))
+			.ForMember(dto => dto.Href, o => o.MapFrom((tec, _, _, ctxt) =>
+				$"{TranslationEnginesUrl}/{ctxt.Items["EngineId"]}/corpora/{tec.CorpusRef}"));
 		CreateMap<Build, BuildDto>()
-			.ForMember(dto => dto.Href, o => o.MapFrom((b, _) => $"{EnginesUrl}/{b.EngineRef}/builds/{b.Id}"))
-			.ForMember(dto => dto.Engine, o => o.MapFrom((b, _) =>
-				new ResourceDto { Id = b.EngineRef, Href = $"{EnginesUrl}/{b.EngineRef}" }));
-		CreateMap<DataFile, DataFileDto>()
-			.ForMember(dto => dto.Href, o => o.MapFrom((f, _) => $"{EnginesUrl}/{f.EngineRef}/files/{f.Id}"))
-			.ForMember(dto => dto.Engine, o => o.MapFrom((f, _) =>
-				new ResourceDto { Id = f.EngineRef, Href = $"{EnginesUrl}/{f.EngineRef}" }));
+			.ForMember(dto => dto.Href, o => o.MapFrom((b, _) => $"{TranslationEnginesUrl}/{b.ParentRef}/builds/{b.Id}"))
+			.ForMember(dto => dto.Parent, o => o.MapFrom((b, _) =>
+				new ResourceDto { Id = b.ParentRef, Href = $"{TranslationEnginesUrl}/{b.ParentRef}" }));
+		CreateMap<Corpus, CorpusDto>()
+			.ForMember(dto => dto.Href, o => o.MapFrom((c, _) => $"{CorporaUrl}/{c.Id}"));
+		CreateMap<DataFile, DataFileDto>().ForMember(dto => dto.Href,
+			o => o.MapFrom((f, _, _, ctxt) => $"{CorporaUrl}/{ctxt.Items["CorpusId"]}/files/{f.Id}"));
 		CreateMap<TranslationResult, TranslationResultDto>()
 			.ForMember(dto => dto.Target, o => o.MapFrom(r => r.TargetSegment))
 			.ForMember(dto => dto.Confidences, o => o.MapFrom(r => r.WordConfidences))

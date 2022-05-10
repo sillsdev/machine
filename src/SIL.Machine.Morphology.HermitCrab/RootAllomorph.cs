@@ -38,36 +38,33 @@ namespace SIL.Machine.Morphology.HermitCrab
 			return base.ConstraintsEqual(other) && IsBound == otherAllo.IsBound;
 		}
 
-		internal override bool IsWordValid(Morpher morpher, Word word)
+		protected override bool CheckAllomorphConstraints(Morpher morpher, Allomorph allomorph, Word word)
 		{
-			if (!base.IsWordValid(morpher, word))
-				return false;
-
 			if (IsBound && word.Allomorphs.Count == 1)
 			{
-				if (morpher.TraceManager.IsTracing)
+				if (morpher != null && morpher.TraceManager.IsTracing)
 					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.BoundRoot, this, null);
 				return false;
 			}
 
 			if (StemName != null && !StemName.IsRequiredMatch(word.SyntacticFeatureStruct))
 			{
-				if (morpher.TraceManager.IsTracing)
+				if (morpher != null && morpher.TraceManager.IsTracing)
 					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.RequiredStemName, this, StemName);
 				return false;
 			}
 
-			foreach (RootAllomorph otherAllo in ((LexEntry) Morpheme).Allomorphs.Where(a => a != this && a.StemName != null))
+			foreach (RootAllomorph otherAllo in ((LexEntry)Morpheme).Allomorphs.Where(a => a != this && a.StemName != null))
 			{
 				if (!otherAllo.StemName.IsExcludedMatch(word.SyntacticFeatureStruct, StemName))
 				{
-					if (morpher.TraceManager.IsTracing)
+					if (morpher != null && morpher.TraceManager.IsTracing)
 						morpher.TraceManager.Failed(morpher.Language, word, FailureReason.ExcludedStemName, this, otherAllo.StemName);
 					return false;
 				}
 			}
 
-			return true;
+			return base.CheckAllomorphConstraints(morpher, allomorph, word);
 		}
 	}
 }

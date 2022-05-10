@@ -26,6 +26,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 		public static readonly StringFeature StrRep;
 
 		public static readonly StringFeature Allomorph;
+		public static readonly StringFeature MorphID;
 
 		public static readonly HCFeatureSystem Instance;
 
@@ -45,28 +46,29 @@ namespace SIL.Machine.Morphology.HermitCrab
 			Clean = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "Clean" };
 
 			Modified = new SymbolicFeature(Guid.NewGuid().ToString(), Dirty, Clean)
-			    {
-			        Description = "Modified",
-			        DefaultValue = new SymbolicFeatureValue(Clean)
-			    };
+			{
+				Description = "Modified",
+				DefaultValue = new SymbolicFeatureValue(Clean)
+			};
 
-			Deleted = new FeatureSymbol(Guid.NewGuid().ToString()) {Description = "Deleted"};
-			NotDeleted = new FeatureSymbol(Guid.NewGuid().ToString()) {Description = "NotDeleted"};
+			Deleted = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "Deleted" };
+			NotDeleted = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "NotDeleted" };
 
 			Deletion = new SymbolicFeature(Guid.NewGuid().ToString(), Deleted, NotDeleted)
-				{
-					Description = "Deletion",
-					DefaultValue = new SymbolicFeatureValue(NotDeleted)
-				};
+			{
+				Description = "Deletion",
+				DefaultValue = new SymbolicFeatureValue(NotDeleted)
+			};
 
 			LeftSide = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "LeftSide" };
 			RightSide = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "RightSide" };
 
 			AnchorType = new SymbolicFeature(Guid.NewGuid().ToString(), LeftSide, RightSide) { Description = "AnchorType" };
 
-			StrRep = new StringFeature(Guid.NewGuid().ToString()) {Description = "StrRep"};
+			StrRep = new StringFeature(Guid.NewGuid().ToString()) { Description = "StrRep" };
 
-			Allomorph = new StringFeature(Guid.NewGuid().ToString()) {Description = "Allomorph"};
+			Allomorph = new StringFeature(Guid.NewGuid().ToString()) { Description = "Allomorph" };
+			MorphID = new StringFeature(Guid.NewGuid().ToString()) { Description = "ID" };
 
 			Instance = new HCFeatureSystem();
 
@@ -82,6 +84,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 			Add(AnchorType);
 			Add(StrRep);
 			Add(Allomorph);
+			Add(MorphID);
 			Freeze();
 		}
 	}
