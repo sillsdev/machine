@@ -9,6 +9,7 @@ namespace SIL.Machine.WebApi
 		[JsonProperty(Required = Required.DisallowNull)]
 		public string TargetLanguageTag { get; set; }
 		[JsonProperty(Required = Required.DisallowNull)]
+		public string Name { get; set; }
 		public TranslationEngineType Type { get; set; }
 		public bool IsBuilding { get; set; }
 		public int ModelRevision { get; set; }

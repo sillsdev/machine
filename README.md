@@ -134,3 +134,9 @@ This is the QA staging environment.  To access it,
 
 ## API BDD Testing
 - Prepare VSC env: follow this guide: https://docs.specflow.org/projects/specflow/en/latest/vscode/vscode-specflow.html
+- Get auth0 token using curl:
+  - Get Client ID and Client Secret from auth0.com
+    - Login, go to Applications-> Applications -> Machine API
+    - Copy ID and secret
+  - `curl --request POST --url https://sil-appbuilder.auth0.com/oauth/token --header 'content-type: application/x-www-form-urlencoded' --data grant_type=client_credentials  --data client_id=MY_ID --data client_secret=MY_SECRET --data audience=https://machine.sil.org`
+  - Save as environment variable `MACHINE_API_TOKEN`

@@ -48,3 +48,4 @@ thot-new-model.zip
 out/
 build/
 !samples/**/release
+**/*.feature.cs

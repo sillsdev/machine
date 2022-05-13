@@ -4,7 +4,7 @@ public class TranslationEngine : IOwnedEntity
 {
 	public string Id { get; set; } = default!;
 	public int Revision { get; set; } = 1;
-	public string? Name { get; set; }
+	public string? Name { get; set; } = "";
 	public string SourceLanguageTag { get; set; } = default!;
 	public string TargetLanguageTag { get; set; } = default!;
 	public TranslationEngineType Type { get; set; }
