@@ -114,12 +114,6 @@ namespace SIL.Machine.Translation
 			return alignment.ToGizaFormat(sourceSegment, targetSegment);
 		}
 
-		public static IReadOnlyCollection<AlignedWordPair> GetAlignedWordPairs(this IWordAlignmentModel model,
-			IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment, WordAlignmentMatrix waMatrix)
-		{
-			return waMatrix.GetAlignedWordPairs(model, sourceSegment, targetSegment);
-		}
-
 		public static void TrainSegment(this ITruecaser truecaser, TextRow segment)
 		{
 			truecaser.TrainSegment(segment.Segment, segment.IsSentenceStart);
@@ -147,6 +141,19 @@ namespace SIL.Machine.Translation
 					arc.Alignment, arc.SourceSegmentRange, arc.WordSources, arc.WordConfidences));
 			}
 			return new WordGraph(newArcs, wordGraph.FinalStates, wordGraph.InitialStateScore);
+		}
+
+		public static double GetAvgTranslationScore(this IWordAlignmentModel model, IReadOnlyList<string> sourceSegment,
+			IReadOnlyList<string> targetSegment, WordAlignmentMatrix waMatrix)
+		{
+			var scores = new List<double>();
+			foreach (AlignedWordPair wordPair in waMatrix.ToAlignedWordPairs(includeNull: true))
+			{
+				string sourceWord = wordPair.SourceIndex == -1 ? null : sourceSegment[wordPair.SourceIndex];
+				string targetWord = wordPair.TargetIndex == -1 ? null : targetSegment[wordPair.TargetIndex];
+				scores.Add(model.GetTranslationScore(sourceWord, targetWord));
+			}
+			return scores.Count > 0 ? scores.Average() : 0;
 		}
 	}
 }

@@ -19,7 +19,9 @@ namespace SIL.Machine.Translation
 		double GetTranslationScore(string sourceWord, string targetWord);
 		double GetTranslationScore(int sourceWordIndex, int targetWordIndex);
 
-		double GetAlignmentScore(int sourceLen, int prevSourceIndex, int sourceIndex, int targetLen,
-			int prevTargetIndex, int targetIndex);
+		IReadOnlyCollection<AlignedWordPair> GetBestAlignedWordPairs(IReadOnlyList<string> sourceSegment,
+			IReadOnlyList<string> targetSegment);
+		void ComputeAlignedWordPairScores(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
+			IReadOnlyCollection<AlignedWordPair> wordPairs);
 	}
 }

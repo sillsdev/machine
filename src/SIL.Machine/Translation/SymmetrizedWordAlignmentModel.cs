@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using SIL.Machine.Corpora;
 using SIL.ObjectModel;
 
@@ -121,16 +122,28 @@ namespace SIL.Machine.Translation
 			return Math.Max(dirScore, invScore);
 		}
 
-		public double GetAlignmentScore(int sourceLen, int prevSourceIndex, int sourceIndex, int targetLen,
-			int prevTargetIndex, int targetIndex)
+		public IReadOnlyCollection<AlignedWordPair> GetBestAlignedWordPairs(IReadOnlyList<string> sourceSegment,
+			IReadOnlyList<string> targetSegment)
 		{
 			CheckDisposed();
 
-			double dirScore = _directWordAlignmentModel.GetAlignmentScore(sourceLen, prevSourceIndex, sourceIndex,
-				targetLen, prevTargetIndex, targetIndex);
-			double invScore = _inverseWordAlignmentModel.GetAlignmentScore(targetLen, prevTargetIndex, targetIndex,
-				sourceLen, prevSourceIndex, sourceIndex);
-			return Math.Max(dirScore, invScore);
+			WordAlignmentMatrix matrix = GetBestAlignment(sourceSegment, targetSegment);
+			IReadOnlyCollection<AlignedWordPair> wordPairs = matrix.ToAlignedWordPairs();
+			ComputeAlignedWordPairScores(sourceSegment, targetSegment, wordPairs);
+			return wordPairs;
+		}
+
+		public void ComputeAlignedWordPairScores(IReadOnlyList<string> sourceSegment,
+			IReadOnlyList<string> targetSegment, IReadOnlyCollection<AlignedWordPair> wordPairs)
+		{
+			AlignedWordPair[] inverseWordPairs = wordPairs.Select(wp => wp.Invert()).ToArray();
+			_directWordAlignmentModel.ComputeAlignedWordPairScores(sourceSegment, targetSegment, wordPairs);
+			_inverseWordAlignmentModel.ComputeAlignedWordPairScores(targetSegment, sourceSegment, inverseWordPairs);
+			foreach (var (wordPair, inverseWordPair) in wordPairs.Zip(inverseWordPairs, (wp, invWp) => (wp, invWp)))
+			{
+				wordPair.TranslationScore = Math.Max(wordPair.TranslationScore, inverseWordPair.TranslationScore);
+				wordPair.AlignmentScore = Math.Max(wordPair.AlignmentScore, inverseWordPair.AlignmentScore);
+			}
 		}
 
 		public ITrainer CreateTrainer(IParallelTextCorpus corpus)

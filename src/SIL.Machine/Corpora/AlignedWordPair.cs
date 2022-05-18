@@ -67,7 +67,9 @@ namespace SIL.Machine.Corpora
 		public override string ToString()
 		{
 			var sb = new StringBuilder();
-			sb.Append($"{SourceIndex}-{TargetIndex}");
+			string sourceIndex = SourceIndex < 0 ? "NULL" : SourceIndex.ToString();
+			string targetIndex = TargetIndex < 0 ? "NULL" : TargetIndex.ToString();
+			sb.Append($"{sourceIndex}-{targetIndex}");
 			if (TranslationScore >= 0)
 			{
 				sb.Append($":{TranslationScore:0.########}");

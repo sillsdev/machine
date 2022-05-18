@@ -135,7 +135,7 @@ namespace SIL.Machine.Corpora
 			Dictionary<string, HashSet<int>> srcLinks = GetLinks(_srcWordTokenizer, srcTokens);
 			Dictionary<string, HashSet<int>> trgLinks = GetLinks(_trgWordTokenizer, trgTokens);
 
-			var wordPairs = new HashSet<AlignedWordPair>();
+			var wordPairs = new List<AlignedWordPair>();
 			foreach (KeyValuePair<string, HashSet<int>> srcLink in srcLinks)
 			{
 				if (trgLinks.TryGetValue(srcLink.Key, out HashSet<int> trgIndices))

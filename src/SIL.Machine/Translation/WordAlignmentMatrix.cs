@@ -411,9 +411,37 @@ namespace SIL.Machine.Translation
 			return wordPairs;
 		}
 
-		public IReadOnlyCollection<AlignedWordPair> GetAlignedWordPairs()
+		public IReadOnlyCollection<AlignedWordPair> ToAlignedWordPairs(bool includeNull = false)
 		{
-			return GetAsymmetricAlignments(out _, out _);
+			var wordPairs = new List<AlignedWordPair>();
+			var nullAlignedTargetIndices = new HashSet<int>(Enumerable.Range(0, ColumnCount));
+			for (int i = 0; i < RowCount; i++)
+			{
+				bool found = false;
+				for (int j = 0; j < ColumnCount; j++)
+				{
+					if (this[i, j])
+					{
+						wordPairs.Add(new AlignedWordPair(i, j));
+						found = true;
+						nullAlignedTargetIndices.Remove(j);
+					}
+				}
+
+				// unaligned indices
+				if (includeNull && !found)
+					wordPairs.Add(new AlignedWordPair(i, -1));
+			}
+
+			// all remaining target indices are unaligned, so fill them in
+			if (includeNull && nullAlignedTargetIndices.Count > 0)
+			{
+				var nullAlignedTargetWordPairs = nullAlignedTargetIndices.OrderBy(j => j)
+					.Select(j => new AlignedWordPair(-1, j));
+				wordPairs = nullAlignedTargetWordPairs.Concat(wordPairs).ToList();
+			}
+
+			return wordPairs;
 		}
 
 		public string ToGizaFormat(IEnumerable<string> sourceSegment, IEnumerable<string> targetSegment)
@@ -455,34 +483,15 @@ namespace SIL.Machine.Translation
 			return sb.ToString();
 		}
 
-		public IReadOnlyCollection<AlignedWordPair> GetAlignedWordPairs(IWordAlignmentModel model,
-			IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
-		{
-			var wordPairs = new HashSet<AlignedWordPair>();
-			foreach (AlignedWordPair wordPair in GetAsymmetricAlignments(out IReadOnlyList<int> sourceIndices,
-				out IReadOnlyList<int> targetIndices))
-			{
-				string sourceWord = sourceSegment[wordPair.SourceIndex];
-				string targetWord = targetSegment[wordPair.TargetIndex];
-				wordPair.TranslationScore = model.GetTranslationScore(sourceWord, targetWord);
-
-				int prevSourceIndex = wordPair.TargetIndex == 0 ? -1 : sourceIndices[wordPair.TargetIndex - 1];
-				int prevTargetIndex = wordPair.SourceIndex == 0 ? -1 : targetIndices[wordPair.SourceIndex - 1];
-				wordPair.AlignmentScore = model.GetAlignmentScore(sourceSegment.Count, prevSourceIndex,
-					wordPair.SourceIndex, targetSegment.Count, prevTargetIndex, wordPair.TargetIndex);
-
-				wordPairs.Add(wordPair);
-			}
-			return wordPairs;
-		}
-
 		public string ToString(IWordAlignmentModel model, IReadOnlyList<string> sourceSegment,
 			IReadOnlyList<string> targetSegment, bool includeScores = true)
 		{
 			if (!includeScores)
 				return ToString();
-			return string.Join(" ", GetAlignedWordPairs(model, sourceSegment, targetSegment)
-				.Select(wp => wp.ToString()));
+
+			IReadOnlyCollection<AlignedWordPair> wordPairs = ToAlignedWordPairs();
+			model.ComputeAlignedWordPairScores(sourceSegment, targetSegment, wordPairs);
+			return string.Join(" ", wordPairs.Select(wp => wp.ToString()));
 		}
 
 		public bool ValueEquals(WordAlignmentMatrix other)
@@ -506,7 +515,7 @@ namespace SIL.Machine.Translation
 
 		public override string ToString()
 		{
-			return string.Join(" ", GetAlignedWordPairs().Select(wp => wp.ToString()));
+			return string.Join(" ", ToAlignedWordPairs().Select(wp => wp.ToString()));
 		}
 
 		public WordAlignmentMatrix Clone()

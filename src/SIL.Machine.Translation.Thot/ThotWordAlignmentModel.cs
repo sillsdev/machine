@@ -154,12 +154,12 @@ namespace SIL.Machine.Translation.Thot
 			return GetTranslationProbability(sourceWordIndex, targetWordIndex);
 		}
 
-		public abstract double GetAlignmentScore(int sourceLen, int prevSourceIndex, int sourceIndex, int targetLen,
-			int prevTargetIndex, int targetIndex);
-
 		public double GetTranslationProbability(string sourceWord, string targetWord)
 		{
 			CheckDisposed();
+
+			if (targetWord == null)
+				return 0;
 
 			IntPtr nativeSourceWord = Thot.ConvertTokenToNativeUtf8(sourceWord ?? "NULL");
 			IntPtr nativeTargetWord = Thot.ConvertTokenToNativeUtf8(targetWord ?? "NULL");
@@ -177,6 +177,9 @@ namespace SIL.Machine.Translation.Thot
 		public double GetTranslationProbability(int sourceWordIndex, int targetWordIndex)
 		{
 			CheckDisposed();
+
+			if (targetWordIndex == 0)
+				return 0;
 
 			return Thot.swAlignModel_getTranslationProbabilityByIndex(Handle, (uint)sourceWordIndex,
 				(uint)targetWordIndex);
@@ -251,6 +254,20 @@ namespace SIL.Machine.Translation.Thot
 				Thot.swAlignTrans_destroy(transHandle);
 			}
 		}
+
+		public IReadOnlyCollection<AlignedWordPair> GetBestAlignedWordPairs(IReadOnlyList<string> sourceSegment,
+			IReadOnlyList<string> targetSegment)
+		{
+			CheckDisposed();
+
+			WordAlignmentMatrix matrix = GetBestAlignment(sourceSegment, targetSegment);
+			IReadOnlyCollection<AlignedWordPair> wordPairs = matrix.ToAlignedWordPairs();
+			ComputeAlignedWordPairScores(sourceSegment, targetSegment, wordPairs);
+			return wordPairs;
+		}
+
+		public abstract void ComputeAlignedWordPairScores(IReadOnlyList<string> sourceSegment,
+			IReadOnlyList<string> targetSegment, IReadOnlyCollection<AlignedWordPair> wordPairs);
 
 		protected override void DisposeUnmanagedResources()
 		{
