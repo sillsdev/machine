@@ -4,6 +4,7 @@ namespace SIL.Machine.WebApi
 {
 	public class TranslationEngineDto : ResourceDto
 	{
+		public string Name { get; set; }
 		[JsonProperty(Required = Required.DisallowNull)]
 		public string SourceLanguageTag { get; set; }
 		[JsonProperty(Required = Required.DisallowNull)]
