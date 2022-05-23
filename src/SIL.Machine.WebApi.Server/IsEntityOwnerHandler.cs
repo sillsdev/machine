@@ -5,11 +5,14 @@ namespace SIL.Machine.WebApi.Server;
 
 public class IsEntityOwnerHandler : AuthorizationHandler<IsOwnerRequirement, IOwnedEntity>
 {
-	protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, IsOwnerRequirement requirement,
-		IOwnedEntity resource)
-	{
-		if (context.User.Identity?.Name == resource.Owner)
-			context.Succeed(requirement);
-		return Task.CompletedTask;
-	}
+    protected override Task HandleRequirementAsync(
+        AuthorizationHandlerContext context,
+        IsOwnerRequirement requirement,
+        IOwnedEntity resource
+    )
+    {
+        if (context.User.Identity?.Name == resource.Owner)
+            context.Succeed(requirement);
+        return Task.CompletedTask;
+    }
 }

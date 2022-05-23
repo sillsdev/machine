@@ -1,7 +1,7 @@
 ﻿namespace SIL.Machine.WebApi
 {
-	public enum DataType
-	{
-		TextCorpus
-	}
+    public enum DataType
+    {
+        TextCorpus
+    }
 }

@@ -3,8 +3,8 @@ using QuickGraph;
 
 namespace SIL.Machine.Clusterers
 {
-	public interface IUnrootedHierarchicalClusterer<T>
-	{
-		IUndirectedGraph<Cluster<T>, ClusterEdge<T>> GenerateClusters(IEnumerable<T> dataObjects);
-	}
+    public interface IUnrootedHierarchicalClusterer<T>
+    {
+        IUndirectedGraph<Cluster<T>, ClusterEdge<T>> GenerateClusters(IEnumerable<T> dataObjects);
+    }
 }

@@ -2,21 +2,23 @@
 
 public static class IServiceCollectionExtensions
 {
-	public static IMachineBuilder AddMachine(this IServiceCollection services)
-	{
-		services.AddSingleton<IDataFileService, DataFileService>();
-		services.AddSingleton<IDistributedReaderWriterLockFactory, DistributedReaderWriterLockFactory>();
-		services.AddHttpClient<IWebhookService, WebhookService>()
-			.AddTransientHttpErrorPolicy(b =>
-				b.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))));
+    public static IMachineBuilder AddMachine(this IServiceCollection services)
+    {
+        services.AddSingleton<IDataFileService, DataFileService>();
+        services.AddSingleton<IDistributedReaderWriterLockFactory, DistributedReaderWriterLockFactory>();
+        services
+            .AddHttpClient<IWebhookService, WebhookService>()
+            .AddTransientHttpErrorPolicy(
+                b => b.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
+            );
 
-		services.AddAutoMapper(Assembly.GetExecutingAssembly());
+        services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
-		var builder = new MachineBuilder(services)
-			.AddThotSmtModel()
-			.AddTransferEngine()
-			.AddUnigramTruecaser()
-			.AddMemoryDataAccess();
-		return builder;
-	}
+        var builder = new MachineBuilder(services)
+            .AddThotSmtModel()
+            .AddTransferEngine()
+            .AddUnigramTruecaser()
+            .AddMemoryDataAccess();
+        return builder;
+    }
 }

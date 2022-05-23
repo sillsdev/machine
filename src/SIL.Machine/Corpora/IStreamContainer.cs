@@ -3,8 +3,8 @@ using System.IO;
 
 namespace SIL.Machine.Corpora
 {
-	public interface IStreamContainer : IDisposable
-	{
-		Stream OpenStream();
-	}
+    public interface IStreamContainer : IDisposable
+    {
+        Stream OpenStream();
+    }
 }

@@ -4,15 +4,15 @@ using SIL.Machine.Corpora;
 
 namespace SIL.Machine.Translation
 {
-	public interface ITruecaser
-	{
-		ITrainer CreateTrainer(ITextCorpus corpus);
+    public interface ITruecaser
+    {
+        ITrainer CreateTrainer(ITextCorpus corpus);
 
-		void TrainSegment(IReadOnlyList<string> segment, bool sentenceStart = true);
+        void TrainSegment(IReadOnlyList<string> segment, bool sentenceStart = true);
 
-		Task SaveAsync();
-		void Save();
+        Task SaveAsync();
+        void Save();
 
-		IReadOnlyList<string> Truecase(IReadOnlyList<string> segment);
-	}
+        IReadOnlyList<string> Truecase(IReadOnlyList<string> segment);
+    }
 }

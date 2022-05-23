@@ -2,5 +2,5 @@
 
 public interface IWebhookService
 {
-	Task SendEventAsync<T>(WebhookEvent webhookEvent, string owner, T resource);
+    Task SendEventAsync<T>(WebhookEvent webhookEvent, string owner, T resource);
 }

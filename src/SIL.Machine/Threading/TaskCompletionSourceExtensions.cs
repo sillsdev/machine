@@ -17,7 +17,10 @@ namespace SIL.Machine.Threading
         /// <param name="this">The task completion source. May not be <c>null</c>.</param>
         /// <param name="task">The task. May not be <c>null</c>.</param>
         /// <returns><c>true</c> if this method completed the task completion source; <c>false</c> if it was already completed.</returns>
-        public static bool TryCompleteFromCompletedTask<TResult, TSourceResult>(this TaskCompletionSource<TResult> @this, Task<TSourceResult> task) where TSourceResult : TResult
+        public static bool TryCompleteFromCompletedTask<TResult, TSourceResult>(
+            this TaskCompletionSource<TResult> @this,
+            Task<TSourceResult> task
+        ) where TSourceResult : TResult
         {
             if (task.IsFaulted)
                 return @this.TrySetException(task.Exception.InnerExceptions);
@@ -47,7 +50,10 @@ namespace SIL.Machine.Threading
         /// <typeparam name="TResult">The type of the result of the asynchronous operation.</typeparam>
         /// <param name="this">The task completion source. May not be <c>null</c>.</param>
         /// <param name="result">The result of the asynchronous operation.</param>
-        public static void TrySetResultWithBackgroundContinuations<TResult>(this TaskCompletionSource<TResult> @this, TResult result)
+        public static void TrySetResultWithBackgroundContinuations<TResult>(
+            this TaskCompletionSource<TResult> @this,
+            TResult result
+        )
         {
             // Set the result on a threadpool thread, so any synchronous continuations will execute in the background.
             Task.Run(() => @this.TrySetResult(result));
@@ -84,9 +90,7 @@ namespace SIL.Machine.Threading
             {
                 @this.Task.Wait();
             }
-            catch (AggregateException)
-            {
-            }
+            catch (AggregateException) { }
         }
 
         /// <summary>
@@ -103,9 +107,7 @@ namespace SIL.Machine.Threading
             {
                 @this.Task.Wait();
             }
-            catch (AggregateException)
-            {
-            }
+            catch (AggregateException) { }
         }
 
         /// <summary>
@@ -114,7 +116,10 @@ namespace SIL.Machine.Threading
         /// <typeparam name="TResult">The type of the result of the asynchronous operation.</typeparam>
         /// <param name="this">The task completion source. May not be <c>null</c>.</param>
         /// <param name="exception">The exception to bind to the task.</param>
-        public static void TrySetExceptionWithBackgroundContinuations<TResult>(this TaskCompletionSource<TResult> @this, Exception exception)
+        public static void TrySetExceptionWithBackgroundContinuations<TResult>(
+            this TaskCompletionSource<TResult> @this,
+            Exception exception
+        )
         {
             // Complete on a threadpool thread, so any synchronous continuations will execute in the background.
             Task.Run(() => @this.TrySetException(exception));
@@ -124,9 +129,7 @@ namespace SIL.Machine.Threading
             {
                 @this.Task.Wait();
             }
-            catch (AggregateException)
-            {
-            }
+            catch (AggregateException) { }
         }
 
         /// <summary>
@@ -134,7 +137,10 @@ namespace SIL.Machine.Threading
         /// </summary>
         /// <param name="this">The task completion source. May not be <c>null</c>.</param>
         /// <param name="exception">The exception to bind to the task.</param>
-        public static void TrySetExceptionWithBackgroundContinuations(this TaskCompletionSource @this, Exception exception)
+        public static void TrySetExceptionWithBackgroundContinuations(
+            this TaskCompletionSource @this,
+            Exception exception
+        )
         {
             // Set the result on a threadpool thread, so any synchronous continuations will execute in the background.
             Task.Run(() => @this.TrySetException(exception));
@@ -144,9 +150,7 @@ namespace SIL.Machine.Threading
             {
                 @this.Task.Wait();
             }
-            catch (AggregateException)
-            {
-            }
+            catch (AggregateException) { }
         }
 
         /// <summary>
@@ -155,7 +159,10 @@ namespace SIL.Machine.Threading
         /// <typeparam name="TResult">The type of the result of the asynchronous operation.</typeparam>
         /// <param name="this">The task completion source. May not be <c>null</c>.</param>
         /// <param name="exceptions">The exceptions to bind to the task.</param>
-        public static void TrySetExceptionWithBackgroundContinuations<TResult>(this TaskCompletionSource<TResult> @this, IEnumerable<Exception> exceptions)
+        public static void TrySetExceptionWithBackgroundContinuations<TResult>(
+            this TaskCompletionSource<TResult> @this,
+            IEnumerable<Exception> exceptions
+        )
         {
             // Complete on a threadpool thread, so any synchronous continuations will execute in the background.
             Task.Run(() => @this.TrySetException(exceptions));
@@ -165,9 +172,7 @@ namespace SIL.Machine.Threading
             {
                 @this.Task.Wait();
             }
-            catch (AggregateException)
-            {
-            }
+            catch (AggregateException) { }
         }
 
         /// <summary>
@@ -175,7 +180,10 @@ namespace SIL.Machine.Threading
         /// </summary>
         /// <param name="this">The task completion source. May not be <c>null</c>.</param>
         /// <param name="exceptions">The exceptions to bind to the task.</param>
-        public static void TrySetExceptionWithBackgroundContinuations(this TaskCompletionSource @this, IEnumerable<Exception> exceptions)
+        public static void TrySetExceptionWithBackgroundContinuations(
+            this TaskCompletionSource @this,
+            IEnumerable<Exception> exceptions
+        )
         {
             // Set the result on a threadpool thread, so any synchronous continuations will execute in the background.
             Task.Run(() => @this.TrySetException(exceptions));
@@ -185,9 +193,7 @@ namespace SIL.Machine.Threading
             {
                 @this.Task.Wait();
             }
-            catch (AggregateException)
-            {
-            }
+            catch (AggregateException) { }
         }
     }
 }

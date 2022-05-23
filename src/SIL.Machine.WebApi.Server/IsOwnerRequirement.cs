@@ -2,6 +2,4 @@
 
 namespace SIL.Machine.WebApi.Server;
 
-public class IsOwnerRequirement : IAuthorizationRequirement
-{
-}
+public class IsOwnerRequirement : IAuthorizationRequirement { }

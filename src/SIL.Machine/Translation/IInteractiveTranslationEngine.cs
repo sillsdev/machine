@@ -2,11 +2,14 @@
 
 namespace SIL.Machine.Translation
 {
-	public interface IInteractiveTranslationEngine : ITranslationEngine
-	{
-		WordGraph GetWordGraph(IReadOnlyList<string> segment);
+    public interface IInteractiveTranslationEngine : ITranslationEngine
+    {
+        WordGraph GetWordGraph(IReadOnlyList<string> segment);
 
-		void TrainSegment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment,
-			bool sentenceStart = true);
-	}
+        void TrainSegment(
+            IReadOnlyList<string> sourceSegment,
+            IReadOnlyList<string> targetSegment,
+            bool sentenceStart = true
+        );
+    }
 }

@@ -2,10 +2,10 @@
 
 internal class MachineBuilder : IMachineBuilder
 {
-	public MachineBuilder(IServiceCollection services)
-	{
-		Services = services;
-	}
+    public MachineBuilder(IServiceCollection services)
+    {
+        Services = services;
+    }
 
-	public IServiceCollection Services { get; }
+    public IServiceCollection Services { get; }
 }

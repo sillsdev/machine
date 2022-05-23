@@ -2,10 +2,10 @@
 
 namespace SIL.Machine.Corpora
 {
-	public interface ITextCorpus : ICorpus<TextRow>
-	{
-		IEnumerable<IText> Texts { get; }
+    public interface ITextCorpus : ICorpus<TextRow>
+    {
+        IEnumerable<IText> Texts { get; }
 
-		IEnumerable<TextRow> GetRows(IEnumerable<string> textIds);
-	}
+        IEnumerable<TextRow> GetRows(IEnumerable<string> textIds);
+    }
 }

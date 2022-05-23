@@ -4,86 +4,88 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
-	/// <summary>
-	/// The matching type
-	/// </summary>
-	public enum MprFeatureGroupMatchType
-	{
-		/// <summary>
-		/// when any features match within the group
-		/// </summary>
-		Any,
-		/// <summary>
-		/// only if all features match within the group
-		/// </summary>
-		All
-	}
+    /// <summary>
+    /// The matching type
+    /// </summary>
+    public enum MprFeatureGroupMatchType
+    {
+        /// <summary>
+        /// when any features match within the group
+        /// </summary>
+        Any,
 
-	/// <summary>
-	/// The outputting type
-	/// </summary>
-	public enum MprFeatureGroupOutput
-	{
-		/// <summary>
-		/// overwrites all existing features in the same group
-		/// </summary>
-		Overwrite,
-		/// <summary>
-		/// appends features
-		/// </summary>
-		Append
-	}
+        /// <summary>
+        /// only if all features match within the group
+        /// </summary>
+        All
+    }
 
-	/// <summary>
-	/// This class represents a group of related MPR features.
-	/// </summary>
-	public class MprFeatureGroup
-	{
-		private readonly ObservableHashSet<MprFeature> _mprFeatures;
+    /// <summary>
+    /// The outputting type
+    /// </summary>
+    public enum MprFeatureGroupOutput
+    {
+        /// <summary>
+        /// overwrites all existing features in the same group
+        /// </summary>
+        Overwrite,
 
-		public MprFeatureGroup()
-		{
-			_mprFeatures = new ObservableHashSet<MprFeature>();
-			_mprFeatures.CollectionChanged += MprFeaturesChanged;
-		}
+        /// <summary>
+        /// appends features
+        /// </summary>
+        Append
+    }
 
-		private void MprFeaturesChanged(object sender, NotifyCollectionChangedEventArgs e)
-		{
-			if (e.OldItems != null)
-			{
-				foreach (MprFeature mf in e.OldItems)
-					mf.Group = null;
-			}
+    /// <summary>
+    /// This class represents a group of related MPR features.
+    /// </summary>
+    public class MprFeatureGroup
+    {
+        private readonly ObservableHashSet<MprFeature> _mprFeatures;
 
-			if (e.NewItems != null)
-			{
-				foreach (MprFeature mf in e.NewItems)
-					mf.Group = this;
-			}
-		}
+        public MprFeatureGroup()
+        {
+            _mprFeatures = new ObservableHashSet<MprFeature>();
+            _mprFeatures.CollectionChanged += MprFeaturesChanged;
+        }
 
-		public string Name { get; set; }
+        private void MprFeaturesChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.OldItems != null)
+            {
+                foreach (MprFeature mf in e.OldItems)
+                    mf.Group = null;
+            }
 
-		/// <summary>
-		/// Gets or sets the type of matching that is used for MPR features in this group.
-		/// </summary>
-		/// <value>The type of matching.</value>
-		public MprFeatureGroupMatchType MatchType { get; set; }
+            if (e.NewItems != null)
+            {
+                foreach (MprFeature mf in e.NewItems)
+                    mf.Group = this;
+            }
+        }
 
-		/// <summary>
-		/// Gets or sets the type of outputting that is used for MPR features in this group.
-		/// </summary>
-		/// <value>The type of outputting.</value>
-		public MprFeatureGroupOutput Output { get; set; }
+        public string Name { get; set; }
 
-		public ICollection<MprFeature> MprFeatures
-		{
-			get { return _mprFeatures; }
-		}
+        /// <summary>
+        /// Gets or sets the type of matching that is used for MPR features in this group.
+        /// </summary>
+        /// <value>The type of matching.</value>
+        public MprFeatureGroupMatchType MatchType { get; set; }
 
-		public override string ToString()
-		{
-			return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
-		}
-	}
+        /// <summary>
+        /// Gets or sets the type of outputting that is used for MPR features in this group.
+        /// </summary>
+        /// <value>The type of outputting.</value>
+        public MprFeatureGroupOutput Output { get; set; }
+
+        public ICollection<MprFeature> MprFeatures
+        {
+            get { return _mprFeatures; }
+        }
+
+        public override string ToString()
+        {
+            return string.IsNullOrEmpty(Name) ? base.ToString() : Name;
+        }
+    }
 }

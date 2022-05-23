@@ -4,8 +4,8 @@ using System.Text;
 
 namespace SIL.Machine.WebApi
 {
-	public enum EngineType
-	{
-		SmtTransfer
-	}
+    public enum EngineType
+    {
+        SmtTransfer
+    }
 }

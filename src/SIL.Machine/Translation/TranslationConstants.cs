@@ -1,7 +1,7 @@
 ﻿namespace SIL.Machine.Translation
 {
-	public static class TranslationConstants
-	{
-		public const int MaxSegmentLength = 200;
-	}
+    public static class TranslationConstants
+    {
+        public const int MaxSegmentLength = 200;
+    }
 }
