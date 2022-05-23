@@ -1,8 +1,8 @@
 ﻿namespace SIL.Machine.Morphology.HermitCrab
 {
-	public enum ConstraintType
-	{
-		Require,
-		Exclude
-	}
+    public enum ConstraintType
+    {
+        Require,
+        Exclude
+    }
 }

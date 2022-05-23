@@ -1,7 +1,7 @@
 ﻿namespace SIL.Machine.WebApi
 {
-	public enum CorpusType
-	{
-		Text
-	}
+    public enum CorpusType
+    {
+        Text
+    }
 }

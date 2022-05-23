@@ -2,5 +2,5 @@
 
 public class ApiOptions
 {
-	public TimeSpan LongPollTimeout { get; set; } = TimeSpan.FromSeconds(40);
+    public TimeSpan LongPollTimeout { get; set; } = TimeSpan.FromSeconds(40);
 }

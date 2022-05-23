@@ -2,5 +2,5 @@
 
 public interface IMachineBuilder
 {
-	IServiceCollection Services { get; }
+    IServiceCollection Services { get; }
 }

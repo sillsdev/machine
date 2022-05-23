@@ -6,57 +6,57 @@ using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 {
-	/// <summary>
-	/// This class represents a morphological rule which combines two words in to one word.
-	/// </summary>
-	public class CompoundingRule : HCRuleBase, IMorphologicalRule
-	{
-		private readonly List<CompoundingSubrule> _subrules;
-		private readonly IDBearerSet<Feature> _obligatorySyntacticFeatures; 
+    /// <summary>
+    /// This class represents a morphological rule which combines two words in to one word.
+    /// </summary>
+    public class CompoundingRule : HCRuleBase, IMorphologicalRule
+    {
+        private readonly List<CompoundingSubrule> _subrules;
+        private readonly IDBearerSet<Feature> _obligatorySyntacticFeatures;
 
-		public CompoundingRule()
-		{
-			MaxApplicationCount = 1;
-			Blockable = true;
-			HeadRequiredSyntacticFeatureStruct = FeatureStruct.New().Value;
-			NonHeadRequiredSyntacticFeatureStruct = FeatureStruct.New().Value;
-			OutSyntacticFeatureStruct = FeatureStruct.New().Value;
+        public CompoundingRule()
+        {
+            MaxApplicationCount = 1;
+            Blockable = true;
+            HeadRequiredSyntacticFeatureStruct = FeatureStruct.New().Value;
+            NonHeadRequiredSyntacticFeatureStruct = FeatureStruct.New().Value;
+            OutSyntacticFeatureStruct = FeatureStruct.New().Value;
 
-			_subrules = new List<CompoundingSubrule>();
+            _subrules = new List<CompoundingSubrule>();
 
-			_obligatorySyntacticFeatures = new IDBearerSet<Feature>();
-		}
+            _obligatorySyntacticFeatures = new IDBearerSet<Feature>();
+        }
 
-		public IList<CompoundingSubrule> Subrules
-		{
-			get { return _subrules; }
-		}
+        public IList<CompoundingSubrule> Subrules
+        {
+            get { return _subrules; }
+        }
 
-		public int MaxApplicationCount { get; set; }
+        public int MaxApplicationCount { get; set; }
 
-		public bool Blockable { get; set; }
+        public bool Blockable { get; set; }
 
-		public FeatureStruct HeadRequiredSyntacticFeatureStruct { get; set; }
+        public FeatureStruct HeadRequiredSyntacticFeatureStruct { get; set; }
 
-		public FeatureStruct NonHeadRequiredSyntacticFeatureStruct { get; set; }
+        public FeatureStruct NonHeadRequiredSyntacticFeatureStruct { get; set; }
 
-		public FeatureStruct OutSyntacticFeatureStruct { get; set; }
+        public FeatureStruct OutSyntacticFeatureStruct { get; set; }
 
-		public ICollection<Feature> ObligatorySyntacticFeatures
-		{
-			get { return _obligatorySyntacticFeatures; }
-		}
+        public ICollection<Feature> ObligatorySyntacticFeatures
+        {
+            get { return _obligatorySyntacticFeatures; }
+        }
 
-		public Stratum Stratum { get; set; }
+        public Stratum Stratum { get; set; }
 
-		public override IRule<Word, ShapeNode> CompileAnalysisRule(Morpher morpher)
-		{
-			return new AnalysisCompoundingRule(morpher, this);
-		}
+        public override IRule<Word, ShapeNode> CompileAnalysisRule(Morpher morpher)
+        {
+            return new AnalysisCompoundingRule(morpher, this);
+        }
 
-		public override IRule<Word, ShapeNode> CompileSynthesisRule(Morpher morpher)
-		{
-			return new SynthesisCompoundingRule(morpher, this);
-		}
-	}
+        public override IRule<Word, ShapeNode> CompileSynthesisRule(Morpher morpher)
+        {
+            return new SynthesisCompoundingRule(morpher, this);
+        }
+    }
 }

@@ -2,11 +2,11 @@
 
 namespace SIL.Machine.Translation
 {
-	public interface IInteractiveTranslationModel : ITranslationModel
-	{
-		IInteractiveTranslationEngine CreateInteractiveEngine();
+    public interface IInteractiveTranslationModel : ITranslationModel
+    {
+        IInteractiveTranslationEngine CreateInteractiveEngine();
 
-		void Save();
-		Task SaveAsync();
-	}
+        void Save();
+        Task SaveAsync();
+    }
 }

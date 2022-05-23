@@ -2,8 +2,8 @@
 
 namespace SIL.Machine.Translation
 {
-	public interface IWordVocabulary : IReadOnlyList<string>
-	{
-		int IndexOf(string word);
-	}
+    public interface IWordVocabulary : IReadOnlyList<string>
+    {
+        int IndexOf(string word);
+    }
 }

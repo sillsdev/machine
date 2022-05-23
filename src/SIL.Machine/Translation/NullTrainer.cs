@@ -5,21 +5,17 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
 {
-	public class NullTrainer : DisposableBase, ITrainer
-	{
-		public TrainStats Stats { get; } = new TrainStats();
+    public class NullTrainer : DisposableBase, ITrainer
+    {
+        public TrainStats Stats { get; } = new TrainStats();
 
-		public void Train(IProgress<ProgressStatus> progress = null, Action checkCanceled = null)
-		{
-		}
+        public void Train(IProgress<ProgressStatus> progress = null, Action checkCanceled = null) { }
 
-		public void Save()
-		{
-		}
+        public void Save() { }
 
-		public Task SaveAsync()
-		{
-			return Task.CompletedTask;
-		}
-	}
+        public Task SaveAsync()
+        {
+            return Task.CompletedTask;
+        }
+    }
 }

@@ -2,18 +2,19 @@ using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Matching.Fluent
 {
-	public interface IQuantifierPatternSyntax<TData, TOffset> : IAlternationPatternSyntax<TData, TOffset> where TData : IAnnotatedData<TOffset>
-	{
-		IAlternationPatternSyntax<TData, TOffset> ZeroOrMore { get; }
-		IAlternationPatternSyntax<TData, TOffset> LazyZeroOrMore { get; }
+    public interface IQuantifierPatternSyntax<TData, TOffset> : IAlternationPatternSyntax<TData, TOffset>
+        where TData : IAnnotatedData<TOffset>
+    {
+        IAlternationPatternSyntax<TData, TOffset> ZeroOrMore { get; }
+        IAlternationPatternSyntax<TData, TOffset> LazyZeroOrMore { get; }
 
-		IAlternationPatternSyntax<TData, TOffset> OneOrMore { get; }
-		IAlternationPatternSyntax<TData, TOffset> LazyOneOrMore { get; }
+        IAlternationPatternSyntax<TData, TOffset> OneOrMore { get; }
+        IAlternationPatternSyntax<TData, TOffset> LazyOneOrMore { get; }
 
-		IAlternationPatternSyntax<TData, TOffset> Optional { get; }
-		IAlternationPatternSyntax<TData, TOffset> LazyOptional { get; }
+        IAlternationPatternSyntax<TData, TOffset> Optional { get; }
+        IAlternationPatternSyntax<TData, TOffset> LazyOptional { get; }
 
-		IAlternationPatternSyntax<TData, TOffset> Range(int min, int max);
-		IAlternationPatternSyntax<TData, TOffset> LazyRange(int min, int max);
-	}
+        IAlternationPatternSyntax<TData, TOffset> Range(int min, int max);
+        IAlternationPatternSyntax<TData, TOffset> LazyRange(int min, int max);
+    }
 }
